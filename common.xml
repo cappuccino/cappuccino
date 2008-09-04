@@ -11,15 +11,14 @@
     <property name = "Build.Cappuccino.Starter.Frameworks" location = "${Build.Cappuccino.Starter}/Frameworks" />
     
     <property name = "Build.Cappuccino.Tools" location = "${Build}/Cappuccino/Tools" />
-    <property name = "Build.Cappuccino.Tools.Objects" location = "${Build.Cappuccino.Tools}/Objects" />
     <property name = "Build.Cappuccino.Tools.Frameworks" location = "${Build.Cappuccino.Tools}/Frameworks" />
     
     
-    <property name = "Build.Cappuccino.Tools.Objj" location = "${Build.Cappuccino.Tools.Objects}/objj" />
+    <property name = "Build.Cappuccino.Tools.Objj" location = "${Build.Cappuccino.Tools}/objj" />
     
-    <property name = "Build.Cappuccino.Tools.Bin" location = "${Build.Cappuccino.Tools.Objects}/objj/bin" />
-    <property name = "Build.Cappuccino.Tools.Lib" location = "${Build.Cappuccino.Tools.Objects}/objj/lib" />
-    <property name = "Build.Cappuccino.Tools.Lib.Frameworks" location = "${Build.Cappuccino.Tools.Objects}/objj/lib/Frameworks" />
+    <property name = "Build.Cappuccino.Tools.Bin" location = "${Build.Cappuccino.Tools}/objj/bin" />
+    <property name = "Build.Cappuccino.Tools.Lib" location = "${Build.Cappuccino.Tools}/objj/lib" />
+    <property name = "Build.Cappuccino.Tools.Lib.Frameworks" location = "${Build.Cappuccino.Tools}/objj/lib/Frameworks" />
     
     <property environment = "environment" />
     <property name = "environment.OBJJ_HOME" value = "/usr/local/share/objj" />
@@ -34,7 +33,6 @@
         <mkdir dir = "${Build.Cappuccino.Starter.Frameworks}" />
         
         <mkdir dir = "${Build.Cappuccino.Tools}" />
-        <mkdir dir = "${Build.Cappuccino.Tools.Objects}" />
         <mkdir dir = "${Build.Cappuccino.Tools.Frameworks}" />
         
         <mkdir dir = "${Build.Cappuccino.Tools.Objj}" />

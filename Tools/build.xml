@@ -33,10 +33,6 @@
     
         <antcall target = "prepare-release"/>
         
-        <copy todir = "${Build.Cappuccino.Tools.Lib}">
-            <fileset dir = "Jars"/>
-        </copy>
-        
         <iterate target = "release" >
             <files>
                 <filelist refid = "Projects" />

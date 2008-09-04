@@ -24,14 +24,10 @@
         
         <antcall target = "prepare-release" />
     
-        <copy file = "${Build.Products}/install-tools" tofile = "${Build.Cappuccino.Tools.Objects}/install-tools" />
+        <copy file = "${Build.Products}/install-tools" tofile = "${Build.Cappuccino.Tools}/install-tools" />
         
-        <chmod file = "${Build.Cappuccino.Tools.Objects}/install-tools" perm = "+x" />
-        
-        <copy todir = "${Build.Cappuccino.Tools.Objects}/Jars">
-            <fileset dir = "${basedir}/../Jars" />
-        </copy>
-    
+        <chmod file = "${Build.Cappuccino.Tools}/install-tools" perm = "+x" />
+            
     </target>
     
     
