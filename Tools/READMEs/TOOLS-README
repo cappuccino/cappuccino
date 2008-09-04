@@ -1,0 +1,58 @@
+
+***********************************************************************
+* Working with Text Editors
+***********************************************************************
+
+This package includes syntax highlighting modes for both SubEthaEdit and TextMate.
+
+***********************************************************************
+* Installing the Development Tools
+***********************************************************************
+
+1. Navigate to Tools (the directory containing this README).
+2. type sudo ./install-tools
+3. Once installation is complete, you will be presented with a list of 
+   options  that looks something like this:
+    
+    Installation of the Objective-J tools to /usr/local is almost complete!
+    
+    Several environment variables must be set:
+    
+    - PATH should include /usr/local/bin:
+
+        export PATH=$PATH:/usr/local/bin
+        
+        (currently: /bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/bin:/Users/tolmasky/Development/Cappuccino/Tools/Scripts/:/usr/local/bin:/opt/local/bin:/opt/bin:/Users/tolmasky/bin)
+
+    - OBJJ_HOME should be set to /usr/local/share/objj:
+
+        export OBJJ_HOME=/usr/local/share/objj
+        
+        (currently: )
+    
+    - STEAM_BUILD should be set to the build directory of your choice (e.x. /Users/tolmasky/objj_build):
+
+        export STEAM_BUILD=/Users/tolmasky/objj_build
+        
+        (currently: )
+
+4. Chances are you can ignore the first two options.  If you chose to install everything to the default location, it should work fine without further modification.
+5. Steam (see below) allows you to specify a global Build directory.  If you wish to use it, you must set the STEAM_BUILD environment variable.  Building Cappuccino from source requires this for example.
+
+**********************************************************************
+* objj
+**********************************************************************
+
+objj is a command line Objective-J interpreter and interactive console.
+
+**********************************************************************
+* objjc
+**********************************************************************
+
+objjc is a static preinterpreter for Objectie-J.  It will take Objective-J files and essentially convert them to JavaScript.  However, for complex interaction between files, you will probably want to use steam (see below).
+
+***********************************************************************
+* steam
+***********************************************************************
+
+Steam is a simple tool for managing Objective-J projects.  Among other things, it allows you to statically pre-interpret entire Objective-J applications so that you can deliver it without requiring client-side pre-interpretation.  

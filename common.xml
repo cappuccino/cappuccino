@@ -20,6 +20,8 @@
     <property name = "Build.Cappuccino.Tools.Lib" location = "${Build.Cappuccino.Tools}/objj/lib" />
     <property name = "Build.Cappuccino.Tools.Lib.Frameworks" location = "${Build.Cappuccino.Tools}/objj/lib/Frameworks" />
     
+    <property name = "Build.Cappuccino.Tools.Editors" location = "${Build.Cappuccino.Tools}/Editors" />
+    
     <property environment = "environment" />
     <property name = "environment.OBJJ_HOME" value = "/usr/local/share/objj" />
 
@@ -40,6 +42,8 @@
         <mkdir dir = "${Build.Cappuccino.Tools.Lib}" />
         
         <mkdir dir = "${Build.Cappuccino.Tools.Lib.Frameworks}" />
+        
+        <mkdir dir = "${Build.Cappuccino.Tools.Editors}" />
         
     </target>
 

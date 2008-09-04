@@ -39,6 +39,12 @@
             </files>
         </iterate>
         
+        <copy file = "READMEs/STARTER-README" tofile = "${Build.Cappuccino.Starter}/README" />        
+        <copy file = "READMEs/TOOLS-README" tofile = "${Build.Cappuccino.Tools}/README" />
+
+        <copy file = "SubEthaEdit/Objective-J.mode.zip" tofile = "${Build.Cappuccino.Tools.Editors}/Objective-J.mode.zip" />     
+        <copy file = "TextMate/Objective-J.tmbundle.zip" tofile = "${Build.Cappuccino.Tools.Editors}/Objective-J.tmbundle.zip" />
+
         <zip destfile = "${Build.Cappuccino}/Starter.zip">
             <fileset dir = "${Build.Cappuccino.Starter}" />
         </zip>
