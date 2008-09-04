@@ -1,0 +1,45 @@
+<?xml version = "1.0"?>
+<project name = "Foundation" default = "build" basedir = "." >
+
+    <import file = "../common.xml" />
+    <import file = "${environment.OBJJ_HOME}/lib/steam.xml" />
+
+    <target name = "clean">
+        <steam>
+            <arguments>
+                <arg line = "-f Foundation.steam -c ${Configuration} clean" />
+            </arguments>
+        </steam>
+    </target>
+        
+    <target name = "build">
+    
+        <steam>
+            <arguments>
+                <arg line = "-f Foundation.steam -c ${Configuration}" />
+            </arguments>
+        </steam>
+        
+        <copy file = "../LICENSE" todir = "${Build}/${Configuration}/Foundation" />
+
+    </target>
+    
+    <target name = "release" depends = "build">
+        
+        <antcall target = "prepare-release" />
+        
+        <copy todir = "${Build.Cappuccino.Tools.Frameworks}/Foundation">
+            <fileset dir = "${Build}/${Configuration}/Foundation" />
+        </copy>        
+
+        <copy todir = "${Build.Cappuccino.Starter.Frameworks}/Foundation" >
+            <fileset dir = "${Build}/${Configuration}/Foundation" />
+        </copy>
+
+        <copy todir = "${Build.Cappuccino.Starter}/NewApplication/Frameworks/Foundation" >
+            <fileset dir = "${Build}/${Configuration}/Foundation" />
+        </copy>
+
+    </target>
+
+</project>

@@ -1,0 +1,56 @@
+<?xml version = "1.0"?>
+<project name = "Tools" default = "build" >
+
+    <import file = "../common.xml" />
+    
+    <filelist id = "Projects" dir = "."> 
+        <file name = "Install/build.xml" />
+        <file name = "objj/build.xml" />
+        <file name = "objjc/build.xml" />
+        <file name = "steam/build.xml" />
+        <file name = "bake/build.xml" />
+        <file name = "Utilities/build.xml" />
+        <file name = "NewApplication/build.xml" />
+    </filelist>
+    
+    <target name = "build">
+        <iterate target = "build">
+            <files>
+                <filelist refid = "Projects" />
+            </files>
+        </iterate>
+    </target>
+    
+    <target name = "clean">
+        <iterate target = "clean">
+            <files>
+                <filelist refid = "Projects" />
+            </files>
+        </iterate>
+    </target>
+    
+    <target name = "release">
+    
+        <antcall target = "prepare-release"/>
+        
+        <copy todir = "${Build.Cappuccino.Tools.Lib}">
+            <fileset dir = "Jars"/>
+        </copy>
+        
+        <iterate target = "release" >
+            <files>
+                <filelist refid = "Projects" />
+            </files>
+        </iterate>
+        
+        <zip destfile = "${Build.Cappuccino}/Starter.zip">
+            <fileset dir = "${Build.Cappuccino.Starter}" />
+        </zip>
+        
+        <zip destfile = "${Build.Cappuccino}/Tools.zip">
+            <fileset dir = "${Build.Cappuccino.Tools}" />
+        </zip>
+        
+    </target>
+
+</project>

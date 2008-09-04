@@ -1,0 +1,6 @@
+#!/bin/sh
+
+SELF_PATH=$(cd -P -- "$(dirname -- "$0")" && pwd -P) && SELF_PATH=$SELF_PATH/$(basename -- "$0")
+SELF_DIR=`dirname $SELF_PATH`
+
+$SELF_DIR/objj $SELF_DIR/../nib2cib/nib2cib.j $@

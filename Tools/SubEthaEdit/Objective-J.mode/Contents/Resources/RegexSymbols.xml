@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE syntax SYSTEM "symbol.dtd">
+<symbols>
+
+    <blocks>
+        <beginregex>{</beginregex>
+        <endregex>}</endregex>
+    </blocks>
+    
+    <symbol id="Objective-J Methods" image="SymbolM" indentation="1" ignoreblocks="yes">
+        <regex>(^[ \t]*[-+][^(-;]*\([A-Za-z0-9 *_]*\)[A-Za-z0-9_ \t]+[^{;]*)</regex>
+        <postprocess>
+            <find>(:) *\([^\)]*\) *[a-zA-Z0-9]*</find>
+            <replace>\1</replace>
+            <find>([\n\r\t]| +|\([^\)]*\))</find>
+            <replace></replace>
+        </postprocess>
+    </symbol>
+
+    <symbol id="Javascript Funtions" image="SymbolF()" indentation="0" ignoreblocks="yes">
+        <regex>(?&lt;=[\n\r]|^)\s*function\s+([^{]*)(?=\s*\{)</regex>
+        <postprocess>
+            <find>\([^\)]*\)</find>
+            <replace>()</replace>
+            <find>[\n\r]</find>
+            <replace> </replace>
+            <find>[ \t]+</find>
+            <replace> </replace>
+        </postprocess>
+    </symbol>
+
+    <symbol id="Objective-J Directives" font-weight="bold" image="SymbolC" indentation="0" ignoreblocks="yes">
+        <regex>(@implementation[^[:cntrl:]{]*)</regex>
+        <postprocess>
+            <find>([\n\r]| +)</find>
+            <replace> </replace>
+        </postprocess>
+    </symbol>
+    
+    <symbol id="Objective-J Declarations" font-weight="bold" font-style="italic" image="SymbolC" indentation="0" ignoreblocks="yes">
+        <regex>(@interface[^[:cntrl:]{]*|@protocol[^[:cntrl:]{]*)</regex>
+        <postprocess>
+            <find>([\n\r]| +)</find>
+            <replace> </replace>
+        </postprocess>
+    </symbol>
+
+    <symbol id="CVS/SVN conflict" font-weight="bold" image="SymbolWarn" indentation="0" ignoreblocks="no">
+        <regex>^&lt;&lt;&lt;&lt;&lt;&lt;&lt;[^=]*======[^&gt;]*&gt;&gt;&gt;&gt;&gt;&gt;&gt;</regex>
+        <postprocess>
+            <find>.*</find>
+            <replace>Versioning conflict!</replace>
+        </postprocess>
+    </symbol>
+
+</symbols>

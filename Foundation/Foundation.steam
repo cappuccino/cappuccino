@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>name</key>
+    <string>Foundation</string>
+	<key>Targets</key>
+	<array>
+        <dict>
+            <key>name</key>
+            <string>Foundation</string>
+        </dict>
+	</array>
+    <key>Configurations</key>
+	<array>
+        <dict>
+            <key>name</key>
+            <string>Debug</string>
+            <key>Settings</key>
+            <dict>
+                <key>PREPROCESS</key>
+                <true/>
+                <key>FLAGS</key>
+                <string>-DDEBUG</string>
+            </dict>
+        </dict>
+        <dict>
+            <key>name</key>
+            <string>Release</string>
+            <key>Settings</key>
+            <dict>
+                <key>PREPROCESS</key>
+                <true/>
+                <key>PREINTERPRET</key>
+                <true/>
+            </dict>
+        </dict>
+	</array>
+</dict>
+</plist>

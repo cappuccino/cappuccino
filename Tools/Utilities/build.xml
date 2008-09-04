@@ -1,0 +1,22 @@
+<?xml version = "1.0"?>
+<project name = "Utilities" default = "build" >
+
+    <import file = "../../common.xml" />
+    
+    <target name = "build">
+    </target>
+    
+    <target name = "clean">
+    </target>
+    
+    <target name = "release">
+    
+        <antcall target = "prepare-release"/>
+        
+        <copy file = "${basedir}/cat" todir = "${Build.Cappuccino.Tools.Lib}" />
+        
+        <chmod file = "${Build.Cappuccino.Tools.Lib}/cat" perm = "+x" />
+        
+    </target>
+
+</project>

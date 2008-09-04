@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html 
+    PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns = "http://www.w3.org/1999/xhtml" xml:lang = "en" lang = "en">
+<!--
+//
+// index.html
+//
+// $APPLICATION_NAME
+//
+// Copyright 2005 - 2008, 280 North, Inc. All rights reserved.
+//
+-->
+<head>
+    <script type="text/javascript" charset="utf-8">
+        //create a new timestamp to monitor launch time
+        _LAUNCH_TIME = new Date();
+
+        var path = document.location.href;
+        
+        path = path.substr(0, path.lastIndexOf('/') + 1);
+        
+        document.write("<base href=\"" + path + "$VERSION/" + "\"><!--[if IE]><"+"/base><![endif]-->");
+    </script>
+    
+    <title>Loading...</title>
+    
+    <script type="text/javascript" charset="utf-8" src="Frameworks/Objective-J/Objective-J.js"></script>
+            
+    <script type="text/javascript" charset="utf-8">
+        window.files_total = $FILES_TOTAL;
+        window.update_progress = function(percent)
+        {
+            var value = Math.max(Math.min(Math.round(percent*100), 100), 0);
+            var progress = document.getElementById("progress");
+            if (progress)
+                progress.style.width = value + "%";
+            window.title = "Loading $APPLICATION_NAME... " + value + "%";
+        }
+        
+        objj_import("main.j", YES, function() { main(); });
+    </script>
+</head>
+<body style="background-color: $BACKGROUND_COLOR;">
+    <div style="position: absolute; top: 50%; left: 50%; min-height: 100px; width: 250px; margin-top: -50px; margin-left: -125px; padding: 10px; background-color: white; text-align: center; -moz-border-radius: 5px; -webkit-border-radius: 5px;">
+        <img src="Resources/spinner.gif" />
+        <div style="height: 3px; width: 100%; left: 0px; top: 0px; background-color: lightgrey; overflow: hidden;">
+            <div id="progress" style="height: 100%; width: 0%; left: 0px; top: 0px; background-color: black; margin-right: auto;"></div>
+        </div>
+        <h3 style="font-size: 18px; font-family: 'Lucida Grande', Lucida, Verdana, Helvetica, Arial, sans-serif; color: $TEXT_COLOR;">Loading $APPLICATION_NAME...</h3>
+    </div>
+    
+<script type="text/javascript">
+	var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+	document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+	var pageTracker = _gat._getTracker("UA-3877734-1");
+	pageTracker._initData();
+	pageTracker._trackPageview();
+</script>
+    
+</body>
+</html>

@@ -1,0 +1,17 @@
+#!/bin/sh
+
+files=""
+outfile=""
+
+while [ $# -ge 1 ]; do
+    case $1 in
+        -o) shift
+            outfile=$1
+            ;;
+
+        *)  files="$files $1"
+    esac
+    shift
+done
+
+cat $files > $outfile

@@ -1,0 +1,49 @@
+{
+	"sources" : [
+	    {
+	        "type"    : "git-ssh",
+	        "server"  : "git@git.myserver.com",
+	        "path"    : "/home/git/cappuccino.git",
+	        "parts"   : [
+    	        {
+    	            "src"       :   "Objective-J",
+    	            "dst"       :   "Frameworks/Objective-J",
+    	            "build"     :   "ant -DBuild=BUILD_PATH",
+    	            "copyFrom"  :   "Release/Objective-J"
+    	        },
+	            {
+    	            "src"       :   "Foundation",
+    	            "dst"       :   "Frameworks/Foundation",
+    	            "build"     :   "steam -c Release -b BUILD_PATH",
+    	            "copyFrom"  :   "Release/Foundation"
+	            },
+        	    {
+    	            "src"       :   "AppKit",
+    	            "dst"       :   "Frameworks/AppKit",
+    	            "build"     :   "steam -c Release -b BUILD_PATH",
+    	            "copyFrom"  :   "Release/AppKit"
+        	    }
+	        ]
+	    },
+	    {
+	        "type"    : "git-ssh",
+	        "server"  : "git@git.myserver.com",
+	        "path"    : "/home/git/myapp.git",
+	        "parts"   : [
+	            {
+    	            "src"       :   "Editor/Server",
+    	            "dst"       :   "Server"
+	            }
+	        ]
+	    }
+	],
+	"deployments" : [
+	    { "host" : "deploy@myserver.com", "path" : "/var/www/mysite/public" }
+	],
+	"templatePath" : "index.html",
+	"templateVars" : {
+        "APPLICATION_NAME" : "My Application",
+        "BACKGROUND_COLOR" : "black",
+        "TEXT_COLOR" : "black"
+	}
+}

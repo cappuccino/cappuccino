@@ -1,0 +1,59 @@
+#!/bin/sh
+
+usage()
+{
+    echo "$0 [--prefix install_directory]"
+    exit 1
+}
+
+INSTALL_DIR="/usr/local"
+
+# Parse parameters
+while [ $# -ge 1 ]; do
+    case $1 in
+        --prefix)
+            INSTALL_DIR=$2
+            shift
+            ;;
+        *)
+            usage
+            ;;
+    esac
+    shift
+done
+
+mkdir -p $INSTALL_DIR/bin
+mkdir -p $INSTALL_DIR/share
+
+cp -fR objj/ $INSTALL_DIR/share/objj
+
+ln -sf $INSTALL_DIR/share/objj/bin/objj $INSTALL_DIR/bin/objj
+ln -sf $INSTALL_DIR/share/objj/bin/objjc $INSTALL_DIR/bin/objjc
+ln -sf $INSTALL_DIR/share/objj/bin/steam $INSTALL_DIR/bin/steam
+ln -sf $INSTALL_DIR/share/objj/bin/bake $INSTALL_DIR/bin/bake
+
+cat <<EOT
+    
+    Installation of the Objective-J tools to $INSTALL_DIR is almost complete!
+    
+    Several environment variables must be set:
+    
+    - PATH should include $INSTALL_DIR/bin:
+
+        export PATH=\$PATH:$INSTALL_DIR/bin
+        
+        (currently: $PATH)
+
+    - OBJJ_HOME should be set to $INSTALL_DIR/share/objj:
+
+        export OBJJ_HOME=$INSTALL_DIR/share/objj
+        
+        (currently: $OBJJ_HOME)
+    
+    - STEAM_BUILD should be set to the build directory of your choice (e.x. $HOME/objj_build):
+
+        export STEAM_BUILD=$HOME/objj_build
+        
+        (currently: $STEAM_BUILD)
+    
+EOT

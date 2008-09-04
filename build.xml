@@ -1,0 +1,46 @@
+<?xml version = "1.0"?>
+<project name = "Cappuccino" default = "build">
+
+    <import file = "common.xml" />
+
+    <filelist id = "Projects" dir = "."> 
+        <file name = "Objective-J/build.xml" />
+        <file name = "Foundation/build.xml" />
+        <file name = "AppKit/build.xml" /> 
+        <file name = "Tools/build.xml" />
+    </filelist>
+
+    <target name = "clean">
+        <iterate-build target = "clean"/>
+    
+        <delete dir = "${Build.Cappuccino}" verbose = "true" />
+    </target>
+
+    <target name = "build">
+        <iterate target = "build">
+            <files>
+                <filelist refid = "Projects" />
+            </files>
+        </iterate>
+    </target>
+    
+    <target name = "release">
+        <iterate target = "release">
+            <files>
+                <filelist refid = "Projects" />
+            </files>
+        </iterate>
+    </target>
+
+    <target name = "tools">
+        <iterate target = "release">
+            <files>
+                <filelist dir = "."> 
+                    <file name = "Objective-J/build.xml" />   
+                    <file name = "Tools/build.xml" />
+                </filelist>
+            </files>
+        </iterate>
+    </target>
+
+</project>

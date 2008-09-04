@@ -1,0 +1,25 @@
+Changes with Version 1.6 (SEE 2.5.1)
+    *) Uncomment script had wrong icon.
+
+Changes with Version 1.5 (SEE 2.5)
+
+    *) Added Scripts: NSLog with Function Call, Insert Call To Super, Open Counterpart, Open File In Project, Open Xcode Project, Compile Using Xcode, Un/Comment Selected Lines, Lookup in AppKiDo.
+    *) AUTOCOMPLETE: added missing constants (AddressBook, NSError)
+
+Changes with Version 1.4 (SEE 2.3)
+
+    *) SYMBOLS: Fixed SEE-490.
+    *) AUTOCOMPLETE: Added important Carbon keywords
+
+Changes with Version 1.3
+    
+    *) SYNTAX: Added some missing Classes and Constants. HYR-587.
+
+Changes with Version 1.2
+    
+    *) SYNTAX: Fixed preprocessor end regex. HYR-410.
+
+Changes with Version 1.1
+    
+    *) SYNTAX: Changed Character to state to fix HYR-371.
+    *) Adding additional Cocoa classes, constants and functions

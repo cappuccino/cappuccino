@@ -1,0 +1,17 @@
+<project>
+
+    <!-- Steam -->
+    
+    <macrodef name = "steam">
+        
+        <element name = "arguments" optional = "true" />
+        
+        <sequential>
+            <exec executable = "steam">
+                <arguments/>
+            </exec>
+        </sequential>
+    
+    </macrodef>
+
+</project>

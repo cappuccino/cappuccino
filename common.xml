@@ -1,0 +1,118 @@
+<project>
+
+    <property name = "Configuration" value = "Release" />
+
+    <property environment = "environment" />
+    <property name = "Build" location = "${environment.STEAM_BUILD}" />
+
+    <property name = "Build.Cappuccino" location = "${Build}/Cappuccino" />
+    
+    <property name = "Build.Cappuccino.Starter" location = "${Build}/Cappuccino/Starter" />
+    <property name = "Build.Cappuccino.Starter.Frameworks" location = "${Build.Cappuccino.Starter}/Frameworks" />
+    
+    <property name = "Build.Cappuccino.Tools" location = "${Build}/Cappuccino/Tools" />
+    <property name = "Build.Cappuccino.Tools.Objects" location = "${Build.Cappuccino.Tools}/Objects" />
+    <property name = "Build.Cappuccino.Tools.Frameworks" location = "${Build.Cappuccino.Tools}/Frameworks" />
+    
+    
+    <property name = "Build.Cappuccino.Tools.Objj" location = "${Build.Cappuccino.Tools.Objects}/objj" />
+    
+    <property name = "Build.Cappuccino.Tools.Bin" location = "${Build.Cappuccino.Tools.Objects}/objj/bin" />
+    <property name = "Build.Cappuccino.Tools.Lib" location = "${Build.Cappuccino.Tools.Objects}/objj/lib" />
+    
+    <property environment = "environment" />
+    <property name = "environment.OBJJ_HOME" value = "/usr/local/share/objj" />
+
+    <!-- prepare-release -->
+    
+    <target name = "prepare-release">
+        
+        <mkdir dir = "${Build.Cappuccino}" />
+        
+        <mkdir dir = "${Build.Cappuccino.Starter}" />
+        <mkdir dir = "${Build.Cappuccino.Starter.Frameworks}" />
+        
+        <mkdir dir = "${Build.Cappuccino.Tools}" />
+        <mkdir dir = "${Build.Cappuccino.Tools.Objects}" />
+        <mkdir dir = "${Build.Cappuccino.Tools.Frameworks}" />
+        
+        <mkdir dir = "${Build.Cappuccino.Tools.Objj}" />
+        <mkdir dir = "${Build.Cappuccino.Tools.Bin}" />
+        <mkdir dir = "${Build.Cappuccino.Tools.Lib}" />
+        
+    </target>
+
+    <!-- Iterate -->
+    
+    <macrodef name = "iterate">
+    
+        <attribute name = "target"/>
+        <element name = "files" />
+    
+        <sequential>
+            <subant target = "@{target}" inheritall = "false" inheritrefs = "false" >
+                <files/>
+            </subant>
+        </sequential>
+    
+    </macrodef>
+    
+    <macrodef name = "iterate-build">
+        
+        <attribute name = "target"/>
+    
+        <sequential>
+            <subant target = "@{target}" inheritall = "false" inheritrefs = "false" >
+                <fileset dir = "." includes = "*/build.xml" />
+            </subant>
+        </sequential>
+    
+    </macrodef>
+
+    <!-- JavaScript Compiler -->
+    <macrodef name = "jsc">
+        
+        <attribute name = "dir" default = "." />
+        
+        <element name = "arguments"/>
+        
+        <sequential>
+            <java classname = "org.mozilla.javascript.tools.jsc.Main" dir = "@{dir}" fork = "true">
+                <classpath>
+                    <pathelement location = "/usr/share/ant/lib/js.jar" />
+                    <pathelement location = "." />
+                </classpath>
+                
+                <arguments/>
+            </java>
+        </sequential>
+    </macrodef>
+    
+    <!--  JavaScript "Preprocessor" -->
+    
+    <macrodef name = "preprocess">
+        
+        <attribute name = "file" />
+        <attribute name = "output"/>
+        <element name = "arguments" optional = "true" />
+        
+        <sequential>
+            <exec executable = "gcc" output = "@{output}">
+                <!-- Preprocessing only -->
+                <arg value = "-E" />
+                <!-- Interpret files as C source files (instead of treating them as object files); this option is given to make the compiler preprocess them -->
+                <arg value = "-x" />
+                <arg value = "c" />
+                <!-- Don't generate #line directives (which would of course mess things up in HTML documents!) -->
+                <arg value = "-P" />
+                
+                <arguments/>
+                
+                <arg value = "@{file}" />
+            </exec>
+        </sequential>
+            
+    </macrodef>
+
+
+</project>

@@ -1,0 +1,31 @@
+#!/bin/sh
+
+# if OBJJ_HOME isn't set, try to determine it out
+if [ -z $OBJJ_HOME ]; then
+    SELF_PATH=$(cd -P -- "$(dirname -- "$0")" && pwd -P) && SELF_PATH=$SELF_PATH/$(basename -- "$0")
+    SELF_DIR=`dirname $SELF_PATH`
+    
+    export OBJJ_HOME="`dirname $SELF_DIR`/share/objj"
+    
+    if [ -d $OBJJ_HOME ]; then
+        echo "OBJJ_HOME not set, defaulting to $OBJJ_HOME" 1>&2
+    else
+        echo "OBJJ_HOME not set, default at $OBJJ_HOME doesn't exist, exiting" 1>&2 
+        exit 2
+    fi
+fi
+
+OBJJ_LIB="$OBJJ_HOME/lib"
+CLASSPATH="$OBJJ_LIB:$OBJJ_LIB/js.jar:$CLASSPATH"
+
+# convert paths for Cygwin
+UNAME=`uname`
+case "$UNAME" in
+    CYGWIN*)
+        CLASSPATH=`cygpath -wp "$CLASSPATH"`
+        ;;
+    *)
+        ;;
+esac
+
+java -classpath $CLASSPATH objjc $@

@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>name</key>
+    <string>AppKit</string>
+	<key>Targets</key>
+	<array>
+        <dict>
+            <key>name</key>
+            <string>AppKit</string>
+            <key>Excluded</key>
+            <array>
+                <string>CPOutlineView.j</string>
+                <string>CPTableColumn.j</string>
+                <string>CPTableView.j</string>
+            </array>
+        </dict>
+	</array>
+    <key>Configurations</key>
+	<array>
+        <dict>
+            <key>name</key>
+            <string>Debug</string>
+            <key>Settings</key>
+            <dict>
+                <key>PREPROCESS</key>
+                <true/>
+                <key>FLAGS</key>
+                <string>-DDEBUG</string>
+            </dict>
+        </dict>
+        <dict>
+            <key>name</key>
+            <string>Release</string>
+            <key>Settings</key>
+            <dict>
+                <key>PREPROCESS</key>
+                <true/>
+                <key>PREINTERPRET</key>
+                <true/>
+            </dict>
+        </dict>
+	</array>
+</dict>
+</plist>

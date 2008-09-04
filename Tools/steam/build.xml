@@ -1,0 +1,61 @@
+<?xml version = "1.0"?>
+<project name = "steam" default = "build" basedir = "." >
+
+    <import file = "../../common.xml" />
+
+    <property name = "Build.Intermediate" location = "${Build}/steam.build/${Configuration}" />
+    <property name = "Build.steam" location = "${Build}/${Configuration}/steam" />
+
+    <target name = "clean">
+        <delete dir = "${Build.steam}" verbose = "true" />
+    </target>
+        
+    <target name = "build">
+    
+        <mkdir dir = "${Build.steam}" />
+        
+        <copy file = "${basedir}/sjheader.txt" tofile = "${Build.steam}/sjheader.txt" />
+        
+        <copy file = "${basedir}/steam" tofile = "${Build.steam}/steam" />
+        
+        <chmod file = "${Build.steam}/steam" perm = "+x" />
+
+        <copy file = "${basedir}/steam.xml" tofile = "${Build.steam}/steam.xml" />
+        
+        <concat destfile = "${Build.Intermediate}/steam.js">
+			<filelist>
+                <file name="${basedir}/../Utilities/bridge.js" />
+                <file name="${basedir}/../Utilities/regex-bridge.js" />
+                <file name="${Build}/Objective-J.build/\${Configuration}/Rhino/Objective-J.js" />
+                <file name="${basedir}/steam.js" />
+			</filelist>
+        </concat>
+
+        <jsc>
+            <arguments>
+                <arg line = "-o steam.class" />
+                <arg value = "-nosource" />
+                <arg value = "${Build.Intermediate}/steam.js" />
+            </arguments>
+        </jsc>
+        
+        <move file = "${Build.Intermediate}/steam.class" tofile = "${Build.steam}/steam.class" />
+        
+    </target>
+    
+    <target name = "release" depends = "build">
+        
+        <antcall target = "prepare-release" />
+        
+        <copy file = "${Build.steam}/steam" tofile = "${Build.Cappuccino.Tools.Bin}/steam" />
+        
+        <chmod file = "${Build.Cappuccino.Tools.Bin}/steam" perm = "+x" />     
+        
+        <copy file = "${Build.steam}/sjheader.txt" tofile = "${Build.Cappuccino.Tools.Lib}/sjheader.txt" />
+        <copy file = "${Build.steam}/steam.xml" tofile = "${Build.Cappuccino.Tools.Lib}/steam.xml" />
+        
+        <copy file = "${Build.steam}/steam.class" tofile = "${Build.Cappuccino.Tools.Lib}/steam.class" />
+        
+    </target>
+
+</project>

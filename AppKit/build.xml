@@ -1,0 +1,45 @@
+<?xml version = "1.0"?>
+<project name = "AppKit" default = "build" basedir = "." >
+
+    <import file = "../common.xml" />
+    <import file = "${environment.OBJJ_HOME}/lib/steam.xml" />
+
+    <target name = "clean">
+        <steam>
+            <arguments>
+                <arg line = "-f AppKit.steam -c ${Configuration} clean" />
+            </arguments>
+        </steam>
+    </target>
+        
+    <target name = "build">
+    
+        <steam>
+            <arguments>
+                <arg line = "-f AppKit.steam -c ${Configuration}" />
+            </arguments>
+        </steam>
+        
+        <copy file = "../LICENSE" todir = "${Build}/${Configuration}/AppKit" />
+
+    </target>
+    
+    <target name = "release" depends = "build">
+        
+        <antcall target = "prepare-release" />
+        
+        <copy todir = "${Build.Cappuccino.Tools.Frameworks}/AppKit">
+            <fileset dir = "${Build}/${Configuration}/AppKit" />
+        </copy>        
+
+        <copy todir = "${Build.Cappuccino.Starter.Frameworks}/AppKit" >
+            <fileset dir = "${Build}/${Configuration}/AppKit" />
+        </copy>
+        
+        <copy todir = "${Build.Cappuccino.Starter}/NewApplication/Frameworks/AppKit" >
+            <fileset dir = "${Build}/${Configuration}/AppKit" />
+        </copy>
+
+    </target>
+
+</project>

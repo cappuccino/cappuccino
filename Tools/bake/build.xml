@@ -1,0 +1,41 @@
+<?xml version = "1.0"?>
+<project name = "bake" default = "build" basedir = "." >
+
+    <import file = "../../common.xml" />
+
+    <property name = "Build.Intermediate" location = "${Build}/bake.build/${Configuration}" />
+    <property name = "Build.bake" location = "${Build}/${Configuration}/bake" />
+
+    <target name = "clean">
+        <delete dir = "${Build.bake}" verbose = "true" />
+    </target>
+        
+    <target name = "build">
+    
+        <mkdir dir = "${Build.bake}" />
+        
+        <copy file = "${basedir}/bake.j" tofile = "${Build.bake}/bake.j" />
+        
+        <copy file = "${basedir}/bake_template.html" tofile = "${Build.bake}/bake_template.html" />
+        
+        <copy file = "${basedir}/bake" tofile = "${Build.bake}/bake" />
+        
+        <chmod file = "${Build.bake}/bake" perm = "+x" />
+        
+    </target>
+    
+    <target name = "release" depends = "build">
+        
+        <antcall target = "prepare-release" />
+        
+        <copy file = "${Build.bake}/bake.j" tofile = "${Build.Cappuccino.Tools.Lib}/bake.j" />
+        
+        <copy file = "${Build.bake}/bake_template.html" tofile = "${Build.Cappuccino.Tools.Lib}/bake_template.html" />
+        
+        <copy file = "${Build.bake}/bake" tofile = "${Build.Cappuccino.Tools.Bin}/bake" />
+        
+        <chmod file = "${Build.Cappuccino.Tools.Bin}/bake" perm = "+x" />
+        
+    </target>
+
+</project>
