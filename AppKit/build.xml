@@ -32,6 +32,10 @@
             <fileset dir = "${Build}/${Configuration}/AppKit" />
         </copy>        
 
+        <copy todir = "${Build.Cappuccino.Tools.Lib.Frameworks}/AppKit">
+            <fileset dir = "${Build}/${Configuration}/AppKit" />
+        </copy>
+
         <copy todir = "${Build.Cappuccino.Starter.Frameworks}/AppKit" >
             <fileset dir = "${Build}/${Configuration}/AppKit" />
         </copy>

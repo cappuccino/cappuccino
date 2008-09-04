@@ -1,23 +1,23 @@
 debug = false;
 args = arguments;
 
-var helpersBase = arguments[0];
+var OBJJ_LIB = arguments[0];
 var STEAM_BUILD = arguments[1];
 arguments.splice(0, 2);
 
 if (typeof window == "undefined")
 {
     print("Loading Objective-J bridge.");
-    load(helpersBase+'/bridge.js');
+    load(OBJJ_LIB+'/bridge.js');
 }
 
 if (typeof objj_import == "undefined")
 {
     print("Loading Objective-J.");
-    load(STEAM_BUILD+'/Objective-J.build/Release/Rhino/Objective-J.js');
+    load(OBJJ_LIB+'/Frameworks/Objective-J/Objective-J.js');
 }
 
-OBJJ_INCLUDE_PATHS = [STEAM_BUILD+'/Release'];
+OBJJ_INCLUDE_PATHS = [OBJJ_LIB+'/Frameworks'];
 
 if (arguments.length > 0)
 {
