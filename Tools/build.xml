@@ -48,10 +48,16 @@
         <zip destfile = "${Build.Cappuccino}/Starter.zip">
             <fileset dir = "${Build.Cappuccino.Starter}" />
         </zip>
+        <tar destfile = "${Build.Cappuccino}/Starter.tar.gz" compression = "gzip">
+            <fileset dir = "${Build.Cappuccino.Starter}" />
+        </tar>
         
         <zip destfile = "${Build.Cappuccino}/Tools.zip">
             <fileset dir = "${Build.Cappuccino.Tools}" />
         </zip>
+        <tar destfile = "${Build.Cappuccino}/Tools.tar.gz" compression = "gzip">
+            <fileset dir = "${Build.Cappuccino.Tools}" />
+        </tar>
         
     </target>
 
