@@ -199,7 +199,7 @@ Project.prototype.build = function()
         replacedFiles = [];
         hasModifiedJFiles = false;
         shouldObjjPreprocess = true,
-        objjcComponents = ["objjc"];
+        objjcComponents = ["bash", OBJJ_HOME + "/bin/objjc"];
     
     if (!shouldObjjPreprocess)
         objjcComponents.push("-E");
@@ -232,7 +232,7 @@ Project.prototype.build = function()
         var oFiles = getFiles(buildObjects, 'o'),
             sjFile = new File(buildProducts.getCanonicalPath() + '/' + this._activeTarget.name() + ".sj"),
             
-            catComponents = [OBJJ_HOME + "/lib/cat", OBJJ_HOME + "/lib/sjheader.txt"];
+            catComponents = ["bash", OBJJ_HOME + "/lib/cat", OBJJ_HOME + "/lib/sjheader.txt"];
     
         for (index = 0, count = oFiles.length; index < count; ++index)
             catComponents.push(oFiles[index].getCanonicalPath());
@@ -265,8 +265,7 @@ Project.prototype.copyIndexFile = function()
 {
     var indexFile = new File(this._root.getAbsolutePath() + "/index.html").getCanonicalFile();
     
-    if (indexFile.exists())
-        exec(["rsync", "-avz", indexFile.getAbsolutePath(), this.buildProducts().getAbsolutePath()]);
+    rsync(indexFile, this.buildProducts());
 }
 
 Project.prototype.writeInfoPlist = function()
@@ -280,8 +279,7 @@ Project.prototype.writeInfoPlist = function()
 
 Project.prototype.copyResources = function()
 {
-    if (this._resources.exists())
-        exec(["rsync", "-avz", this._resources.getAbsolutePath() + '/', this.buildProducts().getAbsolutePath() + "/Resources"]);
+    rsync(this._resources, this.buildProducts());
 }
 
 function main()
@@ -467,6 +465,25 @@ function exec(/*Array*/ command, /*Boolean*/ showOutput)
     }
     
     return output;
+}
+
+function rsync(srcFile, dstFile)
+{
+    var src, dst;
+
+    if (String(java.lang.System.getenv("OS")).indexOf("Windows") < 0)
+    {
+        src = srcFile.getAbsolutePath();
+        dst = dstFile.getAbsolutePath();
+    }
+    else
+    {
+        src = exec(["cygpath", "-u", srcFile.getAbsolutePath() + '/']);
+        dst = exec(["cygpath", "-u", dstFile.getAbsolutePath() + "/Resources"]);
+    }
+
+    if (srcFile.exists())
+        exec(["rsync", "-avz", src, dst]);
 }
 
 function getFileName(aPath)

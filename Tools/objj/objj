@@ -2,11 +2,19 @@
 
 # if OBJJ_HOME isn't set, try to determine it out
 if [ -z $OBJJ_HOME ]; then
+    # get path of the executable
     SELF_PATH=$(cd -P -- "$(dirname -- "$0")" && pwd -P) && SELF_PATH=$SELF_PATH/$(basename -- "$0")
+    
+    # resolve symlinks
+    if [ -h $SELF_PATH ]; then
+        SELF_PATH=`readlink $SELF_PATH`
+    fi
+    
+    # get second ancestor directory
     SELF_DIR=`dirname $SELF_PATH`
+    export OBJJ_HOME=`dirname $SELF_DIR`
     
-    export OBJJ_HOME="`dirname $SELF_DIR`/share/objj"
-    
+    # check to ensure it exists, print message
     if [ -d $OBJJ_HOME ]; then
         echo "OBJJ_HOME not set, defaulting to $OBJJ_HOME" 1>&2
     else
@@ -16,7 +24,7 @@ if [ -z $OBJJ_HOME ]; then
 fi
 
 OBJJ_LIB="$OBJJ_HOME/lib"
-CLASSPATH="$OBJJ_LIB:$OBJJ_LIB/js.jar:$CLASSPATH"
+CLASSPATH="$OBJJ_LIB:$OBJJ_LIB/js.jar"
 
 OBJJ="$OBJJ_LIB/objj.js"
 RLWRAP=`which rlwrap`
@@ -29,19 +37,14 @@ if [ -d "lib" ]; then
 fi
 
 # convert paths for Cygwin
-UNAME=`uname`
-case "$UNAME" in
-    CYGWIN*)
-        OBJJ_HOME=`cygpath -wp "$OBJJ_HOME"`
-        OBJJ_LIB=`cygpath -wp "$OBJJ_LIB"`
-        OBJJ=`cygpath -wp "$OBJJ"`
-        FRAMEWORKS=`cygpath -w "$FRAMEWORKS"`
-        STEAM_BUILD=`cygpath -w "$STEAM_BUILD"`
-        CLASSPATH=`cygpath -wp "$CLASSPATH"`
-        ;;
-    *)
-        ;;
-esac
+if [[ `uname` == CYGWIN* ]]; then
+    OBJJ_HOME=`cygpath -wp "$OBJJ_HOME"`
+    OBJJ_LIB=`cygpath -wp "$OBJJ_LIB"`
+    OBJJ=`cygpath -wp "$OBJJ"`
+    FRAMEWORKS=`cygpath -w "$FRAMEWORKS"`
+    STEAM_BUILD=`cygpath -w "$STEAM_BUILD"`
+    CLASSPATH=`cygpath -wp "$CLASSPATH"`
+fi
 
 #if [ -e $STEAM_BUILD/Objective-J.build/Release/Rhino ]; then
     $RLWRAP java -classpath $CLASSPATH objj $OBJJ_LIB $STEAM_BUILD $@

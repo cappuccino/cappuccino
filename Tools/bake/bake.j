@@ -42,7 +42,7 @@ function update()
         
         switch (source.type)
         {
-            case "git-ssh":
+            case "git":
                 if (new File(sourcePath).isDirectory())
                 {
                     CPLog.debug("git pull (" + sourcePath + ")");
@@ -50,9 +50,8 @@ function update()
                 }
                 else
                 {
-                    var gitPath = "ssh://" + source.server + source.path;
-                    CPLog.debug("git clone (" + gitPath + ")");
-                    exec(["git", "clone", gitPath, sourcePath]);
+                    CPLog.debug("git clone (" + source.path + ")");
+                    exec(["git", "clone", source.path, sourcePath]);
                 }
                 break;
             default : 

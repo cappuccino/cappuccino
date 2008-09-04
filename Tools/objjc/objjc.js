@@ -29,7 +29,9 @@ function preprocess(aFilePath, outFilePath, gccArgs, shouldObjjPreprocess)
 {
     print("Statically Preprocessing " + aFilePath);
     
-    var tmpFile = java.io.File.createTempFile("OBJJC", "");
+    // FIXME: figure out why this doesn't work on Windows/Cygwin
+    //var tmpFile = java.io.File.createTempFile("OBJJC", "");
+    var tmpFile = new java.io.File(outFilePath+".tmp");
     tmpFile.deleteOnExit();
     
     // -E JUST preprocess.

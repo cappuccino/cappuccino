@@ -1,9 +1,8 @@
 {
 	"sources" : [
 	    {
-	        "type"    : "git-ssh",
-	        "server"  : "git@git.myserver.com",
-	        "path"    : "/home/git/cappuccino.git",
+	        "type"    : "git",
+	        "path"    : "git://github.com/280north/cappuccino.git",
 	        "parts"   : [
     	        {
     	            "src"       :   "Objective-J",
@@ -26,9 +25,8 @@
 	        ]
 	    },
 	    {
-	        "type"    : "git-ssh",
-	        "server"  : "git@git.myserver.com",
-	        "path"    : "/home/git/myapp.git",
+	        "type"    : "git",
+	        "server"  : "ssh://git@git.myserver.com/home/git/myapp.git",
 	        "parts"   : [
 	            {
     	            "src"       :   "Editor/Server",
@@ -40,7 +38,6 @@
 	"deployments" : [
 	    { "host" : "deploy@myserver.com", "path" : "/var/www/mysite/public" }
 	],
-	"templatePath" : "index.html",
 	"templateVars" : {
         "APPLICATION_NAME" : "My Application",
         "BACKGROUND_COLOR" : "black",
