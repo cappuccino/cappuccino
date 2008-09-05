@@ -24,6 +24,7 @@
     
     <property environment = "environment" />
     <property name = "environment.OBJJ_HOME" value = "/usr/local/share/objj" />
+    <property name = "environment.OBJJ_LIB" value = "${environment.OBJJ_HOME}/lib" />
 
     <!-- prepare-release -->
     
@@ -84,7 +85,7 @@
         <sequential>
             <java classname = "org.mozilla.javascript.tools.jsc.Main" dir = "@{dir}" fork = "true">
                 <classpath>
-                    <pathelement location = "/usr/share/ant/lib/js.jar" />
+                    <pathelement location = "${environment.OBJJ_LIB}/js.jar" />
                     <pathelement location = "." />
                 </classpath>
                 
