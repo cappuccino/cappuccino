@@ -152,12 +152,12 @@ CPRunContinuesResponse  = -1002;
     if (_delegate)
     {
         [defaultCenter
-            removeObesrver:_delegate
+            removeObserver:_delegate
                       name:CPApplicationWillFinishLaunchingNotification
                     object:self];
 
         [defaultCenter
-            removeObesrver:_delegate
+            removeObserver:_delegate
                       name:CPApplicationDidFinishLaunchingNotification
                     object:self];
     }
