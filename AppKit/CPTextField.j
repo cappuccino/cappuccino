@@ -66,6 +66,7 @@ var _CPTextFieldSquareBezelColor    = nil;
     BOOL                    _isSelectable;
     
     id                      _value;
+    id                      _placeholderString;
     
     CPLineBreakMode         _lineBreakMode;
 #if PLATFORM(DOM)
@@ -104,7 +105,8 @@ var _CPTextFieldSquareBezelColor    = nil;
     if (self)
     {
         _value = @"";
-        
+	_placeholderValue = @"";
+
 #if PLATFORM(DOM)
         _DOMTextElement = document.createElement("div");
         _DOMTextElement.style.position = "absolute";
@@ -245,6 +247,12 @@ var _CPTextFieldSquareBezelColor    = nil;
     
     [[CPDOMWindowBridge sharedDOMWindowBridge] _propagateCurrentDOMEvent:YES];
     
+    // If current value is the placeholder value, remove it to
+    // allow user to update.
+    if ([_value caseInsensitiveCompare:[self placeholderString]]==0) {
+      [self setStringValue:@""];
+    }
+    
     return YES;
 }
 
@@ -254,6 +262,11 @@ var _CPTextFieldSquareBezelColor    = nil;
     
     _DOMElement.removeChild(element);
     [self setStringValue:element.value];
+
+    // If textfield has no value, then display the placeholderValue
+    if ([_value caseInsensitiveCompare:@""]==0) {
+        [self setStringValue:[self placeholderString]];
+    }
     
     return YES;
 }
@@ -344,6 +357,24 @@ var _CPTextFieldSquareBezelColor    = nil;
 {
     _value = aStringValue;
     
+#if PLATFORM(DOM)
+    var cssString = _value ? [_value cssString] : @"";
+
+    if (CPFeatureIsCompatible(CPJavascriptInnerTextFeature))
+        _DOMTextElement.innerText = cssString;
+    else if (CPFeatureIsCompatible(CPJavascriptTextContentFeature))
+        _DOMTextElement.textContent = cssString;
+#endif
+}
+
+- (CPString)placeholderString
+{
+    return [_placeholderString string];
+}
+
+-(void)setPlaceholderString:(CPString)aStringValue
+{
+    _placeholderString = aStringValue;
 #if PLATFORM(DOM)
     var cssString = _value ? [_value cssString] : @"";
 
