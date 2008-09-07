@@ -31,6 +31,7 @@ var _CPWindowViewResizeIndicatorImage = nil;
     unsigned    _styleMask;
     
     CPImageView _resizeIndicator;
+    CGSize      _resizeIndicatorOffset;
     
     CPString    _title;
 }
@@ -59,14 +60,9 @@ var _CPWindowViewResizeIndicatorImage = nil;
     
     if (self)
     {
-        _resizeIndicator = [[CPImageView alloc] initWithFrame:CGRectMakeZero()];
+        _resizeIndicatorOffset = CGSizeMake(0.0, 0.0);
         
-        [_resizeIndicator setImage:_CPWindowViewResizeIndicatorImage];
-        [_resizeIndicator setFrameSize:CGSizeMakeCopy([_CPWindowViewResizeIndicatorImage size])];
-        
-        [self addSubview:_resizeIndicator];
-        
-        [self setShowsResizeIndicator:_styleMask & CPResizableWindowMask];
+        [self setShowsResizeIndicator:((_styleMask & CPBorderlessWindowMask) || (_styleMask & CPBorderlessBridgeWindowMask)) && (_styleMask & CPResizableWindowMask)];
     }
     
     return self;
@@ -90,15 +86,10 @@ var _CPWindowViewResizeIndicatorImage = nil;
 {
     var theWindow = [self window];
     
-    if (![_resizeIndicator isHidden])
+    if ((_styleMask & CPResizableWindowMask) && _resizeIndicator)
     {
         // FIXME: This should be better
-        var frame = CGRectMakeCopy([self frame]);
-    
-        frame.origin.x = CGRectGetWidth(frame) - 20.0;
-        frame.origin.y = CGRectGetHeight(frame) - 24.0;
-        frame.size.width = 20.0 - 5.0,
-        frame.size.height = 24.0 - 8.0;
+        var frame = [_resizeIndicator frame];
         
         if (CGRectContainsPoint(frame, [self convertPoint:[anEvent locationInWindow] fromView:nil]))
             return [theWindow trackResizeWithEvent:anEvent];
@@ -113,12 +104,50 @@ var _CPWindowViewResizeIndicatorImage = nil;
 
 - (void)setShowsResizeIndicator:(BOOL)shouldShowResizeIndicator
 {
-    [_resizeIndicator setHidden:!shouldShowResizeIndicator];
+    if (shouldShowResizeIndicator)
+    {
+        var size = [_CPWindowViewResizeIndicatorImage size],
+            boundsSize = [self frame].size;
+        
+        _resizeIndicator = [[CPImageView alloc] initWithFrame:CGRectMake(boundsSize.width - size.width - _resizeIndicatorOffset.width, boundsSize.height - size.height - _resizeIndicatorOffset.height, size.width, size.height)];
+        
+        [_resizeIndicator setImage:_CPWindowViewResizeIndicatorImage];
+        [_resizeIndicator setAutoresizingMask:CPViewMinXMargin | CPViewMinYMargin];
+        
+        [self addSubview:_resizeIndicator positioned:CPWindowAbove relativeTo:nil];
+    }
+    else
+    {
+        [_resizeIndicator removeFromSuperview];
+        
+        _resizeIndicator = nil;
+    }
 }
 
 - (CPImage)showsResizeIndicator
 {
-    return ![_resizeIndicator isHidden];
+    return _resizeIndicator != nil;
+}
+
+- (void)setResizeIndicatorOffset:(CGSize)anOffset
+{
+    if (CGSizeEqualToSize(_resizeIndicatorOffset, anOffset))
+        return;
+    
+    _resizeIndicatorOffset = anOffset;
+    
+    if (!_resizeIndicator)
+        return;
+
+    var size = [_resizeIndicator frame].size,
+        boundsSize = [self frame].size;
+    
+    [_resizeIndicator setFrameOrigin:CGPointMake(boundsSize.width - size.width - anOffset.width, boundsSize.height - size.height - anOffset.height)];
+}
+
+- (CGSize)resizeIndicatorOffset
+{
+    return _resizeIndicatorOffset;
 }
 
 - (void)setTitle:(CPString)title
@@ -235,8 +264,7 @@ var _CPHUDWindowViewTopImage          = nil,
             [self addSubview:_closeButton];
         }
         
-        [_resizeIndicator setFrameOrigin:CGPointMake(CGRectGetWidth(bounds) - 20.0, CGRectGetHeight(bounds) - 24.0)];
-        [_resizeIndicator setAutoresizingMask:CPViewMinXMargin | CPViewMinYMargin];
+        [self setResizeIndicatorOffset:CGSizeMake(8.0, 12.0)];
     }
     
     return self;

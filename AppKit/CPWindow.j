@@ -410,18 +410,12 @@ var CPWindowSaveImage       = nil,
 
 - (CGSize)resizeIndicatorOffset
 {
-    return _resizeIndicatorOffset;
+    return [_windowView resizeIndicatorOffset];
 }
 
-- (void)setResizeIndicatorOffset:(CGSize)aSize
+- (void)setResizeIndicatorOffset:(CGSize)anOffset
 {
-    _resizeIndicatorOffset = CGSizeCreateCopy(aSize);
-    
-    if (_showsResizeIndicator)
-    {
-        _resizeIndicator.style.top = (CGRectGetMaxY(_windowView._frame) - 13.0 + _resizeIndicatorOffset.height) + "px";
-        _resizeIndicator.style.left = (CGRectGetMaxX(_windowView._frame) - 13.0 + _resizeIndicatorOffset.width) + "px";
-    }
+    [_windowView setResizeIndicatorOffset:anOffset];
 }
 
 - (void)setContentView:(CPView)aView
@@ -433,7 +427,7 @@ var CPWindowSaveImage       = nil,
     [_contentView setFrame:[self contentRectForFrameRect:_frame]];
     
     [_contentView setAutoresizingMask:CPViewWidthSizable | CPViewHeightSizable];
-    [_windowView addSubview:_contentView];
+    [_windowView addSubview:_contentView positioned:CPWindowBelow relativeTo:nil];
 }
 
 - (CPView)contentView
