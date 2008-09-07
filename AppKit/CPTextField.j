@@ -8,7 +8,7 @@
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
- * version 2.1 of the License, or (at your option) any later version.
+c   * version 2.1 of the License, or (at your option) any later version.
  *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -375,14 +375,6 @@ var _CPTextFieldSquareBezelColor    = nil;
 -(void)setPlaceholderString:(CPString)aStringValue
 {
     _placeholderString = aStringValue;
-#if PLATFORM(DOM)
-    var cssString = _value ? [_value cssString] : @"";
-
-    if (CPFeatureIsCompatible(CPJavascriptInnerTextFeature))
-        _DOMTextElement.innerText = cssString;
-    else if (CPFeatureIsCompatible(CPJavascriptTextContentFeature))
-        _DOMTextElement.textContent = cssString;
-#endif
 }
 
 - (void)sizeToFit
