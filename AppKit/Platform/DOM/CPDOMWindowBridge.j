@@ -361,12 +361,45 @@ var CPDOMWindowGetFrame = function(_DOMWindow)
 //right now we hard code q, w, r and t as keys to propogate
 //these aren't normal keycodes, they are with modifier key codes
 //might be mac only, we should investigate futher later.
-var KeyCodesToPropagate = { '113':1, '119':1, '114':1, '116':1, '108':1, '102':1 };
-var KeyCodesWithoutKeyPressEvents = { '8':1, '9':1, '37':1, '38':1, '39':1, '40':1, '46':1 };
+var KeyCodesToPrevent = {},
+    CharacterKeysToPrevent = {},
+    KeyCodesWithoutKeyPressEvents = { '8':1, '9':1, '37':1, '38':1, '39':1, '40':1, '46':1 };
 
 var CTRL_KEY_CODE   = 17;
 
 @implementation CPDOMWindowBridge (Events)
+
+- (void)preventCharacterKeysFromPropagating:(CPArray)characters
+{
+    for(var i=characters.length; i>0; i--)
+        CharacterKeysToPrevent[""+characters[i-1].toLowerCase()] = YES;
+}
+
+- (void)preventCharacterKeyFromPropagating:(CPString)character
+{
+    CharacterKeysToPrevent[character.toLowerCase()] = YES;
+}
+
+- (void)clearCharacterKeysToPreventFromPropagating
+{
+    CharacterKeysToPrevent = {};
+}
+
+- (void)preventKeyCodesFromPropagating:(CPArray)keyCodes
+{
+    for(var i=keyCodes.length; i>0; i--)
+        KeyCodesToPrevent[keyCodes[i-1]] = YES;
+}
+
+- (void)preventKeyCodeFromPropagating:(CPString)keyCode
+{
+    KeyCodesToPrevent[keyCode] = YES;
+}
+
+- (void)clearKeyCodesToPreventFromPropagating
+{
+    KeyCodesToPrevent = {};
+}
 
 - (void)_bridgeMouseEvent:(DOMEvent)aDOMEvent
 {
@@ -513,15 +546,10 @@ var CTRL_KEY_CODE   = 17;
         if (ExcludedDOMElements[sourceElement.tagName] && sourceElement != _DOMFocusElement && sourceElement != _DOMPasteboardElement)
             return;
             
-        StopDOMEventPropagation = YES;
-    
-        if(KeyCodesToPropagate[aDOMEvent.keyCode])
-            StopDOMEventPropagation = !(modifierFlags & (CPControlKeyMask | CPCommandKeyMask));
-          
-        /*if (aDOMEvent.keyCode == 17)
-              StopDOMEventPropagation = NO;
-        if (aDOMEvent.keyCode != 17)
-            alert("WILL SEND " + modifierFlags + " " + aDOMEvent.type);*/
+        //We want to stop propagation if this is a command key AND this character or keycode has been added to our blacklist
+        StopDOMEventPropagation = !(modifierFlags & (CPControlKeyMask | CPCommandKeyMask)) ||
+                                  CharacterKeysToPrevent[String.fromCharCode(aDOMEvent.keyCode || aDOMEvent.charCode).toLowerCase()] ||
+                                  KeyCodesToPrevent[aDOMEvent.keyCode];
 
         var isNativePasteEvent = NO,
             isNativeCopyOrCutEvent = NO;
