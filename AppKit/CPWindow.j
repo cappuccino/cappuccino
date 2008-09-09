@@ -565,6 +565,8 @@ var CPWindowSaveImage       = nil,
     
     _delegateRespondsToWindowWillReturnUndoManagerSelector = [_delegate respondsToSelector:@selector(windowWillReturnUndoManager:)];
 
+    var defaultCenter = [CPNotificationCenter defaultCenter];
+    
     if ([_delegate respondsToSelector:@selector(windowDidBecomeMain:)])
         [defaultCenter
             addObserver:_delegate
