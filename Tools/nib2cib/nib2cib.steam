@@ -3,12 +3,12 @@
 <plist version="1.0">
 <dict>
     <key>Name</key>
-    <string>Foundation</string>
+    <string>nib2cib</string>
 	<key>Targets</key>
 	<array>
         <dict>
             <key>Name</key>
-            <string>Foundation</string>
+            <string>nib2cib</string>
         </dict>
 	</array>
     <key>Configurations</key>

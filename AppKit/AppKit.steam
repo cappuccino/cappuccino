@@ -7,8 +7,20 @@
 	<key>Targets</key>
 	<array>
         <dict>
-            <key>name</key>
+            <key>Name</key>
             <string>AppKit</string>
+            <key>Excluded</key>
+            <array>
+                <string>CPOutlineView.j</string>
+                <string>CPTableColumn.j</string>
+                <string>CPTableView.j</string>
+            </array>
+            <key>Flags</key>
+            <string>-DPLATFORM_DOM</string>
+        </dict>
+        <dict>
+            <key>Name</key>
+            <string>AppKit-Rhino</string>
             <key>Excluded</key>
             <array>
                 <string>CPOutlineView.j</string>
@@ -20,7 +32,7 @@
     <key>Configurations</key>
 	<array>
         <dict>
-            <key>name</key>
+            <key>Name</key>
             <string>Debug</string>
             <key>Settings</key>
             <dict>
@@ -31,7 +43,7 @@
             </dict>
         </dict>
         <dict>
-            <key>name</key>
+            <key>Name</key>
             <string>Release</string>
             <key>Settings</key>
             <dict>

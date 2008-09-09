@@ -12,7 +12,11 @@ importClass(java.io.SequenceInputStream);
 
 function Target(dictionary)
 {
-    this._name = dictionary_getValue(dictionary, "name");
+    this._name = dictionary_getValue(dictionary, "Name");
+    
+    var flagsString = dictionary_getValue(dictionary, "Flags");
+    
+    this._flags = flagsString ? flagsString.split(/\s+/) : [];
     
     this._exclusions = [];
     
@@ -52,9 +56,18 @@ Target.prototype.exclusions = function()
     return this._exclusions;
 }
 
+Target.prototype.flags = function()
+{
+    return this._flags;
+}
+
 function Configuration(dictionary)
 {
-    this._name = dictionary_getValue(dictionary, "name");
+    this._name = dictionary_getValue(dictionary, "Name");
+    
+    var flagsString = dictionary_getValue(dictionary, "Flags");
+    
+    this._flags = flagsString ? flagsString.split(/\s+/) : [];
     
     return this;
 }
@@ -62,6 +75,11 @@ function Configuration(dictionary)
 Configuration.prototype.name = function()
 {
     return this._name;
+}
+
+Configuration.prototype.flags = function()
+{
+    return this._flags;
 }
 
 function Project(/*String*/ aFilePath, /*String*/ aBuildPath)
@@ -151,6 +169,11 @@ Project.prototype.setActiveTarget = function(/*Target*/ aTarget)
     this._buildObjects = null;
 }
 
+Project.prototype.activeTarget = function()
+{
+    return this._activeTarget;
+}
+
 Project.prototype.setActiveConfiguration = function(/*Configuration*/ aConfiguration)
 {
     this._activeConfiguration = aConfiguration;
@@ -158,6 +181,11 @@ Project.prototype.setActiveConfiguration = function(/*Configuration*/ aConfigura
     this._buildProducts = null;
     this._buildIntermediates = null;
     this._buildObjects = null;
+}
+
+Project.prototype.activeConfiguration = function()
+{
+    return this._activeConfiguration;
 }
 
 Project.prototype.buildProducts = function()
@@ -193,6 +221,11 @@ Project.prototype.buildObjects = function()
     return this._buildObjects;
 }
 
+Project.prototype.activeFlags = function()
+{
+    return this.activeTarget().flags().concat(this.activeConfiguration().flags());
+}
+
 Project.prototype.build = function()
 {
     var jFiles = getFiles(this._root, "j", this._activeTarget.exclusions()),
@@ -200,6 +233,8 @@ Project.prototype.build = function()
         hasModifiedJFiles = false;
         shouldObjjPreprocess = true,
         objjcComponents = ["bash", OBJJ_HOME + "/bin/objjc"];
+    
+    objjcComponents = objjcComponents.concat(this.activeFlags());
     
     if (!shouldObjjPreprocess)
         objjcComponents.push("-E");

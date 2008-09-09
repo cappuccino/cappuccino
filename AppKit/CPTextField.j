@@ -210,6 +210,7 @@ var _CPTextFieldSquareBezelColor    = nil;
 
     [self setStringValue:@""];
     
+#if PLATFORM(DOM)
     var element = [[self class] _inputElement];
 
     element.value = string;
@@ -244,17 +245,20 @@ var _CPTextFieldSquareBezelColor    = nil;
     };
     
     [[CPDOMWindowBridge sharedDOMWindowBridge] _propagateCurrentDOMEvent:YES];
-    
+#endif
+
     return YES;
 }
 
 - (BOOL)resignFirstResponder
 {
+#if PLATFORM(DOM)
     var element = [[self class] _inputElement];
     
     _DOMElement.removeChild(element);
     [self setStringValue:element.value];
-    
+#endif
+
     return YES;
 }
 
@@ -272,7 +276,9 @@ var _CPTextFieldSquareBezelColor    = nil;
 {
     [super setFrameSize:aSize];
     
+#if PLATFORM(DOM)
     CPDOMDisplayServerSetStyleSize(_DOMTextElement, _frame.size.width - 2.0 * HORIZONTAL_PADDING, _frame.size.height - TOP_PADDING - BOTTOM_PADDING);
+#endif
 }
 
 - (BOOL)isSelectable

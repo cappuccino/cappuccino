@@ -1,0 +1,39 @@
+<?xml version = "1.0"?>
+<project name = "nib2cib" default = "build" basedir = "." >
+
+    <import file = "../../common.xml" />
+    <import file = "${environment.OBJJ_HOME}/lib/steam.xml" />
+    
+    <target name = "clean">
+        <steam>
+            <arguments>
+                <arg line = "-f nib2cib.steam -c ${Configuration} clean" />
+            </arguments>
+        </steam>
+    </target>
+        
+    <target name = "build">
+    
+        <steam>
+            <arguments>
+                <arg line = "-f nib2cib.steam -c ${Configuration} -t nib2cib" />
+            </arguments>
+        </steam>
+
+    </target>
+    
+    <target name = "release" depends = "build">
+        
+        <antcall target = "prepare-release" />
+        
+        <copy todir = "${Build.Cappuccino.Tools.Lib}/nib2cib">
+            <fileset dir = "${Build}/${Configuration}/nib2cib" />
+        </copy>
+
+        <copy file = "nib2cib" tofile = "${Build.Cappuccino.Tools.Bin}/nib2cib" />
+        
+        <chmod file = "${Build.Cappuccino.Tools.Bin}/nib2cib" perm = "+x" />
+        
+    </target>
+
+</project>

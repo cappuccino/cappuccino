@@ -21,5 +21,3 @@
  */
 
 #define PLATFORM(FEATURE) (defined( PLATFORM_##FEATURE ) && PLATFORM_##FEATURE)
-
-#define PLATFORM_DOM 1

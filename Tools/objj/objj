@@ -28,7 +28,6 @@ CLASSPATH="$OBJJ_LIB:$OBJJ_LIB/js.jar"
 
 OBJJ="$OBJJ_LIB/objj.js"
 RLWRAP=`which rlwrap`
-FRAMEWORKS="$STEAM_BUILD"
 
 # if there's a "lib" directory, add all the jars from it
 if [ -d "lib" ]; then
@@ -41,13 +40,11 @@ if [[ `uname` == CYGWIN* ]]; then
     OBJJ_HOME=`cygpath -wp "$OBJJ_HOME"`
     OBJJ_LIB=`cygpath -wp "$OBJJ_LIB"`
     OBJJ=`cygpath -wp "$OBJJ"`
-    FRAMEWORKS=`cygpath -w "$FRAMEWORKS"`
-    STEAM_BUILD=`cygpath -w "$STEAM_BUILD"`
     CLASSPATH=`cygpath -wp "$CLASSPATH"`
 fi
 
 #if [ -e $STEAM_BUILD/Objective-J.build/Release/Rhino ]; then
-    $RLWRAP java -classpath $CLASSPATH objj $OBJJ_LIB $STEAM_BUILD $@
+    $RLWRAP java -classpath $CLASSPATH objj $OBJJ_LIB $@
     #$RLWRAP java -classpath $CLASSPATH org.mozilla.javascript.tools.shell.Main $OBJJ $OBJJ_LIB $STEAM_BUILD $@
 #else
 #    echo "Missing frameworks at $STEAM_BUILD/Objective-J.build/Release/Rhino" 1>&2

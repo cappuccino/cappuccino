@@ -22,6 +22,19 @@
 
 import "CPView.j"
 
+
+var CPViewAutoresizingMaskKey       = @"CPViewAutoresizingMask",
+    CPViewAutoresizesSubviewsKey    = @"CPViewAutoresizesSubviews",
+    CPViewBackgroundColorKey        = @"CPViewBackgroundColor",
+    CPViewBoundsKey                 = @"CPViewBoundsKey",
+    CPViewFrameKey                  = @"CPViewFrameKey",
+    CPViewHitTestsKey               = @"CPViewHitTestsKey",
+    CPViewIsHiddenKey               = @"CPViewIsHiddenKey",
+    CPViewOpacityKey                = @"CPViewOpacityKey",
+    CPViewSubviewsKey               = @"CPViewSubviewsKey",
+    CPViewSuperviewKey              = @"CPViewSuperviewKey",
+    CPViewWindowKey                 = @"CPViewWindowKey";
+
 @implementation CPCustomView : CPView
 {
     CPString    _className;
@@ -43,41 +56,41 @@ var CPCustomViewClassNameKey    = @"CPCustomViewClassNameKey";
     // FIXME: Should we instead throw an exception?
     if (!theClass)
         theClass = [CPView class];
-        
-    // If this is just a "CPView", don't bother with any funny business, just go ahead and create it with initWithCoder:
-    if (theClass == [CPView class])
-        self = [[CPView alloc] initWithCoder:aCoder];
-    
-    return self;
-    // If not, fall back to initWithFrame:
-/*
+
     var frame = [aCoder decodeRectForKey:CPViewFrameKey];
 
-    self = [[theClass alloc] initWithFrame:frame];
-    
+    // If this is just a "CPView", don't bother with any funny business, just go ahead and create it with initWithCoder:
+    if (theClass == [CPView class])
+        self = [[CPView alloc] initWithFrame:frame];
+        
     if (self)
-    {
-        _bounds = [aCoder decodeRectForKey:CPViewBoundsKey];
-
-        _window = [aCoder decodeObjectForKey:CPViewWindowKey];
-        _subviews = [aCoder decodeObjectForKey:CPViewSubviewsKey];
-        _superview = [aCoder decodeObjectForKey:CPViewSuperviewKey];
+    {    
+        [self _setWindow:[aCoder decodeObjectForKey:CPViewWindowKey]];
+        
+        // Since the object replacement logic hasn't had a chance to kick in yet, we need to do it manually:
+        var subviews = [aCoder decodeObjectForKey:CPViewSubviewsKey],
+            index = 0,
+            count = subviews.length;
+        
+        for (; index < count; ++index)
+        {
+            // This is a bogus superview "CPCustomView".
+            subviews[index]._superview = nil;
+            
+            [self addSubview:subviews[index]];
+        }
         
         _autoresizingMask = [aCoder decodeIntForKey:CPViewAutoresizingMaskKey];
         _autoresizesSubviews = [aCoder decodeBoolForKey:CPViewAutoresizesSubviewsKey];
-        
-        // FIXME: UGH!!!!
-        _index = [aCoder decodeIntForKey:FIXME_indexKey];
-        
+            
         _hitTests = [aCoder decodeObjectForKey:CPViewHitTestsKey];
         _isHidden = [aCoder decodeObjectForKey:CPViewIsHiddenKey];
         _opacity = [aCoder decodeIntForKey:CPViewOpacityKey];
     
         [self setBackgroundColor:[aCoder decodeObjectForKey:CPViewBackgroundColorKey]];
-
     }
     
-    return self;*/
+    return self;
 }
 
 @end

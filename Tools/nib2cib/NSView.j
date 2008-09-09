@@ -1,29 +1,30 @@
+/*
+ * NSView.j
+ * nib2cib
+ *
+ * Portions based on NSView.m (09/09/2008) in Cocotron (http://www.cocotron.org/)
+ * Copyright (c) 2006-2007 Christopher J. W. Lloyd
+ *
+ * Created by Francisco Tolmasky.
+ * Copyright 2008, 280 North, Inc.
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
+ */
 
 import <AppKit/CPView.j>
 
-
-//unsigned int rotatedFromBase:1;
-//unsigned int rotatedOrScaledFromBase:1;
-//unsigned int autosizing:6;
-//unsigned int autoresizeSubviews:1;
-//unsigned int wantsGState:1;
-//unsigned int needsDisplay:1;
-//unsigned int validGState:1;
-//unsigned int newGState:1;
-//unsigned int noVerticalAutosizing:1;
-//unsigned int frameChangeNotesSuspended:1;
-//unsigned int needsFrameChangeNote:1;
-//unsigned int focusChangeNotesSuspended:1;
-//unsigned int boundsChangeNotesSuspended:1;
-//unsigned int needsBoundsChangeNote:1;
-//unsigned int removingWithoutInvalidation:1;
-//unsigned int interfaceStyle0:1;
-//unsigned int needsDisplayForBounds:1;
-//unsigned int specialArchiving:1;
-//unsigned int interfaceStyle1:1;
-//unsigned int retainCount:6;
-//unsigned int retainCountOverMax:1;
-//unsigned int aboutToResize:1;
 
 @implementation CPView (NSCoding)
 

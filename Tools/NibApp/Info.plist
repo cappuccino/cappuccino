@@ -2,23 +2,10 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-	<key>CPBundleDocumentTypes</key>
-	<array>
-		<dict>
-			<key>CFBundleTypeExtensions</key>
-			<array>
-				<string>MyDocument</string>
-			</array>
-			<key>CPBundleTypeName</key>
-			<string>MyDocument</string>
-			<key>CPBundleTypeRole</key>
-			<string>Editor</string>
-			<key>CPDocumentClass</key>
-			<string>MyDocument</string>
-		</dict>
-	</array>
+	<key>CPApplicationDelegateClass</key>
+	<string>AppController</string>
 	<key>CPBundleName</key>
-	<string>MyApplication</string>
+	<string>NibApp</string>
 	<key>CPPrincipalClass</key>
 	<string>CPApplication</string>
 </dict>

@@ -5,6 +5,7 @@
     
     <filelist id = "Projects" dir = "."> 
         <file name = "Install/build.xml" />
+        <file name = "nib2cib/build.xml" />
         <file name = "objj/build.xml" />
         <file name = "objjc/build.xml" />
         <file name = "steam/build.xml" />

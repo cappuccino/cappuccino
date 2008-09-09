@@ -16,7 +16,13 @@
     
         <steam>
             <arguments>
-                <arg line = "-f AppKit.steam -c ${Configuration}" />
+                <arg line = "-f AppKit.steam -c ${Configuration} -t AppKit" />
+            </arguments>
+        </steam>
+
+        <steam>
+            <arguments>
+                <arg line = "-f AppKit.steam -c ${Configuration} -t AppKit-Rhino" />
             </arguments>
         </steam>
         
@@ -33,7 +39,7 @@
         </copy>        
 
         <copy todir = "${Build.Cappuccino.Tools.Lib.Frameworks}/AppKit">
-            <fileset dir = "${Build}/${Configuration}/AppKit" />
+            <fileset dir = "${Build}/${Configuration}/AppKit-Rhino" />
         </copy>
 
         <copy todir = "${Build.Cappuccino.Starter.Frameworks}/AppKit" >

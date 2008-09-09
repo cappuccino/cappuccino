@@ -36,8 +36,6 @@
 
         <move file = "${Build.Products}/objj.class" tofile = "${Build.objj}/objj.class" />
 
-        <copy file = "${basedir}/objj.js" tofile = "${Build.objj}/objj.js" />
-
         <copy file = "${basedir}/../Utilities/bridge.js" tofile = "${Build.objj}/bridge.js" />
 
         <copy file = "${basedir}/objj" tofile = "${Build.objj}/objj" />
@@ -49,8 +47,6 @@
     <target name = "release" depends = "build">
 
         <antcall target = "prepare-release" />
-
-        <copy file = "${Build.objj}/objj.js" tofile = "${Build.Cappuccino.Tools.Lib}/objj.js" />
 
         <copy file = "${Build.objj}/objj.class" tofile = "${Build.Cappuccino.Tools.Lib}/objj.class" />
 

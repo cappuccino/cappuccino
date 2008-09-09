@@ -2,8 +2,8 @@ debug = false;
 args = arguments;
 
 var OBJJ_LIB = arguments[0];
-var STEAM_BUILD = arguments[1];
-arguments.splice(0, 2);
+
+arguments.splice(0, 1);
 
 if (typeof window == "undefined")
 {
@@ -23,12 +23,12 @@ if (arguments.length > 0)
 {
 	var main_file = arguments[0];
 	arguments.splice(0, 1);
-
+	
 	if (debug)
 		print("Loading: " + main_file);
 		
 	objj_import(main_file, NO);
-
+	
 	serviceTimeouts();
 	
 	if (debug)
