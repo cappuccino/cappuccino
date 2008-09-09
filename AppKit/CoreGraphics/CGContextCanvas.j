@@ -33,6 +33,7 @@ var CANVAS_LINECAP_TABLE    = [ "butt", "round", "square" ],
 #define _CGContextAddArcCanvas(aContext, x, y, radius, startAngle, endAngle, anticlockwise) aContext.arc(x, y, radius, startAngle, endAngle, anticlockwise)
 #define _CGContextAddArcToPointCanvas(aContext, x1, y1, x2, y2, radius) aContext.arcTo(x1, y1, x2, y2, radius)
 #define _CGContextAddCurveToPointCanvas(aContext, cp1x, cp1y, cp2x, cp2y, x, y) aContext.bezierCurveTo(cp1x, cp1y, cp2x, cp2y, x, y)
+#define _CGContextAddQuadCurveToPointCanvas(aContext, cpx, cpy, x, y) aContext.quadraticCurveTo(cpx, cpy, x, y)
 #define _CGContextAddLineToPointCanvas(aContext, x, y) aContext.lineTo(x, y)
 #define _CGContextClosePathCanvas(aContext) aContext.closePath()
 #define _CGContextMoveToPointCanvas(aContext, x, y) aContext.moveTo(x, y)
@@ -118,9 +119,9 @@ function CGContextAddPath(aContext, aPath)
         {
             case kCGPathElementMoveToPoint:         _CGContextMoveToPointCanvas(aContext, element.x, element.y);
                                                     break;
-            case kCGPathElementAddLineToPoint:      _CGContextLineToPoint(aContext, element.x, element.y);
+            case kCGPathElementAddLineToPoint:      _CGContextAddLineToPointCanvas(aContext, element.x, element.y);
                                                     break;
-            case kCGPathElementAddQuadCurveToPoint: _CGContextAddQuadCurveToPoint(aContext, element.cpx, element.cpy, element.x, element.y);
+            case kCGPathElementAddQuadCurveToPoint: _CGContextAddQuadCurveToPointCanvas(aContext, element.cpx, element.cpy, element.x, element.y);
                                                     break;
             case kCGPathElementAddCurveToPoint:     _CGContextAddCurveToPointCanvas(aContext, element.cp1x, element.cp1y, element.cp2x, element.cp2y, element.x, element.y);
                                                     break;
