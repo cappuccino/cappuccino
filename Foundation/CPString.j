@@ -125,14 +125,17 @@ var CPStringHashes      = new objj_dictionary();
 
 - (CPRange)rangeOfString:(CPString)aString
 {
-    var location = indexOf(aString);
-    
-    return CPMakeRange(location, location == CPNotFound ? 0 : aString.length);
+   return [self rangeOfString:aString options:0];
 }
 
 - (CPRange)rangeOfString:(CPString)aString options:(int)aMask
 {
-    var string = self,
+	return [self rangeOfString:aString options:aMask range:nil];
+}
+
+- (CPRange)rangeOfString:(CPString)aString options:(int)aMask range:(CPrange)aRange
+{
+	var string = (aRange == nil)?self:[self substringWithRange:aRange],
         location = CPNotFound;
     
     if (aMask & CPCaseInsensitiveSearch)
@@ -141,9 +144,9 @@ var CPStringHashes      = new objj_dictionary();
         aString = aString.toLowerCase();
     }
     
-    if (CPBackwardsSearch) location = lastIndexOf(aString, aMask & CPAnchoredSearch ? length - aString.length : 0);
-    else if (aMask & CPAnchoredSearch) location = substr(0, aString.length).indexOf(aString) != CPNotFound ? 0 : CPNotFound;
-    else location = indexOf(aString);
+    if (aMask & CPBackwardsSearch) location = string.lastIndexOf(aString, aMask & CPAnchoredSearch ? length - aString.length : 0);
+    else if (aMask & CPAnchoredSearch) location = string.substr(0, aString.length).indexOf(aString) != CPNotFound ? 0 : CPNotFound;
+    else location = string.indexOf(aString);
     
     return CPMakeRange(location, location == CPNotFound ? 0 : aString.length);
 }
