@@ -65,6 +65,14 @@ _function(CGRectIsNull(aRect))
 
 _function(CGRectContainsPoint(aRect, aPoint))
 
+/*
+    Returns a <code>BOOL</code> indicating whether <objj>CGRect</objj> <code>lhsRect</code>
+    contains <objj>CGRect</objj> <code>rhsRect</code>.
+    @group CGRect
+    @param lhsRect the <objj>CGRect</objj> to test if <code>rhsRect</code> is inside of
+    @param rhsRect the <objj>CGRect</objj> to test if it fits inside <code>lhsRect</code>.
+    @return BOOL <code>YES</code> if <code>rhsRect</code> fits inside <code>lhsRect</code>.
+*/
 function CGRectContainsRect(lhsRect, rhsRect)
 {
     var union = CGRectUnion(lhsRect, rhsRect);
@@ -72,6 +80,13 @@ function CGRectContainsRect(lhsRect, rhsRect)
     return _CGRectEqualToRect(union, lhsRect);
 }
 
+/*
+    Returns <code>YES</code> if the two rectangles intersect
+    @group CGRect
+    @param lhsRect the first <objj>CGRect</objj>
+    @param rhsRect the second <objj>CGRect</objj>
+    @return BOOL <code>YES</code> if the two rectangles have any common spaces, and <code>NO</code>, otherwise.
+*/
 function CGRectIntersectsRect(lhsRect, rhsRect)
 {
     var intersection = CGRectIntersection(lhsRect, rhsRect);
@@ -79,6 +94,13 @@ function CGRectIntersectsRect(lhsRect, rhsRect)
     return !_CGRectIsEmpty(intersection);
 }
 
+/*
+    Makes the origin and size of a <objj>CGRect</objj> all integers. Specifically, by making 
+    the southwest corner the origin (rounded down), and the northeast corner a <objj>CGSize</objj> (rounded up).
+    @param aRect the rectangle to operate on
+    @return CGRect the modified rectangle (same as the input)
+    @group CGRect
+*/
 function CGRectIntegral(aRect)
 {
     aRect = CGRectStandardize(aRect);
@@ -96,6 +118,13 @@ function CGRectIntegral(aRect)
     return aRect;
 }
 
+/*
+    Returns the intersection of the two provided rectangles as a new rectangle.
+    @param lhsRect the first rectangle used for calculation
+    @param rhsRect the second rectangle used for calculation
+    @return CGRect the intersection of the two rectangles
+    @group CGRect
+*/
 function CGRectIntersection(lhsRect, rhsRect)
 {
     var intersection = _CGRectMake(
@@ -109,6 +138,9 @@ function CGRectIntersection(lhsRect, rhsRect)
     return _CGRectIsEmpty(intersection) ? _CGRectMakeZero() : intersection;
 }
 
+/*
+    
+*/
 function CGRectStandardize(aRect)
 {
     var width = _CGRectGetWidth(aRect),

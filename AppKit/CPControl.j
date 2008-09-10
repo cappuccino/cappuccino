@@ -26,15 +26,46 @@ import "CPView.j"
 
 #include "Platform/Platform.h"
 
-
+/*
+    @global
+    @group CPTextAlignment
+*/
 CPLeftTextAlignment         = 0;
+/*
+    @global
+    @group CPTextAlignment
+*/
 CPRightTextAlignment        = 1;
+/*
+    @global
+    @group CPTextAlignment
+*/
 CPCenterTextAlignment       = 2;
+/*
+    @global
+    @group CPTextAlignment
+*/
 CPJustifiedTextAlignment    = 3;
+/*
+    @global
+    @group CPTextAlignment
+*/
 CPNaturalTextAlignment      = 4;
 
+/*
+    @global
+    @group CPControlSize
+*/
 CPRegularControlSize        = 0;
+/*
+    @global
+    @group CPControlSize
+*/
 CPSmallControlSize          = 1;
+/*
+    @global
+    @group CPControlSize
+*/
 CPMiniControlSize           = 2;
 
 CPControlNormalBackgroundColor      = @"CPControlNormalBackgroundColor";
@@ -44,6 +75,9 @@ CPControlDisabledBackgroundColor    = @"CPControlDisabledBackgroundColor";
 
 var CPControlBlackColor     = [CPColor blackColor];
 
+/*
+    <objj>CPControl</objj> is an abstract superclass used to implement user interface elements. As a subclass of <objj>CPView</objj> and <objj>CPResponder</objj> it has the ability to handle screen drawing and handling user input.
+*/
 @implementation CPControl : CPView
 {
     id          _value;
@@ -66,7 +100,7 @@ var CPControlBlackColor     = [CPColor blackColor];
     CPString        _currentBackgroundColorName;
 }
 
-- (id)initWithFrame:(CPRect)aFrame
+- (id)initWithFrame:(CGRect)aFrame
 {
     self = [super initWithFrame:aFrame];
     
@@ -84,16 +118,27 @@ var CPControlBlackColor     = [CPColor blackColor];
     return self;
 }
 
+/*
+    Sets whether the receiver responds to mouse events.
+    @param isEnabled whether the receiver will respond to mouse events
+*/
 - (void)setEnabled:(BOOL)isEnabled
 {
     [self setAlphaValue:(_isEnabled = isEnabled) ? 1.0 : 0.3];
 }
 
+/*
+    Returns <code>YES</code> if the receiver responds to mouse events.
+*/
 - (BOOL)isEnabled
 {
     return _isEnabled;
 }
 
+
+/*
+    Sets the color of the receiver's text.
+*/
 - (void)setTextColor:(CPColor)aColor
 {
     if (_textColor == aColor)
@@ -106,21 +151,35 @@ var CPControlBlackColor     = [CPColor blackColor];
 #endif
 }
 
+/*
+    Returns the color of the receiver's text
+*/
 - (CPColor)textColor
 {
     return _textColor;
 }
 
-- (int)alignment
+/*
+    Returns the receiver's alignment
+*/
+- (CPTextAlignment)alignment
 {
     return _alignment;
 }
 
-- (void)setAlignment:(int)anAlignment
+/*
+    Sets the receiver's alignment
+    @param anAlignment the receiver's alignment
+*/
+- (void)setAlignment:(CPTextAlignment)anAlignment
 {
     _alignment = anAlignment;
 }
 
+/*
+    Sets the receiver's font
+    @param aFont the font for the receiver
+*/
 - (void)setFont:(CPFont)aFont
 {
     if (_font == aFont)
@@ -133,36 +192,60 @@ var CPControlBlackColor     = [CPColor blackColor];
 #endif
 }
 
+/*
+    Returns the receiver's font
+*/
 - (CPFont)font
 {
     return _font;
 }
 
+/*
+    Sets the shadow for the receiver's text.
+    @param aTextShadow the text shadow
+*/
 - (void)setTextShadow:(CPShadow)aTextShadow
 {
     _DOMElement.style.textShadow = [_textShadow = aTextShadow cssString];
 }
 
+/*
+    Returns the receiver's text shadow
+*/
 - (CPShadow)textShadow
 {
     return _textShadow;
 }
 
+/*
+    Returns the receiver's target action
+*/
 - (SEL)action
 {
     return _action;
 }
 
+/*
+    Sets the receiver's target action
+    @param anAction Sets the action message that gets sent to the target.
+*/
 - (void)setAction:(SEL)anAction
 {
     _action = anAction;
 }
 
+/*
+    Returns the receiver's target. The target receives action messages from the receiver.
+*/
 - (id)target
 {
     return _target;
 }
 
+/*
+    Sets the receiver's target. The target receives action messages from the receiver.
+    @param aTarget the object that will receive the message specified by action
+*/
 - (void)setTarget:(id)aTarget
 {
     _target = aTarget;
@@ -176,16 +259,27 @@ var CPControlBlackColor     = [CPColor blackColor];
     [super mouseUp:anEvent];
 }
 
+/*
+    Causes <code>anAction</code> to be sent to <code>anObject</code>.
+    @param anAction the action to send
+    @param anObject the object to which the action will be sent
+*/
 - (void)sendAction:(SEL)anAction to:(id)anObject
 {
     [CPApp sendAction:anAction to:anObject from:self];
 }
 
+/*
+    Returns the receiver's float value
+*/
 - (float)floatValue
 {
-    return _value ? parseFloat(_value) : 0.0;
+    return _value ? parseFloat(_value, 10) : 0.0;
 }
 
+/*
+    Sets the receiver's float value
+*/
 - (void)setFloatValue:(float)aValue
 {
     _value = aValue;
@@ -239,7 +333,8 @@ var CPControlBlackColor     = [CPColor blackColor];
 Ð setStringValue:  
 Ð setNeedsDisplay  
 Ð attributedStringValue  
-Ð setAttributedStringValue:  */
+Ð setAttributedStringValue:  
+*/
 
 @end
 
@@ -253,6 +348,11 @@ var CPControlIsEnabledKey       = @"CPControlIsEnabledKey",
 
 @implementation CPControl (CPCoding)
 
+/*
+    Initializes the control by unarchiving it from a coder.
+    @param aCoder the coder from which to unarchive the control
+    @return the initialized control
+*/
 - (id)initWithCoder:(CPCoder)aCoder
 {
     self = [super initWithCoder:aCoder];
@@ -274,6 +374,10 @@ var CPControlIsEnabledKey       = @"CPControlIsEnabledKey",
     return self;
 }
 
+/*
+    Archives the control to the provided coder.
+    @param aCoder the coder to which the control will be archived.
+*/
 - (void)encodeWithCoder:(CPCoder)aCoder
 {
     [super encodeWithCoder:aCoder];

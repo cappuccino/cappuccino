@@ -26,27 +26,60 @@ import "CPWindow.j"
 CPOKButton      = 1;
 CPCancelButton  = 0;
 
+/*
+    The <objj>CPPanel</objj> class defines objects that manage the panels of the Cappuccino user interface. A panel is a window that serves an auxiliary function within an application. It generally displays controls that the user can act on to give instructions to the application or to modify the contents of a standard window.</p>
+
+<p>Panels behave differently from standard windows in only a small number of ways, but the ways are important to the user interface:</p>
+
+<ul>
+    <li>Panels can assume key window status but not main window status. (The key window receives keyboard events. The main window is the primary focus of user actions; it might contain the document the user is working on, for example.)</li>
+</ul>
+
+<p>To aid in their auxiliary role, panels can be assigned special behaviors:</p>
+
+<ul>
+    <li>A panel can be precluded from becoming the key window until the user makes a selection (makes some view in the panel the first responder) indicating an intention to begin typing. This prevents key window status from shifting to the panel unnecessarily.</li>
+    <li>Palettes and similar panels can be made to float above standard windows and other panels. This prevents them from being covered and keeps them readily available to the user.</li>
+    <li>A panel can be made to work even when there's an attention panel on-screen. This permits actions within the panel to affect the attention panel.</li>
+</ul>
+*/
 @implementation CPPanel : CPWindow
 {
     BOOL    _becomesKeyOnlyIfNeeded;
     BOOL    _worksWhenModal;
 }
 
+/*
+    Returns <code>YES</code> if the receiver is a floating panel (like a palette).
+*/
 - (BOOL)isFloatingPanel
 {
     return [self level] == CPFloatingWindowLevel;
 }
 
+/*
+    Sets the receiver to be a floating panel. <code>YES</code>
+    makes the window a floating panel. <code>NO</code> makes it a normal window.
+    @param isFloatingPanel specifies whether to make it floating
+*/
 - (void)setFloatingPanel:(BOOL)isFloatingPanel
 {
     [self setLevel:isFloatingPanel ? CPFloatingWindowLevel : CPNormalWindowLevel];
 }
 
+/*
+    Returns <code>YES</code> if the window only becomes key
+    if needed. <code>NO</code> means it behaves just like other windows.
+*/
 - (BOOL)becomesKeyOnlyIfNeeded
 {
     return _becomesKeyOnlyIfNeeded;
 }
 
+/*
+    Sets whether the the window becomes key only if needed.
+    @param shouldBecomeKeyOnlyIfNeeded <code>YES</code> makes the window become key only if needed
+*/
 - (void)setBecomesKeyOnlyIfNeeded:(BOOL)shouldBecomeKeyOnlyIfNeeded
 {
     _becomesKeyOnlyIfNeeded = shouldBecomeKeyOnlyIfNeeded
@@ -57,6 +90,10 @@ CPCancelButton  = 0;
     return _worksWhenModal;
 }
 
+/*
+    Sets whether this window can receive input while another window is running modally.
+    @param shouldWorkWhenModal whether to receive input while another window is modal
+*/
 - (void)setWorksWhenModal:(BOOL)shouldWorkWhenModal
 {
     _worksWhenModal = shouldWorkWhenModal;

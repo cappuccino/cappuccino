@@ -32,6 +32,9 @@ import "CPTabView.j"
 import "CPTabViewItem.j"
 
 
+/*
+    @ignore
+*/
 @implementation CPKulerColorPicker : CPColorPicker
 {    
     CPView            _contentView;
@@ -229,6 +232,7 @@ import "CPTabViewItem.j"
 
 @end
 
+/* @ignore */
 @implementation _CPKulerThemeView : CPView
 {
     CPArray     _themes;
@@ -320,6 +324,7 @@ import "CPTabViewItem.j"
 
 @end
 
+/* @ignore */
 @implementation _CPColorView : CPControl
 {
 

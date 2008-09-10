@@ -44,9 +44,25 @@ CPImageLoadStatusReadError      = 6;
 
 @end
 
+/*
+    <objj>CPImage</objj> is used to represent images in the Cappuccino framework. It supports loading
+    all image types supported by the browser.
+
+    @delegate -(void)imageDidLoad:(CPImage)image;
+    Called when the specified image has finished loading.
+    @param image the image that loaded
+
+    @delegate -(void)imageDidError:(CPImage)image;
+    Called when the specified image had an error loading.
+    @param image the image with the loading error
+
+    @delegate -(void)imageDidAbort:(CPImage)image;
+    Called when the image loading was aborted.
+    @param image the image that was aborted
+*/
 @implementation CPImage : CPObject
 {
-    CPSize      _size;
+    CGSize      _size;
     CPString    _filename;
     
     id          _delegate;
@@ -55,7 +71,15 @@ CPImageLoadStatusReadError      = 6;
     Image       _image;
 }
 
-- (CPImage)initByReferencingFile:(CPString)aFilename size:(CPSize)aSize
+/*
+    Initializes the image, by associating it with a filename. The image
+    denoted in <code>aFilename</code> is not actually loaded. It will
+    be loaded once needed.
+    @param aFilename the file containing the image
+    @param aSize the image's size
+    @return the initialized image
+*/
+- (CPImage)initByReferencingFile:(CPString)aFilename size:(CGSize)aSize
 {
     self = [super init];
     
@@ -69,7 +93,13 @@ CPImageLoadStatusReadError      = 6;
     return self;
 }
 
-- (CPImage)initWithContentsOfFile:(CPString)aFilename size:(CPSize)aSize
+/*
+    Initializes the image. Loads the specified image into memory.
+    @param aFilename the image to load
+    @param aSize the size of the image
+    @return the initialized image.
+*/
+- (CPImage)initWithContentsOfFile:(CPString)aFilename size:(CGSize)aSize
 {
     self = [self initByReferencingFile:aFilename size:aSize];
     
@@ -79,6 +109,12 @@ CPImageLoadStatusReadError      = 6;
     return self;
 }
 
+/*
+    Initializes the receiver with the contents of the specified
+    image file. The method loads the data into memory.
+    @param aFilename the file name of the image
+    @return the initialized image
+*/
 - (CPImage)initWithContentsOfFile:(CPString)aFilename
 {
     self = [self initByReferencingFile:aFilename size: CGSizeMake(-1, -1)];
@@ -89,36 +125,61 @@ CPImageLoadStatusReadError      = 6;
     return self;
 }
 
+/*
+    Returns the path of the file associated with this image.
+*/
 - (CPString)filename
 {
     return _filename;
 }
 
-- (void)setSize:(CPSize)aSize
+/*
+    Sets the size of the image.
+    @param the size of the image
+*/
+- (void)setSize:(CGSize)aSize
 {
     _size = CGSizeMakeCopy(aSize);
 }
 
+/*
+    Returns the size of the image
+*/
 - (CGSize)size
 {
     return _size;
 }
 
+/*
+    Sets the receiver's delegate.
+    @param the delegate
+*/
 - (void)setDelegate:(id)aDelegate
 {
     _delegate = aDelegate;
 }
 
+/*
+    Returns the receiver's delegate
+*/
 - (id)delegate
 {
     return _delegate;
 }
 
+/*
+    Returns <code>YES</code> if the image data has already been loaded.
+*/
 - (BOOL)loadStatus
 {
     return _loadStatus;
 }
 
+/*
+    Loads the image data from the file into memory. You
+    should not call this method directly. Instead use
+    one of the initializers.
+*/
 - (void)load
 {
     if (_loadStatus == CPImageLoadStatusLoading || _loadStatus == CPImageLoadStatusCompleted)
@@ -150,6 +211,7 @@ CPImageLoadStatusReadError      = 6;
     return NO;
 }
 
+/* @ignore */
 - (void)_imageDidLoad
 {
     _loadStatus = CPImageLoadStatusCompleted;
@@ -164,6 +226,7 @@ CPImageLoadStatusReadError      = 6;
     [[CPRunLoop currentRunLoop] performSelectors];
 }
 
+/* @ignore */
 - (void)_imageDidError
 {
     _loadStatus = CPImageLoadStatusReadError;
@@ -174,6 +237,7 @@ CPImageLoadStatusReadError      = 6;
     [[CPRunLoop currentRunLoop] performSelectors];
 }
 
+/* @ignore */
 - (void)_imageDidAbort
 {
     _loadStatus = CPImageLoadStatusCancelled;
@@ -188,11 +252,20 @@ CPImageLoadStatusReadError      = 6;
 
 @implementation CPImage (CPCoding)
 
+/*
+    Initializes the image with data from a coder.
+    @param aCoder the coder from which to read the image data
+    @return the initialized image
+*/
 - (id)initWithCoder:(CPCoder)aCoder
 {
     return [self initWithContentsOfFile:[aCoder decodeObjectForKey:@"CPFilename"] size:[aCoder decodeSizeForKey:@"CPSize"]];
 }
 
+/*
+    Writes the image data from memory into the coder.
+    @param aCoder the coder to which the data will be written
+*/
 - (void)encodeWithCoder:(CPCoder)aCoder
 {
     [aCoder encodeObject:_filename forKey:@"CPFilename"];

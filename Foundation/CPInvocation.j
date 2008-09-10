@@ -21,7 +21,11 @@
  */
 
 import "CPObject.j"
+import "CPException.j"
 
+/*
+    A <objj>CPInvocation</objj> is an object representation of a message sent to an object.
+*/
 @implementation CPInvocation : CPObject
 {
     id                  _returnValue;
@@ -30,12 +34,21 @@ import "CPObject.j"
 }
 
 // Creating CPInvocation Objects
-
+/*
+    Returns a new <objj>CPInvocation</objj> that represents a message to a method.
+    @param aMethodSignature the signature of the method to message
+    @return the new invocation
+*/
 + (id)invocationWithMethodSignature:(CPMethodSignature)aMethodSignature
 {
     return [[self alloc] initWithMethodSignature:aMethodSignature];
 }
 
+/*
+    Initializes the invocation with a provided method signature
+    @param aMethodSignature the signature of the method to message
+    @return the initialized invocation
+*/
 - (id)initWithMethodSignature:(CPMethodSignature)aMethodSignature
 {
     self = [super init];
@@ -50,54 +63,91 @@ import "CPObject.j"
 }
 
 // Configuring an Invocation Object
-
+/*
+    Sets the invocation's selector.
+    @param the invocation selector
+*/
 - (void)setSelector:(SEL)aSelector
 {
     _arguments[1] = aSelector;
 }
 
+/*
+    Returns the invocation's selector
+*/
 - (SEL)selector
 {
     return _arguments[1];
 }
 
+/*
+    Sets the invocation's target
+    @param aTarget the invocation target
+*/
 - (void)setTarget:(id)aTarget
 {
     _arguments[0] = aTarget;
 }
 
+/*
+    Returns the invocation's target
+*/
 - (id)target
 {
     return _arguments[0];
 }
 
+/*
+    Sets a method argument for the invocation. Arguments 0 and 1 are <code>self</code> and <code>_cmd</code>.
+    @param anArgument the argument to add
+    @param anIndex the index of the argument in the method
+*/
 - (void)setArgument:(id)anArgument atIndex:(unsigned)anIndex
 {
     _arguments[anIndex] = anArgument;
 }
 
+/*
+    Returns the argument at the specified index. Arguments 0 and 1 are
+    <code>self</code> and <code>_cmd</code> respectively. Thus, method arguments start at 2.
+    @param anIndex the index of the argument to return
+    @throws CPInvalidArgumentException if anIndex is greater than or equal to the invocation's number of arguments.
+*/
 - (id)argumentAtIndex:(unsigned)anIndex
 {
     return _arguments[anIndex];
 }
 
+/*
+    Sets the invocation's return value
+    @param the invocation return value
+*/
 - (void)setReturnValue:(id)aReturnValue
 {
     _returnValue = aReturnValue;
 }
 
+/*
+    Returns the invocation's return value
+*/
 - (id)returnValue
 {
     return _returnValue;
 }
 
 // Dispatching an Invocation
-
+/*
+    Sends the encapsulated message to the stored target.
+*/
 - (void)invoke
 {
     _returnValue = objj_msgSend.apply(objj_msgSend, _arguments);
 }
 
+/*
+    Sends the encapsulated message to the specified target.
+    @param the target to which the message will be sent
+*/
 - (void)invokeWithTarget:(id)aTarget
 {
     _arguments[0] = aTarget;
@@ -111,6 +161,11 @@ var CPInvocationArguments   = @"CPInvocationArguments",
 
 @implementation CPInvocation (CPCoding)
 
+/*
+    Initializes the invocation with data from a coder.
+    @param aCoder the coder from which to obtain initialization data
+    @return the initialized invocation
+*/
 - (id)initWithCoder:(CPCoder)aCoder
 {
     self = [super init];
@@ -124,6 +179,10 @@ var CPInvocationArguments   = @"CPInvocationArguments",
     return self;
 }
 
+/*
+    Writes out the invocation's data to the provided coder.
+    @param aCoder the coder to which the data will be written
+*/
 - (void)encodeWithCoder:(CPCoder)aCoder
 {
     [aCoder encodeObject:_returnValue forKey:CPInvocationReturnValue];

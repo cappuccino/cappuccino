@@ -41,44 +41,168 @@ kCGPathStroke               = 2;
 kCGPathFillStroke           = 3;
 kCGPathEOFillStroke         = 4;
 
+/*
+    @global
+    @group CGBlendMode
+*/
 kCGBlendModeNormal          = 0;
+/*
+    @global
+    @group CGBlendMode
+*/
 kCGBlendModeMultiply        = 1;
+/*
+    @global
+    @group CGBlendMode
+*/
 kCGBlendModeScreen          = 2;
+/*
+    @global
+    @group CGBlendMode
+*/
 kCGBlendModeOverlay         = 3;
+/*
+    @global
+    @group CGBlendMode
+*/
 kCGBlendModeDarken          = 4;
+/*
+    @global
+    @group CGBlendMode
+*/
 kCGBlendModeLighten         = 5;
+/*
+    @global
+    @group CGBlendMode
+*/
 kCGBlendModeColorDodge      = 6;
+/*
+    @global
+    @group CGBlendMode
+*/
 kCGBlendModeColorBurn       = 7;
+/*
+    @global
+    @group CGBlendMode
+*/
 kCGBlendModeSoftLight       = 8;
+/*
+    @global
+    @group CGBlendMode
+*/
 kCGBlendModeHardLight       = 9;
+/*
+    @global
+    @group CGBlendMode
+*/
 kCGBlendModeDifference      = 10;
+/*
+    @global
+    @group CGBlendMode
+*/
 kCGBlendModeExclusion       = 11;
+/*
+    @global
+    @group CGBlendMode
+*/
 kCGBlendModeHue             = 12;
+/*
+    @global
+    @group CGBlendMode
+*/
 kCGBlendModeSaturation      = 13;
+/*
+    @global
+    @group CGBlendMode
+*/
 kCGBlendModeColor           = 14;
+/*
+    @global
+    @group CGBlendMode
+*/
 kCGBlendModeLuminosity      = 15;
+/*
+    @global
+    @group CGBlendMode
+*/
 kCGBlendModeClear           = 16;
+/*
+    @global
+    @group CGBlendMode
+*/
 kCGBlendModeCopy            = 17;
+/*
+    @global
+    @group CGBlendMode
+*/
 kCGBlendModeSourceIn        = 18;
+/*
+    @global
+    @group CGBlendMode
+*/
 kCGBlendModeSourceOut       = 19;
+/*
+    @global
+    @group CGBlendMode
+*/
 kCGBlendModeSourceAtop      = 20;
+/*
+    @global
+    @group CGBlendMode
+*/
 kCGBlendModeDestinationOver = 21;
+/*
+    @global
+    @group CGBlendMode
+*/
 kCGBlendModeDestinationIn   = 22;
+/*
+    @global
+    @group CGBlendMode
+*/
 kCGBlendModeDestinationOut  = 23;
+/*
+    @global
+    @group CGBlendMode
+*/
 kCGBlendModeDestinationAtop = 24;
+/*
+    @global
+    @group CGBlendMode
+*/
 kCGBlendModeXOR             = 25;
+/*
+    @global
+    @group CGBlendMode
+*/
 kCGBlendModePlusDarker      = 26;
+/*
+    @global
+    @group CGBlendMode
+*/
 kCGBlendModePlusLighter     = 27;
 
+/*
+    This function is just here for source compatability.
+    It does nothing.
+    @group CGContext
+*/
 function CGContextRelease()
 {
 }
 
+/*
+    This function is just here for source compatability.
+    It does nothing.
+    @param aContext a CGContext
+    @return CGContext the context
+*/
 function CGContextRetain(aContext)
 {
     return aContext;
 }
 
+// BEGIN CANVAS IF
 if (!CPFeatureIsCompatible(CPHTMLCanvasFeature))
 {
 
@@ -294,15 +418,26 @@ function CGContextSetShadowWithColor(aContext, aSize, aBlur, aColor)
     gState.shadowColor = aColor;
 }
 
-}
+}   // END CANVAS IF
 
 // GOOD.
-
-function CGContextEOFillPath(aContext, aMode)
+/*
+    Fills in the area of the current path, using the even-odd fill rule.
+    @param aContext the CGContext of the path
+    @return void
+    @group CGContext
+*/
+function CGContextEOFillPath(aContext)
 {
     CGContextDrawPath(aContext, kCGPathEOFill);
 }
 
+/*
+    Fills in the area of the current path, using  the non-zero winding number rule.
+    @param aContext the CGContext of the path
+    @return void
+    @group CGContext
+*/
 function CGContextFillPath(aContext)
 {
     CGContextDrawPath(aContext, kCGPathFill);
@@ -310,6 +445,13 @@ function CGContextFillPath(aContext)
 
 var KAPPA = 4.0 * ((SQRT2 - 1.0) / 3.0);
 
+/*
+    Draws the outline of an ellipse bounded by a rectangle.
+    @param aContext CGContext to draw on
+    @param aRect the rectangle bounding the ellipse
+    @return void
+    @group CGContext
+*/
 function CGContextAddEllipseInRect(aContext, aRect)
 {
 	CGContextBeginPath(aContext);
@@ -332,24 +474,54 @@ function CGContextAddEllipseInRect(aContext, aRect)
 	CGContextClosePath(aContext);
 }
 
-
+/*
+    Fills an ellipse bounded by a rectangle.
+    @param aContext CGContext to draw on
+    @param aRect the rectangle bounding the ellipse
+    @return void
+    @group CGContext
+*/
 function CGContextFillEllipseInRect(aContext, aRect)
 {
     CGContextAddEllipseInRect(aContext, aRect);
     CGContextFillPath(aContext);
 }
 
+/*
+    Strokes an ellipse bounded by the specified rectangle.
+    @param aContext CGContext to draw on
+    @param aRect the rectangle bounding the ellipse
+    @return void
+    @group CGContext
+*/
 function CGContextStrokeEllipseInRect(aContext, aRect)
 {
     CGContextAddEllipseInRect(aContext, aRect);
     CGContextStrokePath(aContext);
 }
 
+/*
+    Paints a line in the current path of the current context.
+    @param aContext CGContext to draw on
+    @return void
+    @group CGContext
+*/
 function CGContextStrokePath(aContext)
 {
     CGContextDrawPath(aContext, kCGPathStroke);
 }
 
+/*
+    Strokes multiple line segments.
+    @param aContext CGContext to draw on
+    @param points an array with an even number of points. The
+    first point is the beginning of the first line segment, the second
+    is the end of the first line segment. The third point is
+    the beginning of second line segment, etc.
+    @param count the number of points in the array
+    @return void
+    @group CGContext
+*/
 function CGContextStrokeLineSegments(aContext, points, count)
 {
     var i = 0;
@@ -368,7 +540,16 @@ function CGContextStrokeLineSegments(aContext, points, count)
     CGContextStrokePath(aContext);
 }
 
-// FIXME: THIS IS WRONG!!!
+
+//FIXME: THIS IS WRONG!!!
+
+/*
+    Sets the current fill color.
+    @param aContext the CGContext
+    @param aColor the new color for the fill
+    @return void
+    @group CGContext
+*/
 
 function CGContextSetFillColor(aContext, aColor)
 {
@@ -376,12 +557,31 @@ function CGContextSetFillColor(aContext, aColor)
         aContext.gState.fillStyle = [aColor cssString];
 }
 
+/*
+    Sets the current stroke color.
+    @param aContext the CGContext
+    @param aColor the new color for the stroke
+    @return void
+    @group CGContext
+*/
 function CGContextSetStrokeColor(aContext, aColor)
 {
     if (aColor)
         aContext.gState.strokeStyle = [aColor cssString];
 }
 
+/*
+    Fills a rounded rectangle.
+    @param aContext the CGContext to draw into
+    @param aRect the base rectangle
+    @param aRadius the distance from the rectange corner to the rounded corner
+    @param ne set it to <code>YES</code> for a rounded northeast corner
+    @param se set it to <code>YES</code> for a rounded southeast corner
+    @param sw set it to <code>YES</code> for a rounded southwest corner
+    @param nw set it to <code>YES</code> for a rounded northwest corner
+    @return void
+    @group CGContext
+*/
 function CGContextFillRoundedRectangleInRect(aContext, aRect, aRadius, ne, se, sw, nw)
 {
     var xMin = _CGRectGetMinX(aRect),

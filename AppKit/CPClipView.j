@@ -24,12 +24,19 @@ import "CPView.j"
 
 #include "CoreGraphics/CGGeometry.h"
 
-
+/*
+    <objj>CPClipView</objj> allows you to define a clip rect and display only that portion of its containing view.  
+    It is used to hold the document view in a <objj>CPScrollView</objj>.
+*/
 @implementation CPClipView : CPView
 {
     CPView  _documentView;
 }
 
+/*
+    Sets the document view to be <code>aView</code>.
+    @param aView the new document view. It's frame origin will be changed to <code>(0,0)</code> after calling this method.
+*/
 - (void)setDocumentView:(CPView)aView
 {
     if (_documentView == aView)
@@ -78,11 +85,20 @@ import "CPView.j"
     }
 }
 
+/*
+    Returns the document view.
+*/
 - (id)documentView
 {
     return _documentView;
 }
 
+/*
+    Returns a new point that may be adjusted from <code>aPoint</code>
+    to make sure it lies within the document view.
+    @param aPoint
+    @return the adjusted point
+*/
 - (CGPoint)constrainScrollPoint:(CGPoint)aPoint
 {
     var documentFrame = [_documentView frame];
@@ -106,11 +122,19 @@ import "CPView.j"
         [superview reflectScrolledClipView:self];
 }
 
-- (void)scrollToPoint:(CPPoint)aPoint
+/*
+    Scrolls the clip view to the specified point. The method
+    sets its bounds origin to <code>aPoint</code>.
+*/
+- (void)scrollToPoint:(CGPoint)aPoint
 {
     [self setBoundsOrigin:[self constrainScrollPoint:aPoint]];
 }
 
+/*
+    Handles a <objj>CPViewBoundsDidChangeNotification</objj>.
+    @param aNotification the notification event
+*/
 - (void)viewBoundsChanged:(CPNotification)aNotification
 {
     var superview = [self superview];
@@ -119,6 +143,10 @@ import "CPView.j"
         [superview reflectScrolledClipView:self];
 }
 
+/*
+    Handles a <objj>CPViewFrameDidChangeNotification</objj>.
+    @param aNotification the notification event
+*/
 - (void)viewFrameChanged:(CPNotification)aNotification
 {
     var superview = [self superview];

@@ -22,7 +22,6 @@
 
 import "CPView.j"
 
-
 var CPViewAutoresizingMaskKey       = @"CPViewAutoresizingMask",
     CPViewAutoresizesSubviewsKey    = @"CPViewAutoresizesSubviews",
     CPViewBackgroundColorKey        = @"CPViewBackgroundColor",
@@ -34,6 +33,8 @@ var CPViewAutoresizingMaskKey       = @"CPViewAutoresizingMask",
     CPViewSubviewsKey               = @"CPViewSubviewsKey",
     CPViewSuperviewKey              = @"CPViewSuperviewKey",
     CPViewWindowKey                 = @"CPViewWindowKey";
+
+/* @ignore */
 
 @implementation CPCustomView : CPView
 {

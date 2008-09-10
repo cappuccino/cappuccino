@@ -42,6 +42,9 @@ CPImagePboardType       = @"CPImagePboardType";
 
 var CPPasteboards = nil;
 
+/*
+    <objj>CPPasteBoard</objj> is the object responsible for cut/copy/paste and drag&drop operations. 
+*/
 @implementation CPPasteboard : CPObject
 {
     CPArray         _types;
@@ -52,6 +55,9 @@ var CPPasteboards = nil;
     CPString        _stateUID;
 }
 
+/*
+    @ignore
+*/
 + (void)initialize
 {
     if (self != [CPPasteboard class])
@@ -62,11 +68,19 @@ var CPPasteboards = nil;
     CPPasteboards = [CPDictionary dictionary];
 }
 
+/*
+    Returns a new instance of a pasteboard
+*/
 + (id)generalPasteboard
 {
     return [CPPasteboard pasteboardWithName:CPGeneralPboard];
 }
 
+/*
+    Returns a pasteboard with the specified name. If the pasteboard doesn't exist, it will be created.
+    @param aName the name of the pasteboard
+    @return the requested pasteboard
+*/
 + (id)pasteboardWithName:(CPString)aName
 {
     var pasteboard = [CPPasteboards objectForKey:aName];
@@ -80,6 +94,7 @@ var CPPasteboards = nil;
     return pasteboard;
 }
 
+/* @ignore */
 - (id)_initWithName:(CPString)aName
 {
     self = [super init];
@@ -98,6 +113,12 @@ var CPPasteboards = nil;
     return self;
 }
 
+/*
+    Adds supported data types to the pasteboard
+    @param types the data types
+    @param anOwner the object that contains the data types
+    @return the pasteboard's change count
+*/
 - (unsigned)addTypes:(CPArray)types owner:(id)anOwner
 {
     var i = 0,
@@ -119,6 +140,12 @@ var CPPasteboards = nil;
     return ++_changeCount;
 }
 
+/*
+    Sets the data types that this pasteboard will contain.
+    @param type the data types it will support
+    @param anOwner the object that contains the the data
+    @return the pasteboard's change count
+*/
 - (unsigned)declareTypes:(CPArray)types owner:(id)anOwner
 {
     [_types setArray:types];
@@ -134,6 +161,12 @@ var CPPasteboards = nil;
     return ++_changeCount;
 }
 
+/*
+    Sets the pasteboard data for the specified type
+    @param aData the data
+    @param aType the data type being set
+    @return <code>YES</code> if the data was successfully written to the pasteboard
+*/
 - (BOOL)setData:(CPData)aData forType:(CPString)aType
 {
     [_provided setObject:aData forKey:aType];
@@ -141,35 +174,62 @@ var CPPasteboards = nil;
     return YES;
 }
 
+/*
+    Writes the specified property list as data for the specified type
+    @param aPropertyList the property list to write
+    @param aType the data type
+    @return <code>YES</code> if the property list was successfully written to the pasteboard
+*/
 - (BOOL)setPropertyList:(id)aPropertyList forType:(CPString)aType
 {
     return [self setData:[CPPropertyListSerialization dataFromPropertyList:aPropertyList format:CPPropertyListXMLFormat_v1_0 errorDescription:nil] forType:aType];
 }
 
+/*
+    Sets the specified string as data for the specified type
+    @param aString the string to write
+    @param aType the data type
+    @return <code>YES</code> if the string was successfully written to the pasteboard
+*/
 - (void)setString:(CPString)aString forType:(CPString)aType
 {
     return [self setPropertyList:aString forType:aType];
 }
 
 // Determining Types
-
+/*
+    Checks the pasteboard's types for a match with the types listen in the specified array. The array should
+    be ordered by the requestor's most preferred data type first.
+    @param anArray an array of requested types ordered by preference
+    @return the highest match with the pasteboard's supported types or <code>nil</code> if no match was found
+*/
 - (CPString)availableTypeFromArray:(CPArray)anArray
 {
     return [_types firstObjectCommonWithArray:anArray];
 }
 
+/*
+    Returns the pasteboards supported types
+*/
 - (CPArray)types
 {
     return _types;
 }
 
 // Reading data
-
+/*
+    Returns the number of changes that have occurred to this pasteboard
+*/
 - (unsigned)changeCount
 {
     return _changeCount;
 }
 
+/*
+    Returns the pasteboard data for the specified data type
+    @param aType the requested data type
+    @return the requested data or <code>nil</code> if the data doesn't exist
+*/
 - (CPData)dataForType:(CPString)aType
 {
     var data = [_provided objectForKey:aType];
@@ -191,6 +251,11 @@ var CPPasteboards = nil;
     return nil;
 }
 
+/*
+    Returns the property list for the specified data type
+    @param aType the requested data type
+    @return the property list or <code>nil</code> if the list was not found
+*/
 - (id)propertyListForType:(CPString)aType
 {
     var data = [self dataForType:aType];
@@ -201,11 +266,17 @@ var CPPasteboards = nil;
     return nil;
 }
 
+/*
+    Returns the string for the specified data type
+    @param aType the requested data type
+    @return the string or <code>nil</code> if the string was not found
+*/
 - (CPString)stringForType:(CPString)aType
 {
     return [self propertyListForType:aType];
 }
 
+/* @ignore */
 - (CPString)_generateStateUID
 {
     var bits = 32;
@@ -218,6 +289,7 @@ var CPPasteboards = nil;
     return _stateUID;
 }
 
+/* @ignore */
 - (CPString)_stateUID
 {
     return _stateUID;

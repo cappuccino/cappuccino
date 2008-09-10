@@ -26,9 +26,20 @@ import <AppKit/CPView.j>
 
 #include "CoreGraphics/CGGeometry.h"
 
-
+/*
+    @global
+    @group CPProgressIndicatorStyle
+*/
 CPProgressIndicatorBarStyle         = 0;
+/*
+    @global
+    @group CPProgressIndicatorStyle
+*/
 CPProgressIndicatorSpinningStyle    = 1;
+/*
+    @global
+    @group CPProgressIndicatorStyle
+*/
 CPProgressIndicatorHUDBarStyle      = 2;
 
 var CPProgressIndicatorSpinningStyleColors  = nil,
@@ -37,6 +48,11 @@ var CPProgressIndicatorSpinningStyleColors  = nil,
     CPProgressIndicatorStyleIdentifiers     = nil,
     CPProgressIndicatorStyleSizes           = nil;
 
+/*
+    This class is used in a Cappuccino GUI to display the progress of a
+    function or task. If the duration of the task is unknown, there is
+    also an indeterminate mode for the indicator.
+*/
 @implementation CPProgressIndicator : CPView
 {
     double                      _minValue;
@@ -57,6 +73,9 @@ var CPProgressIndicatorSpinningStyleColors  = nil,
     CPView                      _barView;
 }
 
+/*
+    @ignore
+*/
 + (void)initialize
 {
     if (self != [CPProgressIndicator class])
@@ -152,10 +171,17 @@ var CPProgressIndicatorSpinningStyleColors  = nil,
     return self;
 }
 
+/*
+    @ignore
+*/
 - (void)setUsesThreadedAnimation:(BOOL)aFlag
 {
 }
 
+/*
+    Starts the animation of the progress indicator in indeterminate mode.
+    @param the requesting object
+*/
 - (void)startAnimation:(id)aSender
 {
     _isAnimating = YES;
@@ -163,6 +189,10 @@ var CPProgressIndicatorSpinningStyleColors  = nil,
     [self _hideOrDisplay];
 }
 
+/*
+    Stops the animation of the progress indicator in indeterminate mode.
+    @param the requesting object
+*/
 - (void)stopAnimation:(id)aSender
 {
     _isAnimating = NO;
@@ -170,18 +200,27 @@ var CPProgressIndicatorSpinningStyleColors  = nil,
     [self _hideOrDisplay];
 }
 
+/*
+    Always returns <code>NO</code>. Cappuccino does not have multiple threads.
+*/
 - (BOOL)usesThreadedAnimation
 {
     return NO;
 }
 
 // Advancing the Progress Bar
-
+/*
+    Increases the progress of the bar by the specified value.
+    @param aValue the amount to increase the progress value
+*/
 - (void)incrementBy:(double)aValue
 {
     [self setDoubleValue:_doubleValue + aValue];
 }
 
+/*
+    Sets the progress value of the indicator.
+*/
 - (void)setDoubleValue:(double)aValue
 {
     _doubleValue = MIN(MAX(aValue, _minValue), _maxValue);
@@ -189,33 +228,53 @@ var CPProgressIndicatorSpinningStyleColors  = nil,
     [self drawBar];
 }
 
+/*
+    Returns the value of the progress indicator.
+*/
 - (double)doubleValue
 {
     return _doubleValue;
 }
 
+/*
+    Sets the minimum value of the progress indicator. The default is 0.0.
+    @param aValue the new minimum value
+*/
 - (void)setMinValue:(double)aValue
 {
     _minValue = aValue;
 }
 
+/*
+    Returns the minimum value of the progress indicator.
+*/
 - (double)minValue
 {
     return _minValue;
 }
 
+/*
+    Sets the maximum value of the progress indicator. The default is 100.0.
+    @param aValue the new maximum value.
+*/
 - (void)setMaxValue:(double)aValue
 {
     _maxValue = aValue;
 }
 
+/*
+    Returns the maximum value of the progress indicator.
+*/
 - (double)maxValue
 {
     return _maxValue;
 }
 
 // Setting the Appearance
-
+/*
+    Sets the progress indicator's size.
+    @param aControlSize the new size
+*/
 - (void)setControlSize:(CPControlSize)aControlSize
 {
     if (_controlSize == aControlSize)
@@ -226,29 +285,48 @@ var CPProgressIndicatorSpinningStyleColors  = nil,
     [self updateBackgroundColor];
 }
 
+/*
+    Returns the progress indicator's size
+*/
 - (CPControlSize)controlSize
 {
     return _controlSize;
 }
 
+/*
+    Not yet implemented
+*/
 - (void)setControlTint:(CPControlTint)aControlTint
 {
 }
 
+/*
+    Not yet impemented.
+*/
 - (CPControlTint)controlTint
 {
     return 0;
 }
 
+/*
+    Not yet implemented.
+*/
 - (void)setBezeled:(BOOL)isBezeled
 {
 }
 
+/*
+    Not yet implemented.
+*/
 - (BOOL)isBezeled
 {
     return YES;
 }
 
+/*
+    Specifies whether this progress indicator should be indeterminate or display progress based on it's max and min.
+    @param isDeterminate <code>YES</code> makes the indicator indeterminate
+*/
 - (void)setIndeterminate:(BOOL)isIndeterminate
 {
     if (_indeterminate == isIndeterminate)
@@ -259,11 +337,18 @@ var CPProgressIndicatorSpinningStyleColors  = nil,
     [self updateBackgroundColor];
 }
 
+/*
+    Returns <code>YES</code> if the progress bar is indeterminate.
+*/
 - (BOOL)isIndeterminate
 {
     return _isIndeterminate;
 }
 
+/*
+    Sets the progress indicator's style
+    @param aStyle the style to set it to
+*/
 - (void)setStyle:(CPProgressIndicatorStyle)aStyle
 {
     if (_style == aStyle)
@@ -274,6 +359,9 @@ var CPProgressIndicatorSpinningStyleColors  = nil,
     [self updateBackgroundColor];
 }
 
+/*
+    Resizes the indicator based on it's style.
+*/
 - (void)sizeToFit
 {
     if (_style == CPProgressIndicatorSpinningStyle)
@@ -284,6 +372,11 @@ var CPProgressIndicatorSpinningStyleColors  = nil,
             _CPControlIdentifierForControlSize(_controlSize)][0].height)];
 }
 
+/*
+    Sets whether the indicator should be displayed when it isn't animating. By default this is <code>YES</code> if the style
+    is <objj>CPProgressIndicatorBarStyle</objj>, and <code>NO</code> if it's <objj>CPProgressIndicatorSpinningStyle</objj>.
+    @param isDisplayedWhenStopped <code>YES</code> means the indicator will be displayed when it's not animating.
+*/
 - (void)setDisplayedWhenStopped:(BOOL)isDisplayedWhenStopped
 {
     if (_isDisplayedWhenStoppedSet && _isDisplayedWhenStopped == isDisplayedWhenStopped)
@@ -296,6 +389,9 @@ var CPProgressIndicatorSpinningStyleColors  = nil,
     [self _hideOrDisplay];
 }
 
+/*
+    Returns <code>YES</code> if the progress bar is displayed when not animating.
+*/
 - (BOOL)isDisplayedWhenStopped
 {
     if (_isDisplayedWhenStoppedSet)
@@ -307,6 +403,7 @@ var CPProgressIndicatorSpinningStyleColors  = nil,
     return NO;
 }
 
+/* @ignore */
 - (void)_hideOrDisplay
 {
     [self setHidden:!_isAnimating && ![self isDisplayedWhenStopped]];
@@ -319,6 +416,7 @@ var CPProgressIndicatorSpinningStyleColors  = nil,
     [self drawBar];
 }
 
+/* @ignore */
 - (void)drawBar
 {
     if (_style == CPProgressIndicatorSpinningStyle)
@@ -343,6 +441,7 @@ var CPProgressIndicatorSpinningStyleColors  = nil,
     [_barView setFrameSize:CGSizeMake(CGRectGetWidth([self bounds]) * (_doubleValue - _minValue) / (_maxValue - _minValue) - 4.0, 9.0)];
 }
 
+/* @ignore */
 - (void)updateBackgroundColor
 {
     if (YES)//_isBezeled)

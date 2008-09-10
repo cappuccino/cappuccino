@@ -45,12 +45,24 @@ _function(CGAffineTransformEqualToTransform(lhs, rhs))
 
 _function(CGStringCreateWithCGAffineTransform(aTransform))
 
-// FIXME: !!!!
+/*
+    FIXME: !!!!
+    @return void
+    @group CGAffineTransform
+*/
 function CGAffineTransformCreateCopy(aTransform)
 {
     return _CGAffineTransformMakeCopy(aTransform);
 }
 
+/*
+    Returns a transform that rotates a coordinate system.
+    @param anAngle the amount in radians for the transform
+    to rotate a coordinate system
+    @return CGAffineTransform the transform with a specified
+    rotation
+    @group CGAffineTransform
+*/
 function CGAffineTransformMakeRotation(anAngle)
 {
     var sin = SIN(anAngle),
@@ -59,6 +71,13 @@ function CGAffineTransformMakeRotation(anAngle)
     return _CGAffineTransformMake(cos, sin, -sin, cos, 0.0, 0.0);
 }
 
+/*
+    Rotates a transform.
+    @param aTransform the transform to rotate
+    @param anAngle the amount to rotate in radians
+    @return void
+    @group CGAffineTransform
+*/
 function CGAffineTransformRotate(aTransform, anAngle)
 {
     var sin = SIN(anAngle),
@@ -74,6 +93,12 @@ function CGAffineTransformRotate(aTransform, anAngle)
         };
 }
 
+/*
+    Inverts a transform.
+    @param aTransform the transform to invert
+    @return CGAffineTransform an inverted transform
+    @group CGAffineTransform
+*/
 function CGAffineTransformInvert(aTransform)
 {
     var determinant = 1 / (aTransform.a * aTransform.d - aTransform.b * aTransform.c);
@@ -88,6 +113,14 @@ function CGAffineTransformInvert(aTransform)
     };
 }
 
+/*
+    Applies a transform to the rectangle's points. The transformed rectangle
+    will be the smallest box that contains the transformed points.
+    @param aRect the rectangle to transform
+    @param anAffineTransform the transform to apply
+    @return CGRect the new transformed rectangle
+    @group CGAffineTransform
+*/
 function CGRectApplyAffineTransform(aRect, anAffineTransform)
 {
     var top = _CGRectGetMinY(aRect),
@@ -106,6 +139,12 @@ function CGRectApplyAffineTransform(aRect, anAffineTransform)
     return _CGRectMake(minX, minY, (maxX - minX), (maxY - minY));
 }
 
+/*
+    Creates and returns a string representation of an affine transform.
+    @param anAffineTransform the transform to represent as a string
+    @return CPString a string describing the transform
+    @group CGAffineTransform
+*/
 function CPStringFromCGAffineTransform(anAffineTransform)
 {
     return '{' + anAffineTransform.a + ", " + anAffineTransform.b + ", " + anAffineTransform.c + ", " + anAffineTransform.d + ", " + anAffineTransform.tx + ", " + anAffineTransform.ty + '}';

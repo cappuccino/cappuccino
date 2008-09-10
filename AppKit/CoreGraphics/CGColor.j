@@ -45,15 +45,28 @@ function CGColorGetConstantColor(aColorName)
     alert("FIX ME");
 }
 
+/*
+    This function is for source compatability.    
+*/
 function CGColorRetain(aColor)
 {
     return aColor;
 }
 
+/*
+    This function is for source compatability.    
+*/
 function CGColorRelease()
 {
 }
 
+/*
+    Creates a new <objj>CGColor</objj>.
+    @param aColorSpace the <objj>CGColorSpace</objj> of the color
+    @param components the color's intensity values plus alpha
+    @return CGColor the new color object
+    @group CGColor
+*/
 function CGColorCreate(aColorSpace, components)
 {
     if (!aColorSpace || !components)
@@ -71,27 +84,68 @@ function CGColorCreate(aColorSpace, components)
     return _CGColorMap[UID] = { colorspace:aColorSpace, pattern:NULL, components:components };
 }
 
+/*
+    Creates a copy of a color... but not really. <objj>CGColor</objj>s
+    are immutable, so to be efficient, this function will just
+    return the same object that was passed in.
+    @param aColor the <objj>CGColor</objj> to 'copy'
+    @return CGColor the color copy
+    @group CGColor
+*/
 function CGColorCreateCopy(aColor)
 {
     // Colors should be treated as immutable, so don't mutate it!
     return aColor;
 }
 
+/*
+    Creates a gray color object.
+    @param gray the value to use for the color intensities (<code>0.0-1.0</code>)
+    @param alpha the gray's alpha value (<code>0.0-1.0</code>)
+    @return CGColor the new gray color object
+    @group CGColor
+*/
 function CGColorCreateGenericGray(gray, alpha)
 {
     return CGColorCreate(0, [gray, alpha]);
 }
 
+/*
+    Creates an RGB color.
+    @param red the red component (<code>0.0-1.0</code>)
+    @param green the green component (<code>0.0-1.0</code>)
+    @param blue the blue component (<code>0.0-1.0</code>)
+    @param alpha the alpha component (<code>0.0-1.0</code>)
+    @return CGColor the RGB based color
+    @group CGColor
+*/
 function CGColorCreateGenericRGB(red, green, blue, alpha)
 {
     return CGColorCreate(0, [red, green, blue, alpha]);
 }
 
+/*
+    Creates a CMYK color.
+    @param cyan the cyan component (<code>0.0-1.0</code>)
+    @param magenta the magenta component (<code>0.0-1.0</code>)
+    @param yellow the yellow component (<code>0.0-1.0</code>)
+    @param black the black component (<code>0.0-1.0</code>)
+    @param alpha the alpha component (<code>0.0-1.0</code>)
+    @return CGColor the CMYK based color
+    @group CGColor
+*/
 function CGColorCreateGenericCMYK(cyan, magenta, yellow, black, alpha)
 {
     return CGColorCreate(0, [cyan, magenta, yellow, black, alpha]);
 }
 
+/*
+    Creates a copy of the color with a specified alpha.
+    @param aColor the color object to copy
+    @param anAlpha the new alpha component for the copy (<code>0.0-1.0</code>)
+    @return CGColor the new copy
+    @group CGColor
+*/
 function CGColorCreateCopyWithAlpha(aColor, anAlpha)
 {
     var components = aColor.components;
@@ -109,6 +163,14 @@ function CGColorCreateCopyWithAlpha(aColor, anAlpha)
     return copy;
 }
 
+/*
+    Creates a color using the specified pattern.
+    @param aColorSpace the <objj>CGColorSpace</objj>
+    @param aPattern the pattern image
+    @param components the color components plus the alpha component
+    @return CGColor the patterned color
+    @group CGColor
+*/
 function CGColorCreateWithPattern(aColorSpace, aPattern, components)
 {
     if (!aColorSpace || !aPattern || !components)
@@ -117,6 +179,13 @@ function CGColorCreateWithPattern(aColorSpace, aPattern, components)
     return { colorspace:aColorSpace, pattern:aPattern, components:components.slice() };
 }
 
+/*
+    Determines if two colors are the same.
+    @param lhs the first <objj>CGColor</objj>
+    @param rhs the second <objj>CGColor</objj>
+    @return <code>YES</code> if the two colors are equal.
+    <code>NO</code> otherwise.
+*/
 function CGColorEqualToColor(lhs, rhs)
 {
     if (lhs == rhs)
@@ -145,6 +214,12 @@ function CGColorEqualToColor(lhs, rhs)
     return true;
 }
 
+/*
+    Returns the color's alpha component.
+    @param aColor the color
+    @return float the alpha component (<code>0.0-1.0</code>)
+    @group CGColor
+*/
 function CGColorGetAlpha(aColor)
 {
     var components = aColor.components;
@@ -152,21 +227,45 @@ function CGColorGetAlpha(aColor)
     return components[components.length - 1];
 }
 
+/*
+    Returns the <objj>CGColor</objj>'s color space.
+    @return <objj>CGColorSpace</objj>
+    @group CGColor
+*/
 function CGColorGetColorSpace(aColor)
 {
     return aColor.colorspace;
 }
 
+/*
+    Returns the <objj>CGColor</objj>'s components
+    including the alpha in an array.
+    @param aColor the color
+    @return CPArray the color's components
+*/
 function CGColorGetComponents(aColor)
 {
     return aColor.components;
 }
 
+/*
+    Returns the number of color components
+    (including alpha) in the specified color.
+    @param aColor the <objj>CGColor</objj>
+    @return CPNumber the number of components
+    @group CGColor
+*/
 function CGColorGetNumberOfComponents(aColor)
 {
     return aColor.components.length;
 }
 
+/*
+    Gets the <objj>CGColor</objj>'s pattern.
+    @param a <objj>CGColor</objj>
+    @return CGPatternFIXME the pattern image
+    @group CGColor
+*/
 function CGColorGetPattern(aColor)
 {
     return aColor.pattern;

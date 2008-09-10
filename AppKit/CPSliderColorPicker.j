@@ -27,6 +27,9 @@ import <AppKit/CPSlider.j>
 import <AppKit/CPColorPicker.j>
 import <AppKit/CPColorPanel.j>
 
+/*
+    @ignore
+*/
 @implementation CPSliderColorPicker : CPColorPicker
 {    
     CPView      _contentView;

@@ -30,8 +30,20 @@ import "CPShadowView.j"
 #include "CoreGraphics/CGGeometry.h"
 
 
+/*
+    @global
+    @group CPImageScaling
+*/
 CPScaleProportionally   = 0;
+/*
+    @global
+    @group CPImageScaling
+*/
 CPScaleToFit            = 1;
+/*
+    @global
+    @group CPImageScaling
+*/
 CPScaleNone             = 2;
 
 
@@ -44,6 +56,9 @@ var LEFT_SHADOW_INSET       = 3.0,
     VERTICAL_SHADOW_INSET   = TOP_SHADOW_INSET + BOTTOM_SHADOW_INSET,
     HORIZONTAL_SHADOW_INSET = LEFT_SHADOW_INSET + RIGHT_SHADOW_INSET;
 
+/*
+    This class is a control that displays an image.
+*/
 @implementation CPImageView : CPControl
 {
     CPImage         _image;
@@ -78,11 +93,18 @@ var LEFT_SHADOW_INSET       = 3.0,
     return self;
 }
 
+/*
+    Returns the view's image.
+*/
 - (CPImage)image
 {
     return _image;
 }
 
+/*
+    Sets the image for the view.
+    @param anImage the view's image
+*/
 - (void)setImage:(CPImage)anImage
 {
     if (_image == anImage)
@@ -105,6 +127,19 @@ var LEFT_SHADOW_INSET       = 3.0,
     [self tile];
 }
 
+/*
+    Returns <code>YES</code> if the image view draws with
+    a drop shadow. The default is <code>NO</code>.
+*/
+- (BOOL)hasShadow
+{
+    return _hasShadow;
+}
+
+/*
+    Sets whether the image view should draw with a drop shadow.
+    @param shouldHaveShadow whether the image view should have a shadow
+*/
 - (void)setHasShadow:(BOOL)shouldHaveShadow
 {
     if (_hasShadow == shouldHaveShadow)
@@ -130,6 +165,11 @@ var LEFT_SHADOW_INSET       = 3.0,
     [self hideOrDisplayContents];
 }
 
+/*
+    Sets the type of image scaling that should be used to
+    render the image.
+    @param anImageScaling the type of scaling to use
+*/
 - (void)setImageScaling:(CPImageScaling)anImageScaling
 {
     if (_imageScaling == anImageScaling)
@@ -152,6 +192,10 @@ var LEFT_SHADOW_INSET       = 3.0,
     [self tile];
 }
 
+/*
+    Returns the image scaling method used to
+    render this image.
+*/
 - (CPImageScaling)imageScaling
 {
     return _imageScaling;
@@ -164,6 +208,9 @@ var LEFT_SHADOW_INSET       = 3.0,
     [self tile];
 }
 
+/*
+    Toggles the display of the image view.
+*/
 - (void)hideOrDisplayContents
 {
     if (!_image)
@@ -178,11 +225,17 @@ var LEFT_SHADOW_INSET       = 3.0,
     }
 }
 
+/*
+    Returns the view's image rectangle
+*/
 - (CGRect)imageRect
 {
     return _imageRect;
 }
 
+/*
+    Add a description
+*/
 - (void)tile
 {
     if (!_image)
@@ -256,6 +309,11 @@ var CPImageViewImageKey         = @"CPImageViewImageKey",
 
 @implementation CPImageView (CPCoding)
 
+/*
+    Initializes the image view with the provided coder.
+    @param aCoder the coder from which data will be read.
+    @return the initialized image view
+*/
 - (id)initWithCoder:(CPCoder)aCoder
 {
     self = [super initWithCoder:aCoder];
@@ -281,6 +339,11 @@ var CPImageViewImageKey         = @"CPImageViewImageKey",
     return self;
 }
 
+/*
+    Writes the image view out to the coder.
+    @param aCoder the coder to which the image
+    view will be written
+*/
 - (void)encodeWithCoder:(CPCoder)aCoder
 {
     // We do this in order to avoid encoding the _shadowView, which 

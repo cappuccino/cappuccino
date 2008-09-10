@@ -22,6 +22,12 @@
 
 import "CPTableView.j"
 
+/*
+    @ignore 
+    This class is a subclass of <objj>CPTableView</objj> which provides the user with a way to display 
+    tree structured data in an outline format. It is particularly useful for displaying hierarchical data 
+    such as a class inheritance tree or any other set of relationships.
+*/
 
 @implementation CPOutlineView : CPTableView
 {
@@ -42,13 +48,34 @@ import "CPTableView.j"
     return self;
 }
 
+/*
+    @ignore
+    Sets the outline's data source. The data source must implement the following methods:
+<pre>
+- (id)outlineView:(<objj>CPOutlineView</objj>)outlineView child:(int)index ofItem:(id)item
+- (BOOL)outlineView:(<objj>CPOutlineView</objj>)outlineView isItemExpandable:(id)item
+- (int)outlineView:(<objj>CPOutlineView</objj>)outlineView numberOfChildrenOfItem:(id)item
+- (id)outlineView:(<objj>CPOutlineView</objj>)outlineView objectValueForTableColumn:(<objj>CPTableColumn</objj>)tableColumn byItem:(id)item
+</pre>
+    @param aDataSource the outline's data source
+    @throws CPInternalInconsistencyException if the data source does not implement all the required methods
+*/
 - (void)setDataSource:(id)aDataSource
 {
+    if (![aDataSource respondsToSelector:@selector(outlineView:child:ofItem)])
+        [CPException raise:CPInternalInconsistencyException reason:"Data source must implement 'outlineView:child:ofItem'"];
+    if (![aDataSource respondsToSelector:@selector(outlineView:isItemExpandable)])
+        [CPException raise:CPInternalInconsistencyException reason:"Data source must implement 'outlineView:isItemExpandable'"];
+    if (![aDataSource respondsToSelector:@selector(outlineView:numberOfChildrenOfItem)])
+        [CPException raise:CPInternalInconsistencyException reason:"Data source must implement 'outlineView:numberOfChildrenOfItem'"];
+    if (![aDataSource respondsToSelector:@selector(outlineView:objectValueForTableColumn:byItem)])
+        [CPException raise:CPInternalInconsistencyException reason:"Data source must implement 'outlineView:objectValueForTableColumn:byItem'"];
+
     _outlineDataSource = aDataSource;
 
     [self reloadData];
 }
-
+/* @ignore */
 - (void)reloadData
 {
     _numberOfVisibleItems = [_outlineDataSource outlineView:self numberOfChildrenOfItem:nil];
@@ -64,13 +91,19 @@ import "CPTableView.j"
 
 @end
 
+/* @ignore */
 @implementation CPOutlineView (CPTableDataSource)
 
+/*
+    FIXME 
+*/
+/* @ignore */
 - (void)numberOfRowsInTableView:(CPTableView)aTableView
 {
     return _numberOfVisibleItems;
 }
 
+/* @ignore */
 - (void)tableView:(CPTableView)aTableView objectValueForTableColumn:(CPTableColumn)aTableColumn row:(int)aRowIndex
 {
     return [_outlineDataSource outlineView:self objectValueForTableColumn:aTableColumn byItem:_itemsByRow[aRowIndex]];

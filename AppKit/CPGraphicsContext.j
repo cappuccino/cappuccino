@@ -22,26 +22,46 @@
 
 var CPGraphicsContextCurrent    = nil;
 
+/*
+    Provides an interface for drawing to the screen.
+*/
 @implementation CPGraphicsContext : CPObject
 {
     CPContext   _graphicsPort;
 }
 
-+ (void)currentContext
+/*
+    Returns the current graphics context.
+*/
++ (CPGraphicsContext)currentContext
 {
     return CPGraphicsContextCurrent;
 }
 
+/*
+    Sets the current graphics context
+*/
 + (void)setCurrentContext:(CPGraphicsContext)aGraphicsContext
 {
     CPGraphicsContextCurrent = aGraphicsContext;
 }
 
-+ (id)graphicsContextWithGraphicsPort:(CPContext)aContext flipped:(BOOL)aFlag
+/*
+    Creates a graphics context with a provided port.
+    @param aContext the context to initialize with
+    @param aFlag whether the context should be flipped
+    @return the initialized graphics context
+*/
++ (CPGraphicsContext)graphicsContextWithGraphicsPort:(CGContext)aContext flipped:(BOOL)aFlag
 {
     return [[self alloc] initWithGraphicsPort:aContext];
 }
 
+/*
+    Initializes the context with a graphics port.
+    @param aGraphicsPort the graphics port to initialize with
+    @return the initialized context
+*/
 - (id)initWithGraphicsPort:(CPContext)aGraphicsPort
 {
     self = [super init];
@@ -52,7 +72,10 @@ var CPGraphicsContextCurrent    = nil;
     return self;
 }
 
-- (CPContext)graphicsPort
+/*
+    Returns the graphics context's port.
+*/
+- (CGContext)graphicsPort
 {
     return _graphicsPort;
 }

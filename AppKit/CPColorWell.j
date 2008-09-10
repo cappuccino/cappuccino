@@ -29,6 +29,11 @@ import "CPColorPanel.j"
 
 var _CPColorWellDidBecomeExclusiveNotification = @"_CPColorWellDidBecomeExclusiveNotification";
 
+/*
+    <objj>CPColorWell</objj> is a <objj>CPControl</objj> for selecting and displaying a single color value. An example of a <objj>CPColorWell</objj> object (or simply color well) is found in <objj>CPColorPanel</objj>, which uses a color well to display the current color selection.</p>
+
+    <p>An application can have one or more active <objj>CPColorWell</objj>s. You can activate multiple <objj>CPColorWell</objj>s by invoking the <code>activate:</code> method with <code>NO</code> as its argument. When a mouse-down event occurs on an <objj>CPColorWell</objj>'s border, it becomes the only active color well. When a color well becomes active, it brings up the color panel also.
+*/
 @implementation CPColorWell : CPControl
 {
     BOOL    _active;
@@ -70,11 +75,17 @@ var _CPColorWellDidBecomeExclusiveNotification = @"_CPColorWellDidBecomeExclusiv
 
 // Managing Color From Color Wells
 
+/*
+    Returns the color well's current color.
+*/
 - (CPColor)color
 {
     return _color;
 }
 
+/*
+    Sets the color well's current color.
+*/
 - (void)setColor:(CPColor)aColor
 {
     if (_color == aColor)
@@ -85,13 +96,21 @@ var _CPColorWellDidBecomeExclusiveNotification = @"_CPColorWellDidBecomeExclusiv
     [self drawWellInside:CGRectInset([self bounds], 3.0, 3.0)];
 }
 
+/*
+    Changes the color of the well to that of <code>aSender</code>.
+    @param aSender the object from which to retrieve the color
+*/
 - (void)takeColorFrom:(id)aSender
 {
     [self setColor:[aSender color]];
 }
 
 // Activating and Deactivating Color Wells
-
+/*
+    Activates the color well, displays the color panel, and makes the panel's current color the same as its own. 
+    If exclusive is <code>YES</code>, deactivates any other <objj>CPColorWell</objj>s. <code>NO</code>, keeps them active.
+    @param shouldBeExclusive whether other color wells should be deactivated.
+*/
 - (void)activate:(BOOL)shouldBeExclusive
 {
     if (shouldBeExclusive)
@@ -113,6 +132,9 @@ var _CPColorWellDidBecomeExclusiveNotification = @"_CPColorWellDidBecomeExclusiv
              object:[CPColorPanel sharedColorPanel]];
 }
 
+/*
+    Deactivates the color well.
+*/
 - (void)deactivate
 {
     if (![self isActive])
@@ -126,6 +148,9 @@ var _CPColorWellDidBecomeExclusiveNotification = @"_CPColorWellDidBecomeExclusiv
                 object:[CPColorPanel sharedColorPanel]];
 }
 
+/*
+    Returns <code>YES</code> if the color well is active.
+*/
 - (BOOL)isActive
 {
     return _active;
@@ -137,6 +162,10 @@ var _CPColorWellDidBecomeExclusiveNotification = @"_CPColorWellDidBecomeExclusiv
 {
 }
 
+/*
+    Draws the colored area inside the color well without borders.
+    @param aRect the location at which to draw
+*/
 - (void)drawWellInside:(CGRect)aRect
 {
     if (!_wellView)

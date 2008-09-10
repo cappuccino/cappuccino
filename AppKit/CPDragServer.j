@@ -114,11 +114,18 @@ var CPDragServerUpdateDragging = function(anEvent)
         [CPDragServerSource draggedView:CPDragServerView movedTo:location];
 }
 
+/*
+    <objj>CPDraggingInfo</objj> is a container of information about a specific dragging session.
+    @ignore
+*/
 @implementation CPDraggingInfo : CPObject
 {
     CPWindow    _window;
 }
 
+/*
+    Initializes the receiver with the window
+*/
 - (id)initWithWindow:(CPWindow)aWindow
 {
     self = [super init];
@@ -152,6 +159,10 @@ var CPDragServerUpdateDragging = function(anEvent)
     CPImageView _imageView;
 }
 
+/*
+    Private Objective-J/Cappuccino method
+    @ignore
+*/
 + (void)initialize
 {
     if (self != [CPDragServer class])
@@ -168,6 +179,9 @@ var CPDragServerUpdateDragging = function(anEvent)
     return CPSharedDragServer;
 }
 
+/*
+    @ignore
+*/
 - (id)init
 {
     self = [super init];
@@ -181,7 +195,19 @@ var CPDragServerUpdateDragging = function(anEvent)
     return self;
 }
 
-- (void)dragView:(CPView)aView fromWindow:(CPWindow)aWindow at:(CPPoint)viewLocation offset:(CPSize)mouseOffset event:(CPEvent)anEvent pasteboard:(CPPasteboard)aPasteboard source:(id)aSourceObject slideBack:(BOOL)slideBack
+/*
+    Initiates a drag session.
+    @param aView the view being dragged
+    @param aWindow the window where the drag source is
+    @param viewLocation
+    @param mouseOffset
+    @param anEvent
+    @param aPasteboard the pasteboard that contains the drag data
+    @param aSourceObject the object where the drag started
+    @param slideBack if <code>YES</code>, <code>aView</code> slides back to
+    its origin on a failed drop
+*/
+- (void)dragView:(CPView)aView fromWindow:(CPWindow)aWindow at:(CGPoint)viewLocation offset:(CGSize)mouseOffset event:(CPEvent)anEvent pasteboard:(CPPasteboard)aPasteboard source:(id)aSourceObject slideBack:(BOOL)slideBack
 {
     var eventLocation = [anEvent locationInWindow];
     
@@ -224,7 +250,19 @@ var CPDragServerUpdateDragging = function(anEvent)
     CPDragServerStartDragging(anEvent);
 }
 
-- (void)dragImage:(CPImage)anImage fromWindow:(CPWindow)aWindow at:(CPPoint)imageLocation offset:(CPSize)mouseOffset event:(CPEvent)anEvent pasteboard:(CPPasteboard)aPasteboard source:(id)aSourceObject slideBack:(BOOL)slideBack
+/*
+    Initiates a drag session.
+    @param anImage the image to be dragged
+    @param aWindow the source window of the drag session
+    @param imageLocation
+    @param mouseOffset
+    @param anEvent
+    @param aPasteboard the pasteboard where the drag data is located
+    @param aSourceObject the object where the drag started
+    @param slideBack if <code>YES</code>, <code>aView</code> slides back to
+    its origin on a failed drop
+*/
+- (void)dragImage:(CPImage)anImage fromWindow:(CPWindow)aWindow at:(CGPoint)imageLocation offset:(CGSize)mouseOffset event:(CPEvent)anEvent pasteboard:(CPPasteboard)aPasteboard source:(id)aSourceObject slideBack:(BOOL)slideBack
 {
     CPDragServerIsDraggingImage = YES;
     
@@ -241,6 +279,7 @@ var CPDragServerUpdateDragging = function(anEvent)
 
 @implementation CPView (CPDraggingAdditions)
 
+/* @ignore */
 - (CPView)_dragHitTest:(CPPoint)aPoint pasteboard:(CPPasteboard)aPasteboard
 {
     if(!CPRectContainsPoint(_frame, aPoint) || self == CPDragServerView)

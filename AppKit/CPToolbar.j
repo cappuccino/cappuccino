@@ -25,14 +25,31 @@ import <Foundation/CPObject.j>
 import "CPPopUpButton.j"
 import "CPToolbarItem.j"
 
+/*
+    @global
+    @group CPToolbarDisplayMode
+*/
 CPToolbarDisplayModeDefault             = 0;
+/*
+    @global
+    @group CPToolbarDisplayMode
+*/
 CPToolbarDisplayModeIconAndLabel        = 1;
+/*
+    @global
+    @group CPToolbarDisplayMode
+*/
 CPToolbarDisplayModeIconOnly            = 2;
+/*
+    @global
+    @group CPToolbarDisplayMode
+*/
 CPToolbarDisplayModeLabelOnly           = 3;
 
 var CPToolbarsByIdentifier              = nil;
 var CPToolbarConfigurationsByIdentifier = nil;
 
+/* @ignore */
 var _CPToolbarItemVisibilityPriorityCompare = function(lhs, rhs)
 {
     var lhsVisibilityPriority = [lhs visibilityPriority],
@@ -47,6 +64,28 @@ var _CPToolbarItemVisibilityPriorityCompare = function(lhs, rhs)
     return CPOrderedDescending;
 }
 
+/*
+    A <objj>CPToolbar</objj> is displayed at the top of a window with multiple
+    buttons (tools) that offer the user quick access to features.
+    
+    @delegate -(CPArray)toolbarDefaultItemIdentifiers:(CPToolbar)toolbar;
+    Called to obtain the toolbar's default item identifiers. Required.
+    @param toolbar the toolbar to obtain identifiers for
+    @return an array of default item identifiers in the order on the toolbar
+
+    @delegate -(CPArray)toolbarAllowedItemIdentifiers:(CPToolbar)toolbar;
+    Called to obtain the toolbar's default item identifiers. Required.
+    @param toolbar the toolbar to obtain identifiers for
+    @return an array of default item identifiers in the order on the toolbar
+    
+    @delegate - (CPToolbarItem)toolbar:(CPToolbar)toolbar itemForItemIdentifier:(CPString)itemIdentifier willBeInsertedIntoToolbar:(BOOL)flag;
+    Called to obtain a toolbar item. Required.
+    @param toolbar the toolbar the item belongs to
+    @param itemIdentifier the identifier of the toolbar item
+    @param flag <code>YES</code> means the item will be placed in the toolbar. <code>NO</code> means the item will be displayed for
+    some other purpose (non-functional)
+    @return the toolbar item or <code>nil</code> if no such item belongs in the toolbar
+*/
 @implementation CPToolbar : CPObject
 {
     CPString                _identifier;
@@ -68,6 +107,7 @@ var _CPToolbarItemVisibilityPriorityCompare = function(lhs, rhs)
     CPMutableDictionary     _itemIndexes;
 }
 
+/* @ignore */
 + (void)initialize
 {
     if (self != [CPToolbar class])
@@ -77,6 +117,11 @@ var _CPToolbarItemVisibilityPriorityCompare = function(lhs, rhs)
     CPToolbarConfigurationsByIdentifier = [CPDictionary dictionary];
 }
 
+/*
+    Initializes the toolbar with the specified identifier.
+    @param anIdentifier the identifier for the toolbar
+    @return the initialized toolbar
+*/
 - (id)initWithIdentifier:(CPString)anIdentifier
 {
     self = [super init];
@@ -103,26 +148,42 @@ var _CPToolbarItemVisibilityPriorityCompare = function(lhs, rhs)
     return self;
 }
 
+/*
+    Sets the toolbar's display mode. NOT YET IMPLEMENTED.
+*/
 - (void)setDisplayMode:(CPToolbarDisplayMode)aDisplayMode
 {
     
 }
 
+/*
+    Returns the toolbar's identifier
+*/
 - (CPString)identifier
 {
     return _identifier;
 }
 
+/*
+    Returns the toolbar's delegate
+*/
 - (id)delegate
 {
     return _delegate;
 }
 
+/*
+    Returns <code>YES</code> if the toolbar is currently visible
+*/
 - (BOOL)isVisible
 {
     return _isVisible;
 }
 
+/*
+    Sets whether the toolbar should be visible.
+    @param aFlag <code>YES</code> makes the toolbar visible
+*/
 - (void)setVisible:(BOOL)aFlag
 {
     if (_isVisible == aFlag)
@@ -134,6 +195,10 @@ var _CPToolbarItemVisibilityPriorityCompare = function(lhs, rhs)
     [self _reloadToolbarItems];
 }
 
+/*
+    Sets the delegate for the toolbar.
+    @param aDelegate the new toolbar delegate
+*/
 - (void)setDelegate:(id)aDelegate
 {
     if (_delegate == aDelegate)
@@ -148,11 +213,13 @@ var _CPToolbarItemVisibilityPriorityCompare = function(lhs, rhs)
     [self _reloadToolbarItems];
 }
 
+/* @ignore */
 - (void)_loadConfiguration
 {
 
 }
 
+/* @ignore */
 - (CPView)_toolbarView
 {
     if (!_toolbarView)
@@ -166,6 +233,7 @@ var _CPToolbarItemVisibilityPriorityCompare = function(lhs, rhs)
     return _toolbarView;
 }
 
+/* @ignore */
 - (void)_reloadToolbarItems
 {
     if (![_toolbarView superview] || !_delegate)
@@ -210,16 +278,26 @@ var _CPToolbarItemVisibilityPriorityCompare = function(lhs, rhs)
     [_toolbarView reloadToolbarItems];
 }
 
-- (void)items
+/*
+    Returns all the items in this toolbar.
+*/
+- (CPArray)items
 {
     return _items;
 }
 
+/*
+    Returns all the visible items in this toolbar
+*/
 - (CPArray)visibleItems
 {
     return [_toolbarView visibleItems];
 }
 
+/*
+    Returns the index of the specified toolbar item
+    @param anItem the item to obtain the index for
+*/
 - (int)indexOfItem:(CPToolbarItem)anItem
 {
     var info = [_itemIndexes objectForKey:[anItem hash]];
@@ -230,6 +308,9 @@ var _CPToolbarItemVisibilityPriorityCompare = function(lhs, rhs)
     return info.index;
 }
 
+/*
+    Returns the toolbar items sorted by their <code>visibilityPriority</code>(ies).
+*/
 - (CPArray)itemsSortedByVisibilityPriority
 {
     return _itemsSortedByVisibilityPriority;
@@ -251,6 +332,7 @@ var _CPToolbarItemInfoMake = function(anIndex, aView, aLabel, aMinWidth)
     return { index:anIndex, view:aView, label:aLabel, minWidth:aMinWidth };
 }
 
+/* @ignore */
 @implementation _CPToolbarView : CPView
 {
     CPToolbar           _toolbar;
