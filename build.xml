@@ -37,8 +37,10 @@
         <iterate target = "release">
             <files>
                 <filelist dir = "."> 
-                    <file name = "Objective-J/build.xml" />   
-                    <file name = "Tools/build.xml" />
+                    <file name = "Objective-J/build.xml" />
+                    <file name = "Tools/objjc/build.xml" />
+                    <file name = "Tools/steam/build.xml" />
+                    <file name = "Tools/Install/build.xml" />
                 </filelist>
             </files>
         </iterate>
