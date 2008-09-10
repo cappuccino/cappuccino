@@ -33,14 +33,51 @@ import "CPResponder.j"
 #include "CoreGraphics/CGGeometry.h"
 
 
+/*
+    Borderless window mask option.
+    @global
+    @class CPWindow
+*/
 CPBorderlessWindowMask          = 0;
+/*
+    Titled window mask option.
+    @global
+    @class CPWindow
+*/
 CPTitledWindowMask              = 1 << 0;
+/*
+    Closeable window mask option.
+    @global
+    @class CPWindow
+*/
 CPClosableWindowMask            = 1 << 1;
+/*
+    Miniaturizabe window mask option.
+    @global
+    @class CPWindow
+*/
 CPMiniaturizableWindowMask      = 1 << 2;
+/*
+    Resizable window mask option.
+    @global
+    @class CPWindow
+*/
 CPResizableWindowMask           = 1 << 3;
+/*
+    Textured window mask option.
+    @global
+    @class CPWindow
+*/
 CPTexturedBackgroundWindowMask  = 1 << 8;
-
+/*
+    @global
+    @class CPWindow
+*/
 CPBorderlessBridgeWindowMask    = 1 << 20;
+/*
+    @global
+    @class CPWindow
+*/
 CPHUDBackgroundWindowMask       = 1 << 21;
 
 CPWindowNotSizable              = 0;
@@ -51,19 +88,84 @@ CPWindowMinYMargin              = 8;
 CPWindowHeightSizable           = 16;
 CPWindowMaxYMargin              = 32;
 
+/*
+    Default level for windows
+    @group CPWindowLevel
+    @global
+*/
 CPNormalWindowLevel             = 4;
+/*
+    Floating palette type window
+    @group CPWindowLevel
+    @global
+*/
 CPFloatingWindowLevel           = 5;
+/*
+    Submenu type window
+    @group CPWindowLevel
+    @global
+*/
 CPSubmenuWindowLevel            = 6;
+/*
+    For a torn-off menu
+    @group CPWindowLevel
+    @global
+*/
 CPTornOffMenuWindowLevel        = 6;
+/*
+    For the application's main menu
+    @group CPWindowLevel
+    @global
+*/
 CPMainMenuWindowLevel           = 8;
+/*
+    Status window level
+    @group CPWindowLevel
+    @global
+*/
 CPStatusWindowLevel             = 9;
+/*
+    Level for a modal panel
+    @group CPWindowLevel
+    @global
+*/
 CPModalPanelWindowLevel         = 10;
+/*
+    Level for a pop up menu
+    @group CPWindowLevel
+    @global
+*/
 CPPopUpMenuWindowLevel          = 11;
+/*
+    Level for a window being dragged
+    @group CPWindowLevel
+    @global
+*/
 CPDraggingWindowLevel           = 12;
+/*
+    Level for the screens saver
+    @group CPWindowLevel
+    @global
+*/
 CPScreenSaverWindowLevel        = 13;
 
+/*
+    The receiver is removed from the screen list and hidden.
+    @global
+    @class CPWindowOrderingMode
+*/
 CPWindowOut                     = 0;
+/*
+    The receiver is placed directly in front of the window specified.
+    @global
+    @class CPWindowOrderingMode
+*/
 CPWindowAbove                   = 1;
+/*
+    The receiver is placed directly behind the window specified.
+    @global
+    @class CPWindowOrderingMode
+*/
 CPWindowBelow                   = 2;
 
 CPWindowWillCloseNotification       = @"CPWindowWillCloseNotification";
@@ -82,6 +184,47 @@ var SHADOW_MARGIN_LEFT      = 20.0,
 var CPWindowSaveImage       = nil,
     CPWindowSavingImage     = nil;
 
+/*
+    An <objj>CPWindow</objj> instance represents a window, panel or menu on the screen.</p>
+
+    <p>Each window has a style, which determines how the window is decorated; whether it has a border, a title bar, a resize bar, minimise and close buttons.</p>
+
+    <p>A window has a frame. This is the frame of the entire window on the screen, including all decorations and borders. The origin of the frame represents its bottom left corner and the frame is expressed in screen coordinates.</p>
+
+    <p>A window always contains a content view which is the highest level view available for public (application) use. This view fills the area of the window inside any decoration/border. This is the only part of the window that application programmers are allowed to draw in directly.</p>
+
+    <p>You can convert between view coordinates and window base coordinates using the <objj>[CPView -convertPoint:fromView:]</objj>, <objj>[CPView -convertPoint:toView:]</objj>, <objj>[CPView -convertRect:fromView:]</objj>, and <objj>[CPView -convertRect:toView:]</objj> methods with a <objj>nil</objj> view argument.
+    
+    @delegate -(void)windowDidResize:(CPNotification)notification;
+    Sent from the notification center when the window has been resized.
+    @param notification contains information about the resize event
+    
+    @delegate  -(CPUndoManager)windowWillReturnUndoManager:(CPWindow)window;
+    Called to obtain the undo manager for a window
+    @param window the window for which to return the undo manager
+    @return the window's undo manager
+    
+    @delegate -(void)windowDidBecomeMain:(CPNotification)notification;
+    Sent from the notification center when the delegate's window becomes
+    the main window.
+    @param notification contains information about the event
+    
+    @delegate -(void)windowDidResignMain:(CPNotification)notification;
+    Sent from the notification center when the delegate's window has
+    resigned main window status.
+    @param notification contains information about the event
+    
+    @delegate -(void)windowDidResignKey:(CPNotification)notification;
+    Sent from the notification center when the delegate's window has
+    resigned key window status.
+    @param notification contains information about the event
+    
+    @delegate -(BOOL)windowShouldClose:(id)window;
+    Called when the user tries to close the window.
+    @param window the window to close
+    @return <code>YES</code> allows the window to close. <code>NO</code>
+    vetoes the close operation and leaves the window open.
+*/
 @implementation CPWindow : CPResponder
 {
     int                 _windowNumber;
@@ -133,6 +276,10 @@ var CPWindowSaveImage       = nil,
     BOOL                _delegateRespondsToWindowWillReturnUndoManagerSelector;
 }
 
+/*
+    Private initializer for Objective-J
+    @ignore
+*/
 + (void)initialize
 {
     if (self != [CPWindow class])
@@ -145,11 +292,43 @@ var CPWindowSaveImage       = nil,
     CPWindowSavingImage = [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"CPProgressIndicator/CPProgressIndicatorSpinningStyleRegular.gif"] size:CGSizeMake(16.0, 16.0)]
 }
 
+/*
+    Initializes the window. The method also takes a style bit mask made up
+    of any of the following values:
+<pre>
+CPBorderlessWindowMask
+CPTitledWindowMask
+CPClosableWindowMask
+CPMiniaturizableWindowMask
+CPResizableWindowMask
+CPTexturedBackgroundWindowMask
+</pre>
+    @param aContentRect the size and location of the window in screen space
+    @param aStyleMask a style mask
+    @return the initialized window
+*/
 - (id)initWithContentRect:(CGRect)aContentRect styleMask:(unsigned int)aStyleMask
 {
     return [self initWithContentRect:aContentRect styleMask:aStyleMask bridge:[CPDOMWindowBridge sharedDOMWindowBridge]];
 }
 
+/*
+    Initializes the window. The method also takes a style bit mask made up
+    of any of the following values:
+<pre>
+CPBorderlessWindowMask
+CPTitledWindowMask
+CPClosableWindowMask
+CPMiniaturizableWindowMask
+CPResizableWindowMask
+CPTexturedBackgroundWindowMask
+</pre>
+    @param aContentRect the size and location of the window in screen space
+    @param aStyleMask a style mask
+    @param aBridge a DOM-Window bridge object
+    @return the initialized window
+    @ignore
+*/
 - (id)initWithContentRect:(CGRect)aContentRect styleMask:(unsigned int)aStyleMask bridge:(CPDOMWindowBridge)aBridge
 {
     self = [super init];
@@ -205,11 +384,20 @@ var CPWindowSaveImage       = nil,
     return self;
 }
 
+/*
+    Returns the window's style mask.
+*/
 - (unsigned)styleMask
 {
     return _styleMask;
 }
 
+/*
+    Returns the frame rectangle used by a window.
+    @param aContentRect the content rectangle of the window
+    @param aStyleMask the style mask of the window
+    @return the matching window's frame rectangle
+*/
 + (CGRect)frameRectForContentRect:(CGRect)aContentRect styleMask:(unsigned)aStyleMask
 {
     var frame = CGRectMakeCopy(aContentRect);
@@ -217,6 +405,10 @@ var CPWindowSaveImage       = nil,
     return frame;
 }
 
+/*
+    Returns the receiver's content rectangle. A content rectangle does not include toolbars.
+    @param aFrame the window's frame rectangle
+*/
 - (CGRect)contentRectForFrameRect:(CGRect)aFrame
 {
     // FIXME: EXTRA RECT COPY
@@ -246,6 +438,11 @@ var CPWindowSaveImage       = nil,
     return contentRect;
 }
 
+/*
+    Retrieves the frame rectangle for this window.
+    @param aContentRect the window's content rectangle
+    @return the window's frame rectangle
+*/
 - (CGRect)frameRectForContentRect:(CGRect)aContentRect
 {
     if (_styleMask & CPBorderlessBridgeWindowMask)
@@ -256,11 +453,21 @@ var CPWindowSaveImage       = nil,
     return frame; 
 }
 
+/*
+    Returns the window's frame rectangle
+*/
 - (CGRect)frame
 {
     return _frame;
 }
 
+/*
+    Sets the window's frame rectangle. Also tells the window whether it should animate
+    the resize operation, and redraw itself if necessary.
+    @param aFrame the new size and location for the window
+    @param shouldDisplay whether the window should redraw its views
+    @param shouldAnimate whether the window resize should be animated
+*/
 - (void)setFrame:(CGRect)aFrame display:(BOOL)shouldDisplay animate:(BOOL)shouldAnimate
 {
     if (shouldAnimate)
@@ -276,11 +483,18 @@ var CPWindowSaveImage       = nil,
     }
 }
 
+/*
+    Sets the window's frame rectangle
+*/
 - (void)setFrame:(CGRect)aFrame
 {
     [self setFrame:aFrame display:YES animate:NO];
 }
 
+/*
+    Sets the window's location.
+    @param anOrigin the new location for the window
+*/
 - (void)setFrameOrigin:(CGPoint)anOrigin
 {
     var origin = _frame.origin;
@@ -296,6 +510,10 @@ var CPWindowSaveImage       = nil,
 #endif
 }
 
+/*
+    Sets the window's size.
+    @param aSize the new size for the window
+*/
 - (void)setFrameSize:(CGSize)aSize
 {
     aSize = _CGSizeMake(MIN(MAX(aSize.width, _minSize.width), _maxSize.width), MIN(MAX(aSize.height, _minSize.height), _maxSize.height));
@@ -314,6 +532,9 @@ var CPWindowSaveImage       = nil,
         [_delegate windowDidResize:self];
 }
 
+/*
+    @ignore
+*/
 - (void)trackMoveWithEvent:(CPEvent)anEvent
 {
     var type = [anEvent type];
@@ -336,6 +557,9 @@ var CPWindowSaveImage       = nil,
     [CPApp setTarget:self selector:@selector(trackMoveWithEvent:) forNextEventMatchingMask:CPLeftMouseDraggedMask | CPLeftMouseUpMask untilDate:nil inMode:nil dequeue:YES];
 }
 
+/*
+    @ignore
+*/
 - (void)trackResizeWithEvent:(CPEvent)anEvent
 {
     var location = [anEvent locationInWindow],
@@ -353,16 +577,29 @@ var CPWindowSaveImage       = nil,
     [CPApp setTarget:self selector:@selector(trackResizeWithEvent:) forNextEventMatchingMask:CPLeftMouseDraggedMask | CPLeftMouseUpMask untilDate:nil inMode:nil dequeue:YES];
 }
 
+/*
+    Makes the receiver the front most window in the screen ordering.
+    @param aSender the object that requested this
+*/
 - (void)orderFront:(id)aSender
 {
     [_bridge order:CPWindowAbove window:self relativeTo:nil];
 }
 
+/*
+    Makes the receiver the last window in the screen ordering.
+    @param aSender the object that requested this
+    @ignore
+*/
 - (void)orderBack:(id)aSender
 {
     //[_bridge order:CPWindowBelow
 }
 
+/*
+    Hides the window.
+    @param the object that requested this
+*/
 - (void)orderOut:(id)aSender
 {
     if ([_delegate respondsToSelector:@selector(windowWillClose:)])
@@ -378,46 +615,80 @@ var CPWindowSaveImage       = nil,
     }
 }
 
+/*
+    Relocates the window in the screen list.
+    @param aPlace the positioning relative to <code>otherWindowNumber</code>
+    @param otherWindowNumber the window relative to which the receiver should be placed
+*/
 - (void)orderWindow:(CPWindowOrderingMode)aPlace relativeTo:(int)otherWindowNumber
 {
     [_bridge order:aPlace window:self relativeTo:CPApp._windows[otherWindowNumber]];
 }
 
+/*
+    Sets the window's level
+    @param the window's new level
+*/
 - (void)setLevel:(int)aLevel
 {
     _level = aLevel;
 }
 
+/*
+    Returns the window's current level
+*/
 - (int)level
 {
     return _level;
 }
 
+/*
+    Returns <code>YES</code> if the window is visible. It does not mean that the window is not obscured by other windows.
+*/
 - (BOOL)isVisible
 {
     return _isVisible;
 }
 
+/*
+    Returns <code>YES</code> if the window's resize indicator is showing. <code>NO</code> otherwise.
+*/
 - (BOOL)showsResizeIndicator
 {
     return [_windowView showsResizeIndicator];
 }
 
+/*
+    Sets the window's resize indicator.
+    @param shouldShowResizeIndicator <code>YES</code> sets the window to show its resize indicator.
+*/
 - (void)setShowsResizeIndicator:(BOOL)shouldShowResizeIndicator
 {       
     [_windowView setShowsResizeIndicator:shouldShowResizeIndicator];
 }
 
+/*
+    Returns the offset of the window's resize indicator.
+*/
 - (CGSize)resizeIndicatorOffset
 {
     return [_windowView resizeIndicatorOffset];
 }
 
+/*
+    Sets the offset of the window's resize indicator.
+    @param aSize the offset for the resize indicator
+*/
 - (void)setResizeIndicatorOffset:(CGSize)anOffset
 {
     [_windowView setResizeIndicatorOffset:anOffset];
 }
 
+/*
+    Sets the window's content view. The new view will be resized to fit
+    inside the content rectangle of the window.
+    @param aView the new content view for the receiver
+*/
 - (void)setContentView:(CPView)aView
 {
     if (_contentView)
@@ -430,21 +701,36 @@ var CPWindowSaveImage       = nil,
     [_windowView addSubview:_contentView positioned:CPWindowBelow relativeTo:nil];
 }
 
+/*
+    Returns the window's current content view.
+*/
 - (CPView)contentView
 {
     return _contentView;
 }
 
+/*
+    Sets the window's background color.
+    @param aColor the new color for the background
+*/
 - (void)setBackgroundColor:(CPColor)aColor
 {
     [_windowView setBackgroundColor:aColor];
 }
 
+/*
+    Returns the window's background color.
+*/
 - (CPColor)backgroundColor
 {
     return [_windowView backgroundColor];
 }
 
+/*
+    Sets the window's minimum size. If the provided
+    size is the same as the current minimum size, the method simply returns.
+    @aSize the new minimum size for the window
+*/
 - (void)setMinSize:(CGSize)aSize
 {
     if (CGSizeEqualToSize(_minSize, aSize))
@@ -471,11 +757,20 @@ var CPWindowSaveImage       = nil,
         [self setFrameSize:size];
 }
 
+/*
+    Returns the windows minimum size.
+*/
 - (CGSize)minSize
 {
     return _minSize;
 }
 
+/*
+    Sets the window's maximum size. If the provided
+    size is the same as the current maximum size,
+    the method simply returns.
+    @param aSize the new maximum size
+*/
 - (void)setMaxSize:(CGSize)aSize
 {
     if (CGSizeEqualToSize(_maxSize, aSize))
@@ -502,16 +797,26 @@ var CPWindowSaveImage       = nil,
         [self setFrameSize:size];
 }
 
+/*
+    Returns the window's maximum size.
+*/
 - (CGSize)maxSize
 {
     return _maxSize;
 }
 
+/*
+    Returns <code>YES</code> if the window has a drop shadow. <code>NO</code> otherwise.
+*/
 - (BOOL)hasShadow
 {
     return _hasShadow;
 }
 
+/*
+    Sets whether the window should have a drop shadow.
+    @param shouldHaveShadow <code>YES</code> to have a drop shadow.
+*/
 - (void)setHasShadow:(BOOL)shouldHaveShadow
 {
     if (_hasShadow == shouldHaveShadow)
@@ -559,6 +864,10 @@ var CPWindowSaveImage       = nil,
     }
 }
 
+/*
+    Sets the delegate for the window. Passing <code>nil</code> will just remove the window's current delegate.
+    @param aDelegate an object to respond to the various delegate methods of <objj>CPWindow</objj>
+*/
 - (void)setDelegate:(id)aDelegate
 {
     _delegate = aDelegate;
@@ -582,16 +891,26 @@ var CPWindowSaveImage       = nil,
                  object:self];
 }
 
+/*
+    Returns window's delegate
+*/
 - (id)delegate
 {
     return _delegate;
 }
 
-- (void)setWindowController:(CPWindow)aWindowController
+/*
+    Sets the window's controller
+    @param aWindowController a window controller
+*/
+- (void)setWindowController:(CPWindowController)aWindowController
 {
     _windowController = aWindowController;
 }
 
+/*
+    Returns the window's controller.
+*/
 - (CPWindowController)windowController
 {
     return _windowController;
@@ -610,6 +929,13 @@ var CPWindowSaveImage       = nil,
     return YES;
 }
 
+/*
+    Attempts to make the <code>aResponder</code> the first responder. Before trying
+    to make it the first responder, the receiver will ask the current first responder
+    to resign its first responder status. If it resigns, it will ask
+    <code>aResponder</code> accept first responder, then finally tell it to become first responder.
+    @return <code>YES</code> if the attempt was successful. <code>NO</code> otherwise.
+*/
 - (void)makeFirstResponder:(CPResponder)aResponder
 {
     if (_firstResponder == aResponder)
@@ -630,6 +956,9 @@ var CPWindowSaveImage       = nil,
     return YES;
 }
 
+/*
+    Returns the window's current first responder.
+*/
 - (CPResponder)firstResponder
 {
     return _firstResponder;
@@ -647,11 +976,17 @@ var CPWindowSaveImage       = nil,
 
 // Managing Titles
 
+/*
+    Returns the window's title bar string
+*/
 - (CPString)title
 {
     return _title;
 }
 
+/*
+    Sets the window's title bar string
+*/
 - (void)setTitle:(CPString)aTitle
 {
     _title = aTitle;
@@ -661,28 +996,43 @@ var CPWindowSaveImage       = nil,
     [self _synchronizeMenuBarTitleWithWindowTitle];
 }
 
+/*
+    Sets the title bar to represent a file path
+*/
 - (void)setTitleWithRepresentedFilename:(CPString)aFilePath
 {
     [self setRepresentedFilename:aFilePath];
     [self setTitle:[aFilePath lastPathComponent]];
 }
 
+/*
+    Sets the path to the file the receiver represents
+*/
 - (void)setRepresentedFilename:(CPString)aFilePath
 {
     // FIXME: urls vs filepaths and all.
     [self setRepresentedURL:aFilePath];
 }
 
+/*
+    Returns the path to the file the receiver represents
+*/
 - (CPString)representedFilename
 {
     return _representedURL;
 }
 
+/*
+    Sets the URL that the receiver represents
+*/
 - (void)setRepresentedURL:(CPURL)aURL
 {
     _representedURL = aURL;
 }
 
+/*
+    Returns the URL that the receiver represents
+*/
 - (CPURL)representedURL
 {
     return _representedURL;
@@ -690,16 +1040,26 @@ var CPWindowSaveImage       = nil,
 
 // Moving
 
+/*
+    Sets whether the window can be moved by dragging its background. The default is based on the window style.
+    @param shouldBeMovableByWindowBackground <code>YES</code> makes the window move from a background drag.
+*/
 - (void)setMovableByWindowBackground:(BOOL)shouldBeMovableByWindowBackground
 {
     _isMovableByWindowBackground = shouldBeMovableByWindowBackground;
 }
 
+/*
+    Returns <code>YES</code> if the window can be moved by dragging its background.
+*/
 - (BOOL)isMovableByWindowBackground
 {
     return _isMovableByWindowBackground;
 }
 
+/*
+    Sets the window location to be the center of the screen
+*/
 - (void)center
 {
     var size = [self frame].size,
@@ -708,6 +1068,10 @@ var CPWindowSaveImage       = nil,
     [self setFrameOrigin:CGPointMake((bridgeSize.width - size.width) / 2.0, (bridgeSize.height - size.height) / 2.0)];
 }
 
+/*
+    Dispatches events that are sent to it from <objj>CPApplication</objj>.
+    @param anEvent the event to be dispatched
+*/
 - (void)sendEvent:(CPEvent)anEvent
 {
     var type = [anEvent type],
@@ -778,27 +1142,45 @@ var CPWindowSaveImage       = nil,
     }
 }
 
+/*
+    Returns the window's number in the desktop's screen list
+*/
 - (int)windowNumber
 {
     return _windowNumber;
 }
 
+/*
+    Called when the receiver should become the key window. It also sends
+    the <code>becomeKeyWindow</code> message to the first responder.
+*/
 - (void)becomeKeyWindow
 {
     if (_firstResponder != self && [_firstResponder respondsToSelector:@selector(becomeKeyWindow)])
         [_firstResponder becomeKeyWindow];
 }
 
+/*
+    Determines if the window can become the key window.
+    @return <code>YES</code> means the window can become the key window.
+*/
 - (BOOL)canBecomeKeyWindow
 {
     return YES;
 }
 
+/*
+    Returns <code>YES</code> if the window is the key window.
+*/
 - (BOOL)isKeyWindow
 {
     return [CPApp keyWindow] == self;
 }
 
+/*
+    Makes the window the key window and brings it to the front of the screen list.
+    @param aSender the object requesting this
+*/
 - (void)makeKeyAndOrderFront:(id)aSender
 {
     [self orderFront:self];
@@ -807,6 +1189,9 @@ var CPWindowSaveImage       = nil,
     [self makeMainWindow];
 }
 
+/*
+    Makes this window the key window.
+*/
 - (void)makeKeyWindow
 {
     if (![self canBecomeKeyWindow])
@@ -819,6 +1204,9 @@ var CPWindowSaveImage       = nil,
     [self becomeKeyWindow];
 }
 
+/*
+    Causes the window to resign it's key window status.
+*/
 - (void)resignKeyWindow
 {
     if (_firstResponder != self && [_firstResponder respondsToSelector:@selector(resignKeyWindow)])
@@ -828,11 +1216,31 @@ var CPWindowSaveImage       = nil,
         [_delegate windowDidResignKey:self];
 }
 
+/*
+    Initiates a drag operation from the receiver to another view that accepts dragged data.
+    @param anImage the image to be dragged
+    @param aLocation the lower-left corner coordinate of <code>anImage</code>
+    @param mouseOffset the distance from the <code>mouseDown:</code> location and the current location
+    @param anEvent the <code>mouseDown:</code> that triggered the drag
+    @param aPastebaord the pasteboard that holds the drag data
+    @param aSourceObject the drag operation controller
+    @param slideBack Whether the image should 'slide back' if the drag is rejected
+*/
 - (void)dragImage:(CPImage)anImage at:(CGPoint)imageLocation offset:(CGSize)mouseOffset event:(CPEvent)anEvent pasteboard:(CPPasteboard)aPasteboard source:(id)aSourceObject slideBack:(BOOL)slideBack
 {
     [[CPDragServer sharedDragServer] dragImage:anImage fromWindow:self at:[self convertBaseToBridge:imageLocation] offset:mouseOffset event:anEvent pasteboard:aPasteboard source:aSourceObject slideBack:slideBack];
 }
 
+/*
+    Initiates a drag operation from the receiver to another view that accepts dragged data.
+    @param aView the view to be dragged
+    @param aLocation the lower-left corner coordinate of <code>aView</code>
+    @param mouseOffset the distance from the <code>mouseDown:</code> location and the current location
+    @param anEvent the <code>mouseDown:</code> that triggered the drag
+    @param aPastebaord the pasteboard that holds the drag data
+    @param aSourceObject the drag operation controller
+    @param slideBack Whether the view should 'slide back' if the drag is rejected
+*/
 - (void)dragView:(CPView)aView at:(CGPoint)imageLocation offset:(CGSize)mouseOffset event:(CPEvent)anEvent pasteboard:(CPPasteboard)aPasteboard source:(id)aSourceObject slideBack:(BOOL)slideBack
 {
     [[CPDragServer sharedDragServer] dragView:aView fromWindow:self at:[self convertBaseToBridge:imageLocation] offset:mouseOffset event:anEvent pasteboard:aPasteboard source:aSourceObject slideBack:slideBack];
@@ -840,6 +1248,10 @@ var CPWindowSaveImage       = nil,
 
 // Accessing Editing Status
 
+/*
+    Sets whether the document has been edited.
+    @param isDocumentEdited <code>YES</code> if the document has been edited.
+*/
 - (void)setDocumentEdited:(BOOL)isDocumentEdited
 {
     if (_isDocumentEdited == isDocumentEdited)
@@ -850,6 +1262,9 @@ var CPWindowSaveImage       = nil,
     [CPMenu _setMenuBarIconImageAlphaValue:_isDocumentEdited ? 0.5 : 1.0];
 }
 
+/*
+    Returns <code>YES</code> if the document has been edited.
+*/
 - (BOOL)isDocumentEdited
 {
     return _isDocumentEdited;
@@ -872,6 +1287,7 @@ var CPWindowSaveImage       = nil,
     return _isDocumentSaving;
 }
 
+/* @ignore */
 - (void)_synchronizeSaveMenuWithDocumentSaving
 {
     if (![self isMainWindow])
@@ -903,6 +1319,10 @@ var CPWindowSaveImage       = nil,
 
 // Closing Windows
 
+/*
+    Simulates the user closing the window, then closes the window.
+    @param aSender the object making this request
+*/
 - (void)performClose:(id)aSender
 {
     if ([_delegate respondsToSelector:@selector(windowShouldClose:)] && ![_delegate windowShouldClose:self] ||
@@ -912,6 +1332,10 @@ var CPWindowSaveImage       = nil,
     [self close];
 }
 
+/*
+    Closes the window. Posts a <code>CPWindowWillCloseNotification</code> to the
+    notification center before closing the window.
+*/
 - (void)close
 {
    [[CPNotificationCenter defaultCenter] postNotificationName:CPWindowWillCloseNotification object:self];
@@ -920,12 +1344,17 @@ var CPWindowSaveImage       = nil,
 }
 
 // Managing Main Status
-
+/*
+    Returns <code>YES</code> if this the main window.
+*/
 - (BOOL)isMainWindow
 {
     return [CPApp mainWindow] == self;
 }
 
+/*
+    Returns <code>YES</code> if the window can become the main window.
+*/
 - (BOOL)canBecomeMainWindow
 {
     // FIXME: Also check if we can resize and titlebar.
@@ -935,6 +1364,9 @@ var CPWindowSaveImage       = nil,
     return NO;
 }
 
+/*
+    Makes the receiver the main window.
+*/
 - (void)makeMainWindow
 {
     if (![self canBecomeMainWindow])
@@ -947,6 +1379,9 @@ var CPWindowSaveImage       = nil,
     [self becomeMainWindow];
 }
 
+/*
+    Called to tell the receiver that it has become the main window.
+*/
 - (void)becomeMainWindow
 {
     [self _synchronizeMenuBarTitleWithWindowTitle];
@@ -957,6 +1392,9 @@ var CPWindowSaveImage       = nil,
                       object:self];
 }
 
+/*
+    Called when the window resigns main window status.
+*/
 - (void)resignMainWindow
 {
     [[CPNotificationCenter defaultCenter]
@@ -965,13 +1403,19 @@ var CPWindowSaveImage       = nil,
 }
 
 // Managing Toolbars
-
+/*
+    Return's the window's toolbar
+*/
 - (CPToolbar)toolbar
 {
     return _toolbar;
 }
 
-- (void)setToolbar:(CPView)aToolbar
+/*
+    Sets the window's toolbar.
+    @param aToolbar the window's new toolbar
+*/
+- (void)setToolbar:(CPToolbar)aToolbar
 {
     if (_toolbar == aToolbar)
         return;
@@ -998,6 +1442,7 @@ var CPWindowSaveImage       = nil,
     }
 }
 
+/* @ignore */
 - (void)_setToolbarVisible:(BOOL)aFlag
 {
     if (aFlag)
@@ -1016,6 +1461,7 @@ var CPWindowSaveImage       = nil,
 
 // Managing Sheets
 
+/* @ignore */
 - (void)_setAttachedSheetFrameOrigin
 {
     // Position the sheet above the contentRect.
@@ -1028,6 +1474,7 @@ var CPWindowSaveImage       = nil,
    [_attachedSheet setFrameOrigin:sheetFrame.origin];
 }
 
+/* @ignore */
 - (void)_animateAttachedSheet
 {
 /*    NSWindow *sheet = [sheetContext sheet];
@@ -1052,6 +1499,7 @@ var CPWindowSaveImage       = nil,
    [sheet setFrame:sheetFrame display:YES animate:YES];*/
 }
 
+/* @ignore */
 - (void)_attachSheet:(CPWindow)aSheet modalDelegate:(id)aModalDelegate didEndSelector:(SEL)aDidEndSelector contextInfo:(id)aContextInfo
 {
     // Set this as our attached sheet.
@@ -1066,23 +1514,36 @@ var CPWindowSaveImage       = nil,
     [_bridge order:CPWindowAbove window:aSheet relativeTo:self];
 }
 
+/*
+    Returns the window's attached sheet.
+*/
 - (CPWindow)attachedSheet
 {
     return _attachedSheet;
 }
 
+/*
+    Returns <code>YES</code> if the window has ever run as a sheet.
+*/
 - (BOOL)isSheet
 {
     return _isSheet;
 }
 
 //
-
+/*
+    Used privately.
+    @ignore
+*/
 - (BOOL)becomesKeyOnlyIfNeeded
 {
     return NO;
 }
 
+/*
+    Returns <code>YES</code> if the receiver is able to receive input events
+    even when a modal session is active.
+*/
 - (BOOL)worksWhenModal
 {
     return NO;
@@ -1105,6 +1566,10 @@ var CPWindowSaveImage       = nil,
 
 @implementation CPWindow (BridgeSupport)
 
+/*
+    Sets the DOM-Window bridge for this window.
+    @ignore
+*/
 - (void)setBridge:(CPDOMWindowBridge)aBridge
 {
     if (_bridge == aBridge)
@@ -1122,6 +1587,9 @@ var CPWindowSaveImage       = nil,
         [self setFrame:[aBridge contentBounds]];
 }
 
+/*
+    @ignore
+*/
 - (void)resizeWithOldBridgeSize:(CGSize)aSize
 {
     if (_styleMask & CPBorderlessBridgeWindowMask)
@@ -1150,16 +1618,25 @@ var CPWindowSaveImage       = nil,
     [self setFrame:newFrame];
 }
 
+/*
+    @ignore
+*/
 - (void)setAutoresizingMask:(unsigned)anAutoresizingMask
 {
     _autoresizingMask = anAutoresizingMask;
 }
 
+/*
+    @ignore
+*/
 - (unsigned)autoresizingMask
 {
     return _autoresizingMask;
 }
 
+/*
+    @ignore
+*/
 - (CGPoint)convertBaseToBridge:(CGPoint)aPoint
 {
     var origin = [self frame].origin;
@@ -1167,6 +1644,9 @@ var CPWindowSaveImage       = nil,
     return CGPointMake(aPoint.x + origin.x, aPoint.y + origin.y);
 }
 
+/*
+    @ignore
+*/
 - (CGPoint)convertBridgeToBase:(CGPoint)aPoint
 {
     var origin = [self frame].origin;
@@ -1175,7 +1655,9 @@ var CPWindowSaveImage       = nil,
 }
 
 // Undo and Redo Support
-
+/*
+    Returns the window's undo manager.
+*/
 - (CPUndoManager)undoManager
 {
     if (_delegateRespondsToWindowWillReturnUndoManagerSelector)
@@ -1187,11 +1669,19 @@ var CPWindowSaveImage       = nil,
     return _undoManager;
 }
 
+/*
+    Sends the undo manager an <code>undo</code> message.
+    @param aSender the object requesting this
+*/
 - (void)undo:(id)aSender
 {
     [[self undoManager] undo];
 }
 
+/*
+    Sends the undo manager a <code>redo:</code> message.
+    @param aSender the object requesting this
+*/
 - (void)redo:(id)aSender
 {
     [[self undoManager] redo];
@@ -1204,6 +1694,7 @@ var interpolate = function(fromValue, toValue, progress)
     return fromValue + (toValue - fromValue) * progress;
 }
 
+/* @ignore */
 @implementation _CPWindowFrameAnimation : CPAnimation
 {
     CPWindow    _window;

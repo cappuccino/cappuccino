@@ -25,6 +25,9 @@ var _CPFonts                = {};
 
 #define _CPCachedFont(aName, aSize, isBold) _CPFonts[(isBold ? @"bold " : @"") + ROUND(aSize) + @"px '" + aName + @"'"]
 
+/*
+    The <objj>CPFont</objj> class allows control of the fonts used for displaying text anywhere on the screen. The primary method for getting a particular font is through one of the class methods that take a name and/or size as arguments, and return the appropriate <objj>CPFont</objj>.
+*/
 @implementation CPFont : CPObject
 {
     CPString    _name;
@@ -34,26 +37,51 @@ var _CPFonts                = {};
     CPString    _cssString;
 }
 
-+ (id)fontWithName:(CPString)aName size:(float)aSize
+/*
+    Returns a font with the specified name and size.
+    @param aName the name of the font
+    @param aSize the size of the font (in points)
+    @return the requested font
+*/
++ (CPFont)fontWithName:(CPString)aName size:(float)aSize
 {
     return _CPCachedFont(aName, aSize, NO) || [[CPFont alloc] _initWithName:aName size:aSize bold:NO];
 }
 
-+ (id)boldFontWithName:(CPString)aName size:(float)aSize
+/*
+    Returns a bold font with the specified name and size.
+    @param aName the name of the font
+    @param aSize the size of the font (in points)
+    @return the requested bold font
+*/
++ (CPFont)boldFontWithName:(CPString)aName size:(float)aSize
 {
     return _CPCachedFont(aName, aSize, YES) || [[CPFont alloc] _initWithName:aName size:aSize bold:YES];
 }
 
-+ (id)systemFontOfSize:(CPSize)aSize
+/*
+    Returns the system font scaled to the specified size
+    @param aSize the size of the font (in points)
+    @return the requested system font
+*/
++ (CPFont)systemFontOfSize:(CPSize)aSize
 {
     return _CPCachedFont(_CPFontSystemFontFace, aSize, NO) || [[CPFont alloc] _initWithName:_CPFontSystemFontFace size:aSize bold:NO];
 }
 
-+ (id)boldSystemFontOfSize:(CPSize)aSize
+/*
+    Returns the bold system font scaled to the specified size
+    @param aSize the size of the font (in points)
+    @return the requested bold system font
+*/
++ (CPFont)boldSystemFontOfSize:(CPSize)aSize
 {
     return _CPCachedFont(_CPFontSystemFontFace, aSize, YES) || [[CPFont alloc] _initWithName:_CPFontSystemFontFace size:aSize bold:YES];
 }
-// FIXME Font Descriptor
+
+/** FIXME Font Descriptor
+    @ignore
+*/
 - (id)_initWithName:(CPString)aName size:(float)aSize bold:(BOOL)isBold
 {   
     self = [super init];
@@ -72,16 +100,25 @@ var _CPFonts                = {};
     return self;
 }
 
+/*
+    Returns the font size (in points)
+*/
 - (float)size
 {
     return _size;
 }
 
+/*
+    Returns the font as a CSS string
+*/
 - (CPString)cssString
 {
     return _cssString;
 }
 
+/*
+    Returns the font's family name
+*/
 - (CPString)familyName
 {
     return _name;
@@ -95,6 +132,11 @@ var CPFontNameKey   = @"CPFontNameKey",
 
 @implementation CPFont (CPCoding)
 
+/*
+    Initializes the font from a coder.
+    @param aCoder the coder from which to read the font data
+    @return the initialized font
+*/
 - (id)initWithCoder:(CPCoder)aCoder
 {
     return [self _initWithName:[aCoder decodeObjectForKey:CPFontNameKey]
@@ -102,6 +144,10 @@ var CPFontNameKey   = @"CPFontNameKey",
         bold:[aCoder decodeBoolForKey:CPFontIsBoldKey]];
 }
 
+/*
+    Writes the font information out to a coder.
+    @param aCoder the coder to which the data will be written
+*/
 - (void)encodeWithCoder:(CPCoder)aCoder
 {
     [aCoder encodeObject:_name forKey:CPFontNameKey];

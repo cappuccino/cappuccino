@@ -37,6 +37,28 @@ CPRunStoppedResponse    = -1000;
 CPRunAbortedResponse    = -1001;
 CPRunContinuesResponse  = -1002;
 
+/*
+    CPApplication is THE way to start up the Cappucino framework for your application to use.
+    Every GUI application has exactly one instance of CPApplication (or of a custom subclass of
+    CPApplication). Your program's main() function can create that instance by calling the
+    <code>CPApplicationMain</code> function. A simple example looks like this:
+    
+    <pre>
+    function main(args, namedArgs)
+    {
+        CPApplicationMain(args, namedArgs);
+    }
+    </pre>
+
+    @delegate -(void)applicationDidFinishLaunching:(CPNotification)aNotification;
+    Sent from the notification center after the app initializes, but before
+    receiving events.
+    @param aNotification contains information about the event
+
+    @delegate -(void)applicationWillFinishLaunching:(CPNotification)aNotification;
+    Sent from the notification center before the app is initialized.
+    @param aNotification contains information about the event
+*/
 @implementation CPApplication : CPResponder
 {
     CPArray                 _eventListeners;
@@ -59,6 +81,11 @@ CPRunContinuesResponse  = -1002;
     CPArray                 _args;
 }
 
+/*
+    Returns the singleton instance of the running application. If it
+    doesn't exist, it will be created, and then returned.
+    @return the application singleton
+*/
 + (CPApplication)sharedApplication
 {
     if (!CPApp)
@@ -67,6 +94,11 @@ CPRunContinuesResponse  = -1002;
     return CPApp;
 }
 
+/*
+    Initializes the Document based application with basic menu functions.
+    Functions are <code>New, Open, Undo, Redo, Save, Cut, Copy, Paste</code>.
+    @return the initialized application
+*/
 - (id)init
 {
     self = [super init];
@@ -142,6 +174,12 @@ CPRunContinuesResponse  = -1002;
 
 // Configuring Applications
 
+/*
+    Sets the delegate for this application. The delegate will receive various notifications
+    caused by user interactions during the application's run. The delegate can choose to
+    react to these events.
+    @param aDelegate the delegate object
+*/
 - (void)setDelegate:(id)aDelegate
 {
     if (_delegate == aDelegate)
@@ -179,11 +217,20 @@ CPRunContinuesResponse  = -1002;
                  object:self];
 }
 
+/*
+    Returns the application's delegate. The app can only have one delegate at a time.
+*/
 - (id)delegate
 {
     return _delegate;
 }
 
+/*
+    This method is called by <code>run</code> before the event loop begins.
+    When it successfully completes, it posts the notification
+    <objj>CPApplicationDidFinishLaunchingNotification</objj>. If you override
+    <code>finishLaunching</code>, the subclass method should invoke the superclass method.
+*/
 - (void)finishLaunching
 {
     var bundle = [CPBundle mainBundle],
@@ -221,18 +268,30 @@ CPRunContinuesResponse  = -1002;
     [[CPRunLoop currentRunLoop] performSelectors];
 }
 
+/*
+    Calls <code>finishLaunching</code> method which results in starting
+    the main event loop.
+*/
 - (void)run
 {
     [self finishLaunching];
 }
 
 // Managing the Event Loop
-
+/*
+    Starts a modal event loop for <code>aWindow</code>
+    @param aWindow the window to start the event loop for
+*/
 - (void)runModalForWindow:(CPWindow)aWindow
 {
     [self runModalSession:[self beginModalSessionForWindow:aWindow]];
 }
 
+/*
+    Stops the event loop started by <code>runModalForWindow:</code> and
+    sets the code that <code>runModalForWindow:</code> will return.
+    @param aCode the return code for the modal event
+*/
 - (void)stopModalWithCode:(int)aCode
 {
     if (!_currentSession)
@@ -248,6 +307,7 @@ CPRunContinuesResponse  = -1002;
         [self _removeRunModalLoop];
 }
 
+/* @ignore */
 - (void)_removeRunModalLoop
 {
     var count = _eventListeners.length;
@@ -261,21 +321,35 @@ CPRunContinuesResponse  = -1002;
         }
 }
 
+/*
+    Stops the modal event loop
+*/
 - (void)stopModal
 {
     [self stopModalWithCode:CPRunStoppedResponse]
 }
 
+/*
+    Aborts the event loop started by <code>runModalForWindow:</code>
+*/
 - (void)abortModal
 {
     [self stopModalWithCode:CPRunAbortedResponse];
 }
 
+/*
+    Sets up a modal session with <code>theWindow</code>.
+    @param aWindow the window to set up the modal session for
+*/
 - (CPModalSession)beginModalSessionForWindow:(CPWindow)aWindow
 {
     return _CPModalSessionMake(aWindow, 0);
 }
 
+/*
+    Runs a modal session
+    @param CPModalSession the session to run
+*/
 - (void)runModalSession:(CPModalSession)aModalSession
 {
     aModalSession._previous = _currentSession;
@@ -291,6 +365,10 @@ CPRunContinuesResponse  = -1002;
     [CPApp setCallback:_CPRunModalLoop forNextEventMatchingMask:CPAnyEventMask untilDate:nil inMode:0 dequeue:NO];
 }
 
+/*
+    Returns the window for the current modal session. If there is no
+    modal session, it returns <code>nil</code>.
+*/
 - (CPWindow)modalWindow
 {
     if (!_currentSession)
@@ -299,6 +377,7 @@ CPRunContinuesResponse  = -1002;
     return _currentSession._window;
 }
 
+/* @ignore */
 - (BOOL)_handleKeyEquivalent:(CPEvent)anEvent
 {
     if ([_mainMenu performKeyEquivalent:anEvent])
@@ -307,6 +386,10 @@ CPRunContinuesResponse  = -1002;
     return NO;
 }
 
+/*
+    Dispatches events to other objects.
+    @param anEvent the event to dispatch
+*/
 - (void)sendEvent:(CPEvent)anEvent
 {
     // Check if this is a candidate for key equivalent...
@@ -335,40 +418,66 @@ CPRunContinuesResponse  = -1002;
         [super doCommandBySelector:aSelector];
 }
 
+/*
+    Returns the key window.
+*/
 - (CPWindow)keyWindow
 {
     return _keyWindow;
 }
 
+/*
+    Returns the main window.
+*/
 - (CPWindow)mainWindow
 {
     return _mainWindow;
 }
 
+/*
+    Returns the <objj>CPWindow</objj> object corresponding to <code>aWindowNumber</code>.
+*/
 - (CPWindow)windowWithWindowNumber:(int)aWindowNumber
 {
     return _windows[aWindowNumber];
 }
 
+/*
+    Returns an array of the application's <objj>CPWindow</objj>s
+*/
 - (CPArray)windows
 {
     return _windows;
 }
 
 // Accessing the Main Menu
-
+/*
+    Returns the application's main menu
+*/
 - (CPMenu)mainMenu
 {
     return _mainMenu;
 }
 
+/*
+    Sets the main menu for the application
+    @param aMenu the menu to set for the application
+*/
 - (void)setMainMenu:(CPMenu)aMenu
 {
     _mainMenu = aMenu;
 }
 
 // Posting Actions
-
+/*
+    Tries to perform the action with an argument. Performs
+    the action on itself (if it responds to it), then
+    tries to perform the action on the delegate.
+    @param anAction the action to perform.
+    @param anObject the argument for the action
+    method
+    @return <code>YES</code> if the action was performed
+*/
 - (BOOL)tryToPerform:(SEL)anAction with:(id)anObject
 {
     if (!anAction)
@@ -387,6 +496,13 @@ CPRunContinuesResponse  = -1002;
     return NO;
 }
 
+/*
+    Sends an action to a target.
+    @param anAction the action to send
+    @param aTarget the target for the action
+    @param aSender the action sender
+    @return <code>YES</code>
+*/
 - (BOOL)sendAction:(SEL)anAction to:(id)aTarget from:(id)aSender
 {
     var target = [self targetForAction:anAction to:aTarget from:aSender];
@@ -399,6 +515,17 @@ CPRunContinuesResponse  = -1002;
     return YES;
 }
 
+/*
+    Finds a target for the specified action. If the
+    action is <code>nil</code>, returns <code>nil</code>.
+    If the target is not <code>nil</code>, <code>aTarget</code> is
+    returned. Otherwise, it calls <code>targetForAction:</code>
+    to search for a target.
+    @param anAction the action to find a target for
+    @param aTarget if not <code>nil</code>, this will be returned
+    @aSender not used
+    @return a target for the action
+*/
 - (id)targetForAction:(SEL)anAction to:(id)aTarget from:(id)aSender
 {
     if (!anAction)
@@ -410,6 +537,23 @@ CPRunContinuesResponse  = -1002;
     return [self targetForAction:anAction];
 }
 
+/*
+    Finds an action-target for a specified window.
+    It finds a matching target in the following order:
+    <ol>
+        <li>the window's first responder</li>
+        <li>all the next responders after first responder</li>
+        <li>the window</li>
+        <li>the window's delegate</li>
+        <li>the window's controller</li>
+        <li>the window's associated document</li>
+    </ol>
+    @param aWindow the window to search for a target
+    @param anAction the action to find a responder to
+    @return the object that responds to the action, or <code>nil</code>
+    if no matching target was found
+    @ignore
+*/
 - (id)_targetForWindow:(CPWindow)aWindow action:(SEL)anAction
 {
     var responder = [aWindow firstResponder],
@@ -431,7 +575,7 @@ CPRunContinuesResponse  = -1002;
     
     var delegate = [aWindow delegate];
     
-    if ([aWindow respondsToSelector:anAction])
+    if ([delegate respondsToSelector:anAction])
         return delegate;
 
     var windowController = [aWindow windowController];
@@ -447,6 +591,20 @@ CPRunContinuesResponse  = -1002;
     return nil;
 }
 
+/*
+    Looks for a target that can handle the specified action.
+    Checks for a target in the following order:
+    <ol>
+        <li>a responder from the key window</li>
+        <li>a responder frmo the main window</li>
+        <li>the <objj>CPApplication</objj> instance</li>
+        <li>the application delegate</li>
+        <li>the document controller</li>
+    </ol>
+    @param anAction the action to handle
+    @return a target that can respond, or <code>nil</code>
+    if no match could be found
+*/
 - (id)targetForAction:(SEL)anAction
 {
     if (!anAction)
@@ -488,6 +646,14 @@ CPRunContinuesResponse  = -1002;
 
 // Managing Sheets
 
+/*
+    Displays a window as a sheet.
+    @param aSheet the window to display as a sheet
+    @param aWindow the window that will hold the sheet as a child
+    @param aModalDelegate
+    @param aDidEndSelector
+    @param aContextInfo
+*/
 - (void)beginSheet:(CPWindow)aSheet modalForWindow:(CPWindow)aWindow modalDelegate:(id)aModalDelegate didEndSelector:(SEL)aDidEndSelector contextInfo:(id)aContextInfo
 {    
     [aWindow _attachSheet:aSheet modalDelegate:aModalDelegate didEndSelector:aDidEndSelector contextInfo:aContextInfo];
@@ -532,6 +698,12 @@ var _CPRunModalLoop = function(anEvent)
         [CPApp _removeRunModalLoop];
 }
 
+/*
+    Starts the GUI and Cappuccino frameworks. This function should be
+    called from the <code>main()</code> function of your program.
+    @class CPApplication
+    @return void
+*/
 function CPApplicationMain(args, namedArgs)
 {
     var mainBundle = [CPBundle mainBundle],

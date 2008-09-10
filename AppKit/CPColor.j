@@ -35,7 +35,19 @@ var _redComponent        = 0,
 var _hueComponent        = 0,
     _saturationComponent = 1,
     _brightnessComponent = 2;
-    
+
+/*
+    <code>CPColor</code> can be used to represent color
+    in an RGB or HSB model with an optional transparency value.</p>
+
+    <p>It also provides some class helper methods that
+    returns instances of commonly used colors.</p>
+
+    <p>The class does not have a <code>set:</code> method
+    like NextStep based frameworks to change the color of
+    the current context. To change the color of the current
+    context, use <objj>CGContextSetFillColor()</objj>.
+*/
 @implementation CPColor : CPObject
 {
     CPArray     _components;
@@ -44,16 +56,47 @@ var _hueComponent        = 0,
     CPString    _cssString;    
 }
 
+/*
+    Creates a color in the RGB color space, with an alpha value.
+    Each component should be between the range of 0.0 to 1.0. For
+    the alpha component, a value of 1.0 is opaque, and 0.0 means
+    completely transparent.
+    
+    @param red the red component of the color
+    @param green the green component of the color
+    @param blue the blue component of the color
+    @param alpha the alpha component
+    
+    @return a color initialized to the values specified
+*/
 + (CPColor)colorWithCalibratedRed:(float)red green:(float)green blue:(float)blue alpha:(float)alpha
 {
     return [[CPColor alloc] _initWithRGBA:[red, green, blue, alpha]];
 }
 
+/*
+    Creates a new color object with <code>white</code> for the RGB components.
+    For the alpha component, a value of 1.0 is opaque, and 0.0 means completely transparent.
+    
+    @param white a float between 0.0 and 1.0
+    @param alpha the alpha component between 0.0 and 1.0
+    
+    @return a color initialized to the values specified
+*/
 + (CPColor)colorWithCalibratedWhite:(float)white alpha:(float)alpha
 {
     return [[CPColor alloc] _initWithRGBA:[white, white, white, alpha]];
 }
 
+/*
+    Creates a new color in HSB space.
+    
+    @param hue the hue value
+    @param saturation the saturation value
+    @param brightness the brightness value
+    
+    @return the initialized color
+*/
 + (CPColor)colorWithHue:(float)hue saturation:(float)saturation brightness:(float)brightness
 {
     if(saturation == 0.0)
@@ -76,71 +119,123 @@ var _hueComponent        = 0,
     }
 }
 
+/*
+    Creates an RGB color from a hexadecimal string. For example,
+    the a string of "FFFFFF" would return a white CPColor.
+    "FF0000" would return a pure red, "00FF00" would return a
+    pure blue, and "0000FF" would return a pure green. 
+
+    @param hex a 6 character long string of hex
+
+    @return an initialized RGB color
+*/
 + (CPColor)colorWithHexString:(string)hex
 {
     return [[CPColor alloc] _initWithRGBA: hexToRGB(hex)];
 }
 
+/*
+    Returns a black color object. (RGBA=[0.0, 0.0, 0.0, 1.0])
+*/
 + (CPColor)blackColor
 {
     return [[CPColor alloc] _initWithRGBA:[0.0, 0.0, 0.0, 1.0]];
 }
 
+/*
+    Returns a blue color object. (RGBA=[0.0, 0.0, 1.0, 1.0])
+*/
 + (CPColor)blueColor
 {
     return [[CPColor alloc] _initWithRGBA:[0.0, 0.0, 1.0, 1.0]];
 }
 
+/*
+    Returns a dark gray color object. (RGBA=[0.33 ,0.33, 0.33, 1.0])
+*/
 + (CPColor)darkGrayColor
 {
     return [CPColor colorWithCalibratedWhite:1.0 / 3.0 alpha:1.0];
 }
 
+/*
+    Returns a gray color object. (RGBA=[0.5, 0.5, 0.5, 1.0])
+*/
 + (CPColor)grayColor
 {
     return [CPColor colorWithCalibratedWhite:0.5 alpha: 1.0];
 }
 
+/*
+    Returns a green color object. (RGBA=[0.0, 1.0, 0.0, 1.0])
+*/
 + (CPColor)greenColor
 {
     return [[CPColor alloc] _initWithRGBA:[0.0, 1.0, 0.0, 1.0]];
 }
 
+/*
+    Returns a light gray color object (RGBA=[0.66, 0.66, 0.66, 1.0])
+*/
 + (CPColor)lightGrayColor
 {
     return [CPColor colorWithCalibratedWhite:2.0 / 3.0 alpha:1.0];
 }
 
+/*
+    Returns a red color object (RGBA=[1.0, 0.0, 0.0, 1.0])
+*/
 + (CPColor)redColor
 {
     return [[CPColor alloc] _initWithRGBA:[1.0, 0.0, 0.0, 1.0]];
 }
 
+/*
+    Returns a white color object (RGBA=[1.0, 1.0, 1.0, 1.0])
+*/
 + (CPColor)whiteColor
 {
     return [[CPColor alloc] _initWithRGBA:[1.0, 1.0, 1.0, 1.0]];
 }
 
+/*
+    Returns a yellow color object (RGBA=[1.0, 1.0, 0.0, 1.0])
+*/
 + (CPColor)yellowColor
 {
     return [[CPColor alloc] _initWithRGBA:[1.0, 1.0, 0.0, 1.0]];
 }
 
+/*
+    Returns a shadow looking color (RGBA=[0.0, 0.0, 0.0, 0.33])
+*/
 + (CPColor)shadowColor
 {
     return [[CPColor alloc] _initWithRGBA:[0.0, 0.0, 0.0, 1.0 / 3.0]];
 }
 
+/*
+    Creates a color using a tile pattern with <code>anImage</code>
+    @param the image to tile
+    @return a tiled image color object
+*/
 + (CPColor)colorWithPatternImage:(CPImage)anImage
 {
     return [[CPColor alloc] _initWithPatternImage:anImage];
 }
 
+/*
+    Creates a <objj>CPColor</objj> from a valid CSS RGB string. Example, "rgb(32,64,129)".
+    
+    @param aString a CSS color string
+    @return a color initialized to the value in the css string
+*/
 + (CPColor)colorWithCSSString:(CPString)aString
 {
     return [[CPColor alloc] _initWithCSSString: aString];
 }
 
+/* @ignore */
 - (id)_initWithCSSString:(CPString)aString
 {
     if(aString.indexOf("rgb") == CPNotFound)
@@ -163,6 +258,7 @@ var _hueComponent        = 0,
     return self;
 }
 
+/* @ignore */
 - (id)_initWithRGBA:(CPArray)components
 {
     self = [super init];
@@ -218,6 +314,7 @@ var _hueComponent        = 0,
     return self;
 }
 
+/* @ignore */
 - (id)_initWithPatternImage:(CPImage)anImage
 {
     self = [super init];
@@ -231,36 +328,69 @@ var _hueComponent        = 0,
     return self;
 }
 
+/*
+    Returns the image being used as the pattern for the tile in this color.
+*/
 - (CPImage)patternImage
 {
     return _patternImage;
 }
 
+/*
+    Returns the alpha component of this color.
+*/
 - (float)alphaComponent
 {
     return _components[3];
 }
 
+/*
+    Returns the blue component of this color.
+*/
 - (float)blueComponent
 {
     return _components[2];
 }
 
+/*
+    Returns the green component of this color.
+*/
 - (float)greenComponent
 {
     return _components[1];
 }
 
+/*
+    Return the red component of this color.
+*/
 - (float)redComponent
 {
     return _components[0];
 }
 
+/*
+    Returns the RGBA components of this color in an array.
+    The index values are ordered as:
+<pre>
+<b>Index</b>   <b>Component</b>
+0       Red
+1       Green
+2       Blue
+3       Alpha
+</pre>
+*/
 - (CPArray)components
 {
     return _components;
 }
 
+/*
+    Returns a new color with the same RGB as the receiver but a new alpha component.
+    
+    @param anAlphaComponent the alpha component for the new color
+    
+    @return a new color object
+*/
 - (CPColor)colorWithAlphaComponent:(float)anAlphaComponent
 {
     var components = _components.slice();
@@ -270,6 +400,16 @@ var _hueComponent        = 0,
     return [[[self class] alloc] _initWithRGBA:components];
 }
 
+/*
+    Returns an array with the HSB values for this color.
+    The index values are ordered as:
+<pre>
+<b>Index</b>   <b>Component</b>
+0       Hue
+1       Saturation
+2       Brightness
+</pre>
+*/
 - (CPArray)hsbComponents
 {
     var red   = ROUND(_components[_redComponent] * 255.0),
@@ -311,11 +451,23 @@ var _hueComponent        = 0,
     ];
 }
 
+/*
+    Returns the CSS representation of this color. The color will
+    be in one of the following forms:
+<pre>
+rgb(22,44,88)
+rgba(22,44,88,0.5)  // if there is an alpha
+url("data:image/png;base64,BASE64ENCODEDDATA")  // if there is a pattern image
+</pre>
+*/
 - (CPString)cssString
 {
     return _cssString;
 }
 
+/*
+    Returns a 6 character long hex string of this color.
+*/
 - (CPString)hexString
 {
     return rgbToHex([self redComponent], [self greenComponent], [self blueComponent])
@@ -328,6 +480,10 @@ var CPColorComponentsKey    = @"CPColorComponentsKey",
 
 @implementation CPColor (CPCoding)
 
+/*
+    Initializes this color from the data archived in a coder.
+    @param aCoder the coder from which the color will be loaded
+*/
 - (id)initWithCoder:(CPCoder)aCoder
 {
     if ([aCoder containsValueForKey:CPColorPatternImageKey])
@@ -336,6 +492,10 @@ var CPColorComponentsKey    = @"CPColorComponentsKey",
     return [self _initWithRGBA:[aCoder decodeObjectForKey:CPColorComponentsKey]];
 }
 
+/*
+    Archives this color into a coder.
+    @param aCoder the coder into which the color will be archived.
+*/
 - (void)encodeWithCoder:(CPCoder)aCoder
 {
     if (_patternImage)
@@ -348,6 +508,12 @@ var CPColorComponentsKey    = @"CPColorComponentsKey",
 
 var hexCharacters = "0123456789ABCDEF";
 
+/*
+    Used for the <objj>CPColor</objj> <code>colorWithHexString:</code> implementation
+    @ignore
+    @class CPColor
+    @return an array of rgb components
+*/
 function hexToRGB(hex) 
 {
     if(hex.length != 6)

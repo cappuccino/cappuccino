@@ -49,6 +49,20 @@ var CALayerFrameOriginUpdateMask                = 1,
 
 var CALayerRegisteredRunLoopUpdates             = nil;
 
+/*
+    A <objj>CALayer</objj> is similar to a <objj>CPView</objj>, but with the ability
+    to have a transform applied to it.
+
+    @delegate -(void)drawLayer:(CALayer)layer inContext:(CGContextRef)ctx;
+    If the delegate implements this method, the <objj>CALayer</objj> will
+    call this in place of its <code>drawInContext:</code>.
+    @param layer the layer to draw for
+    @param ctx the context to draw on
+
+    @delegate  -(void)displayLayer:(CALayer)layer;
+    The delegate can override the layer's <code>display</code> method
+    by implementing this method.
+*/
 @implementation CALayer : CPObject
 {
     // Modifying the Layer Geometry
@@ -85,7 +99,7 @@ var CALayerRegisteredRunLoopUpdates             = nil;
     unsigned            _runLoopUpdateMask;
     BOOL                _needsDisplayOnBoundsChange;
 
-    // Modifyin the Delegate
+    // Modifying the Delegate
     
     id                  _delegate;
     
@@ -104,11 +118,17 @@ var CALayerRegisteredRunLoopUpdates             = nil;
     CGAffineTransform   _transformFromLayer;
 }
 
+/*
+    Returns a new animation layer.
+*/
 + (CALayer)layer
 {
     return [[[self class] alloc] init];
 }
 
+/*
+    Initializes the animation layer.
+*/
 - (id)init
 {
     self = [super init];
@@ -152,7 +172,10 @@ var CALayerRegisteredRunLoopUpdates             = nil;
 }
 
 // Modifying the Layer Geometry
-
+/*
+    Sets the bounds (origin and size) of the rectangle.
+    @param aBounds the new bounds for the layer
+*/
 - (void)setBounds:(CGRect)aBounds
 {
     if (CGRectEqualToRect(_bounds, aBounds))
@@ -178,11 +201,18 @@ var CALayerRegisteredRunLoopUpdates             = nil;
     _CALayerRecalculateGeometry(self, CALayerGeometryBoundsMask);
 }
 
+/*
+    Returns the layer's bound.
+*/
 - (CGRect)bounds
 {
     return _bounds;
 }
 
+/*
+    Sets the layer's position.
+    @param aPosition the layer's new position
+*/
 - (void)setPosition:(CGPoint)aPosition
 {
     if (CGPointEqualToPoint(_position, aPosition))
@@ -193,11 +223,18 @@ var CALayerRegisteredRunLoopUpdates             = nil;
     _CALayerRecalculateGeometry(self, CALayerGeometryPositionMask);
 }
 
+/*
+    Returns the layer's position
+*/
 - (CGPoint)position
 {
     return _position;
 }
 
+/*
+    Sets the layer's z-ordering.
+    @param aZPosition the layer's new z-ordering
+*/
 - (void)setZPosition:(int)aZPosition
 {
     if (_zPosition == aZPosition)
@@ -208,6 +245,10 @@ var CALayerRegisteredRunLoopUpdates             = nil;
     [self registerRunLoopUpdateWithMask:CALayerZPositionUpdateMask];
 }
 
+/*
+    Sets the layer's anchor point. The default point is [0.5, 0.5].
+    @param anAnchorPoint the layer's new anchor point
+*/
 - (void)setAnchorPoint:(CGPoint)anAnchorPoint
 {
     anAnchorPoint = _CGPointMakeCopy(anAnchorPoint);
@@ -228,11 +269,18 @@ var CALayerRegisteredRunLoopUpdates             = nil;
     _CALayerRecalculateGeometry(self, CALayerGeometryAnchorPointMask);
 }
 
+/*
+    Returns the layer's anchor point.
+*/
 - (CGPoint)anchorPoint
 {
     return _anchorPoint;
 }
 
+/*
+    Sets the affine transform applied to this layer.
+    @param anAffineTransform the new affine transform
+*/
 - (void)setAffineTransform:(CGAffineTransform)anAffineTransform
 {
     if (CGAffineTransformEqualToTransform(_affineTransform, anAffineTransform))
@@ -243,11 +291,18 @@ var CALayerRegisteredRunLoopUpdates             = nil;
     _CALayerRecalculateGeometry(self, CALayerGeometryAffineTransformMask);
 }
 
+/*
+    Returns the layer's affine transform.
+*/
 - (CGAffineTransform)affineTransform
 {
     return _affineTransform;
 }
 
+/*
+    Sets the affine transform that gets applied to all the sublayers.
+    @param anAffineTransform the transform to apply to sublayers
+*/
 - (void)setSublayerTransform:(CGAffineTransform)anAffineTransform
 {
     if (CGAffineTransformEqualToTransform(_sublayerTransform, anAffineTransform))
@@ -270,24 +325,40 @@ var CALayerRegisteredRunLoopUpdates             = nil;
     }
 }
 
+/*
+    Returns the affine transform applied to the sublayers.
+*/
 - (CGAffineTransform)sublayerTransform
 {
     return _sublayerTransform;
 }
 
+/*
+    Private
+    @ignore
+*/
 - (CGAffineTransform)transformToLayer
 {
     return _transformToLayer;
 }
 
+/*
+    Sets the frame of the layer. The frame defines a bounding
+    rectangle in the superlayer's coordinate system.
+    @param aFrame the new frame rectangle
+*/
 - (void)setFrame:(CGRect)aFrame
 {
     alert("FIXME IMPLEMENT");
 }
 
-// The frame defines the bounding box of the layer: the smallest 
-// possible rectangle that could fit this layer after transform 
-// properties are applied in superlayer coordinates.
+/*
+    Returns the layer's frame.
+
+    The frame defines the bounding box of the layer: the smallest 
+    possible rectangle that could fit this layer after transform 
+    properties are applied in superlayer coordinates.
+*/
 - (CGRect)frame
 {
     if (!_frame)
@@ -296,16 +367,23 @@ var CALayerRegisteredRunLoopUpdates             = nil;
     return _frame;
 }
 
-// The Backing Store Frame specifies the frame of the actual backing 
-// store used to contain this layer.  Naturally, by default it is the 
-// same as the frame, however, users can specify their own custom 
-// Backing Store Frame in order to speed up certain operations, such as 
-// live transformation.
+/*
+    The Backing Store Frame specifies the frame of the actual backing
+    store used to contain this layer.  Naturally, by default it is the 
+    same as the frame, however, users can specify their own custom 
+    Backing Store Frame in order to speed up certain operations, such as 
+    live transformation.
+    @return the backing store frame
+*/
 - (CGRect)backingStoreFrame
 {
     return _backingStoreFrame;
 }
 
+/*
+    Sets the frame's backing store.
+    @param aFrame the new backing store.
+*/
 - (void)setBackingStoreFrame:(CGRect)aFrame
 {
     _hasCustomBackingStoreFrame = (aFrame != nil);
@@ -338,12 +416,19 @@ var CALayerRegisteredRunLoopUpdates             = nil;
 }
 
 // Providing Layer Content
-
+/*
+    Returns the <objj>CGImage</objj> contents of this layer.
+    The default contents are <code>nil</code>.
+*/
 - (CGImage)contents
 {
     return _contents;
 }
 
+/*
+    Sets the image contents of this layer.
+    @param contents the image to display
+*/
 - (void)setContents:(CGImage)contents
 {
     if (_contents == contents)
@@ -354,6 +439,10 @@ var CALayerRegisteredRunLoopUpdates             = nil;
     [self composite];
 }
 
+/*
+    Composites this layer onto the super layer, and draws its contents as well.
+    @ignore
+*/
 - (void)composite
 {
     if (USE_BUFFER && !_contents || !_context)
@@ -390,6 +479,9 @@ var CALayerRegisteredRunLoopUpdates             = nil;
     CGContextRestoreGState(_context);
 }
 
+/*
+    Displays the contents of this layer.
+*/
 - (void)display
 {
     if (!_context)
@@ -418,7 +510,7 @@ var CALayerRegisteredRunLoopUpdates             = nil;
     if (USE_BUFFER)
     {
         if (_delegateRespondsToDisplayLayerSelector)
-            return [self displayInLayer:self];
+            return [_delegate displayInLayer:self];
     
         if (_CGRectGetWidth(_backingStoreFrame) == 0.0 || _CGRectGetHeight(_backingStoreFrame) == 0.0)
             return;
@@ -434,6 +526,10 @@ var CALayerRegisteredRunLoopUpdates             = nil;
     [self composite];
 }
 
+/*
+    Draws this layer's contents into the specified context.
+    @param aContext the context to draw the layer into
+*/
 - (void)drawInContext:(CGContext)aContext
 {   //if (!window.loop || window.nodisplay) CPLog.error("htiasd");
     if (_backgroundColor)
@@ -448,12 +544,19 @@ var CALayerRegisteredRunLoopUpdates             = nil;
 
 
 // Style Attributes
-
+/*
+    Returns the opacity of the layer. The value is between
+    <code>0.0</code> (transparent) and <code>1.0</code> (opaque).
+*/
 - (float)opacity
 {
     return _opacity;
 }
 
+/*
+    Sets the opacity for the layer.
+    @param anOpacity the new opacity (between <code>0.0</code> (transparent) and <code>1.0</code> (opaque)).
+*/
 - (void)setOpacity:(float)anOpacity
 {
     if (_opacity == anOpacity)
@@ -465,22 +568,36 @@ var CALayerRegisteredRunLoopUpdates             = nil;
     _DOMElement.style.filter = "alpha(opacity=" + anOpacity * 100 + ")";
 }
 
+/*
+    Sets whether the layer is hidden.
+    @param isHidden <code>YES</code> means the layer will be hidden. <code>NO</code> means the layer will be visible.
+*/
 - (void)setHidden:(BOOL)isHidden
 {
     _isHidden = isHidden;
     _DOMElement.style.display = isHidden ? "none" : "block";
 }
 
+/*
+    Returns <code>YES</code> if the layer is hidden.
+*/
 - (BOOL)hidden
 {
     return _isHidden;
 }
 
+/*
+    Returns <code>YES</code> if the layer is hidden.
+*/
 - (BOOL)isHidden
 {
     return _isHidden;
 }
 
+/*
+    Sets whether content that goes lies outside the bounds is hidden or visible.
+    @param masksToBounds <code>YES</code> hides the excess content. <code>NO</code> makes it visible.
+*/
 - (void)setMasksToBounds:(BOOL)masksToBounds
 {
     if (_masksToBounds == masksToBounds)
@@ -490,6 +607,10 @@ var CALayerRegisteredRunLoopUpdates             = nil;
     _DOMElement.style.overflow = _masksToBounds ? "hidden" : "visible";
 }
 
+/*
+    Sets the layer's background color.
+    @param aColor the new background color
+*/
 - (void)setBackgroundColor:(CPColor)aColor
 {
     _backgroundColor = aColor;
@@ -497,18 +618,26 @@ var CALayerRegisteredRunLoopUpdates             = nil;
     [self setNeedsDisplay];
 }
 
+/*
+    Returns the layer's background color.
+*/
 - (CPColor)backgroundColor
 {
     return _backgroundColor;
 }
 
 // Managing Layer Hierarchy
-
+/*
+    Returns an array of the receiver's sublayers.
+*/
 - (CPArray)sublayers
 {
     return _sublayers;
 }
 
+/*
+    Returns the receiver's superlayer.
+*/
 - (CALayer)superlayer
 {
     return _superlayer;
@@ -518,6 +647,9 @@ var CALayerRegisteredRunLoopUpdates             = nil;
 if (_DOMContentsElement && aLayer._zPosition > _DOMContentsElement.style.zIndex)\
     _DOMContentsElement.style.zIndex -= 100.0;\
 
+/*
+    Adds the specified layer as a sublayer of the receiver.
+*/
 - (void)addSublayer:(CALayer)aLayer
 {
     [self insertSublayer:aLayer atIndex:_sublayers.length];
@@ -528,6 +660,9 @@ if (_DOMContentsElement && aLayer._zPosition > _DOMContentsElement.style.zIndex)
     _DOMElement.appendChild(DOM(aLayer));
 }
 
+/*
+    Removes the receiver from its superlayer.
+*/
 - (void)removeFromSuperlayer
 {
     if (_owningView)
@@ -542,6 +677,11 @@ if (_DOMContentsElement && aLayer._zPosition > _DOMContentsElement.style.zIndex)
     _superlayer = nil;
 }
 
+/*
+    Inserts the specified layer as a sublayer into the specified index.
+    @param aLayer the layer to insert
+    @param anIndex the index to insert the layer at
+*/
 - (void)insertSublayer:(CALayer)aLayer atIndex:(unsigned)anIndex
 {
     if (!aLayer)
@@ -579,6 +719,12 @@ if (_DOMContentsElement && aLayer._zPosition > _DOMContentsElement.style.zIndex)
         _CALayerRecalculateGeometry(aLayer, 0xFFFFFFF);
 }
 
+/*
+    Inserts a layer below another layer.
+    @param aLayer the layer to insert
+    @param aSublayer the layer to insert below
+    @throws CALayerNotFoundException if <code>aSublayer</code> is not in the array of sublayers
+*/
 - (void)insertSublayer:(CALayer)aLayer below:(CALayer)aSublayer
 {
     var index = aSublayer ? [_sublayers indexOfObjectIdenticalTo:aSublayer] : 0;
@@ -586,13 +732,26 @@ if (_DOMContentsElement && aLayer._zPosition > _DOMContentsElement.style.zIndex)
     [self insertSublayer:aLayer atIndex:index == CPNotFound ? _sublayers.length : index];
 }
 
-- (void)insertSublayer:(CALayer)aLayer after:(CALayer)aSublayer
+/*
+    Inserts a layer above another layer.
+    @param aLayer the layer to insert
+    @param aSublayer the layer to insert above
+    @throws CALayerNotFoundException if <code>aSublayer</code> is not in the array of sublayers
+*/
+- (void)insertSublayer:(CALayer)aLayer above:(CALayer)aSublayer
 {
     var index = aSublayer ? [_sublayers indexOfObjectIdenticalTo:aSublayer] : _sublayers.length;
+    if (index == CPNotFound)
+        [CPException raise:"CALayerNotFoundException" reason:"aSublayer is not a sublayer of this layer"];
 
     [_sublayers insertObject:aLayer atIndex:index == CPNotFound ? _sublayers.length : index + 1];
 }
 
+/*
+    Replaces a sublayer.
+    @param aSublayer the layer to insert
+    @param aLayer the layer to replace
+*/
 - (void)replaceSublayer:(CALayer)aSublayer with:(CALayer)aLayer
 {
     if (aSublayer == aLayer)
@@ -612,7 +771,10 @@ if (_DOMContentsElement && aLayer._zPosition > _DOMContentsElement.style.zIndex)
 }
 
 // Updating Layer Display
-
+/*
+    Updates the layers on screen.
+    @ignore
+*/
 + (void)runLoopUpdateLayers
 {if (window.oops) {alert(window.latest); objj_debug_print_backtrace();}
     window.loop = true;
@@ -636,6 +798,9 @@ if (_DOMContentsElement && aLayer._zPosition > _DOMContentsElement.style.zIndex)
     CALayerRegisteredRunLoopUpdates = nil;
 }
 
+/*
+    @ignore
+*/
 - (void)registerRunLoopUpdateWithMask:(unsigned)anUpdateMask
 {
     if (CALayerRegisteredRunLoopUpdates == nil)
@@ -650,26 +815,43 @@ if (_DOMContentsElement && aLayer._zPosition > _DOMContentsElement.style.zIndex)
     CALayerRegisteredRunLoopUpdates[[self hash]] = self;
 }
 
+/*
+    @ignore
+*/
 - (void)setNeedsComposite
 {
     [self registerRunLoopUpdateWithMask:CALayerCompositeUpdateMask];
 }
 
+/*
+    Marks the layer as needing to be redrawn.
+*/
 - (void)setNeedsDisplay
 {
     [self registerRunLoopUpdateWithMask:CALayerDisplayUpdateMask];
 }
 
+/*
+    Sets whether the layer needs to be redrawn when its bounds are changed.
+    @param needsDisplayOnBoundsChange <code>YES</code> means the display is redraw on a bounds change.
+*/
 - (void)setNeedsDisplayOnBoundsChange:(BOOL)needsDisplayOnBoundsChange
 {
     _needsDisplayOnBoundsChange = needsDisplayOnBoundsChange;
 }
 
+/*
+    Returns <code>YES</code> if the display should be redrawn on a bounds change.
+*/
 - (BOOL)needsDisplayOnBoundsChange
 {
     return _needsDisplayOnBoundsChange;
 }
 
+/*
+    Marks the specified rectange as needing to be redrawn.
+    @param aRect the area that needs to be redrawn.
+*/
 - (void)setNeedsDisplayInRect:(CGRect)aRect
 {
     _dirtyRect = aRect;
@@ -677,34 +859,65 @@ if (_DOMContentsElement && aLayer._zPosition > _DOMContentsElement.style.zIndex)
 }
 
 // Mapping Between Coordinate and Time Spaces
-
+/*
+    Converts the point from the specified layer's coordinate system into the receiver's coordinate system.
+    @param aPoint the point to convert
+    @param aLayer the layer coordinate system to convert from
+    @return the converted point
+*/
 - (CGPoint)convertPoint:(CGPoint)aPoint fromLayer:(CALayer)aLayer
 {
     return CGPointApplyAffineTransform(aPoint, _CALayerGetTransform(aLayer, self));
 }
 
+/*
+    Converts the point from the receiver's coordinate system to the specified layer's coordinate system.
+    @param aPoint the point to convert
+    @param aLayer the layer coordinate system to convert to
+    @return the converted point
+*/
 - (CGPoint)convertPoint:(CGPoint)aPoint toLayer:(CALayer)aLayer
 {
     return CGPointApplyAffineTransform(aPoint, _CALayerGetTransform(self, aLayer));
 }
 
+/*
+    Converts the rectangle from the specified layer's coordinate system to the receiver's coordinate system.
+    @param aRect the rectangle to convert
+    @param aLayer the layer coordinate system to convert from
+    @return the converted rectangle
+*/
 - (CGRect)convertRect:(CGRect)aRect fromLayer:(CALayer)aLayer
 {
     return CGRectApplyAffineTransform(aRect, _CALayerGetTransform(aLayer, self));
 }
 
+/*
+    Converts the rectangle from the receier's coordinate system to the specified layer's coordinate system.
+    @param aRect the rectange to convert
+    @param aLayer the layer coordinate system to convert to
+    @return the converted rectangle
+*/
 - (CGRect)convertRect:(CGRect)aRect toLayer:(CALayer)aLayer
 {
     return CGRectApplyAffineTransform(aRect, _CALayerGetTransform(self, aLayer));
 }
 
 // Hit Testing
-
+/*
+    Returns <code>YES</code> if the layer contains the point.
+    @param aPoint the point to test
+*/
 - (BOOL)containsPoint:(CGPoint)aPoint
 {
     return _CGRectContainsPoint(_bounds, aPoint);
 }
 
+/*
+    Returns the farthest descendant of this layer that contains the specified point.
+    @param aPoint the point to test
+    @return the containing layer or <code>nil</code> if there was no hit.
+*/
 - (CALayer)hitTest:(CGPoint)aPoint
 {
     if (_isHidden)
@@ -728,7 +941,10 @@ if (_DOMContentsElement && aLayer._zPosition > _DOMContentsElement.style.zIndex)
 }
 
 // Modifying the Delegate
-
+/*
+    Sets the delegate for this layer.
+    @param aDelegate the delegate
+*/
 - (void)setDelegate:(id)aDelegate
 {
     if (_delegate == aDelegate)
@@ -743,11 +959,15 @@ if (_DOMContentsElement && aLayer._zPosition > _DOMContentsElement.style.zIndex)
         [self setNeedsDisplay];
 }
 
+/*
+    Returns the layer's delegate
+*/
 - (id)delegate
 {
     return _delegate;
 }
 
+/* @ignore */
 - (void)_setOwningView:(CPView)anOwningView
 {
     _owningView = anOwningView;
@@ -763,6 +983,7 @@ if (_DOMContentsElement && aLayer._zPosition > _DOMContentsElement.style.zIndex)
     _CALayerRecalculateGeometry(self, CALayerGeometryPositionMask | CALayerGeometryBoundsMask);
 }
 
+/* @ignore */
 - (void)_owningViewBoundsChanged
 {
     _bounds.size = CGSizeMakeCopy([_owningView bounds].size);
@@ -771,6 +992,7 @@ if (_DOMContentsElement && aLayer._zPosition > _DOMContentsElement.style.zIndex)
     _CALayerRecalculateGeometry(self, CALayerGeometryPositionMask | CALayerGeometryBoundsMask);
 }
 
+/* @ignore */
 - (void)_update
 {
     window.loop = true;

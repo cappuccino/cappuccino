@@ -26,10 +26,25 @@ import <Foundation/CPString.j>
 import <AppKit/CPImage.j>
 import <AppKit/CPView.j>
 
-
+/*
+    @global
+    @class CPToolbarItem
+*/
 CPToolbarItemVisibilityPriorityStandard = 0;
+/*
+    @global
+    @class CPToolbarItem
+*/
 CPToolbarItemVisibilityPriorityLow      = -1000;
+/*
+    @global
+    @class CPToolbarItem
+*/
 CPToolbarItemVisibilityPriorityHigh     = 1000;
+/*
+    @global
+    @class CPToolbarItem
+*/
 CPToolbarItemVisibilityPriorityUser     = 2000;
 
 CPToolbarSeparatorItemIdentifier        = @"CPToolbarSeparatorItemIdentifier";
@@ -40,6 +55,9 @@ CPToolbarShowFontsItemIdentifier        = @"CPToolbarShowFontsItemIdentifier";
 CPToolbarCustomizeToolbarItemIdentifier = @"CPToolbarCustomizeToolbarItemIdentifier";
 CPToolbarPrintItemIdentifier            = @"CPToolbarPrintItemIdentifier";
 
+/*
+    A representation of an item in a <objj>CPToolbar</objj>.
+*/
 @implementation CPToolbarItem : CPObject
 {
     CPString    _itemIdentifier;
@@ -63,7 +81,11 @@ CPToolbarPrintItemIdentifier            = @"CPToolbarPrintItemIdentifier";
 }
 
 // Creating a Toolbar Item
-
+/*
+    Initializes the toolbar item with a specified identifier.
+    @param anItemIdentifier the item's identifier
+    @return the initialized toolbar item
+*/
 - (id)initWithItemIdentifier:(CPString)anItemIdentifier
 {
     self = [super init];
@@ -82,62 +104,105 @@ CPToolbarPrintItemIdentifier            = @"CPToolbarPrintItemIdentifier";
 }
 
 // Managing Attributes
-
+/*
+    Returns the item's identifier.
+*/
 - (CPString)itemIdentifier
 {
     return _itemIdentifier;
 }
 
+/*
+    Returns the toolbar of which this item is a part.
+*/
 - (CPToolbar)toolbar
 {
     return _toolbar;
 }
 
+/*
+    Returns the item's label
+*/
 - (CPString)label
 {
     return _label;
 }
 
+/*
+    Sets the item's label.
+    @param aLabel the new label for the item
+*/
 - (void)setLabel:(CPString)aLabel
 {
     _label = aLabel;
 }
 
+/*
+    Returns the palette label.
+*/
 - (CPString)paletteLabel
 {
     return _paletteLabel;
 }
 
+/*
+    Sets the palette label
+    @param aPaletteLabel the new palette label
+*/
 - (void)setPaletteLabel:(CPString)aPaletteLabel
 {
     _paletteLabel = aPaletteLabel;
 }
 
+/*
+    Returns the item's tooltip. A tooltip pops up
+    next to the cursor when the user hovers over
+    the item with the mouse.
+*/
 - (CPString)toolTip
 {
     return _toolTip;
 }
 
+/*
+    Sets the item's tooltip. A tooltip pops up next to the cursor when the user hovers over the item with the mouse.
+    @param aToolTip the new item tool tip
+*/
 - (void)setToolTip:(CPString)aToolTip
 {
     _toolTip = aToolTip;
 }
 
+/*
+    Returns the item's tag.
+*/
 - (int)tag
 {
     return _tag;
 }
 
+/*
+    Sets the item's tag.
+    @param aTag the new tag for the item
+*/
 - (void)setTag:(int)aTag
 {
     _tag = aTag;
 }
 
+/*
+    Returns the item's action target.
+*/
 - (id)target
 {
     return _target;
 }
 
+/*
+    Sets the target of the action that is triggered when the user clicks this item. <code>nil</code> will cause 
+    the action to be passed on to the first responder.
+    @param aTarget the new target
+*/
 - (void)setTarget:(id)aTarget
 {
     _target = aTarget;
@@ -145,11 +210,18 @@ CPToolbarPrintItemIdentifier            = @"CPToolbarPrintItemIdentifier";
     [_view setTarget:aTarget];
 }
 
+/*
+    Returns the action that is triggered when the user clicks this item.
+*/
 - (SEL)action
 {
     return _action;
 }
 
+/*
+    Sets the action that is triggered when the user clicks this item.
+    @param anAction the new action
+*/
 - (void)setAction:(SEL)anAction
 {
     _action = anAction;
@@ -157,21 +229,35 @@ CPToolbarPrintItemIdentifier            = @"CPToolbarPrintItemIdentifier";
     [_view setAction:anAction];
 }
 
+/*
+    Returns <code>YES</code> if the item is enabled.
+*/
 - (BOOL)isEnabled
 {
     return _isEnabled;
 }
 
+/*
+    Sets whether the item is enabled.
+    @param aFlag <code>YES</code> enables the item
+*/
 - (void)setEnabled:(BOOL)aFlag
 {
     _isEnabled = aFlag;
 }
 
+/*
+    Returns the item's image
+*/
 - (CPImage)image
 {
     return _image;
 }
 
+/*
+    Sets the item's image.
+    @param anImage the new item image
+*/
 - (void)setImage:(CPImage)anImage
 {
     _image = anImage;
@@ -179,6 +265,10 @@ CPToolbarPrintItemIdentifier            = @"CPToolbarPrintItemIdentifier";
     [_view setImage:anImage];
 }
 
+/*
+    Sets the alternate image. This image is displayed on the item when the user is clicking it.
+    @param anImage the new alternate image
+*/
 - (void)setAlternateImage:(CPImage)anImage
 {
     _alternateImage = anImage;
@@ -186,48 +276,90 @@ CPToolbarPrintItemIdentifier            = @"CPToolbarPrintItemIdentifier";
     [_view setAlternateImage:anImage];
 }
 
+/*
+    Returns the alternate image. This image is displayed on the item when the user is clicking it.
+*/
 - (CPImage)alternateImage
 {
     return _alternateImage;
 }
 
+/*
+    Returns the item's view.
+*/
 - (CPView)view
 {
     return _view;
 }
 
+/*
+    Sets the item's view
+    @param aView the item's new view
+*/
 - (void)setView:(CPView)aView
 {
     _view = aView;
 }
 
+/*
+    Returns the item's minimum size.
+*/
 - (CGSize)minSize
 {
     return _minSize;
 }
 
+/*
+    Sets the item's minimum size.
+    @param aMinSize the new minimum size
+*/
 - (void)setMinSize:(CGSize)aMinSize
 {
     _minSize = CGSizeCreateCopy(aMinSize);
 }
 
+/*
+    Returns the item's maximum size.
+*/
 - (CGSize)maxSize
 {
     return _maxSize;
 }
 
+/*
+    Sets the item's new maximum size.
+    @param aMaxSize the new maximum size
+*/
 - (void)setMaxSize:(CGSize)aMaxSize
 {
     _maxSize = CGSizeCreateCopy(aMaxSize);
 }
 
 // Visibility Priority
-
+/*
+    Returns the item's visibility priority. The value will be one of:
+<pre>
+CPToolbarItemVisibilityPriorityStandard
+CPToolbarItemVisibilityPriorityLow
+CPToolbarItemVisibilityPriorityHigh
+CPToolbarItemVisibilityPriorityUser
+</pre>
+*/
 - (int)visibilityPriority
 {
     return _visibilityPriority;
 }
 
+/*
+    Sets the item's visibility priority. The value must be one of:
+<pre>
+CPToolbarItemVisibilityPriorityStandard
+CPToolbarItemVisibilityPriorityLow
+CPToolbarItemVisibilityPriorityHigh
+CPToolbarItemVisibilityPriorityUser
+</pre>
+    @param aVisiblityPriority the priority
+*/
 - (void)setVisibilityPriority:(int)aVisibilityPriority
 {
     _visibilityPriority = aVisibilityPriority;
@@ -270,6 +402,7 @@ CPToolbarPrintItemIdentifier            = @"CPToolbarPrintItemIdentifier";
 
 @implementation CPToolbarItem (Standard)
 
+/* @ignore */
 + (CPToolbarItem)_standardItemWithItemIdentifier:(CPString)anItemIdentifier
 {
     var item = [[CPToolbarItem alloc] initWithItemIdentifier:anItemIdentifier];                                                        

@@ -22,6 +22,7 @@
 
 import "CPView.j"
 
+/* @ignore */
 @implementation CPCustomView : CPView
 {
     CPString    _className;

@@ -24,6 +24,10 @@ import "CPObject.j"
 import "CPArray.j"
 import "CPString.j"
 
+/*
+    @global
+    @group CPRunLoopMode
+*/
 CPDefaultRunLoopMode    = @"CPDefaultRunLoopMode";
 
 function _CPRunLoopPerformCompare(lhs, rhs)
@@ -34,6 +38,7 @@ function _CPRunLoopPerformCompare(lhs, rhs)
 var _CPRunLoopPerformPool           = [],
     _CPRunLoopPerformPoolCapacity   = 5;
 
+/* @ignore */
 @implementation _CPRunLoopPerform : CPObject
 {
     id          _target;
@@ -119,6 +124,11 @@ var _CPRunLoopPerformPool           = [],
 
 @end
 
+/*
+    CPRunLoop instances handle various utility tasks that must be performed repetitively in an application, such as processing input events.
+
+    There is one run loop per application, which may always be obtained through the +currentRunLoop method,
+*/
 @implementation CPRunLoop : CPObject
 {
     CPArray _queuedPerforms;
@@ -126,6 +136,9 @@ var _CPRunLoopPerformPool           = [],
     BOOL    _isPerformingSelectors;
 }
 
+/*
+    @ignore
+*/
 + (void)initialize
 {
     if (self != [CPRunLoop class])
@@ -147,16 +160,30 @@ var _CPRunLoopPerformPool           = [],
     return self;
 }
 
+/*
+    Returns the application's singleton <objj>CPRunLoop</objj>.
+*/
 + (CPRunLoop)currentRunLoop
 {
     return CPMainRunLoop;
 }
 
+/*
+    Returns the application's singleton <objj>CPRunLoop</objj>.
+*/
 + (CPRunLoop)mainRunLoop
 {
     return CPMainRunLoop;
 }
 
+/*
+    Performs the specified selector on the specified target. The method will be invoked synchronously.
+    @param aSelector the selector of the method to invoke
+    @param aTarget the target of the selector
+    @param anArgument the method argument
+    @param anOrder the message priority
+    @param modes the modes variable isn't respected.
+*/
 - (void)performSelector:(SEL)aSelector target:(id)aTarget argument:(id)anArgument order:(int)anOrder modes:(CPArray)modes
 {
     var perform = [_CPRunLoopPerform performWithSelector:aSelector target:aTarget argument:anArgument order:anOrder modes:modes];
@@ -176,6 +203,12 @@ var _CPRunLoopPerformPool           = [],
     }
 }
 
+/*
+    Cancels the specified selector and target.
+    @param aSelector the selector of the method to invoke
+    @param aTarget the target to invoke the method on
+    @param the argument for the method
+*/
 - (void)cancelPerformSelector:(SEL)aSelector target:(id)aTarget argument:(id)anArgument
 {
     var count = _orderedPerforms.length;
@@ -189,6 +222,9 @@ var _CPRunLoopPerformPool           = [],
     }
 }
 
+/*
+    @ignore
+*/
 - (void)performSelectors
 {
     if (_isPerformingSelectors)

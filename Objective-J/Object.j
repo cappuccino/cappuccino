@@ -33,7 +33,7 @@
 {
 }
 
-- (id)forwardSelector:(SEL)selector arguments:(void *)args
+- (id)forwardSelector:(SEL)selector arguments:(void)args
 {
     return nil;
 }

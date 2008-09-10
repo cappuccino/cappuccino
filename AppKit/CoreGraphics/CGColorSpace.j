@@ -29,12 +29,40 @@ kCGColorSpaceModelDeviceN       = 4;
 kCGColorSpaceModelIndexed       = 5;
 kCGColorSpaceModelPattern       = 6;
 
+/*
+    @global
+    @group CGColorSpace
+*/
 kCGColorSpaceGenericGray        = "CGColorSpaceGenericGray";
+/*
+    @global
+    @group CGColorSpace
+*/
 kCGColorSpaceGenericRGB         = "CGColorSpaceGenericRGB";
+/*
+    @global
+    @group CGColorSpace
+*/
 kCGColorSpaceGenericCMYK        = "CGColorSpaceGenericCMYK";
+/*
+    @global
+    @group CGColorSpace
+*/
 kCGColorSpaceGenericRGBLinear   = "CGColorSpaceGenericRGBLinear";
+/*
+    @global
+    @group CGColorSpace
+*/
 kCGColorSpaceGenericRGBHDR      = "CGColorSpaceGenericRGBHDR";
+/*
+    @global
+    @group CGColorSpace
+*/
 kCGColorSpaceAdobeRGB1998       = "CGColorSpaceAdobeRGB1998";
+/*
+    @global
+    @group CGColorSpace
+*/
 kCGColorSpaceSRGB               = "CGColorSpaceSRGB";
 
 var _CGNamedColorSpaces         = {};

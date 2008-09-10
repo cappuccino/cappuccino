@@ -48,6 +48,9 @@ var _CPMenuBarVisible               = NO,
     _CPMenuBarIconImageAlphaValue   = 1.0,
     _CPMenuBarSharedWindow          = nil;
 
+/*
+    Menus provide the user with a list of actions and/or submenus. Submenus themselves are full fledged menus and so a heirarchical structure appears.
+*/
 @implementation CPMenu : CPObject
 {
     CPString        _title;
@@ -137,7 +140,11 @@ var _CPMenuBarVisible               = NO,
 }
 
 // Creating a CPMenu Object
-
+/*
+    Initializes the menu with a specified title.
+    @param aTile the menu title
+    @return the initialized menu
+*/
 - (id)initWithTitle:(CPString)aTitle
 {
     self = [super init];
@@ -155,7 +162,11 @@ var _CPMenuBarVisible               = NO,
 }
 
 // Setting Up Menu Commands
-
+/*
+    Inserts a menu item at the specified index.
+    @param aMenuItem the item to insert
+    @param anIndex the index in the menu to insert the item.
+*/
 - (void)insertItem:(CPMenuItem)aMenuItem atIndex:(unsigned)anIndex
 {
     var menu = [aMenuItem menu];
@@ -176,6 +187,14 @@ var _CPMenuBarVisible               = NO,
 
 }
 
+/*
+    Creates and inserts a new menu item with the specified attributes.
+    @param aTitle the title of the menu item
+    @param anAction the action initiated when the user selects the item
+    @param aKeyEquivalent the keyboard shortcut for the item
+    @param anIndex the index location in the menu for the new item
+    @return the new menu item
+*/
 - (CPMenuItem)insertItemWithTitle:(CPString)aTitle action:(SEL)anAction keyEquivalent:(CPString)aKeyEquivalent atIndex:(unsigned)anIndex
 {
     var item = [[CPMenuItem alloc] initWithTitle:aTitle action:anAction keyEquivalent:aKeyEquivalent];
@@ -185,21 +204,41 @@ var _CPMenuBarVisible               = NO,
     return item;
 }
 
+/*
+    Adds a menu item at the end of the menu.
+    @param aMenuItem the menu item to add
+*/
 - (void)addItem:(CPMenuItem)aMenuItem
 {
     [self insertItem:aMenuItem atIndex:[_items count]];
 }
 
+/*
+    Creates and adds a menu item with the specified attributes
+    at the end of the menu.
+    @param aTitle the title of the new menu item
+    @param anAction the action initiated when the user selects the item
+    @param aKeyEquivalent the keyboard shortcut for the menu item
+    @return the new menu item
+*/
 - (CPMenuItem)addItemWithTitle:(CPString)aTitle action:(SEL)anAction keyEquivalent:(CPString)aKeyEquivalent
 {
     return [self insertItemWithTitle:aTitle action:anAction keyEquivalent:aKeyEquivalent atIndex:[_items count]];
 }
 
+/*
+    Removes the specified item from the menu
+    @param aMenuItem the item to remove
+*/
 - (void)removeItem:(CPMenuItem)aMenuItem
 {
     [self removeItemAtIndex:[_items indexOfObjectIdenticalTo:aMenuItem]];
 }
 
+/*
+    Removes the item at the specified index from the menu
+    @param anIndex the index of the item to remove
+*/
 - (void)removeItemAtIndex:(unsigned)anIndex
 {
     if (anIndex < 0 || anIndex >= _items.length)
@@ -214,6 +253,10 @@ var _CPMenuBarVisible               = NO,
                     userInfo:[CPDictionary dictionaryWithObject:anIndex forKey:@"CPMenuItemIndex"]];
 }
 
+/*
+    Called when a menu item has visually changed.
+    @param aMenuItem the item that changed
+*/
 - (void)itemChanged:(CPMenuItem)aMenuItem
 {
     if ([aMenuItem menu] != self)
@@ -226,7 +269,11 @@ var _CPMenuBarVisible               = NO,
 }
 
 // Finding Menu Items
-
+/*
+    Returns the menu item with the specified tag
+    @param the tag of the desired menu item
+    @return the menu item or <code>nil</code> if a match was not found
+*/
 - (CPMenuItem)menuWithTag:(int)aTag
 {
     var index = [self indexOfItemWithTag:aTag];
@@ -237,6 +284,11 @@ var _CPMenuBarVisible               = NO,
     return _items[index];
 }
 
+/*
+    Returns the menu item with the specified title.
+    @param aTitle the title of the menu item
+    @return the menu item or <code>nil</code> if a match was not found
+*/
 - (CPMenuItem)menuWithTitle:(CPString)aTitle
 {
     var index = [self indexOfItemWithTitle:aTitle];
@@ -247,23 +299,37 @@ var _CPMenuBarVisible               = NO,
     return _items[index];
 }
 
+/*
+    Returns the menu item at the specified index
+    @param anIndex the index of the requested item
+*/
 - (CPMenuItem)itemAtIndex:(int)anIndex
 {
     return [_items objectAtIndex:anIndex];
 }
 
+/*
+    Returns the number of menu items in the menu
+*/
 - (unsigned)numberOfItems
 {
     return [_items count];
 }
 
+/*
+    Returns the array of menu items backing this menu
+*/
 - (CPArray)itemArray
 {
     return _items;
 }
 
 // Finding Indices of Menu Items
-
+/*
+    Returns the index of the specified menu item
+    @param aMenuItem the item to find the index for
+    @return the item index or <objj>CPNotFound</objj>
+*/
 - (int)indexOfItem:(CPMenuItem)aMenuItem
 {
     if ([aMenuItem menu] != self)
@@ -272,6 +338,11 @@ var _CPMenuBarVisible               = NO,
     return [_items indexOfObjectIdenticalTo:aMenuItem];
 }
 
+/*
+    Returns the index of the item with the specified title.
+    @param aTitle the desired title to match
+    @return the index of the item or <objj>CPNotFound</objj>
+*/
 - (int)indexOfItemWithTitle:(CPString)aTitle
 {
     var index = 0,
@@ -284,6 +355,11 @@ var _CPMenuBarVisible               = NO,
     return CPNotFound;
 }
 
+/*
+    Returns the index of the item with the specified tag
+    @param aTag the desired tag to match
+    @return the index of the item or <objj>CPNotFound</objj>
+*/
 - (int)indexOfItemWithTag:(int)aTag
 {
     var index = 0,
@@ -296,6 +372,12 @@ var _CPMenuBarVisible               = NO,
     return CPNotFound;
 }
 
+/*
+    Returns the index of the item with the specified target and action.
+    @param aTarget the target of the desired menu item
+    @param anAction the action of the desired menu item
+    @return the index of the item or <objj>CPNotFound</objj>
+*/
 - (int)indexOfItemWithTarget:(id)aTarget andAction:(SEL)anAction
 {
     var index = 0,
@@ -312,6 +394,11 @@ var _CPMenuBarVisible               = NO,
     return CPNotFound;
 }
 
+/*
+    Returns the index of the menu item with the specified represented object.
+    @param anObject the represented object of the desired item
+    @return the index of the item or <objj>CPNotFound</objj>
+*/
 - (int)indexOfItemWithRepresentedObject:(id)anObject
 {
     var index = 0,
@@ -324,6 +411,11 @@ var _CPMenuBarVisible               = NO,
     return CPNotFound;
 }
 
+/*
+    Returns the index of the item with the specified submenu.
+    @param the submenu of the desired menu item
+    @return the index of the item or <objj>CPNotFound</objj>
+*/
 - (int)indexOfItemWithSubmenu:(CPMenu)aMenu
 {
     var index = 0,
@@ -337,7 +429,11 @@ var _CPMenuBarVisible               = NO,
 }
 
 // Managing Submenus
-
+/*
+    Sets a submenu for a menu item
+    @param aMenu the submenu
+    @param aMenuItem the menu item to set the submenu on
+*/
 - (void)setSubmenu:(CPMenu)aMenu forItem:(CPMenuItem)aMenuItem
 {
     [aMenuItem setTarget:aMenuItem];
@@ -346,65 +442,106 @@ var _CPMenuBarVisible               = NO,
     [aMenuItem setSubmenu:aMenu];
 }
 
+/*
+    The action method of menu items that open submenus.
+    The default implementation does nothing, but it may
+    be subclassed to provide different behavior.
+    @param aSender the object that sent the message
+*/
 - (void)submenuAction:(id)aSender
 {
 
 }
 
+/*
+    Returns the attaced menu, or <code>nil</code> if there isn't one.
+*/
 - (CPMenu)attachedMenu
 {
     return _attachedMenu;
 }
 
+/*
+    Returns <code>YES</code> if the menu is attached to another menu.
+*/
 - (BOOL)isAttached
 {
     return _isAttached;
 }
 
+/*
+    Not yet implemented
+*/
 - (CGPoint)locationOfSubmenu:(CPMenu)aMenu
 {
     // FIXME: IMPLEMENT.
 }
 
+/*
+    Returns the super menu or <code>nil</code> if there is none.
+*/
 - (CPMenu)supermenu
 {
     return _supermenu;
 }
 
+/*
+    Sets the super menu.
+    @param aMenu the new super menu
+*/
 - (void)setSupermenu:(CPMenu)aMenu
 {
     _supermenu = aMenu;
 }
 
+/*
+    If there are two instances of this menu visible, return <code>NO</code>.
+    Otherwise, return <code>YES</code> if we are a detached menu and visible.
+*/
 - (BOOL)isTornOff
 {
     return !_supermenu /* || offscreen(?) */ || self == [CPApp mainMenu];
 }
 
 // Enabling and Disabling Menu Items
-
+/*
+    Sets whether the menu automatically enables menu items.
+    @param aFlag <code>YES</code> sets the menu to automatically enable items.
+*/
 - (void)setAutoenablesItems:(BOOL)aFlag
 {
     _autoenablesItems = aFlag;
 }
 
+/*
+    Returns <code>YES</code> if the menu auto enables items.
+*/
 - (BOOL)autoenablesItems
 {
     return _autoenablesItems;
 }
 
+/*
+    Not implemented.
+*/
 - (void)update
 {
 
 }
 
 // Managing the Title
-
+/*
+    Sets the menu title.
+    @param the new title
+*/
 - (void)setTitle:(CPString)aTitle
 {
     _title = aTitle;
 }
 
+/*
+    Returns the menu title
+*/
 - (CPString)title
 {
     return _title;
@@ -470,20 +607,29 @@ var _CPMenuBarVisible               = NO,
 }
 
 // Managing Display of State Column
-
+/*
+    Sets whether to show the state column
+    @param shouldShowStateColumn <code>YES</code> shows the state column
+*/
 - (void)setShowsStateColumn:(BOOL)shouldShowStateColumn
 {
     _showsStateColumn = shouldShowStateColumn;
 }
 
+/*
+    Returns <code>YES</code> if the menu shows the state column
+*/
 - (BOOL)showsStateColumn
 {
     return _showsStateColumn;
 }
 
 // Handling Highlighting
-
-- (BOOL)highlightedItem
+/*
+    Returns the currently highlighted menu item.
+    @return the highlighted menu item or <code>nil</code> if no item is currently highlighted
+*/
+- (CPMenuItem)highlightedItem
 {
     return _highlightedIndex >= 0 ? _items[_highlightedIndex] : nil;
 }
@@ -501,17 +647,26 @@ var _CPMenuBarVisible               = NO,
 }
 
 // Handling Tracking
-
+/*
+	Cancels tracking.
+*/
 - (void)cancelTracking
 {
     [_menuWindow cancelTracking];
 }
 
+/* @ignore */
 - (void)_setMenuWindow:(_CPMenuWindow)aMenuWindow
 {
     _menuWindow = aMenuWindow;
 }
 
+/*
+    Initiates the action of the menu item that
+    has a keyboard shortcut equivalent to <code>anEvent</code>
+    @param anEvent the keyboard event
+    @return <code>YES</code> if it was handled.
+*/
 - (BOOL)performKeyEquivalent:(CPEvent)anEvent
 {
     if (_autoenablesItems)
@@ -548,7 +703,10 @@ var _CPMenuBarVisible               = NO,
 }
 
 // Simulating Mouse Clicks
-
+/*
+    Sends the action of the menu item at the specified index.
+    @param anIndex the index of the item
+*/
 - (void)performActionForItemAtIndex:(unsigned)anIndex
 {
     var item = _items[anIndex];
@@ -557,12 +715,17 @@ var _CPMenuBarVisible               = NO,
 }
 
 //
-
+/*
+    @ignore
+*/
 - (BOOL)_itemIsHighlighted:(CPMenuItem)aMenuItem
 {
     return _items[_highlightedIndex] == aMenuItem;
 }
 
+/*
+    @ignore
+*/
 - (void)_highlightItemAtIndex:(int)anIndex
 {
     var previousHighlightedIndex = _highlightedIndex;
@@ -584,6 +747,11 @@ var CPMenuTitleKey  = @"CPMenuTitleKey",
 
 @implementation CPMenu (CPCoding)
 
+/*
+    Initializes the menu with data from the specified coder.
+    @param aCoder the coder from which to read the data
+    @return the initialized menu
+*/
 - (id)initWithCoder:(CPCoder)aCoder
 {
     self = [super init];
@@ -597,6 +765,10 @@ var CPMenuTitleKey  = @"CPMenuTitleKey",
     return self;
 }
 
+/*
+    Encodes the data of the menu into a coder
+    @param aCoder the coder to which the data will be written
+*/
 - (void)encodeWithCoder:(CPCoder)aCoder
 {
     [aCoder encodeObject:_title forKey:CPMenuTitleKey];
@@ -627,6 +799,9 @@ var STICKY_TIME_INTERVAL        = 500,
     
     SCROLL_INDICATOR_HEIGHT     = 16.0;
 
+/*
+    @ignore
+*/
 @implementation _CPMenuWindow : CPWindow
 {
     _CPMenuView         _menuView;    
@@ -1008,6 +1183,9 @@ var STICKY_TIME_INTERVAL        = 500,
 
 @end
 
+/*
+    @ignore
+*/
 @implementation _CPMenuView : CPView
 {
     CPArray _menuItemViews;

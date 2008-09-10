@@ -23,16 +23,29 @@
 import "CPObject.j"
 import "CPCoder.j"
 
+/*
+    The class can be subclassed to hold different types of scalar values.
+*/
 @implementation CPValue : CPObject
 {
     JSObject    _JSObject;
 }
 
+/*
+    Creates a value from the specified JavaScript object
+    @param aJSObject a JavaScript object containing a value
+    @return the converted <objj>CPValue</objj>
+*/
 + (id)valueWithJSObject:(JSObject)aJSObject
 {
     return [[self alloc] initWithJSObject:aJSObject];
 }
 
+/*
+    Initializes the value from a JavaScript object
+    @param aJSObject the object to get data from
+    @return the initialized <objj>CPValue</objj>
+*/
 - (id)initWithJSObject:(JSObject)aJSObject
 {
     self = [super init];
@@ -43,6 +56,9 @@ import "CPCoder.j"
     return self;
 }
 
+/*
+    Returns the JavaScript object backing this value.
+*/
 - (JSObject)JSObject
 {
     return _JSObject;
@@ -54,6 +70,11 @@ var CPValueValueKey = @"CPValueValueKey";
 
 @implementation CPValue (CPCoding)
 
+/*
+    Initializes the value from a coder.
+    @param aCoder the coder from which to initialize
+    @return the initialized <objj>CPValue</objj>
+*/
 - (id)initWithCoder:(CPCoder)aCoder
 {
     self = [super init];
@@ -64,6 +85,10 @@ var CPValueValueKey = @"CPValueValueKey";
     return self;
 }
 
+/*
+    Encodes the data into the specified coder.
+    @param the coder into which the data will be written.
+*/
 - (void)encodeWithCoder:(CPCoder)aCoder
 {
     [aCoder encodeObject:CPJSObjectCreateJSON(_JSObject) forKey:CPValueValueKey];

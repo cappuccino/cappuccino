@@ -37,13 +37,33 @@ var PREVIEW_HEIGHT = 20.0,
 
 var SharedColorPanel = nil;
 
-CPWheelColorPickerMode = 1,
-CPKulerColorPickerMode = 2,
+/*
+    A color wheel
+    @global
+    @group CPColorPanelMode
+*/
+CPWheelColorPickerMode = 1;
+/*
+    Kuler color picker
+    @global
+    @group CPColorPanelMode
+*/
+CPKulerColorPickerMode = 2;
+/*
+    Slider based picker
+    @global
+    @group CPColorPanelMode
+*/
 CPSliderColorPickerMode = 3;
 
 CPColorPickerViewWidth  = 265,
 CPColorPickerViewHeight = 370;
 
+/*
+    <objj>CPColorPanel</objj> provides a reusable panel that can be used
+    displayed on screen to prompt the user for a color selection. To
+    obtain the panel, call the <code>sharedColorPanel</code> method.
+*/
 @implementation CPColorPanel : CPPanel
 {    
     _CPColorPanelToolbar    _toolbar;
@@ -68,6 +88,9 @@ CPColorPickerViewHeight = 370;
     int             _mode;             
 }
 
+/*
+    Returns (and if necessary, creates) the shared color panel.
+*/
 + (CPColorPanel)sharedColorPanel
 {
     if (!SharedColorPanel)
@@ -76,12 +99,20 @@ CPColorPickerViewHeight = 370;
     return SharedColorPanel;
 }
 
-+ (void)setPickerMode:(int)mode
+/*
+    Returns the shared color panel set to display in <code>mode</code>.
+    @param mode the mode to which the color panel will be set before returning
+*/
++ (void)setPickerMode:(CPColorPanelMode)mode
 {
     var panel = [CPColorPanel sharedColorPanel];
     [panel setMode: mode];
 }
 
+/*
+    To obtain the color panel, use <code>sharedColorPanel</code>.
+    @ignore
+*/
 - (id)init
 {
     self = [super initWithContentRect:CGRectMake(500.0, 50.0, 218.0, 360.0) 
@@ -101,6 +132,9 @@ CPColorPickerViewHeight = 370;
     return self;
 }
 
+/*
+    Sets the color of the panel, and updates the picker. Also posts a <code>CPColorPanelDidChangeNotification</code>.
+*/
 - (void)setColor:(CPColor)aColor
 {
     _color = aColor;
@@ -116,6 +150,11 @@ CPColorPickerViewHeight = 370;
                       object:self];
 }
 
+/*
+    Sets the selected color of the panel and optionally updates the picker.
+    @param bool whether or not to update the picker
+    @ignore
+*/
  -(void)setColor:(CPColor)aColor updatePicker:(BOOL)bool
  {
     [self setColor: aColor];
@@ -125,32 +164,55 @@ CPColorPickerViewHeight = 370;
  }
  
 
+/*
+    Returns the panel's currently selected color.
+*/
 - (CPColor)color
 {
     return _color;
 }
 
+/*
+    Sets the target for the color panel. Messages are sent
+    to the target when colors are selected in the panel.
+*/
 - (void)setTarget:(id)aTarget
 {
     _target = aTarget;
 }
 
+/*
+    Returns the current target. The target receives messages
+    when colors are selected in the panel.
+*/
 - (id)target
 {
     return _target;
 }
 
+/*
+    Sets the action that gets sent to the target.
+    This action is sent whenever a color is selected in the panel.
+    @param anAction the action that will be sent
+*/
 - (void)setAction:(selector)anAction
 {
     _action = anAction;
 }
 
+/*
+    Returns the current target action.
+*/
 - (selector)action
 {
     return _action;
 }
 
-- (void)setMode:(int)mode
+/*
+    Sets the mode (look) of the color panel.
+    @param mode the mode in which to display the color panel
+*/
+- (void)setMode:(CPColorPanelMode)mode
 {
     if(mode == _mode) 
         return;
@@ -175,7 +237,10 @@ CPColorPickerViewHeight = 370;
     [[self contentView] addSubview: _currentView];
 }
 
-- (int)mode
+/*
+    Returns the color panel's current display mode.
+*/
+- (CPColorPanelMode)mode
 {
     return _mode;
 }
@@ -187,6 +252,7 @@ CPColorPickerViewHeight = 370;
     [super orderFront:aSender];
 }
 
+/* @ignore */
 - (void)_loadContentsIfNecessary
 {
     if (_toolbar)
@@ -269,6 +335,7 @@ CPColorPickerViewHeight = 370;
 var iconSize   = 32,
     totalIcons = 3;
 
+/* @ignore */
 @implementation _CPColorPanelToolbar : CPView
 {
     CPImage  _wheelImage;
@@ -366,6 +433,7 @@ var iconSize   = 32,
 CPColorDragType = "CPColorDragType";
 var CPColorPanelSwatchesCookie = "CPColorPanelSwatchesCookie";
 
+/* @ignore */
 @implementation _CPColorPanelSwatches : CPView
 {
     CPView[]        _swatches;
@@ -539,6 +607,7 @@ var CPColorPanelSwatchesCookie = "CPColorPanelSwatchesCookie";
 
 @end
 
+/* @ignore */
 @implementation _CPColorPanelPreview : CPView
 {
     CPColorPanel    _colorPanel;

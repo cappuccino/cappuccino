@@ -27,6 +27,9 @@ var CPStringReferenceElement    = nil;
 
 @implementation CPString (CPStringDrawing)
 
+/*
+    Returns the string
+*/
 - (CPString)cssString
 {
     return self;

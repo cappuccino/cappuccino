@@ -27,12 +27,20 @@ import "CPDocument.j"
 
 var CPSharedDocumentController = nil;
 
+/*
+    This class is responsible for managing an application's open documents.
+*/
 @implementation CPDocumentController : CPObject
 {
     CPArray _documents;
     CPArray _documentTypes;
 }
 
+/*
+    Returns the singleton instance of the application's document controller. If it has not 
+    been created yet, it will be created then returned.
+    @return a <objj>CPDocumentController</objj>
+*/
 + (id)sharedDocumentController
 {
     if (!CPSharedDocumentController)
@@ -41,6 +49,9 @@ var CPSharedDocumentController = nil;
     return CPSharedDocumentController;
 }
 
+/*
+    @ignore
+*/
 - (id)init
 {
     self = [super init];
@@ -59,6 +70,13 @@ var CPSharedDocumentController = nil;
 
 // Creating and Opening Documents
 
+/*
+    Returns the document matching the specified URL. This
+    method searches documents already open. It does not
+    open the document at the URL if it is not already open.
+    @param aURL the url of the document
+    @return the document, or <code>nil</code> if such a document is not open
+*/
 - (CPDocument)documentForURL:(CPURL)aURL
 {
     var index = 0,
@@ -75,6 +93,11 @@ var CPSharedDocumentController = nil;
 	return nil;
 }
 
+/*
+    Creates a new document of the specified type.
+    @param aType the type of the new document
+    @param shouldDisplay whether to display the document on screen
+*/
 - (void)openUntitledDocumentOfType:(CPString)aType display:(BOOL)shouldDisplay
 {
     var document = [self makeUntitledDocumentOfType:aType error:nil];
@@ -91,11 +114,24 @@ var CPSharedDocumentController = nil;
     return document;
 }
 
+/*
+    Creates a document of the specified type.
+    @param aType the document type
+    @param anError not used
+    @return the created document
+*/
 - (CPDocument)makeUntitledDocumentOfType:(CPString)aType error:({CPError})anError
 {
     return [[[self documentClassForType:aType] alloc] initWithType:aType error:anError];
 }
 
+/*
+    Opens the document at the specified URL.
+    @param anAbsoluteURL the path to the document's file
+    @param shouldDisplay whether to display the document on screen
+    @param anError not used
+    @return the opened document
+*/
 - (CPDocument)openDocumentWithContentsOfURL:(CPURL)anAbsoluteURL display:(BOOL)shouldDisplay error:(CPError)anError
 {
     var result = [self documentForURL:anAbsoluteURL];
@@ -110,21 +146,53 @@ var CPSharedDocumentController = nil;
     return result;
 }
 
+/*
+    Loads a document for a specified URL with it's content
+    retrieved from another URL.
+    @param anAbsoluteURL the document URL
+    @param absoluteContentsURL the location of the document's contents
+    @param anError not used
+    @return the loaded document or <code>nil</code> if there was an error
+*/
 - (CPDocument)reopenDocumentForURL:(CPURL)anAbsoluteURL withContentsOfURL:(CPURL)absoluteContentsURL error:(CPError)anError
 {
     return [self makeDocumentForURL:anAbsoluteURL withContentsOfURL:absoluteContentsURL  ofType:[[_documentTypes objectAtIndex:0] objectForKey:@"CPBundleTypeName"] delegate:self didReadSelector:@selector(document:didRead:contextInfo:) contextInfo:nil];
 }
 
+/*
+    Creates a document from the contents at the specified URL.
+    Notifies the provided delegate with the provided selector afterwards.
+    @param anAbsoluteURL the location of the document data
+    @param aType the document type
+    @param aDelegate the delegate to notify
+    @param aSelector the selector to notify with
+    @param aContextInfo the context infomration passed to the delegate
+*/
 - (CPDocument)makeDocumentWithContentsOfURL:(CPURL)anAbsoluteURL ofType:(CPString)aType delegate:(id)aDelegate didReadSelector:(SEL)aSelector contextInfo:(id)aContextInfo
 {
     return [[[self documentClassForType:aType] alloc] initWithContentsOfURL:anAbsoluteURL ofType:aType delegate:aDelegate didReadSelector:aSelector contextInfo:aContextInfo];
 }
 
+/*
+    Creates a document from the contents of a URL, and sets
+    the document's URL location as another URL.
+    @param anAbsoluteURL the document's location
+    @param absoluteContentsURL the location of the document's contents
+    @param aType the document's data type
+    @param aDelegate receives a callback after the load has completed
+    @param aSelector the selector to invoke for the callback
+    @param aContextInfo an object passed as an argument for the callback
+    @return a new document or <code>nil</code> if there was an error
+*/
 - (CPDocument)makeDocumentForURL:(CPURL)anAbsoluteURL withContentsOfURL:(CPURL)absoluteContentsURL ofType:(CPString)aType delegate:(id)aDelegate didReadSelector:(SEL)aSelector contextInfo:(id)aContextInfo
 {
     return [[[self documentClassForType:aType] alloc] initForURL:anAbsoluteURL withContentsOfURL:absoluteContentsURL ofType:aType delegate:aDelegate didReadSelector:aSelector contextInfo:aContextInfo];
 }
 
+/*
+    Implemented delegate method
+    @ignore
+*/
 - (void)document:(CPDocument)aDocument didRead:(BOOL)didRead contextInfo:(id)aContextInfo
 {
     if (!didRead)
@@ -134,6 +202,10 @@ var CPSharedDocumentController = nil;
     [aDocument makeWindowControllers];
 }
 
+/*
+    Opens a new document in the application.
+    @param aSender the requesting object
+*/
 - (CFAction)newDocument:(id)aSender
 {
     [self openUntitledDocumentOfType:[[_documentTypes objectAtIndex:0] objectForKey:@"CPBundleTypeName"] display:YES];
@@ -141,16 +213,28 @@ var CPSharedDocumentController = nil;
 
 // Managing Documents
 
+/*
+    Returns the array of all documents being managed. This is
+    the same as all open documents in the application.
+*/
 - (CPArray)documents
 {
     return _documents;
 }
 
+/*
+    Adds <code>aDocument</code> under the control of the receiver.
+    @param aDocument the document to add
+*/
 - (void)addDocument:(CPDocument)aDocument
 {
     [_documents addObject:aDocument];
 }
 
+/*
+    Removes <code>aDocument</code> from the control of the receiver.
+    @param aDocument the document to remove
+*/
 - (void)removeDocument:(CPDocument)aDocument
 {
     [_documents removeObjectIdenticalTo:aDocument];
@@ -158,6 +242,7 @@ var CPSharedDocumentController = nil;
 
 // Managing Document Types
 
+/* @ignore */
 - (CPDictionary)_infoForType:(CPString)aType
 {
     var i = 0,
@@ -174,11 +259,16 @@ var CPSharedDocumentController = nil;
     return nil;
 }
 
+/*
+    Returns the <objj>CPDocument</objj> subclass associated with <code>aType</code>.
+    @param aType the type of document
+    @return a Cappuccino Class object, or <code>nil</code> if no match was found
+*/
 - (Class)documentClassForType:(CPString)aType
 {
     var className = [[self _infoForType:aType] objectForKey:@"CPDocumentClass"];
 
-    return className ? CPClassFromString(className) : Nil;
+    return className ? CPClassFromString(className) : nil;
 }
 
 @end

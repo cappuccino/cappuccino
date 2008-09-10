@@ -24,6 +24,9 @@ import <Foundation/CPObject.j>
 import <Foundation/CPString.j>
 
 
+/*
+    <objj>CPCookie</objj> is the Cappuccino interface to a web browser cookie. You can set the name
+*/
 @implementation CPCookie : CPObject
 {
     CPString    _cookieName;
@@ -32,6 +35,10 @@ import <Foundation/CPString.j>
     CPString    _expires;
 }
 
+/*
+    Initializes a cookie with a given name <code>aName</code>.
+    @param the name for the cookie
+*/
 - (id)initWithName:(CPString)aName
 {
     self = [super init];
@@ -42,21 +49,36 @@ import <Foundation/CPString.j>
     return self;
 }
 
+/*
+    Returns the cookie's data value
+*/
 - (CPString)value
 {
     return _cookieValue;
 }
 
+/*
+    Returns the cookie's name
+*/
 - (CPString)name
 {
     return _cookieName;
 }
 
+/*
+    Returns the cookie's expiration date
+*/
 - (CPString)expires
 {
     return _expires;
 }
 
+/*
+    Sets a value, expiration date, and domain for the cookie
+    @param value the cookie's value
+    @param date the cookie's expiration date
+    @param domain the cookie's domain
+*/
 - (void)setValue:(CPString)value expires:(CPDate)date domain:(CPString)domain
 {
     if(date)
@@ -72,6 +94,7 @@ import <Foundation/CPString.j>
 	document.cookie = _cookieName+"="+value+expires+"; path=/"+domain;        
 }
 
+/* @ignore */
 - (CPString)_readCookieValue
 {
 	var nameEQ = _cookieName + "=";

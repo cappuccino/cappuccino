@@ -23,7 +23,9 @@
 //import "CPRange.j"
 import "CPObject.j"
 import "CPEnumerator.j"
+import "CPException.j"
 
+/* @ignore */
 @implementation _CPDictionaryValueEnumerator : CPEnumerator
 {
     CPEnumerator    _keyEnumerator;
@@ -55,35 +57,77 @@ import "CPEnumerator.j"
 
 @end
 
+/*
+     A dictionary is the standard way of passing around key-value pairs in
+     the Cappuccino framework. It is similar to the
+     <a href="http://java.sun.com/javase/6/docs/api/index.html">Java map interface</a>,
+     except all keys are <objj>CPString</objj>s and values can be any
+     Cappuccino or JavaScript object.</p>
+
+     <p>If you are familiar with dictionaries in Cocoa, you'll notice that
+     there is no CPMutableDictionary class. The regular <objj>CPDictionary</objj>
+     has <code>setObject:</code> and <code>removeObjectForKey:</code> methods.
+     In Cappuccino there is no distinction between immutable and mutable classes.
+     They are all mutable.
+*/
 @implementation CPDictionary : CPObject
 {
 }
 
+/*
+    @ignore
+*/
 + (id)alloc
 {
     return new objj_dictionary();
 }
 
+/*
+    Returns a new empty <objj>CPDictionary</objj>.
+*/
 + (id)dictionary
 {
     return [[self alloc] init];
 }
 
+/*
+    Returns a new dictionary, initialized with the contents of <code>aDictionary</code>.
+    @param aDictionary the dictionary to copy key-value pairs from
+    @return the new <objj>CPDictionary</objj>
+*/
 + (id)dictionaryWithDictionary:(CPDictionary)aDictionary
 {
     return [[self alloc] initWithDictionary:aDictionary];
 }
 
+/*
+    Creates a new dictionary with single key-value pair.
+    @param anObject the object for the paring
+    @param aKey the key for the pairing
+    @return the new <objj>CPDictionary</objj>
+*/
 + (id)dictionaryWithObject:(id)anObject forKey:(id)aKey
 {
     return [[self alloc] initWithObjects:[anObject] forKeys:[aKey]];
 }
 
+/*
+    Creates a dictionary with multiple key-value pairs.
+    @param objects the objects to place in the dictionary
+    @param keys the keys for each of the objects
+    @throws CPInvalidArgumentException if the number of objects and keys is different
+    @return the new <objj>CPDictionary</objj>
+*/
 + (id)dictionaryWithObjects:(CPArray)objects forKeys:(CPArray)keys
 {
     return [[self alloc] initWithObjects:objects forKeys:keys];
 }
-    
+
+/*
+    Initializes the dictionary with the contents of another dictionary.
+    @param aDictionary the dictionary to copy key-value pairs from
+    @return the initialized dictionary
+*/
 - (id)initWithDictionary:(CPDictionary)aDictionary
 {
     var key = "",
@@ -94,10 +138,20 @@ import "CPEnumerator.j"
         
     return dictionary;
 }
-    
+
+/*
+    Initializes the dictionary from the arrays of keys and objects.
+    @param objects the objects to put in the dictionary
+    @param keyArray the keys for the objects to put in the dictionary
+    @throws CPInvalidArgumentException if the number of objects and keys is different
+    @return the initialized dictionary
+*/
 - (id)initWithObjects:(CPArray)objects forKeys:(CPArray)keyArray
 {
     self = [super init];
+
+    if ([objects count] != [keyArray count])
+        [CPException raise:CPInvalidArgumentException reason:"Counts are different.("+[objects count]+"!="+[keyArray count]+")"];
 
     if (self)
     {
@@ -110,16 +164,25 @@ import "CPEnumerator.j"
     return self;
 }
 
+/*
+    Returns the number of entries in the dictionary
+*/
 - (int)count
 {
     return count;
 }
 
+/*
+    Returns an array of keys for all the entries in the dictionary.
+*/
 - (CPArray)allKeys
 {
     return keys;
 }
 
+/*
+    Returns an array of values for all the entries in the dictionary.
+*/
 - (CPArray)allValues
 {
     var index = keys.length,
@@ -131,11 +194,17 @@ import "CPEnumerator.j"
     return values;
 }
 
+/*
+    Returns an enumerator that enumerates over all the dictionary's keys.
+*/
 - (CPEnumerator)keyEnumerator
 {
     return [keys objectEnumerator];
 }
 
+/*
+    Returns an enumerator that enumerates over all the dictionary's values.
+*/
 - (CPEnumerator)objectEnumerator
 {
     return [[_CPDictionaryValueEnumerator alloc] initWithDictionary:self];
@@ -194,6 +263,11 @@ import "CPEnumerator.j"
         return this._objects.objectEnumerator();
     }
 */
+/*
+    Returns the object for the entry with key <code>aKey</code>.
+    @param aKey the key for the object's entry
+    @return the object for the entry
+*/
 - (id)objectForKey:(CPString)aKey
 {
     // We should really do this with inlining or something of that nature.
@@ -232,6 +306,9 @@ import "CPEnumerator.j"
         while(key= keyEnumerator.nextObject()) this.setObjectForKey(aDictionary.objectForKey(key), key);
     }
 */
+/*
+    Removes all the entries from the dictionary.
+*/
 - (void)removeAllObjects
 {
     keys = [];
@@ -239,6 +316,10 @@ import "CPEnumerator.j"
     buckets = {};
 }
 
+/*
+    Removes the entry for the specified key.
+    @param aKey the key of the entry to be removed
+*/
 - (void)removeObjectForKey:(id)aKey
 {
     dictionary_removeValue(self, aKey);
@@ -270,6 +351,11 @@ import "CPEnumerator.j"
         while(i--) this._dictionary[this._keys[i]]= { object: this._objects[i], index: i };
     }
 */
+/*
+    Adds an entry into the dictionary.
+    @param anObject the object for the entry
+    @param aKey the entry's key
+*/
 - (void)setObject:(id)anObject forKey:(id)aKey
 {
     dictionary_setValue(self, aKey, anObject);
@@ -287,6 +373,9 @@ import "CPEnumerator.j"
     }
 */
 
+/*
+    Returns a human readable description of the dictionary.
+*/
 - (CPString)description
 {
     var description = @"CPDictionary {\n";
@@ -305,11 +394,20 @@ import "CPEnumerator.j"
 
 @implementation CPDictionary (CPCoding)
 
+/*
+    Initializes the dictionary by unarchiving the data from a coder.
+    @param aCoder the coder from which the data will be unarchived.
+    @return the initialized dictionary
+*/
 - (id)initWithCoder:(CPCoder)aCoder
 {
     return [aCoder _decodeDictionaryOfObjectsForKey:@"CP.objects"];
 }
 
+/*
+    Archives the dictionary to a provided coder.
+    @param aCoder the coder to which the dictionary data will be archived.
+*/
 - (void)encodeWithCoder:(CPCoder)aCoder
 {
     [aCoder _encodeDictionaryOfObjects:self forKey:@"CP.objects"];
