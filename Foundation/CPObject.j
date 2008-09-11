@@ -192,7 +192,7 @@
 */
 + (IMP)instanceMethodForSelector:(SEL)aSelector
 {
-    return class_getInstanceMethod(isa, aSelector);
+    return class_getInstanceMethod(self, aSelector);
 }
 
 /*

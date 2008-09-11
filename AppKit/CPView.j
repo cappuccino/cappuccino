@@ -55,14 +55,14 @@ var _DOMOriginUpdateMask        = 1 << 0,
 var _CPViewNotificationCenter   = nil;
 
 #if PLATFORM(DOM)
-var DOMCanvasElementZIndex      = -1,
-    DOMBackgroundElementZIndex  = -2,
-    DOMElementPrototype         = nil,
+var DOMElementPrototype         = nil,
     
     BackgroundTrivialColor              = 0,
     BackgroundVerticalThreePartImage    = 1,
     BackgroundHorizontalThreePartImage  = 2,
-    BackgroundNinePartImage             = 3;
+    BackgroundNinePartImage             = 3,
+    
+    CustomDrawRectViews                 = {};
 #endif
 
 /*
@@ -106,13 +106,15 @@ var DOMCanvasElementZIndex      = -1,
     
 #if PLATFORM(DOM)
     DOMElement          _DOMElement;
+    DOMElement          _DOMContentsElement;
+    
     CPArray             _DOMImageParts;
     CPArray             _DOMImageSizes;
     
     unsigned            _backgroundType;
-    
-    DOMElement          _DOMGraphicsElement;
 #endif
+
+    CGRect              _dirtyRect;
 
     float               _opacity;
     CPColor             _backgroundColor;
@@ -135,6 +137,9 @@ var DOMCanvasElementZIndex      = -1,
 */
 + (void)initialize
 {
+    if ([self instanceMethodForSelector:@selector(drawRect:)] != [CPView instanceMethodForSelector:@selector(drawRect:)])
+        CustomDrawRectViews[[self hash]] = YES;
+    
     if (self != [CPView class])
         return;
 
@@ -398,7 +403,7 @@ var DOMCanvasElementZIndex      = -1,
 */
 - (void)viewDidMoveToSuperview
 {
-    if (_graphicsContext)
+//    if (_graphicsContext)
         [self setNeedsDisplay:YES];
 }
 
@@ -555,9 +560,17 @@ var DOMCanvasElementZIndex      = -1,
 
     if (_autoresizesSubviews)
         [self resizeSubviewsWithOldSize:oldSize];
+        
+    [self setNeedsDisplay:YES];
 
 #if PLATFORM(DOM)
     CPDOMDisplayServerSetStyleSize(_DOMElement, size.width, size.height);
+    
+    if (_DOMContentsElement)
+    {
+        CPDOMDisplayServerSetSize(_DOMContentsElement, size.width, size.height);
+        CPDOMDisplayServerSetStyleSize(_DOMContentsElement, size.width, size.height);
+    }
     
     if (_backgroundType == BackgroundTrivialColor)
         return;
@@ -1291,35 +1304,120 @@ setBoundsOrigin:
 
 }
 
-// Focus
+// Displaying
+
+/*
+    Marks the entire view as dirty, and needing a redraw.
+*/
+- (void)setNeedsDisplay:(BOOL)aFlag
+{
+    if (aFlag)
+        [self setNeedsDisplayInRect:[self bounds]];
+#if PLATFORM(DOM)
+    else
+        CPDOMDisplayServerRemoveView(self);
+#endif
+}
+
+/*
+    Marks the area denoted by <code>aRect</code> as dirty, and initiates a redraw on it.
+    @param aRect the area that needs to be redrawn
+*/
+- (void)setNeedsDisplayInRect:(CPRect)aRect
+{
+    if (!CustomDrawRectViews[[[self class] hash]])
+        return;
+        
+    if (_CGRectIsEmpty(aRect))
+        return;
+    
+    if (_dirtyRect && !_CGRectIsEmpty(_dirtyRect))
+        _dirtyRect = CGRectUnion(aRect, _dirtyRect);
+    else
+        _dirtyRect = _CGRectMakeCopy(aRect);
+
+#if PLATFORM(DOM)
+    CPDOMDisplayServerAddView(self);
+#endif
+}
+
+- (BOOL)needsDisplay
+{
+    return _dirtyRect && !_CGRectIsEmpty(_dirtyRect);
+}
+
+/*
+    Displays the receiver and any of its subviews that need to be displayed.
+*/
+- (void)displayIfNeeded
+{
+    if ([self needsDisplay])
+        [self displayRect:_dirtyRect];
+}
+
+/*
+    Draws the entire area of the receiver as defined by its <code>bounds</code>.
+*/
+- (void)display
+{
+    [self displayRect:[self visibleRect]];
+}
+
+- (void)displayIfNeededInRect:(CGRect)aRect
+{
+    if ([self needsDisplay])
+        [self displayRect:aRect];
+}
+
+/*
+    Draws the receiver into the area defined by <code>aRect</code>.
+    @param aRect the area to be drawn
+*/
+- (void)displayRect:(CPRect)aRect
+{
+    [self displayRectIgnoringOpacity:aRect inContext:nil];
+    
+    _dirtyRect = NULL;
+}
+
+- (void)displayRectIgnoringOpacity:(CGRect)aRect inContext:(CPGraphicsContext)aGraphicsContext
+{
+    [self lockFocus];
+    
+    CGContextClearRect([[CPGraphicsContext currentContext] graphicsPort], aRect);
+    
+    [self drawRect:aRect];
+    [self unlockFocus];
+}
+
 /*
     Locks focus on the receiver, so drawing commands apply to it.
 */
 - (void)lockFocus
 {
-    // If we don't yet have a graphics context, then we must first create a 
-    // canvas element, then use its 2d context.
     if (!_graphicsContext)
     {
-        var context = CGBitmapGraphicsContextCreate();
+        var graphicsPort = CGBitmapGraphicsContextCreate();
         
-#if PLATFORM(DOM)
-        _DOMGraphicsElement = context.DOMElement;
+        _DOMContentsElement = graphicsPort.DOMElement;
         
-        _DOMGraphicsElement.style.position = "absolute";
-        _DOMGraphicsElement.style.top = "0px";
-        _DOMGraphicsElement.style.left = "0px";
-        _DOMGraphicsElement.style.zIndex = DOMCanvasElementZIndex;
-        
-        _DOMGraphicsElement.width = CPRectGetWidth(_frame);
-        _DOMGraphicsElement.height = CPRectGetHeight(_frame);
+        _DOMContentsElement.style.zIndex = -100;
 
-        _DOMGraphicsElement.style.width = CPRectGetWidth(_frame) + "px";
-        _DOMGraphicsElement.style.height = CPRectGetHeight(_frame) + "px";
+        _DOMContentsElement.style.overflow = "hidden";
+        _DOMContentsElement.style.position = "absolute";
+        _DOMContentsElement.style.visibility = "visible";
+        
+        _DOMContentsElement.width = ROUND(_CGRectGetWidth(_frame));
+        _DOMContentsElement.height = ROUND(_CGRectGetHeight(_frame));
+        
+        _DOMContentsElement.style.top = "0px";
+        _DOMContentsElement.style.left = "0px";
+        _DOMContentsElement.style.width = ROUND(_CGRectGetWidth(_frame)) + "px";
+        _DOMContentsElement.style.height = ROUND(_CGRectGetHeight(_frame)) + "px";
 
-        _DOMElement.appendChild(_DOMGraphicsElement);
-#endif
-        _graphicsContext = [CPGraphicsContext graphicsContextWithGraphicsPort:context flipped:YES];
+        CPDOMDisplayServerAppendChild(_DOMElement, _DOMContentsElement);
+        
+        _graphicsContext = [CPGraphicsContext graphicsContextWithGraphicsPort:graphicsPort flipped:YES];
     }
     
     [CPGraphicsContext setCurrentContext:_graphicsContext];
@@ -1332,56 +1430,9 @@ setBoundsOrigin:
 */
 - (void)unlockFocus
 {
-    var graphicsPort = [_graphicsContext graphicsPort];
-    
-    CGContextRestoreGState(graphicsPort);
+    CGContextRestoreGState([_graphicsContext graphicsPort]);
     
     [CPGraphicsContext setCurrentContext:nil];
-}
-
-// Displaying
-/*
-    Marks the entire view as dirty, and needing a redraw.
-*/
-- (void)setNeedsDisplay:(BOOL)aFlag
-{
-    if (aFlag)
-        [self display];
-}
-
-/*
-    Marks the area denoted by <code>aRect</code> as dirty, and initiates a redraw on it.
-    @param aRect the area that needs to be redrawn
-*/
-- (void)setNeedsDisplayInRect:(CGRect)aRect
-{
-    [self displayRect:aRect];
-}
-
-/*
-    Displays the receiver and any of its subviews that need to be displayed.
-*/
-- (void)displayIfNeeded
-{
-}
-
-/*
-    Draws the entire area of the receiver as defined by its <code>bounds</code>.
-*/
-- (void)display
-{
-    [self displayRect:_bounds];
-}
-
-/*
-    Draws the receiver into the area defined by <code>aRect</code>.
-    @param aRect the area to be drawn
-*/
-- (void)displayRect:(CGRect)aRect
-{   
-    [self lockFocus];
-    [self drawRect:aRect];
-    [self unlockFocus];
 }
 
 /*

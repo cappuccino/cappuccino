@@ -26,9 +26,10 @@
 #define SetStyleLeftBottom  2
 #define SetStyleRightBottom 3
 #define SetStyleSize        4
-#define AppendChild         5
-#define InsertBefore        6
-#define RemoveChild         7
+#define SetSize             5
+#define AppendChild         6
+#define InsertBefore        7
+#define RemoveChild         8
 
 #define CPDOMDisplayServerSetStyleOrigin(anInstruction, aDOMElement, aTransform, x, y)\
     if (!aDOMElement.CPDOMDisplayContext)\
@@ -67,6 +68,20 @@
     CPDOMDisplayServerInstructions[__index + 2] = aWidth;\
     CPDOMDisplayServerInstructions[__index + 3] = aHeight;
 
+#define CPDOMDisplayServerSetSize(aDOMElement, aWidth, aHeight)\
+    if (!aDOMElement.CPDOMDisplayContext)\
+        aDOMElement.CPDOMDisplayContext = [];\
+    var __index = aDOMElement.CPDOMDisplayContext[SetSize];\
+    if (!(__index >= 0))\
+    {\
+        __index = aDOMElement.CPDOMDisplayContext[SetSize] = CPDOMDisplayServerInstructionCount;\
+        CPDOMDisplayServerInstructionCount += 4;\
+    }\
+    CPDOMDisplayServerInstructions[__index] = SetSize;\
+    CPDOMDisplayServerInstructions[__index + 1] = aDOMElement;\
+    CPDOMDisplayServerInstructions[__index + 2] = aWidth;\
+    CPDOMDisplayServerInstructions[__index + 3] = aHeight;
+
 #define CPDOMDisplayServerAppendChild(aParentElement, aChildElement)\
     if (aChildElement.CPDOMDisplayContext) aChildElement.CPDOMDisplayContext[SetStyleOrigin] = -1;\
     CPDOMDisplayServerInstructions[CPDOMDisplayServerInstructionCount++] = AppendChild;\
@@ -86,3 +101,25 @@
     CPDOMDisplayServerInstructions[CPDOMDisplayServerInstructionCount++] = aChildElement;
     
 //#dfeine CPDOMDisplayServerCustomAction()
+
+#define CPDOMDisplayServerAddView(aView)\
+    {\
+        var ___hash = [aView hash];\
+        if (typeof (CPDOMDisplayServerViewsContext[___hash]) == "undefined")\
+        {\
+            CPDOMDisplayServerViews[CPDOMDisplayServerViewsCount++] = aView;\
+            CPDOMDisplayServerViewsContext[___hash] = aView;\
+        }\
+    }\
+
+#define CPDOMDisplayServerRemoveView(aView)\
+    {\
+        var index = CPDOMDisplayServerViewsContext[[aView hash]];\
+        if (typeof index != "undefined") \
+        {\
+            CPDOMDisplayServerViewsContext[[aView hash]];\
+            CPDOMDisplayServerViews[index] = NULL;\
+        }\
+    }\
+
+    
