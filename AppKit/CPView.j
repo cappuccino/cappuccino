@@ -933,7 +933,8 @@ var DOMElementPrototype         = nil,
 }
 
 /*
-    @ignore
+    Returns whether or not the view responds to hit tests.
+    @return <code>YES</code> if this view listens to hitTest messages, <code>NO</code> otherwise.
 */
 - (BOOL)hitTests
 {
@@ -941,7 +942,8 @@ var DOMElementPrototype         = nil,
 }
 
 /*
-    @ignore
+    Set whether or not the view should respond to hit tests.
+    @param shouldHitTest should be <code>YES</code> if this view should respond to hit tests, <code>NO</code> otherwise.
 */
 - (void)setHitTests:(BOOL)shouldHitTest
 {
@@ -949,7 +951,9 @@ var DOMElementPrototype         = nil,
 }
 
 /*
-    @ignore
+    Tests whether a point is contained within this view, or one of its subviews.
+    @param aPoint the point to test
+    @return returns the containing view, or nil if the point is not contained
 */
 - (CPView)hitTest:(CPPoint)aPoint
 {
