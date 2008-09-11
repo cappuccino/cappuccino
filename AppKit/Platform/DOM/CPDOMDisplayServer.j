@@ -28,8 +28,12 @@ import <Foundation/CPRunLoop.j>
 
 var CPDOMDisplayRunLoop    = nil;
     
-CPDOMDisplayServerInstructions        = [];
-CPDOMDisplayServerInstructionCount    = 0;
+CPDOMDisplayServerInstructions          = [];
+CPDOMDisplayServerInstructionCount      = 0;
+
+CPDOMDisplayServerViews                 = [];
+CPDOMDisplayServerViewsCount            = 0;
+CPDOMDisplayServerViewsContext          = {};
     
 @implementation CPDOMDisplayServer : CPObject
 {
@@ -44,83 +48,114 @@ CPDOMDisplayServerInstructionCount    = 0;
 
 + (void)run
 {
-    var index = 0;
-
-    while (index < CPDOMDisplayServerInstructionCount)
+    while (CPDOMDisplayServerInstructionCount || CPDOMDisplayServerViewsCount)
     {
-        var instruction = CPDOMDisplayServerInstructions[index++];
-try{
-        switch (instruction)
+        var index = 0;
+    
+        while (index < CPDOMDisplayServerInstructionCount)
         {
-            case SetStyleLeftTop:
-            case SetStyleRightTop:
-            case SetStyleLeftBottom:
-            case SetStyleRightBottom:   var element = CPDOMDisplayServerInstructions[index],
-                                            style = element.style,
-                                            x = (instruction == SetStyleLeftTop || instruction == SetStyleLeftBottom) ? "left" : "right",
-                                            y = (instruction == SetStyleLeftTop || instruction == SetStyleRightTop) ? "top" : "bottom";
-                                    
-                                        CPDOMDisplayServerInstructions[index++] = nil;
+            var instruction = CPDOMDisplayServerInstructions[index++];
+    try{
+            switch (instruction)
+            {
+                case SetStyleLeftTop:
+                case SetStyleRightTop:
+                case SetStyleLeftBottom:
+                case SetStyleRightBottom:   var element = CPDOMDisplayServerInstructions[index],
+                                                style = element.style,
+                                                x = (instruction == SetStyleLeftTop || instruction == SetStyleLeftBottom) ? "left" : "right",
+                                                y = (instruction == SetStyleLeftTop || instruction == SetStyleRightTop) ? "top" : "bottom";
                                         
-                                        var transform = CPDOMDisplayServerInstructions[index++];
-                                        
-                                        if (transform)
-                                        {
-                                            var point = _CGPointMake(CPDOMDisplayServerInstructions[index++], CPDOMDisplayServerInstructions[index++]),
-                                                transformed = _CGPointApplyAffineTransform(point, transform);
-                                                
-                                            style[x] = ROUND(transformed.x) + "px";
-                                            style[y] = ROUND(transformed.y) + "px";
+                                            CPDOMDisplayServerInstructions[index++] = nil;
+                                            
+                                            var transform = CPDOMDisplayServerInstructions[index++];
+                                            
+                                            if (transform)
+                                            {
+                                                var point = _CGPointMake(CPDOMDisplayServerInstructions[index++], CPDOMDisplayServerInstructions[index++]),
+                                                    transformed = _CGPointApplyAffineTransform(point, transform);
+                                                    
+                                                style[x] = ROUND(transformed.x) + "px";
+                                                style[y] = ROUND(transformed.y) + "px";
+    
+                                            }
+                                            else
+                                            {
+                                                style[x] = ROUND(CPDOMDisplayServerInstructions[index++]) + "px";
+                                                style[y] = ROUND(CPDOMDisplayServerInstructions[index++]) + "px";
+                                            }
+                                            
+                                            element.CPDOMDisplayContext[SetStyleOrigin] = -1;
+                                            
+                                            break;
+                        
+                case SetStyleSize:          var element = CPDOMDisplayServerInstructions[index],
+                                                style = element.style;
+                                            
+                                            CPDOMDisplayServerInstructions[index++] = nil;
+                                            
+                                            element.CPDOMDisplayContext[SetStyleSize] = -1;
+                                            
+                                            style.width = MAX(0.0, ROUND(CPDOMDisplayServerInstructions[index++])) + "px";
+                                            style.height = MAX(0.0, ROUND(CPDOMDisplayServerInstructions[index++])) + "px";
+                                            
+                                            break;
 
-                                        }
-                                        else
-                                        {
-                                            style[x] = ROUND(CPDOMDisplayServerInstructions[index++]) + "px";
-                                            style[y] = ROUND(CPDOMDisplayServerInstructions[index++]) + "px";
-                                        }
+                case SetSize:               var element = CPDOMDisplayServerInstructions[index];
+                                            
+                                            CPDOMDisplayServerInstructions[index++] = nil;
+                                            
+                                            element.CPDOMDisplayContext[SetSize] = -1;
+                                            
+                                            element.width = MAX(0.0, ROUND(CPDOMDisplayServerInstructions[index++]));
+                                            element.height = MAX(0.0, ROUND(CPDOMDisplayServerInstructions[index++]));
                                         
-                                        element.CPDOMDisplayContext[SetStyleOrigin] = -1;
-                                        
-                                        break;
+                                            break;
+                        
+                case AppendChild:           CPDOMDisplayServerInstructions[index].appendChild(CPDOMDisplayServerInstructions[index + 1]);
                     
-            case SetStyleSize:          var element = CPDOMDisplayServerInstructions[index],
-                                            style = element.style;
-                                        
-                                        CPDOMDisplayServerInstructions[index++] = nil;
-                                        
-                                        element.CPDOMDisplayContext[SetStyleSize] = -1;
-                                        
-                                        style.width = MAX(0.0, ROUND(CPDOMDisplayServerInstructions[index++])) + "px";
-                                        style.height = MAX(0.0, ROUND(CPDOMDisplayServerInstructions[index++])) + "px";
-                                        
-                                        break;
+                                            CPDOMDisplayServerInstructions[index++] = nil;
+                                            CPDOMDisplayServerInstructions[index++] = nil;
+                                            
+                                            break;
+                                    
+                case InsertBefore:          CPDOMDisplayServerInstructions[index].insertBefore(CPDOMDisplayServerInstructions[index + 1], CPDOMDisplayServerInstructions[index + 2]);
+                                            
+                                            CPDOMDisplayServerInstructions[index++] = nil;
+                                            CPDOMDisplayServerInstructions[index++] = nil;
+                                            CPDOMDisplayServerInstructions[index++] = nil;
+                                            
+                                            break;
                     
-            case AppendChild:           CPDOMDisplayServerInstructions[index].appendChild(CPDOMDisplayServerInstructions[index + 1]);
-                
-                                        CPDOMDisplayServerInstructions[index++] = nil;
-                                        CPDOMDisplayServerInstructions[index++] = nil;
-                                        
-                                        break;
-                                
-            case InsertBefore:          CPDOMDisplayServerInstructions[index].insertBefore(CPDOMDisplayServerInstructions[index + 1], CPDOMDisplayServerInstructions[index + 2]);
-                                        
-                                        CPDOMDisplayServerInstructions[index++] = nil;
-                                        CPDOMDisplayServerInstructions[index++] = nil;
-                                        CPDOMDisplayServerInstructions[index++] = nil;
-                                        
-                                        break;
-                
-            case RemoveChild:           CPDOMDisplayServerInstructions[index].removeChild(CPDOMDisplayServerInstructions[index + 1]);
-                                        
-                                        CPDOMDisplayServerInstructions[index++] = nil;
-                                        CPDOMDisplayServerInstructions[index++] = nil;
-                                        
-                                        break;
-            }}catch(e) { alert("here?" + instruction) }
+                case RemoveChild:           CPDOMDisplayServerInstructions[index].removeChild(CPDOMDisplayServerInstructions[index + 1]);
+                                            
+                                            CPDOMDisplayServerInstructions[index++] = nil;
+                                            CPDOMDisplayServerInstructions[index++] = nil;
+                                            
+                                            break;
+                }}catch(e) { alert("here?" + instruction) }
+        }
+        
+        CPDOMDisplayServerInstructionCount = 0;
+    
+        var views = CPDOMDisplayServerViews,
+            index = 0,
+            count = CPDOMDisplayServerViewsCount;
+
+        // We don't reset CPDOMDisplayServerViewsContext because it can serve for displays that are coming...
+        CPDOMDisplayServerViews = [];
+        CPDOMDisplayServerViewsCount = 0;
+    
+        for (; index < count; ++index)
+        {
+            var view = views[index];
+            
+            delete CPDOMDisplayServerViewsContext[[view hash]];
+            
+            [view displayIfNeeded];
+        }
     }
-    
-    CPDOMDisplayServerInstructionCount = 0;
-    
+        
     [CPDOMDisplayRunLoop performSelector:@selector(run) target:CPDOMDisplayServer argument:nil order:0 modes:[CPDefaultRunLoopMode]];
 }
 

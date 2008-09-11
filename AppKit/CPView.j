@@ -55,14 +55,14 @@ var _DOMOriginUpdateMask        = 1 << 0,
 var _CPViewNotificationCenter   = nil;
 
 #if PLATFORM(DOM)
-var DOMCanvasElementZIndex      = -1,
-    DOMBackgroundElementZIndex  = -2,
-    DOMElementPrototype         = nil,
+var DOMElementPrototype         = nil,
     
     BackgroundTrivialColor              = 0,
     BackgroundVerticalThreePartImage    = 1,
     BackgroundHorizontalThreePartImage  = 2,
-    BackgroundNinePartImage             = 3;
+    BackgroundNinePartImage             = 3,
+    
+    CustomDrawRectViews                 = {};
 #endif
 
 @implementation CPView : CPResponder
@@ -92,13 +92,15 @@ var DOMCanvasElementZIndex      = -1,
     
 #if PLATFORM(DOM)
     DOMElement          _DOMElement;
+    DOMElement          _DOMContentsElement;
+    
     CPArray             _DOMImageParts;
     CPArray             _DOMImageSizes;
     
     unsigned            _backgroundType;
-    
-    DOMElement          _DOMGraphicsElement;
 #endif
+
+    CGRect              _dirtyRect;
 
     float               _opacity;
     CPColor             _backgroundColor;
@@ -117,6 +119,9 @@ var DOMCanvasElementZIndex      = -1,
 
 + (void)initialize
 {
+    if ([self instanceMethodForSelector:@selector(drawRect:)] != [CPView instanceMethodForSelector:@selector(drawRect:)])
+        CustomDrawRectViews[[self hash]] = YES;
+    
     if (self != [CPView class])
         return;
 
@@ -333,7 +338,7 @@ var DOMCanvasElementZIndex      = -1,
 
 - (void)viewDidMoveToSuperview
 {
-    if (_graphicsContext)
+//    if (_graphicsContext)
         [self setNeedsDisplay:YES];
 }
 
@@ -443,9 +448,17 @@ var DOMCanvasElementZIndex      = -1,
 
     if (_autoresizesSubviews)
         [self resizeSubviewsWithOldSize:oldSize];
+        
+    [self setNeedsDisplay:YES];
 
 #if PLATFORM(DOM)
     CPDOMDisplayServerSetStyleSize(_DOMElement, size.width, size.height);
+    
+    if (_DOMContentsElement)
+    {
+        CPDOMDisplayServerSetSize(_DOMContentsElement, size.width, size.height);
+        CPDOMDisplayServerSetStyleSize(_DOMContentsElement, size.width, size.height);
+    }
     
     if (_backgroundType == BackgroundTrivialColor)
         return;
@@ -984,33 +997,101 @@ var DOMCanvasElementZIndex      = -1,
 
 }
 
-// Focus
+// Displaying
+
+- (void)setNeedsDisplay:(BOOL)aFlag
+{
+    if (aFlag)
+        [self setNeedsDisplayInRect:[self bounds]];
+#if PLATFORM(DOM)
+    else
+        CPDOMDisplayServerRemoveView(self);
+#endif
+}
+
+- (void)setNeedsDisplayInRect:(CPRect)aRect
+{
+    if (!CustomDrawRectViews[[[self class] hash]])
+        return;
+        
+    if (_CGRectIsEmpty(aRect))
+        return;
+    
+    if (_dirtyRect && !_CGRectIsEmpty(_dirtyRect))
+        _dirtyRect = CGRectUnion(aRect, _dirtyRect);
+    else
+        _dirtyRect = _CGRectMakeCopy(aRect);
+
+#if PLATFORM(DOM)
+    CPDOMDisplayServerAddView(self);
+#endif
+}
+
+- (BOOL)needsDisplay
+{
+    return _dirtyRect && !_CGRectIsEmpty(_dirtyRect);
+}
+
+- (void)displayIfNeeded
+{
+    if ([self needsDisplay])
+        [self displayRect:_dirtyRect];
+}
+
+- (void)display
+{
+    [self displayRect:[self visibleRect]];
+}
+
+- (void)displayIfNeededInRect:(CGRect)aRect
+{
+    if ([self needsDisplay])
+        [self displayRect:aRect];
+}
+
+- (void)displayRect:(CPRect)aRect
+{
+    [self displayRectIgnoringOpacity:aRect inContext:nil];
+    
+    _dirtyRect = NULL;
+}
+
+- (void)displayRectIgnoringOpacity:(CGRect)aRect inContext:(CPGraphicsContext)aGraphicsContext
+{
+    [self lockFocus];
+    
+    CGContextClearRect([[CPGraphicsContext currentContext] graphicsPort], aRect);
+    
+    [self drawRect:aRect];
+    [self unlockFocus];
+}
+
 
 - (void)lockFocus
 {
-    // If we don't yet have a graphics context, then we must first create a 
-    // canvas element, then use its 2d context.
     if (!_graphicsContext)
     {
-        var context = CGBitmapGraphicsContextCreate();
+        var graphicsPort = CGBitmapGraphicsContextCreate();
         
-#if PLATFORM(DOM)
-        _DOMGraphicsElement = context.DOMElement;
+        _DOMContentsElement = graphicsPort.DOMElement;
         
-        _DOMGraphicsElement.style.position = "absolute";
-        _DOMGraphicsElement.style.top = "0px";
-        _DOMGraphicsElement.style.left = "0px";
-        _DOMGraphicsElement.style.zIndex = DOMCanvasElementZIndex;
-        
-        _DOMGraphicsElement.width = CPRectGetWidth(_frame);
-        _DOMGraphicsElement.height = CPRectGetHeight(_frame);
+        _DOMContentsElement.style.zIndex = -100;
 
-        _DOMGraphicsElement.style.width = CPRectGetWidth(_frame) + "px";
-        _DOMGraphicsElement.style.height = CPRectGetHeight(_frame) + "px";
+        _DOMContentsElement.style.overflow = "hidden";
+        _DOMContentsElement.style.position = "absolute";
+        _DOMContentsElement.style.visibility = "visible";
+        
+        _DOMContentsElement.width = ROUND(_CGRectGetWidth(_frame));
+        _DOMContentsElement.height = ROUND(_CGRectGetHeight(_frame));
+        
+        _DOMContentsElement.style.top = "0px";
+        _DOMContentsElement.style.left = "0px";
+        _DOMContentsElement.style.width = ROUND(_CGRectGetWidth(_frame)) + "px";
+        _DOMContentsElement.style.height = ROUND(_CGRectGetHeight(_frame)) + "px";
 
-        _DOMElement.appendChild(_DOMGraphicsElement);
-#endif
-        _graphicsContext = [CPGraphicsContext graphicsContextWithGraphicsPort:context flipped:YES];
+        CPDOMDisplayServerAppendChild(_DOMElement, _DOMContentsElement);
+        
+        _graphicsContext = [CPGraphicsContext graphicsContextWithGraphicsPort:graphicsPort flipped:YES];
     }
     
     [CPGraphicsContext setCurrentContext:_graphicsContext];
@@ -1020,40 +1101,9 @@ var DOMCanvasElementZIndex      = -1,
 
 - (void)unlockFocus
 {
-    var graphicsPort = [_graphicsContext graphicsPort];
-    
-    CGContextRestoreGState(graphicsPort);
+    CGContextRestoreGState([_graphicsContext graphicsPort]);
     
     [CPGraphicsContext setCurrentContext:nil];
-}
-
-// Displaying
-
-- (void)setNeedsDisplay:(BOOL)aFlag
-{
-    if (aFlag)
-        [self display];
-}
-
-- (void)setNeedsDisplayInRect:(CPRect)aRect
-{
-    [self displayRect:aRect];
-}
-
-- (void)displayIfNeeded
-{
-}
-
-- (void)display
-{
-    [self displayRect:_bounds];
-}
-
-- (void)displayRect:(CPRect)aRect
-{   
-    [self lockFocus];
-    [self drawRect:aRect];
-    [self unlockFocus];
 }
 
 - (BOOL)isOpaque
