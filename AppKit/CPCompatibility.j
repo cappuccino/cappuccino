@@ -88,15 +88,12 @@ else if (USER_AGENT.indexOf("AppleWebKit/") != -1)
     PLATFORM_FEATURES |= CPJavascriptClipboardAccessFeature;
     PLATFORM_FEATURES |= CPJavaScriptShadowFeature;
     
-    if(USER_AGENT.indexOf("AppleWebKit/") != -1)
-    {
-        var versionStart = USER_AGENT.indexOf("AppleWebKit/") + "AppleWebKit/".length,
-            versionEnd = USER_AGENT.indexOf(" ", versionStart),
-            version = parseFloat(USER_AGENT.substring(versionStart, versionEnd), 10);
+    var versionStart = USER_AGENT.indexOf("AppleWebKit/") + "AppleWebKit/".length,
+        versionEnd = USER_AGENT.indexOf(" ", versionStart),
+        version = parseFloat(USER_AGENT.substring(versionStart, versionEnd), 10);
 
-        if(version >= 525.13)
-            PLATFORM_FEATURES |= CPJavascriptRemedialKeySupport;
-    }
+    if(USER_AGENT.indexOf("Plainview") == -1 && version >= 525.14 || USER_AGENT.indexOf("Chrome") != -1)
+        PLATFORM_FEATURES |= CPJavascriptRemedialKeySupport;
 }
 
 // KHTML
