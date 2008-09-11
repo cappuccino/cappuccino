@@ -456,7 +456,7 @@ CPNumericSearch
 - (CPString)stringByDeletingLastPathComponent
 {
     // FIMXE: this is wrong: a/a/ returns a/a/.
-    return substr(0, lastIndexOf('/'));  
+    return substr(0, lastIndexOf('/')+1);  
 }
 
 - (CPString)stringByStandardizingPath
