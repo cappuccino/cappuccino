@@ -452,7 +452,7 @@ CPSegmentSwitchTrackingMomentary = 2;
     @param aSegment the segment to draw the bezel for
     @param shouldHighlight <code>YES</code> highlights the bezel
 */
-- (void)drawSegmentBezel:(int)aSegment highlgiht:(BOOL)shouldHighlight
+- (void)drawSegmentBezel:(int)aSegment highlight:(BOOL)shouldHighlight
 {
 }
 
