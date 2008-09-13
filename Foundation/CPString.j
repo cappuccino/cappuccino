@@ -294,6 +294,24 @@ CPNumericSearch
 	return [self rangeOfString:aString options:aMask range:nil];
 }
 
+/*
+    Finds the range of characters in the receiver
+    where the specified string exists in the given range 
+	of the receiver.The search is subject to the options specified in the
+    specified mask which can be a combination of:
+<pre>
+CPCaseInsensitiveSearch
+CPLiteralSearch
+CPBackwardsSearch
+CPAnchoredSearch
+CPNumericSearch
+</pre>
+    @param aString the string to search for
+    @param aMask the options to use in the search
+	@param aRange the range of the receiver in which to search for
+    @return the range of characters in the receiver. If the string was not found,
+    the <code>length</code> of the range will be 0.
+*/
 - (CPRange)rangeOfString:(CPString)aString options:(int)aMask range:(CPrange)aRange
 {
 	var string = (aRange == nil)?self:[self substringWithRange:aRange],
