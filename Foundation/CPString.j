@@ -144,9 +144,12 @@ var CPStringHashes      = new objj_dictionary();
         aString = aString.toLowerCase();
     }
     
-    if (aMask & CPBackwardsSearch) location = string.lastIndexOf(aString, aMask & CPAnchoredSearch ? length - aString.length : 0);
-    else if (aMask & CPAnchoredSearch) location = string.substr(0, aString.length).indexOf(aString) != CPNotFound ? 0 : CPNotFound;
-    else location = string.indexOf(aString);
+    if (aMask & CPBackwardsSearch) 
+		location = string.lastIndexOf(aString, aMask & CPAnchoredSearch ? length - aString.length : 0);
+    else if (aMask & CPAnchoredSearch) 
+		location = string.substr(0, aString.length).indexOf(aString) != CPNotFound ? 0 : CPNotFound;
+    else 
+		location = string.indexOf(aString);
     
     return CPMakeRange(location, location == CPNotFound ? 0 : aString.length);
 }
@@ -268,7 +271,7 @@ var CPStringHashes      = new objj_dictionary();
 
 - (CPString)stringByDeletingLastPathComponent
 {
-    // FIMXE: this is wrong: a/a/ returns a/a/.
+    // FIXME: this is wrong: a/a/ returns a/a/.
     return substr(0, lastIndexOf('/') + 1);  
 }
 
