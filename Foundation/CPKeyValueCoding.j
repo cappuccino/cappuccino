@@ -29,6 +29,7 @@ import "CPObject.j"
     return YES;
 }
 
+/* @ignore */
 + (SEL)_accessorForKey:(CPString)aKey
 {
     var capitalizedKey = aKey.charAt(0).toUpperCase() + aKey.substr(1),
@@ -36,12 +37,14 @@ import "CPObject.j"
     
     if ([self instancesRespondToSelector:selector] || 
         [self instancesRespondToSelector:selector = CPSelectorFromString(aKey)] || 
+        [self instancesRespondToSelector:selector = CPSelectorFromString("_"+aKey)] || 
         [self instancesRespondToSelector:selector = CPSelectorFromString("is" + capitalizedKey)])
         return selector;
     
     return nil;
 }
 
+/* @ignore */
 + (SEL)_modifierForKey:(CPString)aKey
 {
     var selector = CPSelectorFromString("set" + aKey.charAt(0).toUpperCase() + aKey.substr(1) + ':');
@@ -52,6 +55,7 @@ import "CPObject.j"
     return nil;
 }
 
+/* @ignore */
 - (CPString)_ivarForKey:(CPString)aKey
 {
     var ivar,

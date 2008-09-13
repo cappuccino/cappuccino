@@ -24,7 +24,7 @@ import "CPNull.j"
 import "CPCoder.j"
 
 
-var _CPKeyedUnarchiverCannotDecodeObjectOfClassNameOriginalClassSelector    = 1,
+var _CPKeyedUnarchiverCannotDecodeObjectOfClassNameOriginalClassesSelector  = 1,
     _CPKeyedUnarchiverDidDecodeObjectSelector                               = 1 << 1,
     _CPKeyedUnarchiverWillReplaceObjectWithObjectSelector                   = 1 << 2,
     _CPKeyedUnarchiverWillFinishSelector                                    = 1 << 3,
@@ -48,6 +48,48 @@ var _CPKeyedUnarchiverArrayClass                                            = Ni
     _CPKeyedUnarchiverDictionaryClass                                       = Nil,
     _CPKeyedUnarchiverArchiverValueClass                                    = Nil;
 
+/*
+    <objj>CPKeyedUnarchiver</objj> is used for creating objects out of
+    coded files or <objj>CPData</objj> objects that were created by
+    <objj>CPKeyedArchiver</objj>. More specifically, this class unarchives
+    objects from a data stream or file and brings them back into
+    memory for programmatic usage.
+
+    @delegate  -(Class)unarchiver:(CPKeyedUnarchiver)unarchiver
+                    cannotDecodeObjectOfClassName:(CPString)name
+                    originalClasses:(CPArray)classNames;
+    Called when the specified class is not available during decoding.
+    The delegate may load the class, or return a substitute class
+    to use instead.
+    @param unarchiver the unarchiver performing the decode
+    @param name the name of the class that can't be found
+    @param an array of class names describing the encoded object's
+    class hierarchy. The first index is the encoded class name, and
+    each superclass is after that.
+    @return the <objj>Class</objj> to use instead or <code>nil</code>
+    to abort the unarchiving operation
+
+    @delegate -(id)unarchiver:(CPKeyedUnarchiver)unarchiver didDecodeObject:(id)object;
+    Called when the unarchiver decodes an object.
+    @param unarchiver the unarchiver doing the decoding
+    @param object the decoded objec
+    @return a substitute to use for the decoded object. This can be the same object argument provide,
+    another object or <code>nil</code>.
+
+    @delegate -(void)unarchiver:(CPKeyedUnarchiver)unarchiver willReplaceObject:(id)object withObject:(id)newObject;
+    Called when a decoded object has been substituted with another. (for example, from <code>unarchiver:didDecodeObject:</code>.
+    @param unarchiver the unarchiver that decoded the object
+    @param object the original decoded object
+    @param newObject the replacement object
+
+    @delegate -(void)unarchiverWillFinish:(CPKeyedUnarchiver)unarchiver;
+    Called when the unarchiver is about to finish decoding.
+    @param unarchiver the unarchiver that's about to finish
+
+    @delegate -(void)unarchiverDidFinish:(CPKeyedUnarchiver)unarchiver;
+    Called when the unarchiver has finished decoding.
+    @param unarchiver the unarchiver that finished decoding
+*/
 @implementation CPKeyedUnarchiver : CPCoder
 {
     id              _delegate;
@@ -65,6 +107,9 @@ var _CPKeyedUnarchiverArrayClass                                            = Ni
     CPArray         _plistObjects;
 }
 
+/*
+    @ignore
+*/
 + (void)initialize
 {
     if (self != [CPKeyedUnarchiver class])
@@ -76,6 +121,11 @@ var _CPKeyedUnarchiverArrayClass                                            = Ni
     _CPKeyedUnarchiverArchiverValueClass = [_CPKeyedArchiverValue class];
 }
 
+/*
+    Initializes the receiver to unarchive objects from the specified data object.
+    @param data the data stream from which to read objects
+    @return the initialized unarchiver
+*/
 - (id)initForReadingWithData:(CPData)data
 {
     self = [super init];
@@ -92,6 +142,11 @@ var _CPKeyedUnarchiverArrayClass                                            = Ni
     return self;
 }
 
+/*
+    Unarchives the object graph in the provided data object.
+    @param data the data from which to read the graph
+    @return the unarchived object
+*/
 + (id)unarchiveObjectWithData:(CPData)data
 {
     var unarchiver = [[self alloc] initForReadingWithData:data],
@@ -102,19 +157,30 @@ var _CPKeyedUnarchiverArrayClass                                            = Ni
     return object;
 }
 
+/*
+    Not implemented
+*/
 + (id)unarchiveObjectWithFile:(CPString)aFilePath
 {
 }
 
+/*
+    Not implemented
+*/
 + (id)unarchiveObjectWithFile:(CPString)aFilePath asynchronously:(BOOL)aFlag
 {
 }
 
+/*
+    Returns <code>YES</code> if an object exists for <code>aKey</code>.
+    @param aKey the object's associated key
+*/
 - (BOOL)containsValueForKey:(CPString)aKey
 {
     return [_plistObject objectForKey:aKey] != nil;
 }
 
+/* @ignore */
 - (id)_decodeArrayOfObjectsForKey:(CPString)aKey
 {
     var object = [_plistObject objectForKey:aKey];
@@ -134,6 +200,7 @@ var _CPKeyedUnarchiverArrayClass                                            = Ni
     return nil;
 }
 
+/* @ignore */
 - (void)_decodeDictionaryOfObjectsForKey:(CPString)aKey
 {
     var object = [_plistObject objectForKey:aKey];
@@ -153,27 +220,52 @@ var _CPKeyedUnarchiverArrayClass                                            = Ni
     return nil;
 }
 
+/*
+    Decodes a <code>BOOL</code> from the archive
+    @param aKey the <code>BOOL</code>'s associated key
+    @return the decoded <code>BOOL</code>
+*/
 - (BOOL)decodeBoolForKey:(CPString)aKey
 {
     return [self decodeObjectForKey:aKey];
 }
 
+/*
+    Decodes a <code>float</code> from the archive
+    @param aKey the <code>float</code>'s associated key
+    @return the decoded <code>float</code>
+*/
 - (float)decodeFloatForKey:(CPString)aKey
 {
     return [self decodeObjectForKey:aKey];
 }
 
+/*
+    Decodes a <code>double</code> from the archive.
+    @param aKey the <code>double</code>'s associated key
+    @return the decoded <code>double</code>
+*/
 - (double)decodeDoubleForKey:(CPString)aKey
 {
     return [self decodeObjectForKey:aKey];
 }
 
+/*
+    Decodes an <code>int</code> from the archive.
+    @param aKey the <code>int</code>'s associated key
+    @return the decoded <code>int</code>
+*/
 - (int)decodeIntForKey:(CPString)aKey
 {
     return [self decodeObjectForKey:aKey];
 }
 
-- (CPPoint)decodePointForKey:(CPString)aKey
+/*
+    Decodes a <objj>CGPoint</objj> from the archive.
+    @param aKey the point's associated key
+    @return the decoded point
+*/
+- (CGPoint)decodePointForKey:(CPString)aKey
 {
     var object = [self decodeObjectForKey:aKey];
     
@@ -183,7 +275,12 @@ var _CPKeyedUnarchiverArrayClass                                            = Ni
         return CPPointMake(0.0, 0.0);
 }
 
-- (CPRect)decodeRectForKey:(CPString)aKey
+/*
+    Decodes a <objj>CGRect</objj> from the archive.
+    @param aKey the rectangle's associated key
+    @return the decoded rectangle
+*/
+- (CGRect)decodeRectForKey:(CPString)aKey
 {
     var object = [self decodeObjectForKey:aKey];
     
@@ -193,7 +290,12 @@ var _CPKeyedUnarchiverArrayClass                                            = Ni
         return CPRectMakeZero();
 }
 
-- (CPSize)decodeSizeForKey:(CPString)aKey
+/*
+    Decodes a <objj>CGSize</objj> from the archive.
+    @param aKey the size's associated key
+    @return the decoded size
+*/
+- (CGSize)decodeSizeForKey:(CPString)aKey
 {
     var object = [self decodeObjectForKey:aKey];
     
@@ -203,6 +305,11 @@ var _CPKeyedUnarchiverArrayClass                                            = Ni
         return CPSizeMake(0.0, 0.0);
 }
 
+/*
+    Decodes an object from the archive.
+    @param aKey the object's associated key
+    @return the decoded object
+*/
 - (id)decodeObjectForKey:(CPString)aKey
 {
     var object = [_plistObject objectForKey:aKey];
@@ -217,6 +324,9 @@ var _CPKeyedUnarchiverArrayClass                                            = Ni
     return nil;
 }
 
+/*
+    Notifies the delegates that decoding has finished.
+*/
 - (void)finishDecoding
 {
     if (_delegateSelectors & _CPKeyedUnarchiverWillFinishSelector)
@@ -226,17 +336,24 @@ var _CPKeyedUnarchiverArrayClass                                            = Ni
         [_delegate unarchiverDidFinish:self];
 }
 
+/*
+    Returns the keyed unarchiver's delegate
+*/
 - (id)delegate
 {
     return _delegate;
 }
 
+/*
+    Sets the unarchiver's delegate
+    @param the new delegate
+*/
 - (void)setDelegate:(id)aDelegate
 {
     _delegate = aDelegate;
     
-    if ([_delegate respondsToSelector:@selector(unarchiver:CannotDecodeObjectOfClassName:originalClass:)])
-        _delegateSelectors |= _CPKeyedUnarchiverCannotDecodeObjectOfClassNameOriginalClassSelector;
+    if ([_delegate respondsToSelector:@selector(unarchiver:cannotDecodeObjectOfClassName:originalClasses:)])
+        _delegateSelectors |= _CPKeyedUnarchiverCannotDecodeObjectOfClassNameOriginalClassesSelector;
         
     if ([_delegate respondsToSelector:@selector(unarchiver:didDecodeObject:)])
         _delegateSelectors |= _CPKeyedUnarchiverDidDecodeObjectSelector;

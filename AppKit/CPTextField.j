@@ -26,15 +26,48 @@ import "CPStringDrawing.j"
 #include "Platform/Platform.h"
 #include "Platform/DOM/CPDOMDisplayServer.h"
 
-
-CPLineBreakByWordWrapping       = 0,
-CPLineBreakByCharWrapping       = 1,
-CPLineBreakByClipping           = 2,
-CPLineBreakByTruncatingHead     = 3,
-CPLineBreakByTruncatingTail     = 4,
+/*
+    @global
+    @group CPLineBreakMode
+*/
+CPLineBreakByWordWrapping       = 0;
+/*
+    @global
+    @group CPLineBreakMode
+*/
+CPLineBreakByCharWrapping       = 1;
+/*
+    @global
+    @group CPLineBreakMode
+*/
+CPLineBreakByClipping           = 2;
+/*
+    @global
+    @group CPLineBreakMode
+*/
+CPLineBreakByTruncatingHead     = 3;
+/*
+    @global
+    @group CPLineBreakMode
+*/
+CPLineBreakByTruncatingTail     = 4;
+/*
+    @global
+    @group CPLineBreakMode
+*/
 CPLineBreakByTruncatingMiddle   = 5;
 
+/*
+    A textfield bezel with a squared corners.
+	@global
+	@group CPTextFieldBezelStyle
+*/
 CPTextFieldSquareBezel          = 0;
+/*
+    A textfield bezel with rounded corners.
+	@global
+	@group CPTextFieldBezelStyle
+*/
 CPTextFieldRoundedBezel         = 1;
 
 var TOP_PADDING                 = 4.0,
@@ -49,6 +82,9 @@ var _CPTextFieldSquareBezelColor    = nil;
 
 @implementation CPString (CPTextFieldAdditions)
 
+/*
+    Returns the string (<code>self</code>).
+*/
 - (CPString)string
 {
     return self;
@@ -56,6 +92,9 @@ var _CPTextFieldSquareBezelColor    = nil;
 
 @end
 
+/*
+    This control displays editable text in a Cappuccino application.
+*/
 @implementation CPTextField : CPControl
 {
     BOOL                    _isBordered;
@@ -73,6 +112,7 @@ var _CPTextFieldSquareBezelColor    = nil;
 #endif
 }
 
+/* @ignore */
 #if PLATFORM(DOM)
 + (DOMElement)_inputElement
 {
@@ -97,7 +137,7 @@ var _CPTextFieldSquareBezelColor    = nil;
 }
 #endif
 
-- (id)initWithFrame:(CPRect)aFrame
+- (id)initWithFrame:(CGRect)aFrame
 {
     self = [super initWithFrame:aFrame];
     
@@ -125,7 +165,11 @@ var _CPTextFieldSquareBezelColor    = nil;
 }
 
 // Setting the Bezel Style
-
+/*
+    Sets whether the textfield will have a bezeled border.
+    @param shouldBeBezeled <code>YES</code> means the textfield
+    will draw a bezeled border
+*/
 - (void)setBezeled:(BOOL)shouldBeBezeled
 {
     if (_isBezeled == shouldBeBezeled)
@@ -136,11 +180,19 @@ var _CPTextFieldSquareBezelColor    = nil;
     [self _updateBackground];
 }
 
+/*
+    Returns <code>YES</code> if the textfield draws a
+    bezeled border.
+*/
 - (BOOL)isBezeled
 {
     return _isBezeled;
 }
 
+/*
+    Sets the textfield's bezel style.
+    @param aBezelStyle the constant for the desired bezel style
+*/
 - (void)setBezelStyle:(CPTextFieldBezelStyle)aBezelStyle
 {
     if (_bezelStyle == aBezelStyle)
@@ -151,11 +203,19 @@ var _CPTextFieldSquareBezelColor    = nil;
     [self _updateBackground];
 }
 
+/*
+    Returns the textfield's bezel style.
+*/
 - (CPTextFieldBezelStyle)bezelStyle
 {
     return _bezelStyle;
 }
 
+/*
+    Sets whether the textfield will have a border drawn.
+    @param shouldBeBordered <code>YES</code> makes the
+    textfield draw a border
+*/
 - (void)setBordered:(BOOL)shouldBeBordered
 {
     if (_isBordered == shouldBeBordered)
@@ -166,11 +226,16 @@ var _CPTextFieldSquareBezelColor    = nil;
     [self _updateBackground];
 }
 
+/*
+    Returns <code>YES</code> if the textfield has
+    a border.
+*/
 - (BOOL)isBordered
 {
     return _isBordered;
 }
 
+/* @ignore */
 - (void)_updateBackground
 {
     if (_isBordered && _bezelStyle == CPTextFieldSquareBezel && _isBezeled)
@@ -267,6 +332,10 @@ var _CPTextFieldSquareBezelColor    = nil;
     _isEditable = shouldBeEditable;
 }
 
+/*
+    Returns <code>YES</code> if the textfield is currently
+    editable by the user.
+*/
 - (BOOL)isEditable
 {
     return _isEditable;
@@ -281,17 +350,30 @@ var _CPTextFieldSquareBezelColor    = nil;
 #endif
 }
 
+/*
+    Returns <code>YES</code> if the field's text is
+    selectable by the user.
+*/
 - (BOOL)isSelectable
 {
     return _isSelectable;
 }
 
+/*
+    Sets whether the field's text is selectable
+    by the user.
+    @param aFlag <code>YES</code> makes the text selectable
+*/
 - (void)setSelectable:(BOOL)aFlag
 {
     _isSelectable = aFlag;
 }
 
-- (void)setAlignment:(int)anAlignment
+/*
+    Sets the alignment of the text in the field.
+    @param anAlignment
+*/
+- (void)setAlignment:(CPTextAlignment)anAlignment
 {
     if ([self alignment] == anAlignment)
         return;
@@ -315,6 +397,10 @@ var _CPTextFieldSquareBezelColor    = nil;
 #endif
 }
 
+/*
+    Sets the way line breaks occur in the text field.
+    @param aLineBreakMode the line break style
+*/
 - (void)setLineBreakMode:(CPLineBreakMode)aLineBreakMode
 {
     _lineBreakMode = aLineBreakMode;
@@ -335,6 +421,9 @@ var _CPTextFieldSquareBezelColor    = nil;
 #endif
 }
 
+/*
+    Returns the string the text field.
+*/
 - (CPString)stringValue
 {
     // All of this needs to be better.
@@ -346,6 +435,9 @@ var _CPTextFieldSquareBezelColor    = nil;
     return [_value string];
 }
 
+/*
+    Sets the string the text field.
+*/
 - (void)setStringValue:(CPString)aStringValue
 {
     _value = aStringValue;
@@ -360,6 +452,9 @@ var _CPTextFieldSquareBezelColor    = nil;
 #endif
 }
 
+/*
+    Adjusts the text field's size in the application.
+*/
 - (void)sizeToFit
 {
 #if PLATFORM(DOM)
@@ -377,6 +472,11 @@ var CPTextFieldIsSelectableKey  = @"CPTextFieldIsSelectableKey",
 
 @implementation CPTextField (CPCoding)
 
+/*
+    Initializes the textfield with data from a coder.
+    @param aCoder the coder from which to read the textfield data
+    @return the initialized textfield
+*/
 - (id)initWithCoder:(CPCoder)aCoder
 {
 #if PLATFORM(DOM)
@@ -412,6 +512,12 @@ var CPTextFieldIsSelectableKey  = @"CPTextFieldIsSelectableKey",
     return self;
 }
 
+/*
+    Encodes the data of this textfield into the
+    provided coder.
+    @param aCoder the coder into which the data
+    will be written
+*/
 - (void)encodeWithCoder:(CPCoder)aCoder
 {
     [super encodeWithCoder:aCoder];

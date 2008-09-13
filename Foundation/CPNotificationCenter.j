@@ -23,16 +23,23 @@
 import "CPArray.j"
 import "CPDictionary.j"
 import "CPNotification.j"
+import "CPException.j"
 
 
 var CPNotificationDefaultCenter = nil;
 
+/*
+    Cappuccino provides a framework for sending messages between objects within a process called notifications. Objects register with an <objj>CPNotificationCenter</objj> to be informed whenever other objects post <objj>CPNotification</objj>s to it matching certain criteria. The notification center processes notifications synchronously -- that is, control is only returned to the notification poster once every recipient of the notification has received it and processed it.
+*/
 @implementation CPNotificationCenter : CPObject
 {
     CPMutableDictionary     _namedRegistries;
     _CPNotificationRegistry _unnamedRegistry;
 }
 
+/*
+    Returns the application's notification center
+*/
 + (CPNotifcationCenter)defaultCenter
 {
     if (!CPNotificationDefaultCenter)
@@ -53,6 +60,14 @@ var CPNotificationDefaultCenter = nil;
    return self;
 }
 
+/*
+    Adds an object as an observer. The observer will receive notifications with the specified name
+    and/or containing the specified object (depending on if they are <code>nil</code>.
+    @param anObserver the observing object
+    @param aSelector the message sent to the observer when a notification occurrs
+    @param aNotificationName the name of the notification the observer wants to watch
+    @param anObject the object in the notification the observer wants to watch
+*/
 - (void)addObserver:(id)anObserver selector:(SEL)aSelector name:(CPString)aNotificationName object:(id)anObject
 {
     var registry,
@@ -70,6 +85,10 @@ var CPNotificationDefaultCenter = nil;
     [registry addObserver:observer object:anObject];
 }
 
+/*
+    Unregisters the specified observer from all notifications.
+    @param anObserver the observer to unregister
+*/
 - (void)removeObserver:(id)anObserver
 {
     var name = nil,
@@ -81,6 +100,12 @@ var CPNotificationDefaultCenter = nil;
     [_unnamedRegistry removeObserver:anObserver object:nil];
 }
 
+/*
+    Unregisters the specified observer from notifications matching the specified name and/or object.
+    @param anObserver the observer to remove
+    @param aNotificationName the name of notifications to no longer watch
+    @param anObject notifications containing this object will no longer be watched
+*/
 - (void)removeObserver:(id)anObserver name:(CPString)aNotificationName object:(id)anObject
 {
     if (aNotificationName == nil)
@@ -97,16 +122,35 @@ var CPNotificationDefaultCenter = nil;
         [[_namedRegistries objectForKey:aNotificationName] removeObserver:anObserver object:anObject];
 }
 
+/*
+    Posts a notification to all observers that match the specified notification's name and object.
+    @param aNotification the notification being posted
+    @throws CPInvalidArgumentException if aNotification is <objj>nil</objj>
+*/
 - (void)postNotification:(CPNotification)aNotification
 {
+    if (!aNotification)
+        [CPException raise:CPInvalidArgumentException reason:"postNotification: does not except 'nil' notifications"];
+        
     _CPNotificationCenterPostNotification(self, aNotification);
 }
 
+/*
+    Posts a new notification with the specified name, object, and dictionary.
+    @param aNotificationName the name of the notification name
+    @param anObject the associated object
+    @param aUserInfo the associated dictionary
+*/
 - (void)postNotificationName:(CPString)aNotificationName object:(id)anObject userInfo:(CPDictionary)aUserInfo
 {
    _CPNotificationCenterPostNotification(self, [[CPNotification alloc] initWithName:aNotificationName object:anObject userInfo:aUserInfo]);
 }
 
+/*
+    Posts a new notification with the specified name and object.
+    @param aNotificationName the name of the notification
+    @param anObject the associated object
+*/
 - (void)postNotificationName:(CPString)aNotificationName object:(id)anObject
 {
    _CPNotificationCenterPostNotification(self, [[CPNotification alloc] initWithName:aNotificationName object:anObject userInfo:nil]);
@@ -120,7 +164,9 @@ var _CPNotificationCenterPostNotification = function(/* CPNotificationCenter */ 
     [[self._namedRegistries objectForKey:[aNotification name]] postNotification:aNotification];
 }
 
-// Mapping of Notification Name to listening object/selector.
+/** Mapping of Notification Name to listening object/selector.
+    @ignore
+ */
 @implementation _CPNotificationRegistry : CPObject
 {
     CPDictionary    _objectObservers;
@@ -275,6 +321,7 @@ var _CPNotificationCenterPostNotification = function(/* CPNotificationCenter */ 
 
 @end
 
+/* @ignore */
 @implementation _CPNotificationObserver : CPObject
 {
     id  _observer;

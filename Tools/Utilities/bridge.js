@@ -380,12 +380,16 @@ if (typeof Packages != "undefined") {
 
 // Environment variables
 
-OBJJ_HOME = null;
-if (typeof Packages != "undefined")
-    OBJJ_HOME = String(Packages.java.lang.System.getenv().get("OBJJ_HOME") || "");
-else if (typeof environment != "undefined")
-    OBJJ_HOME = environment["OBJJ_HOME"];
+function getEnv(variable)
+{
+    if (typeof Packages != "undefined")
+        return String(Packages.java.lang.System.getenv().get(variable) || "") || null;
+    else if (typeof environment != "undefined")
+        return environment[variable] || null;
+    return null;
+}
 
+OBJJ_HOME = getEnv("OBJJ_HOME");
 if (!OBJJ_HOME)
 {
     OBJJ_HOME = "/usr/local/share/objj";

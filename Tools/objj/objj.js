@@ -17,7 +17,15 @@ if (typeof objj_import == "undefined")
     load(OBJJ_LIB+'/Frameworks/Objective-J/Objective-J.js');
 }
 
-OBJJ_INCLUDE_PATHS = [OBJJ_LIB+'/Frameworks'];
+var OBJJ_INCLUDE_PATHS_STRING = getEnv("OBJJ_INCLUDE_PATHS");
+if (OBJJ_INCLUDE_PATHS_STRING)
+{
+    OBJJ_INCLUDE_PATHS = OBJJ_INCLUDE_PATHS_STRING.split(":");
+}
+else
+{
+    OBJJ_INCLUDE_PATHS = [OBJJ_LIB+'/Frameworks'];
+}
 
 if (arguments.length > 0)
 {

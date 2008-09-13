@@ -26,6 +26,11 @@ import "CPObjJRuntime.j"
 var __placeholder = new Number(),
     _CPNumberHashes = { };
 
+/*
+    This class primarily exists for source compatability. The JavaScript
+    <code>Number</code> type can be changed on the fly based on context,
+    so there is no need to call any of these methods.
+*/
 @implementation CPNumber : CPObject
 
 + (id)alloc
@@ -93,12 +98,12 @@ var __placeholder = new Number(),
 {
     return anUnsignedLong;
 }
-
+/*
 + (id)numberWithUnsignedLongLong:(unsigned long long)anUnsignedLongLong
 {
     return anUnsignedLongLong;
 }
-
+*/
 + (id)numberWithUnsignedShort:(unsigned short)anUnsignedShort
 {
     return anUnsignedShort;
@@ -164,12 +169,12 @@ var __placeholder = new Number(),
 {
     return anUnsignedLong;
 }
-
+/*
 - (id)initWithUnsignedLongLong:(unsigned long long)anUnsignedLongLong
 {
     return anUnsignedLongLong;
 }
-
+*/
 - (id)initWithUnsignedShort:(unsigned short)anUnsignedShort
 {
     return anUnsignedShort;
@@ -265,13 +270,13 @@ FIXME: Do we need this?
     if (typeof self == "boolean") return self ? 1 : 0;
     return self;
 }
-
+/*
 - (unsigned long long)unsignedLongLongValue
 {
     if (typeof self == "boolean") return self ? 1 : 0;
     return self;
 }
-
+*/
 - (unsigned long)unsignedLongValue
 {
     if (typeof self == "boolean") return self ? 1 : 0;

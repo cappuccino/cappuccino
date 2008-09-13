@@ -24,11 +24,29 @@ import <Foundation/CPObject.j>
 
 import <AppKit/CPView.j>
 
-
+/*
+    The tab is currently selected.
+    @global
+    @group CPTabState
+*/
 CPSelectedTab   = 0;
+/*
+    The tab is currently in the background (not selected).
+    @global
+    @group CPTabState
+*/
 CPBackgroundTab = 1;
+/*
+    The tab of this item is currently being pressed by the user.
+    @global
+    @group CPTabState
+*/
 CPPressedTab    = 2;
 
+/*
+    The class representation of an item in a <objj>CPTabView</objj>. One tab view item
+    can be shown at a time in a <objj>CPTabView</objj>.
+*/
 @implementation CPTabViewItem : CPObject
 {
     id          _identifier;
@@ -38,6 +56,10 @@ CPPressedTab    = 2;
     CPView      _auxiliaryView;
 }
 
+/*
+    Initializes the tab view item with the specified identifier.
+    @return the initialized <objj>CPTabViewItem</objj>
+*/
 - (id)initWithIdentifier:(id)anIdentifier
 {
     self = [super init];
@@ -49,63 +71,90 @@ CPPressedTab    = 2;
 }
 
 // Working With Labels
-
+/*
+    Sets the <objj>CPTabViewItem</objj>'s label.
+    @param aLabel the label for the item
+*/
 - (void)setLabel:(CPString)aLabel
 {
     _label = aLabel;
 }
 
+/*
+    Returns the <objj>CPTabViewItem</objj>'s label
+*/
 - (CPString)label
 {
     return _label;
 }
 
 // Checking the Tab Display State
-
+/*
+    Returns the tab's current state.
+*/
 - (CPTabState)tabState
 {
     return _tabState;
 }
 
 // Assigning an Identifier Object
-
+/*
+    Sets the item's identifier.
+    @param anIdentifier the new identifier for the item
+*/
 - (void)setIdentifier:(id)anIdentifier
 {
     _identifier = anIdentifier;
 }
 
+/*
+    Returns the tab's identifier.
+*/
 - (id)identifier
 {
     return _identifier;
 }
 
 // Assigning a View
-
+/*
+    Sets the view that gets displayed in this tab.
+*/
 - (void)setView:(CPView)aView
 {
     _view = aView;
 }
 
+/*
+    Returns the tab's view.
+*/
 - (CPView)view
 {
     return _view;
 }
 
 // Assigning an Auxiliary View
-
+/*
+    Sets the tab's auxillary view.
+    @param anAuxillaryView the new auxillary view
+*/
 - (void)setAuxiliaryView:(CPView)anAuxiliaryView
 {
     _auxiliaryView = anAuxiliaryView;
 }
 
+/*
+    Returns the tab's auxillary view
+*/
 - (CPView)auxiliaryView
 {
     return _auxiliaryView;
 }
 
 // Accessing the Parent Tab View
-
-- (CPView)tabView
+/*
+    Returns the tab view that contains this item.
+*/
+- (CPTabView)tabView
 {
     return _tabView;
 }

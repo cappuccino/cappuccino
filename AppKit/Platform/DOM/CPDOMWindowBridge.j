@@ -68,6 +68,9 @@ var ExcludedDOMElements = [];
     CPString        _overriddenEventType;
 }
 
+/*
+    Returns the shared DOMWindowBridge.  
+*/
 + (id)sharedDOMWindowBridge
 {
     if (!CPSharedDOMWindowBridge)
@@ -81,6 +84,7 @@ var ExcludedDOMElements = [];
     alert("unimplemented");
 }
 
+/* @ignore */
 - (id)_initWithDOMWindow:(DOMWindow)aDOMWindow
 {
     self = [super init];
@@ -267,6 +271,7 @@ var ExcludedDOMElements = [];
     [layer insertWindow:aWindow atIndex:(otherWindow ? (aPlace == CPWindowAbove ? otherWindow._index + 1 : otherWindow._index) : CPNotFound)];
 }
 
+/* @ignore */
 - (CPView)_dragHitTest:(CPPoint)aPoint pasteboard:(CPPasteboard)aPasteboard
 {
     var view = nil,
@@ -299,6 +304,7 @@ var ExcludedDOMElements = [];
     return view;
 }
 
+/* @ignore */
 - (void)_propagateCurrentDOMEvent:(BOOL)aFlag
 {
     StopDOMEventPropagation = !aFlag;
@@ -369,38 +375,63 @@ var CTRL_KEY_CODE   = 17;
 
 @implementation CPDOMWindowBridge (Events)
 
+/*
+    When using command (mac) or control (windows), keys are propagated to the browser by default.  
+    To prevent a character key from propagating (to prevent its default action, and instead use it
+    in your own application), use these methods. These methods are additive -- the list builds until you clear it.
+    
+    @param characters a list of characters to stop propagating keypresses to the browser.
+*/
 - (void)preventCharacterKeysFromPropagating:(CPArray)characters
 {
     for(var i=characters.length; i>0; i--)
         CharacterKeysToPrevent[""+characters[i-1].toLowerCase()] = YES;
 }
 
+/*
+    @param character a character to stop propagating keypresses to the browser.
+*/
 - (void)preventCharacterKeyFromPropagating:(CPString)character
 {
     CharacterKeysToPrevent[character.toLowerCase()] = YES;
 }
 
+/*
+    Clear the list of characters for which we are not sending keypresses to the browser.
+*/
 - (void)clearCharacterKeysToPreventFromPropagating
 {
     CharacterKeysToPrevent = {};
 }
 
+/*
+    Prevent these keyCodes from sending their keypresses to the browser.
+    @param keyCodes an array of keycodes to prevent propagation.
+*/
 - (void)preventKeyCodesFromPropagating:(CPArray)keyCodes
 {
     for(var i=keyCodes.length; i>0; i--)
         KeyCodesToPrevent[keyCodes[i-1]] = YES;
 }
 
+/*
+    Prevent this keyCode from sending its key events to the browser.
+    @param keyCode a keycode to prevent propagation.
+*/
 - (void)preventKeyCodeFromPropagating:(CPString)keyCode
 {
     KeyCodesToPrevent[keyCode] = YES;
 }
 
+/*
+    Clear the list of keyCodes for which we are not sending keypresses to the browser.
+*/
 - (void)clearKeyCodesToPreventFromPropagating
 {
     KeyCodesToPrevent = {};
 }
 
+/* @ignore */
 - (void)_bridgeMouseEvent:(DOMEvent)aDOMEvent
 {
     var theType = _overriddenEventType || aDOMEvent.type;
@@ -530,6 +561,7 @@ var CTRL_KEY_CODE   = 17;
     }
 }
 
+/* @ignore */
 - (void)_bridgeKeyEvent:(DOMEvent)aDOMEvent
 {
     try
@@ -675,6 +707,7 @@ var CTRL_KEY_CODE   = 17;
     }
 }
 
+/* @ignore */
 - (void)_bridgeScrollEvent:(DOMEvent)aDOMEvent
 {
     if(!aDOMEvent)
@@ -746,6 +779,7 @@ var CTRL_KEY_CODE   = 17;
 
 }
 
+/* @ignore */
 - (void)_bridgeResizeEvent:(DOMEvent)aDOMEvent
 {
     try
@@ -784,6 +818,7 @@ var CTRL_KEY_CODE   = 17;
     }
 }
 
+/* @ignore */
 - (void)_checkPasteboardElement
 {
     try
@@ -816,6 +851,7 @@ var CTRL_KEY_CODE   = 17;
     }
 }
 
+/* @ignore */
 - (void)_clearPasteboardElement
 {
     _DOMPasteboardElement.value = "";

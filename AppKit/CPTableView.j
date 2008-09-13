@@ -26,6 +26,11 @@ import "CPTableColumn.j"
 
 var CPTableViewCellPlaceholder = nil;
 
+/*
+    <objj>CPTableView</objj> is located within the AppKit framework and is used to display tables. It uses a delegate model for getting its data i.e. you give it an object that provides it with the data it should display.
+    
+    @ignore
+*/
 @implementation CPTableView : CPControl
 {
     id _dataSource;
@@ -41,7 +46,7 @@ var CPTableViewCellPlaceholder = nil;
     CPArray             _tableCells;
     CPArray             _tableColumnViews;
     
-    CPSize		_intercellSpacing;
+    CGSize		_intercellSpacing;
 }
 
 + (void)initialize
@@ -52,7 +57,7 @@ var CPTableViewCellPlaceholder = nil;
     CPTableViewCellPlaceholder = [[CPObject alloc] init];
 }
 
-- (id)initWithFrame:(CPRect)aFrame
+- (id)initWithFrame:(CGRect)aFrame
 {
     self = [super initWithFrame:aFrame];
     
@@ -83,6 +88,9 @@ var CPTableViewCellPlaceholder = nil;
     return self;
 }
 
+/*
+    Returns the table's column height
+*/
 - (float)columnHeight
 {
     var bounds = [self bounds],
@@ -91,7 +99,7 @@ var CPTableViewCellPlaceholder = nil;
     return CPRectGetHeight(bounds) > height ? CPRectGetHeight(bounds) : height;
 }
 
-- (void)loadTableCellsInRect:(CPRect)aRect
+- (void)loadTableCellsInRect:(CGRect)aRect
 {
    if (!_dataSource)
         return;
@@ -132,8 +140,11 @@ var CPTableViewCellPlaceholder = nil;
 }
 
 // Setting display attributes
-
-- (void)setIntercellSpacing:(CPSize)aSize
+/*
+    Sets the width and height between cell. The default is (3.0, 2.0) (width, height).
+    @param the width and height spacing
+*/
+- (void)setIntercellSpacing:(CGSize)aSize
 {
     if (_intercellSpacing.width != aSize.width)
     {
@@ -172,11 +183,19 @@ var CPTableViewCellPlaceholder = nil;
     _intercellSpacing = CPSizeCreateCopy(aSize);
 }
 
-- (CPSize)intercellSpacing
+/*
+    Returns the width and height of the space between
+    cells.
+*/
+- (CGSize)intercellSpacing
 {
     return _intercellSpacing;
 }
 
+/*
+    Sets the height of table rows
+    @param aRowHeight the new height of the table rows
+*/
 - (void)setRowHeight:(unsigned)aRowHeight
 {
     if (_rowHeight == aRowHeight)
@@ -192,11 +211,18 @@ var CPTableViewCellPlaceholder = nil;
             [_tableCells[column][row] setFrameOrigin:CPPointMake(0.0, row * (_rowHeight + _intercellSpacing.height))];
 }
 
+/*
+    Returns the height of a table row
+*/
 - (unsigned)rowHeight
 {
     return _rowHeight;
 }
 
+/*
+    Adds a column to the table
+    @param aTableColumn the column to be added
+*/
 - (void)addTableColumn:(CPTableColumn)aTableColumn
 {
     var i = 0,
@@ -219,6 +245,10 @@ var CPTableViewCellPlaceholder = nil;
     ++_numberOfColumns;
 }
 
+/*
+    Removes a column from the table
+    @param aTableColumn the column to remove
+*/
 - (void)removeTableColumn:(CPTableColumn)aTableColumn
 {
     var frame = [self frame],
@@ -240,6 +270,12 @@ var CPTableViewCellPlaceholder = nil;
     [self setFrameSize:CPSizeMake(CPRectGetWidth(frame) - width, CPRectGetHeight(frame))];
 }
 
+/*
+    Not yet implemented. Changes the position of the column in
+    the table.
+    @param fromIndex the original index of the column
+    @param toIndex the desired index of the column
+*/
 - (void)moveColumn:(unsigned)fromIndex toColumn:(unsinged)toIndex
 {
     if (fromIndex == toIndex)
@@ -247,23 +283,34 @@ var CPTableViewCellPlaceholder = nil;
 // FIXME: IMPLEMENT
 }
 
+/*
+    Returns an array containing the table's <objj>CPTableColumn</objj>s.
+*/
 - (CPArray)tableColumns
 {
     return _tableColumns;
 }
 
 // Getting the dimensions of the table
-
+/*
+    Returns the number of columns in the table
+*/
 - (int)numberOfColumns
 {
     return _numberOfColumns;
 }
 
+/*
+    Returns the number of rows in the table
+*/
 - (int)numberOfRows
 {
     return _numberOfRows;
 }
 
+/*
+    Adjusts the size of the table and it's header view.
+*/
 - (void)tile
 {
     var HEIGHT = 10.0;
@@ -272,19 +319,37 @@ var CPTableViewCellPlaceholder = nil;
     [_scrollView setFrame:CPRectMake(0.0, HEIGHT, CPRectGetWidth([self bounds]), CPRectGetHeight([self bounds]) - HEIGHT)];
 }
 
+/*
+    Sets the object that is used to obtain the table data. The data source must implement the following
+    methods:
+<pre>
+- (int)numberOfRowsInTableView:(<objj>CPTableView</objj>)aTableView
+- (id)tableView:(<objj>CPTableView</objj>)aTableView objectValueForTableColumn:(<objj>CPTableColumn</objj>)aTableColumn row:(int)rowIndex
+</pre>
+    @param aDataSource the object with the table data
+    @throws CPInternalInconsistencyException if <code>aDataSource</code> doesn't implement all the required methods
+*/
 - (void)setDataSource:(id)aDataSource
 {
+    if (![aDataSource respondsToSelector:@selector(numberOfRowsInTableView:)])
+        [CPException raise:CPInternalInconsistencyException reason:"Data source doesn't support 'numberOfRowsInTableView:'"];
+    if (![aDataSource respondsToSelector:@selector(tableView:objectValueForTableColumn:row:)])
+        [CPException raise:CPInternalInconsistencyException reason:"Data source doesn't support 'tableView:objectValueForTableColumn:row:'"];
+
     _dataSource = aDataSource;
     
     [self reloadData];
 }
 
+/*
+    Returns the object that has access to the table data
+*/
 - (id)dataSource
 {
     return _dataSource;
 }
 
-- (void)setFrameSize:(CPSize)aSize
+- (void)setFrameSize:(CGSize)aSize
 {
     var oldColumnHeight = [self columnHeight];
     
@@ -303,6 +368,10 @@ var CPTableViewCellPlaceholder = nil;
     [self tile];
 }
 
+/*
+    Tells the table view that the number of rows in the table
+    has changed.
+*/
 - (void)noteNumberOfRowsChanged
 {
     var numberOfRows = [_dataSource numberOfRowsInTableView:self];
@@ -314,21 +383,38 @@ var CPTableViewCellPlaceholder = nil;
     }
 }
 
-- (CPRect)rectOfRow:(int)aRowIndex
+/*
+    Returns the rectangle bounding the specified row.
+    @param aRowIndex the row to obtain a rectangle for
+    @return the bounding rectangle
+*/
+- (CGRect)rectOfRow:(int)aRowIndex
 {
     return CPRectMake(0.0, aRowIndex * (_rowHeight + _intercellSpacing.height), CPRectGetWidth([self bounds]), _rowHeight);
 }
 
-- (CPRect)rectOfColumn:(int)aColumnIndex
+/*
+    Returns the rectangle bounding the specified column
+    @param aColumnIndex the column to obtain a rectangle for
+    @return the bounding column
+*/
+- (CGRect)rectOfColumn:(int)aColumnIndex
 {
     return CPRectCreateCopy([_tableColumnViews[aColumnIndex] frame]);
 }
 
+/*
+    Adjusts column widths to make them all visible at once. Same as <code>tile</code>.
+*/
 - (void)sizeToFit
 {   
     [self tile];
 }
 
+/*
+    Reloads the data from the <code>dataSource</code>. This is an
+    expensive method, so use it lightly.
+*/
 - (void)reloadData
 {
     _numberOfRows = [_dataSource numberOfRowsInTableView:self];

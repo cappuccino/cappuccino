@@ -31,7 +31,7 @@ import "CPView.j"
 #include "Platform/Platform.h"
 #include "Platform/DOM/CPDOMDisplayServer.h"
 
-
+/* @ignore */
 @implementation _CPImageAndTitleView : CPView
 {
     CPTextAlignment     _alignment;

@@ -25,12 +25,18 @@ import <Foundation/CPString.j>
 
 import "CAMediaTimingFunction.j"
 
-
+/*
+    This is an animation class.
+*/
 @implementation CAAnimation : CPObject
 {
     BOOL    _isRemovedOnCompletion;
 }
 
+/*
+    Creates a new <objj>CAAnimation</objj> instance
+    @return a new <objj>CAAnimation</objj> instance
+*/
 + (id)animation
 {
     return [[self alloc] init];
@@ -46,42 +52,70 @@ import "CAMediaTimingFunction.j"
     return self;
 }
 
+/*
+    Returns <code>YES</code>
+    @return <code>YES</code>
+*/
 - (void)shouldArchiveValueForKey:(CPString)aKey
 {
     return YES;
 }
 
+/*
+    Returns <code>nil</code>
+    @return <code>nil</code>
+*/
 + (id)defaultValueForKey:(CPString)aKey
 {
     return nil;
 }
 
+/*
+    Specifies whether this animation should be removed after it has completed.
+    @param <code>YES</code> means the animation should be removed
+*/
 - (void)setRemovedOnCompletion:(BOOL)isRemovedOnCompletion
 {
     _isRemovedOnCompletion = isRemovedOnCompletion;
 }
 
+/*
+    Returns <code>YES</code> if the animation is removed after completion
+*/
 - (BOOL)removedOnCompletion
 {
     return _isRemovedOnCompletion;
 }
 
+/*
+    Returns <code>YES</code> if the animation is removed after completion
+*/
 - (BOOL)isRemovedOnCompletion
 {
     return _isRemovedOnCompletion;
 }
 
+/*
+    Returns the animation's timing function. If <code>nil</code>, then it has a linear pacing.
+*/
 - (CAMediaTimingFunction)timingFunction
 {
     // Linear Pacing
     return nil;
 }
 
+/*
+    Sets the animation delegate
+    @param aDelegate the new delegate
+*/
 - (void)setDelegate:(id)aDelegate
 {
     _delegate = aDelegate;
 }
 
+/*
+    Returns the animation's delegate
+*/
 - (id)delegate
 {
     return _delegate;
@@ -94,6 +128,9 @@ import "CAMediaTimingFunction.j"
 
 @end
 
+/*
+    
+*/
 @implementation CAPropertyAnimation : CAAnimation
 {
     CPString    _keyPath;
@@ -153,6 +190,11 @@ import "CAMediaTimingFunction.j"
 
 @end
 
+/*
+    A <objj>CABasicAnimation</objj> is a simple animation that moves a
+    <objj>CALayer</objj> from one point to another over a specified
+    period of time.
+*/
 @implementation CABasicAnimation : CAPropertyAnimation
 {
     id  _fromValue;
@@ -160,31 +202,52 @@ import "CAMediaTimingFunction.j"
     id  _byValue;
 }
 
+/*
+    Sets the starting position for the animation.
+    @param aValue the animation starting position
+*/
 - (void)setFromValue:(id)aValue
 {
     _fromValue = aValue;
 }
 
+/*
+    Returns the animation's starting position.
+*/
 - (id)fromValue
 {
     return _fromValue;
 }
 
+/*
+    Sets the ending position for the animation.
+    @param aValue the animation ending position
+*/
 - (void)setToValue:(id)aValue
 {
     _toValue = aValue;
 }
 
+/*
+    Returns the animation's ending position.
+*/
 - (id)toValue
 {
     return _toValue;
 }
 
+/*
+    Sets the optional byValue for animation interpolation.
+    @param aValue the byValue
+*/
 - (void)setByValue:(id)aValue
 {
     _byValue = aValue;
 }
 
+/*
+    Returns the animation's byValue.
+*/
 - (id)byValue
 {
     return _byValue;

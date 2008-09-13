@@ -26,13 +26,32 @@ import "CPView.j"
 
 #include "CoreGraphics/CGGeometry.h"
 
-
+/*
+    Places tabs on top with a bezeled border.
+    @global
+    @group CPTabViewType
+*/
 CPTopTabsBezelBorder     = 0;
 //CPLeftTabsBezelBorder    = 1;
 //CPBottomTabsBezelBorder  = 2;
 //CPRightTabsBezelBorder   = 3;
+/*
+    Displays no tabs and has a bezeled border.
+    @global
+    @group CPTabViewType
+*/
 CPNoTabsBezelBorder      = 4;
+/*
+    Has no tabs and displays a line border.
+    @global
+    @group CPTabViewType
+*/
 CPNoTabsLineBorder       = 5;
+/*
+    Displays no tabs and no border.
+    @global
+    @group CPTabViewType
+*/
 CPNoTabsNoBorder         = 6;
 
 var CPTabViewBezelBorderLeftImage       = nil,
@@ -49,6 +68,13 @@ var CPTabViewDidSelectTabViewItemSelector           = 1,
     CPTabViewWillSelectTabViewItemSelector          = 4,
     CPTabViewDidChangeNumberOfTabViewItemsSelector  = 8;
 
+/*
+    This class represents a view that has multiple subviews (<objj>CPTabViewItem</objj>) presented as individual tabs.
+    Only one <objj>CPTabViewItem</objj> is shown at a time, and other <objj>CPTabViewItem</objj>s can be made visible
+    (one at a time) by clicking on the <objj>CPTabViewItem</objj>'s tab at the top of the tab view.
+    
+    THe currently selected <objj>CPTabViewItem</objj> is the view that is displayed.
+*/
 @implementation CPTabView : CPView
 {   
     CPView          _labelsView;
@@ -67,6 +93,9 @@ var CPTabViewDidSelectTabViewItemSelector           = 1,
     unsigned        _delegateSelectors;
 }
 
+/*
+    @ignore
+*/
 + (void)initialize
 {
     if (self != CPTabView)
@@ -99,6 +128,9 @@ var CPTabViewDidSelectTabViewItemSelector           = 1,
     CPTabViewBezelBorderColor = [CPColor colorWithPatternImage:bezerBorderImage];
 }
 
+/*
+    @ignore
+*/
 + (CPColor)bezelBorderColor
 {
     return CPTabViewBezelBorderColor;
@@ -126,6 +158,7 @@ var CPTabViewDidSelectTabViewItemSelector           = 1,
     [self layoutSubviews];
 }
 
+/* @ignore */
 - (void)_createBezelBorder
 {
     var bounds = [self bounds];
@@ -153,6 +186,10 @@ var CPTabViewDidSelectTabViewItemSelector           = 1,
     [self addSubview:_separatorView];
 }
 
+/*
+    Lays out the subviews
+    @ignore
+*/
 - (void)layoutSubviews
 {
     if (_tabViewType == CPTopTabsBezelBorder)
@@ -182,12 +219,21 @@ var CPTabViewDidSelectTabViewItemSelector           = 1,
 }
 
 // Adding and Removing Tabs
-
+/*
+    Adds a <objj>CPTabViewItem</objj> to the tab view.
+    @param aTabViewItem the item to add
+*/
 - (void)addTabViewItem:(CPTabViewItem)aTabViewItem
 {
     [self insertTabViewItem:aTabViewItem atIndex:[_tabViewItems count]];
 }
 
+/*
+    Inserts a <objj>CPTabViewItem</objj> into the tab view
+    at the specified index.
+    @param aTabViewItem the item to insert
+    @param anIndex the index for the item
+*/
 - (void)insertTabViewItem:(CPTabViewItem)aTabViewItem atIndex:(unsigned)anIndex
 {
     [_tabViewItems insertObject:aTabViewItem atIndex:anIndex];
@@ -201,6 +247,10 @@ var CPTabViewDidSelectTabViewItemSelector           = 1,
         [_delegate tabViewDidChangeNumberOfTabViewItems:self];
 }
 
+/*
+    Removes the specified tab view item from the tab view.
+    @param aTabViewItem the item to remove
+*/
 - (void)removeTabViewItem:(CPTabViewItem)aTabViewItem
 {
     [_tabViewItems removeObjectIdenticalTo:aTabViewItem];
@@ -212,12 +262,19 @@ var CPTabViewDidSelectTabViewItemSelector           = 1,
 }
 
 // Accessing Tabs
-
+/*
+    Returns the index of the specified item
+    @param aTabViewItem the item to find the index for
+*/
 - (int)indexOfTabViewItem:(CPTabViewItem)aTabViewItem
 {
     return [_tabViewItems indexOfObjectIdenticalTo:aTabViewItem];
 }
 
+/*
+    Returns the index of the <objj>CPTabViewItem</objj> with the specified identifier.
+    @param anIdentifier the identifier of the item
+*/
 - (int)indexOfTabViewItemWithIdentifier:(CPString)anIdentifier
 {
     var index = 0,
@@ -230,23 +287,35 @@ var CPTabViewDidSelectTabViewItemSelector           = 1,
     return index;
 }
 
+/*
+    Returns the number of items in the tab view.
+*/
 - (unsigned)numberOfTabViewItems
 {
     return [_tabViewItems count];
 }
 
+/*
+    Returns the <objj>CPTabViewItem</objj> at the specified index.
+*/
 - (CPTabViewItem)tabViewItemAtIndex:(unsigned)anIndex
 {
     return _tabViewItems[anIndex];
 }
 
+/*
+    Returns the array of items that backs this tab view.
+*/
 - (CPArray)tabViewItems
 {
     return _tabViewItems;
 }
 
 // Selecting a Tab
-
+/*
+    Sets the first tab view item in the array to be displayed to the user.
+    @param aSender the object making this request
+*/
 - (void)selectFirstTabViewItem:(id)aSender
 {
     var count = [_tabViewItems count];
@@ -255,6 +324,10 @@ var CPTabViewDidSelectTabViewItemSelector           = 1,
         [self selectTabViewItemAtIndex:0];
 }
 
+/*
+    Sets the last tab view item in the array to be displayed to the user.
+    @param aSender the object making this request
+*/
 - (void)selectLastTabViewItem:(id)aSender
 {
     var count = [_tabViewItems count];
@@ -263,6 +336,10 @@ var CPTabViewDidSelectTabViewItemSelector           = 1,
         [self selectTabViewItemAtIndex:count - 1];
 }
 
+/*
+    Sets the next tab item in the array to be displayed.
+    @param aSender the object making this request
+*/
 - (void)selectNextTabViewItem:(id)aSender
 {
     if (!_selectedTabViewItem)
@@ -274,6 +351,10 @@ var CPTabViewDidSelectTabViewItemSelector           = 1,
     [self selectTabViewItemAtIndex:index + 1 % count];
 }
 
+/*
+    Selects the previous item in the array for display.
+    @param aSender the object making this request
+*/
 - (void)selectPreviousTabViewItem:(id)aSender
 {
     if (!_selectedTabViewItem)
@@ -285,6 +366,10 @@ var CPTabViewDidSelectTabViewItemSelector           = 1,
     [self selectTabViewItemAtIndex:index == 0 ? count : index - 1];
 }
 
+/*
+    Displays the specified item in the tab view.
+    @param aTabViewItem the item to display
+*/
 - (void)selectTabViewItem:(CPTabViewItem)aTabViewItem
 {
     if ((_delegateSelectors & CPTabViewShouldSelectTabViewItemSelector) && ![_delegate tabView:self shouldSelectTabViewItem:aTabViewItem])
@@ -324,18 +409,28 @@ var CPTabViewDidSelectTabViewItemSelector           = 1,
         [_delegate tabView:self didSelectTabViewItem:aTabViewItem];
 }
 
+/*
+    Selects the item at the specified index.
+    @param anIndex the index of the item to display.
+*/
 - (void)selectTabViewItemAtIndex:(unsigned)anIndex
 {
     [self selectTabViewItem:_tabViewItems[anIndex]];
 }
 
-- (void)selectedTabViewItem
+/*
+    Returns the current item being displayed.
+*/
+- (CPTabViewItem)selectedTabViewItem
 {
     return _selectedTabViewItem;
 }
 
 // 
-
+/*
+    Sets the tab view type.
+    @param aTabViewType the view type
+*/
 - (void)setTabViewType:(CPTabViewType)aTabViewType
 {
     if (_tabViewType == aTabViewType)
@@ -356,13 +451,18 @@ var CPTabViewDidSelectTabViewItemSelector           = 1,
     [self layoutSubviews];
 }
 
+/*
+    Returns the tab view type.
+*/
 - (CPTabViewType)tabViewType
 {
     return _tabViewType;
 }
 
 // Determining the Size
-
+/*
+    Returns the content rectangle.
+*/
 - (CGRect)contentRect
 {
     var contentRect = CGRectMakeCopy([self bounds]);
@@ -383,6 +483,10 @@ var CPTabViewDidSelectTabViewItemSelector           = 1,
     return contentRect;
 }
 
+/*
+    Sets the delegate for this tab view.
+    @param aDelegate the tab view's delegate
+*/
 - (void)setDelegate:(id)aDelegate
 {
     if (_delegate == aDelegate)
@@ -422,6 +526,7 @@ var _CPTabLabelsViewBackgroundColor = nil,
     _CPTabLabelsViewInsideMargin    = 10.0,
     _CPTabLabelsViewOutsideMargin   = 15.0;
 
+/* @ignore */
 @implementation _CPTabLabelsView : CPView
 {
     CPTabView       _tabView;
@@ -553,6 +658,7 @@ var _CPTabLabelsViewBackgroundColor = nil,
 var _CPTabLabelBackgroundColor          = nil,
     _CPTabLabelSelectedBackgroundColor  = nil;
 
+/* @ignore */
 @implementation _CPTabLabel : CPView
 {
     CPTabViewItem   _tabViewItem;

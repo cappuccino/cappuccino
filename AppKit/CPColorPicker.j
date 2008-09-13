@@ -25,13 +25,20 @@ import <AppKit/CPView.j>
 import <AppKit/CPImage.j>
 import <AppKit/CPImageView.j>
 
-
+/*
+    <objj>CPColorPicker</objj> is an abstract superclass for all color picker subclasses. If you want a particular color picker, use <objj>CPColorPanel</objj>'s <code>setPickerMode:</code> method. The simplest way to implement your own color picker is to create a subclass of CPColorPicker.
+*/
 @implementation CPColorPicker : CPObject
 {
     CPColorPanel    _panel;
     int             _mask;
 }
 
+/*
+    Initializes the color picker.
+    @param aMask a unique unsigned int identifying your color picker
+    @param aPanel the color panel that owns this picker
+*/
 - (id)initWithPickerMask:(int)aMask colorPanel:(CPColorPanel)aPanel
 {
     self = [super init];
@@ -42,21 +49,37 @@ import <AppKit/CPImageView.j>
     return self;
 }
 
+/*
+    Returns the color panel that owns this picker
+*/
 - (CPColorPanel)colorPanel
 {
     return _panel;
 }
 
+/*
+    FIXME Not implemented.
+    @return <code>nil</code>
+    @ignore
+*/
 - (CPImage)provideNewButtonImage
 {
     return nil;
 }
 
-- (void)setMode:(int)mode
+/*
+    Sets the color picker's mode.
+    @param mode the color panel mode
+*/
+- (void)setMode:(CPColorPanelMode)mode
 {
     return;
 }
 
+/*
+    Sets the picker's color.
+    @param aColor the new color for the picker
+*/
 - (void)setColor:(CPColor)aColor
 {
     return;
@@ -64,6 +87,10 @@ import <AppKit/CPImageView.j>
 
 @end
 
+/*
+    The wheel mode color picker.
+    @ignore
+*/
 @implementation CPColorWheelColorPicker : CPColorPicker
 {
     CPView          _pickerView;    
@@ -167,6 +194,7 @@ import <AppKit/CPImageView.j>
 
 @end
 
+/* @ignore */
 @implementation __CPColorWheel : CPView
 {
     DOMElement  _wheelImage;

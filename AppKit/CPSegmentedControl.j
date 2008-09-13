@@ -24,11 +24,26 @@ import <Foundation/CPArray.j>
 
 import "CPControl.j"
 
-
+/*
+    @global
+    @group CPSegmentSwitchTracking
+*/
 CPSegmentSwitchTrackingSelectOne = 0;
+/*
+    @global
+    @group CPSegmentSwitchTracking
+*/
 CPSegmentSwitchTrackingSelectAny = 1;
+/*
+    @global
+    @group CPSegmentSwitchTracking
+*/
 CPSegmentSwitchTrackingMomentary = 2;
 
+/*
+    This class is a horizontal button with multiple
+    segments.
+*/
 @implementation CPSegmentedControl : CPControl
 {
     unsigned                _segmentCount;
@@ -58,13 +73,20 @@ CPSegmentSwitchTrackingMomentary = 2;
     return self;
 }
 
+/*
+    Returns the tag of the selected segment.
+*/
 - (int)selectedTag
 {
     return _segments[_selectedSegment].tag;
 }
 
 // Specifying the number of segments
-
+/*
+    Sets the number of segments in the button.
+    @param aCount the number of segments on
+    the button
+*/
 - (void)setSegmentCount:(unsigned)aCount
 {
     if (_segmentCount == aCount)
@@ -103,23 +125,38 @@ CPSegmentSwitchTrackingMomentary = 2;
     [self tileWithChangedSegment:0];
 }
 
+/*
+    Returns the number of segments in the button.
+*/
 - (unsigned)segmentCount
 {
     return _segmentCount;
 }
 
 // Specifying Selected Segment
-
+/*
+    Selects a segment.
+    @param aSegment the segment to select
+    @throws CPRangeException if <code>aSegment</code> is out of bounds
+*/
 - (void)setSelectedSegment:(unsigned)aSegment
 {
+    // setSelected:forSegment throws the exception for us (if necessary)
     [self setSelected:YES forSegment:aSegment];
 }
 
+/*
+    Returns the selected segment.
+*/
 - (unsigned)selectedSegment
 {
     return _selectedSegment;
 }
 
+/*
+    Selects the button segment with the
+    specified tag.
+*/
 - (BOOL)selectSegmentWithTag:(int)aTag
 {
     var index = 0;
@@ -172,13 +209,21 @@ CPSegmentSwitchTrackingMomentary = 2;
     }
 }
 
-- (CPSegmetnSwitchTracking)trackingMode
+/*
+    Returns the control's tracking mode.
+*/
+- (CPSegmentSwitchTracking)trackingMode
 {
     return _trackingMode;
 }
 
 // Working with Individual Segments
-
+/*
+    Sets the width of the specified segment.
+    @param aWidth the new width for the segment
+    @param aSegment the segment to set the width for
+    @throws CPRangeException if <code>aSegment</code> is out of bounds
+*/
 - (void)setWidth:(float)aWidth forSegment:(unsigned)aSegment
 {
     _segments[aSegment].width = aWidth;
@@ -186,11 +231,22 @@ CPSegmentSwitchTrackingMomentary = 2;
     [self tileWithChangedSegment:aSegment];
 }
 
+/*
+    Returns the width for the specified segment.
+    @param aSegment the segment to get the width for
+    @throws CPRangeException if <code>aSegment</code> is out of bounds
+*/
 - (float)widthForSegment:(unsigned)aSegment
 {
     return _segments[aSegment].width;
 }
 
+/*
+    Sets the image for the specified segment.
+    @param anImage the image for the segment
+    @param aSegment the segment to set the image on
+    @throws CPRangeException if <code>aSegment</code> is out of bounds
+*/
 - (void)setImage:(CPImage)anImage forSegment:(unsigned)aSegment
 {
     var segment = _segments[aSegment];
@@ -223,11 +279,22 @@ CPSegmentSwitchTrackingMomentary = 2;
         [self tileWithChangedSegment:aSegment];
 }
 
+/*
+    Returns the image for the specified segment
+    @param aSegment the segment to obtain the image for
+    @throws CPRangeException if <code>aSegment</code> is out of bounds
+*/
 - (CPImage)imageForSegment:(unsigned)aSegment
 {
     return _segments[aSegment].image;
 }
 
+/*
+    Sets the label for the specified segment
+    @param aLabel the label for the segment
+    @param aSegment the segment to label
+    @throws CPRangeException if <code>aSegment</code> is out of bounds
+*/
 - (void)setLabel:(CPString)aLabel forSegment:(unsigned)aSegment
 {
     var segment = _segments[aSegment];
@@ -262,27 +329,46 @@ CPSegmentSwitchTrackingMomentary = 2;
         [self tileWithChangedSegment:aSegment];
 }
 
-- (CPImage)labelForSegment:(unsigned)aSegment
+/*
+    Returns the label for the specified segment
+    @param the segment to obtain the label for
+    @throws CPRangeException if <code>aSegment</code> is out of bounds
+*/
+- (CPString)labelForSegment:(unsigned)aSegment
 {
     return _segments[aSegment].label;
 }
 
+/*
+    Sets the menu for the specified segment
+    @param aMenu the menu to set
+    @param aSegment the segment to set the menu on
+    @throws CPRangeException if <code>aSegment</code> is out of bounds
+*/
 - (void)setMenu:(CPMenu)aMenu forSegment:(unsigned)aSegment
 {
     _segments[aSegment].menu = aMenu;
 }
 
-- (CPImage)menuForSegment:(unsigned)aSegment
+/*
+    Returns the menu for the specified segment.
+    @param aSegment the segment to obtain the menu for
+    @throws CPRangeException if <code>aSegment</code> is out of bounds
+*/
+- (CPMenu)menuForSegment:(unsigned)aSegment
 {
     return _segments[aSegment].menu;
 }
 
+/*
+    Sets the selection for the specified segment. If only one segment
+    can be selected at a time, any other segment will be deselected.
+    @param isSelected <code>YES</code> selects the segment. <code>NO</code> deselects it.
+    @param aSegment the segment to set the selection for
+    @throws CPRangeException if <code>aSegment</code> is out of bounds
+*/
 - (void)setSelected:(BOOL)isSelected forSegment:(unsigned)aSegment
 {
-    // FIXME: EXCEPTION REQUIRED
-    if (aSegment < 0 || aSegment >= _segments.length)
-        return;
-        
     var segment = _segments[aSegment];
     
     // If we're already in this state, bail.
@@ -310,37 +396,71 @@ CPSegmentSwitchTrackingMomentary = 2;
         [self drawSegmentBezel:aSegment highlight:NO];
 }
 
-- (CPImage)isSelectedForSegment:(unsigned)aSegment
+/*
+    Returns <code>YES</code> if the specified segment is selected.
+    @param aSegment the segment to check for selection
+    @throws CPRangeException if <code>aSegment</code> is out of bounds
+*/
+- (BOOL)isSelectedForSegment:(unsigned)aSegment
 {
     return _segments[aSegment].selected;
 }
 
+/*
+    Enables/diables the specified segment.
+    @param isEnabled <code>YES</code> enables the segment
+    @param aSegment the segment to enable/disble
+    @throws CPRangeException if <code>aSegment</code> is out of bounds
+*/
 - (void)setEnabled:(BOOL)isEnabled forSegment:(unsigned)aSegment
 {
     _segments[aSegment].enabled = isEnabled;
 }
 
-- (CPImage)isEnabledForSegment:(unsigned)aSegment
+/*
+    Returns <code>YES</code> if the specified segment is enabled.
+    @param aSegment the segment to check
+    @throws CPRangeException if <code>aSegment</code> is out of bounds
+*/
+- (BOOL)isEnabledForSegment:(unsigned)aSegment
 {
     return _segments[aSegment].enabled;
 }
 
+/*
+    Sets a tag for the specified segment.
+    @param aTag the tag to set
+    @param aSegment the segment to set the tag on
+*/
 - (void)setTag:(int)aTag forSegment:(unsigned)aSegment
 {
     _segments[aSegment].tag = aTag;
 }
 
+/*
+    Returns the tag for the specified segment.
+    @param aSegment the segment to obtain the tag for
+*/
 - (int)tagForSegment:(unsigned)aSegment
 {
     return _segments[aSegment].tag;
 }
 
 // Drawings
-
-- (void)drawSegmentBezel:(int)aSegment highlgiht:(BOOL)shouldHighlight
+/*
+    Draws the specified segment bezel
+    @param aSegment the segment to draw the bezel for
+    @param shouldHighlight <code>YES</code> highlights the bezel
+*/
+- (void)drawSegmentBezel:(int)aSegment highlight:(BOOL)shouldHighlight
 {
 }
 
+/*
+    Draws the specified segment
+    @param aSegment the segment to draw
+    @param shouldHighlight <code>YES</code> highlights the bezel
+*/
 - (void)drawSegment:(int)aSegment highlight:(BOOL)shouldHighlight
 {
     var segment = _segments[aSegment],
@@ -430,11 +550,20 @@ CPSegmentSwitchTrackingMomentary = 2;
     [self drawSegment:aSegment highlight:NO];
 }
 
+/*
+    Returns the bounding rectangle for the specified segment.
+    @param aSegment the segment to get the rectangle for
+*/
 - (CGRect)frameForSegment:(unsigned)aSegment
 {
     return _segments[aSegment].frame;
 }
 
+/*
+    Returns the segment that is hit by the specified point.
+    @param aPoint the point to test for a segment hit
+    @return the intersecting segment
+*/
 - (unsigned)testSegment:(CGPoint)aPoint
 {
     var location = [self convertPoint:aPoint fromView:nil],
@@ -460,6 +589,10 @@ CPSegmentSwitchTrackingMomentary = 2;
 {
 }
 
+/*
+    Handles events for the segment
+    @param anEvent the event to handle
+*/
 - (void)trackSegment:(CPEvent)anEvent
 {     
     var type = [anEvent type],

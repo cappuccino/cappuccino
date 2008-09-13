@@ -27,48 +27,188 @@ import "CPControl.j"
 
 #include "CoreGraphics/CGGeometry.h"
 
-
 CPScaleProportionally   = 0;
 CPScaleToFit            = 1;
 CPScaleNone             = 2;
 
+/*
+    @global
+    @group CPCellImagePosition
+*/
 CPNoImage       = 0;
+/*
+    @global
+    @group CPCellImagePosition
+*/
 CPImageOnly     = 1;
+/*
+    @global
+    @group CPCellImagePosition
+*/
 CPImageLeft     = 2;
+/*
+    @global
+    @group CPCellImagePosition
+*/
 CPImageRight    = 3;
+/*
+    @global
+    @group CPCellImagePosition
+*/
 CPImageBelow    = 4;
+/*
+    @global
+    @group CPCellImagePosition
+*/
 CPImageAbove    = 5;
+/*
+    @global
+    @group CPCellImagePosition
+*/
 CPImageOverlaps = 6;
 
+/*
+    @global
+    @class CPButton
+*/
 CPOnState       = 1;
+/*
+    @global
+    @class CPButton
+*/
 CPOffState      = 0;
+/*
+    @global
+    @class CPButton
+*/
 CPMixedState    = -1;
 
+/*
+    @global
+    @group CPBezelStyle
+*/
 CPRoundedBezelStyle             = 1;
+/*
+    @global
+    @group CPBezelStyle
+*/
 CPRegularSquareBezelStyle       = 2;
+/*
+    @global
+    @group CPBezelStyle
+*/
 CPThickSquareBezelStyle         = 3;
+/*
+    @global
+    @group CPBezelStyle
+*/
 CPThickerSquareBezelStyle       = 4;
+/*
+    @global
+    @group CPBezelStyle
+*/
 CPDisclosureBezelStyle          = 5;
+/*
+    @global
+    @group CPBezelStyle
+*/
 CPShadowlessSquareBezelStyle    = 6;
+/*
+    @global
+    @group CPBezelStyle
+*/
 CPCircularBezelStyle            = 7;
+/*
+    @global
+    @group CPBezelStyle
+*/
 CPTexturedSquareBezelStyle      = 8;
+/*
+    @global
+    @group CPBezelStyle
+*/
 CPHelpButtonBezelStyle          = 9;
+/*
+    @global
+    @group CPBezelStyle
+*/
 CPSmallSquareBezelStyle         = 10;
+/*
+    @global
+    @group CPBezelStyle
+*/
 CPTexturedRoundedBezelStyle     = 11;
+/*
+    @global
+    @group CPBezelStyle
+*/
 CPRoundRectBezelStyle           = 12;
+/*
+    @global
+    @group CPBezelStyle
+*/
 CPRecessedBezelStyle            = 13;
+/*
+    @global
+    @group CPBezelStyle
+*/
 CPRoundedDisclosureBezelStyle   = 14;
+/*
+    @global
+    @group CPBezelStyle
+*/
 CPHUDBezelStyle                 = -1;
 
+
+/*
+    @global
+    @group CPButtonType
+*/
 CPMomentaryLightButton   = 0;
+/*
+    @global
+    @group CPButtonType
+*/
 CPPushOnPushOffButton    = 1;
+/*
+    @global
+    @group CPButtonType
+*/
 CPToggleButton           = 2;
+/*
+    @global
+    @group CPButtonType
+*/
 CPSwitchButton           = 3;
+/*
+    @global
+    @group CPButtonType
+*/
 CPRadioButton            = 4;
+/*
+    @global
+    @group CPButtonType
+*/
 CPMomentaryChangeButton  = 5;
+/*
+    @global
+    @group CPButtonType
+*/
 CPOnOffButton            = 6;
+/*
+    @global
+    @group CPButtonType
+*/
 CPMomentaryPushInButton  = 7;
+/*
+    @global
+    @group CPButtonType
+*/
 CPMomentaryPushButton    = 0;
+/*
+    @global
+    @group CPButtonType
+*/
 CPMomentaryLight         = 7;
 
 
@@ -79,6 +219,11 @@ var _CPButtonClassName                          = nil,
     _CPButtonBezelStyleIdentifiers              = {},
     _CPButtonBezelStyleHighlightedIdentifier    = @"Highlighted";
 
+/*
+    <objj>CPButton</objj> is a subclass of <objj>CPControl</objj> that
+    intercepts mouse-down events and sends an action message to a
+    target object when it's clicked or pressed.
+*/
 @implementation CPButton : CPControl
 {
     int                     _tag;
@@ -104,6 +249,10 @@ var _CPButtonClassName                          = nil,
     _CPImageAndTitleView    _imageAndTitleView;
 }
 
+/*
+    Initializes the <objj>CPButton</objj> class.
+    @ignore
+*/
 + (void)initialize
 {
     if (self != [CPButton class])
@@ -154,7 +303,10 @@ var _CPButtonClassName                          = nil,
 }
 
 // Configuring Buttons
-
+/*
+    Sets how the button highlights and shows its state.
+    @param aButtonType Defines the behavior of the button.
+*/
 - (void)setButtonType:(CPButtonType)aButtonType
 {
     if (aButtonType == CPSwitchButton)
@@ -166,7 +318,7 @@ var _CPButtonClassName                          = nil,
     }
 }
 
-- (id)initWithFrame:(CPRect)aFrame
+- (id)initWithFrame:(CGRect)aFrame
 {
     self = [super initWithFrame:aFrame];
     
@@ -186,6 +338,10 @@ var _CPButtonClassName                          = nil,
     return self;
 }
 
+/*
+    Sets the position of the button's image to <code>anImagePosition</code>.
+    @param anImagePosition the position for the button's image
+*/
 - (void)setImagePosition:(CPCellImagePosition)anImagePosition
 {
     if (_imagePosition == anImagePosition)
@@ -196,11 +352,18 @@ var _CPButtonClassName                          = nil,
     [self drawContentsWithHighlight:_isHighlighted];
 }
 
+/*
+    Returns the buton's image position
+*/
 - (CPCellImagePosition)imagePosition
 {
     return _imagePosition;
 }
 
+/*
+    Sets the button's images scaling method
+    @param anImageScaling the image scaling method
+*/
 - (void)setImageScaling:(CPImageScaling)anImageScaling
 {
     if (_imageScaling == anImageScaling)
@@ -211,11 +374,18 @@ var _CPButtonClassName                          = nil,
     [self drawContentsWithHighlight:_isHighlighted];
 }
 
+/*
+    Returns the button's image scaling method
+*/
 - (CPImageScaling)imageScaling
 {
     return _imageScaling;
 }
 
+/*
+    Sets the color of the button's text
+    @param aColor the color to use for drawing the button text
+*/
 - (void)setTextColor:(CPColor)aColor
 {
     [super setTextColor:aColor];
@@ -223,6 +393,10 @@ var _CPButtonClassName                          = nil,
     [self drawContentsWithHighlight:_isHighlighted];
 }
 
+/*
+    Sets the font that will be used to draw the button text
+    @param aFont the font used to draw the button text
+*/
 - (void)setFont:(CPFont)aFont
 {
     [super setFont:aFont];
@@ -231,17 +405,26 @@ var _CPButtonClassName                          = nil,
 }
 
 // Setting the state
-
+/*
+    Returns <code>YES</code> if the button has a 'mixed' state in addition to on and off.
+*/
 - (BOOL)allowsMixedState
 {
     return _allowsMixedState;
 }
 
+/*
+    Sets whether the button can have a 'mixed' state.
+    @param aFlag specifies whether a 'mixed' state is allowed or not
+*/
 - (void)setAllowsMixedState:(BOOL)aFlag
 {
     _allowsMixedState = aFlag;
 }
 
+/*
+    Sets the button to its next state.
+*/
 - (void)setNextState
 {
     if (_state == CPOffState)
@@ -250,16 +433,28 @@ var _CPButtonClassName                          = nil,
         _state = (_state >= CPOnState && _allowsMixedState) ? CPMixedState : CPOffState;
 }
 
+/*
+    Sets the button's state to <code>aState</code>.
+    @param aState Possible states are any of the <objj>CPButton</objj> globals:
+    <code>CPOffState, CPOnState, CPMixedState</code>
+*/
 - (void)setState:(int)aState
 {
     _state = aState;
 }
 
+/*
+    Returns the button's current state
+*/
 - (int)state
 {
     return _state;
 }
 
+/*
+    Sets the alignment of the text on the button.
+    @param anAlignment an alignment object
+*/
 - (void)setAlignment:(CPTextAlignment)anAlignment
 {
     [super setAlignment:anAlignment];
@@ -267,6 +462,10 @@ var _CPButtonClassName                          = nil,
     [self drawContentsWithHighlight:_isHighlighted];
 }
 
+/*
+    Sets the image that will be drawn on the button.
+    @param anImage the image that will be drawn
+*/
 - (void)setImage:(CPImage)anImage
 {
     if (_image == anImage)
@@ -277,21 +476,35 @@ var _CPButtonClassName                          = nil,
     [self drawContentsWithHighlight:_isHighlighted];
 }
 
+/*
+    Returns the image that will be drawn on the button
+*/
 - (CPImage)image
 {
     return _image;
 }
 
+/*
+    Sets the button's image which is used in its alternate state.
+    @param anImage the image to be used while the button is in an alternate state
+*/
 - (void)setAlternateImage:(CPImage)anImage
 {
     _alternateImage = anImage;
 }
 
+/*
+    Returns the image used when the button is in an alternate state.
+*/
 - (CPImage)alternateImage
 {
     return _alternateImage;
 }
 
+/*
+    Sets the button's title.
+    @param aTitle the new title for the button
+*/
 - (void)setTitle:(CPString)aTitle
 {
     if (_title == aTitle)
@@ -302,11 +515,17 @@ var _CPButtonClassName                          = nil,
     [self drawContentsWithHighlight:_isHighlighted];
 }
 
+/*
+    Returns the button's title string
+*/
 - (CPString)title
 {
     return _title;
 }
 
+/*
+    Lays out the button.
+*/
 - (void)tile
 {
     var size = [self bounds].size;
@@ -328,6 +547,9 @@ var _CPButtonClassName                          = nil,
         [_imageAndTitleView setFrameSize:size];
 }
 
+/*
+    Compacts the button's frame to fit its contents.
+*/
 - (void)sizeToFit
 {
     [_imageAndTitleView sizeToFit];
@@ -346,29 +568,48 @@ var _CPButtonClassName                          = nil,
     [self setFrameSize:CGSizeMake(CGRectGetWidth(frame), height)];
 }
 
-- (void)setFrameSize:(CPSize)aSize
+/*
+    Sets the frame size for the button.
+    @param the new frame size
+*/
+- (void)setFrameSize:(CGSize)aSize
 {
     [super setFrameSize:aSize];
 
     [self tile];
 }
 
+/*
+    Highlights the receiver based on <code>aFlag</code>.
+    @param If <code>YES</code> the button will highlight, <code>NO</code> the button will unhighlight.
+*/
 - (void)highlight:(BOOL)aFlag
 {
     [self drawBezelWithHighlight:aFlag];
     [self drawContentsWithHighlight:aFlag];
 }
 
+/*
+    Sets button's tag.
+    @param aTag the button's new tag
+*/
 - (void)setTag:(int)aTag
 {
     _tag = aTag;
 }
 
+/*
+    Returns the button's tag.
+*/
 - (int)tag
 {
     return _tag;
 }
 
+/*
+    Called when the user clicks on this button.
+    @param anEvent the event with information about the click
+*/
 - (void)mouseDown:(CPEvent)anEvent
 {
     _isHighlighted = YES;
@@ -376,6 +617,10 @@ var _CPButtonClassName                          = nil,
     [self highlight:_isHighlighted];
 }
 
+/*
+    Called when the user drags on the button.
+    @param anEvent the event with information about the drag
+*/
 - (void)mouseDragged:(CPEvent)anEvent
 {
     _isHighlighted = CGRectContainsPoint([self bounds], [self convertPoint:[anEvent locationInWindow] fromView:nil]);
@@ -383,6 +628,10 @@ var _CPButtonClassName                          = nil,
     [self highlight:_isHighlighted];
 }
 
+/*
+    Called when the user releases the mouse button
+    @param anEvent the event with information about the mouse release
+*/
 - (void)mouseUp:(CPEvent)anEvent
 {
     _isHighlighted = NO;
@@ -392,7 +641,10 @@ var _CPButtonClassName                          = nil,
     [super mouseUp:anEvent];
 }
 
-// FIXME: This probably belongs in CPControl.
+/*
+    Sets the button's control size.
+    @param aControlSize the button's new control size
+*/
 - (void)setControlSize:(CPControlSize)aControlSize
 {
     if (_controlSize == aControlSize)
@@ -404,11 +656,18 @@ var _CPButtonClassName                          = nil,
     [self _updateTextAttributes];
 }
 
+/*
+    Returns the button's control size.
+*/
 - (CPControlSize)controlSize
 {
     return _controlSize;
 }
 
+/*
+    Sets whether the button has a bezeled border.
+    @param If <code>YES</code>, the the button will have a bezeled border.
+*/
 - (void)setBordered:(BOOL)isBordered
 {
     if (_isBordered == isBordered)
@@ -422,11 +681,18 @@ var _CPButtonClassName                          = nil,
     [self tile];
 }
 
+/*
+    Returns <code>YES</code> if the border is bezeled.
+*/
 - (BOOL)isBordered
 {
     return _isBordered;
 }
 
+/*
+    Sets the button's bezel style.
+    @param aBezelStye one of the predefined bezel styles
+*/
 - (void)setBezelStyle:(CPBezelStyle)aBezelStyle
 {
     // FIXME: We need real support for these:
@@ -457,11 +723,15 @@ var _CPButtonClassName                          = nil,
     [self tile];
 }
 
+/*
+    Returns the current bezel style
+*/
 - (int)bezelStyle
 {
     return _bezelStyle;
 }
 
+/* @ignore */
 - (void)updateBackgroundColors
 {
     if (_isBordered)
@@ -488,6 +758,7 @@ var _CPButtonClassName                          = nil,
     }
 }
 
+/* @ignore */
 - (void)drawBezelWithHighlight:(BOOL)shouldHighlight
 {   
     _bezelBorderNeedsUpdate = ![self window];
@@ -498,6 +769,7 @@ var _CPButtonClassName                          = nil,
     [self setBackgroundColorWithName:shouldHighlight ? CPControlHighlightedBackgroundColor : CPControlNormalBackgroundColor];
 }
 
+/* @ignore */
 - (void)drawContentsWithHighlight:(BOOL)isHighlighted
 {
     if (!_title && !_image && !_alternateTitle && !_alternateImage && !_imageAndTitleView)
@@ -528,6 +800,7 @@ var _CPButtonClassName                          = nil,
         [self drawBezelWithHighlight:_isHighlighted];
 }
 
+/* @ignore */
 - (void)_updateTextAttributes
 {
     if (_bezelStyle == CPHUDBezelStyle)
@@ -553,6 +826,10 @@ var CPButtonImageKey                = @"CPButtonImageKey",
 
 @implementation CPButton (CPCoding)
 
+/*
+    Initializes the button by unarchiving data from <code>aCoder</code>.
+    @param aCoder the coder containing the archived <objj>CPButton</objj>.
+*/
 - (id)initWithCoder:(CPCoder)aCoder
 {
     self = [super initWithCoder:aCoder];
@@ -576,6 +853,10 @@ var CPButtonImageKey                = @"CPButtonImageKey",
     return self;
 }
 
+/*
+    Archives this button into the provided coder.
+    @param aCoder the coder to which the button's instance data will be written.
+*/
 - (void)encodeWithCoder:(CPCoder)aCoder
 {
     // We do this in order to avoid encoding the _imageAndTitleView, which 

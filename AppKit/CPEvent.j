@@ -24,27 +24,110 @@ import <Foundation/CPObject.j>
 
 #include "CoreGraphics/CGGeometry.h"
 
-
+/*
+    @global
+    @group CPEventType
+*/
 CPLeftMouseDown                         = 1;
+/*
+    @global
+    @group CPEventType
+*/
 CPLeftMouseUp                           = 2;
+/*
+    @global
+    @group CPEventType
+*/
 CPRightMouseDown                        = 3;
+/*
+    @global
+    @group CPEventType
+*/
 CPRightMouseUp                          = 4;
+/*
+    @global
+    @group CPEventType
+*/
 CPMouseMoved                            = 5;
+/*
+    @global
+    @group CPEventType
+*/
 CPLeftMouseDragged                      = 6;
+/*
+    @global
+    @group CPEventType
+*/
 CPRightMouseDragged                     = 7;
+/*
+    @global
+    @group CPEventType
+*/
 CPMouseEntered                          = 8;
+/*
+    @global
+    @group CPEventType
+*/
 CPMouseExited                           = 9;
+/*
+    @global
+    @group CPEventType
+*/
 CPKeyDown                               = 10;
+/*
+    @global
+    @group CPEventType
+*/
 CPKeyUp                                 = 11;
+/*
+    @global
+    @group CPEventType
+*/
 CPFlagsChanged                          = 12;
+/*
+    @global
+    @group CPEventType
+*/
 CPAppKitDefined                         = 13;
+/*
+    @global
+    @group CPEventType
+*/
 CPSystemDefined                         = 14;
+/*
+    @global
+    @group CPEventType
+*/
 CPApplicationDefined                    = 15;
+/*
+    @global
+    @group CPEventType
+*/
 CPPeriodic                              = 16;
+/*
+    @global
+    @group CPEventType
+*/
 CPCursorUpdate                          = 17; 
+/*
+    @global
+    @group CPEventType
+*/
 CPScrollWheel                           = 22;
+/*
+    @global
+    @group CPEventType
+*/
 CPOtherMouseDown                        = 25;
+/*
+    @global
+    @group CPEventType
+*/
 CPOtherMouseUp                          = 26;
+/*
+    @global
+    @group CPEventType
+*/
 CPOtherMouseDragged                     = 27;
                                         
 CPAlphaShiftKeyMask                     = 1 << 16;
@@ -95,6 +178,9 @@ CPDOMEventScrollWheel                   = "mousewheel";
 var _CPEventPeriodicEventPeriod         = 0,
     _CPEventPeriodicEventTimer          = nil;
 
+/*
+    <objj>CPEvent</objj> encapsulates the details of a Cappuccino keyboard or mouse event.
+*/
 @implementation CPEvent : CPObject
 {
     CPEventType         _type;
@@ -116,8 +202,24 @@ var _CPEventPeriodicEventPeriod         = 0,
     float               _deltaY;
     float               _deltaZ;
 }
-    
-+ (CPEvent)keyEventWithType:(CPEventType)anEventType location:(CPPoint)aPoint modifierFlags:(unsigned int)modifierFlags
+
+/*
+    Creates a new keyboard event.
+    @param anEventType the event type. Must be one of <objj>CPKeyDown</objj>, <objj>CPKeyUp</objj> or <objj>CPFlagsChanged</objj>
+    @param aPoint the location of the cursor in the window specified by <code>aWindowNumber</code>
+    @param modifierFlags a bitwise combination of the modifiers specified in the <objj>CPEvent</objj> globals
+    @param aTimestamp the time the event occurred
+    @param aWindowNumber the number of the <objj>CPWindow</objj> where the event occurred
+    @param aGraphicsContext the graphics context where the event occurred
+    @param characters the characters associated with the event
+    @param unmodCharacters the string of keys pressed without the presence of any modifiers other than Shift
+    @param repeatKey <code>YES</code> if this is caused by the system repeat as opposed to the user pressing the key again
+    @param code a number associated with the keyboard key of this event
+    @throws CPInternalInconsistencyException if <code>anEventType</code> is not a <objj>CPKeyDown</objj>,
+    <objj>CPKeyUp</objj> or <objj>CPFlagsChanged</objj>
+    @return the keyboard event
+*/
++ (CPEvent)keyEventWithType:(CPEventType)anEventType location:(CGPoint)aPoint modifierFlags:(unsigned int)modifierFlags
     timestamp:(CPTimeInterval)aTimestamp windowNumber:(int)aWindowNumber context:(CPGraphicsContext)aGraphicsContext
     characters:(CPString)characters charactersIgnoringModifiers:(CPString)unmodCharacters isARepeat:(BOOL)repeatKey keyCode:(unsigned short)code
 {
@@ -126,7 +228,21 @@ var _CPEventPeriodicEventPeriod         = 0,
         characters:characters charactersIgnoringModifiers:unmodCharacters isARepeat:repeatKey keyCode:code];
 }
 
-+ (id)mouseEventWithType:(CPEventType)anEventType location:(CPPoint)aPoint modifierFlags:(unsigned)modifierFlags 
+/*
+    Creates a new mouse event
+    @param anEventType the event type
+    @param aPoint the location of the cursor in the window specified by <code>aWindowNumber</code>
+    @param modifierFlags a bitwise combination of the modifiers specified in the <objj>CPEvent</objj> globals
+    @param aTimestamp the time the event occurred
+    @param aWindowNumber the number of the <objj>CPWindow</objj> where the event occurred
+    @param aGraphicsContext the graphics context where the event occurred
+    @param anEventNumber a number for this event
+    @param aClickCount the number of clicks that caused this event
+    @param aPressure the amount of pressure applied to the input device (ranges from 0.0 to 1.0)
+    @throws CPInternalInconsistencyException if an invalid event type is provided
+    @return the new mouse event
+*/
++ (id)mouseEventWithType:(CPEventType)anEventType location:(CGPoint)aPoint modifierFlags:(unsigned)modifierFlags 
     timestamp:(CPTimeInterval)aTimestamp windowNumber:(int)aWindowNumber context:(CPGraphicsContext)aGraphicsContext
     eventNumber:(int)anEventNumber clickCount:(int)aClickCount pressure:(float)aPressure
 {
@@ -134,6 +250,20 @@ var _CPEventPeriodicEventPeriod         = 0,
         timestamp:aTimestamp windowNumber:aWindowNumber context:aGraphicsContext eventNumber:anEventNumber clickCount:aClickCount pressure:aPressure];
 }
 
+/*
+    Creates a new custom event
+    @param anEventType the event type. Must be one of <objj>CPAppKitDefined</objj>, <objj>CPSystemDefined</objj>, <objj>CPApplicationDefined</objj> or <objj>CPPeriodic</objj>
+    @param aLocation the location of the cursor in the window specified by <code>aWindowNumber</code>
+    @param modifierFlags a bitwise combination of the modifiers specified in the <objj>CPEvent</objj> globals
+    @param aTimestamp the time the event occurred
+    @param aWindowNumber the number of the <objj>CPWindow</objj> where the event occurred
+    @param aGraphicsContext the graphics context where the event occurred
+    @param aSubtype a numeric identifier to differentiate this event from other custom events
+    @param aData1 more data that describes the event
+    @param aData2 even more data that describes the event
+    @throws CPInternalInconsistencyException if an invalid event type is provided
+    @return the new custom event
+*/
 + (CPEvent)otherEventWithType:(CPEventType)anEventType location:(CGPoint)aLocation modifierFlags:(unsigned)modifierFlags
     timestamp:(CPTimeInterval)aTimestamp windowNumber:(int)aWindowNumber context:(CPGraphicsContext)aGraphicsContext
     subtype:(short)aSubtype data1:(int)aData1 data2:(int)aData2
@@ -142,6 +272,7 @@ var _CPEventPeriodicEventPeriod         = 0,
         timestamp:aTimestamp windowNumber:aWindowNumber context:aGraphicsContext subtype:aSubtype data1:aData1 data2:aData2];
 }
 
+/* @ignore */
 - (id)_initMouseEventWithType:(CPEventType)anEventType location:(CPPoint)aPoint modifierFlags:(unsigned)modifierFlags 
     timestamp:(CPTimeInterval)aTimestamp windowNumber:(int)aWindowNumber context:(CPGraphicsContext)aGraphicsContext
     eventNumber:(int)anEventNumber clickCount:(int)aClickCount pressure:(float)aPressure
@@ -164,6 +295,7 @@ var _CPEventPeriodicEventPeriod         = 0,
     return self;
 }
 
+/* @ignore */
 - (id)_initKeyEventWithType:(CPEventType)anEventType location:(CPPoint)aPoint modifierFlags:(unsigned int)modifierFlags
     timestamp:(CPTimeInterval)aTimestamp windowNumber:(int)aWindowNumber context:(CPGraphicsContext)aGraphicsContext
     characters:(CPString)characters charactersIgnoringModifiers:(CPString)unmodCharacters isARepeat:(BOOL)isARepeat keyCode:(unsigned short)code
@@ -187,6 +319,7 @@ var _CPEventPeriodicEventPeriod         = 0,
     return self;
 }
 
+/* @ignore */
 - (id)_initOtherEventWithType:(CPEventType)anEventType location:(CGPoint)aPoint modifierFlags:(unsigned)modifierFlags
     timestamp:(CPTimeInterval)aTimestamp windowNumber:(int)aWindowNumber context:(CPGraphicsContext)aGraphicsContext
     subtype:(short)aSubtype data1:(int)aData1 data2:(int)aData2
@@ -208,63 +341,107 @@ var _CPEventPeriodicEventPeriod         = 0,
     return self;
 }
 
-- (CPPoint)locationInWindow
+/*
+    Returns the location of the mouse (for mouse events).
+    If this is not a mouse event, it returns <code>nil</code>.
+    If <code>window</code> returns <code>nil</code>, then
+    the mouse coordinates will be based on the screen coordinates.
+    Otherwise, the coordinates are relative to the window's coordinates.
+    @return the location of the mouse, or <code>nil</code> for non-mouse events.
+*/
+- (CGPoint)locationInWindow
 {
     return _location;
 }
 
+/*
+    Returns event information as a bit mask
+*/
 - (unsigned)modifierFlags
 {
     return _modifierFlags;
 }
 
+/*
+    Returns the time the event occurred
+*/
 - (CPTimeInterval)timestamp
 {
     return _timestamp;
 }
 
+/*
+    Returns the type of event.
+*/
 - (CPEventType)type
 {
     return _type;
 }
 
+/*
+    Returns the event's associated window
+*/
 - (CPWindow)window
 {
     return _window;
 }
 
+/*
+    The number of the window associated with the event.
+*/
 - (int)windowNumber
 {
     return _windowNumber;
 }
 
 // Mouse Event Information
-
+/*
+    Returns the button number for the mouse that generated the event.
+*/
 - (int)buttonNumber
 {
     return _buttonNumber;
 }
 
+/*
+    Returns the number of clicks that caused this event. (mouse only)
+*/
 - (int)clickCount
 {
     return _clickCount;
 }
 
+/*
+    Returns the characters associated with this event (keyboard only)
+    @throws CPInternalInconsistencyException if this method is called on a non-key event
+*/
 - (CPString)characters
 {
     return _characters;
 }
 
+/*
+    Returns the character ignoring any modifiers (except shift).
+    @throws CPInternalInconsistencyException if this method is called on a non-key event
+*/
 - (CPString)charactersIgnoringModifiers
 {
     return _charactersIgnoringModifiers;
 }
 
+/*
+    Returns <code>YES</code> if the keyboard event was caused by the key being held down.
+    @throws CPInternalInconsistencyException if this method is called on a non-key event
+*/
 - (BOOL)isARepeat
 {
     return _isARepeat;
 }
 
+/*
+    Returns the key's key code.
+    @throws CPInternalInconsistencyException if this method is called on a non-key event
+*/
 - (unsigned short)keyCode
 {
     return _keyCode;
@@ -275,28 +452,44 @@ var _CPEventPeriodicEventPeriod         = 0,
     return _pressure;
 }
 
+/*
+    @ignore
+*/
 - (DOMEvent)_DOMEvent
 {
     return _DOMEvent;
 }
 
 // Getting Scroll Wheel Event Infomration
-
+/*
+    Returns the change in the x-axis for a mouse event.
+*/
 - (float)deltaX
 {
     return _deltaX;
 }
 
+/*
+    Returns the change in the y-axis for a mouse event.
+*/
 - (float)deltaY
 {
     return _deltaY;
 }
 
+/*
+    Returns the change in the x-axis for a mouse event.
+*/
 - (float)deltaZ
 {
     return _deltaZ;
 }
 
+/*
+    Generates periodic events every <code>aPeriod</code> seconds.
+    @param aDelay the number of seconds before the first event
+    @param aPeriod the length of time in seconds between successive events
+*/
 + (void)startPeriodicEventsAfterDelay:(CPTimeInterval)aDelay withPeriod:(CPTimeInterval)aPeriod
 {
     _CPEventPeriodicEventPeriod = aPeriod;
@@ -305,6 +498,9 @@ var _CPEventPeriodicEventPeriod         = 0,
     _CPEventPeriodicEventTimer = window.setTimeout(function() { _CPEventPeriodicEventTimer = window.setInterval(_CPEventFirePeriodEvent, aPeriod * 1000.0); }, aDelay * 1000.0);
 }
 
+/*
+    Stops the periodic events from being generated
+*/
 + (void)stopPeriodicEvents
 {
     if (_CPEventPeriodicEventTimer === nil)

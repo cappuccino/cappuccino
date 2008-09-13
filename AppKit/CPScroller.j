@@ -96,6 +96,9 @@ var _CPScrollerClassName                            = nil,
     CPView                  _incrementArrowView;
 }
 
+/*
+    @ignore
+*/
 + (void)initialize
 {
     if (self != [CPScroller class])
@@ -178,7 +181,7 @@ var _CPScrollerClassName                            = nil,
 
 // Calculating Layout
 
-- (id)initWithFrame:(CPRect)aFrame
+- (id)initWithFrame:(CGRect)aFrame
 {
     self = [super initWithFrame:aFrame];
     
@@ -193,7 +196,7 @@ var _CPScrollerClassName                            = nil,
         
         _hitPart = CPScrollerNoPart;
         
-        [self checkSpaceForUsableParts];
+        [self checkSpaceForParts];
         [self drawParts];
         
         [self layoutSubviews];
@@ -203,17 +206,27 @@ var _CPScrollerClassName                            = nil,
 }
 
 // Determining CPScroller Size
-
+/*
+    Returns the <objj>CPScroller</objj>'s width for a <objj>CPRegularControlSize</objj>.
+*/
 + (float)scrollerWidth
 {
     return [self scrollerWidthForControlSize:CPRegularControlSize];
 }
 
+/*
+    Returns the width of a <objj>CPScroller</objj> for the specified <objj>CPControlSize</objj>.
+    @param aControlSize the size of a controller to return the width for
+*/
 + (float)scrollerWidthForControlSize:(CPControlSize)aControlSize
 {
     return _CPScrollerWidths[aControlSize];
 }
 
+/*
+    Sets the scroller's size.
+    @param aControlSize the scroller's size
+*/
 - (void)setControlSize:(CPControlSize)aControlSize
 {
     if (_controlSize == aControlSize)
@@ -229,21 +242,32 @@ var _CPScrollerClassName                            = nil,
     [self layoutSubviews];
 }
 
+/*
+    Returns the scroller's control size
+*/
 - (CPControlSize)controlSize
 {
     return _controlSize;
 }
 
 // Setting the Knob Position
-
+/*
+    Sets the scroller's knob position (ranges from 0.0 to 1.0).
+    @param aValue the knob position (ranges from 0.0 to 1.0)
+*/
 - (void)setFloatValue:(float)aValue
 {
     [super setFloatValue:MIN(1.0, MAX(0.0, aValue))];
     
-    [self checkSpaceForUsableParts];
+    [self checkSpaceForParts];
     [self layoutSubviews];
 }
 
+/*
+    Sets the position and proportion of the knob.
+    @param aValue the knob position (ranges from 0.0 to 1.0)
+    @param aProportion the knob's proportion (ranges from 0.0 to 1.0)
+*/
 - (void)setFloatValue:(float)aValue knobProportion:(float)aProportion
 {
     _knobProportion = MIN(1.0, MAX(0.0001, aProportion));
@@ -251,6 +275,9 @@ var _CPScrollerClassName                            = nil,
     [self setFloatValue:aValue];
 }
 
+/*
+    Return's the knob's proportion
+*/
 - (float)knobProportion
 {
     return _knobProportion;
@@ -266,6 +293,11 @@ var _CPScrollerClassName                            = nil,
     return _partRects[aPart];
 }
 
+/*
+    Returns the part of the scroller that would be hit by <code>aPoint</code>.
+    @param aPoint the simulated point hit
+    @return the part of the scroller that intersects the point
+*/
 - (CPScrollerPart)testPart:(CGPoint)aPoint
 {
     aPoint = [self convertPoint:aPoint fromView:nil];
@@ -294,7 +326,10 @@ var _CPScrollerClassName                            = nil,
     return CPScrollerNoPart;
 }
 
-- (void)checkSpaceForUsableParts
+/*
+    Check if there's enough space in the scroller to display the knob
+*/
+- (void)checkSpaceForParts
 {
     var bounds = [self bounds];
 
@@ -351,13 +386,21 @@ var _CPScrollerClassName                            = nil,
     }
 }
 
+/*
+    Returns all the parts of the scroller that
+    are usable for displaying.
+*/
 - (CPUsableScrollerParts)usableParts
 {
     return _usableParts;
 }
 
 // Drawing the Parts
-
+/*
+    Draws the specified arrow and sets the highlight.
+    @param anArrow the arrow to draw
+    @param shouldHighlight sets whether the arrow should be highlighted
+*/
 - (void)drawArrow:(CPScrollerArrow)anArrow highlight:(BOOL)shouldHighlight
 {
     var identifier = (anArrow == CPScrollerDecrementArrow ? _CPScrollerDecrementArrowIdentifier : _CPScrollerIncrementArrowIdentifier),
@@ -372,6 +415,9 @@ var _CPScrollerClassName                            = nil,
         shouldHighlight ? _CPScrollerHighlightedIdentifier : @"")];
 }
 
+/*
+    Draws the knob
+*/
 - (void)drawKnob
 {
     [_knobView setBackgroundColor:_CPControlThreePartImagePattern(
@@ -383,6 +429,9 @@ var _CPScrollerClassName                            = nil,
         _CPControlIdentifierForControlSize(_controlSize))];
 }
 
+/*
+    Draws the knob's slot
+*/
 - (void)drawKnobSlot
 {
     [_knobSlotView setBackgroundColor:_CPControlColorWithPatternImage(
@@ -393,6 +442,9 @@ var _CPScrollerClassName                            = nil,
         _CPControlIdentifierForControlSize(_controlSize))];
 }
 
+/*
+    Caches images for the scroll arrow and knob.
+*/
 - (void)drawParts
 {
     _knobSlotView = [[CPView alloc] initWithFrame:_CGRectMakeZero()];
@@ -428,6 +480,12 @@ var _CPScrollerClassName                            = nil,
     [self drawArrow:CPScrollerIncrementArrow highlight:NO];
 }
 
+/*
+    Draws the scroller's arrow with a possible highlight,
+    if the user's mouse is over it.
+    @param shouldHighlight <code>YES</code> will draw the
+    arrow highlighted if the mouse is hovering over it.
+*/
 - (void)highlight:(BOOL)shouldHighlight
 {
     if (_trackingPart == CPScrollerDecrementLine)
@@ -438,12 +496,18 @@ var _CPScrollerClassName                            = nil,
 }
 
 // Event Handling
-
+/*
+    Returns the part of the scroller that was hit.
+*/
 - (CPScrollerPart)hitPart
 {
     return _hitPart;
 }
 
+/*
+    Tracks the knob.
+    @param anEvent the input event
+*/
 - (void)trackKnob:(CPEvent)anEvent
 {
     var type = [anEvent type];
@@ -483,6 +547,10 @@ var _CPScrollerClassName                            = nil,
     [self sendAction:[self action] to:[self target]];
 }
 
+/*
+    Tracks the scroll button.
+    @param anEvent the input event
+*/
 - (void)trackScrollButtons:(CPEvent)anEvent
 {
     var type = [anEvent type];
@@ -561,7 +629,7 @@ var _CPScrollerClassName                            = nil,
 {
     [super setFrameSize:aSize];
     
-    [self checkSpaceForUsableParts];
+    [self checkSpaceForParts];
     
     var frame = [self frame],
         isHorizontal = CPRectGetWidth(frame) > CPRectGetHeight(frame);
@@ -576,6 +644,9 @@ var _CPScrollerClassName                            = nil,
     [self layoutSubviews];
 }
 
+/*
+    Lays out the scrollers subviews
+*/
 - (void)layoutSubviews
 {
     [_knobSlotView setFrame:[self rectForPart:CPScrollerKnobSlot]];

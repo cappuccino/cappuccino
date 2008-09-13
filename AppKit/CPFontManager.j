@@ -34,8 +34,11 @@ var CPSharedFontManager     = nil,
 }
 
 // Getting the Shared Font Manager
-
-+ (id)sharedFontManager
+/*
+    Returns the application's font manager. If the font
+    manager does not exist yet, it will be created.
+*/
++ (CPFontManager)sharedFontManager
 {
     if (!CPSharedFontManager)
         CPSharedFontManager = [[CPFontManagerFactory alloc] init];
@@ -44,12 +47,18 @@ var CPSharedFontManager     = nil,
 }
 
 // Changing the Default Font Conversion Classes
-
+/*
+    Sets the class that will be used to create the applcation's
+    font manager.
+*/
 + (void)setFontManagerFactory:(Class)aClass
 {
     CPFontManagerFactory = aClass;
 }
 
+/*
+    Returns an array of the available fonts
+*/
 - (CPArray)availableFonts
 {
     if (!_availableFonts)
@@ -75,6 +84,10 @@ var CPSharedFontManager     = nil,
     return _availableFonts;
 }
 
+/*
+    Returns the available fonts matching the provided name.
+    @param aFontName the name of the font
+*/
 - (CPArray)fontWithNameIsAvailable:(CPString)aFontName
 {
     return _CPFontDetectFontAvailable(aFontName);

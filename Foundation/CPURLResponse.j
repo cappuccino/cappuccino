@@ -29,6 +29,9 @@ import "CPObject.j"
     unsigned    _expectedContentLength;
     CPString    _textEncodingName;
 */
+/*
+    Contains protocol agnostic information about a request to a specific URL.
+*/
 @implementation CPURLResponse : CPObject
 {
 }
@@ -44,11 +47,15 @@ Getting the Response Properties
 */
 @end
 
+/*
+    Represents the response to an http request.
+*/
 @implementation CPHTTPURLResponse : CPURLResponse
 {
     int _statusCode;
 }
 
+/* @ignore */
 - (id)_initWithStatusCode:(int)aStatusCode
 {
     self = [super init];
@@ -59,6 +66,9 @@ Getting the Response Properties
     return self;
 }
 
+/*
+    Returns the HTTP status code.
+*/
 - (int)statusCode
 {
     return _statusCode;
