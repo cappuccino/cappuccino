@@ -461,6 +461,19 @@ CPNumericSearch
 }
 
 /*
+Returns <code>YES</code> on encountering one of "Y", "y", "T", "t", or 
+a digit 1-9. Returns <code>NO</code> otherwise. This method skips the initial 
+whitespace characters, +,- followed by Zeroes.
+*/
+- (BOOL)boolValue
+{
+	aString = self.replace(/^\s+[\+,-]*0*/,"");
+	if(aString.match(/[Y,y,t,T,[1-9]/) != null)
+		return YES;
+	return NO;
+}
+
+/*
     Returns the text as a float point value.
 */
 - (float)floatValue
