@@ -432,23 +432,28 @@ var _CPTextFieldSquareBezelColor    = nil;
         return [[self class] _inputElement].value;
 #endif
 
-    return [_value string];
+    return [self stringValue];
 }
 
 /*
-    Sets the string the text field.
+    @ignore
 */
-- (void)setStringValue:(CPString)aStringValue
+- (void)setObjectValue:(id)aValue
 {
-    _value = aStringValue;
+    [super setObjectValue:aValue];
     
 #if PLATFORM(DOM)
-    var cssString = _value ? [_value cssString] : @"";
+    var displayString = "";
+
+    if ([aValue respondsToSelector:@selector(string)])
+        displayString = [aValue string];
+    else
+        displayString += aValue;
 
     if (CPFeatureIsCompatible(CPJavascriptInnerTextFeature))
-        _DOMTextElement.innerText = cssString;
+        _DOMTextElement.innerText = displayString;
     else if (CPFeatureIsCompatible(CPJavascriptTextContentFeature))
-        _DOMTextElement.textContent = cssString;
+        _DOMTextElement.textContent = displayString;
 #endif
 }
 
