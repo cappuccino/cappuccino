@@ -128,7 +128,7 @@ var CPStringHashes      = new objj_dictionary();
 {
     if (!format)
         [CPException raise:CPInvalidArgumentException
-                    reason:"stringWithString: the format can't be 'nil'"];
+                    reason:"initWithFormat: the format can't be 'nil'"];
 
     self = sprintf.apply(this, Array.prototype.slice.call(arguments, 2));
     return self;
@@ -143,7 +143,7 @@ var CPStringHashes      = new objj_dictionary();
 {
     if (!format)
         [CPException raise:CPInvalidArgumentException
-                    reason:"stringWithString: the format can't be 'nil'"];
+                    reason:"initWithFormat: the format can't be 'nil'"];
 
     return sprintf.apply(this, Array.prototype.slice.call(arguments, 2));
 }
