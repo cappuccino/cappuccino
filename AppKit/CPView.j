@@ -137,9 +137,11 @@ var DOMElementPrototype         = nil,
 */
 + (void)initialize
 {
+#if PLATFORM(DOM)
     if ([self instanceMethodForSelector:@selector(drawRect:)] != [CPView instanceMethodForSelector:@selector(drawRect:)])
         CustomDrawRectViews[[self hash]] = YES;
-    
+#endif
+
     if (self != [CPView class])
         return;
 
@@ -1329,8 +1331,10 @@ setBoundsOrigin:
 */
 - (void)setNeedsDisplayInRect:(CPRect)aRect
 {
+#if PLATFORM(DOM)
     if (!CustomDrawRectViews[[[self class] hash]])
         return;
+#endif
         
     if (_CGRectIsEmpty(aRect))
         return;

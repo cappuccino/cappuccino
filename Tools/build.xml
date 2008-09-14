@@ -44,7 +44,8 @@
         <copy file = "READMEs/TOOLS-README" tofile = "${Build.Cappuccino.Tools}/README" />
 
         <copy file = "SubEthaEdit/Objective-J.mode.zip" tofile = "${Build.Cappuccino.Tools.Editors}/Objective-J.mode.zip" />     
-        <copy file = "TextMate/Objective-J.tmbundle.zip" tofile = "${Build.Cappuccino.Tools.Editors}/Objective-J.tmbundle.zip" />
+        <copy file = "TextMate/JavaScript Objective-J.tmbundle.zip" tofile = "${Build.Cappuccino.Tools.Editors}/JavaScript Objective-J.tmbundle.zip" />
+        <copy file = "Vim/objj.vim" tofile = "${Build.Cappuccino.Tools.Editors}/objj.vim" />
 
         <zip destfile = "${Build.Cappuccino}/Starter.zip">
             <fileset dir = "${Build.Cappuccino.Starter}" />
