@@ -467,8 +467,8 @@ whitespace characters, +,- followed by Zeroes.
 */
 - (BOOL)boolValue
 {
-	aString = self.replace(/^\s+[\+,-]*0*/,"");
-	if(aString.match(/[Y,y,t,T,[1-9]/) != null)
+	var aString = self.replace(/^\s+[\+,-]*0*/,"");
+	if (aString.match(/[Y,y,t,T,[1-9]/) != null)
 		return YES;
 	return NO;
 }
