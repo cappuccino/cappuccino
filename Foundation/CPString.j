@@ -135,7 +135,8 @@ var CPStringHashes      = new objj_dictionary();
 }
 
 /*
-    Creates a new string using C printf-style formatting. First argument should be a constant format string, like ' "float val = %f" ', remaining arguments should be the variables to print the values of, comma-separated.
+    Creates a new string using C printf-style formatting. First argument should be a constant format string, 
+	like ' "float val = %f" ', remaining arguments should be the variables to print the values of, comma-separated.
     @param format the format to be used, printf-style
     @return the initialized <objj>CPString</objj>
 */
@@ -174,6 +175,7 @@ var CPStringHashes      = new objj_dictionary();
 }
 
 // Combining strings
+
 /*
     Creates a new <objj>CPString</objj> from the concatenation of the receiver and the specified string.
     @param aString the string to append to the receiver
@@ -459,18 +461,16 @@ CPNumericSearch
 {
     return eval(self);
 }
-
 /*
-Returns <code>YES</code> on encountering one of "Y", "y", "T", "t", or 
-a digit 1-9. Returns <code>NO</code> otherwise. This method skips the initial 
-whitespace characters, +,- followed by Zeroes.
+	Returns <code>YES</code> on encountering one of "Y", "y", "T", "t", or 
+	a digit 1-9. Returns <code>NO</code> otherwise. This method skips the initial 
+	whitespace characters, +,- followed by Zeroes.
 */
+
 - (BOOL)boolValue
 {
-	var aString = self.replace(/^\s+[\+,-]*0*/,"");
-	if (aString.match(/[Y,y,t,T,[1-9]/) != null)
-		return YES;
-	return NO;
+	var replaceRegExp = new RegExp("^\\s*[\\+,\\-]*0*");
+	return RegExp("^[Y,y,t,T,1-9]").test(self.replace(replaceRegExp, ''));
 }
 
 /*
