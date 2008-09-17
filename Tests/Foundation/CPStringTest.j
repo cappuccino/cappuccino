@@ -2,6 +2,16 @@ import <Foundation/CPString.j>
 
 @implementation CPStringTest : OJTestCase
 
+- (void)testStringByAppendingFormat
+{
+    var format = @"%d X %d = %d";
+    var expectedString = "2 X 3 = 6";
+    var dummyString = @"";
+    var actualString = [dummyString stringByAppendingFormat:format ,2 ,3 ,6];
+    [self assertTrue:(expectedString === actualString) 
+             message:"stringByAppendingFormat: expected:" + expectedString + " actual:" + actualString];
+    
+}
 - (void) testBoolValue
 {
     var testString = @"  090";

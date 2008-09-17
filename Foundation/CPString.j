@@ -177,6 +177,22 @@ var CPStringHashes      = new objj_dictionary();
 // Combining strings
 
 /*
+    Returns a string made by appending to the reciever a string constructed from a given format
+    string and the floowing arguments
+    @param format the format string in printf-style.
+    @return the initialized <objj>CPString</objj>
+*/
+- (CPString)stringByAppendingFormat:(CPString)format, ...
+{
+    if (!format)
+           [CPException raise:CPInvalidArgumentException
+                       reason:"initWithFormat: the format can't be 'nil'"];
+    
+
+    return self + sprintf.apply(this, Array.prototype.slice.call(arguments, 2));   
+}
+
+/*
     Creates a new <objj>CPString</objj> from the concatenation of the receiver and the specified string.
     @param aString the string to append to the receiver
     @return the new string
@@ -491,7 +507,7 @@ var CPStringHashes      = new objj_dictionary();
 
 /*
     Returns an the path components of this string. This
-    method assumes that the string's contents is a '/'
+    method assumes that the string's content is a '/'
     separated file system path.
 */
 - (CPArray)pathComponents
@@ -509,6 +525,11 @@ var CPStringHashes      = new objj_dictionary();
     return substr(lastIndexOf('.')+1);
 }
 
+/*
+    Returns the last component of this string.
+    This method assumes that the string's content is a '/'
+    separated file system path.
+*/
 - (CPString)lastPathComponent
 {
     var components = [self pathComponents];
@@ -546,11 +567,11 @@ String.prototype.isa = CPString;
 var sprintfFormatRegex = new RegExp("([^%]+|%[\\+\\-\\ \\#0]*[0-9\\*]*(.[0-9\\*]+)?[hlL]?[cdieEfgGosuxXpn%])", "g");
 var sprintfTagRegex = new RegExp("(%)([\\+\\-\\ \\#0]*)([0-9\\*]*)((.[0-9\\*]+)?)([hlL]?)([cdieEfgGosuxXpn%])");
 
-/**
+/*
   Creates a new string using C printf-style formatting. First argument should be a constant format string, like ' "float val = %f" ', remaining arguments should be the variables to print the values of, comma-separated.
   @param format the format to be used, printf-style
   @return the initialized <objj>CPString</objj>
-  */
+*/
 function sprintf(format)
 {
     var format = arguments[0],
