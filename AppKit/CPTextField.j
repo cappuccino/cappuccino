@@ -473,7 +473,8 @@ var _CPTextFieldSquareBezelColor    = nil;
 
 var CPTextFieldIsSelectableKey  = @"CPTextFieldIsSelectableKey",
     CPTextFieldLineBreakModeKey = @"CPTextFieldLineBreakModeKey",
-    CPTextFieldStringValueKey   = @"CPTextFieldStringValueKey";
+    CPTextFieldStringValueKey   = @"CPTextFieldStringValueKey",
+    CPTextFieldIsEditableKey    = @"CPTextFieldIsEditableKey";
 
 @implementation CPTextField (CPCoding)
 
@@ -508,6 +509,7 @@ var CPTextFieldIsSelectableKey  = @"CPTextFieldIsSelectableKey",
         _DOMElement.appendChild(_DOMTextElement);
 #endif
 
+        [self setEditable:[aCoder decodeBoolForKey:CPTextFieldIsEditableKey]];
         [self setSelectable:[aCoder decodeBoolForKey:CPTextFieldIsSelectableKey]];    
         [self setLineBreakMode:[aCoder decodeIntForKey:CPTextFieldLineBreakModeKey]];
 
@@ -531,6 +533,8 @@ var CPTextFieldIsSelectableKey  = @"CPTextFieldIsSelectableKey",
     [aCoder encodeInt:_lineBreakMode forKey:CPTextFieldLineBreakModeKey];
     
     [aCoder encodeObject:_value forKey:CPTextFieldStringValueKey];
+    
+    [aCoder encodeBool:_isEditable forKey:CPTextFieldIsEditableKey];
 }
 
 @end
