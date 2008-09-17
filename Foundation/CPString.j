@@ -136,7 +136,7 @@ var CPStringHashes      = new objj_dictionary();
 
 /*
     Creates a new string using C printf-style formatting. First argument should be a constant format string, 
-	like ' "float val = %f" ', remaining arguments should be the variables to print the values of, comma-separated.
+    like ' "float val = %f" ', remaining arguments should be the variables to print the values of, comma-separated.
     @param format the format to be used, printf-style
     @return the initialized <objj>CPString</objj>
 */
@@ -279,13 +279,13 @@ var CPStringHashes      = new objj_dictionary();
     where the specified string exists. The search
     is subject to the options specified in the
     specified mask which can be a combination of:
-<pre>
-CPCaseInsensitiveSearch
-CPLiteralSearch
-CPBackwardsSearch
-CPAnchoredSearch
-CPNumericSearch
-</pre>
+    <pre>
+    CPCaseInsensitiveSearch
+    CPLiteralSearch
+    CPBackwardsSearch
+    CPAnchoredSearch
+    CPNumericSearch
+    </pre>
     @param aString the string to search for
     @param aMask the options to use in the search
     @return the range of characters in the receiver. If the string was not found,
@@ -293,30 +293,30 @@ CPNumericSearch
 */
 - (CPRange)rangeOfString:(CPString)aString options:(int)aMask
 {
-	return [self rangeOfString:aString options:aMask range:nil];
+    return [self rangeOfString:aString options:aMask range:nil];
 }
 
 /*
     Finds the range of characters in the receiver
     where the specified string exists in the given range 
-	of the receiver.The search is subject to the options specified in the
+    of the receiver.The search is subject to the options specified in the
     specified mask which can be a combination of:
-<pre>
-CPCaseInsensitiveSearch
-CPLiteralSearch
-CPBackwardsSearch
-CPAnchoredSearch
-CPNumericSearch
-</pre>
+    <pre>
+    CPCaseInsensitiveSearch
+    CPLiteralSearch
+    CPBackwardsSearch
+    CPAnchoredSearch
+    CPNumericSearch
+    </pre>
     @param aString the string to search for
     @param aMask the options to use in the search
-	@param aRange the range of the receiver in which to search for
+    @param aRange the range of the receiver in which to search for
     @return the range of characters in the receiver. If the string was not found,
     the <code>length</code> of the range will be 0.
 */
 - (CPRange)rangeOfString:(CPString)aString options:(int)aMask range:(CPrange)aRange
 {
-	var string = (aRange == nil)?self:[self substringWithRange:aRange],
+    var string = (aRange == nil)?self:[self substringWithRange:aRange],
         location = CPNotFound;
     
     if (aMask & CPCaseInsensitiveSearch)
@@ -326,11 +326,11 @@ CPNumericSearch
     }
     
     if (aMask & CPBackwardsSearch) 
-		location = string.lastIndexOf(aString, aMask & CPAnchoredSearch ? length - aString.length : 0);
+        location = string.lastIndexOf(aString, aMask & CPAnchoredSearch ? length - aString.length : 0);
     else if (aMask & CPAnchoredSearch) 
-		location = string.substr(0, aString.length).indexOf(aString) != CPNotFound ? 0 : CPNotFound;
+        location = string.substr(0, aString.length).indexOf(aString) != CPNotFound ? 0 : CPNotFound;
     else 
-		location = string.indexOf(aString);
+        location = string.indexOf(aString);
     
     return CPMakeRange(location, location == CPNotFound ? 0 : aString.length);
 }
@@ -462,15 +462,15 @@ CPNumericSearch
     return eval(self);
 }
 /*
-	Returns <code>YES</code> on encountering one of "Y", "y", "T", "t", or 
-	a digit 1-9. Returns <code>NO</code> otherwise. This method skips the initial 
-	whitespace characters, +,- followed by Zeroes.
+    Returns <code>YES</code> on encountering one of "Y", "y", "T", "t", or 
+    a digit 1-9. Returns <code>NO</code> otherwise. This method skips the initial 
+    whitespace characters, +,- followed by Zeroes.
 */
 
 - (BOOL)boolValue
 {
-	var replaceRegExp = new RegExp("^\\s*[\\+,\\-]*0*");
-	return RegExp("^[Y,y,t,T,1-9]").test(self.replace(replaceRegExp, ''));
+    var replaceRegExp = new RegExp("^\\s*[\\+,\\-]*0*");
+    return RegExp("^[Y,y,t,T,1-9]").test(self.replace(replaceRegExp, ''));
 }
 
 /*
