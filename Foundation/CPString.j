@@ -232,6 +232,7 @@ var CPStringHashes      = new objj_dictionary();
     if (difference) string += substring.substr(difference + substring.length);
 }
 
+//Dividing Strings
 /*
     Tokenizes the receiver string using the specified
     delimiter. For example, if the receiver is:
@@ -350,6 +351,36 @@ var CPStringHashes      = new objj_dictionary();
     
     return CPMakeRange(location, location == CPNotFound ? 0 : aString.length);
 }
+
+//Replacing Substrings
+
+/*
+    Returns a new string in which all occurrences of a target string in the reciever are replaced by 
+    another given string.
+    @param target The string to replace.
+    @param replacement the string with which to replace the <pre>target<pre>
+*/
+
+- (CPString)stringByReplacingOccurrencesOfString:(CPString)target withString:(CPString)replacement
+{
+    return self.replace(new RegExp(target, "g"), replacement);
+}
+/*
+- (CPString)stringByReplacingOccurrencesOfString:(CPString)target 
+                                      withString:(CPString)replacement 
+                                         options:(int)options 
+                                           range:(CPRange)searchRange
+{
+    //TODO :Vijay implement the method
+
+}
+
+- (CPString)stringByReplacingCharactersInRange:(CPRange)range withString:(CPString)replacement
+{
+    //TODO :Vijay implement the method
+}
+*/
+
 
 // Identifying and comparing strings
 /*

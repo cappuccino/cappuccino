@@ -2,6 +2,18 @@ import <Foundation/CPString.j>
 
 @implementation CPStringTest : OJTestCase
 
+
+- (void)testStringByReplacingOccurrencesOfStringWithString
+{
+    var expectedString = @"hello world. A new world!";
+    var dummyString = @"hello woold. A new woold!";
+    var actualString = [dummyString stringByReplacingOccurrencesOfString:@"woold" withString:@"world"];
+    [self assertTrue:(expectedString === actualString) 
+             message:"stringByAppendingFormat: expected:" + expectedString + " actual:" + actualString];
+    
+    
+    
+}
 - (void)testStringByAppendingFormat
 {
     var format = @"%d X %d = %d";
