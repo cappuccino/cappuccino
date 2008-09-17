@@ -439,15 +439,15 @@ var _CPTextFieldSquareBezelColor    = nil;
     @ignore
 */
 - (void)setObjectValue:(id)aValue
-{
+{CPLog(aValue);
     [super setObjectValue:aValue];
     
 #if PLATFORM(DOM)
     var displayString = "";
 
-    if ([aValue respondsToSelector:@selector(string)])
+    if (aValue && [aValue respondsToSelector:@selector(string)])
         displayString = [aValue string];
-    else
+    else if (aValue)
         displayString += aValue;
 
     if (CPFeatureIsCompatible(CPJavascriptInnerTextFeature))
