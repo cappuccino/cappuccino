@@ -439,7 +439,7 @@ var _CPTextFieldSquareBezelColor    = nil;
     @ignore
 */
 - (void)setObjectValue:(id)aValue
-{CPLog(aValue);
+{
     [super setObjectValue:aValue];
     
 #if PLATFORM(DOM)
