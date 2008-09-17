@@ -419,7 +419,7 @@ var _CPKeyedUnarchiverDecodeObjectAtIndex = function(self, anIndex)
         
         processedObject = [object awakeAfterUsingCoder:self]; 
         
-        if (processedObject == object)
+        if (processedObject != object)
         {
             if (self._delegateSelectors & _CPKeyedUnarchiverWillReplaceObjectWithObjectSelector)
                 [self._delegate unarchiver:self willReplaceObject:object withObject:processedObject];

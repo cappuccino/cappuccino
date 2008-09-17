@@ -13,14 +13,15 @@ This package includes syntax highlighting modes for both SubEthaEdit, Coda, Text
 + Coda
 
 	- Unarchive Tools/Editors/Objective-J.mode.zip
-	- Place the generated Objective-J.mode file in ~/Library/Application\ Support/Coda/Modes
+	- Place the generated Objective-J.mode file in ~/Library/Application Support/Coda/Modes
 
-+ TextMate
++ TextMate (Thanks to Michael Sheets for providing us with this!)
 
-	- Unarchive Tools/Editors/Objective-J.tmbundle.zip
-	- Double click the generated Objective-J.tmbundle file
+	- Unarchive Tools/Editors/JavaScript Objective-J.tmbundle.zip
+	- Double click the generated "JavaScript Objective-J.tmbundle" file
 
-+ Vim
++ Vim (Thanks to Shawn MacIntyre for providing us with this!)
+
 	- Place Tools/Editors/objj.vim in ~/.vim/syntax/
 	- in ~/.vimrc, add:
 	
