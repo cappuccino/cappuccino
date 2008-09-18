@@ -56,6 +56,8 @@ CPJSONPConnectionCallbacks = {};
     {
         [_delegate connection:self didReceiveData:data];
         [self removeScriptTag];
+
+        [[CPRunLoop currentRunLoop] performSelectors];
     };
 
     if(shouldStartImmediately)
