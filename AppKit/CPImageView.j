@@ -20,8 +20,10 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-import "CPImage.j"
+import <Foundation/CPNotificationCenter.j>
+
 import "CPControl.j"
+import "CPImage.j"
 import "CPShadowView.j"
 
 #include "Platform/Platform.h"
@@ -110,20 +112,35 @@ var LEFT_SHADOW_INSET       = 3.0,
     if (_image == anImage)
         return;
     
+    var center = [CPNotificationCenter defaultCenter];
+    
+    if (_image)
+        [center removeObserver:self name:CPImageDidLoadNotification object:_image];
+
     _image = anImage;
-    
     _DOMImageElement.src = [anImage filename];
+
+    var size = [_image size];
     
-    if (_imageScaling == CPScaleNone && _image)
+    if (size && size.width == -1 && size.height == -1)
     {
-        var size = [_image size];
+        [center addObserver:self selector:@selector(imageDidLoad:) name:CPImageDidLoadNotification object:_image];
+
+        _DOMImageElement.width = 0;
+        _DOMImageElement.height = 0;
         
-        _DOMImageElement.width = ROUND(size.width);
-        _DOMImageElement.height = ROUND(size.height);
+        [_shadowView setHidden:YES];
     }
-    
+    else
+    {
+        [self hideOrDisplayContents];
+        [self tile];
+    }
+}
+
+- (void)imageDidLoad:(CPNotification)aNotification
+{
     [self hideOrDisplayContents];
-    
     [self tile];
 }
 
@@ -181,13 +198,6 @@ var LEFT_SHADOW_INSET       = 3.0,
     {
         CPDOMDisplayServerSetStyleLeftTop(_DOMImageElement, NULL, 0.0, 0.0);
     }
-    else if (_imageScaling == CPScaleNone && _image)
-    {
-        var size = [_image size];
-        
-        _DOMImageElement.width = ROUND(size.width);
-        _DOMImageElement.height = ROUND(size.height);
-    }
     
     [self tile];
 }
@@ -240,7 +250,7 @@ var LEFT_SHADOW_INSET       = 3.0,
 {
     if (!_image)
         return;
-        
+
     var bounds = [self bounds],
         x = 0.0,
         y = 0.0,
@@ -260,6 +270,9 @@ var LEFT_SHADOW_INSET       = 3.0,
     {
         var size = [_image size];
         
+        if (size.width == -1 && size.height == -1)
+            return;
+
         if (_imageScaling == CPScaleProportionally)
         {
             // The max size it can be is size.width x size.height, so only
@@ -289,6 +302,12 @@ var LEFT_SHADOW_INSET       = 3.0,
             height = size.height;
         }
     
+        if (_imageScaling == CPScaleNone)
+        {
+            _DOMImageElement.width = ROUND(size.width);
+            _DOMImageElement.height = ROUND(size.height);
+        }
+
         var x = (boundsWidth - width) / 2.0,
             y = (boundsHeight - height) / 2.0;
             

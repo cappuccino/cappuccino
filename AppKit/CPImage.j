@@ -20,10 +20,11 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
  
-import <Foundation/CPObject.j>
-import <Foundation/CPString.j>
 import <Foundation/CPBundle.j>
+import <Foundation/CPNotificationCenter.j>
+import <Foundation/CPObject.j>
 import <Foundation/CPRunLoop.j>
+import <Foundation/CPString.j>
 
 import "CPGeometry.j"
 
@@ -34,6 +35,8 @@ CPImageLoadStatusCancelled      = 3;
 CPImageLoadStatusInvalidData    = 4;
 CPImageLoadStatusUnexpectedEOF  = 5;
 CPImageLoadStatusReadError      = 6;
+
+CPImageDidLoadNotification      = @"CPImageDidLoadNotification";
 
 @implementation CPBundle (CPImageAdditions)
 
@@ -219,7 +222,11 @@ CPImageLoadStatusReadError      = 6;
     // FIXME: IE is wrong on image sizes????
     if (!_size || (_size.width == -1 && _size.height == -1))
         _size = CGSizeMake(_image.width, _image.height);
-    
+
+    [[CPNotificationCenter defaultCenter]
+        postNotificationName:CPImageDidLoadNotification
+        object:self];
+        
     if ([_delegate respondsToSelector:@selector(imageDidLoad:)])
         [_delegate imageDidLoad:self];
 
