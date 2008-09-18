@@ -1,5 +1,5 @@
 /*
- * CPCustomView.j
+ * _CPCibCustomView.j
  * AppKit
  *
  * Created by Francisco Tolmasky.
@@ -36,33 +36,35 @@ var CPViewAutoresizingMaskKey       = @"CPViewAutoresizingMask",
 
 /* @ignore */
 
-@implementation CPCustomView : CPView
+@implementation _CPCibCustomView : CPView
 {
     CPString    _className;
 }
 
 @end
 
-var CPCustomViewClassNameKey    = @"CPCustomViewClassNameKey";
+var _CPCibCustomViewClassNameKey    = @"_CPCibCustomViewClassNameKey";
 
-@implementation CPCustomView (CPCoding)
+@implementation _CPCibCustomView (CPCoding)
 
 - (id)initWithCoder:(CPCoder)aCoder
 {
-   _className = [aCoder decodeObjectForKey:CPCustomViewClassNameKey];
+    _className = [aCoder decodeObjectForKey:_CPCibCustomViewClassNameKey];
     
     var theClass = CPClassFromString(_className);
     
     // If we don't have this class, just use CPView.
     // FIXME: Should we instead throw an exception?
     if (!theClass)
+    {
+        CPLog("Unknown class \"" + _className + "\" in cib file, using CPView instead.");
+        
         theClass = [CPView class];
+    }
 
     var frame = [aCoder decodeRectForKey:CPViewFrameKey];
 
-    // If this is just a "CPView", don't bother with any funny business, just go ahead and create it with initWithCoder:
-    if (theClass == [CPView class])
-        self = [[CPView alloc] initWithFrame:frame];
+    self = [[CPView alloc] initWithFrame:frame];
         
     if (self)
     {    
@@ -75,9 +77,8 @@ var CPCustomViewClassNameKey    = @"CPCustomViewClassNameKey";
         
         for (; index < count; ++index)
         {
-            // This is a bogus superview "CPCustomView".
+            // This is a bogus superview "_CPCibCustomView".
             subviews[index]._superview = nil;
-            
             [self addSubview:subviews[index]];
         }
         
