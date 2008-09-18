@@ -432,23 +432,28 @@ var _CPTextFieldSquareBezelColor    = nil;
         return [[self class] _inputElement].value;
 #endif
 
-    return [_value string];
+    return [self stringValue];
 }
 
 /*
-    Sets the string the text field.
+    @ignore
 */
-- (void)setStringValue:(CPString)aStringValue
+- (void)setObjectValue:(id)aValue
 {
-    _value = aStringValue;
+    [super setObjectValue:aValue];
     
 #if PLATFORM(DOM)
-    var cssString = _value ? [_value cssString] : @"";
+    var displayString = "";
+
+    if (aValue && [aValue respondsToSelector:@selector(string)])
+        displayString = [aValue string];
+    else if (aValue)
+        displayString += aValue;
 
     if (CPFeatureIsCompatible(CPJavascriptInnerTextFeature))
-        _DOMTextElement.innerText = cssString;
+        _DOMTextElement.innerText = displayString;
     else if (CPFeatureIsCompatible(CPJavascriptTextContentFeature))
-        _DOMTextElement.textContent = cssString;
+        _DOMTextElement.textContent = displayString;
 #endif
 }
 
@@ -468,7 +473,8 @@ var _CPTextFieldSquareBezelColor    = nil;
 
 var CPTextFieldIsSelectableKey  = @"CPTextFieldIsSelectableKey",
     CPTextFieldLineBreakModeKey = @"CPTextFieldLineBreakModeKey",
-    CPTextFieldStringValueKey   = @"CPTextFieldStringValueKey";
+    CPTextFieldStringValueKey   = @"CPTextFieldStringValueKey",
+    CPTextFieldIsEditableKey    = @"CPTextFieldIsEditableKey";
 
 @implementation CPTextField (CPCoding)
 
@@ -503,6 +509,7 @@ var CPTextFieldIsSelectableKey  = @"CPTextFieldIsSelectableKey",
         _DOMElement.appendChild(_DOMTextElement);
 #endif
 
+        [self setEditable:[aCoder decodeBoolForKey:CPTextFieldIsEditableKey]];
         [self setSelectable:[aCoder decodeBoolForKey:CPTextFieldIsSelectableKey]];    
         [self setLineBreakMode:[aCoder decodeIntForKey:CPTextFieldLineBreakModeKey]];
 
@@ -526,6 +533,8 @@ var CPTextFieldIsSelectableKey  = @"CPTextFieldIsSelectableKey",
     [aCoder encodeInt:_lineBreakMode forKey:CPTextFieldLineBreakModeKey];
     
     [aCoder encodeObject:_value forKey:CPTextFieldStringValueKey];
+    
+    [aCoder encodeBool:_isEditable forKey:CPTextFieldIsEditableKey];
 }
 
 @end

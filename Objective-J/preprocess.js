@@ -322,12 +322,9 @@ var objj_preprocess_brackets = function(tokens)
         // not within parenthesis or a tertiary statement.
         var preprocess = !braces && !tertiary && !parenthesis && !array;
         
-        // Generally we are unconcerned with whitespace, however the new 
-        // operator is a special case since it could alse be part of an identifier.
-        if(token == TOKEN_NEW) token = "new ";
         // We handle the special case where the receiver is super.  In this case, 
         // use an objj_super object and use objj_msgSendSuper instead of objj_msgSend.
-        else if(token == TOKEN_SUPER)
+        if (token == TOKEN_SUPER)
         {
             if (!receiver.length)
             {
@@ -385,15 +382,21 @@ var objj_preprocess_brackets = function(tokens)
                 }
             }
             else
-            {
+            {            
+                // Generally we are unconcerned with whitespace, however the new 
+                // operator requires it.
+                if (previous == TOKEN_NEW)
+                    previous = "new ";
+                
                 // If we've already begun building our selector, then the token 
                 // should be applied to the current argument.
                 if (selector.length)
                     marg_list[marg_list.length - 1] += previous;
-                // If not, then it belongs to the receiver.
-                else
-                    receiver += previous;
                 
+                // If not, then it belongs to the receiver.
+                else        
+                    receiver += previous;
+                                
                 previous = token;
             }
         }
@@ -409,8 +412,12 @@ var objj_preprocess_brackets = function(tokens)
         }
         
         // The literal interpretation is always handled in the same 
-        // manner, simply aggregate the tokens.
-        literal += token;
+        // manner, simply aggregate the tokens, unless we have a new token,
+        // in which case we need to add back the whitespace we removed.
+        if (token == TOKEN_NEW)
+            literal += "new ";
+        else
+            literal += token;
     }
 
     // If we have a selector, then add the remaining string to the argument.
@@ -425,7 +432,7 @@ var objj_preprocess_brackets = function(tokens)
     // array[i%] becomes arrayobjj_msgSend(i,"%") if not.  This is an error either 
     // way though.  https://trac.280north.com/ticket/6
     else if(!array && receiver.length && !((/[\:\+\-\*\/\=\<\>\&\|\!\.\%]/).test(receiver.charAt(receiver.length - 1))) && 
-            receiver != "new " && !(/[\+\-\*\/\=\<\>\&\|\!\.\[\^\(]/).test(previous.charAt(0)))
+            receiver != TOKEN_NEW && !(/[\+\-\*\/\=\<\>\&\|\!\.\[\^\(]/).test(previous.charAt(0)))
         selector = previous;
     // If we did not build a selector through the parsing process, then we 
     // are either a single entry literal array, or an array index, and so 
