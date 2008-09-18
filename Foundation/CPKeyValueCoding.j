@@ -22,7 +22,15 @@
 
 import "CPObject.j"
 
-@implementation CPObject(CPKeyValueCoding)
+
+var CPObjectAccessorsForClass   = nil,
+    CPObjectModifiersForClass   = nil;
+
+CPUndefinedKeyException     = @"CPUndefinedKeyException";
+CPTargetObjectUserInfoKey   = @"CPTargetObjectUserInfoKey";
+CPUnknownUserInfoKey        = @"CPUnknownUserInfoKey";
+
+@implementation CPObject (CPKeyValueCoding)
 
 + (BOOL)accessInstanceVariablesDirectly
 {
@@ -32,14 +40,42 @@ import "CPObject.j"
 /* @ignore */
 + (SEL)_accessorForKey:(CPString)aKey
 {
-    var capitalizedKey = aKey.charAt(0).toUpperCase() + aKey.substr(1),
-        selector = CPSelectorFromString("get" + capitalizedKey);
+    if (!CPObjectAccessorsForClass)
+        CPObjectAccessorsForClass = [CPDictionary dictionary];
     
-    if ([self instancesRespondToSelector:selector] || 
+    var hash = [isa hash],
+        selector = nil,
+        accessors = [CPObjectAccessorsForClass objectForKey:hash];
+    
+    if (accessors)
+    {
+        selector = [accessors objectForKey:aKey];
+        
+        if (selector)
+            return selector == [CPNull null] ? nil : selector;
+    }
+    else
+    {
+        accessors = [CPDictionary dictionary];
+        
+        [CPObjectAccessorsForClass setObject:accessors forKey:hash];
+    }
+
+    var capitalizedKey = aKey.charAt(0).toUpperCase() + aKey.substr(1);
+    
+    if ([self instancesRespondToSelector:selector = CPSelectorFromString("get" + capitalizedKey)] || 
         [self instancesRespondToSelector:selector = CPSelectorFromString(aKey)] || 
-        [self instancesRespondToSelector:selector = CPSelectorFromString("_"+aKey)] || 
-        [self instancesRespondToSelector:selector = CPSelectorFromString("is" + capitalizedKey)])
+        [self instancesRespondToSelector:selector = CPSelectorFromString("is" + capitalizedKey)] || 
+        [self instancesRespondToSelector:selector = CPSelectorFromString("_get" + capitalizedKey)] || 
+        [self instancesRespondToSelector:selector = CPSelectorFromString("_" + aKey)] || 
+        [self instancesRespondToSelector:selector = CPSelectorFromString("_is" + capitalizedKey)])
+    {
+        [accessors setObject:selector forKey:aKey];
+        
         return selector;
+    }
+    
+    [accessors setObject:[CPNull null] forKey:aKey];
     
     return nil;
 }
@@ -47,22 +83,68 @@ import "CPObject.j"
 /* @ignore */
 + (SEL)_modifierForKey:(CPString)aKey
 {
-    var selector = CPSelectorFromString("set" + aKey.charAt(0).toUpperCase() + aKey.substr(1) + ':');
+    if (!CPObjectModifiersForClass)
+        CPObjectModifiersForClass = [CPDictionary dictionary];
+    
+    var hash = [isa hash],
+        selector = nil,
+        modifiers = [CPObjectModifiersForClass objectForKey:hash];
+    
+    if (modifiers)
+    {
+        selector = [modifiers objectForKey:aKey];
+        
+        if (selector)
+            return selector == [CPNull null] ? nil : selector;
+    }
+    else
+    {
+        modifiers = [CPDictionary dictionary];
+        
+        [CPObjectModifiersForClass setObject:modifiers forKey:hash];
+    }
+    
+    if (selector)
+        return selector == [CPNull null] ? nil : selector;
 
-    if ([self instancesRespondToSelector:selector])
+    var capitalizedKey = aKey.charAt(0).toUpperCase() + aKey.substr(1) + ':';
+
+    if ([self instancesRespondToSelector:selector = CPSelectorFromString("set" + capitalizedKey)] ||
+        [self instancesRespondToSelector:selector = CPSelectorFromString("_set" + capitalizedKey)])
+    {
+        [modifiers setObject:selector forKey:aKey];
+        
         return selector;
-
+    }
+    
+    [modifiers setObject:[CPNull null] forKey:aKey];
+    
     return nil;
 }
 
 /* @ignore */
 - (CPString)_ivarForKey:(CPString)aKey
 {
-    var ivar,
-        isKey = "is" + aKey.charAt(0).toUpperCase() + aKey.substr(1);
+    var ivar = '_' + aKey;
+    
+    if (typeof self[ivar] != "undefined")
+        return ivar;
 
-    if (self[ivar = "_" + aKey] != undefined || self[ivar = "_" + isKey] != undefined || 
-        self[ivar = aKey] != undefined || self[ivar = isKey] != undefined) ;
+    var isKey = "is" + aKey.charAt(0).toUpperCase() + aKey.substr(1);
+
+    ivar = '_' + isKey;    
+    
+    if (typeof self[ivar] != "undefined")
+        return ivar;
+    
+    ivar = aKey;
+    
+    if (typeof self[ivar] != "undefined")
+        return ivar;
+        
+    ivar = isKey;
+    
+    if (typeof self[ivar] != "undefined")
         return ivar;
 
     return nil;
@@ -70,35 +152,62 @@ import "CPObject.j"
     
 - (id)valueForKey:(CPString)aKey
 {
-    var ivar,
-        theClass = [self class],
-        selector = [theClass _accessorForKey:aKey]
+    var selector = [isa _accessorForKey:aKey];
 
     if (selector)
-        return [self performSelector:selector];
-    else if([theClass accessInstanceVariablesDirectly] && (ivar = [self _ivarForKey:aKey]))
-        return self[ivar];
-    else 
-        return [self valueForUndefinedKey:aKey];
+        return objj_msgSend(self, selector);
+    
+    if([isa accessInstanceVariablesDirectly])
+    {
+        var ivar = [self _ivarForKey:aKey];
+        
+        if (ivar)
+            return self[ivar];
+    }
+    
+    return [self valueForUndefinedKey:aKey];
 }
     
 - (id)valueForKeyPath:(CPString)aKeyPath
 {
-    var i = 0,
-        keys = aKeyPath.split("."),
+    var keys = aKeyPath.split("."),
+    
+        index = 0,
         count = keys.length,
+        
         value = self;
 
-    for(; i<count; ++i)
-        value = [value valueForKey:keys[i]];
+    for(; index < count; ++index)
+        value = [value valueForKey:keys[index]];
 
     return value;
 }
 
+- (CPDictionary)dictionaryWithValuesForKeys:(CPArray)keys
+{
+    var index = 0,
+        count = keys.length,
+        dictionary = [CPDictionary dictionary];
+    
+    for (; index < count; ++index)
+    {
+        var key = keys[index],
+            value = [self valueForKey:key];
+
+        if (value === nil)
+            [dictionary setObject:[CPNull null] forKey:key];
+        else
+            [dictionary setObject:value forKey:key];
+    }
+    
+    return dictionary;
+}
+
 - (id)valueForUndefinedKey:(CPString)aKey
 {
-    alert("IMPLEMENT EXCEPTIONS, also, valueForKey died.");
-//    CPException.raise(CPUndefinedKeyException, "[<"+this.classObject().name()+" "+this+"> valueForKey()]: this class is not key value coding-compliant for the key "+aKey+".]");
+    [[CPException exceptionWithName:CPUndefinedKeyException
+                            reason:[self description] + " is not key value coding-compliant for the key " + aKey
+                          userInfo:[CPDictionary dictionaryWithObjects:[self, aKey] forKeys:[CPTargetObjectUserInfoKey, CPUnknownUserInfoKey]]] raise];
 }
     
 - (void)setValue:(id)aValue forKeyPath:(CPString)aKeyPath
@@ -118,22 +227,35 @@ import "CPObject.j"
     
 - (void)setValue:(id)aValue forKey:(CPString)aKey
 {
-    var ivar,
-        theClass = [self class],
-        selector = [theClass _modifierForKey:aKey];
+    var selector = [isa _modifierForKey:aKey];
 
     if (selector)
-        [self performSelector:selector withObject:aValue];
-    else if([theClass accessInstanceVariablesDirectly] && (ivar = [self _ivarForKey:aKey]))
-        self[ivar] = aValue;
-    else
-        [self setValue:aValue forUndefinedKey:aKey];
+        return objj_msgSend(self, selector, aValue);
+    
+    if([isa accessInstanceVariablesDirectly])
+    {
+        var ivar = [self _ivarForKey:aKey];
+        
+        if (ivar)
+        {
+            [self willChangeValueForKey:aKey];
+            
+            self[ivar] = aValue;
+        
+            [self didChangeValueForKey:aKey];
+        }
+        
+        return;
+    }
+    
+    [self setValue:aValue forUndefinedKey:aKey];
 }
     
 - (void)setValue:(id)aValue forUndefinedKey:(CPString)aKey
 {
-    alert("IMPLEMENT EXCEPTIONS, also, setValueForKey died.");
-//    CPException.raise(CPUndefinedKeyException, "[<"+this.className()+" "+this+"> setValueForKey()]: this class is not key value coding-compliant for the key "+aKey+".]");
+    [[CPException exceptionWithName:CPUndefinedKeyException
+                            reason:[self description] + " is not key value coding-compliant for the key " + aKey
+                          userInfo:[CPDictionary dictionaryWithObjects:[self, aKey] forKeys:[CPTargetObjectUserInfoKey, CPUnknownUserInfoKey]]] raise];
 }
 
 @end

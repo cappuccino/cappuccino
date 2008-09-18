@@ -73,9 +73,9 @@ import <AppKit/_CPCibObjectData.j>
         //_accessibilityConnectors = [aCoder decodeObjectForKey:@"NSAccessibilityConnectors"];
         //_accessibilityOidsKeys = [aCoder decodeObjectForKey:@"NSAccessibilityOidsKeys"];
         //_accessibilityOidsValues = [aCoder decodeObjectForKey:@"NSAccessibilityOidsValues"];
-        
-        _classesKeys = [aCoder decodeObjectForKey:@"NSClassesKeys"];
-        _classesValues = [aCoder decodeObjectForKey:@"NSClassesValues"];
+
+        _classesKeys = [aCoder decodeObjectForKey:@"NSClassesKeys"];print("d");
+        _classesValues = [aCoder decodeObjectForKey:@"NSClassesValues"];print("e");
       
         _connections = [aCoder decodeObjectForKey:@"NSConnections"];
         
@@ -90,7 +90,7 @@ import <AppKit/_CPCibObjectData.j>
         _oidKeys = [aCoder decodeObjectForKey:@"NSOidsKeys"];
         _oidValues = [aCoder decodeObjectForKey:@"NSOidsValues"];
 
-        _rootObject = [aCoder decodeObjectForKey:@"NSRoot"];
+        _fileOwner = [aCoder decodeObjectForKey:@"NSRoot"];
         _visibleWindows = [aCoder decodeObjectForKey:@"NSVisibleWindows"];
     }
 

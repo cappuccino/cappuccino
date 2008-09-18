@@ -35,17 +35,19 @@ var CPSplitViewHorizontalImage = nil,
 
 @implementation CPSplitView : CPView
 {
-    id   _delegate;
-    BOOL _isVertical;
-    BOOL _isPaneSplitter;
+    id          _delegate;
+    BOOL        _isVertical;
+    BOOL        _isPaneSplitter;
     
-    int _currentDivider;
-    float _initialOffset;
+    int         _currentDivider;
+    float       _initialOffset;
     
-    CPString _originComponent;
-    CPString _sizeComponent;
+    CPString    _originComponent;
+    CPString    _sizeComponent;
     
-    CPArray _DOMDividerElements;
+    CPArray     _DOMDividerElements;
+    CPString    _dividerImagePath;
+    int         _drawingDivider;
 }
 
 /*
@@ -92,6 +94,7 @@ var CPSplitViewHorizontalImage = nil,
     
     _originComponent = [self isVertical] ? "x" : "y";
     _sizeComponent   = [self isVertical] ? "width" : "height";
+    _dividerImagePath = [self isVertical] ? [CPSplitViewVerticalImage filename] : [CPSplitViewHorizontalImage filename];
     
     [self adjustSubviews];
 }
@@ -162,33 +165,30 @@ var CPSplitViewHorizontalImage = nil,
 
 - (void)drawRect:(CGRect)rect
 {
-#if PLATFORM(DOM)
-    var dividerPath = [self isVertical] ? [CPSplitViewVerticalImage filename] : [CPSplitViewHorizontalImage filename];
-
     var count = [_subviews count];
-    for (var i = 0; i < count; i++)
+    for (var _drawingDivider = 0; _drawingDivider < count-1; _drawingDivider++)
     {
-        if (!_DOMDividerElements[i])
-        {
-            _DOMDividerElements[i] = document.createElement("div");
-            _DOMDividerElements[i].style.cursor = "move";
-            _DOMDividerElements[i].style.position = "absolute";
-            _DOMDividerElements[i].style.backgroundRepeat = "repeat";
-            CPDOMDisplayServerAppendChild(_DOMElement, _DOMDividerElements[i]);
-        }
-        
-        var frame = [self rectOfDividerAtIndex:i];
-        CPDOMDisplayServerSetStyleLeftTop(_DOMDividerElements[i], NULL, _CGRectGetMinX(frame), _CGRectGetMinY(frame));
-        CPDOMDisplayServerSetStyleSize(_DOMDividerElements[i], _CGRectGetWidth(frame), _CGRectGetHeight(frame));
-        
-        _DOMDividerElements[i].style.backgroundImage = "url('"+dividerPath+"')";
+        [self drawDividerInRect:[self rectOfDividerAtIndex:_drawingDivider]];
     }
-#endif
 }
 
 - (void)drawDividerInRect:(CGRect)aRect
 {
-    // TODO: figure out a way to "draw" dividers using DOM element
+#if PLATFORM(DOM)
+    if (!_DOMDividerElements[_drawingDivider])
+    {
+        _DOMDividerElements[_drawingDivider] = document.createElement("div");
+        _DOMDividerElements[_drawingDivider].style.cursor = "move";
+        _DOMDividerElements[_drawingDivider].style.position = "absolute";
+        _DOMDividerElements[_drawingDivider].style.backgroundRepeat = "repeat";
+        CPDOMDisplayServerAppendChild(_DOMElement, _DOMDividerElements[_drawingDivider]);
+    }    
+        
+    CPDOMDisplayServerSetStyleLeftTop(_DOMDividerElements[_drawingDivider], NULL, _CGRectGetMinX(aRect), _CGRectGetMinY(aRect));
+    CPDOMDisplayServerSetStyleSize(_DOMDividerElements[_drawingDivider], _CGRectGetWidth(aRect), _CGRectGetHeight(aRect));
+    
+    _DOMDividerElements[_drawingDivider].style.backgroundImage = "url('"+_dividerImagePath+"')";
+#endif
 }
 
 - (BOOL)cursorAtPoint:(CPPoint)aPoint hitDividerAtIndex:(int)anIndex
@@ -207,72 +207,89 @@ var CPSplitViewHorizontalImage = nil,
     return CGRectContainsPoint(effectiveRect, aPoint) || (additionalRect && CGRectContainsPoint(additionalRect, aPoint));
 }
 
-- (void)mouseDown:(CPEvent)theEvent
-{
-    var location = [theEvent locationInWindow],
-        point = [self convertPoint:location fromView:nil];
-    
-    for (var i = 0; i < [_subviews count] - 1; i++)
-    {
-        var frame = [_subviews[i] frame],
-            startPosition = frame.origin[_originComponent] + frame.size[_sizeComponent];
-        
-        if ([self cursorAtPoint:point hitDividerAtIndex:i])
-        {
-            if ([theEvent clickCount] == 2 &&
-                [_delegate respondsToSelector:@selector(splitView:canCollapseSubview:)] &&
-                [_delegate respondsToSelector:@selector(splitView:shouldCollapseSubview:forDoubleClickOnDividerAtIndex:)])
-            {    
-                var minPosition = [self minPossiblePositionOfDividerAtIndex:i],
-                    maxPosition = [self maxPossiblePositionOfDividerAtIndex:i];
-                    
-                if ([_delegate splitView:self canCollapseSubview:_subviews[i]] && [_delegate splitView:self shouldCollapseSubview:_subviews[i] forDoubleClickOnDividerAtIndex:i])
-                {
-                    if ([self isSubviewCollapsed:_subviews[i]])
-                        [self setPosition:(minPosition + (maxPosition - minPosition) / 2) ofDividerAtIndex:i];
-                    else
-                        [self setPosition:minPosition ofDividerAtIndex:i];
-                }
-                else if ([_delegate splitView:self canCollapseSubview:_subviews[i+1]] && [_delegate splitView:self shouldCollapseSubview:_subviews[i+1] forDoubleClickOnDividerAtIndex:i])
-                {
-                    if ([self isSubviewCollapsed:_subviews[i+1]])
-                        [self setPosition:(minPosition + (maxPosition - minPosition) / 2) ofDividerAtIndex:i];
-                    else
-                        [self setPosition:maxPosition ofDividerAtIndex:i];
-                }
-            }
-            else
-            {
-                _currentDivider = i;
-                _initialOffset = startPosition - point[_originComponent];
 
-                [self _postNotificationWillResize];
+/*
+    Tracks the divider.
+    @param anEvent the input event
+*/
+- (void)trackDivider:(CPEvent)anEvent
+{
+    var type = [anEvent type];
+    
+    if (type == CPLeftMouseUp)
+    {
+        if (_currentDivider != CPNotFound)
+        {
+            _currentDivider = CPNotFound;
+            [self _postNotificationDidResize];
+        }
+        
+        return;
+    }
+    
+    if (type == CPLeftMouseDown)
+    {
+        var location = [anEvent locationInWindow],
+            point = [self convertPoint:location fromView:nil];
+
+        _currentDivider = CPNotFound;
+        for (var i = 0; i < [_subviews count] - 1; i++)
+        {
+            var frame = [_subviews[i] frame],
+                startPosition = frame.origin[_originComponent] + frame.size[_sizeComponent];
+
+            if ([self cursorAtPoint:point hitDividerAtIndex:i])
+            {
+                if ([anEvent clickCount] == 2 &&
+                    [_delegate respondsToSelector:@selector(splitView:canCollapseSubview:)] &&
+                    [_delegate respondsToSelector:@selector(splitView:shouldCollapseSubview:forDoubleClickOnDividerAtIndex:)])
+                {    
+                    var minPosition = [self minPossiblePositionOfDividerAtIndex:i],
+                        maxPosition = [self maxPossiblePositionOfDividerAtIndex:i];
+
+                    if ([_delegate splitView:self canCollapseSubview:_subviews[i]] && [_delegate splitView:self shouldCollapseSubview:_subviews[i] forDoubleClickOnDividerAtIndex:i])
+                    {
+                        if ([self isSubviewCollapsed:_subviews[i]])
+                            [self setPosition:(minPosition + (maxPosition - minPosition) / 2) ofDividerAtIndex:i];
+                        else
+                            [self setPosition:minPosition ofDividerAtIndex:i];
+                    }
+                    else if ([_delegate splitView:self canCollapseSubview:_subviews[i+1]] && [_delegate splitView:self shouldCollapseSubview:_subviews[i+1] forDoubleClickOnDividerAtIndex:i])
+                    {
+                        if ([self isSubviewCollapsed:_subviews[i+1]])
+                            [self setPosition:(minPosition + (maxPosition - minPosition) / 2) ofDividerAtIndex:i];
+                        else
+                            [self setPosition:maxPosition ofDividerAtIndex:i];
+                    }
+                }
+                else
+                {
+                    _currentDivider = i;
+                    _initialOffset = startPosition - point[_originComponent];
+
+                    [self _postNotificationWillResize];
+                }
             }
-            
-            return;
         }
     }
-    _currentDivider = CPNotFound;
+    
+    else if (type == CPLeftMouseDragged)
+    {
+        if (_currentDivider != CPNotFound)
+        {
+            var location = [anEvent locationInWindow],
+                point = [self convertPoint:location fromView:nil];
+
+            [self setPosition:(point[_originComponent] + _initialOffset) ofDividerAtIndex:_currentDivider];
+        }
+    }
+    
+    [CPApp setTarget:self selector:@selector(trackDivider:) forNextEventMatchingMask:CPLeftMouseDraggedMask | CPLeftMouseUpMask untilDate:nil inMode:nil dequeue:YES];
 }
 
-- (void)mouseDragged:(CPEvent)theEvent
+- (void)mouseDown:(CPEvent)anEvent
 {
-    if (_currentDivider != CPNotFound)
-    {
-        var location = [theEvent locationInWindow],
-            point = [self convertPoint:location fromView:nil];
-        
-        [self setPosition:(point[_originComponent] + _initialOffset) ofDividerAtIndex:_currentDivider];
-    }
-}
-
-- (void)mouseUp:(CPEvent)theEvent
-{
-    if (_currentDivider != CPNotFound)
-    {
-        _currentDivider = CPNotFound;
-        [self _postNotificationDidResize];
-    }
+    [self trackDivider:anEvent];
 }
 
 - (float)maxPossiblePositionOfDividerAtIndex:(int)dividerIndex
