@@ -140,7 +140,7 @@ var _CPTextFieldSquareBezelColor    = nil;
 - (id)initWithFrame:(CGRect)aFrame
 {
     self = [super initWithFrame:aFrame];
-    
+
     if (self)
     {
         _value = @"";
@@ -432,7 +432,7 @@ var _CPTextFieldSquareBezelColor    = nil;
         return [[self class] _inputElement].value;
 #endif
 
-    return [self stringValue];
+    return [super stringValue];
 }
 
 /*
@@ -466,6 +466,19 @@ var _CPTextFieldSquareBezelColor    = nil;
     var size = [_value ? _value : @" " sizeWithFont:[self font]];
     
     [self setFrameSize:CGSizeMake(size.width + 2 * HORIZONTAL_PADDING, size.height + TOP_PADDING + BOTTOM_PADDING)];
+#endif
+}
+
+/*
+    Select all the text in the CPTextField.
+*/
+- (void)selectText:(id)sender
+{
+#if PLATFORM(DOM)
+    var element = [[self class] _inputElement];
+    
+    if (element.parentNode == _DOMElement && ([self isEditable] || [self isSelectable]))
+        element.select();
 #endif
 }
 
