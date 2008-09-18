@@ -253,8 +253,8 @@ var CPControlBlackColor     = [CPColor blackColor];
 
 - (void)mouseUp:(CPEvent)anEvent
 {
-    if (_sendActionOn & CPLeftMouseUpMask && CPRectContainsPoint([self bounds], [self convertPoint:[anEvent locationInWindow] fromView:nil])){alert([_target description] + " : " + _action);
-        [self sendAction:_action to:_target];}
+    if (_sendActionOn & CPLeftMouseUpMask && CPRectContainsPoint([self bounds], [self convertPoint:[anEvent locationInWindow] fromView:nil]))
+        [self sendAction:_action to:_target];
     
     [super mouseUp:anEvent];
 }
