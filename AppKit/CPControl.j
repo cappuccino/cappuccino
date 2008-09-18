@@ -253,8 +253,8 @@ var CPControlBlackColor     = [CPColor blackColor];
 
 - (void)mouseUp:(CPEvent)anEvent
 {
-    if (_sendActionOn & CPLeftMouseUpMask && CPRectContainsPoint([self bounds], [self convertPoint:[anEvent locationInWindow] fromView:nil]))
-        [self sendAction:_action to:_target];
+    if (_sendActionOn & CPLeftMouseUpMask && CPRectContainsPoint([self bounds], [self convertPoint:[anEvent locationInWindow] fromView:nil])){alert([_target description] + " : " + _action);
+        [self sendAction:_action to:_target];}
     
     [super mouseUp:anEvent];
 }
@@ -282,7 +282,71 @@ var CPControlBlackColor     = [CPColor blackColor];
 */
 - (void)setFloatValue:(float)aValue
 {
-    _value = aValue;
+    [self setObjectValue:aValue];
+}
+
+/*
+    Returns the receiver's object value
+*/
+- (id)objectValue
+{
+    return _value;
+}
+
+/*
+    Set's the receiver's object value
+*/
+- (void)setObjectValue:(id)anObject
+{
+    _value = anObject;
+}
+
+/*
+    Returns the receiver's double value
+*/
+- (id)doubleValue
+{
+    return [self floatValue];
+}
+
+/*
+    Set's the receiver's double value
+*/
+- (void)setDoubleValue:(id)anObject
+{
+    [self setObjectValue:anObject];
+}
+
+/*
+    Returns the receiver's int value
+*/
+- (id)intValue
+{
+    return _value ? parseInt(_value, 10) : 0;
+}
+
+/*
+    Set's the receiver's int value
+*/
+- (void)setIntValue:(id)anObject
+{
+    [self setObjectValue:anObject];
+}
+
+/*
+    Returns the receiver's int value
+*/
+- (id)stringValue
+{
+    return _value ? ""+_value : "";
+}
+
+/*
+    Set's the receiver's int value
+*/
+- (void)setStringValue:(id)anObject
+{
+    [self setObjectValue:anObject];
 }
 
 - (void)setBackgroundColor:(CPColor)aColor

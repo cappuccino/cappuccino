@@ -1,6 +1,6 @@
 /*
- * NSCustomView.j
- * AppKit
+ * CPKeyValueCoding.j
+ * Foundation
  *
  * Created by Francisco Tolmasky.
  * Copyright 2008, 280 North, Inc.
@@ -20,39 +20,20 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-import <AppKit/CPCustomView.j>
-
-import "NSView.j"
+import "CPObject.j"
 
 
-var _CPCibCustomViewClassNameKey    = @"_CPCibCustomViewClassNameKey";
+@implementation CPObject (KeyValueObserving)
 
-@implementation NSCustomView : CPView
+- (void)willChangeValueForKey:(CPString)aKey
 {
-    CPString    _className;
+
 }
 
-- (id)initWithCoder:(CPCoder)aCoder
-{
-    self = [super NS_initWithCoder:aCoder];
-    
-    if (self)
-        _className = [aCoder decodeObjectForKey:@"NSClassName"];
-    
-    return self;
-}
 
-- (void)encodeWithCoder:(CPCoder)aCoder
+- (void)didChangeValueForKey:(CPString)aKey
 {
-    [super encodeWithCoder:aCoder];
-    
-    [aCoder encodeObject:CP_NSMapClassName(_className) forKey:_CPCibCustomViewClassNameKey];
-}
 
-- (CPString)classForKeyedArchiver
-{
-    return [_CPCibCustomView class];
 }
 
 @end
-

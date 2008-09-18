@@ -219,7 +219,7 @@ var _CPNotificationCenterPostNotification = function(/* CPNotificationCenter */ 
         while (key = [keys nextObject])
         {
             var observers = [_objectObservers objectForKey:key],
-                count = observers.length;
+                count = observers ? observers.length : 0;
             
             while (count--)
                 if ([observers[count] observer] == anObserver)
@@ -231,7 +231,7 @@ var _CPNotificationCenterPostNotification = function(/* CPNotificationCenter */ 
                     observers.splice(count, 1);
                 }
                 
-            if (observers.length == 0)
+            if (!observers || observers.length == 0)
                 removedKeys.push(key);
         }
     }
@@ -239,7 +239,7 @@ var _CPNotificationCenterPostNotification = function(/* CPNotificationCenter */ 
     {
         var key = [anObject hash],
             observers = [_objectObservers objectForKey:key];
-            count = observers.length;
+            count = observers ? observers.length : 0;
         
         while (count--)
             if ([observers[count] observer] == anObserver)
@@ -251,7 +251,7 @@ var _CPNotificationCenterPostNotification = function(/* CPNotificationCenter */ 
                 observers.splice(count, 1)
             }
             
-        if (observers.length == 0)
+        if (!observers || observers.length == 0)
             removedKeys.push(key);
     }    
 

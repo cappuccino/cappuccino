@@ -269,7 +269,9 @@ var CPWindowSaveImage       = nil,
     CPURL               _representedURL;
     
     // Bridge Support
+#if PLATFORM(DOM)
     DOMElement          _DOMElement;
+#endif
     CPDOMWindowBridge   _bridge;
     unsigned            _autoresizingMask;
     
@@ -364,7 +366,8 @@ CPTexturedBackgroundWindowMask
         [self setContentView:[[CPView alloc] initWithFrame:CGRectMakeZero()]];
 
         _firstResponder = self;
-        
+
+#if PLATFORM(DOM)
         _DOMElement = document.createElement("div");
         
         _DOMElement.style.position = "absolute";
@@ -375,7 +378,8 @@ CPTexturedBackgroundWindowMask
         CPDOMDisplayServerSetStyleSize(_DOMElement, 1, 1);
         
         CPDOMDisplayServerAppendChild(_DOMElement, _windowView._DOMElement);
-       
+#endif
+
         [self setBridge:aBridge];
         
         [self setNextResponder:CPApp];
@@ -854,12 +858,15 @@ CPTexturedBackgroundWindowMask
         [_shadowView setBackgroundColor:_CPWindowShadowColor];
         [_shadowView setAutoresizingMask:CPViewWidthSizable | CPViewHeightSizable];
         
+#if PLATFORM(DOM)
         CPDOMDisplayServerInsertBefore(_DOMElement, _shadowView._DOMElement, _windowView._DOMElement);
+#endif
     }
     else
     {
+#if PLATFORM(DOM)
         CPDOMDisplayServerRemoveChild(_DOMElement, _shadowView._DOMElement);
-
+#endif
         _shadowView = nil;
     }
 }

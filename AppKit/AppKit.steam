@@ -34,12 +34,12 @@
         <dict>
             <key>Name</key>
             <string>Debug</string>
+            <key>Flags</key>
+            <string>-DDEBUG</string>
             <key>Settings</key>
             <dict>
                 <key>PREPROCESS</key>
                 <true/>
-                <key>FLAGS</key>
-                <string>-DDEBUG</string>
             </dict>
         </dict>
         <dict>

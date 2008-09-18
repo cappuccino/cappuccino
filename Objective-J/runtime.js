@@ -159,7 +159,7 @@ function class_copyIvarList(/*Class*/ aClass)
 
 //#define class_copyIvarList(aClass) (aClass.ivars.slice(0))
 
-function class_addMethod(/*Class*/ aClass, /*SEL*/ aName, /*IMP*/ anImplementation, /*String*/types)
+function class_addMethod(/*Class*/ aClass, /*SEL*/ aName, /*IMP*/ anImplementation, /*String*/aType)
 {
     if (aClass.method_hash[aName])
         return NO;

@@ -211,7 +211,7 @@ ACTUAL_FRAME_RATE = 0;
 - (void)startAnimation
 {
     // If we're already animating, or our delegate stops us, animate.
-    if (_timer || _delegate && ![_delegate animationShouldStart:self])
+    if (_timer || _delegate && [_delegate respondsToSelector:@selector(animationShouldStart)] && ![_delegate animationShouldStart:self])
         return;
     
     _progress = 0.0;
@@ -258,7 +258,8 @@ ACTUAL_FRAME_RATE = 0;
     window.clearTimeout(_timer);
     _timer = nil;
     
-    [_delegate animationDidStop:self];
+    if ([_delegate respondsToSelector:@selector(animationDidStop:)])
+        [_delegate animationDidStop:self];
 }
 
 /*
