@@ -1684,13 +1684,14 @@ var CPViewAutoresizingMaskKey       = @"CPViewAutoresizingMask",
     _DOMElement = DOMElementPrototype.cloneNode(false);
 #endif
 
+    // Also decode these "early".
+    _frame = [aCoder decodeRectForKey:CPViewFrameKey];
+    _bounds = [aCoder decodeRectForKey:CPViewBoundsKey];
+
     self = [super initWithCoder:aCoder];
     
     if (self)
     {
-        _frame = [aCoder decodeRectForKey:CPViewFrameKey];
-        _bounds = [aCoder decodeRectForKey:CPViewBoundsKey];
-
         _window = [aCoder decodeObjectForKey:CPViewWindowKey];
         _subviews = [aCoder decodeObjectForKey:CPViewSubviewsKey];
         _superview = [aCoder decodeObjectForKey:CPViewSuperviewKey];
@@ -1716,6 +1717,7 @@ var CPViewAutoresizingMaskKey       = @"CPViewAutoresizingMask",
         for (; index < count; ++index)
         {
             CPDOMDisplayServerAppendChild(_DOMElement, _subviews[index]._DOMElement);
+            //_subviews[index]._superview = self;
         }
 #endif
         _displayHash = [self hash];

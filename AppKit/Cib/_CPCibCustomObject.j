@@ -1,0 +1,41 @@
+
+import <Foundation/CPObject.j>
+
+
+var _CPCibCustomObjectClassName = @"_CPCibCustomObjectClassName";
+
+@implementation _CPCibCustomObject : CPObject
+{
+    CPString _className;
+}
+
+@end
+
+@implementation _CPCibCustomObject (CPCoding)
+
+- (id)initWithCoder:(CPCoder)aCoder
+{
+    self = [super init];
+
+    if (self)
+        _className = [aCoder decodeObjectForKey:_CPCibCustomObjectClassName];
+    
+    return self;
+}
+
+- (void)encodeWithCoder:(CPCoder)aCoder
+{
+    [aCoder encodeObject:_className forKey:_CPCibCustomObjectClassName];
+}
+
+- (id)awakeAfterUsingCoder:(CPCoder)aCoder
+{
+    var theClass = CPClassFromString(_className);
+    
+    if (!theClass)
+        CPLog("Unknown class \"" + _className + "\" in cib file");
+    
+    return [[theClass alloc] init];
+}
+
+@end
