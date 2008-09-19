@@ -41,6 +41,11 @@ import <AppKit/CPView.j>
     
     if (self)
     {
+        _tag = -1;
+        
+        if([aCoder containsValueForKey:@"NSTag"])
+            _tag = [aCoder decodeIntForKey:@"NSTag"];
+        
         _bounds = CGRectMake(0.0, 0.0, CGRectGetWidth(_frame), CGRectGetHeight(_frame));
     
         _window = [aCoder decodeObjectForKey:@"NSWindow"];

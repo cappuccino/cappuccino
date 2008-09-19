@@ -88,6 +88,8 @@ var DOMElementPrototype         = nil,
     
     CPGraphicsContext   _graphicsContext;
     
+    int                 _tag;
+    
     CGRect              _frame;
     CGRect              _bounds;
     CGAffineTransform   _boundsTransform;
@@ -173,6 +175,8 @@ var DOMElementPrototype         = nil,
             height = _CGRectGetHeight(aFrame);
         
         _subviews = [];
+
+        _tag = -1;
 
         _frame = _CGRectMakeCopy(aFrame);
         _bounds = _CGRectMake(0.0, 0.0, width, height);
@@ -462,6 +466,11 @@ var DOMElementPrototype         = nil,
         view = [view superview];
     
     return enclosingMenuItem;*/
+}
+
+- (int)tag
+{
+    return _tag;
 }
 
 /*
@@ -1665,6 +1674,7 @@ var CPViewAutoresizingMaskKey       = @"CPViewAutoresizingMask",
     CPViewOpacityKey                = @"CPViewOpacityKey",
     CPViewSubviewsKey               = @"CPViewSubviewsKey",
     CPViewSuperviewKey              = @"CPViewSuperviewKey",
+    CPViewTagKey                    = @"CPViewTagKey",
     CPViewWindowKey                 = @"CPViewWindowKey";
 
 @implementation CPView (CPCoding)
@@ -1692,6 +1702,11 @@ var CPViewAutoresizingMaskKey       = @"CPViewAutoresizingMask",
     
     if (self)
     {
+        _tag = -1;
+        
+        if ([aCoder containsValueForKey:CPViewTagKey])
+            _tag = [aCoder decodeIntForKey:CPViewTagKey];
+        
         _window = [aCoder decodeObjectForKey:CPViewWindowKey];
         _subviews = [aCoder decodeObjectForKey:CPViewSubviewsKey];
         _superview = [aCoder decodeObjectForKey:CPViewSuperviewKey];
@@ -1735,6 +1750,9 @@ var CPViewAutoresizingMaskKey       = @"CPViewAutoresizingMask",
 - (void)encodeWithCoder:(CPCoder)aCoder
 {
     [super encodeWithCoder:aCoder];
+    
+    if (_tag != -1)
+        [aCoder encodeInt:_tag forKey:CPViewTagKey];
     
     [aCoder encodeRect:_frame forKey:CPViewFrameKey];
     [aCoder encodeRect:_bounds forKey:CPViewBoundsKey];
