@@ -62,7 +62,7 @@ var _CPWindowViewResizeIndicatorImage = nil;
     {
         _resizeIndicatorOffset = CGSizeMake(0.0, 0.0);
         
-        [self setShowsResizeIndicator:((_styleMask & CPBorderlessWindowMask) || (_styleMask & CPBorderlessBridgeWindowMask)) && (_styleMask & CPResizableWindowMask)];
+        [self setShowsResizeIndicator:!((_styleMask & CPBorderlessWindowMask) || (_styleMask & CPBorderlessBridgeWindowMask)) && (_styleMask & CPResizableWindowMask)];
     }
     
     return self;
