@@ -22,7 +22,7 @@
 
 import "CPControl.j"
 
-var CPSliderHorizontalKnobImage         = nil
+var CPSliderHorizontalKnobImage         = nil,
     CPSliderHorizontalBarLeftImage      = nil,
     CPSliderHorizontalBarRightImage     = nil,
     CPSliderHorizontalBarCenterImage    = nil;
