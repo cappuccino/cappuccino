@@ -72,8 +72,8 @@ var CPSplitViewHorizontalImage = nil,
         
         _DOMDividerElements = [];
         
-        [self setVertical:YES];
         [self setIsPaneSplitter:YES];
+        [self _setVertical:YES];
     }
     
     return self;
@@ -81,7 +81,7 @@ var CPSplitViewHorizontalImage = nil,
 
 - (float)dividerThickness
 {
-    return 10.0;
+    return _isPaneSplitter ? 1.0 : 10.0;
 }
 
 - (BOOL)isVertical
@@ -90,13 +90,17 @@ var CPSplitViewHorizontalImage = nil,
 }
 - (void)setVertical:(BOOL)flag
 {
-    _isVertical = flag;
-    
-    _originComponent = [self isVertical] ? "x" : "y";
-    _sizeComponent   = [self isVertical] ? "width" : "height";
-    _dividerImagePath = [self isVertical] ? [CPSplitViewVerticalImage filename] : [CPSplitViewHorizontalImage filename];
+    [self _setVertical:flag];
     
     [self adjustSubviews];
+}
+- (void)_setVertical:(BOOL)flag
+{
+    _isVertical = flag;
+    
+    _originComponent    = [self isVertical] ? "x" : "y";
+    _sizeComponent      = [self isVertical] ? "width" : "height";
+    _dividerImagePath   = [self isVertical] ? [CPSplitViewVerticalImage filename] : [CPSplitViewHorizontalImage filename];
 }
 
 - (BOOL)isPaneSplitter
@@ -122,7 +126,8 @@ var CPSplitViewHorizontalImage = nil,
     
     var eachSize = (frame.size[_sizeComponent] - dividerThickness * (_subviews.length - 1)) / _subviews.length;
     
-    for (var i = 0; i < [_subviews count]; i++)
+    var count = [_subviews count]
+    for (var i = 0; i < count; i++)
     {
         if ([self isVertical])
             [_subviews[i] setFrame:CGRectMake(Math.round((eachSize + dividerThickness) * i), 0, Math.round(eachSize), frame.size.height)];
@@ -157,8 +162,10 @@ var CPSplitViewHorizontalImage = nil,
 {
     var realRect = [self rectOfDividerAtIndex:aDivider];
     
-    realRect.size[_sizeComponent] += 4;
-    realRect.origin[_originComponent] -= 2;
+    var padding = 2;
+    
+    realRect.size[_sizeComponent] += padding * 2;
+    realRect.origin[_originComponent] -= padding;
     
     return realRect;
 }
@@ -187,7 +194,16 @@ var CPSplitViewHorizontalImage = nil,
     CPDOMDisplayServerSetStyleLeftTop(_DOMDividerElements[_drawingDivider], NULL, _CGRectGetMinX(aRect), _CGRectGetMinY(aRect));
     CPDOMDisplayServerSetStyleSize(_DOMDividerElements[_drawingDivider], _CGRectGetWidth(aRect), _CGRectGetHeight(aRect));
     
-    _DOMDividerElements[_drawingDivider].style.backgroundImage = "url('"+_dividerImagePath+"')";
+    if (_isPaneSplitter)
+    {
+        _DOMDividerElements[_drawingDivider].style.backgroundColor = "#A5A5A5";
+        _DOMDividerElements[_drawingDivider].style.backgroundImage = "";
+    }
+    else
+    {
+        _DOMDividerElements[_drawingDivider].style.backgroundColor = "";
+        _DOMDividerElements[_drawingDivider].style.backgroundImage = "url('"+_dividerImagePath+"')";
+    }
 #endif
 }
 
@@ -207,6 +223,22 @@ var CPSplitViewHorizontalImage = nil,
     return CGRectContainsPoint(effectiveRect, aPoint) || (additionalRect && CGRectContainsPoint(additionalRect, aPoint));
 }
 
+- (CPView)hitTest:(CGPoint)aPoint
+{
+    if ([self isHidden] || ![self hitTests] || !CGRectContainsPoint([self frame], aPoint))
+        return nil;
+    
+    var point = [self convertPoint:aPoint fromView:[self superview]];
+    
+    var count = [_subviews count] - 1;
+    for (var i = 0; i < count; i++)
+    {
+        if ([self cursorAtPoint:point hitDividerAtIndex:i])
+            return self;
+    }
+    
+    return [super hitTest:aPoint];
+}
 
 /*
     Tracks the divider.
@@ -229,11 +261,11 @@ var CPSplitViewHorizontalImage = nil,
     
     if (type == CPLeftMouseDown)
     {
-        var location = [anEvent locationInWindow],
-            point = [self convertPoint:location fromView:nil];
+        var point = [self convertPoint:[anEvent locationInWindow] fromView:nil];
 
         _currentDivider = CPNotFound;
-        for (var i = 0; i < [_subviews count] - 1; i++)
+        var count = [_subviews count] - 1;
+        for (var i = 0; i < count; i++)
         {
             var frame = [_subviews[i] frame],
                 startPosition = frame.origin[_originComponent] + frame.size[_sizeComponent];
@@ -277,8 +309,7 @@ var CPSplitViewHorizontalImage = nil,
     {
         if (_currentDivider != CPNotFound)
         {
-            var location = [anEvent locationInWindow],
-                point = [self convertPoint:location fromView:nil];
+            var point = [self convertPoint:[anEvent locationInWindow] fromView:nil];
 
             [self setPosition:(point[_originComponent] + _initialOffset) ofDividerAtIndex:_currentDivider];
         }
@@ -331,9 +362,9 @@ var CPSplitViewHorizontalImage = nil,
 
     var frame = [self frame],
         viewA = _subviews[dividerIndex],
-        frameA = CGRectCreateCopy([viewA frame]),
+        frameA = [viewA frame],
         viewB = _subviews[dividerIndex+1],
-        frameB = CGRectCreateCopy([viewB frame]);
+        frameB = [viewB frame];
     
     var realPosition = MAX(MIN(position, actualMax), actualMin);
     
@@ -364,12 +395,13 @@ var CPSplitViewHorizontalImage = nil,
     
     var frame = CGRectCreateCopy([self frame]);
     
-    for (var i = 0; i < [_subviews count]; i++)
+    var count = [_subviews count];
+    for (var i = 0; i < count; i++)
     {
         var view = [_subviews objectAtIndex:i],
             newFrame = CGRectCreateCopy(frame);
         
-        if(i + 1 == [_subviews count])
+        if (i + 1 == count)
             newFrame.size[_sizeComponent] = frame.size[_sizeComponent] - newFrame.origin[_originComponent];
         else
             newFrame.size[_sizeComponent] = frame.size[_sizeComponent] * ([view frame].size[_sizeComponent] / oldSize[_sizeComponent]);
@@ -414,6 +446,51 @@ var CPSplitViewHorizontalImage = nil,
 - (void)_postNotificationDidResize
 {
     [[CPNotificationCenter defaultCenter] postNotificationName:CPSplitViewDidResizeSubviewsNotification object:self];
+}
+
+@end
+
+var CPSplitViewDelegateKey          = "CPSplitViewDelegateKey",
+    CPSplitViewIsVerticalKey        = "CPSplitViewIsVerticalKey",
+    CPSplitViewIsPaneSplitterKey    = "CPSplitViewIsPaneSplitterKey";
+
+@implementation CPSplitView (CPCoding)
+
+/*
+    Initializes the split view by unarchiving data from <code>aCoder</code>.
+    @param aCoder the coder containing the archived <objj>CPSplitView</objj>.
+*/
+- (id)initWithCoder:(CPCoder)aCoder
+{
+    self = [super initWithCoder:aCoder];
+    
+    if (self)
+    {
+        _currentDivider = CPNotFound;
+        
+        _DOMDividerElements = [];
+        
+        _delegate = [aCoder decodeObjectForKey:CPSplitViewDelegateKey];;
+        
+        _isPaneSplitter = [aCoder decodeBoolForKey:CPSplitViewIsPaneSplitterKey];
+        [self _setVertical:[aCoder decodeBoolForKey:CPSplitViewIsVerticalKey]];
+    }
+    
+    return self;
+}
+
+/*
+    Archives this split view into the provided coder.
+    @param aCoder the coder to which the button's instance data will be written.
+*/
+- (void)encodeWithCoder:(CPCoder)aCoder
+{
+    [super encodeWithCoder:aCoder];
+    
+    [aCoder encodeConditionalObject:_delegate forKey:CPSplitViewDelegateKey];
+    
+    [aCoder encodeBool:_isVertical forKey:CPSplitViewIsVerticalKey];
+    [aCoder encodeBool:_isPaneSplitter forKey:CPSplitViewIsPaneSplitterKey];
 }
 
 @end
