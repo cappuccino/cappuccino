@@ -27,6 +27,7 @@ import "CPView.j"
 #include "Platform/Platform.h"
 #include "Platform/DOM/CPDOMDisplayServer.h"
 
+
 CPSplitViewDidResizeSubviewsNotification = @"CPSplitViewDidResizeSubviewsNotification";
 CPSplitViewWillResizeSubviewsNotification = @"CPSplitViewWillResizeSubviewsNotification";
 
@@ -72,7 +73,6 @@ var CPSplitViewHorizontalImage = nil,
         
         _DOMDividerElements = [];
         
-        [self setIsPaneSplitter:YES];
         [self _setVertical:YES];
     }
     
@@ -88,12 +88,14 @@ var CPSplitViewHorizontalImage = nil,
 {
     return _isVertical;
 }
+
 - (void)setVertical:(BOOL)flag
 {
     [self _setVertical:flag];
     
     [self adjustSubviews];
 }
+
 - (void)_setVertical:(BOOL)flag
 {
     _isVertical = flag;
@@ -107,9 +109,19 @@ var CPSplitViewHorizontalImage = nil,
 {
     return _isPaneSplitter;
 }
-- (void)setIsPaneSplitter:(BOOL)flag
+
+- (void)setIsPaneSplitter:(BOOL)shouldBePaneSplitter
 {
-    _isPaneSplitter = flag;
+    if (_isPaneSplitter == shouldBePaneSplitter)
+        return;
+    
+    _isPaneSplitter = shouldBePaneSplitter;
+
+#if PLATFORM(DOM)
+    _DOMDividerElements = [];
+#endif
+
+    [self setNeedsDisplay:YES];
 }
 
 - (void)didAddSubview:(CPView)subview
@@ -124,16 +136,16 @@ var CPSplitViewHorizontalImage = nil,
     
     [self _postNotificationWillResize];
     
-    var eachSize = (frame.size[_sizeComponent] - dividerThickness * (_subviews.length - 1)) / _subviews.length;
-    
-    var count = [_subviews count]
-    for (var i = 0; i < count; i++)
-    {
-        if ([self isVertical])
-            [_subviews[i] setFrame:CGRectMake(Math.round((eachSize + dividerThickness) * i), 0, Math.round(eachSize), frame.size.height)];
-        else
-            [_subviews[i] setFrame:CGRectMake(0, Math.round((eachSize + dividerThickness) * i), frame.size.width, Math.round(eachSize))];
-    }
+    var eachSize = ROUND((frame.size[_sizeComponent] - dividerThickness * (_subviews.length - 1)) / _subviews.length),
+        index = 0,
+        count = _subviews.length;
+
+    if ([self isVertical])
+        for (; index < count; ++index)
+            [_subviews[index] setFrame:CGRectMake(ROUND((eachSize + dividerThickness) * index), 0, eachSize, frame.size.height)];
+    else
+        for (; index < count; ++index)
+            [_subviews[index] setFrame:CGRectMake(0, ROUND((eachSize + dividerThickness) * index), frame.size.width, eachSize)];
     
     [self setNeedsDisplay:YES];
     
@@ -147,10 +159,10 @@ var CPSplitViewHorizontalImage = nil,
 
 - (CGRect)rectOfDividerAtIndex:(int)aDivider
 {
-    var frame = [_subviews[aDivider] frame];
+    var frame = [_subviews[aDivider] frame],
+        rect = CGRectMakeZero();
     
-    var rect = CGRectMakeZero();
-    rect.size = CPSizeCreateCopy([self frame].size);
+    rect.size = [self frame].size;
     
     rect.size[_sizeComponent] = [self dividerThickness];
     rect.origin[_originComponent] = frame.origin[_originComponent] + frame.size[_sizeComponent];
@@ -172,11 +184,10 @@ var CPSplitViewHorizontalImage = nil,
 
 - (void)drawRect:(CGRect)rect
 {
-    var count = [_subviews count];
-    for (var _drawingDivider = 0; _drawingDivider < count-1; _drawingDivider++)
-    {
-        [self drawDividerInRect:[self rectOfDividerAtIndex:_drawingDivider]];
-    }
+    var count = [_subviews count] - 1;
+    
+    while (count--)
+        [self drawDividerInRect:[self rectOfDividerAtIndex:count]];
 }
 
 - (void)drawDividerInRect:(CGRect)aRect
@@ -188,22 +199,23 @@ var CPSplitViewHorizontalImage = nil,
         _DOMDividerElements[_drawingDivider].style.cursor = "move";
         _DOMDividerElements[_drawingDivider].style.position = "absolute";
         _DOMDividerElements[_drawingDivider].style.backgroundRepeat = "repeat";
+        
         CPDOMDisplayServerAppendChild(_DOMElement, _DOMDividerElements[_drawingDivider]);
+
+        if (_isPaneSplitter)
+        {
+            _DOMDividerElements[_drawingDivider].style.backgroundColor = "#A5A5A5";
+            _DOMDividerElements[_drawingDivider].style.backgroundImage = "";
+        }
+        else
+        {
+            _DOMDividerElements[_drawingDivider].style.backgroundColor = "";
+            _DOMDividerElements[_drawingDivider].style.backgroundImage = "url('"+_dividerImagePath+"')";
+        }
     }    
         
     CPDOMDisplayServerSetStyleLeftTop(_DOMDividerElements[_drawingDivider], NULL, _CGRectGetMinX(aRect), _CGRectGetMinY(aRect));
     CPDOMDisplayServerSetStyleSize(_DOMDividerElements[_drawingDivider], _CGRectGetWidth(aRect), _CGRectGetHeight(aRect));
-    
-    if (_isPaneSplitter)
-    {
-        _DOMDividerElements[_drawingDivider].style.backgroundColor = "#A5A5A5";
-        _DOMDividerElements[_drawingDivider].style.backgroundImage = "";
-    }
-    else
-    {
-        _DOMDividerElements[_drawingDivider].style.backgroundColor = "";
-        _DOMDividerElements[_drawingDivider].style.backgroundImage = "url('"+_dividerImagePath+"')";
-    }
 #endif
 }
 
@@ -305,14 +317,11 @@ var CPSplitViewHorizontalImage = nil,
         }
     }
     
-    else if (type == CPLeftMouseDragged)
+    else if (type == CPLeftMouseDragged && _currentDivider != CPNotFound)
     {
-        if (_currentDivider != CPNotFound)
-        {
-            var point = [self convertPoint:[anEvent locationInWindow] fromView:nil];
-
-            [self setPosition:(point[_originComponent] + _initialOffset) ofDividerAtIndex:_currentDivider];
-        }
+        var point = [self convertPoint:[anEvent locationInWindow] fromView:nil];
+        
+        [self setPosition:(point[_originComponent] + _initialOffset) ofDividerAtIndex:_currentDivider];
     }
     
     [CPApp setTarget:self selector:@selector(trackDivider:) forNextEventMatchingMask:CPLeftMouseDraggedMask | CPLeftMouseUpMask untilDate:nil inMode:nil dequeue:YES];
@@ -393,21 +402,23 @@ var CPSplitViewHorizontalImage = nil,
 
     [self _postNotificationWillResize];
     
-    var frame = CGRectCreateCopy([self frame]);
+    var frame = [self frame];
     
-    var count = [_subviews count];
-    for (var i = 0; i < count; i++)
+    var index = 0,
+        count = [_subviews count],
+        dividerThickness = [self dividerThickness];
+    
+    for (; index < count; ++index)
     {
-        var view = [_subviews objectAtIndex:i],
+        var view = _subviews[index],
             newFrame = CGRectCreateCopy(frame);
         
-        if (i + 1 == count)
+        if (index + 1 == count)
             newFrame.size[_sizeComponent] = frame.size[_sizeComponent] - newFrame.origin[_originComponent];
         else
             newFrame.size[_sizeComponent] = frame.size[_sizeComponent] * ([view frame].size[_sizeComponent] / oldSize[_sizeComponent]);
     
-        frame.origin[_originComponent] += newFrame.size[_sizeComponent];
-        frame.origin[_originComponent] += [self dividerThickness];
+        frame.origin[_originComponent] += newFrame.size[_sizeComponent] + dividerThickness;
         
         [view setFrame:newFrame];
     }
