@@ -100,18 +100,18 @@ var CPSharedDocumentController = nil;
 */
 - (void)openUntitledDocumentOfType:(CPString)aType display:(BOOL)shouldDisplay
 {
-    var document = [self makeUntitledDocumentOfType:aType error:nil];
+    var theDocument = [self makeUntitledDocumentOfType:aType error:nil];
     
-    if (document)
-        [self addDocument:document];
+    if (theDocument)
+        [self addDocument:theDocument];
     
     if (shouldDisplay)
     {
-        [document makeWindowControllers];
-        [document showWindows];
+        [theDocument makeWindowControllers];
+        [theDocument showWindows];
     }
         
-    return document;
+    return theDocument;
 }
 
 /*

@@ -368,7 +368,7 @@ var DOMElementPrototype         = nil,
     
     [aSubview removeFromSuperview];
     
-    [aView _insertSubview:aView atIndex:index];
+    [self _insertSubview:aView atIndex:index];
 }
 
 /* @ignore */

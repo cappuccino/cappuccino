@@ -26,6 +26,7 @@ import <Foundation/CPURLRequest.j>
 
 import "CPCustomView.j"
 import "_CPCibCustomObject.j"
+import "_CPCibKeyedUnarchiver.j"
 import "_CPCibObjectData.j"
 import "_CPCibWindowTemplate.j"
 
@@ -51,7 +52,7 @@ var CPCibObjectDataKey  = @"CPCibObjectDataKey";
 
 - (BOOL)instantiateCibWithExternalNameTable:(CPDictionary)anExternalNameTable
 {
-    var unarchiver = [[CPKeyedUnarchiver alloc] initForReadingWithData:_data],
+    var unarchiver = [[_CPCibKeyedUnarchiver alloc] initForReadingWithData:_data],
         objectData = [unarchiver decodeObjectForKey:CPCibObjectDataKey];
 
     if (!objectData || ![objectData isKindOfClass:[_CPCibObjectData class]])

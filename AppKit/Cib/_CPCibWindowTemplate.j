@@ -65,7 +65,7 @@ var _CPCibWindowTemplateMinSizeKey          = @"_CPCibWindowTemplateMinSizeKey",
     [aCoder encodeObject:_windowView forKey:_CPCibWindowTemplateWindowViewKey];
 }
 
-- (id)awakeAfterUsingCoder:(CPCoder)aCoder
+- (id)_cibInstantiate
 {
     var windowClass = CPClassFromString(_windowClass);
     
