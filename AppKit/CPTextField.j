@@ -105,6 +105,7 @@ var _CPTextFieldSquareBezelColor    = nil;
     BOOL                    _isSelectable;
     
     id                      _value;
+    id                      _placeholderString;
     
     CPLineBreakMode         _lineBreakMode;
 #if PLATFORM(DOM)
@@ -144,7 +145,8 @@ var _CPTextFieldSquareBezelColor    = nil;
     if (self)
     {
         _value = @"";
-        
+        _placeholderString = @"";
+
 #if PLATFORM(DOM)
         _DOMTextElement = document.createElement("div");
         _DOMTextElement.style.position = "absolute";
@@ -167,8 +169,7 @@ var _CPTextFieldSquareBezelColor    = nil;
 // Setting the Bezel Style
 /*
     Sets whether the textfield will have a bezeled border.
-    @param shouldBeBezeled <code>YES</code> means the textfield
-    will draw a bezeled border
+    @param shouldBeBezeled <code>YES</code> means the textfield will draw a bezeled border
 */
 - (void)setBezeled:(BOOL)shouldBeBezeled
 {
@@ -181,8 +182,7 @@ var _CPTextFieldSquareBezelColor    = nil;
 }
 
 /*
-    Returns <code>YES</code> if the textfield draws a
-    bezeled border.
+    Returns <code>YES</code> if the textfield draws a bezeled border.
 */
 - (BOOL)isBezeled
 {
@@ -213,8 +213,7 @@ var _CPTextFieldSquareBezelColor    = nil;
 
 /*
     Sets whether the textfield will have a border drawn.
-    @param shouldBeBordered <code>YES</code> makes the
-    textfield draw a border
+    @param shouldBeBordered <code>YES</code> makes the textfield draw a border
 */
 - (void)setBordered:(BOOL)shouldBeBordered
 {
@@ -227,8 +226,7 @@ var _CPTextFieldSquareBezelColor    = nil;
 }
 
 /*
-    Returns <code>YES</code> if the textfield has
-    a border.
+    Returns <code>YES</code> if the textfield has a border.
 */
 - (BOOL)isBordered
 {
@@ -264,11 +262,13 @@ var _CPTextFieldSquareBezelColor    = nil;
         [self setBackgroundColor:nil];
 }
 
+/* @ignore */
 - (BOOL)acceptsFirstResponder
 {
     return _isEditable;
 }
 
+/* @ignore */
 - (BOOL)becomeFirstResponder
 {
     var string = [self stringValue];
@@ -283,12 +283,12 @@ var _CPTextFieldSquareBezelColor    = nil;
     element.style.font = _DOMElement.style.font;
     element.style.zIndex = 1000;
     element.style.width = CGRectGetWidth([self bounds]) - 3.0 + "px";
-//    element.style.left = _DOMTextElement.style.left;
-//    element.style.top = _DOMTextElement.style.top;
+    //element.style.left = _DOMTextElement.style.left;
+    //element.style.top = _DOMTextElement.style.top;
       
     _DOMElement.appendChild(element);
     window.setTimeout(function() { element.focus(); }, 0.0);
-//    element.onblur = function() { objj_debug_print_backtrace(); }
+    //element.onblur = function() { objj_debug_print_backtrace(); }
     //element.select();
     
     element.onkeypress = function(aDOMEvent) 
@@ -309,12 +309,17 @@ var _CPTextFieldSquareBezelColor    = nil;
         } 
     };
     
+    // If current value is the placeholder value, remove it to allow user to update.
+    if ([_value lowercaseString] == [[self placeholderString] lowercaseString])
+        [self setStringValue:@""];    
+
     [[CPDOMWindowBridge sharedDOMWindowBridge] _propagateCurrentDOMEvent:YES];
 #endif
 
     return YES;
 }
 
+/* @ignore */
 - (BOOL)resignFirstResponder
 {
 #if PLATFORM(DOM)
@@ -322,19 +327,25 @@ var _CPTextFieldSquareBezelColor    = nil;
     
     _DOMElement.removeChild(element);
     [self setStringValue:element.value];
-#endif
 
+    // If textfield has no value, then display the placeholderValue
+    if (!_value)
+        [self setStringValue:[self placeholderString]];
+
+#endif
     return YES;
 }
 
+/* 
+    Sets whether or not the receiver text field can be edited
+*/
 - (void)setEditable:(BOOL)shouldBeEditable
 {
     _isEditable = shouldBeEditable;
 }
 
 /*
-    Returns <code>YES</code> if the textfield is currently
-    editable by the user.
+    Returns <code>YES</code> if the textfield is currently editable by the user.
 */
 - (BOOL)isEditable
 {
@@ -351,8 +362,7 @@ var _CPTextFieldSquareBezelColor    = nil;
 }
 
 /*
-    Returns <code>YES</code> if the field's text is
-    selectable by the user.
+    Returns <code>YES</code> if the field's text is selectable by the user.
 */
 - (BOOL)isSelectable
 {
@@ -360,8 +370,7 @@ var _CPTextFieldSquareBezelColor    = nil;
 }
 
 /*
-    Sets whether the field's text is selectable
-    by the user.
+    Sets whether the field's text is selectable by the user.
     @param aFlag <code>YES</code> makes the text selectable
 */
 - (void)setSelectable:(BOOL)aFlag
@@ -458,6 +467,23 @@ var _CPTextFieldSquareBezelColor    = nil;
 }
 
 /*
+    Returns the receiver's placeholder string
+*/
+- (CPString)placeholderString
+{
+    return _placeholderString;
+}
+
+/*
+    Sets a placeholder string for the receiver.  The placeholder is displayed until editing begins,
+    and after editing ends, if the text field has an empty string value
+*/
+-(void)setPlaceholderString:(CPString)aStringValue
+{
+    _placeholderString = aStringValue;
+}
+
+/*
     Adjusts the text field's size in the application.
 */
 - (void)sizeToFit
@@ -533,10 +559,8 @@ var CPTextFieldIsSelectableKey  = @"CPTextFieldIsSelectableKey",
 }
 
 /*
-    Encodes the data of this textfield into the
-    provided coder.
-    @param aCoder the coder into which the data
-    will be written
+    Encodes the data of this textfield into the provided coder.
+    @param aCoder the coder into which the data will be written
 */
 - (void)encodeWithCoder:(CPCoder)aCoder
 {
