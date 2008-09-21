@@ -1,8 +1,8 @@
 /*
- * NSCustomView.j
- * AppKit
+ * NSSplitView.j
+ * nib2cib
  *
- * Created by Francisco Tolmasky.
+ * Created by Thomas Robinson.
  * Copyright 2008, 280 North, Inc.
  *
  * This library is free software; you can redistribute it and/or
@@ -20,39 +20,36 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-import <AppKit/CPCustomView.j>
-
-import "NSView.j"
+import <AppKit/CPSplitView.j>
 
 
-var _CPCibCustomViewClassNameKey    = @"_CPCibCustomViewClassNameKey";
+@implementation CPSplitView (CPCoding)
 
-@implementation NSCustomView : CPView
+- (id)NS_initWithCoder:(CPCoder)aCoder
 {
-    CPString    _className;
-}
-
-- (id)initWithCoder:(CPCoder)aCoder
-{
-    self = [super NS_initWithCoder:aCoder];
-    
-    if (self)
-        _className = [aCoder decodeObjectForKey:@"NSClassName"];
+    if (self = [super NS_initWithCoder:aCoder])
+    {
+        _isVertical = [aCoder decodeBoolForKey:@"NSIsVertical"];
+        _isPaneSplitter = [aCoder decodeIntForKey:@"NSDividerStyle"] == 2 ? YES : NO;
+    }
     
     return self;
 }
 
-- (void)encodeWithCoder:(CPCoder)aCoder
+@end
+
+@implementation NSSplitView : CPSplitView
 {
-    [super encodeWithCoder:aCoder];
-    
-    [aCoder encodeObject:CP_NSMapClassName(_className) forKey:_CPCibCustomViewClassNameKey];
 }
 
-- (CPString)classForKeyedArchiver
+- (id)initWithCoder:(CPCoder)aCoder
 {
-    return [_CPCibCustomView class];
+    return [self NS_initWithCoder:aCoder];
+}
+
+- (Class)classForKeyedArchiver
+{
+    return [CPSplitView class];
 }
 
 @end
-

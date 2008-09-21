@@ -23,9 +23,24 @@
 import "NSButton.j"
 import "NSCell.j"
 import "NSControl.j"
+import "NSCustomObject.j"
 import "NSCustomView.j"
 import "NSFont.j"
 import "NSIBObjectData.j"
+import "NSNibConnector.j"
 import "NSResponder.j"
 import "NSSlider.j"
 import "NSView.j"
+import "NSWindowTemplate.j"
+import "NSSplitView.j"
+
+function CP_NSMapClassName(aClassName)
+{
+    if (aClassName == @"NSView")
+        return "CPView";
+
+    if (aClassName == @"NSWindow")
+        return @"CPWindow";
+    
+    return aClassName;
+}

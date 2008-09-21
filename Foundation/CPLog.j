@@ -2,7 +2,7 @@
  * CPLog.j
  * Foundation
  *
- * Created by Francisco Tolmasky.
+ * Created by Thomas Robinson.
  * Copyright 2008, 280 North, Inc.
  *
  * This library is free software; you can redistribute it and/or
@@ -34,8 +34,6 @@ for (var i = 0; i < CPLogLevels.length; i++)
 var _CPLogRegistrations = {};
 
 // helpers:
-var _randomInteger = function(max) { return Math.round(Math.random() * (typeof(max) != "undefined" ? max : (1 << 30))); }
-var _randomArrayElement = function(element) { return element[_randomInteger(element.length)]; }
 
 var _CPFormatLogMessage = function(aString, aLevel, aTitle)
 {
@@ -375,44 +373,11 @@ var _CPLogInitPopup = function(logWindow)
     }, false);
 }
 
-// CPLogServer sends log messages to the server
-//var _CPLogServerBatch = true;
-//var _CPLogServerSessionID = _randomInteger();
-//function CPLogServer(aString, aLevel, aTitle)
-//{
-//    var entry = { title: aTitle, message: aString, level: aLevel, timestamp: new Date().getTime() }
-//    
-//    if (_CPLogServerBatch)
-//    {
-//    }
-//    else
-//    {
-//        
-//    }
-//}
-//
-//function _CPLogServerSubmit()
-//{
-//    
-//}
-
-// Testing purposes:
-
-var lorem = "Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Maecenas fermentum, elit non lobortis cursus, orci velit suscipit est, id mollis turpis mi eget orci. Ut aliquam sollicitudin metus. Mauris at sapien sed sapien congue iaculis. Nulla lorem urna, bibendum id, laoreet iaculis, nonummy eget, massa. Phasellus ullamcorper commodo velit.";
-
-function CPLogTest(n) {
-    for(var i=0;i<n;i++) {
-        var start = _randomInteger(lorem.length);
-        var length = _randomInteger(lorem.length-start);
-        CPLog(lorem.substring(start, start+length), _randomArrayElement(CPLogLevels));
-    }
-}
-
-
-if (NO)
+// override toString on Objective-J objects so we print the actual description of the object instead of [Object object]
+objj_object.prototype.toString = function()
 {
-    if (window.open)
-        CPLogRegister(CPLogPopup);
-    else if (typeof print != undefined)
-        CPLogRegister(CPLogPrint);
+    if (this.isa && class_getInstanceMethod(this.isa, "description") != NULL)
+        return [this description]
+    else
+        return String(this) + " (-description not implemented)";
 }

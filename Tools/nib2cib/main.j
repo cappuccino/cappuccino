@@ -30,6 +30,7 @@ import "NSAppKit.j"
 importClass(java.io.FileWriter);
 importClass(java.io.BufferedWriter);
 
+CPLogRegister(CPLogPrint);
 
 function exec(command)
 {

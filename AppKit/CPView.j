@@ -122,6 +122,8 @@ var DOMElementPrototype         = nil,
     
     CPGraphicsContext   _graphicsContext;
     
+    int                 _tag;
+    
     CGRect              _frame;
     CGRect              _bounds;
     CGAffineTransform   _boundsTransform;
@@ -193,6 +195,11 @@ var DOMElementPrototype         = nil,
     _CPViewNotificationCenter = [CPNotificationCenter defaultCenter];
 }
 
+- (id)init
+{
+    return [self initWithFrame:CGRectMakeZero()];
+}
+
 /*
     Initializes the receiver for usage with the specified bounding rectangle
     @return the initialized view
@@ -207,6 +214,8 @@ var DOMElementPrototype         = nil,
             height = _CGRectGetHeight(aFrame);
         
         _subviews = [];
+
+        _tag = -1;
 
         _frame = _CGRectMakeCopy(aFrame);
         _bounds = _CGRectMake(0.0, 0.0, width, height);
@@ -398,7 +407,7 @@ var DOMElementPrototype         = nil,
     
     [aSubview removeFromSuperview];
     
-    [aView _insertSubview:aView atIndex:index];
+    [self _insertSubview:aView atIndex:index];
 }
 
 /* @ignore */
@@ -496,6 +505,11 @@ var DOMElementPrototype         = nil,
         view = [view superview];
     
     return enclosingMenuItem;*/
+}
+
+- (int)tag
+{
+    return _tag;
 }
 
 /*
@@ -1699,6 +1713,7 @@ var CPViewAutoresizingMaskKey       = @"CPViewAutoresizingMask",
     CPViewOpacityKey                = @"CPViewOpacityKey",
     CPViewSubviewsKey               = @"CPViewSubviewsKey",
     CPViewSuperviewKey              = @"CPViewSuperviewKey",
+    CPViewTagKey                    = @"CPViewTagKey",
     CPViewWindowKey                 = @"CPViewWindowKey";
 
 @implementation CPView (CPCoding)
@@ -1718,13 +1733,19 @@ var CPViewAutoresizingMaskKey       = @"CPViewAutoresizingMask",
     _DOMElement = DOMElementPrototype.cloneNode(false);
 #endif
 
+    // Also decode these "early".
+    _frame = [aCoder decodeRectForKey:CPViewFrameKey];
+    _bounds = [aCoder decodeRectForKey:CPViewBoundsKey];
+
     self = [super initWithCoder:aCoder];
     
     if (self)
     {
-        _frame = [aCoder decodeRectForKey:CPViewFrameKey];
-        _bounds = [aCoder decodeRectForKey:CPViewBoundsKey];
-
+        _tag = -1;
+        
+        if ([aCoder containsValueForKey:CPViewTagKey])
+            _tag = [aCoder decodeIntForKey:CPViewTagKey];
+        
         _window = [aCoder decodeObjectForKey:CPViewWindowKey];
         _subviews = [aCoder decodeObjectForKey:CPViewSubviewsKey];
         _superview = [aCoder decodeObjectForKey:CPViewSuperviewKey];
@@ -1750,6 +1771,7 @@ var CPViewAutoresizingMaskKey       = @"CPViewAutoresizingMask",
         for (; index < count; ++index)
         {
             CPDOMDisplayServerAppendChild(_DOMElement, _subviews[index]._DOMElement);
+            //_subviews[index]._superview = self;
         }
 #endif
         _displayHash = [self hash];
@@ -1767,6 +1789,9 @@ var CPViewAutoresizingMaskKey       = @"CPViewAutoresizingMask",
 - (void)encodeWithCoder:(CPCoder)aCoder
 {
     [super encodeWithCoder:aCoder];
+    
+    if (_tag != -1)
+        [aCoder encodeInt:_tag forKey:CPViewTagKey];
     
     [aCoder encodeRect:_frame forKey:CPViewFrameKey];
     [aCoder encodeRect:_bounds forKey:CPViewBoundsKey];

@@ -25,8 +25,10 @@ import <Foundation/CPURLConnection.j>
 import <Foundation/CPURLRequest.j>
 
 import "CPCustomView.j"
+import "_CPCibCustomObject.j"
+import "_CPCibKeyedUnarchiver.j"
 import "_CPCibObjectData.j"
-
+import "_CPCibWindowTemplate.j"
 
 CPCibOwner              = @"CPCibOwner",
 CPCibTopLevelObjects    = @"CPCibTopLevelObjects";
@@ -50,26 +52,16 @@ var CPCibObjectDataKey  = @"CPCibObjectDataKey";
 
 - (BOOL)instantiateCibWithExternalNameTable:(CPDictionary)anExternalNameTable
 {
-    var unarchiver = [[CPKeyedUnarchiver alloc] initForReadingWithData:_data],
+    var unarchiver = [[_CPCibKeyedUnarchiver alloc] initForReadingWithData:_data],
         objectData = [unarchiver decodeObjectForKey:CPCibObjectDataKey];
 
     if (!objectData || ![objectData isKindOfClass:[_CPCibObjectData class]])
         return NO;
     
+    [objectData establishConnectionsWithExternalNameTable:anExternalNameTable];
+    
     var owner = [anExternalNameTable objectForKey:CPCibOwner],
         topLevelObjects = [anExternalNameTable objectForKey:CPCibTopLevelObjects];
-    
-        var objects = unarchiver._objects,
-        count = [objects count];
-    
-    // The order in which objects receive the awakeFromCib message is not guaranteed.
-    while (count--)
-    {
-        var object = objects[count];
-        
-        if ([object isMemberOfClass:[CPView class]])
-            return object;
-    }
     /*
 //    [objectData establishConnectionsWithOwner:owner topLevelObjects:topLevelObjects];
 //    [objectData cibInstantiateWithOwner:owner topLevelObjects:topLevelObjects];

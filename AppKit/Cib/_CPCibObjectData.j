@@ -24,47 +24,51 @@ import <Foundation/CPArray.j>
 import <Foundation/CPObject.j>
 import <Foundation/CPString.j>
 
+import "CPCib.j"
+import "_CPCibConnector.j"
+
 
 @implementation _CPCibObjectData : CPObject
 {
-    CPArray         _namesKeys;
-    CPArray         _namesValues;
+    CPArray             _namesKeys;
+    CPArray             _namesValues;
     
-    CPArray         _accessibilityConnectors;
-    CPArray         _accessibilityOidsKeys;
-    CPArray         _accessibilityOidsValues;
+    CPArray             _accessibilityConnectors;
+    CPArray             _accessibilityOidsKeys;
+    CPArray             _accessibilityOidsValues;
     
-    CPArray         _classesKeys;
-    CPArray         _classesValues;
+    CPArray             _classesKeys;
+    CPArray             _classesValues;
     
-    CPArray         _connections;
+    CPArray             _connections;
     
-    id              _fontManager;
+    id                  _fontManager;
     
-    CPString        _framework;
+    CPString            _framework;
     
-    int             _nextOid;
+    int                 _nextOid;
     
-    CPArray         _objectsKeys;
-    CPArray         _objectsValues;
+    CPArray             _objectsKeys;
+    CPArray             _objectsValues;
     
-    CPArray         _oidKeys;
-    CPArray         _oidValues;
+    CPArray             _oidKeys;
+    CPArray             _oidValues;
     
-    CPCustomObject  _rootObject;
+    _CPCibCustomObject  _fileOwner;
     
-    CPSet           _visibleWindows;
+    CPSet               _visibleWindows;
 }
-/*
+
 - (CPArray)topLevelObjects
 {
-    var count = [_objectsValues count];
+    var count = [_objectsValues count],
+        topLevelObjects = [];
     
     while (count--)
     {
         var eachObject = _objectsValues[count];
         
-        if(eachObject == _fileOwner)
+        if (eachObject == _fileOwner)
         {
             var anObject = _objectsKeys[count];
             
@@ -75,7 +79,6 @@ import <Foundation/CPString.j>
     
     return topLevelObjects;
 }
-*/
 
 @end
 
@@ -103,7 +106,7 @@ var _CPCibObjectDataNamesKeysKey                = @"_CPCibObjectDataNamesKeysKey
     _CPCibObjectDataOidKeysKey                  = @"_CPCibObjectDataOidKeysKey",
     _CPCibObjectDataOidValuesKey                = @"_CPCibObjectDataOidValuesKey",
     
-    _CPCibObjectDataRootObjectKey               = @"_CPCibObjectDataRootObjectKey",
+    _CPCibObjectDataFileOwnerKey                = @"_CPCibObjectDataFileOwnerKey",
     _CPCibObjectDataVisibleWindowsKey           = @"_CPCibObjectDataVisibleWindowsKey";
 
 @implementation _CPCibObjectData (CPCoding)
@@ -125,7 +128,6 @@ var _CPCibObjectDataNamesKeysKey                = @"_CPCibObjectDataNamesKeysKey
         _classesValues = [aCoder decodeObjectForKey:_CPCibObjectDataClassesValuesKey];
 
         _connections = [aCoder decodeObjectForKey:_CPCibObjectDataConnectionsKey];
-        
         //id              _fontManager;
         
         _framework = [aCoder decodeObjectForKey:_CPCibObjectDataFrameworkKey];
@@ -138,7 +140,7 @@ var _CPCibObjectDataNamesKeysKey                = @"_CPCibObjectDataNamesKeysKey
         _oidKeys = [aCoder decodeObjectForKey:_CPCibObjectDataOidKeysKey];
         _oidValues = [aCoder decodeObjectForKey:_CPCibObjectDataOidValuesKey];
 
-        _rootObject = [aCoder decodeObjectForKey:_CPCibObjectDataRootObjectKey];
+        _fileOwner = [aCoder decodeObjectForKey:_CPCibObjectDataFileOwnerKey];
     
     //    CPSet           _visibleWindows;
     }
@@ -172,10 +174,25 @@ var _CPCibObjectDataNamesKeysKey                = @"_CPCibObjectDataNamesKeysKey
     [aCoder encodeObject:_oidKeys forKey:_CPCibObjectDataOidKeysKey];
     [aCoder encodeObject:_oidValues forKey:_CPCibObjectDataOidValuesKey];
     
-    [aCoder encodeObject:_rootObject forKey:_CPCibObjectDataRootObjectKey];
+    [aCoder encodeObject:_fileOwner forKey:_CPCibObjectDataFileOwnerKey];
 //    CPCustomObject  _fileOwner;
 
 //    CPSet           _visibleWindows;
+}
+
+- (void)establishConnectionsWithExternalNameTable:(CPDictionary)anExternalNameTable
+{
+    var index = 0,
+        count = _connections.length,
+        cibOwner = [anExternalNameTable objectForKey:CPCibOwner];
+
+    for (; index < count; ++index)
+    {
+        var connection = _connections[index];
+        
+        [connection replaceObject:_fileOwner withObject:cibOwner];
+        [connection establishConnection];
+    }
 }
 
 @end

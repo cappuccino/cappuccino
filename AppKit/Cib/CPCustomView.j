@@ -1,5 +1,5 @@
 /*
- * CPCustomView.j
+ * _CPCibCustomView.j
  * AppKit
  *
  * Created by Francisco Tolmasky.
@@ -22,76 +22,75 @@
 
 import "CPView.j"
 
-var CPViewAutoresizingMaskKey       = @"CPViewAutoresizingMask",
-    CPViewAutoresizesSubviewsKey    = @"CPViewAutoresizesSubviews",
-    CPViewBackgroundColorKey        = @"CPViewBackgroundColor",
-    CPViewBoundsKey                 = @"CPViewBoundsKey",
-    CPViewFrameKey                  = @"CPViewFrameKey",
-    CPViewHitTestsKey               = @"CPViewHitTestsKey",
-    CPViewIsHiddenKey               = @"CPViewIsHiddenKey",
-    CPViewOpacityKey                = @"CPViewOpacityKey",
-    CPViewSubviewsKey               = @"CPViewSubviewsKey",
-    CPViewSuperviewKey              = @"CPViewSuperviewKey",
-    CPViewWindowKey                 = @"CPViewWindowKey";
 
 /* @ignore */
 
-@implementation CPCustomView : CPView
+@implementation _CPCibCustomView : CPView
 {
     CPString    _className;
 }
 
 @end
 
-var CPCustomViewClassNameKey    = @"CPCustomViewClassNameKey";
+var _CPCibCustomViewClassNameKey    = @"_CPCibCustomViewClassNameKey";
 
-@implementation CPCustomView (CPCoding)
+@implementation _CPCibCustomView (CPCoding)
 
 - (id)initWithCoder:(CPCoder)aCoder
 {
-   _className = [aCoder decodeObjectForKey:CPCustomViewClassNameKey];
+    self = [super initWithCoder:aCoder];
+
+    if (self)
+        _className = [aCoder decodeObjectForKey:_CPCibCustomViewClassNameKey];
+
+    return self;
+}
+
+- (void)encodeWithCoder:(CPCoder)aCoder
+{
+    [super encodeWithCoder:aCoder];
     
+    [aCoder encodeObject:_className forKey:_CPCibCustomViewClassNameKey];
+}
+
+- (id)_cibInstantiate
+{
     var theClass = CPClassFromString(_className);
     
     // If we don't have this class, just use CPView.
     // FIXME: Should we instead throw an exception?
     if (!theClass)
-        theClass = [CPView class];
-
-    var frame = [aCoder decodeRectForKey:CPViewFrameKey];
-
-    // If this is just a "CPView", don't bother with any funny business, just go ahead and create it with initWithCoder:
-    if (theClass == [CPView class])
-        self = [[CPView alloc] initWithFrame:frame];
+    {
+        CPLog("Unknown class \"" + _className + "\" in cib file, using CPView instead.");
         
-    if (self)
-    {    
-        [self _setWindow:[aCoder decodeObjectForKey:CPViewWindowKey]];
+        theClass = [CPView class];
+    }
+
+    var view = [[theClass alloc] initWithFrame:[self frame]];
+        
+    if (view)
+    {
+        [view setBounds:[self bounds]];
         
         // Since the object replacement logic hasn't had a chance to kick in yet, we need to do it manually:
-        var subviews = [aCoder decodeObjectForKey:CPViewSubviewsKey],
+        var subviews = [self subviews],
             index = 0,
             count = subviews.length;
         
         for (; index < count; ++index)
-        {
-            // This is a bogus superview "CPCustomView".
-            subviews[index]._superview = nil;
-            
-            [self addSubview:subviews[index]];
-        }
-        
-        _autoresizingMask = [aCoder decodeIntForKey:CPViewAutoresizingMaskKey];
-        _autoresizesSubviews = [aCoder decodeBoolForKey:CPViewAutoresizesSubviewsKey];
-            
-        _hitTests = [aCoder decodeObjectForKey:CPViewHitTestsKey];
-        _isHidden = [aCoder decodeObjectForKey:CPViewIsHiddenKey];
-        _opacity = [aCoder decodeIntForKey:CPViewOpacityKey];
+            [view addSubview:subviews[index]];
+
+        [view setAutoresizingMask:[self autoresizingMask]];
+        [view setAutoresizesSubviews:[self autoresizesSubviews]];
     
-        [self setBackgroundColor:[aCoder decodeObjectForKey:CPViewBackgroundColorKey]];
+        [view setHitTests:[self hitTests]];
+        [view setHidden:[self isHidden]];
+        [view setAlphaValue:[self alphaValue]];
+    
+        [view setBackgroundColor:[self backgroundColor]];
     }
     
-    return self;
+    return view;
 }
 
 @end
