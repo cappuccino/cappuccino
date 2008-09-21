@@ -63,10 +63,9 @@ import "_CPCibConnector.j"
 {
     var count = [_objectsValues count],
         topLevelObjects = [];
-    var str = "";
-    str2 = " ";
+    
     while (count--)
-    {str2 += _namesValues[count] +"\n";
+    {
         var eachObject = _objectsValues[count];
         
         if (eachObject == _fileOwner)
@@ -74,12 +73,10 @@ import "_CPCibConnector.j"
             var anObject = _objectsKeys[count];
             
             if (anObject != _fileOwner)
-            {str += _namesValues[count] + "\n";
-                anObject.realname = _namesValues[count];str2+='X'+'\n';
-                topLevelObjects.push(anObject);}
+                topLevelObjects.push(anObject);
         }
     }
-    alert(str2+'\n'+str);
+    
     return topLevelObjects;
 }
 
