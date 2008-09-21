@@ -6,29 +6,32 @@ import <Foundation/CPKeyedUnarchiver.j>
 {
 }
 
-- (id)decodeObjectForKey:(CPString)aKey
+- (id)initForReadingWithData:(CPData)data
 {
-    var object = [super decodeObjectForKey:aKey];
+    self = [super initForReadingWithData:data];
     
-    if ([object respondsToSelector:@selector(_cibInstantiate)])
-    {
-        var index = [[_plistObject objectForKey:aKey] objectForKey:_CPKeyedArchiverUIDKey],
-            processedObject = [object _cibInstantiate];
-            
-        if (processedObject != object)
-        {
-            object = processedObject;
-        
-            [self replaceObjectAtUID:index withObject:processedObject];
-        }
-    }
+    if (self)
+        [self setDelegate:self];
     
-    return object;
+    return self;
+}
+
+- (id)unarchiver:(CPKeyedUnarchiver)aKeyedUnarchiver didDecodeObject:(id)anObject
+{
+    if ([anObject respondsToSelector:@selector(_cibInstantiate)])
+        return [anObject _cibInstantiate];
+
+    return anObject;
 }
 
 - (void)replaceObjectAtUID:(int)aUID withObject:(id)anObject
 {
     _objects[aUID] = anObject;
+}
+
+- (id)objectAtUID:(int)aUID
+{
+    return _objects[aUID];
 }
 
 @end

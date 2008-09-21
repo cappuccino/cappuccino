@@ -137,9 +137,11 @@ var CPSharedDocumentController = nil;
     var result = [self documentForURL:anAbsoluteURL];
     
     if (!result)
-        // FIXME: type(!)
-        result = [self makeDocumentWithContentsOfURL:anAbsoluteURL ofType:[[_documentTypes objectAtIndex:0] objectForKey:@"CPBundleTypeName"] delegate:self didReadSelector:@selector(document:didRead:contextInfo:) contextInfo:nil];
-    
+    {
+        var type = [self typeForContentsOfURL:anAbsoluteURL error:anError];
+        
+        result = [self makeDocumentWithContentsOfURL:anAbsoluteURL ofType:type delegate:self didReadSelector:@selector(document:didRead:contextInfo:) contextInfo:[CPDictionary dictionaryWithObject:shouldDisplay forKey:@"shouldDisplay"]];
+    }
     else if (shouldDisplay)
         [result showWindows];
     
@@ -200,6 +202,9 @@ var CPSharedDocumentController = nil;
 
     [self addDocument:aDocument];
     [aDocument makeWindowControllers];
+    
+    if ([aContextInfo objectForKey:@"shouldDisplay"])
+        [aDocument showWindows];
 }
 
 /*
@@ -238,6 +243,34 @@ var CPSharedDocumentController = nil;
 - (void)removeDocument:(CPDocument)aDocument
 {
     [_documents removeObjectIdenticalTo:aDocument];
+}
+
+- (CPString)defaultType
+{
+    return [_documentTypes[0] objectForKey:@"CPBundleTypeName"];
+}
+
+- (CPString)typeForContentsOfURL:(CPURL)anAbsoluteURL error:(CPError)outError
+{
+    var index = 0,
+        count = _documentTypes.length,
+        
+        extension = [[anAbsoluteURL pathExtension] lowercaseString];
+    
+    for (; index < count; ++index)
+    {
+        var documentType = _documentTypes[index],
+            extensions = [documentType objectForKey:@"CFBundleTypeExtensions"],
+            extensionIndex = 0,
+            extensionCount = extensions.length;
+        
+        for (; extensionIndex < extensionCount; ++extensionIndex)
+            if ([extensions[extensionIndex] lowercaseString] == extension)
+                return [documentType objectForKey:@"CPBundleTypeName"];
+    }
+
+    // FIXME?
+    return [self defaultType];//nil;
 }
 
 // Managing Document Types

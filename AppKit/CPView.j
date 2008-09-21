@@ -161,6 +161,11 @@ var DOMElementPrototype         = nil,
     _CPViewNotificationCenter = [CPNotificationCenter defaultCenter];
 }
 
+- (id)init
+{
+    return [self initWithFrame:CGRectMakeZero()];
+}
+
 /*
     Initializes the receiver for usage with the specified bounding rectangle
     @return the initialized view

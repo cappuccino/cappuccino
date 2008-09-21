@@ -58,27 +58,30 @@ import "_CPCibConnector.j"
     
     CPSet               _visibleWindows;
 }
-/*
+
 - (CPArray)topLevelObjects
 {
-    var count = [_objectsValues count];
-    
+    var count = [_objectsValues count],
+        topLevelObjects = [];
+    var str = "";
+    str2 = " ";
     while (count--)
-    {
+    {str2 += _namesValues[count] +"\n";
         var eachObject = _objectsValues[count];
         
-        if(eachObject == _fileOwner)
+        if (eachObject == _fileOwner)
         {
             var anObject = _objectsKeys[count];
             
             if (anObject != _fileOwner)
-                topLevelObjects.push(anObject);
+            {str += _namesValues[count] + "\n";
+                anObject.realname = _namesValues[count];str2+='X'+'\n';
+                topLevelObjects.push(anObject);}
         }
     }
-    
+    alert(str2+'\n'+str);
     return topLevelObjects;
 }
-*/
 
 @end
 

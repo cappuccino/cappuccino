@@ -200,7 +200,7 @@ var CPDocumentUntitledCount = 0;
 - (CPData)dataOfType:(CPString)aType error:({CPError})anError
 {
     [CPException raise:CPUnsupportedMethodException
-                reason:"This method must be overridden by the document"];
+                reason:"dataOfType:error: must be overridden by the document subclass."];
 }
 
 /*
@@ -215,7 +215,7 @@ var CPDocumentUntitledCount = 0;
 - (void)readFromData:(CPData)aData ofType:(CPString)aType error:(CPError)anError
 {
     [CPException raise:CPUnsupportedMethodException
-                reason:"This method must be overridden by the document"];
+                reason:"readFromData:ofType: must be overridden by the document subclass."];
 }
 
 // Creating and managing window controllers
