@@ -107,11 +107,11 @@ if (typeof readFile == "undefined") {
         	var f = new Packages.java.io.File(path);
 	
 	        if (!f.canRead()) {
-	            //alert("can't read: " + f.path)
+	            alert("can't read: " + f.path)
 	            return "";
 	        }
 	
-	        //alert("reading: " + f.getAbsolutePath());
+	        alert("reading: " + f.getAbsolutePath());
 	
         	var fis = new Packages.java.io.FileInputStream(f);
         	
@@ -119,12 +119,11 @@ if (typeof readFile == "undefined") {
         	fis.read(b);
         	
         	fis.close();
-	
-            //return String(new Packages.java.lang.String(b));
+
             if (characterCoding)
-                return new Packages.java.lang.String(b, characterCoding);
+                return String(new Packages.java.lang.String(b, characterCoding));
             else
-                return new Packages.java.lang.String(b);
+                return String(new Packages.java.lang.String(b));
         }
     }
     else {
@@ -451,9 +450,9 @@ XMLHttpRequest.prototype.send = function(body) {
 	
 	try {
 		this.responseText = readFile(this.url);
-		alert("xhr: " + this.url);
+		alert("xhr response:  " + this.url + " (length="+this.responseText.length+")");
 	} catch (e) {
-	    alert("read exception: " + this.url);
+	    alert("xhr exception: " + this.url);
     	this.responseText = "";
 		this.responseXML = null;
 	}    
@@ -467,7 +466,7 @@ XMLHttpRequest.prototype.send = function(body) {
 	    this.status = 200;
 	}
 	else {
-	    alert("empty file: " + this.url);
+	    alert("xhr empty:     " + this.url);
 	    this.status = 404;
 	}
 	
