@@ -283,9 +283,25 @@ if (typeof Packages != "undefined") {
 		}
 	};
 
-    var xhr_builder = Packages.javax.xml.parsers.DocumentBuilderFactory.newInstance().newDocumentBuilder();
-    xhr_builder.setErrorHandler(function(exception, methodName) {
-    	//print("xml error!");
+    var _documentBuilderFactory = Packages.javax.xml.parsers.DocumentBuilderFactory.newInstance();
+    // setValidating to false doesn't seem to prevent it from downloading the DTD, but lets do it anyway
+    _documentBuilderFactory.setValidating(false);
+    
+    _documentBuilder = _documentBuilderFactory.newDocumentBuilder();
+    // prevent the Java XML parser from downloading the plist DTD from Apple every time we parse a plist
+    _documentBuilder.setEntityResolver(new Packages.org.xml.sax.EntityResolver({
+        resolveEntity: function(publicId, systemId) {
+            //Packages.java.lang.System.out.println("publicId=" + publicId + " systemId=" + systemId);
+            
+            // TODO: return a local copy of the DTD?
+            if (String(systemId) == "http://www.apple.com/DTDs/PropertyList-1.0.dtd")
+                return new Packages.org.xml.sax.InputSource(new Packages.java.io.StringReader(""));
+                
+            return null;
+        } 
+    }));
+    // throw an exception on error
+    _documentBuilder.setErrorHandler(function(exception, methodName) {
     	throw exception;
     });
 
@@ -372,7 +388,7 @@ if (typeof Packages != "undefined") {
     }
     
     parseXMLString = function(string) {
-        return (Packages.javax.xml.parsers.DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(
+        return (_documentBuilder.parse(
             new Packages.org.xml.sax.InputSource(
                 new Packages.java.io.StringReader(string))).getDocumentElement());
     }
@@ -444,7 +460,7 @@ XMLHttpRequest.prototype.send = function(body) {
 	
 	if (this.responseText.length > 0) {
 		try {
-			this.responseXML = xhr_builder.parse(new Packages.org.xml.sax.InputSource(new Packages.java.io.StringReader(this.responseText)));
+			this.responseXML = _documentBuilder.parse(new Packages.org.xml.sax.InputSource(new Packages.java.io.StringReader(this.responseText)));
 		} catch (e) {
 			this.responseXML = null;
 		}
