@@ -31,10 +31,4 @@ import <AppKit/_CPCibCustomObject.j>
     return [_CPCibCustomObject class];
 }
 
-- (id)awakeAfterUsingCoder:(CPCoder)aCoder
-{
-    print("awaking from coder...");
-    return self;
-}
-
 @end

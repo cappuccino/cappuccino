@@ -46,11 +46,6 @@ import <AppKit/_CPCibWindowTemplate.j>
     return [self NS_initWithCoder:aCoder];
 }
 
-- (id)awakeAfterUsingCoder:(CPCoder)aCoder
-{
-    return self;
-}
-
 - (Class)classForKeyedArchiver
 {
     return [_CPCibWindowTemplate class];

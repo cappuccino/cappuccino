@@ -301,7 +301,7 @@ var CPResponderNextResponderKey = @"CPResponderNextResponderKey";
 */
 - (id)initWithCoder:(CPCoder)aCoder
 {
-    self = [self init];
+    self = [super init];
     
     if (self)
         _nextResponder = [aCoder decodeObjectForKey:CPResponderNextResponderKey];

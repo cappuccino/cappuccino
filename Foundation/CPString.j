@@ -553,7 +553,7 @@ var CPStringHashes      = new objj_dictionary();
 */
 - (CPString)pathExtension
 {
-    return substr(lastIndexOf('.')+1);
+    return substr(lastIndexOf('.') + 1);
 }
 
 /*

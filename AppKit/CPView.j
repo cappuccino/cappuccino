@@ -37,13 +37,47 @@ import "CPGraphicsContext.j"
 #include "CoreGraphics/CGGeometry.h"
 #include "Platform/DOM/CPDOMDisplayServer.h"
 
-
+/*
+    @global
+    @group CPViewAutoresizingMasks
+    The default resizingMask, the view will not resize or reposition itself.
+*/
 CPViewNotSizable    = 0;
+/*
+    @global
+    @group CPViewAutoresizingMasks
+    Allow for flexible space on the left hand side of the view.
+*/
 CPViewMinXMargin    = 1;
+/*
+    @global
+    @group CPViewAutoresizingMasks
+    The view should grow and shrink horizontally with its parent view.
+*/
 CPViewWidthSizable  = 2;
+/*
+    @global
+    @group CPViewAutoresizingMasks
+    Allow for flexible space to the right hand side of the view.
+*/
 CPViewMaxXMargin    = 4;
+/*
+    @global
+    @group CPViewAutoresizingMasks
+    Allow for flexible space above the view.
+*/
 CPViewMinYMargin    = 8;
+/*
+    @global
+    @group CPViewAutoresizingMasks
+    The view should grow and shrink vertically with its parent view.
+*/
 CPViewHeightSizable = 16;
+/*
+    @global
+    @group CPViewAutoresizingMasks
+    Allow for flexible space below the view.
+*/
 CPViewMaxYMargin    = 32;
 
 CPViewBoundsDidChangeNotification   = @"CPViewBoundsDidChangeNotification";
@@ -87,6 +121,8 @@ var DOMElementPrototype         = nil,
     CPArray             _subviews;
     
     CPGraphicsContext   _graphicsContext;
+    
+    int                 _tag;
     
     CGRect              _frame;
     CGRect              _bounds;
@@ -159,6 +195,11 @@ var DOMElementPrototype         = nil,
     _CPViewNotificationCenter = [CPNotificationCenter defaultCenter];
 }
 
+- (id)init
+{
+    return [self initWithFrame:CGRectMakeZero()];
+}
+
 /*
     Initializes the receiver for usage with the specified bounding rectangle
     @return the initialized view
@@ -173,6 +214,8 @@ var DOMElementPrototype         = nil,
             height = _CGRectGetHeight(aFrame);
         
         _subviews = [];
+
+        _tag = -1;
 
         _frame = _CGRectMakeCopy(aFrame);
         _bounds = _CGRectMake(0.0, 0.0, width, height);
@@ -364,7 +407,7 @@ var DOMElementPrototype         = nil,
     
     [aSubview removeFromSuperview];
     
-    [aView _insertSubview:aView atIndex:index];
+    [self _insertSubview:aView atIndex:index];
 }
 
 /* @ignore */
@@ -462,6 +505,11 @@ var DOMElementPrototype         = nil,
         view = [view superview];
     
     return enclosingMenuItem;*/
+}
+
+- (int)tag
+{
+    return _tag;
 }
 
 /*
@@ -1665,6 +1713,7 @@ var CPViewAutoresizingMaskKey       = @"CPViewAutoresizingMask",
     CPViewOpacityKey                = @"CPViewOpacityKey",
     CPViewSubviewsKey               = @"CPViewSubviewsKey",
     CPViewSuperviewKey              = @"CPViewSuperviewKey",
+    CPViewTagKey                    = @"CPViewTagKey",
     CPViewWindowKey                 = @"CPViewWindowKey";
 
 @implementation CPView (CPCoding)
@@ -1692,6 +1741,11 @@ var CPViewAutoresizingMaskKey       = @"CPViewAutoresizingMask",
     
     if (self)
     {
+        _tag = -1;
+        
+        if ([aCoder containsValueForKey:CPViewTagKey])
+            _tag = [aCoder decodeIntForKey:CPViewTagKey];
+        
         _window = [aCoder decodeObjectForKey:CPViewWindowKey];
         _subviews = [aCoder decodeObjectForKey:CPViewSubviewsKey];
         _superview = [aCoder decodeObjectForKey:CPViewSuperviewKey];
@@ -1735,6 +1789,9 @@ var CPViewAutoresizingMaskKey       = @"CPViewAutoresizingMask",
 - (void)encodeWithCoder:(CPCoder)aCoder
 {
     [super encodeWithCoder:aCoder];
+    
+    if (_tag != -1)
+        [aCoder encodeInt:_tag forKey:CPViewTagKey];
     
     [aCoder encodeRect:_frame forKey:CPViewFrameKey];
     [aCoder encodeRect:_bounds forKey:CPViewBoundsKey];

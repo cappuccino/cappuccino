@@ -133,7 +133,7 @@ CPDOMDisplayServerViewsContext          = {};
                                             CPDOMDisplayServerInstructions[index++] = nil;
                                             
                                             break;
-                }}catch(e) { alert("here?" + instruction) }
+                }}catch(e) { CPLog("here?" + instruction) }
         }
         
         CPDOMDisplayServerInstructionCount = 0;
@@ -155,7 +155,7 @@ CPDOMDisplayServerViewsContext          = {};
             [view displayIfNeeded];
         }
     }
-        
+
     [CPDOMDisplayRunLoop performSelector:@selector(run) target:CPDOMDisplayServer argument:nil order:0 modes:[CPDefaultRunLoopMode]];
 }
 

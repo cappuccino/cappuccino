@@ -28,7 +28,7 @@ var _CPCibCustomObjectClassName = @"_CPCibCustomObjectClassName";
     [aCoder encodeObject:_className forKey:_CPCibCustomObjectClassName];
 }
 
-- (id)awakeAfterUsingCoder:(CPCoder)aCoder
+- (id)_cibInstantiate
 {
     var theClass = CPClassFromString(_className);
     

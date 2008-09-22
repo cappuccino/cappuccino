@@ -22,17 +22,6 @@
 
 import "CPView.j"
 
-var CPViewAutoresizingMaskKey       = @"CPViewAutoresizingMask",
-    CPViewAutoresizesSubviewsKey    = @"CPViewAutoresizesSubviews",
-    CPViewBackgroundColorKey        = @"CPViewBackgroundColor",
-    CPViewBoundsKey                 = @"CPViewBoundsKey",
-    CPViewFrameKey                  = @"CPViewFrameKey",
-    CPViewHitTestsKey               = @"CPViewHitTestsKey",
-    CPViewIsHiddenKey               = @"CPViewIsHiddenKey",
-    CPViewOpacityKey                = @"CPViewOpacityKey",
-    CPViewSubviewsKey               = @"CPViewSubviewsKey",
-    CPViewSuperviewKey              = @"CPViewSuperviewKey",
-    CPViewWindowKey                 = @"CPViewWindowKey";
 
 /* @ignore */
 
@@ -49,8 +38,23 @@ var _CPCibCustomViewClassNameKey    = @"_CPCibCustomViewClassNameKey";
 
 - (id)initWithCoder:(CPCoder)aCoder
 {
-    _className = [aCoder decodeObjectForKey:_CPCibCustomViewClassNameKey];
+    self = [super initWithCoder:aCoder];
+
+    if (self)
+        _className = [aCoder decodeObjectForKey:_CPCibCustomViewClassNameKey];
+
+    return self;
+}
+
+- (void)encodeWithCoder:(CPCoder)aCoder
+{
+    [super encodeWithCoder:aCoder];
     
+    [aCoder encodeObject:_className forKey:_CPCibCustomViewClassNameKey];
+}
+
+- (id)_cibInstantiate
+{
     var theClass = CPClassFromString(_className);
     
     // If we don't have this class, just use CPView.
@@ -62,37 +66,31 @@ var _CPCibCustomViewClassNameKey    = @"_CPCibCustomViewClassNameKey";
         theClass = [CPView class];
     }
 
-    var frame = [aCoder decodeRectForKey:CPViewFrameKey];
-
-    self = [[CPView alloc] initWithFrame:frame];
+    var view = [[theClass alloc] initWithFrame:[self frame]];
         
-    if (self)
-    {    
-        [self _setWindow:[aCoder decodeObjectForKey:CPViewWindowKey]];
+    if (view)
+    {
+        [view setBounds:[self bounds]];
         
         // Since the object replacement logic hasn't had a chance to kick in yet, we need to do it manually:
-        var subviews = [aCoder decodeObjectForKey:CPViewSubviewsKey],
+        var subviews = [self subviews],
             index = 0,
             count = subviews.length;
         
         for (; index < count; ++index)
-        {
-            // This is a bogus superview "_CPCibCustomView".
-            subviews[index]._superview = nil;
-            [self addSubview:subviews[index]];
-        }
-        
-        _autoresizingMask = [aCoder decodeIntForKey:CPViewAutoresizingMaskKey];
-        _autoresizesSubviews = [aCoder decodeBoolForKey:CPViewAutoresizesSubviewsKey];
-            
-        _hitTests = [aCoder decodeObjectForKey:CPViewHitTestsKey];
-        _isHidden = [aCoder decodeObjectForKey:CPViewIsHiddenKey];
-        _opacity = [aCoder decodeIntForKey:CPViewOpacityKey];
+            [view addSubview:subviews[index]];
+
+        [view setAutoresizingMask:[self autoresizingMask]];
+        [view setAutoresizesSubviews:[self autoresizesSubviews]];
     
-        [self setBackgroundColor:[aCoder decodeObjectForKey:CPViewBackgroundColorKey]];
+        [view setHitTests:[self hitTests]];
+        [view setHidden:[self isHidden]];
+        [view setAlphaValue:[self alphaValue]];
+    
+        [view setBackgroundColor:[self backgroundColor]];
     }
     
-    return self;
+    return view;
 }
 
 @end

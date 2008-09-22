@@ -58,16 +58,17 @@ import "_CPCibConnector.j"
     
     CPSet               _visibleWindows;
 }
-/*
+
 - (CPArray)topLevelObjects
 {
-    var count = [_objectsValues count];
+    var count = [_objectsValues count],
+        topLevelObjects = [];
     
     while (count--)
     {
         var eachObject = _objectsValues[count];
         
-        if(eachObject == _fileOwner)
+        if (eachObject == _fileOwner)
         {
             var anObject = _objectsKeys[count];
             
@@ -78,7 +79,6 @@ import "_CPCibConnector.j"
     
     return topLevelObjects;
 }
-*/
 
 @end
 
