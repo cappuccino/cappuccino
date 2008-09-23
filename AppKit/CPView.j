@@ -1435,6 +1435,8 @@ setBoundsOrigin:
 */
 - (void)displayRect:(CPRect)aRect
 {
+    [self viewWillDraw];
+    
     [self displayRectIgnoringOpacity:aRect inContext:nil];
     
     _dirtyRect = NULL;
@@ -1448,6 +1450,10 @@ setBoundsOrigin:
     
     [self drawRect:aRect];
     [self unlockFocus];
+}
+
+- (void)viewWillDraw
+{
 }
 
 /*

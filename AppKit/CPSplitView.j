@@ -49,6 +49,8 @@ var CPSplitViewHorizontalImage = nil,
     CPArray     _DOMDividerElements;
     CPString    _dividerImagePath;
     int         _drawingDivider;
+    
+    BOOL        _needsResizeSubviews;
 }
 
 /*
@@ -88,20 +90,45 @@ var CPSplitViewHorizontalImage = nil,
     return _isVertical;
 }
 
-- (void)setVertical:(BOOL)flag
+- (void)setVertical:(BOOL)shouldBeVertical
 {
-    [self _setVertical:flag];
+    if (![self _setVertical:shouldBeVertical])
+        return;
     
-    [self adjustSubviews];
+    // Just re-adjust evenly.
+    var frame = [self frame],
+        dividerThickness = [self dividerThickness];
+    
+    [self _postNotificationWillResize];
+    
+    var eachSize = ROUND((frame.size[_sizeComponent] - dividerThickness * (_subviews.length - 1)) / _subviews.length),
+        index = 0,
+        count = _subviews.length;
+
+    if ([self isVertical])
+        for (; index < count; ++index)
+            [_subviews[index] setFrame:CGRectMake(ROUND((eachSize + dividerThickness) * index), 0, eachSize, frame.size.height)];
+    else
+        for (; index < count; ++index)
+            [_subviews[index] setFrame:CGRectMake(0, ROUND((eachSize + dividerThickness) * index), frame.size.width, eachSize)];
+    
+    [self setNeedsDisplay:YES];
+    
+    [self _postNotificationDidResize];
+
 }
 
-- (void)_setVertical:(BOOL)flag
+- (BOOL)_setVertical:(BOOL)shouldBeVertical
 {
-    _isVertical = flag;
+    var changed = (_isVertical != shouldBeVertical);
     
-    _originComponent    = [self isVertical] ? "x" : "y";
-    _sizeComponent      = [self isVertical] ? "width" : "height";
-    _dividerImagePath   = [self isVertical] ? [CPSplitViewVerticalImage filename] : [CPSplitViewHorizontalImage filename];
+    _isVertical = shouldBeVertical;
+    
+    _originComponent = [self isVertical] ? "x" : "y";
+    _sizeComponent = [self isVertical] ? "width" : "height";
+    _dividerImagePath = [self isVertical] ? [CPSplitViewVerticalImage filename] : [CPSplitViewHorizontalImage filename];
+    
+    return changed;
 }
 
 - (BOOL)isPaneSplitter
@@ -123,32 +150,10 @@ var CPSplitViewHorizontalImage = nil,
     [self setNeedsDisplay:YES];
 }
 
-- (void)didAddSubview:(CPView)subview
+- (void)didAddSubview:(CPView)aSubview
 {
-    [self adjustSubviews];
-}
-
-- (void)adjustSubviews
-{
-    var frame = [self frame],
-        dividerThickness = [self dividerThickness];
-    
-    [self _postNotificationWillResize];
-    
-    var eachSize = ROUND((frame.size[_sizeComponent] - dividerThickness * (_subviews.length - 1)) / _subviews.length),
-        index = 0,
-        count = _subviews.length;
-
-    if ([self isVertical])
-        for (; index < count; ++index)
-            [_subviews[index] setFrame:CGRectMake(ROUND((eachSize + dividerThickness) * index), 0, eachSize, frame.size.height)];
-    else
-        for (; index < count; ++index)
-            [_subviews[index] setFrame:CGRectMake(0, ROUND((eachSize + dividerThickness) * index), frame.size.width, eachSize)];
-    
-    [self setNeedsDisplay:YES];
-    
-    [self _postNotificationDidResize];
+    _needsResizeSubviews = YES;
+//    [self adjustSubviews];
 }
 
 - (BOOL)isSubviewCollapsed:(CPView)subview
@@ -216,6 +221,39 @@ var CPSplitViewHorizontalImage = nil,
     CPDOMDisplayServerSetStyleLeftTop(_DOMDividerElements[_drawingDivider], NULL, _CGRectGetMinX(aRect), _CGRectGetMinY(aRect));
     CPDOMDisplayServerSetStyleSize(_DOMDividerElements[_drawingDivider], _CGRectGetWidth(aRect), _CGRectGetHeight(aRect));
 #endif
+}
+
+- (void)viewWillDraw
+{
+    [self _adjustSubviewsWithCalculatedSize];
+}
+
+- (void)_adjustSubviewsWithCalculatedSize
+{
+    if (!_needsResizeSubviews)
+        return;
+    
+    _needsResizeSubviews = NO;
+        
+    var subviews = [self subviews],
+        count = subviews.length,
+        oldSize = CGSizeMakeZero();
+    
+    if ([self isVertical])
+    {
+        oldSize.width += [self dividerThickness] * (count - 1);
+        oldSize.height = CGRectGetHeight([self frame]);
+    }
+    else
+    {
+        oldSize.width = CGRectGetWidth([self frame]);
+        oldSize.height += [self dividerThickness] * (count - 1);
+    }
+        
+    while (count--)
+        oldSize[_sizeComponent] += [subviews[count] frame].size[_sizeComponent];
+    
+    [self resizeSubviewsWithOldSize:oldSize];
 }
 
 - (BOOL)cursorAtPoint:(CPPoint)aPoint hitDividerAtIndex:(int)anIndex
@@ -353,6 +391,8 @@ var CPSplitViewHorizontalImage = nil,
 
 - (void)setPosition:(float)position ofDividerAtIndex:(int)dividerIndex
 {
+    [self _adjustSubviewsWithCalculatedSize];
+        
     // not sure where this should override other positions?
     if ([_delegate respondsToSelector:@selector(splitView:constrainSplitPosition:ofSubviewAt:)])
         position = [_delegate splitView:self constrainSplitPosition:position ofSubviewAt:dividerIndex];
@@ -386,13 +426,22 @@ var CPSplitViewHorizontalImage = nil,
     
     frameB.size[_sizeComponent] = frameB.origin[_originComponent] + frameB.size[_sizeComponent] - realPosition - [self dividerThickness];
     frameB.origin[_originComponent] = realPosition + [self dividerThickness];
-    [_subviews[dividerIndex+1] setFrame:frameB];
+    [_subviews[dividerIndex + 1] setFrame:frameB];
+    
+    [self setNeedsDisplay:YES];
+}
+
+- (void)setFrameSize:(CGSize)aSize
+{
+    [self _adjustSubviewsWithCalculatedSize];
+        
+    [super setFrameSize:aSize];
     
     [self setNeedsDisplay:YES];
 }
 
 - (void)resizeSubviewsWithOldSize:(CPSize)oldSize
-{
+{   
     if ([_delegate respondsToSelector:@selector(splitView:resizeSubviewsWithOldSize:)])
     {
         [_delegate splitView:self resizeSubviewsWithOldSize:oldSize];
@@ -421,8 +470,6 @@ var CPSplitViewHorizontalImage = nil,
         
         [view setFrame:newFrame];
     }
-    
-    [self setNeedsDisplay:YES];
 
     [self _postNotificationDidResize];
 }
