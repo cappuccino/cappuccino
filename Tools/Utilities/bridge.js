@@ -107,11 +107,11 @@ if (typeof readFile == "undefined") {
         	var f = new Packages.java.io.File(path);
 	
 	        if (!f.canRead()) {
-	            //alert("can't read: " + f.path)
+	            alert("can't read: " + f.path)
 	            return "";
 	        }
 	
-	        //alert("reading: " + f.getAbsolutePath());
+	        alert("reading: " + f.getAbsolutePath());
 	
         	var fis = new Packages.java.io.FileInputStream(f);
         	
@@ -119,12 +119,11 @@ if (typeof readFile == "undefined") {
         	fis.read(b);
         	
         	fis.close();
-	
-            //return String(new Packages.java.lang.String(b));
+
             if (characterCoding)
-                return new Packages.java.lang.String(b, characterCoding);
+                return String(new Packages.java.lang.String(b, characterCoding));
             else
-                return new Packages.java.lang.String(b);
+                return String(new Packages.java.lang.String(b));
         }
     }
     else {
@@ -283,9 +282,25 @@ if (typeof Packages != "undefined") {
 		}
 	};
 
-    var xhr_builder = Packages.javax.xml.parsers.DocumentBuilderFactory.newInstance().newDocumentBuilder();
-    xhr_builder.setErrorHandler(function(exception, methodName) {
-    	//print("xml error!");
+    var _documentBuilderFactory = Packages.javax.xml.parsers.DocumentBuilderFactory.newInstance();
+    // setValidating to false doesn't seem to prevent it from downloading the DTD, but lets do it anyway
+    _documentBuilderFactory.setValidating(false);
+    
+    _documentBuilder = _documentBuilderFactory.newDocumentBuilder();
+    // prevent the Java XML parser from downloading the plist DTD from Apple every time we parse a plist
+    _documentBuilder.setEntityResolver(new Packages.org.xml.sax.EntityResolver({
+        resolveEntity: function(publicId, systemId) {
+            //Packages.java.lang.System.out.println("publicId=" + publicId + " systemId=" + systemId);
+            
+            // TODO: return a local copy of the DTD?
+            if (String(systemId) == "http://www.apple.com/DTDs/PropertyList-1.0.dtd")
+                return new Packages.org.xml.sax.InputSource(new Packages.java.io.StringReader(""));
+                
+            return null;
+        } 
+    }));
+    // throw an exception on error
+    _documentBuilder.setErrorHandler(function(exception, methodName) {
     	throw exception;
     });
 
@@ -372,7 +387,7 @@ if (typeof Packages != "undefined") {
     }
     
     parseXMLString = function(string) {
-        return (Packages.javax.xml.parsers.DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(
+        return (_documentBuilder.parse(
             new Packages.org.xml.sax.InputSource(
                 new Packages.java.io.StringReader(string))).getDocumentElement());
     }
@@ -435,23 +450,23 @@ XMLHttpRequest.prototype.send = function(body) {
 	
 	try {
 		this.responseText = readFile(this.url);
-		alert("xhr: " + this.url);
+		alert("xhr response:  " + this.url + " (length="+this.responseText.length+")");
 	} catch (e) {
-	    alert("read exception: " + this.url);
+	    alert("xhr exception: " + this.url);
     	this.responseText = "";
 		this.responseXML = null;
 	}    
 	
 	if (this.responseText.length > 0) {
 		try {
-			this.responseXML = xhr_builder.parse(new Packages.org.xml.sax.InputSource(new Packages.java.io.StringReader(this.responseText)));
+			this.responseXML = _documentBuilder.parse(new Packages.org.xml.sax.InputSource(new Packages.java.io.StringReader(this.responseText)));
 		} catch (e) {
 			this.responseXML = null;
 		}
 	    this.status = 200;
 	}
 	else {
-	    alert("empty file: " + this.url);
+	    alert("xhr empty:     " + this.url);
 	    this.status = 404;
 	}
 	
