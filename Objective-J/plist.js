@@ -340,7 +340,7 @@ function CPPropertyListCreateFromXMLData(XMLNodeOrData)
     if (XMLNode.string)
     {
 #if RHINO
-        XMLNode = DOCUMENT_ELEMENT(Packages.javax.xml.parsers.DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(
+        XMLNode = DOCUMENT_ELEMENT(_documentBuilder.parse(
             new Packages.org.xml.sax.InputSource(new Packages.java.io.StringReader(XMLNode.string))));
 #else
         if (window.ActiveXObject)

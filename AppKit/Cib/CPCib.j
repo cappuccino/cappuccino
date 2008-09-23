@@ -24,8 +24,8 @@ import <Foundation/CPObject.j>
 import <Foundation/CPURLConnection.j>
 import <Foundation/CPURLRequest.j>
 
-import "CPCustomView.j"
 import "_CPCibCustomObject.j"
+import "_CPCibCustomView.j"
 import "_CPCibKeyedUnarchiver.j"
 import "_CPCibObjectData.j"
 import "_CPCibWindowTemplate.j"
