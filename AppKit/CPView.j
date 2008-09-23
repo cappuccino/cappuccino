@@ -173,11 +173,6 @@ var DOMElementPrototype         = nil,
 */
 + (void)initialize
 {
-#if PLATFORM(DOM)
-    if ([self instanceMethodForSelector:@selector(drawRect:)] != [CPView instanceMethodForSelector:@selector(drawRect:)])
-        CustomDrawRectViews[[self hash]] = YES;
-#endif
-
     if (self != [CPView class])
         return;
 
@@ -1380,7 +1375,16 @@ setBoundsOrigin:
 - (void)setNeedsDisplayInRect:(CPRect)aRect
 {
 #if PLATFORM(DOM)
-    if (!CustomDrawRectViews[[[self class] hash]])
+    var hash = [[self class] hash],
+        hasCustomDrawRect = CustomDrawRectViews[hash];
+    
+    if (!hasCustomDrawRect && typeof hasCustomDrawRect === "undefined")
+    {
+        hasCustomDrawRect = [self methodForSelector:@selector(drawRect:)] != [CPView instanceMethodForSelector:@selector(drawRect:)];
+        CustomDrawRectViews[hash] = hasCustomDrawRect;
+    }
+
+    if (!hasCustomDrawRect)
         return;
 #endif
         

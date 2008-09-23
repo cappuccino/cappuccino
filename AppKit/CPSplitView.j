@@ -54,16 +54,15 @@ var CPSplitViewHorizontalImage = nil,
 /*
     @ignore
 */
-//+ (void)initialize
-//{
-//    if (self != [CPSplitView class])
-//        return;
-//
-//    var bundle = [CPBundle bundleForClass:self];
-//
-//    CPSplitViewHorizontalImage = [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"CPSplitView/CPSplitViewHorizontal.png"] size:CPSizeMake(5.0, 10.0)];
-//    CPSplitViewVerticalImage = [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"CPSplitView/CPSplitViewVertical.png"] size:CPSizeMake(10.0, 5.0)];
-//}
++ (void)initialize
+{
+    if (self != [CPSplitView class])
+        return;
+
+    var bundle = [CPBundle bundleForClass:self];
+    CPSplitViewHorizontalImage = [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"CPSplitView/CPSplitViewHorizontal.png"] size:CPSizeMake(5.0, 10.0)];
+    CPSplitViewVerticalImage = [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"CPSplitView/CPSplitViewVertical.png"] size:CPSizeMake(10.0, 5.0)];
+}
 
 - (id)initWithFrame:(CGRect)aFrame
 {
@@ -505,8 +504,3 @@ var CPSplitViewDelegateKey          = "CPSplitViewDelegateKey",
 }
 
 @end
-
-// FIXME: once +initialize is fixed for superclasses, remove this and uncomment +initialize
-var bundle = [CPBundle bundleForClass:CPSplitView];
-CPSplitViewHorizontalImage = [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"CPSplitView/CPSplitViewHorizontal.png"] size:CPSizeMake(5.0, 10.0)];
-CPSplitViewVerticalImage = [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"CPSplitView/CPSplitViewVertical.png"] size:CPSizeMake(10.0, 5.0)];
