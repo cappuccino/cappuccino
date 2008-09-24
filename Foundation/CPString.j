@@ -185,11 +185,9 @@ var CPStringHashes      = new objj_dictionary();
 - (CPString)stringByAppendingFormat:(CPString)format, ...
 {
     if (!format)
-           [CPException raise:CPInvalidArgumentException
-                       reason:"initWithFormat: the format can't be 'nil'"];
-    
+        [CPException raise:CPInvalidArgumentException reason:"initWithFormat: the format can't be 'nil'"];
 
-    return self + sprintf.apply(this, Array.prototype.slice.call(arguments, 2));   
+    return self + sprintf.apply(this, Array.prototype.slice.call(arguments, 2));
 }
 
 /*
@@ -280,6 +278,7 @@ var CPStringHashes      = new objj_dictionary();
 }
 
 // Finding characters and substrings
+
 /*
     Finds the range of characters in the receiver where the specified string exists. If the string
     does not exist in the receiver, the range <code>length</code> will be 0.
@@ -333,22 +332,22 @@ var CPStringHashes      = new objj_dictionary();
 */
 - (CPRange)rangeOfString:(CPString)aString options:(int)aMask range:(CPrange)aRange
 {
-    var string = (aRange == nil)?self:[self substringWithRange:aRange],
+    var string = (aRange == nil) ? self : [self substringWithRange:aRange],
         location = CPNotFound;
-    
+
     if (aMask & CPCaseInsensitiveSearch)
     {
         string = string.toLowerCase();
         aString = aString.toLowerCase();
     }
-    
-    if (aMask & CPBackwardsSearch) 
+
+    if (aMask & CPBackwardsSearch)
         location = string.lastIndexOf(aString, aMask & CPAnchoredSearch ? length - aString.length : 0);
-    else if (aMask & CPAnchoredSearch) 
+    else if (aMask & CPAnchoredSearch)
         location = string.substr(0, aString.length).indexOf(aString) != CPNotFound ? 0 : CPNotFound;
-    else 
+    else
         location = string.indexOf(aString);
-    
+
     return CPMakeRange(location, location == CPNotFound ? 0 : aString.length);
 }
 
@@ -365,11 +364,9 @@ var CPStringHashes      = new objj_dictionary();
 {
     return self.replace(new RegExp(target, "g"), replacement);
 }
+
 /*
-- (CPString)stringByReplacingOccurrencesOfString:(CPString)target 
-                                      withString:(CPString)replacement 
-                                         options:(int)options 
-                                           range:(CPRange)searchRange
+- (CPString)stringByReplacingOccurrencesOfString:(CPString)target withString:(CPString)replacement options:(int)options range:(CPRange)searchRange
 {
     //TODO :Vijay implement the method
 
@@ -383,6 +380,7 @@ var CPStringHashes      = new objj_dictionary();
 
 
 // Identifying and comparing strings
+
 /*
     Compares the receiver to the specified string.
     @param aString the string with which to compare
@@ -506,7 +504,7 @@ var CPStringHashes      = new objj_dictionary();
 */
 - (double)doubleValue
 {
-    return eval(self);
+    return parseFloat(self, 10);
 }
 /*
     Returns <code>YES</code> on encountering one of "Y", "y", "T", "t", or 
@@ -525,7 +523,7 @@ var CPStringHashes      = new objj_dictionary();
 */
 - (float)floatValue
 {
-    return eval(self);
+    return parseFloat(self, 10);
 }
 
 /*
@@ -533,7 +531,7 @@ var CPStringHashes      = new objj_dictionary();
 */
 - (int)intValue
 {
-    return parseInt(self);
+    return parseInt(self, 10);
 }
 
 /*
@@ -574,7 +572,7 @@ var CPStringHashes      = new objj_dictionary();
 - (CPString)stringByDeletingLastPathComponent
 {
     // FIXME: this is wrong: a/a/ returns a/a/.
-    return substr(0, lastIndexOf('/') + 1);  
+    return substr(0, lastIndexOf('/') + 1);
 }
 
 - (CPString)stringByStandardizingPath
