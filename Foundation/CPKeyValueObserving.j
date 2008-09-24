@@ -31,7 +31,6 @@ import "CPObject.j"
 
 }
 
-
 - (void)didChangeValueForKey:(CPString)aKey
 {
 
@@ -60,15 +59,31 @@ import "CPObject.j"
 
 @end
 
+// KVO Options
+CPKeyValueObservingOptionNew        = 1 << 0;
+CPKeyValueObservingOptionOld        = 1 << 1;
+CPKeyValueObservingOptionInitial    = 1 << 2;
+CPKeyValueObservingOptionPrior      = 1 << 3;
+
+// KVO Change Dictionary Keys
+CPKeyValueChangeKindKey                 = @"CPKeyValueChangeKindKey";
+CPKeyValueChangeNewKey                  = @"CPKeyValueChangeNewKey";
+CPKeyValueChangeOldKey                  = @"CPKeyValueChangeOldKey";
+CPKeyValueChangeIndexesKey              = @"CPKeyValueChangeIndexesKey";
+CPKeyValueChangeNotificationIsPriorKey  = @"CPKeyValueChangeNotificationIsPriorKey";
+
+// Map of real objects to their KVO proxy
 var KVOProxyMap = [CPDictionary dictionary];
 
 //rule of thumb: _ methods are called on the real proxy object, others are called on the "fake" proxy object (aka the real object)
 
+/* @ignore */
 @implementation _CPKVOProxy : CPObject
 {
     id              _targetObject;
     Class           _nativeClass;
-    CPDictionary    _observerInfos;
+    CPDictionary    _changesForKey;
+    CPDictionary    _observersForKey;
     CPDictionary    _replacementMethods;
 }
 
@@ -96,8 +111,9 @@ var KVOProxyMap = [CPDictionary dictionary];
     
     _targetObject       = aTarget;
     _nativeClass        = [aTarget class];
-    _observerInfos      = [CPDictionary dictionary];
     _replacementMethods = [CPDictionary dictionary];
+    _observersForKey    = [CPDictionary dictionary];
+    _changesForKey      = [CPDictionary dictionary];
     
     return self;
 }
@@ -113,7 +129,7 @@ var KVOProxyMap = [CPDictionary dictionary];
             
         for (var i=0; i<count; i++)
         {
-            var newMethod = _kvoMethodForMethod(methodList[i]);
+            var newMethod = _kvoMethodForMethod(_targetObject, methodList[i]);
 
             if (newMethod)
                 [_replacementMethods setObject:newMethod forKey:methodList[i].name];
@@ -123,9 +139,14 @@ var KVOProxyMap = [CPDictionary dictionary];
     }
 }
 
-- (id)class
+- (Class)class
 {
     return [KVOProxyMap objectForKey:[self hash]]._nativeClass;
+}
+
+- (Class)superclass
+{
+    return [self class].super_class;
 }
 
 - (BOOL)respondsToSelector:(SEL)aSelector
@@ -167,76 +188,134 @@ var KVOProxyMap = [CPDictionary dictionary];
     if (!anObserver)
         return;
 
-    var info = [_observerInfos objectForKey:[anObserver hash]];
-    
-    if (!info)
-    {
-        info = _CPKVOInfoMake(anObserver);
-        [_observerInfos setObject:info forKey:[anObserver hash]];
-    }
-
     if (aPath.indexOf('.') != CPNotFound)
-        return print("WHOA, don't go crazy...");
+        return CPLog.error("WHOA, don't go crazy...");
     else
-        [info.keyPaths setObject:_CPKVOInfoRecordMake(options, aContext) forKey:aPath];
+    {
+        var observers = [_observersForKey objectForKey:aPath];
+        
+        if (!observers)
+        {
+            observers = [CPDictionary dictionary];
+            [_observersForKey setObject:observers forKey:aPath];
+        }
+        
+        [observers setObject:_CPKVOInfoMake(anObserver, options, aContext) forKey:[anObserver hash]];
+
+        var changes = [CPDictionary dictionary];
+        [changes setObject:[_targetObject valueForKey:aPath] forKey:CPKeyValueChangeNewKey];
+
+        [_changesForKey setObject:changes forKey:aPath];
+
+        if (options & CPKeyValueObservingOptionInitial)
+            [anObserver observeValueForKeyPath:aPath ofObject:self change:changes context:aContext];
+    }
 }
 
 - (void)_removeObserver:(id)anObserver forKeyPath:(CPString)aPath
 {        
-    var info = [_observerInfos objectForKey:[anObserver hash]],
-        path = [info.keyPaths objectForKey:aPath];
-    
-    if (path)
-        [info.keyPaths removeObjectForKey:aPath];
-    
-    if (![info.keyPaths count])
-        [_observerInfos removeObjectForKey:anObserver];
-
-    if (![_observerInfos count])
+    if (aPath.indexOf('.') != CPNotFound)
+        return CPLog.error("WHOA, don't go crazy...");
+    else
     {
-        _targetObject.isa = _nativeClass; //restore the original class
-        [KVOProxyMap removeObjectForKey:[_targetObject hash]];
+        var observers = [_observersForKey objectForKey:aPath];
+
+        [observers removeObjectForKey:[anObserver hash]];
+        
+        if (![observers count])
+            [_observersForKey removeObjectForKey:aPath];
+            
+        if (![_observersForKey count])
+        {
+            _targetObject.isa = _nativeClass; //restore the original class
+            [KVOProxyMap removeObjectForKey:[_targetObject hash]];
+        }
     }
 }
 
 - (void)willChangeValueForKey:(CPString)aKey
 {
-    print("WILL CHANGE FOR: "+aKey);
+    if (!aKey) 
+        return;
+
+    [[_CPKVOProxy proxyForObject:self] _sendNotificationsForKey:aKey isBefore:YES];
 }
 
 
 - (void)didChangeValueForKey:(CPString)aKey
 {
-    print("DID CHANGE FOR: "+aKey);
+    if (!aKey) 
+        return;
+
+    [[_CPKVOProxy proxyForObject:self] _sendNotificationsForKey:aKey isBefore:NO];
+}
+
+- (void)_sendNotificationsForKey:(CPString)aKey isBefore:(BOOL)isBefore
+{
+    var changes = [_changesForKey objectForKey:aKey],
+        oldValue = [changes objectForKey:CPKeyValueChangeOldKey],
+        newValue = [changes objectForKey:CPKeyValueChangeNewKey];
+    
+    if (!oldValue && oldValue !== "")
+        oldValue = [CPNull null];
+
+    if (!newValue && newValue !== "")
+        newValue = [CPNull null];
+        
+    if (isBefore)
+    {
+        changes = [CPDictionary dictionary];
+        
+        [changes setObject:1 forKey:CPKeyValueChangeNotificationIsPriorKey];
+        [changes setObject:newValue forKey:CPKeyValueChangeOldKey];
+        
+        [_changesForKey setObject:changes forKey:aKey];
+    }
+    else
+    {
+        [changes removeObjectForKey:CPKeyValueChangeNotificationIsPriorKey];
+        
+        var newValue = [_targetObject valueForKey:aKey];
+        
+        if (!newValue && newValue !== "")
+            newValue = [CPNull null];
+
+        [changes setObject:newValue forKey:CPKeyValueChangeNewKey];
+    }
+    
+    var observers = [[_observersForKey objectForKey:aKey] allValues],
+        count = [observers count];
+    
+    while (count--)
+    {
+        var observerInfo = observers[count];
+        
+        if (isBefore && (observerInfo.options & CPKeyValueObservingOptionPrior))
+            [observerInfo.observer observeValueForKeyPath:aKey ofObject:_targetObject change:changes context:observerInfo.context];
+        else if (!isBefore)
+            [observerInfo.observer observeValueForKeyPath:aKey ofObject:_targetObject change:changes context:observerInfo.context];
+    }
 }
 
 @end
 
-var _CPKVOInfoMake = function _CPKVOInfoMake(anObserver)
+var _CPKVOInfoMake = function _CPKVOInfoMake(anObserver, theOptions, aContext)
 {
     return {
         observer: anObserver, 
-        keyPaths: [CPDictionary dictionary],
-        changes:  [CPDictionary dictionary]
+        options: theOptions,
+        context: aContext
     };
 }
 
-var _CPKVOInfoRecordMake = function _CPKVOInfoRecordMake(theOptions, aContext)
-{
-    return {
-        options: theOptions ? theOptions : 0,
-        context: aContext ? aContext : [CPNull null]
-    };
-}
-
-var _kvoMethodForMethod = function _kvoMethodForMethod(theMethod)
+var _kvoMethodForMethod = function _kvoMethodForMethod(theObject, theMethod)
 {
     var methodName = theMethod.name,
         methodImplementation = theMethod.method_imp,
         setterKey = kvoKeyForSetter(methodName);
     
-    if (setterKey)
-    {
+    if (setterKey && objj_msgSend(theObject, @selector(automaticallyNotifiesObserversForKey:), setterKey))
+    {            
         var newMethodImp = function(self) 
         {
             [self willChangeValueForKey:setterKey];
