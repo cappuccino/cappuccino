@@ -248,7 +248,7 @@ var _CPMenuBarVisible               = NO,
     [_items removeObjectAtIndex:anIndex];
     
     [[CPNotificationCenter defaultCenter]
-        postNotificationName:CPMenuDidAddItemNotification
+        postNotificationName:CPMenuDidRemoveItemNotification
                       object:self
                     userInfo:[CPDictionary dictionaryWithObject:anIndex forKey:@"CPMenuItemIndex"]];
 }
@@ -1305,6 +1305,7 @@ var _CPMenuBarWindowBackgroundColor = nil,
 {
     CPMenu      _menu;
     CPView      _highlightView;
+    CPArray     _menuItemViews;
     
     CPMenuItem  _trackingMenuItem;
     
@@ -1447,6 +1448,8 @@ var _CPMenuBarWindowBackgroundColor = nil,
                 object:_menu];
     }
     
+    _menuItemViews = [];
+    
     var contentView = [self contentView],
         items = [_menu itemArray],
         count = items.length;
@@ -1455,6 +1458,8 @@ var _CPMenuBarWindowBackgroundColor = nil,
     {
         var item = items[index],
             menuItemView = [item _menuItemView];
+            
+        _menuItemViews.push(menuItemView);
         
         [menuItemView setShowsStateColumn:NO];
         [menuItemView setBelongsToMenuBar:YES];
@@ -1477,6 +1482,38 @@ var _CPMenuBarWindowBackgroundColor = nil,
     [menuItemView setHidden:[menuItem isHidden]];
     [menuItemView synchronizeWithMenuItem];
     
+    [self tile];
+}
+
+- (void)menuDidAddItem:(CPNotification)aNotification
+{
+    var index = [[aNotification userInfo] objectForKey:@"CPMenuItemIndex"],
+        menuItem = [_menu itemAtIndex:index],
+        menuItemView = [menuItem _menuItemView];
+
+    [_menuItemViews insertObject:menuItemView atIndex:index];
+
+    [menuItemView setShowsStateColumn:NO];
+    [menuItemView setBelongsToMenuBar:YES];
+    [menuItemView setFont:_CPMenuBarWindowFont];
+    [menuItemView setHidden:[menuItem isHidden]];
+
+    [menuItemView synchronizeWithMenuItem];
+    
+    [[self contentView] addSubview:menuItemView];
+    
+    [self tile];
+}
+
+- (void)menuDidRemoveItem:(CPNotification)aNotification
+{
+    var index = [[aNotification userInfo] objectForKey:@"CPMenuItemIndex"],
+        menuItemView = [_menuItemViews objectAtIndex:index];
+
+    [_menuItemViews removeObjectAtIndex:index];
+
+    [menuItemView removeFromSuperview];
+        
     [self tile];
 }
 
