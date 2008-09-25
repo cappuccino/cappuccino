@@ -128,14 +128,15 @@ var CPStringHashes      = new objj_dictionary();
 {
     if (!format)
         [CPException raise:CPInvalidArgumentException
-                    reason:"stringWithString: the format can't be 'nil'"];
+                    reason:"initWithFormat: the format can't be 'nil'"];
 
     self = sprintf.apply(this, Array.prototype.slice.call(arguments, 2));
     return self;
 }
 
 /*
-    Creates a new string using C printf-style formatting. First argument should be a constant format string, like ' "float val = %f" ', remaining arguments should be the variables to print the values of, comma-separated.
+    Creates a new string using C printf-style formatting. First argument should be a constant format string, 
+    like ' "float val = %f" ', remaining arguments should be the variables to print the values of, comma-separated.
     @param format the format to be used, printf-style
     @return the initialized <objj>CPString</objj>
 */
@@ -143,7 +144,7 @@ var CPStringHashes      = new objj_dictionary();
 {
     if (!format)
         [CPException raise:CPInvalidArgumentException
-                    reason:"stringWithString: the format can't be 'nil'"];
+                    reason:"initWithFormat: the format can't be 'nil'"];
 
     return sprintf.apply(this, Array.prototype.slice.call(arguments, 2));
 }
@@ -174,6 +175,21 @@ var CPStringHashes      = new objj_dictionary();
 }
 
 // Combining strings
+
+/*
+    Returns a string made by appending to the reciever a string constructed from a given format
+    string and the floowing arguments
+    @param format the format string in printf-style.
+    @return the initialized <objj>CPString</objj>
+*/
+- (CPString)stringByAppendingFormat:(CPString)format, ...
+{
+    if (!format)
+        [CPException raise:CPInvalidArgumentException reason:"initWithFormat: the format can't be 'nil'"];
+
+    return self + sprintf.apply(this, Array.prototype.slice.call(arguments, 2));
+}
+
 /*
     Creates a new <objj>CPString</objj> from the concatenation of the receiver and the specified string.
     @param aString the string to append to the receiver
@@ -214,6 +230,7 @@ var CPStringHashes      = new objj_dictionary();
     if (difference) string += substring.substr(difference + substring.length);
 }
 
+//Dividing Strings
 /*
     Tokenizes the receiver string using the specified
     delimiter. For example, if the receiver is:
@@ -261,6 +278,7 @@ var CPStringHashes      = new objj_dictionary();
 }
 
 // Finding characters and substrings
+
 /*
     Finds the range of characters in the receiver where the specified string exists. If the string
     does not exist in the receiver, the range <code>length</code> will be 0.
@@ -269,9 +287,7 @@ var CPStringHashes      = new objj_dictionary();
 */
 - (CPRange)rangeOfString:(CPString)aString
 {
-    var location = indexOf(aString);
-    
-    return CPMakeRange(location, location == CPNotFound ? 0 : aString.length);
+   return [self rangeOfString:aString options:0];
 }
 
 /*
@@ -279,13 +295,13 @@ var CPStringHashes      = new objj_dictionary();
     where the specified string exists. The search
     is subject to the options specified in the
     specified mask which can be a combination of:
-<pre>
-CPCaseInsensitiveSearch
-CPLiteralSearch
-CPBackwardsSearch
-CPAnchoredSearch
-CPNumericSearch
-</pre>
+    <pre>
+    CPCaseInsensitiveSearch
+    CPLiteralSearch
+    CPBackwardsSearch
+    CPAnchoredSearch
+    CPNumericSearch
+    </pre>
     @param aString the string to search for
     @param aMask the options to use in the search
     @return the range of characters in the receiver. If the string was not found,
@@ -293,23 +309,78 @@ CPNumericSearch
 */
 - (CPRange)rangeOfString:(CPString)aString options:(int)aMask
 {
-    var string = self,
+    return [self rangeOfString:aString options:aMask range:nil];
+}
+
+/*
+    Finds the range of characters in the receiver
+    where the specified string exists in the given range 
+    of the receiver.The search is subject to the options specified in the
+    specified mask which can be a combination of:
+    <pre>
+    CPCaseInsensitiveSearch
+    CPLiteralSearch
+    CPBackwardsSearch
+    CPAnchoredSearch
+    CPNumericSearch
+    </pre>
+    @param aString the string to search for
+    @param aMask the options to use in the search
+    @param aRange the range of the receiver in which to search for
+    @return the range of characters in the receiver. If the string was not found,
+    the <code>length</code> of the range will be 0.
+*/
+- (CPRange)rangeOfString:(CPString)aString options:(int)aMask range:(CPrange)aRange
+{
+    var string = (aRange == nil) ? self : [self substringWithRange:aRange],
         location = CPNotFound;
-    
+
     if (aMask & CPCaseInsensitiveSearch)
     {
         string = string.toLowerCase();
         aString = aString.toLowerCase();
     }
-    
-    if (CPBackwardsSearch) location = lastIndexOf(aString, aMask & CPAnchoredSearch ? length - aString.length : 0);
-    else if (aMask & CPAnchoredSearch) location = substr(0, aString.length).indexOf(aString) != CPNotFound ? 0 : CPNotFound;
-    else location = indexOf(aString);
-    
+
+    if (aMask & CPBackwardsSearch)
+        location = string.lastIndexOf(aString, aMask & CPAnchoredSearch ? length - aString.length : 0);
+    else if (aMask & CPAnchoredSearch)
+        location = string.substr(0, aString.length).indexOf(aString) != CPNotFound ? 0 : CPNotFound;
+    else
+        location = string.indexOf(aString);
+
     return CPMakeRange(location, location == CPNotFound ? 0 : aString.length);
 }
 
+//Replacing Substrings
+
+/*
+    Returns a new string in which all occurrences of a target string in the reciever are replaced by 
+    another given string.
+    @param target The string to replace.
+    @param replacement the string with which to replace the <pre>target<pre>
+*/
+
+- (CPString)stringByReplacingOccurrencesOfString:(CPString)target withString:(CPString)replacement
+{
+    return self.replace(new RegExp(target, "g"), replacement);
+}
+
+/*
+- (CPString)stringByReplacingOccurrencesOfString:(CPString)target withString:(CPString)replacement options:(int)options range:(CPRange)searchRange
+{
+    //TODO :Vijay implement the method
+
+}
+
+- (CPString)stringByReplacingCharactersInRange:(CPRange)range withString:(CPString)replacement
+{
+    //TODO :Vijay implement the method
+}
+*/
+
+
 // Identifying and comparing strings
+
 /*
     Compares the receiver to the specified string.
     @param aString the string with which to compare
@@ -433,7 +504,18 @@ CPNumericSearch
 */
 - (double)doubleValue
 {
-    return eval(self);
+    return parseFloat(self, 10);
+}
+/*
+    Returns <code>YES</code> on encountering one of "Y", "y", "T", "t", or 
+    a digit 1-9. Returns <code>NO</code> otherwise. This method skips the initial 
+    whitespace characters, +,- followed by Zeroes.
+*/
+
+- (BOOL)boolValue
+{
+    var replaceRegExp = new RegExp("^\\s*[\\+,\\-]*0*");
+    return RegExp("^[Y,y,t,T,1-9]").test(self.replace(replaceRegExp, ''));
 }
 
 /*
@@ -441,7 +523,7 @@ CPNumericSearch
 */
 - (float)floatValue
 {
-    return eval(self);
+    return parseFloat(self, 10);
 }
 
 /*
@@ -449,12 +531,12 @@ CPNumericSearch
 */
 - (int)intValue
 {
-    return parseInt(self);
+    return parseInt(self, 10);
 }
 
 /*
     Returns an the path components of this string. This
-    method assumes that the string's contents is a '/'
+    method assumes that the string's content is a '/'
     separated file system path.
 */
 - (CPArray)pathComponents
@@ -472,6 +554,11 @@ CPNumericSearch
     return substr(lastIndexOf('.') + 1);
 }
 
+/*
+    Returns the last component of this string.
+    This method assumes that the string's content is a '/'
+    separated file system path.
+*/
 - (CPString)lastPathComponent
 {
     var components = [self pathComponents];
@@ -484,8 +571,8 @@ CPNumericSearch
 */
 - (CPString)stringByDeletingLastPathComponent
 {
-    // FIMXE: this is wrong: a/a/ returns a/a/.
-    return substr(0, lastIndexOf('/')+1);  
+    // FIXME: this is wrong: a/a/ returns a/a/.
+    return substr(0, lastIndexOf('/') + 1);
 }
 
 - (CPString)stringByStandardizingPath
@@ -509,11 +596,11 @@ String.prototype.isa = CPString;
 var sprintfFormatRegex = new RegExp("([^%]+|%[\\+\\-\\ \\#0]*[0-9\\*]*(.[0-9\\*]+)?[hlL]?[cdieEfgGosuxXpn%])", "g");
 var sprintfTagRegex = new RegExp("(%)([\\+\\-\\ \\#0]*)([0-9\\*]*)((.[0-9\\*]+)?)([hlL]?)([cdieEfgGosuxXpn%])");
 
-/**
+/*
   Creates a new string using C printf-style formatting. First argument should be a constant format string, like ' "float val = %f" ', remaining arguments should be the variables to print the values of, comma-separated.
   @param format the format to be used, printf-style
   @return the initialized <objj>CPString</objj>
-  */
+*/
 function sprintf(format)
 {
     var format = arguments[0],
