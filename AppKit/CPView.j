@@ -37,13 +37,47 @@ import "CPGraphicsContext.j"
 #include "CoreGraphics/CGGeometry.h"
 #include "Platform/DOM/CPDOMDisplayServer.h"
 
-
+/*
+    @global
+    @group CPViewAutoresizingMasks
+    The default resizingMask, the view will not resize or reposition itself.
+*/
 CPViewNotSizable    = 0;
+/*
+    @global
+    @group CPViewAutoresizingMasks
+    Allow for flexible space on the left hand side of the view.
+*/
 CPViewMinXMargin    = 1;
+/*
+    @global
+    @group CPViewAutoresizingMasks
+    The view should grow and shrink horizontally with its parent view.
+*/
 CPViewWidthSizable  = 2;
+/*
+    @global
+    @group CPViewAutoresizingMasks
+    Allow for flexible space to the right hand side of the view.
+*/
 CPViewMaxXMargin    = 4;
+/*
+    @global
+    @group CPViewAutoresizingMasks
+    Allow for flexible space above the view.
+*/
 CPViewMinYMargin    = 8;
+/*
+    @global
+    @group CPViewAutoresizingMasks
+    The view should grow and shrink vertically with its parent view.
+*/
 CPViewHeightSizable = 16;
+/*
+    @global
+    @group CPViewAutoresizingMasks
+    Allow for flexible space below the view.
+*/
 CPViewMaxYMargin    = 32;
 
 CPViewBoundsDidChangeNotification   = @"CPViewBoundsDidChangeNotification";
@@ -139,11 +173,6 @@ var DOMElementPrototype         = nil,
 */
 + (void)initialize
 {
-#if PLATFORM(DOM)
-    if ([self instanceMethodForSelector:@selector(drawRect:)] != [CPView instanceMethodForSelector:@selector(drawRect:)])
-        CustomDrawRectViews[[self hash]] = YES;
-#endif
-
     if (self != [CPView class])
         return;
 
@@ -1346,7 +1375,16 @@ setBoundsOrigin:
 - (void)setNeedsDisplayInRect:(CPRect)aRect
 {
 #if PLATFORM(DOM)
-    if (!CustomDrawRectViews[[[self class] hash]])
+    var hash = [[self class] hash],
+        hasCustomDrawRect = CustomDrawRectViews[hash];
+    
+    if (!hasCustomDrawRect && typeof hasCustomDrawRect === "undefined")
+    {
+        hasCustomDrawRect = [self methodForSelector:@selector(drawRect:)] != [CPView instanceMethodForSelector:@selector(drawRect:)];
+        CustomDrawRectViews[hash] = hasCustomDrawRect;
+    }
+
+    if (!hasCustomDrawRect)
         return;
 #endif
         
@@ -1397,6 +1435,8 @@ setBoundsOrigin:
 */
 - (void)displayRect:(CPRect)aRect
 {
+    [self viewWillDraw];
+    
     [self displayRectIgnoringOpacity:aRect inContext:nil];
     
     _dirtyRect = NULL;
@@ -1410,6 +1450,10 @@ setBoundsOrigin:
     
     [self drawRect:aRect];
     [self unlockFocus];
+}
+
+- (void)viewWillDraw
+{
 }
 
 /*
