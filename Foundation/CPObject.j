@@ -267,7 +267,7 @@
 */
 - (void)forward:(SEL)aSelector :(marg_list)args
 {
-    var signature = [self methodSignatureForSelector:_cmd];
+    var signature = [self methodSignatureForSelector:aSelector];
     
     if (signature)
     {

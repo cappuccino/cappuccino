@@ -152,12 +152,13 @@ CPUnknownUserInfoKey        = @"CPUnknownUserInfoKey";
     
 - (id)valueForKey:(CPString)aKey
 {
-    var selector = [isa _accessorForKey:aKey];
+    var theClass = [self class],
+        selector = [theClass _accessorForKey:aKey];
 
     if (selector)
         return objj_msgSend(self, selector);
     
-    if([isa accessInstanceVariablesDirectly])
+    if([theClass accessInstanceVariablesDirectly])
     {
         var ivar = [self _ivarForKey:aKey];
         
@@ -227,12 +228,13 @@ CPUnknownUserInfoKey        = @"CPUnknownUserInfoKey";
     
 - (void)setValue:(id)aValue forKey:(CPString)aKey
 {
-    var selector = [isa _modifierForKey:aKey];
+    var theClass = [self class],
+        selector = [theClass _modifierForKey:aKey];
 
     if (selector)
         return objj_msgSend(self, selector, aValue);
     
-    if([isa accessInstanceVariablesDirectly])
+    if([theClass accessInstanceVariablesDirectly])
     {
         var ivar = [self _ivarForKey:aKey];
         
