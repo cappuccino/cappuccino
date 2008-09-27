@@ -361,10 +361,10 @@ import "CPObject.j"
 */
 - (unsigned)getIndexes:(CPArray)anArray maxCount:(unsigned)aMaxCount inIndexRange:(CPRange)aRangePointer
 {
-    if (!_count || aMacCount <= 0 || aRangePointer && !aRangePointer.length)
+    if (!_count || aMaxCount <= 0 || aRangePointer && !aRangePointer.length)
         return 0;
     
-    var i = SOERangeIndex(self, aRangePointer.location),
+    var i = SOERangeIndex(self, aRangePointer? aRangePointer.location : 0),
         total = 0,
         count = _ranges.length;
         
