@@ -296,7 +296,7 @@ import <Foundation/CPKeyValueObserving.j>
         
     var secondTotal = new Date() - startTime;
 
-    [self assertTrue: (secondTotal < total*2) message: "Overheard of one observer exceeded 100%. first: "+total+" second: "+secondTotal+" %"+FLOOR(secondTotal/total*100)];
+    [self assertTrue: (secondTotal < total*3) message: "Overheard of one observer exceeded 300%. first: "+total+" second: "+secondTotal+" %"+FLOOR(secondTotal/total*100)];
 }
 
 - (void)observeValueForKeyPath:(CPString)aKeyPath ofObject:(id)anObject change:(CPDictionary)changes context:(id)aContext

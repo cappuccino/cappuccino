@@ -22,6 +22,7 @@
 
 import "CPArray.j"
 import "CPDictionary.j"
+import "CPException.j"
 import "CPObject.j"
 
 @implementation CPObject (KeyValueObserving)
@@ -99,9 +100,11 @@ var KVOProxyMap = [CPDictionary dictionary];
 
     proxy = [[self alloc] initWithTarget:anObject];
 
-    [proxy _replaceSetters];
+    //[proxy _replaceSetters];
+    
+    //anObject.isa = proxy.isa;
 
-    anObject.isa = proxy.isa;
+    [proxy _replaceClass];
 
     [KVOProxyMap setObject:proxy forKey:[anObject hash]];
 
@@ -142,48 +145,70 @@ var KVOProxyMap = [CPDictionary dictionary];
     }
 }
 
-- (Class)class
+- (void)_replaceSetters
 {
-    return [KVOProxyMap objectForKey:[self hash]]._nativeClass;
+    var currentClass = [_targetObject class];
+
+    while (currentClass && currentClass != currentClass.super_class)
+    {
+        var methodList = currentClass.method_list,
+            count = methodList.length;
+
+        for (var i=0; i<count; i++)
+        {
+            var newMethod = _kvoMethodForMethod(_targetObject, methodList[i]);
+
+            if (newMethod)
+                [_replacementMethods setObject:newMethod forKey:methodList[i].name];
+        }
+
+        currentClass = currentClass.super_class;
+    }
 }
 
-- (Class)superclass
+- (void)_replaceClass
 {
-    return [self class].super_class;
-}
+    var currentClass = _nativeClass,
+        kvoClassName = "$KVO_"+class_getName(_nativeClass),
+        existingKVOClass = objj_lookUpClass(kvoClassName);
+    
+    if (existingKVOClass)
+    {
+        _targetObject.isa = existingKVOClass;
+        return;
+    }
+    
+    var kvoClass = objj_allocateClassPair(currentClass, kvoClassName);
+        
+    objj_registerClassPair(kvoClass);
+    _class_initialize(kvoClass);
+    
+    while (currentClass && currentClass != currentClass.super_class)
+    {
+        var methodList = currentClass.method_list,
+            count = methodList.length;
 
-- (BOOL)respondsToSelector:(SEL)aSelector
-{
-    var proxy = [_CPKVOProxy proxyForObject:self],
-        imp = class_getInstanceMethod(proxy._nativeClass, aSelector);
+        for (var i=0; i<count; i++)
+        {
+            var newMethodImp = _kvoMethodForMethod(_targetObject, methodList[i]);
 
-    return imp ? YES : NO;
-}
+            if (newMethodImp)
+                class_addMethod(kvoClass, method_getName(methodList[i]), newMethodImp, "");
+        }
 
-- (id)methodSignatureForSelector:(SEL)aSelector
-{
-    //FIXME: this only works because we don't have method signatures
-    return [self respondsToSelector:aSelector];
-}
+        currentClass = currentClass.super_class;
+    }
+    
+    var methodList = _CPKVOModelSubclass.method_list,
+        count = methodList.length;
 
-- (IMP)methodForSelector:(SEL)aSelector
-{
-    var proxy = [_CPKVOProxy proxyForObject:self],
-        replacement = [proxy._replacementMethods objectForKey:aSelector],
-        imp = replacement ? replacement : class_getInstanceMethod(proxy._nativeClass, aSelector);
+    for (var i=0; i<count; i++)
+    {
+        var method = methodList[i];
+        class_addMethod(kvoClass, method_getName(method), method_getImplementation(method), "");
+    }
 
-    return imp;
-}
-
-- (void)forwardInvocation:(CPInvocation)anInvocation
-{
-    var proxy = [_CPKVOProxy proxyForObject:self],
-        method = [self methodForSelector:[anInvocation selector]];
-
-    if (method)
-        method.apply(self, anInvocation._arguments); //FIXME
-    else
-        class_getInstanceMethod(proxy._nativeClass, @selector(forwardInvocation:)).apply(self, anInvocation.arguments);
+    _targetObject.isa = kvoClass;
 }
 
 - (void)_addObserver:(id)anObserver forKeyPath:(CPString)aPath options:(unsigned)options context:(id)aContext
@@ -240,23 +265,6 @@ var KVOProxyMap = [CPDictionary dictionary];
     }
 }
 
-- (void)willChangeValueForKey:(CPString)aKey
-{
-    if (!aKey)
-        return;
-
-    [[_CPKVOProxy proxyForObject:self] _sendNotificationsForKey:aKey isBefore:YES];
-}
-
-
-- (void)didChangeValueForKey:(CPString)aKey
-{
-    if (!aKey)
-        return;
-
-    [[_CPKVOProxy proxyForObject:self] _sendNotificationsForKey:aKey isBefore:NO];
-}
-
 - (void)_sendNotificationsForKey:(CPString)aKey isBefore:(BOOL)isBefore
 {
     var changes = [_changesForKey objectForKey:aKey];
@@ -299,6 +307,38 @@ var KVOProxyMap = [CPDictionary dictionary];
         else if (!isBefore)
             [observerInfo.observer observeValueForKeyPath:aKey ofObject:_targetObject change:changes context:observerInfo.context];
     }
+}
+
+@end
+
+@implementation _CPKVOModelSubclass
+{
+}
+
+- (void)willChangeValueForKey:(CPString)aKey
+{
+    if (!aKey)
+        return;
+
+    [[_CPKVOProxy proxyForObject:self] _sendNotificationsForKey:aKey isBefore:YES];
+}
+
+- (void)didChangeValueForKey:(CPString)aKey
+{
+    if (!aKey)
+        return;
+
+    [[_CPKVOProxy proxyForObject:self] _sendNotificationsForKey:aKey isBefore:NO];
+}
+
+- (Class)class
+{
+    return [KVOProxyMap objectForKey:[self hash]]._nativeClass;
+}
+
+- (Class)superclass
+{
+    return [[self class] superclass];
 }
 
 - (BOOL)isKindOfClass:(Class)aClass
@@ -438,3 +478,41 @@ var kvoKeyForSetter = function kvoKeyForSetter(selector)
     
     return selector.charAt(keyIndex).toLowerCase() + selector.substring(keyIndex+1, colonIndex);
 }
+
+@implementation CPArray (KeyValueObserving)
+
+- (void)addObserver:(id)anObserver toObjectsAtIndexes:(CPIndexSet)indexes forKeyPath:(CPString)aKeyPath options:(unsigned)options context:(id)context
+{
+    var index = [indexes firstIndex];
+    
+    while (index >= 0)
+    {
+        [self[index] addObserver:anObserver forKeyPath:aKeyPath options:options context:context];
+
+		index = [indexes indexGreaterThanIndex:index];
+    }
+}
+
+- (void)removeObserver:(id)anObserver fromObjectsAtIndexes:(CPIndexSet)indexes forKeyPath:(CPString)aKeyPath
+{
+    var index = [indexes firstIndex];
+    
+    while (index >= 0)
+    {
+        [self[index] removeObserver:anObserver forKeyPath:aKeyPath];
+
+		index = [indexes indexGreaterThanIndex:index];
+    }
+}
+
+-(void)addObserver:(id)observer forKeyPath:(CPString)aKeyPath options:(unsigned)options context:(id)context
+{
+    [CPException raise:CPInvalidArgumentException reason:"Unsupported method on CPArray"];
+}
+
+-(void)removeObserver:(id)observer forKeyPath:(CPString)aKeyPath
+{
+    [CPException raise:CPInvalidArgumentException reason:"Unsupported method on CPArray"];
+}
+
+@end

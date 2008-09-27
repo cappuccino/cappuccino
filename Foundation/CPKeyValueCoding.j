@@ -20,8 +20,9 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+import "CPArray.j"
 import "CPObject.j"
-
+import "CPDictionary.j"
 
 var CPObjectAccessorsForClass   = nil,
     CPObjectModifiersForClass   = nil;
@@ -258,6 +259,99 @@ CPUnknownUserInfoKey        = @"CPUnknownUserInfoKey";
     [[CPException exceptionWithName:CPUndefinedKeyException
                             reason:[self description] + " is not key value coding-compliant for the key " + aKey
                           userInfo:[CPDictionary dictionaryWithObjects:[self, aKey] forKeys:[CPTargetObjectUserInfoKey, CPUnknownUserInfoKey]]] raise];
+}
+
+@end
+
+@implementation CPDictionary (KeyValueCoding)
+
+- (id)valueForKey:(CPString)aKey
+{
+	return [self objectForKey:aKey];
+}
+
+- (void)setValue:(id)aValue forKey:(CPString)aKey
+{
+    [self setObject:aValue forKey:aKey];
+}
+
+@end
+
+//KVC on CPArray objects act on each item of the array, rather than on the array itself
+
+@implementation CPArray (KeyValueCoding)
+
+- (id)valueForKey:(CPString)aKey
+{
+    if (aKey.indexOf("@") == 0)
+    {
+        if (aKey == "@count")
+            return length;
+            
+        return nil;
+    }
+    else
+    {
+        var newArray = [],
+            enumerator = [self objectEnumerator],
+            object;
+            
+        while (object = [enumerator nextObject])
+        {
+            var value = [object valueForKey:aKey];
+            
+            if (!value && value !== "")
+                value = [NSNull null];
+                
+            newArray.push(value);
+        }
+        
+        return newArray;
+    }
+}
+
+- (id)valueForKeyPath:(CPString)aKeyPath
+{
+    if (aKey.indexOf("@") == 0)
+    {            
+        return nil;
+    }
+    else
+    {
+        var newArray = [],
+            enumerator = [self objectEnumerator],
+            object;
+            
+        while (object = [enumerator nextObject])
+        {
+            var value = [object valueForKeyPath:aKeyPath];
+            
+            if (!value && value !== "")
+                value = [NSNull null];
+                
+            newArray.push(value);
+        }
+        
+        return newArray;
+    }
+}
+
+- (void)setValue:(id)aValue forKey:(CPString)aKey
+{
+    var enumerator = [self objectEnumerator],
+        object;
+    
+    while (object = [enumerator nextObject])
+        [object setValue:aValue forKey:aKey];
+}
+
+- (void)setValue:(id)aValue forKeyPath:(CPString)aKeyPath
+{
+    var enumerator = [self objectEnumerator],
+        object;
+    
+    while (object = [enumerator nextObject])
+        [object setValue:aValue forKeyPath:aKeyPath];
 }
 
 @end
