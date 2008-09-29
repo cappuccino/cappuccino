@@ -25,12 +25,22 @@
 	        ]
 	    },
 	    {
-	        "type"    : "git",
-	        "server"  : "ssh://git@git.myserver.com/home/git/myapp.git",
+	        "type"    : "rsync",
+	        "path"    : "/Users/username/projects/NewApplication",
 	        "parts"   : [
 	            {
-    	            "src"       :   "Editor/Server",
-    	            "dst"       :   "Server"
+    	            "src"       :   "",
+    	            "dst"       :   "Blah"
+	            }
+	        ]
+	    },
+	    {
+	        "type"    : "svn",
+	        "path"    : "https://svn.youserver.com/Project/trunk",
+	        "parts"   : [
+	            {
+    	            "src"       :   "subdirectory",
+    	            "dst"       :   "Something"
 	            }
 	        ]
 	    }

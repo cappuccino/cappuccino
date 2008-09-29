@@ -38,21 +38,38 @@ function update()
     for (var i = 0; i < options.sources.length; i++)
     {
         var source = options.sources[i];
-        var sourcePath = checkoutsPath + "/" + source.path.match(new RegExp("[^\\/]+$"))[0];
+        
+        source.localSourcePath = checkoutsPath + "/" + source.path.replace(/\W+/g, "_");
         
         switch (source.type)
         {
             case "git":
-                if (new File(sourcePath).isDirectory())
+                if (new File(source.localSourcePath).isDirectory())
                 {
-                    CPLog.debug("git pull (" + sourcePath + ")");
-                    exec("git pull", null, new File(sourcePath));
+                    CPLog.debug("git pull (" + source.localSourcePath + ")");
+                    exec("git pull", null, new File(source.localSourcePath));
                 }
                 else
                 {
                     CPLog.debug("git clone (" + source.path + ")");
-                    exec(["git", "clone", source.path, sourcePath]);
+                    exec(["git", "clone", source.path, source.localSourcePath]);
                 }
+                break;
+            case "svn":
+                if (new File(source.localSourcePath).isDirectory())
+                {
+                    CPLog.debug("svn up (" + source.localSourcePath + ")");
+                    exec("svn up", null, new File(source.localSourcePath));
+                }
+                else
+                {
+                    CPLog.debug("svn co (" + source.path + ")");
+                    exec(["svn", "co", source.path, source.localSourcePath]);
+                }
+                break;
+            case "rsync":
+                CPLog.debug("rsync (" + source.localSourcePath + ")");
+                exec(["rsync", "-avz", source.path + "/", source.localSourcePath]);
                 break;
             default : 
                 CPLog.error("Unimplemented: " + source.type);
@@ -69,12 +86,11 @@ function build()
     for (var i = 0; i < options.sources.length; i++)
     {
         var source = options.sources[i];
-        var sourcePath = checkoutsPath + "/" + source.path.match(/[^\/]+$/)[0];
         
         for (var j = 0; j < source.parts.length; j++)
         {
             var part = source.parts[j];
-            var fromPath = sourcePath + "/" + part.src;
+            var fromPath = source.localSourcePath + "/" + part.src;
             var toPath = versionedPath + "/" + part.dst;
             
             if (part.build)
