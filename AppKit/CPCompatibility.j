@@ -137,6 +137,11 @@ function CPFeatureIsCompatible(aFeature)
     return PLATFORM_FEATURES & aFeature;
 }
 
+function CPBrowserIsEngine(anEngine)
+{
+    return PLATFORM_ENGINE == anEngine;
+}
+
 if (USER_AGENT.indexOf("Mac") != -1)
 {
     CPPlatformActionKeyMask = CPCommandKeyMask;
