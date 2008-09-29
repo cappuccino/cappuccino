@@ -283,6 +283,7 @@ var _CPTextFieldSquareBezelColor    = nil;
     element.style.font = _DOMElement.style.font;
     element.style.zIndex = 1000;
     element.style.width = CGRectGetWidth([self bounds]) - 3.0 + "px";
+    element.style.marginTop = "-1px";
     //element.style.left = _DOMTextElement.style.left;
     //element.style.top = _DOMTextElement.style.top;
       
