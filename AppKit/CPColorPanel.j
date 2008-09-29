@@ -100,8 +100,8 @@ CPColorPickerViewHeight = 370;
 }
 
 /*
-    Returns the shared color panel set to display in <code>mode</code>.
-    @param mode the mode to which the color panel will be set before returning
+    Sets the mode for the shared color panel.
+    @param mode the mode to which the color panel will be set
 */
 + (void)setPickerMode:(CPColorPanelMode)mode
 {
@@ -123,6 +123,7 @@ CPColorPickerViewHeight = 370;
         [self setTitle:@"Color Panel"];
         [self setLevel:CPFloatingWindowLevel];
         
+        [self setFloatingPanel:YES];
         [self setBecomesKeyOnlyIfNeeded:YES];
         
         [self setMinSize:CGSizeMake(218.0, 360.0)];
