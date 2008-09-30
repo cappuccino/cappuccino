@@ -717,6 +717,28 @@ function CPApplicationMain(args, namedArgs)
     //[NSBundle loadNibNamed:@"myMain" owner:NSApp];
     
     //FIXME?
+    if (!args && !namedArgs)
+    {
+        var args = window.location.hash.replace("#", "").split("/").slice(0),
+            searchParams = window.location.search.substring(1).split("&");
+            namedArgs = [CPDictionary dictionary];
+    
+        for(var i=0, count = args.length; i<count; i++) 
+            args[i] = decodeURIComponent(args[i]);
+    
+        if([args containsObject:"debug"])
+            CPLogRegister(CPLogPopup);
+    
+        for(var i=0; i<searchParams.length; i++)
+        {
+            var index = searchParams[i].indexOf('=');
+            if(index == -1)
+                [namedArgs setObject: "" forKey:searchParams[i]];
+            else
+                [namedArgs setObject: searchParams[i].substring(index+1) forKey: searchParams[i].substring(0, index)];
+        }
+    }
+    
     CPApp._args = args;
     CPApp._namedArgs = namedArgs;
     
