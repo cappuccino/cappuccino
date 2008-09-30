@@ -861,7 +861,7 @@ var CTRL_KEY_CODE   = 17;
 @end
 
 var CLICK_SPACE_DELTA   = 5.0,
-    CLICK_TIME_DELTA    = document.addEventListener ? 350.0 : 1000.0;
+    CLICK_TIME_DELTA    = (typeof document != "undefined" && document.addEventListener) ? 350.0 : 1000.0;
 
 var CPDOMEventGetClickCount = function(aComparisonEvent, aTimestamp, aLocation)
 {
