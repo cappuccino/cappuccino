@@ -369,7 +369,7 @@ var CPDOMWindowGetFrame = function(_DOMWindow)
 //might be mac only, we should investigate futher later.
 var KeyCodesToPrevent = {},
     CharacterKeysToPrevent = {},
-    KeyCodesWithoutKeyPressEvents = { '8':1, '9':1, '37':1, '38':1, '39':1, '40':1, '46':1 };
+    KeyCodesWithoutKeyPressEvents = { '8':1, '9':1, '37':1, '38':1, '39':1, '40':1, '46':1, '33':1, '34':1 };
 
 var CTRL_KEY_CODE   = 17;
 

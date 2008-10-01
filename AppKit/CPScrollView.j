@@ -57,10 +57,10 @@ import "CPScroller.j"
     if (self)
     {
         _verticalLineScroll = 10.0;
-        _verticalPageScroll = 10.0;
+        _verticalPageScroll = CGRectGetHeight(aFrame)/2.0;
         
         _horizontalLineScroll = 10.0;
-        _horizontalPageScroll = 10.0;
+        _horizontalPageScroll = CGRectGetWidth(aFrame)/2.0;
 
         _contentView = [[CPClipView alloc] initWithFrame:[self bounds]];
         
@@ -592,6 +592,45 @@ import "CPScroller.j"
 
     contentBounds.origin.x += [anEvent deltaX] * _horizontalLineScroll;
     contentBounds.origin.y += [anEvent deltaY] * _verticalLineScroll;
+
+    [_contentView scrollToPoint:contentBounds.origin];
+}
+
+- (void)keyDown:(CPEvent)anEvent
+{
+    var keyCode = [anEvent keyCode],
+        value = [_verticalScroller floatValue],
+        documentFrame = [[self documentView] frame],
+        contentBounds = [_contentView bounds];
+    
+    switch (keyCode)
+    {
+        case 33:    /*pageup*/
+                    contentBounds.origin.y -= [self verticalPageScroll];
+                    break;
+                    
+        case 34:    /*pagedown*/
+                    contentBounds.origin.y += [self verticalPageScroll];
+                    break;
+                    
+        case 38:    /*up arrow*/
+                    contentBounds.origin.y -= _verticalLineScroll;
+                    break;
+
+        case 40:    /*down arrow*/
+                    contentBounds.origin.y += _verticalLineScroll;
+                    break;
+                    
+        case 37:    /*left arrow*/
+                    contentBounds.origin.x -= _horizontalLineScroll;
+                    break;
+
+        case 49:    /*right arrow*/
+                    contentBounds.origin.x += _horizontalLineScroll;
+                    break;
+                    
+        default:    return [super keyDown:anEvent];
+    }
 
     [_contentView scrollToPoint:contentBounds.origin];
 }
