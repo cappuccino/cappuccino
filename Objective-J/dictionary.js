@@ -22,18 +22,18 @@
 
 function objj_dictionary()
 {
-    this.keys       = [];
-    this.count      = 0;
-    this.buckets    = {};
-    this.__address  = _objj_generateObjectHash();
+    this._keys       = [];
+    this.count       = 0;
+    this._buckets    = {};
+    this.__address   = _objj_generateObjectHash();
 }
 
 function dictionary_containsKey(aDictionary, aKey)
 {
-    return aDictionary.buckets[aKey] != NULL;
+    return aDictionary._buckets[aKey] != NULL;
 }
 
-#define dictionary_containsKey(aDictionary, aKey) ((aDictionary).buckets[aKey] != NULL)
+#define dictionary_containsKey(aDictionary, aKey) ((aDictionary)._buckets[aKey] != NULL)
 
 function dictionary_getCount(aDictionary)
 {
@@ -44,47 +44,47 @@ function dictionary_getCount(aDictionary)
 
 function dictionary_getValue(aDictionary, aKey)
 {
-    return aDictionary.buckets[aKey];
+    return aDictionary._buckets[aKey];
 }
 
-#define dictionary_getValue(aDictionary, aKey) ((aDictionary).buckets[aKey])
+#define dictionary_getValue(aDictionary, aKey) ((aDictionary)._buckets[aKey])
 
 function dictionary_setValue(aDictionary, aKey, aValue)
 {
-    if (aDictionary.buckets[aKey] == NULL)
+    if (aDictionary._buckets[aKey] == NULL)
     {
-        aDictionary.keys.push(aKey);
+        aDictionary._keys.push(aKey);
         ++aDictionary.count;
     }
        
-    if ((aDictionary.buckets[aKey] = aValue) == NULL)
+    if ((aDictionary._buckets[aKey] = aValue) == NULL)
         --aDictionary.count;
 }
 
 #define dictionary_setValue(aDictionary, aKey, aValue)\
 {\
-    if ((aDictionary).buckets[aKey] == NULL)\
+    if ((aDictionary)._buckets[aKey] == NULL)\
     {\
-        (aDictionary).keys.push(aKey);\
+        (aDictionary)._keys.push(aKey);\
         ++(aDictionary).count;\
     }\
 \
-    if (((aDictionary).buckets[aKey] = aValue) == NULL) \
+    if (((aDictionary)._buckets[aKey] = aValue) == NULL) \
         --(aDictionary).count;\
 }
 
 
 function dictionary_removeValue(aDictionary, aKey)
 {
-    if (aDictionary.buckets[aKey] == NULL)
+    if (aDictionary._buckets[aKey] == NULL)
         return;
 
     --aDictionary.count;
-    if (aDictionary.keys.indexOf)
-        aDictionary.keys.splice(aDictionary.keys.indexOf(aKey), 1);
+    if (aDictionary._keys.indexOf)
+        aDictionary._keys.splice(aDictionary._keys.indexOf(aKey), 1);
     else
     {
-        var keys = aDictionary.keys,
+        var keys = aDictionary._keys,
             index = 0,
             count = keys.length;
         
@@ -96,7 +96,7 @@ function dictionary_removeValue(aDictionary, aKey)
             }
     }
     
-    delete aDictionary.buckets[aKey];
+    delete aDictionary._buckets[aKey];
 }
 
 function dictionary_replaceValue(aDictionary, aKey, aValue)
@@ -111,8 +111,8 @@ function dictionary_replaceValue(aDictionary, aKey, aValue)
 function dictionary_description(aDictionary)
 {
     str = "{ ";
-    for ( x in aDictionary.buckets)
-        str += x + ":" + aDictionary.buckets[x] + ",";
+    for ( x in aDictionary._buckets)
+        str += x + ":" + aDictionary._buckets[x] + ",";
     str += " }";
     
     return str;

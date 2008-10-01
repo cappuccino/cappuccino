@@ -133,7 +133,7 @@ import "CPException.j"
     var key = "",
         dictionary = [[CPDictionary alloc] init];
     
-    for (key in aDictionary.buckets)
+    for (key in aDictionary._buckets)
         [dictionary setObject:[aDictionary objectForKey:key] forKey:key];
         
     return dictionary;
@@ -177,7 +177,7 @@ import "CPException.j"
 */
 - (CPArray)allKeys
 {
-    return keys;
+    return _keys;
 }
 
 /*
@@ -185,11 +185,11 @@ import "CPException.j"
 */
 - (CPArray)allValues
 {
-    var index = keys.length,
+    var index = _keys.length,
         values = [];
         
     while (index--)
-        values.push(dictionary_getValue(self, [keys[index]]));
+        values.push(dictionary_getValue(self, [_keys[index]]));
 
     return values;
 }
@@ -199,7 +199,7 @@ import "CPException.j"
 */
 - (CPEnumerator)keyEnumerator
 {
-    return [keys objectEnumerator];
+    return [_keys objectEnumerator];
 }
 
 /*
@@ -271,7 +271,7 @@ import "CPException.j"
 - (id)objectForKey:(CPString)aKey
 {
     // We should really do this with inlining or something of that nature.
-    return buckets[aKey];
+    return _buckets[aKey];
     //return dictionary_getValue(self, aKey);
 }
 /*
@@ -311,9 +311,9 @@ import "CPException.j"
 */
 - (void)removeAllObjects
 {
-    keys = [];
+    _keys = [];
     count = 0;
-    buckets = {};
+    _buckets = {};
 }
 
 /*
@@ -380,10 +380,10 @@ import "CPException.j"
 {
     var description = @"CPDictionary {\n";
     
-    var i = keys.length;
+    var i = _keys.length;
     
     while (i--)
-        description += keys[i] +":"+[buckets[keys[i]] description]+"\n";
+        description += _keys[i] +":"+[_buckets[_keys[i]] description]+"\n";
         
     description += "}";
     
