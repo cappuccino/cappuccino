@@ -57,10 +57,10 @@ import "CPScroller.j"
     if (self)
     {
         _verticalLineScroll = 10.0;
-        _verticalPageScroll = CGRectGetHeight(aFrame)/2.0;
+        _verticalPageScroll = 10.0;
         
         _horizontalLineScroll = 10.0;
-        _horizontalPageScroll = CGRectGetWidth(aFrame)/2.0;
+        _horizontalPageScroll = 10.0;
 
         _contentView = [[CPClipView alloc] initWithFrame:[self bounds]];
         
@@ -606,11 +606,11 @@ import "CPScroller.j"
     switch (keyCode)
     {
         case 33:    /*pageup*/
-                    contentBounds.origin.y -= [self verticalPageScroll];
+                    contentBounds.origin.y -= _CGRectGetHeight(contentBounds) - _verticalPageScroll;
                     break;
                     
         case 34:    /*pagedown*/
-                    contentBounds.origin.y += [self verticalPageScroll];
+                    contentBounds.origin.y += _CGRectGetHeight(contentBounds) - _verticalPageScroll;
                     break;
                     
         case 38:    /*up arrow*/
