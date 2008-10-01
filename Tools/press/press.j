@@ -7,11 +7,33 @@ CPLogRegister(CPLogPrint);
 
 function main()
 {
-    if (args.length < 2)
+    var rootPath = null,
+        outputDirectory = null,
+        optimizePNG = false;
+    
+    for (var i = 0; i < args.length; i++)
+    {
+        if (args[i] == "--png")
+            optimizePNG = true;
+        else
+        {
+            if (rootPath == null)
+                rootPath = args[i];
+            else if (outputDirectory == null)
+                outputDirectory = args[i];
+            else
+            {
+                CPLog.warn("Extra param!");
+            }
+        }
+    }
+    
+    if (rootPath == null || outputDirectory == null)   
     {
         print("Usage: press input_base_file.j output_directory");
         return;
     }
+        
     
     var rootPath = args[0],
         sourceDirectory = dirname(rootPath) || ".",
@@ -169,7 +191,7 @@ function main()
     var sourceDirectoryFile = new Packages.java.io.File(sourceDirectory),
         outputDirectoryFile = new Packages.java.io.File(outputDirectory);
         
-    copyDirectory(sourceDirectoryFile, outputDirectoryFile);
+    copyDirectory(sourceDirectoryFile, outputDirectoryFile, optimizePNG);
     
     for (var path in outputFiles)
     {
@@ -199,7 +221,7 @@ function main()
 
 // TODO: moved elsewhere?
 
-function copyDirectory(src, dst)
+function copyDirectory(src, dst, optimizePNG)
 {
     CPLog.trace("Copying directory " + src);
     
@@ -209,23 +231,31 @@ function copyDirectory(src, dst)
     for (var i = 0; i < files.length; i++)
     {
         if (files[i].isFile())
-            copyFile(files[i], new Packages.java.io.File(dst, files[i].getName()));
+            copyFile(files[i], new Packages.java.io.File(dst, files[i].getName()), optimizePNG);
         else if (files[i].isDirectory())
-            copyDirectory(files[i], new Packages.java.io.File(dst, files[i].getName()));
+            copyDirectory(files[i], new Packages.java.io.File(dst, files[i].getName()), optimizePNG);
     }
 }
 
-function copyFile(src, dst)
+function copyFile(src, dst, optimizePNG)
 {
-    CPLog.trace("Copying file " + src);
-    
-    var input = (new Packages.java.io.FileInputStream(src)).getChannel(),
-        output = (new Packages.java.io.FileOutputStream(dst)).getChannel();
+    if (optimizePNG && (/.png$/).test(src.getName()))
+    {
+        CPLog.warn("Optimizing .png " + src);
+        exec(["pngcrush", "-rem", "alla", "-reduce", /*"-brute",*/ src.getAbsolutePath(), dst.getAbsolutePath()]);
+    }
+    else
+    {
+        CPLog.trace("Copying file " + src);
+        
+        var input = (new Packages.java.io.FileInputStream(src)).getChannel(),
+            output = (new Packages.java.io.FileOutputStream(dst)).getChannel();
 
-    input.transferTo(0, input.size(), output);
+        input.transferTo(0, input.size(), output);
 
-    input.close();
-    output.close();
+        input.close();
+        output.close();
+    }
 }
 
 function dirname(path)
@@ -259,6 +289,39 @@ function pathRelativeTo(target, relativeTo)
         components.push(targetParts[j]);
         
     return components.join("/");
+}
+
+function exec()
+{
+    var runtime = Packages.java.lang.Runtime.getRuntime()
+	var p = runtime.exec.apply(runtime, arguments);
+	
+	var stdout = new Packages.java.io.BufferedReader(new Packages.java.io.InputStreamReader(p.getInputStream())),
+	    stdoutString = "",
+	    stderr = new Packages.java.io.BufferedReader(new Packages.java.io.InputStreamReader(p.getErrorStream())),
+	    stderrString = "";
+	
+	var done = false;
+	while (!done)
+	{
+	    done = true;
+	    if (s = stdout.readLine())
+	    {
+    	    stdoutString += s;
+        	CPLog.info("exec: " + s);
+        	done = false;
+	    }
+	    if (s = stderr.readLine())
+    	{
+    	    stderrString += s;
+        	CPLog.warn("exec: " + s);
+        	done = false;
+    	}
+	}
+
+	var code = p.waitFor();
+		
+	return { code : code, stdout : stdoutString, stderr : stderrString };
 }
 
 main();
