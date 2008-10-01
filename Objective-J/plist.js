@@ -460,7 +460,7 @@ var _CPArrayAppendXMLData = function(XMLData, anArray)
 
 var _CPDictionaryAppendXMLData = function(XMLData, aDictionary)
 {
-    var keys = aDictionary.keys,
+    var keys = aDictionary._keys,
         i = 0,
         count = keys.length;
         
@@ -644,7 +644,7 @@ _CPPropertyList280NorthSerializers["array"] = function(anArray, serializers)
 
 _CPPropertyList280NorthSerializers["dictionary"] = function(aDictionary, serializers)
 {
-    var keys = aDictionary.keys,
+    var keys = aDictionary._keys,
         index = 0,
         count = keys.length,
         string = DICTIONARY_MARKER +';';
