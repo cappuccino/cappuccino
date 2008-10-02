@@ -267,13 +267,15 @@ var CPDocumentUntitledCount = 0;
 */
 - (CPString)displayName
 {
-    //  FIXME: By default, return last path component of fileURL
+    if (_fileURL)
+        return [_fileURL lastPathComponent];
+    
     if (!_untitledDocumentIndex)
         _untitledDocumentIndex = ++CPDocumentUntitledCount;
 	
 	if (_untitledDocumentIndex == 1)
 	   return @"Untitled";
-	
+
 	return @"Untitled " + _untitledDocumentIndex;
 }
 
@@ -336,7 +338,7 @@ var CPDocumentUntitledCount = 0;
 {
     if (_fileURL == aFileURL)
         return;
-    
+
     _fileURL = aFileURL;
     
     [_windowControllers makeObjectsPerformSelector:@selector(synchronizeWindowTitleWithDocumentName)];
