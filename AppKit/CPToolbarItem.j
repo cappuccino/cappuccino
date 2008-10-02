@@ -55,6 +55,8 @@ CPToolbarShowFontsItemIdentifier        = @"CPToolbarShowFontsItemIdentifier";
 CPToolbarCustomizeToolbarItemIdentifier = @"CPToolbarCustomizeToolbarItemIdentifier";
 CPToolbarPrintItemIdentifier            = @"CPToolbarPrintItemIdentifier";
 
+var _CPToolbarSeparatorItemView         = nil;
+
 /*
     A representation of an item in a <objj>CPToolbar</objj>.
 */
@@ -206,8 +208,6 @@ CPToolbarPrintItemIdentifier            = @"CPToolbarPrintItemIdentifier";
 - (void)setTarget:(id)aTarget
 {
     _target = aTarget;
-    
-    [_view setTarget:aTarget];
 }
 
 /*
@@ -225,8 +225,6 @@ CPToolbarPrintItemIdentifier            = @"CPToolbarPrintItemIdentifier";
 - (void)setAction:(SEL)anAction
 {
     _action = anAction;
-
-    [_view setAction:anAction];
 }
 
 /*
@@ -409,7 +407,22 @@ CPToolbarItemVisibilityPriorityUser
 
     switch (anItemIdentifier)
     {
-        case CPToolbarSeparatorItemIdentifier:          return nil;
+        case CPToolbarSeparatorItemIdentifier:          [item setMinSize:CGSizeMake(2.0, 0.0)];
+                                                        [item setMaxSize:CGSizeMake(2.0, 100000.0)];
+                                                        
+                                                        if (!_CPToolbarSeparatorItemView)
+                                                        {
+                                                            _CPToolbarSeparatorItemView = [[CPView alloc] initWithFrame:CGRectMake(0.0, 0.0, 2.0, 32.0)];
+                                                            
+                                                            sizes = {};
+                                                            sizes[@"CPToolbarItemSeparator"] = [CGSizeMake(2.0, 26.0), CGSizeMake(2.0, 1.0), CGSizeMake(2.0, 26.0)];
+                                                            [_CPToolbarSeparatorItemView setBackgroundColor:_CPControlThreePartImagePattern(YES, sizes, @"CPToolbarItem", @"Separator")];
+                                                        }
+                                                        
+                                                        [item setView:_CPToolbarSeparatorItemView];
+                                                        
+                                                        
+                                                        return item;
 
         case CPToolbarSpaceItemIdentifier:              [item setMinSize:CGSizeMake(32.0, 32.0)];
                                                         [item setMaxSize:CGSizeMake(32.0, 32.0)];

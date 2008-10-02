@@ -323,9 +323,9 @@ var _CPToolbarViewBackgroundColor = nil,
     _CPToolbarViewExtraItemsImage = nil,
     _CPToolbarViewExtraItemsAlternateImage = nil;
 
-var TOOLBAR_TOP_MARGIN  = 5.0,
-    TOOLBAR_ITEM_MARGIN = 10.0,
-    TOOLBAR_EXTRA_ITEMS_WIDTH = 20.0;
+var TOOLBAR_TOP_MARGIN          = 5.0,
+    TOOLBAR_ITEM_MARGIN         = 10.0,
+    TOOLBAR_EXTRA_ITEMS_WIDTH   = 20.0;
 
 var _CPToolbarItemInfoMake = function(anIndex, aView, aLabel, aMinWidth)
 {
@@ -439,23 +439,37 @@ var _CPToolbarItemInfoMake = function(anIndex, aView, aLabel, aMinWidth)
     }
     
     // Determine all the items that have flexible width.
-    var index = _visibleItems.length;
-    
+    // Also determine the height of the toolbar.
+    var index = _visibleItems.length,
+        height = 0.0;
+
     while (index--)
     {
-        var item = _visibleItems[index];
+        var item = _visibleItems[index],
+            minSize = [item minSize],
+            view = [self viewForItem:item];
         
-        if ([item minSize].width != [item maxSize].width)
-            [flexibleItemIndexes addIndex:index];            
+        if (minSize.width != [item maxSize].width)
+            [flexibleItemIndexes addIndex:index];
+        
+        // If the item doesn't have flexible width, then make sure it's set to the static width (min==max)
+        // This handles the case where the user did setView: with a view of a different size than minSize/maxSize
+        else
+            [view setFrameSize:CGSizeMake([item minSize].width, CGRectGetHeight([view frame]))];
 
-        [[self viewForItem:item] setHidden:NO];
+        // FIXME: minHeight?
+
+        [view setHidden:NO];
         [[self labelForItem:item] setHidden:NO];
+        
+        if (height < minSize.height)
+            height = minSize.height;
     }
     
     var remainingSpace = width - minWidth,
         proportionate = 0.0;
-    
-    // Continue to dstribute space proportionately while we have it, 
+
+    // Continue to distribute space proportionately while we have it, 
     // and there are flexible items left that want it. (Those with max 
     // widths may eventually not want it anymore).
     while (remainingSpace && [flexibleItemIndexes count])
@@ -472,7 +486,8 @@ var _CPToolbarItemInfoMake = function(anIndex, aView, aLabel, aMinWidth)
         {
             var item = _visibleItems[index];
                 view = [self viewForItem:item],
-                frame = [view frame],
+                viewFrame = [view frame],
+                // FIXME: Should this be minWidthForItem: ?
                 proposedWidth = [item minSize].width + proportionate,
                 constrainedWidth = MIN(proposedWidth, [item maxSize].width);
             
@@ -483,14 +498,15 @@ var _CPToolbarItemInfoMake = function(anIndex, aView, aLabel, aMinWidth)
                 remainingSpace += proposedWidth - constrainedWidth;
             }
             
-            [view setFrameSize:CGSizeMake(constrainedWidth, CGRectGetHeight(frame))];
+            [view setFrameSize:CGSizeMake(constrainedWidth, CGRectGetHeight(viewFrame))];
         }
     }
     
     // Now that all the visible items are the correct width, position them accordingly.
     var count = _visibleItems.length,
-        x = TOOLBAR_ITEM_MARGIN;
-    
+        x = TOOLBAR_ITEM_MARGIN,
+        fullHeightItems = [];
+
     for (index = 0; index < count; ++index)
     {
         var item = _visibleItems[index],
@@ -503,14 +519,30 @@ var _CPToolbarItemInfoMake = function(anIndex, aView, aLabel, aMinWidth)
             labelFrame = [label frame],
             labelWidth = CGRectGetWidth(labelFrame),
             
-            itemWidth = MAX([self minWidthForItem:item], viewWidth);
-        
-        [view setFrameOrigin:CGPointMake(x + (itemWidth - viewWidth) / 2.0, TOOLBAR_TOP_MARGIN)];
-        [label setFrameOrigin:CGPointMake(x + (itemWidth - labelWidth) / 2.0, TOOLBAR_TOP_MARGIN + CGRectGetHeight(viewFrame))];
+            itemWidth = MAX([self minWidthForItem:item], viewWidth),
+            
+            viewHeight = MAX([item minSize].height, MIN([item maxSize].height, height));
+
+        // itemWidth != viewWidth.  itemWidth is MAX(size of view, size of label).  If the label is larger,
+        // *center* the view, don't resize it.
+        [view setFrame:CGRectMake(x + (itemWidth - viewWidth) / 2.0, TOOLBAR_TOP_MARGIN + (height - viewHeight) / 2.0, viewWidth, viewHeight)];
+        [label setFrameOrigin:CGPointMake(x + (itemWidth - labelWidth) / 2.0, TOOLBAR_TOP_MARGIN + height + 2.0)];
 
         x += itemWidth + TOOLBAR_ITEM_MARGIN;
+        
+        if ([item itemIdentifier] == CPToolbarSeparatorItemIdentifier)
+            fullHeightItems.push(item);
     }
     
+    for (index = 0, count = fullHeightItems.length; index < count; ++index)
+    {
+        var view = [self viewForItem:fullHeightItems[index]],
+            viewHeight = 53.0;
+        
+        // FIXME: Variable Height
+        [view setFrame:CGRectMake(CGRectGetMinX([view frame]), (59.0 - viewHeight) / 2.0, CGRectGetWidth([view frame]), viewHeight)];
+    }
+
     if ([invisibleItemsSortedByPriority count])
     {
         var index = 0,
