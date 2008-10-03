@@ -313,7 +313,10 @@ var _CPToolbarSeparatorItemView         = nil;
 */
 - (void)setMinSize:(CGSize)aMinSize
 {
-    _minSize = CGSizeCreateCopy(aMinSize);
+    _minSize = CGSizeMakeCopy(aMinSize);
+    
+    // Try to provide some sanity: Make maxSize >= minSize
+    _maxSize = CGSizeMake(MAX(_minSize.width, _maxSize.width), MAX(_minSize.height, _maxSize.height));
 }
 
 /*
@@ -330,7 +333,10 @@ var _CPToolbarSeparatorItemView         = nil;
 */
 - (void)setMaxSize:(CGSize)aMaxSize
 {
-    _maxSize = CGSizeCreateCopy(aMaxSize);
+    _maxSize = CGSizeMakeCopy(aMaxSize);
+    
+    // Try to provide some sanity: Make minSize <= maxSize
+    _minSize = CGSizeMake(MIN(_minSize.width, _maxSize.width), MIN(_minSize.height, _maxSize.height));
 }
 
 // Visibility Priority
