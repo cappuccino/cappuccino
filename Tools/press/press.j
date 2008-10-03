@@ -137,7 +137,7 @@ function main()
                         outputFiles[staticPath].push(file.fragments[i].info.length+";");
                         outputFiles[staticPath].push(file.fragments[i].info);
                     }
-                    else if (file.fragments[i].type & FRAGMENT_IMPORT)
+                    else if (file.fragments[i].type & FRAGMENT_FILE)
                     {
                         var ignoreFragment = false;
                         if (file.fragments[i].conditionallyIgnore)
@@ -159,7 +159,7 @@ function main()
                                 outputFiles[staticPath].push(relativePath.length+";");
                                 outputFiles[staticPath].push(relativePath);
                             }
-                            else if (file.fragments[i].type & FRAGMENT_FILE)
+                            else
                             {
                                 outputFiles[staticPath].push("I;");
                                 outputFiles[staticPath].push(file.fragments[i].info.length+";");

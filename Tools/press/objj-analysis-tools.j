@@ -78,7 +78,7 @@ function traverseDependencies(context, file)
                 }
             }
         }
-        else if (fragment.type & FRAGMENT_IMPORT)
+        else if (fragment.type & FRAGMENT_FILE)
         {
             if (ignoreImports)
             {
@@ -152,7 +152,7 @@ function findImportInObjjFiles(scope, fragment)
             importPath = searchPath;
         }
     }
-    else if (fragment.type & FRAGMENT_FILE)
+    else
     {
         //CPLog.debug("Importing search-path file: " + fragment.info);
 
@@ -167,8 +167,6 @@ function findImportInObjjFiles(scope, fragment)
             }
         }
     }
-    else
-        CPLog.warn("Import fragment not local or file");
     
     return importPath;
 }
@@ -212,7 +210,7 @@ function findGlobalDefines(context, scope, rootPath)
             
             for (var i = 0; i < aFragment.context.fragments.length; i++)
             {
-                if ((aFragment.context.fragments[i].type & FRAGMENT_IMPORT) && (/Foundation\//).test(aFragment.context.fragments[i].info))
+                if ((aFragment.context.fragments[i].type & FRAGMENT_FILE) && (/Foundation\//).test(aFragment.context.fragments[i].info))
                 {
                     CPLog.error("Inserting patch");
                     aFragment.context.fragments.splice(i, 0, patchFragment);
