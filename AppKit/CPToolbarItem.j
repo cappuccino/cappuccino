@@ -260,7 +260,21 @@ var _CPToolbarSeparatorItemView         = nil;
 {
     _image = anImage;
     
+    // FIXME: We can't keep assuming this.
     [_view setImage:anImage];
+    
+    if (!_image)
+        return;
+    
+    var imageSize = [_image size];
+    
+    if (_minSize.width == 0 && _minSize.height == 0 && 
+        _maxSize.width == 0 && _maxSize.height == 0 && 
+        (imageSize.width > 0 || imageSize.height > 0))
+    {
+        [self setMinSize:imageSize];
+        [self setMaxSize:imageSize];
+    }
 }
 
 /*
@@ -271,6 +285,7 @@ var _CPToolbarSeparatorItemView         = nil;
 {
     _alternateImage = anImage;
     
+    // FIXME: We can't keep assuming this.
     [_view setAlternateImage:anImage];
 }
 
