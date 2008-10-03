@@ -66,7 +66,6 @@ function objj_context()
 
 #define IS_FILE(aFragment) (aFragment.type & FRAGMENT_FILE)
 #define IS_LOCAL(aFragment) (aFragment.type & FRAGMENT_LOCAL)
-#define IS_IMPORT(aFragment) (aFragment.type & FRAGMENT_IMPORT)
 
 function fragment_create_code(aCode, aBundle, aFile)
 {
@@ -80,11 +79,11 @@ function fragment_create_code(aCode, aBundle, aFile)
     return fragment;
 }
 
-function fragment_create_file(aPath, aBundle, isLocal, isImport, aFile)
+function fragment_create_file(aPath, aBundle, isLocal, aFile)
 {
     var fragment = new objj_fragment();
     
-    SET_TYPE(fragment, FRAGMENT_FILE | (FRAGMENT_LOCAL * isLocal) | (FRAGMENT_IMPORT * isImport));
+    SET_TYPE(fragment, FRAGMENT_FILE | (FRAGMENT_LOCAL * isLocal));
     SET_PATH(fragment, aPath);
     SET_BUNDLE(fragment, aBundle);
     SET_FILE(fragment, aFile);
@@ -233,7 +232,7 @@ function objj_import(aPath, isLocal, didCompleteCallback)
     var context = new objj_context();
     
     context.didCompleteCallback = didCompleteCallback;
-    context.pushFragment(fragment_create_file(aPath, isLocal, YES));
+    context.pushFragment(fragment_create_file(aPath, new objj_bundle(""), isLocal, NULL));
         
     context.evaluate();
 }
