@@ -496,7 +496,7 @@ function objj_preprocess_tokens(tokens, terminator, instigator, segment)
             else
                 objj_exception_throw(new objj_exception(OBJJParseException, "*** Expecting '<' or '\"', found \"" + token + "\"."));
             
-            fragments.push(fragment_create_file(path, NULL, isLocal, YES, tokens.file));
+            fragments.push(fragment_create_file(path, NULL, isLocal, tokens.file));
         }
         // Safari can't handle function declarations of the form function [name]([arguments]) { } 
         // in evals.  It requires them to be in the form [name] = function([arguments]) { }.  So we 

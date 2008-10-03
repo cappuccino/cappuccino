@@ -59,9 +59,9 @@ function objj_decompile(aString, bundle)
                                         break;
             case MARKER_CODE:           file.fragments.push(fragment_create_code(text, bundle, file));
                                         break;
-            case MARKER_IMPORT_STD:     file.fragments.push(fragment_create_file(text, bundle, NO, YES, file));
+            case MARKER_IMPORT_STD:     file.fragments.push(fragment_create_file(text, bundle, NO, file));
                                         break;
-            case MARKER_IMPORT_LOCAL:   file.fragments.push(fragment_create_file(text, bundle, YES, YES, file));
+            case MARKER_IMPORT_LOCAL:   file.fragments.push(fragment_create_file(text, bundle, YES, file));
                                         break;
         }
     }
