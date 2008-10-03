@@ -25,8 +25,7 @@ var objj_included_files = { };
 var FRAGMENT_CODE   = 1,
 
     FRAGMENT_FILE   = 1 << 2,
-    FRAGMENT_LOCAL  = 1 << 3,
-    FRAGMENT_IMPORT = 1 << 4;
+    FRAGMENT_LOCAL  = 1 << 3;
     
 function objj_fragment()
 {

@@ -78,7 +78,7 @@ function traverseDependencies(context, file)
                 }
             }
         }
-        else if (fragment.type & FRAGMENT_IMPORT)
+        else if (fragment.type & FRAGMENT_FILE)
         {
             if (ignoreImports)
             {
@@ -152,7 +152,7 @@ function findImportInObjjFiles(scope, fragment)
             importPath = searchPath;
         }
     }
-    else if (fragment.type & FRAGMENT_FILE)
+    else
     {
         //CPLog.debug("Importing search-path file: " + fragment.info);
 
@@ -167,8 +167,6 @@ function findImportInObjjFiles(scope, fragment)
             }
         }
     }
-    else
-        CPLog.warn("Import fragment not local or file");
     
     return importPath;
 }
@@ -192,15 +190,48 @@ function findGlobalDefines(context, scope, rootPath)
     //    
     //    return result;
     //}
+    
+    var needsPatch = true;
+    
+    var fragment_evaluate_file_original = scope.fragment_evaluate_file;
+    scope.fragment_evaluate_file = function(aFragment)
+    {
+        // patch Foundation.j (HACK for Rhino bug #374918)
+        if (needsPatch && aFragment.file && (/Foundation\.j$/).test(aFragment.file.path))
+        {
+            CPLog.error("Patching Foundation.j");
+            
+            var patchFragment = new objj_fragment();
+            patchFragment.info = "__RHINO_FIRST_SCOPE.String.prototype.isa=CPString;__RHINO_FIRST_SCOPE.Number.prototype.isa=CPNumber;__RHINO_FIRST_SCOPE.Boolean.prototype.isa=CPNumber;print('PATCHED!');";
+            patchFragment.type = FRAGMENT_CODE;
+            patchFragment.file = aFragment.file;
+            patchFragment.bundle = aFragment.bundle;
+            patchFragment.context = aFragment.context;
+            
+            for (var i = 0; i < aFragment.context.fragments.length; i++)
+            {
+                if ((aFragment.context.fragments[i].type & FRAGMENT_FILE) && (/Foundation\//).test(aFragment.context.fragments[i].info))
+                {
+                    CPLog.error("Inserting patch");
+                    aFragment.context.fragments.splice(i, 0, patchFragment);
+                    break;
+                }
+            }
+            
+            needsPatch = false;
+        }
+        
+        return fragment_evaluate_file_original(aFragment);
+    }
 
-    scope.fragment_evaluate_code_original = scope.fragment_evaluate_code;
+    var fragment_evaluate_code_original = scope.fragment_evaluate_code;
     scope.fragment_evaluate_code = function(aFragment)
     {
         CPLog.debug("Evaling "+aFragment.file.path + " / " + aFragment.bundle.path);
     
         var before = cloneProperties(scope);
-    
-        var result = scope.fragment_evaluate_code_original(aFragment);
+        
+        var result = fragment_evaluate_code_original(aFragment);
     
         var definedGlobals = {};
         diff(before, scope, ignore, definedGlobals, definedGlobals, null);
@@ -257,14 +288,18 @@ function makeObjjScope(context, debug)
     }
     
     // give the scope "print"
-    scope.print = function(value) { Packages.java.lang.System.out.println(value); };
+    scope.print = function(value) { Packages.java.lang.System.out.println(String(value)); };
+    
+    // HACK for Rhino bug #374918 (fix toll free bridging)
+    scope.__RHINO_FIRST_SCOPE = this;
+    CPLog.info("__RHINO_FIRST_SCOPE="+scope.__RHINO_FIRST_SCOPE);
     
     // load and eval fake browser environment
-    var envSource = readFile(envPath);
-    if (envSource)
-        context.evaluateString(scope, envSource, "env.js", 1, null);
-    else
-        CPLog.warn("Missing env.js");
+    //var envSource = readFile(envPath);
+    //if (envSource)
+    //    context.evaluateString(scope, envSource, "env.js", 1, null);
+    //else
+    //     CPLog.warn("Missing env.js");
         
     // load and eval the bridge
     var bridgeSource = readFile(bridgePath);

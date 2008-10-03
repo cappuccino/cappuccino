@@ -4,7 +4,6 @@ import "objj-analysis-tools.j"
 
 CPLogRegister(CPLogPrint);
 
-
 function main()
 {
     var rootPath = null,
@@ -33,7 +32,6 @@ function main()
         print("Usage: press input_base_file.j output_directory");
         return;
     }
-        
     
     var rootPath = args[0],
         sourceDirectory = dirname(rootPath) || ".",
@@ -44,11 +42,9 @@ function main()
     
     var frameworks = rootPath.substring(0, rootPath.lastIndexOf("/")+1) + "Frameworks/";
     scope.OBJJ_INCLUDE_PATHS = [frameworks];
-
     CPLog.info("OBJJ_INCLUDE_PATHS="+scope.OBJJ_INCLUDE_PATHS);
     
     // phase 1: get global defines
-    
     var globals = findGlobalDefines(cx, scope, rootPath);
     
     // coalesce the results
@@ -73,6 +69,7 @@ function main()
             }
         }
         
+        requiredFiles[rootPath] = true;
         traverseDependencies(context, scope.objj_files[rootPath]);
         
         var count = 0,
@@ -140,7 +137,7 @@ function main()
                         outputFiles[staticPath].push(file.fragments[i].info.length+";");
                         outputFiles[staticPath].push(file.fragments[i].info);
                     }
-                    else if (file.fragments[i].type & FRAGMENT_IMPORT)
+                    else if (file.fragments[i].type & FRAGMENT_FILE)
                     {
                         var ignoreFragment = false;
                         if (file.fragments[i].conditionallyIgnore)
@@ -162,7 +159,7 @@ function main()
                                 outputFiles[staticPath].push(relativePath.length+";");
                                 outputFiles[staticPath].push(relativePath);
                             }
-                            else if (file.fragments[i].type & FRAGMENT_FILE)
+                            else
                             {
                                 outputFiles[staticPath].push("I;");
                                 outputFiles[staticPath].push(file.fragments[i].info.length+";");
@@ -272,7 +269,7 @@ function pathRelativeTo(target, relativeTo)
 {
     var components = [],
         targetParts = target.split("/"),
-        relativeParts = relativeTo.split("/");
+        relativeParts = relativeTo ? relativeTo.split("/") : [];
 
     var i = 0;
     while (i < targetParts.length)
@@ -287,12 +284,16 @@ function pathRelativeTo(target, relativeTo)
     
     for (var j = i; j < targetParts.length; j++)
         components.push(targetParts[j]);
-        
-    return components.join("/");
+    
+    var result = components.join("/");
+    
+    return result;
 }
 
 function exec()
 {
+    var printOutput = false;
+    
     var runtime = Packages.java.lang.Runtime.getRuntime()
 	var p = runtime.exec.apply(runtime, arguments);
 	
@@ -308,13 +309,15 @@ function exec()
 	    if (s = stdout.readLine())
 	    {
     	    stdoutString += s;
-        	CPLog.info("exec: " + s);
+    	    if (printOutput)
+        	    CPLog.info("exec: " + s);
         	done = false;
 	    }
 	    if (s = stderr.readLine())
     	{
     	    stderrString += s;
-        	CPLog.warn("exec: " + s);
+    	    //if (printOutput)
+        	    CPLog.warn("exec: " + s);
         	done = false;
     	}
 	}

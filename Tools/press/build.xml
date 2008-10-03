@@ -1,0 +1,39 @@
+<?xml version = "1.0"?>
+<project name = "press" default = "build" basedir = "." >
+
+    <import file = "../../common.xml" />
+
+    <property name = "Build.Intermediate" location = "${Build}/press.build/${Configuration}" />
+    <property name = "Build.press" location = "${Build}/${Configuration}/press" />
+
+    <target name = "clean">
+        <delete dir = "${Build.press}" verbose = "true" />
+    </target>
+        
+    <target name = "build">
+    
+        <mkdir dir = "${Build.press}" />
+        
+        <copy file = "${basedir}/press.j" tofile = "${Build.press}/press.j" />
+        <copy file = "${basedir}/objj-analysis-tools.j" tofile = "${Build.press}/objj-analysis-tools.j" />
+        
+        <copy file = "${basedir}/press" tofile = "${Build.press}/press" />
+        
+        <chmod file = "${Build.press}/press" perm = "+x" />
+        
+    </target>
+    
+    <target name = "release" depends = "build">
+        
+        <antcall target = "prepare-release" />
+        
+        <copy file = "${Build.press}/press.j" tofile = "${Build.Cappuccino.Tools.Lib}/press.j" />
+        <copy file = "${Build.press}/objj-analysis-tools.j" tofile = "${Build.Cappuccino.Tools.Lib}/objj-analysis-tools.j" />
+        
+        <copy file = "${Build.press}/press" tofile = "${Build.Cappuccino.Tools.Bin}/press" />
+        
+        <chmod file = "${Build.Cappuccino.Tools.Bin}/press" perm = "+x" />
+        
+    </target>
+
+</project>
