@@ -36,7 +36,7 @@ try {
     	if (debug)
     		print("Loading: " + main_file);
 
-    	objj_import(main_file, NO);
+    	objj_import(main_file, YES);
 
     	serviceTimeouts();
 
