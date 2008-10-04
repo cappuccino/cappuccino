@@ -17,6 +17,7 @@
         <file name = "preprocess.js" />
         <file name = "evaluate.js" />
         <file name = "static.js" />
+        <file name = "debug.js" />
     
     </filelist>
     

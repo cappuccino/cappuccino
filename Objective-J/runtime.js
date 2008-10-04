@@ -443,80 +443,22 @@ function objj_msgSend(/*id*/ aReceiver, /*SEL*/ aSelector)
 {
     if (aReceiver == nil)
         return nil;
-
-#if DEBUG
-    objj_debug_backtrace.push("[" + GETMETA(aReceiver).name + " " + aSelector + "]");
-    
-    try
-    {
-        var result = class_getMethodImplementation(aReceiver.isa, aSelector).apply(aReceiver, arguments);
-    }
-    catch (anException)
-    {
-        CPLog.error("Exception " + anException + " in [" + GETMETA(aReceiver).name + " " + aSelector + "]");
-        objj_debug_print_backtrace();
-    }
-    
-    objj_debug_backtrace.pop();
-    
-    return result;
-#else
+        
     CLASS_GET_METHOD_IMPLEMENTATION(var implementation, aReceiver.isa, aSelector);
-    
+
     return implementation.apply(aReceiver, arguments);
-#endif
 }
 
 function objj_msgSendSuper(/*id*/ aSuper, /*SEL*/ aSelector)
 {
-#if DEBUG
-    objj_debug_backtrace.push("[" + GETMETA(aSuper.receiver).name + " " + aSelector + "]");
-#endif
     var super_class = aSuper.super_class;
-    
+
     arguments[0] = aSuper.receiver;
-    
-#if !DEBUG
+
     CLASS_GET_METHOD_IMPLEMENTATION(var implementation, super_class, aSelector);
-    
+
     return implementation.apply(aSuper.receiver, arguments);
-#else
-    try
-    {
-        var result = class_getMethodImplementation(super_class, aSelector).apply(aSuper.receiver, arguments);
-    }
-    catch (anException)
-    {
-        CPLog.error("Exception " + anException + " in [" + GETMETA(aSuper.receiver).name + " " + aSelector + "]");
-        objj_debug_print_backtrace();
-    }
-    
-    objj_debug_backtrace.pop();
-    
-    return result;
-#endif
 }
-
-#if DEBUG
-// FIXME: This could be much better.
-var objj_debug_backtrace = [];
-
-function objj_debug_print_backtrace()
-{
-    CPLog.trace(objj_debug_backtrace_string());
-}
-
-function objj_debug_backtrace_string()
-{
-    var i = objj_debug_backtrace.length,
-        backtrace = "";
-        
-    while (i--)
-        backtrace += objj_debug_backtrace[i] + "\n";
-        
-    return backtrace;
-}
-#endif
 
 // Working with Methods
 
