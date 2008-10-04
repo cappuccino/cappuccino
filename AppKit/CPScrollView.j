@@ -235,7 +235,7 @@ import "CPScroller.j"
         var value = [_verticalScroller floatValue],
             contentBounds = [_contentView bounds];
         
-        contentBounds.origin.y = value * (_CGRectGetHeight([[_contentView documentView] frame]) - _CGRectGetHeight(contentBounds));
+        contentBounds.origin.y = value * (_CGRectGetHeight([documentView frame]) - _CGRectGetHeight(contentBounds));
         
         [_contentView scrollToPoint:contentBounds.origin];
     }
@@ -246,7 +246,7 @@ import "CPScroller.j"
         var value = [_horizontalScroller floatValue],
             contentBounds = [_contentView bounds];
         
-        contentBounds.origin.x = value * (_CGRectGetWidth([[_contentView documentView] frame]) - _CGRectGetWidth(contentBounds));
+        contentBounds.origin.x = value * (_CGRectGetWidth([documentView frame]) - _CGRectGetWidth(contentBounds));
         
         [_contentView scrollToPoint:contentBounds.origin];
     }
@@ -272,7 +272,10 @@ import "CPScroller.j"
     
     [_horizontalScroller setTarget:self];
     [_horizontalScroller setAction:@selector(_horizontalScrollerDidScroll:)];
+
     [self addSubview:_horizontalScroller];
+
+    [self reflectScrolledClipView:_contentView];
 }
 
 /*
@@ -288,14 +291,22 @@ import "CPScroller.j"
     @param hasHorizontalScroller <code>YES</code> lets the scroll view
     allocate a horizontal scroller if necessary.
 */
-- (void)setHasHorizontalScroller:(BOOL)hasHorizontalScroller
+- (void)setHasHorizontalScroller:(BOOL)shouldHaveHorizontalScroller
 {
-    _hasHorizontalScroller = hasHorizontalScroller;
+    if (_hasHorizontalScroller == shouldHaveHorizontalScroller)
+        return;
+
+    _hasHorizontalScroller = shouldHaveHorizontalScroller;
     
     if (_hasHorizontalScroller && !_horizontalScroller)
         [self setHorizontalScroller:[[CPScroller alloc] initWithFrame:CPRectMake(0.0, 0.0, CPRectGetWidth([self bounds]), [CPScroller scrollerWidth])]];
-    else if (!hasHorizontalScroller && _horizontalScroller)
+
+    else if (!_hasHorizontalScroller && _horizontalScroller)
+    {
         [_horizontalScroller setHidden:YES];
+
+        [self reflectScrolledClipView:_contentView];
+    }
 }
 
 /*
@@ -324,7 +335,10 @@ import "CPScroller.j"
     
     [_verticalScroller setTarget:self];
     [_verticalScroller setAction:@selector(_verticalScrollerDidScroll:)];
+
     [self addSubview:_verticalScroller];
+
+    [self reflectScrolledClipView:_contentView];
 }
 
 /*
@@ -341,14 +355,22 @@ import "CPScroller.j"
     @param hasVerticalScroller <code>YES</code> allows
     the scroll view to display a vertical scroller
 */
-- (void)setHasVerticalScroller:(BOOL)hasVerticalScroller
+- (void)setHasVerticalScroller:(BOOL)shouldHaveVerticalScroller
 {
-    _hasVerticalScroller = hasVerticalScroller;
-    
+    if (_hasVerticalScroller == shouldHaveVerticalScroller)
+        return;
+
+    _hasVerticalScroller = shouldHaveVerticalScroller;
+
     if (_hasVerticalScroller && !_verticalScroller)
         [self setVerticalScroller:[[CPScroller alloc] initWithFrame:CPRectMake(0.0, 0.0, [CPScroller scrollerWidth], CPRectGetHeight([self bounds]))]];
-    else if (!hasVerticalScroller && _verticalScroller)
+
+    else if (!_hasVerticalScroller && _verticalScroller)
+    {
         [_verticalScroller setHidden:YES];
+
+        [self reflectScrolledClipView:_contentView];
+    }
 }
 
 /*
