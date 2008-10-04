@@ -144,8 +144,6 @@ function findImportInObjjFiles(scope, fragment)
 
     if (fragment.type & FRAGMENT_LOCAL)
     {
-        //CPLog.debug("Importing local file: " + fragment.info);
-
         var searchPath = fragment.info;
         if (scope.objj_files[searchPath])
         {
@@ -154,12 +152,10 @@ function findImportInObjjFiles(scope, fragment)
     }
     else
     {
-        //CPLog.debug("Importing search-path file: " + fragment.info);
-
         var count = scope.OBJJ_INCLUDE_PATHS.length;
         while (count--)
         {
-            var searchPath = scope.OBJJ_INCLUDE_PATHS[count] + fragment.info;
+            var searchPath = scope.OBJJ_INCLUDE_PATHS[count].replace(/\/$/, "") + "/" + fragment.info;
             if (scope.objj_files[searchPath])
             {
                 importPath = searchPath;
@@ -240,20 +236,10 @@ function findGlobalDefines(context, scope, rootPath)
         return result;
     }
 
-    runWithScope(context, scope, function(importName) {
-        
-        print('Loading from '+OBJJ_INCLUDE_PATHS);
-        
-        objj_import(importName, true, function() {
-            print('Callback complete');
-        });
-        
-        print('Done');
-        
+    runWithScope(context, scope, function(importName)
+    {    
+        objj_import(importName, true, NULL);
     }, [rootPath]);
-    
-    //for (var i in scope.objj_included_files)
-    //    CPLog.debug(i + " ==> " + scope.objj_included_files[i]);
     
     return dependencies;
 }

@@ -4,57 +4,84 @@ import "objj-analysis-tools.j"
 
 CPLogRegister(CPLogPrint);
 
+var defaultMain = "main.j",
+    defaultFrameworks = "Frameworks";
+
 function main()
 {
-    var rootPath = null,
+    var rootDirectory = null,
         outputDirectory = null,
+        mainFilename = null,
+        frameworksDirectory = null,
         optimizePNG = false;
     
-    for (var i = 0; i < args.length; i++)
+    var usageError = false;
+    while (args.length && !usageError)
     {
-        if (args[i] == "--png")
-            optimizePNG = true;
-        else
+        var arg = args.shift();
+        switch(arg)
         {
-            if (rootPath == null)
-                rootPath = args[i];
-            else if (outputDirectory == null)
-                outputDirectory = args[i];
-            else
-            {
-                CPLog.warn("Extra param!");
-            }
+            case "--png":
+                optimizePNG = true;
+                break;
+            case "--main":
+                if (args.length)
+                    mainFile = args.shift();
+                else
+                    usageError = true;
+                break;
+            case "--frameworks":
+                if (args.length)
+                    frameworksDirectory = args.shift().replace(/\/$/, "");
+                else
+                    usageError = true;
+                break;
+            default:
+                if (rootDirectory == null)
+                    rootDirectory = arg.replace(/\/$/, "");
+                else if (outputDirectory == null)
+                    outputDirectory = arg.replace(/\/$/, "");
+                else
+                    usageError = true;
         }
     }
     
-    if (rootPath == null || outputDirectory == null)   
+    if (rootDirectory == null || outputDirectory == null)   
     {
-        print("Usage: press input_base_file.j output_directory");
+        print("Usage: press root_directory output_directory [--main override_main.j] [--frameworks override_frameworks] [--png]");
         return;
     }
     
-    var rootPath = args[0],
-        sourceDirectory = dirname(rootPath) || ".",
-        outputDirectory = args[1];
+    rootDirectory = absolutePath(rootDirectory);
     
-    var cx = Packages.org.mozilla.javascript.Context.enter(),
+    // determine main and frameworks paths
+    var mainPath = rootDirectory + "/" + (mainFilename || defaultMain),
+        frameworksPath = rootDirectory + "/" + (frameworksDirectory || defaultFrameworks);
+        
+    CPLog.info("root=" + rootDirectory);
+    CPLog.info("output=" + outputDirectory);
+    CPLog.info("main=" + mainPath)
+    CPLog.info("frameworks=" + frameworksPath);
+    
+    // get Rhino context
+    var cx = Packages.org.mozilla.javascript.Context.getCurrentContext(), //Packages.org.mozilla.javascript.Context.enter(),
         scope = makeObjjScope(cx);
     
-    var frameworks = rootPath.substring(0, rootPath.lastIndexOf("/")+1) + "Frameworks/";
-    scope.OBJJ_INCLUDE_PATHS = [frameworks];
+    // set OBJJ_INCLUDE_PATHS to include the frameworks path
+    scope.OBJJ_INCLUDE_PATHS = [frameworksPath];
     CPLog.info("OBJJ_INCLUDE_PATHS="+scope.OBJJ_INCLUDE_PATHS);
     
     // phase 1: get global defines
-    var globals = findGlobalDefines(cx, scope, rootPath);
+    var globals = findGlobalDefines(cx, scope, mainPath);
     
     // coalesce the results
     var dependencies = coalesceGlobalDefines(globals);
     
-    // phase 2: walk the import tree to determine exactly which files need to be included
+    // phase 2: walk the dependency tree (both imports and references) to determine exactly which files need to be included
     
     var requiredFiles = {};
     
-    if (scope.objj_files[rootPath])
+    if (scope.objj_files[mainPath])
     {
         var context = {
             scope : scope,
@@ -69,8 +96,8 @@ function main()
             }
         }
         
-        requiredFiles[rootPath] = true;
-        traverseDependencies(context, scope.objj_files[rootPath]);
+        requiredFiles[mainPath] = true;
+        traverseDependencies(context, scope.objj_files[mainPath]);
         
         var count = 0,
             total = 0;
@@ -185,14 +212,14 @@ function main()
     
     // phase 4: copy everything and write out the new files
     
-    var sourceDirectoryFile = new Packages.java.io.File(sourceDirectory),
+    var rootDirectoryFile = new Packages.java.io.File(rootDirectory),
         outputDirectoryFile = new Packages.java.io.File(outputDirectory);
         
-    copyDirectory(sourceDirectoryFile, outputDirectoryFile, optimizePNG);
+    copyDirectory(rootDirectoryFile, outputDirectoryFile, optimizePNG);
     
     for (var path in outputFiles)
     {
-        var file = new java.io.File(outputDirectoryFile, path);
+        var file = new java.io.File(outputDirectoryFile, pathRelativeTo(path, rootDirectory));
         
         var parent = file.getParentFile();
         if (!parent.exists())
@@ -263,6 +290,11 @@ function dirname(path)
 function basename(path)
 {
     return path.substring(path.lastIndexOf("/") + 1);
+}
+
+function absolutePath(path)
+{
+    return String((new Packages.java.io.File(path)).getCanonicalPath());
 }
 
 function pathRelativeTo(target, relativeTo)
