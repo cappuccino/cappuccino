@@ -58,7 +58,16 @@ try {
     print("OBJJ EXCEPTION: " + e);
     print("    Name:    " + e.name);
     print("    Message: " + e.message);
-    print("    Java:    " + e.javaException);
     print("    File:    " + e.fileName);
     print("    Line:    " + e.lineNumber);
+    if (e.javaException)
+    {
+        print("    Java Exception: " + e.javaException);
+        e.javaException.printStackTrace();
+    }
+    if (e.rhinoException)
+    {
+        print("    Rhino Exception: " + e.rhinoException);
+        e.rhinoException.printStackTrace();
+    }
 }
