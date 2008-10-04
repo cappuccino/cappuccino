@@ -111,6 +111,22 @@ function build()
         }
     }
     
+    if (options.press)
+    {
+        var tempPath = versionedPath+"-Stripped";
+        
+        var pressCommand = ["press", versionedPath, tempPath];
+        if (options.press)
+            pressCommand.push("--png");
+            
+        var result = exec(pressCommand);
+        if (result.code)
+            throw new Error("press failed");
+            
+        exec(["rm", "-rf", versionedPath]);    
+        exec(["mv", tempPath, versionedPath]);
+    }
+    
     var results = exec(["bash", "-c", "find "+versionedPath+" \\( -name \"*.sj\" -or -name \"*.j\" \\) -exec cat {} \\; | wc -c | tr -d \" \""]);
     
     var filesTotal = parseInt(results.stdout);
@@ -162,12 +178,13 @@ function main()
     var bakefile = "bakefile",
         commandOpts = {};
     
-    for (var i = 0; i < args.length; i++)
+    while (args.length)
     {
-        switch (args[i])
+        var arg = args.shift();
+        switch (arg)
         {
             case "--base":
-                commandOpts.base = args[++i];
+                commandOpts.base = args.shift();
                 break;
             case "--tag":
                 commandOpts.tag = true;
@@ -181,20 +198,26 @@ function main()
             case "--deploy":
                 commandOpts.deploy = true;
                 break;
+            case "--press":
+                commandOpts.press = true;
+                break;
+            case "--png":
+                commandOpts.png = true;
+                break;
             case "--host":
-                commandOpts.deployHost = args[++i];
+                commandOpts.deployHost = args.shift();
                 break;
             case "--path":
-                commandOpts.deployPath = args[++i];
+                commandOpts.deployPath = args.shift();
                 break;
             case "--skip-update":
                 commandOpts.skipUpdate = true
                 break;
             case "--message":
-                commandOpts.message = args[++i];
+                commandOpts.message = args.shift();
                 break;
             default:
-                bakefile = args[i];
+                bakefile = arg;
         }
     }
     
