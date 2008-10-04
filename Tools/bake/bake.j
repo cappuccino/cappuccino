@@ -116,7 +116,7 @@ function build()
         var tempPath = versionedPath+"-Stripped";
         
         var pressCommand = ["press", versionedPath, tempPath];
-        if (options.press)
+        if (options.png)
             pressCommand.push("--png");
             
         var result = exec(pressCommand);
