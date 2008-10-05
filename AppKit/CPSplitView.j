@@ -190,8 +190,9 @@ var CPSplitViewHorizontalImage = nil,
 {
     var count = [_subviews count] - 1;
     
-    while (count--)
-        [self drawDividerInRect:[self rectOfDividerAtIndex:count]];
+    if (count > 0)
+        while (count--)
+            [self drawDividerInRect:[self rectOfDividerAtIndex:count]];
 }
 
 - (void)drawDividerInRect:(CGRect)aRect
