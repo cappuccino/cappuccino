@@ -465,22 +465,15 @@ var CPStringHashes      = new objj_dictionary();
 */
 - (CPString)capitalizedString
 {
-    var i = 0,
-        last = true,
-        capitalized = self;
-    
-    for(; i < length; ++i)
+    var parts = self.split(/\b/g); // split on word boundaries
+    for (var i = 0; i < parts.length; i++)
     {
-        var character = charAt(i);
-        if (character == ' ' || character == '\t' || character == '\n') last = true;
+        if (i == 0 || (/\s$/).test(parts[i-1])) // only capitalize if previous token was whitespace
+            parts[i] = parts[i].substring(0, 1).toUpperCase() + parts[i].substring(1).toLowerCase();
         else
-        {
-            if (last) capitalized = capitalized.substr(0, i - 1) + character.toUpperCase() + capitalized.substr(i);
-            last = false;
-        }
+            parts[i] = parts[i].toLowerCase();
     }
-    
-    return capitalized;
+    return parts.join("");
 }
 
 /*
