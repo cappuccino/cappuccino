@@ -453,3 +453,13 @@
 }
 
 @end
+
+// override toString on Objective-J objects so we get the actual description of the object
+// when coerced to a string, instead of "[Object object]"
+objj_object.prototype.toString = function()
+{
+    if (this.isa && class_getInstanceMethod(this.isa, "description") != NULL)
+        return [this description]
+    else
+        return String(this) + " (-description not implemented)";
+}

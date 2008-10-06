@@ -656,21 +656,16 @@ import "CPException.j"
 /*
     Returns a string formed by concatenating the objects in the
     receiver, with the specified separator string inserted between each part.
-    If the element is a Cappuccino object, then the <code>description</code>
+    If the element is a Objective-J object, then the <code>description</code>
     of that object will be used, otherwise the default JavaScript representation will be used.
     @param aString the separator that will separate each object string
     @return the string representation of the array
 */
 - (CPString)componentsJoinedByString:(CPString)aString
 {
-    var index = 0,
-        count = [self count],
-        string = @"";
-        
-    for(; index < count; ++i)
-        string += self[index].isa ? [self[index] description] : self[index];
-        
-    return string;
+    // Objective-J objects get "description" called on them automatically when coerced to strings
+    // (see "objj_object.prototype.toString" at bottom of CPObject.j)
+    return join(aString);
 }
 
 // Creating a description of the array
