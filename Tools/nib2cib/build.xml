@@ -5,20 +5,20 @@
     <import file = "${environment.OBJJ_HOME}/lib/steam.xml" />
     
     <target name = "clean">
-        <steam>
+        <steam-build>
             <arguments>
                 <arg line = "-f nib2cib.steam -c ${Configuration} clean" />
             </arguments>
-        </steam>
+        </steam-build>
     </target>
         
     <target name = "build">
     
-        <steam>
+        <steam-build>
             <arguments>
                 <arg line = "-f nib2cib.steam -c ${Configuration} -t nib2cib" />
             </arguments>
-        </steam>
+        </steam-build>
 
     </target>
     

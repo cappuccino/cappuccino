@@ -45,5 +45,11 @@
             </files>
         </iterate>
     </target>
+    
+    <target name = "install-tools">
+        <exec executable = "sh" dir = "${Build}/Cappuccino/Tools">
+            <arg value = "install-tools" />
+        </exec>
+    </target>
 
 </project>

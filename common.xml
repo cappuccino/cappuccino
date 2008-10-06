@@ -19,6 +19,7 @@
     <property name = "Build.Cappuccino.Tools.Bin" location = "${Build.Cappuccino.Tools}/objj/bin" />
     <property name = "Build.Cappuccino.Tools.Lib" location = "${Build.Cappuccino.Tools}/objj/lib" />
     <property name = "Build.Cappuccino.Tools.Lib.Frameworks" location = "${Build.Cappuccino.Tools}/objj/lib/Frameworks" />
+    <property name = "Build.Cappuccino.Tools.Lib.Frameworks-Rhino" location = "${Build.Cappuccino.Tools}/objj/lib/Frameworks-Rhino" />
     
     <property name = "Build.Cappuccino.Tools.Editors" location = "${Build.Cappuccino.Tools}/Editors" />
     
@@ -36,13 +37,14 @@
         <mkdir dir = "${Build.Cappuccino.Starter.Frameworks}" />
         
         <mkdir dir = "${Build.Cappuccino.Tools}" />
-        <mkdir dir = "${Build.Cappuccino.Tools.Frameworks}" />
+        <!--<mkdir dir = "${Build.Cappuccino.Tools.Frameworks}" />-->
         
         <mkdir dir = "${Build.Cappuccino.Tools.Objj}" />
         <mkdir dir = "${Build.Cappuccino.Tools.Bin}" />
         <mkdir dir = "${Build.Cappuccino.Tools.Lib}" />
         
         <mkdir dir = "${Build.Cappuccino.Tools.Lib.Frameworks}" />
+        <mkdir dir = "${Build.Cappuccino.Tools.Lib.Frameworks-Rhino}" />
         
         <mkdir dir = "${Build.Cappuccino.Tools.Editors}" />
         

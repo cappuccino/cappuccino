@@ -5,20 +5,20 @@
     <import file = "${environment.OBJJ_HOME}/lib/steam.xml" />
 
     <target name = "clean">
-        <steam>
+        <steam-build>
             <arguments>
                 <arg line = "-f Foundation.steam -c ${Configuration} clean" />
             </arguments>
-        </steam>
+        </steam-build>
     </target>
         
     <target name = "build">
     
-        <steam>
+        <steam-build>
             <arguments>
                 <arg line = "-f Foundation.steam -c ${Configuration}" />
             </arguments>
-        </steam>
+        </steam-build>
         
         <copy file = "../LICENSE" todir = "${Build}/${Configuration}/Foundation" />
 
@@ -28,11 +28,15 @@
         
         <antcall target = "prepare-release" />
         
-        <copy todir = "${Build.Cappuccino.Tools.Frameworks}/Foundation">
+        <!--<copy todir = "${Build.Cappuccino.Tools.Frameworks}/Foundation">
+            <fileset dir = "${Build}/${Configuration}/Foundation" />
+        </copy>-->
+
+        <copy todir = "${Build.Cappuccino.Tools.Lib.Frameworks}/Foundation">
             <fileset dir = "${Build}/${Configuration}/Foundation" />
         </copy>
-        
-        <copy todir = "${Build.Cappuccino.Tools.Lib.Frameworks}/Foundation">
+
+        <copy todir = "${Build.Cappuccino.Tools.Lib.Frameworks-Rhino}/Foundation">
             <fileset dir = "${Build}/${Configuration}/Foundation" />
         </copy>
 

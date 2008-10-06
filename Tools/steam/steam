@@ -32,4 +32,6 @@ if [[ `uname` == CYGWIN* ]]; then
     STEAM_BUILD=`cygpath -wp "$STEAM_BUILD"`
 fi
 
+export OBJJ_LIB
+
 java -classpath $CLASSPATH steam $@

@@ -317,7 +317,74 @@ Project.prototype.copyResources = function()
     rsync(this._resources, this.buildProducts());
 }
 
+function printUsage(command)
+{
+    var usage = "usage: steam COMMAND [ARGS]\n\n"+
+"The most commonly used steam commands are:\n"+
+"\tbuild    Build a project\n"+
+"\tcreate   Create a new project\n\n"+
+"See 'steam help COMMAND' for more information on a specific command.";
+
+    switch (command)
+    {
+        case "--help" :
+        case undefined :
+            java.lang.System.out.println(usage);
+            break;
+        default :
+            java.lang.System.out.println("steam: '" + command + "' is not a steam command. See 'steam --help'.");
+    }
+    java.lang.System.exit(1);
+}
+
 function main()
+{
+    if (arguments.length < 1)
+        printUsage();
+    
+    var command = Array.prototype.shift.apply(arguments);
+    switch (command)
+    {
+        case "create" :
+            mainCreate.apply(mainCreate, arguments);
+            break;
+        case "build" :
+            mainBuild.apply(mainBuild, arguments);
+            break;
+        default :
+            printUsage(command);
+    }
+    
+}
+
+function mainCreate()
+{
+    var OBJJ_LIB = System.getenv("OBJJ_LIB");
+    
+    if (arguments.length < 1)
+        printUsage("create");
+    
+    var dst = arguments[0];
+    
+    var srcNewApp       = new File(OBJJ_LIB+"/NewApplication"),
+        srcFrameworks   = new File(OBJJ_LIB+"/Frameworks"),
+        dstNewApp       = new File(dst),
+        dstFrameworks   = new File(dst+"/Frameworks");
+    
+    System.out.println(srcNewApp.getCanonicalPath() + "," + dstNewApp.getCanonicalPath() + "," + srcFrameworks.getCanonicalPath() + "," + dstFrameworks.getCanonicalPath());
+    
+    if (!dstNewApp.exists())
+    {
+        exec(["cp", "-vR", srcNewApp.getCanonicalPath(), dstNewApp.getCanonicalPath()], true);
+        exec(["cp", "-vR", srcFrameworks.getCanonicalPath(), dstFrameworks.getCanonicalPath()], true);
+    }
+    else
+    {
+        System.out.println("Directory already exists");
+    }
+}
+
+function mainBuild()
 {
     var index = 0,
         count = arguments.length,

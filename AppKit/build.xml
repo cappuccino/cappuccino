@@ -5,26 +5,26 @@
     <import file = "${environment.OBJJ_HOME}/lib/steam.xml" />
 
     <target name = "clean">
-        <steam>
+        <steam-build>
             <arguments>
                 <arg line = "-f AppKit.steam -c ${Configuration} clean" />
             </arguments>
-        </steam>
+        </steam-build>
     </target>
         
     <target name = "build">
     
-        <steam>
+        <steam-build>
             <arguments>
                 <arg line = "-f AppKit.steam -c ${Configuration} -t AppKit" />
             </arguments>
-        </steam>
+        </steam-build>
 
-        <steam>
+        <steam-build>
             <arguments>
                 <arg line = "-f AppKit.steam -c ${Configuration} -t AppKit-Rhino" />
             </arguments>
-        </steam>
+        </steam-build>
         
         <copy file = "../LICENSE" todir = "${Build}/${Configuration}/AppKit" />
 
@@ -34,11 +34,15 @@
         
         <antcall target = "prepare-release" />
         
-        <copy todir = "${Build.Cappuccino.Tools.Frameworks}/AppKit">
+        <!--<copy todir = "${Build.Cappuccino.Tools.Frameworks}/AppKit">
             <fileset dir = "${Build}/${Configuration}/AppKit" />
-        </copy>        
-
+        </copy>-->
+        
         <copy todir = "${Build.Cappuccino.Tools.Lib.Frameworks}/AppKit">
+            <fileset dir = "${Build}/${Configuration}/AppKit" />
+        </copy>
+
+        <copy todir = "${Build.Cappuccino.Tools.Lib.Frameworks-Rhino}/AppKit">
             <fileset dir = "${Build}/${Configuration}/AppKit-Rhino" />
         </copy>
 
