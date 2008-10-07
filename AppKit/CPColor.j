@@ -518,7 +518,9 @@ function hexToRGB(hex)
 {
     if(hex.length != 6)
         return null;
-        
+
+    hex = hex.toUpperCase();
+
     for(var i=0; i<hex.length; i++)
         if(hexCharacters.indexOf(hex.charAt(i)) == -1)
             return null;

@@ -43,9 +43,11 @@ if [[ `uname` == CYGWIN* ]]; then
     CLASSPATH=`cygpath -wp "$CLASSPATH"`
 fi
 
+export OBJJ_LIB
+
 #if [ -e $STEAM_BUILD/Objective-J.build/Release/Rhino ]; then
-    $RLWRAP java -classpath $CLASSPATH objj $OBJJ_LIB $@
-    #$RLWRAP java -classpath $CLASSPATH org.mozilla.javascript.tools.shell.Main $OBJJ $OBJJ_LIB $STEAM_BUILD $@
+    $RLWRAP java -classpath $CLASSPATH objj $@
+    #$RLWRAP java -classpath $CLASSPATH org.mozilla.javascript.tools.shell.Main $OBJJ $@
 #else
 #    echo "Missing frameworks at $STEAM_BUILD/Objective-J.build/Release/Rhino" 1>&2
 #fi

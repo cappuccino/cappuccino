@@ -24,47 +24,39 @@ import <Foundation/CPString.j>
              message:"stringByAppendingFormat: expected:" + expectedString + " actual:" + actualString];
     
 }
-- (void) testBoolValue
+- (void)testBoolValue
 {
-    var testString = @"  090";
-    [self assertTrue:[testString boolValue] message:"boolValue for the string " + testString +  " should return true"];
+    var testStrings = [
+        ["  090",  YES],
+        ["  YES",  YES],
+        ["  true", YES],
+        ["  True", YES],
+        ["  tTR",  YES],
+        ["  +98",  YES],
+        ["  -98",  YES],
+        ["  +08",  YES],
+        ["  -98",  YES],
+        ["  NO",    NO],
+        ["  -N00",  NO],
+        ["  00",    NO],
+        ["  -00",   NO]
+    ];
     
-    testString = @"  YES";
-    [self assertTrue:[testString boolValue] message:"boolValue for the string " + testString +  " should return true"];
-    
-    testString = @"  true";
-    [self assertTrue:[testString boolValue] message:"boolValue for the string " + testString +  " should return true"];
-    
-    testString = @"  True";
-    [self assertTrue:[testString boolValue] message:"boolValue for the string " + testString +  " should return true"];
+    for (var i = 0; i < testStrings.length; i++)
+        [self assert:[testStrings[i][0] boolValue] equals:testStrings[i][1]];
+}
 
-    testString = @"  tTR";
-    [self assertTrue:[testString boolValue] message:"boolValue for the string " + testString +  " should return true"];
-
-    testString = @"  +98";
-    [self assertTrue:[testString boolValue] message:"boolValue for the string " + testString +  " should return true"];
-
-    testString = @"  -98";
-    [self assertTrue:[testString boolValue] message:"boolValue for the string " + testString +  " should return true"];
-
-    testString = @"  +08";
-    [self assertTrue:[testString boolValue] message:"boolValue for the string " + testString +  " should return true"];
-
-    testString = @"  -98";
-    [self assertTrue:[testString boolValue] message:"boolValue for the string " + testString +  " should return true"];
-
-    testString = @"  NO";
-    [self assertFalse:[testString boolValue] message:"boolValue for the string " + testString +  " should return false"];
+- (void)testCapitalizedString
+{
+    var testStrings = [
+        ["", ""],
+        ["hElLo wOrLd", "Hello World"],
+        [" monkey-Cow", " Monkey-cow"],
+        ["tHe QuicK bRowN-Fox JumPed_Over +the LaZy%dog", "The Quick Brown-fox Jumped_over +the Lazy%dog"]
+    ];
     
-    testString = @"  -N00";
-    [self assertFalse:[testString boolValue] message:"boolValue for the string " + testString +  " should return false"];
-    
-    testString = @"  00";
-    [self assertFalse:[testString boolValue] message:"boolValue for the string " + testString +  " should return false"];
-    
-    testString = @"  -00";
-    [self assertFalse:[testString boolValue] message:"boolValue for the string " + testString +  " should return false"];
-    
+    for (var i = 0; i < testStrings.length; i++)
+        [self assert:[testStrings[i][0] capitalizedString] equals:testStrings[i][1]];
 }
 
 

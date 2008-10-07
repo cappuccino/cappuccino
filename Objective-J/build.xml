@@ -64,20 +64,24 @@
     
         <antcall target = "prepare-release" />
     
-        <mkdir dir = "${Build.Cappuccino.Tools.Frameworks}/Objective-J" />
+        <!--<mkdir dir = "${Build.Cappuccino.Tools.Frameworks}/Objective-J" />
         <copy todir = "${Build.Cappuccino.Tools.Frameworks}/Objective-J" >
             <fileset dir = "${Build.Objective-J}/Objective-J" />
-        </copy>       
-
+        </copy>-->
+        
         <mkdir dir = "${Build.Cappuccino.Tools.Lib.Frameworks}/Objective-J" />
-        <copy file = "${Build.Products}/Rhino/Objective-J.js" todir = "${Build.Cappuccino.Tools.Lib.Frameworks}/Objective-J" />
-        <copy file = "../LICENSE" todir = "${Build.Cappuccino.Tools.Lib.Frameworks}/Objective-J" />
+        <copy todir = "${Build.Cappuccino.Tools.Lib.Frameworks}/Objective-J" >
+            <fileset dir = "${Build.Objective-J}/Objective-J" />
+        </copy>    
+
+        <mkdir dir = "${Build.Cappuccino.Tools.Lib.Frameworks-Rhino}/Objective-J" />
+        <copy file = "${Build.Products}/Rhino/Objective-J.js" todir = "${Build.Cappuccino.Tools.Lib.Frameworks-Rhino}/Objective-J" />
+        <copy file = "../LICENSE" todir = "${Build.Cappuccino.Tools.Lib.Frameworks-Rhino}/Objective-J" />
 
         <mkdir dir = "${Build.Cappuccino.Starter.Frameworks}/Objective-J" />
         <copy todir = "${Build.Cappuccino.Starter.Frameworks}/Objective-J" >
             <fileset dir = "${Build.Objective-J}/Objective-J" />
-        </copy>  
-        
+        </copy>
 
         <mkdir dir = "${Build.Cappuccino.Starter}/NewApplication/Frameworks/Objective-J" />
         <copy todir = "${Build.Cappuccino.Starter}/NewApplication/Frameworks/Objective-J" >

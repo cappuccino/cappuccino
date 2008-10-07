@@ -1,9 +1,8 @@
 debug = false;
 args = arguments;
 
-var OBJJ_LIB = arguments[0];
-
-arguments.splice(0, 1);
+// FIXME: remove Rhino/Java dependencies
+var OBJJ_LIB = Packages.java.lang.System.getenv("OBJJ_LIB");
 
 if (typeof window == "undefined")
 {
@@ -14,7 +13,7 @@ if (typeof window == "undefined")
 if (typeof objj_import == "undefined")
 {
     print("Loading Objective-J.");
-    load(OBJJ_LIB+'/Frameworks/Objective-J/Objective-J.js');
+    load(OBJJ_LIB+'/Frameworks-Rhino/Objective-J/Objective-J.js');
 }
 
 var OBJJ_INCLUDE_PATHS_STRING = getEnv("OBJJ_INCLUDE_PATHS");
@@ -24,19 +23,27 @@ if (OBJJ_INCLUDE_PATHS_STRING)
 }
 else
 {
-    OBJJ_INCLUDE_PATHS = [OBJJ_LIB+'/Frameworks'];
+    OBJJ_INCLUDE_PATHS = [OBJJ_LIB+'/Frameworks-Rhino'];
 }
 
 try {
-    if (arguments.length > 0)
+    if (args.length > 0)
     {
-    	var main_file = arguments[0];
-    	arguments.splice(0, 1);
+    	var mainFilename = args.shift();
+    	
+    	mainFile = new Packages.java.io.File(mainFilename);
+    	if (!mainFile.exists())
+    	{
+    	    print(mainFile.getAbsolutePath() + " not found.")
+    	    Packages.java.System.exit(1);
+    	}
+    	
+    	var mainFilePath = mainFile.getAbsolutePath();
 
     	if (debug)
-    		print("Loading: " + main_file);
+    		print("Loading: " + mainFilePath);
 
-    	objj_import(main_file, YES);
+    	objj_import(mainFilePath, YES);
 
     	serviceTimeouts();
 

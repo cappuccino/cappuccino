@@ -13,13 +13,13 @@
 	            {
     	            "src"       :   "Foundation",
     	            "dst"       :   "Frameworks/Foundation",
-    	            "build"     :   "steam -c Release -b BUILD_PATH",
+    	            "build"     :   "steam build -c Release -b BUILD_PATH",
     	            "copyFrom"  :   "Release/Foundation"
 	            },
         	    {
     	            "src"       :   "AppKit",
     	            "dst"       :   "Frameworks/AppKit",
-    	            "build"     :   "steam -c Release -b BUILD_PATH",
+    	            "build"     :   "steam build -c Release -b BUILD_PATH",
     	            "copyFrom"  :   "Release/AppKit"
         	    }
 	        ]

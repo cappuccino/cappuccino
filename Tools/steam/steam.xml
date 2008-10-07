@@ -2,12 +2,13 @@
 
     <!-- Steam -->
     
-    <macrodef name = "steam">
+    <macrodef name = "steam-build">
         
         <element name = "arguments" optional = "true" />
         
         <sequential>
             <exec executable = "steam">
+                <arg value = "build"/>
                 <arguments/>
             </exec>
         </sequential>

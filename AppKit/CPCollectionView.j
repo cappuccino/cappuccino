@@ -235,7 +235,7 @@ import <AppKit/CPView.j>
 */
 - (void)setAllowsMultipleSelection:(BOOL)shouldAllowMultipleSelection
 {
-    _allowsMultipleSelection = shouldAllowsMultipleSelection;
+    _allowsMultipleSelection = shouldAllowMultipleSelection;
 }
 
 /*
