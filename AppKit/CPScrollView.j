@@ -227,30 +227,6 @@ import "CPScroller.j"
     
     [_contentView setFrame:contentViewFrame];
     
-    // The reason we have to do this is because this is called on a frame size change, so when the frame changes, 
-    // so does the the float value, so we have to update the clip view accordingly.
-    if (_hasVerticalScroller && (shouldShowVerticalScroller || wasShowingVerticalScroller))
-    {
-        //[self _verticalScrollerDidScroll:_verticalScroller];
-        var value = [_verticalScroller floatValue],
-            contentBounds = [_contentView bounds];
-        
-        contentBounds.origin.y = value * (_CGRectGetHeight([documentView frame]) - _CGRectGetHeight(contentBounds));
-        
-        [_contentView scrollToPoint:contentBounds.origin];
-    }
-    if (_hasHorizontalScroller && (shouldShowHorizontalScroller || wasShowingHorizontalScroller))
-    {
-        //[self _horizontalScrollerDidScroll:_horizontalScroller];
-    
-        var value = [_horizontalScroller floatValue],
-            contentBounds = [_contentView bounds];
-        
-        contentBounds.origin.x = value * (_CGRectGetWidth([documentView frame]) - _CGRectGetWidth(contentBounds));
-        
-        [_contentView scrollToPoint:contentBounds.origin];
-    }
-    
     --_recursionCount;
 }
 

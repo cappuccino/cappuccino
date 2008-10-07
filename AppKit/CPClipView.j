@@ -137,10 +137,7 @@ import "CPView.j"
 */
 - (void)viewBoundsChanged:(CPNotification)aNotification
 {
-    var superview = [self superview];
-    
-    if([superview isKindOfClass:[CPScrollView class]])
-        [superview reflectScrolledClipView:self];
+    [self viewFrameChanged:aNotification];
 }
 
 /*
@@ -149,9 +146,21 @@ import "CPView.j"
 */
 - (void)viewFrameChanged:(CPNotification)aNotification
 {
-    var superview = [self superview];
+    var oldScrollPoint = [self bounds].origin;
+    
+    // Call scrollToPoint: because the current scroll point may no longer make 
+    // sense given the new frame of the document view.
+    [self scrollToPoint:oldScrollPoint];
+    
+    // scrollToPoint: takes care of reflectScrollClipView: for us, so bail if 
+    // the scroll points are not equal (meaning scrollToPoint: didn't early bail).
+    if (!CGPointEqualToPoint(oldScrollPoint, [self bounds].origin))
+        return;
 
-    if([superview isKindOfClass:[CPScrollView class]])
+    // ... and we're in a scroll view of course.
+    var superview = [self superview];
+        
+    if ([superview isKindOfClass:[CPScrollView class]])
         [superview reflectScrolledClipView:self];
 }
 
