@@ -461,9 +461,7 @@ var _CPTextFieldSquareBezelColor    = nil;
         displayString += aValue;
 
     if ([[self window] firstResponder] == self)
-    {
         [[self class] _inputElement].value = displayString;
-    }
     else
     {
         if (CPFeatureIsCompatible(CPJavascriptInnerTextFeature))
