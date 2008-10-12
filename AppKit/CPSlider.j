@@ -27,7 +27,8 @@ var CPSliderHorizontalKnobImage         = nil,
     CPSliderHorizontalBarRightImage     = nil,
     CPSliderHorizontalBarCenterImage    = nil;
 
-/*
+/*! @class CPSlider
+
     An <objj>CPSlider</objj> displays, and allows control of, some value in the application. It represents a continuous stream of values of type <code>float</code>, which can be retrieved by the method <code>floatValue</code> and set by the method <code>setFloatValue:</code>.
 */
 @implementation CPSlider : CPControl
@@ -116,7 +117,7 @@ var CPSliderHorizontalKnobImage         = nil,
     [_knob setFrameOrigin:[self knobPosition]];
 }
 
-/*
+/*!
     Returns the value by which the slider will be
     incremented if the user holds down the <code>ALT</code>s key.
 */
@@ -125,7 +126,7 @@ var CPSliderHorizontalKnobImage         = nil,
     return _altIncrementValue;
 }
 
-/*
+/*!
     Returns the thickness of the slider's knob. This value is in pixels, 
     and is the size of the knob along the slider's track.
 */
@@ -174,7 +175,7 @@ var CPSliderHorizontalKnobImage         = nil,
     return CPSliderKnobPushedImage;
 }
 
-/*
+/*!
     Returns the slider's knob.
 */
 - (CPView)knob
@@ -192,7 +193,7 @@ var CPSliderHorizontalKnobImage         = nil,
     return _standardKnob;
 }
 
-/*
+/*!
     Returns the slider's bar.
 */
 - (CPView)bar
@@ -220,7 +221,7 @@ var CPSliderHorizontalKnobImage         = nil,
     }
 }
 
-/*
+/*!
     Sets the value the slider will be incremented if the user holds the <code>ALT</code> key.
 */
 - (void)setAltIncrementValue:(double)anIncrementValue
@@ -228,7 +229,7 @@ var CPSliderHorizontalKnobImage         = nil,
     _altIncrementValue = anIncrementValue;
 }
 
-/*
+/*!
     Returns <code>YES</code> if the slider is vertical.
 */
 - (BOOL)isVertical
@@ -241,7 +242,7 @@ var CPSliderHorizontalKnobImage         = nil,
     return CPRectGetWidth(frame) < CPRectGetHeight(frame);
 }
 
-/*
+/*!
     Returns the slider's maximum value
 */
 - (double)maxValue
@@ -249,7 +250,7 @@ var CPSliderHorizontalKnobImage         = nil,
     return _maxValue;
 }
 
-/*
+/*!
     Returns the slider's minimum value
 */
 - (double)minValue
@@ -257,7 +258,7 @@ var CPSliderHorizontalKnobImage         = nil,
     return _minValue;
 }
 
-/*
+/*!
     Sets the slider's maximum value
     @param aMaxValue the new maximum value
 */
@@ -266,7 +267,7 @@ var CPSliderHorizontalKnobImage         = nil,
     _maxValue = aMaxValue;
 }
 
-/*
+/*!
     Sets the slider's minimum value
     @param aMinValue the new minimum value
 */
@@ -275,7 +276,7 @@ var CPSliderHorizontalKnobImage         = nil,
     _minValue = aMinValue;
 }
 
-/*
+/*!
     Sets the slider's value
     @param aValue the new slider value
 */
@@ -286,7 +287,7 @@ var CPSliderHorizontalKnobImage         = nil,
     [_knob setFrameOrigin:[self knobPosition]];
 }
 
-/*
+/*!
     Returns the slider's value
 */
 - (double)value
@@ -361,7 +362,7 @@ var CPSliderMinValueKey = @"CPSliderMinValueKey",
 
 @implementation CPSlider (CPCoding)
 
-/*
+/*!
     Initializes the slider from the data in a coder.
     @param aCoder the coder from which to read the data
     @return the initialized slider
@@ -390,7 +391,7 @@ var CPSliderMinValueKey = @"CPSliderMinValueKey",
     return self;
 }
 
-/*
+/*!
     Writes out the slider's instance information to a coder.
     @param aCoder the coder to which to write the data
 */

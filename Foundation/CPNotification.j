@@ -23,11 +23,11 @@
 import "CPObject.j"
 import "CPException.j"
 
-/*
-    Represents a notification for posting to an <objj>CPNotificationCenter</objj>. Consists of a name, an object, and an optional dictionary. The notification center will check for observers registered to receive either notifications with the name, the object, or both and pass the notification instance on to them.
+/*! @class CPNotification
+    Represents a notification for posting to an CPNotificationCenter. Consists of a name, an object, and an optional dictionary. The notification center will check for observers registered to receive either notifications with the name, the object, or both and pass the notification instance on to them.
 
-    To create a notification use one of the class methods. The default <objj>init</objj> method will throw a
-    <objj>CPUnsupportedMethodException</objj>.
+    To create a notification use one of the class methods. The default init method will throw a
+    CPUnsupportedMethodException.
 */
 @implementation CPNotification : CPObject
 {
@@ -36,7 +36,7 @@ import "CPException.j"
     CPDictionary    _userInfo;
 }
 
-/*
+/*!
     Creates a new notification with the specified name, object and dictionary.
     @param aNotificationName the name of the notification
     @param anObject the associated object
@@ -48,7 +48,7 @@ import "CPException.j"
     return [[self alloc] initWithName:aNotificationName object:anObject userInfo:aUserInfo];
 }
 
-/*
+/*!
     Creates a new notification with the specified name and object.
     @param aNotificationName the name of the notification
     @param anObject the associated object
@@ -59,7 +59,7 @@ import "CPException.j"
     return [[self alloc] initWithName:aNotificationName object:anObject userInfo:nil];
 }
 
-/*
+/*!
     @throws CPUnsupportedMethodException always, because the method should not be used
 */
 - (id)init
@@ -68,7 +68,7 @@ import "CPException.j"
                 reason:"CPNotification's init method should not be used"];
 }
 
-/*
+/*!
     Initializes the notification with a name, object and dictionary
     @param aNotificationName the name of the notification
     @param anObject the associated object
@@ -90,7 +90,7 @@ import "CPException.j"
     return self;
 }
 
-/*
+/*!
     Returns the notification name.
 */
 - (CPString)name
@@ -98,7 +98,7 @@ import "CPException.j"
     return _name;
 }
 
-/*
+/*!
     Returns the notification's object.
 */
 - (id)object
@@ -106,7 +106,7 @@ import "CPException.j"
     return _object;
 }
 
-/*
+/*!
     Returns the notification's dictionary.
 */
 - (CPDictionary)userInfo

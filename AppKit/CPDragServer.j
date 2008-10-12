@@ -195,7 +195,7 @@ var CPDragServerUpdateDragging = function(anEvent)
     return self;
 }
 
-/*
+/*!
     Initiates a drag session.
     @param aView the view being dragged
     @param aWindow the window where the drag source is
@@ -250,7 +250,7 @@ var CPDragServerUpdateDragging = function(anEvent)
     CPDragServerStartDragging(anEvent);
 }
 
-/*
+/*!
     Initiates a drag session.
     @param anImage the image to be dragged
     @param aWindow the source window of the drag session

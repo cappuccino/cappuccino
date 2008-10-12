@@ -30,7 +30,7 @@ CPUnsupportedMethodException        = "CPUnsupportedMethodException";
 CPRangeException                    = "CPRangeException";
 CPInternalInconsistencyException    = "CPInternalInconsistencyException";
 
-/*
+/*! @class CPException
     An example of throwing an exception in Objective-J:
 <pre>
 // some code here...
@@ -52,7 +52,7 @@ if (input == nil)
     return new objj_exception();
 }
 
-/*
+/*!
     Raises an exception with a name and reason.
     @param aName the name of the exception to raise
     @param aReason the reason for the exception
@@ -62,7 +62,7 @@ if (input == nil)
     [[self exceptionWithName:aName reason:aReason userInfo:nil] raise];
 }
 
-/*
+/*!
     Creates an exception with a name, reason and user info.
     @param aName the name of the exception
     @param aReason the reason the exception occurred
@@ -74,7 +74,7 @@ if (input == nil)
     return [[self alloc] initWithName:aName reason:aReason userInfo:aUserInfo];
 }
 
-/*
+/*!
     Initializes the exception.
     @param aName the name of the exception
     @param aReason the reason for the exception
@@ -95,7 +95,7 @@ if (input == nil)
     return self;
 }
 
-/*
+/*!
     Returns the name of the exception.
 */
 - (CPString)name
@@ -103,7 +103,7 @@ if (input == nil)
     return name;
 }
 
-/*
+/*!
     Returns the reason for the exception.
 */
 - (CPString)reason
@@ -111,7 +111,7 @@ if (input == nil)
     return reason;
 }
 
-/*
+/*!
     Returns data containing info about the receiver.
 */
 - (CPDictionary)userInfo
@@ -119,7 +119,7 @@ if (input == nil)
     return userInfo;
 }
 
-/*
+/*!
     Returns the exception's reason.
 */
 - (CPString)description
@@ -127,7 +127,7 @@ if (input == nil)
     return reason;
 }
 
-/*
+/*!
     Raises the exception and causes the program to go to the exception handler.
 */
 - (void)raise
@@ -148,7 +148,7 @@ if (input == nil)
 
 @implementation CPException (CPCoding)
 
-/*
+/*!
     Initializes the exception with data from a coder.
     @param aCoder the coder from which to read the exception data
     @return the initialized exception
@@ -167,7 +167,7 @@ if (input == nil)
     return self;
 }
 
-/*
+/*!
     Encodes the exception's data into a coder.
     @param aCoder the coder to which the data will be written
 */

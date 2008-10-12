@@ -30,7 +30,8 @@ var VISIBLE_MARGIN  = 7.0;
 
 var CPPopUpButtonArrowsImage = nil;
 
-/*
+/*! @class CPPopUpButton
+
     A <objj>CPPopUpButton</objj> contains a pop-up menu of items that a user can select from.
 */
 @implementation CPPopUpButton : CPButton
@@ -44,7 +45,7 @@ var CPPopUpButtonArrowsImage = nil;
     CPMenu      _menu;
 }
 
-/*
+/*!
     Initializes the pop-up button to the specified size.
     @param aFrame the size for the button
     @param shouldPullDown <code>YES</code> makes this a pull-down menu, <code>NO</code> makes it a pop-up menu.
@@ -105,7 +106,7 @@ var CPPopUpButtonArrowsImage = nil;
 
 // Setting the Type of Menu
 
-/*
+/*!
     Specifies whether the object is a pull-down or a pop-up menu.
     @param shouldPullDown <code>YES</code> makes the pop-up button
     a pull-down menu. <code>NO</code> makes it a pop-up menu.
@@ -127,7 +128,7 @@ var CPPopUpButtonArrowsImage = nil;
     [self synchronizeTitleAndSelectedItem];
 }
 
-/*
+/*!
     Returns <code>YES</code> if the button is a pull-down menu. <code>NO</code> if the button is a pop-up menu.
 */
 - (BOOL)pullsDown
@@ -136,7 +137,7 @@ var CPPopUpButtonArrowsImage = nil;
 }
 
 // Inserting and Deleting Items
-/*
+/*!
     Adds a new menu item with the specified title.
     @param the new menu item's tite
 */
@@ -145,7 +146,7 @@ var CPPopUpButtonArrowsImage = nil;
     [_menu addItemWithTitle:aTitle action:NULL keyEquivalent:NULL];
 }
 
-/*
+/*!
     Adds multiple new menu items with the titles specified in the provided array.
     @param titles an arry of names for the new items
 */
@@ -158,7 +159,7 @@ var CPPopUpButtonArrowsImage = nil;
         [self addItemWithTitle:titles[index]];
 }
 
-/*
+/*!
     Inserts a new item with the specified title and index location.
     @param aTitle the new itme's title
     @param anIndex the item's index in the menu
@@ -175,7 +176,7 @@ var CPPopUpButtonArrowsImage = nil;
     [_menu insertItemWithTitle:aTitle action:NULL keyEquivalent:NULL atIndex:anIndex];
 }
 
-/*
+/*!
     Removes all menu items from the pop-up button's menu
 */
 - (void)removeAllItems
@@ -186,7 +187,7 @@ var CPPopUpButtonArrowsImage = nil;
         [_menu removeItemAtIndex:0];
 }
 
-/*
+/*!
     Removes a menu item with the specified title from the button.
     @param aTitle the title of the item to remove
 */
@@ -196,7 +197,7 @@ var CPPopUpButtonArrowsImage = nil;
     [self synchronizeTitleAndSelectedItem];
 }
 
-/*
+/*!
     Removes the menu item at the specified index
     @param anIndex the index of the item to remove
 */
@@ -207,7 +208,7 @@ var CPPopUpButtonArrowsImage = nil;
 }
 
 // Getting the User's Selection
-/*
+/*!
     Returns the selected item or <code>nil</code> if no item is selected.
 */
 - (CPMenuItem)selectedItem
@@ -218,7 +219,7 @@ var CPPopUpButtonArrowsImage = nil;
     return [_menu itemAtIndex:_selectedIndex];
 }
 
-/*
+/*!
     Returns the title of the selected item or <code>nil</code> if no item is selected.
 */
 - (CPString)titleOfSelectedItem
@@ -226,7 +227,7 @@ var CPPopUpButtonArrowsImage = nil;
     return [[self selectedItem] title];
 }
 
-/*
+/*!
     Returns the index of the selected item. If no item is selected, it returns <objj>CPNotFound</objj>.
 */
 - (int)indexOfSelectedItem
@@ -235,7 +236,7 @@ var CPPopUpButtonArrowsImage = nil;
 }
 
 // For us, CPNumber is toll-free bridged to Number, so just return the selected index.
-/*
+/*!
     Returns the selected item's index. If no item is selected, it returns <objj>CPNotFound</objj>.
 */
 - (id)objectValue
@@ -244,7 +245,7 @@ var CPPopUpButtonArrowsImage = nil;
 }
 
 // Setting the Current Selection
-/*
+/*!
     Selects the specified menu item.
     @param aMenuItem the item to select
 */
@@ -253,7 +254,7 @@ var CPPopUpButtonArrowsImage = nil;
     [self selectItemAtIndex:[self indexOfItem:aMenuItem]];
 }
 
-/*
+/*!
     Selects the item at the specified index
     @param anIndex the index of the item to select
 */
@@ -273,7 +274,7 @@ var CPPopUpButtonArrowsImage = nil;
     [self synchronizeTitleAndSelectedItem];
 }
 
-/*
+/*!
     Selects the menu item with the specified tag
     @param the tag of the item to select
 */
@@ -282,7 +283,7 @@ var CPPopUpButtonArrowsImage = nil;
     [self selectItemAtIndex:[self indexOfItemWithTag:aTag]];
 }
 
-/*
+/*!
     Selects the item with the specified title
     @param the title of the item to select
 */
@@ -291,7 +292,7 @@ var CPPopUpButtonArrowsImage = nil;
     [self selectItemAtIndex:[self indexOfItemWithTitle:aTitle]];
 }
 
-/*
+/*!
     Sets the object for the selected item. If no item is selected, then this method has no effect.
     @param the object set for the selected item
 */
@@ -301,7 +302,7 @@ var CPPopUpButtonArrowsImage = nil;
 }
 
 // Getting Menu Items
-/*
+/*!
     Returns the button's menu of items.
 */
 - (CPMenu)menu
@@ -309,7 +310,7 @@ var CPPopUpButtonArrowsImage = nil;
     return _menu;
 }
 
-/*
+/*!
     Sets the menu for the button
 */
 - (void)setMenu:(CPMenu)aMenu
@@ -366,7 +367,7 @@ var CPPopUpButtonArrowsImage = nil;
     [self synchronizeTitleAndSelectedItem];
 }
 
-/*
+/*!
     Returns a count of the number of items in the button's menu.
 */
 - (int)numberOfItems
@@ -374,7 +375,7 @@ var CPPopUpButtonArrowsImage = nil;
     return [_menu numberOfItems];
 }
 
-/*
+/*!
     Returns an array of the items in the menu
 */
 - (CPArray)itemArray
@@ -382,7 +383,7 @@ var CPPopUpButtonArrowsImage = nil;
     return [_menu itemArray];
 }
 
-/*
+/*!
     Returns the item at the specified index or <code>nil</code> if the item does not exist.
     @param anIndex the index of the item to obtain
 */
@@ -391,7 +392,7 @@ var CPPopUpButtonArrowsImage = nil;
     return [_menu itemAtIndex:anIndex];
 }
 
-/*
+/*!
     Returns the title of the item at the specified index or <code>nil</code> if no item exists.
     @param anIndex the index of the item
 */
@@ -400,7 +401,7 @@ var CPPopUpButtonArrowsImage = nil;
     return [[_menu itemAtIndex:anIndex] title];
 }
 
-/*
+/*!
     Returns an array of all the menu item titles.
 */
 - (CPArray)itemTitles
@@ -415,7 +416,7 @@ var CPPopUpButtonArrowsImage = nil;
         items.push([items[index] title]);
 }
 
-/*
+/*!
     Returns the menu item with the specified title.
     @param aTitle the title of the desired menu item
 */
@@ -424,7 +425,7 @@ var CPPopUpButtonArrowsImage = nil;
     return [_menu itemAtIndex:[_menu indexOfItemWithTitle:aTitle]];
 }
 
-/*
+/*!
     Returns the last menu item
 */
 - (CPMenuItem)lastItem
@@ -433,7 +434,7 @@ var CPPopUpButtonArrowsImage = nil;
 }
 
 // Getting the Indices of Menu Items
-/*
+/*!
     Returns the index of the specified item or <objj>CPNotFound</objj> if the item is not in the list.
     @param aMenuItem the item to obtain the index for
 */
@@ -442,7 +443,7 @@ var CPPopUpButtonArrowsImage = nil;
     return [_menu indexOfItem:aMenuItem];
 }
 
-/*
+/*!
     Returns the index of the item with the specified tag or <objj>CPNotFound</objj> if the item is not in the list.
     @param aTag the item's tag
 */
@@ -451,7 +452,7 @@ var CPPopUpButtonArrowsImage = nil;
     return [_menu indexOfItemWithTag:aMenuItem];
 }
 
-/*
+/*!
     Returns the index of the item with the specified title or <objj>CPNotFound</objj>.
     @param aTitle the item's titel
 */
@@ -460,7 +461,7 @@ var CPPopUpButtonArrowsImage = nil;
     return [_menu indexOfItemWithTitle:aTitle];
 }
 
-/*
+/*!
     Returns the index of the item with the specified
     represented object or <objj>CPNotFound</objj>
     if a match does not exist.
@@ -471,7 +472,7 @@ var CPPopUpButtonArrowsImage = nil;
     return [_menu indexOfItemWithRepresentedObejct:anObject];
 }
 
-/*
+/*!
     Returns the index of the item with the specified target
     and action. Returns <objj>CPNotFound</objj> if the no
     such item is in the list.
@@ -484,7 +485,7 @@ var CPPopUpButtonArrowsImage = nil;
 }
 
 // Setting the Cell Edge to Pop out in Restricted Situations
-/*
+/*!
     Returns the button's edge where the pop-up menu will be
     displayed when there is not enough room to display directly
     above the button.
@@ -494,7 +495,7 @@ var CPPopUpButtonArrowsImage = nil;
     return _preferredEdge;
 }
 
-/*
+/*!
     Sets the preffered edge of the button to display the
     pop-up when there is a limited amount of screen space.
     By default, the pop-up should draw on top of the button.
@@ -505,7 +506,7 @@ var CPPopUpButtonArrowsImage = nil;
 }
 
 // Setting the Title
-/*
+/*!
     Sets the pop-up button's title.
     @param aTitle the new title
 */
@@ -535,7 +536,7 @@ var CPPopUpButtonArrowsImage = nil;
 }
 
 // Setting the Image
-/*
+/*!
     This method has no effect. Because the image is taken
     from the currently selected item, this method serves
     no purpose.
@@ -546,7 +547,7 @@ var CPPopUpButtonArrowsImage = nil;
 }
 
 // Setting the State
-/*
+/*!
     Makes sure the selected item and the item
     being displayed are one and the same.
 */
@@ -569,7 +570,7 @@ var CPPopUpButtonArrowsImage = nil;
 }
 
 //
-/*
+/*!
     Called when the menu has a new item added to it.
     @param aNotification information about the event
 */
@@ -597,7 +598,7 @@ var CPPopUpButtonArrowsImage = nil;
     }
 }
 
-/*
+/*!
     Called when a menu item has changed.
     @param aNotification information about the event
 */
@@ -614,7 +615,7 @@ var CPPopUpButtonArrowsImage = nil;
     [self synchronizeTitleAndSelectedItem];
 }
 
-/*
+/*!
     Called when an item was removed from the menu.
     @param aNotification information about the event
 */
@@ -706,7 +707,7 @@ var CPPopUpButtonMenuKey            = @"CPPopUpButtonMenuKey",
     CPPopUpButtonPullsDownKey       = @"CPPopUpButtonPullsDownKey";
 
 @implementation CPPopUpButton (CPCoding)
-/*
+/*!
     Initializes the pop-up button with data from the
     specified coder.
     @param aCoder the coder from which to read
@@ -727,7 +728,7 @@ var CPPopUpButtonMenuKey            = @"CPPopUpButtonMenuKey",
     return self;
 }
 
-/*
+/*!
     Encodes the data of the pop-up button into a coder
     @param aCoder the coder to which the data
     will be written

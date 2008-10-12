@@ -22,7 +22,7 @@
 
 import "CPTableView.j"
 
-/*
+/*!
     @ignore 
     This class is a subclass of <objj>CPTableView</objj> which provides the user with a way to display 
     tree structured data in an outline format. It is particularly useful for displaying hierarchical data 
@@ -48,7 +48,7 @@ import "CPTableView.j"
     return self;
 }
 
-/*
+/*!
     @ignore
     Sets the outline's data source. The data source must implement the following methods:
 <pre>

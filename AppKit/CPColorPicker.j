@@ -25,7 +25,8 @@ import <AppKit/CPView.j>
 import <AppKit/CPImage.j>
 import <AppKit/CPImageView.j>
 
-/*
+/*! @class CPColorPicker
+
     <objj>CPColorPicker</objj> is an abstract superclass for all color picker subclasses. If you want a particular color picker, use <objj>CPColorPanel</objj>'s <code>setPickerMode:</code> method. The simplest way to implement your own color picker is to create a subclass of CPColorPicker.
 */
 @implementation CPColorPicker : CPObject
@@ -34,7 +35,7 @@ import <AppKit/CPImageView.j>
     int             _mask;
 }
 
-/*
+/*!
     Initializes the color picker.
     @param aMask a unique unsigned int identifying your color picker
     @param aPanel the color panel that owns this picker
@@ -49,7 +50,7 @@ import <AppKit/CPImageView.j>
     return self;
 }
 
-/*
+/*!
     Returns the color panel that owns this picker
 */
 - (CPColorPanel)colorPanel
@@ -67,7 +68,7 @@ import <AppKit/CPImageView.j>
     return nil;
 }
 
-/*
+/*!
     Sets the color picker's mode.
     @param mode the color panel mode
 */
@@ -76,7 +77,7 @@ import <AppKit/CPImageView.j>
     return;
 }
 
-/*
+/*!
     Sets the picker's color.
     @param aColor the new color for the picker
 */

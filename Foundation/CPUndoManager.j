@@ -150,8 +150,8 @@ var _CPUndoGroupingParentKey        = @"_CPUndoGroupingParentKey",
 
 @end
 
-/*
-    <objj>CPUndoManager</objj> provides a general mechanism supporting implementation of user action "undo" in applications. Essentially, it allows you to store sequences of messages and receivers that need to be invoked to undo or redo an action. The various methods in this class provide for grouping of sets of actions, execution of undo or redo actions, and tuning behavior parameters such as the size of the undo stack. Each application entity with its own editing history (e.g., a document) should have its own undo manager instance. Obtain an instance through a simple <code>[[CPUndoManager alloc] init]</code> message.
+/*! @class CPUndoManager
+    CPUndoManager provides a general mechanism supporting implementation of user action "undo" in applications. Essentially, it allows you to store sequences of messages and receivers that need to be invoked to undo or redo an action. The various methods in this class provide for grouping of sets of actions, execution of undo or redo actions, and tuning behavior parameters such as the size of the undo stack. Each application entity with its own editing history (e.g., a document) should have its own undo manager instance. Obtain an instance through a simple <code>[[CPUndoManager alloc] init]</code> message.
 */
 @implementation CPUndoManager : CPObject
 {
@@ -170,7 +170,7 @@ var _CPUndoGroupingParentKey        = @"_CPUndoGroupingParentKey",
     BOOL            _registeredWithRunLoop;
 }
 
-/*
+/*!
     Initializes the undo manager
     @return the initialized undo manager
 */
@@ -194,7 +194,7 @@ var _CPUndoGroupingParentKey        = @"_CPUndoGroupingParentKey",
 }
 
 // Registering Undo Operations
-/*
+/*!
     Registers an undo operation. You invoke this method with the target of the undo action providing the selector which can perform the undo with the provided object. The object is often a dictionary of the identifying the attribute and their values before the change. The invocation will be added to the current grouping. If the registrations have been disabled through <code>-disableUndoRegistration</code>, this method does nothing.
     @param aTarget the target for the undo invocation
     @param aSelector the selector for the action message
@@ -222,7 +222,7 @@ var _CPUndoGroupingParentKey        = @"_CPUndoGroupingParentKey",
     if (_state == CPUndoManagerNormal)
         [_redoStack removeAllObjects];
 }
-/*
+/*!
     Prepares the specified target for the undo action.
     @param aTarget the target to receive the action
     @return the undo manager
@@ -246,7 +246,7 @@ var _CPUndoGroupingParentKey        = @"_CPUndoGroupingParentKey",
     return nil;//[_preparedTarget methodSignatureForSelector:selector];
 }
 
-/*
+/*!
     Records the specified invocation as an undo operation. Sets the
     target on the invocation, and adds it to the current grouping.
     @param anInvocation the message to record
@@ -273,7 +273,7 @@ var _CPUndoGroupingParentKey        = @"_CPUndoGroupingParentKey",
 }
 
 // Checking Undo Ability
-/*
+/*!
     Returns <code>YES</code> if the user can perform a redo operation.
 */
 - (BOOL)canRedo
@@ -281,7 +281,7 @@ var _CPUndoGroupingParentKey        = @"_CPUndoGroupingParentKey",
     return _redoStack.length > 0;
 }
 
-/*
+/*!
     Returns <code>YES</code> if the user can perform an undo operation.
 */
 - (BOOL)canUndo
@@ -293,7 +293,7 @@ var _CPUndoGroupingParentKey        = @"_CPUndoGroupingParentKey",
 }
 
 // Preform Undo and Redo
-/*
+/*!
     Ends the current grouping, and performs an 'undo' operation.
 */
 - (void)undo
@@ -304,7 +304,7 @@ var _CPUndoGroupingParentKey        = @"_CPUndoGroupingParentKey",
     [self undoNestedGroup];
 }
 
-/*
+/*!
     Performs an undo on the last undo group.
 */
 - (void)undoNestedGroup
@@ -333,7 +333,7 @@ var _CPUndoGroupingParentKey        = @"_CPUndoGroupingParentKey",
     [defaultCenter postNotificationName:CPUndoManagerDidUndoChangeNotification object:self];
 }
 
-/*
+/*!
     Performs the redo operation using the last grouping on the redo stack.
 */
 - (void)redo
@@ -372,7 +372,7 @@ var _CPUndoGroupingParentKey        = @"_CPUndoGroupingParentKey",
 }
 
 // Creating Undo Groups
-/*
+/*!
     Starts a new grouping of undo tasks, and makes it the current grouping.
 */
 - (void)beginUndoGrouping
@@ -380,7 +380,7 @@ var _CPUndoGroupingParentKey        = @"_CPUndoGroupingParentKey",
     _currentGrouping = [_CPUndoGrouping undoGroupingWithParent:_currentGrouping];
 }
 
-/*
+/*!
     Closes the current undo grouping.
     @throws CPInternalInconsistencyException if no undo group is open
 */
@@ -418,9 +418,9 @@ var _CPUndoGroupingParentKey        = @"_CPUndoGroupingParentKey",
     _currentGrouping = parent;
 }
 
-/*
+/*!
     Enables undo registrations. Calls to this method must
-    be balanced with calls to <objj>disableUndoRegistration</objj>.
+    be balanced with calls to disableUndoRegistration.
     So, if two disable calls were made, two enable calls are required
     to actually enable undo registration again.
 */
@@ -433,7 +433,7 @@ var _CPUndoGroupingParentKey        = @"_CPUndoGroupingParentKey",
     _disableCount--;
 }
 
-/*
+/*!
     Returns <code>YES</code> if the manager groups undo operations at every iteration of the run loop.
 */
 - (BOOL)groupsByEvent
@@ -441,7 +441,7 @@ var _CPUndoGroupingParentKey        = @"_CPUndoGroupingParentKey",
     return _groupsByEvent;
 }
 
-/*
+/*!
     Sets whether the manager should group undo operations at every iteration of the run loop.
     @param aFlag <code>YES</code> groups undo operations
 */
@@ -465,7 +465,7 @@ var _CPUndoGroupingParentKey        = @"_CPUndoGroupingParentKey",
         [self _unregisterWithRunLoop];
 }
 
-/*
+/*!
     Returns the number of undo/redo groups.
 */
 - (unsigned)groupingLevel
@@ -480,7 +480,7 @@ var _CPUndoGroupingParentKey        = @"_CPUndoGroupingParentKey",
 }
 
 // Disabling Undo
-/*
+/*!
     Disables undo registrations.
 */
 - (void)disableUndoRegistration
@@ -488,7 +488,7 @@ var _CPUndoGroupingParentKey        = @"_CPUndoGroupingParentKey",
     ++_disableCount;
 }
 
-/*
+/*!
     Returns <code>YES</code> if undo registration is enabled.
 */
 - (BOOL)isUndoRegistrationEnabled
@@ -497,7 +497,7 @@ var _CPUndoGroupingParentKey        = @"_CPUndoGroupingParentKey",
 }
 
 // Checking Whether Undo or Redo Is Being Performed
-/*
+/*!
     Returns <code>YES</code> if the manager is currently performing an undo.
 */
 - (BOOL)isUndoing
@@ -505,7 +505,7 @@ var _CPUndoGroupingParentKey        = @"_CPUndoGroupingParentKey",
     return _state == CPUndoManagerUndoing;
 }
 
-/*
+/*!
     Returns <code>YES</code> if the manager is currently performing a redo.
 */
 - (BOOL)isRedoing
@@ -514,7 +514,7 @@ var _CPUndoGroupingParentKey        = @"_CPUndoGroupingParentKey",
 }
 
 // Clearing Undo Operations
-/*
+/*!
     Clears all redo and undo operations and enables undo registrations.
 */
 - (void)removeAllActions
@@ -524,7 +524,7 @@ var _CPUndoGroupingParentKey        = @"_CPUndoGroupingParentKey",
     _disableCount = 0;
 }
 
-/*
+/*!
     Removes any redo and undo operations that use the specified target.
     @param aTarget the target for which operations should be removed.
 */
@@ -558,7 +558,7 @@ var _CPUndoGroupingParentKey        = @"_CPUndoGroupingParentKey",
 }
 
 // Managing the Action Name
-/*
+/*!
     Sets the name associated with the actions of the current group.
     Typically, you can call this method while registering the actions for the current group.
     @param anActionName the new name for the current group
@@ -568,7 +568,7 @@ var _CPUndoGroupingParentKey        = @"_CPUndoGroupingParentKey",
     _actionName = anActionName;
 }
 
-/*
+/*!
     If the receiver can perform a redo, this method returns the action
     name previously associated with the top grouping with
     <code>-setActionName:</code>. This name should identify the action to be redone.
@@ -579,7 +579,7 @@ var _CPUndoGroupingParentKey        = @"_CPUndoGroupingParentKey",
     return [self canRedo] ? _actionName : nil;
 }
 
-/*
+/*!
     If the receiver can perform an undo, this method returns the action
     name previously associated with the top grouping with
     <code>-setActionName:</code>. This name should identify the action to be undone.
@@ -591,8 +591,8 @@ var _CPUndoGroupingParentKey        = @"_CPUndoGroupingParentKey",
 }
 
 // Working With Run Loops
-/*
-    Returns the <objj>CPRunLoopMode</objj>s in which the receiver registers
+/*!
+    Returns the CPRunLoopModes in which the receiver registers
     the <code>-endUndoGrouping</code> processing when it <code>-groupsByEvent</code>.
 */
 - (CPArray)runLoopModes
@@ -600,7 +600,7 @@ var _CPUndoGroupingParentKey        = @"_CPUndoGroupingParentKey",
     return _runLoopModes;
 }
 
-/*
+/*!
     Sets the modes in which the receiver registers the calls
     with the current run loop to invoke <code>-endUndoGrouping</code>
     when it <code>-groupsByEvent</code>. This method first

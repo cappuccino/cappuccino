@@ -58,7 +58,8 @@ var LEFT_SHADOW_INSET       = 3.0,
     VERTICAL_SHADOW_INSET   = TOP_SHADOW_INSET + BOTTOM_SHADOW_INSET,
     HORIZONTAL_SHADOW_INSET = LEFT_SHADOW_INSET + RIGHT_SHADOW_INSET;
 
-/*
+/*! @class CPImageView
+
     This class is a control that displays an image.
 */
 @implementation CPImageView : CPControl
@@ -95,7 +96,7 @@ var LEFT_SHADOW_INSET       = 3.0,
     return self;
 }
 
-/*
+/*!
     Returns the view's image.
 */
 - (CPImage)image
@@ -103,7 +104,7 @@ var LEFT_SHADOW_INSET       = 3.0,
     return _image;
 }
 
-/*
+/*!
     Sets the image for the view.
     @param anImage the view's image
 */
@@ -144,7 +145,7 @@ var LEFT_SHADOW_INSET       = 3.0,
     [self tile];
 }
 
-/*
+/*!
     Returns <code>YES</code> if the image view draws with
     a drop shadow. The default is <code>NO</code>.
 */
@@ -153,7 +154,7 @@ var LEFT_SHADOW_INSET       = 3.0,
     return _hasShadow;
 }
 
-/*
+/*!
     Sets whether the image view should draw with a drop shadow.
     @param shouldHaveShadow whether the image view should have a shadow
 */
@@ -182,7 +183,7 @@ var LEFT_SHADOW_INSET       = 3.0,
     [self hideOrDisplayContents];
 }
 
-/*
+/*!
     Sets the type of image scaling that should be used to
     render the image.
     @param anImageScaling the type of scaling to use
@@ -202,7 +203,7 @@ var LEFT_SHADOW_INSET       = 3.0,
     [self tile];
 }
 
-/*
+/*!
     Returns the image scaling method used to
     render this image.
 */
@@ -218,7 +219,7 @@ var LEFT_SHADOW_INSET       = 3.0,
     [self tile];
 }
 
-/*
+/*!
     Toggles the display of the image view.
 */
 - (void)hideOrDisplayContents
@@ -235,7 +236,7 @@ var LEFT_SHADOW_INSET       = 3.0,
     }
 }
 
-/*
+/*!
     Returns the view's image rectangle
 */
 - (CGRect)imageRect
@@ -243,7 +244,7 @@ var LEFT_SHADOW_INSET       = 3.0,
     return _imageRect;
 }
 
-/*
+/*!
     Add a description
 */
 - (void)tile
@@ -328,7 +329,7 @@ var CPImageViewImageKey         = @"CPImageViewImageKey",
 
 @implementation CPImageView (CPCoding)
 
-/*
+/*!
     Initializes the image view with the provided coder.
     @param aCoder the coder from which data will be read.
     @return the initialized image view
@@ -358,7 +359,7 @@ var CPImageViewImageKey         = @"CPImageViewImageKey",
     return self;
 }
 
-/*
+/*!
     Writes the image view out to the coder.
     @param aCoder the coder to which the image
     view will be written

@@ -182,7 +182,7 @@ kCGBlendModePlusDarker      = 26;
 */
 kCGBlendModePlusLighter     = 27;
 
-/*
+/*!
     This function is just here for source compatability.
     It does nothing.
     @group CGContext
@@ -191,7 +191,7 @@ function CGContextRelease()
 {
 }
 
-/*
+/*!
     This function is just here for source compatability.
     It does nothing.
     @param aContext a CGContext
@@ -421,7 +421,7 @@ function CGContextSetShadowWithColor(aContext, aSize, aBlur, aColor)
 }   // END CANVAS IF
 
 // GOOD.
-/*
+/*!
     Fills in the area of the current path, using the even-odd fill rule.
     @param aContext the CGContext of the path
     @return void
@@ -432,7 +432,7 @@ function CGContextEOFillPath(aContext)
     CGContextDrawPath(aContext, kCGPathEOFill);
 }
 
-/*
+/*!
     Fills in the area of the current path, using  the non-zero winding number rule.
     @param aContext the CGContext of the path
     @return void
@@ -445,7 +445,7 @@ function CGContextFillPath(aContext)
 
 var KAPPA = 4.0 * ((SQRT2 - 1.0) / 3.0);
 
-/*
+/*!
     Draws the outline of an ellipse bounded by a rectangle.
     @param aContext CGContext to draw on
     @param aRect the rectangle bounding the ellipse
@@ -474,7 +474,7 @@ function CGContextAddEllipseInRect(aContext, aRect)
 	CGContextClosePath(aContext);
 }
 
-/*
+/*!
     Fills an ellipse bounded by a rectangle.
     @param aContext CGContext to draw on
     @param aRect the rectangle bounding the ellipse
@@ -487,7 +487,7 @@ function CGContextFillEllipseInRect(aContext, aRect)
     CGContextFillPath(aContext);
 }
 
-/*
+/*!
     Strokes an ellipse bounded by the specified rectangle.
     @param aContext CGContext to draw on
     @param aRect the rectangle bounding the ellipse
@@ -500,7 +500,7 @@ function CGContextStrokeEllipseInRect(aContext, aRect)
     CGContextStrokePath(aContext);
 }
 
-/*
+/*!
     Paints a line in the current path of the current context.
     @param aContext CGContext to draw on
     @return void
@@ -511,7 +511,7 @@ function CGContextStrokePath(aContext)
     CGContextDrawPath(aContext, kCGPathStroke);
 }
 
-/*
+/*!
     Strokes multiple line segments.
     @param aContext CGContext to draw on
     @param points an array with an even number of points. The
@@ -543,7 +543,7 @@ function CGContextStrokeLineSegments(aContext, points, count)
 
 //FIXME: THIS IS WRONG!!!
 
-/*
+/*!
     Sets the current fill color.
     @param aContext the CGContext
     @param aColor the new color for the fill
@@ -557,7 +557,7 @@ function CGContextSetFillColor(aContext, aColor)
         aContext.gState.fillStyle = [aColor cssString];
 }
 
-/*
+/*!
     Sets the current stroke color.
     @param aContext the CGContext
     @param aColor the new color for the stroke
@@ -570,7 +570,7 @@ function CGContextSetStrokeColor(aContext, aColor)
         aContext.gState.strokeStyle = [aColor cssString];
 }
 
-/*
+/*!
     Fills a rounded rectangle.
     @param aContext the CGContext to draw into
     @param aRect the base rectangle

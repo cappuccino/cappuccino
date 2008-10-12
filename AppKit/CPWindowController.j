@@ -29,7 +29,8 @@ import "CPDocument.j"
 
 #include "Platform/Platform.h"
 
-/*
+/*! @class CPWindowController
+
     An instance of a <objj>CPWindowController</objj> manages a <objj>CPWindow</objj>. It has methods
     that get called when the window is loading, and after the window has loaded. In the
     Model-View-Controller method of program design, the <objj>CPWindowController</objj> would be
@@ -43,7 +44,7 @@ import "CPDocument.j"
     CPString    _windowCibName;
 }
 
-/*
+/*!
     Initializes the controller with a window.
     @param aWindow the window to control
     @return the initialzed window controller
@@ -62,7 +63,7 @@ import "CPDocument.j"
     return self;
 }
 
-/*
+/*!
     Initializes the controller with a Capppuccino Interface Builder name.
     @param aWindowCibName the cib name of the window to control
     @return the initialized window controller
@@ -72,7 +73,7 @@ import "CPDocument.j"
     return [self initWithWindowCibName:aWindowCibName owner:self];
 }
 
-/*
+/*!
     Initializes the controller with a cafe name.
     @param aWindowCibName the cib name of the window to control
     @param anOwner the owner of the cib file
@@ -93,7 +94,7 @@ import "CPDocument.j"
     return self;
 }
 
-/*
+/*!
     Loads the window
 */
 - (void)loadWindow
@@ -105,7 +106,7 @@ import "CPDocument.j"
     [self windowDidLoad];
 }
 
-/*
+/*!
     Shows the window.
     @param aSender the object requesting the show
 */
@@ -119,7 +120,7 @@ import "CPDocument.j"
         [theWindow makeKeyAndOrderFront:aSender];
 }
 
-/*
+/*!
     Returns <code>YES</code> if the window has been loaded. Specifically,
     if <objj>loadWindow</objj> has been called.
 */
@@ -128,7 +129,7 @@ import "CPDocument.j"
     return _window;
 }
 
-/*
+/*!
     Returns the window this object controls.
 */
 - (CPWindow)window
@@ -139,7 +140,7 @@ import "CPDocument.j"
     return _window;
 }
 
-/*
+/*!
     Sets the window to be controlled.
     @param aWindow the new window to control
 */
@@ -151,7 +152,7 @@ import "CPDocument.j"
     [_window setNextResponder:self];
 }
 
-/*
+/*!
     The method notifies the controller that it's window has loaded.
 */
 - (void)windowDidLoad
@@ -161,7 +162,7 @@ import "CPDocument.j"
     [self synchronizeWindowTitleWithDocumentName];
 }
 
-/*
+/*!
     The method notifies the controller that it's window is about to load.
 */
 - (void)windowWillLoad
@@ -169,7 +170,7 @@ import "CPDocument.j"
     [_document windowControllerWillLoadNib:self];
 }
 
-/*
+/*!
     Sets the document that is inside the controlled window.
     @param aDocument the document in the controlled window
 */
@@ -238,7 +239,7 @@ import "CPDocument.j"
     [[self window] setDocumentSaving:NO];
 }
 
-/*
+/*!
     Returns the document in the controlled window.
 */
 - (CPDocument)document
@@ -246,7 +247,7 @@ import "CPDocument.j"
     return _document;
 }
 
-/*
+/*!
     Sets whether the document has unsaved changes. The window can use this as a hint to 
     @param isEdited <code>YES</code> means the document has unsaved changes.
 */
@@ -257,7 +258,7 @@ import "CPDocument.j"
 
 // Setting and Getting Window Attributes
 
-/*
+/*!
     Sets the title of the window as the name of the document.
 */
 - (void)synchronizeWindowTitleWithDocumentName
@@ -269,7 +270,7 @@ import "CPDocument.j"
     [_window setTitle:[self windowTitleForDocumentDisplayName:[_document displayName]]];
 }
 
-/*
+/*!
     Returns the window title based on the document's name.
     @param aDisplayName the document's filename
 */

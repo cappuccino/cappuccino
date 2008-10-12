@@ -23,8 +23,8 @@
 import "CPObject.j"
 import "CPException.j"
 
-/*
-    A <objj>CPInvocation</objj> is an object representation of a message sent to an object.
+/*! @class CPInvocation
+    A CPInvocation is an object representation of a message sent to an object.
 */
 @implementation CPInvocation : CPObject
 {
@@ -34,8 +34,8 @@ import "CPException.j"
 }
 
 // Creating CPInvocation Objects
-/*
-    Returns a new <objj>CPInvocation</objj> that represents a message to a method.
+/*!
+    Returns a new CPInvocation that represents a message to a method.
     @param aMethodSignature the signature of the method to message
     @return the new invocation
 */
@@ -44,7 +44,7 @@ import "CPException.j"
     return [[self alloc] initWithMethodSignature:aMethodSignature];
 }
 
-/*
+/*!
     Initializes the invocation with a provided method signature
     @param aMethodSignature the signature of the method to message
     @return the initialized invocation
@@ -63,7 +63,7 @@ import "CPException.j"
 }
 
 // Configuring an Invocation Object
-/*
+/*!
     Sets the invocation's selector.
     @param the invocation selector
 */
@@ -72,7 +72,7 @@ import "CPException.j"
     _arguments[1] = aSelector;
 }
 
-/*
+/*!
     Returns the invocation's selector
 */
 - (SEL)selector
@@ -80,7 +80,7 @@ import "CPException.j"
     return _arguments[1];
 }
 
-/*
+/*!
     Sets the invocation's target
     @param aTarget the invocation target
 */
@@ -89,7 +89,7 @@ import "CPException.j"
     _arguments[0] = aTarget;
 }
 
-/*
+/*!
     Returns the invocation's target
 */
 - (id)target
@@ -97,7 +97,7 @@ import "CPException.j"
     return _arguments[0];
 }
 
-/*
+/*!
     Sets a method argument for the invocation. Arguments 0 and 1 are <code>self</code> and <code>_cmd</code>.
     @param anArgument the argument to add
     @param anIndex the index of the argument in the method
@@ -107,7 +107,7 @@ import "CPException.j"
     _arguments[anIndex] = anArgument;
 }
 
-/*
+/*!
     Returns the argument at the specified index. Arguments 0 and 1 are
     <code>self</code> and <code>_cmd</code> respectively. Thus, method arguments start at 2.
     @param anIndex the index of the argument to return
@@ -118,7 +118,7 @@ import "CPException.j"
     return _arguments[anIndex];
 }
 
-/*
+/*!
     Sets the invocation's return value
     @param the invocation return value
 */
@@ -127,7 +127,7 @@ import "CPException.j"
     _returnValue = aReturnValue;
 }
 
-/*
+/*!
     Returns the invocation's return value
 */
 - (id)returnValue
@@ -136,7 +136,7 @@ import "CPException.j"
 }
 
 // Dispatching an Invocation
-/*
+/*!
     Sends the encapsulated message to the stored target.
 */
 - (void)invoke
@@ -144,7 +144,7 @@ import "CPException.j"
     _returnValue = objj_msgSend.apply(objj_msgSend, _arguments);
 }
 
-/*
+/*!
     Sends the encapsulated message to the specified target.
     @param the target to which the message will be sent
 */
@@ -161,7 +161,7 @@ var CPInvocationArguments   = @"CPInvocationArguments",
 
 @implementation CPInvocation (CPCoding)
 
-/*
+/*!
     Initializes the invocation with data from a coder.
     @param aCoder the coder from which to obtain initialization data
     @return the initialized invocation
@@ -179,7 +179,7 @@ var CPInvocationArguments   = @"CPInvocationArguments",
     return self;
 }
 
-/*
+/*!
     Writes out the invocation's data to the provided coder.
     @param aCoder the coder to which the data will be written
 */

@@ -26,7 +26,8 @@ import "CPScroller.j"
 
 #include "CoreGraphics/CGGeometry.h"
 
-/*
+/*! @class CPScrollView
+
     Used to display views that are too large for the viewing area. the <objj>CPScrollView</objj>
     places scroll bars on the side of the view to allow the user to scroll and see the entire
     contents of the view.
@@ -74,7 +75,7 @@ import "CPScroller.j"
 }
 
 // Determining component sizes
-/*
+/*!
     Returns the size of the scroll view's content view.
 */
 - (CGRect)contentSize
@@ -82,7 +83,7 @@ import "CPScroller.j"
     return [_contentView frame].size;
 }
 
-/*
+/*!
     Returns the view that is scrolled for the user.
 */
 - (id)documentView
@@ -90,7 +91,7 @@ import "CPScroller.j"
     return [_contentView documentView];
 }
 
-/*
+/*!
     Sets the content view that clips the document
     @param aContentView the content view
 */
@@ -116,7 +117,7 @@ import "CPScroller.j"
     [self addSubview:_contentView];
 }
 
-/*
+/*!
     Returns the content view that clips the document.
 */
 - (CPClipView)contentView
@@ -124,7 +125,7 @@ import "CPScroller.j"
     return _contentView;
 }
 
-/*
+/*!
     Sets the view that is scrolled for the user.
     @param aView the view that will be scrolled
 */
@@ -134,9 +135,8 @@ import "CPScroller.j"
    [self reflectScrolledClipView:_contentView];
 }
 
-/*
-    Resizes the scroll view to contain the specified
-    clip view.
+/*!
+    Resizes the scroll view to contain the specified clip view.
     @param aClipView the clip view to resize to
 */
 - (void)reflectScrolledClipView:(CPClipView)aClipView
@@ -231,7 +231,7 @@ import "CPScroller.j"
 }
 
 // Managing Scrollers
-/*
+/*!
     Sets the scroll view's horizontal scroller.
     @param aScroller the horizontal scroller for the scroll view
 */
@@ -254,7 +254,7 @@ import "CPScroller.j"
     [self reflectScrolledClipView:_contentView];
 }
 
-/*
+/*!
     Returns the scroll view's horizontal scroller
 */
 - (CPScroller)horizontalScroller
@@ -262,7 +262,7 @@ import "CPScroller.j"
     return _horizontalScroller;
 }
 
-/*
+/*!
     Specifies whether the scroll view can have a horizontal scroller.
     @param hasHorizontalScroller <code>YES</code> lets the scroll view
     allocate a horizontal scroller if necessary.
@@ -285,16 +285,15 @@ import "CPScroller.j"
     }
 }
 
-/*
-    Returns <code>YES</code> if the scroll view can have a horizontal
-    scroller.
+/*!
+    Returns <code>YES</code> if the scroll view can have a horizontal scroller.
 */
 - (BOOL)hasHorizontalScroller
 {
     return _hasHorizontalScroller;
 }
 
-/*
+/*!
     Sets the scroll view's vertical scroller.
     @param aScroller the vertical scroller
 */
@@ -317,7 +316,7 @@ import "CPScroller.j"
     [self reflectScrolledClipView:_contentView];
 }
 
-/*
+/*!
     Return's the scroll view's vertical scroller
 */
 - (CPScroller)verticalScroller
@@ -325,7 +324,7 @@ import "CPScroller.j"
     return _verticalScroller;
 }
 
-/*
+/*!
     Specifies whether the scroll view has can have
     a vertical scroller. It allocates it if necessary.
     @param hasVerticalScroller <code>YES</code> allows
@@ -349,16 +348,15 @@ import "CPScroller.j"
     }
 }
 
-/*
-    Returns <code>YES</code> if the scroll view can have
-    a vertical scroller.
+/*!
+    Returns <code>YES</code> if the scroll view can have a vertical scroller.
 */
 - (BOOL)hasHorizontalScroller
 {
     return _hasHorizontalScroller;
 }
 
-/*
+/*!
     Sets whether the scroll view hides its scoll bars when not needed.
     @param autohidesScrollers <code>YES</code> causes the scroll bars
     to be hidden when not needed.
@@ -368,7 +366,7 @@ import "CPScroller.j"
     _autohidesScrollers = autohidesScrollers;
 }
 
-/*
+/*!
     Returns <code>YES</code> if the scroll view hides its scroll
     bars when not necessary.
 */
@@ -442,7 +440,7 @@ import "CPScroller.j"
     [_contentView scrollToPoint:contentBounds.origin];
 }
 
-/*
+/*!
     Lays out the scroll view's components.
 */
 - (void)tile
@@ -462,11 +460,9 @@ import "CPScroller.j"
 }
 
 // Setting Scrolling Behavior
-/*
-    Sets how much the document moves when scrolled. Sets
-    the vertical and horizontal scroll.
-    @param aLineScroll the amount to move the document
-    when scrolled
+/*!
+    Sets how much the document moves when scrolled. Sets the vertical and horizontal scroll.
+    @param aLineScroll the amount to move the document when scrolled
 */
 - (void)setLineScroll:(float)aLineScroll
 {
@@ -474,59 +470,51 @@ import "CPScroller.j"
     [self setVerticalLineScroll:aLineScroll];
 }
 
-/*
-    Returns how much the document moves
-    when scrolled
+/*!
+    Returns how much the document moves when scrolled
 */
 - (float)lineScroll
 {
     return [self horizontalLineScroll];
 }
 
-/*
-    Sets how much the document moves when scrolled
-    horizontally.
-    @param aLineScroll the amount to move horizontally
-    when scrolled.
+/*!
+    Sets how much the document moves when scrolled horizontally.
+    @param aLineScroll the amount to move horizontally when scrolled.
 */
 - (void)setHorizontalLineScroll:(float)aLineScroll
 {
     _horizontalLineScroll = aLineScroll;
 }
 
-/*
-    Returns how much the document moves horizontally
-    when scrolled.
+/*!
+    Returns how much the document moves horizontally when scrolled.
 */
 - (float)horizontalLineScroll
 {
     return _horizontalLineScroll;
 }
 
-/*
-    Sets how much the document moves when scrolled
-    vertically.
-    @param aLineScroll the new amount to move vertically
-    when scrolled.
+/*!
+    Sets how much the document moves when scrolled vertically.
+    @param aLineScroll the new amount to move vertically when scrolled.
 */
 - (void)setVerticalLineScroll:(float)aLineScroll
 {
     _verticalLineScroll = aLineScroll;
 }
 
-/*
-    Returns how much the document moves vertically
-    when scrolled.
+/*!
+    Returns how much the document moves vertically when scrolled.
 */
 - (float)verticalLineScroll
 {
     return _verticalLineScroll;
 }
 
-/*
+/*!
     Sets the horizontal and vertical page scroll amount.
-    @param aPageScroll the new horizontal and vertical page
-    scroll amount
+    @param aPageScroll the new horizontal and vertical page scroll amount
 */
 - (void)setPageScroll:(float)aPageScroll
 {
@@ -534,16 +522,15 @@ import "CPScroller.j"
     [self setVerticalPageScroll:aPageScroll];
 }
 
-/*
-    Returns the vertical and horizontal page scroll
-    amount.
+/*!
+    Returns the vertical and horizontal page scroll amount.
 */
 - (float)pageScroll
 {
     return [self horizontalPageScroll];
 }
 
-/*
+/*!
     Sets the horizontal page scroll amount.
     @param aPageScroll the new horizontal page scroll amount
 */
@@ -552,7 +539,7 @@ import "CPScroller.j"
     _horizontalPageScroll = aPageScroll;
 }
 
-/*
+/*!
     Returns the horizontal page scroll amount.
 */
 - (float)horizontalPageScroll
@@ -560,17 +547,16 @@ import "CPScroller.j"
     return _horizontalPageScroll;
 }
 
-/*
+/*!
     Sets the vertical page scroll amount.
-    @param aPageScroll the new vertcal page scroll
-    amount
+    @param aPageScroll the new vertcal page scroll amount
 */
 - (void)setVerticalPageScroll:(float)aPageScroll
 {
     _verticalPageScroll = aPageScroll;
 }
 
-/*
+/*!
     Returns the vertical page scroll amount.
 */
 - (float)verticalPageScroll
@@ -578,7 +564,7 @@ import "CPScroller.j"
     return _verticalPageScroll;
 }
 
-/*
+/*!
     Handles a scroll wheel event from the user.
     @param anEvent the scroll wheel event
 */

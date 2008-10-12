@@ -82,7 +82,7 @@ var _CPTextFieldSquareBezelColor    = nil;
 
 @implementation CPString (CPTextFieldAdditions)
 
-/*
+/*!
     Returns the string (<code>self</code>).
 */
 - (CPString)string
@@ -92,7 +92,7 @@ var _CPTextFieldSquareBezelColor    = nil;
 
 @end
 
-/*
+/*!
     This control displays editable text in a Cappuccino application.
 */
 @implementation CPTextField : CPControl
@@ -167,7 +167,7 @@ var _CPTextFieldSquareBezelColor    = nil;
 }
 
 // Setting the Bezel Style
-/*
+/*!
     Sets whether the textfield will have a bezeled border.
     @param shouldBeBezeled <code>YES</code> means the textfield will draw a bezeled border
 */
@@ -181,7 +181,7 @@ var _CPTextFieldSquareBezelColor    = nil;
     [self _updateBackground];
 }
 
-/*
+/*!
     Returns <code>YES</code> if the textfield draws a bezeled border.
 */
 - (BOOL)isBezeled
@@ -189,7 +189,7 @@ var _CPTextFieldSquareBezelColor    = nil;
     return _isBezeled;
 }
 
-/*
+/*!
     Sets the textfield's bezel style.
     @param aBezelStyle the constant for the desired bezel style
 */
@@ -203,7 +203,7 @@ var _CPTextFieldSquareBezelColor    = nil;
     [self _updateBackground];
 }
 
-/*
+/*!
     Returns the textfield's bezel style.
 */
 - (CPTextFieldBezelStyle)bezelStyle
@@ -211,7 +211,7 @@ var _CPTextFieldSquareBezelColor    = nil;
     return _bezelStyle;
 }
 
-/*
+/*!
     Sets whether the textfield will have a border drawn.
     @param shouldBeBordered <code>YES</code> makes the textfield draw a border
 */
@@ -225,7 +225,7 @@ var _CPTextFieldSquareBezelColor    = nil;
     [self _updateBackground];
 }
 
-/*
+/*!
     Returns <code>YES</code> if the textfield has a border.
 */
 - (BOOL)isBordered
@@ -337,7 +337,7 @@ var _CPTextFieldSquareBezelColor    = nil;
     return YES;
 }
 
-/* 
+/*! 
     Sets whether or not the receiver text field can be edited
 */
 - (void)setEditable:(BOOL)shouldBeEditable
@@ -345,7 +345,7 @@ var _CPTextFieldSquareBezelColor    = nil;
     _isEditable = shouldBeEditable;
 }
 
-/*
+/*!
     Returns <code>YES</code> if the textfield is currently editable by the user.
 */
 - (BOOL)isEditable
@@ -362,7 +362,7 @@ var _CPTextFieldSquareBezelColor    = nil;
 #endif
 }
 
-/*
+/*!
     Returns <code>YES</code> if the field's text is selectable by the user.
 */
 - (BOOL)isSelectable
@@ -370,7 +370,7 @@ var _CPTextFieldSquareBezelColor    = nil;
     return _isSelectable;
 }
 
-/*
+/*!
     Sets whether the field's text is selectable by the user.
     @param aFlag <code>YES</code> makes the text selectable
 */
@@ -379,7 +379,7 @@ var _CPTextFieldSquareBezelColor    = nil;
     _isSelectable = aFlag;
 }
 
-/*
+/*!
     Sets the alignment of the text in the field.
     @param anAlignment
 */
@@ -407,7 +407,7 @@ var _CPTextFieldSquareBezelColor    = nil;
 #endif
 }
 
-/*
+/*!
     Sets the way line breaks occur in the text field.
     @param aLineBreakMode the line break style
 */
@@ -431,7 +431,7 @@ var _CPTextFieldSquareBezelColor    = nil;
 #endif
 }
 
-/*
+/*!
     Returns the string the text field.
 */
 - (CPString)stringValue
@@ -472,7 +472,7 @@ var _CPTextFieldSquareBezelColor    = nil;
 #endif
 }
 
-/*
+/*!
     Returns the receiver's placeholder string
 */
 - (CPString)placeholderString
@@ -480,7 +480,7 @@ var _CPTextFieldSquareBezelColor    = nil;
     return _placeholderString;
 }
 
-/*
+/*!
     Sets a placeholder string for the receiver.  The placeholder is displayed until editing begins,
     and after editing ends, if the text field has an empty string value
 */
@@ -489,7 +489,7 @@ var _CPTextFieldSquareBezelColor    = nil;
     _placeholderString = aStringValue;
 }
 
-/*
+/*!
     Adjusts the text field's size in the application.
 */
 - (void)sizeToFit
@@ -501,7 +501,7 @@ var _CPTextFieldSquareBezelColor    = nil;
 #endif
 }
 
-/*
+/*!
     Select all the text in the CPTextField.
 */
 - (void)selectText:(id)sender
@@ -523,7 +523,7 @@ var CPTextFieldIsSelectableKey  = @"CPTextFieldIsSelectableKey",
 
 @implementation CPTextField (CPCoding)
 
-/*
+/*!
     Initializes the textfield with data from a coder.
     @param aCoder the coder from which to read the textfield data
     @return the initialized textfield
@@ -564,7 +564,7 @@ var CPTextFieldIsSelectableKey  = @"CPTextFieldIsSelectableKey",
     return self;
 }
 
-/*
+/*!
     Encodes the data of this textfield into the provided coder.
     @param aCoder the coder into which the data will be written
 */

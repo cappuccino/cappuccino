@@ -55,7 +55,7 @@ function CGAffineTransformCreateCopy(aTransform)
     return _CGAffineTransformMakeCopy(aTransform);
 }
 
-/*
+/*!
     Returns a transform that rotates a coordinate system.
     @param anAngle the amount in radians for the transform
     to rotate a coordinate system
@@ -71,7 +71,7 @@ function CGAffineTransformMakeRotation(anAngle)
     return _CGAffineTransformMake(cos, sin, -sin, cos, 0.0, 0.0);
 }
 
-/*
+/*!
     Rotates a transform.
     @param aTransform the transform to rotate
     @param anAngle the amount to rotate in radians
@@ -93,7 +93,7 @@ function CGAffineTransformRotate(aTransform, anAngle)
         };
 }
 
-/*
+/*!
     Inverts a transform.
     @param aTransform the transform to invert
     @return CGAffineTransform an inverted transform
@@ -113,7 +113,7 @@ function CGAffineTransformInvert(aTransform)
     };
 }
 
-/*
+/*!
     Applies a transform to the rectangle's points. The transformed rectangle
     will be the smallest box that contains the transformed points.
     @param aRect the rectangle to transform
@@ -139,7 +139,7 @@ function CGRectApplyAffineTransform(aRect, anAffineTransform)
     return _CGRectMake(minX, minY, (maxX - minX), (maxY - minY));
 }
 
-/*
+/*!
     Creates and returns a string representation of an affine transform.
     @param anAffineTransform the transform to represent as a string
     @return CPString a string describing the transform
