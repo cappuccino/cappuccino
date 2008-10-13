@@ -398,7 +398,7 @@ var CPStringHashes      = new objj_dictionary();
 
 - (CPString)stringByReplacingCharactersInRange:(CPRange)range withString:(CPString)replacement
 {
-	return('' + substring(0, range.location) + replacement + substring(range.location + range.length, self.length));
+	return '' + substring(0, range.location) + replacement + substring(range.location + range.length, self.length);
 }
 
 
