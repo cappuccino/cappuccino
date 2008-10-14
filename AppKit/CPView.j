@@ -934,7 +934,6 @@ var DOMElementPrototype         = nil,
     _opacity = anAlphaValue;
     
 #if PLATFORM(DOM)
-    _DOMElement.style.opacity = anAlphaValue;
     
     if (CPFeatureIsCompatible(CPOpacityRequiresFilterFeature))
     {
@@ -943,6 +942,9 @@ var DOMElementPrototype         = nil,
         else
             _DOMElement.style.filter = "alpha(opacity=" + anAlphaValue * 100 + ")";
     }
+    else
+        _DOMElement.style.opacity = anAlphaValue;
+
 #endif
 }
 
