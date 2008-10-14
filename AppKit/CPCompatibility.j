@@ -49,6 +49,8 @@ CPJavaScriptShadowFeature               = 1 << 20;
 
 CPJavaScriptNegativeMouseWheelValues    = 1 << 22;
 
+CPOpacityRequiresFilterFeature          = 1 << 23;
+
 var USER_AGENT                          = "";
                                         
     PLATFORM_ENGINE                     = CPUnknownBrowserEngine,
@@ -74,6 +76,8 @@ else if (window.attachEvent) // Must follow Opera check.
     PLATFORM_FEATURES |= CPVMLFeature;
     PLATFORM_FEATURES |= CPJavascriptRemedialKeySupport;
     PLATFORM_FEATURES |= CPJavaScriptShadowFeature;
+    
+    PLATFORM_FEATURES |= CPOpacityRequiresFilterFeature;
 }
 
 // WebKit

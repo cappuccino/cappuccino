@@ -936,10 +936,13 @@ var DOMElementPrototype         = nil,
 #if PLATFORM(DOM)
     _DOMElement.style.opacity = anAlphaValue;
     
-    if (anAlphaValue == 1.0)
-        try { _DOMElement.style.removeAttribute("filter") } catch (anException) { }
-    else
-        _DOMElement.style.filter = "alpha(opacity=" + anAlphaValue * 100 + ")";
+    if (CPFeatureIsCompatible(CPOpacityRequiresFilterFeature))
+    {
+        if (anAlphaValue == 1.0)
+            try { _DOMElement.style.removeAttribute("filter") } catch (anException) { }
+        else
+            _DOMElement.style.filter = "alpha(opacity=" + anAlphaValue * 100 + ")";
+    }
 #endif
 }
 
