@@ -201,7 +201,10 @@ function fragment_evaluate_file(aFragment)
         objj_included_files[aFile.path] = YES;
         
         // Grab the file's fragments if it has them, or preprocess it if not.
-        var fragments = aFile.fragments ? aFile.fragments : objj_preprocess(aFile.contents, aFile.bundle, aFile),
+        if (!aFile.fragments)
+            aFile.fragments = objj_preprocess(aFile.contents, aFile.bundle, aFile);
+        
+        var fragments = aFile.fragments,
             count = fragments.length,
             directory = aFile.path.substr(0, aFile.path.lastIndexOf('/') + 1);
 
