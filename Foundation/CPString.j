@@ -366,17 +366,40 @@ var CPStringHashes      = new objj_dictionary();
 }
 
 /*
+    Returns a new string in which all occurrences of a target string in a specified range of the receiver
+    are replaced by another given string.
+    @param target The string to replace
+    @param replacement the string with which to replace the <pre>target<pre>
+    @param options A mask of options to use when comparing <pre>target<pre> with the receiver. Pass 0 to specify no options
+    @param searchRange The range in the receiver in which to search for <pre>target<pre>.
+*/
+
 - (CPString)stringByReplacingOccurrencesOfString:(CPString)target withString:(CPString)replacement options:(int)options range:(CPRange)searchRange
 {
-    //TODO :Vijay implement the method
+    var start = substring(0, searchRange.location),
+        stringSegmentToSearch = substr(searchRange.location, searchRange.length),
+        end = substring(searchRange.location + searchRange.length, self.length),
+        regExp;
 
+    if (options & CPCaseInsensitiveSearch)
+        regExp = new RegExp(target, "gi"); 
+    else
+        regExp = new RegExp(target, "g");
+
+    return start + '' + stringSegmentToSearch.replace(regExp, replacement) + '' + end;
 }
+
+/*
+   Returns a new string in which the characters in a specified range of the receiver 
+   are replaced by a given string.
+   @param range A range of characters in the receiver.
+   @param replacement The string with which to replace the characters in <pre>range</pre>.
+*/
 
 - (CPString)stringByReplacingCharactersInRange:(CPRange)range withString:(CPString)replacement
 {
-    //TODO :Vijay implement the method
+	return '' + substring(0, range.location) + replacement + substring(range.location + range.length, self.length);
 }
-*/
 
 
 // Identifying and comparing strings
