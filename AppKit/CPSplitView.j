@@ -451,25 +451,24 @@ var CPSplitViewHorizontalImage = nil,
 
     [self _postNotificationWillResize];
     
-    var frame = [self frame];
-    
     var index = 0,
         count = [_subviews count],
+        bounds = [self bounds],
         dividerThickness = [self dividerThickness];
     
     for (; index < count; ++index)
     {
         var view = _subviews[index],
-            newFrame = CGRectCreateCopy(frame);
+            viewFrame = CGRectMakeCopy(bounds);
         
         if (index + 1 == count)
-            newFrame.size[_sizeComponent] = frame.size[_sizeComponent] - newFrame.origin[_originComponent];
+            viewFrame.size[_sizeComponent] = bounds.size[_sizeComponent] - viewFrame.origin[_originComponent];
         else
-            newFrame.size[_sizeComponent] = frame.size[_sizeComponent] * ([view frame].size[_sizeComponent] / oldSize[_sizeComponent]);
+            viewFrame.size[_sizeComponent] = bounds.size[_sizeComponent] * ([view frame].size[_sizeComponent] / oldSize[_sizeComponent]);
     
-        frame.origin[_originComponent] += newFrame.size[_sizeComponent] + dividerThickness;
+        bounds.origin[_originComponent] += viewFrame.size[_sizeComponent] + dividerThickness;
         
-        [view setFrame:newFrame];
+        [view setFrame:viewFrame];
     }
 
     [self _postNotificationDidResize];
