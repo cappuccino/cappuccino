@@ -409,9 +409,20 @@ var CPStringHashes      = new objj_dictionary();
     @param aString the string with which to compare
     @return the result of the comparison
 */
+- (CPComparisonResult)compare:(CPString)aString
+{
+    return [self compare:aString options:nil];
+}
+
+
+/*
+    Compares the receiver to the specified string.
+    @param aString the string with which to compare
+    @return the result of the comparison
+*/
 - (CPComparisonResult)caseInsensitiveCompare:(CPString)aString
 {
-    return [self compare:aString options:CPCaseInsensitiveSearch]
+    return [self compare:aString options:CPCaseInsensitiveSearch];
 }
 
 /*
