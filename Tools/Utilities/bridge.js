@@ -239,7 +239,7 @@ if (typeof Packages != "undefined") {
     
 	objj_console = function()
 	{
-		var br = new Packages.java.io.BufferedReader(new Packages.java.io.InputStreamReader(Packages.java.lang.System["in"]));
+		var br = new Packages.java.io.BufferedReader(new Packages.java.io.InputStreamReader(Packages.java.lang.System["in"], "UTF-8"));
 		
 		keepgoing = true;
 		while (keepgoing)
