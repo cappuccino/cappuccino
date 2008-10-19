@@ -25,7 +25,7 @@ function exec(command)
 	return result;
 }
 
-function preprocess(aFilePath, outFilePath, gccArgs, shouldObjjPreprocess)
+function preprocess(aFilePath, outFilePath, gccArgs, shouldObjjPreprocess, shouldCheckSyntax)
 {
     print("Statically Preprocessing " + aFilePath);
     
@@ -58,12 +58,33 @@ function preprocess(aFilePath, outFilePath, gccArgs, shouldObjjPreprocess)
         fileContents += reader.readLine() + '\n';
         
     reader.close();
+    
+    var results;
+    
+    try
+    {
+        results = objj_preprocess_file(new File(aFilePath).getName(), fileContents, shouldCheckSyntax);
+    }
+    catch (e)
+    {
+        if (e.fragment)
+        {
+            var lines = e.fragment.info.split("\n"),
+                PAD = 3;
+		    System.out.println(
+		        "Syntax error in "+e.fragment.file.path+
+		        " on preprocessed line number "+e.lineNumber+"\n"+
+		        "\t"+lines.slice(e.lineNumber-1-PAD<0 ? 0 : e.lineNumber-1-PAD, e.lineNumber+PAD).join("\n\t"));
+        }
+		else
+		    System.out.println("Unknown error: " + e);
+		    
+    	System.exit(1);
+    }
 
     // Write file.
     var writer = new BufferedWriter(new FileWriter(outFilePath));
-    
-    writer.write(objj_preprocess_file(new File(aFilePath).getName(), fileContents));
-    
+    writer.write(results);
     writer.close();
 }
 
@@ -77,7 +98,8 @@ function main()
         
         gccArgs = [],
         
-        shouldObjjPreprocess = true;
+        shouldObjjPreprocess = true,
+        shouldCheckSyntax = true;
     
     for (; index < count; ++index)
     {
@@ -95,13 +117,16 @@ function main()
             
         else if (args[index].indexOf("-E") == 0)
             shouldObjjPreprocess = false;
+            
+        else if (args[index].indexOf("-S") == 0)
+            shouldCheckSyntax = false;
     
         else
             filePaths.push(args[index]);
     }
     
     for (index = 0, count = filePaths.length; index < count; ++index)
-        preprocess(filePaths[index], outFilePaths[index], gccArgs, shouldObjjPreprocess);
+        preprocess(filePaths[index], outFilePaths[index], gccArgs, shouldObjjPreprocess, shouldCheckSyntax);
 }
 
 args = arguments;
