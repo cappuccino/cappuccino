@@ -43,7 +43,8 @@ CPTableColumnAutoresizingMask   = 1;
 */
 CPTableColumnUserResizingMask   = 2;
 
-/*
+/*! @class CPTableColumn
+
     An <objj>CPTableColumn</objj> object mainly keeps information about the width of the column, its minimum and maximum width; whether the column can be edited or resized; and the cells used to draw the column header and the data in the column. You can change all these attributes of the column by calling the appropriate methods. Please note that the table column does not hold nor has access to the data to be displayed in the column; this data is maintained in the table view's data source.</p>
     
     <p>Each <objj>CPTableColumn</objj> object is identified by a <objj>CPString</objj>, called the column identifier. The reason is that, after a column has been added to a table view, the user might move the columns around, so there is a need to identify the columns regardless of its position in the table.
@@ -63,7 +64,7 @@ CPTableColumnUserResizingMask   = 2;
     unsigned    _resizingMask;
 }
 
-/*
+/*!
     Initializes the table column with the specified identifier.
     @param anIdentifier the identifier
     @return the initialized table column
@@ -87,7 +88,7 @@ CPTableColumnUserResizingMask   = 2;
     return self;
 }
 
-/*
+/*!
     Sets the table column's identifier
     @param anIdentifier the new identifier
 */
@@ -96,7 +97,7 @@ CPTableColumnUserResizingMask   = 2;
     _identifier = anIdentifier;
 }
 
-/*
+/*!
     Returns the table column's identifier
 */
 - (CPString)identifier
@@ -105,7 +106,7 @@ CPTableColumnUserResizingMask   = 2;
 }
 
 // Setting the CPTableView
-/*
+/*!
     Sets the table's view. This is called automatically by Cappuccino.
     @param aTableView the new table view
 */
@@ -114,7 +115,7 @@ CPTableColumnUserResizingMask   = 2;
     _tableView = aTableView;
 }
 
-/*
+/*!
     Returns the column's table view.
 */
 - (CPTableView)tableView
@@ -123,7 +124,7 @@ CPTableColumnUserResizingMask   = 2;
 }
 
 // Controlling size
-/*
+/*!
     Sets the column's width.
     @param aWidth the new column width
 */
@@ -132,7 +133,7 @@ CPTableColumnUserResizingMask   = 2;
     _width = aWidth;
 }
 
-/*
+/*!
     Returns the column's width
 */
 - (float)width
@@ -140,7 +141,7 @@ CPTableColumnUserResizingMask   = 2;
     return _width;
 }
 
-/*
+/*!
     Sets column's minimum width.
     @param aWidth the new minimum column width
 */
@@ -150,7 +151,7 @@ CPTableColumnUserResizingMask   = 2;
         [self setWidth:_minWidth];
 }
 
-/*
+/*!
     The column's minimum width
 */
 - (float)minWidth
@@ -158,7 +159,7 @@ CPTableColumnUserResizingMask   = 2;
     return _minWidth;
 }
 
-/*
+/*!
     Sets the column's maximum width.
     @param aWidth the new maximum width
 */
@@ -168,7 +169,7 @@ CPTableColumnUserResizingMask   = 2;
         [self setWidth:_maxWidth];
 }
 
-/*
+/*!
     Sets the resizing mask. The mask is one of:
 <pre>
 CPTableColumnNoResizing;
@@ -182,7 +183,7 @@ CPTableColumnUserResizingMask;
     _resizingMask = aMask;
 }
 
-/*
+/*!
     Returns the column's resizing mask. One of:
 <pre>
 CPTableColumnNoResizing;
@@ -195,7 +196,7 @@ CPTableColumnUserResizingMask;
     return _resizingMask;
 }
 
-/*
+/*!
     Resizes the column according to the min, max and set width.
 */
 - (void)sizeToFit
@@ -211,7 +212,7 @@ CPTableColumnUserResizingMask;
         [self setWidth:width];
 }
 
-/*
+/*!
     Sets whether the column in this data is editable.
     @param aFlag <code>YES</code> means the column data is editable
 */
@@ -220,7 +221,7 @@ CPTableColumnUserResizingMask;
     _isEditable = aFlag;
 }
 
-/*
+/*!
     Returns <code>YES</code> if the column data is editable.
 */
 - (BOOL)isEditable
@@ -228,7 +229,7 @@ CPTableColumnUserResizingMask;
     return _isEditable;
 }
 
-/*
+/*!
     Sets the view that draws the column's header.
     @param aHeaderView the view that will draws the column header
 */
@@ -237,7 +238,7 @@ CPTableColumnUserResizingMask;
     _headerView = aHeaderView;
 }
 
-/*
+/*!
     Return the view that draws the column's header
 */
 - (CPView)headerView
@@ -245,7 +246,7 @@ CPTableColumnUserResizingMask;
     return _headerView;
 }
 
-/*
+/*!
     Sets the data cell that draws rows in this column.
 */
 - (void)setDataCell:(CPCell)aDataCell
@@ -253,7 +254,7 @@ CPTableColumnUserResizingMask;
     _dataCell = aDataCell;
 }
 
-/*
+/*!
     Returns the data cell that draws rows in this column
 */
 - (CPCell)dataCell
@@ -261,7 +262,7 @@ CPTableColumnUserResizingMask;
     return _dataCell;
 }
 
-/*
+/*!
     By default returns the value from <code>dataCell</code>. This can
     be overridden by a subclass to return different cells for different
     rows.

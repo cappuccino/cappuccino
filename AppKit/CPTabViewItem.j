@@ -43,7 +43,8 @@ CPBackgroundTab = 1;
 */
 CPPressedTab    = 2;
 
-/*
+/*! @class CPTabView
+
     The class representation of an item in a <objj>CPTabView</objj>. One tab view item
     can be shown at a time in a <objj>CPTabView</objj>.
 */
@@ -56,7 +57,7 @@ CPPressedTab    = 2;
     CPView      _auxiliaryView;
 }
 
-/*
+/*!
     Initializes the tab view item with the specified identifier.
     @return the initialized <objj>CPTabViewItem</objj>
 */
@@ -71,7 +72,7 @@ CPPressedTab    = 2;
 }
 
 // Working With Labels
-/*
+/*!
     Sets the <objj>CPTabViewItem</objj>'s label.
     @param aLabel the label for the item
 */
@@ -80,7 +81,7 @@ CPPressedTab    = 2;
     _label = aLabel;
 }
 
-/*
+/*!
     Returns the <objj>CPTabViewItem</objj>'s label
 */
 - (CPString)label
@@ -89,7 +90,7 @@ CPPressedTab    = 2;
 }
 
 // Checking the Tab Display State
-/*
+/*!
     Returns the tab's current state.
 */
 - (CPTabState)tabState
@@ -98,7 +99,7 @@ CPPressedTab    = 2;
 }
 
 // Assigning an Identifier Object
-/*
+/*!
     Sets the item's identifier.
     @param anIdentifier the new identifier for the item
 */
@@ -107,7 +108,7 @@ CPPressedTab    = 2;
     _identifier = anIdentifier;
 }
 
-/*
+/*!
     Returns the tab's identifier.
 */
 - (id)identifier
@@ -116,7 +117,7 @@ CPPressedTab    = 2;
 }
 
 // Assigning a View
-/*
+/*!
     Sets the view that gets displayed in this tab.
 */
 - (void)setView:(CPView)aView
@@ -124,7 +125,7 @@ CPPressedTab    = 2;
     _view = aView;
 }
 
-/*
+/*!
     Returns the tab's view.
 */
 - (CPView)view
@@ -133,7 +134,7 @@ CPPressedTab    = 2;
 }
 
 // Assigning an Auxiliary View
-/*
+/*!
     Sets the tab's auxillary view.
     @param anAuxillaryView the new auxillary view
 */
@@ -142,7 +143,7 @@ CPPressedTab    = 2;
     _auxiliaryView = anAuxiliaryView;
 }
 
-/*
+/*!
     Returns the tab's auxillary view
 */
 - (CPView)auxiliaryView
@@ -151,7 +152,7 @@ CPPressedTab    = 2;
 }
 
 // Accessing the Parent Tab View
-/*
+/*!
     Returns the tab view that contains this item.
 */
 - (CPTabView)tabView

@@ -28,7 +28,8 @@ import <AppKit/CPImage.j>
 import <AppKit/CPMenu.j>
 import <AppKit/CPView.j>
 
-/*
+/*! @class CPMenuItem
+
     A <objj>CPMenuItem</objj> is added to a <objj>CPMenu</objj>.
     It has an action and a target for that action to be sent to
     whenever the item is 'activated'.
@@ -73,7 +74,7 @@ import <AppKit/CPView.j>
     _CPMenuItemView _menuItemView;
 }
 
-/*
+/*!
     Initializes the menu item with a title, action, and keyboard equivalent.
     @param aTitle the menu item's title
     @param anAction the action that gets triggered when the item is selected
@@ -103,7 +104,7 @@ import <AppKit/CPView.j>
 }
 
 // Enabling a Menu Item
-/*
+/*!
     Sets whether the menu item is enabled or not
     @param isEnabled <code>YES</code> enables the item. <code>NO</code> disables it.
 */
@@ -119,7 +120,7 @@ import <AppKit/CPView.j>
     [_menu itemChanged:self];
 }
 
-/*
+/*!
     Returns <code>YES</code> if the item is enabled.
 */
 - (BOOL)isEnabled
@@ -128,7 +129,7 @@ import <AppKit/CPView.j>
 }
 
 // Managing Hidden Status
-/*
+/*!
     Sets whether the item should be hidden. A hidden item can not be triggered by keyboard shortcuts.
     @param isHidden <code>YES</code> hides the item. <code>NO</code> reveals it.
 */
@@ -137,7 +138,7 @@ import <AppKit/CPView.j>
     _isHidden = isHidden;
 }
 
-/*
+/*!
     Returns <code>YES</code> if the item is hidden.
 */
 - (BOOL)isHidden
@@ -145,7 +146,7 @@ import <AppKit/CPView.j>
     return _isHidden;
 }
 
-/*
+/*!
     Returns <code>YES</code> if the item is hidden or if one of it's supermenus is hidden.
 */
 - (BOOL)isHiddenOrHasHiddenAncestor
@@ -160,7 +161,7 @@ import <AppKit/CPView.j>
 }
 
 // Managing Target and Action
-/*
+/*!
     Sets the menu item's action target.
     @param aTarget the target for the action
 */
@@ -169,7 +170,7 @@ import <AppKit/CPView.j>
     _target = aTarget;
 }
 
-/*
+/*!
     Returns the item's action target
 */
 - (id)target
@@ -177,7 +178,7 @@ import <AppKit/CPView.j>
     return _target;
 }
 
-/*
+/*!
     Sets the action that gets sent to the item's target when triggered.
     @param anAction the action to send
 */
@@ -186,7 +187,7 @@ import <AppKit/CPView.j>
     _action = anAction;
 }
 
-/*
+/*!
     Returns the item's action.
 */
 - (SEL)action
@@ -195,7 +196,7 @@ import <AppKit/CPView.j>
 }
 
 // Managing the Title
-/*
+/*!
     Sets the item's title.
     @param aTitle the item's new title
 */
@@ -213,7 +214,7 @@ import <AppKit/CPView.j>
     [_menu itemChanged:self];
 }
 
-/*
+/*!
     Returns the menu item's title.
 */
 - (CPString)title
@@ -221,7 +222,7 @@ import <AppKit/CPView.j>
     return _title;
 }
 
-/*
+/*!
     Sets the font for the text of this menu item
     @param aFont the font for the menu item
 */
@@ -237,7 +238,7 @@ import <AppKit/CPView.j>
     [_menuItemView setDirty];
 }
 
-/*
+/*!
     Returns the menu item's font
 */
 - (CPFont)font
@@ -256,7 +257,7 @@ import <AppKit/CPView.j>
 */
 
 // Managing the Tag
-/*
+/*!
     Sets the menu item's tag
     @param aTag the tag for the item
 */
@@ -265,7 +266,7 @@ import <AppKit/CPView.j>
     _tag = aTag;
 }
 
-/*
+/*!
     Returns the item's tag
 */
 - (int)tag
@@ -273,7 +274,7 @@ import <AppKit/CPView.j>
     return _tag;
 }
 
-/*
+/*!
     Sets the state of the menu item. Possible states are:
 <pre>
 <objj>CPMixedState</objj>
@@ -293,7 +294,7 @@ import <AppKit/CPView.j>
     [_menuItemView setDirty];
 }
 
-/*
+/*!
     Returns the menu item's current state. Possible states are:
 <pre>
 <objj>CPMixedState</objj>
@@ -307,7 +308,7 @@ import <AppKit/CPView.j>
 }
 
 // Managing the Image
-/*
+/*!
     Sets the menu item's image
     @param anImage the menu item's image
 */
@@ -323,7 +324,7 @@ import <AppKit/CPView.j>
     [_menu itemChanged:self];
 }
 
-/*
+/*!
     Returns the menu item's image
 */
 - (CPImage)image
@@ -331,7 +332,7 @@ import <AppKit/CPView.j>
     return _image;
 }
 
-/*
+/*!
     Sets the menu item's alternate image
     @param anImage the menu item's alternate image
 */
@@ -340,7 +341,7 @@ import <AppKit/CPView.j>
     _alternateImage = anImage;
 }
 
-/*
+/*!
     Returns the menu item's alternate image
 */
 - (CPImage)alternateImage
@@ -348,7 +349,7 @@ import <AppKit/CPView.j>
     return _alternateImage;
 }
 
-/*
+/*!
     Sets the image that is shown when the
     menu item is in the 'on' state.
     @param anImage the image to show
@@ -362,7 +363,7 @@ import <AppKit/CPView.j>
     [_menu itemChanged:self];
 }
 
-/*
+/*!
     Returns the image shown when the menu item is in the 'on' state.
 */
 - (CPImage)onStateImage
@@ -370,7 +371,7 @@ import <AppKit/CPView.j>
     return _onStateImage;
 }
 
-/*
+/*!
     Sets the image that is shown when the menu item is in the 'off' state.
     @param anImage the image to show
 */
@@ -383,7 +384,7 @@ import <AppKit/CPView.j>
     [_menu itemChanged:self];
 }
 
-/*
+/*!
     Returns the image shown when the menu item is in the 'off' state.
 */
 - (CPImage)offStateImage
@@ -391,7 +392,7 @@ import <AppKit/CPView.j>
     return _offStateImage;
 }
 
-/*
+/*!
     Sets the image that is shown when the menu item is in the 'mixed' state.
     @param anImage the image to show
 */
@@ -404,7 +405,7 @@ import <AppKit/CPView.j>
     [_menu itemChanged:self];
 }
 
-/*
+/*!
     Returns the image shown when the menu item is
     in the 'mixed' state.
 */
@@ -414,7 +415,7 @@ import <AppKit/CPView.j>
 }
 
 // Managing Subemenus
-/*
+/*!
     Sets the submenu for this item
     @param aMenu the submenu
 */
@@ -437,7 +438,7 @@ import <AppKit/CPView.j>
     [_menu itemChanged:self];
 }
 
-/*
+/*!
     Returns the submenu of the item. <code>nil</code> if there is no submenu.
 */
 - (CPMenu)submenu
@@ -445,7 +446,7 @@ import <AppKit/CPView.j>
     return _submenu;
 }
 
-/*
+/*!
     Returns <code>YES</code> if the menu item has a submenu.
 */
 - (BOOL)hasSubmenu
@@ -455,7 +456,7 @@ import <AppKit/CPView.j>
 
 // Getting a Separator Item
 
-/*
+/*!
     Returns a new menu item separator.
 */
 + (CPMenuItem)separatorItem
@@ -463,7 +464,7 @@ import <AppKit/CPView.j>
     return [[_CPMenuItemSeparator alloc] init];
 }
 
-/*
+/*!
     Returns <code>YES</code> if the menu item is a separator.
 */
 - (BOOL)isSeparatorItem
@@ -472,7 +473,7 @@ import <AppKit/CPView.j>
 }
 
 // Managing the Owning Menu
-/*
+/*!
     Set the container menu of this item.
     @param aMenu the item's container menu
 */
@@ -481,7 +482,7 @@ import <AppKit/CPView.j>
     _menu = aMenu;
 }
 
-/*
+/*!
     Returns the container menu of this item
 */
 - (CPMenu)menu
@@ -491,7 +492,7 @@ import <AppKit/CPView.j>
 
 //
 
-/*
+/*!
     Sets the keyboard shortcut for this menu item
     @param aString the keyboard shortcut
 */
@@ -500,7 +501,7 @@ import <AppKit/CPView.j>
     _keyEquivalent = aString;
 }
 
-/*
+/*!
     Returns the keyboard shortcut for this menu item
 */
 - (CPString)keyEquivalent
@@ -508,7 +509,7 @@ import <AppKit/CPView.j>
     return _keyEquivalent;
 }
 
-/*
+/*!
     Sets the modifier mask used for the item's keyboard shortcut.
     Can be a combination of:
 <pre>
@@ -523,7 +524,7 @@ import <AppKit/CPView.j>
     _keyEquivalentModifierMask = aMask;
 }
 
-/*
+/*!
     Returns the item's keyboard shortcut modifier mask.
     Can be a combination of:
 <pre>
@@ -539,7 +540,7 @@ import <AppKit/CPView.j>
 }
 
 // Managing Mnemonics
-/*
+/*!
     Sets the index of the mnemonic character in the title. The character
     will be underlined and is used as a shortcut for navigation.
     @param aLocation the index of the character in the title
@@ -549,7 +550,7 @@ import <AppKit/CPView.j>
     _mnemonicLocation = aLocation;
 }
 
-/*
+/*!
     Returns the index of the mnemonic character in the title.
 */
 - (unsigned)mnemonicLocation
@@ -557,7 +558,7 @@ import <AppKit/CPView.j>
     return _mnemonicLocation;
 }
 
-/*
+/*!
     Sets the title of the menu item and the mnemonic character. The mnemonic chracter should be preceded by an '&'.
     @param aTitle the title string with a denoted mnemonic
 */
@@ -574,7 +575,7 @@ import <AppKit/CPView.j>
     }    
 }
 
-/*
+/*!
     Returns the menu items mnemonic character
 */
 - (CPString)mnemonic
@@ -584,7 +585,7 @@ import <AppKit/CPView.j>
 
 // Managing Alternates
 
-/*
+/*!
     Sets whether this item is an alternate for the previous menu item.
     @param isAlternate <code>YES</code> denotes that this menu item is an alternate
 */
@@ -593,7 +594,7 @@ import <AppKit/CPView.j>
     _isAlternate = isAlternate;
 }
 
-/*
+/*!
     Returns <code>YES</code> if the menu item is an alternate for the previous item.
 */
 - (BOOL)isAlternate
@@ -603,7 +604,7 @@ import <AppKit/CPView.j>
 
 // Managing Indentation Levels
 
-/*
+/*!
     Sets the indentation level of the menu item. Must be a value between 0 and 15 (inclusive).
     @param aLevel the item's new indentation level
     @throws CPInvalidArgumentException if aLevel is less than 0
@@ -616,7 +617,7 @@ import <AppKit/CPView.j>
     _indentationLevel = MIN(15, aLevel);
 }
 
-/*
+/*!
     Returns the menu item's indentation level. This is a value between 0 and 15 (inclusive).
 */
 - (unsigned)indentationLevel
@@ -625,7 +626,7 @@ import <AppKit/CPView.j>
 }
 
 // Managing Tool Tips
-/*
+/*!
     Sets the tooltip for the menu item.
     @param aToolTip the tool tip for the item
 */
@@ -634,7 +635,7 @@ import <AppKit/CPView.j>
     _toolTip = aToolTip;
 }
 
-/*
+/*!
     Returns the item's tooltip
 */
 - (CPString)toolTip
@@ -644,7 +645,7 @@ import <AppKit/CPView.j>
 
 // Representing an Object
 
-/*
+/*!
     Sets the menu item's represented object. This is a kind of tag for the developer. Not a UI feature.
     @param anObject the represented object
 */
@@ -653,7 +654,7 @@ import <AppKit/CPView.j>
     _representedObject = anObject;
 }
 
-/*
+/*!
     Returns the item's represented object.
 */
 - (id)representedObject
@@ -663,7 +664,7 @@ import <AppKit/CPView.j>
 
 // Managing the View
 
-/*
+/*!
     Sets the view for the menu item
     @param aView the menu's item's view
 */
@@ -679,7 +680,7 @@ import <AppKit/CPView.j>
     [_menu itemChanged:self];
 }
 
-/*
+/*!
     Returns the menu item's view
 */
 - (CPView)view
@@ -689,7 +690,7 @@ import <AppKit/CPView.j>
 
 // Getting Highlighted Status
 
-/*
+/*!
     Returns <code>YES</code> if the menu item is highlighted.
 */
 - (BOOL)isHighlighted
@@ -745,7 +746,7 @@ var CPMenuItemTitleKey              = @"CPMenuItemTitleKey",
     CPMenuItemRepresentedObjectKey  = @"CPMenuItemRepresentedObjectKey";
 
 @implementation CPMenuItem (CPCoding)
-/*
+/*!
     Initializes the menu item from a coder.
     @param aCoder the coder from which to initialize
     @return the initialized menu item
@@ -796,7 +797,7 @@ var CPMenuItemTitleKey              = @"CPMenuItemTitleKey",
     return self;
 }
 
-/*
+/*!
     Writes the menu item out to a coder.
     @param aCoder the coder to write the menu item out to
 */

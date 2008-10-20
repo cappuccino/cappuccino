@@ -23,7 +23,7 @@
 import "CPObject.j"
 import "CPException.j"
 
-/*
+/*! @class CPCoder
     Top-level class defining methods for use when archiving (encoding) objects to a byte array 
     or file, and when restoring (decoding) objects. 
 */
@@ -32,7 +32,7 @@ import "CPException.j"
 
 }
 
-/*
+/*!
     Returns a flag indicating whether the receiver supports keyed coding. The default implementation returns
     <code>NO</code>. Subclasses supporting keyed coding must override this to return <code>YES</code>.
 */
@@ -41,7 +41,7 @@ import "CPException.j"
    return NO;
 }
 
-/*
+/*!
     Encodes a structure or object of a specified type. Usually this
     is used for primitives though it can be used for objects as well.
     Subclasses must override this method.
@@ -53,7 +53,7 @@ import "CPException.j"
    CPInvalidAbstractInvocation();
 }
 
-/*
+/*!
     Encodes a data object. Subclasses must override this method.
     @param aData the object to be encoded.
 */
@@ -62,7 +62,7 @@ import "CPException.j"
    CPInvalidAbstractInvocation();
 }
 
-/*
+/*!
     Encodes an object. Subclasses must override this method.
     @param anObject the object to be encoded
 */
@@ -71,7 +71,7 @@ import "CPException.j"
 //   [self encodeValueOfObjCType:@encode(id) at:object];
 }
 
-/*
+/*!
     Encodes a point
     @param aPoint the point to be encoded.
 */
@@ -81,7 +81,7 @@ import "CPException.j"
     [self encodeNumber:aPoint.y];
 }
 
-/*
+/*!
     Encodes a CGRect
     @param aRect the rectangle to be encoded.
 */
@@ -91,7 +91,7 @@ import "CPException.j"
     [self encodeSize:aRect.size];
 }
 
-/*
+/*!
     Encodes a CGSize
     @param aSize the size to be encoded
 */
@@ -101,7 +101,7 @@ import "CPException.j"
     [self encodeNumber:aSize.height];
 }
 
-/*
+/*!
     Encodes a property list. Not yet implemented.
     @param aPropertyList the property list to be encoded
 */
@@ -110,7 +110,7 @@ import "CPException.j"
 //   [self encodeValueOfObjCType:@encode(id) at:&propertyList];
 }
 
-/*
+/*!
     Encodes the root object of a group of Obj-J objects.
     @param rootObject the root object to be encoded.
 */
@@ -119,7 +119,7 @@ import "CPException.j"
    [self encodeObject:anObject];
 }
 
-/*
+/*!
     Encodes an object.
     @param anObject the object to be encoded.
 */
@@ -128,7 +128,7 @@ import "CPException.j"
    [self encodeObject:object];
 }
 
-/*
+/*!
     Encodes an object.
     @param anObject the object to be encoded.
 */
@@ -141,7 +141,7 @@ import "CPException.j"
 
 @implementation CPObject (CPCoding)
 
-/*
+/*!
     Called after an object is unarchived in case a different object should be used in place of it.
     The defaut method returns <code>self</code>. Interested subclasses should override this.
     @param aDecoder

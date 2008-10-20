@@ -28,8 +28,13 @@ import <Foundation/CPKeyedUnarchiver.j>
 
 import <AppKit/CPView.j>
 
-/*
-    This class presents an array of content as a grid of views.
+/*! @class CPCollectionView
+
+    This class displays an array as a grid of objects, where each object is represented by a view. 
+    The view is controlled by creating a CPCollectionViewItem and specifying its view, then 
+    setting that item as the collection view prototype.
+    
+    @par Delegate Methods
     
     @delegate -(void)collectionViewDidChangeSelection:(CPCollectionView)collectionView;
     Called when the selection in the collection view has changed.
@@ -110,7 +115,7 @@ import <AppKit/CPView.j>
     return self;
 }
 
-/*
+/*!
     Sets the item prototype to <code>anItem</code>
     @param anItem the new item prototype
 */
@@ -122,7 +127,7 @@ import <AppKit/CPView.j>
     [self reloadContent];
 }
 
-/*
+/*!
     Returns the current item prototype
 */
 - (CPCollectionViewItem)itemPrototype
@@ -130,7 +135,7 @@ import <AppKit/CPView.j>
     return _itemPrototype;
 }
 
-/*
+/*!
     Returns a collection view item for <code>anObject</code>.
     @param anObject the object to be represented.
 */
@@ -150,7 +155,7 @@ import <AppKit/CPView.j>
 }
 
 // Working with the Responder Chain
-/*
+/*!
     Returns <code>YES</code> by default.
 */
 - (BOOL)acceptsFirstResponder
@@ -158,7 +163,7 @@ import <AppKit/CPView.j>
     return YES;
 }
 
-/*
+/*!
     Returns whether the receiver is currently the first responder.
 */
 - (BOOL)isFirstResponder
@@ -167,7 +172,7 @@ import <AppKit/CPView.j>
 }
 
 // Setting the Content
-/*
+/*!
     Sets the content of the collection view to the content in <code>anArray</code>. 
     This array can be of any type, and each element will be passed to the <code>setRepresentedObject:</code> method.  
     It's the responsibility of your custom collection view item to interpret the object.
@@ -183,7 +188,7 @@ import <AppKit/CPView.j>
     [self reloadContent];
 }
 
-/*
+/*!
     Returns the collection view content array
 */
 - (CPArray)content
@@ -191,7 +196,7 @@ import <AppKit/CPView.j>
     return _content;
 }
 
-/*
+/*!
     Returns the collection view items.
 */
 - (CPArray)items
@@ -200,7 +205,7 @@ import <AppKit/CPView.j>
 }
 
 // Setting the Selection Mode
-/*
+/*!
     Sets whether the user is allowed to select items
     @param isSelectable <code>YES</code> allows the user to select items.
 */
@@ -220,7 +225,7 @@ import <AppKit/CPView.j>
     }
 }
 
-/*
+/*!
     Returns <code>YES</code> if the collection view is
     selected, and <code>NO</code> otherwise.
 */
@@ -229,7 +234,7 @@ import <AppKit/CPView.j>
     return _isSelected;
 }
 
-/*
+/*!
     Sets whether the user can select multiple items.
     @param shouldAllowMultipleSelection <code>YES</code> allows the user to select multiple items
 */
@@ -238,7 +243,7 @@ import <AppKit/CPView.j>
     _allowsMultipleSelection = shouldAllowMultipleSelection;
 }
 
-/*
+/*!
     Returns <code>YES</code> if the user can select multiple items, <code>NO</code> otherwise.
 */
 - (BOOL)allowsMultipleSelection
@@ -246,7 +251,7 @@ import <AppKit/CPView.j>
     return _allowsMultipleSelection;
 }
 
-/*
+/*!
     Sets the selected items based on the provided indices.
     @param anIndexSet the set of items to be selected
 */
@@ -271,7 +276,7 @@ import <AppKit/CPView.j>
         [_delegate collectionViewDidChangeSelection:self]
 }
 
-/*
+/*!
     Returns a set of the selected indices.
 */
 - (CPIndexSet)selectionIndexes
@@ -382,7 +387,7 @@ import <AppKit/CPView.j>
 }
 
 // Laying Out the Collection View
-/*
+/*!
     Sets the maximum number of rows.
     @param aMaxNumberOfRows the new maximum number of rows
 */
@@ -396,7 +401,7 @@ import <AppKit/CPView.j>
     [self tile];
 }
 
-/*
+/*!
     Returns the maximum number of rows.
 */
 - (unsigned)maxNumberOfRows
@@ -404,7 +409,7 @@ import <AppKit/CPView.j>
     return _maxNumberOfRows;
 }
 
-/*
+/*!
     Sets the maximum number of columns.
     @param aMaxNumberOfColumns the new maximum number of columns
 */
@@ -418,7 +423,7 @@ import <AppKit/CPView.j>
     [self tile];
 }
 
-/*
+/*!
     Returns the maximum number of columns
 */
 - (unsigned)maxNumberOfColumns
@@ -426,7 +431,7 @@ import <AppKit/CPView.j>
     return _maxNumberOfColumns;
 }
 
-/*
+/*!
     Sets the minimum size for an item
     @param aSize the new minimum item size
 */
@@ -440,7 +445,7 @@ import <AppKit/CPView.j>
     [self tile];
 }
 
-/*
+/*!
     Returns the current minimum item size
 */
 - (CGSize)minItemSize
@@ -448,7 +453,7 @@ import <AppKit/CPView.j>
     return _minItemSize;
 }
 
-/*
+/*!
     Sets the maximum item size.
     @param aSize the new maximum item size
 */
@@ -462,7 +467,7 @@ import <AppKit/CPView.j>
     [self tile];
 }
 
-/*
+/*!
     Returns the current maximum item size.
 */
 - (CGSize)maxItemSize
@@ -519,7 +524,7 @@ import <AppKit/CPView.j>
         slideBack:YES];
 }
 
-/*
+/*!
     Places the selected items on the specified pasteboard. The items are requested from the collection's delegate.
     @param aPasteboard the pasteboard to put the items on
     @param aType the format the pasteboard data
@@ -541,7 +546,7 @@ import <AppKit/CPView.j>
     [self tile];
 }
 
-/*
+/*!
     Sets the collection view's delegate
     @param aDelegate the new delegate
 */
@@ -550,7 +555,7 @@ import <AppKit/CPView.j>
     _delegate = aDelegate;
 }
 
-/*
+/*!
     Returns the collection view's delegate
 */
 - (id)delegate
@@ -560,7 +565,7 @@ import <AppKit/CPView.j>
 
 @end
 
-/*
+/*!
     Represents an object inside a <objj>CPCollectionView</objj>.
 */
 @implementation CPCollectionViewItem : CPObject
@@ -573,7 +578,7 @@ import <AppKit/CPView.j>
 }
 
 // Setting the Represented Object
-/*
+/*!
     Sets the object to be represented by this item.
     @param anObject the object to be represented
 */
@@ -588,7 +593,7 @@ import <AppKit/CPView.j>
     [_view setRepresentedObject:anObject];
 }
 
-/*
+/*!
     Returns the object represented by this view item
 */
 - (id)representedObject
@@ -597,7 +602,7 @@ import <AppKit/CPView.j>
 }
 
 // Modifying the View
-/*
+/*!
     Sets the view that is used represent this object.
     @param aView the view used to represent this object
 */
@@ -606,7 +611,7 @@ import <AppKit/CPView.j>
     _view = aView;
 }
 
-/*
+/*!
     Returns the view that represents this object.
 */
 - (CPView)view
@@ -615,7 +620,7 @@ import <AppKit/CPView.j>
 }
 
 // Modifying the Selection
-/*
+/*!
     Sets whether this view item should be selected.
     @param shouldBeSelected <code>YES</code> makes the item selected. <code>NO</code> deselects it.
 */
@@ -630,7 +635,7 @@ import <AppKit/CPView.j>
     [_view setSelected:_isSelected];
 }
 
-/*
+/*!
     Returns <code>YES</code> if the item is currently selected. <code>NO</code> if the item is not selected.
 */
 - (BOOL)isSelected
@@ -639,7 +644,7 @@ import <AppKit/CPView.j>
 }
 
 // Parent Collection View
-/*
+/*!
     Returns the collection view of which this item is a part.
 */
 - (CPCollectionView)collectionView
@@ -667,7 +672,7 @@ var CPCollectionViewItemViewKey = @"CPCollectionViewItemViewKey";
 
 @implementation CPCollectionViewItem (CPCoding)
 
-/*
+/*!
     Initializes the view item by unarchiving data from a coder.
     @param aCoder the coder from which the data will be unarchived
     @return the initialized collection view item
@@ -682,7 +687,7 @@ var CPCollectionViewItemViewKey = @"CPCollectionViewItemViewKey";
     return self;
 }
 
-/*
+/*!
     Archives the colletion view item to the provided coder.
     @param aCoder the coder to which the view item should be archived
 */

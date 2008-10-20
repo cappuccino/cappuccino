@@ -32,7 +32,7 @@ CPMakePoint = CGPointMake;
 CPMakeSize = CGSizeMake;
 CPMakeRect = CGRectMake;
 
-/**
+/*!
   Creates a copy of a specified point and returns the copy
   @group CGPoint
   @param the point to be copied
@@ -43,7 +43,7 @@ function CPPointCreateCopy(aPoint)
     return { x: aPoint.x, y: aPoint.y };
 }
 
-/**
+/*!
   Makes a CGPoint object out of two numbers provided as arguments
   @group CGPoint
   @param x the x-coordinate of the CGPoint
@@ -55,7 +55,7 @@ function CPPointMake(x, y)
     return { x: x, y: y };
 }
 
-/*
+/*!
     Makes a CGRect with an origin and size equal to <code>aRect</code> less the <code>dX/dY</code> insets specified.
     @param dX the size of the inset in the x-axis
     @param dY the size of the inset in the y-axis
@@ -68,7 +68,7 @@ function CPRectInset(aRect, dX, dY)
                         aRect.size.width - 2 * dX, aRect.size.height - 2*dY);
 }
 
-/*
+/*!
     @group CGRect
     @ignore
     @return void
@@ -80,7 +80,7 @@ function CPRectIntegral(aRect)
     alert("CPRectIntegral unimplemented");
 }
 
-/*
+/*!
     Returns the intersection of the two provided rectangles as a new rectangle
     @group CGRect
     @param lhsRect the first rectangle used for calculation
@@ -100,7 +100,7 @@ function CPRectIntersection(lhsRect, rhsRect)
     return CPRectIsEmpty(intersection) ? CPRectMakeZero() : intersection;
 }
 
-/*
+/*!
     Creates a copy of the provided rectangle
     @group CGRect
     @param aRect the CGRect that will be copied
@@ -111,7 +111,7 @@ function CPRectCreateCopy(aRect)
     return { origin: CPPointCreateCopy(aRect.origin), size: CPSizeCreateCopy(aRect.size) };
 }
 
-/*
+/*!
     Returns a CGRect made of the specified arguments
     @group CGRect
     @param x the x-coordinate of the rectangle's origin
@@ -125,7 +125,7 @@ function CPRectMake(x, y, width, height)
     return { origin: CPPointMake(x, y), size: CPSizeMake(width, height) };
 }
 
-/*
+/*!
     Creates a new rectangle with its origin offset by <code>dX</code> and <code>dY</code>.
     @group CGRect
     @param aRect the rectangle to copy the origin and size from
@@ -138,7 +138,7 @@ function CPRectOffset(aRect, dX, dY)
     return CPRectMake(aRect.origin.x + dX, aRect.origin.y + dY, aRect.size.width, aRect.size.height);
 }
 
-/*
+/*!
     @group CGRect
     @param aRect a CGRect
     @return CGRect
@@ -164,7 +164,7 @@ function CPRectStandardize(aRect)
     return standardized;
 }
 
-/*
+/*!
     Returns the smallest rectangle that can contain the two argument <code>CGRect</code>s.
     @group CGRect
     @param lhsRect the first CGRect to use for the union calculation
@@ -181,7 +181,7 @@ function CPRectUnion(lhsRect, rhsRect)
     return CPRectMake(minX, minY, maxX - minX, maxY - minY);
 }
 
-/*
+/*!
     Creates and returns a copy of the provided CGSize
     @group CGSize
     @param aSize the CGSize to copy
@@ -192,7 +192,7 @@ function CPSizeCreateCopy(aSize)
     return { width: aSize.width, height: aSize.height };
 }
 
-/*
+/*!
     Creates and returns a new CGSize object from the provided dimensions.
     @group CGSize
     @param width the width for the new CGSize
@@ -204,7 +204,7 @@ function CPSizeMake(width, height)
     return { width: width, height: height };
 }
 
-/*
+/*!
     Returns <code>YES</code> if the <objj>CGRect</objj>, <code>aRect</code>, contains
     the <objj>CGPoint</objj>, <code>aPoint</code>.
     @param aRect the rectangle to test with
@@ -220,7 +220,7 @@ function CPRectContainsPoint(aRect, aPoint)
    			aPoint.y < CPRectGetMaxY(aRect);
 }
 
-/*
+/*!
     Returns a <code>BOOL</code> indicating whether <objj>CGRect</objj> <code>possibleOuter</code>
     contains <objj>CGRect</objj> <code>possibleInner</code>.
     @group CGRect
@@ -233,7 +233,7 @@ function CPRectContainsRect(lhsRect, rhsRect)
     return CPRectEqualToRect(CPUnionRect(lhsRect, rhsRect), rhsRect);
 }
 
-/*
+/*!
     Tests whether the two <objj>CGPoint</objj>s are equal to each other by comparing their
     <code>x</code> and <code>y</code> members.
     @group @CGPoint
@@ -246,7 +246,7 @@ function CPPointEqualToPoint(lhsPoint, rhsPoint)
     return lhsPoint.x == rhsPoint.x && lhsPoint.y == rhsPoint.y;
 }
 
-/*
+/*!
     Test whether the two <objj>CGRect</objj>s have the same origin and size
     @group CGRect
     @param lhsRect the first <objj>CGRect</objj> to compare
@@ -259,7 +259,7 @@ function CPRectEqualToRect(lhsRect, rhsRect)
             CPSizeEqualToSize(lhsRect.size, rhsRect.size);
 }
 
-/*
+/*!
     @group CGRect
     @param aRect a <objj>CGRect</objj>
     @return int
@@ -269,7 +269,7 @@ function CPRectGetHeight(aRect)
     return aRect.size.height;
 }
 
-/*
+/*!
     @group CGRect
     @param aRect a <objj>CGRect</objj>
     @return int
@@ -279,7 +279,7 @@ function CPRectGetMaxX(aRect)
     return aRect.origin.x + aRect.size.width;
 }
 
-/*
+/*!
     @group CGRect
     @param aRect a <objj>CGRect</objj>
     @return int
@@ -289,7 +289,7 @@ function CPRectGetMaxY(aRect)
     return aRect.origin.y + aRect.size.height;
 }
 
-/*
+/*!
     @group CGRect
     @param aRect a <objj>CGRect</objj>
     @return float
@@ -299,7 +299,7 @@ function CPRectGetMidX(aRect)
     return aRect.origin.x + (aRect.size.width) / 2.0;
 }
 
-/*
+/*!
     @group CGRect
     @param aRect a <objj>CGRect</objj>
     @return float
@@ -309,7 +309,7 @@ function CPRectGetMidY(aRect)
     return aRect.origin.y + (aRect.size.height) / 2.0;
 }
 
-/*
+/*!
     @group CGRect
     @param aRect a <objj>CGRect</objj>
     @return int
@@ -319,7 +319,7 @@ function CPRectGetMinX(aRect)
     return aRect.origin.x;
 }
 
-/*
+/*!
     @group CGRect
     @param aRect a <objj>CGRect</objj>
     @return int
@@ -329,7 +329,7 @@ function CPRectGetMinY(aRect)
     return aRect.origin.y;
 }
 
-/*
+/*!
     @group CGRect
     @param aRect a <objj>CGRect</objj>
     @return int
@@ -339,7 +339,7 @@ function CPRectGetWidth(aRect)
     return aRect.size.width;
 }
 
-/*
+/*!
     Returns <code>YES</code> if the two rectangles intersect
     @group CGRect
     @param lhsRect the first <objj>CGRect</objj>
@@ -351,7 +351,7 @@ function CPRectIntersectsRect(lhsRect, rhsRect)
     return !CPRectIsEmpty(CPRectIntersection(lhsRect, rhsRect));
 }
 
-/*
+/*!
     Returns <code>YES</code> if the <objj>CGRect</objj> has no area.
     The test is performed by checking if the width and height are both zero.
     @group CGRect
@@ -363,7 +363,7 @@ function CPRectIsEmpty(aRect)
     return aRect.size.width <= 0.0 || aRect.size.height <= 0.0;
 }
 
-/*
+/*!
     Returns <code>YES</code> if the <objj>CGRect</objj> has no area.
     The test is performed by checking if the width and height are both zero.
     @group CGRect
@@ -374,7 +374,7 @@ function CPRectIsNull(aRect)
     return aRect.size.width <= 0.0 || aRect.size.height <= 0.0;
 }
 
-/*
+/*!
     Returns <code>YES</code> if the two <objj>CGSize</objj>s are identical.
     @group CGSize
     @param lhsSize the first <objj>CGSize</objj> to compare
@@ -386,7 +386,7 @@ function CPSizeEqualToSize(lhsSize, rhsSize)
     return lhsSize.width == rhsSize.width && lhsSize.height == rhsSize.height;
 }
 
-/*
+/*!
     Returns a human readable string of the provided <objj>CGPoint</objj>.
     @group CGPoint
     @param aPoint the point to represent
@@ -397,7 +397,7 @@ function CPStringFromPoint(aPoint)
     return "{" + aPoint.x + ", " + aPoint.y + "}";
 }
 
-/*
+/*!
     Returns a human readable string of the provided <objj>CGSize</objj>.
     @group CGSize
     @param aSize the size to represent
@@ -408,7 +408,7 @@ function CPStringFromSize(aSize)
     return "{" + aSize.width + ", " + aSize.height + "}";
 }
 
-/*
+/*!
     Returns a human readable string of the provided <objj>CGRect</objj>.
     @group CGRect
     @param aRect the rectangle to represent
@@ -419,7 +419,7 @@ function CPStringFromRect(aRect)
     return "{" + CPStringFromPoint(aRect.origin) + ", " + CPStringFromSize(aRect.size) + "}";
 }
 
-/*
+/*!
     Returns a <objj>CGPoint</objj> from a string with a comma separated pair of integers.
     @group CGPoint
     @param aString a string containing two comma separated integers
@@ -432,7 +432,7 @@ function CPPointFromString(aString)
     return { x:parseInt(aString.substr(1, comma - 1)), y:parseInt(aString.substring(comma + 1, aString.length)) };
 }
 
-/*
+/*!
     Returns a <objj>CGSize</objj> from a string containing a pair of comma separated integers.
     @group CGSize
     @param aString a string containing two comma separated integers
@@ -445,7 +445,7 @@ function CPSizeFromString(aString)
     return { width:parseInt(aString.substr(1, comma - 1)), height:parseInt(aString.substring(comma + 1, aString.length)) };
 }
 
-/*
+/*!
     Returns a <objj>CGRect</objj> created from a string.
     @group CGRect
     @param aString a string in the form generated by <code>CPStringFromRect</code>
@@ -458,7 +458,7 @@ function CPRectFromString(aString)
     return { origin:CPPointFromString(aString.substr(1, comma - 1)), size:CPSizeFromString(aString.substring(comma + 2, aString.length)) };
 }
 
-/*
+/*!
     @group CGPoint
     @param anEvent
     @return CGPoint
@@ -468,7 +468,7 @@ function CPPointFromEvent(anEvent)
     return CPPointMake(anEvent.clientX, anEvent.clientY, 0);
 }
 
-/*
+/*!
     Returns a zero sized <objj>CGSize</objj>.
     @group CGSize
     @return CGSize a size object with zeros for <code>width</code> and <code>height</code>
@@ -478,7 +478,7 @@ function CPSizeMakeZero()
     return CPSizeMake(0, 0);
 }
 
-/*
+/*!
     Returns a rectangle at origin <code>(0,0)</code> and size of <code>(0,0)</code>.
     @group CGRect
     @return CGRect a zeroed out CGRect
@@ -488,7 +488,7 @@ function CPRectMakeZero()
     return CPRectMake(0, 0, 0, 0);
 }
 
-/*
+/*!
     Returns a point located at <code>(0, 0)</code>.
     @group CGPoint
     @return CGPoint a point located at <code>(0, 0)</code>

@@ -22,7 +22,8 @@
 
 import <Foundation/CPObject.j>
 
-/*
+/*! @class CPShadow
+
     Instances of this class contain the attributes of a drop shadow used in Cappuccino.
 */
 @implementation CPShadow : CPObject
@@ -34,7 +35,7 @@ import <Foundation/CPObject.j>
     CPString    _cssString;
 }
 
-/*
+/*!
     Creates a shadow with the specified attributes.
     @param anOffset the shadow's offset
     @param aBlurRadius the shadow's blur radius
@@ -63,7 +64,7 @@ import <Foundation/CPObject.j>
     return self;
 }
 
-/*
+/*!
     Returns the shadow's offset.
 */
 - (CGSize)shadowOffset
@@ -71,7 +72,7 @@ import <Foundation/CPObject.j>
     return _offset;
 }
 
-/*
+/*!
     Returns the shadow's blur radius
 */
 - (float)shadowBlurRadius
@@ -79,7 +80,7 @@ import <Foundation/CPObject.j>
     return _blurRadius;
 }
 
-/*
+/*!
     Returns the shadow's color.
 */
 - (CPColor)shadowColor
@@ -87,7 +88,7 @@ import <Foundation/CPObject.j>
     return _color;
 }
 
-/*
+/*!
     Returns a CSS string representation of the shadow.
 */
 - (CPString)cssString

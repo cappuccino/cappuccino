@@ -57,7 +57,8 @@ CPToolbarPrintItemIdentifier            = @"CPToolbarPrintItemIdentifier";
 
 var _CPToolbarSeparatorItemView         = nil;
 
-/*
+/*! @class CPToolbarItem
+
     A representation of an item in a <objj>CPToolbar</objj>.
 */
 @implementation CPToolbarItem : CPObject
@@ -83,7 +84,7 @@ var _CPToolbarSeparatorItemView         = nil;
 }
 
 // Creating a Toolbar Item
-/*
+/*!
     Initializes the toolbar item with a specified identifier.
     @param anItemIdentifier the item's identifier
     @return the initialized toolbar item
@@ -106,7 +107,7 @@ var _CPToolbarSeparatorItemView         = nil;
 }
 
 // Managing Attributes
-/*
+/*!
     Returns the item's identifier.
 */
 - (CPString)itemIdentifier
@@ -114,7 +115,7 @@ var _CPToolbarSeparatorItemView         = nil;
     return _itemIdentifier;
 }
 
-/*
+/*!
     Returns the toolbar of which this item is a part.
 */
 - (CPToolbar)toolbar
@@ -122,7 +123,7 @@ var _CPToolbarSeparatorItemView         = nil;
     return _toolbar;
 }
 
-/*
+/*!
     Returns the item's label
 */
 - (CPString)label
@@ -130,7 +131,7 @@ var _CPToolbarSeparatorItemView         = nil;
     return _label;
 }
 
-/*
+/*!
     Sets the item's label.
     @param aLabel the new label for the item
 */
@@ -139,7 +140,7 @@ var _CPToolbarSeparatorItemView         = nil;
     _label = aLabel;
 }
 
-/*
+/*!
     Returns the palette label.
 */
 - (CPString)paletteLabel
@@ -147,7 +148,7 @@ var _CPToolbarSeparatorItemView         = nil;
     return _paletteLabel;
 }
 
-/*
+/*!
     Sets the palette label
     @param aPaletteLabel the new palette label
 */
@@ -156,7 +157,7 @@ var _CPToolbarSeparatorItemView         = nil;
     _paletteLabel = aPaletteLabel;
 }
 
-/*
+/*!
     Returns the item's tooltip. A tooltip pops up
     next to the cursor when the user hovers over
     the item with the mouse.
@@ -166,7 +167,7 @@ var _CPToolbarSeparatorItemView         = nil;
     return _toolTip;
 }
 
-/*
+/*!
     Sets the item's tooltip. A tooltip pops up next to the cursor when the user hovers over the item with the mouse.
     @param aToolTip the new item tool tip
 */
@@ -175,7 +176,7 @@ var _CPToolbarSeparatorItemView         = nil;
     _toolTip = aToolTip;
 }
 
-/*
+/*!
     Returns the item's tag.
 */
 - (int)tag
@@ -183,7 +184,7 @@ var _CPToolbarSeparatorItemView         = nil;
     return _tag;
 }
 
-/*
+/*!
     Sets the item's tag.
     @param aTag the new tag for the item
 */
@@ -192,7 +193,7 @@ var _CPToolbarSeparatorItemView         = nil;
     _tag = aTag;
 }
 
-/*
+/*!
     Returns the item's action target.
 */
 - (id)target
@@ -200,7 +201,7 @@ var _CPToolbarSeparatorItemView         = nil;
     return _target;
 }
 
-/*
+/*!
     Sets the target of the action that is triggered when the user clicks this item. <code>nil</code> will cause 
     the action to be passed on to the first responder.
     @param aTarget the new target
@@ -210,7 +211,7 @@ var _CPToolbarSeparatorItemView         = nil;
     _target = aTarget;
 }
 
-/*
+/*!
     Returns the action that is triggered when the user clicks this item.
 */
 - (SEL)action
@@ -218,7 +219,7 @@ var _CPToolbarSeparatorItemView         = nil;
     return _action;
 }
 
-/*
+/*!
     Sets the action that is triggered when the user clicks this item.
     @param anAction the new action
 */
@@ -227,7 +228,7 @@ var _CPToolbarSeparatorItemView         = nil;
     _action = anAction;
 }
 
-/*
+/*!
     Returns <code>YES</code> if the item is enabled.
 */
 - (BOOL)isEnabled
@@ -235,7 +236,7 @@ var _CPToolbarSeparatorItemView         = nil;
     return _isEnabled;
 }
 
-/*
+/*!
     Sets whether the item is enabled.
     @param aFlag <code>YES</code> enables the item
 */
@@ -244,7 +245,7 @@ var _CPToolbarSeparatorItemView         = nil;
     _isEnabled = aFlag;
 }
 
-/*
+/*!
     Returns the item's image
 */
 - (CPImage)image
@@ -252,7 +253,7 @@ var _CPToolbarSeparatorItemView         = nil;
     return _image;
 }
 
-/*
+/*!
     Sets the item's image.
     @param anImage the new item image
 */
@@ -277,7 +278,7 @@ var _CPToolbarSeparatorItemView         = nil;
     }
 }
 
-/*
+/*!
     Sets the alternate image. This image is displayed on the item when the user is clicking it.
     @param anImage the new alternate image
 */
@@ -289,7 +290,7 @@ var _CPToolbarSeparatorItemView         = nil;
     [_view setAlternateImage:anImage];
 }
 
-/*
+/*!
     Returns the alternate image. This image is displayed on the item when the user is clicking it.
 */
 - (CPImage)alternateImage
@@ -297,7 +298,7 @@ var _CPToolbarSeparatorItemView         = nil;
     return _alternateImage;
 }
 
-/*
+/*!
     Returns the item's view.
 */
 - (CPView)view
@@ -305,7 +306,7 @@ var _CPToolbarSeparatorItemView         = nil;
     return _view;
 }
 
-/*
+/*!
     Sets the item's view
     @param aView the item's new view
 */
@@ -314,7 +315,7 @@ var _CPToolbarSeparatorItemView         = nil;
     _view = aView;
 }
 
-/*
+/*!
     Returns the item's minimum size.
 */
 - (CGSize)minSize
@@ -322,7 +323,7 @@ var _CPToolbarSeparatorItemView         = nil;
     return _minSize;
 }
 
-/*
+/*!
     Sets the item's minimum size.
     @param aMinSize the new minimum size
 */
@@ -334,7 +335,7 @@ var _CPToolbarSeparatorItemView         = nil;
     _maxSize = CGSizeMake(MAX(_minSize.width, _maxSize.width), MAX(_minSize.height, _maxSize.height));
 }
 
-/*
+/*!
     Returns the item's maximum size.
 */
 - (CGSize)maxSize
@@ -342,7 +343,7 @@ var _CPToolbarSeparatorItemView         = nil;
     return _maxSize;
 }
 
-/*
+/*!
     Sets the item's new maximum size.
     @param aMaxSize the new maximum size
 */
@@ -355,7 +356,7 @@ var _CPToolbarSeparatorItemView         = nil;
 }
 
 // Visibility Priority
-/*
+/*!
     Returns the item's visibility priority. The value will be one of:
 <pre>
 CPToolbarItemVisibilityPriorityStandard
@@ -369,7 +370,7 @@ CPToolbarItemVisibilityPriorityUser
     return _visibilityPriority;
 }
 
-/*
+/*!
     Sets the item's visibility priority. The value must be one of:
 <pre>
 CPToolbarItemVisibilityPriorityStandard

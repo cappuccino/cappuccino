@@ -219,7 +219,8 @@ var _CPButtonClassName                          = nil,
     _CPButtonBezelStyleIdentifiers              = {},
     _CPButtonBezelStyleHighlightedIdentifier    = @"Highlighted";
 
-/*
+/*! @class CPButton
+
     <objj>CPButton</objj> is a subclass of <objj>CPControl</objj> that
     intercepts mouse-down events and sends an action message to a
     target object when it's clicked or pressed.
@@ -249,7 +250,7 @@ var _CPButtonClassName                          = nil,
     _CPImageAndTitleView    _imageAndTitleView;
 }
 
-/*
+/*!
     Initializes the <objj>CPButton</objj> class.
     @ignore
 */
@@ -303,7 +304,7 @@ var _CPButtonClassName                          = nil,
 }
 
 // Configuring Buttons
-/*
+/*!
     Sets how the button highlights and shows its state.
     @param aButtonType Defines the behavior of the button.
 */
@@ -338,7 +339,7 @@ var _CPButtonClassName                          = nil,
     return self;
 }
 
-/*
+/*!
     Sets the position of the button's image to <code>anImagePosition</code>.
     @param anImagePosition the position for the button's image
 */
@@ -352,7 +353,7 @@ var _CPButtonClassName                          = nil,
     [self drawContentsWithHighlight:_isHighlighted];
 }
 
-/*
+/*!
     Returns the buton's image position
 */
 - (CPCellImagePosition)imagePosition
@@ -360,7 +361,7 @@ var _CPButtonClassName                          = nil,
     return _imagePosition;
 }
 
-/*
+/*!
     Sets the button's images scaling method
     @param anImageScaling the image scaling method
 */
@@ -374,7 +375,7 @@ var _CPButtonClassName                          = nil,
     [self drawContentsWithHighlight:_isHighlighted];
 }
 
-/*
+/*!
     Returns the button's image scaling method
 */
 - (CPImageScaling)imageScaling
@@ -382,7 +383,7 @@ var _CPButtonClassName                          = nil,
     return _imageScaling;
 }
 
-/*
+/*!
     Sets the color of the button's text
     @param aColor the color to use for drawing the button text
 */
@@ -393,7 +394,7 @@ var _CPButtonClassName                          = nil,
     [self drawContentsWithHighlight:_isHighlighted];
 }
 
-/*
+/*!
     Sets the font that will be used to draw the button text
     @param aFont the font used to draw the button text
 */
@@ -405,7 +406,7 @@ var _CPButtonClassName                          = nil,
 }
 
 // Setting the state
-/*
+/*!
     Returns <code>YES</code> if the button has a 'mixed' state in addition to on and off.
 */
 - (BOOL)allowsMixedState
@@ -413,7 +414,7 @@ var _CPButtonClassName                          = nil,
     return _allowsMixedState;
 }
 
-/*
+/*!
     Sets whether the button can have a 'mixed' state.
     @param aFlag specifies whether a 'mixed' state is allowed or not
 */
@@ -422,7 +423,7 @@ var _CPButtonClassName                          = nil,
     _allowsMixedState = aFlag;
 }
 
-/*
+/*!
     Sets the button to its next state.
 */
 - (void)setNextState
@@ -433,7 +434,7 @@ var _CPButtonClassName                          = nil,
         _state = (_state >= CPOnState && _allowsMixedState) ? CPMixedState : CPOffState;
 }
 
-/*
+/*!
     Sets the button's state to <code>aState</code>.
     @param aState Possible states are any of the <objj>CPButton</objj> globals:
     <code>CPOffState, CPOnState, CPMixedState</code>
@@ -443,7 +444,7 @@ var _CPButtonClassName                          = nil,
     _state = aState;
 }
 
-/*
+/*!
     Returns the button's current state
 */
 - (int)state
@@ -451,7 +452,7 @@ var _CPButtonClassName                          = nil,
     return _state;
 }
 
-/*
+/*!
     Sets the alignment of the text on the button.
     @param anAlignment an alignment object
 */
@@ -462,7 +463,7 @@ var _CPButtonClassName                          = nil,
     [self drawContentsWithHighlight:_isHighlighted];
 }
 
-/*
+/*!
     Sets the image that will be drawn on the button.
     @param anImage the image that will be drawn
 */
@@ -476,7 +477,7 @@ var _CPButtonClassName                          = nil,
     [self drawContentsWithHighlight:_isHighlighted];
 }
 
-/*
+/*!
     Returns the image that will be drawn on the button
 */
 - (CPImage)image
@@ -484,7 +485,7 @@ var _CPButtonClassName                          = nil,
     return _image;
 }
 
-/*
+/*!
     Sets the button's image which is used in its alternate state.
     @param anImage the image to be used while the button is in an alternate state
 */
@@ -493,7 +494,7 @@ var _CPButtonClassName                          = nil,
     _alternateImage = anImage;
 }
 
-/*
+/*!
     Returns the image used when the button is in an alternate state.
 */
 - (CPImage)alternateImage
@@ -501,7 +502,7 @@ var _CPButtonClassName                          = nil,
     return _alternateImage;
 }
 
-/*
+/*!
     Sets the button's title.
     @param aTitle the new title for the button
 */
@@ -515,7 +516,7 @@ var _CPButtonClassName                          = nil,
     [self drawContentsWithHighlight:_isHighlighted];
 }
 
-/*
+/*!
     Returns the button's title string
 */
 - (CPString)title
@@ -523,7 +524,7 @@ var _CPButtonClassName                          = nil,
     return _title;
 }
 
-/*
+/*!
     Lays out the button.
 */
 - (void)tile
@@ -547,7 +548,7 @@ var _CPButtonClassName                          = nil,
         [_imageAndTitleView setFrameSize:size];
 }
 
-/*
+/*!
     Compacts the button's frame to fit its contents.
 */
 - (void)sizeToFit
@@ -568,7 +569,7 @@ var _CPButtonClassName                          = nil,
     [self setFrameSize:CGSizeMake(CGRectGetWidth(frame), height)];
 }
 
-/*
+/*!
     Sets the frame size for the button.
     @param the new frame size
 */
@@ -579,7 +580,7 @@ var _CPButtonClassName                          = nil,
     [self tile];
 }
 
-/*
+/*!
     Highlights the receiver based on <code>aFlag</code>.
     @param If <code>YES</code> the button will highlight, <code>NO</code> the button will unhighlight.
 */
@@ -589,7 +590,7 @@ var _CPButtonClassName                          = nil,
     [self drawContentsWithHighlight:aFlag];
 }
 
-/*
+/*!
     Sets button's tag.
     @param aTag the button's new tag
 */
@@ -598,7 +599,7 @@ var _CPButtonClassName                          = nil,
     _tag = aTag;
 }
 
-/*
+/*!
     Returns the button's tag.
 */
 - (int)tag
@@ -606,7 +607,7 @@ var _CPButtonClassName                          = nil,
     return _tag;
 }
 
-/*
+/*!
     Called when the user clicks on this button.
     @param anEvent the event with information about the click
 */
@@ -617,7 +618,7 @@ var _CPButtonClassName                          = nil,
     [self highlight:_isHighlighted];
 }
 
-/*
+/*!
     Called when the user drags on the button.
     @param anEvent the event with information about the drag
 */
@@ -628,7 +629,7 @@ var _CPButtonClassName                          = nil,
     [self highlight:_isHighlighted];
 }
 
-/*
+/*!
     Called when the user releases the mouse button
     @param anEvent the event with information about the mouse release
 */
@@ -641,7 +642,7 @@ var _CPButtonClassName                          = nil,
     [super mouseUp:anEvent];
 }
 
-/*
+/*!
     Sets the button's control size.
     @param aControlSize the button's new control size
 */
@@ -656,7 +657,7 @@ var _CPButtonClassName                          = nil,
     [self _updateTextAttributes];
 }
 
-/*
+/*!
     Returns the button's control size.
 */
 - (CPControlSize)controlSize
@@ -664,7 +665,7 @@ var _CPButtonClassName                          = nil,
     return _controlSize;
 }
 
-/*
+/*!
     Sets whether the button has a bezeled border.
     @param If <code>YES</code>, the the button will have a bezeled border.
 */
@@ -681,7 +682,7 @@ var _CPButtonClassName                          = nil,
     [self tile];
 }
 
-/*
+/*!
     Returns <code>YES</code> if the border is bezeled.
 */
 - (BOOL)isBordered
@@ -689,7 +690,7 @@ var _CPButtonClassName                          = nil,
     return _isBordered;
 }
 
-/*
+/*!
     Sets the button's bezel style.
     @param aBezelStye one of the predefined bezel styles
 */
@@ -723,7 +724,7 @@ var _CPButtonClassName                          = nil,
     [self tile];
 }
 
-/*
+/*!
     Returns the current bezel style
 */
 - (int)bezelStyle
@@ -826,7 +827,7 @@ var CPButtonImageKey                = @"CPButtonImageKey",
 
 @implementation CPButton (CPCoding)
 
-/*
+/*!
     Initializes the button by unarchiving data from <code>aCoder</code>.
     @param aCoder the coder containing the archived <objj>CPButton</objj>.
 */
@@ -853,7 +854,7 @@ var CPButtonImageKey                = @"CPButtonImageKey",
     return self;
 }
 
-/*
+/*!
     Archives this button into the provided coder.
     @param aCoder the coder to which the button's instance data will be written.
 */

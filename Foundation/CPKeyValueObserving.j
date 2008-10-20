@@ -2,7 +2,7 @@
  * CPKeyValueCoding.j
  * Foundation
  *
- * Created by Francisco Tolmasky.
+ * Created by Ross Boucher.
  * Copyright 2008, 280 North, Inc.
  *
  * This library is free software; you can redistribute it and/or
