@@ -409,13 +409,11 @@ var _CPTextFieldSquareBezelColor    = nil;
 }
 
 - (void)mouseUp:(CPEvent)anEvent
-{
-    return;
-    
-    if (_isEditable)
+{    
+    if (_isEditable && [[self window] firstResponder] == self)
         return;
         
-    [super mouseDown:anEvent];
+    [super mouseUp:anEvent];
 }
 
 /* 
