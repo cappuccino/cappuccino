@@ -620,8 +620,8 @@ String.prototype.isa = CPString;
 
 // sprintf:
 
-var sprintfFormatRegex = new RegExp("([^%]+|%[\\+\\-\\ \\#0]*[0-9\\*]*(.[0-9\\*]+)?[hlL]?[cdieEfgGosuxXpn%])", "g");
-var sprintfTagRegex = new RegExp("(%)([\\+\\-\\ \\#0]*)([0-9\\*]*)((.[0-9\\*]+)?)([hlL]?)([cdieEfgGosuxXpn%])");
+var sprintfFormatRegex = new RegExp("([^%]+|%[\\+\\-\\ \\#0]*[0-9\\*]*(.[0-9\\*]+)?[hlL]?[cdieEfgGosuxXpn%@])", "g");
+var sprintfTagRegex = new RegExp("(%)([\\+\\-\\ \\#0]*)([0-9\\*]*)((.[0-9\\*]+)?)([hlL]?)([cdieEfgGosuxXpn%@])");
 
 /*
   Creates a new string using C printf-style formatting. First argument should be a constant format string, like ' "float val = %f" ', remaining arguments should be the variables to print the values of, comma-separated.
@@ -750,7 +750,7 @@ function sprintf(format)
                     subresult = "%";
                 else if (specifier == "c")
                     subresult = String(arguments[arg++]).charAt(0);
-                else if (specifier == "s")
+                else if (specifier == "s" || specifier == "@")
                     subresult = String(arguments[arg++]);
                 else if (specifier == "p" || specifier == "n")
                 {
