@@ -108,6 +108,11 @@ var _CPTextFieldSquareBezelColor    = nil;
     id                      _placeholderString;
     
     CPLineBreakMode         _lineBreakMode;
+    
+    id                      _delegate;
+    
+    CPString                _textDidChangeValue;
+    
 #if PLATFORM(DOM)
     DOMElement              _DOMTextElement;
 #endif
@@ -119,21 +124,21 @@ var _CPTextFieldSquareBezelColor    = nil;
 {
     if (!CPTextFieldDOMInputElement)
     {
-        CPTextFieldDOMInputElement = document.createElement("input");
-        CPTextFieldDOMInputElement.style.position = "absolute";
-        CPTextFieldDOMInputElement.style.top = "0px";
-        CPTextFieldDOMInputElement.style.left = "0px";
-        CPTextFieldDOMInputElement.style.width = "100%"
-        CPTextFieldDOMInputElement.style.height = "100%";
-        CPTextFieldDOMInputElement.style.border = "0px";
-        CPTextFieldDOMInputElement.style.padding = "0px";
-        CPTextFieldDOMInputElement.style.whiteSpace = "pre";
-        CPTextFieldDOMInputElement.style.background = "transparent";
-        CPTextFieldDOMInputElement.style.outline = "none";
-        CPTextFieldDOMInputElement.style.paddingLeft = HORIZONTAL_PADDING - 1.0 + "px";
-        CPTextFieldDOMInputElement.style.paddingTop = TOP_PADDING - 2.0 + "px";
+         CPTextFieldDOMInputElement = document.createElement("input");
+         CPTextFieldDOMInputElement.style.position = "absolute";
+         CPTextFieldDOMInputElement.style.top = "0px";
+         CPTextFieldDOMInputElement.style.left = "0px";
+         CPTextFieldDOMInputElement.style.width = "100%"
+         CPTextFieldDOMInputElement.style.height = "100%";
+         CPTextFieldDOMInputElement.style.border = "0px";
+         CPTextFieldDOMInputElement.style.padding = "0px";
+         CPTextFieldDOMInputElement.style.whiteSpace = "pre";
+         CPTextFieldDOMInputElement.style.background = "transparent";
+         CPTextFieldDOMInputElement.style.outline = "none";
+         CPTextFieldDOMInputElement.style.paddingLeft = HORIZONTAL_PADDING - 1.0 + "px";
+         CPTextFieldDOMInputElement.style.paddingTop = TOP_PADDING - 2.0 + "px";
     }
-    
+
     return CPTextFieldDOMInputElement;
 }
 #endif
@@ -164,6 +169,34 @@ var _CPTextFieldSquareBezelColor    = nil;
     }
     
     return self;
+}
+
+- (void)setDelegate:(id)aDelegate
+{
+    var center = [CPNotificationCenter defaultCenter];
+    
+    //unsubscribe the existing delegate if it exists
+    if (_delegate)
+    {
+        [center removeObserver:_delegate name:CPControlTextDidBeginEditingNotification object:self];
+        [center removeObserver:_delegate name:CPControlTextDidChangeNotification object:self];
+        [center removeObserver:_delegate name:CPControlTextDidEndEditingNotification object:self];
+    }
+    
+    _delegate = aDelegate;
+    
+    if ([_delegate respondsToSelector:@selector(controlTextDidBeginEditing:)])
+        [center addObserver:_delegate selector:@selector(controlTextDidBeginEditing:) name:CPControlTextDidBeginEditingNotification object:self];
+    if ([_delegate respondsToSelector:@selector(controlTextDidChange:)])
+        [center addObserver:_delegate selector:@selector(controlTextDidChange:) name:CPControlTextDidChangeNotification object:self];
+    if ([_delegate respondsToSelector:@selector(controlTextDidEndEditing:)])
+        [center addObserver:_delegate selector:@selector(controlTextDidEndEditing:) name:CPControlTextDidEndEditingNotification object:self];
+
+}
+
+- (id)delegate
+{
+    return _delegate;
 }
 
 // Setting the Bezel Style
@@ -284,18 +317,33 @@ var _CPTextFieldSquareBezelColor    = nil;
     element.style.zIndex = 1000;
     element.style.width = CGRectGetWidth([self bounds]) - 3.0 + "px";
     element.style.marginTop = "0px";
+
     //element.style.left = _DOMTextElement.style.left;
     //element.style.top = _DOMTextElement.style.top;
-      
+
     _DOMElement.appendChild(element);
     window.setTimeout(function() { element.focus(); }, 0.0);
-    element.onblur = function () { [[self window] makeFirstResponder:[self window]]; };
+
+    element.onblur = function () 
+    { 
+        [self sendAction:[self action] to:[self target]];
+        [[self window] makeFirstResponder:nil];
+    };
     
     //element.onblur = function() { objj_debug_print_backtrace(); }
     //element.select();
     
+    element.onkeydown = function(aDOMEvent) 
+    {
+        //all key presses might trigger the delegate method controlTextDidChange: 
+        //record the current string value before we allow this keydown to propagate
+        _textDidChangeValue = [self stringValue];
+
+        return true;
+    }
+        
     element.onkeypress = function(aDOMEvent) 
-    { 
+    {
         aDOMEvent = aDOMEvent || window.event;
         
         if (aDOMEvent.keyCode == 13) 
@@ -306,16 +354,29 @@ var _CPTextFieldSquareBezelColor    = nil;
                 aDOMEvent.stopPropagation();
             
             element.blur();
-            
-            [self sendAction:[self action] to:[self target]];
-            [[self window] makeFirstResponder:nil];
         } 
     };
     
-    // If current value is the placeholder value, remove it to allow user to update.
-    if ([_value lowercaseString] == [[self placeholderString] lowercaseString])
-        [self setStringValue:@""];    
+    //inspect keyup to detect changes in order to trigger controlTextDidChange: delegate method
+    element.onkeyup = function(aDOMEvent) 
+    { 
+        //check if we should fire a notification for CPControlTextDidChange
+        if ([self stringValue] != _textDidChangeValue)
+        {
+            _textDidChangeValue = [self stringValue];
 
+            //call to CPControls methods for posting the notification
+            [self textDidChange:[CPNotification notificationWithName:CPControlTextDidChangeNotification object:self userInfo:nil]];
+        }
+    };
+
+    // If current value is the placeholder value, remove it to allow user to update.
+    if ([string lowercaseString] == [[self placeholderString] lowercaseString])
+        [self setStringValue:@""];
+    
+    //post CPControlTextDidBeginEditingNotification
+    [self textDidBeginEditing:[CPNotification notificationWithName:CPControlTextDidBeginEditingNotification object:self userInfo:nil]];
+    
     [[CPDOMWindowBridge sharedDOMWindowBridge] _propagateCurrentDOMEvent:YES];
 #endif
 
@@ -328,6 +389,11 @@ var _CPTextFieldSquareBezelColor    = nil;
 #if PLATFORM(DOM)
     var element = [[self class] _inputElement];
 
+    //nil out dom handlers
+    element.onkeyup = nil;
+    element.onkeydown = nil;
+    element.onkeypress = nil;
+    
     _DOMElement.removeChild(element);
     [self setStringValue:element.value];
 
@@ -336,7 +402,20 @@ var _CPTextFieldSquareBezelColor    = nil;
         [self setStringValue:[self placeholderString]];
 
 #endif
+    //post CPControlTextDidEndEditingNotification
+    [self textDidEndEditing:[CPNotification notificationWithName:CPControlTextDidBeginEditingNotification object:self userInfo:nil]];
+
     return YES;
+}
+
+- (void)mouseUp:(CPEvent)anEvent
+{
+    return;
+    
+    if (_isEditable)
+        return;
+        
+    [super mouseDown:anEvent];
 }
 
 /* 
@@ -492,7 +571,7 @@ var _CPTextFieldSquareBezelColor    = nil;
     _placeholderString = aStringValue;
 
     //if there is no set value, automatically display the placeholder
-    if (!_value) 
+    if (!_value || _value === "") 
         [self setStringValue:aStringValue];
 }
 
@@ -520,6 +599,8 @@ var _CPTextFieldSquareBezelColor    = nil;
         element.select();
 #endif
 }
+
+
 
 @end
 

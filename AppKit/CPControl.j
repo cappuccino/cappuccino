@@ -73,6 +73,10 @@ CPControlSelectedBackgroundColor    = @"CPControlSelectedBackgroundColor";
 CPControlHighlightedBackgroundColor = @"CPControlHighlightedBackgroundColor";
 CPControlDisabledBackgroundColor    = @"CPControlDisabledBackgroundColor";
 
+CPControlTextDidBeginEditingNotification=@"CPControlTextDidBeginEditingNotification";
+CPControlTextDidChangeNotification=@"CPControlTextDidChangeNotification";
+CPControlTextDidEndEditingNotification=@"CPControlTextDidEndEditingNotification";
+
 var CPControlBlackColor     = [CPColor blackColor];
 
 /*
@@ -384,6 +388,33 @@ var CPControlBlackColor     = [CPColor blackColor];
     _currentBackgroundColorName = aName;
     
     [super setBackgroundColor:[self backgroundColorForName:aName]];
+}
+
+- (void)textDidBeginEditing:(CPNotification)note 
+{
+    //this looks to prevent false propagation of notifications for other objects
+    if([note object] != self)
+        return;
+
+    [[CPNotificationCenter defaultCenter] postNotificationName:CPControlTextDidBeginEditingNotification object:self userInfo:[CPDictionary dictionaryWithObject:[note object] forKey:@"CPFieldEditor"]];
+}
+
+- (void)textDidChange:(CPNotification)note 
+{
+    //this looks to prevent false propagation of notifications for other objects
+    if([note object] != self)
+        return;
+
+    [[CPNotificationCenter defaultCenter] postNotificationName:CPControlTextDidChangeNotification object:self userInfo:[CPDictionary dictionaryWithObject:[note object] forKey:@"CPFieldEditor"]];
+}
+
+- (void)textDidEndEditing:(CPNotification)note 
+{
+    //this looks to prevent false propagation of notifications for other objects
+    if([note object] != self)
+        return;
+
+    [[CPNotificationCenter defaultCenter] postNotificationName:CPControlTextDidEndEditingNotification object:self userInfo:[CPDictionary dictionaryWithObject:[note object] forKey:@"CPFieldEditor"]];
 }
 
 /*
