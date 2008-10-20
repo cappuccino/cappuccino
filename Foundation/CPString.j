@@ -22,6 +22,7 @@
 
 import "CPObject.j"
 import "CPException.j"
+import "CPSortDescriptor.j"
 
 /*
     A case insensitive search
