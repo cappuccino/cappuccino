@@ -265,7 +265,7 @@ var _CPToolbarItemVisibilityPriorityCompare = function(lhs, rhs)
         
         if (item == nil)
             [CPException raise:CPInvalidArgumentException
-                        format:@"_delegate %@ returned nil toolbar item returned for identifier %@", _delegate, identifier];
+                        reason:sprintf(@"_delegate %s returned nil toolbar item returned for identifier %s", _delegate, identifier)];
         
         [_items addObject:item];
     }
