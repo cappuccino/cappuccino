@@ -283,12 +283,14 @@ var _CPTextFieldSquareBezelColor    = nil;
     element.style.font = _DOMElement.style.font;
     element.style.zIndex = 1000;
     element.style.width = CGRectGetWidth([self bounds]) - 3.0 + "px";
-    element.style.marginTop = "-1px";
+    element.style.marginTop = "0px";
     //element.style.left = _DOMTextElement.style.left;
     //element.style.top = _DOMTextElement.style.top;
       
     _DOMElement.appendChild(element);
     window.setTimeout(function() { element.focus(); }, 0.0);
+    element.onblur = function () { [[self window] makeFirstResponder:[self window]]; };
+    
     //element.onblur = function() { objj_debug_print_backtrace(); }
     //element.select();
     
@@ -325,12 +327,12 @@ var _CPTextFieldSquareBezelColor    = nil;
 {
 #if PLATFORM(DOM)
     var element = [[self class] _inputElement];
-    
+
     _DOMElement.removeChild(element);
     [self setStringValue:element.value];
 
     // If textfield has no value, then display the placeholderValue
-    if (!_value)
+    if (!_value || _value === "")
         [self setStringValue:[self placeholderString]];
 
 #endif
@@ -441,6 +443,9 @@ var _CPTextFieldSquareBezelColor    = nil;
     if ([[self window] firstResponder] == self)
         return [[self class] _inputElement].value;
 #endif
+    //if the content is the same as the placeholder value, return "" instead
+    if ([_value lowercaseString] == [[self placeholderString] lowercaseString])
+        return "";
 
     return [super stringValue];
 }
@@ -462,13 +467,11 @@ var _CPTextFieldSquareBezelColor    = nil;
 
     if ([[self window] firstResponder] == self)
         [[self class] _inputElement].value = displayString;
-    else
-    {
-        if (CPFeatureIsCompatible(CPJavascriptInnerTextFeature))
-            _DOMTextElement.innerText = displayString;
-        else if (CPFeatureIsCompatible(CPJavascriptTextContentFeature))
-            _DOMTextElement.textContent = displayString;
-    }
+
+    if (CPFeatureIsCompatible(CPJavascriptInnerTextFeature))
+        _DOMTextElement.innerText = displayString;
+    else if (CPFeatureIsCompatible(CPJavascriptTextContentFeature))
+        _DOMTextElement.textContent = displayString;
 #endif
 }
 
@@ -487,6 +490,10 @@ var _CPTextFieldSquareBezelColor    = nil;
 -(void)setPlaceholderString:(CPString)aStringValue
 {
     _placeholderString = aStringValue;
+
+    //if there is no set value, automatically display the placeholder
+    if (!_value) 
+        [self setStringValue:aStringValue];
 }
 
 /*
