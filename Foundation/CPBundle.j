@@ -58,6 +58,11 @@ import "CPDictionary.j"
     return [path stringByDeletingLastPathComponent];
 }
 
+- (CPString)resourcePath
+{
+    return [self bundlePath] + "Resources/";
+}
+
 - (Class)principalClass
 {
     var className = [[self infoDictionary] objectForKey:@"CPPrincipalClass"];
