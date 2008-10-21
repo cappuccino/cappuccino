@@ -417,6 +417,100 @@ import "CPException.j"
 }
 
 /*!
+    Returns the index of <code>anObject</code> in the array, which must be sorted in the same order as
+    calling sortUsingSelector: with the selector passed to this method would result in. 
+    @param anObject the object to search for
+    @param aSelector the comparison selector to call on each item in the list, the same
+    selector should have been used to sort the array (or to maintain its sorted order).
+    @return the index of the object, or <code>CPNotFound</code> if it was not found.
+*/
+- (unsigned)indexOfObject:(id)anObject sortedBySelector:(SEL)aSelector
+{
+    return [self indexOfObject:anObject sortedByFunction: function(lhs, rhs) { objj_msgSend(lhs, aSelector, rhs); }];
+}
+
+/*!
+    Returns the index of <code>anObject</code> in the array, which must be sorted in the same order as
+    calling sortUsingFunction: with the selector passed to this method would result in. 
+    The function will be called like so:
+    <pre>
+    aFunction(anObject, currentObjectInArrayForComparison)
+    </pre>
+    @param anObject the object to search for
+    @param aFunction the comparison function to call on each item in the array that we search. the same
+    selector should have been used to sort the array (or to maintain its sorted order).
+    @return the index of the object, or <code>CPNotFound</code> if it was not found.
+*/
+- (unsigned)indexOfObject:(id)anObject sortedByFunction:(Function)aFunction
+{
+    return [self indexOfObject:anObject sortedByFunction:aFunction context:nil];
+}
+
+/*!
+    Returns the index of <code>anObject</code> in the array, which must be sorted in the same order as
+    calling sortUsingFunction: with the selector passed to this method would result in. 
+    The function will be called like so:
+    <pre>
+    aFunction(anObject, currentObjectInArrayForComparison, context)
+    </pre>
+    @param anObject the object to search for
+    @param aFunction the comparison function to call on each item in the array that we search. the same
+    function should have been used to sort the array (or to maintain its sorted order).
+    @param aContext a context object that will be passed to the sort function
+    @return the index of the object, or <code>CPNotFound</code> if it was not found.
+*/
+- (unsigned)indexOfObject:(id)anObject sortedByFunction:(Function)aFunction context:(id)aContext
+{
+    if (!aFunction || !anObject)
+        return CPNotFound;
+ 
+    var mid, c, first = 0, last = length - 1;
+    while (first <= last)
+    {
+        mid = FLOOR((first + last) / 2);
+          c = aFunction(anObject, self[mid], aContext);
+
+        if (c > 0)
+            first = mid + 1;
+        else if (c < 0)
+            last = mid - 1;
+        else
+        {
+            while (mid < length - 1 && aFunction(anObject, self[mid+1], aContext) == CPOrderedSame)
+                mid++;
+
+            return mid;
+        }
+    }
+
+    return CPNotFound;
+}
+
+/*!
+    Returns the index of <code>anObject</code> in the array, which must be sorted in the same order as
+    calling sortUsingDescriptors: with the descriptors passed to this method would result in. 
+    @param anObject the object to search for
+    @param descriptors the array of descriptors to use to compare each item in the array that we search. the same
+    descriptors should have been used to sort the array (or to maintain its sorted order).
+    @return the index of the object, or <code>CPNotFound</code> if it was not found.
+*/
+- (unsigned)indexOfObject:(id)anObject sortedByDescriptors:(CPArray)descriptors
+{
+    [self indexOfObject:anObject sortedByFunction:function(lhs, rhs)
+    {
+        var i = 0,
+            count = [descriptors count],
+            result = CPOrderedSame;
+
+        while (i < count)
+            if((result = [descriptors[i++] compareObject:lhs withObject:rhs]) != CPOrderedSame)
+                return result;
+
+        return result;
+    }];
+}
+
+/*!
     Returns the last object in the array. If the array is empty, returns <code>nil</code>/
 */
 - (id)lastObject
