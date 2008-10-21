@@ -24,7 +24,8 @@ import "CPView.j"
 
 #include "CoreGraphics/CGGeometry.h"
 
-/*
+/*! @class CPClipView
+
     <objj>CPClipView</objj> allows you to define a clip rect and display only that portion of its containing view.  
     It is used to hold the document view in a <objj>CPScrollView</objj>.
 */
@@ -33,7 +34,7 @@ import "CPView.j"
     CPView  _documentView;
 }
 
-/*
+/*!
     Sets the document view to be <code>aView</code>.
     @param aView the new document view. It's frame origin will be changed to <code>(0,0)</code> after calling this method.
 */
@@ -85,7 +86,7 @@ import "CPView.j"
     }
 }
 
-/*
+/*!
     Returns the document view.
 */
 - (id)documentView
@@ -93,7 +94,7 @@ import "CPView.j"
     return _documentView;
 }
 
-/*
+/*!
     Returns a new point that may be adjusted from <code>aPoint</code>
     to make sure it lies within the document view.
     @param aPoint
@@ -122,7 +123,7 @@ import "CPView.j"
         [superview reflectScrolledClipView:self];
 }
 
-/*
+/*!
     Scrolls the clip view to the specified point. The method
     sets its bounds origin to <code>aPoint</code>.
 */
@@ -131,7 +132,7 @@ import "CPView.j"
     [self setBoundsOrigin:[self constrainScrollPoint:aPoint]];
 }
 
-/*
+/*!
     Handles a <objj>CPViewBoundsDidChangeNotification</objj>.
     @param aNotification the notification event
 */
@@ -140,7 +141,7 @@ import "CPView.j"
     [self viewFrameChanged:aNotification];
 }
 
-/*
+/*!
     Handles a <objj>CPViewFrameDidChangeNotification</objj>.
     @param aNotification the notification event
 */

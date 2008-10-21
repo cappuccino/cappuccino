@@ -40,9 +40,9 @@ CPSegmentSwitchTrackingSelectAny = 1;
 */
 CPSegmentSwitchTrackingMomentary = 2;
 
-/*
-    This class is a horizontal button with multiple
-    segments.
+/*! @class CPSegmentedControl
+
+    This class is a horizontal button with multiple segments.
 */
 @implementation CPSegmentedControl : CPControl
 {
@@ -73,7 +73,7 @@ CPSegmentSwitchTrackingMomentary = 2;
     return self;
 }
 
-/*
+/*!
     Returns the tag of the selected segment.
 */
 - (int)selectedTag
@@ -82,10 +82,9 @@ CPSegmentSwitchTrackingMomentary = 2;
 }
 
 // Specifying the number of segments
-/*
+/*!
     Sets the number of segments in the button.
-    @param aCount the number of segments on
-    the button
+    @param aCount the number of segments on the button
 */
 - (void)setSegmentCount:(unsigned)aCount
 {
@@ -125,7 +124,7 @@ CPSegmentSwitchTrackingMomentary = 2;
     [self tileWithChangedSegment:0];
 }
 
-/*
+/*!
     Returns the number of segments in the button.
 */
 - (unsigned)segmentCount
@@ -134,7 +133,7 @@ CPSegmentSwitchTrackingMomentary = 2;
 }
 
 // Specifying Selected Segment
-/*
+/*!
     Selects a segment.
     @param aSegment the segment to select
     @throws CPRangeException if <code>aSegment</code> is out of bounds
@@ -145,7 +144,7 @@ CPSegmentSwitchTrackingMomentary = 2;
     [self setSelected:YES forSegment:aSegment];
 }
 
-/*
+/*!
     Returns the selected segment.
 */
 - (unsigned)selectedSegment
@@ -153,9 +152,8 @@ CPSegmentSwitchTrackingMomentary = 2;
     return _selectedSegment;
 }
 
-/*
-    Selects the button segment with the
-    specified tag.
+/*!
+    Selects the button segment with the specified tag.
 */
 - (BOOL)selectSegmentWithTag:(int)aTag
 {
@@ -209,7 +207,7 @@ CPSegmentSwitchTrackingMomentary = 2;
     }
 }
 
-/*
+/*!
     Returns the control's tracking mode.
 */
 - (CPSegmentSwitchTracking)trackingMode
@@ -218,7 +216,7 @@ CPSegmentSwitchTrackingMomentary = 2;
 }
 
 // Working with Individual Segments
-/*
+/*!
     Sets the width of the specified segment.
     @param aWidth the new width for the segment
     @param aSegment the segment to set the width for
@@ -231,7 +229,7 @@ CPSegmentSwitchTrackingMomentary = 2;
     [self tileWithChangedSegment:aSegment];
 }
 
-/*
+/*!
     Returns the width for the specified segment.
     @param aSegment the segment to get the width for
     @throws CPRangeException if <code>aSegment</code> is out of bounds
@@ -241,7 +239,7 @@ CPSegmentSwitchTrackingMomentary = 2;
     return _segments[aSegment].width;
 }
 
-/*
+/*!
     Sets the image for the specified segment.
     @param anImage the image for the segment
     @param aSegment the segment to set the image on
@@ -279,7 +277,7 @@ CPSegmentSwitchTrackingMomentary = 2;
         [self tileWithChangedSegment:aSegment];
 }
 
-/*
+/*!
     Returns the image for the specified segment
     @param aSegment the segment to obtain the image for
     @throws CPRangeException if <code>aSegment</code> is out of bounds
@@ -289,7 +287,7 @@ CPSegmentSwitchTrackingMomentary = 2;
     return _segments[aSegment].image;
 }
 
-/*
+/*!
     Sets the label for the specified segment
     @param aLabel the label for the segment
     @param aSegment the segment to label
@@ -329,7 +327,7 @@ CPSegmentSwitchTrackingMomentary = 2;
         [self tileWithChangedSegment:aSegment];
 }
 
-/*
+/*!
     Returns the label for the specified segment
     @param the segment to obtain the label for
     @throws CPRangeException if <code>aSegment</code> is out of bounds
@@ -339,7 +337,7 @@ CPSegmentSwitchTrackingMomentary = 2;
     return _segments[aSegment].label;
 }
 
-/*
+/*!
     Sets the menu for the specified segment
     @param aMenu the menu to set
     @param aSegment the segment to set the menu on
@@ -350,7 +348,7 @@ CPSegmentSwitchTrackingMomentary = 2;
     _segments[aSegment].menu = aMenu;
 }
 
-/*
+/*!
     Returns the menu for the specified segment.
     @param aSegment the segment to obtain the menu for
     @throws CPRangeException if <code>aSegment</code> is out of bounds
@@ -360,7 +358,7 @@ CPSegmentSwitchTrackingMomentary = 2;
     return _segments[aSegment].menu;
 }
 
-/*
+/*!
     Sets the selection for the specified segment. If only one segment
     can be selected at a time, any other segment will be deselected.
     @param isSelected <code>YES</code> selects the segment. <code>NO</code> deselects it.
@@ -396,7 +394,7 @@ CPSegmentSwitchTrackingMomentary = 2;
         [self drawSegmentBezel:aSegment highlight:NO];
 }
 
-/*
+/*!
     Returns <code>YES</code> if the specified segment is selected.
     @param aSegment the segment to check for selection
     @throws CPRangeException if <code>aSegment</code> is out of bounds
@@ -406,7 +404,7 @@ CPSegmentSwitchTrackingMomentary = 2;
     return _segments[aSegment].selected;
 }
 
-/*
+/*!
     Enables/diables the specified segment.
     @param isEnabled <code>YES</code> enables the segment
     @param aSegment the segment to enable/disble
@@ -417,7 +415,7 @@ CPSegmentSwitchTrackingMomentary = 2;
     _segments[aSegment].enabled = isEnabled;
 }
 
-/*
+/*!
     Returns <code>YES</code> if the specified segment is enabled.
     @param aSegment the segment to check
     @throws CPRangeException if <code>aSegment</code> is out of bounds
@@ -427,7 +425,7 @@ CPSegmentSwitchTrackingMomentary = 2;
     return _segments[aSegment].enabled;
 }
 
-/*
+/*!
     Sets a tag for the specified segment.
     @param aTag the tag to set
     @param aSegment the segment to set the tag on
@@ -437,7 +435,7 @@ CPSegmentSwitchTrackingMomentary = 2;
     _segments[aSegment].tag = aTag;
 }
 
-/*
+/*!
     Returns the tag for the specified segment.
     @param aSegment the segment to obtain the tag for
 */
@@ -447,7 +445,7 @@ CPSegmentSwitchTrackingMomentary = 2;
 }
 
 // Drawings
-/*
+/*!
     Draws the specified segment bezel
     @param aSegment the segment to draw the bezel for
     @param shouldHighlight <code>YES</code> highlights the bezel
@@ -456,7 +454,7 @@ CPSegmentSwitchTrackingMomentary = 2;
 {
 }
 
-/*
+/*!
     Draws the specified segment
     @param aSegment the segment to draw
     @param shouldHighlight <code>YES</code> highlights the bezel
@@ -550,7 +548,7 @@ CPSegmentSwitchTrackingMomentary = 2;
     [self drawSegment:aSegment highlight:NO];
 }
 
-/*
+/*!
     Returns the bounding rectangle for the specified segment.
     @param aSegment the segment to get the rectangle for
 */
@@ -559,7 +557,7 @@ CPSegmentSwitchTrackingMomentary = 2;
     return _segments[aSegment].frame;
 }
 
-/*
+/*!
     Returns the segment that is hit by the specified point.
     @param aPoint the point to test for a segment hit
     @return the intersecting segment
@@ -589,7 +587,7 @@ CPSegmentSwitchTrackingMomentary = 2;
 {
 }
 
-/*
+/*!
     Handles events for the segment
     @param anEvent the event to handle
 */

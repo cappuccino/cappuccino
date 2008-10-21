@@ -59,7 +59,8 @@ CPSliderColorPickerMode = 3;
 CPColorPickerViewWidth  = 265,
 CPColorPickerViewHeight = 370;
 
-/*
+/*! @class CPColorPanel
+
     <objj>CPColorPanel</objj> provides a reusable panel that can be used
     displayed on screen to prompt the user for a color selection. To
     obtain the panel, call the <code>sharedColorPanel</code> method.
@@ -88,7 +89,7 @@ CPColorPickerViewHeight = 370;
     int             _mode;             
 }
 
-/*
+/*!
     Returns (and if necessary, creates) the shared color panel.
 */
 + (CPColorPanel)sharedColorPanel
@@ -99,7 +100,7 @@ CPColorPickerViewHeight = 370;
     return SharedColorPanel;
 }
 
-/*
+/*!
     Sets the mode for the shared color panel.
     @param mode the mode to which the color panel will be set
 */
@@ -133,7 +134,7 @@ CPColorPickerViewHeight = 370;
     return self;
 }
 
-/*
+/*!
     Sets the color of the panel, and updates the picker. Also posts a <code>CPColorPanelDidChangeNotification</code>.
 */
 - (void)setColor:(CPColor)aColor
@@ -151,7 +152,7 @@ CPColorPickerViewHeight = 370;
                       object:self];
 }
 
-/*
+/*!
     Sets the selected color of the panel and optionally updates the picker.
     @param bool whether or not to update the picker
     @ignore
@@ -165,7 +166,7 @@ CPColorPickerViewHeight = 370;
  }
  
 
-/*
+/*!
     Returns the panel's currently selected color.
 */
 - (CPColor)color
@@ -173,7 +174,7 @@ CPColorPickerViewHeight = 370;
     return _color;
 }
 
-/*
+/*!
     Sets the target for the color panel. Messages are sent
     to the target when colors are selected in the panel.
 */
@@ -182,7 +183,7 @@ CPColorPickerViewHeight = 370;
     _target = aTarget;
 }
 
-/*
+/*!
     Returns the current target. The target receives messages
     when colors are selected in the panel.
 */
@@ -191,7 +192,7 @@ CPColorPickerViewHeight = 370;
     return _target;
 }
 
-/*
+/*!
     Sets the action that gets sent to the target.
     This action is sent whenever a color is selected in the panel.
     @param anAction the action that will be sent
@@ -201,7 +202,7 @@ CPColorPickerViewHeight = 370;
     _action = anAction;
 }
 
-/*
+/*!
     Returns the current target action.
 */
 - (selector)action
@@ -209,7 +210,7 @@ CPColorPickerViewHeight = 370;
     return _action;
 }
 
-/*
+/*!
     Sets the mode (look) of the color panel.
     @param mode the mode in which to display the color panel
 */
@@ -238,7 +239,7 @@ CPColorPickerViewHeight = 370;
     [[self contentView] addSubview: _currentView];
 }
 
-/*
+/*!
     Returns the color panel's current display mode.
 */
 - (CPColorPanelMode)mode

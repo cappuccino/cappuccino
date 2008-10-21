@@ -9,7 +9,7 @@ var STATIC_MAGIC_NUMBER     = "@STATIC",
 
 var STATIC_EXTENSION        = "sj";
 
-function objj_preprocess_file(aFilePath, fileContents)
+function objj_preprocess_file(aFilePath, fileContents, checkSyntax)
 {
     // Preprocess contents into fragments.
     var fragments = objj_preprocess(fileContents, { path:"/x" }, { path:aFilePath}),
@@ -25,7 +25,21 @@ function objj_preprocess_file(aFilePath, fileContents)
         if (IS_FILE(fragment))
             preprocessed += (IS_LOCAL(fragment) ? MARKER_IMPORT_LOCAL : MARKER_IMPORT_STD) + ';' + GET_PATH(fragment).length + ';' + GET_PATH(fragment);
         else
+        {
+            if (checkSyntax)
+            {
+                try
+                {
+                    new Function(GET_CODE(fragment));
+                }
+                catch (e)
+                {
+                    e.fragment = fragment;
+                    throw e;
+                }
+            }
             preprocessed += MARKER_CODE + ';' + GET_CODE(fragment).length + ';' + GET_CODE(fragment);
+        }
     }
 
     return preprocessed;

@@ -327,12 +327,15 @@ function printUsage(command)
 
     switch (command)
     {
-        case "--help" :
-        case undefined :
-            java.lang.System.out.println(usage);
-            break;
-        default :
-            java.lang.System.out.println("steam: '" + command + "' is not a steam command. See 'steam --help'.");
+        case  "--help":
+        case undefined: java.lang.System.out.println(usage);
+                        break;
+            
+        case  "create": java.lang.System.out.println("Creates a new Cappuccino project.\n\nusage: steam create PROJECT_NAME [-l]\n\n"+
+                            "\t-l  Link Frameworks to $STEAM_BUILD/Release, instead of installing default Frameworks");
+                        break;
+        
+        default:        java.lang.System.out.println("steam: '" + command + "' is not a steam command. See 'steam --help'.");
     }
     java.lang.System.exit(1);
 }
@@ -345,14 +348,16 @@ function main()
     var command = Array.prototype.shift.apply(arguments);
     switch (command)
     {
-        case "create" :
-            mainCreate.apply(mainCreate, arguments);
-            break;
-        case "build" :
-            mainBuild.apply(mainBuild, arguments);
-            break;
-        default :
-            printUsage(command);
+        case "create":  mainCreate.apply(mainCreate, arguments);
+                        break;
+        case "build":
+                        mainBuild.apply(mainBuild, arguments);
+                        break;
+                        
+        case "help":    printUsage(arguments[1]);
+                        break;
+                        
+        default :       printUsage(command);
     }
     
 }
@@ -364,8 +369,9 @@ function mainCreate()
     if (arguments.length < 1)
         printUsage("create");
     
-    var dst = arguments[0];
-    
+    var dst = arguments[0],
+        link = arguments[1] == "-l";
+
     var srcNewApp       = new File(OBJJ_LIB+"/NewApplication"),
         srcFrameworks   = new File(OBJJ_LIB+"/Frameworks"),
         dstNewApp       = new File(dst),
@@ -376,7 +382,11 @@ function mainCreate()
     if (!dstNewApp.exists())
     {
         exec(["cp", "-vR", srcNewApp.getCanonicalPath(), dstNewApp.getCanonicalPath()], true);
-        exec(["cp", "-vR", srcFrameworks.getCanonicalPath(), dstFrameworks.getCanonicalPath()], true);
+        
+        if (!link)
+            exec(["cp", "-vR", srcFrameworks.getCanonicalPath(), dstFrameworks.getCanonicalPath()], true);            
+        else
+            exec(["ln", "-s", new File(System.getenv("STEAM_BUILD")+"/Release").getCanonicalPath(), dstFrameworks.getCanonicalPath()], true);    
     }
     else
     {

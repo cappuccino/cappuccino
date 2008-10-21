@@ -82,7 +82,7 @@ var _CPTextFieldSquareBezelColor    = nil;
 
 @implementation CPString (CPTextFieldAdditions)
 
-/*
+/*!
     Returns the string (<code>self</code>).
 */
 - (CPString)string
@@ -92,7 +92,7 @@ var _CPTextFieldSquareBezelColor    = nil;
 
 @end
 
-/*
+/*!
     This control displays editable text in a Cappuccino application.
 */
 @implementation CPTextField : CPControl
@@ -108,6 +108,11 @@ var _CPTextFieldSquareBezelColor    = nil;
     id                      _placeholderString;
     
     CPLineBreakMode         _lineBreakMode;
+    
+    id                      _delegate;
+    
+    CPString                _textDidChangeValue;
+    
 #if PLATFORM(DOM)
     DOMElement              _DOMTextElement;
 #endif
@@ -119,21 +124,21 @@ var _CPTextFieldSquareBezelColor    = nil;
 {
     if (!CPTextFieldDOMInputElement)
     {
-        CPTextFieldDOMInputElement = document.createElement("input");
-        CPTextFieldDOMInputElement.style.position = "absolute";
-        CPTextFieldDOMInputElement.style.top = "0px";
-        CPTextFieldDOMInputElement.style.left = "0px";
-        CPTextFieldDOMInputElement.style.width = "100%"
-        CPTextFieldDOMInputElement.style.height = "100%";
-        CPTextFieldDOMInputElement.style.border = "0px";
-        CPTextFieldDOMInputElement.style.padding = "0px";
-        CPTextFieldDOMInputElement.style.whiteSpace = "pre";
-        CPTextFieldDOMInputElement.style.background = "transparent";
-        CPTextFieldDOMInputElement.style.outline = "none";
-        CPTextFieldDOMInputElement.style.paddingLeft = HORIZONTAL_PADDING - 1.0 + "px";
-        CPTextFieldDOMInputElement.style.paddingTop = TOP_PADDING - 2.0 + "px";
+         CPTextFieldDOMInputElement = document.createElement("input");
+         CPTextFieldDOMInputElement.style.position = "absolute";
+         CPTextFieldDOMInputElement.style.top = "0px";
+         CPTextFieldDOMInputElement.style.left = "0px";
+         CPTextFieldDOMInputElement.style.width = "100%"
+         CPTextFieldDOMInputElement.style.height = "100%";
+         CPTextFieldDOMInputElement.style.border = "0px";
+         CPTextFieldDOMInputElement.style.padding = "0px";
+         CPTextFieldDOMInputElement.style.whiteSpace = "pre";
+         CPTextFieldDOMInputElement.style.background = "transparent";
+         CPTextFieldDOMInputElement.style.outline = "none";
+         CPTextFieldDOMInputElement.style.paddingLeft = HORIZONTAL_PADDING - 1.0 + "px";
+         CPTextFieldDOMInputElement.style.paddingTop = TOP_PADDING - 2.0 + "px";
     }
-    
+
     return CPTextFieldDOMInputElement;
 }
 #endif
@@ -166,8 +171,36 @@ var _CPTextFieldSquareBezelColor    = nil;
     return self;
 }
 
+- (void)setDelegate:(id)aDelegate
+{
+    var center = [CPNotificationCenter defaultCenter];
+    
+    //unsubscribe the existing delegate if it exists
+    if (_delegate)
+    {
+        [center removeObserver:_delegate name:CPControlTextDidBeginEditingNotification object:self];
+        [center removeObserver:_delegate name:CPControlTextDidChangeNotification object:self];
+        [center removeObserver:_delegate name:CPControlTextDidEndEditingNotification object:self];
+    }
+    
+    _delegate = aDelegate;
+    
+    if ([_delegate respondsToSelector:@selector(controlTextDidBeginEditing:)])
+        [center addObserver:_delegate selector:@selector(controlTextDidBeginEditing:) name:CPControlTextDidBeginEditingNotification object:self];
+    if ([_delegate respondsToSelector:@selector(controlTextDidChange:)])
+        [center addObserver:_delegate selector:@selector(controlTextDidChange:) name:CPControlTextDidChangeNotification object:self];
+    if ([_delegate respondsToSelector:@selector(controlTextDidEndEditing:)])
+        [center addObserver:_delegate selector:@selector(controlTextDidEndEditing:) name:CPControlTextDidEndEditingNotification object:self];
+
+}
+
+- (id)delegate
+{
+    return _delegate;
+}
+
 // Setting the Bezel Style
-/*
+/*!
     Sets whether the textfield will have a bezeled border.
     @param shouldBeBezeled <code>YES</code> means the textfield will draw a bezeled border
 */
@@ -181,7 +214,7 @@ var _CPTextFieldSquareBezelColor    = nil;
     [self _updateBackground];
 }
 
-/*
+/*!
     Returns <code>YES</code> if the textfield draws a bezeled border.
 */
 - (BOOL)isBezeled
@@ -189,7 +222,7 @@ var _CPTextFieldSquareBezelColor    = nil;
     return _isBezeled;
 }
 
-/*
+/*!
     Sets the textfield's bezel style.
     @param aBezelStyle the constant for the desired bezel style
 */
@@ -203,7 +236,7 @@ var _CPTextFieldSquareBezelColor    = nil;
     [self _updateBackground];
 }
 
-/*
+/*!
     Returns the textfield's bezel style.
 */
 - (CPTextFieldBezelStyle)bezelStyle
@@ -211,7 +244,7 @@ var _CPTextFieldSquareBezelColor    = nil;
     return _bezelStyle;
 }
 
-/*
+/*!
     Sets whether the textfield will have a border drawn.
     @param shouldBeBordered <code>YES</code> makes the textfield draw a border
 */
@@ -225,7 +258,7 @@ var _CPTextFieldSquareBezelColor    = nil;
     [self _updateBackground];
 }
 
-/*
+/*!
     Returns <code>YES</code> if the textfield has a border.
 */
 - (BOOL)isBordered
@@ -283,17 +316,34 @@ var _CPTextFieldSquareBezelColor    = nil;
     element.style.font = _DOMElement.style.font;
     element.style.zIndex = 1000;
     element.style.width = CGRectGetWidth([self bounds]) - 3.0 + "px";
-    element.style.marginTop = "-1px";
+    element.style.marginTop = "0px";
+
     //element.style.left = _DOMTextElement.style.left;
     //element.style.top = _DOMTextElement.style.top;
-      
+
     _DOMElement.appendChild(element);
     window.setTimeout(function() { element.focus(); }, 0.0);
+
+    element.onblur = function () 
+    { 
+        [self sendAction:[self action] to:[self target]];
+        [[self window] makeFirstResponder:nil];
+    };
+    
     //element.onblur = function() { objj_debug_print_backtrace(); }
     //element.select();
     
+    element.onkeydown = function(aDOMEvent) 
+    {
+        //all key presses might trigger the delegate method controlTextDidChange: 
+        //record the current string value before we allow this keydown to propagate
+        _textDidChangeValue = [self stringValue];
+
+        return true;
+    }
+        
     element.onkeypress = function(aDOMEvent) 
-    { 
+    {
         aDOMEvent = aDOMEvent || window.event;
         
         if (aDOMEvent.keyCode == 13) 
@@ -304,16 +354,29 @@ var _CPTextFieldSquareBezelColor    = nil;
                 aDOMEvent.stopPropagation();
             
             element.blur();
-            
-            [self sendAction:[self action] to:[self target]];
-            [[self window] makeFirstResponder:nil];
         } 
     };
     
-    // If current value is the placeholder value, remove it to allow user to update.
-    if ([_value lowercaseString] == [[self placeholderString] lowercaseString])
-        [self setStringValue:@""];    
+    //inspect keyup to detect changes in order to trigger controlTextDidChange: delegate method
+    element.onkeyup = function(aDOMEvent) 
+    { 
+        //check if we should fire a notification for CPControlTextDidChange
+        if ([self stringValue] != _textDidChangeValue)
+        {
+            _textDidChangeValue = [self stringValue];
 
+            //call to CPControls methods for posting the notification
+            [self textDidChange:[CPNotification notificationWithName:CPControlTextDidChangeNotification object:self userInfo:nil]];
+        }
+    };
+
+    // If current value is the placeholder value, remove it to allow user to update.
+    if ([string lowercaseString] == [[self placeholderString] lowercaseString])
+        [self setStringValue:@""];
+    
+    //post CPControlTextDidBeginEditingNotification
+    [self textDidBeginEditing:[CPNotification notificationWithName:CPControlTextDidBeginEditingNotification object:self userInfo:nil]];
+    
     [[CPDOMWindowBridge sharedDOMWindowBridge] _propagateCurrentDOMEvent:YES];
 #endif
 
@@ -325,19 +388,35 @@ var _CPTextFieldSquareBezelColor    = nil;
 {
 #if PLATFORM(DOM)
     var element = [[self class] _inputElement];
+
+    //nil out dom handlers
+    element.onkeyup = nil;
+    element.onkeydown = nil;
+    element.onkeypress = nil;
     
     _DOMElement.removeChild(element);
     [self setStringValue:element.value];
 
     // If textfield has no value, then display the placeholderValue
-    if (!_value)
+    if (!_value || _value === "")
         [self setStringValue:[self placeholderString]];
 
 #endif
+    //post CPControlTextDidEndEditingNotification
+    [self textDidEndEditing:[CPNotification notificationWithName:CPControlTextDidBeginEditingNotification object:self userInfo:nil]];
+
     return YES;
 }
 
-/* 
+- (void)mouseUp:(CPEvent)anEvent
+{    
+    if (_isEditable && [[self window] firstResponder] == self)
+        return;
+        
+    [super mouseUp:anEvent];
+}
+
+/*! 
     Sets whether or not the receiver text field can be edited
 */
 - (void)setEditable:(BOOL)shouldBeEditable
@@ -345,7 +424,7 @@ var _CPTextFieldSquareBezelColor    = nil;
     _isEditable = shouldBeEditable;
 }
 
-/*
+/*!
     Returns <code>YES</code> if the textfield is currently editable by the user.
 */
 - (BOOL)isEditable
@@ -362,7 +441,7 @@ var _CPTextFieldSquareBezelColor    = nil;
 #endif
 }
 
-/*
+/*!
     Returns <code>YES</code> if the field's text is selectable by the user.
 */
 - (BOOL)isSelectable
@@ -370,7 +449,7 @@ var _CPTextFieldSquareBezelColor    = nil;
     return _isSelectable;
 }
 
-/*
+/*!
     Sets whether the field's text is selectable by the user.
     @param aFlag <code>YES</code> makes the text selectable
 */
@@ -379,7 +458,7 @@ var _CPTextFieldSquareBezelColor    = nil;
     _isSelectable = aFlag;
 }
 
-/*
+/*!
     Sets the alignment of the text in the field.
     @param anAlignment
 */
@@ -407,7 +486,7 @@ var _CPTextFieldSquareBezelColor    = nil;
 #endif
 }
 
-/*
+/*!
     Sets the way line breaks occur in the text field.
     @param aLineBreakMode the line break style
 */
@@ -431,7 +510,7 @@ var _CPTextFieldSquareBezelColor    = nil;
 #endif
 }
 
-/*
+/*!
     Returns the string the text field.
 */
 - (CPString)stringValue
@@ -441,6 +520,9 @@ var _CPTextFieldSquareBezelColor    = nil;
     if ([[self window] firstResponder] == self)
         return [[self class] _inputElement].value;
 #endif
+    //if the content is the same as the placeholder value, return "" instead
+    if ([_value lowercaseString] == [[self placeholderString] lowercaseString])
+        return "";
 
     return [super stringValue];
 }
@@ -462,17 +544,15 @@ var _CPTextFieldSquareBezelColor    = nil;
 
     if ([[self window] firstResponder] == self)
         [[self class] _inputElement].value = displayString;
-    else
-    {
-        if (CPFeatureIsCompatible(CPJavascriptInnerTextFeature))
-            _DOMTextElement.innerText = displayString;
-        else if (CPFeatureIsCompatible(CPJavascriptTextContentFeature))
-            _DOMTextElement.textContent = displayString;
-    }
+
+    if (CPFeatureIsCompatible(CPJavascriptInnerTextFeature))
+        _DOMTextElement.innerText = displayString;
+    else if (CPFeatureIsCompatible(CPJavascriptTextContentFeature))
+        _DOMTextElement.textContent = displayString;
 #endif
 }
 
-/*
+/*!
     Returns the receiver's placeholder string
 */
 - (CPString)placeholderString
@@ -480,16 +560,20 @@ var _CPTextFieldSquareBezelColor    = nil;
     return _placeholderString;
 }
 
-/*
+/*!
     Sets a placeholder string for the receiver.  The placeholder is displayed until editing begins,
     and after editing ends, if the text field has an empty string value
 */
 -(void)setPlaceholderString:(CPString)aStringValue
 {
     _placeholderString = aStringValue;
+
+    //if there is no set value, automatically display the placeholder
+    if (!_value || _value === "") 
+        [self setStringValue:aStringValue];
 }
 
-/*
+/*!
     Adjusts the text field's size in the application.
 */
 - (void)sizeToFit
@@ -501,7 +585,7 @@ var _CPTextFieldSquareBezelColor    = nil;
 #endif
 }
 
-/*
+/*!
     Select all the text in the CPTextField.
 */
 - (void)selectText:(id)sender
@@ -514,6 +598,8 @@ var _CPTextFieldSquareBezelColor    = nil;
 #endif
 }
 
+
+
 @end
 
 var CPTextFieldIsSelectableKey  = @"CPTextFieldIsSelectableKey",
@@ -523,7 +609,7 @@ var CPTextFieldIsSelectableKey  = @"CPTextFieldIsSelectableKey",
 
 @implementation CPTextField (CPCoding)
 
-/*
+/*!
     Initializes the textfield with data from a coder.
     @param aCoder the coder from which to read the textfield data
     @return the initialized textfield
@@ -564,7 +650,7 @@ var CPTextFieldIsSelectableKey  = @"CPTextFieldIsSelectableKey",
     return self;
 }
 
-/*
+/*!
     Encodes the data of this textfield into the provided coder.
     @param aCoder the coder into which the data will be written
 */

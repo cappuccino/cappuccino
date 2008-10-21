@@ -22,31 +22,32 @@
 
 import "CPObject.j"
 import "CPException.j"
+import "CPSortDescriptor.j"
 
-/*
+/*!
     A case insensitive search
     @global
     @class CPString
 */
 CPCaseInsensitiveSearch = 1;
-/*
+/*!
     Exact character match
     @global
     @class CPString
 */
 CPLiteralSearch         = 2;
-/*
+/*!
     Start searching from the end of the string
     @global
     @class CPString
 */
 CPBackwardsSearch       = 4;
-/*
+/*!
     @global
     @class CPString
 */
 CPAnchoredSearch        = 8;
-/*
+/*!
     Numbers in the string are compared as numbers instead of strings
     @global
     @class CPString
@@ -55,13 +56,13 @@ CPNumericSearch         = 64;
 
 var CPStringHashes      = new objj_dictionary();
 
-/*
-    <objj>CPString</objj> is an object that allows management of strings. Because <objj>CPString</objj> is
-    based on the JavaScript <code>String</code> object, <objj>CPString</objj>s are immutable, although the
-    class does have methods that create new <objj>CPString</objj>s generated from modifications to the
+/*! @class CPString
+    CPString is an object that allows management of strings. Because CPString is
+    based on the JavaScript <code>String</code> object, CPStrings are immutable, although the
+    class does have methods that create new CPStrings generated from modifications to the
     receiving instance.</p>
 
-    <p>A handy feature of <objj>CPString</objj> instances is that they can be used wherever a JavaScript is
+    <p>A handy feature of CPString instances is that they can be used wherever a JavaScript is
     required, and vice versa.
 */
 @implementation CPString : CPObject
@@ -74,7 +75,7 @@ var CPStringHashes      = new objj_dictionary();
     return new String;
 }
 
-/*
+/*!
     Returns a new string
 */
 + (id)string
@@ -82,8 +83,8 @@ var CPStringHashes      = new objj_dictionary();
     return [[self alloc] init];
 }
 
-/*
-    Returns a <objj>CPString</objj> containing the specified hash.
+/*!
+    Returns a CPString containing the specified hash.
     @param aHash the hash to represent as a string
 */
 + (id)stringWithHash:(unsigned)aHash
@@ -94,11 +95,11 @@ var CPStringHashes      = new objj_dictionary();
     return zeros.substring(0, zeros.length - digits.length) + digits;
 }
 
-/*
+/*!
     Returns a copy of the specified string.
     @param aString a non-<code>nil</code> string to copy
     @throws CPInvalidArgumentException if <code>aString</code> is <code>nil</code>
-    @return the new <objj>CPString</objj>
+    @return the new CPString
 */
 + (id)stringWithString:(CPString)aString
 {
@@ -109,20 +110,20 @@ var CPStringHashes      = new objj_dictionary();
     return [[self alloc] initWithString:aString];
 }
 
-/*
+/*!
     Initializes the string with data from the specified string.
     @param aString the string to copy data from
-    @return the initialized <objj>CPString</objj>
+    @return the initialized CPString
 */
 - (id)initWithString:(CPString)aString
 {
     return String(aString);
 }
 
-/*
+/*!
     Initializes a string using C printf-style formatting. First argument should be a constant format string, like ' "float val = %f" ', remaining arguments should be the variables to print the values of, comma-separated.
     @param format the format to be used, printf-style
-    @return the initialized <objj>CPString</objj>
+    @return the initialized CPString
 */
 - (id)initWithFormat:(CPString)format, ...
 {
@@ -134,11 +135,11 @@ var CPStringHashes      = new objj_dictionary();
     return self;
 }
 
-/*
+/*!
     Creates a new string using C printf-style formatting. First argument should be a constant format string, 
     like ' "float val = %f" ', remaining arguments should be the variables to print the values of, comma-separated.
     @param format the format to be used, printf-style
-    @return the initialized <objj>CPString</objj>
+    @return the initialized CPString
 */
 + (id)stringWithFormat:(CPString)format, ...
 {
@@ -149,15 +150,15 @@ var CPStringHashes      = new objj_dictionary();
     return sprintf.apply(this, Array.prototype.slice.call(arguments, 2));
 }
 
-/*
-    Returns a description of this <objj>CPString</objj> object.
+/*!
+    Returns a description of this CPString object.
 */
 - (CPString)description
 {
     return "<" + self.isa.name + " 0x" + [CPString stringWithHash:[self hash]] + " \"" + self + "\">";
 }
 
-/*
+/*!
     Returns the number of UTF-8 characters in the string.
 */
 - (int)length
@@ -165,7 +166,7 @@ var CPStringHashes      = new objj_dictionary();
     return length;
 }
 
-/*
+/*!
     Returns the character at the specified index.
     @param anIndex the index of the desired character
 */
@@ -176,11 +177,11 @@ var CPStringHashes      = new objj_dictionary();
 
 // Combining strings
 
-/*
+/*!
     Returns a string made by appending to the reciever a string constructed from a given format
     string and the floowing arguments
     @param format the format string in printf-style.
-    @return the initialized <objj>CPString</objj>
+    @return the initialized CPString
 */
 - (CPString)stringByAppendingFormat:(CPString)format, ...
 {
@@ -190,8 +191,8 @@ var CPStringHashes      = new objj_dictionary();
     return self + sprintf.apply(this, Array.prototype.slice.call(arguments, 2));
 }
 
-/*
-    Creates a new <objj>CPString</objj> from the concatenation of the receiver and the specified string.
+/*!
+    Creates a new CPString from the concatenation of the receiver and the specified string.
     @param aString the string to append to the receiver
     @return the new string
 */
@@ -200,14 +201,14 @@ var CPStringHashes      = new objj_dictionary();
     return self + aString;
 }
 
-/*
+/*!
     Returns a new string formed by padding characters or removing them.
     If the padding length is shorter than the receiver's length, the
     new string will be trimmed down to the padding length size.
     If the padding length is longer than the receiver's length, then the
     new string is repeatedly padded with the characters from the
     specified string starting at the specified index.
-    @param aLength the desired length of the new <objj>CPString</objj>
+    @param aLength the desired length of the new CPString
     @param aString the padding string to use (if necessary)
     @param anIndex the index of the padding string to start from (if necessary to use)
     @return the new padded string
@@ -231,7 +232,7 @@ var CPStringHashes      = new objj_dictionary();
 }
 
 //Dividing Strings
-/*
+/*!
     Tokenizes the receiver string using the specified
     delimiter. For example, if the receiver is:
     <pre>"arash.francisco.ross.tom"</pre>
@@ -247,7 +248,7 @@ var CPStringHashes      = new objj_dictionary();
     return split(aString);
 }
 
-/*
+/*!
     Returns a substring starting from the specified index to the end of the receiver.
     @param anIndex the starting string (inclusive)
     @return the substring
@@ -257,7 +258,7 @@ var CPStringHashes      = new objj_dictionary();
     return substr(anIndex);
 }
 
-/*
+/*!
     Returns a substring starting from the specified range <code>location</code> to the range <code>length</code>.
     @param the range of the substring
     @return the substring
@@ -267,7 +268,7 @@ var CPStringHashes      = new objj_dictionary();
     return substr(aRange.location, aRange.length);
 }
 
-/*
+/*!
     Creates a substring from the beginning of the receiver to the specified index.
     @param anIndex the last index of the receiver to use for the substring (inclusive)
     @return the substring
@@ -279,7 +280,7 @@ var CPStringHashes      = new objj_dictionary();
 
 // Finding characters and substrings
 
-/*
+/*!
     Finds the range of characters in the receiver where the specified string exists. If the string
     does not exist in the receiver, the range <code>length</code> will be 0.
     @param aString the string to search for in the receiver
@@ -290,7 +291,7 @@ var CPStringHashes      = new objj_dictionary();
    return [self rangeOfString:aString options:0];
 }
 
-/*
+/*!
     Finds the range of characters in the receiver
     where the specified string exists. The search
     is subject to the options specified in the
@@ -312,7 +313,7 @@ var CPStringHashes      = new objj_dictionary();
     return [self rangeOfString:aString options:aMask range:nil];
 }
 
-/*
+/*!
     Finds the range of characters in the receiver
     where the specified string exists in the given range 
     of the receiver.The search is subject to the options specified in the
@@ -353,7 +354,7 @@ var CPStringHashes      = new objj_dictionary();
 
 //Replacing Substrings
 
-/*
+/*!
     Returns a new string in which all occurrences of a target string in the reciever are replaced by 
     another given string.
     @param target The string to replace.
@@ -404,7 +405,7 @@ var CPStringHashes      = new objj_dictionary();
 
 // Identifying and comparing strings
 
-/*
+/*!
     Compares the receiver to the specified string.
     @param aString the string with which to compare
     @return the result of the comparison
@@ -425,7 +426,7 @@ var CPStringHashes      = new objj_dictionary();
     return [self compare:aString options:CPCaseInsensitiveSearch];
 }
 
-/*
+/*!
     Compares the receiver to the specified string, using options.
     @param aString the string with which to compare
     @param aMask the options to use for the comparison
@@ -450,7 +451,7 @@ var CPStringHashes      = new objj_dictionary();
     return CPOrderedSame;
 }
 
-/*
+/*!
     Returns <code>YES</code> if the receiver starts
     with the specified string. If <code>aString</code>
     is empty, the method will return <code>NO</code>.
@@ -460,7 +461,7 @@ var CPStringHashes      = new objj_dictionary();
     return aString && aString != "" && indexOf(aString) == 0;
 }
 
-/*
+/*!
     Returns <code>NO</code> if the receiver ends
     with the specified string. If <code>aString</code>
     is empty, the method will return <code>NO</code>.
@@ -470,7 +471,7 @@ var CPStringHashes      = new objj_dictionary();
     return aString && aString != "" && lastIndexOf(aString) == (length - aString.length);
 }
 
-/*
+/*!
     Returns <code>YES</code> if the specified string contains the same characters as the receiver.
 */
 - (BOOL)isEqualToString:(CPString)aString
@@ -478,7 +479,7 @@ var CPStringHashes      = new objj_dictionary();
     return self == aString;
 }
 
-/*
+/*!
     Returns a hash of the string instance.
 */
 - (unsigned)hash
@@ -494,7 +495,7 @@ var CPStringHashes      = new objj_dictionary();
     return hash;
 }
 
-/*
+/*!
     Returns a copy of the receiver with all the first letters of words capitalized.
 */
 - (CPString)capitalizedString
@@ -510,7 +511,7 @@ var CPStringHashes      = new objj_dictionary();
     return parts.join("");
 }
 
-/*
+/*!
     Returns a copy of the string with all its characters made lower case.
 */
 - (CPString)lowercaseString
@@ -518,7 +519,7 @@ var CPStringHashes      = new objj_dictionary();
     return toLowerCase();
 }
 
-/*
+/*!
     Returns a copy of the string with all its characters made upper case.
 */
 - (CPString)uppercaseString
@@ -526,14 +527,14 @@ var CPStringHashes      = new objj_dictionary();
     return toUpperCase();
 }
 
-/*
+/*!
     Returns the text as a floating point value.
 */
 - (double)doubleValue
 {
     return parseFloat(self, 10);
 }
-/*
+/*!
     Returns <code>YES</code> on encountering one of "Y", "y", "T", "t", or 
     a digit 1-9. Returns <code>NO</code> otherwise. This method skips the initial 
     whitespace characters, +,- followed by Zeroes.
@@ -545,7 +546,7 @@ var CPStringHashes      = new objj_dictionary();
     return RegExp("^[Y,y,t,T,1-9]").test(self.replace(replaceRegExp, ''));
 }
 
-/*
+/*!
     Returns the text as a float point value.
 */
 - (float)floatValue
@@ -553,7 +554,7 @@ var CPStringHashes      = new objj_dictionary();
     return parseFloat(self, 10);
 }
 
-/*
+/*!
     Returns the text as an integer
 */
 - (int)intValue
@@ -561,7 +562,7 @@ var CPStringHashes      = new objj_dictionary();
     return parseInt(self, 10);
 }
 
-/*
+/*!
     Returns an the path components of this string. This
     method assumes that the string's content is a '/'
     separated file system path.
@@ -571,7 +572,7 @@ var CPStringHashes      = new objj_dictionary();
     return split('/');
 }
 
-/*
+/*!
     Returns the extension of the file denoted by this string.
     The '.' is not a part of the extension. This method assumes
     that the string's contents is the path to a file or just a filename.
@@ -581,7 +582,7 @@ var CPStringHashes      = new objj_dictionary();
     return substr(lastIndexOf('.') + 1);
 }
 
-/*
+/*!
     Returns the last component of this string.
     This method assumes that the string's content is a '/'
     separated file system path.
@@ -592,7 +593,7 @@ var CPStringHashes      = new objj_dictionary();
     return components[components.length -1];
 }
 
-/*
+/*!
     Until this is corrected
     @ignore
 */
@@ -620,13 +621,13 @@ String.prototype.isa = CPString;
 
 // sprintf:
 
-var sprintfFormatRegex = new RegExp("([^%]+|%[\\+\\-\\ \\#0]*[0-9\\*]*(.[0-9\\*]+)?[hlL]?[cdieEfgGosuxXpn%])", "g");
-var sprintfTagRegex = new RegExp("(%)([\\+\\-\\ \\#0]*)([0-9\\*]*)((.[0-9\\*]+)?)([hlL]?)([cdieEfgGosuxXpn%])");
+var sprintfFormatRegex = new RegExp("([^%]+|%[\\+\\-\\ \\#0]*[0-9\\*]*(.[0-9\\*]+)?[hlL]?[cdieEfgGosuxXpn%@])", "g");
+var sprintfTagRegex = new RegExp("(%)([\\+\\-\\ \\#0]*)([0-9\\*]*)((.[0-9\\*]+)?)([hlL]?)([cdieEfgGosuxXpn%@])");
 
-/*
+/*!
   Creates a new string using C printf-style formatting. First argument should be a constant format string, like ' "float val = %f" ', remaining arguments should be the variables to print the values of, comma-separated.
   @param format the format to be used, printf-style
-  @return the initialized <objj>CPString</objj>
+  @return the initialized CPString
 */
 function sprintf(format)
 {
@@ -750,7 +751,7 @@ function sprintf(format)
                     subresult = "%";
                 else if (specifier == "c")
                     subresult = String(arguments[arg++]).charAt(0);
-                else if (specifier == "s")
+                else if (specifier == "s" || specifier == "@")
                     subresult = String(arguments[arg++]);
                 else if (specifier == "p" || specifier == "n")
                 {

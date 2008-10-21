@@ -24,12 +24,12 @@ import <Foundation/CPObject.j>
 
 CPJSONPConnectionCallbacks = {};
 
-/*
+/*! @class CPJSONPConnection
     Important note: CPJSONPConnection is <strong>only</strong> for JSONP APIs.
     If aren't sure you <strong>need</strong>
     <a href="http://ajaxian.com/archives/jsonp-json-with-padding">JSON<strong>P</strong></a>,
     you most likely don't want to use CPJSONPConnection, but rather the more standard
-    <objj>CPURLConnection</objj>. CPJSONPConnection is designed for cross-domain
+    CPURLConnection. CPJSONPConnection is designed for cross-domain
     connections, and if you are making requests to the same domain (as most web
     applications do), you do not need it.
 */
@@ -42,7 +42,13 @@ CPJSONPConnectionCallbacks = {};
     DOMElement      _scriptTag;
 }
 
-+ (CPData)sendRequest:(CPURLRequest)aRequest callback:(CPString)callbackParameter delegate:(id)aDelegate 
+/*! @deprecated */
++ (CPJSONPConnection)sendRequest:(CPURLRequest)aRequest callback:(CPString)callbackParameter delegate:(id)aDelegate 
+{
+    return [self connectionWithRequest:aRequest callback:callbackParameter delegate:aDelegate];
+}
+
++ (CPJSONPConnection)connectionWithRequest:(CPURLRequest)aRequest callback:(CPString)callbackParameter delegate:(id)aDelegate
 {
     return [[[self class] alloc] initWithRequest:aRequest callback:callbackParameter delegate:aDelegate startImmediately:YES];;
 }
