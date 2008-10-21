@@ -1,11 +1,17 @@
-import <Foundation/CPLog.j>
+import <Foundation/Foundation.j>
 
 import "objj-analysis-tools.j"
 
-CPLogRegister(CPLogPrint);
-
 var defaultMain = "main.j",
     defaultFrameworks = "Frameworks";
+
+var usageMessage =
+"Usage: press root_directory output_directory [options]\n\
+        --main path         The relative path (from root_directory) to the main file (default: 'main.j')\n\
+        --frameworks path   The relative path (from root_directory) to the frameworks directory (default: 'Frameworks')\n\
+        --png               Run pngcrush on all PNGs (pngcrush must be installed!)\n\
+        --flatten           Flatten all code into a single Application.js file and attempt add script tag to index.html (useful for Adobe AIR and CDN deployment)\n\
+        --nostrip           Don't strip any files";
 
 function main()
 {
@@ -13,7 +19,10 @@ function main()
         outputDirectory = null,
         mainFilename = null,
         frameworksDirectory = null,
-        optimizePNG = false;
+        optimizePNG = false,
+        flatten = false,
+        noStrip = false,
+        verbose = true;
     
     var usageError = false;
     while (args.length && !usageError)
@@ -21,9 +30,6 @@ function main()
         var arg = args.shift();
         switch(arg)
         {
-            case "--png":
-                optimizePNG = true;
-                break;
             case "--main":
                 if (args.length)
                     mainFile = args.shift();
@@ -36,6 +42,15 @@ function main()
                 else
                     usageError = true;
                 break;
+            case "--png":
+                optimizePNG = true;
+                break;
+            case "--flatten":
+                flatten = true;
+                break;
+            case "--nostrip":
+                noStrip = true;
+                break;
             default:
                 if (rootDirectory == null)
                     rootDirectory = arg.replace(/\/$/, "");
@@ -46,9 +61,14 @@ function main()
         }
     }
     
-    if (rootDirectory == null || outputDirectory == null)   
+    if (verbose)
+        CPLogRegister(CPLogPrint);
+    else
+        CPLogRegisterRange(CPLogPrint, "fatal", "info");
+        
+    if (usageError || rootDirectory == null || outputDirectory == null)   
     {
-        print("Usage: press root_directory output_directory [--main override_main.j] [--frameworks override_frameworks] [--png]");
+        print(usageMessage);
         return;
     }
     
@@ -58,21 +78,47 @@ function main()
     var mainPath = rootDirectory + "/" + (mainFilename || defaultMain),
         frameworksPath = rootDirectory + "/" + (frameworksDirectory || defaultFrameworks);
         
-    CPLog.info("root=" + rootDirectory);
-    CPLog.info("output=" + outputDirectory);
-    CPLog.info("main=" + mainPath)
-    CPLog.info("frameworks=" + frameworksPath);
+    CPLog.info("Application root:    " + rootDirectory);
+    CPLog.info("Output directory:    " + outputDirectory);
+    CPLog.info("Main file:           " + mainPath)
+    CPLog.info("Frameworks:          " + frameworksPath);
     
-    // get Rhino context
-    var cx = Packages.org.mozilla.javascript.Context.getCurrentContext(), //Packages.org.mozilla.javascript.Context.enter(),
+    // get a Rhino context
+    var cx = Packages.org.mozilla.javascript.Context.getCurrentContext(),
         scope = makeObjjScope(cx);
     
     // set OBJJ_INCLUDE_PATHS to include the frameworks path
     scope.OBJJ_INCLUDE_PATHS = [frameworksPath];
-    CPLog.info("OBJJ_INCLUDE_PATHS="+scope.OBJJ_INCLUDE_PATHS);
+    
+    // flattening bookkeeping. keep track of the bundles and evaled code (in the correct order!)
+    var bundleArchives = [],
+        evaledFragments = [];
+
+    scope.objj_search.prototype.didReceiveBundleResponseOriginal = scope.objj_search.prototype.didReceiveBundleResponse;
+    scope.objj_search.prototype.didReceiveBundleResponse = function(aResponse) {
+        //CPLog.trace("RESPONSE: " + aResponse);
+    
+        var __fakeResponse = {
+            success : aResponse.success,
+            filePath : pathRelativeTo(aResponse.filePath, rootDirectory)
+        };
+    
+        if (aResponse.success)
+        {
+            var xmlOutput = new Packages.java.io.ByteArrayOutputStream();
+            outputTransformer(xmlOutput, aResponse.xml, "UTF-8");
+            __fakeResponse.xml = String(xmlOutput.toString());
+            //CPLog.trace("SERIALIZED: " + __fakeResponse.xml.substring(0,100));
+        }
+        
+        bundleArchives.push(__fakeResponse);
+    
+        this.didReceiveBundleResponseOriginal.apply(this, arguments);
+    }
     
     // phase 1: get global defines
-    var globals = findGlobalDefines(cx, scope, mainPath);
+    CPLog.info("Loading application...");
+    var globals = findGlobalDefines(cx, scope, mainPath, evaledFragments);
     
     // coalesce the results
     var dependencies = coalesceGlobalDefines(globals);
@@ -81,8 +127,21 @@ function main()
     
     var requiredFiles = {};
     
-    if (scope.objj_files[mainPath])
+    if (noStrip)
     {
+        // all files are required. no need for analysis
+        requiredFiles = scope.objj_files;
+    }
+    else
+    {
+        if (!scope.objj_files[mainPath])
+        {
+            CPLog.error("Root file not loaded!");
+            return;
+        }
+        
+        CPLog.info("Analyzing dependencies...");
+        
         var context = {
             scope : scope,
             dependencies : dependencies,
@@ -105,7 +164,7 @@ function main()
         {
             if (requiredFiles[path])
             {
-                CPLog.info("Included: " + path);
+                CPLog.debug("Included: " + path);
                 count++;
             }
             else
@@ -114,107 +173,214 @@ function main()
             }    
             total++;
         }
-        CPLog.error("Total required files: " + count + " out of " + total);
+        CPLog.info("Total required files: " + count + " out of " + total);
+        
+        // FIXME: sprite images
+        for (var i in context.bundleImages)
+        {
+            var images = context.bundleImages[i];
+            
+            //CPLog.info("Bundle images for " + i);
+            //for (var j in images)
+            //    CPLog.debug(j + " = " + images[j]);
+        }
+    }
+    
+    var outputFiles = {};
+    
+    if (flatten)
+    {
+        // phase 3a: build single Application.js file (and modified index.html)
+        CPLog.info("Flattening...");
+        
+        var applicationJS = [],
+            indexHTML = readFile(rootDirectory + "/index.html");
+        
+        // shim for faking bundle stuff. kind of a giant hack.
+        var fakeDidReceiveBundleResponse = function(aResponse)
+        {
+            var bundle = new objj_bundle();
+
+            bundle.path = aResponse.filePath;
+
+            if (aResponse.success)
+                bundle.info = CPPropertyListCreateFromXMLData({ string : aResponse.xml });
+            else
+                bundle.info = new objj_dictionary();
+
+            objj_bundles[aResponse.filePath] = bundle;
+        }
+        
+        // add fake bundle response bookkeeping
+        applicationJS.push("var __fakeDidReceiveBundleResponse = " + String(fakeDidReceiveBundleResponse));
+        applicationJS.push("var __fakeBundleArchives = " + CPJSObjectCreateJSON(bundleArchives) + ";");
+        applicationJS.push("for (var i = 0; i < __fakeBundleArchives.length; i++) __fakeDidReceiveBundleResponse(__fakeBundleArchives[i]);")
+        
+        // add each fragment, wrapped in a function, along with OBJJ_CURRENT_BUNDLE bookkeeping
+        for (var i = 0; i < evaledFragments.length; i++)
+        {
+            if (requiredFiles[evaledFragments[i].file.path])
+            {
+                applicationJS.push("(function() {");
+                applicationJS.push("var OBJJ_CURRENT_BUNDLE = objj_bundles['"+pathRelativeTo(evaledFragments[i].bundle.path, rootDirectory)+"'];");
+                applicationJS.push(evaledFragments[i].info);
+                applicationJS.push("})();");
+            }
+            else
+            {
+                CPLog.warn("Stripping " + evaledFragments[i].file.path);
+            }
+        }
+        
+        // call main once the page has loaded
+        applicationJS.push(
+            "if (window.addEventListener) \
+                window.addEventListener('load', main, false); \
+            else if (window.attachEvent) \
+                window.attachEvent('onload', main);"
+        );
+        
+        
+        // do a little regex magic to remove the objj_import and put in a script tag for Application.js 
+        var matches = indexHTML.match(/<script[^>]*>(?:.|\n)*?<\/script>/g);
+        for (var i = 0; i < matches.length; i++)
+        {
+            if (/\bobjj_import\s*\(/.test(matches[i]))
+            {
+                CPLog.warn("Replacing objj_import with script tag.");
+                var replacement = '<script src = "Application.js" type = "text/javascript"></script>\n' + matches[i].replace("objj_import", "//objj_import");
+                indexHTML = indexHTML.replace(matches[i], replacement);
+            }
+        }
+        
+        // output Application.js and index.html
+        outputFiles[rootDirectory + "/Application.js"] = applicationJS.join("\n");
+        outputFiles[rootDirectory + "/index.html"] = indexHTML;
     }
     else
     {
-        CPLog.error("Root file not loaded!");
-        return;
-    }
+        // phase 3b: rebuild .sj files with correct imports, copy .j files
+
+        var bundles = {};
         
-    // phase 3: rebuild .sj files with correct imports, copy .j files
-    
-    var outputFiles = {};
-    for (var path in requiredFiles)
-    {
-        var file = scope.objj_files[path],
-            filename = basename(path),
-            directory = dirname(path);
-        
-        if (file.path != path)
-            CPLog.warn("Sanity check (file path): " + file.path + " vs. " + path);
-        
-        if (file.bundle)
+        for (var path in requiredFiles)
         {
-            var bundleDirectory = dirname(file.bundle.path);
-        
-            if (bundleDirectory != directory)
-                CPLog.warn("Sanity check (directory path): " + directory + " vs. " + bundleDirectory);
-            
-            // if it's in a .sj
-            var dict = file.bundle.info,
-                replacedFiles = [dict objectForKey:"CPBundleReplacedFiles"];
-            if (replacedFiles && [replacedFiles containsObject:filename])
+            var file = scope.objj_files[path],
+                filename = basename(path),
+                directory = dirname(path);
+    
+            if (file.path != path)
+                CPLog.warn("Sanity check (file path): " + file.path + " vs. " + path);
+    
+            if (file.bundle)
             {
-                var staticPath = bundleDirectory + "/" + [dict objectForKey:"CPBundleExecutable"];
-                if (!outputFiles[staticPath])
+                var bundleDirectory = dirname(file.bundle.path);
+        
+                if (!bundles[file.bundle.path])
+                    bundles[file.bundle.path] = file.bundle;
+            
+                if (bundleDirectory != directory)
+                    CPLog.warn("Sanity check (directory path): " + directory + " vs. " + bundleDirectory);
+        
+                // if it's in a .sj
+                var dict = file.bundle.info,
+                    replacedFiles = [dict objectForKey:"CPBundleReplacedFiles"];
+                if (replacedFiles && [replacedFiles containsObject:filename])
                 {
-                    outputFiles[staticPath] = [];
-                    outputFiles[staticPath].push("@STATIC;1.0;");
-                }
-                outputFiles[staticPath].push("p;");
-                outputFiles[staticPath].push(filename.length+";");
-                outputFiles[staticPath].push(filename);
-                
-                for (var i = 0; i < file.fragments.length; i++)
-                {
-                    if (file.fragments[i].type & FRAGMENT_CODE)
+                    var staticPath = bundleDirectory + "/" + [dict objectForKey:"CPBundleExecutable"];
+                    if (!outputFiles[staticPath])
                     {
-                        outputFiles[staticPath].push("c;");
-                        outputFiles[staticPath].push(file.fragments[i].info.length+";");
-                        outputFiles[staticPath].push(file.fragments[i].info);
+                        outputFiles[staticPath] = [];
+                        outputFiles[staticPath].push("@STATIC;1.0;");
                     }
-                    else if (file.fragments[i].type & FRAGMENT_FILE)
+                    outputFiles[staticPath].push("p;");
+                    outputFiles[staticPath].push(filename.length+";");
+                    outputFiles[staticPath].push(filename);
+            
+                    for (var i = 0; i < file.fragments.length; i++)
                     {
-                        var ignoreFragment = false;
-                        if (file.fragments[i].conditionallyIgnore)
+                        if (file.fragments[i].type & FRAGMENT_CODE)
                         {
-                            var importPath = findImportInObjjFiles(scope, file.fragments[i]);
-                            if (!importPath || !requiredFiles[importPath])
-                            {
-                                ignoreFragment = true;
-                            }
+                            outputFiles[staticPath].push("c;");
+                            outputFiles[staticPath].push(file.fragments[i].info.length+";");
+                            outputFiles[staticPath].push(file.fragments[i].info);
                         }
-                        
-                        if (!ignoreFragment)
+                        else if (file.fragments[i].type & FRAGMENT_FILE)
                         {
-                            if (file.fragments[i].type & FRAGMENT_LOCAL)
+                            var ignoreFragment = false;
+                            if (file.fragments[i].conditionallyIgnore)
                             {
-                                var relativePath = pathRelativeTo(file.fragments[i].info, directory)
-                        
-                                outputFiles[staticPath].push("i;");
-                                outputFiles[staticPath].push(relativePath.length+";");
-                                outputFiles[staticPath].push(relativePath);
+                                var importPath = findImportInObjjFiles(scope, file.fragments[i]);
+                                if (!importPath || !requiredFiles[importPath])
+                                {
+                                    ignoreFragment = true;
+                                }
+                            }
+                    
+                            if (!ignoreFragment)
+                            {
+                                if (file.fragments[i].type & FRAGMENT_LOCAL)
+                                {
+                                    var relativePath = pathRelativeTo(file.fragments[i].info, directory)
+                    
+                                    outputFiles[staticPath].push("i;");
+                                    outputFiles[staticPath].push(relativePath.length+";");
+                                    outputFiles[staticPath].push(relativePath);
+                                }
+                                else
+                                {
+                                    outputFiles[staticPath].push("I;");
+                                    outputFiles[staticPath].push(file.fragments[i].info.length+";");
+                                    outputFiles[staticPath].push(file.fragments[i].info);
+                                }
                             }
                             else
-                            {
-                                outputFiles[staticPath].push("I;");
-                                outputFiles[staticPath].push(file.fragments[i].info.length+";");
-                                outputFiles[staticPath].push(file.fragments[i].info);
-                            }
+                                CPLog.warn("Ignoring import fragment " + file.fragments[i].info + " in " + path);
                         }
                         else
-                            CPLog.warn("Ignoring import fragment " + file.fragments[i].info + " in " + path);
+                            CPLog.error("Unknown fragment type");
                     }
-                    else
-                        CPLog.error("Unknown fragment type");
+                }
+                // always output individual .j files
+                else
+                {
+                    outputFiles[path] = file.contents;
                 }
             }
-            // always output individual .j files
             else
-            {
-                outputFiles[path] = file.contents;
-            }
+                CPLog.warn("No bundle for " + path)
         }
-        else
-            CPLog.warn("No bundle for " + path)
+
+        // phase 3.5: fix bundle plists
+        for (var path in bundles)
+        {
+            var bundle = bundles[path];
+            CPLog.info("Bundle: " + path);
+    
+            var dict = file.bundle.info,
+                replacedFiles = [dict objectForKey:"CPBundleReplacedFiles"];
+            if (replacedFiles)
+            {
+                for (var i = 0; i < replacedFiles.length; i++)
+                {
+                    if (!requiredFiles[replacedFiles[i]])
+                    {
+                        CPLog.info("Removing: " + replacedFiles[i]);
+                        replacedFiles.splice(i, 1);
+                    }
+                }
+            }
+    
+            outputFiles[path] = CPPropertyListCreateXMLData(bundle.info).string;
+        }
     }
     
     // phase 4: copy everything and write out the new files
     
     var rootDirectoryFile = new Packages.java.io.File(rootDirectory),
         outputDirectoryFile = new Packages.java.io.File(outputDirectory);
-        
+    
+    // FIXME: intelligently copy only what we need (Resources directories?)
     copyDirectory(rootDirectoryFile, outputDirectoryFile, optimizePNG);
     
     for (var path in outputFiles)
@@ -357,6 +523,23 @@ function exec()
 	var code = p.waitFor();
 		
 	return { code : code, stdout : stdoutString, stderr : stderrString };
+}
+
+function outputTransformer(os, document, encoding, standalone)
+{
+	var domSource       = new Packages.javax.xml.transform.dom.DOMSource(document);
+	var streamResult    = new Packages.javax.xml.transform.stream.StreamResult(os);
+	var tf              =     Packages.javax.xml.transform.TransformerFactory.newInstance();
+
+	var serializer = tf.newTransformer();
+	serializer.setOutputProperty(Packages.javax.xml.transform.OutputKeys.VERSION, "1.0");
+	serializer.setOutputProperty(Packages.javax.xml.transform.OutputKeys.INDENT, "yes");
+	if (encoding)
+		serializer.setOutputProperty(Packages.javax.xml.transform.OutputKeys.ENCODING, encoding);
+	if (standalone)
+		serializer.setOutputProperty(Packages.javax.xml.transform.OutputKeys.STANDALONE,	(standalone ? "yes" : "no"));
+
+	serializer.transform(domSource, streamResult);
 }
 
 main();

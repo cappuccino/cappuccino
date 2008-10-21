@@ -1,4 +1,4 @@
-var objjPath    = OBJJ_LIB+'/Frameworks/Objective-J/Objective-J.js',
+var objjPath    = OBJJ_LIB+'/Frameworks-Rhino/Objective-J/Objective-J.js',
     bridgePath  = OBJJ_LIB+'/bridge.js',
     envPath     = "/Users/tlrobinson/280North/git/cappuccino/Tools/press/env.js";
     
@@ -36,20 +36,42 @@ function traverseDependencies(context, file)
         }
     }
     
+    // if fragments are missing, preprocess the contents
     if (!file.fragments)
     {
         if (file.included)
             CPLog.warn(file.path + " is included but missing fragments");
         else
-            CPLog.info("Preprocessing " + file.path);
-            
+            CPLog.warn("Preprocessing " + file.path);
+        
         file.fragments = objj_preprocess(file.contents, file.bundle, file);
     }
+        
+    // sprite: look for pngs in the Resources directory
+    if (!context.bundleImages)
+        context.bundleImages = {};
+    
+    if (!context.bundleImages[file.bundle.path])
+    {
+        var resourcesFile = new java.io.File(dirname(file.bundle.path) + "/Resources");
+        if (resourcesFile.exists())
+        {
+            context.bundleImages[file.bundle.path] = {};
+            
+            var pngFiles = find(resourcesFile, (/\.png$/));
+            for (var i = 0; i < pngFiles.length; i++)
+            {
+                var path = pathRelativeTo(pngFiles[i].getCanonicalPath(), resourcesFile.getCanonicalPath());
+                context.bundleImages[file.bundle.path][path] = 1;
+            }
+        }
+    }
+    var images = context.bundleImages[file.bundle.path];
     
     var referencedFiles = {},
         importedFiles = {};
-
-    CPLog.trace("Processing " + file.path + " fragments ("+file.fragments.length+")");
+    
+    CPLog.debug("Processing " + file.path + " fragments ("+file.fragments.length+")");
     for (var i = 0; i < file.fragments.length; i++)
     {
         var fragment = file.fragments[i];
@@ -76,6 +98,10 @@ function traverseDependencies(context, file)
                         }
                     }
                 }
+                
+                var matches = token.match(new RegExp("^['\"](.*)['\"]$"));
+                if (matches && images && images[matches[1]])
+                    images[matches[1]] = (images[matches[1]] | 2);
             }
         }
         else if (fragment.type & FRAGMENT_FILE)
@@ -145,6 +171,9 @@ function findImportInObjjFiles(scope, fragment)
     if (fragment.type & FRAGMENT_LOCAL)
     {
         var searchPath = fragment.info;
+        //CPLog.trace("Looking for " + searchPath);
+        //for (var i in scope.objj_files) CPLog.debug("    " + i);
+        
         if (scope.objj_files[searchPath])
         {
             importPath = searchPath;
@@ -168,7 +197,7 @@ function findImportInObjjFiles(scope, fragment)
 }
 
 // given a fresh scope and the path to a root source file, determine which files define each global variable
-function findGlobalDefines(context, scope, rootPath)
+function findGlobalDefines(context, scope, rootPath, evaledFragments)
 {
     addMockBrowserEnvironment(scope);
     
@@ -187,18 +216,20 @@ function findGlobalDefines(context, scope, rootPath)
     //    return result;
     //}
     
-    var needsPatch = true;
+    var needsPatch = true,
+        patchString = "__RHINO_FIRST_SCOPE.String.prototype.isa=CPString;__RHINO_FIRST_SCOPE.Number.prototype.isa=CPNumber;__RHINO_FIRST_SCOPE.Boolean.prototype.isa=CPNumber;print('PATCHED!');";
     
+    // OVERRIDE fragment_evaluate_file
     var fragment_evaluate_file_original = scope.fragment_evaluate_file;
-    scope.fragment_evaluate_file = function(aFragment)
-    {
+    scope.fragment_evaluate_file = function(aFragment) {
+        
         // patch Foundation.j (HACK for Rhino bug #374918)
         if (needsPatch && aFragment.file && (/Foundation\.j$/).test(aFragment.file.path))
         {
-            CPLog.error("Patching Foundation.j");
+            CPLog.warn("Patching Foundation.j");
             
             var patchFragment = new objj_fragment();
-            patchFragment.info = "__RHINO_FIRST_SCOPE.String.prototype.isa=CPString;__RHINO_FIRST_SCOPE.Number.prototype.isa=CPNumber;__RHINO_FIRST_SCOPE.Boolean.prototype.isa=CPNumber;print('PATCHED!');";
+            patchFragment.info = patchString;
             patchFragment.type = FRAGMENT_CODE;
             patchFragment.file = aFragment.file;
             patchFragment.bundle = aFragment.bundle;
@@ -208,7 +239,7 @@ function findGlobalDefines(context, scope, rootPath)
             {
                 if ((aFragment.context.fragments[i].type & FRAGMENT_FILE) && (/Foundation\//).test(aFragment.context.fragments[i].info))
                 {
-                    CPLog.error("Inserting patch");
+                    CPLog.warn("Inserting patch");
                     aFragment.context.fragments.splice(i, 0, patchFragment);
                     break;
                 }
@@ -220,12 +251,19 @@ function findGlobalDefines(context, scope, rootPath)
         return fragment_evaluate_file_original(aFragment);
     }
 
+    // OVERRIDE fragment_evaluate_code
     var fragment_evaluate_code_original = scope.fragment_evaluate_code;
-    scope.fragment_evaluate_code = function(aFragment)
-    {
+    scope.fragment_evaluate_code = function(aFragment) {
+        
         CPLog.debug("Evaling "+aFragment.file.path + " / " + aFragment.bundle.path);
     
         var before = cloneProperties(scope);
+        
+        if (evaledFragments)
+        {
+            if (aFragment.info != patchString)
+                evaledFragments.push(aFragment);
+        }
         
         var result = fragment_evaluate_code_original(aFragment);
     
@@ -236,8 +274,8 @@ function findGlobalDefines(context, scope, rootPath)
         return result;
     }
 
-    runWithScope(context, scope, function(importName)
-    {    
+
+    runWithScope(context, scope, function(importName) {    
         objj_import(importName, true, NULL);
     }, [rootPath]);
     
@@ -278,7 +316,6 @@ function makeObjjScope(context, debug)
     
     // HACK for Rhino bug #374918 (fix toll free bridging)
     scope.__RHINO_FIRST_SCOPE = this;
-    CPLog.info("__RHINO_FIRST_SCOPE="+scope.__RHINO_FIRST_SCOPE);
     
     // load and eval fake browser environment
     //var envSource = readFile(envPath);
@@ -358,4 +395,18 @@ function allKeys(object)
     for (var i in object)
         result.push(i)
     return result.sort();
+}
+
+function find(src, regex)
+{
+    var results = [];
+    var files = src.listFiles();
+    for (var i = 0; i < files.length; i++)
+    {
+        if (files[i].isFile() && regex.test(files[i].getAbsolutePath()))
+            results.push(files[i]);
+        else if (files[i].isDirectory())
+            results = Array.prototype.concat.apply(results, find(files[i], regex));
+    }
+    return results;
 }
