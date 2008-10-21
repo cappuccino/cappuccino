@@ -387,7 +387,7 @@ function CPPropertyListCreateFromXMLData(XMLNodeOrData)
             PLIST_NEXT_SIBLING(XMLNode);
         }
 
-        switch (NODE_NAME(XMLNode))
+        switch (String(NODE_NAME(XMLNode)))
         {
             case PLIST_ARRAY:           object = []
                                         containers.push(object);
