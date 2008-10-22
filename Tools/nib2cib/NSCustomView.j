@@ -1,6 +1,6 @@
 /*
  * NSCustomView.j
- * AppKit
+ * nib2cib
  *
  * Created by Francisco Tolmasky.
  * Copyright 2008, 280 North, Inc.

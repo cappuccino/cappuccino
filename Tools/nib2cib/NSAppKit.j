@@ -27,12 +27,19 @@ import "NSCustomObject.j"
 import "NSCustomView.j"
 import "NSFont.j"
 import "NSIBObjectData.j"
+print("1");
 import "NSNibConnector.j"
+print("1");
 import "NSResponder.j"
+print("1");
 import "NSSlider.j"
+print("1");
 import "NSView.j"
+print("1");
 import "NSWindowTemplate.j"
+print("1");
 import "NSSplitView.j"
+print("1");
 
 function CP_NSMapClassName(aClassName)
 {
