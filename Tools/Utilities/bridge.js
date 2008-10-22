@@ -1,3 +1,6 @@
+if (typeof debug == "undefined")
+    debug = false;
+
 //window
 
 if (!this.window)
@@ -192,7 +195,7 @@ if (!this.readFile)
 	        if (!f.canRead)
 	        {
 	            if (debug)
-	                alert("can't read: " + f.path)
+	                alert("can't read: " + f.path);
 	                
 	            return "";
 	        }
@@ -219,7 +222,7 @@ if (!this.readFile)
 	        if (!f.canRead())
 	        {
 	            if (debug)
-	                alert("can't read: " + f.path)
+	                alert("can't read: " + f.path);
 	                
 	            return "";
 	        }
