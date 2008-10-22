@@ -28,7 +28,7 @@ function traverseDependencies(context, file)
     }
     else if (context.ignoreFrameworkImports)
     {
-        var matches = file.path.match(/([^\/]+)\/([^\/]+)\.j$/); // Matches "ZZZ/ZZZ.j" (e.x. AppKit/AppKit.j and Foundation/Foundation.j)
+        var matches = file.path.match(new RegExp("([^\\/]+)\\/([^\\/]+)\\.j$")); // Matches "ZZZ/ZZZ.j" (e.x. AppKit/AppKit.j and Foundation/Foundation.j)
         if (matches && matches[1] === matches[2])
         {
             CPLog.warn("Framework import file! Ignoring all import fragments. ("+file.path+")");
@@ -58,7 +58,7 @@ function traverseDependencies(context, file)
         {
             context.bundleImages[file.bundle.path] = {};
             
-            var pngFiles = find(resourcesFile, (/\.png$/));
+            var pngFiles = find(resourcesFile, (new RegExp("\\.png$")));
             for (var i = 0; i < pngFiles.length; i++)
             {
                 var path = pathRelativeTo(pngFiles[i].getCanonicalPath(), resourcesFile.getCanonicalPath());
@@ -184,7 +184,7 @@ function findImportInObjjFiles(scope, fragment)
         var count = scope.OBJJ_INCLUDE_PATHS.length;
         while (count--)
         {
-            var searchPath = scope.OBJJ_INCLUDE_PATHS[count].replace(/\/$/, "") + "/" + fragment.info;
+            var searchPath = scope.OBJJ_INCLUDE_PATHS[count].replace(new RegExp("\\/$"), "") + "/" + fragment.info;
             if (scope.objj_files[searchPath])
             {
                 importPath = searchPath;
@@ -224,7 +224,7 @@ function findGlobalDefines(context, scope, rootPath, evaledFragments)
     scope.fragment_evaluate_file = function(aFragment) {
         
         // patch Foundation.j (HACK for Rhino bug #374918)
-        if (needsPatch && aFragment.file && (/Foundation\.j$/).test(aFragment.file.path))
+        if (needsPatch && aFragment.file && (new RegExp("Foundation\\.j$")).test(aFragment.file.path))
         {
             CPLog.warn("Patching Foundation.j");
             
@@ -237,7 +237,7 @@ function findGlobalDefines(context, scope, rootPath, evaledFragments)
             
             for (var i = 0; i < aFragment.context.fragments.length; i++)
             {
-                if ((aFragment.context.fragments[i].type & FRAGMENT_FILE) && (/Foundation\//).test(aFragment.context.fragments[i].info))
+                if ((aFragment.context.fragments[i].type & FRAGMENT_FILE) && (new RegExp("Foundation\\/")).test(aFragment.context.fragments[i].info))
                 {
                     CPLog.warn("Inserting patch");
                     aFragment.context.fragments.splice(i, 0, patchFragment);
