@@ -62,7 +62,7 @@ var OBJJ_CURRENT_BUNDLE     = NULL;
 var objj_lexer = function(aString, aSourceFile)
 {
     this._index = 0;
-    this._tokens = (aString + '\n').match(/\/\/.*(\r|\n)?|\/\*(?:.|\n|\r)*?\*\/|\w+\b|[+-]?\d+(([.]\d+)*([eE][+-]?\d+))?|"[^"\\]*(\\.[^"\\]*)*"|'[^'\\]*(\\.[^'\\]*)*'|\s+|./g);
+    this._tokens = (aString + '\n').match(/\/\/.*(\r|\n)?|\/\*(?:.|\n|\r)*?\*\/|\w+\b|[+-]?\d+(([.]\d+)*([eE][+-]?\d+))?|"([^"\\]|\\[\s\S])*"|'[^'\\]*(\\.[^'\\]*)*'|\s+|./g);
     
     this.file = aSourceFile;
     
