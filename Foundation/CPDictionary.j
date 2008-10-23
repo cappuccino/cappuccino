@@ -165,6 +165,14 @@ import "CPException.j"
 }
 
 /*!
+    return a copy of the receiver (does not deep copy the objects contained in the dictionary).
+*/
+- (CPDictionary)copy
+{
+    return [CPDictionary dictionaryWithDictionary:self];
+}
+
+/*!
     Returns the number of entries in the dictionary
 */
 - (int)count
