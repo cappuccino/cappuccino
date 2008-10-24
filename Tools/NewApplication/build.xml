@@ -3,32 +3,33 @@
 
     <import file = "../../common.xml" />
 
-    <filelist id = "NewApplication Files" dir = "."> 
+    <filelist id = "NewApplication Files" dir = ".">
         <file name = "main.j" />
-        <file name = "AppController.j" />   
+        <file name = "AppController.j" />
         <file name = "Info.plist" />
         <file name = "index.html" />
     </filelist>
 
     <target name = "clean">
     </target>
-    
+
     <target name = "build">
     </target>
-    
+
     <target name = "release" depends = "build">
-    
+
         <antcall target = "prepare-release"/>
-        
+
         <mkdir dir = "${Build.Cappuccino.Tools.Lib}/NewApplication" />
         <copy todir = "${Build.Cappuccino.Tools.Lib}/NewApplication">
             <filelist refid = "NewApplication Files" />
         </copy>
-        
+
         <mkdir dir = "${Build.Cappuccino.Starter}/NewApplication" />
         <copy todir = "${Build.Cappuccino.Starter}/NewApplication">
             <filelist refid = "NewApplication Files" />
         </copy>
-    
+
     </target>
 </project>
+
