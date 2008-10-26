@@ -149,6 +149,10 @@ var CPDOMWindowGetFrame,
             resizeEventImplementation = class_getMethodImplementation(theClass, resizeEventSelector),
             resizeEventCallback = function (anEvent) { resizeEventImplementation(self, nil, anEvent); },
             
+            touchEventSelector = @selector(_bridgeTouchEvent:),
+            touchEventImplementation = class_getMethodImplementation(theClass, touchEventSelector),
+            touchEventCallback = function (anEvent) { touchEventImplementation(self, nil, anEvent); },
+
             theDocument = _DOMWindow.document;
         
         if (document.addEventListener)
@@ -162,6 +166,12 @@ var CPDOMWindowGetFrame,
             theDocument.addEventListener(CPDOMEventKeyUp, keyEventCallback, NO);
             theDocument.addEventListener(CPDOMEventKeyDown, keyEventCallback, NO);
             theDocument.addEventListener(CPDOMEventKeyPress, keyEventCallback, NO);
+            
+            
+            theDocument.addEventListener(CPDOMEventTouchStart, touchEventCallback, NO);
+            theDocument.addEventListener(CPDOMEventTouchEnd, touchEventCallback, NO);
+            theDocument.addEventListener(CPDOMEventTouchMove, touchEventCallback, NO);
+            theDocument.addEventListener(CPDOMEventTouchCancel, touchEventCallback, NO);
             
             //FIXME: does firefox really need a different value?
             _DOMWindow.addEventListener("DOMMouseScroll", scrollEventCallback, NO);
@@ -854,6 +864,69 @@ var CTRL_KEY_CODE   = 17;
     {
         objj_exception_report(anException, {path:@"CPDOMWindowBridge.j"});
     }
+}
+
+// DOM event properties used in mouse bridge code
+
+// type
+// clientX
+// clientY
+// timestamp
+// target/srcElement
+// shiftKey,ctrlKey,altKey,metaKey
+
+/* @ignore */
+- (void)_bridgeTouchEvent:(DOMEvent)aDOMEvent
+{        
+    try
+    {
+        if (aDOMEvent.touches && aDOMEvent.touches.length == 1)
+        {
+            var newEvent = {};
+            
+            switch(aDOMEvent.type)
+            {
+                case CPDOMEventTouchStart:  newEvent.type = CPDOMEventMouseDown;
+                                            break;
+                case CPDOMEventTouchEnd:    newEvent.type = CPDOMEventMouseUp;
+                                            break;
+                case CPDOMEventTouchMove:   newEvent.type = CPDOMEventMouseMoved;
+                                            break;
+                case CPDOMEventTouchCancel: newEvent.type = CPDOMEventMouseUp;
+                                            break;
+            }
+    
+            newEvent.clientX = aDOMEvent.touches[0].clientX;
+            newEvent.clientY = aDOMEvent.touches[0].clientY;
+            
+            newEvent.timestamp = aDOMEvent.timestamp;
+            newEvent.target = aDOMEvent.target;
+            
+            newEvent.shiftKey = newEvent.ctrlKey = newEvent.altKey = newEvent.metaKey = false;
+            
+            if (aDOMEvent.type == CPDOMEventTouchMove)
+            {
+                newEvent.preventDefault = function(){if(aDOMEvent.preventDefault) aDOMEvent.preventDefault()};
+                newEvent.stopPropagation = function(){if(aDOMEvent.stopPropagation) aDOMEvent.stopPropagation()};
+            }
+            
+            [self _bridgeMouseEvent:newEvent];
+    
+            /*if (aDOMEvent.preventDefault)
+                aDOMEvent.preventDefault();
+            
+            if (aDOMEvent.stopPropagation)
+                aDOMEvent.stopPropagation();*/
+        
+            return;
+        }
+    }
+    catch(e)
+    {
+        alert(e);
+    }
+    
+    // handle touch cases specifically
 }
 
 /* @ignore */
