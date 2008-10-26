@@ -1,4 +1,4 @@
-import "CPTextField.j"
+@import "CPTextField.j"
 
 #include "Platform/Platform.h"
 

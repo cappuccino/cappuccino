@@ -20,14 +20,15 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-import <Foundation/CPObject.j>
-import <Foundation/CPString.j>
+@import <Foundation/CPObject.j>
+@import <Foundation/CPString.j>
 
-import "CPResponder.j"
-import "CPWindow.j"
-import "CPDocument.j"
+@import "CPResponder.j"
+@import "CPWindow.j"
+@import "CPDocument.j"
 
 #include "Platform/Platform.h"
+
 
 /*! @class CPWindowController
 

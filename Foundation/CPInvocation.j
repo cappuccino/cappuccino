@@ -20,8 +20,9 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-import "CPObject.j"
-import "CPException.j"
+@import "CPObject.j"
+@import "CPException.j"
+
 
 /*! @class CPInvocation
     A CPInvocation is an object representation of a message sent to an object.

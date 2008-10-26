@@ -20,11 +20,12 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-import "CPControl.j"
-import "CPStringDrawing.j"
+@import "CPControl.j"
+@import "CPStringDrawing.j"
 
 #include "Platform/Platform.h"
 #include "Platform/DOM/CPDOMDisplayServer.h"
+
 
 /*
     @global

@@ -32,9 +32,10 @@
 #import <AppKit/NSFontManager.h>
 #import <AppKit/NSNib.h>*/
 
-import <Foundation/CPObject.j>
+@import <Foundation/CPObject.j>
 
-import <AppKit/_CPCibObjectData.j>
+@import <AppKit/_CPCibObjectData.j>
+
 
 @implementation _CPCibObjectData (NSCoding)
 

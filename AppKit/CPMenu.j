@@ -20,16 +20,16 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-import <Foundation/CPArray.j>
-import <Foundation/CPDictionary.j>
-import <Foundation/CPNotificationCenter.j>
-import <Foundation/CPString.j>
+@import <Foundation/CPArray.j>
+@import <Foundation/CPDictionary.j>
+@import <Foundation/CPNotificationCenter.j>
+@import <Foundation/CPString.j>
 
-import "_CPImageAndTitleView.j"
-import "CPApplication.j"
-import "CPClipView.j"
-import "CPMenuItem.j"
-import "CPPanel.j"
+@import "_CPImageAndTitleView.j"
+@import "CPApplication.j"
+@import "CPClipView.j"
+@import "CPMenuItem.j"
+@import "CPPanel.j"
 
 #include "Platform/Platform.h"
 

@@ -20,8 +20,9 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-import "CPObject.j"
-import "CPException.j"
+@import "CPObject.j"
+@import "CPException.j"
+
 
 /*! @class CPNotification
     Represents a notification for posting to an CPNotificationCenter. Consists of a name, an object, and an optional dictionary. The notification center will check for observers registered to receive either notifications with the name, the object, or both and pass the notification instance on to them.

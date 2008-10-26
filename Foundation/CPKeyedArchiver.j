@@ -20,13 +20,14 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-import "CPData.j"
-import "CPCoder.j"
-import "CPArray.j"
-import "CPString.j"
-import "CPNumber.j"
-import "CPDictionary.j"
-import "CPValue.j"
+@import "CPData.j"
+@import "CPCoder.j"
+@import "CPArray.j"
+@import "CPString.j"
+@import "CPNumber.j"
+@import "CPDictionary.j"
+@import "CPValue.j"
+
 
 var CPArchiverReplacementClassNames                     = nil;
 

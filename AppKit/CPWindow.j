@@ -20,12 +20,12 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-import <Foundation/CPNotificationCenter.j>
-import <Foundation/CPUndoManager.j>
+@import <Foundation/CPNotificationCenter.j>
+@import <Foundation/CPUndoManager.j>
 
-import "CGGeometry.j"
-import "CPAnimation.j"
-import "CPResponder.j"
+@import "CGGeometry.j"
+@import "CPAnimation.j"
+@import "CPResponder.j"
 
 #include "Platform/Platform.h"
 #include "Platform/DOM/CPDOMDisplayServer.h"
@@ -1750,7 +1750,7 @@ var interpolate = function(fromValue, toValue, progress)
 
 @end
 
-import "CPDragServer.j"
-import "CPDOMWindowBridge.j"
-import "_CPWindowView.j"
-import "CPView.j"
+@import "CPDragServer.j"
+@import "CPDOMWindowBridge.j"
+@import "_CPWindowView.j"
+@import "CPView.j"

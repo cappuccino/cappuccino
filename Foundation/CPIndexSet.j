@@ -20,8 +20,9 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-import "CPRange.j"
-import "CPObject.j"
+@import "CPRange.j"
+@import "CPObject.j"
+
 
 /*! @class CPIndexSet
     Instances of this class are collections of numbers. Each integer can appear in a collection only once.

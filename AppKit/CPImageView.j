@@ -20,11 +20,11 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-import <Foundation/CPNotificationCenter.j>
+@import <Foundation/CPNotificationCenter.j>
 
-import "CPControl.j"
-import "CPImage.j"
-import "CPShadowView.j"
+@import "CPControl.j"
+@import "CPImage.j"
+@import "CPShadowView.j"
 
 #include "Platform/Platform.h"
 #include "Platform/DOM/CPDOMDisplayServer.h"

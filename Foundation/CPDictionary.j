@@ -20,10 +20,10 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-//import "CPRange.j"
-import "CPObject.j"
-import "CPEnumerator.j"
-import "CPException.j"
+//@import "CPRange.j"
+@import "CPObject.j"
+@import "CPEnumerator.j"
+@import "CPException.j"
 
 /* @ignore */
 @implementation _CPDictionaryValueEnumerator : CPEnumerator

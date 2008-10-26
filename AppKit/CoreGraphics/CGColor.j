@@ -21,7 +21,8 @@
  */
 
 //import "CGPattern.j"
-import "CGColorSpace.j"
+@import "CGColorSpace.j"
+
 
 // FIXME: Move this to Objective-J.js!!!
 var CFTypeGlobalCount = 0;

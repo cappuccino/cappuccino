@@ -20,12 +20,12 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-import "CPButton.j"
-import "CPColorPicker.j"
-import "CPCookie.j"
-import "CPPanel.j"
-import "CPSliderColorPicker.j"
-import "CPView.j"
+@import "CPButton.j"
+@import "CPColorPicker.j"
+@import "CPCookie.j"
+@import "CPPanel.j"
+@import "CPSliderColorPicker.j"
+@import "CPView.j"
 
 
 CPColorPanelColorDidChangeNotification = @"CPColorPanelColorDidChangeNotification";

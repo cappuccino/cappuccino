@@ -20,13 +20,13 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
  
-import <Foundation/CPBundle.j>
-import <Foundation/CPNotificationCenter.j>
-import <Foundation/CPObject.j>
-import <Foundation/CPRunLoop.j>
-import <Foundation/CPString.j>
+@import <Foundation/CPBundle.j>
+@import <Foundation/CPNotificationCenter.j>
+@import <Foundation/CPObject.j>
+@import <Foundation/CPRunLoop.j>
+@import <Foundation/CPString.j>
 
-import "CPGeometry.j"
+@import "CPGeometry.j"
 
 CPImageLoadStatusInitialized    = 0;
 CPImageLoadStatusLoading        = 1;

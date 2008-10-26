@@ -20,13 +20,13 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-import <Foundation/CPCoder.j>
-import <Foundation/CPObject.j>
-import <Foundation/CPString.j>
+@import <Foundation/CPCoder.j>
+@import <Foundation/CPObject.j>
+@import <Foundation/CPString.j>
 
-import <AppKit/CPImage.j>
-import <AppKit/CPMenu.j>
-import <AppKit/CPView.j>
+@import <AppKit/CPImage.j>
+@import <AppKit/CPMenu.j>
+@import <AppKit/CPView.j>
 
 /*! @class CPMenuItem
 

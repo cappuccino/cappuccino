@@ -20,11 +20,12 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-import <Foundation/CPString.j>
-import <Foundation/CPArray.j>
+@import <Foundation/CPString.j>
+@import <Foundation/CPArray.j>
 
-import "CPResponder.j"
-import "CPWindowController.j"
+@import "CPResponder.j"
+@import "CPWindowController.j"
+
 
 /*
     @global

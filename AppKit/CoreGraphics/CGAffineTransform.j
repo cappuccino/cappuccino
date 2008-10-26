@@ -25,7 +25,8 @@
 
 #define _function(inline) function inline { return _##inline; }
 
-import "CGGeometry.j"
+@import "CGGeometry.j"
+
 
 _function(CGAffineTransformMake(a, b, c, d, tx, ty))
 _function(CGAffineTransformMakeIdentity())

@@ -20,10 +20,10 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-import "CPButton.j"
-import "CPGeometry.j"
-import "CPMenu.j"
-import "CPMenuItem.j"
+@import "CPButton.j"
+@import "CPGeometry.j"
+@import "CPMenu.j"
+@import "CPMenuItem.j"
 
 
 var VISIBLE_MARGIN  = 7.0;

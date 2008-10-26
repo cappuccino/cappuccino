@@ -20,9 +20,9 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-import "CPCoder.j"
-import "CPObject.j"
-import "CPString.j"
+@import "CPCoder.j"
+@import "CPObject.j"
+@import "CPString.j"
 
 
 CPInvalidArgumentException          = "CPInvalidArgumentException";

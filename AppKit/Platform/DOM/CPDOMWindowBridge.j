@@ -20,13 +20,13 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-import <Foundation/CPObject.j>
-import <Foundation/CPRunLoop.j>
+@import <Foundation/CPObject.j>
+@import <Foundation/CPRunLoop.j>
 
-import "CPEvent.j"
-import "CPCompatibility.j"
+@import "CPEvent.j"
+@import "CPCompatibility.j"
 
-import "CPDOMWindowLayer.j"
+@import "CPDOMWindowLayer.j"
 
 #import "../../CoreGraphics/CGGeometry.h"
 

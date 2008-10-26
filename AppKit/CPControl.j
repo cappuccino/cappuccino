@@ -20,11 +20,12 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-import "CPFont.j"
-import "CPShadow.j"
-import "CPView.j"
+@import "CPFont.j"
+@import "CPShadow.j"
+@import "CPView.j"
 
 #include "Platform/Platform.h"
+
 
 /*
     @global

@@ -20,12 +20,13 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-import <Foundation/Foundation.j>
+@import <Foundation/Foundation.j>
 
-import <AppKit/CPView.j>
-import <AppKit/CPSlider.j>
-import <AppKit/CPColorPicker.j>
-import <AppKit/CPColorPanel.j>
+@import <AppKit/CPView.j>
+@import <AppKit/CPSlider.j>
+@import <AppKit/CPColorPicker.j>
+@import <AppKit/CPColorPanel.j>
+
 
 /*
     @ignore

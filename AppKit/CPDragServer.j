@@ -20,10 +20,11 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-import <AppKit/CPView.j>
-import <AppKit/CPEvent.j>
-import <AppKit/CPPasteboard.j>
-import <AppKit/CPImageView.j>
+@import <AppKit/CPView.j>
+@import <AppKit/CPEvent.j>
+@import <AppKit/CPPasteboard.j>
+@import <AppKit/CPImageView.j>
+
 
 var CPSharedDragServer     = nil;
     

@@ -20,12 +20,13 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-import <Foundation/CPObject.j>
+@import <Foundation/CPObject.j>
 
-import "CGColor.j"
+@import "CGColor.j"
 
-import "CPCompatibility.j"
-import "CPImage.j"
+@import "CPCompatibility.j"
+@import "CPImage.j"
+
 
 var _redComponent        = 0,
     _greenComponent      = 1,

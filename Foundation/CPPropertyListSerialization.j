@@ -20,6 +20,9 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+@import "CPObject.j"
+
+
 CPPropertyListOpenStepFormat        = kCFPropertyListOpenStepFormat;
 CPPropertyListXMLFormat_v1_0        = kCFPropertyListXMLFormat_v1_0;
 CPPropertyListBinaryFormat_v1_0     = kCFPropertyListBinaryFormat_v1_0;

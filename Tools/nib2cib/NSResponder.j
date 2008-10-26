@@ -20,7 +20,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-import <AppKit/CPResponder.j>
+@import <AppKit/CPResponder.j>
 
 
 @implementation CPResponder (NSCoding)

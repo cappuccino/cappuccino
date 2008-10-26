@@ -20,11 +20,11 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-import <Foundation/CPString.j>
+@import <Foundation/CPString.j>
 
-import "CPView.j"
-import "CPColor.j"
-import "CPColorPanel.j"
+@import "CPView.j"
+@import "CPColor.j"
+@import "CPColorPanel.j"
 
 
 var _CPColorWellDidBecomeExclusiveNotification = @"_CPColorWellDidBecomeExclusiveNotification";

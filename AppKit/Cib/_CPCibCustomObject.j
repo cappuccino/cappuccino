@@ -1,5 +1,5 @@
 
-import <Foundation/CPObject.j>
+@import <Foundation/CPObject.j>
 
 
 var _CPCibCustomObjectClassName = @"_CPCibCustomObjectClassName";

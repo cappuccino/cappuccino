@@ -20,17 +20,18 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-import <Foundation/CPArray.j>
-import <Foundation/CPObjJRuntime.j>
+@import <Foundation/CPArray.j>
+@import <Foundation/CPObjJRuntime.j>
 
-import "CGAffineTransform.j"
-import "CGGeometry.j"
+@import "CGAffineTransform.j"
+@import "CGGeometry.j"
 
-import "CPColor.j"
-import "CPDOMDisplayServer.j"
-import "CPGeometry.j"
-import "CPResponder.j"
-import "CPGraphicsContext.j"
+@import "CPColor.j"
+@import "CPDOMDisplayServer.j"
+@import "CPGeometry.j"
+@import "CPResponder.j"
+@import "CPGraphicsContext.j"
+
 
 #include "Platform/Platform.h"
 #include "CoreGraphics/CGAffineTransform.h"

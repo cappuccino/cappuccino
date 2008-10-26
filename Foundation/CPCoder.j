@@ -20,8 +20,9 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-import "CPObject.j"
-import "CPException.j"
+@import "CPObject.j"
+@import "CPException.j"
+
 
 /*! @class CPCoder
     Top-level class defining methods for use when archiving (encoding) objects to a byte array 

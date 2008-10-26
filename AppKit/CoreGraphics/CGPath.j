@@ -23,8 +23,9 @@
 #include "CGGeometry.h"
 #include "CGAffineTransform.h"
 
-import "CGGeometry.j"
-import "CGAffineTransform.j"
+@import "CGGeometry.j"
+@import "CGAffineTransform.j"
+
 
 kCGPathElementMoveToPoint           = 0;
 kCGPathElementAddLineToPoint        = 1;

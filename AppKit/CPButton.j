@@ -20,12 +20,13 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-import "_CPImageAndTitleView.j"
-import "CGGeometry.j"
+@import "_CPImageAndTitleView.j"
+@import "CGGeometry.j"
 
-import "CPControl.j"
+@import "CPControl.j"
 
 #include "CoreGraphics/CGGeometry.h"
+
 
 CPScaleProportionally   = 0;
 CPScaleToFit            = 1;

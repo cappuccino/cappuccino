@@ -20,8 +20,9 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-import "CGColor.j"
-import "CGColorSpace.j"
+@import "CGColor.j"
+@import "CGColorSpace.j"
+
 
 kCGGradientDrawsBeforeStartLocation = 1 << 0;
 kCGGradientDrawsAfterEndLocation    = 1 << 1;

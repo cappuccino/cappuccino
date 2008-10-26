@@ -20,10 +20,10 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-import "CPObject.j"
-import "CPRunLoop.j"
-import "CPURLRequest.j"
-import "CPURLResponse.j"
+@import "CPObject.j"
+@import "CPRunLoop.j"
+@import "CPURLRequest.j"
+@import "CPURLResponse.j"
 
 
 var XMLHTTPRequestUninitialized = 0,

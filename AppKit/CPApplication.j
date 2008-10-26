@@ -20,13 +20,14 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-import <Foundation/CPBundle.j>
+@import <Foundation/CPBundle.j>
 
-import "CPCompatibility.j"
-import "CPEvent.j"
-import "CPMenu.j"
-import "CPResponder.j"
-import "CPDocumentController.j"
+@import "CPCompatibility.j"
+@import "CPEvent.j"
+@import "CPMenu.j"
+@import "CPResponder.j"
+@import "CPDocumentController.j"
+
 
 CPApp = nil;
 

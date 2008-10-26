@@ -20,7 +20,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-import <AppKit/CPFont.j>
+@import <AppKit/CPFont.j>
+
 
 @implementation CPFont (NSCoding)
 

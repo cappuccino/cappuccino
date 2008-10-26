@@ -20,10 +20,10 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-import "CPArray.j"
-import "CPDictionary.j"
-import "CPNotification.j"
-import "CPException.j"
+@import "CPArray.j"
+@import "CPDictionary.j"
+@import "CPNotification.j"
+@import "CPException.j"
 
 
 var CPNotificationDefaultCenter = nil;

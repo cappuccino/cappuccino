@@ -20,7 +20,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-import "CPObject.j"
+@import "CPObject.j"
+
 
 /*! @class CPEnumerator
     CPEnumerator is a superclass (with useless method bodies)

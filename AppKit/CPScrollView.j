@@ -20,11 +20,12 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-import "CPView.j"
-import "CPClipView.j"
-import "CPScroller.j"
+@import "CPView.j"
+@import "CPClipView.j"
+@import "CPScroller.j"
 
 #include "CoreGraphics/CGGeometry.h"
+
 
 /*! @class CPScrollView
 

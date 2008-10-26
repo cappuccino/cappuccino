@@ -20,15 +20,16 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-import <Foundation/CPObject.j>
-import <Foundation/CPURLConnection.j>
-import <Foundation/CPURLRequest.j>
+@import <Foundation/CPObject.j>
+@import <Foundation/CPURLConnection.j>
+@import <Foundation/CPURLRequest.j>
 
-import "_CPCibCustomObject.j"
-import "_CPCibCustomView.j"
-import "_CPCibKeyedUnarchiver.j"
-import "_CPCibObjectData.j"
-import "_CPCibWindowTemplate.j"
+@import "_CPCibCustomObject.j"
+@import "_CPCibCustomView.j"
+@import "_CPCibKeyedUnarchiver.j"
+@import "_CPCibObjectData.j"
+@import "_CPCibWindowTemplate.j"
+
 
 CPCibOwner              = @"CPCibOwner",
 CPCibTopLevelObjects    = @"CPCibTopLevelObjects";

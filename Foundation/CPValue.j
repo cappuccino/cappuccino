@@ -20,8 +20,9 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-import "CPObject.j"
-import "CPCoder.j"
+@import "CPObject.j"
+@import "CPCoder.j"
+
 
 /*! @class CPValue
     The class can be subclassed to hold different types of scalar values.

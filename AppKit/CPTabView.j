@@ -20,11 +20,12 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-import "CPImageView.j"
-import "CPTabViewItem.j"
-import "CPView.j"
+@import "CPImageView.j"
+@import "CPTabViewItem.j"
+@import "CPView.j"
 
 #include "CoreGraphics/CGGeometry.h"
+
 
 /*
     Places tabs on top with a bezeled border.
