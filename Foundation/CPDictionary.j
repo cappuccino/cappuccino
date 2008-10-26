@@ -165,6 +165,14 @@
 }
 
 /*!
+    return a copy of the receiver (does not deep copy the objects contained in the dictionary).
+*/
+- (CPDictionary)copy
+{
+    return [CPDictionary dictionaryWithDictionary:self];
+}
+
+/*!
     Returns the number of entries in the dictionary
 */
 - (int)count
@@ -208,6 +216,33 @@
 - (CPEnumerator)objectEnumerator
 {
     return [[_CPDictionaryValueEnumerator alloc] initWithDictionary:self];
+}
+
+/*!
+    Compare the receiver to this dictionary, and return whether or not they are equal. 
+*/
+- (BOOL)isEqualToDictionary:(CPDictionary)aDictionary
+{
+    if (count != [aDictionary count])
+        return NO;
+
+    var index = count;
+    while (index--)
+    {
+        var currentKey = _keys[index],
+            lhsObject = _buckets[currentKey],
+            rhsObject = aDictionary._buckets[currentKey];
+
+        if (lhsObject === rhsObject)
+            continue;
+            
+        if ([lhsObject respondsToSelector:@selector(isEqual:)] && [lhsObject isEqual:rhsObject])
+            continue;
+        
+        return NO;
+    }
+
+    return YES;
 }
 
 /*

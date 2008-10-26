@@ -130,6 +130,18 @@ function CPIntersectionRange(lhsRange, rhsRange)
 }
 
 /*!
+    Checks if a range completely contains another range. In other words, if one range is the "super range" of another.
+    @param lhsRange the containing range
+    @param rhsRange the range we are testing to see if lhsRange contains it
+    @group CPRange
+    @return BOOL whether or not lhsRange completely contains rhsRange
+*/
+function CPRangeInRange(lhsRange, rhsRange)
+{
+    return (lhsRange.location <= rhsRange.location && CPMaxRange(lhsRange) >= CPMaxRange(rhsRange));
+}
+
+/*!
     Returns a string describing a range.
     @param aRange the range to describe
     @group CPRange
