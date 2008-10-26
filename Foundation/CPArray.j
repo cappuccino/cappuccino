@@ -696,10 +696,10 @@ import "CPException.j"
 */
 - (CPArray)subarrayWithRange:(CPRange)aRange
 {
-    if (aRange.location < 0 || (aRange.location + CPMaxRange(aRange)) > length)
+    if (aRange.location < 0 || CPMaxRange(aRange) > length)
         [CPException raise:CPRangeException reason:"subarrayWithRange: aRange out of bounds"];
 
-    return slice(aRange.location, maxRange);
+    return slice(aRange.location, CPMaxRange(aRange));
 }
 
 // Sorting arrays

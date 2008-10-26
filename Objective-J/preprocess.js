@@ -23,14 +23,16 @@
 OBJJParseException          = "OBJJParseException";
 OBJJClassNotFoundException  = "OBJJClassNotFoundException";
 
-var TOKEN_NEW               = "new",
-    TOKEN_SUPER             = "super",
-    TOKEN_CLASS             = "class",
-    TOKEN_IMPORT            = "import",
+var TOKEN_CLASS             = "class",
     TOKEN_FUNCTION          = "function",
-    TOKEN_SELECTOR          = "selector",
     TOKEN_IMPLEMENTATION    = "implementation",
+    TOKEN_IMPORT            = "import",
+    TOKEN_NEW               = "new",
+    TOKEN_SELECTOR          = "selector",
+    TOKEN_SUPER             = "super",
+    TOKEN_SYNTHESIZE        = "synthesize",
                             
+    TOKEN_EQUAL             = '=',
     TOKEN_PLUS              = '+',
     TOKEN_MINUS             = '-',
     TOKEN_COLON             = ':',
@@ -48,8 +50,10 @@ var TOKEN_NEW               = "new",
     TOKEN_CLOSE_BRACKET     = ']',
     TOKEN_QUESTION_MARK     = '?',
     TOKEN_OPEN_PARENTHESIS  = '(',
-    TOKEN_CLOSE_PARENTHESIS = ')';
-    
+    TOKEN_CLOSE_PARENTHESIS = ')',
+    TOKEN_WORD              = /^\w+$/;
+
+#define IS_WORD(token) TOKEN_WORD.test(token)
 
 // FIXME: This could break with static preinterpretation.
 var SUPER_CLASSES           = new objj_dictionary(),
@@ -62,7 +66,7 @@ var OBJJ_CURRENT_BUNDLE     = NULL;
 var objj_lexer = function(aString, aSourceFile)
 {
     this._index = 0;
-    this._tokens = (aString + '\n').match(/\/\/.*(\r|\n)?|\/\*(?:.|\n|\r)*?\*\/|\w+\b|[+-]?\d+(([.]\d+)*([eE][+-]?\d+))?|"[^"\\]*(\\.[^"\\]*)*"|'[^'\\]*(\\.[^'\\]*)*'|\s+|./g);
+    this._tokens = (aString + '\n').match(/\/\/.*(\r|\n)?|\/\*(?:.|\n|\r)*?\*\/|\w+\b|[+-]?\d+(([.]\d+)*([eE][+-]?\d+))?|"([^"\\]|\\[\s\S])*"|'[^'\\]*(\\.[^'\\]*)*'|\s+|./g);
     
     this.file = aSourceFile;
     
@@ -162,8 +166,10 @@ var objj_preprocess_implementation= function(tokens)
         preprocessed = "",
         class_name = tokens.skip_whitespace(),
         superclass_name = "Nil",
+        
         class_method_count = 0,
-        instance_method_count = 0;
+        instance_method_count = 0,
+        methods_preprocessed = [];
     
     if (!(/^\w/).test(class_name))
         objj_exception_throw(new objj_exception(OBJJParseException, "*** Expected class name, found \"" + class_name + "\"."));
@@ -216,29 +222,80 @@ var objj_preprocess_implementation= function(tokens)
         // If we are at an opening curly brace ('{'), then we have an ivar declaration.
         if (token == TOKEN_OPEN_BRACE)
         {
-            var ivar = true,
-                ivar_count = 0;
+            var ivar_count = 0,
+                declaration = [],
                 
+                attributes,
+                synthesizes = {};
+            
             while((token = tokens.skip_whitespace()) && token != TOKEN_CLOSE_BRACE)
             {
-                if (token != TOKEN_SEMICOLON && (ivar = !ivar))
+                if (token == TOKEN_PREPROCESSOR)
+                {
+                    token = tokens.next();
+                    
+                    if (token == TOKEN_SYNTHESIZE)
+                        attributes = objj_preprocess_declaration_synthesize(tokens);
+                    else
+                        objj_exception_throw(new objj_exception(OBJJParseException, "*** Expected 'synthesize', found '" + token + "'."));
+                }
+                else if (token == TOKEN_SEMICOLON)
                 {
                     if (ivar_count++ == 0)
                         preprocessed += "class_addIvars(the_class, [";
                     else
                         preprocessed += ", ";
                     
-                    preprocessed += "new objj_ivar(\"" + token + "\")";
+                    var name = declaration[declaration.length - 1];
+                    
+                    preprocessed += "new objj_ivar(\"" + name + "\")";
+                    
+                    declaration = [];
+                    
+                    if (attributes)
+                    {
+                        synthesizes[name] = attributes;
+                        attributes = NULL;
+                    }
                 }
+                else
+                    declaration.push(token);
             }
+            
+            // If we have objects in our declaration, the user forgot a ';'.
+            if (declaration.length)
+                objj_exception_throw(new objj_exception(OBJJParseException, "*** Expected ';' in ivar declaration, found '}'."));
 
             if (ivar_count)
                 preprocessed += "]);\n";
             
             if (!token)
                 objj_exception_throw(new objj_exception(OBJJParseException, "*** Expected '}'"));
+            
+            for (name in synthesizes)
+            {
+                var synthesized = synthesizes[name],
+                    property = synthesized["property"] || name,
+                    getterName = synthesized["getter"] || property,
+                    getterCode = "(id)" + getterName + "\n{\nreturn " + name + ";\n}";
+
+                methods_preprocessed.push(objj_preprocess_method(new objj_lexer(getterCode, null), instance_method_count++, "instance_methods"));
+                
+                // setter
+                if (synthesized["readonly"])
+                    continue;
+                
+                var setterName = synthesized['setter'] || ("set" + property.substring(0,1).toUpperCase() + 
+                                 property.substring(1) + ":"),
+                    setterCode =    "(void)" + setterName + "(id)newValue\n{\n" + 
+                                    "if (newValue !== " + name + ")\n" +
+                                    name + "=" + (synthesized["copy"] ? "[newValue copy]" : "newValue") + ";\n}";
+                
+                methods_preprocessed.push(objj_preprocess_method(new objj_lexer(setterCode, null), instance_method_count++, "instance_methods"));
+            }
         }
-        else tokens.previous();
+        else
+            tokens.previous();
         
         // We must make a new class object for our class definition.
         preprocessed += "objj_registerClassPair(the_class);\n";
@@ -249,8 +306,11 @@ var objj_preprocess_implementation= function(tokens)
     
     while((token = tokens.skip_whitespace()))
     {
-        if(token == TOKEN_PLUS) preprocessed += (class_method_count ? "" : "var class_methods = [];\n") + objj_preprocess_method(tokens, class_method_count++, "class_methods");
-        else if(token == TOKEN_MINUS) preprocessed += (instance_method_count ? "" : "var instance_methods = [];\n") + objj_preprocess_method(tokens, instance_method_count++, "instance_methods"); 
+        if(token == TOKEN_PLUS)
+            methods_preprocessed.push(objj_preprocess_method(tokens, class_method_count++, "class_methods"));
+        
+        else if(token == TOKEN_MINUS)
+            methods_preprocessed.push(objj_preprocess_method(tokens, instance_method_count++, "instance_methods")); 
         // Check if we've reached @end...
         else if(token == TOKEN_PREPROCESSOR)
         {
@@ -262,11 +322,72 @@ var objj_preprocess_implementation= function(tokens)
         }
     }
     
+    if (instance_method_count) 
+        preprocessed += "var instance_methods = [];\n";
+    
+    if (class_method_count)
+        preprocessed += "var class_methods = [];\n";
+    
+    preprocessed += methods_preprocessed.join("");
+    
     // Do the instance methods first because they could override the class methods if not.
-    if (instance_method_count) preprocessed += "class_addMethods(the_class, instance_methods);\n";
-    if (class_method_count) preprocessed += "class_addMethods(meta_class, class_methods);\n";
+    if (instance_method_count)
+        preprocessed += "class_addMethods(the_class, instance_methods);\n";
+    
+    if (class_method_count)
+        preprocessed += "class_addMethods(meta_class, class_methods);\n";
     
     return preprocessed + '}';
+}
+
+var /*JSObject*/ objj_preprocess_declaration_synthesize = function(tokens)
+{
+    var token = tokens.skip_whitespace(),
+        attributes = {};
+
+    if (token != TOKEN_OPEN_PARENTHESIS)
+    {
+        tokens.previous();
+        
+        return attributes;
+    }
+
+    while ((token = tokens.skip_whitespace()) != TOKEN_CLOSE_PARENTHESIS)
+    {
+        var name = token,
+            value = true;
+
+        if (!IS_WORD(name))
+            objj_exception_throw(new objj_exception(OBJJParseException, "*** @property attribute name not valid."));
+
+        if ((token = tokens.skip_whitespace()) == TOKEN_EQUAL)
+        {
+            value = tokens.skip_whitespace();
+            
+            if (!IS_WORD(value))
+                objj_exception_throw(new objj_exception(OBJJParseException, "*** @property attribute value not valid."));
+
+            if (name == "setter")
+            {
+                if ((token = tokens.next()) != TOKEN_COLON)
+                    objj_exception_throw(new objj_exception(OBJJParseException, "*** @property setter attribute requires argument with \":\" at end of selector name."));
+                
+                value += ":";
+            }
+
+            token = tokens.skip_whitespace();
+        }
+
+        attributes[name] = value;
+
+        if (token == TOKEN_CLOSE_PARENTHESIS)
+            break;
+        
+        if (token != TOKEN_COMMA)
+            objj_exception_throw(new objj_exception(OBJJParseException, "*** Expected ',' or ')' in @property attribute list."));
+    }
+    
+    return attributes;
 }
 
 var objj_preprocess_directive = function(tokens)

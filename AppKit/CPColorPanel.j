@@ -23,7 +23,6 @@
 import "CPButton.j"
 import "CPColorPicker.j"
 import "CPCookie.j"
-import "CPKulerColorPicker.j"
 import "CPPanel.j"
 import "CPSliderColorPicker.j"
 import "CPView.j"
@@ -44,17 +43,11 @@ var SharedColorPanel = nil;
 */
 CPWheelColorPickerMode = 1;
 /*
-    Kuler color picker
-    @global
-    @group CPColorPanelMode
-*/
-CPKulerColorPickerMode = 2;
-/*
     Slider based picker
     @global
     @group CPColorPanelMode
 */
-CPSliderColorPickerMode = 3;
+CPSliderColorPickerMode = 2;
 
 CPColorPickerViewWidth  = 265,
 CPColorPickerViewHeight = 370;
@@ -74,11 +67,10 @@ CPColorPickerViewHeight = 370;
     CPTextField     _previewLabel;
     CPTextField     _swatchLabel;
         
-    CPView          _activeView;
+    CPView          _currentView;
     
     CPColorPicker   _activePicker;
     CPColorPicker   _wheelPicker;
-    CPColorPicker   _kulerPicker;
     CPColorPicker   _sliderPicker;
     
     CPColor         _color;
@@ -225,7 +217,6 @@ CPColorPickerViewHeight = 370;
     switch(mode)
     {
         case CPWheelColorPickerMode:  _activePicker = _wheelPicker; break;
-        case CPKulerColorPickerMode:  _activePicker = _kulerPicker; break;
         case CPSliderColorPickerMode: _activePicker = _sliderPicker; break;
     }
     
@@ -310,9 +301,6 @@ CPColorPickerViewHeight = 370;
     [_currentView setFrameOrigin: CPPointMake(5, TOOLBAR_HEIGHT+10+PREVIEW_HEIGHT+5+SWATCH_HEIGHT+10)];
     [_currentView setAutoresizingMask: (CPViewWidthSizable | CPViewHeightSizable)];
 
-    _kulerPicker = [[CPKulerColorPicker alloc] initWithPickerMask: 1|2|3 colorPanel: self];
-    [_kulerPicker provideNewView: YES];
-
     _sliderPicker = [[CPSliderColorPicker alloc] initWithPickerMask: 1|2|3 colorPanel: self];
     [_sliderPicker provideNewView: YES];
 
@@ -335,7 +323,7 @@ CPColorPickerViewHeight = 370;
 @end
 
 var iconSize   = 32,
-    totalIcons = 3;
+    totalIcons = 2;
 
 /* @ignore */
 @implementation _CPColorPanelToolbar : CPView
@@ -347,10 +335,6 @@ var iconSize   = 32,
     CPImage  _sliderImage;
     CPImage  _sliderAlternateImage;
     CPButton _sliderButton; 
-    
-    CPImage  _kulerImage;
-    CPImage  _kulerAlternateImage;
-    CPButton _kulerButton;    
 }
 
 - (id)initWithFrame:(CPRect)aFrame
@@ -399,32 +383,12 @@ var iconSize   = 32,
 
     [self addSubview: _sliderButton];
      
-    _kulerButton = [[CPButton alloc] initWithFrame:CPRectMake(start, 0, iconSize, iconSize)];
-    start += iconSize + 8;
-
-    path         = [[CPBundle bundleForClass: _CPColorPanelToolbar] pathForResource:@"kuler_button.png"];
-    _kulerImage  = [[CPImage alloc] initWithContentsOfFile:path size: CPSizeMake(iconSize, iconSize)];
-
-    path                 = [[CPBundle bundleForClass: _CPColorPanelToolbar] pathForResource:@"kuler_button_h.png"];
-    _kulerAlternateImage = [[CPImage alloc] initWithContentsOfFile:path size: CPSizeMake(iconSize, iconSize)];
-
-    [_kulerButton setBordered:NO];
-    [_kulerButton setImage: _kulerImage];    
-    [_kulerButton setAlternateImage: _kulerAlternateImage];    
-    [_kulerButton setTarget: self];
-    [_kulerButton setAction: @selector(setMode:)];
-    [_kulerButton setAutoresizingMask:CPViewMinXMargin | CPViewMaxXMargin];
-    
-    [self addSubview: _kulerButton];
-    
     return self;
 }
 
 - (void)setMode:(id)sender
 {
-    if(sender == _kulerButton)
-        [[CPColorPanel sharedColorPanel] setMode: CPKulerColorPickerMode];
-    else if(sender == _wheelButton)
+    if(sender == _wheelButton)
         [[CPColorPanel sharedColorPanel] setMode: CPWheelColorPickerMode];
     else
         [[CPColorPanel sharedColorPanel] setMode: CPSliderColorPickerMode];
