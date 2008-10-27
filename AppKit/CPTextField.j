@@ -152,8 +152,8 @@ var _CPTextFieldSquareBezelColor = nil,
 
     if (self)
     {
-        _value = @"";
-        _placeholderString = @"";
+        _value = "";
+        _placeholderString = "";
 
         _sendActionOn = CPKeyUpMask | CPKeyDownMask;
         
@@ -318,7 +318,6 @@ var _CPTextFieldSquareBezelColor = nil,
 /* @ignore */
 - (void)_updateBackground
 {
-    CPLog.trace(_CPTextFieldSquareBezelColor + "," + _isBezeled + "," + _bezelStyle + "," + _drawsBackground);  
     if (_isBezeled)
     {
         if (_bezelStyle == CPTextFieldSquareBezel)
@@ -329,15 +328,15 @@ var _CPTextFieldSquareBezelColor = nil,
             
                 _CPTextFieldSquareBezelColor = [CPColor colorWithPatternImage:[[CPNinePartImage alloc] initWithImageSlices:
                     [
-                        [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"CPTextField/CPTextFieldBezelSquare0.png"] size:CGSizeMake(2.0, 3.0)],
-                        [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"CPTextField/CPTextFieldBezelSquare1.png"] size:CGSizeMake(1.0, 3.0)],
-                        [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"CPTextField/CPTextFieldBezelSquare2.png"] size:CGSizeMake(2.0, 3.0)],
-                        [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"CPTextField/CPTextFieldBezelSquare3.png"] size:CGSizeMake(2.0, 1.0)],
-                        [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"CPTextField/CPTextFieldBezelSquare4.png"] size:CGSizeMake(1.0, 1.0)],
-                        [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"CPTextField/CPTextFieldBezelSquare5.png"] size:CGSizeMake(2.0, 1.0)],
-                        [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"CPTextField/CPTextFieldBezelSquare6.png"] size:CGSizeMake(2.0, 2.0)],
-                        [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"CPTextField/CPTextFieldBezelSquare7.png"] size:CGSizeMake(1.0, 2.0)],
-                        [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"CPTextField/CPTextFieldBezelSquare8.png"] size:CGSizeMake(2.0, 2.0)]
+                        [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:"CPTextField/CPTextFieldBezelSquare0.png"] size:CGSizeMake(2.0, 3.0)],
+                        [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:"CPTextField/CPTextFieldBezelSquare1.png"] size:CGSizeMake(1.0, 3.0)],
+                        [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:"CPTextField/CPTextFieldBezelSquare2.png"] size:CGSizeMake(2.0, 3.0)],
+                        [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:"CPTextField/CPTextFieldBezelSquare3.png"] size:CGSizeMake(2.0, 1.0)],
+                        [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:"CPTextField/CPTextFieldBezelSquare4.png"] size:CGSizeMake(1.0, 1.0)],
+                        [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:"CPTextField/CPTextFieldBezelSquare5.png"] size:CGSizeMake(2.0, 1.0)],
+                        [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:"CPTextField/CPTextFieldBezelSquare6.png"] size:CGSizeMake(2.0, 2.0)],
+                        [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:"CPTextField/CPTextFieldBezelSquare7.png"] size:CGSizeMake(1.0, 2.0)],
+                        [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:"CPTextField/CPTextFieldBezelSquare8.png"] size:CGSizeMake(2.0, 2.0)]
                     ]]];
             }
             [self setBackgroundColor:_CPTextFieldSquareBezelColor];
@@ -350,9 +349,9 @@ var _CPTextFieldSquareBezelColor = nil,
 
                 _CPTextFieldRoundedBezelColor = [CPColor colorWithPatternImage:[[CPThreePartImage alloc] initWithImageSlices:
                     [
-                        [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"CPTextField/CPTextFieldBezelRounded0.png"] size:CGSizeMake(12.0, 22.0)],
-                        [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"CPTextField/CPTextFieldBezelRounded1.png"] size:CGSizeMake(16.0, 22.0)],
-                        [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"CPTextField/CPTextFieldBezelRounded2.png"] size:CGSizeMake(12.0, 22.0)]
+                        [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:"CPTextField/CPTextFieldBezelRounded0.png"] size:CGSizeMake(12.0, 22.0)],
+                        [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:"CPTextField/CPTextFieldBezelRounded1.png"] size:CGSizeMake(16.0, 22.0)],
+                        [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:"CPTextField/CPTextFieldBezelRounded2.png"] size:CGSizeMake(12.0, 22.0)]
                     ] isVertical:NO]];
             }
             [self setBackgroundColor:_CPTextFieldRoundedBezelColor];
@@ -397,11 +396,7 @@ var _CPTextFieldSquareBezelColor = nil,
     //element.style.top = _DOMTextElement.style.top;
 
     _DOMElement.appendChild(element);
-    window.setTimeout(function()
-    {
-        element.focus();
-        [[CPRunLoop currentRunLoop] performSelectors];
-    }, 0.0);
+    window.setTimeout(function() { element.focus(); }, 0.0);
 
     element.onblur = function () 
     { 
@@ -482,7 +477,7 @@ var _CPTextFieldSquareBezelColor = nil,
     [self setStringValue:element.value]; // redundant?
 
     // If textfield has no value, then display the placeholderValue
-    if (!_value || _value === "")
+    if (!_value)
         [self setStringValue:[self placeholderString]];
 
 #endif
@@ -653,7 +648,7 @@ var _CPTextFieldSquareBezelColor = nil,
     _placeholderString = aStringValue;
 
     //if there is no set value, automatically display the placeholder
-    if (!_value || _value === "") 
+    if (!_value) 
         [self setStringValue:aStringValue];
 }
 
@@ -663,7 +658,7 @@ var _CPTextFieldSquareBezelColor = nil,
 - (void)sizeToFit
 {
 #if PLATFORM(DOM)
-    var size = [_value ? _value : @" " sizeWithFont:[self font]];
+    var size = [(_value || " ") sizeWithFont:[self font]];
     
     [self setFrameSize:CGSizeMake(size.width + 2 * HORIZONTAL_PADDING, size.height + TOP_PADDING + BOTTOM_PADDING)];
 #endif

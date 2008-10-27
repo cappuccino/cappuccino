@@ -57,11 +57,11 @@ var CPSliderHorizontalKnobImage         = nil,
 
     var bundle = [CPBundle bundleForClass:self];
     
-    CPSliderKnobImage = [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"CPSlider/CPSliderKnobRegular.png"] size:CPSizeMake(11.0, 11.0)],
-    CPSliderKnobPushedImage = [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"CPSlider/CPSliderKnobRegularPushed.png"] size:CPSizeMake(11.0, 11.0)],
-    CPSliderHorizontalBarLeftImage = [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"CPSlider/CPSliderTrackHorizontalLeft.png"] size:CPSizeMake(2.0, 4.0)],
-    CPSliderHorizontalBarRightImage = [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"CPSlider/CPSliderTrackHorizontalRight.png"] size:CPSizeMake(2.0, 4.0)],
-    CPSliderHorizontalBarCenterImage = [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"CPSlider/CPSliderTrackHorizontalCenter.png"] size:CPSizeMake(1.0, 4.0)];
+    CPSliderKnobImage = [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:"CPSlider/CPSliderKnobRegular.png"] size:CPSizeMake(11.0, 11.0)],
+    CPSliderKnobPushedImage = [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:"CPSlider/CPSliderKnobRegularPushed.png"] size:CPSizeMake(11.0, 11.0)],
+    CPSliderHorizontalBarLeftImage = [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:"CPSlider/CPSliderTrackHorizontalLeft.png"] size:CPSizeMake(2.0, 4.0)],
+    CPSliderHorizontalBarRightImage = [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:"CPSlider/CPSliderTrackHorizontalRight.png"] size:CPSizeMake(2.0, 4.0)],
+    CPSliderHorizontalBarCenterImage = [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:"CPSlider/CPSliderTrackHorizontalCenter.png"] size:CPSizeMake(1.0, 4.0)];
 }
 
 - (id)initWithFrame:(CGRect)aFrame
@@ -368,7 +368,7 @@ var CPSliderHorizontalKnobImage         = nil,
 {
     [_knob setFrameOrigin:[self constrainKnobPosition:[self convertPoint:[anEvent locationInWindow] fromView:nil]]];
 
-    _value = [self valueForKnobPosition:[_knob frame].origin];
+    [super setObjectValue:[self valueForKnobPosition:[_knob frame].origin]];
     
     [[self knob] setImage:[self pushedKnobImage]];
 
@@ -379,17 +379,17 @@ var CPSliderHorizontalKnobImage         = nil,
 {
     [_knob setFrameOrigin:[self constrainKnobPosition:[self convertPoint:[anEvent locationInWindow] fromView:nil]]];
     
-    _value = [self valueForKnobPosition:[_knob frame].origin];
+    [super setObjectValue:[self valueForKnobPosition:[_knob frame].origin]];
 
     [super mouseDragged:anEvent];
 }
 
 @end
 
-var CPSliderMinValueKey     = @"CPSliderMinValueKey",
-    CPSliderMaxValueKey     = @"CPSliderMaxValueKey",
-    CPSliderAltIncrValueKey = @"CPSliderAltIncrValueKey",
-    CPSliderIsVerticalKey   = @"CPSliderIsVerticalKey";
+var CPSliderMinValueKey     = "CPSliderMinValueKey",
+    CPSliderMaxValueKey     = "CPSliderMaxValueKey",
+    CPSliderAltIncrValueKey = "CPSliderAltIncrValueKey",
+    CPSliderIsVerticalKey   = "CPSliderIsVerticalKey";
 
 @implementation CPSlider (CPCoding)
 

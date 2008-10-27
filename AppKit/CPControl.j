@@ -69,14 +69,14 @@ CPSmallControlSize          = 1;
 */
 CPMiniControlSize           = 2;
 
-CPControlNormalBackgroundColor      = @"CPControlNormalBackgroundColor";
-CPControlSelectedBackgroundColor    = @"CPControlSelectedBackgroundColor";
-CPControlHighlightedBackgroundColor = @"CPControlHighlightedBackgroundColor";
-CPControlDisabledBackgroundColor    = @"CPControlDisabledBackgroundColor";
+CPControlNormalBackgroundColor      = "CPControlNormalBackgroundColor";
+CPControlSelectedBackgroundColor    = "CPControlSelectedBackgroundColor";
+CPControlHighlightedBackgroundColor = "CPControlHighlightedBackgroundColor";
+CPControlDisabledBackgroundColor    = "CPControlDisabledBackgroundColor";
 
-CPControlTextDidBeginEditingNotification=@"CPControlTextDidBeginEditingNotification";
-CPControlTextDidChangeNotification=@"CPControlTextDidChangeNotification";
-CPControlTextDidEndEditingNotification=@"CPControlTextDidEndEditingNotification";
+CPControlTextDidBeginEditingNotification    = "CPControlTextDidBeginEditingNotification";
+CPControlTextDidChangeNotification          = "CPControlTextDidChangeNotification";
+CPControlTextDidEndEditingNotification      = "CPControlTextDidEndEditingNotification";
 
 var CPControlBlackColor     = [CPColor blackColor];
 
@@ -285,7 +285,6 @@ var CPControlBlackColor     = [CPColor blackColor];
 */
 - (void)sendAction:(SEL)anAction to:(id)anObject
 {
-    //CPLog.debug("Sending action: " + anAction + " from " + self + " to " + anObject);
     [CPApp sendAction:anAction to:anObject from:self];
 }
 
@@ -357,7 +356,8 @@ var CPControlBlackColor     = [CPColor blackColor];
 */
 - (double)doubleValue
 {
-    return [self floatValue];
+    var doubleValue = parseFloat(_value, 10);
+    return isNaN(doubleValue) ? 0.0 : doubleValue;
 }
 
 /*!
@@ -373,7 +373,8 @@ var CPControlBlackColor     = [CPColor blackColor];
 */
 - (int)intValue
 {
-    return FLOOR([self floatValue]);
+    var intValue = parseInt(_value, 10);
+    return isNaN(intValue) ? 0.0 : intValue;
 }
 
 /*!
@@ -390,7 +391,8 @@ var CPControlBlackColor     = [CPColor blackColor];
 */
 - (int)integerValue
 {
-    return FLOOR([self floatValue]);
+    var intValue = parseInt(_value, 10);
+    return isNaN(intValue) ? 0.0 : intValue;
 }
 
 /*!
@@ -502,7 +504,7 @@ var CPControlBlackColor     = [CPColor blackColor];
     if([note object] != self)
         return;
 
-    [[CPNotificationCenter defaultCenter] postNotificationName:CPControlTextDidBeginEditingNotification object:self userInfo:[CPDictionary dictionaryWithObject:[note object] forKey:@"CPFieldEditor"]];
+    [[CPNotificationCenter defaultCenter] postNotificationName:CPControlTextDidBeginEditingNotification object:self userInfo:[CPDictionary dictionaryWithObject:[note object] forKey:"CPFieldEditor"]];
 }
 
 - (void)textDidChange:(CPNotification)note 
@@ -511,7 +513,7 @@ var CPControlBlackColor     = [CPColor blackColor];
     if([note object] != self)
         return;
 
-    [[CPNotificationCenter defaultCenter] postNotificationName:CPControlTextDidChangeNotification object:self userInfo:[CPDictionary dictionaryWithObject:[note object] forKey:@"CPFieldEditor"]];
+    [[CPNotificationCenter defaultCenter] postNotificationName:CPControlTextDidChangeNotification object:self userInfo:[CPDictionary dictionaryWithObject:[note object] forKey:"CPFieldEditor"]];
 }
 
 - (void)textDidEndEditing:(CPNotification)note 
@@ -520,7 +522,7 @@ var CPControlBlackColor     = [CPColor blackColor];
     if([note object] != self)
         return;
 
-    [[CPNotificationCenter defaultCenter] postNotificationName:CPControlTextDidEndEditingNotification object:self userInfo:[CPDictionary dictionaryWithObject:[note object] forKey:@"CPFieldEditor"]];
+    [[CPNotificationCenter defaultCenter] postNotificationName:CPControlTextDidEndEditingNotification object:self userInfo:[CPDictionary dictionaryWithObject:[note object] forKey:"CPFieldEditor"]];
 }
 
 /*
@@ -539,14 +541,14 @@ var CPControlBlackColor     = [CPColor blackColor];
 
 @end
 
-var CPControlValueKey           = @"CPControlValueKey",
-    CPControlIsEnabledKey       = @"CPControlIsEnabledKey",
-    CPControlAlignmentKey       = @"CPControlAlignmentKey",
-    CPControlFontKey            = @"CPControlFontKey",
-    CPControlTextColorKey       = @"CPControlTextColorKey",
-    CPControlTargetKey          = @"CPControlTargetKey",
-    CPControlActionKey          = @"CPControlActionKey",
-    CPControlSendActionOnKey    = @"CPControlSendActionOnKey";
+var CPControlValueKey           = "CPControlValueKey",
+    CPControlIsEnabledKey       = "CPControlIsEnabledKey",
+    CPControlAlignmentKey       = "CPControlAlignmentKey",
+    CPControlFontKey            = "CPControlFontKey",
+    CPControlTextColorKey       = "CPControlTextColorKey",
+    CPControlTargetKey          = "CPControlTargetKey",
+    CPControlActionKey          = "CPControlActionKey",
+    CPControlSendActionOnKey    = "CPControlSendActionOnKey";
 
 @implementation CPControl (CPCoding)
 
@@ -606,9 +608,9 @@ var _CPControlSizeIdentifiers               = [],
     _CPControlCachedColorWithPatternImages  = {},
     _CPControlCachedThreePartImagePattern   = {};
 
-_CPControlSizeIdentifiers[CPRegularControlSize] = @"Regular";
-_CPControlSizeIdentifiers[CPSmallControlSize]   = @"Small";
-_CPControlSizeIdentifiers[CPMiniControlSize]    = @"Mini";
+_CPControlSizeIdentifiers[CPRegularControlSize] = "Regular";
+_CPControlSizeIdentifiers[CPSmallControlSize]   = "Small";
+_CPControlSizeIdentifiers[CPMiniControlSize]    = "Mini";
     
 function _CPControlIdentifierForControlSize(aControlSize)
 {
@@ -619,7 +621,7 @@ function _CPControlColorWithPatternImage(sizes, aClassName)
 {
     var index = 1,
         count = arguments.length,
-        identifier = @"";
+        identifier = "";
     
     for (; index < count; ++index)
         identifier += arguments[index];
@@ -630,7 +632,7 @@ function _CPControlColorWithPatternImage(sizes, aClassName)
     {
         var bundle = [CPBundle bundleForClass:[CPControl class]];
     
-        color = [CPColor colorWithPatternImage:[[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:aClassName + "/" + identifier + @".png"] size:sizes[identifier]]];
+        color = [CPColor colorWithPatternImage:[[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:aClassName + "/" + identifier + ".png"] size:sizes[identifier]]];
 
         _CPControlCachedColorWithPatternImages[identifier] = color;
     }
@@ -642,7 +644,7 @@ function _CPControlThreePartImages(sizes, aClassName)
 {
     var index = 1,
         count = arguments.length,
-        identifier = @"";
+        identifier = "";
     
     for (; index < count; ++index)
         identifier += arguments[index];
@@ -657,9 +659,9 @@ function _CPControlThreePartImages(sizes, aClassName)
         sizes = sizes[identifier];
 
         images = [
-                    [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:path + @"0.png"] size:sizes[0]],
-                    [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:path + @"1.png"] size:sizes[1]],
-                    [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:path + @"2.png"] size:sizes[2]]
+                    [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:path + "0.png"] size:sizes[0]],
+                    [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:path + "1.png"] size:sizes[1]],
+                    [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:path + "2.png"] size:sizes[2]]
                 ];
                 
         _CPControlCachedThreePartImages[identifier] = images;
@@ -672,7 +674,7 @@ function _CPControlThreePartImagePattern(isVertical, sizes, aClassName)
 {
     var index = 2,
         count = arguments.length,
-        identifier = @"";
+        identifier = "";
     
     for (; index < count; ++index)
         identifier += arguments[index];
@@ -687,9 +689,9 @@ function _CPControlThreePartImagePattern(isVertical, sizes, aClassName)
         sizes = sizes[identifier];
 
         color = [CPColor colorWithPatternImage:[[CPThreePartImage alloc] initWithImageSlices:[
-                    [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:path + @"0.png"] size:sizes[0]],
-                    [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:path + @"1.png"] size:sizes[1]],
-                    [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:path + @"2.png"] size:sizes[2]]
+                    [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:path + "0.png"] size:sizes[0]],
+                    [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:path + "1.png"] size:sizes[1]],
+                    [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:path + "2.png"] size:sizes[2]]
                 ] isVertical:isVertical]];
                 
         _CPControlCachedThreePartImagePattern[identifier] = color;
