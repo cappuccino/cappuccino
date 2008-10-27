@@ -364,7 +364,12 @@
 */
 - (void)setAutohidesScrollers:(BOOL)autohidesScrollers
 {
+    if (_autohidesScrollers == autohidesScrollers)
+        return;
+
     _autohidesScrollers = autohidesScrollers;
+    
+    [self reflectScrolledClipView:_contentView];
 }
 
 /*!
