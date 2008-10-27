@@ -1794,6 +1794,8 @@ var CPViewAutoresizingMaskKey       = @"CPViewAutoresizingMask",
         _displayHash = [self hash];
 
         [self setBackgroundColor:[aCoder decodeObjectForKey:CPViewBackgroundColorKey]];
+        
+        [self setNeedsDisplay:YES];
     }
     
     return self;

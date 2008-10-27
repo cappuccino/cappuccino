@@ -34,15 +34,14 @@ var CPSliderHorizontalKnobImage         = nil,
 */
 @implementation CPSlider : CPControl
 {
-    double      _value;
     double      _minValue;
     double      _maxValue;
     double      _altIncrementValue;
+    BOOL        _isVertical;
     
     CPView      _bar;
     CPView      _knob;
 
-    BOOL        _isVertical;
     CPImageView _standardKnob;
     CPView      _standardVerticalBar;
     CPView      _standardHorizontalBar;
@@ -91,7 +90,7 @@ var CPSliderHorizontalKnobImage         = nil,
     
 - (void)setFrameSize:(CGSize)aSize
 {
-    if(aSize.height > 21.0)
+    if (aSize.height > 21.0)
         aSize.height = 21.0;
     
     if (_isVertical != [self isVertical])
@@ -125,6 +124,33 @@ var CPSliderHorizontalKnobImage         = nil,
 - (double)altIncrementValue
 {
     return _altIncrementValue;
+}
+
+/*!
+    Sets the value the slider will be incremented if the user holds the <code>ALT</code> key.
+*/
+- (void)setAltIncrementValue:(double)anIncrementValue
+{
+    _altIncrementValue = anIncrementValue;
+}
+
+/*!
+    Returns whether the control can continuously send its action messages.
+*/
+- (BOOL)isContinuous
+{
+    return (_sendActionOn & CPLeftMouseDraggedMask) != 0;
+}
+
+/*!
+    Sets whether the cell can continuously send its action messages.
+ */
+- (void)setContinuous:(BOOL)flag
+{
+    if (flag)
+        _sendActionOn |= CPLeftMouseDraggedMask;
+    else 
+        _sendActionOn &= ~CPLeftMouseDraggedMask;
 }
 
 /*!
@@ -223,14 +249,6 @@ var CPSliderHorizontalKnobImage         = nil,
 }
 
 /*!
-    Sets the value the slider will be incremented if the user holds the <code>ALT</code> key.
-*/
-- (void)setAltIncrementValue:(double)anIncrementValue
-{
-    _altIncrementValue = anIncrementValue;
-}
-
-/*!
     Returns <code>YES</code> if the slider is vertical.
 */
 - (BOOL)isVertical
@@ -280,20 +298,28 @@ var CPSliderHorizontalKnobImage         = nil,
 /*!
     Sets the slider's value
     @param aValue the new slider value
+    @deprecated Use setFloatValue, setObjectValue, etc
 */
 - (void)setValue:(double)aValue
 {
-    _value = aValue;
-
-    [_knob setFrameOrigin:[self knobPosition]];
+    [self setObjectValue:aValue];
 }
 
 /*!
     Returns the slider's value
+    @deprecated Use floatValue, objectValue, etc
 */
 - (double)value
 {
-    return _value;
+    return [self floatValue];
+}
+
+- (void)setObjectValue:(id)anObject
+{
+    [super setObjectValue:anObject];
+    
+    if (_knob)
+        [_knob setFrameOrigin:[self knobPosition]];
 }
 
 /*
@@ -306,7 +332,7 @@ var CPSliderHorizontalKnobImage         = nil,
         return CPPointMake(0.0, 0.0);
     else
         return CPPointMake(
-            ((_value - _minValue) / (_maxValue - _minValue)) * (CPRectGetWidth([self frame]) - CPRectGetWidth([_knob frame])), 
+            (([self floatValue] - _minValue) / (_maxValue - _minValue)) * (CPRectGetWidth([self frame]) - CPRectGetWidth([_knob frame])), 
             (CPRectGetHeight([self frame]) - CPRectGetHeight([_knob frame])) / 2.0);
 }
 
@@ -330,10 +356,12 @@ var CPSliderHorizontalKnobImage         = nil,
 
 - (void)mouseUp:(CPEvent)anEvent
 {
-    [[self knob] setImage: [self knobImage]];
+    [[self knob] setImage:[self knobImage]];
 
     if ([_target respondsToSelector:@selector(sliderDidFinish:)])
         [_target sliderDidFinish:self];
+
+    [super mouseUp:anEvent];
 }
 
 - (void)mouseDown:(CPEvent)anEvent
@@ -342,8 +370,9 @@ var CPSliderHorizontalKnobImage         = nil,
 
     _value = [self valueForKnobPosition:[_knob frame].origin];
     
-    [[self knob] setImage: [self pushedKnobImage]];
-    [self sendAction:_action to:_target];
+    [[self knob] setImage:[self pushedKnobImage]];
+
+    [super mouseDown:anEvent];
 }
 
 - (void)mouseDragged:(CPEvent)anEvent
@@ -351,15 +380,16 @@ var CPSliderHorizontalKnobImage         = nil,
     [_knob setFrameOrigin:[self constrainKnobPosition:[self convertPoint:[anEvent locationInWindow] fromView:nil]]];
     
     _value = [self valueForKnobPosition:[_knob frame].origin];
-    
-    [self sendAction:_action to:_target];
+
+    [super mouseDragged:anEvent];
 }
 
 @end
 
-var CPSliderMinValueKey = @"CPSliderMinValueKey",
-    CPSliderMaxValueKey = @"CPSliderMaxValueKey",
-    CPSliderValueKey = @"CPSliderValueKey";
+var CPSliderMinValueKey     = @"CPSliderMinValueKey",
+    CPSliderMaxValueKey     = @"CPSliderMaxValueKey",
+    CPSliderAltIncrValueKey = @"CPSliderAltIncrValueKey",
+    CPSliderIsVerticalKey   = @"CPSliderIsVerticalKey";
 
 @implementation CPSlider (CPCoding)
 
@@ -374,9 +404,10 @@ var CPSliderMinValueKey = @"CPSliderMinValueKey",
     
     if (self)
     {
-        _value = [aCoder decodeDoubleForKey:CPSliderValueKey];
         _minValue = [aCoder decodeDoubleForKey:CPSliderMinValueKey];
         _maxValue = [aCoder decodeDoubleForKey:CPSliderMaxValueKey];
+        _altIncrementValue = [aCoder decodeDoubleForKey:CPSliderAltIncrValueKey];
+        _isVertical = [aCoder decodeDoubleForKey:CPSliderIsVerticalKey];
     
         _bar = [self bar];
         _knob = [self knob];
@@ -406,9 +437,10 @@ var CPSliderMinValueKey = @"CPSliderMinValueKey",
     
     _subviews = subviews;
     
-    [aCoder encodeDouble:_value forKey:CPSliderValueKey];
     [aCoder encodeDouble:_minValue forKey:CPSliderMinValueKey];
     [aCoder encodeDouble:_maxValue forKey:CPSliderMaxValueKey];
+    [aCoder encodeDouble:_altIncrementValue forKey:CPSliderAltIncrValueKey];
+    [aCoder encodeBool:_isVertical forKey:CPSliderIsVerticalKey];
 }
 
 @end

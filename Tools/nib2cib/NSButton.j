@@ -45,9 +45,6 @@
 
         [self setBezelStyle:[cell bezelStyle]];
         [self setBordered:[cell isBordered]];
-        
-        // FIXME
-        _sendActionOn = CPLeftMouseUpMask;
     }
     
     return self;

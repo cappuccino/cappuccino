@@ -1,8 +1,8 @@
 /*
- * NSAppKit.j
+ * WebView.j
  * nib2cib
  *
- * Created by Francisco Tolmasky.
+ * Created by Thomas Robinson.
  * Copyright 2008, 280 North, Inc.
  *
  * This library is free software; you can redistribute it and/or
@@ -20,30 +20,34 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-@import "NSButton.j"
-@import "NSCell.j"
-@import "NSColor.j"
-@import "NSControl.j"
-@import "NSCustomObject.j"
-@import "NSCustomView.j"
-@import "NSFont.j"
-@import "NSIBObjectData.j"
-@import "NSNibConnector.j"
-@import "NSResponder.j"
-@import "NSSlider.j"
-@import "NSSplitView.j"
-@import "NSTextField.j"
-@import "NSView.j"
-@import "NSWindowTemplate.j"
-@import "WebView.j"
+@import <AppKit/CPWebView.j>
 
-function CP_NSMapClassName(aClassName)
+
+@implementation CPWebView (CPCoding)
+
+- (id)NS_initWithCoder:(CPCoder)aCoder
 {
-    if (aClassName == @"NSView")
-        return "CPView";
-
-    if (aClassName == @"NSWindow")
-        return @"CPWindow";
+    if (self = [super NS_initWithCoder:aCoder])
+    {
+    }
     
-    return aClassName;
+    return self;
 }
+
+@end
+
+@implementation WebView : CPWebView
+{
+}
+
+- (id)initWithCoder:(CPCoder)aCoder
+{
+    return [self NS_initWithCoder:aCoder];
+}
+
+- (Class)classForKeyedArchiver
+{
+    return [CPWebView class];
+}
+
+@end

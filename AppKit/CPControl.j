@@ -99,9 +99,6 @@ var CPControlBlackColor     = [CPColor blackColor];
     SEL         _action;
     int         _sendActionOn;
     
-    CPColor     _backgroundColor;
-    CPColor     _highlightedBackgroundColor;
-    
     CPDictionary    _backgroundColors;
     CPString        _currentBackgroundColorName;
 }
@@ -265,6 +262,22 @@ var CPControlBlackColor     = [CPColor blackColor];
     [super mouseUp:anEvent];
 }
 
+- (void)mouseDown:(CPEvent)anEvent
+{
+    if (_sendActionOn & CPLeftMouseDownMask && CPRectContainsPoint([self bounds], [self convertPoint:[anEvent locationInWindow] fromView:nil]))
+        [self sendAction:_action to:_target];
+
+    [super mouseDown:anEvent];
+}
+
+- (void)mouseDragged:(CPEvent)anEvent
+{
+    if (_sendActionOn & CPLeftMouseDraggedMask && CPRectContainsPoint([self bounds], [self convertPoint:[anEvent locationInWindow] fromView:nil]))
+        [self sendAction:_action to:_target];
+    
+    [super mouseDragged:anEvent];
+}
+
 /*!
     Causes <code>anAction</code> to be sent to <code>anObject</code>.
     @param anAction the action to send
@@ -272,23 +285,38 @@ var CPControlBlackColor     = [CPColor blackColor];
 */
 - (void)sendAction:(SEL)anAction to:(id)anObject
 {
+    //CPLog.debug("Sending action: " + anAction + " from " + self + " to " + anObject);
     [CPApp sendAction:anAction to:anObject from:self];
 }
 
-/*!
-    Returns the receiver's float value
-*/
-- (float)floatValue
+- (int)sendActionOn:(int)mask
 {
-    return _value ? parseFloat(_value, 10) : 0.0;
+    var previousMask = _sendActionOn;
+    
+    _sendActionOn = mask;
+    
+    return previousMask;
 }
 
 /*!
-    Sets the receiver's float value
+    Returns whether the control can continuously send its action messages.
 */
-- (void)setFloatValue:(float)aValue
+- (BOOL)isContinuous
 {
-    [self setObjectValue:aValue];
+    // Some subclasses should redefine this with CPLeftMouseDraggedMask
+    return (_sendActionOn & CPPeriodicMask) != 0;
+}
+
+/*!
+    Sets whether the cell can continuously send its action messages.
+ */
+- (void)setContinuous:(BOOL)flag
+{
+    // Some subclasses should redefine this with CPLeftMouseDraggedMask
+    if (flag)
+        _sendActionOn |= CPPeriodicMask;
+    else 
+        _sendActionOn &= ~CPPeriodicMask;
 }
 
 /*!
@@ -308,9 +336,26 @@ var CPControlBlackColor     = [CPColor blackColor];
 }
 
 /*!
+    Returns the receiver's float value
+*/
+- (float)floatValue
+{
+    var floatValue = parseFloat(_value, 10);
+    return isNaN(floatValue) ? 0.0 : floatValue;
+}
+
+/*!
+    Sets the receiver's float value
+*/
+- (void)setFloatValue:(float)aValue
+{
+    [self setObjectValue:aValue];
+}
+
+/*!
     Returns the receiver's double value
 */
-- (id)doubleValue
+- (double)doubleValue
 {
     return [self floatValue];
 }
@@ -318,7 +363,7 @@ var CPControlBlackColor     = [CPColor blackColor];
 /*!
     Set's the receiver's double value
 */
-- (void)setDoubleValue:(id)anObject
+- (void)setDoubleValue:(double)anObject
 {
     [self setObjectValue:anObject];
 }
@@ -326,15 +371,32 @@ var CPControlBlackColor     = [CPColor blackColor];
 /*!
     Returns the receiver's int value
 */
-- (id)intValue
+- (int)intValue
 {
-    return _value ? parseInt(_value, 10) : 0;
+    return FLOOR([self floatValue]);
 }
 
 /*!
     Set's the receiver's int value
 */
-- (void)setIntValue:(id)anObject
+- (void)setIntValue:(int)anObject
+{
+    [self setObjectValue:anObject];
+}
+
+
+/*!
+    Returns the receiver's int value
+*/
+- (int)integerValue
+{
+    return FLOOR([self floatValue]);
+}
+
+/*!
+    Set's the receiver's int value
+*/
+- (void)setIntegerValue:(int)anObject
 {
     [self setObjectValue:anObject];
 }
@@ -342,18 +404,60 @@ var CPControlBlackColor     = [CPColor blackColor];
 /*!
     Returns the receiver's int value
 */
-- (id)stringValue
+- (CPString)stringValue
 {
-    return _value ? ""+_value : "";
+    return _value ? String(_value) : "";
 }
 
 /*!
     Set's the receiver's int value
 */
-- (void)setStringValue:(id)anObject
+- (void)setStringValue:(CPString)anObject
 {
     [self setObjectValue:anObject];
 }
+
+
+- (void)takeDoubleValueFrom:(id)sender
+{
+    if ([sender respondsToSelector:@selector(doubleValue)])
+        [self setDoubleValue:[sender doubleValue]];
+}
+
+
+- (void)takeFloatValueFrom:(id)sender
+{
+    if ([sender respondsToSelector:@selector(floatValue)])
+        [self setFloatValue:[sender floatValue]];
+}
+
+
+- (void)takeIntegerValueFrom:(id)sender
+{
+    if ([sender respondsToSelector:@selector(integerValue)])
+        [self setIntegerValue:[sender integerValue]];
+}
+
+
+- (void)takeIntValueFrom:(id)sender
+{
+    if ([sender respondsToSelector:@selector(intValue)])
+        [self setIntValue:[sender intValue]];
+}
+
+
+- (void)takeObjectValueFrom:(id)sender
+{
+    if ([sender respondsToSelector:@selector(objectValue)])
+        [self setObjectValue:[sender objectValue]];
+}
+
+- (void)takeStringValueFrom:(id)sender
+{
+    if ([sender respondsToSelector:@selector(stringValue)])
+        [self setStringValue:[sender stringValue]];
+}
+
 
 - (void)setBackgroundColor:(CPColor)aColor
 {
@@ -435,7 +539,8 @@ var CPControlBlackColor     = [CPColor blackColor];
 
 @end
 
-var CPControlIsEnabledKey       = @"CPControlIsEnabledKey",
+var CPControlValueKey           = @"CPControlValueKey",
+    CPControlIsEnabledKey       = @"CPControlIsEnabledKey",
     CPControlAlignmentKey       = @"CPControlAlignmentKey",
     CPControlFontKey            = @"CPControlFontKey",
     CPControlTextColorKey       = @"CPControlTextColorKey",
@@ -456,7 +561,9 @@ var CPControlIsEnabledKey       = @"CPControlIsEnabledKey",
     
     if (self)
     {
-        [self setEnabled:[aCoder decodeIntForKey:CPControlIsEnabledKey]];
+        [self setObjectValue:[aCoder decodeObjectForKey:CPControlValueKey]];
+        
+        [self setEnabled:[aCoder decodeBoolForKey:CPControlIsEnabledKey]];
         
         [self setAlignment:[aCoder decodeIntForKey:CPControlAlignmentKey]];
         [self setFont:[aCoder decodeObjectForKey:CPControlFontKey]];
@@ -464,8 +571,7 @@ var CPControlIsEnabledKey       = @"CPControlIsEnabledKey",
         
         [self setTarget:[aCoder decodeObjectForKey:CPControlTargetKey]];
         [self setAction:[aCoder decodeObjectForKey:CPControlActionKey]];
-    
-        _sendActionOn = [aCoder decodeIntForKey:CPControlSendActionOnKey];
+        [self sendActionOn:[aCoder decodeIntForKey:CPControlSendActionOnKey]];
     }
     
     return self;
@@ -479,7 +585,9 @@ var CPControlIsEnabledKey       = @"CPControlIsEnabledKey",
 {
     [super encodeWithCoder:aCoder];
     
-    [aCoder encodeInt:_isEnabled forKey:CPControlIsEnabledKey];
+    [aCoder encodeObject:_value forKey:CPControlValueKey];
+    
+    [aCoder encodeBool:_isEnabled forKey:CPControlIsEnabledKey];
     
     [aCoder encodeInt:_alignment forKey:CPControlAlignmentKey];
     [aCoder encodeObject:_font forKey:CPControlFontKey];

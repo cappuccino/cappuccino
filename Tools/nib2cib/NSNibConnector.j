@@ -34,9 +34,8 @@
         _source = [aCoder decodeObjectForKey:@"NSSource"];
         _destination = [aCoder decodeObjectForKey:@"NSDestination"];
         _label = [aCoder decodeObjectForKey:@"NSLabel"];
-#if DEBUG
-        CPLog(@"Connection: " + [_source description] + " " + [_destination description] + " " + _label);
-#endif
+        
+        CPLog.debug(@"Connection: " + [_source description] + " " + [_destination description] + " " + _label);
     }
     
     return self;

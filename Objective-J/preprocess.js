@@ -563,10 +563,12 @@ objj_preprocessor.prototype.implementation = function(tokens, /*objj_stringBuffe
             
             for (ivar_name in accessors)
             {
-                var accessor = accessors[name],
-                    property = accessor["property"] || name,
-                    getterName = accessor["getter"] || property,
-                    getterCode = "(id)" + getterName + "\n{\nreturn " + name + ";\n}";
+                var accessor = accessors[ivar_name],
+                    property = accessor["property"] || ivar_name;
+                    
+                // getter
+                var getterName = accessor["getter"] || property,
+                    getterCode = "(id)" + getterName + "\n{\nreturn " + ivar_name + ";\n}";
 
                 if (IS_NOT_EMPTY(instance_methods))
                     CONCAT(instance_methods, ",\n");
@@ -582,16 +584,15 @@ objj_preprocessor.prototype.implementation = function(tokens, /*objj_stringBuffe
                 if (!setterName)
                 {
                     var start = property.charAt(0) == '_' ? 1 : 0;
-                    
-                    setterName = "set" + property.substr(start, 1).toUpperCase() + property.substring(start + 1) + ":";
+                    setterName = (start ? "_" : "") + "set" + property.substr(start, 1).toUpperCase() + property.substring(start + 1) + ":";
                 }
                 
                 var setterCode = "(void)" + setterName + "(id)newValue\n{\n";
                 
                 if (accessor["copy"])
-                    setterCode += "if (" + name + " !== newValue)\n" + name + " = [newValue copy];\n}";
+                    setterCode += "if (" + ivar_name + " !== newValue)\n" + ivar_name + " = [newValue copy];\n}";
                 else
-                    setterCode += name + " = newValue;\n}";
+                    setterCode += ivar_name + " = newValue;\n}";
                 
                 if (IS_NOT_EMPTY(instance_methods))
                     CONCAT(instance_methods, ",\n");
