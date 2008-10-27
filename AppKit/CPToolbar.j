@@ -430,6 +430,7 @@ var _CPToolbarItemInfoMake = function(anIndex, aView, aLabel, aMinWidth)
     
     // Determine all the items that have flexible width.
     // Also determine the height of the toolbar.
+    // NOTE: height is height without top margin, and bottom margin/label.
     var index = _visibleItems.length,
         height = 0.0;
 
@@ -511,7 +512,7 @@ var _CPToolbarItemInfoMake = function(anIndex, aView, aLabel, aMinWidth)
             
             itemWidth = MAX([self minWidthForItem:item], viewWidth),
             
-            viewHeight = MAX([item minSize].height, MIN([item maxSize].height, height));
+            viewHeight = CGRectGetHeight(viewFrame);
 
         // itemWidth != viewWidth.  itemWidth is MAX(size of view, size of label).  If the label is larger,
         // *center* the view, don't resize it.
