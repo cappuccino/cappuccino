@@ -103,6 +103,7 @@ var CPDOMWindowGetFrame,
         _DOMBodyElement = document.getElementsByTagName("body")[0];
         _DOMBodyElement.innerHTML = ""; // Get rid of anything that might be lingering in the body element.
         _DOMBodyElement.style.overflow = "hidden";
+        _DOMBodyElement.style.webkitTouchCallout = "none";
         
         if (document.documentElement)
             document.documentElement.style.overflow = "hidden";
