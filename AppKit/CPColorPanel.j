@@ -137,7 +137,7 @@ CPColorPickerViewHeight = 370;
     [CPApp sendAction:@selector(changeColor:) to:nil from:self];
 
     if (_target && _action)
-        objj_msgSend(_target, _action, self);
+        [CPApp sendAction:_action to:_target from:self];
         
     [[CPNotificationCenter defaultCenter]
         postNotificationName:CPColorPanelColorDidChangeNotification
@@ -149,14 +149,13 @@ CPColorPickerViewHeight = 370;
     @param bool whether or not to update the picker
     @ignore
 */
- -(void)setColor:(CPColor)aColor updatePicker:(BOOL)bool
- {
-    [self setColor: aColor];
-
-    if(bool)
-        [_activePicker setColor: _color];
- }
- 
+- (void)setColor:(CPColor)aColor updatePicker:(BOOL)bool
+{
+    [self setColor:aColor];
+    
+    if (bool)
+        [_activePicker setColor:_color];
+}
 
 /*!
     Returns the panel's currently selected color.

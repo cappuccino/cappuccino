@@ -126,9 +126,9 @@
     brightnessBarView._DOMElement.appendChild(_brightnessBarImage);
         
     _brightnessSlider = [[CPSlider alloc] initWithFrame: CPRectMake(0, aFrame.size.height - 22, aFrame.size.width, 12)];
-    [_brightnessSlider setMaxValue: 100.0];
-    [_brightnessSlider setMinValue:   0.0];
-    [_brightnessSlider setValue:    100.0];
+    [_brightnessSlider setMaxValue:  100.0];
+    [_brightnessSlider setMinValue:    0.0];
+    [_brightnessSlider setFloatValue:100.0];
 
     [_brightnessSlider setTarget: self];
     [_brightnessSlider setAction: @selector(brightnessSliderDidChange:)];
@@ -157,7 +157,7 @@
 {
     var hue        = [_hueSaturationView angle],
         saturation = [_hueSaturationView distance],
-        brightness = [_brightnessSlider value];
+        brightness = [_brightnessSlider floatValue];
 
     [_hueSaturationView setWheelBrightness: brightness / 100.0];
     _brightnessBarImage.style.backgroundColor = "#"+[[CPColor colorWithHue: hue saturation: saturation brightness: 100] hexString];
@@ -187,11 +187,11 @@
 {
     var hsb = [newColor hsbComponents];
     
-    [_hueSaturationView setPositionToColor: newColor];
-    [_brightnessSlider setValue: hsb[2]];
-    [_hueSaturationView setWheelBrightness: hsb[2] / 100.0];
+    [_hueSaturationView setPositionToColor:newColor];
+    [_brightnessSlider setFloatValue:hsb[2]];
+    [_hueSaturationView setWheelBrightness:hsb[2] / 100.0];
 
-    _brightnessBarImage.style.backgroundColor = "#"+[[CPColor colorWithHue: hsb[0] saturation: hsb[1] brightness: 100] hexString];
+    _brightnessBarImage.style.backgroundColor = "#"+[[CPColor colorWithHue:hsb[0] saturation:hsb[1] brightness:100] hexString];
 }
 
 @end
