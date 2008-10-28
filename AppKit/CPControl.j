@@ -262,22 +262,6 @@ var CPControlBlackColor     = [CPColor blackColor];
     [super mouseUp:anEvent];
 }
 
-- (void)mouseDown:(CPEvent)anEvent
-{
-    if (_sendActionOn & CPLeftMouseDownMask && CPRectContainsPoint([self bounds], [self convertPoint:[anEvent locationInWindow] fromView:nil]))
-        [self sendAction:_action to:_target];
-
-    [super mouseDown:anEvent];
-}
-
-- (void)mouseDragged:(CPEvent)anEvent
-{
-    if (_sendActionOn & CPLeftMouseDraggedMask && CPRectContainsPoint([self bounds], [self convertPoint:[anEvent locationInWindow] fromView:nil]))
-        [self sendAction:_action to:_target];
-    
-    [super mouseDragged:anEvent];
-}
-
 /*!
     Causes <code>anAction</code> to be sent to <code>anObject</code>.
     @param anAction the action to send

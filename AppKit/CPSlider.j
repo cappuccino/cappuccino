@@ -79,6 +79,8 @@ var CPSliderHorizontalKnobImage         = nil,
         _knobSize = [[self knobImage] size];
         _isVertical = [self isVertical];
         
+        [self setContinuous:YES];
+        
         [_knob setFrameOrigin:[self knobPosition]];
         
         [self addSubview:_bar];
@@ -361,7 +363,9 @@ var CPSliderHorizontalKnobImage         = nil,
     if ([_target respondsToSelector:@selector(sliderDidFinish:)])
         [_target sliderDidFinish:self];
 
-    [super mouseUp:anEvent];
+    if (_sendActionOn & CPLeftMouseUpMask)
+        [self sendAction:_action to:_target];
+    //[super mouseUp:anEvent];
 }
 
 - (void)mouseDown:(CPEvent)anEvent
@@ -372,7 +376,9 @@ var CPSliderHorizontalKnobImage         = nil,
     
     [[self knob] setImage:[self pushedKnobImage]];
 
-    [super mouseDown:anEvent];
+    if (_sendActionOn & CPLeftMouseDraggedMask)
+        [self sendAction:_action to:_target];
+    //[super mouseDown:anEvent];
 }
 
 - (void)mouseDragged:(CPEvent)anEvent
@@ -381,7 +387,9 @@ var CPSliderHorizontalKnobImage         = nil,
     
     [super setObjectValue:[self valueForKnobPosition:[_knob frame].origin]];
 
-    [super mouseDragged:anEvent];
+    if (_sendActionOn & CPLeftMouseDraggedMask)
+        [self sendAction:_action to:_target];
+    //[super mouseDown:anEvent];
 }
 
 @end
