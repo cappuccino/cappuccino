@@ -11,6 +11,7 @@
         <file name = "steam/build.xml" />
         <file name = "bake/build.xml" />
         <file name = "press/build.xml" />
+        <file name = "cplutil/build.xml" />
         <file name = "Utilities/build.xml" />
         <file name = "NewApplication/build.xml" />
     </filelist>

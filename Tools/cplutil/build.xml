@@ -1,0 +1,56 @@
+<?xml version = "1.0"?>
+<project name = "cplutil" default = "build" basedir = "." >
+
+    <import file = "../../common.xml" />
+
+    <property name = "Build.Products" location = "${Build}/cplutil.build/${Configuration}" />
+    <property name = "Build.cplutil" location = "${Build}/${Configuration}/cplutil" />
+
+    <target name = "clean">
+        <delete dir = "${Build.cplutil}" verbose = "true" />
+        <delete dir = "${Build.Products}" verbose = "true" />
+    </target>
+        
+    <target name = "build">
+        
+        <mkdir dir = "${Build.Products}" />
+        
+        <concat destfile = "${Build.Products}/cplutil.js">
+			<filelist>
+                <file name="${basedir}/../Utilities/bridge.js" />
+                <file name="${basedir}/../Utilities/regex-bridge.js" />
+                <file name="${Build}/Objective-J.build/\${Configuration}/Rhino/Objective-J.js" />
+                <file name="${basedir}/cplutil.js" />
+			</filelist>
+		</concat>
+        
+        <mkdir dir = "${Build.cplutil}" />
+        
+        <jsc>
+            <arguments>
+                <arg line = "-o cplutil.class" />
+                <arg value = "-nosource" />
+                <arg value = "${Build.Products}/cplutil.js" />
+            </arguments>
+        </jsc>
+        
+        <move file = "${Build.Products}/cplutil.class" tofile = "${Build.cplutil}/cplutil.class" />
+                
+        <copy file = "cplutil" tofile = "${Build.cplutil}/cplutil" />
+        <chmod file = "${Build.cplutil}/cplutil" perm = "+x" />
+        
+    </target>
+    
+    <target name = "release" depends = "build">
+        
+        <antcall target = "prepare-release" />
+        
+        <copy file = "${Build.cplutil}/cplutil" tofile = "${Build.Cappuccino.Tools.Bin}/cplutil" />
+
+        <chmod file = "${Build.Cappuccino.Tools.Bin}/cplutil" perm = "+x" />
+        
+        <copy file = "${Build.cplutil}/cplutil.class" tofile = "${Build.Cappuccino.Tools.Lib}/cplutil.class" />
+        
+    </target>
+
+</project>
