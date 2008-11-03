@@ -107,7 +107,7 @@ function main()
         {
             var xmlOutput = new Packages.java.io.ByteArrayOutputStream();
             outputTransformer(xmlOutput, aResponse.xml, "UTF-8");
-            __fakeResponse.xml = String(xmlOutput.toString());
+            __fakeResponse.text = CPPropertyListCreate280NorthData(CPPropertyListCreateFromXMLData({ string:String(xmlOutput.toString())})).string;
             //CPLog.trace("SERIALIZED: " + __fakeResponse.xml.substring(0,100));
         }
         
@@ -204,7 +204,11 @@ function main()
             bundle.path = aResponse.filePath;
 
             if (aResponse.success)
-                bundle.info = CPPropertyListCreateFromXMLData({ string : aResponse.xml });
+            {
+                var data = new objj_data();
+                data.string = aResponse.text;
+                bundle.info = CPPropertyListCreateFrom280NorthData(data);
+            }
             else
                 bundle.info = new objj_dictionary();
 
