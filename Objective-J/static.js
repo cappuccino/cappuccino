@@ -9,42 +9,6 @@ var STATIC_MAGIC_NUMBER     = "@STATIC",
 
 var STATIC_EXTENSION        = "sj";
 
-function objj_preprocess_file(aFilePath, fileContents, checkSyntax)
-{
-    // Preprocess contents into fragments.
-    var fragments = objj_preprocess(fileContents, { path:"/x" }, { path:aFilePath}),
-        index = 0,
-        count = fragments.length,
-        preprocessed = MARKER_PATH + ';' + aFilePath.length() + ';' + aFilePath;
-
-    // Writer preprocessed fragments out.
-    for (; index < count; ++index)
-    {
-        var fragment = fragments[index];
-        
-        if (IS_FILE(fragment))
-            preprocessed += (IS_LOCAL(fragment) ? MARKER_IMPORT_LOCAL : MARKER_IMPORT_STD) + ';' + GET_PATH(fragment).length + ';' + GET_PATH(fragment);
-        else
-        {
-            if (checkSyntax)
-            {
-                try
-                {
-                    new Function(GET_CODE(fragment));
-                }
-                catch (e)
-                {
-                    e.fragment = fragment;
-                    throw e;
-                }
-            }
-            preprocessed += MARKER_CODE + ';' + GET_CODE(fragment).length + ';' + GET_CODE(fragment);
-        }
-    }
-
-    return preprocessed;
-}
-
 function objj_decompile(aString, bundle)
 {
     var stream = new objj_markedStream(aString);
