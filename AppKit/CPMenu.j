@@ -25,7 +25,6 @@
 @import <Foundation/CPNotificationCenter.j>
 @import <Foundation/CPString.j>
 
-@import "_CPImageAndTitleView.j"
 @import "CPApplication.j"
 @import "CPClipView.j"
 @import "CPMenuItem.j"
@@ -46,6 +45,7 @@ var _CPMenuBarVisible               = NO,
     _CPMenuBarTitle                 = @"",
     _CPMenuBarIconImage             = nil,
     _CPMenuBarIconImageAlphaValue   = 1.0,
+    _CPMenuBarAttributes            = nil,
     _CPMenuBarSharedWindow          = nil;
 
 /*! @class CPMenu
@@ -93,6 +93,10 @@ var _CPMenuBarVisible               = NO,
         [_CPMenuBarSharedWindow setIconImage:_CPMenuBarIconImage];
         [_CPMenuBarSharedWindow setIconImageAlphaValue:_CPMenuBarIconImageAlphaValue];
         
+        [_CPMenuBarSharedWindow setColor:[_CPMenuBarAttributes objectForKey:@"CPMenuBarBackgroundColor"]];
+        [_CPMenuBarSharedWindow setTextColor:[_CPMenuBarAttributes objectForKey:@"CPMenuBarTextColor"]];
+        [_CPMenuBarSharedWindow setTitleColor:[_CPMenuBarAttributes objectForKey:@"CPMenuBarTitleColor"]];
+        
         [_CPMenuBarSharedWindow orderFront:self];
     }
     else
@@ -124,6 +128,41 @@ var _CPMenuBarVisible               = NO,
 + (CPImage)menuBarIconImage
 {
     return _CPMenuBarImage;
+}
+
++ (void)setMenuBarAttributes:(CPDictionary)attributes
+{
+    if (_CPMenuBarAttributes == attributes)
+        return;
+        
+    _CPMenuBarAttributes = [attributes copy];
+    
+    var textColor = [attributes objectForKey:@"CPMenuBarTextColor"],
+        titleColor = [attributes objectForKey:@"CPMenuBarTitleColor"];
+    
+    if (!textColor && titleColor)
+        [_CPMenuBarAttributes setObject:titleColor forKey:@"CPMenuBarTextColor"];
+    
+    else if (textColor && !titleColor)
+        [_CPMenuBarAttributes setObject:textColor forKey:@"CPMenuBarTitleColor"];
+    
+    else if (!textColor && !titleColor)
+    {
+        [_CPMenuBarAttributes setObject:[CPColor blackColor] forKey:@"CPMenuBarTextColor"];
+        [_CPMenuBarAttributes setObject:[CPColor blackColor] forKey:@"CPMenuBarTitleColor"];
+    }
+    
+    if (_CPMenuBarSharedWindow)
+    {
+        [_CPMenuBarSharedWindow setColor:[_CPMenuBarAttributes objectForKey:@"CPMenuBarBackgroundColor"]];
+        [_CPMenuBarSharedWindow setTextColor:[_CPMenuBarAttributes objectForKey:@"CPMenuBarTextColor"]];
+        [_CPMenuBarSharedWindow setTitleColor:[_CPMenuBarAttributes objectForKey:@"CPMenuBarTitleColor"]];
+    }
+}
+
++ (CPDictionary)menuBarAttributes
+{
+    return _CPMenuBarAttributes;
 }
 
 + (void)_setMenuBarIconImageAlphaValue:(float)anAlphaValue
@@ -1312,6 +1351,9 @@ var _CPMenuBarWindowBackgroundColor = nil,
     
     CPImageView _iconImageView;
     CPTextField _titleField;
+    
+    CPColor     _textColor;
+    CPColor     _titleColor;
 }
 
 + (void)initialize
@@ -1320,8 +1362,6 @@ var _CPMenuBarWindowBackgroundColor = nil,
         return;
         
     var bundle = [CPBundle bundleForClass:self];
-    
-    _CPMenuBarWindowBackgroundColor = [CPColor colorWithPatternImage:[[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"_CPMenuBarWindow/_CPMenuBarWindowBackground.png"] size:CGSizeMake(1.0, 18.0)]];
     
     _CPMenuBarWindowFont = [CPFont systemFontOfSize:11.0];
 }
@@ -1340,7 +1380,6 @@ var _CPMenuBarWindowBackgroundColor = nil,
      
         var contentView = [self contentView];
         
-        [contentView setBackgroundColor:_CPMenuBarWindowBackgroundColor];
         [contentView setAutoresizesSubviews:NO];
         
         [self setBecomesKeyOnlyIfNeeded:YES];
@@ -1350,11 +1389,9 @@ var _CPMenuBarWindowBackgroundColor = nil,
         
         [contentView addSubview:_iconImageView];
         
-        _titleField = [[_CPImageAndTitleView alloc] initWithFrame:CGRectMakeZero()];
+        _titleField = [[CPTextField alloc] initWithFrame:CGRectMakeZero()];
         
         [_titleField setFont:[CPFont boldSystemFontOfSize:12.0]];
-        
-        [_titleField setImagePosition:CPImageLeft];
         [_titleField setAlignment:CPCenterTextAlignment];
         
         [contentView addSubview:_titleField];
@@ -1376,7 +1413,7 @@ var _CPMenuBarWindowBackgroundColor = nil,
         document.title = bundleName;
 #endif
 
-    [_titleField setTitle:aTitle];
+    [_titleField setStringValue:aTitle];
     [_titleField sizeToFit];
     
     [self tile];
@@ -1393,6 +1430,39 @@ var _CPMenuBarWindowBackgroundColor = nil,
 - (void)setIconImageAlphaValue:(float)anAlphaValue
 {
     [_iconImageView setAlphaValue:anAlphaValue];
+}
+
+- (void)setColor:(CPColor)aColor
+{
+    if (!aColor)
+    {
+        if (!_CPMenuBarWindowBackgroundColor)
+            _CPMenuBarWindowBackgroundColor = [CPColor colorWithPatternImage:[[CPImage alloc] initWithContentsOfFile:[[CPBundle bundleForClass:[_CPMenuBarWindow class]] pathForResource:@"_CPMenuBarWindow/_CPMenuBarWindowBackground.png"] size:CGSizeMake(1.0, 18.0)]];
+            
+        [[self contentView] setBackgroundColor:_CPMenuBarWindowBackgroundColor];
+    }
+    else
+        [[self contentView] setBackgroundColor:aColor];
+}
+
+- (void)setTextColor:(CPColor)aColor
+{
+    if (_textColor == aColor)
+        return;
+    
+    _textColor = aColor;
+    
+    [_menuItemViews makeObjectsPerformSelector:@selector(setTextColor:) withObject:_textColor];
+}
+
+- (void)setTitleColor:(CPColor)aColor
+{
+    if (_titleColor == aColor)
+        return;
+    
+    _titleColor = aColor;
+    
+    [_titleField setTextColor:aColor ? aColor : [CPColor blackColor]];
 }
 
 - (void)setMenu:(CPMenu)aMenu
@@ -1465,6 +1535,7 @@ var _CPMenuBarWindowBackgroundColor = nil,
         [menuItemView setShowsStateColumn:NO];
         [menuItemView setBelongsToMenuBar:YES];
         [menuItemView setFont:_CPMenuBarWindowFont];
+        [menuItemView setTextColor:_textColor];
         [menuItemView setHidden:[item isHidden]];
         
         [menuItemView synchronizeWithMenuItem];
@@ -1497,6 +1568,7 @@ var _CPMenuBarWindowBackgroundColor = nil,
     [menuItemView setShowsStateColumn:NO];
     [menuItemView setBelongsToMenuBar:YES];
     [menuItemView setFont:_CPMenuBarWindowFont];
+    [menuItemView setTextColor:_textColor];
     [menuItemView setHidden:[menuItem isHidden]];
 
     [menuItemView synchronizeWithMenuItem];
