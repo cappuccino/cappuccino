@@ -830,9 +830,7 @@ var LEFT_MARGIN                 = 3.0,
 var _CPMenuItemSelectionColor                   = nil,
     
     _CPMenuItemDefaultStateImages               = [],
-    _CPMenuItemDefaultStateHighlightedImages    = [],
-    
-    _CPMenuItemViewMenuBarArrowActivatedImage   = nil;
+    _CPMenuItemDefaultStateHighlightedImages    = [];
 
 /*
     @ignore
@@ -1076,9 +1074,6 @@ var _CPMenuItemSelectionColor                   = nil,
     
     if (shouldActivate)
     {
-        if (!_CPMenuItemViewMenuBarArrowActivatedImage)
-            _CPMenuItemViewMenuBarArrowActivatedImage = [[CPImage alloc] initWithContentsOfFile:[[CPBundle bundleForClass:[_CPMenuItemView class]] pathForResource:@"_CPMenuItemView/_CPMenuItemViewMenuBarArrowActivated.png"] size:CGSizeMake(10.0, 10.0)];
-                    
         [_imageAndTitleView setTextColor:[CPColor whiteColor]];
         [_submenuView setColor:[CPColor whiteColor]];
     }
