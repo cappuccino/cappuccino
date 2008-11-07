@@ -135,7 +135,12 @@
 */
 - (void)setHidden:(BOOL)isHidden
 {
+    if (_isHidden == isHidden)
+        return;
+    
     _isHidden = isHidden;
+
+    [_menu itemChanged:self];
 }
 
 /*!
@@ -154,7 +159,9 @@
     if (_isHidden)
         return YES;
     
-    if ([[[_menu supermenu] indexOfItemWithSubmenu:_menu] isHiddenOrHasHiddenAncestor])
+    var supermenu = [_menu supermenu];
+    
+    if ([[supermenu itemAtIndex:[supermenu indexOfItemWithSubmenu:_menu]] isHiddenOrHasHiddenAncestor])
         return YES;
 
     return NO;
