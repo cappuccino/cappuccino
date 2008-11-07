@@ -881,7 +881,7 @@ var CTRL_KEY_CODE   = 17;
 {        
     try
     {
-        if (aDOMEvent.touches && aDOMEvent.touches.length == 1)
+        if (aDOMEvent.touches && (aDOMEvent.touches.length == 1 || (aDOMEvent.touches.length == 0 && aDOMEvent.changedTouches.length == 1)))
         {
             var newEvent = {};
             
@@ -897,19 +897,18 @@ var CTRL_KEY_CODE   = 17;
                                             break;
             }
     
-            newEvent.clientX = aDOMEvent.touches[0].clientX;
-            newEvent.clientY = aDOMEvent.touches[0].clientY;
+            var touch = aDOMEvent.touches.length ? aDOMEvent.touches[0] : aDOMEvent.changedTouches[0];
+            
+            newEvent.clientX = touch.clientX;
+            newEvent.clientY = touch.clientY;
             
             newEvent.timestamp = aDOMEvent.timestamp;
             newEvent.target = aDOMEvent.target;
             
             newEvent.shiftKey = newEvent.ctrlKey = newEvent.altKey = newEvent.metaKey = false;
             
-            if (aDOMEvent.type == CPDOMEventTouchMove)
-            {
                 newEvent.preventDefault = function(){if(aDOMEvent.preventDefault) aDOMEvent.preventDefault()};
                 newEvent.stopPropagation = function(){if(aDOMEvent.stopPropagation) aDOMEvent.stopPropagation()};
-            }
             
             [self _bridgeMouseEvent:newEvent];
     
