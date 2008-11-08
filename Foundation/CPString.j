@@ -595,13 +595,24 @@ var CPStringHashes      = new objj_dictionary();
 }
 
 /*!
-    Until this is corrected
-    @ignore
+	Deletes the last path component of a string.
+	This method assumes that the string's content is a '/'
+	separated file system path.
 */
 - (CPString)stringByDeletingLastPathComponent
 {
-    // FIXME: this is wrong: a/a/ returns a/a/.
-    return substr(0, lastIndexOf('/') + 1);
+    var path = self,
+        start = length - 1;
+    
+    while (path.charAt(start) === '/')
+        start--;
+    
+    path = path.substr(0, path.lastIndexOf('/', start));
+    
+    if (path === "" && charAt(0) === '/')
+        return '/';
+
+    return path;
 }
 
 - (CPString)stringByStandardizingPath
