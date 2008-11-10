@@ -1,6 +1,6 @@
 
-import <Foundation/CPObject.j>
-import <Foundation/CPKeyValueCoding.j>
+@import <Foundation/CPObject.j>
+@import <Foundation/CPKeyValueCoding.j>
 
 
 var _CPCibConnectorSourceKey        = @"_CPCibConnectorSourceKey",

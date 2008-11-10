@@ -20,9 +20,9 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-import "CPDOMWindowBridge.j"
-import "CPFlashMovie.j"
-import "CPView.j"
+@import "CPDOMWindowBridge.j"
+@import "CPFlashMovie.j"
+@import "CPView.j"
 
 
 @implementation CPFlashView : CPView

@@ -8,26 +8,85 @@ importClass(java.io.BufferedWriter);
 importClass(java.io.FileWriter);
 
 
-function exec(command)
-{
-	var p = Packages.java.lang.Runtime.getRuntime().exec(command);//jsArrayToJavaArray(command));
-	
-	var reader = new Packages.java.io.BufferedReader(new Packages.java.io.InputStreamReader(p.getInputStream()));
-	while (s = reader.readLine())
-		System.out.println(s);
-    
-	var reader = new Packages.java.io.BufferedReader(new Packages.java.io.InputStreamReader(p.getErrorStream()));
-	while (s = reader.readLine())
-		System.out.println(s);
 
-	var result = p.waitFor();
-		
-	return result;
+OBJJ_PREPROCESSOR_PREPROCESS    = 1 << 10;
+OBJJ_PREPROCESSOR_COMPRESS      = 1 << 11;
+OBJJ_PREPROCESSOR_SYNTAX        = 1 << 12;
+
+function exec(/*Array*/ command, /*Boolean*/ showOutput)
+{
+    var line = "",
+        output = "",
+        
+        process = Packages.java.lang.Runtime.getRuntime().exec(command),//jsArrayToJavaArray(command));
+        reader = new Packages.java.io.BufferedReader(new Packages.java.io.InputStreamReader(process.getInputStream()));
+    
+    while (line = reader.readLine())
+    {
+        if (showOutput)
+            System.out.println(line);
+        
+        output += line + '\n';
+    }
+    
+    reader = new Packages.java.io.BufferedReader(new Packages.java.io.InputStreamReader(process.getErrorStream()));
+    
+    while (line = reader.readLine())
+        System.out.println(line);
+
+    try
+    {
+        if (process.waitFor() != 0)
+            System.err.println("exit value = " + process.exitValue());
+    }
+    catch (anException)
+    {
+        System.err.println(anException);
+    }
+    
+    return output;
 }
 
-function preprocess(aFilePath, outFilePath, gccArgs, shouldObjjPreprocess, shouldCheckSyntax)
+function compress(/*String*/ aCode, /*Object*/ flags, /*File*/ tmpFile)
+{
+    var writer = new BufferedWriter(new FileWriter(tmpFile));
+    
+    writer.write(aCode);
+    
+    writer.close();
+
+    return exec(["java", "-jar", OBJJ_HOME + "/lib/shrinksafe.jar", "-c", tmpFile.getCanonicalPath()]);
+}
+
+//#define SET_CONTEXT(aFragment, aContext) aFragment.context = aContext
+//#define GET_CONTEXT(aFragment) aFragment.context
+
+//#define SET_TYPE(aFragment, aType) aFragment.type = (aType)
+//#define GET_TYPE(aFragment) aFragment.type
+
+function GET_CODE(aFragment) { return aFragment.info; }
+//#define SET_CODE(aFragment, aCode) aFragment.info = (aCode)
+
+function GET_PATH(aFragment) { return aFragment.info; }
+//#define SET_PATH(aFragment, aPath) aFragment.info = aPath
+
+//#define GET_BUNDLE(aFragment) aFragment.bundle
+//#define SET_BUNDLE(aFragment, aBundle) aFragment.bundle = aBundle
+
+//#define GET_FILE(aFragment) aFragment.file
+//#define SET_FILE(aFragment, aFile) aFragment.file = aFile
+
+function IS_FILE(aFragment) { return (aFragment.type & FRAGMENT_FILE); }
+function IS_LOCAL(aFragment) { return (aFragment.type & FRAGMENT_LOCAL); }
+//#define IS_IMPORT(aFragment) (aFragment.type & FRAGMENT_IMPORT)
+
+function preprocess(aFilePath, outFilePath, gccArgs, flags)
 {
     print("Statically Preprocessing " + aFilePath);
+    
+    var shouldObjjPreprocess = flags & OBJJ_PREPROCESSOR_PREPROCESS,
+        shouldCheckSyntax = flags & OBJJ_PREPROCESSOR_SYNTAX,
+        shouldCompress = flags & OBJJ_PREPROCESSOR_COMPRESS;
     
     // FIXME: figure out why this doesn't work on Windows/Cygwin
     //var tmpFile = java.io.File.createTempFile("OBJJC", "");
@@ -59,32 +118,58 @@ function preprocess(aFilePath, outFilePath, gccArgs, shouldObjjPreprocess, shoul
         
     reader.close();
     
-    var results;
-    
-    try
-    {
-        results = objj_preprocess_file(new File(aFilePath).getName(), fileContents, shouldCheckSyntax);
-    }
-    catch (e)
-    {
-        if (e.fragment)
-        {
-            var lines = e.fragment.info.split("\n"),
-                PAD = 3;
-		    System.out.println(
-		        "Syntax error in "+e.fragment.file.path+
-		        " on preprocessed line number "+e.lineNumber+"\n"+
-		        "\t"+lines.slice(e.lineNumber-1-PAD<0 ? 0 : e.lineNumber-1-PAD, e.lineNumber+PAD).join("\n\t"));
-        }
-		else
-		    System.out.println("Unknown error: " + e);
-		    
-    	System.exit(1);
-    }
+    // Preprocess contents into fragments.
+    var filePath = new String(new File(aFilePath).getName()),
+        fragments = objj_preprocess(fileContents, { path:"/x" }, {path:filePath}, flags),
+        index = 0,
+        count = fragments.length,
+        preprocessed = MARKER_PATH + ';' + filePath.length + ';' + filePath;
 
+    // Writer preprocessed fragments out.
+    for (; index < count; ++index)
+    {
+        var fragment = fragments[index];
+        
+        if (IS_FILE(fragment))
+            preprocessed += (IS_LOCAL(fragment) ? MARKER_IMPORT_LOCAL : MARKER_IMPORT_STD) + ';' + GET_PATH(fragment).length + ';' + GET_PATH(fragment);
+        else
+        {            
+            var code = GET_CODE(fragment);
+            
+            if (shouldCheckSyntax)
+            {
+                try
+                {
+                    new Function(GET_CODE(fragment));
+                }
+                catch (e)
+                {
+                    var lines = e.fragment.info.split("\n"),
+                        PAD = 3;
+                        
+                    System.out.println(
+                            "Syntax error in "+e.fragment.file.path+
+                            " on preprocessed line number "+e.lineNumber+"\n"+
+                            "\t"+lines.slice(e.lineNumber-1-PAD<0 ? 0 : e.lineNumber-1-PAD, e.lineNumber+PAD).join("\n\t"));
+                        
+                    System.exit(1);
+                }
+            }
+            
+            if (shouldCompress)
+            {
+                code = compress("function(){" + code + '}', 0, tmpFile);
+            
+                code = code.substr("function(){".length, code.length - "function(){};\n\n".length);
+            }
+            
+            preprocessed += MARKER_CODE + ';' + code.length + ';' + code;
+        }
+    }
+    
     // Write file.
     var writer = new BufferedWriter(new FileWriter(outFilePath));
-    writer.write(results);
+    writer.write(preprocessed);
     writer.close();
 }
 
@@ -98,9 +183,9 @@ function main()
         
         gccArgs = [],
         
-        shouldObjjPreprocess = true,
-        shouldCheckSyntax = true;
+        flags = OBJJ_PREPROCESSOR_PREPROCESS | OBJJ_PREPROCESSOR_SYNTAX;
     
+        
     for (; index < count; ++index)
     {
         if (args[index] == "-o")
@@ -109,24 +194,30 @@ function main()
                 outFilePaths.push(args[index]);
         }
         
-        else if (args[index].indexOf("-D") == 0)
+        else if (args[index].indexOf("-D") === 0)
             gccArgs.push(args[index])
             
-        else if (args[index].indexOf("-U") == 0)
+        else if (args[index].indexOf("-U") === 0)
             gccArgs.push(args[index]);
             
-        else if (args[index].indexOf("-E") == 0)
-            shouldObjjPreprocess = false;
+        else if (args[index].indexOf("-E") === 0)
+            flags &= ~OBJJ_PREPROCESSOR_PREPROCESS;
             
-        else if (args[index].indexOf("-S") == 0)
-            shouldCheckSyntax = false;
+        else if (args[index].indexOf("-S") === 0)
+            flags &= ~OBJJ_PREPROCESSOR_SYNTAX;
+            
+        else if (args[index].indexOf("-g") === 0)
+            flags |= OBJJ_PREPROCESSOR_DEBUG_SYMBOLS;
+            
+        else if (args[index].indexOf("-O") === 0)
+            flags |= OBJJ_PREPROCESSOR_COMPRESS;
     
         else
             filePaths.push(args[index]);
     }
     
     for (index = 0, count = filePaths.length; index < count; ++index)
-        preprocess(filePaths[index], outFilePaths[index], gccArgs, shouldObjjPreprocess, shouldCheckSyntax);
+        preprocess(filePaths[index], outFilePaths[index], gccArgs, flags);
 }
 
 args = arguments;

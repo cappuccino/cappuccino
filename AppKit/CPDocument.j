@@ -20,11 +20,12 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-import <Foundation/CPString.j>
-import <Foundation/CPArray.j>
+@import <Foundation/CPString.j>
+@import <Foundation/CPArray.j>
 
-import "CPResponder.j"
-import "CPWindowController.j"
+@import "CPResponder.j"
+@import "CPWindowController.j"
+
 
 /*
     @global
@@ -79,7 +80,8 @@ CPDocumentDidFailToSaveNotification = @"CPDocumentDidFailToSaveNotification";
 
 var CPDocumentUntitledCount = 0;
 
-/*
+/*! @class CPDocument
+
     <objj>CPDocument</objj> is used to represent a document/file in a Cappuccino application.
     In a document-based application, generally multiple documents are open simutaneously
     (multiple text documents, slide presentations, spreadsheets, etc.), and multiple
@@ -101,7 +103,7 @@ var CPDocumentUntitledCount = 0;
     CPURLRequest    _writeRequest;
 }
 
-/*
+/*!
     Initializes an empty document.
     @return the initialized document
 */
@@ -122,7 +124,7 @@ var CPDocumentUntitledCount = 0;
     return self;
 }
 
-/*
+/*!
     Initializes the document with a specific data type.
     @param aType the type of document to initialize
     @param anError not used
@@ -138,7 +140,7 @@ var CPDocumentUntitledCount = 0;
     return self;
 }
 
-/*
+/*!
     Initializes a document of a specific type located at a URL. Notifies
     the provided delegate after initialization.
     @param anAbsoluteURL the url of the document content
@@ -164,7 +166,7 @@ var CPDocumentUntitledCount = 0;
     return self;
 }
 
-/*
+/*!
     Initializes the document from a URL.
     @param anAbsoluteURL the document location
     @param absoluteContentsURL the location of the document's contents
@@ -189,7 +191,7 @@ var CPDocumentUntitledCount = 0;
     return self;
 }
 
-/*
+/*!
     Returns the receiver's data in a specified type. The default implementation just
     throws an exception.
     @param aType the format of the data
@@ -203,7 +205,7 @@ var CPDocumentUntitledCount = 0;
                 reason:"dataOfType:error: must be overridden by the document subclass."];
 }
 
-/*
+/*!
     Sets the content of the document by reading the provided
     data. The default implementation just throws an exception.
     @param aData the document's data
@@ -219,7 +221,7 @@ var CPDocumentUntitledCount = 0;
 }
 
 // Creating and managing window controllers
-/*
+/*!
     Creates the window controller for this document.
 */
 - (void)makeWindowControllers
@@ -229,7 +231,7 @@ var CPDocumentUntitledCount = 0;
     [self addWindowController:controller];
 }
 
-/*
+/*!
     Returns the document's window controllers
 */
 - (CPArray)windowControllers
@@ -237,7 +239,7 @@ var CPDocumentUntitledCount = 0;
     return _windowControllers;
 }
 
-/*
+/*!
     Add a controller to the document's list of controllers. This should
     be called after making a new window controller.
     @param aWindowController the controller to add
@@ -254,7 +256,7 @@ var CPDocumentUntitledCount = 0;
 }
 
 // Managing Document Windows
-/*
+/*!
     Shows all the document's windows.
 */
 - (void)showWindows
@@ -262,7 +264,7 @@ var CPDocumentUntitledCount = 0;
     [_windowControllers makeObjectsPerformSelector:@selector(showWindow:) withObject:self];
 }
 
-/*
+/*!
     Returns the name of the document as displayed in the title bar.
 */
 - (CPString)displayName
@@ -279,7 +281,7 @@ var CPDocumentUntitledCount = 0;
 	return @"Untitled " + _untitledDocumentIndex;
 }
 
-/*
+/*!
     Returns the document's Cib name
 */
 - (CPString)windowCibName
@@ -287,7 +289,7 @@ var CPDocumentUntitledCount = 0;
     return nil;
 }
 
-/*
+/*!
     Called after <code>aWindowController<code> loads the document's Nib file.
     @param aWindowController the controller that loaded the Nib file
 */
@@ -295,7 +297,7 @@ var CPDocumentUntitledCount = 0;
 {
 }
 
-/*
+/*!
     Called before <code>aWindowController</code> will load the document's Nib file.
     @param aWindowController the controller that will load the Nib file
 */
@@ -304,7 +306,7 @@ var CPDocumentUntitledCount = 0;
 }
 
 // Reading from and Writing to URLs
-/*
+/*!
     Set the document's data from a URL. Notifies the provided delegate afterwards.
     @param anAbsoluteURL the URL to the document's content
     @param aType the document type
@@ -322,7 +324,7 @@ var CPDocumentUntitledCount = 0;
     _readConnection.session = _CPReadSessionMake(aType, aDelegate, aDidReadSelector, aContextInfo);
 }
 
-/*
+/*!
     Returns the path to the document's file.
 */
 - (CPURL)fileURL
@@ -330,7 +332,7 @@ var CPDocumentUntitledCount = 0;
     return _fileURL;
 }
 
-/*
+/*!
     Sets the path to the document's file.
     @param aFileURL the path to the document's file
 */
@@ -344,7 +346,7 @@ var CPDocumentUntitledCount = 0;
     [_windowControllers makeObjectsPerformSelector:@selector(synchronizeWindowTitleWithDocumentName)];
 }
 
-/*
+/*!
     Saves the document to the specified URL. Notifies the provided delegate
     with the provided selector and context info afterwards.
     @param anAbsoluteURL the url to write the document data to
@@ -493,7 +495,7 @@ var CPDocumentUntitledCount = 0;
 }
 
 // Managing Document Status
-/*
+/*!
     Returns <code>YES</code> if there are any unsaved changes.
 */
 - (BOOL)isDocumentEdited
@@ -501,7 +503,7 @@ var CPDocumentUntitledCount = 0;
     return _changeCount != 0;
 }
 
-/*
+/*!
     Updates the number of unsaved changes to the document.
     @param aChangeType a new document change to apply
 */
@@ -521,7 +523,7 @@ var CPDocumentUntitledCount = 0;
 }
 
 // Managing File Types
-/*
+/*!
     Sets the document's file type
     @param aType the document's type
 */
@@ -530,7 +532,7 @@ var CPDocumentUntitledCount = 0;
     _fileType = aType;
 }
 
-/*
+/*!
     Returns the document's file type
 */
 - (CPString)fileType
@@ -539,7 +541,7 @@ var CPDocumentUntitledCount = 0;
 }
 
 // Working with Undo Manager
-/*
+/*!
     Returns <code>YES</code> if the document has a
     <objj>CPUndoManager</objj>.
 */
@@ -548,7 +550,7 @@ var CPDocumentUntitledCount = 0;
     return _hasUndoManager;
 }
 
-/*
+/*!
     Sets whether the document should have a <objj>CPUndoManager</objj>.
     @param aFlag <code>YES</code> makes the document have an undo manager
 */
@@ -632,7 +634,7 @@ var CPDocumentUntitledCount = 0;
     }
 }
 
-/*
+/*!
     Returns the document's undo manager. If the document
     should have one, but the manager is <code>nil</code>, it
     will be created and then returned.
@@ -656,7 +658,7 @@ var CPDocumentUntitledCount = 0;
 }
 
 // Handling User Actions
-/*
+/*!
     Saves the document. If the document does not
     have a file path to save to (<code>fileURL</code>)
     then <code>saveDocumentAs:</code> will be called.
@@ -676,7 +678,7 @@ var CPDocumentUntitledCount = 0;
         [self saveDocumentAs:self];
 }
 
-/*
+/*!
     Saves the document to a user specified path.
     @param aSender the object requesting the operation
 */

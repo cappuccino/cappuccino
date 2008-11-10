@@ -20,11 +20,11 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-import <Foundation/CPObject.j>
-import <Foundation/CPString.j>
+@import <Foundation/CPObject.j>
+@import <Foundation/CPString.j>
 
 
-/*
+/*! @class CPCookie
     <objj>CPCookie</objj> is the Cappuccino interface to a web browser cookie. You can set the name
 */
 @implementation CPCookie : CPObject
@@ -35,7 +35,7 @@ import <Foundation/CPString.j>
     CPString    _expires;
 }
 
-/*
+/*!
     Initializes a cookie with a given name <code>aName</code>.
     @param the name for the cookie
 */
@@ -49,7 +49,7 @@ import <Foundation/CPString.j>
     return self;
 }
 
-/*
+/*!
     Returns the cookie's data value
 */
 - (CPString)value
@@ -57,7 +57,7 @@ import <Foundation/CPString.j>
     return _cookieValue;
 }
 
-/*
+/*!
     Returns the cookie's name
 */
 - (CPString)name
@@ -65,7 +65,7 @@ import <Foundation/CPString.j>
     return _cookieName;
 }
 
-/*
+/*!
     Returns the cookie's expiration date
 */
 - (CPString)expires
@@ -73,7 +73,7 @@ import <Foundation/CPString.j>
     return _expires;
 }
 
-/*
+/*!
     Sets a value, expiration date, and domain for the cookie
     @param value the cookie's value
     @param date the cookie's expiration date

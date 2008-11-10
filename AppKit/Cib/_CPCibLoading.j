@@ -20,9 +20,9 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-import <Foundation/CPBundle.j>
-import <Foundation/CPDictionary.j>
-import <Foundation/CPString.j>
+@import <Foundation/CPBundle.j>
+@import <Foundation/CPDictionary.j>
+@import <Foundation/CPString.j>
 
 
 var CPCibOwner = @"CPCibOwner";

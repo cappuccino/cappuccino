@@ -20,17 +20,18 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-import "CPObject.j"
+@import "CPObject.j"
 
-/*
-    <objj>CPEnumerator</objj> is a superclass (with useless method bodies)
+
+/*! @class CPEnumerator
+    CPEnumerator is a superclass (with useless method bodies)
     that defines an interface for subclasses to follow. The purpose of an
     enumerator is to be a convenient system for traversing over the elements
     of a collection of objects.
 */
 @implementation CPEnumerator : CPObject
 
-/*
+/*!
     Returns the next object in the collection.
     No particular ordering is guaranteed.
 */
@@ -39,7 +40,7 @@ import "CPObject.j"
     return nil;
 }
 
-/*
+/*!
     Returns all objects in the collection in an array.
     No particular ordering is guaranteed.
 */

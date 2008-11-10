@@ -20,12 +20,13 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-import <Foundation/CPObject.j>
+@import <Foundation/CPObject.j>
 
-import "CGColor.j"
+@import "CGColor.j"
 
-import "CPCompatibility.j"
-import "CPImage.j"
+@import "CPCompatibility.j"
+@import "CPImage.j"
+
 
 var _redComponent        = 0,
     _greenComponent      = 1,
@@ -36,7 +37,8 @@ var _hueComponent        = 0,
     _saturationComponent = 1,
     _brightnessComponent = 2;
 
-/*
+/*! @code CPColor
+
     <code>CPColor</code> can be used to represent color
     in an RGB or HSB model with an optional transparency value.</p>
 
@@ -56,7 +58,7 @@ var _hueComponent        = 0,
     CPString    _cssString;    
 }
 
-/*
+/*!
     Creates a color in the RGB color space, with an alpha value.
     Each component should be between the range of 0.0 to 1.0. For
     the alpha component, a value of 1.0 is opaque, and 0.0 means
@@ -74,7 +76,7 @@ var _hueComponent        = 0,
     return [[CPColor alloc] _initWithRGBA:[red, green, blue, alpha]];
 }
 
-/*
+/*!
     Creates a new color object with <code>white</code> for the RGB components.
     For the alpha component, a value of 1.0 is opaque, and 0.0 means completely transparent.
     
@@ -88,7 +90,7 @@ var _hueComponent        = 0,
     return [[CPColor alloc] _initWithRGBA:[white, white, white, alpha]];
 }
 
-/*
+/*!
     Creates a new color in HSB space.
     
     @param hue the hue value
@@ -119,7 +121,7 @@ var _hueComponent        = 0,
     }
 }
 
-/*
+/*!
     Creates an RGB color from a hexadecimal string. For example,
     the a string of "FFFFFF" would return a white CPColor.
     "FF0000" would return a pure red, "00FF00" would return a
@@ -134,7 +136,7 @@ var _hueComponent        = 0,
     return [[CPColor alloc] _initWithRGBA: hexToRGB(hex)];
 }
 
-/*
+/*!
     Returns a black color object. (RGBA=[0.0, 0.0, 0.0, 1.0])
 */
 + (CPColor)blackColor
@@ -142,7 +144,7 @@ var _hueComponent        = 0,
     return [[CPColor alloc] _initWithRGBA:[0.0, 0.0, 0.0, 1.0]];
 }
 
-/*
+/*!
     Returns a blue color object. (RGBA=[0.0, 0.0, 1.0, 1.0])
 */
 + (CPColor)blueColor
@@ -150,7 +152,7 @@ var _hueComponent        = 0,
     return [[CPColor alloc] _initWithRGBA:[0.0, 0.0, 1.0, 1.0]];
 }
 
-/*
+/*!
     Returns a dark gray color object. (RGBA=[0.33 ,0.33, 0.33, 1.0])
 */
 + (CPColor)darkGrayColor
@@ -158,7 +160,7 @@ var _hueComponent        = 0,
     return [CPColor colorWithCalibratedWhite:1.0 / 3.0 alpha:1.0];
 }
 
-/*
+/*!
     Returns a gray color object. (RGBA=[0.5, 0.5, 0.5, 1.0])
 */
 + (CPColor)grayColor
@@ -166,7 +168,7 @@ var _hueComponent        = 0,
     return [CPColor colorWithCalibratedWhite:0.5 alpha: 1.0];
 }
 
-/*
+/*!
     Returns a green color object. (RGBA=[0.0, 1.0, 0.0, 1.0])
 */
 + (CPColor)greenColor
@@ -174,7 +176,7 @@ var _hueComponent        = 0,
     return [[CPColor alloc] _initWithRGBA:[0.0, 1.0, 0.0, 1.0]];
 }
 
-/*
+/*!
     Returns a light gray color object (RGBA=[0.66, 0.66, 0.66, 1.0])
 */
 + (CPColor)lightGrayColor
@@ -182,7 +184,7 @@ var _hueComponent        = 0,
     return [CPColor colorWithCalibratedWhite:2.0 / 3.0 alpha:1.0];
 }
 
-/*
+/*!
     Returns a red color object (RGBA=[1.0, 0.0, 0.0, 1.0])
 */
 + (CPColor)redColor
@@ -190,7 +192,7 @@ var _hueComponent        = 0,
     return [[CPColor alloc] _initWithRGBA:[1.0, 0.0, 0.0, 1.0]];
 }
 
-/*
+/*!
     Returns a white color object (RGBA=[1.0, 1.0, 1.0, 1.0])
 */
 + (CPColor)whiteColor
@@ -198,7 +200,7 @@ var _hueComponent        = 0,
     return [[CPColor alloc] _initWithRGBA:[1.0, 1.0, 1.0, 1.0]];
 }
 
-/*
+/*!
     Returns a yellow color object (RGBA=[1.0, 1.0, 0.0, 1.0])
 */
 + (CPColor)yellowColor
@@ -206,7 +208,7 @@ var _hueComponent        = 0,
     return [[CPColor alloc] _initWithRGBA:[1.0, 1.0, 0.0, 1.0]];
 }
 
-/*
+/*!
     Returns a shadow looking color (RGBA=[0.0, 0.0, 0.0, 0.33])
 */
 + (CPColor)shadowColor
@@ -214,7 +216,7 @@ var _hueComponent        = 0,
     return [[CPColor alloc] _initWithRGBA:[0.0, 0.0, 0.0, 1.0 / 3.0]];
 }
 
-/*
+/*!
     Creates a color using a tile pattern with <code>anImage</code>
     @param the image to tile
     @return a tiled image color object
@@ -224,7 +226,7 @@ var _hueComponent        = 0,
     return [[CPColor alloc] _initWithPatternImage:anImage];
 }
 
-/*
+/*!
     Creates a <objj>CPColor</objj> from a valid CSS RGB string. Example, "rgb(32,64,129)".
     
     @param aString a CSS color string
@@ -328,7 +330,7 @@ var _hueComponent        = 0,
     return self;
 }
 
-/*
+/*!
     Returns the image being used as the pattern for the tile in this color.
 */
 - (CPImage)patternImage
@@ -336,7 +338,7 @@ var _hueComponent        = 0,
     return _patternImage;
 }
 
-/*
+/*!
     Returns the alpha component of this color.
 */
 - (float)alphaComponent
@@ -344,7 +346,7 @@ var _hueComponent        = 0,
     return _components[3];
 }
 
-/*
+/*!
     Returns the blue component of this color.
 */
 - (float)blueComponent
@@ -352,7 +354,7 @@ var _hueComponent        = 0,
     return _components[2];
 }
 
-/*
+/*!
     Returns the green component of this color.
 */
 - (float)greenComponent
@@ -360,7 +362,7 @@ var _hueComponent        = 0,
     return _components[1];
 }
 
-/*
+/*!
     Return the red component of this color.
 */
 - (float)redComponent
@@ -368,7 +370,7 @@ var _hueComponent        = 0,
     return _components[0];
 }
 
-/*
+/*!
     Returns the RGBA components of this color in an array.
     The index values are ordered as:
 <pre>
@@ -384,7 +386,7 @@ var _hueComponent        = 0,
     return _components;
 }
 
-/*
+/*!
     Returns a new color with the same RGB as the receiver but a new alpha component.
     
     @param anAlphaComponent the alpha component for the new color
@@ -400,7 +402,7 @@ var _hueComponent        = 0,
     return [[[self class] alloc] _initWithRGBA:components];
 }
 
-/*
+/*!
     Returns an array with the HSB values for this color.
     The index values are ordered as:
 <pre>
@@ -451,7 +453,7 @@ var _hueComponent        = 0,
     ];
 }
 
-/*
+/*!
     Returns the CSS representation of this color. The color will
     be in one of the following forms:
 <pre>
@@ -465,7 +467,7 @@ url("data:image/png;base64,BASE64ENCODEDDATA")  // if there is a pattern image
     return _cssString;
 }
 
-/*
+/*!
     Returns a 6 character long hex string of this color.
 */
 - (CPString)hexString
@@ -480,7 +482,7 @@ var CPColorComponentsKey    = @"CPColorComponentsKey",
 
 @implementation CPColor (CPCoding)
 
-/*
+/*!
     Initializes this color from the data archived in a coder.
     @param aCoder the coder from which the color will be loaded
 */
@@ -492,7 +494,7 @@ var CPColorComponentsKey    = @"CPColorComponentsKey",
     return [self _initWithRGBA:[aCoder decodeObjectForKey:CPColorComponentsKey]];
 }
 
-/*
+/*!
     Archives this color into a coder.
     @param aCoder the coder into which the color will be archived.
 */
@@ -508,7 +510,7 @@ var CPColorComponentsKey    = @"CPColorComponentsKey",
 
 var hexCharacters = "0123456789ABCDEF";
 
-/*
+/*!
     Used for the <objj>CPColor</objj> <code>colorWithHexString:</code> implementation
     @ignore
     @class CPColor

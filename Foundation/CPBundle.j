@@ -20,8 +20,9 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-import "CPObject.j"
-import "CPDictionary.j"
+@import "CPObject.j"
+@import "CPDictionary.j"
+
 
 @implementation CPBundle : CPObject
 {
@@ -56,6 +57,16 @@ import "CPDictionary.j"
 - (CPString)bundlePath
 {
     return [path stringByDeletingLastPathComponent];
+}
+
+- (CPString)resourcePath
+{
+    var path = [self bundlePath];
+    
+    if (path.length)
+        path += '/';
+        
+    return path + "Resources";
 }
 
 - (Class)principalClass

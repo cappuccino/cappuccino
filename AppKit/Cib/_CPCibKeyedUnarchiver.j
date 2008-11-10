@@ -1,5 +1,5 @@
 
-import <Foundation/CPKeyedUnarchiver.j>
+@import <Foundation/CPKeyedUnarchiver.j>
 
 
 @implementation _CPCibKeyedUnarchiver : CPKeyedUnarchiver

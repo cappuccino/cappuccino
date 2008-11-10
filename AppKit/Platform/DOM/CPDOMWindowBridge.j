@@ -20,13 +20,13 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-import <Foundation/CPObject.j>
-import <Foundation/CPRunLoop.j>
+@import <Foundation/CPObject.j>
+@import <Foundation/CPRunLoop.j>
 
-import "CPEvent.j"
-import "CPCompatibility.j"
+@import "CPEvent.j"
+@import "CPCompatibility.j"
 
-import "CPDOMWindowLayer.j"
+@import "CPDOMWindowLayer.j"
 
 #import "../../CoreGraphics/CGGeometry.h"
 
@@ -34,6 +34,11 @@ import "CPDOMWindowLayer.j"
 CPSharedDOMWindowBridge = nil;
 
 var ExcludedDOMElements = [];
+
+// Define up here so compressor knows about em.
+var CPDOMWindowGetFrame,
+    CPDOMEventGetClickCount,
+    CPDOMEventStop;
 
 @implementation CPDOMWindowBridge : CPObject
 {
@@ -68,7 +73,7 @@ var ExcludedDOMElements = [];
     CPString        _overriddenEventType;
 }
 
-/*
+/*!
     Returns the shared DOMWindowBridge.  
 */
 + (id)sharedDOMWindowBridge
@@ -375,7 +380,7 @@ var CTRL_KEY_CODE   = 17;
 
 @implementation CPDOMWindowBridge (Events)
 
-/*
+/*!
     When using command (mac) or control (windows), keys are propagated to the browser by default.  
     To prevent a character key from propagating (to prevent its default action, and instead use it
     in your own application), use these methods. These methods are additive -- the list builds until you clear it.
@@ -388,7 +393,7 @@ var CTRL_KEY_CODE   = 17;
         CharacterKeysToPrevent[""+characters[i-1].toLowerCase()] = YES;
 }
 
-/*
+/*!
     @param character a character to stop propagating keypresses to the browser.
 */
 - (void)preventCharacterKeyFromPropagating:(CPString)character
@@ -396,7 +401,7 @@ var CTRL_KEY_CODE   = 17;
     CharacterKeysToPrevent[character.toLowerCase()] = YES;
 }
 
-/*
+/*!
     Clear the list of characters for which we are not sending keypresses to the browser.
 */
 - (void)clearCharacterKeysToPreventFromPropagating
@@ -404,7 +409,7 @@ var CTRL_KEY_CODE   = 17;
     CharacterKeysToPrevent = {};
 }
 
-/*
+/*!
     Prevent these keyCodes from sending their keypresses to the browser.
     @param keyCodes an array of keycodes to prevent propagation.
 */
@@ -414,7 +419,7 @@ var CTRL_KEY_CODE   = 17;
         KeyCodesToPrevent[keyCodes[i-1]] = YES;
 }
 
-/*
+/*!
     Prevent this keyCode from sending its key events to the browser.
     @param keyCode a keycode to prevent propagation.
 */
@@ -423,7 +428,7 @@ var CTRL_KEY_CODE   = 17;
     KeyCodesToPrevent[keyCode] = YES;
 }
 
-/*
+/*!
     Clear the list of keyCodes for which we are not sending keypresses to the browser.
 */
 - (void)clearKeyCodesToPreventFromPropagating

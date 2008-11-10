@@ -20,10 +20,10 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-import <AppKit/CPControl.j>
+@import <AppKit/CPControl.j>
 
-import "NSCell.j"
-import "NSView.j"
+@import "NSCell.j"
+@import "NSView.j"
 
 
 @implementation CPControl (NSCoding)
@@ -34,12 +34,17 @@ import "NSView.j"
     
     if (self)
     {
+        [self sendActionOn:CPLeftMouseUpMask];
+        
         var cell = [aCoder decodeObjectForKey:@"NSCell"];
         
-        _value = [cell contents];
+        [self setObjectValue:[cell objectValue]];
         
         [self setFont:[cell font]];
+        [self setAlignment:[cell alignment]];
+        
         [self setEnabled:[aCoder decodeObjectForKey:@"NSEnabled"]];
+        [self setContinuous:[cell isContinuous]];
     }
     
     return self;

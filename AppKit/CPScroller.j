@@ -20,7 +20,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-import "CPControl.j"
+@import "CPControl.j"
 
 #include "CoreGraphics/CGGeometry.h"
 
@@ -73,6 +73,10 @@ var _CPScrollerKnobIdentifier                       = @"Knob",
     
 var _CPScrollerClassName                            = nil,
     _CPScrollerPartSizes                            = {};
+
+/*! @class CPScroller
+    
+*/
 
 @implementation CPScroller : CPControl
 {
@@ -206,7 +210,7 @@ var _CPScrollerClassName                            = nil,
 }
 
 // Determining CPScroller Size
-/*
+/*!
     Returns the <objj>CPScroller</objj>'s width for a <objj>CPRegularControlSize</objj>.
 */
 + (float)scrollerWidth
@@ -214,7 +218,7 @@ var _CPScrollerClassName                            = nil,
     return [self scrollerWidthForControlSize:CPRegularControlSize];
 }
 
-/*
+/*!
     Returns the width of a <objj>CPScroller</objj> for the specified <objj>CPControlSize</objj>.
     @param aControlSize the size of a controller to return the width for
 */
@@ -223,7 +227,7 @@ var _CPScrollerClassName                            = nil,
     return _CPScrollerWidths[aControlSize];
 }
 
-/*
+/*!
     Sets the scroller's size.
     @param aControlSize the scroller's size
 */
@@ -242,7 +246,7 @@ var _CPScrollerClassName                            = nil,
     [self layoutSubviews];
 }
 
-/*
+/*!
     Returns the scroller's control size
 */
 - (CPControlSize)controlSize
@@ -251,7 +255,7 @@ var _CPScrollerClassName                            = nil,
 }
 
 // Setting the Knob Position
-/*
+/*!
     Sets the scroller's knob position (ranges from 0.0 to 1.0).
     @param aValue the knob position (ranges from 0.0 to 1.0)
 */
@@ -263,7 +267,7 @@ var _CPScrollerClassName                            = nil,
     [self layoutSubviews];
 }
 
-/*
+/*!
     Sets the position and proportion of the knob.
     @param aValue the knob position (ranges from 0.0 to 1.0)
     @param aProportion the knob's proportion (ranges from 0.0 to 1.0)
@@ -275,7 +279,7 @@ var _CPScrollerClassName                            = nil,
     [self setFloatValue:aValue];
 }
 
-/*
+/*!
     Return's the knob's proportion
 */
 - (float)knobProportion
@@ -293,7 +297,7 @@ var _CPScrollerClassName                            = nil,
     return _partRects[aPart];
 }
 
-/*
+/*!
     Returns the part of the scroller that would be hit by <code>aPoint</code>.
     @param aPoint the simulated point hit
     @return the part of the scroller that intersects the point
@@ -326,7 +330,7 @@ var _CPScrollerClassName                            = nil,
     return CPScrollerNoPart;
 }
 
-/*
+/*!
     Check if there's enough space in the scroller to display the knob
 */
 - (void)checkSpaceForParts
@@ -386,7 +390,7 @@ var _CPScrollerClassName                            = nil,
     }
 }
 
-/*
+/*!
     Returns all the parts of the scroller that
     are usable for displaying.
 */
@@ -396,7 +400,7 @@ var _CPScrollerClassName                            = nil,
 }
 
 // Drawing the Parts
-/*
+/*!
     Draws the specified arrow and sets the highlight.
     @param anArrow the arrow to draw
     @param shouldHighlight sets whether the arrow should be highlighted
@@ -415,7 +419,7 @@ var _CPScrollerClassName                            = nil,
         shouldHighlight ? _CPScrollerHighlightedIdentifier : @"")];
 }
 
-/*
+/*!
     Draws the knob
 */
 - (void)drawKnob
@@ -429,7 +433,7 @@ var _CPScrollerClassName                            = nil,
         _CPControlIdentifierForControlSize(_controlSize))];
 }
 
-/*
+/*!
     Draws the knob's slot
 */
 - (void)drawKnobSlot
@@ -442,7 +446,7 @@ var _CPScrollerClassName                            = nil,
         _CPControlIdentifierForControlSize(_controlSize))];
 }
 
-/*
+/*!
     Caches images for the scroll arrow and knob.
 */
 - (void)drawParts
@@ -480,7 +484,7 @@ var _CPScrollerClassName                            = nil,
     [self drawArrow:CPScrollerIncrementArrow highlight:NO];
 }
 
-/*
+/*!
     Draws the scroller's arrow with a possible highlight,
     if the user's mouse is over it.
     @param shouldHighlight <code>YES</code> will draw the
@@ -496,7 +500,7 @@ var _CPScrollerClassName                            = nil,
 }
 
 // Event Handling
-/*
+/*!
     Returns the part of the scroller that was hit.
 */
 - (CPScrollerPart)hitPart
@@ -504,7 +508,7 @@ var _CPScrollerClassName                            = nil,
     return _hitPart;
 }
 
-/*
+/*!
     Tracks the knob.
     @param anEvent the input event
 */
@@ -547,7 +551,7 @@ var _CPScrollerClassName                            = nil,
     [self sendAction:[self action] to:[self target]];
 }
 
-/*
+/*!
     Tracks the scroll button.
     @param anEvent the input event
 */
@@ -644,7 +648,7 @@ var _CPScrollerClassName                            = nil,
     [self layoutSubviews];
 }
 
-/*
+/*!
     Lays out the scrollers subviews
 */
 - (void)layoutSubviews

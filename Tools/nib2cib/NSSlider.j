@@ -20,9 +20,9 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-import <AppKit/CPSlider.j>
+@import <AppKit/CPSlider.j>
 
-import "NSSlider.j"
+@import "NSSlider.j"
 
 
 @implementation CPSlider (CPCoding)
@@ -33,10 +33,12 @@ import "NSSlider.j"
     
     if (self)
     {
-        _minValue = [aCoder decodeDoubleForKey:@"NSMinValue"];
-        _maxValue = [aCoder decodeDoubleForKey:@"NSMaxValue"];
+        var cell = [aCoder decodeObjectForKey:@"NSCell"];
         
-        //_value = [aCoder decodeDoubleForKey:@"NSValue"];
+        _minValue           = [cell minValue];
+        _maxValue           = [cell maxValue];
+        _altIncrementValue  = [cell altIncrementValue];
+        _isVertical         = [cell isVertical];
     }
     
     return self;
@@ -62,5 +64,27 @@ import "NSSlider.j"
 
 @implementation NSSliderCell : NSCell
 {
+    double  _minValue           @accessors(readonly, getter=minValue);
+    double  _maxValue           @accessors(readonly, getter=maxValue);
+    double  _altIncrementValue  @accessors(readonly, getter=altIncrementValue);
+    BOOL    _vertical           @accessors(readonly, getter=isVertical);
 }
+
+- (id)initWithCoder:(CPCoder)aCoder
+{
+    self = [super initWithCoder:aCoder];
+    
+    if (self)
+    {
+        _objectValue        = [aCoder decodeDoubleForKey:@"NSValue"];
+        
+        _minValue           = [aCoder decodeDoubleForKey:@"NSMinValue"];
+        _maxValue           = [aCoder decodeDoubleForKey:@"NSMaxValue"];
+        _altIncrementValue  = [aCoder decodeDoubleForKey:@"NSAltIncValue"];
+        _isVertical         = [aCoder decodeBoolForKey:@"NSVertical"];
+    }
+    
+    return self;
+}
+
 @end

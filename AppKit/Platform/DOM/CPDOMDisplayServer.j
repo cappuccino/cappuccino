@@ -20,7 +20,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-import <Foundation/CPRunLoop.j>
+@import <Foundation/CPRunLoop.j>
 
 #include "../../CoreGraphics/CGAffineTransform.h"
 #include "CPDOMDisplayServer.h"

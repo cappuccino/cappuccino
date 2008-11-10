@@ -1,13 +1,12 @@
-   ////////////
-  // window //
- ////////////
+if (typeof debug == "undefined")
+    debug = false;
+
+//window
 
 if (!this.window)
     this.window = this;
 
-   ///////////////
-  // DOMParser //
- ///////////////
+// DOMParser
 
 /*function DOMParser() {};
 DOMParser.prototype.parseFromString = function(text, contentType) {
@@ -16,81 +15,193 @@ DOMParser.prototype.parseFromString = function(text, contentType) {
 			new Packages.java.io.StringReader(text)));
 };*/
 
+// Image
+
 function Image() { }
 
-   ///////////////////////
-  // window.setTimeout //
- ///////////////////////
+// print, alert, prompt, confirm
 
-function setTimeout(code, delay) {
-	var func;
-	
-	if (typeof code == "function")
-		func = code;
-	else if (typeof code == "string")
-		func = function () { eval(code); };
-	else
-		return;
-		
-	pendingTimeouts.push(func);
-}
-
-pendingTimeouts = [];
-
-function pendingTimeout() {
-	return pendingTimeouts.length > 0;
-}
-
-function serviceTimeout() {
-	if (pendingTimeout()) {
-		func = pendingTimeouts.shift();
-		return func();
-	}
-}
-
-function serviceTimeouts() {
-	while (pendingTimeout()) {
-		serviceTimeout();
-	}
-}
-
-   ////////////////////////////
-  // alert, prompt, confirm //
- ////////////////////////////
-
-if (typeof alert == "undefined")
+if (!this.print)
 {
-    alert = function(obj) {
-        if (typeof debug != "undefined" && debug) {
-            var result = typeof Packages != "undefined" ? Packages.java.lang.Thread.currentThread().getName() + ": " + obj : String(obj);
-
-            if (typeof print != "undefined")
-                print(result);
-            else if (typeof Packages != "undefined")
-    	        Packages.java.lang.System.out.println(result);
+    if (this.Packages)
+    {
+        this.print = function(object)
+        {
+            Packages.java.lang.System.out.println(String(object));
         }
     }
-    confirm = function(obj) { alert(obj); return true; }
-    prompt  = function(obj) { alert(obj); return ""; }
 }
 
+window.alert = function(obj)
+{
+    if (this.print)
+        print(String(obj));
+}
+// FIXME: prompt user for response?
+window.confirm = function(obj)
+{
+    window.alert(obj);
+    return true;
+}
+window.prompt  = function(obj)
+{ 
+    window.alert(obj);
+    return "";
+}
 
-   ////////////////////
-  // readFile, load //
- ////////////////////
+// setTimeout, setInterval, clearTimeout, clearInterval
 
-if (typeof readFile == "undefined") {
-    if (typeof File != "undefined") {
-        alert("Setting up \"readFile()\" for Spidermonkey");
-        this.readFile = function(path) {
+// This implementation is single-threaded (like browsers) but requires a call to serviceTimeouts()
+// Also includes beginning of a multithreaded implementation (commented out)
+
+window.setTimeout = function(callback, delay)
+{
+    return _scheduleTimeout(callback, delay, false);
+}
+
+window.setInterval = function(callback, delay)
+{
+    return _scheduleTimeout(callback, delay, true);
+}
+
+window.clearTimeout = function(id)
+{
+    if (_timeouts[id])
+        _timeouts[id] = null;
+}
+window.clearInterval = window.clearTimeout;
+
+var _nextId = 0,
+    _timeouts = {},
+    _pendingTimeouts = [];
+
+var _scheduleTimeout = function(callback, delay, repeat)
+{
+    var date = new Date(new Date().getTime() + delay);
+
+	if (typeof callback == "function")
+		var func = callback;
+	else if (typeof callback == "string")
+		var func = new Function(callback);
+	else
+		return;
+
+	var timeout = {
+        callback: func,
+    	date: date,
+    	repeat: repeat,
+    	interval: delay,
+    	id : _nextId++
+    }
+
+    _timeouts[timeout.id] = timeout;
+    _pendingTimeouts.push(timeout);
+
+//	if (!_timersBlock)
+//	    serviceTimeouts();
+
+	return timeout.id;
+}
+
+var _sortTimeouts = function()
+{
+    
+}
+
+//var _timersBlock = false,
+//    _timerThread = null,
+//    _nextTimeout = null;
+
+function serviceTimeouts()
+{
+    while (_pendingTimeouts.length > 0)
+    {
+        _pendingTimeouts = _pendingTimeouts.sort(function (a,b) { return a.date - b.date; });
+        
+        var timeout = _pendingTimeouts.shift();
+        if (_timeouts[timeout.id])
+        {
+        	var wait = timeout.date - new Date();
+
+        	if (wait > 0)
+        	{
+        	    //if (_timersBlock)
+        	    //{
+        	        Packages.java.lang.Thread.sleep(wait);
+        	    //}
+        	    //else
+        	    //{
+        	    //    _pendingTimeouts.splice(0, 0, timeout);
+        	    //    
+        	    //    if (!_nextTimeout || _nextTimeout > timeout.date)
+        	    //    {
+                //        _nextTimeout = timeout.date;
+                //        
+            	//        
+            	//        _timerThread = new java.lang.Thread(new java.lang.Runnable({
+                //			run: function() {
+                //    	        Packages.java.lang.Thread.sleep(wait);
+                //    	        _nextTimeout = null;
+                //			    serviceTimeouts();
+                //			}
+                //		}));
+                //		
+                //		_timerThread.start();
+        	    //    }    
+                //		
+                //	return;
+        	    //}
+        	}
+
+            // perform the callback
+        	timeout.callback();
+    	
+    	    // if its an interval, reschedule it, otherwise clear it
+        	if (timeout.repeat)
+        	{
+        	    var now = new Date(),
+        	        proposed = new Date(timeout.date.getTime() + timeout.interval);
+        	    timeout.date = (proposed < now) ? now : proposed;
+        	    _pendingTimeouts.push(timeout);
+        	}
+        	else
+                _timeouts[timeout.id] = null;
+        }
+    }
+}
+
+// load
+
+if (!this.load)
+{
+    alert("Setting up 'load()'");
+    this.load = function(path)
+    {
+        return eval(readFile(path));
+    }
+}
+
+// readFile
+
+if (!this.readFile)
+{
+    if (this.File)
+    {
+        alert("Setting up 'readFile()' for SpiderMonkey");
+        this.readFile = function(path)
+        {
         	var f = new File(path);
 	        
-	        if (!f.canRead) {
-	            //alert("can't read: " + f.path)
+	        if (!f.canRead)
+	        {
+	            if (debug)
+	                alert("can't read: " + f.path);
+	                
 	            return "";
 	        }
 	
-	        //alert("reading: " + f.path);
+	        if (debug)
+	            alert("reading: " + f.path);
 	
 	        f.open("read", "text");
 	        
@@ -101,23 +212,28 @@ if (typeof readFile == "undefined") {
         	return result;
         }
     }
-    else if (typeof Packages != "undefined") {
-        alert("Setting up \"readFile()\" for Rhino");
-        readFile = function(path, characterCoding) {
+    else if (this.Packages)
+    {
+        alert("Setting up 'readFile()' for Rhino");
+        this.readFile = function(path, characterCoding)
+        {
         	var f = new Packages.java.io.File(path);
 	
-	        if (!f.canRead()) {
-	            alert("can't read: " + f.path)
+	        if (!f.canRead())
+	        {
+	            if (debug)
+	                alert("can't read: " + f.path);
+	                
 	            return "";
 	        }
 	
-	        alert("reading: " + f.getAbsolutePath());
+	        if (debug)
+	            alert("reading: " + f.getAbsolutePath());
 	
-        	var fis = new Packages.java.io.FileInputStream(f);
+        	var fis = new Packages.java.io.FileInputStream(f),
+        	    b = Packages.java.lang.reflect.Array.newInstance(Packages.java.lang.Byte.TYPE, fis.available());
         	
-        	var b = Packages.java.lang.reflect.Array.newInstance(Packages.java.lang.Byte.TYPE, fis.available());
         	fis.read(b);
-        	
         	fis.close();
 
             if (characterCoding)
@@ -126,59 +242,10 @@ if (typeof readFile == "undefined") {
                 return String(new Packages.java.lang.String(b));
         }
     }
-    else {
-        alert("Warning: No \"readFile\" implementation available.")
+    else
+    {
+        alert("Warning: No 'readFile' implementation available.")
     }
-}
-
-if (typeof load == "undefined") {
-    alert("Setting up \"load()\"");
-    load = function(path) {
-        return eval(readFile(path));
-    }
-}
-
-   /////////////
-  // inspect //
- /////////////
-
-function insp(obj) {
-    for (var i in obj)
-        alert(i + " ("+(typeof obj[i])+")");
-}
-function inspect(obj) {
-	var a = [];
-	for (var i in obj)
-		a.push({name:i, type:(typeof obj[i])});
-	a = a.sort(function(a,b) { return a.name.localeCompare(b.name); });
-	for (var i = 0; i < a.length; i++)
-		alert(a[i].name + " ("+a[i].type+")");
-}
-
-function time(fn) {
-    var start = new Date();
-    
-    fn();
-    
-    var elapsed = ((new Date()) - start) / 1000;
-    var minutes = Math.floor(elapsed/60);
-    var seconds = elapsed - minutes * 60;
-    
-    alert("real\t"+minutes+"m"+seconds+"s");
-}
-
-function recordGlobals() {
-    GLOBALS_BEFORE = {};
-    for (var i in this)
-        GLOBALS_BEFORE[i] = true;
-}
-function printGlobalsDiff() {
-    for (var i in this)
-        if (GLOBALS_BEFORE[i] == undefined)
-            alert("NEW: " + i);
-    for (var i in GLOBALS_BEFORE)
-        if (this[i] == undefined)
-            alert("MISSING: " + i);
 }
 
 var hex_lookup = "0123456789abcdef";
@@ -191,7 +258,7 @@ function bytesToHexString(buf)
 }
 
 // Rhino utilities
-if (typeof Packages != "undefined") {
+if (this.Packages) {
     alert("Setting up Rhino utilties");
 
     jsArrayToJavaArray = function(js_array, type)
@@ -395,27 +462,20 @@ if (typeof Packages != "undefined") {
 
 // Environment variables
 
-function getEnv(variable)
+function getenv(variable)
 {
-    if (typeof Packages != "undefined")
+    if (this.Packages)
         return String(Packages.java.lang.System.getenv().get(variable) || "") || null;
-    else if (typeof environment != "undefined")
+    else if (this.environment)
         return environment[variable] || null;
     return null;
 }
 
-OBJJ_HOME = getEnv("OBJJ_HOME");
-if (!OBJJ_HOME)
+
+// XMLHttpRequest
+
+function XMLHttpRequest()
 {
-    OBJJ_HOME = "/usr/local/share/objj";
-    alert("OBJJ_HOME environment variable not set, defaulting to " + OBJJ_HOME);
-}
-
-   ////////////////////
-  // XMLHttpRequest //
- ////////////////////
-
-function XMLHttpRequest() {
 	this.readyState		= 0;
 	this.responseText	= "";
 	this.responseXML	= null;
@@ -430,10 +490,12 @@ function XMLHttpRequest() {
 	this.username	= null;
 	this.password	= null;
 }
-XMLHttpRequest.prototype.abort = function() {
+XMLHttpRequest.prototype.abort = function()
+{
 	this.readyState = 0;
 }
-XMLHttpRequest.prototype.open = function(method, url, async, username, password) {
+XMLHttpRequest.prototype.open = function(method, url, async, username, password)
+{
 	this.readyState = 1;
 
 	this.method		= method;
@@ -442,31 +504,43 @@ XMLHttpRequest.prototype.open = function(method, url, async, username, password)
 	this.username	= username;
 	this.password	= password;
 }
-XMLHttpRequest.prototype.send = function(body) {
+XMLHttpRequest.prototype.send = function(body)
+{
 	this.readyState = 3;
 	
 	this.responseText = "";
 	this.responseXML = null;
 	
-	try {
+	try
+	{
 		this.responseText = readFile(this.url);
-		alert("xhr response:  " + this.url + " (length="+this.responseText.length+")");
-	} catch (e) {
-	    alert("xhr exception: " + this.url);
+		
+		if (debug)
+		    alert("xhr response:  " + this.url + " (length="+this.responseText.length+")");
+	}
+	catch (e)
+	{
+	    if (debug)
+	        alert("xhr exception: " + this.url);
     	this.responseText = "";
 		this.responseXML = null;
 	}    
 	
-	if (this.responseText.length > 0) {
-		try {
+	if (this.responseText.length > 0)
+	{
+		try
+		{
 			this.responseXML = _documentBuilder.parse(new Packages.org.xml.sax.InputSource(new Packages.java.io.StringReader(this.responseText)));
-		} catch (e) {
+		}
+		catch (e)
+		{
 			this.responseXML = null;
 		}
 	    this.status = 200;
 	}
 	else {
-	    alert("xhr empty:     " + this.url);
+	    if (debug)
+	        alert("xhr empty:     " + this.url);
 	    this.status = 404;
 	}
 	
@@ -480,16 +554,27 @@ XMLHttpRequest.prototype.send = function(body) {
              this.onreadystatechange();
     }
 }
-XMLHttpRequest.prototype.getResponseHeader = function(header) {
+XMLHttpRequest.prototype.getResponseHeader = function(header)
+{
 	return (this.readyState < 3) ? "" : "";
 }
-XMLHttpRequest.prototype.getAllResponseHeaders = function() {
+XMLHttpRequest.prototype.getAllResponseHeaders = function()
+{
 	return (this.readyState < 3) ? null : "";
 }
-XMLHttpRequest.prototype.setRequestHeader = function(name, value) {
+XMLHttpRequest.prototype.setRequestHeader = function(name, value)
+{
 }
 
 objj_request_xmlhttp = function()
 {
     return new XMLHttpRequest();
+}
+
+
+OBJJ_HOME = getenv("OBJJ_HOME");
+if (!OBJJ_HOME)
+{
+    OBJJ_HOME = "/usr/local/share/objj";
+    alert("OBJJ_HOME environment variable not set, defaulting to " + OBJJ_HOME);
 }

@@ -20,14 +20,14 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-import <Foundation/CPString.j>
+@import <Foundation/CPString.j>
 
 
 var CPStringReferenceElement    = nil;
 
 @implementation CPString (CPStringDrawing)
 
-/*
+/*!
     Returns the string
 */
 - (CPString)cssString

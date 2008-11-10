@@ -20,19 +20,23 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-import "NSButton.j"
-import "NSCell.j"
-import "NSControl.j"
-import "NSCustomObject.j"
-import "NSCustomView.j"
-import "NSFont.j"
-import "NSIBObjectData.j"
-import "NSNibConnector.j"
-import "NSResponder.j"
-import "NSSlider.j"
-import "NSView.j"
-import "NSWindowTemplate.j"
-import "NSSplitView.j"
+@import "NSButton.j"
+@import "NSCell.j"
+@import "NSColor.j"
+@import "NSColorWell.j"
+@import "NSControl.j"
+@import "NSCustomObject.j"
+@import "NSCustomView.j"
+@import "NSFont.j"
+@import "NSIBObjectData.j"
+@import "NSNibConnector.j"
+@import "NSResponder.j"
+@import "NSSlider.j"
+@import "NSSplitView.j"
+@import "NSTextField.j"
+@import "NSView.j"
+@import "NSWindowTemplate.j"
+@import "WebView.j"
 
 function CP_NSMapClassName(aClassName)
 {

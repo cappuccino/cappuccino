@@ -20,13 +20,14 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-import "CPData.j"
-import "CPCoder.j"
-import "CPArray.j"
-import "CPString.j"
-import "CPNumber.j"
-import "CPDictionary.j"
-import "CPValue.j"
+@import "CPData.j"
+@import "CPCoder.j"
+@import "CPArray.j"
+@import "CPString.j"
+@import "CPNumber.j"
+@import "CPDictionary.j"
+@import "CPValue.j"
+
 
 var CPArchiverReplacementClassNames                     = nil;
 
@@ -59,12 +60,15 @@ var _CPKeyedArchiverStringClass                         = Nil,
 }
 @end
 
-/*
+/*! @class CPKeyedArchiver
+
     Implements keyed archiving of object graphs. Archiving means to
     write data out in a format that be read in again later, or possibly
     stored in a file. To read the data back in, use a
     <code>CPKeyedUnarchiver</code>.
 
+    @par Delegate Methods
+    
     @delegate -(void)archiverWillFinish:(CPKeyedArchiver)archiver;
     Called when the encoding is about to finish.
     @param archiver the archiver that's about to finish
@@ -132,7 +136,7 @@ var _CPKeyedArchiverStringClass                         = Nil,
     return YES;
 }
 
-/*
+/*!
     Archives the specified object.
     @param anObject the object to archive
     @return the archived object
@@ -149,7 +153,7 @@ var _CPKeyedArchiverStringClass                         = Nil,
 }
 
 // Initializing an NSKeyedArchiver object
-/*
+/*!
     Initializes the keyed archiver with the specified <code>CPMutableData</code> for writing.
     @param data the object to archive to
     @return the initialized keyed archiver
@@ -179,7 +183,7 @@ var _CPKeyedArchiverStringClass                         = Nil,
 }
 
 // Archiving Data
-/*
+/*!
     Finishes up writing any left over data, and notifies delegates.
     After calling this method, the archiver can not encode anymore objects.
 */
@@ -220,7 +224,7 @@ var _CPKeyedArchiverStringClass                         = Nil,
         [_delegate archiverDidFinish:self];
 }
 
-/*
+/*!
     Returns the property list format used to archive objects.
 */
 - (CPPropertyListFormat)outputFormat
@@ -228,7 +232,7 @@ var _CPKeyedArchiverStringClass                         = Nil,
     return _outputFormat;
 }
 
-/*
+/*!
     Sets the property list format the archiver should use to archive objects.
     @param aPropertyListFormat the format to use
 */
@@ -237,7 +241,7 @@ var _CPKeyedArchiverStringClass                         = Nil,
     _outputFormat = aPropertyListFormat;
 }
 
-/*
+/*!
     Encodes a <code>BOOL</code> value
     @param aBool the <code>BOOL</code> value
     @param aKey the key to associate with the <code>BOOL</code>
@@ -247,7 +251,7 @@ var _CPKeyedArchiverStringClass                         = Nil,
     [_plistObject setObject:_CPKeyedArchiverEncodeObject(self, aBOOL, NO) forKey:aKey];
 }
 
-/*
+/*!
     Encodes a <code>double</code> value
     @param aDouble the <code>double</code> value
     @param aKey the key to associate with the <code>double</code>
@@ -257,7 +261,7 @@ var _CPKeyedArchiverStringClass                         = Nil,
     [_plistObject setObject:_CPKeyedArchiverEncodeObject(self, aDouble, NO) forKey:aKey];
 }
 
-/*
+/*!
     Encodes a <code>float</code> value
     @param aFloat the <code>float</code> value
     @param aKey the key to associate with the <code>float</code>
@@ -267,7 +271,7 @@ var _CPKeyedArchiverStringClass                         = Nil,
     [_plistObject setObject:_CPKeyedArchiverEncodeObject(self, aFloat, NO) forKey:aKey];
 }
 
-/*
+/*!
     Encodes a <code>int</code> value
     @param anInt the <code>int</code> value
     @param aKey the key to associate with the <code>int</code>
@@ -278,7 +282,7 @@ var _CPKeyedArchiverStringClass                         = Nil,
 }
 
 // Managing Delegates
-/*
+/*!
     Sets the keyed archiver's delegate
 */
 - (void)setDelegate:(id)aDelegate
@@ -302,7 +306,7 @@ var _CPKeyedArchiverStringClass                         = Nil,
     
 }
 
-/*
+/*!
     Returns the keyed archiver's delegate
 */
 - (id)delegate
@@ -310,8 +314,8 @@ var _CPKeyedArchiverStringClass                         = Nil,
     return _delegate;
 }
 
-/*
-    Encodes a <objj>CGPoint</objj>
+/*!
+    Encodes a CGPoint
     @param aPoint the point to encode
     @param aKey the key to associate with the point
 */
@@ -320,8 +324,8 @@ var _CPKeyedArchiverStringClass                         = Nil,
     [_plistObject setObject:_CPKeyedArchiverEncodeObject(self, CPStringFromPoint(aPoint), NO) forKey:aKey];
 }
 
-/*
-    Encodes a <objj>CGRect</objj>
+/*!
+    Encodes a CGRect
     @param aRect the rectangle to encode
     @param aKey the key to associate with the rectangle
 */
@@ -330,8 +334,8 @@ var _CPKeyedArchiverStringClass                         = Nil,
     [_plistObject setObject:_CPKeyedArchiverEncodeObject(self, CPStringFromRect(aRect), NO) forKey:aKey];
 }
 
-/*
-    Encodes a <objj>CGSize</objj>
+/*!
+    Encodes a CGSize
     @param aSize the size to encode
     @param aKey the key to associate with the size
 */
@@ -340,7 +344,7 @@ var _CPKeyedArchiverStringClass                         = Nil,
     [_plistObject setObject:_CPKeyedArchiverEncodeObject(self, CPStringFromSize(aSize), NO) forKey:aKey];
 }
 
-/*
+/*!
     Encodes an conditionally. The method checks if the object has already been
     coded into this data stream before. If so, it will only encode a reference
     to that first object to save memory.
@@ -352,17 +356,17 @@ var _CPKeyedArchiverStringClass                         = Nil,
     [_plistObject setObject:_CPKeyedArchiverEncodeObject(self, anObject, YES) forKey:aKey];
 }
 
-/*
+/*!
     Encodes a number
     @param aNumber the number to encode
     @param aKey the key to associate with the object
 */
 - (void)encodeNumber:(CPNumber)aNumber forKey:(CPString)aKey
 {
-    [_plistObject setObject:_CPKeyedArchiverEncodeObject(self, aNuumber, NO) forKey:aKey];
+    [_plistObject setObject:_CPKeyedArchiverEncodeObject(self, aNumber, NO) forKey:aKey];
 }
 
-/*
+/*!
     Encdoes an object
     @param anObject the object to encode
     @param aKey the key to associate with the object
@@ -399,7 +403,7 @@ var _CPKeyedArchiverStringClass                         = Nil,
 }
 
 // Managing classes and class names
-/*
+/*!
     Allows substitution of class types for encoding. Specifically classes
     of type <code>aClass</code> encountered by all keyed archivers will
     instead be archived as a class of type <code>aClassName</code>.
@@ -414,7 +418,7 @@ var _CPKeyedArchiverStringClass                         = Nil,
     [CPArchiverReplacementClassNames setObject:aClassName forKey:CPStringFromClass(aClass)];
 }
 
-/*
+/*!
     Returns the name of the substitute class used for encoding
     <code>aClass</code> by all keyed archivers.
     @param aClass the class to substitute
@@ -431,7 +435,7 @@ var _CPKeyedArchiverStringClass                         = Nil,
     return className ? className : aClass.name;
 }
 
-/*
+/*!
     Allows substitution of class types for encoding. Specifically classes
     of type <code>aClass</code> encountered by this keyed archiver will
     instead be archived as a class of type <code>aClassName</code>.
@@ -446,7 +450,7 @@ var _CPKeyedArchiverStringClass                         = Nil,
     [_replacementClassNames setObject:aClassName forKey:CPStringFromClass(aClass)];
 }
 
-/*
+/*!
     Returns the name of the substitute class used for encoding <code>aClass</code> by this keyed archiver.
     @param aClass the class to substitute
     @return the name of the substitute class, or <code>nil</code> if there is no substitute class

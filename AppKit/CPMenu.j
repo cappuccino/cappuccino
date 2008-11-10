@@ -20,16 +20,15 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-import <Foundation/CPArray.j>
-import <Foundation/CPDictionary.j>
-import <Foundation/CPNotificationCenter.j>
-import <Foundation/CPString.j>
+@import <Foundation/CPArray.j>
+@import <Foundation/CPDictionary.j>
+@import <Foundation/CPNotificationCenter.j>
+@import <Foundation/CPString.j>
 
-import "_CPImageAndTitleView.j"
-import "CPApplication.j"
-import "CPClipView.j"
-import "CPMenuItem.j"
-import "CPPanel.j"
+@import "CPApplication.j"
+@import "CPClipView.j"
+@import "CPMenuItem.j"
+@import "CPPanel.j"
 
 #include "Platform/Platform.h"
 
@@ -46,9 +45,11 @@ var _CPMenuBarVisible               = NO,
     _CPMenuBarTitle                 = @"",
     _CPMenuBarIconImage             = nil,
     _CPMenuBarIconImageAlphaValue   = 1.0,
+    _CPMenuBarAttributes            = nil,
     _CPMenuBarSharedWindow          = nil;
 
-/*
+/*! @class CPMenu
+
     Menus provide the user with a list of actions and/or submenus. Submenus themselves are full fledged menus and so a heirarchical structure appears.
 */
 @implementation CPMenu : CPObject
@@ -92,6 +93,10 @@ var _CPMenuBarVisible               = NO,
         [_CPMenuBarSharedWindow setIconImage:_CPMenuBarIconImage];
         [_CPMenuBarSharedWindow setIconImageAlphaValue:_CPMenuBarIconImageAlphaValue];
         
+        [_CPMenuBarSharedWindow setColor:[_CPMenuBarAttributes objectForKey:@"CPMenuBarBackgroundColor"]];
+        [_CPMenuBarSharedWindow setTextColor:[_CPMenuBarAttributes objectForKey:@"CPMenuBarTextColor"]];
+        [_CPMenuBarSharedWindow setTitleColor:[_CPMenuBarAttributes objectForKey:@"CPMenuBarTitleColor"]];
+        
         [_CPMenuBarSharedWindow orderFront:self];
     }
     else
@@ -125,6 +130,41 @@ var _CPMenuBarVisible               = NO,
     return _CPMenuBarImage;
 }
 
++ (void)setMenuBarAttributes:(CPDictionary)attributes
+{
+    if (_CPMenuBarAttributes == attributes)
+        return;
+        
+    _CPMenuBarAttributes = [attributes copy];
+    
+    var textColor = [attributes objectForKey:@"CPMenuBarTextColor"],
+        titleColor = [attributes objectForKey:@"CPMenuBarTitleColor"];
+    
+    if (!textColor && titleColor)
+        [_CPMenuBarAttributes setObject:titleColor forKey:@"CPMenuBarTextColor"];
+    
+    else if (textColor && !titleColor)
+        [_CPMenuBarAttributes setObject:textColor forKey:@"CPMenuBarTitleColor"];
+    
+    else if (!textColor && !titleColor)
+    {
+        [_CPMenuBarAttributes setObject:[CPColor blackColor] forKey:@"CPMenuBarTextColor"];
+        [_CPMenuBarAttributes setObject:[CPColor blackColor] forKey:@"CPMenuBarTitleColor"];
+    }
+    
+    if (_CPMenuBarSharedWindow)
+    {
+        [_CPMenuBarSharedWindow setColor:[_CPMenuBarAttributes objectForKey:@"CPMenuBarBackgroundColor"]];
+        [_CPMenuBarSharedWindow setTextColor:[_CPMenuBarAttributes objectForKey:@"CPMenuBarTextColor"]];
+        [_CPMenuBarSharedWindow setTitleColor:[_CPMenuBarAttributes objectForKey:@"CPMenuBarTitleColor"]];
+    }
+}
+
++ (CPDictionary)menuBarAttributes
+{
+    return _CPMenuBarAttributes;
+}
+
 + (void)_setMenuBarIconImageAlphaValue:(float)anAlphaValue
 {
     _CPMenuBarIconImageAlphaValue = anAlphaValue;
@@ -140,7 +180,7 @@ var _CPMenuBarVisible               = NO,
 }
 
 // Creating a CPMenu Object
-/*
+/*!
     Initializes the menu with a specified title.
     @param aTile the menu title
     @return the initialized menu
@@ -162,7 +202,7 @@ var _CPMenuBarVisible               = NO,
 }
 
 // Setting Up Menu Commands
-/*
+/*!
     Inserts a menu item at the specified index.
     @param aMenuItem the item to insert
     @param anIndex the index in the menu to insert the item.
@@ -187,7 +227,7 @@ var _CPMenuBarVisible               = NO,
 
 }
 
-/*
+/*!
     Creates and inserts a new menu item with the specified attributes.
     @param aTitle the title of the menu item
     @param anAction the action initiated when the user selects the item
@@ -204,7 +244,7 @@ var _CPMenuBarVisible               = NO,
     return item;
 }
 
-/*
+/*!
     Adds a menu item at the end of the menu.
     @param aMenuItem the menu item to add
 */
@@ -213,7 +253,7 @@ var _CPMenuBarVisible               = NO,
     [self insertItem:aMenuItem atIndex:[_items count]];
 }
 
-/*
+/*!
     Creates and adds a menu item with the specified attributes
     at the end of the menu.
     @param aTitle the title of the new menu item
@@ -226,7 +266,7 @@ var _CPMenuBarVisible               = NO,
     return [self insertItemWithTitle:aTitle action:anAction keyEquivalent:aKeyEquivalent atIndex:[_items count]];
 }
 
-/*
+/*!
     Removes the specified item from the menu
     @param aMenuItem the item to remove
 */
@@ -235,7 +275,7 @@ var _CPMenuBarVisible               = NO,
     [self removeItemAtIndex:[_items indexOfObjectIdenticalTo:aMenuItem]];
 }
 
-/*
+/*!
     Removes the item at the specified index from the menu
     @param anIndex the index of the item to remove
 */
@@ -253,7 +293,7 @@ var _CPMenuBarVisible               = NO,
                     userInfo:[CPDictionary dictionaryWithObject:anIndex forKey:@"CPMenuItemIndex"]];
 }
 
-/*
+/*!
     Called when a menu item has visually changed.
     @param aMenuItem the item that changed
 */
@@ -269,7 +309,7 @@ var _CPMenuBarVisible               = NO,
 }
 
 // Finding Menu Items
-/*
+/*!
     Returns the menu item with the specified tag
     @param the tag of the desired menu item
     @return the menu item or <code>nil</code> if a match was not found
@@ -284,7 +324,7 @@ var _CPMenuBarVisible               = NO,
     return _items[index];
 }
 
-/*
+/*!
     Returns the menu item with the specified title.
     @param aTitle the title of the menu item
     @return the menu item or <code>nil</code> if a match was not found
@@ -299,7 +339,7 @@ var _CPMenuBarVisible               = NO,
     return _items[index];
 }
 
-/*
+/*!
     Returns the menu item at the specified index
     @param anIndex the index of the requested item
 */
@@ -308,7 +348,7 @@ var _CPMenuBarVisible               = NO,
     return [_items objectAtIndex:anIndex];
 }
 
-/*
+/*!
     Returns the number of menu items in the menu
 */
 - (unsigned)numberOfItems
@@ -316,7 +356,7 @@ var _CPMenuBarVisible               = NO,
     return [_items count];
 }
 
-/*
+/*!
     Returns the array of menu items backing this menu
 */
 - (CPArray)itemArray
@@ -325,7 +365,7 @@ var _CPMenuBarVisible               = NO,
 }
 
 // Finding Indices of Menu Items
-/*
+/*!
     Returns the index of the specified menu item
     @param aMenuItem the item to find the index for
     @return the item index or <objj>CPNotFound</objj>
@@ -338,7 +378,7 @@ var _CPMenuBarVisible               = NO,
     return [_items indexOfObjectIdenticalTo:aMenuItem];
 }
 
-/*
+/*!
     Returns the index of the item with the specified title.
     @param aTitle the desired title to match
     @return the index of the item or <objj>CPNotFound</objj>
@@ -355,7 +395,7 @@ var _CPMenuBarVisible               = NO,
     return CPNotFound;
 }
 
-/*
+/*!
     Returns the index of the item with the specified tag
     @param aTag the desired tag to match
     @return the index of the item or <objj>CPNotFound</objj>
@@ -372,7 +412,7 @@ var _CPMenuBarVisible               = NO,
     return CPNotFound;
 }
 
-/*
+/*!
     Returns the index of the item with the specified target and action.
     @param aTarget the target of the desired menu item
     @param anAction the action of the desired menu item
@@ -394,7 +434,7 @@ var _CPMenuBarVisible               = NO,
     return CPNotFound;
 }
 
-/*
+/*!
     Returns the index of the menu item with the specified represented object.
     @param anObject the represented object of the desired item
     @return the index of the item or <objj>CPNotFound</objj>
@@ -411,7 +451,7 @@ var _CPMenuBarVisible               = NO,
     return CPNotFound;
 }
 
-/*
+/*!
     Returns the index of the item with the specified submenu.
     @param the submenu of the desired menu item
     @return the index of the item or <objj>CPNotFound</objj>
@@ -429,7 +469,7 @@ var _CPMenuBarVisible               = NO,
 }
 
 // Managing Submenus
-/*
+/*!
     Sets a submenu for a menu item
     @param aMenu the submenu
     @param aMenuItem the menu item to set the submenu on
@@ -442,7 +482,7 @@ var _CPMenuBarVisible               = NO,
     [aMenuItem setSubmenu:aMenu];
 }
 
-/*
+/*!
     The action method of menu items that open submenus.
     The default implementation does nothing, but it may
     be subclassed to provide different behavior.
@@ -453,7 +493,7 @@ var _CPMenuBarVisible               = NO,
 
 }
 
-/*
+/*!
     Returns the attaced menu, or <code>nil</code> if there isn't one.
 */
 - (CPMenu)attachedMenu
@@ -461,7 +501,7 @@ var _CPMenuBarVisible               = NO,
     return _attachedMenu;
 }
 
-/*
+/*!
     Returns <code>YES</code> if the menu is attached to another menu.
 */
 - (BOOL)isAttached
@@ -469,7 +509,7 @@ var _CPMenuBarVisible               = NO,
     return _isAttached;
 }
 
-/*
+/*!
     Not yet implemented
 */
 - (CGPoint)locationOfSubmenu:(CPMenu)aMenu
@@ -477,7 +517,7 @@ var _CPMenuBarVisible               = NO,
     // FIXME: IMPLEMENT.
 }
 
-/*
+/*!
     Returns the super menu or <code>nil</code> if there is none.
 */
 - (CPMenu)supermenu
@@ -485,7 +525,7 @@ var _CPMenuBarVisible               = NO,
     return _supermenu;
 }
 
-/*
+/*!
     Sets the super menu.
     @param aMenu the new super menu
 */
@@ -494,7 +534,7 @@ var _CPMenuBarVisible               = NO,
     _supermenu = aMenu;
 }
 
-/*
+/*!
     If there are two instances of this menu visible, return <code>NO</code>.
     Otherwise, return <code>YES</code> if we are a detached menu and visible.
 */
@@ -504,7 +544,7 @@ var _CPMenuBarVisible               = NO,
 }
 
 // Enabling and Disabling Menu Items
-/*
+/*!
     Sets whether the menu automatically enables menu items.
     @param aFlag <code>YES</code> sets the menu to automatically enable items.
 */
@@ -513,7 +553,7 @@ var _CPMenuBarVisible               = NO,
     _autoenablesItems = aFlag;
 }
 
-/*
+/*!
     Returns <code>YES</code> if the menu auto enables items.
 */
 - (BOOL)autoenablesItems
@@ -521,7 +561,7 @@ var _CPMenuBarVisible               = NO,
     return _autoenablesItems;
 }
 
-/*
+/*!
     Not implemented.
 */
 - (void)update
@@ -530,7 +570,7 @@ var _CPMenuBarVisible               = NO,
 }
 
 // Managing the Title
-/*
+/*!
     Sets the menu title.
     @param the new title
 */
@@ -539,7 +579,7 @@ var _CPMenuBarVisible               = NO,
     _title = aTitle;
 }
 
-/*
+/*!
     Returns the menu title
 */
 - (CPString)title
@@ -607,7 +647,7 @@ var _CPMenuBarVisible               = NO,
 }
 
 // Managing Display of State Column
-/*
+/*!
     Sets whether to show the state column
     @param shouldShowStateColumn <code>YES</code> shows the state column
 */
@@ -616,7 +656,7 @@ var _CPMenuBarVisible               = NO,
     _showsStateColumn = shouldShowStateColumn;
 }
 
-/*
+/*!
     Returns <code>YES</code> if the menu shows the state column
 */
 - (BOOL)showsStateColumn
@@ -625,7 +665,7 @@ var _CPMenuBarVisible               = NO,
 }
 
 // Handling Highlighting
-/*
+/*!
     Returns the currently highlighted menu item.
     @return the highlighted menu item or <code>nil</code> if no item is currently highlighted
 */
@@ -647,7 +687,7 @@ var _CPMenuBarVisible               = NO,
 }
 
 // Handling Tracking
-/*
+/*!
 	Cancels tracking.
 */
 - (void)cancelTracking
@@ -661,7 +701,7 @@ var _CPMenuBarVisible               = NO,
     _menuWindow = aMenuWindow;
 }
 
-/*
+/*!
     Initiates the action of the menu item that
     has a keyboard shortcut equivalent to <code>anEvent</code>
     @param anEvent the keyboard event
@@ -703,7 +743,7 @@ var _CPMenuBarVisible               = NO,
 }
 
 // Simulating Mouse Clicks
-/*
+/*!
     Sends the action of the menu item at the specified index.
     @param anIndex the index of the item
 */
@@ -747,7 +787,7 @@ var CPMenuTitleKey  = @"CPMenuTitleKey",
 
 @implementation CPMenu (CPCoding)
 
-/*
+/*!
     Initializes the menu with data from the specified coder.
     @param aCoder the coder from which to read the data
     @return the initialized menu
@@ -765,7 +805,7 @@ var CPMenuTitleKey  = @"CPMenuTitleKey",
     return self;
 }
 
-/*
+/*!
     Encodes the data of the menu into a coder
     @param aCoder the coder to which the data will be written
 */
@@ -1311,6 +1351,9 @@ var _CPMenuBarWindowBackgroundColor = nil,
     
     CPImageView _iconImageView;
     CPTextField _titleField;
+    
+    CPColor     _textColor;
+    CPColor     _titleColor;
 }
 
 + (void)initialize
@@ -1319,8 +1362,6 @@ var _CPMenuBarWindowBackgroundColor = nil,
         return;
         
     var bundle = [CPBundle bundleForClass:self];
-    
-    _CPMenuBarWindowBackgroundColor = [CPColor colorWithPatternImage:[[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"_CPMenuBarWindow/_CPMenuBarWindowBackground.png"] size:CGSizeMake(1.0, 18.0)]];
     
     _CPMenuBarWindowFont = [CPFont systemFontOfSize:11.0];
 }
@@ -1339,7 +1380,6 @@ var _CPMenuBarWindowBackgroundColor = nil,
      
         var contentView = [self contentView];
         
-        [contentView setBackgroundColor:_CPMenuBarWindowBackgroundColor];
         [contentView setAutoresizesSubviews:NO];
         
         [self setBecomesKeyOnlyIfNeeded:YES];
@@ -1349,11 +1389,9 @@ var _CPMenuBarWindowBackgroundColor = nil,
         
         [contentView addSubview:_iconImageView];
         
-        _titleField = [[_CPImageAndTitleView alloc] initWithFrame:CGRectMakeZero()];
+        _titleField = [[CPTextField alloc] initWithFrame:CGRectMakeZero()];
         
         [_titleField setFont:[CPFont boldSystemFontOfSize:12.0]];
-        
-        [_titleField setImagePosition:CPImageLeft];
         [_titleField setAlignment:CPCenterTextAlignment];
         
         [contentView addSubview:_titleField];
@@ -1375,7 +1413,7 @@ var _CPMenuBarWindowBackgroundColor = nil,
         document.title = bundleName;
 #endif
 
-    [_titleField setTitle:aTitle];
+    [_titleField setStringValue:aTitle];
     [_titleField sizeToFit];
     
     [self tile];
@@ -1392,6 +1430,39 @@ var _CPMenuBarWindowBackgroundColor = nil,
 - (void)setIconImageAlphaValue:(float)anAlphaValue
 {
     [_iconImageView setAlphaValue:anAlphaValue];
+}
+
+- (void)setColor:(CPColor)aColor
+{
+    if (!aColor)
+    {
+        if (!_CPMenuBarWindowBackgroundColor)
+            _CPMenuBarWindowBackgroundColor = [CPColor colorWithPatternImage:[[CPImage alloc] initWithContentsOfFile:[[CPBundle bundleForClass:[_CPMenuBarWindow class]] pathForResource:@"_CPMenuBarWindow/_CPMenuBarWindowBackground.png"] size:CGSizeMake(1.0, 18.0)]];
+            
+        [[self contentView] setBackgroundColor:_CPMenuBarWindowBackgroundColor];
+    }
+    else
+        [[self contentView] setBackgroundColor:aColor];
+}
+
+- (void)setTextColor:(CPColor)aColor
+{
+    if (_textColor == aColor)
+        return;
+    
+    _textColor = aColor;
+    
+    [_menuItemViews makeObjectsPerformSelector:@selector(setTextColor:) withObject:_textColor];
+}
+
+- (void)setTitleColor:(CPColor)aColor
+{
+    if (_titleColor == aColor)
+        return;
+    
+    _titleColor = aColor;
+    
+    [_titleField setTextColor:aColor ? aColor : [CPColor blackColor]];
 }
 
 - (void)setMenu:(CPMenu)aMenu
@@ -1464,6 +1535,7 @@ var _CPMenuBarWindowBackgroundColor = nil,
         [menuItemView setShowsStateColumn:NO];
         [menuItemView setBelongsToMenuBar:YES];
         [menuItemView setFont:_CPMenuBarWindowFont];
+        [menuItemView setTextColor:_textColor];
         [menuItemView setHidden:[item isHidden]];
         
         [menuItemView synchronizeWithMenuItem];
@@ -1496,6 +1568,7 @@ var _CPMenuBarWindowBackgroundColor = nil,
     [menuItemView setShowsStateColumn:NO];
     [menuItemView setBelongsToMenuBar:YES];
     [menuItemView setFont:_CPMenuBarWindowFont];
+    [menuItemView setTextColor:_textColor];
     [menuItemView setHidden:[menuItem isHidden]];
 
     [menuItemView synchronizeWithMenuItem];

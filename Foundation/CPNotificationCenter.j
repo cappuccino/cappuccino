@@ -20,16 +20,17 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-import "CPArray.j"
-import "CPDictionary.j"
-import "CPNotification.j"
-import "CPException.j"
+@import "CPArray.j"
+@import "CPDictionary.j"
+@import "CPNotification.j"
+@import "CPException.j"
 
 
 var CPNotificationDefaultCenter = nil;
 
-/*
-    Cappuccino provides a framework for sending messages between objects within a process called notifications. Objects register with an <objj>CPNotificationCenter</objj> to be informed whenever other objects post <objj>CPNotification</objj>s to it matching certain criteria. The notification center processes notifications synchronously -- that is, control is only returned to the notification poster once every recipient of the notification has received it and processed it.
+/*! @class CPNotificationCenter
+
+    Cappuccino provides a framework for sending messages between objects within a process called notifications. Objects register with an CPNotificationCenter to be informed whenever other objects post CPNotifications to it matching certain criteria. The notification center processes notifications synchronously -- that is, control is only returned to the notification poster once every recipient of the notification has received it and processed it.
 */
 @implementation CPNotificationCenter : CPObject
 {
@@ -37,7 +38,7 @@ var CPNotificationDefaultCenter = nil;
     _CPNotificationRegistry _unnamedRegistry;
 }
 
-/*
+/*!
     Returns the application's notification center
 */
 + (CPNotifcationCenter)defaultCenter
@@ -60,7 +61,7 @@ var CPNotificationDefaultCenter = nil;
    return self;
 }
 
-/*
+/*!
     Adds an object as an observer. The observer will receive notifications with the specified name
     and/or containing the specified object (depending on if they are <code>nil</code>.
     @param anObserver the observing object
@@ -85,7 +86,7 @@ var CPNotificationDefaultCenter = nil;
     [registry addObserver:observer object:anObject];
 }
 
-/*
+/*!
     Unregisters the specified observer from all notifications.
     @param anObserver the observer to unregister
 */
@@ -100,7 +101,7 @@ var CPNotificationDefaultCenter = nil;
     [_unnamedRegistry removeObserver:anObserver object:nil];
 }
 
-/*
+/*!
     Unregisters the specified observer from notifications matching the specified name and/or object.
     @param anObserver the observer to remove
     @param aNotificationName the name of notifications to no longer watch
@@ -122,10 +123,10 @@ var CPNotificationDefaultCenter = nil;
         [[_namedRegistries objectForKey:aNotificationName] removeObserver:anObserver object:anObject];
 }
 
-/*
+/*!
     Posts a notification to all observers that match the specified notification's name and object.
     @param aNotification the notification being posted
-    @throws CPInvalidArgumentException if aNotification is <objj>nil</objj>
+    @throws CPInvalidArgumentException if aNotification is nil
 */
 - (void)postNotification:(CPNotification)aNotification
 {
@@ -135,7 +136,7 @@ var CPNotificationDefaultCenter = nil;
     _CPNotificationCenterPostNotification(self, aNotification);
 }
 
-/*
+/*!
     Posts a new notification with the specified name, object, and dictionary.
     @param aNotificationName the name of the notification name
     @param anObject the associated object
@@ -146,7 +147,7 @@ var CPNotificationDefaultCenter = nil;
    _CPNotificationCenterPostNotification(self, [[CPNotification alloc] initWithName:aNotificationName object:anObject userInfo:aUserInfo]);
 }
 
-/*
+/*!
     Posts a new notification with the specified name and object.
     @param aNotificationName the name of the notification
     @param anObject the associated object
@@ -164,7 +165,8 @@ var _CPNotificationCenterPostNotification = function(/* CPNotificationCenter */ 
     [[self._namedRegistries objectForKey:[aNotification name]] postNotification:aNotification];
 }
 
-/** Mapping of Notification Name to listening object/selector.
+/* 
+    Mapping of Notification Name to listening object/selector.
     @ignore
  */
 @implementation _CPNotificationRegistry : CPObject

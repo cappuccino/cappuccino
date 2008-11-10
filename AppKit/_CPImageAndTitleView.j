@@ -20,13 +20,13 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-import <Foundation/CPString.j>
+@import <Foundation/CPString.j>
 
-import "CPColor.j"
-import "CPFont.j"
-import "CPImage.j"
-import "CPTextField.j"
-import "CPView.j"
+@import "CPColor.j"
+@import "CPFont.j"
+@import "CPImage.j"
+@import "CPTextField.j"
+@import "CPView.j"
 
 #include "Platform/Platform.h"
 #include "Platform/DOM/CPDOMDisplayServer.h"
@@ -238,6 +238,7 @@ import "CPView.j"
             [_titleField setAlignment:_alignment];
             [_titleField setTextColor:_textColor];
             [_titleField setHidden:_imagePosition == CPImageOnly];
+            [_titleField setHitTests:NO];
             
             [self addSubview:_titleField];
         }

@@ -20,9 +20,10 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-import <Foundation/CPObject.j>
+@import <Foundation/CPObject.j>
 
-import "CAMediaTimingFunction.j"
+@import "CAMediaTimingFunction.j"
+
 
 /*
     @global
@@ -47,9 +48,11 @@ CPAnimationLinear       = 3;
 
 ACTUAL_FRAME_RATE = 0;
 
-/*
+/*! @class CPAnimation
     Manages an animation. Contains timing and progress information.
 
+    @par Delegate Methods
+    
     @delegate -(BOOL)animationShouldStart:(CPAnimation)animation;
     Called at the beginning of <code>startAnimation</code>.
     @param animation the animation that will start
@@ -86,7 +89,7 @@ ACTUAL_FRAME_RATE = 0;
     CPTimer                 _timer;
 }
 
-/*
+/*!
     Initializes the animation with a duration and animation curve.
     @param aDuration the length of the animation
     @param anAnimationCurve defines the animation's pace
@@ -106,7 +109,7 @@ ACTUAL_FRAME_RATE = 0;
     return self;
 }
 
-/*
+/*!
     Sets the animation's pace.
     @param anAnimationCurve the animation's pace
     @throws CPInvalidArgumentException if an invalid animation curve is specified 
@@ -136,7 +139,7 @@ ACTUAL_FRAME_RATE = 0;
     _timingFunction = [CAMediaTimingFunction functionWithName:timingFunctionName];
 }
 
-/*
+/*!
     Returns the animation's pace
 */
 - (CPAnimationCurve)animationCurve
@@ -144,7 +147,7 @@ ACTUAL_FRAME_RATE = 0;
     return _animationCurve;
 }
 
-/*
+/*!
     Sets the animation's length.
     @param aDuration the new animation length
     @throws CPInvalidArgumentException if <code>aDuration</code> is negative
@@ -157,7 +160,7 @@ ACTUAL_FRAME_RATE = 0;
     _duration = aDuration;
 }
 
-/*
+/*!
     Returns the length of the animation.
 */
 - (CPTimeInterval)duration
@@ -165,7 +168,7 @@ ACTUAL_FRAME_RATE = 0;
     return _duration;
 }
 
-/*
+/*!
     Sets the animation frame rate. This is not a guaranteed frame rate. 0 means to go as fast as possible.
     @param frameRate the new desired frame rate
     @throws CPInvalidArgumentException if <code>frameRate</code> is negative
@@ -178,7 +181,7 @@ ACTUAL_FRAME_RATE = 0;
     _frameRate = frameRate;
 }
 
-/*
+/*!
     Returns the desired frame rate.
 */
 - (float)frameRate
@@ -186,7 +189,7 @@ ACTUAL_FRAME_RATE = 0;
     return _frameRate;
 }
 
-/*
+/*!
     Returns the animation's delegate
 */
 - (id)delegate
@@ -194,7 +197,7 @@ ACTUAL_FRAME_RATE = 0;
     return _delegate;
 }
 
-/*
+/*!
     Sets the animation's delegate.
     @param aDelegate the new delegate
 */
@@ -203,7 +206,7 @@ ACTUAL_FRAME_RATE = 0;
     _delegate = aDelegate;
 }
 
-/*
+/*!
     Starts the animation. The method calls <code>animationShouldStart:</code>
     on the delegate (if it implements it) to see if the animation
     should begin.
@@ -247,7 +250,7 @@ ACTUAL_FRAME_RATE = 0;
     
 }
 
-/*
+/*!
     Stops the animation before it has completed.
 */
 - (void)stopAnimation
@@ -262,7 +265,7 @@ ACTUAL_FRAME_RATE = 0;
         [_delegate animationDidStop:self];
 }
 
-/*
+/*!
     Returns <code>YES</code> if the animation
     is running.
 */
@@ -271,7 +274,7 @@ ACTUAL_FRAME_RATE = 0;
     return _timer;
 }
 
-/*
+/*!
     Sets the animation's progress.
     @param aProgress the animation's progress
 */
@@ -280,7 +283,7 @@ ACTUAL_FRAME_RATE = 0;
     _progress = aProgress;
 }
 
-/*
+/*!
     Returns the animation's progress
 */
 - (float)currentProgress
@@ -288,7 +291,7 @@ ACTUAL_FRAME_RATE = 0;
     return _progress;
 }
 
-/*
+/*!
     Returns the animation's timing progress.
 */
 - (float)currentValue

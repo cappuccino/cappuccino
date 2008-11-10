@@ -20,13 +20,14 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-import "CPWindow.j"
+@import "CPWindow.j"
 
 
 CPOKButton      = 1;
 CPCancelButton  = 0;
 
-/*
+/*! @class CPPanel
+
     The <objj>CPPanel</objj> class defines objects that manage the panels of the Cappuccino user interface. A panel is a window that serves an auxiliary function within an application. It generally displays controls that the user can act on to give instructions to the application or to modify the contents of a standard window.</p>
 
 <p>Panels behave differently from standard windows in only a small number of ways, but the ways are important to the user interface:</p>
@@ -49,7 +50,7 @@ CPCancelButton  = 0;
     BOOL    _worksWhenModal;
 }
 
-/*
+/*!
     Returns <code>YES</code> if the receiver is a floating panel (like a palette).
 */
 - (BOOL)isFloatingPanel
@@ -57,7 +58,7 @@ CPCancelButton  = 0;
     return [self level] == CPFloatingWindowLevel;
 }
 
-/*
+/*!
     Sets the receiver to be a floating panel. <code>YES</code>
     makes the window a floating panel. <code>NO</code> makes it a normal window.
     @param isFloatingPanel specifies whether to make it floating
@@ -67,7 +68,7 @@ CPCancelButton  = 0;
     [self setLevel:isFloatingPanel ? CPFloatingWindowLevel : CPNormalWindowLevel];
 }
 
-/*
+/*!
     Returns <code>YES</code> if the window only becomes key
     if needed. <code>NO</code> means it behaves just like other windows.
 */
@@ -76,7 +77,7 @@ CPCancelButton  = 0;
     return _becomesKeyOnlyIfNeeded;
 }
 
-/*
+/*!
     Sets whether the the window becomes key only if needed.
     @param shouldBecomeKeyOnlyIfNeeded <code>YES</code> makes the window become key only if needed
 */
@@ -90,7 +91,7 @@ CPCancelButton  = 0;
     return _worksWhenModal;
 }
 
-/*
+/*!
     Sets whether this window can receive input while another window is running modally.
     @param shouldWorkWhenModal whether to receive input while another window is modal
 */

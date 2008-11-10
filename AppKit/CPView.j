@@ -20,17 +20,18 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-import <Foundation/CPArray.j>
-import <Foundation/CPObjJRuntime.j>
+@import <Foundation/CPArray.j>
+@import <Foundation/CPObjJRuntime.j>
 
-import "CGAffineTransform.j"
-import "CGGeometry.j"
+@import "CGAffineTransform.j"
+@import "CGGeometry.j"
 
-import "CPColor.j"
-import "CPDOMDisplayServer.j"
-import "CPGeometry.j"
-import "CPResponder.j"
-import "CPGraphicsContext.j"
+@import "CPColor.j"
+@import "CPDOMDisplayServer.j"
+@import "CPGeometry.j"
+@import "CPResponder.j"
+@import "CPGraphicsContext.j"
+
 
 #include "Platform/Platform.h"
 #include "CoreGraphics/CGAffineTransform.h"
@@ -99,7 +100,8 @@ var DOMElementPrototype         = nil,
     CustomDrawRectViews                 = {};
 #endif
 
-/*
+/*! @class CPView
+
     <objj>CPView</objj> is an abstract class which provides facilities for drawing
     in a window and receiving events. It is the superclass of many of the visual
     elements of the GUI.</p>
@@ -195,7 +197,7 @@ var DOMElementPrototype         = nil,
     return [self initWithFrame:CGRectMakeZero()];
 }
 
-/*
+/*!
     Initializes the receiver for usage with the specified bounding rectangle
     @return the initialized view
 */
@@ -240,7 +242,7 @@ var DOMElementPrototype         = nil,
     return self;
 }
 
-/*
+/*!
     Returns the container view of the receiver
     @return the receiver's containing view
 */
@@ -249,7 +251,7 @@ var DOMElementPrototype         = nil,
     return _superview;
 }
 
-/*
+/*!
     Returns an array of all the views contained as direct children of the receiver
     @return an array of <objj>CPView</objj>s
 */
@@ -258,7 +260,7 @@ var DOMElementPrototype         = nil,
     return _subviews;
 }
 
-/*
+/*!
     Returns the window containing this receiver
 */
 - (CPWindow)window
@@ -266,7 +268,7 @@ var DOMElementPrototype         = nil,
     return _window;
 }
 
-/*
+/*!
     Makes the argument a subview of the receiver.
     @param aSubview the <objj>CPView</objj> to make a subview
 */
@@ -275,7 +277,7 @@ var DOMElementPrototype         = nil,
     [self _insertSubview:aSubview atIndex:CPNotFound];
 }
 
-/*
+/*!
     Makes <code>aSubview</code> a subview of the receiver. It is positioned relative to <code>anotherView</code>
     @param aSubview the view to add as a subview
     @param anOrderingMode specifies <code>aSubview</code>'s ordering relative to <code>anotherView</code>
@@ -359,7 +361,7 @@ var DOMElementPrototype         = nil,
     [self didAddSubview:aSubview];
 }
 
-/*
+/*!
     Called when the receiver has added <code>aSubview</code> to it's child views.
     @param aSubview the view that was added
 */
@@ -367,7 +369,7 @@ var DOMElementPrototype         = nil,
 {
 }
 
-/*
+/*!
     Removes the receiver from it's container view and window.
     Does nothing if there's no container view.
 */
@@ -388,7 +390,7 @@ var DOMElementPrototype         = nil,
     [self _setWindow:nil];
 }
 
-/*
+/*!
     Replaces the specified child view with another view
     @param aSubview the view to replace
     @param aView the replacement view
@@ -421,7 +423,7 @@ var DOMElementPrototype         = nil,
     [self viewDidMoveToWindow];
 }
 
-/*
+/*!
     Returns <code>YES</code> if the receiver is, or is a descendant of, <code>aView</code>.
     @param aView the view to test for ancestry
 */
@@ -438,7 +440,7 @@ var DOMElementPrototype         = nil,
     return NO;
 }
 
-/*
+/*!
     Called when the receiver's superview has changed.
 */
 - (void)viewDidMoveToSuperview
@@ -447,14 +449,14 @@ var DOMElementPrototype         = nil,
         [self setNeedsDisplay:YES];
 }
 
-/*
+/*!
     Called when the receiver has been moved to a new <objj>CPWindow</objj>.
 */
 - (void)viewDidMoveToWindow
 {
 }
 
-/*
+/*!
     Called when the receiver is about to be moved to a new view.
     @param aView the view to which the receiver will be moved
 */
@@ -462,7 +464,7 @@ var DOMElementPrototype         = nil,
 {
 }
 
-/*
+/*!
     Called when the receiver is about to be moved to a new window.
     @param aWindow the window to which the receiver will be moved.
 */
@@ -470,7 +472,7 @@ var DOMElementPrototype         = nil,
 {
 }
 
-/*
+/*!
     Called when the receiver is about to be remove one of its subviews.
     @param aView the view that will be removed
 */
@@ -478,7 +480,7 @@ var DOMElementPrototype         = nil,
 {
 }
 
-/*
+/*!
     Returns the menu item containing the receiver or one of its ancestor views.
     @return a menu item, or <code>nil</code> if the view or one of its ancestors wasn't found
 */
@@ -507,7 +509,7 @@ var DOMElementPrototype         = nil,
     return _tag;
 }
 
-/*
+/*!
     Returns whether the view is flipped.
     @return <code>YES</code> if the view is flipped. <code>NO</code>, otherwise.
 */
@@ -516,7 +518,7 @@ var DOMElementPrototype         = nil,
     return YES;
 }
 
-/*
+/*!
     Sets the frame size of the receiver to the dimensions and origin of the provided rectangle in the coordinate system
     of the superview. The method also posts an <objj>CPViewFrameDidChangeNotification</objj> to the notification
     center if the receiver is configured to do so. If the frame is the same as the current frame, the method simply
@@ -539,7 +541,7 @@ var DOMElementPrototype         = nil,
         [_CPViewNotificationCenter postNotificationName:CPViewFrameDidChangeNotification object:self];
 }
 
-/*
+/*!
     Returns the receiver's frame.
     @return a copy of the receiver's frame
 */
@@ -548,7 +550,7 @@ var DOMElementPrototype         = nil,
     return _CGRectMakeCopy(_frame);
 }
 
-/*
+/*!
     Sets the receiver's frame origin to the provided point. The point is defined in the superview's coordinate system. 
     The method posts a <objj>CPViewFrameDidChangeNotification</objj> to the default notification center if the receiver 
     is configured to do so. If the specified origin is the same as the frame's current origin, the method will 
@@ -573,7 +575,7 @@ var DOMElementPrototype         = nil,
 #endif
 }
 
-/*
+/*!
     Sets the receiver's frame size. If <code>aSize</code> is the same as the frame's current dimensions, this
     method simply returns. The method posts a <objj>CPViewFrameDidChangeNotification</objj> to the
     default notification center if the receiver is configured to do so.
@@ -646,7 +648,7 @@ var DOMElementPrototype         = nil,
 #endif
 }
 
-/*
+/*!
     Sets the receiver's bounds. The bounds define the size and location of the receiver inside it's frame. Posts a 
     <objj>CPViewBoundsDidChangeNotification</objj> to the default notification center if the receiver is configured to do so.
     @param bounds the new bounds
@@ -667,7 +669,7 @@ var DOMElementPrototype         = nil,
         [_CPViewNotificationCenter postNotificationName:CPViewBoundsDidChangeNotification object:self];
 }
 
-/*
+/*!
     Returns the receiver's bounds. The bounds define the size
     and location of the receiver inside its frame.
 */
@@ -676,7 +678,7 @@ var DOMElementPrototype         = nil,
     return _CGRectMakeCopy(_bounds);
 }
 
-/*
+/*!
     Sets the location of the receiver inside its frame. The method
     posts a <objj>CPViewBoundsDidChangeNotification</objj> to the
     default notification center if the receiver is configured to do so.
@@ -719,7 +721,7 @@ var DOMElementPrototype         = nil,
         [_CPViewNotificationCenter postNotificationName:CPViewBoundsDidChangeNotification object:self];
 }
 
-/*
+/*!
     Sets the receiver's size inside its frame. The method posts a
     <objj>CPViewBoundsDidChangeNotification</objj> to the default
     notification center if the receiver is configured to do so.
@@ -758,7 +760,7 @@ var DOMElementPrototype         = nil,
 }
 
 
-/*
+/*!
     Notifies subviews that the superview changed size.
     @param aSize the size of the old superview
 */
@@ -789,7 +791,7 @@ var DOMElementPrototype         = nil,
     [self setFrame:newFrame];
 }
 
-/*
+/*!
     Initiates <code>superviewSizeChanged:</code> messages to subviews.
     @param aSize the size for the subviews
 */
@@ -801,7 +803,7 @@ var DOMElementPrototype         = nil,
         [_subviews[count] resizeWithOldSuperviewSize:aSize];
 }
 
-/*
+/*!
     Specifies whether the receiver view should automatically resize its
     subviews when its <code>setFrameSize:</code> method receives a change.
     @param aFlag If <code>YES</code>, then subviews will automatically be resized
@@ -813,7 +815,7 @@ var DOMElementPrototype         = nil,
     _autoresizesSubviews = aFlag;
 }
 
-/*
+/*!
     Reports whether the receiver automatically resizes its subviews when its frame size changes.
     @return <code>YES</code> means it resizes its subviews on a frame size change.
 */
@@ -822,7 +824,7 @@ var DOMElementPrototype         = nil,
     return _autoresizesSubviews;
 }
 
-/*
+/*!
     Determines automatic resizing behavior.
     @param aMask a bit mask with options
 */
@@ -831,7 +833,7 @@ var DOMElementPrototype         = nil,
     _autoresizingMask = aMask;
 }
 
-/*
+/*!
     Returns the bit mask options for resizing behavior
 */
 - (unsigned)autoresizingMask
@@ -840,7 +842,7 @@ var DOMElementPrototype         = nil,
 }
 
 // Fullscreen Mode
-/*
+/*!
     Puts the receiver into full screen mode.
     @param aScreen the that should be used
     @param options configuration options
@@ -871,7 +873,7 @@ var DOMElementPrototype         = nil,
     return YES;
 }
 
-/*
+/*!
     The receiver should exit full screen mode.
     @param options configurations options
 */
@@ -889,7 +891,7 @@ var DOMElementPrototype         = nil,
     [[self window] orderOut:self];
 }
 
-/*
+/*!
     Returns <code>YES</code> if the receiver is currently in full screen mode.
 */
 - (BOOL)isInFullScreenMode
@@ -897,7 +899,7 @@ var DOMElementPrototype         = nil,
     return _isInFullScreenMode;
 }
 
-/*
+/*!
     Sets whether the receiver should be hidden.
     @param aFlag <code>YES</code> makes the receiver hidden.
 */
@@ -913,7 +915,7 @@ var DOMElementPrototype         = nil,
 #endif
 }
 
-/*
+/*!
     Returns <code>YES</code> if the receiver is hidden.
 */
 - (BOOL)isHidden
@@ -921,7 +923,7 @@ var DOMElementPrototype         = nil,
     return _isHidden;
 }
 
-/*
+/*!
     Sets the opacity of the receiver. The value must be in the range of 0.0 to 1.0, where 0.0 is 
     completely transparent and 1.0 is completely opaque.
     @param anAlphaValue an alpha value ranging from 0.0 to 1.0.
@@ -948,7 +950,7 @@ var DOMElementPrototype         = nil,
 #endif
 }
 
-/*
+/*!
     Returns the alpha value of the receiver. Ranges from 0.0 to
     1.0, where 0.0 is completely transparent and 1.0 is completely opaque.
 */
@@ -957,7 +959,7 @@ var DOMElementPrototype         = nil,
     return _opacity;
 }
 
-/*
+/*!
     Returns <code>YES</code> if the receiver is hidden, or one
     of it's ancestor views is hidden. <code>NO</code>, otherwise.
 */   
@@ -971,7 +973,7 @@ var DOMElementPrototype         = nil,
     return view != nil;
 }
 
-/*
+/*!
     Returns whether the receiver should be sent a <code>mouseDown:</code> message for <code>anEvent</code>.<br/>
     Returns <code>YES</code> by default.
     @return <code>YES</code>, if the view object accepts first mouse-down event. <code>NO</code>, otherwise.
@@ -982,7 +984,7 @@ var DOMElementPrototype         = nil,
     return YES;
 }
 
-/*
+/*!
     Returns whether or not the view responds to hit tests.
     @return <code>YES</code> if this view listens to hitTest messages, <code>NO</code> otherwise.
 */
@@ -991,7 +993,7 @@ var DOMElementPrototype         = nil,
     return YES;
 }
 
-/*
+/*!
     Set whether or not the view should respond to hit tests.
     @param shouldHitTest should be <code>YES</code> if this view should respond to hit tests, <code>NO</code> otherwise.
 */
@@ -1000,7 +1002,7 @@ var DOMElementPrototype         = nil,
     _hitTests = shouldHitTest;
 }
 
-/*
+/*!
     Tests whether a point is contained within this view, or one of its subviews.
     @param aPoint the point to test
     @return returns the containing view, or nil if the point is not contained
@@ -1024,7 +1026,7 @@ var DOMElementPrototype         = nil,
     return self;
 }
 
-/*
+/*!
     Returns <code>YES</code> if mouse events aren't needed by the receiver and can be sent to the superview. The
     default implementation returns <code>NO</code> if the view is opaque.
 */
@@ -1039,7 +1041,7 @@ var DOMElementPrototype         = nil,
         [super mouseDown:anEvent];
 }
 
-/*
+/*!
     Sets the background color of the receiver.
     @param aColor the new color for the receiver's background
 */
@@ -1154,7 +1156,7 @@ var DOMElementPrototype         = nil,
 #endif
 }
 
-/*
+/*!
     Returns the background color of the receiver
 */
 - (CPColor)backgroundColor
@@ -1163,7 +1165,7 @@ var DOMElementPrototype         = nil,
 }
 
 // Converting Coordinates
-/*
+/*!
     Converts <code>aPoint</code> from the coordinate space of <code>aView</code> to the coordinate space of the receiver.
     @param aPoint the point to convert
     @param aView the view space to convert from
@@ -1174,7 +1176,7 @@ var DOMElementPrototype         = nil,
     return CGPointApplyAffineTransform(aPoint, _CPViewGetTransform(aView, self));
 }
 
-/*
+/*!
     Converts <code>aPoint</code> from the receiver's coordinate space to the coordinate space of <code>aView</code>.
     @param aPoint the point to convert
     @param aView the coordinate space to which the point will be converted
@@ -1185,7 +1187,7 @@ var DOMElementPrototype         = nil,
     return CGPointApplyAffineTransform(aPoint, _CPViewGetTransform(self, aView));
 }
 
-/*
+/*!
     Convert's <code>aSize</code> from <code>aView</code>'s coordinate space to the receiver's coordinate space.
     @param aSize the size to convert
     @param aView the coordinate space to convert from
@@ -1196,7 +1198,7 @@ var DOMElementPrototype         = nil,
     return CGSizeApplyAffineTransform(aSize, _CPViewGetTransform(aView, self));
 }
 
-/*
+/*!
     Convert's <code>aSize</code> from the receiver's coordinate space to <code>aView</code>'s coordinate space.
     @param aSize the size to convert
     @param the coordinate space to which the size will be converted
@@ -1207,7 +1209,7 @@ var DOMElementPrototype         = nil,
     return CGSizeApplyAffineTransform(aSize, _CPViewGetTransform(self, aView));
 }
 
-/*
+/*!
     Converts <code>aRect</code> from <code>aView</code>'s coordinate space to the receiver's space.
     @param aRect the rectangle to convert
     @param aView the coordinate space from which to convert
@@ -1218,7 +1220,7 @@ var DOMElementPrototype         = nil,
     return CGRectApplyAffineTransform(aRect, _CPViewGetTransform(aView, self));
 }
 
-/*
+/*!
     Converts <code>aRect</code> from the receiver's coordinate space to <code>aView</code>'s coordinate space.
     @param aRect the rectangle to convert
     @param aView the coordinate space to which the rectangle will be converted
@@ -1229,7 +1231,7 @@ var DOMElementPrototype         = nil,
     return CGRectApplyAffineTransform(aRect, _CPViewGetTransform(self, aView));
 }
 
-/*
+/*!
     Sets whether the receiver posts a <objj>CPViewFrameDidChangeNotification</objj> notification
     to the default notification center when its frame is changed. The default is <code>NO</code>.
     Methods that could cause a frame change notification are:
@@ -1252,7 +1254,7 @@ setFrameOrigin:
         [_CPViewNotificationCenter postNotificationName:CPViewFrameDidChangeNotification object:self];
 }
 
-/*
+/*!
     Returns <code>YES</code> if the receiver posts a <objj>CPViewFrameDidChangeNotification</objj> if its frame is changed.
 */
 - (BOOL)postsFrameChangedNotifications
@@ -1260,7 +1262,7 @@ setFrameOrigin:
     return _postsFrameChangedNotifications;
 }
 
-/*
+/*!
     Sets whether the receiver posts a <objj>CPViewBoundsDidChangeNotification</objj> notification
     to the default notification center when its bounds is changed. The default is <code>NO</code>.
     Methods that could cause a bounds change notification are:
@@ -1283,7 +1285,7 @@ setBoundsOrigin:
         [_CPViewNotificationCenter postNotificationName:CPViewBoundsDidChangeNotification object:self];
 }
 
-/*
+/*!
     Returns <code>YES</code> if the receiver posts a
     <objj>CPViewBoundsDidChangeNotification</objj> when its
     bounds is changed.
@@ -1293,7 +1295,7 @@ setBoundsOrigin:
     return _postsBoundsChangedNotifications;
 }
 
-/*
+/*!
     Initiates a drag operation from the receiver to another view that accepts dragged data.
     @param anImage the image to be dragged
     @param aLocation the lower-left corner coordinate of <code>anImage</code>
@@ -1308,7 +1310,7 @@ setBoundsOrigin:
     [_window dragImage:anImage at:[self convertPoint:aLocation toView:nil] offset:mouseOffset event:anEvent pasteboard:aPasteboard source:aSourceObject slideBack:slideBack];
 }
 
-/*
+/*!
     Initiates a drag operation from the receiver to another view that accepts dragged data.
     @param aView the view to be dragged
     @param aLocation the lower-left corner coordinate of <code>aView</code>
@@ -1323,7 +1325,7 @@ setBoundsOrigin:
     [_window dragView:aView at:[self convertPoint:aLocation toView:nil] offset:mouseOffset event:anEvent pasteboard:aPasteboard source:aSourceObject slideBack:slideBack];
 }
 
-/*
+/*!
     Sets the receiver's list of acceptable data types for a dragging operation.
     @param pasteboardTypes an array of <objj>CPPasteboard</objj>s
 */
@@ -1332,7 +1334,7 @@ setBoundsOrigin:
     _registeredDraggedTypes = [pasteboardTypes copy];
 }
 
-/*
+/*!
     Returns an array of all types the receiver accepts for dragging operations.
     @return an array of <objj>CPPasteBoard</objj>s
 */
@@ -1341,7 +1343,7 @@ setBoundsOrigin:
     return _registeredDraggedTypes;
 }
 
-/*
+/*!
     Resets the array of acceptable data types for a dragging operation.
 */
 - (void)unregisterDraggedTypes
@@ -1349,7 +1351,7 @@ setBoundsOrigin:
     _registeredDraggedTypes = nil;
 }
 
-/*
+/*!
     Draws the receiver into <code>aRect</code>. This method should be overridden by subclasses.
     @param aRect the area that should be drawn into
 */
@@ -1360,7 +1362,7 @@ setBoundsOrigin:
 
 // Displaying
 
-/*
+/*!
     Marks the entire view as dirty, and needing a redraw.
 */
 - (void)setNeedsDisplay:(BOOL)aFlag
@@ -1373,7 +1375,7 @@ setBoundsOrigin:
 #endif
 }
 
-/*
+/*!
     Marks the area denoted by <code>aRect</code> as dirty, and initiates a redraw on it.
     @param aRect the area that needs to be redrawn
 */
@@ -1411,7 +1413,7 @@ setBoundsOrigin:
     return _dirtyRect && !_CGRectIsEmpty(_dirtyRect);
 }
 
-/*
+/*!
     Displays the receiver and any of its subviews that need to be displayed.
 */
 - (void)displayIfNeeded
@@ -1420,7 +1422,7 @@ setBoundsOrigin:
         [self displayRect:_dirtyRect];
 }
 
-/*
+/*!
     Draws the entire area of the receiver as defined by its <code>bounds</code>.
 */
 - (void)display
@@ -1434,7 +1436,7 @@ setBoundsOrigin:
         [self displayRect:aRect];
 }
 
-/*
+/*!
     Draws the receiver into the area defined by <code>aRect</code>.
     @param aRect the area to be drawn
 */
@@ -1461,7 +1463,7 @@ setBoundsOrigin:
 {
 }
 
-/*
+/*!
     Locks focus on the receiver, so drawing commands apply to it.
 */
 - (void)lockFocus
@@ -1496,7 +1498,7 @@ setBoundsOrigin:
     CGContextSaveGState([_graphicsContext graphicsPort]);
 }
 
-/*
+/*!
     Takes focus away from the receiver, and restores it to the previous view.
 */
 - (void)unlockFocus
@@ -1506,7 +1508,7 @@ setBoundsOrigin:
     [CPGraphicsContext setCurrentContext:nil];
 }
 
-/*
+/*!
     Returns whether the receiver is completely opaque. By default, returns <code>NO</code>.
 */
 - (BOOL)isOpaque
@@ -1514,7 +1516,7 @@ setBoundsOrigin:
     return NO;
 }
 
-/*
+/*!
     Returns the rectangle of the receiver not clipped by its superview.
 */
 - (CGRect)visibleRect
@@ -1538,7 +1540,7 @@ setBoundsOrigin:
     return superview;
 }
 
-/*
+/*!
     Changes the receiver's frame origin to a 'constrained' <code>aPoint</code>.
     @param aPoint the proposed frame origin
 */
@@ -1552,7 +1554,7 @@ setBoundsOrigin:
     [clipView scrollToPoint:[self convertPoint:aPoint toView:clipView]];
 }
 
-/*
+/*!
     Scrolls the nearest ancestor <objj>CPClipView</objj> a minimum amount so <code>aRect</code> can become visible.
     @param aRect the area to become visible
     @return <codeYES</code> if any scrolling occurred, <code>NO</code> otherwise.
@@ -1601,7 +1603,7 @@ setBoundsOrigin:
     return NO;
 }
 
-/*
+/*!
     Subclasses can override this to modify the visible rectangle after a
     scrolling operation. The default implementation simply returns the provided rectangle.
     @param proposedVisibleRect the rectangle to alter
@@ -1612,7 +1614,7 @@ setBoundsOrigin:
     return proposedVisibleRect;
 }
 
-/*
+/*!
     Should be overridden by subclasses.
 */
 - (void)scrollRect:(CGRect)aRect by:(float)anAmount
@@ -1620,7 +1622,7 @@ setBoundsOrigin:
 
 }
 
-/*
+/*!
     Returns the <objj>CPScrollView</objj> containing the receiver.
     @return the <objj>CPScrollView</objj> containing the receiver.
 */
@@ -1635,7 +1637,7 @@ setBoundsOrigin:
     return superview;
 }
 
-/*
+/*!
     Scrolls the clip view to a specified point
     @param the clip view to scoll
     @param the point to scroll to
@@ -1645,7 +1647,7 @@ setBoundsOrigin:
     [aClipView scrollToPoint:aPoint];
 }
 
-/*
+/*!
     Notifies the receiver (superview of a <objj>CPClipView</objj>)
     that the clip view bounds or the document view bounds have changed.
     @param aClipView the clip view of the superview being notified
@@ -1658,7 +1660,7 @@ setBoundsOrigin:
 
 @implementation CPView (CoreAnimationAdditions)
 
-/*
+/*!
     Sets the core animation layer to be used by this receiver.
 */
 - (void)setLayer:(CALayer)aLayer
@@ -1690,7 +1692,7 @@ setBoundsOrigin:
     }
 }
 
-/*
+/*!
     Returns the core animation layer used by the receiver.
 */
 - (CALayer)layer
@@ -1698,7 +1700,7 @@ setBoundsOrigin:
     return _layer;
 }
 
-/*
+/*!
     Sets whether the receiver wants a core animation layer.
     @param <code>YES</code> means the receiver wants a layer.
 */
@@ -1707,7 +1709,7 @@ setBoundsOrigin:
     _wantsLayer = aFlag;
 }
 
-/*
+/*!
     Returns <code>YES</code> if the receiver uses a <objj>CALayer</objj>
     @returns <code>YES</code> if the receiver uses a <objj>CALayer</objj>
 */
@@ -1733,7 +1735,7 @@ var CPViewAutoresizingMaskKey       = @"CPViewAutoresizingMask",
 
 @implementation CPView (CPCoding)
 
-/*
+/*!
     Initializes the view from an archive.
     @param aCoder the coder from which to initialize
     @return the initialized view
@@ -1792,12 +1794,14 @@ var CPViewAutoresizingMaskKey       = @"CPViewAutoresizingMask",
         _displayHash = [self hash];
 
         [self setBackgroundColor:[aCoder decodeObjectForKey:CPViewBackgroundColorKey]];
+        
+        [self setNeedsDisplay:YES];
     }
     
     return self;
 }
 
-/*
+/*!
     Archives the view to a coder.
     @param aCoder the object into which the view's data will be archived.
 */

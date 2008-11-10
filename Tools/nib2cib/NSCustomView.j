@@ -1,6 +1,6 @@
 /*
  * NSCustomView.j
- * AppKit
+ * nib2cib
  *
  * Created by Francisco Tolmasky.
  * Copyright 2008, 280 North, Inc.
@@ -20,9 +20,9 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-import <AppKit/_CPCibCustomView.j>
+@import <AppKit/_CPCibCustomView.j>
 
-import "NSView.j"
+@import "NSView.j"
 
 
 var _CPCibCustomViewClassNameKey    = @"_CPCibCustomViewClassNameKey";

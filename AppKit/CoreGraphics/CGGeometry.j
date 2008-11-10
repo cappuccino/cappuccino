@@ -65,7 +65,7 @@ _function(CGRectIsNull(aRect))
 
 _function(CGRectContainsPoint(aRect, aPoint))
 
-/*
+/*!
     Returns a <code>BOOL</code> indicating whether <objj>CGRect</objj> <code>lhsRect</code>
     contains <objj>CGRect</objj> <code>rhsRect</code>.
     @group CGRect
@@ -80,7 +80,7 @@ function CGRectContainsRect(lhsRect, rhsRect)
     return _CGRectEqualToRect(union, lhsRect);
 }
 
-/*
+/*!
     Returns <code>YES</code> if the two rectangles intersect
     @group CGRect
     @param lhsRect the first <objj>CGRect</objj>
@@ -94,7 +94,7 @@ function CGRectIntersectsRect(lhsRect, rhsRect)
     return !_CGRectIsEmpty(intersection);
 }
 
-/*
+/*!
     Makes the origin and size of a <objj>CGRect</objj> all integers. Specifically, by making 
     the southwest corner the origin (rounded down), and the northeast corner a <objj>CGSize</objj> (rounded up).
     @param aRect the rectangle to operate on
@@ -118,7 +118,7 @@ function CGRectIntegral(aRect)
     return aRect;
 }
 
-/*
+/*!
     Returns the intersection of the two provided rectangles as a new rectangle.
     @param lhsRect the first rectangle used for calculation
     @param rhsRect the second rectangle used for calculation

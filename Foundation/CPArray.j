@@ -20,11 +20,11 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-import "CPObject.j"
-import "CPRange.j"
-import "CPEnumerator.j"
-import "CPSortDescriptor.j"
-import "CPException.j"
+@import "CPObject.j"
+@import "CPRange.j"
+@import "CPEnumerator.j"
+@import "CPSortDescriptor.j"
+@import "CPException.j"
 
 /* @ignore */
 @implementation _CPArrayEnumerator : CPEnumerator
@@ -86,55 +86,55 @@ import "CPException.j"
 
 @end
 
-/*
+/*! @class CPArray
     A mutable array class backed by a JavaScript Array.
-    There is also a <objj>CPMutableArray</objj> class,
+    There is also a CPMutableArray class,
     but it is just a child class of this class with an
     empty implementation. All mutable functionality is
-    implemented directly in <objj>CPArray</objj>.
+    implemented directly in CPArray.
 */
 @implementation CPArray : CPObject
 
-/*
-    Returns a new uninitialized <objj>CPArray</objj>.
+/*!
+    Returns a new uninitialized CPArray.
 */
 + (id)alloc
 {
     return [];
 }
 
-/*
-    Returns a new initialized <objj>CPArray</objj>.
+/*!
+    Returns a new initialized CPArray.
 */
 + (id)array
 {
     return [[self alloc] init];
 }
 
-/*
+/*!
     Creates a new array containing the objects in <code>anArray</code>.
     @param anArray Objects in this array will be added to the new array
-    @return a new <objj>CPArray</objj> of the provided objects
+    @return a new CPArray of the provided objects
 */
 + (id)arrayWithArray:(CPArray)anArray
 {
     return [[self alloc] initWithArray:anArray];
 }
 
-/*
+/*!
     Creates a new array with <code>anObject</code> in it.
     @param anObject the object to be added to the array
-    @return a new <objj>CPArray</objj> containing a single object
+    @return a new CPArray containing a single object
 */
 + (id)arrayWithObject:(id)anObject
 {
     return [[self alloc] initWithObjects:anObject];
 }
 
-/*
-    Creates a new <objj>CPArray</objj> containing all the objects passed as arguments to the method.
+/*!
+    Creates a new CPArray containing all the objects passed as arguments to the method.
     @param anObject the objects that will be added to the new array
-    @return a new <objj>CPArray</objj> containing the argument objects
+    @return a new CPArray containing the argument objects
 */
 + (id)arrayWithObjects:(id)anObject, ...
 {
@@ -148,19 +148,19 @@ import "CPException.j"
     return array;
 }
 
-/*
-    Creates a <objj>CPArray</objj> from a JavaScript array of objects.
+/*!
+    Creates a CPArray from a JavaScript array of objects.
     @param objects the JavaScript Array
     @param aCount the number of objects in the JS Array
-    @return a new <objj>CPArray</objj> containing the specified objects
+    @return a new CPArray containing the specified objects
 */
 + (id)arrayWithObjects:(id)objects count:(unsigned)aCount
 {
     return [[self alloc] initWithObjects:objects count:aCount];
 }
 
-/*
-    Initializes the <objj>CPArray</objj>.
+/*!
+    Initializes the CPArray.
     @return the initialized array
 */
 - (id)init
@@ -169,10 +169,10 @@ import "CPException.j"
 }
 
 // Creating an Array
-/*
-    Creates a new <objj>CPArray</objj> from <code>anArray</code>.
+/*!
+    Creates a new CPArray from <code>anArray</code>.
     @param anArray objects in this array will be added to the new array
-    @return a new <objj>CPArray</objj> containing the objects of <code>anArray</code>
+    @return a new CPArray containing the objects of <code>anArray</code>
 */
 - (id)initWithArray:(CPArray)anArray
 {
@@ -184,7 +184,7 @@ import "CPException.j"
     return self;
 }
 
-/*
+/*!
     Initializes a the array with the contents of <code>anArray</code>
     and optionally performs a deep copy of the objects based on <code>copyItems</code>.
     @param anArray the array to copy the data from
@@ -217,10 +217,10 @@ import "CPException.j"
     return self;
 }
 
-/*
-    initializes 
+/*!
+    initializes an array with the contents of anArray
 */
-- (id)initWithObjects:(Array)anObject, ...
+- (id)initWithObjects:(Array)anArray, ...
 {
     // The arguments array contains self and _cmd, so the first object is at position 2.
     var i = 2,
@@ -232,11 +232,11 @@ import "CPException.j"
     return self; 
 }
 
-/*
+/*!
     Initializes the array with a JavaScript array of objects.
     @param objects the array of objects to add to the receiver
     @param aCount the number of objects in <code>objects</code>
-    @return the initialized <objj>CPArray</objj>
+    @return the initialized CPArray
 */
 - (id)initWithObjects:(id)objects count:(unsigned)aCount
 {
@@ -253,8 +253,8 @@ import "CPException.j"
     return self;
 }
 
-/*
-    Returns a hash of the <objj>CPArray</objj>.
+/*!
+    Returns a hash of the CPArray.
     @return an unsigned integer hash
 */
 - (unsigned)hash
@@ -266,7 +266,7 @@ import "CPException.j"
 }
 
 // Querying an array
-/*
+/*!
     Returns <code>YES</code> if the array contains <code>anObject</code>. Otherwise, it returns <code>NO</code>.
     @param anObject the method checks if this object is already in the array
 */
@@ -275,7 +275,7 @@ import "CPException.j"
     return [self indexOfObject:anObject] != CPNotFound;
 }
 
-/*
+/*!
     Returns the number of elements in the array
 */
 - (int)count
@@ -283,7 +283,7 @@ import "CPException.j"
     return length;
 }
 
-/*
+/*!
     Returns the index of <code>anObject</code> in this array.
     If the object is <code>nil</code> or not in the array,
     returns <code>CPNotFound</code>. It first attempts to find
@@ -318,7 +318,7 @@ import "CPException.j"
     return CPNotFound;
 }
 
-/*
+/*!
     Returns the index of <code>anObject</code> in the array
     within <code>aRange</code>. It first attempts to find
     a match using <code>isEqual:</code>, then <code>==</code>.
@@ -350,7 +350,7 @@ import "CPException.j"
     return CPNotFound;
 }
 
-/*
+/*!
     Returns the index of <code>anObject</code> in the array. The test for equality is done using only <code>==</code>.
     @param anObject the object to search for
     @return the index of the object in the array. <code>CPNotFound</code> if the object is not in the array.
@@ -379,7 +379,7 @@ import "CPException.j"
     return CPNotFound;
 }
 
-/*
+/*!
     Returns the index of <code>anObject</code> in the array
     within <code>aRange</code>. The test for equality is
     done using only <code>==</code>.
@@ -416,7 +416,101 @@ import "CPException.j"
     return CPNotFound;
 }
 
-/*
+/*!
+    Returns the index of <code>anObject</code> in the array, which must be sorted in the same order as
+    calling sortUsingSelector: with the selector passed to this method would result in. 
+    @param anObject the object to search for
+    @param aSelector the comparison selector to call on each item in the list, the same
+    selector should have been used to sort the array (or to maintain its sorted order).
+    @return the index of the object, or <code>CPNotFound</code> if it was not found.
+*/
+- (unsigned)indexOfObject:(id)anObject sortedBySelector:(SEL)aSelector
+{
+    return [self indexOfObject:anObject sortedByFunction: function(lhs, rhs) { objj_msgSend(lhs, aSelector, rhs); }];
+}
+
+/*!
+    Returns the index of <code>anObject</code> in the array, which must be sorted in the same order as
+    calling sortUsingFunction: with the selector passed to this method would result in. 
+    The function will be called like so:
+    <pre>
+    aFunction(anObject, currentObjectInArrayForComparison)
+    </pre>
+    @param anObject the object to search for
+    @param aFunction the comparison function to call on each item in the array that we search. the same
+    selector should have been used to sort the array (or to maintain its sorted order).
+    @return the index of the object, or <code>CPNotFound</code> if it was not found.
+*/
+- (unsigned)indexOfObject:(id)anObject sortedByFunction:(Function)aFunction
+{
+    return [self indexOfObject:anObject sortedByFunction:aFunction context:nil];
+}
+
+/*!
+    Returns the index of <code>anObject</code> in the array, which must be sorted in the same order as
+    calling sortUsingFunction: with the selector passed to this method would result in. 
+    The function will be called like so:
+    <pre>
+    aFunction(anObject, currentObjectInArrayForComparison, context)
+    </pre>
+    @param anObject the object to search for
+    @param aFunction the comparison function to call on each item in the array that we search. the same
+    function should have been used to sort the array (or to maintain its sorted order).
+    @param aContext a context object that will be passed to the sort function
+    @return the index of the object, or <code>CPNotFound</code> if it was not found.
+*/
+- (unsigned)indexOfObject:(id)anObject sortedByFunction:(Function)aFunction context:(id)aContext
+{
+    if (!aFunction || !anObject)
+        return CPNotFound;
+ 
+    var mid, c, first = 0, last = length - 1;
+    while (first <= last)
+    {
+        mid = FLOOR((first + last) / 2);
+          c = aFunction(anObject, self[mid], aContext);
+
+        if (c > 0)
+            first = mid + 1;
+        else if (c < 0)
+            last = mid - 1;
+        else
+        {
+            while (mid < length - 1 && aFunction(anObject, self[mid+1], aContext) == CPOrderedSame)
+                mid++;
+
+            return mid;
+        }
+    }
+
+    return CPNotFound;
+}
+
+/*!
+    Returns the index of <code>anObject</code> in the array, which must be sorted in the same order as
+    calling sortUsingDescriptors: with the descriptors passed to this method would result in. 
+    @param anObject the object to search for
+    @param descriptors the array of descriptors to use to compare each item in the array that we search. the same
+    descriptors should have been used to sort the array (or to maintain its sorted order).
+    @return the index of the object, or <code>CPNotFound</code> if it was not found.
+*/
+- (unsigned)indexOfObject:(id)anObject sortedByDescriptors:(CPArray)descriptors
+{
+    [self indexOfObject:anObject sortedByFunction:function(lhs, rhs)
+    {
+        var i = 0,
+            count = [descriptors count],
+            result = CPOrderedSame;
+
+        while (i < count)
+            if((result = [descriptors[i++] compareObject:lhs withObject:rhs]) != CPOrderedSame)
+                return result;
+
+        return result;
+    }];
+}
+
+/*!
     Returns the last object in the array. If the array is empty, returns <code>nil</code>/
 */
 - (id)lastObject
@@ -428,7 +522,7 @@ import "CPException.j"
     return self[count - 1];
 }
 
-/*
+/*!
     Returns the object at index <code>anIndex</code>.
     @throws CPRangeException if <code>anIndex</code> is out of bounds
 */
@@ -437,8 +531,8 @@ import "CPException.j"
     return self[anIndex];
 }
 
-/*
-    Returns the objects at <code>indexes</code> in a new <objj>CPArray</objj>.
+/*!
+    Returns the objects at <code>indexes</code> in a new CPArray.
     @param indexes the set of indices
     @throws CPRangeException if any of the indices is greater than or equal to the length of the array
 */
@@ -456,7 +550,7 @@ import "CPException.j"
     return objects;
 }
 
-/*
+/*!
     Returns an enumerator describing the array sequentially
     from the first to the last element. You should not modify
     the array during enumeration.
@@ -466,7 +560,7 @@ import "CPException.j"
     return [[_CPArrayEnumerator alloc] initWithArray:self];
 }
 
-/*
+/*!
     Returns an enumerator describing the array sequentially
     from the last to the first element. You should not modify
     the array during enumeration.
@@ -477,7 +571,7 @@ import "CPException.j"
 }
 
 // Sending messages to elements
-/*
+/*!
     Sends each element in the array a message.
     @param aSelector the selector of the message to send
     @throws CPInvalidArgumentException if <code>aSelector</code> is <code>nil</code>
@@ -494,7 +588,7 @@ import "CPException.j"
         objj_msgSend(self[index], aSelector);
 }
 
-/*
+/*!
     Sends each element in the array a message with an argument.
     @param aSelector the selector of the message to send
     @param anObject the first argument of the message
@@ -513,7 +607,7 @@ import "CPException.j"
 }
 
 // Comparing arrays
-/*
+/*!
     Returns the first object found in the receiver (starting at index 0) which is present in the
     <code>otherArray</code> as determined by using the <code>-containsObject:</code> method.
     @return the first object found, or <code>nil</code> if no common object was found.
@@ -533,7 +627,7 @@ import "CPException.j"
     return nil;
 }
 
-/*
+/*!
     Returns true if anArray contains exactly the same objects as the reciever.
 */
 - (BOOL)isEqualToArray:(id)anArray
@@ -552,7 +646,7 @@ import "CPException.j"
 }
 
 // Deriving new arrays
-/*
+/*!
     Returns a copy of this array plus <code>anObject</code> inside the copy.
     @param anObject the object to be added to the array copy
     @throws CPInvalidArgumentException if <code>anObject</code> is <code>nil</code>
@@ -571,7 +665,7 @@ import "CPException.j"
     return array;
 }
 
-/*
+/*!
     Returns a new array which is the concatenation of <code>self</code> and otherArray (in this precise order).
     @param anArray the array that will be concatenated to the receiver's copy
 */
@@ -595,17 +689,17 @@ import "CPException.j"
 }
 */
 
-/*
+/*!
     Returns a subarray of the receiver containing the objects found in the specified range <code>aRange</code>.
     @param aRange the range of objects to be copied into the subarray
     @throws CPRangeException if the specified range exceeds the bounds of the array
 */
 - (CPArray)subarrayWithRange:(CPRange)aRange
 {
-    if (aRange.location < 0 || (aRange.location + CPMaxRange(aRange)) > length)
+    if (aRange.location < 0 || CPMaxRange(aRange) > length)
         [CPException raise:CPRangeException reason:"subarrayWithRange: aRange out of bounds"];
 
-    return slice(aRange.location, maxRange);
+    return slice(aRange.location, CPMaxRange(aRange));
 }
 
 // Sorting arrays
@@ -621,7 +715,7 @@ import "CPException.j"
     return sorted;
 }
 
-/*
+/*!
     Returns an array in which the objects are ordered according
     to a sort with <code>aFunction</code>. This invokes
     <code>-sortUsingFunction:context</code>.
@@ -638,7 +732,7 @@ import "CPException.j"
     return sorted;
 }
 
-/*
+/*!
     Returns a new array in which the objects are ordered according to a sort with <code>aSelector</code>.
     @param aSelector the selector that will perform object comparisons
 */
@@ -653,7 +747,7 @@ import "CPException.j"
 
 // Working with string elements
 
-/*
+/*!
     Returns a string formed by concatenating the objects in the
     receiver, with the specified separator string inserted between each part.
     If the element is a Objective-J object, then the <code>description</code>
@@ -670,7 +764,7 @@ import "CPException.j"
 
 // Creating a description of the array
 
-/*
+/*!
     Returns a human readable description of this array and it's elements.
 */
 - (CPString)description
@@ -691,11 +785,11 @@ import "CPException.j"
 }
 
 // Collecting paths
-/*
+/*!
     Returns a new array subset formed by selecting the elements that have
     filename extensions from <code>filterTypes</code>. Only elements
-    that are of type <objj>CPString</objj> are candidates for inclusion in the returned array.
-    @param filterTypes an array of <objj>CPString</objj> objects that contain file extensions (without the '.')
+    that are of type CPString are candidates for inclusion in the returned array.
+    @param filterTypes an array of CPString objects that contain file extensions (without the '.')
     @return a new array with matching paths
 */
 - (CPArray)pathsMatchingExtensions:(CPArray)filterTypes
@@ -712,7 +806,7 @@ import "CPException.j"
 }
 
 // Key value coding
-/*
+/*!
     Sets the key-value for each element in the array.
     @param aValue the value for the coding
     @param aKey the key for the coding
@@ -726,7 +820,7 @@ import "CPException.j"
         [self[i] setValue:aValue forKey:aKey];
 }
 
-/*
+/*!
     Returns the value for <code>aKey</code> from each element in the array.
     @param aKey the key to return the value for
     @return an array of containing a value for each element in the array
@@ -745,9 +839,9 @@ import "CPException.j"
 
 // Copying arrays
 
-/*
+/*!
     Makes a copy of the receiver.
-    @return a new <objj>CPArray</objj> copy
+    @return a new CPArray copy
 */
 - (id)copy
 {
@@ -759,9 +853,9 @@ import "CPException.j"
 @implementation CPArray(CPMutableArray)
 
 // Creating arrays
-/*
+/*!
     Creates an array able to store at least  <code>aCapacity</code>
-    items. Because <objj>CPArray</objj> is backed by JavaScript arrays,
+    items. Because CPArray is backed by JavaScript arrays,
     this method ends up simply returning a regular array.
 */
 + (CPArray)arrayWithCapacity:(unsigned)aCapacity
@@ -769,8 +863,8 @@ import "CPException.j"
     return [[self alloc] initWithCapacity:aCapacity];
 }
 
-/*
-    Initializes an array able to store at least <code>aCapacity</code> items. Because <objj>CPArray</objj>
+/*!
+    Initializes an array able to store at least <code>aCapacity</code> items. Because CPArray
     is backed by JavaScript arrays, this method ends up simply returning a regular array.
 */
 - (id)initWithCapacity:(unsigned)aCapacity
@@ -779,7 +873,7 @@ import "CPException.j"
 }
 
 // Adding and replacing objects
-/*
+/*!
     Adds <code>anObject</code> to the end of the array.
     @param anObject the object to add to the array
 */
@@ -788,7 +882,7 @@ import "CPException.j"
     push(anObject);
 }
 
-/*
+/*!
     Adds the objects in <code>anArray</code> to the receiver array.
     @param anArray the array of objects to add to the end of the receiver
 */
@@ -797,7 +891,7 @@ import "CPException.j"
     splice.apply(self, [length, 0].concat(anArray));
 }
 
-/*
+/*!
     Inserts an object into the receiver at the specified location.
     @param anObject the object to insert into the array
     @param anIndex the location to insert <code>anObject</code> at
@@ -807,7 +901,7 @@ import "CPException.j"
     splice(anIndex, 0, anObject);
 }
 
-/*
+/*!
     Inserts the objects in the provided array into the receiver at the indexes specified.
     @param objects the objects to add to this array
     @param anIndexSet the indices for the objects
@@ -821,7 +915,7 @@ import "CPException.j"
         [self insertObject:objects[index++] atindex:position];
 }
 
-/*
+/*!
     Replaces the element at <code>anIndex</code> with <code>anObject</code>.
     The current element at position <code>anIndex</code> will be removed from the array.
     @param anIndex the position in the array to place <code>anObject</code>
@@ -831,7 +925,7 @@ import "CPException.j"
     self[anIndex] = anObject;
 }
 
-/*
+/*!
     Replace the elements at the indices specified by <code>anIndexSet</code> with
     the objects in <code>objects</code>.
     @param anIndexSet the set of indices to array positions that will be replaced
@@ -849,7 +943,7 @@ import "CPException.j"
     }
 }
 
-/*
+/*!
     Replaces some of the receiver's objects with objects from <code>anArray</code>. Specifically, the elements of the
     receiver in the range specified by <code>aRange</code>,
     with the elements of <code>anArray</code> in the range specified by <code>otherRange</code>.
@@ -865,7 +959,7 @@ import "CPException.j"
         splice.apply(self, [aRange.location, aRange.length].concat([anArray subarrayWithRange:otherRange]));
 }
 
-/*
+/*!
     Replaces some of the receiver's objects with the objects from
     <code>anArray</code>. Specifically, the elements of the
     receiver in the range specified by <code>aRange</code>.
@@ -877,7 +971,7 @@ import "CPException.j"
     splice.apply(self, [aRange.location, aRange.length].concat(anArray));
 }
 
-/*
+/*!
     Sets the contents of the receiver to be identical to the contents of <code>anArray</code>.
     @param anArray the array of objects used to replace the receiver's objects
 */
@@ -889,7 +983,7 @@ import "CPException.j"
 }
 
 // Removing Objects
-/*
+/*!
     Removes all objects from this array.
 */
 - (void)removeAllObjects
@@ -897,7 +991,7 @@ import "CPException.j"
     splice(0, length);
 }
 
-/*
+/*!
     Removes the last object from the array.
 */
 - (void)removeLastObject
@@ -905,7 +999,7 @@ import "CPException.j"
     pop();
 }
 
-/*
+/*!
     Removes all entries of <code>anObject</code> from the array.
     @param anObject the object whose entries are to be removed
 */
@@ -914,7 +1008,7 @@ import "CPException.j"
     [self removeObject:anObject inRange:CPMakeRange(0, length)];
 }
 
-/*
+/*!
     Removes all entries of <code>anObject</code> from the array, in the range specified by <code>aRange</code>.
     @param anObject the object to remove
     @param aRange the range to search in the receiver for the object
@@ -930,7 +1024,7 @@ import "CPException.j"
     }
 }
 
-/*
+/*!
     Removes the object at <code>anIndex</code>.
     @param anIndex the location of the element to be removed
 */
@@ -939,7 +1033,7 @@ import "CPException.j"
     splice(anIndex, 1);
 }
 
-/*
+/*!
     Removes the objects at the indices specified by <code>CPIndexSet</code>.
     @param anIndexSet the indices of the elements to be removed from the array
 */
@@ -954,7 +1048,7 @@ import "CPException.j"
     }
 }
 
-/*
+/*!
     Remove the first instance of <code>anObject</code> from the array.
     The search for the object is done using <code>==</code>.
     @param anObject the object to remove
@@ -964,7 +1058,7 @@ import "CPException.j"
     [self removeObjectIdenticalTo:anObject inRange:CPMakeRange(0, length)];
 }
 
-/*
+/*!
     Remove the first instance of <code>anObject</code> from the array,
     within the range specified by <code>aRange</code>.
     The search for the object is done using <code>==</code>.
@@ -982,7 +1076,7 @@ import "CPException.j"
     }
 }
 
-/*
+/*!
     Remove the objects in <code>anArray</code> from the receiver array.
     @param anArray the array of objects to remove from the receiver
 */
@@ -995,7 +1089,7 @@ import "CPException.j"
         [self removeObject:anArray[index]];
 }
 
-/*
+/*!
     Removes all the objects in the specified range from the receiver.
     @param aRange the range of objects to remove
 */
@@ -1005,7 +1099,7 @@ import "CPException.j"
 }
 
 // Rearranging objects
-/*
+/*!
     Swaps the elements at the two specified indices.
     @param anIndex the first index to swap from
     @param otherIndex the second index to swap from
@@ -1033,7 +1127,7 @@ import "CPException.j"
     });
 }
 
-/*
+/*!
     Sorts the receiver array using a JavaScript function as a comparator, and a specified context.
     @param aFunction a JavaScript function that will be called to compare objects
     @param aContext an object that will be passed to <code>aFunction</code> with comparison
@@ -1043,7 +1137,7 @@ import "CPException.j"
     sort(function(lhs, rhs) { return aFunction(lhs, rhs, aContext); });
 }
 
-/*
+/*!
     Sorts the receiver array using an Objective-J method as a comparator.
     @param aSelector the selector for the method to call for comparison
 */
@@ -1068,9 +1162,9 @@ import "CPException.j"
 
 @end
 
-/*
-    This class is just an empty subclass of <objj>CPArray</objj>.
-    <objj>CPArray</objj> already implements mutable methods and
+/*!
+    This class is just an empty subclass of CPArray.
+    CPArray already implements mutable methods and
     this class only exists for source compatability.
 */
 @implementation CPMutableArray : CPArray

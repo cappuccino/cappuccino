@@ -20,11 +20,12 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-import "CPFont.j"
-import "CPShadow.j"
-import "CPView.j"
+@import "CPFont.j"
+@import "CPShadow.j"
+@import "CPView.j"
 
 #include "Platform/Platform.h"
+
 
 /*
     @global
@@ -68,14 +69,19 @@ CPSmallControlSize          = 1;
 */
 CPMiniControlSize           = 2;
 
-CPControlNormalBackgroundColor      = @"CPControlNormalBackgroundColor";
-CPControlSelectedBackgroundColor    = @"CPControlSelectedBackgroundColor";
-CPControlHighlightedBackgroundColor = @"CPControlHighlightedBackgroundColor";
-CPControlDisabledBackgroundColor    = @"CPControlDisabledBackgroundColor";
+CPControlNormalBackgroundColor      = "CPControlNormalBackgroundColor";
+CPControlSelectedBackgroundColor    = "CPControlSelectedBackgroundColor";
+CPControlHighlightedBackgroundColor = "CPControlHighlightedBackgroundColor";
+CPControlDisabledBackgroundColor    = "CPControlDisabledBackgroundColor";
+
+CPControlTextDidBeginEditingNotification    = "CPControlTextDidBeginEditingNotification";
+CPControlTextDidChangeNotification          = "CPControlTextDidChangeNotification";
+CPControlTextDidEndEditingNotification      = "CPControlTextDidEndEditingNotification";
 
 var CPControlBlackColor     = [CPColor blackColor];
 
-/*
+/*! @class CPControl
+
     <objj>CPControl</objj> is an abstract superclass used to implement user interface elements. As a subclass of <objj>CPView</objj> and <objj>CPResponder</objj> it has the ability to handle screen drawing and handling user input.
 */
 @implementation CPControl : CPView
@@ -92,9 +98,6 @@ var CPControlBlackColor     = [CPColor blackColor];
     id          _target;
     SEL         _action;
     int         _sendActionOn;
-    
-    CPColor     _backgroundColor;
-    CPColor     _highlightedBackgroundColor;
     
     CPDictionary    _backgroundColors;
     CPString        _currentBackgroundColorName;
@@ -118,7 +121,7 @@ var CPControlBlackColor     = [CPColor blackColor];
     return self;
 }
 
-/*
+/*!
     Sets whether the receiver responds to mouse events.
     @param isEnabled whether the receiver will respond to mouse events
 */
@@ -127,7 +130,7 @@ var CPControlBlackColor     = [CPColor blackColor];
     [self setAlphaValue:(_isEnabled = isEnabled) ? 1.0 : 0.3];
 }
 
-/*
+/*!
     Returns <code>YES</code> if the receiver responds to mouse events.
 */
 - (BOOL)isEnabled
@@ -136,7 +139,7 @@ var CPControlBlackColor     = [CPColor blackColor];
 }
 
 
-/*
+/*!
     Sets the color of the receiver's text.
 */
 - (void)setTextColor:(CPColor)aColor
@@ -151,7 +154,7 @@ var CPControlBlackColor     = [CPColor blackColor];
 #endif
 }
 
-/*
+/*!
     Returns the color of the receiver's text
 */
 - (CPColor)textColor
@@ -159,7 +162,7 @@ var CPControlBlackColor     = [CPColor blackColor];
     return _textColor;
 }
 
-/*
+/*!
     Returns the receiver's alignment
 */
 - (CPTextAlignment)alignment
@@ -167,7 +170,7 @@ var CPControlBlackColor     = [CPColor blackColor];
     return _alignment;
 }
 
-/*
+/*!
     Sets the receiver's alignment
     @param anAlignment the receiver's alignment
 */
@@ -176,7 +179,7 @@ var CPControlBlackColor     = [CPColor blackColor];
     _alignment = anAlignment;
 }
 
-/*
+/*!
     Sets the receiver's font
     @param aFont the font for the receiver
 */
@@ -192,7 +195,7 @@ var CPControlBlackColor     = [CPColor blackColor];
 #endif
 }
 
-/*
+/*!
     Returns the receiver's font
 */
 - (CPFont)font
@@ -200,7 +203,7 @@ var CPControlBlackColor     = [CPColor blackColor];
     return _font;
 }
 
-/*
+/*!
     Sets the shadow for the receiver's text.
     @param aTextShadow the text shadow
 */
@@ -209,7 +212,7 @@ var CPControlBlackColor     = [CPColor blackColor];
     _DOMElement.style.textShadow = [_textShadow = aTextShadow cssString];
 }
 
-/*
+/*!
     Returns the receiver's text shadow
 */
 - (CPShadow)textShadow
@@ -217,7 +220,7 @@ var CPControlBlackColor     = [CPColor blackColor];
     return _textShadow;
 }
 
-/*
+/*!
     Returns the receiver's target action
 */
 - (SEL)action
@@ -225,7 +228,7 @@ var CPControlBlackColor     = [CPColor blackColor];
     return _action;
 }
 
-/*
+/*!
     Sets the receiver's target action
     @param anAction Sets the action message that gets sent to the target.
 */
@@ -234,7 +237,7 @@ var CPControlBlackColor     = [CPColor blackColor];
     _action = anAction;
 }
 
-/*
+/*!
     Returns the receiver's target. The target receives action messages from the receiver.
 */
 - (id)target
@@ -242,7 +245,7 @@ var CPControlBlackColor     = [CPColor blackColor];
     return _target;
 }
 
-/*
+/*!
     Sets the receiver's target. The target receives action messages from the receiver.
     @param aTarget the object that will receive the message specified by action
 */
@@ -259,7 +262,7 @@ var CPControlBlackColor     = [CPColor blackColor];
     [super mouseUp:anEvent];
 }
 
-/*
+/*!
     Causes <code>anAction</code> to be sent to <code>anObject</code>.
     @param anAction the action to send
     @param anObject the object to which the action will be sent
@@ -269,23 +272,37 @@ var CPControlBlackColor     = [CPColor blackColor];
     [CPApp sendAction:anAction to:anObject from:self];
 }
 
-/*
-    Returns the receiver's float value
-*/
-- (float)floatValue
+- (int)sendActionOn:(int)mask
 {
-    return _value ? parseFloat(_value, 10) : 0.0;
+    var previousMask = _sendActionOn;
+    
+    _sendActionOn = mask;
+    
+    return previousMask;
 }
 
-/*
-    Sets the receiver's float value
+/*!
+    Returns whether the control can continuously send its action messages.
 */
-- (void)setFloatValue:(float)aValue
+- (BOOL)isContinuous
 {
-    [self setObjectValue:aValue];
+    // Some subclasses should redefine this with CPLeftMouseDraggedMask
+    return (_sendActionOn & CPPeriodicMask) != 0;
 }
 
-/*
+/*!
+    Sets whether the cell can continuously send its action messages.
+ */
+- (void)setContinuous:(BOOL)flag
+{
+    // Some subclasses should redefine this with CPLeftMouseDraggedMask
+    if (flag)
+        _sendActionOn |= CPPeriodicMask;
+    else 
+        _sendActionOn &= ~CPPeriodicMask;
+}
+
+/*!
     Returns the receiver's object value
 */
 - (id)objectValue
@@ -293,7 +310,7 @@ var CPControlBlackColor     = [CPColor blackColor];
     return _value;
 }
 
-/*
+/*!
     Set's the receiver's object value
 */
 - (void)setObjectValue:(id)anObject
@@ -301,53 +318,132 @@ var CPControlBlackColor     = [CPColor blackColor];
     _value = anObject;
 }
 
-/*
+/*!
+    Returns the receiver's float value
+*/
+- (float)floatValue
+{
+    var floatValue = parseFloat(_value, 10);
+    return isNaN(floatValue) ? 0.0 : floatValue;
+}
+
+/*!
+    Sets the receiver's float value
+*/
+- (void)setFloatValue:(float)aValue
+{
+    [self setObjectValue:aValue];
+}
+
+/*!
     Returns the receiver's double value
 */
-- (id)doubleValue
+- (double)doubleValue
 {
-    return [self floatValue];
+    var doubleValue = parseFloat(_value, 10);
+    return isNaN(doubleValue) ? 0.0 : doubleValue;
 }
 
-/*
+/*!
     Set's the receiver's double value
 */
-- (void)setDoubleValue:(id)anObject
+- (void)setDoubleValue:(double)anObject
 {
     [self setObjectValue:anObject];
 }
 
-/*
+/*!
     Returns the receiver's int value
 */
-- (id)intValue
+- (int)intValue
 {
-    return _value ? parseInt(_value, 10) : 0;
+    var intValue = parseInt(_value, 10);
+    return isNaN(intValue) ? 0.0 : intValue;
 }
 
-/*
+/*!
     Set's the receiver's int value
 */
-- (void)setIntValue:(id)anObject
+- (void)setIntValue:(int)anObject
 {
     [self setObjectValue:anObject];
 }
 
-/*
+
+/*!
     Returns the receiver's int value
 */
-- (id)stringValue
+- (int)integerValue
 {
-    return _value ? ""+_value : "";
+    var intValue = parseInt(_value, 10);
+    return isNaN(intValue) ? 0.0 : intValue;
 }
 
-/*
+/*!
     Set's the receiver's int value
 */
-- (void)setStringValue:(id)anObject
+- (void)setIntegerValue:(int)anObject
 {
     [self setObjectValue:anObject];
 }
+
+/*!
+    Returns the receiver's int value
+*/
+- (CPString)stringValue
+{
+    return _value ? String(_value) : "";
+}
+
+/*!
+    Set's the receiver's int value
+*/
+- (void)setStringValue:(CPString)anObject
+{
+    [self setObjectValue:anObject];
+}
+
+
+- (void)takeDoubleValueFrom:(id)sender
+{
+    if ([sender respondsToSelector:@selector(doubleValue)])
+        [self setDoubleValue:[sender doubleValue]];
+}
+
+
+- (void)takeFloatValueFrom:(id)sender
+{
+    if ([sender respondsToSelector:@selector(floatValue)])
+        [self setFloatValue:[sender floatValue]];
+}
+
+
+- (void)takeIntegerValueFrom:(id)sender
+{
+    if ([sender respondsToSelector:@selector(integerValue)])
+        [self setIntegerValue:[sender integerValue]];
+}
+
+
+- (void)takeIntValueFrom:(id)sender
+{
+    if ([sender respondsToSelector:@selector(intValue)])
+        [self setIntValue:[sender intValue]];
+}
+
+
+- (void)takeObjectValueFrom:(id)sender
+{
+    if ([sender respondsToSelector:@selector(objectValue)])
+        [self setObjectValue:[sender objectValue]];
+}
+
+- (void)takeStringValueFrom:(id)sender
+{
+    if ([sender respondsToSelector:@selector(stringValue)])
+        [self setStringValue:[sender stringValue]];
+}
+
 
 - (void)setBackgroundColor:(CPColor)aColor
 {
@@ -386,6 +482,33 @@ var CPControlBlackColor     = [CPColor blackColor];
     [super setBackgroundColor:[self backgroundColorForName:aName]];
 }
 
+- (void)textDidBeginEditing:(CPNotification)note 
+{
+    //this looks to prevent false propagation of notifications for other objects
+    if([note object] != self)
+        return;
+
+    [[CPNotificationCenter defaultCenter] postNotificationName:CPControlTextDidBeginEditingNotification object:self userInfo:[CPDictionary dictionaryWithObject:[note object] forKey:"CPFieldEditor"]];
+}
+
+- (void)textDidChange:(CPNotification)note 
+{
+    //this looks to prevent false propagation of notifications for other objects
+    if([note object] != self)
+        return;
+
+    [[CPNotificationCenter defaultCenter] postNotificationName:CPControlTextDidChangeNotification object:self userInfo:[CPDictionary dictionaryWithObject:[note object] forKey:"CPFieldEditor"]];
+}
+
+- (void)textDidEndEditing:(CPNotification)note 
+{
+    //this looks to prevent false propagation of notifications for other objects
+    if([note object] != self)
+        return;
+
+    [[CPNotificationCenter defaultCenter] postNotificationName:CPControlTextDidEndEditingNotification object:self userInfo:[CPDictionary dictionaryWithObject:[note object] forKey:"CPFieldEditor"]];
+}
+
 /*
 Ð doubleValue  
 Ð setDoubleValue:
@@ -402,13 +525,14 @@ var CPControlBlackColor     = [CPColor blackColor];
 
 @end
 
-var CPControlIsEnabledKey       = @"CPControlIsEnabledKey",
-    CPControlAlignmentKey       = @"CPControlAlignmentKey",
-    CPControlFontKey            = @"CPControlFontKey",
-    CPControlTextColorKey       = @"CPControlTextColorKey",
-    CPControlTargetKey          = @"CPControlTargetKey",
-    CPControlActionKey          = @"CPControlActionKey",
-    CPControlSendActionOnKey    = @"CPControlSendActionOnKey";
+var CPControlValueKey           = "CPControlValueKey",
+    CPControlIsEnabledKey       = "CPControlIsEnabledKey",
+    CPControlAlignmentKey       = "CPControlAlignmentKey",
+    CPControlFontKey            = "CPControlFontKey",
+    CPControlTextColorKey       = "CPControlTextColorKey",
+    CPControlTargetKey          = "CPControlTargetKey",
+    CPControlActionKey          = "CPControlActionKey",
+    CPControlSendActionOnKey    = "CPControlSendActionOnKey";
 
 @implementation CPControl (CPCoding)
 
@@ -423,7 +547,9 @@ var CPControlIsEnabledKey       = @"CPControlIsEnabledKey",
     
     if (self)
     {
-        [self setEnabled:[aCoder decodeIntForKey:CPControlIsEnabledKey]];
+        [self setObjectValue:[aCoder decodeObjectForKey:CPControlValueKey]];
+        
+        [self setEnabled:[aCoder decodeBoolForKey:CPControlIsEnabledKey]];
         
         [self setAlignment:[aCoder decodeIntForKey:CPControlAlignmentKey]];
         [self setFont:[aCoder decodeObjectForKey:CPControlFontKey]];
@@ -431,8 +557,7 @@ var CPControlIsEnabledKey       = @"CPControlIsEnabledKey",
         
         [self setTarget:[aCoder decodeObjectForKey:CPControlTargetKey]];
         [self setAction:[aCoder decodeObjectForKey:CPControlActionKey]];
-    
-        _sendActionOn = [aCoder decodeIntForKey:CPControlSendActionOnKey];
+        [self sendActionOn:[aCoder decodeIntForKey:CPControlSendActionOnKey]];
     }
     
     return self;
@@ -446,7 +571,9 @@ var CPControlIsEnabledKey       = @"CPControlIsEnabledKey",
 {
     [super encodeWithCoder:aCoder];
     
-    [aCoder encodeInt:_isEnabled forKey:CPControlIsEnabledKey];
+    [aCoder encodeObject:_value forKey:CPControlValueKey];
+    
+    [aCoder encodeBool:_isEnabled forKey:CPControlIsEnabledKey];
     
     [aCoder encodeInt:_alignment forKey:CPControlAlignmentKey];
     [aCoder encodeObject:_font forKey:CPControlFontKey];
@@ -465,9 +592,9 @@ var _CPControlSizeIdentifiers               = [],
     _CPControlCachedColorWithPatternImages  = {},
     _CPControlCachedThreePartImagePattern   = {};
 
-_CPControlSizeIdentifiers[CPRegularControlSize] = @"Regular";
-_CPControlSizeIdentifiers[CPSmallControlSize]   = @"Small";
-_CPControlSizeIdentifiers[CPMiniControlSize]    = @"Mini";
+_CPControlSizeIdentifiers[CPRegularControlSize] = "Regular";
+_CPControlSizeIdentifiers[CPSmallControlSize]   = "Small";
+_CPControlSizeIdentifiers[CPMiniControlSize]    = "Mini";
     
 function _CPControlIdentifierForControlSize(aControlSize)
 {
@@ -478,7 +605,7 @@ function _CPControlColorWithPatternImage(sizes, aClassName)
 {
     var index = 1,
         count = arguments.length,
-        identifier = @"";
+        identifier = "";
     
     for (; index < count; ++index)
         identifier += arguments[index];
@@ -489,7 +616,7 @@ function _CPControlColorWithPatternImage(sizes, aClassName)
     {
         var bundle = [CPBundle bundleForClass:[CPControl class]];
     
-        color = [CPColor colorWithPatternImage:[[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:aClassName + "/" + identifier + @".png"] size:sizes[identifier]]];
+        color = [CPColor colorWithPatternImage:[[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:aClassName + "/" + identifier + ".png"] size:sizes[identifier]]];
 
         _CPControlCachedColorWithPatternImages[identifier] = color;
     }
@@ -501,7 +628,7 @@ function _CPControlThreePartImages(sizes, aClassName)
 {
     var index = 1,
         count = arguments.length,
-        identifier = @"";
+        identifier = "";
     
     for (; index < count; ++index)
         identifier += arguments[index];
@@ -516,9 +643,9 @@ function _CPControlThreePartImages(sizes, aClassName)
         sizes = sizes[identifier];
 
         images = [
-                    [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:path + @"0.png"] size:sizes[0]],
-                    [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:path + @"1.png"] size:sizes[1]],
-                    [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:path + @"2.png"] size:sizes[2]]
+                    [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:path + "0.png"] size:sizes[0]],
+                    [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:path + "1.png"] size:sizes[1]],
+                    [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:path + "2.png"] size:sizes[2]]
                 ];
                 
         _CPControlCachedThreePartImages[identifier] = images;
@@ -531,7 +658,7 @@ function _CPControlThreePartImagePattern(isVertical, sizes, aClassName)
 {
     var index = 2,
         count = arguments.length,
-        identifier = @"";
+        identifier = "";
     
     for (; index < count; ++index)
         identifier += arguments[index];
@@ -546,9 +673,9 @@ function _CPControlThreePartImagePattern(isVertical, sizes, aClassName)
         sizes = sizes[identifier];
 
         color = [CPColor colorWithPatternImage:[[CPThreePartImage alloc] initWithImageSlices:[
-                    [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:path + @"0.png"] size:sizes[0]],
-                    [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:path + @"1.png"] size:sizes[1]],
-                    [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:path + @"2.png"] size:sizes[2]]
+                    [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:path + "0.png"] size:sizes[0]],
+                    [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:path + "1.png"] size:sizes[1]],
+                    [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:path + "2.png"] size:sizes[2]]
                 ] isVertical:isVertical]];
                 
         _CPControlCachedThreePartImagePattern[identifier] = color;

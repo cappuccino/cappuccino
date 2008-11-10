@@ -20,10 +20,10 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-//import "CPRange.j"
-import "CPObject.j"
-import "CPEnumerator.j"
-import "CPException.j"
+//@import "CPRange.j"
+@import "CPObject.j"
+@import "CPEnumerator.j"
+@import "CPException.j"
 
 /* @ignore */
 @implementation _CPDictionaryValueEnumerator : CPEnumerator
@@ -57,15 +57,15 @@ import "CPException.j"
 
 @end
 
-/*
+/*!  @class CPDictionary
      A dictionary is the standard way of passing around key-value pairs in
      the Cappuccino framework. It is similar to the
      <a href="http://java.sun.com/javase/6/docs/api/index.html">Java map interface</a>,
-     except all keys are <objj>CPString</objj>s and values can be any
+     except all keys are CPStrings and values can be any
      Cappuccino or JavaScript object.</p>
 
      <p>If you are familiar with dictionaries in Cocoa, you'll notice that
-     there is no CPMutableDictionary class. The regular <objj>CPDictionary</objj>
+     there is no CPMutableDictionary class. The regular CPDictionary
      has <code>setObject:</code> and <code>removeObjectForKey:</code> methods.
      In Cappuccino there is no distinction between immutable and mutable classes.
      They are all mutable.
@@ -82,48 +82,48 @@ import "CPException.j"
     return new objj_dictionary();
 }
 
-/*
-    Returns a new empty <objj>CPDictionary</objj>.
+/*!
+    Returns a new empty CPDictionary.
 */
 + (id)dictionary
 {
     return [[self alloc] init];
 }
 
-/*
+/*!
     Returns a new dictionary, initialized with the contents of <code>aDictionary</code>.
     @param aDictionary the dictionary to copy key-value pairs from
-    @return the new <objj>CPDictionary</objj>
+    @return the new CPDictionary
 */
 + (id)dictionaryWithDictionary:(CPDictionary)aDictionary
 {
     return [[self alloc] initWithDictionary:aDictionary];
 }
 
-/*
+/*!
     Creates a new dictionary with single key-value pair.
     @param anObject the object for the paring
     @param aKey the key for the pairing
-    @return the new <objj>CPDictionary</objj>
+    @return the new CPDictionary
 */
 + (id)dictionaryWithObject:(id)anObject forKey:(id)aKey
 {
     return [[self alloc] initWithObjects:[anObject] forKeys:[aKey]];
 }
 
-/*
+/*!
     Creates a dictionary with multiple key-value pairs.
     @param objects the objects to place in the dictionary
     @param keys the keys for each of the objects
     @throws CPInvalidArgumentException if the number of objects and keys is different
-    @return the new <objj>CPDictionary</objj>
+    @return the new CPDictionary
 */
 + (id)dictionaryWithObjects:(CPArray)objects forKeys:(CPArray)keys
 {
     return [[self alloc] initWithObjects:objects forKeys:keys];
 }
 
-/*
+/*!
     Initializes the dictionary with the contents of another dictionary.
     @param aDictionary the dictionary to copy key-value pairs from
     @return the initialized dictionary
@@ -139,7 +139,7 @@ import "CPException.j"
     return dictionary;
 }
 
-/*
+/*!
     Initializes the dictionary from the arrays of keys and objects.
     @param objects the objects to put in the dictionary
     @param keyArray the keys for the objects to put in the dictionary
@@ -164,7 +164,15 @@ import "CPException.j"
     return self;
 }
 
-/*
+/*!
+    return a copy of the receiver (does not deep copy the objects contained in the dictionary).
+*/
+- (CPDictionary)copy
+{
+    return [CPDictionary dictionaryWithDictionary:self];
+}
+
+/*!
     Returns the number of entries in the dictionary
 */
 - (int)count
@@ -172,7 +180,7 @@ import "CPException.j"
     return count;
 }
 
-/*
+/*!
     Returns an array of keys for all the entries in the dictionary.
 */
 - (CPArray)allKeys
@@ -180,7 +188,7 @@ import "CPException.j"
     return _keys;
 }
 
-/*
+/*!
     Returns an array of values for all the entries in the dictionary.
 */
 - (CPArray)allValues
@@ -194,7 +202,7 @@ import "CPException.j"
     return values;
 }
 
-/*
+/*!
     Returns an enumerator that enumerates over all the dictionary's keys.
 */
 - (CPEnumerator)keyEnumerator
@@ -202,12 +210,39 @@ import "CPException.j"
     return [_keys objectEnumerator];
 }
 
-/*
+/*!
     Returns an enumerator that enumerates over all the dictionary's values.
 */
 - (CPEnumerator)objectEnumerator
 {
     return [[_CPDictionaryValueEnumerator alloc] initWithDictionary:self];
+}
+
+/*!
+    Compare the receiver to this dictionary, and return whether or not they are equal. 
+*/
+- (BOOL)isEqualToDictionary:(CPDictionary)aDictionary
+{
+    if (count != [aDictionary count])
+        return NO;
+
+    var index = count;
+    while (index--)
+    {
+        var currentKey = _keys[index],
+            lhsObject = _buckets[currentKey],
+            rhsObject = aDictionary._buckets[currentKey];
+
+        if (lhsObject === rhsObject)
+            continue;
+            
+        if ([lhsObject respondsToSelector:@selector(isEqual:)] && [lhsObject isEqual:rhsObject])
+            continue;
+        
+        return NO;
+    }
+
+    return YES;
 }
 
 /*
@@ -263,7 +298,7 @@ import "CPException.j"
         return this._objects.objectEnumerator();
     }
 */
-/*
+/*!
     Returns the object for the entry with key <code>aKey</code>.
     @param aKey the key for the object's entry
     @return the object for the entry
@@ -306,7 +341,7 @@ import "CPException.j"
         while(key= keyEnumerator.nextObject()) this.setObjectForKey(aDictionary.objectForKey(key), key);
     }
 */
-/*
+/*!
     Removes all the entries from the dictionary.
 */
 - (void)removeAllObjects
@@ -316,7 +351,7 @@ import "CPException.j"
     _buckets = {};
 }
 
-/*
+/*!
     Removes the entry for the specified key.
     @param aKey the key of the entry to be removed
 */
@@ -351,7 +386,7 @@ import "CPException.j"
         while(i--) this._dictionary[this._keys[i]]= { object: this._objects[i], index: i };
     }
 */
-/*
+/*!
     Adds an entry into the dictionary.
     @param anObject the object for the entry
     @param aKey the entry's key
@@ -373,7 +408,7 @@ import "CPException.j"
     }
 */
 
-/*
+/*!
     Returns a human readable description of the dictionary.
 */
 - (CPString)description
@@ -404,7 +439,7 @@ import "CPException.j"
     return [aCoder _decodeDictionaryOfObjectsForKey:@"CP.objects"];
 }
 
-/*
+/*!
     Archives the dictionary to a provided coder.
     @param aCoder the coder to which the dictionary data will be archived.
 */

@@ -20,16 +20,17 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-import <Foundation/CPString.j>
+@import <Foundation/CPString.j>
 
-import "CPView.j"
-import "CPColor.j"
-import "CPColorPanel.j"
+@import "CPView.j"
+@import "CPColor.j"
+@import "CPColorPanel.j"
 
 
 var _CPColorWellDidBecomeExclusiveNotification = @"_CPColorWellDidBecomeExclusiveNotification";
 
-/*
+/*! @class CPColorWell
+
     <objj>CPColorWell</objj> is a <objj>CPControl</objj> for selecting and displaying a single color value. An example of a <objj>CPColorWell</objj> object (or simply color well) is found in <objj>CPColorPanel</objj>, which uses a color well to display the current color selection.</p>
 
     <p>An application can have one or more active <objj>CPColorWell</objj>s. You can activate multiple <objj>CPColorWell</objj>s by invoking the <code>activate:</code> method with <code>NO</code> as its argument. When a mouse-down event occurs on an <objj>CPColorWell</objj>'s border, it becomes the only active color well. When a color well becomes active, it brings up the color panel also.
@@ -37,6 +38,7 @@ var _CPColorWellDidBecomeExclusiveNotification = @"_CPColorWellDidBecomeExclusiv
 @implementation CPColorWell : CPControl
 {
     BOOL    _active;
+    BOOL    _bordered;
     
     CPColor _color;
     CPView  _wellView;
@@ -49,33 +51,59 @@ var _CPColorWellDidBecomeExclusiveNotification = @"_CPColorWellDidBecomeExclusiv
     if (self)
     {
         _active = NO;
-        
+        _bordered = YES;
         _color = [CPColor whiteColor];
         
         [self drawBezelWithHighlight:NO];
         [self drawWellInside:CGRectInset([self bounds], 3.0, 3.0)];
         
-        var defaultCenter = [CPNotificationCenter defaultCenter];
-        
-        [defaultCenter
-            addObserver:self
-               selector:@selector(colorWellDidBecomeExclusive:)
-                   name:_CPColorWellDidBecomeExclusiveNotification
-                 object:nil];
-
-        [defaultCenter
-            addObserver:self
-               selector:@selector(colorPanelWillClose:)
-                   name:CPWindowWillCloseNotification
-                 object:[CPColorPanel sharedColorPanel]];
+        [self _registerForNotifications];
     }
     
     return self;
 }
 
+- (void)_registerForNotifications
+{
+    var defaultCenter = [CPNotificationCenter defaultCenter];
+
+    [defaultCenter
+        addObserver:self
+           selector:@selector(colorWellDidBecomeExclusive:)
+               name:_CPColorWellDidBecomeExclusiveNotification
+             object:nil];
+
+    [defaultCenter
+        addObserver:self
+           selector:@selector(colorPanelWillClose:)
+               name:CPWindowWillCloseNotification
+             object:[CPColorPanel sharedColorPanel]];
+}
+
+/*!
+    Returns whether the color well is bordered
+*/
+- (BOOL)isBordered
+{
+    return _bordered;
+}
+
+/*!
+    Sets the color well's current color.
+*/
+- (void)setBordered:(BOOL)bordered
+{
+    if (_bordered == bordered)
+        return;
+        
+    _bordered = bordered;
+    
+    [self drawWellInside:CGRectInset([self bounds], 3.0, 3.0)];
+}
+
 // Managing Color From Color Wells
 
-/*
+/*!
     Returns the color well's current color.
 */
 - (CPColor)color
@@ -83,7 +111,7 @@ var _CPColorWellDidBecomeExclusiveNotification = @"_CPColorWellDidBecomeExclusiv
     return _color;
 }
 
-/*
+/*!
     Sets the color well's current color.
 */
 - (void)setColor:(CPColor)aColor
@@ -96,7 +124,7 @@ var _CPColorWellDidBecomeExclusiveNotification = @"_CPColorWellDidBecomeExclusiv
     [self drawWellInside:CGRectInset([self bounds], 3.0, 3.0)];
 }
 
-/*
+/*!
     Changes the color of the well to that of <code>aSender</code>.
     @param aSender the object from which to retrieve the color
 */
@@ -106,7 +134,7 @@ var _CPColorWellDidBecomeExclusiveNotification = @"_CPColorWellDidBecomeExclusiv
 }
 
 // Activating and Deactivating Color Wells
-/*
+/*!
     Activates the color well, displays the color panel, and makes the panel's current color the same as its own. 
     If exclusive is <code>YES</code>, deactivates any other <objj>CPColorWell</objj>s. <code>NO</code>, keeps them active.
     @param shouldBeExclusive whether other color wells should be deactivated.
@@ -132,7 +160,7 @@ var _CPColorWellDidBecomeExclusiveNotification = @"_CPColorWellDidBecomeExclusiv
              object:[CPColorPanel sharedColorPanel]];
 }
 
-/*
+/*!
     Deactivates the color well.
 */
 - (void)deactivate
@@ -148,7 +176,7 @@ var _CPColorWellDidBecomeExclusiveNotification = @"_CPColorWellDidBecomeExclusiv
                 object:[CPColorPanel sharedColorPanel]];
 }
 
-/*
+/*!
     Returns <code>YES</code> if the color well is active.
 */
 - (BOOL)isActive
@@ -162,7 +190,7 @@ var _CPColorWellDidBecomeExclusiveNotification = @"_CPColorWellDidBecomeExclusiv
 {
 }
 
-/*
+/*!
     Draws the colored area inside the color well without borders.
     @param aRect the location at which to draw
 */
@@ -222,6 +250,54 @@ var _CPColorWellDidBecomeExclusiveNotification = @"_CPColorWellDidBecomeExclusiv
     [colorPanel setColor:_color];
 
     [colorPanel orderFront:self];
+}
+
+@end
+
+var CPColorWellColorKey     = "CPColorWellColorKey",
+    CPColorWellBorderedKey  = "CPColorWellBorderedKey";
+
+@implementation CPColorWell (CPCoding)
+
+/*!
+    Initializes the color well by unarchiving data from <code>aCoder</code>.
+    @param aCoder the coder containing the archived <objj>CPColorWell</objj>.
+*/
+- (id)initWithCoder:(CPCoder)aCoder
+{
+    self = [super initWithCoder:aCoder];
+    
+    if (self)
+    {
+        _active = NO;
+        _bordered = [aCoder decodeObjectForKey:CPColorWellBorderedKey];
+        _color = [aCoder decodeObjectForKey:CPColorWellColorKey];
+        
+        [self _registerForNotifications];
+    }
+    
+    return self;
+}
+
+/*!
+    Archives this button into the provided coder.
+    @param aCoder the coder to which the color well's instance data will be written.
+*/
+- (void)encodeWithCoder:(CPCoder)aCoder
+{
+    // We do this in order to avoid encoding the _wellView, which 
+    // should just automatically be created programmatically as needed.
+    var actualSubviews = _subviews;
+    
+    _subviews = [_subviews copy];
+    [_subviews removeObjectIdenticalTo:_wellView];
+    
+    [super encodeWithCoder:aCoder];
+    
+    _subviews = actualSubviews;
+    
+    [aCoder encodeObject:_color forKey:CPColorWellColorKey];
+    [aCoder encodeObject:_bordered forKey:CPColorWellBorderedKey];
 }
 
 @end

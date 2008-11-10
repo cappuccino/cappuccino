@@ -20,12 +20,13 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-import <Foundation/Foundation.j>
+@import <Foundation/Foundation.j>
 
-import <AppKit/CPView.j>
-import <AppKit/CPSlider.j>
-import <AppKit/CPColorPicker.j>
-import <AppKit/CPColorPanel.j>
+@import <AppKit/CPView.j>
+@import <AppKit/CPSlider.j>
+@import <AppKit/CPColorPicker.j>
+@import <AppKit/CPColorPanel.j>
+
 
 /*
     @ignore
@@ -92,28 +93,28 @@ import <AppKit/CPColorPanel.j>
            
         switch(this)
         {
-            case _redValue:        [_redSlider setValue: MAX(MIN(ROUND(this.value), 255) / 255.0, 0)]; 
-                                   [self sliderChanged: _redSlider];
+            case _redValue:        [_redSlider setFloatValue:MAX(MIN(ROUND(this.value), 255) / 255.0, 0)]; 
+                                   //[self sliderChanged: _redSlider];
                                    break;
                                    
-            case _greenValue:      [_greenSlider setValue: MAX(MIN(ROUND(this.value), 255) / 255.0, 0)]; 
-                                   [self sliderChanged: _greenSlider];
+            case _greenValue:      [_greenSlider setFloatValue:MAX(MIN(ROUND(this.value), 255) / 255.0, 0)]; 
+                                   //[self sliderChanged: _greenSlider];
                                    break;
                                    
-            case _blueValue:       [_blueSlider setValue: MAX(MIN(ROUND(this.value), 255) / 255.0, 0)]; 
-                                   [self sliderChanged: _blueSlider];
+            case _blueValue:       [_blueSlider setFloatValue:MAX(MIN(ROUND(this.value), 255) / 255.0, 0)]; 
+                                   //[self sliderChanged: _blueSlider];
                                    break;
 
-            case _hueValue:        [_hueSlider setValue: MAX(MIN(ROUND(this.value), 360), 0)]; 
-                                   [self sliderChanged: _hueSlider];
+            case _hueValue:        [_hueSlider setFloatValue:MAX(MIN(ROUND(this.value), 360), 0)]; 
+                                   //[self sliderChanged: _hueSlider];
                                    break;
                                    
-            case _saturationValue: [_saturationSlider setValue: MAX(MIN(ROUND(this.value), 100), 0)]; 
-                                   [self sliderChanged: _saturationSlider];
+            case _saturationValue: [_saturationSlider setFloatValue:MAX(MIN(ROUND(this.value), 100), 0)]; 
+                                   //[self sliderChanged: _saturationSlider];
                                    break;
 
-            case _brightnessValue: [_brightnessSlider setValue: MAX(MIN(ROUND(this.value), 100), 0)]; 
-                                   [self sliderChanged: _brightnessSlider];
+            case _brightnessValue: [_brightnessSlider setFloatValue:MAX(MIN(ROUND(this.value), 100), 0)]; 
+                                   //[self sliderChanged: _brightnessSlider];
                                    break;
         }
         
@@ -338,18 +339,18 @@ import <AppKit/CPColorPanel.j>
     {
         case    _hueSlider:
         case    _saturationSlider:
-        case    _brightnessSlider:      newColor = [CPColor colorWithHue: [_hueSlider value]
-                                                              saturation: [_saturationSlider value]
-                                                              brightness: [_brightnessSlider value]];
+        case    _brightnessSlider:      newColor = [CPColor colorWithHue: [_hueSlider floatValue]
+                                                              saturation: [_saturationSlider floatValue]
+                                                              brightness: [_brightnessSlider floatValue]];
                                                               
                                         [self updateRGBSliders: newColor];
                                         break;
                                         
         case    _redSlider:
         case    _greenSlider:
-        case    _blueSlider:            newColor = [CPColor colorWithCalibratedRed: [_redSlider value]
-                                                                             green: [_greenSlider value]
-                                                                              blue: [_blueSlider value]
+        case    _blueSlider:            newColor = [CPColor colorWithCalibratedRed: [_redSlider floatValue]
+                                                                             green: [_greenSlider floatValue]
+                                                                              blue: [_blueSlider floatValue]
                                                                              alpha: 1.0];
                                                               
                                         [self updateHSBSliders: newColor];
@@ -373,9 +374,9 @@ import <AppKit/CPColorPanel.j>
 {
     var hsb = [aColor hsbComponents];
         
-    [_hueSlider setValue: hsb[0]];
-    [_saturationSlider setValue: hsb[1]];
-    [_brightnessSlider setValue: hsb[2]];
+    [_hueSlider setFloatValue:hsb[0]];
+    [_saturationSlider setFloatValue:hsb[1]];
+    [_brightnessSlider setFloatValue:hsb[2]];
 }
 
 - (void)updateHex:(CPColor)aColor
@@ -387,20 +388,20 @@ import <AppKit/CPColorPanel.j>
 {
     var rgb = [aColor components];
 
-    [_redSlider setValue: rgb[0]];
-    [_greenSlider setValue: rgb[1]];
-    [_blueSlider setValue: rgb[2]];
+    [_redSlider setFloatValue:rgb[0]];
+    [_greenSlider setFloatValue:rgb[1]];
+    [_blueSlider setFloatValue:rgb[2]];
 }
 
 - (void)updateLabels
 {
-    _hueValue.value        = ROUND([_hueSlider value]);      
-    _saturationValue.value = ROUND([_saturationSlider value]);
-    _brightnessValue.value = ROUND([_brightnessSlider value]);
+    _hueValue.value        = ROUND([_hueSlider floatValue]);      
+    _saturationValue.value = ROUND([_saturationSlider floatValue]);
+    _brightnessValue.value = ROUND([_brightnessSlider floatValue]);
     
-    _redValue.value        = ROUND([_redSlider value] * 255);
-    _greenValue.value      = ROUND([_greenSlider value] * 255);
-    _blueValue.value       = ROUND([_blueSlider value] * 255);
+    _redValue.value        = ROUND([_redSlider floatValue] * 255);
+    _greenValue.value      = ROUND([_greenSlider floatValue] * 255);
+    _blueValue.value       = ROUND([_blueSlider floatValue] * 255);
 }
 
 

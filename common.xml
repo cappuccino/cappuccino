@@ -105,7 +105,7 @@
         <element name = "arguments" optional = "true" />
         
         <sequential>
-            <exec executable = "gcc" output = "@{output}">
+            <exec executable = "gcc" output = "@{output}" error = "@{output}.err">
                 <!-- Preprocessing only -->
                 <arg value = "-E" />
                 <!-- Interpret files as C source files (instead of treating them as object files); this option is given to make the compiler preprocess them -->

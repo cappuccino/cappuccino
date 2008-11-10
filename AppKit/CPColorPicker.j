@@ -20,12 +20,14 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-import <Foundation/Foundation.j>
-import <AppKit/CPView.j>
-import <AppKit/CPImage.j>
-import <AppKit/CPImageView.j>
+@import <Foundation/Foundation.j>
+@import <AppKit/CPView.j>
+@import <AppKit/CPImage.j>
+@import <AppKit/CPImageView.j>
 
-/*
+
+/*! @class CPColorPicker
+
     <objj>CPColorPicker</objj> is an abstract superclass for all color picker subclasses. If you want a particular color picker, use <objj>CPColorPanel</objj>'s <code>setPickerMode:</code> method. The simplest way to implement your own color picker is to create a subclass of CPColorPicker.
 */
 @implementation CPColorPicker : CPObject
@@ -34,7 +36,7 @@ import <AppKit/CPImageView.j>
     int             _mask;
 }
 
-/*
+/*!
     Initializes the color picker.
     @param aMask a unique unsigned int identifying your color picker
     @param aPanel the color panel that owns this picker
@@ -49,7 +51,7 @@ import <AppKit/CPImageView.j>
     return self;
 }
 
-/*
+/*!
     Returns the color panel that owns this picker
 */
 - (CPColorPanel)colorPanel
@@ -67,7 +69,7 @@ import <AppKit/CPImageView.j>
     return nil;
 }
 
-/*
+/*!
     Sets the color picker's mode.
     @param mode the color panel mode
 */
@@ -76,7 +78,7 @@ import <AppKit/CPImageView.j>
     return;
 }
 
-/*
+/*!
     Sets the picker's color.
     @param aColor the new color for the picker
 */
@@ -124,9 +126,9 @@ import <AppKit/CPImageView.j>
     brightnessBarView._DOMElement.appendChild(_brightnessBarImage);
         
     _brightnessSlider = [[CPSlider alloc] initWithFrame: CPRectMake(0, aFrame.size.height - 22, aFrame.size.width, 12)];
-    [_brightnessSlider setMaxValue: 100.0];
-    [_brightnessSlider setMinValue:   0.0];
-    [_brightnessSlider setValue:    100.0];
+    [_brightnessSlider setMaxValue:  100.0];
+    [_brightnessSlider setMinValue:    0.0];
+    [_brightnessSlider setFloatValue:100.0];
 
     [_brightnessSlider setTarget: self];
     [_brightnessSlider setAction: @selector(brightnessSliderDidChange:)];
@@ -155,7 +157,7 @@ import <AppKit/CPImageView.j>
 {
     var hue        = [_hueSaturationView angle],
         saturation = [_hueSaturationView distance],
-        brightness = [_brightnessSlider value];
+        brightness = [_brightnessSlider floatValue];
 
     [_hueSaturationView setWheelBrightness: brightness / 100.0];
     _brightnessBarImage.style.backgroundColor = "#"+[[CPColor colorWithHue: hue saturation: saturation brightness: 100] hexString];
@@ -185,11 +187,11 @@ import <AppKit/CPImageView.j>
 {
     var hsb = [newColor hsbComponents];
     
-    [_hueSaturationView setPositionToColor: newColor];
-    [_brightnessSlider setValue: hsb[2]];
-    [_hueSaturationView setWheelBrightness: hsb[2] / 100.0];
+    [_hueSaturationView setPositionToColor:newColor];
+    [_brightnessSlider setFloatValue:hsb[2]];
+    [_hueSaturationView setWheelBrightness:hsb[2] / 100.0];
 
-    _brightnessBarImage.style.backgroundColor = "#"+[[CPColor colorWithHue: hsb[0] saturation: hsb[1] brightness: 100] hexString];
+    _brightnessBarImage.style.backgroundColor = "#"+[[CPColor colorWithHue:hsb[0] saturation:hsb[1] brightness:100] hexString];
 }
 
 @end

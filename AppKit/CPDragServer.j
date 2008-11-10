@@ -20,10 +20,11 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-import <AppKit/CPView.j>
-import <AppKit/CPEvent.j>
-import <AppKit/CPPasteboard.j>
-import <AppKit/CPImageView.j>
+@import <AppKit/CPView.j>
+@import <AppKit/CPEvent.j>
+@import <AppKit/CPPasteboard.j>
+@import <AppKit/CPImageView.j>
+
 
 var CPSharedDragServer     = nil;
     
@@ -195,7 +196,7 @@ var CPDragServerUpdateDragging = function(anEvent)
     return self;
 }
 
-/*
+/*!
     Initiates a drag session.
     @param aView the view being dragged
     @param aWindow the window where the drag source is
@@ -250,7 +251,7 @@ var CPDragServerUpdateDragging = function(anEvent)
     CPDragServerStartDragging(anEvent);
 }
 
-/*
+/*!
     Initiates a drag session.
     @param anImage the image to be dragged
     @param aWindow the source window of the drag session

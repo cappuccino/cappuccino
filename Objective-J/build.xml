@@ -30,14 +30,14 @@
     
         <mkdir dir = "${Build.Products}" />
     
-        <concat destfile = "${Build.Products}/Objecive-J.concat">
+        <concat destfile = "${Build.Products}/Objective-J.concat">
 			<filelist refid = "Files.Objective-J" />
 		</concat>
 		
 		<!-- Rhino Version -->
 		<mkdir dir = "${Build.Products}/Rhino" />
 		
-		<preprocess file = "${Build.Products}/Objecive-J.concat" output = "${Build.Products}/Rhino/Objective-J.js">
+		<preprocess file = "${Build.Products}/Objective-J.concat" output = "${Build.Products}/Rhino/Objective-J.js">
             <arguments>
                 <arg value = "-DRHINO"/>
             </arguments>
@@ -48,7 +48,7 @@
 		<!-- Browser Version -->
 		<mkdir dir = "${Build.Products}/Browser" />
 		
-		<preprocess file = "${Build.Products}/Objecive-J.concat" output = "${Build.Products}/Browser/Objective-J.preprocessed" />
+		<preprocess file = "${Build.Products}/Objective-J.concat" output = "${Build.Products}/Browser/Objective-J.preprocessed" />
 		
 		<mkdir dir = "${Build.Objective-J}/Objective-J" />
 		

@@ -20,11 +20,12 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-import <Foundation/CPObject.j>
-import <Foundation/CPString.j>
+@import <Foundation/CPObject.j>
+@import <Foundation/CPString.j>
 
-import <AppKit/CPImage.j>
-import <AppKit/CPView.j>
+@import <AppKit/CPImage.j>
+@import <AppKit/CPView.j>
+
 
 /*
     @global
@@ -57,7 +58,8 @@ CPToolbarPrintItemIdentifier            = @"CPToolbarPrintItemIdentifier";
 
 var _CPToolbarSeparatorItemView         = nil;
 
-/*
+/*! @class CPToolbarItem
+
     A representation of an item in a <objj>CPToolbar</objj>.
 */
 @implementation CPToolbarItem : CPObject
@@ -75,7 +77,9 @@ var _CPToolbarSeparatorItemView         = nil;
     BOOL        _isEnabled;
     CPImage     _image;
     CPImage     _alternateImage;
+    
     CPView      _view;
+    
     CGSize      _minSize;
     CGSize      _maxSize;    
     
@@ -83,7 +87,7 @@ var _CPToolbarSeparatorItemView         = nil;
 }
 
 // Creating a Toolbar Item
-/*
+/*!
     Initializes the toolbar item with a specified identifier.
     @param anItemIdentifier the item's identifier
     @return the initialized toolbar item
@@ -96,6 +100,9 @@ var _CPToolbarSeparatorItemView         = nil;
     {
         _itemIdentifier = anItemIdentifier;
      
+        _tag = 0;
+        _isEnabled = YES;
+     
         _minSize = CGSizeMakeZero();
         _maxSize = CGSizeMakeZero();
      
@@ -106,7 +113,7 @@ var _CPToolbarSeparatorItemView         = nil;
 }
 
 // Managing Attributes
-/*
+/*!
     Returns the item's identifier.
 */
 - (CPString)itemIdentifier
@@ -114,7 +121,7 @@ var _CPToolbarSeparatorItemView         = nil;
     return _itemIdentifier;
 }
 
-/*
+/*!
     Returns the toolbar of which this item is a part.
 */
 - (CPToolbar)toolbar
@@ -122,7 +129,7 @@ var _CPToolbarSeparatorItemView         = nil;
     return _toolbar;
 }
 
-/*
+/*!
     Returns the item's label
 */
 - (CPString)label
@@ -130,7 +137,7 @@ var _CPToolbarSeparatorItemView         = nil;
     return _label;
 }
 
-/*
+/*!
     Sets the item's label.
     @param aLabel the new label for the item
 */
@@ -139,7 +146,7 @@ var _CPToolbarSeparatorItemView         = nil;
     _label = aLabel;
 }
 
-/*
+/*!
     Returns the palette label.
 */
 - (CPString)paletteLabel
@@ -147,7 +154,7 @@ var _CPToolbarSeparatorItemView         = nil;
     return _paletteLabel;
 }
 
-/*
+/*!
     Sets the palette label
     @param aPaletteLabel the new palette label
 */
@@ -156,148 +163,188 @@ var _CPToolbarSeparatorItemView         = nil;
     _paletteLabel = aPaletteLabel;
 }
 
-/*
+/*!
     Returns the item's tooltip. A tooltip pops up
     next to the cursor when the user hovers over
     the item with the mouse.
 */
 - (CPString)toolTip
 {
+    if ([_view respondsToSelector:@selector(toolTip)])
+        return [_view toolTip];
+    
     return _toolTip;
 }
 
-/*
+/*!
     Sets the item's tooltip. A tooltip pops up next to the cursor when the user hovers over the item with the mouse.
     @param aToolTip the new item tool tip
 */
 - (void)setToolTip:(CPString)aToolTip
 {
+    if ([_view respondsToSelector:@selector(setToolTip:)])
+        [view setToolTip:aToolTip];
+    
     _toolTip = aToolTip;
 }
 
-/*
+/*!
     Returns the item's tag.
 */
 - (int)tag
 {
+    if ([_view respondsToSelector:@selector(tag)])
+        return [_view tag];
+    
     return _tag;
 }
 
-/*
+/*!
     Sets the item's tag.
     @param aTag the new tag for the item
 */
 - (void)setTag:(int)aTag
 {
+    if ([_view respondsToSelector:@selector(setTag:)])
+        [_view setTag:aTag];
+    
     _tag = aTag;
 }
 
-/*
+/*!
     Returns the item's action target.
 */
 - (id)target
 {
+    if (_view)
+        return [_view respondsToSelector:@selector(target)] ? [_view target] : nil;
+    
     return _target;
 }
 
-/*
+/*!
     Sets the target of the action that is triggered when the user clicks this item. <code>nil</code> will cause 
     the action to be passed on to the first responder.
     @param aTarget the new target
 */
 - (void)setTarget:(id)aTarget
 {
-    _target = aTarget;
+    if (!_view)
+        _target = aTarget;
+    
+    else if ([_view respondsToSelector:@selector(setTarget:)])
+        [_view setTarget:aTarget];
 }
 
-/*
+/*!
     Returns the action that is triggered when the user clicks this item.
 */
 - (SEL)action
 {
+    if (_view)
+        return [_view respondsToSelector:@selector(action)] ? [_view action] : nil;
+    
     return _action;
 }
 
-/*
+/*!
     Sets the action that is triggered when the user clicks this item.
     @param anAction the new action
 */
 - (void)setAction:(SEL)anAction
 {
-    _action = anAction;
+    if (!_view)
+        _action = anAction;
+
+    else if ([_view respondsToSelector:@selector(setAction:)])
+        [_view setAction:anAction];
 }
 
-/*
+/*!
     Returns <code>YES</code> if the item is enabled.
 */
 - (BOOL)isEnabled
 {
+    if ([_view respondsToSelector:@selector(isEnabled)])
+        return [_view isEnabled];
+    
     return _isEnabled;
 }
 
-/*
+/*!
     Sets whether the item is enabled.
     @param aFlag <code>YES</code> enables the item
 */
-- (void)setEnabled:(BOOL)aFlag
+- (void)setEnabled:(BOOL)shouldBeEnabled
 {
-    _isEnabled = aFlag;
+    if ([_view respondsToSelector:@selector(setEnabled:)])
+        [_view setEnabled:shouldBeEnabled];
+    
+    _isEnabled = shouldBeEnabled;
 }
 
-/*
+/*!
     Returns the item's image
 */
 - (CPImage)image
 {
+    if ([_view respondsToSelector:@selector(image)])
+        return [_view image];
+        
     return _image;
 }
 
-/*
+/*!
     Sets the item's image.
     @param anImage the new item image
 */
 - (void)setImage:(CPImage)anImage
 {
+    if ([_view respondsToSelector:@selector(setImage:)])
+        [_view setImage:anImage];
+
     _image = anImage;
-    
-    // FIXME: We can't keep assuming this.
-    [_view setImage:anImage];
     
     if (!_image)
         return;
     
-    var imageSize = [_image size];
-    
     if (_minSize.width == 0 && _minSize.height == 0 && 
-        _maxSize.width == 0 && _maxSize.height == 0 && 
-        (imageSize.width > 0 || imageSize.height > 0))
+        _maxSize.width == 0 && _maxSize.height == 0)
     {
-        [self setMinSize:imageSize];
-        [self setMaxSize:imageSize];
+        var imageSize = [_image size];
+
+        if (imageSize.width > 0 || imageSize.height > 0)
+        {
+            [self setMinSize:imageSize];
+            [self setMaxSize:imageSize];
+        }
     }
 }
 
-/*
+/*!
     Sets the alternate image. This image is displayed on the item when the user is clicking it.
     @param anImage the new alternate image
 */
 - (void)setAlternateImage:(CPImage)anImage
 {
-    _alternateImage = anImage;
+    if ([_view respondsToSelector:@selector(setAlternateImage:)])
+        [_view setAlternateImage:anImage];
     
-    // FIXME: We can't keep assuming this.
-    [_view setAlternateImage:anImage];
+    _alternateImage = anImage;
 }
 
-/*
+/*!
     Returns the alternate image. This image is displayed on the item when the user is clicking it.
 */
 - (CPImage)alternateImage
 {
+    if ([_view respondsToSelector:@selector(alternateIamge)])
+        return [_view alternateImage];
+    
     return _alternateImage;
 }
 
-/*
+/*!
     Returns the item's view.
 */
 - (CPView)view
@@ -305,16 +352,29 @@ var _CPToolbarSeparatorItemView         = nil;
     return _view;
 }
 
-/*
+/*!
     Sets the item's view
     @param aView the item's new view
 */
 - (void)setView:(CPView)aView
 {
+    if (_view == aView)
+        return;
+    
     _view = aView;
+
+    if (_view)
+    {
+        // Tags get forwarded.
+        if (_tag !== 0 && [_view respondsToSelector:@selector(setTag:)])
+            [_view setTag:_tag];
+        
+        _target = nil;
+        _action = nil;
+    }
 }
 
-/*
+/*!
     Returns the item's minimum size.
 */
 - (CGSize)minSize
@@ -322,7 +382,7 @@ var _CPToolbarSeparatorItemView         = nil;
     return _minSize;
 }
 
-/*
+/*!
     Sets the item's minimum size.
     @param aMinSize the new minimum size
 */
@@ -334,7 +394,7 @@ var _CPToolbarSeparatorItemView         = nil;
     _maxSize = CGSizeMake(MAX(_minSize.width, _maxSize.width), MAX(_minSize.height, _maxSize.height));
 }
 
-/*
+/*!
     Returns the item's maximum size.
 */
 - (CGSize)maxSize
@@ -342,7 +402,7 @@ var _CPToolbarSeparatorItemView         = nil;
     return _maxSize;
 }
 
-/*
+/*!
     Sets the item's new maximum size.
     @param aMaxSize the new maximum size
 */
@@ -355,7 +415,7 @@ var _CPToolbarSeparatorItemView         = nil;
 }
 
 // Visibility Priority
-/*
+/*!
     Returns the item's visibility priority. The value will be one of:
 <pre>
 CPToolbarItemVisibilityPriorityStandard
@@ -369,7 +429,7 @@ CPToolbarItemVisibilityPriorityUser
     return _visibilityPriority;
 }
 
-/*
+/*!
     Sets the item's visibility priority. The value must be one of:
 <pre>
 CPToolbarItemVisibilityPriorityStandard
@@ -392,21 +452,21 @@ CPToolbarItemVisibilityPriorityUser
 {
     var copy = [[[self class] alloc] initWithItemIdentifier:_itemIdentifier];
     
+    if (_view)
+        [copy setView:[CPKeyedUnarchiver unarchiveObjectWithData:[CPKeyedArchiver archivedDataWithRootObject:_view]]];
+    
     [copy setLabel:_label];
     [copy setPaletteLabel:_paletteLabel];
-    [copy setToolTip:_toolTip];
+    [copy setToolTip:[self toolTip]];
     
-    [copy setTag:_tag];
-    [copy setTarget:_target];
-    [copy setAction:_action];
+    [copy setTag:[self tag]];
+    [copy setTarget:[self target]];
+    [copy setAction:[self action]];
     
-    [copy setEnabled:_isEnabled];
+    [copy setEnabled:[self isEnabled]];
     [copy setImage:_image];
     [copy setAlternateImage:_alternateImage];
     
-    if (_view)
-        [copy setView:[CPKeyedUnarchiver unarchiveObjectWithData:[CPKeyedArchiver archivedDataWithRootObject:_view]]];
-
     [copy setMinSize:_minSize];
     [copy setMaxSize:_maxSize];
     

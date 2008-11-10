@@ -20,12 +20,12 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-import <Foundation/Foundation.j>
+@import <Foundation/Foundation.j>
 
-import <AppKit/CPCib.j>
+@import <AppKit/CPCib.j>
 
-import "NSFoundation.j"
-import "NSAppKit.j"
+@import "NSFoundation.j"
+@import "NSAppKit.j"
 
 importClass(java.io.FileWriter);
 importClass(java.io.BufferedWriter);

@@ -241,6 +241,7 @@ var XML_XML                 = "xml",
     PLIST_BOOLEAN_FALSE     = "false",
     PLIST_NUMBER_REAL       = "real",
     PLIST_NUMBER_INTEGER    = "integer";
+    PLIST_DATA              = "data";
 
 #if RHINO
 
@@ -387,7 +388,7 @@ function CPPropertyListCreateFromXMLData(XMLNodeOrData)
             PLIST_NEXT_SIBLING(XMLNode);
         }
 
-        switch (NODE_NAME(XMLNode))
+        switch (String(NODE_NAME(XMLNode)))
         {
             case PLIST_ARRAY:           object = []
                                         containers.push(object);
@@ -407,6 +408,9 @@ function CPPropertyListCreateFromXMLData(XMLNodeOrData)
             case PLIST_BOOLEAN_TRUE:    object = true;
                                         break;
             case PLIST_BOOLEAN_FALSE:   object = false;
+                                        break;
+                                        
+            case PLIST_DATA:            object = FIRST_CHILD(XMLNode) ? CHILD_VALUE(XMLNode) : ""; // FIXME: temporary fix for NIBs with <data> tags
                                         break;
                                         
             default:                    objj_exception_throw(new objj_exception(OBJJPlistParseException, "*** " + NODE_NAME(XMLNode) + " tag not recognized in Plist."));

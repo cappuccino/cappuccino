@@ -20,11 +20,12 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-import "CPObject.j"
+@import "CPObject.j"
+
 
 var CPNullSharedNull = nil;
 
-/*
+/*! @class CPNull
     This class is used as an object representation of <code>nil</code>. This is handy when a collection
     only accepts objects as values, but you would like a <code>nil</code> representation in there.
 */
@@ -39,9 +40,9 @@ var CPNullSharedNull = nil;
         
     return [super alloc];
 }*/
-/*
-    Returns the singleton instance of the <objj>CPNull</objj>
-    object. While <objj>CPNull</objj> and <code>nil</code> should
+/*!
+    Returns the singleton instance of the CPNull
+    object. While CPNull and <code>nil</code> should
     be <i>interpreted</i> as the same, they are not equal ('==').
 */
 + (CPNull)null

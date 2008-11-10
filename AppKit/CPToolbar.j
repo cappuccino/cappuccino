@@ -20,10 +20,11 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-import <Foundation/CPObject.j>
+@import <Foundation/CPObject.j>
 
-import "CPPopUpButton.j"
-import "CPToolbarItem.j"
+@import "CPPopUpButton.j"
+@import "CPToolbarItem.j"
+
 
 /*
     @global
@@ -49,25 +50,14 @@ CPToolbarDisplayModeLabelOnly           = 3;
 var CPToolbarsByIdentifier              = nil;
 var CPToolbarConfigurationsByIdentifier = nil;
 
-/* @ignore */
-var _CPToolbarItemVisibilityPriorityCompare = function(lhs, rhs)
-{
-    var lhsVisibilityPriority = [lhs visibilityPriority],
-        rhsVisibilityPriority = [rhs visibilityPriority];
-        
-    if (lhsVisibilityPriority == rhsVisibilityPriority)
-        return CPOrderedSame;
+/*!
+    @class CPToolbar
     
-    if (lhsVisibilityPriority > rhsVisibilityPriority)
-        return CPOrderedAscending;
-    
-    return CPOrderedDescending;
-}
-
-/*
-    A <objj>CPToolbar</objj> is displayed at the top of a window with multiple
+    A CPToolbar is displayed at the top of a window with multiple
     buttons (tools) that offer the user quick access to features.
-    
+
+    @par Delegate Methods
+
     @delegate -(CPArray)toolbarDefaultItemIdentifiers:(CPToolbar)toolbar;
     Called to obtain the toolbar's default item identifiers. Required.
     @param toolbar the toolbar to obtain identifiers for
@@ -117,7 +107,7 @@ var _CPToolbarItemVisibilityPriorityCompare = function(lhs, rhs)
     CPToolbarConfigurationsByIdentifier = [CPDictionary dictionary];
 }
 
-/*
+/*!
     Initializes the toolbar with the specified identifier.
     @param anIdentifier the identifier for the toolbar
     @return the initialized toolbar
@@ -148,7 +138,7 @@ var _CPToolbarItemVisibilityPriorityCompare = function(lhs, rhs)
     return self;
 }
 
-/*
+/*!
     Sets the toolbar's display mode. NOT YET IMPLEMENTED.
 */
 - (void)setDisplayMode:(CPToolbarDisplayMode)aDisplayMode
@@ -156,7 +146,7 @@ var _CPToolbarItemVisibilityPriorityCompare = function(lhs, rhs)
     
 }
 
-/*
+/*!
     Returns the toolbar's identifier
 */
 - (CPString)identifier
@@ -164,7 +154,7 @@ var _CPToolbarItemVisibilityPriorityCompare = function(lhs, rhs)
     return _identifier;
 }
 
-/*
+/*!
     Returns the toolbar's delegate
 */
 - (id)delegate
@@ -172,7 +162,7 @@ var _CPToolbarItemVisibilityPriorityCompare = function(lhs, rhs)
     return _delegate;
 }
 
-/*
+/*!
     Returns <code>YES</code> if the toolbar is currently visible
 */
 - (BOOL)isVisible
@@ -180,7 +170,7 @@ var _CPToolbarItemVisibilityPriorityCompare = function(lhs, rhs)
     return _isVisible;
 }
 
-/*
+/*!
     Sets whether the toolbar should be visible.
     @param aFlag <code>YES</code> makes the toolbar visible
 */
@@ -195,7 +185,7 @@ var _CPToolbarItemVisibilityPriorityCompare = function(lhs, rhs)
     [self _reloadToolbarItems];
 }
 
-/*
+/*!
     Sets the delegate for the toolbar.
     @param aDelegate the new toolbar delegate
 */
@@ -278,7 +268,7 @@ var _CPToolbarItemVisibilityPriorityCompare = function(lhs, rhs)
     [_toolbarView reloadToolbarItems];
 }
 
-/*
+/*!
     Returns all the items in this toolbar.
 */
 - (CPArray)items
@@ -286,7 +276,7 @@ var _CPToolbarItemVisibilityPriorityCompare = function(lhs, rhs)
     return _items;
 }
 
-/*
+/*!
     Returns all the visible items in this toolbar
 */
 - (CPArray)visibleItems
@@ -294,7 +284,7 @@ var _CPToolbarItemVisibilityPriorityCompare = function(lhs, rhs)
     return [_toolbarView visibleItems];
 }
 
-/*
+/*!
     Returns the index of the specified toolbar item
     @param anItem the item to obtain the index for
 */
@@ -308,7 +298,7 @@ var _CPToolbarItemVisibilityPriorityCompare = function(lhs, rhs)
     return info.index;
 }
 
-/*
+/*!
     Returns the toolbar items sorted by their <code>visibilityPriority</code>(ies).
 */
 - (CPArray)itemsSortedByVisibilityPriority
@@ -440,6 +430,7 @@ var _CPToolbarItemInfoMake = function(anIndex, aView, aLabel, aMinWidth)
     
     // Determine all the items that have flexible width.
     // Also determine the height of the toolbar.
+    // NOTE: height is height without top margin, and bottom margin/label.
     var index = _visibleItems.length,
         height = 0.0;
 
@@ -521,7 +512,7 @@ var _CPToolbarItemInfoMake = function(anIndex, aView, aLabel, aMinWidth)
             
             itemWidth = MAX([self minWidthForItem:item], viewWidth),
             
-            viewHeight = MAX([item minSize].height, MIN([item maxSize].height, height));
+            viewHeight = CGRectGetHeight(viewFrame);
 
         // itemWidth != viewWidth.  itemWidth is MAX(size of view, size of label).  If the label is larger,
         // *center* the view, don't resize it.
@@ -698,3 +689,18 @@ var _CPToolbarItemInfoMake = function(anIndex, aView, aLabel, aMinWidth)
 }
 
 @end
+
+/* @ignore */
+var _CPToolbarItemVisibilityPriorityCompare = function(lhs, rhs)
+{
+    var lhsVisibilityPriority = [lhs visibilityPriority],
+        rhsVisibilityPriority = [rhs visibilityPriority];
+        
+    if (lhsVisibilityPriority == rhsVisibilityPriority)
+        return CPOrderedSame;
+    
+    if (lhsVisibilityPriority > rhsVisibilityPriority)
+        return CPOrderedAscending;
+    
+    return CPOrderedDescending;
+}

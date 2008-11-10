@@ -20,13 +20,12 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-import "CPButton.j"
-import "CPColorPicker.j"
-import "CPCookie.j"
-import "CPKulerColorPicker.j"
-import "CPPanel.j"
-import "CPSliderColorPicker.j"
-import "CPView.j"
+@import "CPButton.j"
+@import "CPColorPicker.j"
+@import "CPCookie.j"
+@import "CPPanel.j"
+@import "CPSliderColorPicker.j"
+@import "CPView.j"
 
 
 CPColorPanelColorDidChangeNotification = @"CPColorPanelColorDidChangeNotification";
@@ -44,22 +43,17 @@ var SharedColorPanel = nil;
 */
 CPWheelColorPickerMode = 1;
 /*
-    Kuler color picker
-    @global
-    @group CPColorPanelMode
-*/
-CPKulerColorPickerMode = 2;
-/*
     Slider based picker
     @global
     @group CPColorPanelMode
 */
-CPSliderColorPickerMode = 3;
+CPSliderColorPickerMode = 2;
 
 CPColorPickerViewWidth  = 265,
 CPColorPickerViewHeight = 370;
 
-/*
+/*! @class CPColorPanel
+
     <objj>CPColorPanel</objj> provides a reusable panel that can be used
     displayed on screen to prompt the user for a color selection. To
     obtain the panel, call the <code>sharedColorPanel</code> method.
@@ -73,11 +67,10 @@ CPColorPickerViewHeight = 370;
     CPTextField     _previewLabel;
     CPTextField     _swatchLabel;
         
-    CPView          _activeView;
+    CPView          _currentView;
     
     CPColorPicker   _activePicker;
     CPColorPicker   _wheelPicker;
-    CPColorPicker   _kulerPicker;
     CPColorPicker   _sliderPicker;
     
     CPColor         _color;
@@ -88,7 +81,7 @@ CPColorPickerViewHeight = 370;
     int             _mode;             
 }
 
-/*
+/*!
     Returns (and if necessary, creates) the shared color panel.
 */
 + (CPColorPanel)sharedColorPanel
@@ -99,7 +92,7 @@ CPColorPickerViewHeight = 370;
     return SharedColorPanel;
 }
 
-/*
+/*!
     Sets the mode for the shared color panel.
     @param mode the mode to which the color panel will be set
 */
@@ -133,7 +126,7 @@ CPColorPickerViewHeight = 370;
     return self;
 }
 
-/*
+/*!
     Sets the color of the panel, and updates the picker. Also posts a <code>CPColorPanelDidChangeNotification</code>.
 */
 - (void)setColor:(CPColor)aColor
@@ -144,28 +137,27 @@ CPColorPickerViewHeight = 370;
     [CPApp sendAction:@selector(changeColor:) to:nil from:self];
 
     if (_target && _action)
-        objj_msgSend(_target, _action, self);
+        [CPApp sendAction:_action to:_target from:self];
         
     [[CPNotificationCenter defaultCenter]
         postNotificationName:CPColorPanelColorDidChangeNotification
                       object:self];
 }
 
-/*
+/*!
     Sets the selected color of the panel and optionally updates the picker.
     @param bool whether or not to update the picker
     @ignore
 */
- -(void)setColor:(CPColor)aColor updatePicker:(BOOL)bool
- {
-    [self setColor: aColor];
+- (void)setColor:(CPColor)aColor updatePicker:(BOOL)bool
+{
+    [self setColor:aColor];
+    
+    if (bool)
+        [_activePicker setColor:_color];
+}
 
-    if(bool)
-        [_activePicker setColor: _color];
- }
- 
-
-/*
+/*!
     Returns the panel's currently selected color.
 */
 - (CPColor)color
@@ -173,7 +165,7 @@ CPColorPickerViewHeight = 370;
     return _color;
 }
 
-/*
+/*!
     Sets the target for the color panel. Messages are sent
     to the target when colors are selected in the panel.
 */
@@ -182,7 +174,7 @@ CPColorPickerViewHeight = 370;
     _target = aTarget;
 }
 
-/*
+/*!
     Returns the current target. The target receives messages
     when colors are selected in the panel.
 */
@@ -191,7 +183,7 @@ CPColorPickerViewHeight = 370;
     return _target;
 }
 
-/*
+/*!
     Sets the action that gets sent to the target.
     This action is sent whenever a color is selected in the panel.
     @param anAction the action that will be sent
@@ -201,7 +193,7 @@ CPColorPickerViewHeight = 370;
     _action = anAction;
 }
 
-/*
+/*!
     Returns the current target action.
 */
 - (selector)action
@@ -209,7 +201,7 @@ CPColorPickerViewHeight = 370;
     return _action;
 }
 
-/*
+/*!
     Sets the mode (look) of the color panel.
     @param mode the mode in which to display the color panel
 */
@@ -224,7 +216,6 @@ CPColorPickerViewHeight = 370;
     switch(mode)
     {
         case CPWheelColorPickerMode:  _activePicker = _wheelPicker; break;
-        case CPKulerColorPickerMode:  _activePicker = _kulerPicker; break;
         case CPSliderColorPickerMode: _activePicker = _sliderPicker; break;
     }
     
@@ -238,7 +229,7 @@ CPColorPickerViewHeight = 370;
     [[self contentView] addSubview: _currentView];
 }
 
-/*
+/*!
     Returns the color panel's current display mode.
 */
 - (CPColorPanelMode)mode
@@ -309,9 +300,6 @@ CPColorPickerViewHeight = 370;
     [_currentView setFrameOrigin: CPPointMake(5, TOOLBAR_HEIGHT+10+PREVIEW_HEIGHT+5+SWATCH_HEIGHT+10)];
     [_currentView setAutoresizingMask: (CPViewWidthSizable | CPViewHeightSizable)];
 
-    _kulerPicker = [[CPKulerColorPicker alloc] initWithPickerMask: 1|2|3 colorPanel: self];
-    [_kulerPicker provideNewView: YES];
-
     _sliderPicker = [[CPSliderColorPicker alloc] initWithPickerMask: 1|2|3 colorPanel: self];
     [_sliderPicker provideNewView: YES];
 
@@ -334,7 +322,7 @@ CPColorPickerViewHeight = 370;
 @end
 
 var iconSize   = 32,
-    totalIcons = 3;
+    totalIcons = 2;
 
 /* @ignore */
 @implementation _CPColorPanelToolbar : CPView
@@ -346,10 +334,6 @@ var iconSize   = 32,
     CPImage  _sliderImage;
     CPImage  _sliderAlternateImage;
     CPButton _sliderButton; 
-    
-    CPImage  _kulerImage;
-    CPImage  _kulerAlternateImage;
-    CPButton _kulerButton;    
 }
 
 - (id)initWithFrame:(CPRect)aFrame
@@ -398,32 +382,12 @@ var iconSize   = 32,
 
     [self addSubview: _sliderButton];
      
-    _kulerButton = [[CPButton alloc] initWithFrame:CPRectMake(start, 0, iconSize, iconSize)];
-    start += iconSize + 8;
-
-    path         = [[CPBundle bundleForClass: _CPColorPanelToolbar] pathForResource:@"kuler_button.png"];
-    _kulerImage  = [[CPImage alloc] initWithContentsOfFile:path size: CPSizeMake(iconSize, iconSize)];
-
-    path                 = [[CPBundle bundleForClass: _CPColorPanelToolbar] pathForResource:@"kuler_button_h.png"];
-    _kulerAlternateImage = [[CPImage alloc] initWithContentsOfFile:path size: CPSizeMake(iconSize, iconSize)];
-
-    [_kulerButton setBordered:NO];
-    [_kulerButton setImage: _kulerImage];    
-    [_kulerButton setAlternateImage: _kulerAlternateImage];    
-    [_kulerButton setTarget: self];
-    [_kulerButton setAction: @selector(setMode:)];
-    [_kulerButton setAutoresizingMask:CPViewMinXMargin | CPViewMaxXMargin];
-    
-    [self addSubview: _kulerButton];
-    
     return self;
 }
 
 - (void)setMode:(id)sender
 {
-    if(sender == _kulerButton)
-        [[CPColorPanel sharedColorPanel] setMode: CPKulerColorPickerMode];
-    else if(sender == _wheelButton)
+    if(sender == _wheelButton)
         [[CPColorPanel sharedColorPanel] setMode: CPWheelColorPickerMode];
     else
         [[CPColorPanel sharedColorPanel] setMode: CPSliderColorPickerMode];

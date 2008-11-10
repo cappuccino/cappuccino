@@ -20,10 +20,11 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-import "CPRange.j"
-import "CPObject.j"
+@import "CPRange.j"
+@import "CPObject.j"
 
-/*
+
+/*! @class CPIndexSet
     Instances of this class are collections of numbers. Each integer can appear in a collection only once.
 */
 @implementation CPIndexSet : CPObject
@@ -34,7 +35,7 @@ import "CPObject.j"
 }
 
 // Creating an Index Set
-/*
+/*!
     Returns a new empty index set.
 */
 + (id)indexSet
@@ -42,7 +43,7 @@ import "CPObject.j"
 	return [[self alloc] init];
 }
 
-/*
+/*!
     Returns a new index set with just one index.
 */
 + (id)indexSetWithIndex:(int)anIndex
@@ -50,7 +51,7 @@ import "CPObject.j"
 	return [[self alloc] initWithIndex:anIndex];
 }
 
-/*
+/*!
     Returns a new index set with all the numbers in the specified range.
     @param aRange the range of numbers to add to the index set.
 */
@@ -75,7 +76,7 @@ import "CPObject.j"
     return self;
 }
 
-/*
+/*!
     Initializes the index set with a single index.
     @return the initialized index set
 */
@@ -93,7 +94,7 @@ import "CPObject.j"
     return self;
 }
 
-/*
+/*!
     Initializes the index set with numbers from the specified range.
     @param aRange the range of numbers to add to the index set
     @return the initialized index set
@@ -112,7 +113,7 @@ import "CPObject.j"
     return self;
 }
 
-/*
+/*!
     Initializes the index set with another index set.
     @param anIndexSet the index set from which to read the initial index set
     @return the initialized index set
@@ -138,7 +139,7 @@ import "CPObject.j"
 }
 
 // Querying an Index Set
-/*
+/*!
     Compares the receiver with the provided index set.
     @param anIndexSet the index set to compare to
     @return <code>YES</code> if the receiver and the index set are functionally equivalent
@@ -165,7 +166,7 @@ import "CPObject.j"
 	return YES;
 }
 
-/*
+/*!
     Returns <code>YES</code> if the index set contains the specified index.
     @param anIndex the index to check for in the set
     @return <code>YES</code> if <code>anIndex</code> is in the receiver index set
@@ -175,7 +176,7 @@ import "CPObject.j"
     return [self containsIndexesInRange:CPMakeRange(anIndex, 1)];
 }
 
-/*
+/*!
     Returns <code>YES</code> if the index set contains all the numbers in the specified range.
     @param aRange the range of numbers to check for in the index set
 */
@@ -206,7 +207,7 @@ import "CPObject.j"
     return NO;
 }
 
-/*
+/*!
     Returns <code>YES</code> if the receving index set contains all the indices in the argument.
     @param anIndexSet the set of indices to check for in the receiving index set
 */
@@ -231,7 +232,7 @@ import "CPObject.j"
     return YES;
 }
 
-/*
+/*!
     Checks if the receiver contains at least one number in <code>aRange</code>.
     @param aRange the range of numbers to check.
     @return <code>YES</code> if the receiving index set contains at least one number in the provided range
@@ -255,7 +256,7 @@ import "CPObject.j"
     return NO;
 }
 
-/*
+/*!
     The number of indices in the set
 */
 - (int)count
@@ -264,7 +265,7 @@ import "CPObject.j"
 }
 
 // Accessing Indexes
-/*
+/*!
     Return the first index in the set
 */
 - (int)firstIndex
@@ -272,7 +273,7 @@ import "CPObject.j"
     return _count ? _ranges[0].location : CPNotFound;
 }
 
-/*
+/*!
     Returns the last index in the set
 */
 - (int)lastIndex
@@ -280,9 +281,9 @@ import "CPObject.j"
     return _count ? CPMaxRange(_ranges[_ranges.length - 1]) - 1 : CPNotFound;
 }
 
-/*
+/*!
     Returns the first index value in the receiver which is greater than <code>anIndex</code>.
-    @return the closest index or <objj>CPNotFound</objj> if no match was found
+    @return the closest index or CPNotFound if no match was found
 */
 - (unsigned)indexGreaterThanIndex:(unsigned)anIndex
 {
@@ -305,9 +306,9 @@ import "CPObject.j"
     return anIndex;
 }
 
-/*
+/*!
     Returns the first index value in the receiver which is less than <code>anIndex</code>.
-    @return the closest index or <objj>CPNotFound</objj> if no match was found
+    @return the closest index or CPNotFound if no match was found
 */
 - (unsigned)indexLessThanIndex:(unsigned)anIndex
 {
@@ -332,25 +333,25 @@ import "CPObject.j"
     return CPNotFound;
 }
 
-/*
+/*!
     Returns the first index value in the receiver which is greater than or equal to <code>anIndex</code>.
-    @return the matching index or <objj>CPNotFound</objj> if no match was found
+    @return the matching index or CPNotFound if no match was found
 */
 - (unsigned int)indexGreaterThanOrEqualToIndex:(unsigned)anIndex
 {
 	return [self indexGreaterThanIndex:anIndex - 1];
 }
 
-/*
+/*!
     Returns the first index value in the receiver which is less than or equal to <code>anIndex</code>.
-    @return the matching index or <objj>CPNotFound</objj> if no match was found
+    @return the matching index or CPNotFound if no match was found
 */
 - (unsigned int)indexLessThanOrEqualToIndex:(unsigned)anIndex
 {
 	return [self indexLessThanIndex:anIndex + 1];
 }
 
-/*
+/*!
     Fills up the specified array with numbers from the index set within
     the specified range. The method stops filling up the array until the
     <code>aMaxCount</code> number have been added or the range maximum is reached.
@@ -431,7 +432,7 @@ import "CPObject.j"
 @implementation CPIndexSet(CPMutableIndexSet)
 
 // Adding indexes.
-/*
+/*!
     Adds an index to the set.
     @param anIndex the index to add
 */
@@ -440,7 +441,7 @@ import "CPObject.j"
     [self addIndexesInRange:CPMakeRange(anIndex, 1)];
 }
 
-/*
+/*!
     Adds indices to the set
     @param anIndexSet a set of indices to add to the receiver
 */
@@ -455,7 +456,7 @@ import "CPObject.j"
         [self addIndexesInRange:ranges[i]];
 }
 
-/*
+/*!
     Adds the range of indices to the set
     @param aRange the range of numbers to add as indices to the set
 */
@@ -549,7 +550,7 @@ import "CPObject.j"
 }
 
 // Removing Indexes
-/*
+/*!
     Removes an index from the set
     @param anIndex the index to remove
 */
@@ -558,7 +559,7 @@ import "CPObject.j"
     [self removeIndexesInRange:CPMakeRange(anIndex, 1)];
 }
 
-/*
+/*!
     Removes the indices from the receiving set.
     @param anIndexSet the set of indices to remove
     from the receiver
@@ -574,7 +575,7 @@ import "CPObject.j"
         [self removeIndexesInRange:ranges[i]];
 }
 
-/*
+/*!
     Removes all indices from the set
 */
 - (void)removeAllIndexes
@@ -584,7 +585,7 @@ import "CPObject.j"
     _cachedRangeIndex = 0;
 }
 
-/*
+/*!
     Removes the indices in the range from the
     set.
     @param aRange the range of indices to remove
@@ -651,7 +652,7 @@ import "CPObject.j"
 }
 
 // Shifting Index Groups
-/*
+/*!
     Shifts the values of indices left or right by a specified amount.
     @param anIndex the index to start the shifting operation from (inclusive)
     @param aDelta the amount and direction to shift. A positive value shifts to
@@ -737,7 +738,7 @@ var CPIndexSetCountKey              = @"CPIndexSetCountKey",
 
 @implementation CPIndexSet (CPCoding)
 
-/*
+/*!
     Initializes the index set from a coder.
     @param aCoder the coder from which to read the
     index set data
@@ -764,7 +765,7 @@ var CPIndexSetCountKey              = @"CPIndexSetCountKey",
     return self;
 }
 
-/*
+/*!
     Writes out the index set to the specified coder.
     @param aCoder the coder to which the index set will
     be written
@@ -788,7 +789,7 @@ var CPIndexSetCountKey              = @"CPIndexSetCountKey",
 
 @implementation CPIndexSet (CPCopying)
 
-/*
+/*!
     Creates a deep copy of the index set. The returned copy
     is mutable. The reason for the two copy methods is for
     source compatability with GNUStep code.
@@ -799,7 +800,7 @@ var CPIndexSetCountKey              = @"CPIndexSetCountKey",
     return [[[self class] alloc] initWithIndexSet:self];
 }
 
-/*
+/*!
     Creates a deep copy of the index set. The returned copy
     is mutable. The reason for the two copy methods is for
     source compatability with GNUStep code.
@@ -812,9 +813,9 @@ var CPIndexSetCountKey              = @"CPIndexSetCountKey",
 
 @end
 
-/*
-    This class is an empty of subclass of <objj>CPIndexSet</objj>.
-    <objj>CPIndexSet</objj> already implements mutable methods, and
+/*!
+    This class is an empty of subclass of CPIndexSet.
+    CPIndexSet already implements mutable methods, and
     this class only exists for source compatability.
 */
 @implementation CPMutableIndexSet : CPIndexSet

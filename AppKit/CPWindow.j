@@ -20,12 +20,12 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-import <Foundation/CPNotificationCenter.j>
-import <Foundation/CPUndoManager.j>
+@import <Foundation/CPNotificationCenter.j>
+@import <Foundation/CPUndoManager.j>
 
-import "CGGeometry.j"
-import "CPAnimation.j"
-import "CPResponder.j"
+@import "CGGeometry.j"
+@import "CPAnimation.j"
+@import "CPResponder.j"
 
 #include "Platform/Platform.h"
 #include "Platform/DOM/CPDOMDisplayServer.h"
@@ -184,7 +184,8 @@ var SHADOW_MARGIN_LEFT      = 20.0,
 var CPWindowSaveImage       = nil,
     CPWindowSavingImage     = nil;
 
-/*
+/*! @class CPWindow
+
     An <objj>CPWindow</objj> instance represents a window, panel or menu on the screen.</p>
 
     <p>Each window has a style, which determines how the window is decorated; whether it has a border, a title bar, a resize bar, minimise and close buttons.</p>
@@ -194,6 +195,8 @@ var CPWindowSaveImage       = nil,
     <p>A window always contains a content view which is the highest level view available for public (application) use. This view fills the area of the window inside any decoration/border. This is the only part of the window that application programmers are allowed to draw in directly.</p>
 
     <p>You can convert between view coordinates and window base coordinates using the <objj>[CPView -convertPoint:fromView:]</objj>, <objj>[CPView -convertPoint:toView:]</objj>, <objj>[CPView -convertRect:fromView:]</objj>, and <objj>[CPView -convertRect:toView:]</objj> methods with a <objj>nil</objj> view argument.
+    
+    @par Delegate Methods
     
     @delegate -(void)windowDidResize:(CPNotification)notification;
     Sent from the notification center when the window has been resized.
@@ -294,7 +297,7 @@ var CPWindowSaveImage       = nil,
     CPWindowSavingImage = [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"CPProgressIndicator/CPProgressIndicatorSpinningStyleRegular.gif"] size:CGSizeMake(16.0, 16.0)]
 }
 
-/*
+/*!
     Initializes the window. The method also takes a style bit mask made up
     of any of the following values:
 <pre>
@@ -314,7 +317,7 @@ CPTexturedBackgroundWindowMask
     return [self initWithContentRect:aContentRect styleMask:aStyleMask bridge:[CPDOMWindowBridge sharedDOMWindowBridge]];
 }
 
-/*
+/*!
     Initializes the window. The method also takes a style bit mask made up
     of any of the following values:
 <pre>
@@ -388,7 +391,7 @@ CPTexturedBackgroundWindowMask
     return self;
 }
 
-/*
+/*!
     Returns the window's style mask.
 */
 - (unsigned)styleMask
@@ -396,7 +399,7 @@ CPTexturedBackgroundWindowMask
     return _styleMask;
 }
 
-/*
+/*!
     Returns the frame rectangle used by a window.
     @param aContentRect the content rectangle of the window
     @param aStyleMask the style mask of the window
@@ -409,7 +412,7 @@ CPTexturedBackgroundWindowMask
     return frame;
 }
 
-/*
+/*!
     Returns the receiver's content rectangle. A content rectangle does not include toolbars.
     @param aFrame the window's frame rectangle
 */
@@ -442,7 +445,7 @@ CPTexturedBackgroundWindowMask
     return contentRect;
 }
 
-/*
+/*!
     Retrieves the frame rectangle for this window.
     @param aContentRect the window's content rectangle
     @return the window's frame rectangle
@@ -457,7 +460,7 @@ CPTexturedBackgroundWindowMask
     return frame; 
 }
 
-/*
+/*!
     Returns the window's frame rectangle
 */
 - (CGRect)frame
@@ -465,7 +468,7 @@ CPTexturedBackgroundWindowMask
     return _frame;
 }
 
-/*
+/*!
     Sets the window's frame rectangle. Also tells the window whether it should animate
     the resize operation, and redraw itself if necessary.
     @param aFrame the new size and location for the window
@@ -487,7 +490,7 @@ CPTexturedBackgroundWindowMask
     }
 }
 
-/*
+/*!
     Sets the window's frame rectangle
 */
 - (void)setFrame:(CGRect)aFrame
@@ -495,7 +498,7 @@ CPTexturedBackgroundWindowMask
     [self setFrame:aFrame display:YES animate:NO];
 }
 
-/*
+/*!
     Sets the window's location.
     @param anOrigin the new location for the window
 */
@@ -514,7 +517,7 @@ CPTexturedBackgroundWindowMask
 #endif
 }
 
-/*
+/*!
     Sets the window's size.
     @param aSize the new size for the window
 */
@@ -581,7 +584,7 @@ CPTexturedBackgroundWindowMask
     [CPApp setTarget:self selector:@selector(trackResizeWithEvent:) forNextEventMatchingMask:CPLeftMouseDraggedMask | CPLeftMouseUpMask untilDate:nil inMode:nil dequeue:YES];
 }
 
-/*
+/*!
     Makes the receiver the front most window in the screen ordering.
     @param aSender the object that requested this
 */
@@ -600,7 +603,7 @@ CPTexturedBackgroundWindowMask
     //[_bridge order:CPWindowBelow
 }
 
-/*
+/*!
     Hides the window.
     @param the object that requested this
 */
@@ -619,7 +622,7 @@ CPTexturedBackgroundWindowMask
     }
 }
 
-/*
+/*!
     Relocates the window in the screen list.
     @param aPlace the positioning relative to <code>otherWindowNumber</code>
     @param otherWindowNumber the window relative to which the receiver should be placed
@@ -629,7 +632,7 @@ CPTexturedBackgroundWindowMask
     [_bridge order:aPlace window:self relativeTo:CPApp._windows[otherWindowNumber]];
 }
 
-/*
+/*!
     Sets the window's level
     @param the window's new level
 */
@@ -638,7 +641,7 @@ CPTexturedBackgroundWindowMask
     _level = aLevel;
 }
 
-/*
+/*!
     Returns the window's current level
 */
 - (int)level
@@ -646,7 +649,7 @@ CPTexturedBackgroundWindowMask
     return _level;
 }
 
-/*
+/*!
     Returns <code>YES</code> if the window is visible. It does not mean that the window is not obscured by other windows.
 */
 - (BOOL)isVisible
@@ -654,7 +657,7 @@ CPTexturedBackgroundWindowMask
     return _isVisible;
 }
 
-/*
+/*!
     Returns <code>YES</code> if the window's resize indicator is showing. <code>NO</code> otherwise.
 */
 - (BOOL)showsResizeIndicator
@@ -662,7 +665,7 @@ CPTexturedBackgroundWindowMask
     return [_windowView showsResizeIndicator];
 }
 
-/*
+/*!
     Sets the window's resize indicator.
     @param shouldShowResizeIndicator <code>YES</code> sets the window to show its resize indicator.
 */
@@ -671,7 +674,7 @@ CPTexturedBackgroundWindowMask
     [_windowView setShowsResizeIndicator:shouldShowResizeIndicator];
 }
 
-/*
+/*!
     Returns the offset of the window's resize indicator.
 */
 - (CGSize)resizeIndicatorOffset
@@ -679,7 +682,7 @@ CPTexturedBackgroundWindowMask
     return [_windowView resizeIndicatorOffset];
 }
 
-/*
+/*!
     Sets the offset of the window's resize indicator.
     @param aSize the offset for the resize indicator
 */
@@ -688,7 +691,7 @@ CPTexturedBackgroundWindowMask
     [_windowView setResizeIndicatorOffset:anOffset];
 }
 
-/*
+/*!
     Sets the window's content view. The new view will be resized to fit
     inside the content rectangle of the window.
     @param aView the new content view for the receiver
@@ -705,7 +708,7 @@ CPTexturedBackgroundWindowMask
     [_windowView addSubview:_contentView positioned:CPWindowBelow relativeTo:nil];
 }
 
-/*
+/*!
     Returns the window's current content view.
 */
 - (CPView)contentView
@@ -713,7 +716,7 @@ CPTexturedBackgroundWindowMask
     return _contentView;
 }
 
-/*
+/*!
     Sets the window's background color.
     @param aColor the new color for the background
 */
@@ -722,7 +725,7 @@ CPTexturedBackgroundWindowMask
     [_windowView setBackgroundColor:aColor];
 }
 
-/*
+/*!
     Returns the window's background color.
 */
 - (CPColor)backgroundColor
@@ -730,7 +733,7 @@ CPTexturedBackgroundWindowMask
     return [_windowView backgroundColor];
 }
 
-/*
+/*!
     Sets the window's minimum size. If the provided
     size is the same as the current minimum size, the method simply returns.
     @aSize the new minimum size for the window
@@ -761,7 +764,7 @@ CPTexturedBackgroundWindowMask
         [self setFrameSize:size];
 }
 
-/*
+/*!
     Returns the windows minimum size.
 */
 - (CGSize)minSize
@@ -769,7 +772,7 @@ CPTexturedBackgroundWindowMask
     return _minSize;
 }
 
-/*
+/*!
     Sets the window's maximum size. If the provided
     size is the same as the current maximum size,
     the method simply returns.
@@ -801,7 +804,7 @@ CPTexturedBackgroundWindowMask
         [self setFrameSize:size];
 }
 
-/*
+/*!
     Returns the window's maximum size.
 */
 - (CGSize)maxSize
@@ -809,7 +812,7 @@ CPTexturedBackgroundWindowMask
     return _maxSize;
 }
 
-/*
+/*!
     Returns <code>YES</code> if the window has a drop shadow. <code>NO</code> otherwise.
 */
 - (BOOL)hasShadow
@@ -817,7 +820,7 @@ CPTexturedBackgroundWindowMask
     return _hasShadow;
 }
 
-/*
+/*!
     Sets whether the window should have a drop shadow.
     @param shouldHaveShadow <code>YES</code> to have a drop shadow.
 */
@@ -871,7 +874,7 @@ CPTexturedBackgroundWindowMask
     }
 }
 
-/*
+/*!
     Sets the delegate for the window. Passing <code>nil</code> will just remove the window's current delegate.
     @param aDelegate an object to respond to the various delegate methods of <objj>CPWindow</objj>
 */
@@ -898,7 +901,7 @@ CPTexturedBackgroundWindowMask
                  object:self];
 }
 
-/*
+/*!
     Returns window's delegate
 */
 - (id)delegate
@@ -906,7 +909,7 @@ CPTexturedBackgroundWindowMask
     return _delegate;
 }
 
-/*
+/*!
     Sets the window's controller
     @param aWindowController a window controller
 */
@@ -915,7 +918,7 @@ CPTexturedBackgroundWindowMask
     _windowController = aWindowController;
 }
 
-/*
+/*!
     Returns the window's controller.
 */
 - (CPWindowController)windowController
@@ -936,7 +939,7 @@ CPTexturedBackgroundWindowMask
     return YES;
 }
 
-/*
+/*!
     Attempts to make the <code>aResponder</code> the first responder. Before trying
     to make it the first responder, the receiver will ask the current first responder
     to resign its first responder status. If it resigns, it will ask
@@ -963,7 +966,7 @@ CPTexturedBackgroundWindowMask
     return YES;
 }
 
-/*
+/*!
     Returns the window's current first responder.
 */
 - (CPResponder)firstResponder
@@ -983,7 +986,7 @@ CPTexturedBackgroundWindowMask
 
 // Managing Titles
 
-/*
+/*!
     Returns the window's title bar string
 */
 - (CPString)title
@@ -991,7 +994,7 @@ CPTexturedBackgroundWindowMask
     return _title;
 }
 
-/*
+/*!
     Sets the window's title bar string
 */
 - (void)setTitle:(CPString)aTitle
@@ -1003,7 +1006,7 @@ CPTexturedBackgroundWindowMask
     [self _synchronizeMenuBarTitleWithWindowTitle];
 }
 
-/*
+/*!
     Sets the title bar to represent a file path
 */
 - (void)setTitleWithRepresentedFilename:(CPString)aFilePath
@@ -1012,7 +1015,7 @@ CPTexturedBackgroundWindowMask
     [self setTitle:[aFilePath lastPathComponent]];
 }
 
-/*
+/*!
     Sets the path to the file the receiver represents
 */
 - (void)setRepresentedFilename:(CPString)aFilePath
@@ -1021,7 +1024,7 @@ CPTexturedBackgroundWindowMask
     [self setRepresentedURL:aFilePath];
 }
 
-/*
+/*!
     Returns the path to the file the receiver represents
 */
 - (CPString)representedFilename
@@ -1029,7 +1032,7 @@ CPTexturedBackgroundWindowMask
     return _representedURL;
 }
 
-/*
+/*!
     Sets the URL that the receiver represents
 */
 - (void)setRepresentedURL:(CPURL)aURL
@@ -1037,7 +1040,7 @@ CPTexturedBackgroundWindowMask
     _representedURL = aURL;
 }
 
-/*
+/*!
     Returns the URL that the receiver represents
 */
 - (CPURL)representedURL
@@ -1047,7 +1050,7 @@ CPTexturedBackgroundWindowMask
 
 // Moving
 
-/*
+/*!
     Sets whether the window can be moved by dragging its background. The default is based on the window style.
     @param shouldBeMovableByWindowBackground <code>YES</code> makes the window move from a background drag.
 */
@@ -1056,7 +1059,7 @@ CPTexturedBackgroundWindowMask
     _isMovableByWindowBackground = shouldBeMovableByWindowBackground;
 }
 
-/*
+/*!
     Returns <code>YES</code> if the window can be moved by dragging its background.
 */
 - (BOOL)isMovableByWindowBackground
@@ -1064,7 +1067,7 @@ CPTexturedBackgroundWindowMask
     return _isMovableByWindowBackground;
 }
 
-/*
+/*!
     Sets the window location to be the center of the screen
 */
 - (void)center
@@ -1075,7 +1078,7 @@ CPTexturedBackgroundWindowMask
     [self setFrameOrigin:CGPointMake((bridgeSize.width - size.width) / 2.0, (bridgeSize.height - size.height) / 2.0)];
 }
 
-/*
+/*!
     Dispatches events that are sent to it from <objj>CPApplication</objj>.
     @param anEvent the event to be dispatched
 */
@@ -1149,7 +1152,7 @@ CPTexturedBackgroundWindowMask
     }
 }
 
-/*
+/*!
     Returns the window's number in the desktop's screen list
 */
 - (int)windowNumber
@@ -1157,7 +1160,7 @@ CPTexturedBackgroundWindowMask
     return _windowNumber;
 }
 
-/*
+/*!
     Called when the receiver should become the key window. It also sends
     the <code>becomeKeyWindow</code> message to the first responder.
 */
@@ -1167,7 +1170,7 @@ CPTexturedBackgroundWindowMask
         [_firstResponder becomeKeyWindow];
 }
 
-/*
+/*!
     Determines if the window can become the key window.
     @return <code>YES</code> means the window can become the key window.
 */
@@ -1176,7 +1179,7 @@ CPTexturedBackgroundWindowMask
     return YES;
 }
 
-/*
+/*!
     Returns <code>YES</code> if the window is the key window.
 */
 - (BOOL)isKeyWindow
@@ -1184,7 +1187,7 @@ CPTexturedBackgroundWindowMask
     return [CPApp keyWindow] == self;
 }
 
-/*
+/*!
     Makes the window the key window and brings it to the front of the screen list.
     @param aSender the object requesting this
 */
@@ -1196,7 +1199,7 @@ CPTexturedBackgroundWindowMask
     [self makeMainWindow];
 }
 
-/*
+/*!
     Makes this window the key window.
 */
 - (void)makeKeyWindow
@@ -1211,7 +1214,7 @@ CPTexturedBackgroundWindowMask
     [self becomeKeyWindow];
 }
 
-/*
+/*!
     Causes the window to resign it's key window status.
 */
 - (void)resignKeyWindow
@@ -1223,7 +1226,7 @@ CPTexturedBackgroundWindowMask
         [_delegate windowDidResignKey:self];
 }
 
-/*
+/*!
     Initiates a drag operation from the receiver to another view that accepts dragged data.
     @param anImage the image to be dragged
     @param aLocation the lower-left corner coordinate of <code>anImage</code>
@@ -1238,7 +1241,7 @@ CPTexturedBackgroundWindowMask
     [[CPDragServer sharedDragServer] dragImage:anImage fromWindow:self at:[self convertBaseToBridge:imageLocation] offset:mouseOffset event:anEvent pasteboard:aPasteboard source:aSourceObject slideBack:slideBack];
 }
 
-/*
+/*!
     Initiates a drag operation from the receiver to another view that accepts dragged data.
     @param aView the view to be dragged
     @param aLocation the lower-left corner coordinate of <code>aView</code>
@@ -1255,7 +1258,7 @@ CPTexturedBackgroundWindowMask
 
 // Accessing Editing Status
 
-/*
+/*!
     Sets whether the document has been edited.
     @param isDocumentEdited <code>YES</code> if the document has been edited.
 */
@@ -1269,7 +1272,7 @@ CPTexturedBackgroundWindowMask
     [CPMenu _setMenuBarIconImageAlphaValue:_isDocumentEdited ? 0.5 : 1.0];
 }
 
-/*
+/*!
     Returns <code>YES</code> if the document has been edited.
 */
 - (BOOL)isDocumentEdited
@@ -1326,7 +1329,7 @@ CPTexturedBackgroundWindowMask
 
 // Closing Windows
 
-/*
+/*!
     Simulates the user closing the window, then closes the window.
     @param aSender the object making this request
 */
@@ -1339,7 +1342,7 @@ CPTexturedBackgroundWindowMask
     [self close];
 }
 
-/*
+/*!
     Closes the window. Posts a <code>CPWindowWillCloseNotification</code> to the
     notification center before closing the window.
 */
@@ -1351,7 +1354,7 @@ CPTexturedBackgroundWindowMask
 }
 
 // Managing Main Status
-/*
+/*!
     Returns <code>YES</code> if this the main window.
 */
 - (BOOL)isMainWindow
@@ -1359,7 +1362,7 @@ CPTexturedBackgroundWindowMask
     return [CPApp mainWindow] == self;
 }
 
-/*
+/*!
     Returns <code>YES</code> if the window can become the main window.
 */
 - (BOOL)canBecomeMainWindow
@@ -1371,7 +1374,7 @@ CPTexturedBackgroundWindowMask
     return NO;
 }
 
-/*
+/*!
     Makes the receiver the main window.
 */
 - (void)makeMainWindow
@@ -1386,7 +1389,7 @@ CPTexturedBackgroundWindowMask
     [self becomeMainWindow];
 }
 
-/*
+/*!
     Called to tell the receiver that it has become the main window.
 */
 - (void)becomeMainWindow
@@ -1399,7 +1402,7 @@ CPTexturedBackgroundWindowMask
                       object:self];
 }
 
-/*
+/*!
     Called when the window resigns main window status.
 */
 - (void)resignMainWindow
@@ -1410,7 +1413,7 @@ CPTexturedBackgroundWindowMask
 }
 
 // Managing Toolbars
-/*
+/*!
     Return's the window's toolbar
 */
 - (CPToolbar)toolbar
@@ -1418,7 +1421,7 @@ CPTexturedBackgroundWindowMask
     return _toolbar;
 }
 
-/*
+/*!
     Sets the window's toolbar.
     @param aToolbar the window's new toolbar
 */
@@ -1521,7 +1524,7 @@ CPTexturedBackgroundWindowMask
     [_bridge order:CPWindowAbove window:aSheet relativeTo:self];
 }
 
-/*
+/*!
     Returns the window's attached sheet.
 */
 - (CPWindow)attachedSheet
@@ -1529,7 +1532,7 @@ CPTexturedBackgroundWindowMask
     return _attachedSheet;
 }
 
-/*
+/*!
     Returns <code>YES</code> if the window has ever run as a sheet.
 */
 - (BOOL)isSheet
@@ -1547,7 +1550,7 @@ CPTexturedBackgroundWindowMask
     return NO;
 }
 
-/*
+/*!
     Returns <code>YES</code> if the receiver is able to receive input events
     even when a modal session is active.
 */
@@ -1662,7 +1665,7 @@ CPTexturedBackgroundWindowMask
 }
 
 // Undo and Redo Support
-/*
+/*!
     Returns the window's undo manager.
 */
 - (CPUndoManager)undoManager
@@ -1676,7 +1679,7 @@ CPTexturedBackgroundWindowMask
     return _undoManager;
 }
 
-/*
+/*!
     Sends the undo manager an <code>undo</code> message.
     @param aSender the object requesting this
 */
@@ -1685,7 +1688,7 @@ CPTexturedBackgroundWindowMask
     [[self undoManager] undo];
 }
 
-/*
+/*!
     Sends the undo manager a <code>redo:</code> message.
     @param aSender the object requesting this
 */
@@ -1747,7 +1750,7 @@ var interpolate = function(fromValue, toValue, progress)
 
 @end
 
-import "CPDragServer.j"
-import "CPDOMWindowBridge.j"
-import "_CPWindowView.j"
-import "CPView.j"
+@import "CPDragServer.j"
+@import "CPDOMWindowBridge.j"
+@import "_CPWindowView.j"
+@import "CPView.j"

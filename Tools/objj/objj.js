@@ -1,44 +1,41 @@
 debug = false;
 args = arguments;
 
-// FIXME: remove Rhino/Java dependencies
-var OBJJ_LIB = Packages.java.lang.System.getenv("OBJJ_LIB");
+// FIXME: remove these Rhino/Java dependencies
+var OBJJ_LIB = Packages.java.lang.System.getenv("OBJJ_LIB"); // chicken/egg problem, getenv is defined in bridge.js
 
-if (typeof window == "undefined")
+if (!this.window)
 {
     print("Loading Objective-J bridge.");
     load(OBJJ_LIB+'/bridge.js');
 }
 
-if (typeof objj_import == "undefined")
+if (!this.objj_import)
 {
     print("Loading Objective-J.");
     load(OBJJ_LIB+'/Frameworks-Rhino/Objective-J/Objective-J.js');
 }
 
-var OBJJ_INCLUDE_PATHS_STRING = getEnv("OBJJ_INCLUDE_PATHS");
+var defaultFrameworks = OBJJ_LIB+'/Frameworks-Rhino';
+OBJJ_INCLUDE_PATHS = [defaultFrameworks];
+
+var OBJJ_INCLUDE_PATHS_STRING = getenv("OBJJ_INCLUDE_PATHS");
+
 if (OBJJ_INCLUDE_PATHS_STRING)
 {
     OBJJ_INCLUDE_PATHS = OBJJ_INCLUDE_PATHS_STRING.split(":");
-}
-else
-{
-    OBJJ_INCLUDE_PATHS = [OBJJ_LIB+'/Frameworks-Rhino'];
+    OBJJ_INCLUDE_PATHS.push(defaultFrameworks);
 }
 
-try {
+try
+{
     if (args.length > 0)
     {
-    	var mainFilename = args.shift();
+    	var mainFilePath = args.shift();
     	
-    	mainFile = new Packages.java.io.File(mainFilename);
-    	if (!mainFile.exists())
-    	{
-    	    print(mainFile.getAbsolutePath() + " not found.")
-    	    Packages.java.System.exit(1);
-    	}
-    	
-    	var mainFilePath = mainFile.getAbsolutePath();
+        // convert from relative to absolute path
+    	if (this.Packages)
+    	    mainFilePath = (new Packages.java.io.File(mainFilePath)).getAbsolutePath();
 
     	if (debug)
     		print("Loading: " + mainFilePath);
@@ -61,7 +58,9 @@ try {
     {
     	print("Error: No file provided or console  available.")
     }
-} catch (e) {
+}
+catch (e)
+{
     print("OBJJ EXCEPTION: " + e);
     print("    Name:    " + e.name);
     print("    Message: " + e.message);

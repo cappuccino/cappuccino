@@ -20,16 +20,20 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-import "CPObject.j"
-import "CPObjJRuntime.j"
+@import "CPObject.j"
+@import "CPObjJRuntime.j"
+
 
 var __placeholder = new Number(),
     _CPNumberHashes = { };
 
-/*
+/*! @class CPNumber
     This class primarily exists for source compatability. The JavaScript
     <code>Number</code> type can be changed on the fly based on context,
-    so there is no need to call any of these methods.
+    so there is no need to call any of these methods. 
+    
+    In other words, native JavaScript numbers are bridged to CPNumber,
+    so you can use them interchangeably (including operators and methods).
 */
 @implementation CPNumber : CPObject
 

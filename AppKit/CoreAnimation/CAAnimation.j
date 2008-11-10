@@ -20,10 +20,10 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-import <Foundation/CPObject.j>
-import <Foundation/CPString.j>
+@import <Foundation/CPObject.j>
+@import <Foundation/CPString.j>
 
-import "CAMediaTimingFunction.j"
+@import "CAMediaTimingFunction.j"
 
 /*
     This is an animation class.
@@ -33,7 +33,7 @@ import "CAMediaTimingFunction.j"
     BOOL    _isRemovedOnCompletion;
 }
 
-/*
+/*!
     Creates a new <objj>CAAnimation</objj> instance
     @return a new <objj>CAAnimation</objj> instance
 */
@@ -52,7 +52,7 @@ import "CAMediaTimingFunction.j"
     return self;
 }
 
-/*
+/*!
     Returns <code>YES</code>
     @return <code>YES</code>
 */
@@ -61,7 +61,7 @@ import "CAMediaTimingFunction.j"
     return YES;
 }
 
-/*
+/*!
     Returns <code>nil</code>
     @return <code>nil</code>
 */
@@ -70,7 +70,7 @@ import "CAMediaTimingFunction.j"
     return nil;
 }
 
-/*
+/*!
     Specifies whether this animation should be removed after it has completed.
     @param <code>YES</code> means the animation should be removed
 */
@@ -79,7 +79,7 @@ import "CAMediaTimingFunction.j"
     _isRemovedOnCompletion = isRemovedOnCompletion;
 }
 
-/*
+/*!
     Returns <code>YES</code> if the animation is removed after completion
 */
 - (BOOL)removedOnCompletion
@@ -87,7 +87,7 @@ import "CAMediaTimingFunction.j"
     return _isRemovedOnCompletion;
 }
 
-/*
+/*!
     Returns <code>YES</code> if the animation is removed after completion
 */
 - (BOOL)isRemovedOnCompletion
@@ -95,7 +95,7 @@ import "CAMediaTimingFunction.j"
     return _isRemovedOnCompletion;
 }
 
-/*
+/*!
     Returns the animation's timing function. If <code>nil</code>, then it has a linear pacing.
 */
 - (CAMediaTimingFunction)timingFunction
@@ -104,7 +104,7 @@ import "CAMediaTimingFunction.j"
     return nil;
 }
 
-/*
+/*!
     Sets the animation delegate
     @param aDelegate the new delegate
 */
@@ -113,7 +113,7 @@ import "CAMediaTimingFunction.j"
     _delegate = aDelegate;
 }
 
-/*
+/*!
     Returns the animation's delegate
 */
 - (id)delegate
@@ -190,7 +190,7 @@ import "CAMediaTimingFunction.j"
 
 @end
 
-/*
+/*!
     A <objj>CABasicAnimation</objj> is a simple animation that moves a
     <objj>CALayer</objj> from one point to another over a specified
     period of time.
@@ -202,7 +202,7 @@ import "CAMediaTimingFunction.j"
     id  _byValue;
 }
 
-/*
+/*!
     Sets the starting position for the animation.
     @param aValue the animation starting position
 */
@@ -211,7 +211,7 @@ import "CAMediaTimingFunction.j"
     _fromValue = aValue;
 }
 
-/*
+/*!
     Returns the animation's starting position.
 */
 - (id)fromValue
@@ -219,7 +219,7 @@ import "CAMediaTimingFunction.j"
     return _fromValue;
 }
 
-/*
+/*!
     Sets the ending position for the animation.
     @param aValue the animation ending position
 */
@@ -228,7 +228,7 @@ import "CAMediaTimingFunction.j"
     _toValue = aValue;
 }
 
-/*
+/*!
     Returns the animation's ending position.
 */
 - (id)toValue
@@ -236,7 +236,7 @@ import "CAMediaTimingFunction.j"
     return _toValue;
 }
 
-/*
+/*!
     Sets the optional byValue for animation interpolation.
     @param aValue the byValue
 */
@@ -245,7 +245,7 @@ import "CAMediaTimingFunction.j"
     _byValue = aValue;
 }
 
-/*
+/*!
     Returns the animation's byValue.
 */
 - (id)byValue

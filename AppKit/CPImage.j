@@ -20,13 +20,13 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
  
-import <Foundation/CPBundle.j>
-import <Foundation/CPNotificationCenter.j>
-import <Foundation/CPObject.j>
-import <Foundation/CPRunLoop.j>
-import <Foundation/CPString.j>
+@import <Foundation/CPBundle.j>
+@import <Foundation/CPNotificationCenter.j>
+@import <Foundation/CPObject.j>
+@import <Foundation/CPRunLoop.j>
+@import <Foundation/CPString.j>
 
-import "CPGeometry.j"
+@import "CPGeometry.j"
 
 CPImageLoadStatusInitialized    = 0;
 CPImageLoadStatusLoading        = 1;
@@ -42,15 +42,18 @@ CPImageDidLoadNotification      = @"CPImageDidLoadNotification";
 
 - (CPString)pathForResource:(CPString)aFilename
 {
-    return [self bundlePath] + "Resources/" + aFilename;
+    return [self resourcePath] + '/' + aFilename;
 }
 
 @end
 
-/*
+/*! @class CPImage
+
     <objj>CPImage</objj> is used to represent images in the Cappuccino framework. It supports loading
     all image types supported by the browser.
 
+    @par Delegate Methods
+    
     @delegate -(void)imageDidLoad:(CPImage)image;
     Called when the specified image has finished loading.
     @param image the image that loaded
@@ -74,7 +77,7 @@ CPImageDidLoadNotification      = @"CPImageDidLoadNotification";
     Image       _image;
 }
 
-/*
+/*!
     Initializes the image, by associating it with a filename. The image
     denoted in <code>aFilename</code> is not actually loaded. It will
     be loaded once needed.
@@ -96,7 +99,7 @@ CPImageDidLoadNotification      = @"CPImageDidLoadNotification";
     return self;
 }
 
-/*
+/*!
     Initializes the image. Loads the specified image into memory.
     @param aFilename the image to load
     @param aSize the size of the image
@@ -112,7 +115,7 @@ CPImageDidLoadNotification      = @"CPImageDidLoadNotification";
     return self;
 }
 
-/*
+/*!
     Initializes the receiver with the contents of the specified
     image file. The method loads the data into memory.
     @param aFilename the file name of the image
@@ -128,7 +131,7 @@ CPImageDidLoadNotification      = @"CPImageDidLoadNotification";
     return self;
 }
 
-/*
+/*!
     Returns the path of the file associated with this image.
 */
 - (CPString)filename
@@ -136,7 +139,7 @@ CPImageDidLoadNotification      = @"CPImageDidLoadNotification";
     return _filename;
 }
 
-/*
+/*!
     Sets the size of the image.
     @param the size of the image
 */
@@ -145,7 +148,7 @@ CPImageDidLoadNotification      = @"CPImageDidLoadNotification";
     _size = CGSizeMakeCopy(aSize);
 }
 
-/*
+/*!
     Returns the size of the image
 */
 - (CGSize)size
@@ -153,7 +156,7 @@ CPImageDidLoadNotification      = @"CPImageDidLoadNotification";
     return _size;
 }
 
-/*
+/*!
     Sets the receiver's delegate.
     @param the delegate
 */
@@ -162,7 +165,7 @@ CPImageDidLoadNotification      = @"CPImageDidLoadNotification";
     _delegate = aDelegate;
 }
 
-/*
+/*!
     Returns the receiver's delegate
 */
 - (id)delegate
@@ -170,7 +173,7 @@ CPImageDidLoadNotification      = @"CPImageDidLoadNotification";
     return _delegate;
 }
 
-/*
+/*!
     Returns <code>YES</code> if the image data has already been loaded.
 */
 - (BOOL)loadStatus
@@ -178,7 +181,7 @@ CPImageDidLoadNotification      = @"CPImageDidLoadNotification";
     return _loadStatus;
 }
 
-/*
+/*!
     Loads the image data from the file into memory. You
     should not call this method directly. Instead use
     one of the initializers.
@@ -259,7 +262,7 @@ CPImageDidLoadNotification      = @"CPImageDidLoadNotification";
 
 @implementation CPImage (CPCoding)
 
-/*
+/*!
     Initializes the image with data from a coder.
     @param aCoder the coder from which to read the image data
     @return the initialized image
@@ -269,7 +272,7 @@ CPImageDidLoadNotification      = @"CPImageDidLoadNotification";
     return [self initWithContentsOfFile:[aCoder decodeObjectForKey:@"CPFilename"] size:[aCoder decodeSizeForKey:@"CPSize"]];
 }
 
-/*
+/*!
     Writes the image data from memory into the coder.
     @param aCoder the coder to which the data will be written
 */

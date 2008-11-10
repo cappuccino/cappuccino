@@ -25,7 +25,7 @@ done
 mkdir -p $INSTALL_DIR/bin
 mkdir -p $INSTALL_DIR/share
 
-cp -fR objj/ $INSTALL_DIR/share/objj
+cp -fR objj/ $INSTALL_DIR/share/
 
 ln -sf $INSTALL_DIR/share/objj/bin/nib2cib $INSTALL_DIR/bin/nib2cib
 ln -sf $INSTALL_DIR/share/objj/bin/objj $INSTALL_DIR/bin/objj
@@ -33,6 +33,7 @@ ln -sf $INSTALL_DIR/share/objj/bin/objjc $INSTALL_DIR/bin/objjc
 ln -sf $INSTALL_DIR/share/objj/bin/steam $INSTALL_DIR/bin/steam
 ln -sf $INSTALL_DIR/share/objj/bin/bake $INSTALL_DIR/bin/bake
 ln -sf $INSTALL_DIR/share/objj/bin/press $INSTALL_DIR/bin/press
+ln -sf $INSTALL_DIR/share/objj/bin/cplutil $INSTALL_DIR/bin/cplutil
 
 chmod +x $INSTALL_DIR/bin/nib2cib
 chmod +x $INSTALL_DIR/bin/objj

@@ -20,12 +20,12 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-import <Foundation/CPArray.j>
-import <Foundation/CPObject.j>
-import <Foundation/CPString.j>
+@import <Foundation/CPArray.j>
+@import <Foundation/CPObject.j>
+@import <Foundation/CPString.j>
 
-import "CPCib.j"
-import "_CPCibConnector.j"
+@import "CPCib.j"
+@import "_CPCibConnector.j"
 
 
 @implementation _CPCibObjectData : CPObject

@@ -20,10 +20,11 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-import "CPObject.j"
+@import "CPObject.j"
 
-/*
-    A helper object for <objj>CPURLConnection</objj>, that contains
+
+/*! @class CPURLRequest
+    A helper object for CPURLConnection, that contains
     data obtained during the life of a request.
 */
 @implementation CPURLRequest : CPObject
@@ -36,20 +37,20 @@ import "CPObject.j"
     CPDictionary    _HTTPHeaderFields;
 }
 
-/*
+/*!
     Creates a request with a specified URL.
     @param aURL the URL of the request
-    @return a <objj>CPURLRequest</objj>
+    @return a CPURLRequest
 */
 + (id)requestWithURL:(CPURL)aURL
 {
     return [[CPURLRequest alloc] initWithURL:aURL];
 }
 
-/*
+/*!
     Initializes the request with a URL.
     @param aURL the url to set
-    @return the initialized <objj>CPURLRequest</objj>
+    @return the initialized CPURLRequest
 */
 - (id)initWithURL:(CPURL)aURL
 {
@@ -69,7 +70,7 @@ import "CPObject.j"
     return self;
 }
 
-/*
+/*!
     Returns the request URL
 */
 - (CPURL)URL
@@ -77,7 +78,7 @@ import "CPObject.j"
     return _URL;
 }
 
-/*
+/*!
     Sets the URL for this request.
     @param aURL the new URL
 */
@@ -86,7 +87,7 @@ import "CPObject.j"
     _URL = aURL;
 }
 
-/*
+/*!
     Sets the HTTP body for this request
     @param anHTTPBody the new HTTP body
 */
@@ -95,7 +96,7 @@ import "CPObject.j"
     _HTTPBody = anHTTPBody;
 }
 
-/*
+/*!
     Returns the request's http body.
 */
 - (CPString)HTTPBody
@@ -103,7 +104,7 @@ import "CPObject.j"
     return _HTTPBody;
 }
 
-/*
+/*!
     Sets the request's http method.
     @param anHTPPMethod the new http method
 */
@@ -112,7 +113,7 @@ import "CPObject.j"
     _HTTPMethod = anHTTPMethod;
 }
 
-/*
+/*!
     Returns the request's http method
 */
 - (CPString)HTTPMethod
@@ -120,7 +121,7 @@ import "CPObject.j"
     return _HTTPMethod;
 }
 
-/*
+/*!
     Returns a dictionar of the http header fields
 */
 - (CPDictionary)allHTTPHeaderFields
@@ -128,7 +129,7 @@ import "CPObject.j"
     return _HTTPHeaderFields;
 }
 
-/*
+/*!
     Returns the value for the specified header field.
     @param aField the header field to obtain a value for
 */
@@ -137,7 +138,7 @@ import "CPObject.j"
     return [_HTTPHeaderFields objectForKey:aField];
 }
 
-/*
+/*!
     Sets the value for the specified header field.
     @param aValue the value for the header field
     @param aField the header field

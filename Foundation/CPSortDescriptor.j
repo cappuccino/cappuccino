@@ -20,30 +20,31 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-import "CPObject.j"
-import "CPObjJRuntime.j"
+@import "CPObject.j"
+@import "CPObjJRuntime.j"
 
-/*
+
+/*!
     The left operand is smaller than the right.
     @global
     @group CPComparisonResult
 */
 CPOrderedAscending      = -1;
-/*
+/*!
     The left and right operands are equal.
     @global
     @group CPComparisonResult
 */
 CPOrderedSame           =  0;
-/*
+/*!
     The left operand is greater than the right.
     @global
     @group CPComparisonResult
 */
 CPOrderedDescending     =  1;
 
-/*
-    A <objj>CPSortDescriptor</objj> holds the attributes necessary to describe how
+/*! @class CPSortDescriptor
+    A CPSortDescriptor holds the attributes necessary to describe how
     to sort a set of objects. The sort descriptor instance holds a property key path
     to the sort item of the objects to compare, the method selector to call for sorting and the sort order.
 */
@@ -55,7 +56,7 @@ CPOrderedDescending     =  1;
 }
 
 // Initializing a sort descriptor
-/*
+/*!
     Initializes the sort descriptor.
     @param aKey the property key path to sort
     @param isAscending the sort order
@@ -66,12 +67,12 @@ CPOrderedDescending     =  1;
     return [self initWithKey:aKey ascending:isAscending selector:@selector(compare:)];
 }
 
-/*
+/*!
     Initializes the sort descriptor
     @param aKey the property key path to sort
     @param isAscending the sort order
     @param aSelector this method gets called to compare objects. The method will take one argument 
-    (the object to compare against itself, and must return a <objj>CPComparisonResult</objj>.
+    (the object to compare against itself, and must return a CPComparisonResult.
 */
 - (id)initWithKey:(CPString)aKey ascending:(BOOL)isAscending selector:(SEL)aSelector
 {
@@ -88,7 +89,7 @@ CPOrderedDescending     =  1;
 }
 
 // Getting information about a sort descriptor
-/*
+/*!
     Returns <code>YES</code> if the sort descriptor's order is ascending.
 */
 - (BOOL)ascending
@@ -96,7 +97,7 @@ CPOrderedDescending     =  1;
     return _ascending;
 }
 
-/*
+/*!
     Returns the descriptor's property key
 */
 - (CPString)key
@@ -104,7 +105,7 @@ CPOrderedDescending     =  1;
     return _key;
 }
 
-/*
+/*!
     Returns the selector of the method to call when comparing objects.
 */
 - (SEL)selector
@@ -113,7 +114,7 @@ CPOrderedDescending     =  1;
 }
 
 // Using sort descriptors
-/*
+/*!
     Compares two objects.
     @param lhsObject the left hand side object to compre
     @param rhsObject the right hand side object to compare
@@ -124,7 +125,7 @@ CPOrderedDescending     =  1;
     return (_ascending ? 1 : -1) * [[lhsObject valueForKey:_key] performSelector:_selector withObject:[rhsObject valueForKey:_key]];
 }
 
-/*
+/*!
     Makes a copy of this sort descriptor with a reversed sort order.
     @return the reversed copy of the sort descriptor
 */

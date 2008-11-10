@@ -20,9 +20,10 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-import <Foundation/CPObject.j>
+@import <Foundation/CPObject.j>
 
 #include "CoreGraphics/CGGeometry.h"
+
 
 /*
     @global
@@ -178,7 +179,7 @@ CPDOMEventScrollWheel                   = "mousewheel";
 var _CPEventPeriodicEventPeriod         = 0,
     _CPEventPeriodicEventTimer          = nil;
 
-/*
+/*! @class CPEvent
     <objj>CPEvent</objj> encapsulates the details of a Cappuccino keyboard or mouse event.
 */
 @implementation CPEvent : CPObject
@@ -203,7 +204,7 @@ var _CPEventPeriodicEventPeriod         = 0,
     float               _deltaZ;
 }
 
-/*
+/*!
     Creates a new keyboard event.
     @param anEventType the event type. Must be one of <objj>CPKeyDown</objj>, <objj>CPKeyUp</objj> or <objj>CPFlagsChanged</objj>
     @param aPoint the location of the cursor in the window specified by <code>aWindowNumber</code>
@@ -228,7 +229,7 @@ var _CPEventPeriodicEventPeriod         = 0,
         characters:characters charactersIgnoringModifiers:unmodCharacters isARepeat:repeatKey keyCode:code];
 }
 
-/*
+/*!
     Creates a new mouse event
     @param anEventType the event type
     @param aPoint the location of the cursor in the window specified by <code>aWindowNumber</code>
@@ -250,7 +251,7 @@ var _CPEventPeriodicEventPeriod         = 0,
         timestamp:aTimestamp windowNumber:aWindowNumber context:aGraphicsContext eventNumber:anEventNumber clickCount:aClickCount pressure:aPressure];
 }
 
-/*
+/*!
     Creates a new custom event
     @param anEventType the event type. Must be one of <objj>CPAppKitDefined</objj>, <objj>CPSystemDefined</objj>, <objj>CPApplicationDefined</objj> or <objj>CPPeriodic</objj>
     @param aLocation the location of the cursor in the window specified by <code>aWindowNumber</code>
@@ -341,7 +342,7 @@ var _CPEventPeriodicEventPeriod         = 0,
     return self;
 }
 
-/*
+/*!
     Returns the location of the mouse (for mouse events).
     If this is not a mouse event, it returns <code>nil</code>.
     If <code>window</code> returns <code>nil</code>, then
@@ -354,7 +355,7 @@ var _CPEventPeriodicEventPeriod         = 0,
     return _location;
 }
 
-/*
+/*!
     Returns event information as a bit mask
 */
 - (unsigned)modifierFlags
@@ -362,7 +363,7 @@ var _CPEventPeriodicEventPeriod         = 0,
     return _modifierFlags;
 }
 
-/*
+/*!
     Returns the time the event occurred
 */
 - (CPTimeInterval)timestamp
@@ -370,7 +371,7 @@ var _CPEventPeriodicEventPeriod         = 0,
     return _timestamp;
 }
 
-/*
+/*!
     Returns the type of event.
 */
 - (CPEventType)type
@@ -378,7 +379,7 @@ var _CPEventPeriodicEventPeriod         = 0,
     return _type;
 }
 
-/*
+/*!
     Returns the event's associated window
 */
 - (CPWindow)window
@@ -386,7 +387,7 @@ var _CPEventPeriodicEventPeriod         = 0,
     return _window;
 }
 
-/*
+/*!
     The number of the window associated with the event.
 */
 - (int)windowNumber
@@ -395,7 +396,7 @@ var _CPEventPeriodicEventPeriod         = 0,
 }
 
 // Mouse Event Information
-/*
+/*!
     Returns the button number for the mouse that generated the event.
 */
 - (int)buttonNumber
@@ -403,7 +404,7 @@ var _CPEventPeriodicEventPeriod         = 0,
     return _buttonNumber;
 }
 
-/*
+/*!
     Returns the number of clicks that caused this event. (mouse only)
 */
 - (int)clickCount
@@ -411,7 +412,7 @@ var _CPEventPeriodicEventPeriod         = 0,
     return _clickCount;
 }
 
-/*
+/*!
     Returns the characters associated with this event (keyboard only)
     @throws CPInternalInconsistencyException if this method is called on a non-key event
 */
@@ -420,7 +421,7 @@ var _CPEventPeriodicEventPeriod         = 0,
     return _characters;
 }
 
-/*
+/*!
     Returns the character ignoring any modifiers (except shift).
     @throws CPInternalInconsistencyException if this method is called on a non-key event
 */
@@ -429,7 +430,7 @@ var _CPEventPeriodicEventPeriod         = 0,
     return _charactersIgnoringModifiers;
 }
 
-/*
+/*!
     Returns <code>YES</code> if the keyboard event was caused by the key being held down.
     @throws CPInternalInconsistencyException if this method is called on a non-key event
 */
@@ -438,7 +439,7 @@ var _CPEventPeriodicEventPeriod         = 0,
     return _isARepeat;
 }
 
-/*
+/*!
     Returns the key's key code.
     @throws CPInternalInconsistencyException if this method is called on a non-key event
 */
@@ -461,7 +462,7 @@ var _CPEventPeriodicEventPeriod         = 0,
 }
 
 // Getting Scroll Wheel Event Infomration
-/*
+/*!
     Returns the change in the x-axis for a mouse event.
 */
 - (float)deltaX
@@ -469,7 +470,7 @@ var _CPEventPeriodicEventPeriod         = 0,
     return _deltaX;
 }
 
-/*
+/*!
     Returns the change in the y-axis for a mouse event.
 */
 - (float)deltaY
@@ -477,7 +478,7 @@ var _CPEventPeriodicEventPeriod         = 0,
     return _deltaY;
 }
 
-/*
+/*!
     Returns the change in the x-axis for a mouse event.
 */
 - (float)deltaZ
@@ -485,7 +486,7 @@ var _CPEventPeriodicEventPeriod         = 0,
     return _deltaZ;
 }
 
-/*
+/*!
     Generates periodic events every <code>aPeriod</code> seconds.
     @param aDelay the number of seconds before the first event
     @param aPeriod the length of time in seconds between successive events
@@ -498,7 +499,7 @@ var _CPEventPeriodicEventPeriod         = 0,
     _CPEventPeriodicEventTimer = window.setTimeout(function() { _CPEventPeriodicEventTimer = window.setInterval(_CPEventFirePeriodEvent, aPeriod * 1000.0); }, aDelay * 1000.0);
 }
 
-/*
+/*!
     Stops the periodic events from being generated
 */
 + (void)stopPeriodicEvents

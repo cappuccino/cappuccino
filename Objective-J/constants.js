@@ -99,3 +99,15 @@ function objj_printf(string)
 {
     objj_fprintf(alert, string);
 }
+
+#if COMPILER
+importPackage(java.lang);
+
+warning_stream = function (aString) { System.out.println(aString) };
+
+#else
+if (window.console && window.console.warn)
+    warning_stream = function(aString) { window.console.warn(aString); }
+else
+    warning_stream = function(){};
+#endif

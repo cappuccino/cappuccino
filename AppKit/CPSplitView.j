@@ -20,8 +20,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-import "CPImage.j"
-import "CPView.j"
+@import "CPImage.j"
+@import "CPView.j"
 
 #include "CoreGraphics/CGGeometry.h"
 #include "Platform/Platform.h"

@@ -20,10 +20,11 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-import "CGGeometry.j"
-import "CPCompatibility.j"
+@import "CGGeometry.j"
+@import "CPCompatibility.j"
 
 #define PIXEL(pixels) pixels + "px";
+
 
 function CABackingStoreGetContext(aBackingStore)
 {

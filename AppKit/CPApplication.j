@@ -20,13 +20,14 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-import <Foundation/CPBundle.j>
+@import <Foundation/CPBundle.j>
 
-import "CPCompatibility.j"
-import "CPEvent.j"
-import "CPMenu.j"
-import "CPResponder.j"
-import "CPDocumentController.j"
+@import "CPCompatibility.j"
+@import "CPEvent.j"
+@import "CPMenu.j"
+@import "CPResponder.j"
+@import "CPDocumentController.j"
+
 
 CPApp = nil;
 
@@ -37,7 +38,8 @@ CPRunStoppedResponse    = -1000;
 CPRunAbortedResponse    = -1001;
 CPRunContinuesResponse  = -1002;
 
-/*
+/*! @class CPApplication
+
     CPApplication is THE way to start up the Cappucino framework for your application to use.
     Every GUI application has exactly one instance of CPApplication (or of a custom subclass of
     CPApplication). Your program's main() function can create that instance by calling the
@@ -81,7 +83,7 @@ CPRunContinuesResponse  = -1002;
     CPArray                 _args;
 }
 
-/*
+/*!
     Returns the singleton instance of the running application. If it
     doesn't exist, it will be created, and then returned.
     @return the application singleton
@@ -94,7 +96,7 @@ CPRunContinuesResponse  = -1002;
     return CPApp;
 }
 
-/*
+/*!
     Initializes the Document based application with basic menu functions.
     Functions are <code>New, Open, Undo, Redo, Save, Cut, Copy, Paste</code>.
     @return the initialized application
@@ -174,7 +176,7 @@ CPRunContinuesResponse  = -1002;
 
 // Configuring Applications
 
-/*
+/*!
     Sets the delegate for this application. The delegate will receive various notifications
     caused by user interactions during the application's run. The delegate can choose to
     react to these events.
@@ -217,7 +219,7 @@ CPRunContinuesResponse  = -1002;
                  object:self];
 }
 
-/*
+/*!
     Returns the application's delegate. The app can only have one delegate at a time.
 */
 - (id)delegate
@@ -225,7 +227,7 @@ CPRunContinuesResponse  = -1002;
     return _delegate;
 }
 
-/*
+/*!
     This method is called by <code>run</code> before the event loop begins.
     When it successfully completes, it posts the notification
     <objj>CPApplicationDidFinishLaunchingNotification</objj>. If you override
@@ -268,7 +270,7 @@ CPRunContinuesResponse  = -1002;
     [[CPRunLoop currentRunLoop] performSelectors];
 }
 
-/*
+/*!
     Calls <code>finishLaunching</code> method which results in starting
     the main event loop.
 */
@@ -278,7 +280,7 @@ CPRunContinuesResponse  = -1002;
 }
 
 // Managing the Event Loop
-/*
+/*!
     Starts a modal event loop for <code>aWindow</code>
     @param aWindow the window to start the event loop for
 */
@@ -287,7 +289,7 @@ CPRunContinuesResponse  = -1002;
     [self runModalSession:[self beginModalSessionForWindow:aWindow]];
 }
 
-/*
+/*!
     Stops the event loop started by <code>runModalForWindow:</code> and
     sets the code that <code>runModalForWindow:</code> will return.
     @param aCode the return code for the modal event
@@ -321,7 +323,7 @@ CPRunContinuesResponse  = -1002;
         }
 }
 
-/*
+/*!
     Stops the modal event loop
 */
 - (void)stopModal
@@ -329,7 +331,7 @@ CPRunContinuesResponse  = -1002;
     [self stopModalWithCode:CPRunStoppedResponse]
 }
 
-/*
+/*!
     Aborts the event loop started by <code>runModalForWindow:</code>
 */
 - (void)abortModal
@@ -337,7 +339,7 @@ CPRunContinuesResponse  = -1002;
     [self stopModalWithCode:CPRunAbortedResponse];
 }
 
-/*
+/*!
     Sets up a modal session with <code>theWindow</code>.
     @param aWindow the window to set up the modal session for
 */
@@ -346,7 +348,7 @@ CPRunContinuesResponse  = -1002;
     return _CPModalSessionMake(aWindow, 0);
 }
 
-/*
+/*!
     Runs a modal session
     @param CPModalSession the session to run
 */
@@ -365,7 +367,7 @@ CPRunContinuesResponse  = -1002;
     [CPApp setCallback:_CPRunModalLoop forNextEventMatchingMask:CPAnyEventMask untilDate:nil inMode:0 dequeue:NO];
 }
 
-/*
+/*!
     Returns the window for the current modal session. If there is no
     modal session, it returns <code>nil</code>.
 */
@@ -386,7 +388,7 @@ CPRunContinuesResponse  = -1002;
     return NO;
 }
 
-/*
+/*!
     Dispatches events to other objects.
     @param anEvent the event to dispatch
 */
@@ -418,7 +420,7 @@ CPRunContinuesResponse  = -1002;
         [super doCommandBySelector:aSelector];
 }
 
-/*
+/*!
     Returns the key window.
 */
 - (CPWindow)keyWindow
@@ -426,7 +428,7 @@ CPRunContinuesResponse  = -1002;
     return _keyWindow;
 }
 
-/*
+/*!
     Returns the main window.
 */
 - (CPWindow)mainWindow
@@ -434,7 +436,7 @@ CPRunContinuesResponse  = -1002;
     return _mainWindow;
 }
 
-/*
+/*!
     Returns the <objj>CPWindow</objj> object corresponding to <code>aWindowNumber</code>.
 */
 - (CPWindow)windowWithWindowNumber:(int)aWindowNumber
@@ -442,7 +444,7 @@ CPRunContinuesResponse  = -1002;
     return _windows[aWindowNumber];
 }
 
-/*
+/*!
     Returns an array of the application's <objj>CPWindow</objj>s
 */
 - (CPArray)windows
@@ -451,7 +453,7 @@ CPRunContinuesResponse  = -1002;
 }
 
 // Accessing the Main Menu
-/*
+/*!
     Returns the application's main menu
 */
 - (CPMenu)mainMenu
@@ -459,7 +461,7 @@ CPRunContinuesResponse  = -1002;
     return _mainMenu;
 }
 
-/*
+/*!
     Sets the main menu for the application
     @param aMenu the menu to set for the application
 */
@@ -469,7 +471,7 @@ CPRunContinuesResponse  = -1002;
 }
 
 // Posting Actions
-/*
+/*!
     Tries to perform the action with an argument. Performs
     the action on itself (if it responds to it), then
     tries to perform the action on the delegate.
@@ -496,7 +498,7 @@ CPRunContinuesResponse  = -1002;
     return NO;
 }
 
-/*
+/*!
     Sends an action to a target.
     @param anAction the action to send
     @param aTarget the target for the action
@@ -515,7 +517,7 @@ CPRunContinuesResponse  = -1002;
     return YES;
 }
 
-/*
+/*!
     Finds a target for the specified action. If the
     action is <code>nil</code>, returns <code>nil</code>.
     If the target is not <code>nil</code>, <code>aTarget</code> is
@@ -537,7 +539,7 @@ CPRunContinuesResponse  = -1002;
     return [self targetForAction:anAction];
 }
 
-/*
+/*!
     Finds an action-target for a specified window.
     It finds a matching target in the following order:
     <ol>
@@ -591,7 +593,7 @@ CPRunContinuesResponse  = -1002;
     return nil;
 }
 
-/*
+/*!
     Looks for a target that can handle the specified action.
     Checks for a target in the following order:
     <ol>
@@ -646,7 +648,7 @@ CPRunContinuesResponse  = -1002;
 
 // Managing Sheets
 
-/*
+/*!
     Displays a window as a sheet.
     @param aSheet the window to display as a sheet
     @param aWindow the window that will hold the sheet as a child
@@ -698,7 +700,7 @@ var _CPRunModalLoop = function(anEvent)
         [CPApp _removeRunModalLoop];
 }
 
-/*
+/*!
     Starts the GUI and Cappuccino frameworks. This function should be
     called from the <code>main()</code> function of your program.
     @class CPApplication

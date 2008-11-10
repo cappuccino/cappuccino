@@ -20,8 +20,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-import "CPNull.j"
-import "CPCoder.j"
+@import "CPNull.j"
+@import "CPCoder.j"
 
 
 var _CPKeyedUnarchiverCannotDecodeObjectOfClassNameOriginalClassesSelector  = 1,
@@ -49,9 +49,9 @@ var _CPKeyedUnarchiverArrayClass                                            = Ni
     _CPKeyedUnarchiverArchiverValueClass                                    = Nil;
 
 /*
-    <objj>CPKeyedUnarchiver</objj> is used for creating objects out of
-    coded files or <objj>CPData</objj> objects that were created by
-    <objj>CPKeyedArchiver</objj>. More specifically, this class unarchives
+    CPKeyedUnarchiver is used for creating objects out of
+    coded files or CPData objects that were created by
+    CPKeyedArchiver. More specifically, this class unarchives
     objects from a data stream or file and brings them back into
     memory for programmatic usage.
 
@@ -66,7 +66,7 @@ var _CPKeyedUnarchiverArrayClass                                            = Ni
     @param an array of class names describing the encoded object's
     class hierarchy. The first index is the encoded class name, and
     each superclass is after that.
-    @return the <objj>Class</objj> to use instead or <code>nil</code>
+    @return the Class to use instead or <code>nil</code>
     to abort the unarchiving operation
 
     @delegate -(id)unarchiver:(CPKeyedUnarchiver)unarchiver didDecodeObject:(id)object;
@@ -261,7 +261,7 @@ var _CPKeyedUnarchiverArrayClass                                            = Ni
 }
 
 /*
-    Decodes a <objj>CGPoint</objj> from the archive.
+    Decodes a CGPoint from the archive.
     @param aKey the point's associated key
     @return the decoded point
 */
@@ -276,7 +276,7 @@ var _CPKeyedUnarchiverArrayClass                                            = Ni
 }
 
 /*
-    Decodes a <objj>CGRect</objj> from the archive.
+    Decodes a CGRect from the archive.
     @param aKey the rectangle's associated key
     @return the decoded rectangle
 */
@@ -291,7 +291,7 @@ var _CPKeyedUnarchiverArrayClass                                            = Ni
 }
 
 /*
-    Decodes a <objj>CGSize</objj> from the archive.
+    Decodes a CGSize from the archive.
     @param aKey the size's associated key
     @return the decoded size
 */

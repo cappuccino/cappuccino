@@ -2,7 +2,7 @@
  * CPKeyValueCoding.j
  * Foundation
  *
- * Created by Francisco Tolmasky.
+ * Created by Ross Boucher.
  * Copyright 2008, 280 North, Inc.
  *
  * This library is free software; you can redistribute it and/or
@@ -20,10 +20,11 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-import "CPArray.j"
-import "CPDictionary.j"
-import "CPException.j"
-import "CPObject.j"
+@import "CPArray.j"
+@import "CPDictionary.j"
+@import "CPException.j"
+@import "CPObject.j"
+
 
 @implementation CPObject (KeyValueObserving)
 
