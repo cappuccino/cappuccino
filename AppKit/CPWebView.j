@@ -71,44 +71,90 @@ CPWebViewProgressFinishedNotification           = "CPWebViewProgressFinishedNoti
         _mainFrameURL = nil;
         _backwardStack = [];
         _forwardStack = [];
-        _ignoreLoadEvent = NO;
-        
-        _iframe = document.createElement("iframe");
-        _iframe.name = "iframe_" + Math.floor(Math.random()*10000);
-        _iframe.style.width = "100%";
-        _iframe.style.height = "100%";
-        _iframe.style.borderWidth = "0px";
-        
-        var loadCallback = function() {
-		    // HACK: this block handles the case where we don't know about loads initiated by the user clicking a link
-		    if (!_ignoreLoadEvent)
-		    {
-		        // post the start load notification
-		        [self _startedLoading];
-		        
-		        if (_mainFrameURL)
-		            [_backwardStack addObject:_mainFrameURL];
-		            
-		        // FIXME: this doesn't actually get the right URL for different domains. Probably not be possible due to browser security restrictions.
-                _mainFrameURL = _iframe.src;
-                
-    	        [_forwardStack removeAllObjects];
-		    }
-		    _ignoreLoadEvent = NO;
-		    
-            [self _finishedLoading]
-		}
-		
-		if (_iframe.addEventListener)
-		    _iframe.addEventListener("load", loadCallback, false);
-		else if (_iframe.attachEvent)
-    		_iframe.attachEvent("onload", loadCallback);
-		    
-        _DOMElement.appendChild(_iframe);
+        [self _initDOMWithFrame:aFrame];
     }
     
     return self;
 }
+
+- (id)_initDOMWithFrame:(CPRect)aFrame
+{
+    _ignoreLoadEvent = NO;
+    
+    _iframe = document.createElement("iframe");
+    _iframe.name = "iframe_" + Math.floor(Math.random()*10000);
+    _iframe.style.width = "100%";
+    _iframe.style.height = "100%";
+    _iframe.style.borderWidth = "0px";
+    [self setDrawsBackground:YES];
+    
+    var loadCallback = function() {
+	    // HACK: this block handles the case where we don't know about loads initiated by the user clicking a link
+	    if (!_ignoreLoadEvent)
+	    {
+	        // post the start load notification
+	        [self _startedLoading];
+	        
+	        if (_mainFrameURL)
+	            [_backwardStack addObject:_mainFrameURL];
+	            
+	        // FIXME: this doesn't actually get the right URL for different domains. Probably not be possible due to browser security restrictions.
+            _mainFrameURL = _iframe.src;
+            
+	        [_forwardStack removeAllObjects];
+	    }
+	    _ignoreLoadEvent = NO;
+	    
+        [self _finishedLoading]
+	}
+	
+	if (_iframe.addEventListener)
+	    _iframe.addEventListener("load", loadCallback, false);
+	else if (_iframe.attachEvent)
+		_iframe.attachEvent("onload", loadCallback);
+	    
+    _DOMElement.appendChild(_iframe);
+}
+
+// IBActions
+
+- (IBAction)takeStringURLFrom:(id)sender
+{
+    [self setMainFrameURL:[sender stringValue]];
+}
+
+- (IBAction)goBack:(id)sender
+{
+    [self goBack];
+}
+
+- (IBAction)goForward:(id)sender
+{
+    [self goForward];
+}
+
+- (IBAction)stopLoading:(id)sender
+{
+    // FIXME: what to do?
+}
+
+- (IBAction)reload:(id)sender
+{
+    [self _loadMainFrameURL];
+}
+
+- (IBAction)print:(id)sender
+{
+    try
+    {
+        [self window].print();
+    }
+    catch (e)
+    {
+        alert('Please click the webpage and select "Print" from the "File" menu');
+    }
+}
+
 
 - (BOOL)drawsBackground
 {
@@ -118,11 +164,6 @@ CPWebViewProgressFinishedNotification           = "CPWebViewProgressFinishedNoti
 - (void)setDrawsBackground:(BOOL)drawsBackround
 {
     _iframe.style.backgroundColor = drawsBackround ? "white" : "";
-}
-
-- (CPString)mainFrameURL
-{
-    return _mainFrameURL;
 }
 
 - (void)_loadMainFrameURL
@@ -149,19 +190,19 @@ CPWebViewProgressFinishedNotification           = "CPWebViewProgressFinishedNoti
         [_frameLoadDelegate webView:self didFinishLoadForFrame:nil]; // FIXME: give this a frame somehow?
 }
 
+- (CPString)mainFrameURL
+{
+    return _mainFrameURL;
+}
+
 - (void)setMainFrameURL:(CPString)URLString
 {    
     if (_mainFrameURL)
         [_backwardStack addObject:_mainFrameURL];
     _mainFrameURL = URLString;
     [_forwardStack removeAllObjects];
-    
-    [self _loadMainFrameURL];
-}
 
-- (IBAction)takeStringURLFrom:(id)sender
-{
-    [self setMainFrameURL:[sender stringValue]];
+    [self _loadMainFrameURL];
 }
 
 - (BOOL)goBack
@@ -194,16 +235,6 @@ CPWebViewProgressFinishedNotification           = "CPWebViewProgressFinishedNoti
         return YES;
     }
     return NO;
-}
-
-- (IBAction)goBack:(id)sender
-{
-    [self goBack];
-}
-
-- (IBAction)goForward:(id)sender
-{
-    [self goForward];
 }
 
 - (BOOL)canGoBack
@@ -374,6 +405,42 @@ CPWebViewProgressFinishedNotification           = "CPWebViewProgressFinishedNoti
 - (Window)window
 {
     return _window;
+}
+
+@end
+
+
+@implementation CPWebView (CPCoding)
+
+/*!
+    Initializes the web view from the data in a coder.
+    @param aCoder the coder from which to read the data
+    @return the initialized web view
+*/
+- (id)initWithCoder:(CPCoder)aCoder
+{
+    self = [super initWithCoder:aCoder];
+    
+    if (self)
+    {
+        // FIXME: encode/decode these?
+        _mainFrameURL = nil;
+        _backwardStack = [];
+        _forwardStack = [];
+        
+        [self _initDOMWithFrame:[self frame]];
+    }
+    
+    return self;
+}
+
+/*!
+    Writes out the web view's instance information to a coder.
+    @param aCoder the coder to which to write the data
+*/
+- (void)encodeWithCoder:(CPCoder)aCoder
+{
+    [super encodeWithCoder:aCoder];
 }
 
 @end

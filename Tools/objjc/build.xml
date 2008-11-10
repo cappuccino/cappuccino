@@ -51,6 +51,8 @@
         
         <copy file = "${Build.objjc}/objjc.class" tofile = "${Build.Cappuccino.Tools.Lib}/objjc.class" />
         
+        <copy file = "shrinksafe.jar" tofile = "${Build.Cappuccino.Tools.Lib}/shrinksafe.jar" />        
+        
     </target>
 
 </project>

@@ -34,12 +34,17 @@
     
     if (self)
     {
+        [self sendActionOn:CPLeftMouseUpMask];
+        
         var cell = [aCoder decodeObjectForKey:@"NSCell"];
         
-        _value = [cell contents];
+        [self setObjectValue:[cell objectValue]];
         
         [self setFont:[cell font]];
+        [self setAlignment:[cell alignment]];
+        
         [self setEnabled:[aCoder decodeObjectForKey:@"NSEnabled"]];
+        [self setContinuous:[cell isContinuous]];
     }
     
     return self;

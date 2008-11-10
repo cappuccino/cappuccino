@@ -35,23 +35,13 @@
             <key>Name</key>
             <string>Debug</string>
             <key>Flags</key>
-            <string>-DDEBUG</string>
-            <key>Settings</key>
-            <dict>
-                <key>PREPROCESS</key>
-                <true/>
-            </dict>
+            <string>-DDEBUG -g</string>
         </dict>
         <dict>
             <key>Name</key>
             <string>Release</string>
-            <key>Settings</key>
-            <dict>
-                <key>PREPROCESS</key>
-                <true/>
-                <key>PREINTERPRET</key>
-                <true/>
-            </dict>
+            <key>Flags</key>
+            <string>-O</string>
         </dict>
 	</array>
 </dict>

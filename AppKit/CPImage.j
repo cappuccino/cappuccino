@@ -42,7 +42,7 @@ CPImageDidLoadNotification      = @"CPImageDidLoadNotification";
 
 - (CPString)pathForResource:(CPString)aFilename
 {
-    return [self bundlePath] + "Resources/" + aFilename;
+    return [self resourcePath] + '/' + aFilename;
 }
 
 @end

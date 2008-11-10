@@ -56,9 +56,28 @@ import <Foundation/CPString.j>
     ];
     
     for (var i = 0; i < testStrings.length; i++)
-        [self assert:[testStrings[i][0] capitalizedString] equals:testStrings[i][1]];
+        [self assert:[testStrings[i][0] capitalizedString] equals:testStrings[i][1]];	
 }
 
+- (void)testStringByDeletingLastPathComponent
+{
+    var testStrings = [
+        ["/tmp/scratch.tiff", "/tmp"],
+        ["/tmp/lock/", "/tmp"],
+        ["/tmp/", "/"],
+        ["/tmp", "/"],
+        ["/", "/"],
+        ["scratch.tiff", ""],
+        ["a/b/c/d//////",  "a/b/c"],
+        ["a/b/././././c/d/./././", "a/b/././././c/d/./."],
+        [@"a/b/././././d////", "a/b/./././."],
+        [@"~/a", "~"],
+        [@"~/a/", "~"],
+        [@"../../", ".."]
+    ];
 
+    for (var i = 0; i < testStrings.length; i++)
+        [self assert:[testStrings[i][0] stringByDeletingLastPathComponent] equals:testStrings[i][1]];
+}
 
 @end

@@ -79,7 +79,8 @@ var TOP_PADDING                 = 4.0,
 var CPTextFieldDOMInputElement = nil;
 #endif
 
-var _CPTextFieldSquareBezelColor    = nil;
+var _CPTextFieldSquareBezelColor = nil,
+    _CPTextFieldRoundedBezelColor = nil;
 
 @implementation CPString (CPTextFieldAdditions)
 
@@ -98,17 +99,18 @@ var _CPTextFieldSquareBezelColor    = nil;
 */
 @implementation CPTextField : CPControl
 {
+    BOOL                    _isEditable;
+    BOOL                    _isSelectable;
+
     BOOL                    _isBordered;
     BOOL                    _isBezeled;
     CPTextFieldBezelStyle   _bezelStyle;
-    
-    BOOL                    _isEditable;
-    BOOL                    _isSelectable;
-    
-    id                      _value;
-    id                      _placeholderString;
+    BOOL                    _drawsBackground;
     
     CPLineBreakMode         _lineBreakMode;
+    CPColor                 _textFieldBackgroundColor;
+    
+    id                      _placeholderString;
     
     id                      _delegate;
     
@@ -150,9 +152,11 @@ var _CPTextFieldSquareBezelColor    = nil;
 
     if (self)
     {
-        _value = @"";
-        _placeholderString = @"";
+        _value = "";
+        _placeholderString = "";
 
+        _sendActionOn = CPKeyUpMask | CPKeyDownMask;
+        
 #if PLATFORM(DOM)
         _DOMTextElement = document.createElement("div");
         _DOMTextElement.style.position = "absolute";
@@ -267,33 +271,102 @@ var _CPTextFieldSquareBezelColor    = nil;
     return _isBordered;
 }
 
+/*!
+    Sets whether the textfield will have a background drawn.
+    @param shouldDrawBackground <code>YES</code> makes the textfield draw a background
+*/
+- (void)setDrawsBackground:(BOOL)shouldDrawBackground
+{
+    if (_drawsBackground == shouldDrawBackground)
+        return;
+        
+    _drawsBackground = shouldDrawBackground;
+    
+    [self _updateBackground];
+}
+
+/*!
+    Returns <code>YES</code> if the textfield draws a background.
+*/
+- (BOOL)drawsBackground
+{
+    return _drawsBackground;
+}
+
+/*!
+    Sets the background color, which is shown for non-bezeled text fields with drawsBackground set to YES
+    @param aColor The background color
+*/
+- (void)setTextFieldBackgroundColor:(BOOL)aColor
+{
+    if (_textFieldBackgroundColor == aColor)
+        return;
+        
+    _textFieldBackgroundColor = aColor;
+    
+    [self _updateBackground];
+}
+
+/*!
+    Returns the background color.
+*/
+- (BOOL)textFieldBackgroundColor
+{
+    return _textFieldBackgroundColor;
+}
+
 /* @ignore */
 - (void)_updateBackground
 {
-    if (_isBordered && _bezelStyle == CPTextFieldSquareBezel && _isBezeled)
+    if (_isBezeled)
     {
-        if (!_CPTextFieldSquareBezelColor)
+        if (_bezelStyle == CPTextFieldSquareBezel)
         {
-            var bundle = [CPBundle bundleForClass:[CPTextField class]];
+            if (!_CPTextFieldSquareBezelColor)
+            {
+                var bundle = [CPBundle bundleForClass:[CPTextField class]];
             
-            _CPTextFieldSquareBezelColor = [CPColor colorWithPatternImage:[[CPNinePartImage alloc] initWithImageSlices:
-                [
-                    [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"CPTextField/CPTextFieldBezelSquare0.png"] size:CGSizeMake(2.0, 3.0)],
-                    [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"CPTextField/CPTextFieldBezelSquare1.png"] size:CGSizeMake(1.0, 3.0)],
-                    [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"CPTextField/CPTextFieldBezelSquare2.png"] size:CGSizeMake(2.0, 3.0)],
-                    [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"CPTextField/CPTextFieldBezelSquare3.png"] size:CGSizeMake(2.0, 1.0)],
-                    [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"CPTextField/CPTextFieldBezelSquare4.png"] size:CGSizeMake(1.0, 1.0)],
-                    [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"CPTextField/CPTextFieldBezelSquare5.png"] size:CGSizeMake(2.0, 1.0)],
-                    [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"CPTextField/CPTextFieldBezelSquare6.png"] size:CGSizeMake(2.0, 2.0)],
-                    [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"CPTextField/CPTextFieldBezelSquare7.png"] size:CGSizeMake(1.0, 2.0)],
-                    [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"CPTextField/CPTextFieldBezelSquare8.png"] size:CGSizeMake(2.0, 2.0)]
-                ]]];
+                _CPTextFieldSquareBezelColor = [CPColor colorWithPatternImage:[[CPNinePartImage alloc] initWithImageSlices:
+                    [
+                        [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:"CPTextField/CPTextFieldBezelSquare0.png"] size:CGSizeMake(2.0, 3.0)],
+                        [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:"CPTextField/CPTextFieldBezelSquare1.png"] size:CGSizeMake(1.0, 3.0)],
+                        [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:"CPTextField/CPTextFieldBezelSquare2.png"] size:CGSizeMake(2.0, 3.0)],
+                        [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:"CPTextField/CPTextFieldBezelSquare3.png"] size:CGSizeMake(2.0, 1.0)],
+                        [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:"CPTextField/CPTextFieldBezelSquare4.png"] size:CGSizeMake(1.0, 1.0)],
+                        [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:"CPTextField/CPTextFieldBezelSquare5.png"] size:CGSizeMake(2.0, 1.0)],
+                        [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:"CPTextField/CPTextFieldBezelSquare6.png"] size:CGSizeMake(2.0, 2.0)],
+                        [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:"CPTextField/CPTextFieldBezelSquare7.png"] size:CGSizeMake(1.0, 2.0)],
+                        [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:"CPTextField/CPTextFieldBezelSquare8.png"] size:CGSizeMake(2.0, 2.0)]
+                    ]]];
+            }
+            [self setBackgroundColor:_CPTextFieldSquareBezelColor];
         }
-        
-        [self setBackgroundColor:_CPTextFieldSquareBezelColor];
+        else if (_bezelStyle == CPTextFieldRoundedBezel)
+        {
+            if (!_CPTextFieldRoundedBezelColor)
+            {
+                var bundle = [CPBundle bundleForClass:[CPTextField class]];
+
+                _CPTextFieldRoundedBezelColor = [CPColor colorWithPatternImage:[[CPThreePartImage alloc] initWithImageSlices:
+                    [
+                        [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:"CPTextField/CPTextFieldBezelRounded0.png"] size:CGSizeMake(12.0, 22.0)],
+                        [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:"CPTextField/CPTextFieldBezelRounded1.png"] size:CGSizeMake(16.0, 22.0)],
+                        [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:"CPTextField/CPTextFieldBezelRounded2.png"] size:CGSizeMake(12.0, 22.0)]
+                    ] isVertical:NO]];
+            }
+            [self setBackgroundColor:_CPTextFieldRoundedBezelColor];
+        }
     }
     else
-        [self setBackgroundColor:nil];
+    {
+        if (_drawsBackground)
+            [self setBackgroundColor:_textFieldBackgroundColor];
+        else
+            [self setBackgroundColor:nil];
+            
+        // FIXME: do something for bordered textfields
+        //if (_isBordered)
+    }
 }
 
 /* @ignore */
@@ -307,7 +380,7 @@ var _CPTextFieldSquareBezelColor    = nil;
 {
     var string = [self stringValue];
 
-    [self setStringValue:@""];
+    [self setStringValue:""];
     
 #if PLATFORM(DOM)
     var element = [[self class] _inputElement];
@@ -327,8 +400,10 @@ var _CPTextFieldSquareBezelColor    = nil;
 
     element.onblur = function () 
     { 
+        [self setObjectValue:element.value];
         [self sendAction:[self action] to:[self target]];
         [[self window] makeFirstResponder:nil];
+        [[CPRunLoop currentRunLoop] performSelectors];
     };
     
     //element.onblur = function() { objj_debug_print_backtrace(); }
@@ -339,7 +414,7 @@ var _CPTextFieldSquareBezelColor    = nil;
         //all key presses might trigger the delegate method controlTextDidChange: 
         //record the current string value before we allow this keydown to propagate
         _textDidChangeValue = [self stringValue];
-
+        [[CPRunLoop currentRunLoop] performSelectors];
         return true;
     }
         
@@ -349,13 +424,15 @@ var _CPTextFieldSquareBezelColor    = nil;
         
         if (aDOMEvent.keyCode == 13) 
         {
-            if(aDOMEvent.preventDefault)
+            if (aDOMEvent.preventDefault)
                 aDOMEvent.preventDefault(); 
-            else if(aDOMEvent.stopPropagation)
+            if (aDOMEvent.stopPropagation)
                 aDOMEvent.stopPropagation();
+            aDOMEvent.cancelBubble = true;
             
             element.blur();
-        } 
+        }
+        [[CPRunLoop currentRunLoop] performSelectors];
     };
     
     //inspect keyup to detect changes in order to trigger controlTextDidChange: delegate method
@@ -369,11 +446,12 @@ var _CPTextFieldSquareBezelColor    = nil;
             //call to CPControls methods for posting the notification
             [self textDidChange:[CPNotification notificationWithName:CPControlTextDidChangeNotification object:self userInfo:nil]];
         }
+        [[CPRunLoop currentRunLoop] performSelectors];
     };
 
     // If current value is the placeholder value, remove it to allow user to update.
     if ([string lowercaseString] == [[self placeholderString] lowercaseString])
-        [self setStringValue:@""];
+        [self setStringValue:""];
     
     //post CPControlTextDidBeginEditingNotification
     [self textDidBeginEditing:[CPNotification notificationWithName:CPControlTextDidBeginEditingNotification object:self userInfo:nil]];
@@ -396,10 +474,10 @@ var _CPTextFieldSquareBezelColor    = nil;
     element.onkeypress = nil;
     
     _DOMElement.removeChild(element);
-    [self setStringValue:element.value];
+    [self setStringValue:element.value]; // redundant?
 
     // If textfield has no value, then display the placeholderValue
-    if (!_value || _value === "")
+    if (!_value)
         [self setStringValue:[self placeholderString]];
 
 #endif
@@ -514,7 +592,7 @@ var _CPTextFieldSquareBezelColor    = nil;
 /*!
     Returns the string the text field.
 */
-- (CPString)stringValue
+- (id)objectValue
 {
     // All of this needs to be better.
 #if PLATFORM(DOM)
@@ -522,10 +600,10 @@ var _CPTextFieldSquareBezelColor    = nil;
         return [[self class] _inputElement].value;
 #endif
     //if the content is the same as the placeholder value, return "" instead
-    if ([_value lowercaseString] == [[self placeholderString] lowercaseString])
+    if ([super objectValue] == [self placeholderString])
         return "";
 
-    return [super stringValue];
+    return [super objectValue];
 }
 
 /*
@@ -570,7 +648,7 @@ var _CPTextFieldSquareBezelColor    = nil;
     _placeholderString = aStringValue;
 
     //if there is no set value, automatically display the placeholder
-    if (!_value || _value === "") 
+    if (!_value) 
         [self setStringValue:aStringValue];
 }
 
@@ -580,7 +658,7 @@ var _CPTextFieldSquareBezelColor    = nil;
 - (void)sizeToFit
 {
 #if PLATFORM(DOM)
-    var size = [_value ? _value : @" " sizeWithFont:[self font]];
+    var size = [(_value || " ") sizeWithFont:[self font]];
     
     [self setFrameSize:CGSizeMake(size.width + 2 * HORIZONTAL_PADDING, size.height + TOP_PADDING + BOTTOM_PADDING)];
 #endif
@@ -603,10 +681,15 @@ var _CPTextFieldSquareBezelColor    = nil;
 
 @end
 
-var CPTextFieldIsSelectableKey  = @"CPTextFieldIsSelectableKey",
-    CPTextFieldLineBreakModeKey = @"CPTextFieldLineBreakModeKey",
-    CPTextFieldStringValueKey   = @"CPTextFieldStringValueKey",
-    CPTextFieldIsEditableKey    = @"CPTextFieldIsEditableKey";
+var CPTextFieldIsEditableKey            = "CPTextFieldIsEditableKey",
+    CPTextFieldIsSelectableKey          = "CPTextFieldIsSelectableKey",
+    CPTextFieldIsBorderedKey            = "CPTextFieldIsBorderedKey",
+    CPTextFieldIsBezeledKey             = "CPTextFieldIsBezeledKey",
+    CPTextFieldBezelStyleKey            = "CPTextFieldBezelStyleKey",
+    CPTextFieldDrawsBackgroundKey       = "CPTextFieldDrawsBackgroundKey",
+    CPTextFieldLineBreakModeKey         = "CPTextFieldLineBreakModeKey",
+    CPTextFieldBackgroundColorKey       = "CPTextFieldBackgroundColorKey",
+    CPTextFieldPlaceholderStringKey     = "CPTextFieldPlaceholderStringKey";
 
 @implementation CPTextField (CPCoding)
 
@@ -625,11 +708,8 @@ var CPTextFieldIsSelectableKey  = @"CPTextFieldIsSelectableKey",
     
     if (self)
     {
-        var bounds = [self bounds];
-        
-        _value = @"";
-        
 #if PLATFORM(DOM)
+        var bounds = [self bounds];
         _DOMTextElement.style.position = "absolute";
         _DOMTextElement.style.top = TOP_PADDING + "px";
         _DOMTextElement.style.left = HORIZONTAL_PADDING + "px";
@@ -642,10 +722,17 @@ var CPTextFieldIsSelectableKey  = @"CPTextFieldIsSelectableKey",
 #endif
 
         [self setEditable:[aCoder decodeBoolForKey:CPTextFieldIsEditableKey]];
-        [self setSelectable:[aCoder decodeBoolForKey:CPTextFieldIsSelectableKey]];    
-        [self setLineBreakMode:[aCoder decodeIntForKey:CPTextFieldLineBreakModeKey]];
+        [self setSelectable:[aCoder decodeBoolForKey:CPTextFieldIsSelectableKey]];
 
-        [self setStringValue:[aCoder decodeObjectForKey:CPTextFieldStringValueKey]];
+        [self setBordered:[aCoder decodeBoolForKey:CPTextFieldIsBorderedKey]];
+        [self setBezeled:[aCoder decodeBoolForKey:CPTextFieldIsBezeledKey]];
+        [self setBezelStyle:[aCoder decodeIntForKey:CPTextFieldBezelStyleKey]];
+        [self setDrawsBackground:[aCoder decodeBoolForKey:CPTextFieldDrawsBackgroundKey]];
+
+        [self setLineBreakMode:[aCoder decodeIntForKey:CPTextFieldLineBreakModeKey]];
+        [self setTextFieldBackgroundColor:[aCoder decodeObjectForKey:CPTextFieldBackgroundColorKey]];
+
+        [self setPlaceholderString:[aCoder decodeObjectForKey:CPTextFieldPlaceholderStringKey]];
     }
     
     return self;
@@ -659,12 +746,18 @@ var CPTextFieldIsSelectableKey  = @"CPTextFieldIsSelectableKey",
 {
     [super encodeWithCoder:aCoder];
     
-    [aCoder encodeBool:_isSelectable forKey:CPTextFieldIsSelectableKey];
-    [aCoder encodeInt:_lineBreakMode forKey:CPTextFieldLineBreakModeKey];
-    
-    [aCoder encodeObject:_value forKey:CPTextFieldStringValueKey];
-    
     [aCoder encodeBool:_isEditable forKey:CPTextFieldIsEditableKey];
+    [aCoder encodeBool:_isSelectable forKey:CPTextFieldIsSelectableKey];
+    
+    [aCoder encodeBool:_isBordered forKey:CPTextFieldIsBorderedKey];
+    [aCoder encodeBool:_isBezeled forKey:CPTextFieldIsBezeledKey];
+    [aCoder encodeInt:_bezelStyle forKey:CPTextFieldBezelStyleKey];
+    [aCoder encodeBool:_drawsBackground forKey:CPTextFieldDrawsBackgroundKey];
+    
+    [aCoder encodeInt:_lineBreakMode forKey:CPTextFieldLineBreakModeKey];
+    [aCoder encodeObject:_textFieldBackgroundColor forKey:CPTextFieldBackgroundColorKey];
+    
+    [aCoder encodeObject:_placeholderString forKey:CPTextFieldPlaceholderStringKey];
 }
 
 @end

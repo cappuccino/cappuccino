@@ -363,7 +363,7 @@ var _CPKeyedArchiverStringClass                         = Nil,
 */
 - (void)encodeNumber:(CPNumber)aNumber forKey:(CPString)aKey
 {
-    [_plistObject setObject:_CPKeyedArchiverEncodeObject(self, aNuumber, NO) forKey:aKey];
+    [_plistObject setObject:_CPKeyedArchiverEncodeObject(self, aNumber, NO) forKey:aKey];
 }
 
 /*!

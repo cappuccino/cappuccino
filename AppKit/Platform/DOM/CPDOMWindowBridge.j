@@ -35,6 +35,11 @@ CPSharedDOMWindowBridge = nil;
 
 var ExcludedDOMElements = [];
 
+// Define up here so compressor knows about em.
+var CPDOMWindowGetFrame,
+    CPDOMEventGetClickCount,
+    CPDOMEventStop;
+
 @implementation CPDOMWindowBridge : CPObject
 {
     CPArray         _orderedWindows;

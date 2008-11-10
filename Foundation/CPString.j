@@ -453,6 +453,21 @@ var CPStringHashes      = new objj_dictionary();
 }
 
 /*!
+    Compares the receiver to the specified string, using options in range.
+    @param aString the string with which to compare the range of the receiver specified by range.
+    @param aMask the options to use for the comparison
+    @param range the range of the receiver over which to perform the comparison. The range must not exceed the bounds of the receiver.
+    @return the result of the comparison
+*/
+- (CPComparisonResult)compare:(CPString)aString options:(int)aMask range:(CPRange)range
+{
+    var lhs = [self substringWithRange:range],
+        rhs = aString;
+
+    return [lhs compare:rhs options:aMask];
+}
+
+/*!
     Returns <code>YES</code> if the receiver starts
     with the specified string. If <code>aString</code>
     is empty, the method will return <code>NO</code>.
@@ -595,13 +610,24 @@ var CPStringHashes      = new objj_dictionary();
 }
 
 /*!
-    Until this is corrected
-    @ignore
+	Deletes the last path component of a string.
+	This method assumes that the string's content is a '/'
+	separated file system path.
 */
 - (CPString)stringByDeletingLastPathComponent
 {
-    // FIXME: this is wrong: a/a/ returns a/a/.
-    return substr(0, lastIndexOf('/') + 1);
+    var path = self,
+        start = length - 1;
+    
+    while (path.charAt(start) === '/')
+        start--;
+    
+    path = path.substr(0, path.lastIndexOf('/', start));
+    
+    if (path === "" && charAt(0) === '/')
+        return '/';
+
+    return path;
 }
 
 - (CPString)stringByStandardizingPath

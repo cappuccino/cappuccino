@@ -324,19 +324,16 @@ var CPPopUpButtonArrowsImage = nil;
     {
         [defaultCenter
             removeObserver:self
-                  selector:@selector(menuDidAddItem:)
                       name:CPMenuDidAddItemNotification
                     object:_menu];
 
         [defaultCenter
             removeObserver:self
-                  selector:@selector(menuDidChangeItem:)
                       name:CPMenuDidChangeItemNotification
                     object:_menu];
 
         [defaultCenter
             removeObserver:self
-                  selector:@selector(menuDidRemoveItem:)
                       name:CPMenuDidRemoveItemNotification
                     object:_menu];
     }

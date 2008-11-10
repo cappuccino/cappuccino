@@ -46,7 +46,7 @@ the Cappuccino Tools:
     1. Download the Cappuccino Tools from http://cappuccino.org/tools.
     2. Unarchive the downloaded file.
     3. Run: chmod +x install-tools
-    4. Run: sudo ./install-tools
+    4. Run: sudo sh ./install-tools
     5. Set your environment variables:
        export PATH=$PATH:/usr/local/bin
        export OBJJ_HOME=/usr/local/share/objj

@@ -34,15 +34,14 @@ var CPSliderHorizontalKnobImage         = nil,
 */
 @implementation CPSlider : CPControl
 {
-    double      _value;
     double      _minValue;
     double      _maxValue;
     double      _altIncrementValue;
+    BOOL        _isVertical;
     
     CPView      _bar;
     CPView      _knob;
 
-    BOOL        _isVertical;
     CPImageView _standardKnob;
     CPView      _standardVerticalBar;
     CPView      _standardHorizontalBar;
@@ -58,11 +57,11 @@ var CPSliderHorizontalKnobImage         = nil,
 
     var bundle = [CPBundle bundleForClass:self];
     
-    CPSliderKnobImage = [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"CPSlider/CPSliderKnobRegular.png"] size:CPSizeMake(11.0, 11.0)],
-    CPSliderKnobPushedImage = [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"CPSlider/CPSliderKnobRegularPushed.png"] size:CPSizeMake(11.0, 11.0)],
-    CPSliderHorizontalBarLeftImage = [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"CPSlider/CPSliderTrackHorizontalLeft.png"] size:CPSizeMake(2.0, 4.0)],
-    CPSliderHorizontalBarRightImage = [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"CPSlider/CPSliderTrackHorizontalRight.png"] size:CPSizeMake(2.0, 4.0)],
-    CPSliderHorizontalBarCenterImage = [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"CPSlider/CPSliderTrackHorizontalCenter.png"] size:CPSizeMake(1.0, 4.0)];
+    CPSliderKnobImage = [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:"CPSlider/CPSliderKnobRegular.png"] size:CPSizeMake(11.0, 11.0)],
+    CPSliderKnobPushedImage = [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:"CPSlider/CPSliderKnobRegularPushed.png"] size:CPSizeMake(11.0, 11.0)],
+    CPSliderHorizontalBarLeftImage = [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:"CPSlider/CPSliderTrackHorizontalLeft.png"] size:CPSizeMake(2.0, 4.0)],
+    CPSliderHorizontalBarRightImage = [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:"CPSlider/CPSliderTrackHorizontalRight.png"] size:CPSizeMake(2.0, 4.0)],
+    CPSliderHorizontalBarCenterImage = [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:"CPSlider/CPSliderTrackHorizontalCenter.png"] size:CPSizeMake(1.0, 4.0)];
 }
 
 - (id)initWithFrame:(CGRect)aFrame
@@ -80,6 +79,8 @@ var CPSliderHorizontalKnobImage         = nil,
         _knobSize = [[self knobImage] size];
         _isVertical = [self isVertical];
         
+        [self setContinuous:YES];
+        
         [_knob setFrameOrigin:[self knobPosition]];
         
         [self addSubview:_bar];
@@ -91,7 +92,7 @@ var CPSliderHorizontalKnobImage         = nil,
     
 - (void)setFrameSize:(CGSize)aSize
 {
-    if(aSize.height > 21.0)
+    if (aSize.height > 21.0)
         aSize.height = 21.0;
     
     if (_isVertical != [self isVertical])
@@ -125,6 +126,33 @@ var CPSliderHorizontalKnobImage         = nil,
 - (double)altIncrementValue
 {
     return _altIncrementValue;
+}
+
+/*!
+    Sets the value the slider will be incremented if the user holds the <code>ALT</code> key.
+*/
+- (void)setAltIncrementValue:(double)anIncrementValue
+{
+    _altIncrementValue = anIncrementValue;
+}
+
+/*!
+    Returns whether the control can continuously send its action messages.
+*/
+- (BOOL)isContinuous
+{
+    return (_sendActionOn & CPLeftMouseDraggedMask) != 0;
+}
+
+/*!
+    Sets whether the cell can continuously send its action messages.
+ */
+- (void)setContinuous:(BOOL)flag
+{
+    if (flag)
+        _sendActionOn |= CPLeftMouseDraggedMask;
+    else 
+        _sendActionOn &= ~CPLeftMouseDraggedMask;
 }
 
 /*!
@@ -223,14 +251,6 @@ var CPSliderHorizontalKnobImage         = nil,
 }
 
 /*!
-    Sets the value the slider will be incremented if the user holds the <code>ALT</code> key.
-*/
-- (void)setAltIncrementValue:(double)anIncrementValue
-{
-    _altIncrementValue = anIncrementValue;
-}
-
-/*!
     Returns <code>YES</code> if the slider is vertical.
 */
 - (BOOL)isVertical
@@ -280,20 +300,28 @@ var CPSliderHorizontalKnobImage         = nil,
 /*!
     Sets the slider's value
     @param aValue the new slider value
+    @deprecated Use setFloatValue, setObjectValue, etc
 */
 - (void)setValue:(double)aValue
 {
-    _value = aValue;
-
-    [_knob setFrameOrigin:[self knobPosition]];
+    [self setObjectValue:aValue];
 }
 
 /*!
     Returns the slider's value
+    @deprecated Use floatValue, objectValue, etc
 */
 - (double)value
 {
-    return _value;
+    return [self floatValue];
+}
+
+- (void)setObjectValue:(id)anObject
+{
+    [super setObjectValue:anObject];
+    
+    if (_knob)
+        [_knob setFrameOrigin:[self knobPosition]];
 }
 
 /*
@@ -306,7 +334,7 @@ var CPSliderHorizontalKnobImage         = nil,
         return CPPointMake(0.0, 0.0);
     else
         return CPPointMake(
-            ((_value - _minValue) / (_maxValue - _minValue)) * (CPRectGetWidth([self frame]) - CPRectGetWidth([_knob frame])), 
+            (([self floatValue] - _minValue) / (_maxValue - _minValue)) * (CPRectGetWidth([self frame]) - CPRectGetWidth([_knob frame])), 
             (CPRectGetHeight([self frame]) - CPRectGetHeight([_knob frame])) / 2.0);
 }
 
@@ -330,36 +358,46 @@ var CPSliderHorizontalKnobImage         = nil,
 
 - (void)mouseUp:(CPEvent)anEvent
 {
-    [[self knob] setImage: [self knobImage]];
+    [[self knob] setImage:[self knobImage]];
 
     if ([_target respondsToSelector:@selector(sliderDidFinish:)])
         [_target sliderDidFinish:self];
+
+    if (_sendActionOn & CPLeftMouseUpMask)
+        [self sendAction:_action to:_target];
+    //[super mouseUp:anEvent];
 }
 
 - (void)mouseDown:(CPEvent)anEvent
 {
     [_knob setFrameOrigin:[self constrainKnobPosition:[self convertPoint:[anEvent locationInWindow] fromView:nil]]];
 
-    _value = [self valueForKnobPosition:[_knob frame].origin];
+    [super setObjectValue:[self valueForKnobPosition:[_knob frame].origin]];
     
-    [[self knob] setImage: [self pushedKnobImage]];
-    [self sendAction:_action to:_target];
+    [[self knob] setImage:[self pushedKnobImage]];
+
+    if (_sendActionOn & CPLeftMouseDraggedMask)
+        [self sendAction:_action to:_target];
+    //[super mouseDown:anEvent];
 }
 
 - (void)mouseDragged:(CPEvent)anEvent
 {
     [_knob setFrameOrigin:[self constrainKnobPosition:[self convertPoint:[anEvent locationInWindow] fromView:nil]]];
     
-    _value = [self valueForKnobPosition:[_knob frame].origin];
-    
-    [self sendAction:_action to:_target];
+    [super setObjectValue:[self valueForKnobPosition:[_knob frame].origin]];
+
+    if (_sendActionOn & CPLeftMouseDraggedMask)
+        [self sendAction:_action to:_target];
+    //[super mouseDown:anEvent];
 }
 
 @end
 
-var CPSliderMinValueKey = @"CPSliderMinValueKey",
-    CPSliderMaxValueKey = @"CPSliderMaxValueKey",
-    CPSliderValueKey = @"CPSliderValueKey";
+var CPSliderMinValueKey     = "CPSliderMinValueKey",
+    CPSliderMaxValueKey     = "CPSliderMaxValueKey",
+    CPSliderAltIncrValueKey = "CPSliderAltIncrValueKey",
+    CPSliderIsVerticalKey   = "CPSliderIsVerticalKey";
 
 @implementation CPSlider (CPCoding)
 
@@ -374,9 +412,10 @@ var CPSliderMinValueKey = @"CPSliderMinValueKey",
     
     if (self)
     {
-        _value = [aCoder decodeDoubleForKey:CPSliderValueKey];
         _minValue = [aCoder decodeDoubleForKey:CPSliderMinValueKey];
         _maxValue = [aCoder decodeDoubleForKey:CPSliderMaxValueKey];
+        _altIncrementValue = [aCoder decodeDoubleForKey:CPSliderAltIncrValueKey];
+        _isVertical = [aCoder decodeDoubleForKey:CPSliderIsVerticalKey];
     
         _bar = [self bar];
         _knob = [self knob];
@@ -406,9 +445,10 @@ var CPSliderMinValueKey = @"CPSliderMinValueKey",
     
     _subviews = subviews;
     
-    [aCoder encodeDouble:_value forKey:CPSliderValueKey];
     [aCoder encodeDouble:_minValue forKey:CPSliderMinValueKey];
     [aCoder encodeDouble:_maxValue forKey:CPSliderMaxValueKey];
+    [aCoder encodeDouble:_altIncrementValue forKey:CPSliderAltIncrValueKey];
+    [aCoder encodeBool:_isVertical forKey:CPSliderIsVerticalKey];
 }
 
 @end

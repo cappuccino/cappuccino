@@ -77,7 +77,9 @@ var _CPToolbarSeparatorItemView         = nil;
     BOOL        _isEnabled;
     CPImage     _image;
     CPImage     _alternateImage;
+    
     CPView      _view;
+    
     CGSize      _minSize;
     CGSize      _maxSize;    
     
@@ -97,6 +99,9 @@ var _CPToolbarSeparatorItemView         = nil;
     if (self)
     {
         _itemIdentifier = anItemIdentifier;
+     
+        _tag = 0;
+        _isEnabled = YES;
      
         _minSize = CGSizeMakeZero();
         _maxSize = CGSizeMakeZero();
@@ -165,6 +170,9 @@ var _CPToolbarSeparatorItemView         = nil;
 */
 - (CPString)toolTip
 {
+    if ([_view respondsToSelector:@selector(toolTip)])
+        return [_view toolTip];
+    
     return _toolTip;
 }
 
@@ -174,6 +182,9 @@ var _CPToolbarSeparatorItemView         = nil;
 */
 - (void)setToolTip:(CPString)aToolTip
 {
+    if ([_view respondsToSelector:@selector(setToolTip:)])
+        [view setToolTip:aToolTip];
+    
     _toolTip = aToolTip;
 }
 
@@ -182,6 +193,9 @@ var _CPToolbarSeparatorItemView         = nil;
 */
 - (int)tag
 {
+    if ([_view respondsToSelector:@selector(tag)])
+        return [_view tag];
+    
     return _tag;
 }
 
@@ -191,6 +205,9 @@ var _CPToolbarSeparatorItemView         = nil;
 */
 - (void)setTag:(int)aTag
 {
+    if ([_view respondsToSelector:@selector(setTag:)])
+        [_view setTag:aTag];
+    
     _tag = aTag;
 }
 
@@ -199,6 +216,9 @@ var _CPToolbarSeparatorItemView         = nil;
 */
 - (id)target
 {
+    if (_view)
+        return [_view respondsToSelector:@selector(target)] ? [_view target] : nil;
+    
     return _target;
 }
 
@@ -209,7 +229,11 @@ var _CPToolbarSeparatorItemView         = nil;
 */
 - (void)setTarget:(id)aTarget
 {
-    _target = aTarget;
+    if (!_view)
+        _target = aTarget;
+    
+    else if ([_view respondsToSelector:@selector(setTarget:)])
+        [_view setTarget:aTarget];
 }
 
 /*!
@@ -217,6 +241,9 @@ var _CPToolbarSeparatorItemView         = nil;
 */
 - (SEL)action
 {
+    if (_view)
+        return [_view respondsToSelector:@selector(action)] ? [_view action] : nil;
+    
     return _action;
 }
 
@@ -226,7 +253,11 @@ var _CPToolbarSeparatorItemView         = nil;
 */
 - (void)setAction:(SEL)anAction
 {
-    _action = anAction;
+    if (!_view)
+        _action = anAction;
+
+    else if ([_view respondsToSelector:@selector(setAction:)])
+        [_view setAction:anAction];
 }
 
 /*!
@@ -234,6 +265,9 @@ var _CPToolbarSeparatorItemView         = nil;
 */
 - (BOOL)isEnabled
 {
+    if ([_view respondsToSelector:@selector(isEnabled)])
+        return [_view isEnabled];
+    
     return _isEnabled;
 }
 
@@ -241,9 +275,12 @@ var _CPToolbarSeparatorItemView         = nil;
     Sets whether the item is enabled.
     @param aFlag <code>YES</code> enables the item
 */
-- (void)setEnabled:(BOOL)aFlag
+- (void)setEnabled:(BOOL)shouldBeEnabled
 {
-    _isEnabled = aFlag;
+    if ([_view respondsToSelector:@selector(setEnabled:)])
+        [_view setEnabled:shouldBeEnabled];
+    
+    _isEnabled = shouldBeEnabled;
 }
 
 /*!
@@ -251,6 +288,9 @@ var _CPToolbarSeparatorItemView         = nil;
 */
 - (CPImage)image
 {
+    if ([_view respondsToSelector:@selector(image)])
+        return [_view image];
+        
     return _image;
 }
 
@@ -260,22 +300,24 @@ var _CPToolbarSeparatorItemView         = nil;
 */
 - (void)setImage:(CPImage)anImage
 {
+    if ([_view respondsToSelector:@selector(setImage:)])
+        [_view setImage:anImage];
+
     _image = anImage;
-    
-    // FIXME: We can't keep assuming this.
-    [_view setImage:anImage];
     
     if (!_image)
         return;
     
-    var imageSize = [_image size];
-    
     if (_minSize.width == 0 && _minSize.height == 0 && 
-        _maxSize.width == 0 && _maxSize.height == 0 && 
-        (imageSize.width > 0 || imageSize.height > 0))
+        _maxSize.width == 0 && _maxSize.height == 0)
     {
-        [self setMinSize:imageSize];
-        [self setMaxSize:imageSize];
+        var imageSize = [_image size];
+
+        if (imageSize.width > 0 || imageSize.height > 0)
+        {
+            [self setMinSize:imageSize];
+            [self setMaxSize:imageSize];
+        }
     }
 }
 
@@ -285,10 +327,10 @@ var _CPToolbarSeparatorItemView         = nil;
 */
 - (void)setAlternateImage:(CPImage)anImage
 {
-    _alternateImage = anImage;
+    if ([_view respondsToSelector:@selector(setAlternateImage:)])
+        [_view setAlternateImage:anImage];
     
-    // FIXME: We can't keep assuming this.
-    [_view setAlternateImage:anImage];
+    _alternateImage = anImage;
 }
 
 /*!
@@ -296,6 +338,9 @@ var _CPToolbarSeparatorItemView         = nil;
 */
 - (CPImage)alternateImage
 {
+    if ([_view respondsToSelector:@selector(alternateIamge)])
+        return [_view alternateImage];
+    
     return _alternateImage;
 }
 
@@ -313,7 +358,20 @@ var _CPToolbarSeparatorItemView         = nil;
 */
 - (void)setView:(CPView)aView
 {
+    if (_view == aView)
+        return;
+    
     _view = aView;
+
+    if (_view)
+    {
+        // Tags get forwarded.
+        if (_tag !== 0 && [_view respondsToSelector:@selector(setTag:)])
+            [_view setTag:_tag];
+        
+        _target = nil;
+        _action = nil;
+    }
 }
 
 /*!
@@ -394,21 +452,21 @@ CPToolbarItemVisibilityPriorityUser
 {
     var copy = [[[self class] alloc] initWithItemIdentifier:_itemIdentifier];
     
+    if (_view)
+        [copy setView:[CPKeyedUnarchiver unarchiveObjectWithData:[CPKeyedArchiver archivedDataWithRootObject:_view]]];
+    
     [copy setLabel:_label];
     [copy setPaletteLabel:_paletteLabel];
-    [copy setToolTip:_toolTip];
+    [copy setToolTip:[self toolTip]];
     
-    [copy setTag:_tag];
-    [copy setTarget:_target];
-    [copy setAction:_action];
+    [copy setTag:[self tag]];
+    [copy setTarget:[self target]];
+    [copy setAction:[self action]];
     
-    [copy setEnabled:_isEnabled];
+    [copy setEnabled:[self isEnabled]];
     [copy setImage:_image];
     [copy setAlternateImage:_alternateImage];
     
-    if (_view)
-        [copy setView:[CPKeyedUnarchiver unarchiveObjectWithData:[CPKeyedArchiver archivedDataWithRootObject:_view]]];
-
     [copy setMinSize:_minSize];
     [copy setMaxSize:_maxSize];
     
