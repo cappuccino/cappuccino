@@ -32,7 +32,7 @@ function main()
         {
             case "--main":
                 if (args.length)
-                    mainFile = args.shift();
+                    mainFilename = args.shift();
                 else
                     usageError = true;
                 break;
