@@ -21,6 +21,7 @@
  */
 
 @import "CALayer.j"
+@import "CPAlert.j"
 @import "CPAnimation.j"
 @import "CPApplication.j"
 @import "CPButton.j"
