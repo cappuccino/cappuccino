@@ -453,6 +453,21 @@ var CPStringHashes      = new objj_dictionary();
 }
 
 /*!
+    Compares the receiver to the specified string, using options in range.
+    @param aString the string with which to compare the range of the receiver specified by range.
+    @param aMask the options to use for the comparison
+    @param range the range of the receiver over which to perform the comparison. The range must not exceed the bounds of the receiver.
+    @return the result of the comparison
+*/
+- (CPComparisonResult)compare:(CPString)aString options:(int)aMask range:(CPRange)range
+{
+    var lhs = [self substringWithRange:range],
+        rhs = aString;
+
+    return [lhs compare:rhs options:aMask];
+}
+
+/*!
     Returns <code>YES</code> if the receiver starts
     with the specified string. If <code>aString</code>
     is empty, the method will return <code>NO</code>.
