@@ -25,7 +25,7 @@ done
 mkdir -p $INSTALL_DIR/bin
 mkdir -p $INSTALL_DIR/share
 
-cp -fR objj/ $INSTALL_DIR/share/objj
+cp -fR objj/ $INSTALL_DIR/share/
 
 ln -sf $INSTALL_DIR/share/objj/bin/nib2cib $INSTALL_DIR/bin/nib2cib
 ln -sf $INSTALL_DIR/share/objj/bin/objj $INSTALL_DIR/bin/objj
