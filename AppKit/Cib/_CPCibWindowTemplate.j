@@ -92,6 +92,11 @@ var _CPCibWindowTemplateMinSizeKey          = @"_CPCibWindowTemplateMinSizeKey",
 
     [_windowView setAutoresizesSubviews:YES];
     
+    if ([_viewClass isKindOfClass:[CPToolbar class]])
+    {
+       [theWindow setToolbar:_viewClass];
+    }
+    
     return theWindow;
 }
 

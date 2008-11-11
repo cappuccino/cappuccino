@@ -34,6 +34,7 @@
 @import "NSSlider.j"
 @import "NSSplitView.j"
 @import "NSTextField.j"
+@import "NSToolbar.j"
 @import "NSView.j"
 @import "NSWindowTemplate.j"
 @import "WebView.j"
