@@ -111,7 +111,7 @@ function CGContextDrawPath(aContext, aMode)
 {
     if (!aContext || CGPathIsEmpty(aContext.path))
         return;
-var opacity = 1.0;
+    
     var elements = aContext.path.elements,
         
         i = 0,
@@ -120,6 +120,7 @@ var opacity = 1.0;
         gState = aContext.gState,
         fill = (aMode == kCGPathFill || aMode == kCGPathFillStroke) ? 1 : 0,
         stroke = (aMode == kCGPathStroke || aMode == kCGPathFillStroke) ? 1 : 0,
+        opacity = gState.alpha,
         vml = [ "<cg_vml_:shape", 
                 " fillcolor=\"", gState.fillStyle, 
                 "\" filled=\"", VML_TRUTH_TABLE[fill], 
