@@ -239,3 +239,5 @@ var CPAlertWarningImage,
     [CPApp abortModal];
     [_alertPanel close];
 }
+
+@end

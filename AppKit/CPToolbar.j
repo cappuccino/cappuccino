@@ -2,6 +2,9 @@
  * CPToolbar.j
  * AppKit
  *
+ * Portions based on NSToolbar.m (11/10/2008) in Cocotron (http://www.cocotron.org/)
+ * Copyright (c) 2006-2007 Christopher J. W. Lloyd
+ *
  * Created by Francisco Tolmasky.
  * Copyright 2008, 280 North, Inc.
  *
@@ -83,18 +86,18 @@ var CPToolbarConfigurationsByIdentifier = nil;
     BOOL                    _showsBaselineSeparator;
     BOOL                    _allowsUserCustomization;
     BOOL                    _isVisible;
-    BOOL                    _needsReloadOfItems;
     
     id                      _delegate;
-    CPView                  _toolbarView;
     
-    CPArray                 _itemIdentifiers;
-    CPArray                 _allowedItemIdentifiers;    
+    CPDictionary            _identifiedItems;
+    CPArray                 _defaultItems;
+    CPArray                 _allowedItems;
+    CPArray                 _selectableItems;
     
     CPArray                 _items;
-    CPArray                 _labels;
+    CPArray                 _itemsSortedByVisibilityPriority;
     
-    CPMutableDictionary     _itemIndexes;
+    CPView                  _toolbarView;
 }
 
 /* @ignore */
@@ -105,6 +108,20 @@ var CPToolbarConfigurationsByIdentifier = nil;
         
     CPToolbarsByIdentifier = [CPDictionary dictionary];
     CPToolbarConfigurationsByIdentifier = [CPDictionary dictionary];
+}
+
+/* @ignore */
++ (void)_addToolbar:(CPToolbar)toolbar forIdentifier:(CPString)identifier
+{
+    var toolbarsSharingIdentifier = [CPToolbarsByIdentifier objectForKey:identifier];
+    
+    if (!toolbarsSharingIdentifier)
+    {
+        toolbarsSharingIdentifier = []
+        [CPToolbarsByIdentifier setObject:toolbarsSharingIdentifier forKey:identifier];
+    }
+        
+    [toolbarsSharingIdentifier addObject:toolbar];
 }
 
 /*!
@@ -119,24 +136,16 @@ var CPToolbarConfigurationsByIdentifier = nil;
     if (self)
     {
         _items = [];
-        _labels = [];
         
         _identifier = anIdentifier;
         _isVisible = YES;
     
-        var toolbarsSharingIdentifier = [CPToolbarsByIdentifier objectForKey:_identifier];
-        
-        if (!toolbarsSharingIdentifier)
-        {
-            toolbarsSharingIdentifier = []
-            [CPToolbarsByIdentifier setObject:toolbarsSharingIdentifier forKey:_identifier];
-        }
-            
-        [toolbarsSharingIdentifier addObject:self];
+        [CPToolbar _addToolbar:self forIdentifier:_identifier];
     }
     
     return self;
 }
+
 
 /*!
     Sets the toolbar's display mode. NOT YET IMPLEMENTED.
@@ -196,10 +205,6 @@ var CPToolbarConfigurationsByIdentifier = nil;
         
     _delegate = aDelegate;
     
-    // When _delegate is nil, this will be cleared out.
-    _itemIdentifiers = nil;
-    _allowedItemIdentifiers = [_delegate toolbarAllowedItemIdentifiers:self];
-    
     [self _reloadToolbarItems];
 }
 
@@ -229,36 +234,9 @@ var CPToolbarConfigurationsByIdentifier = nil;
     if (![_toolbarView superview] || !_delegate)
         return;
     
-    var count = [_itemIdentifiers count];
-    
-    if (!count)
-    {
-        _itemIdentifiers = [[_delegate toolbarDefaultItemIdentifiers:self] mutableCopy];
-        
-        count = [_itemIdentifiers count];
-    }
-    
     [[_toolbarView subviews] makeObjectsPerformSelector:@selector(removeFromSuperview)];
     
-    _items = [];
-    _labels = []; 
-
-    var index = 0;
-    
-    for (; index < count; ++index)
-    {
-        var identifier = _itemIdentifiers[index],
-            item = [CPToolbarItem _standardItemWithItemIdentifier:identifier];
-        
-        if (!item)
-            item = [[_delegate toolbar:self itemForItemIdentifier:identifier willBeInsertedIntoToolbar:YES] copy];
-        
-        if (item == nil)
-            [CPException raise:CPInvalidArgumentException
-                        reason:sprintf(@"_delegate %s returned nil toolbar item returned for identifier %s", _delegate, identifier)];
-        
-        [_items addObject:item];
-    }
+    _items = [[self _defaultToolbarItems] mutableCopy];
     
     // Store items sorted by priority.  We want items to be removed first at the end of the array,
     // items to be removed last at the front.
@@ -285,25 +263,118 @@ var CPToolbarConfigurationsByIdentifier = nil;
 }
 
 /*!
-    Returns the index of the specified toolbar item
-    @param anItem the item to obtain the index for
-*/
-- (int)indexOfItem:(CPToolbarItem)anItem
-{
-    var info = [_itemIndexes objectForKey:[anItem hash]];
-    
-    if (!info)
-        return CPNotFound;
-    
-    return info.index;
-}
-
-/*!
     Returns the toolbar items sorted by their <code>visibilityPriority</code>(ies).
 */
 - (CPArray)itemsSortedByVisibilityPriority
 {
     return _itemsSortedByVisibilityPriority;
+}
+
+/* @ignore */
+- (id)_itemForItemIdentifier:(CPString)identifier willBeInsertedIntoToolbar:(BOOL)toolbar
+{
+    var item = [_identifiedItems objectForKey:identifier];
+    if (!item)
+    {
+        item = [CPToolbarItem _standardItemWithItemIdentifier:identifier];
+        if (_delegate && !item)
+        {
+            item = [_delegate toolbar:self itemForItemIdentifier:identifier willBeInsertedIntoToolbar:toolbar];
+            if (!item)
+                [CPException raise:CPInvalidArgumentException
+                            reason:sprintf(@"_delegate %s returned nil toolbar item returned for identifier %s", _delegate, identifier)];
+        }
+        
+        [_identifiedItems setObject:item forKey:identifier];
+    }
+
+    return item;
+}
+
+/* @ignore */
+- (id)_itemsWithIdentifiers:(CPArray)identifiers
+{   
+    var items = [];
+    for (var i = 0; i < identifiers.length; i++)
+        [items addObject:[self _itemForItemIdentifier:identifiers[i] willBeInsertedIntoToolbar:NO]];
+
+    return items;
+}
+
+/* @ignore */
+-(id)_defaultToolbarItems
+{
+    if (!_defaultItems)
+        if ([_delegate respondsToSelector:@selector(toolbarDefaultItemIdentifiers:)])
+            _defaultItems = [self _itemsWithIdentifiers:[_delegate toolbarDefaultItemIdentifiers:self]];
+    
+    return _defaultItems;
+}
+
+@end
+
+
+var CPToolbarIdentifierKey              = "CPToolbarIdentifierKey",
+    CPToolbarDisplayModeKey             = "CPToolbarDisplayModeKey",
+    CPToolbarShowsBaselineSeparatorKey  = "CPToolbarShowsBaselineSeparatorKey",
+    CPToolbarAllowsUserCustomizationKey = "CPToolbarAllowsUserCustomizationKey",
+    CPToolbarIsVisibleKey               = "CPToolbarIsVisibleKey",
+    CPToolbarDelegateKey                = "CPToolbarDelegateKey",
+    CPToolbarIdentifiedItemsKey         = "CPToolbarIdentifiedItemsKey",
+    CPToolbarDefaultItemsKey            = "CPToolbarDefaultItemsKey",
+    CPToolbarAllowedItemsKey            = "CPToolbarAllowedItemsKey",
+    CPToolbarSelectableItemsKey         = "CPToolbarSelectableItemsKey";
+
+@implementation CPToolbar (CPCoding)
+
+/*
+    Initializes the toolbar by unarchiving data from <code>aCoder</code>.
+    @param aCoder the coder containing the archived <objj>CPToolbar</objj>.
+*/
+- (id)initWithCoder:(CPCoder)aCoder
+{
+    self = [super init];
+    
+    if (self)
+    {
+        _identifier                 = [aCoder decodeObjectForKey:CPToolbarIdentifierKey];
+        _displayMode                = [aCoder decodeIntForKey:CPToolbarDisplayModeKey];
+        _showsBaselineSeparator     = [aCoder decodeBoolForKey:CPToolbarShowsBaselineSeparatorKey];
+        _allowsUserCustomization    = [aCoder decodeBoolForKey:CPToolbarAllowsUserCustomizationKey];
+        _isVisible                  = [aCoder decodeBoolForKey:CPToolbarIsVisibleKey];
+        
+        _identifiedItems            = [aCoder decodeObjectForKey:CPToolbarIdentifiedItemsKey];
+        _defaultItems               = [aCoder decodeObjectForKey:CPToolbarDefaultItemsKey];
+        _allowedItems               = [aCoder decodeObjectForKey:CPToolbarAllowedItemsKey];
+        _selectableItems            = [aCoder decodeObjectForKey:CPToolbarSelectableItemsKey];
+        
+        _items = [];
+        [CPToolbar _addToolbar:self forIdentifier:_identifier];
+        
+        [self setDelegate:[aCoder decodeObjectForKey:CPToolbarDelegateKey]];
+    }
+    
+    return self;
+}
+
+/*
+    Archives this toolbar into the provided coder.
+    @param aCoder the coder to which the toolbar's instance data will be written.
+*/
+- (void)encodeWithCoder:(CPCoder)aCoder
+{
+    [aCoder encodeObject:_identifier            forKey:CPToolbarIdentifierKey];
+    [aCoder encodeInt:_displayMode              forKey:CPToolbarDisplayModeKey];
+    [aCoder encodeBool:_showsBaselineSeparator  forKey:CPToolbarShowsBaselineSeparatorKey];
+    [aCoder encodeBool:_allowsUserCustomization forKey:CPToolbarAllowsUserCustomizationKey];
+    [aCoder encodeBool:_isVisible               forKey:CPToolbarIsVisibleKey];
+    
+    [aCoder encodeObject:_identifiedItems       forKey:CPToolbarIdentifiedItemsKey];
+    [aCoder encodeObject:_defaultItems          forKey:CPToolbarDefaultItemsKey];
+    [aCoder encodeObject:_allowedItems          forKey:CPToolbarAllowedItemsKey];
+    [aCoder encodeObject:_selectableItems       forKey:CPToolbarSelectableItemsKey];
+    
+    [aCoder encodeConditionalObject:_delegate   forKey:CPToolbarDelegateKey];
 }
 
 @end
@@ -330,7 +401,7 @@ var _CPToolbarItemInfoMake = function(anIndex, aView, aLabel, aMinWidth)
     CPIndexSet          _flexibleWidthIndexes;
     CPIndexSet          _visibleFlexibleWidthIndexes;
     
-    CPMutableDictionary _itemInfos;
+    CPDictionary        _itemInfos;
     
     CPArray             _visibleItems;
     CPArray             _invisibleItems;
@@ -578,16 +649,6 @@ var _CPToolbarItemInfoMake = function(anIndex, aView, aLabel, aMinWidth)
     else
         [_additionalItemsButton removeFromSuperview];
     
-}
-
-- (int)indexOfItem:(CPToolbarItem)anItem
-{
-    var info = [_itemInfos objectForKey:[anItem hash]];
-    
-    if (!info)
-        return CPNotFound;
-    
-    return info.index;
 }
 
 - (CPView)viewForItem:(CPToolbarItem)anItem

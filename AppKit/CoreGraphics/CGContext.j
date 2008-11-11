@@ -208,14 +208,14 @@ if (!CPFeatureIsCompatible(CPHTMLCanvasFeature))
 
 function CGGStateCreate()
 {
-    return { strokeStyle:"#000", fillStyle:"#ccc", lineWidth:1.0, lineJoin:kCGLineJoinMiter, lineCap:kCGLineCapButt, miterLimit:10.0, globalAlpha:1.0, 
+    return { alpha:1.0, strokeStyle:"#000", fillStyle:"#ccc", lineWidth:1.0, lineJoin:kCGLineJoinMiter, lineCap:kCGLineCapButt, miterLimit:10.0, globalAlpha:1.0, 
         blendMode:kCGBlendModeNormal, 
         shadowOffset:_CGSizeMakeZero(), shadowBlur:0.0, shadowColor:NULL, CTM:_CGAffineTransformMakeIdentity() };
 }
 
 function CGGStateCreateCopy(aGState)
 {
-    return { strokeStyle:aGState.strokeStyle, fillStyle:aGState.fillStyle, lineWidth:aGState.lineWidth, 
+    return { alpha:aGState.alpha, strokeStyle:aGState.strokeStyle, fillStyle:aGState.fillStyle, lineWidth:aGState.lineWidth, 
         lineJoin:aGState.lineJoin, lineCap:aGState.lineCap, miterLimit:aGState.miterLimit, globalAlpha:aGState.globalAlpha, 
         blendMode:aGState.blendMode, 
         shadowOffset:aGState.shadowOffset, shadowBlur:aGState.shadowBlur, shadowColor:aGState.shadowColor, CTM:_CGAffineTransformMakeCopy(aGState.CTM) };
@@ -416,6 +416,11 @@ function CGContextSetShadowWithColor(aContext, aSize, aBlur, aColor)
     gState.shadowOffset = _CGSizeMakeCopy(aSize);
     gState.shadowBlur = aBlur;
     gState.shadowColor = aColor;
+}
+
+function CGContextSetAlpha(aContext, anAlpha)
+{
+    aContext.gState.alpha = MAX(MIN(anAlpha, 1.0), 0.0);
 }
 
 }   // END CANVAS IF
