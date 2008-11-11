@@ -222,14 +222,15 @@ var CPURLConnectionDelegate = nil;
 {
     if (_XMLHTTPRequest.readyState == XMLHTTPRequestComplete)
     {
-        var statusCode = _XMLHTTPRequest.status;
+        var statusCode = _XMLHTTPRequest.status,
+            url = [_request URL];
         
         if ([_delegate respondsToSelector:@selector(connection:didReceiveResponse:)])
             [_delegate connection:self didReceiveResponse:[[CPHTTPURLResponse alloc] _initWithStatusCode:statusCode]];
             
         if (!_isCanceled)
         {
-            if (statusCode == 200)
+            if (statusCode == 200 || (url.indexOf("file:") === 0 && statusCode === 0) || ((url.indexOf("http:") !== 0 || url.indexOf("https:") !== 0) && window.location && window.location.protocol === "file:" && statusCode === 0))
             {
                 [_delegate connection:self didReceiveData:_XMLHTTPRequest.responseText];
                 [_delegate connectionDidFinishLoading:self];
