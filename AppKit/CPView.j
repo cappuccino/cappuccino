@@ -288,11 +288,11 @@ var DOMElementPrototype         = nil,
     var index = anotherView ? [_subviews indexOfObjectIdenticalTo:anotherView] : CPNotFound;
     
     // In other words, if no view, then either all the way at the bottom or all the way at the top.
-    if (index == CPNotFound)
-        index = (anOrderingMode == CPWindowAbove) ? [_subviews count] : 0;
+    if (index === CPNotFound)
+        index = (anOrderingMode === CPWindowAbove) ? [_subviews count] : 0;
     
     // else, if we have a view, above if above.
-    else if (anOrderingMode == CPWindowAbove)
+    else if (anOrderingMode === CPWindowAbove)
         ++index;
         
     [self _insertSubview:aSubview atIndex:index];
@@ -309,7 +309,8 @@ var DOMElementPrototype         = nil,
     {
         var index = [_subviews indexOfObjectIdenticalTo:aSubview];
         
-        if (index == anIndex || index == count - 1 && anIndex == count)
+        // FIXME: should this be anIndex >= count? (last one)
+        if (index === anIndex || index === count - 1 && anIndex === count)
             return;
         
         [_subviews removeObjectAtIndex:index];
@@ -320,6 +321,9 @@ var DOMElementPrototype         = nil,
 
         if (anIndex > index)
             --anIndex;
+        
+        //We've effectively made the subviews array shorter, so represent that.
+        --count;
     }
     else
     {
@@ -336,7 +340,7 @@ var DOMElementPrototype         = nil,
         aSubview._superview = self;
     }
     
-    if (anIndex == CPNotFound || anIndex >= count)
+    if (anIndex === CPNotFound || anIndex >= count)
     {
         _subviews.push(aSubview);
 
