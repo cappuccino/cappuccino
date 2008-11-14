@@ -632,6 +632,9 @@
 */
 - (BOOL)isEqualToArray:(id)anArray
 {
+    if (self === anArray)
+        return YES;
+    
     if(length != anArray.length)
         return NO;
     
@@ -639,10 +642,27 @@
         count = [self count];
     
     for(; index < count; ++index)
-        if(!self[index] || !anArray[index] || ![self[index] isEqual:anArray[index]])
+    {
+        var lhs = self[index],
+            rhs = anArray[index];
+        
+        // If they're not equal, and either doesn't have an isa, or they're !isEqual (not isEqual)
+        if (lhs !== rhs && (!lhs.isa || !rhs.isa || ![lhs isEqual:rhs]))
             return NO;
-    
+    }
+        
     return YES;
+}
+
+- (BOOL)isEqual:(id)anObject
+{
+    if (self === anObject)
+        return YES;
+    
+    if(![anObject isKindOfClass:[CPArray class]])
+        return NO;
+
+    return [self isEqualToArray:anObject];
 }
 
 // Deriving new arrays
@@ -906,13 +926,24 @@
     @param objects the objects to add to this array
     @param anIndexSet the indices for the objects
 */
-- (void)insertObjects:(CPArray)objects atIndexes:(CPIndexSet)anIndexSet
+- (void)insertObjects:(CPArray)objects atIndexes:(CPIndexSet)indexes
 {
-    var index = 0,
-        position = CPNotFound;
+    var indexesCount = [indexes count],
+        objectsCount = [objects count];
     
-    while ((position = [indexes indexGreaterThanIndex:position]) != CPNotFound)
-        [self insertObject:objects[index++] atindex:position];
+    if(indexesCount !== objectsCount)
+        [CPException raise:CPRangeException reason:"the counts of the passed-in array (" + objectsCount + ") and index set (" + indexesCount + ") must be identical."];
+    
+    var lastIndex = [indexes lastIndex];
+    
+    if(lastIndex >= [self count] + indexesCount)
+        [CPException raise:CPRangeException reason:"the last index (" + lastIndex + ") must be less than the sum of the original count (" + [self count] + ") and the insertion count (" + indexesCount + ")."];    
+    
+    var index = 0,
+        currentIndex = [indexes firstIndex];
+ 
+    for (; index < objectsCount; ++index, currentIndex = [indexes indexGreaterThanIndex:currentIndex])
+        [self insertObject:objects[index] atIndex:currentIndex];
 }
 
 /*!
