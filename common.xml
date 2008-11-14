@@ -169,6 +169,7 @@
         <element name = "tests" />
         <sequential>
             <apply executable = "ojtest" parallel = "true">
+                <env key = "OBJJ_INCLUDE_PATHS" value = "@{frameworks}" />
                 <tests/>
             </apply>
         </sequential>
