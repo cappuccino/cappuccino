@@ -10,18 +10,18 @@
 
     <property name = "Build.Cappuccino" location = "${Build}/Cappuccino" />
     
-    <property name = "Build.Cappuccino.Starter" location = "${Build}/Cappuccino/Starter" />
+    <property name = "Build.Cappuccino.Starter" location = "${Build.Cappuccino}/Starter" />
     <property name = "Build.Cappuccino.Starter.Frameworks" location = "${Build.Cappuccino.Starter}/Frameworks" />
     
-    <property name = "Build.Cappuccino.Tools" location = "${Build}/Cappuccino/Tools" />
+    <property name = "Build.Cappuccino.Tools" location = "${Build.Cappuccino}/Tools" />
     <property name = "Build.Cappuccino.Tools.Frameworks" location = "${Build.Cappuccino.Tools}/Frameworks" />
     
     <property name = "Build.Cappuccino.Tools.Objj" location = "${Build.Cappuccino.Tools}/objj" />
     
-    <property name = "Build.Cappuccino.Tools.Bin" location = "${Build.Cappuccino.Tools}/objj/bin" />
-    <property name = "Build.Cappuccino.Tools.Lib" location = "${Build.Cappuccino.Tools}/objj/lib" />
-    <property name = "Build.Cappuccino.Tools.Lib.Frameworks" location = "${Build.Cappuccino.Tools}/objj/lib/Frameworks" />
-    <property name = "Build.Cappuccino.Tools.Lib.Frameworks-Rhino" location = "${Build.Cappuccino.Tools}/objj/lib/Frameworks-Rhino" />
+    <property name = "Build.Cappuccino.Tools.Bin" location = "${Build.Cappuccino.Tools.Objj}/bin" />
+    <property name = "Build.Cappuccino.Tools.Lib" location = "${Build.Cappuccino.Tools.Objj}/lib" />
+    <property name = "Build.Cappuccino.Tools.Lib.Frameworks" location = "${Build.Cappuccino.Tools.Lib}/Frameworks" />
+    <property name = "Build.Cappuccino.Tools.Lib.Frameworks-Rhino" location = "${Build.Cappuccino.Tools.Lib}/Frameworks-Rhino" />
     
     <property name = "Build.Cappuccino.Tools.Editors" location = "${Build.Cappuccino.Tools}/Editors" />
 
@@ -132,6 +132,45 @@
         </sequential>
             
     </macrodef>
+    
+    <!-- git tasks -->
 
-
+    <macrodef name = "git">
+        <attribute name = "command" />
+        <attribute name = "dir" default = "" />
+        <element name = "args" optional = "true" />
+        <sequential>
+            <echo message = "git @{command}" />
+            <exec executable = "git" dir = "@{dir}">
+                <arg value = "@{command}" />
+                <args/>
+            </exec>
+        </sequential>
+    </macrodef>
+    
+    <macrodef name = "git-clone-pull">
+        <attribute name = "repository" />
+        <attribute name = "dest" />
+        <sequential>
+            <git command = "clone">
+                <args>
+                    <arg value = "@{repository}" />
+                    <arg value = "@{dest}" />
+                </args>
+            </git>
+            <git command = "pull" dir = "@{dest}" />
+        </sequential>
+    </macrodef>
+    
+    <!-- ojtest task -->
+    
+    <macrodef name = "ojtest">
+        <attribute name = "frameworks" default = "${env.STEAM_BUILD}/Release" />
+        <element name = "tests" />
+        <sequential>
+            <apply executable = "ojtest" parallel = "true">
+                <tests/>
+            </apply>
+        </sequential>
+    </macrodef>
 </project>
