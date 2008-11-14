@@ -558,6 +558,9 @@ import <Foundation/CPString.j>
 
 @end
 
+@implementation CPMutableAttributedString : CPAttributedString {}
+@end
+
 var isEqual = function isEqual(a, b)
 {
     if (a == b)
