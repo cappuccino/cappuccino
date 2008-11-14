@@ -61,12 +61,12 @@
 
 - (CPString)resourcePath
 {
-    var path = [self bundlePath];
+    var resourcePath = [self bundlePath];
     
-    if (path.length)
-        path += '/';
+    if (resourcePath.length)
+        resourcePath += '/';
         
-    return path + "Resources";
+    return resourcePath + "Resources";
 }
 
 - (Class)principalClass

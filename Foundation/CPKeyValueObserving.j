@@ -448,11 +448,22 @@ var _CPKVOInfoMake = function _CPKVOInfoMake(anObserver, theOptions, aContext, a
     };
 }
 
+var _kvoKeyForSetter = function _kvoKeyForSetter(selector)
+{
+    if (selector.split(":").length > 2 || !([selector hasPrefix:@"set"] || [selector hasPrefix:@"_set"]))
+        return nil;
+        
+    var keyIndex = selector.indexOf("set") + "set".length,
+        colonIndex = selector.indexOf(":");
+    
+    return selector.charAt(keyIndex).toLowerCase() + selector.substring(keyIndex+1, colonIndex);
+}
+
 var _kvoMethodForMethod = function _kvoMethodForMethod(theObject, theMethod)
 {
     var methodName = theMethod.name,
         methodImplementation = theMethod.method_imp,
-        setterKey = kvoKeyForSetter(methodName);
+        setterKey = _kvoKeyForSetter(methodName);
     
     if (setterKey && objj_msgSend(theObject, @selector(automaticallyNotifiesObserversForKey:), setterKey))
     {            
@@ -467,17 +478,6 @@ var _kvoMethodForMethod = function _kvoMethodForMethod(theObject, theMethod)
     }
 
     return nil;
-}
-
-var kvoKeyForSetter = function kvoKeyForSetter(selector)
-{
-    if (selector.split(":").length > 2 || !([selector hasPrefix:@"set"] || [selector hasPrefix:@"_set"]))
-        return nil;
-        
-    var keyIndex = selector.indexOf("set") + "set".length,
-        colonIndex = selector.indexOf(":");
-    
-    return selector.charAt(keyIndex).toLowerCase() + selector.substring(keyIndex+1, colonIndex);
 }
 
 @implementation CPArray (KeyValueObserving)

@@ -26,9 +26,7 @@ function objj_preprocess(/*String*/ aString, /*objj_bundle*/ aBundle, /*objj_fil
 {    
     try
     {
-        OBJJ_CURRENT_BUNDLE = aBundle;
-    
-        return new objj_preprocessor(aString, aSourceFile, flags).fragments();
+        return new objj_preprocessor(aString, aSourceFile, aBundle, flags).fragments();
     }
     catch (anException)
     {
@@ -135,7 +133,7 @@ objj_stringBuffer.prototype.isEmpty = function()
     return (this.atoms.length === 0);
 }
 
-var objj_preprocessor = function(aString, aSourceFile, flags)
+var objj_preprocessor = function(aString, aSourceFile, aBundle, flags)
 {
     this._currentClass = "";
     this._currentSuperClass = "";
@@ -145,6 +143,7 @@ var objj_preprocessor = function(aString, aSourceFile, flags)
     this._preprocessed = new objj_stringBuffer();
     this._tokens = new objj_lexer(aString);
     this._flags = flags;
+    this._bundle = aBundle;
     
     this.preprocess(this._tokens, this._preprocessed);
     this.fragment();
@@ -452,7 +451,7 @@ objj_preprocessor.prototype.fragment = function()
     
     // But make sure it's not just all whitespace!
     if ((/[^\s]/).test(preprocessed))
-        this._fragments.push(fragment_create_code(preprocessed, OBJJ_CURRENT_BUNDLE, this._file));
+        this._fragments.push(fragment_create_code(preprocessed, this._bundle, this._file));
     
     this._preprocessed.clear();
 }

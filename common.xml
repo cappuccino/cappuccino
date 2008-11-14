@@ -1,31 +1,42 @@
-<project>
+<project name = "common">
+    
+    <property environment = "env" />
+    
+    <dirname property = "Checkout" file = "${ant.file.common}" />
 
     <property name = "Configuration" value = "Release" />
 
-    <property environment = "environment" />
-    <property name = "Build" location = "${environment.STEAM_BUILD}" />
+    <property name = "Build" location = "${env.STEAM_BUILD}" />
 
     <property name = "Build.Cappuccino" location = "${Build}/Cappuccino" />
     
-    <property name = "Build.Cappuccino.Starter" location = "${Build}/Cappuccino/Starter" />
+    <property name = "Build.Cappuccino.Starter" location = "${Build.Cappuccino}/Starter" />
     <property name = "Build.Cappuccino.Starter.Frameworks" location = "${Build.Cappuccino.Starter}/Frameworks" />
     
-    <property name = "Build.Cappuccino.Tools" location = "${Build}/Cappuccino/Tools" />
+    <property name = "Build.Cappuccino.Tools" location = "${Build.Cappuccino}/Tools" />
     <property name = "Build.Cappuccino.Tools.Frameworks" location = "${Build.Cappuccino.Tools}/Frameworks" />
-    
     
     <property name = "Build.Cappuccino.Tools.Objj" location = "${Build.Cappuccino.Tools}/objj" />
     
-    <property name = "Build.Cappuccino.Tools.Bin" location = "${Build.Cappuccino.Tools}/objj/bin" />
-    <property name = "Build.Cappuccino.Tools.Lib" location = "${Build.Cappuccino.Tools}/objj/lib" />
-    <property name = "Build.Cappuccino.Tools.Lib.Frameworks" location = "${Build.Cappuccino.Tools}/objj/lib/Frameworks" />
-    <property name = "Build.Cappuccino.Tools.Lib.Frameworks-Rhino" location = "${Build.Cappuccino.Tools}/objj/lib/Frameworks-Rhino" />
+    <property name = "Build.Cappuccino.Tools.Bin" location = "${Build.Cappuccino.Tools.Objj}/bin" />
+    <property name = "Build.Cappuccino.Tools.Lib" location = "${Build.Cappuccino.Tools.Objj}/lib" />
+    <property name = "Build.Cappuccino.Tools.Lib.Frameworks" location = "${Build.Cappuccino.Tools.Lib}/Frameworks" />
+    <property name = "Build.Cappuccino.Tools.Lib.Frameworks-Rhino" location = "${Build.Cappuccino.Tools.Lib}/Frameworks-Rhino" />
     
     <property name = "Build.Cappuccino.Tools.Editors" location = "${Build.Cappuccino.Tools}/Editors" />
+
+    <property name = "env.OBJJ_HOME" value = "/usr/local/share/objj" />
+    <property name = "env.OBJJ_LIB" value = "${env.OBJJ_HOME}/lib" />
     
-    <property environment = "environment" />
-    <property name = "environment.OBJJ_HOME" value = "/usr/local/share/objj" />
-    <property name = "environment.OBJJ_LIB" value = "${environment.OBJJ_HOME}/lib" />
+    <!-- allow bootstrapping: use installed js.jar if it's present, otherwise use local version -->
+    <condition property = "jsjar" value = "${env.OBJJ_LIB}/js.jar">
+        <and>
+            <available file = "${env.OBJJ_LIB}/js.jar"  />
+            <!-- hack to prevent deprecation warnings for overwriting properties -->
+            <not><isset property = "jsjar" /></not>
+        </and>
+    </condition>
+    <property name = "jsjar" value = "${Checkout}/Tools/Utilities/js.jar" />
 
     <!-- prepare-release -->
     
@@ -87,7 +98,7 @@
         <sequential>
             <java classname = "org.mozilla.javascript.tools.jsc.Main" dir = "@{dir}" fork = "true">
                 <classpath>
-                    <pathelement location = "${environment.OBJJ_LIB}/js.jar" />
+                    <pathelement location = "${jsjar}" />
                     <pathelement location = "." />
                 </classpath>
                 
@@ -121,6 +132,45 @@
         </sequential>
             
     </macrodef>
+    
+    <!-- git tasks -->
 
-
+    <macrodef name = "git">
+        <attribute name = "command" />
+        <attribute name = "dir" default = "" />
+        <element name = "args" optional = "true" />
+        <sequential>
+            <echo message = "git @{command}" />
+            <exec executable = "git" dir = "@{dir}">
+                <arg value = "@{command}" />
+                <args/>
+            </exec>
+        </sequential>
+    </macrodef>
+    
+    <macrodef name = "git-clone-pull">
+        <attribute name = "repository" />
+        <attribute name = "dest" />
+        <sequential>
+            <git command = "clone">
+                <args>
+                    <arg value = "@{repository}" />
+                    <arg value = "@{dest}" />
+                </args>
+            </git>
+            <git command = "pull" dir = "@{dest}" />
+        </sequential>
+    </macrodef>
+    
+    <!-- ojtest task -->
+    
+    <macrodef name = "ojtest">
+        <attribute name = "frameworks" default = "${env.STEAM_BUILD}/Release" />
+        <element name = "tests" />
+        <sequential>
+            <apply executable = "ojtest" parallel = "true">
+                <tests/>
+            </apply>
+        </sequential>
+    </macrodef>
 </project>

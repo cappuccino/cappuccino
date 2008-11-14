@@ -331,7 +331,7 @@ var CPProgressIndicatorSpinningStyleColors  = nil,
 */
 - (void)setIndeterminate:(BOOL)isIndeterminate
 {
-    if (_indeterminate == isIndeterminate)
+    if (_isIndeterminate == isIndeterminate)
         return;
     
     _isIndeterminate = isIndeterminate;

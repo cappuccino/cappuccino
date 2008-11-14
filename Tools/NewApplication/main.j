@@ -1,15 +1,15 @@
-//
-// main.j
-// PhotoAlbum
-//
-// Created by Francisco Tolmasky on July 18th, 2008.
-// Copyright 2005 - 2008, 280 North, Inc. All rights reserved.
-//
+/*
+ * main.j
+ *
+ * Created by __Me__ on __Date__.
+ * Copyright 2008 __MyCompanyName__. All rights reserved.
+ */
 
-import <Foundation/Foundation.j>
-import <AppKit/AppKit.j>
+@import <Foundation/Foundation.j>
+@import <AppKit/AppKit.j>
 
-import "AppController.j"
+@import "AppController.j"
+
 
 function main(args, namedArgs)
 {

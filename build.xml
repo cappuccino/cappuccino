@@ -40,6 +40,7 @@
                     <file name = "Objective-J/build.xml" />
                     <file name = "Tools/objjc/build.xml" />
                     <file name = "Tools/steam/build.xml" />
+                    <file name = "Tools/Utilities/build.xml" />
                     <file name = "Tools/Install/build.xml" />
                 </filelist>
             </files>
@@ -47,9 +48,31 @@
     </target>
     
     <target name = "install-tools">
-        <exec executable = "sh" dir = "${Build}/Cappuccino/Tools">
+        <!-- TODO: replace this with a cross-platform (i.e. Windows compatible) version -->
+        <exec executable = "sudo" dir = "${Build.Cappuccino.Tools}">
+            <arg value = "sh" />
             <arg value = "install-tools" />
         </exec>
     </target>
 
+    <target name = "bootstrap">
+        <antcall target = "tools" />
+        <antcall target = "install-tools" />
+        <antcall target = "release" />
+        <antcall target = "install-tools" />
+    </target>
+    
+    <target name = "update-install" depends = "release">
+        <antcall target = "install-tools" />
+    </target>
+    
+    <target name = "test">
+        <ojtest>
+            <tests>
+                <fileset dir = "Tests/Foundation" includes = "*.j"/>
+                <fileset dir = "Tests/AppKit" includes = "*.j"/>
+            </tests>
+        </ojtest>
+    </target>
+    
 </project>

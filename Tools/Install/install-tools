@@ -27,20 +27,13 @@ mkdir -p $INSTALL_DIR/share
 
 cp -fR objj/ $INSTALL_DIR/share/objj
 
-ln -sf $INSTALL_DIR/share/objj/bin/nib2cib $INSTALL_DIR/bin/nib2cib
-ln -sf $INSTALL_DIR/share/objj/bin/objj $INSTALL_DIR/bin/objj
-ln -sf $INSTALL_DIR/share/objj/bin/objjc $INSTALL_DIR/bin/objjc
-ln -sf $INSTALL_DIR/share/objj/bin/steam $INSTALL_DIR/bin/steam
-ln -sf $INSTALL_DIR/share/objj/bin/bake $INSTALL_DIR/bin/bake
-ln -sf $INSTALL_DIR/share/objj/bin/press $INSTALL_DIR/bin/press
-ln -sf $INSTALL_DIR/share/objj/bin/cplutil $INSTALL_DIR/bin/cplutil
+BINS=`ls objj/bin`
+for BIN in $BINS
+do
+    ln -sf $INSTALL_DIR/share/objj/bin/$BIN $INSTALL_DIR/bin/$BIN
+    chmod +x $INSTALL_DIR/bin/$BIN
+done
 
-chmod +x $INSTALL_DIR/bin/nib2cib
-chmod +x $INSTALL_DIR/bin/objj
-chmod +x $INSTALL_DIR/bin/objjc
-chmod +x $INSTALL_DIR/bin/steam
-chmod +x $INSTALL_DIR/bin/bake
-chmod +x $INSTALL_DIR/bin/press
 chmod +x $INSTALL_DIR/share/objj/bin/*
 chmod +x $INSTALL_DIR/share/objj/lib/cat
 
@@ -48,7 +41,7 @@ cat <<EOT
     
     Installation of the Objective-J tools to $INSTALL_DIR is almost complete!
     
-    Several environment variables must be set:
+    Several environment variables should be set:
     
     - PATH should include $INSTALL_DIR/bin:
 
@@ -62,7 +55,7 @@ cat <<EOT
         
         (currently: $OBJJ_HOME)
     
-    - STEAM_BUILD should be set to the build directory of your choice (e.x. $HOME/objj_build):
+    - STEAM_BUILD should be set (required) to the build directory of your choice (e.x. $HOME/objj_build):
 
         export STEAM_BUILD=$HOME/objj_build
         

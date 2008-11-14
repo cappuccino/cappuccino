@@ -1,0 +1,37 @@
+<?xml version = "1.0"?>
+<project name = "ojunit" default = "build" basedir = "." >
+
+    <import file = "../../common.xml" />
+
+    <property name = "Build.Products" location = "${Build}/ojunit.build/${Configuration}" />
+    <property name = "Build.ojunit" location = "${Build}/${Configuration}/ojunit" />
+
+    <target name = "clean">
+        <delete dir = "${Build.ojunit}" verbose = "true" />
+        <delete dir = "${Build.Products}" verbose = "true" />
+    </target>
+
+    <target name = "build">
+    </target>
+
+    <target name = "release" depends = "build">
+
+        <antcall target = "prepare-release" />
+        
+        <git-clone-pull repository="git://github.com/280north/ojunit.git" dest="${Build.ojunit}" />
+        
+        <mkdir dir = "${Build.Cappuccino.Tools.Lib}/ojunit" />
+        <copy todir = "${Build.Cappuccino.Tools.Lib}/ojunit">
+            <fileset dir = "${Build.ojunit}" includes = "**/*.j" />
+        </copy>
+        
+        <!-- remove following line if/when we move the shell script to the ojunit repo -->
+        <copy file = "${basedir}/ojtest" tofile = "${Build.ojunit}/ojtest" />
+        
+        <copy file = "${Build.ojunit}/ojtest" tofile = "${Build.Cappuccino.Tools.Bin}/ojtest" />
+
+        <chmod file = "${Build.Cappuccino.Tools.Bin}/ojtest" perm = "+x" />
+
+    </target>
+
+</project>
