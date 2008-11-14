@@ -461,9 +461,9 @@
 */
 - (unsigned)indexOfObject:(id)anObject sortedByFunction:(Function)aFunction context:(id)aContext
 {
-    if (!aFunction || !anObject)
+    if (!aFunction || anObject === undefined)
         return CPNotFound;
- 
+
     var mid, c, first = 0, last = length - 1;
     while (first <= last)
     {

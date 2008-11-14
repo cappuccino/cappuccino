@@ -423,7 +423,7 @@
 */
 - (BOOL)isEqual:(id)anObject
 {
-    return self === anObject;
+    return self === anObject || [self hash] === [anObject hash];
 }
 
 /*!
