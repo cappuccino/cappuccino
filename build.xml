@@ -66,7 +66,7 @@
         <antcall target = "install-tools" />
     </target>
     
-    <target name = "test">
+    <target name = "test" depends = "build">
         <ojtest>
             <tests>
                 <fileset dir = "Tests/Foundation" includes = "*.j"/>
