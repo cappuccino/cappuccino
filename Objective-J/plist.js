@@ -29,17 +29,6 @@ OBJJPlistParseException = "OBJJPlistParseException";
 
 var kCFPropertyList280NorthMagicNumber  = "280NPLIST";
 
-/*var BASE64_TABLE = [
-    "A", "B", "C", "D", "E", "F", "G", "H",
-    "I", "J", "K", "L", "M", "N", "O", "P",
-    "Q", "R", "S", "T", "U", "V", "W", "X",
-    "Y", "Z", "a", "b", "c", "d", "e", "f",
-    "g", "h", "i", "j", "k", "l", "m", "n",
-    "o", "p", "q", "r", "s", "t", "u", "v",
-    "w", "x", "y", "z", "0", "1", "2", "3",
-    "4", "5", "6", "7", "8", "9", "+", "/"
-];*/
-
 function objj_data()
 {
     this.string         = "";
@@ -47,45 +36,6 @@ function objj_data()
     this.bytes          = NULL;
     this.base64         = NULL;
 }
-
-/*function data_setBytes(data, bytes)
-{
-    this.bytes = bytes;
-    this.base64 = NULL;
-}
-
-function data_getBytes(data)
-{
-    return this.bytes;
-}
-
-function data_getBase64String()
-{
-    if (!this.base64)
-    {
-        this.base64 = "";
-        
-        var offset = 0,
-            bytes = this.bytes,
-            length = bytes.length;
-        
-            uint24 = this.bytes[offset] << 16 | this.bytes[offset + 1] << 8 | this.bytes[offset + 2];
-            this.base64 += BASE64_TABLE[ ( uint24 & 0xFC0000 ) >> 18 ]);
-            this.base64 += BASE64_TABLE[ ( uint24 & 0x03F000 ) >> 12 ]);
-            this.base64 += BASE64_TABLE[ ( uint24 & 0x0FC0   ) >>  6 ]);
-            this.base64 += BASE64_TABLE[ ( uint24 & 0x3F     )       ]);
-        
-        for (;offset < length; ++offset)
-        {   
-            this.base64 = BASE64_TABLE[bytes[offset] >> 2];
-            this.base64 = BASE64_TABLE[((bytes[offset] & 3) << 4) | (bytes[++offset] >> 4)];
-            this.base64 = offset < length ? "=" : BASE64_TABLE[((bytes[offset] & 15) << 2) | (bytes[++offset] >> 6)];
-            this.base64 = offset < length ? "=" : BASE64_TABLE[bytes[offset] & 63];
-        }
-    }
-    
-    return this.base64;
-}*/
 
 var objj_markedStream = function(aString)
 {
@@ -402,7 +352,7 @@ function CPPropertyListCreateFromXMLData(XMLNodeOrData)
             case PLIST_NUMBER_INTEGER:  object = parseInt(CHILD_VALUE(XMLNode));
                                         break;
                                         
-            case PLIST_STRING:          object = decodeURIComponent(FIRST_CHILD(XMLNode) ? CHILD_VALUE(XMLNode) : "");
+            case PLIST_STRING:          object = _decodeHTMLComponent(FIRST_CHILD(XMLNode) ? CHILD_VALUE(XMLNode) : "");
                                         break;
                                         
             case PLIST_BOOLEAN_TRUE:    object = true;
@@ -479,6 +429,16 @@ var _CPDictionaryAppendXMLData = function(XMLData, aDictionary)
     XMLData.string += "</dict>";
 }
 
+var _encodeHTMLComponent = function(aString)
+{
+    return aString.replace('<', "&lt;").replace('>', "&gt;").replace('\"', "&quot;").replace('\'', "&apos;").replace('&', "&amp;");
+}
+
+var _decodeHTMLComponent = function(aString)
+{
+    return aString.replace("&lt;", '<').replace("&gt;", '>').replace("&quot;", '\"').replace("&apos;", '\'').replace("&amp;", '&');
+}
+
 var _CPPropertyListAppendXMLData = function(XMLData, aPlist)
 {
     var type = typeof aPlist,
@@ -492,7 +452,7 @@ var _CPPropertyListAppendXMLData = function(XMLData, aPlist)
     }
     
     if (type == "string")
-        XMLData.string += "<string>" + encodeURIComponent(aPlist) + "</string>";
+        XMLData.string += "<string>" + _encodeHTMLComponent(aPlist) + "</string>";
     
     else if (aPlist === true)
         XMLData.string += "<true/>";
