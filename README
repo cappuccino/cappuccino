@@ -55,7 +55,7 @@ the Cappuccino Tools:
 Refer to the Cappuccino Tools README file for more information on the tools
 that were installed and these environment variables.
 
-Once both the Cappuccino Tools are installed, you can build Cappuccino running "ant release" from within the root of the Cappuccino directory.
+Once both the Cappuccino Tools are installed, you can build Cappuccino running "ant" from within the root of the Cappuccino directory.
 
 Getting Help
 ------------
