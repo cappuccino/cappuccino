@@ -70,7 +70,7 @@
         <ojtest>
             <tests>
                 <fileset dir = "Tests/Foundation" includes = "*.j"/>
-                <fileset dir = "Tests/AppKit" includes = "*.j"/>
+                <!--<fileset dir = "Tests/AppKit" includes = "*.j"/>-->
             </tests>
         </ojtest>
     </target>
