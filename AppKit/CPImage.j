@@ -186,6 +186,7 @@ CPImageDidLoadNotification      = @"CPImageDidLoadNotification";
     should not call this method directly. Instead use
     one of the initializers.
 */
+
 - (void)load
 {
     if (_loadStatus == CPImageLoadStatusLoading || _loadStatus == CPImageLoadStatusCompleted)
@@ -198,9 +199,38 @@ CPImageDidLoadNotification      = @"CPImageDidLoadNotification";
     var isSynchronous = YES;
 
     // FIXME: We need a better/performance way of doing this.
-    _image.onload = function () { if (isSynchronous) window.setTimeout(function() { [self _imageDidLoad] }, 0); else [self _imageDidLoad]; }
-    _image.onerror = function () { if (isSynchronous) window.setTimeout(function() { [self _imageDidError] }, 0); else [self _imageDidError]; }
-    _image.onabort = function () { if (isSynchronous) window.setTimeout(function() { [self _imageDidAbort] }, 0); else [self _imageDidAbort]; }
+    _image.onload = function ()
+        {
+            if (isSynchronous)
+                window.setTimeout(function() { [self _imageDidLoad]; }, 0);
+            else
+            {
+                [self _imageDidLoad];
+                [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
+            }
+        }
+    
+    _image.onerror = function ()
+        {
+            if (isSynchronous)
+                window.setTimeout(function() { [self _imageDidError]; }, 0);
+            else
+            {
+                [self _imageDidError];
+                [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
+            }
+        }
+    
+    _image.onabort = function ()
+        {
+            if (isSynchronous)
+                window.setTimeout(function() { [self _imageDidAbort]; }, 0);
+            else
+            {
+                [self _imageDidAbort];
+                [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
+            }
+        }
         
     _image.src = _filename;
     
@@ -232,8 +262,6 @@ CPImageDidLoadNotification      = @"CPImageDidLoadNotification";
         
     if ([_delegate respondsToSelector:@selector(imageDidLoad:)])
         [_delegate imageDidLoad:self];
-
-    [[CPRunLoop currentRunLoop] performSelectors];
 }
 
 /* @ignore */
@@ -243,8 +271,6 @@ CPImageDidLoadNotification      = @"CPImageDidLoadNotification";
     
     if ([_delegate respondsToSelector:@selector(imageDidError:)])
         [_delegate imageDidError:self];
-
-    [[CPRunLoop currentRunLoop] performSelectors];
 }
 
 /* @ignore */
@@ -254,8 +280,6 @@ CPImageDidLoadNotification      = @"CPImageDidLoadNotification";
     
     if ([_delegate respondsToSelector:@selector(imageDidAbort:)])
         [_delegate imageDidAbort:self];
-
-    [[CPRunLoop currentRunLoop] performSelectors];
 }
 
 @end

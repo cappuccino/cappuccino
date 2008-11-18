@@ -73,7 +73,7 @@ CPJSONPConnectionCallbacks = {};
         [_delegate connection:self didReceiveData:data];
         [self removeScriptTag];
 
-        [[CPRunLoop currentRunLoop] performSelectors];
+        [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
     };
 
     if(shouldStartImmediately)

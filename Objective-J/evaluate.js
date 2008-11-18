@@ -133,7 +133,7 @@ objj_context.prototype.schedule = function()
     
     var context = this;
     
-    window.setTimeout(function () { context.evaluate(); }, 0);
+    window.setNativeTimeout(function () { context.evaluate(); }, 0);
 }
 
 objj_context.prototype.pushFragment = function(aFragment)

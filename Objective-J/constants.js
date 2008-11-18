@@ -68,6 +68,11 @@ var NO      = false,
     SQRT1_2 = Math.SQRT1_2,
     SQRT2   = Math.SQRT2;
 
+window.setNativeTimeout = window.setTimeout;
+window.clearNativeTimeout = window.clearTimeout;
+window.setNativeInterval = window.setInterval;
+window.clearNativeInterval = window.clearInterval;
+
 // Detecting Browser Features
 #define ACTIVE_X                window.ActiveXObject
 #define OPERA                   window.opera

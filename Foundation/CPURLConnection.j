@@ -242,7 +242,7 @@ var CPURLConnectionDelegate = nil;
         }
     }
 
-    [[CPRunLoop currentRunLoop] performSelectors];
+    [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
 }
 
 /* @ignore */

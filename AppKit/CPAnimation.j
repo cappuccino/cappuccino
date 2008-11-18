@@ -220,11 +220,8 @@ ACTUAL_FRAME_RATE = 0;
     _progress = 0.0;
     ACTUAL_FRAME_RATE = 0;
     _startTime = new Date();
-    // FIXME: THIS SHOULD BE A CPTIMER!!!
-    _timer = window.setInterval(function() {
-        [self animationTimerDidFire:_timer];
-        [[CPRunLoop currentRunLoop] performSelectors];
-    }, 1); // must be 1ms not 0 for IE. //_duration * 1000 / _frameRate);
+    
+    _timer = [CPTimer scheduledTimerWithTimeInterval:0.0 target:self selector:@selector(animationTimerDidFire:) userInfo:nil repeats:YES];
 }
 
 /*
@@ -239,9 +236,9 @@ ACTUAL_FRAME_RATE = 0;
     
     [self setCurrentProgress:progress];
     
-    if (progress == 1.0)
+    if (progress === 1.0)
     {
-        window.clearTimeout(_timer);
+        [_timer invalidate];
         _timer = nil;
         
         if ([_delegate respondsToSelector:@selector(animationDidEnd:)])
@@ -258,7 +255,7 @@ ACTUAL_FRAME_RATE = 0;
     if (!_timer)
         return;
     
-    window.clearTimeout(_timer);
+    [_timer invalidate];
     _timer = nil;
     
     if ([_delegate respondsToSelector:@selector(animationDidStop:)])

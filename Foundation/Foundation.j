@@ -47,6 +47,7 @@
 @import "CPRunLoop.j"
 @import "CPSortDescriptor.j"
 @import "CPString.j"
+@import "CPTimer.j"
 @import "CPUndoManager.j"
 @import "CPURLConnection.j"
 @import "CPURLRequest.j"

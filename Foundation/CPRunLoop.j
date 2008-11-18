@@ -46,6 +46,7 @@ var _CPRunLoopPerformPool           = [],
     id          _argument;
     unsigned    _order;
     CPArray     _runLoopModes;
+    BOOL        _isValid;
 }
 
 + (void)_poolPerform:(_CPRunLoopPerform)aPerform
@@ -67,6 +68,7 @@ var _CPRunLoopPerformPool           = [],
         perform._arguments = anArgument;
         perform._order = anOrder;
         perform._runLoopModes = modes;
+        perform._isValid = YES;
         
         return perform;
     }
@@ -85,6 +87,7 @@ var _CPRunLoopPerformPool           = [],
         _argument = anArgument;
         _order = anOrder;
         _runLoopModes = modes;
+        _isValid = YES;
     }
     
     return self;
@@ -112,6 +115,9 @@ var _CPRunLoopPerformPool           = [],
 
 - (BOOL)fireInMode:(CPString)aRunLoopMode
 {
+    if (!_isValid)
+        return YES;
+    
     if ([_runLoopModes containsObject:aRunLoopMode])
     {
         [_target performSelector:_selector withObject:_argument];
@@ -120,6 +126,11 @@ var _CPRunLoopPerformPool           = [],
     }
     
     return NO;
+}
+
+- (void)invalidate
+{
+    _isValid = NO;
 }
 
 @end
@@ -132,9 +143,14 @@ var _CPRunLoopPerformPool           = [],
 */
 @implementation CPRunLoop : CPObject
 {
-    CPArray _queuedPerforms;
+    BOOL    _runLoopLock;
+
+    Object  _timersForModes; //should be a dictionary to allow lookups by mode
+    Object  _nativeTimersForModes;
+    CPDate  _nextTimerFireDatesForModes;
+    BOOL    _didAddTimer;
+
     CPArray _orderedPerforms;
-    BOOL    _isPerformingSelectors;
 }
 
 /*
@@ -154,8 +170,11 @@ var _CPRunLoopPerformPool           = [],
     
     if (self)
     {
-        _queuedPerforms = [];
         _orderedPerforms = [];
+        
+        _timersForModes = {};
+        _nativeTimersForModes = {};
+        _nextTimerFireDatesForModes = {};
     }
     
     return self;
@@ -187,21 +206,15 @@ var _CPRunLoopPerformPool           = [],
 */
 - (void)performSelector:(SEL)aSelector target:(id)aTarget argument:(id)anArgument order:(int)anOrder modes:(CPArray)modes
 {
-    var perform = [_CPRunLoopPerform performWithSelector:aSelector target:aTarget argument:anArgument order:anOrder modes:modes];
+    var perform = [_CPRunLoopPerform performWithSelector:aSelector target:aTarget argument:anArgument order:anOrder modes:modes],
+        count = _orderedPerforms.length;
 
-    if (_isPerformingSelectors)
-        _queuedPerforms.push(perform);
-    else
-    {
-        var count = _orderedPerforms.length;
+    // We sort ourselves in reverse because we iterate this list backwards.
+    while (count--)
+        if (anOrder < [_orderedPerforms[count] order])
+            break;
     
-        // We sort ourselves in reverse because we iterate this list backwards.
-        while (count--)
-            if (anOrder < [_orderedPerforms[count] order])
-                break;
-        
-        _orderedPerforms.splice(count + 1, 0, perform);
-    }
+    _orderedPerforms.splice(count + 1, 0, perform);
 }
 
 /*!
@@ -218,8 +231,8 @@ var _CPRunLoopPerformPool           = [],
     {
         var perform = _orderedPerforms[count];
         
-        if ([perform selector] == aSelector && [perform target] == aTarget && [perform argument] == anArgument)
-            [_orderedPerforms removeObjectAtIndex:count];
+        if ([perform selector] === aSelector && [perform target] == aTarget && [perform argument] == anArgument)
+            [_orderedPerforms[count] invalidate];
     }
 }
 
@@ -228,34 +241,129 @@ var _CPRunLoopPerformPool           = [],
 */
 - (void)performSelectors
 {
-    if (_isPerformingSelectors)
+    [self limitDateForMode:CPDefaultRunLoopMode];
+}
+
+/*!
+    Registers a given timer with a given input mode.
+*/
+- (void)addTimer:(CPTimer)aTimer forMode:(CPString)aMode
+{
+    if (_timersForModes[aMode])
+        _timersForModes[aMode].push(aTimer);
+    else
+        _timersForModes[aMode] = [aTimer];
+    
+    _didAddTimer = YES;
+}
+
+/*!
+    Performs one pass through the run loop in the specified mode and returns the date at which the next timer is scheduled to fire.
+*/
+- (CPDate)limitDateForMode:(CPString)aMode
+{
+    //simple locking to try to prevent concurrent iterating over timers
+    if (_runLoopLock)
         return;
         
-    _isPerformingSelectors = YES;
+    _runLoopLock = YES;
     
-    var index = _orderedPerforms.length;
+    var now = [CPDate date],
+        nextFireDate = nil,
+        nextTimerFireDate = _nextTimerFireDatesForModes[aMode];
+    
+    // Perform Timers if necessary
+    if (_didAddTimer || nextTimerFireDate && nextTimerFireDate <= now)
+    {
+        _didAddTimer = NO;
+    
+        // Cancel existing window.setTimeout
+        if (_nativeTimersForModes[aMode] !== nil)
+        {
+            window.clearNativeTimeout(_nativeTimersForModes[aMode]);
+            
+            _nativeTimersForModes[aMode] = nil;
+        }
+    
+        // Empty timers to avoid catastrophe if a timer is added during a timer fire.
+        var timers = _timersForModes[aMode],
+            index = timers.length;
+        
+        _timersForModes[aMode] = nil;
+        
+        //  Loop through timers looking for ones that had fired          
+        while (index--)
+        {
+            var timer = timers[index];
+            
+            if (timer._isValid && timer._fireDate <= now)
+                [timer fire];
+    
+            // Timer may or may not still be valid
+            if (timer._isValid)
+                nextFireDate = (nextFireDate === nil) ? timer._fireDate : [nextFireDate earlierDate:timer._fireDate];
+            
+            else
+                timers.splice(index, 1);
+        }
+        
+        var newTimers = _timersForModes[aMode];
+        
+        if (newTimers && newTimers.length)
+        {
+            index = newTimers.length;
+            
+            while (index--)
+            {
+                var timer = newTimers[index];
+                
+                if ([timer isValid])
+                    nextFireDate = (nextFireDate === nil) ? timer._fireDate : [nextFireDate earlierDate:timer._fireDate];
+                else
+                    newTimers.splice(index, 1);
+            }
+            
+            _timersForModes[aMode] = newTimers.concat(timers);
+        }
+        else
+            _timersForModes[aMode] = timers;
+        
+        _nextTimerFireDatesForModes[aMode] = nextFireDate;
+        
+        //initiate a new window.setTimeout if there are any timers
+        if (_nextTimerFireDatesForModes[aMode] !== nil)
+            _nativeTimersForModes[aMode] = window.setNativeTimeout(function() { _nativeTimersForModes[aMode] = nil; [self limitDateForMode:aMode]; }, MAX(0, [nextFireDate timeIntervalSinceNow] * 1000));
+    }
+    
+    // Run loop performers
+    var performs = _orderedPerforms,
+        index = performs.length;
+    
+    _orderedPerforms = [];
     
     while (index--)
     {
-        var perform = _orderedPerforms[index];
+        var perform = performs[index];
         
         if ([perform fireInMode:CPDefaultRunLoopMode])
         {
             [_CPRunLoopPerform _poolPerform:perform];
             
-            _orderedPerforms.splice(index, 1);
+            performs.splice(index, 1);
         }
     }
     
-    _isPerformingSelectors = NO;
-    
-    if (_queuedPerforms.length)
+    if (_orderedPerforms.length)
     {
-        _orderedPerforms = _orderedPerforms.concat(_queuedPerforms);
+        _orderedPerforms = _orderedPerforms.concat(performs);
         _orderedPerforms.sort(_CPRunLoopPerformCompare);
     }
+    else
+        _orderedPerforms = performs;
     
-    _queuedPerforms = [];
+    _runLoopLock = NO;
+    
+    return nextFireDate;
 }
 
 @end
