@@ -105,7 +105,7 @@ function objj_printf(string)
     objj_fprintf(alert, string);
 }
 
-#if COMPILER
+#if RHINO
 importPackage(java.lang);
 
 warning_stream = function (aString) { System.out.println(aString) };
