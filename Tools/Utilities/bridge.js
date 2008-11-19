@@ -314,9 +314,8 @@ if (this.Packages) {
 			try {
 				Packages.java.lang.System.out.print("objj> ");
 			
-				var input = br.readLine();
-				
-				var fragments = objj_preprocess(String(input)),
+				var input = String(br.readLine()),
+				    fragments = objj_preprocess(input, new objj_bundle(), new objj_file(), OBJJ_PREPROCESSOR_DEBUG_SYMBOLS),
 		            count = fragments.length,
 					ctx = (new objj_context);
 
