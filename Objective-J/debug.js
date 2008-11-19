@@ -1,9 +1,14 @@
+function objj_backtrace_format(aReceiver, aSelector)
+{
+    return "[<" + GETMETA(aReceiver).name + " " + (typeof sprintf == "function" ? sprintf("%#08x", aReceiver.__address) : aReceiver.__address.toString(16)) + "> " + aSelector + "]";
+}
+
 function objj_msgSend_Backtrace(/*id*/ aReceiver, /*SEL*/ aSelector)
 {
     if (aReceiver == nil)
         return nil;
 
-    objj_debug_backtrace.push("[" + GETMETA(aReceiver).name + " " + aSelector + "]");
+    objj_debug_backtrace.push(objj_backtrace_format(aReceiver, aSelector));
 
     try
     {
@@ -11,7 +16,7 @@ function objj_msgSend_Backtrace(/*id*/ aReceiver, /*SEL*/ aSelector)
     }
     catch (anException)
     {
-        CPLog.error("Exception " + anException + " in [" + GETMETA(aReceiver).name + " " + aSelector + "]");
+        CPLog.error("Exception " + anException + " in " + objj_backtrace_format(aReceiver, aSelector));
         objj_debug_print_backtrace();
     }
 
@@ -22,7 +27,7 @@ function objj_msgSend_Backtrace(/*id*/ aReceiver, /*SEL*/ aSelector)
 
 function objj_msgSendSuper_Backtrace(/*id*/ aSuper, /*SEL*/ aSelector)
 {
-    objj_debug_backtrace.push("[" + GETMETA(aSuper.receiver).name + " " + aSelector + "]");
+    objj_debug_backtrace.push(objj_backtrace_format(aSuper.receiver, aSelector));
     var super_class = aSuper.super_class;
 
     arguments[0] = aSuper.receiver;
@@ -33,7 +38,7 @@ function objj_msgSendSuper_Backtrace(/*id*/ aSuper, /*SEL*/ aSelector)
     }
     catch (anException)
     {
-        CPLog.error("Exception " + anException + " in [" + GETMETA(aSuper.receiver).name + " " + aSelector + "]");
+        CPLog.error("Exception " + anException + " in " + objj_backtrace_format(aSuper.receiver, aSelector));
         objj_debug_print_backtrace();
     }
 
@@ -97,7 +102,7 @@ var objj_msgSend_Standard = objj_msgSend,
 // FIXME: This could be much better.
 var objj_debug_backtrace;
     
-function objj_backtrace_set_enable(enabled)
+function objj_backtrace_set_enabled(enabled)
 {
     if (enabled)
     {
@@ -119,7 +124,7 @@ function objj_debug_print_backtrace()
 
 function objj_debug_backtrace_string()
 {
-    return objj_debug_backtrace.join("\n");
+    return objj_debug_backtrace ? objj_debug_backtrace.join("\n") : "";
 }
 
 var objj_debug_profile = null,
