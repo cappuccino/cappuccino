@@ -49,7 +49,7 @@
 
 - (id)initWithCoder:(CPCoder)aCoder
 {
-    return [[_CPCibConnector alloc] NS_initWithCoder:aCoder];
+    return [self NS_initWithCoder:aCoder];
 }
 
 - (Class)classForKeyedArchiver
@@ -65,7 +65,7 @@
 
 - (id)initWithCoder:(CPCoder)aCoder
 {
-    return [[_CPCibControlConnector alloc] NS_initWithCoder:aCoder];
+    return [self NS_initWithCoder:aCoder];
 }
 
 - (Class)classForKeyedArchiver
@@ -81,7 +81,7 @@
 
 - (id)initWithCoder:(CPCoder)aCoder
 {
-    return [[_CPCibOutletConnector alloc] NS_initWithCoder:aCoder];
+    return [self NS_initWithCoder:aCoder];
 }
 
 - (Class)classForKeyedArchiver
