@@ -239,7 +239,7 @@ var CPTimersTimeoutID       = 1000,
 
 var _CPTimerBridgeTimer = function(codeOrFunction, aDelay, shouldRepeat, functionArgs)
 {
-    var timeoutID = CPTimersTimeoutID++;
+    var timeoutID = CPTimersTimeoutID++,
         theFunction = nil;
         
     if (typeof codeOrFunction === "string")
@@ -249,7 +249,7 @@ var _CPTimerBridgeTimer = function(codeOrFunction, aDelay, shouldRepeat, functio
         if (!functionArgs)
             functionArgs = [];
         
-        theFunction = function() { codeOrFunction.apply(window, functionArgs); CPTimersForTimeoutIDs[timeoutID] = nil;}
+        theFunction = function() { codeOrFunction.apply(window, functionArgs); CPTimersForTimeoutIDs[timeoutID] = nil; }
     }
 
     CPTimersForTimeoutIDs[timeoutID] = [CPTimer scheduledTimerWithTimeInterval:aDelay / 1000 callback:theFunction repeats:shouldRepeat];
