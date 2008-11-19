@@ -235,11 +235,11 @@
 @end
 
 var CPTimersTimeoutID       = 1000,
-    CPTimersForTimeoutIDs   = {}
+    CPTimersForTimeoutIDs   = {};
 
 var _CPTimerBridgeTimer = function(codeOrFunction, aDelay, shouldRepeat, functionArgs)
 {
-    var timeoutID = CPTimersTimeoutID++;
+    var timeoutID = CPTimersTimeoutID++,
         theFunction = nil;
         
     if (typeof codeOrFunction === "string")
