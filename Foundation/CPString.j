@@ -90,10 +90,7 @@ var CPStringHashes      = new objj_dictionary();
 */
 + (id)stringWithHash:(unsigned)aHash
 {
-    var zeros = "000000",
-        digits = aHash.toString(16);
-    
-    return zeros.substring(0, zeros.length - digits.length) + digits;
+    return sprintf("%06x", aHash);
 }
 
 /*!

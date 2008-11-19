@@ -90,7 +90,7 @@
 
 - (id)initWithCoder:(CPCoder)aCoder
 {
-    return [[CPView alloc] NS_initWithCoder:aCoder];
+    return [self NS_initWithCoder:aCoder];
 }
 
 - (Class)classForKeyedArchiver
