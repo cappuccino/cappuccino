@@ -89,6 +89,8 @@ var CPToolbarConfigurationsByIdentifier = nil;
     
     id                      _delegate;
     
+    CPArray                 _itemIdentifiers;
+    
     CPDictionary            _identifiedItems;
     CPArray                 _defaultItems;
     CPArray                 _allowedItems;
@@ -234,9 +236,36 @@ var CPToolbarConfigurationsByIdentifier = nil;
     if (![_toolbarView superview] || !_delegate)
         return;
     
-    [[_toolbarView subviews] makeObjectsPerformSelector:@selector(removeFromSuperview)];
+    var count = [_itemIdentifiers count];
     
-    _items = [[self _defaultToolbarItems] mutableCopy];
+    if (!count)
+    {
+         _itemIdentifiers = [[_delegate toolbarDefaultItemIdentifiers:self] mutableCopy];
+         count = [_itemIdentifiers count];
+    }
+    
+    [[_toolbarView subviews] makeObjectsPerformSelector:@selector(removeFromSuperview)];
+
+    _items = [];
+
+    var index = 0;
+    
+    for (; index < count; ++index)
+    {
+        var identifier = _itemIdentifiers[index],
+            item = [CPToolbarItem _standardItemWithItemIdentifier:identifier];
+        
+        if (!item)
+            item = [[_delegate toolbar:self itemForItemIdentifier:identifier willBeInsertedIntoToolbar:YES] copy];
+            
+        if (item == nil)
+            [CPException raise:CPInvalidArgumentException
+                         reason:sprintf(@"_delegate %s returned nil toolbar item returned for identifier %s", _delegate, identifier)];
+            
+        [_items addObject:item];
+    }
+  
+//    _items = [[self _defaultToolbarItems] mutableCopy];
     
     // Store items sorted by priority.  We want items to be removed first at the end of the array,
     // items to be removed last at the front.
@@ -279,7 +308,7 @@ var CPToolbarConfigurationsByIdentifier = nil;
         item = [CPToolbarItem _standardItemWithItemIdentifier:identifier];
         if (_delegate && !item)
         {
-            item = [_delegate toolbar:self itemForItemIdentifier:identifier willBeInsertedIntoToolbar:toolbar];
+            item = [[_delegate toolbar:self itemForItemIdentifier:identifier willBeInsertedIntoToolbar:toolbar] copy];
             if (!item)
                 [CPException raise:CPInvalidArgumentException
                             reason:sprintf(@"_delegate %s returned nil toolbar item returned for identifier %s", _delegate, identifier)];
