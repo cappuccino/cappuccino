@@ -911,19 +911,21 @@ var CTRL_KEY_CODE   = 17;
                 newEvent.stopPropagation = function(){if(aDOMEvent.stopPropagation) aDOMEvent.stopPropagation()};
             
             [self _bridgeMouseEvent:newEvent];
-    
-            /*if (aDOMEvent.preventDefault)
+        
+            return;
+        }
+        else
+        {
+            if (aDOMEvent.preventDefault)
                 aDOMEvent.preventDefault();
             
             if (aDOMEvent.stopPropagation)
-                aDOMEvent.stopPropagation();*/
-        
-            return;
+                aDOMEvent.stopPropagation();
         }
     }
     catch(e)
     {
-        alert(e);
+        objj_exception_report(e, {path:@"CPDOMWindowBridge.j"});
     }
     
     // handle touch cases specifically
