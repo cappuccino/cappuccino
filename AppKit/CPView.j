@@ -994,7 +994,7 @@ var DOMElementPrototype         = nil,
 */
 - (BOOL)hitTests
 {
-    return YES;
+    return _hitTests;
 }
 
 /*!
