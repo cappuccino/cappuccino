@@ -576,20 +576,31 @@ var _CPTextFieldSquareBezelColor = nil,
 #if PLATFORM(DOM)
     switch (aLineBreakMode)
     {
-        case CPLineBreakByTruncatingTail:   _DOMTextElement.style.textOverflow  = "ellipsis";
-                                            _DOMTextElement.style.whiteSpace    = "nowrap";
-                                            _DOMTextElement.style.overflow      = "hidden";
-                                            _DOMTextElement.style.wordWrap      = "normal";                                                
+        case CPLineBreakByTruncatingTail:   _DOMTextElement.style.textOverflow = "ellipsis";
+                                            _DOMTextElement.style.whiteSpace   = "nowrap";
+                                            _DOMTextElement.style.overflow     = "hidden";
+                                            
+                                            if (document.attachEvent)
+                                                _DOMTextElement.style.wordWrap = "normal";    
+                                                                                            
                                             break;
                                             
-        case CPLineBreakByWordWrapping:     _DOMTextElement.style.whiteSpace    = "pre";
-                                            _DOMTextElement.style.whiteSpace    = "-o-pre-wrap";
-                                            _DOMTextElement.style.whiteSpace    = "-pre-wrap";
-                                            _DOMTextElement.style.whiteSpace    = "-moz-pre-wrap";
-                                            _DOMTextElement.style.whiteSpace    = "pre-wrap";
-                                            _DOMTextElement.style.overflow      = "hidden";
-                                            _DOMTextElement.style.textOverflow  = "clip";
-                                            _DOMTextElement.style.wordWrap      = "break-word";
+        case CPLineBreakByWordWrapping:     if (document.attachEvent)
+                                            {                                            
+                                                _DOMTextElement.style.whiteSpace = "pre";
+                                                _DOMTextElement.style.wordWrap   = "break-word";
+                                            }
+                                            else
+                                            {
+                                                _DOMTextElement.style.whiteSpace = "-o-pre-wrap";
+                                                _DOMTextElement.style.whiteSpace = "-pre-wrap";
+                                                _DOMTextElement.style.whiteSpace = "-moz-pre-wrap";
+                                                _DOMTextElement.style.whiteSpace = "pre-wrap";
+                                            }
+
+                                            _DOMTextElement.style.overflow     = "hidden";
+                                            _DOMTextElement.style.textOverflow = "clip";
+                                            
                                             break;
     }
 #endif
