@@ -9,7 +9,6 @@ importClass(java.io.BufferedWriter);
 importClass(java.io.FileWriter);
 importClass(java.io.SequenceInputStream);
 
-
 function Target(dictionary)
 {
     this._name = dictionary_getValue(dictionary, "Name");
@@ -232,7 +231,8 @@ Project.prototype.build = function()
         replacedFiles = [];
         hasModifiedJFiles = false;
         shouldObjjPreprocess = true,
-        objjcComponents = ["bash", OBJJ_HOME + "/bin/objjc"];
+        shouldGzip = this._gzip,
+        objjcComponents = ["sh", OBJJ_HOME + "/bin/objjc"];
     
     objjcComponents = objjcComponents.concat(this.activeFlags());
     
@@ -262,20 +262,25 @@ Project.prototype.build = function()
     
     exec(objjcComponents, true);
     
+    var oFiles = getFiles(buildObjects, 'o'),
+        sjFile = new File(buildProducts.getCanonicalPath() + '/' + this._activeTarget.name() + ".sj");
+            
     if (hasModifiedJFiles)
     {
-        var oFiles = getFiles(buildObjects, 'o'),
-            sjFile = new File(buildProducts.getCanonicalPath() + '/' + this._activeTarget.name() + ".sj"),
-            
-            catComponents = ["bash", OBJJ_HOME + "/lib/cat", OBJJ_HOME + "/lib/sjheader.txt"];
+        // concatenate sjheader.txt and individual .o
+        exec(["sh", "-c", "cat '" + OBJJ_HOME + "/lib/sjheader.txt' '" + oFiles.join("' '") + "' > '" + sjFile.getCanonicalPath() + "'"], true);
+    }
     
-        for (index = 0, count = oFiles.length; index < count; ++index)
-            catComponents.push(oFiles[index].getCanonicalPath());
-            
-        catComponents.push("-o");
-        catComponents.push(sjFile.getCanonicalPath());
-    
-        exec(catComponents);
+    if (shouldGzip)
+    {
+        // gzip and copy .htaccess file
+        exec(["sh", "-c", "gzip -c '" + sjFile.getCanonicalPath() + "' > '" + sjFile.getCanonicalPath() + ".gz'"], true);
+        exec(["cp", OBJJ_HOME + "/lib/htaccess", sjFile.getParentFile().getCanonicalPath() + "/.htaccess"], true);
+    }
+    else
+    {
+        // remove gzip and .htaccess file if present
+        exec(["rm", "-f", sjFile.getParentFile().getCanonicalPath() + "/.htaccess", sjFile.getCanonicalPath() + ".gz"], true);
     }
     
     dictionary_setValue(this._infoDictionary, "CPBundleExecutable", this._activeTarget.name() + ".sj");
@@ -288,6 +293,7 @@ Project.prototype.build = function()
     // FIXME: This should be, if this is an app...
     if (dictionary_getValue(this._infoDictionary, "CPBundlePackageType") == "280N")
         this.copyIndexFile();
+        
 }
 
 Project.prototype.clean = function()
@@ -363,17 +369,15 @@ function main()
 }
 
 function mainCreate()
-{
-    var OBJJ_LIB = System.getenv("OBJJ_LIB");
-    
+{   
     if (arguments.length < 1)
         printUsage("create");
     
     var dst = arguments[0],
         link = arguments[1] == "-l";
 
-    var srcNewApp       = new File(OBJJ_LIB+"/NewApplication"),
-        srcFrameworks   = new File(OBJJ_LIB+"/Frameworks"),
+    var srcNewApp       = new File(OBJJ_HOME+"/lib/NewApplication"),
+        srcFrameworks   = new File(OBJJ_HOME+"/lib/Frameworks"),
         dstNewApp       = new File(dst),
         dstFrameworks   = new File(dst+"/Frameworks");
     
@@ -405,7 +409,9 @@ function mainBuild()
         configurationName   = null,
         
         buildPath           = null,
-        projectFilePath     = null;
+        projectFilePath     = null,
+        
+        gzip                = false;
     
     for (; index < count; ++index)
     {   
@@ -434,7 +440,10 @@ function mainBuild()
                             
                             buildPath = arguments[++index];
                             break;
-                        
+                            
+            case "--gzip":  gzip = true;
+                            break;
+                            
             case "clean":   
             case "build":   actions.push(arguments[index]);
                             break;
@@ -462,6 +471,8 @@ function mainBuild()
     }
     
     var project = new Project(projectFilePath, buildPath);
+    
+    project._gzip = gzip;
     
     if (targetName)
     {
