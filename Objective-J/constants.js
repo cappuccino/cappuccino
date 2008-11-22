@@ -107,7 +107,7 @@ function objj_printf(string)
 
 #if RHINO
 
-warning_stream = function (aString) { Packages.java.System.out.println(aString) };
+warning_stream = function (aString) { Packages.java.lang.System.out.println(aString) };
 
 #else
 if (window.console && window.console.warn)
