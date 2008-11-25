@@ -41,6 +41,7 @@ CPJavascriptTextContentFeature          = 1 << 9;
 CPJavascriptClipboardEventsFeature      = 1 << 10;
 CPJavascriptClipboardAccessFeature      = 1 << 11;
 CPJavaScriptCanvasDrawFeature           = 1 << 12;
+CPJavaScriptCanvasTransformFeature      = 1 << 13;
 
 CPVMLFeature                            = 1 << 14;
 
@@ -101,13 +102,13 @@ else if (USER_AGENT.indexOf("AppleWebKit/") != -1)
 }
 
 // KHTML
-else if (USER_AGENT.indexOf('KHTML') != -1) // Must follow WebKit check.
+else if (USER_AGENT.indexOf("KHTML") != -1) // Must follow WebKit check.
 {
     PLATFORM_ENGINE = CPKHTMLBrowserEngine;
 }
 
 // Gecko
-else if (USER_AGENT.indexOf('Gecko') != -1) // Must follow KHTML check.
+else if (USER_AGENT.indexOf("Gecko") != -1) // Must follow KHTML check.
 {
     PLATFORM_ENGINE = CPGeckoBrowserEngine;
     
@@ -123,9 +124,18 @@ else if (USER_AGENT.indexOf('Gecko') != -1) // Must follow KHTML check.
 // Feature Specific Checks
 if (typeof document != "undefined")
 {
+    var canvasElement = document.createElement("canvas");
     // Detect Canvas Support
-    if (document.createElement("canvas").getContext)
+    if (canvasElement && canvasElement.getContext)
+    {
         PLATFORM_FEATURES |= CPHTMLCanvasFeature;
+    
+        // Detect Canvas setTransform/transform support
+        var context = document.createElement("canvas").getContext("2d");
+        
+        if (context && context.setTransform && context.transform)
+            PLATFORM_FEATURES |= CPJavaScriptCanvasTransformFeature;
+    }
     
     var DOMElement = document.createElement("div");
     

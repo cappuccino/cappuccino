@@ -333,7 +333,20 @@ function eigen(anAffineTransform)
     alert("IMPLEMENT ME!");
 }
 
-function CGContextConcatCTM(aContext, anAffineTransform)
+
+if (CPFeatureIsCompatible(CPJavaScriptCanvasTransformFeature))
+{
+
+CGContextConcatCTM = function(aContext, anAffineTransform)
+{
+    aContext.transform(anAffineTransform.a, anAffineTransform.b, anAffineTransform.c, anAffineTransform.d, anAffineTransform.tx, anAffineTransform.ty);
+}
+
+}
+else
+{
+
+CGContextConcatCTM = function(aContext, anAffineTransform)
 {
     var a = anAffineTransform.a,
         b = anAffineTransform.b,
@@ -397,6 +410,8 @@ function CGContextConcatCTM(aContext, anAffineTransform)
         CGContextScaleCTM(aContext, sx, sy);
     if (a2 != 0.0)
         CGContextRotateCTM(aContext, a2);
+}
+
 }
 
 function CGContextDrawImage(aContext, aRect, anImage)
