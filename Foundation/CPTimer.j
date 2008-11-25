@@ -243,13 +243,13 @@ var _CPTimerBridgeTimer = function(codeOrFunction, aDelay, shouldRepeat, functio
         theFunction = nil;
         
     if (typeof codeOrFunction === "string")
-        theFunction = function() { new Function(codeOrFunction)(); CPTimersForTimeoutIDs[timeoutID] = nil; }
+        theFunction = function() { new Function(codeOrFunction)(); if (!shouldRepeat) CPTimersForTimeoutIDs[timeoutID] = nil; }
     else
     {
         if (!functionArgs)
             functionArgs = [];
         
-        theFunction = function() { codeOrFunction.apply(window, functionArgs); CPTimersForTimeoutIDs[timeoutID] = nil; }
+        theFunction = function() { codeOrFunction.apply(window, functionArgs); if (!shouldRepeat) CPTimersForTimeoutIDs[timeoutID] = nil; }
     }
 
     CPTimersForTimeoutIDs[timeoutID] = [CPTimer scheduledTimerWithTimeInterval:aDelay / 1000 callback:theFunction repeats:shouldRepeat];
@@ -268,6 +268,8 @@ window.clearTimeout = function(aTimeoutID)
     
     if (timer)
         [timer invalidate];
+        
+    CPTimersForTimeoutIDs[aTimeoutID] = nil;
 }
 
 window.setInterval = function(codeOrFunction, aDelay, functionArgs)
