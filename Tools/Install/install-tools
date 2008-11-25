@@ -23,9 +23,9 @@ while [ $# -ge 1 ]; do
 done
 
 mkdir -p $INSTALL_DIR/bin
-mkdir -p $INSTALL_DIR/share
+mkdir -p $INSTALL_DIR/share/objj
 
-cp -fR objj/ $INSTALL_DIR/share/objj
+cp -fR objj/* $INSTALL_DIR/share/objj/.
 
 BINS=`ls objj/bin`
 for BIN in $BINS
@@ -35,7 +35,6 @@ do
 done
 
 chmod +x $INSTALL_DIR/share/objj/bin/*
-chmod +x $INSTALL_DIR/share/objj/lib/cat
 
 cat <<EOT
     

@@ -22,6 +22,8 @@
 
         <copy file = "${basedir}/steam.xml" tofile = "${Build.steam}/steam.xml" />
         
+        <copy file = "${basedir}/htaccess" tofile = "${Build.steam}/htaccess" />
+        
         <concat destfile = "${Build.Intermediate}/steam.js">
 			<filelist>
                 <file name="${basedir}/../Utilities/bridge.js" />
@@ -53,6 +55,7 @@
         
         <copy file = "${Build.steam}/sjheader.txt" tofile = "${Build.Cappuccino.Tools.Lib}/sjheader.txt" />
         <copy file = "${Build.steam}/steam.xml" tofile = "${Build.Cappuccino.Tools.Lib}/steam.xml" />
+        <copy file = "${Build.steam}/htaccess" tofile = "${Build.Cappuccino.Tools.Lib}/htaccess" />
         
         <copy file = "${Build.steam}/steam.class" tofile = "${Build.Cappuccino.Tools.Lib}/steam.class" />
         

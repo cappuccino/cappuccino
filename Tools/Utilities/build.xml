@@ -18,9 +18,6 @@
         <copy file = "${basedir}/commons-logging-1.1.jar" todir = "${Build.Cappuccino.Tools.Lib}" />
         <copy file = "${basedir}/js.jar" todir = "${Build.Cappuccino.Tools.Lib}" />
         
-        <copy file = "${basedir}/cat" todir = "${Build.Cappuccino.Tools.Lib}" />
-        <chmod file = "${Build.Cappuccino.Tools.Lib}/cat" perm = "+x" />
-        
     </target>
 
 </project>
