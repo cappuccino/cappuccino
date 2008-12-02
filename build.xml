@@ -75,4 +75,13 @@
         </ojtest>
     </target>
     
+    <target name = "docs">
+        <exec executable = "doxygen" dir = ".">
+            <arg value = "Tools/Documentation/Cappuccino.doxygen" />
+        </exec>
+
+        <mkdir dir = "${Build}" />
+        <move file = "Documentation" todir = "${Build}" />
+    </target>
+    
 </project>
