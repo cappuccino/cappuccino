@@ -1335,8 +1335,15 @@ CPTexturedBackgroundWindowMask
 */
 - (void)performClose:(id)aSender
 {
-    if ([_delegate respondsToSelector:@selector(windowShouldClose:)] && ![_delegate windowShouldClose:self] ||
-        [self respondsToSelector:@selector(windowShouldClose:)] && ![self windowShouldClose:self])
+    // Only send ONE windowShouldClose: message.
+    if ([_delegate respondsToSelector:@selector(windowShouldClose:)])
+    {
+        if (![_delegate windowShouldClose:self])
+            return;
+    }
+    
+    // Only check self is delegate does NOT implement this.  This also ensures this when delegate == self (returns true).
+    else if ([self respondsToSelector:@selector(windowShouldClose:)] && ![self windowShouldClose:self])
         return;
     
     [self close];

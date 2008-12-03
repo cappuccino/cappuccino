@@ -52,10 +52,8 @@ function objj_exception_setOutputStream(aStream)
     OBJJ_EXCEPTION_OUTPUT_STREAM = aStream;
 }
 
-#if COMPILER
-importPackage(java.lang);
-
-objj_exception_setOutputStream(function (aString) { System.out.println(aString) } );
+#if RHINO
+objj_exception_setOutputStream(warning_stream);
 #elif DEBUG
 if (window.console && window.console.error)
     objj_exception_setOutputStream(function (aString) { console.error(aString) } );
