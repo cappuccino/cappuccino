@@ -94,7 +94,7 @@
         
         _state = CPOffState;
         
-        _keyEquivalent = aKeyEquivalent;
+        _keyEquivalent = aKeyEquivalent || @"";
         _keyEquivalentModifierMask = CPPlatformActionKeyMask;
         
         _mnemonicLocation = CPNotFound;
@@ -505,7 +505,7 @@
 */
 - (void)setKeyEquivalent:(CPString)aString
 {
-    _keyEquivalent = aString;
+    _keyEquivalent = aString || @"";
 }
 
 /*!
