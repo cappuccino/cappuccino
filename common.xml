@@ -11,8 +11,6 @@
     <property name = "env.OBJJ_HOME" value = "/usr/local/share/objj" />
     <property name = "env.OBJJ_LIB" value = "${env.OBJJ_HOME}/lib" />
     
-    <import file = "${env.OBJJ_LIB}/steam.xml" />
-    
     <!-- allow bootstrapping: use installed js.jar if it's present, otherwise use local version -->
     
     <condition property = "jsjar" value = "${env.OBJJ_LIB}/js.jar">
