@@ -99,6 +99,11 @@
     <target name = "deploy-bare-minimum" >
 
         <!-- Build Bare Minimum -->
+        
+        <ant antfile = "build.xml" dir = "Objective-J">
+            <property name = "Configuration" value = "Release" />
+        </ant>
+        
         <ant antfile = "build.xml" dir = "Tools/objjc" >
             <property name = "Configuration" value = "Release" />
         </ant>
@@ -109,6 +114,12 @@
     
         <!-- Deploy Bare Minimum -->
         
+        <copy todir = "${Build.Cappuccino.Tools.Lib.Frameworks-Rhino}">
+            <fileset dir = "${Build}/Release/">
+                <include name = "Objective-J/" />
+            </fileset>
+        </copy>
+        
         <copy todir = "${Build.Cappuccino.Tools.Bin}">
             <fileset dir = "${Build}/Release/objjc/bin" />
             <fileset dir = "${Build}/Release/steam/bin" />
@@ -118,6 +129,8 @@
             <fileset dir = "${Build}/Release/objjc/lib" />
             <fileset dir = "${Build}/Release/steam/lib" />
         </copy>
+        
+        <copy file = "Tools/Utilities/js.jar" todir = "${Build.Cappuccino.Tools.Lib}" />
     
         <!-- Copy install script -->
         
