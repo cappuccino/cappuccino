@@ -645,8 +645,8 @@ String.prototype.isa = CPString;
 
 // sprintf:
 
-var sprintfFormatRegex = new RegExp("([^%]+|%[\\+\\-\\ \\#0]*[0-9\\*]*(.[0-9\\*]+)?[hlL]?[cdieEfgGosuxXpn%@])", "g");
-var sprintfTagRegex = new RegExp("(%)([\\+\\-\\ \\#0]*)([0-9\\*]*)((.[0-9\\*]+)?)([hlL]?)([cdieEfgGosuxXpn%@])");
+var sprintfFormatRegex = new RegExp("([^%]+|%[\\+\\-\\ \\#0]*[0-9\\*]*(.[0-9\\*]+)?[hlL]?[cbBdieEfgGosuxXpn%@])", "g");
+var sprintfTagRegex = new RegExp("(%)([\\+\\-\\ \\#0]*)([0-9\\*]*)((.[0-9\\*]+)?)([hlL]?)([cbBdieEfgGosuxXpn%@])");
 
 /*!
   Creates a new string using C printf-style formatting. First argument should be a constant format string, like ' "float val = %f" ', remaining arguments should be the variables to print the values of, comma-separated.
@@ -706,7 +706,7 @@ function sprintf(format)
 
             var subresult = "";
 
-            if (RegExp("[diufeExXo]").test(specifier))
+            if (RegExp("[bBdiufeExXo]").test(specifier))
             {
                 var num = Number(arguments[arg++]);
 
@@ -750,6 +750,14 @@ function sprintf(format)
                 {
                     var number = String(Math.abs(num).toString(16));
                     var prefix = (flags.indexOf("#") >= 0 && num != 0) ? "0x" : "";
+
+                    subresult = sprintf_justify(sign, prefix, number, "", width, leftJustify, padZeros);
+                }
+
+                if (specifier == "b" || specifier == "B")
+                {
+                    var number = String(Math.abs(num).toString(2));
+                    var prefix = (flags.indexOf("#") >= 0 && num != 0) ? "0b" : "";
 
                     subresult = sprintf_justify(sign, prefix, number, "", width, leftJustify, padZeros);
                 }
