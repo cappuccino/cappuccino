@@ -102,6 +102,11 @@ $ant bootstrap
     <target name = "debug" >
         <antcall target = "build-debug" />
     </target>
+    
+    <target name = "all" >
+        <antcall target = "build-debug" />
+        <antcall target = "build-release" />
+    </target>
 
     <!-- Iterate -->
     
