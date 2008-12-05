@@ -430,7 +430,7 @@ function CPPointFromString(aString)
 {
     var comma = aString.indexOf(',');
     
-    return { x:parseInt(aString.substr(1, comma - 1)), y:parseInt(aString.substring(comma + 1, aString.length)) };
+    return { x:parseFloat(aString.substr(1, comma - 1)), y:parseFloat(aString.substring(comma + 1, aString.length)) };
 }
 
 /*!
@@ -443,7 +443,7 @@ function CPSizeFromString(aString)
 {
     var comma = aString.indexOf(',');
     
-    return { width:parseInt(aString.substr(1, comma - 1)), height:parseInt(aString.substring(comma + 1, aString.length)) };
+    return { width:parseFloat(aString.substr(1, comma - 1)), height:parseFloat(aString.substring(comma + 1, aString.length)) };
 }
 
 /*!
