@@ -27,9 +27,9 @@ var CPLogDefaultTitle = "Cappuccino";
 var CPLogLevels = ["fatal", "error", "warn", "info", "debug", "trace"];
 var CPLogDefaultLevel = CPLogLevels[0];
 
-var CPLogLevelsInverted = {};
+var _CPLogLevelsInverted = {};
 for (var i = 0; i < CPLogLevels.length; i++)
-    CPLogLevelsInverted[CPLogLevels[i]] = i;
+    _CPLogLevelsInverted[CPLogLevels[i]] = i;
 
 var _CPLogRegistrations = {};
 
@@ -37,20 +37,15 @@ var _CPLogRegistrations = {};
 
 var _CPFormatLogMessage = function(aString, aLevel, aTitle)
 {
-    var now = new Date(),
-        zero =  function(number, zeros)
-                {
-                    var digits = number.toString();
-                    return zeros.substring(0, zeros.length - digits.length) + digits;
-                }
+    var now = new Date();
     
-    var level = aLevel ? " ["+aLevel+"]" : "";
-    var message = 
-        now.getFullYear() + "-" + zero(now.getMonth()+1, "00") + "-" + zero(now.getDate(), "00") + " " + 
-        zero(now.getHours(), "00") + ":" + zero(now.getMinutes(), "00") + ":" + zero(now.getSeconds(), "00") + "." + 
-        zero(now.getMilliseconds(), "000")+" " + aTitle + level + ": " + aString;
-        
-    return message;
+    if (typeof sprintf == "function")
+        return sprintf("%4d-%02d-%02d %02d:%02d:%02d.%03d %s [%s]: %s",
+            now.getFullYear(), now.getMonth(), now.getDate(),
+            now.getHours(), now.getMinutes(), now.getSeconds(), now.getMilliseconds(),
+            aTitle, aLevel, aString);
+    else
+        return now + " " + aTitle + " [" + aLevel + "]: " + aString;
 }
 
 // Register Functions:
@@ -63,8 +58,8 @@ function CPLogRegister(aProvider, aMaxLevel)
 // Register a logger for a range of levels
 function CPLogRegisterRange(aProvider, aMinLevel, aMaxLevel)
 {
-    var min = CPLogLevelsInverted[aMinLevel];
-    var max = CPLogLevelsInverted[aMaxLevel];
+    var min = _CPLogLevelsInverted[aMinLevel];
+    var max = _CPLogLevelsInverted[aMaxLevel];
     
     if (min != undefined && max != undefined)
         for (var i = 0; i <= max; i++)
@@ -80,21 +75,27 @@ function CPLogRegisterSingle(aProvider, aLevel)
 }
 
 // Main CPLog, which dispatches to individual loggers
-function CPLog(aString, aLevel, aTitle)
+function _CPLogDispatch(parameters, aLevel, aTitle)
 {
     if (aTitle == undefined)
         aTitle = CPLogDefaultTitle;
     if (aLevel == undefined)
         aLevel = CPLogDefaultLevel;
     
+    // to format message: use sprintf if available; otherwise do a simple join
+    var message = (typeof sprintf == "function") ? sprintf.apply(null, parameters) : Array.prototype.join.call(parameters, ", ");
+    
     if (_CPLogRegistrations[aLevel])
         for (var i = 0; i < _CPLogRegistrations[aLevel].length; i++)
-             _CPLogRegistrations[aLevel][i](aString, aLevel, aTitle);
+             _CPLogRegistrations[aLevel][i](message, aLevel, aTitle);
 }
 
-// Shortcuts for common log levels (CPLog.fatal(), CPLog.error(), etc)
+// Setup CPLog() and CPLog.xxx() aliases
+
+function CPLog() { _CPLogDispatch(arguments); }
+    
 for (var i = 0; i < CPLogLevels.length; i++)
-    CPLog[CPLogLevels[i]] = (function(level) { return function(message, title) { CPLog(message, level, title); }; })(CPLogLevels[i]);
+    CPLog[CPLogLevels[i]] = (function(level) { return function() { _CPLogDispatch(arguments, level); }; })(CPLogLevels[i]);
 
 // Loggers:
 

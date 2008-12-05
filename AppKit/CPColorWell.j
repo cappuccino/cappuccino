@@ -199,6 +199,7 @@ var _CPColorWellDidBecomeExclusiveNotification = @"_CPColorWellDidBecomeExclusiv
     if (!_wellView)
     {
         _wellView = [[CPView alloc] initWithFrame:aRect];
+        [_wellView setAutoresizingMask:CPViewWidthSizable | CPViewHeightSizable];
         
         [self addSubview:_wellView];
     }
@@ -272,7 +273,10 @@ var CPColorWellColorKey     = "CPColorWellColorKey",
         _active = NO;
         _bordered = [aCoder decodeObjectForKey:CPColorWellBorderedKey];
         _color = [aCoder decodeObjectForKey:CPColorWellColorKey];
-        
+
+        [self drawBezelWithHighlight:NO];
+        [self drawWellInside:CGRectInset([self bounds], 3.0, 3.0)];
+
         [self _registerForNotifications];
     }
     

@@ -30,9 +30,12 @@
     self = [super init];
     
     if (self)
-    {
-        _minSize = [aCoder decodeSizeForKey:@"NSMinSize"];
-        _maxSize = [aCoder decodeSizeForKey:@"NSMaxSize"];
+    {   
+        if ([aCoder containsValueForKey:@"NSMinSize"])
+            _minSize = [aCoder decodeSizeForKey:@"NSMinSize"];
+        if ([aCoder containsValueForKey:@"NSMaxSize"])
+            _maxSize = [aCoder decodeSizeForKey:@"NSMaxSize"];
+        
         _screenRect = [aCoder decodeRectForKey:@"NSScreenRect"]; // screen created on
         _viewClass = [aCoder decodeObjectForKey:@"NSViewClass"];
         _wtFlags = [aCoder decodeIntForKey:@"NSWTFlags"];
@@ -46,9 +49,10 @@
         _windowTitle = [aCoder decodeObjectForKey:@"NSWindowTitle"];
         _windowView = [aCoder decodeObjectForKey:@"NSWindowView"];
         
-        /*
-        _windowRect.origin.y -= _screenRect.size.height - [[NSScreen mainScreen] frame].size.height;
-        if (![_windowClass isEqualToString:@"NSPanel"])
+        // Flip Y coordinate
+        _windowRect.origin.y = _screenRect.size.height - _windowRect.origin.y - _windowRect.size.height;
+        
+        /*if (![_windowClass isEqualToString:@"NSPanel"])
            _windowRect.origin.y -= [NSMainMenuView menuHeight];   // compensation for the additional menu bar
         */
    }
