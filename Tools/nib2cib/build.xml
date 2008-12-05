@@ -4,36 +4,28 @@
     <import file = "../../common.xml" />
     <import file = "${env.OBJJ_LIB}/steam.xml" />
     
-    <target name = "clean">
+    <property name = "Build.nib2cib" location = "${Build}/${Configuration}/nib2cib" />
+    <property name = "Build.nib2cib.bin" location = "${Build}/${Configuration}/nib2cib/bin" />
+    <property name = "Build.nib2cib.lib" location = "${Build}/${Configuration}/nib2cib/lib" />
+    
+    <target name = "clean" depends = "steam-uptodate">
         <steam-build>
-            <arguments>
-                <arg line = "-f nib2cib.steam -c ${Configuration} clean" />
-            </arguments>
+            <arg line = "-f nib2cib.steam -c ${Configuration} clean" />
         </steam-build>
     </target>
         
-    <target name = "build">
+    <target name = "build" depends = "steam-uptodate">
     
         <steam-build>
-            <arguments>
-                <arg line = "-f nib2cib.steam -c ${Configuration} -t nib2cib" />
-            </arguments>
+            <arg line = "-f nib2cib.steam -c ${Configuration} -t nib2cib" />
         </steam-build>
-
-    </target>
-    
-    <target name = "release" depends = "build">
         
-        <antcall target = "prepare-release" />
-        
-        <copy todir = "${Build.Cappuccino.Tools.Lib}/nib2cib">
+        <copy todir = "${Build.nib2cib.lib}/nib2cib">
             <fileset dir = "${Build}/${Configuration}/nib2cib" />
         </copy>
 
-        <copy file = "nib2cib" tofile = "${Build.Cappuccino.Tools.Bin}/nib2cib" />
-        
-        <chmod file = "${Build.Cappuccino.Tools.Bin}/nib2cib" perm = "+x" />
-        
+        <copy file = "nib2cib" tofile = "${Build.nib2cib.bin}/nib2cib" />
+
     </target>
 
 </project>

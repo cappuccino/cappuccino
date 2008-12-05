@@ -5,6 +5,8 @@
 
     <property name = "Build.Products" location = "${Build}/cplutil.build/${Configuration}" />
     <property name = "Build.cplutil" location = "${Build}/${Configuration}/cplutil" />
+    <property name = "Build.cplutil.bin" location = "${Build}/${Configuration}/cplutil/bin" />
+    <property name = "Build.cplutil.lib" location = "${Build}/${Configuration}/cplutil/lib" />
 
     <target name = "clean">
         <delete dir = "${Build.cplutil}" verbose = "true" />
@@ -36,20 +38,8 @@
         
         <move file = "${Build.Products}/cplutil.class" tofile = "${Build.cplutil}/cplutil.class" />
                 
-        <copy file = "cplutil" tofile = "${Build.cplutil}/cplutil" />
-        <chmod file = "${Build.cplutil}/cplutil" perm = "+x" />
-        
-    </target>
-    
-    <target name = "release" depends = "build">
-        
-        <antcall target = "prepare-release" />
-        
-        <copy file = "${Build.cplutil}/cplutil" tofile = "${Build.Cappuccino.Tools.Bin}/cplutil" />
-
-        <chmod file = "${Build.Cappuccino.Tools.Bin}/cplutil" perm = "+x" />
-        
-        <copy file = "${Build.cplutil}/cplutil.class" tofile = "${Build.Cappuccino.Tools.Lib}/cplutil.class" />
+        <copy file = "cplutil" tofile = "${Build.cplutil.bin}/cplutil" />
+        <copy file = "${Build.cplutil}/cplutil.class" tofile = "${Build.cplutil.lib}/cplutil.class" />
         
     </target>
 

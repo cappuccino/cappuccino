@@ -4,7 +4,7 @@
     
     <macrodef name = "steam-build">
         
-        <element name = "arguments" optional = "true" />
+        <element name = "arguments" optional = "true" implicit = "true"/>
         
         <sequential>
             <exec executable = "steam">

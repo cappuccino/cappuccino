@@ -5,6 +5,8 @@
 
     <property name = "Build.Products" location = "${Build}/objjc.build/${Configuration}" />
     <property name = "Build.objjc" location = "${Build}/${Configuration}/objjc" />
+    <property name = "Build.objjc.bin" location = "${Build.objjc}/bin" />
+    <property name = "Build.objjc.lib" location = "${Build.objjc}/lib" />
 
     <target name = "clean">
         <delete dir = "${Build.objjc}" verbose = "true" />
@@ -34,24 +36,12 @@
             </arguments>
         </jsc>
         
-        <move file = "${Build.Products}/objjc.class" tofile = "${Build.objjc}/objjc.class" />
+        <move file = "${Build.Products}/objjc.class" tofile = "${Build.objjc.lib}/objjc.class" />
                 
-        <copy file = "objjc" tofile = "${Build.objjc}/objjc" />
-        <chmod file = "${Build.objjc}/objjc" perm = "+x" />
+        <copy file = "objjc" tofile = "${Build.objjc.bin}/objjc" />
         
-    </target>
-    
-    <target name = "release" depends = "build">
-        
-        <antcall target = "prepare-release" />
-        
-        <copy file = "${Build.objjc}/objjc" tofile = "${Build.Cappuccino.Tools.Bin}/objjc" />
-
-        <chmod file = "${Build.Cappuccino.Tools.Bin}/objjc" perm = "+x" />
-        
-        <copy file = "${Build.objjc}/objjc.class" tofile = "${Build.Cappuccino.Tools.Lib}/objjc.class" />
-        
-        <copy file = "shrinksafe.jar" tofile = "${Build.Cappuccino.Tools.Lib}/shrinksafe.jar" />        
+        <!-- Isn't this taken care of? -->
+        <copy file = "shrinksafe.jar" tofile = "${Build.objjc.lib}/shrinksafe.jar" />  
         
     </target>
 

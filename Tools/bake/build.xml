@@ -5,6 +5,8 @@
 
     <property name = "Build.Intermediate" location = "${Build}/bake.build/${Configuration}" />
     <property name = "Build.bake" location = "${Build}/${Configuration}/bake" />
+    <property name = "Build.bake.bin" location = "${Build}/${Configuration}/bake/bin" />
+    <property name = "Build.bake.lib" location = "${Build}/${Configuration}/bake/lib" />
 
     <target name = "clean">
         <delete dir = "${Build.bake}" verbose = "true" />
@@ -14,28 +16,12 @@
     
         <mkdir dir = "${Build.bake}" />
         
-        <copy file = "${basedir}/bake.j" tofile = "${Build.bake}/bake.j" />
+        <copy file = "${basedir}/bake.j" tofile = "${Build.bake.lib}/bake.j" />
         
-        <copy file = "${basedir}/bake_template.html" tofile = "${Build.bake}/bake_template.html" />
+        <copy file = "${basedir}/bake_template.html" tofile = "${Build.bake.lib}/bake_template.html" />
         
-        <copy file = "${basedir}/bake" tofile = "${Build.bake}/bake" />
-        
-        <chmod file = "${Build.bake}/bake" perm = "+x" />
+        <copy file = "${basedir}/bake" tofile = "${Build.bake.bin}/bake" />
         
     </target>
     
-    <target name = "release" depends = "build">
-        
-        <antcall target = "prepare-release" />
-        
-        <copy file = "${Build.bake}/bake.j" tofile = "${Build.Cappuccino.Tools.Lib}/bake.j" />
-        
-        <copy file = "${Build.bake}/bake_template.html" tofile = "${Build.Cappuccino.Tools.Lib}/bake_template.html" />
-        
-        <copy file = "${Build.bake}/bake" tofile = "${Build.Cappuccino.Tools.Bin}/bake" />
-        
-        <chmod file = "${Build.Cappuccino.Tools.Bin}/bake" perm = "+x" />
-        
-    </target>
-
 </project>

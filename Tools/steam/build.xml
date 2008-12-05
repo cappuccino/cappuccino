@@ -5,7 +5,9 @@
 
     <property name = "Build.Intermediate" location = "${Build}/steam.build/${Configuration}" />
     <property name = "Build.steam" location = "${Build}/${Configuration}/steam" />
-
+    <property name = "Build.steam.bin" location = "${Build.steam}/bin" />
+    <property name = "Build.steam.lib" location = "${Build.steam}/lib" />
+    
     <target name = "clean">
         <delete dir = "${Build.steam}" verbose = "true" />
     </target>
@@ -14,15 +16,13 @@
     
         <mkdir dir = "${Build.steam}" />
         
-        <copy file = "${basedir}/sjheader.txt" tofile = "${Build.steam}/sjheader.txt" />
+        <copy file = "${basedir}/sjheader.txt" tofile = "${Build.steam.lib}/sjheader.txt" />
         
-        <copy file = "${basedir}/steam" tofile = "${Build.steam}/steam" />
+        <copy file = "${basedir}/steam" tofile = "${Build.steam.bin}/steam" />
         
-        <chmod file = "${Build.steam}/steam" perm = "+x" />
-
-        <copy file = "${basedir}/steam.xml" tofile = "${Build.steam}/steam.xml" />
+        <copy file = "${basedir}/steam.xml" tofile = "${Build.steam.lib}/steam.xml" />
         
-        <copy file = "${basedir}/htaccess" tofile = "${Build.steam}/htaccess" />
+        <copy file = "${basedir}/htaccess" tofile = "${Build.steam.lib}/htaccess" />
         
         <concat destfile = "${Build.Intermediate}/steam.js">
 			<filelist>
@@ -41,23 +41,7 @@
             </arguments>
         </jsc>
         
-        <move file = "${Build.Intermediate}/steam.class" tofile = "${Build.steam}/steam.class" />
-        
-    </target>
-    
-    <target name = "release" depends = "build">
-        
-        <antcall target = "prepare-release" />
-        
-        <copy file = "${Build.steam}/steam" tofile = "${Build.Cappuccino.Tools.Bin}/steam" />
-        
-        <chmod file = "${Build.Cappuccino.Tools.Bin}/steam" perm = "+x" />     
-        
-        <copy file = "${Build.steam}/sjheader.txt" tofile = "${Build.Cappuccino.Tools.Lib}/sjheader.txt" />
-        <copy file = "${Build.steam}/steam.xml" tofile = "${Build.Cappuccino.Tools.Lib}/steam.xml" />
-        <copy file = "${Build.steam}/htaccess" tofile = "${Build.Cappuccino.Tools.Lib}/htaccess" />
-        
-        <copy file = "${Build.steam}/steam.class" tofile = "${Build.Cappuccino.Tools.Lib}/steam.class" />
+        <move file = "${Build.Intermediate}/steam.class" tofile = "${Build.steam.lib}/steam.class" />
         
     </target>
 

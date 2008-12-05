@@ -8,57 +8,101 @@
 
     <property name = "Build" location = "${env.STEAM_BUILD}" />
 
-    <property name = "Build.Cappuccino" location = "${Build}/Cappuccino" />
-    
-    <property name = "Build.Cappuccino.Starter" location = "${Build.Cappuccino}/Starter" />
-    <property name = "Build.Cappuccino.Starter.Frameworks" location = "${Build.Cappuccino.Starter}/Frameworks" />
-    
-    <property name = "Build.Cappuccino.Tools" location = "${Build.Cappuccino}/Tools" />
-    <property name = "Build.Cappuccino.Tools.Frameworks" location = "${Build.Cappuccino.Tools}/Frameworks" />
-    
-    <property name = "Build.Cappuccino.Tools.Objj" location = "${Build.Cappuccino.Tools}/objj" />
-    
-    <property name = "Build.Cappuccino.Tools.Bin" location = "${Build.Cappuccino.Tools.Objj}/bin" />
-    <property name = "Build.Cappuccino.Tools.Lib" location = "${Build.Cappuccino.Tools.Objj}/lib" />
-    <property name = "Build.Cappuccino.Tools.Lib.Frameworks" location = "${Build.Cappuccino.Tools.Lib}/Frameworks" />
-    <property name = "Build.Cappuccino.Tools.Lib.Frameworks-Rhino" location = "${Build.Cappuccino.Tools.Lib}/Frameworks-Rhino" />
-    
-    <property name = "Build.Cappuccino.Tools.Editors" location = "${Build.Cappuccino.Tools}/Editors" />
-
     <property name = "env.OBJJ_HOME" value = "/usr/local/share/objj" />
     <property name = "env.OBJJ_LIB" value = "${env.OBJJ_HOME}/lib" />
     
+    <import file = "${env.OBJJ_LIB}/steam.xml" />
+    
     <!-- allow bootstrapping: use installed js.jar if it's present, otherwise use local version -->
+    
     <condition property = "jsjar" value = "${env.OBJJ_LIB}/js.jar">
         <and>
             <available file = "${env.OBJJ_LIB}/js.jar"  />
             <!-- hack to prevent deprecation warnings for overwriting properties -->
-            <not><isset property = "jsjar" /></not>
+            <not>
+                <isset property = "jsjar" />
+            </not>
         </and>
     </condition>
-    <property name = "jsjar" value = "${Checkout}/Tools/Utilities/js.jar" />
-
-    <!-- prepare-release -->
     
-    <target name = "prepare-release">
+    <property name = "jsjar" value = "${Checkout}/Tools/Utilities/js.jar" />
+    
+    <!-- Steam Version Checking -->
+    
+    <target name = "steam-uptodate">
+    
+        <exec executable = "steam" outputproperty = "steam.version">
+            <arg line = "--version" />
+        </exec>
+    
+        <fail>
+!
+**********************************************
+You version of Steam is out of date.  
+----------------------------------------------
+Please run the following commands to update:
+
+$sudo echo
+$ant bootstrap
+**********************************************
+            <condition>
+                <not>
+                    <contains string = "${steam.version}" substring = "steam version 0.6" />
+                </not>
+            </condition>
+        </fail>
+    </target>
+    
+<!--    <macrodef name = "safe-steam-build" >
         
-        <mkdir dir = "${Build.Cappuccino}" />
+        <element name = "args" optional = "true" implicit = "true" />
         
-        <mkdir dir = "${Build.Cappuccino.Starter}" />
-        <mkdir dir = "${Build.Cappuccino.Starter.Frameworks}" />
+        <sequential>
+                
+            <antcall target = "steam-uptodate" />
+                
+            <steam-build>
+                <arguments>
+                    <args/>
+                </arguments>
+            </steam-build>
+            
+        </sequential>
         
-        <mkdir dir = "${Build.Cappuccino.Tools}" />
-        <!--<mkdir dir = "${Build.Cappuccino.Tools.Frameworks}" />-->
-        
-        <mkdir dir = "${Build.Cappuccino.Tools.Objj}" />
-        <mkdir dir = "${Build.Cappuccino.Tools.Bin}" />
-        <mkdir dir = "${Build.Cappuccino.Tools.Lib}" />
-        
-        <mkdir dir = "${Build.Cappuccino.Tools.Lib.Frameworks}" />
-        <mkdir dir = "${Build.Cappuccino.Tools.Lib.Frameworks-Rhino}" />
-        
-        <mkdir dir = "${Build.Cappuccino.Tools.Editors}" />
-        
+    </macrodef> -->
+    
+    <!-- Short Hands -->
+    
+    <target name = "build-release">
+        <ant antfile = "build.xml">
+            <property name = "Configuration" value = "Release" />
+        </ant>
+    </target>
+    
+    <target name = "clean-release">
+        <ant antfile = "build.xml" target = "clean">
+            <property name = "Configuration" value = "Release" />
+        </ant>
+    </target>
+    
+    <target name = "build-debug">
+        <ant antfile = "build.xml">
+            <property name = "Configuration" value = "Debug" />
+        </ant>
+    </target>
+    
+    <target name = "clean-debug">
+        <ant antfile = "build.xml" target = "clean">
+            <property name = "Configuration" value = "Debug" />
+        </ant>
+    </target>
+    
+    <target name = "release" >
+        <antcall target = "build-release" />
+    </target>
+
+    <target name = "debug" >
+        <antcall target = "build-debug" />
     </target>
 
     <!-- Iterate -->
@@ -89,6 +133,7 @@
     </macrodef>
 
     <!-- JavaScript Compiler -->
+    
     <macrodef name = "jsc">
         
         <attribute name = "dir" default = "." />
@@ -174,4 +219,5 @@
             </apply>
         </sequential>
     </macrodef>
+    
 </project>

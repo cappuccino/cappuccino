@@ -5,6 +5,8 @@
 
     <property name = "Build.Intermediate" location = "${Build}/press.build/${Configuration}" />
     <property name = "Build.press" location = "${Build}/${Configuration}/press" />
+    <property name = "Build.press.bin" location = "${Build.press}/bin" />
+    <property name = "Build.press.lib" location = "${Build.press}/lib" />
 
     <target name = "clean">
         <delete dir = "${Build.press}" verbose = "true" />
@@ -14,25 +16,10 @@
     
         <mkdir dir = "${Build.press}" />
         
-        <copy file = "${basedir}/press.j" tofile = "${Build.press}/press.j" />
-        <copy file = "${basedir}/objj-analysis-tools.j" tofile = "${Build.press}/objj-analysis-tools.j" />
+        <copy file = "${basedir}/press.j" tofile = "${Build.press.lib}/press.j" />
+        <copy file = "${basedir}/objj-analysis-tools.j" tofile = "${Build.press.lib}/objj-analysis-tools.j" />
         
-        <copy file = "${basedir}/press" tofile = "${Build.press}/press" />
-        
-        <chmod file = "${Build.press}/press" perm = "+x" />
-        
-    </target>
-    
-    <target name = "release" depends = "build">
-        
-        <antcall target = "prepare-release" />
-        
-        <copy file = "${Build.press}/press.j" tofile = "${Build.Cappuccino.Tools.Lib}/press.j" />
-        <copy file = "${Build.press}/objj-analysis-tools.j" tofile = "${Build.Cappuccino.Tools.Lib}/objj-analysis-tools.j" />
-        
-        <copy file = "${Build.press}/press" tofile = "${Build.Cappuccino.Tools.Bin}/press" />
-        
-        <chmod file = "${Build.Cappuccino.Tools.Bin}/press" perm = "+x" />
+        <copy file = "${basedir}/press" tofile = "${Build.press.bin}/press" />
         
     </target>
 

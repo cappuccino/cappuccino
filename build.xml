@@ -10,6 +10,27 @@
         <file name = "Tools/build.xml" />
     </filelist>
 
+    <!-- Deployment Paths -->
+
+    <property name = "Build.Cappuccino" location = "${Build}/Cappuccino" />
+    
+    <property name = "Build.Cappuccino.Starter" location = "${Build.Cappuccino}/Starter" />
+    <property name = "Build.Cappuccino.Starter.Frameworks" location = "${Build.Cappuccino.Starter}/Frameworks" />
+    
+    <property name = "Build.Cappuccino.Tools" location = "${Build.Cappuccino}/Tools" />
+    <property name = "Build.Cappuccino.Tools.Frameworks" location = "${Build.Cappuccino.Tools}/Frameworks" />
+    
+    <property name = "Build.Cappuccino.Tools.Objj" location = "${Build.Cappuccino.Tools}/objj" />
+    
+    <property name = "Build.Cappuccino.Tools.Bin" location = "${Build.Cappuccino.Tools.Objj}/bin" />
+    <property name = "Build.Cappuccino.Tools.Lib" location = "${Build.Cappuccino.Tools.Objj}/lib" />
+    <property name = "Build.Cappuccino.Tools.Lib.Frameworks" location = "${Build.Cappuccino.Tools.Lib}/Frameworks" />
+    <property name = "Build.Cappuccino.Tools.Lib.Frameworks-Debug" location = "${Build.Cappuccino.Tools.Lib}/Frameworks-Debug" />
+    <property name = "Build.Cappuccino.Tools.Lib.Frameworks-Rhino" location = "${Build.Cappuccino.Tools.Lib}/Frameworks-Rhino" />
+    <property name = "Build.Cappuccino.Tools.Lib.Frameworks-Rhino-Debug" location = "${Build.Cappuccino.Tools.Lib}/Frameworks-Rhino-Debug" />
+    
+    <property name = "Build.Cappuccino.Tools.Editors" location = "${Build.Cappuccino.Tools}/Editors" />    
+
     <target name = "clean">
         <iterate-build target = "clean"/>
     
@@ -23,15 +44,6 @@
             </files>
         </iterate>
     </target>
-    
-    <target name = "release">
-        <iterate target = "release">
-            <files>
-                <filelist refid = "Projects" />
-            </files>
-        </iterate>
-        
-    </target>
 
     <target name = "tools">
         <iterate target = "release">
@@ -40,8 +52,6 @@
                     <file name = "Objective-J/build.xml" />
                     <file name = "Tools/objjc/build.xml" />
                     <file name = "Tools/steam/build.xml" />
-                    <file name = "Tools/Utilities/build.xml" />
-                    <file name = "Tools/Install/build.xml" />
                 </filelist>
             </files>
         </iterate>
@@ -56,13 +66,13 @@
     </target>
 
     <target name = "bootstrap">
-        <antcall target = "tools" />
+        <antcall target = "deploy-bare-minimum" />
         <antcall target = "install-tools" />
-        <antcall target = "release" />
+        <antcall target = "deploy" />
         <antcall target = "install-tools" />
     </target>
     
-    <target name = "update-install" depends = "release">
+    <target name = "update-install" depends = "deploy">
         <antcall target = "install-tools" />
     </target>
     
@@ -82,6 +92,189 @@
 
         <mkdir dir = "${Build}" />
         <move file = "Documentation" todir = "${Build}" />
+    </target>
+
+    <!-- Deploying -->
+    
+    <target name = "deploy-bare-minimum" >
+
+        <!-- Build Bare Minimum -->
+        <ant antfile = "build.xml" dir = "Tools/objjc" >
+            <property name = "Configuration" value = "Release" />
+        </ant>
+    
+        <ant antfile = "build.xml" dir = "Tools/steam" >
+            <property name = "Configuration" value = "Release" />
+        </ant>
+    
+        <!-- Deploy Bare Minimum -->
+        
+        <copy todir = "${Build.Cappuccino.Tools.Bin}">
+            <fileset dir = "${Build}/Release/objjc/bin" />
+            <fileset dir = "${Build}/Release/steam/bin" />
+        </copy>
+
+        <copy todir = "${Build.Cappuccino.Tools.Lib}">
+            <fileset dir = "${Build}/Release/objjc/lib" />
+            <fileset dir = "${Build}/Release/steam/lib" />
+        </copy>
+    
+        <!-- Copy install script -->
+        
+        <copy file = "Tools/Install/install-tools" tofile = "${Build.Cappuccino.Tools}/install-tools" />
+    
+    </target>
+    
+    <target name = "deploy" >
+
+        <!-- Build Everything Debug AND Release -->
+        
+        <ant antfile = "build.xml" >
+            <property name = "Configuration" value = "Debug" />
+        </ant>
+
+        <ant antfile = "build.xml" >
+            <property name = "Configuration" value = "Release" />
+        </ant>
+        
+        <!-- Actually Deploy -->
+        
+        <copy todir = "${Build.Cappuccino.Tools.Lib.Frameworks}">
+            <fileset dir = "${Build}/Release/">
+                <include name = "Objective-J/" />
+                <include name = "Foundation/" />
+                <include name = "AppKit/" />
+            </fileset>
+        </copy>
+
+        <copy todir = "${Build.Cappuccino.Tools.Lib.Frameworks-Debug}">
+            <fileset dir = "${Build}/Debug/">
+                <include name = "Objective-J/" />
+                <include name = "Foundation/" />
+                <include name = "AppKit/" />
+            </fileset>
+        </copy>
+
+        <copy todir = "${Build.Cappuccino.Tools.Lib.Frameworks-Rhino}">
+            <fileset dir = "${Build}/Release/">
+                <include name = "Objective-J/" />
+                <include name = "Foundation/" />
+            </fileset>
+        </copy>
+        
+        <copy todir = "${Build.Cappuccino.Tools.Lib.Frameworks-Rhino}/AppKit">
+            <fileset dir = "${Build}/Release/AppKit-Rhino" />
+        </copy>
+
+        <copy todir = "${Build.Cappuccino.Tools.Lib.Frameworks-Rhino-Debug}">
+            <fileset dir = "${Build}/Debug/">
+                <include name = "Objective-J/" />
+                <include name = "Foundation/" />
+            </fileset>
+        </copy>
+        
+        <copy todir = "${Build.Cappuccino.Tools.Lib.Frameworks-Rhino-Debug}/AppKit">
+            <fileset dir = "${Build}/Debug/AppKit-Rhino" />
+        </copy>
+        
+        <copy todir = "${Build.Cappuccino.Tools.Lib}/NewApplication">
+            <fileset dir = "Tools/NewApplication" />
+        </copy>
+        
+        <copy todir = "${Build.Cappuccino.Tools.Lib}/NewApplication/Frameworks">
+            <fileset dir = "${Build}/Release/">
+                <include name = "Objective-J/" />
+                <include name = "Foundation/" />
+                <include name = "AppKit/" />
+            </fileset>
+        </copy>
+
+        <copy todir = "${Build.Cappuccino.Tools.Lib}/NewApplication/Frameworks-Debug">
+            <fileset dir = "${Build}/Debug/">
+                <include name = "Objective-J/" />
+                <include name = "Foundation/" />
+                <include name = "AppKit/" />
+            </fileset>
+        </copy>
+        
+        <!-- FIXME: This is awful, we need to handle this like we handle Demos -->
+        
+        <git-clone-pull repository = "git://github.com/280north/ojunit.git" dest = "${Build}/Release/ojunit" />
+        
+        <copy todir = "${Build.Cappuccino.Tools.Lib}/ojunit">
+            <fileset dir = "${Build}/Release/ojunit" includes = "**/*.j" />
+        </copy>
+        
+        <copy file = "Tools/ojunit/ojtest" tofile = "${Build.Cappuccino.Tools.Bin}/ojtest" />
+        
+        <!-- Tools -->
+        
+        <copy todir = "${Build.Cappuccino.Tools.Bin}">
+            <fileset dir = "${Build}/Release/bake/bin" />
+            <fileset dir = "${Build}/Release/cplutil/bin" />
+            <fileset dir = "${Build}/Release/nib2cib/bin" />
+            <fileset dir = "${Build}/Release/objj/bin" />
+            <fileset dir = "${Build}/Release/objjc/bin" />
+            <fileset dir = "${Build}/Release/press/bin" />
+            <fileset dir = "${Build}/Release/steam/bin" />
+        </copy>
+
+        <copy todir = "${Build.Cappuccino.Tools.Lib}">
+            <fileset dir = "${Build}/Release/bake/lib" />
+            <fileset dir = "${Build}/Release/cplutil/lib" />
+            <fileset dir = "${Build}/Release/nib2cib/lib" />
+            <fileset dir = "${Build}/Release/objj/lib" />
+            <fileset dir = "${Build}/Release/objjc/lib" />
+            <fileset dir = "${Build}/Release/press/lib" />
+            <fileset dir = "${Build}/Release/steam/lib" />
+        </copy>
+        
+        <!-- Copy READMEs -->
+        
+        <copy file = "Tools/READMEs/STARTER-README" tofile = "${Build.Cappuccino.Starter}/README" />        
+        <copy file = "Tools/READMEs/TOOLS-README" tofile = "${Build.Cappuccino.Tools}/README" />
+
+        <!-- Copy Editors -->
+
+        <copy file = "Tools/SubEthaEdit/Objective-J.mode.zip" tofile = "${Build.Cappuccino.Tools.Editors}/Objective-J.mode.zip" />     
+        <copy file = "Tools/TextMate/JavaScript Objective-J.tmbundle.zip" tofile = "${Build.Cappuccino.Tools.Editors}/JavaScript Objective-J.tmbundle.zip" />
+        <copy file = "Tools/Vim/objj.vim" tofile = "${Build.Cappuccino.Tools.Editors}/objj.vim" />
+
+        <!-- Copy Utilities -->
+        
+        <copy file = "Tools/Utilities/ant-apache-bsf-1.7.0.jar" todir = "${Build.Cappuccino.Tools.Lib}" />
+        <copy file = "Tools/Utilities/bsf.jar" todir = "${Build.Cappuccino.Tools.Lib}" />
+        <copy file = "Tools/Utilities/commons-logging-1.1.jar" todir = "${Build.Cappuccino.Tools.Lib}" />
+        <copy file = "Tools/Utilities/js.jar" todir = "${Build.Cappuccino.Tools.Lib}" />
+
+        <!-- Copy install script -->
+
+        <copy file = "Tools/Install/install-tools" tofile = "${Build.Cappuccino.Tools}/install-tools" />
+
+        <!-- Starter Package -->
+
+        <copy todir = "${Build.Cappuccino.Starter}/NewApplication">
+            <fileset dir = "${Build.Cappuccino.Tools.Lib}/NewApplication/" />
+        </copy>
+        
+        <!-- Zip -->
+        
+        <zip destfile = "${Build.Cappuccino}/Starter.zip">
+            <fileset dir = "${Build.Cappuccino.Starter}" />
+        </zip>
+        
+        <tar destfile = "${Build.Cappuccino}/Starter.tar.gz" compression = "gzip">
+            <fileset dir = "${Build.Cappuccino.Starter}" />
+        </tar>
+        
+        <zip destfile = "${Build.Cappuccino}/Tools.zip">
+            <fileset dir = "${Build.Cappuccino.Tools}" />
+        </zip>
+        
+        <tar destfile = "${Build.Cappuccino}/Tools.tar.gz" compression = "gzip">
+            <fileset dir = "${Build.Cappuccino.Tools}" />
+        </tar>
+        
     </target>
     
 </project>

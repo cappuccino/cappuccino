@@ -4,7 +4,6 @@
     <import file = "../common.xml" />
     
     <filelist id = "Projects" dir = "."> 
-        <file name = "Install/build.xml" />
         <file name = "nib2cib/build.xml" />
         <file name = "objj/build.xml" />
         <file name = "objjc/build.xml" />
@@ -13,8 +12,6 @@
         <file name = "press/build.xml" />
         <file name = "cplutil/build.xml" />
         <file name = "ojunit/build.xml" />
-        <file name = "Utilities/build.xml" />
-        <file name = "NewApplication/build.xml" />
     </filelist>
     
     <target name = "build">
@@ -31,39 +28,6 @@
                 <filelist refid = "Projects" />
             </files>
         </iterate>
-    </target>
-    
-    <target name = "release">
-    
-        <antcall target = "prepare-release"/>
-        
-        <iterate target = "release" >
-            <files>
-                <filelist refid = "Projects" />
-            </files>
-        </iterate>
-        
-        <copy file = "READMEs/STARTER-README" tofile = "${Build.Cappuccino.Starter}/README" />        
-        <copy file = "READMEs/TOOLS-README" tofile = "${Build.Cappuccino.Tools}/README" />
-
-        <copy file = "SubEthaEdit/Objective-J.mode.zip" tofile = "${Build.Cappuccino.Tools.Editors}/Objective-J.mode.zip" />     
-        <copy file = "TextMate/JavaScript Objective-J.tmbundle.zip" tofile = "${Build.Cappuccino.Tools.Editors}/JavaScript Objective-J.tmbundle.zip" />
-        <copy file = "Vim/objj.vim" tofile = "${Build.Cappuccino.Tools.Editors}/objj.vim" />
-
-        <zip destfile = "${Build.Cappuccino}/Starter.zip">
-            <fileset dir = "${Build.Cappuccino.Starter}" />
-        </zip>
-        <tar destfile = "${Build.Cappuccino}/Starter.tar.gz" compression = "gzip">
-            <fileset dir = "${Build.Cappuccino.Starter}" />
-        </tar>
-        
-        <zip destfile = "${Build.Cappuccino}/Tools.zip">
-            <fileset dir = "${Build.Cappuccino.Tools}" />
-        </zip>
-        <tar destfile = "${Build.Cappuccino}/Tools.tar.gz" compression = "gzip">
-            <fileset dir = "${Build.Cappuccino.Tools}" />
-        </tar>
-        
     </target>
 
 </project>

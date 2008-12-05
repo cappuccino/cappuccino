@@ -354,18 +354,28 @@ function main()
     var command = Array.prototype.shift.apply(arguments);
     switch (command)
     {
-        case "create":  mainCreate.apply(mainCreate, arguments);
-                        break;
+        case "create":      mainCreate.apply(mainCreate, arguments);
+                            break;
         case "build":
-                        mainBuild.apply(mainBuild, arguments);
-                        break;
+                            mainBuild.apply(mainBuild, arguments);
+                            break;
                         
-        case "help":    printUsage(arguments[1]);
-                        break;
+        case "help":        printUsage(arguments[1]);
+                            break;
+        
+        case "version":
+        case "--version":   printVersion();
+                            break;
                         
-        default :       printUsage(command);
+        default :           printUsage(command);
     }
     
+}
+
+function printVersion()
+{
+    java.lang.System.out.println("steam version 0.6");
+    java.lang.System.exit(1);
 }
 
 function mainCreate()

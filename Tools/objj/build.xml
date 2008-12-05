@@ -5,6 +5,8 @@
 
     <property name = "Build.Products" location = "${Build}/objj.build/${Configuration}" />
     <property name = "Build.objj" location = "${Build}/${Configuration}/objj" />
+    <property name = "Build.objj.bin" location = "${Build.objj}/bin" />
+    <property name = "Build.objj.lib" location = "${Build.objj}/lib" />
 
     <target name = "clean">
         <delete dir = "${Build.objj}" verbose = "true" />
@@ -34,27 +36,12 @@
             </arguments>
         </jsc>
 
-        <move file = "${Build.Products}/objj.class" tofile = "${Build.objj}/objj.class" />
+        <move file = "${Build.Products}/objj.class" tofile = "${Build.objj.lib}/objj.class" />
 
-        <copy file = "${basedir}/../Utilities/bridge.js" tofile = "${Build.objj}/bridge.js" />
+        <!-- Isn't this taken care of? -->
+        <copy file = "${basedir}/../Utilities/bridge.js" tofile = "${Build.objj.lib}/bridge.js" />
 
-        <copy file = "${basedir}/objj" tofile = "${Build.objj}/objj" />
-
-        <chmod file = "${Build.objj}/objj" perm = "+x" />
-
-    </target>
-
-    <target name = "release" depends = "build">
-
-        <antcall target = "prepare-release" />
-
-        <copy file = "${Build.objj}/objj.class" tofile = "${Build.Cappuccino.Tools.Lib}/objj.class" />
-
-        <copy file = "${Build.objj}/bridge.js" tofile = "${Build.Cappuccino.Tools.Lib}/bridge.js" />
-
-        <copy file = "${Build.objj}/objj" tofile = "${Build.Cappuccino.Tools.Bin}/objj" />
-
-        <chmod file = "${Build.Cappuccino.Tools.Bin}/objj" perm = "+x" />
+        <copy file = "${basedir}/objj" tofile = "${Build.objj.bin}/objj" />
 
     </target>
 

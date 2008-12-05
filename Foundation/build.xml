@@ -4,49 +4,20 @@
     <import file = "../common.xml" />
     <import file = "${env.OBJJ_LIB}/steam.xml" />
 
-    <target name = "clean">
+    <target name = "clean" depends = "steam-uptodate">
         <steam-build>
-            <arguments>
-                <arg line = "-f Foundation.steam -c ${Configuration} clean" />
-            </arguments>
+            <arg line = "-f Foundation.steam -c ${Configuration} clean" />
         </steam-build>
+    
     </target>
         
-    <target name = "build">
+    <target name = "build" depends = "steam-uptodate">
     
         <steam-build>
-            <arguments>
-                <arg line = "-f Foundation.steam -c ${Configuration}" />
-            </arguments>
+            <arg line = "-f Foundation.steam -c ${Configuration}" />
         </steam-build>
         
         <copy file = "../LICENSE" todir = "${Build}/${Configuration}/Foundation" />
-
-    </target>
-    
-    <target name = "release" depends = "build">
-        
-        <antcall target = "prepare-release" />
-        
-        <!--<copy todir = "${Build.Cappuccino.Tools.Frameworks}/Foundation">
-            <fileset dir = "${Build}/${Configuration}/Foundation" />
-        </copy>-->
-
-        <copy todir = "${Build.Cappuccino.Tools.Lib.Frameworks}/Foundation">
-            <fileset dir = "${Build}/${Configuration}/Foundation" />
-        </copy>
-
-        <copy todir = "${Build.Cappuccino.Tools.Lib.Frameworks-Rhino}/Foundation">
-            <fileset dir = "${Build}/${Configuration}/Foundation" />
-        </copy>
-
-        <copy todir = "${Build.Cappuccino.Starter.Frameworks}/Foundation" >
-            <fileset dir = "${Build}/${Configuration}/Foundation" />
-        </copy>
-
-        <copy todir = "${Build.Cappuccino.Starter}/NewApplication/Frameworks/Foundation" >
-            <fileset dir = "${Build}/${Configuration}/Foundation" />
-        </copy>
 
     </target>
 

@@ -4,55 +4,29 @@
     <import file = "../common.xml" />
     <import file = "${env.OBJJ_LIB}/steam.xml" />
 
-    <target name = "clean">
-        <steam-build>
-            <arguments>
-                <arg line = "-f AppKit.steam -c ${Configuration} clean" />
-            </arguments>
-        </steam-build>
-    </target>
-        
-    <target name = "build">
+    <target name = "clean" depends = "steam-uptodate">
     
         <steam-build>
-            <arguments>
-                <arg line = "-f AppKit.steam -c ${Configuration} -t AppKit" />
-            </arguments>
+            <arg line = "-f AppKit.steam -c ${Configuration} clean" />
+        </steam-build>
+    
+        <steam-build>
+            <arg line = "-f AppKit.steam -c ${Configuration} -t AppKit-Rhino clean" />
+        </steam-build>
+        
+    </target>
+        
+    <target name = "build" depends = "steam-uptodate">
+    
+        <steam-build>
+            <arg line = "-f AppKit.steam -c ${Configuration} -t AppKit" />
         </steam-build>
 
         <steam-build>
-            <arguments>
-                <arg line = "-f AppKit.steam -c ${Configuration} -t AppKit-Rhino" />
-            </arguments>
+            <arg line = "-f AppKit.steam -c ${Configuration} -t AppKit-Rhino" />
         </steam-build>
         
         <copy file = "../LICENSE" todir = "${Build}/${Configuration}/AppKit" />
-
-    </target>
-    
-    <target name = "release" depends = "build">
-        
-        <antcall target = "prepare-release" />
-        
-        <!--<copy todir = "${Build.Cappuccino.Tools.Frameworks}/AppKit">
-            <fileset dir = "${Build}/${Configuration}/AppKit" />
-        </copy>-->
-        
-        <copy todir = "${Build.Cappuccino.Tools.Lib.Frameworks}/AppKit">
-            <fileset dir = "${Build}/${Configuration}/AppKit" />
-        </copy>
-
-        <copy todir = "${Build.Cappuccino.Tools.Lib.Frameworks-Rhino}/AppKit">
-            <fileset dir = "${Build}/${Configuration}/AppKit-Rhino" />
-        </copy>
-
-        <copy todir = "${Build.Cappuccino.Starter.Frameworks}/AppKit" >
-            <fileset dir = "${Build}/${Configuration}/AppKit" />
-        </copy>
-        
-        <copy todir = "${Build.Cappuccino.Starter}/NewApplication/Frameworks/AppKit" >
-            <fileset dir = "${Build}/${Configuration}/AppKit" />
-        </copy>
 
     </target>
 
