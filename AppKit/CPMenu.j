@@ -1194,6 +1194,9 @@ var STICKY_TIME_INTERVAL        = 500,
         
     if (_trackingCanceled)
     {
+        // Stop all periodic events at this point.
+        [CPEvent stopPeriodicEvents];
+        
         var highlightedItem = [[_menuView menu] highlightedItem];
         
         [menu _highlightItemAtIndex:CPNotFound];
@@ -1639,7 +1642,7 @@ var _CPMenuBarWindowBackgroundColor = nil,
 {
     var type = [anEvent type];
     
-    if (type == CPPeriodic)
+    if (type === CPPeriodic)
         return [self showMenu:anEvent];
     
     var frame = [self frameForMenuItem:_trackingMenuItem],

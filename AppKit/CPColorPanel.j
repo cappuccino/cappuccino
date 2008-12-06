@@ -21,21 +21,21 @@
  */
 
 @import "CPButton.j"
-@import "CPColorPicker.j"
 @import "CPCookie.j"
 @import "CPPanel.j"
-@import "CPSliderColorPicker.j"
 @import "CPView.j"
-
 
 CPColorPanelColorDidChangeNotification = @"CPColorPanelColorDidChangeNotification";
 
 var PREVIEW_HEIGHT = 20.0,
     TOOLBAR_HEIGHT = 32.0,
-    SWATCH_HEIGHT  = 14.0;
+    SWATCH_HEIGHT  = 14.0,
+    ICON_WIDTH     = 32.0,
+    ICON_PADDING   = 12.0;
 
-var SharedColorPanel = nil;
-
+var SharedColorPanel = nil,
+    ColorPickerClasses = [];
+    
 /*
     A color wheel
     @global
@@ -54,7 +54,7 @@ CPColorPickerViewHeight = 370;
 
 /*! @class CPColorPanel
 
-    <objj>CPColorPanel</objj> provides a reusable panel that can be used
+    CPColorPanel provides a reusable panel that can be used
     displayed on screen to prompt the user for a color selection. To
     obtain the panel, call the <code>sharedColorPanel</code> method.
 */
@@ -67,11 +67,8 @@ CPColorPickerViewHeight = 370;
     CPTextField     _previewLabel;
     CPTextField     _swatchLabel;
         
-    CPView          _currentView;
-    
-    CPColorPicker   _activePicker;
-    CPColorPicker   _wheelPicker;
-    CPColorPicker   _sliderPicker;
+    CPArray         _colorPickers;
+    CPView          _currentView;    
     
     CPColor         _color;
     
@@ -79,6 +76,15 @@ CPColorPickerViewHeight = 370;
     SEL             _action;       
     
     int             _mode;             
+}
+
+/*! 
+    A list of color pickers is collected here, and any color panel created will contain 
+    any picker in this list up to this point. In other words, call before creating a color panel.
+*/
++ (void)provideColorPickerClass:(Class)aColorPickerSubclass
+{
+    ColorPickerClasses.push(aColorPickerSubclass);
 }
 
 /*!
@@ -207,26 +213,38 @@ CPColorPickerViewHeight = 370;
 */
 - (void)setMode:(CPColorPanelMode)mode
 {
-    if(mode == _mode) 
-        return;
-                
-    var frame = CPRectCreateCopy([_currentView frame]);
-    [_currentView removeFromSuperview];
+    _mode = mode;
+}
+
+- (void)_setPicker:(id)sender
+{
+    var picker = _colorPickers[[sender tag]],
+        view = [picker provideNewView:NO];
     
-    switch(mode)
+    if (!view)
+        view = [picker provideNewView:YES];
+        
+    if (view == _currentView)
+        return;
+        
+    if (_currentView)
+        [view setFrame:[_currentView frame]];
+    else
     {
-        case CPWheelColorPickerMode:  _activePicker = _wheelPicker; break;
-        case CPSliderColorPickerMode: _activePicker = _sliderPicker; break;
+        var height = (TOOLBAR_HEIGHT+10+PREVIEW_HEIGHT+5+SWATCH_HEIGHT+10),
+            bounds = [[self contentView] bounds];
+
+        [view setFrameSize: CPSizeMake(bounds.size.width - 10, bounds.size.height - height)];
+        [view setFrameOrigin: CPPointMake(5, height)];
     }
     
-    _currentView = [_activePicker provideNewView: NO]; 
-    [_activePicker setColor: _color]; 
-
-    _mode = mode;
-
-    [_currentView setFrame: frame];
-    [_currentView setAutoresizingMask: (CPViewWidthSizable | CPViewHeightSizable)];
-    [[self contentView] addSubview: _currentView];
+    [_currentView removeFromSuperview];
+    [[self contentView] addSubview:view];
+    
+    _currentView = view;
+    _activePicker = picker;
+    
+    [picker setColor:[self color]];
 }
 
 /*!
@@ -240,7 +258,6 @@ CPColorPickerViewHeight = 370;
 - (void)orderFront:(id)aSender
 {
     [self _loadContentsIfNecessary];
-    
     [super orderFront:aSender];
 }
 
@@ -249,12 +266,48 @@ CPColorPickerViewHeight = 370;
 {
     if (_toolbar)
         return;
-        
+            
+    _colorPickers = [];
+    
+    var count = [ColorPickerClasses count];
+    for (var i=0; i<count; i++)
+    {
+        var currentPickerClass = ColorPickerClasses[i],
+            currentPicker = [[currentPickerClass alloc] initWithPickerMask:0 colorPanel:self];
+            
+        _colorPickers.push(currentPicker);
+    }
+
     var contentView = [self contentView],
         bounds = [contentView bounds];
     
-    _toolbar = [[_CPColorPanelToolbar alloc] initWithFrame: CPRectMake(0, 0, CGRectGetWidth(bounds), TOOLBAR_HEIGHT)];
+    _toolbar = [[CPView alloc] initWithFrame:CGRectMake(0, 0, CGRectGetWidth(bounds), TOOLBAR_HEIGHT)];
     [_toolbar setAutoresizingMask: CPViewWidthSizable];  
+
+    var totalToolbarWidth = count * ICON_WIDTH + (count - 1) * ICON_PADDING,
+        leftOffset = (CGRectGetWidth(bounds) - totalToolbarWidth) / 2.0,
+        buttonForLater = nil;
+    
+    for (var i=0; i<count; i++)
+    {
+        var image = [_colorPickers[i] provideNewButtonImage],
+            highlightImage = [_colorPickers[i] provideNewAlternateButtonImage],
+            button = [[CPButton alloc] initWithFrame:CGRectMake(leftOffset + i*(ICON_WIDTH+ICON_PADDING), 0, ICON_WIDTH, ICON_WIDTH)];
+            
+        [button setTag:i];
+        [button setTarget:self];
+        [button setAction:@selector(_setPicker:)];
+        [button setBordered:NO];
+        [button setAutoresizingMask:CPViewMinXMargin|CPViewMaxXMargin];
+        
+        [button setImage:image];
+        [button setAlternateImage:highlightImage];
+        
+        [_toolbar addSubview:button];
+        
+        if (!buttonForLater)
+            buttonForLater = button;
+    }
 
     // FIXME: http://280north.lighthouseapp.com/projects/13294-cappuccino/tickets/25-implement-cpbox
     var previewBox = [[CPView alloc] initWithFrame:CGRectMake(76, TOOLBAR_HEIGHT + 10, CGRectGetWidth(bounds) - 86, PREVIEW_HEIGHT)];
@@ -292,108 +345,25 @@ CPColorPickerViewHeight = 370;
     [_swatchLabel setTextColor:[CPColor whiteColor]];
     [_swatchLabel setAlignment:CPRightTextAlignment];
 
-    _wheelPicker = [[CPColorWheelColorPicker alloc] initWithPickerMask: 1|2|3 colorPanel: self];
-    _currentView = [_wheelPicker provideNewView: YES];
-
-    var height = (TOOLBAR_HEIGHT+10+PREVIEW_HEIGHT+5+SWATCH_HEIGHT+10);
-    [_currentView setFrameSize: CPSizeMake(bounds.size.width - 10, bounds.size.height - height)];
-    [_currentView setFrameOrigin: CPPointMake(5, TOOLBAR_HEIGHT+10+PREVIEW_HEIGHT+5+SWATCH_HEIGHT+10)];
-    [_currentView setAutoresizingMask: (CPViewWidthSizable | CPViewHeightSizable)];
-
-    _sliderPicker = [[CPSliderColorPicker alloc] initWithPickerMask: 1|2|3 colorPanel: self];
-    [_sliderPicker provideNewView: YES];
 
     [contentView addSubview: _toolbar];
     [contentView addSubview: previewBox];
     [contentView addSubview: _previewLabel];
     [contentView addSubview: swatchBox];
     [contentView addSubview: _swatchLabel];
-    [contentView addSubview: _currentView];
     
     _target = nil;
     _action = nil;
-    
-    _activePicker = _wheelPicker;
+    _activePicker = nil;
     
     [self setColor:[CPColor whiteColor]];
-    [_activePicker setColor:[CPColor whiteColor]];
+    
+    if (buttonForLater)
+        [self _setPicker:buttonForLater];
 }
 
 @end
 
-var iconSize   = 32,
-    totalIcons = 2;
-
-/* @ignore */
-@implementation _CPColorPanelToolbar : CPView
-{
-    CPImage  _wheelImage;
-    CPImage  _wheelAlternateImage;
-    CPButton _wheelButton;
-    
-    CPImage  _sliderImage;
-    CPImage  _sliderAlternateImage;
-    CPButton _sliderButton; 
-}
-
-- (id)initWithFrame:(CPRect)aFrame
-{
-    self = [super initWithFrame:aFrame];
-    
-    var width  = aFrame.size.width;
-    var center = width / 2.0;
-    var start  = center - ((totalIcons * iconSize) + (totalIcons - 1) * 8.0) / 2.0;
-    
-    _wheelButton = [[CPButton alloc] initWithFrame:CPRectMake(start, 0, iconSize, iconSize)];
-        
-    start += iconSize + 8;
-    
-    var path     = [[CPBundle bundleForClass: _CPColorPanelToolbar] pathForResource:@"wheel_button.png"]; 
-    _wheelImage  = [[CPImage alloc] initWithContentsOfFile:path size: CPSizeMake(iconSize, iconSize)];
-    
-    path                 = [[CPBundle bundleForClass: _CPColorPanelToolbar] pathForResource:@"wheel_button_h.png"];
-    _wheelAlternateImage = [[CPImage alloc] initWithContentsOfFile:path size: CPSizeMake(iconSize, iconSize)];
-    
-    [_wheelButton setBordered:NO];
-    [_wheelButton setImage: _wheelImage];
-    [_wheelButton setAlternateImage: _wheelAlternateImage];
-    [_wheelButton setTarget: self];
-    [_wheelButton setAction: @selector(setMode:)];
-    [_wheelButton setAutoresizingMask:CPViewMinXMargin | CPViewMaxXMargin];
-
-    [self addSubview: _wheelButton];
- 
-    _sliderButton = [[CPButton alloc] initWithFrame:CPRectMake(start, 0, iconSize, iconSize)];
-    
-    start += iconSize + 8;
-
-    path          = [[CPBundle bundleForClass: _CPColorPanelToolbar] pathForResource:@"slider_button.png"];
-    _sliderImage  = [[CPImage alloc] initWithContentsOfFile:path size: CPSizeMake(iconSize, iconSize)];
-
-    path                  = [[CPBundle bundleForClass: _CPColorPanelToolbar] pathForResource:@"slider_button_h.png"];
-    _sliderAlternateImage = [[CPImage alloc] initWithContentsOfFile:path size: CPSizeMake(iconSize, iconSize)];
-
-    [_sliderButton setBordered:NO];
-    [_sliderButton setImage: _sliderImage];    
-    [_sliderButton setAlternateImage: _sliderAlternateImage];    
-    [_sliderButton setTarget: self];
-    [_sliderButton setAction: @selector(setMode:)];
-    [_sliderButton setAutoresizingMask:CPViewMinXMargin | CPViewMaxXMargin];
-
-    [self addSubview: _sliderButton];
-     
-    return self;
-}
-
-- (void)setMode:(id)sender
-{
-    if(sender == _wheelButton)
-        [[CPColorPanel sharedColorPanel] setMode: CPWheelColorPickerMode];
-    else
-        [[CPColorPanel sharedColorPanel] setMode: CPSliderColorPickerMode];
-}
-
-@end
 
 CPColorDragType = "CPColorDragType";
 var CPColorPanelSwatchesCookie = "CPColorPanelSwatchesCookie";
@@ -646,3 +616,9 @@ var CPColorPanelSwatchesCookie = "CPColorPanelSwatchesCookie";
 }
 
 @end
+
+@import "CPColorPicker.j"
+@import "CPSliderColorPicker.j"
+
+[CPColorPanel provideColorPickerClass:CPColorWheelColorPicker];
+[CPColorPanel provideColorPickerClass:CPSliderColorPicker];

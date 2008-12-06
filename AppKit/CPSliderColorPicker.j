@@ -20,13 +20,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-@import <Foundation/Foundation.j>
-
-@import <AppKit/CPView.j>
-@import <AppKit/CPSlider.j>
-@import <AppKit/CPColorPicker.j>
-@import <AppKit/CPColorPanel.j>
-
+@import "CPColorPicker.j"
 
 /*
     @ignore
@@ -69,8 +63,10 @@
 -(id)initView
 {
     aFrame = CPRectMake(0, 0, CPColorPickerViewWidth, CPColorPickerViewHeight);    
+    
     _contentView = [[CPView alloc] initWithFrame:aFrame];
-
+    [_contentView setAutoresizingMask:CPViewWidthSizable|CPViewHeightSizable];
+    
     _rgbLabel = [[CPTextField alloc] initWithFrame: CPRectMake(0, 10, 100, 20)];
     [_rgbLabel setStringValue: "RGB"];
     [_rgbLabel setTextColor:[CPColor whiteColor]];
@@ -404,5 +400,14 @@
     _blueValue.value       = ROUND([_blueSlider floatValue] * 255);
 }
 
+- (CPImage)provideNewButtonImage
+{
+    return [[CPImage alloc] initWithContentsOfFile:[[CPBundle bundleForClass:CPColorPicker] pathForResource:"slider_button.png"] size:CGSizeMake(32, 32)];
+}
+
+- (CPImage)provideNewAlternateButtonImage
+{
+    return [[CPImage alloc] initWithContentsOfFile:[[CPBundle bundleForClass:CPColorPicker] pathForResource:"slider_button_h.png"] size:CGSizeMake(32, 32)];
+}
 
 @end
