@@ -135,6 +135,8 @@ var _CPRunLoopPerformPool           = [],
 
 @end
 
+var CPRunLoopLastNativeRunLoop = 0;
+
 /*! @class CPRunLoop
 
     CPRunLoop instances handle various utility tasks that must be performed repetitively in an application, such as processing input events.
@@ -249,12 +251,18 @@ var _CPRunLoopPerformPool           = [],
 */
 - (void)addTimer:(CPTimer)aTimer forMode:(CPString)aMode
 {
+    // FIXME: Timer already added...
     if (_timersForModes[aMode])
         _timersForModes[aMode].push(aTimer);
     else
         _timersForModes[aMode] = [aTimer];
     
     _didAddTimer = YES;
+    
+    if (!aTimer._lastNativeRunLoopsForModes)
+        aTimer._lastNativeRunLoopsForModes = {};
+        
+    aTimer._lastNativeRunLoopsForModes[aMode] = CPRunLoopLastNativeRunLoop;
 }
 
 /*!
@@ -296,17 +304,25 @@ var _CPRunLoopPerformPool           = [],
         {
             var timer = timers[index];
             
-            if (timer._isValid && timer._fireDate <= now)
+            if (timer._lastNativeRunLoopsForModes[aMode] < CPRunLoopLastNativeRunLoop && timer._isValid && timer._fireDate <= now)
                 [timer fire];
-    
+                    
             // Timer may or may not still be valid
             if (timer._isValid)
                 nextFireDate = (nextFireDate === nil) ? timer._fireDate : [nextFireDate earlierDate:timer._fireDate];
             
             else
+            {
+                // FIXME: Is there an issue with reseting the fire date in -fire? or adding it back to the run loop?...
+                timer._lastNativeRunLoopsForModes[aMode] = 0;
+                
                 timers.splice(index, 1);
+            }
         }
         
+        // Timers may have been added during the firing of timers
+        // They do NOT get a shot at firing, because they certainly 
+        // haven't gone through one native timer.
         var newTimers = _timersForModes[aMode];
         
         if (newTimers && newTimers.length)
@@ -332,7 +348,7 @@ var _CPRunLoopPerformPool           = [],
         
         //initiate a new window.setTimeout if there are any timers
         if (_nextTimerFireDatesForModes[aMode] !== nil)
-            _nativeTimersForModes[aMode] = window.setNativeTimeout(function() { _nativeTimersForModes[aMode] = nil; [self limitDateForMode:aMode]; }, MAX(0, [nextFireDate timeIntervalSinceNow] * 1000));
+            _nativeTimersForModes[aMode] = window.setNativeTimeout(function() { _nativeTimersForModes[aMode] = nil; ++CPRunLoopLastNativeRunLoop; [self limitDateForMode:aMode]; _isNativeTimerRun = NO; }, MAX(0, [nextFireDate timeIntervalSinceNow] * 1000));
     }
     
     // Run loop performers
