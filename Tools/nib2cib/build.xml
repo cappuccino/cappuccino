@@ -20,8 +20,8 @@
             <arg line = "-f nib2cib.steam -c ${Configuration} -t nib2cib" />
         </steam-build>
         
-        <copy todir = "${Build.nib2cib.lib}/nib2cib">
-            <fileset dir = "${Build}/${Configuration}/nib2cib" />
+        <copy todir = "${Build.nib2cib.lib}">
+            <fileset dir = "${Build}/${Configuration}/nib2cib/" />
         </copy>
 
         <copy file = "nib2cib" tofile = "${Build.nib2cib.bin}/nib2cib" />

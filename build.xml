@@ -194,22 +194,6 @@
             <fileset dir = "Tools/NewApplication" />
         </copy>
         
-        <copy todir = "${Build.Cappuccino.Tools.Lib}/NewApplication/Frameworks">
-            <fileset dir = "${Build}/Release/">
-                <include name = "Objective-J/" />
-                <include name = "Foundation/" />
-                <include name = "AppKit/" />
-            </fileset>
-        </copy>
-
-        <copy todir = "${Build.Cappuccino.Tools.Lib}/NewApplication/Frameworks-Debug">
-            <fileset dir = "${Build}/Debug/">
-                <include name = "Objective-J/" />
-                <include name = "Foundation/" />
-                <include name = "AppKit/" />
-            </fileset>
-        </copy>
-        
         <!-- FIXME: This is awful, we need to handle this like we handle Demos -->
         
         <git-clone-pull repository = "git://github.com/280north/ojunit.git" dest = "${Build}/Release/ojunit" />
@@ -267,8 +251,25 @@
         <!-- Starter Package -->
 
         <copy todir = "${Build.Cappuccino.Starter}/NewApplication">
-            <fileset dir = "${Build.Cappuccino.Tools.Lib}/NewApplication/" />
+            <fileset dir = "Tools/NewApplication/" />
         </copy>
+        
+        <copy todir = "${Build.Cappuccino.Starter}/NewApplication/Frameworks">
+            <fileset dir = "${Build}/Release/">
+                <include name = "Objective-J/" />
+                <include name = "Foundation/" />
+                <include name = "AppKit/" />
+            </fileset>
+        </copy>
+
+        <copy todir = "${Build.Cappuccino.Starter}/NewApplication/Frameworks-Debug">
+            <fileset dir = "${Build}/Debug/">
+                <include name = "Objective-J/" />
+                <include name = "Foundation/" />
+                <include name = "AppKit/" />
+            </fileset>
+        </copy>
+
         
         <!-- Zip -->
         
