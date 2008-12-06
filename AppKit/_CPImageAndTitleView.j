@@ -39,7 +39,7 @@
     CPFont              _font;
     
     CPCellImagePosition _imagePosition;
-    CPImageScaling      _imageScalng;
+    CPImageScaling      _imageScaling;
     
     CPImage             _image;
     CPString            _title;
