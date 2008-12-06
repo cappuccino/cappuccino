@@ -20,11 +20,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-@import <Foundation/Foundation.j>
-@import <AppKit/CPView.j>
-@import <AppKit/CPImage.j>
-@import <AppKit/CPImageView.j>
-
+@import <Foundation/CPObject.j>
+@import "CPColorPanel.j"
 
 /*! @class CPColorPicker
 
@@ -109,7 +106,9 @@
 -(id)initView
 {
     aFrame = CPRectMake(0, 0, CPColorPickerViewWidth, CPColorPickerViewHeight);
+    
     _pickerView = [[CPView alloc] initWithFrame:aFrame];
+    [_pickerView setAutoresizingMask:CPViewWidthSizable|CPViewHeightSizable];
         
     var path = [[CPBundle bundleForClass: CPColorPicker] pathForResource:@"brightness_bar.png"]; 
     
@@ -192,6 +191,16 @@
     [_hueSaturationView setWheelBrightness:hsb[2] / 100.0];
 
     _brightnessBarImage.style.backgroundColor = "#"+[[CPColor colorWithHue:hsb[0] saturation:hsb[1] brightness:100] hexString];
+}
+
+- (CPImage)provideNewButtonImage
+{
+    return [[CPImage alloc] initWithContentsOfFile:[[CPBundle bundleForClass:CPColorPicker] pathForResource:"wheel_button.png"] size:CGSizeMake(32, 32)];
+}
+
+- (CPImage)provideNewAlternateButtonImage
+{
+    return [[CPImage alloc] initWithContentsOfFile:[[CPBundle bundleForClass:CPColorPicker] pathForResource:"wheel_button_h.png"] size:CGSizeMake(32, 32)];
 }
 
 @end
@@ -362,5 +371,6 @@
 {
     return -(((degrees - 360) / 180) * PI);
 }
-
+ 
 @end
+

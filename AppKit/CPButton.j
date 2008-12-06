@@ -237,7 +237,7 @@ var _CPButtonClassName                          = nil,
     CPImage                 _alternateImage;
     
     CPCellImagePosition     _imagePosition;
-    CPImageScaling          _imageScalng;
+    CPImageScaling          _imageScaling;
     
     CPString                _title;
     CPString                _alternateTitle;
