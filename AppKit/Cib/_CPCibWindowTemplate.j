@@ -78,7 +78,6 @@ var _CPCibWindowTemplateMinSizeKey          = @"_CPCibWindowTemplateMinSizeKey",
         [NSException raise:NSInvalidArgumentException format:@"Unable to locate NSWindow class %@, using NSWindow",_windowClass];
         class=[NSWindow class];*/
         
-    _windowStyleMask = (CPHUDBackgroundWindowMask | CPClosableWindowMask | CPResizableWindowMask);
     var theWindow = [[windowClass alloc] initWithContentRect:_windowRect styleMask:_windowStyleMask];
     
     if (_minSize)

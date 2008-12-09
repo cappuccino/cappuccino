@@ -6,7 +6,6 @@ import <AppKit/CPCib.j>
 @implementation AppController : CPObject
 {
     CPWindow    _window;
-    CPWindow    _secondWindow;
     CPView      _view;
 }
 
@@ -23,7 +22,8 @@ import <AppKit/CPCib.j>
     [contentView addSubview:_view];
     [theWindow orderFront:self];
     
-    [_secondWindow orderFront:self];
+    // HACK: shift the window down to accomodate for menubar
+    [theWindow setFrameOrigin:CGPointMake([theWindow frame].origin.x, [theWindow frame].origin.y + 29)];
 }
 
 @end

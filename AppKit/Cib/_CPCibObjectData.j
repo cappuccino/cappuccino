@@ -80,6 +80,15 @@
     return topLevelObjects;
 }
 
+- (CPMenu)mainMenu
+{
+    var index = [_namesValues indexOfObjectIdenticalTo:"MainMenu"];
+    if (index === CPNotFound)
+        return nil;
+    
+    return _namesKeys[index];
+}
+
 @end
 
 var _CPCibObjectDataNamesKeysKey                = @"_CPCibObjectDataNamesKeysKey",

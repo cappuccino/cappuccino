@@ -91,3 +91,10 @@
 }
 
 @end
+
+
+@implementation NSActionCell : NSCell
+{
+}
+
+@end

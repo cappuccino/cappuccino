@@ -1,8 +1,8 @@
 /*
- * NSAppKit.j
+ * NSMenu.j
  * nib2cib
  *
- * Created by Francisco Tolmasky.
+ * Created by Thomas Robinson.
  * Copyright 2008, 280 North, Inc.
  *
  * This library is free software; you can redistribute it and/or
@@ -20,38 +20,40 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-@import "NSButton.j"
-@import "NSCell.j"
-@import "NSColor.j"
-@import "NSColorWell.j"
-@import "NSControl.j"
-@import "NSCustomObject.j"
-@import "NSCustomView.j"
-@import "NSFont.j"
-@import "NSIBObjectData.j"
-@import "NSMenu.j"
+@import <AppKit/CPMenu.j>
+
 @import "NSMenuItem.j"
-@import "NSNibConnector.j"
-@import "NSPopUpButton.j"
-@import "NSResponder.j"
-@import "NSSlider.j"
-@import "NSSplitView.j"
-@import "NSTextField.j"
-@import "NSToolbar.j"
-@import "NSView.j"
-@import "NSWindowTemplate.j"
-@import "WebView.j"
 
 
-function CP_NSMapClassName(aClassName)
+@implementation CPMenu (NSCoding)
+
+- (id)NS_initWithCoder:(CPCoder)aCoder
 {
-    if (aClassName == @"NSView")
-        return "CPView";
-
-    if (aClassName == @"NSWindow")
-        return @"CPWindow";
+    self = [super init];
     
-    CPLog.warn("No class name mapping for \""+aClassName+"\"");
+    if (self)
+    {
+        _title = [aCoder decodeObjectForKey:"NSTitle"];
+        _items = [aCoder decodeObjectForKey:"NSMenuItems"];
+    }
     
-    return aClassName;
+    return self;
 }
+
+@end
+
+@implementation NSMenu : CPMenu
+{
+}
+
+- (id)initWithCoder:(CPCoder)aCoder
+{
+    return [self NS_initWithCoder:aCoder];
+}
+
+- (Class)classForKeyedArchiver
+{
+    return [CPMenu class];
+}
+
+@end
