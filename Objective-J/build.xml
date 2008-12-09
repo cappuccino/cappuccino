@@ -18,6 +18,7 @@
         <file name = "evaluate.js" />
         <file name = "static.js" />
         <file name = "debug.js" />
+        <file name = "bootstrap.js" />
     
     </filelist>
     
