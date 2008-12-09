@@ -1,4 +1,4 @@
-import <Foundation/Foundation.j>
+@import <Foundation/Foundation.j>
 importPackage(Packages.java.io);
 
 var options = {
