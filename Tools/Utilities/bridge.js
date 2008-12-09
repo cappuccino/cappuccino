@@ -516,7 +516,7 @@ XMLHttpRequest.prototype.send = function(body)
 	
 	try
 	{
-		this.responseText = readFile(this.url);
+		this.responseText = readFile(this.url, "UTF-8"); // FIXME: should we really assume this is UTF-8?
 		
 		if (debug)
 		    alert("xhr response:  " + this.url + " (length="+this.responseText.length+")");
