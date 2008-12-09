@@ -20,6 +20,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+
 @import <Foundation/Foundation.j>
 
 @import <AppKit/CPCib.j>
@@ -27,8 +28,7 @@
 @import "NSFoundation.j"
 @import "NSAppKit.j"
 
-importClass(java.io.FileWriter);
-importClass(java.io.BufferedWriter);
+importPackage(java.io);
 
 CPLogRegister(CPLogPrint);
 
@@ -95,7 +95,7 @@ var unarchiver = [[CPKeyedUnarchiver alloc] initForReadingWithData:data],
 [archiver encodeObject:objectData forKey:@"CPCibObjectDataKey"];
 [archiver finishEncoding];
 
-var writer = new BufferedWriter(new FileWriter("MainMenu.cib"));//outputPath + name.substring(0, args[0].indexOf(".")) + ".o"));
+var writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream("MainMenu.cib"), "UTF-8"));//outputPath + name.substring(0, args[0].indexOf(".")) + ".o"));
 
 writer.write([data string]);
 
