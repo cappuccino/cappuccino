@@ -28,6 +28,10 @@
 @import "NSCell.j"
 @import "NSControl.j"
 
+var _CPButtonBezelStyleHeights = {};
+_CPButtonBezelStyleHeights[CPRoundedBezelStyle] = 18;
+_CPButtonBezelStyleHeights[CPTexturedRoundedBezelStyle] = 20;
+_CPButtonBezelStyleHeights[CPHUDBezelStyle] = 20;
 
 @implementation CPButton (NSCoding)
 
@@ -41,10 +45,54 @@
     
         var cell = [aCoder decodeObjectForKey:@"NSCell"];
         
-        [self setTitle:[cell title]];
-
-        [self setBezelStyle:[cell bezelStyle]];
-        [self setBordered:[cell isBordered]];
+        _title = [cell title];
+        _isBordered = [cell isBordered];
+        _bezelStyle = [cell bezelStyle];
+        
+        // clean up:
+        
+        switch (_bezelStyle)
+        {
+            // implemented:
+            case CPRoundedBezelStyle:
+            case CPTexturedRoundedBezelStyle:
+            case CPHUDBezelStyle:
+                break;
+            // approximations:
+            case CPRoundRectBezelStyle:
+                _bezelStyle = CPRoundedBezelStyle;
+                break;
+            case CPSmallSquareBezelStyle:
+            case CPThickSquareBezelStyle:
+            case CPThickerSquareBezelStyle:
+            case CPRegularSquareBezelStyle:
+            case CPTexturedSquareBezelStyle:
+            case CPShadowlessSquareBezelStyle:
+                _bezelStyle = CPTexturedRoundedBezelStyle;
+                break;
+            case CPRecessedBezelStyle:
+                _bezelStyle = CPHUDBezelStyle;
+                break;
+            // unsupported
+            case CPRoundedDisclosureBezelStyle:
+            case CPHelpButtonBezelStyle:
+            case CPCircularBezelStyle:
+            case CPDisclosureBezelStyle:
+                CPLog.warn("Unsupported bezel style: " + _bezelStyle);
+                _bezelStyle = CPHUDBezelStyle;
+                break;
+            // error:
+            default:
+                CPLog.error("Unknown bezel style: " + _bezelStyle);
+                _bezelStyle = CPHUDBezelStyle;
+        }
+        
+        if (_CPButtonBezelStyleHeights[_bezelStyle] != undefined)
+        {
+            CPLog.warn("Adjusting CPButton height from " +_frame.size.height+ " / " + _bounds.size.height+" to " + _CPButtonBezelStyleHeights[_bezelStyle]);
+            _frame.size.height = _CPButtonBezelStyleHeights[_bezelStyle];
+            _bounds.size.height = _CPButtonBezelStyleHeights[_bezelStyle];
+        }
     }
     
     return self;
@@ -68,12 +116,12 @@
 
 @end
 
-@implementation NSButtonCell : NSCell
+@implementation NSButtonCell : NSActionCell
 {
-    BOOL        _isBordered;
-    unsigned    _bezelStyle;
+    BOOL        _isBordered     @accessors(readonly, getter=isBordered);
+    int         _bezelStyle     @accessors(readonly, getter=bezelStyle);
     
-    CPString    _title;
+    CPString    _title          @accessors(readonly, getter=title);
 }
 
 - (id)initWithCoder:(CPCoder)aCoder
@@ -93,21 +141,6 @@
     }
     
     return self;
-}
-
-- (BOOL)isBordered
-{
-    return _isBordered;
-}
-
-- (int)bezelStyle
-{
-    return _bezelStyle;
-}
-
-- (CPString)title
-{
-    return _title;
 }
 
 @end

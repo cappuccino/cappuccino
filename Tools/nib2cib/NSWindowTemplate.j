@@ -37,7 +37,7 @@
             _maxSize = [aCoder decodeSizeForKey:@"NSMaxSize"];
         
         _screenRect = [aCoder decodeRectForKey:@"NSScreenRect"]; // screen created on
-        _viewClass = [aCoder decodeObjectForKey:@"NSViewClass"];
+        _viewClass = [aCoder decodeObjectForKey:@"NSViewClass"]; // references the toolbar if present (anything else?)
         _wtFlags = [aCoder decodeIntForKey:@"NSWTFlags"];
         _windowBacking = [aCoder decodeIntForKey:@"NSWindowBacking"];
         
@@ -51,6 +51,19 @@
         
         // Flip Y coordinate
         _windowRect.origin.y = _screenRect.size.height - _windowRect.origin.y - _windowRect.size.height;
+        
+        // Only window style so far is CPHUDBackgroundWindowMask
+        _windowStyleMask |= CPHUDBackgroundWindowMask;
+            
+        // Adjust size for HUD window - FIXME: in CPWindow.j
+        if (_windowStyleMask & CPHUDBackgroundWindowMask)
+        {
+            CPLog.warn("Adjusting window rect.");
+            _windowRect.origin.x -= 7.0;
+            _windowRect.origin.y -= 30.0;
+            _windowRect.size.width += 14.0;
+            _windowRect.size.height += 40.0;
+        }
         
         /*if (![_windowClass isEqualToString:@"NSPanel"])
            _windowRect.origin.y -= [NSMainMenuView menuHeight];   // compensation for the additional menu bar

@@ -57,7 +57,22 @@
         
         var vFlags = [aCoder decodeIntForKey:@"NSvFlags"];
         
-        _autoresizingMask = vFlags & (0x3F << 1);
+        var autoresizingMaskNS = vFlags & 0x3F;
+        
+        // swap Y coordinate flags:
+        _autoresizingMask = autoresizingMaskNS & ~(CPViewMaxYMargin | CPViewMinYMargin)
+        if (!(autoresizingMaskNS & (CPViewMaxYMargin | CPViewMinYMargin | CPViewHeightSizable)))
+        {
+            _autoresizingMask |= CPViewMinYMargin;
+        }
+        else
+        {
+            if (autoresizingMaskNS & CPViewMaxYMargin)
+                _autoresizingMask |= CPViewMinYMargin;
+            if (autoresizingMaskNS & CPViewMinYMargin)
+                _autoresizingMask |= CPViewMaxYMargin;
+        }
+        
         _autoresizesSubviews = vFlags & (1 << 8);
         
         _hitTests = YES;
