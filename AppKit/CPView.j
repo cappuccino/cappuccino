@@ -102,17 +102,17 @@ var DOMElementPrototype         = nil,
 
 /*! @class CPView
 
-    <objj>CPView</objj> is an abstract class which provides facilities for drawing
+    <p>CPView is a class which provides facilities for drawing
     in a window and receiving events. It is the superclass of many of the visual
     elements of the GUI.</p>
 
     <p>In order to display itself, a view must be placed in a window (represented by an
-    <objj>CPWindow</objj> object). Within the window is a hierarchy of <objj>CPView</objj>s,
+    CPWindow object). Within the window is a hierarchy of CPViews,
     headed by the window's content view. Every other view in a window is a descendant
     of this view.</p>
 
     <p>Subclasses can override <code>-drawRect:</code> in order to implement their
-    appearance. Other methods of <objj>CPView</objj> and <objj>CPResponder</objj> can
+    appearance. Other methods of CPView and CPResponder can
     also be overridden to handle user generated events.
 */
 @implementation CPView : CPResponder
@@ -253,7 +253,7 @@ var DOMElementPrototype         = nil,
 
 /*!
     Returns an array of all the views contained as direct children of the receiver
-    @return an array of <objj>CPView</objj>s
+    @return an array of CPViews
 */
 - (CPArray)subviews
 {
@@ -270,7 +270,7 @@ var DOMElementPrototype         = nil,
 
 /*!
     Makes the argument a subview of the receiver.
-    @param aSubview the <objj>CPView</objj> to make a subview
+    @param aSubview the CPView to make a subview
 */
 - (void)addSubview:(CPView)aSubview
 {
@@ -454,7 +454,7 @@ var DOMElementPrototype         = nil,
 }
 
 /*!
-    Called when the receiver has been moved to a new <objj>CPWindow</objj>.
+    Called when the receiver has been moved to a new CPWindow.
 */
 - (void)viewDidMoveToWindow
 {
@@ -524,7 +524,7 @@ var DOMElementPrototype         = nil,
 
 /*!
     Sets the frame size of the receiver to the dimensions and origin of the provided rectangle in the coordinate system
-    of the superview. The method also posts an <objj>CPViewFrameDidChangeNotification</objj> to the notification
+    of the superview. The method also posts an CPViewFrameDidChangeNotification to the notification
     center if the receiver is configured to do so. If the frame is the same as the current frame, the method simply
     returns (and no notificaion is posted).
     @param aFrame the rectangle specifying the new origin and size  of the receiver
@@ -556,7 +556,7 @@ var DOMElementPrototype         = nil,
 
 /*!
     Sets the receiver's frame origin to the provided point. The point is defined in the superview's coordinate system. 
-    The method posts a <objj>CPViewFrameDidChangeNotification</objj> to the default notification center if the receiver 
+    The method posts a CPViewFrameDidChangeNotification to the default notification center if the receiver 
     is configured to do so. If the specified origin is the same as the frame's current origin, the method will 
     simply return (and no notification will be posted).
     @param aPoint the new origin point
@@ -581,7 +581,7 @@ var DOMElementPrototype         = nil,
 
 /*!
     Sets the receiver's frame size. If <code>aSize</code> is the same as the frame's current dimensions, this
-    method simply returns. The method posts a <objj>CPViewFrameDidChangeNotification</objj> to the
+    method simply returns. The method posts a CPViewFrameDidChangeNotification to the
     default notification center if the receiver is configured to do so.
     @param aSize the new size for the frame
 */
@@ -654,7 +654,7 @@ var DOMElementPrototype         = nil,
 
 /*!
     Sets the receiver's bounds. The bounds define the size and location of the receiver inside it's frame. Posts a 
-    <objj>CPViewBoundsDidChangeNotification</objj> to the default notification center if the receiver is configured to do so.
+    CPViewBoundsDidChangeNotification to the default notification center if the receiver is configured to do so.
     @param bounds the new bounds
 */
 - (void)setBounds:(CGRect)bounds
@@ -684,7 +684,7 @@ var DOMElementPrototype         = nil,
 
 /*!
     Sets the location of the receiver inside its frame. The method
-    posts a <objj>CPViewBoundsDidChangeNotification</objj> to the
+    posts a CPViewBoundsDidChangeNotification to the
     default notification center if the receiver is configured to do so.
     @param aPoint the new location for the receiver
 */
@@ -727,7 +727,7 @@ var DOMElementPrototype         = nil,
 
 /*!
     Sets the receiver's size inside its frame. The method posts a
-    <objj>CPViewBoundsDidChangeNotification</objj> to the default
+    CPViewBoundsDidChangeNotification to the default
     notification center if the receiver is configured to do so.
     @param aSize the new size for the receiver
 */
@@ -1236,7 +1236,7 @@ var DOMElementPrototype         = nil,
 }
 
 /*!
-    Sets whether the receiver posts a <objj>CPViewFrameDidChangeNotification</objj> notification
+    Sets whether the receiver posts a CPViewFrameDidChangeNotification notification
     to the default notification center when its frame is changed. The default is <code>NO</code>.
     Methods that could cause a frame change notification are:
 <pre>
@@ -1259,7 +1259,7 @@ setFrameOrigin:
 }
 
 /*!
-    Returns <code>YES</code> if the receiver posts a <objj>CPViewFrameDidChangeNotification</objj> if its frame is changed.
+    Returns <code>YES</code> if the receiver posts a CPViewFrameDidChangeNotification if its frame is changed.
 */
 - (BOOL)postsFrameChangedNotifications
 {
@@ -1267,7 +1267,7 @@ setFrameOrigin:
 }
 
 /*!
-    Sets whether the receiver posts a <objj>CPViewBoundsDidChangeNotification</objj> notification
+    Sets whether the receiver posts a CPViewBoundsDidChangeNotification notification
     to the default notification center when its bounds is changed. The default is <code>NO</code>.
     Methods that could cause a bounds change notification are:
 <pre>
@@ -1291,7 +1291,7 @@ setBoundsOrigin:
 
 /*!
     Returns <code>YES</code> if the receiver posts a
-    <objj>CPViewBoundsDidChangeNotification</objj> when its
+    CPViewBoundsDidChangeNotification when its
     bounds is changed.
 */
 - (BOOL)postsBoundsChangedNotifications
@@ -1331,7 +1331,7 @@ setBoundsOrigin:
 
 /*!
     Sets the receiver's list of acceptable data types for a dragging operation.
-    @param pasteboardTypes an array of <objj>CPPasteboard</objj>s
+    @param pasteboardTypes an array of CPPasteboards
 */
 - (void)registerForDraggedTypes:(CPArray)pasteboardTypes
 {
@@ -1340,7 +1340,7 @@ setBoundsOrigin:
 
 /*!
     Returns an array of all types the receiver accepts for dragging operations.
-    @return an array of <objj>CPPasteBoard</objj>s
+    @return an array of CPPasteBoards
 */
 - (CPArray)registeredDraggedTypes
 {
@@ -1559,7 +1559,7 @@ setBoundsOrigin:
 }
 
 /*!
-    Scrolls the nearest ancestor <objj>CPClipView</objj> a minimum amount so <code>aRect</code> can become visible.
+    Scrolls the nearest ancestor CPClipView a minimum amount so <code>aRect</code> can become visible.
     @param aRect the area to become visible
     @return <codeYES</code> if any scrolling occurred, <code>NO</code> otherwise.
 */
@@ -1627,8 +1627,8 @@ setBoundsOrigin:
 }
 
 /*!
-    Returns the <objj>CPScrollView</objj> containing the receiver.
-    @return the <objj>CPScrollView</objj> containing the receiver.
+    Returns the CPScrollView containing the receiver.
+    @return the CPScrollView containing the receiver.
 */
 - (CPScrollView)enclosingScrollView
 {
@@ -1652,7 +1652,7 @@ setBoundsOrigin:
 }
 
 /*!
-    Notifies the receiver (superview of a <objj>CPClipView</objj>)
+    Notifies the receiver (superview of a CPClipView)
     that the clip view bounds or the document view bounds have changed.
     @param aClipView the clip view of the superview being notified
 */
@@ -1714,8 +1714,8 @@ setBoundsOrigin:
 }
 
 /*!
-    Returns <code>YES</code> if the receiver uses a <objj>CALayer</objj>
-    @returns <code>YES</code> if the receiver uses a <objj>CALayer</objj>
+    Returns <code>YES</code> if the receiver uses a CALayer
+    @returns <code>YES</code> if the receiver uses a CALayer
 */
 - (BOOL)wantsLayer
 {

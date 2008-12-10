@@ -186,7 +186,7 @@ var CPWindowSaveImage       = nil,
 
 /*! @class CPWindow
 
-    An <objj>CPWindow</objj> instance represents a window, panel or menu on the screen.</p>
+    An CPWindow instance represents a window, panel or menu on the screen.</p>
 
     <p>Each window has a style, which determines how the window is decorated; whether it has a border, a title bar, a resize bar, minimise and close buttons.</p>
 
@@ -194,7 +194,7 @@ var CPWindowSaveImage       = nil,
 
     <p>A window always contains a content view which is the highest level view available for public (application) use. This view fills the area of the window inside any decoration/border. This is the only part of the window that application programmers are allowed to draw in directly.</p>
 
-    <p>You can convert between view coordinates and window base coordinates using the <objj>[CPView -convertPoint:fromView:]</objj>, <objj>[CPView -convertPoint:toView:]</objj>, <objj>[CPView -convertRect:fromView:]</objj>, and <objj>[CPView -convertRect:toView:]</objj> methods with a <objj>nil</objj> view argument.
+    <p>You can convert between view coordinates and window base coordinates using the [CPView -convertPoint:fromView:], [CPView -convertPoint:toView:], [CPView -convertRect:fromView:], and [CPView -convertRect:toView:] methods with a nil view argument.
     
     @par Delegate Methods
     
@@ -876,7 +876,7 @@ CPTexturedBackgroundWindowMask
 
 /*!
     Sets the delegate for the window. Passing <code>nil</code> will just remove the window's current delegate.
-    @param aDelegate an object to respond to the various delegate methods of <objj>CPWindow</objj>
+    @param aDelegate an object to respond to the various delegate methods of CPWindow
 */
 - (void)setDelegate:(id)aDelegate
 {
@@ -1079,7 +1079,7 @@ CPTexturedBackgroundWindowMask
 }
 
 /*!
-    Dispatches events that are sent to it from <objj>CPApplication</objj>.
+    Dispatches events that are sent to it from CPApplication.
     @param anEvent the event to be dispatched
 */
 - (void)sendEvent:(CPEvent)anEvent

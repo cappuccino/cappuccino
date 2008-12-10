@@ -32,7 +32,7 @@ var CPPopUpButtonArrowsImage = nil;
 
 /*! @class CPPopUpButton
 
-    A <objj>CPPopUpButton</objj> contains a pop-up menu of items that a user can select from.
+    A CPPopUpButton contains a pop-up menu of items that a user can select from.
 */
 @implementation CPPopUpButton : CPButton
 {
@@ -228,7 +228,7 @@ var CPPopUpButtonArrowsImage = nil;
 }
 
 /*!
-    Returns the index of the selected item. If no item is selected, it returns <objj>CPNotFound</objj>.
+    Returns the index of the selected item. If no item is selected, it returns CPNotFound.
 */
 - (int)indexOfSelectedItem
 {
@@ -237,7 +237,7 @@ var CPPopUpButtonArrowsImage = nil;
 
 // For us, CPNumber is toll-free bridged to Number, so just return the selected index.
 /*!
-    Returns the selected item's index. If no item is selected, it returns <objj>CPNotFound</objj>.
+    Returns the selected item's index. If no item is selected, it returns CPNotFound.
 */
 - (id)objectValue
 {
@@ -432,7 +432,7 @@ var CPPopUpButtonArrowsImage = nil;
 
 // Getting the Indices of Menu Items
 /*!
-    Returns the index of the specified item or <objj>CPNotFound</objj> if the item is not in the list.
+    Returns the index of the specified item or CPNotFound if the item is not in the list.
     @param aMenuItem the item to obtain the index for
 */
 - (int)indexOfItem:(CPMenuItem)aMenuItem
@@ -441,7 +441,7 @@ var CPPopUpButtonArrowsImage = nil;
 }
 
 /*!
-    Returns the index of the item with the specified tag or <objj>CPNotFound</objj> if the item is not in the list.
+    Returns the index of the item with the specified tag or CPNotFound if the item is not in the list.
     @param aTag the item's tag
 */
 - (int)indexOfItemWithTag:(int)aTag
@@ -450,7 +450,7 @@ var CPPopUpButtonArrowsImage = nil;
 }
 
 /*!
-    Returns the index of the item with the specified title or <objj>CPNotFound</objj>.
+    Returns the index of the item with the specified title or CPNotFound.
     @param aTitle the item's titel
 */
 - (int)indexOfItemWithTitle:(CPString)aTitle
@@ -460,7 +460,7 @@ var CPPopUpButtonArrowsImage = nil;
 
 /*!
     Returns the index of the item with the specified
-    represented object or <objj>CPNotFound</objj>
+    represented object or CPNotFound
     if a match does not exist.
     @param anObject the item's represented object
 */
@@ -471,7 +471,7 @@ var CPPopUpButtonArrowsImage = nil;
 
 /*!
     Returns the index of the item with the specified target
-    and action. Returns <objj>CPNotFound</objj> if the no
+    and action. Returns CPNotFound if the no
     such item is in the list.
     @param aTarget the item's target
     @param anAction the item's action

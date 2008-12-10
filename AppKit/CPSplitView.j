@@ -515,7 +515,7 @@ var CPSplitViewDelegateKey          = "CPSplitViewDelegateKey",
 
 /*
     Initializes the split view by unarchiving data from <code>aCoder</code>.
-    @param aCoder the coder containing the archived <objj>CPSplitView</objj>.
+    @param aCoder the coder containing the archived CPSplitView.
 */
 - (id)initWithCoder:(CPCoder)aCoder
 {

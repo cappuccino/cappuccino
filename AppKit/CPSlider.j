@@ -30,7 +30,7 @@ var CPSliderHorizontalKnobImage         = nil,
 
 /*! @class CPSlider
 
-    An <objj>CPSlider</objj> displays, and allows control of, some value in the application. It represents a continuous stream of values of type <code>float</code>, which can be retrieved by the method <code>floatValue</code> and set by the method <code>setFloatValue:</code>.
+    An CPSlider displays, and allows control of, some value in the application. It represents a continuous stream of values of type <code>float</code>, which can be retrieved by the method <code>floatValue</code> and set by the method <code>setFloatValue:</code>.
 */
 @implementation CPSlider : CPControl
 {

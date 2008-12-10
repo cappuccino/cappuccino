@@ -62,8 +62,8 @@ function CGColorRelease()
 }
 
 /*!
-    Creates a new <objj>CGColor</objj>.
-    @param aColorSpace the <objj>CGColorSpace</objj> of the color
+    Creates a new CGColor.
+    @param aColorSpace the CGColorSpace of the color
     @param components the color's intensity values plus alpha
     @return CGColor the new color object
     @group CGColor
@@ -86,10 +86,10 @@ function CGColorCreate(aColorSpace, components)
 }
 
 /*!
-    Creates a copy of a color... but not really. <objj>CGColor</objj>s
+    Creates a copy of a color... but not really. CGColors
     are immutable, so to be efficient, this function will just
     return the same object that was passed in.
-    @param aColor the <objj>CGColor</objj> to 'copy'
+    @param aColor the CGColor to 'copy'
     @return CGColor the color copy
     @group CGColor
 */
@@ -166,7 +166,7 @@ function CGColorCreateCopyWithAlpha(aColor, anAlpha)
 
 /*!
     Creates a color using the specified pattern.
-    @param aColorSpace the <objj>CGColorSpace</objj>
+    @param aColorSpace the CGColorSpace
     @param aPattern the pattern image
     @param components the color components plus the alpha component
     @return CGColor the patterned color
@@ -182,8 +182,8 @@ function CGColorCreateWithPattern(aColorSpace, aPattern, components)
 
 /*!
     Determines if two colors are the same.
-    @param lhs the first <objj>CGColor</objj>
-    @param rhs the second <objj>CGColor</objj>
+    @param lhs the first CGColor
+    @param rhs the second CGColor
     @return <code>YES</code> if the two colors are equal.
     <code>NO</code> otherwise.
 */
@@ -229,8 +229,8 @@ function CGColorGetAlpha(aColor)
 }
 
 /*!
-    Returns the <objj>CGColor</objj>'s color space.
-    @return <objj>CGColorSpace</objj>
+    Returns the CGColor's color space.
+    @return CGColorSpace
     @group CGColor
 */
 function CGColorGetColorSpace(aColor)
@@ -239,7 +239,7 @@ function CGColorGetColorSpace(aColor)
 }
 
 /*!
-    Returns the <objj>CGColor</objj>'s components
+    Returns the CGColor's components
     including the alpha in an array.
     @param aColor the color
     @return CPArray the color's components
@@ -252,7 +252,7 @@ function CGColorGetComponents(aColor)
 /*!
     Returns the number of color components
     (including alpha) in the specified color.
-    @param aColor the <objj>CGColor</objj>
+    @param aColor the CGColor
     @return CPNumber the number of components
     @group CGColor
 */
@@ -262,8 +262,8 @@ function CGColorGetNumberOfComponents(aColor)
 }
 
 /*!
-    Gets the <objj>CGColor</objj>'s pattern.
-    @param a <objj>CGColor</objj>
+    Gets the CGColor's pattern.
+    @param a CGColor
     @return CGPatternFIXME the pattern image
     @group CGColor
 */

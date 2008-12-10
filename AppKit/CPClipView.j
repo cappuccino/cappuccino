@@ -27,8 +27,8 @@
 
 /*! @class CPClipView
 
-    <objj>CPClipView</objj> allows you to define a clip rect and display only that portion of its containing view.  
-    It is used to hold the document view in a <objj>CPScrollView</objj>.
+    CPClipView allows you to define a clip rect and display only that portion of its containing view.  
+    It is used to hold the document view in a CPScrollView.
 */
 @implementation CPClipView : CPView
 {
@@ -134,7 +134,7 @@
 }
 
 /*!
-    Handles a <objj>CPViewBoundsDidChangeNotification</objj>.
+    Handles a CPViewBoundsDidChangeNotification.
     @param aNotification the notification event
 */
 - (void)viewBoundsChanged:(CPNotification)aNotification
@@ -143,7 +143,7 @@
 }
 
 /*!
-    Handles a <objj>CPViewFrameDidChangeNotification</objj>.
+    Handles a CPViewFrameDidChangeNotification.
     @param aNotification the notification event
 */
 - (void)viewFrameChanged:(CPNotification)aNotification

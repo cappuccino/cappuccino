@@ -82,10 +82,10 @@ var CPDocumentUntitledCount = 0;
 
 /*! @class CPDocument
 
-    <objj>CPDocument</objj> is used to represent a document/file in a Cappuccino application.
+    CPDocument is used to represent a document/file in a Cappuccino application.
     In a document-based application, generally multiple documents are open simutaneously
     (multiple text documents, slide presentations, spreadsheets, etc.), and multiple
-    <objj>CPDocument</objj>s should be used to represent this.
+    CPDocuments should be used to represent this.
 */
 @implementation CPDocument : CPResponder
 {    
@@ -543,7 +543,7 @@ var CPDocumentUntitledCount = 0;
 // Working with Undo Manager
 /*!
     Returns <code>YES</code> if the document has a
-    <objj>CPUndoManager</objj>.
+    CPUndoManager.
 */
 - (BOOL)hasUndoManager
 {
@@ -551,7 +551,7 @@ var CPDocumentUntitledCount = 0;
 }
 
 /*!
-    Sets whether the document should have a <objj>CPUndoManager</objj>.
+    Sets whether the document should have a CPUndoManager.
     @param aFlag <code>YES</code> makes the document have an undo manager
 */
 - (void)setHasUndoManager:(BOOL)aFlag
@@ -649,7 +649,7 @@ var CPDocumentUntitledCount = 0;
 }
  
 /*
-    Implemented as a delegate of a <objj>CPWindow</objj>
+    Implemented as a delegate of a CPWindow
     @ignore
 */
 - (CPUndoManager)windowWillReturnUndoManager:(CPWindow)aWindow

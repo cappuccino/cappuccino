@@ -71,11 +71,11 @@ var CPTabViewDidSelectTabViewItemSelector           = 1,
 
 /*! @class CPTabView
 
-    This class represents a view that has multiple subviews (<objj>CPTabViewItem</objj>) presented as individual tabs.
-    Only one <objj>CPTabViewItem</objj> is shown at a time, and other <objj>CPTabViewItem</objj>s can be made visible
-    (one at a time) by clicking on the <objj>CPTabViewItem</objj>'s tab at the top of the tab view.
+    This class represents a view that has multiple subviews (CPTabViewItem) presented as individual tabs.
+    Only one CPTabViewItem is shown at a time, and other CPTabViewItems can be made visible
+    (one at a time) by clicking on the CPTabViewItem's tab at the top of the tab view.
     
-    THe currently selected <objj>CPTabViewItem</objj> is the view that is displayed.
+    THe currently selected CPTabViewItem is the view that is displayed.
 */
 @implementation CPTabView : CPView
 {   
@@ -222,7 +222,7 @@ var CPTabViewDidSelectTabViewItemSelector           = 1,
 
 // Adding and Removing Tabs
 /*!
-    Adds a <objj>CPTabViewItem</objj> to the tab view.
+    Adds a CPTabViewItem to the tab view.
     @param aTabViewItem the item to add
 */
 - (void)addTabViewItem:(CPTabViewItem)aTabViewItem
@@ -231,7 +231,7 @@ var CPTabViewDidSelectTabViewItemSelector           = 1,
 }
 
 /*!
-    Inserts a <objj>CPTabViewItem</objj> into the tab view
+    Inserts a CPTabViewItem into the tab view
     at the specified index.
     @param aTabViewItem the item to insert
     @param anIndex the index for the item
@@ -274,7 +274,7 @@ var CPTabViewDidSelectTabViewItemSelector           = 1,
 }
 
 /*!
-    Returns the index of the <objj>CPTabViewItem</objj> with the specified identifier.
+    Returns the index of the CPTabViewItem with the specified identifier.
     @param anIdentifier the identifier of the item
 */
 - (int)indexOfTabViewItemWithIdentifier:(CPString)anIdentifier
@@ -298,7 +298,7 @@ var CPTabViewDidSelectTabViewItemSelector           = 1,
 }
 
 /*!
-    Returns the <objj>CPTabViewItem</objj> at the specified index.
+    Returns the CPTabViewItem at the specified index.
 */
 - (CPTabViewItem)tabViewItemAtIndex:(unsigned)anIndex
 {

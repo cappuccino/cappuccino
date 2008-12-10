@@ -30,7 +30,7 @@
 
 /*! @class CPMenuItem
 
-    A <objj>CPMenuItem</objj> is added to a <objj>CPMenu</objj>.
+    A CPMenuItem is added to a CPMenu.
     It has an action and a target for that action to be sent to
     whenever the item is 'activated'.
 */
@@ -284,9 +284,9 @@
 /*!
     Sets the state of the menu item. Possible states are:
 <pre>
-<objj>CPMixedState</objj>
-<objj>CPOnState</objj>
-<objj>CPOffState</objj>
+CPMixedState
+CPOnState
+CPOffState
 </pre>
 */
 - (void)setState:(int)aState
@@ -304,9 +304,9 @@
 /*!
     Returns the menu item's current state. Possible states are:
 <pre>
-<objj>CPMixedState</objj>
-<objj>CPOnState</objj>
-<objj>CPOffState</objj>
+CPMixedState
+CPOnState
+CPOffState
 </pre>
 */
 - (int)state
@@ -520,10 +520,10 @@
     Sets the modifier mask used for the item's keyboard shortcut.
     Can be a combination of:
 <pre>
-<objj>CPShiftKeyMask</objj>
-<objj>CPAlternateKeyMask</objj>
-<objj>CPCommandKeyMask</objj>
-<objj>CPControlKeyMask</objj>
+CPShiftKeyMask
+CPAlternateKeyMask
+CPCommandKeyMask
+CPControlKeyMask
 </pre>
 */
 - (void)setKeyEquivalentModifierMask:(unsigned)aMask
@@ -535,10 +535,10 @@
     Returns the item's keyboard shortcut modifier mask.
     Can be a combination of:
 <pre>
-<objj>CPShiftKeyMask</objj>
-<objj>CPAlternateKeyMask</objj>
-<objj>CPCommandKeyMask</objj>
-<objj>CPControlKeyMask</objj>
+CPShiftKeyMask
+CPAlternateKeyMask
+CPCommandKeyMask
+CPControlKeyMask
 </pre>
 */
 - (unsigned)keyEquivalentModifierMask

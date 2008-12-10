@@ -21,4 +21,4 @@
  */
 
 if (window.OBJJ_MAIN_FILE)
-    objj_import("main.j", YES, function() { main(); });
+    objj_import(OBJJ_MAIN_FILE, YES, function() { main(); });

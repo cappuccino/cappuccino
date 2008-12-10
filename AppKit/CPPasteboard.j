@@ -44,7 +44,7 @@ var CPPasteboards = nil;
 
 /*! @class CPPasteboard
 
-    <objj>CPPasteBoard</objj> is the object responsible for cut/copy/paste and drag&drop operations. 
+    CPPasteBoard is the object responsible for cut/copy/paste and drag&drop operations. 
 */
 @implementation CPPasteboard : CPObject
 {

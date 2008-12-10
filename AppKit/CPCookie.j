@@ -25,7 +25,7 @@
 
 
 /*! @class CPCookie
-    <objj>CPCookie</objj> is the Cappuccino interface to a web browser cookie. You can set the name
+    CPCookie is the Cappuccino interface to a web browser cookie. You can set the name
 */
 @implementation CPCookie : CPObject
 {

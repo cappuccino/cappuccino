@@ -358,7 +358,7 @@ var CPToolbarIdentifierKey              = "CPToolbarIdentifierKey",
 
 /*
     Initializes the toolbar by unarchiving data from <code>aCoder</code>.
-    @param aCoder the coder containing the archived <objj>CPToolbar</objj>.
+    @param aCoder the coder containing the archived CPToolbar.
 */
 - (id)initWithCoder:(CPCoder)aCoder
 {

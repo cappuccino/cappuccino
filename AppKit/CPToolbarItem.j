@@ -60,7 +60,7 @@ var _CPToolbarSeparatorItemView         = nil;
 
 /*! @class CPToolbarItem
 
-    A representation of an item in a <objj>CPToolbar</objj>.
+    A representation of an item in a CPToolbar.
 */
 @implementation CPToolbarItem : CPObject
 {

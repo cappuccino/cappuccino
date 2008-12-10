@@ -32,10 +32,10 @@
 
 /*! @class CPWindowController
 
-    An instance of a <objj>CPWindowController</objj> manages a <objj>CPWindow</objj>. It has methods
+    An instance of a CPWindowController manages a CPWindow. It has methods
     that get called when the window is loading, and after the window has loaded. In the
-    Model-View-Controller method of program design, the <objj>CPWindowController</objj> would be
-    considered the 'Controller' and the <objj>CPWindow</objj> the 'Model.'
+    Model-View-Controller method of program design, the CPWindowController would be
+    considered the 'Controller' and the CPWindow the 'Model.'
 */
 @implementation CPWindowController : CPResponder
 {
@@ -123,7 +123,7 @@
 
 /*!
     Returns <code>YES</code> if the window has been loaded. Specifically,
-    if <objj>loadWindow</objj> has been called.
+    if loadWindow has been called.
 */
 - (BOOL)isWindowLoaded
 {

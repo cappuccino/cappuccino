@@ -6,11 +6,13 @@ This package includes syntax highlighting modes for both SubEthaEdit, Coda, Text
 
 + SubEthaEdit
 
+	- NOTE: SubEthaEdit now has built-in support for Objective-J, but the copy included here is probably more up to date.
 	- Unarchive Tools/Editors/Objective-J.mode.zip
 	- Double click the generated Objective-J.mode file
 
 + Coda
 
+	- NOTE: Coda now has built-in support for Objective-J, but the copy included here is probably more up to date.
 	- Unarchive Tools/Editors/Objective-J.mode.zip
 	- Place the generated Objective-J.mode file in ~/Library/Application Support/Coda/Modes
 
@@ -87,6 +89,6 @@ objjc is a static preinterpreter for Objectie-J. It will take Objective-J files 
 
 Steam is a simple tool for managing Objective-J projects. Among other things, it allows you to statically pre-interpret entire Objective-J applications so that you can deliver it without requiring client-side pre-interpretation.
 
-    steam create path - This will create a new Cappuccino application at the specified path. The resulting project contains a basic Cappuccino application as well as Objective-J and the preprocessed Cappuccino frameworks.
+    steam create [-l] path - This will create a new Cappuccino application at the specified path. The resulting project contains a basic Cappuccino application as well as Objective-J and the preprocessed Cappuccino frameworks.
 
     steam build [options] - This builds an application or framework.

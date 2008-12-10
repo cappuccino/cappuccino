@@ -116,7 +116,7 @@ var CPDragServerUpdateDragging = function(anEvent)
 }
 
 /*
-    <objj>CPDraggingInfo</objj> is a container of information about a specific dragging session.
+    CPDraggingInfo is a container of information about a specific dragging session.
     @ignore
 */
 @implementation CPDraggingInfo : CPObject

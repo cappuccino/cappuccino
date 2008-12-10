@@ -376,7 +376,7 @@ var CPProgressIndicatorSpinningStyleColors  = nil,
 
 /*!
     Sets whether the indicator should be displayed when it isn't animating. By default this is <code>YES</code> if the style
-    is <objj>CPProgressIndicatorBarStyle</objj>, and <code>NO</code> if it's <objj>CPProgressIndicatorSpinningStyle</objj>.
+    is CPProgressIndicatorBarStyle, and <code>NO</code> if it's CPProgressIndicatorSpinningStyle.
     @param isDisplayedWhenStopped <code>YES</code> means the indicator will be displayed when it's not animating.
 */
 - (void)setDisplayedWhenStopped:(BOOL)isDisplayedWhenStopped

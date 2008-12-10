@@ -230,7 +230,7 @@ CPRunContinuesResponse  = -1002;
 /*!
     This method is called by <code>run</code> before the event loop begins.
     When it successfully completes, it posts the notification
-    <objj>CPApplicationDidFinishLaunchingNotification</objj>. If you override
+    CPApplicationDidFinishLaunchingNotification. If you override
     <code>finishLaunching</code>, the subclass method should invoke the superclass method.
 */
 - (void)finishLaunching
@@ -437,7 +437,7 @@ CPRunContinuesResponse  = -1002;
 }
 
 /*!
-    Returns the <objj>CPWindow</objj> object corresponding to <code>aWindowNumber</code>.
+    Returns the CPWindow object corresponding to <code>aWindowNumber</code>.
 */
 - (CPWindow)windowWithWindowNumber:(int)aWindowNumber
 {
@@ -445,7 +445,7 @@ CPRunContinuesResponse  = -1002;
 }
 
 /*!
-    Returns an array of the application's <objj>CPWindow</objj>s
+    Returns an array of the application's CPWindows
 */
 - (CPArray)windows
 {
@@ -599,7 +599,7 @@ CPRunContinuesResponse  = -1002;
     <ol>
         <li>a responder from the key window</li>
         <li>a responder frmo the main window</li>
-        <li>the <objj>CPApplication</objj> instance</li>
+        <li>the CPApplication instance</li>
         <li>the application delegate</li>
         <li>the document controller</li>
     </ol>

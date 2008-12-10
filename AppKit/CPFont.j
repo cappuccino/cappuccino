@@ -27,7 +27,7 @@ var _CPFonts                = {};
 
 /*! @class CPFont
 
-    The <objj>CPFont</objj> class allows control of the fonts used for displaying text anywhere on the screen. The primary method for getting a particular font is through one of the class methods that take a name and/or size as arguments, and return the appropriate <objj>CPFont</objj>.
+    The CPFont class allows control of the fonts used for displaying text anywhere on the screen. The primary method for getting a particular font is through one of the class methods that take a name and/or size as arguments, and return the appropriate CPFont.
 */
 @implementation CPFont : CPObject
 {

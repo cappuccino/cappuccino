@@ -46,8 +46,8 @@ CPPressedTab    = 2;
 
 /*! @class CPTabView
 
-    The class representation of an item in a <objj>CPTabView</objj>. One tab view item
-    can be shown at a time in a <objj>CPTabView</objj>.
+    The class representation of an item in a CPTabView. One tab view item
+    can be shown at a time in a CPTabView.
 */
 @implementation CPTabViewItem : CPObject
 {
@@ -60,7 +60,7 @@ CPPressedTab    = 2;
 
 /*!
     Initializes the tab view item with the specified identifier.
-    @return the initialized <objj>CPTabViewItem</objj>
+    @return the initialized CPTabViewItem
 */
 - (id)initWithIdentifier:(id)anIdentifier
 {
@@ -74,7 +74,7 @@ CPPressedTab    = 2;
 
 // Working With Labels
 /*!
-    Sets the <objj>CPTabViewItem</objj>'s label.
+    Sets the CPTabViewItem's label.
     @param aLabel the label for the item
 */
 - (void)setLabel:(CPString)aLabel
@@ -83,7 +83,7 @@ CPPressedTab    = 2;
 }
 
 /*!
-    Returns the <objj>CPTabViewItem</objj>'s label
+    Returns the CPTabViewItem's label
 */
 - (CPString)label
 {

@@ -180,7 +180,7 @@ var _CPEventPeriodicEventPeriod         = 0,
     _CPEventPeriodicEventTimer          = nil;
 
 /*! @class CPEvent
-    <objj>CPEvent</objj> encapsulates the details of a Cappuccino keyboard or mouse event.
+    CPEvent encapsulates the details of a Cappuccino keyboard or mouse event.
 */
 @implementation CPEvent : CPObject
 {
@@ -206,18 +206,18 @@ var _CPEventPeriodicEventPeriod         = 0,
 
 /*!
     Creates a new keyboard event.
-    @param anEventType the event type. Must be one of <objj>CPKeyDown</objj>, <objj>CPKeyUp</objj> or <objj>CPFlagsChanged</objj>
+    @param anEventType the event type. Must be one of CPKeyDown, CPKeyUp or CPFlagsChanged
     @param aPoint the location of the cursor in the window specified by <code>aWindowNumber</code>
-    @param modifierFlags a bitwise combination of the modifiers specified in the <objj>CPEvent</objj> globals
+    @param modifierFlags a bitwise combination of the modifiers specified in the CPEvent globals
     @param aTimestamp the time the event occurred
-    @param aWindowNumber the number of the <objj>CPWindow</objj> where the event occurred
+    @param aWindowNumber the number of the CPWindow where the event occurred
     @param aGraphicsContext the graphics context where the event occurred
     @param characters the characters associated with the event
     @param unmodCharacters the string of keys pressed without the presence of any modifiers other than Shift
     @param repeatKey <code>YES</code> if this is caused by the system repeat as opposed to the user pressing the key again
     @param code a number associated with the keyboard key of this event
-    @throws CPInternalInconsistencyException if <code>anEventType</code> is not a <objj>CPKeyDown</objj>,
-    <objj>CPKeyUp</objj> or <objj>CPFlagsChanged</objj>
+    @throws CPInternalInconsistencyException if <code>anEventType</code> is not a CPKeyDown,
+    CPKeyUp or CPFlagsChanged
     @return the keyboard event
 */
 + (CPEvent)keyEventWithType:(CPEventType)anEventType location:(CGPoint)aPoint modifierFlags:(unsigned int)modifierFlags
@@ -233,9 +233,9 @@ var _CPEventPeriodicEventPeriod         = 0,
     Creates a new mouse event
     @param anEventType the event type
     @param aPoint the location of the cursor in the window specified by <code>aWindowNumber</code>
-    @param modifierFlags a bitwise combination of the modifiers specified in the <objj>CPEvent</objj> globals
+    @param modifierFlags a bitwise combination of the modifiers specified in the CPEvent globals
     @param aTimestamp the time the event occurred
-    @param aWindowNumber the number of the <objj>CPWindow</objj> where the event occurred
+    @param aWindowNumber the number of the CPWindow where the event occurred
     @param aGraphicsContext the graphics context where the event occurred
     @param anEventNumber a number for this event
     @param aClickCount the number of clicks that caused this event
@@ -253,11 +253,11 @@ var _CPEventPeriodicEventPeriod         = 0,
 
 /*!
     Creates a new custom event
-    @param anEventType the event type. Must be one of <objj>CPAppKitDefined</objj>, <objj>CPSystemDefined</objj>, <objj>CPApplicationDefined</objj> or <objj>CPPeriodic</objj>
+    @param anEventType the event type. Must be one of CPAppKitDefined, CPSystemDefined, CPApplicationDefined or CPPeriodic
     @param aLocation the location of the cursor in the window specified by <code>aWindowNumber</code>
-    @param modifierFlags a bitwise combination of the modifiers specified in the <objj>CPEvent</objj> globals
+    @param modifierFlags a bitwise combination of the modifiers specified in the CPEvent globals
     @param aTimestamp the time the event occurred
-    @param aWindowNumber the number of the <objj>CPWindow</objj> where the event occurred
+    @param aWindowNumber the number of the CPWindow where the event occurred
     @param aGraphicsContext the graphics context where the event occurred
     @param aSubtype a numeric identifier to differentiate this event from other custom events
     @param aData1 more data that describes the event

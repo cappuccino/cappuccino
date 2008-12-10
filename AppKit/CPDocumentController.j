@@ -40,7 +40,7 @@ var CPSharedDocumentController = nil;
 /*!
     Returns the singleton instance of the application's document controller. If it has not 
     been created yet, it will be created then returned.
-    @return a <objj>CPDocumentController</objj>
+    @return a CPDocumentController
 */
 + (id)sharedDocumentController
 {
@@ -294,7 +294,7 @@ var CPSharedDocumentController = nil;
 }
 
 /*!
-    Returns the <objj>CPDocument</objj> subclass associated with <code>aType</code>.
+    Returns the CPDocument subclass associated with <code>aType</code>.
     @param aType the type of document
     @return a Cappuccino Class object, or <code>nil</code> if no match was found
 */
