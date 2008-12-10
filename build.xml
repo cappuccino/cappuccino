@@ -262,7 +262,7 @@
             </fileset>
         </copy>
 
-        <copy todir = "${Build.Cappuccino.Starter}/NewApplication/Frameworks-Debug">
+        <copy todir = "${Build.Cappuccino.Starter}/NewApplication/Frameworks/Debug">
             <fileset dir = "${Build}/Debug/">
                 <include name = "Objective-J/" />
                 <include name = "Foundation/" />
