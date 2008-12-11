@@ -36,6 +36,8 @@
 @import "NSResponder.j"
 @import "NSSlider.j"
 @import "NSSplitView.j"
+@import "NSTabView.j"
+@import "NSTabViewItem.j"
 @import "NSTextField.j"
 @import "NSToolbar.j"
 @import "NSView.j"

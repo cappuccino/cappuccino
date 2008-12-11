@@ -78,7 +78,7 @@ var CPTabViewDidSelectTabViewItemSelector           = 1,
     THe currently selected <objj>CPTabViewItem</objj> is the view that is displayed.
 */
 @implementation CPTabView : CPView
-{   
+{
     CPView          _labelsView;
     CPView          _backgroundView;
     CPView          _separatorView;
@@ -523,6 +523,55 @@ var CPTabViewDidSelectTabViewItemSelector           = 1,
 }
 
 @end
+
+var CPTabViewItemsKey               = "CPTabViewItemsKey",
+    CPTabViewSelectedItemKey        = "CPTabViewSelectedItemKey",
+    CPTabViewTypeKey                = "CPTabViewTypeKey",
+    CPTabViewDelegateKey            = "CPTabViewDelegateKey";
+
+@implementation CPTabView (CPCoding)
+
+- (id)initWithCoder:(CPCoder)aCoder
+{
+    if (self = [super initWithCoder:aCoder])
+    {
+        _tabViewType    = [aCoder decodeIntForKey:CPTabViewTypeKey];
+        _tabViewItems   = [];
+        
+        // FIXME: this is somewhat hacky
+        [self _createBezelBorder];
+        
+        var items = [aCoder decodeObjectForKey:CPTabViewItemsKey];
+        for (var i = 0; items && i < items.length; i++)
+            [self insertTabViewItem:items[i] atIndex:i];
+    
+        var selected = [aCoder decodeObjectForKey:CPTabViewSelectedItemKey];
+        if (selected)
+            [self selectTabViewItem:selected];
+        
+        [self setDelegate:[aCoder decodeObjectForKey:CPTabViewDelegateKey]];
+    }
+
+    return self;
+}
+
+- (void)encodeWithCoder:(CPCoder)aCoder
+{
+    var actualSubviews = _subviews;
+    _subviews = [];
+    [super encodeWithCoder:aCoder];
+    _subviews = actualSubviews;
+    
+    [aCoder encodeObject:_tabViewItems forKey:CPTabViewItemsKey];;
+    [aCoder encodeObject:_selectedTabViewItem forKey:CPTabViewSelectedItemKey];
+    
+    [aCoder encodeInt:_tabViewType forKey:CPTabViewTypeKey];
+    
+    [aCoder encodeConditionalObject:_delegate forKey:CPTabViewDelegateKey];
+}
+
+@end
+
 
 var _CPTabLabelsViewBackgroundColor = nil,
     _CPTabLabelsViewInsideMargin    = 10.0,

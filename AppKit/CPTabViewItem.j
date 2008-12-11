@@ -162,3 +162,40 @@ CPPressedTab    = 2;
 }
 
 @end
+
+var CPTabViewItemIdentifierKey  = "CPTabViewItemIdentifierKey",
+    CPTabViewItemLabelKey       = "CPTabViewItemLabelKey",
+    CPTabViewItemViewKey        = "CPTabViewItemViewKey",
+    CPTabViewItemAuxViewKey     = "CPTabViewItemAuxViewKey";
+
+
+@implementation CPTabViewItem (CPCoding)
+
+- (id)initWithCoder:(CPCoder)aCoder
+{
+    self = [super init];
+    
+    if (self)
+    {
+        _identifier     = [aCoder decodeObjectForKey:CPTabViewItemIdentifierKey];
+        _label          = [aCoder decodeObjectForKey:CPTabViewItemLabelKey];
+        
+        _view           = [aCoder decodeObjectForKey:CPTabViewItemViewKey];
+        _auxiliaryView  = [aCoder decodeObjectForKey:CPTabViewItemAuxViewKey];
+        
+        CPLog.warn("_identifier="+_identifier+" _label="+_label+" _view="+_view+" _auxiliaryView="+_auxiliaryView);
+    }
+    
+    return self;
+}
+
+- (void)encodeWithCoder:(CPCoder)aCoder
+{
+    [aCoder encodeObject:_identifier    forKey:CPTabViewItemIdentifierKey];
+    [aCoder encodeObject:_label         forKey:CPTabViewItemLabelKey];
+    
+    [aCoder encodeObject:_view          forKey:CPTabViewItemViewKey];
+    [aCoder encodeObject:_auxiliaryView forKey:CPTabViewItemAuxViewKey];
+}
+
+@end
