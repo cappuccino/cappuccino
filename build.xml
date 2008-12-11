@@ -79,6 +79,7 @@
     <target name = "test" depends = "build">
         <ojtest>
             <tests>
+                <fileset dir = "Tests/Objective-J" includes = "*.j"/>
                 <fileset dir = "Tests/Foundation" includes = "*.j"/>
                 <!--<fileset dir = "Tests/AppKit" includes = "*.j"/>-->
             </tests>
