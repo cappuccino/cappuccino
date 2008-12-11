@@ -17,7 +17,7 @@ import <AppKit/CPCib.j>
 
     [cib instantiateCibWithExternalNameTable:[CPDictionary dictionaryWithObject:self forKey:CPCibOwner]];
 
-    [_view setBackgroundColor:[CPColor blueColor]];
+    [_view setBackgroundColor:[CPColor colorWithCalibratedRed:0.7 green:0.77 blue:0.85 alpha:1.0]];
 
     [contentView addSubview:_view];
     [theWindow orderFront:self];
