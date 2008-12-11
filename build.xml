@@ -248,10 +248,13 @@
             <fileset dir = "${Build}/Release/steam/bin" />
         </copy>
 
+        <copy todir = "${Build.Cappuccino.Tools.Lib}/nib2cib">
+            <fileset dir = "${Build}/Release/nib2cib/lib" />
+        </copy>
+
         <copy todir = "${Build.Cappuccino.Tools.Lib}">
             <fileset dir = "${Build}/Release/bake/lib" />
             <fileset dir = "${Build}/Release/cplutil/lib" />
-            <fileset dir = "${Build}/Release/nib2cib/lib" />
             <fileset dir = "${Build}/Release/objj/lib" />
             <fileset dir = "${Build}/Release/objjc/lib" />
             <fileset dir = "${Build}/Release/press/lib" />
