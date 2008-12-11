@@ -85,13 +85,45 @@
         </ojtest>
     </target>
     
-    <target name = "docs">
+    <target name = "safe-documentation" >
+    
+        <exec executable = "which" outputproperty = "doxygen.location">
+            <arg line = "doxygen" />
+        </exec>
+
+        <condition property = "doxygen.target" value = "" else = "-warning">
+            <not>
+                <length string = "${doxygen.location}" length = "0" />
+            </not>
+        </condition>
+
+        <antcall target = "documentation${doxygen.target}" />
+    
+    </target>
+
+    <target name = "documentation-warning">
+        <echo>*** WARNING: Doxygen not installed.  Could not create documentation.</echo>
+    </target>
+    
+    <target name = "documentation">
+    
         <exec executable = "doxygen" dir = ".">
             <arg value = "Tools/Documentation/Cappuccino.doxygen" />
         </exec>
 
-        <mkdir dir = "${Build}" />
-        <move file = "Documentation" todir = "${Build}" />
+        <mkdir dir = "${Build.Cappuccino}" />
+        <move file = "Documentation" todir = "${Build.Cappuccino}" />
+
+        <mkdir dir = "${Build.Cappuccino.Starter}" />
+        <copy todir = "${Build.Cappuccino.Starter}/Documentation" >
+            <fileset dir = "${Build.Cappuccino}/Documentation/html" />
+        </copy>
+
+        <mkdir dir = "${Build.Cappuccino.Tools}" />
+        <copy todir = "${Build.Cappuccino.Tools}/Documentation" >
+            <fileset dir = "${Build.Cappuccino}/Documentation/html" />
+        </copy>
+        
     </target>
 
     <!-- Deploying -->
@@ -262,14 +294,17 @@
             </fileset>
         </copy>
 
-        <copy todir = "${Build.Cappuccino.Starter}/NewApplication/Frameworks-Debug">
+        <copy todir = "${Build.Cappuccino.Starter}/NewApplication/Frameworks/Debug">
             <fileset dir = "${Build}/Debug/">
                 <include name = "Objective-J/" />
                 <include name = "Foundation/" />
                 <include name = "AppKit/" />
             </fileset>
         </copy>
-
+        
+        <!-- Documentation -->
+        
+        <antcall target = "safe-documentation" />
         
         <!-- Zip -->
         

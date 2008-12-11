@@ -82,7 +82,7 @@ var CPControlBlackColor     = [CPColor blackColor];
 
 /*! @class CPControl
 
-    <objj>CPControl</objj> is an abstract superclass used to implement user interface elements. As a subclass of <objj>CPView</objj> and <objj>CPResponder</objj> it has the ability to handle screen drawing and handling user input.
+    CPControl is an abstract superclass used to implement user interface elements. As a subclass of CPView and CPResponder it has the ability to handle screen drawing and handling user input.
 */
 @implementation CPControl : CPView
 {

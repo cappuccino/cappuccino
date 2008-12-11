@@ -27,7 +27,7 @@ import "CPTableColumn.j"
 var CPTableViewCellPlaceholder = nil;
 
 /*
-    <objj>CPTableView</objj> is located within the AppKit framework and is used to display tables. It uses a delegate model for getting its data i.e. you give it an object that provides it with the data it should display.
+    CPTableView is located within the AppKit framework and is used to display tables. It uses a delegate model for getting its data i.e. you give it an object that provides it with the data it should display.
     
     @ignore
 */
@@ -284,7 +284,7 @@ var CPTableViewCellPlaceholder = nil;
 }
 
 /*
-    Returns an array containing the table's <objj>CPTableColumn</objj>s.
+    Returns an array containing the table's CPTableColumns.
 */
 - (CPArray)tableColumns
 {
@@ -323,8 +323,8 @@ var CPTableViewCellPlaceholder = nil;
     Sets the object that is used to obtain the table data. The data source must implement the following
     methods:
 <pre>
-- (int)numberOfRowsInTableView:(<objj>CPTableView</objj>)aTableView
-- (id)tableView:(<objj>CPTableView</objj>)aTableView objectValueForTableColumn:(<objj>CPTableColumn</objj>)aTableColumn row:(int)rowIndex
+- (int)numberOfRowsInTableView:(CPTableView)aTableView
+- (id)tableView:(CPTableView)aTableView objectValueForTableColumn:(CPTableColumn)aTableColumn row:(int)rowIndex
 </pre>
     @param aDataSource the object with the table data
     @throws CPInternalInconsistencyException if <code>aDataSource</code> doesn't implement all the required methods

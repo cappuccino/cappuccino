@@ -151,6 +151,7 @@ var CPRunLoopLastNativeRunLoop = 0;
     Object  _nativeTimersForModes;
     CPDate  _nextTimerFireDatesForModes;
     BOOL    _didAddTimer;
+    CPDate  _effectiveDate;
 
     CPArray _orderedPerforms;
 }
@@ -276,7 +277,7 @@ var CPRunLoopLastNativeRunLoop = 0;
         
     _runLoopLock = YES;
     
-    var now = [CPDate date],
+    var now = _effectiveDate ? [_effectiveDate laterDate:[CPDate date]] : [CPDate date],
         nextFireDate = nil,
         nextTimerFireDate = _nextTimerFireDatesForModes[aMode];
     
@@ -348,7 +349,7 @@ var CPRunLoopLastNativeRunLoop = 0;
         
         //initiate a new window.setTimeout if there are any timers
         if (_nextTimerFireDatesForModes[aMode] !== nil)
-            _nativeTimersForModes[aMode] = window.setNativeTimeout(function() { _nativeTimersForModes[aMode] = nil; ++CPRunLoopLastNativeRunLoop; [self limitDateForMode:aMode]; _isNativeTimerRun = NO; }, MAX(0, [nextFireDate timeIntervalSinceNow] * 1000));
+            _nativeTimersForModes[aMode] = window.setNativeTimeout(function() { _effectiveDate = nextFireDate; _nativeTimersForModes[aMode] = nil; ++CPRunLoopLastNativeRunLoop; [self limitDateForMode:aMode]; _effectiveDate = nil; }, [nextFireDate timeIntervalSinceNow] * 1000);
     }
     
     // Run loop performers

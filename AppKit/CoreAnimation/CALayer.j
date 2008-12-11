@@ -51,11 +51,11 @@ var CALayerRegisteredRunLoopUpdates             = nil;
 
 /*! @class CALayer
 
-    A <objj>CALayer</objj> is similar to a <objj>CPView</objj>, but with the ability
+    A CALayer is similar to a CPView, but with the ability
     to have a transform applied to it.
 
     @delegate -(void)drawLayer:(CALayer)layer inContext:(CGContextRef)ctx;
-    If the delegate implements this method, the <objj>CALayer</objj> will
+    If the delegate implements this method, the CALayer will
     call this in place of its <code>drawInContext:</code>.
     @param layer the layer to draw for
     @param ctx the context to draw on
@@ -418,7 +418,7 @@ var CALayerRegisteredRunLoopUpdates             = nil;
 
 // Providing Layer Content
 /*!
-    Returns the <objj>CGImage</objj> contents of this layer.
+    Returns the CGImage contents of this layer.
     The default contents are <code>nil</code>.
 */
 - (CGImage)contents

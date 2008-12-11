@@ -222,7 +222,7 @@ var _CPButtonClassName                          = nil,
 
 /*! @class CPButton
 
-    <objj>CPButton</objj> is a subclass of <objj>CPControl</objj> that
+    CPButton is a subclass of CPControl that
     intercepts mouse-down events and sends an action message to a
     target object when it's clicked or pressed.
 */
@@ -252,7 +252,7 @@ var _CPButtonClassName                          = nil,
 }
 
 /*!
-    Initializes the <objj>CPButton</objj> class.
+    Initializes the CPButton class.
     @ignore
 */
 + (void)initialize
@@ -437,7 +437,7 @@ var _CPButtonClassName                          = nil,
 
 /*!
     Sets the button's state to <code>aState</code>.
-    @param aState Possible states are any of the <objj>CPButton</objj> globals:
+    @param aState Possible states are any of the CPButton globals:
     <code>CPOffState, CPOnState, CPMixedState</code>
 */
 - (void)setState:(int)aState
@@ -830,7 +830,7 @@ var CPButtonImageKey                = @"CPButtonImageKey",
 
 /*!
     Initializes the button by unarchiving data from <code>aCoder</code>.
-    @param aCoder the coder containing the archived <objj>CPButton</objj>.
+    @param aCoder the coder containing the archived CPButton.
 */
 - (id)initWithCoder:(CPCoder)aCoder
 {

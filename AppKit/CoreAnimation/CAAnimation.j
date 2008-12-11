@@ -34,8 +34,8 @@
 }
 
 /*!
-    Creates a new <objj>CAAnimation</objj> instance
-    @return a new <objj>CAAnimation</objj> instance
+    Creates a new CAAnimation instance
+    @return a new CAAnimation instance
 */
 + (id)animation
 {
@@ -191,8 +191,8 @@
 @end
 
 /*!
-    A <objj>CABasicAnimation</objj> is a simple animation that moves a
-    <objj>CALayer</objj> from one point to another over a specified
+    A CABasicAnimation is a simple animation that moves a
+    CALayer from one point to another over a specified
     period of time.
 */
 @implementation CABasicAnimation : CAPropertyAnimation

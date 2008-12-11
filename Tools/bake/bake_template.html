@@ -13,23 +13,18 @@
 //
 -->
 <head>
-    <script type="text/javascript" charset="utf-8">
+
+    <title>$APPLICATION_NAME</title>
+    
+    <script type = "text/javascript" charset = "utf-8" >
+    
         //create a new timestamp to monitor launch time
         _LAUNCH_TIME = new Date();
-
-        var path = document.location.href;
-        
-        path = path.substr(0, path.lastIndexOf('/') + 1);
-        
-        document.write("<base href=\"" + path + "$VERSION/" + "\"><!--[if IE]><"+"/base><![endif]-->");
-    </script>
     
-    <title>Loading...</title>
+        OBJJ_MAIN_FILE = "main.j";
     
-    <script type="text/javascript" charset="utf-8" src="Frameworks/Objective-J/Objective-J.js"></script>
-            
-    <script type="text/javascript" charset="utf-8">
         window.files_total = $FILES_TOTAL;
+        
         window.update_progress = function(percent)
         {
             var value = Math.max(Math.min(Math.round(percent*100), 100), 0);
@@ -39,8 +34,16 @@
             window.title = "Loading $APPLICATION_NAME... " + value + "%";
         }
         
-        objj_import("main.j", YES, function() { main(); });
+        var path = document.location.href;
+        
+        path = path.substr(0, path.lastIndexOf('/') + 1);
+        
+        document.write("<base href=\"" + path + "$VERSION/" + "\"><!--[if IE]><"+"/base><![endif]-->");
+
     </script>
+
+    <script src = "Frameworks/Objective-J/Objective-J.js" type = "text/javascript" charset = "utf-8"></script>
+
 </head>
 <body style="background-color: $BACKGROUND_COLOR;">
     <div style="position: absolute; top: 50%; left: 50%; min-height: 100px; width: 250px; margin-top: -50px; margin-left: -125px; padding: 10px; background-color: white; text-align: center; -moz-border-radius: 5px; -webkit-border-radius: 5px;">

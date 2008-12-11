@@ -37,9 +37,11 @@ var objj_files              = { },
     objj_bundlesForClass    = { },
     objj_searches           = { };
 
-var OBJJ_NO_FILE            = {},
-    OBJJ_INCLUDE_PATHS      = ["Frameworks", "SomethingElse"];
-    
+var OBJJ_NO_FILE            = {};
+
+if (!window.OBJJ_INCLUDE_PATHS)
+    var OBJJ_INCLUDE_PATHS  = ["Frameworks", "SomethingElse"];
+
 var OBJJ_BASE_URI           = "";
 
 IF (OPERA)

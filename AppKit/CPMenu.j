@@ -368,7 +368,7 @@ var _CPMenuBarVisible               = NO,
 /*!
     Returns the index of the specified menu item
     @param aMenuItem the item to find the index for
-    @return the item index or <objj>CPNotFound</objj>
+    @return the item index or CPNotFound
 */
 - (int)indexOfItem:(CPMenuItem)aMenuItem
 {
@@ -381,7 +381,7 @@ var _CPMenuBarVisible               = NO,
 /*!
     Returns the index of the item with the specified title.
     @param aTitle the desired title to match
-    @return the index of the item or <objj>CPNotFound</objj>
+    @return the index of the item or CPNotFound
 */
 - (int)indexOfItemWithTitle:(CPString)aTitle
 {
@@ -398,7 +398,7 @@ var _CPMenuBarVisible               = NO,
 /*!
     Returns the index of the item with the specified tag
     @param aTag the desired tag to match
-    @return the index of the item or <objj>CPNotFound</objj>
+    @return the index of the item or CPNotFound
 */
 - (int)indexOfItemWithTag:(int)aTag
 {
@@ -416,7 +416,7 @@ var _CPMenuBarVisible               = NO,
     Returns the index of the item with the specified target and action.
     @param aTarget the target of the desired menu item
     @param anAction the action of the desired menu item
-    @return the index of the item or <objj>CPNotFound</objj>
+    @return the index of the item or CPNotFound
 */
 - (int)indexOfItemWithTarget:(id)aTarget andAction:(SEL)anAction
 {
@@ -437,7 +437,7 @@ var _CPMenuBarVisible               = NO,
 /*!
     Returns the index of the menu item with the specified represented object.
     @param anObject the represented object of the desired item
-    @return the index of the item or <objj>CPNotFound</objj>
+    @return the index of the item or CPNotFound
 */
 - (int)indexOfItemWithRepresentedObject:(id)anObject
 {
@@ -454,7 +454,7 @@ var _CPMenuBarVisible               = NO,
 /*!
     Returns the index of the item with the specified submenu.
     @param the submenu of the desired menu item
-    @return the index of the item or <objj>CPNotFound</objj>
+    @return the index of the item or CPNotFound
 */
 - (int)indexOfItemWithSubmenu:(CPMenu)aMenu
 {

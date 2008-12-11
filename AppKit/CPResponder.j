@@ -88,7 +88,7 @@ CPRightArrowKeyCode = 63235;
 
 /*!
     Called to interpret a series of key events.
-    @param events an array of key <objj>CPEvent</objj>s
+    @param events an array of key CPEvents
 */
 - (void)interpretKeyEvents:(CPArray)events
 {

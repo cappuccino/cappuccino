@@ -48,7 +48,7 @@ var _hueComponent        = 0,
     <p>The class does not have a <code>set:</code> method
     like NextStep based frameworks to change the color of
     the current context. To change the color of the current
-    context, use <objj>CGContextSetFillColor()</objj>.
+    context, use CGContextSetFillColor().
 */
 @implementation CPColor : CPObject
 {
@@ -227,7 +227,7 @@ var _hueComponent        = 0,
 }
 
 /*!
-    Creates a <objj>CPColor</objj> from a valid CSS RGB string. Example, "rgb(32,64,129)".
+    Creates a CPColor from a valid CSS RGB string. Example, "rgb(32,64,129)".
     
     @param aString a CSS color string
     @return a color initialized to the value in the css string
@@ -511,7 +511,7 @@ var CPColorComponentsKey    = @"CPColorComponentsKey",
 var hexCharacters = "0123456789ABCDEF";
 
 /*!
-    Used for the <objj>CPColor</objj> <code>colorWithHexString:</code> implementation
+    Used for the CPColor <code>colorWithHexString:</code> implementation
     @ignore
     @class CPColor
     @return an array of rgb components

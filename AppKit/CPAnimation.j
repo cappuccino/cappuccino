@@ -68,7 +68,7 @@ ACTUAL_FRAME_RATE = 0;
     @param animation the animation that was stopped
 
     @delegate - (float)animation:(CPAnimation)animation valueForProgress:(float)progress;
-    The value from this method will be returned when <objj>CPAnimation</objj>'s
+    The value from this method will be returned when CPAnimation's
     <code>currentValue</code> method is called.
     @param animation the animation to obtain the curve value for
     @param progress the current animation progress

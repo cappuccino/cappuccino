@@ -211,7 +211,7 @@ var _CPScrollerClassName                            = nil,
 
 // Determining CPScroller Size
 /*!
-    Returns the <objj>CPScroller</objj>'s width for a <objj>CPRegularControlSize</objj>.
+    Returns the CPScroller's width for a CPRegularControlSize.
 */
 + (float)scrollerWidth
 {
@@ -219,7 +219,7 @@ var _CPScrollerClassName                            = nil,
 }
 
 /*!
-    Returns the width of a <objj>CPScroller</objj> for the specified <objj>CPControlSize</objj>.
+    Returns the width of a CPScroller for the specified CPControlSize.
     @param aControlSize the size of a controller to return the width for
 */
 + (float)scrollerWidthForControlSize:(CPControlSize)aControlSize

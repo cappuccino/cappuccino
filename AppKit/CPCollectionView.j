@@ -57,7 +57,7 @@
     Invoked to obtain the data types supported by the specified indices for placement on the pasteboard.
     @param collectionView the collection view the items reside in
     @param indices the indices to obtain drag types
-    @return an array of drag types (<objj>CPString</objj>)
+    @return an array of drag types (CPString)
 */
 @implementation CPCollectionView : CPView
 {
@@ -567,7 +567,7 @@
 @end
 
 /*!
-    Represents an object inside a <objj>CPCollectionView</objj>.
+    Represents an object inside a CPCollectionView.
 */
 @implementation CPCollectionViewItem : CPObject
 {

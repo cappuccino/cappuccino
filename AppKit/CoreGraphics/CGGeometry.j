@@ -66,11 +66,11 @@ _function(CGRectIsNull(aRect))
 _function(CGRectContainsPoint(aRect, aPoint))
 
 /*!
-    Returns a <code>BOOL</code> indicating whether <objj>CGRect</objj> <code>lhsRect</code>
-    contains <objj>CGRect</objj> <code>rhsRect</code>.
+    Returns a <code>BOOL</code> indicating whether CGRect <code>lhsRect</code>
+    contains CGRect <code>rhsRect</code>.
     @group CGRect
-    @param lhsRect the <objj>CGRect</objj> to test if <code>rhsRect</code> is inside of
-    @param rhsRect the <objj>CGRect</objj> to test if it fits inside <code>lhsRect</code>.
+    @param lhsRect the CGRect to test if <code>rhsRect</code> is inside of
+    @param rhsRect the CGRect to test if it fits inside <code>lhsRect</code>.
     @return BOOL <code>YES</code> if <code>rhsRect</code> fits inside <code>lhsRect</code>.
 */
 function CGRectContainsRect(lhsRect, rhsRect)
@@ -83,8 +83,8 @@ function CGRectContainsRect(lhsRect, rhsRect)
 /*!
     Returns <code>YES</code> if the two rectangles intersect
     @group CGRect
-    @param lhsRect the first <objj>CGRect</objj>
-    @param rhsRect the second <objj>CGRect</objj>
+    @param lhsRect the first CGRect
+    @param rhsRect the second CGRect
     @return BOOL <code>YES</code> if the two rectangles have any common spaces, and <code>NO</code>, otherwise.
 */
 function CGRectIntersectsRect(lhsRect, rhsRect)
@@ -95,8 +95,8 @@ function CGRectIntersectsRect(lhsRect, rhsRect)
 }
 
 /*!
-    Makes the origin and size of a <objj>CGRect</objj> all integers. Specifically, by making 
-    the southwest corner the origin (rounded down), and the northeast corner a <objj>CGSize</objj> (rounded up).
+    Makes the origin and size of a CGRect all integers. Specifically, by making 
+    the southwest corner the origin (rounded down), and the northeast corner a CGSize (rounded up).
     @param aRect the rectangle to operate on
     @return CGRect the modified rectangle (same as the input)
     @group CGRect

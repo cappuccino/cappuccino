@@ -49,7 +49,7 @@ CPImageDidLoadNotification      = @"CPImageDidLoadNotification";
 
 /*! @class CPImage
 
-    <objj>CPImage</objj> is used to represent images in the Cappuccino framework. It supports loading
+    CPImage is used to represent images in the Cappuccino framework. It supports loading
     all image types supported by the browser.
 
     @par Delegate Methods

@@ -24,7 +24,7 @@
 
 /*!
     @ignore 
-    This class is a subclass of <objj>CPTableView</objj> which provides the user with a way to display 
+    This class is a subclass of CPTableView which provides the user with a way to display 
     tree structured data in an outline format. It is particularly useful for displaying hierarchical data 
     such as a class inheritance tree or any other set of relationships.
 */
@@ -52,10 +52,10 @@
     @ignore
     Sets the outline's data source. The data source must implement the following methods:
 <pre>
-- (id)outlineView:(<objj>CPOutlineView</objj>)outlineView child:(int)index ofItem:(id)item
-- (BOOL)outlineView:(<objj>CPOutlineView</objj>)outlineView isItemExpandable:(id)item
-- (int)outlineView:(<objj>CPOutlineView</objj>)outlineView numberOfChildrenOfItem:(id)item
-- (id)outlineView:(<objj>CPOutlineView</objj>)outlineView objectValueForTableColumn:(<objj>CPTableColumn</objj>)tableColumn byItem:(id)item
+- (id)outlineView:(CPOutlineView)outlineView child:(int)index ofItem:(id)item
+- (BOOL)outlineView:(CPOutlineView)outlineView isItemExpandable:(id)item
+- (int)outlineView:(CPOutlineView)outlineView numberOfChildrenOfItem:(id)item
+- (id)outlineView:(CPOutlineView)outlineView objectValueForTableColumn:(CPTableColumn)tableColumn byItem:(id)item
 </pre>
     @param aDataSource the outline's data source
     @throws CPInternalInconsistencyException if the data source does not implement all the required methods

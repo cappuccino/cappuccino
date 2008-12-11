@@ -31,9 +31,9 @@ var _CPColorWellDidBecomeExclusiveNotification = @"_CPColorWellDidBecomeExclusiv
 
 /*! @class CPColorWell
 
-    <objj>CPColorWell</objj> is a <objj>CPControl</objj> for selecting and displaying a single color value. An example of a <objj>CPColorWell</objj> object (or simply color well) is found in <objj>CPColorPanel</objj>, which uses a color well to display the current color selection.</p>
+    CPColorWell is a CPControl for selecting and displaying a single color value. An example of a CPColorWell object (or simply color well) is found in CPColorPanel, which uses a color well to display the current color selection.</p>
 
-    <p>An application can have one or more active <objj>CPColorWell</objj>s. You can activate multiple <objj>CPColorWell</objj>s by invoking the <code>activate:</code> method with <code>NO</code> as its argument. When a mouse-down event occurs on an <objj>CPColorWell</objj>'s border, it becomes the only active color well. When a color well becomes active, it brings up the color panel also.
+    <p>An application can have one or more active CPColorWells. You can activate multiple CPColorWells by invoking the <code>activate:</code> method with <code>NO</code> as its argument. When a mouse-down event occurs on an CPColorWell's border, it becomes the only active color well. When a color well becomes active, it brings up the color panel also.
 */
 @implementation CPColorWell : CPControl
 {
@@ -136,7 +136,7 @@ var _CPColorWellDidBecomeExclusiveNotification = @"_CPColorWellDidBecomeExclusiv
 // Activating and Deactivating Color Wells
 /*!
     Activates the color well, displays the color panel, and makes the panel's current color the same as its own. 
-    If exclusive is <code>YES</code>, deactivates any other <objj>CPColorWell</objj>s. <code>NO</code>, keeps them active.
+    If exclusive is <code>YES</code>, deactivates any other CPColorWells. <code>NO</code>, keeps them active.
     @param shouldBeExclusive whether other color wells should be deactivated.
 */
 - (void)activate:(BOOL)shouldBeExclusive
@@ -262,7 +262,7 @@ var CPColorWellColorKey     = "CPColorWellColorKey",
 
 /*!
     Initializes the color well by unarchiving data from <code>aCoder</code>.
-    @param aCoder the coder containing the archived <objj>CPColorWell</objj>.
+    @param aCoder the coder containing the archived CPColorWell.
 */
 - (id)initWithCoder:(CPCoder)aCoder
 {
