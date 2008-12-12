@@ -848,6 +848,10 @@ objj_preprocessor.prototype.preprocess = function(tokens, /*objj_stringBuffer*/ 
             CONCAT(buffer, token);
     }
     
+    // If we get this far and we're parsing an objj_msgSend (or array), then we have a problem.
+    if (tuple)
+        objj_exception_throw(new objj_exception(OBJJParseException, "*** Expected ']' - Unterminated message send or array."));
+    
     if (!aStringBuffer)
         return buffer;
 }
