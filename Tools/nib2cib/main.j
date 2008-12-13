@@ -48,57 +48,96 @@ function exec(command)
 	return result;
 }
 
-// Make sure we can read the file
-if (!(new Packages.java.io.File(args[0])).canRead())
+function printUsage()
 {
-    print("Could not read file at " + args[0]);
-    return;
+    java.lang.System.out.println("usage: steam INPUT_FILE [OUTPUT_FILE]");    
+    java.lang.System.exit(1);
 }
 
-// Compile xib or nib to make sure we have a non-new format nib.
-var temporaryNibFile = Packages.java.io.File.createTempFile("temp", ".nib"),
-    temporaryNibFilePath = temporaryNibFile.getAbsolutePath();
-
-temporaryNibFile.deleteOnExit();
-
-if (exec(["/usr/bin/ibtool", args[0], "--compile", temporaryNibFilePath]))
+function cibExtension(aPath)
 {
-    print("Could not compile file at " + args[0]);
-    return;
-}
-
-// Convert from binary plist to XML plist
-var temporaryPlistFile = Packages.java.io.File.createTempFile("temp", ".plist"),
-    temporaryPlistFilePath = temporaryPlistFile.getAbsolutePath();
-
-temporaryPlistFile.deleteOnExit();
-
-if (exec(["/usr/bin/plutil", "-convert", "xml1", temporaryNibFilePath, "-o", temporaryPlistFilePath]))
-{
-    print("Could not convert to xml plist for file at " + args[0]);
-    return;
-}
-
-var data = [CPURLConnection sendSynchronousRequest:[CPURLRequest requestWithURL:temporaryPlistFilePath] returningResponse:nil error:nil];
-
-// Minor NSKeyedArchive to CPKeyedArchive conversion.
-[data setString:[data string].replace(/\<key\>\s*CF\$UID\s*\<\/key\>/g, "<key>CP$UID</key>")];
-
-// Unarchive the NS data
-var unarchiver = [[CPKeyedUnarchiver alloc] initForReadingWithData:data],
-    objectData = [unarchiver decodeObjectForKey:@"IB.objectdata"],
+    var start = aPath.length - 1;
     
-    data = [CPData data],
-    archiver = [[CPKeyedArchiver alloc] initForWritingWithMutableData:data];
+    while (aPath.charAt(start) === '/')
+        start--;
 
-// Re-archive the CP data.
-[archiver encodeObject:objectData forKey:@"CPCibObjectDataKey"];
-[archiver finishEncoding];
+    aPath = aPath.substr(0, start + 1);
 
-var writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream("MainMenu.cib"), "UTF-8"));//outputPath + name.substring(0, args[0].indexOf(".")) + ".o"));
+    var dotIndex = aPath.lastIndexOf('.');
+    
+    if (dotIndex == -1)
+        return aPath + ".cib";
+    
+    var slashIndex = aPath.lastIndexOf('/');
+    
+    if (slashIndex > dotIndex)
+        return aPath + ".cib";
+    
+    return aPath.substr(0, dotIndex) + ".cib";
+}
 
-writer.write([data string]);
+function main()
+{
+    var count = arguments.length;
+    
+    if (count < 1)
+        printUsage();
+    
+    var inputFileName = arguments[0],
+        outputFileName = count < 2 ? cibExtension(inputFileName) : arguments[1];
 
-writer.close();
+    // Make sure we can read the file
+    if (!(new Packages.java.io.File(inputFileName)).canRead())
+    {
+        print("Could not read file at " + inputFileName);
+        return;
+    }
 
+    // Compile xib or nib to make sure we have a non-new format nib.
+    var temporaryNibFile = Packages.java.io.File.createTempFile("temp", ".nib"),
+        temporaryNibFilePath = temporaryNibFile.getAbsolutePath();
+    
+    temporaryNibFile.deleteOnExit();
+    
+    if (exec(["/usr/bin/ibtool", inputFileName, "--compile", temporaryNibFilePath]))
+    {
+        print("Could not compile file at " + inputFileName);
+        return;
+    }
 
+    // Convert from binary plist to XML plist
+    var temporaryPlistFile = Packages.java.io.File.createTempFile("temp", ".plist"),
+        temporaryPlistFilePath = temporaryPlistFile.getAbsolutePath();
+    
+    temporaryPlistFile.deleteOnExit();
+    
+    if (exec(["/usr/bin/plutil", "-convert", "xml1", temporaryNibFilePath, "-o", temporaryPlistFilePath]))
+    {
+        print("Could not convert to xml plist for file at " + inputFileName);
+        return;
+    }
+
+    var data = [CPURLConnection sendSynchronousRequest:[CPURLRequest requestWithURL:temporaryPlistFilePath] returningResponse:nil error:nil];
+    
+    // Minor NSKeyedArchive to CPKeyedArchive conversion.
+    [data setString:[data string].replace(/\<key\>\s*CF\$UID\s*\<\/key\>/g, "<key>CP$UID</key>")];
+    
+    // Unarchive the NS data
+    var unarchiver = [[CPKeyedUnarchiver alloc] initForReadingWithData:data],
+        objectData = [unarchiver decodeObjectForKey:@"IB.objectdata"],
+        
+        data = [CPData data],
+        archiver = [[CPKeyedArchiver alloc] initForWritingWithMutableData:data];
+
+    // Re-archive the CP data.
+    [archiver encodeObject:objectData forKey:@"CPCibObjectDataKey"];
+    [archiver finishEncoding];
+    
+    var writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(outputFileName), "UTF-8"));
+    
+    writer.write([data string]);
+    
+    writer.close();
+}
+
+main.apply(main, args);
