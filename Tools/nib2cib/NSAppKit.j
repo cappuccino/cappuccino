@@ -47,13 +47,15 @@
 
 function CP_NSMapClassName(aClassName)
 {
-    if (aClassName == @"NSView")
-        return "CPView";
+    switch (aClassName)
+    {
+        case @"NSApplication":  return @"CPApplication";
+        case @"NSObject":       return @"CPObject";
+        case @"NSView":         return @"CPView";
+        case @"NSWindow":       return @"CPWindow";
+        
+        default:                CPLog.warn("No class name mapping for \"" + aClassName + "\"");
+    }
 
-    if (aClassName == @"NSWindow")
-        return @"CPWindow";
-    
-    CPLog.warn("No class name mapping for \""+aClassName+"\"");
-    
     return aClassName;
 }

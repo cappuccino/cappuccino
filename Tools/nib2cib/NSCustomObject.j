@@ -30,7 +30,7 @@
     self = [super init];
     
     if (self){
-        _className = [aCoder decodeObjectForKey:@"NSClassName"];
+        _className = CP_NSMapClassName([aCoder decodeObjectForKey:@"NSClassName"]);
     print(":::"+_className);
     }
     return self;
