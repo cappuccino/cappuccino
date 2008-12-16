@@ -152,6 +152,16 @@ var CPDragServerUpdateDragging = function(anEvent)
     return CPDragServerPasteboard;
 }
 
+- (CPImage)draggedImage
+{
+    return [CPDragServerView image];
+}
+
+- (CPView)draggedView
+{
+    return CPDragServerView;
+}
+
 @end
 
 @implementation CPDragServer : CPObject

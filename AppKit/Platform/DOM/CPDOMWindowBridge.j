@@ -59,8 +59,6 @@ var CPDOMWindowGetFrame,
     CPTimeInterval  _lastMouseUp;
     CPTimeInterval  _lastMouseDown;
     
-    CPPoint         _currentMousePosition;
-    
     JSObject        _charCodes;
     unsigned        _keyCode;
     
@@ -542,8 +540,6 @@ var CTRL_KEY_CODE   = 17;
                                         event = [CPEvent mouseEventWithType:_mouseIsDown ? CPLeftMouseDragged : CPMouseMoved 
                                                     location:location modifierFlags:modifierFlags timestamp:timestamp 
                                                     windowNumber:windowNumber context:nil eventNumber:-1 clickCount:1 pressure:0];
-                                                    
-                                        _currentMousePosition = _CGPointMake(aDOMEvent.clientX, aDOMEvent.clientY);
                                         
                                         break;
         }
@@ -720,10 +716,32 @@ var CTRL_KEY_CODE   = 17;
 
     try
     {
+        if (CPFeatureIsCompatible(CPJavaScriptMouseWheelValues_8_15))
+        {
+            var x = 0.0,
+                y = 0.0,
+                element = aDOMEvent.target;
+            
+            while (element.nodeType !== 1)
+                element = element.parentNode;
+
+            if (element.offsetParent)
+            {
+                do
+                {
+                    x += element.offsetLeft;
+                    y += element.offsetTop;
+        
+                } while (element = element.offsetParent);
+            }
+		
+            var location = _CGPointMake((x + ((aDOMEvent.clientX - 8) / 15)), (y + ((aDOMEvent.clientY - 8) / 15)));}
+        else
+            var location = _CGPointMake(aDOMEvent.clientX, aDOMEvent.clientY);
+            
         var deltaX = 0.0,
             deltaY = 0.0,
             windowNumber = 0,
-            location = CGPointMake(_currentMousePosition.x, _currentMousePosition.y),
             timestamp = aDOMEvent.timeStamp ? aDOMEvent.timeStamp : new Date(),
             modifierFlags = (aDOMEvent.shiftKey ? CPShiftKeyMask : 0) | 
                             (aDOMEvent.ctrlKey ? CPControlKeyMask : 0) | 
@@ -898,7 +916,3 @@ var CPDOMEventStop = function(aDOMEvent)
         CPSharedDOMWindowBridge._DOMFocusElement.blur();
     }
 }
-
-/*
-
-*/

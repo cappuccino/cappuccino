@@ -76,16 +76,8 @@ function cibExtension(aPath)
     return aPath.substr(0, dotIndex) + ".cib";
 }
 
-function main()
+function convert(inputFileName, outputFileName)
 {
-    var count = arguments.length;
-    
-    if (count < 1)
-        printUsage();
-    
-    var inputFileName = arguments[0],
-        outputFileName = count < 2 ? cibExtension(inputFileName) : arguments[1];
-
     // Make sure we can read the file
     if (!(new Packages.java.io.File(inputFileName)).canRead())
     {
@@ -138,6 +130,104 @@ function main()
     writer.write([data string]);
     
     writer.close();
+}
+
+function readPlist(/*File*/ aFile)
+{
+    var reader = new BufferedReader(new FileReader(aFile)),
+        fileContents = "";
+    
+    // Get contents of the file
+    while (reader.ready())
+        fileContents += reader.readLine() + '\n';
+        
+    reader.close();
+
+    var data = new objj_data();
+    data.string = fileContents;
+
+    return new CPPropertyListCreateFromData(data);
+}
+
+function importFiles(filePaths, aCallback)
+{
+    if (filePaths.length === 0)
+        aCallback();
+    else
+        objj_import(new File(filePaths.shift()).getCanonicalPath(), YES, function() { importFiles(filePaths, aCallback) });
+}
+
+function loadFrameworks(frameworkPaths, aCallback)
+{
+    if (frameworkPaths.length === 0)
+        return aCallback();
+    
+    var frameworkPath = frameworkPaths.shift(),
+        
+        infoPlist = new File(frameworkPath + "/Info.plist");
+        
+    if (!infoPlist.exists())
+    {
+        java.lang.System.out.println("'" + frameworkPath + "' is not a framework or could not be found.");
+        java.lang.System.exit(1);
+    }
+    
+    var infoDictionary = readPlist(new File(frameworkPath + "/Info.plist"));
+    
+    if ([infoDictionary objectForKey:@"CPBundlePackageType"] !== "FMWK")
+    {
+        java.lang.System.out.println("'" + frameworkPath + "' is not a framework .");
+        java.lang.System.exit(1);
+    }
+    
+    var files = [infoDictionary objectForKey:@"CPBundleReplacedFiles"],
+        index = 0,
+        count = files.length;
+        
+    for (; index < count; ++index)
+        files[index] = frameworkPath + '/' + files[index];
+    
+    importFiles(files, function() { loadFrameworks(frameworkPaths, aCallback) });
+}
+
+function main()
+{
+    var count = arguments.length;
+    
+    if (count < 1)
+        printUsage();
+    
+    var index = 0,
+    
+        inputFileName = nil,
+        outputFileName = nil,
+        frameworkPaths = [];
+    
+    for (; index < count; ++index)
+    {
+        switch(arguments[index])
+        {
+            case "-help":
+            case "--help":  printUsage();
+            
+            case "-F":      frameworkPaths.push(arguments[++index]);
+                            break;
+            
+            default:        if (inputFileName && inputFileName.length > 0)
+                                outputFileName = arguments[index];
+                            else
+                                inputFileName = arguments[index];
+        }
+    }
+
+    if (!outputFileName || outputFileName.length < 1)
+        outputFileName = cibExtension(inputFileName);
+
+    if (frameworkPaths.length)
+        loadFrameworks(frameworkPaths, function() { convert(inputFileName, outputFileName); });
+    
+    else
+        convert(inputFileName, outputFileName);
 }
 
 main.apply(main, args);

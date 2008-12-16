@@ -49,8 +49,9 @@ CPJavascriptRemedialKeySupport          = 1 << 15;
 CPJavaScriptShadowFeature               = 1 << 20;
 
 CPJavaScriptNegativeMouseWheelValues    = 1 << 22;
+CPJavaScriptMouseWheelValues_8_15       = 1 << 23
 
-CPOpacityRequiresFilterFeature          = 1 << 23;
+CPOpacityRequiresFilterFeature          = 1 << 24;
 
 var USER_AGENT                          = "",
     PLATFORM_ENGINE                     = CPUnknownBrowserEngine,
@@ -114,10 +115,16 @@ else if (USER_AGENT.indexOf("Gecko") != -1) // Must follow KHTML check.
     PLATFORM_FEATURES |= CPJavaScriptCanvasDrawFeature;
     
     var index = USER_AGENT.indexOf("Firefox"),
-        version = (index == -1) ? 2.0 : parseFloat(USER_AGENT.substring(index+"Firefox".length+1));
+        version = (index == -1) ? 2.0 : parseFloat(USER_AGENT.substring(index + "Firefox".length + 1));
     
     if (version >= 3.0)
         PLATFORM_FEATURES |= CPCSSRGBAFeature;
+
+    var geckoIndex = USER_AGENT.indexOf("Gecko"),
+        geckoVersion = (geckoIndex === -1) ? 0.0 : parseFloat(USER_AGENT.substring(geckoIndex + "Gecko".length + 1, USER_AGENT.indexOf(' ', geckoIndex)));
+
+    if (version < 20061028)
+        PLATFORM_FEATURES |= CPJavaScriptMouseWheelValues_8_15;
 }
 
 // Feature Specific Checks

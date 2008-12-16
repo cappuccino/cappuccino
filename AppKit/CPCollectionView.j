@@ -328,7 +328,7 @@
     // either proportioned out to the views (if their minSize != maxSize) or used as
     // margin
     var itemSize = CGSizeMakeCopy(_minItemSize);
-        
+    
     _numberOfColumns = MAX(1.0, FLOOR(width / itemSize.width));
     
     if (_maxNumberOfColumns > 0)
@@ -339,6 +339,10 @@
         
     if (remaining > 0 && itemSize.width < _maxItemSize.width)
         itemSize.width = MIN(_maxItemSize.width, itemSize.width + FLOOR(remaining / _numberOfColumns));
+    
+    // When we ONE column and a non-integral width, the FLOORing above can cause the item width to be smaller than the total width.
+    if (_maxNumberOfColumns == 1 && itemSize.width < _maxItemSize.width && itemSize.width < width)
+        itemSize.width = MIN(_maxItemSize.width, width);
     
     if (!CGSizeEqualToSize(_itemSize, itemSize))
     {
@@ -515,6 +519,7 @@
         frame = [view frame];
     
     [view setFrameSize:_itemSize];
+    [view setAlphaValue:0.7];
     
     [self dragView:view
         at:[[_items[[_selectionIndexes firstIndex]] view] frame].origin

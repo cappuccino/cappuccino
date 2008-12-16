@@ -34,6 +34,9 @@ var _CPCibCustomObjectClassName = @"_CPCibCustomObjectClassName";
     
     if (!theClass)
         CPLog("Unknown class \"" + _className + "\" in cib file");
+        
+    if (theClass === [CPApplication class])
+        return [CPApplication sharedApplication];
     
     return [[theClass alloc] init];
 }

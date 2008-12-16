@@ -71,6 +71,9 @@ var CPCibObjectDataKey  = @"CPCibObjectDataKey";
          [CPMenu setMenuBarVisible:YES];
     }
     
+    if (topLevelObjects)
+        [topLevelObjects addObjectsFromArray:[objectData topLevelObjects]];
+    
     /*
 //    [objectData establishConnectionsWithOwner:owner topLevelObjects:topLevelObjects];
 //    [objectData cibInstantiateWithOwner:owner topLevelObjects:topLevelObjects];
