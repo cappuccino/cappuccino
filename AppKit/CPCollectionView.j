@@ -519,7 +519,7 @@
         frame = [view frame];
     
     [view setFrameSize:_itemSize];
-    [view setAlphaValue:0.5];
+    [view setAlphaValue:0.7];
     
     [self dragView:view
         at:[[_items[[_selectionIndexes firstIndex]] view] frame].origin
