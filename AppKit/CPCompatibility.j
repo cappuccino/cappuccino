@@ -52,8 +52,7 @@ CPJavaScriptNegativeMouseWheelValues    = 1 << 22;
 
 CPOpacityRequiresFilterFeature          = 1 << 23;
 
-var USER_AGENT                          = "";
-                                        
+var USER_AGENT                          = "",
     PLATFORM_ENGINE                     = CPUnknownBrowserEngine,
     PLATFORM_FEATURES                   = 0;
 
