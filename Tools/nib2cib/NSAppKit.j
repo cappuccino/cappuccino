@@ -34,6 +34,7 @@
 @import "NSNibConnector.j"
 @import "NSPopUpButton.j"
 @import "NSResponder.j"
+@import "NSSegmentedControl.j"
 @import "NSSlider.j"
 @import "NSSplitView.j"
 @import "NSTabView.j"

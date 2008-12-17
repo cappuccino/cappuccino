@@ -46,26 +46,24 @@ CPSegmentSwitchTrackingMomentary = 2;
 */
 @implementation CPSegmentedControl : CPControl
 {
-    unsigned                _segmentCount;
-    
     CPArray                 _segments;
-    CPArray                 _selectedSegment;
-    
+    int                     _selectedSegment;
+    int                     _segmentStyle;
     CPSegmentSwitchTracking _trackingMode;
+
     unsigned                _trackingSegment;
     BOOL                    _trackingHighlighted;
 }
 
 - (id)initWithFrame:(CGRect)aRect
 {
+    _segments = [];
+    
     self = [super initWithFrame:aRect];
     
     if (self)
     {
-        _segments = [];
         _selectedSegment = -1;
-        
-        _segmentCount = 0;
         
         _trackingMode = CPSegmentSwitchTrackingSelectOne;
     }
@@ -88,26 +86,26 @@ CPSegmentSwitchTrackingMomentary = 2;
 */
 - (void)setSegmentCount:(unsigned)aCount
 {
-    if (_segmentCount == aCount)
+    if (_segments.length == aCount)
         return;
         
     var height = CGRectGetHeight([self bounds]);
     
-    if (_segmentCount < aCount)
+    if (_segments.length < aCount)
     {
-        var index = _segmentCount;
+        var index = _segments.length;
         
         for (; index < aCount; ++index)
         {
-            _segments[index] = _CPSegmentMake();
+            _segments[index] = [[_CPSegmentItem alloc] init];
             _segments[index].frame.size.height = height;
         }
     }
-    else if (aCount < _segmentCount)
+    else if (aCount < _segments.length)
     {
         var index = aCount;
         
-        for (; index < _segmentCount; ++index)
+        for (; index < _segments.length; ++index)
         {
             [_segments[index].imageView removeFromSuperview];
             [_segments[index].labelView removeFromSuperview];
@@ -116,9 +114,7 @@ CPSegmentSwitchTrackingMomentary = 2;
         }
     }
     
-    _segmentCount = aCount;
-    
-    if (_selectedSegment < _segmentCount)
+    if (_selectedSegment < _segments.length)
         _selectedSegment = -1;
     
     [self tileWithChangedSegment:0];
@@ -129,7 +125,7 @@ CPSegmentSwitchTrackingMomentary = 2;
 */
 - (unsigned)segmentCount
 {
-    return _segmentCount;
+    return _segments.length;
 }
 
 // Specifying Selected Segment
@@ -159,7 +155,7 @@ CPSegmentSwitchTrackingMomentary = 2;
 {
     var index = 0;
     
-    for (; index < _segmentCount; ++index)
+    for (; index < _segments.length; ++index)
         if (_segments[index].tag == aTag)
         {
             [self setSelectedSegment:index];
@@ -189,7 +185,7 @@ CPSegmentSwitchTrackingMomentary = 2;
         var index = 0,
             selected = NO;
         
-        for (; index < _segmentCount; ++index)
+        for (; index < _segments.length; ++index)
             if (_segments[index].selected)
                 if (selected)
                     [self setSelected:NO forSegment:index];
@@ -201,7 +197,7 @@ CPSegmentSwitchTrackingMomentary = 2;
     {
         var index = 0;
         
-        for (; index < _segmentCount; ++index)
+        for (; index < _segments.length; ++index)
             if (_segments[index].selected)
                 [self setSelected:NO forSegment:index];
     }
@@ -536,7 +532,7 @@ CPSegmentSwitchTrackingMomentary = 2;
     // Update Following Segments Widths
     var index = aSegment + 1;
     
-    for (; index < _segmentCount; ++index)
+    for (; index < _segments.length; ++index)
     {
         _segments[index].frame.origin.x += delta;
         
@@ -631,6 +627,7 @@ CPSegmentSwitchTrackingMomentary = 2;
     {
         _trackingHighlighted = YES;
         _trackingSegment = [self testSegment:location];
+        CPLog.error("_trackingSegment="+_trackingSegment);
 
         [self drawSegmentBezel:_trackingSegment highlight:YES];
     }
@@ -654,7 +651,7 @@ CPSegmentSwitchTrackingMomentary = 2;
 {
     [super setFont:aFont];
     
-    var count = _segmentCount;
+    var count = _segments.length;
     
     if (!count)
         return;
@@ -667,7 +664,142 @@ CPSegmentSwitchTrackingMomentary = 2;
 
 @end
 
-var _CPSegmentMake = function()
+var CPSegmentedControlSegmentsKey       = "CPSegmentedControlSegmentsKey",
+    CPSegmentedControlSelectedKey       = "CPSegmentedControlSelectedKey",
+    CPSegmentedControlSegmentStyleKey   = "CPSegmentedControlSegmentStyleKey",
+    CPSegmentedControlTrackingModeKey   = "CPSegmentedControlTrackingModeKey";
+
+@implementation CPSegmentedControl (CPCoding)
+
+- (id)initWithCoder:(CPCoder)aCoder
 {
-    return { width:0, image:nil, label:@"", menu:nil, selected:NO, enabled:NO, tag:0, labelView:nil, imageView:nil, frame:CGRectMakeZero() }
+    self = [super initWithCoder:aCoder];
+    
+    if (self)
+    {
+        _segments           = [aCoder decodeObjectForKey:CPSegmentedControlSegmentsKey];
+        _segmentStyle       = [aCoder decodeIntForKey:CPSegmentedControlSegmentStyleKey];
+        
+        if ([aCoder containsValueForKey:CPSegmentedControlSelectedKey])
+            _selectedSegment = [aCoder decodeIntForKey:CPSegmentedControlSelectedKey];
+        else    
+            _selectedSegment = -1;
+        
+        if ([aCoder containsValueForKey:CPSegmentedControlTrackingModeKey])
+            _trackingMode    = [aCoder decodeIntForKey:CPSegmentedControlTrackingModeKey];
+        else
+            _trackingMode = CPSegmentSwitchTrackingSelectOne;
+        
+        // HACK
+        for (var i = 0; i < _segments.length; i++)
+        {
+            if (_segments[i].image != undefined)
+                [self setImage:_segments[i].image forSegment:i];
+            if (_segments[i].label != undefined)
+                [self setLabel:_segments[i].label forSegment:i];
+        }
+    }
+    
+    return self;
 }
+
+- (void)encodeWithCoder:(CPCoder)aCoder
+{
+    var actualSubviews = _subviews;
+
+    _subviews = [];
+    
+    [super encodeWithCoder:aCoder];
+
+    _subviews = actualSubviews;
+    
+    [aCoder encodeObject:_segments forKey:CPSegmentedControlSegmentsKey];
+    [aCoder encodeInt:_selectedSegment forKey:CPSegmentedControlSelectedKey];
+    [aCoder encodeInt:_segmentStyle forKey:CPSegmentedControlSegmentStyleKey];
+    [aCoder encodeInt:_trackingMode forKey:CPSegmentedControlTrackingModeKey];
+}
+
+@end
+
+
+@implementation _CPSegmentItem : CPObject
+{
+    CPImage     image;
+    CPString    label;
+    CPMenu      menu;
+    BOOL        selected;
+    BOOL        enabled;
+    int         tag;
+
+    int         width;
+    CPView      labelView;
+    CPView      imageView;
+    CPRect      frame;
+}
+
+- (id)init
+{
+    if (self = [super init])
+    {
+        image       = nil;
+        label       = @"";
+        menu        = nil;
+        selected    = NO;
+        enabled     = NO;
+        tag         = 0;
+        
+        labelView   = nil;
+        imageView   = nil;
+        
+        width       = 0;
+        frame       = CGRectMakeZero();
+    }
+    return self;
+}
+
+@end
+
+var CPSegmentItemImageKey       = "CPSegmentItemImageKey",
+    CPSegmentItemLabelKey       = "CPSegmentItemLabelKey",
+    CPSegmentItemMenuKey        = "CPSegmentItemMenuKey",
+    CPSegmentItemSelectedKey    = "CPSegmentItemSelectedKey",
+    CPSegmentItemEnabledKey     = "CPSegmentItemEnabledKey",
+    CPSegmentItemTagKey         = "CPSegmentItemTagKey";
+
+@implementation _CPSegmentItem (CPCoding)
+
+- (id)initWithCoder:(CPCoder)aCoder
+{
+    self = [super init];
+    
+    if (self)
+    {
+        image       = [aCoder decodeObjectForKey:CPSegmentItemImageKey];
+        label       = [aCoder decodeObjectForKey:CPSegmentItemLabelKey];
+        menu        = [aCoder decodeObjectForKey:CPSegmentItemMenuKey];
+        selected    = [aCoder decodeBoolForKey:CPSegmentItemSelectedKey];
+        enabled     = [aCoder decodeBoolForKey:CPSegmentItemEnabledKey];
+        tag         = [aCoder decodeIntForKey:CPSegmentItemTagKey];
+        
+        labelView   = nil;
+        imageView   = nil;
+        
+        width       = 0;
+        frame       = CGRectMakeZero();
+    }
+    
+    return self;
+}
+
+- (void)encodeWithCoder:(CPCoder)aCoder
+{
+    [aCoder encodeObject:image  forKey:CPSegmentItemImageKey];
+    [aCoder encodeObject:label  forKey:CPSegmentItemLabelKey];
+    [aCoder encodeObject:menu   forKey:CPSegmentItemMenuKey];
+    [aCoder encodeBool:selected forKey:CPSegmentItemSelectedKey];
+    [aCoder encodeBool:enabled  forKey:CPSegmentItemEnabledKey];
+    [aCoder encodeInt:tag       forKey:CPSegmentItemTagKey];
+}
+
+@end
+
