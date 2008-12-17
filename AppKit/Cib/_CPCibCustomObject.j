@@ -9,6 +9,11 @@ var _CPCibCustomObjectClassName = @"_CPCibCustomObjectClassName";
     CPString _className;
 }
 
+- (CPString)customClassName
+{
+    return _className;
+}
+
 @end
 
 @implementation _CPCibCustomObject (CPCoding)
