@@ -182,8 +182,6 @@ var CPTabViewItemIdentifierKey  = "CPTabViewItemIdentifierKey",
         
         _view           = [aCoder decodeObjectForKey:CPTabViewItemViewKey];
         _auxiliaryView  = [aCoder decodeObjectForKey:CPTabViewItemAuxViewKey];
-        
-        CPLog.warn("_identifier="+_identifier+" _label="+_label+" _view="+_view+" _auxiliaryView="+_auxiliaryView);
     }
     
     return self;
