@@ -45,6 +45,7 @@
 @import "CPPropertyListSerialization.j"
 @import "CPRange.j"
 @import "CPRunLoop.j"
+@import "CPSet.j"
 @import "CPSortDescriptor.j"
 @import "CPString.j"
 @import "CPTimer.j"
