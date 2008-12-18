@@ -126,7 +126,8 @@
     var theClass = self;
     
     for(; theClass; theClass = theClass.super_class)
-        if(theClass == aClass) return YES;
+        if(theClass === aClass)
+            return YES;
     
     return NO;
 }
@@ -140,13 +141,23 @@
     return [isa isSubclassOfClass:aClass];
 }
 
++ (BOOL)isKindOfClass:(Class)aClass
+{
+    return [self isSubclassOfClass:aClass];
+}
+
 /*!
     Returns <code>YES</code> if the receiver is of the <code>aClass</code> class type.
     @param aClass the class to test the receiper
 */
 - (BOOL)isMemberOfClass:(Class)aClass
 {
-    return self.isa == aClass;
+    return self.isa === aClass;
+}
+
++ (BOOL)isMemberOfClass:(Class)aClass
+{
+    return self === aClass;
 }
 
 /*!

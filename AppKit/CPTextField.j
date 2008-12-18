@@ -297,7 +297,7 @@ var _CPTextFieldSquareBezelColor = nil,
     Sets the background color, which is shown for non-bezeled text fields with drawsBackground set to YES
     @param aColor The background color
 */
-- (void)setTextFieldBackgroundColor:(BOOL)aColor
+- (void)setTextFieldBackgroundColor:(CPColor)aColor
 {
     if (_textFieldBackgroundColor == aColor)
         return;
@@ -310,7 +310,7 @@ var _CPTextFieldSquareBezelColor = nil,
 /*!
     Returns the background color.
 */
-- (BOOL)textFieldBackgroundColor
+- (CPColor)textFieldBackgroundColor
 {
     return _textFieldBackgroundColor;
 }

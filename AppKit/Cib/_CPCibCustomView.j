@@ -30,6 +30,11 @@
     CPString    _className;
 }
 
+- (CPString)customClassName
+{
+    return _className;
+}
+
 @end
 
 var _CPCibCustomViewClassNameKey    = @"_CPCibCustomViewClassNameKey";
