@@ -359,6 +359,17 @@
 {
     dictionary_removeValue(self, aKey);
 }
+
+/*!
+    Removes each entry in allKeys from the receiver.
+    @param allKeys an array of keys that will be removed from the dictionary
+*/
+- (void)removeObjectsForKeys:(CPArray)allKeys
+{
+    for (var i=0, count = allKeys.length; i<count; i++)
+        dictionary_removeValue(self, allKeys[i]);
+}
+
 /*
     Instance.removeObjectForKey(aKey)
     {
