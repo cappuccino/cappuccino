@@ -409,6 +409,23 @@
 */
 
 /*!
+    Take all the key/value pairs in aDictionary and apply them to this dictionary.
+*/
+- (void)setValuesForKeysWithDictionary:(CPDictionary)aDictionary
+{
+    if (!aDictionary)
+        return;
+        
+    var allKeys = [aDictionary allKeys];
+    
+    for (var i=0, count = [allKeys count]; i<count; i++)
+    {
+        var thisKey = allKeys[i];
+        [selt setOject:[aDictionary objectForKey:thisKey] forKey:thisKey];
+    }
+}
+
+/*!
     Returns a human readable description of the dictionary.
 */
 - (CPString)description
