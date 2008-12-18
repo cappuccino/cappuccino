@@ -432,7 +432,7 @@
     for (var i=0, count = [allKeys count]; i<count; i++)
     {
         var thisKey = allKeys[i];
-        [selt setObject:[aDictionary objectForKey:thisKey] forKey:thisKey];
+        [self setObject:[aDictionary objectForKey:thisKey] forKey:thisKey];
     }
 }
 
