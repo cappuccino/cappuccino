@@ -411,7 +411,7 @@
 /*!
     Take all the key/value pairs in aDictionary and apply them to this dictionary.
 */
-- (void)setValuesForKeysWithDictionary:(CPDictionary)aDictionary
+- (void)addEntriesFromDictionary:(CPDictionary)aDictionary
 {
     if (!aDictionary)
         return;
