@@ -165,8 +165,8 @@
     var array = [];
     for (var property in _contents)
     {
-        //if (_contents.hasOwnProperty(property))
-        array.push(_contents[property]);
+        if (_contents.hasOwnProperty(property))
+            array.push(_contents[property]);
     }
     
     return array;
@@ -234,7 +234,7 @@
 - (BOOL)isEqualToSet:(CPSet)set
 {    
     // If both are subsets of each other, they are equal
-    return [self isSubsetOfSet:set] && [set isSubsetOfSet:self];
+    return self === set || ([self count] === [set count] && [set isSubsetOfSet:self]);
 }
 
 /*
@@ -350,7 +350,7 @@
     @param anObject The object to remove from the receiver.
 */
 - (void)removeObject:(id)anObject
-{print("removing: "+anObject);
+{
     if ([self containsObject:anObject])
     {
         delete _contents[[anObject hash]];
