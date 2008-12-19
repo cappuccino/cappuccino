@@ -1317,7 +1317,7 @@ setBoundsOrigin:
 /*!
     Initiates a drag operation from the receiver to another view that accepts dragged data.
     @param aView the view to be dragged
-    @param aLocation the lower-left corner coordinate of <code>aView</code>
+    @param aLocation the top-left corner coordinate of <code>aView</code>
     @param mouseOffset the distance from the <code>mouseDown:</code> location and the current location
     @param anEvent the <code>mouseDown:</code> that triggered the drag
     @param aPastebaord the pasteboard that holds the drag data

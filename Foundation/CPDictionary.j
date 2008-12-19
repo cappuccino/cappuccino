@@ -359,6 +359,17 @@
 {
     dictionary_removeValue(self, aKey);
 }
+
+/*!
+    Removes each entry in allKeys from the receiver.
+    @param allKeys an array of keys that will be removed from the dictionary
+*/
+- (void)removeObjectsForKeys:(CPArray)allKeys
+{
+    for (var i=0, count = allKeys.length; i<count; i++)
+        dictionary_removeValue(self, allKeys[i]);
+}
+
 /*
     Instance.removeObjectForKey(aKey)
     {
@@ -407,6 +418,23 @@
         return CPDictionary.alloc().dictionaryWithDictionary(this);
     }
 */
+
+/*!
+    Take all the key/value pairs in aDictionary and apply them to this dictionary.
+*/
+- (void)addEntriesFromDictionary:(CPDictionary)aDictionary
+{
+    if (!aDictionary)
+        return;
+        
+    var allKeys = [aDictionary allKeys];
+    
+    for (var i=0, count = [allKeys count]; i<count; i++)
+    {
+        var thisKey = allKeys[i];
+        [self setObject:[aDictionary objectForKey:thisKey] forKey:thisKey];
+    }
+}
 
 /*!
     Returns a human readable description of the dictionary.
