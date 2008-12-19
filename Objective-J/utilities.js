@@ -254,7 +254,13 @@ function base64_encode_array(input)
 
 function base64_decode_to_string(input, strip)
 {
-    return String.fromCharCode.apply(null, base64_decode_to_array(input, strip));
+    return bytes_to_string(base64_decode_to_array(input, strip));
+}
+
+function bytes_to_string(bytes)
+{
+    // This is relatively efficient, I think:
+    return String.fromCharCode.apply(null, bytes);
 }
 
 function base64_encode_string(input)
