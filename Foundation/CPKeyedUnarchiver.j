@@ -316,11 +316,27 @@ var _CPKeyedUnarchiverArrayClass                                            = Ni
 
     if ([object isKindOfClass:_CPKeyedUnarchiverDictionaryClass])
         return _CPKeyedUnarchiverDecodeObjectAtIndex(self, [object objectForKey:_CPKeyedArchiverUIDKey]);
-    else if ([object isKindOfClass:[CPNumber class]])
+    else if ([object isKindOfClass:[CPNumber class]] || [object isKindOfClass:[CPData class]])
         return object;
 /*    else
         alert([object className] + " " + object + " " + aKey + " " + [_plistObject description]);*/
 
+    return nil;
+}
+
+/*
+    Decodes bytes from the archive.
+    @param aKey the object's associated key
+    @return array of bytes
+*/
+- (id)decodeBytesForKey:(CPString)aKey
+{
+    // We get the CPData wrapper, then extract the bytes array
+    var data = [self decodeObjectForKey:aKey];
+    
+    if ([data isKindOfClass:[CPData class]])
+        return data.bytes;
+    
     return nil;
 }
 

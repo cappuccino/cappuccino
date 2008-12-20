@@ -8,7 +8,7 @@
 		<string key="IBDocument.HIToolboxVersion">352.00</string>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
-			<integer value="1" id="9"/>
+			<integer value="106"/>
 			<integer value="13"/>
 			<integer value="15"/>
 		</object>
@@ -146,7 +146,7 @@
 									<bool key="EncodedWithXMLCoder">YES</bool>
 									<integer value="12" id="779933340"/>
 									<reference ref="779933340"/>
-									<reference ref="9"/>
+									<integer value="1" id="9"/>
 								</object>
 							</object>
 						</object>
@@ -380,7 +380,7 @@
 						<bool key="NSIsNotContinuous">YES</bool>
 						<object class="NSColor" key="NSColor">
 							<int key="NSColorSpace">1</int>
-							<bytes key="NSRGB">MC4wNTgxMzA0OTkgMC4wNTU1NDE4OTkgMQA</bytes>
+							<bytes key="NSRGB">MC4zNzUyMzAzNyAwLjQ1NjE5NzE0IDEAA</bytes>
 						</object>
 					</object>
 					<object class="NSColorWell" id="426656007">
@@ -398,7 +398,7 @@
 						<bool key="NSEnabled">YES</bool>
 						<object class="NSColor" key="NSColor">
 							<int key="NSColorSpace">1</int>
-							<bytes key="NSRGB">MC4wNTgxMzA0OTkgMC4wNTU1NDE4OTkgMQA</bytes>
+							<bytes key="NSRGB">MSAwLjE3MjgzOTUyIDAuMTcyODM5NTIAA</bytes>
 						</object>
 					</object>
 					<object class="NSButton" id="684874808">
@@ -3327,7 +3327,7 @@
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{199, 438}, {480, 303}}</string>
+					<string>{{438, 741}, {480, 303}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>{628, 654}</string>
 					<string>{{257, 484}, {480, 272}}</string>
@@ -3352,7 +3352,7 @@
 					<string>{{56, 843}, {299, 193}}</string>
 					<reference ref="9"/>
 					<string>{{115, 207}, {299, 193}}</string>
-					<integer value="0"/>
+					<integer value="0" id="8"/>
 					<reference ref="9"/>
 					<string>{299, 193}</string>
 					<string>{299, 193}</string>
@@ -3373,7 +3373,7 @@
 					<string>{{0, 822}, {276, 323}}</string>
 					<reference ref="9"/>
 					<string>{{118, 105}, {276, 323}}</string>
-					<integer value="0"/>
+					<reference ref="8"/>
 					<string>{3.40282e+38, 3.40282e+38}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>

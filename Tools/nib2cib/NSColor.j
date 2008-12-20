@@ -2,6 +2,9 @@
  * NSColor.j
  * nib2cib
  *
+ * Portions based on NSColor.m (12/18/2008) in Cocotron (http://www.cocotron.org/)
+ * Copyright (c) 2006-2007 Christopher J. W. Lloyd
+ *
  * Created by Thomas Robinson.
  * Copyright 2008, 280 North, Inc.
  *
@@ -35,8 +38,86 @@ var NSUnknownColorSpaceModel    = -1,
 
 - (id)NS_initWithCoder:(CPCoder)aCoder
 {
-    //var colorSpace = [aCoder decodeIntForKey:@"NSColorSpace"];
-    return self = [CPColor blueColor];
+    var colorSpace = [aCoder decodeIntForKey:@"NSColorSpace"],
+        result;
+
+    switch (colorSpace)
+    {
+        case 1: // [NSColor colorWithCalibratedRed:values[0] green:values[1] blue:values[2] alpha:values[3]];
+        case 2: // [NSColor colorWithDeviceRed:values[0] green:values[1] blue:values[2] alpha:values[3]];
+        
+            // NSComponents data
+            // NSCustomColorSpace NSColorSpace
+            var rgb         = [aCoder decodeBytesForKey:@"NSRGB"],
+                string      = bytes_to_string(rgb),
+                components  = [string componentsSeparatedByString:@" "],
+                values      = [0,0,0,1];
+
+            for (var i = 0; i < components.length && i < 4; i++)
+                values[i] = [components[i] floatValue];
+            
+            CPLog.warn("rgb="+rgb+" string=" + string + " values=" + values);
+
+            result = [CPColor colorWithCalibratedRed:values[0] green:values[1] blue:values[2] alpha:values[3]];
+            break;
+            
+        case 3: // [NSColor colorWithCalibratedWhite:values[0] alpha:values[1]];
+        case 4: // [NSColor colorWithDeviceWhite:values[0] alpha:values[1]];
+        
+            var bytes       = [aCoder decodeBytesForKey:@"NSWhite"],
+                string      = bytes_to_string(rgb),
+                components  = [string componentsSeparatedByString:@" "],
+                values      = [0,1];
+                
+            for (var i = 0; i < components.length && i < 2; i++)
+                values[i] = [components[i] floatValue];
+
+            result = [CPColor colorWithCalibratedWhite:values[0] alpha:values[1]];
+            break;
+/*
+        case 5:
+            var cmyk        = [aCoder decodeBytesForKey:@"NSCMYK"],
+                string      = bytes_to_string(rgb),
+                components  = [string componentsSeparatedByString:@" "],
+                values      = [0,0,0,0,1];
+            
+            for (var i = 0; i < components.length && i < 5; i++)
+                values[i] = [components[i] floatValue];
+
+            result = [CPColor colorWithDeviceCyan:values[0] magenta:values[1] yellow:values[2] black:values[3] alpha:values[4]];
+            break;
+*/
+        case 6:
+            var catalogName = [aCoder decodeObjectForKey:@"NSCatalogName"],
+                colorName   = [aCoder decodeObjectForKey:@"NSColorName"],
+                color       = [aCoder decodeObjectForKey:@"NSColor"];
+                
+            // We don't having color mappings implemented, so just use the cached NSColor
+            
+            if (catalogName === @"System")
+            {
+                var //display = [NSDisplay currentDisplay],
+                    result = null;//[display colorWithName: colorName];
+                if (!result)
+                {
+                    result = color;
+                    //[display _addSystemColor: result forName: colorName];
+                }
+            }
+            else
+            {
+                result = null;//[CPColor colorWithCatalogName: catalogName colorName: colorName];
+                if (!result)
+                    result = color;
+            }
+            break;
+        default:
+            CPLog(@"-[%@ %s] unknown color space %d", isa, _cmd, colorSpace);
+            result  = [CPColor blackColor];
+            break;
+    }
+
+    return result;
 }
 
 @end
