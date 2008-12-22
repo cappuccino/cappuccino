@@ -485,12 +485,12 @@ CPRunContinuesResponse  = -1002;
     if (!anAction)
         return NO;
 
-    if ([self tryToPerform:anAction with:anObject])
+    if ([super tryToPerform:anAction with:anObject])
         return YES;
     
-    if([_delegate respondsToSelector:aSelector])
+    if([_delegate respondsToSelector:anAction])
     {
-        [_delegate performSelector:aSelector withObject:anObject];
+        [_delegate performSelector:anAction withObject:anObject];
         
         return YES;
     }
