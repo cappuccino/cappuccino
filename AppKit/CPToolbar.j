@@ -100,6 +100,7 @@ var CPToolbarConfigurationsByIdentifier = nil;
     CPArray                 _itemsSortedByVisibilityPriority;
     
     CPView                  _toolbarView;
+    CPWindow                _window;
 }
 
 /* @ignore */
@@ -187,13 +188,22 @@ var CPToolbarConfigurationsByIdentifier = nil;
 */
 - (void)setVisible:(BOOL)aFlag
 {
-    if (_isVisible == aFlag)
+    if (_isVisible === aFlag)
         return;
-        
+    
     _isVisible = aFlag;
 
-    [_window _setToolbarVisible:_isVisible];
-    [self _reloadToolbarItems];
+    [_window _noteToolbarChanged];
+}
+
+- (CPWindow)_window
+{
+    return _window;
+}
+
+- (void)_setWindow:(CPWindow)aWindow
+{
+    _window = aWindow;
 }
 
 /*!
@@ -222,9 +232,10 @@ var CPToolbarConfigurationsByIdentifier = nil;
     if (!_toolbarView)
     {
         _toolbarView = [[_CPToolbarView alloc] initWithFrame:CPRectMake(0.0, 0.0, 1200.0, 59.0)];
-        [_toolbarView setAutoresizingMask:CPViewWidthSizable];
-    
+        
         [_toolbarView setToolbar:self];
+        [_toolbarView setAutoresizingMask:CPViewWidthSizable];
+        [_toolbarView reloadToolbarItems];
     }
     
     return _toolbarView;
@@ -233,9 +244,9 @@ var CPToolbarConfigurationsByIdentifier = nil;
 /* @ignore */
 - (void)_reloadToolbarItems
 {
-    if (![_toolbarView superview] || !_delegate)
+    if (!_delegate)
         return;
-    
+
     var count = [_itemIdentifiers count];
     
     if (!count)
@@ -243,8 +254,6 @@ var CPToolbarConfigurationsByIdentifier = nil;
          _itemIdentifiers = [[_delegate toolbarDefaultItemIdentifiers:self] mutableCopy];
          count = [_itemIdentifiers count];
     }
-    
-    [[_toolbarView subviews] makeObjectsPerformSelector:@selector(removeFromSuperview)];
 
     _items = [];
 
@@ -256,8 +265,10 @@ var CPToolbarConfigurationsByIdentifier = nil;
             item = [CPToolbarItem _standardItemWithItemIdentifier:identifier];
         
         if (!item)
-            item = [[_delegate toolbar:self itemForItemIdentifier:identifier willBeInsertedIntoToolbar:YES] copy];
-            
+            item = [_delegate toolbar:self itemForItemIdentifier:identifier willBeInsertedIntoToolbar:YES];
+        
+        item = [item copy];
+        
         if (item == nil)
             [CPException raise:CPInvalidArgumentException
                          reason:sprintf(@"_delegate %s returned nil toolbar item returned for identifier %s", _delegate, identifier)];
@@ -436,6 +447,7 @@ var _CPToolbarItemInfoMake = function(anIndex, aView, aLabel, aMinWidth)
     CPArray             _invisibleItems;
     
     CPPopUpButton       _additionalItemsButton;
+    CPColor             _labelColor;
 }
 
 + (void)initialize
@@ -444,8 +456,6 @@ var _CPToolbarItemInfoMake = function(anIndex, aView, aLabel, aMinWidth)
         return;
     
     var bundle = [CPBundle bundleForClass:self];
-    
-    _CPToolbarViewBackgroundColor = [CPColor colorWithPatternImage:[[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"_CPToolbarView/_CPToolbarViewBackground.png"] size:CGSizeMake(1.0, 59.0)]];
     
     _CPToolbarViewExtraItemsImage = [[CPImage alloc] initWithContentsOfFile: [bundle pathForResource:"_CPToolbarView/_CPToolbarViewExtraItemsImage.png"] size: CPSizeMake(10.0, 15.0)];
 
@@ -460,7 +470,7 @@ var _CPToolbarItemInfoMake = function(anIndex, aView, aLabel, aMinWidth)
     {
         _minWidth = 0;
         
-        [self setBackgroundColor:_CPToolbarViewBackgroundColor];
+        _labelColor = [CPColor blackColor];
         
         _additionalItemsButton = [[CPPopUpButton alloc] initWithFrame:CGRectMake(0.0, 0.0, 10.0, 15.0) pullsDown:YES];
         [_additionalItemsButton setBordered:NO];
@@ -482,6 +492,20 @@ var _CPToolbarItemInfoMake = function(anIndex, aView, aLabel, aMinWidth)
 - (CPToolbar)toolbar
 {
     return _toolbar;
+}
+
+- (void)setLabelColor:(CPColor)aColor
+{
+    if (_labelColor === aColor)
+        return;
+    
+    _labelColor = aColor;
+    
+    var items = [_toolbar items],
+        count = [items count];
+    
+    while (count--)
+        [[self labelForItem:items[count]] setTextColor:_labelColor];
 }
 
 // This *should* be roughly O(3N) = O(N)
@@ -527,7 +551,7 @@ var _CPToolbarItemInfoMake = function(anIndex, aView, aLabel, aMinWidth)
             [[self labelForItem:item] setHidden:YES];
         }
     }
-    
+
     // Determine all the items that have flexible width.
     // Also determine the height of the toolbar.
     // NOTE: height is height without top margin, and bottom margin/label.
@@ -717,8 +741,8 @@ var _CPToolbarItemInfoMake = function(anIndex, aView, aLabel, aMinWidth)
         count = subviews.length;
     
     while (count--)
-        [subviews removeObjectAtIndex:count];
-
+        [subviews[count] removeFromSuperview];
+    
     // Populate with new subviews.
     var items = [_toolbar items],
         index = 0;
@@ -748,7 +772,7 @@ var _CPToolbarItemInfoMake = function(anIndex, aView, aLabel, aMinWidth)
         
             [view setImagePosition:CPImageOnly];
         }
-        
+               
         [self addSubview:view];
         
         // Create a lable for this item.
@@ -756,6 +780,7 @@ var _CPToolbarItemInfoMake = function(anIndex, aView, aLabel, aMinWidth)
         
         [label setStringValue:[item label]];
         [label setFont:[CPFont systemFontOfSize:11.0]];
+        [label setTextColor:_labelColor];
         [label sizeToFit];
 
         [label setTarget:[item target]];

@@ -27,10 +27,10 @@
 @import "CPAnimation.j"
 @import "CPResponder.j"
 
-#include "Platform/Platform.h"
-#include "Platform/DOM/CPDOMDisplayServer.h"
+#include "../Platform/Platform.h"
+#include "../Platform/DOM/CPDOMDisplayServer.h"
 
-#include "CoreGraphics/CGGeometry.h"
+#include "../CoreGraphics/CGGeometry.h"
 
 
 /*
@@ -88,6 +88,7 @@ CPWindowMinYMargin              = 8;
 CPWindowHeightSizable           = 16;
 CPWindowMaxYMargin              = 32;
 
+CPBackgroundWindowLevel         = -1;
 /*
     Default level for windows
     @group CPWindowLevel
@@ -345,11 +346,7 @@ CPTexturedBackgroundWindowMask
         CPApp._windows[_windowNumber] = self;
         
         _styleMask = aStyleMask;
-        
-        _frame = [self frameRectForContentRect:aContentRect];
-        
-        _level = CPNormalWindowLevel;
-        _hasShadow = NO;
+        _level = aStyleMask === CPBorderlessBridgeWindowMask ? CPBackgroundWindowLevel : CPNormalWindowLevel;
         
         _minSize = CGSizeMake(0.0, 0.0);
         _maxSize = CGSizeMake(1000000.0, 1000000.0);
@@ -358,16 +355,19 @@ CPTexturedBackgroundWindowMask
             _autoresizingMask = CPWindowWidthSizable | CPWindowHeightSizable;
 
         // Create our border view which is the actual root of our view hierarchy.
-        _windowView = [[_CPWindowView alloc] initWithFrame:CGRectMake(0.0, 0.0, CGRectGetWidth(_frame), CGRectGetHeight(_frame)) forStyleMask:_styleMask];
+        var windowViewClass = [[self class] _windowViewClassForStyleMask:aStyleMask];
         
+        _frame = [windowViewClass frameRectForContentRect:aContentRect];
+        _windowView = [[windowViewClass alloc] initWithFrame:CGRectMake(0.0, 0.0, CGRectGetWidth(_frame), CGRectGetHeight(_frame)) styleMask:aStyleMask owningWindow:self];
+
         [_windowView _setWindow:self];
         [_windowView setNextResponder:self];
-        
+
         [self setMovableByWindowBackground:aStyleMask & CPHUDBackgroundWindowMask];
         
         // Create a generic content view.
         [self setContentView:[[CPView alloc] initWithFrame:CGRectMakeZero()]];
-
+        
         _firstResponder = self;
 
 #if PLATFORM(DOM)
@@ -384,11 +384,30 @@ CPTexturedBackgroundWindowMask
 #endif
 
         [self setBridge:aBridge];
-        
+
         [self setNextResponder:CPApp];
+
+        [self setHasShadow:aStyleMask !== CPBorderlessWindowMask && !(aStyleMask & CPBorderlessBridgeWindowMask)];
     }
     
     return self;
+}
+
+/*!
+    @ignore
+*/
++ (Class)_windowViewClassForStyleMask:(unsigned)aStyleMask
+{
+    if (aStyleMask & CPHUDBackgroundWindowMask)
+        return _CPHUDWindowView;
+    
+    else if (aStyleMask & CPBorderlessBridgeWindowMask)
+        return _CPBorderlessBridgeWindowView;
+    
+    else if (aStyleMask === CPBorderlessWindowMask)
+        return _CPBorderlessWindowView;
+    
+    return _CPStandardWindowView;
 }
 
 /*!
@@ -407,9 +426,7 @@ CPTexturedBackgroundWindowMask
 */
 + (CGRect)frameRectForContentRect:(CGRect)aContentRect styleMask:(unsigned)aStyleMask
 {
-    var frame = CGRectMakeCopy(aContentRect);
-    
-    return frame;
+    return [[[self class] _windowViewClassForStyleMask:_styleMask] frameRectForContentRect:aContentRect];
 }
 
 /*!
@@ -418,6 +435,7 @@ CPTexturedBackgroundWindowMask
 */
 - (CGRect)contentRectForFrameRect:(CGRect)aFrame
 {
+    return [_windowView contentRectForFrameRect:aFrame];/*
     // FIXME: EXTRA RECT COPY
     var contentRect = CGRectMakeCopy([_windowView bounds]);
     
@@ -442,7 +460,7 @@ CPTexturedBackgroundWindowMask
         contentRect.size.height -= toolbarHeight;
     }
     
-    return contentRect;
+    return contentRect;*/
 }
 
 /*!
@@ -452,12 +470,7 @@ CPTexturedBackgroundWindowMask
 */
 - (CGRect)frameRectForContentRect:(CGRect)aContentRect
 {
-    if (_styleMask & CPBorderlessBridgeWindowMask)
-        return _bridge ? [_bridge visibleFrame] : CGRectMakeZero();
-        
-    var frame = [[self class] frameRectForContentRect:aContentRect styleMask:_styleMask];
-    
-    return frame; 
+    return [_windowView frameRectForContentRect:aContentRect];
 }
 
 /*!
@@ -701,11 +714,13 @@ CPTexturedBackgroundWindowMask
     if (_contentView)
         [_contentView removeFromSuperview];
     
+    var bounds = CGRectMake(0.0, 0.0, CGRectGetWidth(_frame), CGRectGetHeight(_frame));
+    
     _contentView = aView;
-    [_contentView setFrame:[self contentRectForFrameRect:_frame]];
+    [_contentView setFrame:[self contentRectForFrameRect:bounds]];
     
     [_contentView setAutoresizingMask:CPViewWidthSizable | CPViewHeightSizable];
-    [_windowView addSubview:_contentView positioned:CPWindowBelow relativeTo:nil];
+    [_windowView addSubview:_contentView];// positioned:CPWindowBelow relativeTo:nil];
 }
 
 /*!
@@ -826,7 +841,7 @@ CPTexturedBackgroundWindowMask
 */
 - (void)setHasShadow:(BOOL)shouldHaveShadow
 {
-    if (_hasShadow == shouldHaveShadow)
+    if (_hasShadow === shouldHaveShadow)
         return;
     
     _hasShadow = shouldHaveShadow;
@@ -840,7 +855,7 @@ CPTexturedBackgroundWindowMask
     
         if (!_CPWindowShadowColor)
         {
-            var bundle = [CPBundle bundleForClass:[self class]];
+            var bundle = [CPBundle bundleForClass:[CPWindow class]];
             
             _CPWindowShadowColor = [CPColor colorWithPatternImage:[[CPNinePartImage alloc] initWithImageSlices:
                 [
@@ -865,7 +880,7 @@ CPTexturedBackgroundWindowMask
         CPDOMDisplayServerInsertBefore(_DOMElement, _shadowView._DOMElement, _windowView._DOMElement);
 #endif
     }
-    else
+    else if (_shadowView)
     {
 #if PLATFORM(DOM)
         CPDOMDisplayServerRemoveChild(_DOMElement, _shadowView._DOMElement);
@@ -1434,49 +1449,34 @@ CPTexturedBackgroundWindowMask
 */
 - (void)setToolbar:(CPToolbar)aToolbar
 {
-    if (_toolbar == aToolbar)
+    if (_toolbar === aToolbar)
         return;
     
-    // Cleanup old toolbar
-    if (_toolbar)
-    {
-        [self _setToolbarVisible:NO];
+    // If this has an owner, dump it!
+    [[aToolbar _window] setToolbar:nil];
     
-        _toolbar._window = nil;
-        _toolbarView = nil;
-    }
+    // This is no longer out toolbar.
+    [_toolbar _setWindow:nil];
     
-    if (_toolbar = aToolbar)
-    {
-        // Set up new toolbar
-        _toolbar = aToolbar;
-        _toolbar._window = self;
-        
-        if ([_toolbar isVisible])
-            [self _setToolbarVisible:YES];
-            
-        [_toolbar _reloadToolbarItems];
-    }
+    _toolbar = aToolbar;
+    
+    // THIS is our toolbar.
+    [_toolbar _setWindow:self];
+    
+    [self _noteToolbarChanged];
 }
 
-/* @ignore */
-- (void)_setToolbarVisible:(BOOL)aFlag
+- (void)toggleToolbarShown:(id)aSender
 {
-    if (aFlag)
-    {
-        if (!_toolbarView)
-            _toolbarView = [_toolbar _toolbarView];
-        
-        [_toolbarView setFrame:CGRectMake(0.0, 0.0, CGRectGetWidth([_windowView bounds]), CGRectGetHeight([_toolbarView frame]))];
-        [_windowView addSubview:_toolbarView];
-    }
-    else
-        [_toolbarView removeFromSuperview];
+    var toolbar = [self toolbar];
     
-    [_contentView setFrame:[self contentRectForFrameRect:[_windowView bounds]]];
+    [toolbar setVisible:![toolbar isVisible]];
 }
 
-// Managing Sheets
+- (void)_noteToolbarChanged
+{
+    [_windowView noteToolbarChanged];
+}
 
 /* @ignore */
 - (void)_setAttachedSheetFrameOrigin
@@ -1757,7 +1757,11 @@ var interpolate = function(fromValue, toValue, progress)
 
 @end
 
+@import "_CPWindowView.j"
+@import "_CPStandardWindowView.j"
+@import "_CPHUDWindowView.j"
+@import "_CPBorderlessWindowView.j"
+@import "_CPBorderlessBridgeWindowView.j"
 @import "CPDragServer.j"
 @import "CPDOMWindowBridge.j"
-@import "_CPWindowView.j"
 @import "CPView.j"
