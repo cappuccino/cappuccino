@@ -249,7 +249,6 @@ var _CPColorWellDidBecomeExclusiveNotification = @"_CPColorWellDidBecomeExclusiv
     var colorPanel = [CPColorPanel sharedColorPanel];
     
     [colorPanel setColor:_color];
-
     [colorPanel orderFront:self];
 }
 

@@ -475,6 +475,11 @@ url("data:image/png;base64,BASE64ENCODEDDATA")  // if there is a pattern image
     return rgbToHex([self redComponent], [self greenComponent], [self blueComponent])
 }
 
+- (CPString)description
+{
+    return [super description]+" "+[self cssString];
+}
+
 @end
 
 var CPColorComponentsKey    = @"CPColorComponentsKey",

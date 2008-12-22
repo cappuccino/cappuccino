@@ -68,7 +68,8 @@ CPColorPickerViewHeight = 370;
     CPTextField     _swatchLabel;
         
     CPArray         _colorPickers;
-    CPView          _currentView;    
+    CPView          _currentView; 
+    id              _activePicker;   
     
     CPColor         _color;
     
@@ -136,7 +137,7 @@ CPColorPickerViewHeight = 370;
     Sets the color of the panel, and updates the picker. Also posts a <code>CPColorPanelDidChangeNotification</code>.
 */
 - (void)setColor:(CPColor)aColor
-{
+{    
     _color = aColor;
     [_previewView setBackgroundColor: _color];
     
@@ -148,6 +149,8 @@ CPColorPickerViewHeight = 370;
     [[CPNotificationCenter defaultCenter]
         postNotificationName:CPColorPanelColorDidChangeNotification
                       object:self];
+
+    [_activePicker setColor:_color];
 }
 
 /*!
@@ -356,7 +359,7 @@ CPColorPickerViewHeight = 370;
     _action = nil;
     _activePicker = nil;
     
-    [self setColor:[CPColor whiteColor]];
+    [_previewView setBackgroundColor: _color ? _color : [CPColor whiteColor]];
     
     if (buttonForLater)
         [self _setPicker:buttonForLater];
