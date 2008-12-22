@@ -38,14 +38,15 @@ var _CPLogRegistrations = {};
 var _CPFormatLogMessage = function(aString, aLevel, aTitle)
 {
     var now = new Date();
+    aLevel = ( aLevel == null ? '' : ' [' + aLevel + ']' );
     
     if (typeof sprintf == "function")
-        return sprintf("%4d-%02d-%02d %02d:%02d:%02d.%03d %s [%s]: %s",
+        return sprintf("%4d-%02d-%02d %02d:%02d:%02d.%03d %s%s: %s",
             now.getFullYear(), now.getMonth(), now.getDate(),
             now.getHours(), now.getMinutes(), now.getSeconds(), now.getMilliseconds(),
             aTitle, aLevel, aString);
     else
-        return now + " " + aTitle + " [" + aLevel + "]: " + aString;
+        return now + " " + aTitle + aLevel + ": " + aString;
 }
 
 // Register Functions:
