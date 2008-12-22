@@ -360,7 +360,8 @@ function CPPropertyListCreateFromXMLData(XMLNodeOrData)
             case PLIST_BOOLEAN_FALSE:   object = false;
                                         break;
                                         
-            case PLIST_DATA:            object = FIRST_CHILD(XMLNode) ? CHILD_VALUE(XMLNode) : ""; // FIXME: temporary fix for NIBs with <data> tags
+            case PLIST_DATA:            object = new objj_data();
+                                        object.bytes = FIRST_CHILD(XMLNode) ? base64_decode_to_array(CHILD_VALUE(XMLNode), true) : [];
                                         break;
                                         
             default:                    objj_exception_throw(new objj_exception(OBJJPlistParseException, "*** " + NODE_NAME(XMLNode) + " tag not recognized in Plist."));

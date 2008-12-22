@@ -100,7 +100,7 @@ var _CPMenuBarVisible               = NO,
         [_CPMenuBarSharedWindow orderFront:self];
     }
     else
-        [_CPMenuBarWindow orderOut:self];
+        [_CPMenuBarSharedWindow orderOut:self];
         
 // FIXME: There must be a better way to do this.
 #if PLATFORM(DOM)

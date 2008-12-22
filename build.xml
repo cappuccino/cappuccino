@@ -242,15 +242,16 @@
         <copy todir = "${Build.Cappuccino.Tools.Bin}">
             <fileset dir = "${Build}/Release/bake/bin" />
             <fileset dir = "${Build}/Release/cplutil/bin" />
-            <fileset dir = "${Build}/Release/nib2cib/bin" />
             <fileset dir = "${Build}/Release/objj/bin" />
             <fileset dir = "${Build}/Release/objjc/bin" />
             <fileset dir = "${Build}/Release/press/bin" />
             <fileset dir = "${Build}/Release/steam/bin" />
         </copy>
+        
+        <copy file = "Tools/nib2cib/nib2cib" todir = "${Build.Cappuccino.Tools.Bin}" />
 
         <copy todir = "${Build.Cappuccino.Tools.Lib}/nib2cib">
-            <fileset dir = "${Build}/Release/nib2cib/lib" />
+            <fileset dir = "${Build}/Release/nib2cib" />
         </copy>
 
         <copy todir = "${Build.Cappuccino.Tools.Lib}">

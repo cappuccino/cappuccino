@@ -82,9 +82,9 @@ function _CPLogDispatch(parameters, aLevel, aTitle)
     if (aLevel == undefined)
         aLevel = CPLogDefaultLevel;
     
-    // to format message: use sprintf if available; otherwise do a simple join
-    var message = (typeof sprintf == "function") ? sprintf.apply(null, parameters) : Array.prototype.join.call(parameters, ", ");
-    
+    // use sprintf if param 0 is a string and there is more than one param. otherwise just convert param 0 to a string
+    var message = (typeof parameters[0] == "string" && parameters.length > 1) ? sprintf.apply(null, parameters) : String(parameters[0]);
+        
     if (_CPLogRegistrations[aLevel])
         for (var i = 0; i < _CPLogRegistrations[aLevel].length; i++)
              _CPLogRegistrations[aLevel][i](message, aLevel, aTitle);
