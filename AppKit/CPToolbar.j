@@ -769,6 +769,8 @@ var _CPToolbarItemInfoMake = function(anIndex, aView, aLabel, aMinWidth)
             
             [view setTarget:[item target]];
             [view setAction:[item action]];
+            
+            [view setTag:[item tag]];
         
             [view setImagePosition:CPImageOnly];
         }
