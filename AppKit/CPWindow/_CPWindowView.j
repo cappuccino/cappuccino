@@ -99,7 +99,7 @@ var _CPWindowViewResizeIndicatorImage = nil;
 
 - (void)mouseDown:(CPEvent)anEvent
 {
-    var theWindow = [self window];
+    var theWindow = [self owningWindow];
     
     if ((_styleMask & CPResizableWindowMask) && _resizeIndicator)
     {
@@ -107,7 +107,7 @@ var _CPWindowViewResizeIndicatorImage = nil;
         var frame = [_resizeIndicator frame];
         
         if (CGRectContainsPoint(frame, [self convertPoint:[anEvent locationInWindow] fromView:nil]))
-            return [theWindow trackResizeWithEvent:anEvent];
+            return [self trackResizeWithEvent:anEvent];
     }
     
     if ([theWindow isMovableByWindowBackground])
@@ -115,6 +115,32 @@ var _CPWindowViewResizeIndicatorImage = nil;
         
     else
         [super mouseDown:anEvent];
+}
+
+/*
+    @ignore
+*/
+- (void)trackResizeWithEvent:(CPEvent)anEvent
+{
+    var location = [anEvent locationInWindow],
+        type = [anEvent type];
+        
+    if (type === CPLeftMouseUp)
+        return;
+    
+    var theWindow = [self owningWindow];
+    
+    if (type === CPLeftMouseDown)
+    {
+        var frame = [theWindow frame];
+        
+        _resizeFrame = CGRectMake(location.x, location.y, CGRectGetWidth(frame), CGRectGetHeight(frame));
+    }
+    
+    else if (type === CPLeftMouseDragged)
+        [theWindow setFrameSize:CGSizeMake(CGRectGetWidth(_resizeFrame) + location.x - CGRectGetMinX(_resizeFrame), CGRectGetHeight(_resizeFrame) + location.y - CGRectGetMinY(_resizeFrame))];
+    
+    [CPApp setTarget:self selector:@selector(trackResizeWithEvent:) forNextEventMatchingMask:CPLeftMouseDraggedMask | CPLeftMouseUpMask untilDate:nil inMode:nil dequeue:YES];
 }
 
 - (void)setShowsResizeIndicator:(BOOL)shouldShowResizeIndicator

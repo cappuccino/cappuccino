@@ -550,26 +550,6 @@ CPTexturedBackgroundWindowMask
     [CPApp setTarget:self selector:@selector(trackMoveWithEvent:) forNextEventMatchingMask:CPLeftMouseDraggedMask | CPLeftMouseUpMask untilDate:nil inMode:nil dequeue:YES];
 }
 
-/*
-    @ignore
-*/
-- (void)trackResizeWithEvent:(CPEvent)anEvent
-{
-    var location = [anEvent locationInWindow],
-        type = [anEvent type];
-        
-    if (type == CPLeftMouseUp)
-        return;
-    
-    else if (type == CPLeftMouseDown)
-        _resizeFrame = CGRectMake(location.x, location.y, CGRectGetWidth(_frame), CGRectGetHeight(_frame));
-    
-    else if (type == CPLeftMouseDragged)
-        [self setFrameSize:CGSizeMake(CGRectGetWidth(_resizeFrame) + location.x - CGRectGetMinX(_resizeFrame), CGRectGetHeight(_resizeFrame) + location.y - CGRectGetMinY(_resizeFrame))];
-    
-    [CPApp setTarget:self selector:@selector(trackResizeWithEvent:) forNextEventMatchingMask:CPLeftMouseDraggedMask | CPLeftMouseUpMask untilDate:nil inMode:nil dequeue:YES];
-}
-
 /*!
     Makes the receiver the front most window in the screen ordering.
     @param aSender the object that requested this
