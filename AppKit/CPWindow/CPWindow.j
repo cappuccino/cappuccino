@@ -293,8 +293,6 @@ var CPWindowSaveImage       = nil,
     
     var bundle = [CPBundle bundleForClass:[CPWindow class]];
     
-    CPWindowResizeIndicatorImage = [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"CPWindowResizeIndicator.png"] size:CGSizeMake(12.0, 12.0)];
-    
     CPWindowSavingImage = [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"CPProgressIndicator/CPProgressIndicatorSpinningStyleRegular.gif"] size:CGSizeMake(16.0, 16.0)]
 }
 
@@ -435,32 +433,7 @@ CPTexturedBackgroundWindowMask
 */
 - (CGRect)contentRectForFrameRect:(CGRect)aFrame
 {
-    return [_windowView contentRectForFrameRect:aFrame];/*
-    // FIXME: EXTRA RECT COPY
-    var contentRect = CGRectMakeCopy([_windowView bounds]);
-    
-    if (_styleMask & CPHUDBackgroundWindowMask)
-    {
-        contentRect.origin.x += 7.0;
-        contentRect.origin.y += 30.0;
-        contentRect.size.width -= 14.0;
-        contentRect.size.height -= 40.0;
-    }
-    
-    else if (_styleMask & CPBorderlessBridgeWindowMask)
-    {
-        // The full width, like borderless.
-    }
-    
-    if ([_toolbar isVisible])
-    {
-        var toolbarHeight = CGRectGetHeight([_toolbarView frame]);
-        
-        contentRect.origin.y += toolbarHeight;
-        contentRect.size.height -= toolbarHeight;
-    }
-    
-    return contentRect;*/
+    return [_windowView contentRectForFrameRect:aFrame];
 }
 
 /*!
