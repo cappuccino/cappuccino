@@ -23,6 +23,8 @@
 @import "CPView.j"
 @import "CPImageView.j"
 
+#include "../CoreGraphics/CGGeometry.h"
+
 
 var _CPWindowViewResizeIndicatorImage = nil;
 
@@ -36,6 +38,9 @@ var _CPWindowViewResizeIndicatorImage = nil;
     CPView      _toolbarView;
     
     CPWindow    _owningWindow;
+    
+    CGRect      _resizeFrame;
+    CGPoint     _mouseDraggedPoint;
 }
 
 + (void)initialize
@@ -111,15 +116,12 @@ var _CPWindowViewResizeIndicatorImage = nil;
     }
     
     if ([theWindow isMovableByWindowBackground])
-        [theWindow trackMoveWithEvent:anEvent];
+        [self trackMoveWithEvent:anEvent];
         
     else
         [super mouseDown:anEvent];
 }
 
-/*
-    @ignore
-*/
 - (void)trackResizeWithEvent:(CPEvent)anEvent
 {
     var location = [anEvent locationInWindow],
@@ -141,6 +143,30 @@ var _CPWindowViewResizeIndicatorImage = nil;
         [theWindow setFrameSize:CGSizeMake(CGRectGetWidth(_resizeFrame) + location.x - CGRectGetMinX(_resizeFrame), CGRectGetHeight(_resizeFrame) + location.y - CGRectGetMinY(_resizeFrame))];
     
     [CPApp setTarget:self selector:@selector(trackResizeWithEvent:) forNextEventMatchingMask:CPLeftMouseDraggedMask | CPLeftMouseUpMask untilDate:nil inMode:nil dequeue:YES];
+}
+
+- (void)trackMoveWithEvent:(CPEvent)anEvent
+{
+    var type = [anEvent type];
+        
+    if (type === CPLeftMouseUp)
+        return;
+    
+    else if (type === CPLeftMouseDown)
+        _mouseDraggedPoint = [[self owningWindow] convertBaseToBridge:[anEvent locationInWindow]];
+    
+    else if (type === CPLeftMouseDragged)
+    {
+        var theWindow = [self owningWindow],
+            location = [theWindow convertBaseToBridge:[anEvent locationInWindow]],
+            frame = [theWindow frame];
+        
+        [theWindow setFrameOrigin:CGPointMake(_CGRectGetMinX(frame) + (location.x - _mouseDraggedPoint.x), _CGRectGetMinY(frame) + (location.y - _mouseDraggedPoint.y))];
+        
+        _mouseDraggedPoint = location;
+    }
+    
+    [CPApp setTarget:self selector:@selector(trackMoveWithEvent:) forNextEventMatchingMask:CPLeftMouseDraggedMask | CPLeftMouseUpMask untilDate:nil inMode:nil dequeue:YES];
 }
 
 - (void)setShowsResizeIndicator:(BOOL)shouldShowResizeIndicator

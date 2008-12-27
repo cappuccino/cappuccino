@@ -277,9 +277,9 @@ var STANDARD_GRADIENT_HEIGHT                    = 41.0;
 - (void)mouseDown:(CPEvent)anEvent
 {
     if (CGRectContainsPoint([_headView frame], [self convertPoint:[anEvent locationInWindow] fromView:nil]))
-        [[self owningWindow] trackMoveWithEvent:anEvent];
+        return [self trackMoveWithEvent:anEvent];
     
-    return [super mouseDown:anEvent];
+    [super mouseDown:anEvent];
 }
 
 @end
