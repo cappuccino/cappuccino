@@ -6,13 +6,13 @@
  * Extended by Ross Boucher
  * Extended by Nabil Elisa
  * 
- * TODO: Needs to implement CPCoding, CPCopying, CPEnumerator.
+ * TODO: Needs to implement CPCoding, CPCopying.
  */
  
 @import "CPObject.j"
 @import "CPArray.j"
 @import "CPNumber.j"
-//import "CPEnumerator.j"
+@import "CPEnumerator.j"
 
 
 @implementation CPSet : CPObject
@@ -163,6 +163,7 @@
 - (CPArray)allObjects
 {
     var array = [];
+    
     for (var property in _contents)
     {
         if (_contents.hasOwnProperty(property))
@@ -289,7 +290,10 @@
     return nil;
 }
 
-//- (CPEnumerator)objectEnumerator;
+- (CPEnumerator)objectEnumerator
+{
+    return [[self allObjects] objectEnumerator];
+}
 
 
 // Mutable Set Methods
