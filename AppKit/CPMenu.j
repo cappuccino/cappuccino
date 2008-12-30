@@ -905,7 +905,7 @@ var STICKY_TIME_INTERVAL        = 500,
     
     if (self)
     {
-        [self setLevel:CPTornOffMenuWindowLevel];
+        [self setLevel:CPPopUpMenuWindowLevel];
         [self setHasShadow:YES];
         [self setAcceptsMouseMovedEvents:YES];
         
