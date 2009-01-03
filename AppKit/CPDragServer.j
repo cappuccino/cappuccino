@@ -157,6 +157,16 @@ var CPDragServerUpdateDragging = function(anEvent)
     return [CPDragServerView image];
 }
 
+- (CGPoint)draggedImageLocation
+{
+    return [self draggedViewLocation];
+}
+
+- (CGPoint)draggedViewLocation
+{
+    return [[CPDragServerDestination window] convertBridgeToBase:[CPDragServerView frame].origin];
+}
+
 - (CPView)draggedView
 {
     return CPDragServerView;
