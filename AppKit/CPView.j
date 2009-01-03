@@ -1844,7 +1844,10 @@ var _CPViewFullScreenModeStateMake = function(aView)
 
 var _CPViewGetTransform = function(/*CPView*/ fromView, /*CPView */ toView)
 {
-    var transform = CGAffineTransformMakeIdentity();
+    var transform = CGAffineTransformMakeIdentity(),
+        sameWindow = YES,
+        fromWindow = nil,
+        toWindow = nil;
     
     if (fromView)
     {
@@ -1868,8 +1871,24 @@ var _CPViewGetTransform = function(/*CPView*/ fromView, /*CPView */ toView)
         }
         
         // If we hit toView, then we're done.
-        if (view == toView)
+        if (view === toView)
             return transform;
+        
+        else if (fromView && toView)
+        {
+            fromWindow = [fromView window];
+            toWindow = [toView window];
+            
+            if (fromWindow && toWindow && fromWindow !== toWindow)
+            {
+                sameWindow = NO;
+                
+                var frame = [fromWindow frame];
+                
+                transform.tx += _CGRectGetMinX(frame);
+                transform.ty += _CGRectGetMinY(frame);
+            }
+        }
     }
     
     // FIXME: For now we can do things this way, but eventually we need to do them the "hard" way.
@@ -1890,6 +1909,13 @@ var _CPViewGetTransform = function(/*CPView*/ fromView, /*CPView */ toView)
         view = view._superview;
     }
     
+    if (!sameWindow)
+    {
+        var frame = [toWindow frame];
+            
+        transform.tx -= _CGRectGetMinX(frame);
+        transform.ty -= _CGRectGetMinY(frame);
+    }
 /*    var views = [],
         view = toView;
     
