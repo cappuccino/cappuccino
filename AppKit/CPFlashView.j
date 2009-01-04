@@ -61,7 +61,7 @@
         _DOMEmbedElement = document.createElement("embed");
 
         _DOMEmbedElement.type = "application/x-shockwave-flash";
-        _DOMEmbedElement.wmode = "transparent";
+        _DOMEmbedElement.setAttribute("wmode", "transparent");
         _DOMEmbedElement.width = "100%";
         _DOMEmbedElement.height = "100%";
 
