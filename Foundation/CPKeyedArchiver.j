@@ -523,7 +523,7 @@ var _CPKeyedArchiverEncodeObject = function(self, anObject, isConditional)
         if (isConditional)
         {
             // If we haven't already noted this conditional object...
-            if ((UID = [self._conditionalUIDs objectForKey:hash]) == nil)
+            if ((UID = [self._conditionalUIDs objectForKey:hash]) === nil)
             {
                 // Use the null object as a placeholder.
                 [self._conditionalUIDs setObject:UID = [self._plistObjects count] forKey:hash];
@@ -533,66 +533,63 @@ var _CPKeyedArchiverEncodeObject = function(self, anObject, isConditional)
         else
         {
             var theClass = [anObject classForKeyedArchiver],
-                plistObject = nil,
-                shouldEncodeObject = NO;
+                plistObject = nil;
             
-            if (theClass == _CPKeyedArchiverStringClass || theClass == _CPKeyedArchiverNumberClass)// || theClass == _CPKeyedArchiverBooleanClass)
+            if (theClass === _CPKeyedArchiverStringClass || theClass === _CPKeyedArchiverNumberClass)// || theClass == _CPKeyedArchiverBooleanClass)
                 plistObject = object;
             else
             {
-                shouldEncodeObject = YES;
+                // Only actually encode the object and create a plist representation if it is not a simple type.
                 plistObject = [CPDictionary dictionary];
+                
+                [self._objects addObject:object];
+                
+                var className = [self classNameForClass:theClass];
+    
+                if (!className)
+                    className = [[self class] classNameForClass:theClass];
+                
+                if (!className)
+                    className = theClass.name;
+                else
+                    theClass = window[className];
+
+                var classUID = [self._UIDs objectForKey:className];
+                
+                if (!classUID)
+                {
+                    var plistClass = [CPDictionary dictionary],
+                        hierarchy = [];
+                    
+                    [plistClass setObject:className forKey:_CPKeyedArchiverClassNameKey];
+                    
+                    do
+                    {
+                        [hierarchy addObject:CPStringFromClass(theClass)];
+                    } while (theClass = [theClass superclass]);
+                    
+                    [plistClass setObject:hierarchy forKey:_CPKeyedArchiverClassesKey];
+                    
+                    classUID = [self._plistObjects count];
+                    [self._plistObjects addObject:plistClass];
+                    [self._UIDs setObject:classUID forKey:className];
+                }
+
+                [plistObject setObject:[CPDictionary dictionaryWithObject:classUID forKey:_CPKeyedArchiverUIDKey] forKey:_CPKeyedArchiverClassKey];
             }
             
-            // If this object was previously encoded conditionally...
-            if ((UID = [self._conditionalUIDs objectForKey:hash]) == nil)
+            UID = [self._conditionalUIDs objectForKey:hash];
+            
+            // If this object WAS previously encoded conditionally...
+            if (UID != nil)
             {
-                [self._UIDs setObject:UID = [self._plistObjects count] forKey:hash];
-                [self._plistObjects addObject:plistObject];
-                
-                // Only encode the object if it is not the same as the plist object.
-                if (shouldEncodeObject)
-                {
-                    [self._objects addObject:object];
-                    
-                    var className = [self classNameForClass:theClass];
-        
-                    if (!className)
-                        className = [[self class] classNameForClass:theClass];
-                    
-                    if (!className)
-                        className = theClass.name;
-                    else
-                        theClass = window[className];
-
-                    var classUID = [self._UIDs objectForKey:className];
-                    
-                    if (!classUID)
-                    {
-                        var plistClass = [CPDictionary dictionary],
-                            hierarchy = [];
-                        
-                        [plistClass setObject:className forKey:_CPKeyedArchiverClassNameKey];
-                        
-                        do
-                        {
-                            [hierarchy addObject:CPStringFromClass(theClass)];
-                        } while (theClass = [theClass superclass]);
-                        
-                        [plistClass setObject:hierarchy forKey:_CPKeyedArchiverClassesKey];
-                        
-                        classUID = [self._plistObjects count];
-                        [self._plistObjects addObject:plistClass];
-                        [self._UIDs setObject:classUID forKey:className];
-                    }
-
-                    [plistObject setObject:[CPDictionary dictionaryWithObject:classUID forKey:_CPKeyedArchiverUIDKey] forKey:_CPKeyedArchiverClassKey];
-                }
+                [self._UIDs setObject:UID forKey:hash];
+                [self._plistObjects replaceObjectAtIndex:UID withObject:plistObject];
             }
             else
             {
-                [self._UIDs setObject:object forKey:UID];
-                [self._plistObjects replaceObjectAtIndex:UID withObject:plistObject];
+                [self._UIDs setObject:UID = [self._plistObjects count] forKey:hash];
+                [self._plistObjects addObject:plistObject];
             }
         }
     }
