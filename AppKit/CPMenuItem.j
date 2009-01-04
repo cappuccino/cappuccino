@@ -727,7 +727,19 @@ CPControlKeyMask
 
 - (id)init
 {
-    return [super initWithTitle:@"" action:nil keyEquivalent:@""];
+    self = [super initWithTitle:@"" action:nil keyEquivalent:nil];
+    
+    if(self)
+    {
+        var view = [[CPView alloc] initWithFrame:CGRectMake(0.0, 0.0, 0.0, 20.0)],
+            line = [[CPView alloc] initWithFrame:CGRectMake(0.0, 8.0, 1000.0, 1.3)];
+        [line setBackgroundColor:[CPColor lightGrayColor]];
+        [view addSubview:line];
+        
+        [self setView:view];
+    }
+    
+    return self;
 }
 
 - (BOOL)isSeparatorItem

@@ -179,6 +179,14 @@ var _CPMenuBarVisible               = NO,
     return 0.0;
 }
 
++ (float)menuBarHeight
+{
+    if ([self menuBarVisible])
+        return MENUBAR_HEIGHT;
+    
+    return 0.0;
+}
+
 // Creating a CPMenu Object
 /*!
     Initializes the menu with a specified title.
@@ -997,6 +1005,10 @@ var STICKY_TIME_INTERVAL        = 500,
     var menuViewSize = [_menuView frame].size;
     
     [self setFrameSize:CGSizeMake(LEFT_MARGIN + menuViewSize.width + RIGHT_MARGIN, TOP_MARGIN + menuViewSize.height + BOTTOM_MARGIN)];
+    
+    for(var i = 0; i < [aMenu numberOfItems]; i++)
+        if([[aMenu itemAtIndex:i] isSeparatorItem])
+            [[[aMenu itemAtIndex:i] view] setFrameSize:CPSizeMake(menuViewSize.width, 20.0)];
     
     [_menuView scrollPoint:CGPointMake(0.0, 0.0)];
     [_menuClipView setFrame:CGRectMake(LEFT_MARGIN, TOP_MARGIN, menuViewSize.width, menuViewSize.height)];
