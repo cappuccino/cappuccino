@@ -305,9 +305,9 @@
 */
 - (id)objectForKey:(CPString)aKey
 {
-    // We should really do this with inlining or something of that nature.
-    return _buckets[aKey];
-    //return dictionary_getValue(self, aKey);
+    var object = _buckets[aKey];
+    
+    return (object === undefined) ? nil : object;
 }
 /*
     Instance.objectsForKeys(keys, aNotFoundMarker)
