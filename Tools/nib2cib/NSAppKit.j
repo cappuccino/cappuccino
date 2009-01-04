@@ -55,6 +55,7 @@ function CP_NSMapClassName(aClassName)
     {
         case @"NSApplication":  return @"CPApplication";
         case @"NSObject":       return @"CPObject";
+        case @"NSPanel":        return @"CPPanel";
         case @"NSView":         return @"CPView";
         case @"NSWindow":       return @"CPWindow";
         

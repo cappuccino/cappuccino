@@ -369,6 +369,7 @@ var CPSplitViewHorizontalImage = nil,
 
 - (void)mouseDown:(CPEvent)anEvent
 {
+    // FIXME: This should not trap events if not on a divider!
     [self trackDivider:anEvent];
 }
 

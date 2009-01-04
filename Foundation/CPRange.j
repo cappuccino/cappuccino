@@ -62,7 +62,7 @@ function CPMakeRangeCopy(aRange)
 */
 function CPEmptyRange(aRange)
 {
-    return aRange.length == 0;
+    return aRange.length === 0;
 }
 
 /*!
@@ -84,7 +84,7 @@ function CPMaxRange(aRange)
 */
 function CPEqualRanges(lhsRange, rhsRange)
 {
-    return ((lhsRange.location == rhsRange.location) && (lhsRange.length == rhsRange.length));
+    return ((lhsRange.location === rhsRange.location) && (lhsRange.length === rhsRange.length));
 }
 
 /*!
@@ -109,8 +109,8 @@ function CPLocationInRange(aLocation, aRange)
 */
 function CPUnionRange(lhsRange, rhsRange)
 {
-    var location = Math.min(lhsRange.location, rhsRange.location);
-   	return CPMakeRange(location, Math.max(CPMaxRange(lhsRange), CPMaxRange(rhsRange)) - location);
+    var location = MIN(lhsRange.location, rhsRange.location);
+   	return CPMakeRange(location, MAX(CPMaxRange(lhsRange), CPMaxRange(rhsRange)) - location);
 }
 
 /*!
@@ -125,8 +125,8 @@ function CPIntersectionRange(lhsRange, rhsRange)
     if(CPMaxRange(lhsRange) < rhsRange.location || CPMaxRange(rhsRange) < lhsRange.location)
         return CPMakeRange(0, 0);
 	
-    var location = Math.max(lhsRange.location, rhsRange.location);
-    return CPMakeRange(location, Math.min(CPMaxRange(lhsRange), CPMaxRange(rhsRange)) - location);
+    var location = MAX(lhsRange.location, rhsRange.location);
+    return CPMakeRange(location, MIN(CPMaxRange(lhsRange), CPMaxRange(rhsRange)) - location);
 }
 
 /*!

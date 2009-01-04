@@ -631,8 +631,9 @@ var CPPopUpButtonArrowsImage = nil;
         
     [self highlight:YES];
 
-    var theWindow = [self window],
-        menuWindow = [_CPMenuWindow menuWindowWithMenu:[self menu] font:[self font]];
+    var menu = [self menu],
+        theWindow = [self window],
+        menuWindow = [_CPMenuWindow menuWindowWithMenu:menu font:[self font]];
     
     [menuWindow setDelegate:self];
     [menuWindow setBackgroundStyle:_CPMenuWindowPopUpBackgroundStyle];
@@ -648,14 +649,14 @@ var CPPopUpButtonArrowsImage = nil;
     {
         var contentRect = [menuWindow rectForItemAtIndex:_selectedIndex];
         
-        menuOrigin.x -= CGRectGetMinX(contentRect) + [_CPMenuItemView leftMargin];
+        menuOrigin.x -= CGRectGetMinX(contentRect) + [[[menu itemAtIndex:_selectedIndex] _menuItemView] calculatedLeftMargin];
         menuOrigin.y -= CGRectGetMinY(contentRect);
     }
     
     [menuWindow setFrameOrigin:menuOrigin];
     
     var menuMaxX = CGRectGetMaxX([menuWindow frame]),
-        buttonMaxX = CGRectGetMaxX([self convertRect:[self bounds] toView:nil]);
+        buttonMaxX = [theWindow convertBaseToBridge:CGPointMake(CGRectGetMaxX([self convertRect:[self bounds] toView:nil]), 0.0)].x;
         
     if (menuMaxX < buttonMaxX)
         [menuWindow setMinWidth:CGRectGetWidth([menuWindow frame]) + buttonMaxX - menuMaxX - VISIBLE_MARGIN];

@@ -56,8 +56,6 @@ CPToolbarShowFontsItemIdentifier        = @"CPToolbarShowFontsItemIdentifier";
 CPToolbarCustomizeToolbarItemIdentifier = @"CPToolbarCustomizeToolbarItemIdentifier";
 CPToolbarPrintItemIdentifier            = @"CPToolbarPrintItemIdentifier";
 
-var _CPToolbarSeparatorItemView         = nil;
-
 /*! @class CPToolbarItem
 
     A representation of an item in a CPToolbar.
@@ -479,7 +477,32 @@ CPToolbarItemVisibilityPriorityUser
 
 // Standard toolbar identifiers
 
+var _CPToolbarSeparatorItemView = nil,
+    _CPToolbarSpaceItemView     = nil;
+
 @implementation CPToolbarItem (Standard)
+
++ (CPView)_separatorItemView
+{
+    if (!_CPToolbarSeparatorItemView)
+    {
+        _CPToolbarSeparatorItemView = [[CPView alloc] initWithFrame:CGRectMake(0.0, 0.0, 2.0, 32.0)];
+        
+        sizes = {};
+        sizes[@"CPToolbarItemSeparator"] = [CGSizeMake(2.0, 26.0), CGSizeMake(2.0, 1.0), CGSizeMake(2.0, 26.0)];
+        [_CPToolbarSeparatorItemView setBackgroundColor:_CPControlThreePartImagePattern(YES, sizes, @"CPToolbarItem", @"Separator")];
+    }
+
+    return _CPToolbarSeparatorItemView;
+}
+
++ (CPView)_spaceItemView
+{
+    if (!_CPToolbarSpaceItemView)
+        _CPToolbarSpaceItemView = [[CPView alloc] initWithFrame:CGRectMakeZero()];
+    
+    return _CPToolbarSpaceItemView;
+}
 
 /* @ignore */
 + (CPToolbarItem)_standardItemWithItemIdentifier:(CPString)anItemIdentifier
@@ -488,29 +511,23 @@ CPToolbarItemVisibilityPriorityUser
 
     switch (anItemIdentifier)
     {
-        case CPToolbarSeparatorItemIdentifier:          [item setMinSize:CGSizeMake(2.0, 0.0)];
+        case CPToolbarSeparatorItemIdentifier:          [item setView:[self _separatorItemView]];
+                                                        
+                                                        [item setMinSize:CGSizeMake(2.0, 0.0)];
                                                         [item setMaxSize:CGSizeMake(2.0, 100000.0)];
-                                                        
-                                                        if (!_CPToolbarSeparatorItemView)
-                                                        {
-                                                            _CPToolbarSeparatorItemView = [[CPView alloc] initWithFrame:CGRectMake(0.0, 0.0, 2.0, 32.0)];
-                                                            
-                                                            sizes = {};
-                                                            sizes[@"CPToolbarItemSeparator"] = [CGSizeMake(2.0, 26.0), CGSizeMake(2.0, 1.0), CGSizeMake(2.0, 26.0)];
-                                                            [_CPToolbarSeparatorItemView setBackgroundColor:_CPControlThreePartImagePattern(YES, sizes, @"CPToolbarItem", @"Separator")];
-                                                        }
-                                                        
-                                                        [item setView:_CPToolbarSeparatorItemView];
-                                                        
                                                         
                                                         return item;
 
-        case CPToolbarSpaceItemIdentifier:              [item setMinSize:CGSizeMake(32.0, 32.0)];
+        case CPToolbarSpaceItemIdentifier:              [item setView:[self _spaceItemView]];
+                                                        
+                                                        [item setMinSize:CGSizeMake(32.0, 32.0)];
                                                         [item setMaxSize:CGSizeMake(32.0, 32.0)];
                                                         
                                                         return item;
                                                         
-        case CPToolbarFlexibleSpaceItemIdentifier:      [item setMinSize:CGSizeMake(32.0, 32.0)];
+        case CPToolbarFlexibleSpaceItemIdentifier:      [item setView:[self _spaceItemView]];
+        
+                                                        [item setMinSize:CGSizeMake(32.0, 32.0)];
                                                         [item setMaxSize:CGSizeMake(10000.0, 32.0)];
                                                         
                                                         return item;

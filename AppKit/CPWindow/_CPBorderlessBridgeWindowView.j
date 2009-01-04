@@ -1,0 +1,77 @@
+/*
+ * _CPBorderlessWindowView.j
+ * AppKit
+ *
+ * Created by Francisco Tolmasky.
+ * Copyright 2008, 280 North, Inc.
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
+ */
+
+@import "_CPWindowView.j"
+
+
+var _CPToolbarViewBackgroundColor = nil;
+
+@implementation _CPBorderlessBridgeWindowView : _CPWindowView
+{
+    CPView  _toolbarBackgroundView;
+}
+
++ (CPColor)toolbarBackgroundColor
+{
+    if (!_CPToolbarViewBackgroundColor)
+        _CPToolbarViewBackgroundColor = [CPColor colorWithPatternImage:[[CPImage alloc] initWithContentsOfFile:[[CPBundle bundleForClass:[_CPBorderlessBridgeWindowView class]] pathForResource:@"_CPToolbarView/_CPToolbarViewBackground.png"] size:CGSizeMake(1.0, 59.0)]];
+
+    return _CPToolbarViewBackgroundColor;
+}
+
+- (void)tile
+{
+    [super tile];
+    
+    var owningWindow = [self owningWindow],
+        bounds = [self bounds];
+        
+    [[owningWindow contentView] setFrame:CGRectMake(0.0, [self toolbarMaxY], CGRectGetWidth(bounds), CGRectGetHeight(bounds) - [self toolbarMaxY])];
+    
+    if (![[owningWindow toolbar] isVisible])
+    {
+        [_toolbarBackgroundView removeFromSuperview];
+    
+        _toolbarBackgroundView = nil;
+    
+        return;
+    }
+    
+    if (!_toolbarBackgroundView)
+    {
+        _toolbarBackgroundView = [[CPView alloc] initWithFrame:CGRectMakeZero()];
+    
+        [_toolbarBackgroundView setBackgroundColor:[[self class] toolbarBackgroundColor]];
+        [_toolbarBackgroundView setAutoresizingMask:CPViewWidthSizable];
+    
+        [self addSubview:_toolbarBackgroundView positioned:CPWindowBelow relativeTo:nil];
+    }
+            
+    var frame = CGRectMakeZero();
+    
+    frame.origin = CGPointMakeCopy([self toolbarOffset]);
+    frame.size = [_toolbarView frame].size;
+    
+    [_toolbarBackgroundView setFrame:frame];
+}
+
+@end
