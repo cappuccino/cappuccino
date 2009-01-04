@@ -651,7 +651,8 @@ var _CPMenuBarVisible               = NO,
     else
         target = [aMenuItem target];
 
-    [CPApp sendAction:action to:target from:nil];
+    if([aMenuItem isEnabled])
+        [CPApp sendAction:action to:target from:nil];
 }
 
 // Managing Display of State Column
