@@ -65,7 +65,7 @@ var _CPRunLoopPerformPool           = [],
         
         perform._target = aTarget;
         perform._selector = aSelector;
-        perform._arguments = anArgument;
+        perform._argument = anArgument;
         perform._order = anOrder;
         perform._runLoopModes = modes;
         perform._isValid = YES;
