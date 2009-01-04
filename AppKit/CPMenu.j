@@ -179,6 +179,11 @@ var _CPMenuBarVisible               = NO,
     return 0.0;
 }
 
++ (float)menuBarHeight
+{
+    return MENUBAR_HEIGHT;
+}
+
 // Creating a CPMenu Object
 /*!
     Initializes the menu with a specified title.
@@ -643,7 +648,8 @@ var _CPMenuBarVisible               = NO,
     else
         target = [aMenuItem target];
 
-    [CPApp sendAction:action to:target from:nil];
+    if([aMenuItem isEnabled])
+        [CPApp sendAction:action to:target from:nil];
 }
 
 // Managing Display of State Column

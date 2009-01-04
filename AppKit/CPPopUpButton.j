@@ -143,7 +143,7 @@ var CPPopUpButtonArrowsImage = nil;
 */
 - (void)addItemWithTitle:(CPString)aTitle
 {
-    [_menu addItemWithTitle:aTitle action:NULL keyEquivalent:NULL];
+    [_menu addItemWithTitle:aTitle action:NULL keyEquivalent:nil];
 }
 
 /*!
@@ -173,7 +173,7 @@ var CPPopUpButtonArrowsImage = nil;
         if ([items[count] title] == aTitle)
             [self removeItemAtIndex:count];
         
-    [_menu insertItemWithTitle:aTitle action:NULL keyEquivalent:NULL atIndex:anIndex];
+    [_menu insertItemWithTitle:aTitle action:NULL keyEquivalent:nil atIndex:anIndex];
 }
 
 /*!
