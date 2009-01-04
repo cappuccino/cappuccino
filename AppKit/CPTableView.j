@@ -20,11 +20,12 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-import "CPControl.j"
-import "CPTableColumn.j"
+@import "CPControl.j"
+@import "CPTableColumn.j"
 
+//objj_backtrace_set_enable(true);
 
-var CPTableViewCellPlaceholder = nil;
+#define ROW_HEIGHT(aRow) (_hasVariableHeightRows ? _rowHeights[aRow] : _rowHeight);
 
 /*
     CPTableView is located within the AppKit framework and is used to display tables. It uses a delegate model for getting its data i.e. you give it an object that provides it with the data it should display.
@@ -33,28 +34,40 @@ var CPTableViewCellPlaceholder = nil;
 */
 @implementation CPTableView : CPControl
 {
-    id _dataSource;
+    id                  _dataSource;
     
     CPScrollView        _scrollView;
     CPTableHeaderView   _headerView;
     
-    CPArray         _tableColumns;
+    CPArray             _tableColumns;
     
+    // 
     unsigned            _numberOfRows;
     unsigned            _numberOfColumns;
+    
+    // Heights
+    float               _rowHeight;
+    float               _columnHeight; // calculated
+    
+    CPArray             _rowMinYs;
+    CPArray             _rowHeights;
+    
+    BOOL                _hasVariableHeightRows;
     
     CPArray             _tableCells;
     CPArray             _tableColumnViews;
     
-    CGSize		_intercellSpacing;
-}
-
-+ (void)initialize
-{
-    if (self != [CPTableView class])
-        return;
+    CGSize		        _intercellSpacing;
     
-    CPTableViewCellPlaceholder = [[CPObject alloc] init];
+    // Caching
+    Object              _dataViewCache;
+    CPArray             _objectValueCache;
+    
+    CPRange             _visibleRows;
+    CPRange             _visibleColumns;
+    
+    CPRange             _populatedRows;
+    CPRange             _populatedColumns;
 }
 
 - (id)initWithFrame:(CGRect)aFrame
@@ -62,27 +75,20 @@ var CPTableViewCellPlaceholder = nil;
     self = [super initWithFrame:aFrame];
     
     if (self)
-    {
-        /*_scrollView = [[CPView alloc] initWithFrame:CPRectMakeZero()];
-        _headerView = [[CPView alloc] initWithFrame:CPRectMakeZero()];
-        
-        [_scrollView setBackgroundColor:[CPColor redColor]];
-        [_headerView setBackgroundColor:[CPColor blueColor]];
-        
-        [self addSubview:_scrollView];
-        [self addSubview:_headerView];
-    
-        [self tile];*/
-        
-        //[self setBackgroundColor:[CPColor redColor]];
-        
+    {   
         _rowHeight = 17.0;
         
-        _tableCells = [[CPArray alloc] init];
-        _tableColumns = [[CPArray alloc] init];
-        _tableColumnViews = [[CPArray alloc] init];
+        _tableCells = [];
+        _tableColumns = [];
+        _tableColumnViews = [];
         
+        _dataViewCache = {};
+        _objectValueCache = {};
+                
         _intercellSpacing = CPSizeMake(3.0, 2.0);
+        
+        _visibleRows = CPMakeRange(0, 0);
+        _visibleColumns = CPMakeRange(0, 0);
     }
     
     return self;
@@ -91,52 +97,186 @@ var CPTableViewCellPlaceholder = nil;
 /*
     Returns the table's column height
 */
-- (float)columnHeight
+- (float)_columnHeight
 {
-    var bounds = [self bounds],
-        height = _numberOfRows * (_rowHeight + _intercellSpacing.height);
+    return _numberOfRows * (_rowHeight + _intercellSpacing.height);
+}
+
+- (void)newCellForRow:(unsigned)aRowIndex column:(unsigned)aColumnIndex avoidingRows:(CPRange)rows
+{//console.warn("new cell please.");
+    var dataView = [_tableColumns[aColumnIndex] _newDataViewForRow:aRowIndex avoidingRows:rows];
+                
+    [dataView setFrame:CGRectMake(0.0, aRowIndex * (_rowHeight + _intercellSpacing.height), [_tableColumns[aColumnIndex] width], _rowHeight)];
+    [dataView setBackgroundColor:[CPColor greenColor]];
     
-    return CPRectGetHeight(bounds) > height ? CPRectGetHeight(bounds) : height;
+    if (!_objectValueCache[aColumnIndex])
+        _objectValueCache[aColumnIndex] = [];
+
+    // We may be storing 0 after all!
+    if (typeof _objectValueCache[aColumnIndex][aRowIndex] === "undefined")
+        _objectValueCache[aColumnIndex][aRowIndex] = [_dataSource tableView:self objectValueForTableColumn:_tableColumns[aColumnIndex] row:aRowIndex];        
+    
+    [dataView setObjectValue:_objectValueCache[aColumnIndex][aRowIndex]];
+    
+    return dataView;
 }
 
 - (void)loadTableCellsInRect:(CGRect)aRect
 {
    if (!_dataSource)
         return;
+
+    // Determine new visible rows and columns.
+
+        // Use a ambitious estimate for our starting row.
+    var rowStart = MAX(FLOOR((CGRectGetMinY(aRect) + _intercellSpacing.height) / (_rowHeight + _intercellSpacing.height)), 0),
         
-    // Use a ambitious estimate for our starting row.
-    var rows = CPMakeRange(MAX(Math.floor((CPRectGetMinY(aRect) + _intercellSpacing.height) / (_rowHeight + _intercellSpacing.height)), 0), 1);
+        // Use a conservative estimate for the final row.
+        rowEnd = MIN(_numberOfRows, CEIL(CGRectGetMaxY(aRect) / (_rowHeight + _intercellSpacing.height))),
+        
+        visibleRows = CPMakeRange(rowStart, rowEnd - rowStart);
+
+    var columnStart = 0;
+
+    // Iterate through all our columns until we find the first one that intersects the rect.
+    while (columnStart < _numberOfColumns && !CGRectIntersectsRect([_tableColumnViews[columnStart] frame], aRect)) 
+        ++columnStart;
+        
+    // Now use a binary search to find the last visible column
+    // O (lg n) < O (n), but O(n) (above), so O (n + lg n) = O (n) ? 
+    var first = columnStart + 1,
+        last = _numberOfColumns - 1;
+        columnEnd = columnStart;
     
-    // Use a conservative estimate for the final row.
-    rows.length = MIN(_numberOfRows, Math.ceil(CPRectGetMaxY(aRect) / (_rowHeight + _intercellSpacing.height))) - rows.location;
-
-    var columns = CPMakeRange(0, 1);
-
-    // Iterate through all our columns until we find one that intersects the rect.
-    while (columns.location < _numberOfColumns && !CPRectIntersectsRect([_tableColumnViews[columns.location] frame], aRect)) 
-        ++columns.location;
-    
-    // Now iterate through our columns until we find one that doesn't intersect our rect.
-    while (CPMaxRange(columns) < _numberOfColumns && CPRectIntersectsRect([_tableColumnViews[CPMaxRange(columns)] frame], aRect)) 
-        ++columns.length;
-
-    var row = rows.location,
-        column = 0;
-
-    for (; row < CPMaxRange(rows); ++row)
-        for (column = columns.location; column < CPMaxRange(columns); ++column)
-        {
-            if (!_tableCells[column][row] || _tableCells[column][row] == CPTableViewCellPlaceholder)
-            {
-                _tableCells[column][row] = [[_tableColumns[column] dataCellForRow:row] copy];
-                
-                [_tableCells[column][row] setFrame:CPRectMake(0.0, row * (_rowHeight + _intercellSpacing.height), [_tableColumns[column] width], _rowHeight)];
-                //[_tableCells[column][row] setBackgroundColor:[CPColor blueColor]];
-                [_tableColumnViews[column] addSubview:_tableCells[column][row]];
-            }
+    while (first <= last)
+    {
+        // Assume this is the one.
+        var columnEnd = FLOOR((first + last) / 2),
+            columnIsVisible = CGRectIntersectsRect([_tableColumnViews[columnEnd] frame], aRect);
             
-            [_tableCells[column][row] setObjectValue:[_dataSource tableView:self objectValueForTableColumn:_tableColumns[column] row:row]];
+        // If the column isn't visible, look left!
+        if (!columnIsVisible)
+            last = columnEnd - 1;
+        
+        // Visible, nothing to the right, found it...
+        if (columnEnd + 1 >= _numberOfColumns)
+            break;
+        
+        // Visible, column to the right is NOT visible, found it! (the good way)
+        if (!CGRectIntersectsRect([_tableColumnViews[columnEnd + 1] frame], aRect))
+            break;
+        
+        // If not, look right! (2 since we checked the dude to the right already)
+        first = columnEnd + 2;
+    }
+    
+    // columnEnd is our "count" in loops.
+    ++columnEnd;
+    
+    var visibleColumns = CPMakeRange(columnStart, columnEnd - columnStart);
+
+    if (CPEqualRanges(_visibleRows, visibleRows) && CPEqualRanges(_visibleColumns, visibleColumns))
+        return;
+    
+    var unionVisibleRows = CPUnionRange(_visibleRows, visibleRows),
+        unionVisibleColumns = CPUnionRange(_visibleColumns, visibleColumns);
+    
+    // Determine whether to use 2 sweeps or one.  If we have lots of overlap of cells, use just one.
+    if (unionVisibleRows.length * unionVisibleColumns.length <= 
+        (_visibleRows.length + visibleRows.length) * (_visibleColumns.length + visibleColumns.length))
+    {
+        var column = unionVisibleColumns.location,
+            columnEnd = CPMaxRange(unionVisibleColumns),
+            
+            rowStart = unionVisibleRows.location,
+            rowEnd = CPMaxRange(unionVisibleRows);
+            
+        for (; column < columnEnd; ++column)
+        {
+            var row = rowStart,
+                tableColumn = _tableColumns[column],
+                tableColumnCells = _tableCells[column],
+                columnIsVisible = CPLocationInRange(column, visibleColumns);
+            
+            for (; row < rowEnd; ++row)
+            {
+                var cell = tableColumnCells[row];
+                
+                if (cell)
+                {
+                    if (columnIsVisible && CPLocationInRange(row, visibleRows))
+                        [tableColumn _markView:cell inRow:row asPurgable:NO];
+                    else {
+                    //!!!
+                    _tableCells[column][row] = nil;
+                        [tableColumn _markView:cell inRow:row asPurgable:YES];
+                    }
+                }
+                
+                else
+                {
+//                    ASSERT(CPLocationInRange(row, visibleRows) && CPLocationInRange(column, visibleColumns))
+                    tableColumnCells[row] = [self newCellForRow:row column:column avoidingRows:visibleRows];
+                    
+                    [_tableColumnViews[column] addSubview:tableColumnCells[row]];
+                }
+            }
         }
+    }
+    else
+    {
+    
+    }
+
+    _visibleRows = visibleRows;
+    _visibleColumns = visibleColumns;
+    
+    /*
+    var column = columnStart;
+    
+    for (; column < _numberOfColumns && CGRectIntersectsRect([_tableColumnViews[column] frame], aRect); ++column)
+    {
+        var row = rowStart,
+            tableColumn = _tableColumns[column];
+                    
+        for (; row < rowEnd; ++row)
+        {
+            //if (CPLocationInRange(row, _visibleRows))
+            //    continue;
+            
+            var cell = _tableCells[column][row];
+            
+            if (cell)
+                [tableColumn _markView:cell inRow:row asPurgable:NO];
+                
+            else
+                _tableCells[column][row] = [self newCellForRow:row column:column avoidingRows:visibleRows];
+        }
+    }
+    
+    var visibleRows = visibleRowsCPMakeRange(rowStart, rowEnd - rowStart),
+        visibleColumns = CPMakeRange(columnStart, rememberColumn - columnStart);
+    
+    var columnEnd = CPMaxRange(_visibelColumns);
+    
+    
+    for (column = _visibleColumns.location; column < columnEnd; ++column)
+    {
+        var tableColumn = _tableColumns[tableColumn],
+            tableColumnCells = _tableCells[column];
+        
+        for (row = _visibleRows.location, rowEnd = CPMaxRange(_visibleRows); row < rowEnd; ++row)
+            if (!CPLocationInRange(row, visibleRows) || !CPLocationInRange(column, visibleColumns))
+            {
+                var view = tableColumnCells[row];
+                
+                if (view)
+                    [tableColumn _markView:view inRow:row asPurgable:YES];
+            }
+    }        
+    
+    _visibleRows = visibleRows;
+    _visibleColumns = visibleColumns;*/
 }
 
 // Setting display attributes
@@ -155,7 +295,7 @@ var CPTableViewCellPlaceholder = nil;
         for (; i < _numberOfColumns; ++i, total += delta)
         {
             var origin = [_tableColumnViews[i] frame].origin;
-            [_tableColumnViews[i] setFrameOrigin:CPPointMake(origin.x + total, origin.y)];
+            [_tableColumnViews[i] setFrameOrigin:CGPointMake(origin.x + total, origin.y)];
         }
     }
 
@@ -165,14 +305,14 @@ var CPTableViewCellPlaceholder = nil;
         
         for (; i < _numberOfColumns; ++i, total += delta)
         {
-            [_tableColumnViews[i] setFrameSize:CPSizeMake([_tableColumnViews[i] width], _numberOfRows * (_rowHeight + _intercellSpacing.height))];
+            [_tableColumnViews[i] setFrameSize:CGSizeMake([_tableColumnViews[i] width], _numberOfRows * (_rowHeight + _intercellSpacing.height))];
             
             var j = 1,
                 y = _rowHeight + _intercellSpacing.height;
             
             for (; j < _numberOfRows; ++i, y += _rowHeight + _intercellSpacing.height)
             {
-                if (_tableCells[i][j] == CPTableViewCellPlaceholder)
+                if (!_tableCells[i][j])
                     continue;
                 
                 [_tableCells[i][j] setFrameOrigin:CPPointMake(0.0, y)];
@@ -227,8 +367,8 @@ var CPTableViewCellPlaceholder = nil;
 {
     var i = 0,
         x = _numberOfColumns ? CPRectGetMaxX([self rectOfColumn:_numberOfColumns - 1]) + _intercellSpacing.width : 0.0,
-        tableColumnView = [[CPView alloc] initWithFrame:CPRectMake(x, 0.0, [aTableColumn width], [self columnHeight])],
-        tableColumnCells = [[CPArray alloc] init];
+        tableColumnView = [[CPView alloc] initWithFrame:CPRectMake(x, 0.0, [aTableColumn width], [self _columnHeight])],
+        tableColumnCells = [];
 
     [_tableColumns addObject:aTableColumn];
     [_tableColumnViews addObject:tableColumnView];
@@ -240,8 +380,8 @@ var CPTableViewCellPlaceholder = nil;
     [_tableCells addObject:tableColumnCells];
 
     for (; i < _numberOfRows; ++i)
-        _tableCells[_numberOfColumns][i] = CPTableViewCellPlaceholder;
-
+        _tableCells[_numberOfColumns][i] = nil;
+        
     ++_numberOfColumns;
 }
 
@@ -315,8 +455,8 @@ var CPTableViewCellPlaceholder = nil;
 {
     var HEIGHT = 10.0;
     
-    [_headerView setFrame:CPRectMake(0.0, 0.0, CPRectGetWidth([self bounds]), HEIGHT)];
-    [_scrollView setFrame:CPRectMake(0.0, HEIGHT, CPRectGetWidth([self bounds]), CPRectGetHeight([self bounds]) - HEIGHT)];
+//    [_headerView setFrame:CPRectMake(0.0, 0.0, CPRectGetWidth([self bounds]), HEIGHT)];
+//    [_scrollView setFrame:CPRectMake(0.0, HEIGHT, CPRectGetWidth([self bounds]), CPRectGetHeight([self bounds]) - HEIGHT)];
 }
 
 /*
@@ -349,25 +489,6 @@ var CPTableViewCellPlaceholder = nil;
     return _dataSource;
 }
 
-- (void)setFrameSize:(CGSize)aSize
-{
-    var oldColumnHeight = [self columnHeight];
-    
-    [super setFrameSize:aSize];
-    
-    var columnHeight = [self columnHeight];
-    
-    if (columnHeight != oldColumnHeight)
-    {
-        var i = 0;
-        
-        for (; i < _numberOfColumns; ++i)
-            [_tableColumnViews[i] setFrameSize:CPSizeMake([_tableColumns[i] width], columnHeight)];
-    }
-    
-    [self tile];
-}
-
 /*
     Tells the table view that the number of rows in the table
     has changed.
@@ -379,7 +500,8 @@ var CPTableViewCellPlaceholder = nil;
     if (_numberOfRows != numberOfRows)
     {
         _numberOfRows = numberOfRows;
-        [self sizeToFit];
+        
+        [self _recalculateColumnHeight];
     }
 }
 
@@ -400,7 +522,7 @@ var CPTableViewCellPlaceholder = nil;
 */
 - (CGRect)rectOfColumn:(int)aColumnIndex
 {
-    return CPRectCreateCopy([_tableColumnViews[aColumnIndex] frame]);
+    return [_tableColumnViews[aColumnIndex] frame];
 }
 
 /*
@@ -408,7 +530,35 @@ var CPTableViewCellPlaceholder = nil;
 */
 - (void)sizeToFit
 {   
-    [self tile];
+//    [self tile];
+}
+
+- (void)_recalculateColumnHeight
+{
+    var oldColumnHeight = _columnHeight;
+    
+    if (_hasVariableHeightRows)
+    {
+    }
+    else
+        _columnHeight = _numberOfRows * (_rowHeight + _intercellSpacing.height);
+    
+    var count = _tableColumnViews.length;
+
+    while (count--)
+        [_tableColumnViews[count] setFrameSize:CGSizeMake([_tableColumns[count] width], _columnHeight)];
+    
+    [self setFrameSize:CGSizeMake(CGRectGetWidth([self frame]), _columnHeight)];
+}
+
+- (CGRect)visibleRectInParent
+{
+    var superview = [self superview];
+    
+    if (!superview)
+        return [self bounds];
+    
+    return [self convertRect:CGRectIntersection([superview bounds], [self frame]) fromView:superview];
 }
 
 /*
@@ -417,9 +567,60 @@ var CPTableViewCellPlaceholder = nil;
 */
 - (void)reloadData
 {
+    var oldNumberOfRows = _numberOfRows;
+    
     _numberOfRows = [_dataSource numberOfRowsInTableView:self];
 
-    [self loadTableCellsInRect:[self bounds]];
+    if (oldNumberOfRows != _numberOfRows)
+    {
+        [self _recalculateColumnHeight];
+        [self setFrameSize:CGSizeMake(CGRectGetWidth([self frame]), [self _columnHeight])];
+    }   
+    
+    [self setNeedsDisplay:YES];
+}
+
+- (void)viewWillDraw
+{
+    [self loadTableCellsInRect:[self visibleRectInParent]];
+    
+    //alert("oh yes. " + CPStringFromRect([self visibleRect]));
+    //[self reloadData];
+}
+
+- (void)drawRect:(CGRect)aRect
+{
+}
+
+- (void)setFrameSize:(CGSize)aFrameSize
+{
+    [super setFrameSize:aFrameSize];
+
+//    [self setNeedsDisplay:YES];
+}
+
+- (void)displaySoon
+{
+//    window.setTimeout();
+}
+
+- (void)viewDidMoveToSuperview
+{
+    [[[self enclosingScrollView] contentView] setPostsBoundsChangedNotifications:YES];
+    
+    [[CPNotificationCenter defaultCenter]
+        addObserver:self
+               selector:@selector(viewBoundsChanged:)
+                   name:CPViewBoundsDidChangeNotification 
+                 object:[[self enclosingScrollView] contentView]];
+    //console.warn("cheese");
+}
+
+- (void)viewBoundsChanged:(CPNotification)aNotification
+{
+    //console.warn(_cmd + CPStringFromRect([[[self enclosingScrollView] contentView] bounds]));
+    //objj_debug_print_backtrace();
+    [self setNeedsDisplay:YES];
 }
 
 @end
