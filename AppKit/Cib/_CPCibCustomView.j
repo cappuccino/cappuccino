@@ -75,6 +75,9 @@ var _CPCibCustomViewClassNameKey    = @"_CPCibCustomViewClassNameKey";
         
     if (view)
     {
+        view._superview = _superview;
+        view._window = _window; // Doesn't matter that we don't call _setWindow: since nothing has a window yet anyways(?)
+        
         [view setBounds:[self bounds]];
         
         // Since the object replacement logic hasn't had a chance to kick in yet, we need to do it manually:
