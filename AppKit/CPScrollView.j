@@ -626,3 +626,62 @@
 }
 
 @end
+
+var CPScrollViewContentViewKey = "CPScrollViewContentView",
+    CPScrollViewVLineScrollKey = "CPScrollViewVLineScroll",
+    CPScrollViewHLineScrollKey = "CPScrollViewHLineScroll",
+    CPScrollViewVPageScrollKey = "CPScrollViewVPageScroll",
+    CPScrollViewHPageScrollKey = "CPScrollViewHPageScroll",
+    CPScrollViewHasVScrollerKey = "CPScrollViewHasVScroller",
+    CPScrollViewHasHScrollerKey = "CPScrollViewHasHScroller",
+    CPScrollViewVScrollerKey = "CPScrollViewVScroller",
+    CPScrollViewHScrollerKey = "CPScrollViewHScroller",
+    CPScrollViewAutohidesScrollerKey = "CPScrollViewAutohidesScroller";
+
+@implementation CPScrollView (CPCoding)
+
+- (id)initWithCoder:(CPCoder)aCoder
+{
+    if (self = [super initWithCoder:aCoder])
+    {
+        _verticalLineScroll     = [aCoder decodeFloatForKey:CPScrollViewVLineScrollKey];
+        _verticalPageScroll     = [aCoder decodeFloatForKey:CPScrollViewVPageScrollKey];
+
+        _horizontalLineScroll   = [aCoder decodeFloatForKey:CPScrollViewHLineScrollKey];
+        _horizontalPageScroll   = [aCoder decodeFloatForKey:CPScrollViewHPageScrollKey];
+        
+        _contentView            = [aCoder decodeObjectForKey:CPScrollViewContentViewKey];
+        
+        _verticalScroller       = [aCoder decodeObjectForKey:CPScrollViewVScrollerKey];
+        _horizontalScroller     = [aCoder decodeObjectForKey:CPScrollViewHScrollerKey];
+
+        _hasVerticalScroller    = [aCoder decodeBoolForKey:CPScrollViewHasVScrollerKey];
+        _hasHorizontalScroller  = [aCoder decodeBoolForKey:CPScrollViewHasHScrollerKey];
+        _autohidesScrollers     = [aCoder decodeBoolForKey:CPScrollViewAutohidesScrollerKey];
+        
+        [[CPRunLoop currentRunLoop] performSelector:@selector(reflectScrolledClipView:) target:self argument:_contentView order:0 modes:[CPDefaultRunLoopMode]];
+    }
+    
+    return self;
+}
+
+- (void)encodeWithCoder:(CPCoder)aCoder
+{
+    [super encodeWithCoder:aCoder];
+    
+    [aCoder encodeObject:_contentView           forKey:CPScrollViewContentViewKey];
+    
+    [aCoder encodeObject:_verticalScroller      forKey:CPScrollViewVScrollerKey];
+    [aCoder encodeObject:_horizontalScroller    forKey:CPScrollViewHScrollerKey];
+    
+    [aCoder encodeFloat:_verticalLineScroll     forKey:CPScrollViewVLineScrollKey];
+    [aCoder encodeFloat:_verticalPageScroll     forKey:CPScrollViewVPageScrollKey];
+    [aCoder encodeFloat:_horizontalLineScroll   forKey:CPScrollViewHLineScrollKey];
+    [aCoder encodeFloat:_horizontalPageScroll   forKey:CPScrollViewHPageScrollKey];
+    
+    [aCoder encodeBool:_hasVerticalScroller     forKey:CPScrollViewHasVScrollerKey];
+    [aCoder encodeBool:_hasHorizontalScroller   forKey:CPScrollViewHasHScrollerKey];
+    [aCoder encodeBool:_autohidesScrollers      forKey:CPScrollViewAutohidesScrollerKey];
+}
+
+@end

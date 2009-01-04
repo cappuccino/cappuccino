@@ -22,6 +22,7 @@
 
 @import "NSButton.j"
 @import "NSCell.j"
+@import "NSClipView.j"
 @import "NSColor.j"
 @import "NSColorWell.j"
 @import "NSControl.j"
@@ -34,6 +35,8 @@
 @import "NSNibConnector.j"
 @import "NSPopUpButton.j"
 @import "NSResponder.j"
+@import "NSScrollView.j"
+@import "NSScroller.j"
 @import "NSSegmentedControl.j"
 @import "NSSlider.j"
 @import "NSSplitView.j"

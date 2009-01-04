@@ -694,3 +694,45 @@ var _CPScrollerClassName                            = nil,
 }
 
 @end
+
+var CPScrollerControlSizeKey = "CPScrollerControlSize",
+    CPScrollerKnobProportionKey = "CPScrollerKnobProportion";
+
+@implementation CPScroller (CPCoding)
+
+- (id)initWithCoder:(CPCoder)aCoder
+{
+    if (self = [super initWithCoder:aCoder])
+    {
+        _controlSize = CPRegularControlSize;
+        if ([aCoder containsValueForKey:CPScrollerControlSizeKey])
+            _controlSize = [aCoder decodeIntForKey:CPScrollerControlSizeKey];
+            
+        _knobProportion = 1.0;
+        if ([aCoder containsValueForKey:CPScrollerKnobProportionKey])
+            _knobProportion = [aCoder decodeFloatForKey:CPScrollerKnobProportionKey];
+            
+        _partRects = [];
+        
+        _isHorizontal = CPRectGetWidth([self frame]) > CPRectGetHeight([self frame]);
+        
+        _hitPart = CPScrollerNoPart;
+        
+        [self checkSpaceForParts];
+        [self drawParts];
+        
+        [self layoutSubviews];
+    }
+    
+    return self;
+}
+
+- (void)encodeWithCoder:(CPCoder)aCoder
+{
+    [super encodeWithCoder:aCoder];
+    
+    [aCoder encodeInt:_controlSize forKey:CPScrollerControlSizeKey];
+    [aCoder encodeFloat:_knobProportion forKey:CPScrollerKnobProportionKey];
+}
+
+@end
