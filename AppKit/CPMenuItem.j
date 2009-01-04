@@ -1066,23 +1066,26 @@ var _CPMenuItemSelectionColor                   = nil,
     
     else
     {
-        [_imageAndTitleView setTextColor:shouldHighlight ? [CPColor whiteColor] : [self textColor]];
-        
-        if (shouldHighlight)
-            [self setBackgroundColor:_CPMenuItemSelectionColor];
-        else
-            [self setBackgroundColor:nil];
-            
-        var state = [_menuItem state];
-            
-        switch (state)
+        if([_menuItem isEnabled])
         {
-            case CPOffState:
-            case CPOnState:
-            case CPMixedState:  [_stateView setImage:shouldHighlight ? _CPMenuItemDefaultStateHighlightedImages[state] : _CPMenuItemDefaultStateImages[state]];
+            [_imageAndTitleView setTextColor:shouldHighlight ? [CPColor whiteColor] : [self textColor]];
+            
+            if (shouldHighlight)
+                [self setBackgroundColor:_CPMenuItemSelectionColor];
+            else
+                [self setBackgroundColor:nil];
+            
+            var state = [_menuItem state];
+            
+            switch (state)
+            {
+                case CPOffState:
+                case CPOnState:
+                case CPMixedState:  [_stateView setImage:shouldHighlight ? _CPMenuItemDefaultStateHighlightedImages[state] : _CPMenuItemDefaultStateImages[state]];
                                 break;
                                 
-            default:            [_stateView setImage:nil];
+                default:            [_stateView setImage:nil];
+            }
         }
     }
 }
