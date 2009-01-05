@@ -730,9 +730,7 @@ CPControlKeyMask
     self = [super initWithTitle:@"" action:nil keyEquivalent:nil];
     
     if (self)
-    {
         [self setEnabled:NO];
-    }
     
     return self;
 }
@@ -929,10 +927,13 @@ var _CPMenuItemSelectionColor                   = nil,
     
     if ([_menuItem isSeparatorItem])
     {
-        var line = [[CPView alloc] initWithFrame:CGRectMake(0.0, 8.0, 1000.0, 1.3)];
-        view = [[CPView alloc] initWithFrame:CGRectMake(0.0, 0.0, 0.0, 20.0)];
+        var line = [[CPView alloc] initWithFrame:CGRectMake(0.0, 5.0, 10.0, 1.0)];
+        
+        view = [[CPView alloc] initWithFrame:CGRectMake(0.0, 0.0, 0.0, 10.0)];
         
         [view setAutoresizingMask:CPViewWidthSizable];
+        [line setAutoresizingMask:CPViewWidthSizable];
+        
         [line setBackgroundColor:[CPColor lightGrayColor]];
         
         [view addSubview:line];
@@ -1070,28 +1071,25 @@ var _CPMenuItemSelectionColor                   = nil,
     if (_belongsToMenuBar)
         [_imageAndTitleView setImage:shouldHighlight ? [_menuItem alternateImage] : [_menuItem image]];
     
-    else
+    else if([_menuItem isEnabled])
     {
-        if([_menuItem isEnabled])
+        [_imageAndTitleView setTextColor:shouldHighlight ? [CPColor whiteColor] : [self textColor]];
+        
+        if (shouldHighlight)
+            [self setBackgroundColor:_CPMenuItemSelectionColor];
+        else
+            [self setBackgroundColor:nil];
+        
+        var state = [_menuItem state];
+        
+        switch (state)
         {
-            [_imageAndTitleView setTextColor:shouldHighlight ? [CPColor whiteColor] : [self textColor]];
-            
-            if (shouldHighlight)
-                [self setBackgroundColor:_CPMenuItemSelectionColor];
-            else
-                [self setBackgroundColor:nil];
-            
-            var state = [_menuItem state];
-            
-            switch (state)
-            {
-                case CPOffState:
-                case CPOnState:
-                case CPMixedState:  [_stateView setImage:shouldHighlight ? _CPMenuItemDefaultStateHighlightedImages[state] : _CPMenuItemDefaultStateImages[state]];
-                                break;
-                                
-                default:            [_stateView setImage:nil];
-            }
+            case CPOffState:
+            case CPOnState:
+            case CPMixedState:  [_stateView setImage:shouldHighlight ? _CPMenuItemDefaultStateHighlightedImages[state] : _CPMenuItemDefaultStateImages[state]];
+                            break;
+                            
+            default:            [_stateView setImage:nil];
         }
     }
 }
