@@ -69,11 +69,12 @@ CPTextFieldSquareBezel          = 0;
 	@global
 	@group CPTextFieldBezelStyle
 */
-CPTextFieldRoundedBezel         = 1;
+CPTextFieldRoundedBezel             = 1;
 
-var TOP_PADDING                 = 4.0,
-    BOTTOM_PADDING              = 3.0;
-    HORIZONTAL_PADDING          = 3.0;
+var TOP_PADDING                     = 4.0,
+    BOTTOM_PADDING                  = 3.0;
+    HORIZONTAL_PADDING              = 3.0;
+    ROUNDEDBEZEL_HORIZONTAL_PADDING = 12.0;
 
 #if PLATFORM(DOM)
 var CPTextFieldDOMInputElement = nil;
@@ -161,8 +162,16 @@ var _CPTextFieldSquareBezelColor = nil,
         _DOMTextElement = document.createElement("div");
         _DOMTextElement.style.position = "absolute";
         _DOMTextElement.style.top = TOP_PADDING + "px";
-        _DOMTextElement.style.left = HORIZONTAL_PADDING + "px";
-        _DOMTextElement.style.width = MAX(0.0, CGRectGetWidth(aFrame) - 2.0 * HORIZONTAL_PADDING) + "px";
+        if (_isBezeled && _bezelStyle == CPTextFieldRoundedBezel)
+        {
+            _DOMTextElement.style.left = ROUNDEDBEZEL_HORIZONTAL_PADDING + "px";
+            _DOMTextElement.style.width = MAX(0.0, CGRectGetWidth(aFrame) - 2.0 * ROUNDEDBEZEL_HORIZONTAL_PADDING) + "px";
+        }
+        else
+        {
+            _DOMTextElement.style.left = HORIZONTAL_PADDING + "px";
+            _DOMTextElement.style.width = MAX(0.0, CGRectGetWidth(aFrame) - 2.0 * HORIZONTAL_PADDING) + "px";
+        }
         _DOMTextElement.style.height = MAX(0.0, CGRectGetHeight(aFrame) - TOP_PADDING - BOTTOM_PADDING) + "px";
         _DOMTextElement.style.whiteSpace = "pre";
         _DOMTextElement.style.cursor = "default";
@@ -237,6 +246,9 @@ var _CPTextFieldSquareBezelColor = nil,
         return;
     
     _bezelStyle = aBezelStyle;
+    
+    if (aBezelStyle == CPTextFieldRoundedBezel)
+        _DOMTextElement.style.paddingLeft = ROUNDEDBEZEL_HORIZONTAL_PADDING - 1.0 + "px";        
     
     [self _updateBackground];
 }
@@ -391,6 +403,8 @@ var _CPTextFieldSquareBezelColor = nil,
     element.style.zIndex = 1000;
     element.style.width = CGRectGetWidth([self bounds]) - 3.0 + "px";
     element.style.marginTop = "0px";
+    if (_isBezeled && _bezelStyle == CPTextFieldRoundedBezel)
+        element.style.paddingLeft = ROUNDEDBEZEL_HORIZONTAL_PADDING - 1.0 + "px";
 
     //element.style.left = _DOMTextElement.style.left;
     //element.style.top = _DOMTextElement.style.top;
@@ -516,7 +530,14 @@ var _CPTextFieldSquareBezelColor = nil,
     [super setFrameSize:aSize];
     
 #if PLATFORM(DOM)
-    CPDOMDisplayServerSetStyleSize(_DOMTextElement, _frame.size.width - 2.0 * HORIZONTAL_PADDING, _frame.size.height - TOP_PADDING - BOTTOM_PADDING);
+    if (_isBezeled && _bezelStyle == CPTextFieldRoundedBezel)
+    {
+        CPDOMDisplayServerSetStyleSize(_DOMTextElement, _frame.size.width - 2.0 * ROUNDEDBEZEL_HORIZONTAL_PADDING, _frame.size.height - TOP_PADDING - BOTTOM_PADDING);
+    }
+    else
+    {
+        CPDOMDisplayServerSetStyleSize(_DOMTextElement, _frame.size.width - 2.0 * HORIZONTAL_PADDING, _frame.size.height - TOP_PADDING - BOTTOM_PADDING);
+    }
 #endif
 }
 
@@ -677,7 +698,14 @@ var _CPTextFieldSquareBezelColor = nil,
 #if PLATFORM(DOM)
     var size = [(_value || " ") sizeWithFont:[self font]];
     
-    [self setFrameSize:CGSizeMake(size.width + 2 * HORIZONTAL_PADDING, size.height + TOP_PADDING + BOTTOM_PADDING)];
+    if (_isBezeled && _bezelStyle == CPTextFieldRoundedBezel)
+    {
+        [self setFrameSize:CGSizeMake(size.width + 2 * ROUNDEDBEZEL_HORIZONTAL_PADDING, size.height + TOP_PADDING + BOTTOM_PADDING)];
+    }
+    else
+    {
+        [self setFrameSize:CGSizeMake(size.width + 2 * HORIZONTAL_PADDING, size.height + TOP_PADDING + BOTTOM_PADDING)];
+    }
 #endif
 }
 
@@ -729,8 +757,16 @@ var CPTextFieldIsEditableKey            = "CPTextFieldIsEditableKey",
         var bounds = [self bounds];
         _DOMTextElement.style.position = "absolute";
         _DOMTextElement.style.top = TOP_PADDING + "px";
-        _DOMTextElement.style.left = HORIZONTAL_PADDING + "px";
-        _DOMTextElement.style.width = MAX(0.0, CGRectGetWidth(bounds) - 2.0 * HORIZONTAL_PADDING) + "px";
+        if (_isBezeled && _bezelStyle == CPTextFieldRoundedBezel)
+        {
+            _DOMTextElement.style.left = ROUNDEDBEZEL_HORIZONTAL_PADDING + "px";
+            _DOMTextElement.style.width = MAX(0.0, CGRectGetWidth(bounds) - 2.0 * ROUNDEDBEZEL_HORIZONTAL_PADDING) + "px";
+        }
+        else
+        {
+            _DOMTextElement.style.left = HORIZONTAL_PADDING + "px";
+            _DOMTextElement.style.width = MAX(0.0, CGRectGetWidth(bounds) - 2.0 * HORIZONTAL_PADDING) + "px";
+        }
         _DOMTextElement.style.height = MAX(0.0, CGRectGetHeight(bounds) - TOP_PADDING - BOTTOM_PADDING) + "px";
         _DOMTextElement.style.whiteSpace = "pre";
         _DOMTextElement.style.cursor = "default";
