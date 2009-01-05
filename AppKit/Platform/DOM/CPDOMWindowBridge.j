@@ -223,6 +223,16 @@ var CPDOMWindowGetFrame,
     return CPRectCreateCopy(_contentBounds);
 }
 
+- (CPArray)orderedWindowsAtLevel:(int)aLevel
+{
+    var layer = [self layerAtLevel:aLevel create:NO];
+    
+    if (!layer)
+        return [];
+    
+    return [layer orderedWindows];
+}
+
 - (CPDOMWindowLayer)layerAtLevel:(int)aLevel create:(BOOL)aFlag
 {
     var layer = [_windowLayers objectForKey:aLevel];
@@ -326,8 +336,12 @@ var CPDOMWindowGetFrame,
             windowCount = windows.length;
 
         while (windowCount-- && !theWindow)
-            if (CPRectContainsPoint(windows[windowCount]._frame, location))
-                theWindow = windows[windowCount];
+        {
+            var candidateWindow = windows[windowCount];
+            
+            if (!candidateWindow._ignoresMouseEvents && CGRectContainsPoint(candidateWindow._frame, location))
+                theWindow = candidateWindow;
+        }
     }
     
     return theWindow;

@@ -260,6 +260,7 @@ var CPWindowSaveImage       = nil,
     CPString            _title;
     
     BOOL                _acceptsMouseMovedEvents;
+    BOOL                _ignoresMouseEvents;
     
     CPWindowController  _windowController;
     
@@ -925,6 +926,16 @@ CPTexturedBackgroundWindowMask
 - (void)setAcceptsMouseMovedEvents:(BOOL)shouldAcceptMouseMovedEvents
 {
     _acceptsMouseMovedEvents = shouldAcceptMouseMovedEvents;
+}
+
+- (BOOL)ignoresMouseEvents
+{
+    return _ignoresMouseEvents;
+}
+
+- (void)setIgnoresMouseEvents:(BOOL)shouldIgnoreMouseEvents
+{
+    _ignoresMouseEvents = shouldIgnoreMouseEvents;
 }
 
 // Managing Titles

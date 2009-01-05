@@ -116,4 +116,9 @@
     }
 }
 
+- (CPArray)orderedWindows
+{
+    return _windows;
+}
+
 @end
