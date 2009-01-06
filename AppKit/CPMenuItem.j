@@ -782,7 +782,7 @@ var CPMenuItemTitleKey              = @"CPMenuItemTitleKey",
         _isEnabled = [aCoder decodeObjectForKey:CPMenuItemIsEnabledKey];
         _isHidden = [aCoder decodeObjectForKey:CPMenuItemIsHiddenKey];
 
-        _tag = [aCoder containsObjectForKey:CPMenuItemTagKey] ? [aCoder objectForKey:CPMenuItemTagKey] : 0;
+        _tag = [aCoder containsValueForKey:CPMenuItemTagKey] ? [aCoder decodeObjectForKey:CPMenuItemTagKey] : 0;
 
 //    int             _state;
                     
