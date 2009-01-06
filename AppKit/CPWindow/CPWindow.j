@@ -273,6 +273,8 @@ var CPWindowSaveImage       = nil,
     CPUndoManager       _undoManager;
     CPURL               _representedURL;
     
+    CPArray             _registeredDraggedTypes;
+    
     // Bridge Support
 #if PLATFORM(DOM)
     DOMElement          _DOMElement;
@@ -1210,6 +1212,32 @@ CPTexturedBackgroundWindowMask
     [[CPDragServer sharedDragServer] dragView:aView fromWindow:self at:[self convertBaseToBridge:imageLocation] offset:mouseOffset event:anEvent pasteboard:aPasteboard source:aSourceObject slideBack:slideBack];
 }
 
+/*!
+    Sets the receiver's list of acceptable data types for a dragging operation.
+    @param pasteboardTypes an array of CPPasteboards
+*/
+- (void)registerForDraggedTypes:(CPArray)pasteboardTypes
+{
+    _registeredDraggedTypes = [pasteboardTypes copy];
+}
+
+/*!
+    Returns an array of all types the receiver accepts for dragging operations.
+    @return an array of CPPasteBoards
+*/
+- (CPArray)registeredDraggedTypes
+{
+    return _registeredDraggedTypes;
+}
+
+/*!
+    Resets the array of acceptable data types for a dragging operation.
+*/
+- (void)unregisterDraggedTypes
+{
+    _registeredDraggedTypes = nil;
+}
+
 // Accessing Editing Status
 
 /*!
@@ -1641,6 +1669,11 @@ CPTexturedBackgroundWindowMask
 - (void)redo:(id)aSender
 {
     [[self undoManager] redo];
+}
+
+- (BOOL)containsPoint:(CGPoint)aPoint
+{
+    return CGRectContainsPoint(_frame, aPoint);
 }
 
 @end
