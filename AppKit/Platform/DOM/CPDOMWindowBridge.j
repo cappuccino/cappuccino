@@ -285,14 +285,13 @@ var CPDOMWindowGetFrame,
 }
 
 /* @ignore */
-- (CPView)_dragHitTest:(CPPoint)aPoint pasteboard:(CPPasteboard)aPasteboard
+- (id)_dragHitTest:(CPPoint)aPoint pasteboard:(CPPasteboard)aPasteboard
 {
-    var view = nil,
-        levels = _windowLevels,
+    var levels = _windowLevels,
         layers = _windowLayers,
         levelCount = levels.length;
 
-    while (levelCount-- && !view)
+    while (levelCount--)
     {
         // Skip any windows above or at the dragging level.
         if (levels[levelCount] >= CPDraggingWindowLevel)
@@ -303,18 +302,21 @@ var CPDOMWindowGetFrame,
         
         while (windowCount--)
         {
-            var theWindow = windows[windowCount],
-                frame = theWindow._frame;
+            var theWindow = windows[windowCount];
             
-            if (CPRectContainsPoint(frame, aPoint))
-                if (view = [theWindow._windowView _dragHitTest:CGPointMake(aPoint.x - frame.origin.x, aPoint.y - frame.origin.y) pasteboard:aPasteboard])
-                    return view;
+            if ([theWindow containsPoint:aPoint])
+            {
+                var object = [theWindow _dragHitTest:aPoint pasteboard:aPasteboard];
+                
+                if (object)
+                    return object;
                 else
                     return nil;
+            }
         }
     }
     
-    return view;
+    return nil;
 }
 
 /* @ignore */
@@ -339,7 +341,7 @@ var CPDOMWindowGetFrame,
         {
             var candidateWindow = windows[windowCount];
             
-            if (!candidateWindow._ignoresMouseEvents && CGRectContainsPoint(candidateWindow._frame, location))
+            if (!candidateWindow._ignoresMouseEvents && [candidateWindow containsPoint:location])
                 theWindow = candidateWindow;
         }
     }

@@ -26,6 +26,8 @@
 @import <AppKit/CPImageView.j>
 
 
+#define DRAGGING_WINDOW(anObject) ([anObject isKindOfClass:[CPWindow class]] ? anObject : [anObject window])
+
 var CPSharedDragServer     = nil;
     
 var CPDragServerView              = nil,
@@ -55,7 +57,7 @@ var CPDragServerUpdateDragging = function(anEvent)
     // If this is a mouse up, then complete the drag.
     if([anEvent type] == CPLeftMouseUp)
     {
-        CPDragServerLocation = [[CPDragServerDestination window] convertBridgeToBase:[[anEvent window] convertBaseToBridge:[anEvent locationInWindow]]];
+        CPDragServerLocation = [DRAGGING_WINDOW(CPDragServerDestination) convertBridgeToBase:[[anEvent window] convertBaseToBridge:[anEvent locationInWindow]]];
         
         [CPDragServerView removeFromSuperview];
         [CPSharedDragServer._dragWindow orderOut:nil];
@@ -89,7 +91,7 @@ var CPDragServerUpdateDragging = function(anEvent)
     // We have to convert base to bridge since the drag event comes from the source window, not the drag window.
     var draggingDestination = [[CPDOMWindowBridge sharedDOMWindowBridge] _dragHitTest:bridgeLocation pasteboard:CPDragServerPasteboard];
     
-    CPDragServerLocation = [[CPDragServerDestination window] convertBridgeToBase:bridgeLocation];
+    CPDragServerLocation = [DRAGGING_WINDOW(draggingDestination) convertBridgeToBase:bridgeLocation];
     
     if(draggingDestination != CPDragServerDestination) 
     {
@@ -121,20 +123,6 @@ var CPDragServerUpdateDragging = function(anEvent)
 */
 @implementation CPDraggingInfo : CPObject
 {
-    CPWindow    _window;
-}
-
-/*
-    Initializes the receiver with the window
-*/
-- (id)initWithWindow:(CPWindow)aWindow
-{
-    self = [super init];
-    
-    if (self)
-        _window = aWindow;
-    
-    return this;
 }
 
 - (id)draggingSource
@@ -164,7 +152,7 @@ var CPDragServerUpdateDragging = function(anEvent)
 
 - (CGPoint)draggedViewLocation
 {
-    return [[CPDragServerDestination window] convertBridgeToBase:[CPDragServerView frame].origin];
+    return [DRAGGING_WINDOW(CPDragServerDestination) convertBridgeToBase:[CPDragServerView frame].origin];
 }
 
 - (CPView)draggedView
@@ -298,22 +286,22 @@ var CPDragServerUpdateDragging = function(anEvent)
 
 @end
 
-@implementation CPView (CPDraggingAdditions)
+@implementation CPWindow (CPDraggingAdditions)
 
 /* @ignore */
-- (CPView)_dragHitTest:(CPPoint)aPoint pasteboard:(CPPasteboard)aPasteboard
+- (id)_dragHitTest:(CPPoint)aPoint pasteboard:(CPPasteboard)aPasteboard
 {
-    if(!CPRectContainsPoint(_frame, aPoint) || self == CPDragServerView)
+    if (![self containsPoint:aPoint])
         return nil;
     
-    var view = nil,
-        i = [_subviews count],
-        adjustedPoint = CPPointMake(aPoint.x - CPRectGetMinX(_frame), aPoint.y - CPRectGetMinY(_frame));
-
-    while (i--)
-        if (view = [_subviews[i] _dragHitTest:adjustedPoint pasteboard:aPasteboard])
-            return view;
-
+    var hitView = [_windowView hitTest:aPoint];
+    
+    while (hitView && ![aPasteboard availableTypeFromArray:[hitView registeredDraggedTypes]])
+        hitView = [hitView superview];
+    
+    if (hitView)
+        return hitView;
+    
     if ([aPasteboard availableTypeFromArray:_registeredDraggedTypes])
         return self;
     
