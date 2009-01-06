@@ -23,6 +23,7 @@
 @import "CPObject.j"
 @import "CPException.j"
 @import "CPSortDescriptor.j"
+@import "CPValue.j"
 
 
 /*!
@@ -639,5 +640,25 @@ var CPStringHashes      = new objj_dictionary();
 
 @end
 
+
+@implementation CPString (JSON)
+
+/*!
+    Returns a string representing the supplied JavaScript object encoded as JSON.
+*/
++ (CPString)encodeJSON:(JSObject)anObject
+{
+    return CPJSObjectCreateJSON(anObject);
+}
+
+/*!
+    Returns a JavaScript object decoded from the string's JSON representation.
+*/
+- (JSObject)decodeJSON
+{
+    return CPJSObjectCreateWithJSON(self);
+}
+
+@end
 
 String.prototype.isa = CPString;
