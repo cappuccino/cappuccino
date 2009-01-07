@@ -92,6 +92,7 @@
         
         _isEnabled = YES;
         
+        _tag = 0;
         _state = CPOffState;
         
         _keyEquivalent = aKeyEquivalent || @"";
@@ -749,6 +750,8 @@ var CPMenuItemTitleKey              = @"CPMenuItemTitleKey",
     CPMenuItemIsEnabledKey          = @"CPMenuItemIsEnabledKey",
     CPMenuItemIsHiddenKey           = @"CPMenuItemIsHiddenKey",
     
+    CPMenuItemTagKey                = @"CPMenuItemTagKey",
+    
     CPMenuItemImageKey              = @"CPMenuItemImageKey",
     CPMenuItemAlternateImageKey     = @"CPMenuItemAlternateImageKey",
     
@@ -779,7 +782,8 @@ var CPMenuItemTitleKey              = @"CPMenuItemTitleKey",
         _isEnabled = [aCoder decodeObjectForKey:CPMenuItemIsEnabledKey];
         _isHidden = [aCoder decodeObjectForKey:CPMenuItemIsHiddenKey];
 
-//    int             _tag;
+        _tag = [aCoder containsValueForKey:CPMenuItemTagKey] ? [aCoder decodeObjectForKey:CPMenuItemTagKey] : 0;
+
 //    int             _state;
                     
         _image = [aCoder decodeObjectForKey:CPMenuItemImageKey];
@@ -822,6 +826,9 @@ var CPMenuItemTitleKey              = @"CPMenuItemTitleKey",
 
     [aCoder encodeObject:_isEnabled forKey:CPMenuItemIsEnabledKey];
     [aCoder encodeObject:_isHidden forKey:CPMenuItemIsHiddenKey];
+
+    if (_tag !== 0)
+        [aCoder encodeObject:_tag forKey:CPMenuItemTagKey];
 
     [aCoder encodeObject:_image forKey:CPMenuItemImageKey];
     [aCoder encodeObject:_alternateImage forKey:CPMenuItemAlternateImageKey];
