@@ -633,6 +633,52 @@ function CGContextFillRoundedRectangleInRect(aContext, aRect, aRadius, ne, se, s
     CGContextFillPath(aContext);
 }
 
+function CGContextStrokeRoundedRectangleInRect(aContext, aRect, aRadius, ne, se, sw, nw)
+{
+    var xMin = _CGRectGetMinX(aRect),
+        xMax = _CGRectGetMaxX(aRect),
+        yMin = _CGRectGetMinY(aRect),
+        yMax = _CGRectGetMaxY(aRect);
+
+    CGContextBeginPath(aContext);
+    CGContextMoveToPoint(aContext, xMin + aRadius, yMin);
+	
+	if (ne)
+	{
+		CGContextAddLineToPoint(aContext, xMax - aRadius, yMin);
+		CGContextAddCurveToPoint(aContext, xMax - aRadius, yMin, xMax, yMin, xMax, yMin + aRadius);
+	}
+	else
+		CGContextAddLineToPoint(aContext, xMax, yMin);
+	
+	if (se)
+	{
+		CGContextAddLineToPoint(aContext, xMax, yMax - aRadius);
+		CGContextAddCurveToPoint(aContext, xMax, yMax - aRadius, xMax, yMax, xMax - aRadius, yMax);
+	}
+	else
+		CGContextAddLineToPoint(aContext, xMax, yMax);
+	
+	if (sw)
+	{
+		CGContextAddLineToPoint(aContext, xMin + aRadius, yMax);
+		CGContextAddCurveToPoint(aContext, xMin + aRadius, yMax, xMin, yMax, xMin, yMax - aRadius);
+	}
+	else
+		CGContextAddLineToPoint(aContext, xMin, yMax);
+	
+	if (nw)
+	{
+		CGContextAddLineToPoint(aContext, xMin, yMin + aRadius);
+		CGContextAddCurveToPoint(aContext, xMin, yMin + aRadius, xMin, yMin, xMin + aRadius, yMin);
+	} else
+		CGContextAddLineToPoint(aContext, xMin, yMin);
+	
+	CGContextClosePath(aContext);
+	
+    CGContextStrokePath(aContext);
+}
+
 if (CPFeatureIsCompatible(CPHTMLCanvasFeature))
 {
 #include "CGContextCanvas.j"
