@@ -646,7 +646,7 @@ var CPStringHashes      = new objj_dictionary();
 /*!
     Returns a string representing the supplied JavaScript object encoded as JSON.
 */
-+ (CPString)encodeJSON:(JSObject)anObject
++ (CPString)JSONFromObject:(JSObject)anObject
 {
     return CPJSObjectCreateJSON(anObject);
 }
@@ -654,7 +654,7 @@ var CPStringHashes      = new objj_dictionary();
 /*!
     Returns a JavaScript object decoded from the string's JSON representation.
 */
-- (JSObject)decodeJSON
+- (JSObject)objectFromJSON
 {
     return CPJSObjectCreateWithJSON(self);
 }
