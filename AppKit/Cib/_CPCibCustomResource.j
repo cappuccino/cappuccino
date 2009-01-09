@@ -41,6 +41,11 @@ var _CPCibCustomResourceClassNameKey    = @"_CPCibCustomResourceClassNameKey",
     return "";
 }
 
+- (CGSize)size
+{
+    return CGSizeMakeZero();
+}
+
 - (id)initWithCoder:(CPCoder)aCoder
 {
     self = [super init];

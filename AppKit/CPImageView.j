@@ -334,8 +334,10 @@ var LEFT_SHADOW_INSET       = 3.0,
 
         var x = (boundsWidth - width) / 2.0,
             y = (boundsHeight - height) / 2.0;
-        
+
+#if PLATFORM(DOM)
         CPDOMDisplayServerSetStyleLeftTop(_DOMImageElement, NULL, x, y);
+#endif
     }
 
     _imageRect = _CGRectMake(x, y, width, height);
