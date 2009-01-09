@@ -419,7 +419,7 @@ var _CPKeyedUnarchiverDecodeObjectAtIndex = function(self, anIndex)
         var savedPlistObject = self._plistObject;
         
         self._plistObject = plistObject;
-        
+        var string = className;
         var processedObject = [object initWithCoder:self];
 
         self._plistObject = savedPlistObject;
@@ -432,7 +432,7 @@ var _CPKeyedUnarchiverDecodeObjectAtIndex = function(self, anIndex)
             object = processedObject;
             self._objects[anIndex] = processedObject;
         }
-        
+
         processedObject = [object awakeAfterUsingCoder:self]; 
         
         if (processedObject != object)

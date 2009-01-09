@@ -472,7 +472,7 @@ var _CPKeyedArchiverEncodeObject = function(self, anObject, isConditional)
     // We wrap primitive JavaScript objects in a unique subclass of CPValue.
     // This way, when we unarchive, we know to unwrap it, since 
     // _CPKeyedArchiverValue should not be used anywhere else.
-    if (anObject != nil && !anObject.isa)
+    if (anObject !== nil && !anObject.isa)
         anObject = [_CPKeyedArchiverValue valueWithJSObject:anObject];
     
     // Get the proper replacement object
@@ -481,21 +481,21 @@ var _CPKeyedArchiverEncodeObject = function(self, anObject, isConditional)
 
     // If a replacement object doesn't exist, then actually ask for one.
     // Explicitly compare to nil because object could be === 0.
-    if (object == nil)
+    if (object === nil)
     {
         object = [anObject replacementObjectForKeyedArchiver:self];
         
         // Notify our delegate of this replacement.
         if (self._delegate)
         {
-            if (object != anObject && self._delegateSelectors & _CPKeyedArchiverWillReplaceObjectWithObjectSelector)
+            if (object !== anObject && self._delegateSelectors & _CPKeyedArchiverWillReplaceObjectWithObjectSelector)
                 [self._delegate archiver:self willReplaceObject:anObject withObject:object];
             
             if (self._delegateSelectors & _CPKeyedArchiverWillEncodeObjectSelector)
             {
                 anObject = [self._delegate archiver:self willEncodeObject:object];
                 
-                if (anObject != object && self._delegateSelectors & _CPKeyedArchiverWillReplaceObjectWithObjectSelector)
+                if (anObject !== object && self._delegateSelectors & _CPKeyedArchiverWillReplaceObjectWithObjectSelector)
                     [self._delegate archiver:self willReplaceObject:object withObject:anObject];
                     
                 object = anObject;
@@ -508,7 +508,7 @@ var _CPKeyedArchiverEncodeObject = function(self, anObject, isConditional)
     // If we still don't have an object by this point, then return a 
     // reference to the null object.
     // Explicitly compare to nil because object could be === 0.
-    if (object == nil)
+    if (object === nil)
         return _CPKeyedArchiverNullReference;
     
     // If not, then grab the object's UID
@@ -517,7 +517,7 @@ var _CPKeyedArchiverEncodeObject = function(self, anObject, isConditional)
     // If this object doesn't have a unique index in the object table yet, 
     // then it also hasn't been properly encoded.  We explicitly compare 
     // index to nil since it could be 0, which would also evaluate to false.
-    if (UID == nil)
+    if (UID === nil)
     {
         // If it is being conditionally encoded, then 
         if (isConditional)
@@ -535,7 +535,7 @@ var _CPKeyedArchiverEncodeObject = function(self, anObject, isConditional)
             var theClass = [anObject classForKeyedArchiver],
                 plistObject = nil;
             
-            if (theClass === _CPKeyedArchiverStringClass || theClass === _CPKeyedArchiverNumberClass)// || theClass == _CPKeyedArchiverBooleanClass)
+            if ((theClass === _CPKeyedArchiverStringClass) || (theClass === _CPKeyedArchiverNumberClass))// || theClass == _CPKeyedArchiverBooleanClass)
                 plistObject = object;
             else
             {
@@ -581,7 +581,7 @@ var _CPKeyedArchiverEncodeObject = function(self, anObject, isConditional)
             UID = [self._conditionalUIDs objectForKey:hash];
             
             // If this object WAS previously encoded conditionally...
-            if (UID != nil)
+            if (UID !== nil)
             {
                 [self._UIDs setObject:UID forKey:hash];
                 [self._plistObjects replaceObjectAtIndex:UID withObject:plistObject];

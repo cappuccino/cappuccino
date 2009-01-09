@@ -23,10 +23,11 @@
 @import "CPObject.j"
 @import "CPDictionary.j"
 
+@import "CPURLRequest.j"
+
 
 @implementation CPBundle : CPObject
 {
-    Class   _principalClass;
 }
 
 + (id)alloc
@@ -47,6 +48,20 @@
 + (CPBundle)mainBundle
 {
     return [CPBundle bundleWithPath:"Info.plist"];
+}
+
+- (id)initWithPath:(CPString)aPath
+{
+    self = [super init];
+    
+    if (self)
+    {
+        path = aPath;
+        
+        objj_setBundleForPath(path, self);
+    }
+    
+    return self;
 }
 
 - (Class)classNamed:(CPString)aString
@@ -71,7 +86,7 @@
 
 - (Class)principalClass
 {
-    var className = [[self infoDictionary] objectForKey:@"CPPrincipalClass"];
+    var className = [self objectForInfoDictionaryKey:@"CPPrincipalClass"];
     
     //[self load];
     
@@ -86,6 +101,44 @@
 - (id)objectForInfoDictionaryKey:(CPString)aKey
 {
     return [info objectForKey:aKey];
+}
+
+//
+
+- (void)loadWithDelegate:(id)aDelegate
+{
+    self._delegate = aDelegate;
+    self._infoConnection = [CPURLConnection connectionWithRequest:[CPURLRequest requestWithURL:[self bundlePath] + "/Info.plist"] delegate:self];
+}
+
+- (void)connection:(CPURLConnection)aConnection didReceiveData:(CPString)data
+{
+    if (aConnection === self._infoConnection)
+    {
+        info = CPPropertyListCreateFromData([CPData dataWithString:data]);
+
+        [CPURLConnection connectionWithRequest:[CPURLRequest requestWithURL:[self bundlePath] + "/" + [self objectForInfoDictionaryKey:"CPBundleExecutable"]] delegate:self];
+    }
+    else
+    {
+        objj_decompile([data string], self);
+        
+        var files = [self objectForInfoDictionaryKey:@"CPBundleReplacedFiles"];
+            importCallback = function()
+            {
+                // FIXME: Should we share a common context across all these loads?
+                if (files.length > 0) 
+                    objj_import([self bundlePath] + '/' + files.pop(), YES, importCallback);
+                else if ([_delegate respondsToSelector:@selector(bundleDidFinishLoading:)])
+                    [_delegate bundleDidFinishLoading:self];
+            }
+        
+        objj_import([self bundlePath] + '/' + files.pop(), YES, importCallback);
+    }
+}
+
+- (void)connectionDidFinishLoading:(CPURLConnection)aConnection
+{
 }
 
 @end

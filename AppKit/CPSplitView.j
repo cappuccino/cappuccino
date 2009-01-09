@@ -385,10 +385,12 @@ var CPSplitViewHorizontalImage = nil,
 
 - (float)minPossiblePositionOfDividerAtIndex:(int)dividerIndex
 {
-    var frame = [_subviews[dividerIndex - 1] frame];
-    
     if (dividerIndex > 0)
+    {
+        var frame = [_subviews[dividerIndex - 1] frame];
+        
         return frame.origin[_originComponent] + frame.size[_sizeComponent] + [self dividerThickness];
+    }
     else    
         return 0;
 }
@@ -415,7 +417,7 @@ var CPSplitViewHorizontalImage = nil,
     var frame = [self frame],
         viewA = _subviews[dividerIndex],
         frameA = [viewA frame],
-        viewB = _subviews[dividerIndex+1],
+        viewB = _subviews[dividerIndex + 1],
         frameB = [viewB frame];
     
     var realPosition = MAX(MIN(position, actualMax), actualMin);

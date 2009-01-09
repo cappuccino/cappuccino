@@ -718,6 +718,9 @@ var CPPopUpButtonMenuKey            = @"CPPopUpButtonMenuKey",
     
     if (self)
     {
+        // Nothing is currently selected
+        _selectedIndex = -1;
+        
         [self setMenu:[aCoder decodeObjectForKey:CPPopUpButtonMenuKey]];
         [self selectItemAtIndex:[aCoder decodeObjectForKey:CPPopUpButtonSelectedIndexKey]];
         [self setPullsDown:[aCoder decodeBoolForKey:CPPopUpButtonPullsDownKey]];

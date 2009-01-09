@@ -661,7 +661,7 @@ var CTRL_KEY_CODE   = 17;
                                         {
                                             _pasteboardKeyDownEvent = event;
                                             
-                                            window.setTimeout(function () { [self _checkPasteboardElement] }, 0);
+                                            window.setNativeTimeout(function () { [self _checkPasteboardElement] }, 0);
                                             
                                             return;
                                         }
@@ -706,7 +706,7 @@ var CTRL_KEY_CODE   = 17;
 
                     _DOMPasteboardElement.select();
                     
-                    window.setTimeout(function() { [self _clearPasteboardElement]; }, 0);
+                    window.setNativeTimeout(function() { [self _clearPasteboardElement]; }, 0);
                 }
                 
                 return;
@@ -862,7 +862,7 @@ var CTRL_KEY_CODE   = 17;
     try
     {
         var value = _DOMPasteboardElement.value;
-        
+
         if ([value length])
         {
             var pasteboard = [CPPasteboard generalPasteboard];
