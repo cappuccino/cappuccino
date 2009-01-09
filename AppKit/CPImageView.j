@@ -64,7 +64,6 @@ var LEFT_SHADOW_INSET       = 3.0,
 */
 @implementation CPImageView : CPControl
 {
-    CPImage         _image;
     DOMElement      _DOMImageElement;
     
     CPImageScaling  _imageScaling;
@@ -101,35 +100,46 @@ var LEFT_SHADOW_INSET       = 3.0,
 */
 - (CPImage)image
 {
-    return _image;
+    return [self objectValue];
 }
 
-/*!
-    Sets the image for the view.
-    @param anImage the view's image
-*/
 - (void)setImage:(CPImage)anImage
 {
-    if (_image == anImage)
+    [self setObjectValue:anImage];
+}
+
+/*! @ignore */
+- (void)setObjectValue:(CPImage)anImage
+{
+    var oldImage = [self objectValue];
+    
+    if (oldImage === anImage)
         return;
+        
+    [super setObjectValue:anImage];
     
-    var center = [CPNotificationCenter defaultCenter];
+    var defaultCenter = [CPNotificationCenter defaultCenter];
     
-    if (_image)
-        [center removeObserver:self name:CPImageDidLoadNotification object:_image];
+    if (oldImage)
+        [defaultCenter removeObserver:self name:CPImageDidLoadNotification object:oldImage];
 
-    _image = anImage;
-    _DOMImageElement.src = [anImage filename];
-
-    var size = [_image size];
+    var newImage = [self objectValue];
     
-    if (size && size.width == -1 && size.height == -1)
+#if PLATFORM(DOM)
+    _DOMImageElement.src = newImage ? [newImage filename] : "";
+#endif
+
+    var size = [newImage size];
+    
+    if (size && size.width === -1 && size.height === -1)
     {
-        [center addObserver:self selector:@selector(imageDidLoad:) name:CPImageDidLoadNotification object:_image];
-
+        [defaultCenter addObserver:self selector:@selector(imageDidLoad:) name:CPImageDidLoadNotification object:newImage];
+        
+#if PLATFORM(DOM)
         _DOMImageElement.width = 0;
         _DOMImageElement.height = 0;
-        
+#endif
+
         [_shadowView setHidden:YES];
     }
     else
@@ -195,10 +205,12 @@ var LEFT_SHADOW_INSET       = 3.0,
     
     _imageScaling = anImageScaling;
     
+#if PLATFORM(DOM)
     if (_imageScaling == CPScaleToFit)
     {
         CPDOMDisplayServerSetStyleLeftTop(_DOMImageElement, NULL, 0.0, 0.0);
     }
+#endif
     
     [self tile];
 }
@@ -224,14 +236,18 @@ var LEFT_SHADOW_INSET       = 3.0,
 */
 - (void)hideOrDisplayContents
 {
-    if (!_image)
+    if (![self image])
     {
+#if PLATFORM(DOM)
         _DOMImageElement.style.visibility = "hidden";
+#endif
         [_shadowView setHidden:YES];
     }
     else
     {
+#if PLATFORM(DOM)
         _DOMImageElement.style.visibility = "visible";
+#endif
         [_shadowView setHidden:NO];
     }
 }
@@ -249,10 +265,11 @@ var LEFT_SHADOW_INSET       = 3.0,
 */
 - (void)tile
 {
-    if (!_image)
+    if (![self image])
         return;
 
     var bounds = [self bounds],
+        image = [self image],
         x = 0.0,
         y = 0.0,
         insetWidth = (_hasShadow ? HORIZONTAL_SHADOW_INSET : 0.0),
@@ -264,12 +281,14 @@ var LEFT_SHADOW_INSET       = 3.0,
         
     if (_imageScaling == CPScaleToFit)
     {
+#if PLATFORM(DOM)
         _DOMImageElement.width = ROUND(width);
         _DOMImageElement.height = ROUND(height);
+#endif
     }
     else
     {
-        var size = [_image size];
+        var size = [image size];
         
         if (size.width == -1 && size.height == -1)
             return;
@@ -293,9 +312,11 @@ var LEFT_SHADOW_INSET       = 3.0,
                 else
                     height = width / imageRatio;
             }
-            
+
+#if PLATFORM(DOM)
             _DOMImageElement.width = ROUND(width);
             _DOMImageElement.height = ROUND(height);
+#endif
         }
         else
         {
@@ -305,13 +326,15 @@ var LEFT_SHADOW_INSET       = 3.0,
     
         if (_imageScaling == CPScaleNone)
         {
+#if PLATFORM(DOM)
             _DOMImageElement.width = ROUND(size.width);
             _DOMImageElement.height = ROUND(size.height);
+#endif
         }
 
         var x = (boundsWidth - width) / 2.0,
             y = (boundsHeight - height) / 2.0;
-            
+        
         CPDOMDisplayServerSetStyleLeftTop(_DOMImageElement, NULL, x, y);
     }
 
@@ -336,20 +359,22 @@ var CPImageViewImageKey         = @"CPImageViewImageKey",
 */
 - (id)initWithCoder:(CPCoder)aCoder
 {
+#if PLATFORM(DOM)
+    _DOMImageElement = document.createElement("img");
+    _DOMImageElement.style.position = "absolute";
+    _DOMImageElement.style.left = "0px";
+    _DOMImageElement.style.top = "0px";
+    _DOMImageElement.style.visibility = "hidden";
+#endif
+
     self = [super initWithCoder:aCoder];
     
     if (self)
     {
-        _DOMImageElement = document.createElement("img");
-        _DOMImageElement.style.position = "absolute";
-        _DOMImageElement.style.left = "0px";
-        _DOMImageElement.style.top = "0px";
-    
+#if PLATFORM(DOM)
         _DOMElement.appendChild(_DOMImageElement);
-        _DOMImageElement.style.visibility = "hidden";
-        
-        [self setImage:[aCoder decodeObjectForKey:CPImageViewImageKey]];
-        
+#endif
+
         [self setImageScaling:[aCoder decodeIntForKey:CPImageViewImageScalingKey]];
         [self setHasShadow:[aCoder decodeBoolForKey:CPImageViewHasShadowKey]];
         
@@ -380,8 +405,6 @@ var CPImageViewImageKey         = @"CPImageViewImageKey",
     
     if (_shadowView)
         _subviews = actualSubviews;
-    
-    [aCoder encodeObject:_image forKey:CPImageViewImageKey];
     
     [aCoder encodeInt:_imageScaling forKey:CPImageViewImageScalingKey];
     [aCoder encodeBool:_hasShadow forKey:CPImageViewHasShadowKey];

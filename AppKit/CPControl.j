@@ -534,6 +534,8 @@ var CPControlValueKey           = "CPControlValueKey",
     CPControlActionKey          = "CPControlActionKey",
     CPControlSendActionOnKey    = "CPControlSendActionOnKey";
 
+var __Deprecated__CPImageViewImageKey   = @"CPImageViewImageKey";
+
 @implementation CPControl (CPCoding)
 
 /*
@@ -549,6 +551,9 @@ var CPControlValueKey           = "CPControlValueKey",
     {
         [self setObjectValue:[aCoder decodeObjectForKey:CPControlValueKey]];
         
+        if ([aCoder containsValueForKey:__Deprecated__CPImageViewImageKey])
+            [self setObjectValue:[aCoder decodeObjectForKey:_DeprecatedCPImageViewImageKey]];
+
         [self setEnabled:[aCoder decodeBoolForKey:CPControlIsEnabledKey]];
         
         [self setAlignment:[aCoder decodeIntForKey:CPControlAlignmentKey]];

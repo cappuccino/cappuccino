@@ -181,26 +181,6 @@ var _CPKeyedUnarchiverArrayClass                                            = Ni
 }
 
 /* @ignore */
-- (id)_decodeArrayOfObjectsForKey:(CPString)aKey
-{
-    var object = [_plistObject objectForKey:aKey];
-    
-    if ([object isKindOfClass:_CPKeyedUnarchiverArrayClass])
-    {
-        var index = 0,
-            count = object.length,
-            array = [];
-
-        for (; index < count; ++index)
-            array[index] = _CPKeyedUnarchiverDecodeObjectAtIndex(self, [object[index] objectForKey:_CPKeyedArchiverUIDKey]);
-            
-        return array;
-    }
-    
-    return nil;
-}
-
-/* @ignore */
 - (void)_decodeDictionaryOfObjectsForKey:(CPString)aKey
 {
     var object = [_plistObject objectForKey:aKey];
@@ -313,13 +293,26 @@ var _CPKeyedUnarchiverArrayClass                                            = Ni
 - (id)decodeObjectForKey:(CPString)aKey
 {
     var object = [_plistObject objectForKey:aKey];
-
+    
     if ([object isKindOfClass:_CPKeyedUnarchiverDictionaryClass])
         return _CPKeyedUnarchiverDecodeObjectAtIndex(self, [object objectForKey:_CPKeyedArchiverUIDKey]);
+
     else if ([object isKindOfClass:[CPNumber class]] || [object isKindOfClass:[CPData class]])
         return object;
+
+    else if ([object isKindOfClass:_CPKeyedUnarchiverArrayClass])
+    {
+        var index = 0,
+            count = object.length,
+            array = [];
+
+        for (; index < count; ++index)
+            array[index] = _CPKeyedUnarchiverDecodeObjectAtIndex(self, [object[index] objectForKey:_CPKeyedArchiverUIDKey]);
+        
+        return array;
+    }
 /*    else
-        alert([object className] + " " + object + " " + aKey + " " + [_plistObject description]);*/
+        CPLog([object className] + " " + object + " " + aKey + " " + [_plistObject description]);*/
 
     return nil;
 }

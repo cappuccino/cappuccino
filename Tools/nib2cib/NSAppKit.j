@@ -27,9 +27,11 @@
 @import "NSColorWell.j"
 @import "NSControl.j"
 @import "NSCustomObject.j"
+@import "NSCustomResource.j"
 @import "NSCustomView.j"
 @import "NSFont.j"
 @import "NSIBObjectData.j"
+@import "NSImageView.j"
 @import "NSMenu.j"
 @import "NSMenuItem.j"
 @import "NSNibConnector.j"
@@ -37,6 +39,7 @@
 @import "NSResponder.j"
 @import "NSScrollView.j"
 @import "NSScroller.j"
+@import "NSSet.j"
 @import "NSSegmentedControl.j"
 @import "NSSlider.j"
 @import "NSSplitView.j"
@@ -51,15 +54,16 @@
 
 function CP_NSMapClassName(aClassName)
 {
-    switch (aClassName)
+    if (aClassName.indexOf("NS") === 0)
     {
-        case @"NSApplication":  return @"CPApplication";
-        case @"NSObject":       return @"CPObject";
-        case @"NSPanel":        return @"CPPanel";
-        case @"NSView":         return @"CPView";
-        case @"NSWindow":       return @"CPWindow";
+        var mappedClassName = @"CP" + aClassName.substr(2);
         
-        default:                CPLog.warn("No class name mapping for \"" + aClassName + "\"");
+        if (window[mappedClassName])
+        {
+            CPLog.warn("Mapping " + aClassName + " to " + mappedClassName);
+
+            return mappedClassName;
+        }
     }
 
     return aClassName;

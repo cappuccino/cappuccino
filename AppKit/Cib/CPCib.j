@@ -25,6 +25,7 @@
 @import <Foundation/CPURLRequest.j>
 
 @import "_CPCibCustomObject.j"
+@import "_CPCibCustomResource.j"
 @import "_CPCibCustomView.j"
 @import "_CPCibKeyedUnarchiver.j"
 @import "_CPCibObjectData.j"
@@ -38,7 +39,8 @@ var CPCibObjectDataKey  = @"CPCibObjectDataKey";
 
 @implementation CPCib : CPObject
 {
-    CPData  _data;
+    CPData      _data;
+    CPBundle    _bundle;
 }
 
 - (id)initWithContentsOfURL:(CPURL)aURL
@@ -51,9 +53,21 @@ var CPCibObjectDataKey  = @"CPCibObjectDataKey";
     return self;
 }
 
-- (BOOL)instantiateCibWithExternalNameTable:(CPDictionary)anExternalNameTable
+- (id)initWithCibNamed:(CPString)aName bundle:(CPBundle)aBundle
 {
-    var unarchiver = [[_CPCibKeyedUnarchiver alloc] initForReadingWithData:_data],
+    self = [self initWithContentsOfURL:aName];
+    
+    if (self)
+    {
+        _bundle = aBundle;
+    }
+    
+    return self;
+}
+
+- (BOOL)instantiateCibWithExternalNameTable:(CPDictionary)anExternalNameTable
+{   
+    var unarchiver = [[_CPCibKeyedUnarchiver alloc] initForReadingWithData:_data bundle:_bundle],
         objectData = [unarchiver decodeObjectForKey:CPCibObjectDataKey];
 
     if (!objectData || ![objectData isKindOfClass:[_CPCibObjectData class]])

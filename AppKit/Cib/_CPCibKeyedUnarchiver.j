@@ -4,16 +4,26 @@
 
 @implementation _CPCibKeyedUnarchiver : CPKeyedUnarchiver
 {
+    CPBundle    _bundle;
 }
 
-- (id)initForReadingWithData:(CPData)data
+- (id)initForReadingWithData:(CPData)data bundle:(CPBundle)aBundle
 {
     self = [super initForReadingWithData:data];
     
     if (self)
+    {
+        _bundle = aBundle;
+        
         [self setDelegate:self];
+    }
     
     return self;
+}
+
+- (CPBundle)bundle
+{
+    return _bundle;
 }
 
 - (id)unarchiver:(CPKeyedUnarchiver)aKeyedUnarchiver didDecodeObject:(id)anObject

@@ -261,7 +261,7 @@
 {
     if (self.__address == nil)
         self.__address = _objj_generateObjectHash();
-        
+
     return self.__address;
 }
 
@@ -800,7 +800,7 @@
         
         if (i != count - 1) description += ", ";
     }
-        
+    
     return description + ')';
 }
 
@@ -1183,7 +1183,7 @@
 
 - (id)initWithCoder:(CPCoder)aCoder
 {
-    return [aCoder _decodeArrayOfObjectsForKey:@"CP.objects"];
+    return [aCoder decodeObjectForKey:@"CP.objects"];
 }
 
 - (void)encodeWithCoder:(CPCoder)aCoder

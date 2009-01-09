@@ -1,6 +1,9 @@
 /*
- * NSArray.j
+ * NSCustomResource.j
  * nib2cib
+ *
+ * Portions based on NSCustomResource.m (01/08/2009) in Cocotron (http://www.cocotron.org/)
+ * Copyright (c) 2006-2007 Christopher J. W. Lloyd
  *
  * Created by Francisco Tolmasky.
  * Copyright 2008, 280 North, Inc.
@@ -19,22 +22,39 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
- 
-@import <Foundation/CPObject.j>
+
+@import <AppKit/_CPCibCustomResource.j>
 
 
-@implementation NSArray : CPObject
+@implementation _CPCibCustomResource (NSCoding)
+
+- (id)NS_initWithCoder:(CPCoder)aCoder
+{
+    self = [super init];
+    
+    if (self)
+    {
+        _className = CP_NSMapClassName([aCoder decodeObjectForKey:@"NSClassName"]);
+        _resourceName = [aCoder decodeObjectForKey:@"NSResourceName"];
+    }
+    
+    return self;
+}
+
+@end
+
+@implementation NSCustomResource : _CPCibCustomResource
 {
 }
 
 - (id)initWithCoder:(CPCoder)aCoder
 {
-    return [aCoder decodeObjectForKey:@"NS.objects"];
+    return [self NS_initWithCoder:aCoder];
 }
 
-@end
-
-@implementation NSMutableArray : NSArray
+- (Class)classForKeyedArchiver
 {
+    return [_CPCibCustomResource class];
 }
+
 @end

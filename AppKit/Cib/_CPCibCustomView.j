@@ -46,8 +46,12 @@ var _CPCibCustomViewClassNameKey    = @"_CPCibCustomViewClassNameKey";
     self = [super initWithCoder:aCoder];
 
     if (self)
+    {
         _className = [aCoder decodeObjectForKey:_CPCibCustomViewClassNameKey];
-
+    
+        [self setBackgroundColor:[CPColor blueColor]];
+    }
+    
     return self;
 }
 
@@ -70,6 +74,10 @@ var _CPCibCustomViewClassNameKey    = @"_CPCibCustomViewClassNameKey";
         
         theClass = [CPView class];
     }
+    
+    // Hey this is us!
+    if (theClass === [self class])
+        return self;
 
     var view = [[theClass alloc] initWithFrame:[self frame]];
         

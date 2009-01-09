@@ -101,12 +101,14 @@
     Initializes a newly allocated set with the objects that are contained in a given array.
     @param array An array of objects to add to the new set. If the same object appears more than once in array, it is represented only once in the returned set.
 */
-- (id)initWithArray:(CPArray)array
+- (id)initWithArray:(CPArray)anArray
 {    
     if (self = [self init])
     {
-        for (var i = 0; i<array.length; i++) 
-            [self addObject:array[i]];
+        var count = anArray.length;
+        
+        while (count--)
+            [self addObject:anArray[count]];
     }
     
     return self;
@@ -414,6 +416,21 @@
 
 @end
 
+var CPSetObjectsKey = @"CPSetObjectsKey";
+
+@implementation CPSet (CPCoding)
+
+- (id)initWithCoder:(CPCoder)aCoder
+{
+    return [[CPSet alloc] initWithArray:[aCoder decodeObjectForKey:CPSetObjectsKey]];
+}
+
+- (void)encodeWithCoder:(CPCoder)aCoder
+{
+    [aCoder encodeObject:[self allObjects] forKey:CPSetObjectsKey];
+}
+
+@end
 
 @implementation CPMutableSet : CPSet
 @end
