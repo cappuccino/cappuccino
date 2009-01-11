@@ -176,6 +176,7 @@ var _CPTextFieldSquareBezelColor = nil,
         _DOMTextElement.style.whiteSpace = "pre";
         _DOMTextElement.style.cursor = "default";
         _DOMTextElement.style.zIndex = 100;
+        _DOMTextElement.style.overflow = "hidden";
 
         _DOMElement.appendChild(_DOMTextElement);
 #endif
@@ -401,13 +402,22 @@ var _CPTextFieldSquareBezelColor = nil,
     element.style.color = _DOMElement.style.color;
     element.style.font = _DOMElement.style.font;
     element.style.zIndex = 1000;
-    element.style.width = CGRectGetWidth([self bounds]) - 3.0 + "px";
     element.style.marginTop = "0px";
     if (_isBezeled && _bezelStyle == CPTextFieldRoundedBezel)
-        element.style.paddingLeft = ROUNDEDBEZEL_HORIZONTAL_PADDING - 1.0 + "px";
-
-    //element.style.left = _DOMTextElement.style.left;
-    //element.style.top = _DOMTextElement.style.top;
+    {
+        // http://cappuccino.lighthouseapp.com/projects/16499/tickets/191-cptextfield-shifts-updown-when-receiveslosts-focus
+        // uncommenting the following 2 lines will solve the problem in Firefox only ...
+        // element.style.paddingTop = TOP_PADDING - 0.0 + "px" ;
+        // element.style.paddingLeft = HORIZONTAL_PADDING - 3.0 + "px" ;
+        
+        element.style.top = "0px" ;
+        element.style.left = ROUNDEDBEZEL_HORIZONTAL_PADDING + 1.0 + "px" ;
+        element.style.width = CGRectGetWidth([self bounds]) - (2 * ROUNDEDBEZEL_HORIZONTAL_PADDING) + "px";
+    }
+    else 
+    {
+        element.style.width = CGRectGetWidth([self bounds]) - 3.0 + "px";
+    }
 
     _DOMElement.appendChild(element);
     window.setTimeout(function() { element.focus(); }, 0.0);
