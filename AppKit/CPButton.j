@@ -617,6 +617,7 @@ var _CPButtonClassName                          = nil,
     _isHighlighted = YES;
     
     [self highlight:_isHighlighted];
+    [super mouseDown:anEvent] ;
 }
 
 /*!
