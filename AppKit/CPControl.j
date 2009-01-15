@@ -209,7 +209,9 @@ var CPControlBlackColor     = [CPColor blackColor];
 */
 - (void)setTextShadow:(CPShadow)aTextShadow
 {
+#if PLATFORM(DOM)
     _DOMElement.style.textShadow = [_textShadow = aTextShadow cssString];
+#endif
 }
 
 /*!

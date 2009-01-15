@@ -22,6 +22,8 @@
 
 @import "CPView.j"
 
+#include "Platform/Platform.h"
+
 
 // FIXME: implement these where possible:
 /*
@@ -428,7 +430,9 @@ CPWebViewProgressFinishedNotification           = "CPWebViewProgressFinishedNoti
         _backwardStack = [];
         _forwardStack = [];
         
+#if PLATFORM(DOM)
         [self _initDOMWithFrame:[self frame]];
+#endif
     }
     
     return self;
