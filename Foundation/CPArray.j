@@ -1075,7 +1075,7 @@
     while (index != CPNotFound)
     {
         [self removeObjectAtIndex:index];
-        index = [anIndexSet indexSmallerThanIndex:index];
+        index = [anIndexSet indexLessThanIndex:index];
     }
 }
 
