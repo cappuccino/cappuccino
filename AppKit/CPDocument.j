@@ -389,7 +389,7 @@ var CPDocumentUntitledCount = 0;
     var statusCode = [aResponse statusCode];
     
     // Nothing to do if everything is hunky dory.
-    if (statusCode == 200)
+    if (statusCode === 200 || (statusCode === 0 && [aConnection isLocalFileConnection]))
         return;
     
     var session = aConnection.session;

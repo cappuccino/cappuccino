@@ -633,11 +633,14 @@ var _CPTextFieldSquareBezelColor = nil,
 #if PLATFORM(DOM)
     var displayString = "";
 
-    if (aValue && [aValue respondsToSelector:@selector(string)])
-        displayString = [aValue string];
-    else if (aValue)
-        displayString += aValue;
-
+    if (aValue !== nil && aValue !== undefined)
+    {
+        if ([aValue respondsToSelector:@selector(string)])
+            displayString = [aValue string];
+        else
+            displayString += aValue;
+    }
+    
     if ([[self window] firstResponder] == self)
         [[self class] _inputElement].value = displayString;
 

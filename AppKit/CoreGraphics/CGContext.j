@@ -338,7 +338,7 @@ function CGContextFillRect(aContext, aRect)
 
 function CGContextFillRects(aContext, rects, count)
 {
-    if (arguments["count"] == NULL)
+    if (arguments[2] === undefined)
         var count = rects.length;
     
     CGContextBeginPath(aContext);
