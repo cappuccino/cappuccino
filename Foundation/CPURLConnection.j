@@ -235,11 +235,20 @@ var CPURLConnectionDelegate = nil;
     if (_XMLHTTPRequest.readyState == XMLHTTPRequestComplete)
     {
         var statusCode = _XMLHTTPRequest.status,
-            url = [_request URL];
+            URL = [_request URL];
         
         if ([_delegate respondsToSelector:@selector(connection:didReceiveResponse:)])
-            [_delegate connection:self didReceiveResponse:[[CPHTTPURLResponse alloc] _initWithStatusCode:statusCode]];
-            
+            if (_isLocalFileConnection)
+                [_delegate connection:self didReceiveResponse:[[CPURLResponse alloc] initWithURL:URL]];
+            else
+            {
+                var response = [[CPHTTPURLResponse alloc] initWithURL:URL];
+                
+                [response _setStatusCode:statusCode];
+                
+                [_delegate connection:self didReceiveResponse:response];
+            }
+                        
         if (!_isCanceled)
         {
             if (statusCode == 200 || (statusCode === 0 && _isLocalFileConnection))

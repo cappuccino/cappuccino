@@ -34,6 +34,22 @@
 */
 @implementation CPURLResponse : CPObject
 {
+    CPURL   _URL;
+}
+
+- (id)initWithURL:(CPURL)aURL
+{
+    self = [super init];
+    
+    if (self)
+        _URL = aURL;
+    
+    return self;
+}
+
+- (CPURL)URL
+{
+    return _URL;
 }
 /*
 Creating a Response
@@ -56,14 +72,9 @@ Getting the Response Properties
 }
 
 /* @ignore */
-- (id)_initWithStatusCode:(int)aStatusCode
+- (id)_setStatusCode:(int)aStatusCode
 {
-    self = [super init];
-    
-    if (self)
-        _statusCode = aStatusCode;
-    
-    return self;
+    _statusCode = aStatusCode;
 }
 
 /*!
