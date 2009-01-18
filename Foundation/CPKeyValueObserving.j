@@ -24,6 +24,7 @@
 @import "CPDictionary.j"
 @import "CPException.j"
 @import "CPObject.j"
+@import "CPSet.j"
 
 
 @implementation CPObject (KeyValueObserving)
@@ -54,7 +55,7 @@
     [[KVOProxyMap objectForKey:[self hash]] _removeObserver:anObserver forKeyPath:aPath];
 }
 
-- (BOOL)automaticallyNotifiesObserversForKey:(CPString)aKey
++ (BOOL)automaticallyNotifiesObserversForKey:(CPString)aKey
 {
     return YES;
 }
@@ -89,7 +90,7 @@ var KVOProxyMap = [CPDictionary dictionary];
     Class           _nativeClass;
     CPDictionary    _changesForKey;
     CPDictionary    _observersForKey;
-    CPDictionary    _replacementMethods;
+    CPSet           _replacedKeys;
 }
 
 + (id)proxyForObject:(CPObject)anObject
@@ -100,10 +101,6 @@ var KVOProxyMap = [CPDictionary dictionary];
         return proxy;
 
     proxy = [[self alloc] initWithTarget:anObject];
-
-    //[proxy _replaceSetters];
-    
-    //anObject.isa = proxy.isa;
 
     [proxy _replaceClass];
 
@@ -118,53 +115,11 @@ var KVOProxyMap = [CPDictionary dictionary];
 
     _targetObject       = aTarget;
     _nativeClass        = [aTarget class];
-    _replacementMethods = [CPDictionary dictionary];
     _observersForKey    = [CPDictionary dictionary];
     _changesForKey      = [CPDictionary dictionary];
+    _replacedKeys       = [CPSet set];
 
     return self;
-}
-
-- (void)_replaceSetters
-{
-    var currentClass = [_targetObject class];
-
-    while (currentClass && currentClass != currentClass.super_class)
-    {
-        var methodList = currentClass.method_list,
-            count = methodList.length;
-
-        for (var i=0; i<count; i++)
-        {
-            var newMethod = _kvoMethodForMethod(_targetObject, methodList[i]);
-
-            if (newMethod)
-                [_replacementMethods setObject:newMethod forKey:methodList[i].name];
-        }
-
-        currentClass = currentClass.super_class;
-    }
-}
-
-- (void)_replaceSetters
-{
-    var currentClass = [_targetObject class];
-
-    while (currentClass && currentClass != currentClass.super_class)
-    {
-        var methodList = currentClass.method_list,
-            count = methodList.length;
-
-        for (var i=0; i<count; i++)
-        {
-            var newMethod = _kvoMethodForMethod(_targetObject, methodList[i]);
-
-            if (newMethod)
-                [_replacementMethods setObject:newMethod forKey:methodList[i].name];
-        }
-
-        currentClass = currentClass.super_class;
-    }
 }
 
 - (void)_replaceClass
@@ -183,23 +138,8 @@ var KVOProxyMap = [CPDictionary dictionary];
         
     objj_registerClassPair(kvoClass);
     _class_initialize(kvoClass);
-    
-    while (currentClass && currentClass != currentClass.super_class)
-    {
-        var methodList = currentClass.method_list,
-            count = methodList.length;
-
-        for (var i=0; i<count; i++)
-        {
-            var newMethodImp = _kvoMethodForMethod(_targetObject, methodList[i]);
-
-            if (newMethodImp)
-                class_addMethod(kvoClass, method_getName(methodList[i]), newMethodImp, "");
-        }
-
-        currentClass = currentClass.super_class;
-    }
-    
+        
+    //copy in the methods from our model subclass
     var methodList = _CPKVOModelSubclass.method_list,
         count = methodList.length;
 
@@ -212,6 +152,33 @@ var KVOProxyMap = [CPDictionary dictionary];
     _targetObject.isa = kvoClass;
 }
 
+- (void)_replaceSetterForKey:(CPString)aKey
+{    
+    if ([_replacedKeys containsObject:aKey] || ![_nativeClass automaticallyNotifiesObserversForKey:aKey])
+        return;
+        
+    var currentClass = _nativeClass,
+        capitalizedKey = aKey.charAt(0).toUpperCase() + aKey.substring(1),
+        replacementMethods = [
+            "set"+capitalizedKey+":",
+            "_set"+capitalizedKey+":",
+            "insertObject:in"+capitalizedKey+"AtIndex:",
+            "replaceObjectIn"+capitalizedKey+"AtIndex:",
+            "removeObjectFrom"+capitalizedKey+"AtIndex:"        
+        ];
+    
+    for (var i=0, count=replacementMethods.length; i<count; i++)
+    {
+        if ([_nativeClass instancesRespondToSelector:replacementMethods[i]])
+        {
+            var theSelector = sel_getName(replacementMethods[i]),
+                theMethod = class_getInstanceMethod(_nativeClass, theSelector);
+                
+            class_addMethod(_targetObject.isa, theSelector, _kvoMethodForMethod(aKey, theMethod), "");
+        }
+    }
+}
+
 - (void)_addObserver:(id)anObserver forKeyPath:(CPString)aPath options:(unsigned)options context:(id)aContext
 {
     if (!anObserver)
@@ -221,6 +188,8 @@ var KVOProxyMap = [CPDictionary dictionary];
     
     if (aPath.indexOf('.') != CPNotFound)
         forwarder = [[_CPKVOForwardingObserver alloc] initWithKeyPath:aPath object:_targetObject observer:anObserver options:options context:aContext];
+    else
+        [self _replaceSetterForKey:aPath];
 
     var observers = [_observersForKey objectForKey:aPath];
 
@@ -448,36 +417,14 @@ var _CPKVOInfoMake = function _CPKVOInfoMake(anObserver, theOptions, aContext, a
     };
 }
 
-var _kvoKeyForSetter = function _kvoKeyForSetter(selector)
+var _kvoMethodForMethod = function _kvoMethodForMethod(theKey, theMethod)
 {
-    if (selector.split(":").length > 2 || !([selector hasPrefix:@"set"] || [selector hasPrefix:@"_set"]))
-        return nil;
-        
-    var keyIndex = selector.indexOf("set") + "set".length,
-        colonIndex = selector.indexOf(":");
-    
-    return selector.charAt(keyIndex).toLowerCase() + selector.substring(keyIndex+1, colonIndex);
-}
-
-var _kvoMethodForMethod = function _kvoMethodForMethod(theObject, theMethod)
-{
-    var methodName = theMethod.name,
-        methodImplementation = theMethod.method_imp,
-        setterKey = _kvoKeyForSetter(methodName);
-    
-    if (setterKey && objj_msgSend(theObject, @selector(automaticallyNotifiesObserversForKey:), setterKey))
-    {            
-        var newMethodImp = function(self) 
-        {
-            [self willChangeValueForKey:setterKey];
-            methodImplementation.apply(self, arguments);
-            [self didChangeValueForKey:setterKey];
-        }
-        
-        return newMethodImp;
+    return function(self) 
+    {
+        [self willChangeValueForKey:theKey];
+        theMethod.method_imp.apply(self, arguments);
+        [self didChangeValueForKey:theKey];
     }
-
-    return nil;
 }
 
 @implementation CPArray (KeyValueObserving)
