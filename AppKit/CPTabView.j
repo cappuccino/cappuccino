@@ -443,7 +443,7 @@ var CPTabViewDidSelectTabViewItemSelector           = 1,
     if (_tabViewType == CPNoTabsBezelBorder || _tabViewType == CPNoTabsLineBorder || _tabViewType == CPNoTabsNoBorder)
         [_labelsView removeFromSuperview];
     else if (![_labelsView superview])
-        [self addSubview:_lablesView];
+        [self addSubview:_labelsView];
         
     if (_tabViewType == CPNoTabsLineBorder || _tabViewType == CPNoTabsNoBorder)
         [_backgroundView removeFromSuperview];
