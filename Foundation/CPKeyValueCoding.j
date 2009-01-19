@@ -54,7 +54,7 @@ CPUnknownUserInfoKey        = @"CPUnknownUserInfoKey";
         selector = [accessors objectForKey:aKey];
         
         if (selector)
-            return selector == [CPNull null] ? nil : selector;
+            return selector === [CPNull null] ? nil : selector;
     }
     else
     {
@@ -97,7 +97,7 @@ CPUnknownUserInfoKey        = @"CPUnknownUserInfoKey";
         selector = [modifiers objectForKey:aKey];
         
         if (selector)
-            return selector == [CPNull null] ? nil : selector;
+            return selector === [CPNull null] ? nil : selector;
     }
     else
     {
@@ -107,7 +107,7 @@ CPUnknownUserInfoKey        = @"CPUnknownUserInfoKey";
     }
     
     if (selector)
-        return selector == [CPNull null] ? nil : selector;
+        return selector === [CPNull null] ? nil : selector;
 
     var capitalizedKey = aKey.charAt(0).toUpperCase() + aKey.substr(1) + ':';
 
