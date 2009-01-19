@@ -298,19 +298,19 @@ import <Foundation/CPKeyValueObserving.j>
     [bob setValue:"initial bob" forKey:"name"];
 
     var startTime = new Date();
-    
+
     for(var i=0; i<1000; i++)
         [bob setValue:i+"bob" forKey:"name"];
-        
+
     var total = new Date() - startTime;
 
     [bob addObserver:[CPObject new] forKeyPath:"name" options:nil context:nil];
 
     startTime = new Date();
-    
+
     for(var i=0; i<1000; i++)
         [bob setValue: i+"bob" forKey:"name"];
-        
+
     var secondTotal = new Date() - startTime;
 
     [self assertTrue: (secondTotal < total*4) message: "Overheard of one observer exceeded 400%. first: "+total+" second: "+secondTotal+" %"+FLOOR(secondTotal/total*100)];
@@ -458,12 +458,9 @@ import <Foundation/CPKeyValueObserving.j>
     CarTester   car;
 }
 
-+ (CPSet)keyPathsForValuesAffectingValueForKey:(CPString)aKey
++ (CPSet)keyPathsForValuesAffectingValueForBobName
 {
-    if (aKey == "bobName")
-        return [CPSet setWithObject:"name"];
-    else
-        return [[super class] keyPathsForValuesAffectingValueForKey:aKey];
+    return [CPSet setWithObject:"name"];
 }
 
 - (void)setName:(CPString)aName

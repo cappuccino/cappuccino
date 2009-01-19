@@ -62,6 +62,12 @@
 
 + (CPSet)keyPathsForValuesAffectingValueForKey:(CPString)aKey
 {
+    var capitalizedKey = aKey.charAt(0).toUpperCase()+aKey.substring(1);
+        selector = "keyPathsForValuesAffectingValueFor"+capitalizedKey;
+
+    if ([[self class] respondsToSelector:selector])
+        return objj_msgSend([self class], selector);
+
     return [CPSet set];
 }
 
@@ -196,12 +202,12 @@ var KVOProxyMap = [CPDictionary dictionary],
     if (!composedOfKeys)
         return;
 
-    var dependentKeysForClass = [DependentKeysMap objectForKey:_nativeClass];
+    var dependentKeysForClass = [DependentKeysMap objectForKey:[_nativeClass hash]];
 
     if (!dependentKeysForClass)
     {
         dependentKeysForClass = [CPDictionary new];
-        [DependentKeysMap setObject:dependentKeysForClass forKey:_nativeClass];
+        [DependentKeysMap setObject:dependentKeysForClass forKey:[_nativeClass hash]];
     }
 
     for (var i=0, count=composedOfKeys.length; i<count; i++)
@@ -319,7 +325,7 @@ var KVOProxyMap = [CPDictionary dictionary],
             [observerInfo.observer observeValueForKeyPath:aKey ofObject:_targetObject change:changes context:observerInfo.context];
     }
     
-    var keysComposedOfKey = [[[DependentKeysMap objectForKey:_nativeClass] objectForKey:aKey] allObjects];
+    var keysComposedOfKey = [[[DependentKeysMap objectForKey:[_nativeClass hash]] objectForKey:aKey] allObjects];
     
     if (!keysComposedOfKey)
         return;
