@@ -6,6 +6,7 @@ import <Foundation/CPKeyValueObserving.j>
     BOOL    _sawInitialObservation;
     BOOL    _sawPriorObservation;
     BOOL    _sawObservation;
+    BOOL    _sawDependentObservation;
     
     id      bob;
     id      obj;
@@ -132,8 +133,8 @@ import <Foundation/CPKeyValueObserving.j>
     _sawInitialObservation = NO;
 
     bob = [[PersonTester alloc] init];
-    
-    bob.name = "paul";    
+
+    bob.name = "paul";
 
     [bob addObserver:self forKeyPath:@"name" options:CPKeyValueObservingOptionInitial context:"testInitialObservationOption"];
     [bob removeObserver:self forKeyPath:@"name"];
@@ -141,6 +142,22 @@ import <Foundation/CPKeyValueObserving.j>
     [bob setValue:@"bob" forKey:@"name"];
 
     [self assertTrue: _sawInitialObservation message: "asked for CPKeyValueObservingOptionInitial but did not recieve corresponding notification"];
+}
+
+- (void)testDependentKeyObservation
+{
+    _sawDependentObservation = NO;
+    
+    bob = [[PersonTester alloc] init];
+    
+    bob.name = "paul";    
+
+    [bob addObserver:self forKeyPath:@"bobName" options:0 context:"testDependentKeyObservation"];
+
+    [bob setValue:@"bob" forKey:@"name"];
+
+    [self assertTrue: _sawDependentObservation message: "asked for bobName but did not recieve corresponding notification"];
+    [self assertTrue: [bob valueForKey:@"bobName"] === @"BOB! set_bob" message: "should have been BOB! set_bob, was "+[bob valueForKey:@"bobName"]];    
 }
 
 - (void)testMultipartKey
@@ -296,7 +313,7 @@ import <Foundation/CPKeyValueObserving.j>
         
     var secondTotal = new Date() - startTime;
 
-    [self assertTrue: (secondTotal < total*3) message: "Overheard of one observer exceeded 300%. first: "+total+" second: "+secondTotal+" %"+FLOOR(secondTotal/total*100)];
+    [self assertTrue: (secondTotal < total*4) message: "Overheard of one observer exceeded 400%. first: "+total+" second: "+secondTotal+" %"+FLOOR(secondTotal/total*100)];
 }
 
 - (void)observeValueForKeyPath:(CPString)aKeyPath ofObject:(id)anObject change:(CPDictionary)changes context:(id)aContext
@@ -410,6 +427,11 @@ import <Foundation/CPKeyValueObserving.j>
             [self assertTrue: aKeyPath == "b.c.d.e.f" message:"Expected keyPath b.c.d.e.f, got: "+aKeyPath];
             break;
             
+        case "testDependentKeyObservation":
+            [self assertTrue: aKeyPath == "bobName" message: @"expected key value change for bobName, got: "+aKeyPath];
+            _sawDependentObservation = YES;
+            break;
+
         default:
             [self assertFalse:YES message:"unhandled observation, must be an error"];
             return;
@@ -436,9 +458,22 @@ import <Foundation/CPKeyValueObserving.j>
     CarTester   car;
 }
 
++ (CPSet)keyPathsForValuesAffectingValueForKey:(CPString)aKey
+{
+    if (aKey == "bobName")
+        return [CPSet setWithObject:"name"];
+    else
+        return [[super class] keyPathsForValuesAffectingValueForKey:aKey];
+}
+
 - (void)setName:(CPString)aName
 {
     name = "set_"+aName;
+}
+
+- (CPString)bobName
+{
+    return "BOB! "+name;
 }
 
 @end

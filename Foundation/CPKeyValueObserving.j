@@ -60,6 +60,11 @@
     return YES;
 }
 
++ (CPSet)keyPathsForValuesAffectingValueForKey:(CPString)aKey
+{
+    return [CPSet set];
+}
+
 @end
 
 // KVO Options
@@ -79,7 +84,8 @@ CPKeyValueChangeIndexesKey              = @"CPKeyValueChangeIndexesKey";
 CPKeyValueChangeNotificationIsPriorKey  = @"CPKeyValueChangeNotificationIsPriorKey";
 
 // Map of real objects to their KVO proxy
-var KVOProxyMap = [CPDictionary dictionary];
+var KVOProxyMap = [CPDictionary dictionary],
+    DependentKeysMap = [CPDictionary dictionary];
 
 //rule of thumb: _ methods are called on the real proxy object, others are called on the "fake" proxy object (aka the real object)
 
@@ -159,6 +165,7 @@ var KVOProxyMap = [CPDictionary dictionary];
         
     var currentClass = _nativeClass,
         capitalizedKey = aKey.charAt(0).toUpperCase() + aKey.substring(1),
+        found = false,
         replacementMethods = [
             "set"+capitalizedKey+":",
             "_set"+capitalizedKey+":",
@@ -169,13 +176,47 @@ var KVOProxyMap = [CPDictionary dictionary];
     
     for (var i=0, count=replacementMethods.length; i<count; i++)
     {
-        if ([_nativeClass instancesRespondToSelector:replacementMethods[i]])
+        var theSelector = sel_getName(replacementMethods[i]);
+
+        if ([_nativeClass instancesRespondToSelector:theSelector])
         {
-            var theSelector = sel_getName(replacementMethods[i]),
-                theMethod = class_getInstanceMethod(_nativeClass, theSelector);
-                
+            var theMethod = class_getInstanceMethod(_nativeClass, theSelector);
+
             class_addMethod(_targetObject.isa, theSelector, _kvoMethodForMethod(aKey, theMethod), "");
+
+            found = true;
         }
+    }
+
+    if (found)
+        return;
+
+    var composedOfKeys = [[_nativeClass keyPathsForValuesAffectingValueForKey:aKey] allObjects];
+
+    if (!composedOfKeys)
+        return;
+
+    var dependentKeysForClass = [DependentKeysMap objectForKey:_nativeClass];
+
+    if (!dependentKeysForClass)
+    {
+        dependentKeysForClass = [CPDictionary new];
+        [DependentKeysMap setObject:dependentKeysForClass forKey:_nativeClass];
+    }
+
+    for (var i=0, count=composedOfKeys.length; i<count; i++)
+    {
+        var componentKey = composedOfKeys[i],
+            keysComposedOfKey = [dependentKeysForClass objectForKey:componentKey];
+
+        if (!keysComposedOfKey)
+        {
+            keysComposedOfKey = [CPSet new];
+            [dependentKeysForClass setObject:keysComposedOfKey forKey:componentKey];
+        }
+
+        [keysComposedOfKey addObject:aKey];
+        [self _replaceSetterForKey:componentKey];
     }
 }
 
@@ -277,6 +318,14 @@ var KVOProxyMap = [CPDictionary dictionary];
         else if (!isBefore)
             [observerInfo.observer observeValueForKeyPath:aKey ofObject:_targetObject change:changes context:observerInfo.context];
     }
+    
+    var keysComposedOfKey = [[[DependentKeysMap objectForKey:_nativeClass] objectForKey:aKey] allObjects];
+    
+    if (!keysComposedOfKey)
+        return;
+
+    for (var i=0, count=keysComposedOfKey.length; i<count; i++)
+        [self _sendNotificationsForKey:keysComposedOfKey[i] isBefore:isBefore];
 }
 
 @end
