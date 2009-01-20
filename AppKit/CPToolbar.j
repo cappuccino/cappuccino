@@ -448,6 +448,8 @@ var _CPToolbarItemInfoMake = function(anIndex, aView, aLabel, aMinWidth)
     
     CPPopUpButton       _additionalItemsButton;
     CPColor             _labelColor;
+    
+    float               _minWidth;
 }
 
 + (void)initialize
