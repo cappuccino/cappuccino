@@ -1,6 +1,6 @@
-import <Foundation/CPArray.j>
-import <Foundation/CPString.j>
-import <Foundation/CPNumber.j>
+@import <Foundation/CPArray.j>
+@import <Foundation/CPString.j>
+@import <Foundation/CPNumber.j>
 
 @implementation CPArrayTest : OJTestCase
 
@@ -83,4 +83,13 @@ import <Foundation/CPNumber.j>
     }
 }
 
+- (void)testRemoveObjectsAtIndexes
+{
+	var array = [CPMutableArray arrayWithObjects:@"one", @"two", @"three", @"four", nil],
+			indexes = [CPMutableIndexSet indexSetWithIndex: 2];
+			
+	[array removeObjectsAtIndexes: indexes];
+	
+	[self assert:array equals:[@"one", @"two", @"four"]];
+}
 @end
