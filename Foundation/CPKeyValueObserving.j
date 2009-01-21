@@ -582,4 +582,4 @@ var _kvoRemoveMethodForMethod = function _kvoRemoveMethodForMethod(theKey, theMe
     }
 }
 
-@import "CPArray_KVO.j"
+@import "CPArray+KVO.j"
