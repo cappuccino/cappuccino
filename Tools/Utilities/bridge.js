@@ -181,7 +181,11 @@ if (!this.load)
     alert("Setting up 'load()'");
     this.load = function(path)
     {
-        return eval(readFile(path));
+        var contents = readFile(path);
+        if (typeof Packages !== "undefined")
+            return Packages.org.mozilla.javascript.Context.getCurrentContext().evaluateString(window, contents, path, 0, null);
+        else
+            return eval(contents);
     }
 }
 

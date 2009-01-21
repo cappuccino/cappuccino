@@ -151,7 +151,11 @@ function fragment_evaluate_code(aFragment)
     
     try
     {
+#if RHINO
+        compiled = Packages.org.mozilla.javascript.Context.getCurrentContext().compileFunction(window, "function(){"+GET_CODE(aFragment)+"}", GET_FILE(aFragment).path, 0, null);
+#else
         compiled = new Function(GET_CODE(aFragment));
+#endif
     }
     catch(anException)
     {
