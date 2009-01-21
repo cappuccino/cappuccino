@@ -80,6 +80,7 @@ var CPURLConnectionDelegate = nil;
     CPURLRequest    _request;
     id              _delegate;
     BOOL            _isCanceled;
+    BOOL            _isLocalFileConnection;
     
     XMLHTTPRequest  _XMLHTTPRequest;
 }
@@ -150,6 +151,12 @@ var CPURLConnectionDelegate = nil;
         _delegate = aDelegate;
         _isCanceled = NO;
         
+        var path = [_request URL];
+        
+        _isLocalFileConnection =    path.indexOf("file:") === 0 || 
+                                    ((path.indexOf("http:") !== 0 || path.indexOf("https:") !== 0) && 
+                                    window.location && window.location.protocol === "file:");
+        
         _XMLHTTPRequest = objj_request_xmlhttp();
             
         if (shouldStartImmediately)
@@ -217,20 +224,34 @@ var CPURLConnectionDelegate = nil;
     }
 }
 
+- (BOOL)isLocalFileConnection
+{
+    return _isLocalFileConnection;
+}
+
 /* @ignore */
 - (void)_readyStateDidChange
 {
     if (_XMLHTTPRequest.readyState == XMLHTTPRequestComplete)
     {
         var statusCode = _XMLHTTPRequest.status,
-            url = [_request URL];
+            URL = [_request URL];
         
         if ([_delegate respondsToSelector:@selector(connection:didReceiveResponse:)])
-            [_delegate connection:self didReceiveResponse:[[CPHTTPURLResponse alloc] _initWithStatusCode:statusCode]];
-            
+            if (_isLocalFileConnection)
+                [_delegate connection:self didReceiveResponse:[[CPURLResponse alloc] initWithURL:URL]];
+            else
+            {
+                var response = [[CPHTTPURLResponse alloc] initWithURL:URL];
+                
+                [response _setStatusCode:statusCode];
+                
+                [_delegate connection:self didReceiveResponse:response];
+            }
+                        
         if (!_isCanceled)
         {
-            if (statusCode == 200 || (url.indexOf("file:") === 0 && statusCode === 0) || ((url.indexOf("http:") !== 0 || url.indexOf("https:") !== 0) && window.location && window.location.protocol === "file:" && statusCode === 0))
+            if (statusCode == 200 || (statusCode === 0 && _isLocalFileConnection))
             {
                 [_delegate connection:self didReceiveData:_XMLHTTPRequest.responseText];
                 [_delegate connectionDidFinishLoading:self];

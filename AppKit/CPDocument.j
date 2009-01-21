@@ -386,10 +386,14 @@ var CPDocumentUntitledCount = 0;
 */
 - (void)connection:(CPURLConnection)aConnection didReceiveResponse:(CPURLResponse)aResponse
 {
+    // If we got this far and it wasn't an HTTP request, then everything is fine.
+    if (![aResponse isKindOfClass:[CPHTTPURLResponse class]])
+        return;
+    
     var statusCode = [aResponse statusCode];
     
     // Nothing to do if everything is hunky dory.
-    if (statusCode == 200)
+    if (statusCode === 200)
         return;
     
     var session = aConnection.session;

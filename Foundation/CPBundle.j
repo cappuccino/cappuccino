@@ -123,17 +123,18 @@
     {
         objj_decompile([data string], self);
         
-        var files = [self objectForInfoDictionaryKey:@"CPBundleReplacedFiles"];
-            importCallback = function()
-            {
-                // FIXME: Should we share a common context across all these loads?
-                if (files.length > 0) 
-                    objj_import([self bundlePath] + '/' + files.pop(), YES, importCallback);
-                else if ([_delegate respondsToSelector:@selector(bundleDidFinishLoading:)])
-                    [_delegate bundleDidFinishLoading:self];
-            }
+        var context = new objj_context();
+    
+        if ([_delegate respondsToSelector:@selector(bundleDidFinishLoading:)])
+            context.didCompleteCallback = function() { [_delegate bundleDidFinishLoading:self]; };
+    
+        var files = [self objectForInfoDictionaryKey:@"CPBundleReplacedFiles"],
+            count = files.length;
+            
+        while (count--)
+            context.pushFragment(fragment_create_file([self bundlePath] + '/' + files[count], new objj_bundle(""), YES, NULL));
         
-        objj_import([self bundlePath] + '/' + files.pop(), YES, importCallback);
+        context.evaluate();
     }
 }
 
