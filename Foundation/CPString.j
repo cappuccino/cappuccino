@@ -91,7 +91,8 @@ var CPStringHashes      = new objj_dictionary();
 */
 + (id)stringWithHash:(unsigned)aHash
 {
-    return sprintf("%06x", aHash);
+    var hashString = String(aHash);
+    return "000000".substring(0, MAX(6-hashString.length, 0)) + hashString;
 }
 
 /*!
