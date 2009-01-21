@@ -513,6 +513,14 @@ var _CPTextFieldSquareBezelColor = nil,
     return YES;
 }
 
+- (void)mouseDown:(CPEvent)anEvent
+{
+    if (![self isEditable])
+        return [[self nextResponder] mouseDown:anEvent];
+        
+    [super mouseDown:anEvent];
+}
+/*
 - (void)mouseUp:(CPEvent)anEvent
 {    
     if (_isEditable && [[self window] firstResponder] == self)
@@ -520,7 +528,7 @@ var _CPTextFieldSquareBezelColor = nil,
         
     [super mouseUp:anEvent];
 }
-
+*/
 /*! 
     Sets whether or not the receiver text field can be edited
 */

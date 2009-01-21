@@ -346,6 +346,12 @@ var LEFT_SHADOW_INSET       = 3.0,
         [_shadowView setFrame:_CGRectMake(x - LEFT_SHADOW_INSET, y - TOP_SHADOW_INSET, width + insetWidth, height + insetHeight)];
 }
 
+- (void)mouseDown:(CPEvent)anEvent
+{
+    // Should we do something with this event?
+    [[self nextResponder] mouseDown:anEvent];
+}
+
 @end
 
 var CPImageViewImageKey         = @"CPImageViewImageKey",

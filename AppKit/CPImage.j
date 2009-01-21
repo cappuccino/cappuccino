@@ -38,6 +38,17 @@ CPImageLoadStatusReadError      = 6;
 
 CPImageDidLoadNotification      = @"CPImageDidLoadNotification";
 
+function CPImageInBundle(aFilename, aSize, aBundle)
+{
+    if (!aBundle)
+        aBundle = [CPBundle mainBundle];
+    
+    if (aSize)
+        return [[CPImage alloc] initWithContentsOfFile:[aBundle pathForResource:aFilename] size:aSize];
+    
+    return [[CPImage alloc] initWithContentsOfFile:[aBundle pathForResource:aFilename]];
+}
+
 @implementation CPBundle (CPImageAdditions)
 
 - (CPString)pathForResource:(CPString)aFilename
