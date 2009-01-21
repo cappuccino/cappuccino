@@ -272,7 +272,7 @@ var CPControlBlackColor     = [CPColor blackColor];
 {
     var type = [anEvent type],
         currentLocation = [self convertPoint:[anEvent locationInWindow] fromView:nil];
-        isWithinFrame = [self tracksOutsideOfFrame] || CGRectContainsPoint([self bounds], currentLocation);
+        isWithinFrame = [self tracksMouseOutsideOfFrame] || CGRectContainsPoint([self bounds], currentLocation);
 
     if (type === CPLeftMouseUp)
     {
