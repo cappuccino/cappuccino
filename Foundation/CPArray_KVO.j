@@ -263,12 +263,12 @@
             enumerator = [self objectEnumerator],
             object;
             
-        while (object = [enumerator nextObject])
+        while ((object = [enumerator nextObject]) !== nil)
         {
             var value = [object valueForKey:aKey];
             
-            if (!value && value !== "")
-                value = [NSNull null];
+            if (value === nil || value === undefined)
+                value = [CPNull null];
                 
             newArray.push(value);
         }
@@ -279,11 +279,11 @@
 
 - (id)valueForKeyPath:(CPString)aKeyPath
 {
-    if (aKey.indexOf("@") === 0)
+    if (aKeyPath.indexOf("@") === 0)
     {            
-        var dotIndex = akey.indexOf("."),
-            operator = aKey.substring(1, dotIndex),
-            parameter = aKey.substring(dotIndex+1);
+        var dotIndex = aKeyPath.indexOf("."),
+            operator = aKeyPath.substring(1, dotIndex),
+            parameter = aKeyPath.substring(dotIndex+1);
         
         if (kvoOperators[operator])
             return kvoOperators[operator](self, _cmd, parameter);
@@ -296,12 +296,12 @@
             enumerator = [self objectEnumerator],
             object;
             
-        while (object = [enumerator nextObject])
+        while ((object = [enumerator nextObject]) !== nil)
         {
             var value = [object valueForKeyPath:aKeyPath];
             
-            if (!value && value !== "")
-                value = [NSNull null];
+            if (value === nil || value === undefined)
+                value = [CPNull null];
                 
             newArray.push(value);
         }
@@ -337,23 +337,27 @@ kvoOperators["avg"] = function avgOperator(self, _cmd, param)
 {
     var objects = [self valueForKeyPath:param],
         length = [objects count],
+        index = length;
         average = 0.0;
 
-    while(length--)
-        average += [objects[length] doubleValue] / count;
+    if (!length)
+        return 0;
+        
+    while(index--)
+        average += [objects[index] doubleValue];
 
-    return average;
+    return average / length;
 }
 
 kvoOperators["max"] = function maxOperator(self, _cmd, param)
 {
     var objects = [self valueForKeyPath:param],
-        length = [objects count] - 1,
+        index = [objects count] - 1,
         max = [objects lastObject];
 
-    while (length--)
+    while (index--)
     {
-        var item = objects[length];
+        var item = objects[index];
         if ([max compare:item] < 0)
             max = item;
     }
@@ -364,12 +368,12 @@ kvoOperators["max"] = function maxOperator(self, _cmd, param)
 kvoOperators["min"] = function minOperator(self, _cmd, param)
 {
     var objects = [self valueForKeyPath:param],
-        length = [objects count] - 1,
+        index = [objects count] - 1,
         min = [objects lastObject];
 
-    while (length--)
+    while (index--)
     {
-        var item = objects[length];
+        var item = objects[index];
         if ([min compare:item] > 0)
             min = item;
     }
@@ -385,11 +389,11 @@ kvoOperators["count"] = function countOperator(self, _cmd, param)
 kvoOperators["sum"] = function sumOperator(self, _cmd, param)
 {
     var objects = [self valueForKeyPath:param],
-        length = [objects count],
+        index = [objects count],
         sum = 0.0;
 
-    while(length--)
-        sum += [objects[length] doubleValue];
+    while(index--)
+        sum += [objects[index] doubleValue];
 
     return sum;
 }

@@ -265,7 +265,7 @@ var KVOProxyMap = [CPDictionary dictionary],
     {
         var newValue = [_targetObject valueForKeyPath:aPath];
 
-        if (!newValue && newValue !== "")
+        if (newValue === nil || newValue === undefined)
             newValue = [CPNull null];
 
         var changes = [CPDictionary dictionaryWithObject:newValue forKey:CPKeyValueChangeNewKey];
@@ -323,7 +323,7 @@ var KVOProxyMap = [CPDictionary dictionary],
         {
             var oldValue = [_targetObject valueForKey:aKey];
     
-            if (!oldValue && oldValue !== "")
+            if (oldValue === nil || oldValue === undefined)
                 oldValue = [CPNull null];
 
             [changes setObject:oldValue forKey:CPKeyValueChangeOldKey];
@@ -355,7 +355,7 @@ var KVOProxyMap = [CPDictionary dictionary],
         {
             var newValue = [_targetObject valueForKey:aKey];
     
-            if (!newValue && newValue !== "")
+            if (newValue === nil || newValue === undefined)
                 newValue = [CPNull null];
     
             [changes setObject:newValue forKey:CPKeyValueChangeNewKey];

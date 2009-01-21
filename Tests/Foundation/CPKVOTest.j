@@ -323,7 +323,17 @@
     [self assertTrue: _sawObservation message:"Never recieved an observation"];
 }
 
-
+- (void)testKVCArrayOperators
+{
+    var one = [1, 1, 1, 1, 1, 1, 1, 1],
+        two = [1, 2, 3, 4, 8, 0];
+    
+    [self assertTrue:[one valueForKey:"@count"]===8 message:@"expected count of 8, got: "+[one valueForKey:@"@count"]]
+    [self assertTrue:[one valueForKeyPath:@"@sum.intValue"]===8 message:@"expected sum of 8, got: "+[one valueForKeyPath:@"@sum.intValue"]];
+    [self assertTrue:[two valueForKeyPath:@"@avg.intValue"]===3 message:@"expected avg of 3, got: "+[two valueForKeyPath:@"@avg.intValue"]];
+    [self assertTrue:[two valueForKeyPath:@"@max.intValue"]===8 message:@"expected max of 8, got: "+[two valueForKeyPath:@"@max.intValue"]];
+    [self assertTrue:[two valueForKeyPath:@"@min.intValue"]===0 message:@"expected min of 0, got: "+[two valueForKeyPath:@"@min.intValue"]];
+}
 
 - (void)testPerformance
 {
@@ -347,7 +357,7 @@
 
     var secondTotal = new Date() - startTime;
 
-    [self assertTrue: (secondTotal < total*4) message: "Overheard of one observer exceeded 400%. first: "+total+" second: "+secondTotal+" %"+FLOOR(secondTotal/total*100)];
+    [self assertTrue: (secondTotal < total*4) message: "Overhead of one observer exceeded 400%. first: "+total+" second: "+secondTotal+" %"+FLOOR(secondTotal/total*100)];
 }
 
 - (void)observeValueForKeyPath:(CPString)aKeyPath ofObject:(id)anObject change:(CPDictionary)changes context:(id)aContext
