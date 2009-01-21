@@ -26,6 +26,7 @@ kCFPropertyListBinaryFormat_v1_0    = 200;
 kCFPropertyList280NorthFormat_v1_0  = -1000;
 
 OBJJPlistParseException = "OBJJPlistParseException";
+OBJJPlistSerializeException = "OBJJPlistSerializeException";
 
 var kCFPropertyList280NorthMagicNumber  = "280NPLIST";
 
@@ -193,27 +194,15 @@ var XML_XML                 = "xml",
     PLIST_NUMBER_INTEGER    = "integer";
     PLIST_DATA              = "data";
 
-#if RHINO
 
-#define NODE_NAME(anXMLNode)        (String(anXMLNode.getNodeName()))
-#define NODE_TYPE(anXMLNode)        (anXMLNode.getNodeType())
-#define NODE_VALUE(anXMLNode)       (String(anXMLNode.getNodeValue()))
-#define FIRST_CHILD(anXMLNode)      (anXMLNode.getFirstChild())
-#define NEXT_SIBLING(anXMLNode)     (anXMLNode.getNextSibling())
-#define PARENT_NODE(anXMLNode)      (anXMLNode.getParentNode())
-#define DOCUMENT_ELEMENT(aDocument) (aDocument.getDocumentElement())
-
-#else
-
-#define NODE_NAME(anXMLNode)        (anXMLNode.nodeName)
+#define NODE_NAME(anXMLNode)        (String(anXMLNode.nodeName))
 #define NODE_TYPE(anXMLNode)        (anXMLNode.nodeType)
-#define NODE_VALUE(anXMLNode)       (anXMLNode.nodeValue)
+#define NODE_VALUE(anXMLNode)       (String(anXMLNode.nodeValue))
 #define FIRST_CHILD(anXMLNode)      (anXMLNode.firstChild)
 #define NEXT_SIBLING(anXMLNode)     (anXMLNode.nextSibling)
 #define PARENT_NODE(anXMLNode)      (anXMLNode.parentNode)
 #define DOCUMENT_ELEMENT(aDocument) (aDocument.documentElement)
 
-#endif
 
 #define IS_OF_TYPE(anXMLNode, aType) (NODE_NAME(anXMLNode) == aType)
 #define IS_PLIST(anXMLNode) IS_OF_TYPE(anXMLNode, PLIST_PLIST)
@@ -473,8 +462,11 @@ var _CPPropertyListAppendXMLData = function(XMLData, aPlist)
     else if (aPlist.slice)
         _CPArrayAppendXMLData(XMLData, aPlist);
         
-    else
+    else if (aPlist._keys)
         _CPDictionaryAppendXMLData(XMLData, aPlist);
+    else
+        objj_exception_throw(new objj_exception(OBJJPlistSerializeException, "*** unknown plist ("+aPlist+") type: " + type));
+        
 }
 
 // 280 North Plist Format
