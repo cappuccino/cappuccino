@@ -101,6 +101,11 @@ var CPControlBlackColor     = [CPColor blackColor];
     
     CPDictionary    _backgroundColors;
     CPString        _currentBackgroundColorName;
+    
+    BOOL        _continuousTracking;
+    BOOL        _trackingWasWithinFrame;
+    unsigned    _trackingMouseDownFlags;
+    CGPoint     _previousTrackingLocation;
 }
 
 - (id)initWithFrame:(CGRect)aFrame
@@ -110,6 +115,8 @@ var CPControlBlackColor     = [CPColor blackColor];
     if (self)
     {
         _sendActionOn = CPLeftMouseUpMask;
+        _trackingMouseDownFlags = 0;
+        
         _isEnabled = YES;
         
         [self setFont:[CPFont systemFontOfSize:12.0]];
@@ -256,206 +263,82 @@ var CPControlBlackColor     = [CPColor blackColor];
     _target = aTarget;
 }
 
-- (BOOL)startTrackingAt:(CGPoint)aPoint
+- (BOOL)tracksMouseOutsideOfFrame
 {
-    CPLog("Start tracking at x:" + aPoint.x + " y:" + aPoint.y) ;
-    return YES;
+    return NO;
 }
 
-//- (BOOL)continueTracking:(CGPoint)lastPoint at:(CGPoint)currentPoint inView:(NSView *)view {
-- (BOOL)continueTracking:(CGPoint)lastPoint at:(CGPoint)currentPoint // inView:(CPView)aView
+- (void)trackMouse:(CPEvent)anEvent
 {
-    CPLog("Continue tracking at x:" + currentPoint.x + " y:" + currentPoint.y) ;
-    return YES;
+    var type = [anEvent type],
+        currentLocation = [self convertPoint:[anEvent locationInWindow] fromView:nil];
+        isWithinFrame = [self tracksOutsideOfFrame] || CGRectContainsPoint([self bounds], currentLocation);
+
+    if (type === CPLeftMouseUp)
+    {
+        [self stopTracking:_previousTrackingLocation at:currentLocation mouseIsUp:YES];
+        
+        _trackingMouseDownFlags = 0;
+    }
+    
+    else
+    {
+        if (type === CPLeftMouseDown)
+        {
+            _trackingMouseDownFlags = [anEvent modifierFlags];
+            _continuousTracking = [self startTrackingAt:currentLocation];
+        }
+        else if (type === CPLeftMouseDragged)
+        {
+            if (isWithinFrame)
+            {
+                if (!_trackingWasWithinFrame)
+                    _continuousTracking = [self startTrackingAt:currentLocation];
+                
+                else if (_continuousTracking)
+                    _continuousTracking = [self continueTracking:_previousTrackingLocation at:currentLocation];
+            }
+            else
+                [self stopTracking:_previousTrackingLocation at:currentLocation mouseIsUp:NO];
+        }
+        
+        [CPApp setTarget:self selector:@selector(trackMouse:) forNextEventMatchingMask:CPLeftMouseDraggedMask | CPLeftMouseUpMask untilDate:nil inMode:nil dequeue:YES];
+    }
+    
+    if ((_sendActionOn & (1 << type)) && isWithinFrame)
+        [self sendAction:_action to:_target];
+    
+    _trackingWasInFrame = isWithinFrame;
+    _previousTrackingLocation = currentLocation;
+}
+
+- (unsigned)mouseDownFlags
+{
+    return _trackingMouseDownFlags;
+}
+
+- (BOOL)startTrackingAt:(CGPoint)aPoint
+{
+    return (_sendActionOn & CPPeriodicMask) || (_sendActionOn & CPLeftMouseDraggedMask);
+}
+
+- (BOOL)continueTracking:(CGPoint)lastPoint at:(CGPoint)aPoint
+{
+    return (_sendActionOn & CPPeriodicMask) || (_sendActionOn & CPLeftMouseDraggedMask);
 }
 
 - (void)stopTracking:(CGPoint)lastPoint at:(CGPoint)aPoint mouseIsUp:(BOOL)mouseIsUp
 {
-    CPLog("Stop tracking at x:" + aPoint.x + " y:" + aPoint.y) ;
-}
-
-- (void)old__trackMouse:(CPEvent)anEvent untilMouseUp:(BOOL)shouldContinueUntilMouseUp
-{
-    CPLog("start trackMouse") ;
-    // if (event is mousedown) startTackingAt:event.locationInWIndow
-    // else if (event is mousedragged && event location withing frame)
-    // continueTracking:at:....
-    // else if (event is out of frame) { stopTracking... if (event is mouseup
-    // || !shouldContinueUntilMouseUp) return;}
-    // register to receive next event
-
-    // if (_sendActionOn & CPLeftMouseUpMask && CPRectContainsPoint([self bounds], [self convertPoint:[anEvent locationInWindow] fromView:nil]))
-
-    // doc here : http://objc.toodarkpark.net/AppKit/Classes/NSCell.html#//apple_ref/occ/instm/NSCell/trackMouse:inRect:ofView:untilMouseUp:
-    // if(![self startTrackingAt:[event locationInWindow] inView:view])
-    //  return NO;
-
-     if ([anEvent type] == CPLeftMouseDown) 
-     {
-         CPLog("startTrackingAt should log something") ;
-         [self startTrackingAt:[anEvent locationInWindow]] ;
-     }
-     else
-        return NO ;
-
-
-    do {
-        var currentPoint    = [anEvent locationInWindow] ;
-        var lastPoint       = [anEvent locationInWindow] // should test if _lastPoint do not existe = current point else = _lastPoint
-        var isWithinFrame   = CPRectContainsPoint([self bounds], [self convertPoint:[anEvent locationInWindow] fromView:nil]) ;
-        var eventType       = [anEvent type] ;
-        
-        // if (shouldContinueUntilMouseUp) {
-        //     if (eventType==CPLeftMouseUp) {
-        //         // [self stopTracking:lastPoint at:[event locationInWindow] inView:view mouseIsUp:YES];
-        //         [self stopTracking:lastPoint at:currentPoint mouseIsUp:YES];
-        //         result=YES;
-        //         break;
-        //     }
-        // }
-        // else if (isWithinFrame) {
-        //     if(eventType==CPLeftMouseUp){
-        //         // [self stopTracking:lastPoint at:[event locationInWindow] inView:view mouseIsUp:YES];
-        //         [self stopTracking:lastPoint at:currentPoint mouseIsUp:YES];
-        //         result=YES;
-        //         break;
-        //     }
-        // }
-        // else {
-        //     // [self stopTracking:lastPoint at:[event locationInWindow] inView:view mouseIsUp:NO];
-        //     [self stopTracking:lastPoint at:currentPoint mouseIsUp:NO];
-        //     result=NO;
-        //     break;
-        // }
-        // 
-        // if (isWithinFrame) {
-        //     // if (![self continueTracking:lastPoint at:[event locationInWindow] inView:view])
-        //     if (![self continueTracking:lastPoint at:currentPoint])
-        //         break;
-        // 
-        //     // if([self isContinuous])
-        //     //     [(NSControl *)view sendAction:[(NSControl *)view action] to:[(NSControl *)view target]];
-        // }
-
-        // [[view window] flushWindow];
-        // 
-        // event=[[view window] nextEventMatchingMask:NSLeftMouseUpMask|
-        //                       NSLeftMouseDraggedMask];
-
-        
-        // === my version now :
-        
-        // var eventType       = [anEvent type] ;
-        // var point           = [anEvent locationInWindow] ;
-        // var lastPoint       = [anEvent locationInWindow] // should test if _lastPoint do not existe = current point else = _lastPoint
-        // var isWithinFrame   = CPRectContainsPoint([self bounds], [self convertPoint:[anEvent locationInWindow] fromView:nil]) ;
-        
-        if (eventType == CPLeftMouseDown) 
-        {
-            // [self startTrackingAt:currentPoint] ;
-        }
-        else if (eventType == CPLeftMouseDragged && isWithinFrame)
-        {
-            [self continueTracking:lastPoint at:currentPoint];
-        }
-        // else if (event is out of frame) {
-        //  stopTracking... if (event is mouseup || !shouldContinueUntilMouseUp) return;
-        //  }
-        // register to receive next event
-        else if (!isWithinFrame)
-        {
-            [self stopTracking:lastPoint at:currentPoint mouseIsUp:(anEvent == CPLeftMouseUp)];
-        
-            if (eventType == CPLeftMouseUp || !shouldContinueUntilMouseUp) 
-            {
-                CPLog("This should end") ;
-                break ;
-            }
-        }
-        
-        // CPLog("before force break") ;
-        // break;
-        // CPLog("after force break") ;
-    } while (YES) ;
-
-
-
-    // register to receive next event
-    CPLog("end trackMouse 8") ;
-}
-
-- (void)trackMouse:(CPEvent)anEvent untilMouseUp:(BOOL)shouldContinueUntilMouseUp
-{
-    CPLog("start trackMouse") ;
-
-    // doc here : http://objc.toodarkpark.net/AppKit/Classes/NSCell.html#//apple_ref/occ/instm/NSCell/trackMouse:inRect:ofView:untilMouseUp:
-
-    var currentPoint    = [anEvent locationInWindow] ;
-    // var currentPoint    = [self convertPoint:[anEvent locationInWindow] fromView:nil] ;
-    var lastPoint       = [anEvent locationInWindow] 
-    var isWithinFrame   = CPRectContainsPoint([self bounds], [self convertPoint:[anEvent locationInWindow] fromView:nil]) ;
-    var eventType       = [anEvent type] ;
-    
-    if (eventType == CPLeftMouseDown) 
-    {
-        [self startTrackingAt:currentPoint] ;
-    }
-    else if (eventType == CPLeftMouseDragged && isWithinFrame)
-    {
-        [self continueTracking:lastPoint at:currentPoint];
-    }
-    else if (eventType == CPLeftMouseUp && isWithinFrame)
-    {
-        CPLog("Up in the frame -> shoud fire up action!") ;
-        // [self stopTracking:lastPoint at:currentPoint mouseIsUp:(anEvent == CPLeftMouseUp)];
-        return ;
-    }
-    else if (!isWithinFrame)
-    {
-        // [self stopTracking:lastPoint at:currentPoint mouseIsUp:(anEvent == CPLeftMouseUp)];
-    
-        if (eventType == CPLeftMouseUp || !shouldContinueUntilMouseUp) 
-        {
-            [self stopTracking:lastPoint at:currentPoint mouseIsUp:(anEvent == CPLeftMouseUp)];
-            CPLog("Up out of the frame") ;
-            return ;
-        }
-    }
-
-    [CPApp setTarget:self selector:@selector(trackMouse:untilMouseUp:) forNextEventMatchingMask:CPLeftMouseDraggedMask | CPLeftMouseUpMask untilDate:nil inMode:nil dequeue:YES];
-    
-    CPLog("end trackMouse") ;
 }
 
 - (void)mouseDown:(CPEvent)anEvent
 {
-    // while (getNextEvent)
-    // if (currentEvent is mousedragged) highlight or unhighlight
-    // else if (currentEvent is mouseUp) fire action, return
-
-    // if (not enabled) return; // nothing to do.
-    // [self trackMouse:anEvent untilMouseUp:YES];    
-
-    CPLog("CPControl > mouseDown") ;
-    if (!_isEnabled) return ;
-    [self trackMouse:anEvent untilMouseUp:YES] ;
-}
-
-- (void)mouseUp:(CPEvent)anEvent
-{
-    CPLog("CPControl > mouseUp") ;
-    if (_sendActionOn & CPLeftMouseUpMask && CPRectContainsPoint([self bounds], [self convertPoint:[anEvent locationInWindow] fromView:nil]))
-    {
-        CPLog("Will send action because isWithinFrame == " + CPRectContainsPoint([self bounds], [self convertPoint:[anEvent locationInWindow] fromView:nil])) ;
-        [self sendAction:_action to:_target];
-    }
-    else 
-    {
-        CPLog("Won't send action because isWithinFrame == " + CPRectContainsPoint([self bounds], [self convertPoint:[anEvent locationInWindow] fromView:nil])) ;
-    }
+    if (!_isEnabled)
+        return;
     
-    [super mouseUp:anEvent];
+    [self trackMouse:anEvent];
 }
+
 
 /*!
     Causes <code>anAction</code> to be sent to <code>anObject</code>.
@@ -482,7 +365,7 @@ var CPControlBlackColor     = [CPColor blackColor];
 - (BOOL)isContinuous
 {
     // Some subclasses should redefine this with CPLeftMouseDraggedMask
-    return (_sendActionOn & CPPeriodicMask) != 0;
+    return (_sendActionOn & CPPeriodicMask) !== 0;
 }
 
 /*!

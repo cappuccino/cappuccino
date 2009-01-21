@@ -216,6 +216,7 @@ var CPSliderHorizontalKnobImage         = nil,
         
         _standardKnob = [[CPImageView alloc] initWithFrame:CPRectMake(0.0, 0.0, knobSize.width, knobSize.height)];
         
+        [_standardKnob setHitTests:NO];
         [_standardKnob setImage:knobImage];
     }
     
@@ -356,40 +357,37 @@ var CPSliderHorizontalKnobImage         = nil,
     return CPPointMake(MAX(MIN(CPRectGetWidth([self bounds]) - _knobSize.width, aPoint.x), 0.0), (CPRectGetHeight([self bounds]) - CPRectGetHeight([_knob frame])) / 2.0);
 }
 
-- (void)mouseUp:(CPEvent)anEvent
+- (BOOL)tracksMouseOutsideOfFrame
+{
+    return YES;
+}
+
+- (BOOL)startTrackingAt:(CGPoint)aPoint
+{
+    [[self knob] setImage:[self pushedKnobImage]];
+    
+    [_knob setFrameOrigin:[self constrainKnobPosition:aPoint]];
+
+    [super setObjectValue:[self valueForKnobPosition:[_knob frame].origin]];
+    
+    return YES;   
+}
+
+- (BOOL)continueTracking:(CGPoint)lastPoint at:(CGPoint)aPoint
+{
+    [_knob setFrameOrigin:[self constrainKnobPosition:aPoint]];
+    
+    [super setObjectValue:[self valueForKnobPosition:[_knob frame].origin]];
+    
+    return YES;
+}
+
+- (void)stopTracking:(CGPoint)lastPoint at:(CGPoint)aPoint mouseIsUp:(BOOL)mouseIsUp
 {
     [[self knob] setImage:[self knobImage]];
-
+    
     if ([_target respondsToSelector:@selector(sliderDidFinish:)])
         [_target sliderDidFinish:self];
-
-    if (_sendActionOn & CPLeftMouseUpMask)
-        [self sendAction:_action to:_target];
-    //[super mouseUp:anEvent];
-}
-
-- (void)mouseDown:(CPEvent)anEvent
-{
-    [_knob setFrameOrigin:[self constrainKnobPosition:[self convertPoint:[anEvent locationInWindow] fromView:nil]]];
-
-    [super setObjectValue:[self valueForKnobPosition:[_knob frame].origin]];
-    
-    [[self knob] setImage:[self pushedKnobImage]];
-
-    if (_sendActionOn & CPLeftMouseDraggedMask)
-        [self sendAction:_action to:_target];
-    //[super mouseDown:anEvent];
-}
-
-- (void)mouseDragged:(CPEvent)anEvent
-{
-    [_knob setFrameOrigin:[self constrainKnobPosition:[self convertPoint:[anEvent locationInWindow] fromView:nil]]];
-    
-    [super setObjectValue:[self valueForKnobPosition:[_knob frame].origin]];
-
-    if (_sendActionOn & CPLeftMouseDraggedMask)
-        [self sendAction:_action to:_target];
-    //[super mouseDown:anEvent];
 }
 
 @end

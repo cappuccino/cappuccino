@@ -305,7 +305,7 @@ CPRunContinuesResponse  = -1002;
     _currentSession._state = aCode;
     _currentSession = _currentSession._previous;
     
-    if (aCode == CPRunAbortedResponse)
+//    if (aCode == CPRunAbortedResponse)
         [self _removeRunModalLoop];
 }
 
@@ -315,7 +315,7 @@ CPRunContinuesResponse  = -1002;
     var count = _eventListeners.length;
     
     while (count--)
-        if (_eventListeners[count]._callback == _CPRunModalLoop)
+        if (_eventListeners[count]._callback === _CPRunModalLoop)
         {
             _eventListeners.splice(count, 1);
             
@@ -686,18 +686,12 @@ var _CPEventListenerMake = function(anEventMask, aCallback)
 var _CPRunModalLoop = function(anEvent)
 {
     [CPApp setCallback:_CPRunModalLoop forNextEventMatchingMask:CPAnyEventMask untilDate:nil inMode:0 dequeue:NO];
-        
-    // FIXME: abortModal from event loop?
+
     var theWindow = [anEvent window],
         modalSession = CPApp._currentSession;
     
     if (theWindow == modalSession._window || [theWindow worksWhenModal])
         [theWindow sendEvent:anEvent];
-    /*else
-        [[session modalWindow] makeKeyAndOrderFront:]*/
-
-    if (modalSession._state != CPRunContinuesResponse)
-        [CPApp _removeRunModalLoop];
 }
 
 /*!

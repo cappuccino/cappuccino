@@ -587,6 +587,8 @@ var _CPButtonClassName                          = nil,
 */
 - (void)highlight:(BOOL)aFlag
 {
+    _isHighlighted = aFlag;
+    
     [self drawBezelWithHighlight:aFlag];
     [self drawContentsWithHighlight:aFlag];
 }
@@ -608,40 +610,18 @@ var _CPButtonClassName                          = nil,
     return _tag;
 }
 
-/*!
-    Called when the user clicks on this button.
-    @param anEvent the event with information about the click
-*/
-- (void)mouseDown:(CPEvent)anEvent
+- (BOOL)startTrackingAt:(CGPoint)aPoint
 {
-    _isHighlighted = YES;
+    [self highlight:YES];
     
-    [self highlight:_isHighlighted];
-    [super mouseDown:anEvent] ;
+    return [super startTrackingAt:aPoint];
 }
 
-/*!
-    Called when the user drags on the button.
-    @param anEvent the event with information about the drag
-*/
-- (void)mouseDragged:(CPEvent)anEvent
+- (void)stopTracking:(CGPoint)lastPoint at:(CGPoint)aPoint mouseIsUp:(BOOL)mouseIsUp
 {
-    _isHighlighted = CGRectContainsPoint([self bounds], [self convertPoint:[anEvent locationInWindow] fromView:nil]);
+    [self highlight:NO];
     
-    [self highlight:_isHighlighted];
-}
-
-/*!
-    Called when the user releases the mouse button
-    @param anEvent the event with information about the mouse release
-*/
-- (void)mouseUp:(CPEvent)anEvent
-{
-    _isHighlighted = NO;
-    
-    [self highlight:_isHighlighted];
-
-    [super mouseUp:anEvent];
+    [super stopTracking:lastPoint at:aPoint mouseIsUp:mouseIsUp];
 }
 
 /*!
