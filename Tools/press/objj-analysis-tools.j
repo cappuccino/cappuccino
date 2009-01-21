@@ -216,38 +216,9 @@ function findGlobalDefines(context, scope, rootPath, evaledFragments)
     //    return result;
     //}
     
-    var needsPatch = true,
-        patchString = "__RHINO_FIRST_SCOPE.String.prototype.isa=CPString;__RHINO_FIRST_SCOPE.Number.prototype.isa=CPNumber;__RHINO_FIRST_SCOPE.Boolean.prototype.isa=CPNumber;print('PATCHED!');";
-    
     // OVERRIDE fragment_evaluate_file
     var fragment_evaluate_file_original = scope.fragment_evaluate_file;
     scope.fragment_evaluate_file = function(aFragment) {
-        
-        // patch Foundation.j (HACK for Rhino bug #374918)
-        if (needsPatch && aFragment.file && (new RegExp("Foundation\\.j$")).test(aFragment.file.path))
-        {
-            CPLog.warn("Patching Foundation.j");
-            
-            var patchFragment = new objj_fragment();
-            patchFragment.info = patchString;
-            patchFragment.type = FRAGMENT_CODE;
-            patchFragment.file = aFragment.file;
-            patchFragment.bundle = aFragment.bundle;
-            patchFragment.context = aFragment.context;
-            
-            for (var i = 0; i < aFragment.context.fragments.length; i++)
-            {
-                if ((aFragment.context.fragments[i].type & FRAGMENT_FILE) && (new RegExp("Foundation\\/")).test(aFragment.context.fragments[i].info))
-                {
-                    CPLog.warn("Inserting patch");
-                    aFragment.context.fragments.splice(i, 0, patchFragment);
-                    break;
-                }
-            }
-            
-            needsPatch = false;
-        }
-        
         return fragment_evaluate_file_original(aFragment);
     }
 
@@ -261,7 +232,6 @@ function findGlobalDefines(context, scope, rootPath, evaledFragments)
         
         if (evaledFragments)
         {
-            if (aFragment.info != patchString)
                 evaledFragments.push(aFragment);
         }
         
@@ -313,9 +283,6 @@ function makeObjjScope(context, debug)
     
     // give the scope "print"
     scope.print = function(value) { Packages.java.lang.System.out.println(String(value)); };
-    
-    // HACK for Rhino bug #374918 (fix toll free bridging)
-    scope.__RHINO_FIRST_SCOPE = this;
     
     // load and eval fake browser environment
     //var envSource = readFile(envPath);
