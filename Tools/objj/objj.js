@@ -74,6 +74,27 @@ catch (e)
     if (e.rhinoException)
     {
         print("    Rhino Exception: " + e.rhinoException);
+        
+        print(" *** Message:       " + e.rhinoException.getMessage());
+        print(" *** Source name:   " + e.rhinoException.sourceName());
+        print(" *** Line number:   " + e.rhinoException.lineNumber());
+        print(" *** Column number: " + e.rhinoException.columnNumber());
+        print(" *** Line Source:   " + e.rhinoException.lineSource());
+        
+        // print the JavaScript stack trace with line numbers:
+        print(" *** Filtered stack trace:");
+        var bos = new Packages.java.io.ByteArrayOutputStream();
+        e.rhinoException.printStackTrace(new Packages.java.io.PrintStream(bos));
+        var stack = String(bos.toString()).split("\n").slice(1);
+        for (var i = 0; i < stack.length; i++) {
+            var match;
+            if (match = stack[i].match(/_c[0-9]+\((.+)\)/))
+                print(match[1]);
+        }
+
+        print(" *** Script stack trace:\n" + e.rhinoException.getScriptStackTrace());
+        
+        print(" *** Raw stack trace:");
         e.rhinoException.printStackTrace();
     }
 }
