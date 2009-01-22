@@ -79,27 +79,4 @@ Eventually we should see what these are supposed to do, and then do that.
 
 */
 
-
-@end
-
-var CPCountedSetCountsKey = @"CPCountedSetCountsKey";
-
-@implementation CPSet (CPCoding)
-
-- (id)initWithCoder:(CPCoder)aCoder
-{
-    self = [super initWithCoder:aCoder];
-
-    if ([aCoder containsObjectForKey:CPCountedSetCountsKey])
-        _counts = [aCoder objectForKey:CPCountedSetCountsKey];
-        
-    return self;
-}
-
-- (void)encodeWithCoder:(CPCoder)aCoder
-{
-    [super encodeWithCoder:aCoder];
-    [aCoder encodeObject:_counts forKey:CPCountedSetCountsKey];
-}
-
 @end
