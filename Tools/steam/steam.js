@@ -89,6 +89,8 @@ function Project(/*String*/ aFilePath, /*String*/ aBuildPath)
     // Read the project file (its just a plist).
     this._properties = readPlist(this._file);
     
+    this._name = dictionary_getValue(this._properties, "Name");
+    
     // Read existing Info.plist if it exists.
     var infoPlist = new File(this._root.getAbsolutePath() + "/Info.plist");
     
@@ -123,6 +125,11 @@ function Project(/*String*/ aFilePath, /*String*/ aBuildPath)
     this._resources = new File(this._root.getAbsolutePath() + "/Resources/").getCanonicalFile();
     
     return this;
+}
+
+Project.prototype.name = function()
+{
+    return this._name;
 }
 
 Project.prototype.targetWithName = function(/*String*/ aName)
@@ -227,6 +234,10 @@ Project.prototype.activeFlags = function()
 
 Project.prototype.build = function()
 {
+    java.lang.System.out.println("Building Target \"" + this.activeTarget().name() + 
+        "\" of Project \"" + this.name() + 
+        "\" with Configuration \"" + this.activeConfiguration().name() + "\".");
+
     var jFiles = getFiles(this._root, "j", this._activeTarget.exclusions()),
         replacedFiles = [];
         hasModifiedJFiles = false;
@@ -298,6 +309,10 @@ Project.prototype.build = function()
 
 Project.prototype.clean = function()
 {
+    java.lang.System.out.println("Cleaning Target \"" + this.activeTarget().name() + 
+        "\" of Project \"" + this.name() + 
+        "\" with Configuration \"" + this.activeConfiguration().name() + "\".");
+        
     exec(["rm", "-rf", this.buildIntermediates().getAbsolutePath()], true);
     exec(["rm", "-rf", this.buildProducts().getAbsolutePath()], true);
 }
@@ -565,11 +580,12 @@ function fileArrayContainsFile(/*Array*/ files, /*File*/ aFile)
     return false;
 }
 
-function getFiles(/*File*/ sourceDirectory, /*String*/ extension, /*Array*/ exclusions)
+function getFiles(/*File*/ sourceDirectory, /*nil|String|Array<String>*/ extensions, /*Array*/ exclusions)
 {
     var matches = [],
-        files = sourceDirectory.listFiles();
-    
+        files = sourceDirectory.listFiles(),
+        hasMultipleExtensions = typeof extensions !== "string";
+
     if (files)
     {
         var index = 0,
@@ -578,13 +594,33 @@ function getFiles(/*File*/ sourceDirectory, /*String*/ extension, /*Array*/ excl
         for (; index < count; ++index)
         {
             var file = files[index].getCanonicalFile(),
-                name = String(file.getName());
+                name = String(file.getName()),
+                isValidExtension = !extensions;
             
-            if ((!extension || name.substring(name.length - extension.length - 1) == ("." + extension)) && (!exclusions || !fileArrayContainsFile(exclusions, file)))
+            if (exclusions && fileArrayContainsFile(exclusions, file))
+                continue;
+            
+            if (!isValidExtension)
+                if (hasMultipleExtensions)
+                {
+                    var extensionCount = extensions.length;
+                    
+                    while (extensionCount-- && !isValidExtension)
+                    {
+                        var extension = extensions[extensionCount];
+                        
+                        if (name.substring(name.length - extension.length - 1) === ("." + extension))
+                            isValidExtension = true;
+                    }
+                }
+                else if (name.substring(name.length - extensions.length - 1) === ("." + extensions))
+                    isValidExtension = true;
+                
+            if (isValidExtension)
                 matches.push(file);
             
             if (file.isDirectory())
-                matches = matches.concat(getFiles(file, extension, exclusions));
+                matches = matches.concat(getFiles(file, extensions, exclusions));
         }
     }
     
