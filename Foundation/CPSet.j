@@ -146,17 +146,35 @@
 /*
     Initializes a newly allocated set and adds to it objects from another given set. Only included for compatability.
 */
-- (id)initWithSet:(CPSet)set
+- (id)initWithSet:(CPSet)aSet
 {
-    return [set copy];
+    return [self initWithSet:aSet copyItems:NO];
 }
 
 /*
     Initializes a newly allocated set and adds to it members of another given set. Only included for compatability.
 */
-- (id)initWithSet:(CPSet)set copyItems:(BOOL)flag
+- (id)initWithSet:(CPSet)aSet copyItems:(BOOL)shouldCopyItems
 {
-    return [self initWithSet:set];
+    self = [self init];
+
+    if (!aSet)
+        return self;
+            
+    var contents = aSet._contents;
+    
+    for (var property in contents)
+    {
+        if (_contents.hasOwnProperty(property))
+        {
+            if (shouldCopyItems)
+                [self addObject:[contents[property] copy]];
+            else
+                [self addObject:contents[property]];
+        }
+    }
+    
+    return self;
 }
 
 /*
@@ -416,13 +434,27 @@
 
 @end
 
+@implementation CPSet (CPCopying)
+
+- (id)copy
+{
+    return [[CPSet alloc] initWithSet:self];
+}
+
+- (id)mutableCopy
+{
+    return [self copy];
+}
+
+@end
+
 var CPSetObjectsKey = @"CPSetObjectsKey";
 
 @implementation CPSet (CPCoding)
 
 - (id)initWithCoder:(CPCoder)aCoder
 {
-    return [[CPSet alloc] initWithArray:[aCoder decodeObjectForKey:CPSetObjectsKey]];
+    return [self initWithArray:[aCoder decodeObjectForKey:CPSetObjectsKey]];
 }
 
 - (void)encodeWithCoder:(CPCoder)aCoder
