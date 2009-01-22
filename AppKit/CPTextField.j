@@ -248,11 +248,13 @@ var _CPTextFieldSquareBezelColor = nil,
     
     _bezelStyle = aBezelStyle;
     
+#if PLATFORM(DOM)
     if (aBezelStyle == CPTextFieldRoundedBezel)
         _DOMTextElement.style.paddingLeft = ROUNDEDBEZEL_HORIZONTAL_PADDING - 1.0 + "px";        
     else 
         _DOMTextElement.style.paddingLeft = "0px";        
-        
+#endif
+
     [self _updateBackground];
 }
 
