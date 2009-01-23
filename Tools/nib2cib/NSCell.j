@@ -68,7 +68,7 @@
         _controlSize    = (flags2 & 0xE0000) >> 17;
                         
         _objectValue    = [aCoder decodeObjectForKey:@"NSContents"];
-        _font           = [aCoder decodeObjectForKey:@"NSFont"];
+        _font           = [aCoder decodeObjectForKey:@"NSSupport"];
     }
     
     return self;

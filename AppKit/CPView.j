@@ -414,15 +414,22 @@ var DOMElementPrototype         = nil,
 /* @ignore */
 - (void)_setWindow:(CPWindow)aWindow
 {
-    // FIXME: check _window == aWindow?  If not, comment why!
-    if ([_window firstResponder] == self)
+    if (_window === aWindow)
+        return;
+    
+    // Clear out first responder if we're the first responder and leaving.
+    if ([_window firstResponder] === self)
         [_window makeFirstResponder:nil];
 
     // Notify the view and its subviews
     [self viewWillMoveToWindow:aWindow];
-    [_subviews makeObjectsPerformSelector:@selector(_setWindow:) withObject:aWindow];
-
+    
     _window = aWindow;
+    
+    var count = [_subviews count];
+    
+    while (count--)
+        [_subviews[count] _setWindow:aWindow];
     
     [self viewDidMoveToWindow];
 }

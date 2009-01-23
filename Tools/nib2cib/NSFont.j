@@ -27,8 +27,17 @@
 
 - (id)NS_initWithCoder:(CPCoder)aCoder
 {
-    // FIXME: bold?
-    return [self _initWithName:[aCoder decodeObjectForKey:@"NSName"] size:[aCoder decodeDoubleForKey:@"NSSize"] bold:NO];
+    var isBold = NO,
+        fontName = [aCoder decodeObjectForKey:@"NSName"];
+ 
+    // FIXME: Is this alwasy true?
+    if (fontName.indexOf("-Bold") === fontName.length - "-Bold".length)
+        isBold = YES;
+    
+    if (fontName === "LucidaGrande" || fontName === "LucidaGrande-Bold")
+        fontName = "Arial";
+    
+    return [self _initWithName:fontName size:[aCoder decodeDoubleForKey:@"NSSize"] bold:isBold];
 }
 
 @end
