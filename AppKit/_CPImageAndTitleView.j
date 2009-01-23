@@ -111,7 +111,7 @@
     [self createOrDestroyDOMTextElement];
 #endif
 
-    [self tile];
+    [self setNeedsDisplay:YES];
 }
 
 - (CPCellImagePosition)imagePosition
@@ -126,7 +126,7 @@
     
     _imageScaling = anImageScaling;
 
-    [self tile];
+    [self setNeedsDisplay:YES];
 }
 
 - (void)imageScaling
@@ -164,7 +164,7 @@
     
     _titleSize = NULL;
     
-    [self tile];
+    [self setNeedsDisplay:YES];
 }
 
 - (CPFont)font
@@ -219,7 +219,7 @@
 #endif
     }
     
-    [self tile];
+    [self setNeedsDisplay:YES];
 }
 
 - (CPImage)image
@@ -280,7 +280,7 @@
 
     _titleSize = NULL;
     
-    [self tile];
+    [self setNeedsDisplay:YES];
 }
 
 - (CPString)title
@@ -288,7 +288,7 @@
     return _title;
 }
 
-- (void)tile
+- (void)drawRect:(CGRect)aRect
 {
     if (!_titleSize && _DOMTextElement)
         _titleSize = [_title sizeWithFont:_font];
@@ -416,11 +416,6 @@
     }
     
     [self setFrameSize:size];
-}
-
-- (void)resizeSubviewsWithOldSize:(CGSize)aSize
-{
-    [self tile];
 }
 
 @end
