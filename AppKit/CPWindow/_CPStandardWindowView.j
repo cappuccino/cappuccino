@@ -96,10 +96,12 @@ var _CPTexturedWindowHeadGradientColor  = nil,
 
 var _CPStandardWindowViewBodyBackgroundColor            = nil,
     _CPStandardWindowViewDividerBackgroundColor         = nil,
-    _CPStandardWindowViewTitleBackgroundColor           = nil;
+    _CPStandardWindowViewTitleBackgroundColor           = nil,
+    _CPStandardWindowViewCloseButtonImage               = nil,
+    _CPStandardWindowViewCloseButtonHighlightedImage    = nil;
 
 var STANDARD_GRADIENT_HEIGHT                    = 41.0;
-    STANDARD_TITLEBAR_HEIGHT                    = 22.0;
+    STANDARD_TITLEBAR_HEIGHT                    = 25.0;
 
 @implementation _CPStandardWindowView : _CPWindowView
 {
@@ -242,6 +244,30 @@ var STANDARD_GRADIENT_HEIGHT                    = 41.0;
         
         [self addSubview:_titleField];
         
+        if (_styleMask & CPClosableWindowMask)
+        {
+            if (!_CPStandardWindowViewCloseButtonImage)
+            {
+                var bundle = [CPBundle bundleForClass:[CPWindow class]];
+            
+                _CPStandardWindowViewCloseButtonImage = [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"CPWindow/Standard/CPWindowStandardCloseButton.png"] size:CGSizeMake(16.0, 16.0)];
+                _CPStandardWindowViewCloseButtonHighlightedImage  = [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"CPWindow/Standard/CPWindowStandardCloseButtonHighlighted.png"] size:CGSizeMake(16.0, 16.0)];
+            }
+            
+            _closeButton = [[CPButton alloc] initWithFrame:CGRectMake(8.0, 7.0, 16.0, 16.0)];
+            
+            [_closeButton setBordered:NO];
+            
+            [_closeButton setImage:_CPStandardWindowViewCloseButtonImage];
+            [_closeButton setAlternateImage:_CPStandardWindowViewCloseButtonHighlightedImage];
+            
+            [_closeButton setTarget:aWindow];
+            [_closeButton setAction:@selector(performClose:)];
+            
+            [self addSubview:_closeButton];
+        }
+
+        
         [self tile];
     }
     
@@ -264,7 +290,7 @@ var STANDARD_GRADIENT_HEIGHT                    = 41.0;
     [_dividerView setFrameOrigin:CGPointMake(0.0, CGRectGetMaxY([_headView frame]))];
     [_bodyView setFrameOrigin:CGPointMake(0.0, CGRectGetMaxY([_dividerView frame]))];
 
-    [_titleField setFrame:CGRectMake(10.0, 0.0, width - 20.0, CGRectGetHeight([_titleField frame]))];
+    [_titleField setFrame:CGRectMake(10.0, 3.0, width - 20.0, CGRectGetHeight([_titleField frame]))];
     
     [[owningWindow contentView] setFrameOrigin:CGPointMake(0.0, CGRectGetMaxY([_dividerView frame]))];
 }

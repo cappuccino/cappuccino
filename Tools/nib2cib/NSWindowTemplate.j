@@ -66,6 +66,7 @@ var NSBorderlessWindowMask          = 0x00,
         
         else
             _windowStyleMask =  (_windowStyleMask & NSTitledWindowMask ? CPTitledWindowMask : 0) | 
+                                (_windowStyleMask & NSClosableWindowMask ? CPClosableWindowMask : 0) |
                                 (_windowStyleMask & NSMiniaturizableWindowMask ? CPMiniaturizableWindowMask : 0) |
                                 (_windowStyleMask & NSResizableWindowMask ? CPResizableWindowMask : 0) |
                                 (_windowStyleMask & NSTexturedBackgroundWindowMask ? NSTexturedBackgroundWindowMask : 0) |
