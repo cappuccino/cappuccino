@@ -28,8 +28,13 @@
 @import "CPTextField.j"
 @import "CPView.j"
 
+#include "CoreGraphics/CGGeometry.h"
+
 #include "Platform/Platform.h"
 #include "Platform/DOM/CPDOMDisplayServer.h"
+
+var _CPImageAndTitleViewTitleChangedFlag    = 1 << 0,
+    _CPImageAndTitleViewImageChangedFlag    = 1 << 1;
 
 /* @ignore */
 @implementation _CPImageAndTitleView : CPView
@@ -45,6 +50,8 @@
     CPString            _title;
     
     CGRect              _titleSize;
+
+    unsigned            _flags;
 
 #if PLATFORM(DOM)
     DOMElement          _DOMImageElement;
@@ -107,10 +114,6 @@
     
     _imagePosition = anImagePosition;
     
-#if PLATFORM(DOM)
-    [self createOrDestroyDOMTextElement];
-#endif
-
     [self setNeedsDisplay:YES];
 }
 
@@ -177,47 +180,8 @@
     if (_image == anImage)
         return;
     
-    var oldSize = [_image size],
-        newSize = [anImage size];
-
     _image = anImage;
-
-    if (anImage)
-    {
-#if PLATFORM(DOM)
-        if (!_DOMImageElement)
-        {
-            _DOMImageElement = document.createElement("img");
-
-            _DOMImageElement.style.top = "0px";
-            _DOMImageElement.style.left = "0px";
-            _DOMImageElement.style.position = "absolute";
-            _DOMImageElement.style.zIndex = 100;
-
-            _DOMElement.appendChild(_DOMImageElement);
-        }
-        
-        _DOMImageElement.src = [_image filename];
-#endif
-
-        if (oldSize && CGSizeEqualToSize(newSize, oldSize))
-            return;
-
-#if PLATFORM(DOM)        
-        _DOMImageElement.width = newSize.width;
-        _DOMImageElement.height = newSize.height;
-        _DOMImageElement.style.width = newSize.width + "px";
-        _DOMImageElement.style.height = newSize.height + "px";
-#endif
-    }
-    else
-    {
-#if PLATFORM(DOM)
-        _DOMElement.removeChild(_DOMImageElement);
-        
-        _DOMImageElement = NULL;
-#endif
-    }
+    _flags |= _CPImageAndTitleViewImageChangedFlag;
     
     [self setNeedsDisplay:YES];
 }
@@ -227,57 +191,14 @@
     return _image;
 }
 
-#if PLATFORM(DOM)
-- (void)createOrDestroyDOMTextElement
-{
-    var needsDOMTextElement = _imagePosition !== CPImageOnly && ([_title length] > 0);
-    
-    if (needsDOMTextElement === !!_DOMTextElement)
-        return;
-    
-    if (_DOMTextElement)
-    {
-        _DOMElement.removeChild(_DOMTextElement);
-        _DOMTextElement = NULL;
-    }
-    
-    else
-    {
-        _DOMTextElement = document.createElement("div");
-        _DOMTextElement.style.background = "red";
-        _DOMTextElement.style.position = "absolute";
-        _DOMTextElement.style.whiteSpace = "pre";
-        _DOMTextElement.style.cursor = "default";
-        _DOMTextElement.style.zIndex = 100;
-        _DOMTextElement.style.overflow = "hidden";
-
-        _DOMElement.appendChild(_DOMTextElement);
-    }
-}
-#endif
-
 - (void)setTitle:(CPString)aTitle
 {
     if (_title === aTitle)
         return;
     
     _title = aTitle;
+    _flags |= _CPImageAndTitleViewTitleChangedFlag;
     
-#if PLATFORM(DOM)
-        [self createOrDestroyDOMTextElement];
-#endif
-    
-#if PLATFORM(DOM)
-    if (_DOMTextElement)
-    {
-        if (CPFeatureIsCompatible(CPJavascriptInnerTextFeature))
-            _DOMTextElement.innerText = _title;
-    
-        else if (CPFeatureIsCompatible(CPJavascriptTextContentFeature))
-            _DOMTextElement.textContent = _title;  
-    }
-#endif
-
     _titleSize = NULL;
     
     [self setNeedsDisplay:YES];
@@ -290,27 +211,90 @@
 
 - (void)drawRect:(CGRect)aRect
 {
-    if (!_titleSize && _DOMTextElement)
-        _titleSize = [_title sizeWithFont:_font];
+#if PLATFORM(DOM)
+    var needsDOMTextElement = _imagePosition !== CPImageOnly && ([_title length] > 0);
+    
+    // Create or destroy the DOM Text Element as necessary
+    if (needsDOMTextElement !== !!_DOMTextElement)    
+        if (_DOMTextElement)
+        {
+            _DOMElement.removeChild(_DOMTextElement);
+            _DOMTextElement = NULL;
+        }
+        
+        else
+        {
+            _DOMTextElement = document.createElement("div");
+//            _DOMTextElement.style.background = "red";
+            _DOMTextElement.style.position = "absolute";
+            _DOMTextElement.style.whiteSpace = "pre";
+            _DOMTextElement.style.cursor = "default";
+            _DOMTextElement.style.zIndex = 100;
+            _DOMTextElement.style.overflow = "hidden";
+    
+            _DOMElement.appendChild(_DOMTextElement);
+        }
+        
+    if (_DOMTextElement)
+    {   
+        if (_flags & _CPImageAndTitleViewTitleChangedFlag)
+            if (CPFeatureIsCompatible(CPJavascriptInnerTextFeature))
+                _DOMTextElement.innerText = _title;
+        
+            else if (CPFeatureIsCompatible(CPJavascriptTextContentFeature))
+                _DOMTextElement.textContent = _title;
+            
+        if (!_titleSize)
+            _titleSize = [_title sizeWithFont:_font];
+    }
+    
+    var needsDOMImageElement = _image !== nil;
+
+    // Create or destroy DOM Image element    
+    if (needsDOMImageElement !== !!_DOMImageElement)
+        if (_DOMImageElement)
+        {
+            _DOMElement.removeChild(_DOMImageElement);
+        
+            _DOMImageElement = NULL;
+        }
+        
+        else
+        {
+            _DOMImageElement = document.createElement("img");
+
+            _DOMImageElement.style.top = "0px";
+            _DOMImageElement.style.left = "0px";
+            _DOMImageElement.style.position = "absolute";
+            _DOMImageElement.style.zIndex = 100;
+
+            _DOMElement.appendChild(_DOMImageElement);
+        }
+    
+    if (_DOMImageElement && (_flags & _CPImageAndTitleViewImageChangedFlag))
+        _DOMImageElement.src = [_image filename];
+#endif
+
+    _flags = 0;
         
     var size = [self bounds].size,
         centerX = size.width / 2.0,
         centerY = size.height / 2.0,
         titleHeight = _DOMTextElement ? _titleSize.height : 0.0,
-        titleRect = CGRectMake(0.0, centerY - titleHeight / 2.0, size.width, titleHeight);
+        titleRect = _CGRectMake(0.0, centerY - titleHeight / 2.0, size.width, titleHeight);
 
-    if (_imagePosition != CPNoImage && _image)
+    if ((_imagePosition !== CPNoImage) && _image)
     {
         var imageSize = [_image size], 
             imageWidth = imageSize.width,
             imageHeight = imageSize.height;
         
-        if (_imageScaling == CPScaleToFit)
+        if (_imageScaling === CPScaleToFit)
         {
             imageWidth = size.width;
             imageHeight = size.height;
         }
-        else if (_imageScaling == CPScaleProportionally)
+        else if (_imageScaling === CPScaleProportionally)
         {
             var scale = MIN(MIN(size.width, imageWidth) / imageWidth, MIN(size.height, imageHeight) / imageHeight);
     
@@ -325,7 +309,7 @@
         _DOMImageElement.style.height = imageHeight + "px";
 #endif
 
-        if (_imagePosition == CPImageBelow)
+        if (_imagePosition === CPImageBelow)
         {
 #if PLATFORM(DOM)
             _DOMImageElement.style.left = FLOOR(centerX - imageWidth / 2.0) + "px";
@@ -334,7 +318,7 @@
 
             titleRect.origin.y = (size.height - imageHeight - titleHeight) / 2.0;
         }
-        else if (_imagePosition == CPImageAbove)
+        else if (_imagePosition === CPImageAbove)
         {
 #if PLATFORM(DOM)
             CPDOMDisplayServerSetStyleLeftTop(_DOMImageElement, NULL, FLOOR(centerX - imageWidth / 2.0), 0);
@@ -342,7 +326,7 @@
 
             titleRect.origin.y = imageHeight + (size.height - imageHeight - titleHeight) / 2.0;
         }
-        else if (_imagePosition == CPImageLeft)
+        else if (_imagePosition === CPImageLeft)
         {
 #if PLATFORM(DOM)
             _DOMImageElement.style.top = FLOOR(centerY - imageHeight / 2.0) + "px";
@@ -352,7 +336,7 @@
             titleRect.origin.x += imageWidth;
             titleRect.size.width -= imageWidth;
         }
-        else if (_imagePosition == CPImageRight)
+        else if (_imagePosition === CPImageRight)
         {
 #if PLATFORM(DOM)
             _DOMImageElement.style.top = FLOOR(centerY - imageHeight / 2.0) + "px";
@@ -361,7 +345,7 @@
 
             titleRect.size.width -= imageWidth;
         }
-        else if(_imagePosition == CPImageOnly)
+        else if(_imagePosition === CPImageOnly)
         {
 #if PLATFORM(DOM)
             _DOMImageElement.style.top = FLOOR(centerY - imageHeight / 2.0) + "px";
@@ -373,19 +357,16 @@
 #if PLATFORM(DOM)
     if (_DOMTextElement)
     {
-        _DOMTextElement.style.top = FLOOR(CGRectGetMinY(titleRect)) + "px";
-        _DOMTextElement.style.left = FLOOR(CGRectGetMinX(titleRect)) + "px";
-        _DOMTextElement.style.width = FLOOR(CGRectGetWidth(titleRect)) + "px";
-        _DOMTextElement.style.height = FLOOR(CGRectGetHeight(titleRect)) + "px";
+        _DOMTextElement.style.top = FLOOR(_CGRectGetMinY(titleRect)) + "px";
+        _DOMTextElement.style.left = FLOOR(_CGRectGetMinX(titleRect)) + "px";
+        _DOMTextElement.style.width = FLOOR(_CGRectGetWidth(titleRect)) + "px";
+        _DOMTextElement.style.height = FLOOR(_CGRectGetHeight(titleRect)) + "px";
     }
 #endif
 }
 
 - (void)sizeToFit
 {
-    if (!_titleSize && _DOMTextElement)
-        _titleSize = [_title sizeWithFont:_font];
-    
     var size = CGSizeMakeZero();
     
     if (_imagePosition != CPNoImage && _image)
@@ -396,8 +377,11 @@
         size.height += imageSize.height;
     }
     
-    if (_imagePosition != CPImageOnly && [_title length])
+    if (_imagePosition != CPImageOnly && [_title length] > 0)
     {
+        if (!_titleSize)
+            _titleSize = [_title sizeWithFont:_font];
+            
         if (_imagePosition == CPImageLeft || _imagePosition == CPImageRight)
         {
             size.width += _titleSize.width;
