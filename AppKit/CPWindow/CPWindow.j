@@ -316,7 +316,11 @@ CPTexturedBackgroundWindowMask
 */
 - (id)initWithContentRect:(CGRect)aContentRect styleMask:(unsigned int)aStyleMask
 {
+#if PLATFORM(DOM)
     return [self initWithContentRect:aContentRect styleMask:aStyleMask bridge:[CPDOMWindowBridge sharedDOMWindowBridge]];
+#else
+    return [self initWithContentRect:aContentRect styleMask:aStyleMask bridge:nil];
+#endif
 }
 
 /*!
