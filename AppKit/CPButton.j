@@ -20,7 +20,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-@import "_CPImageAndTitleView.j"
+@import "_CPImageAndTextView.j"
 @import "CGGeometry.j"
 
 @import "CPControl.j"
@@ -248,7 +248,7 @@ var _CPButtonClassName                          = nil,
     
     BOOL                    _bezelBorderNeedsUpdate;
     
-    _CPImageAndTitleView    _imageAndTitleView;
+    _CPImageAndTextView     _imageAndTextView;
 }
 
 /*!
@@ -543,10 +543,10 @@ var _CPButtonClassName                          = nil,
         else if (_bezelStyle == CPTexturedRoundedBezelStyle)
             imageAndTitleSize.height -= 2.0;
     
-        [_imageAndTitleView setFrameSize:imageAndTitleSize];
+        [_imageAndTextView setFrameSize:imageAndTitleSize];
     }
     else
-        [_imageAndTitleView setFrameSize:size];
+        [_imageAndTextView setFrameSize:size];
 }
 
 /*!
@@ -554,9 +554,9 @@ var _CPButtonClassName                          = nil,
 */
 - (void)sizeToFit
 {
-    [_imageAndTitleView sizeToFit];
+    [_imageAndTextView sizeToFit];
     
-    var frame = [_imageAndTitleView frame],
+    var frame = [_imageAndTextView frame],
         height = CGRectGetHeight(frame);
     /*
     if (_isBordered)
@@ -755,26 +755,26 @@ var _CPButtonClassName                          = nil,
 /* @ignore */
 - (void)drawContentsWithHighlight:(BOOL)isHighlighted
 {
-    if (!_title && !_image && !_alternateTitle && !_alternateImage && !_imageAndTitleView)
+    if (!_title && !_image && !_alternateTitle && !_alternateImage && !_imageAndTextView)
         return;
     
-    if (!_imageAndTitleView)
+    if (!_imageAndTextView)
     {
-        _imageAndTitleView = [[_CPImageAndTitleView alloc] initWithFrame:[self bounds]];
+        _imageAndTextView = [[_CPImageAndTextView alloc] initWithFrame:[self bounds]];
                 
-        [self addSubview:_imageAndTitleView];
+        [self addSubview:_imageAndTextView];
         
         [self tile];
     }
         
-    [_imageAndTitleView setFont:[self font]];
-    [_imageAndTitleView setTextColor:[self textColor]];
-    [_imageAndTitleView setAlignment:[self alignment]];
-    [_imageAndTitleView setImagePosition:_imagePosition];
-    [_imageAndTitleView setImageScaling:_imageScaling];
+    [_imageAndTextView setFont:[self font]];
+    [_imageAndTextView setTextColor:[self textColor]];
+    [_imageAndTextView setAlignment:[self alignment]];
+    [_imageAndTextView setImagePosition:_imagePosition];
+    [_imageAndTextView setImageScaling:_imageScaling];
         
-    [_imageAndTitleView setTitle:isHighlighted && _alternateTitle ? _alternateTitle : _title];
-    [_imageAndTitleView setImage:isHighlighted && _alternateImage ? _alternateImage : _image];
+    [_imageAndTextView setTitle:isHighlighted && _alternateTitle ? _alternateTitle : _title];
+    [_imageAndTextView setImage:isHighlighted && _alternateImage ? _alternateImage : _image];
 }
 
 - (void)viewDidMoveToWindow
@@ -842,12 +842,12 @@ var CPButtonImageKey                = @"CPButtonImageKey",
 */
 - (void)encodeWithCoder:(CPCoder)aCoder
 {
-    // We do this in order to avoid encoding the _imageAndTitleView, which 
+    // We do this in order to avoid encoding the _imageAndTextView, which 
     // should just automatically be created programmatically as needed.
     var actualSubviews = _subviews;
     
     _subviews = [_subviews copy];
-    [_subviews removeObjectIdenticalTo:_imageAndTitleView];
+    [_subviews removeObjectIdenticalTo:_imageAndTextView];
     
     [super encodeWithCoder:aCoder];
     

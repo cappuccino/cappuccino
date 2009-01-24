@@ -867,7 +867,7 @@ var _CPMenuItemSelectionColor                   = nil,
     BOOL                    _belongsToMenuBar;
 
     CPImageView             _stateView;
-    _CPImageAndTitleView    _imageAndTitleView;
+    _CPImageAndTextView     _imageAndTextView;
     CPView                  _submenuView;
 }
 
@@ -948,8 +948,8 @@ var _CPMenuItemSelectionColor                   = nil,
     
     if (view)
     {
-        [_imageAndTitleView removeFromSuperview];
-        _imageAndTitleView = nil;
+        [_imageAndTextView removeFromSuperview];
+        _imageAndTextView = nil;
         
         [_stateView removeFromSuperview];
         _stateView = nil;
@@ -1003,13 +1003,13 @@ var _CPMenuItemSelectionColor                   = nil,
     
     // Image and Title
     
-    if (!_imageAndTitleView)
+    if (!_imageAndTextView)
     {
-        _imageAndTitleView = [[_CPImageAndTitleView alloc] initWithFrame:CGRectMake(0.0, 0.0, 0.0, 0.0)];
+        _imageAndTextView = [[_CPImageAndTextView alloc] initWithFrame:CGRectMake(0.0, 0.0, 0.0, 0.0)];
         
-        [_imageAndTitleView setImagePosition:CPImageLeft];
+        [_imageAndTextView setImagePosition:CPImageLeft];
         
-        [self addSubview:_imageAndTitleView];
+        [self addSubview:_imageAndTextView];
     }
     
     var font = [_menuItem font];
@@ -1017,15 +1017,15 @@ var _CPMenuItemSelectionColor                   = nil,
     if (!font)
         font = _font;
 
-    [_imageAndTitleView setFont:font];
-    [_imageAndTitleView setImage:[_menuItem image]];
-    [_imageAndTitleView setTitle:[_menuItem title]];
-    [_imageAndTitleView setTextColor:[self textColor]];
-    [_imageAndTitleView setFrameOrigin:CGPointMake(x, 0.0)];
+    [_imageAndTextView setFont:font];
+    [_imageAndTextView setImage:[_menuItem image]];
+    [_imageAndTextView setTitle:[_menuItem title]];
+    [_imageAndTextView setTextColor:[self textColor]];
+    [_imageAndTextView setFrameOrigin:CGPointMake(x, 0.0)];
     
-    [_imageAndTitleView sizeToFit];
+    [_imageAndTextView sizeToFit];
     
-    var frame = [_imageAndTitleView frame];
+    var frame = [_imageAndTextView frame];
     
     x += CGRectGetWidth(frame);
     
@@ -1076,11 +1076,11 @@ var _CPMenuItemSelectionColor                   = nil,
     // ASSERT(![_menuItem view]);
     
     if (_belongsToMenuBar)
-        [_imageAndTitleView setImage:shouldHighlight ? [_menuItem alternateImage] : [_menuItem image]];
+        [_imageAndTextView setImage:shouldHighlight ? [_menuItem alternateImage] : [_menuItem image]];
     
     else if([_menuItem isEnabled])
     {
-        [_imageAndTitleView setTextColor:shouldHighlight ? [CPColor whiteColor] : [self textColor]];
+        [_imageAndTextView setTextColor:shouldHighlight ? [CPColor whiteColor] : [self textColor]];
         
         if (shouldHighlight)
             [self setBackgroundColor:_CPMenuItemSelectionColor];
@@ -1103,16 +1103,16 @@ var _CPMenuItemSelectionColor                   = nil,
 
 - (void)activate:(BOOL)shouldActivate
 {
-    [_imageAndTitleView setImage:[_menuItem image]];
+    [_imageAndTextView setImage:[_menuItem image]];
     
     if (shouldActivate)
     {
-        [_imageAndTitleView setTextColor:[CPColor whiteColor]];
+        [_imageAndTextView setTextColor:[CPColor whiteColor]];
         [_submenuView setColor:[CPColor whiteColor]];
     }
     else
     {
-        [_imageAndTitleView setTextColor:[self textColor]];
+        [_imageAndTextView setTextColor:[self textColor]];
         [_submenuView setColor:[self textColor]];
     }
 }
@@ -1152,7 +1152,7 @@ var _CPMenuItemSelectionColor                   = nil,
     
     _textColor = aColor;
 
-    [_imageAndTitleView setTextColor:[self textColor]];
+    [_imageAndTextView setTextColor:[self textColor]];
     [_submenuView setColor:[self textColor]];
 }
 

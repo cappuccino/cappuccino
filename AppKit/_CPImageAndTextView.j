@@ -1,5 +1,5 @@
 /*
- * _CPImageAndTitleView.j
+ * _CPImageAndTextView.j
  * AppKit
  *
  * Created by Francisco Tolmasky.
@@ -33,11 +33,11 @@
 #include "Platform/Platform.h"
 #include "Platform/DOM/CPDOMDisplayServer.h"
 
-var _CPImageAndTitleViewTitleChangedFlag    = 1 << 0,
-    _CPImageAndTitleViewImageChangedFlag    = 1 << 1;
+var _CPImageAndTextViewTextChangedFlag  = 1 << 0,
+    _CPImageAndTextViewImageChangedFlag = 1 << 1;
 
 /* @ignore */
-@implementation _CPImageAndTitleView : CPView
+@implementation _CPImageAndTextView : CPView
 {
     CPTextAlignment     _alignment;
     CPColor             _textColor;
@@ -47,9 +47,9 @@ var _CPImageAndTitleViewTitleChangedFlag    = 1 << 0,
     CPImageScaling      _imageScaling;
     
     CPImage             _image;
-    CPString            _title;
+    CPString            _text;
     
-    CGRect              _titleSize;
+    CGRect              _textSize;
 
     unsigned            _flags;
 
@@ -72,7 +72,7 @@ var _CPImageAndTitleViewTitleChangedFlag    = 1 << 0,
 
         _textColor = nil;
         
-        _titleSize = NULL;
+        _textSize = NULL;
     }
     
     return self;
@@ -165,7 +165,7 @@ var _CPImageAndTitleViewTitleChangedFlag    = 1 << 0,
     _DOMElement.style.font = [_font ? _font : [CPFont systemFontOfSize:12.0] cssString];
 #endif
     
-    _titleSize = NULL;
+    _textSize = NULL;
     
     [self setNeedsDisplay:YES];
 }
@@ -181,7 +181,7 @@ var _CPImageAndTitleViewTitleChangedFlag    = 1 << 0,
         return;
     
     _image = anImage;
-    _flags |= _CPImageAndTitleViewImageChangedFlag;
+    _flags |= _CPImageAndTextViewImageChangedFlag;
     
     [self setNeedsDisplay:YES];
 }
@@ -193,26 +193,26 @@ var _CPImageAndTitleViewTitleChangedFlag    = 1 << 0,
 
 - (void)setTitle:(CPString)aTitle
 {
-    if (_title === aTitle)
+    if (_text === aTitle)
         return;
     
-    _title = aTitle;
-    _flags |= _CPImageAndTitleViewTitleChangedFlag;
+    _text = aTitle;
+    _flags |= _CPImageAndTextViewTextChangedFlag;
     
-    _titleSize = NULL;
+    _textSize = NULL;
     
     [self setNeedsDisplay:YES];
 }
 
 - (CPString)title
 {
-    return _title;
+    return _text;
 }
 
 - (void)drawRect:(CGRect)aRect
 {
 #if PLATFORM(DOM)
-    var needsDOMTextElement = _imagePosition !== CPImageOnly && ([_title length] > 0);
+    var needsDOMTextElement = _imagePosition !== CPImageOnly && ([_text length] > 0);
     
     // Create or destroy the DOM Text Element as necessary
     if (needsDOMTextElement !== !!_DOMTextElement)    
@@ -237,15 +237,15 @@ var _CPImageAndTitleViewTitleChangedFlag    = 1 << 0,
         
     if (_DOMTextElement)
     {   
-        if (_flags & _CPImageAndTitleViewTitleChangedFlag)
+        if (_flags & _CPImageAndTextViewTextChangedFlag)
             if (CPFeatureIsCompatible(CPJavascriptInnerTextFeature))
-                _DOMTextElement.innerText = _title;
+                _DOMTextElement.innerText = _text;
         
             else if (CPFeatureIsCompatible(CPJavascriptTextContentFeature))
-                _DOMTextElement.textContent = _title;
+                _DOMTextElement.textContent = _text;
             
-        if (!_titleSize)
-            _titleSize = [_title sizeWithFont:_font];
+        if (!_textSize)
+            _textSize = [_text sizeWithFont:_font];
     }
     
     var needsDOMImageElement = _image !== nil;
@@ -271,7 +271,7 @@ var _CPImageAndTitleViewTitleChangedFlag    = 1 << 0,
             _DOMElement.appendChild(_DOMImageElement);
         }
     
-    if (_DOMImageElement && (_flags & _CPImageAndTitleViewImageChangedFlag))
+    if (_DOMImageElement && (_flags & _CPImageAndTextViewImageChangedFlag))
         _DOMImageElement.src = [_image filename];
 #endif
 
@@ -280,7 +280,7 @@ var _CPImageAndTitleViewTitleChangedFlag    = 1 << 0,
     var size = [self bounds].size,
         centerX = size.width / 2.0,
         centerY = size.height / 2.0,
-        titleHeight = _DOMTextElement ? _titleSize.height : 0.0,
+        titleHeight = _DOMTextElement ? _textSize.height : 0.0,
         titleRect = _CGRectMake(0.0, centerY - titleHeight / 2.0, size.width, titleHeight);
 
     if ((_imagePosition !== CPNoImage) && _image)
@@ -377,25 +377,25 @@ var _CPImageAndTitleViewTitleChangedFlag    = 1 << 0,
         size.height += imageSize.height;
     }
     
-    if (_imagePosition != CPImageOnly && [_title length] > 0)
+    if (_imagePosition != CPImageOnly && [_text length] > 0)
     {
-        if (!_titleSize)
-            _titleSize = [_title sizeWithFont:_font];
+        if (!_textSize)
+            _textSize = [_text sizeWithFont:_font];
             
         if (_imagePosition == CPImageLeft || _imagePosition == CPImageRight)
         {
-            size.width += _titleSize.width;
-            size.height = MAX(size.height, _titleSize.height);
+            size.width += _textSize.width;
+            size.height = MAX(size.height, _textSize.height);
         }
         else if (_imagePosition == CPImageAbove || _imagePosition == CPImageBelow)
         {
-            size.width = MAX(size.width, _titleSize.width);
-            size.height += _titleSize.height;
+            size.width = MAX(size.width, _textSize.width);
+            size.height += _textSize.height;
         }
         else // if (_imagePosition == CPImageOverlaps)
         {
-            size.width = MAX(size.width, _titleSize.width);
-            size.height = MAX(size.height, _titleSize.height);
+            size.width = MAX(size.width, _textSize.width);
+            size.height = MAX(size.height, _textSize.height);
         }
     }
     
