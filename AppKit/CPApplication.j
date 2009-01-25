@@ -666,6 +666,40 @@ CPRunContinuesResponse  = -1002;
     return _args;
 }
 
+- (void)setArguments:(CPArray)args
+{
+    if(!args || args.length == 0)
+    {
+        _args = [];
+        window.location.hash = @"#";
+        
+        return;
+    }
+    
+    if([args class] != CPArray)
+        args = [CPArray arrayWithObject:args];
+    
+    _args = args;
+    
+    var toEncode = [_args copy];
+    for(var i=0, count = toEncode.length; i<count; i++)
+        toEncode[i] = encodeURIComponent(toEncode[i]);
+    
+    var hash = [toEncode componentsJoinedByString:@"/"];
+    
+    window.location.hash = @"#" + hash;
+}
+
+- (void)_reloadArguments
+{
+    var args = window.location.hash.replace("#", "").split("/").slice(0);
+    
+    for(var i=0, count = args.length; i<count; i++) 
+        args[i] = decodeURIComponent(args[i]);
+    
+    _args = args
+}
+
 - (CPDictionary)namedArguments
 {
     return _namedArgs;
@@ -715,13 +749,12 @@ function CPApplicationMain(args, namedArgs)
     //FIXME?
     if (!args && !namedArgs)
     {
-        var args = window.location.hash.replace("#", "").split("/").slice(0),
+        [CPApp _reloadArguments];
+        
+        var args = [CPApp arguments],
             searchParams = window.location.search.substring(1).split("&");
             namedArgs = [CPDictionary dictionary];
-    
-        for(var i=0, count = args.length; i<count; i++) 
-            args[i] = decodeURIComponent(args[i]);
-    
+        
         if([args containsObject:"debug"])
             CPLogRegister(CPLogPopup);
     
