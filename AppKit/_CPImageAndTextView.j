@@ -33,25 +33,44 @@
 #include "Platform/Platform.h"
 #include "Platform/DOM/CPDOMDisplayServer.h"
 
-var _CPImageAndTextViewTextChangedFlag  = 1 << 0,
-    _CPImageAndTextViewImageChangedFlag = 1 << 1;
+
+CPTopVerticalTextAlignment      = 1,
+CPCenterVerticalTextAlignment   = 2,
+CPBottomVerticalTextAlignment   = 3;
+
+var _CPimageAndTextViewFrameSizeChangedFlag         = 1 << 0,
+    _CPImageAndTextViewImageChangedFlag             = 1 << 1,
+    _CPImageAndTextViewTextChangedFlag              = 1 << 2,
+    _CPImageAndTextViewAlignmentChangedFlag         = 1 << 3,
+    _CPImageAndTextViewVerticalAlignmentChangedFlag = 1 << 4,
+    _CPImageAndTextViewLineBreakModeChangedFlag     = 1 << 5,
+    _CPImageAndTextViewTextColorChangedFlag         = 1 << 6,
+    _CPImageAndTextViewFontChangedFlag              = 1 << 7,
+    _CPImageAndTextViewImagePositionChangedFlag     = 1 << 8,
+    _CPImageAndTextViewImageScalingChangedFlag      = 1 << 9;
+
+var HORIZONTAL_MARGIN   = 3.0,
+    VERTICAL_MARGIN     = 5.0;
 
 /* @ignore */
 @implementation _CPImageAndTextView : CPView
 {
-    CPTextAlignment     _alignment;
-    CPColor             _textColor;
-    CPFont              _font;
+    CPTextAlignment         _alignment;
+    CPVerticalTextAlignment _verticalAlignment;
     
-    CPCellImagePosition _imagePosition;
-    CPImageScaling      _imageScaling;
+    CPLineBreakMode         _lineBreakMode;
+    CPColor                 _textColor;
+    CPFont                  _font;
     
-    CPImage             _image;
-    CPString            _text;
+    CPCellImagePosition     _imagePosition;
+    CPImageScaling          _imageScaling;
     
-    CGRect              _textSize;
+    CPImage                 _image;
+    CPString                _text;
+    
+    CGRect                  _textSize;
 
-    unsigned            _flags;
+    unsigned                _flags;
 
 #if PLATFORM(DOM)
     DOMElement          _DOMImageElement;
@@ -65,7 +84,11 @@ var _CPImageAndTextViewTextChangedFlag  = 1 << 0,
     
     if (self)
     {
+        _lineBreakMode = CPLineBreakByClipping;
+        _textColor = nil;
+        
         [self setAlignment:CPCenterTextAlignment];
+        [self setVerticalAlignment:CPTopVerticalTextAlignment];
         [self setFont:[CPFont systemFontOfSize:12.0]];
         [self setImagePosition:CPNoImage];
         [self setImageScaling:CPScaleNone];
@@ -107,12 +130,45 @@ var _CPImageAndTextViewTextChangedFlag  = 1 << 0,
     return _alignment;
 }
 
+- (void)setVerticalAlignment:(CPVerticalTextAlignment)anAlignment
+{
+    if (_verticalAlignment === anAlignment)
+        return;
+    
+    _verticalAlignment = anAlignment;
+    _flags |= _CPImageAndTextViewVerticalAlignmentChangedFlag;
+    
+    [self setNeedsDisplay:YES];
+}
+
+- (unsigned)verticalAlignment
+{
+    return _verticalAlignment;
+}
+
+- (void)setLineBreakMode:(CPLineBreakMode)aLineBreakMode
+{
+    if (_lineBreakMode === aLineBreakMode)
+        return;
+    
+    _lineBreakMode = aLineBreakMode;
+    _flags |= _CPImageAndTextViewLineBreakModeChangedFlag;
+    
+    [self setNeedsDisplay:YES];
+}
+
+- (CPLineBreakMode)lineBreakMode
+{
+    return _lineBreakMode;
+}
+
 - (void)setImagePosition:(CPCellImagePosition)anImagePosition
 {
     if (_imagePosition == anImagePosition)
         return;
     
     _imagePosition = anImagePosition;
+    _flags |= _CPImageAndTextViewImagePositionChangedFlag;
     
     [self setNeedsDisplay:YES];
 }
@@ -128,6 +184,7 @@ var _CPImageAndTextViewTextChangedFlag  = 1 << 0,
         return;
     
     _imageScaling = anImageScaling;
+    _flags |= _CPImageAndTextViewImageScalingChangedFlag;
 
     [self setNeedsDisplay:YES];
 }
@@ -139,7 +196,7 @@ var _CPImageAndTextViewTextChangedFlag  = 1 << 0,
 
 - (void)setTextColor:(CPColor)aTextColor
 {
-    if (_textColor == aTextColor)
+    if (_textColor === aTextColor)
         return;
     
     _textColor = aTextColor;
@@ -160,11 +217,7 @@ var _CPImageAndTextViewTextChangedFlag  = 1 << 0,
         return;
     
     _font = aFont;
-    
-#if PLATFORM(DOM)
-    _DOMElement.style.font = [_font ? _font : [CPFont systemFontOfSize:12.0] cssString];
-#endif
-    
+    _flags |= _CPImageAndTextViewFontChangedFlag;    
     _textSize = NULL;
     
     [self setNeedsDisplay:YES];
@@ -191,12 +244,12 @@ var _CPImageAndTextViewTextChangedFlag  = 1 << 0,
     return _image;
 }
 
-- (void)setTitle:(CPString)aTitle
+- (void)setText:(CPString)text
 {
-    if (_text === aTitle)
+    if (_text === text)
         return;
     
-    _text = aTitle;
+    _text = text;
     _flags |= _CPImageAndTextViewTextChangedFlag;
     
     _textSize = NULL;
@@ -212,31 +265,46 @@ var _CPImageAndTextViewTextChangedFlag  = 1 << 0,
 - (void)drawRect:(CGRect)aRect
 {
 #if PLATFORM(DOM)
-    var needsDOMTextElement = _imagePosition !== CPImageOnly && ([_text length] > 0);
+    var needsDOMTextElement = _imagePosition !== CPImageOnly && ([_text length] > 0),
+        hasDOMTextElement = !!_DOMTextElement;
     
     // Create or destroy the DOM Text Element as necessary
-    if (needsDOMTextElement !== !!_DOMTextElement)    
-        if (_DOMTextElement)
+    if (needsDOMTextElement !== hasDOMTextElement)    
+        if (hasDOMTextElement)
         {
             _DOMElement.removeChild(_DOMTextElement);
+            
             _DOMTextElement = NULL;
+        
+            hasDOMTextElement = NO;
         }
         
         else
-        {
+        {        
             _DOMTextElement = document.createElement("div");
-//            _DOMTextElement.style.background = "red";
-            _DOMTextElement.style.position = "absolute";
-            _DOMTextElement.style.whiteSpace = "pre";
-            _DOMTextElement.style.cursor = "default";
-            _DOMTextElement.style.zIndex = 100;
-            _DOMTextElement.style.overflow = "hidden";
+         
+            var textStyle = _DOMTextElement.style;
+            
+            textStyle.position = "absolute";
+            textStyle.whiteSpace = "pre";
+            textStyle.cursor = "default";
+            textStyle.zIndex = 100;
+            textStyle.overflow = "hidden";
     
             _DOMElement.appendChild(_DOMTextElement);
+            
+            hasDOMTextElement = YES;
+            
+            // We have to set all these values now.
+            _flags |= _CPImageAndTextViewTextChangedFlag | _CPImageAndTextViewFontChangedFlag | _CPImageAndTextViewLineBreakModeChangedFlag;
         }
         
-    if (_DOMTextElement)
-    {   
+    if (hasDOMTextElement)
+    {
+        if (!textStyle)
+            var textStyle = _DOMTextElement.style;
+                    
+        // Update the text contents if necessary.
         if (_flags & _CPImageAndTextViewTextChangedFlag)
             if (CPFeatureIsCompatible(CPJavascriptInnerTextFeature))
                 _DOMTextElement.innerText = _text;
@@ -244,48 +312,103 @@ var _CPImageAndTextViewTextChangedFlag  = 1 << 0,
             else if (CPFeatureIsCompatible(CPJavascriptTextContentFeature))
                 _DOMTextElement.textContent = _text;
             
-        if (!_textSize)
-            _textSize = [_text sizeWithFont:_font];
+        if (_flags & _CPImageAndTextViewFontChangedFlag)
+            textStyle.font = [_font ? _font : [CPFont systemFontOfSize:12.0] cssString];
+            
+        // Update the line break mode if necessary.
+        if (_flags & _CPImageAndTextViewLineBreakModeChangedFlag)
+        {
+            switch (_lineBreakMode)
+            {
+                case CPLineBreakByClipping:         textStyle.overflow = "hidden";
+                                                    textStyle.textOverflow = "clip";
+                                                    textStyle.whiteSpace = "pre";
+                                                    
+                                                    if (document.attachEvent)
+                                                        textStyle.wordWrap = "normal"; 
+                                                    
+                                                    break;
+                
+                case CPLineBreakByTruncatingHead:
+                case CPLineBreakByTruncatingMiddle: // Don't have support for these (yet?), so just degrade to truncating tail.
+                   
+                case CPLineBreakByTruncatingTail:   textStyle.textOverflow = "ellipsis";
+                                                    textStyle.whiteSpace = "nowrap";
+                                                    textStyle.overflow = "hidden";
+                                                    
+                                                    if (document.attachEvent)
+                                                        textStyle.wordWrap = "normal"; 
+                                                                     
+                                                    break;
+                     
+                case CPLineBreakByCharWrapping:                               
+                case CPLineBreakByWordWrapping:     if (document.attachEvent)
+                                                    {                                            
+                                                        textStyle.whiteSpace = "pre";
+                                                        textStyle.wordWrap = "break-word";
+                                                    }
+                                                    
+                                                    else
+                                                    {
+                                                        textStyle.whiteSpace = "-o-pre-wrap";
+                                                        textStyle.whiteSpace = "-pre-wrap";
+                                                        textStyle.whiteSpace = "-moz-pre-wrap";
+                                                        textStyle.whiteSpace = "pre-wrap";
+                                                    }
+                                                    
+                                                    textStyle.overflow = "hidden";
+                                                    textStyle.textOverflow = "clip";
+                                                    
+                                                    break;
+            }
+        }
     }
     
-    var needsDOMImageElement = _image !== nil;
+    var needsDOMImageElement = _image !== nil && _imagePosition !== CPNoImage,
+        hasDOMImageElement = !!_DOMImageElement;
 
     // Create or destroy DOM Image element    
-    if (needsDOMImageElement !== !!_DOMImageElement)
-        if (_DOMImageElement)
+    if (needsDOMImageElement !== hasDOMImageElement)
+        if (hasDOMImageElement)
         {
             _DOMElement.removeChild(_DOMImageElement);
         
             _DOMImageElement = NULL;
+            
+            hasDOMImageElement = NO;
         }
         
         else
         {
             _DOMImageElement = document.createElement("img");
+            
+            var imageStyle = _DOMImageElement.style;
 
-            _DOMImageElement.style.top = "0px";
-            _DOMImageElement.style.left = "0px";
-            _DOMImageElement.style.position = "absolute";
-            _DOMImageElement.style.zIndex = 100;
+            imageStyle.top = "0px";
+            imageStyle.left = "0px";
+            imageStyle.position = "absolute";
+            imageStyle.zIndex = 100;
 
             _DOMElement.appendChild(_DOMImageElement);
-        }
-    
-    if (_DOMImageElement && (_flags & _CPImageAndTextViewImageChangedFlag))
-        _DOMImageElement.src = [_image filename];
+            
+            hasDOMImageElement = YES;
+        }    
 #endif
 
-    _flags = 0;
-        
     var size = [self bounds].size,
-        centerX = size.width / 2.0,
-        centerY = size.height / 2.0,
-        titleHeight = _DOMTextElement ? _textSize.height : 0.0,
-        titleRect = _CGRectMake(0.0, centerY - titleHeight / 2.0, size.width, titleHeight);
+        textRect = _CGRectMake(0.0, 0.0, size.width, size.height);
 
-    if ((_imagePosition !== CPNoImage) && _image)
+    if (hasDOMImageElement)
     {
-        var imageSize = [_image size], 
+        if (!imageStyle)
+            var imageStyle = _DOMImageElement.style;
+        
+        if (_flags & _CPImageAndTextViewImageChangedFlag)
+            _DOMImageElement.src = [_image filename];
+        
+        var centerX = size.width / 2.0,
+            centerY = size.height / 2.0,
+            imageSize = [_image size], 
             imageWidth = imageSize.width,
             imageHeight = imageSize.height;
         
@@ -305,71 +428,110 @@ var _CPImageAndTextViewTextChangedFlag  = 1 << 0,
 #if PLATFORM(DOM)
         _DOMImageElement.width = imageWidth;
         _DOMImageElement.height = imageHeight;        
-        _DOMImageElement.style.width = imageWidth + "px";
-        _DOMImageElement.style.height = imageHeight + "px";
+        imageStyle.width = imageWidth + "px";
+        imageStyle.height = imageHeight + "px";
 #endif
 
         if (_imagePosition === CPImageBelow)
         {
 #if PLATFORM(DOM)
-            _DOMImageElement.style.left = FLOOR(centerX - imageWidth / 2.0) + "px";
-            _DOMImageElement.style.top = FLOOR(size.height - imageHeight) + "px";
+            imageStyle.left = FLOOR(centerX - imageWidth / 2.0) + "px";
+            imageStyle.top = FLOOR(size.height - imageHeight) + "px";
 #endif
 
-            titleRect.origin.y = (size.height - imageHeight - titleHeight) / 2.0;
+            textRect.size.height = size.height - imageHeight - VERTICAL_MARGIN;
         }
         else if (_imagePosition === CPImageAbove)
         {
 #if PLATFORM(DOM)
             CPDOMDisplayServerSetStyleLeftTop(_DOMImageElement, NULL, FLOOR(centerX - imageWidth / 2.0), 0);
 #endif
-
-            titleRect.origin.y = imageHeight + (size.height - imageHeight - titleHeight) / 2.0;
+            
+            textRect.origin.y += imageHeight + VERTICAL_MARGIN;
+            textRect.size.height = size.height - imageHeight - VERTICAL_MARGIN;
         }
         else if (_imagePosition === CPImageLeft)
         {
 #if PLATFORM(DOM)
-            _DOMImageElement.style.top = FLOOR(centerY - imageHeight / 2.0) + "px";
-            _DOMImageElement.style.left = "0px";
+            imageStyle.top = FLOOR(centerY - imageHeight / 2.0) + "px";
+            imageStyle.left = "0px";
 #endif
 
-            titleRect.origin.x += imageWidth;
-            titleRect.size.width -= imageWidth;
+            textRect.origin.x = imageWidth + HORIZONTAL_MARGIN;
+            textRect.size.width -= imageWidth + HORIZONTAL_MARGIN;
         }
         else if (_imagePosition === CPImageRight)
         {
 #if PLATFORM(DOM)
-            _DOMImageElement.style.top = FLOOR(centerY - imageHeight / 2.0) + "px";
-            _DOMImageElement.style.left = FLOOR(size.width - imageWidth) + "px";
+            imageStyle.top = FLOOR(centerY - imageHeight / 2.0) + "px";
+            imageStyle.left = FLOOR(size.width - imageWidth) + "px";
 #endif
 
-            titleRect.size.width -= imageWidth;
+            textRect.size.width -= imageWidth + HORIZONTAL_MARGIN;
         }
-        else if(_imagePosition === CPImageOnly)
+        else if (_imagePosition === CPImageOnly)
         {
 #if PLATFORM(DOM)
-            _DOMImageElement.style.top = FLOOR(centerY - imageHeight / 2.0) + "px";
-            _DOMImageElement.style.left = FLOOR(centerX - imageWidth / 2.0) + "px";
+            imageStyle.top = FLOOR(centerY - imageHeight / 2.0) + "px";
+            imageStyle.left = FLOOR(centerX - imageWidth / 2.0) + "px";
 #endif
         }
     }
 
 #if PLATFORM(DOM)
-    if (_DOMTextElement)
+    if (hasDOMTextElement)
     {
-        _DOMTextElement.style.top = FLOOR(_CGRectGetMinY(titleRect)) + "px";
-        _DOMTextElement.style.left = FLOOR(_CGRectGetMinX(titleRect)) + "px";
-        _DOMTextElement.style.width = FLOOR(_CGRectGetWidth(titleRect)) + "px";
-        _DOMTextElement.style.height = FLOOR(_CGRectGetHeight(titleRect)) + "px";
+        var textRectX = FLOOR(_CGRectGetMinX(textRect)),
+            textRectY = FLOOR(_CGRectGetMinY(textRect)),
+            textRectWidth = FLOOR(_CGRectGetWidth(textRect)),
+            textRectHeight = FLOOR(_CGRectGetHeight(textRect));
+        
+        textStyle.left = textRectX + "px";
+        textStyle.width = textRectWidth + "px";
+    
+        switch (_verticalAlignment)
+        {
+            case CPTopVerticalTextAlignment:    textStyle.top = "0px";
+                                                textStyle.height = textRectHeight + "px";
+                                                
+                                                break;
+                                                
+            case CPCenterVerticalTextAlignment: if (0 && _lineBreakMode !== CPLineBreakByCharWrapping && _lineBreakMode !== CPLineBreakByWordWrapping)
+                                                {
+                                                    textStyle.lineHeight = textRectHeight + "px";
+                                                    textStyle.height = textRectHeight + "px";
+                                                }
+                                                
+                                                else
+                                                {
+                                                    if (!_textSize)
+                                                        _textSize = [_text sizeWithFont:_font inWidth:textRectWidth];
+                                                    
+                                                    textStyle.top = (textRectY + (textRectHeight - _textSize.height) / 2.0) + "px";
+                                                    textStyle.height = _textSize.height + "px";
+                                                }
+                                                
+                                                break;
+                                                
+            case CPBottomVerticalTextAlignment: if (!_textSize)
+                                                    _textSize = [_text sizeWithFont:_font inWidth:textRectWidth];  
+                                                                                  
+                                                textStyle.top = (textRectY + textRectHeight - _textSize.height) + "px";
+                                                textStyle.height = _textSize.height + "px";
+
+                                                break;
+        }
     }
 #endif
+
+    _flags = 0;
 }
 
 - (void)sizeToFit
 {
     var size = CGSizeMakeZero();
     
-    if (_imagePosition != CPNoImage && _image)
+    if ((_imagePosition !== CPNoImage) && _image)
     {
         var imageSize = [_image size];
         
@@ -377,20 +539,20 @@ var _CPImageAndTextViewTextChangedFlag  = 1 << 0,
         size.height += imageSize.height;
     }
     
-    if (_imagePosition != CPImageOnly && [_text length] > 0)
+    if ((_imagePosition !== CPImageOnly) && [_text length] > 0)
     {
         if (!_textSize)
-            _textSize = [_text sizeWithFont:_font];
+            _textSize = [_text sizeWithFont:_font ? _font : [CPFont systemFontOfSize:12.0]];
             
         if (_imagePosition == CPImageLeft || _imagePosition == CPImageRight)
         {
-            size.width += _textSize.width;
+            size.width += _textSize.width + HORIZONTAL_MARGIN;
             size.height = MAX(size.height, _textSize.height);
         }
         else if (_imagePosition == CPImageAbove || _imagePosition == CPImageBelow)
         {
             size.width = MAX(size.width, _textSize.width);
-            size.height += _textSize.height;
+            size.height += _textSize.height + VERTICAL_MARGIN;
         }
         else // if (_imagePosition == CPImageOverlaps)
         {

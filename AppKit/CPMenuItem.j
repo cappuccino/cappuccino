@@ -844,7 +844,8 @@ var CPMenuItemTitleKey              = @"CPMenuItemTitleKey",
 var LEFT_MARGIN                 = 3.0,
     RIGHT_MARGIN                = 16.0,
     STATE_COLUMN_WIDTH          = 14.0,
-    INDENTATION_WIDTH           = 17.0;
+    INDENTATION_WIDTH           = 17.0,
+    VERTICAL_MARGIN             = 4.0;
     
 var _CPMenuItemSelectionColor                   = nil,
     
@@ -1018,20 +1019,25 @@ var _CPMenuItemSelectionColor                   = nil,
         font = _font;
 
     [_imageAndTextView setFont:font];
+    [_imageAndTextView setVerticalAlignment:CPCenterVerticalTextAlignment];
     [_imageAndTextView setImage:[_menuItem image]];
-    [_imageAndTextView setTitle:[_menuItem title]];
+    [_imageAndTextView setText:[_menuItem title]];
     [_imageAndTextView setTextColor:[self textColor]];
-    [_imageAndTextView setFrameOrigin:CGPointMake(x, 0.0)];
+    [_imageAndTextView setFrameOrigin:CGPointMake(x, VERTICAL_MARGIN)];
     
     [_imageAndTextView sizeToFit];
     
     var frame = [_imageAndTextView frame];
+    
+    frame.size.height += 2 * VERTICAL_MARGIN;
     
     x += CGRectGetWidth(frame);
     
     // Submenu Arrow
     if ([_menuItem hasSubmenu])
     {
+        x += 3.0;
+        
         if (!_submenuView)
         {
             _submenuView = [[_CPMenuItemArrowView alloc] initWithFrame:CGRectMake(0.0, 0.0, 10.0, 10.0)];
@@ -1048,7 +1054,7 @@ var _CPMenuItemSelectionColor                   = nil,
     else
         [_submenuView setHidden:YES];
 
-    _minSize = CGSizeMake(x + (_belongsToMenuBar ? 0.0 : RIGHT_MARGIN), CGRectGetHeight(frame));
+    _minSize = CGSizeMake(x + (_belongsToMenuBar ? 0.0 : RIGHT_MARGIN) + 3.0, CGRectGetHeight(frame));
  
     [self setFrameSize:_minSize];
 }

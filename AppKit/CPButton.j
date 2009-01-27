@@ -326,7 +326,7 @@ var _CPButtonClassName                          = nil,
     
     if (self)
     {
-        _imagePosition = CPNoImage;
+        _imagePosition = CPImageLeft;
         _imageScaling = CPScaleNone;
         
         _controlSize = CPRegularControlSize;
@@ -761,19 +761,20 @@ var _CPButtonClassName                          = nil,
     if (!_imageAndTextView)
     {
         _imageAndTextView = [[_CPImageAndTextView alloc] initWithFrame:[self bounds]];
-                
+        
         [self addSubview:_imageAndTextView];
         
         [self tile];
     }
         
+    [_imageAndTextView setVerticalAlignment:CPCenterVerticalTextAlignment];
     [_imageAndTextView setFont:[self font]];
     [_imageAndTextView setTextColor:[self textColor]];
     [_imageAndTextView setAlignment:[self alignment]];
     [_imageAndTextView setImagePosition:_imagePosition];
     [_imageAndTextView setImageScaling:_imageScaling];
         
-    [_imageAndTextView setTitle:isHighlighted && _alternateTitle ? _alternateTitle : _title];
+    [_imageAndTextView setText:isHighlighted && _alternateTitle ? _alternateTitle : _title];
     [_imageAndTextView setImage:isHighlighted && _alternateImage ? _alternateImage : _image];
 }
 

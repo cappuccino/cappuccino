@@ -23,7 +23,8 @@
 @import <Foundation/CPString.j>
 
 
-var CPStringReferenceElement    = nil;
+var CPStringReferenceElement    = nil,
+    CPStringDefaultFont         = nil;
 
 @implementation CPString (CPStringDrawing)
 
@@ -36,6 +37,11 @@ var CPStringReferenceElement    = nil;
 }
 
 - (CGSize)sizeWithFont:(CPFont)aFont
+{
+    return [self sizeWithFont:aFont inWidth:NULL];
+}
+
+- (CGSize)sizeWithFont:(CPFont)aFont inWidth:(float)aWidth
 {
     if (!CPStringReferenceElement)
     {
@@ -56,11 +62,44 @@ var CPStringReferenceElement    = nil;
         
         document.getElementsByTagName("body")[0].appendChild(CPStringReferenceElement);
     }
+
+    if (!aFont)
+    {
+        if (!CPStringDefaultFont)
+            CPStringDefaultFont = [CPFont systemFontOfSize:12.0];
+        
+        aFont = CPStringDefaultFont;
+    }
+
+    var style = CPStringReferenceElement.style;
     
-    CPStringReferenceElement.style.font = [aFont ? aFont : [CPFont systemFontOfSize:12.0] cssString];
+    if (aWidth === NULL)
+    {
+        style.width = "";
+        style.whiteSpace = "pre";
+    }
+    
+    else
+    {
+        style.width = ROUND(aWidth) + "px";
+        
+        if (document.attachEvent)
+            style.wordWrap = "break-word";
+        
+        else
+        {
+            style.whiteSpace = "-o-pre-wrap";
+            style.whiteSpace = "-pre-wrap";
+            style.whiteSpace = "-moz-pre-wrap";
+            style.whiteSpace = "pre-wrap";
+        }
+    }
+    
+    style.font = [aFont cssString];
 
     if (CPFeatureIsCompatible(CPJavascriptInnerTextFeature))
         CPStringReferenceElement.innerText = self;
+    
     else if (CPFeatureIsCompatible(CPJavascriptTextContentFeature))
         CPStringReferenceElement.textContent = self;
 
