@@ -23,6 +23,7 @@
 @import "CPFont.j"
 @import "CPShadow.j"
 @import "CPView.j"
+@import "CPKeyValueBinding.j"
 
 #include "Platform/Platform.h"
 
@@ -116,6 +117,19 @@ var CPControlBlackColor     = [CPColor blackColor];
     
     CPDictionary    _backgroundColors;
     CPString        _currentBackgroundColorName;
+}
+
++ (void)initialize
+{
+    [self exposeBinding:"value"];
+}
+
++ (BOOL)automaticallyNotifiesObserversForKey:(CPString)aKey
+{
+    if (aKey === @"value")
+        return NO;
+
+    return YES;
 }
 
 - (id)initWithFrame:(CGRect)aFrame
@@ -478,7 +492,9 @@ var CPControlBlackColor     = [CPColor blackColor];
 */
 - (void)setObjectValue:(id)anObject
 {
+    [self willChangeValueForKey:@"value"];
     _value = anObject;
+    [self didChangeValueForKey:@"value"];
 }
 
 /*!
