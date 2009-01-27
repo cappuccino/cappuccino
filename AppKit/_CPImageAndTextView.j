@@ -46,8 +46,9 @@ var _CPimageAndTextViewFrameSizeChangedFlag         = 1 << 0,
     _CPImageAndTextViewLineBreakModeChangedFlag     = 1 << 5,
     _CPImageAndTextViewTextColorChangedFlag         = 1 << 6,
     _CPImageAndTextViewFontChangedFlag              = 1 << 7,
-    _CPImageAndTextViewImagePositionChangedFlag     = 1 << 8,
-    _CPImageAndTextViewImageScalingChangedFlag      = 1 << 9;
+    _CPImageAndTextViewTextShadowColorChangedFlag   = 1 << 8,
+    _CPImageAndTextViewImagePositionChangedFlag     = 1 << 9,
+    _CPImageAndTextViewImageScalingChangedFlag      = 1 << 10;
 
 var HORIZONTAL_MARGIN   = 3.0,
     VERTICAL_MARGIN     = 5.0;
@@ -62,6 +63,9 @@ var HORIZONTAL_MARGIN   = 3.0,
     CPColor                 _textColor;
     CPFont                  _font;
     
+    CPColor                 _textShadowColor;
+    CGSize                  _textShadowOffset;
+    
     CPCellImagePosition     _imagePosition;
     CPImageScaling          _imageScaling;
     
@@ -75,6 +79,7 @@ var HORIZONTAL_MARGIN   = 3.0,
 #if PLATFORM(DOM)
     DOMElement              _DOMImageElement;
     DOMELement              _DOMTextElement;
+    DOMElement              _DOMTextShadowElement;
 #endif
 }
 
@@ -84,7 +89,7 @@ var HORIZONTAL_MARGIN   = 3.0,
     
     if (self)
     {
-        // ?
+        _textShadowOffset = _CGSizeMakeZero();
         [self setVerticalAlignment:CPTopVerticalTextAlignment];
 
         if (aControl)
@@ -245,6 +250,37 @@ var HORIZONTAL_MARGIN   = 3.0,
     return _font;
 }
 
+- (void)setTextShadowColor:(CPColor)aColor
+{
+    if (_textShadowColor === aColor)
+        return;
+    
+    _textShadowColor = aColor;
+    _flags |= _CPImageAndTextViewTextShadowColorChangedFlag;
+    
+    [self setNeedsDisplay:YES];
+}
+
+- (CPColor)textShadowColor
+{
+    return _textShadowColor;
+}
+
+- (void)setTextShadowOffset:(CGSize)anOffset
+{
+    if (_CGSizeEqualToSize(_textShadowOffset, anOffset))
+        return;
+    
+    _textShadowOffset = _CGSizeMakeCopy(anOffset);
+    
+    [self setNeedsDisplay:YES];
+}
+
+- (CGSize)textShadowOffset
+{
+    return _textShadowOffset;
+}
+
 - (void)setImage:(CPImage)anImage
 {
     if (_image == anImage)
@@ -315,23 +351,76 @@ var HORIZONTAL_MARGIN   = 3.0,
             // We have to set all these values now.
             _flags |= _CPImageAndTextViewTextChangedFlag | _CPImageAndTextViewFontChangedFlag | _CPImageAndTextViewLineBreakModeChangedFlag;
         }
+    
+    var textStyle = hasDOMTextElement ? _DOMTextElement.style : nil;
+    
+    // Create or destroy the DOM Text Shadow element as necessary.
+    var needsDOMTextShadowElement = hasDOMTextElement && !!_textShadowColor,
+        hasDOMTextShadowElement = !!_DOMTextShadowElement;
+    
+    if (needsDOMTextShadowElement !== hasDOMTextShadowElement)
+        if (hasDOMTextShadowElement)
+        {
+            _DOMElement.removeChild(_DOMTextShadowElement);
+            
+            _DOMTextShadowElement = NULL;
+            
+            hasDOMTextShadowElement = NO;
+        }
+        else
+        {
+            _DOMTextShadowElement = document.createElement("div");
+            
+            var shadowStyle = _DOMTextShadowElement.style;
+            
+            shadowStyle.font = textStyle.font;
+            shadowStyle.position = "absolute";
+            shadowStyle.whiteSpace = textStyle.whiteSpace;
+            shadowStyle.cursor = "default";
+            shadowStyle.zIndex = -100;
+            shadowStyle.overflowX = textStyle.overflowX;
+            shadowStyle.overflowY = textStyle.overflowY;
+            shadowStyle.textOverflow = textStyle.textOverflow;
+            
+            if (document.attachEvent)
+                shadowStyle.wordWrap = textStyle.wordWrap; 
+                
+            _DOMElement.appendChild(_DOMTextShadowElement);
+            
+            hasDOMTextShadowElement = YES;
+            
+            _flags |= _CPImageAndTextViewTextChangedFlag; //sigh...
+        }
+        
+    var shadowStyle = hasDOMTextShadowElement ? _DOMTextShadowElement.style : nil;
         
     if (hasDOMTextElement)
     {
-        if (!textStyle)
-            var textStyle = _DOMTextElement.style;
-                    
         // Update the text contents if necessary.
         if (_flags & _CPImageAndTextViewTextChangedFlag)
             if (CPFeatureIsCompatible(CPJavascriptInnerTextFeature))
+            {
                 _DOMTextElement.innerText = _text;
-        
+                
+                if (_DOMTextShadowElement)
+                    _DOMTextShadowElement.innerText = _text;
+            }    
             else if (CPFeatureIsCompatible(CPJavascriptTextContentFeature))
+            {
                 _DOMTextElement.textContent = _text;
             
+                if (_DOMTextShadowElement)
+                    _DOMTextShadowElement.textContent = _text;
+            }
+            
         if (_flags & _CPImageAndTextViewFontChangedFlag)
+        {
             textStyle.font = [_font ? _font : [CPFont systemFontOfSize:12.0] cssString];
             
+            if (shadowStyle)
+                shadowStyle.font = textStyle.font;
+        }
+        
         // Update the line break mode if necessary.
         if (_flags & _CPImageAndTextViewLineBreakModeChangedFlag)
         {
@@ -377,6 +466,17 @@ var HORIZONTAL_MARGIN   = 3.0,
                                                     textStyle.textOverflow = "clip";
                                                     
                                                     break;
+            }
+            
+            if (shadowStyle)
+            {
+                if (document.attachEvent)
+                    shadowStyle.wordWrap = textStyle.wordWrap;
+                
+                shadowStyle.whiteSpace = textStyle.whiteSpace;
+                shadowStyle.overflowX = textStyle.overflowX;
+                shadowStyle.overflowY = textStyle.overflowY;
+                shadowStyle.textOverflow = textStyle.textOverflow;
             }
         }
     }
@@ -498,20 +598,12 @@ var HORIZONTAL_MARGIN   = 3.0,
 #if PLATFORM(DOM)
     if (hasDOMTextElement)
     {
-        var textRectX = FLOOR(_CGRectGetMinX(textRect)),
-            textRectY = FLOOR(_CGRectGetMinY(textRect)),
-            textRectWidth = FLOOR(_CGRectGetWidth(textRect)),
-            textRectHeight = FLOOR(_CGRectGetHeight(textRect));
-        
-        textStyle.left = textRectX + "px";
-        textStyle.width = textRectWidth + "px";
+        var textRectX = _CGRectGetMinX(textRect),
+            textRectY = _CGRectGetMinY(textRect),
+            textRectWidth = _CGRectGetWidth(textRect),
+            textRectHeight = _CGRectGetHeight(textRect);
     
-        if (_verticalAlignment === CPTopVerticalTextAlignment)
-        {
-            textStyle.top = "0px";
-            textStyle.height = textRectHeight + "px";
-        }
-        else
+        if (_verticalAlignment !== CPTopVerticalTextAlignment)
         {
             if (!_textSize)
             {
@@ -524,15 +616,31 @@ var HORIZONTAL_MARGIN   = 3.0,
                     
             if (_verticalAlignment === CPCenterVerticalTextAlignment)
             {
-                textStyle.top = (textRectY + (textRectHeight - _textSize.height) / 2.0) + "px";
-                textStyle.height = _textSize.height + "px";
+                textRectY = textRectY + (textRectHeight - _textSize.height) / 2.0;
+                textRectHeight = _textSize.height;
             }
             
             else //if (_verticalAlignment === CPBottomVerticalTextAlignment)
             {            
-                textStyle.top = (textRectY + textRectHeight - _textSize.height) + "px";
-                textStyle.height = _textSize.height + "px";
+                textRectY = textRectY + textRectHeight - _textSize.height;
+                textRectHeight = _textSize.height;
             }
+        }
+        
+        textStyle.top = ROUND(textRectY) + "px";
+        textStyle.left = ROUND(textRectX) + "px";
+        textStyle.width = ROUND(textRectWidth) + "px";
+        textStyle.height = ROUND(textRectHeight) + "px";
+        
+        if (shadowStyle)
+        {
+            if (_flags & _CPImageAndTextViewTextShadowColorChangedFlag)
+                shadowStyle.color = [_textShadowColor cssString];
+            
+            shadowStyle.top = ROUND(textRectY + _textShadowOffset.height) + "px";
+            shadowStyle.left = ROUND(textRectX + _textShadowOffset.width) + "px";
+            shadowStyle.width = ROUND(textRectWidth) + "px";
+            shadowStyle.height = ROUND(textRectHeight) + "px";
         }
     }
 #endif

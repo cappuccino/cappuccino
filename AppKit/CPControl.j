@@ -86,29 +86,36 @@ var CPControlBlackColor     = [CPColor blackColor];
 */
 @implementation CPControl : CPView
 {
-    id          _value;
-
-    BOOL        _isEnabled;
+    id                      _value;
+    BOOL                    _isEnabled;
     
-    int         _alignment;
+    // Display Properties
+    CPTextAlignment         _alignment;
     CPVerticalTextAlignment _verticalAlignment;
-    CPFont      _font;
-    CPColor     _textColor;
+    
+    CPLineBreakMode         _lineBreakMode;
+    CPColor                 _textColor;
+    CPFont                  _font;
+    
+    CPCellImagePosition     _imagePosition;
+    CPImageScaling          _imageScaling;
+    
+    // Target-Action Support
+    id                      _target;
+    SEL                     _action;
+    int                     _sendActionOn;
+    
+    // Mouse Tracking Support
+    BOOL                    _continuousTracking;
+    BOOL                    _trackingWasWithinFrame;
+    unsigned                _trackingMouseDownFlags;
+    CGPoint                 _previousTrackingLocation;
+
+    // Stuff
     CPShadow    _textShadow;
-    
-    CPLineBreakMode _lineBreakMode;
-    
-    id          _target;
-    SEL         _action;
-    int         _sendActionOn;
     
     CPDictionary    _backgroundColors;
     CPString        _currentBackgroundColorName;
-    
-    BOOL        _continuousTracking;
-    BOOL        _trackingWasWithinFrame;
-    unsigned    _trackingMouseDownFlags;
-    CGPoint     _previousTrackingLocation;
 }
 
 - (id)initWithFrame:(CGRect)aFrame
@@ -150,6 +157,56 @@ var CPControlBlackColor     = [CPColor blackColor];
     return _isEnabled;
 }
 
+/*!
+    Sets the receiver's horizontal text alignment
+    @param anAlignment the receiver's alignment
+*/
+- (void)setAlignment:(CPTextAlignment)anAlignment
+{
+    _alignment = anAlignment;
+}
+
+/*!
+    Returns the receiver's horizontal text alignment
+*/
+- (CPTextAlignment)alignment
+{
+    return _alignment;
+}
+
+/*!
+    Sets the receiver's vertical text alignment
+    @param anAlignment the receiver's alignment
+*/
+- (void)setVerticalAlignment:(CPVerticalTextAlignment)anAlignment
+{
+    _verticalAlignment = anAlignment;
+}
+
+/*!
+    Returns the receiver's vertical text alignment
+*/
+- (CPVerticalTextAlignment)verticalAlignment
+{
+    return _verticalAlignment;
+}
+
+/*!
+    Sets the receiver's line break mode.
+    @param anAlignment the receiver's line break mode.
+*/
+- (void)setLineBreakMode:(CPLineBreakMode)aLineBreakMode
+{
+    _lineBreakMode = aLineBreakMode;
+}
+
+/*!
+    Returns the receiver's line break mode.
+*/
+- (CPLineBreakMode)lineBreakMode
+{
+    return _lineBreakMode;
+}
 
 /*!
     Sets the color of the receiver's text.
@@ -175,43 +232,6 @@ var CPControlBlackColor     = [CPColor blackColor];
 }
 
 /*!
-    Sets the receiver's alignment
-    @param anAlignment the receiver's alignment
-*/
-- (void)setAlignment:(CPTextAlignment)anAlignment
-{
-    _alignment = anAlignment;
-}
-
-/*!
-    Returns the receiver's alignment
-*/
-- (CPTextAlignment)alignment
-{
-    return _alignment;
-}
-
-- (void)setVerticalAlignment:(CPVerticalTextAlignment)anAlignment
-{
-    _verticalAlignment = anAlignment;
-}
-
-- (CPVerticalTextAlignment)verticalAlignment
-{
-    return _verticalAlignment;
-}
-
-- (void)setLineBreakMode:(CPLineBreakMode)aLineBreakMode
-{
-    _lineBreakMode = aLineBreakMode;
-}
-
-- (CPLineBreakMode)lineBreakMode
-{
-    return _lineBreakMode;
-}
-
-/*!
     Sets the receiver's font
     @param aFont the font for the receiver
 */
@@ -233,6 +253,46 @@ var CPControlBlackColor     = [CPColor blackColor];
 - (CPFont)font
 {
     return _font;
+}
+
+/*!
+    Sets the position of the button's image to <code>anImagePosition</code>.
+    @param anImagePosition the position for the button's image
+*/
+- (void)setImagePosition:(CPCellImagePosition)anImagePosition
+{
+    if (_imagePosition === anImagePosition)
+        return;
+    
+    _imagePosition = anImagePosition;
+}
+
+/*!
+    Returns the buton's image position
+*/
+- (CPCellImagePosition)imagePosition
+{
+    return _imagePosition;
+}
+
+/*!
+    Sets the button's images scaling method
+    @param anImageScaling the image scaling method
+*/
+- (void)setImageScaling:(CPImageScaling)anImageScaling
+{
+    if (_imageScaling === anImageScaling)
+        return;
+    
+    _imageScaling = anImageScaling;
+}
+
+/*!
+    Returns the button's image scaling method
+*/
+- (CPImageScaling)imageScaling
+{
+    return _imageScaling;
 }
 
 /*!

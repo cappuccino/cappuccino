@@ -326,19 +326,15 @@ var _CPButtonClassName                          = nil,
     
     if (self)
     {
-
-
+        [self setAlignment:CPCenterTextAlignment];
         [self setVerticalAlignment:CPCenterVerticalTextAlignment];
-    
-        _imagePosition = CPImageLeft;
-        _imageScaling = CPScaleNone;
+        [self setImagePosition:CPImageLeft];
+        [self setImageScaling:CPScaleNone];
         
         _controlSize = CPRegularControlSize;
         
         [self setBezelStyle:CPRoundRectBezelStyle];
         [self setBordered:YES];
-        
-        [self setAlignment:CPCenterTextAlignment];
     }
     
     return self;
@@ -350,20 +346,9 @@ var _CPButtonClassName                          = nil,
 */
 - (void)setImagePosition:(CPCellImagePosition)anImagePosition
 {
-    if (_imagePosition == anImagePosition)
-        return;
+    [super setImagePosition:anImagePosition];
     
-    _imagePosition = anImagePosition;
-    
-    [_imageAndTextView setImagePosition:_imagePosition];
-}
-
-/*!
-    Returns the buton's image position
-*/
-- (CPCellImagePosition)imagePosition
-{
-    return _imagePosition;
+    [_imageAndTextView setImagePosition:[self imagePosition]];
 }
 
 /*!
@@ -372,20 +357,9 @@ var _CPButtonClassName                          = nil,
 */
 - (void)setImageScaling:(CPImageScaling)anImageScaling
 {
-    if (_imageScaling == anImageScaling)
-        return;
-    
-    _imageScaling = anImageScaling;
-    
-    [_imageAndTextView setImageScaling:anImageScaling];
-}
+    [super setImageScaling:anImageScaling];
 
-/*!
-    Returns the button's image scaling method
-*/
-- (CPImageScaling)imageScaling
-{
-    return _imageScaling;
+    [_imageAndTextView setImageScaling:[self imageScaling]];
 }
 
 /*!
