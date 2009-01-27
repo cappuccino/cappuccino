@@ -73,32 +73,49 @@ var HORIZONTAL_MARGIN   = 3.0,
     unsigned                _flags;
 
 #if PLATFORM(DOM)
-    DOMElement          _DOMImageElement;
-    DOMELement          _DOMTextElement;
+    DOMElement              _DOMImageElement;
+    DOMELement              _DOMTextElement;
 #endif
 }
 
-- (id)initWithFrame:(CGRect)aFrame
+- (id)initWithFrame:(CGRect)aFrame control:(CPControl)aControl
 {
     self = [super initWithFrame:aFrame];
     
     if (self)
     {
-        _lineBreakMode = CPLineBreakByClipping;
-        _textColor = nil;
-        
-        [self setAlignment:CPCenterTextAlignment];
+        // ?
         [self setVerticalAlignment:CPTopVerticalTextAlignment];
-        [self setFont:[CPFont systemFontOfSize:12.0]];
-        [self setImagePosition:CPNoImage];
-        [self setImageScaling:CPScaleNone];
 
-        _textColor = nil;
+        if (aControl)
+        {
+            [self setLineBreakMode:[aControl lineBreakMode]];
+            [self setTextColor:[aControl textColor]];
+            [self setAlignment:[aControl alignment]];
+            [self setVerticalAlignment:[aControl verticalAlignment]];
+            [self setFont:[aControl font]];
+            [self setImagePosition:[aControl imagePosition]];
+            [self setImageScaling:[aControl imageScaling]];
+        }
+        else
+        {
+            [self setLineBreakMode:CPLineBreakByClipping];
+            //[self setTextColor:[aControl textColor]];    
+            [self setAlignment:CPCenterTextAlignment];
+            [self setFont:[CPFont systemFontOfSize:12.0]];
+            [self setImagePosition:CPNoImage];
+            [self setImageScaling:CPScaleNone];
+        }
         
         _textSize = NULL;
     }
     
     return self;
+}
+
+- (id)initWithFrame:(CGRect)aFrame
+{
+    return [self initWithFrame:aFrame control:nil];
 }
 
 - (void)setAlignment:(CPTextAlignment)anAlignment
@@ -489,37 +506,33 @@ var HORIZONTAL_MARGIN   = 3.0,
         textStyle.left = textRectX + "px";
         textStyle.width = textRectWidth + "px";
     
-        switch (_verticalAlignment)
+        if (_verticalAlignment === CPTopVerticalTextAlignment)
         {
-            case CPTopVerticalTextAlignment:    textStyle.top = "0px";
-                                                textStyle.height = textRectHeight + "px";
-                                                
-                                                break;
-                                                
-            case CPCenterVerticalTextAlignment: if (0 && _lineBreakMode !== CPLineBreakByCharWrapping && _lineBreakMode !== CPLineBreakByWordWrapping)
-                                                {
-                                                    textStyle.lineHeight = textRectHeight + "px";
-                                                    textStyle.height = textRectHeight + "px";
-                                                }
-                                                
-                                                else
-                                                {
-                                                    if (!_textSize)
-                                                        _textSize = [_text sizeWithFont:_font inWidth:textRectWidth];
-                                                    
-                                                    textStyle.top = (textRectY + (textRectHeight - _textSize.height) / 2.0) + "px";
-                                                    textStyle.height = _textSize.height + "px";
-                                                }
-                                                
-                                                break;
-                                                
-            case CPBottomVerticalTextAlignment: if (!_textSize)
-                                                    _textSize = [_text sizeWithFont:_font inWidth:textRectWidth];  
-                                                                                  
-                                                textStyle.top = (textRectY + textRectHeight - _textSize.height) + "px";
-                                                textStyle.height = _textSize.height + "px";
-
-                                                break;
+            textStyle.top = "0px";
+            textStyle.height = textRectHeight + "px";
+        }
+        else
+        {
+            if (!_textSize)
+            {
+                if (_lineBreakMode === CPLineBreakByCharWrapping || 
+                    _lineBreakMode === CPLineBreakByWordWrapping)
+                    _textSize = [_text sizeWithFont:_font inWidth:textRectWidth];
+                else
+                    _textSize = [_text sizeWithFont:_font];
+            }
+                    
+            if (_verticalAlignment === CPCenterVerticalTextAlignment)
+            {
+                textStyle.top = (textRectY + (textRectHeight - _textSize.height) / 2.0) + "px";
+                textStyle.height = _textSize.height + "px";
+            }
+            
+            else //if (_verticalAlignment === CPBottomVerticalTextAlignment)
+            {            
+                textStyle.top = (textRectY + textRectHeight - _textSize.height) + "px";
+                textStyle.height = _textSize.height + "px";
+            }
         }
     }
 #endif

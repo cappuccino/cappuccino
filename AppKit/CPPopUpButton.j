@@ -65,6 +65,7 @@ var CPPopUpButtonArrowsImage = nil;
         
         [self setImagePosition:CPImageLeft];
         [self setAlignment:CPLeftTextAlignment];
+        [self setLineBreakMode:CPLineBreakByTruncatingTail];
         
         [self setMenu:[[CPMenu alloc] initWithTitle:@""]];
     }
@@ -696,6 +697,11 @@ var CPPopUpButtonArrowsImage = nil;
         target = [selectedItem target];
 
     [self sendAction:action to:target];
+}
+
+- (CGRect)contentRectForBounds:(CGRect)bounds
+{
+    return CGRectMake(3.0, 2.0, CGRectGetWidth(bounds) - 16.0, CGRectGetHeight(bounds) - 5.0);
 }
 
 @end

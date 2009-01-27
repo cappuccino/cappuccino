@@ -91,9 +91,12 @@ var CPControlBlackColor     = [CPColor blackColor];
     BOOL        _isEnabled;
     
     int         _alignment;
+    CPVerticalTextAlignment _verticalAlignment;
     CPFont      _font;
     CPColor     _textColor;
     CPShadow    _textShadow;
+    
+    CPLineBreakMode _lineBreakMode;
     
     id          _target;
     SEL         _action;
@@ -114,6 +117,8 @@ var CPControlBlackColor     = [CPColor blackColor];
     
     if (self)
     {
+        [self setVerticalAlignment:CPTopVerticalTextAlignment];
+        
         _sendActionOn = CPLeftMouseUpMask;
         _trackingMouseDownFlags = 0;
         
@@ -170,6 +175,15 @@ var CPControlBlackColor     = [CPColor blackColor];
 }
 
 /*!
+    Sets the receiver's alignment
+    @param anAlignment the receiver's alignment
+*/
+- (void)setAlignment:(CPTextAlignment)anAlignment
+{
+    _alignment = anAlignment;
+}
+
+/*!
     Returns the receiver's alignment
 */
 - (CPTextAlignment)alignment
@@ -177,13 +191,24 @@ var CPControlBlackColor     = [CPColor blackColor];
     return _alignment;
 }
 
-/*!
-    Sets the receiver's alignment
-    @param anAlignment the receiver's alignment
-*/
-- (void)setAlignment:(CPTextAlignment)anAlignment
+- (void)setVerticalAlignment:(CPVerticalTextAlignment)anAlignment
 {
-    _alignment = anAlignment;
+    _verticalAlignment = anAlignment;
+}
+
+- (CPVerticalTextAlignment)verticalAlignment
+{
+    return _verticalAlignment;
+}
+
+- (void)setLineBreakMode:(CPLineBreakMode)aLineBreakMode
+{
+    _lineBreakMode = aLineBreakMode;
+}
+
+- (CPLineBreakMode)lineBreakMode
+{
+    return _lineBreakMode;
 }
 
 /*!

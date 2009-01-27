@@ -311,7 +311,7 @@ var _CPButtonClassName                          = nil,
 */
 - (void)setButtonType:(CPButtonType)aButtonType
 {
-    if (aButtonType == CPSwitchButton)
+    if (aButtonType === CPSwitchButton)
     {
         [self setBordered:NO];
         [self setImage:nil];
@@ -326,6 +326,10 @@ var _CPButtonClassName                          = nil,
     
     if (self)
     {
+
+
+        [self setVerticalAlignment:CPCenterVerticalTextAlignment];
+    
         _imagePosition = CPImageLeft;
         _imageScaling = CPScaleNone;
         
@@ -351,7 +355,7 @@ var _CPButtonClassName                          = nil,
     
     _imagePosition = anImagePosition;
     
-    [self drawContentsWithHighlight:_isHighlighted];
+    [_imageAndTextView setImagePosition:_imagePosition];
 }
 
 /*!
@@ -373,7 +377,7 @@ var _CPButtonClassName                          = nil,
     
     _imageScaling = anImageScaling;
     
-    [self drawContentsWithHighlight:_isHighlighted];
+    [_imageAndTextView setImageScaling:anImageScaling];
 }
 
 /*!
@@ -392,7 +396,7 @@ var _CPButtonClassName                          = nil,
 {
     [super setTextColor:aColor];
     
-    [self drawContentsWithHighlight:_isHighlighted];
+    [_imageAndTextView setTextColor:[self textColor]];
 }
 
 /*!
@@ -403,7 +407,7 @@ var _CPButtonClassName                          = nil,
 {
     [super setFont:aFont];
     
-    [self drawContentsWithHighlight:_isHighlighted];
+    [_imageAndTextView setFont:[self font]];
 }
 
 // Setting the state
@@ -461,7 +465,7 @@ var _CPButtonClassName                          = nil,
 {
     [super setAlignment:anAlignment];
     
-    [self drawContentsWithHighlight:_isHighlighted];
+    [_imageAndTextView setAlignment:[self alignment]];
 }
 
 /*!
@@ -470,12 +474,12 @@ var _CPButtonClassName                          = nil,
 */
 - (void)setImage:(CPImage)anImage
 {
-    if (_image == anImage)
+    if (_image === anImage)
         return;
     
     _image = anImage;
     
-    [self drawContentsWithHighlight:_isHighlighted];
+    [self setNeedsDisplay:YES];
 }
 
 /*!
@@ -514,7 +518,7 @@ var _CPButtonClassName                          = nil,
     
     _title = aTitle;
     
-    [self drawContentsWithHighlight:_isHighlighted];
+    [self setNeedsDisplay:YES];
 }
 
 /*!
@@ -549,11 +553,46 @@ var _CPButtonClassName                          = nil,
         [_imageAndTextView setFrameSize:size];
 }
 
+- (CGRect)contentRectForBounds:(CGRect)aRect
+{
+    if (_isBordered)
+    {
+        if (_bezelStyle == CPHUDBezelStyle)
+            aRect.size.height -= 4.0;
+        else if (_bezelStyle == CPRoundRectBezelStyle)
+            aRect.size.height -= 2.0;
+        else if (_bezelStyle == CPTexturedRoundedBezelStyle)
+            aRect.size.height -= 2.0;
+    }
+
+    return aRect;
+}
+
+- (void)drawRect:(CGRect)aRect
+{
+    if (!_imageAndTextView)
+    {
+        _imageAndTextView = [[_CPImageAndTextView alloc] initWithFrame:[self contentRectForBounds:aRect] control:self];
+
+        [self addSubview:_imageAndTextView];
+    }
+    else
+        [_imageAndTextView setFrame:[self contentRectForBounds:aRect]];
+
+    [_imageAndTextView setText:_isHighlighted && _alternateTitle ? _alternateTitle : _title];
+    [_imageAndTextView setImage:_isHighlighted && _alternateImage ? _alternateImage : _image];
+}
+
 /*!
     Compacts the button's frame to fit its contents.
 */
 - (void)sizeToFit
-{
+{    if (!_imageAndTextView)
+    {
+        _imageAndTextView = [[_CPImageAndTextView alloc] initWithFrame:[self contentRectForBounds:[self bounds]] control:self];
+
+        [self addSubview:_imageAndTextView];
+    }
     [_imageAndTextView sizeToFit];
     
     var frame = [_imageAndTextView frame],
@@ -571,17 +610,6 @@ var _CPButtonClassName                          = nil,
 }
 
 /*!
-    Sets the frame size for the button.
-    @param the new frame size
-*/
-- (void)setFrameSize:(CGSize)aSize
-{
-    [super setFrameSize:aSize];
-
-    [self tile];
-}
-
-/*!
     Highlights the receiver based on <code>aFlag</code>.
     @param If <code>YES</code> the button will highlight, <code>NO</code> the button will unhighlight.
 */
@@ -590,7 +618,7 @@ var _CPButtonClassName                          = nil,
     _isHighlighted = aFlag;
     
     [self drawBezelWithHighlight:aFlag];
-    [self drawContentsWithHighlight:aFlag];
+    [self setNeedsDisplay:YES];
 }
 
 /*!
@@ -750,32 +778,6 @@ var _CPButtonClassName                          = nil,
         return;
     
     [self setBackgroundColorWithName:shouldHighlight ? CPControlHighlightedBackgroundColor : CPControlNormalBackgroundColor];
-}
-
-/* @ignore */
-- (void)drawContentsWithHighlight:(BOOL)isHighlighted
-{
-    if (!_title && !_image && !_alternateTitle && !_alternateImage && !_imageAndTextView)
-        return;
-    
-    if (!_imageAndTextView)
-    {
-        _imageAndTextView = [[_CPImageAndTextView alloc] initWithFrame:[self bounds]];
-        
-        [self addSubview:_imageAndTextView];
-        
-        [self tile];
-    }
-        
-    [_imageAndTextView setVerticalAlignment:CPCenterVerticalTextAlignment];
-    [_imageAndTextView setFont:[self font]];
-    [_imageAndTextView setTextColor:[self textColor]];
-    [_imageAndTextView setAlignment:[self alignment]];
-    [_imageAndTextView setImagePosition:_imagePosition];
-    [_imageAndTextView setImageScaling:_imageScaling];
-        
-    [_imageAndTextView setText:isHighlighted && _alternateTitle ? _alternateTitle : _title];
-    [_imageAndTextView setImage:isHighlighted && _alternateImage ? _alternateImage : _image];
 }
 
 - (void)viewDidMoveToWindow
