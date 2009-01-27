@@ -49,7 +49,7 @@
 {
     if (!anObserver || !aPath)
         return;
-
+    CPLog.info(self+" is adding observer to object: "+self+" forKeyPath: "+aPath+" context: "+aContext);
     [[_CPKVOProxy proxyForObject:self] _addObserver:anObserver forKeyPath:aPath options:options context:aContext];
 }
 

@@ -426,7 +426,8 @@ kvoOperators["sum"] = function sumOperator(self, _cmd, param)
 
 -(void)addObserver:(id)observer forKeyPath:(CPString)aKeyPath options:(unsigned)options context:(id)context
 {
-    if ([isa instanceMethodForSelector:_cmd]==[NSArray instanceMethodForSelector:_cmd])
+    CPLog.warn("adding observer to CPArray. observer: "+observer+" keypath: "+aKeyPath+" context: "+context);
+    if ([isa instanceMethodForSelector:_cmd]==[CPArray instanceMethodForSelector:_cmd])
         [CPException raise:CPInvalidArgumentException reason:"Unsupported method on CPArray"];
     else
         [super addObserver:observer forKeyPath:aKeyPath options:options context:context];
@@ -434,7 +435,7 @@ kvoOperators["sum"] = function sumOperator(self, _cmd, param)
 
 -(void)removeObserver:(id)observer forKeyPath:(CPString)aKeyPath
 {
-    if ([isa instanceMethodForSelector:_cmd]==[NSArray instanceMethodForSelector:_cmd])
+    if ([isa instanceMethodForSelector:_cmd]==[CPArray instanceMethodForSelector:_cmd])
         [CPException raise:CPInvalidArgumentException reason:"Unsupported method on CPArray"];
     else
         [super removeObserver:observer forKeyPath:aKeyPath];
