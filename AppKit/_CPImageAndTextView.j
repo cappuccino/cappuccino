@@ -310,7 +310,7 @@ var HORIZONTAL_MARGIN   = 3.0,
     [self setNeedsDisplay:YES];
 }
 
-- (CPString)title
+- (CPString)text
 {
     return _text;
 }

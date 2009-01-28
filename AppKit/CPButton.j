@@ -531,11 +531,11 @@ var _CPButtonClassName                          = nil,
 {
     if (_isBordered)
     {
-        if (_bezelStyle == CPHUDBezelStyle)
+        if (_bezelStyle === CPHUDBezelStyle)
             aRect.size.height -= 4.0;
-        else if (_bezelStyle == CPRoundRectBezelStyle)
+        else if (_bezelStyle === CPRoundRectBezelStyle)
             aRect.size.height -= 2.0;
-        else if (_bezelStyle == CPTexturedRoundedBezelStyle)
+        else if (_bezelStyle === CPTexturedRoundedBezelStyle)
             aRect.size.height -= 2.0;
     }
 
@@ -546,12 +546,12 @@ var _CPButtonClassName                          = nil,
 {
     if (!_imageAndTextView)
     {
-        _imageAndTextView = [[_CPImageAndTextView alloc] initWithFrame:[self contentRectForBounds:aRect] control:self];
+        _imageAndTextView = [[_CPImageAndTextView alloc] initWithFrame:[self contentRectForBounds:[self bounds]] control:self];
 
         [self addSubview:_imageAndTextView];
     }
     else
-        [_imageAndTextView setFrame:[self contentRectForBounds:aRect]];
+        [_imageAndTextView setFrame:[self contentRectForBounds:[self bounds]]];
 
     [_imageAndTextView setText:_isHighlighted && _alternateTitle ? _alternateTitle : _title];
     [_imageAndTextView setImage:_isHighlighted && _alternateImage ? _alternateImage : _image];
@@ -570,7 +570,7 @@ var _CPButtonClassName                          = nil,
     
     [_imageAndTextView setText:_isHighlighted && _alternateTitle ? _alternateTitle : _title];
     [_imageAndTextView setImage:_isHighlighted && _alternateImage ? _alternateImage : _image];
-    
+
     [_imageAndTextView sizeToFit];
     
     var frame = [_imageAndTextView frame],
