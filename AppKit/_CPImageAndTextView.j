@@ -665,12 +665,12 @@ var HORIZONTAL_MARGIN   = 3.0,
         if (!_textSize)
             _textSize = [_text sizeWithFont:_font ? _font : [CPFont systemFontOfSize:12.0]];
             
-        if (_imagePosition == CPImageLeft || _imagePosition == CPImageRight)
+        if (_imagePosition === CPImageLeft || _imagePosition === CPImageRight)
         {
             size.width += _textSize.width + HORIZONTAL_MARGIN;
             size.height = MAX(size.height, _textSize.height);
         }
-        else if (_imagePosition == CPImageAbove || _imagePosition == CPImageBelow)
+        else if (_imagePosition === CPImageAbove || _imagePosition === CPImageBelow)
         {
             size.width = MAX(size.width, _textSize.width);
             size.height += _textSize.height + VERTICAL_MARGIN;

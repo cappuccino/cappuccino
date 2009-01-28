@@ -567,6 +567,10 @@ var _CPButtonClassName                          = nil,
 
         [self addSubview:_imageAndTextView];
     }
+    
+    [_imageAndTextView setText:_isHighlighted && _alternateTitle ? _alternateTitle : _title];
+    [_imageAndTextView setImage:_isHighlighted && _alternateImage ? _alternateImage : _image];
+    
     [_imageAndTextView sizeToFit];
     
     var frame = [_imageAndTextView frame],

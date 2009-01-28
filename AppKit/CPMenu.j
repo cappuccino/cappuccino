@@ -1238,6 +1238,7 @@ var STICKY_TIME_INTERVAL        = 500,
 @implementation _CPMenuView : CPView
 {
     CPArray _menuItemViews;
+    CPArray _visibleMenuItemViews;
     
     CPFont  _font;
 }
@@ -1264,21 +1265,32 @@ var STICKY_TIME_INTERVAL        = 500,
 
 - (int)itemIndexAtPoint:(CGPoint)aPoint
 {
-    var index = 0,
-        count = _menuItemViews.length;
+    var x = aPoint.x,
+        bounds = [self bounds];
     
-    for (; index < count; ++index)
+    if (x < CGRectGetMinX(bounds) || x > CGRectGetMaxX(bounds))
+        return CPNotFound;
+    
+    var y = aPoint.y,
+        low = 0,
+        high = _visibleMenuItemViews.length - 1;
+       
+    while (low <= high)
     {
-        var view = _menuItemViews[index];
+        var middle = FLOOR(low + (high - low) / 2),
+            frame = [_visibleMenuItemViews[middle] frame];
         
-        if ([view isHidden])
-            continue;
+        if (y < CGRectGetMinY(frame))
+            high = middle - 1;
         
-        if (CGRectContainsPoint([view frame], aPoint))
-            return index;
-    }
-    
-    return CPNotFound;
+        else if (y > CGRectGetMaxY(frame))
+            low = middle + 1.;
+        
+        else
+            return middle;
+   }
+   
+   return CPNotFound;
 }
 
 - (void)setMenu:(CPMenu)aMenu
@@ -1288,6 +1300,7 @@ var STICKY_TIME_INTERVAL        = 500,
     [_menuItemViews makeObjectsPerformSelector:@selector(removeFromSuperview)];   
     
     _menuItemViews = [];
+    _visibleMenuItemViews = [];
     
     var menu = [self menu];
     
@@ -1311,6 +1324,8 @@ var STICKY_TIME_INTERVAL        = 500,
         if ([item isHidden])
             continue;
 
+        _visibleMenuItemViews.push(view);
+        
         [view setFont:_font];
         [view setShowsStateColumn:showsStateColumn];
         [view synchronizeWithMenuItem];
