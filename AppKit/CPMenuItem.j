@@ -848,6 +848,7 @@ var LEFT_MARGIN                 = 3.0,
     VERTICAL_MARGIN             = 4.0;
     
 var _CPMenuItemSelectionColor                   = nil,
+    _CPMenuItemTextShadowColor                  = nil,
     
     _CPMenuItemDefaultStateImages               = [],
     _CPMenuItemDefaultStateHighlightedImages    = [];
@@ -877,7 +878,7 @@ var _CPMenuItemSelectionColor                   = nil,
     if (self != [_CPMenuItemView class])
         return;
     
-    _CPMenuItemSelectionColor = [CPColor colorWithCalibratedRed:81.0 / 255.0 green:83.0 / 255.0 blue:109.0 / 255.0 alpha:1.0];
+    _CPMenuItemSelectionColor =  [CPColor colorWithCalibratedRed:95.0 / 255.0 green:131.0 / 255.0 blue:185.0 / 255.0 alpha:1.0];;//[CPColor colorWithCalibratedRed:81.0 / 255.0 green:83.0 / 255.0 blue:109.0 / 255.0 alpha:1.0];
     
     var bundle = [CPBundle bundleForClass:self];
     
@@ -889,6 +890,8 @@ var _CPMenuItemSelectionColor                   = nil,
 
     _CPMenuItemDefaultStateImages[CPMixedState]             = nil;
     _CPMenuItemDefaultStateHighlightedImages[CPMixedState]  = nil;
+    
+    _CPMenuItemTextShadowColor = [CPColor colorWithCalibratedRed:26.0 / 255.0 green: 73.0 / 255.0 blue:109.0 / 255.0 alpha:1.0];
 }
 
 + (float)leftMargin
@@ -1030,8 +1033,8 @@ var _CPMenuItemSelectionColor                   = nil,
     
     var frame = [_imageAndTextView frame];
     
-    frame.size.height += 1.0;
-    [_imageAndTextView setFrame:frame];
+//    frame.size.height += 1.0;
+//    [_imageAndTextView setFrame:frame];
     
     frame.size.height += 2 * VERTICAL_MARGIN;
     
@@ -1095,7 +1098,7 @@ var _CPMenuItemSelectionColor                   = nil,
             [self setBackgroundColor:_CPMenuItemSelectionColor];
     
             [_imageAndTextView setTextColor:[CPColor whiteColor]];
-            [_imageAndTextView setTextShadowColor:[CPColor blackColor]];
+            [_imageAndTextView setTextShadowColor:_CPMenuItemTextShadowColor];
         }
         else
         {

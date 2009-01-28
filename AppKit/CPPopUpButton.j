@@ -701,7 +701,10 @@ var CPPopUpButtonArrowsImage = nil;
 
 - (CGRect)contentRectForBounds:(CGRect)bounds
 {
-    return CGRectMake(3.0, 2.0, CGRectGetWidth(bounds) - 16.0, CGRectGetHeight(bounds) - 5.0);
+    if ([self isBordered])
+        return CGRectMake(3.0, 2.0, CGRectGetWidth(bounds) - 16.0, CGRectGetHeight(bounds) - 5.0);
+    
+    return bounds;
 }
 
 @end
