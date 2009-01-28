@@ -373,18 +373,24 @@ var HORIZONTAL_MARGIN   = 3.0,
             
             var shadowStyle = _DOMTextShadowElement.style;
             
-            shadowStyle.font = textStyle.font;
+            shadowStyle.font = [_font ? _font : [CPFont systemFontOfSize:12.0] cssString];
             shadowStyle.position = "absolute";
             shadowStyle.whiteSpace = textStyle.whiteSpace;
             shadowStyle.cursor = "default";
             shadowStyle.zIndex = -100;
-            shadowStyle.overflowX = textStyle.overflowX;
-            shadowStyle.overflowY = textStyle.overflowY;
             shadowStyle.textOverflow = textStyle.textOverflow;
             
             if (document.attachEvent)
-                shadowStyle.wordWrap = textStyle.wordWrap; 
-                
+            {
+                shadowStyle.overflow = textStyle.overflow;
+                shadowStyle.wordWrap = textStyle.wordWrap;
+            }
+            else
+            {
+                shadowStyle.overflowX = textStyle.overflowX;
+                shadowStyle.overflowY = textStyle.overflowY;
+            }
+            
             _DOMElement.appendChild(_DOMTextShadowElement);
             
             hasDOMTextShadowElement = YES;
@@ -415,10 +421,11 @@ var HORIZONTAL_MARGIN   = 3.0,
             
         if (_flags & _CPImageAndTextViewFontChangedFlag)
         {
-            textStyle.font = [_font ? _font : [CPFont systemFontOfSize:12.0] cssString];
+            var fontStyle = [_font ? _font : [CPFont systemFontOfSize:12.0] cssString];
+            textStyle.font = fontStyle;
             
             if (shadowStyle)
-                shadowStyle.font = textStyle.font;
+                shadowStyle.font = fontStyle;
         }
         
         // Update the line break mode if necessary.
@@ -471,11 +478,17 @@ var HORIZONTAL_MARGIN   = 3.0,
             if (shadowStyle)
             {
                 if (document.attachEvent)
-                    shadowStyle.wordWrap = textStyle.wordWrap;
-                
+                {
+                    shadowStyle.wordWrap = textStyle.wordWrap;            
+                    shadowStyle.overflow = textStyle.overflow;
+                }
+                else
+                {
+                    shadowStyle.overflowX = textStyle.overflowX;
+                    shadowStyle.overflowY = textStyle.overflowY;
+                }
+
                 shadowStyle.whiteSpace = textStyle.whiteSpace;
-                shadowStyle.overflowX = textStyle.overflowX;
-                shadowStyle.overflowY = textStyle.overflowY;
                 shadowStyle.textOverflow = textStyle.textOverflow;
             }
         }
