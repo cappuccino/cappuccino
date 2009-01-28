@@ -475,6 +475,17 @@ url("data:image/png;base64,BASE64ENCODEDDATA")  // if there is a pattern image
     return rgbToHex([self redComponent], [self greenComponent], [self blueComponent])
 }
 
+- (BOOL)isEqual:(CPColor)aColor
+{
+    if (!aColor)
+        return NO;
+
+    if (aColor === self)
+        return YES;
+
+    return [aColor isKindOfClass:CPColor] && [aColor cssString] === [self cssString];
+}
+
 - (CPString)description
 {
     return [super description]+" "+[self cssString];
