@@ -206,6 +206,11 @@ var _CPMenuBarVisible               = NO,
     return self;
 }
 
+- (id)init
+{
+    return [self initWithTitle:@""];
+}
+
 // Setting Up Menu Commands
 /*!
     Inserts a menu item at the specified index.
