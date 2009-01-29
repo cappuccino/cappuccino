@@ -81,6 +81,7 @@ CPRunContinuesResponse  = -1002;
     
     CPDictionary            _namedArgs;
     CPArray                 _args;
+    CPString                _fullArgsString;
 }
 
 /*!
@@ -663,6 +664,9 @@ CPRunContinuesResponse  = -1002;
 
 - (CPArray)arguments
 {
+    if(_fullArgsString != window.location.hash)
+        [self _reloadArguments];
+    
     return _args;
 }
 
@@ -692,12 +696,13 @@ CPRunContinuesResponse  = -1002;
 
 - (void)_reloadArguments
 {
-    var args = window.location.hash.replace("#", "").split("/").slice(0);
+    _fullArgsString = window.location.hash;
+    var args = _fullArgsString.replace("#", "").split("/").slice(0);
     
     for(var i=0, count = args.length; i<count; i++) 
         args[i] = decodeURIComponent(args[i]);
     
-    _args = args
+    _args = args;
 }
 
 - (CPDictionary)namedArguments
@@ -749,8 +754,6 @@ function CPApplicationMain(args, namedArgs)
     //FIXME?
     if (!args && !namedArgs)
     {
-        [CPApp _reloadArguments];
-        
         var args = [CPApp arguments],
             searchParams = window.location.search.substring(1).split("&");
             namedArgs = [CPDictionary dictionary];
