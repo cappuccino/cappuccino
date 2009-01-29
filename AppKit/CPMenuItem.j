@@ -878,7 +878,7 @@ var _CPMenuItemSelectionColor                   = nil,
     if (self != [_CPMenuItemView class])
         return;
     
-    _CPMenuItemSelectionColor =  [CPColor colorWithCalibratedRed:95.0 / 255.0 green:131.0 / 255.0 blue:185.0 / 255.0 alpha:1.0];;//[CPColor colorWithCalibratedRed:81.0 / 255.0 green:83.0 / 255.0 blue:109.0 / 255.0 alpha:1.0];
+    _CPMenuItemSelectionColor =  [CPColor colorWithCalibratedRed:81.0 / 255.0 green:83.0 / 255.0 blue:109.0 / 255.0 alpha:1.0];
     
     var bundle = [CPBundle bundleForClass:self];
     
@@ -890,8 +890,6 @@ var _CPMenuItemSelectionColor                   = nil,
 
     _CPMenuItemDefaultStateImages[CPMixedState]             = nil;
     _CPMenuItemDefaultStateHighlightedImages[CPMixedState]  = nil;
-    
-    _CPMenuItemTextShadowColor = [CPColor colorWithCalibratedRed:26.0 / 255.0 green: 73.0 / 255.0 blue:109.0 / 255.0 alpha:1.0];
 }
 
 + (float)leftMargin
