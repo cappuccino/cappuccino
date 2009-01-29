@@ -527,19 +527,36 @@ var _CPButtonClassName                          = nil,
         [_imageAndTextView setFrameSize:size];
 }
 
-- (CGRect)contentRectForBounds:(CGRect)aRect
+- (CGRect)contentRectForBounds:(CGRect)bounds
 {
     if (_isBordered)
     {
         if (_bezelStyle === CPHUDBezelStyle)
-            aRect.size.height -= 4.0;
+        {
+            bounds.origin.x += 5.0;
+            bounds.origin.y += 2.0;
+            bounds.size.width -= 5.0 * 2;
+            bounds.size.height -= 2.0 + 4.0;
+        }
+        
         else if (_bezelStyle === CPRoundRectBezelStyle)
-            aRect.size.height -= 2.0;
+        {
+            bounds.origin.x += 5.0;
+            bounds.origin.y += 1.0;
+            bounds.size.width -= 5.0 * 2;
+            bounds.size.height -= 1.0 + 2.0;
+        }
+        
         else if (_bezelStyle === CPTexturedRoundedBezelStyle)
-            aRect.size.height -= 2.0;
+        {
+            bounds.origin.x += 5.0;
+            bounds.origin.y += 2.0;
+            bounds.size.width -= 5.0 * 2;
+            bounds.size.height -= 2.0 + 3.0;
+        }
     }
 
-    return aRect;
+    return bounds;
 }
 
 - (void)drawRect:(CGRect)aRect

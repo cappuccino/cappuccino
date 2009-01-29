@@ -691,6 +691,7 @@ var CPControlBlackColor     = [CPColor blackColor];
 var CPControlValueKey           = "CPControlValueKey",
     CPControlIsEnabledKey       = "CPControlIsEnabledKey",
     CPControlAlignmentKey       = "CPControlAlignmentKey",
+    CPControlVerticalAlignmentKey   = @"CPControlVerticalAlignmentKey",
     CPControlFontKey            = "CPControlFontKey",
     CPControlTextColorKey       = "CPControlTextColorKey",
     CPControlTargetKey          = "CPControlTargetKey",
@@ -720,6 +721,7 @@ var __Deprecated__CPImageViewImageKey   = @"CPImageViewImageKey";
         [self setEnabled:[aCoder decodeBoolForKey:CPControlIsEnabledKey]];
         
         [self setAlignment:[aCoder decodeIntForKey:CPControlAlignmentKey]];
+        [self setVerticalAlignment:[aCoder decodeIntForKey:CPControlVerticalAlignmentKey]];
         [self setFont:[aCoder decodeObjectForKey:CPControlFontKey]];
         [self setTextColor:[aCoder decodeObjectForKey:CPControlTextColorKey]];
         
@@ -744,6 +746,8 @@ var __Deprecated__CPImageViewImageKey   = @"CPImageViewImageKey";
     [aCoder encodeBool:_isEnabled forKey:CPControlIsEnabledKey];
     
     [aCoder encodeInt:_alignment forKey:CPControlAlignmentKey];
+    [aCoder encodeInt:_verticalAlignment forKey:CPControlVerticalAlignmentKey];
+    
     [aCoder encodeObject:_font forKey:CPControlFontKey];
     [aCoder encodeObject:_textColor forKey:CPControlTextColorKey];
     
