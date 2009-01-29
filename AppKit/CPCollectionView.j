@@ -437,6 +437,23 @@
 }
 
 /*!
+    Returns the current number of rows
+*/
+- (unsigned)numberOfRows
+{
+    return _numberOfRows;
+}
+
+/*!
+    Returns the current number of columns
+*/
+
+- (unsigned)numberOfColumns
+{
+    return _numberOfColumns;
+}
+
+/*!
     Sets the minimum size for an item
     @param aSize the new minimum item size
 */
