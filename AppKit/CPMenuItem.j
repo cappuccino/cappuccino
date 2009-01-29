@@ -1028,7 +1028,6 @@ var _CPMenuItemSelectionColor                   = nil,
     [_imageAndTextView setText:[_menuItem title]];
     [_imageAndTextView setTextColor:[self textColor]];
     [_imageAndTextView setFrameOrigin:CGPointMake(x, VERTICAL_MARGIN)];
-    
     [_imageAndTextView sizeToFit];
     
     var frame = [_imageAndTextView frame];
@@ -1066,12 +1065,9 @@ var _CPMenuItemSelectionColor                   = nil,
     [self setFrameSize:_minSize];
 }
 
-- (float)calculatedLeftMargin
+- (CGFloat)overlapOffsetWidth
 {
-    if (_belongsToMenuBar)
-        return 0.0;
-    
-    return LEFT_MARGIN + ([[_menuItem menu] showsStateColumn] ? STATE_COLUMN_WIDTH : 0.0) + [_menuItem indentationLevel] * INDENTATION_WIDTH;
+    return LEFT_MARGIN + ([[_menuItem menu] showsStateColumn] ? STATE_COLUMN_WIDTH : 0.0);
 }
 
 - (void)setShowsStateColumn:(BOOL)shouldShowStateColumn

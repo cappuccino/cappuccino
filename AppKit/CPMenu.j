@@ -949,6 +949,11 @@ var STICKY_TIME_INTERVAL        = 500,
     return self;
 }
 
+- (CGFloat)overlapOffsetWidth
+{
+    return LEFT_MARGIN;
+}
+
 - (void)setFont:(CPFont)aFont
 {
     [_menuView setFont:aFont];
