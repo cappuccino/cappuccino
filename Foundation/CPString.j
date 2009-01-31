@@ -662,4 +662,22 @@ var CPStringHashes      = new objj_dictionary();
 
 @end
 
+
+@implementation CPString (UUID)
+
+/*!
+    Returns a randomly generated Universally Unique Identifier.
+*/
++ (CPString)UUID
+{
+    var g = @"";
+    
+    for(var i = 0; i < 32; i++)
+        g += Math.floor(Math.random() * 0xF).toString(0xF);
+    
+    return g;
+}
+
+@end
+
 String.prototype.isa = CPString;
