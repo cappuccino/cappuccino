@@ -258,6 +258,10 @@ Project.prototype.buildTheme = function()
     // Load ALL of Foundation and AppKit, be nice to people.
     loadFrameworks([OBJJ_LIB + "/Frameworks-Rhino/Foundation", OBJJ_LIB + "/Frameworks-Rhino/AppKit"], function()
     {
+        // FIXME!
+        if (!objj_getClass("CPTheme"))   
+            return;
+        
         // Get .j files
         var jFiles = getFiles(project._root, "j", project.activeTarget().exclusions().concat("Frameworks/"));
         
