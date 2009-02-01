@@ -27,8 +27,10 @@
 
 @import "NSFoundation.j"
 @import "NSAppKit.j"
+@import "Nib2CibKeyedUnarchiver.j"
 
 importPackage(java.io);
+importClass(java.io.File);
 
 CPLogRegister(CPLogPrint);
 
@@ -76,8 +78,21 @@ function cibExtension(aPath)
     return aPath.substr(0, dotIndex) + ".cib";
 }
 
-function convert(inputFileName, outputFileName)
+function convert(inputFileName, outputFileName, resourcesPath)
 {
+    var resourcesFile = nil;
+    
+    if (resourcesPath)
+    {
+        resourcesFile = new File(resourcesPath).getCanonicalFile();
+     
+        if (!resourcesFile.canRead())
+        {
+            print("Could not find Resources at " + resourcesFile);
+            return;
+        }
+    }
+    
     // Make sure we can read the file
     if (!(new Packages.java.io.File(inputFileName)).canRead())
     {
@@ -115,7 +130,7 @@ function convert(inputFileName, outputFileName)
     [data setString:[data string].replace(/\<key\>\s*CF\$UID\s*\<\/key\>/g, "<key>CP$UID</key>")];
     
     // Unarchive the NS data
-    var unarchiver = [[CPKeyedUnarchiver alloc] initForReadingWithData:data],
+    var unarchiver = [[Nib2CibKeyedUnarchiver alloc] initForReadingWithData:data resourcesFile:resourcesFile],
         objectData = [unarchiver decodeObjectForKey:@"IB.objectdata"],
         
         data = [CPData data],
@@ -201,6 +216,7 @@ function main()
     
         inputFileName = nil,
         outputFileName = nil,
+        resourcesPath = nil,
         frameworkPaths = [];
     
     for (; index < count; ++index)
@@ -211,6 +227,9 @@ function main()
             case "--help":  printUsage();
             
             case "-F":      frameworkPaths.push(arguments[++index]);
+                            break;
+                            
+            case "-R":      resourcesPath = arguments[++index];
                             break;
             
             default:        if (inputFileName && inputFileName.length > 0)
@@ -224,10 +243,10 @@ function main()
         outputFileName = cibExtension(inputFileName);
 
     if (frameworkPaths.length)
-        loadFrameworks(frameworkPaths, function() { convert(inputFileName, outputFileName); });
+        loadFrameworks(frameworkPaths, function() { convert(inputFileName, outputFileName, resourcesPath); });
     
     else
-        convert(inputFileName, outputFileName);
+        convert(inputFileName, outputFileName, resourcesPath);
 }
 
 main.apply(main, args);
