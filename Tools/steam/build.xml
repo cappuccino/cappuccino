@@ -15,6 +15,7 @@
     <target name = "build">
     
         <mkdir dir = "${Build.steam}" />
+        <mkdir dir = "${Build.Intermediate}" />
         
         <copy file = "${basedir}/sjheader.txt" tofile = "${Build.steam.lib}/sjheader.txt" />
         
