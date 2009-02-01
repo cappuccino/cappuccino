@@ -545,6 +545,8 @@ OBJJUnrecognizedFormatException = "OBJJUnrecognizedFormatException";
 var STATIC_MAGIC_NUMBER     = "@STATIC",
     MARKER_PATH             = "p",
     MARKER_CODE             = "c",
+    MARKER_BUNDLE           = "b",
+    MARKER_TEXT             = "t",
     MARKER_IMPORT_STD       = 'I',
     MARKER_IMPORT_LOCAL     = 'i';
 
@@ -569,7 +571,10 @@ function objj_decompile(aString, bundle)
         
         switch (marker)
         {
-            case MARKER_PATH:           file = new objj_file();
+            case MARKER_PATH:           if (file && file.contents && file.path === file.bundle.path)
+                                            file.bundle.info = CPPropertyListCreateWithData({string:file.contents});
+                                            
+                                        file = new objj_file();
                                         file.path = DIRECTORY(bundle.path) + text;
                                         file.bundle = bundle;
                                         file.fragments = [];
@@ -579,6 +584,24 @@ function objj_decompile(aString, bundle)
                                         objj_files[file.path] = file;
                                         
                                         break;
+                                        
+            case MARKER_BUNDLE:         var bundlePath = DIRECTORY(bundle.path) + '/' + text;
+            
+                                        file.bundle = objj_getBundleWithPath(bundlePath);
+                                        
+                                        if (!file.bundle)
+                                        {
+                                            file.bundle = new objj_bundle();
+                                            file.bundle.path = bundlePath;
+                                            
+                                            objj_setBundleForPath(file.bundle, bundlePath);
+                                        }
+                                        
+                                        break;
+                                        
+            case MARKER_TEXT:           file.contents = text;
+                                        break;
+                                        
             case MARKER_CODE:           file.fragments.push(fragment_create_code(text, bundle, file));
                                         break;
             case MARKER_IMPORT_STD:     file.fragments.push(fragment_create_file(text, bundle, NO, file));
@@ -587,6 +610,9 @@ function objj_decompile(aString, bundle)
                                         break;
         }
     }
+    
+    if (file && file.contents && file.path === file.bundle.path)
+        file.bundle.info = CPPropertyListCreateWithData({string:file.contents});
     
     return files;    
 }

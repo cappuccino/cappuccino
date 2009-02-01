@@ -29,8 +29,9 @@
 @import "CPColor.j"
 @import "CPDOMDisplayServer.j"
 @import "CPGeometry.j"
-@import "CPResponder.j"
 @import "CPGraphicsContext.j"
+@import "CPResponder.j"
+@import "CPTheme.j"
 
 
 #include "Platform/Platform.h"
@@ -167,6 +168,9 @@ var DOMElementPrototype         = nil,
     BOOL                _isInFullScreenMode;
     
     _CPViewFullScreenModeState  _fullScreenModeState;
+    
+    // Theming Support
+    CPTheme             _theme;
 }
 
 /*
@@ -237,6 +241,8 @@ var DOMElementPrototype         = nil,
         _DOMImageParts = [];
         _DOMImageSizes = [];
 #endif
+
+        [self setTheme:[CPTheme defaultTheme]];
     }
     
     return self;
@@ -1727,6 +1733,36 @@ setBoundsOrigin:
 - (BOOL)wantsLayer
 {
     return _wantsLayer;
+}
+
+@end
+
+@implementation CPView (Theming)
+
+- (void)setTheme:(CPTheme)aTheme
+{
+    if (_theme === aTheme)
+        return;
+    
+    _theme = aTheme;
+    
+    [_theme setActiveClass:[self class]];
+    [self viewDidChangeTheme];
+    [_theme setActiveClass:Nil];
+}
+
+- (CPTheme)theme
+{
+    return _theme;
+}
+
+- (void)viewDidChangeTheme
+{
+}
+
+- (CPDictionary)themedValues
+{
+    return [CPDictionary dictionary];
 }
 
 @end

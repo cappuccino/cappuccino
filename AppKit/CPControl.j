@@ -393,7 +393,7 @@ var CPControlBlackColor     = [CPColor blackColor];
     if ((_sendActionOn & (1 << type)) && isWithinFrame)
         [self sendAction:_action to:_target];
     
-    _trackingWasInFrame = isWithinFrame;
+    _trackingWasWithinFrame = isWithinFrame;
     _previousTrackingLocation = currentLocation;
 }
 

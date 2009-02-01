@@ -66,6 +66,12 @@ function objj_context()
 #define IS_FILE(aFragment) (aFragment.type & FRAGMENT_FILE)
 #define IS_LOCAL(aFragment) (aFragment.type & FRAGMENT_LOCAL)
 
+objj_fragment.prototype.toMarkedString = function()
+{
+    return IS_FILE(this) ?  (IS_LOCAL(this) ? MARKER_IMPORT_LOCAL : MARKER_IMPORT_STD) + ';' + GET_PATH(this).length + ';' + GET_PATH(this) :
+                            MARKER_CODE + ';' + GET_CODE(this).length + ';' + GET_CODE(this);
+}
+
 function fragment_create_code(aCode, aBundle, aFile)
 {
     var fragment = new objj_fragment();

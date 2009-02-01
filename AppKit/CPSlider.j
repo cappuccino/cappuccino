@@ -1,67 +1,28 @@
-/*
- * CPSlider.j
- * AppKit
- *
- * Created by Francisco Tolmasky.
- * Copyright 2008, 280 North, Inc.
- *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2.1 of the License, or (at your option) any later version.
- *
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
- */
 
-@import "CPControl.j"
+@import <AppKit/CPControl.j>
+
+#include "CoreGraphics/CGGeometry.h"
 
 
-var CPSliderHorizontalKnobImage         = nil,
-    CPSliderHorizontalBarLeftImage      = nil,
-    CPSliderHorizontalBarRightImage     = nil,
-    CPSliderHorizontalBarCenterImage    = nil;
-
-/*! @class CPSlider
-
-    An CPSlider displays, and allows control of, some value in the application. It represents a continuous stream of values of type <code>float</code>, which can be retrieved by the method <code>floatValue</code> and set by the method <code>setFloatValue:</code>.
-*/
 @implementation CPSlider : CPControl
 {
-    double      _minValue;
-    double      _maxValue;
-    double      _altIncrementValue;
-    BOOL        _isVertical;
+    double  _minValue;
+    double  _maxValue;
+    double  _altIncrementValue;
     
-    CPView      _bar;
-    CPView      _knob;
-
-    CPImageView _standardKnob;
-    CPView      _standardVerticalBar;
-    CPView      _standardHorizontalBar;
-}
-
-/*
-    @ignore
-*/
-+ (void)initialize
-{
-    if (self != [CPSlider class])
-        return;
-
-    var bundle = [CPBundle bundleForClass:self];
+    CPColor _verticalTrackColor;    // vertical-track-color
+    CPColor _horizontalTrackColor;  // horizontal-track-color
     
-    CPSliderKnobImage = [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:"CPSlider/CPSliderKnobRegular.png"] size:CPSizeMake(11.0, 11.0)],
-    CPSliderKnobPushedImage = [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:"CPSlider/CPSliderKnobRegularPushed.png"] size:CPSizeMake(11.0, 11.0)],
-    CPSliderHorizontalBarLeftImage = [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:"CPSlider/CPSliderTrackHorizontalLeft.png"] size:CPSizeMake(2.0, 4.0)],
-    CPSliderHorizontalBarRightImage = [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:"CPSlider/CPSliderTrackHorizontalRight.png"] size:CPSizeMake(2.0, 4.0)],
-    CPSliderHorizontalBarCenterImage = [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:"CPSlider/CPSliderTrackHorizontalCenter.png"] size:CPSizeMake(1.0, 4.0)];
+    CPColor _knobColor;             // knob-color
+    CPColor _highlightedKnobColor;  // knob-color-highlighted
+    
+    float   _trackWidth;            // track-width
+    CGSize  _knobSize;              // knob-size
+    
+    BOOL    _isHighlighted;
+    
+    CPView  _trackView;
+    CPView  _knobView;
 }
 
 - (id)initWithFrame:(CGRect)aFrame
@@ -70,83 +31,353 @@ var CPSliderHorizontalKnobImage         = nil,
     
     if (self)
     {
-        _value = 50.0;
         _minValue = 0.0;
         _maxValue = 100.0;
-    
-        _bar = [self bar];
-        _knob = [self knob];
-        _knobSize = [[self knobImage] size];
-        _isVertical = [self isVertical];
+
+        [self setObjectValue:50.0];
         
         [self setContinuous:YES];
-        
-        [_knob setFrameOrigin:[self knobPosition]];
-        
-        [self addSubview:_bar];
-        [self addSubview:_knob];
     }
     
     return self;
 }
-    
-- (void)setFrameSize:(CGSize)aSize
+
+- (void)setMinValue:(float)aMinimumValue
 {
-    if (aSize.height > 21.0)
-        aSize.height = 21.0;
+    if (_minValue === aMinimumValue)
+        return;
     
-    if (_isVertical != [self isVertical])
+    _minValue = aMinimumValue;
+
+    var doubleValue = [self doubleValue];
+    
+    if (doubleValue < _minValue)
+        [self setdoubleValue:_minValue];
+}
+
+- (float)minValue
+{
+    return _minValue;
+}
+
+- (void)setMaxValue:(float)aMaximumValue
+{
+    if (_maxValue === aMaximumValue)
+        return;
+    
+    _maxValue = aMaximumValue;
+    
+    var doubleValue = [self doubleValue];
+    
+    if (doubleValue > _maxValue)
+        [self setdoubleValue:_maxValue];
+}
+
+- (float)maxValue
+{
+    return _maxValue;
+}
+
+- (void)setValue:(id)aValue
+{
+    CPLog.warn("[CPSlider setValue:] is deprecated, use setDoubleValue: instead.");
+    
+    [self setObjectValue:aValue];
+}
+
+- (void)setObjectValue:(id)aValue
+{
+    [super setObjectValue:aValue];
+
+    [self setNeedsDisplay:YES];
+}
+
+- (void)setHorizontalTrackColor:(CPColor)aColor
+{
+    if (_horizontalTrackColor === aColor)
+        return;
+    
+    _horizontalTrackColor = aColor;
+    
+    [self setNeedsDisplay:YES];
+}
+
+- (CPColor)horizontalTrackColor
+{
+    return _horizontalTrackColor;
+}
+
+- (void)setVerticalTrackColor:(CPColor)aColor
+{
+    if (_verticalTrackColor === aColor)
+        return;
+    
+    _verticalTrackColor = aColor;
+    
+    [self setNeedsDisplay:YES];
+}
+
+- (CPColor)verticalTrackColor
+{
+    return _verticalTrackColor;
+}
+
+- (void)setTrackWidth:(float)aTrackWidth
+{
+    if (_trackWidth === aTrackWidth)
+        return;
+    
+    _trackWidth = aTrackWidth;
+    
+    [self setNeedsDisplay:YES];
+}
+
+- (float)trackWidth
+{
+    return _trackWidth;
+}
+
+- (CGRect)trackRectForBounds:(CGRect)bounds
+{
+    var trackWidth = [self trackWidth];
+    
+    if (!trackWidth)
+        return _CGRectMakeZero();
+    
+    if ([self isVertical])
     {
-        _isVertical = [self isVertical];
-        
-        var bar = [self bar],
-            knob = [self knob];
-        
-        if (_bar != bar)
-            [self replaceSubview:_bar = bar withView:_bar];
-        
-        if (_knob != knob)
-        {
-            [self replaceSubview:knob withView:_knob];
-            
-            _knob = knob;
-            [_knob setFrameOrigin:[self knobPosition]];
-        }
+        bounds.origin.x = (_CGRectGetWidth(bounds) - trackWidth) / 2.0;
+        bounds.size.width = _trackWidth;
+    }
+    else
+    {
+        bounds.origin.y = (_CGRectGetHeight(bounds) - trackWidth) / 2.0;
+        bounds.size.height = _trackWidth;
     }
     
-    [super setFrameSize:aSize];
+    return bounds;
+}
+
+- (void)setHighlightedKnobColor:(CPColor)aColor
+{
+    if (_highlightedKnobColor === aColor)
+        _highlightedKnobColor = aColor;
     
-    [_knob setFrameOrigin:[self knobPosition]];
+    _highlightedKnobColor = aColor;
 }
 
-/*!
-    Returns the value by which the slider will be
-    incremented if the user holds down the <code>ALT</code>s key.
-*/
-- (double)altIncrementValue
+- (CPColor)highlightedKnobColor
 {
-    return _altIncrementValue;
+    return _highlightedKnobColor;
 }
 
-/*!
-    Sets the value the slider will be incremented if the user holds the <code>ALT</code> key.
-*/
-- (void)setAltIncrementValue:(double)anIncrementValue
+- (void)setKnobSize:(CGSize)aKnobSize
 {
-    _altIncrementValue = anIncrementValue;
+    if (_knobSize && (!aKnobSize || _CGSizeEqualToSize(_knobSize, aKnobSize)))
+        return;
+    
+    _knobSize = aKnobSize ? _CGSizeMakeCopy(aKnobSize) : nil;
+    
+    [self setNeedsDisplay:YES];
 }
 
-/*!
-    Returns whether the control can continuously send its action messages.
-*/
-- (BOOL)isContinuous
+- (void)setKnobColor:(CPColor)aColor
 {
-    return (_sendActionOn & CPLeftMouseDraggedMask) != 0;
+    if (_knobColor === aColor)
+        return;
+    
+    _knobColor = aColor;
+    
+    [self setNeedsDisplay:YES];
+}
+
+- (CPColor)knobColor
+{
+    return _knobColor;
+}
+
+- (CGRect)knobRectForBounds:(CGRect)bounds
+{
+    if (!_knobSize || _knobSize.width <= 0 || _knobSize.height <= 0)
+        return _CGRectMakeZero();
+    
+    var knobRect = _CGRectMake(0.0, 0.0, _knobSize.width, _knobSize.height),
+        trackRect = [self trackRectForBounds:bounds];
+    
+    // No track, do our best to approximate a place for this thing.
+    if (!trackRect || _CGRectIsEmpty(trackRect))
+        trackRect = bounds;
+
+    if ([self isVertical])
+    {
+        knobRect.origin.x = _CGRectGetMidX(trackRect) - _knobSize.width / 2.0; 
+        knobRect.origin.y = (([self doubleValue] - _minValue) / (_maxValue - _minValue)) * (_CGRectGetHeight(trackRect) - _knobSize.height);
+    }
+    else
+    {
+        knobRect.origin.x = (([self doubleValue] - _minValue) / (_maxValue - _minValue)) * (_CGRectGetWidth(trackRect) - _knobSize.width);
+        knobRect.origin.y = _CGRectGetMidY(trackRect) - _knobSize.height / 2.0;   
+    }
+    
+    return knobRect;
+}
+
+- (int)isVertical
+{
+    var bounds = [self bounds],
+        width = CGRectGetWidth(bounds),
+        height = CGRectGetHeight(bounds);
+    
+    return width < height ? 1 : (width > height ? 0 : -1);
+}
+
+- (void)drawRect:(CGRect)aRect
+{
+    var bounds = [self bounds],
+        isVertical = [self isVertical],
+        trackRect = nil;
+
+    if ((isVertical && _verticalTrackColor || !isVertical && _horizontalTrackColor) && 
+        (trackRect = [self trackRectForBounds:_CGRectMakeCopy(bounds)]) && !_CGRectIsEmpty(trackRect))
+    {
+        if (!_trackView)
+        {
+            _trackView = [[CPView alloc] initWithFrame:trackRect];
+            
+            [_trackView setHitTests:NO];
+            
+            [self addSubview:_trackView positioned:CPWindowBelow relativeTo:_knobView];
+        }
+        else
+            [_trackView setFrame:trackRect];
+            
+        if ([self isVertical])
+            [_trackView setBackgroundColor:_verticalTrackColor];
+        else
+            [_trackView setBackgroundColor:_horizontalTrackColor];
+    }
+    else if (_trackView)
+    {
+        [_trackView removeFromSuperview];
+        
+        _trackView = nil;
+    }
+    
+    var knobRect = nil;
+    
+    if (_knobColor && (knobRect = [self knobRectForBounds:bounds]) && !_CGRectIsEmpty(knobRect))
+    {
+        if (!_knobView)
+        {
+            _knobView = [[CPView alloc] initWithFrame:knobRect];
+            
+            [_knobView setHitTests:NO];
+            
+            [self addSubview:_knobView positioned:CPWindowAbove relativeTo:_trackView];
+        }
+        else
+            [_knobView setFrame:knobRect];
+      
+        if (_isHighlighted)
+        {
+            if (_highlightedKnobColor)
+                [_knobView setBackgroundColor:_highlightedKnobColor];
+        }
+        else
+            [_knobView setBackgroundColor:_knobColor];
+    }
+    else if (_knobView)
+    {
+        [_knobView removeFromSuperview];
+        
+        _knobView = nil;
+    }
+}
+
+- (BOOL)tracksMouseOutsideOfFrame
+{
+    return YES;
+}
+
+- (float)_valueAtPoint:(CGPoint)aPoint
+{
+    var bounds = [self bounds],
+        knobRect = [self knobRectForBounds:bounds],
+        trackRect = [self trackRectForBounds:bounds];
+
+    if ([self isVertical])
+    {
+        var knobHeight = _CGRectGetHeight(knobRect);
+        
+        trackRect.origin.y += knobHeight / 2;
+        trackRect.size.height -= knobHeight;
+        
+        var minValue = [self minValue];
+        
+        return MAX(0.0, MIN(1.0, (aPoint.y - _CGRectGetMinY(trackRect)) / _CGRectGetHeight(trackRect))) * ([self maxValue] - minValue) + minValue;
+    }
+    else
+
+    var knobWidth = _CGRectGetWidth(knobRect);
+    
+    trackRect.origin.x += knobWidth / 2;
+    trackRect.size.width -= knobWidth;
+    
+    var minValue = [self minValue];
+    
+    return MAX(0.0, MIN(1.0, (aPoint.x - _CGRectGetMinX(trackRect)) / _CGRectGetWidth(trackRect))) * ([self maxValue] - minValue) + minValue;
+}
+
+- (BOOL)startTrackingAt:(CGPoint)aPoint
+{
+    var bounds = [self bounds],
+        knobRect = [self knobRectForBounds:_CGRectMakeCopy(bounds)];
+    
+    if (_CGRectContainsPoint(knobRect, aPoint))
+        _dragOffset = _CGSizeMake(_CGRectGetMidX(knobRect) - aPoint.x, _CGRectGetMidY(knobRect) - aPoint.y);
+    
+    else 
+    {
+        var trackRect = [self trackRectForBounds:bounds];
+        
+        if (trackRect && _CGRectContainsPoint(trackRect, aPoint))
+        {
+            _dragOffset = _CGSizeMakeZero();
+            
+            [self setObjectValue:[self _valueAtPoint:aPoint]];
+        }
+    
+        else
+            return NO;
+    }
+    
+    _isHighlighted = YES;
+    [self setNeedsDisplay:YES];
+    
+    return YES;   
+}
+
+- (BOOL)continueTracking:(CGPoint)lastPoint at:(CGPoint)aPoint
+{
+    [self setObjectValue:[self _valueAtPoint:_CGPointMake(aPoint.x + _dragOffset.width, aPoint.y + _dragOffset.height)]];
+    
+    return YES;
+}
+
+- (void)stopTracking:(CGPoint)lastPoint at:(CGPoint)aPoint mouseIsUp:(BOOL)mouseIsUp
+{
+    _isHighlighted = NO;
+    
+    if ([_target respondsToSelector:@selector(sliderDidFinish:)])
+        [_target sliderDidFinish:self];
+
+    [self setNeedsDisplay:YES];
 }
 
 /*!
-    Sets whether the cell can continuously send its action messages.
- */
+    @ignore
+    shoudl we have _continuous?
+*/
 - (void)setContinuous:(BOOL)flag
 {
     if (flag)
@@ -155,255 +386,52 @@ var CPSliderHorizontalKnobImage         = nil,
         _sendActionOn &= ~CPLeftMouseDraggedMask;
 }
 
-/*!
-    Returns the thickness of the slider's knob. This value is in pixels, 
-    and is the size of the knob along the slider's track.
-*/
-- (float)knobThickness
-{
-    return CPRectGetWidth([_knob frame]);
-}
+@end
 
-/*
-    @ignore
-*/
-- (CPImage)leftTrackImage
-{
-    return CPSliderHorizontalBarLeftImage;
-}
+@implementation CPSlider (Theming)
 
-/*
-    @ignore
-*/
-- (CPImage)rightTrackImage
+- (void)viewDidChangeTheme
 {
-    return CPSliderHorizontalBarRightImage;
-}
-
-/*
-    @ignore
-*/
-- (CPImage)centerTrackImage
-{
-    return CPSliderHorizontalBarCenterImage
-}
-
-/*
-    @ignore
-*/
-- (CPImage)knobImage
-{
-    return CPSliderKnobImage;
-}
-
-/*
-    @ignore
-*/
-- (CPImage)pushedKnobImage
-{
-    return CPSliderKnobPushedImage;
-}
-
-/*!
-    Returns the slider's knob.
-*/
-- (CPView)knob
-{
-    if (!_standardKnob)
-    {
-        var knobImage = [self knobImage],
-            knobSize = [knobImage size];
-        
-        _standardKnob = [[CPImageView alloc] initWithFrame:CPRectMake(0.0, 0.0, knobSize.width, knobSize.height)];
-        
-        [_standardKnob setHitTests:NO];
-        [_standardKnob setImage:knobImage];
-    }
+    [super viewDidChangeTheme];
     
-    return _standardKnob;
-}
-
-/*!
-    Returns the slider's bar.
-*/
-- (CPView)bar
-{
-    // FIXME: veritcal.
-    if ([self isVertical])
-        return nil;
-    else
-    {
-        if (!_standardHorizontalBar)
-        {
-            var frame = [self frame],
-                barFrame = CPRectMake(0.0, 0.0, CPRectGetWidth(frame), 4.0);
-                
-            _standardHorizontalBar = [[CPView alloc] initWithFrame:barFrame];
-            
-            [_standardHorizontalBar setBackgroundColor:[CPColor colorWithPatternImage:[[CPThreePartImage alloc] initWithImageSlices:
-                [[self leftTrackImage], [self centerTrackImage], [self rightTrackImage]] isVertical:NO]]];
-
-            [_standardHorizontalBar setFrame:CPRectMake(0.0, (CPRectGetHeight(frame) - CPRectGetHeight(barFrame)) / 2.0, CPRectGetWidth(_isVertical ? barFrame : frame), CPRectGetHeight(_isVertical ? frame : barFrame))];
-            [_standardHorizontalBar setAutoresizingMask:_isVertical ? CPViewHeightSizable : CPViewWidthSizable];
-        }
-        
-        return _standardHorizontalBar;
-    }
-}
-
-/*!
-    Returns <code>YES</code> if the slider is vertical.
-*/
-- (BOOL)isVertical
-{
-    var frame = [self frame];
+    var theme = [self theme];
     
-    if (CPRectGetWidth(frame) == CPRectGetHeight(frame))
-        return -1;
+    if (!theme)
+        return;
+
+    [self setKnobSize:[theme valueForKey:@"knob-size"]];
+    [self setKnobColor:[theme valueForKey:@"knob-color"]];
+    [self setHighlightedKnobColor:[theme valueForKey:@"knob-color-highlighted"]];
     
-    return CPRectGetWidth(frame) < CPRectGetHeight(frame);
-}
-
-/*!
-    Returns the slider's maximum value
-*/
-- (double)maxValue
-{
-    return _maxValue;
-}
-
-/*!
-    Returns the slider's minimum value
-*/
-- (double)minValue
-{
-    return _minValue;
-}
-
-/*!
-    Sets the slider's maximum value
-    @param aMaxValue the new maximum value
-*/
-- (void)setMaxValue:(double)aMaxValue
-{
-    _maxValue = aMaxValue;
-}
-
-/*!
-    Sets the slider's minimum value
-    @param aMinValue the new minimum value
-*/
-- (void)setMinValue:(double)aMinValue
-{
-    _minValue = aMinValue;
-}
-
-/*!
-    Sets the slider's value
-    @param aValue the new slider value
-    @deprecated Use setFloatValue, setObjectValue, etc
-*/
-- (void)setValue:(double)aValue
-{
-    [self setObjectValue:aValue];
-}
-
-/*!
-    Returns the slider's value
-    @deprecated Use floatValue, objectValue, etc
-*/
-- (double)value
-{
-    return [self floatValue];
-}
-
-- (void)setObjectValue:(id)anObject
-{
-    [super setObjectValue:anObject];
+    [self setTrackWidth:[theme valueForKey:@"track-width"]];
+    [self setHorizontalTrackColor:[theme valueForKey:@"horizontal-track-color"]];
+    [self setVerticalTrackColor:[theme valueForKey:@"vertical-track-color"]];
     
-    if (_knob)
-        [_knob setFrameOrigin:[self knobPosition]];
+    [self setNeedsDisplay:YES];
 }
 
-/*
-    Returns the knob's position
-    @ignore
-*/
-- (CGPoint)knobPosition
+- (CPDictionary)themedValues
 {
-    if ([self isVertical])
-        return CPPointMake(0.0, 0.0);
-    else
-        return CPPointMake(
-            (([self floatValue] - _minValue) / (_maxValue - _minValue)) * (CPRectGetWidth([self frame]) - CPRectGetWidth([_knob frame])), 
-            (CPRectGetHeight([self frame]) - CPRectGetHeight([_knob frame])) / 2.0);
-}
-
-/*
-    @ignore
-*/
-- (float)valueForKnobPosition:(CGPoint)aPoint
-{
-    if ([self isVertical])
-        return 0.0;
-    else
-        return MAX(MIN((aPoint.x) * (_maxValue - _minValue) / ( CPRectGetWidth([self frame]) - CPRectGetWidth([_knob frame]) ) + _minValue, _maxValue), _minValue);
-}
-
-- (CGPoint)constrainKnobPosition:(CGPoint)aPoint
-{
-    //FIXME
-    aPoint.x -= _knobSize.width / 2.0;
-    return CPPointMake(MAX(MIN(CPRectGetWidth([self bounds]) - _knobSize.width, aPoint.x), 0.0), (CPRectGetHeight([self bounds]) - CPRectGetHeight([_knob frame])) / 2.0);
-}
-
-- (BOOL)tracksMouseOutsideOfFrame
-{
-    return YES;
-}
-
-- (BOOL)startTrackingAt:(CGPoint)aPoint
-{
-    [[self knob] setImage:[self pushedKnobImage]];
+    var values = [super themedValues];
     
-    [_knob setFrameOrigin:[self constrainKnobPosition:aPoint]];
+    [values setObject:_knobSize forKey:@"knob-size"];
+    [values setObject:_knobColor forKey:@"knob-color"];
+    [values setObject:_highlightedKnobColor forKey:@"knob-color-highlighted"];
+    [values setObject:_trackWidth forKey:@"track-width"];
+    [values setObject:_verticalTrackColor forKey:@"vertical-track-color"];
+    [values setObject:_horizontalTrackColor forKey:@"horizontal-track-color"];
 
-    [super setObjectValue:[self valueForKnobPosition:[_knob frame].origin]];
-    
-    return YES;   
-}
-
-- (BOOL)continueTracking:(CGPoint)lastPoint at:(CGPoint)aPoint
-{
-    [_knob setFrameOrigin:[self constrainKnobPosition:aPoint]];
-    
-    [super setObjectValue:[self valueForKnobPosition:[_knob frame].origin]];
-    
-    return YES;
-}
-
-- (void)stopTracking:(CGPoint)lastPoint at:(CGPoint)aPoint mouseIsUp:(BOOL)mouseIsUp
-{
-    [[self knob] setImage:[self knobImage]];
-    
-    if ([_target respondsToSelector:@selector(sliderDidFinish:)])
-        [_target sliderDidFinish:self];
+    return values;
 }
 
 @end
 
 var CPSliderMinValueKey     = "CPSliderMinValueKey",
     CPSliderMaxValueKey     = "CPSliderMaxValueKey",
-    CPSliderAltIncrValueKey = "CPSliderAltIncrValueKey",
-    CPSliderIsVerticalKey   = "CPSliderIsVerticalKey";
+    CPSliderAltIncrValueKey = "CPSliderAltIncrValueKey";
 
 @implementation CPSlider (CPCoding)
 
-/*!
-    Initializes the slider from the data in a coder.
-    @param aCoder the coder from which to read the data
-    @return the initialized slider
-*/
 - (id)initWithCoder:(CPCoder)aCoder
 {
     self = [super initWithCoder:aCoder];
@@ -413,32 +441,37 @@ var CPSliderMinValueKey     = "CPSliderMinValueKey",
         _minValue = [aCoder decodeDoubleForKey:CPSliderMinValueKey];
         _maxValue = [aCoder decodeDoubleForKey:CPSliderMaxValueKey];
         _altIncrementValue = [aCoder decodeDoubleForKey:CPSliderAltIncrValueKey];
-        _isVertical = [aCoder decodeDoubleForKey:CPSliderIsVerticalKey];
     
-        _bar = [self bar];
-        _knob = [self knob];
-        _knobSize = [[self knobImage] size];
-        _isVertical = [self isVertical];
-        
-        [_knob setFrameOrigin:[self knobPosition]];
-        
-        [self addSubview:_bar];
-        [self addSubview:_knob];
+        [self setContinuous:YES];
+    
+        [self setNeedsDisplay:YES];
     }
     
     return self;
 }
 
-/*!
-    Writes out the slider's instance information to a coder.
-    @param aCoder the coder to which to write the data
-*/
 - (void)encodeWithCoder:(CPCoder)aCoder
 {
-    var subviews = _subviews;
+    [super encodeWithCoder:aCoder];
     
-    _subviews = [];
-         
+    var count = [_subviews count],
+        subviews = nil;
+    
+    if (count)
+    {
+        subviews = _subviews;
+            
+        if (count === 2 && _trackView && _knobView)
+            _subviews = [];
+        else
+        {
+            if (_trackView)
+                [_subviews removeObjectIdenticalTo:_trackView];
+            if (_knobView)
+                [_subviews removeObjectIdenticalTo:_knobView];
+        }
+    }
+    
     [super encodeWithCoder:aCoder];
     
     _subviews = subviews;
@@ -446,7 +479,12 @@ var CPSliderMinValueKey     = "CPSliderMinValueKey",
     [aCoder encodeDouble:_minValue forKey:CPSliderMinValueKey];
     [aCoder encodeDouble:_maxValue forKey:CPSliderMaxValueKey];
     [aCoder encodeDouble:_altIncrementValue forKey:CPSliderAltIncrValueKey];
-    [aCoder encodeBool:_isVertical forKey:CPSliderIsVerticalKey];
+    
+    // NO!
+/*    [aCoder encodeObject:_verticalTrackColor forKey:"1"];
+    [aCoder encodeObject:_horizontalTrackColor forKey:"2"];
+    [aCoder encodeObject:_knobColor forKey:"3"];
+    [aCoder encodeObject:_highlightedKnobColor forKey:"4"];*/
 }
 
 @end

@@ -24,20 +24,22 @@
         
         <copy file = "${basedir}/htaccess" tofile = "${Build.steam.lib}/htaccess" />
         
-        <concat destfile = "${Build.Intermediate}/steam.js">
+        <preprocess file = "${basedir}/main.js" output = "${Build.Intermediate}/steam-preprocessed.js" />
+        
+        <concat destfile = "${Build.Intermediate}/steam-flattened.js">
 			<filelist>
                 <file name="${basedir}/../Utilities/bridge.js" />
                 <file name="${basedir}/../Utilities/regex-bridge.js" />
                 <file name="${Build}/Objective-J.build/\${Configuration}/Rhino/Objective-J.js" />
-                <file name="${basedir}/steam.js" />
+                <file name="${Build.Intermediate}/steam-preprocessed.js" />
 			</filelist>
-        </concat>
+        </concat>        
 
         <jsc>
             <arguments>
                 <arg line = "-o steam.class" />
                 <arg value = "-nosource" />
-                <arg value = "${Build.Intermediate}/steam.js" />
+                <arg value = "${Build.Intermediate}/steam-flattened.js" />
             </arguments>
         </jsc>
         

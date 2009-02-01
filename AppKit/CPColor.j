@@ -324,7 +324,7 @@ var _hueComponent        = 0,
     if (self)
     {
         _patternImage = anImage;
-        _cssString = "url(\"" + _patternImage._filename + "\")";
+        _cssString = "url(\"" + [_patternImage filename] + "\")";
     }
        
     return self;

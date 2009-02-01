@@ -28,22 +28,33 @@
 
 
 var _CPCibCustomResourceClassNameKey    = @"_CPCibCustomResourceClassNameKey",
-    _CPCibCustomResourceResourceNameKey = @"_CPCibCustomResourceResourceNameKey";
+    _CPCibCustomResourceResourceNameKey = @"_CPCibCustomResourceResourceNameKey",
+    _CPCibCustomResourcePropertiesKey   = @"_CPCibCustomResourcePropertiesKey";
 
 @implementation _CPCibCustomResource : CPObject
 {
-    CPString    _className;
-    CPString    _resourceName;
+    CPString        _className;
+    CPString        _resourceName;
+    CPDictionary    _properties;
 }
 
-- (CPString)filename
++ (id)imageResourceWithName:(CPString)aResourceName size:(CGSize)aSize
 {
-    return "";
+    return [[self alloc] initWithClassName:@"CPImage" resourceName:aResourceName properties:[CPDictionary dictionaryWithObject:aSize forKey:@"size"]];
 }
 
-- (CGSize)size
+- (id)initWithClassName:(CPString)aClassName resourceName:(CPString)aResourceName properties:(CPDictionary)properties
 {
-    return CGSizeMakeZero();
+    self = [super init];
+    
+    if (self)
+    {
+        _className = aClassName;
+        _resourceName = aResourceName;
+        _properties = properties;
+    }
+    
+    return self;
 }
 
 - (id)initWithCoder:(CPCoder)aCoder
@@ -54,6 +65,7 @@ var _CPCibCustomResourceClassNameKey    = @"_CPCibCustomResourceClassNameKey",
     {
         _className = [aCoder decodeObjectForKey:_CPCibCustomResourceClassNameKey];
         _resourceName = [aCoder decodeObjectForKey:_CPCibCustomResourceResourceNameKey];
+        _properties = [aCoder decodeObjectForKey:_CPCibCustomResourcePropertiesKey];
     }
     
     return self;
@@ -63,15 +75,40 @@ var _CPCibCustomResourceClassNameKey    = @"_CPCibCustomResourceClassNameKey",
 {
     [aCoder encodeObject:_className forKey:_CPCibCustomResourceClassNameKey];
     [aCoder encodeObject:_resourceName forKey:_CPCibCustomResourceResourceNameKey];
+    [aCoder encodeObject:_properties forKey:_CPCibCustomResourcePropertiesKey];
 }
 
 - (id)awakeAfterUsingCoder:(CPCoder)aCoder
 {
-    if ([aCoder isKindOfClass:[_CPCibKeyedUnarchiver class]])
+    if ([aCoder respondsToSelector:@selector(bundle)])
         if (_className === @"CPImage")
-            return [[CPImage alloc] initWithContentsOfFile:[[aCoder bundle] pathForResource:_resourceName]];
-    
+            return [[CPImage alloc] initWithContentsOfFile:[[aCoder bundle] pathForResource:_resourceName] size:[_properties objectForKey:@"size"]];
+
     return self;
+}
+
+@end
+
+@implementation _CPCibCustomResource (CPImage)
+
+- (CPString)filename
+{
+    return [[CPBundle mainBundle] pathForResource:_resourceName];
+}
+
+- (CGSize)size
+{
+    return [_properties objectForKey:@"size"];
+}
+
+- (BOOL)isThreePartImage
+{
+    return NO;
+}
+
+- (BOOL)isNinePartImage
+{
+    return NO;
 }
 
 @end

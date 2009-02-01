@@ -338,6 +338,11 @@ function CPImageInBundle(aFilename, aSize, aBundle)
     return self;
 }
 
+- (CPString)filename
+{
+    return @"";
+}
+
 - (CPArray)imageSlices
 {
     return _imageSlices;
@@ -400,6 +405,11 @@ var CPThreePartImageImageSlicesKey  = @"CPThreePartImageImageSlicesKey",
         _imageSlices = imageSlices;
     
     return self;
+}
+
+- (CPString)filename
+{
+    return @"";
 }
 
 - (CPArray)imageSlices

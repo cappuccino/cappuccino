@@ -15,4 +15,23 @@
     
     </macrodef>
 
+    <macrodef name = "steam-inline-bundle">
+        
+        <attribute name = "bundle" />
+        
+        <element name = "arguments" optional = "true" implicit = "true"/>
+        
+        <sequential>
+            <exec executable = "steam">
+                
+                <arg value = "inline-bundle" />
+                <arg value = "@{bundle}" />
+                
+                <arguments/>
+                
+            </exec>
+        </sequential>
+    
+    </macrodef>
+
 </project>

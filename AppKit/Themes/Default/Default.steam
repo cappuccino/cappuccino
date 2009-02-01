@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Name</key>
+    <string>Default</string>
+	<key>Targets</key>
+	<array>
+        <dict>
+            <key>Name</key>
+            <string>Default.cptheme</string>
+            <key>Type</key>
+            <string>280N.theme</string>
+        </dict>
+	</array>
+    <key>Configurations</key>
+	<array>
+        <dict>
+            <key>Name</key>
+            <string>Debug</string>
+            <key>Flags</key>
+            <string>-DDEBUG -g</string>
+        </dict>
+        <dict>
+            <key>Name</key>
+            <string>Release</string>
+            <key>Flags</key>
+            <string>-O</string>
+        </dict>
+	</array>
+</dict>
+</plist>

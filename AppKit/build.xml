@@ -3,6 +3,8 @@
 
     <import file = "../common.xml" />
     <import file = "${env.OBJJ_LIB}/steam.xml" />
+    
+    <property name = "Theme" value = "Default" />
 
     <target name = "clean" depends = "steam-uptodate">
     
@@ -25,6 +27,16 @@
         <steam-build>
             <arg line = "-f AppKit.steam -c ${Configuration} -t AppKit-Rhino" />
         </steam-build>
+        
+        <steam-build>
+            <arg line = "-f Themes/${Theme}/${Theme}.steam -c ${Configuration} -t ${Theme}.cptheme" />
+        </steam-build>
+        
+        <copy todir = "${Build}/${Configuration}/AppKit/Resources/${Theme}.cptheme" >
+            <fileset dir = "${Build}/${Configuration}/${Theme}.cptheme" />
+        </copy>
+        
+        <steam-inline-bundle bundle = "${Build}/${Configuration}/AppKit" />
         
         <copy file = "../LICENSE" todir = "${Build}/${Configuration}/AppKit" />
 
