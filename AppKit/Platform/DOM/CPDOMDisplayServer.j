@@ -152,6 +152,7 @@ CPDOMDisplayServerViewsContext          = {};
             
             delete CPDOMDisplayServerViewsContext[[view hash]];
             
+            [view layoutIfNeeded];
             [view displayIfNeeded];
         }
     }

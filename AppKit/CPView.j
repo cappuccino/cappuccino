@@ -98,7 +98,8 @@ var DOMElementPrototype         = nil,
     BackgroundHorizontalThreePartImage  = 2,
     BackgroundNinePartImage             = 3,
     
-    CustomDrawRectViews                 = {};
+    CustomDrawRectViews                 = {},
+    CustomLayoutSubviewsViews           = {};
 #endif
 
 /*! @class CPView
@@ -154,6 +155,7 @@ var DOMElementPrototype         = nil,
 #endif
 
     CGRect              _dirtyRect;
+    BOOL                _needsLayout;
 
     float               _opacity;
     CPColor             _backgroundColor;
@@ -624,7 +626,8 @@ var DOMElementPrototype         = nil,
 
     if (_autoresizesSubviews)
         [self resizeSubviewsWithOldSize:oldSize];
-        
+    
+    [self setNeedsLayout];
     [self setNeedsDisplay:YES];
 
 #if PLATFORM(DOM)
@@ -1523,6 +1526,44 @@ setBoundsOrigin:
     CGContextRestoreGState([_graphicsContext graphicsPort]);
     
     [CPGraphicsContext setCurrentContext:nil];
+}
+
+- (void)setNeedsLayout
+{
+    _needsLayout = YES;
+    
+#if PLATFORM(DOM)
+    var hash = [[self class] hash],
+        hasCustomLayoutSubviews = CustomLayoutSubviewsViews[hash];
+    
+    if (hasCustomLayoutSubviews === undefined)
+    {
+        hasCustomLayoutSubviews = [self methodForSelector:@selector(layoutSubviews)] != [CPView instanceMethodForSelector:@selector(layoutSubviews)];
+        CustomLayoutSubviewsViews[hash] = hasCustomLayoutSubviews;
+    }
+
+    if (!hasCustomLayoutSubviews)
+        return;
+
+    if (_needsLayout)
+    {
+        CPDOMDisplayServerAddView(self);
+    }
+#endif
+}
+
+- (void)layoutIfNeeded
+{
+    if (_needsLayout)
+    {
+        _needsLayout = NO;
+    
+        [self layoutSubviews];
+    }
+}
+
+- (void)layoutSubviews
+{
 }
 
 /*!

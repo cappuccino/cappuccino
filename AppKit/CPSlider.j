@@ -89,6 +89,7 @@
 {
     [super setObjectValue:aValue];
 
+    [self setNeedsLayout];
     [self setNeedsDisplay:YES];
 }
 
@@ -99,6 +100,7 @@
     
     _horizontalTrackColor = aColor;
     
+    [self setNeedsLayout];
     [self setNeedsDisplay:YES];
 }
 
@@ -114,6 +116,7 @@
     
     _verticalTrackColor = aColor;
     
+    [self setNeedsLayout];
     [self setNeedsDisplay:YES];
 }
 
@@ -129,6 +132,7 @@
     
     _trackWidth = aTrackWidth;
     
+    [self setNeedsLayout];
     [self setNeedsDisplay:YES];
 }
 
@@ -178,6 +182,7 @@
     
     _knobSize = aKnobSize ? _CGSizeMakeCopy(aKnobSize) : nil;
     
+    [self setNeedsLayout];
     [self setNeedsDisplay:YES];
 }
 
@@ -188,6 +193,7 @@
     
     _knobColor = aColor;
     
+    [self setNeedsLayout];
     [self setNeedsDisplay:YES];
 }
 
@@ -231,30 +237,55 @@
     return width < height ? 1 : (width > height ? 0 : -1);
 }
 
-- (void)drawRect:(CGRect)aRect
+- (CPView)createTrackView
+{
+    var trackView = [[CPView alloc] initWithFrame:_CGRectMakeZero()];
+            
+    [trackView setHitTests:NO];
+
+    return trackView;
+}
+
+- (CPView)createKnobView
+{
+    var knobView = [[CPView alloc] initWithFrame:_CGRectMakeZero()];
+    
+    [knobView setHitTests:NO];
+    
+    return knobView;
+}
+
+- (void)layoutSubviews
 {
     var bounds = [self bounds],
         isVertical = [self isVertical],
         trackRect = nil;
 
-    if ((isVertical && _verticalTrackColor || !isVertical && _horizontalTrackColor) && 
-        (trackRect = [self trackRectForBounds:_CGRectMakeCopy(bounds)]) && !_CGRectIsEmpty(trackRect))
+    if ((trackRect = [self trackRectForBounds:_CGRectMakeCopy(bounds)]) && !_CGRectIsEmpty(trackRect))
     {
         if (!_trackView)
         {
-            _trackView = [[CPView alloc] initWithFrame:trackRect];
+            _trackView = [self createTrackView]
             
-            [_trackView setHitTests:NO];
-            
-            [self addSubview:_trackView positioned:CPWindowBelow relativeTo:_knobView];
+            if (_trackView)
+                [self addSubview:_trackView positioned:CPWindowBelow relativeTo:_knobView];
         }
-        else
-            [_trackView setFrame:trackRect];
+        
+        if (_trackView)
+        {
+            [_trackView setFrame:trackRect];        
             
-        if ([self isVertical])
-            [_trackView setBackgroundColor:_verticalTrackColor];
-        else
-            [_trackView setBackgroundColor:_horizontalTrackColor];
+            if ([self isVertical])
+            {
+                if (_verticalTrackColor)
+                    [_trackView setBackgroundColor:_verticalTrackColor];
+            }
+            else
+            {
+                if (_horizontalTrackColor)
+                    [_trackView setBackgroundColor:_horizontalTrackColor];
+            }
+        }
     }
     else if (_trackView)
     {
@@ -265,26 +296,28 @@
     
     var knobRect = nil;
     
-    if (_knobColor && (knobRect = [self knobRectForBounds:bounds]) && !_CGRectIsEmpty(knobRect))
+    if ((knobRect = [self knobRectForBounds:bounds]) && !_CGRectIsEmpty(knobRect))
     {
         if (!_knobView)
         {
-            _knobView = [[CPView alloc] initWithFrame:knobRect];
+            _knobView = [self createKnobView];
             
-            [_knobView setHitTests:NO];
-            
-            [self addSubview:_knobView positioned:CPWindowAbove relativeTo:_trackView];
+            if (_knobView)
+                [self addSubview:_knobView positioned:CPWindowAbove relativeTo:_trackView];
         }
-        else
+        
+        if (_knobView)
+        {        
             [_knobView setFrame:knobRect];
-      
-        if (_isHighlighted)
-        {
-            if (_highlightedKnobColor)
-                [_knobView setBackgroundColor:_highlightedKnobColor];
+          
+            if (_isHighlighted)
+            {
+                if (_highlightedKnobColor)
+                    [_knobView setBackgroundColor:_highlightedKnobColor];
+            }
+            else if (_knobColor)
+                [_knobView setBackgroundColor:_knobColor];
         }
-        else
-            [_knobView setBackgroundColor:_knobColor];
     }
     else if (_knobView)
     {
@@ -352,6 +385,8 @@
     }
     
     _isHighlighted = YES;
+    
+    [self setNeedsLayout];
     [self setNeedsDisplay:YES];
     
     return YES;   
@@ -371,6 +406,7 @@
     if ([_target respondsToSelector:@selector(sliderDidFinish:)])
         [_target sliderDidFinish:self];
 
+    [self setNeedsLayout];
     [self setNeedsDisplay:YES];
 }
 
@@ -407,6 +443,7 @@
     [self setHorizontalTrackColor:[theme valueForKey:@"horizontal-track-color"]];
     [self setVerticalTrackColor:[theme valueForKey:@"vertical-track-color"]];
     
+    [self setNeedsLayout];
     [self setNeedsDisplay:YES];
 }
 
@@ -443,7 +480,10 @@ var CPSliderMinValueKey     = "CPSliderMinValueKey",
         _altIncrementValue = [aCoder decodeDoubleForKey:CPSliderAltIncrValueKey];
     
         [self setContinuous:YES];
-    
+        
+        [self setTheme:[CPTheme defaultTheme]];
+        
+        [self setNeedsLayout];
         [self setNeedsDisplay:YES];
     }
     
