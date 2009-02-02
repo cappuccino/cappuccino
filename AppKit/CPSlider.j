@@ -52,7 +52,7 @@
     var doubleValue = [self doubleValue];
     
     if (doubleValue < _minValue)
-        [self setdoubleValue:_minValue];
+        [self setDoubleValue:_minValue];
 }
 
 - (float)minValue
@@ -70,7 +70,7 @@
     var doubleValue = [self doubleValue];
     
     if (doubleValue > _maxValue)
-        [self setdoubleValue:_maxValue];
+        [self setDoubleValue:_maxValue];
 }
 
 - (float)maxValue
@@ -78,16 +78,9 @@
     return _maxValue;
 }
 
-- (void)setValue:(id)aValue
-{
-    CPLog.warn("[CPSlider setValue:] is deprecated, use setDoubleValue: instead.");
-    
-    [self setObjectValue:aValue];
-}
-
 - (void)setObjectValue:(id)aValue
 {
-    [super setObjectValue:aValue];
+    [super setObjectValue:MIN(MAX(aValue, _minValue), _maxValue)];
 
     [self setNeedsLayout];
     [self setNeedsDisplay:YES];
@@ -525,6 +518,24 @@ var CPSliderMinValueKey     = "CPSliderMinValueKey",
     [aCoder encodeObject:_horizontalTrackColor forKey:"2"];
     [aCoder encodeObject:_knobColor forKey:"3"];
     [aCoder encodeObject:_highlightedKnobColor forKey:"4"];*/
+}
+
+@end
+
+@implementation CPSlider (Deprecated)
+
+- (id)value
+{
+    CPLog.warn("[CPSlider value] is deprecated, use doubleValue or objectValue instead.");
+    
+    return [self doubleValue];    
+}
+
+- (void)setValue:(id)aValue
+{
+    CPLog.warn("[CPSlider setValue:] is deprecated, use setDoubleValue: or setObjectValue: instead.");
+    
+    [self setObjectValue:aValue];
 }
 
 @end
