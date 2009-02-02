@@ -6,7 +6,7 @@
     <property name = "Build.Intermediate" location = "${Build}/steam.build/${Configuration}" />
     <property name = "Build.steam" location = "${Build}/${Configuration}/steam" />
     <property name = "Build.steam.bin" location = "${Build.steam}/bin" />
-    <property name = "Build.steam.lib" location = "${Build.steam}/lib" />
+    <property name = "Build.steam.lib" location = "${Build.steam}/lib/steam" />
     
     <target name = "clean">
         <delete dir = "${Build.steam}" verbose = "true" />
@@ -24,6 +24,10 @@
         <copy file = "${basedir}/steam.xml" tofile = "${Build.steam.lib}/steam.xml" />
         
         <copy file = "${basedir}/htaccess" tofile = "${Build.steam.lib}/htaccess" />
+        
+        <copy todir = "${Build.steam.lib}/Templates" >
+            <fileset dir = "${basedir}/Templates" />
+        </copy>
         
         <preprocess file = "${basedir}/main.js" output = "${Build.Intermediate}/steam-preprocessed.js" />
         
