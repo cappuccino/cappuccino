@@ -24,7 +24,8 @@ if [ -z $OBJJ_HOME ]; then
 fi
 
 OBJJ_LIB="$OBJJ_HOME/lib"
-CLASSPATH="$OBJJ_LIB:$OBJJ_LIB/js.jar"
+STEAM="$OBJJ_LIB/steam"
+CLASSPATH="$STEAM:$OBJJ_LIB:$OBJJ_LIB/js.jar"
 
 # convert paths for Cygwin
 if [[ `uname` == CYGWIN* ]]; then
