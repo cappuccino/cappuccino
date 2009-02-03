@@ -389,17 +389,17 @@ var _CPTextFieldSquareBezelColor = nil,
 /* @ignore */
 - (BOOL)acceptsFirstResponder
 {
-    return _isEditable;
+    return _isEditable && _isEnabled;
 }
 
 /* @ignore */
 - (BOOL)becomeFirstResponder
-{
+{    
+#if PLATFORM(DOM)
     var string = [self stringValue];
 
     [self setStringValue:""];
-    
-#if PLATFORM(DOM)
+
     var element = [[self class] _inputElement];
 
     element.value = string;
@@ -479,7 +479,7 @@ var _CPTextFieldSquareBezelColor = nil,
 
     // If current value is the placeholder value, remove it to allow user to update.
     if ([string lowercaseString] == [[self placeholderString] lowercaseString])
-        [self setStringValue:""];
+        element.value = "";
     
     //post CPControlTextDidBeginEditingNotification
     [self textDidBeginEditing:[CPNotification notificationWithName:CPControlTextDidBeginEditingNotification object:self userInfo:nil]];
@@ -519,7 +519,7 @@ var _CPTextFieldSquareBezelColor = nil,
 {
     if (![self isEditable])
         return [[self nextResponder] mouseDown:anEvent];
-        
+
     [super mouseDown:anEvent];
 }
 /*
@@ -683,7 +683,7 @@ var _CPTextFieldSquareBezelColor = nil,
         else
             displayString += aValue;
     }
-    
+
     if ([[self window] firstResponder] == self)
         [[self class] _inputElement].value = displayString;
 
@@ -712,7 +712,7 @@ var _CPTextFieldSquareBezelColor = nil,
 
     //if there is no set value, automatically display the placeholder
     if (!_value) 
-        [self setStringValue:aStringValue];
+        [self setStringValue:_placeholderString];
 }
 
 /*!
