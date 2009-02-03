@@ -142,7 +142,7 @@ objj_search.prototype.attemptNextSearchPath = function()
             
         for (; index < count; ++index)
             objj_files[this.searchedPaths[index]] = file;
-#end
+#endif
         if (this.didCompleteCallback)
             this.didCompleteCallback(file);
             
