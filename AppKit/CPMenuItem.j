@@ -231,6 +231,14 @@
 }
 
 /*!
+    Set's the item's text color
+*/
+- (void)setTextColor:(CPString)aColor
+{
+    //FIXME IMPLEMENT
+}
+
+/*!
     Sets the font for the text of this menu item
     @param aFont the font for the menu item
 */
