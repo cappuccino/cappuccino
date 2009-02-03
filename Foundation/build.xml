@@ -2,7 +2,7 @@
 <project name = "Foundation" default = "build" basedir = "." >
 
     <import file = "../common.xml" />
-    <import file = "${env.OBJJ_LIB}/steam.xml" />
+    <import file = "${env.OBJJ_LIB}/steam/steam.xml" />
 
     <target name = "clean" depends = "steam-uptodate">
         <steam-build>

@@ -111,7 +111,7 @@ function loadFrameworks(frameworkPaths, aCallback)
         java.lang.System.out.println("'" + frameworkPath + "' is not a framework or could not be found.");
         java.lang.System.exit(1);
     }
-    
+
     var infoDictionary = readPlist(new File(frameworkPath + "/Info.plist"));
     
     if (dictionary_getValue(infoDictionary, "CPBundlePackageType") !== "FMWK")
@@ -119,13 +119,13 @@ function loadFrameworks(frameworkPaths, aCallback)
         java.lang.System.out.println("'" + frameworkPath + "' is not a framework .");
         java.lang.System.exit(1);
     }
-    
+
     var files = dictionary_getValue(infoDictionary, "CPBundleReplacedFiles"),
         index = 0,
         count = files.length;
         
     for (; index < count; ++index)
         files[index] = String(frameworkPath + '/' + files[index]);
-    
+
     importFiles(files, function() { loadFrameworks(frameworkPaths, aCallback) });
 }

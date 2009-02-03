@@ -135,6 +135,14 @@ objj_search.prototype.attemptNextSearchPath = function()
     if (file)
     {
         objj_alert("The file request at " + this.filePath + " has already been downloaded at " + searchPath);
+        // FIXME: Do we need this for everything?
+#if RHINO
+        var index = 0,
+            count = this.searchedPaths.length;
+            
+        for (; index < count; ++index)
+            objj_files[this.searchedPaths[index]] = file;
+#end
         if (this.didCompleteCallback)
             this.didCompleteCallback(file);
             

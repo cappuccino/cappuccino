@@ -13,13 +13,15 @@ importClass(java.io.SequenceInputStream);
 
 #include "Project.js"
 
+OBJJ_STEAM = OBJJ_HOME + "/lib/steam/";
+
 function main()
 {
     if (arguments.length < 1)
         printUsage();
     
     var command = Array.prototype.shift.apply(arguments);
-    
+
     switch (command)
     {
         case "create":              create.apply(create, arguments);

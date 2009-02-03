@@ -19,22 +19,6 @@
                 <string>CoreGraphics/CGContextCanvas.j</string>
                 <string>CoreGraphics/CGContextVML.j</string>
             </array>
-            <key>Flags</key>
-            <string>-DPLATFORM_DOM</string>
-        </dict>
-        <dict>
-            <key>Name</key>
-            <string>AppKit-Rhino</string>
-            <key>Excluded</key>
-            <array>
-                <string>CPOutlineView.j</string>
-                <string>CPTableColumn.j</string>
-                <string>CPTableView.j</string>
-                <string>Themes</string>
-                <!-- These get compiled into CGContext -->
-                <string>CoreGraphics/CGContextCanvas.j</string>
-                <string>CoreGraphics/CGContextVML.j</string>
-            </array>
         </dict>
 	</array>
     <key>Configurations</key>
@@ -43,11 +27,23 @@
             <key>Name</key>
             <string>Debug</string>
             <key>Flags</key>
-            <string>-DDEBUG -g</string>
+            <string>-DDEBUG -DPLATFORM_DOM -g</string>
         </dict>
         <dict>
             <key>Name</key>
             <string>Release</string>
+            <key>Flags</key>
+            <string>-DPLATFORM_DOM -O</string>
+        </dict>
+        <dict>
+            <key>Name</key>
+            <string>Debug-Rhino</string>
+            <key>Flags</key>
+            <string>-DDEBUG -g</string>
+        </dict>
+        <dict>
+            <key>Name</key>
+            <string>Release-Rhino</string>
             <key>Flags</key>
             <string>-O</string>
         </dict>

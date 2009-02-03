@@ -2,7 +2,7 @@
 <project name = "nib2cib" default = "build" basedir = "." >
 
     <import file = "../../common.xml" />
-    <import file = "${env.OBJJ_LIB}/steam.xml" />
+    <import file = "${env.OBJJ_LIB}/steam/steam.xml" />
     
     <property name = "Build.nib2cib" location = "${Build}/${Configuration}/nib2cib" />
     <property name = "Build.nib2cib.bin" location = "${Build}/${Configuration}/nib2cib/bin" />

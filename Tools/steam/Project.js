@@ -238,8 +238,24 @@ Project.prototype.activeFlags = function()
 
 Project.prototype.buildTheme = function()
 {
-    var project = this;
+    var project = this/*,
+        frameworks = NULL;
     
+    // FIXME: OBJJ_INCLUDE_PATHS ENV VAR?
+    if (true)
+    {
+        OBJJ_INCLUDE_PATHS = [System.getenv("STEAM_BUILD") + "/Release-Rhino/", System.getenv("STEAM_BUILD") + "/Release/"];
+        frameworks = [System.getenv("STEAM_BUILD") + "/Release/Foundation", System.getenv("STEAM_BUILD") + "/Release-Rhino/AppKit"];
+    }
+    else
+    {
+        OBJJ_INCLUDE_PATHS = [OBJJ_HOME + "/lib/Frameworks-Rhino"];
+        frameworks = [OBJJ_HOME + "/lib/Frameworks-Rhino/Foundation", OBJJ_HOME + "/lib/Frameworks-Rhino/AppKit"];
+    }
+    
+    // Load ALL of Foundation and AppKit, be nice to people.
+    loadFrameworks(frameworks, function()*/
+     
     // FIXME: This should be stubbed out.  It is also in objj.js
     var OBJJ_LIB = OBJJ_HOME + "/lib/";
     
@@ -255,13 +271,11 @@ Project.prototype.buildTheme = function()
         OBJJ_INCLUDE_PATHS.push(defaultFrameworks);
     }
     
+    OBJJ_INCLUDE_PATHS = [System.getenv("STEAM_BUILD") + "/Release-Rhino/", System.getenv("STEAM_BUILD") + "/Release/"];
+    
     // Load ALL of Foundation and AppKit, be nice to people.
-    loadFrameworks([OBJJ_LIB + "/Frameworks-Rhino/Foundation", OBJJ_LIB + "/Frameworks-Rhino/AppKit"], function()
+    loadFrameworks([System.getenv("STEAM_BUILD") + "/Release/Foundation", System.getenv("STEAM_BUILD") + "/Release-Rhino/AppKit"], function()
     {
-        // FIXME!
-        if (!objj_getClass("CPTheme"))   
-            return;
-        
         // Get .j files
         var jFiles = getFiles(project._root, "j", project.activeTarget().exclusions().concat("Frameworks/"));
         
@@ -335,7 +349,7 @@ Project.prototype.buildTheme = function()
             writer.close();
         });
     });
-    
+
     serviceTimeouts();
     
     this.copyResources();
@@ -391,7 +405,7 @@ Project.prototype.build = function()
     if (hasModifiedJFiles)
     {
         // concatenate sjheader.txt and individual .o
-        exec(["sh", "-c", "cat '" + OBJJ_HOME + "/lib/sjheader.txt' '" + oFiles.join("' '") + "' > '" + sjFile.getCanonicalPath() + "'"], true);
+        exec(["sh", "-c", "cat '" + OBJJ_STEAM + "/sjheader.txt' '" + oFiles.join("' '") + "' > '" + sjFile.getCanonicalPath() + "'"], true);
     }
     
     if (shouldGzip)

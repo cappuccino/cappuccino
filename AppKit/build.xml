@@ -2,7 +2,7 @@
 <project name = "AppKit" default = "build" basedir = "." >
 
     <import file = "../common.xml" />
-    <import file = "${env.OBJJ_LIB}/steam.xml" />
+    <import file = "${env.OBJJ_LIB}/steam/steam.xml" />
     
     <property name = "Theme" value = "Default" />
 
@@ -25,7 +25,7 @@
         </steam-build>
 
         <steam-build>
-            <arg line = "-f AppKit.steam -c ${Configuration} -t AppKit-Rhino" />
+            <arg line = "-f AppKit.steam -c ${Configuration}-Rhino -t AppKit" />
         </steam-build>
         
         <steam-build>
