@@ -562,6 +562,18 @@ var DOMElementPrototype         = nil,
 }
 
 /*!
+    Moves the center of the receiver's frame to the provided point. The point is defined in the superview's coordinate system. 
+    The method posts a CPViewFrameDidChangeNotification to the default notification center if the receiver 
+    is configured to do so. If the specified origin is the same as the frame's current origin, the method will 
+    simply return (and no notification will be posted).
+    @param aPoint the new origin point
+*/
+- (void)setCenter:(CGPoint)aPoint
+{
+    [self setFrameOrigin:CGPointMake(aPoint.x - _frame.size.width / 2.0, aPoint.y - _frame.size.height / 2.0)]; 
+}
+
+/*!
     Sets the receiver's frame origin to the provided point. The point is defined in the superview's coordinate system. 
     The method posts a CPViewFrameDidChangeNotification to the default notification center if the receiver 
     is configured to do so. If the specified origin is the same as the frame's current origin, the method will 
