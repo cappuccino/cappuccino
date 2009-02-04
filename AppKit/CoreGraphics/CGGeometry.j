@@ -65,6 +65,10 @@ _function(CGRectIsNull(aRect))
 
 _function(CGRectContainsPoint(aRect, aPoint))
 
+_function(CGInsetMake(top, left, bottom, right))
+_function(CGInsetMakeCopy(anInset))
+_function(CGInsetIsEmpty(anInset))
+
 /*!
     Returns a <code>BOOL</code> indicating whether CGRect <code>lhsRect</code>
     contains CGRect <code>rhsRect</code>.

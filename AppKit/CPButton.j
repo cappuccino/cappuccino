@@ -25,6 +25,7 @@
 
 @import "CPControl.j"
 
+#include "CPControl.h"
 #include "CoreGraphics/CGGeometry.h"
 
 
@@ -231,24 +232,33 @@ var _CPButtonClassName                          = nil,
     int                     _tag;
     int                     _state;
     BOOL                    _allowsMixedState;
-    BOOL                    _isHighlighted;
     
     CPImage                 _image;
     CPImage                 _alternateImage;
-    
-    CPCellImagePosition     _imagePosition;
-    CPImageScaling          _imageScaling;
-    
+        
     CPString                _title;
     CPString                _alternateTitle;
+    
+    CPControlStateValue     _image;
+    CPControlStateValue     _title;
 
+    // Display Properties
+    CPControlStateValue     _bezelInset;
+    CPControlStateValue     _contentInset;
+    
+    CPControlStateValue     _bezelColor;
+
+    //
+    CPView                  _bezelView;
+    _CPImageAndTextView     _contentView;
+    
+    // NS-style Display Properties
     CPBezelStyle            _bezelStyle;
     BOOL                    _isBordered;
     CPControlSize           _controlSize;
     
+    // bleh
     BOOL                    _bezelBorderNeedsUpdate;
-    
-    _CPImageAndTextView     _imageAndTextView;
 }
 
 /*!
@@ -326,6 +336,14 @@ var _CPButtonClassName                          = nil,
     
     if (self)
     {
+        _bezelInset = [[CPControlStateValue alloc] initWithDefaultValue:_CGInsetMakeZero()];
+        _contentInset = [[CPControlStateValue alloc] initWithDefaultValue:_CGInsetMakeZero()];
+        
+        _bezelColor = [[CPControlStateValue alloc] initWithDefaultValue:nil];
+
+//        _image = [[CPControlStateValue alloc] initWithDefaultValue:nil];
+//        _title = [[CPControlStateValue alloc] initWithDefaultValue:nil];
+        
         [self setAlignment:CPCenterTextAlignment];
         [self setVerticalAlignment:CPCenterVerticalTextAlignment];
         [self setImagePosition:CPImageLeft];
@@ -338,50 +356,6 @@ var _CPButtonClassName                          = nil,
     }
     
     return self;
-}
-
-/*!
-    Sets the position of the button's image to <code>anImagePosition</code>.
-    @param anImagePosition the position for the button's image
-*/
-- (void)setImagePosition:(CPCellImagePosition)anImagePosition
-{
-    [super setImagePosition:anImagePosition];
-    
-    [_imageAndTextView setImagePosition:[self imagePosition]];
-}
-
-/*!
-    Sets the button's images scaling method
-    @param anImageScaling the image scaling method
-*/
-- (void)setImageScaling:(CPImageScaling)anImageScaling
-{
-    [super setImageScaling:anImageScaling];
-
-    [_imageAndTextView setImageScaling:[self imageScaling]];
-}
-
-/*!
-    Sets the color of the button's text
-    @param aColor the color to use for drawing the button text
-*/
-- (void)setTextColor:(CPColor)aColor
-{
-    [super setTextColor:aColor];
-    
-    [_imageAndTextView setTextColor:[self textColor]];
-}
-
-/*!
-    Sets the font that will be used to draw the button text
-    @param aFont the font used to draw the button text
-*/
-- (void)setFont:(CPFont)aFont
-{
-    [super setFont:aFont];
-    
-    [_imageAndTextView setFont:[self font]];
 }
 
 // Setting the state
@@ -429,17 +403,6 @@ var _CPButtonClassName                          = nil,
 - (int)state
 {
     return _state;
-}
-
-/*!
-    Sets the alignment of the text on the button.
-    @param anAlignment an alignment object
-*/
-- (void)setAlignment:(CPTextAlignment)anAlignment
-{
-    [super setAlignment:anAlignment];
-    
-    [_imageAndTextView setAlignment:[self alignment]];
 }
 
 /*!
@@ -507,7 +470,7 @@ var _CPButtonClassName                          = nil,
     Lays out the button.
 */
 - (void)tile
-{
+{return;
     var size = [self bounds].size;
     
     if (_isBordered)
@@ -559,34 +522,19 @@ var _CPButtonClassName                          = nil,
     return bounds;
 }
 
-- (void)drawRect:(CGRect)aRect
-{
-    if (!_imageAndTextView)
-    {
-        _imageAndTextView = [[_CPImageAndTextView alloc] initWithFrame:[self contentRectForBounds:[self bounds]] control:self];
-
-        [self addSubview:_imageAndTextView];
-    }
-    else
-        [_imageAndTextView setFrame:[self contentRectForBounds:[self bounds]]];
-
-    [_imageAndTextView setText:_isHighlighted && _alternateTitle ? _alternateTitle : _title];
-    [_imageAndTextView setImage:_isHighlighted && _alternateImage ? _alternateImage : _image];
-}
-
 /*!
     Compacts the button's frame to fit its contents.
 */
 - (void)sizeToFit
-{    if (!_imageAndTextView)
+{return;    if (!_imageAndTextView)
     {
         _imageAndTextView = [[_CPImageAndTextView alloc] initWithFrame:[self contentRectForBounds:[self bounds]] control:self];
 
         [self addSubview:_imageAndTextView];
     }
     
-    [_imageAndTextView setText:_isHighlighted && _alternateTitle ? _alternateTitle : _title];
-    [_imageAndTextView setImage:_isHighlighted && _alternateImage ? _alternateImage : _image];
+    [_imageAndTextView setText:[self isHighlighted] && _alternateTitle ? _alternateTitle : _title];
+    [_imageAndTextView setImage:[self isHighlighted] && _alternateImage ? _alternateImage : _image];
 
     [_imageAndTextView sizeToFit];
     
@@ -610,10 +558,9 @@ var _CPButtonClassName                          = nil,
 */
 - (void)highlight:(BOOL)aFlag
 {
-    _isHighlighted = aFlag;
+    [super highlight:aFlag];
     
     [self drawBezelWithHighlight:aFlag];
-    [self setNeedsDisplay:YES];
 }
 
 /*!
@@ -658,7 +605,7 @@ var _CPButtonClassName                          = nil,
     
     _controlSize = aControlSize;
     
-    [self drawBezelWithHighlight:_isHighlighted];
+    [self drawBezelWithHighlight:[self isHighlighted]];
     [self _updateTextAttributes];
 }
 
@@ -682,7 +629,7 @@ var _CPButtonClassName                          = nil,
     _isBordered = isBordered;
     
     [self updateBackgroundColors];
-    [self drawBezelWithHighlight:_isHighlighted];
+    [self drawBezelWithHighlight:[self isHighlighted]];
     
     [self tile];
 }
@@ -723,7 +670,7 @@ var _CPButtonClassName                          = nil,
     _bezelStyle = aBezelStyle;
     
     [self updateBackgroundColors];
-    [self drawBezelWithHighlight:_isHighlighted];
+    [self drawBezelWithHighlight:[self isHighlighted]];
     
     [self _updateTextAttributes];
     [self tile];
@@ -739,7 +686,7 @@ var _CPButtonClassName                          = nil,
 
 /* @ignore */
 - (void)updateBackgroundColors
-{
+{return;
     if (_isBordered)
     {
         [self setBackgroundColor:_CPControlThreePartImagePattern(
@@ -766,7 +713,7 @@ var _CPButtonClassName                          = nil,
 
 /* @ignore */
 - (void)drawBezelWithHighlight:(BOOL)shouldHighlight
-{   
+{   return;
     _bezelBorderNeedsUpdate = ![self window];
     
     if (_bezelBorderNeedsUpdate)
@@ -778,17 +725,142 @@ var _CPButtonClassName                          = nil,
 - (void)viewDidMoveToWindow
 {
     if (_bezelBorderNeedsUpdate)
-        [self drawBezelWithHighlight:_isHighlighted];
+        [self drawBezelWithHighlight:[self isHighlighted]];
 }
 
 /* @ignore */
 - (void)_updateTextAttributes
-{
+{return;
     if (_bezelStyle == CPHUDBezelStyle)
         [self setTextColor:CPHUDBezelStyleTextColor];
     
     if (_controlSize == CPRegularControlSize)
         [self setFont:[CPFont systemFontOfSize:11.0]];
+}
+
+// NEW
+
+- (CPView)createBezelView
+{
+    var view = [[CPView alloc] initWithFrame:_CGRectMakeZero()];
+
+    [view setHitTests:NO];
+    
+    return view;
+}
+
+CONTROL_STATE_VALUE(BezelColor, bezelColor)
+
+- (CPView)createContentView
+{
+    var view = [[_CPImageAndTextView alloc] initWithFrame:_CGRectMakeZero()];
+    
+    return view;
+}
+
+CONTROL_STATE_VALUE(ContentInset, contentInset)
+CONTROL_STATE_VALUE(BezelInset, bezelInset)
+
+- (CGRect)contentRectForBounds:(CGRect)bounds
+{
+    var contentInset = [self contentInset];
+    
+    if (!contentInset)
+        return bounds;
+    
+    bounds.origin.x += contentInset.left;
+    bounds.origin.y += contentInset.top;
+    bounds.size.width -= contentInset.left + contentInset.right;
+    bounds.size.height -= contentInset.top + contentInset.bottom;
+    
+    return bounds;
+}
+
+- (CGRect)bezelRectForBounds:(CFRect)bounds
+{
+    var bezelInset = [self bezelInset];
+    
+    if (!_CGInsetIsEmpty(bezelInset))
+        return bounds;
+    
+    bounds.origin.x += bezelInset.left;
+    bounds.origin.y += bezelInset.top;
+    bounds.size.width -= bezelInset.left + bezelInset.right;
+    bounds.size.height -= bezelInset.top + bezelInset.bottom;
+    
+    return bounds;
+}
+
+- (void)layoutSubviews
+{
+    var bounds = [self bounds],
+        bezelRect = [self bezelRectForBounds:_CGRectMakeCopy(bounds)];
+    
+    if (bezelRect && !_CGRectIsEmpty(bezelRect))
+    {
+        if (!_bezelView)
+        {
+            _bezelView = [self createBezelView];
+            
+            if (_bezelView)
+                [self addSubview:_bezelView positioned:CPWindowBelow relativeTo:_contentView];
+        }
+        
+        if (_bezelView)
+            [_bezelView setFrame:bezelRect];
+    }
+    else if (_bezelView)
+    {
+        [_bezelView removeFromSuperview];
+            
+        _bezelView = nil;
+    }
+    
+    if (_bezelView)
+    {
+        [_bezelView setBackgroundColor:[self bezelColor]];
+    }
+    
+    var contentRect = [self contentRectForBounds:bounds];
+    
+    if (contentRect && !_CGRectIsEmpty(contentRect))
+    {
+        if (!_contentView)
+        {
+            _contentView = [self createContentView];
+            
+            if (_contentView)
+                [self addSubview:_contentView positioned:CPWindowAbove relativeTo:_bezelView];
+        }
+        
+        if (_contentView)
+            [_contentView setFrame:contentRect];
+    }
+    else if (_contentView)
+    {
+        [_contentView removeFromSuperview];
+        
+        _contentView = nil;
+    }
+    
+    if (_contentView)
+    {
+        [_contentView setText:[self isHighlighted] && _alternateTitle ? _alternateTitle : _title];
+        [_contentView setImage:[self isHighlighted] && _alternateImage ? _alternateImage : _image];
+        
+    //    [_imageAndTextView setText:[self titleForControlState:_title]];
+    //    [_imageAndTextView setImage:[self imageForControlState:_controlState]];
+    
+        [_contentView setFont:[self font]];
+        [_contentView setTextColor:[self textColor]];
+        [_contentView setAlignment:[self alignment]];
+        [_contentView setVerticalAlignment:[self verticalAlignment]];
+        [_contentView setLineBreakMode:[self lineBreakMode]];
+        [_contentView setTextShadowColor:[self textShadowColor]];
+        [_contentView setTextShadowOffset:[self textShadowOffset]];
+        [_contentView setImagePosition:[self imagePosition]];
+        [_contentView setImageScaling:[self imageScaling]];
+    }
 }
 
 @end
@@ -844,8 +916,8 @@ var CPButtonImageKey                = @"CPButtonImageKey",
     // should just automatically be created programmatically as needed.
     var actualSubviews = _subviews;
     
-    _subviews = [_subviews copy];
-    [_subviews removeObjectIdenticalTo:_imageAndTextView];
+//    _subviews = [_subviews copy];
+//    [_subviews removeObjectIdenticalTo:_imageAndTextView];
     
     [super encodeWithCoder:aCoder];
     

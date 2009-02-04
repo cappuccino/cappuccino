@@ -59,6 +59,11 @@
 
 #define _CGRectContainsPoint(aRect, aPoint) (aPoint.x >= _CGRectGetMinX(aRect) && aPoint.y >= _CGRectGetMinY(aRect) && aPoint.x < _CGRectGetMaxX(aRect) && aPoint.y < _CGRectGetMaxY(aRect))
 
+#define _CGInsetMake(_top, _left, _bottom, _right) { top:(_top), left:(_left), bottom:(_bottom), right:(_right) }
+#define _CGInsetMakeCopy(anInset) _CGInsetMake(anInset.top, anInset.left, anInset.bottom, anInset.right)
+#define _CGInsetMakeZero() _CGInsetMake(0, 0, 0, 0)
+#define _CGInsetIsEmpty(anInset) ((anInset).left === 0 && (anInset).top === 0 && (anInset).right === 0 && (anInset).bottom === 0)
+
 // DEPRECATED
 #define _CGPointCreateCopy(aPoint) _CGPointMake(aPoint.x, aPoint.y)
 #define _CGSizeCreateCopy(aSize) _CGSizeMake(aSize.width, aSize.height)

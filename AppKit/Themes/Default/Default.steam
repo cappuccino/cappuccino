@@ -11,6 +11,10 @@
             <string>Default.cptheme</string>
             <key>Type</key>
             <string>280N.theme</string>
+            <key>Excluded</key>
+            <array>
+                <string>Frameworks</string>
+            </array>
         </dict>
 	</array>
     <key>Configurations</key>

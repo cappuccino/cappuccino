@@ -2,6 +2,7 @@
 @import <AppKit/CPControl.j>
 
 #include "CoreGraphics/CGGeometry.h"
+#include "CPControl.h"
 
 
 @implementation CPSlider : CPControl
@@ -13,13 +14,10 @@
     CPColor _verticalTrackColor;    // vertical-track-color
     CPColor _horizontalTrackColor;  // horizontal-track-color
     
-    CPColor _knobColor;             // knob-color
-    CPColor _highlightedKnobColor;  // knob-color-highlighted
+    CPControlStateValue _knobColor;
     
     float   _trackWidth;            // track-width
     CGSize  _knobSize;              // knob-size
-    
-    BOOL    _isHighlighted;
     
     CPView  _trackView;
     CPView  _knobView;
@@ -33,6 +31,8 @@
     {
         _minValue = 0.0;
         _maxValue = 100.0;
+        
+        _knobColor = [[CPControlStateValue alloc] initWithDefaultValue:nil];
 
         [self setObjectValue:50.0];
         
@@ -155,19 +155,6 @@
     return bounds;
 }
 
-- (void)setHighlightedKnobColor:(CPColor)aColor
-{
-    if (_highlightedKnobColor === aColor)
-        _highlightedKnobColor = aColor;
-    
-    _highlightedKnobColor = aColor;
-}
-
-- (CPColor)highlightedKnobColor
-{
-    return _highlightedKnobColor;
-}
-
 - (void)setKnobSize:(CGSize)aKnobSize
 {
     if (_knobSize && (!aKnobSize || _CGSizeEqualToSize(_knobSize, aKnobSize)))
@@ -179,21 +166,7 @@
     [self setNeedsDisplay:YES];
 }
 
-- (void)setKnobColor:(CPColor)aColor
-{
-    if (_knobColor === aColor)
-        return;
-    
-    _knobColor = aColor;
-    
-    [self setNeedsLayout];
-    [self setNeedsDisplay:YES];
-}
-
-- (CPColor)knobColor
-{
-    return _knobColor;
-}
+CONTROL_STATE_VALUE(KnobColor, knobColor)
 
 - (CGRect)knobRectForBounds:(CGRect)bounds
 {
@@ -303,13 +276,10 @@
         {        
             [_knobView setFrame:knobRect];
           
-            if (_isHighlighted)
-            {
-                if (_highlightedKnobColor)
-                    [_knobView setBackgroundColor:_highlightedKnobColor];
-            }
-            else if (_knobColor)
-                [_knobView setBackgroundColor:_knobColor];
+            var knobColor = [self knobColor];
+            
+            if (knobColor)
+                [_knobView setBackgroundColor:knobColor];
         }
     }
     else if (_knobView)
@@ -377,7 +347,7 @@
             return NO;
     }
     
-    _isHighlighted = YES;
+    [self setHighlighted:YES];
     
     [self setNeedsLayout];
     [self setNeedsDisplay:YES];
@@ -394,7 +364,7 @@
 
 - (void)stopTracking:(CGPoint)lastPoint at:(CGPoint)aPoint mouseIsUp:(BOOL)mouseIsUp
 {
-    _isHighlighted = NO;
+    [self setHighlighted:NO];
     
     if ([_target respondsToSelector:@selector(sliderDidFinish:)])
         [_target sliderDidFinish:self];
@@ -427,10 +397,10 @@
     
     if (!theme)
         return;
-
+    
+    //_knobColor = [theme valueForKey:@"knob-color"];
+    
     [self setKnobSize:[theme valueForKey:@"knob-size"]];
-    [self setKnobColor:[theme valueForKey:@"knob-color"]];
-    [self setHighlightedKnobColor:[theme valueForKey:@"knob-color-highlighted"]];
     
     [self setTrackWidth:[theme valueForKey:@"track-width"]];
     [self setHorizontalTrackColor:[theme valueForKey:@"horizontal-track-color"]];
@@ -446,7 +416,6 @@
     
     [values setObject:_knobSize forKey:@"knob-size"];
     [values setObject:_knobColor forKey:@"knob-color"];
-    [values setObject:_highlightedKnobColor forKey:@"knob-color-highlighted"];
     [values setObject:_trackWidth forKey:@"track-width"];
     [values setObject:_verticalTrackColor forKey:@"vertical-track-color"];
     [values setObject:_horizontalTrackColor forKey:@"horizontal-track-color"];

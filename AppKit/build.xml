@@ -19,7 +19,7 @@
     </target>
         
     <target name = "build" depends = "steam-uptodate">
-    
+
         <steam-build>
             <arg line = "-f AppKit.steam -c ${Configuration} -t AppKit" />
         </steam-build>
@@ -27,11 +27,11 @@
         <steam-build>
             <arg line = "-f AppKit.steam -c ${Configuration}-Rhino -t AppKit" />
         </steam-build>
-        
+
         <steam-build>
             <arg line = "-f Themes/${Theme}/${Theme}.steam -c ${Configuration} -t ${Theme}.cptheme" />
         </steam-build>
-        
+
         <copy todir = "${Build}/${Configuration}/AppKit/Resources/${Theme}.cptheme" >
             <fileset dir = "${Build}/${Configuration}/${Theme}.cptheme" />
         </copy>

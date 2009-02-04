@@ -43,7 +43,7 @@
 
     [horizontalSlider setKnobSize:CGSizeMake(12.0, 12.0)];
     [horizontalSlider setKnobColor:knobColor];
-    [horizontalSlider setHighlightedKnobColor:knobHighlightedColor];  
+    [horizontalSlider setKnobColor:knobHighlightedColor forControlState:CPControlStateHighlighted];  
 
     views.push(horizontalSlider);
     
@@ -64,7 +64,7 @@
 
     [verticalSlider setKnobSize:CGSizeMake(12.0, 12.0)];
     [verticalSlider setKnobColor:knobColor];
-    [verticalSlider setHighlightedKnobColor:knobHighlightedColor];  
+    [verticalSlider setKnobColor:knobHighlightedColor forControlState:CPControlStateHighlighted];  
     
     views.push(verticalSlider);
     

@@ -87,18 +87,6 @@ var CPControlBlackColor     = [CPColor blackColor];
 @implementation CPControl : CPView
 {
     id                      _value;
-    BOOL                    _isEnabled;
-    
-    // Display Properties
-    CPTextAlignment         _alignment;
-    CPVerticalTextAlignment _verticalAlignment;
-    
-    CPLineBreakMode         _lineBreakMode;
-    CPColor                 _textColor;
-    CPFont                  _font;
-    
-    CPCellImagePosition     _imagePosition;
-    CPImageScaling          _imageScaling;
     
     // Target-Action Support
     id                      _target;
@@ -116,6 +104,22 @@ var CPControlBlackColor     = [CPColor blackColor];
     
     CPDictionary    _backgroundColors;
     CPString        _currentBackgroundColorName;
+    
+    // Properties
+    CPControlStateValue _alignment;
+    CPControlStateValue _verticalAlignment;
+    
+    CPControlStateValue _lineBreakMode;
+    CPControlStateValue _textColor;
+    CPControlStateValue _font;
+    
+    CPControlStateValue _textShadowColor;
+    CPControlStateValue _textShadowOffset;
+    
+    CPControlStateValue _imagePosition;
+    CPControlStateValue _imageScaling;
+    
+    CPControlState      _controlState;
 }
 
 - (id)initWithFrame:(CGRect)aFrame
@@ -124,15 +128,27 @@ var CPControlBlackColor     = [CPColor blackColor];
     
     if (self)
     {
-        [self setVerticalAlignment:CPTopVerticalTextAlignment];
+        _controlState = CPControlStateNormal;
+        
+        _alignment = [[CPControlStateValue alloc] initWithDefaultValue:CPLeftTextAlignment];
+        _verticalAlignment = [[CPControlStateValue alloc] initWithDefaultValue:CPTopVerticalTextAlignment];
+        
+        _lineBreakMode = [[CPControlStateValue alloc] initWithDefaultValue:CPLeftTextAlignment];
+        _textColor = [[CPControlStateValue alloc] initWithDefaultValue:[CPColor blackColor]];
+        _font = [[CPControlStateValue alloc] initWithDefaultValue:[CPFont systemFontOfSize:12.0]];
+        
+        _textShadowColor = [[CPControlStateValue alloc] initWithDefaultValue:nil];
+        _textShadowOffset = [[CPControlStateValue alloc] initWithDefaultValue:CGSizeMake(0.0, 0.0)];;
+        
+        _imagePosition = [[CPControlStateValue alloc] initWithDefaultValue:CPImageLeft];
+        _imageScaling = [[CPControlStateValue alloc] initWithDefaultValue:CPScaleToFit];
+        
+        //
         
         _sendActionOn = CPLeftMouseUpMask;
         _trackingMouseDownFlags = 0;
         
         _isEnabled = YES;
-        
-        [self setFont:[CPFont systemFontOfSize:12.0]];
-        [self setTextColor:CPControlBlackColor];
         
         _backgroundColors = [CPDictionary dictionary];
     }
@@ -155,163 +171,6 @@ var CPControlBlackColor     = [CPColor blackColor];
 - (BOOL)isEnabled
 {
     return _isEnabled;
-}
-
-/*!
-    Sets the receiver's horizontal text alignment
-    @param anAlignment the receiver's alignment
-*/
-- (void)setAlignment:(CPTextAlignment)anAlignment
-{
-    _alignment = anAlignment;
-}
-
-/*!
-    Returns the receiver's horizontal text alignment
-*/
-- (CPTextAlignment)alignment
-{
-    return _alignment;
-}
-
-/*!
-    Sets the receiver's vertical text alignment
-    @param anAlignment the receiver's alignment
-*/
-- (void)setVerticalAlignment:(CPVerticalTextAlignment)anAlignment
-{
-    _verticalAlignment = anAlignment;
-}
-
-/*!
-    Returns the receiver's vertical text alignment
-*/
-- (CPVerticalTextAlignment)verticalAlignment
-{
-    return _verticalAlignment;
-}
-
-/*!
-    Sets the receiver's line break mode.
-    @param anAlignment the receiver's line break mode.
-*/
-- (void)setLineBreakMode:(CPLineBreakMode)aLineBreakMode
-{
-    _lineBreakMode = aLineBreakMode;
-}
-
-/*!
-    Returns the receiver's line break mode.
-*/
-- (CPLineBreakMode)lineBreakMode
-{
-    return _lineBreakMode;
-}
-
-/*!
-    Sets the color of the receiver's text.
-*/
-- (void)setTextColor:(CPColor)aColor
-{
-    if (_textColor == aColor)
-        return;
-    
-    _textColor = aColor;
-
-#if PLATFORM(DOM)
-    _DOMElement.style.color = [aColor cssString];
-#endif
-}
-
-/*!
-    Returns the color of the receiver's text
-*/
-- (CPColor)textColor
-{
-    return _textColor;
-}
-
-/*!
-    Sets the receiver's font
-    @param aFont the font for the receiver
-*/
-- (void)setFont:(CPFont)aFont
-{
-    if (_font == aFont)
-        return;
-    
-    _font = aFont;
-    
-#if PLATFORM(DOM)
-    _DOMElement.style.font = [_font ? _font : [CPFont systemFontOfSize:12.0] cssString];
-#endif
-}
-
-/*!
-    Returns the receiver's font
-*/
-- (CPFont)font
-{
-    return _font;
-}
-
-/*!
-    Sets the position of the button's image to <code>anImagePosition</code>.
-    @param anImagePosition the position for the button's image
-*/
-- (void)setImagePosition:(CPCellImagePosition)anImagePosition
-{
-    if (_imagePosition === anImagePosition)
-        return;
-    
-    _imagePosition = anImagePosition;
-}
-
-/*!
-    Returns the buton's image position
-*/
-- (CPCellImagePosition)imagePosition
-{
-    return _imagePosition;
-}
-
-/*!
-    Sets the button's images scaling method
-    @param anImageScaling the image scaling method
-*/
-- (void)setImageScaling:(CPImageScaling)anImageScaling
-{
-    if (_imageScaling === anImageScaling)
-        return;
-    
-    _imageScaling = anImageScaling;
-}
-
-/*!
-    Returns the button's image scaling method
-*/
-- (CPImageScaling)imageScaling
-{
-    return _imageScaling;
-}
-
-/*!
-    Sets the shadow for the receiver's text.
-    @param aTextShadow the text shadow
-*/
-- (void)setTextShadow:(CPShadow)aTextShadow
-{
-#if PLATFORM(DOM)
-    _DOMElement.style.textShadow = [_textShadow = aTextShadow cssString];
-#endif
-}
-
-/*!
-    Returns the receiver's text shadow
-*/
-- (CPShadow)textShadow
-{
-    return _textShadow;
 }
 
 /*!
@@ -713,6 +572,8 @@ var __Deprecated__CPImageViewImageKey   = @"CPImageViewImageKey";
     
     if (self)
     {
+        _controlState = CPControlStateNormal;
+        
         [self setObjectValue:[aCoder decodeObjectForKey:CPControlValueKey]];
         
         if ([aCoder containsValueForKey:__Deprecated__CPImageViewImageKey])
@@ -855,4 +716,215 @@ function _CPControlThreePartImagePattern(isVertical, sizes, aClassName)
     
     return color;
 }
+
+///
+
+#include "CPControl.h"
+
+@implementation CPControl (BETTER)
+
+CONTROL_STATE_VALUE(Alignment, alignment)
+CONTROL_STATE_VALUE(VerticalAlignment, verticalAlignment)
+CONTROL_STATE_VALUE(LineBreakMode, lineBreakMode)
+CONTROL_STATE_VALUE(TextColor, textColor)
+CONTROL_STATE_VALUE(Font, font)
+CONTROL_STATE_VALUE(TextShadowColor, textShadowColor)
+CONTROL_STATE_VALUE(TextShadowOffset, textShadowOffset)
+CONTROL_STATE_VALUE(ImagePosition, imagePosition)
+CONTROL_STATE_VALUE(ImageScaling, imageScaling)
+
+- (int)controlState
+{
+    return _controlState;
+}
+
+- (void)setEnabled:(BOOL)isEnabled
+{
+    if ((!(_controlState & CPControlStateDisabled)) === isEnabled)
+        return;
+    
+    if (isEnabled)
+        _controlState &= ~CPControlStateDisabled;
+    else
+        _controlState |= CPControlStateDisabled;
+        
+    [self setNeedsLayout];
+    [self setNeedsDisplay:YES];
+}
+
+- (BOOL)isEnabled
+{
+    return !(_controlState & CPControlStateDisabled);
+}
+
+- (void)highlight:(BOOL)shouldHighlight
+{
+    [self setHighlighted:shouldHighlight];
+}
+
+- (void)setHighlighted:(BOOL)isHighlighted
+{
+    if ((!!(_controlState & CPControlStateHighlighted)) === isHighlighted)
+        return;
+    
+    if (isHighlighted)
+        _controlState |= CPControlStateHighlighted;
+    else
+        _controlState &= ~CPControlStateHighlighted;
+        
+    [self setNeedsLayout];
+    [self setNeedsDisplay:YES];
+}
+
+- (BOOL)isHighlighted
+{
+    return !!(_controlState & CPControlStateHighlighted);
+}
+
+@end
+
+CPControlStateNormal        = 0,
+CPControlStateHighlighted   = 1 << 0,
+CPControlStateDisabled      = 1 << 1,
+CPControlStateSelected      = 1 << 2,
+CPControlStateDefault       = 1 << 3;
+
+@implementation CPControlStateValue : CPObject
+{
+    id          _defaultValue;
+    JSObject    _values;
+    int         _highestState;
+}
+
+- (id)initWithDefaultValue:(id)aDefaultValue
+{
+    self = [super init];
+    
+    if (self)
+    {
+        _defaultValue = aDefaultValue;
+        _values = {};
+        _highestState = 0;
+    }
+    
+    return self;
+}
+
+- (void)setDefaultValue:(id)aDefaultValue
+{
+    _defaultValue = aDefaultValue;
+}
+
+- (id)valueForControlState:(CPControlState)aState
+{
+    var value = _values[aState];
+    
+    // If we don't have a value, and we have a non-normal state...
+    if (value === undefined && aState > 0)
+    {
+        // If this is a composite state, retrieve what we can.
+        if (!(aState & (aState - 1)))
+        {
+            var state = 1;
+            
+            while (value === undefined && state < _highestState)
+            {
+                if (state & aState)
+                    value = _values[state];
+                
+                state << 1;
+            }
+        }
+
+        // Still don't have a value? OK, let's use the normal value.        
+        if (value === undefined && aState > 0)
+            value = _values[CPControlStateNormal];
+    }
+    
+    return value || _defaultValue;
+}
+
+- (void)setValue:(id)aValue
+{
+    _values = {};
+    _values[CPControlStateNormal] = aValue;
+    _highestState = CPControlStateNormal;
+}
+
+- (void)setValue:(id)aValue forControlState:(CPControlState)aState
+{
+    if (_highestState < aState)
+        _highestState = aState;
+        
+    _values[aState] = aValue;
+}
+
+- (void)removeValueForControlState:(CPControlState)aState
+{    
+    delete _values[aState];
+
+//    if (_highestState === aState)
+//        _highestState = nil;
+}
+
+@end
+
+var CPControlStateValueStates   = @"CPControlStateValueStates",
+    CPControlStateValueValues   = @"CPControlStateValueValues";
+
+@implementation CPControlStateValue (CPCoding)
+
+- (id)initWithCoder:(CPCoder)aCoder
+{
+    self = [super init];
+    
+    if (self)
+    {
+        _values = {};
+        _highestState = 0;
+                        
+        var states = [aCoder decodeObjectForKey:CPControlStateValueStates];
+        
+        if (states)
+        {
+            var values = [aCoder decodeObjectForKey:CPControlStateValueValues],
+                count = states.length;
+            
+            while (count--)
+            {
+                var state = states[count];
+                
+                if (state > _highestState)
+                    _highestState = state;
+                
+                _values[state] = values[count];
+            }
+        }
+    }
+    
+    return self;
+}
+
+- (void)encodeWithCoder:(CPCoder)aCoder
+{
+    var states = [],
+        values = [];
+    
+    for (state in _values)
+    {
+        if (!_values.hasOwnProperty(state))
+            continue;
+
+        states.push(state);
+        values.push(_values[state]);
+    }
+    
+    if (states.length)
+    {
+        [aCoder encodeObject:states forKey:CPControlStateValueStates];
+        [aCoder encodeObject:values forKey:CPControlStateValueValues];
+    }
+}
+
+@end
 
