@@ -577,7 +577,7 @@ var DOMElementPrototype         = nil,
     Returns the center of the receiver's frame to the provided point. The point is defined in the superview's coordinate system. 
     @return CGPoint the center point of the receiver's frame
 */
-- (void)center
+- (CGPoint)center
 {
     return CGPointMake(_frame.size.width / 2.0 + _frame.origin.x, _frame.size.height / 2.0 + _frame.origin.y);
 }
