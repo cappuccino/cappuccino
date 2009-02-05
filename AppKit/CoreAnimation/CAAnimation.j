@@ -31,6 +31,7 @@
 @implementation CAAnimation : CPObject
 {
     BOOL    _isRemovedOnCompletion;
+    id      _delegate;
 }
 
 /*!
