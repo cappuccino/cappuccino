@@ -23,9 +23,11 @@
 @import "CPFont.j"
 @import "CPShadow.j"
 @import "CPView.j"
+@import "CPThemedValue.j"
 
+#include "CoreGraphics/CGGeometry.h"
+#include "CPThemedValue.h"
 #include "Platform/Platform.h"
-
 
 /*
     @global
@@ -86,28 +88,22 @@ var CPControlBlackColor     = [CPColor blackColor];
 */
 @implementation CPControl : CPView
 {
-    id                      _value;
+    id                  _value;
     
     // Target-Action Support
-    id                      _target;
-    SEL                     _action;
-    int                     _sendActionOn;
+    id                  _target;
+    SEL                 _action;
+    int                 _sendActionOn;
     
     // Mouse Tracking Support
-    BOOL                    _continuousTracking;
-    BOOL                    _trackingWasWithinFrame;
-    unsigned                _trackingMouseDownFlags;
-    CGPoint                 _previousTrackingLocation;
-
-    // Stuff
-    CPShadow    _textShadow;
-    
-    CPDictionary    _backgroundColors;
-    CPString        _currentBackgroundColorName;
+    BOOL                _continuousTracking;
+    BOOL                _trackingWasWithinFrame;
+    unsigned            _trackingMouseDownFlags;
+    CGPoint             _previousTrackingLocation;
     
     // Properties
-    CPControlStateValue _alignment;
-    CPControlStateValue _verticalAlignment;
+    CPThemedValue   _alignment;
+    CPThemedValue   _verticalAlignment;
     
     CPControlStateValue _lineBreakMode;
     CPControlStateValue _textColor;
@@ -120,6 +116,9 @@ var CPControlBlackColor     = [CPColor blackColor];
     CPControlStateValue _imageScaling;
     
     CPControlState      _controlState;
+    
+    // FIXME: Who uses this?
+    BOOL _isBezeled;
 }
 
 - (id)initWithFrame:(CGRect)aFrame
@@ -130,55 +129,30 @@ var CPControlBlackColor     = [CPColor blackColor];
     {
         _controlState = CPControlStateNormal;
         
-        _alignment = [[CPControlStateValue alloc] initWithDefaultValue:CPLeftTextAlignment];
-        _verticalAlignment = [[CPControlStateValue alloc] initWithDefaultValue:CPTopVerticalTextAlignment];
+        var theme = [self theme],
+            theClass = [self class];
         
-        _lineBreakMode = [[CPControlStateValue alloc] initWithDefaultValue:CPLeftTextAlignment];
-        _textColor = [[CPControlStateValue alloc] initWithDefaultValue:[CPColor blackColor]];
-        _font = [[CPControlStateValue alloc] initWithDefaultValue:[CPFont systemFontOfSize:12.0]];
+        _alignment = CPThemedValueMake(CPLeftTextAlignment, "alignment", theme, theClass);
+        _verticalAlignment = CPThemedValueMake(CPTopVerticalTextAlignment, "vertical-alignment", theme, theClass);
         
-        _textShadowColor = [[CPControlStateValue alloc] initWithDefaultValue:nil];
-        _textShadowOffset = [[CPControlStateValue alloc] initWithDefaultValue:CGSizeMake(0.0, 0.0)];;
+        _lineBreakMode = CPThemedValueMake(CPLineBreakByClipping, "line-break-mode", theme, theClass);
+        _textColor = CPThemedValueMake([CPColor blackColor], "text-color", theme, theClass);
+        _font = CPThemedValueMake([CPFont systemFontOfSize:12.0], "font", theme, theClass);
         
-        _imagePosition = [[CPControlStateValue alloc] initWithDefaultValue:CPImageLeft];
-        _imageScaling = [[CPControlStateValue alloc] initWithDefaultValue:CPScaleToFit];
+        _textShadowColor = CPThemedValueMake(nil, @"text-shadow-color", theme, theClass);
+        _textShadowOffset = CPThemedValueMake(_CGSizeMake(0.0, 0.0), "text-shadow-offset", theme, theClass);
         
+        _imagePosition = CPThemedValueMake(CPImageLeft, @"image-position", theme, theClass);
+        _imageScaling = CPThemedValueMake(CPScaleToFit, "image-scaling", theme, theClass);
+        
+        [theme setActiveClass:nil];
         //
         
         _sendActionOn = CPLeftMouseUpMask;
         _trackingMouseDownFlags = 0;
-        
-        _isEnabled = YES;
-        
-        _backgroundColors = [CPDictionary dictionary];
     }
     
     return self;
-}
-
-/*!
-    Sets whether the receiver responds to mouse events.
-    @param isEnabled whether the receiver will respond to mouse events
-*/
-- (void)setEnabled:(BOOL)isEnabled
-{
-    [self setAlphaValue:(_isEnabled = isEnabled) ? 1.0 : 0.3];
-}
-
-/*!
-    Returns <code>YES</code> if the receiver responds to mouse events.
-*/
-- (BOOL)isEnabled
-{
-    return _isEnabled;
-}
-
-/*!
-    Returns the receiver's target action
-*/
-- (SEL)action
-{
-    return _action;
 }
 
 /*!
@@ -191,11 +165,11 @@ var CPControlBlackColor     = [CPColor blackColor];
 }
 
 /*!
-    Returns the receiver's target. The target receives action messages from the receiver.
+    Returns the receiver's target action
 */
-- (id)target
+- (SEL)action
 {
-    return _target;
+    return _action;
 }
 
 /*!
@@ -205,6 +179,54 @@ var CPControlBlackColor     = [CPColor blackColor];
 - (void)setTarget:(id)aTarget
 {
     _target = aTarget;
+}
+
+/*!
+    Returns the receiver's target. The target receives action messages from the receiver.
+*/
+- (id)target
+{
+    return _target;
+}
+
+/*!
+    Causes <code>anAction</code> to be sent to <code>anObject</code>.
+    @param anAction the action to send
+    @param anObject the object to which the action will be sent
+*/
+- (void)sendAction:(SEL)anAction to:(id)anObject
+{
+    [CPApp sendAction:anAction to:anObject from:self];
+}
+
+- (int)sendActionOn:(int)mask
+{
+    var previousMask = _sendActionOn;
+    
+    _sendActionOn = mask;
+    
+    return previousMask;
+}
+
+/*!
+    Returns whether the control can continuously send its action messages.
+*/
+- (BOOL)isContinuous
+{
+    // Some subclasses should redefine this with CPLeftMouseDraggedMask
+    return (_sendActionOn & CPPeriodicMask) !== 0;
+}
+
+/*!
+    Sets whether the cell can continuously send its action messages.
+ */
+- (void)setContinuous:(BOOL)flag
+{
+    // Some subclasses should redefine this with CPLeftMouseDraggedMask
+    if (flag)
+        _sendActionOn |= CPPeriodicMask;
+    else 
+        _sendActionOn &= ~CPPeriodicMask;
 }
 
 - (BOOL)tracksMouseOutsideOfFrame
@@ -277,51 +299,10 @@ var CPControlBlackColor     = [CPColor blackColor];
 
 - (void)mouseDown:(CPEvent)anEvent
 {
-    if (!_isEnabled)
+    if (![self isEnabled])
         return;
     
     [self trackMouse:anEvent];
-}
-
-
-/*!
-    Causes <code>anAction</code> to be sent to <code>anObject</code>.
-    @param anAction the action to send
-    @param anObject the object to which the action will be sent
-*/
-- (void)sendAction:(SEL)anAction to:(id)anObject
-{
-    [CPApp sendAction:anAction to:anObject from:self];
-}
-
-- (int)sendActionOn:(int)mask
-{
-    var previousMask = _sendActionOn;
-    
-    _sendActionOn = mask;
-    
-    return previousMask;
-}
-
-/*!
-    Returns whether the control can continuously send its action messages.
-*/
-- (BOOL)isContinuous
-{
-    // Some subclasses should redefine this with CPLeftMouseDraggedMask
-    return (_sendActionOn & CPPeriodicMask) !== 0;
-}
-
-/*!
-    Sets whether the cell can continuously send its action messages.
- */
-- (void)setContinuous:(BOOL)flag
-{
-    // Some subclasses should redefine this with CPLeftMouseDraggedMask
-    if (flag)
-        _sendActionOn |= CPPeriodicMask;
-    else 
-        _sendActionOn &= ~CPPeriodicMask;
 }
 
 /*!
@@ -338,6 +319,9 @@ var CPControlBlackColor     = [CPColor blackColor];
 - (void)setObjectValue:(id)anObject
 {
     _value = anObject;
+    
+    [self setNeedsLayout];
+    [self setNeedsDisplay:YES];
 }
 
 /*!
@@ -391,7 +375,6 @@ var CPControlBlackColor     = [CPColor blackColor];
     [self setObjectValue:anObject];
 }
 
-
 /*!
     Returns the receiver's int value
 */
@@ -424,7 +407,6 @@ var CPControlBlackColor     = [CPColor blackColor];
 {
     [self setObjectValue:anObject];
 }
-
 
 - (void)takeDoubleValueFrom:(id)sender
 {
@@ -466,44 +448,6 @@ var CPControlBlackColor     = [CPColor blackColor];
         [self setStringValue:[sender stringValue]];
 }
 
-
-- (void)setBackgroundColor:(CPColor)aColor
-{
-    _backgroundColors = [CPDictionary dictionary];
-    
-    [self setBackgroundColor:aColor forName:CPControlNormalBackgroundColor];
-    
-    [super setBackgroundColor:aColor];
-}
-
-- (void)setBackgroundColor:(CPColor)aColor forName:(CPString)aName
-{
-    if (!aColor)
-        [_backgroundColors removeObjectForKey:aName];
-    else
-        [_backgroundColors setObject:aColor forKey:aName];
-        
-    if (_currentBackgroundColorName == aName)
-        [self setBackgroundColorWithName:_currentBackgroundColorName];
-}
-
-- (CPColor)backgroundColorForName:(CPString)aName
-{
-    var backgroundColor = [_backgroundColors objectForKey:aName];
-    
-    if (!backgroundColor && aName != CPControlNormalBackgroundColor)
-        return [_backgroundColors objectForKey:CPControlNormalBackgroundColor];
-        
-    return backgroundColor;
-}
-
-- (void)setBackgroundColorWithName:(CPString)aName
-{
-    _currentBackgroundColorName = aName;
-    
-    [super setBackgroundColor:[self backgroundColorForName:aName]];
-}
-
 - (void)textDidBeginEditing:(CPNotification)note 
 {
     //this looks to prevent false propagation of notifications for other objects
@@ -531,28 +475,123 @@ var CPControlBlackColor     = [CPColor blackColor];
     [[CPNotificationCenter defaultCenter] postNotificationName:CPControlTextDidEndEditingNotification object:self userInfo:[CPDictionary dictionaryWithObject:[note object] forKey:"CPFieldEditor"]];
 }
 
-/*
-Ð doubleValue  
-Ð setDoubleValue:
-Ð intValue  
-Ð setIntValue:  
-Ð objectValue  
-Ð setObjectValue:  
-Ð stringValue  
-Ð setStringValue:  
-Ð setNeedsDisplay  
-Ð attributedStringValue  
-Ð setAttributedStringValue:  
-*/
+THEMED_STATED_VALUE(Alignment, alignment)
+THEMED_STATED_VALUE(VerticalAlignment, verticalAlignment)
+THEMED_STATED_VALUE(LineBreakMode, lineBreakMode)
+THEMED_STATED_VALUE(TextColor, textColor)
+THEMED_STATED_VALUE(Font, font)
+THEMED_STATED_VALUE(TextShadowColor, textShadowColor)
+THEMED_STATED_VALUE(TextShadowOffset, textShadowOffset)
+THEMED_STATED_VALUE(ImagePosition, imagePosition)
+THEMED_STATED_VALUE(ImageScaling, imageScaling)
+
+- (int)controlState
+{
+    return _controlState;
+}
+
+- (void)setEnabled:(BOOL)isEnabled
+{
+    if ((!(_controlState & CPControlStateDisabled)) === isEnabled)
+        return;
+    
+    if (isEnabled)
+        _controlState &= ~CPControlStateDisabled;
+    else
+        _controlState |= CPControlStateDisabled;
+        
+    [self setNeedsLayout];
+    [self setNeedsDisplay:YES];
+}
+
+- (BOOL)isEnabled
+{
+    return !(_controlState & CPControlStateDisabled);
+}
+
+- (void)highlight:(BOOL)shouldHighlight
+{
+    [self setHighlighted:shouldHighlight];
+}
+
+- (void)setHighlighted:(BOOL)isHighlighted
+{
+    if ((!!(_controlState & CPControlStateHighlighted)) === isHighlighted)
+        return;
+    
+    if (isHighlighted)
+        _controlState |= CPControlStateHighlighted;
+    else
+        _controlState &= ~CPControlStateHighlighted;
+        
+    [self setNeedsLayout];
+    [self setNeedsDisplay:YES];
+}
+
+- (BOOL)isHighlighted
+{
+    return !!(_controlState & CPControlStateHighlighted);
+}
+
+@end
+
+@implementation CPControl (Theming)
+
+- (void)viewDidChangeTheme
+{
+    [super viewDidChangeTheme];
+    
+    var theme = [self theme];
+    
+    [_alignment setTheme:theme];
+    [_verticalAlignment setTheme:theme];
+    
+    [_lineBreakMode setTheme:theme];
+    [_textColor setTheme:theme];
+    [_font setTheme:theme];
+    
+    [_textShadowColor setTheme:theme];
+    [_textShadowOffset setTheme:theme];
+    
+    [_imagePositions setTheme:theme];
+    [_imageScaling setTheme:theme];
+}
+
+- (CPDictionary)themedValues
+{
+    var values = [super themedValues];
+
+    [values setObject:_alignment forKey:@"alignment"];
+    [values setObject:_verticalAlignment forKey:@"vertical-alignment"];
+    
+    [values setObject:_lineBreakMode forKey:@"line-break-mode"];
+    [values setObject:_textColor forKey:@"text-color"];
+    [values setObject:_font forKey:@"font"];
+    
+    [values setObject:_textShadowColor forKey:@"text-shadow-color"];
+    [values setObject:_textShadowOffset forKey:@"text-shadow-offset"];
+    
+    [values setObject:_imagePosition forKey:@"image-position"];
+    [values setObject:_imageScaling forKey:@"image-scaling"];
+
+    return values;
+}
 
 @end
 
 var CPControlValueKey           = "CPControlValueKey",
     CPControlIsEnabledKey       = "CPControlIsEnabledKey",
-    CPControlAlignmentKey       = "CPControlAlignmentKey",
+    
+    CPControlAlignmentKey           = @"CPControlAlignmentKey",
     CPControlVerticalAlignmentKey   = @"CPControlVerticalAlignmentKey",
-    CPControlFontKey            = "CPControlFontKey",
-    CPControlTextColorKey       = "CPControlTextColorKey",
+    CPControlLineBreakModeKey       = @"CPControlLineBreakModeKey",
+    CPControlFontKey                = @"CPControlFontKey",
+    CPControlTextColorKey           = @"CPControlTextColorKey",
+    CPControlTextShadowColorKey     = @"CPControlTextShadowColorKey",
+    CPControlTextShadowOffsetKey    = @"CPControlTextShadowOffsetKey",
+    CPControlImagePositionKey       = @"CPControlImagePositionKey",
+    CPControlImageScalingKey        = @"CPControlImageScalingKey",
+    
     CPControlTargetKey          = "CPControlTargetKey",
     CPControlActionKey          = "CPControlActionKey",
     CPControlSendActionOnKey    = "CPControlSendActionOnKey";
@@ -574,21 +613,28 @@ var __Deprecated__CPImageViewImageKey   = @"CPImageViewImageKey";
     {
         _controlState = CPControlStateNormal;
         
+        var theme = [self theme],
+            theClass = [self class];
+        
         [self setObjectValue:[aCoder decodeObjectForKey:CPControlValueKey]];
-        
-        if ([aCoder containsValueForKey:__Deprecated__CPImageViewImageKey])
-            [self setObjectValue:[aCoder decodeObjectForKey:_DeprecatedCPImageViewImageKey]];
 
-        [self setEnabled:[aCoder decodeBoolForKey:CPControlIsEnabledKey]];
-        
-        [self setAlignment:[aCoder decodeIntForKey:CPControlAlignmentKey]];
-        [self setVerticalAlignment:[aCoder decodeIntForKey:CPControlVerticalAlignmentKey]];
-        [self setFont:[aCoder decodeObjectForKey:CPControlFontKey]];
-        [self setTextColor:[aCoder decodeObjectForKey:CPControlTextColorKey]];
-        
+        _alignment = CPThemedValueDecode(aCoder, CPControlAlignmentKey, CPLeftTextAlignment, @"alignment", theme, theClass);
+        _verticalAlignment = CPThemedValueDecode(aCoder, CPControlVerticalAlignmentKey, CPTopVerticalTextAlignment, @"vertical-alignment", theme, theClass);
+    
+        _lineBreakMode = CPThemedValueDecode(aCoder, CPControlLineBreakModeKey, CPLineBreakByClipping, @"line-break-mode", theme, theClass);
+        _textColor = CPThemedValueDecode(aCoder, CPControlTextColorKey, [CPColor blackColor], @"text-color", theme, theClass);
+        _font = CPThemedValueDecode(aCoder, CPControlFontKey, [CPFont systemFontOfSize:12.0], @"font", theme, theClass);
+
+        _textShadowColor = CPThemedValueDecode(aCoder, CPControlTextShadowColorKey, nil, @"text-shadow-color", theme, theClass);
+        _textShadowOffset = CPThemedValueDecode(aCoder, CPControlTextShadowOffsetKey, _CGSizeMake(0.0, 0.0), @"text-shadow-offset", theme, theClass);
+    
+        _imagePosition = CPThemedValueDecode(aCoder, CPControlImagePositionKey, CPImageLeft, @"image-position", theme, theClass);
+        _imageScaling = CPThemedValueDecode(aCoder, CPControlImageScalingKey, CPScaleToFit, @"image-scaling", theme, theClass);
+
+        /*
         [self setTarget:[aCoder decodeObjectForKey:CPControlTargetKey]];
         [self setAction:[aCoder decodeObjectForKey:CPControlActionKey]];
-        [self sendActionOn:[aCoder decodeIntForKey:CPControlSendActionOnKey]];
+        [self sendActionOn:[aCoder decodeIntForKey:CPControlSendActionOnKey]];*/
     }
     
     return self;
@@ -603,7 +649,21 @@ var __Deprecated__CPImageViewImageKey   = @"CPImageViewImageKey";
     [super encodeWithCoder:aCoder];
     
     [aCoder encodeObject:_value forKey:CPControlValueKey];
+
+    CPThemedValueEncode(aCoder, CPControlAlignmentKey, _alignment);
+    CPThemedValueEncode(aCoder, CPControlVerticalAlignmentKey, _verticalAlignment);
+
+    CPThemedValueEncode(aCoder, CPControlLineBreakModeKey, _lineBreakMode);
+    CPThemedValueEncode(aCoder, CPControlTextColorKey, _textColor);
+    CPThemedValueEncode(aCoder, CPControlFontKey, _font);
+
+    CPThemedValueEncode(aCoder, CPControlTextShadowColorKey, _textShadowColor);
+    CPThemedValueEncode(aCoder, CPControlTextShadowOffsetKey, _textShadowOffset);
     
+    CPThemedValueEncode(aCoder, CPControlImagePositionKey, _imagePosition);
+    CPThemedValueEncode(aCoder, CPControlImageScalingKey, _imageScaling);
+
+    /*
     [aCoder encodeBool:_isEnabled forKey:CPControlIsEnabledKey];
     
     [aCoder encodeInt:_alignment forKey:CPControlAlignmentKey];
@@ -615,7 +675,7 @@ var __Deprecated__CPImageViewImageKey   = @"CPImageViewImageKey";
     [aCoder encodeConditionalObject:_target forKey:CPControlTargetKey];
     [aCoder encodeObject:_action forKey:CPControlActionKey];
     
-    [aCoder encodeInt:_sendActionOn forKey:CPControlSendActionOnKey];
+    [aCoder encodeInt:_sendActionOn forKey:CPControlSendActionOnKey];*/
 }
 
 @end
@@ -716,215 +776,3 @@ function _CPControlThreePartImagePattern(isVertical, sizes, aClassName)
     
     return color;
 }
-
-///
-
-#include "CPControl.h"
-
-@implementation CPControl (BETTER)
-
-CONTROL_STATE_VALUE(Alignment, alignment)
-CONTROL_STATE_VALUE(VerticalAlignment, verticalAlignment)
-CONTROL_STATE_VALUE(LineBreakMode, lineBreakMode)
-CONTROL_STATE_VALUE(TextColor, textColor)
-CONTROL_STATE_VALUE(Font, font)
-CONTROL_STATE_VALUE(TextShadowColor, textShadowColor)
-CONTROL_STATE_VALUE(TextShadowOffset, textShadowOffset)
-CONTROL_STATE_VALUE(ImagePosition, imagePosition)
-CONTROL_STATE_VALUE(ImageScaling, imageScaling)
-
-- (int)controlState
-{
-    return _controlState;
-}
-
-- (void)setEnabled:(BOOL)isEnabled
-{
-    if ((!(_controlState & CPControlStateDisabled)) === isEnabled)
-        return;
-    
-    if (isEnabled)
-        _controlState &= ~CPControlStateDisabled;
-    else
-        _controlState |= CPControlStateDisabled;
-        
-    [self setNeedsLayout];
-    [self setNeedsDisplay:YES];
-}
-
-- (BOOL)isEnabled
-{
-    return !(_controlState & CPControlStateDisabled);
-}
-
-- (void)highlight:(BOOL)shouldHighlight
-{
-    [self setHighlighted:shouldHighlight];
-}
-
-- (void)setHighlighted:(BOOL)isHighlighted
-{
-    if ((!!(_controlState & CPControlStateHighlighted)) === isHighlighted)
-        return;
-    
-    if (isHighlighted)
-        _controlState |= CPControlStateHighlighted;
-    else
-        _controlState &= ~CPControlStateHighlighted;
-        
-    [self setNeedsLayout];
-    [self setNeedsDisplay:YES];
-}
-
-- (BOOL)isHighlighted
-{
-    return !!(_controlState & CPControlStateHighlighted);
-}
-
-@end
-
-CPControlStateNormal        = 0,
-CPControlStateHighlighted   = 1 << 0,
-CPControlStateDisabled      = 1 << 1,
-CPControlStateSelected      = 1 << 2,
-CPControlStateDefault       = 1 << 3;
-
-@implementation CPControlStateValue : CPObject
-{
-    id          _defaultValue;
-    JSObject    _values;
-    int         _highestState;
-}
-
-- (id)initWithDefaultValue:(id)aDefaultValue
-{
-    self = [super init];
-    
-    if (self)
-    {
-        _defaultValue = aDefaultValue;
-        _values = {};
-        _highestState = 0;
-    }
-    
-    return self;
-}
-
-- (void)setDefaultValue:(id)aDefaultValue
-{
-    _defaultValue = aDefaultValue;
-}
-
-- (id)valueForControlState:(CPControlState)aState
-{
-    var value = _values[aState];
-    
-    // If we don't have a value, and we have a non-normal state...
-    if (value === undefined && aState > 0)
-    {
-        // If this is a composite state, retrieve what we can.
-        if (!(aState & (aState - 1)))
-        {
-            var state = 1;
-            
-            while (value === undefined && state < _highestState)
-            {
-                if (state & aState)
-                    value = _values[state];
-                
-                state << 1;
-            }
-        }
-
-        // Still don't have a value? OK, let's use the normal value.        
-        if (value === undefined && aState > 0)
-            value = _values[CPControlStateNormal];
-    }
-    
-    return value || _defaultValue;
-}
-
-- (void)setValue:(id)aValue
-{
-    _values = {};
-    _values[CPControlStateNormal] = aValue;
-    _highestState = CPControlStateNormal;
-}
-
-- (void)setValue:(id)aValue forControlState:(CPControlState)aState
-{
-    if (_highestState < aState)
-        _highestState = aState;
-        
-    _values[aState] = aValue;
-}
-
-- (void)removeValueForControlState:(CPControlState)aState
-{    
-    delete _values[aState];
-
-//    if (_highestState === aState)
-//        _highestState = nil;
-}
-
-@end
-
-var CPControlStateValueStates   = @"CPControlStateValueStates",
-    CPControlStateValueValues   = @"CPControlStateValueValues";
-
-@implementation CPControlStateValue (CPCoding)
-
-- (id)initWithCoder:(CPCoder)aCoder
-{
-    self = [super init];
-    
-    if (self)
-    {
-        _values = {};
-        _highestState = 0;
-                        
-        var states = [aCoder decodeObjectForKey:CPControlStateValueStates];
-        
-        if (states)
-        {
-            var values = [aCoder decodeObjectForKey:CPControlStateValueValues],
-                count = states.length;
-            
-            while (count--)
-            {
-                var state = states[count];
-                
-                if (state > _highestState)
-                    _highestState = state;
-                
-                _values[state] = values[count];
-            }
-        }
-    }
-    
-    return self;
-}
-
-- (void)encodeWithCoder:(CPCoder)aCoder
-{
-    var states = [],
-        values = [];
-    
-    for (state in _values)
-    {
-        if (!_values.hasOwnProperty(state))
-            continue;
-
-        states.push(state);
-        values.push(_values[state]);
-    }
-    
-    if (states.length)
-    {
-        [aCoder encodeObject:states forKey:CPControlStateValueStates];
-        [aCoder encodeObject:values forKey:CPControlStateValueValues];
-    }
-}
-
-@end
-

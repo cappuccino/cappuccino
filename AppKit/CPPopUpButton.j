@@ -61,8 +61,6 @@ var CPPopUpButtonArrowsImage = nil;
         _selectedIndex = CPNotFound;
         _preferredEdge = CPMaxYEdge;
         
-        [self setBezelStyle:CPTexturedRoundedBezelStyle];
-        
         [self setImagePosition:CPImageLeft];
         [self setAlignment:CPLeftTextAlignment];
         [self setLineBreakMode:CPLineBreakByTruncatingTail];

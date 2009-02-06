@@ -12,7 +12,7 @@ function build()
         projectFilePath     = null,
         
         gzip                = false;
-    
+
     for (; index < count; ++index)
     {   
         switch (arguments[index])
@@ -49,7 +49,7 @@ function build()
                             break;
         }
     }
-    
+
     // If no project file was specified, look for one.
     if (!projectFilePath)
     {
@@ -60,7 +60,7 @@ function build()
         
         projectFilePath = candidates[0];
     }
-
+    
     // Construct the Build Directory
     if (!buildPath)
     {
@@ -69,9 +69,9 @@ function build()
         if (!buildPath)
             buildPath = "Build";
     }
-    
+
     var project = new Project(projectFilePath, buildPath);
-    
+
     project._gzip = gzip;
     
     if (targetName)
@@ -93,7 +93,7 @@ function build()
             
         project.setActiveConfiguration(configuration);
     }
-    
+
     if (!actions.length)
         actions.push("build");
     

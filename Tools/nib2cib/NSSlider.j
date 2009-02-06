@@ -38,7 +38,16 @@
         _minValue           = [cell minValue];
         _maxValue           = [cell maxValue];
         _altIncrementValue  = [cell altIncrementValue];
-        _isVertical         = [cell isVertical];
+        
+        var theme = nil,
+            theClass = [self class];
+        
+        _knobColor = CPThemedValueMake(nil, "knob-color", theme, theClass);
+        _knobSize = CPThemedValueMake(CGSizeMakeZero(), "knob-size", theme, theClass);
+        
+        _trackWidth = CPThemedValueMake(0.0, "track-width", theme, theClass);
+        _horizontalTrackColor = CPThemedValueMake(nil, "horizontal-track-color", theme, theClass);
+        _verticalTrackColor = CPThemedValueMake(nil, "vertical-track-color", theme, theClass);
     }
     
     return self;

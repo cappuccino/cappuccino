@@ -1,4 +1,20 @@
-#define CONTROL_STATE_VALUE(VALUE, LOWERCASEVALUE) \
+
+#define THEMED_VALUE(VALUE, LOWERCASEVALUE) \
+- (void)set##VALUE:(id)aValue\
+{\
+    var currentValue = [_##LOWERCASEVALUE valueForControlState:_controlState];\
+    [_##LOWERCASEVALUE setValue:aValue];\
+    if ([_##LOWERCASEVALUE valueForControlState:_controlState] === currentValue)\
+        return;\
+    [self setNeedsDisplay:YES];\
+    [self setNeedsLayout];\
+}\
+- (id)LOWERCASEVALUE\
+{\
+    return [_##LOWERCASEVALUE value];\
+}\
+
+#define THEMED_STATED_VALUE(VALUE, LOWERCASEVALUE) \
 - (void)set##VALUE:(id)aValue forControlState:(CPControlState)aControlState\
 {\
     var currentValue = [_##LOWERCASEVALUE valueForControlState:_controlState];\
@@ -22,6 +38,10 @@
     [self setNeedsLayout];\
 }\
 - (id)LOWERCASEVALUE\
+{\
+    return [_##LOWERCASEVALUE value];\
+}\
+- (id)current##VALUE\
 {\
     return [_##LOWERCASEVALUE valueForControlState:_controlState];\
 }

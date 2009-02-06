@@ -49,6 +49,17 @@ _CPButtonBezelStyleHeights[CPHUDBezelStyle] = 20;
         _isBordered = [cell isBordered];
         _bezelStyle = [cell bezelStyle];
         
+        var theme = nil,
+            theClass = [self class];
+        
+        _bezelInset = CPThemedValueMake(CGInsetMakeZero(), "bezel-inset", theme, theClass);
+        _contentInset = CPThemedValueMake(CGInsetMakeZero(), "content-inset", theme, theClass);
+        
+        _bezelColor = CPThemedValueMake(nil, "bezel-color", theme, theClass);
+        
+        _image = CPThemedValueMake(nil, @"image", theme, theClass);
+        _title = CPThemedValueMake(nil, @"title", theme, theClass);
+        
         // clean up:
         
         switch (_bezelStyle)

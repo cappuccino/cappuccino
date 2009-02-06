@@ -26,19 +26,7 @@ function Target(dictionary)
             count = exclusions.length;
     
         for (; index < count; ++index)
-        {
-            var file = new File(exclusions[index]).getCanonicalFile();
-            
-            if (file.isDirectory())
-            {
-                var files = getFiles(file);
-                
-                if (files.length)
-                   this._exclusions = this._exclusions.concat(files);
-            }
-            else
-                this._exclusions.push(file);
-        }
+            this._exclusions.push(new File((exclusions[index])).getCanonicalFile());
     }
     
     return this;
@@ -102,17 +90,17 @@ function Project(/*String*/ aFilePath, /*String*/ aBuildPath)
         this._infoDictionary = readPlist(new File(this._root.getAbsolutePath() + "/Info.plist"));
     else
         this._infoDictionary = new objj_dictionary();
-        
+
     this.buildPath = aBuildPath;
-    
+
     // Covert target dictionaries to target objects.
     var targetDictionaries = dictionary_getValue(this._properties, "Targets");
-    
+
     this._targets = [];
-    
-    for (index = 0, count = targetDictionaries.length; index < count; ++index)
+
+    for (var index = 0, count = targetDictionaries.length; index < count; ++index)
         this._targets.push(new Target(targetDictionaries[index]));
-        
+
     this.setActiveTarget(this._targets[0]);
 
     // Covert target dictionaries to target objects.
@@ -124,7 +112,7 @@ function Project(/*String*/ aFilePath, /*String*/ aBuildPath)
         this._configurations.push(new Configuration(configurationDictionaries[index]));
         
     this.setActiveConfiguration(this._configurations[0]);
-    
+
     // Grab the Resources Directory (if it exists)
     this._resources = new File(this._root.getAbsolutePath() + "/Resources/").getCanonicalFile();
     
@@ -271,13 +259,15 @@ Project.prototype.buildTheme = function()
         OBJJ_INCLUDE_PATHS.push(defaultFrameworks);
     }
     
-    OBJJ_INCLUDE_PATHS = [System.getenv("STEAM_BUILD") + "/Release-Rhino/", System.getenv("STEAM_BUILD") + "/Release/"];
+    var activeConfigurationName = this.activeConfiguration().name();
+    
+    OBJJ_INCLUDE_PATHS = [System.getenv("STEAM_BUILD") + "/" + activeConfigurationName + "-Rhino/", System.getenv("STEAM_BUILD") + "/" + activeConfigurationName + "/"];
     
     // Load ALL of Foundation and AppKit, be nice to people.
-    loadFrameworks([System.getenv("STEAM_BUILD") + "/Release/Foundation", System.getenv("STEAM_BUILD") + "/Release-Rhino/AppKit"], function()
+    loadFrameworks([System.getenv("STEAM_BUILD") + "/" + activeConfigurationName + "/Foundation", System.getenv("STEAM_BUILD") + "/" + activeConfigurationName + "-Rhino/AppKit"], function()
     {
         // Get .j files
-        var jFiles = getFiles(project._root, "j", project.activeTarget().exclusions().concat("Frameworks/"));
+        var jFiles = getFiles(project._root, "j", project.activeTarget().exclusions().concat([new File("Frameworks/")]));
         
         // Load 'em
         importFiles(jFiles, function()

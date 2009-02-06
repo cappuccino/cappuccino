@@ -3,6 +3,8 @@
 @import <AppKit/_CPCibCustomResource.j>
 @import <AppKit/_CPCibKeyedUnarchiver.j>
 
+@import "CPThemedValue.j"
+
 
 var CPThemesByName      = nil,
     CPThemeDefaultTheme = nil,
@@ -122,7 +124,7 @@ var CPThemesByName      = nil,
 - (id)valueForKey:(CPString)aKey inClass:(CPClass)aClass
 {
     if (!aClass)
-        throw "no!";
+        return nil;
     
     var className = [aClass className],
         table = _classTable[className];
@@ -136,6 +138,11 @@ var CPThemesByName      = nil,
         return nil;
     
     return value;
+}
+
+- (id)valueForIdentifier:(CPString)anIdentifier inClass:(Class)aClass
+{
+    return [self valueForKey:anIdentifier inClass:aClass];
 }
 
 - (void)takeThemeFromObject:(id)anObject
@@ -192,6 +199,8 @@ var CPThemesByName      = nil,
     }
     
     if (table[aKey] !== aValue)
+//    {
+//        if (table.hasOwnProperty(aKey) 
         table[aKey] = aValue;
 }
 

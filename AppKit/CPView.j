@@ -243,8 +243,8 @@ var DOMElementPrototype         = nil,
         _DOMImageParts = [];
         _DOMImageSizes = [];
 #endif
-
-        [self setTheme:[CPTheme defaultTheme]];
+        
+        _theme = [CPTheme defaultTheme];
     }
     
     return self;
@@ -1882,6 +1882,8 @@ var CPViewAutoresizingMaskKey       = @"CPViewAutoresizingMask",
         _displayHash = [self hash];
 
         [self setBackgroundColor:[aCoder decodeObjectForKey:CPViewBackgroundColorKey]];
+        
+        _theme = [CPTheme defaultTheme];
         
         [self setNeedsDisplay:YES];
     }

@@ -1,8 +1,9 @@
 
-@import <AppKit/CPControl.j>
+@import "CPControl.j"
+@import "CPThemedValue.j"
 
 #include "CoreGraphics/CGGeometry.h"
-#include "CPControl.h"
+#include "CPThemedValue.h"
 
 
 @implementation CPSlider : CPControl
@@ -11,13 +12,13 @@
     double  _maxValue;
     double  _altIncrementValue;
     
-    CPColor _verticalTrackColor;    // vertical-track-color
-    CPColor _horizontalTrackColor;  // horizontal-track-color
+    CPThemedValue   _verticalTrackColor;    // vertical-track-color
+    CPThemedValue   _horizontalTrackColor;  // horizontal-track-color
     
-    CPControlStateValue _knobColor;
+    CPThemedValue   _knobColor;
     
-    float   _trackWidth;            // track-width
-    CGSize  _knobSize;              // knob-size
+    CPThemedValue   _trackWidth;            // track-width
+    CPThemedValue   _knobSize;              // knob-size
     
     CPView  _trackView;
     CPView  _knobView;
@@ -32,8 +33,16 @@
         _minValue = 0.0;
         _maxValue = 100.0;
         
-        _knobColor = [[CPControlStateValue alloc] initWithDefaultValue:nil];
-
+        var theme = [self theme],
+            theClass = [self class];
+        
+        _knobColor = CPThemedValueMake(nil, "knob-color", theme, theClass);
+        _knobSize = CPThemedValueMake(_CGSizeMakeZero(), "knob-size", theme, theClass);
+        
+        _trackWidth = CPThemedValueMake(0.0, "track-width", theme, theClass);
+        _verticalTrackColor = CPThemedValueMake(nil, "vertical-track-color", theme, theClass);
+        _horizontalTrackColor = CPThemedValueMake(nil, "horizonal-track-color", theme, theClass);
+        
         [self setObjectValue:50.0];
         
         [self setContinuous:YES];
@@ -86,94 +95,41 @@
     [self setNeedsDisplay:YES];
 }
 
-- (void)setHorizontalTrackColor:(CPColor)aColor
-{
-    if (_horizontalTrackColor === aColor)
-        return;
-    
-    _horizontalTrackColor = aColor;
-    
-    [self setNeedsLayout];
-    [self setNeedsDisplay:YES];
-}
-
-- (CPColor)horizontalTrackColor
-{
-    return _horizontalTrackColor;
-}
-
-- (void)setVerticalTrackColor:(CPColor)aColor
-{
-    if (_verticalTrackColor === aColor)
-        return;
-    
-    _verticalTrackColor = aColor;
-    
-    [self setNeedsLayout];
-    [self setNeedsDisplay:YES];
-}
-
-- (CPColor)verticalTrackColor
-{
-    return _verticalTrackColor;
-}
-
-- (void)setTrackWidth:(float)aTrackWidth
-{
-    if (_trackWidth === aTrackWidth)
-        return;
-    
-    _trackWidth = aTrackWidth;
-    
-    [self setNeedsLayout];
-    [self setNeedsDisplay:YES];
-}
-
-- (float)trackWidth
-{
-    return _trackWidth;
-}
-
 - (CGRect)trackRectForBounds:(CGRect)bounds
 {
-    var trackWidth = [self trackWidth];
+    var trackWidth = [self currentTrackWidth];
     
-    if (!trackWidth)
+    if (trackWidth <= 0)
         return _CGRectMakeZero();
     
     if ([self isVertical])
     {
         bounds.origin.x = (_CGRectGetWidth(bounds) - trackWidth) / 2.0;
-        bounds.size.width = _trackWidth;
+        bounds.size.width = trackWidth;
     }
     else
     {
         bounds.origin.y = (_CGRectGetHeight(bounds) - trackWidth) / 2.0;
-        bounds.size.height = _trackWidth;
+        bounds.size.height = trackWidth;
     }
     
     return bounds;
 }
 
-- (void)setKnobSize:(CGSize)aKnobSize
-{
-    if (_knobSize && (!aKnobSize || _CGSizeEqualToSize(_knobSize, aKnobSize)))
-        return;
-    
-    _knobSize = aKnobSize ? _CGSizeMakeCopy(aKnobSize) : nil;
-    
-    [self setNeedsLayout];
-    [self setNeedsDisplay:YES];
-}
-
-CONTROL_STATE_VALUE(KnobColor, knobColor)
+THEMED_STATED_VALUE(KnobColor, knobColor)
+THEMED_STATED_VALUE(KnobSize, knobSize)
+THEMED_STATED_VALUE(TrackWidth, trackWidth)
+THEMED_STATED_VALUE(HorizontalTrackColor, horizontalTrackColor)
+THEMED_STATED_VALUE(VerticalTrackColor, verticalTrackColor)
 
 - (CGRect)knobRectForBounds:(CGRect)bounds
 {
-    if (!_knobSize || _knobSize.width <= 0 || _knobSize.height <= 0)
+    var knobSize = [self currentKnobSize];
+    
+    if (knobSize.width <= 0 || knobSize.height <= 0)
         return _CGRectMakeZero();
     
-    var knobRect = _CGRectMake(0.0, 0.0, _knobSize.width, _knobSize.height),
+    var knobRect = _CGRectMake(0.0, 0.0, knobSize.width, knobSize.height),
         trackRect = [self trackRectForBounds:bounds];
     
     // No track, do our best to approximate a place for this thing.
@@ -182,13 +138,13 @@ CONTROL_STATE_VALUE(KnobColor, knobColor)
 
     if ([self isVertical])
     {
-        knobRect.origin.x = _CGRectGetMidX(trackRect) - _knobSize.width / 2.0; 
-        knobRect.origin.y = (([self doubleValue] - _minValue) / (_maxValue - _minValue)) * (_CGRectGetHeight(trackRect) - _knobSize.height);
+        knobRect.origin.x = _CGRectGetMidX(trackRect) - knobSize.width / 2.0; 
+        knobRect.origin.y = (([self doubleValue] - _minValue) / (_maxValue - _minValue)) * (_CGRectGetHeight(trackRect) - knobSize.height);
     }
     else
     {
-        knobRect.origin.x = (([self doubleValue] - _minValue) / (_maxValue - _minValue)) * (_CGRectGetWidth(trackRect) - _knobSize.width);
-        knobRect.origin.y = _CGRectGetMidY(trackRect) - _knobSize.height / 2.0;   
+        knobRect.origin.x = (([self doubleValue] - _minValue) / (_maxValue - _minValue)) * (_CGRectGetWidth(trackRect) - knobSize.width);
+        knobRect.origin.y = _CGRectGetMidY(trackRect) - knobSize.height / 2.0;   
     }
     
     return knobRect;
@@ -231,7 +187,7 @@ CONTROL_STATE_VALUE(KnobColor, knobColor)
     {
         if (!_trackView)
         {
-            _trackView = [self createTrackView]
+            _trackView = [self createTrackView];
             
             if (_trackView)
                 [self addSubview:_trackView positioned:CPWindowBelow relativeTo:_knobView];
@@ -244,12 +200,12 @@ CONTROL_STATE_VALUE(KnobColor, knobColor)
             if ([self isVertical])
             {
                 if (_verticalTrackColor)
-                    [_trackView setBackgroundColor:_verticalTrackColor];
+                    [_trackView setBackgroundColor:[self currentVerticalTrackColor]];
             }
             else
             {
                 if (_horizontalTrackColor)
-                    [_trackView setBackgroundColor:_horizontalTrackColor];
+                    [_trackView setBackgroundColor:[self currentHorizontalTrackColor]];
             }
         }
     }
@@ -276,7 +232,7 @@ CONTROL_STATE_VALUE(KnobColor, knobColor)
         {        
             [_knobView setFrame:knobRect];
           
-            var knobColor = [self knobColor];
+            var knobColor = [self currentKnobColor];
             
             if (knobColor)
                 [_knobView setBackgroundColor:knobColor];
@@ -398,13 +354,12 @@ CONTROL_STATE_VALUE(KnobColor, knobColor)
     if (!theme)
         return;
     
-    //_knobColor = [theme valueForKey:@"knob-color"];
+    [_knobColor setTheme:theme];
+    [_knobSize setTheme:theme];
     
-    [self setKnobSize:[theme valueForKey:@"knob-size"]];
-    
-    [self setTrackWidth:[theme valueForKey:@"track-width"]];
-    [self setHorizontalTrackColor:[theme valueForKey:@"horizontal-track-color"]];
-    [self setVerticalTrackColor:[theme valueForKey:@"vertical-track-color"]];
+    [_trackWidth setTheme:theme];
+    [_horizontalTrackColor setTheme:theme];
+    [_verticalTrackColor setTheme:theme];
     
     [self setNeedsLayout];
     [self setNeedsDisplay:YES];
@@ -425,9 +380,15 @@ CONTROL_STATE_VALUE(KnobColor, knobColor)
 
 @end
 
-var CPSliderMinValueKey     = "CPSliderMinValueKey",
-    CPSliderMaxValueKey     = "CPSliderMaxValueKey",
-    CPSliderAltIncrValueKey = "CPSliderAltIncrValueKey";
+var CPSliderMinValueKey             = "CPSliderMinValueKey",
+    CPSliderMaxValueKey             = "CPSliderMaxValueKey",
+    CPSliderAltIncrValueKey         = "CPSliderAltIncrValueKey",
+    
+    CPSliderKnobColorKey            = "CPSliderKnobColorKey",
+    CPSliderKnobSizeKey             = "CPSliderKnobSizeKey";
+    CPSliderTrackWidthKey           = "CPSliderTrackWidthKey";
+    CPSliderHorizontalTrackColorKey = "CPSliderHorizontalTrackColorKey";
+    CPSliderVerticalTrackColorKey   = "CPSliderVerticalTrackColorKey";
 
 @implementation CPSlider (CPCoding)
 
@@ -441,9 +402,17 @@ var CPSliderMinValueKey     = "CPSliderMinValueKey",
         _maxValue = [aCoder decodeDoubleForKey:CPSliderMaxValueKey];
         _altIncrementValue = [aCoder decodeDoubleForKey:CPSliderAltIncrValueKey];
     
-        [self setContinuous:YES];
+        var theme = [self theme],
+            theClass = [self class];
+    
+        _knobColor = CPThemedValueDecode(aCoder, CPSliderKnobColorKey, nil, "knob-color", theme, theClass);
+        _knobSize = CPThemedValueDecode(aCoder, CPSliderKnobSizeKey, nil, "knob-size", theme, theClass);
+
+        _trackWidth = CPThemedValueDecode(aCoder, CPSliderKnobColorKey, nil, "track-width", theme, theClass);
+        _horizontalTrackColor = CPThemedValueDecode(aCoder, CPSliderHorizontalTrackColorKey, nil, "horizontal-track-color", theme, theClass);
+        _verticalTrackColor = CPThemedValueDecode(aCoder, CPSliderVerticalTrackColorKey, nil, "vertical-track-color", theme, theClass);
         
-        [self setTheme:[CPTheme defaultTheme]];
+        [self setContinuous:YES];
         
         [self setNeedsLayout];
         [self setNeedsDisplay:YES];
@@ -455,7 +424,7 @@ var CPSliderMinValueKey     = "CPSliderMinValueKey",
 - (void)encodeWithCoder:(CPCoder)aCoder
 {
     [super encodeWithCoder:aCoder];
-    
+    /*
     var count = [_subviews count],
         subviews = nil;
     
@@ -472,21 +441,22 @@ var CPSliderMinValueKey     = "CPSliderMinValueKey",
             if (_knobView)
                 [_subviews removeObjectIdenticalTo:_knobView];
         }
-    }
+    }*/
     
     [super encodeWithCoder:aCoder];
     
-    _subviews = subviews;
+//    _subviews = subviews;
     
     [aCoder encodeDouble:_minValue forKey:CPSliderMinValueKey];
     [aCoder encodeDouble:_maxValue forKey:CPSliderMaxValueKey];
     [aCoder encodeDouble:_altIncrementValue forKey:CPSliderAltIncrValueKey];
     
-    // NO!
-/*    [aCoder encodeObject:_verticalTrackColor forKey:"1"];
-    [aCoder encodeObject:_horizontalTrackColor forKey:"2"];
-    [aCoder encodeObject:_knobColor forKey:"3"];
-    [aCoder encodeObject:_highlightedKnobColor forKey:"4"];*/
+    CPThemedValueEncode(aCoder, CPSliderKnobColorKey, _knobColor);
+    CPThemedValueEncode(aCoder, CPSliderKnobSizeKey, _knobSize);
+
+    CPThemedValueEncode(aCoder, CPSliderTrackWidthKey, _trackWidth);
+    CPThemedValueEncode(aCoder, CPSliderHorizontalTrackColorKey, _horizontalTrackColor);
+    CPThemedValueEncode(aCoder, CPSliderVerticalTrackColorKey, _verticalTrackColor);
 }
 
 @end
