@@ -328,7 +328,7 @@ var CPControlBlackColor     = [CPColor blackColor];
     _toolTip = aToolTip;
 
 #if PLATFORM(DOM)
-    _DOMElement.title = [aToolTip cssString];
+    _DOMElement.title = aToolTip;
 #endif
 }
 
