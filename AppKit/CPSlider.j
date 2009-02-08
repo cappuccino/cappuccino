@@ -8,9 +8,9 @@
 
 @implementation CPSlider : CPControl
 {
-    double  _minValue;
-    double  _maxValue;
-    double  _altIncrementValue;
+    double          _minValue;
+    double          _maxValue;
+    double          _altIncrementValue;
     
     CPThemedValue   _verticalTrackColor;    // vertical-track-color
     CPThemedValue   _horizontalTrackColor;  // horizontal-track-color
@@ -20,8 +20,8 @@
     CPThemedValue   _trackWidth;            // track-width
     CPThemedValue   _knobSize;              // knob-size
     
-    CPView  _trackView;
-    CPView  _knobView;
+    CPView          _trackView;
+    CPView          _knobView;
 }
 
 - (id)initWithFrame:(CGRect)aFrame
@@ -372,8 +372,11 @@ THEMED_STATED_VALUE(VerticalTrackColor, verticalTrackColor)
     [values setObject:_knobSize forKey:@"knob-size"];
     [values setObject:_knobColor forKey:@"knob-color"];
     [values setObject:_trackWidth forKey:@"track-width"];
-    [values setObject:_verticalTrackColor forKey:@"vertical-track-color"];
-    [values setObject:_horizontalTrackColor forKey:@"horizontal-track-color"];
+    
+    if ([self isVertical])
+        [values setObject:_verticalTrackColor forKey:@"vertical-track-color"];
+    else
+        [values setObject:_horizontalTrackColor forKey:@"horizontal-track-color"];
 
     return values;
 }

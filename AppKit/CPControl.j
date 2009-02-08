@@ -285,6 +285,8 @@ var CPControlBlackColor     = [CPColor blackColor];
 
 - (BOOL)startTrackingAt:(CGPoint)aPoint
 {
+    [self highlight:YES];
+    
     return (_sendActionOn & CPPeriodicMask) || (_sendActionOn & CPLeftMouseDraggedMask);
 }
 
@@ -295,6 +297,7 @@ var CPControlBlackColor     = [CPColor blackColor];
 
 - (void)stopTracking:(CGPoint)lastPoint at:(CGPoint)aPoint mouseIsUp:(BOOL)mouseIsUp
 {
+    [self highlight:NO];
 }
 
 - (void)mouseDown:(CPEvent)anEvent
@@ -518,7 +521,7 @@ THEMED_STATED_VALUE(ImageScaling, imageScaling)
 {
     if ((!!(_controlState & CPControlStateHighlighted)) === isHighlighted)
         return;
-    
+
     if (isHighlighted)
         _controlState |= CPControlStateHighlighted;
     else

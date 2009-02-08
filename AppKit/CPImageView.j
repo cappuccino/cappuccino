@@ -66,8 +66,6 @@ var LEFT_SHADOW_INSET       = 3.0,
 {
     DOMElement      _DOMImageElement;
     
-    CPImageScaling  _imageScaling;
-    
     BOOL            _hasShadow;
     CPView          _shadowView;
     
@@ -145,14 +143,17 @@ var LEFT_SHADOW_INSET       = 3.0,
     else
     {
         [self hideOrDisplayContents];
-        [self tile];
+        [self setNeedsLayout];
+        [self setNeedsDisplay:YES];
     }
 }
 
 - (void)imageDidLoad:(CPNotification)aNotification
 {
     [self hideOrDisplayContents];
-    [self tile];
+    
+    [self setNeedsLayout];
+    [self setNeedsDisplay:YES];
 }
 
 /*!
@@ -181,7 +182,8 @@ var LEFT_SHADOW_INSET       = 3.0,
                         
         [self addSubview:_shadowView];
         
-        [self tile];
+        [self setNeedsLayout];
+        [self setNeedsDisplay:YES];
     }
     else
     {
@@ -200,35 +202,17 @@ var LEFT_SHADOW_INSET       = 3.0,
 */
 - (void)setImageScaling:(CPImageScaling)anImageScaling
 {
-    if (_imageScaling == anImageScaling)
-        return;
-    
-    _imageScaling = anImageScaling;
+    [super setImageScaling:anImageScaling];
     
 #if PLATFORM(DOM)
-    if (_imageScaling == CPScaleToFit)
+    if ([self currentImageScaling] === CPScaleToFit)
     {
         CPDOMDisplayServerSetStyleLeftTop(_DOMImageElement, NULL, 0.0, 0.0);
     }
 #endif
     
-    [self tile];
-}
-
-/*!
-    Returns the image scaling method used to
-    render this image.
-*/
-- (CPImageScaling)imageScaling
-{
-    return _imageScaling;
-}
-
-- (void)setFrameSize:(CGSize)aSize
-{
-    [super setFrameSize:aSize];
-    
-    [self tile];
+    [self setNeedsLayout];
+    [self setNeedsDisplay:YES];
 }
 
 /*!
@@ -263,7 +247,7 @@ var LEFT_SHADOW_INSET       = 3.0,
 /*!
     Add a description
 */
-- (void)tile
+- (void)layoutSubviews
 {
     if (![self image])
         return;
@@ -383,10 +367,10 @@ var CPImageViewImageKey         = @"CPImageViewImageKey",
         _DOMElement.appendChild(_DOMImageElement);
 #endif
 
-        [self setImageScaling:[aCoder decodeIntForKey:CPImageViewImageScalingKey]];
         [self setHasShadow:[aCoder decodeBoolForKey:CPImageViewHasShadowKey]];
         
-        [self tile];
+        [self setNeedsLayout];
+        [self setNeedsDisplay:YES];
     }
     
     return self;
@@ -414,7 +398,6 @@ var CPImageViewImageKey         = @"CPImageViewImageKey",
     if (_shadowView)
         _subviews = actualSubviews;
     
-    [aCoder encodeInt:_imageScaling forKey:CPImageViewImageScalingKey];
     [aCoder encodeBool:_hasShadow forKey:CPImageViewHasShadowKey];
 }
 

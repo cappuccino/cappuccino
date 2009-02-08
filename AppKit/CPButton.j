@@ -514,7 +514,7 @@ THEMED_STATED_VALUE(BezelInset, bezelInset)
     
     if (_bezelView)
     {
-        [_bezelView setBackgroundColor:[self bezelColor]];
+        [_bezelView setBackgroundColor:[self currentBezelColor]];
     }
     
     var contentRect = [self contentRectForBounds:bounds];
