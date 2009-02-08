@@ -230,30 +230,30 @@ var _CPButtonClassName                          = nil,
 */
 @implementation CPButton : CPControl
 {
-    int                     _tag;
-    int                     _state;
-    BOOL                    _allowsMixedState;
+    int                 _tag;
+    int                 _state;
+    BOOL                _allowsMixedState;
     
-    CPControlStateValue     _title;
-    CPString                _alteranteTitle;
+    CPString            _title;
+    CPString            _alternateTitle;
     
-    CPControlStateValue     _image;
-    CPImage                 _alternateImage;
+    CPImage             _image;
+    CPImage             _alternateImage;
 
     // Display Properties
-    CPControlStateValue     _bezelInset;
-    CPControlStateValue     _contentInset;
+    CPThemedValue       _bezelInset;
+    CPThemedValue       _contentInset;
     
-    CPControlStateValue     _bezelColor;
+    CPThemedValue       _bezelColor;
 
     // Layout Views
-    CPView                  _bezelView;
-    _CPImageAndTextView     _contentView;
+    CPView              _bezelView;
+    _CPImageAndTextView _contentView;
     
     // NS-style Display Properties
-    CPBezelStyle            _bezelStyle;
-    BOOL                    _isBordered;
-    CPControlSize           _controlSize;
+    CPBezelStyle        _bezelStyle;
+    BOOL                _isBordered;
+    CPControlSize       _controlSize;
 }
 
 - (id)initWithFrame:(CGRect)aFrame
@@ -269,9 +269,6 @@ var _CPButtonClassName                          = nil,
         _contentInset = CPThemedValueMake(_CGInsetMakeZero(), "content-inset", theme, theClass);
         
         _bezelColor = CPThemedValueMake(nil, "bezel-color", theme, theClass);
-        
-        _image = CPThemedValueMake(nil, @"image", theme, theClass);
-        _title = CPThemedValueMake(nil, @"title", theme, theClass);
 
         [self setAlignment:CPCenterTextAlignment];
         [self setVerticalAlignment:CPCenterVerticalTextAlignment];
@@ -334,7 +331,21 @@ var _CPButtonClassName                          = nil,
     return _state;
 }
 
-THEMED_STATED_VALUE(Title, title)
+- (void)setTitle:(CPString)aTitle
+{
+    if (_title === aTitle)
+        return;
+    
+    _title = aTitle;
+    
+    [self setNeedsLayout];
+    [self setNeedsDisplay:YES];
+}
+
+- (CPString)title
+{
+    return _title;
+}
 
 - (void)setAlternateTitle:(CPString)aTitle
 {
@@ -352,7 +363,21 @@ THEMED_STATED_VALUE(Title, title)
     return _alternateTitle;
 }
 
-THEMED_STATED_VALUE(Image, image)
+- (void)setImage:(CPImage)anImage
+{
+    if (_image === anImage)
+        return;
+    
+    _image = anImage;
+    
+    [self setNeedsLayout];
+    [self setNeedsDisplay:YES];
+}
+
+- (CPImage)image
+{
+    return _image;
+}
 
 /*!
     Sets the button's image which is used in its alternate state.
@@ -363,7 +388,7 @@ THEMED_STATED_VALUE(Image, image)
     if (_alternateImage === anImage)
         return;
     
-    _alteranteImage = anImage;
+    _alternateImage = anImage;
     
     [self setNeedsLayout];
     [self setNeedsDisplay:YES];
@@ -541,11 +566,8 @@ THEMED_STATED_VALUE(BezelInset, bezelInset)
     
     if (_contentView)
     {
-        [_contentView setText:[self currentTitle]];
-        [_contentView setImage:[self currentImage]];
-        
-    //    [_imageAndTextView setText:[self titleForControlState:_title]];
-    //    [_imageAndTextView setImage:[self imageForControlState:_controlState]];
+        [_contentView setText:((_controlState & CPControlStateHighlighted) && _alternateTitle) ? _alternateTitle : _title];
+        [_contentView setImage:((_controlState & CPControlStateHighlighted) && _alternateImage) ? _alternateImage : _image];
     
         [_contentView setFont:[self currentFont]];
         [_contentView setTextColor:[self currentTextColor]];
@@ -622,7 +644,7 @@ THEMED_STATED_VALUE(BezelInset, bezelInset)
 var CPButtonImageKey                = @"CPButtonImageKey",
     CPButtonAlternateImageKey       = @"CPButtonAlternateImageKey",
     CPButtonTitleKey                = @"CPButtonTitleKey",
-    CPButtonAlteranteTitleKey       = @"CPButtonAlternateTitleKey",
+    CPButtonAlternateTitleKey       = @"CPButtonAlternateTitleKey",
     CPButtonContentInsetKey         = @"CPButtonContentInsetKey",
     CPButtonBezelInsetKey           = @"CPButtonBezelInsetKey",
     CPButtonBezelColorKey           = @"CPButtonBezelColorKey",
@@ -649,11 +671,12 @@ var CPButtonImageKey                = @"CPButtonImageKey",
         
         var theme = [self theme],
             theClass = [self class];
-        
+
+        [self setImage:[aCoder decodeObjectForKey:CPButtonImageKey]];
         [self setAlternateImage:[aCoder decodeObjectForKey:CPButtonAlternateImageKey]];
         
-        _image =  CPThemedValueDecode(aCoder, CPButtonImageKey, nil, @"image", theme, theClass);
-        _title = CPThemedValueDecode(aCoder, CPButtonTitleKey, nil, @"title", theme, theClass);
+        [self setTitle:[aCoder decodeObjectForKey:CPButtonTitleKey]];
+        [self setAlternateTitle:[aCoder decodeObjectForKey:CPButtonAlternateTitleKey]];
                 
         _contentInset = CPThemedValueDecode(aCoder, CPButtonContentInsetKey, _CGInsetMakeZero(), @"content-inset", theme, theClass);
         _bezelInset = CPThemedValueDecode(aCoder, CPButtonBezelInsetKey, _CGInsetMakeZero(), @"bezel-inset", theme, theClass);
@@ -686,14 +709,14 @@ var CPButtonImageKey                = @"CPButtonImageKey",
     
     _subviews = actualSubviews;
     
-
+    [aCoder encodeObject:_image forKey:CPButtonImageKey];
     [aCoder encodeObject:_alternateImage forKey:CPButtonAlternateImageKey];
+    
+    [aCoder encodeObject:_title forKey:CPButtonTitleKey];
+    [aCoder encodeObject:_alternateTitle forKey:CPButtonAlternateTitleKey];
     
     [aCoder encodeBool:_isBordered forKey:CPButtonIsBorderedKey];
     [aCoder encodeInt:_bezelStyle forKey:CPButtonBezelStyleKey];
-    
-    CPThemedValueEncode(aCoder, CPButtonImageKey, _image);
-    CPThemedValueEncode(aCoder, CPButtonTitleKey, _title);
 
     CPThemedValueEncode(aCoder, CPButtonContentInsetKey, _contentInset);
     CPThemedValueEncode(aCoder, CPButtonBezelInsetKey, _bezelInset);
