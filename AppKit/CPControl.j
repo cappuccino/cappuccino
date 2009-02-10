@@ -26,7 +26,6 @@
 @import "CPThemedValue.j"
 
 #include "CoreGraphics/CGGeometry.h"
-#include "CPThemedValue.h"
 #include "Platform/Platform.h"
 
 /*
@@ -101,24 +100,20 @@ var CPControlBlackColor     = [CPColor blackColor];
     unsigned            _trackingMouseDownFlags;
     CGPoint             _previousTrackingLocation;
     
-    // Properties
-    CPThemedValue   _alignment;
-    CPThemedValue   _verticalAlignment;
-    
-    CPControlStateValue _lineBreakMode;
-    CPControlStateValue _textColor;
-    CPControlStateValue _font;
-    
-    CPControlStateValue _textShadowColor;
-    CPControlStateValue _textShadowOffset;
-    
-    CPControlStateValue _imagePosition;
-    CPControlStateValue _imageScaling;
-    
     CPControlState      _controlState;
+    
+    JSObject            _ephemeralSubviewsForNames;
+    CPSet               _ephereralSubviews;
     
     // FIXME: Who uses this?
     BOOL _isBezeled;
+}
+
++ (CPDictionary)themedAttributes
+{
+    return [CPDictionary dictionaryWithObjects:[
+        CPLeftTextAlignment, CPTopVerticalTextAlignment, CPLineBreakByClipping, [CPColor blackColor], [CPFont systemFontOfSize:12.0], nil, _CGSizeMakeZero(), CPImageLeft, CPScaleToFit] 
+                                       forKeys:[@"alignment", @"vertical-alignment", @"line-break-mode", @"text-color", @"font", @"text-shadow-color", @"text-shadow-offset", @"image-position", @"image-scaling"]]; 
 }
 
 - (id)initWithFrame:(CGRect)aFrame
@@ -128,26 +123,7 @@ var CPControlBlackColor     = [CPColor blackColor];
     if (self)
     {
         _controlState = CPControlStateNormal;
-        
-        var theme = [self theme],
-            theClass = [self class];
-        
-        _alignment = CPThemedValueMake(CPLeftTextAlignment, "alignment", theme, theClass);
-        _verticalAlignment = CPThemedValueMake(CPTopVerticalTextAlignment, "vertical-alignment", theme, theClass);
-        
-        _lineBreakMode = CPThemedValueMake(CPLineBreakByClipping, "line-break-mode", theme, theClass);
-        _textColor = CPThemedValueMake([CPColor blackColor], "text-color", theme, theClass);
-        _font = CPThemedValueMake([CPFont systemFontOfSize:12.0], "font", theme, theClass);
-        
-        _textShadowColor = CPThemedValueMake(nil, @"text-shadow-color", theme, theClass);
-        _textShadowOffset = CPThemedValueMake(_CGSizeMake(0.0, 0.0), "text-shadow-offset", theme, theClass);
-        
-        _imagePosition = CPThemedValueMake(CPImageLeft, @"image-position", theme, theClass);
-        _imageScaling = CPThemedValueMake(CPScaleToFit, "image-scaling", theme, theClass);
-        
-        [theme setActiveClass:nil];
-        //
-        
+                
         _sendActionOn = CPLeftMouseUpMask;
         _trackingMouseDownFlags = 0;
     }
@@ -478,15 +454,25 @@ var CPControlBlackColor     = [CPColor blackColor];
     [[CPNotificationCenter defaultCenter] postNotificationName:CPControlTextDidEndEditingNotification object:self userInfo:[CPDictionary dictionaryWithObject:[note object] forKey:"CPFieldEditor"]];
 }
 
-THEMED_STATED_VALUE(Alignment, alignment)
-THEMED_STATED_VALUE(VerticalAlignment, verticalAlignment)
-THEMED_STATED_VALUE(LineBreakMode, lineBreakMode)
-THEMED_STATED_VALUE(TextColor, textColor)
-THEMED_STATED_VALUE(Font, font)
-THEMED_STATED_VALUE(TextShadowColor, textShadowColor)
-THEMED_STATED_VALUE(TextShadowOffset, textShadowOffset)
-THEMED_STATED_VALUE(ImagePosition, imagePosition)
-THEMED_STATED_VALUE(ImageScaling, imageScaling)
+#define BRIDGE(UPPERCASE, LOWERCASE, ATTRIBUTENAME) \
+- (void)set##UPPERCASE:(id)aValue\
+{\
+[self setValue:aValue forThemedAttributeName:ATTRIBUTENAME];\
+}\
+- (id)LOWERCASE\
+{\
+return [self valueForThemedAttributeName:ATTRIBUTENAME];\
+}
+
+BRIDGE(Alignment, alignment, "alignment")
+BRIDGE(VerticalAlignment, verticalAlignment, "vertical-alignment")
+BRIDGE(LineBreakMode, lineBreakMode, "line-break-mode")
+BRIDGE(TextColor, textColor, "text-color")
+BRIDGE(Font, font, "font")
+BRIDGE(TextShadowColor, textShadowColor, "text-shadow-color")
+BRIDGE(TextShadowOffset, textShadowOffset, "text-shadow-offset")
+BRIDGE(ImagePosition, imagePosition, "image-position")
+BRIDGE(ImageScaling, imageScaling, "image-scaling")
 
 - (int)controlState
 {
@@ -536,64 +522,58 @@ THEMED_STATED_VALUE(ImageScaling, imageScaling)
     return !!(_controlState & CPControlStateHighlighted);
 }
 
-@end
-
-@implementation CPControl (Theming)
-
-- (void)viewDidChangeTheme
+- (CPView)createEphemeralSubviewNamed:(CPString)aViewName
 {
-    [super viewDidChangeTheme];
-    
-    var theme = [self theme];
-    
-    [_alignment setTheme:theme];
-    [_verticalAlignment setTheme:theme];
-    
-    [_lineBreakMode setTheme:theme];
-    [_textColor setTheme:theme];
-    [_font setTheme:theme];
-    
-    [_textShadowColor setTheme:theme];
-    [_textShadowOffset setTheme:theme];
-    
-    [_imagePositions setTheme:theme];
-    [_imageScaling setTheme:theme];
+    return nil;
 }
 
-- (CPDictionary)themedValues
+- (CGRect)rectForEphemeralSubviewNamed:(CPString)aViewName
 {
-    var values = [super themedValues];
+    return _CGRectMakeZero();
+}
 
-    [values setObject:_alignment forKey:@"alignment"];
-    [values setObject:_verticalAlignment forKey:@"vertical-alignment"];
+- (CPView)layoutEphemeralSubviewNamed:(CPString)aViewName 
+                           positioned:(CPWindowOrderingMode)anOrderingMode
+      relativeToEphemeralSubviewNamed:(CPString)relativeToViewName
+{
+    if (!_ephemeralSubviewsForNames)
+    {
+        _ephemeralSubviewsForNames = {};
+        _ephemeralSubviews = [CPSet set];
+    }
     
-    [values setObject:_lineBreakMode forKey:@"line-break-mode"];
-    [values setObject:_textColor forKey:@"text-color"];
-    [values setObject:_font forKey:@"font"];
-    
-    [values setObject:_textShadowColor forKey:@"text-shadow-color"];
-    [values setObject:_textShadowOffset forKey:@"text-shadow-offset"];
-    
-    [values setObject:_imagePosition forKey:@"image-position"];
-    [values setObject:_imageScaling forKey:@"image-scaling"];
+    var frame = [self rectForEphemeralSubviewNamed:aViewName];
 
-    return values;
+    if (frame && !_CGRectIsEmpty(frame))
+    {
+        if (!_ephemeralSubviewsForNames[aViewName])
+        {
+            _ephemeralSubviewsForNames[aViewName] = [self createEphemeralSubviewNamed:aViewName];
+        
+            [_ephemeralSubviews addObject:_ephemeralSubviewsForNames[aViewName]];
+        
+            if (_ephemeralSubviewsForNames[aViewName])
+                [self addSubview:_ephemeralSubviewsForNames[aViewName] positioned:anOrderingMode relativeTo:_ephemeralSubviewsForNames[relativeToViewName]];
+        }
+        
+        if (_ephemeralSubviewsForNames[aViewName])
+            [_ephemeralSubviewsForNames[aViewName] setFrame:frame];
+    }
+    else if (_ephemeralSubviewsForNames[aViewName])
+    {
+        [_ephemeralSubviewsForNames[aViewName] removeFromSuperview];
+        
+        [_ephemeralSubviews removeObject:_ephemeralSubviewsForNames[aViewName]];
+        delete _ephemeralSubviewsForNames[aViewName];
+    }
+    
+    return _ephemeralSubviewsForNames[aViewName];
 }
 
 @end
 
 var CPControlValueKey           = "CPControlValueKey",
     CPControlIsEnabledKey       = "CPControlIsEnabledKey",
-    
-    CPControlAlignmentKey           = @"CPControlAlignmentKey",
-    CPControlVerticalAlignmentKey   = @"CPControlVerticalAlignmentKey",
-    CPControlLineBreakModeKey       = @"CPControlLineBreakModeKey",
-    CPControlFontKey                = @"CPControlFontKey",
-    CPControlTextColorKey           = @"CPControlTextColorKey",
-    CPControlTextShadowColorKey     = @"CPControlTextShadowColorKey",
-    CPControlTextShadowOffsetKey    = @"CPControlTextShadowOffsetKey",
-    CPControlImagePositionKey       = @"CPControlImagePositionKey",
-    CPControlImageScalingKey        = @"CPControlImageScalingKey",
     
     CPControlTargetKey          = "CPControlTargetKey",
     CPControlActionKey          = "CPControlActionKey",
@@ -616,24 +596,8 @@ var __Deprecated__CPImageViewImageKey   = @"CPImageViewImageKey";
     {
         _controlState = CPControlStateNormal;
         
-        var theme = [self theme],
-            theClass = [self class];
-        
         [self setObjectValue:[aCoder decodeObjectForKey:CPControlValueKey]];
-
-        _alignment = CPThemedValueDecode(aCoder, CPControlAlignmentKey, CPLeftTextAlignment, @"alignment", theme, theClass);
-        _verticalAlignment = CPThemedValueDecode(aCoder, CPControlVerticalAlignmentKey, CPTopVerticalTextAlignment, @"vertical-alignment", theme, theClass);
-    
-        _lineBreakMode = CPThemedValueDecode(aCoder, CPControlLineBreakModeKey, CPLineBreakByClipping, @"line-break-mode", theme, theClass);
-        _textColor = CPThemedValueDecode(aCoder, CPControlTextColorKey, [CPColor blackColor], @"text-color", theme, theClass);
-        _font = CPThemedValueDecode(aCoder, CPControlFontKey, [CPFont systemFontOfSize:12.0], @"font", theme, theClass);
-
-        _textShadowColor = CPThemedValueDecode(aCoder, CPControlTextShadowColorKey, nil, @"text-shadow-color", theme, theClass);
-        _textShadowOffset = CPThemedValueDecode(aCoder, CPControlTextShadowOffsetKey, _CGSizeMake(0.0, 0.0), @"text-shadow-offset", theme, theClass);
-    
-        _imagePosition = CPThemedValueDecode(aCoder, CPControlImagePositionKey, CPImageLeft, @"image-position", theme, theClass);
-        _imageScaling = CPThemedValueDecode(aCoder, CPControlImageScalingKey, CPScaleToFit, @"image-scaling", theme, theClass);
-
+        
         /*
         [self setTarget:[aCoder decodeObjectForKey:CPControlTargetKey]];
         [self setAction:[aCoder decodeObjectForKey:CPControlActionKey]];
@@ -649,32 +613,28 @@ var __Deprecated__CPImageViewImageKey   = @"CPImageViewImageKey";
 */
 - (void)encodeWithCoder:(CPCoder)aCoder
 {
+    var count = [_subviews count],
+        ephemeral
+        subviews = nil;
+    
+    if (count > 0 && [_ephemeralSubviews count] > 0)
+    {
+        subviews = [_subviews.slice(0) copy];
+        
+        while (count--)
+            if ([_ephemeralSubviews containsObject:_subviews[count]])
+                _subviews.splice(count, 1);
+    }
+    
     [super encodeWithCoder:aCoder];
     
+    if (subviews)
+        _subviews = subviews;
+    
     [aCoder encodeObject:_value forKey:CPControlValueKey];
-
-    CPThemedValueEncode(aCoder, CPControlAlignmentKey, _alignment);
-    CPThemedValueEncode(aCoder, CPControlVerticalAlignmentKey, _verticalAlignment);
-
-    CPThemedValueEncode(aCoder, CPControlLineBreakModeKey, _lineBreakMode);
-    CPThemedValueEncode(aCoder, CPControlTextColorKey, _textColor);
-    CPThemedValueEncode(aCoder, CPControlFontKey, _font);
-
-    CPThemedValueEncode(aCoder, CPControlTextShadowColorKey, _textShadowColor);
-    CPThemedValueEncode(aCoder, CPControlTextShadowOffsetKey, _textShadowOffset);
     
-    CPThemedValueEncode(aCoder, CPControlImagePositionKey, _imagePosition);
-    CPThemedValueEncode(aCoder, CPControlImageScalingKey, _imageScaling);
-
-    /*
-    [aCoder encodeBool:_isEnabled forKey:CPControlIsEnabledKey];
-    
-    [aCoder encodeInt:_alignment forKey:CPControlAlignmentKey];
-    [aCoder encodeInt:_verticalAlignment forKey:CPControlVerticalAlignmentKey];
-    
-    [aCoder encodeObject:_font forKey:CPControlFontKey];
-    [aCoder encodeObject:_textColor forKey:CPControlTextColorKey];
-    
+    /*[aCoder encodeBool:_isEnabled forKey:CPControlIsEnabledKey];
+        
     [aCoder encodeConditionalObject:_target forKey:CPControlTargetKey];
     [aCoder encodeObject:_action forKey:CPControlActionKey];
     

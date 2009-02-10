@@ -3,7 +3,6 @@
 @import "CPThemedValue.j"
 
 #include "CoreGraphics/CGGeometry.h"
-#include "CPThemedValue.h"
 
 
 @implementation CPSlider : CPControl
@@ -11,17 +10,12 @@
     double          _minValue;
     double          _maxValue;
     double          _altIncrementValue;
-    
-    CPThemedValue   _verticalTrackColor;    // vertical-track-color
-    CPThemedValue   _horizontalTrackColor;  // horizontal-track-color
-    
-    CPThemedValue   _knobColor;
-    
-    CPThemedValue   _trackWidth;            // track-width
-    CPThemedValue   _knobSize;              // knob-size
-    
-    CPView          _trackView;
-    CPView          _knobView;
+}
+
++ (id)themedAttributes
+{
+    return [CPDictionary dictionaryWithObjects:[nil, _CGSizeMakeZero(), 0.0, nil, nil]
+                                       forKeys:[@"knob-color", @"knob-size", @"track-width", @"vertical-track-color", @"horizontal-track-color"]];
 }
 
 - (id)initWithFrame:(CGRect)aFrame
@@ -32,16 +26,6 @@
     {
         _minValue = 0.0;
         _maxValue = 100.0;
-        
-        var theme = [self theme],
-            theClass = [self class];
-        
-        _knobColor = CPThemedValueMake(nil, "knob-color", theme, theClass);
-        _knobSize = CPThemedValueMake(_CGSizeMakeZero(), "knob-size", theme, theClass);
-        
-        _trackWidth = CPThemedValueMake(0.0, "track-width", theme, theClass);
-        _verticalTrackColor = CPThemedValueMake(nil, "vertical-track-color", theme, theClass);
-        _horizontalTrackColor = CPThemedValueMake(nil, "horizonal-track-color", theme, theClass);
         
         [self setObjectValue:50.0];
         
@@ -97,7 +81,7 @@
 
 - (CGRect)trackRectForBounds:(CGRect)bounds
 {
-    var trackWidth = [self currentTrackWidth];
+    var trackWidth = [self currentValueForThemedAttributeName:@"track-width"];
     
     if (trackWidth <= 0)
         return _CGRectMakeZero();
@@ -116,15 +100,9 @@
     return bounds;
 }
 
-THEMED_STATED_VALUE(KnobColor, knobColor)
-THEMED_STATED_VALUE(KnobSize, knobSize)
-THEMED_STATED_VALUE(TrackWidth, trackWidth)
-THEMED_STATED_VALUE(HorizontalTrackColor, horizontalTrackColor)
-THEMED_STATED_VALUE(VerticalTrackColor, verticalTrackColor)
-
 - (CGRect)knobRectForBounds:(CGRect)bounds
 {
-    var knobSize = [self currentKnobSize];
+    var knobSize = [self currentValueForThemedAttributeName:@"knob-size"];
     
     if (knobSize.width <= 0 || knobSize.height <= 0)
         return _CGRectMakeZero();
@@ -150,6 +128,31 @@ THEMED_STATED_VALUE(VerticalTrackColor, verticalTrackColor)
     return knobRect;
 }
 
+- (CGRect)rectForEphemeralSubviewNamed:(CPString)aName
+{
+    if (aName === "track-view")
+        return [self trackRectForBounds:[self bounds]];
+    
+    else if (aName === "knob-view")
+        return [self knobRectForBounds:[self bounds]];
+    
+    return [super rectForEphemeralSubviewNamed:aName];
+}
+
+- (CPView)createEphemeralSubviewNamed:(CPString)aName
+{
+    if (aName === "track-view" || aName === "knob-view")
+    {
+        var view = [[CPView alloc] init];
+        
+        [view setHitTests:NO];
+        
+        return view;
+    }
+    
+    return [super createEphemeralSubviewNamed:aName];
+}
+
 - (int)isVertical
 {
     var bounds = [self bounds],
@@ -159,91 +162,24 @@ THEMED_STATED_VALUE(VerticalTrackColor, verticalTrackColor)
     return width < height ? 1 : (width > height ? 0 : -1);
 }
 
-- (CPView)createTrackView
-{
-    var trackView = [[CPView alloc] initWithFrame:_CGRectMakeZero()];
-            
-    [trackView setHitTests:NO];
-
-    return trackView;
-}
-
-- (CPView)createKnobView
-{
-    var knobView = [[CPView alloc] initWithFrame:_CGRectMakeZero()];
-    
-    [knobView setHitTests:NO];
-    
-    return knobView;
-}
-
 - (void)layoutSubviews
 {
-    var bounds = [self bounds],
-        isVertical = [self isVertical],
-        trackRect = nil;
+    var trackView = [self layoutEphemeralSubviewNamed:@"track-view"
+                                           positioned:CPWindowBelow
+                      relativeToEphemeralSubviewNamed:@"knob-view"];
+      
+    if (trackView)
+        if ([self isVertical])
+            [trackView setBackgroundColor:[self currentValueForThemedAttributeName:@"vertical-track-color"]];
+        else
+            [trackView setBackgroundColor:[self currentValueForThemedAttributeName:@"horizontal-track-color"]];
 
-    if ((trackRect = [self trackRectForBounds:_CGRectMakeCopy(bounds)]) && !_CGRectIsEmpty(trackRect))
-    {
-        if (!_trackView)
-        {
-            _trackView = [self createTrackView];
-            
-            if (_trackView)
-                [self addSubview:_trackView positioned:CPWindowBelow relativeTo:_knobView];
-        }
-        
-        if (_trackView)
-        {
-            [_trackView setFrame:trackRect];        
-            
-            if ([self isVertical])
-            {
-                if (_verticalTrackColor)
-                    [_trackView setBackgroundColor:[self currentVerticalTrackColor]];
-            }
-            else
-            {
-                if (_horizontalTrackColor)
-                    [_trackView setBackgroundColor:[self currentHorizontalTrackColor]];
-            }
-        }
-    }
-    else if (_trackView)
-    {
-        [_trackView removeFromSuperview];
-        
-        _trackView = nil;
-    }
-    
-    var knobRect = nil;
-    
-    if ((knobRect = [self knobRectForBounds:bounds]) && !_CGRectIsEmpty(knobRect))
-    {
-        if (!_knobView)
-        {
-            _knobView = [self createKnobView];
-            
-            if (_knobView)
-                [self addSubview:_knobView positioned:CPWindowAbove relativeTo:_trackView];
-        }
-        
-        if (_knobView)
-        {        
-            [_knobView setFrame:knobRect];
-          
-            var knobColor = [self currentKnobColor];
-            
-            if (knobColor)
-                [_knobView setBackgroundColor:knobColor];
-        }
-    }
-    else if (_knobView)
-    {
-        [_knobView removeFromSuperview];
-        
-        _knobView = nil;
-    }
+    var knobView = [self layoutEphemeralSubviewNamed:@"knob-view"
+                                          positioned:CPWindowAbove
+                     relativeToEphemeralSubviewNamed:@"track-view"];
+      
+    if (knobView)
+        [knobView setBackgroundColor:[self currentValueForThemedAttributeName:"knob-color"]];
 }
 
 - (BOOL)tracksMouseOutsideOfFrame
@@ -342,7 +278,7 @@ THEMED_STATED_VALUE(VerticalTrackColor, verticalTrackColor)
 }
 
 @end
-
+/*
 @implementation CPSlider (Theming)
 
 - (void)viewDidChangeTheme
@@ -382,7 +318,7 @@ THEMED_STATED_VALUE(VerticalTrackColor, verticalTrackColor)
 }
 
 @end
-
+*/
 var CPSliderMinValueKey             = "CPSliderMinValueKey",
     CPSliderMaxValueKey             = "CPSliderMaxValueKey",
     CPSliderAltIncrValueKey         = "CPSliderAltIncrValueKey",
@@ -404,17 +340,7 @@ var CPSliderMinValueKey             = "CPSliderMinValueKey",
         _minValue = [aCoder decodeDoubleForKey:CPSliderMinValueKey];
         _maxValue = [aCoder decodeDoubleForKey:CPSliderMaxValueKey];
         _altIncrementValue = [aCoder decodeDoubleForKey:CPSliderAltIncrValueKey];
-    
-        var theme = [self theme],
-            theClass = [self class];
-    
-        _knobColor = CPThemedValueDecode(aCoder, CPSliderKnobColorKey, nil, "knob-color", theme, theClass);
-        _knobSize = CPThemedValueDecode(aCoder, CPSliderKnobSizeKey, nil, "knob-size", theme, theClass);
 
-        _trackWidth = CPThemedValueDecode(aCoder, CPSliderKnobColorKey, nil, "track-width", theme, theClass);
-        _horizontalTrackColor = CPThemedValueDecode(aCoder, CPSliderHorizontalTrackColorKey, nil, "horizontal-track-color", theme, theClass);
-        _verticalTrackColor = CPThemedValueDecode(aCoder, CPSliderVerticalTrackColorKey, nil, "vertical-track-color", theme, theClass);
-        
         [self setContinuous:YES];
         
         [self setNeedsLayout];
@@ -453,13 +379,6 @@ var CPSliderMinValueKey             = "CPSliderMinValueKey",
     [aCoder encodeDouble:_minValue forKey:CPSliderMinValueKey];
     [aCoder encodeDouble:_maxValue forKey:CPSliderMaxValueKey];
     [aCoder encodeDouble:_altIncrementValue forKey:CPSliderAltIncrValueKey];
-    
-    CPThemedValueEncode(aCoder, CPSliderKnobColorKey, _knobColor);
-    CPThemedValueEncode(aCoder, CPSliderKnobSizeKey, _knobSize);
-
-    CPThemedValueEncode(aCoder, CPSliderTrackWidthKey, _trackWidth);
-    CPThemedValueEncode(aCoder, CPSliderHorizontalTrackColorKey, _horizontalTrackColor);
-    CPThemedValueEncode(aCoder, CPSliderVerticalTrackColorKey, _verticalTrackColor);
 }
 
 @end

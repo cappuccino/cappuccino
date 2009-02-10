@@ -88,7 +88,8 @@ CPViewFrameDidChangeNotification    = @"CPViewFrameDidChangeNotification";
 var _DOMOriginUpdateMask        = 1 << 0,
     _DOMSizeUpdateMask          = 1 << 1;
 
-var _CPViewNotificationCenter   = nil;
+var _CPViewNotificationCenter   = nil,
+    _CachedThemedAttributes     = nil;
 
 #if PLATFORM(DOM)
 var DOMElementPrototype         = nil,
@@ -155,7 +156,6 @@ var DOMElementPrototype         = nil,
 #endif
 
     CGRect              _dirtyRect;
-    BOOL                _needsLayout;
 
     float               _opacity;
     CPColor             _backgroundColor;
@@ -171,8 +171,13 @@ var DOMElementPrototype         = nil,
     
     _CPViewFullScreenModeState  _fullScreenModeState;
     
+    // Layout Support
+    BOOL                _needsLayout;
+    JSObject            _ephemeralSubviews;
+    
     // Theming Support
     CPTheme             _theme;
+    JSObject            _themedAttributes;
 }
 
 /*
@@ -245,6 +250,9 @@ var DOMElementPrototype         = nil,
 #endif
         
         _theme = [CPTheme defaultTheme];
+        _themedAttributes = {};
+        
+        [self _loadThemedAttributes];
     }
     
     return self;
@@ -1780,16 +1788,77 @@ setBoundsOrigin:
 
 @implementation CPView (Theming)
 
++ (CPDictionary)themedAttributes
+{
+    return nil;
+}
+
++ (CPArray)_themedAttributes
+{
+    if (!_CachedThemedAttributes)
+        _CachedThemedAttributes = {};
+
+    var theClass = [self class],
+        CPViewClass = [CPView class],
+        attributes = [];
+    
+    while (theClass && theClass !== CPViewClass)
+    {
+        var cachedAttributes = _CachedThemedAttributes[class_getName(theClass)];
+        
+        if (cachedAttributes)
+        {
+            attributes = attributes.length ? attributes.concat(cachedAttributes) : attributes;
+            _CachedThemedAttributes[[self className]] = attributes;
+            
+            break;
+        }
+        
+        var attributeDictionary = [theClass themedAttributes];
+        
+        if (attributeDictionary)
+        {
+            var attributeKeys = [attributeDictionary allKeys],
+                attributeCount = attributeKeys.length;
+        
+            while (attributeCount--)
+            {
+                var attributeName = attributeKeys[attributeCount];
+                
+                attributes.push([attributeDictionary objectForKey:attributeName]);
+                attributes.push(attributeName);
+            }
+        }
+        
+        theClass = [theClass superclass];
+    }
+    
+    return attributes;
+}
+
+- (void)_loadThemedAttributes
+{
+    var theme = [self theme],
+        theClass = [self class],
+        attributes = [theClass _themedAttributes];
+        count = attributes.length;
+    
+    while (count--)
+    {
+        var attributeName = attributes[count--];
+        
+        _themedAttributes[attributeName] = CPThemedValueMake(attributes[count], attributeName, theme, theClass);
+    }
+}
+
 - (void)setTheme:(CPTheme)aTheme
 {
     if (_theme === aTheme)
         return;
     
     _theme = aTheme;
-    
-    [_theme setActiveClass:[self class]];
+        
     [self viewDidChangeTheme];
-    [_theme setActiveClass:Nil];
 }
 
 - (CPTheme)theme
@@ -1799,11 +1868,60 @@ setBoundsOrigin:
 
 - (void)viewDidChangeTheme
 {
+    var theme = [self theme];
+    
+    for (var attributeName in _themedAttributes)
+        if (_themedAttributes.hasOwnProperty(attributeName))
+            [_themedAttributes[attributeName] setTheme:theme];
 }
 
 - (CPDictionary)themedValues
 {
-    return [CPDictionary dictionary];
+    var dictionary = [CPDictionary dictionary];
+    
+    for (var attributeName in _themedAttributes)
+        if (_themedAttributes.hasOwnProperty(attributeName))
+            [dictionary setObject:_themedAttributes[attributeName] forKey:attributeName];
+    
+    return dictionary;
+}
+
+- (void)setValue:(id)aValue forThemedAttributeName:(CPString)aName inControlState:(CPControlState)aControlState
+{
+    var attribute = _themedAttributes[aName];
+    
+    if (!attribute)
+        return nil;
+    
+    var currentValue = [self currentValueForThemedAttributeName:aName];
+    
+    [attribute setValue:aValue forControlState:aControlState];
+    
+    if ([self currentValueForThemedAttributeName:aName] === currentValue)
+        return;
+    
+    [self setNeedsDisplay:YES];
+    [self setNeedsLayout];
+}
+
+- (void)setValue:(id)aValue forThemedAttributeName:(CPString)aName
+{
+    [_themedAttributes[aName] setValue:aValue];
+}
+
+- (id)valueForThemedAttributeName:(CPString)aName inControlState:(CPControlState)aControlState
+{
+    return [_themedAttributes[aName] valueForControlState:aControlState];
+}
+
+- (id)valueForThemedAttributeName:(CPString)aName
+{
+    return [_themedAttributes[aName] value];
+}
+
+- (void)currentValueForThemedAttributeName:(CPString)aName
+{
+    return [_themedAttributes[aName] valueForControlState:_controlState];//[self controlStateForThemedAttributeName:aName]];
 }
 
 @end
@@ -1884,6 +2002,18 @@ var CPViewAutoresizingMaskKey       = @"CPViewAutoresizingMask",
         [self setBackgroundColor:[aCoder decodeObjectForKey:CPViewBackgroundColorKey]];
         
         _theme = [CPTheme defaultTheme];
+        _themedAttributes = {};
+  
+        var theClass = [self class],
+            attributes = [theClass _themedAttributes],
+            count = attributes.length;
+        
+        while (count--)
+        {
+            var attributeName = attributes[count--];
+            
+            _themedAttributes[attributeName] = CPThemedValueDecode2(aCoder, attributeName, attributes[count], _theme, theClass);
+        }
         
         [self setNeedsDisplay:YES];
     }
@@ -1917,6 +2047,10 @@ var CPViewAutoresizingMaskKey       = @"CPViewAutoresizingMask",
     [aCoder encodeBool:_hitTests forKey:CPViewHitTestsKey];
     [aCoder encodeBool:_isHidden forKey:CPViewIsHiddenKey];
     [aCoder encodeFloat:_opacity forKey:CPViewOpacityKey];
+    
+    for (var attributeName in _themedAttributes)
+        if (_themedAttributes.hasOwnProperty(attributeName))
+            CPThemedValueEncode2(aCoder, _themedAttributes[attributeName]);
 }
 
 @end

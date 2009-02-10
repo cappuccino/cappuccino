@@ -27,7 +27,6 @@
 @import "CPThemedValue.j"
 
 #include "CoreGraphics/CGGeometry.h"
-#include "CPThemedValue.h"
 
 
 CPScaleProportionally   = 0;
@@ -256,24 +255,23 @@ var _CPButtonClassName                          = nil,
     CPControlSize       _controlSize;
 }
 
++ (id)themedAttributes
+{
+    return [CPDictionary dictionaryWithObjects:[_CGInsetMakeZero(), _CGInsetMakeZero(), nil]
+                                       forKeys:[@"bezel-inset", @"content-inset", @"bezel-color"]];
+}
+
 - (id)initWithFrame:(CGRect)aFrame
 {
     self = [super initWithFrame:aFrame];
     
     if (self)
     {
-        var theme = [self theme],
-            theClass = [self class];
-        
-        _bezelInset = CPThemedValueMake(_CGInsetMakeZero(), "bezel-inset", theme, theClass);
-        _contentInset = CPThemedValueMake(_CGInsetMakeZero(), "content-inset", theme, theClass);
-        
-        _bezelColor = CPThemedValueMake(nil, "bezel-color", theme, theClass);
-
-        [self setAlignment:CPCenterTextAlignment];
-        [self setVerticalAlignment:CPCenterVerticalTextAlignment];
-        [self setImagePosition:CPImageLeft];
-        [self setImageScaling:CPScaleNone];
+        // Should we instead override the defaults?
+        [self setValue:CPCenterTextAlignment forThemedAttributeName:@"alignment"];
+        [self setValue:CPCenterVerticalTextAlignment forThemedAttributeName:@"vertical-alignment"];
+        [self setValue:CPImageLeft forThemedAttributeName:@"image-position"];
+        [self setValue:CPScaleNone forThemedAttributeName:@"image-scaling"];
         
         _controlSize = CPRegularControlSize;
         
@@ -464,8 +462,6 @@ var _CPButtonClassName                          = nil,
     return view;
 }
 
-THEMED_STATED_VALUE(BezelColor, bezelColor)
-
 - (CPView)createContentView
 {
     var view = [[_CPImageAndTextView alloc] initWithFrame:_CGRectMakeZero()];
@@ -473,16 +469,13 @@ THEMED_STATED_VALUE(BezelColor, bezelColor)
     return view;
 }
 
-THEMED_STATED_VALUE(ContentInset, contentInset)
-THEMED_STATED_VALUE(BezelInset, bezelInset)
-
 - (CGRect)contentRectForBounds:(CGRect)bounds
 {
     if (![self isBordered])
         return bounds;
         
-    var contentInset = [self currentContentInset];
-    
+    var contentInset = [self currentValueForThemedAttributeName:@"content-inset"];
+
     if (!contentInset)
         return bounds;
     
@@ -499,7 +492,7 @@ THEMED_STATED_VALUE(BezelInset, bezelInset)
     if (![self isBordered])
         return _CGRectMakeZero();
 
-    var bezelInset = [self currentBezelInset];
+    var bezelInset = [self currentValueForThemedAttributeName:@"bezel-inset"];
     
     if (!_CGInsetIsEmpty(bezelInset))
         return bounds;
@@ -512,105 +505,64 @@ THEMED_STATED_VALUE(BezelInset, bezelInset)
     return bounds;
 }
 
+- (CGRect)rectForEphemeralSubviewNamed:(CPString)aName
+{
+    if (aName === "bezel-view")
+        return [self bezelRectForBounds:[self bounds]];
+    
+    else if (aName === "content-view")
+        return [self contentRectForBounds:[self bounds]];
+    
+    return [super rectForEphemeralSubviewNamed:aName];
+}
+
+- (CPView)createEphemeralSubviewNamed:(CPString)aName
+{
+    if (aName === "bezel-view")
+    {
+        var view = [[CPView alloc] initWithFrame:_CGRectMakeZero()];
+
+        [view setHitTests:NO];
+        
+        return view;
+    }
+    else
+        return [[_CPImageAndTextView alloc] initWithFrame:_CGRectMakeZero()];
+    
+    return [super createEphemeralSubviewNamed:aName];
+}
+
 - (void)layoutSubviews
 {
-    var bounds = [self bounds],
-        bezelRect = [self bezelRectForBounds:_CGRectMakeCopy(bounds)];
+    var bezelView = [self layoutEphemeralSubviewNamed:@"bezel-view"
+                                           positioned:CPWindowBelow
+                      relativeToEphemeralSubviewNamed:@"content-view"];
+      
+    if (bezelView)
+        [bezelView setBackgroundColor:[self currentValueForThemedAttributeName:@"bezel-color"]];
     
-    if (bezelRect && !_CGRectIsEmpty(bezelRect))
-    {
-        if (!_bezelView)
-        {
-            _bezelView = [self createBezelView];
-            
-            if (_bezelView)
-                [self addSubview:_bezelView positioned:CPWindowBelow relativeTo:_contentView];
-        }
-        
-        if (_bezelView)
-            [_bezelView setFrame:bezelRect];
-    }
-    else if (_bezelView)
-    {
-        [_bezelView removeFromSuperview];
-            
-        _bezelView = nil;
-    }
+    var contentView = [self layoutEphemeralSubviewNamed:@"content-view"
+                                             positioned:CPWindowAbove
+                        relativeToEphemeralSubviewNamed:@"bezel-view"];
     
-    if (_bezelView)
+    if (contentView)
     {
-        [_bezelView setBackgroundColor:[self currentBezelColor]];
-    }
+        [contentView setText:((_controlState & CPControlStateHighlighted) && _alternateTitle) ? _alternateTitle : _title];
+        [contentView setImage:((_controlState & CPControlStateHighlighted) && _alternateImage) ? _alternateImage : _image];
     
-    var contentRect = [self contentRectForBounds:bounds];
-    
-    if (contentRect && !_CGRectIsEmpty(contentRect))
-    {
-        if (!_contentView)
-        {
-            _contentView = [self createContentView];
-            
-            if (_contentView)
-                [self addSubview:_contentView positioned:CPWindowAbove relativeTo:_bezelView];
-        }
-        
-        if (_contentView)
-            [_contentView setFrame:contentRect];
-    }
-    else if (_contentView)
-    {
-        [_contentView removeFromSuperview];
-        
-        _contentView = nil;
-    }
-    
-    if (_contentView)
-    {
-        [_contentView setText:((_controlState & CPControlStateHighlighted) && _alternateTitle) ? _alternateTitle : _title];
-        [_contentView setImage:((_controlState & CPControlStateHighlighted) && _alternateImage) ? _alternateImage : _image];
-    
-        [_contentView setFont:[self currentFont]];
-        [_contentView setTextColor:[self currentTextColor]];
-        [_contentView setAlignment:[self currentAlignment]];
-        [_contentView setVerticalAlignment:[self currentVerticalAlignment]];
-        [_contentView setLineBreakMode:[self currentLineBreakMode]];
-        [_contentView setTextShadowColor:[self currentTextShadowColor]];
-        [_contentView setTextShadowOffset:[self currentTextShadowOffset]];
-        [_contentView setImagePosition:[self currentImagePosition]];
-        [_contentView setImageScaling:[self currentImageScaling]];
+        [contentView setFont:[self currentValueForThemedAttributeName:@"font"]];
+        [contentView setTextColor:[self currentValueForThemedAttributeName:@"text-color"]];
+        [contentView setAlignment:[self currentValueForThemedAttributeName:@"alignment"]];
+        [contentView setVerticalAlignment:[self currentValueForThemedAttributeName:@"vertical-alignment"]];
+        [contentView setLineBreakMode:[self currentValueForThemedAttributeName:@"line-break-mode"]];
+        [contentView setTextShadowColor:[self currentValueForThemedAttributeName:@"text-shadow-color"]];
+        [contentView setTextShadowOffset:[self currentValueForThemedAttributeName:@"text-shadow-offset"]];
+        [contentView setImagePosition:[self currentValueForThemedAttributeName:@"image-position"]];
+        [contentView setImageScaling:[self currentValueForThemedAttributeName:@"image-scaling"]];
     }
 }
 
 @end
-
-@implementation CPButton (Theming)
-
-- (void)viewDidChangeTheme
-{
-    [super viewDidChangeTheme];
-    
-    var theme = [self theme];
-    
-    [_bezelInset setTheme:theme];
-    [_contentInset setTheme:theme];
-    
-    [_bezelColor setTheme:theme];
-}
-
-- (CPDictionary)themedValues
-{
-    var values = [super themedValues];
-    
-    [values setObject:_bezelInset forKey:@"bezel-inset"];
-    [values setObject:_contentInset forKey:@"content-inset"];
-
-    [values setObject:_bezelColor forKey:@"bezel-color"];
-
-    return values;
-}
-
-@end
-
 
 @implementation CPButton (NS)
 
@@ -677,11 +629,6 @@ var CPButtonImageKey                = @"CPButtonImageKey",
         
         [self setTitle:[aCoder decodeObjectForKey:CPButtonTitleKey]];
         [self setAlternateTitle:[aCoder decodeObjectForKey:CPButtonAlternateTitleKey]];
-                
-        _contentInset = CPThemedValueDecode(aCoder, CPButtonContentInsetKey, _CGInsetMakeZero(), @"content-inset", theme, theClass);
-        _bezelInset = CPThemedValueDecode(aCoder, CPButtonBezelInsetKey, _CGInsetMakeZero(), @"bezel-inset", theme, theClass);
-        
-        _bezelColor = CPThemedValueDecode(aCoder, CPButtonBezelColorKey, nil, @"bezel-color", theme, theClass);
     
         _isBordered = [aCoder decodeBoolForKey:CPButtonIsBorderedKey];
         
@@ -717,11 +664,6 @@ var CPButtonImageKey                = @"CPButtonImageKey",
     
     [aCoder encodeBool:_isBordered forKey:CPButtonIsBorderedKey];
     [aCoder encodeInt:_bezelStyle forKey:CPButtonBezelStyleKey];
-
-    CPThemedValueEncode(aCoder, CPButtonContentInsetKey, _contentInset);
-    CPThemedValueEncode(aCoder, CPButtonBezelInsetKey, _bezelInset);
-
-    CPThemedValueEncode(aCoder, CPButtonBezelColorKey, _bezelColor);
 }
 
 @end

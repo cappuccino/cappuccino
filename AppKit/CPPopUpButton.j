@@ -61,9 +61,9 @@ var CPPopUpButtonArrowsImage = nil;
         _selectedIndex = CPNotFound;
         _preferredEdge = CPMaxYEdge;
         
-        [self setImagePosition:CPImageLeft];
-        [self setAlignment:CPLeftTextAlignment];
-        [self setLineBreakMode:CPLineBreakByTruncatingTail];
+        [self setValue:CPImageLeft forThemedAttributeName:@"image-position"];
+        [self setValue:CPLeftTextAlignment forThemedAttributeName:@"alignment"];
+        [self setValue:CPLineBreakByTruncatingTail forThemedAttributeName:@"line-break-mode"];
         
         [self setMenu:[[CPMenu alloc] initWithTitle:@""]];
     }
@@ -708,7 +708,7 @@ var CPPopUpButtonArrowsImage = nil;
     
     if ([self isBordered])
     {
-        contentRect.size.width -= 16.0;
+        contentRect.size.width -= 20.0;
 
         return contentRect;
     }

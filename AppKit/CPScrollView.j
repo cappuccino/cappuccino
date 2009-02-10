@@ -161,8 +161,8 @@
         }
         else
         {
-            [_verticalScroller setEnabled:NO];
-            [_horizontalScroller setEnabled:NO];
+//            [_verticalScroller setEnabled:NO];
+//            [_horizontalScroller setEnabled:NO];
         }
         
         [_contentView setFrame:[self bounds]];
@@ -180,22 +180,24 @@
         shouldShowHorizontalScroller = (!_autohidesScrollers || difference.width > 0.0) && _hasHorizontalScroller,
         wasShowingVerticalScroller = ![_verticalScroller isHidden],
         wasShowingHorizontalScroller = ![_horizontalScroller isHidden],
-        verticalScrollerWidth = [CPScroller scrollerWidthForControlSize:[_verticalScroller controlSize]],
-        horizontalScrollerHeight = [CPScroller scrollerWidthForControlSize:[_horizontalScroller controlSize]];
+        verticalScrollerWidth = _CGRectGetWidth([_verticalScroller frame]);
+        horizontalScrollerHeight = _CGRectGetHeight([_horizontalScroller frame]);
 
     if (_autohidesScrollers)
     {
+        // Check to see if either affected the other!
         if (shouldShowVerticalScroller)
             shouldShowHorizontalScroller = (!_autohidesScrollers || difference.width > -verticalScrollerWidth) && _hasHorizontalScroller;
+
         if (shouldShowHorizontalScroller)
             shouldShowVerticalScroller = (!_autohidesScrollers || difference.height > -horizontalScrollerHeight) && _hasVerticalScroller;
     }
-    
+
     [_verticalScroller setHidden:!shouldShowVerticalScroller];
-    [_verticalScroller setEnabled:!_autohidesScrollers && difference.height < 0];
+    [_verticalScroller setEnabled:difference.height > 0.0];
 
     [_horizontalScroller setHidden:!shouldShowHorizontalScroller];
-    [_horizontalScroller setEnabled:!_autohidesScrollers && difference.width < 0];
+    [_horizontalScroller setEnabled:difference.width > 0.0];
 
     if (shouldShowVerticalScroller)
     {
@@ -276,7 +278,7 @@
     _hasHorizontalScroller = shouldHaveHorizontalScroller;
     
     if (_hasHorizontalScroller && !_horizontalScroller)
-        [self setHorizontalScroller:[[CPScroller alloc] initWithFrame:CPRectMake(0.0, 0.0, CPRectGetWidth([self bounds]), [CPScroller scrollerWidth])]];
+        [self setHorizontalScroller:[[CPScroller alloc] initWithFrame:CGRectMake(0.0, 0.0, CPRectGetWidth([self bounds]), [CPScroller scrollerWidth])]];
 
     else if (!_hasHorizontalScroller && _horizontalScroller)
     {
