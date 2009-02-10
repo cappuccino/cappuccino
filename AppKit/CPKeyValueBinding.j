@@ -106,26 +106,30 @@ var CPBindingOperationAnd = 0,
 - (id)initWithBinding:(CPString)aBinding name:(CPString)aName to:(id)aDestination keyPath:(CPString)aKeyPath options:(CPDictionary)options from:(id)aSource
 {
     self = [super init];
-    CPLog("creating CPKeyValueBinding with binding: "+aBinding+" name: "+aName+" to: "+aDestination+" keyPath: "+aKeyPath+" from: "+aSource);
-    _source = aSource;
-    _info   = [CPDictionary dictionaryWithObjects:[aDestination, aKeyPath] forKeys:[CPObservedObjectKey, CPObservedKeyPathKey]];
     
-    if (options)
-        [_info setObject:options forKey:CPOptionsKey];
-    
-    //_replacementKeyPathForBinding
-    
-    [aDestination addObserver:self forKeyPath:aKeyPath options:CPKeyValueObservingOptionNew context:aBinding];
-    
-    var bindings = [bindingsMap objectForKey:[_source hash]];
-    if (!bindings)
+    if (self)
     {
-        bindings = [CPDictionary new];
-        [bindingsMap setObject:bindings forKey:[_source hash]];
+        CPLog("creating CPKeyValueBinding with binding: "+aBinding+" name: "+aName+" to: "+aDestination+" keyPath: "+aKeyPath+" from: "+aSource);
+        _source = aSource;
+        _info   = [CPDictionary dictionaryWithObjects:[aDestination, aKeyPath] forKeys:[CPObservedObjectKey, CPObservedKeyPathKey]];
+        
+        if (options)
+            [_info setObject:options forKey:CPOptionsKey];
+        
+        //_replacementKeyPathForBinding
+        
+        [aDestination addObserver:self forKeyPath:aKeyPath options:CPKeyValueObservingOptionNew context:aBinding];
+        
+        var bindings = [bindingsMap objectForKey:[_source hash]];
+        if (!bindings)
+        {
+            bindings = [CPDictionary new];
+            [bindingsMap setObject:bindings forKey:[_source hash]];
+        }
+    
+        [bindings setObject:self forKey:aName];
+        [self setValueFor:aBinding];
     }
-
-    [bindings setObject:self forKey:aName];
-    [self setValueFor:aBinding];
 
     return self;
 }
@@ -138,7 +142,6 @@ var CPBindingOperationAnd = 0,
         newValue = [destination valueForKeyPath:keyPath];
 
     newValue = [self transformValue:newValue withOptions:options];
-    CPLog.trace("Setting value for: "+aBinding+" value: "+newValue);
     [_source setValue:newValue forKey:aBinding];
 }
 
@@ -157,7 +160,7 @@ var CPBindingOperationAnd = 0,
 {
     if (!changes)
         return;
-        
+    CPLog.fatal("HERE");
     var options = [_info objectForKey:CPOptionsKey],
         newValue = [changes objectForKey:CPKeyValueChangeNewKey];
 

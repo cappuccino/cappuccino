@@ -121,15 +121,7 @@ var CPControlBlackColor     = [CPColor blackColor];
 
 + (void)initialize
 {
-    [self exposeBinding:"value"];
-}
-
-+ (BOOL)automaticallyNotifiesObserversForKey:(CPString)aKey
-{
-    if (aKey === @"value")
-        return NO;
-
-    return YES;
+    [self exposeBinding:"objectValue", "value"];
 }
 
 - (id)initWithFrame:(CGRect)aFrame
@@ -492,9 +484,7 @@ var CPControlBlackColor     = [CPColor blackColor];
 */
 - (void)setObjectValue:(id)anObject
 {
-    [self willChangeValueForKey:@"value"];
     _value = anObject;
-    [self didChangeValueForKey:@"value"];
 }
 
 /*!
@@ -687,20 +677,6 @@ var CPControlBlackColor     = [CPColor blackColor];
 
     [[CPNotificationCenter defaultCenter] postNotificationName:CPControlTextDidEndEditingNotification object:self userInfo:[CPDictionary dictionaryWithObject:[note object] forKey:"CPFieldEditor"]];
 }
-
-/*
-Ð doubleValue  
-Ð setDoubleValue:
-Ð intValue  
-Ð setIntValue:  
-Ð objectValue  
-Ð setObjectValue:  
-Ð stringValue  
-Ð setStringValue:  
-Ð setNeedsDisplay  
-Ð attributedStringValue  
-Ð setAttributedStringValue:  
-*/
 
 @end
 

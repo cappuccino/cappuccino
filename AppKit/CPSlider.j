@@ -368,7 +368,7 @@ var CPSliderHorizontalKnobImage         = nil,
     
     [_knob setFrameOrigin:[self constrainKnobPosition:aPoint]];
 
-    [super setObjectValue:[self valueForKnobPosition:[_knob frame].origin]];
+    [self setObjectValue:[self valueForKnobPosition:[_knob frame].origin]];
     
     return YES;   
 }
@@ -377,7 +377,7 @@ var CPSliderHorizontalKnobImage         = nil,
 {
     [_knob setFrameOrigin:[self constrainKnobPosition:aPoint]];
     
-    [super setObjectValue:[self valueForKnobPosition:[_knob frame].origin]];
+    [self setObjectValue:[self valueForKnobPosition:[_knob frame].origin]];
     
     return YES;
 }

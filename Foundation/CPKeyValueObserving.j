@@ -49,7 +49,7 @@
 {
     if (!anObserver || !aPath)
         return;
-    CPLog.info(self+" is adding observer to object: "+self+" forKeyPath: "+aPath+" context: "+aContext);
+    CPLog.warn(anObserver+" is adding itself as an observer to object: "+self+" forKeyPath: "+aPath+" context: "+aContext);
     [[_CPKVOProxy proxyForObject:self] _addObserver:anObserver forKeyPath:aPath options:options context:aContext];
 }
 
@@ -497,6 +497,7 @@ var KVOProxyMap = [CPDictionary dictionary],
 
 - (void)observeValueForKeyPath:(CPString)aKeyPath ofObject:(id)anObject change:(CPDictionary)changes context:(id)aContext
 {
+    CPLog("OBSERVE FORWARDING: "+aKeyPath+" "+anObject+" "+([anObject valueForKeyPath:aKeyPath])+" "+aContext);
     if (anObject == _object)
     {
         [_observer observeValueForKeyPath:_firstPart ofObject:_object change:changes context:_context];

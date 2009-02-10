@@ -60,10 +60,8 @@ CPLogRegister(CPLogConsole);
 	var controller = [[CPObjectController alloc] init];
     [controller bind:@"contentObject" toObject:self withKeyPath:@"track" options:nil];
 	
-	[textField bind:@"value" toObject:controller withKeyPath:@"selection.volume" options:nil];
-	[slider bind:@"value" toObject:controller withKeyPath:@"selection.volume" options:nil];
-
-
+	[textField bind:@"objectValue" toObject:controller withKeyPath:@"selection.volume" options:nil];
+	[slider bind:@"objectValue" toObject:controller withKeyPath:@"selection.volume" options:nil];
 
     [theWindow orderFront:self];
 

@@ -79,7 +79,6 @@
 
 - (CPArray)selectedObjects
 {
-    CPLog("returning: "+_contentObject);
     return [[_CPObservableArray alloc] initWithObjects:[_contentObject] count:1];
 }
 
@@ -110,6 +109,7 @@
 
 - (void)_selectionWillChange
 {
+    [_selection controllerWillChange];
     [self willChangeValueForKey:@"selection"];
 }
 
@@ -117,7 +117,7 @@
 {
     if (_selection === undefined || _selection === nil)
         _selection = [[CPControllerSelectionProxy alloc] initWithController:self];
-CPLog("selection did change: "+_selection);
+
     [_selection controllerDidChange];
     [self didChangeValueForKey:@"selection"];
 }
@@ -262,7 +262,6 @@ CPLog("selection did change: "+_selection);
 
 @implementation _CPObservableArray : CPMutableArray
 {
-    CPArray     _array;
     CPArray     _observationProxies;
 }
 
@@ -280,26 +279,15 @@ CPLog("selection did change: "+_selection);
     return a;
 }
 
-- (id)objectAtIndex:(unsigned)anIndex
-{
-    return [_array objectAtIndex:anIndex];
-}
-
-- (unsigned)count
-{
-    return [_array count];
-}
-
 - (CPString)description
 {
-    return "<_CPObservableArray: "+[_array description]+" >";
+    return "<_CPObservableArray: "+[super description]+" >";
 }
 
 - (id)initWithObjects:(CPArray)objects count:(unsigned)count
-{CPLog("initing with objects: "+objects);
-    if (self = [super init])
+{
+    if (self = [super initWithObjects:objects count:count])
     {
-        _array = [CPArray arrayWithObjects:objects count:count];
         _observationProxies = [];
     }
 
@@ -319,14 +307,14 @@ CPLog("selection did change: "+_selection);
         
         var dotIndex = aKeyPath.indexOf("."),
             remaining = aKeyPath.substring(dotIndex+1),
-            indexes = [CPIndexSet indexSetWithIndexesInRange:CPMakeRange(0, [_array count])];
+            indexes = [CPIndexSet indexSetWithIndexesInRange:CPMakeRange(0, [self count])];
             
-        [_array addObserver:proxy toObjectsAtIndexes:indexes forKeyPath:remaining options:options context:context];
+        [self addObserver:proxy toObjectsAtIndexes:indexes forKeyPath:remaining options:options context:context];
     }
     else
     {
-        var indexes = [CPIndexSet indexSetWithIndexesInRange:CPMakeRange(0, [_array count])];
-        [_array addObserver:anObserver toObjectsAtIndexes:indexes forKeyPath:aKeyPath options:options context:context];
+        var indexes = [CPIndexSet indexSetWithIndexesInRange:CPMakeRange(0, [self count])];
+        [self addObserver:anObserver toObjectsAtIndexes:indexes forKeyPath:aKeyPath options:options context:context];
     }
 }
 
@@ -341,14 +329,14 @@ CPLog("selection did change: "+_selection);
 
         var dotIndex = aKeyPath.indexOf("."),
             remaining = aKeyPath.substring(dotIndex+1),
-            indexes = [CPIndexSet indexSetWithIndexesInRange:CPMakeRange(0, [_array count])];
+            indexes = [CPIndexSet indexSetWithIndexesInRange:CPMakeRange(0, [self count])];
 
-        [_array removeObserver:proxy fromObjectsAtIndexes:indexes forKeyPath:remaining];
+        [self removeObserver:proxy fromObjectsAtIndexes:indexes forKeyPath:remaining];
     }
     else
     {
-        var indexes = [CPIndexSet indexSetWithIndexesInRange:CPMakeRange(0, [_array count])];
-        [_array removeObserver:observer fromObjectsAtIndexes:indexes forKeyPath:aKeyPath];
+        var indexes = [CPIndexSet indexSetWithIndexesInRange:CPMakeRange(0, [self count])];
+        [self removeObserver:observer fromObjectsAtIndexes:indexes forKeyPath:aKeyPath];
     }
 }
 
@@ -369,7 +357,7 @@ CPLog("selection did change: "+_selection);
             [self didChangeValueForKey:keyPath];
     }
 
-    [_array insertObject:anObject atIndex:anIndex];
+    [self insertObject:anObject atIndex:anIndex];
 }
 
 - (void)removeObjectAtIndex:(unsigned)anIndex
@@ -389,7 +377,7 @@ CPLog("selection did change: "+_selection);
             [self didChangeValueForKey:keyPath];
     }
 
-    [_array removeObjectAtIndex:anIndex];
+    [self removeObjectAtIndex:anIndex];
 }
 
 - (void)addObject:(id)anObject
@@ -404,7 +392,7 @@ CPLog("selection did change: "+_selection);
 
 - (void)replaceObjectAtIndex:(unsigned)anIndex withObject:(id)anObject
 {
-    var currentObject = [_array objectAtIndex:anIndex];
+    var currentObject = [self objectAtIndex:anIndex];
     
     for (var i=0, count=[_observationProxies count]; i<count; i++)
     {
@@ -422,7 +410,7 @@ CPLog("selection did change: "+_selection);
             [self didChangeValueForKey:keyPath];
     }
 
-    [_array replaceObjectAtIndex:anIndex withObject:anObject];
+    [self replaceObjectAtIndex:anIndex withObject:anObject];
 }
 
 @end
@@ -442,7 +430,6 @@ CPLog("selection did change: "+_selection);
     {
         _cachedValues = [CPDictionary dictionary];
         _observationProxies = [CPArray array];
-        CPLog.trace("initing controller selection proxy with controller: "+aController);
         _controller = aController;
     }
 
@@ -451,15 +438,14 @@ CPLog("selection did change: "+_selection);
 
 - (id)valueForKey:(CPString)aKey
 {
-    CPLog.warn("looking for value for key: "+aKey+" on selection controller: "+self);
     var value = [_cachedValues objectForKey:aKey];
-    CPLog("VALUE FOR KEY: "+value);
-    if (value)
+
+    if (value !== undefined && value !== nil)
         return value;
-    CPLog("selected objects: "+[_controller selectedObjects]);
+
     var allValues = [[_controller selectedObjects] valueForKeyPath:aKey],
         count = [allValues count];
-    CPLog("all values: "+[allValues description]+" count: "+count);
+
     if (!count)
         value = CPNoSelectionMarker;
     else if (count === 1)
@@ -504,8 +490,11 @@ CPLog("selection did change: "+_selection);
 {
     _keys = [_cachedValues allKeys];
     
-    //for (var i=0, count=_keys.length; i<count; i++)
-    //    [self willChangeValueForKey:_keys[i]];
+    if (!_keys)
+        return;
+        
+    for (var i=0, count=_keys.length; i<count; i++)
+        [self willChangeValueForKey:_keys[i]];
 
     [_cachedValues removeAllObjects];
 }
@@ -514,9 +503,12 @@ CPLog("selection did change: "+_selection);
 {   
     [_cachedValues removeAllObjects];
 
-    //for (var i=0, count=_keys.length; i<count; i++)
-    //    [self didChangeValueForKey:_keys[i]];
-    CPLog("controller didChange");
+    if (!_keys)
+        return;
+
+    for (var i=0, count=_keys.length; i<count; i++)
+        [self didChangeValueForKey:_keys[i]];
+    
    _keys = nil;
 }
 
