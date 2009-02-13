@@ -106,7 +106,6 @@ var _CPTextFieldSquareBezelColor = nil,
 
     BOOL                    _drawsBackground;
     
-    CPLineBreakMode         _lineBreakMode;
     CPColor                 _textFieldBackgroundColor;
     
     id                      _placeholderString;
@@ -114,10 +113,6 @@ var _CPTextFieldSquareBezelColor = nil,
     id                      _delegate;
     
     CPString                _textDidChangeValue;
-    
-    // 
-    CPView                  _bezelView;
-    _CPImageAndTextView     _contentView;
 
     // NS-style Display Properties
     CPTextFieldBezelStyle   _bezelStyle;
@@ -127,8 +122,8 @@ var _CPTextFieldSquareBezelColor = nil,
 
 + (id)themedAttributes
 {
-    return [CPDictionary dictionaryWithObjects:[_CGInsetMakeZero(), _CGInsetMakeZero(), nil]
-                                       forKeys:[@"bezel-inset", @"content-inset", @"bezel-color"]];
+    return [CPDictionary dictionaryWithObjects:[_CGInsetMakeZero(), _CGInsetMake(2.0, 2.0, 2.0, 2.0), _CGInsetMake(2.0, 2.0, 2.0, 2.0), nil]
+                                       forKeys:[@"bezel-inset", @"content-inset", @"bezeled-content-inset", @"bezel-color"]];
 }
 
 /* @ignore */
@@ -677,7 +672,7 @@ var _CPTextFieldSquareBezelColor = nil,
 - (void)sizeToFit
 {
     var size = [(_value || " ") sizeWithFont:[self font]],
-        contentInset = [self isBezeled] ? [self currentValueForThemedAttributeName:@"content-inset"] : _CGInsetMakeZero();
+        contentInset = [self currentValueForThemedAttributeName:([self isBezeled] ? @"bezeled" : "") + @"content-inset"];
 
     [self setFrameSize:CGSizeMake(size.width + contentInset.left + contentInset.right, size.height + contentInset.top + contentInset.bottom)];
 /*#if PLATFORM(DOM)
@@ -754,10 +749,7 @@ var _CPTextFieldSquareBezelColor = nil,
 
 - (CGRect)contentRectForBounds:(CGRect)bounds
 {
-    if (![self isBezeled])
-        return bounds;
-        
-    var contentInset = [self currentValueForThemedAttributeName:@"content-inset"];
+    var contentInset = [self currentValueForThemedAttributeName:([self isBezeled] ? @"bezeled" : @"") + @"content-inset"];
     
     if (!contentInset)
         return bounds;
@@ -903,15 +895,15 @@ var CPTextFieldIsEditableKey            = "CPTextFieldIsEditableKey",
     @return the initialized textfield
 */
 - (id)initWithCoder:(CPCoder)aCoder
-{
+{/*
 #if PLATFORM(DOM)
     _DOMTextElement = document.createElement("div");
 #endif
-
+*/
     self = [super initWithCoder:aCoder];
     
     if (self)
-    {
+    {/*
 #if PLATFORM(DOM)
         var bounds = [self bounds];
         _DOMTextElement.style.position = "absolute";
@@ -932,7 +924,7 @@ var CPTextFieldIsEditableKey            = "CPTextFieldIsEditableKey",
         
         _DOMElement.appendChild(_DOMTextElement);
 #endif
-
+*/
         [self setEditable:[aCoder decodeBoolForKey:CPTextFieldIsEditableKey]];
         [self setSelectable:[aCoder decodeBoolForKey:CPTextFieldIsSelectableKey]];
 
