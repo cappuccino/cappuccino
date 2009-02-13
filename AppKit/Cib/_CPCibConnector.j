@@ -14,13 +14,17 @@ var _CPCibConnectorSourceKey        = @"_CPCibConnectorSourceKey",
     CPString    _label;
 }
 
-- (void)replaceObject:(id)anObject withObject:(id)anotherObject
+- (void)replaceObjects:(JSObject)replacementObjects
 {
-    if (_source == anObject)
-        _source = anotherObject;
-    
-    else if (_destination == anObject)
-        _destination = anotherObject;
+    var replacement = replacementObjects[[_source hash]];
+
+    if (replacement !== undefined)
+        _source = replacement;
+
+    replacement = replacementObjects[[_destination hash]];
+
+    if (replacement !== undefined)
+        _destination = replacement;
 }
 
 @end

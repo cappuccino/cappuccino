@@ -376,7 +376,7 @@ var CPControlBlackColor     = [CPColor blackColor];
 */
 - (CPString)stringValue
 {
-    return _value ? String(_value) : "";
+    return (_value === undefined || _value === nil) ? "" : String(_value);
 }
 
 /*!

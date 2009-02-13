@@ -57,35 +57,17 @@
     _CPCibCustomObject  _fileOwner;
     
     CPSet               _visibleWindows;
-}
 
-- (CPArray)topLevelObjects
-{
-    var count = [_objectsValues count],
-        topLevelObjects = [];
-    
-    while (count--)
-    {
-        var eachObject = _objectsValues[count];
-        
-        if (eachObject == _fileOwner)
-        {
-            var anObject = _objectsKeys[count];
-            
-            if (anObject != _fileOwner)
-                topLevelObjects.push(anObject);
-        }
-    }
-    
-    return topLevelObjects;
+    JSObject            _replacementObjects;
 }
 
 - (CPMenu)mainMenu
 {
     var index = [_namesValues indexOfObjectIdenticalTo:"MainMenu"];
+
     if (index === CPNotFound)
         return nil;
-    
+
     return _namesKeys[index];
 }
 
@@ -131,6 +113,8 @@ var _CPCibObjectDataNamesKeysKey                = @"_CPCibObjectDataNamesKeysKey
     
     if (self)
     {
+        _replacementObjects = {};
+
         _namesKeys = [aCoder decodeObjectForKey:_CPCibObjectDataNamesKeysKey];
         _namesValues = [aCoder decodeObjectForKey:_CPCibObjectDataNamesValuesKey];
 
@@ -194,17 +178,42 @@ var _CPCibObjectDataNamesKeysKey                = @"_CPCibObjectDataNamesKeysKey
     [aCoder encodeObject:_visibleWindows forKey:_CPCibObjectDataVisibleWindowsKey];
 }
 
-- (void)establishConnectionsWithExternalNameTable:(CPDictionary)anExternalNameTable
+- (void)instantiateWithOwner:(id)anOwner topLevelObjects:(CPMutableArray)topLevelObjects
 {
+    // _objectsValues -> parent
+    // _objectsKeys -> child
+    var count = [_objectsKeys count];
+
+    while (count--)
+    {
+        var object = _objectsKeys[count],
+            parent = _objectsValues[count];
+
+        if ([object respondsToSelector:@selector(_cibInstantiate)])
+        {
+            var instantiatedObject = [object _cibInstantiate];
+
+            if (instantiatedObject !== object)
+                _replacementObjects[[object hash]] = instantiatedObject;
+        }
+
+        if (topLevelObjects && parent === _fileOwner && object !== _fileOwner)
+            topLevelObjects.push(object);
+    }
+}
+
+- (void)establishConnectionsWithOwner:(id)anOwner topLevelObjects:(CPMutableArray)topLevelObjects
+{
+    _replacementObjects[[_fileOwner hash]] = anOwner;
+
     var index = 0,
-        count = _connections.length,
-        cibOwner = [anExternalNameTable objectForKey:CPCibOwner];
+        count = _connections.length;
 
     for (; index < count; ++index)
     {
         var connection = _connections[index];
-        
-        [connection replaceObject:_fileOwner withObject:cibOwner];
+
+        [connection replaceObjects:_replacementObjects];
         [connection establishConnection];
     }
 }

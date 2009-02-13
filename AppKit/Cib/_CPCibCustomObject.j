@@ -14,6 +14,11 @@ var _CPCibCustomObjectClassName = @"_CPCibCustomObjectClassName";
     return _className;
 }
 
+- (CPString)description
+{
+    return [super description] + " (" + [self customClassName] + ')';
+}
+
 @end
 
 @implementation _CPCibCustomObject (CPCoding)
