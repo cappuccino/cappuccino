@@ -89,6 +89,11 @@
     return _namesKeys[index];
 }
 
+- (CPSet)visibleWindows
+{
+    return _visibleWindows;
+}
+
 @end
 
 var _CPCibObjectDataNamesKeysKey                = @"_CPCibObjectDataNamesKeysKey",
@@ -151,7 +156,7 @@ var _CPCibObjectDataNamesKeysKey                = @"_CPCibObjectDataNamesKeysKey
 
         _fileOwner = [aCoder decodeObjectForKey:_CPCibObjectDataFileOwnerKey];
     
-    //    CPSet           _visibleWindows;
+        _visibleWindows = [aCoder decodeObjectForKey:_CPCibObjectDataVisibleWindowsKey];
     }
     
     return self;
@@ -186,7 +191,7 @@ var _CPCibObjectDataNamesKeysKey                = @"_CPCibObjectDataNamesKeysKey
     [aCoder encodeObject:_fileOwner forKey:_CPCibObjectDataFileOwnerKey];
 //    CPCustomObject  _fileOwner;
 
-//    CPSet           _visibleWindows;
+    [aCoder encodeObject:_visibleWindows forKey:_CPCibObjectDataVisibleWindowsKey];
 }
 
 - (void)establishConnectionsWithExternalNameTable:(CPDictionary)anExternalNameTable

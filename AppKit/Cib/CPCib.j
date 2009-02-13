@@ -66,7 +66,7 @@ var CPCibObjectDataKey  = @"CPCibObjectDataKey";
 }
 
 - (BOOL)instantiateCibWithExternalNameTable:(CPDictionary)anExternalNameTable
-{   
+{
     var unarchiver = [[_CPCibKeyedUnarchiver alloc] initForReadingWithData:_data bundle:_bundle],
         objectData = [unarchiver decodeObjectForKey:CPCibObjectDataKey];
 
@@ -84,10 +84,13 @@ var CPCibObjectDataKey  = @"CPCibObjectDataKey";
          [CPApp setMainMenu:menu];
          [CPMenu setMenuBarVisible:YES];
     }
-    
+
     if (topLevelObjects)
         [topLevelObjects addObjectsFromArray:[objectData topLevelObjects]];
-    
+
+    // Display Visible Windows.
+    [[objectData visibleWindows] makeObjectsPerformSelector:@selector(makeKeyAndOrderFront:) withObject:self];
+
     /*
 //    [objectData establishConnectionsWithOwner:owner topLevelObjects:topLevelObjects];
 //    [objectData cibInstantiateWithOwner:owner topLevelObjects:topLevelObjects];
@@ -135,6 +138,8 @@ var CPCibObjectDataKey  = @"CPCibObjectDataKey";
     // Display visible windows.
     
     return YES;*/
+
+    return YES;
 }
 
 - (BOOL)instantiateCibWithOwner:(id)anOwner topLevelObjects:(CPArray)topLevelObjects

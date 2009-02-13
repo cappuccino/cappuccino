@@ -592,6 +592,15 @@ var CPPopUpButtonArrowsImage = nil;
         if (items.length > 0)
             [items[1] setHidden:NO];
     }
+
+    var item = [_menu itemArray][index],
+        action = [item action];
+
+    if (!action || (action === @selector(_popUpItemAction:)))
+    {
+        [item setTarget:self];
+        [item setAction:@selector(_popUpItemAction:)];
+    }
 }
 
 /*!
@@ -685,21 +694,12 @@ var CPPopUpButtonArrowsImage = nil;
     
     [self selectItemAtIndex:index];
     
-    var selectedItem = [self selectedItem],
-        target = nil,
-        action = [selectedItem action];
-    
-    if (!action)
-    {
-        target = [self target];
-        action = [self action];
-    }
-    
-    // FIXME: If [selectedItem target] == nil do we use our own target?
-    else
-        target = [selectedItem target];
+    [CPApp sendAction:[aMenuItem action] to:[aMenuItem target] from:aMenuItem];
+}
 
-    [self sendAction:action to:target];
+- (void)_popUpItemAction:(id)aSender
+{
+    [self sendAction:[self action] to:[self target]];
 }
 
 - (CGRect)contentRectForBounds:(CGRect)bounds

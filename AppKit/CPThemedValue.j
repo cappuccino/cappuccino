@@ -123,7 +123,7 @@ var BIT_COUNT   = [ 0 /*0000*/, 1 /*0001*/, 1 /*0010*/, 2 /*0011*/, 1 /*0100*/, 
         _values[aState] = aValue;
     }
     
-    else if (isSingularObject)
+    else if (_isSingularObject)
         _values = aValue;
         
     else
@@ -133,12 +133,22 @@ var BIT_COUNT   = [ 0 /*0000*/, 1 /*0001*/, 1 /*0010*/, 2 /*0011*/, 1 /*0100*/, 
 - (id)valueForControlState:(CPControlState)aState
 {
     if (_isSingularObject)
-        return _values || [_valueFromTheme valueForControlState:aState] || _defaultValue;
-        
+    {
+        var value = _values;
+
+        if (value === undefined || value === nil)
+            value = [_valueFromTheme valueForControlState:aState];
+
+        if (value === undefined || value === nil)
+            value = _defaultValue;
+
+        return value;
+    }
+
     var value = _values[aState];
     
     // If we don't have a value, and we have a non-normal state...
-    if (value === undefined && aState > 0)
+    if ((value === undefined || value === nil) && aState > 0)
     {
         // If this is a composite state, find the closest partial subset match.
         if (!(aState & (aState - 1)))
@@ -165,11 +175,17 @@ var BIT_COUNT   = [ 0 /*0000*/, 1 /*0001*/, 1 /*0010*/, 2 /*0011*/, 1 /*0100*/, 
         }
 
         // Still don't have a value? OK, let's use the normal value.        
-        if (value === undefined)
+        if (value === undefined || value === nil)
             value = _values[CPControlStateNormal];
     }
-    
-    return value || [_valueFromTheme valueForControlState:aState] || _defaultValue;
+
+    if (value === undefined || value === nil)
+        value = [_valueFromTheme valueForControlState:aState];
+
+    if (value === undefined || value === nil)
+        value = _defaultValue;
+
+    return value;
 }
 
 - (id)initWithCoder:(CPCoder)aCoder
@@ -269,5 +285,46 @@ function CPThemedValueDecode(aCoder, aKey, aDefaultValue, anIdentifier, aTheme, 
         [value setThemedClass:aClass];
     }
     
+    return value;
+}
+
+function CPThemedValueEncode2(aCoder, aThemedValue)
+{
+    if (aThemedValue._isSingularObject)
+    {
+        var actualValue = aThemedValue._values;
+
+        if (aThemedValue._values)
+            [aCoder encodeObject:actualValue forKey:"$a" + [aThemedValue identifier]];
+    }
+    else
+        [aCoder encodeObject:aThemedValue forKey:"$a" + [aThemedValue identifier]];
+}
+
+function CPThemedValueDecode2(aCoder, anAttributeName, aDefaultValue, aTheme, aClass)
+{
+    var key = "$a" + anAttributeName;
+
+    if (![aCoder containsValueForKey:key])
+        return CPThemedValueMake(aDefaultValue, anAttributeName, aTheme, aClass);
+
+    var value = [aCoder decodeObjectForKey:key];
+
+    if (![value isKindOfClass:[CPThemedValue class]])
+    {
+        var themedValue = CPThemedValueMake(aDefaultValue, anAttributeName, aTheme, aClass);
+
+        [themedValue setValue:value];
+
+        value = themedValue;
+    }
+    else
+    {
+        [value setDefaultValue:aDefaultValue];
+        [value setTheme:aTheme];
+        [value setIdentifier:anAttributeName];
+        [value setThemedClass:aClass];
+    }
+
     return value;
 }

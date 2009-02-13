@@ -36,24 +36,6 @@
     {
         [self sendActionOn:CPLeftMouseUpMask];
         
-        // Shoudl we stub this out?
-        
-        var theme = nil,
-            theClass = [self class];
-        
-        _alignment = CPThemedValueMake(CPLeftTextAlignment, "alignment", theme, theClass);
-        _verticalAlignment = CPThemedValueMake(CPTopVerticalTextAlignment, "vertical-alignment", theme, theClass);
-        
-        _lineBreakMode = CPThemedValueMake(CPLineBreakByClipping, "line-break-mode", theme, theClass);
-        _textColor = CPThemedValueMake([CPColor blackColor], "text-color", theme, theClass);
-        _font = CPThemedValueMake([CPFont systemFontOfSize:12.0], "font", theme, theClass);
-        
-        _textShadowColor = CPThemedValueMake(nil, @"text-shadow-color", theme, theClass);
-        _textShadowOffset = CPThemedValueMake(CGSizeMake(0.0, 0.0), "text-shadow-offset", theme, theClass);
-        
-        _imagePosition = CPThemedValueMake(CPImageLeft, @"image-position", theme, theClass);
-        _imageScaling = CPThemedValueMake(CPScaleToFit, "image-scaling", theme, theClass);
-        
         var cell = [aCoder decodeObjectForKey:@"NSCell"];
         
         [self setObjectValue:[cell objectValue]];

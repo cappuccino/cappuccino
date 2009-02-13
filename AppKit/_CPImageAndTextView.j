@@ -160,7 +160,7 @@ var HORIZONTAL_MARGIN   = 3.0,
     _verticalAlignment = anAlignment;
     _flags |= _CPImageAndTextViewVerticalAlignmentChangedFlag;
     
-    [self setNeedsDisplay:YES];
+    [self setNeedsLayout];
 }
 
 - (unsigned)verticalAlignment
@@ -176,7 +176,7 @@ var HORIZONTAL_MARGIN   = 3.0,
     _lineBreakMode = aLineBreakMode;
     _flags |= _CPImageAndTextViewLineBreakModeChangedFlag;
     
-    [self setNeedsDisplay:YES];
+    [self setNeedsLayout];
 }
 
 - (CPLineBreakMode)lineBreakMode
@@ -192,7 +192,7 @@ var HORIZONTAL_MARGIN   = 3.0,
     _imagePosition = anImagePosition;
     _flags |= _CPImageAndTextViewImagePositionChangedFlag;
     
-    [self setNeedsDisplay:YES];
+    [self setNeedsLayout];
 }
 
 - (CPCellImagePosition)imagePosition
@@ -208,7 +208,7 @@ var HORIZONTAL_MARGIN   = 3.0,
     _imageScaling = anImageScaling;
     _flags |= _CPImageAndTextViewImageScalingChangedFlag;
 
-    [self setNeedsDisplay:YES];
+    [self setNeedsLayout];
 }
 
 - (void)imageScaling
@@ -242,7 +242,7 @@ var HORIZONTAL_MARGIN   = 3.0,
     _flags |= _CPImageAndTextViewFontChangedFlag;    
     _textSize = NULL;
     
-    [self setNeedsDisplay:YES];
+    [self setNeedsLayout];
 }
 
 - (CPFont)font
@@ -258,7 +258,7 @@ var HORIZONTAL_MARGIN   = 3.0,
     _textShadowColor = aColor;
     _flags |= _CPImageAndTextViewTextShadowColorChangedFlag;
     
-    [self setNeedsDisplay:YES];
+    [self setNeedsLayout];
 }
 
 - (CPColor)textShadowColor
@@ -273,7 +273,7 @@ var HORIZONTAL_MARGIN   = 3.0,
     
     _textShadowOffset = _CGSizeMakeCopy(anOffset);
     
-    [self setNeedsDisplay:YES];
+    [self setNeedsLayout];
 }
 
 - (CGSize)textShadowOffset
@@ -289,7 +289,7 @@ var HORIZONTAL_MARGIN   = 3.0,
     _image = anImage;
     _flags |= _CPImageAndTextViewImageChangedFlag;
     
-    [self setNeedsDisplay:YES];
+    [self setNeedsLayout];
 }
 
 - (CPImage)image
@@ -307,7 +307,7 @@ var HORIZONTAL_MARGIN   = 3.0,
     
     _textSize = NULL;
     
-    [self setNeedsDisplay:YES];
+    [self setNeedsLayout];
 }
 
 - (CPString)text
@@ -315,7 +315,7 @@ var HORIZONTAL_MARGIN   = 3.0,
     return _text;
 }
 
-- (void)drawRect:(CGRect)aRect
+- (void)layoutSubviews
 {
 #if PLATFORM(DOM)
     var needsDOMTextElement = _imagePosition !== CPImageOnly && ([_text length] > 0),
@@ -677,7 +677,7 @@ var HORIZONTAL_MARGIN   = 3.0,
     {
         if (!_textSize)
             _textSize = [_text sizeWithFont:_font ? _font : [CPFont systemFontOfSize:12.0]];
-            
+
         if (_imagePosition === CPImageLeft || _imagePosition === CPImageRight)
         {
             size.width += _textSize.width + HORIZONTAL_MARGIN;

@@ -92,6 +92,9 @@
                 [subview setFrameOrigin:CGPointMake(CGRectGetMinX(frame), height - CGRectGetMaxY(frame))];
             }
         }
+
+        _themedAttributes = {};
+        [self _loadThemedAttributes];
     }
     
     return self;

@@ -127,7 +127,8 @@ var HUD_TITLEBAR_HEIGHT             = 26.0;
         [_titleField setHitTests:NO];
         [_titleField setFont:[CPFont systemFontOfSize:11.0]];
         [_titleField setTextColor:[CPColor whiteColor]];
-        [_titleField setTextShadow:[CPShadow shadowWithOffset:CPSizeMake(0.0, 1.0) blurRadius:2.0 color:[CPColor blackColor]]];
+        [_titleField setTextShadowColor:[CPColor blackColor]];
+        [_titleField setTextShadowOffset:CGSizeMake(0.0, 1.0)];
         [_titleField setAutoresizingMask:CPViewWidthSizable];
         
         // FIXME: Make this to CPLineBreakByTruncatingMiddle once it's implemented.

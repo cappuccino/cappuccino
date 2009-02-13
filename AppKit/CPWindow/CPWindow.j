@@ -172,6 +172,7 @@ CPWindowBelow                   = 2;
 CPWindowWillCloseNotification       = @"CPWindowWillCloseNotification";
 CPWindowDidBecomeMainNotification   = @"CPWindowDidBecomeMainNotification";
 CPWindowDidResignMainNotification   = @"CPWindowDidResignMainNotification";
+CPWindowDidMoveNotification         = @"CPWindowDidMoveNotification";
 
 
 var SHADOW_MARGIN_LEFT      = 20.0,
@@ -508,6 +509,8 @@ CPTexturedBackgroundWindowMask
 #if PLATFORM(DOM)
     CPDOMDisplayServerSetStyleLeftTop(_DOMElement, NULL, origin.x, origin.y);
 #endif
+
+    [[CPNotificationCenter defaultCenter] postNotificationName:CPWindowDidMoveNotification object:self];
 }
 
 /*!
@@ -830,6 +833,8 @@ CPTexturedBackgroundWindowMask
 */
 - (void)setDelegate:(id)aDelegate
 {
+    // FIXME: Unregister for notifications!
+
     _delegate = aDelegate;
     
     _delegateRespondsToWindowWillReturnUndoManagerSelector = [_delegate respondsToSelector:@selector(windowWillReturnUndoManager:)];
@@ -848,6 +853,13 @@ CPTexturedBackgroundWindowMask
             addObserver:_delegate
                selector:@selector(windowDidResignMain:)
                    name:CPWindowDidResignMainNotification
+                 object:self];
+
+    if ([_delegate respondsToSelector:@selector(windowDidMove:)])
+        [defaultCenter
+            addObserver:_delegate
+               selector:@selector(windowDidMove:)
+                   name:CPWindowDidMoveNotification
                  object:self];
 }
 
