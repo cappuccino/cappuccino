@@ -165,7 +165,7 @@
     
     for (var property in contents)
     {
-        if (_contents.hasOwnProperty(property))
+        if (contents.hasOwnProperty(property))
         {
             if (shouldCopyItems)
                 [self addObject:[contents[property] copy]];
