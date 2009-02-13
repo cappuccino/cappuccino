@@ -476,7 +476,7 @@ var CPPopUpButtonArrowsImage = nil;
 */
 - (int)indexOfItemWithRepresentedObject:(id)anObject
 {
-    return [_menu indexOfItemWithRepresentedObejct:anObject];
+    return [_menu indexOfItemWithRepresentedObject:anObject];
 }
 
 /*!
