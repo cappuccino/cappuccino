@@ -226,6 +226,22 @@ function class_copyMethodList(/*Class*/ aClass)
     return aClass.method_list.slice(0);
 }
 
+function class_replaceMethod(/*Class*/ aClass, /*SEL*/ aSelector, /*IMP*/ aMethodImplementation)
+{
+    if (!aClass || !aSelector)
+        return NULL;
+
+    var method = aClass.method_dtable[aSelector],
+        method_imp = NULL;
+
+    if (method)
+        method_imp = method.method_imp;
+
+    method.method_imp = aMethodImplementation;
+
+    return method_imp;
+}
+
 var _class_initialize = function(/*Class*/ aClass)
 {
     var meta = GETMETA(aClass);
