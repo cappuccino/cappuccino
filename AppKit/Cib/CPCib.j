@@ -88,7 +88,7 @@ var CPCibObjectDataKey  = @"CPCibObjectDataKey";
     }
 
     // Display Visible Windows.
-    [[objectData visibleWindows] makeObjectsPerformSelector:@selector(makeKeyAndOrderFront:) withObject:self];
+    [objectData displayVisibleWindows];
 
     /*
 //    [objectData establishConnectionsWithOwner:owner topLevelObjects:topLevelObjects];

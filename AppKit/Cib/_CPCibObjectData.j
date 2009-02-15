@@ -71,9 +71,13 @@
     return _namesKeys[index];
 }
 
-- (CPSet)visibleWindows
+- (void)displayVisibleWindows
 {
-    return _visibleWindows;
+    var object = nil,
+        objectEnumerator = [_visibleWindows objectEnumerator];
+
+    while (object = [objectEnumerator nextObject])
+        [_replacementObjects[[object hash]] makeKeyAndOrderFront:self];
 }
 
 @end
@@ -187,7 +191,8 @@ var _CPCibObjectDataNamesKeysKey                = @"_CPCibObjectDataNamesKeysKey
     while (count--)
     {
         var object = _objectsKeys[count],
-            parent = _objectsValues[count];
+            parent = _objectsValues[count],
+            instantiatedObject = object;
 
         if ([object respondsToSelector:@selector(_cibInstantiate)])
         {
@@ -198,7 +203,7 @@ var _CPCibObjectDataNamesKeysKey                = @"_CPCibObjectDataNamesKeysKey
         }
 
         if (topLevelObjects && parent === _fileOwner && object !== _fileOwner)
-            topLevelObjects.push(object);
+            topLevelObjects.push(instantiatedObject);
     }
 }
 

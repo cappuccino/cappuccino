@@ -26,14 +26,6 @@
     return _bundle;
 }
 
-- (id)unarchiver:(CPKeyedUnarchiver)aKeyedUnarchiver didDecodeObject:(id)anObject
-{
-    if ([anObject respondsToSelector:@selector(_cibInstantiate)])
-        return [anObject _cibInstantiate];
-
-    return anObject;
-}
-
 - (void)replaceObjectAtUID:(int)aUID withObject:(id)anObject
 {
     _objects[aUID] = anObject;

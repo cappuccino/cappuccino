@@ -794,7 +794,7 @@ var DOMElementPrototype         = nil,
 */
 - (void)resizeWithOldSuperviewSize:(CGSize)aSize
 {
-    var mask = _autoresizingMask;
+    var mask = [self autoresizingMask];
     
     if(mask == CPViewNotSizable)
         return;
