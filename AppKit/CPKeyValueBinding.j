@@ -55,7 +55,7 @@ var CPBindingOperationAnd = 0,
 
 + (CPKeyValueBinding)getBinding:(CPString)aBinding forObject:(id)anObject
 {
-    return [[bindingsMap objectForKey:anObject] objectForKey:aBinding];
+    return [[bindingsMap objectForKey:[anObject hash]] objectForKey:aBinding];
 }
 
 + (CPDictionary)infoForBinding:(CPString)aBinding forObject:(id)anObject
@@ -160,7 +160,7 @@ var CPBindingOperationAnd = 0,
 {
     if (!changes)
         return;
-    CPLog.fatal("HERE");
+
     var options = [_info objectForKey:CPOptionsKey],
         newValue = [changes objectForKey:CPKeyValueChangeNewKey];
 
@@ -176,7 +176,7 @@ var CPBindingOperationAnd = 0,
         valueTransformer,
         placeholder;
 
-    switch (aValue || @"")
+    switch (aValue)
     {
         case CPMultipleValuesMarker:    return [options objectForKey:CPMultipleValuesPlaceholderBindingOption] || @"Multiple Values";
         
@@ -187,7 +187,8 @@ var CPBindingOperationAnd = 0,
 
                                         return [options objectForKey:CPNotApplicablePlaceholderBindingOption] || @"Not Applicable";
 
-        case @"":                       return [options objectForKey:CPNullPlaceholderBindingOption] || @"";
+        case nil:
+        case undefined:                 return [options objectForKey:CPNullPlaceholderBindingOption] || @"";
     }
 
     var valueTransformerName = [options objectForKey:CPValueTransformerNameBindingOption],
@@ -204,7 +205,7 @@ var CPBindingOperationAnd = 0,
     return aValue;
 }
 
-- (id)reverseTransformValue: (id)value withOptions: (NSDictionary *)options
+- (id)reverseTransformValue:(id)aValue withOptions: (CPDictionary)options
 {
     var valueTransformerName = [options objectForKey:CPValueTransformerNameBindingOption],
         valueTransformer;

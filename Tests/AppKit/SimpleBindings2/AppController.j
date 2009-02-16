@@ -40,13 +40,16 @@ CPLogRegister(CPLogConsole);
     
     slider = [[CPSlider alloc] initWithFrame:CGRectMake(CGRectGetMinX(textFrame), CGRectGetMaxY(textFrame)+10, CGRectGetWidth(textFrame), 12)];
 
-    [slider setContinuous:NO];
+    [slider setContinuous:YES];
     
     [contentView addSubview:slider];
     
     var button = [[CPButton alloc] initWithFrame:CGRectMake(CGRectGetMinX(textFrame)+25, CGRectGetMaxY(textFrame)+40, 100, 18)];
     
     [button setTitle:@"mute"];
+    
+    [button setTarget:self];
+    [button setAction:@selector(muteTrack:)];
 
     [contentView addSubview:button];
 
@@ -60,19 +63,17 @@ CPLogRegister(CPLogConsole);
 	var controller = [[CPObjectController alloc] init];
     [controller bind:@"contentObject" toObject:self withKeyPath:@"track" options:nil];
 	
-	[textField bind:@"objectValue" toObject:controller withKeyPath:@"selection.volume" options:nil];
-	[slider bind:@"objectValue" toObject:controller withKeyPath:@"selection.volume" options:nil];
+	[textField bind:CPValueBinding toObject:controller withKeyPath:@"selection.volume" options:nil];
+	[slider bind:CPValueBinding toObject:controller withKeyPath:@"selection.volume" options:nil];
 
     [theWindow orderFront:self];
-
-    // Uncomment the following line to turn on the standard menu bar.
-    //[CPMenu setMenuBarVisible:YES];
 }
 
 - (IBAction)muteTrack:(id)sender
 {
 	[track setVolume:0.0];
 }
+
 
 @end
 

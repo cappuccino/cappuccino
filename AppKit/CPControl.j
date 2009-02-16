@@ -121,7 +121,7 @@ var CPControlBlackColor     = [CPColor blackColor];
 
 + (void)initialize
 {
-    [self exposeBinding:"objectValue", "value"];
+    [self exposeBinding:"value"];
 }
 
 - (id)initWithFrame:(CGRect)aFrame
@@ -144,6 +144,17 @@ var CPControlBlackColor     = [CPColor blackColor];
     }
     
     return self;
+}
+
+- (void)bind:(CPString)binding toObject:(id)anObject withKeyPath:(CPString)keyPath options:(CPDictionary)options
+{
+    if ([binding isEqual: CPValueBinding])
+    {
+        [self unbind: binding];
+        [[CPKeyValueBinding alloc] initWithBinding: @"objectValue" name:CPValueBinding to:anObject  keyPath:keyPath options:options from:self];
+    }
+    else
+        [super bind:binding toObject:anObject withKeyPath:keyPath options:options];
 }
 
 /*!
@@ -438,6 +449,11 @@ var CPControlBlackColor     = [CPColor blackColor];
 */
 - (void)sendAction:(SEL)anAction to:(id)anObject
 {
+    var theBinding = [CPKeyValueBinding getBinding:CPValueBinding forObject:self];
+
+    if (theBinding)
+        [theBinding reverseSetValueFor:@"objectValue"];
+
     [CPApp sendAction:anAction to:anObject from:self];
 }
 
