@@ -464,6 +464,7 @@ var CPSplitViewHorizontalImage = nil,
         totalSizableSpace = 0,
         nonSizableSpace = 0,
         lastSizableIndex = -1,
+        totalSizablePanes = 0,
         isVertical = [self isVertical];
 
     for (index = 0; index < count; ++index)
@@ -475,8 +476,12 @@ var CPSplitViewHorizontalImage = nil,
         {
             totalSizableSpace += [view frame].size[_sizeComponent];
             lastSizableIndex = index;
+            totalSizablePanes++;
         }
     }
+
+    if (totalSizablePanes === count)
+        totalSizableSpace = 0;
 
     var nonSizableSpace = totalSizableSpace ? bounds.size[_sizeComponent] - totalSizableSpace : 0,
         ratio = (bounds.size[_sizeComponent] - totalDividers*dividerThickness - nonSizableSpace) / (oldSize[_sizeComponent]- totalDividers*dividerThickness - nonSizableSpace),
