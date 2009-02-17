@@ -49,17 +49,6 @@ _CPButtonBezelStyleHeights[CPHUDBezelStyle] = 20;
         _isBordered = [cell isBordered];
         _bezelStyle = [cell bezelStyle];
         
-        var theme = nil,
-            theClass = [self class];
-        
-        _bezelInset = CPThemedValueMake(CGInsetMakeZero(), "bezel-inset", theme, theClass);
-        _contentInset = CPThemedValueMake(CGInsetMakeZero(), "content-inset", theme, theClass);
-        
-        _bezelColor = CPThemedValueMake(nil, "bezel-color", theme, theClass);
-        
-        _image = CPThemedValueMake(nil, @"image", theme, theClass);
-        _title = CPThemedValueMake(nil, @"title", theme, theClass);
-        
         // clean up:
         
         switch (_bezelStyle)
@@ -98,11 +87,11 @@ _CPButtonBezelStyleHeights[CPHUDBezelStyle] = 20;
                 _bezelStyle = CPHUDBezelStyle;
         }
         
-        if (_CPButtonBezelStyleHeights[_bezelStyle] != undefined)
+        //if (_CPButtonBezelStyleHeights[_bezelStyle] != undefined)
         {
-            CPLog.warn("Adjusting CPButton height from " +_frame.size.height+ " / " + _bounds.size.height+" to " + _CPButtonBezelStyleHeights[_bezelStyle]);
-            _frame.size.height = _CPButtonBezelStyleHeights[_bezelStyle];
-            _bounds.size.height = _CPButtonBezelStyleHeights[_bezelStyle];
+            //CPLog.warn("Adjusting CPButton height from " +_frame.size.height+ " / " + _bounds.size.height+" to " + _CPButtonBezelStyleHeights[_bezelStyle]);
+            _frame.size.height = 24.0;//_CPButtonBezelStyleHeights[_bezelStyle];
+            _bounds.size.height = 24.0;//_CPButtonBezelStyleHeights[_bezelStyle];
         }
     }
     
