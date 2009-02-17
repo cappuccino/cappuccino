@@ -136,6 +136,15 @@ var CPPopUpButtonArrowsImage = nil;
 }
 
 // Inserting and Deleting Items
+
+/*!
+    Adds a new menu item using a CPMenuItem object.
+*/
+- (void)addItem:(CPMenuItem)anItem
+{
+    [_menu addItem:anItem];
+}
+
 /*!
     Adds a new menu item with the specified title.
     @param the new menu item's tite

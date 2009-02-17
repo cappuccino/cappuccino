@@ -84,6 +84,7 @@ var CPAlertWarningImage,
     CPImageView     _alertImageView;
 
     CPAlertStyle    _alertStyle;
+    CPString        _windowTitle;
     int             _windowStyle;
     int             _buttonCount;
     CPArray         _buttons;
@@ -161,6 +162,23 @@ var CPAlertWarningImage,
     
     [[_alertPanel contentView] addSubview:_messageLabel];
     [[_alertPanel contentView] addSubview:_alertImageView];
+}
+
+/*!
+    Sets the window's title. If this is not defined, a default title based on your warning level will be used.
+    @param aTitle the title to use in place of the default. Set to nil to use default.
+*/
+- (void)setTitle:(CPString)aTitle
+{
+    _windowTitle = aTitle;
+}
+
+/*!
+    Gets the window's title.
+*/
+- (CPString)title
+{
+    return _windowTitle;
 }
 
 /*!
@@ -252,19 +270,23 @@ var CPAlertWarningImage,
 */
 - (void)runModal
 {
+    var theTitle;
+    
     switch (_alertStyle)
     {
         case CPWarningAlertStyle:       [_alertImageView setImage:CPAlertWarningImage];
-                                        [_alertPanel setTitle:@"Warning"];
+                                        theTitle = @"Warning";
                                         break;
         case CPInformationalAlertStyle: [_alertImageView setImage:CPAlertInformationImage];
-                                        [_alertPanel setTitle:@"Information"];
+                                        theTitle = @"Information";
                                         break;
         case CPCriticalAlertStyle:      [_alertImageView setImage:CPAlertErrorImage];
-                                        [_alertPanel setTitle:@"Error"];
+                                        theTitle = @"Error";
                                         break;
     }
-        
+    
+    [_alertPanel setTitle:_windowTitle ? _windowTitle : theTitle];
+    
     [CPApp runModalForWindow:_alertPanel];
 }
 

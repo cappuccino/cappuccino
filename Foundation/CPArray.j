@@ -51,7 +51,7 @@
     if (++_index >= [_array count])
         return nil;
 
-    return _array[_index];
+    return [_array objectAtIndex:_index];
 }
 
 @end
@@ -81,7 +81,7 @@
     if (--_index < 0)
         return nil;
 
-    return _array[_index];
+    return [_array objectAtIndex:_index];
 }
 
 @end
@@ -733,6 +733,14 @@
     [sorted sortUsingDescriptors:descriptors];
     
     return sorted;
+}
+
+/*!
+    Return a copy of the receiver sorted using the function passed into the first parameter.
+*/
+- (CPArray)sortedArrayUsingFunction:(Function)aFunction
+{
+    return [self sortedArrayUsingFunction:aFunction context:nil];
 }
 
 /*!

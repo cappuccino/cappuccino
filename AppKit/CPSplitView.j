@@ -459,20 +459,56 @@ var CPSplitViewHorizontalImage = nil,
     var index = 0,
         count = [_subviews count],
         bounds = [self bounds],
-        dividerThickness = [self dividerThickness];
-    
-    for (; index < count; ++index)
+        dividerThickness = [self dividerThickness],
+        totalDividers = count - 1,
+        totalSizableSpace = 0,
+        nonSizableSpace = 0,
+        lastSizableIndex = -1,
+        totalSizablePanes = 0,
+        isVertical = [self isVertical];
+
+    for (index = 0; index < count; ++index)
     {
         var view = _subviews[index],
-            viewFrame = CGRectMakeCopy(bounds);
-        
-        if (index + 1 == count)
-            viewFrame.size[_sizeComponent] = bounds.size[_sizeComponent] - viewFrame.origin[_originComponent];
-        else
-            viewFrame.size[_sizeComponent] = bounds.size[_sizeComponent] * ([view frame].size[_sizeComponent] / oldSize[_sizeComponent]);
-    
-        bounds.origin[_originComponent] += viewFrame.size[_sizeComponent] + dividerThickness;
-        
+            isSizable = isVertical ? [view autoresizingMask] & CPViewWidthSizable : [view autoresizingMask] & CPViewHeightSizable;
+
+        if (isSizable)
+        {
+            totalSizableSpace += [view frame].size[_sizeComponent];
+            lastSizableIndex = index;
+            totalSizablePanes++;
+        }
+    }
+
+    if (totalSizablePanes === count)
+        totalSizableSpace = 0;
+
+    var nonSizableSpace = totalSizableSpace ? bounds.size[_sizeComponent] - totalSizableSpace : 0,
+        ratio = (bounds.size[_sizeComponent] - totalDividers*dividerThickness - nonSizableSpace) / (oldSize[_sizeComponent]- totalDividers*dividerThickness - nonSizableSpace),
+        remainingFlexibleSpace = bounds.size[_sizeComponent] - oldSize[_sizeComponent];
+
+    for (index = 0; index < count; ++index)
+    {
+        var view = _subviews[index],
+            viewFrame = CGRectMakeCopy(bounds),
+            isSizable = isVertical ? [view autoresizingMask] & CPViewWidthSizable : [view autoresizingMask] & CPViewHeightSizable;
+
+            if (index + 1 == count)
+                viewFrame.size[_sizeComponent] = bounds.size[_sizeComponent] - viewFrame.origin[_originComponent];
+            else if (totalSizableSpace && isSizable && lastSizableIndex === index)
+                viewFrame.size[_sizeComponent] = MAX(0, ROUND([view frame].size[_sizeComponent] + remainingFlexibleSpace))
+            else if (isSizable || !totalSizableSpace)
+            {
+                viewFrame.size[_sizeComponent] = MAX(0, ROUND(ratio * [view frame].size[_sizeComponent]));
+                remainingFlexibleSpace -= (viewFrame.size[_sizeComponent] - [view frame].size[_sizeComponent]);
+            }
+            else if (totalSizableSpace && !isSizable)
+                viewFrame.size[_sizeComponent] = [view frame].size[_sizeComponent];
+            else
+                alert("SHOULD NEVER GET HERE");
+                
+        bounds.origin[_originComponent] += viewFrame.size[_sizeComponent] + dividerThickness;        
+
         [view setFrame:viewFrame];
     }
 
