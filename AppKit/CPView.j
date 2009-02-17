@@ -625,9 +625,6 @@ var DOMElementPrototype         = nil,
         _bounds.size.width = aSize.width;
         _bounds.size.height = aSize.height;
     }
-    
-    if (_postsFrameChangedNotifications && !_inhibitFrameAndBoundsChangedNotifications)
-        [_CPViewNotificationCenter postNotificationName:CPViewFrameDidChangeNotification object:self];
 
     if (_layer)
         [_layer _owningViewBoundsChanged];
@@ -640,40 +637,43 @@ var DOMElementPrototype         = nil,
 
 #if PLATFORM(DOM)
     CPDOMDisplayServerSetStyleSize(_DOMElement, size.width, size.height);
-    
+
     if (_DOMContentsElement)
     {
         CPDOMDisplayServerSetSize(_DOMContentsElement, size.width, size.height);
         CPDOMDisplayServerSetStyleSize(_DOMContentsElement, size.width, size.height);
     }
-    
-    if (_backgroundType == BackgroundTrivialColor)
-        return;
-        
-    var images = [[_backgroundColor patternImage] imageSlices];
 
-    if (_backgroundType == BackgroundVerticalThreePartImage)
+    if (_backgroundType !== BackgroundTrivialColor)
     {
-        CPDOMDisplayServerSetStyleSize(_DOMImageParts[1], size.width, size.height - _DOMImageSizes[0].height - _DOMImageSizes[2].height);
-    }
-    
-    else if (_backgroundType == BackgroundHorizontalThreePartImage)
-    {
-        CPDOMDisplayServerSetStyleSize(_DOMImageParts[1], size.width - _DOMImageSizes[0].width - _DOMImageSizes[2].width, size.height);
-    }
-    
-    else if (_backgroundType == BackgroundNinePartImage)
-    {
-        var width = size.width - _DOMImageSizes[0].width - _DOMImageSizes[2].width,
-            height = size.height - _DOMImageSizes[0].height - _DOMImageSizes[6].height;
-        
-        CPDOMDisplayServerSetStyleSize(_DOMImageParts[1], width, _DOMImageSizes[0].height);
-        CPDOMDisplayServerSetStyleSize(_DOMImageParts[3], _DOMImageSizes[3].width, height);
-        CPDOMDisplayServerSetStyleSize(_DOMImageParts[4], width, height);
-        CPDOMDisplayServerSetStyleSize(_DOMImageParts[5], _DOMImageSizes[5].width, height);
-        CPDOMDisplayServerSetStyleSize(_DOMImageParts[7], width, _DOMImageSizes[7].height);
+        var images = [[_backgroundColor patternImage] imageSlices];
+
+        if (_backgroundType === BackgroundVerticalThreePartImage)
+        {
+            CPDOMDisplayServerSetStyleSize(_DOMImageParts[1], size.width, size.height - _DOMImageSizes[0].height - _DOMImageSizes[2].height);
+        }
+
+        else if (_backgroundType === BackgroundHorizontalThreePartImage)
+        {
+            CPDOMDisplayServerSetStyleSize(_DOMImageParts[1], size.width - _DOMImageSizes[0].width - _DOMImageSizes[2].width, size.height);
+        }
+
+        else if (_backgroundType === BackgroundNinePartImage)
+        {
+            var width = size.width - _DOMImageSizes[0].width - _DOMImageSizes[2].width,
+                height = size.height - _DOMImageSizes[0].height - _DOMImageSizes[6].height;
+
+            CPDOMDisplayServerSetStyleSize(_DOMImageParts[1], width, _DOMImageSizes[0].height);
+            CPDOMDisplayServerSetStyleSize(_DOMImageParts[3], _DOMImageSizes[3].width, height);
+            CPDOMDisplayServerSetStyleSize(_DOMImageParts[4], width, height);
+            CPDOMDisplayServerSetStyleSize(_DOMImageParts[5], _DOMImageSizes[5].width, height);
+            CPDOMDisplayServerSetStyleSize(_DOMImageParts[7], width, _DOMImageSizes[7].height);
+        }
     }
 #endif
+
+    if (_postsFrameChangedNotifications && !_inhibitFrameAndBoundsChangedNotifications)
+        [_CPViewNotificationCenter postNotificationName:CPViewFrameDidChangeNotification object:self];
 }
 
 /*!
@@ -1973,7 +1973,7 @@ var CPViewAutoresizingMaskKey       = @"CPViewAutoresizingMask",
         _subviews = [aCoder decodeObjectForKey:CPViewSubviewsKey];
         _superview = [aCoder decodeObjectForKey:CPViewSuperviewKey];
         
-        _autoresizingMask = [aCoder decodeIntForKey:CPViewAutoresizingMaskKey];
+        _autoresizingMask = [aCoder decodeIntForKey:CPViewAutoresizingMaskKey] || 0;
         _autoresizesSubviews = [aCoder decodeBoolForKey:CPViewAutoresizesSubviewsKey];
         
         _hitTests = [aCoder decodeObjectForKey:CPViewHitTestsKey];
