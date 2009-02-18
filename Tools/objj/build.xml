@@ -31,7 +31,8 @@
         <jsc>
             <arguments>
                 <arg line = "-o objj.class" />
-                <arg value = "-nosource" />
+                <!-- <arg value = "-nosource" /> -->
+                <arg value = "-debug" />
                 <arg value = "${Build.Products}/objj.js" />
             </arguments>
         </jsc>
