@@ -11,9 +11,6 @@
             <string>AppKit</string>
             <key>Excluded</key>
             <array>
-                <string>CPOutlineView.j</string>
-                <string>CPTableColumn.j</string>
-                <string>CPTableView.j</string>
                 <!-- These get compiled into CGContext -->
                 <string>Themes</string>
                 <string>CoreGraphics/CGContextCanvas.j</string>

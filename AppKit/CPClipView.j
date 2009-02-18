@@ -188,27 +188,7 @@ var CPClipViewDocumentViewKey = @"CPScrollViewDocumentView";
 {
     if (self = [super initWithCoder:aCoder])
     {
-        _documentView = [aCoder decodeObjectForKey:CPClipViewDocumentViewKey];
-        
-        if (_documentView)
-        {
-    		[_documentView setPostsFrameChangedNotifications:YES];
-    		[_documentView setPostsBoundsChangedNotifications:YES];
-
-            var defaultCenter = [CPNotificationCenter defaultCenter];
-            
-    		[defaultCenter
-                addObserver:self
-                   selector:@selector(viewFrameChanged:)
-                       name:CPViewFrameDidChangeNotification 
-                     object:_documentView];
-
-    		[defaultCenter
-                addObserver:self
-                   selector:@selector(viewBoundsChanged:)
-                       name:CPViewBoundsDidChangeNotification 
-                     object:_documentView];
-        }
+        [self setDocumentView:[aCoder decodeObjectForKey:CPClipViewDocumentViewKey]];
     }
     
     return self;
