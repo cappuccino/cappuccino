@@ -24,7 +24,6 @@
 @import "CGGeometry.j"
 
 @import "CPControl.j"
-@import "CPThemedValue.j"
 
 #include "CoreGraphics/CGGeometry.h"
 
@@ -528,7 +527,7 @@ var _CPButtonClassName                          = nil,
     }
     else
         return [[_CPImageAndTextView alloc] initWithFrame:_CGRectMakeZero()];
-    
+
     return [super createEphemeralSubviewNamed:aName];
 }
 
