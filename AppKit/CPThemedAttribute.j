@@ -84,7 +84,7 @@ var BIT_COUNT   = [ 0 /*00000*/, 1 /*00001*/, 1 /*00010*/, 2 /*00011*/, 1 /*0010
         return;
     
     _theme = aTheme;
-    _valueFromTheme = [_theme valueForName:_name inClass:_themedClass];
+    _valueFromTheme = [_theme valueForAttributeName:_name inClass:_themedClass];
 }
 
 - (void)setThemedClass:(Class)aClass
@@ -93,7 +93,7 @@ var BIT_COUNT   = [ 0 /*00000*/, 1 /*00001*/, 1 /*00010*/, 2 /*00011*/, 1 /*0010
         return;
     
     _themedClass = aClass;
-    _valueFromTheme = [_theme valueForName:_name inClass:_themedClass];
+    _valueFromTheme = [_theme valueForAttributeName:_name inClass:_themedClass];
 }
 
 - (void)setValue:(id)aValue
