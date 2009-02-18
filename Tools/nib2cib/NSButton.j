@@ -44,9 +44,11 @@ _CPButtonBezelStyleHeights[CPHUDBezelStyle] = 20;
         _controlSize = CPRegularControlSize;
     
         var cell = [aCoder decodeObjectForKey:@"NSCell"];
-        
+
         _title = [cell title];
-        _isBordered = [cell isBordered];
+
+        [self setBordered:[cell isBordered]];
+
         _bezelStyle = [cell bezelStyle];
         
         // clean up:

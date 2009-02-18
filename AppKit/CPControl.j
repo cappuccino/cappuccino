@@ -572,6 +572,7 @@ BRIDGE(ImageScaling, imageScaling, "image-scaling")
 @end
 
 var CPControlValueKey           = "CPControlValueKey",
+    CPControlControlStateKey    = @"CPControlControlStateKey",
     CPControlIsEnabledKey       = "CPControlIsEnabledKey",
     
     CPControlTargetKey          = "CPControlTargetKey",
@@ -590,11 +591,11 @@ var __Deprecated__CPImageViewImageKey   = @"CPImageViewImageKey";
 - (id)initWithCoder:(CPCoder)aCoder
 {
     self = [super initWithCoder:aCoder];
-    
+
     if (self)
     {
-        _controlState = CPControlStateNormal;
-        
+        _controlState = [aCoder decodeObjectForKey:CPControlControlStateKey];
+
         [self setObjectValue:[aCoder decodeObjectForKey:CPControlValueKey]];
         
         /*
@@ -630,6 +631,7 @@ var __Deprecated__CPImageViewImageKey   = @"CPImageViewImageKey";
     if (subviews)
         _subviews = subviews;
     
+    [aCoder encodeObject:_controlState forKey:CPControlControlStateKey];
     [aCoder encodeObject:_value forKey:CPControlValueKey];
     
     /*[aCoder encodeBool:_isEnabled forKey:CPControlIsEnabledKey];

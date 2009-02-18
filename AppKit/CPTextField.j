@@ -71,7 +71,7 @@ CPTextFieldSquareBezel          = 0;
 	@global
 	@group CPTextFieldBezelStyle
 */
-CPTextFieldRoundedBezel             = 1;
+CPTextFieldRoundedBezel         = 1;
 
 var TOP_PADDING                     = 4.0,
     BOTTOM_PADDING                  = 3.0;
@@ -96,6 +96,8 @@ var _CPTextFieldSquareBezelColor = nil,
 }
 
 @end
+
+CPTextFieldStateRounded = 1 << 12;
 
 /*!
     This control displays editable text in a Cappuccino application.
@@ -235,12 +237,16 @@ var _CPTextFieldSquareBezelColor = nil,
 */
 - (void)setBezeled:(BOOL)shouldBeBezeled
 {
-    if (_isBezeled == shouldBeBezeled)
+    if ((!!(_controlState & CPControlStateBezeled)) === shouldBeBezeled)
         return;
     
-    _isBezeled = shouldBeBezeled;
-    
-    [self _updateBackground];
+    if (shouldBeBezeled)
+        _controlState |= CPControlStateBezeled;
+    else
+        _controlState &= ~CPControlStateBezeled;
+
+    [self setNeedsLayout];
+    [self setNeedsDisplay:YES];
 }
 
 /*!
@@ -248,7 +254,7 @@ var _CPTextFieldSquareBezelColor = nil,
 */
 - (BOOL)isBezeled
 {
-    return _isBezeled;
+    return !!(_controlState & CPControlStateBezeled);
 }
 
 /*!
@@ -257,19 +263,18 @@ var _CPTextFieldSquareBezelColor = nil,
 */
 - (void)setBezelStyle:(CPTextFieldBezelStyle)aBezelStyle
 {
-    if (_bezelStyle == aBezelStyle)
+    var shouldBeRounded = aBezelStyle === CPTextFieldRoundedBezel;
+    
+    if ((!!(_controlState & CPTextFieldStateRounded)) === shouldBeRounded)
         return;
     
-    _bezelStyle = aBezelStyle;
-    
-/*#if PLATFORM(DOM)
-    if (aBezelStyle == CPTextFieldRoundedBezel)
-        _DOMTextElement.style.paddingLeft = ROUNDEDBEZEL_HORIZONTAL_PADDING - 1.0 + "px";        
-    else 
-        _DOMTextElement.style.paddingLeft = "0px";        
-#endif
+    if (shouldBeRounded)
+        _controlState |= CPTextFieldStateRounded;
+    else
+        _controlState &= ~CPTextFieldStateRounded;
 
-    [self _updateBackground];*/
+    [self setNeedsLayout];
+    [self setNeedsDisplay:YES];
 }
 
 /*!
@@ -277,7 +282,10 @@ var _CPTextFieldSquareBezelColor = nil,
 */
 - (CPTextFieldBezelStyle)bezelStyle
 {
-    return _bezelStyle;
+    if (_controlState & CPTextFieldStateRounded)
+        return CPTextFieldRoundedBezel;
+
+    return CPTextFieldSquareBezel;
 }
 
 /*!
@@ -286,12 +294,16 @@ var _CPTextFieldSquareBezelColor = nil,
 */
 - (void)setBordered:(BOOL)shouldBeBordered
 {
-    if (_isBordered == shouldBeBordered)
+    if ((!!(_controlState & CPControlStateBordered)) === shouldBeBordered)
         return;
-        
-    _isBordered = shouldBeBordered;
     
-    [self _updateBackground];
+    if (shouldBeBordered)
+        _controlState |= CPControlStateBordered;
+    else
+        _controlState &= ~CPControlStateBordered;
+
+    [self setNeedsLayout];
+    [self setNeedsDisplay:YES];
 }
 
 /*!
@@ -299,7 +311,7 @@ var _CPTextFieldSquareBezelColor = nil,
 */
 - (BOOL)isBordered
 {
-    return _isBordered;
+    return !!(_controlState & CPControlStateBordered);
 }
 
 /*!
@@ -673,7 +685,7 @@ var _CPTextFieldSquareBezelColor = nil,
 - (void)sizeToFit
 {
     var size = [(_value || " ") sizeWithFont:[self font]],
-        contentInset = [self currentValueForThemedAttributeName:([self isBezeled] ? @"bezeled" : "") + @"content-inset"];
+        contentInset = [self currentValueForThemedAttributeName:@"content-inset"];
 
     [self setFrameSize:CGSizeMake(size.width + contentInset.left + contentInset.right, size.height + contentInset.top + contentInset.bottom)];
 /*#if PLATFORM(DOM)
@@ -750,7 +762,7 @@ var _CPTextFieldSquareBezelColor = nil,
 
 - (CGRect)contentRectForBounds:(CGRect)bounds
 {
-    var contentInset = [self currentValueForThemedAttributeName:([self isBezeled] ? @"bezeled" : @"") + @"content-inset"];
+    var contentInset = [self currentValueForThemedAttributeName:@"content-inset"];
     
     if (!contentInset)
         return bounds;
@@ -765,9 +777,6 @@ var _CPTextFieldSquareBezelColor = nil,
 
 - (CGRect)bezelRectForBounds:(CFRect)bounds
 {
-    if (![self isBezeled])
-        return _CGRectMakeZero();
-
     var bezelInset = [self currentValueForThemedAttributeName:@"bezel-inset"];
     
     if (!_CGInsetIsEmpty(bezelInset))
@@ -929,8 +938,6 @@ var CPTextFieldIsEditableKey            = "CPTextFieldIsEditableKey",
         [self setEditable:[aCoder decodeBoolForKey:CPTextFieldIsEditableKey]];
         [self setSelectable:[aCoder decodeBoolForKey:CPTextFieldIsSelectableKey]];
 
-        [self setBordered:[aCoder decodeBoolForKey:CPTextFieldIsBorderedKey]];
-        [self setBezeled:[aCoder decodeBoolForKey:CPTextFieldIsBezeledKey]];
         [self setBezelStyle:[aCoder decodeIntForKey:CPTextFieldBezelStyleKey]];
         [self setDrawsBackground:[aCoder decodeBoolForKey:CPTextFieldDrawsBackgroundKey]];
 
@@ -953,8 +960,6 @@ var CPTextFieldIsEditableKey            = "CPTextFieldIsEditableKey",
     [aCoder encodeBool:_isEditable forKey:CPTextFieldIsEditableKey];
     [aCoder encodeBool:_isSelectable forKey:CPTextFieldIsSelectableKey];
     
-    [aCoder encodeBool:_isBordered forKey:CPTextFieldIsBorderedKey];
-    [aCoder encodeBool:_isBezeled forKey:CPTextFieldIsBezeledKey];
     [aCoder encodeInt:_bezelStyle forKey:CPTextFieldBezelStyleKey];
     [aCoder encodeBool:_drawsBackground forKey:CPTextFieldDrawsBackgroundKey];
     

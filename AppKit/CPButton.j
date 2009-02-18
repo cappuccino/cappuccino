@@ -470,9 +470,6 @@ var _CPButtonClassName                          = nil,
 
 - (CGRect)contentRectForBounds:(CGRect)bounds
 {
-    if (![self isBordered])
-        return bounds;
-        
     var contentInset = [self currentValueForThemedAttributeName:@"content-inset"];
 
     if (!contentInset)
@@ -575,18 +572,21 @@ var _CPButtonClassName                          = nil,
 
 - (void)setBordered:(BOOL)shouldBeBordered
 {
-    if (_isBordered === shouldBeBordered)
+    if ((!!(_controlState & CPControlStateBordered)) === shouldBeBordered)
         return;
     
-    _isBordered = shouldBeBordered;
-    
+    if (shouldBeBordered)
+        _controlState |= CPControlStateBordered;
+    else
+        _controlState &= ~CPControlStateBordered;
+
     [self setNeedsLayout];
     [self setNeedsDisplay:YES];
 }
 
 - (BOOL)isBordered
 {
-    return _isBordered;
+    return !!(_controlState & CPControlStateBordered);
 }
 
 @end
@@ -619,17 +619,12 @@ var CPButtonImageKey                = @"CPButtonImageKey",
     if (self)
     {
         _controlSize = CPRegularControlSize;
-        
-        var theme = [self theme],
-            theClass = [self class];
 
         [self setImage:[aCoder decodeObjectForKey:CPButtonImageKey]];
         [self setAlternateImage:[aCoder decodeObjectForKey:CPButtonAlternateImageKey]];
         
         [self setTitle:[aCoder decodeObjectForKey:CPButtonTitleKey]];
         [self setAlternateTitle:[aCoder decodeObjectForKey:CPButtonAlternateTitleKey]];
-    
-        _isBordered = [aCoder decodeBoolForKey:CPButtonIsBorderedKey];
         
         [self setNeedsLayout];
         [self setNeedsDisplay:YES];
@@ -644,16 +639,7 @@ var CPButtonImageKey                = @"CPButtonImageKey",
 */
 - (void)encodeWithCoder:(CPCoder)aCoder
 {
-    // We do this in order to avoid encoding the _imageAndTextView, which 
-    // should just automatically be created programmatically as needed.
-    var actualSubviews = _subviews;
-    
-//    _subviews = [_subviews copy];
-//    [_subviews removeObjectIdenticalTo:_imageAndTextView];
-    
     [super encodeWithCoder:aCoder];
-    
-    _subviews = actualSubviews;
     
     [aCoder encodeObject:_image forKey:CPButtonImageKey];
     [aCoder encodeObject:_alternateImage forKey:CPButtonAlternateImageKey];
@@ -661,7 +647,6 @@ var CPButtonImageKey                = @"CPButtonImageKey",
     [aCoder encodeObject:_title forKey:CPButtonTitleKey];
     [aCoder encodeObject:_alternateTitle forKey:CPButtonAlternateTitleKey];
     
-    [aCoder encodeBool:_isBordered forKey:CPButtonIsBorderedKey];
     [aCoder encodeInt:_bezelStyle forKey:CPButtonBezelStyleKey];
 }
 
