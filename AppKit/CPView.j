@@ -1885,7 +1885,7 @@ setBoundsOrigin:
     {
         var attributeName = attributes[count--];
         
-        _themedAttributes[attributeName] = CPThemedValueMake(attributes[count], attributeName, theme, theClass);
+        _themedAttributes[attributeName] = CPThemedAttributeMake(attributeName, attributes[count], theme, theClass);
     }
 }
 
@@ -1913,7 +1913,7 @@ setBoundsOrigin:
             [_themedAttributes[attributeName] setTheme:theme];
 }
 
-- (CPDictionary)themedValues
+- (CPDictionary)_themedAttributes
 {
     var dictionary = [CPDictionary dictionary];
     
@@ -2050,7 +2050,7 @@ var CPViewAutoresizingMaskKey       = @"CPViewAutoresizingMask",
         {
             var attributeName = attributes[count--];
             
-            _themedAttributes[attributeName] = CPThemedValueDecode2(aCoder, attributeName, attributes[count], _theme, theClass);
+            _themedAttributes[attributeName] = CPThemedAttributeDecode(aCoder, attributeName, attributes[count], _theme, theClass);
         }
         
         [self setNeedsDisplay:YES];
@@ -2088,7 +2088,7 @@ var CPViewAutoresizingMaskKey       = @"CPViewAutoresizingMask",
     
     for (var attributeName in _themedAttributes)
         if (_themedAttributes.hasOwnProperty(attributeName))
-            CPThemedValueEncode2(aCoder, _themedAttributes[attributeName]);
+            CPThemedAttributeEncode(aCoder, _themedAttributes[attributeName]);
 }
 
 @end
