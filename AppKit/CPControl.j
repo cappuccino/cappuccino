@@ -23,7 +23,6 @@
 @import "CPFont.j"
 @import "CPShadow.j"
 @import "CPView.j"
-@import "CPThemedValue.j"
 
 #include "CoreGraphics/CGGeometry.h"
 #include "Platform/Platform.h"
@@ -600,8 +599,8 @@ var __Deprecated__CPImageViewImageKey   = @"CPImageViewImageKey";
         
         /*
         [self setTarget:[aCoder decodeObjectForKey:CPControlTargetKey]];
-        [self setAction:[aCoder decodeObjectForKey:CPControlActionKey]];
-        [self sendActionOn:[aCoder decodeIntForKey:CPControlSendActionOnKey]];*/
+        [self setAction:[aCoder decodeObjectForKey:CPControlActionKey]];*/
+        [self sendActionOn:[aCoder decodeIntForKey:CPControlSendActionOnKey]];
     }
     
     return self;
@@ -637,8 +636,8 @@ var __Deprecated__CPImageViewImageKey   = @"CPImageViewImageKey";
         
     [aCoder encodeConditionalObject:_target forKey:CPControlTargetKey];
     [aCoder encodeObject:_action forKey:CPControlActionKey];
-    
-    [aCoder encodeInt:_sendActionOn forKey:CPControlSendActionOnKey];*/
+    */
+    [aCoder encodeInt:_sendActionOn forKey:CPControlSendActionOnKey];
 }
 
 @end

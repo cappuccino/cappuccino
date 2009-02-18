@@ -25,10 +25,12 @@
 @import "CPMenu.j"
 @import "CPMenuItem.j"
 
+#include "CoreGraphics/CGGeometry.h"
+
 
 var VISIBLE_MARGIN  = 7.0;
 
-var CPPopUpButtonArrowsImage = nil;
+CPPopUpButtonStatePullsDown = 1 << 12;
 
 /*! @class CPPopUpButton
 
@@ -36,11 +38,8 @@ var CPPopUpButtonArrowsImage = nil;
 */
 @implementation CPPopUpButton : CPButton
 {
-    BOOL        _pullsDown;
     int         _selectedIndex;
     CPRectEdge  _preferredEdge;
-    
-    CPImageView _arrowsView;
     
     CPMenu      _menu;
 }
@@ -57,7 +56,6 @@ var CPPopUpButtonArrowsImage = nil;
     
     if (self)
     {
-        _pullsDown = shouldPullDown;
         _selectedIndex = CPNotFound;
         _preferredEdge = CPMaxYEdge;
         
@@ -66,6 +64,8 @@ var CPPopUpButtonArrowsImage = nil;
         [self setValue:CPLineBreakByTruncatingTail forThemedAttributeName:@"line-break-mode"];
         
         [self setMenu:[[CPMenu alloc] initWithTitle:@""]];
+
+        [self setPullsDown:shouldPullDown];
     }
     
     return self;
@@ -74,33 +74,6 @@ var CPPopUpButtonArrowsImage = nil;
 - (id)initWithFrame:(CGRect)aFrame
 {
     return [self initWithFrame:aFrame pullsDown:NO];
-}
-
-- (void)setBordered:(BOOL)shouldBeBordered
-{
-    if (shouldBeBordered)
-    {
-        var bounds = [self bounds];
-        
-        _arrowsView = [[CPImageView alloc] initWithFrame:CGRectMake(CGRectGetWidth(bounds) - 10.0, (CGRectGetHeight(bounds) - 8.0) / 2.0, 5.0, 8.0)];
-        
-        if (!CPPopUpButtonArrowsImage)
-            CPPopUpButtonArrowsImage = [[CPImage alloc] initWithContentsOfFile:[[CPBundle bundleForClass:[CPPopUpButton class]] pathForResource:@"CPPopUpButton/CPPopUpButtonArrows.png"] size:CGSizeMake(5.0, 8.0)];
-        
-        [_arrowsView setImage:CPPopUpButtonArrowsImage];
-        [_arrowsView setAutoresizingMask:CPViewMaxXMargin | CPViewMinYMargin | CPViewMaxYMargin];
-        
-        
-        [self addSubview:_arrowsView];
-    }
-    else
-    {
-        [_arrowsView removeFromSuperview];
-        
-        _arrowsView = nil;
-    }
-    
-    [super setBordered:shouldBeBordered];
 }
 
 // Setting the Type of Menu
@@ -112,17 +85,20 @@ var CPPopUpButtonArrowsImage = nil;
 */
 - (void)setPullsDown:(BOOL)shouldPullDown
 {
-    if (_pullsDown == shouldPullDown)
+    if ((!!(_controlState & CPPopUpButtonStatePullsDown)) === shouldPullDown)
         return;
     
-    _pullsDown = shouldPullDown;
+    if (shouldPullDown)
+        _controlState |= CPPopUpButtonStatePullsDown;
+    else
+        _controlState &= ~CPPopUpButtonStatePullsDown;
 
     var items = [_menu itemArray];
     
     if (items.length <= 0)
         return;
-    
-    [items[0] setHidden:_pullsDown];
+
+    [items[0] setHidden:[self pullsDown]];
     
     [self synchronizeTitleAndSelectedItem];
 }
@@ -132,7 +108,7 @@ var CPPopUpButtonArrowsImage = nil;
 */
 - (BOOL)pullsDown
 {
-    return _pullsDown;
+    return _controlState & CPPopUpButtonStatePullsDown;
 }
 
 // Inserting and Deleting Items
@@ -271,12 +247,12 @@ var CPPopUpButtonArrowsImage = nil;
     if (_selectedIndex == anIndex)
         return;
     
-    if (_selectedIndex >= 0 && !_pullsDown)
+    if (_selectedIndex >= 0 && ![self pullsDown])
         [[self selectedItem] setState:CPOffState];
     
     _selectedIndex = anIndex;
 
-    if (_selectedIndex >= 0 && !_pullsDown)
+    if (_selectedIndex >= 0 && ![self pullsDown])
         [[self selectedItem] setState:CPOnState];
     
     [self synchronizeTitleAndSelectedItem];
@@ -323,7 +299,7 @@ var CPPopUpButtonArrowsImage = nil;
 */
 - (void)setMenu:(CPMenu)aMenu
 {
-    if (_menu == aMenu)
+    if (_menu === aMenu)
         return;
 
     var defaultCenter = [CPNotificationCenter defaultCenter];
@@ -520,10 +496,18 @@ var CPPopUpButtonArrowsImage = nil;
     if ([self title] == aTitle)
         return;
     
-    if (_pullsDown)
+    if ([self pullsDown])
     {
-        [_items[0] setTitle:aTitle];
-        [self synchronizeTitleAndSelectedItem];
+        var items = [_menu itemArray];
+
+        if (items.length <= 0)
+            [self addItemWithTitle:aTitle];
+
+        else
+        {
+            [items[0] setTitle:aTitle];
+            [self synchronizeTitleAndSelectedItem];
+        }
     }
     else
     {
@@ -560,7 +544,7 @@ var CPPopUpButtonArrowsImage = nil;
 {
     var item = nil;
 
-    if (_pullsDown)
+    if ([self pullsDown])
     {
         var items = [_menu itemArray];
         
@@ -592,7 +576,7 @@ var CPPopUpButtonArrowsImage = nil;
     else if (index < _selectedIndex)
         ++_selectedIndex;
         
-    if (index == 0 && _pullsDown)
+    if (index == 0 && [self pullsDown])
     {
         var items = [_menu itemArray];
         
@@ -620,10 +604,10 @@ var CPPopUpButtonArrowsImage = nil;
 {
     var index = [[aNotification userInfo] objectForKey:@"CPMenuItemIndex"];
 
-    if (_pullsDown && index != 0)
+    if ([self pullsDown] && index != 0)
         return;
     
-    if (!_pullsDown && index != _selectedIndex)
+    if (![self pullsDown] && index != _selectedIndex)
         return;
     
     [self synchronizeTitleAndSelectedItem];
@@ -656,7 +640,7 @@ var CPPopUpButtonArrowsImage = nil;
     [menuWindow setBackgroundStyle:_CPMenuWindowPopUpBackgroundStyle];
     
     // Pull Down Menus show up directly below their buttons.
-    if (_pullsDown)
+    if ([self pullsDown])
         var menuOrigin = [theWindow convertBaseToBridge:[self convertPoint:CGPointMake(0.0, CGRectGetMaxY([self bounds])) toView:nil]];
     
     // Pop Up Menus attempt to show up "on top" of the selected item.
@@ -681,7 +665,7 @@ var CPPopUpButtonArrowsImage = nil;
         buttonMaxX = [theWindow convertBaseToBridge:CGPointMake(CGRectGetMaxX([self convertRect:[self bounds] toView:nil]), 0.0)].x;
         
     if (menuMaxX < buttonMaxX)
-        [menuWindow setMinWidth:CGRectGetWidth([menuWindow frame]) + buttonMaxX - menuMaxX - VISIBLE_MARGIN];
+        [menuWindow setMinWidth:CGRectGetWidth([menuWindow frame]) + buttonMaxX - menuMaxX - ([self pullsDown] ? 0.0 : VISIBLE_MARGIN)];
     
     [menuWindow orderFront:self];
     [menuWindow beginTrackingWithEvent:anEvent sessionDelegate:self didEndSelector:@selector(menuWindowDidFinishTracking:highlightedItem:)];
@@ -711,20 +695,6 @@ var CPPopUpButtonArrowsImage = nil;
     [self sendAction:[self action] to:[self target]];
 }
 
-- (CGRect)contentRectForBounds:(CGRect)bounds
-{
-    var contentRect = [super contentRectForBounds:bounds];
-    
-    if ([self isBordered])
-    {
-        contentRect.size.width -= 20.0;
-
-        return contentRect;
-    }
-    
-    return contentRect;
-}
-
 @end
 
 var CPPopUpButtonMenuKey            = @"CPPopUpButtonMenuKey",
@@ -750,7 +720,6 @@ var CPPopUpButtonMenuKey            = @"CPPopUpButtonMenuKey",
         
         [self setMenu:[aCoder decodeObjectForKey:CPPopUpButtonMenuKey]];
         [self selectItemAtIndex:[aCoder decodeObjectForKey:CPPopUpButtonSelectedIndexKey]];
-        [self setPullsDown:[aCoder decodeBoolForKey:CPPopUpButtonPullsDownKey]];
     }
     
     return self;
@@ -767,7 +736,6 @@ var CPPopUpButtonMenuKey            = @"CPPopUpButtonMenuKey",
     
     [aCoder encodeObject:_menu forKey:CPPopUpButtonMenuKey];
     [aCoder encodeInt:_selectedIndex forKey:CPPopUpButtonSelectedIndexKey];
-    [aCoder encodeBool:_pullsDown forKey:CPPopUpButtonPullsDownKey];
 }
 
 @end
