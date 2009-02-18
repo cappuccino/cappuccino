@@ -68,7 +68,7 @@
         argLength = arguments.length,
         i = 2;
 
-    for(; i < argLength && (argument = arguments[i]) != nil; ++i)
+    for(; i < argLength && ((argument = arguments[i]) !== nil); ++i)
         [set addObject:argument];
     
     return set;

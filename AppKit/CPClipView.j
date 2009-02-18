@@ -139,7 +139,7 @@
 */
 - (void)viewBoundsChanged:(CPNotification)aNotification
 {
-    [self viewFrameChanged:aNotification];
+    [self _constrainScrollPoint];
 }
 
 /*!
@@ -147,6 +147,17 @@
     @param aNotification the notification event
 */
 - (void)viewFrameChanged:(CPNotification)aNotification
+{
+    [self _constrainScrollPoint];
+}
+
+- (void)resizeSubviewsWithOldSize:(CGSize)aSize
+{
+    [super resizeSubviewsWithOldSize:aSize];
+    [self _constrainScrollPoint];
+}
+
+- (void)_constrainScrollPoint
 {
     var oldScrollPoint = [self bounds].origin;
     

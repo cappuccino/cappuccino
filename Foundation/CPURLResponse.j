@@ -53,13 +53,13 @@
 }
 /*
 Creating a Response
-Ð initWithURL:MIMEType:expectedContentLength:textEncodingName:  
+initWithURL:MIMEType:expectedContentLength:textEncodingName:  
 Getting the Response Properties
-Ð expectedContentLength  
-Ð suggestedFilename  
-Ð MIMEType  
-Ð textEncodingName  
-Ð URL  
+expectedContentLength  
+suggestedFilename  
+MIMEType  
+textEncodingName  
+URL  
 */
 @end
 

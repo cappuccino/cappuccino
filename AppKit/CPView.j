@@ -578,6 +578,27 @@ var DOMElementPrototype         = nil,
 }
 
 /*!
+    Moves the center of the receiver's frame to the provided point. The point is defined in the superview's coordinate system. 
+    The method posts a CPViewFrameDidChangeNotification to the default notification center if the receiver 
+    is configured to do so. If the specified origin is the same as the frame's current origin, the method will 
+    simply return (and no notification will be posted).
+    @param aPoint the new origin point
+*/
+- (void)setCenter:(CGPoint)aPoint
+{
+    [self setFrameOrigin:CGPointMake(aPoint.x - _frame.size.width / 2.0, aPoint.y - _frame.size.height / 2.0)]; 
+}
+
+/*!
+    Returns the center of the receiver's frame to the provided point. The point is defined in the superview's coordinate system. 
+    @return CGPoint the center point of the receiver's frame
+*/
+- (CGPoint)center
+{
+    return CGPointMake(_frame.size.width / 2.0 + _frame.origin.x, _frame.size.height / 2.0 + _frame.origin.y);
+}
+
+/*!
     Sets the receiver's frame origin to the provided point. The point is defined in the superview's coordinate system. 
     The method posts a CPViewFrameDidChangeNotification to the default notification center if the receiver 
     is configured to do so. If the specified origin is the same as the frame's current origin, the method will 
@@ -870,6 +891,15 @@ var DOMElementPrototype         = nil,
 }
 
 // Fullscreen Mode
+
+/*!
+    Puts the receiver into full screen mode.
+*/
+- (BOOL)enterFullScreenMode
+{
+    return [self enterFullScreenMode:nil withOptions:nil];
+}
+
 /*!
     Puts the receiver into full screen mode.
     @param aScreen the that should be used
@@ -899,6 +929,14 @@ var DOMElementPrototype         = nil,
     _isInFullScreenMode = YES;
     
     return YES;
+}
+
+/*!
+    The receiver should exit full screen mode.
+*/
+- (void)exitFullScreenMode
+{
+    [self exitFullScreenModeWithOptions:nil];
 }
 
 /*!
