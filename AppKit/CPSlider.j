@@ -298,104 +298,37 @@
 }
 
 @end
-/*
-@implementation CPSlider (Theming)
 
-- (void)viewDidChangeTheme
-{
-    [super viewDidChangeTheme];
-    
-    var theme = [self theme];
-    
-    if (!theme)
-        return;
-    
-    [_knobColor setTheme:theme];
-    [_knobSize setTheme:theme];
-    
-    [_trackWidth setTheme:theme];
-    [_horizontalTrackColor setTheme:theme];
-    [_verticalTrackColor setTheme:theme];
-    
-    [self setNeedsLayout];
-    [self setNeedsDisplay:YES];
-}
-
-- (CPDictionary)themedValues
-{
-    var values = [super themedValues];
-    
-    [values setObject:_knobSize forKey:@"knob-size"];
-    [values setObject:_knobColor forKey:@"knob-color"];
-    [values setObject:_trackWidth forKey:@"track-width"];
-    
-    if ([self isVertical])
-        [values setObject:_verticalTrackColor forKey:@"vertical-track-color"];
-    else
-        [values setObject:_horizontalTrackColor forKey:@"horizontal-track-color"];
-
-    return values;
-}
-
-@end
-*/
 var CPSliderMinValueKey             = "CPSliderMinValueKey",
     CPSliderMaxValueKey             = "CPSliderMaxValueKey",
-    CPSliderAltIncrValueKey         = "CPSliderAltIncrValueKey",
-    
-    CPSliderKnobColorKey            = "CPSliderKnobColorKey",
-    CPSliderKnobSizeKey             = "CPSliderKnobSizeKey";
-    CPSliderTrackWidthKey           = "CPSliderTrackWidthKey";
-    CPSliderHorizontalTrackColorKey = "CPSliderHorizontalTrackColorKey";
-    CPSliderVerticalTrackColorKey   = "CPSliderVerticalTrackColorKey";
+    CPSliderAltIncrValueKey         = "CPSliderAltIncrValueKey";
 
 @implementation CPSlider (CPCoding)
 
 - (id)initWithCoder:(CPCoder)aCoder
 {
+    _minValue = [aCoder decodeDoubleForKey:CPSliderMinValueKey];
+    _maxValue = [aCoder decodeDoubleForKey:CPSliderMaxValueKey];
+
     self = [super initWithCoder:aCoder];
-    
+
     if (self)
     {
-        _minValue = [aCoder decodeDoubleForKey:CPSliderMinValueKey];
-        _maxValue = [aCoder decodeDoubleForKey:CPSliderMaxValueKey];
         _altIncrementValue = [aCoder decodeDoubleForKey:CPSliderAltIncrValueKey];
 
         [self setContinuous:YES];
-        
+
         [self setNeedsLayout];
         [self setNeedsDisplay:YES];
     }
-    
+
     return self;
 }
 
 - (void)encodeWithCoder:(CPCoder)aCoder
 {
     [super encodeWithCoder:aCoder];
-    /*
-    var count = [_subviews count],
-        subviews = nil;
-    
-    if (count)
-    {
-        subviews = _subviews;
-            
-        if (count === 2 && _trackView && _knobView)
-            _subviews = [];
-        else
-        {
-            if (_trackView)
-                [_subviews removeObjectIdenticalTo:_trackView];
-            if (_knobView)
-                [_subviews removeObjectIdenticalTo:_knobView];
-        }
-    }*/
-    
-    [super encodeWithCoder:aCoder];
-    
-//    _subviews = subviews;
-    
+
     [aCoder encodeDouble:_minValue forKey:CPSliderMinValueKey];
     [aCoder encodeDouble:_maxValue forKey:CPSliderMaxValueKey];
     [aCoder encodeDouble:_altIncrementValue forKey:CPSliderAltIncrValueKey];
