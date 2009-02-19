@@ -124,6 +124,38 @@
 }
 
 /*!
+    Creates a dictionary with multiple key-value pairs.
+    @param JavaScript object
+    @return the new CPDictionary
+*/
++ (id)dictionaryWithJSObject:(JSObject)object
+{
+    return [self dictionaryWithJSObject:object recursively:NO];
+}
+
+/*!
+    Creates a dictionary with multiple key-value pairs, recursively.
+    @param JavaScript object
+    @return the new CPDictionary
+*/
++ (id)dictionaryWithJSObject:(JSObject)object recursively:(BOOL)recursively
+{
+    var dictionary = [[self alloc] init];
+        
+    for (var key in object)
+    {
+        var value = object[key];
+    
+        if (recursively && value.constructor === Object)
+            value = [CPDictionary dictionaryWithJSObject:value recursively:YES];
+    
+        [dictionary setObject:value forKey:key];
+    }
+    
+    return dictionary;
+}
+
+/*!
     Initializes the dictionary with the contents of another dictionary.
     @param aDictionary the dictionary to copy key-value pairs from
     @return the initialized dictionary
