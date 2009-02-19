@@ -815,7 +815,7 @@ var _CPTableViewWillDisplayCellSelector                         = 1 << 0,
 
 - (int)columnAtPoint:(CGPoint)aPoint
 {
-    var index = [self _columnAtY:aPoint.x]
+    var index = [self _columnAtX:aPoint.x]
     
     if (index >= 0 && index < _numberOfColumns)
         return index;
@@ -1021,6 +1021,28 @@ var _CPTableViewWillDisplayCellSelector                         = 1 << 0,
 }
 
 /*
+    Sets the message to be sent to the target when a cell is double clicked
+    @param aSelector the selector to be performed
+*/
+- (void)setDoubleAction:(SEL)aSelector
+{
+    _doubleAction = aSelector;
+}
+- (SEL)doubleAction
+{
+    return _doubleAction;
+}
+
+- (int)clickedColumn
+{
+    return _clickedColumn;
+}
+- (int)clickedRow
+{
+    return _clickedRow;
+}
+
+/*
     @ignore
 */
 - (void)trackSelection:(CPEvent)anEvent
@@ -1031,13 +1053,23 @@ var _CPTableViewWillDisplayCellSelector                         = 1 << 0,
     
     if (type == CPLeftMouseUp)
     {
+        _clickedRow = [self rowAtPoint:point];
+        _clickedColumn = [self columnAtPoint:point];
+        
         if ([anEvent clickCount] === 2)
         {
             CPLog.warn("edit?!");
+            
+            [self sendAction:_doubleAction to:_target];
         }
-        else if (![_previousSelectedRowIndexes isEqualToIndexSet:_selectedRowIndexes])
+        else
         {
-            [[CPNotificationCenter defaultCenter] postNotificationName:CPTableViewSelectionDidChangeNotification object:self userInfo:nil];
+            if (![_previousSelectedRowIndexes isEqualToIndexSet:_selectedRowIndexes])
+            {
+                [[CPNotificationCenter defaultCenter] postNotificationName:CPTableViewSelectionDidChangeNotification object:self userInfo:nil];
+            }
+            
+            [self sendAction:_action to:_target];
         }
         
         return;
