@@ -164,7 +164,7 @@ var STANDARD_GRADIENT_HEIGHT                    = 41.0;
 {
     var contentRect = [[self class] contentRectForFrameRect:aFrameRect];
     
-    if ([[[self owningWindow] toolbar] isVisible])
+    if ([[[self window] toolbar] isVisible])
     {
         toolbarHeight = CGRectGetHeight([[self toolbarView] frame]);
         
@@ -179,7 +179,7 @@ var STANDARD_GRADIENT_HEIGHT                    = 41.0;
 {
     var frameRect = [[self class] frameRectForContentRect:aContentRect];
     
-    if ([[[self owningWindow] toolbar] isVisible])
+    if ([[[self window] toolbar] isVisible])
     {
         toolbarHeight = CGRectGetHeight([[self toolbarView] frame]);
         
@@ -190,9 +190,9 @@ var STANDARD_GRADIENT_HEIGHT                    = 41.0;
     return frameRect;
 }
 
-- (id)initWithFrame:(CPRect)aFrame styleMask:(unsigned)aStyleMask owningWindow:(CPWindow)aWindow
+- (id)initWithFrame:(CPRect)aFrame styleMask:(unsigned)aStyleMask
 {
-    self = [super initWithFrame:aFrame styleMask:aStyleMask owningWindow:aWindow];
+    self = [super initWithFrame:aFrame styleMask:aStyleMask];
     
     if (self)
     {
@@ -261,9 +261,6 @@ var STANDARD_GRADIENT_HEIGHT                    = 41.0;
             [_closeButton setImage:_CPStandardWindowViewCloseButtonImage];
             [_closeButton setAlternateImage:_CPStandardWindowViewCloseButtonHighlightedImage];
             
-            [_closeButton setTarget:aWindow];
-            [_closeButton setAction:@selector(performClose:)];
-            
             [self addSubview:_closeButton];
         }
 
@@ -272,6 +269,12 @@ var STANDARD_GRADIENT_HEIGHT                    = 41.0;
     }
     
     return self;
+}
+
+- (void)viewDidMoveToWindow
+{
+    [_closeButton setTarget:[self window]];
+    [_closeButton setAction:@selector(performClose:)];
 }
 
 - (CGSize)toolbarOffset
@@ -283,7 +286,7 @@ var STANDARD_GRADIENT_HEIGHT                    = 41.0;
 {
     [super tile];
 
-    var owningWindow = [self owningWindow],
+    var theWindow = [self window],
         width = CGRectGetWidth([self bounds]);
     
     [_headView setFrameSize:CGSizeMake(width, [self toolbarMaxY])];
@@ -292,7 +295,7 @@ var STANDARD_GRADIENT_HEIGHT                    = 41.0;
 
     [_titleField setFrame:CGRectMake(10.0, 3.0, width - 20.0, CGRectGetHeight([_titleField frame]))];
     
-    [[owningWindow contentView] setFrameOrigin:CGPointMake(0.0, CGRectGetMaxY([_dividerView frame]))];
+    [[theWindow contentView] setFrameOrigin:CGPointMake(0.0, CGRectGetMaxY([_dividerView frame]))];
 }
 
 - (void)setTitle:(CPString)aTitle

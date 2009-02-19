@@ -73,17 +73,10 @@ CPTextFieldSquareBezel          = 0;
 */
 CPTextFieldRoundedBezel         = 1;
 
-var TOP_PADDING                     = 4.0,
-    BOTTOM_PADDING                  = 3.0;
-    HORIZONTAL_PADDING              = 3.0;
-    ROUNDEDBEZEL_HORIZONTAL_PADDING = 8.0;
 
 #if PLATFORM(DOM)
 var CPTextFieldDOMInputElement = nil;
 #endif
-
-var _CPTextFieldSquareBezelColor = nil,
-    _CPTextFieldRoundedBezelColor = nil;
 
 @implementation CPString (CPTextFieldAdditions)
 
@@ -325,7 +318,8 @@ CPTextFieldStateRounded = 1 << 12;
         
     _drawsBackground = shouldDrawBackground;
     
-    [self _updateBackground];
+    [self setNeedsLayout];
+    [self setNeedsDisplay:YES];
 }
 
 /*!
@@ -347,7 +341,8 @@ CPTextFieldStateRounded = 1 << 12;
         
     _textFieldBackgroundColor = aColor;
     
-    [self _updateBackground];
+    [self setNeedsLayout];
+    [self setNeedsDisplay:YES];
 }
 
 /*!
@@ -356,60 +351,6 @@ CPTextFieldStateRounded = 1 << 12;
 - (CPColor)textFieldBackgroundColor
 {
     return _textFieldBackgroundColor;
-}
-
-/* @ignore */
-- (void)_updateBackground
-{
-    if (_isBezeled)
-    {
-        if (_bezelStyle == CPTextFieldSquareBezel)
-        {
-            if (!_CPTextFieldSquareBezelColor)
-            {
-                var bundle = [CPBundle bundleForClass:[CPTextField class]];
-            
-                _CPTextFieldSquareBezelColor = [CPColor colorWithPatternImage:[[CPNinePartImage alloc] initWithImageSlices:
-                    [
-                        [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:"CPTextField/CPTextFieldBezelSquare0.png"] size:CGSizeMake(2.0, 3.0)],
-                        [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:"CPTextField/CPTextFieldBezelSquare1.png"] size:CGSizeMake(1.0, 3.0)],
-                        [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:"CPTextField/CPTextFieldBezelSquare2.png"] size:CGSizeMake(2.0, 3.0)],
-                        [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:"CPTextField/CPTextFieldBezelSquare3.png"] size:CGSizeMake(2.0, 1.0)],
-                        [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:"CPTextField/CPTextFieldBezelSquare4.png"] size:CGSizeMake(1.0, 1.0)],
-                        [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:"CPTextField/CPTextFieldBezelSquare5.png"] size:CGSizeMake(2.0, 1.0)],
-                        [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:"CPTextField/CPTextFieldBezelSquare6.png"] size:CGSizeMake(2.0, 2.0)],
-                        [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:"CPTextField/CPTextFieldBezelSquare7.png"] size:CGSizeMake(1.0, 2.0)],
-                        [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:"CPTextField/CPTextFieldBezelSquare8.png"] size:CGSizeMake(2.0, 2.0)]
-                    ]]];
-            }
-            [self setBackgroundColor:_CPTextFieldSquareBezelColor];
-        }
-        else if (_bezelStyle == CPTextFieldRoundedBezel)
-        {
-            if (!_CPTextFieldRoundedBezelColor)
-            {
-                var bundle = [CPBundle bundleForClass:[CPTextField class]];
-
-                _CPTextFieldRoundedBezelColor = [CPColor colorWithPatternImage:[[CPThreePartImage alloc] initWithImageSlices:
-                    [
-                        [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:"CPTextField/CPTextFieldBezelRounded0.png"] size:CGSizeMake(12.0, 22.0)],
-                        [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:"CPTextField/CPTextFieldBezelRounded1.png"] size:CGSizeMake(16.0, 22.0)],
-                        [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:"CPTextField/CPTextFieldBezelRounded2.png"] size:CGSizeMake(12.0, 22.0)]
-                    ] isVertical:NO]];
-            }
-            [self setBackgroundColor:_CPTextFieldRoundedBezelColor];
-        }
-    }
-    else
-    {
-        if (_drawsBackground)
-            [self setBackgroundColor:_textFieldBackgroundColor];
-        else
-            [self setBackgroundColor:nil];
-            
-        // FIXME: do something for bordered textfields
-        //if (_isBordered)
-    }
 }
 
 /* @ignore */

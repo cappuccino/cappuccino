@@ -37,8 +37,6 @@ var _CPWindowViewResizeIndicatorImage = nil;
     
     CPView      _toolbarView;
     
-    CPWindow    _owningWindow;
-    
     CGRect      _resizeFrame;
     CGPoint     _mouseDraggedPoint;
 }
@@ -71,14 +69,13 @@ var _CPWindowViewResizeIndicatorImage = nil;
     return [[self class] frameRectForContentRect:aContentRect];
 }
 
-- (id)initWithFrame:(CPRect)aFrame styleMask:(unsigned)aStyleMask owningWindow:(CPWindow)aWindow
+- (id)initWithFrame:(CPRect)aFrame styleMask:(unsigned)aStyleMask
 {
     self = [super initWithFrame:aFrame];
     
     if (self)
     {
         _styleMask = aStyleMask;
-        _owningWindow = aWindow;
         _resizeIndicatorOffset = CGSizeMake(0.0, 0.0);
         _toolbarOffset = CGSizeMake(0.0, 0.0);
         
@@ -86,11 +83,6 @@ var _CPWindowViewResizeIndicatorImage = nil;
     }
     
     return self;
-}
-
-- (CPWindow)owningWindow
-{
-    return _owningWindow;
 }
 
 - (void)setTitle:(CPString)aTitle
@@ -104,7 +96,7 @@ var _CPWindowViewResizeIndicatorImage = nil;
 
 - (void)mouseDown:(CPEvent)anEvent
 {
-    var theWindow = [self owningWindow];
+    var theWindow = [self window];
     
     if ((_styleMask & CPResizableWindowMask) && _resizeIndicator)
     {
@@ -130,7 +122,7 @@ var _CPWindowViewResizeIndicatorImage = nil;
     if (type === CPLeftMouseUp)
         return;
     
-    var theWindow = [self owningWindow];
+    var theWindow = [self window];
     
     if (type === CPLeftMouseDown)
     {
@@ -153,11 +145,11 @@ var _CPWindowViewResizeIndicatorImage = nil;
         return;
     
     else if (type === CPLeftMouseDown)
-        _mouseDraggedPoint = [[self owningWindow] convertBaseToBridge:[anEvent locationInWindow]];
+        _mouseDraggedPoint = [[self window] convertBaseToBridge:[anEvent locationInWindow]];
     
     else if (type === CPLeftMouseDragged)
     {
-        var theWindow = [self owningWindow],
+        var theWindow = [self window],
             location = [theWindow convertBaseToBridge:[anEvent locationInWindow]],
             frame = [theWindow frame];
         
@@ -256,11 +248,11 @@ var _CPWindowViewResizeIndicatorImage = nil;
 
 - (void)tile
 {
-    var owningWindow = [self owningWindow],
+    var theWindow = [self window],
         bounds = [self bounds],
         width = CGRectGetWidth(bounds);
         
-    if ([[owningWindow toolbar] isVisible])
+    if ([[theWindow toolbar] isVisible])
     {
         var toolbarView = [self toolbarView],
             toolbarOffset = [self toolbarOffset];
@@ -279,8 +271,8 @@ var _CPWindowViewResizeIndicatorImage = nil;
 
 - (void)noteToolbarChanged
 {
-    var owningWindow = [self owningWindow],
-        toolbar = [owningWindow toolbar],
+    var theWindow = [self window],
+        toolbar = [theWindow toolbar],
         toolbarView = [toolbar _toolbarView];
     
     if (_toolbarView !== toolbarView)
@@ -302,7 +294,7 @@ var _CPWindowViewResizeIndicatorImage = nil;
     [toolbarView setHidden:![self showsToolbar] || ![toolbar isVisible]];
     
     [self setAutoresizesSubviews:NO];
-    [owningWindow setFrameSize:[self frameRectForContentRect:[[owningWindow contentView] frame]].size];
+    [theWindow setFrameSize:[self frameRectForContentRect:[[theWindow contentView] frame]].size];
     [self setAutoresizesSubviews:YES];
     
     [self tile];
