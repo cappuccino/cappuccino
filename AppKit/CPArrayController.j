@@ -42,9 +42,22 @@
     id      _arrangedObjects;
 }
 
++ (void)initialize
+{
+    if (self !== [self class])
+        return;
+
+    [[self class] exposeBinding:@"contentArray"];
+}
+
 + (CPSet)keyPathsForValuesAffectingValueForContentArray
 {
     return [CPSet setWithObjects:"content"];
+}
+
++ (CPSet)keyPathsForValuesAffectingValueForArrangedObjects
+{
+    return [CPSet setWithObjects:"content", "contentArray", "filterPredicate", "sortDescriptors"];
 }
 
 + (CPSet)keyPathsForValuesAffectingValueForSelection
@@ -92,6 +105,26 @@
     _preservesSelection = value;
 }
 
+- (BOOL)selectsInsertedObjects
+{
+    return _selectsInsertedObjects;
+}
+
+- (void)setSelectsInsertedObjects:(BOOL)value
+{
+    _selectsInsertedObjects = value;
+}
+
+- (BOOL)avoidsEmptySelection
+{
+    return _avoidsEmptySelection;
+}
+
+- (void)setAvoidsEmptySelection:(BOOL)value
+{
+    _avoidsEmptySelection = value;
+}
+
 - (void)setContent:(id)value
 {
     if(![value isKindOfClass:[CPArray class]])
@@ -103,8 +136,8 @@
     if ([self preservesSelection])
         oldSelection = [self selectedObjects];
 
-    //FIXME: mutable copy?
-    [super setContent:[value copy]];
+    //FIXME: copy?
+    [super setContent:value];
 
     if(_clearsFilterPredicateOnInsertion)
         [self setFilterPredicate:nil];
@@ -231,7 +264,7 @@
 
 - (CPArray)selectedObjects
 {
-    var objects = [_CPObservableArray arrayWithArray:[[self arrangedObjects] objectsAtIndexes:[self selectionIndexes]]];
+    var objects = [[self arrangedObjects] objectsAtIndexes:[self selectionIndexes]];
 
     return objects || [_CPObservableArray array];
 }
@@ -288,24 +321,25 @@
 {
     if (![self canAdd])
         return;
-   
-   [self willChangeValueForKey:@"content"];
-   [_content addObject:object];
-   [self didChangeValueForKey:@"content"];
-   
-   if (_clearsFilterPredicateOnInsertion)
+
+    [self willChangeValueForKey:@"content"];
+    [_contentObject addObject:object];
+    [self didChangeValueForKey:@"content"];
+
+    if (_clearsFilterPredicateOnInsertion)
         [self setFilterPredicate:nil];
-   
-   if ([_filterPredicate evaluateWithObject:object])
-   {
+
+    if ([_filterPredicate evaluateWithObject:object])
+    {
         [self willChangeValueForKey:@"selectionIndexes"];
         var pos = [_arrangedObjects insertObject:object inArraySortedByDescriptors:_sortDescriptors];
         
         [_selectionIndexes shiftIndexesStartingAtIndex:pos by:1];
         [self didChangeValueForKey:@"selectionIndexes"];
-   }
+    }
+    else
+        [self rearrangeObjects];
 }
-
 
 - (void)removeObject:(id)object
 {
@@ -313,7 +347,7 @@
         return;    
 
    [self willChangeValueForKey:@"content"];
-   [_content removeObject:object];
+   [_contentObject removeObject:object];
    [self didChangeValueForKey:@"content"];
 
    if ([_filterPredicate evaluateWithObject:object])

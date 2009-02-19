@@ -19,6 +19,11 @@
     [self exposeBinding:"contentObject"];
 }
 
++ (CPSet)keyPathsForValuesAffectingValueForContentObject
+{
+    return [CPSet setWithObjects:"content"];
+}
+
 + (BOOL)automaticallyNotifiesObserversForKey:(CPString)aKey
 {
     if (aKey === @"contentObject")
@@ -89,7 +94,7 @@
 
 - (void)setObjectClass:(Class)aClass
 {
-    _defaultClassName = [aClass name];
+    _defaultClassName = [aClass className];
 }
 
 - (Class)objectClass
@@ -134,7 +139,7 @@
 
 - (BOOL)isEditable
 {
-    return _isEditable;
+    return _editable;
 }
 
 - (void)setEditable:(BOOL)isEditable
@@ -322,7 +327,7 @@
 {
     if (aKeyPath.indexOf("@") === 0)
     {
-        var proxy = [[_CPObservationProxy alloc] initWithKeyPath:aKeyPath observer:anObsever object:self],
+        var proxy = [[_CPObservationProxy alloc] initWithKeyPath:aKeyPath observer:anObserver object:self],
             index = [_observationProxies indexOfObject:proxy];
 
         proxy = [_observationProxies objectAtIndex:index];

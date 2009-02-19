@@ -246,7 +246,6 @@
 
 - (id)valueForKey:(CPString)aKey
 {
-
     if (aKey.indexOf("@") === 0)
     {
         if (aKey.indexOf(".") !== -1)
@@ -280,7 +279,7 @@
 - (id)valueForKeyPath:(CPString)aKeyPath
 {
     if (aKeyPath.indexOf("@") === 0)
-    {            
+    {
         var dotIndex = aKeyPath.indexOf("."),
             operator = aKeyPath.substring(1, dotIndex),
             parameter = aKeyPath.substring(dotIndex+1);
@@ -292,21 +291,7 @@
     }
     else
     {
-        var newArray = [],
-            enumerator = [self objectEnumerator],
-            object;
-            
-        while ((object = [enumerator nextObject]) !== nil)
-        {
-            var value = [object valueForKeyPath:aKeyPath];
-            
-            if (value === nil || value === undefined)
-                value = [CPNull null];
-                
-            newArray.push(value);
-        }
-        
-        return newArray;
+        return [super valueForKeyPath:aKeyPath];
     }
 }
 
@@ -426,7 +411,7 @@ kvoOperators["sum"] = function sumOperator(self, _cmd, param)
 
 -(void)addObserver:(id)observer forKeyPath:(CPString)aKeyPath options:(unsigned)options context:(id)context
 {
-    CPLog.warn("adding observer to CPArray. observer: "+observer+" keypath: "+aKeyPath+" context: "+context);
+    //CPLog.warn("adding observer to CPArray. observer: "+observer+" keypath: "+aKeyPath+" context: "+context);
     if ([isa instanceMethodForSelector:_cmd]==[CPArray instanceMethodForSelector:_cmd])
         [CPException raise:CPInvalidArgumentException reason:"Unsupported method on CPArray"];
     else

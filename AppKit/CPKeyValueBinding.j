@@ -23,6 +23,10 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+@import <Foundation/CPObject.j>
+@import <Foundation/CPArray.j>
+@import <Foundation/CPDictionary.j>
+
 var exposedBindingsMap = [CPDictionary new],
     bindingsMap = [CPDictionary new];
     
@@ -109,7 +113,6 @@ var CPBindingOperationAnd = 0,
     
     if (self)
     {
-        CPLog("creating CPKeyValueBinding with binding: "+aBinding+" name: "+aName+" to: "+aDestination+" keyPath: "+aKeyPath+" from: "+aSource);
         _source = aSource;
         _info   = [CPDictionary dictionaryWithObjects:[aDestination, aKeyPath] forKeys:[CPObservedObjectKey, CPObservedKeyPathKey]];
         
@@ -161,13 +164,7 @@ var CPBindingOperationAnd = 0,
     if (!changes)
         return;
 
-    var options = [_info objectForKey:CPOptionsKey],
-        newValue = [changes objectForKey:CPKeyValueChangeNewKey];
-
-    newValue = [self transformValue:newValue withOptions:options];
-    
-    if (![newValue isEqual:[_source valueForKey:context]])
-        [_source setValue:newValue forKey:context];
+    [self setValueFor:context];
 }
 
 - (id)transformValue:(id)aValue withOptions:(CPDictionary)options
@@ -260,7 +257,7 @@ var CPBindingOperationAnd = 0,
         return CPLog.error("Invalid object or path on "+self+" for "+aBinding);
 
     if (![[self exposedBindings] containsObject:aBinding])
-        return CPLog.error("No binding exposed on "+self+" for "+aBinding);
+        CPLog.warn("No binding exposed on "+self+" for "+aBinding);
 
     [self unbind:aBinding];
     [[CPKeyValueBinding alloc] initWithBinding:aBinding name:aBinding to:anObject keyPath:aKeyPath options:options from:self];

@@ -173,17 +173,15 @@ CPUnknownUserInfoKey        = @"CPUnknownUserInfoKey";
     
 - (id)valueForKeyPath:(CPString)aKeyPath
 {
-    var keys = aKeyPath.split("."),
-    
-        index = 0,
-        count = keys.length,
-        
-        value = self;
+    var dotIndex = aKeyPath.indexOf(".");
 
-    for(; index < count; ++index)
-        value = [value valueForKey:keys[index]];
+    if (dotIndex === CPNotFound)
+        return [self valueForKey:aKeyPath];
 
-    return value;
+    var firstPart = aKeyPath.substring(0, dotIndex),
+        secondPart = aKeyPath.substring(dotIndex+1);
+
+    return [[self valueForKey:firstPart] valueForKeyPath:secondPart];
 }
 
 - (CPDictionary)dictionaryWithValuesForKeys:(CPArray)keys
