@@ -938,7 +938,6 @@ var CPTextFieldIsEditableKey            = "CPTextFieldIsEditableKey",
         [self setEditable:[aCoder decodeBoolForKey:CPTextFieldIsEditableKey]];
         [self setSelectable:[aCoder decodeBoolForKey:CPTextFieldIsSelectableKey]];
 
-        [self setBezelStyle:[aCoder decodeIntForKey:CPTextFieldBezelStyleKey]];
         [self setDrawsBackground:[aCoder decodeBoolForKey:CPTextFieldDrawsBackgroundKey]];
 
         [self setTextFieldBackgroundColor:[aCoder decodeObjectForKey:CPTextFieldBackgroundColorKey]];
@@ -960,7 +959,6 @@ var CPTextFieldIsEditableKey            = "CPTextFieldIsEditableKey",
     [aCoder encodeBool:_isEditable forKey:CPTextFieldIsEditableKey];
     [aCoder encodeBool:_isSelectable forKey:CPTextFieldIsSelectableKey];
     
-    [aCoder encodeInt:_bezelStyle forKey:CPTextFieldBezelStyleKey];
     [aCoder encodeBool:_drawsBackground forKey:CPTextFieldDrawsBackgroundKey];
     
     [aCoder encodeObject:_textFieldBackgroundColor forKey:CPTextFieldBackgroundColorKey];
