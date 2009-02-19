@@ -29,17 +29,17 @@
 
 - (id)NS_initWithCoder:(CPCoder)aCoder
 {
+    var cell = [aCoder decodeObjectForKey:@"NSCell"];
+
+    // We need to do these first or setObjectValue: will 0 anything we put in it.
+    _minValue = [cell minValue];
+    _maxValue = [cell maxValue];
+
     self = [super NS_initWithCoder:aCoder];
-    
+
     if (self)
-    {
-        var cell = [aCoder decodeObjectForKey:@"NSCell"];
-        
-        _minValue           = [cell minValue];
-        _maxValue           = [cell maxValue];
         _altIncrementValue  = [cell altIncrementValue];
-    }
-    
+
     return self;
 }
 
