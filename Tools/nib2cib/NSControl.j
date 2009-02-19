@@ -34,6 +34,8 @@
     
     if (self)
     {
+        _controlState = CPControlStateNormal;
+
         [self sendActionOn:CPLeftMouseUpMask];
         
         var cell = [aCoder decodeObjectForKey:@"NSCell"];
