@@ -90,7 +90,8 @@ var CPTextFieldDOMInputElement = nil;
 
 @end
 
-CPTextFieldStateRounded = 1 << 12;
+CPTextFieldStateRounded     = 1 << 12;
+CPTextFieldStatePlaceholder = 1 << 13;
 
 /*!
     This control displays editable text in a Cappuccino application.
@@ -153,35 +154,11 @@ CPTextFieldStateRounded = 1 << 12;
 
     if (self)
     {
-        _value = "";
-        _placeholderString = "";
+        [self setStringValue:@""];
+        [self setPlaceholderString:@""];
 
         _sendActionOn = CPKeyUpMask | CPKeyDownMask;
 
-/*        
-#if PLATFORM(DOM)
-        _DOMTextElement = document.createElement("div");
-        _DOMTextElement.style.position = "absolute";
-        _DOMTextElement.style.top = TOP_PADDING + "px";
-        if (_isBezeled && _bezelStyle == CPTextFieldRoundedBezel)
-        {
-            _DOMTextElement.style.left = ROUNDEDBEZEL_HORIZONTAL_PADDING + "px";
-            _DOMTextElement.style.width = MAX(0.0, CGRectGetWidth(aFrame) - 2.0 * ROUNDEDBEZEL_HORIZONTAL_PADDING - 2.0) + "px";
-        }
-        else
-        {
-            _DOMTextElement.style.left = HORIZONTAL_PADDING + "px";
-            _DOMTextElement.style.width = MAX(0.0, CGRectGetWidth(aFrame) - 2.0 * HORIZONTAL_PADDING) + "px";
-        }
-        _DOMTextElement.style.height = MAX(0.0, CGRectGetHeight(aFrame) - TOP_PADDING - BOTTOM_PADDING) + "px";
-        _DOMTextElement.style.whiteSpace = "pre";
-        _DOMTextElement.style.cursor = "default";
-        _DOMTextElement.style.zIndex = 100;
-        _DOMTextElement.style.overflow = "hidden";
-
-        _DOMElement.appendChild(_DOMTextElement);
-#endif
-*/
         [self setValue:CPLeftTextAlignment forThemedAttributeName:@"alignment"];
     }
     
@@ -519,23 +496,6 @@ CPTextFieldStateRounded = 1 << 12;
 }
 */
 
-- (void)setFrameSize:(CGSize)aSize
-{
-    [super setFrameSize:aSize];
-    /*
-#if PLATFORM(DOM)
-    if (_isBezeled && _bezelStyle == CPTextFieldRoundedBezel)
-    {
-        CPDOMDisplayServerSetStyleSize(_DOMTextElement, _frame.size.width - 2.0 * ROUNDEDBEZEL_HORIZONTAL_PADDING, _frame.size.height - TOP_PADDING - BOTTOM_PADDING);
-    }
-    else
-    {
-        CPDOMDisplayServerSetStyleSize(_DOMTextElement, _frame.size.width - 2.0 * HORIZONTAL_PADDING, _frame.size.height - TOP_PADDING - BOTTOM_PADDING);
-    }
-#endif
-*/
-}
-
 /*!
     Returns the string the text field.
 */
@@ -559,27 +519,20 @@ CPTextFieldStateRounded = 1 << 12;
 - (void)setObjectValue:(id)aValue
 {
     [super setObjectValue:aValue];
-    /*
+
+/*
 #if PLATFORM(DOM)
-    var displayString = "";
-
-    if (aValue !== nil && aValue !== undefined)
-    {
-        if ([aValue respondsToSelector:@selector(string)])
-            displayString = [aValue string];
-        else
-            displayString += aValue;
-    }
-
     if ([[self window] firstResponder] == self)
         [[self class] _inputElement].value = displayString;
-
-    if (CPFeatureIsCompatible(CPJavascriptInnerTextFeature))
-        _DOMTextElement.innerText = displayString;
-    else if (CPFeatureIsCompatible(CPJavascriptTextContentFeature))
-        _DOMTextElement.textContent = displayString;
 #endif
 */
+
+    var string = [self stringValue];
+
+    if (!string || [string length] === 0)
+        _controlState |= CPTextFieldStatePlaceholder;
+    else
+        _controlState &= ~CPTextFieldStatePlaceholder;
 }
 
 /*!
@@ -594,7 +547,7 @@ CPTextFieldStateRounded = 1 << 12;
     _placeholderString = aStringValue;
 
     // Only update things if we need to show the placeholder
-    if ([self _shouldShowPlaceholderString])
+    if (_controlState & CPTextFieldStatePlaceholder)
     {
         [self setNeedsLayout];
         [self setNeedsDisplay:YES];
@@ -610,16 +563,6 @@ CPTextFieldStateRounded = 1 << 12;
 }
 
 /*!
-    @ignore
-*/
-- (BOOL)_shouldShowPlaceholderString
-{
-    var string = [self stringValue];
-    
-    return (!string || [string length] === 0) && [_placeholderString length] > 0;
-}
-
-/*!
     Adjusts the text field's size in the application.
 */
 
@@ -629,18 +572,6 @@ CPTextFieldStateRounded = 1 << 12;
         contentInset = [self currentValueForThemedAttributeName:@"content-inset"];
 
     [self setFrameSize:CGSizeMake(size.width + contentInset.left + contentInset.right, size.height + contentInset.top + contentInset.bottom)];
-/*#if PLATFORM(DOM)
-    var size = [(_value || " ") sizeWithFont:[self font]];
-    
-    if (_isBezeled && _bezelStyle == CPTextFieldRoundedBezel)
-    {
-        [self setFrameSize:CGSizeMake(size.width + 2 * ROUNDEDBEZEL_HORIZONTAL_PADDING, size.height + TOP_PADDING + BOTTOM_PADDING)];
-    }
-    else
-    {
-        [self setFrameSize:CGSizeMake(size.width + 2 * HORIZONTAL_PADDING, size.height + TOP_PADDING + BOTTOM_PADDING)];
-    }
-#endif*/
 }
 
 /*!
@@ -775,20 +706,15 @@ CPTextFieldStateRounded = 1 << 12;
     var contentView = [self layoutEphemeralSubviewNamed:@"content-view"
                                              positioned:CPWindowAbove
                         relativeToEphemeralSubviewNamed:@"bezel-view"];
-    
+
     if (contentView)
     {
-        if ([self _shouldShowPlaceholderString])
-        {
+        if (_controlState & CPTextFieldStatePlaceholder)
             [contentView setText:[self placeholderString]];
-            [contentView setTextColor:[CPColor grayColor]];
-        }
         else
-        {
             [contentView setText:[self stringValue]];
-            [contentView setTextColor:[self currentValueForThemedAttributeName:@"text-color"]];
-        }
-        
+
+        [contentView setTextColor:[self currentValueForThemedAttributeName:@"text-color"]];
         [contentView setFont:[self currentValueForThemedAttributeName:@"font"]];
         [contentView setAlignment:[self currentValueForThemedAttributeName:@"alignment"]];
         [contentView setVerticalAlignment:[self currentValueForThemedAttributeName:@"vertical-alignment"]];
@@ -799,35 +725,7 @@ CPTextFieldStateRounded = 1 << 12;
 }
 
 @end
-/*
-@implementation CPTextField (Theming)
 
-- (void)viewDidChangeTheme
-{
-    [super viewDidChangeTheme];
-    
-    var theme = [self theme];
-    
-    [_bezelInset setTheme:theme];
-    [_contentInset setTheme:theme];
-    
-    [_bezelColor setTheme:theme];
-}
-
-- (CPDictionary)themedValues
-{
-    var values = [super themedValues];
-
-    [values setObject:_bezelInset forKey:@"bezel-inset"];
-    [values setObject:_contentInset forKey:@"content-isnet"];
-    
-    [values setObject:_bezelColor forKey:@"bezel-color"];
-
-    return values;
-}
-
-@end
-*/
 var CPTextFieldIsEditableKey            = "CPTextFieldIsEditableKey",
     CPTextFieldIsSelectableKey          = "CPTextFieldIsSelectableKey",
     CPTextFieldIsBorderedKey            = "CPTextFieldIsBorderedKey",
@@ -846,36 +744,11 @@ var CPTextFieldIsEditableKey            = "CPTextFieldIsEditableKey",
     @return the initialized textfield
 */
 - (id)initWithCoder:(CPCoder)aCoder
-{/*
-#if PLATFORM(DOM)
-    _DOMTextElement = document.createElement("div");
-#endif
-*/
+{
     self = [super initWithCoder:aCoder];
     
     if (self)
-    {/*
-#if PLATFORM(DOM)
-        var bounds = [self bounds];
-        _DOMTextElement.style.position = "absolute";
-        _DOMTextElement.style.top = TOP_PADDING + "px";
-        if (_isBezeled && _bezelStyle == CPTextFieldRoundedBezel)
-        {
-            _DOMTextElement.style.left = ROUNDEDBEZEL_HORIZONTAL_PADDING + "px";
-            _DOMTextElement.style.width = MAX(0.0, CGRectGetWidth(bounds) - 2.0 * ROUNDEDBEZEL_HORIZONTAL_PADDING) + "px";
-        }
-        else
-        {
-            _DOMTextElement.style.left = HORIZONTAL_PADDING + "px";
-            _DOMTextElement.style.width = MAX(0.0, CGRectGetWidth(bounds) - 2.0 * HORIZONTAL_PADDING) + "px";
-        }
-        _DOMTextElement.style.height = MAX(0.0, CGRectGetHeight(bounds) - TOP_PADDING - BOTTOM_PADDING) + "px";
-        _DOMTextElement.style.whiteSpace = "pre";
-        _DOMTextElement.style.cursor = "default";
-        
-        _DOMElement.appendChild(_DOMTextElement);
-#endif
-*/
+    {
         [self setEditable:[aCoder decodeBoolForKey:CPTextFieldIsEditableKey]];
         [self setSelectable:[aCoder decodeBoolForKey:CPTextFieldIsSelectableKey]];
 
