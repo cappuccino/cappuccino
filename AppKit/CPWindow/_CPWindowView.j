@@ -36,6 +36,7 @@ var _CPWindowViewResizeIndicatorImage = nil;
     CGSize      _resizeIndicatorOffset;
     
     CPView      _toolbarView;
+//    BOOL        _isAnimatingToolbar;
     
     CGRect      _resizeFrame;
     CGPoint     _mouseDraggedPoint;
@@ -173,7 +174,7 @@ var _CPWindowViewResizeIndicatorImage = nil;
         [_resizeIndicator setImage:_CPWindowViewResizeIndicatorImage];
         [_resizeIndicator setAutoresizingMask:CPViewMinXMargin | CPViewMinYMargin];
         
-        [self addSubview:_resizeIndicator positioned:CPWindowAbove relativeTo:nil];
+        [self addSubview:_resizeIndicator];
     }
     else
     {
@@ -185,7 +186,7 @@ var _CPWindowViewResizeIndicatorImage = nil;
 
 - (CPImage)showsResizeIndicator
 {
-    return _resizeIndicator != nil;
+    return _resizeIndicator !== nil;
 }
 
 - (void)setResizeIndicatorOffset:(CGSize)anOffset
@@ -220,7 +221,6 @@ var _CPWindowViewResizeIndicatorImage = nil;
 - (BOOL)showsToolbar
 {
     return YES;
-    return NO;
 }
 
 - (CGSize)toolbarOffset
@@ -257,7 +257,7 @@ var _CPWindowViewResizeIndicatorImage = nil;
         var toolbarView = [self toolbarView],
             toolbarOffset = [self toolbarOffset];
         
-        [toolbarView setFrameOrigin:CGPointMake(toolbarOffset.width, toolbarOffset.height)];
+        [toolbarView setFrame:CGRectMake(toolbarOffset.width, toolbarOffset.height, width, CGRectGetHeight([toolbarView frame]))];
     }
     
     if ([self showsResizeIndicator])
@@ -283,21 +283,46 @@ var _CPWindowViewResizeIndicatorImage = nil;
         {
             [toolbarView removeFromSuperview];
             [toolbarView setLabelColor:[self toolbarLabelColor]];
-            [toolbarView setFrameSize:CGSizeMake(CGRectGetWidth([self bounds]), CGRectGetHeight([toolbarView frame]))];
                
             [self addSubview:toolbarView];
         }
         
         _toolbarView = toolbarView;
     }
-    
+
     [toolbarView setHidden:![self showsToolbar] || ![toolbar isVisible]];
-    
-    [self setAutoresizesSubviews:NO];
-    [theWindow setFrameSize:[self frameRectForContentRect:[[theWindow contentView] frame]].size];
-    [self setAutoresizesSubviews:YES];
-    
+
+    if (theWindow)
+    {
+        var contentRect = [self convertRect:[[theWindow contentView] frame] toView:nil];
+
+        contentRect.origin = [theWindow convertBaseToBridge:contentRect.origin];
+
+        [self setAutoresizesSubviews:NO];
+        [theWindow setFrame:[theWindow frameRectForContentRect:contentRect]];
+        [self setAutoresizesSubviews:YES];
+    }
+
     [self tile];
+}
+/*
+- (void)setAnimatingToolbar:(BOOL)isAnimatingToolbar
+{
+    _isAnimatingToolbar = isAnimatingToolbar;
+}
+
+- (BOOL)isAnimatingToolbar
+{
+    return _isAnimatingToolbar;
+}
+*/
+
+- (void)didAddSubview:(CPView)aView
+{
+    if (!_resizeIndicator || aView === _resizeIndicator)
+        return;
+
+    [self addSubview:_resizeIndicator];
 }
 
 @end

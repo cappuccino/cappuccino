@@ -111,7 +111,7 @@
         
         aWindow._isVisible = YES;
         
-        if ([aWindow styleMask] & CPBorderlessBridgeWindowMask)
+        if ([aWindow isFullBridge])
             [aWindow setFrame:[aWindow._bridge contentBounds]];
     }
 }

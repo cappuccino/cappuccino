@@ -97,8 +97,7 @@ var _CPKeyedUnarchiverArrayClass                                            = Ni
     
     CPData          _data;
 
-    // FIXME: We need to support this!
-    CPDictionary    _replacementClassNames;
+    CPDictionary    _replacementClasses;
     
     CPDictionary    _objects;
     CPDictionary    _archive;
@@ -137,6 +136,8 @@ var _CPKeyedUnarchiverArrayClass                                            = Ni
         
         _plistObject = [_archive objectForKey:_CPKeyedArchiverTopKey];
         _plistObjects = [_archive objectForKey:_CPKeyedArchiverObjectsKey];
+
+        _replacementClasses = [CPDictionary dictionary];
     }
     
     return self;
@@ -377,6 +378,16 @@ var _CPKeyedUnarchiverArrayClass                                            = Ni
         _delegateSelectors |= _CPKeyedUnarchiverDidFinishSelector;
 }
 
+- (void)setClass:(Class)aClass forClassName:(CPString)aClassName
+{
+    [_replacementClasses setObject:aClass forKey:aClassName];
+}
+
+- (Class)classForClassName:(CPString)aClassName
+{
+    return [_replacementClasses objectForKey:aClassName];
+}
+
 - (BOOL)allowsKeyedCoding
 {
     return YES;
@@ -402,6 +413,9 @@ var _CPKeyedUnarchiverDecodeObjectAtIndex = function(self, anIndex)
         var plistClass = self._plistObjects[[[plistObject objectForKey:_CPKeyedArchiverClassKey] objectForKey:_CPKeyedArchiverUIDKey]],
             className = [plistClass objectForKey:_CPKeyedArchiverClassNameKey],
             classes = [plistClass objectForKey:_CPKeyedArchiverClassesKey],
+            theClass = [self classForClassName:className];
+
+        if (!theClass)
             theClass = CPClassFromString(className);
 
         object = [theClass alloc];

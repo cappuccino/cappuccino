@@ -33,7 +33,8 @@
 
 
 CPCibOwner              = @"CPCibOwner",
-CPCibTopLevelObjects    = @"CPCibTopLevelObjects";
+CPCibTopLevelObjects    = @"CPCibTopLevelObjects",
+CPCibReplacementClasses = @"CPCibReplacementClasses";
     
 var CPCibObjectDataKey  = @"CPCibObjectDataKey";
 
@@ -68,7 +69,18 @@ var CPCibObjectDataKey  = @"CPCibObjectDataKey";
 - (BOOL)instantiateCibWithExternalNameTable:(CPDictionary)anExternalNameTable
 {
     var unarchiver = [[_CPCibKeyedUnarchiver alloc] initForReadingWithData:_data bundle:_bundle],
-        objectData = [unarchiver decodeObjectForKey:CPCibObjectDataKey];
+        replacementClasses = [anExternalNameTable objectForKey:CPCibReplacementClasses];
+
+    if (replacementClasses)
+    {
+        var key = nil,
+            keyEnumerator = [replacementClasses keyEnumerator];
+
+        while (key = [keyEnumerator nextObject])
+            [unarchiver setClass:[replacementClasses objectForKey:key] forClassName:key];
+    }
+
+    var objectData = [unarchiver decodeObjectForKey:CPCibObjectDataKey];
 
     if (!objectData || ![objectData isKindOfClass:[_CPCibObjectData class]])
         return NO;

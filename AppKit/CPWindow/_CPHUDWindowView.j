@@ -194,9 +194,15 @@ var HUD_TITLEBAR_HEIGHT             = 26.0;
 {
     [super tile];
 
-    var theWindow = [self window];
-    
-    [[theWindow contentView] setFrameOrigin:CGPointMake(0.0, [self toolbarMaxY])];//HUD_TITLEBAR_HEIGHT + toolbarHeight)];
+    var theWindow = [self window],
+        bounds = [self bounds],
+        width = CGRectGetWidth(bounds);
+
+    [_titleField setFrame:CGRectMake(20.0, 3.0, width - 40.0, CGRectGetHeight([_titleField frame]))];
+
+    var maxY = [self toolbarMaxY];
+
+    [[theWindow contentView] setFrameOrigin:CGPointMake(0.0, maxY, width, CGRectGetHeight(bounds) - maxY)];
 }
 
 @end

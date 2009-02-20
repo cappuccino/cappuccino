@@ -2,31 +2,35 @@
 @import <Foundation/CPObject.j>
 
 
-var _CPCibWindowTemplateMinSizeKey          = @"_CPCibWindowTemplateMinSizeKey",
-    _CPCibWindowTemplateMaxSizeKey          = @"_CPCibWindowTemplateMaxSizeKey",
+var _CPCibWindowTemplateMinSizeKey              = @"_CPCibWindowTemplateMinSizeKey",
+    _CPCibWindowTemplateMaxSizeKey              = @"_CPCibWindowTemplateMaxSizeKey",
     
-    _CPCibWindowTemplateViewClassKey        = @"_CPCibWindowTemplateViewClassKey",
-    _CPCibWindowTemplateWindowClassKey        = @"_CPCibWindowTemplateWindowClassKey",
+    _CPCibWindowTemplateViewClassKey            = @"_CPCibWindowTemplateViewClassKey",
+    _CPCibWindowTemplateWindowClassKey          = @"_CPCibWindowTemplateWindowClassKey",
     
-    _CPCibWindowTemplateWindowRectKey       = @"_CPCibWindowTemplateWindowRectKey",
-    _CPCibWindowTemplateWindowStyleMaskKey  = @"_CPCibWindowTempatStyleMaskKey",
-    _CPCibWindowTemplateWindowTitleKey      = @"_CPCibWindowTemplateWindowTitleKey",
-    _CPCibWindowTemplateWindowViewKey       = @"_CPCibWindowTemplateWindowViewKey";
+    _CPCibWindowTemplateWindowRectKey           = @"_CPCibWindowTemplateWindowRectKey",
+    _CPCibWindowTemplateWindowStyleMaskKey      = @"_CPCibWindowTempatStyleMaskKey",
+    _CPCibWindowTemplateWindowTitleKey          = @"_CPCibWindowTemplateWindowTitleKey",
+    _CPCibWindowTemplateWindowViewKey           = @"_CPCibWindowTemplateWindowViewKey",
+
+    _CPCibWindowTemplateWindowIsFullBridgeKey   = @"_CPCibWindowTemplateWindowIsFullBridgeKey";
 
 @implementation _CPCibWindowTemplate : CPObject
 {
     CGSize      _minSize;
     CGSize      _maxSize;
     //CGSize      _screenRect;
-    
+
     id          _viewClass;
     //unsigned  _wtFlags;
     CPString    _windowClass;
     CGRect      _windowRect;
     unsigned    _windowStyleMask;
-    
+
     CPString    _windowTitle;
     CPView      _windowView;
+
+    BOOL        _windowIsFullBridge;
 }
 
 - (id)initWithCoder:(CPCoder)aCoder
@@ -48,6 +52,8 @@ var _CPCibWindowTemplateMinSizeKey          = @"_CPCibWindowTemplateMinSizeKey",
         
         _windowTitle = [aCoder decodeObjectForKey:_CPCibWindowTemplateWindowTitleKey];
         _windowView = [aCoder decodeObjectForKey:_CPCibWindowTemplateWindowViewKey];
+
+        _windowIsFullBridge = [aCoder decodeObjectForKey:_CPCibWindowTemplateWindowIsFullBridgeKey];
     }
     
     return self;
@@ -68,11 +74,18 @@ var _CPCibWindowTemplateMinSizeKey          = @"_CPCibWindowTemplateMinSizeKey",
     
     [aCoder encodeObject:_windowTitle forKey:_CPCibWindowTemplateWindowTitleKey];
     [aCoder encodeObject:_windowView forKey:_CPCibWindowTemplateWindowViewKey];
+
+    [aCoder encodeObject:_windowIsFullBridge forKey:_CPCibWindowTemplateWindowIsFullBridgeKey];
+}
+
+- (CPString)windowClass
+{
+    return _windowClass;
 }
 
 - (id)_cibInstantiate
 {
-    var windowClass = CPClassFromString(_windowClass);
+    var windowClass = CPClassFromString([self windowClass]);
     
 /*    if (!windowClass)
         [NSException raise:NSInvalidArgumentException format:@"Unable to locate NSWindow class %@, using NSWindow",_windowClass];
@@ -100,7 +113,9 @@ var _CPCibWindowTemplateMinSizeKey          = @"_CPCibWindowTemplateMinSizeKey",
     {
        [theWindow setToolbar:_viewClass];
     }
-    
+
+    [theWindow setFullBridge:_windowIsFullBridge];
+
     return theWindow;
 }
 

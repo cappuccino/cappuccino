@@ -72,8 +72,7 @@ var NSBorderlessWindowMask          = 0x00,
                                 (_windowStyleMask & NSTexturedBackgroundWindowMask ? NSTexturedBackgroundWindowMask : 0) |
                                 (_windowStyleMask & NSHUDBackgroundWindowMask ? CPHUDBackgroundWindowMask : 0);
                                 
-        if ([aCoder decodeObjectForKey:"NSFrameAutosaveName"] === "CPBorderlessBridgeWindowMask")
-            _windowStyleMask = CPBorderlessBridgeWindowMask;
+        _windowIsFullBridge = [aCoder decodeObjectForKey:"NSFrameAutosaveName"] === "CPBorderlessBridgeWindowMask";
         
         /*if (![_windowClass isEqualToString:@"NSPanel"])
            _windowRect.origin.y -= [NSMainMenuView menuHeight];   // compensation for the additional menu bar

@@ -141,7 +141,7 @@ var STANDARD_GRADIENT_HEIGHT                    = 41.0;
 + (CGRect)contentRectForFrameRect:(CGRect)aFrameRect
 {
     var contentRect = CGRectMakeCopy(aFrameRect),
-        titleBarHeight = STANDARD_TITLEBAR_HEIGHT + 1.0;
+        titleBarHeight = [self titleBarHeight] + 1.0;
         
     contentRect.origin.y += titleBarHeight;
     contentRect.size.height -= titleBarHeight;
@@ -152,7 +152,7 @@ var STANDARD_GRADIENT_HEIGHT                    = 41.0;
 + (CGRect)frameRectForContentRect:(CGRect)aContentRect
 {
     var frameRect = CGRectMakeCopy(aContentRect),
-        titleBarHeight = STANDARD_TITLEBAR_HEIGHT + 1.0;
+        titleBarHeight = [self titleBarHeight] + 1.0;
     
     frameRect.origin.y -= titleBarHeight;
     frameRect.size.height += titleBarHeight;
@@ -160,13 +160,19 @@ var STANDARD_GRADIENT_HEIGHT                    = 41.0;
     return frameRect;
 }
 
++ (float)titleBarHeight
+{
+    return STANDARD_TITLEBAR_HEIGHT;
+}
+
 - (CGRect)contentRectForFrameRect:(CGRect)aFrameRect
 {
-    var contentRect = [[self class] contentRectForFrameRect:aFrameRect];
+    var contentRect = [[self class] contentRectForFrameRect:aFrameRect],
+        theToolbar = [[self window] toolbar];
     
-    if ([[[self window] toolbar] isVisible])
+    if ([theToolbar isVisible])
     {
-        toolbarHeight = CGRectGetHeight([[self toolbarView] frame]);
+        toolbarHeight = CGRectGetHeight([[theToolbar _toolbarView] frame]);
         
         contentRect.origin.y += toolbarHeight;
         contentRect.size.height -= toolbarHeight;
@@ -177,11 +183,12 @@ var STANDARD_GRADIENT_HEIGHT                    = 41.0;
 
 - (CGRect)frameRectForContentRect:(CGRect)aContentRect
 {
-    var frameRect = [[self class] frameRectForContentRect:aContentRect];
+    var frameRect = [[self class] frameRectForContentRect:aContentRect],
+        theToolbar = [[self window] toolbar];
     
-    if ([[[self window] toolbar] isVisible])
+    if ([theToolbar isVisible])
     {
-        toolbarHeight = CGRectGetHeight([[self toolbarView] frame]);
+        toolbarHeight = CGRectGetHeight([[theToolbar _toolbarView] frame]);
         
         frameRect.origin.y -= toolbarHeight;
         frameRect.size.height += toolbarHeight;
@@ -199,7 +206,7 @@ var STANDARD_GRADIENT_HEIGHT                    = 41.0;
         var theClass = [self class],
             bounds = [self bounds];
         
-        _headView = [[_CPTexturedWindowHeadView alloc] initWithFrame:CGRectMake(0.0, 0.0, CGRectGetWidth(bounds), STANDARD_TITLEBAR_HEIGHT)];
+        _headView = [[_CPTexturedWindowHeadView alloc] initWithFrame:CGRectMake(0.0, 0.0, CGRectGetWidth(bounds), [[self class] titleBarHeight])];
           
         [_headView setAutoresizingMask:CPViewWidthSizable];;
         [_headView setHitTests:NO];
@@ -236,6 +243,8 @@ var STANDARD_GRADIENT_HEIGHT                    = 41.0;
         // FIXME: Make this to CPLineBreakByTruncatingMiddle once it's implemented.
         [_titleField setLineBreakMode:CPLineBreakByTruncatingTail];
         [_titleField setAlignment:CPCenterTextAlignment];
+        [_titleField setTextShadowColor:[CPColor whiteColor]];
+        [_titleField setTextShadowOffset:CGSizeMake(0.0, 1.0)];
         
         [_titleField setStringValue:@"Untitled"];
         [_titleField sizeToFit];
@@ -263,7 +272,6 @@ var STANDARD_GRADIENT_HEIGHT                    = 41.0;
             
             [self addSubview:_closeButton];
         }
-
         
         [self tile];
     }
@@ -279,7 +287,7 @@ var STANDARD_GRADIENT_HEIGHT                    = 41.0;
 
 - (CGSize)toolbarOffset
 {
-    return CGSizeMake(0.0, STANDARD_TITLEBAR_HEIGHT);
+    return CGSizeMake(0.0, [[self class] titleBarHeight]);
 }
 
 - (void)tile
@@ -287,17 +295,47 @@ var STANDARD_GRADIENT_HEIGHT                    = 41.0;
     [super tile];
 
     var theWindow = [self window],
-        width = CGRectGetWidth([self bounds]);
-    
+        bounds = [self bounds],
+        width = CGRectGetWidth(bounds);
+
     [_headView setFrameSize:CGSizeMake(width, [self toolbarMaxY])];
-    [_dividerView setFrameOrigin:CGPointMake(0.0, CGRectGetMaxY([_headView frame]))];
-    [_bodyView setFrameOrigin:CGPointMake(0.0, CGRectGetMaxY([_dividerView frame]))];
+    [_dividerView setFrame:CGRectMake(0.0, CGRectGetMaxY([_headView frame]), width, 1.0)];
+
+    var dividerMaxY = CGRectGetMaxY([_dividerView frame]);
+
+    [_bodyView setFrame:CGRectMake(0.0, dividerMaxY, width, CGRectGetHeight(bounds) - dividerMaxY)];
 
     [_titleField setFrame:CGRectMake(10.0, 3.0, width - 20.0, CGRectGetHeight([_titleField frame]))];
-    
+
     [[theWindow contentView] setFrameOrigin:CGPointMake(0.0, CGRectGetMaxY([_dividerView frame]))];
 }
+/*
+- (void)setAnimatingToolbar:(BOOL)isAnimatingToolbar
+{
+    [super setAnimatingToolbar:isAnimatingToolbar];
 
+    if ([self isAnimatingToolbar])
+    {
+        [[self toolbarView] setAutoresizingMask:CPViewHeightSizable];
+
+        [_headView setAutoresizingMask:CPViewHeightSizable];
+        [_dividerView setAutoresizingMask:CPViewMinYMargin];
+        [_bodyView setAutoresizingMask:CPViewMinYMargin];
+
+        [[[self window] contentView] setAutoresizingMask:CPViewNotSizable];
+    }
+    else
+    {
+        [[self toolbarView] setAutoresizingMask:CPViewWidthSizable];
+
+        [_headView setAutoresizingMask:CPViewWidthSizable];
+        [_dividerView setAutoresizingMask:CPViewWidthSizable];
+        [_bodyView setAutoresizingMask:CPViewWidthSizable | CPViewHeightSizable];
+
+        [[[self window] contentView] setAutoresizingMask:CPViewWidthSizable | CPViewHeightSizable];
+    }
+}
+*/
 - (void)setTitle:(CPString)aTitle
 {
     [_titleField setStringValue:aTitle];
@@ -307,7 +345,7 @@ var STANDARD_GRADIENT_HEIGHT                    = 41.0;
 {
     if (CGRectContainsPoint([_headView frame], [self convertPoint:[anEvent locationInWindow] fromView:nil]))
         return [self trackMoveWithEvent:anEvent];
-    
+
     [super mouseDown:anEvent];
 }
 
