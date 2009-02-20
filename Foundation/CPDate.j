@@ -43,6 +43,9 @@ var CPDateReferenceDate = new Date(Date.UTC(2001,1,1,0,0,0,0));
 {
     return [[CPDate alloc] initWithTimeIntervalSinceNow:seconds];
 }
++ (id)dateWithTimeIntervalSince1970:(CPTimeInterval)seconds {
+    return [[CPDate alloc] initWithTimeIntervalSince1970:seconds];
+}
 + (id)dateWithTimeIntervalSinceReferenceDate:(CPTimeInterval)seconds
 {
     return [[CPDate alloc] initWithTimeIntervalSinceReferenceDate:seconds];
@@ -61,6 +64,11 @@ var CPDateReferenceDate = new Date(Date.UTC(2001,1,1,0,0,0,0));
 - (id)initWithTimeIntervalSinceNow:(CPTimeInterval)seconds
 {
     self = new Date((new Date()).getTime() + seconds * 1000);
+    return self;
+}
+- (id)initWithTimeIntervalSince1970:(CPTimeInterval)seconds
+{
+    self = new Date(seconds * 1000);
     return self;
 }
 - (id)initWithTimeIntervalSinceReferenceDate:(CPTimeInterval)seconds
