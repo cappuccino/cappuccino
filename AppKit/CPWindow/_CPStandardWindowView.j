@@ -232,8 +232,6 @@ var STANDARD_GRADIENT_HEIGHT                    = 41.0;
         [self addSubview:_bodyView];
                 
         [self setResizeIndicatorOffset:CGSizeMake(2.0, 2.0)];
-        [self setShowsResizeIndicator:NO];
-        [self setShowsResizeIndicator:YES];
         
         _titleField = [[CPTextField alloc] initWithFrame:CGRectMakeZero()];
         
