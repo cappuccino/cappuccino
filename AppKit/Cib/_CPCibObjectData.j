@@ -223,4 +223,24 @@ var _CPCibObjectDataNamesKeysKey                = @"_CPCibObjectDataNamesKeysKey
     }
 }
 
+- (void)awakeWithOwner:(id)anOwner topLevelObjects:(CPMutableArray)topLevelObjects
+{
+    var count = [_objectsKeys count];
+
+    while (count--)
+    {
+        var object = _objectsKeys[count],
+            instantiatedObject = _replacementObjects[[object hash]];
+
+        if (instantiatedObject)
+            object = instantiatedObject;
+
+        if (object !== _fileOwner && [object respondsToSelector:@selector(awakeFromCib)])
+            [object awakeFromCib];
+    }
+
+    if ([anOwner respondsToSelector:@selector(awakeFromCib)])
+        [anOwner awakeFromCib];
+}
+
 @end

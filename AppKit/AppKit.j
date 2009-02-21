@@ -25,6 +25,7 @@
 @import "CPAnimation.j"
 @import "CPApplication.j"
 @import "CPButton.j"
+@import "CPButtonBar.j"
 @import "CPClipView.j"
 @import "CPCollectionView.j"
 @import "CPColor.j"

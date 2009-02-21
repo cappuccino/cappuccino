@@ -90,6 +90,7 @@ var CPCibObjectDataKey  = @"CPCibObjectDataKey";
 
     [objectData instantiateWithOwner:owner topLevelObjects:topLevelObjects]
     [objectData establishConnectionsWithOwner:owner topLevelObjects:topLevelObjects];
+    [objectData awakeWithOwner:owner topLevelObjects:topLevelObjects];
 
     var menu;
 
