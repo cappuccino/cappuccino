@@ -1927,24 +1927,37 @@ setBoundsOrigin:
 - (void)setValue:(id)aValue forThemedAttributeName:(CPString)aName inControlState:(CPControlState)aControlState
 {
     var attribute = _themedAttributes[aName];
-    
+
     if (!attribute)
-        return nil;
-    
+        return;
+
     var currentValue = [self currentValueForThemedAttributeName:aName];
-    
+
     [attribute setValue:aValue forControlState:aControlState];
-    
+
     if ([self currentValueForThemedAttributeName:aName] === currentValue)
         return;
-    
+
     [self setNeedsDisplay:YES];
     [self setNeedsLayout];
 }
 
 - (void)setValue:(id)aValue forThemedAttributeName:(CPString)aName
 {
-    [_themedAttributes[aName] setValue:aValue];
+    var attribute = _themedAttributes[aName];
+
+    if (!attribute)
+        return;
+
+    var currentValue = [self currentValueForThemedAttributeName:aName];
+
+    [attribute setValue:aValue];
+
+    if ([self currentValueForThemedAttributeName:aName] === currentValue)
+        return;
+
+    [self setNeedsDisplay:YES];
+    [self setNeedsLayout];
 }
 
 - (id)valueForThemedAttributeName:(CPString)aName inControlState:(CPControlState)aControlState
