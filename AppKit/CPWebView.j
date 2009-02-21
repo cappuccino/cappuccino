@@ -107,11 +107,6 @@ CPWebViewScrollNative                           = 2;
     _iframe.style.height = "100%";
     _iframe.style.borderWidth = "0px";
     
-    if (_scrollMode === CPWebViewScrollNative || _scrollMode === CPWebViewScrollAuto)
-        _iframe.setAttribute("scrolling", "no");
-    else
-        _iframe.setAttribute("scrolling", "auto");
-    
     [self setDrawsBackground:YES];
     
     _loadCallback = function() {
@@ -246,6 +241,8 @@ CPWebViewScrollNative                           = 2;
 {
     // FIXME: do something with baseURL?
 
+    [self _setScrollMode:CPWebViewScrollAppKit];
+
     [self _startedLoading];
     
     _ignoreLoadStart = YES;
@@ -259,6 +256,8 @@ CPWebViewScrollNative                           = 2;
 
 - (void)_loadMainFrameURL
 {
+    [self _setScrollMode:CPWebViewScrollNative];
+
     [self _startedLoading];
     
     _ignoreLoadStart = YES;
