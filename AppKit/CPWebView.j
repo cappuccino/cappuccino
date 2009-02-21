@@ -20,7 +20,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-@import "CPView.j"
+@import <AppKit/CPView.j>
 
 #include "Platform/Platform.h"
 
@@ -37,16 +37,23 @@ CPWebViewProgressEstimateChangedNotification    = "CPWebViewProgressEstimateChan
 CPWebViewProgressStartedNotification            = "CPWebViewProgressStartedNotification";
 CPWebViewProgressFinishedNotification           = "CPWebViewProgressFinishedNotification";
 
+CPWebViewScrollAppKit                           = 1;
+CPWebViewScrollNative                           = 2;
+
 // FIXME: somehow make CPWebView work with CPScrollView instead of native scrollbars (is this even possible?)
 
 @implementation CPWebView : CPView
 {
+    CPScrollView    _scrollView;
+    CPView          _frameView;
+    
     IFrame      _iframe;
     CPString    _mainFrameURL;
     CPArray     _backwardStack;
     CPArray     _forwardStack;
     
-    BOOL        _ignoreLoadEvent;
+    BOOL        _ignoreLoadStart;
+    BOOL        _ignoreLoadEnd;
     
     id          _downloadDelegate;
     id          _frameLoadDelegate;
@@ -55,6 +62,14 @@ CPWebViewProgressFinishedNotification           = "CPWebViewProgressFinishedNoti
     id          _UIDelegate;
     
     CPWebScriptObject _wso;
+    
+    CPString    _url;
+    CPString    _html;
+    
+    Function    _loadCallback;
+    
+    int         _scrollMode;
+    CGSize      _scrollSize;
 }
 
 - (id)initWithFrame:(CPRect)frameRect frameName:(CPString)frameName groupName:(CPString)groupName
@@ -70,9 +85,11 @@ CPWebViewProgressFinishedNotification           = "CPWebViewProgressFinishedNoti
 {
     if (self = [super initWithFrame:aFrame])
     {
-        _mainFrameURL = nil;
-        _backwardStack = [];
-        _forwardStack = [];
+        _mainFrameURL   = nil;
+        _backwardStack  = [];
+        _forwardStack   = [];
+        _scrollMode     = CPWebViewScrollNative;
+        
         [self _initDOMWithFrame:aFrame];
     }
     
@@ -81,18 +98,25 @@ CPWebViewProgressFinishedNotification           = "CPWebViewProgressFinishedNoti
 
 - (id)_initDOMWithFrame:(CPRect)aFrame
 {
-    _ignoreLoadEvent = NO;
+    _ignoreLoadStart = YES;
+    _ignoreLoadEnd  = YES;
     
     _iframe = document.createElement("iframe");
     _iframe.name = "iframe_" + Math.floor(Math.random()*10000);
     _iframe.style.width = "100%";
     _iframe.style.height = "100%";
     _iframe.style.borderWidth = "0px";
+    
+    if (_scrollMode === CPWebViewScrollNative || _scrollMode === CPWebViewScrollAuto)
+        _iframe.setAttribute("scrolling", "no");
+    else
+        _iframe.setAttribute("scrolling", "auto");
+    
     [self setDrawsBackground:YES];
     
-    var loadCallback = function() {
+    _loadCallback = function() {
 	    // HACK: this block handles the case where we don't know about loads initiated by the user clicking a link
-	    if (!_ignoreLoadEvent)
+	    if (!_ignoreLoadStart)
 	    {
 	        // post the start load notification
 	        [self _startedLoading];
@@ -100,80 +124,172 @@ CPWebViewProgressFinishedNotification           = "CPWebViewProgressFinishedNoti
 	        if (_mainFrameURL)
 	            [_backwardStack addObject:_mainFrameURL];
 	            
-	        // FIXME: this doesn't actually get the right URL for different domains. Probably not be possible due to browser security restrictions.
+	        // FIXME: this doesn't actually get the right URL for different domains. Not possible due to browser security restrictions.
+            _mainFrameURL = _iframe.src;
             _mainFrameURL = _iframe.src;
             
+            // clear the forward
 	        [_forwardStack removeAllObjects];
 	    }
-	    _ignoreLoadEvent = NO;
+	    else
+            _ignoreLoadStart = NO;
 	    
-        [self _finishedLoading]
+	    if (!_ignoreLoadEnd)
+	    {
+            [self _finishedLoading];
+	    }
+	    else
+	        _ignoreLoadEnd = NO;
+        
+        [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
 	}
 	
 	if (_iframe.addEventListener)
-	    _iframe.addEventListener("load", loadCallback, false);
+	    _iframe.addEventListener("load", _loadCallback, false);
 	else if (_iframe.attachEvent)
-		_iframe.attachEvent("onload", loadCallback);
-	    
-    _DOMElement.appendChild(_iframe);
+		_iframe.attachEvent("onload", _loadCallback);
+	
+	
+    _frameView = [[CPView alloc] initWithFrame:[self bounds]];
+
+    _scrollView = [[CPScrollView alloc] initWithFrame:[self bounds]];
+    [_scrollView setAutoresizingMask:CPViewWidthSizable|CPViewHeightSizable];
+    [_scrollView setDocumentView:_frameView];
+	
+    _frameView._DOMElement.appendChild(_iframe);
+    
+    [self _setScrollMode:_scrollMode];
+
+    [self addSubview:_scrollView];
 }
 
-// IBActions
-
-- (IBAction)takeStringURLFrom:(id)sender
+- (BOOL)_resizeWebFrame
 {
-    [self setMainFrameURL:[sender stringValue]];
-}
-
-- (IBAction)goBack:(id)sender
-{
-    [self goBack];
-}
-
-- (IBAction)goForward:(id)sender
-{
-    [self goForward];
-}
-
-- (IBAction)stopLoading:(id)sender
-{
-    // FIXME: what to do?
-}
-
-- (IBAction)reload:(id)sender
-{
-    [self _loadMainFrameURL];
-}
-
-- (IBAction)print:(id)sender
-{
-    try
+    if (_scrollMode === CPWebViewScrollAppKit)
     {
-        [self window].print();
+        if (_scrollSize)
+        {
+            [_frameView setFrameSize:CGSizeMake(width, height)];
+        }
+        else
+        {
+            // try to get the document size so we can correctly set the frame
+            var win = null;
+            try { win = [self window]; } catch (e) {}
+
+            if (win && win.document)
+            {
+                var width = win.document.body.scrollWidth,
+                    height = win.document.body.scrollHeight;
+
+                _iframe.setAttribute("width", width);
+                _iframe.setAttribute("height", height);
+
+                [_frameView setFrameSize:CGSizeMake(width, height)];
+            }
+            else
+            {
+                [_frameView setFrameSize:CGSizeMake(800, 1600)];
+            }
+        }
     }
-    catch (e)
+}
+
+- (void)setScrollMode:(int)aScrollMode
+{
+    if (_scrollMode == aScrollMode)
+        return;
+        
+    [self _setScrollMode:aScrollMode];
+}
+
+- (void)_setScrollMode:(int)aScrollMode
+{
+    _scrollMode = aScrollMode;
+        
+    _ignoreLoadStart = YES;
+    _ignoreLoadEnd  = YES;
+
+    var parent = _iframe.parentNode;
+    parent.removeChild(_iframe);
+
+    if (_scrollMode === CPWebViewScrollAppKit)
     {
-        alert('Please click the webpage and select "Print" from the "File" menu');
+        [_frameView setAutoresizingMask:0];
+        
+        [_scrollView setHasHorizontalScroller:YES];
+        [_scrollView setHasVerticalScroller:YES];
+        
+        _iframe.setAttribute("scrolling", "no");
     }
+    else
+    {
+        [_frameView setAutoresizingMask:CPViewWidthSizable|CPViewHeightSizable];
+        
+        [_scrollView setHasHorizontalScroller:NO];
+        [_scrollView setHasVerticalScroller:NO];
+        
+        _iframe.setAttribute("scrolling", "auto");
+        
+        [_frameView setFrameSize:[_scrollView bounds].size];
+    }
+
+    parent.appendChild(_iframe);
 }
 
-
-- (BOOL)drawsBackground
+- (void)loadHTMLString:(CPString)aString
 {
-    return _iframe.style.backgroundColor != "";
+    [self loadHTMLString:aString baseURL:nil];
 }
 
-- (void)setDrawsBackground:(BOOL)drawsBackround
+- (void)loadHTMLString:(CPString)aString baseURL:(CPURL)URL
 {
-    _iframe.style.backgroundColor = drawsBackround ? "white" : "";
+    // FIXME: do something with baseURL?
+
+    [self _startedLoading];
+    
+    _ignoreLoadStart = YES;
+    _ignoreLoadEnd = NO;
+    
+    _url = null;
+    _html = aString;
+    
+    [self _load];
 }
 
 - (void)_loadMainFrameURL
 {
     [self _startedLoading];
     
-    _ignoreLoadEvent = YES;
-    _iframe.src = _mainFrameURL;
+    _ignoreLoadStart = YES;
+    _ignoreLoadEnd = NO;
+    
+    _url = _mainFrameURL;
+    _html = null;
+    
+    [self _load];
+}
+
+- (void)_load
+{
+    if (_url)
+    {
+        _iframe.src = _url;
+    }
+    else if (_html)
+    {
+        // clear the iframe
+        _iframe.src = "";
+
+        // need to give the browser a chance to reset iframe, otherwise we'll be document.write()-ing the previous document 
+        window.setTimeout(function() {
+            var win = [self window];
+            
+            win.document.write(_html);
+
+            window.setTimeout(_loadCallback, 1);
+        }, 0);
+    }
 }
 
 - (void)_startedLoading
@@ -186,6 +302,8 @@ CPWebViewProgressFinishedNotification           = "CPWebViewProgressFinishedNoti
 
 - (void)_finishedLoading
 {
+    [self _resizeWebFrame];
+    
     [[CPNotificationCenter defaultCenter] postNotificationName:CPWebViewProgressFinishedNotification object:self];
 
     if ([_frameLoadDelegate respondsToSelector:@selector(webView:didFinishLoadForFrame:)])
@@ -257,7 +375,7 @@ CPWebViewProgressFinishedNotification           = "CPWebViewProgressFinishedNoti
 
 - (void)close
 {
-    _DOMElement.removeChild(_iframe);
+    _iframe.parentNode.removeChild(_iframe);
 }
 
 - (Window)window
@@ -299,6 +417,60 @@ CPWebViewProgressFinishedNotification           = "CPWebViewProgressFinishedNoti
     }
     return nil;
 }
+
+
+
+- (BOOL)drawsBackground
+{
+    return _iframe.style.backgroundColor != "";
+}
+
+- (void)setDrawsBackground:(BOOL)drawsBackround
+{
+    _iframe.style.backgroundColor = drawsBackround ? "white" : "";
+}
+
+
+
+// IBActions
+
+- (IBAction)takeStringURLFrom:(id)sender
+{
+    [self setMainFrameURL:[sender stringValue]];
+}
+
+- (IBAction)goBack:(id)sender
+{
+    [self goBack];
+}
+
+- (IBAction)goForward:(id)sender
+{
+    [self goForward];
+}
+
+- (IBAction)stopLoading:(id)sender
+{
+    // FIXME: what to do?
+}
+
+- (IBAction)reload:(id)sender
+{
+    [self _loadMainFrameURL];
+}
+
+- (IBAction)print:(id)sender
+{
+    try
+    {
+        [self window].print();
+    }
+    catch (e)
+    {
+        alert('Please click the webpage and select "Print" from the "File" menu');
+    }
+}
+
 
 // Delegates:
 
@@ -343,26 +515,6 @@ CPWebViewProgressFinishedNotification           = "CPWebViewProgressFinishedNoti
 - (void)setUIDelegate:(id)anObject
 {
     _UIDelegate = anObject;
-}
-
-
-- (void)loadHTMLString:(CPString)aString
-{
-    [self loadHTMLString:aString baseURL:nil];
-}
-
-- (void)loadHTMLString:(CPString)aString baseURL:(CPURL)URL
-{
-    // FIXME: do something with baseURL?
-    
-    // clear the iframe
-    _iframe.src = "";
-
-    // need to give the browser a chance to reset iframe, otherwise we'll be document.write()-ing the previous document 
-    window.setTimeout(function() {
-        var win = [self window];
-        win.document.write(aString);
-    }, 0);
 }
 
 @end
@@ -426,9 +578,10 @@ CPWebViewProgressFinishedNotification           = "CPWebViewProgressFinishedNoti
     if (self)
     {
         // FIXME: encode/decode these?
-        _mainFrameURL = nil;
-        _backwardStack = [];
-        _forwardStack = [];
+        _mainFrameURL   = nil;
+        _backwardStack  = [];
+        _forwardStack   = [];
+        _scrollMode     = CPWebViewScrollNative;
         
 #if PLATFORM(DOM)
         [self _initDOMWithFrame:[self frame]];
@@ -444,7 +597,10 @@ CPWebViewProgressFinishedNotification           = "CPWebViewProgressFinishedNoti
 */
 - (void)encodeWithCoder:(CPCoder)aCoder
 {
+    var actualSubviews = _subviews;
+    _subviews = [];
     [super encodeWithCoder:aCoder];
+    _subviews = actualSubviews;
 }
 
 @end
