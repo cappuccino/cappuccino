@@ -189,6 +189,35 @@ var _CPTableViewWillDisplayCellSelector                         = 1 << 0,
     return dataView;
 }
 
+- (void)clearCells
+{
+    var columnEnd = CPMaxRange(_visibleColumns),
+        rowEnd = CPMaxRange(_visibleRows);
+        
+    for (var column = _visibleColumns.location; column < columnEnd; column++)
+    {
+        var tableColumn = _tableColumns[column],
+            tableColumnCells = _tableCells[column];
+            
+        for (var row = _visibleRows.location; row < rowEnd; row++)
+        {
+            var cell = tableColumnCells[row];
+            if (cell)
+            {
+                tableColumnCells[row] = nil;
+                [tableColumn _markView:cell inRow:row asPurgable:YES];
+            }
+            else
+            {
+                CPLog.warn("Missing cell? " + row + "," + column);
+            }
+        }
+    }
+    
+    _visibleColumns = CPMakeRange(0,0);
+    _visibleRows = CPMakeRange(0,0);
+}
+
 - (void)loadTableCellsInRect:(CGRect)aRect
 {
    if (!_dataSource)
@@ -239,7 +268,7 @@ var _CPTableViewWillDisplayCellSelector                         = 1 << 0,
                         [tableColumn _markView:cell inRow:row asPurgable:NO];
                     else {
                     //!!!
-                    _tableCells[column][row] = nil;
+                        tableColumnCells[row] = nil;
                         [tableColumn _markView:cell inRow:row asPurgable:YES];
                     }
                 }
@@ -252,6 +281,8 @@ var _CPTableViewWillDisplayCellSelector                         = 1 << 0,
                     [_tableColumnViews[column] addSubview:tableColumnCells[row]];
                 }
             }
+            
+            [tableColumn _purge];
         }
     //}
     //else
@@ -697,6 +728,8 @@ var _CPTableViewWillDisplayCellSelector                         = 1 << 0,
     }
     
     _objectValueCache = [];
+    
+    [self clearCells];
     
     [self setNeedsDisplay:YES];
 }
