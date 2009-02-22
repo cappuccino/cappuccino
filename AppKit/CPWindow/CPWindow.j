@@ -347,6 +347,8 @@ CPTexturedBackgroundWindowMask
     
     if (self)
     {
+        _isFullBridge = NO;
+
         // Set up our window number.
         _windowNumber = [CPApp._windows count];
         CPApp._windows[_windowNumber] = self;
@@ -457,6 +459,8 @@ CPTexturedBackgroundWindowMask
 
 - (void)setFullBridge:(BOOL)shouldBeFullBridge
 {
+    shouldBeFullBridge = !!shouldBeFullBridge;
+
     if (_isFullBridge === shouldBeFullBridge)
         return;
 
