@@ -691,6 +691,49 @@
 
 @end
 
+var CPCollectionViewMinItemSizeKey      = @"CPCollectionViewMinItemSizeKey",
+    CPCollectionViewMaxItemSizeKey      = @"CPCollectionViewMaxItemSizeKey",
+    CPCollectionViewVerticalMarginKey   = @"CPCollectionViewVerticalMarginKey";
+
+
+@implementation CPCollectionView (CPCoding)
+
+- (id)initWithCoder:(CPCoder)aCoder
+{
+    self = [super initWithCoder:aCoder];
+
+    if (self)
+    {
+        _items = [];
+        _content = [];
+
+        _cachedItems = [];
+
+        _itemSize = CGSizeMakeZero();
+        _minItemSize = [aCoder decodeSizeForKey:CPCollectionViewMinItemSizeKey];
+        _maxItemSize = [aCoder decodeSizeForKey:CPCollectionViewMaxItemSizeKey];
+
+        _verticalMargin = [aCoder decodeSizeForKey:CPCollectionViewVerticalMarginKey];
+        _tileWidth = -1.0;
+
+        _selectionIndexes = [CPIndexSet indexSet];
+    }
+
+    return self;
+}
+
+- (void)encodeWithCoder:(CPCoder)aCoder
+{
+    [super encodeWithCoder:aCoder];
+
+    [aCoder encodeSize:_minItemSize forKey:CPCollectionViewMinItemSizeKey];
+    [aCoder encodeSize:_maxItemSize forKey:CPCollectionViewMaxItemSizeKey];
+
+    [aCoder encodeSize:_verticalMargin forKey:CPCollectionViewVerticalMarginKey];
+}
+
+@end
+
 var CPCollectionViewItemViewKey = @"CPCollectionViewItemViewKey";
 
 @implementation CPCollectionViewItem (CPCoding)

@@ -44,8 +44,14 @@
         // Cocoa uses NSCurValue instead of NSControl's NSContents
         if ([aCoder containsValueForKey:"NSCurValue"])
             _value = [aCoder decodeFloatForKey:"NSCurValue"];
+
+        if (CPStringFromSelector([self action]) === @"_doScroller:")
+            if ([self isVertical])
+                [self setAction:@selector(_verticalScrollerDidScroll)];
+            else
+                [self setAction:@selector(_horizontalScrollerDidScroll)];
     }
-    
+
     return self;
 }
 

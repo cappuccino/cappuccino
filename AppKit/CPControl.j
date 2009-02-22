@@ -597,10 +597,10 @@ var __Deprecated__CPImageViewImageKey   = @"CPImageViewImageKey";
         _controlState = [aCoder decodeObjectForKey:CPControlControlStateKey];
 
         [self setObjectValue:[aCoder decodeObjectForKey:CPControlValueKey]];
-        
-        /*
+
         [self setTarget:[aCoder decodeObjectForKey:CPControlTargetKey]];
-        [self setAction:[aCoder decodeObjectForKey:CPControlActionKey]];*/
+        [self setAction:[aCoder decodeObjectForKey:CPControlActionKey]];
+
         [self sendActionOn:[aCoder decodeIntForKey:CPControlSendActionOnKey]];
     }
     
@@ -635,10 +635,10 @@ var __Deprecated__CPImageViewImageKey   = @"CPImageViewImageKey";
     [aCoder encodeObject:_value forKey:CPControlValueKey];
     
     /*[aCoder encodeBool:_isEnabled forKey:CPControlIsEnabledKey];
-        
+    */
     [aCoder encodeConditionalObject:_target forKey:CPControlTargetKey];
     [aCoder encodeObject:_action forKey:CPControlActionKey];
-    */
+
     [aCoder encodeInt:_sendActionOn forKey:CPControlSendActionOnKey];
 }
 

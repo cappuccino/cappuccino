@@ -199,7 +199,22 @@ var _CPCibObjectDataNamesKeysKey                = @"_CPCibObjectDataNamesKeysKey
             var instantiatedObject = [object _cibInstantiate];
 
             if (instantiatedObject !== object)
+            {
                 _replacementObjects[[object hash]] = instantiatedObject;
+
+                if ([instantiatedObject isKindOfClass:[CPView class]])
+                {
+                    var clipView = [instantiatedObject superview];
+
+                    if ([clipView isKindOfClass:[CPClipView class]])
+                    {
+                        var scrollView = [clipView superview];
+
+                        if ([scrollView isKindOfClass:[CPScrollView class]])
+                            [scrollView setDocumentView:instantiatedObject];
+                    }
+                }
+            }
         }
 
         if (topLevelObjects && parent === _fileOwner && object !== _fileOwner)
