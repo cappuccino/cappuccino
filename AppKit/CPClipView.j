@@ -65,9 +65,6 @@
     
     if (_documentView)
     {
-        // FIXME: remove when bounds.
-        [_documentView setFrameOrigin:CGPointMake(0.0, 0.0)];
-            
         [self addSubview:_documentView];
         
 		[_documentView setPostsFrameChangedNotifications:YES];
@@ -187,9 +184,7 @@ var CPClipViewDocumentViewKey = @"CPScrollViewDocumentView";
 - (id)initWithCoder:(CPCoder)aCoder
 {
     if (self = [super initWithCoder:aCoder])
-    {
         [self setDocumentView:[aCoder decodeObjectForKey:CPClipViewDocumentViewKey]];
-    }
     
     return self;
 }

@@ -67,10 +67,6 @@ var PARTS_ARRANGEMENT = [CPScrollerKnobSlot, CPScrollerDecrementLine, CPScroller
 
     CPView                  _decrementArrowView;
     CPView                  _incrementArrowView;
-    
-    JSObject                _layoutViews;
-    
-    CPThemedValue           _scrollerWidth;
 }
 
 + (id)themedAttributes
@@ -101,7 +97,7 @@ var PARTS_ARRANGEMENT = [CPScrollerKnobSlot, CPScrollerDecrementLine, CPScroller
     self = [super initWithFrame:aFrame];
     
     if (self)
-    {_layoutViews = {}
+    {
         _controlSize = CPRegularControlSize;
         _partRects = [];
 
@@ -414,31 +410,18 @@ var PARTS_ARRANGEMENT = [CPScrollerKnobSlot, CPScrollerDecrementLine, CPScroller
     return view;
 }
 
-- (CPView)layoutSubviewNamed:(CPString)aViewName positioned:(CPWindowOrderingMode)anOrderingMode relativeToSubviewNamed:(CPString)relativeToViewName
+- (CGRect)rectForEphemeralSubviewNamed:(CPString)aName
 {
-    var frame = [self rectForPart:aViewName];
+    return _partRects[aName];
+}
 
-    if (frame && !_CGRectIsEmpty(frame))
-    {
-        if (!_layoutViews[aViewName])
-        {
-            _layoutViews[aViewName] = [self createViewForPart:aViewName];
+- (CPView)createEphemeralSubviewNamed:(CPString)aName
+{
+    var view = [[CPView alloc] initWithFrame:_CGRectMakeZero()];
+
+    [view setHitTests:NO];
         
-            if (_layoutViews[aViewName])
-                [self addSubview:_layoutViews[aViewName] positioned:anOrderingMode relativeTo:_layoutViews[relativeToViewName]];
-        }
-        
-        if (_layoutViews[aViewName])
-            [_layoutViews[aViewName] setFrame:frame];
-    }
-    else if (_layoutViews[aViewName])
-    {
-        [_layoutViews[aViewName] removeFromSuperview];
-        
-        delete _layoutViews[aViewName];
-    }
-    
-    return _layoutViews[aViewName];
+    return view;
 }
 
 - (void)layoutSubviews
@@ -454,9 +437,9 @@ var PARTS_ARRANGEMENT = [CPScrollerKnobSlot, CPScrollerDecrementLine, CPScroller
         var part = PARTS_ARRANGEMENT[index];
     
         if (index === 0)
-            view = [self layoutSubviewNamed:part positioned:CPWindowBelow relativeToSubviewNamed:PARTS_ARRANGEMENT[index + 1]];
+            view = [self layoutEphemeralSubviewNamed:part positioned:CPWindowBelow relativeToEphemeralSubviewNamed:PARTS_ARRANGEMENT[index + 1]];
         else
-            view = [self layoutSubviewNamed:part positioned:CPWindowAbove relativeToSubviewNamed:PARTS_ARRANGEMENT[index - 1]];
+            view = [self layoutEphemeralSubviewNamed:part positioned:CPWindowAbove relativeToEphemeralSubviewNamed:PARTS_ARRANGEMENT[index - 1]];
         
         if (view)
             [view setBackgroundColor:objj_msgSend(self, selector, part)];
@@ -635,75 +618,7 @@ var PARTS_ARRANGEMENT = [CPScrollerKnobSlot, CPScrollerDecrementLine, CPScroller
 }
 
 @end
-/*
-@implementation CPScroller (Theming)
 
-- (void)viewDidChangeTheme
-{
-    [super viewDidChangeTheme];
-    
-    var theme = [self theme];
-    
-    [_trackOverlapInset setTheme:theme];
-    
-    [_verticalMinimumKnobSize setTheme:theme];
-    [_verticalDecrementLineSize setTheme:theme];
-    [_verticalIncrementLineSize setTheme:theme];
-
-    [_horizontalMinimumKnobSize setTheme:theme];
-    [_horizontalDecrementLineSize setTheme:theme];
-    [_horizontalIncrementLineSize setTheme:theme];
-    
-    var index = 0,
-        count = PARTS_ARRANGEMENT.length;
-    
-    for (; index < count; ++index)
-    {
-        var part = PARTS_ARRANGEMENT[index];
-        
-        [_horizontalPartColors[part] setTheme:theme];
-        [_verticalPartColors[part] setTheme:theme];
-    }
-    
-    [self setNeedsLayout];
-    [self setNeedsDisplay:YES];
-}
-
-- (CPDictionary)themedValues
-{
-    var values = [super themedValues],
-        isVertical = [self isVertical];
-    
-    [values setObject:_trackOverlapInset forKey:"track-overlap-inset"];
-    
-    if (isVertical)
-    {
-        [values setObject:_verticalMinimumKnobSize forKey:"vertical-minimum-knob-size"];
-        [values setObject:_verticalDecrementLineSize forKey:"vertical-decrement-line-size"];
-        [values setObject:_verticalIncrementLineSize forKey:"vertical-increment-line-size"];
-    }
-    else
-    {
-        [values setObject:_horizontalMinimumKnobSize forKey:"horizontal-minimum-knob-size"];
-        [values setObject:_horizontalDecrementLineSize forKey:"horizontal-decrement-line-size"];
-        [values setObject:_horizontalIncrementLineSize forKey:"horizontal-increment-line-size"];
-    }
-        
-    var index = 0,
-        count = PARTS_ARRANGEMENT.length;
-    
-    for (; index < count; ++index)
-    {
-        var part = PARTS_ARRANGEMENT[index];
-        
-        [values setObject:(isVertical ? _verticalPartColors : _horizontalPartColors)[part] forKey:(isVertical ? "vertical-" : "horizontal-") + part + "-color"];
-    }
-    
-    return values;
-}
-
-@end
-*/
 var CPScrollerControlSizeKey = "CPScrollerControlSize",
     CPScrollerKnobProportionKey = "CPScrollerKnobProportion";
 
@@ -712,7 +627,7 @@ var CPScrollerControlSizeKey = "CPScrollerControlSize",
 - (id)initWithCoder:(CPCoder)aCoder
 {
     if (self = [super initWithCoder:aCoder])
-    {_layoutViews = {};
+    {
         _controlSize = CPRegularControlSize;
         if ([aCoder containsValueForKey:CPScrollerControlSizeKey])
             _controlSize = [aCoder decodeIntForKey:CPScrollerControlSizeKey];
@@ -722,8 +637,6 @@ var CPScrollerControlSizeKey = "CPScrollerControlSize",
             _knobProportion = [aCoder decodeFloatForKey:CPScrollerKnobProportionKey];
             
         _partRects = [];
-        _verticalPartColors = [];
-        _horizontalPartColors = [];
         
         _hitPart = CPScrollerNoPart;
         

@@ -142,7 +142,7 @@
 */
 - (void)reflectScrolledClipView:(CPClipView)aClipView
 {
-    if(_contentView != aClipView)
+    if(_contentView !== aClipView)
         return;
 
     if (_recursionCount > 5)
@@ -240,7 +240,7 @@
 */
 - (void)setHorizontalScroller:(CPScroller)aScroller
 {
-    if (_horizontalScroller == aScroller)
+    if (_horizontalScroller === aScroller)
         return;
     
     [_horizontalScroller removeFromSuperview];
@@ -272,7 +272,7 @@
 */
 - (void)setHasHorizontalScroller:(BOOL)shouldHaveHorizontalScroller
 {
-    if (_hasHorizontalScroller == shouldHaveHorizontalScroller)
+    if (_hasHorizontalScroller === shouldHaveHorizontalScroller)
         return;
 
     _hasHorizontalScroller = shouldHaveHorizontalScroller;
@@ -302,7 +302,7 @@
 */
 - (void)setVerticalScroller:(CPScroller)aScroller
 {
-    if (_verticalScroller == aScroller)
+    if (_verticalScroller === aScroller)
         return;
     
     [_verticalScroller removeFromSuperview];
@@ -335,7 +335,7 @@
 */
 - (void)setHasVerticalScroller:(BOOL)shouldHaveVerticalScroller
 {
-    if (_hasVerticalScroller == shouldHaveVerticalScroller)
+    if (_hasVerticalScroller === shouldHaveVerticalScroller)
         return;
 
     _hasVerticalScroller = shouldHaveVerticalScroller;
