@@ -46,4 +46,11 @@
         [bezelView setBackgroundColor:[self currentValueForThemedAttributeName:@"bezel-color"]];
 }
 
+- (void)addSubview:(CPView)aSubview
+{
+    [super addSubview:aSubview];
+
+    [aSubview setAutoresizingMask:CPViewMinXMargin];
+}
+
 @end

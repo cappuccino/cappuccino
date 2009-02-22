@@ -54,6 +54,8 @@ var _CPMenuBarVisible               = NO,
 */
 @implementation CPMenu : CPObject
 {
+    CPMenu          _supermenu;
+
     CPString        _title;
     
     CPMutableArray  _items;
@@ -61,7 +63,7 @@ var _CPMenuBarVisible               = NO,
     
     BOOL            _autoenablesItems;
     BOOL            _showsStateColumn;
-    
+
     id              _delegate;
     
     CPMenuItem      _highlightedIndex;
