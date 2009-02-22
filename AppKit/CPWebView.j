@@ -158,16 +158,26 @@ CPWebViewScrollNative                           = 2;
     [self addSubview:_scrollView];
 }
 
+
+- (void)setFrameSize:(CPSize)aSize
+{   
+    [super setFrameSize:aSize];
+    
+    [self _resizeWebFrame];
+}
+
 - (BOOL)_resizeWebFrame
 {
     if (_scrollMode === CPWebViewScrollAppKit)
     {
         if (_scrollSize)
         {
-            [_frameView setFrameSize:CGSizeMake(width, height)];
+            [_frameView setFrameSize:_scrollSize];
         }
         else
         {
+            [_frameView setFrameSize:[_scrollView bounds].size];
+            
             // try to get the document size so we can correctly set the frame
             var win = null;
             try { win = [self window]; } catch (e) {}
@@ -184,6 +194,8 @@ CPWebViewScrollNative                           = 2;
             }
             else
             {
+                CPLog.warn("using default size 800*1600");
+            
                 [_frameView setFrameSize:CGSizeMake(800, 1600)];
             }
         }
@@ -210,8 +222,6 @@ CPWebViewScrollNative                           = 2;
 
     if (_scrollMode === CPWebViewScrollAppKit)
     {
-        [_frameView setAutoresizingMask:0];
-        
         [_scrollView setHasHorizontalScroller:YES];
         [_scrollView setHasVerticalScroller:YES];
         
@@ -219,8 +229,6 @@ CPWebViewScrollNative                           = 2;
     }
     else
     {
-        [_frameView setAutoresizingMask:CPViewWidthSizable|CPViewHeightSizable];
-        
         [_scrollView setHasHorizontalScroller:NO];
         [_scrollView setHasVerticalScroller:NO];
         
