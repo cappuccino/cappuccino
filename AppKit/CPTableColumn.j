@@ -396,10 +396,13 @@ CPTableColumnUserResizingMask;
     for (var viewHash in _purgableInfosForDataView)
     {
         var purgableInfos = _purgableInfosForDataView[viewHash];
+
         for (var key in purgableInfos)
         {
             var view = PurgableInfoView(purgableInfos[key]);
+
             //CPLog.error("PURGING: " + view);
+
             [view removeFromSuperview];
             delete purgableInfos[key];
         }
