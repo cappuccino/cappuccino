@@ -536,7 +536,7 @@ CPWebViewScrollNative                           = 2;
 {
     if (self = [super init])
     {
-        _window = aWindow
+        _window = aWindow;
     }
     return self;
 }
@@ -593,6 +593,8 @@ CPWebViewScrollNative                           = 2;
 #if PLATFORM(DOM)
         [self _initDOMWithFrame:[self frame]];
 #endif
+
+        [self setBackgroundColor:[CPColor whiteColor]];
     }
     
     return self;
