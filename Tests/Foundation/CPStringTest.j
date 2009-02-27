@@ -90,9 +90,9 @@ import <Foundation/CPString.j>
 - (void)testStringByPaddingToLength
 {
     [self assert:"onebcd" 
-	  equals:["one" stringByPaddingToLength:6 
-			withString:"abcdefg"
-	                startingAtIndex:1]];
+	      equals:["one" stringByPaddingToLength:6 
+			                         withString:"abcdefg"
+	                            startingAtIndex:1]];
 }
 
 - (void)testComponentsSeparatedByString
@@ -155,6 +155,27 @@ import <Foundation/CPString.j>
     
     for (var i = 0; i < testStrings.length; i++)
         [self assert:[testStrings[i][0] capitalizedString] equals:testStrings[i][1]];	
+}
+
+- (void)testUppercaseString
+{
+    var str = "This is a test";
+    [self assert:[str uppercaseString] equals:"THIS IS A TEST"];
+}
+ 
+- (void)testLowercaseString
+{
+    var str = "This Is A TEST";
+    [self assert:"this is a test" equals:[str lowercaseString]];
+}
+
+- (void)testStringWithHash
+{
+    [self assert:"000000" equals:[CPString stringWithHash:0]];
+    [self assert:"000001" equals:[CPString stringWithHash:1]];
+    [self assert:"00000a" equals:[CPString stringWithHash:10]];
+    [self assert:"000010" equals:[CPString stringWithHash:16]];
+    [self assert:"ffffff" equals:[CPString stringWithHash:16777215]];
 }
 
 - (void)testStringByDeletingLastPathComponent

@@ -91,7 +91,7 @@ var CPStringHashes      = new objj_dictionary();
 */
 + (id)stringWithHash:(unsigned)aHash
 {
-    var hashString = String(aHash);
+    var hashString = parseInt(aHash, 10).toString(16);
     return "000000".substring(0, MAX(6-hashString.length, 0)) + hashString;
 }
 
@@ -222,13 +222,16 @@ var CPStringHashes      = new objj_dictionary();
         return substr(0, aLength);
 
     var string = self,
-        substring = aString.substr(anIndex),
+        substring = aString.substring(anIndex),
         difference = aLength - length;
 
-    while ((difference -= substring.length) > 0)
+    while ((difference -= substring.length) >= 0)
         string += substring;
     
-    if (difference) string += substring.substr(difference + substring.length);
+    if (-difference < substring.length) 
+        string += substring.substring(0, -difference);
+
+    return string;
 }
 
 //Dividing Strings
