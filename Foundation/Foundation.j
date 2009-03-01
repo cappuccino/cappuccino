@@ -56,10 +56,7 @@
 @import "CPUserSessionManager.j"
 @import "CPValue.j"
 
-/*! @defgroup appkit AppKit
-    @defgroup foundation Foundation
-
-    @mainpage
+/*! @mainpage
     Cappuccino is distributed under the @ref license "GNU LGPL".
 
     @htmlonly <pre>@endhtmlonly
@@ -70,4 +67,7 @@
     @htmlonly <pre>@endhtmlonly
     @htmlinclude LICENSE
     @htmlonly </pre>@endhtmlonly
+
+    @defgroup appkit AppKit
+    @defgroup foundation Foundation
 */
