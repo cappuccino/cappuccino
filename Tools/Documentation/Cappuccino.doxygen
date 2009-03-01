@@ -137,7 +137,8 @@ EXCLUDE                = AppKit/Cib \
 EXCLUDE_SYMLINKS       = NO
 EXCLUDE_PATTERNS       = _*
 EXCLUDE_SYMBOLS        = _*
-EXAMPLE_PATH           = 
+EXAMPLE_PATH           = ./README \
+                         ./LICENSE
 EXAMPLE_PATTERNS       = *
 EXAMPLE_RECURSIVE      = NO
 IMAGE_PATH             = 
