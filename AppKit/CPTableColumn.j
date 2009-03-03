@@ -350,8 +350,11 @@ CPTableColumnUserResizingMask;
         _purgableInfosForDataView[dataViewHash] = {};
     }
     
-    if (!isPurgable)
-        delete _purgableInfosForDataView[dataViewHash][viewHash];
+    if (!isPurgable) {
+        if (_purgableInfosForDataView[dataViewHash][viewHash])
+            CPLog.warn("removing unpurgable " + _purgableInfosForDataView[dataViewHash][viewHash]);
+        delete _purgableInfosForDataView[dataViewHash][viewHash];   
+    }
     else
         _purgableInfosForDataView[dataViewHash][viewHash] = PurgableInfoMake(aView, aRow);
 }
@@ -367,12 +370,14 @@ CPTableColumnUserResizingMask;
         for (var key in purgableInfos)
         {
             var info = purgableInfos[key];
-            if (!CPLocationInRange(PurgableInfoRow(info), rows))
-            {
+            //if (!CPLocationInRange(PurgableInfoRow(info), rows))
+            //{
                 //CPLog.debug("yes, a purged view is usable, its called: " + PurgableInfoView(info));
                 delete purgableInfos[key];
                 return PurgableInfoView(info);
-            }
+            //}
+            //else
+            //    CPLog.warn("avoiding");
         }
     }
     
@@ -386,7 +391,7 @@ CPTableColumnUserResizingMask;
     // map the new view's hash to it's data view prototype
     _dataViewForView[[newView hash]] = view;
     
-    //CPLog.warn("nope, time for creation: %s", newView);
+    CPLog.warn("creating cell: %s", newView);
     
     return newView;
 }
@@ -400,11 +405,18 @@ CPTableColumnUserResizingMask;
         for (var key in purgableInfos)
         {
             var view = PurgableInfoView(purgableInfos[key]);
-
-            //CPLog.error("PURGING: " + view);
-
-            [view removeFromSuperview];
-            delete purgableInfos[key];
+            
+            if (!view)
+                CPLog.info("key="+key+" view=" + view + " purgableInfos[key]="+purgableInfos[key])
+            else if (view._superview) {
+                //CPLog.error("PURGING: (removing)" + view);
+                //[view removeFromSuperview];
+                [view setHidden:YES];
+            } 
+            //else
+            //    CPLog.warn("PURGING: (already removed)" + view);
+            
+            //delete purgableInfos[key];
         }
     }
 }

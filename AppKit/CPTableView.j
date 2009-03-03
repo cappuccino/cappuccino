@@ -83,7 +83,7 @@ var _CPTableViewWillDisplayCellSelector                         = 1 << 0,
     //CPScrollView        _scrollView;
     
     unsigned            _numberOfRows;
-    unsigned            _numberOfColumns;
+    //unsigned            _numberOfColumns;
     
     BOOL                _hasVariableHeightRows;
     
@@ -114,6 +114,8 @@ var _CPTableViewWillDisplayCellSelector                         = 1 << 0,
     CPIndexSet          _currentlySelected;
     CPArray             _selectionViews;
     CPArray             _selectionViewsPool;
+    
+    CPDate              _scrollTimer;
 }
 
 + (void)initialize
@@ -136,7 +138,7 @@ var _CPTableViewWillDisplayCellSelector                         = 1 << 0,
 - (void)_init
 {
     _tableColumns = [];
-    _numberOfColumns = 0;
+    //_numberOfColumns = 0;
 
     _selectedRowIndexes = [CPIndexSet indexSet];
 
@@ -231,7 +233,7 @@ var _CPTableViewWillDisplayCellSelector                         = 1 << 0,
         visibleRows = CPMakeRange(rowStart, rowEnd - rowStart),
     
         columnStart = MAX(0, [self _columnAtX:CGRectGetMinX(aRect)]),
-        columnEnd   = MIN(_numberOfColumns, [self _columnAtX:CGRectGetMaxX(aRect)] + 1),
+        columnEnd   = MIN(_tableColumns.length, [self _columnAtX:CGRectGetMaxX(aRect)] + 1),
         
         visibleColumns = CPMakeRange(columnStart, columnEnd - columnStart);
 
@@ -241,102 +243,111 @@ var _CPTableViewWillDisplayCellSelector                         = 1 << 0,
     var unionVisibleRows = CPUnionRange(_visibleRows, visibleRows),
         unionVisibleColumns = CPUnionRange(_visibleColumns, visibleColumns);
     
+    
     // Determine whether to use 2 sweeps or one.  If we have lots of overlap of cells, use just one.
-    //if (unionVisibleRows.length * unionVisibleColumns.length <= 
-    //    (_visibleRows.length * _visibleColumns.length) + (visibleRows.length * visibleColumns.length))
-    //{
-        var column = unionVisibleColumns.location,
-            columnEnd = CPMaxRange(unionVisibleColumns),
-            
-            rowStart = unionVisibleRows.location,
-            rowEnd = CPMaxRange(unionVisibleRows);
-            
-        for (; column < columnEnd; ++column)
+    if (unionVisibleRows.length * unionVisibleColumns.length <= 
+        (_visibleRows.length * _visibleColumns.length) + (visibleRows.length * visibleColumns.length))
+    {
+        //CPLog.info("single sweep");
+
+        var cEnd = CPMaxRange(unionVisibleColumns),
+            rEnd = CPMaxRange(unionVisibleRows),
+            cell;
+        
+        for (var column = unionVisibleColumns.location; column < cEnd; ++column)
         {
-            var row = rowStart,
-                tableColumn = _tableColumns[column],
+            var tableColumn = _tableColumns[column],
                 tableColumnCells = _tableCells[column],
-                columnIsVisible = CPLocationInRange(column, visibleColumns);
-            
-            for (; row < rowEnd; ++row)
+                columnIsVisible = CPLocationInRange(column, visibleColumns),
+                newCells = [];
+        
+            for (var row = unionVisibleRows.location; row < rEnd; ++row)
             {
-                var cell = tableColumnCells[row];
-                
-                if (cell)
+                if (cell = tableColumnCells[row])
                 {
-                    if (columnIsVisible && CPLocationInRange(row, visibleRows))
-                        [tableColumn _markView:cell inRow:row asPurgable:NO];
-                    else {
-                    //!!!
+                    if (!columnIsVisible || !CPLocationInRange(row, visibleRows))
+                    {
                         tableColumnCells[row] = nil;
                         [tableColumn _markView:cell inRow:row asPurgable:YES];
                     }
                 }
-                
                 else
                 {
-//                    ASSERT(CPLocationInRange(row, visibleRows) && CPLocationInRange(column, visibleColumns))
-                    tableColumnCells[row] = [self newCellForRow:row column:column avoidingRows:visibleRows];
-                    
-                    [_tableColumnViews[column] addSubview:tableColumnCells[row]];
+                    newCells.push(row);
                 }
+            }
+        
+            while (newCells.length > 0)
+            {
+                var row = newCells.pop();
+            
+                tableColumnCells[row] = [self newCellForRow:row column:column avoidingRows:visibleRows];
+            
+                if (!tableColumnCells[row]._superview)
+                    [_tableColumnViews[column] addSubview:tableColumnCells[row]];
+                else if (tableColumnCells[row]._isHidden)
+                    [tableColumnCells[row] setHidden:NO];
+            }
+        
+            [tableColumn _purge];
+        }
+    }
+    else {
+        //CPLog.info("double sweep");
+        
+        // first sweep: remove old cells
+        
+        var cEnd = CPMaxRange(_visibleColumns),
+            rEnd = CPMaxRange(_visibleRows),
+            cell;
+        
+        for (var column = _visibleColumns.location; column < cEnd; ++column)
+        {
+            var tableColumn = _tableColumns[column],
+                tableColumnCells = _tableCells[column],
+                columnIsVisible = CPLocationInRange(column, visibleColumns);
+        
+            for (var row = _visibleRows.location; row < rEnd; ++row)
+            {
+                if (cell = tableColumnCells[row])
+                {
+                    if (!columnIsVisible || !CPLocationInRange(row, visibleRows))
+                    {
+                        tableColumnCells[row] = nil;
+                        [tableColumn _markView:cell inRow:row asPurgable:YES];
+                    }
+                }
+            }
+        }
+        
+        // second sweep: add new cells
+        
+        var cEnd = CPMaxRange(visibleColumns),
+            rEnd = CPMaxRange(visibleRows);
+        
+        for (var column = visibleColumns.location; column < cEnd; ++column)
+        {
+            var tableColumn = _tableColumns[column],
+                tableColumnCells = _tableCells[column];
+        
+            for (var row = visibleRows.location; row < rEnd; ++row)
+            {
+                tableColumnCells[row] = [self newCellForRow:row column:column avoidingRows:visibleRows];
+            
+                if (!tableColumnCells[row]._superview)
+                    [_tableColumnViews[column] addSubview:tableColumnCells[row]];
+                else if (tableColumnCells[row]._isHidden)
+                    [tableColumnCells[row] setHidden:NO];
             }
             
             [tableColumn _purge];
         }
-    //}
-    //else
-    //    CPLog.error("CPTable double sweep not implemented");
-
+    }
+    
+    
     _visibleRows = visibleRows;
     _visibleColumns = visibleColumns;
     
-    /*
-    var column = columnStart;
-    
-    for (; column < _numberOfColumns && CGRectIntersectsRect([_tableColumnViews[column] frame], aRect); ++column)
-    {
-        var row = rowStart,
-            tableColumn = _tableColumns[column];
-                    
-        for (; row < rowEnd; ++row)
-        {
-            //if (CPLocationInRange(row, _visibleRows))
-            //    continue;
-            
-            var cell = _tableCells[column][row];
-            
-            if (cell)
-                [tableColumn _markView:cell inRow:row asPurgable:NO];
-                
-            else
-                _tableCells[column][row] = [self newCellForRow:row column:column avoidingRows:visibleRows];
-        }
-    }
-    
-    var visibleRows = visibleRowsCPMakeRange(rowStart, rowEnd - rowStart),
-        visibleColumns = CPMakeRange(columnStart, rememberColumn - columnStart);
-    
-    var columnEnd = CPMaxRange(_visibelColumns);
-    
-    
-    for (column = _visibleColumns.location; column < columnEnd; ++column)
-    {
-        var tableColumn = _tableColumns[tableColumn],
-            tableColumnCells = _tableCells[column];
-        
-        for (row = _visibleRows.location, rowEnd = CPMaxRange(_visibleRows); row < rowEnd; ++row)
-            if (!CPLocationInRange(row, visibleRows) || !CPLocationInRange(column, visibleColumns))
-            {
-                var view = tableColumnCells[row];
-                
-                if (view)
-                    [tableColumn _markView:view inRow:row asPurgable:YES];
-            }
-    }        
-    
-    _visibleRows = visibleRows;
-    _visibleColumns = visibleColumns;*/
 }
 
 // Setting display attributes
@@ -352,7 +363,7 @@ var _CPTableViewWillDisplayCellSelector                         = 1 << 0,
             delta = aSize.width - _intercellSpacing.width;
             total = delta;
         
-        for (; i < _numberOfColumns; ++i, total += delta)
+        for (; i < _tableColumns.length; ++i, total += delta)
         {
             var origin = [_tableColumnViews[i] frame].origin;
             [_tableColumnViews[i] setFrameOrigin:CGPointMake(origin.x + total, origin.y)];
@@ -363,7 +374,7 @@ var _CPTableViewWillDisplayCellSelector                         = 1 << 0,
     {
         var i = 0;
         
-        for (; i < _numberOfColumns; ++i, total += delta)
+        for (; i < _tableColumns.length; ++i, total += delta)
         {
             [_tableColumnViews[i] setFrameSize:CGSizeMake([_tableColumnViews[i] width], _numberOfRows * (_rowHeight + _intercellSpacing.height))];
             
@@ -410,7 +421,7 @@ var _CPTableViewWillDisplayCellSelector                         = 1 << 0,
         return;
     
     for (var row = 0; row < _numberOfRows; ++row)
-        for (var column = 0; column < _numberOfColumns; ++column)
+        for (var column = 0; column < _tableColumns.length; ++column)
             [_tableCells[column][row] setFrameOrigin:CPPointMake(0.0, row * (_rowHeight + _intercellSpacing.height))];
 }
 
@@ -429,7 +440,7 @@ var _CPTableViewWillDisplayCellSelector                         = 1 << 0,
 - (void)addTableColumn:(CPTableColumn)aTableColumn
 {
     var i = 0,
-        x = _numberOfColumns ? CPRectGetMaxX([self rectOfColumn:_numberOfColumns - 1]) + _intercellSpacing.width : 0.0,
+        x = _tableColumns.length ? CPRectGetMaxX([self rectOfColumn:_tableColumns.length - 1]) + _intercellSpacing.width : 0.0,
         tableColumnView = [[CPView alloc] initWithFrame:CPRectMake(x, 0.0, [aTableColumn width], [self _columnHeight])],
         tableColumnCells = [];
 
@@ -444,9 +455,9 @@ var _CPTableViewWillDisplayCellSelector                         = 1 << 0,
 
     // TODO: do we really need to initialize this, or is undefined good enough?
     for (; i < _numberOfRows; ++i)
-        _tableCells[_numberOfColumns][i] = nil;
+        _tableCells[_tableColumns.length-1][i] = nil;
         
-    ++_numberOfColumns;
+    //++_numberOfColumns;
 }
 
 /*
@@ -467,7 +478,7 @@ var _CPTableViewWillDisplayCellSelector                         = 1 << 0,
     [_tabelColumnViews removeObjectAtIndex:index];
 
     // Shift remaining column views to the left.    
-    for (; index < _numberOfColumns; ++ index)
+    for (; index < _tableColumns.length; ++ index)
         [_tableColumnViews[index] setFrameOrigin:CPPointMake(CPRectGetMinX([_tableColumnViews[index] frame]) - width, 0.0)]
 
     // Resize ourself.
@@ -513,7 +524,7 @@ var _CPTableViewWillDisplayCellSelector                         = 1 << 0,
 */
 - (int)numberOfColumns
 {
-    return _numberOfColumns;
+    return _tableColumns.length;
 }
 
 /*
@@ -731,21 +742,23 @@ var _CPTableViewWillDisplayCellSelector                         = 1 << 0,
     
     [self clearCells];
     
-    [self setNeedsDisplay:YES];
+    [self setNeedsLayout];
 }
 
-- (void)viewWillDraw
+- (void)layoutSubviews
 {
     [self loadTableCellsInRect:[self visibleRectInParent]];
 }
 
-- (void)drawRect:(CGRect)aRect
-{
-}
-
 - (void)displaySoon
 {
-//    window.setTimeout();
+    [_scrollTimer invalidate];
+    _scrollTimer = [CPTimer scheduledTimerWithTimeInterval:0.05 target:self selector:@selector(displayNow) userInfo:nil repeats:NO];
+}
+
+- (void)displayNow
+{
+    [self setNeedsLayout];
 }
 
 - (void)viewDidMoveToSuperview
@@ -761,9 +774,10 @@ var _CPTableViewWillDisplayCellSelector                         = 1 << 0,
 
 - (void)viewBoundsChanged:(CPNotification)aNotification
 {
-    //console.warn(_cmd + CPStringFromRect([[[self enclosingScrollView] contentView] bounds]));
+    //CPLog.info(_cmd + CPStringFromRect([[[self enclosingScrollView] contentView] bounds]));
     //objj_debug_print_backtrace();
-    [self setNeedsDisplay:YES];
+    //[self setNeedsLayout];
+    [self displayNow];
 }
 
 /*
@@ -850,7 +864,7 @@ var _CPTableViewWillDisplayCellSelector                         = 1 << 0,
 {
     var index = [self _columnAtX:aPoint.x]
     
-    if (index >= 0 && index < _numberOfColumns)
+    if (index >= 0 && index < _tableColumns.length)
         return index;
     else
         return CPNotFound;
@@ -901,21 +915,21 @@ var _CPTableViewWillDisplayCellSelector                         = 1 << 0,
 - (int)_columnAtX:(float)y
 {
     var a = 0,
-        b = _numberOfColumns;
+        b = _tableColumns.length;
         
-    var last = [_tableColumnViews[_numberOfColumns-1] frame];
+    var last = [_tableColumnViews[_tableColumns.length-1] frame];
     if (y < [_tableColumnViews[0] frame].origin.x)
         return -1;
     if (y >= last.origin.x + last.size.width)
-        return _numberOfColumns;
+        return _tableColumns.length;
 
     // binary search
     while (true)
     {
         var half = a + Math.floor((b - a) / 2);
 
-        if (half === _numberOfColumns - 1)
-            return _numberOfColumns - 1;
+        if (half === _tableColumns.length - 1)
+            return _tableColumns.length - 1;
             
         if (y >= [_tableColumnViews[half+1] frame].origin.x)
             a = half;
@@ -1157,14 +1171,14 @@ var _CPTableViewWillDisplayCellSelector                         = 1 << 0,
     for (var i = 0; i < indexesToRemove.length; i++)
     {
         var row = indexesToRemove[i];
-        for (var column = 0; column < _numberOfColumns; column++)
+        for (var column = 0; column < _tableColumns.length; column++)
             if ([_tableCells[column][row] respondsToSelector:@selector(highlight:)])
                 [_tableCells[column][row] highlight:NO];
     }
     for (var i = 0; i < indexesToAdd.length; i++)
     {
         var row = indexesToAdd[i];
-        for (var column = 0; column < _numberOfColumns; column++)
+        for (var column = 0; column < _tableColumns.length; column++)
             if ([_tableCells[column][row] respondsToSelector:@selector(highlight:)])
                 [_tableCells[column][row] highlight:YES];
     }
