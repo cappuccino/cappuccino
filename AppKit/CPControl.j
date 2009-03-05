@@ -100,7 +100,7 @@ var CPControlBlackColor     = [CPColor blackColor];
     CPCellImagePosition     _imagePosition;
     CPImageScaling          _imageScaling;
     
-    CPString				_toolTip;
+    CPString                _toolTip;
     
     // Target-Action Support
     id                      _target;
@@ -337,7 +337,7 @@ var CPControlBlackColor     = [CPColor blackColor];
 */
 -(CPString)toolTip
 {
-	return _toolTip;
+    return _toolTip;
 }
 
 /*!
