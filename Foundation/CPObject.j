@@ -177,7 +177,7 @@
 */
 + (BOOL)instancesRespondToSelector:(SEL)aSelector
 {
-    return class_getInstanceMethod(self, aSelector);
+    return !!class_getInstanceMethod(self, aSelector);
 }
 
 /*!
@@ -187,7 +187,7 @@
 */
 - (BOOL)respondsToSelector:(SEL)aSelector
 {
-    return class_getInstanceMethod(isa, aSelector) != NULL;
+    return !!class_getInstanceMethod(isa, aSelector);
 }
 
 // Obtaining method information
