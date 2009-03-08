@@ -85,7 +85,7 @@ function traverseDependencies(context, file)
             {
                 if (context.dependencies[token])
                 {
-                    var files = context.dependencies[token]
+                    var files = context.dependencies[token];
                     for (var j = 0; j < files.length; j++)
                     {
                         // don't record references to self
@@ -232,7 +232,7 @@ function findGlobalDefines(context, scope, rootPath, evaledFragments)
         
         if (evaledFragments)
         {
-                evaledFragments.push(aFragment);
+            evaledFragments.push(aFragment);
         }
         
         var result = fragment_evaluate_code_original(aFragment);
