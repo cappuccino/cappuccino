@@ -4,7 +4,7 @@
     <import file = "../common.xml" />
     <import file = "${env.OBJJ_LIB}/steam/steam.xml" />
     
-    <property name = "Theme" value = "Default" />
+    <property name = "Theme" value = "Aristo" />
 
     <target name = "clean" depends = "steam-uptodate">
     
