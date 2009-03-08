@@ -100,4 +100,4 @@ function main()
     }
 }
 
-main.apply(main, arguments);
+main.apply(main, args);
