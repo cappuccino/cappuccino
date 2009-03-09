@@ -32,6 +32,8 @@ var BIT_COUNT   = [ 0 /*00000*/, 1 /*00001*/, 1 /*00010*/, 2 /*00011*/, 1 /*0010
 {
     BOOL        _isSingularObject;
     
+    JSObject    _cache;
+
     CPString    _name;
     id          _defaultValue;
     
@@ -45,21 +47,23 @@ var BIT_COUNT   = [ 0 /*00000*/, 1 /*00001*/, 1 /*00010*/, 2 /*00011*/, 1 /*0010
 - (id)initWithName:(CPString)aName defaultValue:(id)aDefaultValue theme:(CPTheme)aTheme class:(Class)aClass
 {
     self = [super init];
-    
+
     if (self)
     {
+        _cache = {};
+
         _name = aName;
-        
+
         _defaultValue = aDefaultValue;
-        
+
         _theme = aTheme;
         _themedClass = aClass;
-        
+
         _isSingularObject = YES;
         _values = nil;
         _valueFromTheme = [_theme valueForAttributeName:_name inClass:_themedClass];
     }
-    
+
     return self;
 }
 
@@ -75,6 +79,7 @@ var BIT_COUNT   = [ 0 /*00000*/, 1 /*00001*/, 1 /*00010*/, 2 /*00011*/, 1 /*0010
 
 - (void)setDefaultValue:(id)aValue
 {
+    _cache = {};
     _defaultValue = aValue;
 }
 
@@ -83,6 +88,7 @@ var BIT_COUNT   = [ 0 /*00000*/, 1 /*00001*/, 1 /*00010*/, 2 /*00011*/, 1 /*0010
     if (_theme === aTheme)
         return;
     
+    _cache = {};
     _theme = aTheme;
     _valueFromTheme = [_theme valueForAttributeName:_name inClass:_themedClass];
 }
@@ -98,6 +104,7 @@ var BIT_COUNT   = [ 0 /*00000*/, 1 /*00001*/, 1 /*00010*/, 2 /*00011*/, 1 /*0010
 
 - (void)setValue:(id)aValue
 {
+    _cache = {};
     _isSingularObject = YES;
     _values = aValue;
 }
@@ -109,6 +116,8 @@ var BIT_COUNT   = [ 0 /*00000*/, 1 /*00001*/, 1 /*00010*/, 2 /*00011*/, 1 /*0010
 
 - (void)setValue:(id)aValue forControlState:(CPControlState)aState
 {
+    _cache = {};
+
     if (aState !== CPControlStateNormal)
     {
         if (_isSingularObject)
@@ -135,54 +144,52 @@ var BIT_COUNT   = [ 0 /*00000*/, 1 /*00001*/, 1 /*00010*/, 2 /*00011*/, 1 /*0010
 
 - (id)valueForControlState:(CPControlState)aState
 {
+    var value = _cache[aState];
+
+    if (value !== undefined && value !== nil)
+        return value;
+
     if (_isSingularObject)
-    {
         var value = _values;
 
-        if (value === undefined || value === nil)
-            value = [_valueFromTheme valueForControlState:aState];
-
-        if (value === undefined || value === nil)
-            value = _defaultValue;
-
-        return value;
-    }
-
-    var value = _values[aState];
-    
-    // If we don't have a value, and we have a non-normal state...
-    if ((value === undefined || value === nil) && aState > 0)
+    else
     {
-        // If this is a composite state, find the closest partial subset match.
-        if (aState & (aState - 1))
+        var value = _values[aState];
+
+        // If we don't have a value, and we have a non-normal state...
+        if ((value === undefined || value === nil) && aState > 0)
         {
-            var highestBitCount = 0;
-                
-            for (state in _values)
-            {                    
-                if (!_values.hasOwnProperty(state))
-                    continue;
-                
-                // state is a string!
-                state = Number(state);
-                
-                // A & B = A iff A < B
-                if ((state & aState) === state)
+            // If this is a composite state, find the closest partial subset match.
+            if (aState & (aState - 1))
+            {
+                var highestBitCount = 0;
+
+                for (state in _values)
                 {
-                    var bitCount = (state < BIT_COUNT.length) ? BIT_COUNT[state] : bit_count(state);
-                        
-                    if (bitCount > highestBitCount)
+                    if (!_values.hasOwnProperty(state))
+                        continue;
+
+                    // state is a string!
+                    state = Number(state);
+
+                    // A & B = A iff A < B
+                    if ((state & aState) === state)
                     {
-                        highestBitCount = bitCount;
-                        value = _values[state];
+                        var bitCount = (state < BIT_COUNT.length) ? BIT_COUNT[state] : bit_count(state);
+
+                        if (bitCount > highestBitCount)
+                        {
+                            highestBitCount = bitCount;
+                            value = _values[state];
+                        }
                     }
                 }
             }
-        }
 
-        // Still don't have a value? OK, let's use the normal value.        
-        if (value === undefined || value === nil)
-            value = _values[CPControlStateNormal];
+            // Still don't have a value? OK, let's use the normal value.
+            if (value === undefined || value === nil)
+                value = _values[CPControlStateNormal];
+        }
     }
 
     if (value === undefined || value === nil)
@@ -190,6 +197,8 @@ var BIT_COUNT   = [ 0 /*00000*/, 1 /*00001*/, 1 /*00010*/, 2 /*00011*/, 1 /*0010
 
     if (value === undefined || value === nil)
         value = _defaultValue;
+
+    _cache[aState] = value;
 
     return value;
 }
@@ -234,6 +243,7 @@ var BIT_COUNT   = [ 0 /*00000*/, 1 /*00001*/, 1 /*00010*/, 2 /*00011*/, 1 /*0010
     
     if (self)
     {
+        _cache = {};
         _isSingularObject = [aCoder containsValueForKey:@"value"];
         
         if (_isSingularObject)
@@ -311,7 +321,7 @@ function CPThemedAttributeDecode(aCoder, anAttributeName, aDefaultValue, aTheme,
 
     var attribute = [aCoder decodeObjectForKey:key];
 
-    if (![attribute isKindOfClass:[CPThemedAttribute class]])
+    if (!attribute.isa || ![attribute isKindOfClass:[CPThemedAttribute class]])
     {
         var themedAttribute = CPThemedAttributeMake(anAttributeName, aDefaultValue, aTheme, aClass);
 
@@ -319,6 +329,7 @@ function CPThemedAttributeDecode(aCoder, anAttributeName, aDefaultValue, aTheme,
 
         attribute = themedAttribute;
     }
+
     else
     {
         [attribute setName:anAttributeName];

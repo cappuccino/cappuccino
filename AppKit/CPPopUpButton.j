@@ -95,7 +95,7 @@ CPPopUpButtonStatePullsDown = 1 << 12;
 
     var items = [_menu itemArray];
     
-    if (items.length <= 0)
+    if ([items count] <= 0)
         return;
 
     [items[0] setHidden:[self pullsDown]];
@@ -493,14 +493,14 @@ CPPopUpButtonStatePullsDown = 1 << 12;
 */
 - (void)setTitle:(CPString)aTitle
 {
-    if ([self title] == aTitle)
+    if ([self title] === aTitle)
         return;
     
     if ([self pullsDown])
     {
         var items = [_menu itemArray];
 
-        if (items.length <= 0)
+        if ([items count] <= 0)
             [self addItemWithTitle:aTitle];
 
         else
@@ -548,7 +548,7 @@ CPPopUpButtonStatePullsDown = 1 << 12;
     {
         var items = [_menu itemArray];
         
-        if (items.length > 0)
+        if ([items count] > 0)
             item = items[0];
     }
     else
@@ -717,7 +717,7 @@ var CPPopUpButtonMenuKey            = @"CPPopUpButtonMenuKey",
     {
         // Nothing is currently selected
         _selectedIndex = -1;
-        
+
         [self setMenu:[aCoder decodeObjectForKey:CPPopUpButtonMenuKey]];
         [self selectItemAtIndex:[aCoder decodeObjectForKey:CPPopUpButtonSelectedIndexKey]];
     }
