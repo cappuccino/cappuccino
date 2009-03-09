@@ -80,7 +80,8 @@ var _CPCibCustomResourceClassNameKey    = @"_CPCibCustomResourceClassNameKey",
 
 - (id)awakeAfterUsingCoder:(CPCoder)aCoder
 {
-    if ([aCoder respondsToSelector:@selector(bundle)])
+    if ([aCoder respondsToSelector:@selector(bundle)] && 
+        (![aCoder respondsToSelector:@selector(awakenCustomResources)] || [aCoder awakenCustomResources]))
         if (_className === @"CPImage")
             return [[CPImage alloc] initWithContentsOfFile:[[aCoder bundle] pathForResource:_resourceName] size:[_properties objectForKey:@"size"]];
 

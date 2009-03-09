@@ -4,6 +4,7 @@
     <import file = "../common.xml" />
     
     <filelist id = "Projects" dir = "."> 
+        <file name = "blend/build.xml" />
         <file name = "nib2cib/build.xml" />
         <file name = "objj/build.xml" />
         <file name = "objjc/build.xml" />

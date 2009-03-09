@@ -31,18 +31,25 @@ try
 {
     if (args.length > 0)
     {
+        // Convert all arguments to JavaScript-style Strings.
+        var count = args.length;
+
+        while (count--)
+            args[count] = String(args[count]);
+
+        // Grab the location of the objj file to run.
     	var mainFilePath = args.shift();
-    	
+
         // convert from relative to absolute path
     	if (this.Packages)
-    	    mainFilePath = (new Packages.java.io.File(mainFilePath)).getAbsolutePath();
+            mainFilePath = String((new Packages.java.io.File(mainFilePath)).getAbsolutePath());
 
     	if (debug)
     		print("Loading: " + mainFilePath);
 
-    	objj_import(mainFilePath, YES);
+        objj_import(mainFilePath, YES);
 
-    	serviceTimeouts();
+        serviceTimeouts();
 
     	if (debug)
     		print("Done!");

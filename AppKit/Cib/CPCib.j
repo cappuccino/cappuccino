@@ -42,6 +42,7 @@ var CPCibObjectDataKey  = @"CPCibObjectDataKey";
 {
     CPData      _data;
     CPBundle    _bundle;
+    BOOL        _awakenCustomResources;
 }
 
 - (id)initWithContentsOfURL:(CPURL)aURL
@@ -49,7 +50,10 @@ var CPCibObjectDataKey  = @"CPCibObjectDataKey";
     self = [super init];
     
     if (self)
+    {
         _data = [CPURLConnection sendSynchronousRequest:[CPURLRequest requestWithURL:aURL] returningResponse:nil error:nil];
+        _awakenCustomResources = YES;
+    }
     
     return self;
 }
@@ -66,9 +70,19 @@ var CPCibObjectDataKey  = @"CPCibObjectDataKey";
     return self;
 }
 
+- (void)_setAwakenCustomResources:(BOOL)shouldAwakenCustomResources
+{
+    _awakenCustomResources = shouldAwakenCustomResources;
+}
+
+- (BOOL)_awakenCustomResources
+{
+    return _awakenCustomResources;
+}
+
 - (BOOL)instantiateCibWithExternalNameTable:(CPDictionary)anExternalNameTable
 {
-    var unarchiver = [[_CPCibKeyedUnarchiver alloc] initForReadingWithData:_data bundle:_bundle],
+    var unarchiver = [[_CPCibKeyedUnarchiver alloc] initForReadingWithData:_data bundle:_bundle awakenCustomResources:_awakenCustomResources],
         replacementClasses = [anExternalNameTable objectForKey:CPCibReplacementClasses];
 
     if (replacementClasses)

@@ -23,22 +23,22 @@ function main()
     
     for (; index < count; ++index)
     {
-        var argument = String(arguments[index]);
+        var argument = arguments[index];
         
         switch (argument)
         {
             case "-c":      
-            case "--cib":       cibFiles.push(String(arguments[++index]));
+            case "--cib":       cibFiles.push(arguments[++index]);
                                 break;
             
             case "-d":      
-            case "-descriptor": descriptorFiles.push(String(arguments[++index]));
+            case "-descriptor": descriptorFiles.push(arguments[++index]);
                                 break;
 
-            case "-o":          outputFilePath = String(arguments[++index]);
+            case "-o":          outputFilePath = arguments[++index];
                                 break;
 
-            case "-R":          resourcesPath = String(arguments[++index]);
+            case "-R":          resourcesPath = arguments[++index];
                                 break;
 
             default:            jExtensionIndex = argument.indexOf(".j");
@@ -113,14 +113,10 @@ function getDirectory(aPath)
 
 function buildBlendFromCibFiles(cibFiles, outputFilePath, resourcesPath)
 {
-    var resourcesFile = nil,
-        resourcesBundle = new objj_bundle();
+    var resourcesFile = nil;
     
     if (resourcesPath)
-    {
         resourcesFile = new File(resourcesPath);
-        resourcesBundle.path = getDirectory(resourcesFile.getCanonicalPath()) + "/Info.plist";
-    }
     
     var count = cibFiles.length,
         replacedFiles = [],
@@ -128,7 +124,7 @@ function buildBlendFromCibFiles(cibFiles, outputFilePath, resourcesPath)
     
     while (count--)
     {
-        var theme = themeFromCibFile(new File(cibFiles[count]), resourcesBundle),
+        var theme = themeFromCibFile(new File(cibFiles[count])),
         
             // Archive our theme.
             filePath = [theme name] + ".keyedtheme",
@@ -169,11 +165,12 @@ function buildBlendFromCibFiles(cibFiles, outputFilePath, resourcesPath)
         rsync(new File(resourcesPath), new File(outputFilePath));
 }
 
-function themeFromCibFile(aFile, resourcesBundle)
+function themeFromCibFile(aFile)
 {
-    var cib = [[CPCib alloc] initWithCibNamed:aFile.getCanonicalPath() bundle:resourcesBundle],//WithContentsOfURL:aFile.getCanonicalPath()],
+    var cib = [[CPCib alloc] initWithContentsOfURL:aFile.getCanonicalPath()],
         topLevelObjects = [];
     
+    [cib _setAwakenCustomResources:NO];
     [cib instantiateCibWithExternalNameTable:[CPDictionary dictionaryWithObject:topLevelObjects forKey:CPCibTopLevelObjects]];
 
     var count = topLevelObjects.length,
