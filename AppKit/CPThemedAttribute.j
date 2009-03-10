@@ -58,7 +58,7 @@ var BIT_COUNT   = [ 0 /*00000*/, 1 /*00001*/, 1 /*00010*/, 2 /*00011*/, 1 /*0010
         _themedClass = aClass;
 
         _values = [CPDictionary dictionary];
-        _attributeFromTheme = nil;//[_theme valueForAttributeName:_name inClass:_themedClass];
+        _attributeFromTheme = [_theme valueForAttributeName:_name inClass:_themedClass];
     }
 
     return self;
@@ -87,7 +87,7 @@ var BIT_COUNT   = [ 0 /*00000*/, 1 /*00001*/, 1 /*00010*/, 2 /*00011*/, 1 /*0010
     
     _cache = {};
     _theme = aTheme;
-    _attributeFromTheme = nil;//[_theme valueForAttributeName:_name inClass:_themedClass];
+    _attributeFromTheme = [_theme valueForAttributeName:_name inClass:_themedClass];
 }
 
 - (void)setThemedClass:(Class)aClass
@@ -97,7 +97,7 @@ var BIT_COUNT   = [ 0 /*00000*/, 1 /*00001*/, 1 /*00010*/, 2 /*00011*/, 1 /*0010
     
     _cache = {};
     _themedClass = aClass;
-    _attributeFromTheme = nil;//[_theme valueForAttributeName:_name inClass:_themedClass];
+    _attributeFromTheme = [_theme valueForAttributeName:_name inClass:_themedClass];
 }
 
 - (void)setValue:(id)aValue
