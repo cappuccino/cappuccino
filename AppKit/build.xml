@@ -30,7 +30,7 @@
 
         <exec executable = "objj">
             <env key = "OBJJ_INCLUDE_PATHS" value = "${Build}/${Configuration}-Rhino:${Build}/${Configuration}" />
-            <arg line = "${Build}/Release/blend/main.j -d Themes/${Theme}/ThemeDescriptors.j -o ${Build}/${Configuration}/AppKit/Resources/${Theme}.blend -R Themes/${Theme}/Resources" />
+            <arg line = "${Build}/${Configuration}/blend/main.j -d Themes/${Theme}/ThemeDescriptors.j -o ${Build}/${Configuration}/AppKit/Resources/${Theme}.blend -R Themes/${Theme}/Resources" />
         </exec>
 
         <steam-inline-bundle bundle = "${Build}/${Configuration}/AppKit" />
