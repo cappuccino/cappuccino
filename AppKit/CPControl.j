@@ -320,6 +320,7 @@ var CPControlBlackColor     = [CPColor blackColor];
     Sets the tooltip for the receiver.
     @param aToolTip the tooltip
 */
+/*
 -(void)setToolTip:(CPString)aToolTip
 {
     if (_toolTip == aToolTip)
@@ -331,15 +332,16 @@ var CPControlBlackColor     = [CPColor blackColor];
     _DOMElement.title = aToolTip;
 #endif
 }
-
+*/
 /*!
     Returns the receiver's tooltip
 */
+/*
 -(CPString)toolTip
 {
     return _toolTip;
 }
-
+*/
 /*!
     Returns the receiver's target action
 */
