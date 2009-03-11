@@ -258,7 +258,7 @@
 */
 - (void)setSelectionIndexes:(CPIndexSet)anIndexSet
 {
-    if (_selectionIndexes == anIndexSet)
+    if (_selectionIndexes == anIndexSet || !_isSelectable)
         return;
     
     var index = CPNotFound;
