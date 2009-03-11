@@ -22,17 +22,30 @@
 
 @import <Foundation/CPObject.j>
 
+/*! @class CPFlashMovie
 
+    CPFlashMovie is used to represent a Flash movie in the Cappuccino framework.
+*/
 @implementation CPFlashMovie : CPObject
 {
     CPString _fileName;
 }
 
+/*!
+    Creates a new Flash movie with the swf at <code>aFileName</code>.
+    @param aFilename the swf to load
+    @return the initialized CPFlashMovie
+*/
 + (id)flashMovieWithFile:(CPString)aFileName
 {
     return [[self alloc] initWithFile:aFileName];
 }
 
+/*!
+    Initializes the Flash movie.
+    @param aFilename the swf to load
+    @return the initialized CPFlashMovie
+*/
 - (id)initWithFile:(CPString)aFileName
 {
     self = [super init];
