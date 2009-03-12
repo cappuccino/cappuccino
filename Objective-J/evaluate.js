@@ -239,12 +239,21 @@ function fragment_evaluate_file(aFragment)
     return requiresSleep;
 }
 
-function objj_import(aPath, isLocal, didCompleteCallback)
+function objj_import(/*String | Array*/ pathOrPaths, /*BOOL*/ isLocal, /*Function*/ didCompleteCallback)
 {
-    var context = new objj_context();
-    
+    var context = new objj_context(),
+        paths = pathOrPaths;
+
+    if (typeof paths === "string")
+        paths = [paths];
+
+    var index = 0,
+        count = paths.length;
+
+    for (; index < count; ++index)
+        context.pushFragment(fragment_create_file(paths[index], new objj_bundle(""), isLocal, NULL));
+
     context.didCompleteCallback = didCompleteCallback;
-    context.pushFragment(fragment_create_file(aPath, new objj_bundle(""), isLocal, NULL));
-        
+
     context.evaluate();
 }

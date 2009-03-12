@@ -28,14 +28,11 @@
             <arg line = "-f AppKit.steam -c ${Configuration}-Rhino -t AppKit" />
         </steam-build>
 
-        <steam-build>
-            <arg line = "-f Themes/${Theme}/${Theme}.steam -c ${Configuration} -t ${Theme}.cptheme" />
-        </steam-build>
+        <exec executable = "objj">
+            <env key = "OBJJ_INCLUDE_PATHS" value = "${Build}/${Configuration}-Rhino:${Build}/${Configuration}" />
+            <arg line = "../Tools/blend/Tool/main.j -d Themes/${Theme}/ThemeDescriptors.j -o ${Build}/${Configuration}/AppKit/Resources/${Theme}.blend -R Themes/${Theme}/Resources" />
+        </exec>
 
-        <copy todir = "${Build}/${Configuration}/AppKit/Resources/${Theme}.cptheme" >
-            <fileset dir = "${Build}/${Configuration}/${Theme}.cptheme" />
-        </copy>
-        
         <steam-inline-bundle bundle = "${Build}/${Configuration}/AppKit" />
         
         <copy file = "../LICENSE" todir = "${Build}/${Configuration}/AppKit" />

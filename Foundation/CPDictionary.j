@@ -459,12 +459,14 @@
     if (!aDictionary)
         return;
         
-    var allKeys = [aDictionary allKeys];
+    var keys = [aDictionary allKeys],
+        count = [keys count];
     
-    for (var i=0, count = [allKeys count]; i<count; i++)
+    while (count--)
     {
-        var thisKey = allKeys[i];
-        [self setObject:[aDictionary objectForKey:thisKey] forKey:thisKey];
+        var key = keys[count];
+
+        [self setObject:[aDictionary objectForKey:key] forKey:key];
     }
 }
 

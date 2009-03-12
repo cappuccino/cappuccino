@@ -30,36 +30,37 @@ var BIT_COUNT   = [ 0 /*00000*/, 1 /*00001*/, 1 /*00010*/, 2 /*00011*/, 1 /*0010
 
 @implementation CPThemedAttribute : CPObject
 {
-    BOOL        _isSingularObject;
+    JSObject            _cache;
+
+    CPString            _name;
+    id                  _defaultValue;
     
-    CPString    _name;
-    id          _defaultValue;
+    CPTheme             _theme;
+    Class               _themedClass;
     
-    CPTheme     _theme;
-    Class       _themedClass;
-    
-    id          _values;
-    id          _valueFromTheme;
+    CPDictionary        _values;
+    CPThemedAttribute   _attributeFromTheme;
 }
 
 - (id)initWithName:(CPString)aName defaultValue:(id)aDefaultValue theme:(CPTheme)aTheme class:(Class)aClass
 {
     self = [super init];
-    
+
     if (self)
     {
+        _cache = {};
+
         _name = aName;
-        
+
         _defaultValue = aDefaultValue;
-        
+
         _theme = aTheme;
         _themedClass = aClass;
-        
-        _isSingularObject = YES;
-        _values = nil;
-        _valueFromTheme = [_theme valueForAttributeName:_name inClass:_themedClass];
+
+        _values = [CPDictionary dictionary];
+        _attributeFromTheme = [_theme valueForAttributeName:_name inClass:_themedClass];
     }
-    
+
     return self;
 }
 
@@ -75,6 +76,7 @@ var BIT_COUNT   = [ 0 /*00000*/, 1 /*00001*/, 1 /*00010*/, 2 /*00011*/, 1 /*0010
 
 - (void)setDefaultValue:(id)aValue
 {
+    _cache = {};
     _defaultValue = aValue;
 }
 
@@ -83,8 +85,9 @@ var BIT_COUNT   = [ 0 /*00000*/, 1 /*00001*/, 1 /*00010*/, 2 /*00011*/, 1 /*0010
     if (_theme === aTheme)
         return;
     
+    _cache = {};
     _theme = aTheme;
-    _valueFromTheme = [_theme valueForAttributeName:_name inClass:_themedClass];
+    _attributeFromTheme = [_theme valueForAttributeName:_name inClass:_themedClass];
 }
 
 - (void)setThemedClass:(Class)aClass
@@ -92,14 +95,19 @@ var BIT_COUNT   = [ 0 /*00000*/, 1 /*00001*/, 1 /*00010*/, 2 /*00011*/, 1 /*0010
     if (_themedClass === aClass)
         return;
     
+    _cache = {};
     _themedClass = aClass;
-    _valueFromTheme = [_theme valueForAttributeName:_name inClass:_themedClass];
+    _attributeFromTheme = [_theme valueForAttributeName:_name inClass:_themedClass];
 }
 
 - (void)setValue:(id)aValue
 {
-    _isSingularObject = YES;
-    _values = aValue;
+    _cache = {};
+
+    if (aValue === undefined || aValue === nil)
+        _values = [CPDictionary dictionary];
+    else
+        _values = [CPDictionary dictionaryWithObject:aValue forKey:String(CPControlStateNormal)];
 }
 
 - (id)value
@@ -109,123 +117,78 @@ var BIT_COUNT   = [ 0 /*00000*/, 1 /*00001*/, 1 /*00010*/, 2 /*00011*/, 1 /*0010
 
 - (void)setValue:(id)aValue forControlState:(CPControlState)aState
 {
-    if (aState !== CPControlStateNormal)
-    {
-        if (_isSingularObject)
-        {
-            var normalValue = _values;
-            
-            _isSingularObject = NO;
-            
-            _values = {};
-            
-            if (normalValue)
-                _values[CPControlStateNormal] = normalValue;
-        }
-        
-        _values[aState] = aValue;
-    }
-    
-    else if (_isSingularObject)
-        _values = aValue;
-        
+    //delete _cache[aState];
+    _cache = {};
+
+    if ((aValue === undefined) || (aValue === nil))
+        [_values removeObjectForKey:String(aState)];
     else
-        _values[CPControlStateNormal] = aValue;
+        [_values setObject:aValue forKey:String(aState)];
 }
 
 - (id)valueForControlState:(CPControlState)aState
 {
-    if (_isSingularObject)
-    {
-        var value = _values;
+    var value = _cache[aState];
 
-        if (value === undefined || value === nil)
-            value = [_valueFromTheme valueForControlState:aState];
-
-        if (value === undefined || value === nil)
-            value = _defaultValue;
-
+    // This can be nil.
+    if (value !== undefined)
         return value;
-    }
 
-    var value = _values[aState];
-    
+    value = [_values objectForKey:String(aState)];
+
     // If we don't have a value, and we have a non-normal state...
     if ((value === undefined || value === nil) && aState > 0)
     {
         // If this is a composite state, find the closest partial subset match.
         if (aState & (aState - 1))
         {
-            var highestBitCount = 0;
-                
-            for (state in _values)
-            {                    
-                if (!_values.hasOwnProperty(state))
-                    continue;
-                
+            var highestBitCount = 0,
+                states = [_values allKeys],
+                count = states.length;
+
+            while (count--)
+            {
                 // state is a string!
-                state = Number(state);
-                
+                state = Number(states[count]);
+
                 // A & B = A iff A < B
                 if ((state & aState) === state)
                 {
                     var bitCount = (state < BIT_COUNT.length) ? BIT_COUNT[state] : bit_count(state);
-                        
+
                     if (bitCount > highestBitCount)
                     {
                         highestBitCount = bitCount;
-                        value = _values[state];
+                        value = [_values objectForKey:String(state)];
                     }
                 }
             }
         }
 
-        // Still don't have a value? OK, let's use the normal value.        
+        // Still don't have a value? OK, let's use the normal value.
         if (value === undefined || value === nil)
-            value = _values[CPControlStateNormal];
+            value = [_values objectForKey:String(CPControlStateNormal)];
     }
 
     if (value === undefined || value === nil)
-        value = [_valueFromTheme valueForControlState:aState];
+        value = [_attributeFromTheme valueForControlState:aState];
 
     if (value === undefined || value === nil)
         value = _defaultValue;
+
+    _cache[aState] = value;
 
     return value;
 }
 
 - (CPThemedAttribute)themedAttributeMergedWithThemedAttribute:(CPThemedAttribute)aThemedAttribute
 {
-    var themedAttribute = CPThemedAttributeMake(_name, _defaultValue, _theme, _themedClass);
+    var mergedAttribute = CPThemedAttributeMake(_name, _defaultValue, _theme, _themedClass);
     
-    themedAttribute._isSingularObject = NO;
-    themedAttribute._values = {};
-    
-    if (_isSingularObject)
-        themedAttribute._values[CPControlStateNormal] = _values;
+    mergedAttribute._values = [_values copy];
+    [mergedAttribute._values addEntriesFromDictionary:aThemedAttribute._values];
 
-    else
-    {
-        var values = _values;
-        
-        for (state in _values)
-            if (_values.hasOwnProperty(state))
-                themedAttribute._values[state] = _values[state];
-    }
-
-    if (aThemedAttribute._isSingularObject)
-        themedAttribute._values[CPControlStateNormal] = aThemedAttribute._values;
-
-    else
-    {
-        var values = aThemedAttribute._values;
-        
-        for (state in values)
-            if (values.hasOwnProperty(state))
-                themedAttribute._values[state] = values[state];
-    }
-    
-    return themedAttribute;
+    return mergedAttribute;
 }
 
 - (id)initWithCoder:(CPCoder)aCoder
@@ -234,26 +197,8 @@ var BIT_COUNT   = [ 0 /*00000*/, 1 /*00001*/, 1 /*00010*/, 2 /*00011*/, 1 /*0010
     
     if (self)
     {
-        _isSingularObject = [aCoder containsValueForKey:@"value"];
-        
-        if (_isSingularObject)
-            _values = [aCoder decodeObjectForKey:"value"];
-        
-        else
-        {       
-            _values = {};     
-            
-            var statesAndValues = [aCoder decodeObjectForKey:"statesAndValues"];
-                count = [statesAndValues count];
-                    
-            while (count--)
-            {
-                var value = statesAndValues[count--],
-                    state = statesAndValues[count];
-                
-                _values[state] = value;
-            }
-        }
+        _cache = {};
+        _values = [aCoder decodeObjectForKey:@"values"];
     }
     
     return self;
@@ -261,25 +206,7 @@ var BIT_COUNT   = [ 0 /*00000*/, 1 /*00001*/, 1 /*00010*/, 2 /*00011*/, 1 /*0010
 
 - (void)encodeWithCoder:(CPCoder)aCoder
 {
-    if (_isSingularObject)
-    {
-        [aCoder encodeObject:_values forKey:@"value"];
-    
-        return;
-    }
-    
-    var statesAndValues = [];
-    
-    for (state in _values)
-    {
-        if (!_values.hasOwnProperty(state))
-            continue;
-
-        statesAndValues.push(state);
-        statesAndValues.push(_values[state]);
-    }
-
-    [aCoder encodeObject:statesAndValues forKey:@"statesAndValues"];
+    [aCoder encodeObject:_values forKey:@"values"];
 }
 
 @end
@@ -291,14 +218,18 @@ function CPThemedAttributeMake(aName, aDefaultValue, aTheme, aClass)
 
 function CPThemedAttributeEncode(aCoder, aThemedAttribute)
 {
-    if (aThemedAttribute._isSingularObject)
-    {
-        var actualValue = aThemedAttribute._values;
+    var values = aThemedAttribute._values,
+        count = [values count];
 
-        if (aThemedAttribute._values)
-            [aCoder encodeObject:actualValue forKey:"$a" + [aThemedAttribute name]];
+    if (count === 1)
+    {
+        var key = [values allKeys][0];
+
+        if (Number(key) === 0)
+            return [aCoder encodeObject:[values objectForKey:key] forKey:"$a" + [aThemedAttribute name]];
     }
-    else
+
+    if (count >= 1)
         [aCoder encodeObject:aThemedAttribute forKey:"$a" + [aThemedAttribute name]];
 }
 
@@ -311,7 +242,7 @@ function CPThemedAttributeDecode(aCoder, anAttributeName, aDefaultValue, aTheme,
 
     var attribute = [aCoder decodeObjectForKey:key];
 
-    if (![attribute isKindOfClass:[CPThemedAttribute class]])
+    if (!attribute.isa || ![attribute isKindOfClass:[CPThemedAttribute class]])
     {
         var themedAttribute = CPThemedAttributeMake(anAttributeName, aDefaultValue, aTheme, aClass);
 
@@ -319,6 +250,7 @@ function CPThemedAttributeDecode(aCoder, anAttributeName, aDefaultValue, aTheme,
 
         attribute = themedAttribute;
     }
+
     else
     {
         [attribute setName:anAttributeName];

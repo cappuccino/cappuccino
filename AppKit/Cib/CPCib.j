@@ -42,6 +42,7 @@ var CPCibObjectDataKey  = @"CPCibObjectDataKey";
 {
     CPData      _data;
     CPBundle    _bundle;
+    BOOL        _awakenCustomResources;
 }
 
 - (id)initWithContentsOfURL:(CPURL)aURL
@@ -49,7 +50,10 @@ var CPCibObjectDataKey  = @"CPCibObjectDataKey";
     self = [super init];
     
     if (self)
+    {
         _data = [CPURLConnection sendSynchronousRequest:[CPURLRequest requestWithURL:aURL] returningResponse:nil error:nil];
+        _awakenCustomResources = YES;
+    }
     
     return self;
 }
@@ -66,9 +70,19 @@ var CPCibObjectDataKey  = @"CPCibObjectDataKey";
     return self;
 }
 
+- (void)_setAwakenCustomResources:(BOOL)shouldAwakenCustomResources
+{
+    _awakenCustomResources = shouldAwakenCustomResources;
+}
+
+- (BOOL)_awakenCustomResources
+{
+    return _awakenCustomResources;
+}
+
 - (BOOL)instantiateCibWithExternalNameTable:(CPDictionary)anExternalNameTable
 {
-    var unarchiver = [[_CPCibKeyedUnarchiver alloc] initForReadingWithData:_data bundle:_bundle],
+    var unarchiver = [[_CPCibKeyedUnarchiver alloc] initForReadingWithData:_data bundle:_bundle awakenCustomResources:_awakenCustomResources],
         replacementClasses = [anExternalNameTable objectForKey:CPCibReplacementClasses];
 
     if (replacementClasses)
@@ -102,54 +116,6 @@ var CPCibObjectDataKey  = @"CPCibObjectDataKey";
 
     // Display Visible Windows.
     [objectData displayVisibleWindows];
-
-    /*
-//    [objectData establishConnectionsWithOwner:owner topLevelObjects:topLevelObjects];
-//    [objectData cibInstantiateWithOwner:owner topLevelObjects:topLevelObjects];
-//    alert([objectData description]);
-//    alert([unarchiver._archive description]);
-    
-	NSMutableArray *t;
-	NSEnumerator *e;
-	id o;
-	id owner;
-	id rootObject;
-#if 0
-	NSLog(@"instantiateCibWithExternalNameTable=%@", table);
-#endif
-	if(![decoded isKindOfClass:[NSIBObjectData class]])
-		return NO;
-	owner=[table objectForKey:NSCibOwner];
-	rootObject=[decoded rootObject];
-#if 0
-	NSLog(@"establishConnections");
-#endif
-	[decoded establishConnectionsWithExternalNameTable:table];
-#if 0
-	NSLog(@"awakeFromCib %d objects", [decodedObjects count]);
-#endif
-#if 0
-	NSLog(@"objects 2=%@", decodedObjects);
-#endif
-
-    // FIXME: shouldn't be accessing private variables.
-    var objects = unarchiver._objects,
-        count = [objects count];
-    
-    // The order in which objects receive the awakeFromCib message is not guaranteed.
-    while (count--)
-    {
-        var object = objects[count];
-        
-        if ([object respondsToSelector:@selector(awakeFromCib)])
-            [object awakeFromCib];
-    }
-
-//    if ([owner respondsToSelector:@selector(awakeFromCib)])
-//        [owner awakeFromCib];
-    // Display visible windows.
-    
-    return YES;*/
 
     return YES;
 }

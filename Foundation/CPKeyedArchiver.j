@@ -205,8 +205,8 @@ var _CPKeyedArchiverStringClass                         = Nil,
         // We call willEncodeObject previously.
         
         _plistObject = _plistObjects[[_UIDs objectForKey:[object hash]]];
-        [object encodeWithCoder:self];        
-        
+        [object encodeWithCoder:self];
+
         if (_delegate && _delegateSelectors & _CPKeyedArchiverDidEncodeObjectSelector)
             [_delegate archiver:self didEncodeObject:object];
     }

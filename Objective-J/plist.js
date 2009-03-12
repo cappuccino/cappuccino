@@ -496,7 +496,7 @@ function CPPropertyListCreateFrom280NorthData(aData)
 
     while (marker = stream.getMarker())
     {
-        if (marker == END_MARKER)
+        if (marker === END_MARKER)
         {
             containers.pop();
             continue;
@@ -507,7 +507,7 @@ function CPPropertyListCreateFrom280NorthData(aData)
         if (count)
             currentContainer = containers[count - 1];
         
-        if (marker == KEY_MARKER)
+        if (marker === KEY_MARKER)
         {
             key = stream.getString();
             marker = stream.getMarker();

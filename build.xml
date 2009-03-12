@@ -208,6 +208,7 @@
             </fileset>
             <fileset dir = "${Build}/Release-Rhino/">
                 <include name = "AppKit/" />
+                <include name = "BlendKit/" />
             </fileset>
         </copy>
 
@@ -218,6 +219,7 @@
             </fileset>
             <fileset dir = "${Build}/Debug-Rhino/">
                 <include name = "AppKit/" />
+                <include name = "BlendKit/" />
             </fileset>
         </copy>
         
@@ -227,14 +229,14 @@
         
         <!-- FIXME: This is awful, we need to handle this like we handle Demos -->
         
-        <git-clone-pull repository = "git://github.com/280north/ojunit.git" dest = "${Build}/Release/ojunit" />
+<!--        <git-clone-pull repository = "git://github.com/280north/ojunit.git" dest = "${Build}/Release/ojunit" />
         
         <copy todir = "${Build.Cappuccino.Tools.Lib}/ojunit">
             <fileset dir = "${Build}/Release/ojunit" includes = "**/*.j" />
         </copy>
         
         <copy file = "Tools/ojunit/ojtest" tofile = "${Build.Cappuccino.Tools.Bin}/ojtest" />
-        
+        -->
         <!-- Tools -->
         
         <copy todir = "${Build.Cappuccino.Tools.Bin}">
@@ -247,9 +249,14 @@
         </copy>
         
         <copy file = "Tools/nib2cib/nib2cib" todir = "${Build.Cappuccino.Tools.Bin}" />
-
+        <copy file = "Tools/blend/Tool/blend" todir = "${Build.Cappuccino.Tools.Bin}" />
+        
         <copy todir = "${Build.Cappuccino.Tools.Lib}/nib2cib">
             <fileset dir = "${Build}/Release/nib2cib" />
+        </copy>
+
+        <copy todir = "${Build.Cappuccino.Tools.Lib}/blend">
+            <fileset dir = "${Build}/Release/blend" />
         </copy>
 
         <copy todir = "${Build.Cappuccino.Tools.Lib}">

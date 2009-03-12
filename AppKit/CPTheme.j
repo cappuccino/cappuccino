@@ -305,4 +305,9 @@ var CPThemeNameKey              = @"CPThemeNameKey",
     return _bundle;
 }
 
+- (BOOL)awakenCustomResources
+{
+    return YES;
+}
+
 @end

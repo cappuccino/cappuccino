@@ -61,6 +61,43 @@
     JSObject            _replacementObjects;
 }
 
+- (id)init
+{
+    self = [super init];
+
+    if (self)
+    {
+        _namesKeys = [];
+        _namesValues = [];
+
+        //CPArray         _accessibilityConnectors;
+        //CPArray         _accessibilityOidsKeys;
+        //CPArray         _accessibilityOidsValues;
+
+        _classesKeys = [];
+        _classesValues = [];
+
+        _connections = [];
+        //id              _fontManager;
+
+        _framework = @"";
+
+        _nextOid = [];
+
+        _objectsKeys = [];
+        _objectsValues = [];
+
+        _oidKeys = [];
+        _oidValues = [];
+
+        _fileOwner = nil;
+
+        _visibleWindows = [CPSet set];
+    }
+
+    return self;
+}
+
 - (CPMenu)mainMenu
 {
     var index = [_namesValues indexOfObjectIdenticalTo:"MainMenu"];
@@ -114,7 +151,7 @@ var _CPCibObjectDataNamesKeysKey                = @"_CPCibObjectDataNamesKeysKey
 - (id)initWithCoder:(CPCoder)aCoder
 {
     self = [super init];
-    
+
     if (self)
     {
         _replacementObjects = {};
@@ -131,22 +168,22 @@ var _CPCibObjectDataNamesKeysKey                = @"_CPCibObjectDataNamesKeysKey
 
         _connections = [aCoder decodeObjectForKey:_CPCibObjectDataConnectionsKey];
         //id              _fontManager;
-        
+
         _framework = [aCoder decodeObjectForKey:_CPCibObjectDataFrameworkKey];
-    
+
         _nextOid = [aCoder decodeIntForKey:_CPCibObjectDataNextOidKey];
-        
+
         _objectsKeys = [aCoder decodeObjectForKey:_CPCibObjectDataObjectsKeysKey];
         _objectsValues = [aCoder decodeObjectForKey:_CPCibObjectDataObjectsValuesKey];
-        
+
         _oidKeys = [aCoder decodeObjectForKey:_CPCibObjectDataOidKeysKey];
         _oidValues = [aCoder decodeObjectForKey:_CPCibObjectDataOidValuesKey];
 
         _fileOwner = [aCoder decodeObjectForKey:_CPCibObjectDataFileOwnerKey];
-    
+
         _visibleWindows = [aCoder decodeObjectForKey:_CPCibObjectDataVisibleWindowsKey];
     }
-    
+
     return self;
 }
 
@@ -154,16 +191,16 @@ var _CPCibObjectDataNamesKeysKey                = @"_CPCibObjectDataNamesKeysKey
 {
     [aCoder encodeObject:_namesKeys forKey:_CPCibObjectDataNamesKeysKey];
     [aCoder encodeObject:_namesValues forKey:_CPCibObjectDataNamesValuesKey];
-    
+
     //CPArray         _accessibilityConnectors;
     //CPArray         _accessibilityOidsKeys;
     //CPArray         _accessibilityOidsValues;
-    
+
     [aCoder encodeObject:_classesKeys forKey:_CPCibObjectDataClassesKeysKey];
     [aCoder encodeObject:_classesValues forKey:_CPCibObjectDataClassesValuesKey];
-    
+
     [aCoder encodeObject:_connections forKey:_CPCibObjectDataConnectionsKey];
-    
+
     //id              _fontManager;
     
     [aCoder encodeObject:_framework forKey:_CPCibObjectDataFrameworkKey];

@@ -41,7 +41,7 @@ function importFiles(files, aCallback)
         if (typeof file === "string")
             file = new File(file);
         
-        objj_import(file.getCanonicalPath(), YES, function() { importFiles(files, aCallback) });
+        objj_import(String(file.getCanonicalPath()), YES, function() { importFiles(files, aCallback) });
     }
         return;
 
