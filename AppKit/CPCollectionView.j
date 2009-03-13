@@ -111,6 +111,7 @@
         _tileWidth = -1.0;
         
         _selectionIndexes = [CPIndexSet indexSet];
+        _isSelectable = YES;
     }
     
     return self;
