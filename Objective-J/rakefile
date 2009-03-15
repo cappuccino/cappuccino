@@ -1,0 +1,13 @@
+#!/usr/bin/env ruby
+
+require 'rake'
+require '../common'
+
+
+subprojects = %w{Runtime Tools}
+
+%w(build clean).each do |task_name|
+  task task_name do
+    subrake(subprojects)
+  end
+end

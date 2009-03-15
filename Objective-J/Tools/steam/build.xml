@@ -1,0 +1,55 @@
+<?xml version = "1.0"?>
+<project name = "steam" default = "build" basedir = "." >
+
+    <import file = "../../../common.xml" />
+
+    <property name = "Build.Intermediate" location = "${Build}/steam.build/${Configuration}" />
+    <property name = "Build.steam" location = "${Build}/${Configuration}/steam" />
+    <property name = "Build.steam.bin" location = "${Build.steam}/bin" />
+    <property name = "Build.steam.lib" location = "${Build.steam}/lib/steam" />
+    
+    <target name = "clean">
+        <delete dir = "${Build.steam}" verbose = "true" />
+    </target>
+        
+    <target name = "build">
+    
+        <mkdir dir = "${Build.steam}" />
+        <mkdir dir = "${Build.Intermediate}" />
+        
+        <copy file = "${basedir}/sjheader.txt" tofile = "${PATH.SYSTEM.LIB}/steam/sjheader.txt" />
+        
+        <copy file = "${basedir}/steam.xml" tofile = "${PATH.SYSTEM.LIB}/steam/steam.xml" />
+        
+        <copy file = "${basedir}/htaccess" tofile = "${PATH.SYSTEM.LIB}/steam/htaccess" />
+
+        <copy todir = "${PATH.SYSTEM.LIB}/steam/Templates" >
+            <fileset dir = "${basedir}/Templates" />
+        </copy>
+
+        <copy file = "../executable" tofile = "${PATH.SYSTEM.BIN}/steam" />
+
+        <preprocess file = "${basedir}/main.js" output = "${Build.Intermediate}/steam-preprocessed.js" />
+        
+        <concat destfile = "${Build.Intermediate}/steam-flattened.js">
+			<filelist>
+                <file name="${Checkout}/Tools/Utilities/bridge.js" />
+                <file name="${Checkout}/Tools/Utilities/regex-bridge.js" />
+                <file name="${Build}/Objective-J.build/\${Configuration}/Rhino/Objective-J.js" />
+                <file name="${Build.Intermediate}/steam-preprocessed.js" />
+			</filelist>
+        </concat>        
+
+        <jsc>
+            <arguments>
+                <arg line = "-o main.class" />
+                <arg value = "-nosource" />
+                <arg value = "${Build.Intermediate}/steam-flattened.js" />
+            </arguments>
+        </jsc>
+        
+        <move file = "${Build.Intermediate}/main.class" tofile = "${PATH.SYSTEM.LIB}/steam/main.class" />
+        
+    </target>
+
+</project>

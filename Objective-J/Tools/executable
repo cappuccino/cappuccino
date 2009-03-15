@@ -24,7 +24,7 @@ if [ -z $OBJJ_HOME ]; then
 fi
 
 OBJJ_LIB="$OBJJ_HOME/lib"
-CLASSPATH="$OBJJ_LIB:$OBJJ_LIB/js.jar:$CLASSPATH"
+CLASSPATH="$OBJJ_LIB:$OBJJ_LIB/js.jar:$OBJJ_HOME/lib/$(basename $SELF_PATH):$CLASSPATH"
 
 OBJJ="$OBJJ_LIB/objj.js"
 RLWRAP=`which rlwrap`
@@ -44,9 +44,9 @@ if [[ `uname` == CYGWIN* ]]; then
 fi
 
 export OBJJ_LIB
-
+echo $RLWRAP java -classpath $CLASSPATH main $@
 #if [ -e $STEAM_BUILD/Objective-J.build/Release/Rhino ]; then
-    $RLWRAP java -classpath $CLASSPATH objj $@
+    $RLWRAP java -classpath $CLASSPATH main $@
     #$RLWRAP java -classpath $CLASSPATH org.mozilla.javascript.tools.shell.Main $OBJJ $@
 #else
 #    echo "Missing frameworks at $STEAM_BUILD/Objective-J.build/Release/Rhino" 1>&2
