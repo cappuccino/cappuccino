@@ -79,5 +79,12 @@ def cat(files, outfile)
     end
 end
 
+$OBJJ_TEMPLATE_EXECUTABLE   = File.join($HOME_DIR, 'Rake', 'Resources', 'objj-executable')
+
+def make_objj_executable(path)
+    cp($OBJJ_TEMPLATE_EXECUTABLE, path)
+    File.chmod 0755, path
+end
+
 task :build => [$ENVIRONMENT_JS]
 task :default => [:build]
