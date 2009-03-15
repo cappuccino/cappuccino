@@ -1,11 +1,13 @@
 <?xml version = "1.0"?>
 <project name = "Objective-J" default = "build" >
 
-    <import file = "../common.xml" />
+    <import file = "../../common.xml" />
     
     <filelist id = "Projects" dir = "."> 
-        <file name = "Runtime/build.xml" />
-        <file name = "Tools/build.xml" />
+        <file name = "cplutil/build.xml" />
+        <file name = "objj/build.xml" />
+        <file name = "objjc/build.xml" />
+        <file name = "steam/build.xml" />
     </filelist>
     
     <target name = "build">
@@ -23,5 +25,12 @@
             </files>
         </iterate>
     </target>
-
+<!--
+    <macrodef name = "make-js-executable">
+        <attribute name = "name" />
+        <sequential>
+            <copy file = "${basedir}/executable" tofile = "${PATH.SYSTEM.BIN}/${name}" />
+        </sequential>
+    </macrodef>
+-->
 </project>

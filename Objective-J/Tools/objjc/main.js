@@ -90,7 +90,7 @@ function preprocess(aFilePath, outFilePath, gccArgs, flags)
     
     // FIXME: figure out why this doesn't work on Windows/Cygwin
     //var tmpFile = java.io.File.createTempFile("OBJJC", "");
-    var tmpFile = new java.io.File(outFilePath+".tmp");
+    var tmpFile = new java.io.File(outFilePath + ".tmp");
     tmpFile.deleteOnExit();
     
     // -E JUST preprocess.
@@ -179,7 +179,7 @@ function main()
         outFilePaths = [],
         
         index = 0,
-        count = args.length,
+        count = arguments.length,
         
         gccArgs = [],
         
@@ -188,37 +188,38 @@ function main()
         
     for (; index < count; ++index)
     {
-        if (args[index] == "-o")
+        var argument = String(arguments[index]);
+        
+        if (argument === "-o")
         {
             if (++index < count)
-                outFilePaths.push(args[index]);
+                outFilePaths.push(String(arguments[index]));
         }
         
-        else if (args[index].indexOf("-D") === 0)
-            gccArgs.push(args[index])
+        else if (argument.indexOf("-D") === 0)
+            gccArgs.push(argument)
             
-        else if (args[index].indexOf("-U") === 0)
-            gccArgs.push(args[index]);
+        else if (argument.indexOf("-U") === 0)
+            gccArgs.push(argument);
             
-        else if (args[index].indexOf("-E") === 0)
+        else if (argument.indexOf("-E") === 0)
             flags &= ~OBJJ_PREPROCESSOR_PREPROCESS;
             
-        else if (args[index].indexOf("-S") === 0)
+        else if (argument.indexOf("-S") === 0)
             flags &= ~OBJJ_PREPROCESSOR_SYNTAX;
             
-        else if (args[index].indexOf("-g") === 0)
+        else if (argument.indexOf("-g") === 0)
             flags |= OBJJ_PREPROCESSOR_DEBUG_SYMBOLS;
             
-        else if (args[index].indexOf("-O") === 0)
+        else if (argument.indexOf("-O") === 0)
             flags |= OBJJ_PREPROCESSOR_COMPRESS;
     
         else
-            filePaths.push(args[index]);
+            filePaths.push(argument);
     }
     
     for (index = 0, count = filePaths.length; index < count; ++index)
         preprocess(filePaths[index], outFilePaths[index], gccArgs, flags);
 }
 
-args = arguments;
-main();
+main.apply(main, arguments);

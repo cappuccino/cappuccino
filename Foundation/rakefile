@@ -1,0 +1,54 @@
+#!/usr/bin/env ruby
+
+require 'rake'
+require '../common'
+require 'objective-j'
+require 'objective-j/bundle'
+
+
+$PRODUCT = 'Foundation' + $CONFIGURATION
+$ENVIRONMENT_PRODUCT = File.join($ENVIRONMENT_FRAMEWORKS_DIR, 'Foundation')
+
+task :build => [$PRODUCT, $ENVIRONMENT_PRODUCT]
+
+Specs = {}
+
+# Debug Framework
+Specs[:FoundationDebug] = ObjectiveJ::BundleSpecification.new do |s|
+    s.name                  = 'Foundation'
+    s.identifier            = 'com.280n.Foundation'
+    s.version               = '0.6.5'
+    s.author                = '280 North, Inc.'
+    s.email                 = 'feedback @nospam@ 280north.com'
+    s.summary               = 'Foundation classes for Cappuccino'
+    s.sources               = FileList['*.j']
+    s.resources             = FileList['Resources/*'].to_a
+    s.license               = ObjectiveJ::License::LGPL_v2_1
+    s.build_path            = File.join($BUILD_DIR, 'Debug', 'Foundation')
+    s.intermediates_path    = File.join($BUILD_DIR, 'Foundation.build', 'Debug')
+    s.flag                  = 'DEBUG'
+end
+
+bundle Specs[:FoundationDebug], :FoundationDebug
+
+# Release Framework
+Specs[:FoundationRelease] = ObjectiveJ::BundleSpecification.new do |s|
+    s.name                  = 'Foundation'
+    s.identifier            = 'com.280n.Foundation'
+    s.version               = '0.6.5'
+    s.author                = '280 North, Inc.'
+    s.email                 = 'feedback @nospam@ 280north.com'
+    s.summary               = 'Foundation classes for Cappuccino'
+    s.sources               = FileList['*.j']
+    s.resources             = FileList['Resources/*'].to_a
+    s.license               = ObjectiveJ::License::LGPL_v2_1
+    s.build_path            = File.join($BUILD_DIR, 'Release', 'Foundation')
+    s.intermediates_path    = File.join($BUILD_DIR, 'Foundation.build', 'Release')
+end
+
+bundle Specs[:FoundationRelease], :FoundationRelease
+
+#Framework in environment directory
+file_d $ENVIRONMENT_PRODUCT => [$PRODUCT] do
+    cp_r(Specs[$PRODUCT.to_sym].build_path, $ENVIRONMENT_PRODUCT)
+end
