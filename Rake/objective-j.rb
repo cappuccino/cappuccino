@@ -508,17 +508,26 @@ module ObjectiveJ
 end
 
 def file_d(*args, &block)
-
-    fileTask = file_create(*args, &block)
     
+    fileTask = Rake::FileTask.define_task(*args, &block)
+
     fileDirectory = File.dirname(fileTask.name)
     directory fileDirectory
     
     file fileTask.name => fileDirectory
-
 end
 
 def bundle(spec, *args, &block)
     task = ObjectiveJ::BundleTask.define_task(*args, &block)
     task.bundle_spec = spec
+end
+
+def resolve_flags(flags)
+
+    case flags
+    when nil then ''
+    when String then '-D' + flags
+    when Array then flags.map { |flag| '-D' + flag }.join(' ')
+    when Hash then flags.map { |flag, value| '-D' + flag + '=' + value }.join(' ')
+    end
 end
