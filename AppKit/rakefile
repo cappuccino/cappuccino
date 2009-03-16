@@ -13,8 +13,6 @@ subprojects = %w{Tools}
 
 subrake(subprojects)
 
-task :build => [$PRODUCT, $ENVIRONMENT_PRODUCT]
-
 Specs = {}
 
 AppKitFiles = FileList['**/*.j'].exclude('CoreGraphics/CGContextCanvas.j', 'CoreGraphics/CGContextVML.j', 'Themes/**', 'Tools/**')
@@ -60,3 +58,15 @@ bundle Specs[:AppKitRelease], :AppKitRelease
 file_d $ENVIRONMENT_PRODUCT => [$PRODUCT] do
     cp_r(Specs[$PRODUCT.to_sym].build_path, $ENVIRONMENT_PRODUCT)
 end
+
+ThemeFiles = FileList['Themes/Aristo/*']
+
+$THEME_PRODUCT = File.join(Specs[$PRODUCT.to_sym].build_path, 'Resources', 'Aristo.blend')
+
+file_d $THEME_PRODUCT => ThemeFiles do
+    File.popen("blend -d Themes/Aristo/ThemeDescriptors.j -o #{$THEME_PRODUCT} -R Themes/Aristo/Resources") do |blend|
+        puts blend.read
+    end
+end
+
+task :build => [$PRODUCT, $ENVIRONMENT_PRODUCT, $THEME_PRODUCT]

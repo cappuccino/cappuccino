@@ -369,7 +369,7 @@ objj_search.prototype.didReceiveBundleResponse = function(aResponse)
             platforms = dictionary_getValue(bundle.info, "CPBundlePlatforms"),
             index = 0,
             count = OBJJ_PLATFORMS.length,
-            inner_count = platforms.length;
+            innerCount = platforms.length;
 
         // Ugh, no indexOf, no objects-in-common.
         for(; index < count; ++index)
@@ -377,8 +377,8 @@ objj_search.prototype.didReceiveBundleResponse = function(aResponse)
             var innerIndex = 0,
                 currentPlatform = OBJJ_PLATFORMS[index];
             
-            for (; innerIndex < inner_count; ++innerIndex)
-                if(OBJJ_PLATFORMS[index] === platforms[innerIndex])
+            for (; innerIndex < innerCount; ++innerIndex)
+                if(currentPlatform === platforms[innerIndex])
                 {
                     platform = currentPlatform;
                     break;
@@ -386,7 +386,7 @@ objj_search.prototype.didReceiveBundleResponse = function(aResponse)
         }
         
         executablePath = platform + ".platform/" + executablePath;
-        
+
         this.request(DIRECTORY(aResponse.filePath) + executablePath, this.didReceiveExecutableResponse);
         
         // FIXME: Is this the right approach?
