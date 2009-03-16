@@ -1,0 +1,54 @@
+#!/usr/bin/env ruby
+
+require 'rake'
+require '../../../common'
+require 'objective-j'
+require 'objective-j/bundle'
+
+
+$PRODUCT = 'BlendKit' + $CONFIGURATION
+$ENVIRONMENT_PRODUCT = File.join($ENVIRONMENT_FRAMEWORKS_DIR, 'BlendKit')
+
+task :build => [$PRODUCT, $ENVIRONMENT_PRODUCT]
+
+Specs = {}
+
+# Debug Framework
+Specs[:BlendKitDebug] = ObjectiveJ::BundleSpecification.new do |s|
+    s.name                  = 'BlendKit'
+    s.identifier            = 'com.280n.BlendKit'
+    s.version               = '0.6.5'
+    s.author                = '280 North, Inc.'
+    s.email                 = 'feedback @nospam@ 280north.com'
+    s.summary               = 'BlendKit classes for Cappuccino'
+    s.sources               = FileList['**/*.j']
+    s.resources             = FileList['Resources/*']
+    s.license               = ObjectiveJ::License::LGPL_v2_1
+    s.build_path            = File.join($BUILD_DIR, 'Debug', 'BlendKit')
+    s.intermediates_path    = File.join($BUILD_DIR, 'BlendKit.build', 'Debug')
+    s.flag                  = 'DEBUG'
+end
+
+bundle Specs[:BlendKitDebug], :BlendKitDebug
+
+# Release Framework
+Specs[:BlendKitRelease] = ObjectiveJ::BundleSpecification.new do |s|
+    s.name                  = 'BlendKit'
+    s.identifier            = 'com.280n.BlendKit'
+    s.version               = '0.6.5'
+    s.author                = '280 North, Inc.'
+    s.email                 = 'feedback @nospam@ 280north.com'
+    s.summary               = 'BlendKit classes for Cappuccino'
+    s.sources               = FileList['**/*.j']
+    s.resources             = FileList['Resources/*']
+    s.license               = ObjectiveJ::License::LGPL_v2_1
+    s.build_path            = File.join($BUILD_DIR, 'Release', 'BlendKit')
+    s.intermediates_path    = File.join($BUILD_DIR, 'BlendKit.build', 'Release')
+end
+
+bundle Specs[:BlendKitRelease], :BlendKitRelease
+
+#Framework in environment directory
+file_d $ENVIRONMENT_PRODUCT => [$PRODUCT] do
+    cp_r(Specs[$PRODUCT.to_sym].build_path, $ENVIRONMENT_PRODUCT)
+end

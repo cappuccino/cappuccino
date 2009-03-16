@@ -9,11 +9,15 @@ require 'objective-j/bundle'
 $PRODUCT = 'AppKit' + $CONFIGURATION
 $ENVIRONMENT_PRODUCT = File.join($ENVIRONMENT_FRAMEWORKS_DIR, 'AppKit')
 
+subprojects = %w{Tools}
+
+subrake(subprojects)
+
 task :build => [$PRODUCT, $ENVIRONMENT_PRODUCT]
 
 Specs = {}
 
-AppKitFiles = FileList['**/*.j'].exclude('CoreGraphics/CGContextCanvas.j', 'CoreGraphics/CGContextVML.j', 'Themes/**')
+AppKitFiles = FileList['**/*.j'].exclude('CoreGraphics/CGContextCanvas.j', 'CoreGraphics/CGContextVML.j', 'Themes/**', 'Tools/**')
 
 # Debug Framework
 Specs[:AppKitDebug] = ObjectiveJ::BundleSpecification.new do |s|

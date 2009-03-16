@@ -24,7 +24,7 @@
 #fi
 
 OBJJ_LIB="$OBJJ_HOME/lib"
-
+FRAMEWORKS="$OBJJ_HOME/lib/Frameworks"
 MAIN="$OBJJ_LIB/$(basename $SELF_PATH)/main.j"
 
 # convert paths for Cygwin
@@ -33,4 +33,4 @@ if [[ `uname` == CYGWIN* ]]; then
     BAKE=`cygpath -w "$BLEND"`
 fi
 
-objj $MAIN $@
+objj -I$FRAMEWORKS $MAIN $@

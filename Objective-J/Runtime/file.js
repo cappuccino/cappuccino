@@ -39,8 +39,8 @@ var objj_files              = { },
 
 var OBJJ_NO_FILE            = {};
 
-if (!window.OBJJ_INCLUDE_PATHS)
-    var OBJJ_INCLUDE_PATHS  = ["Frameworks", "SomethingElse"];
+if (typeof OBJJ_INCLUDE_PATHS === "undefined")
+    OBJJ_INCLUDE_PATHS  = ["Frameworks", "SomethingElse"];
 
 var OBJJ_BASE_URI           = "";
 
@@ -127,7 +127,7 @@ objj_search.prototype.attemptNextSearchPath = function()
 {
     var searchPath = this.nextSearchPath(),
         file = objj_files[searchPath];
-        
+
     objj_alert("Will attempt to find " + this.filePath + " at " + searchPath);
         
     // If a file for this search path already exists, then it has already been downloaded.
@@ -150,7 +150,7 @@ objj_search.prototype.attemptNextSearchPath = function()
     }
     
     var existingSearch = objj_searches[searchPath];
-    
+
     // If there is already an ongoing search for this search path, then we can let it find 
     // the file for us.  Make sure to assign it our callback, if we have one, since only 
     // one search can have a callback at a time.

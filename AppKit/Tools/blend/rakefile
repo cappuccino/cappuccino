@@ -1,0 +1,59 @@
+#!/usr/bin/env ruby
+
+require 'rake'
+require '../../../common'
+require 'objective-j'
+require 'objective-j/bundle'
+
+
+$PRODUCT = 'blend' + $CONFIGURATION
+$ENVIRONMENT_BIN_PRODUCT = File.join($ENVIRONMENT_BIN_DIR, 'blend')
+$ENVIRONMENT_LIB_PRODUCT = File.join($ENVIRONMENT_LIB_DIR, 'blend')
+
+task :build => [$PRODUCT, $ENVIRONMENT_BIN_PRODUCT, $ENVIRONMENT_LIB_PRODUCT]
+
+Specs = {}
+
+# Debug Framework
+Specs[:blendDebug] = ObjectiveJ::BundleSpecification.new do |s|
+    s.name                  = 'blend'
+    s.identifier            = 'com.280n.blend'
+    s.version               = '0.6.5'
+    s.author                = '280 North, Inc.'
+    s.email                 = 'feedback @nospam@ 280north.com'
+    s.summary               = 'blend classes for Cappuccino'
+    s.sources               = FileList['**/*.j']
+    s.resources             = FileList['Resources/*']
+    s.license               = ObjectiveJ::License::LGPL_v2_1
+    s.build_path            = File.join($BUILD_DIR, 'Debug', 'blend')
+    s.intermediates_path    = File.join($BUILD_DIR, 'blend.build', 'Debug')
+    s.flag                  = 'DEBUG'
+end
+
+bundle Specs[:blendDebug], :blendDebug
+
+# Release Framework
+Specs[:blendRelease] = ObjectiveJ::BundleSpecification.new do |s|
+    s.name                  = 'blend'
+    s.identifier            = 'com.280n.blend'
+    s.version               = '0.6.5'
+    s.author                = '280 North, Inc.'
+    s.email                 = 'feedback @nospam@ 280north.com'
+    s.summary               = 'blend classes for Cappuccino'
+    s.sources               = FileList['**/*.j']
+    s.resources             = FileList['Resources/*']
+    s.license               = ObjectiveJ::License::LGPL_v2_1
+    s.build_path            = File.join($BUILD_DIR, 'Release', 'blend')
+    s.intermediates_path    = File.join($BUILD_DIR, 'blend.build', 'Release')
+end
+
+bundle Specs[:blendRelease], :blendRelease
+
+#executable in environment directory
+file_d $ENVIRONMENT_BIN_PRODUCT do
+    make_objj_executable($ENVIRONMENT_BIN_PRODUCT)
+end
+
+file_d $ENVIRONMENT_LIB_PRODUCT => [$PRODUCT] do
+    cp_r(Specs[$PRODUCT.to_sym].build_path, $ENVIRONMENT_LIB_PRODUCT)
+end

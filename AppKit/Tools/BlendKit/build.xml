@@ -1,0 +1,33 @@
+<?xml version = "1.0"?>
+<project name = "BlendKit" default = "build" basedir = "." >
+
+    <import file = "../../../common.xml" />
+    <import file = "${env.OBJJ_LIB}/steam/steam.xml" />
+
+    <target name = "clean" depends = "steam-uptodate">
+    
+        <steam-build>
+            <arg line = "-f BlendKit.steam -c ${Configuration} clean" />
+        </steam-build>
+    
+        <steam-build>
+            <arg line = "-f BlendKit.steam -c ${Configuration}-Rhino clean" />
+        </steam-build>
+        
+    </target>
+        
+    <target name = "build" depends = "steam-uptodate">
+
+        <steam-build>
+            <arg line = "-f BlendKit.steam -c ${Configuration}" />
+        </steam-build>
+
+        <steam-build>
+            <arg line = "-f BlendKit.steam -c ${Configuration}-Rhino" />
+        </steam-build>
+
+<!--        <copy file = "../LICENSE" todir = "${Build}/${Configuration}/AppKit" />-->
+
+    </target>
+
+</project>

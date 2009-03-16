@@ -17,12 +17,11 @@ if (!this.objj_import)
     load(OBJJ_LIB+'/Frameworks-Rhino/Objective-J/Objective-J.js');
 }
 */
-OBJJ_INCLUDE_PATHS = [];
 
 var OBJJ_INCLUDE_PATHS_STRING = getenv("OBJJ_INCLUDE_PATHS");
 
 if (OBJJ_INCLUDE_PATHS_STRING)
-    OBJJ_INCLUDE_PATHS = OBJJ_INCLUDE_PATHS.concat(OBJJ_INCLUDE_PATHS_STRING.split(":"));
+    OBJJ_INCLUDE_PATHS = OBJJ_INCLUDE_PATHS_STRING.split(":").concat(OBJJ_INCLUDE_PATHS);
 
 try
 {
@@ -35,7 +34,7 @@ try
             args[count] = String(args[count]);
 
         while (args.length && args[0].indexOf('-I') === 0)
-            OBJJ_INCLUDE_PATHS = OBJJ_INCLUDE_PATHS.concat(args.shift().substr(2).split(':'))
+            OBJJ_INCLUDE_PATHS = args.shift().substr(2).split(':').concat(OBJJ_INCLUDE_PATHS);
     }
 
     if (args.length > 0)
