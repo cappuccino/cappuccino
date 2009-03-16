@@ -1,12 +1,18 @@
 require 'rake'
 require 'date'
+require 'plist'
 
 module ObjectiveJ
 
     class Platform
-        OBJJ    = 'objj'
-        RHINO   = 'rhino'
-        BROWSER = 'browser'
+        ObjJ            = 'objj'
+        
+        Rhino           = 'rhino'
+        Desktop         = 'desktop'
+        Browser         = 'browser'
+        BrowserDesktop  = 'browser-desktop'
+        BrowserIPhone   = 'browser-iphone'
+        BrowseriPhone   = 'browser-iphone'
     end
 
     ##
@@ -197,6 +203,7 @@ module ObjectiveJ
         attribute :date
         required_attribute :summary
         required_attribute :identifier
+        required_attribute :platforms, [Platform::ObjJ]
         
         read_only :specification_version
         
@@ -224,6 +231,7 @@ module ObjectiveJ
         #    attribute_alias_singular :executable,   :executables
         attribute_alias_singular :author, :authors
         attribute_alias_singular :flag, :flags
+        attribute_alias_singular :platform, :platforms
         #    attribute_alias_singular :require_path, :require_paths
         #    attribute_alias_singular :test_file,    :test_files
         

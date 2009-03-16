@@ -32,7 +32,8 @@ Specs[:AppKitDebug] = ObjectiveJ::BundleSpecification.new do |s|
     s.license               = ObjectiveJ::License::LGPL_v2_1
     s.build_path            = File.join($BUILD_DIR, 'Debug', 'AppKit')
     s.intermediates_path    = File.join($BUILD_DIR, 'AppKit.build', 'Debug')
-    s.flags                 = ['PLATFORM_DOM', 'DEBUG']
+    s.flags                 = ['DEBUG']
+    s.platforms             = [ObjectiveJ::Platform::Browser, ObjectiveJ::Platform::Rhino]
 end
 
 bundle Specs[:AppKitDebug], :AppKitDebug
@@ -50,7 +51,7 @@ Specs[:AppKitRelease] = ObjectiveJ::BundleSpecification.new do |s|
     s.license               = ObjectiveJ::License::LGPL_v2_1
     s.build_path            = File.join($BUILD_DIR, 'Release', 'AppKit')
     s.intermediates_path    = File.join($BUILD_DIR, 'AppKit.build', 'Release')
-    s.flag                  = 'PLATFORM_DOM'
+    s.platforms             = [ObjectiveJ::Platform::Browser, ObjectiveJ::Platform::Rhino]
 end
 
 bundle Specs[:AppKitRelease], :AppKitRelease

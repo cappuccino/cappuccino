@@ -27,6 +27,7 @@
 // Look inside bundleResponseCallback.
 
 
+OBJJ_PLATFORMS = PLATFORMS
 #define DIRECTORY(aPath) (aPath).substr(0, (aPath).lastIndexOf('/') + 1)
 
 OBJJFileNotFoundException       = "OBJJFileNotFoundException";
@@ -364,6 +365,28 @@ objj_search.prototype.didReceiveBundleResponse = function(aResponse)
     
     if (executablePath)
     {
+        var platform = NULL,
+            platforms = dictionary_getValue(bundle.info, "CPBundlePlatforms"),
+            index = 0,
+            count = OBJJ_PLATFORMS.length,
+            inner_count = platforms.length;
+
+        // Ugh, no indexOf, no objects-in-common.
+        for(; index < count; ++index)
+        {
+            var innerIndex = 0,
+                currentPlatform = OBJJ_PLATFORMS[index];
+            
+            for (; innerIndex < inner_count; ++innerIndex)
+                if(OBJJ_PLATFORMS[index] === platforms[innerIndex])
+                {
+                    platform = currentPlatform;
+                    break;
+                }
+        }
+        
+        executablePath = platform + ".platform/" + executablePath;
+        
         this.request(DIRECTORY(aResponse.filePath) + executablePath, this.didReceiveExecutableResponse);
         
         // FIXME: Is this the right approach?
@@ -581,7 +604,7 @@ function objj_decompile(aString, bundle)
         {
             case MARKER_PATH:           if (file && file.contents && file.path === file.bundle.path)
                                             file.bundle.info = CPPropertyListCreateWithData({string:file.contents});
-                                            
+
                                         file = new objj_file();
                                         file.path = DIRECTORY(bundle.path) + text;
                                         file.bundle = bundle;

@@ -4,7 +4,7 @@ require 'rake'
 require '../../common'
 
 
-subprojects = %w{bundle cplutil objj objjc}
+subprojects = %w{cplutil objj objjc}
 
 %w(build clean).each do |task_name|
   task task_name do
