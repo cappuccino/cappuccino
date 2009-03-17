@@ -739,7 +739,23 @@ var _CPRunModalLoop = function(anEvent)
     @class CPApplication
     @return void
 */
+@implementation X : CPObject
+{
+}
+- (void)blendDidFinishLoading:(CPBundle)aBundle
+{
+    [CPTheme setDefaultTheme:[CPTheme themeNamed:@"Aristo"]];
+    _CPApplicationMain()
+}
+@end
 function CPApplicationMain(args, namedArgs)
+{
+    var blend = [[CPBlend alloc] initWithContentsOfURL:[[CPBundle bundleForClass:[CPApplication class]] pathForResource:@"Aristo.blend"]];
+    
+    [blend loadWithDelegate:[X new]];
+}
+
+function _CPApplicationMain(args, namedArgs)
 {
     var mainBundle = [CPBundle mainBundle],
         principalClass = [mainBundle principalClass];

@@ -27,6 +27,60 @@
 @import "CPThemedAttribute.j"
 
 
+@implementation CPBlend : CPObject
+{
+    CPBundle    _bundle;
+    CPArray     _themes @accessors(readonly);
+    id          _loadDelegate;
+}
+
+- (id)initWithContentsOfURL:(CPURL)aURL
+{
+    self = [super init];
+    
+    if (self)
+    {
+        _bundle = [[CPBundle alloc] initWithPath:aURL + "/Info.plist"];
+    }
+    
+    return self;
+}
+
+- (void)loadWithDelegate:(id)aDelegate
+{
+    _loadDelegate = aDelegate;
+    
+    [_bundle loadWithDelegate:self];
+}
+
+- (void)bundleDidFinishLoading:(CPBundle)aBundle
+{
+    var paths = [_bundle objectForInfoDictionaryKey:@"CPBundleReplacedFiles"],
+        index = 0,
+        count = paths.length,
+        bundlePath = [_bundle bundlePath];
+    
+    while (count--)
+    {
+        var path = paths[count];
+        
+        if ([path pathExtension] === "keyedtheme")
+        {
+            var unarchiver = [[_CPThemeKeyedUnarchiver alloc]
+                initForReadingWithData:[CPData dataWithString:objj_files[bundlePath + '/' + path].contents]
+                                bundle:_bundle];
+
+            [unarchiver decodeObjectForKey:@"root"];
+
+            [unarchiver finishDecoding];
+        }
+    }
+    
+    [_loadDelegate blendDidFinishLoading:self];
+}
+
+@end
+
 var CPThemesByName      = nil,
     CPThemeDefaultTheme = nil,
 
