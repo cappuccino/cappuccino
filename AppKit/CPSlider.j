@@ -173,6 +173,16 @@
     return [super createEphemeralSubviewNamed:aName];
 }
 
+- (void)setAltIncrementValue:(float)anAltIncrementValue
+{
+    _altIncrementValue = anAltIncrementValue;
+}
+
+- (float)altIncrementValue
+{
+    return _altIncrementValue;
+}
+
 - (int)isVertical
 {
     var bounds = [self bounds],
