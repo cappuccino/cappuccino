@@ -38,7 +38,10 @@ file_d $BROWSER_FILE => Files do |t|
 end
 
 file_d $RHINO_FILE => Files do |t|
-    build_product(t.name, platform_flags(ObjectiveJ::Platform::Rhino, ObjectiveJ::Platform::ObjJ))
+    flags = platform_flags(ObjectiveJ::Platform::Rhino, ObjectiveJ::Platform::ObjJ)
+    flags['RHINO'] = ''
+
+    build_product(t.name, flags)
 end
 
 #Framework in environment directory
