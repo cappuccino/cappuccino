@@ -1,10 +1,10 @@
 #!/usr/bin/env ruby
 
 require 'rake'
-require 'common'
+require '../common'
 
 
-subprojects = %w{Objective-J Foundation AppKit Tools}
+subprojects = %w{capp nib2cib}
 
 %w(build clean).each do |task_name|
   task task_name do

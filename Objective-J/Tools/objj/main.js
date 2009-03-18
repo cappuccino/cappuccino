@@ -49,7 +49,7 @@ try
     	if (debug)
     		print("Loading: " + mainFilePath);
 
-        objj_import(mainFilePath, YES, function() { if (typeof main === "Function") main.apply(main, args); } );
+        objj_import(mainFilePath, YES, function() { if (typeof main === "function") main.apply(main, args); } );
 
         serviceTimeouts();
 

@@ -294,5 +294,3 @@ function exec(/*Array*/ command, /*Boolean*/ showOutput)
 }
 
 @end
-
-main.apply(main, args);

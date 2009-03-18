@@ -34,5 +34,5 @@ file_d $ENVIRONMENT_BIN_PRODUCT do
 end
 
 file_d $ENVIRONMENT_LIB_PRODUCT => [:nib2cib] do
-    cp_r($BUILD_PATH, $ENVIRONMENT_LIB_PRODUCT)
+    cp_r(File.join($BUILD_PATH, '.'), $ENVIRONMENT_LIB_PRODUCT)
 end

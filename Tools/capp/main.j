@@ -1,9 +1,21 @@
-function createFrameworks()
+
+importClass(java.io.File);
+importClass(java.io.FileOutputStream);
+importClass(java.io.BufferedWriter);
+importClass(java.io.OutputStreamWriter);
+
+function main()
 {
-    var shouldSymbolicallyLink = false,
-        index = 0,
+    if (arguments.length < 1)
+        return printUsage();
+        
+    var index = 0,
         count = arguments.length,
         
+        shouldSymbolicallyLink = false,
+        justFrameworks = false,
+        
+        template = "Application",
         destination = "";
 
     for (; index < count; ++index)
@@ -12,14 +24,50 @@ function createFrameworks()
         
         switch (arguments[index])
         {
-            case "-l":  shouldSymbolicallyLink = true;
-                        break;
+            case "-l":              shouldSymbolicallyLink = true;
+                                    break;
+                                    
+            case "-h":
+            case "--help":          printUsage();
+                                    return;
             
-            default:    destination = argument;
+            case "-t":
+            case "--template":      template = arguments[++index];
+                                    break;
+                                
+            case "-f":
+            case "--frameworks":    justFrameworks = true;
+                                    break;
+                                
+            default:                destination = argument;
         }
     }
 
-    createFrameworksInFile(new File(destination), shouldSymbolicallyLink);
+    var sourceTemplate = new File(OBJJ_HOME + "/lib/steam/Templates/" + template),
+        destinationProject = new File(destination);
+    
+    if (!destinationProject.exists())
+    {
+        exec(["cp", "-vR", sourceTemplate.getCanonicalPath(), destinationProject.getCanonicalPath()], true);
+        
+        var files = getFiles(destinationProject, ['j', "plist", "html"]),
+            index = 0,
+            count = files.length;
+        
+        for (; index < count; ++index)
+        {
+            var file = files[index],
+                contents = readFile(file);
+            
+            contents = contents.replace(/__Product__/g, destinationProject.getName());
+            
+            writeContentsToFile(contents, file);
+        }
+        
+        createFrameworksInFile(destinationProject, shouldSymbolicallyLink);
+    }
+    else
+        System.out.println("Directory already exists");
 }
 
 function createFrameworksInFile(/*File*/ aFile, /*Boolean*/ shouldSymbolicallyLink)
@@ -63,4 +111,9 @@ function createFrameworksInFile(/*File*/ aFile, /*Boolean*/ shouldSymbolicallyLi
 
         exec(["ln", "-s",   new File(STEAM_BUILD + "/Debug/AppKit").getCanonicalPath(),
                             new File(aFile.getCanonicalPath() + "/Frameworks/Debug/AppKit").getCanonicalPath()], true);
+}
+
+function printUsage()
+{
+    print("capp /path/to/your/app [options]");
 }

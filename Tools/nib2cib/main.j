@@ -248,5 +248,3 @@ function main()
     else
         convert(inputFileName, outputFileName, resourcesPath);
 }
-
-main.apply(main, args);

@@ -585,3 +585,85 @@ if (!OBJJ_HOME)
     OBJJ_HOME = "/usr/local/share/objj";
     alert("OBJJ_HOME environment variable not set, defaulting to " + OBJJ_HOME);
 }
+
+function exec(/*Array*/ command, /*Boolean*/ showOutput)
+{
+    var line = "",
+        output = "",
+        
+        process = Packages.java.lang.Runtime.getRuntime().exec(command),//jsArrayToJavaArray(command));
+        reader = new Packages.java.io.BufferedReader(new Packages.java.io.InputStreamReader(process.getInputStream()));
+    
+    while (line = reader.readLine())
+    {
+        if (showOutput)
+            Packages.java.lang.System.out.println(line);
+        
+        output += line + '\n';
+    }
+    
+    reader = new Packages.java.io.BufferedReader(new Packages.java.io.InputStreamReader(process.getErrorStream()));
+    
+    while (line = reader.readLine())
+        Packages.java.lang.System.out.println(line);
+
+    try
+    {
+        if (process.waitFor() != 0)
+            Packages.java.lang.System.err.println("exit value = " + process.exitValue());
+    }
+    catch (anException)
+    {
+        Packages.java.lang.System.err.println(anException);
+    }
+    
+    return output;
+}
+
+
+function getFiles(/*File*/ sourceDirectory, /*nil|String|Array<String>*/ extensions, /*Array*/ exclusions)
+{
+    var matches = [],
+        files = sourceDirectory.listFiles(),
+        hasMultipleExtensions = typeof extensions !== "string";
+
+    if (files)
+    {
+        var index = 0,
+            count = files.length;
+        
+        for (; index < count; ++index)
+        {
+            var file = files[index].getCanonicalFile(),
+                name = String(file.getName()),
+                isValidExtension = !extensions;
+            
+            if (exclusions && fileArrayContainsFile(exclusions, file))
+                continue;
+            
+            if (!isValidExtension)
+                if (hasMultipleExtensions)
+                {
+                    var extensionCount = extensions.length;
+                    
+                    while (extensionCount-- && !isValidExtension)
+                    {
+                        var extension = extensions[extensionCount];
+                        
+                        if (name.substring(name.length - extension.length - 1) === ("." + extension))
+                            isValidExtension = true;
+                    }
+                }
+                else if (name.substring(name.length - extensions.length - 1) === ("." + extensions))
+                    isValidExtension = true;
+                
+            if (isValidExtension)
+                matches.push(file);
+            
+            if (file.isDirectory())
+                matches = matches.concat(getFiles(file, extensions, exclusions));
+        }
+    }
+    
+    return matches;
+}
