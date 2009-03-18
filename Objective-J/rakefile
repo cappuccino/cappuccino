@@ -46,7 +46,7 @@ end
 
 #Framework in environment directory
 file_d $ENVIRONMENT_PRODUCT => [:Products] do
-    cp_r($PRODUCT, $ENVIRONMENT_PRODUCT)
+    cp_r(File.join($PRODUCT, '.'), $ENVIRONMENT_PRODUCT)
 end
 
 def platform_flags(*platforms)

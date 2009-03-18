@@ -93,6 +93,11 @@
     return className ? CPClassFromString(className) : Nil;
 }
 
+- (CPString)pathForResource:(CPString)aFilename
+{
+    return [self resourcePath] + '/' + aFilename;
+}
+
 - (CPDictionary)infoDictionary
 {
     return info;

@@ -22,7 +22,7 @@ ObjectiveJ::BundleTask.new(:capp) do |t|
     t.email         = 'feedback @nospam@ 280north.com'
     t.summary       = 'Setup up Cappuccino projects'
     t.sources       = FileList['*.j']
-    t.resources     = FileList['Resources/*']
+    t.resources     = FileList['Resources/*', 'Templates']
     t.license       = ObjectiveJ::License::LGPL_v2_1
     t.build_path    = $BUILD_PATH
     t.flag          = 'DEBUG' if $CONFIGURATION == 'Debug'

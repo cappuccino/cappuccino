@@ -1,14 +1,18 @@
 
+importClass(java.lang.System);
 importClass(java.io.File);
+importClass(java.io.FileWriter);
 importClass(java.io.FileOutputStream);
 importClass(java.io.BufferedWriter);
 importClass(java.io.OutputStreamWriter);
+
+@import <Foundation/Foundation.j>
 
 function main()
 {
     if (arguments.length < 1)
         return printUsage();
-        
+
     var index = 0,
         count = arguments.length,
         
@@ -43,7 +47,7 @@ function main()
         }
     }
 
-    var sourceTemplate = new File(OBJJ_HOME + "/lib/steam/Templates/" + template),
+    var sourceTemplate = new File(OBJJ_HOME + "/lib/capp/Resources/Templates/" + template),
         destinationProject = new File(destination);
     
     if (!destinationProject.exists())
@@ -67,7 +71,7 @@ function main()
         createFrameworksInFile(destinationProject, shouldSymbolicallyLink);
     }
     else
-        System.out.println("Directory already exists");
+        print("Directory already exists");
 }
 
 function createFrameworksInFile(/*File*/ aFile, /*Boolean*/ shouldSymbolicallyLink)
@@ -77,12 +81,10 @@ function createFrameworksInFile(/*File*/ aFile, /*Boolean*/ shouldSymbolicallyLi
 
         if (!shouldSymbolicallyLink)
         {
-            var sourceFrameworks = new File(OBJJ_HOME + "/lib/Frameworks"),
-                sourceDebugFrameworks = new File(OBJJ_HOME + "/lib/Frameworks-Debug");
+            var sourceFrameworks = new File(OBJJ_HOME + "/lib/Frameworks");
         
             exec(["cp", "-vR", sourceFrameworks.getCanonicalPath(), destinationFrameworks.getCanonicalPath()], true);
-            exec(["cp", "-vR", sourceDebugFrameworks.getCanonicalPath(), destinationDebugFrameworks.getCanonicalPath()], true);
-            
+
             return true;
         }
         
@@ -116,4 +118,14 @@ function createFrameworksInFile(/*File*/ aFile, /*Boolean*/ shouldSymbolicallyLi
 function printUsage()
 {
     print("capp /path/to/your/app [options]");
+}
+
+
+function writeContentsToFile(/*String*/ aString, /*File*/ aFile)
+{
+    var writer = new BufferedWriter(new FileWriter(aFile));
+
+    writer.write(aString);
+
+    writer.close();
 }

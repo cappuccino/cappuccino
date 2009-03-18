@@ -33,7 +33,7 @@ end
 
 #Framework in environment directory
 file_d $ENVIRONMENT_PRODUCT => [:AppKit] do
-    cp_r($BUILD_PATH, $ENVIRONMENT_PRODUCT)
+    cp_r(File.join($BUILD_PATH, '.'), $ENVIRONMENT_PRODUCT)
 end
 
 ThemeFiles = FileList['Themes/Aristo/*']
