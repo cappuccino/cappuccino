@@ -80,4 +80,31 @@ import <Foundation/CPString.j>
         [self assert:[testStrings[i][0] stringByDeletingLastPathComponent] equals:testStrings[i][1]];
 }
 
+- (void)testPathComponents
+{
+    var testStrings = [
+        ["tmp/scratch", ["tmp", "scratch"]],
+        ["/tmp/scratch", ["/", "tmp", "scratch"]]
+    ]
+    
+    for (var i = 0; i < testStrings.length; i++) {
+        var result = [testStrings[i][0] pathComponents];
+        [self assertTrue:[result isEqualToArray:testStrings[i][1]] message:"Expected [" + testStrings[i][1] + "] was [" + result + "]"];
+    }
+}
+
+- (void)testLastPathComponent
+{
+    var testStrings = [
+        ["/tmp/scratch.tiff", "scratch.tiff"],
+        ["/tmp/scratch", "scratch"],
+        ["/tmp/", "tmp"],
+        ["scratch", "scratch"],
+        ["/", "/"]
+    ];
+        
+    for (var i = 0; i < testStrings.length; i++)
+        [self assert:testStrings[i][1] equals:[testStrings[i][0] lastPathComponent]];
+}
+
 @end
