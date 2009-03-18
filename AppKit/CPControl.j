@@ -100,6 +100,8 @@ var CPControlBlackColor     = [CPColor blackColor];
     CPCellImagePosition     _imagePosition;
     CPImageScaling          _imageScaling;
     
+    CPString                _toolTip;
+    
     // Target-Action Support
     id                      _target;
     SEL                     _action;
@@ -314,6 +316,32 @@ var CPControlBlackColor     = [CPColor blackColor];
     return _textShadow;
 }
 
+/*!
+    Sets the tooltip for the receiver.
+    @param aToolTip the tooltip
+*/
+/*
+-(void)setToolTip:(CPString)aToolTip
+{
+    if (_toolTip == aToolTip)
+        return;
+    
+    _toolTip = aToolTip;
+
+#if PLATFORM(DOM)
+    _DOMElement.title = aToolTip;
+#endif
+}
+*/
+/*!
+    Returns the receiver's tooltip
+*/
+/*
+-(CPString)toolTip
+{
+    return _toolTip;
+}
+*/
 /*!
     Returns the receiver's target action
 */

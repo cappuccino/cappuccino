@@ -874,6 +874,15 @@ var DOMElementPrototype         = nil,
 }
 
 // Fullscreen Mode
+
+/*!
+    Puts the receiver into full screen mode.
+*/
+- (BOOL)enterFullScreenMode
+{
+    return [self enterFullScreenMode:nil withOptions:nil];
+}
+
 /*!
     Puts the receiver into full screen mode.
     @param aScreen the that should be used
@@ -903,6 +912,14 @@ var DOMElementPrototype         = nil,
     _isInFullScreenMode = YES;
     
     return YES;
+}
+
+/*!
+    The receiver should exit full screen mode.
+*/
+- (void)exitFullScreenMode
+{
+    [self exitFullScreenModeWithOptions:nil];
 }
 
 /*!

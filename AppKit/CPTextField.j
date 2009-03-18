@@ -708,6 +708,9 @@ var _CPTextFieldSquareBezelColor = nil,
 */
 -(void)setPlaceholderString:(CPString)aStringValue
 {
+    if(_placeholderString && [self stringValue] === _placeholderString)
+        _value = @"";
+
     _placeholderString = aStringValue;
 
     //if there is no set value, automatically display the placeholder

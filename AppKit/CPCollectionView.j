@@ -111,6 +111,7 @@
         _tileWidth = -1.0;
         
         _selectionIndexes = [CPIndexSet indexSet];
+        _isSelectable = YES;
     }
     
     return self;
@@ -258,7 +259,7 @@
 */
 - (void)setSelectionIndexes:(CPIndexSet)anIndexSet
 {
-    if (_selectionIndexes == anIndexSet)
+    if (_selectionIndexes == anIndexSet || !_isSelectable)
         return;
     
     var index = CPNotFound;
