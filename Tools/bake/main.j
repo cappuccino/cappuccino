@@ -11,14 +11,14 @@ var options = {
     tag             : false,
     archive         : false,
     message         : null,
-    templatePath    : OBJJ_HOME + "/lib/bake_template.html"
+    templatePath    : OBJJ_HOME + "/lib/bake/Resources/bake_template.html"
 }
 
 var targetPath,
     checkoutsPath,
     buildsPath,
     productsPath,
-    version = Math.round(new Date().getTime() / 1000);
+    version = ROUND(new Date().getTime() / 1000);
 
 CPLogRegister(CPLogPrint);
 
@@ -95,7 +95,7 @@ function build()
             
             if (part.build)
             {
-                var buildCommand = part.build.replace("BUILD_PATH", buildsPath);
+                var buildCommand = part.build.replace("$BUILD_PATH", buildsPath);
                 CPLog.debug("Building: " + buildCommand);
                 
                 exec(buildCommand, null, new File(fromPath));
@@ -297,5 +297,3 @@ function mkdirs(path)
 {
     return new File(path).mkdirs();
 }
-
-main();

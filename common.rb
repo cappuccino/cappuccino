@@ -1,28 +1,30 @@
 require 'rake'
 
 # Read in and set up development environment variables.
-if !ENV['BUILD_DIR'] 
+if !ENV['BUILD_PATH']
 
     # Global Cappuccino build directory
     if ENV['CAPP_BUILD']
-        ENV['BUILD_DIR'] = ENV['CAPP_BUILD']
+        ENV['BUILD_PATH'] = ENV['CAPP_BUILD']
         
     # Maintain backwards compatibility with steam.
     elsif ENV['STEAM_BUILD']
-        ENV['BUILD_DIR'] = ENV['STEAM_BUILD']
+        ENV['BUILD_PATH'] = ENV['STEAM_BUILD']
 
     # Just build here.
     else 
-        ENV['BUILD_DIR'] = File.join(File.dirname(__FILE__), 'Build')
+        ENV['BUILD_PATH'] = File.join(File.dirname(__FILE__), 'Build')
     end
 end
+
+ENV['BUILD_PATH'] = File.expand_path(ENV['BUILD_PATH'])
 
 if !ENV['CONFIG']
     ENV['CONFIG'] = 'Release'
 end
 
 $CONFIGURATION              = ENV['CONFIG']
-$BUILD_DIR                  = File.expand_path(ENV['BUILD_DIR'])
+$BUILD_DIR                  = ENV['BUILD_PATH']
 $PRODUCT_DIR                = File.join($BUILD_DIR, $CONFIGURATION)
 $ENVIRONMENT_DIR            = File.join($BUILD_DIR, $CONFIGURATION, 'env')
 $ENVIRONMENT_BIN_DIR        = File.join($ENVIRONMENT_DIR, 'bin')
