@@ -10,8 +10,9 @@ $PRODUCT = :press
 $BUILD_PATH = File.join($BUILD_DIR, $CONFIGURATION, 'press')
 $ENVIRONMENT_BIN_PRODUCT = File.join($ENVIRONMENT_BIN_DIR, 'press')
 $ENVIRONMENT_LIB_PRODUCT = File.join($ENVIRONMENT_LIB_DIR, 'press')
+$ENVIRONMENT_BRIDGE = File.join($ENVIRONMENT_LIB_DIR, 'press', 'bridge.js')
 
-task :build => [:press, $ENVIRONMENT_BIN_PRODUCT, $ENVIRONMENT_LIB_PRODUCT]
+task :build => [:press, $ENVIRONMENT_BIN_PRODUCT, $ENVIRONMENT_LIB_PRODUCT, $ENVIRONMENT_BRIDGE]
 
 # Debug Framework
 ObjectiveJ::BundleTask.new(:press) do |t|
@@ -35,4 +36,8 @@ end
 
 file_d $ENVIRONMENT_LIB_PRODUCT => [:press] do
     cp_r(File.join($BUILD_PATH, '.'), $ENVIRONMENT_LIB_PRODUCT)
+end
+
+file_d $ENVIRONMENT_BRIDGE => [File.join($HOME_DIR, 'Tools', 'Utilities', 'bridge.js')] do
+    cp(File.join($HOME_DIR, 'Tools', 'Utilities', 'bridge.js'), $ENVIRONMENT_BRIDGE)
 end

@@ -563,5 +563,3 @@ function outputTransformer(os, document, encoding, standalone)
 
 	String(serializer.transform(domSource, streamResult));
 }
-
-main();
