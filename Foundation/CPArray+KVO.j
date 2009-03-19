@@ -57,7 +57,16 @@
     
     SEL         _replaceSEL;
     Function    _replace;
+ 
+    SEL         _insertManySEL;
+    Function    _insertMany;
     
+    SEL         _removeManySEL;
+    Function    _removeMany;
+    
+    SEL         _replaceManySEL;
+    Function    _replaceMany;
+   
     SEL         _objectAtIndexSEL;
     Function    _objectAtIndex;
     
@@ -95,32 +104,44 @@
     var capitalizedKey = _key.charAt(0).toUpperCase() + _key.substring(1);
     
     _insertSEL = sel_getName(@"insertObject:in"+capitalizedKey+"AtIndex:");
-    if ([_proxyObject respondsToSelector:selector])
-        _insert = [_proxyObject methodForSelector:selector];
+    if ([_proxyObject respondsToSelector:_insertSEL])
+        _insert = [_proxyObject methodForSelector:_insertSEL];
 
     _removeSEL = sel_getName(@"removeObjectFrom"+capitalizedKey+"AtIndex:");
-    if ([_proxyObject respondsToSelector:selector])
-        _remove = [_proxyObject methodForSelector:selector];
+    if ([_proxyObject respondsToSelector:_removeSEL])
+        _remove = [_proxyObject methodForSelector:_removeSEL];
         
     _replaceSEL = sel_getName(@"replaceObjectFrom"+capitalizedKey+"AtIndex:withObject:");
-    if ([_proxyObject respondsToSelector:selector])
-        _replace = [_proxyObject methodForSelector:selector];
+    if ([_proxyObject respondsToSelector:_replaceSEL])
+        _replace = [_proxyObject methodForSelector:_replaceSEL];
+
+    _insertManySEL = sel_getName(@"insertObjects:in"+capitalizedKey+"AtIndexes:");
+    if ([_proxyObject respondsToSelector:_insertManySEL])
+        _insert = [_proxyObject methodForSelector:_insertManySEL];
+
+    _removeManySEL = sel_getName(@"removeObjectsFrom"+capitalizedKey+"AtIndexes:");
+    if ([_proxyObject respondsToSelector:_removeManySEL])
+        _remove = [_proxyObject methodForSelector:_removeManySEL];
+        
+    _replaceManySEL = sel_getName(@"replaceObjectsFrom"+capitalizedKey+"AtIndexes:withObjects:");
+    if ([_proxyObject respondsToSelector:_replaceManySEL])
+        _replace = [_proxyObject methodForSelector:_replaceManySEL];
         
     _objectAtIndexSEL = sel_getName(@"objectIn"+capitalizedKey+"AtIndex:");
-    if ([_proxyObject respondsToSelector:selector])
-        _objectAtIndex = [_proxyObject methodForSelector:selector];
+    if ([_proxyObject respondsToSelector:_objectAtIndexSEL])
+        _objectAtIndex = [_proxyObject methodForSelector:_objectAtIndexSEL];
 
     _countSEL = sel_getName(@"countOf"+capitalizedKey);
-    if ([_proxyObject respondsToSelector:selector])
-        _count = [_proxyObject methodForSelector:selector];
+    if ([_proxyObject respondsToSelector:_countSEL])
+        _count = [_proxyObject methodForSelector:_countSEL];
 
     _accessSEL = sel_getName(_key);
-    if ([_proxyObject respondsToSelector:selector])
-        _access = [_proxyObject methodForSelector:selector];
+    if ([_proxyObject respondsToSelector:_accessSEL])
+        _access = [_proxyObject methodForSelector:_accessSEL];
 
     _setSEL = sel_getName(@"set"+capitalizedKey+":");
-    if ([_proxyObject respondsToSelector:selector])
-        _set = [_proxyObject methodForSelector:selector];
+    if ([_proxyObject respondsToSelector:_setSEL])
+        _set = [_proxyObject methodForSelector:_setSEL];
 
     return self;
 }
@@ -176,7 +197,7 @@
     var target = [[self _representedObject] copy];
     
     [target addObject:anObject];
-    [_self _setRepresentedObject:target];
+    [self _setRepresentedObject:target];
 }
 
 - (void)insertObject:(id)anObject atIndex:(unsigned)anIndex
@@ -187,7 +208,7 @@
     var target = [[self _representedObject] copy];
     
     [target insertObject:anObject atIndex:anIndex];
-    [_self _setRepresentedObject:target];
+    [self _setRepresentedObject:target];
 }
 
 - (void)removeLastObject
@@ -198,7 +219,7 @@
     var target = [[self _representedObject] copy];
     
     [target removeLastObject];
-    [_self _setRepresentedObject:target];
+    [self _setRepresentedObject:target];
 }
 
 - (void)removeObjectAtIndex:(unsigned)anIndex
@@ -209,7 +230,7 @@
     var target = [[self _representedObject] copy];
     
     [target removeObjectAtIndex:anIndex];
-    [_self _setRepresentedObject:target];
+    [self _setRepresentedObject:target];
 }
 
 - (void)replaceObjectAtIndex:(unsigned)anIndex withObject:(id)anObject
@@ -220,7 +241,7 @@
     var target = [[self _representedObject] copy];
     
     [target replaceObjectAtIndex:anIndex withObject:anObject];
-    [_self _setRepresentedObject:target];
+    [self _setRepresentedObject:target];
 }
 
 - (CPArray)objectsAtIndexes:(CPIndexSet)indexes

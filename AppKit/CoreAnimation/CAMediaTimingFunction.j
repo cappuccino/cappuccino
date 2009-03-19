@@ -95,7 +95,7 @@ var CAMediaNamedTimingFunctions = nil;
     else
     {
         reference[0] = 1.0;
-        reference[0] = 1.0;
+        reference[1] = 1.0;
     }
 }
 

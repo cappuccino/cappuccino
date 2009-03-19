@@ -41,7 +41,7 @@ var CPNotificationDefaultCenter = nil;
 /*!
     Returns the application's notification center
 */
-+ (CPNotifcationCenter)defaultCenter
++ (CPNotificationCenter)defaultCenter
 {
     if (!CPNotificationDefaultCenter)
         CPNotificationDefaultCenter = [[CPNotificationCenter alloc] init];

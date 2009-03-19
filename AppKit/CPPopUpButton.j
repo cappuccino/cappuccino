@@ -450,7 +450,7 @@ CPPopUpButtonStatePullsDown = 1 << 12;
 */
 - (int)indexOfItemWithRepresentedObject:(id)anObject
 {
-    return [_menu indexOfItemWithRepresentedObejct:anObject];
+    return [_menu indexOfItemWithRepresentedObject:anObject];
 }
 
 /*!
