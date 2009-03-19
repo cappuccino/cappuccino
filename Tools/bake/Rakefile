@@ -11,8 +11,6 @@ $BUILD_PATH = File.join($BUILD_DIR, $CONFIGURATION, 'bake')
 $ENVIRONMENT_BIN_PRODUCT = File.join($ENVIRONMENT_BIN_DIR, 'bake')
 $ENVIRONMENT_LIB_PRODUCT = File.join($ENVIRONMENT_LIB_DIR, 'bake')
 
-task :build => [:bake, $ENVIRONMENT_BIN_PRODUCT, $ENVIRONMENT_LIB_PRODUCT]
-
 # Debug Framework
 ObjectiveJ::BundleTask.new(:bake) do |t|
     t.name          = 'bake'
@@ -36,3 +34,7 @@ end
 file_d $ENVIRONMENT_LIB_PRODUCT => [:bake] do
     cp_r(File.join($BUILD_PATH, '.'), $ENVIRONMENT_LIB_PRODUCT)
 end
+
+task :build => [:bake, $ENVIRONMENT_BIN_PRODUCT, $ENVIRONMENT_LIB_PRODUCT]
+
+CLOBBER.include($ENVIRONMENT_BIN_PRODUCT, $ENVIRONMENT_LIB_PRODUCT)

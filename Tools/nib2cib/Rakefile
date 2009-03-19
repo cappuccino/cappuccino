@@ -11,9 +11,6 @@ $BUILD_PATH = File.join($BUILD_DIR, $CONFIGURATION, 'nib2cib')
 $ENVIRONMENT_BIN_PRODUCT = File.join($ENVIRONMENT_BIN_DIR, 'nib2cib')
 $ENVIRONMENT_LIB_PRODUCT = File.join($ENVIRONMENT_LIB_DIR, 'nib2cib')
 
-task :build => [:nib2cib, $ENVIRONMENT_BIN_PRODUCT, $ENVIRONMENT_LIB_PRODUCT]
-
-# Debug Framework
 ObjectiveJ::BundleTask.new(:nib2cib) do |t|
     t.name          = 'nib2cib'
     t.identifier    = 'com.280n.nib2cib'
@@ -36,3 +33,7 @@ end
 file_d $ENVIRONMENT_LIB_PRODUCT => [:nib2cib] do
     cp_r(File.join($BUILD_PATH, '.'), $ENVIRONMENT_LIB_PRODUCT)
 end
+
+task :build => [:nib2cib, $ENVIRONMENT_BIN_PRODUCT, $ENVIRONMENT_LIB_PRODUCT]
+
+CLOBBER.include($ENVIRONMENT_BIN_PRODUCT, $ENVIRONMENT_LIB_PRODUCT )

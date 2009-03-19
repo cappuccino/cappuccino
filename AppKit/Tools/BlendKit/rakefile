@@ -9,8 +9,6 @@ require 'objective-j/bundletask'
 $ENVIRONMENT_PRODUCT = File.join($ENVIRONMENT_FRAMEWORKS_DIR, 'BlendKit')
 $BUILD_PATH = File.join($BUILD_DIR, $CONFIGURATION, 'BlendKit')
 
-task :build => [:BlendKit, $ENVIRONMENT_PRODUCT]
-
 ObjectiveJ::BundleTask.new(:BlendKit) do |t|
     t.name          = 'BlendKit'
     t.identifier    = 'com.280n.BlendKit'
@@ -29,3 +27,7 @@ end
 file_d $ENVIRONMENT_PRODUCT => [:BlendKit] do
     cp_r(File.join($BUILD_PATH, '.'), $ENVIRONMENT_PRODUCT)
 end
+
+task :build => [:BlendKit, $ENVIRONMENT_PRODUCT]
+
+CLOBBER.include($ENVIRONMENT_PRODUCT)

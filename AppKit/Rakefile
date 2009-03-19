@@ -10,10 +10,6 @@ $BUILD_PATH = File.join($BUILD_DIR, $CONFIGURATION, 'AppKit')
 $ENVIRONMENT_PRODUCT = File.join($ENVIRONMENT_FRAMEWORKS_DIR, 'AppKit')
 $THEME_PRODUCT = File.join($BUILD_PATH, 'Resources', 'Aristo.blend')
 
-subprojects = %w{Tools}
-
-subrake(subprojects)
-
 AppKitFiles = FileList['**/*.j'].exclude('CoreGraphics/CGContextCanvas.j', 'CoreGraphics/CGContextVML.j', 'Themes/**', 'Tools/**')
 
 ObjectiveJ::BundleTask.new(:AppKit) do |t|
@@ -44,4 +40,24 @@ file_d $THEME_PRODUCT => ThemeFiles do
     end
 end
 
-task :build => [:AppKit, $ENVIRONMENT_PRODUCT, $THEME_PRODUCT]
+task :build => [:build_subprojects, :AppKit, $ENVIRONMENT_PRODUCT, $THEME_PRODUCT]
+
+task :clean => :clean_suprojects
+
+task :clobber => :clobber_subprojects
+
+subprojects = %w{Tools}
+
+task :build_subprojects do
+    subrake(subprojects, :build)
+end
+
+task :clean_suprojects do
+    subrake(subprojects, :clean)
+end
+
+task :clobber_subprojects do
+    subrake(subprojects, :clobber)
+end
+
+CLOBBER.include($ENVIRONMENT_PRODUCT)

@@ -11,9 +11,6 @@ $BUILD_PATH = File.join($BUILD_DIR, $CONFIGURATION, 'capp')
 $ENVIRONMENT_BIN_PRODUCT = File.join($ENVIRONMENT_BIN_DIR, 'capp')
 $ENVIRONMENT_LIB_PRODUCT = File.join($ENVIRONMENT_LIB_DIR, 'capp')
 
-task :build => [:capp, $ENVIRONMENT_BIN_PRODUCT, $ENVIRONMENT_LIB_PRODUCT]
-
-# Debug Framework
 ObjectiveJ::BundleTask.new(:capp) do |t|
     t.name          = 'capp'
     t.identifier    = 'com.280n.capp'
@@ -36,3 +33,7 @@ end
 file_d $ENVIRONMENT_LIB_PRODUCT => [:capp] do
     cp_r(File.join($BUILD_PATH, '.'), $ENVIRONMENT_LIB_PRODUCT)
 end
+
+task :build => [:capp, $ENVIRONMENT_BIN_PRODUCT, $ENVIRONMENT_LIB_PRODUCT]
+
+CLOBBER.include($ENVIRONMENT_BIN_PRODUCT, $ENVIRONMENT_LIB_PRODUCT)

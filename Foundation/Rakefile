@@ -29,3 +29,5 @@ end
 file_d $ENVIRONMENT_PRODUCT => [:Foundation] do
     cp_r(File.join($BUILD_PATH, '.'), $ENVIRONMENT_PRODUCT)
 end
+
+CLOBBER.include($ENVIRONMENT_PRODUCT)

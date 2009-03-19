@@ -12,8 +12,6 @@ $ENVIRONMENT_BIN_PRODUCT = File.join($ENVIRONMENT_BIN_DIR, 'press')
 $ENVIRONMENT_LIB_PRODUCT = File.join($ENVIRONMENT_LIB_DIR, 'press')
 $ENVIRONMENT_BRIDGE = File.join($ENVIRONMENT_LIB_DIR, 'press', 'bridge.js')
 
-task :build => [:press, $ENVIRONMENT_BIN_PRODUCT, $ENVIRONMENT_LIB_PRODUCT, $ENVIRONMENT_BRIDGE]
-
 # Debug Framework
 ObjectiveJ::BundleTask.new(:press) do |t|
     t.name          = 'press'
@@ -41,3 +39,7 @@ end
 file_d $ENVIRONMENT_BRIDGE => [File.join($HOME_DIR, 'Tools', 'Utilities', 'bridge.js')] do
     cp(File.join($HOME_DIR, 'Tools', 'Utilities', 'bridge.js'), $ENVIRONMENT_BRIDGE)
 end
+
+task :build => [:press, $ENVIRONMENT_BIN_PRODUCT, $ENVIRONMENT_LIB_PRODUCT, $ENVIRONMENT_BRIDGE]
+
+CLOBBER.include($ENVIRONMENT_BIN_PRODUCT, $ENVIRONMENT_LIB_PRODUCT)

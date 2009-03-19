@@ -1,6 +1,7 @@
 
 require 'objective-j'
 require 'rake'
+require 'rake/clean'
 
 module Rake
     class Application
@@ -484,6 +485,8 @@ module ObjectiveJ
             end
 
             enhance(preprocessed_files + copied_resources + [info_plist_path])
+			
+			CLOBBER.include(build_path)
         end
 
         def BundleTask.compact(path, *patterns)
