@@ -4,7 +4,7 @@ require 'rake'
 require '../common'
 
 
-subprojects = %w{capp nib2cib}
+subprojects = %w{bake capp nib2cib press}
 
 %w(build clean).each do |task_name|
   task task_name do
