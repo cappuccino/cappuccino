@@ -1,0 +1,36 @@
+
+require '../common'
+require 'rubygems'
+require 'rubygems/installer'
+require 'rake'
+require 'rake/gempackagetask'
+
+
+PKG_FILES = FileList['lib/**/*']
+
+spec = Gem::Specification.new do |s|
+    s.platform      = Gem::Platform::RUBY
+    s.author        = '280 North, Inc.'
+    s.email         = 'feedback @nospam@ 280north.com'
+    s.homepage      = 'cappuccino.org'
+    s.summary       = "Objective-J extensions to Rake."
+    s.name          = 'objective-j'
+    s.version       = "0.7.0"
+    s.requirements  << 'rake'
+    s.require_path  = 'lib'
+    s.files         = PKG_FILES
+    s.description   = <<EOF
+Extensions to Rake to allow building Objective-J 
+frameworks and applications.
+EOF
+end
+
+Rake::GemPackageTask.new(spec) do |pkg|
+    pkg.need_zip = true
+    pkg.need_tar = true
+    pkg.package_dir = File.join($BUILD_DIR, $CONFIGURATION, 'rake')
+end
+
+task :install do
+    Gem::Installer.new(File.join($BUILD_DIR, $CONFIGURATION, 'rake', 'objective-j-0.7.0.gem')).install
+end

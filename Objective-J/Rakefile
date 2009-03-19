@@ -1,0 +1,71 @@
+#!/usr/bin/env ruby
+
+require 'rake'
+require '../common'
+require 'objective-j'
+
+
+$PRODUCT                = File.join($PRODUCT_DIR, 'Objective-J')
+$ENVIRONMENT_PRODUCT    = File.join($ENVIRONMENT_FRAMEWORKS_DIR, 'Objective-J')
+
+$LICENSE_FILE           = File.join($PRODUCT, 'LICENSE')
+$BROWSER_FILE           = File.join($PRODUCT, 'Objective-J.js')
+$RHINO_FILE             = File.join($PRODUCT, 'rhino.platform', 'Objective-J.js')
+
+task :Products => [$BROWSER_FILE, $RHINO_FILE]
+
+task :build => [:Products, $ENVIRONMENT_PRODUCT, :Tools]
+
+task :Tools => [:Products] do
+    subrake(%w{Tools})
+end
+
+Files = [   'LICENSE.txt',
+            'constants.js', 
+            'utilities.js', 
+            'runtime.js', 
+            'dictionary.js', 
+            'plist.js', 
+            'file.js', 
+            'exception.js', 
+            'preprocess.js', 
+            'evaluate.js', 
+            'debug.js', 
+            'bootstrap.js'];
+
+file_d $BROWSER_FILE => Files do |t|
+    build_product(t.name, platform_flags(ObjectiveJ::Platform::Browser, ObjectiveJ::Platform::ObjJ))
+end
+
+file_d $RHINO_FILE => Files do |t|
+    flags = platform_flags(ObjectiveJ::Platform::Rhino, ObjectiveJ::Platform::ObjJ)
+    flags['RHINO'] = ''
+
+    build_product(t.name, flags)
+end
+
+#Framework in environment directory
+file_d $ENVIRONMENT_PRODUCT => [:Products] do
+    cp_r(File.join($PRODUCT, '.'), $ENVIRONMENT_PRODUCT)
+end
+
+def platform_flags(*platforms)
+    return { 'PLATFORMS' => ('"[' + platforms.uniq.map { |platform| '\"' + platform + '\"' }.join(', ') + ']"') }
+end
+
+def build_product(path, flags)
+
+    IO.popen("gcc #{resolve_flags(flags)} -E -x c -P -", "w+") do |preprocessor|
+
+        Files.select { |name| name.match(/\.js$/) }.each do |fileName|
+          preprocessor.puts IO.read(fileName)
+        end
+        
+        preprocessor.close_write
+
+        File.open(path, "w") do |file|
+            file.write(IO.read("LICENSE.txt") + preprocessor.read)
+        end
+
+    end
+end

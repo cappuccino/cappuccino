@@ -36,7 +36,7 @@ if !(defined? COMMON_DO_ONCE)
     
     COMMON_DO_ONCE = true
     
-    $LOAD_PATH << File.join($HOME_DIR, 'Rake')
+    $LOAD_PATH << File.join($HOME_DIR, 'Rake', 'lib')
     ENV['PATH'] = $ENVIRONMENT_BIN_DIR + ':' + ENV['PATH']
 end
 
@@ -77,6 +77,13 @@ def cat(files, outfile)
           concated.write IO.read(file)
         end 
     end
+end
+
+$OBJJ_TEMPLATE_EXECUTABLE   = File.join($HOME_DIR, 'Rake', 'lib', 'objj-executable')
+
+def make_objj_executable(path)
+    cp($OBJJ_TEMPLATE_EXECUTABLE, path)
+    File.chmod 0755, path
 end
 
 task :build => [$ENVIRONMENT_JS]

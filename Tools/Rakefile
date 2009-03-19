@@ -1,0 +1,15 @@
+#!/usr/bin/env ruby
+
+require 'rake'
+require '../common'
+
+
+subprojects = %w{capp nib2cib}
+
+%w(build clean).each do |task_name|
+  task task_name do
+    subrake(subprojects)
+  end
+end
+
+#task :deploy => [:build]

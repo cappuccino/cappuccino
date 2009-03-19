@@ -93,6 +93,11 @@
     return className ? CPClassFromString(className) : Nil;
 }
 
+- (CPString)pathForResource:(CPString)aFilename
+{
+    return [self resourcePath] + '/' + aFilename;
+}
+
 - (CPDictionary)infoDictionary
 {
     return info;
@@ -129,13 +134,27 @@
             context.didCompleteCallback = function() { [_delegate bundleDidFinishLoading:self]; };
     
         var files = [self objectForInfoDictionaryKey:@"CPBundleReplacedFiles"],
-            count = files.length;
+            count = files.length,
+            bundlePath = [self bundlePath];
             
         while (count--)
-            context.pushFragment(fragment_create_file([self bundlePath] + '/' + files[count], new objj_bundle(""), YES, NULL));
+        {
+            var fileName = files[count];
+            
+            if (fileName.indexOf(".j") === fileName.length - 2)
+                context.pushFragment(fragment_create_file(bundlePath + '/' + fileName, new objj_bundle(""), YES, NULL));
+        }
         
-        context.evaluate();
+        if (context.fragments.length)
+            context.evaluate();
+        else
+            [_delegate bundleDidFinishLoading:self];
     }
+}
+
+- (void)connection:(CPURLConnection)aConnection didFailWithError:(CPError)anError
+{
+    alert("what the hell!?!!!" + anError)
 }
 
 - (void)connectionDidFinishLoading:(CPURLConnection)aConnection

@@ -1,0 +1,37 @@
+#!/usr/bin/env ruby
+
+require 'rake'
+require '../../../common'
+require 'objective-j'
+
+
+$OBJJC_SCRIPT           = File.join($BUILD_DIR, 'objjc.build', $CONFIGURATION, 'main-concat.js')
+$OBJJC_CLASS            = File.join($ENVIRONMENT_LIB_DIR, 'objjc', 'main.class')
+$OBJJC_JS_COMPILER      = File.join($ENVIRONMENT_LIB_DIR, 'objjc', 'shrinksafe.jar')
+$OBJJC_EXECUTABLE       = File.join($ENVIRONMENT_BIN_DIR, 'objjc')
+$STANDARD_EXECUTABLE    = File.expand_path(File.join('..', 'executable'))
+
+task :build => [$OBJJC_CLASS, $OBJJC_EXECUTABLE, $OBJJC_JS_COMPILER]
+
+Files = [   File.join($HOME_DIR, 'Tools', 'Utilities', 'bridge.js'), #yuck!
+            File.join($HOME_DIR, 'Tools', 'Utilities', 'regex-bridge.js'), #double-yuck!
+            File.join($ENVIRONMENT_FRAMEWORKS_DIR, 'Objective-J', 'rhino.platform', 'Objective-J.js'),
+            'main.js'];
+
+file_d $OBJJC_EXECUTABLE => [$STANDARD_EXECUTABLE] do
+    cp($STANDARD_EXECUTABLE, $OBJJC_EXECUTABLE)
+    File.chmod 0755, $OBJJC_EXECUTABLE
+end
+
+file_d $OBJJC_SCRIPT => Files do
+    cat(Files, $OBJJC_SCRIPT)
+end
+
+file_d $OBJJC_CLASS => $OBJJC_SCRIPT do
+    js2java($OBJJC_SCRIPT, 'main.class', false)
+    cp(File.join(File.dirname($OBJJC_SCRIPT), 'main.class'), $OBJJC_CLASS)
+end
+
+file_d $OBJJC_JS_COMPILER => 'shrinksafe.jar' do
+    cp('shrinksafe.jar', $OBJJC_JS_COMPILER)
+end

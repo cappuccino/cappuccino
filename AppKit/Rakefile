@@ -1,0 +1,47 @@
+#!/usr/bin/env ruby
+
+require 'rake'
+require '../common'
+require 'objective-j'
+require 'objective-j/bundletask'
+
+
+$BUILD_PATH = File.join($BUILD_DIR, $CONFIGURATION, 'AppKit')
+$ENVIRONMENT_PRODUCT = File.join($ENVIRONMENT_FRAMEWORKS_DIR, 'AppKit')
+$THEME_PRODUCT = File.join($BUILD_PATH, 'Resources', 'Aristo.blend')
+
+subprojects = %w{Tools}
+
+subrake(subprojects)
+
+AppKitFiles = FileList['**/*.j'].exclude('CoreGraphics/CGContextCanvas.j', 'CoreGraphics/CGContextVML.j', 'Themes/**', 'Tools/**')
+
+ObjectiveJ::BundleTask.new(:AppKit) do |t|
+    t.name          = 'AppKit'
+    t.identifier    = 'com.280n.AppKit'
+    t.version       = '0.6.5'
+    t.author        = '280 North, Inc.'
+    t.email         = 'feedback @nospam@ 280north.com'
+    t.summary       = 'AppKit classes for Cappuccino'
+    t.sources       = AppKitFiles
+    t.resources     = FileList['Resources/*']
+    t.license       = ObjectiveJ::License::LGPL_v2_1
+    t.build_path    = $BUILD_PATH
+    t.flag          = 'DEBUG' if $CONFIGURATION == 'Debug'
+    t.platforms     = [ObjectiveJ::Platform::Browser, ObjectiveJ::Platform::Rhino]
+end
+
+#Framework in environment directory
+file_d $ENVIRONMENT_PRODUCT => [:AppKit] do
+    cp_r(File.join($BUILD_PATH, '.'), $ENVIRONMENT_PRODUCT)
+end
+
+ThemeFiles = FileList['Themes/Aristo/*']
+
+file_d $THEME_PRODUCT => ThemeFiles do
+    File.popen("blend -d Themes/Aristo/ThemeDescriptors.j -o #{$THEME_PRODUCT} -R Themes/Aristo/Resources") do |blend|
+        puts blend.read
+    end
+end
+
+task :build => [:AppKit, $ENVIRONMENT_PRODUCT, $THEME_PRODUCT]

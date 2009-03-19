@@ -11,7 +11,8 @@ var usageMessage =
         --frameworks path   The relative path (from root_directory) to the frameworks directory (default: 'Frameworks')\n\
         --png               Run pngcrush on all PNGs (pngcrush must be installed!)\n\
         --flatten           Flatten all code into a single Application.js file and attempt add script tag to index.html (useful for Adobe AIR and CDN deployment)\n\
-        --nostrip           Don't strip any files";
+        --nostrip           Don't strip any files\n\
+        --v                 Verbose";
 
 function main()
 {
@@ -22,7 +23,7 @@ function main()
         optimizePNG = false,
         flatten = false,
         noStrip = false,
-        verbose = true;
+        verbose = false;
     
     var usageError = false;
     while (args.length && !usageError)
@@ -50,6 +51,9 @@ function main()
                 break;
             case "--nostrip":
                 noStrip = true;
+                break;
+            case "--v":
+                verbose = true;
                 break;
             default:
                 if (rootDirectory == null)
@@ -125,6 +129,11 @@ function main()
     // coalesce the results
     var dependencies = coalesceGlobalDefines(globals);
     
+    // Log 
+    CPLog.trace("Global defines:");
+    for (var i in dependencies)
+        CPLog.trace("    " + i + " => " + dependencies[i]);
+    
     // phase 2: walk the dependency tree (both imports and references) to determine exactly which files need to be included
     CPLog.error("PHASE 2: Walk dependency tree...");
     
@@ -143,7 +152,7 @@ function main()
             return;
         }
         
-        CPLog.info("Analyzing dependencies...");
+        CPLog.warn("Analyzing dependencies...");
         
         var context = {
             scope : scope,
@@ -172,21 +181,21 @@ function main()
             }
             else
             {
-                CPLog.warn("Excluded: " + path);
+                CPLog.info("Excluded: " + path);
             }    
             total++;
         }
-        CPLog.info("Total required files: " + count + " out of " + total);
+        CPLog.warn("Total required files: " + count + " out of " + total);
         
         // FIXME: sprite images
-        for (var i in context.bundleImages)
-        {
-            var images = context.bundleImages[i];
-            
-            //CPLog.info("Bundle images for " + i);
-            //for (var j in images)
-            //    CPLog.debug(j + " = " + images[j]);
-        }
+        //for (var i in context.bundleImages)
+        //{
+        //    var images = context.bundleImages[i];
+        //    
+        //    CPLog.debug("Bundle images for " + i);
+        //    for (var j in images)
+        //        CPLog.trace(j + " = " + images[j]);
+        //}
     }
     
     var outputFiles = {};
@@ -236,7 +245,7 @@ function main()
             }
             else
             {
-                CPLog.warn("Stripping " + evaledFragments[i].file.path);
+                CPLog.info("Stripping " + evaledFragments[i].file.path);
             }
         }
         
@@ -272,7 +281,7 @@ function main()
                 directory = dirname(path);
     
             if (file.path != path)
-                CPLog.warn("Sanity check (file path): " + file.path + " vs. " + path);
+                CPLog.warn("Sanity check failed (file path): " + file.path + " vs. " + path);
     
             if (file.bundle)
             {
@@ -282,7 +291,7 @@ function main()
                     bundles[file.bundle.path] = file.bundle;
             
                 if (bundleDirectory != directory)
-                    CPLog.warn("Sanity check (directory path): " + directory + " vs. " + bundleDirectory);
+                    CPLog.warn("Sanity check failed (directory path): " + directory + " vs. " + bundleDirectory);
         
                 // if it's in a .sj
                 var dict = file.bundle.info,
@@ -337,7 +346,7 @@ function main()
                                 }
                             }
                             else
-                                CPLog.warn("Ignoring import fragment " + file.fragments[i].info + " in " + path);
+                                CPLog.info("Ignoring import fragment " + file.fragments[i].info + " in " + path);
                         }
                         else
                             CPLog.error("Unknown fragment type");
@@ -361,6 +370,8 @@ function main()
             var directory = dirname(path),
                 dict = bundles[path].info,
                 replacedFiles = [dict objectForKey:"CPBundleReplacedFiles"];
+            
+            CPLog.info("Modifying .sj: " + path);
             
             if (replacedFiles)
             {

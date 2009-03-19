@@ -2,6 +2,14 @@ import <Foundation/CPDate.j>
 
 @implementation CPDateTest : OJTestCase
 
+- (void)testSince1970 
+{
+    /* These two dates should be equal to Fri Feb 13 2009 15:31:30 GMT-0800 */
+    unixDate = [CPDate dateWithTimeIntervalSince1970: 1234567890];
+    cocoaDate = [CPDate dateWithTimeIntervalSinceReferenceDate: 253582290];
+    [self assertTrue:[unixDate isEqualToDate: cocoaDate]];
+}
+
 - (void)testDate
 {
     var before = new Date();

@@ -1,0 +1,38 @@
+#!/usr/bin/env ruby
+
+require 'rake'
+require '../../../common'
+require 'objective-j'
+require 'objective-j/bundletask'
+
+
+$PRODUCT = :blend
+$BUILD_PATH = File.join($BUILD_DIR, $CONFIGURATION, 'blend')
+$ENVIRONMENT_BIN_PRODUCT = File.join($ENVIRONMENT_BIN_DIR, 'blend')
+$ENVIRONMENT_LIB_PRODUCT = File.join($ENVIRONMENT_LIB_DIR, 'blend')
+
+task :build => [:blend, $ENVIRONMENT_BIN_PRODUCT, $ENVIRONMENT_LIB_PRODUCT]
+
+# Debug Framework
+ObjectiveJ::BundleTask.new(:blend) do |t|
+    t.name          = 'blend'
+    t.identifier    = 'com.280n.blend'
+    t.version       = '0.6.5'
+    t.author        = '280 North, Inc.'
+    t.email         = 'feedback @nospam@ 280north.com'
+    t.summary       = 'blend classes for Cappuccino'
+    t.sources       = FileList['**/*.j']
+    t.resources     = FileList['Resources/*']
+    t.license       = ObjectiveJ::License::LGPL_v2_1
+    t.build_path    = $BUILD_PATH
+    t.flag          = 'DEBUG' if $CONFIGURATION == 'Debug'
+end
+
+#executable in environment directory
+file_d $ENVIRONMENT_BIN_PRODUCT do
+    make_objj_executable($ENVIRONMENT_BIN_PRODUCT)
+end
+
+file_d $ENVIRONMENT_LIB_PRODUCT => [:blend] do
+    cp_r(File.join($BUILD_PATH, '.'), $ENVIRONMENT_LIB_PRODUCT)
+end

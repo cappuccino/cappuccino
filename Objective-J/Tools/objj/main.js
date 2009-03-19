@@ -2,6 +2,7 @@ debug = false;
 args = arguments;
 
 // FIXME: remove these Rhino/Java dependencies
+/*
 var OBJJ_LIB = Packages.java.lang.System.getenv("OBJJ_LIB"); // chicken/egg problem, getenv is defined in bridge.js
 
 if (!this.window)
@@ -15,17 +16,12 @@ if (!this.objj_import)
     print("Loading Objective-J.");
     load(OBJJ_LIB+'/Frameworks-Rhino/Objective-J/Objective-J.js');
 }
-
-var defaultFrameworks = OBJJ_LIB+'/Frameworks-Rhino';
-OBJJ_INCLUDE_PATHS = [defaultFrameworks];
+*/
 
 var OBJJ_INCLUDE_PATHS_STRING = getenv("OBJJ_INCLUDE_PATHS");
 
 if (OBJJ_INCLUDE_PATHS_STRING)
-{
-    OBJJ_INCLUDE_PATHS = OBJJ_INCLUDE_PATHS_STRING.split(":");
-    OBJJ_INCLUDE_PATHS.push(defaultFrameworks);
-}
+    OBJJ_INCLUDE_PATHS = OBJJ_INCLUDE_PATHS_STRING.split(":").concat(OBJJ_INCLUDE_PATHS);
 
 try
 {
@@ -37,6 +33,12 @@ try
         while (count--)
             args[count] = String(args[count]);
 
+        while (args.length && args[0].indexOf('-I') === 0)
+            OBJJ_INCLUDE_PATHS = args.shift().substr(2).split(':').concat(OBJJ_INCLUDE_PATHS);
+    }
+
+    if (args.length > 0)
+    {
         // Grab the location of the objj file to run.
     	var mainFilePath = args.shift();
 
@@ -47,7 +49,7 @@ try
     	if (debug)
     		print("Loading: " + mainFilePath);
 
-        objj_import(mainFilePath, YES, function() { if (typeof main === "Function") main.apply(main, args); } );
+        objj_import(mainFilePath, YES, function() { if (typeof main === "function") main.apply(main, args); } );
 
         serviceTimeouts();
 

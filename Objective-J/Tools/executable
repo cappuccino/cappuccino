@@ -1,7 +1,7 @@
 #!/bin/sh
 
 # if OBJJ_HOME isn't set, try to determine it out
-if [ -z $OBJJ_HOME ]; then
+#if [ -z $OBJJ_HOME ]; then
     # get path of the executable
     SELF_PATH=$(cd -P -- "$(dirname -- "$0")" && pwd -P) && SELF_PATH=$SELF_PATH/$(basename -- "$0")
     
@@ -15,13 +15,13 @@ if [ -z $OBJJ_HOME ]; then
     export OBJJ_HOME=`dirname $SELF_DIR`
     
     # check to ensure it exists, print message
-    if [ -d $OBJJ_HOME ]; then
-        echo "OBJJ_HOME not set, defaulting to $OBJJ_HOME" 1>&2
-    else
-        echo "OBJJ_HOME not set, default at $OBJJ_HOME doesn't exist, exiting" 1>&2 
-        exit 2
-    fi
-fi
+#    if [ -d $OBJJ_HOME ]; then
+#        echo "OBJJ_HOME not set, defaulting to $OBJJ_HOME" 1>&2
+#    else
+#        echo "OBJJ_HOME not set, default at $OBJJ_HOME doesn't exist, exiting" 1>&2 
+#        exit 2
+#    fi
+#fi
 
 OBJJ_LIB="$OBJJ_HOME/lib"
 CLASSPATH="$OBJJ_LIB:$OBJJ_LIB/js.jar:$OBJJ_HOME/lib/$(basename $SELF_PATH):$CLASSPATH"

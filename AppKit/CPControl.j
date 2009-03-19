@@ -103,6 +103,8 @@ var CPControlBlackColor     = [CPColor blackColor];
     
     JSObject            _ephemeralSubviewsForNames;
     CPSet               _ephereralSubviews;
+
+    CPString                _toolTip;
     
     // FIXME: Who uses this?
     BOOL _isBezeled;
@@ -182,6 +184,33 @@ var CPControlBlackColor     = [CPColor blackColor];
     
     return previousMask;
 }
+
+/*!
+    Sets the tooltip for the receiver.
+    @param aToolTip the tooltip
+*/
+/*
+-(void)setToolTip:(CPString)aToolTip
+{
+    if (_toolTip == aToolTip)
+        return;
+    
+    _toolTip = aToolTip;
+
+#if PLATFORM(DOM)
+    _DOMElement.title = aToolTip;
+#endif
+}
+*/
+/*!
+    Returns the receiver's tooltip
+*/
+/*
+-(CPString)toolTip
+{
+    return _toolTip;
+}
+*/
 
 /*!
     Returns whether the control can continuously send its action messages.

@@ -1,27 +1,64 @@
 <?xml version = "1.0"?>
-<project name = "Objective-J" default = "build" >
+<project name = "Objective-J Runtime" default = "build">
 
-    <import file = "../common.xml" />
+    <import file = "../../common.xml" />
     
-    <filelist id = "Projects" dir = "."> 
-        <file name = "Runtime/build.xml" />
-        <file name = "Tools/build.xml" />
+    <property name = "Build.Products" location = "${Build}/Objective-J.build/${Configuration}" />
+    <property name = "Build.Objective-J" location = "${Build}/${Configuration}" />
+    
+    <filelist id = "Files.Objective-J" dir = ".">
+    
+        <file name = "constants.js" />
+        <file name = "utilities.js" />
+        <file name = "runtime.js" />
+        <file name = "dictionary.js" />
+        <file name = "plist.js" />
+        <file name = "file.js" />
+        <file name = "exception.js" />
+        <file name = "preprocess.js" />
+        <file name = "evaluate.js" />
+        <file name = "debug.js" />
+        <file name = "bootstrap.js" />
+    
     </filelist>
     
-    <target name = "build">
-        <iterate target = "build">
-            <files>
-                <filelist refid = "Projects" />
-            </files>
-        </iterate>
+    <target name = "clean">
+        <delete dir = "${Build.Products}" verbose = "true" />
+        <delete dir = "${Build.Objective-J}/Objective-J" verbose = "true" />
     </target>
     
-    <target name = "clean">
-        <iterate target = "clean">
-            <files>
-                <filelist refid = "Projects" />
-            </files>
-        </iterate>
+    <target name = "build">
+    
+        <mkdir dir = "${Build.Products}" />
+    
+        <concat destfile = "${Build.Products}/Objective-J.concat">
+			<filelist refid = "Files.Objective-J" />
+		</concat>
+		
+		<!-- Rhino Version -->
+		<mkdir dir = "${Build.Products}/Rhino" />
+		
+		<preprocess file = "${Build.Products}/Objective-J.concat" output = "${Build.Products}/Rhino/Objective-J.js">
+            <arguments>
+                <arg value = "-DRHINO"/>
+            </arguments>
+		</preprocess>
+		
+		<mkdir dir = "${Build.Objective-J}/Objective-J" />
+        
+		<!-- Browser Version -->
+		<mkdir dir = "${Build.Products}/Browser" />
+		
+		<preprocess file = "${Build.Products}/Objective-J.concat" output = "${Build.Products}/Browser/Objective-J.preprocessed" />
+		
+		<mkdir dir = "${Build.Objective-J}/Objective-J" />
+		
+		<concat destfile = "${Build.Objective-J}/Objective-J/Objective-J.js">
+            <filelist files = "${basedir}/license.txt, ${Build.Products}/Browser/Objective-J.preprocessed" />
+		</concat>
+		
+		<copy file = "${PATH.LICENSE}" todir = "${Build.Objective-J}/Objective-J" />
+		
     </target>
-
+    
 </project>

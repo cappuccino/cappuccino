@@ -123,7 +123,7 @@ function preprocess(aFilePath, outFilePath, gccArgs, flags)
         fragments = objj_preprocess(fileContents, { path:"/x" }, {path:filePath}, flags),
         index = 0,
         count = fragments.length,
-        preprocessed = MARKER_PATH + ';' + filePath.length + ';' + filePath;
+        preprocessed = "";
 
     // Writer preprocessed fragments out.
     for (; index < count; ++index)
