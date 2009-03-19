@@ -1,0 +1,22 @@
+<?xml version = "1.0"?>
+<project name = "Aristo" default = "build" basedir = "." >
+
+    <import file = "../../../common.xml" />
+    <import file = "${env.OBJJ_LIB}/steam/steam.xml" />
+
+    <target name = "clean" depends = "steam-uptodate">
+    
+    </target>
+        
+    <target name = "build" depends = "steam-uptodate">
+
+        <exec executable = "objj">
+            <env key = "OBJJ_INCLUDE_PATHS" value = "${Build}/${Configuration}-Rhino:${Build}/${Configuration}" />
+            <arg line = "${Build}/Release/blend/main.j -d ThemeDescriptors.j -o ${Build}/${Configuration}/AppKit/Resources/Aristo.blend -R Resources" />
+        </exec>
+
+        <steam-inline-bundle bundle = "${Build}/${Configuration}/AppKit" />
+
+    </target>
+
+</project>
