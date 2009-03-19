@@ -5,9 +5,9 @@
 	<key>CPBundleIdentifier</key>
 	<string>com.280n.AppKit</string>
 	<key>Default Themes Path</key>
-	<string>Aristo.cptheme</string>
+	<string>Default.cptheme</string>
 	<key>Default Theme Name</key>
-	<string>Aristo</string>
+	<string>Default</string>
 	<key>CPBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CPBundleName</key>
