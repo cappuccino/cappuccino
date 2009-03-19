@@ -432,12 +432,28 @@ module ObjectiveJ
                 file_d executable_path => info_plist_path
 
                 sources.each do |source|
-    
-                    preprocessed_file = File.join(build_path, PLATFORM_DIRECTORIES[platform], File.basename(source))
-    
-                    file_d preprocessed_file => source do
-                        IO.popen("objjc #{resolve_flags(flags)} #{resolve_flags(PLATFORM_FLAGS[platform])} #{source} -o #{preprocessed_file}") do |objjc|
-                            puts objjc.read
+
+                    # This needs to be way better.
+                    if File.basename(source) == 'index.html'
+                        preprocessed_file = File.join(build_path, File.basename(source))
+                    else
+                        preprocessed_file = File.join(build_path, PLATFORM_DIRECTORIES[platform], File.basename(source))
+                    end
+
+                    # Use objjc for .j files
+                    if (File.extname(preprocessed_file) == '.j')
+                        file_d preprocessed_file => source do
+                            IO.popen("objjc #{resolve_flags(flags)} #{resolve_flags(PLATFORM_FLAGS[platform])} #{source} -o #{preprocessed_file}") do |objjc|
+                                puts objjc.read
+                            end
+                        end
+
+                    # If not just run them through the C preprocessor.
+                    else
+                        file_d preprocessed_file => source do
+                            IO.popen("gcc #{resolve_flags(flags)} #{resolve_flags(PLATFORM_FLAGS[platform])} -E -x c -P #{source} -o #{preprocessed_file}") do |preprocessor|
+                                puts preprocessor.read
+                            end
                         end
                     end
                     
