@@ -44,13 +44,18 @@ end
 
 require 'objective-j'
 
-$env = ""
-$env += %{CONFIG="#{ENV['CONFIG']}" } if ENV['CONFIG']
-$env += %{BUILD_DIR="#{ENV['BUILD_DIR']}" } if ENV['BUILD_DIR']
+def serialized_env
+    env = ""
+    env += %{CONFIG="#{ENV['CONFIG']}" } if ENV['CONFIG']
+    env += %{BUILD_DIR="#{ENV['BUILD_DIR']}" } if ENV['BUILD_DIR']
+
+    return env
+
+end
 
 def subrake(directories, task_name)
     directories.each do |directory|
-        system %{cd #{directory} && #{$env} #{$0} #{task_name}}
+        system %{cd #{directory} && #{$serialized_env} #{$0} #{task_name}}
     end
 end
 
@@ -90,3 +95,45 @@ end
 
 task :build => [$ENVIRONMENT_JS]
 task :default => [:build]
+
+task :release do
+    ENV['CONFIG'] = 'Release'
+    spawn_rake(:build)
+end
+
+task :debug do
+    ENV['CONFIG'] = 'Debug'
+    spawn_rake(:build)
+end
+
+task :all => [:debug, :release]
+
+task 'clean-debug' do
+    ENV['CONFIG'] = 'Debug'
+    spawn_rake(:clean)
+end
+
+task 'clean-release' do
+    ENV['CONFIG'] = 'Release'
+    spawn_rake(:clean)
+end
+
+task 'clean-all' => ['clean-debug', 'clean-release']
+task :cleanall => ['clean-all']
+
+task 'clobber-debug' do
+    ENV['CONFIG'] = 'Debug'
+    spawn_rake(:clobber)
+end
+
+task 'clobber-release' do
+    ENV['CONFIG'] = 'Release'
+    spawn_rake(:clobber)
+end
+
+task 'clobber-all' => ['clobber-debug', 'clobber-release']
+task :clobberall => ['clobber-all']
+
+def spawn_rake(task_name)
+    system %{#{$serialized_env} #{$0} #{task_name}}
+end
