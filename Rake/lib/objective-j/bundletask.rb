@@ -457,7 +457,7 @@ module ObjectiveJ
 
                 case license
                     when License::LGPL_v2_1
-                        license_path = File.expand_path(File.join(File.dirname(__FILE__), '../LGPL-v2.1'))
+                        license_path = File.expand_path(File.join(File.dirname(File.dirname(__FILE__)), 'licenses', '/LGPL-v2.1'))
                     else
                         license_path = license
                 end

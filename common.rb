@@ -36,7 +36,7 @@ if !(defined? COMMON_DO_ONCE)
     
     COMMON_DO_ONCE = true
     
-    $LOAD_PATH << File.join($HOME_DIR, 'Rake')
+    $LOAD_PATH << File.join($HOME_DIR, 'Rake', 'lib')
     ENV['PATH'] = $ENVIRONMENT_BIN_DIR + ':' + ENV['PATH']
 end
 
@@ -79,7 +79,7 @@ def cat(files, outfile)
     end
 end
 
-$OBJJ_TEMPLATE_EXECUTABLE   = File.join($HOME_DIR, 'Rake', 'Resources', 'objj-executable')
+$OBJJ_TEMPLATE_EXECUTABLE   = File.join($HOME_DIR, 'Rake', 'lib', 'objj-executable')
 
 def make_objj_executable(path)
     cp($OBJJ_TEMPLATE_EXECUTABLE, path)
