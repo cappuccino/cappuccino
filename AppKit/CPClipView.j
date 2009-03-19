@@ -100,6 +100,9 @@
 */
 - (CGPoint)constrainScrollPoint:(CGPoint)aPoint
 {
+    if (!_documentView)
+        return _CGPointMakeZero();
+
     var documentFrame = [_documentView frame];
     
     aPoint.x = MAX(0.0, MIN(aPoint.x, MAX(_CGRectGetWidth(documentFrame) - _CGRectGetWidth(_bounds), 0.0)));
