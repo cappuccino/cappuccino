@@ -1,16 +1,15 @@
 #!/usr/bin/env ruby
 
-require 'rake'
 require '../../../common'
 require 'objective-j'
+require 'rake'
+require 'rake/clean'
 
 
 $OBJJ_SCRIPT            = File.join($BUILD_DIR, 'objj.build', $CONFIGURATION, 'main-concat.js')
 $OBJJ_CLASS             = File.join($ENVIRONMENT_LIB_DIR, 'objj', 'main.class')
 $OBJJ_EXECUTABLE        = File.join($ENVIRONMENT_BIN_DIR, 'objj')
 $STANDARD_EXECUTABLE    = File.expand_path(File.join('..', 'executable'))
-
-task :build => [$OBJJ_CLASS, $OBJJ_EXECUTABLE]
 
 Files = [   File.join($HOME_DIR, 'Tools', 'Utilities', 'bridge.js'), #yuck!
             File.join($ENVIRONMENT_FRAMEWORKS_DIR, 'Objective-J', 'rhino.platform', 'Objective-J.js'),
@@ -29,3 +28,8 @@ file_d $OBJJ_CLASS => $OBJJ_SCRIPT do |t|
     js2java($OBJJ_SCRIPT, 'main.class', false)
     cp(File.join(File.dirname($OBJJ_SCRIPT), 'main.class'), $OBJJ_CLASS)
 end
+
+task :build => [$OBJJ_CLASS, $OBJJ_EXECUTABLE]
+
+CLEAN.include(File.join($BUILD_DIR, 'objj.build', $CONFIGURATION))
+CLOBBER.include(File.join($ENVIRONMENT_LIB_DIR, 'objj'), $OBJJ_EXECUTABLE)

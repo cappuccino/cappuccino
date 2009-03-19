@@ -1,8 +1,9 @@
 #!/usr/bin/env ruby
 
-require 'rake'
 require '../common'
 require 'objective-j'
+require 'rake'
+require 'rake/clean'
 
 
 $PRODUCT                = File.join($PRODUCT_DIR, 'Objective-J')
@@ -13,12 +14,6 @@ $BROWSER_FILE           = File.join($PRODUCT, 'Objective-J.js')
 $RHINO_FILE             = File.join($PRODUCT, 'rhino.platform', 'Objective-J.js')
 
 task :Products => [$BROWSER_FILE, $RHINO_FILE]
-
-task :build => [:Products, $ENVIRONMENT_PRODUCT, :Tools]
-
-task :Tools => [:Products] do
-    subrake(%w{Tools})
-end
 
 Files = [   'LICENSE.txt',
             'constants.js', 
@@ -69,3 +64,26 @@ def build_product(path, flags)
 
     end
 end
+
+task :build => [:Products, $ENVIRONMENT_PRODUCT, :build_subprojects]
+
+task :clean => :clean_suprojects
+
+task :clobber => :clobber_subprojects
+
+subprojects = %w{Tools}
+
+task :build_subprojects do
+    subrake(subprojects, :build)
+end
+
+task :clean_suprojects do
+    subrake(subprojects, :clean)
+end
+
+task :clobber_subprojects do
+    subrake(subprojects, :clobber)
+end
+
+#CLEAN.include() no temporary files.
+CLOBBER.include($PRODUCT, $ENVIRONMENT_PRODUCT)

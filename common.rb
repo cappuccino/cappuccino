@@ -48,9 +48,9 @@ $env = ""
 $env += %{CONFIG="#{ENV['CONFIG']}" } if ENV['CONFIG']
 $env += %{BUILD_DIR="#{ENV['BUILD_DIR']}" } if ENV['BUILD_DIR']
 
-def subrake(directories)
+def subrake(directories, task_name)
     directories.each do |directory|
-        system %{cd #{directory} && #{$env} #{$0}}
+        system %{cd #{directory} && #{$env} #{$0} #{task_name}}
     end
 end
 

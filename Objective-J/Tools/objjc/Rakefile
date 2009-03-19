@@ -1,8 +1,9 @@
 #!/usr/bin/env ruby
 
-require 'rake'
 require '../../../common'
 require 'objective-j'
+require 'rake'
+require 'rake/clean'
 
 
 $OBJJC_SCRIPT           = File.join($BUILD_DIR, 'objjc.build', $CONFIGURATION, 'main-concat.js')
@@ -10,8 +11,6 @@ $OBJJC_CLASS            = File.join($ENVIRONMENT_LIB_DIR, 'objjc', 'main.class')
 $OBJJC_JS_COMPILER      = File.join($ENVIRONMENT_LIB_DIR, 'objjc', 'shrinksafe.jar')
 $OBJJC_EXECUTABLE       = File.join($ENVIRONMENT_BIN_DIR, 'objjc')
 $STANDARD_EXECUTABLE    = File.expand_path(File.join('..', 'executable'))
-
-task :build => [$OBJJC_CLASS, $OBJJC_EXECUTABLE, $OBJJC_JS_COMPILER]
 
 Files = [   File.join($HOME_DIR, 'Tools', 'Utilities', 'bridge.js'), #yuck!
             File.join($HOME_DIR, 'Tools', 'Utilities', 'regex-bridge.js'), #double-yuck!
@@ -35,3 +34,8 @@ end
 file_d $OBJJC_JS_COMPILER => 'shrinksafe.jar' do
     cp('shrinksafe.jar', $OBJJC_JS_COMPILER)
 end
+
+task :build => [$OBJJC_CLASS, $OBJJC_EXECUTABLE, $OBJJC_JS_COMPILER]
+
+CLEAN.include(File.join($BUILD_DIR, 'objjc.build', $CONFIGURATION))
+CLOBBER.include(File.join($ENVIRONMENT_LIB_DIR, 'objjc'), $OBJJC_EXECUTABLE)
