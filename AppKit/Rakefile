@@ -28,7 +28,7 @@ ObjectiveJ::BundleTask.new(:AppKit) do |t|
 end
 
 #Framework in environment directory
-file_d $ENVIRONMENT_PRODUCT => [:AppKit] do
+file_d $ENVIRONMENT_PRODUCT => [:AppKit, $THEME_PRODUCT] do
     cp_r(File.join($BUILD_PATH, '.'), $ENVIRONMENT_PRODUCT)
 end
 

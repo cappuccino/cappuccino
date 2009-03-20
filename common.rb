@@ -113,10 +113,14 @@ task 'clean-debug' do
     spawn_rake(:clean)
 end
 
+task :cleandebug => ['clean-debug']
+
 task 'clean-release' do
     ENV['CONFIG'] = 'Release'
     spawn_rake(:clean)
 end
+
+task :cleanrelease => ['clean-release']
 
 task 'clean-all' => ['clean-debug', 'clean-release']
 task :cleanall => ['clean-all']
@@ -126,10 +130,14 @@ task 'clobber-debug' do
     spawn_rake(:clobber)
 end
 
+task :clobberdebug => ['clobber-debug']
+
 task 'clobber-release' do
     ENV['CONFIG'] = 'Release'
     spawn_rake(:clobber)
 end
+
+task :clobberrelease => ['clobber-release']
 
 task 'clobber-all' => ['clobber-debug', 'clobber-release']
 task :clobberall => ['clobber-all']
