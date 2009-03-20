@@ -15,25 +15,32 @@ end
 
 $DEBUG_ENV = File.join($BUILD_DIR, 'Release', 'env')
 $RELEASE_ENV = File.join($BUILD_DIR, 'Release', 'env')
-$TOOLS_ENV = File.join($BUILD_DIR, 'Cappuccino', 'Tools', 'objj')
+$TOOLS_DOWNLOAD_ENV = File.join($BUILD_DIR, 'Cappuccino', 'Tools', 'objj')
+
+$TOOLS_EDITORS = File.join('Tools', 'Editors')
+$TOOLS_DOWNLOAD_EDITORS = File.join($BUILD_DIR, 'Cappuccino', 'Tools', 'Editors')
 
 $STARTER_DOWNLOAD = File.join($BUILD_DIR, 'Cappuccino', 'Starter')
 $STARTER_APPLICATION = File.join($BUILD_DIR, 'Cappuccino', 'Starter', 'NewApplication')
 
 task :downloads => [:starter_download, :tools_download]
 
-file_d $TOOLS_ENV => [:debug, :release] do
-    cp_r(File.join($RELEASE_ENV, '.'), $TOOLS_ENV)
-    cp_r(File.join($DEBUG_ENV, 'lib', 'Frameworks', '.'), File.join($TOOLS_ENV, 'lib', 'Frameworks', 'Debug'))
+file_d $TOOLS_DOWNLOAD_ENV => [:debug, :release] do
+    cp_r(File.join($RELEASE_ENV, '.'), $TOOLS_DOWNLOAD_ENV)
+    cp_r(File.join($DEBUG_ENV, 'lib', 'Frameworks', '.'), File.join($TOOLS_DOWNLOAD_ENV, 'lib', 'Frameworks', 'Debug'))
 end
 
-task :tools_download => [$TOOLS_ENV]
+file_d $TOOLS_DOWNLOAD_EDITORS => $TOOLS_EDITORS do
+    cp_r(File.join($TOOLS_EDITORS, '.'), $TOOLS_DOWNLOAD_EDITORS)
+end
+
+task :tools_download => [$TOOLS_DOWNLOAD_ENV, $TOOLS_DOWNLOAD_EDITORS]
 
 task :starter_download => [$STARTER_APPLICATION]
 
-file_d $STARTER_APPLICATION => [$TOOLS_ENV] do
+file_d $STARTER_APPLICATION => [$TOOLS_DOWNLOAD_ENV] do
 
-    ENV['PATH'] = "#{File.join($TOOLS_ENV, 'bin')}:#{ENV['PATH']}"
+    ENV['PATH'] = "#{File.join($TOOLS_DOWNLOAD_ENV, 'bin')}:#{ENV['PATH']}"
 
     rm_rf($STARTER_APPLICATION)
     mkdir_p($STARTER_DOWNLOAD)
