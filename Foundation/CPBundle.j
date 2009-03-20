@@ -154,7 +154,7 @@
 
 - (void)connection:(CPURLConnection)aConnection didFailWithError:(CPError)anError
 {
-    alert("what the hell!?!!!" + anError)
+    alert("Couldnot find bundle:" + anError)
 }
 
 - (void)connectionDidFinishLoading:(CPURLConnection)aConnection
