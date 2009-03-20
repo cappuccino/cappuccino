@@ -13,15 +13,20 @@ subprojects = %w{Objective-J Foundation AppKit Tools}
     end
 end
 
-$DEBUG_ENV = File.join($BUILD_DIR, 'Release', 'env')
-$RELEASE_ENV = File.join($BUILD_DIR, 'Release', 'env')
-$TOOLS_DOWNLOAD_ENV = File.join($BUILD_DIR, 'Cappuccino', 'Tools', 'objj')
+$DEBUG_ENV                      = File.join($BUILD_DIR, 'Debug', 'env')
+$RELEASE_ENV                    = File.join($BUILD_DIR, 'Release', 'env')
 
-$TOOLS_EDITORS = File.join('Tools', 'Editors')
-$TOOLS_DOWNLOAD_EDITORS = File.join($BUILD_DIR, 'Cappuccino', 'Tools', 'Editors')
+$TOOLS_README                   = File.join('Tools', 'READMEs', 'TOOLS-README')
+$TOOLS_EDITORS                  = File.join('Tools', 'Editors')
+$TOOLS_DOWNLOAD                 = File.join($BUILD_DIR, 'Cappuccino', 'Tools')
+$TOOLS_DOWNLOAD_ENV             = File.join($TOOLS_DOWNLOAD, 'objj')
+$TOOLS_DOWNLOAD_EDITORS         = File.join($TOOLS_DOWNLOAD, 'Editors')
+$TOOLS_DOWNLOAD_README          = File.join($TOOLS_DOWNLOAD, 'README')
 
-$STARTER_DOWNLOAD = File.join($BUILD_DIR, 'Cappuccino', 'Starter')
-$STARTER_APPLICATION = File.join($BUILD_DIR, 'Cappuccino', 'Starter', 'NewApplication')
+$STARTER_README                 = File.join('Tools', 'READMEs', 'STARTER-README')
+$STARTER_DOWNLOAD               = File.join($BUILD_DIR, 'Cappuccino', 'Starter')
+$STARTER_DOWNLOAD_APPLICATION   = File.join($STARTER_DOWNLOAD, 'NewApplication')
+$STARTER_DOWNLOAD_README        = File.join($STARTER_DOWNLOAD, 'README')
 
 task :downloads => [:starter_download, :tools_download]
 
@@ -30,22 +35,30 @@ file_d $TOOLS_DOWNLOAD_ENV => [:debug, :release] do
     cp_r(File.join($DEBUG_ENV, 'lib', 'Frameworks', '.'), File.join($TOOLS_DOWNLOAD_ENV, 'lib', 'Frameworks', 'Debug'))
 end
 
-file_d $TOOLS_DOWNLOAD_EDITORS => $TOOLS_EDITORS do
+file_d $TOOLS_DOWNLOAD_EDITORS => [$TOOLS_EDITORS] do
     cp_r(File.join($TOOLS_EDITORS, '.'), $TOOLS_DOWNLOAD_EDITORS)
 end
 
-task :tools_download => [$TOOLS_DOWNLOAD_ENV, $TOOLS_DOWNLOAD_EDITORS]
+file_d $TOOLS_DOWNLOAD_README => [$TOOLS_README] do
+    cp($TOOLS_README, $TOOLS_DOWNLOAD_README)
+end
 
-task :starter_download => [$STARTER_APPLICATION]
+task :tools_download => [$TOOLS_DOWNLOAD_ENV, $TOOLS_DOWNLOAD_EDITORS, $TOOLS_DOWNLOAD_README]
 
-file_d $STARTER_APPLICATION => [$TOOLS_DOWNLOAD_ENV] do
+task :starter_download => [$STARTER_DOWNLOAD_APPLICATION, $STARTER_DOWNLOAD_README]
+
+file_d $STARTER_DOWNLOAD_APPLICATION => [$TOOLS_DOWNLOAD_ENV] do
 
     ENV['PATH'] = "#{File.join($TOOLS_DOWNLOAD_ENV, 'bin')}:#{ENV['PATH']}"
 
-    rm_rf($STARTER_APPLICATION)
+    rm_rf($STARTER_DOWNLOAD_APPLICATION)
     mkdir_p($STARTER_DOWNLOAD)
-    system %{capp #{$STARTER_APPLICATION} -t Application }
+    system %{capp #{$STARTER_DOWNLOAD_APPLICATION} -t Application }
 
+end
+
+file_d $STARTER_DOWNLOAD_README => [$STARTER_README] do
+    cp($STARTER_README, $STARTER_DOWNLOAD_README)
 end
 
 task :install => [:downloads] do
