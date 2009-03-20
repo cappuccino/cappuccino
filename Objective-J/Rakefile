@@ -8,12 +8,14 @@ require 'rake/clean'
 
 $PRODUCT                = File.join($PRODUCT_DIR, 'Objective-J')
 $ENVIRONMENT_PRODUCT    = File.join($ENVIRONMENT_FRAMEWORKS_DIR, 'Objective-J')
+$LICENSE_PRODUCT        = File.join($PRODUCT, 'LICENSE')
 
-$LICENSE_FILE           = File.join($PRODUCT, 'LICENSE')
+$LICENSE_FILE           = File.join($HOME_DIR, 'Rake', 'lib', 'licenses', 'LGPL-v2.1')
+
 $BROWSER_FILE           = File.join($PRODUCT, 'Objective-J.js')
 $RHINO_FILE             = File.join($PRODUCT, 'rhino.platform', 'Objective-J.js')
 
-task :Products => [$BROWSER_FILE, $RHINO_FILE]
+task :Products => [$BROWSER_FILE, $RHINO_FILE, $LICENSE_PRODUCT]
 
 Files = [   'LICENSE.txt',
             'constants.js', 
@@ -42,6 +44,10 @@ end
 #Framework in environment directory
 file_d $ENVIRONMENT_PRODUCT => [:Products] do
     cp_r(File.join($PRODUCT, '.'), $ENVIRONMENT_PRODUCT)
+end
+
+file_d $LICENSE_PRODUCT => [$LICENSE_FILE] do
+    cp($LICENSE_FILE, $LICENSE_PRODUCT)
 end
 
 def platform_flags(*platforms)

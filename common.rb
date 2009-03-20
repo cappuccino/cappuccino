@@ -1,5 +1,25 @@
 require 'rake'
 
+def gem_command
+    case RUBY_PLATFORM
+    when /win32/
+        'gem.bat'
+    when /java/
+        'jruby -S gem'
+    else
+        'gem'
+    end
+end
+
+begin
+    require 'plist'
+rescue LoadError
+    puts 'Plist gem not installed, installing...'
+    cmd = "#{gem_command} install plist"
+    puts cmd
+    puts %x(#{cmd})
+end
+
 # Read in and set up development environment variables.
 if !ENV['BUILD_PATH']
 
@@ -145,3 +165,4 @@ task :clobberall => ['clobber-all']
 def spawn_rake(task_name)
     system %{#{$serialized_env} #{$0} #{task_name}}
 end
+
