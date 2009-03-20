@@ -18,10 +18,12 @@ $RELEASE_ENV                    = File.join($BUILD_DIR, 'Release', 'env')
 
 $TOOLS_README                   = File.join('Tools', 'READMEs', 'TOOLS-README')
 $TOOLS_EDITORS                  = File.join('Tools', 'Editors')
+$TOOLS_INSTALLER                = File.join('Tools', 'Install', 'install-tools')
 $TOOLS_DOWNLOAD                 = File.join($BUILD_DIR, 'Cappuccino', 'Tools')
 $TOOLS_DOWNLOAD_ENV             = File.join($TOOLS_DOWNLOAD, 'objj')
 $TOOLS_DOWNLOAD_EDITORS         = File.join($TOOLS_DOWNLOAD, 'Editors')
 $TOOLS_DOWNLOAD_README          = File.join($TOOLS_DOWNLOAD, 'README')
+$TOOLS_DOWNLOAD_INSTALLER       = File.join($TOOLS_DOWNLOAD, 'install-tools')
 
 $STARTER_README                 = File.join('Tools', 'READMEs', 'STARTER-README')
 $STARTER_DOWNLOAD               = File.join($BUILD_DIR, 'Cappuccino', 'Starter')
@@ -43,7 +45,11 @@ file_d $TOOLS_DOWNLOAD_README => [$TOOLS_README] do
     cp($TOOLS_README, $TOOLS_DOWNLOAD_README)
 end
 
-task :tools_download => [$TOOLS_DOWNLOAD_ENV, $TOOLS_DOWNLOAD_EDITORS, $TOOLS_DOWNLOAD_README]
+file_d $TOOLS_DOWNLOAD_INSTALLER => [$TOOLS_INSTALLER] do
+    cp($TOOLS_INSTALLER, $TOOLS_DOWNLOAD_INSTALLER)
+end
+
+task :tools_download => [$TOOLS_DOWNLOAD_ENV, $TOOLS_DOWNLOAD_EDITORS, $TOOLS_DOWNLOAD_README, $TOOLS_DOWNLOAD_INSTALLER]
 
 task :starter_download => [$STARTER_DOWNLOAD_APPLICATION, $STARTER_DOWNLOAD_README]
 
@@ -62,5 +68,5 @@ file_d $STARTER_DOWNLOAD_README => [$STARTER_README] do
 end
 
 task :install => [:downloads] do
-
+    system %{cd #{$TOOLS_DOWNLOAD} && sudo sh ./install-tools }
 end
