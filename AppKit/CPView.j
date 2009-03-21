@@ -1033,10 +1033,10 @@ var DOMElementPrototype         = nil,
 {
     var view = self;
     
-    while (![view isHidden])
+    while (view && ![view isHidden])
         view = [view superview];
     
-    return view != nil;
+    return view !== nil;
 }
 
 /*!
