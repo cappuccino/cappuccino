@@ -70,3 +70,19 @@ end
 task :install => [:downloads] do
     system %{cd #{$TOOLS_DOWNLOAD} && sudo sh ./install-tools }
 end
+
+=begin
+TODO: ojunit stuff:
+
+<git-clone-pull repository = "git://github.com/280north/ojunit.git" dest = "${Build}/Release/ojunit" />
+        
+        <copy todir = "${Build.Cappuccino.Tools.Lib}/ojunit">
+            <fileset dir = "${Build}/Release/ojunit" includes = "**/*.j" />
+        </copy>
+        
+        <copy file = "Tools/ojunit/ojtest" tofile = "${Build.Cappuccino.Tools.Bin}/ojtest" />
+        
+TODO: documentation
+
+TODO: zip/tar.        
+=end

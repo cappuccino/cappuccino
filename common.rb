@@ -165,4 +165,3 @@ task :clobberall => ['clobber-all']
 def spawn_rake(task_name)
     system %{#{$serialized_env} #{$0} #{task_name}}
 end
-
