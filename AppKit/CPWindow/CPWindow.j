@@ -478,7 +478,7 @@ CPTexturedBackgroundWindowMask
         [self setLevel:CPBackgroundWindowLevel];
         [self setHasShadow:NO];
         [self setAutoresizingMask:CPWindowWidthSizable | CPWindowHeightSizable];
-        [self setFrame:[_bridge contentBounds]];
+        [self setFrame:[_bridge visibleFrame]];
     }
     else
     {
