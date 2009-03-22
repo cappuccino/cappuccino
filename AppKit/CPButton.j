@@ -472,9 +472,9 @@ var _CPButtonClassName                          = nil,
 {
     var contentInset = [self currentValueForThemedAttributeName:@"content-inset"];
 
-    if (!contentInset)
+    if (_CGInsetIsEmpty(contentInset))
         return bounds;
-    
+
     bounds.origin.x += contentInset.left;
     bounds.origin.y += contentInset.top;
     bounds.size.width -= contentInset.left + contentInset.right;
@@ -489,8 +489,8 @@ var _CPButtonClassName                          = nil,
         return _CGRectMakeZero();
 
     var bezelInset = [self currentValueForThemedAttributeName:@"bezel-inset"];
-    
-    if (!_CGInsetIsEmpty(bezelInset))
+
+    if (_CGInsetIsEmpty(bezelInset))
         return bounds;
     
     bounds.origin.x += bezelInset.left;
@@ -540,7 +540,7 @@ var _CPButtonClassName                          = nil,
     var contentView = [self layoutEphemeralSubviewNamed:@"content-view"
                                              positioned:CPWindowAbove
                         relativeToEphemeralSubviewNamed:@"bezel-view"];
-    
+
     if (contentView)
     {
         [contentView setText:((_controlState & CPControlStateHighlighted) && _alternateTitle) ? _alternateTitle : _title];

@@ -212,8 +212,8 @@
     
     [button setTitle:@"Pop Up"];
     
-    [button setValue:color forThemedAttributeName:@"bezel-color"];
-    [button setValue:CGInsetMake(0, 5, 0, 27.0 + 5.0) forThemedAttributeName:@"content-inset"];
+    [button setValue:color forThemedAttributeName:@"bezel-color" inControlState:CPControlStateBordered];
+    [button setValue:CGInsetMake(0, 5, 0, 27.0 + 5.0) forThemedAttributeName:@"content-inset" inControlState:CPControlStateBordered];
     [button setValue:[CPFont boldSystemFontOfSize:12.0] forThemedAttributeName:@"font"];
     [button setValue:[CPColor colorWithCalibratedWhite:79.0 / 255.0 alpha:1.0] forThemedAttributeName:@"text-color"];
     [button setValue:[CPColor colorWithCalibratedWhite:240.0 / 255.0 alpha:1.0] forThemedAttributeName:@"text-shadow-color"];
@@ -237,8 +237,8 @@
     
     [button setTitle:@"Pop Up"];
 
-    [button setValue:color forThemedAttributeName:@"bezel-color" inControlState:CPPopUpButtonStatePullsDown];
-    [button setValue:CGInsetMake(0, 5, 0, 27.0 + 5.0) forThemedAttributeName:@"content-inset"];
+    [button setValue:color forThemedAttributeName:@"bezel-color" inControlState:CPPopUpButtonStatePullsDown|CPControlStateBordered];
+    [button setValue:CGInsetMake(0, 5, 0, 27.0 + 5.0) forThemedAttributeName:@"content-inset" inControlState:CPControlStateBordered];
     [button setValue:[CPFont boldSystemFontOfSize:12.0] forThemedAttributeName:@"font"];
     [button setValue:[CPColor colorWithCalibratedWhite:79.0 / 255.0 alpha:1.0] forThemedAttributeName:@"text-color"];
     [button setValue:[CPColor colorWithCalibratedWhite:240.0 / 255.0 alpha:1.0] forThemedAttributeName:@"text-shadow-color"];
