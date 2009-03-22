@@ -417,15 +417,29 @@ module ObjectiveJ
                 end
             end
 
-            preprocessed_files = []
-            
+            executable_paths = []
+
             # create file tasks for object files
             platforms.uniq.each do |platform|
-                
+
                 executable_path = File.join(build_path, PLATFORM_DIRECTORIES[platform], name + '.sj')
                 enhance([executable_path])
                 
-                file_d executable_path do
+                executable_paths << executable_path
+
+                file_d executable_path do |t|
+                    timestamp = t.timestamp
+                    files = t.prerequisites.to_a.select { |item| File.exist?(item) && File.extname(item) == '.j' && File.mtime(item) > timestamp }
+                    preprocessed_files = files.map { |file| '-o ' + File.join(build_path, PLATFORM_DIRECTORIES[platform], File.basename(file)) }
+
+                    IO.popen("objjc #{resolve_flags(flags)} #{resolve_flags(PLATFORM_FLAGS[platform])} #{files.join(' ')} #{preprocessed_files.join(' ')}") do |objjc|
+                        objjc.sync = true
+
+                        while str = objjc.gets
+                            puts str
+                        end
+                    end
+
                     BundleTask.compact(build_path)
                 end
                 
@@ -443,12 +457,14 @@ module ObjectiveJ
 
                     # Use objjc for .j files
                     if (File.extname(preprocessed_file) == '.j')
+                        file_d executable_path => source
+=begin
                         file_d preprocessed_file => source do
                             IO.popen("objjc #{resolve_flags(flags)} #{resolve_flags(PLATFORM_FLAGS[platform])} #{source} -o #{preprocessed_file}") do |objjc|
                                 puts objjc.read
                             end
                         end
-
+=end
                     # If not just run them through the C preprocessor.
                     else
                         file_d preprocessed_file => source do
@@ -456,11 +472,11 @@ module ObjectiveJ
                                 puts preprocessor.read
                             end
                         end
+
+                        file_d executable_path => preprocessed_file
                     end
-                    
-                    preprocessed_files << preprocessed_file
-                    
-                    file_d executable_path => preprocessed_file
+
+#                    file_d executable_path => preprocessed_file
                 end
             end
 
@@ -484,7 +500,7 @@ module ObjectiveJ
                 end
             end
 
-            enhance(preprocessed_files + copied_resources + [info_plist_path])
+            enhance(executable_paths + copied_resources + [info_plist_path])
 			
 			CLOBBER.include(build_path)
         end
