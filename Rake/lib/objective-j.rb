@@ -51,6 +51,28 @@ module ObjectiveJ
     
 end
 
+module ObjectiveJ
+
+    class Bundle
+
+        class Type
+
+            Application = :Application
+            Framework   = :Framework
+
+            CODE_STRINGS =
+            {
+                Application => '280N',
+                Framework   => 'FMWK'
+            }
+
+            def Type.code_string(type)
+                return CODE_STRINGS[type] || type.to_s
+            end
+        end
+    end
+end
+
 def file_d(*args, &block)
     
     fileTask = Rake::FileTask.define_task(*args, &block)

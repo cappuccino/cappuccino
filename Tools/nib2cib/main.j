@@ -164,14 +164,6 @@ function readPlist(/*File*/ aFile)
     return new CPPropertyListCreateFromData(data);
 }
 
-function importFiles(filePaths, aCallback)
-{
-    if (filePaths.length === 0)
-        aCallback();
-    else
-        objj_import(new File(filePaths.shift()).getCanonicalPath(), YES, function() { importFiles(filePaths, aCallback) });
-}
-
 function loadFrameworks(frameworkPaths, aCallback)
 {
     if (frameworkPaths.length === 0)
@@ -191,18 +183,26 @@ function loadFrameworks(frameworkPaths, aCallback)
     
     if ([infoDictionary objectForKey:@"CPBundlePackageType"] !== "FMWK")
     {
-        java.lang.System.out.println("'" + frameworkPath + "' is not a framework .");
+        java.lang.System.out.println("'" + frameworkPath + "' is not a framework.");
         java.lang.System.exit(1);
     }
     
     var files = [infoDictionary objectForKey:@"CPBundleReplacedFiles"],
-        index = 0,
         count = files.length;
-        
-    for (; index < count; ++index)
-        files[index] = frameworkPath + '/' + files[index];
     
-    importFiles(files, function() { loadFrameworks(frameworkPaths, aCallback) });
+    if (count)
+    {
+        var context = new objj_context();
+
+        context.didCompleteCallback = function() { loadFrameworks(frameworkPaths, aCallback) };
+
+        while (count--)
+            context.pushFragment(fragment_create_file(frameworkPath + '/' + files[count], new objj_bundle(""), YES, NULL));
+
+        context.evaluate();
+    }
+    else
+        loadFrameworks(frameworkPaths, aCallback);
 }
 
 function main()

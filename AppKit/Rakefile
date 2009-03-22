@@ -27,6 +27,7 @@ ObjectiveJ::BundleTask.new(:AppKit) do |t|
     t.build_path    = $BUILD_PATH
     t.flag          = 'DEBUG' if $CONFIGURATION == 'Debug'
     t.platforms     = [ObjectiveJ::Platform::Browser, ObjectiveJ::Platform::Rhino]
+    t.type          = ObjectiveJ::Bundle::Type::Framework
 end
 
 # It would be nice to just have ENVIRONMENT_PRODUCT depend on THEME_PRODUCT,

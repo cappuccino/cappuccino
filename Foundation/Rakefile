@@ -23,6 +23,7 @@ ObjectiveJ::BundleTask.new(:Foundation) do |t|
     t.license       = ObjectiveJ::License::LGPL_v2_1
     t.build_path    = $BUILD_PATH
     t.flag          = 'DEBUG' if $CONFIGURATION == 'Debug'
+    t.type          = ObjectiveJ::Bundle::Type::Framework
 end
 
 #Framework in environment directory

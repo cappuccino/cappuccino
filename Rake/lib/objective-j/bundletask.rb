@@ -191,6 +191,7 @@ module ObjectiveJ
         required_attribute :summary
         required_attribute :identifier
         required_attribute :platforms, [Platform::ObjJ]
+        required_attribute :type, Bundle::Type::Application
         
         # ------------------------- OPTIONAL gemspec attributes.
         
@@ -200,7 +201,7 @@ module ObjectiveJ
         #    attribute :platform,               Gem::Platform::RUBY
         
         array_attribute :authors
-        array_attribute :sources
+        attributes :sources
         array_attribute :resources
         array_attribute :flags
         #    array_attribute :test_files
@@ -407,7 +408,7 @@ module ObjectiveJ
             end
 
             info_plist_path = build_path + '/Info.plist'
-            info_plist = { 'CPBundleName' => name, 'CPBundleIdentifier' => identifier, 'CPBundleInfoDictionaryVersion' => 6.0, 'CPBundleVersion' => version }
+            info_plist = { 'CPBundleName' => name, 'CPBundleIdentifier' => identifier, 'CPBundleInfoDictionaryVersion' => 6.0, 'CPBundleVersion' => version, 'CPBundlePackageType' => Bundle::Type.code_string(type) }
             
             info_plist['CPBundlePlatforms'] =  platforms;
             
@@ -446,7 +447,10 @@ module ObjectiveJ
                 # Yes its unfortunate that we need to regenerate the whole executable if the Info.plist changes.  Oh well.
                 file_d executable_path => info_plist_path
 
-                sources.each do |source|
+                platform_sources = sources
+                platform_sources = sources[platform] if sources.class == Hash
+
+                platform_sources.each do |source|
 
                     # This needs to be way better.
                     if File.basename(source) == 'index.html'
