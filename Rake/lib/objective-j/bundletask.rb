@@ -197,6 +197,7 @@ module ObjectiveJ
         
         attributes :email, :homepage, :github_project, :description, :license_file, :license
         attributes :build_path, :intermediates_path
+        attribute :principal_class
         #    attributes :autorequire, :default_executable
         #    attribute :platform,               Gem::Platform::RUBY
         
@@ -410,8 +411,12 @@ module ObjectiveJ
             info_plist_path = build_path + '/Info.plist'
             info_plist = { 'CPBundleName' => name, 'CPBundleIdentifier' => identifier, 'CPBundleInfoDictionaryVersion' => 6.0, 'CPBundleVersion' => version, 'CPBundlePackageType' => Bundle::Type.code_string(type) }
             
-            info_plist['CPBundlePlatforms'] =  platforms;
-            
+            info_plist['CPBundlePlatforms'] = platforms;
+
+            if principal_class
+                info_plist['CPPrincipalClass'] = principal_class
+            end
+
             file_d info_plist_path do
                 File.open(info_plist_path, 'w') do |file|
                     file.puts info_plist.to_plist

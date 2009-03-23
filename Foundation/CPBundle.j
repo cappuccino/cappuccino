@@ -122,7 +122,16 @@
     {
         info = CPPropertyListCreateFromData([CPData dataWithString:data]);
 
-        [CPURLConnection connectionWithRequest:[CPURLRequest requestWithURL:[self bundlePath] + "/" + [self objectForInfoDictionaryKey:"CPBundleExecutable"]] delegate:self];
+        var platform = '/',
+            platforms = [self objectForInfoDictionaryKey:"CPBundlePlatforms"];
+
+        if (platforms)
+        {
+            platform = [platforms firstObjectCommonWithArray:OBJJ_PLATFORMS];
+            platform = platform ? '/' + platform + ".platform/" : '/';
+        }
+
+        [CPURLConnection connectionWithRequest:[CPURLRequest requestWithURL:[self bundlePath] + platform + [self objectForInfoDictionaryKey:"CPBundleExecutable"]] delegate:self];
     }
     else
     {
