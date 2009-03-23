@@ -52,20 +52,23 @@ function main()
     
     if (!destinationProject.exists())
     {
-        exec(["cp", "-vR", sourceTemplate.getCanonicalPath(), destinationProject.getCanonicalPath()], true);
-        
-        var files = getFiles(destinationProject, ['j', "plist", "html"]),
-            index = 0,
-            count = files.length;
-        
-        for (; index < count; ++index)
+        if (!justFrameworks)
         {
-            var file = files[index],
-                contents = readFile(file);
-            
-            contents = contents.replace(/__Product__/g, destinationProject.getName());
-            
-            writeContentsToFile(contents, file);
+            exec(["cp", "-vR", sourceTemplate.getCanonicalPath(), destinationProject.getCanonicalPath()], true);
+
+            var files = getFiles(destinationProject, ['j', "plist", "html"]),
+                index = 0,
+                count = files.length;
+
+            for (; index < count; ++index)
+            {
+                var file = files[index],
+                    contents = readFile(file);
+
+                contents = contents.replace(/__Product__/g, destinationProject.getName());
+
+                writeContentsToFile(contents, file);
+            }
         }
         
         createFrameworksInFile(destinationProject, shouldSymbolicallyLink);
