@@ -1702,7 +1702,7 @@ var _CPMenuBarWindowBackgroundColor = nil,
         [menuItemView highlight:NO];
         
         if (onMenuItemView)
-            [CPApp sendAction:[_trackingMenuItem action] to:[_trackingMenuItem target] from:nil];
+            [CPApp sendAction:[_trackingMenuItem action] to:[_trackingMenuItem target] from:_trackingMenuItem];
         
         return;
     }

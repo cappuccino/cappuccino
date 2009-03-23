@@ -478,7 +478,7 @@ CPTexturedBackgroundWindowMask
         [self setLevel:CPBackgroundWindowLevel];
         [self setHasShadow:NO];
         [self setAutoresizingMask:CPWindowWidthSizable | CPWindowHeightSizable];
-        [self setFrame:[_bridge contentBounds]];
+        [self setFrame:[_bridge visibleFrame]];
     }
     else
     {
@@ -1541,20 +1541,20 @@ CPTexturedBackgroundWindowMask
 
 - (void)_noteToolbarChanged
 {
-    var frame = CGRectMakeCopy([self frame]);
+    var frame = CGRectMakeCopy([self frame]),
+        newFrame;
 
     [_windowView noteToolbarChanged];
 
     if (_isFullBridge)
-        var newFrame = [_bridge contentBounds];
-
+        newFrame = [_bridge visibleFrame];
     else
     {
-        var newFrame = CGRectMakeCopy([self frame]);
-
+        newFrame = CGRectMakeCopy([self frame]);
+        
         newFrame.origin = frame.origin;
     }
-
+    
     [self setFrame:newFrame];
     /*
     [_windowView setAnimatingToolbar:YES];
