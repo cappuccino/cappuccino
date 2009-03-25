@@ -2,21 +2,24 @@ debug = false;
 args = arguments;
 
 // FIXME: remove these Rhino/Java dependencies
-/*
-var OBJJ_LIB = Packages.java.lang.System.getenv("OBJJ_LIB"); // chicken/egg problem, getenv is defined in bridge.js
 
+var OBJJ_HOME = Packages.java.lang.System.getenv("OBJJ_HOME"); // chicken/egg problem, getenv is defined in bridge.js
+
+/*
 if (!this.window)
 {
     print("Loading Objective-J bridge.");
-    load(OBJJ_LIB+'/bridge.js');
+    load(OBJJ_HOME+'/lib/bridge.js');
 }
 
 if (!this.objj_import)
 {
     print("Loading Objective-J.");
-    load(OBJJ_LIB+'/Frameworks-Rhino/Objective-J/Objective-J.js');
+    load(OBJJ_HOME+'/lib/Frameworks-Rhino/Objective-J/Objective-J.js');
 }
 */
+
+OBJJ_INCLUDE_PATHS = [OBJJ_HOME+"/lib/Frameworks"];
 
 var OBJJ_INCLUDE_PATHS_STRING = getenv("OBJJ_INCLUDE_PATHS");
 
@@ -36,7 +39,7 @@ try
         while (args.length && args[0].indexOf('-I') === 0)
             OBJJ_INCLUDE_PATHS = args.shift().substr(2).split(':').concat(OBJJ_INCLUDE_PATHS);
     }
-
+    
     if (args.length > 0)
     {
         // Grab the location of the objj file to run.
