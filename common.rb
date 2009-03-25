@@ -12,6 +12,7 @@ def gem_command
 end
 
 begin
+    require 'rubygems'
     require 'plist'
 rescue LoadError
     puts 'Plist gem not installed, installing...'
