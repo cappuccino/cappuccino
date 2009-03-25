@@ -17,8 +17,7 @@ $RHINO_FILE             = File.join($PRODUCT, 'rhino.platform', 'Objective-J.js'
 
 task :Products => [$BROWSER_FILE, $RHINO_FILE, $LICENSE_PRODUCT]
 
-Files = [   'header.txt',
-            'constants.js', 
+Files = [   'constants.js', 
             'utilities.js', 
             'runtime.js', 
             'dictionary.js', 
