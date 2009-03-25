@@ -178,7 +178,9 @@ function serviceTimeouts()
 
 if (!this.load)
 {
-    alert("Setting up 'load()'");
+	if (debug)
+    	alert("Setting up 'load()'");
+
     this.load = function(path)
     {
         var contents = readFile(path);
@@ -195,7 +197,9 @@ if (!this.readFile)
 {
     if (this.File)
     {
-        alert("Setting up 'readFile()' for SpiderMonkey");
+		if (debug)
+        	alert("Setting up 'readFile()' for SpiderMonkey");
+
         this.readFile = function(path)
         {
         	var f = new File(path);
@@ -222,7 +226,9 @@ if (!this.readFile)
     }
     else if (this.Packages)
     {
-        alert("Setting up 'readFile()' for Rhino");
+		if (debug)
+        	alert("Setting up 'readFile()' for Rhino");
+
         this.readFile = function(path, characterCoding)
         {
         	var f = new Packages.java.io.File(path);
@@ -267,7 +273,8 @@ function bytesToHexString(buf)
 
 // Rhino utilities
 if (this.Packages) {
-    alert("Setting up Rhino utilties");
+	if (debug)
+    	alert("Setting up Rhino utilties");
 
     jsArrayToJavaArray = function(js_array, type)
     {
