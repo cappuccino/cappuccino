@@ -20,8 +20,10 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-@import <Foundation/CPObject.j>
-@import <Foundation/CPString.j>
+@import "CPObject.j"
+@import "CPString.j"
+@import "CPDictionary.j"
+@import "CPRange.j"
 
 /*! @class CPAttributedString
     @ingroup foundation
@@ -502,7 +504,7 @@
         
     var startingIndex = [self _indexOfEntryWithIndex:aRange.location],
         startingRangeEntry = _rangeEntries[startingIndex],
-        endingIndex = [self _indexOfEntryWithIndex:CPMaxRange(aRange)-1],
+        endingIndex = [self _indexOfEntryWithIndex:MAX(CPMaxRange(aRange)-1, 0)],
         endingRangeEntry = _rangeEntries[endingIndex],
         additionalLength = aString.length - aRange.length;
 
