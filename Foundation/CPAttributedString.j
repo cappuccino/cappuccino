@@ -657,7 +657,7 @@
     @param anIndex the index at which the insert is to occur.
     @exception CPRangeException If the index is out of bounds.
 */
-- (void)insertAttributedString:(CPAttributedString)aString atIndex:(CPString)anIndex
+- (void)insertAttributedString:(CPAttributedString)aString atIndex:(unsigned)anIndex
 {
     [self beginEditing];
 
