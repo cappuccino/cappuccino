@@ -864,7 +864,7 @@ objj_preprocessor.prototype.selector = function(tokens, aStringBuffer)
     
     // Swallow open parenthesis.
     if (tokens.skip_whitespace() != TOKEN_OPEN_PARENTHESIS)
-        objj_exception_throw(new objj_exception(OBJJParseException, "*** Expected ')'"));
+        objj_exception_throw(new objj_exception(OBJJParseException, "*** Expected '('"));
     
     // Eat leading whitespace
     var selector = tokens.skip_whitespace();
