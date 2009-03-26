@@ -4,7 +4,7 @@ require 'rake'
 require '../common'
 
 
-subprojects = %w{bake capp nib2cib press}
+subprojects = %w{bake capp nib2cib press ojunit}
 
 %w(build clean clobber).each do |task_name|
   task task_name do

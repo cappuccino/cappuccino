@@ -16,6 +16,9 @@ end
 $DEBUG_ENV                      = File.join($BUILD_DIR, 'Debug', 'env')
 $RELEASE_ENV                    = File.join($BUILD_DIR, 'Release', 'env')
 
+$DOXYGEN_CONFIG                 = File.join('Tools', 'Documentation', 'Cappuccino.doxygen')
+$DOCUMENTATION_BUILD            = File.join($BUILD_DIR, 'Documentation')
+
 $TOOLS_README                   = File.join('Tools', 'READMEs', 'TOOLS-README')
 $TOOLS_EDITORS                  = File.join('Tools', 'Editors')
 $TOOLS_INSTALLER                = File.join('Tools', 'Install', 'install-tools')
@@ -71,16 +74,19 @@ task :install => [:downloads] do
     system %{cd #{$TOOLS_DOWNLOAD} && sudo sh ./install-tools }
 end
 
-=begin
-TODO: ojunit stuff:
+task :test => [:build] do
+  tests = "'" + FileList['Tests/**/*.j'].join("' '") + "'"
+  system %{ojtest #{tests} }
+end
 
-<git-clone-pull repository = "git://github.com/280north/ojunit.git" dest = "${Build}/Release/ojunit" />
-        
-        <copy todir = "${Build.Cappuccino.Tools.Lib}/ojunit">
-            <fileset dir = "${Build}/Release/ojunit" includes = "**/*.j" />
-        </copy>
-        
-        <copy file = "Tools/ojunit/ojtest" tofile = "${Build.Cappuccino.Tools.Bin}/ojtest" />
+task :docs do
+  system %{doxygen #{$DOXYGEN_CONFIG} }
+  rm_rf $DOCUMENTATION_BUILD
+  mv "Documentation", $DOCUMENTATION_BUILD
+  rm "debug.txt"
+end
+
+=begin
         
 TODO: documentation
 
