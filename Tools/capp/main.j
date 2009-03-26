@@ -121,6 +121,10 @@ function createFrameworksInFile(/*File*/ aFile, /*Boolean*/ shouldSymbolicallyLi
 function printUsage()
 {
     print("capp /path/to/your/app [options]");
+    print("    -l                Symlink the Frameworks folder to your $STEAM_BUILD directory");
+    print("    -t, --template    Specify the template name to use (listed in capp/Resources/Templates)");
+    print("    -f, --frameworks  Create only frameworks, not a full application");
+    print("    -h, --help        Print usage");
 }
 
 
