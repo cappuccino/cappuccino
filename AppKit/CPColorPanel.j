@@ -115,8 +115,8 @@ CPColorPickerViewHeight = 370;
 */
 - (id)init
 {
-    self = [super initWithContentRect:CGRectMake(500.0, 50.0, 218.0, 360.0) 
-                            styleMask:(CPHUDBackgroundWindowMask | CPTitledWindowMask | CPClosableWindowMask | CPResizableWindowMask)];
+    self = [super initWithContentRect:CGRectMake(500.0, 50.0, 219.0, 322.0) 
+                            styleMask:(CPTitledWindowMask | CPClosableWindowMask | CPResizableWindowMask)];
     
     if (self)
     {
@@ -126,8 +126,8 @@ CPColorPickerViewHeight = 370;
         [self setFloatingPanel:YES];
         [self setBecomesKeyOnlyIfNeeded:YES];
         
-        [self setMinSize:CGSizeMake(218.0, 360.0)];
-        [self setMaxSize:CGSizeMake(327.0, 540.0)];
+        [self setMinSize:CGSizeMake(219.0, 342.0)];
+        [self setMaxSize:CGSizeMake(323.0, 537.0)];
     }
     
     return self;
@@ -284,7 +284,7 @@ CPColorPickerViewHeight = 370;
     var contentView = [self contentView],
         bounds = [contentView bounds];
     
-    _toolbar = [[CPView alloc] initWithFrame:CGRectMake(0, 0, CGRectGetWidth(bounds), TOOLBAR_HEIGHT)];
+    _toolbar = [[CPView alloc] initWithFrame:CGRectMake(0, 6, CGRectGetWidth(bounds), TOOLBAR_HEIGHT)];
     [_toolbar setAutoresizingMask: CPViewWidthSizable];  
 
     var totalToolbarWidth = count * ICON_WIDTH + (count - 1) * ICON_PADDING,
@@ -325,9 +325,9 @@ CPColorPickerViewHeight = 370;
     
     [previewBox addSubview:_previewView];
         
-    _previewLabel = [[CPTextField alloc] initWithFrame: CPRectMake(10, TOOLBAR_HEIGHT + 14, 60, 15)];
+    _previewLabel = [[CPTextField alloc] initWithFrame: CPRectMake(10, TOOLBAR_HEIGHT + 13, 60, 15)];
     [_previewLabel setStringValue: "Preview:"];
-    [_previewLabel setTextColor:[CPColor whiteColor]];
+    [_previewLabel setTextColor:[CPColor blackColor]];
     [_previewLabel setAlignment:CPRightTextAlignment];
 
     // FIXME: http://280north.lighthouseapp.com/projects/13294-cappuccino/tickets/25-implement-cpbox
@@ -343,9 +343,9 @@ CPColorPickerViewHeight = 370;
 
     [swatchBox addSubview:_swatchView];
 
-    _swatchLabel = [[CPTextField alloc] initWithFrame: CPRectMake(10, TOOLBAR_HEIGHT + 8 + PREVIEW_HEIGHT + 5, 60, 15)];
+    _swatchLabel = [[CPTextField alloc] initWithFrame: CPRectMake(10, TOOLBAR_HEIGHT + 8 + PREVIEW_HEIGHT + 7, 60, 15)];
     [_swatchLabel setStringValue: "Swatches:"];
-    [_swatchLabel setTextColor:[CPColor whiteColor]];
+    [_swatchLabel setTextColor:[CPColor blackColor]];
     [_swatchLabel setAlignment:CPRightTextAlignment];
 
 
