@@ -9,7 +9,9 @@ CPControlStateSelected      = 1 << 2,
 CPControlStateDefault       = 1 << 3,
 CPControlStateBordered      = 1 << 4,
 CPControlStateBezeled       = 1 << 5,
-CPControlStateVertical      = 1 << 6;
+CPControlStateVertical      = 1 << 6,
+CPControlStateEditable      = 1 << 7,
+CPControlStateEditing       = 1 << 8;
 
 var BIT_COUNT   = [ 0 /*00000*/, 1 /*00001*/, 1 /*00010*/, 2 /*00011*/, 1 /*00100*/, 2 /*00101*/, 2 /*00110*/, 3 /*00111*/, 
                     1 /*01000*/, 2 /*01001*/, 2 /*01010*/, 3 /*01011*/, 2 /*01100*/, 3 /*01101*/, 3 /*01110*/, 4 /*01111*/,
