@@ -86,6 +86,15 @@ task :docs do
   rm "debug.txt"
 end
 
+task :submodules do
+  if executable_exists? "git"
+    system %{git submodule init}
+    system %{git submodule update}
+  else
+    puts "Git not installed"
+  end
+end
+
 =begin
         
 TODO: documentation

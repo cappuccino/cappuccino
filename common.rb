@@ -76,7 +76,11 @@ end
 
 def subrake(directories, task_name)
     directories.each do |directory|
+      if (File.directory?(directory) && File.file?(File.join(directory, "Rakefile")))
         system %{cd #{directory} && #{$serialized_env} #{$0} #{task_name}}
+      else
+        puts "subrake missing: " + directory
+      end
     end
 end
 
@@ -105,6 +109,10 @@ def cat(files, outfile)
           concated.write IO.read(file)
         end 
     end
+end
+
+def executable_exists?(name)
+  ENV["PATH"].split(":").any? {|p| File.executable? File.join(p, name) }
 end
 
 $OBJJ_TEMPLATE_EXECUTABLE   = File.join($HOME_DIR, 'Rake', 'lib', 'objj-executable')
