@@ -341,7 +341,7 @@ var HORIZONTAL_MARGIN   = 3.0,
             textStyle.position = "absolute";
             textStyle.whiteSpace = "pre";
             textStyle.cursor = "default";
-            textStyle.zIndex = 100;
+            textStyle.zIndex = 200;
             textStyle.overflow = "hidden";
     
             _DOMElement.appendChild(_DOMTextElement);
@@ -377,7 +377,7 @@ var HORIZONTAL_MARGIN   = 3.0,
             shadowStyle.position = "absolute";
             shadowStyle.whiteSpace = textStyle.whiteSpace;
             shadowStyle.cursor = "default";
-            shadowStyle.zIndex = -100;
+            shadowStyle.zIndex = 150;
             shadowStyle.textOverflow = textStyle.textOverflow;
             
             if (document.attachEvent)
