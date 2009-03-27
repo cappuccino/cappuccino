@@ -892,13 +892,10 @@ var _CPTableViewWillDisplayCellSelector                         = 1 << 0,
         {
             var half = a + Math.floor((b - a) / 2);
             
-            if (half === _numberOfRows - 1)
-                return _numberOfRows - 1;
-            
-            if (y >= _rowMinYs[half+1])
-                a = half;
-            else if (y < _rowMinYs[half])
+            if (y < _rowMinYs[half])
                 b = half;
+            else if (half < _numberOfRows-1 && y >= _rowMinYs[half+1])
+                a = half;
             else
                 return half;
         }
@@ -912,15 +909,15 @@ var _CPTableViewWillDisplayCellSelector                         = 1 << 0,
     
     Internal version takes a X value, returns an index, or -1 if its beyond the min, or numberOfColumns if it's beyond the max
 */
-- (int)_columnAtX:(float)y
+- (int)_columnAtX:(float)x
 {
     var a = 0,
         b = _tableColumns.length;
         
     var last = [_tableColumnViews[_tableColumns.length-1] frame];
-    if (y < [_tableColumnViews[0] frame].origin.x)
+    if (x < [_tableColumnViews[0] frame].origin.x)
         return -1;
-    if (y >= last.origin.x + last.size.width)
+    if (x >= last.origin.x + last.size.width)
         return _tableColumns.length;
 
     // binary search
@@ -928,13 +925,10 @@ var _CPTableViewWillDisplayCellSelector                         = 1 << 0,
     {
         var half = a + Math.floor((b - a) / 2);
 
-        if (half === _tableColumns.length - 1)
-            return _tableColumns.length - 1;
-            
-        if (y >= [_tableColumnViews[half+1] frame].origin.x)
-            a = half;
-        else if (y < [_tableColumnViews[half] frame].origin.x)
+        if (x < [_tableColumnViews[half] frame].origin.x)
             b = half;
+        else if (half < _tableColumns.length-1 && x >= [_tableColumnViews[half+1] frame].origin.x)
+            a = half;
         else
             return half;
     }
