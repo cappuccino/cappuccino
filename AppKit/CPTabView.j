@@ -283,7 +283,7 @@ var CPTabViewDidSelectTabViewItemSelector           = 1,
         count = [_tabViewItems count];
         
     for (; index < count; ++index)
-        if ([[_tabViewItems[index] identifier] isEqualTo:anIdentifier])
+        if ([[_tabViewItems[index] identifier] isEqual:anIdentifier])
             return index;
 
     return index;
