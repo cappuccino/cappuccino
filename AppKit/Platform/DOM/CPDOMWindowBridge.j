@@ -316,14 +316,7 @@ var CPDOMWindowGetFrame,
             var theWindow = windows[windowCount];
             
             if ([theWindow containsPoint:aPoint])
-            {
-                var object = [theWindow _dragHitTest:aPoint pasteboard:aPasteboard];
-                
-                if (object)
-                    return object;
-                else
-                    return nil;
-            }
+                return [theWindow _dragHitTest:aPoint pasteboard:aPasteboard];
         }
     }
     

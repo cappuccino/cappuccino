@@ -25,6 +25,8 @@
 @import <AppKit/CPPasteboard.j>
 @import <AppKit/CPImageView.j>
 
+#import "CoreGraphics/CGGeometry.h"
+
 
 #define DRAGGING_WINDOW(anObject) ([anObject isKindOfClass:[CPWindow class]] ? anObject : [anObject window])
 
@@ -289,13 +291,14 @@ var CPDragServerUpdateDragging = function(anEvent)
 @implementation CPWindow (CPDraggingAdditions)
 
 /* @ignore */
-- (id)_dragHitTest:(CPPoint)aPoint pasteboard:(CPPasteboard)aPasteboard
+- (id)_dragHitTest:(CGPoint)aPoint pasteboard:(CPPasteboard)aPasteboard
 {
     if (![self containsPoint:aPoint])
         return nil;
-    
-    var hitView = [_windowView hitTest:aPoint];
-    
+
+    var adjustedPoint = _CGPointMake(aPoint.x - _CGRectGetMinX(_frame), aPoint.y - _CGRectGetMinY(_frame)),
+        hitView = [_windowView hitTest:adjustedPoint];
+
     while (hitView && ![aPasteboard availableTypeFromArray:[hitView registeredDraggedTypes]])
         hitView = [hitView superview];
     
