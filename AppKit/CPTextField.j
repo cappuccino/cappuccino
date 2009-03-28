@@ -131,17 +131,12 @@ CPTextFieldStatePlaceholder = 1 << 13;
     {
          CPTextFieldDOMInputElement = document.createElement("input");
          CPTextFieldDOMInputElement.style.position = "absolute";
-         CPTextFieldDOMInputElement.style.top = "0px";
-         CPTextFieldDOMInputElement.style.left = "0px";
-         CPTextFieldDOMInputElement.style.width = "100%"
-         CPTextFieldDOMInputElement.style.height = "100%";
          CPTextFieldDOMInputElement.style.border = "0px";
          CPTextFieldDOMInputElement.style.padding = "0px";
+         CPTextFieldDOMInputElement.style.margin = "0px";
          CPTextFieldDOMInputElement.style.whiteSpace = "pre";
          CPTextFieldDOMInputElement.style.background = "transparent";
          CPTextFieldDOMInputElement.style.outline = "none";
-         CPTextFieldDOMInputElement.style.paddingLeft = HORIZONTAL_PADDING - 1.0 + "px";
-         CPTextFieldDOMInputElement.style.paddingTop = TOP_PADDING - 2.0 + "px";
     }
 
     return CPTextFieldDOMInputElement;
@@ -333,40 +328,30 @@ CPTextFieldStatePlaceholder = 1 << 13;
 /* @ignore */
 - (BOOL)acceptsFirstResponder
 {
-    return _isEditable && _isEnabled;
+    return [self isEditable] && [self isEnabled];
 }
 
 /* @ignore */
 - (BOOL)becomeFirstResponder
 {
-    [_contentView setHidden:YES];
-    var string = [self stringValue];
-
-    [self setStringValue:""];
+    _controlState |= CPControlStateEditing;
+    [self setNeedsLayout];
 
 #if PLATFORM(DOM)
-    var element = [[self class] _inputElement];
+    var string = [self stringValue],
+        element = [[self class] _inputElement];
 
-    element.value = "hey there hot shot";//string;
-    element.style.color = _DOMElement.style.color;
-    element.style.font = _DOMElement.style.font;
+    element.value = string;
+    element.style.color = [[self currentValueForThemedAttributeName:@"text-color"] cssString];
+    element.style.font = [[self currentValueForThemedAttributeName:@"font"] cssString];
     element.style.zIndex = 1000;
-    element.style.marginTop = "0px";
-    if (_isBezeled && _bezelStyle == CPTextFieldRoundedBezel)
-    {
-        // http://cappuccino.lighthouseapp.com/projects/16499/tickets/191-cptextfield-shifts-updown-when-receiveslosts-focus
-        // uncommenting the following 2 lines will solve the problem in Firefox only ...
-        // element.style.paddingTop = TOP_PADDING - 0.0 + "px" ;
-        // element.style.paddingLeft = HORIZONTAL_PADDING - 3.0 + "px" ;
-        
-        element.style.top = "0px" ;
-        element.style.left = ROUNDEDBEZEL_HORIZONTAL_PADDING + 1.0 + "px" ;
-        element.style.width = CGRectGetWidth([self bounds]) - (2 * ROUNDEDBEZEL_HORIZONTAL_PADDING) - 2.0 + "px";
-    }
-    else 
-    {
-        element.style.width = CGRectGetWidth([self bounds]) - 3.0 + "px";
-    }
+
+    var contentRect = [self contentRectForBounds:[self bounds]];
+
+    element.style.top = _CGRectGetMinY(contentRect) + "px";
+    element.style.left = (_CGRectGetMinX(contentRect) - 1) + "px"; // why -1?
+    element.style.width = _CGRectGetWidth(contentRect) + "px";
+    element.style.height = _CGRectGetHeight(contentRect) + "px";
 
     _DOMElement.appendChild(element);
 //    [anEvent _DOMEvent].
@@ -440,10 +425,6 @@ CPTextFieldStatePlaceholder = 1 << 13;
         }    
         [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
     };
-
-    // If current value is the placeholder value, remove it to allow user to update.
-    if ([string lowercaseString] == [[self placeholderString] lowercaseString])
-        element.value = "";
     
     //post CPControlTextDidBeginEditingNotification
     [self textDidBeginEditing:[CPNotification notificationWithName:CPControlTextDidBeginEditingNotification object:self userInfo:nil]];
@@ -457,22 +438,23 @@ CPTextFieldStatePlaceholder = 1 << 13;
 /* @ignore */
 - (BOOL)resignFirstResponder
 {
+    _controlState &= ~CPControlStateEditing;
+    [self setNeedsLayout];
+
 #if PLATFORM(DOM)
     var element = [[self class] _inputElement];
 
     //nil out dom handlers
-    element.onkeyup = nil;
-    element.onkeydown = nil;
-    element.onkeypress = nil;
+    element.onkeyup = NULL;
+    element.onkeydown = NULL;
+    element.onkeypress = NULL;
     
     _DOMElement.removeChild(element);
-    [self setStringValue:element.value]; // redundant?
 
-    // If textfield has no value, then display the placeholderValue
-    if (!_value)
-        [self setStringValue:[self placeholderString]];
-
+    // Is this redundant?
+    [self setStringValue:element.value];
 #endif
+
     //post CPControlTextDidEndEditingNotification
     [self textDidEndEditing:[CPNotification notificationWithName:CPControlTextDidBeginEditingNotification object:self userInfo:nil]];
 
@@ -481,20 +463,12 @@ CPTextFieldStatePlaceholder = 1 << 13;
 
 - (void)mouseDown:(CPEvent)anEvent
 {
-    if (![self isEditable])
+    // Don't track! (ever?)
+    if ([self isEditable] && [self isEnabled])
+        return [[self window] makeFirstResponder:self];
+    else
         return [[self nextResponder] mouseDown:anEvent];
-
-    [super mouseDown:anEvent];
 }
-/*
-- (void)mouseUp:(CPEvent)anEvent
-{    
-    if (_isEditable && [[self window] firstResponder] == self)
-        return;
-        
-    [super mouseUp:anEvent];
-}
-*/
 
 /*!
     Returns the string the text field.
@@ -506,9 +480,6 @@ CPTextFieldStatePlaceholder = 1 << 13;
     if ([[self window] firstResponder] == self)
         return [[self class] _inputElement].value;
 #endif
-    //if the content is the same as the placeholder value, return "" instead
-    if ([super objectValue] == [self placeholderString])
-        return "";
 
     return [super objectValue];
 }
@@ -709,6 +680,8 @@ CPTextFieldStatePlaceholder = 1 << 13;
 
     if (contentView)
     {
+        [contentView setHidden:_controlState & CPControlStateEditing];
+
         if (_controlState & CPTextFieldStatePlaceholder)
             [contentView setText:[self placeholderString]];
         else

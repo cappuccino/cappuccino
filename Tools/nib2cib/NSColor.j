@@ -65,7 +65,7 @@ var NSUnknownColorSpaceModel    = -1,
         case 4: // [NSColor colorWithDeviceWhite:values[0] alpha:values[1]];
         
             var bytes       = [aCoder decodeBytesForKey:@"NSWhite"],
-                string      = bytes_to_string(rgb),
+                string      = bytes_to_string(bytes),
                 components  = [string componentsSeparatedByString:@" "],
                 values      = [0,1];
                 
