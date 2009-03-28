@@ -20,6 +20,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+@import <Foundation/CPCountedSet.j>
 @import <Foundation/CPNotificationCenter.j>
 @import <Foundation/CPUndoManager.j>
 
@@ -271,7 +272,9 @@ var CPWindowSaveImage       = nil,
     CPUndoManager               _undoManager;
     CPURL                       _representedURL;
 
-    CPArray                     _registeredDraggedTypes;
+    CPSet                       _registeredDraggedTypes;
+    CPArray                     _registeredDraggedTypesArray;
+    CPCountedSet                _inclusiveRegisteredDraggedTypes;
 
     // Bridge Support
 #if PLATFORM(DOM)
@@ -348,6 +351,8 @@ CPTexturedBackgroundWindowMask
     if (self)
     {
         _isFullBridge = NO;
+        _registeredDraggedTypes = [CPSet set];
+        _registeredDraggedTypesArray = [];
 
         // Set up our window number.
         _windowNumber = [CPApp._windows count];
@@ -1296,6 +1301,28 @@ CPTexturedBackgroundWindowMask
     [[CPDragServer sharedDragServer] dragImage:anImage fromWindow:self at:[self convertBaseToBridge:imageLocation] offset:mouseOffset event:anEvent pasteboard:aPasteboard source:aSourceObject slideBack:slideBack];
 }
 
+- (void)_noteRegisteredDraggedTypes:(CPSet)pasteboardTypes
+{
+    if (!pasteboardTypes)
+        return;
+
+    if (!_inclusiveRegisteredDraggedTypes)
+        _inclusiveRegisteredDraggedTypes = [CPCountedSet set];
+
+    [_inclusiveRegisteredDraggedTypes unionSet:pasteboardTypes];
+}
+
+- (void)_noteUnregisteredDraggedTypes:(CPArray)pasteboardTypes
+{
+    if (!pasteboardTypes)
+        return;
+
+    [_inclusiveRegisteredDraggedTypes minusSet:pasteboardTypes]
+
+    if ([_inclusiveRegisteredDraggedTypes count] === 0)
+        _inclusiveRegisteredDraggedTypes = nil;
+}
+
 /*!
     Initiates a drag operation from the receiver to another view that accepts dragged data.
     @param aView the view to be dragged
@@ -1317,7 +1344,14 @@ CPTexturedBackgroundWindowMask
 */
 - (void)registerForDraggedTypes:(CPArray)pasteboardTypes
 {
-    _registeredDraggedTypes = [pasteboardTypes copy];
+    if (!pasteboardTypes)
+        return;
+
+    [self _noteUnregisteredDraggedTypes:_registeredDraggedTypes];
+    [_registeredDraggedTypes addObjectsFromArray:pasteboardTypes]
+    [self _noteRegisteredDraggedTypes:_registeredDraggedTypes];
+
+    _registeredDraggedTypesArray = nil;
 }
 
 /*!
@@ -1326,7 +1360,10 @@ CPTexturedBackgroundWindowMask
 */
 - (CPArray)registeredDraggedTypes
 {
-    return _registeredDraggedTypes;
+    if (!_registeredDraggedTypesArray)
+        _registeredDraggedTypesArray = [_registeredDraggedTypes allObjects]
+
+    return _registeredDraggedTypesArray;
 }
 
 /*!
@@ -1334,7 +1371,10 @@ CPTexturedBackgroundWindowMask
 */
 - (void)unregisterDraggedTypes
 {
-    _registeredDraggedTypes = nil;
+    [self _noteUnregisteredDraggedTypes:_registeredDraggedTypes];
+
+    _registeredDraggedTypes = [CPSet set];
+    _registeredDraggedTypesArray = [];
 }
 
 // Accessing Editing Status

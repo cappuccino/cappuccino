@@ -134,7 +134,8 @@ var DOMElementPrototype         = nil,
     CGAffineTransform   _boundsTransform;
     CGAffineTransform   _inverseBoundsTransform;
     
-    CPArray             _registeredDraggedTypes;
+    CPSet               _registeredDraggedTypes;
+    CPArray             _registeredDraggedTypesArray;
     
     BOOL                _isHidden;
     BOOL                _hitTests;
@@ -222,13 +223,13 @@ var DOMElementPrototype         = nil,
             height = _CGRectGetHeight(aFrame);
         
         _subviews = [];
+        _registeredDraggedTypes = [CPSet set];
+        _registeredDraggedTypesArray = [];
 
         _tag = -1;
 
         _frame = _CGRectMakeCopy(aFrame);
         _bounds = _CGRectMake(0.0, 0.0, width, height);
-
-        _registeredDraggedTypes = [];
 
         _autoresizingMask = CPViewNotSizable;
         _autoresizesSubviews = YES;
@@ -439,11 +440,19 @@ var DOMElementPrototype         = nil,
 
     // Notify the view and its subviews
     [self viewWillMoveToWindow:aWindow];
-    
+
+    // Unregister the drag events from the current window and register
+    // them in the new window.
+    if (_registeredDraggedTypes)
+    {
+        [_window _noteUnregisteredDraggedTypes:_registeredDraggedTypes];
+        [aWindow _noteRegisteredDraggedTypes:_registeredDraggedTypes];
+    }
+
     _window = aWindow;
-    
+
     var count = [_subviews count];
-    
+
     while (count--)
         [_subviews[count] _setWindow:aWindow];
     
@@ -1397,7 +1406,16 @@ setBoundsOrigin:
 */
 - (void)registerForDraggedTypes:(CPArray)pasteboardTypes
 {
-    _registeredDraggedTypes = [pasteboardTypes copy];
+    if (!pasteboardTypes)
+        return;
+
+    var theWindow = [self window];
+
+    [theWindow _noteUnregisteredDraggedTypes:_registeredDraggedTypes];
+    [_registeredDraggedTypes addObjectsFromArray:pasteboardTypes]
+    [theWindow _noteRegisteredDraggedTypes:_registeredDraggedTypes];
+
+    _registeredDraggedTypesArray = nil;
 }
 
 /*!
@@ -1406,7 +1424,10 @@ setBoundsOrigin:
 */
 - (CPArray)registeredDraggedTypes
 {
-    return _registeredDraggedTypes;
+    if (!_registeredDraggedTypesArray)
+        _registeredDraggedTypesArray = [_registeredDraggedTypes allObjects];
+
+    return _registeredDraggedTypesArray;
 }
 
 /*!
@@ -1414,7 +1435,10 @@ setBoundsOrigin:
 */
 - (void)unregisterDraggedTypes
 {
-    _registeredDraggedTypes = nil;
+    [[self window] _noteUnregisteredDraggedTypes:_registeredDraggedTypes];
+
+    _registeredDraggedTypes = [CPSet set];
+    _registeredDraggedTypesArray = [];
 }
 
 /*!

@@ -293,8 +293,15 @@ var CPDragServerUpdateDragging = function(anEvent)
 /* @ignore */
 - (id)_dragHitTest:(CGPoint)aPoint pasteboard:(CPPasteboard)aPasteboard
 {
-    if (![self containsPoint:aPoint])
+    // If none of our views or ourselves has registered for drag events...
+    if (!_inclusiveRegisteredDraggedTypes)
         return nil;
+
+// We don't need to do this because the only place this gets called
+// -_dragHitTest: in CPDOMWindowBridge does this already. Perhaps to
+// be safe?
+//    if (![self containsPoint:aPoint])
+//        return nil;
 
     var adjustedPoint = _CGPointMake(aPoint.x - _CGRectGetMinX(_frame), aPoint.y - _CGRectGetMinY(_frame)),
         hitView = [_windowView hitTest:adjustedPoint];
@@ -305,7 +312,7 @@ var CPDragServerUpdateDragging = function(anEvent)
     if (hitView)
         return hitView;
     
-    if ([aPasteboard availableTypeFromArray:_registeredDraggedTypes])
+    if ([aPasteboard availableTypeFromArray:[self registeredDraggedTypes]])
         return self;
     
     return nil;
