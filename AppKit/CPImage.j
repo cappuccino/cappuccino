@@ -219,6 +219,7 @@ function CPImageInBundle(aFilename, aSize, aBundle)
                 [self _imageDidLoad];
                 [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
             }
+            [self _derefFromImage];
         }
     
     _image.onerror = function ()
@@ -230,6 +231,7 @@ function CPImageInBundle(aFilename, aSize, aBundle)
                 [self _imageDidError];
                 [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
             }
+            [self _derefFromImage];
         }
     
     _image.onabort = function ()
@@ -241,6 +243,7 @@ function CPImageInBundle(aFilename, aSize, aBundle)
                 [self _imageDidAbort];
                 [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
             }
+            [self _derefFromImage];
         }
         
     _image.src = _filename;
@@ -256,6 +259,14 @@ function CPImageInBundle(aFilename, aSize, aBundle)
 - (BOOL)isNinePartImage
 {
     return NO;
+}
+
+/* @ignore */
+- (void)_derefFromImage
+{
+    _image.onload = null;
+    _image.onerror = null;
+    _image.onabort = null;
 }
 
 /* @ignore */
