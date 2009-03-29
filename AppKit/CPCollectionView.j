@@ -79,6 +79,7 @@
     
     BOOL                    _isSelectable;
     BOOL                    _allowsMultipleSelection;
+    BOOL                    _allowsEmptySelection;
     CPIndexSet              _selectionIndexes;
     
     CGSize                  _itemSize;
@@ -111,6 +112,7 @@
         _tileWidth = -1.0;
         
         _selectionIndexes = [CPIndexSet indexSet];
+        _allowsEmptySelection = YES;
         _isSelectable = YES;
     }
     
@@ -237,6 +239,23 @@
 }
 
 /*!
+    Sets whether the user may have no items selected. If YES, mouse clicks not on any item will empty the current selection. The first item will also start off as selected.
+    @param shouldAllowMultipleSelection <code>YES</code> allows the user to select multiple items
+*/
+- (void)setAllowsEmptySelection:(BOOL)shouldAllowEmptySelection
+{
+    _allowsEmptySelection = shouldAllowEmptySelection;
+}
+
+/*!
+    Returns <code>YES</code> if the user can select no items, <code>NO</code> otherwise.
+*/
+- (BOOL)allowsEmptySelection
+{
+    return _allowsEmptySelection;
+}
+
+/*!
     Sets whether the user can select multiple items.
     @param shouldAllowMultipleSelection <code>YES</code> allows the user to select multiple items
 */
@@ -266,14 +285,14 @@
     
     while ((index = [_selectionIndexes indexGreaterThanIndex:index]) != CPNotFound)
         [_items[index] setSelected:NO];
-
+    
     _selectionIndexes = anIndexSet;
-
+    
     var index = CPNotFound;
-
+    
     while ((index = [_selectionIndexes indexGreaterThanIndex:index]) != CPNotFound)
         [_items[index] setSelected:YES];
-
+    
     if ([_delegate respondsToSelector:@selector(collectionViewDidChangeSelection:)])
         [_delegate collectionViewDidChangeSelection:self]
 }
@@ -513,6 +532,8 @@
         
     if (index >= 0 && index < _items.length)
         [self setSelectionIndexes:[CPIndexSet indexSetWithIndex:index]];
+    else if (_allowsEmptySelection)
+        [self setSelectionIndexes:[CPIndexSet indexSet]];
 }
 
 - (void)mouseDragged:(CPEvent)anEvent
