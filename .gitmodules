@@ -1,3 +1,0 @@
-[submodule "Tools/ojunit"]
-	path = Tools/ojunit
-	url = git://github.com/280north/ojunit.git
