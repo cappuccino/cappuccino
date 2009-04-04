@@ -110,7 +110,7 @@ function dictionary_replaceValue(aDictionary, aKey, aValue)
 
 function dictionary_description(aDictionary)
 {
-    str = "{ ";
+    var str = "{ ";
     for ( x in aDictionary._buckets)
         str += x + ":" + aDictionary._buckets[x] + ",";
     str += " }";
