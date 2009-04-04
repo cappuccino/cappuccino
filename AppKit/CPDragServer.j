@@ -25,6 +25,8 @@
 @import <AppKit/CPPasteboard.j>
 @import <AppKit/CPImageView.j>
 
+#import "CoreGraphics/CGGeometry.h"
+
 
 #define DRAGGING_WINDOW(anObject) ([anObject isKindOfClass:[CPWindow class]] ? anObject : [anObject window])
 
@@ -289,20 +291,28 @@ var CPDragServerUpdateDragging = function(anEvent)
 @implementation CPWindow (CPDraggingAdditions)
 
 /* @ignore */
-- (id)_dragHitTest:(CPPoint)aPoint pasteboard:(CPPasteboard)aPasteboard
+- (id)_dragHitTest:(CGPoint)aPoint pasteboard:(CPPasteboard)aPasteboard
 {
-    if (![self containsPoint:aPoint])
+    // If none of our views or ourselves has registered for drag events...
+    if (!_inclusiveRegisteredDraggedTypes)
         return nil;
-    
-    var hitView = [_windowView hitTest:aPoint];
-    
+
+// We don't need to do this because the only place this gets called
+// -_dragHitTest: in CPDOMWindowBridge does this already. Perhaps to
+// be safe?
+//    if (![self containsPoint:aPoint])
+//        return nil;
+
+    var adjustedPoint = _CGPointMake(aPoint.x - _CGRectGetMinX(_frame), aPoint.y - _CGRectGetMinY(_frame)),
+        hitView = [_windowView hitTest:adjustedPoint];
+
     while (hitView && ![aPasteboard availableTypeFromArray:[hitView registeredDraggedTypes]])
         hitView = [hitView superview];
     
     if (hitView)
         return hitView;
     
-    if ([aPasteboard availableTypeFromArray:_registeredDraggedTypes])
+    if ([aPasteboard availableTypeFromArray:[self registeredDraggedTypes]])
         return self;
     
     return nil;
