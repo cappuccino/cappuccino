@@ -356,7 +356,7 @@
 */
 - (BOOL)hasVerticalScroller
 {
-    return _hasHorizontalScroller;
+    return _hasVerticalScroller;
 }
 
 /*!
