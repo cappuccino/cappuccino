@@ -32,14 +32,16 @@
 
 var CPSharedDragServer     = nil;
     
-var CPDragServerView              = nil,
-    CPDragServerSource            = nil,
-    CPDragServerWindow            = nil,
-    CPDragServerOffset            = nil,
-    CPDragServerLocation          = nil,
-    CPDragServerPasteboard        = nil,
-    CPDragServerDestination       = nil,
-    CPDragServerDraggingInfo      = nil;
+var CPDragServerView               = nil,
+    CPDragServerSource             = nil,
+    CPDragServerWindow             = nil,
+    CPDragServerOffset             = nil,
+    CPDragServerLocation           = nil,
+    CPDragServerPasteboard         = nil,
+    CPDragServerDestination        = nil,
+    CPDragServerDraggingInfo       = nil,
+    CPDragServerPreviousEvent      = nil,
+    CPDragServerAutoscrollInterval = nil;
 
 var CPDragServerIsDraggingImage                           = NO,
 
@@ -48,6 +50,11 @@ var CPDragServerIsDraggingImage                           = NO,
     
     CPDragServerShouldSendDraggedViewEndedAtOperation     = NO,
     CPDragServerShouldSendDraggedImageEndedAtOperation    = NO;
+
+var CPDragServerAutoscroll = function()
+{
+    [CPDragServerSource autoscroll:CPDragServerPreviousEvent];
+}
 
 var CPDragServerStartDragging = function(anEvent)
 {
@@ -59,6 +66,11 @@ var CPDragServerUpdateDragging = function(anEvent)
     // If this is a mouse up, then complete the drag.
     if([anEvent type] == CPLeftMouseUp)
     {
+        if (CPDragServerAutoscrollInterval !== nil)
+            clearInterval(CPDragServerAutoscrollInterval);
+
+        CPDragServerAutoscrollInterval = nil;
+
         CPDragServerLocation = [DRAGGING_WINDOW(CPDragServerDestination) convertBridgeToBase:[[anEvent window] convertBaseToBridge:[anEvent locationInWindow]]];
         
         [CPDragServerView removeFromSuperview];
@@ -77,9 +89,17 @@ var CPDragServerUpdateDragging = function(anEvent)
         
         CPDragServerIsDraggingImage = NO;
         CPDragServerDestination = nil;
-        
+
         return;
     }
+
+    if (CPDragServerAutoscrollInterval === nil)
+    {
+        if ([CPDragServerSource respondsToSelector:@selector(autoscroll:)])
+            CPDragServerAutoscrollInterval = setInterval(CPDragServerAutoscroll, 100);
+    }
+
+    CPDragServerPreviousEvent = anEvent;
 
     // If we're not a mouse up, then we're going to want to grab the next event.
     [CPApp setCallback:CPDragServerUpdateDragging 

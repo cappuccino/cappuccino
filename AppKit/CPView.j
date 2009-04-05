@@ -1727,8 +1727,7 @@ setBoundsOrigin:
 */
 - (BOOL)autoscroll:(CPEvent)anEvent
 {
-    // FIXME: Implement.
-    return NO;
+    return [[self superview] autoscroll:anEvent];
 }
 
 /*!

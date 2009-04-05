@@ -354,7 +354,7 @@
 /*!
     Returns <code>YES</code> if the scroll view can have a vertical scroller.
 */
-- (BOOL)hasHorizontalScroller
+- (BOOL)hasVerticalScroller
 {
     return _hasHorizontalScroller;
 }

@@ -177,6 +177,22 @@
         [superview reflectScrolledClipView:self];
 }
 
+- (BOOL)autoscroll:(CPEvent)anEvent 
+{
+    var bounds = [self bounds],
+        eventLocation = [self convertPoint:[anEvent locationInWindow] fromView:nil];
+
+    if (CPRectContainsPoint(bounds, eventLocation))
+        return NO;
+
+    var newRect = CGRectMakeZero();
+
+    newRect.origin = eventLocation;
+    newRect.size = CPSizeMake(10, 10);
+
+	return [_documentView scrollRectToVisible:newRect];
+}
+
 @end
 
 
