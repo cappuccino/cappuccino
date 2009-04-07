@@ -871,6 +871,8 @@ var _CPMenuItemSelectionColor                   = nil,
     CPFont                  _font;
     CPColor                 _textColor;
     CPColor                 _textShadowColor;
+    CPColor                 _activateColor;
+    CPColor                 _activateShadowColor;
 
     CGSize                  _minSize;
     BOOL                    _isDirty;
@@ -1134,12 +1136,14 @@ var _CPMenuItemSelectionColor                   = nil,
     
     if (shouldActivate)
     {
-        [_imageAndTextView setTextColor:[CPColor whiteColor]];
-        [_submenuView setColor:[CPColor whiteColor]];
+        [_imageAndTextView setTextColor:[self activateColor] || [CPColor whiteColor]];
+        [_imageAndTextView setTextShadowColor:[self activateShadowColor] || [CPColor blackColor]];
+        [_submenuView setColor:[self activateColor] || [CPColor whiteColor]];
     }
     else
     {
         [_imageAndTextView setTextColor:[self textColor]];
+        [_imageAndTextView setTextShadowColor:[self textShadowColor]];
         [_submenuView setColor:[self textColor]];
     }
 }
@@ -1202,6 +1206,26 @@ var _CPMenuItemSelectionColor                   = nil,
 - (CPColor)textShadowColor
 {
     return [_menuItem isEnabled] ? (_textShadowColor ? _textShadowColor : [CPColor colorWithWhite:1.0 alpha:0.8]) : [CPColor colorWithWhite:0.8 alpha:0.8];
+}
+
+- (void)setActivateColor:(CPColor)aColor
+{
+    _activateColor = aColor;
+}
+
+- (CPColor)activateColor
+{
+    return _activateColor;
+}
+
+- (void)setActivateShadowColor:(CPColor)aColor
+{
+    _activateShadowColor = aColor;
+}
+
+- (CPColor)activateShadowColor
+{
+    return _activateShadowColor;
 }
 
 @end
