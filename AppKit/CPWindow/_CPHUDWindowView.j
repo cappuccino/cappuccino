@@ -185,6 +185,11 @@ var HUD_TITLEBAR_HEIGHT             = 26.0;
     return [CPColor whiteColor];
 }
 
+- (CPColor)toolbarLabelShadowColor
+{
+    return [CPColor blackColor];
+}
+
 - (CGSize)toolbarOffset
 {
     return CGSizeMake(0.0, HUD_TITLEBAR_HEIGHT);

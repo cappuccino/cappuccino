@@ -283,6 +283,9 @@ var _CPWindowViewResizeIndicatorImage = nil;
         {
             [toolbarView removeFromSuperview];
             [toolbarView setLabelColor:[self toolbarLabelColor]];
+            
+            if ([self respondsToSelector:@selector(toolbarLabelShadowColor)])
+                [toolbarView setLabelShadowColor:[self toolbarLabelShadowColor]];
                
             [self addSubview:toolbarView];
         }
