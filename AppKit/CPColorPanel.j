@@ -117,9 +117,11 @@ CPColorPickerViewHeight = 370;
 {
     self = [super initWithContentRect:CGRectMake(500.0, 50.0, 219.0, 322.0) 
                             styleMask:(CPTitledWindowMask | CPClosableWindowMask | CPResizableWindowMask)];
-    
+
     if (self)
     {
+        [[self contentView] setBackgroundColor:[CPColor colorWithWhite:0.95 alpha:1.0]];
+
         [self setTitle:@"Color Panel"];
         [self setLevel:CPFloatingWindowLevel];
         
@@ -320,7 +322,7 @@ CPColorPickerViewHeight = 370;
     [_previewView setColorPanel:self];
     [_previewView setAutoresizingMask:CPViewWidthSizable];  
     
-    [previewBox setBackgroundColor:[CPColor grayColor]];
+    [previewBox setBackgroundColor:[CPColor colorWithWhite:0.8 alpha:1.0]];
     [previewBox setAutoresizingMask:CPViewWidthSizable];
     
     [previewBox addSubview:_previewView];
@@ -333,7 +335,7 @@ CPColorPickerViewHeight = 370;
     // FIXME: http://280north.lighthouseapp.com/projects/13294-cappuccino/tickets/25-implement-cpbox
     var swatchBox = [[CPView alloc] initWithFrame:CGRectMake(76, TOOLBAR_HEIGHT + 10 + PREVIEW_HEIGHT + 5, CGRectGetWidth(bounds) - 86, SWATCH_HEIGHT + 2.0)];
 
-    [swatchBox setBackgroundColor:[CPColor grayColor]];
+    [swatchBox setBackgroundColor:[CPColor colorWithWhite:0.8 alpha:1.0]];
     [swatchBox setAutoresizingMask:CPViewWidthSizable];
     
     _swatchView = [[_CPColorPanelSwatches alloc] initWithFrame:CGRectInset([swatchBox bounds], 1.0, 1.0)];
