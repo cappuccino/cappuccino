@@ -144,7 +144,7 @@
 {
     var animation = [self animation];
     
-    [animation setKeypath:aKeyPath];
+    [animation setKeyPath:aKeyPath];
     
     return animation;
 }
