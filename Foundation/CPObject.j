@@ -226,23 +226,23 @@ CPLog(@"Got some class: %@", inst);</pre>
 // Obtaining method information
 
 /*!
-    Returns the address of the receiver's method for the provided selector.
+    Returns the implementation of the receiver's method for the provided selector.
     @param aSelector the selector for the method to return
-    @return the address of the method's implementation
+    @return the method implementation ( a function )
 */
 - (IMP)methodForSelector:(SEL)aSelector
 {
-    return class_getInstanceMethod(isa, aSelector);
+    return class_getMethodImplementation(isa, aSelector);
 }
 
 /*!
-    Returns the address of the receiving class' method for the provided selector.
+    Returns the implementation of the receiving class' method for the provided selector.
     @param aSelector the selector for the class method to return
-    @return the address of the method's implementation
+    @return the method implementation ( a function )
 */
 + (IMP)instanceMethodForSelector:(SEL)aSelector
 {
-    return class_getInstanceMethod(self, aSelector);
+    return class_getMethodImplementation(self, aSelector);
 }
 
 /*!
