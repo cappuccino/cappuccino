@@ -80,6 +80,7 @@ task :test => [:build] do
   
   if build_result.match(/Test suite failed/i)
     puts "tests failed, aborting the build"
+    puts build_result
     rake abort
   end
 end
