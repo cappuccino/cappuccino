@@ -76,7 +76,12 @@ end
 
 task :test => [:build] do
   tests = "'" + FileList['Tests/**/*.j'].join("' '") + "'"
-  system %{ojtest #{tests} }
+  build_result = %x{ojtest #{tests} }
+  
+  if build_result.match(/Test suite failed/i)
+    puts "tests failed, aborting the build"
+    rake abort
+  end
 end
 
 task :docs do
