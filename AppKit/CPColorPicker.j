@@ -41,10 +41,10 @@
 - (id)initWithPickerMask:(int)aMask colorPanel:(CPColorPanel)aPanel
 {
     self = [super init];
-    
+
     _panel = aPanel;
     _mask  = aMask;
-    
+
     return self;
 }
 
@@ -92,26 +92,28 @@
 */
 @implementation CPColorWheelColorPicker : CPColorPicker
 {
-    CPView          _pickerView;    
+    CPView          _pickerView;
     CPView          _brightnessSlider;
     DOMElement      _brightnessBarImage;
     __CPColorWheel  _hueSaturationView;
+
+    CPColor         _cachedColor;
 }
  
 - (id)initWithPickerMask:(int)mask colorPanel:(CPColorPanel)owningColorPanel 
 {
     return [super initWithPickerMask:mask colorPanel: owningColorPanel];
 }
-  
+
 -(id)initView
 {
     aFrame = CPRectMake(0, 0, CPColorPickerViewWidth, CPColorPickerViewHeight);
-    
+
     _pickerView = [[CPView alloc] initWithFrame:aFrame];
     [_pickerView setAutoresizingMask:CPViewWidthSizable|CPViewHeightSizable];
-        
+
     var path = [[CPBundle bundleForClass: CPColorPicker] pathForResource:@"brightness_bar.png"]; 
-    
+
     _brightnessBarImage = new Image();
     _brightnessBarImage.src = path;
     _brightnessBarImage.style.width = "100%";
@@ -123,7 +125,7 @@
     var brightnessBarView = [[CPView alloc] initWithFrame: CPRectMake(0, (aFrame.size.height - 34), aFrame.size.width, 15)];
     [brightnessBarView setAutoresizingMask: (CPViewWidthSizable | CPViewMinYMargin)];
     brightnessBarView._DOMElement.appendChild(_brightnessBarImage);
-        
+
     _brightnessSlider = [[CPSlider alloc] initWithFrame: CPRectMake(0, aFrame.size.height - 22, aFrame.size.width, 12)];
     [_brightnessSlider setMaxValue:  100.0];
     [_brightnessSlider setMinValue:    0.0];
@@ -161,31 +163,36 @@
     [_hueSaturationView setWheelBrightness: brightness / 100.0];
     _brightnessBarImage.style.backgroundColor = "#"+[[CPColor colorWithHue: hue saturation: saturation brightness: 100] hexString];
 
-    [[self colorPanel] setColor:[CPColor colorWithHue: hue saturation: saturation brightness: brightness]];    
+    _cachedColor = [CPColor colorWithHue: hue saturation: saturation brightness: brightness];
+
+    [[self colorPanel] setColor:_cachedColor];
 }
-  
-- (BOOL)supportsMode:(int)mode 
+
+- (BOOL)supportsMode:(int)mode
 {
     return (mode == CPWheelColorPickerMode) ? YES : NO;
 }
- 
-- (int)currentMode 
+
+- (int)currentMode
 {
     return CPWheelColorPickerMode;
 }
- 
-- (CPView)provideNewView:(BOOL)initialRequest 
+
+- (CPView)provideNewView:(BOOL)initialRequest
 {
-    if (initialRequest) 
+    if (initialRequest)
         [self initView];
-    
+
     return _pickerView;
 }
- 
-- (void)setColor:(CPColor)newColor 
+
+- (void)setColor:(CPColor)newColor
 {
+    if ([newColor isEqual:_cachedColor])
+        return;
+
     var hsb = [newColor hsbComponents];
-    
+
     [_hueSaturationView setPositionToColor:newColor];
     [_brightnessSlider setFloatValue:hsb[2]];
     [_hueSaturationView setWheelBrightness:hsb[2] / 100.0];
@@ -210,28 +217,28 @@
 {
     DOMElement  _wheelImage;
     DOMElement  _blackWheelImage;
-        
+
     CPView      _crosshair;
-    
+
     id          _delegate;
-    
+
     float       _angle;
     float       _distance;
-    
+
     float       _radius;
 }
 
 -(id)initWithFrame:(CPRect)aFrame
-{    
-    self = [super initWithFrame: aFrame];
-    
-    var path = [[CPBundle bundleForClass: CPColorPicker] pathForResource:@"wheel.png"]; 
+{
+    self = [super initWithFrame:aFrame];
+
+    var path = [[CPBundle bundleForClass:CPColorPicker] pathForResource:@"wheel.png"];
 
     _wheelImage = new Image();
     _wheelImage.src = path;
     _wheelImage.style.position = "absolute";
-            
-    path = [[CPBundle bundleForClass: CPColorPicker] pathForResource:@"wheel_black.png"]; 
+
+    path = [[CPBundle bundleForClass:CPColorPicker] pathForResource:@"wheel_black.png"];
 
     _blackWheelImage = new Image();
     _blackWheelImage.src = path;
@@ -241,19 +248,19 @@
 
     _DOMElement.appendChild(_wheelImage);
     _DOMElement.appendChild(_blackWheelImage);
-    
-    [self setWheelSize: aFrame.size];
+
+    [self setWheelSize:aFrame.size];
 
     _crosshair = [[CPView alloc] initWithFrame:CPRectMake(_radius - 2, _radius - 2, 4, 4)];
     [_crosshair setBackgroundColor:[CPColor blackColor]];
-    
+
     var view = [[CPView alloc] initWithFrame:CGRectInset([_crosshair bounds], 1.0, 1.0)];
     [view setBackgroundColor:[CPColor whiteColor]];
-    
+
     [_crosshair addSubview:view];
-        
-    [self addSubview: _crosshair];  
-    
+
+    [self addSubview:_crosshair];
+
     return self;
 }
 
@@ -265,8 +272,8 @@
 
 -(void)setFrameSize:(CPSize)aSize
 {
-    [super setFrameSize: aSize];
-    [self setWheelSize: aSize];
+    [super setFrameSize:aSize];
+    [self setWheelSize:aSize];
 }
 
 -(void)setWheelSize:(CPSize)aSize
@@ -288,8 +295,8 @@
     _wheelImage.style.left = (aSize.width - min) / 2.0 + "px";
 
     _radius = min / 2.0;
-    
-    [self setAngle: [self degreesToRadians: _angle] distance: (_distance / 100.0) * _radius];
+
+    [self setAngle:[self degreesToRadians:_angle] distance:(_distance / 100.0) * _radius];
 }
 
 -(void)setDelegate:(id)aDelegate
@@ -314,29 +321,28 @@
 
 -(void)mouseDown:(CPEvent)anEvent
 {
-    [self reposition: anEvent];
+    [self reposition:anEvent];
 }
 
 -(void)mouseDragged:(CPEvent)anEvent
 {
-    [self reposition: anEvent];
+    [self reposition:anEvent];
 }
 
 -(void)reposition:(CPEvent)anEvent
 {
     var bounds   = [self bounds],
-        location = [self convertPoint: [anEvent locationInWindow] fromView: nil];
+        location = [self convertPoint:[anEvent locationInWindow] fromView:nil];
 
     var midX   = CGRectGetMidX(bounds);
     var midY   = CGRectGetMidY(bounds);
-    
+
     var distance = MIN(SQRT((location.x - midX)*(location.x - midX) + (location.y - midY)*(location.y - midY)), _radius);
     var angle    = ATAN2(location.y - midY, location.x - midX);
-    
-    [self setAngle: angle distance: distance];
 
-    if(_delegate)
-        [_delegate colorWheelDidChange: self];
+    [self setAngle:angle distance:distance];
+
+    [_delegate colorWheelDidChange:self];
 }
 
 -(void)setAngle:(int)angle distance:(float)distance
@@ -344,10 +350,10 @@
     var bounds = [self bounds];
     var midX   = CGRectGetMidX(bounds);
     var midY   = CGRectGetMidY(bounds);
-    
-    _angle     = [self radiansToDegrees: angle];
-    _distance  = (distance / _radius) * 100.0;  
-    
+
+    _angle     = [self radiansToDegrees:angle];
+    _distance  = (distance / _radius) * 100.0;
+
     [_crosshair setFrameOrigin:CPPointMake(COS(angle) * distance + midX - 2.0, SIN(angle) * distance + midY - 2.0)];
 }
 
@@ -355,11 +361,11 @@
 {
     var hsb    = [aColor hsbComponents],
         bounds = [self bounds];
-        
-    var angle    = [self degreesToRadians: hsb[0]],
+
+    var angle    = [self degreesToRadians:hsb[0]],
         distance = (hsb[1] / 100.0) * _radius;
-        
-    [self setAngle: angle distance: distance];
+
+    [self setAngle:angle distance:distance];
 }
 
 -(int)radiansToDegrees:(float)radians
@@ -371,6 +377,6 @@
 {
     return -(((degrees - 360) / 180) * PI);
 }
- 
+
 @end
 
