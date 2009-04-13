@@ -78,6 +78,8 @@ CPTextFieldRoundedBezel         = 1;
 var CPTextFieldDOMInputElement = nil;
 #endif
 
+var CPSecureTextFieldCharacter = "\u2022";
+
 @implementation CPString (CPTextFieldAdditions)
 
 /*!
@@ -100,6 +102,7 @@ CPTextFieldStatePlaceholder = 1 << 13;
 {
     BOOL                    _isEditable;
     BOOL                    _isSelectable;
+    BOOL                    _isSecure;
 
     BOOL                    _drawsBackground;
     
@@ -142,6 +145,12 @@ CPTextFieldStatePlaceholder = 1 << 13;
     return CPTextFieldDOMInputElement;
 }
 #endif
+
++ (void)initialize
+{
+    if (CPBrowserIsEngine(CPGeckoBrowserEngine))
+        CPSecureTextFieldCharacter = "*";
+}
 
 - (id)initWithFrame:(CGRect)aFrame
 {
@@ -193,6 +202,23 @@ CPTextFieldStatePlaceholder = 1 << 13;
 - (BOOL)isSelectable
 {
     return _isSelectable;
+}
+
+/*!
+    Sets whether the field's text is secure.
+    @param aFlag <code>YES</code> makes the text secure
+*/
+- (void)setSecure:(BOOL)aFlag
+{
+    _isSecure = aFlag;
+}
+
+/*!
+    Returns <code>YES</code> if the field's text is secure (password entry).
+*/
+- (BOOL)isSecure
+{
+    return _isSecure;
 }
 
 // Setting the Bezel Style
@@ -345,6 +371,11 @@ CPTextFieldStatePlaceholder = 1 << 13;
     element.style.color = [[self currentValueForThemedAttributeName:@"text-color"] cssString];
     element.style.font = [[self currentValueForThemedAttributeName:@"font"] cssString];
     element.style.zIndex = 1000;
+
+    if ([self isSecure])
+        element.type = "password";
+    else
+        element.type = "text";
 
     var contentRect = [self contentRectForBounds:[self bounds]];
 
@@ -682,10 +713,17 @@ CPTextFieldStatePlaceholder = 1 << 13;
     {
         [contentView setHidden:_controlState & CPControlStateEditing];
 
+        var string = "";
+        
         if (_controlState & CPTextFieldStatePlaceholder)
-            [contentView setText:[self placeholderString]];
+            string = [self placeholderString];
         else
-            [contentView setText:[self stringValue]];
+            string = [self stringValue];
+
+        if ([self isSecure])
+            string = secureStringForString(string);
+
+        [contentView setText:string];
 
         [contentView setTextColor:[self currentValueForThemedAttributeName:@"text-color"]];
         [contentView setFont:[self currentValueForThemedAttributeName:@"font"]];
@@ -698,6 +736,18 @@ CPTextFieldStatePlaceholder = 1 << 13;
 }
 
 @end
+
+var secureStringForString = function(aString)
+{
+    var secureString = "",
+        length = aString.length;
+
+    while (length--)
+        secureString += CPSecureTextFieldCharacter;
+
+    return secureString;
+}
+
 
 var CPTextFieldIsEditableKey            = "CPTextFieldIsEditableKey",
     CPTextFieldIsSelectableKey          = "CPTextFieldIsSelectableKey",
@@ -754,3 +804,4 @@ var CPTextFieldIsEditableKey            = "CPTextFieldIsEditableKey",
 }
 
 @end
+
