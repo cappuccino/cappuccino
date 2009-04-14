@@ -144,7 +144,7 @@ function class_addIvars(/*Class*/ aClass, /*Array*/ivars)
         var ivar = ivars[index],
             name = ivar.name;
 
-        if (typeof thePrototype[name] == "undefined")
+        if (typeof thePrototype[name] === "undefined")
         {
             aClass.ivars.push(ivar); 
             thePrototype[name] = NULL;
@@ -159,6 +159,8 @@ function class_copyIvarList(/*Class*/ aClass)
 
 //#define class_copyIvarList(aClass) (aClass.ivars.slice(0))
 
+#define METHOD_DISPLAY_NAME(aClass, aMethod) (ISMETA(aClass) ? '+' : '-') + " [" + class_getName(aClass) + ' ' + method_getName(aMethod) + ']'
+
 function class_addMethod(/*Class*/ aClass, /*SEL*/ aName, /*IMP*/ anImplementation, /*String*/aType)
 {
     if (aClass.method_hash[aName])
@@ -168,10 +170,13 @@ function class_addMethod(/*Class*/ aClass, /*SEL*/ aName, /*IMP*/ anImplementati
     
     aClass.method_list.push(method); 
     aClass.method_dtable[aName] = method;
-    
+
+    // Give this function a "pretty" name for the console.
+    method.method_imp.displayName = METHOD_DISPLAY_NAME(aClass, method);
+
     // FIXME: Should this be done here?
     // If this is a root class...
-    if (!ISMETA(aClass) && GETMETA(aClass).isa == GETMETA(aClass))
+    if (!ISMETA(aClass) && GETMETA(aClass).isa === GETMETA(aClass))
         class_addMethods(GETMETA(aClass), methods);
     
     return YES;
@@ -194,10 +199,13 @@ function class_addMethods(/*Class*/ aClass, /*Array*/ methods)
         
         method_list.push(method); 
         method_dtable[method.name] = method;
+
+        // Give this function a "pretty" name for the console.
+        method.method_imp.displayName = METHOD_DISPLAY_NAME(aClass, method);
     }
 
     // If this is a root class...
-    if (!ISMETA(aClass) && GETMETA(aClass).isa == GETMETA(aClass))
+    if (!ISMETA(aClass) && GETMETA(aClass).isa === GETMETA(aClass))
         class_addMethods(GETMETA(aClass), methods);
 }
 
@@ -520,7 +528,7 @@ function sel_getUid(/*String*/ aName)
 
 function sel_isEqual(/*SEL*/ lhs, /*SEL*/ rhs)
 {
-    return lhs == rhs;
+    return lhs === rhs;
 }
 
 function sel_registerName(aName)
