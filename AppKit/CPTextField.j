@@ -361,6 +361,9 @@ CPTextFieldStatePlaceholder = 1 << 13;
 - (BOOL)becomeFirstResponder
 {
     _controlState |= CPControlStateEditing;
+
+    [self _updatePlaceholderState];
+
     [self setNeedsLayout];
 
 #if PLATFORM(DOM)
@@ -470,6 +473,9 @@ CPTextFieldStatePlaceholder = 1 << 13;
 - (BOOL)resignFirstResponder
 {
     _controlState &= ~CPControlStateEditing;
+
+    [self _updatePlaceholderState];
+
     [self setNeedsLayout];
 
 #if PLATFORM(DOM)
@@ -522,19 +528,24 @@ CPTextFieldStatePlaceholder = 1 << 13;
 {
     [super setObjectValue:aValue];
 
-/*
-#if PLATFORM(DOM)
-    if ([[self window] firstResponder] == self)
-        [[self class] _inputElement].value = displayString;
-#endif
-*/
+    [self _updatePlaceholderState];
+}
 
-    var string = [self stringValue];
+- (void)_updatePlaceholderState
+{
+    var string = [self stringValue],
+        controlState = _controlState;
 
-    if (!string || [string length] === 0)
+    if ((!string || [string length] === 0) && !(_controlState & CPControlStateEditing))
         _controlState |= CPTextFieldStatePlaceholder;
     else
         _controlState &= ~CPTextFieldStatePlaceholder;
+
+    if (_controlState !== controlState)
+    {
+        [self setNeedsLayout];
+        [self setNeedsDisplay:YES];
+    }
 }
 
 /*!
