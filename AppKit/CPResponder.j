@@ -24,10 +24,12 @@
 
 
 CPDeleteKeyCode     = 8;
-CPUpArrowKeyCode    = 63232;
-CPDownArrowKeyCode  = 63233;
-CPLeftArrowKeyCode  = 63234;
-CPRightArrowKeyCode = 63235;
+CPReturnKeyCode     = 13;
+CPEscapeKeyCode     = 27;
+CPLeftArrowKeyCode  = 37;
+CPUpArrowKeyCode    = 38;
+CPRightArrowKeyCode = 39;
+CPDownArrowKeyCode  = 40;
 
 /*!
     @class CPResponder
@@ -109,9 +111,13 @@ CPRightArrowKeyCode = 63235;
                                         break;
             case CPDeleteKeyCode:       [self deleteBackward:self];
                                         break;
-            case 3:
-            case 13:                    [self insertLineBreak:self];
+            case CPReturnKeyCode:
+            case 3:                     [self insertLineBreak:self];
                                         break;
+            
+            case CPEscapeKeyCode:       [self cancel:self];
+                                        break;
+
             default:                    [self insertText:[event characters]];
         }
     }
@@ -220,6 +226,20 @@ CPRightArrowKeyCode = 63235;
     @param aSender the object requesting this
 */
 - (void)insertLineBreak:(id)aSender
+{
+    [self insertNewline:aSender];
+}
+
+/*!
+    Insert a line break at the caret position or selection.
+    @param aSender the object requesting this
+*/
+- (void)insertNewline:(id)aSender
+{
+    [self insertNewline:aSender];
+}
+
+- (void)cancel:(id)sender
 {
 }
 

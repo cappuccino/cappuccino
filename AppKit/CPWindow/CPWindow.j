@@ -276,6 +276,9 @@ var CPWindowSaveImage       = nil,
     CPArray                     _registeredDraggedTypesArray;
     CPCountedSet                _inclusiveRegisteredDraggedTypes;
 
+    CPButton                    _defaultButton;
+    BOOL                        _defaultButtonEnabled;
+
     // Bridge Support
 #if PLATFORM(DOM)
     DOMElement                  _DOMElement;
@@ -401,6 +404,8 @@ CPTexturedBackgroundWindowMask
 
         if (aStyleMask & CPBorderlessBridgeWindowMask)
             [self setFullBridge:YES];
+
+        _defaultButtonEnabled = YES;
     }
     
     return self;
@@ -1690,6 +1695,58 @@ CPTexturedBackgroundWindowMask
 - (BOOL)worksWhenModal
 {
     return NO;
+}
+
+- (void)keyDown:(CPEvent)event
+{
+    if (![self performKeyEquivalent:event])
+        [self interpretKeyEvents:[event]];
+}
+
+- (void)insertNewline:(id)sender
+{
+    if (_defaultButton && _defaultButtonEnabled)
+        [_defaultButton performClick:nil];
+}
+
+- (void)setDefaultButtonCell:(CPButton)aButton
+{
+    [self setDefaultButton:aButton];
+}
+
+- (CPButton)defaultButtonCell
+{
+    return [self defaultButton];
+}
+
+- (void)setDefaultButton:(CPButton)aButton
+{
+    _defaultButton = aButton;
+}
+
+- (CPButton)defaultButton
+{
+    return _defaultButton;
+}
+
+- (void)enableKeyEquivalentForDefaultButton
+{
+    _defaultButtonEnabled = YES;
+}
+
+- (void)enableKeyEquivalentForDefaultButtonCell
+{
+    [self enableKeyEquivalentForDefaultButton];
+}
+
+- (void)disableKeyEquivalentForDefaultButton
+{
+    _defaultButtonEnabled = NO;
+}
+
+- (void)disableKeyEquivalentForDefaultButtonCell
+{
+    [self disableKeyEquivalentForDefaultButton];
 }
 
 @end

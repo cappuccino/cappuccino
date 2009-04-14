@@ -282,6 +282,14 @@ var CPControlBlackColor     = [CPColor blackColor];
     _previousTrackingLocation = currentLocation;
 }
 
+- (void)performClick:(id)sender 
+{
+    [self highlight:YES];
+    [self setState:[self nextState]];
+    [self sendAction:[self action] to:[self target]];
+    [self highlight:NO];
+}
+
 - (unsigned)mouseDownFlags
 {
     return _trackingMouseDownFlags;

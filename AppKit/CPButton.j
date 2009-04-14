@@ -32,184 +32,53 @@ CPScaleProportionally   = 0;
 CPScaleToFit            = 1;
 CPScaleNone             = 2;
 
-/*
-    @global
-    @group CPCellImagePosition
-*/
+
+/* @group CPCellImagePosition */
+
 CPNoImage       = 0;
-/*
-    @global
-    @group CPCellImagePosition
-*/
 CPImageOnly     = 1;
-/*
-    @global
-    @group CPCellImagePosition
-*/
 CPImageLeft     = 2;
-/*
-    @global
-    @group CPCellImagePosition
-*/
 CPImageRight    = 3;
-/*
-    @global
-    @group CPCellImagePosition
-*/
 CPImageBelow    = 4;
-/*
-    @global
-    @group CPCellImagePosition
-*/
 CPImageAbove    = 5;
-/*
-    @global
-    @group CPCellImagePosition
-*/
 CPImageOverlaps = 6;
 
-/*
-    @global
-    @class CPButton
-*/
+
+/*  @group CPButtonState */
+
 CPOnState       = 1;
-/*
-    @global
-    @class CPButton
-*/
 CPOffState      = 0;
-/*
-    @global
-    @class CPButton
-*/
 CPMixedState    = -1;
 
-/*
-    @global
-    @group CPBezelStyle
-*/
+/* @group CPBezelStyle */
+
 CPRoundedBezelStyle             = 1;
-/*
-    @global
-    @group CPBezelStyle
-*/
 CPRegularSquareBezelStyle       = 2;
-/*
-    @global
-    @group CPBezelStyle
-*/
 CPThickSquareBezelStyle         = 3;
-/*
-    @global
-    @group CPBezelStyle
-*/
 CPThickerSquareBezelStyle       = 4;
-/*
-    @global
-    @group CPBezelStyle
-*/
 CPDisclosureBezelStyle          = 5;
-/*
-    @global
-    @group CPBezelStyle
-*/
 CPShadowlessSquareBezelStyle    = 6;
-/*
-    @global
-    @group CPBezelStyle
-*/
 CPCircularBezelStyle            = 7;
-/*
-    @global
-    @group CPBezelStyle
-*/
 CPTexturedSquareBezelStyle      = 8;
-/*
-    @global
-    @group CPBezelStyle
-*/
 CPHelpButtonBezelStyle          = 9;
-/*
-    @global
-    @group CPBezelStyle
-*/
 CPSmallSquareBezelStyle         = 10;
-/*
-    @global
-    @group CPBezelStyle
-*/
 CPTexturedRoundedBezelStyle     = 11;
-/*
-    @global
-    @group CPBezelStyle
-*/
 CPRoundRectBezelStyle           = 12;
-/*
-    @global
-    @group CPBezelStyle
-*/
 CPRecessedBezelStyle            = 13;
-/*
-    @global
-    @group CPBezelStyle
-*/
 CPRoundedDisclosureBezelStyle   = 14;
-/*
-    @global
-    @group CPBezelStyle
-*/
 CPHUDBezelStyle                 = -1;
 
 
-/*
-    @global
-    @group CPButtonType
-*/
+/* @group CPButtonType */
 CPMomentaryLightButton   = 0;
-/*
-    @global
-    @group CPButtonType
-*/
 CPPushOnPushOffButton    = 1;
-/*
-    @global
-    @group CPButtonType
-*/
 CPToggleButton           = 2;
-/*
-    @global
-    @group CPButtonType
-*/
 CPSwitchButton           = 3;
-/*
-    @global
-    @group CPButtonType
-*/
 CPRadioButton            = 4;
-/*
-    @global
-    @group CPButtonType
-*/
 CPMomentaryChangeButton  = 5;
-/*
-    @global
-    @group CPButtonType
-*/
 CPOnOffButton            = 6;
-/*
-    @global
-    @group CPButtonType
-*/
 CPMomentaryPushInButton  = 7;
-/*
-    @global
-    @group CPButtonType
-*/
 CPMomentaryPushButton    = 0;
-/*
-    @global
-    @group CPButtonType
-*/
 CPMomentaryLight         = 7;
 
 
@@ -302,14 +171,18 @@ var _CPButtonClassName                          = nil,
 /*!
     Sets the button to its next state.
 */
-- (void)setNextState
+- (int)nextState
 {
     if (_state == CPOffState)
-        _state = CPOnState;
+        return CPOnState;
     else
-        _state = (_state >= CPOnState && _allowsMixedState) ? CPMixedState : CPOffState;
+        return (_state >= CPOnState && _allowsMixedState) ? CPMixedState : CPOffState;
 }
 
+- (void)setNextState
+{
+    [self setState:[self nextState]];
+}
 /*!
     Sets the button's state to <code>aState</code>.
     @param aState Possible states are any of the CPButton globals:
