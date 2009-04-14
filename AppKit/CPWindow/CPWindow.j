@@ -1721,7 +1721,11 @@ CPTexturedBackgroundWindowMask
 
 - (void)setDefaultButton:(CPButton)aButton
 {
+    [_defaultButton setDefaultButton:NO];
+
     _defaultButton = aButton;
+
+    [_defaultButton setDefaultButton:YES];    
 }
 
 - (CPButton)defaultButton

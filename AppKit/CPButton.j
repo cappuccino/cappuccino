@@ -431,6 +431,20 @@ var _CPButtonClassName                          = nil,
     }
 }
 
+- (void)setDefaultButton:(BOOL)shouldBeDefaultButton
+{
+    if ((!!(_controlState & CPControlStateDefault)) === shouldBeDefaultButton)
+        return;
+
+    if (shouldBeDefaultButton)
+        _controlState |= CPControlStateDefault;
+    else
+        _controlState &= ~CPControlStateDefault;
+
+    [self setNeedsLayout];
+    [self setNeedsDisplay:YES];
+}
+
 @end
 
 @implementation CPButton (NS)

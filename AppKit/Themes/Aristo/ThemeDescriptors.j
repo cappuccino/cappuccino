@@ -173,7 +173,7 @@
                 [_CPCibCustomResource imageResourceWithName:"button-bezel-center.png" size:CGSizeMake(1.0, 24.0)],
                 [_CPCibCustomResource imageResourceWithName:"button-bezel-right.png" size:CGSizeMake(4.0, 24.0)]
             ]
-        isVertical:NO]];
+        isVertical:NO]],
 
         highlightedBezelColor = [CPColor colorWithPatternImage:[[CPThreePartImage alloc] initWithImageSlices:
             [
@@ -181,7 +181,24 @@
                 [_CPCibCustomResource imageResourceWithName:"button-bezel-highlighted-center.png" size:CGSizeMake(1.0, 24.0)],
                 [_CPCibCustomResource imageResourceWithName:"button-bezel-highlighted-right.png" size:CGSizeMake(4.0, 24.0)]
             ]
+        isVertical:NO]],
+
+        defaultBezelColor = [CPColor colorWithPatternImage:[[CPThreePartImage alloc] initWithImageSlices:
+            [
+                [_CPCibCustomResource imageResourceWithName:"default-button-bezel-left.png" size:CGSizeMake(4.0, 24.0)],
+                [_CPCibCustomResource imageResourceWithName:"default-button-bezel-center.png" size:CGSizeMake(1.0, 24.0)],
+                [_CPCibCustomResource imageResourceWithName:"default-button-bezel-right.png" size:CGSizeMake(4.0, 24.0)]
+            ]
+        isVertical:NO]],
+
+        defaultHighlightedBezelColor = [CPColor colorWithPatternImage:[[CPThreePartImage alloc] initWithImageSlices:
+            [
+                [_CPCibCustomResource imageResourceWithName:"default-button-bezel-highlighted-left.png" size:CGSizeMake(4.0, 24.0)],
+                [_CPCibCustomResource imageResourceWithName:"default-button-bezel-highlighted-center.png" size:CGSizeMake(1.0, 24.0)],
+                [_CPCibCustomResource imageResourceWithName:"default-button-bezel-highlighted-right.png" size:CGSizeMake(4.0, 24.0)]
+            ]
         isVertical:NO]];
+
                 
     [button setTitle:@"Cancel"];
     
@@ -194,6 +211,10 @@
     [button setValue:bezelColor forThemedAttributeName:@"bezel-color" inControlState:CPControlStateBordered];
     [button setValue:highlightedBezelColor forThemedAttributeName:@"bezel-color" inControlState:CPControlStateBordered|CPControlStateHighlighted];
     [button setValue:CGInsetMake(0.0, 5.0, 0.0, 5.0) forThemedAttributeName:@"content-inset" inControlState:CPControlStateBordered];
+
+    [button setValue:defaultBezelColor forThemedAttributeName:@"bezel-color" inControlState:CPControlStateBordered|CPControlStateDefault];
+    [button setValue:defaultHighlightedBezelColor forThemedAttributeName:@"bezel-color" inControlState:CPControlStateBordered|CPControlStateHighlighted|CPControlStateDefault];
+    [button setValue:[CPColor colorWithCalibratedRed:13.0/255.0 green:51.0/255.0 blue:70.0/255.0 alpha:1.0] forThemedAttributeName:@"text-color" inControlState:CPControlStateDefault];
 
     [button setValue:24.0 forThemedAttributeName:@"default-height"];
 
