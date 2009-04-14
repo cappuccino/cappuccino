@@ -75,7 +75,11 @@ CPTextFieldRoundedBezel         = 1;
 
 
 #if PLATFORM(DOM)
-var CPTextFieldDOMInputElement = nil;
+
+var CPTextFieldDOMInputElement = nil,
+    CPTextFieldInputOwner = nil,
+    CPTextFieldTextDidChangeValue = nil;
+    
 #endif
 
 var CPSecureTextFieldCharacter = "\u2022";
@@ -132,14 +136,94 @@ CPTextFieldStatePlaceholder = 1 << 13;
 {
     if (!CPTextFieldDOMInputElement)
     {
-         CPTextFieldDOMInputElement = document.createElement("input");
-         CPTextFieldDOMInputElement.style.position = "absolute";
-         CPTextFieldDOMInputElement.style.border = "0px";
-         CPTextFieldDOMInputElement.style.padding = "0px";
-         CPTextFieldDOMInputElement.style.margin = "0px";
-         CPTextFieldDOMInputElement.style.whiteSpace = "pre";
-         CPTextFieldDOMInputElement.style.background = "transparent";
-         CPTextFieldDOMInputElement.style.outline = "none";
+        CPTextFieldDOMInputElement = document.createElement("input");
+        CPTextFieldDOMInputElement.style.position = "absolute";
+        CPTextFieldDOMInputElement.style.border = "0px";
+        CPTextFieldDOMInputElement.style.padding = "0px";
+        CPTextFieldDOMInputElement.style.margin = "0px";
+        CPTextFieldDOMInputElement.style.whiteSpace = "pre";
+        CPTextFieldDOMInputElement.style.background = "transparent";
+        CPTextFieldDOMInputElement.style.outline = "none";
+
+        var blurFunction = function(anEvent)
+        {
+            if (CPTextFieldInputOwner)
+                CPTextFieldHandleBlur(anEvent, CPTextFieldDOMInputElement);
+
+            return true;
+        }
+
+        var keydownFunction = function(anEvent)
+        {
+            CPTextFieldTextDidChangeValue = [CPTextFieldInputOwner stringValue];
+
+            keypressFunction(anEvent);
+
+            return true;
+        }
+
+        var keypressFunction = function(aDOMEvent)
+        {
+            aDOMEvent = aDOMEvent || window.event;
+
+            if (aDOMEvent.keyCode == CPReturnKeyCode || aDOMEvent.keyCode == CPTabKeyCode) 
+            {
+                if (aDOMEvent.preventDefault)
+                    aDOMEvent.preventDefault(); 
+                if (aDOMEvent.stopPropagation)
+                    aDOMEvent.stopPropagation();
+                aDOMEvent.cancelBubble = true;
+
+                CPTextFieldHandleBlur(aDOMEvent, CPTextFieldDOMInputElement);
+            }    
+
+            [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
+        }
+
+        var keyupFunction = function()
+        {
+            if ([CPTextFieldInputOwner stringValue] !== CPTextFieldTextDidChangeValue)
+            {
+                CPTextFieldTextDidChangeValue = [CPTextFieldInputOwner stringValue];
+                [CPTextFieldInputOwner textDidChange:[CPNotification notificationWithName:CPControlTextDidChangeNotification object:CPTextFieldInputOwner userInfo:nil]];
+            }
+
+            [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
+        }
+
+        CPTextFieldHandleBlur = function(anEvent, anElement)
+        {
+            [CPTextFieldInputOwner setObjectValue:anElement.value];
+
+            if (anEvent && anEvent.keyCode == CPReturnKeyCode)
+            {
+                [CPTextFieldInputOwner sendAction:[CPTextFieldInputOwner action] to:[CPTextFieldInputOwner targer]];    
+                [[CPTextFieldInputOwner window] makeFirstResponder:nil];
+            }
+            else if (anEvent && anEvent.keyCode == CPTabKeyCode)
+            {
+                if (!anEvent.shiftKey)
+                    [[CPTextFieldInputOwner window] selectNextKeyView:CPTextFieldInputOwner];
+                else
+                    [[CPTextFieldInputOwner window] selectPreviousKeyView:CPTextFieldInputOwner];
+            }
+
+            [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
+            CPTextFieldInputOwner = nil;
+        }
+
+        if (document.attachEvent)
+        {
+            CPTextFieldDOMInputElement.attachEvent("on" + CPDOMEventKeyUp, keyupFunction);
+            CPTextFieldDOMInputElement.attachEvent("on" + CPDOMEventKeyDown, keydownFunction);
+            CPTextFieldDOMInputElement.attachEvent("on" + CPDOMEventKeyPress, keypressFunction);
+        }
+        else
+        {
+            CPTextFieldDOMInputElement.addEventListener(CPDOMEventKeyUp, keyupFunction, NO);
+            CPTextFieldDOMInputElement.addEventListener(CPDOMEventKeyDown, keydownFunction, NO);
+            CPTextFieldDOMInputElement.addEventListener(CPDOMEventKeyPress, keypressFunction, NO);
+        }
     }
 
     return CPTextFieldDOMInputElement;
@@ -364,6 +448,8 @@ CPTextFieldStatePlaceholder = 1 << 13;
     [self setNeedsLayout];
 
 #if PLATFORM(DOM)
+    CPTextFieldInputOwner = self;
+
     var string = [self stringValue],
         element = [[self class] _inputElement];
 
@@ -385,78 +471,9 @@ CPTextFieldStatePlaceholder = 1 << 13;
     element.style.height = _CGRectGetHeight(contentRect) + "px";
 
     _DOMElement.appendChild(element);
-//    [anEvent _DOMEvent].
-    var evt = document.createEvent("MouseEvents");
-  evt.initMouseEvent("mousedown", true, true, window,
-    0, 0, 0, 0, 0, false, false, false, false, 0, null);
-  var canceled = !element.dispatchEvent(evt);/*
-    var evt = document.createEvent("MouseEvents");
-  evt.initMouseEvent("mousedown", true, true, window,
-    0, 0, 0, 0, 0, false, false, false, false, 0, null);
-  var canceled = !element.dispatchEvent(evt);
-    var evt = document.createEvent("MouseEvents");
-  evt.initMouseEvent("mousemove", true, true, window,
-    1, 0, 0, 20, 0, false, false, false, false, 0, null);
-  /*if(canceled) {
-    // A handler called preventDefault
-    alert("canceled");
-  } else {
-    // None of the handlers called preventDefault
-    alert("not canceled");
-  }*/
-//    window.setTimeout(function() { element.focus(); }, 0.0);
 
-    element.onblur = function () 
-    { 
-        [self setObjectValue:element.value];
-        [self sendAction:[self action] to:[self target]];
-        [[self window] makeFirstResponder:nil];
-        [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
-    };
-    
-    //element.onblur = function() { objj_debug_print_backtrace(); }
-    //element.select();
-    
-    element.onkeydown = function(aDOMEvent) 
-    {
-        //all key presses might trigger the delegate method controlTextDidChange: 
-        //record the current string value before we allow this keydown to propagate
-        _textDidChangeValue = [self stringValue];    
-        [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
-        return true;
-    }
-        
-    element.onkeypress = function(aDOMEvent) 
-    {
-        aDOMEvent = aDOMEvent || window.event;
-        
-        if (aDOMEvent.keyCode == 13) 
-        {
-            if (aDOMEvent.preventDefault)
-                aDOMEvent.preventDefault(); 
-            if (aDOMEvent.stopPropagation)
-                aDOMEvent.stopPropagation();
-            aDOMEvent.cancelBubble = true;
-            
-            element.blur();
-        }    
-        [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
-    };
-    
-    //inspect keyup to detect changes in order to trigger controlTextDidChange: delegate method
-    element.onkeyup = function(aDOMEvent) 
-    { 
-        //check if we should fire a notification for CPControlTextDidChange
-        if ([self stringValue] != _textDidChangeValue)
-        {
-            _textDidChangeValue = [self stringValue];
-
-            //call to CPControls methods for posting the notification
-            [self textDidChange:[CPNotification notificationWithName:CPControlTextDidChangeNotification object:self userInfo:nil]];
-        }    
-        [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
-    };
-    
+    window.setTimeout(function() { element.focus(); }, 0.0);
+ 
     //post CPControlTextDidBeginEditingNotification
     [self textDidBeginEditing:[CPNotification notificationWithName:CPControlTextDidBeginEditingNotification object:self userInfo:nil]];
     
@@ -473,17 +490,16 @@ CPTextFieldStatePlaceholder = 1 << 13;
     [self setNeedsLayout];
 
 #if PLATFORM(DOM)
+
     var element = [[self class] _inputElement];
 
-    //nil out dom handlers
-    element.onkeyup = NULL;
-    element.onkeydown = NULL;
-    element.onkeypress = NULL;
-    
+    if (CPTextFieldInputOwner == self)
+        CPTextFieldHandleBlur(nil, [[self class] _inputElement]);
+
     _DOMElement.removeChild(element);
 
-    // Is this redundant?
-    [self setStringValue:element.value];
+    CPTextFieldInputOwner = nil;
+
 #endif
 
     //post CPControlTextDidEndEditingNotification

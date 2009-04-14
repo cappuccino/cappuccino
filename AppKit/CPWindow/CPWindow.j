@@ -1709,6 +1709,33 @@ CPTexturedBackgroundWindowMask
         [_defaultButton performClick:nil];
 }
 
+- (void)insertTab:(id)sender
+{
+    [self selectNextKeyView:nil];
+}
+
+- (void)selectNextKeyView:(id)sender
+{
+    if ([_firstResponder isKindOfClass:[CPView class]])
+        [self selectKeyViewFollowingView:_firstResponder];
+}
+
+- (void)selectPreviousKeyView:(id)sender
+{
+    if ([_firstResponder isKindOfClass:[CPView class]])
+        [self selectKeyViewPrecedingView:_firstResponder];
+}
+
+- (void)selectKeyViewFollowingView:(CPView)aView
+{
+    [self makeFirstResponder:[aView nextValidKeyView]];
+}
+
+- (void)selectKeyViewPrecedingView:(CPView)aView
+{
+    [self makeFirstResponder:[aView previousValidKeyView]];
+}
+
 - (void)setDefaultButtonCell:(CPButton)aButton
 {
     [self setDefaultButton:aButton];

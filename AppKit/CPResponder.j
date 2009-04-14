@@ -24,6 +24,7 @@
 
 
 CPDeleteKeyCode     = 8;
+CPTabKeyCode        = 9;
 CPReturnKeyCode     = 13;
 CPEscapeKeyCode     = 27;
 CPLeftArrowKeyCode  = 37;
@@ -116,6 +117,15 @@ CPDownArrowKeyCode  = 40;
                                         break;
             
             case CPEscapeKeyCode:       [self cancel:self];
+                                        break;
+
+            case CPTabKeyCode:          var shift = [event modifierFlags] & CPShiftKeyMask;
+
+                                        if (!shift)
+                                            [self insertTab:self];
+                                        else
+                                            [self insertBackTab:self];
+
                                         break;
 
             default:                    [self insertText:[event characters]];
@@ -240,6 +250,10 @@ CPDownArrowKeyCode  = 40;
 }
 
 - (void)cancel:(id)sender
+{
+}
+
+- (void)insertTab:(id)sender
 {
 }
 

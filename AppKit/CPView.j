@@ -179,6 +179,10 @@ var DOMElementPrototype         = nil,
     // Theming Support
     CPTheme             _theme;
     JSObject            _themedAttributes;
+
+    // Key View Support
+    CPView              _nextKeyView;
+    CPView              _previousKeyView;
 }
 
 /*
@@ -988,6 +992,24 @@ var DOMElementPrototype         = nil,
 #if PLATFORM(DOM)
     _DOMElement.style.display = _isHidden ? "none" : "block";
 #endif
+
+    if (aFlag)
+    {
+        var view = [_window firstResponder];
+
+        if ([view isKindOfClass:[CPView class]])
+        {
+            do 
+            {
+               if (self == view)
+               {
+                  [_window makeFirstResponder:[self nextValidKeyView]];
+                  break;
+               }   
+            } 
+            while (view = [view superview]);
+        }
+    }
 }
 
 /*!
@@ -1785,6 +1807,56 @@ setBoundsOrigin:
 
 @end
 
+@implementation CPView (KeyView)
+
+- (BOOL)canBecomeKeyView
+{
+    return [self acceptsFirstResponder] && ![self isHiddenOrHasHiddenAncestor];
+}
+
+- (CPView)nextKeyView
+{
+    return _nextKeyView;
+}
+
+- (CPView)nextValidKeyView
+{
+    var result = [self nextKeyView];
+
+    while (result && ![result canBecomeKeyView])
+        result = [result nextKeyView];
+
+    return result;
+}
+
+- (CPView)previousKeyView
+{
+    return _previousKeyView;
+}
+
+- (CPView)previousValidKeyView
+{
+    var result = [self previousKeyView];
+
+    while (result && ![result canBecomeKeyView])
+        result = [result previousKeyView];
+
+    return result;
+}
+
+- (void)_setPreviousKeyView:(CPView)previous
+{
+    _previousKeyView = previous;
+}
+
+- (void)setNextKeyView:(CPView)next
+{
+    _nextKeyView = next;
+    [_nextKeyView _setPreviousKeyView:self];
+}
+
+@end
+
 @implementation CPView (CoreAnimationAdditions)
 
 /*!
@@ -2011,7 +2083,9 @@ var CPViewAutoresizingMaskKey       = @"CPViewAutoresizingMask",
     CPViewSubviewsKey               = @"CPViewSubviewsKey",
     CPViewSuperviewKey              = @"CPViewSuperviewKey",
     CPViewTagKey                    = @"CPViewTagKey",
-    CPViewWindowKey                 = @"CPViewWindowKey";
+    CPViewWindowKey                 = @"CPViewWindowKey",
+    CPViewNextKeyViewKey            = @"CPViewNextKeyViewKey",
+    CPViewPreviousKeyViewKey        = @"CPViewPreviousKeyViewKey";
 
 @implementation CPView (CPCoding)
 
@@ -2122,6 +2196,9 @@ var CPViewAutoresizingMaskKey       = @"CPViewAutoresizingMask",
     [aCoder encodeBool:_isHidden forKey:CPViewIsHiddenKey];
     [aCoder encodeFloat:_opacity forKey:CPViewOpacityKey];
     
+    [aCoder encodeConditionalObject:[self nextKeyView] forKey:CPViewNextKeyViewKey];
+    [aCoder encodeConditionalObject:[self previousKeyView] forKey:CPViewPreviousKeyViewKey];
+
     for (var attributeName in _themedAttributes)
         if (_themedAttributes.hasOwnProperty(attributeName))
             CPThemedAttributeEncode(aCoder, _themedAttributes[attributeName]);
