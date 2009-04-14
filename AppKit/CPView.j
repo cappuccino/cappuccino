@@ -528,7 +528,7 @@ var DOMElementPrototype         = nil,
 {
     var view = self;
     
-    while (![view isKindOfClass:[_CPMenuItemView class]])
+    while (view && ![view isKindOfClass:[_CPMenuItemView class]])
         view = [view superview];
     
     if (view)
