@@ -199,6 +199,7 @@ CPTextFieldStatePlaceholder = 1 << 13;
             {
                 [CPTextFieldInputOwner sendAction:[CPTextFieldInputOwner action] to:[CPTextFieldInputOwner targer]];    
                 [[CPTextFieldInputOwner window] makeFirstResponder:nil];
+                CPTextFieldInputOwner = nil;
             }
             else if (anEvent && anEvent.keyCode == CPTabKeyCode)
             {
@@ -209,7 +210,6 @@ CPTextFieldStatePlaceholder = 1 << 13;
             }
 
             [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
-            CPTextFieldInputOwner = nil;
         }
 
         if (document.attachEvent)
@@ -503,8 +503,6 @@ CPTextFieldStatePlaceholder = 1 << 13;
         CPTextFieldHandleBlur(nil, [[self class] _inputElement]);
 
     _DOMElement.removeChild(element);
-
-    CPTextFieldInputOwner = nil;
 
 #endif
 
