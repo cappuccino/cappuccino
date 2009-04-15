@@ -257,6 +257,10 @@ CPDownArrowKeyCode  = 40;
 {
 }
 
+- (void)insertBackTab:(id)sender
+{
+}
+
 /*!
     Inserts some text at the caret position or selection.
     @param aString the string to insert
