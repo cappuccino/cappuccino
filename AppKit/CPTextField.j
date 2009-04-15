@@ -684,8 +684,8 @@ CPTextFieldStatePlaceholder = 1 << 13;
 - (CGRect)bezelRectForBounds:(CFRect)bounds
 {
     var bezelInset = [self currentValueForThemedAttributeName:@"bezel-inset"];
-    
-    if (!_CGInsetIsEmpty(bezelInset))
+
+    if (_CGInsetIsEmpty(bezelInset))
         return bounds;
     
     bounds.origin.x += bezelInset.left;
