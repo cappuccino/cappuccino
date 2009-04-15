@@ -409,6 +409,7 @@ CPTexturedBackgroundWindowMask
             [self setFullBridge:YES];
 
         _defaultButtonEnabled = YES;
+        _keyViewLoopIsDirty = YES;
     }
     
     return self;
@@ -1719,7 +1720,8 @@ CPTexturedBackgroundWindowMask
 
 - (void)_dirtyKeyViewLoop
 {
-    _keyViewLoopIsDirty = YES;
+    if (_autorecalculatesKeyViewLoop)
+        _keyViewLoopIsDirty = YES;
 }
 
 - (void)recalculateKeyViewLoop
@@ -1754,7 +1756,8 @@ CPTexturedBackgroundWindowMask
         return;
 
     _autorecalculatesKeyViewLoop = shouldRecalculate;
-    _keyViewLoopIsDirty = YES;
+    
+    [self _dirtyKeyViewLoop];
 }
 
 - (BOOL)autorecalculatesKeyViewLoop
@@ -1776,7 +1779,7 @@ CPTexturedBackgroundWindowMask
 
 - (void)selectKeyViewFollowingView:(CPView)aView
 {
-    if (_keyViewLoopIsDirty && _autorecalculatesKeyViewLoop)
+    if (_keyViewLoopIsDirty)
         [self recalculateKeyViewLoop];
 
     [self makeFirstResponder:[aView nextValidKeyView]];
@@ -1784,7 +1787,7 @@ CPTexturedBackgroundWindowMask
 
 - (void)selectKeyViewPrecedingView:(CPView)aView
 {
-    if (_keyViewLoopIsDirty && _autorecalculatesKeyViewLoop)
+    if (_keyViewLoopIsDirty)
         [self recalculateKeyViewLoop];
 
     [self makeFirstResponder:[aView previousValidKeyView]];
