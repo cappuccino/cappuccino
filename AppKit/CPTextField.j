@@ -602,7 +602,7 @@ CPTextFieldStatePlaceholder = 1 << 13;
 
 - (void)sizeToFit
 {
-    var size = [(_value || " ") sizeWithFont:[self font]],
+    var size = [([self stringValue] || " ") sizeWithFont:[self font]],
         contentInset = [self currentValueForThemedAttributeName:@"content-inset"];
 
     [self setFrameSize:CGSizeMake(size.width + contentInset.left + contentInset.right, size.height + contentInset.top + contentInset.bottom)];
