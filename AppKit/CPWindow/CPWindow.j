@@ -257,6 +257,7 @@ var CPWindowSaveImage       = nil,
 
     CPToolbar                   _toolbar;
     CPResponder                 _firstResponder;
+    CPResponder                 _initialFirstResponder;
     id                          _delegate;
 
     CPString                    _title;
@@ -432,6 +433,12 @@ CPTexturedBackgroundWindowMask
 + (Class)_windowViewClassForFullBridgeStyleMask:(unsigned)aStyleMask
 {
     return _CPBorderlessBridgeWindowView;
+}
+
+- (void)awakeFromCib
+{
+    if (_initialFirstResponder)
+        [self makeFirstResponder:_initialFirstResponder];
 }
 
 - (void)_setWindowView:(CPView)aWindowView
