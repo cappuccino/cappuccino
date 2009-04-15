@@ -94,7 +94,6 @@
 {
     CPView          _pickerView;
     CPView          _brightnessSlider;
-    DOMElement      _brightnessBarImage;
     __CPColorWheel  _hueSaturationView;
 
     CPColor         _cachedColor;
@@ -112,36 +111,25 @@
     _pickerView = [[CPView alloc] initWithFrame:aFrame];
     [_pickerView setAutoresizingMask:CPViewWidthSizable|CPViewHeightSizable];
 
-    var path = [[CPBundle bundleForClass: CPColorPicker] pathForResource:@"brightness_bar.png"]; 
+    _brightnessSlider = [[CPSlider alloc] initWithFrame:CGRectMake(0, (aFrame.size.height - 34), aFrame.size.width, 15)];
 
-    _brightnessBarImage = new Image();
-    _brightnessBarImage.src = path;
-    _brightnessBarImage.style.width = "100%";
-    _brightnessBarImage.style.height = "100%";
-    _brightnessBarImage.style.position = "absolute";
-    _brightnessBarImage.style.top = "0px";
-    _brightnessBarImage.style.left = "0px";
+    [_brightnessSlider setValue:15.0 forThemedAttributeName:@"track-width"];
+    [_brightnessSlider setValue:[CPColor colorWithPatternImage:[[CPImage alloc] initWithContentsOfFile:[[CPBundle bundleForClass:[CPColorPicker class]] pathForResource:@"brightness_bar.png"]]] forThemedAttributeName:@"horizontal-track-color"];
 
-    var brightnessBarView = [[CPView alloc] initWithFrame: CPRectMake(0, (aFrame.size.height - 34), aFrame.size.width, 15)];
-    [brightnessBarView setAutoresizingMask: (CPViewWidthSizable | CPViewMinYMargin)];
-    brightnessBarView._DOMElement.appendChild(_brightnessBarImage);
-
-    _brightnessSlider = [[CPSlider alloc] initWithFrame: CPRectMake(0, aFrame.size.height - 22, aFrame.size.width, 12)];
-    [_brightnessSlider setMaxValue:  100.0];
-    [_brightnessSlider setMinValue:    0.0];
+    [_brightnessSlider setMinValue:0.0];
+    [_brightnessSlider setMaxValue:100.0];
     [_brightnessSlider setFloatValue:100.0];
 
-    [_brightnessSlider setTarget: self];
-    [_brightnessSlider setAction: @selector(brightnessSliderDidChange:)];
-    [_brightnessSlider setAutoresizingMask: (CPViewWidthSizable | CPViewMinYMargin)];
+    [_brightnessSlider setTarget:self];
+    [_brightnessSlider setAction:@selector(brightnessSliderDidChange:)];
+    [_brightnessSlider setAutoresizingMask:CPViewWidthSizable | CPViewMinYMargin];
 
     _hueSaturationView = [[__CPColorWheel alloc] initWithFrame: CPRectMake(0, 0, aFrame.size.width, aFrame.size.height - 38)];
     [_hueSaturationView setDelegate: self];
     [_hueSaturationView setAutoresizingMask: (CPViewWidthSizable | CPViewHeightSizable)];
 
-    [_pickerView addSubview: brightnessBarView];
-    [_pickerView addSubview: _hueSaturationView];
-    [_pickerView addSubview: _brightnessSlider];
+    [_pickerView addSubview:_hueSaturationView];
+    [_pickerView addSubview:_brightnessSlider];
 }
 
 -(void)brightnessSliderDidChange:(id)sender
@@ -160,10 +148,10 @@
         saturation = [_hueSaturationView distance],
         brightness = [_brightnessSlider floatValue];
 
-    [_hueSaturationView setWheelBrightness: brightness / 100.0];
-    _brightnessBarImage.style.backgroundColor = "#"+[[CPColor colorWithHue: hue saturation: saturation brightness: 100] hexString];
+    [_hueSaturationView setWheelBrightness:brightness / 100.0];
+    [_brightnessSlider setBackgroundColor:[CPColor colorWithHue:hue saturation:saturation brightness:100]];
 
-    _cachedColor = [CPColor colorWithHue: hue saturation: saturation brightness: brightness];
+    _cachedColor = [CPColor colorWithHue:hue saturation:saturation brightness:brightness];
 
     [[self colorPanel] setColor:_cachedColor];
 }
@@ -197,7 +185,7 @@
     [_brightnessSlider setFloatValue:hsb[2]];
     [_hueSaturationView setWheelBrightness:hsb[2] / 100.0];
 
-    _brightnessBarImage.style.backgroundColor = "#"+[[CPColor colorWithHue:hsb[0] saturation:hsb[1] brightness:100] hexString];
+    [_brightnessSlider setBackgroundColor:[CPColor colorWithHue:hsb[0] saturation:hsb[1] brightness:100]];
 }
 
 - (CPImage)provideNewButtonImage

@@ -149,8 +149,8 @@ var cachedBlackColor,
 */
 + (CPColor)colorWithHue:(float)hue saturation:(float)saturation brightness:(float)brightness
 {
-    if(saturation == 0.0)
-        return [CPColor colorWithCalibratedWhite: brightness/100.0 alpha: 1.0];
+    if(saturation === 0.0)
+        return [CPColor colorWithCalibratedWhite:brightness / 100.0 alpha:1.0];
     
     var f = hue % 60,
         p = (brightness * (100 - saturation)) / 10000,
