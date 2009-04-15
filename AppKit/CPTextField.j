@@ -197,7 +197,7 @@ CPTextFieldStatePlaceholder = 1 << 13;
 
             if (anEvent && anEvent.keyCode == CPReturnKeyCode)
             {
-                [CPTextFieldInputOwner sendAction:[CPTextFieldInputOwner action] to:[CPTextFieldInputOwner targer]];    
+                [CPTextFieldInputOwner sendAction:[CPTextFieldInputOwner action] to:[CPTextFieldInputOwner target]];    
                 [[CPTextFieldInputOwner window] makeFirstResponder:nil];
                 CPTextFieldInputOwner = nil;
             }
@@ -207,6 +207,12 @@ CPTextFieldStatePlaceholder = 1 << 13;
                     [[CPTextFieldInputOwner window] selectNextKeyView:CPTextFieldInputOwner];
                 else
                     [[CPTextFieldInputOwner window] selectPreviousKeyView:CPTextFieldInputOwner];
+            }
+            else
+            {
+                var obj = CPTextFieldInputOwner;
+                CPTextFieldInputOwner = nil;
+                [[obj window] makeFirstResponder:nil];
             }
 
             [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
@@ -224,6 +230,9 @@ CPTextFieldStatePlaceholder = 1 << 13;
             CPTextFieldDOMInputElement.addEventListener(CPDOMEventKeyDown, keydownFunction, NO);
             CPTextFieldDOMInputElement.addEventListener(CPDOMEventKeyPress, keypressFunction, NO);
         }
+
+        //FIXME make this not onblur
+        CPTextFieldDOMInputElement.onblur = blurFunction;
     }
 
     return CPTextFieldDOMInputElement;
@@ -499,10 +508,8 @@ CPTextFieldStatePlaceholder = 1 << 13;
 
     var element = [[self class] _inputElement];
 
-    if (CPTextFieldInputOwner == self)
-        CPTextFieldHandleBlur(nil, [[self class] _inputElement]);
-
-    _DOMElement.removeChild(element);
+    if (element.parentNode == _DOMElement)
+        _DOMElement.removeChild(element);
 
 #endif
 
