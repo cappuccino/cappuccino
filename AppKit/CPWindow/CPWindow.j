@@ -279,6 +279,9 @@ var CPWindowSaveImage       = nil,
     CPButton                    _defaultButton;
     BOOL                        _defaultButtonEnabled;
 
+    BOOL                        _autorecalculatesKeyViewLoop;
+    BOOL                        _keyViewLoopIsDirty;
+
     // Bridge Support
 #if PLATFORM(DOM)
     DOMElement                  _DOMElement;
@@ -1714,6 +1717,51 @@ CPTexturedBackgroundWindowMask
     [self selectNextKeyView:nil];
 }
 
+- (void)_dirtyKeyViewLoop
+{
+    _keyViewLoopIsDirty = YES;
+}
+
+- (void)recalculateKeyViewLoop
+{
+    var subviews = [];
+    
+    [self _appendSubviewsOf:_contentView toArray:subviews];
+
+    var keyViewOrder = [subviews sortedArrayUsingFunction:keyViewComparator context:_contentView],
+        count = [keyViewOrder count];
+
+    for (var i=0; i<count; i++)
+        [keyViewOrder[i] setNextKeyView:keyViewOrder[(i+1)%count]];
+    
+    _keyViewLoopIsDirty = NO;
+}
+
+- (void)_appendSubviewsOf:(CPView)aView toArray:(CPArray)anArray
+{
+    var subviews = [aView subviews],
+        count = [subviews count];
+
+    while (count--)
+        [self _appendSubviewsOf:subviews[count] toArray:anArray];
+
+    [anArray addObject:aView];
+}
+
+- (void)setAutorecalculatesKeyViewLoop:(BOOL)shouldRecalculate
+{
+    if (_autorecalculatesKeyViewLoop === shouldRecalculate)
+        return;
+
+    _autorecalculatesKeyViewLoop = shouldRecalculate;
+    _keyViewLoopIsDirty = YES;
+}
+
+- (BOOL)autorecalculatesKeyViewLoop
+{
+    return _autorecalculatesKeyViewLoop;
+}
+
 - (void)selectNextKeyView:(id)sender
 {
     if ([_firstResponder isKindOfClass:[CPView class]])
@@ -1728,11 +1776,17 @@ CPTexturedBackgroundWindowMask
 
 - (void)selectKeyViewFollowingView:(CPView)aView
 {
+    if (_keyViewLoopIsDirty && _autorecalculatesKeyViewLoop)
+        [self recalculateKeyViewLoop];
+
     [self makeFirstResponder:[aView nextValidKeyView]];
 }
 
 - (void)selectKeyViewPrecedingView:(CPView)aView
 {
+    if (_keyViewLoopIsDirty && _autorecalculatesKeyViewLoop)
+        [self recalculateKeyViewLoop];
+
     [self makeFirstResponder:[aView previousValidKeyView]];
 }
 
@@ -1781,6 +1835,21 @@ CPTexturedBackgroundWindowMask
 }
 
 @end
+
+var keyViewComparator = function(a, b, context)
+{
+    var viewBounds = [a convertRect:[a bounds] toView:nil],
+        otherBounds = [b convertRect:[b bounds] toView:nil];
+
+    if (CGRectGetMinY(viewBounds) < CGRectGetMinY(otherBounds))
+        return -1;
+    else if (CGRectGetMinY(viewBounds) == CGRectGetMinY(otherBounds) && CGRectGetMinX(viewBounds) < CGRectGetMinX(otherBounds))
+        return -1;
+    else if (CGRectGetMinX(viewBounds) == CGRectGetMinX(otherBounds) && CGRectGetMinX(viewBounds) == CGRectGetMinX(otherBounds))
+        return 0;
+    else
+        return 1;
+}
 
 @implementation CPWindow (MenuBar)
 

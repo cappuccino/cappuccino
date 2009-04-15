@@ -324,7 +324,10 @@ var DOMElementPrototype         = nil,
 {
     // We will have to adjust the z-index of all views starting at this index.
     var count = _subviews.length;
-    
+
+    // dirty the key view loop, in case the window wants to auto recalculate it
+    [[self window] _dirtyKeyViewLoop];
+
     // If this is already one of our subviews, remove it.
     if (aSubview._superview == self)
     {
@@ -403,6 +406,9 @@ var DOMElementPrototype         = nil,
     if (!_superview)
         return;
 
+    // dirty the key view loop, in case the window wants to auto recalculate it
+    [[self window] _dirtyKeyViewLoop];
+
     [_superview willRemoveSubview:self];
     
     [[_superview subviews] removeObject:self];
@@ -438,6 +444,8 @@ var DOMElementPrototype         = nil,
     if (_window === aWindow)
         return;
     
+    [[self window] _dirtyKeyViewLoop];
+
     // Clear out first responder if we're the first responder and leaving.
     if ([_window firstResponder] === self)
         [_window makeFirstResponder:nil];
@@ -461,6 +469,8 @@ var DOMElementPrototype         = nil,
         [_subviews[count] _setWindow:aWindow];
     
     [self viewDidMoveToWindow];
+
+    [[self window] _dirtyKeyViewLoop];
 }
 
 /*!
