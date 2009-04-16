@@ -271,28 +271,31 @@ CPColorPickerViewHeight = 370;
 {
     if (_toolbar)
         return;
-            
+
+    if (!_color)
+        _color = [CPColor whiteColor];
+
     _colorPickers = [];
-    
+
     var count = [ColorPickerClasses count];
     for (var i=0; i<count; i++)
     {
         var currentPickerClass = ColorPickerClasses[i],
             currentPicker = [[currentPickerClass alloc] initWithPickerMask:0 colorPanel:self];
-            
+
         _colorPickers.push(currentPicker);
     }
 
     var contentView = [self contentView],
         bounds = [contentView bounds];
-    
+
     _toolbar = [[CPView alloc] initWithFrame:CGRectMake(0, 6, CGRectGetWidth(bounds), TOOLBAR_HEIGHT)];
     [_toolbar setAutoresizingMask: CPViewWidthSizable];  
 
     var totalToolbarWidth = count * ICON_WIDTH + (count - 1) * ICON_PADDING,
         leftOffset = (CGRectGetWidth(bounds) - totalToolbarWidth) / 2.0,
         buttonForLater = nil;
-    
+
     for (var i=0; i<count; i++)
     {
         var image = [_colorPickers[i] provideNewButtonImage],
@@ -316,17 +319,17 @@ CPColorPickerViewHeight = 370;
 
     // FIXME: http://280north.lighthouseapp.com/projects/13294-cappuccino/tickets/25-implement-cpbox
     var previewBox = [[CPView alloc] initWithFrame:CGRectMake(76, TOOLBAR_HEIGHT + 10, CGRectGetWidth(bounds) - 86, PREVIEW_HEIGHT)];
-    
+
     _previewView = [[_CPColorPanelPreview alloc] initWithFrame:CGRectInset([previewBox bounds], 2.0, 2.0)];
-                                                         
+
     [_previewView setColorPanel:self];
     [_previewView setAutoresizingMask:CPViewWidthSizable];  
-    
+
     [previewBox setBackgroundColor:[CPColor colorWithWhite:0.8 alpha:1.0]];
     [previewBox setAutoresizingMask:CPViewWidthSizable];
-    
+
     [previewBox addSubview:_previewView];
-        
+
     _previewLabel = [[CPTextField alloc] initWithFrame: CPRectMake(10, TOOLBAR_HEIGHT + 13, 60, 15)];
     [_previewLabel setStringValue: "Preview:"];
     [_previewLabel setTextColor:[CPColor blackColor]];
@@ -337,9 +340,9 @@ CPColorPickerViewHeight = 370;
 
     [swatchBox setBackgroundColor:[CPColor colorWithWhite:0.8 alpha:1.0]];
     [swatchBox setAutoresizingMask:CPViewWidthSizable];
-    
+
     _swatchView = [[_CPColorPanelSwatches alloc] initWithFrame:CGRectInset([swatchBox bounds], 1.0, 1.0)];
-                                                                     
+
     [_swatchView setColorPanel: self];
     [_swatchView setAutoresizingMask: CPViewWidthSizable];  
 
@@ -356,13 +359,13 @@ CPColorPickerViewHeight = 370;
     [contentView addSubview: _previewLabel];
     [contentView addSubview: swatchBox];
     [contentView addSubview: _swatchLabel];
-    
+
     _target = nil;
     _action = nil;
     _activePicker = nil;
-    
-    [_previewView setBackgroundColor: _color ? _color : [CPColor whiteColor]];
-    
+
+    [_previewView setBackgroundColor: _color];
+
     if (buttonForLater)
         [self _setPicker:buttonForLater];
 }
