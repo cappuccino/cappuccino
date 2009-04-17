@@ -63,20 +63,19 @@ CPColorPickerViewHeight = 370;
     _CPColorPanelToolbar    _toolbar;
     _CPColorPanelSwatches   _swatchView;
     _CPColorPanelPreview    _previewView;
-    
-    CPTextField     _previewLabel;
-    CPTextField     _swatchLabel;
-        
+
+    CPSlider        _opacitySlider;
+
     CPArray         _colorPickers;
-    CPView          _currentView; 
-    id              _activePicker;   
-    
+    CPView          _currentView;
+    id              _activePicker;
+
     CPColor         _color;
-    
+
     id              _target;
-    SEL             _action;       
-    
-    int             _mode;             
+    SEL             _action;
+
+    int             _mode;
 }
 
 /*! 
@@ -115,7 +114,7 @@ CPColorPickerViewHeight = 370;
 */
 - (id)init
 {
-    self = [super initWithContentRect:CGRectMake(500.0, 50.0, 219.0, 322.0) 
+    self = [super initWithContentRect:CGRectMake(500.0, 50.0, 219.0, 370.0) 
                             styleMask:(CPTitledWindowMask | CPClosableWindowMask | CPResizableWindowMask)];
 
     if (self)
@@ -153,6 +152,7 @@ CPColorPickerViewHeight = 370;
                       object:self];
 
     [_activePicker setColor:_color];
+    [_opacitySlider setFloatValue:[_color alphaComponent]];
 }
 
 /*!
@@ -174,6 +174,11 @@ CPColorPickerViewHeight = 370;
 - (CPColor)color
 {
     return _color;
+}
+
+- (float)opacity
+{
+    return [_opacitySlider floatValue];
 }
 
 /*!
@@ -236,7 +241,7 @@ CPColorPickerViewHeight = 370;
         [view setFrame:[_currentView frame]];
     else
     {
-        var height = (TOOLBAR_HEIGHT+10+PREVIEW_HEIGHT+5+SWATCH_HEIGHT+10),
+        var height = (TOOLBAR_HEIGHT+10+PREVIEW_HEIGHT+5+SWATCH_HEIGHT+32),
             bounds = [[self contentView] bounds];
 
         [view setFrameSize: CPSizeMake(bounds.size.width - 10, bounds.size.height - height)];
@@ -330,7 +335,7 @@ CPColorPickerViewHeight = 370;
 
     [previewBox addSubview:_previewView];
 
-    _previewLabel = [[CPTextField alloc] initWithFrame: CPRectMake(10, TOOLBAR_HEIGHT + 13, 60, 15)];
+    var _previewLabel = [[CPTextField alloc] initWithFrame: CPRectMake(10, TOOLBAR_HEIGHT + 10, 60, 15)];
     [_previewLabel setStringValue: "Preview:"];
     [_previewLabel setTextColor:[CPColor blackColor]];
     [_previewLabel setAlignment:CPRightTextAlignment];
@@ -348,17 +353,32 @@ CPColorPickerViewHeight = 370;
 
     [swatchBox addSubview:_swatchView];
 
-    _swatchLabel = [[CPTextField alloc] initWithFrame: CPRectMake(10, TOOLBAR_HEIGHT + 8 + PREVIEW_HEIGHT + 7, 60, 15)];
+    var _swatchLabel = [[CPTextField alloc] initWithFrame: CPRectMake(10, TOOLBAR_HEIGHT + 8 + PREVIEW_HEIGHT + 6, 60, 15)];
     [_swatchLabel setStringValue: "Swatches:"];
     [_swatchLabel setTextColor:[CPColor blackColor]];
     [_swatchLabel setAlignment:CPRightTextAlignment];
 
 
-    [contentView addSubview: _toolbar];
-    [contentView addSubview: previewBox];
-    [contentView addSubview: _previewLabel];
-    [contentView addSubview: swatchBox];
-    [contentView addSubview: _swatchLabel];
+    var opacityLabel = [[CPTextField alloc] initWithFrame: CPRectMake(10, TOOLBAR_HEIGHT + PREVIEW_HEIGHT + 35, 60, 20)];
+    [opacityLabel setStringValue: "Opacity:"];
+    [opacityLabel setTextColor:[CPColor blackColor]];
+    [opacityLabel setAlignment:CPRightTextAlignment];
+
+    _opacitySlider = [[CPSlider alloc] initWithFrame:CGRectMake(76, TOOLBAR_HEIGHT + PREVIEW_HEIGHT + 34, CGRectGetWidth(bounds) - 86, 20.0)];
+    
+    [_opacitySlider setMinValue:0.0];
+    [_opacitySlider setMaxValue:1.0];
+
+    [_opacitySlider setTarget:self];
+    [_opacitySlider setAction:@selector(setOpacity:)];
+
+    [contentView addSubview:_toolbar];
+    [contentView addSubview:previewBox];
+    [contentView addSubview:_previewLabel];
+    [contentView addSubview:swatchBox];
+    [contentView addSubview:_swatchLabel];
+    [contentView addSubview:opacityLabel];
+    [contentView addSubview:_opacitySlider];
 
     _target = nil;
     _action = nil;
@@ -368,6 +388,14 @@ CPColorPickerViewHeight = 370;
 
     if (buttonForLater)
         [self _setPicker:buttonForLater];
+}
+
+- (void)setOpacity:(id)sender
+{
+    var components = [[self color] components],
+        alpha = [sender floatValue];
+
+    [self setColor:[_color colorWithAlphaComponent:alpha] updatePicker:YES];
 }
 
 @end

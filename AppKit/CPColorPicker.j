@@ -151,7 +151,10 @@
     [_hueSaturationView setWheelBrightness:brightness / 100.0];
     [_brightnessSlider setBackgroundColor:[CPColor colorWithHue:hue saturation:saturation brightness:100]];
 
-    _cachedColor = [CPColor colorWithHue:hue saturation:saturation brightness:brightness];
+    var colorPanel = [self colorPanel],
+        opacity = [colorPanel opacity];
+
+    _cachedColor = [CPColor colorWithHue:hue saturation:saturation brightness:brightness alpha:opacity];
 
     [[self colorPanel] setColor:_cachedColor];
 }

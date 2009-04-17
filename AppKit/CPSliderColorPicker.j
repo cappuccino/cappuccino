@@ -257,15 +257,15 @@
     brightnessValue._DOMElement.appendChild(_brightnessValue);
     [_contentView addSubview: brightnessValue];
 
-    _hexLabel = [[CPTextField alloc] initWithFrame: CPRectMake(0, 230, 100, 20)];
+    _hexLabel = [[CPTextField alloc] initWithFrame: CPRectMake(0, 230, 30, 20)];
     [_hexLabel setStringValue: "Hex"];
     [_hexLabel setTextColor:[CPColor blackColor]];
     
     //hex input box
     _hexValue = _redValue.cloneNode(false);
-    _hexValue.style.top = "255px";
+    _hexValue.style.top = "228px";
     _hexValue.style.width = "80px";
-    _hexValue.style.left = "0px";
+    _hexValue.style.left = "35px";
     _hexValue.onkeypress = function(aDOMEvent) 
     { 
         aDOMEvent = aDOMEvent || window.event;
@@ -329,7 +329,9 @@
 
 -(void)sliderChanged:(id)sender
 {
-    var newColor;
+    var newColor,
+        colorPanel = [self colorPanel],
+        alpha = [colorPanel opacity];
 
     switch(sender)
     {
@@ -337,7 +339,8 @@
         case    _saturationSlider:
         case    _brightnessSlider:      newColor = [CPColor colorWithHue: [_hueSlider floatValue]
                                                               saturation: [_saturationSlider floatValue]
-                                                              brightness: [_brightnessSlider floatValue]];
+                                                              brightness: [_brightnessSlider floatValue]
+                                                                   alpha: alpha];
                                                               
                                         [self updateRGBSliders: newColor];
                                         break;
@@ -347,7 +350,7 @@
         case    _blueSlider:            newColor = [CPColor colorWithCalibratedRed: [_redSlider floatValue]
                                                                              green: [_greenSlider floatValue]
                                                                               blue: [_blueSlider floatValue]
-                                                                             alpha: 1.0];
+                                                                             alpha: alpha];
                                                               
                                         [self updateHSBSliders: newColor];
                                         break;
@@ -355,7 +358,7 @@
         
     [self updateLabels];
     [self updateHex: newColor];
-    [[self colorPanel] setColor: newColor];
+    [colorPanel setColor: newColor];
 }
 
 -(void)setColor:(CPColor)aColor

@@ -149,8 +149,13 @@ var cachedBlackColor,
 */
 + (CPColor)colorWithHue:(float)hue saturation:(float)saturation brightness:(float)brightness
 {
+    return [self colorWithHue:hue saturation:saturation brightness:brightness alpha:1.0];
+}
+
++ (CPColor)colorWithHue:(float)hue saturation:(float)saturation brightness:(float)brightness alpha:(float)alpha
+{
     if(saturation === 0.0)
-        return [CPColor colorWithCalibratedWhite:brightness / 100.0 alpha:1.0];
+        return [CPColor colorWithCalibratedWhite:brightness / 100.0 alpha:alpha];
     
     var f = hue % 60,
         p = (brightness * (100 - saturation)) / 10000,
@@ -160,12 +165,12 @@ var cachedBlackColor,
         
     switch(FLOOR(hue / 60))
     {
-        case 0: return [CPColor colorWithCalibratedRed: b green: t blue: p alpha: 1.0];
-        case 1: return [CPColor colorWithCalibratedRed: q green: b blue: p alpha: 1.0];
-        case 2: return [CPColor colorWithCalibratedRed: p green: b blue: t alpha: 1.0];
-        case 3: return [CPColor colorWithCalibratedRed: p green: q blue: b alpha: 1.0];
-        case 4: return [CPColor colorWithCalibratedRed: t green: p blue: b alpha: 1.0];
-        case 5: return [CPColor colorWithCalibratedRed: b green: p blue: q alpha: 1.0];            
+        case 0: return [CPColor colorWithCalibratedRed: b green: t blue: p alpha: alpha];
+        case 1: return [CPColor colorWithCalibratedRed: q green: b blue: p alpha: alpha];
+        case 2: return [CPColor colorWithCalibratedRed: p green: b blue: t alpha: alpha];
+        case 3: return [CPColor colorWithCalibratedRed: p green: q blue: b alpha: alpha];
+        case 4: return [CPColor colorWithCalibratedRed: t green: p blue: b alpha: alpha];
+        case 5: return [CPColor colorWithCalibratedRed: b green: p blue: q alpha: alpha];
     }
 }
 
