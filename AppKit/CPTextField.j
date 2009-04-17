@@ -453,6 +453,9 @@ CPTextFieldStatePlaceholder = 1 << 13;
 /* @ignore */
 - (BOOL)becomeFirstResponder
 {
+    if (CPTextFieldInputOwner && [CPTextFieldInputOwner window] !== [self window])
+        [[CPTextFieldInputOwner window] makeFirstResponder:nil];
+
     _controlState |= CPControlStateEditing;
 
     [self _updatePlaceholderState];
