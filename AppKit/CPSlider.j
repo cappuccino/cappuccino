@@ -24,28 +24,35 @@
 
 #include "CoreGraphics/CGGeometry.h"
 
+/*! SLIDER STATES */
+
+CPLinearSlider = 0;
+CPCircularSlider = 1;
 
 @implementation CPSlider : CPControl
 {
     double          _minValue;
     double          _maxValue;
     double          _altIncrementValue;
+    int             _sliderType;
 }
 
 + (id)themedAttributes
 {
-    return [CPDictionary dictionaryWithObjects:[nil, _CGSizeMakeZero(), 0.0, nil, nil]
-                                       forKeys:[@"knob-color", @"knob-size", @"track-width", @"vertical-track-color", @"horizontal-track-color"]];
+    return [CPDictionary dictionaryWithObjects:[nil, _CGSizeMakeZero(), 0.0, nil]
+                                       forKeys:[@"knob-color", @"knob-size", @"track-width", @"track-color"]];
 }
 
 - (id)initWithFrame:(CGRect)aFrame
 {
     self = [super initWithFrame:aFrame];
-    
+
     if (self)
     {
         _minValue = 0.0;
         _maxValue = 100.0;
+
+        _sliderType = CPLinearSlider;
         
         [self setObjectValue:50.0];
         
@@ -99,6 +106,26 @@
     [self setNeedsDisplay:YES];
 }
 
+- (void)setSliderType:(CPSliderType)sliderType
+{
+    if (sliderType === _sliderType)
+        return;
+
+    _sliderType = sliderType;
+
+    if (_sliderType === CPCircularSlider)
+        _controlState |= CPControlStateCircular;
+    else
+        _controlState &= ~CPControlStateCircular;
+    
+    [self setNeedsLayout];
+}
+
+- (CPSliderType)sliderType
+{
+    return _sliderType;
+}
+
 - (CGRect)trackRectForBounds:(CGRect)bounds
 {
     var trackWidth = [self currentValueForThemedAttributeName:@"track-width"];
@@ -106,15 +133,30 @@
     if (trackWidth <= 0)
         return _CGRectMakeZero();
     
-    if ([self isVertical])
+    if ([self sliderType] === CPLinearSlider)
     {
-        bounds.origin.x = (_CGRectGetWidth(bounds) - trackWidth) / 2.0;
-        bounds.size.width = trackWidth;
+        if ([self isVertical])
+        {
+            bounds.origin.x = (_CGRectGetWidth(bounds) - trackWidth) / 2.0;
+            bounds.size.width = trackWidth;
+        }
+        else
+        {
+            bounds.origin.y = (_CGRectGetHeight(bounds) - trackWidth) / 2.0;
+            bounds.size.height = trackWidth;
+        }
     }
     else
     {
-        bounds.origin.y = (_CGRectGetHeight(bounds) - trackWidth) / 2.0;
-        bounds.size.height = trackWidth;
+        var originalBounds = CGRectCreateCopy(bounds);
+
+        bounds.size.width = MIN(bounds.size.width, bounds.size.height);
+        bounds.size.height = bounds.size.width;
+
+        if (bounds.size.width < originalBounds.size.width)
+            bounds.origin.x += (originalBounds.size.width - bounds.size.width) / 2.0;
+        else
+            bounds.origin.y += (originalBounds.size.height - bounds.size.height) / 2.0;
     }
     
     return bounds;
@@ -134,17 +176,28 @@
     if (!trackRect || _CGRectIsEmpty(trackRect))
         trackRect = bounds;
 
-    if ([self isVertical])
+    if ([self sliderType] === CPLinearSlider)
     {
-        knobRect.origin.x = _CGRectGetMidX(trackRect) - knobSize.width / 2.0; 
-        knobRect.origin.y = (([self doubleValue] - _minValue) / (_maxValue - _minValue)) * (_CGRectGetHeight(trackRect) - knobSize.height);
+        if ([self isVertical])
+        {
+            knobRect.origin.x = _CGRectGetMidX(trackRect) - knobSize.width / 2.0;
+            knobRect.origin.y = (([self doubleValue] - _minValue) / (_maxValue - _minValue)) * (_CGRectGetHeight(trackRect) - knobSize.height);
+        }
+        else
+        {
+            knobRect.origin.x = (([self doubleValue] - _minValue) / (_maxValue - _minValue)) * (_CGRectGetWidth(trackRect) - knobSize.width);
+            knobRect.origin.y = _CGRectGetMidY(trackRect) - knobSize.height / 2.0;
+        }
     }
     else
     {
-        knobRect.origin.x = (([self doubleValue] - _minValue) / (_maxValue - _minValue)) * (_CGRectGetWidth(trackRect) - knobSize.width);
-        knobRect.origin.y = _CGRectGetMidY(trackRect) - knobSize.height / 2.0;   
+        var angle = 3*PI_2 - ([self doubleValue] - _minValue) / (_maxValue - _minValue) * PI2,
+            radius = CGRectGetWidth(trackRect) / 2.0 - 6.0;
+
+        knobRect.origin.x = radius * COS(angle) + CGRectGetMidX(trackRect) - 3.0;
+        knobRect.origin.y = radius * SIN(angle) + CGRectGetMidY(trackRect) - 2.0;
     }
-    
+
     return knobRect;
 }
 
@@ -200,9 +253,9 @@
       
     if (trackView)
         if ([self isVertical])
-            [trackView setBackgroundColor:[self currentValueForThemedAttributeName:@"vertical-track-color"]];
+            [trackView setBackgroundColor:[self currentValueForThemedAttributeName:@"track-color"]];
         else
-            [trackView setBackgroundColor:[self currentValueForThemedAttributeName:@"horizontal-track-color"]];
+            [trackView setBackgroundColor:[self currentValueForThemedAttributeName:@"track-color"]];
 
     var knobView = [self layoutEphemeralSubviewNamed:@"knob-view"
                                           positioned:CPWindowAbove
@@ -223,27 +276,44 @@
         knobRect = [self knobRectForBounds:bounds],
         trackRect = [self trackRectForBounds:bounds];
 
-    if ([self isVertical])
+    if ([self sliderType] === CPLinearSlider)
     {
-        var knobHeight = _CGRectGetHeight(knobRect);
-        
-        trackRect.origin.y += knobHeight / 2;
-        trackRect.size.height -= knobHeight;
-        
-        var minValue = [self minValue];
-        
-        return MAX(0.0, MIN(1.0, (aPoint.y - _CGRectGetMinY(trackRect)) / _CGRectGetHeight(trackRect))) * ([self maxValue] - minValue) + minValue;
+        if ([self isVertical])
+        {
+            var knobHeight = _CGRectGetHeight(knobRect);
+
+            trackRect.origin.y += knobHeight / 2;
+            trackRect.size.height -= knobHeight;
+
+            var minValue = [self minValue];
+
+            return MAX(0.0, MIN(1.0, (aPoint.y - _CGRectGetMinY(trackRect)) / _CGRectGetHeight(trackRect))) * ([self maxValue] - minValue) + minValue;
+        }
+        else
+        {
+            var knobWidth = _CGRectGetWidth(knobRect);
+
+            trackRect.origin.x += knobWidth / 2;
+            trackRect.size.width -= knobWidth;
+
+            var minValue = [self minValue];
+
+            return MAX(0.0, MIN(1.0, (aPoint.x - _CGRectGetMinX(trackRect)) / _CGRectGetWidth(trackRect))) * ([self maxValue] - minValue) + minValue;
+        }
     }
     else
+    {
+        var knobWidth = _CGRectGetWidth(knobRect);
 
-    var knobWidth = _CGRectGetWidth(knobRect);
-    
-    trackRect.origin.x += knobWidth / 2;
-    trackRect.size.width -= knobWidth;
-    
-    var minValue = [self minValue];
-    
-    return MAX(0.0, MIN(1.0, (aPoint.x - _CGRectGetMinX(trackRect)) / _CGRectGetWidth(trackRect))) * ([self maxValue] - minValue) + minValue;
+        trackRect.origin.x += knobWidth / 2;
+        trackRect.size.width -= knobWidth;
+
+        var minValue = [self minValue],
+            dx = aPoint.x - _CGRectGetMidX(trackRect),
+            dy = aPoint.y - _CGRectGetMidY(trackRect);
+
+        return MAX(0.0, MIN(1.0, (3*PI_2 - ATAN2(dy, dx))%PI2 / PI2)) * ([self maxValue] - minValue) + minValue;
+    }
 }
 
 - (BOOL)startTrackingAt:(CGPoint)aPoint
@@ -311,7 +381,8 @@
 
 var CPSliderMinValueKey             = "CPSliderMinValueKey",
     CPSliderMaxValueKey             = "CPSliderMaxValueKey",
-    CPSliderAltIncrValueKey         = "CPSliderAltIncrValueKey";
+    CPSliderAltIncrValueKey         = "CPSliderAltIncrValueKey",
+    CPSliderTypeKey                 = "CPSliderTypeKey";
 
 @implementation CPSlider (CPCoding)
 
@@ -326,6 +397,7 @@ var CPSliderMinValueKey             = "CPSliderMinValueKey",
     {
         _altIncrementValue = [aCoder decodeDoubleForKey:CPSliderAltIncrValueKey];
 
+        [self setSliderType:[aCoder decodeIntForkey:CPSliderTypeKey]];
         [self setContinuous:YES];
 
         [self setNeedsLayout];
@@ -342,6 +414,7 @@ var CPSliderMinValueKey             = "CPSliderMinValueKey",
     [aCoder encodeDouble:_minValue forKey:CPSliderMinValueKey];
     [aCoder encodeDouble:_maxValue forKey:CPSliderMaxValueKey];
     [aCoder encodeDouble:_altIncrementValue forKey:CPSliderAltIncrValueKey];
+    [aCoder encodeInt:_sliderType forKey:CPSliderTypeKey];
 }
 
 @end

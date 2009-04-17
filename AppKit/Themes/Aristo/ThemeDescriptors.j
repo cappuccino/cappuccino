@@ -7,7 +7,7 @@
  */
 
 @import <Foundation/CPObject.j>
-
+@import <AppKit/CPThemedAttribute.j>
 
 @implementation AristoThemeDescriptor : CPObject
 {
@@ -315,7 +315,7 @@
         isVertical:NO]];
 
     [slider setValue:5.0 forThemedAttributeName:@"track-width"];
-    [slider setValue:trackColor forThemedAttributeName:@"horizontal-track-color"];
+    [slider setValue:trackColor forThemedAttributeName:@"track-color"];
     
         var knobColor = [CPColor colorWithPatternImage:[_CPCibCustomResource imageResourceWithName:"knob.png" size:CGSizeMake(23.0, 24.0)]];
         knobHighlightedColor = [CPColor colorWithPatternImage:[_CPCibCustomResource imageResourceWithName:"knob-highlighted.png" size:CGSizeMake(23.0, 24.0)]];
@@ -339,7 +339,7 @@
         isVertical:YES]];
         
     [slider setValue:5.0 forThemedAttributeName:@"track-width"];
-    [slider setValue:trackColor forThemedAttributeName:@"vertical-track-color"];
+    [slider setValue:trackColor forThemedAttributeName:@"track-color"];
     
         var knobColor = [CPColor colorWithPatternImage:[_CPCibCustomResource imageResourceWithName:"knob.png" size:CGSizeMake(23.0, 24.0)]];
         knobHighlightedColor = [CPColor colorWithPatternImage:[_CPCibCustomResource imageResourceWithName:"knob-highlighted.png" size:CGSizeMake(23.0, 24.0)]];
@@ -350,6 +350,26 @@
     
     return slider;
 }
+
++ (CPSlider)themedCircularSlider
+{
+    var slider = [[CPSlider alloc] initWithFrame:CGRectMake(0.0, 0.0, 32.0, 32.0)],
+        trackColor = [CPColor colorWithPatternImage:[_CPCibCustomResource imageResourceWithName:"circularSliderBezel.png" size:CGSizeMake(32.0, 32.0)]];
+
+    [slider setSliderType:CPCircularSlider];
+    [slider setValue:trackColor forThemedAttributeName:@"track-color" inControlState:CPControlStateCircular];
+    [slider setValue:trackColor forThemedAttributeName:@"track-color" inControlState:CPControlStateCircular|CPControlStateVertical];
+
+    var knobColor = [CPColor colorWithPatternImage:[_CPCibCustomResource imageResourceWithName:"circularSliderKnob.png" size:CGSizeMake(5.0, 5.0)]],
+        knobHighlightedColor = knobColor;
+
+    [slider setValue:CGSizeMake(5.0, 5.0) forThemedAttributeName:@"knob-size" inControlState:CPControlStateCircular];
+    [slider setValue:knobColor forThemedAttributeName:@"knob-color" inControlState:CPControlStateCircular];
+    [slider setValue:knobHighlightedColor forThemedAttributeName:@"knob-color" inControlState:CPControlStateCircular|CPControlStateHighlighted];
+
+    return slider;
+}
+
 /*
     var buttonBar = [[CPButtonBar alloc] initWithFrame:CGRectMake(0.0, 0.0, 100.0, 30.0)],
         color = [CPColor colorWithPatternImage:[[CPThreePartImage alloc] initWithImageSlices:
