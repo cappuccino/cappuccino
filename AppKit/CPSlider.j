@@ -34,7 +34,6 @@ CPCircularSlider = 1;
     double          _minValue;
     double          _maxValue;
     double          _altIncrementValue;
-    int             _sliderType;
 }
 
 + (id)themedAttributes
@@ -51,8 +50,6 @@ CPCircularSlider = 1;
     {
         _minValue = 0.0;
         _maxValue = 100.0;
-
-        _sliderType = CPLinearSlider;
         
         [self setObjectValue:50.0];
         
@@ -106,24 +103,23 @@ CPCircularSlider = 1;
     [self setNeedsDisplay:YES];
 }
 
-- (void)setSliderType:(CPSliderType)sliderType
+- (void)setSliderType:(CPSliderType)aSliderType
 {
-    if (sliderType === _sliderType)
+    if ((aSliderType === CPCircularSlider) === (_controlState & CPControlStateCircular))
         return;
 
-    _sliderType = sliderType;
-
-    if (_sliderType === CPCircularSlider)
+    if (aSliderType === CPCircularSlider)
         _controlState |= CPControlStateCircular;
     else
         _controlState &= ~CPControlStateCircular;
     
     [self setNeedsLayout];
+    [self setNeedsDisplay:YES];
 }
 
 - (CPSliderType)sliderType
 {
-    return _sliderType;
+    return (_controlState & CPControlStateCircular) ? CPCircularSlider : CPLinearSlider;
 }
 
 - (CGRect)trackRectForBounds:(CGRect)bounds
@@ -133,20 +129,7 @@ CPCircularSlider = 1;
     if (trackWidth <= 0)
         return _CGRectMakeZero();
     
-    if ([self sliderType] === CPLinearSlider)
-    {
-        if ([self isVertical])
-        {
-            bounds.origin.x = (_CGRectGetWidth(bounds) - trackWidth) / 2.0;
-            bounds.size.width = trackWidth;
-        }
-        else
-        {
-            bounds.origin.y = (_CGRectGetHeight(bounds) - trackWidth) / 2.0;
-            bounds.size.height = trackWidth;
-        }
-    }
-    else
+    if (_controlState & CPControlStateCircular)
     {
         var originalBounds = CGRectCreateCopy(bounds);
 
@@ -157,6 +140,16 @@ CPCircularSlider = 1;
             bounds.origin.x += (originalBounds.size.width - bounds.size.width) / 2.0;
         else
             bounds.origin.y += (originalBounds.size.height - bounds.size.height) / 2.0;
+    }
+    else if ([self isVertical])
+    {
+        bounds.origin.x = (_CGRectGetWidth(bounds) - trackWidth) / 2.0;
+        bounds.size.width = trackWidth;
+    }
+    else
+    {
+        bounds.origin.y = (_CGRectGetHeight(bounds) - trackWidth) / 2.0;
+        bounds.size.height = trackWidth;
     }
     
     return bounds;
@@ -176,26 +169,23 @@ CPCircularSlider = 1;
     if (!trackRect || _CGRectIsEmpty(trackRect))
         trackRect = bounds;
 
-    if ([self sliderType] === CPLinearSlider)
-    {
-        if ([self isVertical])
-        {
-            knobRect.origin.x = _CGRectGetMidX(trackRect) - knobSize.width / 2.0;
-            knobRect.origin.y = (([self doubleValue] - _minValue) / (_maxValue - _minValue)) * (_CGRectGetHeight(trackRect) - knobSize.height);
-        }
-        else
-        {
-            knobRect.origin.x = (([self doubleValue] - _minValue) / (_maxValue - _minValue)) * (_CGRectGetWidth(trackRect) - knobSize.width);
-            knobRect.origin.y = _CGRectGetMidY(trackRect) - knobSize.height / 2.0;
-        }
-    }
-    else
+    if (_controlState & CPControlStateCircular)
     {
         var angle = 3*PI_2 - ([self doubleValue] - _minValue) / (_maxValue - _minValue) * PI2,
             radius = CGRectGetWidth(trackRect) / 2.0 - 6.0;
 
         knobRect.origin.x = radius * COS(angle) + CGRectGetMidX(trackRect) - 3.0;
         knobRect.origin.y = radius * SIN(angle) + CGRectGetMidY(trackRect) - 2.0;
+    }
+    else if ([self isVertical])
+    {
+        knobRect.origin.x = _CGRectGetMidX(trackRect) - knobSize.width / 2.0;
+        knobRect.origin.y = (([self doubleValue] - _minValue) / (_maxValue - _minValue)) * (_CGRectGetHeight(trackRect) - knobSize.height);
+    }
+    else
+    {
+        knobRect.origin.x = (([self doubleValue] - _minValue) / (_maxValue - _minValue)) * (_CGRectGetWidth(trackRect) - knobSize.width);
+        knobRect.origin.y = _CGRectGetMidY(trackRect) - knobSize.height / 2.0;
     }
 
     return knobRect;
@@ -276,32 +266,7 @@ CPCircularSlider = 1;
         knobRect = [self knobRectForBounds:bounds],
         trackRect = [self trackRectForBounds:bounds];
 
-    if ([self sliderType] === CPLinearSlider)
-    {
-        if ([self isVertical])
-        {
-            var knobHeight = _CGRectGetHeight(knobRect);
-
-            trackRect.origin.y += knobHeight / 2;
-            trackRect.size.height -= knobHeight;
-
-            var minValue = [self minValue];
-
-            return MAX(0.0, MIN(1.0, (aPoint.y - _CGRectGetMinY(trackRect)) / _CGRectGetHeight(trackRect))) * ([self maxValue] - minValue) + minValue;
-        }
-        else
-        {
-            var knobWidth = _CGRectGetWidth(knobRect);
-
-            trackRect.origin.x += knobWidth / 2;
-            trackRect.size.width -= knobWidth;
-
-            var minValue = [self minValue];
-
-            return MAX(0.0, MIN(1.0, (aPoint.x - _CGRectGetMinX(trackRect)) / _CGRectGetWidth(trackRect))) * ([self maxValue] - minValue) + minValue;
-        }
-    }
-    else
+    if (_controlState & CPControlStateCircular)
     {
         var knobWidth = _CGRectGetWidth(knobRect);
 
@@ -313,6 +278,28 @@ CPCircularSlider = 1;
             dy = aPoint.y - _CGRectGetMidY(trackRect);
 
         return MAX(0.0, MIN(1.0, (3*PI_2 - ATAN2(dy, dx))%PI2 / PI2)) * ([self maxValue] - minValue) + minValue;
+    }
+    else if ([self isVertical])
+    {
+        var knobHeight = _CGRectGetHeight(knobRect);
+
+        trackRect.origin.y += knobHeight / 2;
+        trackRect.size.height -= knobHeight;
+
+        var minValue = [self minValue];
+
+        return MAX(0.0, MIN(1.0, (aPoint.y - _CGRectGetMinY(trackRect)) / _CGRectGetHeight(trackRect))) * ([self maxValue] - minValue) + minValue;
+    }
+    else
+    {
+        var knobWidth = _CGRectGetWidth(knobRect);
+
+        trackRect.origin.x += knobWidth / 2;
+        trackRect.size.width -= knobWidth;
+
+        var minValue = [self minValue];
+
+        return MAX(0.0, MIN(1.0, (aPoint.x - _CGRectGetMinX(trackRect)) / _CGRectGetWidth(trackRect))) * ([self maxValue] - minValue) + minValue;
     }
 }
 
@@ -381,8 +368,7 @@ CPCircularSlider = 1;
 
 var CPSliderMinValueKey             = "CPSliderMinValueKey",
     CPSliderMaxValueKey             = "CPSliderMaxValueKey",
-    CPSliderAltIncrValueKey         = "CPSliderAltIncrValueKey",
-    CPSliderTypeKey                 = "CPSliderTypeKey";
+    CPSliderAltIncrValueKey         = "CPSliderAltIncrValueKey";
 
 @implementation CPSlider (CPCoding)
 
@@ -397,7 +383,6 @@ var CPSliderMinValueKey             = "CPSliderMinValueKey",
     {
         _altIncrementValue = [aCoder decodeDoubleForKey:CPSliderAltIncrValueKey];
 
-        [self setSliderType:[aCoder decodeObjectForKey:CPSliderTypeKey]];
         [self setContinuous:YES];
 
         [self setNeedsLayout];
@@ -414,7 +399,6 @@ var CPSliderMinValueKey             = "CPSliderMinValueKey",
     [aCoder encodeDouble:_minValue forKey:CPSliderMinValueKey];
     [aCoder encodeDouble:_maxValue forKey:CPSliderMaxValueKey];
     [aCoder encodeDouble:_altIncrementValue forKey:CPSliderAltIncrValueKey];
-    [aCoder encodeInt:_sliderType forKey:CPSliderTypeKey];
 }
 
 @end
