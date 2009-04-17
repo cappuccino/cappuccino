@@ -171,7 +171,7 @@ CPCircularSlider = 1;
 
     if (_controlState & CPControlStateCircular)
     {
-        var angle = 3*PI_2 - ([self doubleValue] - _minValue) / (_maxValue - _minValue) * PI2,
+        var angle = 3*PI_2 - (1.0 - [self doubleValue] - _minValue) / (_maxValue - _minValue) * PI2,
             radius = CGRectGetWidth(trackRect) / 2.0 - 6.0;
 
         knobRect.origin.x = radius * COS(angle) + CGRectGetMidX(trackRect) - 3.0;
@@ -277,7 +277,7 @@ CPCircularSlider = 1;
             dx = aPoint.x - _CGRectGetMidX(trackRect),
             dy = aPoint.y - _CGRectGetMidY(trackRect);
 
-        return MAX(0.0, MIN(1.0, (3*PI_2 - ATAN2(dy, dx))%PI2 / PI2)) * ([self maxValue] - minValue) + minValue;
+        return MAX(0.0, MIN(1.0, 1.0 - (3*PI_2 - ATAN2(dy, dx))%PI2 / PI2)) * ([self maxValue] - minValue) + minValue;
     }
     else if ([self isVertical])
     {
