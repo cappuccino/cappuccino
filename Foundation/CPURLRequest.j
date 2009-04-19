@@ -65,6 +65,7 @@
         
         [self setValue:"Thu, 1 Jan 1970 00:00:00 GMT" forHTTPHeaderField:"If-Modified-Since"];
         [self setValue:"no-cache" forHTTPHeaderField:"Cache-Control"];
+        [self setValue:"XMLHttpRequest" forHTTPHeaderField:"X-Requested-With"];
     }
     
     return self;
