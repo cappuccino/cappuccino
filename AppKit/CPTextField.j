@@ -774,6 +774,10 @@ CPTextFieldStatePlaceholder = 1 << 13;
 
 var secureStringForString = function(aString)
 {
+    // This is true for when aString === "" and null/undefined.
+    if (!aString)
+        return "";
+
     var secureString = "",
         length = aString.length;
 
