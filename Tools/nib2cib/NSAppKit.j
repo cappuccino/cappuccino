@@ -40,6 +40,7 @@
 @import "NSScrollView.j"
 @import "NSScroller.j"
 @import "NSSet.j"
+@import "NSSecureTextField.j"
 @import "NSSegmentedControl.j"
 @import "NSSlider.j"
 @import "NSSplitView.j"

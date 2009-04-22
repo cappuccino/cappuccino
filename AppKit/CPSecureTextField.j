@@ -1,6 +1,6 @@
+
 @import "CPTextField.j"
 
-#include "Platform/Platform.h"
 
 @implementation CPSecureTextField : CPTextField
 {
