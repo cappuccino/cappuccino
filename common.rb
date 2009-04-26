@@ -79,7 +79,7 @@ def subrake(directories, task_name)
       if (File.directory?(directory) && File.file?(File.join(directory, "Rakefile")))
         system %{cd #{directory} && #{$serialized_env} #{$0} #{task_name}}
       else
-        puts "subrake missing: " + directory
+        puts "warning: subrake missing: " + directory +" (this is not necessarily an error, "+directory+" may be optional)"
       end
     end
 end
