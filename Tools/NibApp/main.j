@@ -6,10 +6,10 @@
 // Copyright 2005 - 2008, 280 North, Inc. All rights reserved.
 //
 
-import <Foundation/Foundation.j>
-import <AppKit/AppKit.j>
+@import <Foundation/Foundation.j>
+@import <AppKit/AppKit.j>
 
-import "AppController.j"
+@import "AppController.j"
 
 
 CPLogRegister(CPLogPopup);

@@ -1,4 +1,4 @@
-import <Foundation/CPString.j>
+@import <Foundation/CPString.j>
 
 @implementation CPStringTest : OJTestCase
 

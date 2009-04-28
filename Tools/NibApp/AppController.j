@@ -1,6 +1,6 @@
 
-import <Foundation/CPObject.j>
-import <AppKit/CPCib.j>
+@import <Foundation/CPObject.j>
+@import <AppKit/CPCib.j>
 
 
 @implementation AppController : CPObject

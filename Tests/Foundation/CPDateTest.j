@@ -1,4 +1,4 @@
-import <Foundation/CPDate.j>
+@import <Foundation/CPDate.j>
 
 @implementation CPDateTest : OJTestCase
 
