@@ -100,7 +100,7 @@
 
 - (CPMenu)mainMenu
 {
-    var index = [_namesValues indexOfObjectIdenticalTo:"MainMenu"];
+    var index = [_namesValues indexOfObjectIdenticalTo:"Main Menu"];
 
     if (index === CPNotFound)
         return nil;
