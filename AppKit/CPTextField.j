@@ -753,10 +753,12 @@ CPTextFieldStatePlaceholder = 1 << 13;
         if (_controlState & CPTextFieldStatePlaceholder)
             string = [self placeholderString];
         else
+        {
             string = [self stringValue];
 
-        if ([self isSecure])
-            string = secureStringForString(string);
+            if ([self isSecure])
+                string = secureStringForString(string);
+        }
 
         [contentView setText:string];
 
