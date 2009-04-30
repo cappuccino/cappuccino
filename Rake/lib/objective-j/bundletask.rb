@@ -186,8 +186,7 @@ module ObjectiveJ
 
         required_attribute :name
         required_attribute :version
-        #required_attribute :date
-        attribute :date
+
         required_attribute :summary
         required_attribute :identifier
         required_attribute :platforms, [Platform::ObjJ]
@@ -228,30 +227,6 @@ module ObjectiveJ
         attr_accessor :loaded_from
         
         # ------------------------- Special accessor behaviours (overwriting default).
-
-#        overwrite_accessor :version= do |version|
-#            @version = Version.create(version)
-#        end
-    
-        overwrite_accessor :date= do |date|
-          # We want to end up with a Time object with one-day resolution.  This is
-          # the cleanest, most-readable, faster-than-using-Date way to do it.
-          case date
-          when String then
-            @date = Time.parse date
-          when Time then
-            @date = Time.parse date.strftime("%Y-%m-%d")
-          when Date then
-            @date = Time.parse date.to_s
-          else
-            @date = Time.today
-          end
-        end
-
-        overwrite_accessor :date do
-          self.date = nil if @date.nil?  # HACK Sets the default value for date
-          @date
-        end
     
         overwrite_accessor :summary= do |str|
           if str
