@@ -339,7 +339,7 @@
         isVertical:YES]];
         
     [slider setValue:5.0 forThemedAttributeName:@"track-width"];
-    [slider setValue:trackColor forThemedAttributeName:@"track-color"];
+    [slider setValue:trackColor forThemedAttributeName:@"track-color" inControlState:CPControlStateVertical];
     
         var knobColor = [CPColor colorWithPatternImage:[_CPCibCustomResource imageResourceWithName:"knob.png" size:CGSizeMake(23.0, 24.0)]];
         knobHighlightedColor = [CPColor colorWithPatternImage:[_CPCibCustomResource imageResourceWithName:"knob-highlighted.png" size:CGSizeMake(23.0, 24.0)]];
