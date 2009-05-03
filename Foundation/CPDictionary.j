@@ -512,4 +512,13 @@
 
 @end
 
+/*!
+    This class is just an empty subclass of CPDictionary.
+    CPDictionary already implements mutable methods and
+    this class only exists for source compatability.
+*/
+@implementation CPMutableDictionary : CPDictionary
+
+@end
+
 objj_dictionary.prototype.isa = CPDictionary;
