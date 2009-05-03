@@ -475,7 +475,7 @@ var _CPTableViewWillDisplayCellSelector                         = 1 << 0,
 
     [_tableCells removeObjectAtIndex:index];
     [_tableColumns removeObjectAtIndex:index];
-    [_tabelColumnViews removeObjectAtIndex:index];
+    [_tableColumnViews removeObjectAtIndex:index];
 
     // Shift remaining column views to the left.    
     for (; index < _tableColumns.length; ++ index)
