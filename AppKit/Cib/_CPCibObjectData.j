@@ -100,10 +100,15 @@
 
 - (CPMenu)mainMenu
 {
-    var index = [_namesValues indexOfObjectIdenticalTo:"Main Menu"];
+    var index = [_namesValues indexOfObjectIdenticalTo:"MainMenu"];
 
     if (index === CPNotFound)
-        return nil;
+    {
+        index = [_namesValues indexOfObjectIdenticalTo:"Main Menu"];
+
+        if (index === CPNotFound)
+            return nil;
+    }
 
     return _namesKeys[index];
 }
@@ -287,7 +292,8 @@ var _CPCibObjectDataNamesKeysKey                = @"_CPCibObjectDataNamesKeysKey
         if (instantiatedObject)
             object = instantiatedObject;
 
-        if (object !== _fileOwner && [object respondsToSelector:@selector(awakeFromCib)])
+        // Don't use _fileOwner, by this point its been replaced with anOwner.
+        if (object !== anOwner && [object respondsToSelector:@selector(awakeFromCib)])
             [object awakeFromCib];
     }
 
