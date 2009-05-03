@@ -156,6 +156,31 @@
 }
 
 /*!
+    Creates and returns a dictionary constructed by a given pairs of keys and values.
+    @param firstObject first object value
+    @param ... key for the first object and ongoing value-key pairs for more objects.
+    @throws CPInvalidArgumentException if the number of objects and keys is different
+    @return the new CPDictionary
+    
+    Assuming that there's no object retaining in Cappuccino, you can create
+    dictionaries same way as with alloc and initWithObjectsAndKeys:
+    var dict = [CPDictionary dictionaryWithObjectsAndKeys:
+    @"value1", @"key1",
+    @"value2", @"key2"];
+    
+    Note, that there's no final nil like in Objective-C/Cocoa.
+    
+    @see [CPDictionary initWithObjectsAndKeys:]
+*/
++ (id)dictionaryWithObjectsAndKeys:(id)firstObject, ...
+{
+    arguments[0] = [self alloc];
+    arguments[1] = @selector(initWithObjectsAndKeys:);
+    
+    return objj_msgSend.apply(this, arguments);
+}
+
+/*!
     Initializes the dictionary with the contents of another dictionary.
     @param aDictionary the dictionary to copy key-value pairs from
     @return the initialized dictionary
@@ -193,6 +218,48 @@
             [self setObject:objects[i] forKey:keyArray[i]];
     }
     
+    return self;
+}
+
+/*!
+    Creates and returns a dictionary constructed by a given pairs of keys and values.
+    @param firstObject first object value
+    @param ... key for the first object and ongoing value-key pairs for more objects.
+    @throws CPInvalidArgumentException if the number of objects and keys is different
+    @return the new CPDictionary
+    
+    You can create dictionaries this way:
+    var dict = [[CPDictionary alloc] initWithObjectsAndKeys:
+    @"value1", @"key1",
+    @"value2", @"key2"];
+    
+    Note, that there's no final nil like in Objective-C/Cocoa.
+*/
+- (id)initWithObjectsAndKeys:(id)firstObject, ...
+{
+    var argCount = arguments.length;
+    
+    if (argCount % 2 !== 0)
+        [CPException raise:CPInvalidArgumentException reason:"Key-value count is mismatched. (" + argCount + " arguments passed)"];
+
+    self = [super init];
+    
+    if (self)
+    {
+        // The arguments array contains self and _cmd, so the first object is at position 2.
+        var index = 2;
+        
+        for(; index < argCount; index += 2)
+        {
+            var value = arguments[index];
+
+            if (value === nil)
+                break;
+
+            [self setObject:value forKey:arguments[index + 1]];
+        }
+    }
+
     return self;
 }
 
