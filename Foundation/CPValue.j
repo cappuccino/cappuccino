@@ -115,7 +115,7 @@ function CPJSObjectCreateJSON(aJSObject)
     // typeof new Number() and new String() gives you "object", 
     // so valueof in those cases.
     var type = typeof aJSObject,
-        valueOf = aJSObject.valueOf(),
+        valueOf = aJSObject ? aJSObject.valueOf() : null,
         typeValueOf = typeof valueOf;
     
     if (type != typeValueOf)
