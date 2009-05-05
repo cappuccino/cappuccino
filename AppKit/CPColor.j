@@ -46,7 +46,8 @@ var cachedBlackColor,
     cachedLightGrayColor,
     cachedDarkGrayColor,
     cachedWhiteColor,
-    cachedShadowColor;
+    cachedShadowColor,
+    cachedClearColor;
 
 /*! @code CPColor
 
@@ -298,6 +299,18 @@ var cachedBlackColor,
         cachedShadowColor = [[CPColor alloc] _initWithRGBA:[0.0, 0.0, 0.0, 1.0 / 3.0]];
 
     return cachedShadowColor;
+}
+
+/*!
+    Returns a clear color (RGBA=[0.0, 0.0, 0.0, 0.0])
+*/
+
++ (CPColor)clearColor
+{
+    if (!cachedClearColor)
+        cachedClearColor = [self colorWithCalibratedWhite:0.0 alpha:0.0];
+
+    return cachedClearColor;
 }
 
 /*!
