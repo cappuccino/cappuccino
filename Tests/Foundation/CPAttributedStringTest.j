@@ -1,5 +1,5 @@
 
-import <Foundation/CPAttributedString.j>
+@import <Foundation/CPAttributedString.j>
 
 var sharedObject = [CPObject new];
 

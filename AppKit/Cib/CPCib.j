@@ -43,30 +43,47 @@ var CPCibObjectDataKey  = @"CPCibObjectDataKey";
     CPData      _data;
     CPBundle    _bundle;
     BOOL        _awakenCustomResources;
+
+    id          _loadDelegate;
 }
 
 - (id)initWithContentsOfURL:(CPURL)aURL
 {
     self = [super init];
-    
+
     if (self)
     {
         _data = [CPURLConnection sendSynchronousRequest:[CPURLRequest requestWithURL:aURL] returningResponse:nil error:nil];
         _awakenCustomResources = YES;
     }
-    
+
     return self;
 }
 
-- (id)initWithCibNamed:(CPString)aName bundle:(CPBundle)aBundle
+- (id)initWithContentsOfURL:(CPURL)aURL loadDelegate:(id)aLoadDelegate
 {
-    self = [self initWithContentsOfURL:aName];
-    
+    self = [super init];
+
     if (self)
     {
-        _bundle = aBundle;
+        [CPURLConnection connectionWithRequest:[CPURLRequest requestWithURL:aURL] delegate:self];
+
+        _awakenCustomResources = YES;
+
+        _loadDelegate = aLoadDelegate;
     }
-    
+
+    return self;
+}
+
+- (id)initWithCibNamed:(CPString)aName bundle:(CPBundle)aBundle loadDelegate:(id)aLoadDelegate
+{
+    // If aBundle is nil, use mainBundle, but ONLY for searching for the nib, not for resources later.
+    self = [self initWithContentsOfURL:[aBundle || [CPBundle mainBundle] pathForResource:aName] loadDelegate:aLoadDelegate];
+
+    if (self)
+        _bundle = aBundle;
+
     return self;
 }
 
@@ -82,7 +99,13 @@ var CPCibObjectDataKey  = @"CPCibObjectDataKey";
 
 - (BOOL)instantiateCibWithExternalNameTable:(CPDictionary)anExternalNameTable
 {
-    var unarchiver = [[_CPCibKeyedUnarchiver alloc] initForReadingWithData:_data bundle:_bundle awakenCustomResources:_awakenCustomResources],
+    var bundle = _bundle,
+        owner = [anExternalNameTable objectForKey:CPCibOwner];
+
+    if (!bundle && owner)
+        bundle = [CPBundle bundleForClass:[owner class]];
+
+    var unarchiver = [[_CPCibKeyedUnarchiver alloc] initForReadingWithData:_data bundle:bundle awakenCustomResources:_awakenCustomResources],
         replacementClasses = [anExternalNameTable objectForKey:CPCibReplacementClasses];
 
     if (replacementClasses)
@@ -99,8 +122,7 @@ var CPCibObjectDataKey  = @"CPCibObjectDataKey";
     if (!objectData || ![objectData isKindOfClass:[_CPCibObjectData class]])
         return NO;
 
-    var owner = [anExternalNameTable objectForKey:CPCibOwner],
-        topLevelObjects = [anExternalNameTable objectForKey:CPCibTopLevelObjects];
+    var topLevelObjects = [anExternalNameTable objectForKey:CPCibTopLevelObjects];
 
     [objectData instantiateWithOwner:owner topLevelObjects:topLevelObjects]
     [objectData establishConnectionsWithOwner:owner topLevelObjects:topLevelObjects];
@@ -122,8 +144,31 @@ var CPCibObjectDataKey  = @"CPCibObjectDataKey";
 
 - (BOOL)instantiateCibWithOwner:(id)anOwner topLevelObjects:(CPArray)topLevelObjects
 {
-    [CPDictionary dictionaryWithObjectsAndKeys:anOwner, CPCibOwner, topLevelObjects, CPCibTopLevelObjects];
-    return [self instantiate];
+    return [self instantiateCibWithExternalNameTable:[CPDictionary dictionaryWithObjectsAndKeys:anOwner, CPCibOwner, topLevelObjects, CPCibTopLevelObjects]];
+}
+
+@end
+
+@implementation CPCib (CPURLConnectionDelegate)
+
+- (void)connection:(CPURLConnection)aConnection didReceiveData:(CPString)data
+{
+    _data = [CPData dataWithString:data];
+
+    if ([_loadDelegate respondsToSelector:@selector(cibDidFinishLoading:)])
+        [_loadDelegate cibDidFinishLoading:self];
+}
+
+- (void)connection:(CPURLConnection)aConnection didFailWithError:(CPError)anError
+{
+    alert("cib: connection failed.");
+
+    _loadDelegate = nil;
+}
+
+- (void)connectionDidFinishLoading:(CPURLConnection)aConnection
+{
+    _loadDelegate = nil;
 }
 
 @end

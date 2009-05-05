@@ -20,13 +20,13 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-kCFPropertyListOpenStepFormat       = 1;
-kCFPropertyListXMLFormat_v1_0       = 100;
-kCFPropertyListBinaryFormat_v1_0    = 200;
-kCFPropertyList280NorthFormat_v1_0  = -1000;
+var kCFPropertyListOpenStepFormat       = 1,
+    kCFPropertyListXMLFormat_v1_0       = 100,
+    kCFPropertyListBinaryFormat_v1_0    = 200,
+    kCFPropertyList280NorthFormat_v1_0  = -1000;
 
-OBJJPlistParseException = "OBJJPlistParseException";
-OBJJPlistSerializeException = "OBJJPlistSerializeException";
+var OBJJPlistParseException = "OBJJPlistParseException",
+    OBJJPlistSerializeException = "OBJJPlistSerializeException";
 
 var kCFPropertyList280NorthMagicNumber  = "280NPLIST";
 
@@ -191,7 +191,7 @@ var XML_XML                 = "xml",
     PLIST_BOOLEAN_TRUE      = "true",
     PLIST_BOOLEAN_FALSE     = "false",
     PLIST_NUMBER_REAL       = "real",
-    PLIST_NUMBER_INTEGER    = "integer";
+    PLIST_NUMBER_INTEGER    = "integer",
     PLIST_DATA              = "data";
 
 

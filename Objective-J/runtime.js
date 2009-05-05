@@ -296,7 +296,7 @@ function class_getMethodImplementation(/*Class*/ aClass, /*SEL*/ aSelector)
 
 // Adding Classes
 
-var GLOBAL_NAMESPACE    = this,
+var GLOBAL_NAMESPACE    = window,
     REGISTERED_CLASSES  = {};
 
 function objj_allocateClassPair(/*Class*/ superclass, /*String*/ aName)

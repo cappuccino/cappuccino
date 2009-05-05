@@ -34,6 +34,8 @@ CPCircularSlider = 1;
     double          _minValue;
     double          _maxValue;
     double          _altIncrementValue;
+
+    BOOL            _isVertical;
 }
 
 + (id)themedAttributes
@@ -54,6 +56,8 @@ CPCircularSlider = 1;
         [self setObjectValue:50.0];
         
         [self setContinuous:YES];
+
+        [self _recalculateIsVertical];
     }
     
     return self;
@@ -226,13 +230,30 @@ CPCircularSlider = 1;
     return _altIncrementValue;
 }
 
+- (void)setFrameSize:(CGSize)aSize
+{
+    [super setFrameSize:aSize];
+    [self _recalculateIsVertical];
+}
+
+- (void)_recalculateIsVertical
+{
+    // Recalculate isVertical.
+    var bounds = [self bounds],
+        width = _CGRectGetWidth(bounds),
+        height = _CGRectGetHeight(bounds);
+    
+    _isVertical = width < height ? 1 : (width > height ? 0 : -1);
+
+    if (_isVertical === 1)
+        _controlState |= CPControlStateVertical;
+    else if (_isVertical === 0)
+        _controlState &= ~CPControlStateVertical;
+}
+
 - (int)isVertical
 {
-    var bounds = [self bounds],
-        width = CGRectGetWidth(bounds),
-        height = CGRectGetHeight(bounds);
-    
-    return width < height ? 1 : (width > height ? 0 : -1);
+    return _isVertical;
 }
 
 - (void)layoutSubviews
@@ -240,12 +261,9 @@ CPCircularSlider = 1;
     var trackView = [self layoutEphemeralSubviewNamed:@"track-view"
                                            positioned:CPWindowBelow
                       relativeToEphemeralSubviewNamed:@"knob-view"];
-      
+
     if (trackView)
-        if ([self isVertical])
-            [trackView setBackgroundColor:[self currentValueForThemedAttributeName:@"track-color"]];
-        else
-            [trackView setBackgroundColor:[self currentValueForThemedAttributeName:@"track-color"]];
+        [trackView setBackgroundColor:[self currentValueForThemedAttributeName:@"track-color"]];
 
     var knobView = [self layoutEphemeralSubviewNamed:@"knob-view"
                                           positioned:CPWindowAbove
@@ -384,6 +402,8 @@ var CPSliderMinValueKey             = "CPSliderMinValueKey",
         _altIncrementValue = [aCoder decodeDoubleForKey:CPSliderAltIncrValueKey];
 
         [self setContinuous:YES];
+
+        [self _recalculateIsVertical];
 
         [self setNeedsLayout];
         [self setNeedsDisplay:YES];
