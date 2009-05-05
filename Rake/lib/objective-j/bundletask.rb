@@ -400,70 +400,6 @@ module ObjectiveJ
 
             executable_paths = []
 
-            # create file tasks for object files
-            platforms.uniq.each do |platform|
-
-                executable_path = File.join(build_path, PLATFORM_DIRECTORIES[platform], name + '.sj')
-                enhance([executable_path])
-                
-                executable_paths << executable_path
-
-                file_d executable_path do |t|
-                    timestamp = t.timestamp
-                    files = t.prerequisites.to_a.select { |item| File.exist?(item) && File.extname(item) == '.j' && File.mtime(item) > timestamp }
-                    preprocessed_files = files.map { |file| '-o ' + File.join(build_path, PLATFORM_DIRECTORIES[platform], File.basename(file)) }
-
-                    IO.popen("objjc #{resolve_flags(flags)} #{resolve_flags(PLATFORM_FLAGS[platform])} #{files.join(' ')} #{preprocessed_files.join(' ')}") do |objjc|
-                        objjc.sync = true
-
-                        while str = objjc.gets
-                            puts str
-                        end
-                    end
-
-                    BundleTask.compact(build_path)
-                end
-                
-                # Yes its unfortunate that we need to regenerate the whole executable if the Info.plist changes.  Oh well.
-                file_d executable_path => info_plist_path
-
-                platform_sources = sources
-                platform_sources = sources[platform] if sources.class == Hash
-
-                platform_sources.each do |source|
-
-                    # This needs to be way better.
-                    if File.basename(source) == 'index.html'
-                        preprocessed_file = File.join(build_path, File.basename(source))
-                    else
-                        preprocessed_file = File.join(build_path, PLATFORM_DIRECTORIES[platform], File.basename(source))
-                    end
-
-                    # Use objjc for .j files
-                    if (File.extname(preprocessed_file) == '.j')
-                        file_d executable_path => source
-=begin
-                        file_d preprocessed_file => source do
-                            IO.popen("objjc #{resolve_flags(flags)} #{resolve_flags(PLATFORM_FLAGS[platform])} #{source} -o #{preprocessed_file}") do |objjc|
-                                puts objjc.read
-                            end
-                        end
-=end
-                    # If not just run them through the C preprocessor.
-                    else
-                        file_d preprocessed_file => source do
-                            IO.popen("gcc #{resolve_flags(flags)} #{resolve_flags(PLATFORM_FLAGS[platform])} -E -x c -P #{source} -o #{preprocessed_file}") do |preprocessor|
-                                puts preprocessor.read
-                            end
-                        end
-
-                        file_d executable_path => preprocessed_file
-                    end
-
-#                    file_d executable_path => preprocessed_file
-                end
-            end
-
             # copy license file
             license_path = nil
             
@@ -484,9 +420,48 @@ module ObjectiveJ
                 end
             end
 
-            enhance(executable_paths + copied_resources + [info_plist_path])
-			
+            enhance(copied_resources + [info_plist_path])
+
 			CLOBBER.include(build_path)
+
+            enhance do
+                needs_compact = false
+
+                platforms.uniq.each do |platform|
+
+                    platform_sources = sources
+                    platform_sources = sources[platform] if sources.class == Hash
+
+                    platform_sources = platform_sources.to_a.select { |file|
+                        #if this file doesn't exist or isn't a .j file, don't preprocess it.
+                        if !File.exist?(file) || File.extname(file) != '.j'
+                            false
+                        #if this file is newer than the generated file, preprocess it
+                        else
+                            preprocessed_file = File.join(build_path, PLATFORM_DIRECTORIES[platform], File.basename(file))
+                            !File.exists?(preprocessed_file) || File.mtime(file) > File.mtime(preprocessed_file)
+                        end
+                    }
+
+                    executable_path = File.join(build_path, PLATFORM_DIRECTORIES[platform], name + '.sj')
+                    needs_compact = needs_compact || platform_sources.length > 0 || !File.exists?(executable_path)
+
+                    preprocessed_files = platform_sources.map { |file| '-o ' + File.join(build_path, PLATFORM_DIRECTORIES[platform], File.basename(file)) }
+
+                    # We no longer get this for free with file_d
+                    FileUtils.mkdir_p File.join(build_path, PLATFORM_DIRECTORIES[platform])
+
+                    IO.popen("objjc #{resolve_flags(flags)} #{resolve_flags(PLATFORM_FLAGS[platform])} #{platform_sources.join(' ')} #{preprocessed_files.join(' ')}") do |objjc|
+                        objjc.sync = true
+
+                        while str = objjc.gets
+                            puts str
+                        end
+                    end
+                end
+
+                BundleTask.compact(build_path) if needs_compact
+            end
         end
 
         def BundleTask.compact(path, *patterns)
