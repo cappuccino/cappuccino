@@ -78,7 +78,11 @@ CPTextFieldRoundedBezel         = 1;
 
 var CPTextFieldDOMInputElement = nil,
     CPTextFieldInputOwner = nil,
-    CPTextFieldTextDidChangeValue = nil;
+    CPTextFieldTextDidChangeValue = nil,
+    CPTextFieldInputResigning = NO,
+    CPTextFieldInputDidBlur = NO,
+    CPTextFieldInputIsActive = NO,
+    CPTextFieldBlurFunction = nil;
     
 #endif
 
@@ -147,11 +151,22 @@ CPTextFieldStatePlaceholder = 1 << 13;
 
         var blurFunction = function(anEvent)
         {
-            if (CPTextFieldInputOwner)
-                CPTextFieldHandleBlur(anEvent, CPTextFieldDOMInputElement);
+            if (CPTextFieldInputOwner && CPTextFieldInputOwner._DOMElement != CPTextFieldDOMInputElement.parentNode)
+                return;
+
+            if (!CPTextFieldInputResigning)
+            {
+                [[CPTextFieldInputOwner window] makeFirstResponder:nil];
+                return;
+            }
+
+            CPTextFieldHandleBlur(anEvent, CPTextFieldDOMInputElement);
+            CPTextFieldInputDidBlur = YES;
 
             return true;
         }
+
+        CPTextFieldBlurFunction = blurFunction;
 
         var keydownFunction = function(anEvent)
         {
@@ -174,7 +189,20 @@ CPTextFieldStatePlaceholder = 1 << 13;
                     aDOMEvent.stopPropagation();
                 aDOMEvent.cancelBubble = true;
 
-                CPTextFieldHandleBlur(aDOMEvent, CPTextFieldDOMInputElement);
+                var owner = CPTextFieldInputOwner;
+
+                if (aDOMEvent && aDOMEvent.keyCode == CPReturnKeyCode)
+                {
+                    [owner sendAction:[owner action] to:[owner target]];    
+                    [[owner window] makeFirstResponder:nil];
+                }
+                else if (aDOMEvent && aDOMEvent.keyCode == CPTabKeyCode)
+                {
+                    if (!aDOMEvent.shiftKey)
+                        [[owner window] selectNextKeyView:owner];
+                    else
+                        [[owner window] selectPreviousKeyView:owner];
+                }
             }    
 
             [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
@@ -191,29 +219,10 @@ CPTextFieldStatePlaceholder = 1 << 13;
             [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
         }
 
-        CPTextFieldHandleBlur = function(anEvent, anElement)
-        {
-            [CPTextFieldInputOwner setObjectValue:anElement.value];
-
-            if (anEvent && anEvent.keyCode == CPReturnKeyCode)
-            {
-                [CPTextFieldInputOwner sendAction:[CPTextFieldInputOwner action] to:[CPTextFieldInputOwner target]];    
-                [[CPTextFieldInputOwner window] makeFirstResponder:nil];
-                CPTextFieldInputOwner = nil;
-            }
-            else if (anEvent && anEvent.keyCode == CPTabKeyCode)
-            {
-                if (!anEvent.shiftKey)
-                    [[CPTextFieldInputOwner window] selectNextKeyView:CPTextFieldInputOwner];
-                else
-                    [[CPTextFieldInputOwner window] selectPreviousKeyView:CPTextFieldInputOwner];
-            }
-            else
-            {
-                var obj = CPTextFieldInputOwner;
-                CPTextFieldInputOwner = nil;
-                [[obj window] makeFirstResponder:nil];
-            }
+        CPTextFieldHandleBlur = function(anEvent)
+        {            
+            var owner = CPTextFieldInputOwner;
+            CPTextFieldInputOwner = nil;
 
             [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
         }
@@ -463,7 +472,6 @@ CPTextFieldStatePlaceholder = 1 << 13;
     [self setNeedsLayout];
 
 #if PLATFORM(DOM)
-    CPTextFieldInputOwner = self;
 
     var string = [self stringValue],
         element = [[self class] _inputElement];
@@ -487,12 +495,18 @@ CPTextFieldStatePlaceholder = 1 << 13;
 
     _DOMElement.appendChild(element);
 
-    window.setTimeout(function() { element.focus(); }, 0.0);
+    window.setTimeout(function() 
+    { 
+        element.focus(); 
+        CPTextFieldInputOwner = self;
+    }, 0.0);
  
     //post CPControlTextDidBeginEditingNotification
     [self textDidBeginEditing:[CPNotification notificationWithName:CPControlTextDidBeginEditingNotification object:self userInfo:nil]];
     
     [[CPDOMWindowBridge sharedDOMWindowBridge] _propagateCurrentDOMEvent:YES];
+    
+    CPTextFieldInputIsActive = YES;
 #endif
 
     return YES;
@@ -511,9 +525,21 @@ CPTextFieldStatePlaceholder = 1 << 13;
 
     var element = [[self class] _inputElement];
 
-    if (element.parentNode == _DOMElement)
-        _DOMElement.removeChild(element);
+    [self setObjectValue:element.value];
 
+    CPTextFieldInputResigning = YES;
+    element.blur();
+    
+    if (!CPTextFieldInputDidBlur)
+        CPTextFieldBlurFunction();
+    
+    CPTextFieldInputDidBlur = NO;
+    CPTextFieldInputResigning = NO;
+
+    if (element.parentNode == _DOMElement)
+        element.parentNode.removeChild(element);
+
+    CPTextFieldInputIsActive = NO;
 #endif
 
     //post CPControlTextDidEndEditingNotification
