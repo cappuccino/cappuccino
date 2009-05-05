@@ -82,6 +82,8 @@ var CPTextFieldDOMInputElement = nil,
     CPTextFieldInputResigning = NO,
     CPTextFieldInputDidBlur = NO,
     CPTextFieldInputIsActive = NO,
+    CPTextFieldCachedSelectStartFunction = nil,
+    CPTextFieldCachedDragFunction = nil,
     CPTextFieldBlurFunction = nil;
     
 #endif
@@ -507,6 +509,16 @@ CPTextFieldStatePlaceholder = 1 << 13;
     [[CPDOMWindowBridge sharedDOMWindowBridge] _propagateCurrentDOMEvent:YES];
     
     CPTextFieldInputIsActive = YES;
+
+    if (document.attachEvent)
+    {
+        CPTextFieldCachedSelectStartFunction = document.body.onselectstart;
+        CPTextFieldCachedDragFunction = document.body.ondrag;
+        
+        document.body.ondrag = function () {};
+        document.body.onselectstart = function () {};
+    }
+    
 #endif
 
     return YES;
@@ -540,6 +552,16 @@ CPTextFieldStatePlaceholder = 1 << 13;
         element.parentNode.removeChild(element);
 
     CPTextFieldInputIsActive = NO;
+
+    if (document.attachEvent)
+    {
+        CPTextFieldCachedSelectStartFunction = nil;
+        CPTextFieldCachedDragFunction = nil;
+        
+        document.body.ondrag = CPTextFieldCachedDragFunction
+        document.body.onselectstart = CPTextFieldCachedSelectStartFunction
+    }
+    
 #endif
 
     //post CPControlTextDidEndEditingNotification
