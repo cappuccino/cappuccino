@@ -212,6 +212,8 @@ CPTextFieldStatePlaceholder = 1 << 13;
 
         var keyupFunction = function()
         {
+            [CPTextFieldInputOwner setStringValue:CPTextFieldDOMInputElement.value];
+
             if ([CPTextFieldInputOwner stringValue] !== CPTextFieldTextDidChangeValue)
             {
                 CPTextFieldTextDidChangeValue = [CPTextFieldInputOwner stringValue];
@@ -584,12 +586,6 @@ CPTextFieldStatePlaceholder = 1 << 13;
 */
 - (id)objectValue
 {
-    // All of this needs to be better.
-#if PLATFORM(DOM)
-    if ([[self window] firstResponder] == self)
-        return [[self class] _inputElement].value;
-#endif
-
     return [super objectValue];
 }
 
