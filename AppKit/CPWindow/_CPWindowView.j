@@ -40,6 +40,8 @@ var _CPWindowViewResizeIndicatorImage = nil;
     
     CGRect      _resizeFrame;
     CGPoint     _mouseDraggedPoint;
+
+    CGRect      _cachedScreenFrame;
 }
 
 + (void)initialize
@@ -138,25 +140,46 @@ var _CPWindowViewResizeIndicatorImage = nil;
     [CPApp setTarget:self selector:@selector(trackResizeWithEvent:) forNextEventMatchingMask:CPLeftMouseDraggedMask | CPLeftMouseUpMask untilDate:nil inMode:nil dequeue:YES];
 }
 
+- (CGPoint)_pointWithinScreenFrame:(CGPoint)aPoint
+{
+    var visibleFrame = _cachedScreenFrame;
+
+    if (!visibleFrame)
+        visibleFrame = [[CPDOMWindowBridge sharedDOMWindowBridge] visibleFrame];
+
+    var restrictedPoint = CGPointMake(0, 0);
+
+    restrictedPoint.x = MIN(MAX(aPoint.x, -_frame.size.width + 4.0), CGRectGetMaxX(visibleFrame) - 4.0);
+    restrictedPoint.y = MIN(MAX(aPoint.y, 0.0), CGRectGetMaxY(visibleFrame) - 8.0);
+
+    return restrictedPoint;
+}
+
 - (void)trackMoveWithEvent:(CPEvent)anEvent
 {
     var type = [anEvent type];
         
     if (type === CPLeftMouseUp)
+    {
+        _cachedScreenFrame = nil;
         return;
-    
+    }
     else if (type === CPLeftMouseDown)
+    {
         _mouseDraggedPoint = [[self window] convertBaseToBridge:[anEvent locationInWindow]];
-    
+        _cachedScreenFrame = [[CPDOMWindowBridge sharedDOMWindowBridge] visibleFrame];
+    }
     else if (type === CPLeftMouseDragged)
     {
         var theWindow = [self window],
+            frame = [theWindow frame],
             location = [theWindow convertBaseToBridge:[anEvent locationInWindow]],
-            frame = [theWindow frame];
-        
-        [theWindow setFrameOrigin:CGPointMake(_CGRectGetMinX(frame) + (location.x - _mouseDraggedPoint.x), _CGRectGetMinY(frame) + (location.y - _mouseDraggedPoint.y))];
-        
-        _mouseDraggedPoint = location;
+            origin = [self _pointWithinScreenFrame:CGPointMake(_CGRectGetMinX(frame) + (location.x - _mouseDraggedPoint.x), 
+                                                               _CGRectGetMinY(frame) + (location.y - _mouseDraggedPoint.y))];
+
+        [theWindow setFrameOrigin:origin];
+
+        _mouseDraggedPoint = [self _pointWithinScreenFrame:location];
     }
     
     [CPApp setTarget:self selector:@selector(trackMoveWithEvent:) forNextEventMatchingMask:CPLeftMouseDraggedMask | CPLeftMouseUpMask untilDate:nil inMode:nil dequeue:YES];
