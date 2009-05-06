@@ -72,6 +72,11 @@ var _CPMenuBarVisible               = NO,
 
 // Managing the Menu Bar
 
++ (void)initialize
+{
+    [[self class] setMenuBarAttributes:[CPDictionary dictionary]];
+}
+
 + (BOOL)menuBarVisible
 {
     return _CPMenuBarVisible;
@@ -137,6 +142,7 @@ var _CPMenuBarVisible               = NO,
     return _CPMenuBarImage;
 }
 
+
 + (void)setMenuBarAttributes:(CPDictionary)attributes
 {
     if (_CPMenuBarAttributes == attributes)
@@ -160,8 +166,8 @@ var _CPMenuBarVisible               = NO,
     
     else if (!textColor && !titleColor)
     {
-        [_CPMenuBarAttributes setObject:[CPColor blackColor] forKey:@"CPMenuBarTextColor"];
-        [_CPMenuBarAttributes setObject:[CPColor blackColor] forKey:@"CPMenuBarTitleColor"];
+        [_CPMenuBarAttributes setObject:[CPColor colorWithRed:0.051 green:0.2 blue:0.275 alpha:1.0] forKey:@"CPMenuBarTextColor"];
+        [_CPMenuBarAttributes setObject:[CPColor colorWithRed:0.051 green:0.2 blue:0.275 alpha:1.0] forKey:@"CPMenuBarTitleColor"];
     }
     
     if (!textShadowColor && titleShadowColor)
@@ -172,8 +178,8 @@ var _CPMenuBarVisible               = NO,
     
     else if (!textShadowColor && !titleShadowColor)
     {
-        [_CPMenuBarAttributes setObject:[CPColor colorWithWhite:1.0 alpha:0.8] forKey:@"CPMenuBarTextShadowColor"];
-        [_CPMenuBarAttributes setObject:[CPColor colorWithWhite:1.0 alpha:0.8] forKey:@"CPMenuBarTitleShadowColor"];
+        [_CPMenuBarAttributes setObject:[CPColor whiteColor] forKey:@"CPMenuBarTextShadowColor"];
+        [_CPMenuBarAttributes setObject:[CPColor whiteColor] forKey:@"CPMenuBarTitleShadowColor"];
     }
     
     if (!highlightColor)
@@ -1813,7 +1819,7 @@ var _CPMenuBarWindowBackgroundColor = nil,
     {
         _highlightView = [[CPView alloc] initWithFrame:frame];
     
-        [_highlightView setBackgroundColor:_highlightColor];
+        [_highlightView setBackgroundColor:_highlightColor ? _highlightColor : [CPColor colorWithRed:95.0/255.0 green:131.0/255.0 blue:185.0/255.0 alpha:1.0]];
     }
     else
         [_highlightView setFrame:frame];

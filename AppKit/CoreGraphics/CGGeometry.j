@@ -208,3 +208,9 @@ function CGPointFromEvent(anEvent)
 {
     return _CGPointMake(anEvent.clientX, anEvent.clientY);
 }
+
+function CPStringFromInset(anInset)
+{
+    return anInset.top+" "+anInset.left+" "+anInset.bottom+" "+anInset.right;
+}
+
