@@ -125,8 +125,8 @@ var _CPButtonClassName                          = nil,
 
 + (id)themedAttributes
 {
-    return [CPDictionary dictionaryWithObjects:[_CGInsetMakeZero(), _CGInsetMakeZero(), nil]
-                                       forKeys:[@"bezel-inset", @"content-inset", @"bezel-color"]];
+    return [CPDictionary dictionaryWithObjects:[_CGInsetMakeZero(), _CGInsetMakeZero(), nil, 24.0]
+                                       forKeys:[@"bezel-inset", @"content-inset", @"bezel-color", @"default-height"]];
 }
 
 - (id)initWithFrame:(CGRect)aFrame
@@ -372,6 +372,18 @@ var _CPButtonClassName                          = nil,
     bounds.size.height -= bezelInset.top + bezelInset.bottom;
     
     return bounds;
+}
+
+/*!
+    Adjust the size of the button to fit the title and surrounding button image.
+*/
+- (void)sizeToFit
+{
+    var size = [([self title] || " ") sizeWithFont:[self font]],
+        contentInset = [self currentValueForThemedAttributeName:@"content-inset"],
+        defaultHeight = [self currentValueForThemedAttributeName:@"default-height"];
+
+    [self setFrameSize:CGSizeMake(size.width + contentInset.left + contentInset.right, defaultHeight)];
 }
 
 - (CGRect)rectForEphemeralSubviewNamed:(CPString)aName
