@@ -532,7 +532,7 @@ var _CPKeyedArchiverEncodeObject = function(self, anObject, isConditional)
         }
         else
         {
-            var theClass = [anObject classForKeyedArchiver],
+            var theClass = [object classForKeyedArchiver],
                 plistObject = nil;
             
             if ((theClass === _CPKeyedArchiverStringClass) || (theClass === _CPKeyedArchiverNumberClass))// || theClass == _CPKeyedArchiverBooleanClass)

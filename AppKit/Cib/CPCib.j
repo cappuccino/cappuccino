@@ -154,9 +154,6 @@ var CPCibObjectDataKey  = @"CPCibObjectDataKey";
 - (void)connection:(CPURLConnection)aConnection didReceiveData:(CPString)data
 {
     _data = [CPData dataWithString:data];
-
-    if ([_loadDelegate respondsToSelector:@selector(cibDidFinishLoading:)])
-        [_loadDelegate cibDidFinishLoading:self];
 }
 
 - (void)connection:(CPURLConnection)aConnection didFailWithError:(CPError)anError
@@ -168,6 +165,9 @@ var CPCibObjectDataKey  = @"CPCibObjectDataKey";
 
 - (void)connectionDidFinishLoading:(CPURLConnection)aConnection
 {
+    if ([_loadDelegate respondsToSelector:@selector(cibDidFinishLoading:)])
+        [_loadDelegate cibDidFinishLoading:self];
+
     _loadDelegate = nil;
 }
 
