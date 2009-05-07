@@ -24,6 +24,8 @@
 
 @import "CPControl.j"
 
+#include "CoreGraphics/CGGeometry.h"
+
 /*
     @global
     @group CPSegmentSwitchTracking
@@ -47,6 +49,8 @@ CPSegmentSwitchTrackingMomentary = 2;
 @implementation CPSegmentedControl : CPControl
 {
     CPArray                 _segments;
+    CPArray                 _controlStates;
+
     int                     _selectedSegment;
     int                     _segmentStyle;
     CPSegmentSwitchTracking _trackingMode;
@@ -55,9 +59,16 @@ CPSegmentSwitchTrackingMomentary = 2;
     BOOL                    _trackingHighlighted;
 }
 
++ (id)themedAttributes
+{
+    return [CPDictionary dictionaryWithObjects:[_CGInsetMakeZero(), _CGInsetMakeZero(), nil, nil, nil, nil, 1.0, 24.0]
+                                       forKeys:[@"bezel-inset", @"content-inset", @"left-segment-bezel-color", @"right-segment-bezel-color", @"center-segment-bezel-color", @"divider-bezel-color", @"divider-thickness", @"default-height"]];
+}
+
 - (id)initWithFrame:(CGRect)aRect
 {
     _segments = [];
+    _controlStates = [];
     
     self = [super initWithFrame:aRect];
     
@@ -99,6 +110,8 @@ CPSegmentSwitchTrackingMomentary = 2;
         {
             _segments[index] = [[_CPSegmentItem alloc] init];
             _segments[index].frame.size.height = height;
+
+            _controlStates[index] = CPControlStateNormal;
         }
     }
     else if (aCount < _segments.length)
@@ -371,6 +384,8 @@ CPSegmentSwitchTrackingMomentary = 2;
     
     segment.selected = isSelected;
 
+    _controlStates[aSegment] = isSelected ? CPControlStateSelected : CPControlStateNormal;
+
     // We need to do some cleanup if we only allow one selection.
     if (isSelected)
     {
@@ -381,6 +396,7 @@ CPSegmentSwitchTrackingMomentary = 2;
         if (_trackingMode == CPSegmentSwitchTrackingSelectOne && oldSelectedSegment != aSegment && oldSelectedSegment != -1)
         {
             _segments[oldSelectedSegment].selected = NO;
+            _controlStates[oldSelectedSegment] = CPControlStateNormal;
 
             [self drawSegmentBezel:oldSelectedSegment highlight:NO];
         }
@@ -388,6 +404,8 @@ CPSegmentSwitchTrackingMomentary = 2;
     
     if (_trackingMode != CPSegmentSwitchTrackingMomentary)
         [self drawSegmentBezel:aSegment highlight:NO];
+
+    [self setNeedsLayout];
 }
 
 /*!
@@ -448,7 +466,123 @@ CPSegmentSwitchTrackingMomentary = 2;
 */
 - (void)drawSegmentBezel:(int)aSegment highlight:(BOOL)shouldHighlight
 {
+    if (shouldHighlight)
+        _controlStates[aSegment] |= CPControlStateHighlighted;
+    else
+        _controlStates[aSegment] &= ~CPControlStateHighlighted;
+
+    [self setNeedsLayout];
 }
+
+- (float)_leftOffsetForSegment:(unsigned)segment
+{
+    var bezelInset = [self currentValueForThemedAttributeName:@"bezel-inset"];
+
+    if (segment == 0)
+        return bezelInset.left;
+
+    var thickness = [self currentValueForThemedAttributeName:@"divider-thickness"];
+
+    return [self _leftOffsetForSegment:segment - 1] + [self widthForSegment:segment - 1] + thickness;
+}
+
+- (CGRect)rectForEphemeralSubviewNamed:(CPString)aName
+{
+    var height = [self currentValueForThemedAttributeName:@"default-height"],
+        contentInset = [self currentValueForThemedAttributeName:@"content-inset"],
+        bezelInset = [self currentValueForThemedAttributeName:@"bezel-inset"],
+        bounds = [self bounds];
+
+    if (aName === "left-segment-bezel")
+    {
+        return CGRectMake(bezelInset.left, bezelInset.top, contentInset.left, height);
+    }
+    else if (aName === "right-segment-bezel")
+    {
+        return CGRectMake(CGRectGetMaxX(bounds) - contentInset.right, bezelInset.top, contentInset.right, height);
+    }
+    else if (aName.substring(0, "segment-bezel".length) == "segment-bezel")
+    {
+        var segment = parseInt(aName.substring("segment-bezel-".length), 10),
+            width = [self widthForSegment:segment],
+            left = [self _leftOffsetForSegment:segment];
+
+        if (_segments.length == 1)
+            return CGRectMake(left + contentInset.left, bezelInset.top, width - contentInset.left - contentInset.right, height);
+        else if (segment == 0)
+            return CGRectMake(left + contentInset.left, bezelInset.top, width - contentInset.left, height);
+        else if (segment == _segments.length - 1)
+            return CGRectMake(left, bezelInset.top, width - contentInset.right, height);
+        else
+            return CGRectMake(left, bezelInset.top, width, height);
+    }
+    else if (aName.substring(0, "divider-bezel".length) == "divider-bezel")
+    {
+        var segment = parseInt(aName.substring("divider-bezel-".length), 10),
+            width = [self widthForSegment:segment],
+            left = [self _leftOffsetForSegment:segment],
+            thickness = [self currentValueForThemedAttributeName:@"divider-thickness"];
+
+        return CGRectMake(left + width, bezelInset.top, thickness, height);
+    }
+
+    return [super rectForEphemeralSubviewNamed:aName];
+}
+
+- (CPView)createEphemeralSubviewNamed:(CPString)aName
+{
+    return [[CPView alloc] initWithFrame:_CGRectMakeZero()];
+}
+
+- (void)layoutSubviews
+{
+    var leftCapColor = [self valueForThemedAttributeName:@"left-segment-bezel-color" 
+                                          inControlState:_controlStates[0]];
+
+    var leftBezelView = [self layoutEphemeralSubviewNamed:@"left-segment-bezel"
+                                               positioned:CPWindowBelow
+                          relativeToEphemeralSubviewNamed:nil];
+
+    [leftBezelView setBackgroundColor:leftCapColor];
+
+    var rightCapColor = [self valueForThemedAttributeName:@"right-segment-bezel-color" 
+                                           inControlState:_controlStates[_controlStates.length - 1]];
+
+    var rightBezelView = [self layoutEphemeralSubviewNamed:@"right-segment-bezel"
+                                               positioned:CPWindowBelow
+                          relativeToEphemeralSubviewNamed:nil];
+
+    [rightBezelView setBackgroundColor:rightCapColor];
+
+    for (var i=0, count = _controlStates.length; i<count; i++)
+    {
+        var bezelColor = [self valueForThemedAttributeName:@"center-segment-bezel-color" 
+                                            inControlState:_controlStates[i]];
+
+        var bezelView = [self layoutEphemeralSubviewNamed:"segment-bezel-"+i 
+                                               positioned:CPWindowBelow 
+                          relativeToEphemeralSubviewNamed:nil];
+
+        [bezelView setBackgroundColor:bezelColor];
+
+        if (i == count - 1)
+            continue;
+
+        var borderState = _controlStates[i] | _controlStates[i+1];
+        
+        borderState = (borderState & CPControlStateSelected & ~CPControlStateHighlighted) ? CPControlStateSelected : CPControlStateNormal;
+    
+        var borderColor = [self valueForThemedAttributeName:@"divider-bezel-color"
+                                             inControlState:borderState];
+
+        var borderView = [self layoutEphemeralSubviewNamed:"divider-bezel-"+i 
+                                                positioned:CPWindowBelow 
+                           relativeToEphemeralSubviewNamed:nil];
+
+        [borderView setBackgroundColor:borderColor];
+    }
+}
+
 
 /*!
     Draws the specified segment
@@ -627,8 +761,8 @@ CPSegmentSwitchTrackingMomentary = 2;
     {
         _trackingHighlighted = YES;
         _trackingSegment = [self testSegment:location];
-        CPLog.error("_trackingSegment="+_trackingSegment);
 
+        
         [self drawSegmentBezel:_trackingSegment highlight:YES];
     }
     
@@ -680,6 +814,10 @@ var CPSegmentedControlSegmentsKey       = "CPSegmentedControlSegmentsKey",
         _segments           = [aCoder decodeObjectForKey:CPSegmentedControlSegmentsKey];
         _segmentStyle       = [aCoder decodeIntForKey:CPSegmentedControlSegmentStyleKey];
         
+        _controlStates = [];
+        for (var i = 0; i < _segments.length; i++)
+            _controlStates[i] = 0;
+
         if ([aCoder containsValueForKey:CPSegmentedControlSelectedKey])
             _selectedSegment = [aCoder decodeIntForKey:CPSegmentedControlSelectedKey];
         else    

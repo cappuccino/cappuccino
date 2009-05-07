@@ -278,6 +278,82 @@
     return button;
 }
 
++ (CPPopUpButton)themedSegmentedControl
+{
+    var segmentedControl = [[CPSegmentedControl alloc] initWithFrame:CGRectMake(0.0, 0.0, 0.0, 24.0)];
+    
+    [segmentedControl setTrackingMode:CPSegmentSwitchTrackingSelectAny];
+    [segmentedControl setSegmentCount:3];
+    
+    [segmentedControl setWidth:40.0 forSegment:0];
+    [segmentedControl setLabel:@"foo" forSegment:0];
+    [segmentedControl setTag:1 forSegment:0];
+    
+    [segmentedControl setWidth:60.0 forSegment:1];
+    [segmentedControl setLabel:@"bar" forSegment:1];
+    [segmentedControl setTag:2 forSegment:1];
+
+    [segmentedControl setWidth:25.0 forSegment:2];
+    [segmentedControl setLabel:@"1" forSegment:2];
+    [segmentedControl setTag:3 forSegment:2];
+    
+    //various colors
+    var centerBezelColor = [CPColor colorWithPatternImage:[_CPCibCustomResource imageResourceWithName:@"segmented-control-bezel-center.png" size:CGSizeMake(1.0, 24.0)]],
+        dividerBezelColor = [CPColor colorWithPatternImage:[_CPCibCustomResource imageResourceWithName:@"segmented-control-bezel-divider.png" size:CGSizeMake(1.0, 24.0)]],
+        centerHighlightedBezelColor = [CPColor colorWithPatternImage:[_CPCibCustomResource imageResourceWithName:@"segmented-control-bezel-highlighted-center.png" size:CGSizeMake(1.0, 24.0)]],
+        dividerHighlightedBezelColor = [CPColor colorWithPatternImage:[_CPCibCustomResource imageResourceWithName:@"segmented-control-bezel-highlighted-divider.png" size:CGSizeMake(1.0, 24.0)]],
+        leftHighlightedBezelColor = [CPColor colorWithPatternImage:[_CPCibCustomResource imageResourceWithName:@"segmented-control-bezel-highlighted-left.png" size:CGSizeMake(4.0, 24.0)]],
+        rightHighlightedBezelColor = [CPColor colorWithPatternImage:[_CPCibCustomResource imageResourceWithName:@"segmented-control-bezel-highlighted-right.png" size:CGSizeMake(4.0, 24.0)]],
+        inactiveCenterBezelColor = [CPColor colorWithPatternImage:[_CPCibCustomResource imageResourceWithName:@"segmented-control-bezel-inactive-center.png" size:CGSizeMake(1.0, 24.0)]],
+        inactiveDividerBezelColor = [CPColor colorWithPatternImage:[_CPCibCustomResource imageResourceWithName:@"segmented-control-bezel-inactive-divider.png" size:CGSizeMake(1.0, 24.0)]],
+        inactiveLeftBezelColor = [CPColor colorWithPatternImage:[_CPCibCustomResource imageResourceWithName:@"segmented-control-bezel-inactive-left.png" size:CGSizeMake(4.0, 24.0)]],
+        inactiveRightBezelColor = [CPColor colorWithPatternImage:[_CPCibCustomResource imageResourceWithName:@"segmented-control-bezel-inactive-right.png" size:CGSizeMake(4.0, 24.0)]],
+        leftBezelColor = [CPColor colorWithPatternImage:[_CPCibCustomResource imageResourceWithName:@"segmented-control-bezel-left.png" size:CGSizeMake(4.0, 24.0)]],
+        rightBezelColor = [CPColor colorWithPatternImage:[_CPCibCustomResource imageResourceWithName:@"segmented-control-bezel-right.png" size:CGSizeMake(4.0, 24.0)]],
+        pushedCenterBezelColor = [CPColor colorWithPatternImage:[_CPCibCustomResource imageResourceWithName:@"segmented-control-bezel-pushed-center.png" size:CGSizeMake(1.0, 24.0)]],
+        pushedLeftBezelColor = [CPColor colorWithPatternImage:[_CPCibCustomResource imageResourceWithName:@"segmented-control-bezel-pushed-left.png" size:CGSizeMake(4.0, 24.0)]],
+        pushedRightBezelColor = [CPColor colorWithPatternImage:[_CPCibCustomResource imageResourceWithName:@"segmented-control-bezel-pushed-right.png" size:CGSizeMake(4.0, 24.0)]];
+        pushedHighlightedCenterBezelColor = [CPColor colorWithPatternImage:[_CPCibCustomResource imageResourceWithName:@"segmented-control-bezel-pushed-highlighted-center.png" size:CGSizeMake(1.0, 24.0)]],
+        pushedHighlightedLeftBezelColor = [CPColor colorWithPatternImage:[_CPCibCustomResource imageResourceWithName:@"segmented-control-bezel-pushed-highlighted-left.png" size:CGSizeMake(4.0, 24.0)]],
+        pushedHighlightedRightBezelColor = [CPColor colorWithPatternImage:[_CPCibCustomResource imageResourceWithName:@"segmented-control-bezel-pushed-highlighted-right.png" size:CGSizeMake(4.0, 24.0)]];
+
+    [segmentedControl setValue:centerBezelColor forThemedAttributeName:@"center-segment-bezel-color" inControlState:CPControlStateNormal];
+    [segmentedControl setValue:inactiveCenterBezelColor forThemedAttributeName:@"center-segment-bezel-color" inControlState:CPControlStateDisabled];
+    [segmentedControl setValue:centerHighlightedBezelColor forThemedAttributeName:@"center-segment-bezel-color" inControlState:CPControlStateSelected];
+    [segmentedControl setValue:pushedCenterBezelColor forThemedAttributeName:@"center-segment-bezel-color" inControlState:CPControlStateHighlighted];
+    [segmentedControl setValue:pushedHighlightedCenterBezelColor forThemedAttributeName:@"center-segment-bezel-color" inControlState:CPControlStateHighlighted|CPControlStateSelected];
+
+    [segmentedControl setValue:dividerBezelColor forThemedAttributeName:@"divider-bezel-color" inControlState:CPControlStateNormal];
+    [segmentedControl setValue:inactiveDividerBezelColor forThemedAttributeName:@"divider-bezel-color" inControlState:CPControlStateDisabled];
+    [segmentedControl setValue:dividerHighlightedBezelColor forThemedAttributeName:@"divider-bezel-color" inControlState:CPControlStateSelected];
+    [segmentedControl setValue:dividerBezelColor forThemedAttributeName:@"divider-bezel-color" inControlState:CPControlStateHighlighted];
+
+    [segmentedControl setValue:rightBezelColor forThemedAttributeName:@"right-segment-bezel-color" inControlState:CPControlStateNormal];
+    [segmentedControl setValue:inactiveRightBezelColor forThemedAttributeName:@"right-segment-bezel-color" inControlState:CPControlStateDisabled];
+    [segmentedControl setValue:rightHighlightedBezelColor forThemedAttributeName:@"right-segment-bezel-color" inControlState:CPControlStateSelected];
+    [segmentedControl setValue:pushedRightBezelColor forThemedAttributeName:@"right-segment-bezel-color" inControlState:CPControlStateHighlighted];
+    [segmentedControl setValue:pushedHighlightedRightBezelColor forThemedAttributeName:@"right-segment-bezel-color" inControlState:CPControlStateHighlighted|CPControlStateSelected];
+
+    [segmentedControl setValue:leftBezelColor forThemedAttributeName:@"left-segment-bezel-color" inControlState:CPControlStateNormal];
+    [segmentedControl setValue:inactiveLeftBezelColor forThemedAttributeName:@"left-segment-bezel-color" inControlState:CPControlStateDisabled];
+    [segmentedControl setValue:leftHighlightedBezelColor forThemedAttributeName:@"left-segment-bezel-color" inControlState:CPControlStateSelected];
+    [segmentedControl setValue:pushedLeftBezelColor forThemedAttributeName:@"left-segment-bezel-color" inControlState:CPControlStateHighlighted];
+    [segmentedControl setValue:pushedHighlightedLeftBezelColor forThemedAttributeName:@"left-segment-bezel-color" inControlState:CPControlStateHighlighted|CPControlStateSelected];
+
+    [segmentedControl setValue:CGInsetMake(0.0, 4.0, 0.0, 4.0) forThemedAttributeName:@"content-inset" inControlState:CPControlStateNormal];
+
+    [segmentedControl setValue:CGInsetMake(0.0, 0.0, 0.0, 0.0) forThemedAttributeName:@"bezel-inset" inControlState:CPControlStateNormal];
+
+    [segmentedControl setValue:[CPFont boldSystemFontOfSize:12.0] forThemedAttributeName:@"font"];
+    [segmentedControl setValue:[CPColor colorWithCalibratedWhite:79.0 / 255.0 alpha:1.0] forThemedAttributeName:@"text-color"];
+    [segmentedControl setValue:[CPColor colorWithCalibratedWhite:240.0 / 255.0 alpha:1.0] forThemedAttributeName:@"text-shadow-color"];
+
+    [segmentedControl setValue:1.0 forThemedAttributeName:@"divider-thickness"];
+    [segmentedControl setValue:24.0 forThemedAttributeName:@"default-height"];
+    
+    return segmentedControl;
+}
+
 + (CPPopUpButton)themedPullDownMenu
 {
     var button = [[CPPopUpButton alloc] initWithFrame:CGRectMake(0.0, 0.0, 100.0, 24.0) pullsDown:YES],
