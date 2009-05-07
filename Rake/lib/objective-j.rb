@@ -56,13 +56,3 @@ def file_d(*args, &block)
     
     file fileTask.name => fileDirectory
 end
-
-def resolve_flags(flags)
-
-    case flags
-    when nil then ''
-    when String then '-D' + flags
-    when Array then flags.map { |flag| '-D' + flag }.join(' ')
-    when Hash then flags.map { |flag, value| '-D' + flag + (value != '' ? '=' + value : '') }.join(' ')
-    end
-end
