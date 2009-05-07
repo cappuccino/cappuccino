@@ -13,32 +13,6 @@ module ObjectiveJ
         BrowserDesktop  = 'browser-desktop'
         BrowserIPhone   = 'browser-iphone'
         BrowseriPhone   = 'browser-iphone'
-
-        PLATFORM_DIRECTORIES =
-        {
-            Platform::ObjJ              => 'objj.platform',
-            Platform::Rhino             => 'rhino.platform',
-            Platform::Browser           => 'browser.platform',
-            Platform::BrowserDesktop    => 'browser-desktop.platform',
-            Platform::BrowserIPhone     => 'browser-iphone.platform'
-        }
-
-        PLATFORM_FLAGS =
-        {
-            Platform::ObjJ              => [],
-            Platform::Rhino             => ['PLATFORM_RHINO'],
-            Platform::Browser           => ['PLATFORM_BROWSER', 'PLATFORM_DOM'],
-            Platform::BrowserDesktop    => ['PLATFORM_BROWSER', 'PLATFORM_DOM', 'PLATFORM_DESKTOP'],
-            Platform::BrowserIPhone     => ['PLATFORM_BROWSER', 'PLATFORM_DOM', 'PLATFORM_IPHONE', 'PLATFORM_MOBILE']
-        }
-
-        def Platform.directory(aPlatform)
-            return PLATFORM_DIRECTORIES[aPlatform]
-        end
-
-        def Platform.flags(aPlatform)
-            return PLATFORM_FLAGS[aPlatform]
-        end
     end
 
 end  # module ObjectiveJ
