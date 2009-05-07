@@ -273,17 +273,44 @@ function CGContextDrawLinearGradient(aContext, aGradient, aStartPoint, anEndPoin
     if (!aContext || !aGradient)
         return;
     
-    var colors = aGradient.colors,
-        count = colors.length,
+    var vml = nil;
+    
+    // MASSIVE hack for 280 Slides
+    if (aGradient.vml_gradient)
+    {
+        var stops = [[aGradient.vml_gradient stops] sortedArrayUsingSelector:@selector(comparePosition:)],
+            count = [stops count];
         
+        vml = ["<cg_vml_:fill type=\"gradient\" method=\"linear sigma\" "];
+        vml.push("angle=\"" + ([aGradient.vml_gradient angle] + 90) +"\" ");
+        
+        vml.push("colors=\"");
+
+        for (var i = 0; i < count; i++)
+        {
+            vml.push(([stops[i] position]*100).toFixed(0)+"% ");
+            vml.push([[[stops[i] color] colorForSlideBase:nil] cssString]);
+            
+            if (i < count-1)
+                vml.push(",");
+        }
+
+        vml.push("\" />");
+    }
+    else
+    {
+        var colors = aGradient.colors,
+            count = colors.length;
+
         vml = ["<cg_vml_:fill type=\"gradient\" "];
 
-    vml.push("colors=\"");
-    console.log(aGradient.locations);
-    for (var i = 0; i < count; i++)
-        vml.push((aGradient.locations[i]*100).toFixed(0)+"% "+to_string(colors[i])+(i<count-1 ? "," : ""));
-    
-    vml.push("\" />");
+        vml.push("colors=\"");
+
+        for (var i = 0; i < count; i++)
+            vml.push((aGradient.locations[i]*100).toFixed(0)+"% "+to_string(colors[i])+(i<count-1 ? "," : ""));
+
+        vml.push("\" />");
+    }
     
     aContext.gState.gradient = vml.join("");
     console.log(vml.join(""));
