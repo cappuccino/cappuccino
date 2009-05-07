@@ -275,7 +275,6 @@ function CGContextDrawLinearGradient(aContext, aGradient, aStartPoint, anEndPoin
     
     var vml = nil;
     
-    // MASSIVE hack for 280 Slides
     if (aGradient.vml_gradient)
     {
         var stops = [[aGradient.vml_gradient stops] sortedArrayUsingSelector:@selector(comparePosition:)],
