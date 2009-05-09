@@ -23,6 +23,7 @@
 
 @import "CPControl.j"
 @import "CPStringDrawing.j"
+@import "CPCompatibility.j"
 
 #include "CoreGraphics/CGGeometry.j"
 #include "Platform/Platform.h"
@@ -77,6 +78,8 @@ CPTextFieldRoundedBezel         = 1;
 #if PLATFORM(DOM)
 
 var CPTextFieldDOMInputElement = nil,
+    CPTextFieldDOMPasswordInputElement = nil,
+    CPTextFieldDOMStandardInputElement = nil,
     CPTextFieldInputOwner = nil,
     CPTextFieldTextDidChangeValue = nil,
     CPTextFieldInputResigning = NO,
@@ -84,7 +87,11 @@ var CPTextFieldDOMInputElement = nil,
     CPTextFieldInputIsActive = NO,
     CPTextFieldCachedSelectStartFunction = nil,
     CPTextFieldCachedDragFunction = nil,
-    CPTextFieldBlurFunction = nil;
+    
+    CPTextFieldBlurFunction = nil,
+    CPTextFieldKeyUpFunction = nil,
+    CPTextFieldKeyPressFunction = nil,
+    CPTextFieldKeyDownFunction = nil;
     
 #endif
 
@@ -138,7 +145,7 @@ CPTextFieldStatePlaceholder = 1 << 13;
 
 /* @ignore */
 #if PLATFORM(DOM)
-+ (DOMElement)_inputElement
+- (DOMElement)_inputElement
 {
     if (!CPTextFieldDOMInputElement)
     {
@@ -151,7 +158,7 @@ CPTextFieldStatePlaceholder = 1 << 13;
         CPTextFieldDOMInputElement.style.background = "transparent";
         CPTextFieldDOMInputElement.style.outline = "none";
 
-        var blurFunction = function(anEvent)
+        CPTextFieldBlurFunction = function(anEvent)
         {
             if (CPTextFieldInputOwner && CPTextFieldInputOwner._DOMElement != CPTextFieldDOMInputElement.parentNode)
                 return;
@@ -168,18 +175,16 @@ CPTextFieldStatePlaceholder = 1 << 13;
             return true;
         }
 
-        CPTextFieldBlurFunction = blurFunction;
-
-        var keydownFunction = function(anEvent)
+        CPTextFieldKeyDownFunction = function(anEvent)
         {
             CPTextFieldTextDidChangeValue = [CPTextFieldInputOwner stringValue];
 
-            keypressFunction(anEvent);
+            CPTextFieldKeyPressFunction(anEvent);
 
             return true;
         }
 
-        var keypressFunction = function(aDOMEvent)
+        CPTextFieldKeyPressFunction = function(aDOMEvent)
         {
             aDOMEvent = aDOMEvent || window.event;
 
@@ -210,7 +215,7 @@ CPTextFieldStatePlaceholder = 1 << 13;
             [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
         }
 
-        var keyupFunction = function()
+        CPTextFieldKeyUpFunction = function()
         {
             [CPTextFieldInputOwner setStringValue:CPTextFieldDOMInputElement.value];
 
@@ -233,30 +238,64 @@ CPTextFieldStatePlaceholder = 1 << 13;
 
         if (document.attachEvent)
         {
-            CPTextFieldDOMInputElement.attachEvent("on" + CPDOMEventKeyUp, keyupFunction);
-            CPTextFieldDOMInputElement.attachEvent("on" + CPDOMEventKeyDown, keydownFunction);
-            CPTextFieldDOMInputElement.attachEvent("on" + CPDOMEventKeyPress, keypressFunction);
+            CPTextFieldDOMInputElement.attachEvent("on" + CPDOMEventKeyUp, CPTextFieldKeyUpFunction);
+            CPTextFieldDOMInputElement.attachEvent("on" + CPDOMEventKeyDown, CPTextFieldKeyDownFunction);
+            CPTextFieldDOMInputElement.attachEvent("on" + CPDOMEventKeyPress, CPTextFieldKeyPressFunction);
         }
         else
         {
-            CPTextFieldDOMInputElement.addEventListener(CPDOMEventKeyUp, keyupFunction, NO);
-            CPTextFieldDOMInputElement.addEventListener(CPDOMEventKeyDown, keydownFunction, NO);
-            CPTextFieldDOMInputElement.addEventListener(CPDOMEventKeyPress, keypressFunction, NO);
+            CPTextFieldDOMInputElement.addEventListener(CPDOMEventKeyUp, CPTextFieldKeyUpFunction, NO);
+            CPTextFieldDOMInputElement.addEventListener(CPDOMEventKeyDown, CPTextFieldKeyDownFunction, NO);
+            CPTextFieldDOMInputElement.addEventListener(CPDOMEventKeyPress, CPTextFieldKeyPressFunction, NO);
         }
 
         //FIXME make this not onblur
-        CPTextFieldDOMInputElement.onblur = blurFunction;
+        CPTextFieldDOMInputElement.onblur = CPTextFieldBlurFunction;
+        
+        CPTextFieldDOMStandardInputElement = CPTextFieldDOMInputElement;
+    }
+    
+    if (CPFeatureIsCompatible(CPInputTypeCanBeChangedFeature))
+    {
+        if ([self isSecure])
+            CPTextFieldDOMInputElement.type = "password";
+        else
+            CPTextFieldDOMInputElement.type = "text";
+
+        return CPTextFieldDOMInputElement;
     }
 
+    if ([self isSecure])
+    {
+        if (!CPTextFieldDOMPasswordInputElement)
+        {
+            CPTextFieldDOMPasswordInputElement = document.createElement("input");
+            CPTextFieldDOMPasswordInputElement.style.position = "absolute";
+            CPTextFieldDOMPasswordInputElement.style.border = "0px";
+            CPTextFieldDOMPasswordInputElement.style.padding = "0px";
+            CPTextFieldDOMPasswordInputElement.style.margin = "0px";
+            CPTextFieldDOMPasswordInputElement.style.whiteSpace = "pre";
+            CPTextFieldDOMPasswordInputElement.style.background = "transparent";
+            CPTextFieldDOMPasswordInputElement.style.outline = "none";
+            CPTextFieldDOMPasswordInputElement.type = "password";
+
+            CPTextFieldDOMPasswordInputElement.attachEvent("on" + CPDOMEventKeyUp, CPTextFieldKeyUpFunction);
+            CPTextFieldDOMPasswordInputElement.attachEvent("on" + CPDOMEventKeyDown, CPTextFieldKeyDownFunction);
+            CPTextFieldDOMPasswordInputElement.attachEvent("on" + CPDOMEventKeyPress, CPTextFieldKeyPressFunction);
+
+            CPTextFieldDOMPasswordInputElement.onblur = CPTextFieldBlurFunction;
+        }
+        
+        CPTextFieldDOMInputElement = CPTextFieldDOMPasswordInputElement;
+    }
+    else
+    {
+        CPTextFieldDOMInputElement = CPTextFieldDOMStandardInputElement;
+    }
+    
     return CPTextFieldDOMInputElement;
 }
 #endif
-
-+ (void)initialize
-{
-    if (CPBrowserIsEngine(CPGeckoBrowserEngine))
-        CPSecureTextFieldCharacter = "*";
-}
 
 - (id)initWithFrame:(CGRect)aFrame
 {
@@ -478,17 +517,12 @@ CPTextFieldStatePlaceholder = 1 << 13;
 #if PLATFORM(DOM)
 
     var string = [self stringValue],
-        element = [[self class] _inputElement];
+        element = [self _inputElement];
 
     element.value = string;
     element.style.color = [[self currentValueForThemedAttributeName:@"text-color"] cssString];
     element.style.font = [[self currentValueForThemedAttributeName:@"font"] cssString];
     element.style.zIndex = 1000;
-
-    if ([self isSecure])
-        element.type = "password";
-    else
-        element.type = "text";
 
     var contentRect = [self contentRectForBounds:[self bounds]];
 
@@ -537,7 +571,7 @@ CPTextFieldStatePlaceholder = 1 << 13;
 
 #if PLATFORM(DOM)
 
-    var element = [[self class] _inputElement];
+    var element = [self _inputElement];
 
     [self setObjectValue:element.value];
 
@@ -661,7 +695,7 @@ CPTextFieldStatePlaceholder = 1 << 13;
 - (void)selectText:(id)sender
 {
 #if PLATFORM(DOM)
-    var element = [[self class] _inputElement];
+    var element = [self _inputElement];
     
     if (element.parentNode == _DOMElement && ([self isEditable] || [self isSelectable]))
         element.select();
