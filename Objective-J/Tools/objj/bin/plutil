@@ -1,8 +1,5 @@
 #!/usr/bin/env narwhal
 
-importPackage(java.lang);
-
-importClass(java.io.File);
 importClass(java.io.BufferedReader);
 importClass(java.io.FileReader);
 importClass(java.io.BufferedWriter);
@@ -62,7 +59,7 @@ function main()
     for (; index < count; ++index)
     {
         // Read the plist file
-        var file = new File(filePaths[index]),
+        var file = new java.io.File(filePaths[index]),
             reader = new BufferedReader(new FileReader(file)),
             fileContents = "";
         
@@ -87,7 +84,7 @@ function main()
         var outFile = file;
         
         if (outPath)
-            outFile = new File(outPath);
+            outFile = new java.io.File(outPath);
         
 //        else if (outExtension)
             

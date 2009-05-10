@@ -6,7 +6,6 @@ with (objjc)
 
 importPackage(java.lang);
 
-importClass(java.io.File);
 importClass(java.io.BufferedReader);
 importClass(java.io.FileReader);
 importClass(java.io.BufferedWriter);
@@ -123,7 +122,7 @@ function preprocess(aFilePath, outFilePath, gccArgs, flags)
     reader.close();
     
     // Preprocess contents into fragments.
-    var filePath = new String(new File(aFilePath).getName()),
+    var filePath = new String(new java.io.File(aFilePath).getName()),
         fragments = objj_preprocess(fileContents, { path:"/x" }, {path:filePath}, flags),
         index = 0,
         count = fragments.length,
