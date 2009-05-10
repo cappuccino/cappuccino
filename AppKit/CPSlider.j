@@ -26,8 +26,8 @@
 
 /*! SLIDER STATES */
 
-CPLinearSlider = 0;
-CPCircularSlider = 1;
+CPLinearSlider      = 0;
+CPCircularSlider    = 1;
 
 @implementation CPSlider : CPControl
 {
@@ -38,7 +38,12 @@ CPCircularSlider = 1;
     BOOL            _isVertical;
 }
 
-+ (id)themedAttributes
++ (CPString)themeClass
+{
+    return "slider";
+}
+
++ (id)themeAttributes
 {
     return [CPDictionary dictionaryWithObjects:[nil, _CGSizeMakeZero(), 0.0, nil]
                                        forKeys:[@"knob-color", @"knob-size", @"track-width", @"track-color"]];
@@ -109,31 +114,20 @@ CPCircularSlider = 1;
 
 - (void)setSliderType:(CPSliderType)aSliderType
 {
-    if ((aSliderType === CPCircularSlider) === (_controlState & CPControlStateCircular))
-        return;
-
     if (aSliderType === CPCircularSlider)
-        _controlState |= CPControlStateCircular;
+        [self setThemeState:CPThemeStateCircular];
     else
-        _controlState &= ~CPControlStateCircular;
-    
-    [self setNeedsLayout];
-    [self setNeedsDisplay:YES];
+        [self unsetThemeState:CPThemeStateCircular];
 }
 
 - (CPSliderType)sliderType
 {
-    return (_controlState & CPControlStateCircular) ? CPCircularSlider : CPLinearSlider;
+    return [self hasThemeState:CPThemeStateCircular] ? CPCircularSlider : CPLinearSlider;
 }
 
 - (CGRect)trackRectForBounds:(CGRect)bounds
 {
-    var trackWidth = [self currentValueForThemedAttributeName:@"track-width"];
-    
-    if (trackWidth <= 0)
-        return _CGRectMakeZero();
-    
-    if (_controlState & CPControlStateCircular)
+    if ([self hasThemeState:CPThemeStateCircular])
     {
         var originalBounds = CGRectCreateCopy(bounds);
 
@@ -145,15 +139,23 @@ CPCircularSlider = 1;
         else
             bounds.origin.y += (originalBounds.size.height - bounds.size.height) / 2.0;
     }
-    else if ([self isVertical])
-    {
-        bounds.origin.x = (_CGRectGetWidth(bounds) - trackWidth) / 2.0;
-        bounds.size.width = trackWidth;
-    }
     else
     {
-        bounds.origin.y = (_CGRectGetHeight(bounds) - trackWidth) / 2.0;
-        bounds.size.height = trackWidth;
+        var trackWidth = [self currentValueForThemeAttribute:@"track-width"];
+
+        if (trackWidth <= 0)
+            return _CGRectMakeZero();
+
+        if ([self isVertical])
+        {
+            bounds.origin.x = (_CGRectGetWidth(bounds) - trackWidth) / 2.0;
+            bounds.size.width = trackWidth;
+        }
+        else
+        {
+            bounds.origin.y = (_CGRectGetHeight(bounds) - trackWidth) / 2.0;
+            bounds.size.height = trackWidth;
+        }
     }
     
     return bounds;
@@ -161,7 +163,7 @@ CPCircularSlider = 1;
 
 - (CGRect)knobRectForBounds:(CGRect)bounds
 {
-    var knobSize = [self currentValueForThemedAttributeName:@"knob-size"];
+    var knobSize = [self currentValueForThemeAttribute:@"knob-size"];
     
     if (knobSize.width <= 0 || knobSize.height <= 0)
         return _CGRectMakeZero();
@@ -173,7 +175,7 @@ CPCircularSlider = 1;
     if (!trackRect || _CGRectIsEmpty(trackRect))
         trackRect = bounds;
 
-    if (_controlState & CPControlStateCircular)
+    if ([self hasThemeState:CPThemeStateCircular])
     {
         var angle = 3*PI_2 - (1.0 - [self doubleValue] - _minValue) / (_maxValue - _minValue) * PI2,
             radius = CGRectGetWidth(trackRect) / 2.0 - 6.0;
@@ -246,9 +248,9 @@ CPCircularSlider = 1;
     _isVertical = width < height ? 1 : (width > height ? 0 : -1);
 
     if (_isVertical === 1)
-        _controlState |= CPControlStateVertical;
+        [self setThemeState:CPThemeStateVertical];
     else if (_isVertical === 0)
-        _controlState &= ~CPControlStateVertical;
+        [self unsetThemeState:CPThemeStateVertical];
 }
 
 - (int)isVertical
@@ -263,14 +265,14 @@ CPCircularSlider = 1;
                       relativeToEphemeralSubviewNamed:@"knob-view"];
 
     if (trackView)
-        [trackView setBackgroundColor:[self currentValueForThemedAttributeName:@"track-color"]];
+        [trackView setBackgroundColor:[self currentValueForThemeAttribute:@"track-color"]];
 
     var knobView = [self layoutEphemeralSubviewNamed:@"knob-view"
                                           positioned:CPWindowAbove
                      relativeToEphemeralSubviewNamed:@"track-view"];
       
     if (knobView)
-        [knobView setBackgroundColor:[self currentValueForThemedAttributeName:"knob-color"]];
+        [knobView setBackgroundColor:[self currentValueForThemeAttribute:"knob-color"]];
 }
 
 - (BOOL)tracksMouseOutsideOfFrame
@@ -284,7 +286,7 @@ CPCircularSlider = 1;
         knobRect = [self knobRectForBounds:bounds],
         trackRect = [self trackRectForBounds:bounds];
 
-    if (_controlState & CPControlStateCircular)
+    if ([self hasThemeState:CPThemeStateCircular])
     {
         var knobWidth = _CGRectGetWidth(knobRect);
 
@@ -295,7 +297,7 @@ CPCircularSlider = 1;
             dx = aPoint.x - _CGRectGetMidX(trackRect),
             dy = aPoint.y - _CGRectGetMidY(trackRect);
 
-        return MAX(0.0, MIN(1.0, 1.0 - (3*PI_2 - ATAN2(dy, dx))%PI2 / PI2)) * ([self maxValue] - minValue) + minValue;
+        return MAX(0.0, MIN(1.0, 1.0 - (3 * PI_2 - ATAN2(dy, dx)) % PI2 / PI2)) * ([self maxValue] - minValue) + minValue;
     }
     else if ([self isVertical])
     {

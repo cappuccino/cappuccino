@@ -7,7 +7,7 @@
  */
 
 @import <Foundation/CPObject.j>
-@import <AppKit/CPThemedAttribute.j>
+
 
 @implementation AristoThemeDescriptor : CPObject
 {
@@ -21,34 +21,34 @@
 + (CPScroller)themedVerticalScroller
 {
     var scroller = [[CPScroller alloc] initWithFrame:CGRectMake(0.0, 0.0, 17.0, 170.0)],
-        trackColor = PatterColor([_CPCibCustomResource imageResourceWithName:"scroller-vertical-track.png" size:CGSizeMake(17.0, 1.0)]),
-        disabledTrackColor = PatterColor([_CPCibCustomResource imageResourceWithName:"scroller-vertical-track-disabled.png" size:CGSizeMake(17.0, 1.0)]);
+        trackColor = PatternColor([_CPCibCustomResource imageResourceWithName:"scroller-vertical-track.png" size:CGSizeMake(17.0, 1.0)]),
+        disabledTrackColor = PatternColor([_CPCibCustomResource imageResourceWithName:"scroller-vertical-track-disabled.png" size:CGSizeMake(17.0, 1.0)]);
         
-    [scroller setValue:CGSizeMake(15.0, 19.0) forThemedAttributeName:@"minimum-knob-size" inControlState:CPControlStateVertical];
+    [scroller setValue:CGSizeMake(15.0, 19.0) forThemeAttribute:@"minimum-knob-size" inState:CPThemeStateVertical];
 
-    [scroller setValue:CGInsetMake(9.0, 9.0, 9.0, 9.0) forThemedAttributeName:@"track-overlap-inset" inControlState:CPControlStateVertical];
-    [scroller setValue:trackColor forThemedAttributeName:@"knob-slot-color" inControlState:CPControlStateVertical];
-    [scroller setValue:disabledTrackColor forThemedAttributeName:@"knob-slot-color" inControlState:CPControlStateVertical | CPControlStateDisabled];
+    [scroller setValue:CGInsetMake(9.0, 9.0, 9.0, 9.0) forThemeAttribute:@"track-overlap-inset" inState:CPThemeStateVertical];
+    [scroller setValue:trackColor forThemeAttribute:@"knob-slot-color" inState:CPThemeStateVertical];
+    [scroller setValue:disabledTrackColor forThemeAttribute:@"knob-slot-color" inState:CPThemeStateVertical | CPThemeStateDisabled];
 
-    var arrowColor = PatterColor([_CPCibCustomResource imageResourceWithName:"scroller-up-arrow.png" size:CGSizeMake(17.0, 30.0)]),
-        highlightedArrowColor = PatterColor([_CPCibCustomResource imageResourceWithName:"scroller-up-arrow-highlighted.png" size:CGSizeMake(17.0, 30.0)]),
-        disabledArrowColor = PatterColor([_CPCibCustomResource imageResourceWithName:"scroller-up-arrow-disabled.png" size:CGSizeMake(17.0, 30.0)]);
+    var arrowColor = PatternColor([_CPCibCustomResource imageResourceWithName:"scroller-up-arrow.png" size:CGSizeMake(17.0, 30.0)]),
+        highlightedArrowColor = PatternColor([_CPCibCustomResource imageResourceWithName:"scroller-up-arrow-highlighted.png" size:CGSizeMake(17.0, 30.0)]),
+        disabledArrowColor = PatternColor([_CPCibCustomResource imageResourceWithName:"scroller-up-arrow-disabled.png" size:CGSizeMake(17.0, 30.0)]);
 
-    [scroller setValue:CGSizeMake(17.0, 30.0) forThemedAttributeName:@"decrement-line-size" inControlState:CPControlStateVertical];
-    [scroller setValue:arrowColor forThemedAttributeName:@"decrement-line-color" inControlState:CPControlStateVertical];
-    [scroller setValue:highlightedArrowColor forThemedAttributeName:@"decrement-line-color" inControlState:CPControlStateVertical | CPControlStateHighlighted],
-    [scroller setValue:disabledArrowColor forThemedAttributeName:@"decrement-line-color" inControlState:CPControlStateVertical | CPControlStateDisabled];
+    [scroller setValue:CGSizeMake(17.0, 30.0) forThemeAttribute:@"decrement-line-size" inState:CPThemeStateVertical];
+    [scroller setValue:arrowColor forThemeAttribute:@"decrement-line-color" inState:CPThemeStateVertical];
+    [scroller setValue:highlightedArrowColor forThemeAttribute:@"decrement-line-color" inState:CPThemeStateVertical | CPThemeStateHighlighted],
+    [scroller setValue:disabledArrowColor forThemeAttribute:@"decrement-line-color" inState:CPThemeStateVertical | CPThemeStateDisabled];
 
-    var arrowColor = PatterColor([_CPCibCustomResource imageResourceWithName:"scroller-down-arrow.png" size:CGSizeMake(17.0, 30.0)]),
-        highlightedArrowColor = PatterColor([_CPCibCustomResource imageResourceWithName:"scroller-down-arrow-highlighted.png" size:CGSizeMake(17.0, 30.0)]),
-        disabledArrowColor = PatterColor([_CPCibCustomResource imageResourceWithName:"scroller-down-arrow-disabled.png" size:CGSizeMake(17.0, 30.0)]);
+    var arrowColor = PatternColor([_CPCibCustomResource imageResourceWithName:"scroller-down-arrow.png" size:CGSizeMake(17.0, 30.0)]),
+        highlightedArrowColor = PatternColor([_CPCibCustomResource imageResourceWithName:"scroller-down-arrow-highlighted.png" size:CGSizeMake(17.0, 30.0)]),
+        disabledArrowColor = PatternColor([_CPCibCustomResource imageResourceWithName:"scroller-down-arrow-disabled.png" size:CGSizeMake(17.0, 30.0)]);
 
-    [scroller setValue:CGSizeMake(17.0, 30.0) forThemedAttributeName:@"increment-line-size"];
-    [scroller setValue:arrowColor forThemedAttributeName:@"increment-line-color" inControlState:CPControlStateVertical];
-    [scroller setValue:highlightedArrowColor forThemedAttributeName:@"increment-line-color" inControlState:CPControlStateVertical | CPControlStateHighlighted];
-    [scroller setValue:disabledArrowColor forThemedAttributeName:@"increment-line-color" inControlState:CPControlStateVertical | CPControlStateDisabled];
+    [scroller setValue:CGSizeMake(17.0, 30.0) forThemeAttribute:@"increment-line-size"];
+    [scroller setValue:arrowColor forThemeAttribute:@"increment-line-color" inState:CPThemeStateVertical];
+    [scroller setValue:highlightedArrowColor forThemeAttribute:@"increment-line-color" inState:CPThemeStateVertical | CPThemeStateHighlighted];
+    [scroller setValue:disabledArrowColor forThemeAttribute:@"increment-line-color" inState:CPThemeStateVertical | CPThemeStateDisabled];
     
-    var knobColor = PatterColor([[CPThreePartImage alloc] initWithImageSlices:
+    var knobColor = PatternColor([[CPThreePartImage alloc] initWithImageSlices:
             [
                 [_CPCibCustomResource imageResourceWithName:"scroller-vertical-knob-top.png" size:CGSizeMake(15.0, 8.0)],
                 [_CPCibCustomResource imageResourceWithName:"scroller-vertical-knob-center.png" size:CGSizeMake(15.0, 1.0)],
@@ -56,7 +56,7 @@
             ]
         isVertical:YES]);
     
-    [scroller setValue:knobColor forThemedAttributeName:@"knob-color" inControlState:CPControlStateVertical];
+    [scroller setValue:knobColor forThemeAttribute:@"knob-color" inState:CPThemeStateVertical];
     
     [scroller setFloatValue:0.1 knobProportion:0.5];
 
@@ -64,36 +64,36 @@
 }
 
 + (CPScroller)themedHorizontalScroller
-{CPControlStateHorizontal = 0;
+{
     var scroller = [[CPScroller alloc] initWithFrame:CGRectMake(0.0, 0.0, 170.0, 17.0)],
-        trackColor = PatterColor([_CPCibCustomResource imageResourceWithName:"scroller-horizontal-track.png" size:CGSizeMake(1.0, 17.0)]),
-        disabledTrackColor = PatterColor([_CPCibCustomResource imageResourceWithName:"scroller-vertical-track-disabled.png" size:CGSizeMake(17.0, 1.0)]);
+        trackColor = PatternColor([_CPCibCustomResource imageResourceWithName:"scroller-horizontal-track.png" size:CGSizeMake(1.0, 17.0)]),
+        disabledTrackColor = PatternColor([_CPCibCustomResource imageResourceWithName:"scroller-vertical-track-disabled.png" size:CGSizeMake(17.0, 1.0)]);
     [scroller setBackgroundColor:[CPColor blueColor]];
-    [scroller setValue:CGSizeMake(19.0, 15.0) forThemedAttributeName:@"minimum-knob-size" inControlState:CPControlStateHorizontal];
+    [scroller setValue:CGSizeMake(19.0, 15.0) forThemeAttribute:@"minimum-knob-size"];
 
-    [scroller setValue:CGInsetMake(9.0, 9.0, 9.0, 9.0) forThemedAttributeName:@"track-overlap-inset" inControlState:CPControlStateHorizontal];
-    [scroller setValue:trackColor forThemedAttributeName:@"knob-slot-color" inControlState:CPControlStateHorizontal];
-    [scroller setValue:disabledTrackColor forThemedAttributeName:@"knob-slot-color" inControlState:CPControlStateHorizontal | CPControlStateDisabled];
+    [scroller setValue:CGInsetMake(9.0, 9.0, 9.0, 9.0) forThemeAttribute:@"track-overlap-inset" ];
+    [scroller setValue:trackColor forThemeAttribute:@"knob-slot-color"];
+    [scroller setValue:disabledTrackColor forThemeAttribute:@"knob-slot-color" inState:CPThemeStateDisabled];
 
-    var arrowColor = PatterColor([_CPCibCustomResource imageResourceWithName:"scroller-left-arrow.png" size:CGSizeMake(32.0, 17.0)]),
-        highlightedArrowColor = PatterColor([_CPCibCustomResource imageResourceWithName:"scroller-up-arrow-highlighted.png" size:CGSizeMake(17.0, 30.0)]),
-        disabledArrowColor = PatterColor([_CPCibCustomResource imageResourceWithName:"scroller-up-arrow-disabled.png" size:CGSizeMake(17.0, 30.0)]);
+    var arrowColor = PatternColor([_CPCibCustomResource imageResourceWithName:"scroller-left-arrow.png" size:CGSizeMake(32.0, 17.0)]),
+        highlightedArrowColor = PatternColor([_CPCibCustomResource imageResourceWithName:"scroller-left-arrow-highlighted.png" size:CGSizeMake(17.0, 30.0)]),
+        disabledArrowColor = PatternColor([_CPCibCustomResource imageResourceWithName:"scroller-left-arrow-disabled.png" size:CGSizeMake(17.0, 30.0)]);
 
-    [scroller setValue:CGSizeMake(32.0, 17.0) forThemedAttributeName:@"decrement-line-size" inControlState:CPControlStateHorizontal];
-    [scroller setValue:arrowColor forThemedAttributeName:@"decrement-line-color" inControlState:CPControlStateHorizontal];
-    [scroller setValue:highlightedArrowColor forThemedAttributeName:@"decrement-line-color" inControlState:CPControlStateHorizontal | CPControlStateHighlighted],
-    [scroller setValue:disabledArrowColor forThemedAttributeName:@"decrement-line-color" inControlState:CPControlStateHorizontal | CPControlStateDisabled];
+    [scroller setValue:CGSizeMake(32.0, 17.0) forThemeAttribute:@"decrement-line-size"];
+    [scroller setValue:arrowColor forThemeAttribute:@"decrement-line-color"];
+    [scroller setValue:highlightedArrowColor forThemeAttribute:@"decrement-line-color" inState:CPThemeStateHighlighted],
+    [scroller setValue:disabledArrowColor forThemeAttribute:@"decrement-line-color" inState:CPThemeStateDisabled];
 
-    var arrowColor = PatterColor([_CPCibCustomResource imageResourceWithName:"scroller-right-arrow.png" size:CGSizeMake(31.0, 17.0)]),
-        highlightedArrowColor = PatterColor([_CPCibCustomResource imageResourceWithName:"scroller-down-arrow-highlighted.png" size:CGSizeMake(17.0, 30.0)]),
-        disabledArrowColor = PatterColor([_CPCibCustomResource imageResourceWithName:"scroller-down-arrow-disabled.png" size:CGSizeMake(17.0, 30.0)]);
+    var arrowColor = PatternColor([_CPCibCustomResource imageResourceWithName:"scroller-right-arrow.png" size:CGSizeMake(31.0, 17.0)]),
+        highlightedArrowColor = PatternColor([_CPCibCustomResource imageResourceWithName:"scroller-right-arrow-highlighted.png" size:CGSizeMake(17.0, 30.0)]),
+        disabledArrowColor = PatternColor([_CPCibCustomResource imageResourceWithName:"scroller-right-arrow-disabled.png" size:CGSizeMake(17.0, 30.0)]);
 
-    [scroller setValue:CGSizeMake(31.0, 17.0) forThemedAttributeName:@"increment-line-size"];
-    [scroller setValue:arrowColor forThemedAttributeName:@"increment-line-color" inControlState:CPControlStateHorizontal];
-    [scroller setValue:highlightedArrowColor forThemedAttributeName:@"increment-line-color" inControlState:CPControlStateHorizontal | CPControlStateHighlighted];
-    [scroller setValue:disabledArrowColor forThemedAttributeName:@"increment-line-color" inControlState:CPControlStateHorizontal | CPControlStateDisabled];
+    [scroller setValue:CGSizeMake(31.0, 17.0) forThemeAttribute:@"increment-line-size"];
+    [scroller setValue:arrowColor forThemeAttribute:@"increment-line-color"];
+    [scroller setValue:highlightedArrowColor forThemeAttribute:@"increment-line-color" inState:CPThemeStateHighlighted];
+    [scroller setValue:disabledArrowColor forThemeAttribute:@"increment-line-color" inState:CPThemeStateDisabled];
     
-    var knobColor = PatterColor([[CPThreePartImage alloc] initWithImageSlices:
+    var knobColor = PatternColor([[CPThreePartImage alloc] initWithImageSlices:
             [
                 [_CPCibCustomResource imageResourceWithName:"scroller-horizontal-knob-left.png" size:CGSizeMake(11.0, 15.0)],
                 [_CPCibCustomResource imageResourceWithName:"scroller-horizontal-knob-center.png" size:CGSizeMake(1.0, 15.0)],
@@ -101,7 +101,7 @@
             ]
         isVertical:NO]);
     
-    [scroller setValue:knobColor forThemedAttributeName:@"knob-color" inControlState:CPControlStateHorizontal];
+    [scroller setValue:knobColor forThemeAttribute:@"knob-color"];
     
     [scroller setFloatValue:0.1 knobProportion:0.5];
 
@@ -139,17 +139,15 @@
 
     [textfield setBezeled:YES];
 
-    [textfield setValue:bezelColor forThemedAttributeName:@"bezel-color" inControlState:CPControlStateBezeled];
-    [textfield setValue:bezelFocusedColor forThemedAttributeName:@"bezel-color" inControlState:CPControlStateBezeled|CPControlStateEditing];
+    [textfield setValue:bezelColor forThemeAttribute:@"bezel-color" inState:CPThemeStateBezeled];
+    [textfield setValue:bezelFocusedColor forThemeAttribute:@"bezel-color" inState:CPThemeStateBezeled|CPThemeStateEditing];
+    [textfield setValue:[CPFont systemFontOfSize:12.0] forThemeAttribute:@"font" inState:CPThemeStateBezeled];
+    [textfield setValue:CGInsetMake(9.0, 8.0, 5.0, 7.0) forThemeAttribute:@"content-inset" inState:CPThemeStateBezeled];
 
-    [textfield setValue:[CPFont systemFontOfSize:12.0] forThemedAttributeName:@"font"];
+    [textfield setValue:CGInsetMake(4.0, 4.0, 3.0, 4.0) forThemeAttribute:@"bezel-inset" inState:CPThemeStateBezeled];
+    [textfield setValue:CGInsetMake(0.0, 0.0, 0.0, 0.0) forThemeAttribute:@"bezel-inset" inState:CPThemeStateBezeled|CPThemeStateEditing];
 
-    [textfield setValue:CGInsetMake(9.0, 8.0, 5.0, 7.0) forThemedAttributeName:@"content-inset" inControlState:CPControlStateBezeled];
-
-    [textfield setValue:CGInsetMake(4.0, 4.0, 3.0, 4.0) forThemedAttributeName:@"bezel-inset" inControlState:CPControlStateBezeled];
-    [textfield setValue:CGInsetMake(0.0, 0.0, 0.0, 0.0) forThemedAttributeName:@"bezel-inset" inControlState:CPControlStateBezeled|CPControlStateEditing];
-
-    [textfield setValue:[CPColor colorWithCalibratedRed:189.0 / 255.0 green:199.0 / 255.0 blue:211.0 / 255.0 alpha:1.0] forThemedAttributeName:@"text-color" inControlState:CPTextFieldStatePlaceholder];
+    [textfield setValue:[CPColor colorWithCalibratedRed:189.0 / 255.0 green:199.0 / 255.0 blue:211.0 / 255.0 alpha:1.0] forThemeAttribute:@"text-color" inState:CPTextFieldStatePlaceholder];
 
     [textfield setPlaceholderString:"cheese cheese"];
     [textfield setStringValue:""];
@@ -178,16 +176,16 @@
     [textfield setBezeled:YES];
     [textfield setBezelStyle:CPTextFieldRoundedBezel];
 
-    [textfield setValue:bezelColor forThemedAttributeName:@"bezel-color" inControlState:CPControlStateBezeled | CPTextFieldStateRounded];
-    [textfield setValue:bezelFocusedColor forThemedAttributeName:@"bezel-color" inControlState:CPControlStateBezeled | CPTextFieldStateRounded | CPControlStateEditing];
+    [textfield setValue:bezelColor forThemeAttribute:@"bezel-color" inState:CPThemeStateBezeled | CPTextFieldStateRounded];
+    [textfield setValue:bezelFocusedColor forThemeAttribute:@"bezel-color" inState:CPThemeStateBezeled | CPTextFieldStateRounded | CPThemeStateEditing];
 
-    [textfield setValue:[CPFont systemFontOfSize:12.0] forThemedAttributeName:@"font"];
-    [textfield setValue:CGInsetMake(9.0, 14.0, 6.0, 14.0) forThemedAttributeName:@"content-inset" inControlState:CPControlStateBezeled | CPTextFieldStateRounded];
+    [textfield setValue:[CPFont systemFontOfSize:12.0] forThemeAttribute:@"font"];
+    [textfield setValue:CGInsetMake(9.0, 14.0, 6.0, 14.0) forThemeAttribute:@"content-inset" inState:CPThemeStateBezeled | CPTextFieldStateRounded];
 
-    [textfield setValue:CGInsetMake(4.0, 4.0, 4.0, 4.0) forThemedAttributeName:@"bezel-inset" inControlState:CPControlStateBezeled|CPTextFieldStateRounded];
-    [textfield setValue:CGInsetMake(0.0, 0.0, 0.0, 0.0) forThemedAttributeName:@"bezel-inset" inControlState:CPControlStateBezeled|CPTextFieldStateRounded|CPControlStateEditing];
+    [textfield setValue:CGInsetMake(4.0, 4.0, 4.0, 4.0) forThemeAttribute:@"bezel-inset" inState:CPThemeStateBezeled|CPTextFieldStateRounded];
+    [textfield setValue:CGInsetMake(0.0, 0.0, 0.0, 0.0) forThemeAttribute:@"bezel-inset" inState:CPThemeStateBezeled|CPTextFieldStateRounded|CPThemeStateEditing];
 
-    [textfield setValue:[CPColor colorWithCalibratedRed:189.0 / 255.0 green:199.0 / 255.0 blue:211.0 / 255.0 alpha:1.0] forThemedAttributeName:@"text-color" inControlState:CPTextFieldStatePlaceholder];
+    [textfield setValue:[CPColor colorWithCalibratedRed:189.0 / 255.0 green:199.0 / 255.0 blue:211.0 / 255.0 alpha:1.0] forThemeAttribute:@"text-color" inState:CPTextFieldStatePlaceholder];
 
     [textfield setPlaceholderString:"cheese cheese"];
     [textfield setStringValue:""];
@@ -235,28 +233,29 @@
                 
     [button setTitle:@"Cancel"];
     
-    [button setValue:[CPFont boldSystemFontOfSize:12.0] forThemedAttributeName:@"font" inControlState:CPControlStateBordered];
-    [button setValue:[CPColor colorWithCalibratedWhite:79.0 / 255.0 alpha:1.0] forThemedAttributeName:@"text-color"];
-    [button setValue:[CPColor colorWithCalibratedWhite:240.0 / 255.0 alpha:1.0] forThemedAttributeName:@"text-shadow-color" inControlState:CPControlStateBordered];
-    [button setValue:CGSizeMake(0.0, 1.0) forThemedAttributeName:@"text-shadow-offset" inControlState:CPControlStateBordered];
-    [button setValue:CPLineBreakByTruncatingTail forThemedAttributeName:@"line-break-mode"];
+    [button setValue:[CPFont boldSystemFontOfSize:12.0] forThemeAttribute:@"font" inState:CPThemeStateBordered];
+    [button setValue:[CPColor colorWithCalibratedWhite:79.0 / 255.0 alpha:1.0] forThemeAttribute:@"text-color"];
+    [button setValue:[CPColor colorWithCalibratedWhite:240.0 / 255.0 alpha:1.0] forThemeAttribute:@"text-shadow-color" inState:CPThemeStateBordered];
+    [button setValue:CGSizeMake(0.0, 1.0) forThemeAttribute:@"text-shadow-offset" inState:CPThemeStateBordered];
+    [button setValue:CPLineBreakByTruncatingTail forThemeAttribute:@"line-break-mode"];
     
-    [button setValue:bezelColor forThemedAttributeName:@"bezel-color" inControlState:CPControlStateBordered];
-    [button setValue:highlightedBezelColor forThemedAttributeName:@"bezel-color" inControlState:CPControlStateBordered|CPControlStateHighlighted];
-    [button setValue:CGInsetMake(0.0, 5.0, 0.0, 5.0) forThemedAttributeName:@"content-inset" inControlState:CPControlStateBordered];
+    [button setValue:bezelColor forThemeAttribute:@"bezel-color" inState:CPThemeStateBordered];
+    [button setValue:highlightedBezelColor forThemeAttribute:@"bezel-color" inState:CPThemeStateBordered|CPThemeStateHighlighted];
+    [button setValue:CGInsetMake(0.0, 5.0, 0.0, 5.0) forThemeAttribute:@"content-inset" inState:CPThemeStateBordered];
 
-    [button setValue:defaultBezelColor forThemedAttributeName:@"bezel-color" inControlState:CPControlStateBordered|CPControlStateDefault];
-    [button setValue:defaultHighlightedBezelColor forThemedAttributeName:@"bezel-color" inControlState:CPControlStateBordered|CPControlStateHighlighted|CPControlStateDefault];
-    [button setValue:[CPColor colorWithCalibratedRed:13.0/255.0 green:51.0/255.0 blue:70.0/255.0 alpha:1.0] forThemedAttributeName:@"text-color" inControlState:CPControlStateDefault];
+    [button setValue:defaultBezelColor forThemeAttribute:@"bezel-color" inState:CPThemeStateBordered|CPThemeStateDefault];
+    [button setValue:defaultHighlightedBezelColor forThemeAttribute:@"bezel-color" inState:CPThemeStateBordered|CPThemeStateHighlighted|CPThemeStateDefault];
+    [button setValue:[CPColor colorWithCalibratedRed:13.0/255.0 green:51.0/255.0 blue:70.0/255.0 alpha:1.0] forThemeAttribute:@"text-color" inState:CPThemeStateDefault];
 
-    [button setValue:24.0 forThemedAttributeName:@"default-height"];
+    [button setValue:24.0 forThemeAttribute:@"default-height"];
 
     return button;
 }
 
 + (CPPopUpButton)themedPopUpButton
 {
-    var button = [[CPPopUpButton alloc] initWithFrame:CGRectMake(0.0, 0.0, 100.0, 24.0) pullsDown:NO],color = [CPColor colorWithPatternImage:[[CPThreePartImage alloc] initWithImageSlices:
+    var button = [[CPPopUpButton alloc] initWithFrame:CGRectMake(0.0, 0.0, 100.0, 24.0) pullsDown:NO],
+        color = [CPColor colorWithPatternImage:[[CPThreePartImage alloc] initWithImageSlices:
             [
                 [_CPCibCustomResource imageResourceWithName:"button-bezel-left.png" size:CGSizeMake(4.0, 24.0)],
                 [_CPCibCustomResource imageResourceWithName:"button-bezel-center.png" size:CGSizeMake(1.0, 24.0)],
@@ -266,15 +265,40 @@
     
     [button setTitle:@"Pop Up"];
     
-    [button setValue:color forThemedAttributeName:@"bezel-color" inControlState:CPControlStateBordered];
-    [button setValue:CGInsetMake(0, 5, 0, 27.0 + 5.0) forThemedAttributeName:@"content-inset" inControlState:CPControlStateBordered];
-    [button setValue:[CPFont boldSystemFontOfSize:12.0] forThemedAttributeName:@"font"];
-    [button setValue:[CPColor colorWithCalibratedWhite:79.0 / 255.0 alpha:1.0] forThemedAttributeName:@"text-color"];
-    [button setValue:[CPColor colorWithCalibratedWhite:240.0 / 255.0 alpha:1.0] forThemedAttributeName:@"text-shadow-color"];
-    [button setValue:CGSizeMake(0.0, 1.0) forThemedAttributeName:@"text-shadow-offset"];
+    [button setValue:color forThemeAttribute:@"bezel-color" inState:CPThemeStateBordered];
+    [button setValue:CGInsetMake(0, 5, 0, 27.0 + 5.0) forThemeAttribute:@"content-inset" inState:CPThemeStateBordered];
+    [button setValue:[CPFont boldSystemFontOfSize:12.0] forThemeAttribute:@"font"];
+    [button setValue:[CPColor colorWithCalibratedWhite:79.0 / 255.0 alpha:1.0] forThemeAttribute:@"text-color"];
+    [button setValue:[CPColor colorWithCalibratedWhite:240.0 / 255.0 alpha:1.0] forThemeAttribute:@"text-shadow-color"];
+    [button setValue:CGSizeMake(0.0, 1.0) forThemeAttribute:@"text-shadow-offset"];
 
     [button addItemWithTitle:@"item"];
     
+    return button;
+}
+
++ (CPPopUpButton)themedPullDownMenu
+{
+    var button = [[CPPopUpButton alloc] initWithFrame:CGRectMake(0.0, 0.0, 100.0, 24.0) pullsDown:YES],
+        color = [CPColor colorWithPatternImage:[[CPThreePartImage alloc] initWithImageSlices:
+            [
+                [_CPCibCustomResource imageResourceWithName:"button-bezel-left.png" size:CGSizeMake(4.0, 24.0)],
+                [_CPCibCustomResource imageResourceWithName:"button-bezel-center.png" size:CGSizeMake(1.0, 24.0)],
+                [_CPCibCustomResource imageResourceWithName:"popup-bezel-right-pullsdown.png" size:CGSizeMake(27.0, 24.0)]
+            ]
+        isVertical:NO]];
+
+    [button setTitle:@"Pop Up"];
+
+    [button setValue:color forThemeAttribute:@"bezel-color" inState:CPPopUpButtonStatePullsDown|CPThemeStateBordered];
+    [button setValue:CGInsetMake(0, 5, 0, 27.0 + 5.0) forThemeAttribute:@"content-inset" inState:CPThemeStateBordered];
+    [button setValue:[CPFont boldSystemFontOfSize:12.0] forThemeAttribute:@"font"];
+    [button setValue:[CPColor colorWithCalibratedWhite:79.0 / 255.0 alpha:1.0] forThemeAttribute:@"text-color"];
+    [button setValue:[CPColor colorWithCalibratedWhite:240.0 / 255.0 alpha:1.0] forThemeAttribute:@"text-shadow-color"];
+    [button setValue:CGSizeMake(0.0, 1.0) forThemeAttribute:@"text-shadow-offset"];
+
+    [button addItemWithTitle:@"item"];
+
     return button;
 }
 
@@ -298,85 +322,62 @@
     [segmentedControl setTag:3 forSegment:2];
     
     //various colors
-    var centerBezelColor = [CPColor colorWithPatternImage:[_CPCibCustomResource imageResourceWithName:@"segmented-control-bezel-center.png" size:CGSizeMake(1.0, 24.0)]],
-        dividerBezelColor = [CPColor colorWithPatternImage:[_CPCibCustomResource imageResourceWithName:@"segmented-control-bezel-divider.png" size:CGSizeMake(1.0, 24.0)]],
-        centerHighlightedBezelColor = [CPColor colorWithPatternImage:[_CPCibCustomResource imageResourceWithName:@"segmented-control-bezel-highlighted-center.png" size:CGSizeMake(1.0, 24.0)]],
-        dividerHighlightedBezelColor = [CPColor colorWithPatternImage:[_CPCibCustomResource imageResourceWithName:@"segmented-control-bezel-highlighted-divider.png" size:CGSizeMake(1.0, 24.0)]],
-        leftHighlightedBezelColor = [CPColor colorWithPatternImage:[_CPCibCustomResource imageResourceWithName:@"segmented-control-bezel-highlighted-left.png" size:CGSizeMake(4.0, 24.0)]],
-        rightHighlightedBezelColor = [CPColor colorWithPatternImage:[_CPCibCustomResource imageResourceWithName:@"segmented-control-bezel-highlighted-right.png" size:CGSizeMake(4.0, 24.0)]],
-        inactiveCenterBezelColor = [CPColor colorWithPatternImage:[_CPCibCustomResource imageResourceWithName:@"segmented-control-bezel-inactive-center.png" size:CGSizeMake(1.0, 24.0)]],
-        inactiveDividerBezelColor = [CPColor colorWithPatternImage:[_CPCibCustomResource imageResourceWithName:@"segmented-control-bezel-inactive-divider.png" size:CGSizeMake(1.0, 24.0)]],
-        inactiveLeftBezelColor = [CPColor colorWithPatternImage:[_CPCibCustomResource imageResourceWithName:@"segmented-control-bezel-inactive-left.png" size:CGSizeMake(4.0, 24.0)]],
-        inactiveRightBezelColor = [CPColor colorWithPatternImage:[_CPCibCustomResource imageResourceWithName:@"segmented-control-bezel-inactive-right.png" size:CGSizeMake(4.0, 24.0)]],
-        leftBezelColor = [CPColor colorWithPatternImage:[_CPCibCustomResource imageResourceWithName:@"segmented-control-bezel-left.png" size:CGSizeMake(4.0, 24.0)]],
-        rightBezelColor = [CPColor colorWithPatternImage:[_CPCibCustomResource imageResourceWithName:@"segmented-control-bezel-right.png" size:CGSizeMake(4.0, 24.0)]],
-        pushedCenterBezelColor = [CPColor colorWithPatternImage:[_CPCibCustomResource imageResourceWithName:@"segmented-control-bezel-pushed-center.png" size:CGSizeMake(1.0, 24.0)]],
-        pushedLeftBezelColor = [CPColor colorWithPatternImage:[_CPCibCustomResource imageResourceWithName:@"segmented-control-bezel-pushed-left.png" size:CGSizeMake(4.0, 24.0)]],
-        pushedRightBezelColor = [CPColor colorWithPatternImage:[_CPCibCustomResource imageResourceWithName:@"segmented-control-bezel-pushed-right.png" size:CGSizeMake(4.0, 24.0)]];
-        pushedHighlightedCenterBezelColor = [CPColor colorWithPatternImage:[_CPCibCustomResource imageResourceWithName:@"segmented-control-bezel-pushed-highlighted-center.png" size:CGSizeMake(1.0, 24.0)]],
-        pushedHighlightedLeftBezelColor = [CPColor colorWithPatternImage:[_CPCibCustomResource imageResourceWithName:@"segmented-control-bezel-pushed-highlighted-left.png" size:CGSizeMake(4.0, 24.0)]],
-        pushedHighlightedRightBezelColor = [CPColor colorWithPatternImage:[_CPCibCustomResource imageResourceWithName:@"segmented-control-bezel-pushed-highlighted-right.png" size:CGSizeMake(4.0, 24.0)]];
+    var centerBezelColor = PatternColor([_CPCibCustomResource imageResourceWithName:@"segmented-control-bezel-center.png" size:CGSizeMake(1.0, 24.0)]),
+        dividerBezelColor = PatternColor([_CPCibCustomResource imageResourceWithName:@"segmented-control-bezel-divider.png" size:CGSizeMake(1.0, 24.0)]),
+        centerHighlightedBezelColor = PatternColor([_CPCibCustomResource imageResourceWithName:@"segmented-control-bezel-highlighted-center.png" size:CGSizeMake(1.0, 24.0)]),
+        dividerHighlightedBezelColor = PatternColor([_CPCibCustomResource imageResourceWithName:@"segmented-control-bezel-highlighted-divider.png" size:CGSizeMake(1.0, 24.0)]),
+        leftHighlightedBezelColor = PatternColor([_CPCibCustomResource imageResourceWithName:@"segmented-control-bezel-highlighted-left.png" size:CGSizeMake(4.0, 24.0)]),
+        rightHighlightedBezelColor = PatternColor([_CPCibCustomResource imageResourceWithName:@"segmented-control-bezel-highlighted-right.png" size:CGSizeMake(4.0, 24.0)]),
+        inactiveCenterBezelColor = PatternColor([_CPCibCustomResource imageResourceWithName:@"segmented-control-bezel-inactive-center.png" size:CGSizeMake(1.0, 24.0)]),
+        inactiveDividerBezelColor = PatternColor([_CPCibCustomResource imageResourceWithName:@"segmented-control-bezel-inactive-divider.png" size:CGSizeMake(1.0, 24.0)]),
+        inactiveLeftBezelColor = PatternColor([_CPCibCustomResource imageResourceWithName:@"segmented-control-bezel-inactive-left.png" size:CGSizeMake(4.0, 24.0)]),
+        inactiveRightBezelColor = PatternColor([_CPCibCustomResource imageResourceWithName:@"segmented-control-bezel-inactive-right.png" size:CGSizeMake(4.0, 24.0)]),
+        leftBezelColor = PatternColor([_CPCibCustomResource imageResourceWithName:@"segmented-control-bezel-left.png" size:CGSizeMake(4.0, 24.0)]),
+        rightBezelColor = PatternColor([_CPCibCustomResource imageResourceWithName:@"segmented-control-bezel-right.png" size:CGSizeMake(4.0, 24.0)]),
+        pushedCenterBezelColor = PatternColor([_CPCibCustomResource imageResourceWithName:@"segmented-control-bezel-pushed-center.png" size:CGSizeMake(1.0, 24.0)]),
+        pushedLeftBezelColor = PatternColor([_CPCibCustomResource imageResourceWithName:@"segmented-control-bezel-pushed-left.png" size:CGSizeMake(4.0, 24.0)]),
+        pushedRightBezelColor = PatternColor([_CPCibCustomResource imageResourceWithName:@"segmented-control-bezel-pushed-right.png" size:CGSizeMake(4.0, 24.0)]);
+        pushedHighlightedCenterBezelColor = PatternColor([_CPCibCustomResource imageResourceWithName:@"segmented-control-bezel-pushed-highlighted-center.png" size:CGSizeMake(1.0, 24.0)]),
+        pushedHighlightedLeftBezelColor = PatternColor([_CPCibCustomResource imageResourceWithName:@"segmented-control-bezel-pushed-highlighted-left.png" size:CGSizeMake(4.0, 24.0)]),
+        pushedHighlightedRightBezelColor = PatternColor([_CPCibCustomResource imageResourceWithName:@"segmented-control-bezel-pushed-highlighted-right.png" size:CGSizeMake(4.0, 24.0)]);
 
-    [segmentedControl setValue:centerBezelColor forThemedAttributeName:@"center-segment-bezel-color" inControlState:CPControlStateNormal];
-    [segmentedControl setValue:inactiveCenterBezelColor forThemedAttributeName:@"center-segment-bezel-color" inControlState:CPControlStateDisabled];
-    [segmentedControl setValue:centerHighlightedBezelColor forThemedAttributeName:@"center-segment-bezel-color" inControlState:CPControlStateSelected];
-    [segmentedControl setValue:pushedCenterBezelColor forThemedAttributeName:@"center-segment-bezel-color" inControlState:CPControlStateHighlighted];
-    [segmentedControl setValue:pushedHighlightedCenterBezelColor forThemedAttributeName:@"center-segment-bezel-color" inControlState:CPControlStateHighlighted|CPControlStateSelected];
+    [segmentedControl setValue:centerBezelColor forThemeAttribute:@"center-segment-bezel-color" inState:CPThemeStateNormal];
+    [segmentedControl setValue:inactiveCenterBezelColor forThemeAttribute:@"center-segment-bezel-color" inState:CPThemeStateDisabled];
+    [segmentedControl setValue:centerHighlightedBezelColor forThemeAttribute:@"center-segment-bezel-color" inState:CPThemeStateSelected];
+    [segmentedControl setValue:pushedCenterBezelColor forThemeAttribute:@"center-segment-bezel-color" inState:CPThemeStateHighlighted];
+    [segmentedControl setValue:pushedHighlightedCenterBezelColor forThemeAttribute:@"center-segment-bezel-color" inState:CPThemeStateHighlighted|CPThemeStateSelected];
 
-    [segmentedControl setValue:dividerBezelColor forThemedAttributeName:@"divider-bezel-color" inControlState:CPControlStateNormal];
-    [segmentedControl setValue:inactiveDividerBezelColor forThemedAttributeName:@"divider-bezel-color" inControlState:CPControlStateDisabled];
-    [segmentedControl setValue:dividerHighlightedBezelColor forThemedAttributeName:@"divider-bezel-color" inControlState:CPControlStateSelected];
-    [segmentedControl setValue:dividerBezelColor forThemedAttributeName:@"divider-bezel-color" inControlState:CPControlStateHighlighted];
+    [segmentedControl setValue:dividerBezelColor forThemeAttribute:@"divider-bezel-color" inState:CPThemeStateNormal];
+    [segmentedControl setValue:inactiveDividerBezelColor forThemeAttribute:@"divider-bezel-color" inState:CPThemeStateDisabled];
+    [segmentedControl setValue:dividerHighlightedBezelColor forThemeAttribute:@"divider-bezel-color" inState:CPThemeStateSelected];
+    [segmentedControl setValue:dividerBezelColor forThemeAttribute:@"divider-bezel-color" inState:CPThemeStateHighlighted];
 
-    [segmentedControl setValue:rightBezelColor forThemedAttributeName:@"right-segment-bezel-color" inControlState:CPControlStateNormal];
-    [segmentedControl setValue:inactiveRightBezelColor forThemedAttributeName:@"right-segment-bezel-color" inControlState:CPControlStateDisabled];
-    [segmentedControl setValue:rightHighlightedBezelColor forThemedAttributeName:@"right-segment-bezel-color" inControlState:CPControlStateSelected];
-    [segmentedControl setValue:pushedRightBezelColor forThemedAttributeName:@"right-segment-bezel-color" inControlState:CPControlStateHighlighted];
-    [segmentedControl setValue:pushedHighlightedRightBezelColor forThemedAttributeName:@"right-segment-bezel-color" inControlState:CPControlStateHighlighted|CPControlStateSelected];
+    [segmentedControl setValue:rightBezelColor forThemeAttribute:@"right-segment-bezel-color" inState:CPThemeStateNormal];
+    [segmentedControl setValue:inactiveRightBezelColor forThemeAttribute:@"right-segment-bezel-color" inState:CPThemeStateDisabled];
+    [segmentedControl setValue:rightHighlightedBezelColor forThemeAttribute:@"right-segment-bezel-color" inState:CPThemeStateSelected];
+    [segmentedControl setValue:pushedRightBezelColor forThemeAttribute:@"right-segment-bezel-color" inState:CPThemeStateHighlighted];
+    [segmentedControl setValue:pushedHighlightedRightBezelColor forThemeAttribute:@"right-segment-bezel-color" inState:CPThemeStateHighlighted|CPThemeStateSelected];
 
-    [segmentedControl setValue:leftBezelColor forThemedAttributeName:@"left-segment-bezel-color" inControlState:CPControlStateNormal];
-    [segmentedControl setValue:inactiveLeftBezelColor forThemedAttributeName:@"left-segment-bezel-color" inControlState:CPControlStateDisabled];
-    [segmentedControl setValue:leftHighlightedBezelColor forThemedAttributeName:@"left-segment-bezel-color" inControlState:CPControlStateSelected];
-    [segmentedControl setValue:pushedLeftBezelColor forThemedAttributeName:@"left-segment-bezel-color" inControlState:CPControlStateHighlighted];
-    [segmentedControl setValue:pushedHighlightedLeftBezelColor forThemedAttributeName:@"left-segment-bezel-color" inControlState:CPControlStateHighlighted|CPControlStateSelected];
+    [segmentedControl setValue:leftBezelColor forThemeAttribute:@"left-segment-bezel-color" inState:CPThemeStateNormal];
+    [segmentedControl setValue:inactiveLeftBezelColor forThemeAttribute:@"left-segment-bezel-color" inState:CPThemeStateDisabled];
+    [segmentedControl setValue:leftHighlightedBezelColor forThemeAttribute:@"left-segment-bezel-color" inState:CPThemeStateSelected];
+    [segmentedControl setValue:pushedLeftBezelColor forThemeAttribute:@"left-segment-bezel-color" inState:CPThemeStateHighlighted];
+    [segmentedControl setValue:pushedHighlightedLeftBezelColor forThemeAttribute:@"left-segment-bezel-color" inState:CPThemeStateHighlighted|CPThemeStateSelected];
 
-    [segmentedControl setValue:CGInsetMake(0.0, 4.0, 0.0, 4.0) forThemedAttributeName:@"content-inset" inControlState:CPControlStateNormal];
+    [segmentedControl setValue:CGInsetMake(0.0, 4.0, 0.0, 4.0) forThemeAttribute:@"content-inset" inState:CPThemeStateNormal];
 
-    [segmentedControl setValue:CGInsetMake(0.0, 0.0, 0.0, 0.0) forThemedAttributeName:@"bezel-inset" inControlState:CPControlStateNormal];
+    [segmentedControl setValue:CGInsetMake(0.0, 0.0, 0.0, 0.0) forThemeAttribute:@"bezel-inset" inState:CPThemeStateNormal];
 
-    [segmentedControl setValue:[CPFont boldSystemFontOfSize:12.0] forThemedAttributeName:@"font"];
-    [segmentedControl setValue:[CPColor colorWithCalibratedWhite:79.0 / 255.0 alpha:1.0] forThemedAttributeName:@"text-color"];
-    [segmentedControl setValue:[CPColor colorWithCalibratedWhite:240.0 / 255.0 alpha:1.0] forThemedAttributeName:@"text-shadow-color"];
+    [segmentedControl setValue:[CPFont boldSystemFontOfSize:12.0] forThemeAttribute:@"font"];
+    [segmentedControl setValue:[CPColor colorWithCalibratedWhite:79.0 / 255.0 alpha:1.0] forThemeAttribute:@"text-color"];
+    [segmentedControl setValue:[CPColor colorWithCalibratedWhite:240.0 / 255.0 alpha:1.0] forThemeAttribute:@"text-shadow-color"];
+    [segmentedControl setValue:CGSizeMake(0.0, 1.0) forThemeAttribute:@"text-shadow-offset"];
+    [segmentedControl setValue:CPLineBreakByTruncatingTail forThemeAttribute:@"line-break-mode"];
 
-    [segmentedControl setValue:1.0 forThemedAttributeName:@"divider-thickness"];
-    [segmentedControl setValue:24.0 forThemedAttributeName:@"default-height"];
-    
+    [segmentedControl setValue:1.0 forThemeAttribute:@"divider-thickness"];
+    [segmentedControl setValue:24.0 forThemeAttribute:@"default-height"];
+
     return segmentedControl;
-}
-
-+ (CPPopUpButton)themedPullDownMenu
-{
-    var button = [[CPPopUpButton alloc] initWithFrame:CGRectMake(0.0, 0.0, 100.0, 24.0) pullsDown:YES],
-        color = [CPColor colorWithPatternImage:[[CPThreePartImage alloc] initWithImageSlices:
-            [
-                [_CPCibCustomResource imageResourceWithName:"button-bezel-left.png" size:CGSizeMake(4.0, 24.0)],
-                [_CPCibCustomResource imageResourceWithName:"button-bezel-center.png" size:CGSizeMake(1.0, 24.0)],
-                [_CPCibCustomResource imageResourceWithName:"popup-bezel-right-pullsdown.png" size:CGSizeMake(27.0, 24.0)]
-            ]
-        isVertical:NO]];
-    
-    [button setTitle:@"Pop Up"];
-
-    [button setValue:color forThemedAttributeName:@"bezel-color" inControlState:CPPopUpButtonStatePullsDown|CPControlStateBordered];
-    [button setValue:CGInsetMake(0, 5, 0, 27.0 + 5.0) forThemedAttributeName:@"content-inset" inControlState:CPControlStateBordered];
-    [button setValue:[CPFont boldSystemFontOfSize:12.0] forThemedAttributeName:@"font"];
-    [button setValue:[CPColor colorWithCalibratedWhite:79.0 / 255.0 alpha:1.0] forThemedAttributeName:@"text-color"];
-    [button setValue:[CPColor colorWithCalibratedWhite:240.0 / 255.0 alpha:1.0] forThemedAttributeName:@"text-shadow-color"];
-    [button setValue:CGSizeMake(0.0, 1.0) forThemedAttributeName:@"text-shadow-offset"];
-    
-    [button addItemWithTitle:@"item"];
-
-    return button;
 }
 
 + (CPSlider)themedHorizontalSlider
@@ -390,15 +391,15 @@
         ]
         isVertical:NO]];
 
-    [slider setValue:5.0 forThemedAttributeName:@"track-width"];
-    [slider setValue:trackColor forThemedAttributeName:@"track-color"];
+    [slider setValue:5.0 forThemeAttribute:@"track-width"];
+    [slider setValue:trackColor forThemeAttribute:@"track-color"];
     
         var knobColor = [CPColor colorWithPatternImage:[_CPCibCustomResource imageResourceWithName:"knob.png" size:CGSizeMake(23.0, 24.0)]];
         knobHighlightedColor = [CPColor colorWithPatternImage:[_CPCibCustomResource imageResourceWithName:"knob-highlighted.png" size:CGSizeMake(23.0, 24.0)]];
 
-    [slider setValue:CGSizeMake(23.0, 24.0) forThemedAttributeName:@"knob-size"];
-    [slider setValue:knobColor forThemedAttributeName:@"knob-color"];
-    [slider setValue:knobHighlightedColor forThemedAttributeName:@"knob-color" inControlState:CPControlStateHighlighted];
+    [slider setValue:CGSizeMake(23.0, 24.0) forThemeAttribute:@"knob-size"];
+    [slider setValue:knobColor forThemeAttribute:@"knob-color"];
+    [slider setValue:knobHighlightedColor forThemeAttribute:@"knob-color" inState:CPThemeStateHighlighted];
     
     return slider;
 }
@@ -414,15 +415,15 @@
         ]
         isVertical:YES]];
         
-    [slider setValue:5.0 forThemedAttributeName:@"track-width"];
-    [slider setValue:trackColor forThemedAttributeName:@"track-color" inControlState:CPControlStateVertical];
+    [slider setValue:5.0 forThemeAttribute:@"track-width"];
+    [slider setValue:trackColor forThemeAttribute:@"track-color" inState:CPThemeStateVertical];
     
         var knobColor = [CPColor colorWithPatternImage:[_CPCibCustomResource imageResourceWithName:"knob.png" size:CGSizeMake(23.0, 24.0)]];
         knobHighlightedColor = [CPColor colorWithPatternImage:[_CPCibCustomResource imageResourceWithName:"knob-highlighted.png" size:CGSizeMake(23.0, 24.0)]];
     
-    [slider setValue:CGSizeMake(23.0, 24.0) forThemedAttributeName:@"knob-size"];
-    [slider setValue:knobColor forThemedAttributeName:@"knob-color"];
-    [slider setValue:knobHighlightedColor forThemedAttributeName:@"knob-color" inControlState:CPControlStateHighlighted];
+    [slider setValue:CGSizeMake(23.0, 24.0) forThemeAttribute:@"knob-size"];
+    [slider setValue:knobColor forThemeAttribute:@"knob-color"];
+    [slider setValue:knobHighlightedColor forThemeAttribute:@"knob-color" inState:CPThemeStateHighlighted];
     
     return slider;
 }
@@ -430,18 +431,17 @@
 + (CPSlider)themedCircularSlider
 {
     var slider = [[CPSlider alloc] initWithFrame:CGRectMake(0.0, 0.0, 32.0, 32.0)],
-        trackColor = [CPColor colorWithPatternImage:[_CPCibCustomResource imageResourceWithName:"circularSliderBezel.png" size:CGSizeMake(32.0, 32.0)]];
+        trackColor = PatternColor([_CPCibCustomResource imageResourceWithName:"circularSliderBezel.png" size:CGSizeMake(32.0, 32.0)]);
 
     [slider setSliderType:CPCircularSlider];
-    [slider setValue:trackColor forThemedAttributeName:@"track-color" inControlState:CPControlStateCircular];
-    [slider setValue:trackColor forThemedAttributeName:@"track-color" inControlState:CPControlStateCircular|CPControlStateVertical];
+    [slider setValue:trackColor forThemeAttribute:@"track-color" inState:CPThemeStateCircular];
 
     var knobColor = [CPColor colorWithPatternImage:[_CPCibCustomResource imageResourceWithName:"circularSliderKnob.png" size:CGSizeMake(5.0, 5.0)]],
         knobHighlightedColor = knobColor;
 
-    [slider setValue:CGSizeMake(5.0, 5.0) forThemedAttributeName:@"knob-size" inControlState:CPControlStateCircular];
-    [slider setValue:knobColor forThemedAttributeName:@"knob-color" inControlState:CPControlStateCircular];
-    [slider setValue:knobHighlightedColor forThemedAttributeName:@"knob-color" inControlState:CPControlStateCircular|CPControlStateHighlighted];
+    [slider setValue:CGSizeMake(5.0, 5.0) forThemeAttribute:@"knob-size" inState:CPThemeStateCircular];
+    [slider setValue:knobColor forThemeAttribute:@"knob-color" inState:CPThemeStateCircular];
+    [slider setValue:knobHighlightedColor forThemeAttribute:@"knob-color" inState:CPThemeStateCircular|CPThemeStateHighlighted];
 
     return slider;
 }
@@ -456,7 +456,7 @@
         ]
         isVertical:NO]];
 
-    [buttonBar setValue:color forThemedAttributeName:@"bezel-color"];
+    [buttonBar setValue:color forThemeAttribute:@"bezel-color"];
     [buttonBar setNeedsLayout];
     
     views.push(buttonBar);
@@ -465,7 +465,7 @@
 */
 @end
 
-function PatterColor(anImage)
+function PatternColor(anImage)
 {
     return [CPColor colorWithPatternImage:anImage];
 }

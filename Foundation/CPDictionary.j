@@ -547,10 +547,21 @@
     var i = _keys.length;
     
     while (i--)
-        description += _keys[i] +":"+[_buckets[_keys[i]] description]+"\n";
-        
+    {
+        description += _keys[i] + ":";
+
+        var object = _buckets[_keys[i]];
+
+        if (object && object.isa)
+            description += [object description];
+        else
+            description += object;
+
+        description += "\n";
+    }
+
     description += "}";
-    
+
     return description;
 }
 

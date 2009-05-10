@@ -8,7 +8,7 @@
 {
 }
 
-+ (id)themedAttributes
++ (id)themeAttributes
 {
     return [CPDictionary dictionaryWithObjects:[nil]
                                        forKeys:[@"bezel-color"]];
@@ -43,7 +43,7 @@
                       relativeToEphemeralSubviewNamed:@""];
       
     if (bezelView)
-        [bezelView setBackgroundColor:[self currentValueForThemedAttributeName:@"bezel-color"]];
+        [bezelView setBackgroundColor:[self currentValueForThemeAttribute:@"bezel-color"]];
 }
 
 - (void)addSubview:(CPView)aSubview

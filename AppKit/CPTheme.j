@@ -21,123 +21,16 @@
  */
 
 @import <Foundation/CPObject.j>
-@import <AppKit/_CPCibCustomResource.j>
-@import <AppKit/_CPCibKeyedUnarchiver.j>
-
-@import "CPThemedAttribute.j"
+@import <Foundation/CPString.j>
 
 
-@implementation CPBlend : CPObject
-{
-    CPBundle    _bundle;
-    CPArray     _themes @accessors(readonly);
-    id          _loadDelegate;
-}
-
-- (id)initWithContentsOfURL:(CPURL)aURL
-{
-    self = [super init];
-    
-    if (self)
-    {
-        _bundle = [[CPBundle alloc] initWithPath:aURL + "/Info.plist"];
-    }
-    
-    return self;
-}
-
-- (void)loadWithDelegate:(id)aDelegate
-{
-    _loadDelegate = aDelegate;
-    
-    [_bundle loadWithDelegate:self];
-}
-
-- (void)bundleDidFinishLoading:(CPBundle)aBundle
-{
-    var paths = [_bundle objectForInfoDictionaryKey:@"CPBundleReplacedFiles"],
-        index = 0,
-        count = paths.length,
-        bundlePath = [_bundle bundlePath];
-    
-    while (count--)
-    {
-        var path = paths[count];
-        
-        if ([path pathExtension] === "keyedtheme")
-        {
-            var unarchiver = [[_CPThemeKeyedUnarchiver alloc]
-                initForReadingWithData:[CPData dataWithString:objj_files[bundlePath + '/' + path].contents]
-                                bundle:_bundle];
-
-            [unarchiver decodeObjectForKey:@"root"];
-
-            [unarchiver finishDecoding];
-        }
-    }
-    
-    [_loadDelegate blendDidFinishLoading:self];
-}
-
-@end
-
-var CPThemesByName      = nil,
-    CPThemeDefaultTheme = nil,
-
-    CPThemeViewClass    = Nil,
-    CPThemeWindowClass  = Nil;
+var CPThemesByName      = { },
+    CPThemeDefaultTheme = nil;
 
 @implementation CPTheme : CPObject
 {
-    CPString    _name;
-    Class       _activeClass;
-    JSObject    _classTable;
-}
-
-+ (void)initialize
-{
-    if (self !== [CPTheme class])
-        return;
-    
-    CPThemesByName = {};
-    
-    CPThemeViewClass = [CPView class];
-    CPThemeWindowClass = [CPWindow class];
-
-    var bundle = [CPBundle bundleForClass:self];
-        defaultThemePath = [bundle objectForInfoDictionaryKey:@"Default Themes Path"],
-        defaultThemeName = [bundle objectForInfoDictionaryKey:@"Default Theme Name"];
-    
-    if (!defaultThemePath)
-        return;
-    
-    defaultThemePath = [bundle pathForResource:defaultThemePath];
-    
-    var file = objj_files[defaultThemePath + "/Info.plist"];
-    
-    if (!file)
-        return;
-    
-    // Oh boy are we tricky.
-    var infoDictionary = CPPropertyListCreateFromData([CPData dataWithString:objj_files[defaultThemePath + "/Info.plist"].contents]);
-    
-        themes = [infoDictionary objectForKey:@"CPBundleReplacedFiles"],
-        
-        themeIndex = 0,
-        themeCount = [themes count];
-        
-    for (; themeIndex < themeCount; ++themeIndex)
-    {
-        var unarchiver = [[_CPThemeKeyedUnarchiver alloc]
-            initForReadingWithData:[CPData dataWithString:objj_files[defaultThemePath + '/' + themes[themeIndex]].contents]
-                            bundle:file.bundle];
-        
-        [unarchiver decodeObjectForKey:@"root"];
-         
-        [unarchiver finishDecoding];
-    }
-    
-    [self setDefaultTheme:[CPTheme themeNamed:defaultThemeName]];
+    CPString        _name;
+    CPDictionary    _attributes;
 }
 
 + (void)setDefaultTheme:(CPTheme)aTheme
@@ -155,24 +48,18 @@ var CPThemesByName      = nil,
     return CPThemesByName[aName];
 }
 
-+ (void)loadThemesAtURL:(CPURL)aURL delegate:(id)aLoadDelegate
-{
-    
-}
-
 - (id)initWithName:(CPString)aName
 {
     self = [super init];
-    
+
     if (self)
     {
         _name = aName;
-        _classTable = {};
-        _classTable[[[self class] className]] = {};
-        
-        CPThemesByName[_name] = aName;
+        _attributes = [CPDictionary dictionary];
+
+        CPThemesByName[_name] = self;
     }
-    
+
     return self;
 }
 
@@ -181,160 +68,124 @@ var CPThemesByName      = nil,
     return _name;
 }
 
-- (void)setActiveClass:(Class)aClass
+- (_CPThemeAttribute)_attributeWithName:(CPString)aName forClass:(CPString)aClass
 {
-    _activeClass = aClass;
-}
+    var attributes = [_attributes objectForKey:aClass];
 
-- (Class)activeClass
-{
-    return _activeClass;
-}
+    if (!attributes)
+        return nil;
 
-- (id)valueForAttributeName:(CPString)anAttributeName inClass:(CPClass)aClass
-{
-    if (!aClass)
-        return nil;
-    
-    var className = [aClass className],
-        table = _classTable[className];
-    
-    if (!table)
-        return nil;
-    
-    var value = table[anAttributeName];
-    
-    if (!value)
-        return nil;
-    
-    return value;
+    return [attributes objectForKey:aName];
 }
 
 - (void)takeThemeFromObject:(id)anObject
 {
-    var attributes = [anObject _themedAttributes],
+    var attributes = [anObject _themeAttributeDictionary],
         attributeName = nil,
         attributeNames = [attributes keyEnumerator],
-        objectClass = [anObject class];
-        
+        objectThemeClass = [[anObject class] themeClass];
+
     while (attributeName = [attributeNames nextObject])
-        [self addValue:[attributes objectForKey:attributeName] forAttributeName:attributeName inClass:objectClass];
+        [self _recordAttribute:[attributes objectForKey:attributeName] forClass:objectThemeClass];
 }
 
-- (void)setDefaultValue:(id)aValue forAttributeName:(CPString)anAttributeName
+- (void)_recordAttribute:(_CPThemeAttribute)anAttribute forClass:(CPString)aClass
 {
-    [self addValue:aValue forAttributeName:anAttributeName inClass:[self class]];
-}
+    var attributes = [_attributes objectForKey:aClass];
 
-- (void)addValue:(id)aValue forAttributeName:(CPString)anAttributeName inClass:(Class)aClass
-{
-    if (!aValue)
-        return;
-    
-    var className = [aClass className],
-        table = _classTable[className];
-        
-    if (!table)
+    if (!attributes)
     {
-        var classNames = [];
-        
-        while (!table && (aClass !== CPThemeViewClass) && (aClass !== CPThemeWindowClass))
-        {            
-            classNames.push(className);
-            
-            aClass = [aClass superclass];
-            className = [aClass className];
-            table = _classTable[className];
-        }
-        
-        if (!table)
-            table = _classTable[[[self class] className]];
-        
-        var count = [classNames count];
-        
-        while (count--)
-        {
-            className = classNames[count];
-            
-            _classTable[className] = {};
-            _classTable[className].prototype = table;
-            
-            table = _classTable[className];
-        }
+        attributes = [CPDictionary dictionary];
+
+        [_attributes setObject:attributes forKey:aClass];
     }
 
-    var existingAttribute = table[anAttributeName];
+    var name = [anAttribute name],
+        existingAttribute = [attributes objectForKey:name];
 
     if (existingAttribute)
-        table[anAttributeName] = [existingAttribute themedAttributeMergedWithThemedAttribute:aValue];
+        [attributes setObject:[existingAttribute attributeMergedWithAttribute:anAttribute] forKey:name];
     else
-        table[anAttributeName] = aValue;
+        [attributes setObject:anAttribute forKey:name];
 }
 
 @end
 
-var CPThemeNameKey              = @"CPThemeNameKey",         
-    CPThemeClassNamesArrayKey   = @"CPThemeClassNamesArrayKey";
+var CPThemeNameKey          = @"CPThemeNameKey",
+    CPThemeAttributesKey    = @"CPThemeAttributesKey";
 
 @implementation CPTheme (CPCoding)
 
 - (id)initWithCoder:(CPCoder)aCoder
 {
     self = [super init];
-    
-    _name = [aCoder decodeObjectForKey:CPThemeNameKey];
-    _classTable = {};
-    
-    CPThemesByName[_name] = self;
-    
+
     if (self)
     {
-        var classNamesArray = [aCoder decodeObjectForKey:CPThemeClassNamesArrayKey],
-            count = classNamesArray.length;
+        _name = [aCoder decodeObjectForKey:CPThemeNameKey];
+        /*
         
+        var themeClasses = [aCoder decodeObjectForKey:CPThemeClassesKey],
+            count = themeClasses.length;
+
         while (count--)
         {
-            var className = classNamesArray[count],
-                theClass = objj_getClass(className),
-                values = [aCoder decodeObjectForKey:className],
-                keys = [values allKeys],
-                keyCount = keys.length;
-                
-            while (keyCount--)
+            var themeClass = themeClasses[count],
+                attributes = [CPDictionary dictionary],
+                encodedAttributeNames = [aCoder decodeObjectForKey:@"$c" + themeClass],
+                encodedCount = encodedAttributeNames.length;
+            
+            while (encodedCount--)
             {
-                var key = keys[keyCount];
+                var attributeName = encodedAttributeNames[encodedCount];
                 
-                [self addValue:[values objectForKey:key] forAttributeName:key inClass:theClass];
+                [attributes setObject:CPThemeAttributeDecode(aCoder, attributeName, nil, nil, nil) forKey:attributeName];
             }
+
+            [_attributes setObject:attributes forKey:themeClass];
         }
+        
+        */
+
+        _attributes = [aCoder decodeObjectForKey:CPThemeAttributesKey];
+
+        CPThemesByName[_name] = self;
     }
-    
+
     return self;
 }
 
 - (void)encodeWithCoder:(CPCoder)aCoder
 {
-    var classNamesArray = [];
+    [aCoder encodeObject:_name forKey:CPThemeNameKey];
+    /*
     
-    for (var className in _classTable)
+    var themeClasses = [],
+        classNames = [_attributes keyEnumerator],
+        className = nil;
+    
+    while (className = [classNames nextObject])
     {
-        if (_classTable.hasOwnProperty(className))
+        var attributeNames = [],
+            attributes = [_attributes objectForKey:className],
+            attribute = nil;
+        
+        while (attribute = [attributes nextObject])
+            if (CPThemeAttributeEncode(aCoder, attribute))
+                attributeNames.push([attribute name]);
+        
+        if (attributeNames.length > 0)
         {
-            var values = _classTable[className],
-                valuesDictionary = [CPDictionary dictionary];
+            [aCoder encodeObject:attributeNames forKey:"$c" + themeClass];
             
-            for (var key in values)
-                if (key !== "prototype" && values.hasOwnProperty(key))
-                    [valuesDictionary setObject:values[key] forKey:key];
-            
-            [aCoder encodeObject:valuesDictionary forKey:className];
-            
-            classNamesArray.push(className);
+            themeClasses.push(themeClass);
         }
     }
     
-    [aCoder encodeObject:_name forKey:CPThemeNameKey];
-    [aCoder encodeObject:classNamesArray forKey:CPThemeClassNamesArrayKey];
+    [aCoder encodeObject:themeClasses forKey:CPThemeClassesKey];
+    */
+
+    [aCoder encodeObject:_attributes forKey:CPThemeAttributesKey];
 }
 
 @end
@@ -347,10 +198,10 @@ var CPThemeNameKey              = @"CPThemeNameKey",
 - (id)initForReadingWithData:(CPData)data bundle:(CPBundle)aBundle
 {
     self = [super initForReadingWithData:data];
-    
+
     if (self)
         _bundle = aBundle;
-    
+
     return self;
 }
 
@@ -365,3 +216,337 @@ var CPThemeNameKey              = @"CPThemeNameKey",
 }
 
 @end
+
+var CPThemeStates       = {},
+    CPThemeStateNames   = {},
+    CPThemeStateCount   = 0;
+
+function CPThemeState(aStateName)
+{
+    var state = CPThemeStates[aStateName];
+
+    if (state === undefined)
+    {
+        if (aStateName.indexOf('+') === -1)
+            state = 1 << CPThemeStateCount++;
+        else
+        {
+            var state = 0,
+                states = aStateName.split('+'),
+                count = states.length;
+
+            while (count--)
+            {
+                var stateName = states[count],
+                    individualState = CPThemeStates[stateName];
+
+                if (individualState === undefined)
+                {
+                    individualState = 1 << CPThemeStateCount++;
+                    CPThemeStates[stateName] = individualState;
+                    CPThemeStateNames[individualState] = stateName;
+                }
+
+                state |= individualState;
+            }
+        }
+
+        CPThemeStates[aStateName] = state;
+        CPThemeStateNames[state] = aStateName;
+    }
+
+    return state;
+}
+
+function CPThemeStateName(aState)
+{
+    var name = CPThemeStateNames[aState];
+
+    if (name !== undefined)
+        return name;
+
+    if (!(aState & (aState - 1)))
+        return "";
+
+    var state = 1,
+        name = "";
+
+    for (; state < aState; state <<= 1)
+        if (aState & state)
+            name += (name.length === 0 ? '' : '+') + CPThemeStateNames[state];
+
+    CPThemeStateNames[aState] = name;
+
+    return name;
+}
+
+CPThemeStateNames[0]        = "normal";
+CPThemeStateNormal          = CPThemeStates["normal"] = 0;
+CPThemeStateDisabled        = CPThemeState("disabled");
+CPThemeStateHighlighted     = CPThemeState("highlighted");
+CPThemeStateSelected        = CPThemeState("selected");
+CPThemeStateBezeled         = CPThemeState("bezeled");
+CPThemeStateBordered        = CPThemeState("bordered");
+CPThemeStateEditable        = CPThemeState("editable");
+CPThemeStateEditing         = CPThemeState("editing");
+CPThemeStateVertical        = CPThemeState("vertical");
+CPThemeStateDefault         = CPThemeState("default");
+CPThemeStateCircular        = CPThemeState("circular");
+
+@implementation _CPThemeAttribute : CPObject
+{
+    CPString            _name;
+    id                  _defaultValue;
+    CPDictionary        _values;
+
+    JSObject            _cache;
+    CPThemeAttribute    _parentAttribute;
+}
+
+- (id)initWithName:(CPString)aName defaultValue:(id)aDefaultValue
+{
+    self = [super init];
+
+    if (self)
+    {
+        _cache = { };
+        _name = aName;
+        _defaultValue = aDefaultValue;
+        _values = [CPDictionary dictionary];
+    }
+
+    return self;
+}
+
+- (CPString)name
+{
+    return _name;
+}
+
+- (id)defaultValue
+{
+    return _defaultValue;
+}
+
+- (void)setValue:(id)aValue
+{
+    _cache = {};
+
+    if (aValue === undefined || aValue === nil)
+        _values = [CPDictionary dictionary];
+    else
+        _values = [CPDictionary dictionaryWithObject:aValue forKey:String(CPThemeStateNormal)];
+}
+
+- (void)setValue:(id)aValue forState:(CPThemeState)aState
+{
+    _cache = { };
+
+    if ((aValue === undefined) || (aValue === nil))
+        [_values removeObjectForKey:String(aState)];
+    else
+        [_values setObject:aValue forKey:String(aState)];
+}
+
+- (id)value
+{
+    return [self valueForState:CPThemeStateNormal];
+}
+
+- (id)valueForState:(CPThemeState)aState
+{
+    var value = _cache[aState];
+
+    // This can be nil.
+    if (value !== undefined)
+        return value;
+
+    value = [_values objectForKey:String(aState)];
+
+    // If we don't have a value, and we have a non-normal state...
+    if ((value === undefined || value === nil) && aState !== CPThemeStateNormal)
+    {
+        // If this is a composite state (not a power of 2), find the closest partial subset match.
+        if (aState & (aState - 1))
+        {
+            var highestOneCount = 0,
+                states = [_values allKeys],
+                count = states.length;
+
+            while (count--)
+            {
+                // states[count] is a string!
+                var state = Number(states[count]);
+
+                // A & B = A iff A < B
+                if ((state & aState) === state)
+                {
+                    var oneCount = cachedNumberOfOnes[state];
+
+                    if (oneCount === undefined)
+                        oneCount = numberOfOnes(state);
+
+                    if (oneCount > highestOneCount)
+                    {
+                        highestOneCount = oneCount;
+                        value = [_values objectForKey:String(state)];
+                    }
+                }
+            }
+        }
+
+        // Still don't have a value? OK, let's use the normal value.
+        if (value === undefined || value === nil)
+            value = [_values objectForKey:String(CPThemeStateNormal)];
+    }
+
+    if (value === undefined || value === nil)
+        value = [_parentAttribute valueForState:aState];
+
+    if (value === undefined || value === nil)
+        value = _defaultValue;
+
+    _cache[aState] = value;
+
+    return value;
+}
+
+- (void)setParentAttribute:(CPThemeAttribute)anAttribute
+{
+    if (_parentAttribute === anAttribute)
+        return;
+
+    _cache = { };
+    _parentAttribute = anAttribute;
+}
+
+- (CPThemeAttribute)attributeMergedWithAttribute:(_CPThemeAttribute)anAttribute
+{
+    var mergedAttribute = [[_CPThemeAttribute alloc] initWithName:_name defaultValue:_defaultValue];
+
+    mergedAttribute._values = [_values copy];
+    [mergedAttribute._values addEntriesFromDictionary:anAttribute._values];
+
+    return mergedAttribute;
+}
+
+@end
+
+@implementation _CPThemeAttribute (CPCoding)
+
+- (id)initWithCoder:(CPCoder)aCoder
+{
+    self = [super init];
+
+    if (self)
+    {
+        _cache = {};
+
+        _name = [aCoder decodeObjectForKey:@"name"];
+        _values = [CPDictionary dictionary];
+
+        var encodedValues = [aCoder decodeObjectForKey:@"values"],
+            keys = [encodedValues allKeys],
+            count = keys.length;
+
+        while (count--)
+        {
+            var key = keys[count];
+
+            [_values setObject:[encodedValues objectForKey:key] forKey:CPThemeState(key)];
+        }
+    }
+
+    return self;
+}
+
+- (void)encodeWithCoder:(CPCoder)aCoder
+{
+    var encodedValues = [CPDictionary dictionary],
+        keys = [_values allKeys],
+        count = keys.length;
+
+    while (count--)
+    {
+        var key = keys[count];
+
+        [encodedValues setObject:[_values objectForKey:key] forKey:CPThemeStateName(Number(key))];
+    }
+
+    [aCoder encodeObject:_name forKey:@"name"];
+    [aCoder encodeObject:encodedValues forKey:@"values"];
+}
+
+@end
+
+var cachedNumberOfOnes = [  0 /*000000*/, 1 /*000001*/, 1 /*000010*/, 2 /*000011*/, 1 /*000100*/, 2 /*000101*/, 2 /*000110*/, 
+                            3 /*000111*/, 1 /*001000*/, 2 /*001001*/, 2 /*001010*/, 3 /*001011*/, 2 /*001100*/, 3 /*001101*/, 
+                            3 /*001110*/, 4 /*001111*/, 1 /*010000*/, 2 /*010001*/, 2 /*010010*/, 3 /*010011*/, 2 /*010100*/, 
+                            3 /*010101*/, 3 /*010110*/, 4 /*010111*/, 2 /*011000*/, 3 /*011001*/, 3 /*011010*/, 4 /*011011*/, 
+                            3 /*011100*/, 4 /*011101*/, 4 /*011110*/, 5 /*011111*/, 1 /*100000*/, 2 /*100001*/, 2 /*100010*/, 
+                            3 /*100011*/, 2 /*100100*/, 3 /*100101*/, 3 /*100110*/, 4 /*100111*/, 2 /*101000*/, 3 /*101001*/, 
+                            3 /*101010*/, 4 /*101011*/, 3 /*101100*/, 4 /*101101*/, 4 /*101110*/, 5 /*101111*/, 2 /*110000*/, 
+                            3 /*110001*/, 3 /*110010*/, 4 /*110011*/, 3 /*110100*/, 4 /*110101*/, 4 /*110110*/, 5 /*110111*/, 
+                            3 /*111000*/, 4 /*111001*/, 4 /*111010*/, 5 /*111011*/, 4 /*111100*/, 5 /*111101*/, 5 /*111110*/, 
+                            6 /*111111*/ ];
+
+var numberOfOnes = function(aNumber)
+{
+    var count = 0,
+        slot = aNumber;
+
+    while (aNumber)
+    {
+        ++count;
+        aNumber &= (aNumber - 1);
+    }
+
+    cachedNumberOfOnes[slot] = count;
+
+    return count;
+}
+
+numberOfOnes.displayName = "numberOfOnes";
+
+function CPThemeAttributeEncode(aCoder, aThemeAttribute)
+{
+    var values = aThemeAttribute._values,
+        count = [values count];
+
+    if (count === 1)
+    {
+        var key = [values allKeys][0];
+
+        if (Number(key) === 0)
+            return [aCoder encodeObject:[values objectForKey:key] forKey:"$a" + [aThemeAttribute name]];
+    }
+
+    if (count >= 1)
+        [aCoder encodeObject:aThemeAttribute forKey:"$a" + [aThemeAttribute name]];
+}
+
+function CPThemeAttributeDecode(aCoder, anAttributeName, aDefaultValue, aTheme, aClass)
+{
+    var key = "$a" + anAttributeName;
+
+    if (![aCoder containsValueForKey:key])
+        var attribute = [[_CPThemeAttribute alloc] initWithName:anAttributeName defaultValue:aDefaultValue];
+
+    else
+    {
+        var attribute = [aCoder decodeObjectForKey:key];
+
+        if (!attribute.isa || ![attribute isKindOfClass:[_CPThemeAttribute class]])
+        {
+            var themeAttribute = [[_CPThemeAttribute alloc] initWithName:anAttributeName defaultValue:aDefaultValue];
+
+            [themeAttribute setValue:attribute];
+
+            attribute = themeAttribute;
+        }
+    }
+
+    [attribute setParentAttribute:[aTheme _attributeWithName:anAttributeName forClass:aClass]];
+
+    return attribute;
+}
