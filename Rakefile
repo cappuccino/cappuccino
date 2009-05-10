@@ -5,7 +5,7 @@ require 'rake'
 require 'rake/clean'
 
 
-subprojects = %w{Objective-J Foundation AppKit Tools}
+subprojects = %w{External Objective-J Foundation AppKit Tools External/ojunit}
 
 %w(build clean clobber).each do |task_name|
     task task_name do
@@ -82,6 +82,8 @@ task :test => [:build] do
     puts "tests failed, aborting the build"
     puts build_result
     rake abort
+  else  
+    puts build_result
   end
 end
 

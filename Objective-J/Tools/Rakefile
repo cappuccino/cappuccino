@@ -1,13 +1,35 @@
 #!/usr/bin/env ruby
 
-require 'rake'
 require '../../common'
+require 'objective-j'
+require 'rake'
+require 'rake/clean'
 
+$ENVIRONMENT_NARWHAL_PRODUCT = File.join($ENVIRONMENT_DIR, 'narwhal')
+$ENVIRONMENT_OBJJ_PRODUCT = File.join($ENVIRONMENT_NARWHAL_PRODUCT, 'packages', 'objj')
 
-subprojects = %w{cplutil objj objjc}
+$OBJJC_JS_COMPILER = File.join($ENVIRONMENT_LIB_DIR, 'shrinksafe.jar')
 
-%w(build clean clobber).each do |task_name|
-  task task_name do
-    subrake(subprojects, task_name)
+$EXECUTABLES = ['objj', 'objjc', 'plutil']
+$EXECUTABLES_PRODUCTS = $EXECUTABLES.map {|e| File.join($ENVIRONMENT_BIN_DIR, e) }
+
+file_d $ENVIRONMENT_OBJJ_PRODUCT do
+    cp_r('objj', $ENVIRONMENT_OBJJ_PRODUCT)
+end
+
+$EXECUTABLES.each do |executable|
+  source = File.join('objj', 'bin', executable)
+  dest = File.join($ENVIRONMENT_BIN_DIR, executable)
+  file_d dest => source do
+    #cp(source, dest)
+    FileUtils.ln_s("../narwhal/packages/objj/bin/#{executable}", dest)
   end
 end
+
+file_d $OBJJC_JS_COMPILER => 'shrinksafe.jar' do
+    cp('shrinksafe.jar', $OBJJC_JS_COMPILER)
+end
+
+task :build => [$ENVIRONMENT_OBJJ_PRODUCT, $OBJJC_JS_COMPILER].concat($EXECUTABLES_PRODUCTS)
+
+CLOBBER.include($ENVIRONMENT_OBJJ_PRODUCT, $EXECUTABLES_PRODUCTS, $OBJJC_JS_COMPILER)

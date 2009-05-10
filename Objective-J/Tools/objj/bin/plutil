@@ -1,3 +1,4 @@
+#!/usr/bin/env narwhal
 
 importPackage(java.lang);
 
@@ -15,7 +16,7 @@ function printUsage()
 
 function main()
 {
-    if (arguments.length < 1)
+    if (system.args.length < 1)
         return printUsage();
     
     var allFiles = NO,
@@ -25,11 +26,11 @@ function main()
         outExtension = nil;
     
         index = 0,
-        count = arguments.length;
+        count = system.args.length;
     
     for (; index < count; ++index)
     {
-        var argument = arguments[index];
+        var argument = system.args[index];
         
         if (argument.charAt(0) === '-' && !allFiles)
         {
@@ -37,13 +38,13 @@ function main()
                 return printUsage();
             
             else if (argument === "-convert")
-                format = arguments[++index];
+                format = system.args[++index];
             
             else if (argument === "-o")
-                outPath = arguments[++index];
+                outPath = system.args[++index];
             
             else if (argument === "-e")
-                outExtension = arguments[++index];
+                outExtension = system.args[++index];
             
             else if (argument === "--")
                 allFiles = YES;
@@ -52,7 +53,7 @@ function main()
                 return printUsage();
         }
         else
-            filePaths.push(arguments[index]);
+            filePaths.push(system.args[index]);
     }
     
     index = 0;
@@ -100,4 +101,4 @@ function main()
     }
 }
 
-main.apply(main, args);
+main();

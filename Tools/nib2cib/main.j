@@ -36,7 +36,7 @@ CPLogRegister(CPLogPrint);
 
 function exec(command)
 {
-	var p = Packages.java.lang.Runtime.getRuntime().exec(jsArrayToJavaArray(command));
+	var p = Packages.java.lang.Runtime.getRuntime().exec(command);
 	var result = p.waitFor();
 	
 	var reader = new Packages.java.io.BufferedReader(new Packages.java.io.InputStreamReader(p.getInputStream()));
