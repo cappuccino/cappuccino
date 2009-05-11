@@ -8,6 +8,11 @@
 {
 }
 
++ (CPString)themeClass
+{
+    return @"button-bar";
+}
+
 + (id)themeAttributes
 {
     return [CPDictionary dictionaryWithObjects:[nil]
