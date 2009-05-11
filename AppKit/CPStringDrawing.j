@@ -98,7 +98,7 @@ var CPStringReferenceElement    = nil,
             style.whiteSpace = "pre-wrap";
         }
     }
-    
+
     style.font = [aFont cssString];
 
     if (CPFeatureIsCompatible(CPJavascriptInnerTextFeature))
@@ -107,9 +107,14 @@ var CPStringReferenceElement    = nil,
     else if (CPFeatureIsCompatible(CPJavascriptTextContentFeature))
         CPStringReferenceElement.textContent = self;
 
-    return CGSizeMake(CPStringReferenceElement.clientWidth, CPStringReferenceElement.clientHeight);
+    return _CGSizeMake(/*CPStringReferenceElement.clientWidth*/20, CPStringReferenceElement.clientHeight);//, );
 #endif
     return _CGSizeMakeZero();
+}
+
++ (void)_resetSize
+{
+    CPStringReferenceElement = nil;
 }
 
 @end
