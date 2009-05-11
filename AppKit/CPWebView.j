@@ -180,7 +180,7 @@ CPWebViewScrollNative                           = 2;
             
             // try to get the document size so we can correctly set the frame
             var win = null;
-            try { win = [self window]; } catch (e) {}
+            try { win = [self DOMWindow]; } catch (e) {}
 
             if (win && win.document)
             {
@@ -290,7 +290,7 @@ CPWebViewScrollNative                           = 2;
 
         // need to give the browser a chance to reset iframe, otherwise we'll be document.write()-ing the previous document 
         window.setTimeout(function() {
-            var win = [self window];
+            var win = [self DOMWindow];
             
             win.document.write(_html);
 
@@ -385,14 +385,14 @@ CPWebViewScrollNative                           = 2;
     _iframe.parentNode.removeChild(_iframe);
 }
 
-- (Window)window
+- (DOMWindow)DOMWindow
 {
     return (_iframe.contentDocument && _iframe.contentDocument.defaultView) || _iframe.contentWindow;
 }
 
 - (CPWebScriptObject)windowScriptObject
 {
-    var win = [self window];
+    var win = [self DOMWindow];
     if (!_wso || win != [_wso window])
     {
         if (win)
@@ -470,7 +470,7 @@ CPWebViewScrollNative                           = 2;
 {
     try
     {
-        [self window].print();
+        [self DOMWindow].print();
     }
     catch (e)
     {
