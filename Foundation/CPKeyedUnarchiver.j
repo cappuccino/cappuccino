@@ -113,7 +113,7 @@ var _CPKeyedUnarchiverArrayClass                                            = Ni
 */
 + (void)initialize
 {
-    if (self != [CPKeyedUnarchiver class])
+    if (self !== [CPKeyedUnarchiver class])
         return;
     
     _CPKeyedUnarchiverArrayClass = [CPArray class];

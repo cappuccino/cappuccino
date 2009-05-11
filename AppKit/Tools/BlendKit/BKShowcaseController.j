@@ -87,6 +87,10 @@
     CPTextField _label;
 }
 
+- (void)setSelected:(BOOL)isSelected
+{
+}
+
 - (void)setRepresentedObject:(id)anObject
 {
     if (!_label)
