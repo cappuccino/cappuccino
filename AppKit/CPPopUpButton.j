@@ -30,7 +30,7 @@
 
 var VISIBLE_MARGIN  = 7.0;
 
-CPPopUpButtonStatePullsDown = 1 << 12;
+CPPopUpButtonStatePullsDown = CPThemeState("pulls-down");
 
 /*! @class CPPopUpButton
 
@@ -42,6 +42,11 @@ CPPopUpButtonStatePullsDown = 1 << 12;
     CPRectEdge  _preferredEdge;
     
     CPMenu      _menu;
+}
+
++ (CPString)themeClass
+{
+    return "popup-button";
 }
 
 /*!
@@ -59,9 +64,9 @@ CPPopUpButtonStatePullsDown = 1 << 12;
         _selectedIndex = CPNotFound;
         _preferredEdge = CPMaxYEdge;
         
-        [self setValue:CPImageLeft forThemedAttributeName:@"image-position"];
-        [self setValue:CPLeftTextAlignment forThemedAttributeName:@"alignment"];
-        [self setValue:CPLineBreakByTruncatingTail forThemedAttributeName:@"line-break-mode"];
+        [self setValue:CPImageLeft forThemeAttribute:@"image-position"];
+        [self setValue:CPLeftTextAlignment forThemeAttribute:@"alignment"];
+        [self setValue:CPLineBreakByTruncatingTail forThemeAttribute:@"line-break-mode"];
         
         [self setMenu:[[CPMenu alloc] initWithTitle:@""]];
 
@@ -85,21 +90,21 @@ CPPopUpButtonStatePullsDown = 1 << 12;
 */
 - (void)setPullsDown:(BOOL)shouldPullDown
 {
-    if ((!!(_controlState & CPPopUpButtonStatePullsDown)) === shouldPullDown)
-        return;
-    
     if (shouldPullDown)
-        _controlState |= CPPopUpButtonStatePullsDown;
+        var changed = [self setThemeState:CPPopUpButtonStatePullsDown];
     else
-        _controlState &= ~CPPopUpButtonStatePullsDown;
+        var changed = [self unsetThemeState:CPPopUpButtonStatePullsDown];
+
+    if (!changed)
+        return;
 
     var items = [_menu itemArray];
-    
+
     if ([items count] <= 0)
         return;
 
     [items[0] setHidden:[self pullsDown]];
-    
+
     [self synchronizeTitleAndSelectedItem];
 }
 
@@ -108,7 +113,7 @@ CPPopUpButtonStatePullsDown = 1 << 12;
 */
 - (BOOL)pullsDown
 {
-    return _controlState & CPPopUpButtonStatePullsDown;
+    return [self hasThemeState:CPPopUpButtonStatePullsDown];
 }
 
 // Inserting and Deleting Items

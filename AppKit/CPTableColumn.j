@@ -95,7 +95,7 @@ CPTableColumnUserResizingMask   = 2;
         _maxWidth = 1000.0;
         
         var dataView = [[CPTextField alloc] initWithFrame:CPRectMakeZero()];
-        [dataView setValue:[CPColor whiteColor] forThemedAttributeName:"text-color" inControlState:CPControlStateHighlighted];
+        [dataView setValue:[CPColor whiteColor] forThemeAttribute:"text-color" inState:CPThemeStateHighlighted];
         
         [self setDataView:dataView];
         

@@ -99,18 +99,16 @@ var CPControlBlackColor     = [CPColor blackColor];
     unsigned            _trackingMouseDownFlags;
     CGPoint             _previousTrackingLocation;
     
-    CPControlState      _controlState;
-    
     JSObject            _ephemeralSubviewsForNames;
     CPSet               _ephereralSubviews;
 
-    CPString                _toolTip;
+    CPString            _toolTip;
     
     // FIXME: Who uses this?
     BOOL _isBezeled;
 }
 
-+ (CPDictionary)themedAttributes
++ (CPDictionary)themeAttributes
 {
     return [CPDictionary dictionaryWithObjects:[
         CPLeftTextAlignment, CPTopVerticalTextAlignment, CPLineBreakByClipping, [CPColor blackColor], [CPFont systemFontOfSize:12.0], nil, _CGSizeMakeZero(), CPImageLeft, CPScaleToFit] 
@@ -123,8 +121,6 @@ var CPControlBlackColor     = [CPColor blackColor];
     
     if (self)
     {
-        _controlState = CPControlStateNormal;
-                
         _sendActionOn = CPLeftMouseUpMask;
         _trackingMouseDownFlags = 0;
     }
@@ -493,11 +489,11 @@ var CPControlBlackColor     = [CPColor blackColor];
 #define BRIDGE(UPPERCASE, LOWERCASE, ATTRIBUTENAME) \
 - (void)set##UPPERCASE:(id)aValue\
 {\
-[self setValue:aValue forThemedAttributeName:ATTRIBUTENAME];\
+[self setValue:aValue forThemeAttribute:ATTRIBUTENAME];\
 }\
 - (id)LOWERCASE\
 {\
-return [self valueForThemedAttributeName:ATTRIBUTENAME];\
+return [self valueForThemeAttribute:ATTRIBUTENAME];\
 }
 
 BRIDGE(Alignment, alignment, "alignment")
@@ -510,28 +506,17 @@ BRIDGE(TextShadowOffset, textShadowOffset, "text-shadow-offset")
 BRIDGE(ImagePosition, imagePosition, "image-position")
 BRIDGE(ImageScaling, imageScaling, "image-scaling")
 
-- (int)controlState
-{
-    return _controlState;
-}
-
 - (void)setEnabled:(BOOL)isEnabled
 {
-    if ((!(_controlState & CPControlStateDisabled)) === isEnabled)
-        return;
-    
     if (isEnabled)
-        _controlState &= ~CPControlStateDisabled;
+        [self unsetThemeState:CPThemeStateDisabled];
     else
-        _controlState |= CPControlStateDisabled;
-        
-    [self setNeedsLayout];
-    [self setNeedsDisplay:YES];
+        [self setThemeState:CPThemeStateDisabled];
 }
 
 - (BOOL)isEnabled
 {
-    return !(_controlState & CPControlStateDisabled);
+    return ![self hasThemeState:CPThemeStateDisabled];
 }
 
 - (void)highlight:(BOOL)shouldHighlight
@@ -541,21 +526,15 @@ BRIDGE(ImageScaling, imageScaling, "image-scaling")
 
 - (void)setHighlighted:(BOOL)isHighlighted
 {
-    if ((!!(_controlState & CPControlStateHighlighted)) === isHighlighted)
-        return;
-
     if (isHighlighted)
-        _controlState |= CPControlStateHighlighted;
+        [self setThemeState:CPThemeStateHighlighted];
     else
-        _controlState &= ~CPControlStateHighlighted;
-        
-    [self setNeedsLayout];
-    [self setNeedsDisplay:YES];
+        [self unsetThemeState:CPThemeStateHighlighted];
 }
 
 - (BOOL)isHighlighted
 {
-    return !!(_controlState & CPControlStateHighlighted);
+    return [self hasThemeState:CPThemeStateHighlighted];
 }
 
 - (CPView)createEphemeralSubviewNamed:(CPString)aViewName
@@ -631,8 +610,6 @@ var __Deprecated__CPImageViewImageKey   = @"CPImageViewImageKey";
 
     if (self)
     {
-        _controlState = [aCoder decodeObjectForKey:CPControlControlStateKey];
-
         [self setObjectValue:[aCoder decodeObjectForKey:CPControlValueKey]];
 
         [self setTarget:[aCoder decodeObjectForKey:CPControlTargetKey]];
@@ -668,7 +645,6 @@ var __Deprecated__CPImageViewImageKey   = @"CPImageViewImageKey";
     if (subviews)
         _subviews = subviews;
     
-    [aCoder encodeObject:_controlState forKey:CPControlControlStateKey];
     [aCoder encodeObject:_value forKey:CPControlValueKey];
     
     /*[aCoder encodeBool:_isEnabled forKey:CPControlIsEnabledKey];

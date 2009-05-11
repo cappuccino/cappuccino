@@ -107,12 +107,6 @@ var _CPButtonClassName                          = nil,
     CPImage             _image;
     CPImage             _alternateImage;
 
-    // Display Properties
-    CPThemedValue       _bezelInset;
-    CPThemedValue       _contentInset;
-    
-    CPThemedValue       _bezelColor;
-
     // Layout Views
     CPView              _bezelView;
     _CPImageAndTextView _contentView;
@@ -123,7 +117,24 @@ var _CPButtonClassName                          = nil,
     CPControlSize       _controlSize;
 }
 
-+ (id)themedAttributes
++ (id)standardButtonWithTitle:(CPString)aTitle
+{
+}
+
++ (id)standardCheckboxWithTitle:(CPString)aTitle
+{
+}
+
+- (id)standardRadioButtonWithTitle:(CPString)aTitle
+{
+}
+
++ (CPString)themeClass
+{
+    return @"button";
+}
+
++ (id)themeAttributes
 {
     return [CPDictionary dictionaryWithObjects:[_CGInsetMakeZero(), _CGInsetMakeZero(), nil, 24.0]
                                        forKeys:[@"bezel-inset", @"content-inset", @"bezel-color", @"default-height"]];
@@ -136,10 +147,10 @@ var _CPButtonClassName                          = nil,
     if (self)
     {
         // Should we instead override the defaults?
-        [self setValue:CPCenterTextAlignment forThemedAttributeName:@"alignment"];
-        [self setValue:CPCenterVerticalTextAlignment forThemedAttributeName:@"vertical-alignment"];
-        [self setValue:CPImageLeft forThemedAttributeName:@"image-position"];
-        [self setValue:CPScaleNone forThemedAttributeName:@"image-scaling"];
+        [self setValue:CPCenterTextAlignment forThemeAttribute:@"alignment"];
+        [self setValue:CPCenterVerticalTextAlignment forThemeAttribute:@"vertical-alignment"];
+        [self setValue:CPImageLeft forThemeAttribute:@"image-position"];
+        [self setValue:CPScaleNone forThemeAttribute:@"image-scaling"];
         
         _controlSize = CPRegularControlSize;
         
@@ -343,7 +354,7 @@ var _CPButtonClassName                          = nil,
 
 - (CGRect)contentRectForBounds:(CGRect)bounds
 {
-    var contentInset = [self currentValueForThemedAttributeName:@"content-inset"];
+    var contentInset = [self currentValueForThemeAttribute:@"content-inset"];
 
     if (_CGInsetIsEmpty(contentInset))
         return bounds;
@@ -361,7 +372,7 @@ var _CPButtonClassName                          = nil,
     if (![self isBordered])
         return _CGRectMakeZero();
 
-    var bezelInset = [self currentValueForThemedAttributeName:@"bezel-inset"];
+    var bezelInset = [self currentValueForThemeAttribute:@"bezel-inset"];
 
     if (_CGInsetIsEmpty(bezelInset))
         return bounds;
@@ -380,8 +391,8 @@ var _CPButtonClassName                          = nil,
 - (void)sizeToFit
 {
     var size = [([self title] || " ") sizeWithFont:[self font]],
-        contentInset = [self currentValueForThemedAttributeName:@"content-inset"],
-        defaultHeight = [self currentValueForThemedAttributeName:@"default-height"];
+        contentInset = [self currentValueForThemeAttribute:@"content-inset"],
+        defaultHeight = [self currentValueForThemeAttribute:@"default-height"];
 
     [self setFrameSize:CGSizeMake(size.width + contentInset.left + contentInset.right, defaultHeight)];
 }
@@ -420,41 +431,35 @@ var _CPButtonClassName                          = nil,
                       relativeToEphemeralSubviewNamed:@"content-view"];
       
     if (bezelView)
-        [bezelView setBackgroundColor:[self currentValueForThemedAttributeName:@"bezel-color"]];
-    
+        [bezelView setBackgroundColor:[self currentValueForThemeAttribute:@"bezel-color"]];
+
     var contentView = [self layoutEphemeralSubviewNamed:@"content-view"
                                              positioned:CPWindowAbove
                         relativeToEphemeralSubviewNamed:@"bezel-view"];
 
     if (contentView)
     {
-        [contentView setText:((_controlState & CPControlStateHighlighted) && _alternateTitle) ? _alternateTitle : _title];
-        [contentView setImage:((_controlState & CPControlStateHighlighted) && _alternateImage) ? _alternateImage : _image];
-    
-        [contentView setFont:[self currentValueForThemedAttributeName:@"font"]];
-        [contentView setTextColor:[self currentValueForThemedAttributeName:@"text-color"]];
-        [contentView setAlignment:[self currentValueForThemedAttributeName:@"alignment"]];
-        [contentView setVerticalAlignment:[self currentValueForThemedAttributeName:@"vertical-alignment"]];
-        [contentView setLineBreakMode:[self currentValueForThemedAttributeName:@"line-break-mode"]];
-        [contentView setTextShadowColor:[self currentValueForThemedAttributeName:@"text-shadow-color"]];
-        [contentView setTextShadowOffset:[self currentValueForThemedAttributeName:@"text-shadow-offset"]];
-        [contentView setImagePosition:[self currentValueForThemedAttributeName:@"image-position"]];
-        [contentView setImageScaling:[self currentValueForThemedAttributeName:@"image-scaling"]];
+        [contentView setText:([self hasThemeState:CPThemeStateHighlighted] && _alternateTitle) ? _alternateTitle : _title];
+        [contentView setImage:([self hasThemeState:CPThemeStateHighlighted] && _alternateImage) ? _alternateImage : _image];
+
+        [contentView setFont:[self currentValueForThemeAttribute:@"font"]];
+        [contentView setTextColor:[self currentValueForThemeAttribute:@"text-color"]];
+        [contentView setAlignment:[self currentValueForThemeAttribute:@"alignment"]];
+        [contentView setVerticalAlignment:[self currentValueForThemeAttribute:@"vertical-alignment"]];
+        [contentView setLineBreakMode:[self currentValueForThemeAttribute:@"line-break-mode"]];
+        [contentView setTextShadowColor:[self currentValueForThemeAttribute:@"text-shadow-color"]];
+        [contentView setTextShadowOffset:[self currentValueForThemeAttribute:@"text-shadow-offset"]];
+        [contentView setImagePosition:[self currentValueForThemeAttribute:@"image-position"]];
+        [contentView setImageScaling:[self currentValueForThemeAttribute:@"image-scaling"]];
     }
 }
 
 - (void)setDefaultButton:(BOOL)shouldBeDefaultButton
 {
-    if ((!!(_controlState & CPControlStateDefault)) === shouldBeDefaultButton)
-        return;
-
     if (shouldBeDefaultButton)
-        _controlState |= CPControlStateDefault;
+        [self setThemeState:CPThemeStateDefault];
     else
-        _controlState &= ~CPControlStateDefault;
-
-    [self setNeedsLayout];
-    [self setNeedsDisplay:YES];
+        [self unsetThemeState:CPThemeStateDefault];
 }
 
 @end
@@ -471,21 +476,15 @@ var _CPButtonClassName                          = nil,
 
 - (void)setBordered:(BOOL)shouldBeBordered
 {
-    if ((!!(_controlState & CPControlStateBordered)) === shouldBeBordered)
-        return;
-    
     if (shouldBeBordered)
-        _controlState |= CPControlStateBordered;
+        [self setThemeState:CPThemeStateBordered];
     else
-        _controlState &= ~CPControlStateBordered;
-
-    [self setNeedsLayout];
-    [self setNeedsDisplay:YES];
+        [self unsetThemeState:CPThemeStateBordered];
 }
 
 - (BOOL)isBordered
 {
-    return !!(_controlState & CPControlStateBordered);
+    return [self hasThemeState:CPThemeStateBordered];
 }
 
 @end

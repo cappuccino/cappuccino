@@ -49,7 +49,7 @@ function main()
                                     cibFiles.push(argument);
         }
     }
-    
+
     if (descriptorFiles.length === 0)
         return buildBlendFromCibFiles(cibFiles);
 
@@ -57,26 +57,26 @@ function main()
     {
         var themeDescriptorClasses = BKThemeDescriptorClasses(),
             count = [themeDescriptorClasses count];
-    
+
         while (count--)
         {
             var theClass = themeDescriptorClasses[count],
                 themeTemplate = [[AKThemeTemplate alloc] init];
-                
+
             [themeTemplate setValue:[theClass themeName] forKey:@"name"];
-            
-            var objectTemplates = BKThemeObjectTemplatesForClass(theClass);
+
+            var objectTemplates = BKThemeObjectTemplatesForClass(theClass),
                 data = cibDataFromTopLevelObjects(objectTemplates.concat([themeTemplate])),
                 temporaryCibFile = File.createTempFile("temp", ".cib"),
                 temporaryCibFilePath = temporaryCibFile.getAbsolutePath(),
                 writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(temporaryCibFilePath), "UTF-8"));
-    
+
             writer.write([data string]);
             writer.close();
             
             cibFiles.push(temporaryCibFilePath);
         }
-        
+
         buildBlendFromCibFiles(cibFiles, outputFilePath, resourcesPath);
     });
 }
@@ -131,7 +131,7 @@ function buildBlendFromCibFiles(cibFiles, outputFilePath, resourcesPath)
             fileContents = [[CPKeyedArchiver archivedDataWithRootObject:theme] string];
         
         replacedFiles.push(filePath);
-        
+
         staticContent += MARKER_PATH + ';' + filePath.length + ';' + filePath + MARKER_TEXT + ';' + fileContents.length + ';' + fileContents;
     }
     
@@ -182,7 +182,7 @@ function themeFromCibFile(aFile)
         var object = topLevelObjects[count];
         
         templates = templates.concat([object blendThemeObjectTemplates]);
-        
+
         if ([object isKindOfClass:[AKThemeTemplate class]])
             theme = [[CPTheme alloc] initWithName:[object valueForKey:@"name"]];
     }

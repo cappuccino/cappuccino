@@ -71,7 +71,12 @@ NAMES_FOR_PARTS[CPScrollerKnob]             = @"knob";
     CGPoint                 _trackingStartPoint;
 }
 
-+ (id)themedAttributes
++ (CPString)themeClass
+{
+    return "scroller";
+}
+
++ (id)themeAttributes
 {
     return [CPDictionary dictionaryWithObjects:[    _CGInsetMakeZero(),
                                                     nil, nil, nil, nil,
@@ -181,14 +186,14 @@ NAMES_FOR_PARTS[CPScrollerKnob]             = @"knob";
     return _knobProportion;
 }
 
-- (id)currentValueForThemedAttributeName:(CPString)anAttributeName
+- (id)currentValueForThemeAttribute:(CPString)anAttributeName
 {
-    var controlState = _controlState;
+    var themeState = _themeState;
     
     if (NAMES_FOR_PARTS[_hitPart] + "-color" !== anAttributeName)
-        controlState &= ~CPControlStateHighlighted;
+        themeState &= ~CPThemeStateHighlighted;
     
-    return [self valueForThemedAttributeName:anAttributeName inControlState:controlState];
+    return [self valueForThemeAttribute:anAttributeName inState:themeState];
 }
 
 // Calculating Layout
@@ -261,18 +266,18 @@ NAMES_FOR_PARTS[CPScrollerKnob]             = @"knob";
     // At this point we know we're going to need arrows.
     _usableParts = CPAllScrollerParts;
 
-    var trackOverlapInset = [self currentValueForThemedAttributeName:@"track-overlap-inset"],
+    var trackOverlapInset = [self currentValueForThemeAttribute:@"track-overlap-inset"],
         width = _CGRectGetWidth(bounds),
         height = _CGRectGetHeight(bounds); 
     
     if ([self isVertical])
     {
-        var decrementLineSize = [self currentValueForThemedAttributeName:"decrement-line-size"],
-            incrementLineSize = [self currentValueForThemedAttributeName:"increment-line-size"],
+        var decrementLineSize = [self currentValueForThemeAttribute:"decrement-line-size"],
+            incrementLineSize = [self currentValueForThemeAttribute:"increment-line-size"],
             effectiveDecrementLineHeight = decrementLineSize.height - trackOverlapInset.top,
             effectiveIncrementLineHeight = incrementLineSize.height - trackOverlapInset.bottom,
             slotHeight = height - effectiveDecrementLineHeight - effectiveIncrementLineHeight,
-            minimumKnobSize = [self currentValueForThemedAttributeName:"minimum-knob-size"],
+            minimumKnobSize = [self currentValueForThemeAttribute:"minimum-knob-size"],
             knobHeight = MAX(minimumKnobSize.height, (slotHeight * _knobProportion)),
             knobLocation = effectiveDecrementLineHeight + (slotHeight - knobHeight) * [self floatValue];
 
@@ -286,12 +291,12 @@ NAMES_FOR_PARTS[CPScrollerKnob]             = @"knob";
 
     else
     {
-        var decrementLineSize = [self currentValueForThemedAttributeName:"decrement-line-size"],
-            incrementLineSize = [self currentValueForThemedAttributeName:"increment-line-size"],
+        var decrementLineSize = [self currentValueForThemeAttribute:"decrement-line-size"],
+            incrementLineSize = [self currentValueForThemeAttribute:"increment-line-size"],
             effectiveDecrementLineWidth = decrementLineSize.width - trackOverlapInset.left,
             effectiveIncrementLineWidth = incrementLineSize.width - trackOverlapInset.right;
             slotWidth = width - effectiveDecrementLineWidth - effectiveIncrementLineWidth,
-            minimumKnobSize = [self currentValueForThemedAttributeName:"minimum-knob-size"],
+            minimumKnobSize = [self currentValueForThemeAttribute:"minimum-knob-size"],
             knobWidth = MAX(minimumKnobSize.width, (slotWidth * _knobProportion)),
             knobLocation = effectiveDecrementLineWidth + (slotWidth - knobWidth) * [self floatValue];
 
@@ -377,7 +382,7 @@ NAMES_FOR_PARTS[CPScrollerKnob]             = @"knob";
             view = [self layoutEphemeralSubviewNamed:part positioned:CPWindowAbove relativeToEphemeralSubviewNamed:PARTS_ARRANGEMENT[index - 1]];
         
         if (view)
-            [view setBackgroundColor:[self currentValueForThemedAttributeName:NAMES_FOR_PARTS[part] + "-color"]];
+            [view setBackgroundColor:[self currentValueForThemeAttribute:NAMES_FOR_PARTS[part] + "-color"]];
     }
 }
 
@@ -534,9 +539,9 @@ NAMES_FOR_PARTS[CPScrollerKnob]             = @"knob";
     _isVertical = width < height ? 1 : (width > height ? 0 : -1);
     
     if (_isVertical === 1)
-        _controlState |= CPControlStateVertical;
+        [self setThemeState:CPThemeStateVertical];
     else if (_isVertical === 0)
-        _controlState &= ~CPControlStateVertical;
+        [self unsetThemeState:CPThemeStateVertical];
 }
 
 - (void)setFrameSize:(CGSize)aSize
