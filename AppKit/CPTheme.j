@@ -91,6 +91,9 @@ var CPThemesByName      = { },
 
 - (void)_recordAttribute:(_CPThemeAttribute)anAttribute forClass:(CPString)aClass
 {
+    if (![anAttribute hasValues])
+        return;
+
     var attributes = [_attributes objectForKey:aClass];
 
     if (!attributes)
@@ -123,30 +126,6 @@ var CPThemeNameKey          = @"CPThemeNameKey",
     if (self)
     {
         _name = [aCoder decodeObjectForKey:CPThemeNameKey];
-        /*
-        
-        var themeClasses = [aCoder decodeObjectForKey:CPThemeClassesKey],
-            count = themeClasses.length;
-
-        while (count--)
-        {
-            var themeClass = themeClasses[count],
-                attributes = [CPDictionary dictionary],
-                encodedAttributeNames = [aCoder decodeObjectForKey:@"$c" + themeClass],
-                encodedCount = encodedAttributeNames.length;
-            
-            while (encodedCount--)
-            {
-                var attributeName = encodedAttributeNames[encodedCount];
-                
-                [attributes setObject:CPThemeAttributeDecode(aCoder, attributeName, nil, nil, nil) forKey:attributeName];
-            }
-
-            [_attributes setObject:attributes forKey:themeClass];
-        }
-        
-        */
-
         _attributes = [aCoder decodeObjectForKey:CPThemeAttributesKey];
 
         CPThemesByName[_name] = self;
@@ -158,33 +137,6 @@ var CPThemeNameKey          = @"CPThemeNameKey",
 - (void)encodeWithCoder:(CPCoder)aCoder
 {
     [aCoder encodeObject:_name forKey:CPThemeNameKey];
-    /*
-    
-    var themeClasses = [],
-        classNames = [_attributes keyEnumerator],
-        className = nil;
-    
-    while (className = [classNames nextObject])
-    {
-        var attributeNames = [],
-            attributes = [_attributes objectForKey:className],
-            attribute = nil;
-        
-        while (attribute = [attributes nextObject])
-            if (CPThemeAttributeEncode(aCoder, attribute))
-                attributeNames.push([attribute name]);
-        
-        if (attributeNames.length > 0)
-        {
-            [aCoder encodeObject:attributeNames forKey:"$c" + themeClass];
-            
-            themeClasses.push(themeClass);
-        }
-    }
-    
-    [aCoder encodeObject:themeClasses forKey:CPThemeClassesKey];
-    */
-
     [aCoder encodeObject:_attributes forKey:CPThemeAttributesKey];
 }
 
@@ -328,6 +280,16 @@ CPThemeStateCircular        = CPThemeState("circular");
     return _defaultValue;
 }
 
+- (BOOL)hasValues
+{
+    return [_values count] > 0;
+}
+
+- (BOOL)isTrivial
+{
+    return ([_values count] === 1) && (Number([_values allKeys][0]) === CPThemeStateNormal);
+}
+
 - (void)setValue:(id)aValue
 {
     _cache = {};
@@ -445,15 +407,27 @@ CPThemeStateCircular        = CPThemeState("circular");
         _name = [aCoder decodeObjectForKey:@"name"];
         _values = [CPDictionary dictionary];
 
-        var encodedValues = [aCoder decodeObjectForKey:@"values"],
-            keys = [encodedValues allKeys],
-            count = keys.length;
-
-        while (count--)
+        if ([aCoder containsValueForKey:@"value"])
         {
-            var key = keys[count];
+            var state = CPThemeStateNormal;
 
-            [_values setObject:[encodedValues objectForKey:key] forKey:CPThemeState(key)];
+            if ([aCoder containsValueForKey:@"state"])
+                state = CPThemeState([aCoder decodeObjectForKey:@"state"]);
+
+            [_values setObject:[aCoder decodeObjectForKey:"value"] forKey:state];
+        }
+        else
+        {
+            var encodedValues = [aCoder decodeObjectForKey:@"values"],
+                keys = [encodedValues allKeys],
+                count = keys.length;
+
+            while (count--)
+            {
+                var key = keys[count];
+
+                [_values setObject:[encodedValues objectForKey:key] forKey:CPThemeState(key)];
+            }
         }
     }
 
@@ -462,19 +436,33 @@ CPThemeStateCircular        = CPThemeState("circular");
 
 - (void)encodeWithCoder:(CPCoder)aCoder
 {
-    var encodedValues = [CPDictionary dictionary],
-        keys = [_values allKeys],
+    [aCoder encodeObject:_name forKey:@"name"];
+
+    var keys = [_values allKeys],
         count = keys.length;
 
-    while (count--)
+    if (count === 1)
     {
-        var key = keys[count];
+        var onlyKey = keys[0];
 
-        [encodedValues setObject:[_values objectForKey:key] forKey:CPThemeStateName(Number(key))];
+        if (Number(onlyKey) !== CPThemeStateNormal)
+            [aCoder encodeObject:CPThemeStateName(Number(onlyKey)) forKey:@"state"];
+
+        [aCoder encodeObject:[_values objectForKey:onlyKey] forKey:@"value"];
     }
+    else
+    {
+        var encodedValues = [CPDictionary dictionary];
 
-    [aCoder encodeObject:_name forKey:@"name"];
-    [aCoder encodeObject:encodedValues forKey:@"values"];
+        while (count--)
+        {
+            var key = keys[count];
+
+            [encodedValues setObject:[_values objectForKey:key] forKey:CPThemeStateName(Number(key))];
+        }
+
+        [aCoder encodeObject:encodedValues forKey:@"values"];
+    }
 }
 
 @end
@@ -511,23 +499,34 @@ numberOfOnes.displayName = "numberOfOnes";
 function CPThemeAttributeEncode(aCoder, aThemeAttribute)
 {
     var values = aThemeAttribute._values,
-        count = [values count];
+        count = [values count],
+        key = "$a" + [aThemeAttribute name];
 
     if (count === 1)
     {
-        var key = [values allKeys][0];
+        var state = [values allKeys][0];
 
-        if (Number(key) === 0)
-            return [aCoder encodeObject:[values objectForKey:key] forKey:"$a" + [aThemeAttribute name]];
+        if (Number(state) === 0)
+        {
+            [aCoder encodeObject:[values objectForKey:state] forKey:key];
+
+            return YES;
+        }
     }
 
     if (count >= 1)
-        [aCoder encodeObject:aThemeAttribute forKey:"$a" + [aThemeAttribute name]];
+    {
+        [aCoder encodeObject:aThemeAttribute forKey:key];
+
+        return YES;
+    }
+
+    return NO;
 }
 
 function CPThemeAttributeDecode(aCoder, anAttributeName, aDefaultValue, aTheme, aClass)
 {
-    var key = "$a" + anAttributeName;
+    var key =  "$a" + anAttributeName;
 
     if (![aCoder containsValueForKey:key])
         var attribute = [[_CPThemeAttribute alloc] initWithName:anAttributeName defaultValue:aDefaultValue];
@@ -546,7 +545,8 @@ function CPThemeAttributeDecode(aCoder, anAttributeName, aDefaultValue, aTheme, 
         }
     }
 
-    [attribute setParentAttribute:[aTheme _attributeWithName:anAttributeName forClass:aClass]];
+    if (aTheme && aClass)
+        [attribute setParentAttribute:[aTheme _attributeWithName:anAttributeName forClass:aClass]];
 
     return attribute;
 }

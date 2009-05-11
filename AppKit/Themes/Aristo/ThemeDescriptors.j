@@ -142,7 +142,7 @@
     [textfield setValue:bezelColor forThemeAttribute:@"bezel-color" inState:CPThemeStateBezeled];
     [textfield setValue:bezelFocusedColor forThemeAttribute:@"bezel-color" inState:CPThemeStateBezeled|CPThemeStateEditing];
     [textfield setValue:[CPFont systemFontOfSize:12.0] forThemeAttribute:@"font" inState:CPThemeStateBezeled];
-    [textfield setValue:CGInsetMake(9.0, 8.0, 5.0, 7.0) forThemeAttribute:@"content-inset" inState:CPThemeStateBezeled];
+    [textfield setValue:CGInsetMake(9.0, 7.0, 5.0, 8.0) forThemeAttribute:@"content-inset" inState:CPThemeStateBezeled];
 
     [textfield setValue:CGInsetMake(4.0, 4.0, 3.0, 4.0) forThemeAttribute:@"bezel-inset" inState:CPThemeStateBezeled];
     [textfield setValue:CGInsetMake(0.0, 0.0, 0.0, 0.0) forThemeAttribute:@"bezel-inset" inState:CPThemeStateBezeled|CPThemeStateEditing];
@@ -266,7 +266,7 @@
     [button setTitle:@"Pop Up"];
     
     [button setValue:color forThemeAttribute:@"bezel-color" inState:CPThemeStateBordered];
-    [button setValue:CGInsetMake(0, 5, 0, 27.0 + 5.0) forThemeAttribute:@"content-inset" inState:CPThemeStateBordered];
+    [button setValue:CGInsetMake(0, 27.0 + 5.0, 0, 5.0) forThemeAttribute:@"content-inset" inState:CPThemeStateBordered];
     [button setValue:[CPFont boldSystemFontOfSize:12.0] forThemeAttribute:@"font"];
     [button setValue:[CPColor colorWithCalibratedWhite:79.0 / 255.0 alpha:1.0] forThemeAttribute:@"text-color"];
     [button setValue:[CPColor colorWithCalibratedWhite:240.0 / 255.0 alpha:1.0] forThemeAttribute:@"text-shadow-color"];
@@ -291,7 +291,7 @@
     [button setTitle:@"Pop Up"];
 
     [button setValue:color forThemeAttribute:@"bezel-color" inState:CPPopUpButtonStatePullsDown|CPThemeStateBordered];
-    [button setValue:CGInsetMake(0, 5, 0, 27.0 + 5.0) forThemeAttribute:@"content-inset" inState:CPThemeStateBordered];
+    [button setValue:CGInsetMake(0, 27.0 + 5.0, 0, 5.0) forThemeAttribute:@"content-inset" inState:CPThemeStateBordered];
     [button setValue:[CPFont boldSystemFontOfSize:12.0] forThemeAttribute:@"font"];
     [button setValue:[CPColor colorWithCalibratedWhite:79.0 / 255.0 alpha:1.0] forThemeAttribute:@"text-color"];
     [button setValue:[CPColor colorWithCalibratedWhite:240.0 / 255.0 alpha:1.0] forThemeAttribute:@"text-shadow-color"];

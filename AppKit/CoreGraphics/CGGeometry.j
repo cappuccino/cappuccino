@@ -65,7 +65,7 @@ _function(CGRectIsNull(aRect))
 
 _function(CGRectContainsPoint(aRect, aPoint))
 
-_function(CGInsetMake(top, left, bottom, right))
+_function(CGInsetMake(top, right, bottom, left))
 _function(CGInsetMakeZero())
 _function(CGInsetMakeCopy(anInset))
 _function(CGInsetIsEmpty(anInset))
@@ -209,8 +209,17 @@ function CGPointFromEvent(anEvent)
     return _CGPointMake(anEvent.clientX, anEvent.clientY);
 }
 
-function CPStringFromInset(anInset)
+function CGInsetFromString(aString)
 {
-    return anInset.top+" "+anInset.left+" "+anInset.bottom+" "+anInset.right;
+    var numbers = aString.substr(1, aString.length - 2).split(',');
+
+    return _CGInsetMake(parseFloat(numbers[0]), parseFloat(numbers[1]), parseFloat(numbers[2]), parseFloat(numbers[3]));
+}
+
+CGInsetFromCPString = CGInsetFromString;
+
+function CPStringFromCGInset(anInset)
+{
+    return '{' + anInset.top + ", " + anInset.left + ", " + anInset.bottom + ", " + anInset.right + '}';
 }
 
