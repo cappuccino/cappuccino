@@ -446,23 +446,22 @@
     return slider;
 }
 
-/*
-    var buttonBar = [[CPButtonBar alloc] initWithFrame:CGRectMake(0.0, 0.0, 100.0, 30.0)],
++ (CPButtonBar)themedButtonBar
+{
+    var buttonBar = [[CPButtonBar alloc] initWithFrame:CGRectMake(0.0, 0.0, 100.0, 26.0)],
         color = [CPColor colorWithPatternImage:[[CPThreePartImage alloc] initWithImageSlices:
         [
-            [_CPCibCustomResource imageResourceWithName:"buttonbar-bezel.png" size:CGSizeMake(1.0, 30.0)],
-            [_CPCibCustomResource imageResourceWithName:"buttonbar-bezel.png" size:CGSizeMake(1.0, 30.0)],
-            [_CPCibCustomResource imageResourceWithName:"buttonbar-bezel-right.png" size:CGSizeMake(13.0, 30.0)]
+            [_CPCibCustomResource imageResourceWithName:"buttonbar-bezel.png" size:CGSizeMake(1.0, 26.0)],
+            [_CPCibCustomResource imageResourceWithName:"buttonbar-bezel.png" size:CGSizeMake(1.0, 26.0)],
+            [_CPCibCustomResource imageResourceWithName:"buttonbar-bezel-right.png" size:CGSizeMake(13.0, 26.0)]
         ]
         isVertical:NO]];
 
     [buttonBar setValue:color forThemeAttribute:@"bezel-color"];
-    [buttonBar setNeedsLayout];
     
-    views.push(buttonBar);
-    
-    return views;
-*/
+    return buttonBar;
+}
+
 @end
 
 function PatternColor(anImage)
