@@ -26,20 +26,20 @@ function main()
         verbose = false;
     
     var usageError = false;
-    while (args.length && !usageError)
+    while (system.args.length && !usageError)
     {
-        var arg = args.shift();
+        var arg = system.args.shift();
         switch(arg)
         {
             case "--main":
-                if (args.length)
-                    mainFilename = args.shift();
+                if (system.args.length)
+                    mainFilename = system.args.shift();
                 else
                     usageError = true;
                 break;
             case "--frameworks":
-                if (args.length)
-                    frameworksDirectory = args.shift().replace(/\/$/, "");
+                if (system.args.length)
+                    frameworksDirectory = system.args.shift().replace(/\/$/, "");
                 else
                     usageError = true;
                 break;
