@@ -27,7 +27,7 @@
 - (id)NS_initWithCoder:(CPCoder)aCoder
 {
     _segments = [];
-    _controlStates = [];
+    _themeStates = [];
 
     if (self = [super NS_initWithCoder:aCoder])
     {
@@ -46,13 +46,13 @@
         _segmentStyle       = [cell segmentStyle];
         _trackingMode       = [cell trackingMode];
 
-        [self setValue:CPCenterTextAlignment forThemedAttributeName:@"alignment"];
+        [self setValue:CPCenterTextAlignment forThemeAttribute:@"alignment"];
         
         // HACK
 
         for (var i = 0; i < _segments.length; i++)
         {
-            _controlStates[i] = _segments[i].selected ? CPControlStateSelected : CPControlStateNormal;
+            _themeStates[i] = _segments[i].selected ? CPThemeStateSelected : CPThemeStateNormal;
 
             [self tileWithChangedSegment:i];
         }
