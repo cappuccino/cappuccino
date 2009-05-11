@@ -22,7 +22,7 @@ $EXECUTABLES.each do |executable|
   dest = File.join($ENVIRONMENT_BIN_DIR, executable)
   file_d dest => source do
     #cp(source, dest)
-    FileUtils.ln_s("../narwhal/packages/objj/bin/#{executable}", dest)
+    FileUtils.ln_sf("../narwhal/packages/objj/bin/#{executable}", dest)
   end
 end
 
