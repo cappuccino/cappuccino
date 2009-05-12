@@ -205,7 +205,7 @@ var LEFT_SHADOW_INSET       = 3.0,
     [super setImageScaling:anImageScaling];
     
 #if PLATFORM(DOM)
-    if ([self currentValueForThemedAttributeName:@"image-scaling"] === CPScaleToFit)
+    if ([self currentValueForThemeAttribute:@"image-scaling"] === CPScaleToFit)
     {
         CPDOMDisplayServerSetStyleLeftTop(_DOMImageElement, NULL, 0.0, 0.0);
     }
@@ -254,7 +254,7 @@ var LEFT_SHADOW_INSET       = 3.0,
 
     var bounds = [self bounds],
         image = [self image],
-        imageScaling = [self currentValueForThemedAttributeName:@"image-scaling"],
+        imageScaling = [self currentValueForThemeAttribute:@"image-scaling"],
         x = 0.0,
         y = 0.0,
         insetWidth = (_hasShadow ? HORIZONTAL_SHADOW_INSET : 0.0),

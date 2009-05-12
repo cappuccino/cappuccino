@@ -78,8 +78,9 @@ var _CPCibCustomViewClassNameKey    = @"_CPCibCustomViewClassNameKey";
     // FIXME: Should we instead throw an exception?
     if (!theClass)
     {
+#if DEBUG
         CPLog("Unknown class \"" + _className + "\" in cib file, using CPView instead.");
-        
+#endif        
         theClass = [CPView class];
     }
     

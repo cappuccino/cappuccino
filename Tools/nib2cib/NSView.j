@@ -93,8 +93,9 @@
             }
         }
 
-        _themedAttributes = {};
-        [self _loadThemedAttributes];
+        _themeAttributes = {};
+        _themeState = CPThemeStateNormal;
+        [self _loadThemeAttributes];
     }
     
     return self;

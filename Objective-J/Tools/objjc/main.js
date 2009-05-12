@@ -55,7 +55,7 @@ function compress(/*String*/ aCode, /*Object*/ flags, /*File*/ tmpFile)
     
     writer.close();
 
-    return exec(["java", "-jar", OBJJ_HOME + "/lib/shrinksafe.jar", "-c", tmpFile.getCanonicalPath()]);
+    return exec(["java", "-jar", OBJJ_HOME + "/lib/objjc/shrinksafe.jar", "-c", tmpFile.getCanonicalPath()]);
 }
 
 //#define SET_CONTEXT(aFragment, aContext) aFragment.context = aContext

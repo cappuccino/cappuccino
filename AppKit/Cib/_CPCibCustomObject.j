@@ -41,10 +41,12 @@ var _CPCibCustomObjectClassName = @"_CPCibCustomObjectClassName";
 - (id)_cibInstantiate
 {
     var theClass = CPClassFromString(_className);
-    
+
+#if DEBUG    
     if (!theClass)
         CPLog("Unknown class \"" + _className + "\" in cib file");
-        
+#endif
+
     if (theClass === [CPApplication class])
         return [CPApplication sharedApplication];
     

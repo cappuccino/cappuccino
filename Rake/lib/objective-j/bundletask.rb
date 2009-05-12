@@ -350,10 +350,10 @@ module ObjectiveJ
         PLATFORM_FLAGS =
         {
             Platform::ObjJ              => [],
-            Platform::Rhino             => ['PLATFORM_RHINO'],
-            Platform::Browser           => ['PLATFORM_BROWSER', 'PLATFORM_DOM'],
-            Platform::BrowserDesktop    => ['PLATFORM_BROWSER', 'PLATFORM_DOM', 'PLATFORM_DESKTOP'],
-            Platform::BrowserIPhone     => ['PLATFORM_BROWSER', 'PLATFORM_DOM', 'PLATFORM_IPHONE', 'PLATFORM_MOBILE']
+            Platform::Rhino             => ['-DPLATFORM_RHINO'],
+            Platform::Browser           => ['-DPLATFORM_BROWSER', '-DPLATFORM_DOM'],
+            Platform::BrowserDesktop    => ['-DPLATFORM_BROWSER', '-DPLATFORM_DOM', '-DPLATFORM_DESKTOP'],
+            Platform::BrowserIPhone     => ['-DPLATFORM_BROWSER', '-DPLATFORM_DOM', '-DPLATFORM_IPHONE', '-DPLATFORM_MOBILE']
         }
 
         # Objective-J Bundle spec containing the metadata for this bundle.
@@ -451,7 +451,7 @@ module ObjectiveJ
                     # We no longer get this for free with file_d
                     FileUtils.mkdir_p File.join(build_path, PLATFORM_DIRECTORIES[platform])
 
-                    IO.popen("objjc #{resolve_flags(flags)} #{resolve_flags(PLATFORM_FLAGS[platform])} #{platform_sources.join(' ')} #{preprocessed_files.join(' ')}") do |objjc|
+                    IO.popen("objjc #{flags.join(' ')} #{PLATFORM_FLAGS[platform].join(' ')} #{platform_sources.join(' ')} #{preprocessed_files.join(' ')}") do |objjc|
                         objjc.sync = true
 
                         while str = objjc.gets

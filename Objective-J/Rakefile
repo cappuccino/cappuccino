@@ -35,7 +35,7 @@ end
 
 file_d $RHINO_FILE => Files do |t|
     flags = platform_flags(ObjectiveJ::Platform::Rhino, ObjectiveJ::Platform::ObjJ)
-    flags['RHINO'] = ''
+    flags += ' -DRHINO'
 
     build_product(t.name, flags)
 end
@@ -50,12 +50,12 @@ file_d $LICENSE_PRODUCT => [$LICENSE_FILE] do
 end
 
 def platform_flags(*platforms)
-    return { 'PLATFORMS' => ('"[' + platforms.uniq.map { |platform| '\"' + platform + '\"' }.join(', ') + ']"') }
+    return '-DPLATFORMS="[' + platforms.uniq.map { |platform| '\"' + platform + '\"' }.join(', ') + ']"'
 end
 
 def build_product(path, flags)
 
-    IO.popen("gcc #{resolve_flags(flags)} -E -x c -P -", "w+") do |preprocessor|
+    IO.popen("gcc #{flags} -E -x c -P -", "w+") do |preprocessor|
 
         Files.select { |name| name.match(/\.js$/) }.each do |fileName|
           preprocessor.puts IO.read(fileName)

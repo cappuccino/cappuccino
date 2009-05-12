@@ -85,11 +85,8 @@ CPViewMaxYMargin    = 32;
 CPViewBoundsDidChangeNotification   = @"CPViewBoundsDidChangeNotification";
 CPViewFrameDidChangeNotification    = @"CPViewFrameDidChangeNotification";
 
-var _DOMOriginUpdateMask        = 1 << 0,
-    _DOMSizeUpdateMask          = 1 << 1;
-
-var _CPViewNotificationCenter   = nil,
-    _CachedThemedAttributes     = nil;
+var CachedNotificationCenter    = nil,
+    CachedThemeAttributes       = nil;
 
 #if PLATFORM(DOM)
 var DOMElementPrototype         = nil,
@@ -178,7 +175,8 @@ var DOMElementPrototype         = nil,
     
     // Theming Support
     CPTheme             _theme;
-    JSObject            _themedAttributes;
+    JSObject            _themeAttributes;
+    unsigned            _themeState;
 
     // Key View Support
     CPView              _nextKeyView;
@@ -191,7 +189,7 @@ var DOMElementPrototype         = nil,
 */
 + (void)initialize
 {
-    if (self != [CPView class])
+    if (self !== [CPView class])
         return;
 
 #if PLATFORM(DOM)
@@ -205,7 +203,7 @@ var DOMElementPrototype         = nil,
     style.zIndex = 0;
 #endif
 
-    _CPViewNotificationCenter = [CPNotificationCenter defaultCenter];
+    CachedNotificationCenter = [CPNotificationCenter defaultCenter];
 }
 
 - (id)init
@@ -255,9 +253,9 @@ var DOMElementPrototype         = nil,
 #endif
         
         _theme = [CPTheme defaultTheme];
-        _themedAttributes = {};
-        
-        [self _loadThemedAttributes];
+        _themeState = CPThemeStateNormal;
+
+        [self _loadThemeAttributes];
     }
     
     return self;
@@ -588,7 +586,7 @@ var DOMElementPrototype         = nil,
     _inhibitFrameAndBoundsChangedNotifications = NO;
 
     if (_postsFrameChangedNotifications)
-        [_CPViewNotificationCenter postNotificationName:CPViewFrameDidChangeNotification object:self];
+        [CachedNotificationCenter postNotificationName:CPViewFrameDidChangeNotification object:self];
 }
 
 /*!
@@ -639,7 +637,7 @@ var DOMElementPrototype         = nil,
     origin.y = aPoint.y;
 
     if (_postsFrameChangedNotifications && !_inhibitFrameAndBoundsChangedNotifications)
-        [_CPViewNotificationCenter postNotificationName:CPViewFrameDidChangeNotification object:self];
+        [CachedNotificationCenter postNotificationName:CPViewFrameDidChangeNotification object:self];
 
 #if PLATFORM(DOM)
     CPDOMDisplayServerSetStyleLeftTop(_DOMElement, _superview ? _superview._boundsTransform : NULL, origin.x, origin.y);
@@ -717,7 +715,7 @@ var DOMElementPrototype         = nil,
 #endif
 
     if (_postsFrameChangedNotifications && !_inhibitFrameAndBoundsChangedNotifications)
-        [_CPViewNotificationCenter postNotificationName:CPViewFrameDidChangeNotification object:self];
+        [CachedNotificationCenter postNotificationName:CPViewFrameDidChangeNotification object:self];
 }
 
 /*!
@@ -738,7 +736,7 @@ var DOMElementPrototype         = nil,
     _inhibitFrameAndBoundsChangedNotifications = NO;
 
     if (_postsBoundsChangedNotifications)
-        [_CPViewNotificationCenter postNotificationName:CPViewBoundsDidChangeNotification object:self];
+        [CachedNotificationCenter postNotificationName:CPViewBoundsDidChangeNotification object:self];
 }
 
 /*!
@@ -790,7 +788,7 @@ var DOMElementPrototype         = nil,
 #endif
     
     if (_postsBoundsChangedNotifications && !_inhibitFrameAndBoundsChangedNotifications)
-        [_CPViewNotificationCenter postNotificationName:CPViewBoundsDidChangeNotification object:self];
+        [CachedNotificationCenter postNotificationName:CPViewBoundsDidChangeNotification object:self];
 }
 
 /*!
@@ -828,7 +826,7 @@ var DOMElementPrototype         = nil,
     }
     
     if (_postsBoundsChangedNotifications && !_inhibitFrameAndBoundsChangedNotifications)
-        [_CPViewNotificationCenter postNotificationName:CPViewBoundsDidChangeNotification object:self];
+        [CachedNotificationCenter postNotificationName:CPViewBoundsDidChangeNotification object:self];
 }
 
 
@@ -1358,7 +1356,7 @@ setFrameOrigin:
     _postsFrameChangedNotifications = shouldPostFrameChangedNotifications;
     
     if (_postsFrameChangedNotifications)
-        [_CPViewNotificationCenter postNotificationName:CPViewFrameDidChangeNotification object:self];
+        [CachedNotificationCenter postNotificationName:CPViewFrameDidChangeNotification object:self];
 }
 
 /*!
@@ -1389,7 +1387,7 @@ setBoundsOrigin:
     _postsBoundsChangedNotifications = shouldPostBoundsChangedNotifications;
     
     if (_postsBoundsChangedNotifications)
-        [_CPViewNotificationCenter postNotificationName:CPViewBoundsDidChangeNotification object:self];
+        [CachedNotificationCenter postNotificationName:CPViewBoundsDidChangeNotification object:self];
 }
 
 /*!
@@ -1930,67 +1928,118 @@ setBoundsOrigin:
 @end
 
 @implementation CPView (Theming)
+#pragma mark Theme States
 
-+ (CPDictionary)themedAttributes
+- (BOOL)hasThemeState:(CPThemeState)aState
+{
+    return !!(_themeState & ((typeof aState === "string") ? CPThemeState(aState) : aState));
+}
+
+- (BOOL)setThemeState:(CPThemeState)aState
+{
+    var newState = (typeof aState === "string") ? CPThemeState(aState) : aState;
+
+    if (_themeState & newState)
+        return NO;
+
+    _themeState |= newState;
+
+    [self setNeedsLayout];
+    [self setNeedsDisplay:YES];
+
+    return YES;
+}
+
+- (BOOL)unsetThemeState:(CPThemeState)aState
+{
+    var newState = ((typeof aState === "string") ? CPThemeState(aState) : aState);
+
+    if (!(_themeState & newState))
+        return NO;
+
+    _themeState &= ~newState;
+
+    [self setNeedsLayout];
+    [self setNeedsDisplay:YES];
+
+    return YES;
+}
+
+#pragma mark Theme Attributes
+
++ (CPString)themeClass
 {
     return nil;
 }
 
-+ (CPArray)_themedAttributes
++ (CPDictionary)themeAttributes
 {
-    if (!_CachedThemedAttributes)
-        _CachedThemedAttributes = {};
+    return nil;
+}
+
++ (CPArray)_themeAttributes
+{
+    if (!CachedThemeAttributes)
+        CachedThemeAttributes = {};
 
     var theClass = [self class],
         CPViewClass = [CPView class],
         attributes = [];
-    
-    while (theClass && theClass !== CPViewClass)
+
+    for (; theClass && theClass !== CPViewClass; theClass = [theClass superclass])
     {
-        var cachedAttributes = _CachedThemedAttributes[class_getName(theClass)];
-        
+        var cachedAttributes = CachedThemeAttributes[class_getName(theClass)];
+
         if (cachedAttributes)
         {
             attributes = attributes.length ? attributes.concat(cachedAttributes) : attributes;
-            _CachedThemedAttributes[[self className]] = attributes;
-            
+            CachedThemeAttributes[[self className]] = attributes;
+
             break;
         }
+
+        var attributeDictionary = [theClass themeAttributes];
         
-        var attributeDictionary = [theClass themedAttributes];
-        
-        if (attributeDictionary)
+        if (!attributeDictionary)
+            continue;
+
+        var attributeKeys = [attributeDictionary allKeys],
+            attributeCount = attributeKeys.length;
+
+        while (attributeCount--)
         {
-            var attributeKeys = [attributeDictionary allKeys],
-                attributeCount = attributeKeys.length;
-        
-            while (attributeCount--)
-            {
-                var attributeName = attributeKeys[attributeCount];
-                
-                attributes.push([attributeDictionary objectForKey:attributeName]);
-                attributes.push(attributeName);
-            }
+            var attributeName = attributeKeys[attributeCount];
+
+            attributes.push([attributeDictionary objectForKey:attributeName]);
+            attributes.push(attributeName);
         }
-        
-        theClass = [theClass superclass];
     }
-    
+
     return attributes;
 }
 
-- (void)_loadThemedAttributes
+- (void)_loadThemeAttributes
 {
-    var theme = [self theme],
-        theClass = [self class],
-        attributes = [theClass _themedAttributes];
+    var theClass = [self class],
+        attributes = [theClass _themeAttributes],
         count = attributes.length;
+
+    if (!count)
+        return;
+
+    var theme = [self theme],
+        themeClass = [theClass themeClass];
+
+    _themeAttributes = {};
     
     while (count--)
     {
-        var attributeName = attributes[count--];
+        var attributeName = attributes[count--],
+            attribute = [[_CPThemeAttribute alloc] initWithName:attributeName defaultValue:attributes[count]];
+
+        [attribute setParentAttribute:[theme _attributeWithName:attributeName forClass:themeClass]];
         
-        _themedAttributes[attributeName] = CPThemedAttributeMake(attributeName, attributes[count], theme, theClass);
+        _themeAttributes[attributeName] = attribute;
     }
 }
 
@@ -2011,73 +2060,87 @@ setBoundsOrigin:
 
 - (void)viewDidChangeTheme
 {
-    var theme = [self theme];
-    
-    for (var attributeName in _themedAttributes)
-        if (_themedAttributes.hasOwnProperty(attributeName))
-            [_themedAttributes[attributeName] setTheme:theme];
+    if (!_themeAttributes)
+        return;
+
+    var theme = [self theme],
+        themeClass = [[self class] themeClass];
+
+    for (var attributeName in _themeAttributes)
+        if (_themeAttributes.hasOwnProperty(attributeName))
+            [_themeAttributes[attributeName] setParentAttribute:[theme _attributeWithName:attributeName forClass:themeClass]];
 }
 
-- (CPDictionary)_themedAttributes
+- (CPDictionary)_themeAttributeDictionary
 {
     var dictionary = [CPDictionary dictionary];
-    
-    for (var attributeName in _themedAttributes)
-        if (_themedAttributes.hasOwnProperty(attributeName))
-            [dictionary setObject:_themedAttributes[attributeName] forKey:attributeName];
-    
+
+    if (_themeAttributes)
+    {
+        var theme = [self theme];
+
+        for (var attributeName in _themeAttributes)
+            if (_themeAttributes.hasOwnProperty(attributeName))
+                [dictionary setObject:_themeAttributes[attributeName] forKey:attributeName];
+    }
+
     return dictionary;
 }
 
-- (void)setValue:(id)aValue forThemedAttributeName:(CPString)aName inControlState:(CPControlState)aControlState
+- (void)setValue:(id)aValue forThemeAttribute:(CPString)aName inState:(CPThemeState)aState
 {
-    var attribute = _themedAttributes[aName];
+    if (!_themeAttributes || !_themeAttributes[aName])
+        [CPException raise:CPInvalidArgumentException reason:[self className] + " does not contain theme attribute '" + aName + "'"];
 
-    if (!attribute)
-        return;
+    var currentValue = [self currentValueForThemeAttribute:aName];
 
-    var currentValue = [self currentValueForThemedAttributeName:aName];
+    [_themeAttributes[aName] setValue:aValue forState:aState];
 
-    [attribute setValue:aValue forControlState:aControlState];
-
-    if ([self currentValueForThemedAttributeName:aName] === currentValue)
-        return;
-
-    [self setNeedsDisplay:YES];
-    [self setNeedsLayout];
-}
-
-- (void)setValue:(id)aValue forThemedAttributeName:(CPString)aName
-{
-    var attribute = _themedAttributes[aName];
-
-    if (!attribute)
-        return;
-
-    var currentValue = [self currentValueForThemedAttributeName:aName];
-
-    [attribute setValue:aValue];
-
-    if ([self currentValueForThemedAttributeName:aName] === currentValue)
+    if ([self currentValueForThemeAttribute:aName] === currentValue)
         return;
 
     [self setNeedsDisplay:YES];
     [self setNeedsLayout];
 }
 
-- (id)valueForThemedAttributeName:(CPString)aName inControlState:(CPControlState)aControlState
+- (void)setValue:(id)aValue forThemeAttribute:(CPString)aName
 {
-    return [_themedAttributes[aName] valueForControlState:aControlState];
+    if (!_themeAttributes || !_themeAttributes[aName])
+        [CPException raise:CPInvalidArgumentException reason:[self className] + " does not contain theme attribute '" + aName + "'"];
+
+    var currentValue = [self currentValueForThemeAttribute:aName];
+
+    [_themeAttributes[aName] setValue:aValue];
+
+    if ([self currentValueForThemeAttribute:aName] === currentValue)
+        return;
+
+    [self setNeedsDisplay:YES];
+    [self setNeedsLayout];
 }
 
-- (id)valueForThemedAttributeName:(CPString)aName
+- (id)valueForThemeAttribute:(CPString)aName inState:(CPThemeState)aState
 {
-    return [_themedAttributes[aName] value];
+    if (!_themeAttributes || !_themeAttributes[aName])
+        [CPException raise:CPInvalidArgumentException reason:[self className] + " does not contain theme attribute '" + aName + "'"];
+
+    return [_themeAttributes[aName] valueForState:aState];
 }
 
-- (void)currentValueForThemedAttributeName:(CPString)aName
+- (id)valueForThemeAttribute:(CPString)aName
 {
-    return [_themedAttributes[aName] valueForControlState:_controlState];//[self controlStateForThemedAttributeName:aName]];
+    if (!_themeAttributes || !_themeAttributes[aName])
+        [CPException raise:CPInvalidArgumentException reason:[self className] + " does not contain theme attribute '" + aName + "'"];
+
+    return [_themeAttributes[aName] value];
+}
+
+- (void)currentValueForThemeAttribute:(CPString)aName
+{
+    if (!_themeAttributes || !_themeAttributes[aName])
+        [CPException raise:CPInvalidArgumentException reason:[self className] + " does not contain theme attribute '" + aName + "'"];
+
+    return [_themeAttributes[aName] valueForState:_themeState];
 }
 
 @end
@@ -2093,6 +2156,7 @@ var CPViewAutoresizingMaskKey       = @"CPViewAutoresizingMask",
     CPViewSubviewsKey               = @"CPViewSubviewsKey",
     CPViewSuperviewKey              = @"CPViewSuperviewKey",
     CPViewTagKey                    = @"CPViewTagKey",
+    CPViewThemeStateKey             = @"CPViewThemeStateKey",
     CPViewWindowKey                 = @"CPViewWindowKey",
     CPViewNextKeyViewKey            = @"CPViewNextKeyViewKey",
     CPViewPreviousKeyViewKey        = @"CPViewPreviousKeyViewKey";
@@ -2135,7 +2199,6 @@ var CPViewAutoresizingMaskKey       = @"CPViewAutoresizingMask",
         _autoresizesSubviews = [aCoder decodeBoolForKey:CPViewAutoresizesSubviewsKey];
         
         _hitTests = [aCoder decodeObjectForKey:CPViewHitTestsKey];
-        _isHidden = [aCoder decodeObjectForKey:CPViewIsHiddenKey];
         _opacity = [aCoder decodeIntForKey:CPViewOpacityKey];
     
         // DOM SETUP
@@ -2160,22 +2223,29 @@ var CPViewAutoresizingMaskKey       = @"CPViewAutoresizingMask",
         [self setBackgroundColor:[aCoder decodeObjectForKey:CPViewBackgroundColorKey]];
         
         _theme = [CPTheme defaultTheme];
-        _themedAttributes = {};
-  
+        _themeState = [aCoder decodeIntForKey:CPViewThemeStateKey];
+        _themeAttributes = {};
+
         var theClass = [self class],
-            attributes = [theClass _themedAttributes],
+            themeClass = [theClass themeClass],
+            attributes = [theClass _themeAttributes],
             count = attributes.length;
-        
+
         while (count--)
         {
             var attributeName = attributes[count--];
-            
-            _themedAttributes[attributeName] = CPThemedAttributeDecode(aCoder, attributeName, attributes[count], _theme, theClass);
+
+            _themeAttributes[attributeName] = CPThemeAttributeDecode(aCoder, attributeName, attributes[count], _theme, themeClass);
         }
         
         [self setNeedsDisplay:YES];
-    }
     
+        _isHidden = NO;
+
+        if ([aCoder containsValueForKey:CPViewIsHiddenKey])
+            [self setHidden:[aCoder decodeBoolForKey:CPViewIsHiddenKey]];
+    }
+
     return self;
 }
 
@@ -2203,15 +2273,19 @@ var CPViewAutoresizingMaskKey       = @"CPViewAutoresizingMask",
     [aCoder encodeObject:_backgroundColor forKey:CPViewBackgroundColorKey];
         
     [aCoder encodeBool:_hitTests forKey:CPViewHitTestsKey];
-    [aCoder encodeBool:_isHidden forKey:CPViewIsHiddenKey];
     [aCoder encodeFloat:_opacity forKey:CPViewOpacityKey];
-    
+
+    if (_isHidden)
+        [aCoder encodeBool:_isHidden forKey:CPViewIsHiddenKey];
+
     [aCoder encodeConditionalObject:[self nextKeyView] forKey:CPViewNextKeyViewKey];
     [aCoder encodeConditionalObject:[self previousKeyView] forKey:CPViewPreviousKeyViewKey];
 
-    for (var attributeName in _themedAttributes)
-        if (_themedAttributes.hasOwnProperty(attributeName))
-            CPThemedAttributeEncode(aCoder, _themedAttributes[attributeName]);
+    [aCoder encodeInt:_themeState forKey:CPViewThemeStateKey];
+
+    for (var attributeName in _themeAttributes)
+        if (_themeAttributes.hasOwnProperty(attributeName))
+            CPThemeAttributeEncode(aCoder, _themeAttributes[attributeName]);
 }
 
 @end

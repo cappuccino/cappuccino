@@ -439,6 +439,8 @@ CPTexturedBackgroundWindowMask
 {
     if (_initialFirstResponder)
         [self makeFirstResponder:_initialFirstResponder];
+
+    _keyViewLoopIsDirty = ![self _hasKeyViewLoop];
 }
 
 - (void)_setWindowView:(CPView)aWindowView
@@ -1729,6 +1731,21 @@ CPTexturedBackgroundWindowMask
 {
     if (_autorecalculatesKeyViewLoop)
         _keyViewLoopIsDirty = YES;
+}
+
+- (BOOL)_hasKeyViewLoop
+{
+    var subviews = [];
+
+    [self _appendSubviewsOf:_contentView toArray:subviews];
+
+    for (var i = 0, count = [subviews count]; i<count; i++)
+    {
+        if (subviews[i]._nextKeyView)
+            return YES;
+    }
+
+    return NO;
 }
 
 - (void)recalculateKeyViewLoop

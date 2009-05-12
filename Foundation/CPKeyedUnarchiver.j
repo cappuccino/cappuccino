@@ -46,6 +46,8 @@ var _CPKeyedArchiverNullString                                              = "$
 var _CPKeyedUnarchiverArrayClass                                            = Nil,
     _CPKeyedUnarchiverStringClass                                           = Nil,
     _CPKeyedUnarchiverDictionaryClass                                       = Nil,
+    _CPKeyedUnarchiverNumberClass                                           = Nil,
+    _CPKeyedUnarchiverDataClass                                             = Nil,
     _CPKeyedUnarchiverArchiverValueClass                                    = Nil;
 
 /*
@@ -111,12 +113,14 @@ var _CPKeyedUnarchiverArrayClass                                            = Ni
 */
 + (void)initialize
 {
-    if (self != [CPKeyedUnarchiver class])
+    if (self !== [CPKeyedUnarchiver class])
         return;
     
     _CPKeyedUnarchiverArrayClass = [CPArray class];
     _CPKeyedUnarchiverStringClass = [CPString class];
     _CPKeyedUnarchiverDictionaryClass = [CPDictionary class];
+    _CPKeyedUnarchiverNumberClass = [CPNumber class];
+    _CPKeyedUnarchiverDataClass = [CPData class];
     _CPKeyedUnarchiverArchiverValueClass = [_CPKeyedArchiverValue class];
 }
 
@@ -298,7 +302,7 @@ var _CPKeyedUnarchiverArrayClass                                            = Ni
     if ([object isKindOfClass:_CPKeyedUnarchiverDictionaryClass])
         return _CPKeyedUnarchiverDecodeObjectAtIndex(self, [object objectForKey:_CPKeyedArchiverUIDKey]);
 
-    else if ([object isKindOfClass:[CPNumber class]] || [object isKindOfClass:[CPData class]])
+    else if ([object isKindOfClass:_CPKeyedUnarchiverNumberClass] || [object isKindOfClass:_CPKeyedUnarchiverDataClass])
         return object;
 
     else if ([object isKindOfClass:_CPKeyedUnarchiverArrayClass])

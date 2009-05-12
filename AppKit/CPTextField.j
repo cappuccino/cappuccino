@@ -23,8 +23,9 @@
 
 @import "CPControl.j"
 @import "CPStringDrawing.j"
+@import "CPCompatibility.j"
 
-#include "CoreGraphics/CGGeometry.j"
+#include "CoreGraphics/CGGeometry.h"
 #include "Platform/Platform.h"
 #include "Platform/DOM/CPDOMDisplayServer.h"
 
@@ -77,6 +78,8 @@ CPTextFieldRoundedBezel         = 1;
 #if PLATFORM(DOM)
 
 var CPTextFieldDOMInputElement = nil,
+    CPTextFieldDOMPasswordInputElement = nil,
+    CPTextFieldDOMStandardInputElement = nil,
     CPTextFieldInputOwner = nil,
     CPTextFieldTextDidChangeValue = nil,
     CPTextFieldInputResigning = NO,
@@ -84,7 +87,11 @@ var CPTextFieldDOMInputElement = nil,
     CPTextFieldInputIsActive = NO,
     CPTextFieldCachedSelectStartFunction = nil,
     CPTextFieldCachedDragFunction = nil,
-    CPTextFieldBlurFunction = nil;
+    
+    CPTextFieldBlurFunction = nil,
+    CPTextFieldKeyUpFunction = nil,
+    CPTextFieldKeyPressFunction = nil,
+    CPTextFieldKeyDownFunction = nil;
     
 #endif
 
@@ -102,8 +109,8 @@ var CPSecureTextFieldCharacter = "\u2022";
 
 @end
 
-CPTextFieldStateRounded     = 1 << 12;
-CPTextFieldStatePlaceholder = 1 << 13;
+CPTextFieldStateRounded     = CPThemeState("rounded");
+CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 
 /*!
     This control displays editable text in a Cappuccino application.
@@ -130,15 +137,20 @@ CPTextFieldStatePlaceholder = 1 << 13;
     CPControlSize           _controlSize;
 }
 
-+ (id)themedAttributes
++ (CPString)themeClass
 {
-    return [CPDictionary dictionaryWithObjects:[_CGInsetMakeZero(), _CGInsetMake(2.0, 2.0, 2.0, 2.0), _CGInsetMake(2.0, 2.0, 2.0, 2.0), nil]
-                                       forKeys:[@"bezel-inset", @"content-inset", @"bezeled-content-inset", @"bezel-color"]];
+    return "textfield";
+}
+
++ (id)themeAttributes
+{
+    return [CPDictionary dictionaryWithObjects:[_CGInsetMakeZero(), _CGInsetMake(2.0, 2.0, 2.0, 2.0), nil]
+                                       forKeys:[@"bezel-inset", @"content-inset", @"bezel-color"]];
 }
 
 /* @ignore */
 #if PLATFORM(DOM)
-+ (DOMElement)_inputElement
+- (DOMElement)_inputElement
 {
     if (!CPTextFieldDOMInputElement)
     {
@@ -151,7 +163,7 @@ CPTextFieldStatePlaceholder = 1 << 13;
         CPTextFieldDOMInputElement.style.background = "transparent";
         CPTextFieldDOMInputElement.style.outline = "none";
 
-        var blurFunction = function(anEvent)
+        CPTextFieldBlurFunction = function(anEvent)
         {
             if (CPTextFieldInputOwner && CPTextFieldInputOwner._DOMElement != CPTextFieldDOMInputElement.parentNode)
                 return;
@@ -168,18 +180,16 @@ CPTextFieldStatePlaceholder = 1 << 13;
             return true;
         }
 
-        CPTextFieldBlurFunction = blurFunction;
-
-        var keydownFunction = function(anEvent)
+        CPTextFieldKeyDownFunction = function(anEvent)
         {
             CPTextFieldTextDidChangeValue = [CPTextFieldInputOwner stringValue];
 
-            keypressFunction(anEvent);
+            CPTextFieldKeyPressFunction(anEvent);
 
             return true;
         }
 
-        var keypressFunction = function(aDOMEvent)
+        CPTextFieldKeyPressFunction = function(aDOMEvent)
         {
             aDOMEvent = aDOMEvent || window.event;
 
@@ -210,7 +220,7 @@ CPTextFieldStatePlaceholder = 1 << 13;
             [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
         }
 
-        var keyupFunction = function()
+        CPTextFieldKeyUpFunction = function()
         {
             [CPTextFieldInputOwner setStringValue:CPTextFieldDOMInputElement.value];
 
@@ -233,30 +243,64 @@ CPTextFieldStatePlaceholder = 1 << 13;
 
         if (document.attachEvent)
         {
-            CPTextFieldDOMInputElement.attachEvent("on" + CPDOMEventKeyUp, keyupFunction);
-            CPTextFieldDOMInputElement.attachEvent("on" + CPDOMEventKeyDown, keydownFunction);
-            CPTextFieldDOMInputElement.attachEvent("on" + CPDOMEventKeyPress, keypressFunction);
+            CPTextFieldDOMInputElement.attachEvent("on" + CPDOMEventKeyUp, CPTextFieldKeyUpFunction);
+            CPTextFieldDOMInputElement.attachEvent("on" + CPDOMEventKeyDown, CPTextFieldKeyDownFunction);
+            CPTextFieldDOMInputElement.attachEvent("on" + CPDOMEventKeyPress, CPTextFieldKeyPressFunction);
         }
         else
         {
-            CPTextFieldDOMInputElement.addEventListener(CPDOMEventKeyUp, keyupFunction, NO);
-            CPTextFieldDOMInputElement.addEventListener(CPDOMEventKeyDown, keydownFunction, NO);
-            CPTextFieldDOMInputElement.addEventListener(CPDOMEventKeyPress, keypressFunction, NO);
+            CPTextFieldDOMInputElement.addEventListener(CPDOMEventKeyUp, CPTextFieldKeyUpFunction, NO);
+            CPTextFieldDOMInputElement.addEventListener(CPDOMEventKeyDown, CPTextFieldKeyDownFunction, NO);
+            CPTextFieldDOMInputElement.addEventListener(CPDOMEventKeyPress, CPTextFieldKeyPressFunction, NO);
         }
 
         //FIXME make this not onblur
-        CPTextFieldDOMInputElement.onblur = blurFunction;
+        CPTextFieldDOMInputElement.onblur = CPTextFieldBlurFunction;
+        
+        CPTextFieldDOMStandardInputElement = CPTextFieldDOMInputElement;
+    }
+    
+    if (CPFeatureIsCompatible(CPInputTypeCanBeChangedFeature))
+    {
+        if ([self isSecure])
+            CPTextFieldDOMInputElement.type = "password";
+        else
+            CPTextFieldDOMInputElement.type = "text";
+
+        return CPTextFieldDOMInputElement;
     }
 
+    if ([self isSecure])
+    {
+        if (!CPTextFieldDOMPasswordInputElement)
+        {
+            CPTextFieldDOMPasswordInputElement = document.createElement("input");
+            CPTextFieldDOMPasswordInputElement.style.position = "absolute";
+            CPTextFieldDOMPasswordInputElement.style.border = "0px";
+            CPTextFieldDOMPasswordInputElement.style.padding = "0px";
+            CPTextFieldDOMPasswordInputElement.style.margin = "0px";
+            CPTextFieldDOMPasswordInputElement.style.whiteSpace = "pre";
+            CPTextFieldDOMPasswordInputElement.style.background = "transparent";
+            CPTextFieldDOMPasswordInputElement.style.outline = "none";
+            CPTextFieldDOMPasswordInputElement.type = "password";
+
+            CPTextFieldDOMPasswordInputElement.attachEvent("on" + CPDOMEventKeyUp, CPTextFieldKeyUpFunction);
+            CPTextFieldDOMPasswordInputElement.attachEvent("on" + CPDOMEventKeyDown, CPTextFieldKeyDownFunction);
+            CPTextFieldDOMPasswordInputElement.attachEvent("on" + CPDOMEventKeyPress, CPTextFieldKeyPressFunction);
+
+            CPTextFieldDOMPasswordInputElement.onblur = CPTextFieldBlurFunction;
+        }
+        
+        CPTextFieldDOMInputElement = CPTextFieldDOMPasswordInputElement;
+    }
+    else
+    {
+        CPTextFieldDOMInputElement = CPTextFieldDOMStandardInputElement;
+    }
+    
     return CPTextFieldDOMInputElement;
 }
 #endif
-
-+ (void)initialize
-{
-    if (CPBrowserIsEngine(CPGeckoBrowserEngine))
-        CPSecureTextFieldCharacter = "*";
-}
 
 - (id)initWithFrame:(CGRect)aFrame
 {
@@ -269,7 +313,7 @@ CPTextFieldStatePlaceholder = 1 << 13;
 
         _sendActionOn = CPKeyUpMask | CPKeyDownMask;
 
-        [self setValue:CPLeftTextAlignment forThemedAttributeName:@"alignment"];
+        [self setValue:CPLeftTextAlignment forThemeAttribute:@"alignment"];
     }
     
     return self;
@@ -334,16 +378,10 @@ CPTextFieldStatePlaceholder = 1 << 13;
 */
 - (void)setBezeled:(BOOL)shouldBeBezeled
 {
-    if ((!!(_controlState & CPControlStateBezeled)) === shouldBeBezeled)
-        return;
-    
     if (shouldBeBezeled)
-        _controlState |= CPControlStateBezeled;
+        [self setThemeState:CPThemeStateBezeled];
     else
-        _controlState &= ~CPControlStateBezeled;
-
-    [self setNeedsLayout];
-    [self setNeedsDisplay:YES];
+        [self unsetThemeState:CPThemeStateBezeled];
 }
 
 /*!
@@ -351,7 +389,7 @@ CPTextFieldStatePlaceholder = 1 << 13;
 */
 - (BOOL)isBezeled
 {
-    return !!(_controlState & CPControlStateBezeled);
+    return [self hasThemeState:CPThemeStateBezeled];
 }
 
 /*!
@@ -362,16 +400,10 @@ CPTextFieldStatePlaceholder = 1 << 13;
 {
     var shouldBeRounded = aBezelStyle === CPTextFieldRoundedBezel;
     
-    if ((!!(_controlState & CPTextFieldStateRounded)) === shouldBeRounded)
-        return;
-    
     if (shouldBeRounded)
-        _controlState |= CPTextFieldStateRounded;
+        [self setThemeState:CPTextFieldStateRounded];
     else
-        _controlState &= ~CPTextFieldStateRounded;
-
-    [self setNeedsLayout];
-    [self setNeedsDisplay:YES];
+        [self unsetThemeState:CPTextFieldStateRounded];
 }
 
 /*!
@@ -379,7 +411,7 @@ CPTextFieldStatePlaceholder = 1 << 13;
 */
 - (CPTextFieldBezelStyle)bezelStyle
 {
-    if (_controlState & CPTextFieldStateRounded)
+    if ([self hasThemeState:CPTextFieldStateRounded])
         return CPTextFieldRoundedBezel;
 
     return CPTextFieldSquareBezel;
@@ -391,16 +423,10 @@ CPTextFieldStatePlaceholder = 1 << 13;
 */
 - (void)setBordered:(BOOL)shouldBeBordered
 {
-    if ((!!(_controlState & CPControlStateBordered)) === shouldBeBordered)
-        return;
-    
     if (shouldBeBordered)
-        _controlState |= CPControlStateBordered;
+        [self setThemeState:CPThemeStateBordered];
     else
-        _controlState &= ~CPControlStateBordered;
-
-    [self setNeedsLayout];
-    [self setNeedsDisplay:YES];
+        [self unsetThemeState:CPThemeStateBordered];
 }
 
 /*!
@@ -408,7 +434,7 @@ CPTextFieldStatePlaceholder = 1 << 13;
 */
 - (BOOL)isBordered
 {
-    return !!(_controlState & CPControlStateBordered);
+    return [self hasThemeState:CPThemeStateBordered];
 }
 
 /*!
@@ -469,7 +495,7 @@ CPTextFieldStatePlaceholder = 1 << 13;
     if (CPTextFieldInputOwner && [CPTextFieldInputOwner window] !== [self window])
         [[CPTextFieldInputOwner window] makeFirstResponder:nil];
 
-    _controlState |= CPControlStateEditing;
+    [self setThemeState:CPThemeStateEditing];
 
     [self _updatePlaceholderState];
 
@@ -478,17 +504,12 @@ CPTextFieldStatePlaceholder = 1 << 13;
 #if PLATFORM(DOM)
 
     var string = [self stringValue],
-        element = [[self class] _inputElement];
+        element = [self _inputElement];
 
     element.value = string;
-    element.style.color = [[self currentValueForThemedAttributeName:@"text-color"] cssString];
-    element.style.font = [[self currentValueForThemedAttributeName:@"font"] cssString];
+    element.style.color = [[self currentValueForThemeAttribute:@"text-color"] cssString];
+    element.style.font = [[self currentValueForThemeAttribute:@"font"] cssString];
     element.style.zIndex = 1000;
-
-    if ([self isSecure])
-        element.type = "password";
-    else
-        element.type = "text";
 
     var contentRect = [self contentRectForBounds:[self bounds]];
 
@@ -529,7 +550,7 @@ CPTextFieldStatePlaceholder = 1 << 13;
 /* @ignore */
 - (BOOL)resignFirstResponder
 {
-    _controlState &= ~CPControlStateEditing;
+    [self unsetThemeState:CPThemeStateEditing];
 
     [self _updatePlaceholderState];
 
@@ -537,7 +558,7 @@ CPTextFieldStatePlaceholder = 1 << 13;
 
 #if PLATFORM(DOM)
 
-    var element = [[self class] _inputElement];
+    var element = [self _inputElement];
 
     [self setObjectValue:element.value];
 
@@ -601,19 +622,12 @@ CPTextFieldStatePlaceholder = 1 << 13;
 
 - (void)_updatePlaceholderState
 {
-    var string = [self stringValue],
-        controlState = _controlState;
+    var string = [self stringValue];
 
-    if ((!string || [string length] === 0) && !(_controlState & CPControlStateEditing))
-        _controlState |= CPTextFieldStatePlaceholder;
+    if ((!string || [string length] === 0) && ![self hasThemeState:CPThemeStateEditing])
+        [self setThemeState:CPTextFieldStatePlaceholder];
     else
-        _controlState &= ~CPTextFieldStatePlaceholder;
-
-    if (_controlState !== controlState)
-    {
-        [self setNeedsLayout];
-        [self setNeedsDisplay:YES];
-    }
+        [self unsetThemeState:CPTextFieldStatePlaceholder];
 }
 
 /*!
@@ -628,7 +642,7 @@ CPTextFieldStatePlaceholder = 1 << 13;
     _placeholderString = aStringValue;
 
     // Only update things if we need to show the placeholder
-    if (_controlState & CPTextFieldStatePlaceholder)
+    if ([self hasThemeState:CPTextFieldStatePlaceholder])
     {
         [self setNeedsLayout];
         [self setNeedsDisplay:YES];
@@ -650,7 +664,7 @@ CPTextFieldStatePlaceholder = 1 << 13;
 - (void)sizeToFit
 {
     var size = [([self stringValue] || " ") sizeWithFont:[self font]],
-        contentInset = [self currentValueForThemedAttributeName:@"content-inset"];
+        contentInset = [self currentValueForThemeAttribute:@"content-inset"];
 
     [self setFrameSize:CGSizeMake(size.width + contentInset.left + contentInset.right, size.height + contentInset.top + contentInset.bottom)];
 }
@@ -661,7 +675,7 @@ CPTextFieldStatePlaceholder = 1 << 13;
 - (void)selectText:(id)sender
 {
 #if PLATFORM(DOM)
-    var element = [[self class] _inputElement];
+    var element = [self _inputElement];
     
     if (element.parentNode == _DOMElement && ([self isEditable] || [self isSelectable]))
         element.select();
@@ -715,7 +729,7 @@ CPTextFieldStatePlaceholder = 1 << 13;
 
 - (CGRect)contentRectForBounds:(CGRect)bounds
 {
-    var contentInset = [self currentValueForThemedAttributeName:@"content-inset"];
+    var contentInset = [self currentValueForThemeAttribute:@"content-inset"];
     
     if (!contentInset)
         return bounds;
@@ -730,7 +744,7 @@ CPTextFieldStatePlaceholder = 1 << 13;
 
 - (CGRect)bezelRectForBounds:(CFRect)bounds
 {
-    var bezelInset = [self currentValueForThemedAttributeName:@"bezel-inset"];
+    var bezelInset = [self currentValueForThemeAttribute:@"bezel-inset"];
 
     if (_CGInsetIsEmpty(bezelInset))
         return bounds;
@@ -782,7 +796,7 @@ CPTextFieldStatePlaceholder = 1 << 13;
                       relativeToEphemeralSubviewNamed:@"content-view"];
       
     if (bezelView)
-        [bezelView setBackgroundColor:[self currentValueForThemedAttributeName:@"bezel-color"]];
+        [bezelView setBackgroundColor:[self currentValueForThemeAttribute:@"bezel-color"]];
     
     var contentView = [self layoutEphemeralSubviewNamed:@"content-view"
                                              positioned:CPWindowAbove
@@ -790,11 +804,11 @@ CPTextFieldStatePlaceholder = 1 << 13;
 
     if (contentView)
     {
-        [contentView setHidden:_controlState & CPControlStateEditing];
+        [contentView setHidden:[self hasThemeState:CPThemeStateEditing]];
 
         var string = "";
         
-        if (_controlState & CPTextFieldStatePlaceholder)
+        if ([self hasThemeState:CPTextFieldStatePlaceholder])
             string = [self placeholderString];
         else
         {
@@ -806,13 +820,13 @@ CPTextFieldStatePlaceholder = 1 << 13;
 
         [contentView setText:string];
 
-        [contentView setTextColor:[self currentValueForThemedAttributeName:@"text-color"]];
-        [contentView setFont:[self currentValueForThemedAttributeName:@"font"]];
-        [contentView setAlignment:[self currentValueForThemedAttributeName:@"alignment"]];
-        [contentView setVerticalAlignment:[self currentValueForThemedAttributeName:@"vertical-alignment"]];
-        [contentView setLineBreakMode:[self currentValueForThemedAttributeName:@"line-break-mode"]];
-        [contentView setTextShadowColor:[self currentValueForThemedAttributeName:@"text-shadow-color"]];
-        [contentView setTextShadowOffset:[self currentValueForThemedAttributeName:@"text-shadow-offset"]];
+        [contentView setTextColor:[self currentValueForThemeAttribute:@"text-color"]];
+        [contentView setFont:[self currentValueForThemeAttribute:@"font"]];
+        [contentView setAlignment:[self currentValueForThemeAttribute:@"alignment"]];
+        [contentView setVerticalAlignment:[self currentValueForThemeAttribute:@"vertical-alignment"]];
+        [contentView setLineBreakMode:[self currentValueForThemeAttribute:@"line-break-mode"]];
+        [contentView setTextShadowColor:[self currentValueForThemeAttribute:@"text-shadow-color"]];
+        [contentView setTextShadowOffset:[self currentValueForThemeAttribute:@"text-shadow-offset"]];
     }
 }
 

@@ -8,7 +8,12 @@
 {
 }
 
-+ (id)themedAttributes
++ (CPString)themeClass
+{
+    return @"button-bar";
+}
+
++ (id)themeAttributes
 {
     return [CPDictionary dictionaryWithObjects:[nil]
                                        forKeys:[@"bezel-color"]];
@@ -43,7 +48,7 @@
                       relativeToEphemeralSubviewNamed:@""];
       
     if (bezelView)
-        [bezelView setBackgroundColor:[self currentValueForThemedAttributeName:@"bezel-color"]];
+        [bezelView setBackgroundColor:[self currentValueForThemeAttribute:@"bezel-color"]];
 }
 
 - (void)addSubview:(CPView)aSubview

@@ -53,9 +53,18 @@ CPJavaScriptMouseWheelValues_8_15       = 1 << 23
 
 CPOpacityRequiresFilterFeature          = 1 << 24;
 
+//Internet explorer does not allow dynamically changing the type of an input element
+CPInputTypeCanBeChangedFeature          = 1 << 25;  
+
+
+
 var USER_AGENT                          = "",
     PLATFORM_ENGINE                     = CPUnknownBrowserEngine,
     PLATFORM_FEATURES                   = 0;
+
+// default these features to true
+
+PLATFORM_FEATURES |= CPInputTypeCanBeChangedFeature;
 
 if (typeof window != "undfined" && typeof window.navigator != "undefined")
     USER_AGENT = window.navigator.userAgent;
@@ -79,6 +88,8 @@ else if (window.attachEvent) // Must follow Opera check.
     PLATFORM_FEATURES |= CPJavaScriptShadowFeature;
     
     PLATFORM_FEATURES |= CPOpacityRequiresFilterFeature;
+
+    PLATFORM_FEATURES &= ~CPInputTypeCanBeChangedFeature;
 }
 
 // WebKit

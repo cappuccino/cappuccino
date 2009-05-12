@@ -22,7 +22,8 @@ ObjectiveJ::BundleTask.new(:Foundation) do |t|
     t.resources     = FileList['Resources/*'].to_a
     t.license       = ObjectiveJ::License::LGPL_v2_1
     t.build_path    = $BUILD_PATH
-    t.flag          = 'DEBUG' if $CONFIGURATION == 'Debug'
+    t.flag          = '-DDEBUG -g' if $CONFIGURATION == 'Debug'
+    t.flag          = '-O' if $CONFIGURATION == 'Release'
     t.type          = ObjectiveJ::Bundle::Type::Framework
 end
 

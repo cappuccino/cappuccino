@@ -322,7 +322,7 @@
 */
 - (BOOL)isEqualToDictionary:(CPDictionary)aDictionary
 {
-    if (count != [aDictionary count])
+    if (count !== [aDictionary count])
         return NO;
 
     var index = count;
@@ -465,8 +465,10 @@
 */
 - (void)removeObjectsForKeys:(CPArray)allKeys
 {
-    for (var i=0, count = allKeys.length; i<count; i++)
-        dictionary_removeValue(self, allKeys[i]);
+    var index = allKeys.length;
+
+    while (index--)
+        dictionary_removeValue(self, allKeys[index]);
 }
 
 /*
@@ -527,11 +529,11 @@
         return;
         
     var keys = [aDictionary allKeys],
-        count = [keys count];
+        index = [keys count];
     
-    while (count--)
+    while (index--)
     {
-        var key = keys[count];
+        var key = keys[index];
 
         [self setObject:[aDictionary objectForKey:key] forKey:key];
     }
@@ -547,10 +549,21 @@
     var i = _keys.length;
     
     while (i--)
-        description += _keys[i] +":"+[_buckets[_keys[i]] description]+"\n";
-        
+    {
+        description += _keys[i] + ":";
+
+        var object = _buckets[_keys[i]];
+
+        if (object && object.isa)
+            description += [object description];
+        else
+            description += object;
+
+        description += "\n";
+    }
+
     description += "}";
-    
+
     return description;
 }
 
