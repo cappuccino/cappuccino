@@ -7,3 +7,6 @@
 [submodule "External/ojunit"]
 	path = External/ojunit
 	url = git://github.com/280north/ojunit.git
+[submodule "External/jack"]
+	path = External/jack
+	url = git://github.com/tlrobinson/jack.git
