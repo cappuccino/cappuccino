@@ -88,37 +88,40 @@ function createFrameworksInFile(/*File*/ aFile, /*Boolean*/ shouldSymbolicallyLi
             return true;
         }
         
-        var STEAM_BUILD = system.env("STEAM_BUILD");
+        var BUILD = system.env["CAPP_BUILD"] || system.env["STEAM_BUILD"];
+        
+        if (!BUILD)
+            throw "CAPP_BUILD or STEAM_BUILD must be defined";
         
         // Release Frameworks
         new java.io.File(destinationFrameworks).mkdir();
         
-        exec(["ln", "-s",   new java.io.File(STEAM_BUILD + "/Release/Objective-J").getCanonicalPath(),
+        exec(["ln", "-s",   new java.io.File(BUILD + "/Release/Objective-J").getCanonicalPath(),
                             new java.io.File(aFile.getCanonicalPath() + "/Frameworks/Objective-J").getCanonicalPath()], true);
 
-        exec(["ln", "-s",   new java.io.File(STEAM_BUILD + "/Release/Foundation").getCanonicalPath(),
+        exec(["ln", "-s",   new java.io.File(BUILD + "/Release/Foundation").getCanonicalPath(),
                             new java.io.File(aFile.getCanonicalPath() + "/Frameworks/Foundation").getCanonicalPath()], true);
 
-        exec(["ln", "-s",   new java.io.File(STEAM_BUILD + "/Release/AppKit").getCanonicalPath(),
+        exec(["ln", "-s",   new java.io.File(BUILD + "/Release/AppKit").getCanonicalPath(),
                             new java.io.File(aFile.getCanonicalPath() + "/Frameworks/AppKit").getCanonicalPath()], true);
 
         // Debug Frameworks
         new java.io.File(destinationDebugFrameworks).mkdir();
         
-        exec(["ln", "-s",   new java.io.File(STEAM_BUILD + "/Debug/Objective-J").getCanonicalPath(),
+        exec(["ln", "-s",   new java.io.File(BUILD + "/Debug/Objective-J").getCanonicalPath(),
                             new java.io.File(aFile.getCanonicalPath() + "/Frameworks/Debug/Objective-J").getCanonicalPath()], true);
 
-        exec(["ln", "-s",   new java.io.File(STEAM_BUILD + "/Debug/Foundation").getCanonicalPath(),
+        exec(["ln", "-s",   new java.io.File(BUILD + "/Debug/Foundation").getCanonicalPath(),
                             new java.io.File(aFile.getCanonicalPath() + "/Frameworks/Debug/Foundation").getCanonicalPath()], true);
 
-        exec(["ln", "-s",   new java.io.File(STEAM_BUILD + "/Debug/AppKit").getCanonicalPath(),
+        exec(["ln", "-s",   new java.io.File(BUILD + "/Debug/AppKit").getCanonicalPath(),
                             new java.io.File(aFile.getCanonicalPath() + "/Frameworks/Debug/AppKit").getCanonicalPath()], true);
 }
 
 function printUsage()
 {
     print("capp /path/to/your/app [options]");
-    print("    -l                Symlink the Frameworks folder to your $STEAM_BUILD directory");
+    print("    -l                Symlink the Frameworks folder to your $CAPP_BUILD or $STEAM_BUILD directory");
     print("    -t, --template    Specify the template name to use (listed in capp/Resources/Templates)");
     print("    -f, --frameworks  Create only frameworks, not a full application");
     print("    -h, --help        Print usage");
