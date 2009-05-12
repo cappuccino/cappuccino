@@ -36,6 +36,7 @@ $STARTER_DOWNLOAD_README        = File.join($STARTER_DOWNLOAD, 'README')
 task :downloads => [:starter_download, :tools_download]
 
 file_d $TOOLS_DOWNLOAD_ENV => [:debug, :release] do
+    rm_rf($TOOLS_DOWNLOAD_ENV)
     cp_r(File.join($RELEASE_ENV, '.'), $TOOLS_DOWNLOAD_ENV)
     cp_r(File.join($DEBUG_ENV, 'lib', 'Frameworks', '.'), File.join($TOOLS_DOWNLOAD_ENV, 'lib', 'Frameworks', 'Debug'))
 end
