@@ -443,20 +443,20 @@ CPSegmentSwitchTrackingMomentary = 2;
         contentInset = [self currentValueForThemeAttribute:@"content-inset"],
         bezelInset = [self currentValueForThemeAttribute:@"bezel-inset"],
         bounds = [self bounds];
-
+console.log("bounds: "+CPStringFromRect(bounds));
     if (aName === "left-segment-bezel")
     {
         return CGRectMake(bezelInset.left, bezelInset.top, contentInset.left, height);
     }
     else if (aName === "right-segment-bezel")
     {
-        return CGRectMake(CGRectGetMaxX(bounds) - contentInset.right, bezelInset.top, contentInset.right, height);
+        return CGRectMake(CGRectGetMaxX(bounds) - contentInset.right - bezelInset.right, bezelInset.top, contentInset.right, height);
     }
     else if (aName.substring(0, "segment-bezel".length) == "segment-bezel")
     {
         var segment = parseInt(aName.substring("segment-bezel-".length), 10),
             frame = CGRectCreateCopy(_segments[segment].frame);
-
+console.log(segment+" "+CPStringFromRect(frame));
         if (segment == 0)
         {
             frame.origin.x += contentInset.left;
@@ -465,7 +465,7 @@ CPSegmentSwitchTrackingMomentary = 2;
 
         if (segment == _segments.length - 1)
             frame.size.width -= contentInset.right;
-
+console.log("finished "+CPStringFromRect(frame));
         return frame;
     }
     else if (aName.substring(0, "divider-bezel".length) == "divider-bezel")
@@ -549,9 +549,12 @@ CPSegmentSwitchTrackingMomentary = 2;
         [contentView setLineBreakMode:[self valueForThemeAttribute:@"line-break-mode" inState:themeState]];
         [contentView setTextShadowColor:[self valueForThemeAttribute:@"text-shadow-color" inState:themeState]];
         [contentView setTextShadowOffset:[self valueForThemeAttribute:@"text-shadow-offset" inState:themeState]];
-        [contentView setImagePosition:[self valueForThemeAttribute:@"image-position" inState:themeState]];
         [contentView setImageScaling:[self valueForThemeAttribute:@"image-scaling" inState:themeState]];        
-
+        
+        if (segment.image && segment.label)
+            [contentView setImagePosition:[self valueForThemeAttribute:@"image-position" inState:themeState]];
+        else if (segment.image)
+            [contentView setImagePosition:CPImageOnly];
 
         if (i == count - 1)
             continue;
@@ -619,7 +622,7 @@ CPSegmentSwitchTrackingMomentary = 2;
     // Update Segment Width
     segment.width = segmentWidth;
     segment.frame = [self frameForSegment:aSegment];;
-
+console.log("updated: "+CPStringFromRect(segment.frame));
     // Update Following Segments Widths
     var index = aSegment + 1;
     
