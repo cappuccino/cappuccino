@@ -31,14 +31,17 @@
     {
         var flags = [aCoder decodeIntForKey:"NSsFlags"];
         
-        _hasVerticalScroller    = Boolean(flags & (1 << 4));
-        _hasHorizontalScroller  = Boolean(flags & (1 << 5));
-        _autohidesScrollers     = Boolean(flags & (1 << 9));
-        
         _verticalScroller   = [aCoder decodeObjectForKey:"NSVScroller"];
         _horizontalScroller = [aCoder decodeObjectForKey:"NSHScroller"];
         _contentView        = [aCoder decodeObjectForKey:"NSContentView"];
-        
+
+        _hasVerticalScroller    = !Boolean(flags & (1 << 4));
+        _hasHorizontalScroller  = !Boolean(flags & (1 << 5));
+        _autohidesScrollers     = Boolean(flags & (1 << 9));
+
+        [self setHasHorizontalScroller:!_hasHorizontalScroller];
+        [self setHasVerticalScroller:!_hasVerticalScroller];
+
         //[aCoder decodeBytesForKey:"NSScrollAmts"];
         _verticalLineScroll = 10.0;
         _verticalPageScroll = 10.0;

@@ -2199,7 +2199,6 @@ var CPViewAutoresizingMaskKey       = @"CPViewAutoresizingMask",
         _autoresizesSubviews = [aCoder decodeBoolForKey:CPViewAutoresizesSubviewsKey];
         
         _hitTests = [aCoder decodeObjectForKey:CPViewHitTestsKey];
-        _isHidden = [aCoder decodeObjectForKey:CPViewIsHiddenKey];
         _opacity = [aCoder decodeIntForKey:CPViewOpacityKey];
     
         // DOM SETUP
@@ -2240,8 +2239,13 @@ var CPViewAutoresizingMaskKey       = @"CPViewAutoresizingMask",
         }
         
         [self setNeedsDisplay:YES];
-    }
     
+        _isHidden = NO;
+
+        if ([aCoder containsValueForKey:CPViewIsHiddenKey])
+            [self setHidden:[aCoder decodeBoolForKey:CPViewIsHiddenKey]];
+    }
+
     return self;
 }
 
@@ -2269,9 +2273,11 @@ var CPViewAutoresizingMaskKey       = @"CPViewAutoresizingMask",
     [aCoder encodeObject:_backgroundColor forKey:CPViewBackgroundColorKey];
         
     [aCoder encodeBool:_hitTests forKey:CPViewHitTestsKey];
-    [aCoder encodeBool:_isHidden forKey:CPViewIsHiddenKey];
     [aCoder encodeFloat:_opacity forKey:CPViewOpacityKey];
-    
+
+    if (_isHidden)
+        [aCoder encodeBool:_isHidden forKey:CPViewIsHiddenKey];
+
     [aCoder encodeConditionalObject:[self nextKeyView] forKey:CPViewNextKeyViewKey];
     [aCoder encodeConditionalObject:[self previousKeyView] forKey:CPViewPreviousKeyViewKey];
 
