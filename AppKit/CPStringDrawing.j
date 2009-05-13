@@ -107,7 +107,7 @@ var CPStringReferenceElement    = nil,
     else if (CPFeatureIsCompatible(CPJavascriptTextContentFeature))
         CPStringReferenceElement.textContent = self;
 
-    return _CGSizeMake(/*CPStringReferenceElement.clientWidth*/20, CPStringReferenceElement.clientHeight);//, );
+    return _CGSizeMake(CPStringReferenceElement.clientWidth, CPStringReferenceElement.clientHeight);
 #endif
     return _CGSizeMakeZero();
 }
