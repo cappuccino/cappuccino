@@ -450,7 +450,7 @@ CPSegmentSwitchTrackingMomentary = 2;
     }
     else if (aName === "right-segment-bezel")
     {
-        return CGRectMake(CGRectGetMaxX(bounds) - contentInset.right, bezelInset.top, contentInset.right, height);
+        return CGRectMake(CGRectGetMaxX(bounds) - contentInset.right - bezelInset.right, bezelInset.top, contentInset.right, height);
     }
     else if (aName.substring(0, "segment-bezel".length) == "segment-bezel")
     {
@@ -549,9 +549,12 @@ CPSegmentSwitchTrackingMomentary = 2;
         [contentView setLineBreakMode:[self valueForThemeAttribute:@"line-break-mode" inState:themeState]];
         [contentView setTextShadowColor:[self valueForThemeAttribute:@"text-shadow-color" inState:themeState]];
         [contentView setTextShadowOffset:[self valueForThemeAttribute:@"text-shadow-offset" inState:themeState]];
-        [contentView setImagePosition:[self valueForThemeAttribute:@"image-position" inState:themeState]];
         [contentView setImageScaling:[self valueForThemeAttribute:@"image-scaling" inState:themeState]];        
-
+        
+        if (segment.image && segment.label)
+            [contentView setImagePosition:[self valueForThemeAttribute:@"image-position" inState:themeState]];
+        else if (segment.image)
+            [contentView setImagePosition:CPImageOnly];
 
         if (i == count - 1)
             continue;
