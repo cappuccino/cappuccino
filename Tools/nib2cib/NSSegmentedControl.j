@@ -22,23 +22,45 @@
 
 @import <AppKit/CPSegmentedControl.j>
 
-@import "NSSegmentedControl.j"
-
-
 @implementation CPSegmentedControl (CPCoding)
 
 - (id)NS_initWithCoder:(CPCoder)aCoder
 {
+    _segments = [];
+    _themeStates = [];
+
     if (self = [super NS_initWithCoder:aCoder])
     {
+        var frame = [self frame],
+            originalWidth = frame.size.width;
+
+        frame.size.width = 0;
+        frame.origin.x = MAX(frame.origin.x - 4.0, 0.0);
+
+        [self setFrame:frame];
+
         var cell = [aCoder decodeObjectForKey:"NSCell"];
-        
+
         _segments           = [cell segments];
         _selectedSegment    = [cell selectedSegment];
         _segmentStyle       = [cell segmentStyle];
         _trackingMode       = [cell trackingMode];
+
+        [self setValue:CPCenterTextAlignment forThemeAttribute:@"alignment"];
+        
+        // HACK
+
+        for (var i = 0; i < _segments.length; i++)
+        {
+            _themeStates[i] = _segments[i].selected ? CPThemeStateSelected : CPThemeStateNormal;
+
+            [self tileWithChangedSegment:i];
+        }
+
+        frame.size.width = originalWidth;
+        [self setFrame:frame];
     }
-    
+
     return self;
 }
 
@@ -76,8 +98,6 @@
         _selectedSegment    = [aCoder decodeIntForKey:"NSSelectedSegment"];
         _segmentStyle       = [aCoder decodeIntForKey:"NSSegmentStyle"];
         _trackingMode       = [aCoder decodeIntForKey:"NSTrackingMode"];
-        
-        
     }
     
     return self;
@@ -98,7 +118,10 @@
         selected    = [aCoder decodeBoolForKey:"NSSegmentItemSelected"];
         enabled     = ![aCoder decodeBoolForKey:"NSSegmentItemDisabled"];
         tag         = [aCoder decodeIntForKey:"NSSegmentItemTag"];
-        
+        width       = [aCoder decodeIntForKey:"NSSegmentItemWidth"];
+
+        frame       = CGRectMakeZero();
+
         // NSSegmentItemImageScaling
         // NSSegmentItemTooltip
     }

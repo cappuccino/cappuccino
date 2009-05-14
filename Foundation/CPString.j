@@ -155,7 +155,7 @@ var CPStringHashes      = new objj_dictionary();
 */
 - (CPString)description
 {
-    return "<" + self.isa.name + " 0x" + [CPString stringWithHash:[self hash]] + " \"" + self + "\">";
+    return self;
 }
 
 /*!
