@@ -51,7 +51,7 @@ function exec(command)
 
 function printUsage()
 {
-    java.lang.System.out.println("usage: steam INPUT_FILE [OUTPUT_FILE]");    
+    java.lang.System.out.println("usage: nib2cib INPUT_FILE [OUTPUT_FILE] [-F /path/to/required/framework]");    
     java.lang.System.exit(1);
 }
 
