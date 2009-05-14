@@ -58,7 +58,7 @@ function compress(/*String*/ aCode, /*Object*/ flags, /*File*/ tmpFile)
     
     writer.close();
 
-    return exec(["java", "-jar", OBJJ_HOME + "/lib/shrinksafe.jar", "-c", tmpFile.getCanonicalPath()]);
+    return exec(["java", "-classpath", OBJJ_HOME + "/lib/js.jar" + ":" + OBJJ_HOME + "/lib/shrinksafe.jar", "org.dojotoolkit.shrinksafe.Main", tmpFile.getCanonicalPath(), "-escape-unicode"]);
 }
 
 //#define SET_CONTEXT(aFragment, aContext) aFragment.context = aContext
