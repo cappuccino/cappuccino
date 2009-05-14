@@ -443,7 +443,7 @@ CPSegmentSwitchTrackingMomentary = 2;
         contentInset = [self currentValueForThemeAttribute:@"content-inset"],
         bezelInset = [self currentValueForThemeAttribute:@"bezel-inset"],
         bounds = [self bounds];
-console.log("bounds: "+CPStringFromRect(bounds));
+
     if (aName === "left-segment-bezel")
     {
         return CGRectMake(bezelInset.left, bezelInset.top, contentInset.left, height);
@@ -456,7 +456,7 @@ console.log("bounds: "+CPStringFromRect(bounds));
     {
         var segment = parseInt(aName.substring("segment-bezel-".length), 10),
             frame = CGRectCreateCopy(_segments[segment].frame);
-console.log(segment+" "+CPStringFromRect(frame));
+
         if (segment == 0)
         {
             frame.origin.x += contentInset.left;
@@ -465,7 +465,7 @@ console.log(segment+" "+CPStringFromRect(frame));
 
         if (segment == _segments.length - 1)
             frame.size.width -= contentInset.right;
-console.log("finished "+CPStringFromRect(frame));
+
         return frame;
     }
     else if (aName.substring(0, "divider-bezel".length) == "divider-bezel")
@@ -622,7 +622,7 @@ console.log("finished "+CPStringFromRect(frame));
     // Update Segment Width
     segment.width = segmentWidth;
     segment.frame = [self frameForSegment:aSegment];;
-console.log("updated: "+CPStringFromRect(segment.frame));
+
     // Update Following Segments Widths
     var index = aSegment + 1;
     
