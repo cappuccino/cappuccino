@@ -459,24 +459,7 @@ var KAPPA = 4.0 * ((SQRT2 - 1.0) / 3.0);
 */
 function CGContextAddEllipseInRect(aContext, aRect)
 {
-	CGContextBeginPath(aContext);
-	
-	if (_CGRectGetWidth(aRect) == _CGRectGetHeight(aRect))
-	    CGContextAddArc(aContext, _CGRectGetMidX(aRect), _CGRectGetMidY(aRect), _CGRectGetWidth(aRect) / 2.0, 0.0, 2 * PI, YES);
-	else
-	{
-	    var axis = _CGSizeMake(_CGRectGetWidth(aRect) / 2.0, _CGRectGetHeight(aRect) / 2.0),
-	        center = _CGPointMake(_CGRectGetMinX(aRect) + axis.width, _CGRectGetMinY(aRect) + axis.height);
-	
-	    CGContextMoveToPoint(aContext, center.x, center.y - axis.height);
-	
-	    CGContextAddCurveToPoint(aContext, center.x + (KAPPA * axis.width), center.y - axis.height,  center.x + axis.width, center.y - (KAPPA * axis.height), center.x + axis.width, center.y);
-	    CGContextAddCurveToPoint(aContext, center.x + axis.width, center.y + (KAPPA * axis.height), center.x + (KAPPA * axis.width), center.y + axis.height, center.x, center.y + axis.height);
-	    CGContextAddCurveToPoint(aContext, center.x - (KAPPA * axis.width), center.y + axis.height, center.x - axis.width, center.y + (KAPPA * axis.height), center.x - axis.width, center.y);
-	    CGContextAddCurveToPoint(aContext, center.x - axis.width, center.y - (KAPPA * axis.height), center.x - (KAPPA * axis.width), center.y - axis.height, center.x, center.y - axis.height);
-	}
-	
-	CGContextClosePath(aContext);
+    CGContextAddPath(aContext, CGPathWithEllipseInRect(aRect));
 }
 
 /*!
@@ -589,93 +572,13 @@ function CGContextSetStrokeColor(aContext, aColor)
 */
 function CGContextFillRoundedRectangleInRect(aContext, aRect, aRadius, ne, se, sw, nw)
 {
-    var xMin = _CGRectGetMinX(aRect),
-        xMax = _CGRectGetMaxX(aRect),
-        yMin = _CGRectGetMinY(aRect),
-        yMax = _CGRectGetMaxY(aRect);
-
-    CGContextBeginPath(aContext);
-    CGContextMoveToPoint(aContext, xMin + aRadius, yMin);
-	
-	if (ne)
-	{
-		CGContextAddLineToPoint(aContext, xMax - aRadius, yMin);
-		CGContextAddCurveToPoint(aContext, xMax - aRadius, yMin, xMax, yMin, xMax, yMin + aRadius);
-	}
-	else
-		CGContextAddLineToPoint(aContext, xMax, yMin);
-	
-	if (se)
-	{
-		CGContextAddLineToPoint(aContext, xMax, yMax - aRadius);
-		CGContextAddCurveToPoint(aContext, xMax, yMax - aRadius, xMax, yMax, xMax - aRadius, yMax);
-	}
-	else
-		CGContextAddLineToPoint(aContext, xMax, yMax);
-	
-	if (sw)
-	{
-		CGContextAddLineToPoint(aContext, xMin + aRadius, yMax);
-		CGContextAddCurveToPoint(aContext, xMin + aRadius, yMax, xMin, yMax, xMin, yMax - aRadius);
-	}
-	else
-		CGContextAddLineToPoint(aContext, xMin, yMax);
-	
-	if (nw)
-	{
-		CGContextAddLineToPoint(aContext, xMin, yMin + aRadius);
-		CGContextAddCurveToPoint(aContext, xMin, yMin + aRadius, xMin, yMin, xMin + aRadius, yMin);
-	} else
-		CGContextAddLineToPoint(aContext, xMin, yMin);
-	
-	CGContextClosePath(aContext);
-	
+    CGContextAddPath(aContext, CGPathWithRoundedRectangleInRect(aRect, aRadius, aRadius, ne, se, sw, nw));	
     CGContextFillPath(aContext);
 }
 
 function CGContextStrokeRoundedRectangleInRect(aContext, aRect, aRadius, ne, se, sw, nw)
 {
-    var xMin = _CGRectGetMinX(aRect),
-        xMax = _CGRectGetMaxX(aRect),
-        yMin = _CGRectGetMinY(aRect),
-        yMax = _CGRectGetMaxY(aRect);
-
-    CGContextBeginPath(aContext);
-    CGContextMoveToPoint(aContext, xMin + aRadius, yMin);
-	
-	if (ne)
-	{
-		CGContextAddLineToPoint(aContext, xMax - aRadius, yMin);
-		CGContextAddCurveToPoint(aContext, xMax - aRadius, yMin, xMax, yMin, xMax, yMin + aRadius);
-	}
-	else
-		CGContextAddLineToPoint(aContext, xMax, yMin);
-	
-	if (se)
-	{
-		CGContextAddLineToPoint(aContext, xMax, yMax - aRadius);
-		CGContextAddCurveToPoint(aContext, xMax, yMax - aRadius, xMax, yMax, xMax - aRadius, yMax);
-	}
-	else
-		CGContextAddLineToPoint(aContext, xMax, yMax);
-	
-	if (sw)
-	{
-		CGContextAddLineToPoint(aContext, xMin + aRadius, yMax);
-		CGContextAddCurveToPoint(aContext, xMin + aRadius, yMax, xMin, yMax, xMin, yMax - aRadius);
-	}
-	else
-		CGContextAddLineToPoint(aContext, xMin, yMax);
-	
-	if (nw)
-	{
-		CGContextAddLineToPoint(aContext, xMin, yMin + aRadius);
-		CGContextAddCurveToPoint(aContext, xMin, yMin + aRadius, xMin, yMin, xMin + aRadius, yMin);
-	} else
-		CGContextAddLineToPoint(aContext, xMin, yMin);
-	
-	CGContextClosePath(aContext);
-	
+    CGContextAddPath(aContext, CGPathWithRoundedRectangleInRect(aRect, aRadius, aRadius, ne, se, sw, nw));		
     CGContextStrokePath(aContext);
 }
 

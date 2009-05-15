@@ -158,12 +158,15 @@ function CGPathAddPath(aPath, aTransform, anotherPath)
         
     for (; i < count; ++i)
     {
-        var element = anotherPath[i];
+        var element = anotherPath.elements[i];
         
-        aPath.elements[aPath.count++] = { type:element.type, points:element.point.slice() };
+        aPath.elements[aPath.count] = { type:element.type, x:element.x, y:element.y, 
+                                        cpx:element.cpx, cpy:element.cpy, 
+                                        radius:element.radius, startAngle:element.startAngle, endAngle:element.endAngle, 
+                                        cp1x:element.cp1x, cp1y:element.cp1y, cp2x:element.cp2x, cp2y:element.cp2y,
+                                        points: element.points ? element.points.slice() : nil};
         
-        if (element.type == kCGPathElementAddArc || element.type == kCGPathElementAddArcToPoint)
-            aPath.elements[aPath.count - 1].radius = element.radius;
+        aPath.count++
     }
     
     aPath.current = anotherPath.current;
@@ -229,6 +232,76 @@ function CGPathMoveToPoint(aPath, aTransform, x, y)
     }
     else
         aPath.elements[aPath.count++] = { type:kCGPathElementMoveToPoint, x:point.x, y:point.y };
+}
+
+function CGPathWithEllipseInRect(aRect)
+{
+    var path = CGPathCreateMutable();
+	
+	if (_CGRectGetWidth(aRect) == _CGRectGetHeight(aRect))
+        CGPathAddArc(path, nil, _CGRectGetMidX(aRect), _CGRectGetMidY(aRect), _CGRectGetWidth(aRect) / 2.0, 0.0, 2 * PI, YES);
+	else
+	{
+	    var axis = _CGSizeMake(_CGRectGetWidth(aRect) / 2.0, _CGRectGetHeight(aRect) / 2.0),
+	        center = _CGPointMake(_CGRectGetMinX(aRect) + axis.width, _CGRectGetMinY(aRect) + axis.height);
+
+        CGPathMoveToPoint(path, nil, center.x, center.y - axis.height);
+	
+	    CGPathAddCurveToPoint(path, nil, center.x + (KAPPA * axis.width), center.y - axis.height,  center.x + axis.width, center.y - (KAPPA * axis.height), center.x + axis.width, center.y);
+	    CGPathAddCurveToPoint(path, nil, center.x + axis.width, center.y + (KAPPA * axis.height), center.x + (KAPPA * axis.width), center.y + axis.height, center.x, center.y + axis.height);
+	    CGPathAddCurveToPoint(path, nil, center.x - (KAPPA * axis.width), center.y + axis.height, center.x - axis.width, center.y + (KAPPA * axis.height), center.x - axis.width, center.y);
+	    CGPathAddCurveToPoint(path, nil, center.x - axis.width, center.y - (KAPPA * axis.height), center.x - (KAPPA * axis.width), center.y - axis.height, center.x, center.y - axis.height);
+	}
+
+    CGPathCloseSubpath(path);
+
+    return path;
+}
+
+function CGPathWithRoundedRectangleInRect(aRect, xRadius, yRadius/*not currently supported*/, ne, se, sw, nw)
+{
+    var path = CGPathCreateMutable(),
+        xMin = _CGRectGetMinX(aRect),
+        xMax = _CGRectGetMaxX(aRect),
+        yMin = _CGRectGetMinY(aRect),
+        yMax = _CGRectGetMaxY(aRect);
+
+    CGPathMoveToPoint(path, nil, xMin + xRadius, yMin);
+	
+	if (ne)
+	{
+		CGPathAddLineToPoint(path, nil, xMax - xRadius, yMin);
+		CGPathAddCurveToPoint(path, nil, xMax - xRadius, yMin, xMax, yMin, xMax, yMin + xRadius);
+	}
+	else
+		CGPathAddLineToPoint(path, nil, xMax, yMin);
+	
+	if (se)
+	{
+		CGPathAddLineToPoint(path, nil, xMax, yMax - xRadius);
+		CGPathAddCurveToPoint(path, nil, xMax, yMax - xRadius, xMax, yMax, xMax - xRadius, yMax);
+	}
+	else
+		CGPathAddLineToPoint(path, nil, xMax, yMax);
+	
+	if (sw)
+	{
+		CGPathAddLineToPoint(path, nil, xMin + xRadius, yMax);
+		CGPathAddCurveToPoint(path, nil, xMin + xRadius, yMax, xMin, yMax, xMin, yMax - xRadius);
+	}
+	else
+		CGPathAddLineToPoint(path, nil, xMin, yMax);
+	
+	if (nw)
+	{
+		CGPathAddLineToPoint(path, nil, xMin, yMin + xRadius);
+		CGPathAddCurveToPoint(path, nil, xMin, yMin + xRadius, xMin, yMin, xMin + xRadius, yMin);
+	} else
+		CGPathAddLineToPoint(path, nil, xMin, yMin);
+
+    CGPathCloseSubpath(path);
+
+    return path;
 }
 
 function CGPathCloseSubpath(aPath)

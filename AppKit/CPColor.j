@@ -590,6 +590,28 @@ url("data:image/png;base64,BASE64ENCODEDDATA")  // if there is a pattern image
 
 @end
 
+@implementation CPColor (CoreGraphicsExtensions)
+
+- (void)set
+{
+    [self setFill];
+    [self setStroke];
+}
+
+- (void)setFill
+{
+    var ctx = [[CPGraphicsContext currentContext] graphicsPort];
+    CGContextSetFillColor(ctx, self);   
+}
+
+- (void)setStroke
+{
+    var ctx = [[CPGraphicsContext currentContext] graphicsPort];
+    CGContextSetStrokeColor(ctx, self);
+}
+
+@end
+
 var CPColorComponentsKey    = @"CPColorComponentsKey",
     CPColorPatternImageKey  = @"CPColorPatternImageKey";
 
