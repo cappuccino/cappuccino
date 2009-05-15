@@ -592,18 +592,27 @@ url("data:image/png;base64,BASE64ENCODEDDATA")  // if there is a pattern image
 
 @implementation CPColor (CoreGraphicsExtensions)
 
+/*! 
+    Set's the receiver to be the fill and stroke color in the current graphics context
+*/
 - (void)set
 {
     [self setFill];
     [self setStroke];
 }
 
+/*! 
+    Set's the receiver to be the fill color in the current graphics context
+*/
 - (void)setFill
 {
     var ctx = [[CPGraphicsContext currentContext] graphicsPort];
     CGContextSetFillColor(ctx, self);   
 }
 
+/*! 
+    Set's the receiver to be the stroke color in the current graphics context
+*/
 - (void)setStroke
 {
     var ctx = [[CPGraphicsContext currentContext] graphicsPort];

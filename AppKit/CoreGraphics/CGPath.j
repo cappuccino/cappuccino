@@ -36,10 +36,17 @@ kCGPathElementCloseSubpath          = 4;
 kCGPathElementAddArc                = 5;
 kCGPathElementAddArcToPoint         = 6;
 
+/*!
+    Returns a new CGPath object.
+*/
 function CGPathCreateMutable()
 {
     return { count:0, start:NULL, current:NULL, elements:[] };
 }
+
+/*!
+    Returns a copy of the given path object.
+*/
 
 function CGPathCreateMutableCopy(aPath)
 {
@@ -49,6 +56,10 @@ function CGPathCreateMutableCopy(aPath)
     
     return path;
 }
+
+/*!
+    Returns a copy of the given path object.
+*/
 
 function CGPathCreateCopy(aPath)
 {
