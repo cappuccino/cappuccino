@@ -72,7 +72,12 @@ file_d $STARTER_DOWNLOAD_README => [$STARTER_README] do
 end
 
 task :install => [:downloads] do
-    system %{cd #{$TOOLS_DOWNLOAD} && sudo sh ./install-tools }
+  if ENV['prefix']
+    prefix = "--prefix #{ENV['prefix']}"
+  else
+    prefix = ''
+  end
+  system %{cd #{$TOOLS_DOWNLOAD} && sudo sh ./install-tools #{prefix} }
 end
 
 task :test => [:build] do
