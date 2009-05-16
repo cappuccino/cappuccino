@@ -7,6 +7,7 @@
  */
 
 @import <Foundation/CPObject.j>
+@import <AppKit/CPRadio.j>
 
 
 @implementation AristoThemeDescriptor : CPObject
@@ -248,6 +249,42 @@
     [button setValue:[CPColor colorWithCalibratedRed:13.0/255.0 green:51.0/255.0 blue:70.0/255.0 alpha:1.0] forThemeAttribute:@"text-color" inState:CPThemeStateDefault];
 
     [button setValue:24.0 forThemeAttribute:@"default-height"];
+
+    return button;
+}
+
++ (CPRadioButton)themedRadioButton
+{
+    var button = [[CPRadio alloc] initWithFrame:CGRectMake(0.0, 0.0, 120.0, 17.0)];
+
+    [button setTitle:@"Hello Friend!"];
+
+    var bezelColor = PatternColor([_CPCibCustomResource imageResourceWithName:"radio-bezel.png" size:CGSizeMake(17.0, 17.0)]),
+        bezelColorSelected = PatternColor([_CPCibCustomResource imageResourceWithName:"radio-bezel-selected.png" size:CGSizeMake(17.0, 17.0)]);
+
+    [button setValue:CPLeftTextAlignment forThemeAttribute:@"alignment" inState:CPThemeStateBordered];
+    [button setValue:[CPFont boldSystemFontOfSize:12.0] forThemeAttribute:@"font" inState:CPThemeStateBordered];
+    [button setValue:CGInsetMake(0.0, 0.0, 0.0, 20.0) forThemeAttribute:@"content-inset" inState:CPThemeStateBordered];
+    [button setValue:bezelColor forThemeAttribute:@"bezel-color" inState:CPThemeStateBordered];    
+    [button setValue:bezelColorSelected forThemeAttribute:@"bezel-color" inState:CPThemeStateBordered | CPThemeStateSelected];
+
+    return button;
+}
+
++ (CPRadioButton)themedCheckBoxButton
+{
+    var button = [[CPCheckBox alloc] initWithFrame:CGRectMake(0.0, 0.0, 120.0, 17.0)];
+    
+    [button setTitle:@"Another option"];
+
+    var bezelColor = PatternColor([_CPCibCustomResource imageResourceWithName:"check-box-bezel.png" size:CGSizeMake(15.0, 15.0)]),
+        bezelColorSelected = PatternColor([_CPCibCustomResource imageResourceWithName:"check-box-bezel-selected.png" size:CGSizeMake(15.0, 16.0)]);
+    
+    [button setValue:CPLeftTextAlignment forThemeAttribute:@"alignment" inState:CPThemeStateBordered];
+    [button setValue:[CPFont boldSystemFontOfSize:12.0] forThemeAttribute:@"font" inState:CPThemeStateBordered];
+    [button setValue:CGInsetMake(0.0, 0.0, 0.0, 20.0) forThemeAttribute:@"content-inset" inState:CPThemeStateBordered];
+    [button setValue:bezelColor forThemeAttribute:@"bezel-color" inState:CPThemeStateBordered];    
+    [button setValue:bezelColorSelected forThemeAttribute:@"bezel-color" inState:CPThemeStateBordered | CPThemeStateSelected];
 
     return button;
 }
