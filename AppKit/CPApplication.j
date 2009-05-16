@@ -474,6 +474,16 @@ CPRunContinuesResponse  = -1002;
     _mainMenu = aMenu;
 }
 
+- (void)orderFrontStandardAboutPanel:(id)aSender
+{
+    [self orderFrontStandardAboutPanelWithOptions:nil];
+}
+
+- (void)orderFrontStandardAboutPanelWithOptions:(CPDictionary)aDictionary
+{
+    // FIXME: Implement.
+}
+
 // Posting Actions
 /*!
     Tries to perform the action with an argument. Performs

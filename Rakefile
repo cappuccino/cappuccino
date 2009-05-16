@@ -72,12 +72,12 @@ file_d $STARTER_DOWNLOAD_README => [$STARTER_README] do
 end
 
 task :install => [:downloads] do
-  if ENV['prefix']
-    prefix = "--prefix #{ENV['prefix']}"
-  else
-    prefix = ''
-  end
-  system %{cd #{$TOOLS_DOWNLOAD} && sudo sh ./install-tools #{prefix} }
+    if ENV['prefix']
+        prefix = "--prefix #{ENV['prefix']}"
+    else
+        prefix = ''
+    end
+    system %{cd #{$TOOLS_DOWNLOAD} && sudo sh ./install-tools #{prefix} }
 end
 
 task :test => [:build] do
@@ -101,12 +101,12 @@ task :docs do
 end
 
 task :submodules do
-  if executable_exists? "git"
-    system %{git submodule init}
-    system %{git submodule update}
-  else
-    puts "Git not installed"
-  end
+    if executable_exists? "git"
+        system %{cd .. && git submodule update --init}
+    else
+        puts "Git not installed"
+        rake abort
+    end
 end
 
 =begin

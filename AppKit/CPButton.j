@@ -46,9 +46,9 @@ CPImageOverlaps = 6;
 
 /*  @group CPButtonState */
 
-CPOnState       = 1;
-CPOffState      = 0;
-CPMixedState    = -1;
+CPOnState                       = 1;
+CPOffState                      = 0;
+CPMixedState                    = -1;
 
 /* @group CPBezelStyle */
 
@@ -70,24 +70,30 @@ CPHUDBezelStyle                 = -1;
 
 
 /* @group CPButtonType */
-CPMomentaryLightButton   = 0;
-CPPushOnPushOffButton    = 1;
-CPToggleButton           = 2;
-CPSwitchButton           = 3;
-CPRadioButton            = 4;
-CPMomentaryChangeButton  = 5;
-CPOnOffButton            = 6;
-CPMomentaryPushInButton  = 7;
-CPMomentaryPushButton    = 0;
-CPMomentaryLight         = 7;
+CPMomentaryLightButton  = 0;
+CPPushOnPushOffButton   = 1;
+CPToggleButton          = 2;
+CPSwitchButton          = 3; // Deprecated, use CPCheckBox instead.
+CPRadioButton           = 4; // Deprecated, use CPRadio instead.
+CPMomentaryChangeButton = 5;
+CPOnOffButton           = 6;
+CPMomentaryPushInButton = 7;
+CPMomentaryPushButton   = 0;
+CPMomentaryLight        = 7;
 
+CPNoButtonMask              = 0;
+CPContentsButtonMask        = 1;
+CPPushInButtonMask          = 2;
+CPGrayButtonMask            = 4;
+CPBackgroundButtonMask      = 8;
 
-var CPHUDBezelStyleTextColor = nil;
+CPNoCellMask                = CPNoButtonMask;
+CPContentsCellMask          = CPContentsButtonMask;
+CPPushInCellMask            = CPPushInButtonMask;
+CPChangeGrayCellMask        = CPGrayButtonMask;
+CPChangeBackgroundCellMask  = CPBackgroundButtonMask;
 
-var _CPButtonClassName                          = nil,
-    _CPButtonBezelStyleSizes                    = {},
-    _CPButtonBezelStyleIdentifiers              = {},
-    _CPButtonBezelStyleHighlightedIdentifier    = @"Highlighted";
+CPButtonStateMixed  = CPThemeState("mixed");
 
 /*! @class CPButton
 
@@ -97,8 +103,6 @@ var _CPButtonClassName                          = nil,
 */
 @implementation CPButton : CPControl
 {
-    int                 _tag;
-    int                 _state;
     BOOL                _allowsMixedState;
     
     CPString            _title;
@@ -107,26 +111,32 @@ var _CPButtonClassName                          = nil,
     CPImage             _image;
     CPImage             _alternateImage;
 
-    // Layout Views
-    CPView              _bezelView;
-    _CPImageAndTextView _contentView;
-    
+    CPInteger           _showsStateBy;
+    CPInteger           _highlightsBy;
+    BOOL                _imageDimsWhenDisabled;
+
     // NS-style Display Properties
     CPBezelStyle        _bezelStyle;
-    BOOL                _isBordered;
     CPControlSize       _controlSize;
 }
 
 + (id)standardButtonWithTitle:(CPString)aTitle
 {
+    var button = [[CPButton alloc] init];
+
+    [button setTitle:aTitle];
+
+    return button;
 }
 
-+ (id)standardCheckboxWithTitle:(CPString)aTitle
++ (id)standardCheckBoxWithTitle:(CPString)aTitle
 {
+    return [CPCheckBox standardButtonWithTitle:aTitle];
 }
 
-- (id)standardRadioButtonWithTitle:(CPString)aTitle
+- (id)standardRadioWithTitle:(CPString)aTitle
 {
+    return [CPRadio standardButtonWithTitle:aTitle];
 }
 
 + (CPString)themeClass
@@ -176,40 +186,84 @@ var _CPButtonClassName                          = nil,
 */
 - (void)setAllowsMixedState:(BOOL)aFlag
 {
+    aFlag = !!aFlag;
+
+    if (_allowsMixedState === aFlag)
+        return;
+
     _allowsMixedState = aFlag;
+
+    if (!_allowsMixedState)
+        [self unsetThemeState:CPButtonStateMixed];
 }
 
-/*!
-    Sets the button to its next state.
-*/
-- (int)nextState
+- (void)setObjectValue:(id)anObjectValue
 {
-    if (_state == CPOffState)
-        return CPOnState;
-    else
-        return (_state >= CPOnState && _allowsMixedState) ? CPMixedState : CPOffState;
+    if (!anObjectValue || anObjectValue === @"" || ([anObjectValue intValue] === 0))
+        anObjectValue = CPOffState;
+
+    else if (![anObjectValue isKindOfClass:[CPNumber class]])
+        anObjectValue = CPOnState;
+
+    else if (anObjectValue > CPOnState)
+        anObjectValue = CPOnState
+
+    else if (anObjectValue < CPOffState)
+        if ([self allowsMixedState])
+            anObjectValue = CPMixedState;
+
+        else
+            anObjectValue = CPOnState;
+
+    [super setObjectValue:anObjectValue];
+
+    switch ([self objectValue])
+    {
+        case CPMixedState:  [self unsetThemeState:CPThemeStateSelected];
+                            [self setThemeState:CPButtonStateMixed];
+                            break;
+
+        case CPOnState:     [self unsetThemeState:CPButtonStateMixed];
+                            [self setThemeState:CPThemeStateSelected];
+                            break;
+
+        case CPOffState:    [self unsetThemeState:CPThemeStateSelected | CPButtonStateMixed];
+    }
+}
+
+- (CPInteger)nextState
+{
+   if ([self allowsMixedState])
+   {
+      var value = [self state];
+
+      return value - ((value === -1) ? -2 : 1);
+   }
+
+    return 1 - [self state];
 }
 
 - (void)setNextState
 {
     [self setState:[self nextState]];
 }
+
 /*!
     Sets the button's state to <code>aState</code>.
     @param aState Possible states are any of the CPButton globals:
     <code>CPOffState, CPOnState, CPMixedState</code>
 */
-- (void)setState:(int)aState
+- (void)setState:(CPInteger)aState
 {
-    _state = aState;
+    [self setIntValue:aState];
 }
 
 /*!
     Returns the button's current state
 */
-- (int)state
+- (CPInteger)state
 {
-    return _state;
+    return [self intValue];
 }
 
 - (void)setTitle:(CPString)aTitle
@@ -283,32 +337,96 @@ var _CPButtonClassName                          = nil,
     return _alternateImage;
 }
 
-/*!
-    Highlights the receiver based on <code>aFlag</code>.
-    @param If <code>YES</code> the button will highlight, <code>NO</code> the button will unhighlight.
-*/
-- (void)highlight:(BOOL)aFlag
+- (void)setShowsStateBy:(CPInteger)aMask
 {
-    [super highlight:aFlag];
-    
-    [self drawBezelWithHighlight:aFlag];
+    if (_showsStateBy === aMask)
+        return;
+
+    _showsStateBy = aMask;
+
+    [self setNeedsDisplay:YES];
+    [self setNeedsLayout];
 }
 
-/*!
-    Sets button's tag.
-    @param aTag the button's new tag
-*/
-- (void)setTag:(int)aTag
+- (CPInteger)showsStateBy
 {
-    _tag = aTag;
+    return _showsStateBy;
 }
 
-/*!
-    Returns the button's tag.
-*/
-- (int)tag
+- (void)setHighlightsBy:(CPInteger)aMask
 {
-    return _tag;
+    if (_highlightsBy === aMask)
+        return;
+
+    _highlightsBy = aMask;
+
+    if ([self hasThemeState:CPThemeStateHighlighted])
+    {
+        [self setNeedsDisplay:YES];
+        [self setNeedsLayout];
+    }
+}
+
+- (void)setButtonType:(CPButtonType)aButtonType
+{
+    switch (buttonType)
+    {
+        case CPMomentaryLightButton:    [self setHighlightsBy:CPChangeBackgroundCellMask];
+                                        [self setShowsStateBy:CPNoCellMask];
+                                        break;
+
+        case CPMomentaryPushInButton:   [self setHighlightsBy:CPPushInCellMask | CPChangeGrayCellMask];
+                                        [self setShowsStateBy:CPNoCellMask];
+                                        break;
+
+        case CPMomentaryChangeButton:   [self setHighlightsBy:CPContentsCellMask];
+                                        [self setShowsStateBy:CPNoCellMask];
+                                        break;
+
+        case CPPushOnPushOffButton:     [self setHighlightsBy:CPPushInCellMask | CPChangeGrayCellMask];
+                                        [self setShowsStateBy:CPChangeBackgroundCellMask];
+                                        break;
+
+        case CPOnOffButton:             [self setHighlightsBy:CPChangeBackgroundCellMask];
+                                        [self setShowsStateBy:CPChangeBackgroundCellMask];
+                                        break;
+
+        case CPToggleButton:            [self setHighlightsBy:CPPushInCellMask | NSContentsCellMask];
+                                        [self setShowsStateBy:CPContentsCellMask];
+                                        break;
+
+        case CPSwitchButton:            [CPException raise:CPInvalidArgumentException 
+                                                    reason:"The CPSwitchButton type is not supported in Cappuccino, use the CPCheckBox class instead."];
+
+        case CPRadioButton:             [CPException raise:CPInvalidArgumentException 
+                                                    reason:"The CPRadioButton type is not supported in Cappuccino, use the CPRadio class instead."];
+
+        default:                        [CPException raise:CPInvalidArgumentException 
+                                                    reason:"Unknown button type."];
+    }
+
+    [self setImageDimsWhenDisabled:YES];
+}
+
+- (void)setImageDimsWhenDisabled:(BOOL)imageShouldDimWhenDisabled
+{
+    imageShouldDimWhenDisabled = !!imageShouldDimWhenDisabled;
+
+    if (_imageDimsWhenDisabled === imageShouldDimWhenDisabled)
+        return;
+
+    _imageDimsWhenDisabled = imageShouldDimWhenDisabled;
+
+    if (_imageDimsWhenDisabled)
+    {
+        [self setNeedsDisplay:YES];
+        [self setNeedsLayout];
+    }
+}
+
+- (BOOL)imageDimsWhenDisabled
+{
+    return _imageDimsWhenDisabled;
 }
 
 - (BOOL)startTrackingAt:(CGPoint)aPoint
@@ -321,35 +439,11 @@ var _CPButtonClassName                          = nil,
 - (void)stopTracking:(CGPoint)lastPoint at:(CGPoint)aPoint mouseIsUp:(BOOL)mouseIsUp
 {
     [self highlight:NO];
-    
+
     [super stopTracking:lastPoint at:aPoint mouseIsUp:mouseIsUp];
-}
 
-/* @ignore */
-- (void)drawBezelWithHighlight:(BOOL)shouldHighlight
-{   return;
-    _bezelBorderNeedsUpdate = ![self window];
-    
-    if (_bezelBorderNeedsUpdate)
-        return;
-    
-    [self setBackgroundColorWithName:shouldHighlight ? CPControlHighlightedBackgroundColor : CPControlNormalBackgroundColor];
-}
-
-- (CPView)createBezelView
-{
-    var view = [[CPView alloc] initWithFrame:_CGRectMakeZero()];
-
-    [view setHitTests:NO];
-    
-    return view;
-}
-
-- (CPView)createContentView
-{
-    var view = [[_CPImageAndTextView alloc] initWithFrame:_CGRectMakeZero()];
-    
-    return view;
+    if (mouseIsUp && CGRectContainsPoint([self bounds], aPoint))
+        [self setNextState];
 }
 
 - (CGRect)contentRectForBounds:(CGRect)bounds
@@ -494,15 +588,8 @@ var CPButtonImageKey                = @"CPButtonImageKey",
     CPButtonAlternateImageKey       = @"CPButtonAlternateImageKey",
     CPButtonTitleKey                = @"CPButtonTitleKey",
     CPButtonAlternateTitleKey       = @"CPButtonAlternateTitleKey",
-    CPButtonContentInsetKey         = @"CPButtonContentInsetKey",
-    CPButtonBezelInsetKey           = @"CPButtonBezelInsetKey",
-    CPButtonBezelColorKey           = @"CPButtonBezelColorKey",
-    CPButtonImageAndTitleViewKey    = @"CPButtonImageAndTitleViewKey",
-    CPButtonImagePositionKey        = @"CPButtonImagePositionKey",
-    CPButtonImageScalingKey         = @"CPButtonImageScalingKey",
     CPButtonIsBorderedKey           = @"CPButtonIsBorderedKey",
-    CPButtonBezelStyleKey           = @"CPButtonBezelStyleKey",
-    CPButtonImageAndTitleViewKey    = @"CPButtonImageAndTitleViewKey";
+    CPButtonBezelStyleKey           = @"CPButtonBezelStyleKey";
 
 @implementation CPButton (CPCoding)
 
@@ -549,3 +636,6 @@ var CPButtonImageKey                = @"CPButtonImageKey",
 }
 
 @end
+
+@import "CPCheckBox.j"
+@import "CPRadio.j"

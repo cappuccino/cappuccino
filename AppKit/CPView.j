@@ -552,9 +552,33 @@ var DOMElementPrototype         = nil,
     return enclosingMenuItem;*/
 }
 
-- (int)tag
+- (void)setTag:(CPInteger)aTag
+{
+    _tag = aTag;
+}
+
+- (CPInteger)tag
 {
     return _tag;
+}
+
+- (void)viewWithTag:(CPInteger)aTag
+{
+    if ([self tag] === aTag)
+        return self;
+
+    var index = 0,
+        count = _subviews.length;
+
+    for (; index < count; ++index)
+    {
+        var view = [_subviews[index] viewWithTag:aTag];
+
+        if (view)
+            return view;
+    }
+
+    return nil;
 }
 
 /*!
@@ -1930,6 +1954,11 @@ setBoundsOrigin:
 @implementation CPView (Theming)
 #pragma mark Theme States
 
+- (unsigned)themeState
+{
+    return _themeState;
+}
+
 - (BOOL)hasThemeState:(CPThemeState)aState
 {
     return !!(_themeState & ((typeof aState === "string") ? CPThemeState(aState) : aState));
@@ -2192,7 +2221,12 @@ var CPViewAutoresizingMaskKey       = @"CPViewAutoresizingMask",
             _tag = [aCoder decodeIntForKey:CPViewTagKey];
         
         _window = [aCoder decodeObjectForKey:CPViewWindowKey];
-        _subviews = [aCoder decodeObjectForKey:CPViewSubviewsKey];
+
+        if ([aCoder containsValueForKey:CPViewSubviewsKey])
+            _subviews = [aCoder decodeObjectForKey:CPViewSubviewsKey];
+        else
+            _subviews = [];
+
         _superview = [aCoder decodeObjectForKey:CPViewSuperviewKey];
         
         _autoresizingMask = [aCoder decodeIntForKey:CPViewAutoresizingMaskKey] || 0;
@@ -2223,7 +2257,7 @@ var CPViewAutoresizingMaskKey       = @"CPViewAutoresizingMask",
         [self setBackgroundColor:[aCoder decodeObjectForKey:CPViewBackgroundColorKey]];
         
         _theme = [CPTheme defaultTheme];
-        _themeState = [aCoder decodeIntForKey:CPViewThemeStateKey];
+        _themeState = CPThemeState([aCoder decodeIntForKey:CPViewThemeStateKey]);
         _themeAttributes = {};
 
         var theClass = [self class],
@@ -2257,14 +2291,17 @@ var CPViewAutoresizingMaskKey       = @"CPViewAutoresizingMask",
 {
     [super encodeWithCoder:aCoder];
     
-    if (_tag != -1)
+    if (_tag !== -1)
         [aCoder encodeInt:_tag forKey:CPViewTagKey];
     
     [aCoder encodeRect:_frame forKey:CPViewFrameKey];
     [aCoder encodeRect:_bounds forKey:CPViewBoundsKey];
     
     [aCoder encodeConditionalObject:_window forKey:CPViewWindowKey];
-    [aCoder encodeObject:_subviews forKey:CPViewSubviewsKey];
+
+    if (_subviews.length > 0)
+        [aCoder encodeObject:_subviews forKey:CPViewSubviewsKey];
+
     [aCoder encodeConditionalObject:_superview forKey:CPViewSuperviewKey];
         
     [aCoder encodeInt:_autoresizingMask forKey:CPViewAutoresizingMaskKey];
@@ -2281,7 +2318,7 @@ var CPViewAutoresizingMaskKey       = @"CPViewAutoresizingMask",
     [aCoder encodeConditionalObject:[self nextKeyView] forKey:CPViewNextKeyViewKey];
     [aCoder encodeConditionalObject:[self previousKeyView] forKey:CPViewPreviousKeyViewKey];
 
-    [aCoder encodeInt:_themeState forKey:CPViewThemeStateKey];
+    [aCoder encodeInt:CPThemeStateName(_themeState) forKey:CPViewThemeStateKey];
 
     for (var attributeName in _themeAttributes)
         if (_themeAttributes.hasOwnProperty(attributeName))
