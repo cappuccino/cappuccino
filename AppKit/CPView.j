@@ -2221,7 +2221,12 @@ var CPViewAutoresizingMaskKey       = @"CPViewAutoresizingMask",
             _tag = [aCoder decodeIntForKey:CPViewTagKey];
         
         _window = [aCoder decodeObjectForKey:CPViewWindowKey];
-        _subviews = [aCoder decodeObjectForKey:CPViewSubviewsKey];
+
+        if ([aCoder containsValueForKey:CPViewSubviewsKey])
+            _subviews = [aCoder decodeObjectForKey:CPViewSubviewsKey];
+        else
+            _subviews = [];
+
         _superview = [aCoder decodeObjectForKey:CPViewSuperviewKey];
         
         _autoresizingMask = [aCoder decodeIntForKey:CPViewAutoresizingMaskKey] || 0;
@@ -2252,7 +2257,7 @@ var CPViewAutoresizingMaskKey       = @"CPViewAutoresizingMask",
         [self setBackgroundColor:[aCoder decodeObjectForKey:CPViewBackgroundColorKey]];
         
         _theme = [CPTheme defaultTheme];
-        _themeState = [aCoder decodeIntForKey:CPViewThemeStateKey];
+        _themeState = CPThemeState([aCoder decodeIntForKey:CPViewThemeStateKey]);
         _themeAttributes = {};
 
         var theClass = [self class],
@@ -2286,14 +2291,17 @@ var CPViewAutoresizingMaskKey       = @"CPViewAutoresizingMask",
 {
     [super encodeWithCoder:aCoder];
     
-    if (_tag != -1)
+    if (_tag !== -1)
         [aCoder encodeInt:_tag forKey:CPViewTagKey];
     
     [aCoder encodeRect:_frame forKey:CPViewFrameKey];
     [aCoder encodeRect:_bounds forKey:CPViewBoundsKey];
     
     [aCoder encodeConditionalObject:_window forKey:CPViewWindowKey];
-    [aCoder encodeObject:_subviews forKey:CPViewSubviewsKey];
+
+    if (_subviews.length > 0)
+        [aCoder encodeObject:_subviews forKey:CPViewSubviewsKey];
+
     [aCoder encodeConditionalObject:_superview forKey:CPViewSuperviewKey];
         
     [aCoder encodeInt:_autoresizingMask forKey:CPViewAutoresizingMaskKey];
@@ -2310,7 +2318,7 @@ var CPViewAutoresizingMaskKey       = @"CPViewAutoresizingMask",
     [aCoder encodeConditionalObject:[self nextKeyView] forKey:CPViewNextKeyViewKey];
     [aCoder encodeConditionalObject:[self previousKeyView] forKey:CPViewPreviousKeyViewKey];
 
-    [aCoder encodeInt:_themeState forKey:CPViewThemeStateKey];
+    [aCoder encodeInt:CPThemeStateName(_themeState) forKey:CPViewThemeStateKey];
 
     for (var attributeName in _themeAttributes)
         if (_themeAttributes.hasOwnProperty(attributeName))
