@@ -552,9 +552,33 @@ var DOMElementPrototype         = nil,
     return enclosingMenuItem;*/
 }
 
-- (int)tag
+- (void)setTag:(CPInteger)aTag
+{
+    _tag = aTag;
+}
+
+- (CPInteger)tag
 {
     return _tag;
+}
+
+- (void)viewWithTag:(CPInteger)aTag
+{
+    if ([self tag] === aTag)
+        return self;
+
+    var index = 0,
+        count = _subviews.length;
+
+    for (; index < count; ++index)
+    {
+        var view = [_subviews[index] viewWithTag:aTag];
+
+        if (view)
+            return view;
+    }
+
+    return nil;
 }
 
 /*!
@@ -1929,6 +1953,11 @@ setBoundsOrigin:
 
 @implementation CPView (Theming)
 #pragma mark Theme States
+
+- (unsigned)themeState
+{
+    return _themeState;
+}
 
 - (BOOL)hasThemeState:(CPThemeState)aState
 {

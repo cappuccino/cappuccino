@@ -84,11 +84,6 @@ CPMomentaryLight         = 7;
 
 var CPHUDBezelStyleTextColor = nil;
 
-var _CPButtonClassName                          = nil,
-    _CPButtonBezelStyleSizes                    = {},
-    _CPButtonBezelStyleIdentifiers              = {},
-    _CPButtonBezelStyleHighlightedIdentifier    = @"Highlighted";
-
 /*! @class CPButton
 
     CPButton is a subclass of CPControl that
@@ -97,8 +92,6 @@ var _CPButtonClassName                          = nil,
 */
 @implementation CPButton : CPControl
 {
-    int                 _tag;
-    int                 _state;
     BOOL                _allowsMixedState;
     
     CPString            _title;
@@ -107,10 +100,6 @@ var _CPButtonClassName                          = nil,
     CPImage             _image;
     CPImage             _alternateImage;
 
-    // Layout Views
-    CPView              _bezelView;
-    _CPImageAndTextView _contentView;
-    
     // NS-style Display Properties
     CPBezelStyle        _bezelStyle;
     BOOL                _isBordered;
@@ -179,21 +168,44 @@ var _CPButtonClassName                          = nil,
     _allowsMixedState = aFlag;
 }
 
-/*!
-    Sets the button to its next state.
-*/
+- (void)setObjectValue:(id)anObjectValue
+{
+    if (!anObjectValue || anObjectValue === @"")
+        anObjectValue = CPOffState;
+
+    else if (![anObjectValue isKindOfClass:[CPNumber class]])
+        anObjectValue = CPOnState;
+
+    else if (aState > CPOnState)
+        anObjectValue = CPOnState
+
+    else if (anObjectValue < CPOffState)
+        if ([self allowsMixedState])
+            anObjectValue = CPMixedState;
+
+        else
+            anObjectValue = CPOnState;
+
+    [super setObjectValue:anObjectValue];
+}
+
 - (int)nextState
 {
-    if (_state == CPOffState)
-        return CPOnState;
-    else
-        return (_state >= CPOnState && _allowsMixedState) ? CPMixedState : CPOffState;
+   if ([self allowsMixedState])
+   {
+      var value = [self state];
+
+      return value - ((value === -1) ? -2 : 1);
+   }
+
+    return 1 - [self state];
 }
 
 - (void)setNextState
 {
     [self setState:[self nextState]];
 }
+
 /*!
     Sets the button's state to <code>aState</code>.
     @param aState Possible states are any of the CPButton globals:
@@ -201,7 +213,7 @@ var _CPButtonClassName                          = nil,
 */
 - (void)setState:(int)aState
 {
-    _state = aState;
+    [self setIntValue:aState];
 }
 
 /*!
@@ -209,7 +221,7 @@ var _CPButtonClassName                          = nil,
 */
 - (int)state
 {
-    return _state;
+    return [self intValue];
 }
 
 - (void)setTitle:(CPString)aTitle
@@ -283,34 +295,6 @@ var _CPButtonClassName                          = nil,
     return _alternateImage;
 }
 
-/*!
-    Highlights the receiver based on <code>aFlag</code>.
-    @param If <code>YES</code> the button will highlight, <code>NO</code> the button will unhighlight.
-*/
-- (void)highlight:(BOOL)aFlag
-{
-    [super highlight:aFlag];
-    
-    [self drawBezelWithHighlight:aFlag];
-}
-
-/*!
-    Sets button's tag.
-    @param aTag the button's new tag
-*/
-- (void)setTag:(int)aTag
-{
-    _tag = aTag;
-}
-
-/*!
-    Returns the button's tag.
-*/
-- (int)tag
-{
-    return _tag;
-}
-
 - (BOOL)startTrackingAt:(CGPoint)aPoint
 {
     [self highlight:YES];
@@ -323,33 +307,6 @@ var _CPButtonClassName                          = nil,
     [self highlight:NO];
     
     [super stopTracking:lastPoint at:aPoint mouseIsUp:mouseIsUp];
-}
-
-/* @ignore */
-- (void)drawBezelWithHighlight:(BOOL)shouldHighlight
-{   return;
-    _bezelBorderNeedsUpdate = ![self window];
-    
-    if (_bezelBorderNeedsUpdate)
-        return;
-    
-    [self setBackgroundColorWithName:shouldHighlight ? CPControlHighlightedBackgroundColor : CPControlNormalBackgroundColor];
-}
-
-- (CPView)createBezelView
-{
-    var view = [[CPView alloc] initWithFrame:_CGRectMakeZero()];
-
-    [view setHitTests:NO];
-    
-    return view;
-}
-
-- (CPView)createContentView
-{
-    var view = [[_CPImageAndTextView alloc] initWithFrame:_CGRectMakeZero()];
-    
-    return view;
 }
 
 - (CGRect)contentRectForBounds:(CGRect)bounds
@@ -494,15 +451,8 @@ var CPButtonImageKey                = @"CPButtonImageKey",
     CPButtonAlternateImageKey       = @"CPButtonAlternateImageKey",
     CPButtonTitleKey                = @"CPButtonTitleKey",
     CPButtonAlternateTitleKey       = @"CPButtonAlternateTitleKey",
-    CPButtonContentInsetKey         = @"CPButtonContentInsetKey",
-    CPButtonBezelInsetKey           = @"CPButtonBezelInsetKey",
-    CPButtonBezelColorKey           = @"CPButtonBezelColorKey",
-    CPButtonImageAndTitleViewKey    = @"CPButtonImageAndTitleViewKey",
-    CPButtonImagePositionKey        = @"CPButtonImagePositionKey",
-    CPButtonImageScalingKey         = @"CPButtonImageScalingKey",
     CPButtonIsBorderedKey           = @"CPButtonIsBorderedKey",
-    CPButtonBezelStyleKey           = @"CPButtonBezelStyleKey",
-    CPButtonImageAndTitleViewKey    = @"CPButtonImageAndTitleViewKey";
+    CPButtonBezelStyleKey           = @"CPButtonBezelStyleKey";
 
 @implementation CPButton (CPCoding)
 
