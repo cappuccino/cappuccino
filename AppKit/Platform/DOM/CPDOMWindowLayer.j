@@ -61,6 +61,9 @@
 
 - (void)removeWindow:(CPWindow)aWindow
 {
+    if (!aWindow._isVisible)
+        return;
+
     var index = aWindow._index,
         count = _windows.length - 1;
 

@@ -1,6 +1,3 @@
-
-importClass(java.lang.System);
-importClass(java.io.File);
 importClass(java.io.FileWriter);
 importClass(java.io.FileOutputStream);
 importClass(java.io.BufferedWriter);
@@ -10,11 +7,11 @@ importClass(java.io.OutputStreamWriter);
 
 function main()
 {
-    if (arguments.length < 1)
+    if (system.args.length < 1)
         return printUsage();
 
     var index = 0,
-        count = arguments.length,
+        count = system.args.length,
         
         shouldSymbolicallyLink = false,
         justFrameworks = false,
@@ -24,9 +21,9 @@ function main()
 
     for (; index < count; ++index)
     {
-        var argument = arguments[index];
+        var argument = system.args[index];
         
-        switch (arguments[index])
+        switch (system.args[index])
         {
             case "-l":              shouldSymbolicallyLink = true;
                                     break;
@@ -36,7 +33,7 @@ function main()
                                     return;
             
             case "-t":
-            case "--template":      template = arguments[++index];
+            case "--template":      template = system.args[++index];
                                     break;
                                 
             case "-f":
@@ -47,8 +44,8 @@ function main()
         }
     }
 
-    var sourceTemplate = new File(OBJJ_HOME + "/lib/capp/Resources/Templates/" + template),
-        destinationProject = new File(destination);
+    var sourceTemplate = new java.io.File(OBJJ_HOME + "/lib/capp/Resources/Templates/" + template),
+        destinationProject = new java.io.File(destination);
     
     if (!destinationProject.exists())
     {
@@ -79,49 +76,52 @@ function main()
 
 function createFrameworksInFile(/*File*/ aFile, /*Boolean*/ shouldSymbolicallyLink)
 {
-        var destinationFrameworks = new File(aFile.getCanonicalPath()+ "/Frameworks"),
-            destinationDebugFrameworks = new File(aFile.getCanonicalPath() + "/Frameworks/Debug");
+        var destinationFrameworks = new java.io.File(aFile.getCanonicalPath()+ "/Frameworks"),
+            destinationDebugFrameworks = new java.io.File(aFile.getCanonicalPath() + "/Frameworks/Debug");
 
         if (!shouldSymbolicallyLink)
         {
-            var sourceFrameworks = new File(OBJJ_HOME + "/lib/Frameworks");
+            var sourceFrameworks = new java.io.File(OBJJ_HOME + "/lib/Frameworks");
         
             exec(["cp", "-vR", sourceFrameworks.getCanonicalPath(), destinationFrameworks.getCanonicalPath()], true);
 
             return true;
         }
         
-        var STEAM_BUILD = System.getenv("STEAM_BUILD");
+        var BUILD = system.env["CAPP_BUILD"] || system.env["STEAM_BUILD"];
+        
+        if (!BUILD)
+            throw "CAPP_BUILD or STEAM_BUILD must be defined";
         
         // Release Frameworks
-        new File(destinationFrameworks).mkdir();
+        new java.io.File(destinationFrameworks).mkdir();
         
-        exec(["ln", "-s",   new File(STEAM_BUILD + "/Release/Objective-J").getCanonicalPath(),
-                            new File(aFile.getCanonicalPath() + "/Frameworks/Objective-J").getCanonicalPath()], true);
+        exec(["ln", "-s",   new java.io.File(BUILD + "/Release/Objective-J").getCanonicalPath(),
+                            new java.io.File(aFile.getCanonicalPath() + "/Frameworks/Objective-J").getCanonicalPath()], true);
 
-        exec(["ln", "-s",   new File(STEAM_BUILD + "/Release/Foundation").getCanonicalPath(),
-                            new File(aFile.getCanonicalPath() + "/Frameworks/Foundation").getCanonicalPath()], true);
+        exec(["ln", "-s",   new java.io.File(BUILD + "/Release/Foundation").getCanonicalPath(),
+                            new java.io.File(aFile.getCanonicalPath() + "/Frameworks/Foundation").getCanonicalPath()], true);
 
-        exec(["ln", "-s",   new File(STEAM_BUILD + "/Release/AppKit").getCanonicalPath(),
-                            new File(aFile.getCanonicalPath() + "/Frameworks/AppKit").getCanonicalPath()], true);
+        exec(["ln", "-s",   new java.io.File(BUILD + "/Release/AppKit").getCanonicalPath(),
+                            new java.io.File(aFile.getCanonicalPath() + "/Frameworks/AppKit").getCanonicalPath()], true);
 
         // Debug Frameworks
-        new File(destinationDebugFrameworks).mkdir();
+        new java.io.File(destinationDebugFrameworks).mkdir();
         
-        exec(["ln", "-s",   new File(STEAM_BUILD + "/Debug/Objective-J").getCanonicalPath(),
-                            new File(aFile.getCanonicalPath() + "/Frameworks/Debug/Objective-J").getCanonicalPath()], true);
+        exec(["ln", "-s",   new java.io.File(BUILD + "/Debug/Objective-J").getCanonicalPath(),
+                            new java.io.File(aFile.getCanonicalPath() + "/Frameworks/Debug/Objective-J").getCanonicalPath()], true);
 
-        exec(["ln", "-s",   new File(STEAM_BUILD + "/Debug/Foundation").getCanonicalPath(),
-                            new File(aFile.getCanonicalPath() + "/Frameworks/Debug/Foundation").getCanonicalPath()], true);
+        exec(["ln", "-s",   new java.io.File(BUILD + "/Debug/Foundation").getCanonicalPath(),
+                            new java.io.File(aFile.getCanonicalPath() + "/Frameworks/Debug/Foundation").getCanonicalPath()], true);
 
-        exec(["ln", "-s",   new File(STEAM_BUILD + "/Debug/AppKit").getCanonicalPath(),
-                            new File(aFile.getCanonicalPath() + "/Frameworks/Debug/AppKit").getCanonicalPath()], true);
+        exec(["ln", "-s",   new java.io.File(BUILD + "/Debug/AppKit").getCanonicalPath(),
+                            new java.io.File(aFile.getCanonicalPath() + "/Frameworks/Debug/AppKit").getCanonicalPath()], true);
 }
 
 function printUsage()
 {
     print("capp /path/to/your/app [options]");
-    print("    -l                Symlink the Frameworks folder to your $STEAM_BUILD directory");
+    print("    -l                Symlink the Frameworks folder to your $CAPP_BUILD or $STEAM_BUILD directory");
     print("    -t, --template    Specify the template name to use (listed in capp/Resources/Templates)");
     print("    -f, --frameworks  Create only frameworks, not a full application");
     print("    -h, --help        Print usage");
@@ -135,4 +135,85 @@ function writeContentsToFile(/*String*/ aString, /*File*/ aFile)
     writer.write(aString);
 
     writer.close();
+}
+
+function exec(/*Array*/ command, /*Boolean*/ showOutput)
+{
+    var line = "",
+        output = "",
+        
+        process = Packages.java.lang.Runtime.getRuntime().exec(command),//jsArrayToJavaArray(command));
+        reader = new Packages.java.io.BufferedReader(new Packages.java.io.InputStreamReader(process.getInputStream()));
+    
+    while (line = reader.readLine())
+    {
+        if (showOutput)
+            Packages.java.lang.System.out.println(line);
+        
+        output += line + '\n';
+    }
+    
+    reader = new Packages.java.io.BufferedReader(new Packages.java.io.InputStreamReader(process.getErrorStream()));
+    
+    while (line = reader.readLine())
+        Packages.java.lang.System.out.println(line);
+
+    try
+    {
+        if (process.waitFor() != 0)
+            Packages.java.lang.System.err.println("exit value = " + process.exitValue());
+    }
+    catch (anException)
+    {
+        Packages.java.lang.System.err.println(anException);
+    }
+    
+    return output;
+}
+
+function getFiles(/*File*/ sourceDirectory, /*nil|String|Array<String>*/ extensions, /*Array*/ exclusions)
+{
+    var matches = [],
+        files = sourceDirectory.listFiles(),
+        hasMultipleExtensions = typeof extensions !== "string";
+
+    if (files)
+    {
+        var index = 0,
+            count = files.length;
+        
+        for (; index < count; ++index)
+        {
+            var file = files[index].getCanonicalFile(),
+                name = String(file.getName()),
+                isValidExtension = !extensions;
+            
+            if (exclusions && fileArrayContainsFile(exclusions, file))
+                continue;
+            
+            if (!isValidExtension)
+                if (hasMultipleExtensions)
+                {
+                    var extensionCount = extensions.length;
+                    
+                    while (extensionCount-- && !isValidExtension)
+                    {
+                        var extension = extensions[extensionCount];
+                        
+                        if (name.substring(name.length - extension.length - 1) === ("." + extension))
+                            isValidExtension = true;
+                    }
+                }
+                else if (name.substring(name.length - extensions.length - 1) === ("." + extensions))
+                    isValidExtension = true;
+                
+            if (isValidExtension)
+                matches.push(file);
+            
+            if (file.isDirectory())
+                matches = matches.concat(getFiles(file, extensions, exclusions));
+        }
+    }
+    
+    return matches;
 }

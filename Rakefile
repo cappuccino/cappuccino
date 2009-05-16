@@ -5,7 +5,7 @@ require 'rake'
 require 'rake/clean'
 
 
-subprojects = %w{Objective-J Foundation AppKit Tools}
+subprojects = %w{External Objective-J Foundation AppKit Tools External/ojunit}
 
 %w(build clean clobber).each do |task_name|
     task task_name do
@@ -36,6 +36,7 @@ $STARTER_DOWNLOAD_README        = File.join($STARTER_DOWNLOAD, 'README')
 task :downloads => [:starter_download, :tools_download]
 
 file_d $TOOLS_DOWNLOAD_ENV => [:debug, :release] do
+    rm_rf($TOOLS_DOWNLOAD_ENV)
     cp_r(File.join($RELEASE_ENV, '.'), $TOOLS_DOWNLOAD_ENV)
     cp_r(File.join($DEBUG_ENV, 'lib', 'Frameworks', '.'), File.join($TOOLS_DOWNLOAD_ENV, 'lib', 'Frameworks', 'Debug'))
 end
@@ -71,7 +72,12 @@ file_d $STARTER_DOWNLOAD_README => [$STARTER_README] do
 end
 
 task :install => [:downloads] do
-    system %{cd #{$TOOLS_DOWNLOAD} && sudo sh ./install-tools }
+  if ENV['prefix']
+    prefix = "--prefix #{ENV['prefix']}"
+  else
+    prefix = ''
+  end
+  system %{cd #{$TOOLS_DOWNLOAD} && sudo sh ./install-tools #{prefix} }
 end
 
 task :test => [:build] do
@@ -82,6 +88,8 @@ task :test => [:build] do
     puts "tests failed, aborting the build"
     puts build_result
     rake abort
+  else  
+    puts build_result
   end
 end
 

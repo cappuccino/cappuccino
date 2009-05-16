@@ -30,13 +30,12 @@
 @import "Nib2CibKeyedUnarchiver.j"
 
 importPackage(java.io);
-importClass(java.io.File);
 
 CPLogRegister(CPLogPrint);
 
 function exec(command)
 {
-	var p = Packages.java.lang.Runtime.getRuntime().exec(jsArrayToJavaArray(command));
+	var p = Packages.java.lang.Runtime.getRuntime().exec(command);
 	var result = p.waitFor();
 	
 	var reader = new Packages.java.io.BufferedReader(new Packages.java.io.InputStreamReader(p.getInputStream()));
@@ -52,7 +51,7 @@ function exec(command)
 
 function printUsage()
 {
-    java.lang.System.out.println("usage: steam INPUT_FILE [OUTPUT_FILE]");    
+    java.lang.System.out.println("usage: nib2cib INPUT_FILE [OUTPUT_FILE] [-F /path/to/required/framework]");    
     java.lang.System.exit(1);
 }
 
@@ -84,7 +83,7 @@ function convert(inputFileName, outputFileName, resourcesPath)
     
     if (resourcesPath)
     {
-        resourcesFile = new File(resourcesPath).getCanonicalFile();
+        resourcesFile = new java.io.File(resourcesPath).getCanonicalFile();
      
         if (!resourcesFile.canRead())
         {
@@ -101,7 +100,7 @@ function convert(inputFileName, outputFileName, resourcesPath)
     }
 
     // Compile xib or nib to make sure we have a non-new format nib.
-    var temporaryNibFile = Packages.java.io.File.createTempFile("temp", ".nib"),
+    var temporaryNibFile = java.io.File.createTempFile("temp", ".nib"),
         temporaryNibFilePath = temporaryNibFile.getAbsolutePath();
     
     temporaryNibFile.deleteOnExit();
@@ -113,7 +112,7 @@ function convert(inputFileName, outputFileName, resourcesPath)
     }
 
     // Convert from binary plist to XML plist
-    var temporaryPlistFile = Packages.java.io.File.createTempFile("temp", ".plist"),
+    var temporaryPlistFile = java.io.File.createTempFile("temp", ".plist"),
         temporaryPlistFilePath = temporaryPlistFile.getAbsolutePath();
     
     temporaryPlistFile.deleteOnExit();
@@ -171,7 +170,7 @@ function loadFrameworks(frameworkPaths, aCallback)
     
     var frameworkPath = frameworkPaths.shift(),
         
-        infoPlist = new File(frameworkPath + "/Info.plist");
+        infoPlist = new java.io.File(frameworkPath + "/Info.plist");
         
     if (!infoPlist.exists())
     {
@@ -179,7 +178,7 @@ function loadFrameworks(frameworkPaths, aCallback)
         java.lang.System.exit(1);
     }
     
-    var infoDictionary = readPlist(new File(frameworkPath + "/Info.plist"));
+    var infoDictionary = readPlist(new java.io.File(frameworkPath + "/Info.plist"));
     
     if ([infoDictionary objectForKey:@"CPBundlePackageType"] !== "FMWK")
     {

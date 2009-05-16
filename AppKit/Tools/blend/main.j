@@ -5,7 +5,6 @@
 @import <AppKit/CPTheme.j>
 @import <BlendKit/BlendKit.j>
 
-importClass(java.io.File);
 importClass(java.io.FileOutputStream);
 importClass(java.io.BufferedWriter);
 importClass(java.io.OutputStreamWriter);
@@ -14,7 +13,7 @@ importClass(java.io.OutputStreamWriter);
 function main()
 {
     var index = 0,
-        count = arguments.length,
+        count = system.args.length,
         
         outputFilePath = "",
         descriptorFiles = [],
@@ -23,22 +22,22 @@ function main()
     
     for (; index < count; ++index)
     {
-        var argument = arguments[index];
+        var argument = system.args[index];
         
         switch (argument)
         {
             case "-c":      
-            case "--cib":       cibFiles.push(arguments[++index]);
+            case "--cib":       cibFiles.push(system.args[++index]);
                                 break;
             
             case "-d":      
-            case "-descriptor": descriptorFiles.push(arguments[++index]);
+            case "-descriptor": descriptorFiles.push(system.args[++index]);
                                 break;
 
-            case "-o":          outputFilePath = arguments[++index];
+            case "-o":          outputFilePath = system.args[++index];
                                 break;
 
-            case "-R":          resourcesPath = arguments[++index];
+            case "-R":          resourcesPath = system.args[++index];
                                 break;
 
             default:            jExtensionIndex = argument.indexOf(".j");
@@ -67,7 +66,7 @@ function main()
 
             var objectTemplates = BKThemeObjectTemplatesForClass(theClass),
                 data = cibDataFromTopLevelObjects(objectTemplates.concat([themeTemplate])),
-                temporaryCibFile = File.createTempFile("temp", ".cib"),
+                temporaryCibFile = Packages.java.io.File.createTempFile("temp", ".cib"),
                 temporaryCibFilePath = temporaryCibFile.getAbsolutePath(),
                 writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(temporaryCibFilePath), "UTF-8"));
 
@@ -116,7 +115,7 @@ function buildBlendFromCibFiles(cibFiles, outputFilePath, resourcesPath)
     var resourcesFile = nil;
     
     if (resourcesPath)
-        resourcesFile = new File(resourcesPath);
+        resourcesFile = new Packages.java.io.File(resourcesPath);
     
     var count = cibFiles.length,
         replacedFiles = [],
@@ -124,7 +123,7 @@ function buildBlendFromCibFiles(cibFiles, outputFilePath, resourcesPath)
     
     while (count--)
     {
-        var theme = themeFromCibFile(new File(cibFiles[count])),
+        var theme = themeFromCibFile(new Packages.java.io.File(cibFiles[count])),
         
             // Archive our theme.
             filePath = [theme name] + ".keyedtheme",
@@ -145,7 +144,7 @@ function buildBlendFromCibFiles(cibFiles, outputFilePath, resourcesPath)
     [infoDictionary setObject:replacedFiles forKey:@"CPBundleReplacedFiles"];
     [infoDictionary setObject:staticContentName forKey:@"CPBundleExecutable"];
     
-    var outputFile = new File(outputFilePath).getCanonicalFile();
+    var outputFile = new Packages.java.io.File(outputFilePath).getCanonicalFile();
 
     outputFile.mkdirs();
     
@@ -162,7 +161,7 @@ function buildBlendFromCibFiles(cibFiles, outputFilePath, resourcesPath)
     writer.close();
     
     if (resourcesPath)
-        rsync(new File(resourcesPath), new File(outputFilePath));
+        rsync(new Packages.java.io.File(resourcesPath), new Packages.java.io.File(outputFilePath));
 }
 
 function themeFromCibFile(aFile)

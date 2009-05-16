@@ -251,15 +251,13 @@ var CPURLConnectionDelegate = nil;
                         
         if (!_isCanceled)
         {
-            if (statusCode == 200 || (statusCode === 0 && _isLocalFileConnection))
+            if (statusCode == 401 && [CPURLConnectionDelegate respondsToSelector:@selector(connectionDidReceiveAuthenticationChallenge:)])
+                [CPURLConnectionDelegate connectionDidReceiveAuthenticationChallenge:self];
+            else
             {
                 [_delegate connection:self didReceiveData:_XMLHTTPRequest.responseText];
                 [_delegate connectionDidFinishLoading:self];
             }
-            else if (statusCode == 401 && [CPURLConnectionDelegate respondsToSelector:@selector(connectionDidReceiveAuthenticationChallenge:)])
-                [CPURLConnectionDelegate connectionDidReceiveAuthenticationChallenge:self];
-            else
-                [_delegate connection:self didFailWithError:_XMLHTTPRequest.status]
         }
     }
 

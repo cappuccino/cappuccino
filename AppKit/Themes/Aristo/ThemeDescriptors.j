@@ -68,16 +68,16 @@
     var scroller = [[CPScroller alloc] initWithFrame:CGRectMake(0.0, 0.0, 170.0, 17.0)],
         trackColor = PatternColor([_CPCibCustomResource imageResourceWithName:"scroller-horizontal-track.png" size:CGSizeMake(1.0, 17.0)]),
         disabledTrackColor = PatternColor([_CPCibCustomResource imageResourceWithName:"scroller-vertical-track-disabled.png" size:CGSizeMake(17.0, 1.0)]);
-    [scroller setBackgroundColor:[CPColor blueColor]];
+
     [scroller setValue:CGSizeMake(19.0, 15.0) forThemeAttribute:@"minimum-knob-size"];
 
-    [scroller setValue:CGInsetMake(9.0, 9.0, 9.0, 9.0) forThemeAttribute:@"track-overlap-inset" ];
+    [scroller setValue:CGInsetMake(9.0, 9.0, 9.0, 12.0) forThemeAttribute:@"track-overlap-inset" ];
     [scroller setValue:trackColor forThemeAttribute:@"knob-slot-color"];
     [scroller setValue:disabledTrackColor forThemeAttribute:@"knob-slot-color" inState:CPThemeStateDisabled];
 
     var arrowColor = PatternColor([_CPCibCustomResource imageResourceWithName:"scroller-left-arrow.png" size:CGSizeMake(32.0, 17.0)]),
-        highlightedArrowColor = PatternColor([_CPCibCustomResource imageResourceWithName:"scroller-left-arrow-highlighted.png" size:CGSizeMake(17.0, 30.0)]),
-        disabledArrowColor = PatternColor([_CPCibCustomResource imageResourceWithName:"scroller-left-arrow-disabled.png" size:CGSizeMake(17.0, 30.0)]);
+        highlightedArrowColor = PatternColor([_CPCibCustomResource imageResourceWithName:"scroller-left-arrow-highlighted.png" size:CGSizeMake(32.0, 17.0)]),
+        disabledArrowColor = PatternColor([_CPCibCustomResource imageResourceWithName:"scroller-left-arrow-disabled.png" size:CGSizeMake(32.0, 17.0)]);
 
     [scroller setValue:CGSizeMake(32.0, 17.0) forThemeAttribute:@"decrement-line-size"];
     [scroller setValue:arrowColor forThemeAttribute:@"decrement-line-color"];
@@ -85,8 +85,8 @@
     [scroller setValue:disabledArrowColor forThemeAttribute:@"decrement-line-color" inState:CPThemeStateDisabled];
 
     var arrowColor = PatternColor([_CPCibCustomResource imageResourceWithName:"scroller-right-arrow.png" size:CGSizeMake(31.0, 17.0)]),
-        highlightedArrowColor = PatternColor([_CPCibCustomResource imageResourceWithName:"scroller-right-arrow-highlighted.png" size:CGSizeMake(17.0, 30.0)]),
-        disabledArrowColor = PatternColor([_CPCibCustomResource imageResourceWithName:"scroller-right-arrow-disabled.png" size:CGSizeMake(17.0, 30.0)]);
+        highlightedArrowColor = PatternColor([_CPCibCustomResource imageResourceWithName:"scroller-right-arrow-highlighted.png" size:CGSizeMake(31.0, 17.0)]),
+        disabledArrowColor = PatternColor([_CPCibCustomResource imageResourceWithName:"scroller-right-arrow-disabled.png" size:CGSizeMake(31.0, 17.0)]);
 
     [scroller setValue:CGSizeMake(31.0, 17.0) forThemeAttribute:@"increment-line-size"];
     [scroller setValue:arrowColor forThemeAttribute:@"increment-line-color"];

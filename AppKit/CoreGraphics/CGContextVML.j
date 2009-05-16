@@ -229,7 +229,10 @@ function CGContextDrawPath(aContext, aMode)
 
     vml.push("\">");
     
-    if (fill)
+    if (gState.gradient)
+        vml.push(gState.gradient)
+    
+    else if (fill)
         vml.push("<cg_vml_:fill color=\"", gState.fillStyle, "\" opacity=\"", opacity, "\" />");
     
     if (stroke)
@@ -260,3 +263,59 @@ function CGContextDrawPath(aContext, aMode)
         aContext.DOMElement.insertAdjacentHTML("BeforeEnd", vml.join(""));
 }
 
+function to_string(aColor)
+{
+    return "rgb(" + ROUND(aColor.components[0] * 255) + ", " + ROUND(aColor.components[1] * 255) + ", " + ROUND(255 * aColor.components[2]) + ")";
+}
+
+function CGContextDrawLinearGradient(aContext, aGradient, aStartPoint, anEndPoint, options)
+{
+    if (!aContext || !aGradient)
+        return;
+    
+    var vml = nil;
+    
+    if (aGradient.vml_gradient)
+    {
+        var stops = [[aGradient.vml_gradient stops] sortedArrayUsingSelector:@selector(comparePosition:)],
+            count = [stops count];
+        
+        vml = ["<cg_vml_:fill type=\"gradient\" method=\"linear sigma\" "];
+        vml.push("angle=\"" + ([aGradient.vml_gradient angle] + 90) +"\" ");
+        
+        vml.push("colors=\"");
+
+        for (var i = 0; i < count; i++)
+        {
+            vml.push(([stops[i] position]*100).toFixed(0)+"% ");
+            vml.push([[[stops[i] color] colorForSlideBase:nil] cssString]);
+            
+            if (i < count-1)
+                vml.push(",");
+        }
+
+        vml.push("\" />");
+    }
+    else
+    {
+        var colors = aGradient.colors,
+            count = colors.length;
+
+        vml = ["<cg_vml_:fill type=\"gradient\" "];
+
+        vml.push("colors=\"");
+
+        for (var i = 0; i < count; i++)
+            vml.push((aGradient.locations[i]*100).toFixed(0)+"% "+to_string(colors[i])+(i<count-1 ? "," : ""));
+
+        vml.push("\" />");
+    }
+    
+    aContext.gState.gradient = vml.join("");
+    console.log(vml.join(""));
+    
+    // if (aContext.buffer != nil)
+    //     aContext.buffer += vml.join("");
+    // else
+    //     aContext.DOMElement.innerHTML = vml.join("");
+}

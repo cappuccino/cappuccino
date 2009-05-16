@@ -127,6 +127,7 @@
 {
     _itemData = [CPKeyedArchiver archivedDataWithRootObject:anItem];
     _itemForDragging = anItem//[CPKeyedUnarchiver unarchiveObjectWithData:_itemData];
+    _itemPrototype = anItem;
     
     [self reloadContent];
 }

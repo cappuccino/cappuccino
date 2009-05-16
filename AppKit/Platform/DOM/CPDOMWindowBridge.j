@@ -105,6 +105,8 @@ var CPDOMWindowGetFrame,
         _DOMBodyElement.style.overflow = "hidden";
         _DOMBodyElement.style.webkitTouchCallout = "none";
         
+        [CPString _resetSize];
+
         if (document.documentElement)
             document.documentElement.style.overflow = "hidden";
         

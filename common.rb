@@ -77,37 +77,11 @@ end
 def subrake(directories, task_name)
     directories.each do |directory|
       if (File.directory?(directory) && File.file?(File.join(directory, "Rakefile")))
-        system %{cd #{directory} && #{$serialized_env} #{$0} #{task_name}}
+        ok = system(%{cd #{directory} && #{$serialized_env} #{$0} #{task_name}})
+        rake abort unless ok
       else
         puts "warning: subrake missing: " + directory +" (this is not necessarily an error, "+directory+" may be optional)"
       end
-    end
-end
-
-# Shared Resrouces in env
-$JSJAR_PATH = File.expand_path(File.join($HOME_DIR, 'Tools/Utilities/js.jar'))
-$ENVIRONMENT_JS = File.join($ENVIRONMENT_LIB_DIR, 'js.jar')
-
-file_d $ENVIRONMENT_JS do
-    cp($JSJAR_PATH, $ENVIRONMENT_JS)
-end
-
-def js2java(inputfile, className, debug)
-    
-    debugString = '-nosource -debug' if debug
-    
-    IO.popen("java -classpath #{$JSJAR_PATH}:. #{debugString} org.mozilla.javascript.tools.jsc.Main -o #{className} #{inputfile}") do |shrinksafe|
-        puts shrinksafe.read
-    end
-end
-
-def cat(files, outfile)
-
-    File.open(outfile, "w") do |concated|
-    
-        files.each do |file|
-          concated.write IO.read(file)
-        end 
     end
 end
 
@@ -122,7 +96,7 @@ def make_objj_executable(path)
     File.chmod 0755, path
 end
 
-task :build => [$ENVIRONMENT_JS]
+task :build
 task :default => [:build]
 
 task :release do

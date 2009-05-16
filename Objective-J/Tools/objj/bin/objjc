@@ -1,12 +1,15 @@
+#!/usr/bin/env narwhal
+
+var objjc = require("objj/objjc");
+with (objjc)
+{
 
 importPackage(java.lang);
 
-importClass(java.io.File);
 importClass(java.io.BufferedReader);
 importClass(java.io.FileReader);
 importClass(java.io.BufferedWriter);
 importClass(java.io.FileWriter);
-
 
 
 OBJJ_PREPROCESSOR_PREPROCESS    = 1 << 10;
@@ -55,7 +58,7 @@ function compress(/*String*/ aCode, /*Object*/ flags, /*File*/ tmpFile)
     
     writer.close();
 
-    return exec(["java", "-jar", OBJJ_HOME + "/lib/objjc/shrinksafe.jar", "-c", tmpFile.getCanonicalPath()]);
+    return exec(["java", "-classpath", OBJJ_HOME + "/lib/js.jar" + ":" + OBJJ_HOME + "/lib/shrinksafe.jar", "org.dojotoolkit.shrinksafe.Main", tmpFile.getCanonicalPath(), "-escape-unicode"]);
 }
 
 //#define SET_CONTEXT(aFragment, aContext) aFragment.context = aContext
@@ -119,7 +122,7 @@ function preprocess(aFilePath, outFilePath, gccArgs, flags)
     reader.close();
     
     // Preprocess contents into fragments.
-    var filePath = new String(new File(aFilePath).getName()),
+    var filePath = new String(new java.io.File(aFilePath).getName()),
         fragments = objj_preprocess(fileContents, { path:"/x" }, {path:filePath}, flags),
         index = 0,
         count = fragments.length,
@@ -179,7 +182,7 @@ function main()
         outFilePaths = [],
         
         index = 0,
-        count = arguments.length,
+        count = system.args.length,
         
         gccArgs = [],
         
@@ -188,12 +191,12 @@ function main()
         
     for (; index < count; ++index)
     {
-        var argument = String(arguments[index]);
+        var argument = system.args[index];
         
         if (argument === "-o")
         {
             if (++index < count)
-                outFilePaths.push(String(arguments[index]));
+                outFilePaths.push(system.args[index]);
         }
         
         else if (argument.indexOf("-D") === 0)
@@ -222,4 +225,6 @@ function main()
         preprocess(filePaths[index], outFilePaths[index], gccArgs, flags);
 }
 
-main.apply(main, arguments);
+main();
+
+}

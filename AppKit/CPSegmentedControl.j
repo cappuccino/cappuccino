@@ -66,8 +66,8 @@ CPSegmentSwitchTrackingMomentary = 2;
 
 + (id)themeAttributes
 {
-    return [CPDictionary dictionaryWithObjects:[_CGInsetMakeZero(), _CGInsetMakeZero(), nil, nil, nil, nil, 1.0, 24.0]
-                                       forKeys:[@"bezel-inset", @"content-inset", @"left-segment-bezel-color", @"right-segment-bezel-color", @"center-segment-bezel-color", @"divider-bezel-color", @"divider-thickness", @"default-height"]];
+    return [CPDictionary dictionaryWithObjects:[CPCenterTextAlignment, CPCenterVerticalTextAlignment, CPImageLeft, CPScaleNone, _CGInsetMakeZero(), _CGInsetMakeZero(), nil, nil, nil, nil, 1.0, 24.0]
+                                       forKeys:[@"alignment", @"vertical-alignment", @"image-position", @"image-scaling", @"bezel-inset", @"content-inset", @"left-segment-bezel-color", @"right-segment-bezel-color", @"center-segment-bezel-color", @"divider-bezel-color", @"divider-thickness", @"default-height"]];
 }
 
 - (id)initWithFrame:(CGRect)aRect
@@ -108,28 +108,17 @@ CPSegmentSwitchTrackingMomentary = 2;
     var height = CGRectGetHeight([self bounds]);
     
     if (_segments.length < aCount)
-    {
-        var index = _segments.length;
-        
-        for (; index < aCount; ++index)
+    {        
+        for (var index = _segments.length; index < aCount; ++index)
         {
             _segments[index] = [[_CPSegmentItem alloc] init];
-            _segments[index].frame.size.height = height;
-
             _themeStates[index] = CPThemeStateNormal;
         }
     }
     else if (aCount < _segments.length)
     {
-        var index = aCount;
-        
-        for (; index < _segments.length; ++index)
-        {
-            [_segments[index].imageView removeFromSuperview];
-            [_segments[index].labelView removeFromSuperview];
-            
+        for (var index = aCount; index < _segments.length; ++index)
             _segments[index] = nil;
-        }
     }
     
     if (_selectedSegment < _segments.length)
@@ -263,32 +252,9 @@ CPSegmentSwitchTrackingMomentary = 2;
 {
     var segment = _segments[aSegment];
     
-    if (!anImage)
-    {
-        [segment.imageView removeFromSuperview];
-        
-        segment.imageView = nil;
-    }
-    
-    else
-    {
-        if (!segment.imageView)
-        {
-            segment.imageView = [[CPImageView alloc] initWithFrame:CGRectMakeZero()];
-            
-            [self addSubview:segment.imageView];
-        }
-        
-        [segment.imageView setImage:anImage];
-        [segment.imageView setFrameSize:CGSizeMakeCopy([anImage size])];
-    }
-    
     segment.image = anImage;
 
-    if (segment.width)
-        [self drawSegment:aSegment highlight:NO];
-    else
-        [self tileWithChangedSegment:aSegment];
+    [self tileWithChangedSegment:aSegment];
 }
 
 /*!
@@ -310,35 +276,10 @@ CPSegmentSwitchTrackingMomentary = 2;
 - (void)setLabel:(CPString)aLabel forSegment:(unsigned)aSegment
 {
     var segment = _segments[aSegment];
-    
-    if (!aLabel || !aLabel.length)
-    {
-        [segment.labelView removeFromSuperview];
         
-        segment.labelView = nil;
-    }
-    
-    else
-    {
-        if (!segment.labelView)
-        {
-            segment.labelView = [[CPTextField alloc] initWithFrame:CGRectMakeZero()];
-            
-            [segment.labelView setFont:[self font]];
-            
-            [self addSubview:segment.labelView];
-        }
-        
-        [segment.labelView setStringValue:aLabel];
-        [segment.labelView sizeToFit];
-    }
-    
     _segments[aSegment].label = aLabel;
     
-    if (segment.width)
-        [self drawSegment:aSegment highlight:NO];
-    else
-        [self tileWithChangedSegment:aSegment];
+    [self tileWithChangedSegment:aSegment];
 }
 
 /*!
@@ -411,6 +352,7 @@ CPSegmentSwitchTrackingMomentary = 2;
         [self drawSegmentBezel:aSegment highlight:NO];
 
     [self setNeedsLayout];
+    [self setNeedsDisplay:YES];
 }
 
 /*!
@@ -432,6 +374,9 @@ CPSegmentSwitchTrackingMomentary = 2;
 - (void)setEnabled:(BOOL)isEnabled forSegment:(unsigned)aSegment
 {
     _segments[aSegment].enabled = isEnabled;
+
+    [self setNeedsLayout];
+    [self setNeedsDisplay:YES];
 }
 
 /*!
@@ -477,6 +422,7 @@ CPSegmentSwitchTrackingMomentary = 2;
         _themeStates[aSegment] &= ~CPThemeStateHighlighted;
 
     [self setNeedsLayout];
+    [self setNeedsDisplay:YES];
 }
 
 - (float)_leftOffsetForSegment:(unsigned)segment
@@ -504,22 +450,23 @@ CPSegmentSwitchTrackingMomentary = 2;
     }
     else if (aName === "right-segment-bezel")
     {
-        return CGRectMake(CGRectGetMaxX(bounds) - contentInset.right, bezelInset.top, contentInset.right, height);
+        return CGRectMake(CGRectGetMaxX(bounds) - contentInset.right - bezelInset.right, bezelInset.top, contentInset.right, height);
     }
     else if (aName.substring(0, "segment-bezel".length) == "segment-bezel")
     {
         var segment = parseInt(aName.substring("segment-bezel-".length), 10),
-            width = [self widthForSegment:segment],
-            left = [self _leftOffsetForSegment:segment];
+            frame = CGRectCreateCopy(_segments[segment].frame);
 
-        if (_segments.length == 1)
-            return CGRectMake(left + contentInset.left, bezelInset.top, width - contentInset.left - contentInset.right, height);
-        else if (segment == 0)
-            return CGRectMake(left + contentInset.left, bezelInset.top, width - contentInset.left, height);
-        else if (segment == _segments.length - 1)
-            return CGRectMake(left, bezelInset.top, width - contentInset.right, height);
-        else
-            return CGRectMake(left, bezelInset.top, width, height);
+        if (segment == 0)
+        {
+            frame.origin.x += contentInset.left;
+            frame.size.width -= contentInset.left;
+        }
+
+        if (segment == _segments.length - 1)
+            frame.size.width -= contentInset.right;
+
+        return frame;
     }
     else if (aName.substring(0, "divider-bezel".length) == "divider-bezel")
     {
@@ -530,12 +477,21 @@ CPSegmentSwitchTrackingMomentary = 2;
 
         return CGRectMake(left + width, bezelInset.top, thickness, height);
     }
+    else if (aName.substring(0, "segment-content".length) == "segment-content")
+    {
+        var segment = parseInt(aName.substring("segment-content-".length), 10);
+
+        return [self contentFrameForSegment:segment];
+    }
 
     return [super rectForEphemeralSubviewNamed:aName];
 }
 
 - (CPView)createEphemeralSubviewNamed:(CPString)aName
 {
+    if (aName.substring(0, "segment-content".length) == "segment-content")
+        return [[_CPImageAndTextView alloc] initWithFrame:_CGRectMakeZero()];
+
     return [[CPView alloc] initWithFrame:_CGRectMakeZero()];
 }
 
@@ -561,8 +517,12 @@ CPSegmentSwitchTrackingMomentary = 2;
 
     for (var i=0, count = _themeStates.length; i<count; i++)
     {
+        var themeState = _themeStates[i];
+
+        themeState |= _themeState & CPThemeStateDisabled;
+
         var bezelColor = [self valueForThemeAttribute:@"center-segment-bezel-color" 
-                                              inState:_themeStates[i]];
+                                              inState:themeState];
 
         var bezelView = [self layoutEphemeralSubviewNamed:"segment-bezel-"+i 
                                                positioned:CPWindowBelow 
@@ -570,13 +530,41 @@ CPSegmentSwitchTrackingMomentary = 2;
 
         [bezelView setBackgroundColor:bezelColor];
 
+
+        //layout image/title views
+        var segment = _segments[i];
+
+
+        var contentView = [self layoutEphemeralSubviewNamed:@"segment-content-"+i
+                                                 positioned:CPWindowAbove
+                            relativeToEphemeralSubviewNamed:@"segment-bezel-"+i];
+
+        [contentView setText:segment.label];
+        [contentView setImage:segment.image];
+
+        [contentView setFont:[self valueForThemeAttribute:@"font" inState:themeState]];
+        [contentView setTextColor:[self valueForThemeAttribute:@"text-color" inState:themeState]];
+        [contentView setAlignment:[self valueForThemeAttribute:@"alignment" inState:themeState]];
+        [contentView setVerticalAlignment:[self valueForThemeAttribute:@"vertical-alignment" inState:themeState]];
+        [contentView setLineBreakMode:[self valueForThemeAttribute:@"line-break-mode" inState:themeState]];
+        [contentView setTextShadowColor:[self valueForThemeAttribute:@"text-shadow-color" inState:themeState]];
+        [contentView setTextShadowOffset:[self valueForThemeAttribute:@"text-shadow-offset" inState:themeState]];
+        [contentView setImageScaling:[self valueForThemeAttribute:@"image-scaling" inState:themeState]];        
+        
+        if (segment.image && segment.label)
+            [contentView setImagePosition:[self valueForThemeAttribute:@"image-position" inState:themeState]];
+        else if (segment.image)
+            [contentView setImagePosition:CPImageOnly];
+
         if (i == count - 1)
             continue;
 
         var borderState = _themeStates[i] | _themeStates[i+1];
         
         borderState = (borderState & CPThemeStateSelected & ~CPThemeStateHighlighted) ? CPThemeStateSelected : CPThemeStateNormal;
-    
+
+        borderState |= _themeState & CPThemeStateDisabled;
+
         var borderColor = [self valueForThemeAttribute:@"divider-bezel-color"
                                                inState:borderState];
 
@@ -596,63 +584,29 @@ CPSegmentSwitchTrackingMomentary = 2;
 */
 - (void)drawSegment:(int)aSegment highlight:(BOOL)shouldHighlight
 {
-    var segment = _segments[aSegment],
-            
-        imageView = segment.imageView,
-        labelView = segment.labelView,
-        
-        frame = segment.frame,
-            
-        segmentX = CGRectGetMinX(frame),
-        segmentWidth = CGRectGetWidth(frame),
-        segmentHeight = CGRectGetHeight(frame) - 1.0;
-                    
-    if (imageView && labelView)
-    {
-        var imageViewSize = [imageView frame].size,
-            labelViewSize = [labelView frame].size,
-            totalHeight = imageViewSize.height + labelViewSize.height,
-            labelWidth = MIN(labelViewSize.width, width),
-            y = (segmentHeight - totalHeight) / 2.0;
-        
-        [imageView setFrameOrigin:CGPointMake(segmentX + (segmentWidth - imageViewSize.width) / 2.0, y)];
-        
-        if (labelWidth < labelViewSize.width)
-            [labelView setFrameSize:CGSizeMake(labelWidth, labelViewSize.height)];
-        
-        [labelView setFrameOrigin:CGPointMake(segmentX + (segmentWidth - labelWidth) / 2.0, y + imageViewSize.height)];
-    }
-    else if (imageView)
-    {
-        var imageViewSize = [imageView frame].size;
-        
-        [imageView setFrameOrigin:CGPointMake(segmentX + (segmentWidth - imageViewSize.width) / 2.0, (segmentHeight - imageViewSize.height) / 2.0)];
-    }
-    else if (labelView)
-    {
-        var labelViewSize = [labelView frame].size,
-            labelWidth = MIN(labelViewSize.width, segmentWidth);
-        
-        if (labelWidth < labelViewSize.width)
-            [labelView setFrameSize:CGSizeMake(labelWidth, labelViewSize.height)];
-        
-        [labelView setFrameOrigin:CGPointMake(segmentX + (segmentWidth - labelWidth) / 2.0, (segmentHeight - labelViewSize.height) / 2.0)];
-    }
 }
 
 - (void)tileWithChangedSegment:(unsigned)aSegment
 {
+    if (aSegment >= _segments.length)
+        return;
+
     var segment = _segments[aSegment],
-        segmentWidth = segment.width;
+        segmentWidth = segment.width,
+        themeState = _themeStates[aSegment] | (_themeState & CPThemeStateDisabled),
+        contentInset = [self valueForThemeAttribute:@"content-inset" inState:themeState],
+        font = [self valueForThemeAttribute:@"font" inState:themeState];
     
     if (!segmentWidth)
     {
-        if (segment.labelView && segment.imageView)
-            segmentWidth = MAX(CGRectGetWidth([segment.labelView frame]) , CGRectGetWidth([segment.imageView frame]));
-        else if (segment.labelView)
-            segmentWidth = CGRectGetWidth([segment.labelView frame]);
-        else if (segment.imageView)
-            segmentWidth = CGRectGetWidth([segment.imageView frame]);
+        if (segment.image && segment.label)
+            segmentWidth = [segment.label sizeWithFont:font].width + [segment.image size].width + contentInset.left + contentInset.right;
+        else if (segment.image)
+            segmentWidth = [segment.image size].width + contentInset.left + contentInset.right;
+        else if (segment.label)
+            segmentWidth = [segment.label sizeWithFont:font].width + contentInset.left + contentInset.right;
+        else
+            segmentWidth = 0.0;
     }
     
     var delta = segmentWidth - CGRectGetWidth(segment.frame);
@@ -666,7 +620,8 @@ CPSegmentSwitchTrackingMomentary = 2;
     [self setFrameSize:CGSizeMake(CGRectGetWidth(frame) + delta, CGRectGetHeight(frame))];
 
     // Update Segment Width
-    segment.frame.size.width = segmentWidth;
+    segment.width = segmentWidth;
+    segment.frame = [self frameForSegment:aSegment];;
 
     // Update Following Segments Widths
     var index = aSegment + 1;
@@ -681,6 +636,9 @@ CPSegmentSwitchTrackingMomentary = 2;
     
     [self drawSegmentBezel:aSegment highlight:NO];
     [self drawSegment:aSegment highlight:NO];
+
+    [self setNeedsLayout];
+    [self setNeedsDisplay:YES];
 }
 
 /*!
@@ -689,7 +647,27 @@ CPSegmentSwitchTrackingMomentary = 2;
 */
 - (CGRect)frameForSegment:(unsigned)aSegment
 {
-    return _segments[aSegment].frame;
+    return [self bezelFrameForSegment:aSegment];
+}
+
+- (CGRect)bezelFrameForSegment:(unsigned)aSegment
+{
+    var height = [self currentValueForThemeAttribute:@"default-height"],
+        bezelInset = [self currentValueForThemeAttribute:@"bezel-inset"],
+        width = [self widthForSegment:aSegment],
+        left = [self _leftOffsetForSegment:aSegment];
+
+    return CGRectMake(left, bezelInset.top, width, height);
+}
+
+- (CGRect)contentFrameForSegment:(unsigned)aSegment
+{
+    var height = [self currentValueForThemeAttribute:@"default-height"],
+        contentInset = [self currentValueForThemeAttribute:@"content-inset"],
+        width = [self widthForSegment:aSegment],
+        left = [self _leftOffsetForSegment:aSegment];
+
+    return CGRectMake(left + contentInset.left, contentInset.top, width - contentInset.left - contentInset.right, height - contentInset.top - contentInset.bottom);
 }
 
 /*!
@@ -733,6 +711,9 @@ CPSegmentSwitchTrackingMomentary = 2;
         
     if (type == CPLeftMouseUp)
     {
+        if (_trackingSegment == -1)
+            return;
+
         if (CGRectContainsPoint(_segments[_trackingSegment].frame, location))
         {
             if (_trackingMode == CPSegmentSwitchTrackingSelectAny)
@@ -766,13 +747,15 @@ CPSegmentSwitchTrackingMomentary = 2;
     {
         _trackingHighlighted = YES;
         _trackingSegment = [self testSegment:location];
-
         
         [self drawSegmentBezel:_trackingSegment highlight:YES];
     }
     
     else if (type == CPLeftMouseDragged)
     {
+        if (_trackingSegment == -1)
+            return;
+
         var highlighted = CGRectContainsPoint(_segments[_trackingSegment].frame, location);
         
         if (highlighted != _trackingHighlighted)
@@ -789,14 +772,6 @@ CPSegmentSwitchTrackingMomentary = 2;
 - (void)setFont:(CPFont)aFont
 {
     [super setFont:aFont];
-    
-    var count = _segments.length;
-    
-    if (!count)
-        return;
-    
-    while (count--)
-        [_segments[count].labelView setFont:aFont];
     
     [self tileWithChangedSegment:0];
 }
@@ -816,12 +791,16 @@ var CPSegmentedControlSegmentsKey       = "CPSegmentedControlSegmentsKey",
     
     if (self)
     {
-        _segments           = [aCoder decodeObjectForKey:CPSegmentedControlSegmentsKey];
-        _segmentStyle       = [aCoder decodeIntForKey:CPSegmentedControlSegmentStyleKey];
+        var frame = [self frame],
+            originalWidth = frame.size.width;
         
-        _themeStates = [];
-        for (var i = 0; i < _segments.length; i++)
-            _themeStates[i] = 0;
+        frame.size.width = 0;
+
+        [self setFrame:frame];
+
+        _segments       = [aCoder decodeObjectForKey:CPSegmentedControlSegmentsKey];
+        _segmentStyle   = [aCoder decodeIntForKey:CPSegmentedControlSegmentStyleKey];
+        _themeStates  = [];
 
         if ([aCoder containsValueForKey:CPSegmentedControlSelectedKey])
             _selectedSegment = [aCoder decodeIntForKey:CPSegmentedControlSelectedKey];
@@ -829,18 +808,25 @@ var CPSegmentedControlSegmentsKey       = "CPSegmentedControlSegmentsKey",
             _selectedSegment = -1;
         
         if ([aCoder containsValueForKey:CPSegmentedControlTrackingModeKey])
-            _trackingMode    = [aCoder decodeIntForKey:CPSegmentedControlTrackingModeKey];
+            _trackingMode = [aCoder decodeIntForKey:CPSegmentedControlTrackingModeKey];
         else
             _trackingMode = CPSegmentSwitchTrackingSelectOne;
         
         // HACK
+
         for (var i = 0; i < _segments.length; i++)
         {
-            if (_segments[i].image != undefined)
-                [self setImage:_segments[i].image forSegment:i];
-            if (_segments[i].label != undefined)
-                [self setLabel:_segments[i].label forSegment:i];
+            _themeStates[i] = _segments[i].selected ? CPThemeStateSelected : CPThemeStateNormal;
+            [self tileWithChangedSegment:i];
         }
+
+        var difference = MAX(originalWidth - [self frame].size.width, 0.0),
+            remainingWidth = FLOOR(difference / _segments.length);
+
+        for (var i=0; i < _segments.length; i++)
+            [self setWidth:_segments[i].width + remainingWidth forSegment:i];
+
+        [self tileWithChangedSegment:0];
     }
     
     return self;
@@ -848,13 +834,7 @@ var CPSegmentedControlSegmentsKey       = "CPSegmentedControlSegmentsKey",
 
 - (void)encodeWithCoder:(CPCoder)aCoder
 {
-    var actualSubviews = _subviews;
-
-    _subviews = [];
-    
     [super encodeWithCoder:aCoder];
-
-    _subviews = actualSubviews;
     
     [aCoder encodeObject:_segments forKey:CPSegmentedControlSegmentsKey];
     [aCoder encodeInt:_selectedSegment forKey:CPSegmentedControlSelectedKey];
@@ -873,29 +853,24 @@ var CPSegmentedControlSegmentsKey       = "CPSegmentedControlSegmentsKey",
     BOOL        selected;
     BOOL        enabled;
     int         tag;
-
     int         width;
-    CPView      labelView;
-    CPView      imageView;
-    CPRect      frame;
+
+    CGRect      frame;
 }
 
 - (id)init
 {
     if (self = [super init])
     {
-        image       = nil;
-        label       = @"";
-        menu        = nil;
-        selected    = NO;
-        enabled     = NO;
-        tag         = 0;
-        
-        labelView   = nil;
-        imageView   = nil;
-        
-        width       = 0;
-        frame       = CGRectMakeZero();
+        image        = nil;
+        label        = @"";
+        menu         = nil;
+        selected     = NO;
+        enabled      = NO;
+        tag          = 0;
+        width        = 0;
+
+        frame        = CGRectMakeZero();
     }
     return self;
 }
@@ -907,7 +882,8 @@ var CPSegmentItemImageKey       = "CPSegmentItemImageKey",
     CPSegmentItemMenuKey        = "CPSegmentItemMenuKey",
     CPSegmentItemSelectedKey    = "CPSegmentItemSelectedKey",
     CPSegmentItemEnabledKey     = "CPSegmentItemEnabledKey",
-    CPSegmentItemTagKey         = "CPSegmentItemTagKey";
+    CPSegmentItemTagKey         = "CPSegmentItemTagKey",
+    CPSegmentItemWidthKey       = "CPSegmentItemWidthKey";
 
 @implementation _CPSegmentItem (CPCoding)
 
@@ -917,18 +893,15 @@ var CPSegmentItemImageKey       = "CPSegmentItemImageKey",
     
     if (self)
     {
-        image       = [aCoder decodeObjectForKey:CPSegmentItemImageKey];
-        label       = [aCoder decodeObjectForKey:CPSegmentItemLabelKey];
-        menu        = [aCoder decodeObjectForKey:CPSegmentItemMenuKey];
-        selected    = [aCoder decodeBoolForKey:CPSegmentItemSelectedKey];
-        enabled     = [aCoder decodeBoolForKey:CPSegmentItemEnabledKey];
-        tag         = [aCoder decodeIntForKey:CPSegmentItemTagKey];
-        
-        labelView   = nil;
-        imageView   = nil;
-        
-        width       = 0;
-        frame       = CGRectMakeZero();
+        image        = [aCoder decodeObjectForKey:CPSegmentItemImageKey];
+        label        = [aCoder decodeObjectForKey:CPSegmentItemLabelKey];
+        menu         = [aCoder decodeObjectForKey:CPSegmentItemMenuKey];
+        selected     = [aCoder decodeBoolForKey:CPSegmentItemSelectedKey];
+        enabled      = [aCoder decodeBoolForKey:CPSegmentItemEnabledKey];
+        tag          = [aCoder decodeIntForKey:CPSegmentItemTagKey];
+        width        = [aCoder decodeFloatForKey:CPSegmentItemWidthKey];
+
+        frame        = CGRectMakeZero();
     }
     
     return self;
@@ -942,6 +915,7 @@ var CPSegmentItemImageKey       = "CPSegmentItemImageKey",
     [aCoder encodeBool:selected forKey:CPSegmentItemSelectedKey];
     [aCoder encodeBool:enabled  forKey:CPSegmentItemEnabledKey];
     [aCoder encodeInt:tag       forKey:CPSegmentItemTagKey];
+    [aCoder encodeFloat:width   forKey:CPSegmentItemWidthKey];
 }
 
 @end
