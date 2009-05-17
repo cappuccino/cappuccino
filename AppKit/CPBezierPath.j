@@ -130,8 +130,8 @@ var DefaultLineWidth = 1.0;
     CGContextBeginPath(ctx);
     CGContextAddPath(ctx, _path);
     CGContextSetLineWidth(ctx, [self lineWidth]);
-    CGContextStrokePath(ctx);
     CGContextClosePath(ctx);
+    CGContextStrokePath(ctx);
 }
 
 - (void)fill
@@ -141,8 +141,8 @@ var DefaultLineWidth = 1.0;
     CGContextBeginPath(ctx);
     CGContextAddPath(ctx, _path);
     CGContextSetLineWidth(ctx, [self lineWidth]);
-    CGContextFillPath(ctx);
     CGContextClosePath(ctx);
+    CGContextFillPath(ctx);
 }
 
 - (float)lineWidth

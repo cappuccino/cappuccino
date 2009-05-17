@@ -24,6 +24,7 @@
 @import "CPAlert.j"
 @import "CPAnimation.j"
 @import "CPApplication.j"
+@import "CPBezierPath.j"
 @import "CPButton.j"
 @import "CPButtonBar.j"
 @import "CPCib.j"

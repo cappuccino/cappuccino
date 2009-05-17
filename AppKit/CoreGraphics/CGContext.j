@@ -542,7 +542,9 @@ function CGContextAddEllipseInRect(aContext, aRect)
 */
 function CGContextFillEllipseInRect(aContext, aRect)
 {
+    CGContextBeginPath(aContext);
     CGContextAddEllipseInRect(aContext, aRect);
+    CGContextClosePath(aContext);
     CGContextFillPath(aContext);
 }
 
@@ -554,7 +556,9 @@ function CGContextFillEllipseInRect(aContext, aRect)
 */
 function CGContextStrokeEllipseInRect(aContext, aRect)
 {
+    CGContextBeginPath(aContext);
     CGContextAddEllipseInRect(aContext, aRect);
+    CGContextClosePath(aContext);
     CGContextStrokePath(aContext);
 }
 
