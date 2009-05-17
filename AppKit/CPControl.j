@@ -103,9 +103,6 @@ var CPControlBlackColor     = [CPColor blackColor];
     CPSet               _ephereralSubviews;
 
     CPString            _toolTip;
-    
-    // FIXME: Who uses this?
-    BOOL _isBezeled;
 }
 
 + (CPDictionary)themeAttributes
@@ -630,7 +627,7 @@ var __Deprecated__CPImageViewImageKey   = @"CPImageViewImageKey";
     var count = [_subviews count],
         ephemeral
         subviews = nil;
-    
+
     if (count > 0 && [_ephemeralSubviews count] > 0)
     {
         subviews = [_subviews.slice(0) copy];
@@ -639,18 +636,20 @@ var __Deprecated__CPImageViewImageKey   = @"CPImageViewImageKey";
             if ([_ephemeralSubviews containsObject:_subviews[count]])
                 _subviews.splice(count, 1);
     }
-    
+
     [super encodeWithCoder:aCoder];
-    
+
     if (subviews)
         _subviews = subviews;
-    
-    [aCoder encodeObject:_value forKey:CPControlValueKey];
-    
-    /*[aCoder encodeBool:_isEnabled forKey:CPControlIsEnabledKey];
-    */
-    [aCoder encodeConditionalObject:_target forKey:CPControlTargetKey];
-    [aCoder encodeObject:_action forKey:CPControlActionKey];
+
+    if (_value !== nil)
+        [aCoder encodeObject:_value forKey:CPControlValueKey];
+
+    if (_target !== nil)
+        [aCoder encodeConditionalObject:_target forKey:CPControlTargetKey];
+
+    if (_action !== NULL)
+        [aCoder encodeObject:_action forKey:CPControlActionKey];
 
     [aCoder encodeInt:_sendActionOn forKey:CPControlSendActionOnKey];
 }
@@ -658,7 +657,6 @@ var __Deprecated__CPImageViewImageKey   = @"CPImageViewImageKey";
 @end
 
 var _CPControlSizeIdentifiers               = [],
-    _CPControlCachedThreePartImages         = {},
     _CPControlCachedColorWithPatternImages  = {},
     _CPControlCachedThreePartImagePattern   = {};
 
@@ -692,36 +690,6 @@ function _CPControlColorWithPatternImage(sizes, aClassName)
     }
     
     return color;
-}
-
-function _CPControlThreePartImages(sizes, aClassName)
-{
-    var index = 1,
-        count = arguments.length,
-        identifier = "";
-    
-    for (; index < count; ++index)
-        identifier += arguments[index];
-
-    var images = _CPControlCachedThreePartImages[identifier];
-    
-    if (!images)
-    {
-        var bundle = [CPBundle bundleForClass:[CPControl class]],
-            path = aClassName + "/" + identifier;
-        
-        sizes = sizes[identifier];
-
-        images = [
-                    [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:path + "0.png"] size:sizes[0]],
-                    [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:path + "1.png"] size:sizes[1]],
-                    [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:path + "2.png"] size:sizes[2]]
-                ];
-                
-        _CPControlCachedThreePartImages[identifier] = images;
-    }
-    
-    return images;
 }
 
 function _CPControlThreePartImagePattern(isVertical, sizes, aClassName)
