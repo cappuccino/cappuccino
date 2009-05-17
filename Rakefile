@@ -102,7 +102,7 @@ end
 
 task :submodules do
     if executable_exists? "git"
-        system %{cd .. && git submodule update --init}
+        system %{git submodule init && git submodule update}
     else
         puts "Git not installed"
         rake abort
