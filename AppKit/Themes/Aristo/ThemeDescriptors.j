@@ -467,8 +467,8 @@
 
 + (CPSlider)themedCircularSlider
 {
-    var slider = [[CPSlider alloc] initWithFrame:CGRectMake(0.0, 0.0, 32.0, 32.0)],
-        trackColor = PatternColor([_CPCibCustomResource imageResourceWithName:"circularSliderBezel.png" size:CGSizeMake(32.0, 32.0)]);
+    var slider = [[CPSlider alloc] initWithFrame:CGRectMake(0.0, 0.0, 34.0, 34.0)],
+        trackColor = PatternColor([_CPCibCustomResource imageResourceWithName:"circularSliderBezel.png" size:CGSizeMake(34.0, 34.0)]);
 
     [slider setSliderType:CPCircularSlider];
     [slider setValue:trackColor forThemeAttribute:@"track-color" inState:CPThemeStateCircular];
