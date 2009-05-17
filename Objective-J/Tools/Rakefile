@@ -14,10 +14,6 @@ $OBJJC_JS_COMPILER_RHINO = File.join($ENVIRONMENT_LIB_DIR, 'js.jar')
 $EXECUTABLES = ['objj', 'objjc', 'plutil']
 $EXECUTABLES_PRODUCTS = $EXECUTABLES.map {|e| File.join($ENVIRONMENT_BIN_DIR, e) }
 
-file_d $ENVIRONMENT_OBJJ_PRODUCT do
-    cp_r('objj', $ENVIRONMENT_OBJJ_PRODUCT)
-end
-
 $EXECUTABLES.each do |executable|
   source = File.join('objj', 'bin', executable)
   dest = File.join($ENVIRONMENT_BIN_DIR, executable)
@@ -28,13 +24,16 @@ $EXECUTABLES.each do |executable|
 end
 
 file_d $OBJJC_JS_COMPILER => 'shrinksafe.jar' do
-    cp('shrinksafe.jar', $OBJJC_JS_COMPILER)
+  cp('shrinksafe.jar', $OBJJC_JS_COMPILER)
 end
 
 file_d $OBJJC_JS_COMPILER_RHINO => 'js.jar' do
-    cp('js.jar', $OBJJC_JS_COMPILER_RHINO)
+  cp('js.jar', $OBJJC_JS_COMPILER_RHINO)
 end
 
-task :build => [$ENVIRONMENT_OBJJ_PRODUCT, $OBJJC_JS_COMPILER, $OBJJC_JS_COMPILER_RHINO].concat($EXECUTABLES_PRODUCTS)
+task :build => [$OBJJC_JS_COMPILER, $OBJJC_JS_COMPILER_RHINO].concat($EXECUTABLES_PRODUCTS) do
+  rm_rf($ENVIRONMENT_OBJJ_PRODUCT)
+  cp_r('objj', $ENVIRONMENT_OBJJ_PRODUCT)
+end
 
 CLOBBER.include($ENVIRONMENT_OBJJ_PRODUCT, $EXECUTABLES_PRODUCTS, $OBJJC_JS_COMPILER, $OBJJC_JS_COMPILER_RHINO)
