@@ -131,6 +131,7 @@ FILE_PATTERNS          = *.c \
                          *.j
 RECURSIVE              = YES
 EXCLUDE                = AppKit/Cib \
+                         AppKit/Themes \
                          AppKit/CPOutlineView.j \
                          AppKit/CPTableColumn.j \
                          AppKit/CPTableView.j
