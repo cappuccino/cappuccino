@@ -5,128 +5,55 @@ importClass(java.io.OutputStreamWriter);
 
 @import <Foundation/Foundation.j>
 
+@import "Configuration.j"
+@import "Generate.j"
+
+
 function main()
 {
     if (system.args.length < 1)
         return printUsage();
 
     var index = 0,
-        count = system.args.length,
-        
-        shouldSymbolicallyLink = false,
-        justFrameworks = false,
-        
-        template = "Application",
-        destination = "";
+        count = system.args.length;
 
     for (; index < count; ++index)
     {
         var argument = system.args[index];
         
-        switch (system.args[index])
+        switch (argument)
         {
-            case "-l":              shouldSymbolicallyLink = true;
-                                    break;
-                                    
+            case "version":
+            case "--version":   return print("capp version 0.7.0");
+
             case "-h":
-            case "--help":          printUsage();
-                                    return;
+            case "--help":      return printUsage();
+
+            case "config":      return config.apply(this, system.args.slice(index + 1));
+
+            case "gen":         return gen.apply(this, system.args.slice(index + 1));
             
-            case "-t":
-            case "--template":      template = system.args[++index];
-                                    break;
-                                
-            case "-f":
-            case "--frameworks":    justFrameworks = true;
-                                    break;
-                                
-            default:                destination = argument;
+            default:            print("unknown command " + argument);
         }
     }
-
-    var sourceTemplate = new java.io.File(OBJJ_HOME + "/lib/capp/Resources/Templates/" + template),
-        destinationProject = new java.io.File(destination);
-    
-    if (!destinationProject.exists())
-    {
-        if (!justFrameworks)
-        {
-            exec(["cp", "-vR", sourceTemplate.getCanonicalPath(), destinationProject.getCanonicalPath()], true);
-
-            var files = getFiles(destinationProject, ['j', "plist", "html"]),
-                index = 0,
-                count = files.length;
-
-            for (; index < count; ++index)
-            {
-                var file = files[index],
-                    contents = readFile(file);
-
-                contents = contents.replace(/__Product__/g, destinationProject.getName());
-
-                writeContentsToFile(contents, file);
-            }
-        }
-        
-        createFrameworksInFile(destinationProject, shouldSymbolicallyLink);
-    }
-    else
-        print("Directory already exists");
-}
-
-function createFrameworksInFile(/*File*/ aFile, /*Boolean*/ shouldSymbolicallyLink)
-{
-        var destinationFrameworks = new java.io.File(aFile.getCanonicalPath()+ "/Frameworks"),
-            destinationDebugFrameworks = new java.io.File(aFile.getCanonicalPath() + "/Frameworks/Debug");
-
-        if (!shouldSymbolicallyLink)
-        {
-            var sourceFrameworks = new java.io.File(OBJJ_HOME + "/lib/Frameworks");
-        
-            exec(["cp", "-vR", sourceFrameworks.getCanonicalPath(), destinationFrameworks.getCanonicalPath()], true);
-
-            return true;
-        }
-        
-        var BUILD = system.env["CAPP_BUILD"] || system.env["STEAM_BUILD"];
-        
-        if (!BUILD)
-            throw "CAPP_BUILD or STEAM_BUILD must be defined";
-        
-        // Release Frameworks
-        new java.io.File(destinationFrameworks).mkdir();
-        
-        exec(["ln", "-s",   new java.io.File(BUILD + "/Release/Objective-J").getCanonicalPath(),
-                            new java.io.File(aFile.getCanonicalPath() + "/Frameworks/Objective-J").getCanonicalPath()], true);
-
-        exec(["ln", "-s",   new java.io.File(BUILD + "/Release/Foundation").getCanonicalPath(),
-                            new java.io.File(aFile.getCanonicalPath() + "/Frameworks/Foundation").getCanonicalPath()], true);
-
-        exec(["ln", "-s",   new java.io.File(BUILD + "/Release/AppKit").getCanonicalPath(),
-                            new java.io.File(aFile.getCanonicalPath() + "/Frameworks/AppKit").getCanonicalPath()], true);
-
-        // Debug Frameworks
-        new java.io.File(destinationDebugFrameworks).mkdir();
-        
-        exec(["ln", "-s",   new java.io.File(BUILD + "/Debug/Objective-J").getCanonicalPath(),
-                            new java.io.File(aFile.getCanonicalPath() + "/Frameworks/Debug/Objective-J").getCanonicalPath()], true);
-
-        exec(["ln", "-s",   new java.io.File(BUILD + "/Debug/Foundation").getCanonicalPath(),
-                            new java.io.File(aFile.getCanonicalPath() + "/Frameworks/Debug/Foundation").getCanonicalPath()], true);
-
-        exec(["ln", "-s",   new java.io.File(BUILD + "/Debug/AppKit").getCanonicalPath(),
-                            new java.io.File(aFile.getCanonicalPath() + "/Frameworks/Debug/AppKit").getCanonicalPath()], true);
 }
 
 function printUsage()
 {
-    print("capp /path/to/your/app [options]");
+    print("capp [--version] COMMAND [ARGS]");
+    print("    --version         Print version");
+    print("    -h, --help        Print usage");
+    print("");
+    print(ANSITextApplyProperties("    gen", ANSI_BOLD) + " PATH          Generate new project at PATH from a predefined template");
     print("    -l                Symlink the Frameworks folder to your $CAPP_BUILD or $STEAM_BUILD directory");
     print("    -t, --template    Specify the template name to use (listed in capp/Resources/Templates)");
     print("    -f, --frameworks  Create only frameworks, not a full application");
-    print("    -h, --help        Print usage");
+    print("");
+    print(ANSITextApplyProperties("    config ", ANSI_BOLD));
+    print("    name value        Set a value for a given key");
+    print("    -l, --list        List all variables set in config file.");
+    print("    --get name        Get the value for a given key");
 }
-
 
 function writeContentsToFile(/*String*/ aString, /*File*/ aFile)
 {
@@ -207,11 +134,10 @@ function getFiles(/*File*/ sourceDirectory, /*nil|String|Array<String>*/ extensi
                 else if (name.substring(name.length - extensions.length - 1) === ("." + extensions))
                     isValidExtension = true;
                 
-            if (isValidExtension)
-                matches.push(file);
-            
             if (file.isDirectory())
                 matches = matches.concat(getFiles(file, extensions, exclusions));
+            else if (isValidExtension)
+                matches.push(file);
         }
     }
     

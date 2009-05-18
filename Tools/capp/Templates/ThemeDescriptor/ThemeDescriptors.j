@@ -1,33 +1,36 @@
 /*
  * ThemeDescriptors.j
- * __Product__
+ * __project.name__
  *
- * Created by __Me__ on __Date__.
- * Copyright 2008 __MyCompanyName__. All rights reserved.
+ * Created by __user.name__ on __project.date__.
+ * Copyright __project.year__, __organization.name__ All rights reserved.
  */
 
 @import <Foundation/CPObject.j>
 
 
-@implementation __Product__ThemeDescriptor : CPObject
+@implementation __project.nameasidentifier__ThemeDescriptor : CPObject
 {
 }
 
 + (CPString)themeName
 {
-    return @"__Product__";
+    return @"__project.name__";
 }
 
-+ (CPTextField)themedTextField
++ (CPButton)themedStandardButton
 {
-    var textField = [[CPTextField alloc] initWithFrame:CGRectMake(0.0, 0.0, 200.0, 20.0)];
+    var button = [[CPButton alloc] initWithFrame:CGRectMake(0.0, 0.0, 100.0, 20.0)];
     
-    [textField setValue:[CPColor blueColor] forThemedAttributeName:@"bezel-color"];
-    [textField setValue:[CPColor redColor] forThemedAttributeName:@"text-color"];
+    [button setValue:[CPColor blueColor] forThemeAttribute:@"bezel-color"];
+    [button setValue:[CPColor greenColor] forThemeAttribute:@"bezel-color" inState:CPThemeStateHighlighted];
+
+    [button setValue:[CPColor redColor] forThemeAttribute:@"text-color"];
+    [button setValue:[CPColor yellowColor] forThemeAttribute:@"text-color" inState:CPThemeStateHighlighted];
+
+    [button setTitle:@"Yikes!"];
     
-    [textField setStringValue:@"Yikes!"];
-    
-    return textField;
+    return button;
 }
 
 @end

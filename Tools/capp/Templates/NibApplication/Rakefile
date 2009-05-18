@@ -1,0 +1,24 @@
+
+require 'objective-j'
+require 'objective-j/bundletask'
+
+if !ENV['CONFIG']
+    ENV['CONFIG'] = 'Debug'
+end
+
+ObjectiveJ::BundleTask.new(:__project.nameasidentifier__) do |t|
+    t.name          = '__project.name__'
+    t.identifier    = '__project.identifier__'
+    t.version       = '1.0'
+    t.author        = '__organization.name__'
+    t.email         = '__organization.email__'
+    t.summary       = '__project.name__'
+    t.sources       = FileList['*.j']
+    t.resources     = FileList['Resources/*']
+    t.license       = ObjectiveJ::License::LGPL_v2_1
+    t.build_path    = File.join('Build', ENV['CONFIG'], '__project.nameasidentifier__')
+    t.flag          = '-DDEBUG' if ENV['CONFIG'] == 'Debug'
+    t.flag          = '-O' if ENV['CONFIG'] == 'Release'
+end
+
+task :default => [:__project.nameasidentifier__]

@@ -67,7 +67,7 @@ file_d $STARTER_DOWNLOAD_APPLICATION => [$TOOLS_DOWNLOAD_ENV] do
 
     rm_rf($STARTER_DOWNLOAD_APPLICATION)
     mkdir_p($STARTER_DOWNLOAD)
-    system %{capp #{$STARTER_DOWNLOAD_APPLICATION} -t Application }
+    system %{capp gen #{$STARTER_DOWNLOAD_APPLICATION} -t Application --noconfig }
 
 end
 
