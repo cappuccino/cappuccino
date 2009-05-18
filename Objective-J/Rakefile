@@ -10,7 +10,7 @@ $PRODUCT                = File.join($PRODUCT_DIR, 'Objective-J')
 $ENVIRONMENT_PRODUCT    = File.join($ENVIRONMENT_FRAMEWORKS_DIR, 'Objective-J')
 $LICENSE_PRODUCT        = File.join($PRODUCT, 'LICENSE')
 
-$LICENSE_FILE           = File.join($HOME_DIR, 'Rake', 'lib', 'licenses', 'LGPL-v2.1')
+$LICENSE_FILE           = File.join($HOME_DIR, 'Tools', 'Rake', 'lib', 'licenses', 'LGPL-v2.1')
 
 $BROWSER_FILE           = File.join($PRODUCT, 'Objective-J.js')
 $RHINO_FILE             = File.join($PRODUCT, 'rhino.platform', 'Objective-J.js')

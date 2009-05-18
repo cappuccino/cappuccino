@@ -59,7 +59,7 @@ if !(defined? COMMON_DO_ONCE)
     
     COMMON_DO_ONCE = true
     
-    $LOAD_PATH << File.join($HOME_DIR, 'Rake', 'lib')
+    $LOAD_PATH << File.join($HOME_DIR, 'Tools', 'Rake', 'lib')
     ENV['PATH'] = $ENVIRONMENT_BIN_DIR + ':' + ENV['PATH']
 end
 
@@ -89,7 +89,7 @@ def executable_exists?(name)
   ENV["PATH"].split(":").any? {|p| File.executable? File.join(p, name) }
 end
 
-$OBJJ_TEMPLATE_EXECUTABLE   = File.join($HOME_DIR, 'Rake', 'lib', 'objj-executable')
+$OBJJ_TEMPLATE_EXECUTABLE   = File.join($HOME_DIR, 'Tools', 'Rake', 'lib', 'objj-executable')
 
 def make_objj_executable(path)
     cp($OBJJ_TEMPLATE_EXECUTABLE, path)

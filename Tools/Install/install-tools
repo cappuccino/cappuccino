@@ -36,4 +36,6 @@ done
 
 chmod +x $INSTALL_DIR/share/objj/bin/*
 
+gem install /Users/tlrobinson/cappuccino/capp_build/Release/rake/*.gem
+
 echo "Cappuccino Tools Installed"
