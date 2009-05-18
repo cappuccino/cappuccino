@@ -32,7 +32,9 @@ var VISIBLE_MARGIN  = 7.0;
 
 CPPopUpButtonStatePullsDown = CPThemeState("pulls-down");
 
-/*! @class CPPopUpButton
+/*! 
+    @ingroup appkit
+    @class CPPopUpButton
 
     A CPPopUpButton contains a pop-up menu of items that a user can select from.
 */

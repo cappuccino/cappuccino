@@ -23,7 +23,9 @@
 @import "CPObject.j"
 
 
-/*! @class CPURLRequest
+/*! 
+    @ingroup foundation
+    @class CPURLRequest
     A helper object for CPURLConnection, that contains
     data obtained during the life of a request.
 */

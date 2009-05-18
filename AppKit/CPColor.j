@@ -49,7 +49,9 @@ var cachedBlackColor,
     cachedShadowColor,
     cachedClearColor;
 
-/*! @code CPColor
+/*! 
+    @ingroup appkit
+    @code CPColor
 
     <code>CPColor</code> can be used to represent color
     in an RGB or HSB model with an optional transparency value.</p>

@@ -34,6 +34,11 @@ CPMakeSize = CGSizeMake;
 CPMakeRect = CGRectMake;
 
 /*!
+    @addtogroup appkit
+    @{
+*/
+
+/*!
   Creates a copy of a specified point and returns the copy
   @group CGPoint
   @param the point to be copied
@@ -498,3 +503,7 @@ function CPPointMakeZero()
 {
     return CPPointMake(0, 0, 0);
 }
+
+/*! 
+    @}
+*/

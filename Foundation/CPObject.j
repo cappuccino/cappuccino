@@ -21,6 +21,7 @@
  */
 
 /*!
+    @ingroup foundation
     @class CPObject
     
     CPObject is the root class for most Cappuccino classes. Like in Objective-C,

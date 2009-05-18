@@ -21,6 +21,11 @@
  */
 
 /*!
+    @addtogroup foundation
+    @{
+*/
+
+/*!
     Makes a CPRange.
     @param location the location for new range
     @param length the length of the new range
@@ -164,3 +169,7 @@ function CPRangeFromString(aString)
     
     return { location:parseInt(aString.substr(1, comma - 1)), length:parseInt(aString.substring(comma + 1, aString.length)) };
 }
+
+/*!
+    @}
+*/

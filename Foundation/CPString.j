@@ -58,7 +58,9 @@ CPNumericSearch         = 64;
 
 var CPStringHashes      = new objj_dictionary();
 
-/*! @class CPString
+/*! 
+    @ingroup foundation
+    @class CPString
     CPString is an object that allows management of strings. Because CPString is
     based on the JavaScript <code>String</code> object, CPStrings are immutable, although the
     class does have methods that create new CPStrings generated from modifications to the

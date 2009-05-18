@@ -34,6 +34,10 @@ CPSplitViewWillResizeSubviewsNotification = @"CPSplitViewWillResizeSubviewsNotif
 var CPSplitViewHorizontalImage = nil,
     CPSplitViewVerticalImage = nil;
 
+/*!
+    @ingroup appkit
+*/
+
 @implementation CPSplitView : CPView
 {
     id          _delegate;

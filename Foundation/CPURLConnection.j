@@ -35,6 +35,8 @@ var XMLHTTPRequestUninitialized = 0,
 var CPURLConnectionDelegate = nil;
 
 /*
+    @ingroup foundation
+
     An interface to downloading content at a specified URL. Using one of the
     class methods, you can obtain the data.
     

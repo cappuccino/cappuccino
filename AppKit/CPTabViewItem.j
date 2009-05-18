@@ -44,7 +44,9 @@ CPBackgroundTab = 1;
 */
 CPPressedTab    = 2;
 
-/*! @class CPTabView
+/*! 
+    @ingroup appkit
+    @class CPTabViewItem
 
     The class representation of an item in a CPTabView. One tab view item
     can be shown at a time in a CPTabView.

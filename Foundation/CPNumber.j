@@ -27,7 +27,9 @@
 var __placeholder = new Number(),
     _CPNumberHashes = { };
 
-/*! @class CPNumber
+/*! 
+    @ingroup foundation
+    @class CPNumber
     This class primarily exists for source compatability. The JavaScript
     <code>Number</code> type can be changed on the fly based on context,
     so there is no need to call any of these methods. 

@@ -28,7 +28,9 @@
 @import <AppKit/CPMenu.j>
 @import <AppKit/CPView.j>
 
-/*! @class CPMenuItem
+/*! 
+    @ingroup appkit
+    @class CPMenuItem
 
     A CPMenuItem is added to a CPMenu.
     It has an action and a target for that action to be sent to

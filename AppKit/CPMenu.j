@@ -48,9 +48,12 @@ var _CPMenuBarVisible               = NO,
     _CPMenuBarAttributes            = nil,
     _CPMenuBarSharedWindow          = nil;
 
-/*! @class CPMenu
+/*! 
+    @ingroup appkit
+    @class CPMenu
 
-    Menus provide the user with a list of actions and/or submenus. Submenus themselves are full fledged menus and so a heirarchical structure appears.
+    Menus provide the user with a list of actions and/or submenus. Submenus themselves are full fledged menus 
+    and so a heirarchical structure appears.
 */
 @implementation CPMenu : CPObject
 {

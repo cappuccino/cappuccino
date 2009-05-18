@@ -190,7 +190,9 @@ CPDOMEventTouchCancel                   = "touchcancel";
 var _CPEventPeriodicEventPeriod         = 0,
     _CPEventPeriodicEventTimer          = nil;
 
-/*! @class CPEvent
+/*! 
+    @ingroup appkit
+    @class CPEvent
     CPEvent encapsulates the details of a Cappuccino keyboard or mouse event.
 */
 @implementation CPEvent : CPObject

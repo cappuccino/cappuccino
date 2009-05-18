@@ -47,7 +47,9 @@ CPTableColumnUserResizingMask   = 2;
 #define PurgableInfoView(anInfo) ((anInfo).view)
 #define PurgableInfoRow(anInfo) ((anInfo).row)
 
-/*! @class CPTableColumn
+/*! 
+    @ingroup appkit
+    @class CPTableColumn
 
     An CPTableColumn object mainly keeps information about the width of the column, its minimum and maximum width; whether the column can be edited or resized; and the cells used to draw the column header and the data in the column. You can change all these attributes of the column by calling the appropriate methods. Please note that the table column does not hold nor has access to the data to be displayed in the column; this data is maintained in the table view's data source.</p>
     

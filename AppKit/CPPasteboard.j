@@ -42,7 +42,9 @@ CPImagePboardType       = @"CPImagePboardType";
 
 var CPPasteboards = nil;
 
-/*! @class CPPasteboard
+/*! 
+    @ingroup appkit
+    @class CPPasteboard
 
     CPPasteBoard is the object responsible for cut/copy/paste and drag&drop operations. 
 */

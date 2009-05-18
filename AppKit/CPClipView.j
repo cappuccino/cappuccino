@@ -25,7 +25,9 @@
 #include "CoreGraphics/CGGeometry.h"
 
 
-/*! @class CPClipView
+/*! 
+    @ingroup appkit
+    @class CPClipView
 
     CPClipView allows you to define a clip rect and display only that portion of its containing view.  
     It is used to hold the document view in a CPScrollView.

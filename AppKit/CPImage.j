@@ -58,7 +58,9 @@ function CPImageInBundle(aFilename, aSize, aBundle)
 
 @end
 
-/*! @class CPImage
+/*! 
+    @ingroup appkit
+    @class CPImage
 
     CPImage is used to represent images in the Cappuccino framework. It supports loading
     all image types supported by the browser.

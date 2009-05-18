@@ -187,7 +187,9 @@ var SHADOW_MARGIN_LEFT      = 20.0,
 var CPWindowSaveImage       = nil,
     CPWindowSavingImage     = nil;
 
-/*! @class CPWindow
+/*! 
+    @ingroup appkit
+    @class CPWindow
 
     An CPWindow instance represents a window, panel or menu on the screen.</p>
 

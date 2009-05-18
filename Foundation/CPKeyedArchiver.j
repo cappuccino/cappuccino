@@ -60,7 +60,9 @@ var _CPKeyedArchiverStringClass                         = Nil,
 }
 @end
 
-/*! @class CPKeyedArchiver
+/*! 
+    @ingroup foundation
+    @class CPKeyedArchiver
 
     Implements keyed archiving of object graphs. Archiving means to
     write data out in a format that be read in again later, or possibly
@@ -95,6 +97,7 @@ var _CPKeyedArchiverStringClass                         = Nil,
     @param object the object to be replaced
     @param newObject the replacement object
 */
+
 @implementation CPKeyedArchiver : CPCoder
 {
     id                      _delegate;

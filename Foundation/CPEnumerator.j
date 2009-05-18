@@ -22,6 +22,9 @@
 
 @import "CPObject.j"
 
+/*! 
+    @ingroup foundation
+*/
 
 /*! @class CPEnumerator
     CPEnumerator is a superclass (with useless method bodies)

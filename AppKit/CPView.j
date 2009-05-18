@@ -100,7 +100,9 @@ var DOMElementPrototype         = nil,
     CustomLayoutSubviewsViews           = {};
 #endif
 
-/*! @class CPView
+/*! 
+    @ingroup appkit
+    @class CPView
 
     <p>CPView is a class which provides facilities for drawing
     in a window and receiving events. It is the superclass of many of the visual

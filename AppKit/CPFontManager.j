@@ -28,6 +28,9 @@
 var CPSharedFontManager     = nil,
     CPFontManagerFactory    = Nil;
 
+/*!
+    @ingroup appkit
+*/
 @implementation CPFontManager : CPObject
 {
     CPArray _availableFonts;

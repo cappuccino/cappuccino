@@ -26,6 +26,9 @@
 @import <AppKit/_CPCibCustomResource.j>
 @import <AppKit/_CPCibKeyedUnarchiver.j>
 
+/*!
+    @ingroup appkit
+*/
 
 @implementation CPThemeBlend : CPObject
 {

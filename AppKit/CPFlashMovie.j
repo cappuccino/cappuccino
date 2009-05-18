@@ -22,7 +22,9 @@
 
 @import <Foundation/CPObject.j>
 
-/*! @class CPFlashMovie
+/*! 
+    @ingroup appkit
+    @class CPFlashMovie
 
     CPFlashMovie is used to represent a Flash movie in the Cappuccino framework.
 */

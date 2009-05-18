@@ -23,6 +23,9 @@
 @import "CPObject.j"
 @import "CPString.j"
 
+/*!
+    @ingroup foundation
+*/
 
 @implementation CPData : CPObject
 {

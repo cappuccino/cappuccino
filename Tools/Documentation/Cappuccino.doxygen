@@ -130,8 +130,7 @@ FILE_PATTERNS          = *.c \
                          *.vhdl \
                          *.j
 RECURSIVE              = YES
-EXCLUDE                = AppKit/Cib \
-                         AppKit/Themes \
+EXCLUDE                = AppKit/Themes \
                          AppKit/CPOutlineView.j \
                          AppKit/CPTableColumn.j \
                          AppKit/CPTableView.j

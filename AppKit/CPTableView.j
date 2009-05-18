@@ -43,7 +43,13 @@ var _CPTableViewWillDisplayCellSelector                         = 1 << 0,
     _CPTableViewHeightOfRowSelector                             = 1 << 6;
     
 /*
-    CPTableView is located within the AppKit framework and is used to display tables. It uses a delegate model for getting its data i.e. you give it an object that provides it with the data it should display.
+    @ingroup appkit
+    
+    This class is not yet stable.
+    
+    CPTableView is located within the AppKit framework and is used to display tables. 
+    It uses a delegate model for getting its data i.e. you give it an object that provides 
+    it with the data it should display.
     
     @ignore
 */

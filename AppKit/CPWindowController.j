@@ -30,7 +30,9 @@
 #include "Platform/Platform.h"
 
 
-/*! @class CPWindowController
+/*! 
+    @ingroup appkit
+    @class CPWindowController
 
     An instance of a CPWindowController manages a CPWindow. It has methods
     that get called when the window is loading, and after the window has loaded. In the

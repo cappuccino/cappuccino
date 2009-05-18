@@ -48,7 +48,10 @@ CPAnimationLinear       = 3;
 
 ACTUAL_FRAME_RATE = 0;
 
-/*! @class CPAnimation
+/*! 
+    @ingroup appkit
+    @class CPAnimation
+
     Manages an animation. Contains timing and progress information.
 
     @par Delegate Methods

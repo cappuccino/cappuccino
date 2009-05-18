@@ -24,7 +24,9 @@
 @import "CPException.j"
 
 
-/*! @class CPInvocation
+/*! 
+    @ingroup foundation
+    @class CPInvocation
     A CPInvocation is an object representation of a message sent to an object.
 */
 @implementation CPInvocation : CPObject

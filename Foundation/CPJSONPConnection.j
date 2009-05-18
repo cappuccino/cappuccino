@@ -25,6 +25,10 @@
 
 CPJSONPConnectionCallbacks = {};
 
+/*! 
+    @ingroup foundation
+*/
+
 /*! @class CPJSONPConnection
     Important note: CPJSONPConnection is <strong>only</strong> for JSONP APIs.
     If aren't sure you <strong>need</strong>

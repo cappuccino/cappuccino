@@ -56,7 +56,9 @@ var CPAlertWarningImage,
     CPAlertInformationImage,
     CPAlertErrorImage;
 
-/*
+/*!
+    @ingroup appkit
+    
     CPAlert is an alert panel that can be displayed modally to present the
     user with a message and one or more options.
 

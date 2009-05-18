@@ -24,7 +24,9 @@
 @import <Foundation/CPString.j>
 
 
-/*! @class CPCookie
+/*! 
+    @ingroup appkit
+    @class CPCookie
     CPCookie is the Cappuccino interface to a web browser cookie. You can set the name
 */
 @implementation CPCookie : CPObject

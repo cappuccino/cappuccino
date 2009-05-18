@@ -58,7 +58,9 @@ var LEFT_SHADOW_INSET       = 3.0,
     VERTICAL_SHADOW_INSET   = TOP_SHADOW_INSET + BOTTOM_SHADOW_INSET,
     HORIZONTAL_SHADOW_INSET = LEFT_SHADOW_INSET + RIGHT_SHADOW_INSET;
 
-/*! @class CPImageView
+/*! 
+    @ingroup appkit
+    @class CPImageView
 
     This class is a control that displays an image.
 */

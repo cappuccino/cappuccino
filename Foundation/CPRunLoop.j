@@ -137,7 +137,9 @@ var _CPRunLoopPerformPool           = [],
 
 var CPRunLoopLastNativeRunLoop = 0;
 
-/*! @class CPRunLoop
+/*! 
+    @ingroup foundation
+    @class CPRunLoop
 
     CPRunLoop instances handle various utility tasks that must be performed repetitively in an application, such as processing input events.
 
