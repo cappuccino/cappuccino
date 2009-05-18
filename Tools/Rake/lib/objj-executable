@@ -21,4 +21,4 @@ if [[ `uname` == CYGWIN* ]]; then
     MAIN=`cygpath -w "$MAIN"`
 fi
 
-objj -I$FRAMEWORKS $MAIN $@
+objj -I$FRAMEWORKS $MAIN "$@"
