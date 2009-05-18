@@ -183,7 +183,7 @@ var _CPMenuBarVisible               = NO,
     }
     
     if (!highlightColor)
-        [_CPMenuBarAttributes setObject:[CPColor colorWithCalibratedRed:81.0 / 255.0 green:83.0 / 255.0 blue:109.0 / 255.0 alpha:1.0] forKey:@"CPMenuBarHighlightColor"];
+        [_CPMenuBarAttributes setObject:[CPColor colorWithCalibratedRed:94.0/255.0 green:130.0/255.0 blue:186.0/255.0 alpha:1.0] forKey:@"CPMenuBarHighlightColor"];
     
     if (!highlightTextColor)
         [_CPMenuBarAttributes setObject:[CPColor whiteColor] forKey:@"CPMenuBarHighlightTextColor"];
