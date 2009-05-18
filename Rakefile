@@ -54,7 +54,7 @@ file_d $TOOLS_DOWNLOAD_INSTALLER => [$TOOLS_INSTALLER] do
 end
 
 task :objj_gem do
-    subrake('Tools/Rake', :objj_gem)
+    #subrake('Tools/Rake', :objj_gem)
 end
 
 task :tools_download => [$TOOLS_DOWNLOAD_ENV, $TOOLS_DOWNLOAD_EDITORS, $TOOLS_DOWNLOAD_README, $TOOLS_DOWNLOAD_INSTALLER, :objj_gem]
