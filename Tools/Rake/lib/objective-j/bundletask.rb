@@ -189,6 +189,7 @@ module ObjectiveJ
 
         required_attribute :summary
         required_attribute :identifier
+        required_attribute :nib2cib_flags, []
         required_attribute :platforms, [Platform::ObjJ]
         required_attribute :type, Bundle::Type::Application
         
@@ -217,6 +218,7 @@ module ObjectiveJ
         #    attribute_alias_singular :executable,   :executables
         attribute_alias_singular :author, :authors
         attribute_alias_singular :flag, :flags
+        attribute_alias_singular :nib2cib_flag, :nib2cib_flags
         attribute_alias_singular :platform, :platforms
         #    attribute_alias_singular :require_path, :require_paths
         #    attribute_alias_singular :test_file,    :test_files
@@ -367,20 +369,35 @@ module ObjectiveJ
         def define
 
             validate
-            
+
             resources_path = File.join(build_path, 'Resources')
-            copied_resources = []
 
-            # create file tasks for copied resources
-            resources.each do |resource|
+            copied_resources = copy_resources resources, resources_path do |resource, copied_resource|
+                extname = File.extname(copied_resource)
 
-                copied_resource = File.join(resources_path, File.basename(resource))
+                if extname == '.xib' || extname == '.nib'
+                    copied_resource = File.join(File.dirname(copied_resource), File.basename(copied_resource, extname)) + '.cib'
 
-                file_d copied_resource => [resource] do
-                    cp_r(resource, resources_path)
+                    file_d copied_resource => [resource] do
+                        IO.popen("nib2cib #{resource} #{copied_resource} #{nib2cib_flags.join(' ') || ''}") do |nib2cib|
+                            nib2cib.sync = true
+
+                            while str = nib2cib.gets
+                                puts str
+                            end
+                        end
+                    end
+
+                    copied_resource
+                else
+                    extensionless = File.join(File.dirname(copied_resource), File.basename(copied_resource, extname))
+
+                    if extname == '.cib' and (File.exists?(extensionless + '.xib') or File.exists?(extensionless + '.nib'))
+                        false
+                    else
+                        true
+                    end
                 end
-                
-                copied_resources << copied_resource
             end
 
             info_plist_path = build_path + '/Info.plist'
