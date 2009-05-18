@@ -9,6 +9,7 @@ var usageMessage =
 "Usage: press root_directory output_directory [options]\n\
         --main path         The relative path (from root_directory) to the main file (default: 'main.j')\n\
         --frameworks path   The relative path (from root_directory) to the frameworks directory (default: 'Frameworks')\n\
+        --platforms         Platform names, colon separated (default: 'browser:objj')\n\
         --png               Run pngcrush on all PNGs (pngcrush must be installed!)\n\
         --flatten           Flatten all code into a single Application.js file and attempt add script tag to index.html (useful for Adobe AIR and CDN deployment)\n\
         --nostrip           Don't strip any files\n\
@@ -20,6 +21,7 @@ function main()
         outputDirectory = null,
         mainFilename = null,
         frameworksDirectory = null,
+        platforms = ['browser', 'objj'],
         optimizePNG = false,
         flatten = false,
         noStrip = false,
@@ -40,6 +42,12 @@ function main()
             case "--frameworks":
                 if (system.args.length)
                     frameworksDirectory = system.args.shift().replace(/\/$/, "");
+                else
+                    usageError = true;
+                break;
+            case "--platforms":
+                if (system.args.length)
+                    platforms = system.args.shift().split(":");
                 else
                     usageError = true;
                 break;
@@ -70,7 +78,7 @@ function main()
     else
         CPLogRegisterRange(CPLogPrint, "fatal", "info");
         
-    if (usageError || rootDirectory == null || outputDirectory == null)   
+    if (usageError || rootDirectory == null || outputDirectory == null || !platforms.length)   
     {
         print(usageMessage);
         return;
@@ -93,6 +101,7 @@ function main()
     
     // set OBJJ_INCLUDE_PATHS to include the frameworks path
     scope.OBJJ_INCLUDE_PATHS = [frameworksPath];
+    scope.OBJJ_PLATFORMS = platforms;
     
     // flattening bookkeeping. keep track of the bundles and evaled code (in the correct order!)
     var bundleArchives = [],
@@ -298,7 +307,18 @@ function main()
                     replacedFiles = [dict objectForKey:"CPBundleReplacedFiles"];
                 if (replacedFiles && [replacedFiles containsObject:filename])
                 {
-                    var staticPath = bundleDirectory + "/" + [dict objectForKey:"CPBundleExecutable"];
+                    // compute the platform used for this bundle
+                    var platform = "",
+                        bundlePlatforms = [dict objectForKey:"CPBundlePlatforms"];
+                    
+                    if (bundlePlatforms)
+                    {
+                        platform = [bundlePlatforms firstObjectCommonWithArray:scope.OBJJ_PLATFORMS];
+                        if (platform)
+                            platform = platform + ".platform/";
+                    }
+                    
+                    var staticPath = bundleDirectory + "/" + platform + [dict objectForKey:"CPBundleExecutable"];
                     if (!outputFiles[staticPath])
                     {
                         outputFiles[staticPath] = [];
