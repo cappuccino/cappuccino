@@ -153,9 +153,11 @@ var CPURLConnectionDelegate = nil;
         
         var path = [_request URL];
         
+        // Browsers use "file:", Titanium uses "app:"
         _isLocalFileConnection =    path.indexOf("file:") === 0 || 
                                     ((path.indexOf("http:") !== 0 || path.indexOf("https:") !== 0) && 
-                                    window.location && window.location.protocol === "file:");
+                                    window.location &&
+                                    (window.location.protocol === "file:" || window.location.protocol === "app:"));
         
         _XMLHTTPRequest = objj_request_xmlhttp();
             
