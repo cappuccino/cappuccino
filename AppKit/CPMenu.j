@@ -48,9 +48,12 @@ var _CPMenuBarVisible               = NO,
     _CPMenuBarAttributes            = nil,
     _CPMenuBarSharedWindow          = nil;
 
-/*! @class CPMenu
+/*! 
+    @ingroup appkit
+    @class CPMenu
 
-    Menus provide the user with a list of actions and/or submenus. Submenus themselves are full fledged menus and so a heirarchical structure appears.
+    Menus provide the user with a list of actions and/or submenus. Submenus themselves are full fledged menus 
+    and so a heirarchical structure appears.
 */
 @implementation CPMenu : CPObject
 {
@@ -183,7 +186,7 @@ var _CPMenuBarVisible               = NO,
     }
     
     if (!highlightColor)
-        [_CPMenuBarAttributes setObject:[CPColor colorWithCalibratedRed:81.0 / 255.0 green:83.0 / 255.0 blue:109.0 / 255.0 alpha:1.0] forKey:@"CPMenuBarHighlightColor"];
+        [_CPMenuBarAttributes setObject:[CPColor colorWithCalibratedRed:94.0/255.0 green:130.0/255.0 blue:186.0/255.0 alpha:1.0] forKey:@"CPMenuBarHighlightColor"];
     
     if (!highlightTextColor)
         [_CPMenuBarAttributes setObject:[CPColor whiteColor] forKey:@"CPMenuBarHighlightTextColor"];

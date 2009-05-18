@@ -54,12 +54,31 @@ file_d $TOOLS_DOWNLOAD_INSTALLER => [$TOOLS_INSTALLER] do
 end
 
 task :objj_gem do
-    subrake('Tools/Rake', :objj_gem)
+    #subrake('Tools/Rake', :objj_gem)
 end
 
 task :tools_download => [$TOOLS_DOWNLOAD_ENV, $TOOLS_DOWNLOAD_EDITORS, $TOOLS_DOWNLOAD_README, $TOOLS_DOWNLOAD_INSTALLER, :objj_gem]
 
 task :starter_download => [$STARTER_DOWNLOAD_APPLICATION, $STARTER_DOWNLOAD_README]
+
+task :deploy => [:tools_download, :starter_download, :docs] do
+    #copy the docs into the starter pack
+    cp_r(File.join($DOCUMENTATION_BUILD, 'html', '.'), File.join($STARTER_DOWNLOAD, 'Documentation'))
+
+    cappuccino_output_path = File.join($BUILD_DIR, 'Cappuccino')
+
+    #zip the starter pack
+    starter_zip_output = File.join($BUILD_DIR, 'Cappuccino', 'Starter.zip')
+    rm_rf(starter_zip_output)
+
+    `cd #{cappuccino_output_path} && zip -r -8 Starter.zip Starter`
+
+    #zip the tools pack
+    tools_zip_output = File.join($BUILD_DIR, 'Cappuccino', 'Tools.zip')
+    rm_rf(tools_zip_output)
+
+    `cd #{cappuccino_output_path} && zip -r -8 Tools.zip Tools`
+end
 
 file_d $STARTER_DOWNLOAD_APPLICATION => [$TOOLS_DOWNLOAD_ENV] do
 
@@ -98,10 +117,14 @@ task :test => [:build] do
 end
 
 task :docs do
-  system %{doxygen #{$DOXYGEN_CONFIG} }
-  rm_rf $DOCUMENTATION_BUILD
-  mv "Documentation", $DOCUMENTATION_BUILD
-  rm "debug.txt"
+    if executable_exists? "doxygen"
+      system %{doxygen #{$DOXYGEN_CONFIG} }
+      rm_rf $DOCUMENTATION_BUILD
+      mv "debug.txt", "Documentation"
+      mv "Documentation", $DOCUMENTATION_BUILD
+    else
+        puts 'doxygen not installed. skipping documentation generation.'
+    end
 end
 
 task :submodules do

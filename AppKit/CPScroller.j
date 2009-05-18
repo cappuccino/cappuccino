@@ -41,8 +41,9 @@ CPNoScrollerParts           = 0;
 CPOnlyScrollerArrows        = 1;
 CPAllScrollerParts          = 2;
 
-/*! @class CPScroller
-    
+/*! 
+    @ingroup appkit
+    @class CPScroller    
 */
 
 var PARTS_ARRANGEMENT   = [CPScrollerKnobSlot, CPScrollerDecrementLine, CPScrollerIncrementLine, CPScrollerKnob],

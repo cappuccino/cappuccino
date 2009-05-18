@@ -29,7 +29,9 @@
 @import <AppKit/CPView.j>
 
 
-/*! @class CPCollectionView
+/*! 
+    @ingroup appkit
+    @class CPCollectionView
 
     This class displays an array as a grid of objects, where each object is represented by a view. 
     The view is controlled by creating a CPCollectionViewItem and specifying its view, then 

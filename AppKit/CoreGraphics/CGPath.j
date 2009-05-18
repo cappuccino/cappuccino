@@ -37,6 +37,11 @@ kCGPathElementAddArc                = 5;
 kCGPathElementAddArcToPoint         = 6;
 
 /*!
+    @addtogroup coregraphics
+    @{
+*/
+
+/*!
     Returns a new CGPath object.
 */
 function CGPathCreateMutable()
@@ -368,3 +373,8 @@ function CGPathIsEmpty(aPath)
 {
     return !aPath || aPath.count == 0;
 }
+
+/*!
+    @}
+*/
+

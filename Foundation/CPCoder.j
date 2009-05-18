@@ -24,7 +24,9 @@
 @import "CPException.j"
 
 
-/*! @class CPCoder
+/*! 
+    @ingroup foundation
+    @class CPCoder
     Top-level class defining methods for use when archiving (encoding) objects to a byte array 
     or file, and when restoring (decoding) objects. 
 */

@@ -42,7 +42,9 @@ CPSegmentSwitchTrackingSelectAny = 1;
 */
 CPSegmentSwitchTrackingMomentary = 2;
 
-/*! @class CPSegmentedControl
+/*! 
+    @ingroup appkit
+    @class CPSegmentedControl
 
     This class is a horizontal button with multiple segments.
 */

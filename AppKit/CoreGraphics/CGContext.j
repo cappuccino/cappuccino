@@ -75,6 +75,11 @@ kCGBlendModePlusDarker      = 26;
 kCGBlendModePlusLighter     = 27;
 
 /*!
+    @defgroup coregraphics CoreGraphics
+    @{
+*/
+
+/*!
     This function is just here for source compatability.
     It does nothing.
     @group CGContext
@@ -94,9 +99,15 @@ function CGContextRetain(aContext)
     return aContext;
 }
 
+/*!
+@cond
+*/
 // BEGIN CANVAS IF
 if (!CPFeatureIsCompatible(CPHTMLCanvasFeature))
 {
+/*!
+@endcond
+*/
 
 /*!
     Creates a new graphics state, which describes all the current values for drawing.
@@ -498,7 +509,13 @@ function CGContextSetAlpha(aContext, anAlpha)
     aContext.gState.alpha = MAX(MIN(anAlpha, 1.0), 0.0);
 }
 
+/*!
+@cond
+*/
 }   // END CANVAS IF
+/*!
+@endcond
+*/
 
 // GOOD.
 /*!
@@ -662,6 +679,13 @@ function CGContextStrokeRoundedRectangleInRect(aContext, aRect, aRadius, ne, se,
     CGContextStrokePath(aContext);
 }
 
+/*! 
+    @}
+*/
+
+/*!
+@cond
+*/
 if (CPFeatureIsCompatible(CPHTMLCanvasFeature))
 {
 #include "CGContextCanvas.j"
@@ -670,3 +694,6 @@ else if (CPFeatureIsCompatible(CPVMLFeature))
 {
 #include "CGContextVML.j"
 }
+/*!
+@endcond
+*/

@@ -26,6 +26,9 @@
 
 var CPDateReferenceDate = new Date(Date.UTC(2001,1,1,0,0,0,0));
 
+/*!
+    @ingroup foundation
+*/
 @implementation CPDate : CPObject
 { 
 }

@@ -28,7 +28,9 @@
 
 var CPSharedDocumentController = nil;
 
-/*! @class CPDocumentController
+/*! 
+    @ingroup appkit
+    @class CPDocumentController
     This class is responsible for managing an application's open documents.
 */
 @implementation CPDocumentController : CPObject

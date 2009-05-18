@@ -80,7 +80,9 @@ CPDocumentDidFailToSaveNotification = @"CPDocumentDidFailToSaveNotification";
 
 var CPDocumentUntitledCount = 0;
 
-/*! @class CPDocument
+/*! 
+    @ingroup appkit
+    @class CPDocument
 
     CPDocument is used to represent a document/file in a Cappuccino application.
     In a document-based application, generally multiple documents are open simutaneously

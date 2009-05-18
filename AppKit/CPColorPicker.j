@@ -23,7 +23,9 @@
 @import <Foundation/CPObject.j>
 @import "CPColorPanel.j"
 
-/*! @class CPColorPicker
+/*! 
+    @ingroup appkit
+    @class CPColorPicker
 
     CPColorPicker is an abstract superclass for all color picker subclasses. If you want a particular color picker, use CPColorPanel's <code>setPickerMode:</code> method. The simplest way to implement your own color picker is to create a subclass of CPColorPicker.
 */

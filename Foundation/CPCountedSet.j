@@ -1,6 +1,9 @@
 
 @import "CPSet.j"
 
+/*!
+    @ingroup foundation
+*/
 @implementation CPCountedSet : CPMutableSet
 {
     Object  _counts;

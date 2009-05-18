@@ -52,7 +52,9 @@ CPSliderColorPickerMode = 2;
 CPColorPickerViewWidth  = 265,
 CPColorPickerViewHeight = 370;
 
-/*! @class CPColorPanel
+/*! 
+    @ingroup appkit
+    @class CPColorPanel
 
     CPColorPanel provides a reusable panel that can be used
     displayed on screen to prompt the user for a color selection. To

@@ -25,7 +25,43 @@
 
 @import "CPButton.j"
 
+/*!
+    @ingroup appkit
+    
+    from this mailing list thread:
+    http://groups.google.com/group/objectivej/browse_thread/thread/7c41cbd9cbee9ea3    
+    
+    -----------------------------------
+    
+    Creating a checkbox is easy enough:
+    
+    checkbox = [[CPCheckBox alloc] initWithFrame:aFrame];
+    
+    That's basically all there is to it. Radio buttons are very similar,
+    the key difference is the introduction of a new class CPRadioGroup,
+    which defines which radio buttons are part of the same group:
+    
+    [myRadioButton setRadioGroup:aRadioGroup];
+    
+    Every radio button receives a unique radio group by default (so if you
+    do nothing further, they will all behave independently), but you can
+    use an existing radio button's group with other buttons as so:
+    
+    button1 = [[CPRadio alloc] initWithFrame:aFrame];
+    ...
+    button2 = [[CPRadio alloc] initWithFrame:aFrame radioGroup:[button1
+    radioGroup]];
+    ...
+    button3 = [[CPRadio alloc] initWithFrame:aFrame radioGroup:[button1
+    radioGroup]];
+    ...etc...
+    
+    Here, all the radio buttons will act "together". [[button1 radioGroup]
+    allRadios] returns every button that's part of this group, and
+    [[button1 radioGroup] selectedRadio] returns the currently selected
+    option.
 
+*/
 @implementation CPRadio : CPButton
 {
     CPRadioGroup    _radioGroup;

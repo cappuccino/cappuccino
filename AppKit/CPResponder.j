@@ -33,6 +33,7 @@ CPRightArrowKeyCode = 39;
 CPDownArrowKeyCode  = 40;
 
 /*!
+    @ingroup appkit
     @class CPResponder
     
     Subclasses of CPResonder can be part of the responder chain.

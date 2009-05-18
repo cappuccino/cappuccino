@@ -25,6 +25,9 @@
 
 @import "CPURLRequest.j"
 
+/*! 
+    @ingroup foundation
+*/
 
 @implementation CPBundle : CPObject
 {

@@ -27,6 +27,11 @@
 var CPThemesByName      = { },
     CPThemeDefaultTheme = nil;
 
+
+/*!
+    @ingroup appkit
+*/
+
 @implementation CPTheme : CPObject
 {
     CPString        _name;

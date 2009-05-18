@@ -113,6 +113,7 @@ CPTextFieldStateRounded     = CPThemeState("rounded");
 CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 
 /*!
+    @ingroup appkit
     This control displays editable text in a Cappuccino application.
 */
 @implementation CPTextField : CPControl

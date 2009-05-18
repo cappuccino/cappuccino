@@ -23,7 +23,9 @@
 @import <Foundation/CPObject.j>
 
 
-/*! @class CPShadow
+/*! 
+    @deprecated 
+    @class CPShadow
 
     Instances of this class contain the attributes of a drop shadow used in Cappuccino.
 */

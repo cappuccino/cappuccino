@@ -69,7 +69,9 @@ var CPTabViewDidSelectTabViewItemSelector           = 1,
     CPTabViewWillSelectTabViewItemSelector          = 4,
     CPTabViewDidChangeNumberOfTabViewItemsSelector  = 8;
 
-/*! @class CPTabView
+/*! 
+    @ingroup appkit
+    @class CPTabView
 
     This class represents a view that has multiple subviews (CPTabViewItem) presented as individual tabs.
     Only one CPTabViewItem is shown at a time, and other CPTabViewItems can be made visible

@@ -27,7 +27,9 @@
 #include "CoreGraphics/CGGeometry.h"
 
 
-/*! @class CPScrollView
+/*! 
+    @ingroup appkit
+    @class CPScrollView
 
     Used to display views that are too large for the viewing area. the CPScrollView
     places scroll bars on the side of the view to allow the user to scroll and see the entire

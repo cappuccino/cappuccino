@@ -41,7 +41,9 @@ CPRunStoppedResponse    = -1000;
 CPRunAbortedResponse    = -1001;
 CPRunContinuesResponse  = -1002;
 
-/*! @class CPApplication
+/*! 
+    @ingroup appkit
+    @class CPApplication
 
     CPApplication is THE way to start up the Cappucino framework for your application to use.
     Every GUI application has exactly one instance of CPApplication (or of a custom subclass of

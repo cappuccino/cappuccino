@@ -14,7 +14,9 @@
 @import "CPNumber.j"
 @import "CPEnumerator.j"
 
-
+/*!
+    @ingroup foundation
+*/
 @implementation CPSet : CPObject
 {
     Object      _contents;

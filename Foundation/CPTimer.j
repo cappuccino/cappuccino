@@ -25,7 +25,9 @@
 @import "CPDate.j"
 @import "CPRunLoop.j"
 
-
+/*! 
+    @ingroup foundation
+*/
 @implementation CPTimer : CPObject
 {
     CPTimeInterval      _timeInterval;

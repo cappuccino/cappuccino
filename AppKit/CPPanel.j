@@ -26,7 +26,9 @@
 CPOKButton      = 1;
 CPCancelButton  = 0;
 
-/*! @class CPPanel
+/*! 
+    @ingroup appkit
+    @class CPPanel
 
     The CPPanel class defines objects that manage the panels of the Cappuccino user interface. A panel is a window that serves an auxiliary function within an application. It generally displays controls that the user can act on to give instructions to the application or to modify the contents of a standard window.</p>
 

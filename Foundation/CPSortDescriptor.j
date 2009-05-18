@@ -43,7 +43,9 @@ CPOrderedSame           =  0;
 */
 CPOrderedDescending     =  1;
 
-/*! @class CPSortDescriptor
+/*! 
+    @ingroup foundation
+    @class CPSortDescriptor
     A CPSortDescriptor holds the attributes necessary to describe how
     to sort a set of objects. The sort descriptor instance holds a property key path
     to the sort item of the objects to compare, the method selector to call for sorting and the sort order.

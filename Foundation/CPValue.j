@@ -24,7 +24,9 @@
 @import "CPCoder.j"
 
 
-/*! @class CPValue
+/*! 
+    @ingroup foundation
+    @class CPValue
     The class can be subclassed to hold different types of scalar values.
 */
 @implementation CPValue : CPObject

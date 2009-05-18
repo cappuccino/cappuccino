@@ -57,7 +57,9 @@
 
 @end
 
-/*!  @class CPDictionary
+/*!  
+    @ingroup foundation
+    @class CPDictionary
      A dictionary is the standard way of passing around key-value pairs in
      the Cappuccino framework. It is similar to the
      <a href="http://java.sun.com/javase/6/docs/api/index.html">Java map interface</a>,

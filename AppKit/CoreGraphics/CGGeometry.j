@@ -71,6 +71,11 @@ _function(CGInsetMakeCopy(anInset))
 _function(CGInsetIsEmpty(anInset))
 
 /*!
+    @addtogroup appkit
+    @{
+*/
+
+/*!
     Returns a <code>BOOL</code> indicating whether CGRect <code>lhsRect</code>
     contains CGRect <code>rhsRect</code>.
     @group CGRect
@@ -223,3 +228,6 @@ function CPStringFromCGInset(anInset)
     return '{' + anInset.top + ", " + anInset.left + ", " + anInset.bottom + ", " + anInset.right + '}';
 }
 
+/*! 
+    @} 
+*/

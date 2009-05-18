@@ -42,6 +42,10 @@ CPWebViewScrollNative                           = 2;
 
 // FIXME: somehow make CPWebView work with CPScrollView instead of native scrollbars (is this even possible?)
 
+/*!
+    @ingroup appkit
+*/
+
 @implementation CPWebView : CPView
 {
     CPScrollView    _scrollView;

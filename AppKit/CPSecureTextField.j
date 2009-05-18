@@ -1,7 +1,9 @@
 
 @import "CPTextField.j"
 
-
+/*!
+    @ingroup appkit
+*/
 @implementation CPSecureTextField : CPTextField
 {
 }

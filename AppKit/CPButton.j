@@ -95,7 +95,9 @@ CPChangeBackgroundCellMask  = CPBackgroundButtonMask;
 
 CPButtonStateMixed  = CPThemeState("mixed");
 
-/*! @class CPButton
+/*! 
+    @ingroup appkit
+    @class CPButton
 
     CPButton is a subclass of CPControl that
     intercepts mouse-down events and sends an action message to a

@@ -54,6 +54,7 @@ var CPToolbarsByIdentifier              = nil;
 var CPToolbarConfigurationsByIdentifier = nil;
 
 /*!
+    @ingroup appkit
     @class CPToolbar
     
     A CPToolbar is displayed at the top of a window with multiple

@@ -29,6 +29,10 @@
 CPLinearSlider      = 0;
 CPCircularSlider    = 1;
 
+/*!
+    @ingroup appkit
+*/
+
 @implementation CPSlider : CPControl
 {
     double          _minValue;

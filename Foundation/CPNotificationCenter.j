@@ -25,6 +25,9 @@
 @import "CPNotification.j"
 @import "CPException.j"
 
+/*! 
+    @ingroup foundation
+*/
 
 var CPNotificationDefaultCenter = nil;
 

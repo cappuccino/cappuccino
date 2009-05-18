@@ -56,7 +56,9 @@ CPToolbarShowFontsItemIdentifier        = @"CPToolbarShowFontsItemIdentifier";
 CPToolbarCustomizeToolbarItemIdentifier = @"CPToolbarCustomizeToolbarItemIdentifier";
 CPToolbarPrintItemIdentifier            = @"CPToolbarPrintItemIdentifier";
 
-/*! @class CPToolbarItem
+/*! 
+    @ingroup appkit
+    @class CPToolbarItem
 
     A representation of an item in a CPToolbar.
 */

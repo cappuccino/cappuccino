@@ -80,7 +80,9 @@ CPControlTextDidEndEditingNotification      = "CPControlTextDidEndEditingNotific
 
 var CPControlBlackColor     = [CPColor blackColor];
 
-/*! @class CPControl
+/*! 
+    @ingroup appkit
+    @class CPControl
 
     CPControl is an abstract superclass used to implement user interface elements. As a subclass of CPView and CPResponder it has the ability to handle screen drawing and handling user input.
 */

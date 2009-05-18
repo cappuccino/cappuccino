@@ -30,7 +30,9 @@ CPUnsupportedMethodException        = "CPUnsupportedMethodException";
 CPRangeException                    = "CPRangeException";
 CPInternalInconsistencyException    = "CPInternalInconsistencyException";
 
-/*! @class CPException
+/*! 
+    @ingroup foundation
+    @class CPException
     An example of throwing an exception in Objective-J:
 <pre>
 // some code here...

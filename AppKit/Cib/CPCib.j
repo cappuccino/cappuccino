@@ -38,6 +38,10 @@ CPCibReplacementClasses = @"CPCibReplacementClasses";
     
 var CPCibObjectDataKey  = @"CPCibObjectDataKey";
 
+/*!
+    @ingroup appkit
+*/
+
 @implementation CPCib : CPObject
 {
     CPData      _data;
