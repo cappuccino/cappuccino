@@ -30,18 +30,18 @@ end
 Rake::GemPackageTask.new(spec) do |pkg|
     pkg.need_zip = true
     pkg.need_tar = true
-    pkg.package_dir = File.join($BUILD_DIR, $CONFIGURATION, 'rake')
+    pkg.package_dir = File.join($BUILD_DIR, $CONFIGURATION, 'Rake')
 end
 
 #task :install do
 #    Gem::Installer.new(File.join($BUILD_DIR, $CONFIGURATION, 'rake', 'objective-j-0.7.0.gem')).install
 #end
 
-task :objj_gem do
+task :objj_gem => [:gem] do
   mkdir_p $TOOLS_DOWNLOAD
-  cp(File.join($BUILD_DIR, $CONFIGURATION, 'rake', spec.file_name), File.join($TOOLS_DOWNLOAD, spec.file_name))
+  cp(File.join($BUILD_DIR, $CONFIGURATION, 'Rake', spec.file_name), File.join($TOOLS_DOWNLOAD, spec.file_name))
 end
 
 task :build
 
-CLOBBER.include(File.join($BUILD_DIR, $CONFIGURATION, 'rake'), File.join($TOOLS_DOWNLOAD, spec.file_name))
+CLOBBER.include(File.join($BUILD_DIR, $CONFIGURATION, 'Rake'), File.join($TOOLS_DOWNLOAD, spec.file_name))
