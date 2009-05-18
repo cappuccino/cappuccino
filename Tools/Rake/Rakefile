@@ -1,10 +1,12 @@
 
-require '../common'
+require '../../common'
 require 'rubygems'
 require 'rubygems/installer'
 require 'rake'
 require 'rake/gempackagetask'
+require 'rake/clean'
 
+$TOOLS_DOWNLOAD                 = File.join($BUILD_DIR, 'Cappuccino', 'Tools')
 
 PKG_FILES = FileList['lib/**/*']
 
@@ -31,6 +33,13 @@ Rake::GemPackageTask.new(spec) do |pkg|
     pkg.package_dir = File.join($BUILD_DIR, $CONFIGURATION, 'rake')
 end
 
-task :install do
-    Gem::Installer.new(File.join($BUILD_DIR, $CONFIGURATION, 'rake', 'objective-j-0.7.0.gem')).install
+#task :install do
+#    Gem::Installer.new(File.join($BUILD_DIR, $CONFIGURATION, 'rake', 'objective-j-0.7.0.gem')).install
+#end
+
+task :build => :gem do
+  mkdir_p $TOOLS_DOWNLOAD
+  cp(File.join($BUILD_DIR, $CONFIGURATION, 'rake', spec.file_name), File.join($TOOLS_DOWNLOAD, spec.file_name))
 end
+
+CLOBBER.include(File.join($BUILD_DIR, $CONFIGURATION, 'rake'), File.join($TOOLS_DOWNLOAD, spec.file_name))
