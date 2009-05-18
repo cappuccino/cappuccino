@@ -24,79 +24,123 @@
  */
 
 @import <AppKit/CPButton.j>
+@import <AppKit/CPCheckBox.j>
+@import <AppKit/CPRadio.j>
 
 @import "NSCell.j"
 @import "NSControl.j"
+
 
 var _CPButtonBezelStyleHeights = {};
 _CPButtonBezelStyleHeights[CPRoundedBezelStyle] = 18;
 _CPButtonBezelStyleHeights[CPTexturedRoundedBezelStyle] = 20;
 _CPButtonBezelStyleHeights[CPHUDBezelStyle] = 20;
 
-@implementation CPButton (NSCoding)
+@implementation CPRadio (NSCoding)
 
 - (id)NS_initWithCoder:(CPCoder)aCoder
 {
     self = [super NS_initWithCoder:aCoder];
-    
+
+    if (self)
+        _radioGroup = [CPRadioGroup new];
+
+    return self;
+}
+
+@end
+
+@implementation CPButton (NSCoding)
+
+- (id)NS_initWithCoder:(CPCoder)aCoder
+{
+    if (![self isKindOfClass:[CPRadio class]] && ![self isKindOfClass:[CPCheckBox class]])
+    {
+        // We need to do a bit of magic to determine if this is a checkbox or radio button.
+        var cell = [aCoder decodeObjectForKey:@"NSCell"],
+            alternateImage = [cell alternateImage];
+
+        if ([alternateImage isKindOfClass:[NSButtonImageSource class]])
+        {
+            if ([alternateImage imageName] === @"NSSwitch")
+            {
+                CPLog.warn("Detected check box, switching to CPCheckBox");
+
+                return [[CPCheckBox alloc] NS_initWithCoder:aCoder];
+            }
+            else if ([alternateImage imageName] === @"NSRadioButton")
+            {
+                CPLog.warn("Detected radio, switching to CPRadio");
+
+                return [[CPRadio alloc] NS_initWithCoder:aCoder];
+            }
+        }
+    }
+
+    self = [super NS_initWithCoder:aCoder];
+
     if (self)
     {
-        _controlSize = CPRegularControlSize;
-    
         var cell = [aCoder decodeObjectForKey:@"NSCell"];
+
+        _controlSize = CPRegularControlSize;
 
         _title = [cell title];
 
-        [self setBordered:[cell isBordered]];
+        if (![self isKindOfClass:[CPCheckBox class]] && ![self isKindOfClass:[CPRadio class]])
+        {
+            [self setBordered:[cell isBordered]];
 
-        _bezelStyle = [cell bezelStyle];
-        
-        // clean up:
-        
-        switch (_bezelStyle)
-        {
-            // implemented:
-            case CPRoundedBezelStyle:
-            case CPTexturedRoundedBezelStyle:
-            case CPHUDBezelStyle:
-                break;
-            // approximations:
-            case CPRoundRectBezelStyle:
-                _bezelStyle = CPRoundedBezelStyle;
-                break;
-            case CPSmallSquareBezelStyle:
-            case CPThickSquareBezelStyle:
-            case CPThickerSquareBezelStyle:
-            case CPRegularSquareBezelStyle:
-            case CPTexturedSquareBezelStyle:
-            case CPShadowlessSquareBezelStyle:
-                _bezelStyle = CPTexturedRoundedBezelStyle;
-                break;
-            case CPRecessedBezelStyle:
-                _bezelStyle = CPHUDBezelStyle;
-                break;
-            // unsupported
-            case CPRoundedDisclosureBezelStyle:
-            case CPHelpButtonBezelStyle:
-            case CPCircularBezelStyle:
-            case CPDisclosureBezelStyle:
-                CPLog.warn("Unsupported bezel style: " + _bezelStyle);
-                _bezelStyle = CPHUDBezelStyle;
-                break;
-            // error:
-            default:
-                CPLog.error("Unknown bezel style: " + _bezelStyle);
-                _bezelStyle = CPHUDBezelStyle;
+            _bezelStyle = [cell bezelStyle];
+
+            // clean up:
+            switch (_bezelStyle)
+            {
+                // implemented:
+                case CPRoundedBezelStyle:
+                case CPTexturedRoundedBezelStyle:
+                case CPHUDBezelStyle:
+                    break;
+                // approximations:
+                case CPRoundRectBezelStyle:
+                    _bezelStyle = CPRoundedBezelStyle;
+                    break;
+                case CPSmallSquareBezelStyle:
+                case CPThickSquareBezelStyle:
+                case CPThickerSquareBezelStyle:
+                case CPRegularSquareBezelStyle:
+                case CPTexturedSquareBezelStyle:
+                case CPShadowlessSquareBezelStyle:
+                    _bezelStyle = CPTexturedRoundedBezelStyle;
+                    break;
+                case CPRecessedBezelStyle:
+                    _bezelStyle = CPHUDBezelStyle;
+                    break;
+                // unsupported
+                case CPRoundedDisclosureBezelStyle:
+                case CPHelpButtonBezelStyle:
+                case CPCircularBezelStyle:
+                case CPDisclosureBezelStyle:
+                    CPLog.warn("Unsupported bezel style: " + _bezelStyle);
+                    _bezelStyle = CPHUDBezelStyle;
+                    break;
+                // error:
+                default:
+                    CPLog.error("Unknown bezel style: " + _bezelStyle);
+                    _bezelStyle = CPHUDBezelStyle;
+            }
+
+            //if (_CPButtonBezelStyleHeights[_bezelStyle] != undefined)
+            {
+                //CPLog.warn("Adjusting CPButton height from " +_frame.size.height+ " / " + _bounds.size.height+" to " + _CPButtonBezelStyleHeights[_bezelStyle]);
+                _frame.size.height = 24.0;//_CPButtonBezelStyleHeights[_bezelStyle];
+                _bounds.size.height = 24.0;//_CPButtonBezelStyleHeights[_bezelStyle];
+            }
         }
-        
-        //if (_CPButtonBezelStyleHeights[_bezelStyle] != undefined)
-        {
-            //CPLog.warn("Adjusting CPButton height from " +_frame.size.height+ " / " + _bounds.size.height+" to " + _CPButtonBezelStyleHeights[_bezelStyle]);
-            _frame.size.height = 24.0;//_CPButtonBezelStyleHeights[_bezelStyle];
-            _bounds.size.height = 24.0;//_CPButtonBezelStyleHeights[_bezelStyle];
-        }
+        else
+            [self setBordered:YES];
     }
-    
+
     return self;
 }
 
@@ -122,26 +166,48 @@ _CPButtonBezelStyleHeights[CPHUDBezelStyle] = 20;
 {
     BOOL        _isBordered     @accessors(readonly, getter=isBordered);
     int         _bezelStyle     @accessors(readonly, getter=bezelStyle);
-    
+
     CPString    _title          @accessors(readonly, getter=title);
+    CPImage     _alternateImage @accessors(readonly, getter=alternateImage);
 }
 
 - (id)initWithCoder:(CPCoder)aCoder
 {
     self = [super initWithCoder:aCoder];
-    
+
     if (self)
-    {   
+    {
         var buttonFlags = [aCoder decodeIntForKey:@"NSButtonFlags"],
             buttonFlags2 = [aCoder decodeIntForKey:@"NSButtonFlags2"];
-        
+
         _isBordered = (buttonFlags & 0x00800000) ? YES : NO;
         _bezelStyle = (buttonFlags2 & 0x7) | ((buttonFlags2 & 0x20) >> 2);
-        
+
         // NSContents for NSButton is actually the title
         _title = [aCoder decodeObjectForKey:@"NSContents"];
+        // ... and _objectValue is _state
+        _objectValue = [self state];
+
+        _alternateImage = [aCoder decodeObjectForKey:@"NSAlternateImage"];
     }
-    
+
+    return self;
+}
+
+@end
+
+@implementation NSButtonImageSource : CPObject
+{
+    CPString    _imageName @accessors(readonly, getter=imageName);
+}
+
+- (id)initWithCoder:(CPCoder)aCoder
+{
+    self = [super init];
+
+    if (self)
+        _imageName = [aCoder decodeObjectForKey:@"NSImageName"];
+
     return self;
 }
 

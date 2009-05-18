@@ -52,8 +52,8 @@
     
     if (self)
     {
-        _radioGroup = aRadioGroup || [CPRadioGroup new];
-    
+        [self setRadioGroup:aRadioGroup || [CPRadioGroup new]];
+
         [self setHighlightsBy:CPContentsCellMask];
         [self setShowsStateBy:CPContentsCellMask];
 
@@ -98,6 +98,29 @@
     
     if ([self state] === CPOnState)
         [_radioGroup _setSelectedRadio:self];
+}
+
+@end
+
+var CPRadioRadioGroupKey    = @"CPRadioRadioGroupKey";
+
+@implementation CPRadio (CPCoding)
+
+- (id)initWithCoder:(CPCoder)aCoder
+{
+    self = [super initWithCoder:aCoder];
+
+    if (self)
+        _radioGroup = [aCoder decodeObjectForKey:CPRadioRadioGroupKey];
+
+    return self;
+}
+
+- (void)encodeWithCoder:(CPCoder)aCoder
+{
+    [super encodeWithCoder:aCoder];
+
+    [aCoder encodeObject:_radioGroup forKey:CPRadioRadioGroupKey];
 }
 
 @end
@@ -154,6 +177,32 @@
 - (CPArray)radios
 {
     return [_radios allObjects];
+}
+
+@end
+
+var CPRadioGroupRadiosKey           = @"CPRadioGroupRadiosKey",
+    CPRadioGroupSelectedRadioKey    = @"CPRadioGroupSelectedRadioKey";
+
+@implementation CPRadioGroup (CPCoding)
+
+- (id)initWithCoder:(CPCoder)aCoder
+{
+    self = [super init];
+
+    if (self)
+    {
+        _radios = [aCoder decodeObjectForKey:CPRadioGroupRadiosKey];
+        _selectedRadio = [aCoder decodeObjectForKey:CPRadioGroupSelectedRadioKey];
+    }
+
+    return self;
+}
+
+- (void)encodeWithCoder:(CPCoder)aCoder
+{
+    [aCoder encodeObject:_radios forKey:CPRadioGroupRadiosKey];
+    [aCoder encodeObject:_selectedRadio forKey:CPRadioGroupSelectedRadioKey];
 }
 
 @end
