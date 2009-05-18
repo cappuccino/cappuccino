@@ -185,6 +185,8 @@ _CPButtonBezelStyleHeights[CPHUDBezelStyle] = 20;
 
         // NSContents for NSButton is actually the title
         _title = [aCoder decodeObjectForKey:@"NSContents"];
+        // ... and _objectValue is _state
+        _objectValue = [self state];
 
         _alternateImage = [aCoder decodeObjectForKey:@"NSAlternateImage"];
     }

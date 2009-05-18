@@ -32,6 +32,7 @@
 @import "NSFont.j"
 @import "NSIBObjectData.j"
 @import "NSImageView.j"
+@import "NSMatrix.j"
 @import "NSMenu.j"
 @import "NSMenuItem.j"
 @import "NSNibConnector.j"

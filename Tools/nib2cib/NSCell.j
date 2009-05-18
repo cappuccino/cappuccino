@@ -53,7 +53,7 @@
     {
         var flags  = [aCoder decodeIntForKey:@"NSCellFlags"],
             flags2 = [aCoder decodeIntForKey:@"NSCellFlags2"];
-            
+
         _state          = (flags & 0x80000000) ? CPOnState : CPOffState;
         _isHighlighted  = (flags & 0x40000000) ? YES : NO;
         _isEnabled      = (flags & 0x20000000) ? NO : YES;
@@ -66,7 +66,7 @@
         _wraps          = (flags & 0x00100000) ? NO : YES;
         _alignment      = (flags2 & 0x1c000000) >> 26;
         _controlSize    = (flags2 & 0xE0000) >> 17;
-                        
+
         _objectValue    = [aCoder decodeObjectForKey:@"NSContents"];
         _font           = [aCoder decodeObjectForKey:@"NSSupport"];
     }
