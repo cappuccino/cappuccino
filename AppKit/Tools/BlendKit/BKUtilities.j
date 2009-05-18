@@ -1,5 +1,5 @@
 
-@implementation AKThemeTemplate : CPObject
+@implementation BKThemeTemplate : CPObject
 {
     CPString    _name;
     CPString    _description;
@@ -11,8 +11,8 @@
     
     if (self)
     {
-        _name = [aCoder decodeObjectForKey:@"AKThemeTemplateName"];
-        _description = [aCoder decodeObjectForKey:@"AKThemeTemplateDescription"];
+        _name = [aCoder decodeObjectForKey:@"BKThemeTemplateName"];
+        _description = [aCoder decodeObjectForKey:@"BKThemeTemplateDescription"];
     }
     
     return self;
@@ -20,13 +20,13 @@
 
 - (void)encodeWithCoder:(CPCoder)aCoder
 {
-    [aCoder encodeObject:_name forKey:@"AKThemeTemplateName"];
-    [aCoder encodeObject:_description forKey:@"AKThemeTemplateDescription"];
+    [aCoder encodeObject:_name forKey:@"BKThemeTemplateName"];
+    [aCoder encodeObject:_description forKey:@"BKThemeTemplateDescription"];
 }
 
 @end
 
-@implementation AKThemeObjectTemplate : CPView
+@implementation BKThemeObjectTemplate : CPView
 {
     CPString    _label;
     id          _themedObject;
@@ -38,8 +38,8 @@
     
     if (self)
     {
-        _label = [aCoder decodeObjectForKey:@"AKThemeObjectTemplateLabel"];
-        _themedObject = [aCoder decodeObjectForKey:@"AKThemeObjectTemplateThemedObject"];
+        _label = [aCoder decodeObjectForKey:@"BKThemeObjectTemplateLabel"];
+        _themedObject = [aCoder decodeObjectForKey:@"BKThemeObjectTemplateThemedObject"];
     }
     
     return self;
@@ -47,8 +47,8 @@
 
 - (void)encodeWithCoder:(CPCoder)aCoder
 {
-    [aCoder encodeObject:_label forKey:@"AKThemeObjectTemplateLabel"];
-    [aCoder encodeObject:_themedObject forKey:@"AKThemeObjectTemplateThemedObject"];
+    [aCoder encodeObject:_label forKey:@"BKThemeObjectTemplateLabel"];
+    [aCoder encodeObject:_themedObject forKey:@"BKThemeObjectTemplateThemedObject"];
 }
 
 @end
@@ -89,7 +89,7 @@ function BKThemeObjectTemplatesForClass(aClass)
             
             if (object)
             {
-                var template = [[AKThemeObjectTemplate alloc] init];
+                var template = [[BKThemeObjectTemplate alloc] init];
 
                 [template setValue:object forKey:@"themedObject"];
                 [template setValue:BKLabelFromIdentifier(selector) forKey:@"label"];
