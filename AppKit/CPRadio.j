@@ -67,6 +67,16 @@
     CPRadioGroup    _radioGroup;
 }
 
++ (id)radioWithTitle:(CPString)aTitle theme:(CPTheme)aTheme
+{
+    return [self buttonWithTitle:aTitle theme:aTheme];
+}
+
++ (id)radioWithTitle:(CPString)aTitle
+{
+    return [self buttonWithTitle:aTitle];
+}
+
 + (CPButton)standardButtonWithTitle:(CPString)aTitle
 {
     var button = [[CPRadio alloc] init];

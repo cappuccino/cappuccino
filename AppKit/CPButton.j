@@ -122,23 +122,20 @@ CPButtonStateMixed  = CPThemeState("mixed");
     CPControlSize       _controlSize;
 }
 
-+ (id)standardButtonWithTitle:(CPString)aTitle
++ (id)buttonWithTitle:(CPString)aTitle
 {
-    var button = [[CPButton alloc] init];
+    return [self buttonWithTitle:aTitle theme:[CPTheme defaultTheme]];
+}
 
++ (id)buttonWithTitle:(CPString)aTitle theme:(CPTheme)aTheme
+{
+    var button = [[self alloc] init];
+
+    [button setTheme:aTheme];
     [button setTitle:aTitle];
+    [button sizeToFit];
 
     return button;
-}
-
-+ (id)standardCheckBoxWithTitle:(CPString)aTitle
-{
-    return [CPCheckBox standardButtonWithTitle:aTitle];
-}
-
-- (id)standardRadioWithTitle:(CPString)aTitle
-{
-    return [CPRadio standardButtonWithTitle:aTitle];
 }
 
 + (CPString)themeClass
@@ -148,8 +145,8 @@ CPButtonStateMixed  = CPThemeState("mixed");
 
 + (id)themeAttributes
 {
-    return [CPDictionary dictionaryWithObjects:[_CGInsetMakeZero(), _CGInsetMakeZero(), nil, 24.0]
-                                       forKeys:[@"bezel-inset", @"content-inset", @"bezel-color", @"default-height"]];
+    return [CPDictionary dictionaryWithObjects:[_CGInsetMakeZero(), _CGInsetMakeZero(), nil]
+                                       forKeys:[@"bezel-inset", @"content-inset", @"bezel-color"]];
 }
 
 - (id)initWithFrame:(CGRect)aFrame
@@ -472,12 +469,12 @@ CPButtonStateMixed  = CPThemeState("mixed");
 
     if (_CGInsetIsEmpty(bezelInset))
         return bounds;
-    
+
     bounds.origin.x += bezelInset.left;
     bounds.origin.y += bezelInset.top;
     bounds.size.width -= bezelInset.left + bezelInset.right;
     bounds.size.height -= bezelInset.top + bezelInset.bottom;
-    
+
     return bounds;
 }
 
@@ -486,11 +483,21 @@ CPButtonStateMixed  = CPThemeState("mixed");
 */
 - (void)sizeToFit
 {
-    var size = [([self title] || " ") sizeWithFont:[self font]],
+    var size = [([self title] || " ") sizeWithFont:[self currentValueForThemeAttribute:@"font"]],//[self font]],
         contentInset = [self currentValueForThemeAttribute:@"content-inset"],
-        defaultHeight = [self currentValueForThemeAttribute:@"default-height"];
+        minSize = [self currentValueForThemeAttribute:@"min-size"],
+        maxSize = [self currentValueForThemeAttribute:@"max-size"];
 
-    [self setFrameSize:CGSizeMake(size.width + contentInset.left + contentInset.right, defaultHeight)];
+    size.width = MAX(size.width + contentInset.left + contentInset.right, minSize.width);
+    size.height = MAX(size.height + contentInset.top + contentInset.bottom, minSize.height);
+
+    if (maxSize.width >= 0.0)
+        size.width = MIN(size.width, maxSize.width);
+
+    if (maxSize.height >= 0.0)
+        size.height = MIN(size.height, maxSize.height);
+
+    [self setFrameSize:size];
 }
 
 - (CGRect)rectForEphemeralSubviewNamed:(CPString)aName
@@ -558,18 +565,6 @@ CPButtonStateMixed  = CPThemeState("mixed");
         [self unsetThemeState:CPThemeStateDefault];
 }
 
-@end
-
-@implementation CPButton (NS)
-
-- (void)setBezelStyle:(unsigned)aBezelStyle
-{
-}
-
-- (unsigned)bezelStyle
-{
-}
-
 - (void)setBordered:(BOOL)shouldBeBordered
 {
     if (shouldBeBordered)
@@ -585,13 +580,24 @@ CPButtonStateMixed  = CPThemeState("mixed");
 
 @end
 
+@implementation CPButton (NS)
+
+- (void)setBezelStyle:(unsigned)aBezelStyle
+{
+}
+
+- (unsigned)bezelStyle
+{
+}
+
+@end
+
 
 var CPButtonImageKey                = @"CPButtonImageKey",
     CPButtonAlternateImageKey       = @"CPButtonAlternateImageKey",
     CPButtonTitleKey                = @"CPButtonTitleKey",
     CPButtonAlternateTitleKey       = @"CPButtonAlternateTitleKey",
-    CPButtonIsBorderedKey           = @"CPButtonIsBorderedKey",
-    CPButtonBezelStyleKey           = @"CPButtonBezelStyleKey";
+    CPButtonIsBorderedKey           = @"CPButtonIsBorderedKey";
 
 @implementation CPButton (CPCoding)
 
@@ -627,14 +633,12 @@ var CPButtonImageKey                = @"CPButtonImageKey",
 - (void)encodeWithCoder:(CPCoder)aCoder
 {
     [super encodeWithCoder:aCoder];
-    
+
     [aCoder encodeObject:_image forKey:CPButtonImageKey];
     [aCoder encodeObject:_alternateImage forKey:CPButtonAlternateImageKey];
-    
+
     [aCoder encodeObject:_title forKey:CPButtonTitleKey];
     [aCoder encodeObject:_alternateTitle forKey:CPButtonAlternateTitleKey];
-    
-    [aCoder encodeInt:_bezelStyle forKey:CPButtonBezelStyleKey];
 }
 
 @end

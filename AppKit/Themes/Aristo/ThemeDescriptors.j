@@ -1,9 +1,9 @@
 /*
  * AppController.j
- * A
+ * Aristo
  *
- * Created by __Me__ on __Date__.
- * Copyright 2008 __MyCompanyName__. All rights reserved.
+ * Created by Francisco Tolmasky.
+ * Copyright 2009, 280 North, Inc. All rights reserved.
  */
 
 @import <Foundation/CPObject.j>
@@ -250,7 +250,8 @@
     [button setValue:defaultHighlightedBezelColor forThemeAttribute:@"bezel-color" inState:CPThemeStateBordered|CPThemeStateHighlighted|CPThemeStateDefault];
     [button setValue:[CPColor colorWithCalibratedRed:13.0/255.0 green:51.0/255.0 blue:70.0/255.0 alpha:1.0] forThemeAttribute:@"text-color" inState:CPThemeStateDefault];
 
-    [button setValue:24.0 forThemeAttribute:@"default-height"];
+    [button setValue:CGSizeMake(0.0, 24.0) forThemeAttribute:@"min-size"];
+    [button setValue:CGSizeMake(-1.0, 24.0) forThemeAttribute:@"max-size"];
 
     return button;
 }
@@ -278,6 +279,8 @@
     [button setValue:bezelColor forThemeAttribute:@"bezel-color" inState:CPThemeStateBordered];    
     [button setValue:bezelColorSelected forThemeAttribute:@"bezel-color" inState:CPThemeStateBordered | CPThemeStateSelected];
 
+    [button setValue:CGSizeMake(0.0, 17.0) forThemeAttribute:@"min-size"];
+
     return button;
 }
 
@@ -303,6 +306,8 @@
     [button setValue:CGInsetMake(0.0, 0.0, 0.0, 20.0) forThemeAttribute:@"content-inset" inState:CPThemeStateBordered];
     [button setValue:bezelColor forThemeAttribute:@"bezel-color" inState:CPThemeStateBordered];    
     [button setValue:bezelColorSelected forThemeAttribute:@"bezel-color" inState:CPThemeStateBordered | CPThemeStateSelected];
+
+    [button setValue:CGSizeMake(0.0, 16.0) forThemeAttribute:@"min-size"];
 
     return button;
 }
@@ -563,7 +568,8 @@
     [button setValue:highlightedBezelColor forThemeAttribute:@"bezel-color" inState:CPThemeStateBordered|CPThemeStateHighlighted];
     [button setValue:CGInsetMake(2.0, 5.0, 4.0, 5.0) forThemeAttribute:@"content-inset" inState:CPThemeStateBordered];
 
-    [button setValue:20.0 forThemeAttribute:@"default-height"];
+    [button setValue:CGSizeMake(0.0, 20.0) forThemeAttribute:@"min-size"];
+    [button setValue:CGSizeMake(-1.0, 20.0) forThemeAttribute:@"max-size"];
 
     return button;
 }

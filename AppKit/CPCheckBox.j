@@ -27,13 +27,14 @@
 {
 }
 
-+ (CPButton)standardButtonWithTitle:(CPString)aTitle
++ (id)checkBoxWithTitle:(CPString)aTitle theme:(CPTheme)aTheme
 {
-    var button = [[CPCheckBox alloc] init];
+    return [self buttonWithTitle:aTitle theme:aTheme];
+}
 
-    [button setTitle:aTitle];
-
-    return button;
++ (id)checkBoxWithTitle:(CPString)aTitle
+{
+    return [self buttonWithTitle:aTitle];
 }
 
 + (CPString)themeClass

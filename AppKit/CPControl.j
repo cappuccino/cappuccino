@@ -109,9 +109,28 @@ var CPControlBlackColor     = [CPColor blackColor];
 
 + (CPDictionary)themeAttributes
 {
-    return [CPDictionary dictionaryWithObjects:[
-        CPLeftTextAlignment, CPTopVerticalTextAlignment, CPLineBreakByClipping, [CPColor blackColor], [CPFont systemFontOfSize:12.0], nil, _CGSizeMakeZero(), CPImageLeft, CPScaleToFit] 
-                                       forKeys:[@"alignment", @"vertical-alignment", @"line-break-mode", @"text-color", @"font", @"text-shadow-color", @"text-shadow-offset", @"image-position", @"image-scaling"]]; 
+    return [CPDictionary dictionaryWithObjects:[CPLeftTextAlignment,
+                                                CPTopVerticalTextAlignment,
+                                                CPLineBreakByClipping,
+                                                [CPColor blackColor],
+                                                [CPFont systemFontOfSize:12.0],
+                                                nil,
+                                                _CGSizeMakeZero(),
+                                                CPImageLeft,
+                                                CPScaleToFit,
+                                                _CGSizeMakeZero(),
+                                                _CGSizeMake(-1.0, -1.0)]
+                                       forKeys:[@"alignment",
+                                                @"vertical-alignment",
+                                                @"line-break-mode",
+                                                @"text-color",
+                                                @"font",
+                                                @"text-shadow-color",
+                                                @"text-shadow-offset",
+                                                @"image-position",
+                                                @"image-scaling",
+                                                @"min-size",
+                                                @"max-size"]];
 }
 
 - (id)initWithFrame:(CGRect)aFrame
