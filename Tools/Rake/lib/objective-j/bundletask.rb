@@ -189,6 +189,7 @@ module ObjectiveJ
 
         required_attribute :summary
         required_attribute :identifier
+        required_attribute :include_nibs, false
         required_attribute :nib2cib_flags, []
         required_attribute :platforms, [Platform::ObjJ]
         required_attribute :type, Bundle::Type::Application
@@ -302,8 +303,9 @@ module ObjectiveJ
       end
 =end
     @@required_attributes.each do |symbol|
-        unless self.send(symbol)
-            raise InvalidSpecificationException.new("Missing value for attribute #{symbol}")
+        unless (self.send(symbol) or self.send(symbol) == false)
+            raise Exception.new("Missing value for attribute #{symbol}")
+#            raise InvalidSpecificationException.new("Missing value for attribute #{symbol}")
         end
     end
 =begin
@@ -372,7 +374,7 @@ module ObjectiveJ
 
             resources_path = File.join(build_path, 'Resources')
 
-            copied_resources = copy_resources resources, resources_path do |resource, copied_resource|
+            copied_resources = copy_resources resources, resources_path do |resource, copied_resource, copied_resources|
                 extname = File.extname(resource)
 
                 if extname == '.xib' || extname == '.nib'
@@ -388,14 +390,14 @@ module ObjectiveJ
                         end
                     end
 
-                    copied_resource
+                    { 'copy' => include_nibs, 'copied_resources' => [copied_resource] }
                 else
                     extensionless = File.join(File.dirname(resource), File.basename(resource, extname))
 
                     if extname == '.cib' and (File.exists?(extensionless + '.xib') or File.exists?(extensionless + '.nib'))
-                        false
+                        { 'copy' => false }
                     else
-                        true
+                        { 'copy' => true }
                     end
                 end
             end

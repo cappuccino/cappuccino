@@ -24,6 +24,7 @@ ObjectiveJ::BundleTask.new(:capp) do |t|
     t.build_path    = $BUILD_PATH
     t.flag          = '-DDEBUG' if $CONFIGURATION == 'Debug'
     t.flag          = '-O' if $CONFIGURATION == 'Release'
+    t.include_nibs  = true
 end
 
 #executable in environment directory

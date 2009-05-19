@@ -70,35 +70,35 @@ def copy_resources(files, destination, &block)
 
                     copied_resource = File.join(destination, subresource[(resource.length - baselength) .. -1])
 
-                    custom_resource = true
-                    custom_resource = block.call(subresource, copied_resource) if block_given?
+                    result = nil
+                    result = block.call(subresource, copied_resource) if block_given?
 
-                    if custom_resource == true
+                    if result.nil? or result['copy'] == true
                         file_d copied_resource => [subresource] do
                             cp_r(subresource, copied_resource)
                         end
 
                         copied_resources << copied_resource
-                    elsif custom_resource
-                        copied_resources << custom_resource
                     end
+
+                    copied_resources.concat(result['copied_resources']) if !result.nil? and result['copied_resources'].kind_of?(Array)
                 end
             end
         else
             copied_resource = File.join(destination, File.basename(resource))
 
-            custom_resource = true
-            custom_resource = block.call(resource, copied_resource) if block_given?
+            result = nil
+            result = block.call(resource, copied_resource) if block_given?
 
-            if custom_resource == true
+            if result.nil? or result['copy'] == true
                 file_d copied_resource => [resource] do
                     cp_r(resource, copied_resource)
                 end
 
                 copied_resources << copied_resource
-            elsif custom_resource
-                copied_resources << custom_resource
             end
+
+            copied_resources.concat(result['copied_resources']) if !result.nil? and result['copied_resources'].kind_of?(Array)
         end
     end
 
