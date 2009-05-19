@@ -5,9 +5,7 @@
 @import <AppKit/CPTheme.j>
 @import <BlendKit/BlendKit.j>
 
-importClass(java.io.FileOutputStream);
-importClass(java.io.BufferedWriter);
-importClass(java.io.OutputStreamWriter);
+var File = require("file");
 
 
 function main()
@@ -18,7 +16,8 @@ function main()
         outputFilePath = "",
         descriptorFiles = [],
         resourcesPath = nil,
-        cibFiles = [];
+        cibFiles = [],
+        blendName = "Untitled";
     
     for (; index < count; ++index)
     {
@@ -67,11 +66,9 @@ function main()
             var objectTemplates = BKThemeObjectTemplatesForClass(theClass),
                 data = cibDataFromTopLevelObjects(objectTemplates.concat([themeTemplate])),
                 temporaryCibFile = Packages.java.io.File.createTempFile("temp", ".cib"),
-                temporaryCibFilePath = temporaryCibFile.getAbsolutePath(),
-                writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(temporaryCibFilePath), "UTF-8"));
+                temporaryCibFilePath = String(temporaryCibFile.getAbsolutePath());
 
-            writer.write([data string]);
-            writer.close();
+            File.write(temporaryCibFilePath, [data string], { charset:"UTF8" });
             
             cibFiles.push(temporaryCibFilePath);
         }
@@ -113,52 +110,49 @@ function getDirectory(aPath)
 function buildBlendFromCibFiles(cibFiles, outputFilePath, resourcesPath)
 {
     var resourcesFile = nil;
-    
+
     if (resourcesPath)
         resourcesFile = new Packages.java.io.File(resourcesPath);
-    
+
     var count = cibFiles.length,
         replacedFiles = [],
         staticContent = @"";
-    
+
     while (count--)
     {
         var theme = themeFromCibFile(new Packages.java.io.File(cibFiles[count])),
-        
+
             // Archive our theme.
             filePath = [theme name] + ".keyedtheme",
             fileContents = [[CPKeyedArchiver archivedDataWithRootObject:theme] string];
-        
+
         replacedFiles.push(filePath);
 
         staticContent += MARKER_PATH + ';' + filePath.length + ';' + filePath + MARKER_TEXT + ';' + fileContents.length + ';' + fileContents;
     }
-    
-    staticContent = "@STATIC;1.0;" + staticContent;
-    
-    var infoDictionary = [CPDictionary dictionary];
-        staticContentName = "Aristo";//getFileNameWithoutExtension(project.activeTarget().name());
 
-    [infoDictionary setObject:@"Yikes." forKey:@"CPBundleName"];    
-    [infoDictionary setObject:@"Yikes." forKey:@"CPBundleIdentifier"];
+    staticContent = "@STATIC;1.0;" + staticContent;
+
+    var blendName = File.basename(outputFilePath),
+        extension = File.extname(outputFilePath);
+
+    if (extension.length)
+        blendName = blendName.substr(0, blendName.length - extension.length);
+
+    var infoDictionary = [CPDictionary dictionary],
+        staticContentName = blendName + ".sj";
+
+    [infoDictionary setObject:blendName forKey:@"CPBundleName"];
+    [infoDictionary setObject:blendName forKey:@"CPBundleIdentifier"];
     [infoDictionary setObject:replacedFiles forKey:@"CPBundleReplacedFiles"];
     [infoDictionary setObject:staticContentName forKey:@"CPBundleExecutable"];
     
     var outputFile = new Packages.java.io.File(outputFilePath).getCanonicalFile();
 
     outputFile.mkdirs();
-    
-    var writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(outputFilePath + "/Info.plist"), "UTF-8"));
-    
-    writer.write(CPPropertyListCreate280NorthData(infoDictionary).string);
-    
-    writer.close();
-    
-    writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(outputFilePath + '/' + staticContentName), "UTF-8"));
-    
-    writer.write(staticContent);
-    
-    writer.close();
+
+    File.write(outputFilePath + "/Info.plist", [CPPropertyListCreate280NorthData(infoDictionary) string], { charset:"UTF8" });
+    File.write(outputFilePath + '/' + staticContentName, staticContent, { charset:"UTF8" });
     
     if (resourcesPath)
         rsync(new Packages.java.io.File(resourcesPath), new Packages.java.io.File(outputFilePath));
@@ -185,6 +179,8 @@ function themeFromCibFile(aFile)
         if ([object isKindOfClass:[BKThemeTemplate class]])
             theme = [[CPTheme alloc] initWithName:[object valueForKey:@"name"]];
     }
+
+    print("Building " + [theme name] + " theme");
 
     [templates makeObjectsPerformSelector:@selector(blendAddThemedObjectAttributesToTheme:) withObject:theme];
 
@@ -286,7 +282,7 @@ function exec(/*Array*/ command, /*Boolean*/ showOutput)
     
     if (themedObject)
     {
-        print(" Recording theme for " + [themedObject className] + ".");
+        print(" Recording themed properties for " + [themedObject className] + ".");
         
         [aTheme takeThemeFromObject:themedObject];
     }

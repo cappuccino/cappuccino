@@ -18,7 +18,7 @@
     return @"__project.name__";
 }
 
-+ (CPButton)themedStandardButton
++ (CPButton)themedButton
 {
     var button = [[CPButton alloc] initWithFrame:CGRectMake(0.0, 0.0, 100.0, 20.0)];
     

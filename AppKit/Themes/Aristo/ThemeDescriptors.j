@@ -7,7 +7,7 @@
  */
 
 @import <Foundation/CPObject.j>
-@import <AppKit/CPRadio.j>
+@import <AppKit/AppKit.j>
 
 
 @implementation AristoThemeDescriptor : CPObject

@@ -6,19 +6,16 @@ if !ENV['CONFIG']
     ENV['CONFIG'] = 'Debug'
 end
 
-ObjectiveJ::BundleTask.new(:__project.nameasidentifier__) do |t|
-    t.name          = '__project.name__'
-    t.identifier    = '__project.identifier__'
-    t.version       = '1.0'
-    t.author        = '__organization.name__'
-    t.email         = '__organization.email__'
-    t.summary       = '__project.name__'
-    t.sources       = FileList['*.j']
-    t.resources     = FileList['Resources/*']
-    t.license       = ObjectiveJ::License::LGPL_v2_1
-    t.build_path    = File.join('Build', ENV['CONFIG'], '__project.nameasidentifier__')
-    t.flag          = '-DDEBUG' if ENV['CONFIG'] == 'Debug'
-    t.flag          = '-O' if ENV['CONFIG'] == 'Release'
+$BLEND_PRODUCT = File.join('Build', ENV['CONFIG'], '__project.nameasidentifier__.blend');
+
+file_d $BLEND_PRODUCT => ['ThemeDescriptors.j'] do
+    File.popen("blend -d ThemeDescriptors.j -o #{$BLEND_PRODUCT} -R Resources") do |blend|
+        blend.sync = true
+
+        while str = blend.gets
+            puts str
+        end
+    end
 end
 
-task :default => [:__project.nameasidentifier__]
+task :default => [$BLEND_PRODUCT]
