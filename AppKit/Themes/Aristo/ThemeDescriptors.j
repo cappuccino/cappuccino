@@ -501,6 +501,57 @@
 
 @end
 
+@implementation AristoHUDThemeDescriptor : CPObject
+{
+}
+
++ (CPString)themeName
+{
+    return @"Aristo-HUD";
+}
+
++ (CPColor)themeShowcaseBackgroundColor
+{
+    return [CPColor blackColor];
+}
+
++ (CPButton)themedButton
+{
+    var button = [[CPButton alloc] initWithFrame:CGRectMake(0.0, 0.0, 60.0, 20.0)],
+
+        bezelColor = [CPColor colorWithPatternImage:[[CPThreePartImage alloc] initWithImageSlices:
+            [
+                [_CPCibCustomResource imageResourceWithName:"HUD/button-bezel-left.png" size:CGSizeMake(13.0, 20.0)],
+                [_CPCibCustomResource imageResourceWithName:"HUD/button-bezel-center.png" size:CGSizeMake(1.0, 20.0)],
+                [_CPCibCustomResource imageResourceWithName:"HUD/button-bezel-right.png" size:CGSizeMake(13.0, 20.0)]
+            ]
+        isVertical:NO]],
+
+        highlightedBezelColor = [CPColor colorWithPatternImage:[[CPThreePartImage alloc] initWithImageSlices:
+            [
+                [_CPCibCustomResource imageResourceWithName:"HUD/button-bezel-highlighted-left.png" size:CGSizeMake(13.0, 20.0)],
+                [_CPCibCustomResource imageResourceWithName:"HUD/button-bezel-highlighted-center.png" size:CGSizeMake(1.0, 20.0)],
+                [_CPCibCustomResource imageResourceWithName:"HUD/button-bezel-highlighted-right.png" size:CGSizeMake(13.0, 20.0)]
+            ]
+        isVertical:NO]];
+
+    [button setTitle:@"Cancel"];
+
+    [button setValue:[CPFont systemFontOfSize:11.0] forThemeAttribute:@"font" inState:CPThemeStateBordered];
+    [button setValue:[CPColor whiteColor] forThemeAttribute:@"text-color"];
+    [button setValue:CPLineBreakByTruncatingTail forThemeAttribute:@"line-break-mode"];
+
+    [button setValue:bezelColor forThemeAttribute:@"bezel-color" inState:CPThemeStateBordered];
+    [button setValue:highlightedBezelColor forThemeAttribute:@"bezel-color" inState:CPThemeStateBordered|CPThemeStateHighlighted];
+    [button setValue:CGInsetMake(2.0, 5.0, 4.0, 5.0) forThemeAttribute:@"content-inset" inState:CPThemeStateBordered];
+
+    [button setValue:20.0 forThemeAttribute:@"default-height"];
+
+    return button;
+}
+
+@end
+
 function PatternColor(anImage)
 {
     return [CPColor colorWithPatternImage:anImage];

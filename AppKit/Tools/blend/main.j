@@ -60,7 +60,7 @@ function main()
         while (count--)
         {
             var theClass = themeDescriptorClasses[count],
-                themeTemplate = [[AKThemeTemplate alloc] init];
+                themeTemplate = [[BKThemeTemplate alloc] init];
 
             [themeTemplate setValue:[theClass themeName] forKey:@"name"];
 
@@ -182,7 +182,7 @@ function themeFromCibFile(aFile)
         
         templates = templates.concat([object blendThemeObjectTemplates]);
 
-        if ([object isKindOfClass:[AKThemeTemplate class]])
+        if ([object isKindOfClass:[BKThemeTemplate class]])
             theme = [[CPTheme alloc] initWithName:[object valueForKey:@"name"]];
     }
 
@@ -250,7 +250,7 @@ function exec(/*Array*/ command, /*Boolean*/ showOutput)
 {
     var theClass = [self class];
     
-    if ([theClass isKindOfClass:[AKThemeObjectTemplate class]])
+    if ([theClass isKindOfClass:[BKThemeObjectTemplate class]])
         return [self];
         
     if ([theClass isKindOfClass:[CPView class]])
@@ -270,7 +270,7 @@ function exec(/*Array*/ command, /*Boolean*/ showOutput)
 
 @end
 
-@implementation AKThemeObjectTemplate (BlendAdditions)
+@implementation BKThemeObjectTemplate (BlendAdditions)
 
 - (void)blendAddThemedObjectAttributesToTheme:(CPTheme)aTheme
 {

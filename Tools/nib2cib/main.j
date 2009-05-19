@@ -223,8 +223,8 @@ function main()
         outputFileName = cibExtension(inputFileName);
 
     if (frameworkPaths.length)
-        loadFrameworks(frameworkPaths, function() { convert(inputFileName, outputFileName, resourcesPath); print ("done");});
+        loadFrameworks(frameworkPaths, function() { convert(inputFileName, outputFileName, resourcesPath); });
     
-    else{
-        convert(inputFileName, outputFileName, resourcesPath);print ("done");}
+    else
+        convert(inputFileName, outputFileName, resourcesPath);
 }

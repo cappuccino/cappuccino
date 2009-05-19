@@ -22,11 +22,12 @@
     
     [contentView addSubview:tabView];
     
-    var count = [themeDescriptorClasses count];
+    var index = 0,
+        count = [themeDescriptorClasses count];
     
-    while (count--)
+    for (; index < count; ++index)
     {
-        var theClass = themeDescriptorClasses[count],
+        var theClass = themeDescriptorClasses[index],
             item = [[CPTabViewItem alloc] initWithIdentifier:[theClass themeName]],
             templates = BKThemeObjectTemplatesForClass(theClass),
             templatesCount = [templates count],
@@ -56,12 +57,18 @@
             }
         }
         
-        itemSize.height += 30;
-        
+        itemSize.width += 20.0;
+        itemSize.height += 30.0;
+
         var collectionView = [[CPCollectionView alloc] initWithFrame:CGRectMakeZero()],
             collectionViewItem = [[CPCollectionViewItem alloc] init];
-            
-        [collectionViewItem setView:[[BKShowcaseCell alloc] init]];
+
+        var backgroundColor = nil;
+
+        if ([theClass respondsToSelector:@selector(themeShowcaseBackgroundColor)])
+            backgroundColor = [theClass themeShowcaseBackgroundColor];
+
+        [collectionViewItem setView:[[BKShowcaseCell alloc] initWithShowcaseBackgroundColor:backgroundColor]];
 
         [collectionView setItemPrototype:collectionViewItem];
         [collectionView setMinItemSize:itemSize];
@@ -83,8 +90,21 @@
 
 @implementation BKShowcaseCell : CPView
 {
+    CPColor     _showcaseBackgroundColor;
+    CPView      _backgroundView;
+
     CPView      _view;
     CPTextField _label;
+}
+
+- (id)initWithShowcaseBackgroundColor:(CPColor)aColor
+{
+    self = [super init];
+
+    if (self)
+        _showcaseBackgroundColor = aColor;
+
+    return self;
 }
 
 - (void)setSelected:(BOOL)isSelected
@@ -110,16 +130,46 @@
     [_label setFrame:CGRectMake(0.0, CGRectGetHeight([self bounds]) - CGRectGetHeight([_label frame]), 
         CGRectGetWidth([self bounds]), CGRectGetHeight([_label frame]))];
     
+    if (!_backgroundView)
+    {
+        _backgroundView = [[CPView alloc] init];
+
+        [_backgroundView setBackgroundColor:_showcaseBackgroundColor];
+
+        [self addSubview:_backgroundView];
+    }
+
+    [_backgroundView setFrame:CGRectMake(0.0, 0.0, CGRectGetWidth([self bounds]), CGRectGetMinY([_label frame]))];
+    [_backgroundView setAutoresizingMask:CPViewWidthSizable | CPViewHeightSizable];
+
     if (_view)
         [_view removeFromSuperview];
-        
+
     _view = [anObject valueForKey:@"themedObject"];
 
     [_view setTheme:nil];
     [_view setAutoresizingMask:CPViewMinXMargin | CPViewMaxXMargin | CPViewMinYMargin | CPViewMaxYMargin];
-    [_view setFrameOrigin:CGPointMake((CGRectGetWidth([self bounds]) - CGRectGetWidth([_view frame])) / 2.0, (CGRectGetMinY([_label frame]) - CGRectGetHeight([_view frame])) / 2.0)];
-    
-    [self addSubview:_view];
+    [_view setFrameOrigin:CGPointMake((CGRectGetWidth([_backgroundView bounds]) - CGRectGetWidth([_view frame])) / 2.0,
+        (CGRectGetHeight([_backgroundView bounds]) - CGRectGetHeight([_view frame])) / 2.0)];
+
+    [_backgroundView addSubview:_view];
+}
+
+- (id)initWithCoder:(CPCoder)aCoder
+{
+    self = [super initWithCoder:aCoder];
+
+    if (self)
+        _showcaseBackgroundColor = [aCoder decodeObjectForKey:@"showcase-background-color"];
+
+    return self
+}
+
+- (void)encodeWithCoder:(CPCoder)aCoder
+{
+    [super encodeWithCoder:aCoder];
+
+    [aCoder encodeObject:_showcaseBackgroundColor forKey:@"showcase-background-color"];
 }
 
 @end
