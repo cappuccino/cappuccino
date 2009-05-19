@@ -1,6 +1,8 @@
 
 @import "Configuration.j"
 
+var File = require("file");
+
 
 function gen(/*va_args*/)
 {
@@ -64,15 +66,15 @@ function gen(/*va_args*/)
 
             for (; index < count; ++index)
             {
-                var file = files[index],
-                    contents = readFile(file);
-                var key = nil,
+                var path = files[index],
+                    contents = File.read(path, { charset : "UTF-8" }),
+                    key = nil,
                     keyEnumerator = [configuration keyEnumerator];
 
                 while (key = [keyEnumerator nextObject])
                     contents = contents.replace(new RegExp("__" + key + "__", 'g'), [configuration valueForKey:key]);
 
-                writeContentsToFile(contents, file);
+                File.write(path, contents, { charset: "UTF-8"});
             }
         }
 

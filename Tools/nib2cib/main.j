@@ -29,6 +29,8 @@
 @import "NSAppKit.j"
 @import "Nib2CibKeyedUnarchiver.j"
 
+var File = require("file");
+
 importPackage(java.io);
 
 CPLogRegister(CPLogPrint);
@@ -113,7 +115,7 @@ function convert(inputFileName, outputFileName, resourcesPath)
 
     // Convert from binary plist to XML plist
     var temporaryPlistFile = java.io.File.createTempFile("temp", ".plist"),
-        temporaryPlistFilePath = temporaryPlistFile.getAbsolutePath();
+        temporaryPlistFilePath = String(temporaryPlistFile.getAbsolutePath());
     
     temporaryPlistFile.deleteOnExit();
     
@@ -123,8 +125,8 @@ function convert(inputFileName, outputFileName, resourcesPath)
         return;
     }
 
-    var data = [CPURLConnection sendSynchronousRequest:[CPURLRequest requestWithURL:temporaryPlistFilePath] returningResponse:nil error:nil];
-    
+    var data = [CPData dataWithString:File.read(String(temporaryPlistFilePath), { charset:"UTF8" })];
+
     // Minor NSKeyedArchive to CPKeyedArchive conversion.
     [data setString:[data string].replace(/\<key\>\s*CF\$UID\s*\<\/key\>/g, "<key>CP$UID</key>")];
     
@@ -139,28 +141,7 @@ function convert(inputFileName, outputFileName, resourcesPath)
     [archiver encodeObject:objectData forKey:@"CPCibObjectDataKey"];
     [archiver finishEncoding];
     
-    var writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(outputFileName), "UTF-8"));
-    
-    writer.write([data string]);
-    
-    writer.close();
-}
-
-function readPlist(/*File*/ aFile)
-{
-    var reader = new BufferedReader(new FileReader(aFile)),
-        fileContents = "";
-    
-    // Get contents of the file
-    while (reader.ready())
-        fileContents += reader.readLine() + '\n';
-        
-    reader.close();
-
-    var data = new objj_data();
-    data.string = fileContents;
-
-    return new CPPropertyListCreateFromData(data);
+    File.write(outputFileName, [data string], { charset:"UTF8" });
 }
 
 function loadFrameworks(frameworkPaths, aCallback)
@@ -178,7 +159,7 @@ function loadFrameworks(frameworkPaths, aCallback)
         java.lang.System.exit(1);
     }
     
-    var infoDictionary = readPlist(new java.io.File(frameworkPath + "/Info.plist"));
+    var infoDictionary = CPPropertyListCreateFromData([CPData dataWithString:File.read(frameworkPath + "/Info.plist", { charset:"UTF8" })]);
     
     if ([infoDictionary objectForKey:@"CPBundlePackageType"] !== "FMWK")
     {
@@ -242,8 +223,8 @@ function main()
         outputFileName = cibExtension(inputFileName);
 
     if (frameworkPaths.length)
-        loadFrameworks(frameworkPaths, function() { convert(inputFileName, outputFileName, resourcesPath); });
+        loadFrameworks(frameworkPaths, function() { convert(inputFileName, outputFileName, resourcesPath); print ("done");});
     
-    else
-        convert(inputFileName, outputFileName, resourcesPath);
+    else{
+        convert(inputFileName, outputFileName, resourcesPath);print ("done");}
 }

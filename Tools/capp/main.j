@@ -137,7 +137,7 @@ function getFiles(/*File*/ sourceDirectory, /*nil|String|Array<String>*/ extensi
             if (file.isDirectory())
                 matches = matches.concat(getFiles(file, extensions, exclusions));
             else if (isValidExtension)
-                matches.push(file);
+                matches.push(String(file.getCanonicalPath()));
         }
     }
     

@@ -36,6 +36,7 @@
         _title = [aCoder decodeObjectForKey:@"NSTitle"];
         _items = [aCoder decodeObjectForKey:@"NSMenuItems"];
 
+        _showsStateColumn = YES;
         //_showsStateColumn = ![aCoder containsValueForKey:@"NSMenuExcludeMarkColumn"] || ![aCoder decodeBoolForKey:@"NSMenuExcludeMarkColumn"];
     }
     
