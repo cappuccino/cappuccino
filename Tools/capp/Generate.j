@@ -48,34 +48,34 @@ function gen(/*va_args*/)
         destinationProject = new java.io.File(destination),
         configuration = noConfig ? [Configuration defaultConfiguration] : [Configuration userConfiguration];
 
-    if (!destinationProject.exists())
+    if (justFrameworks)
+        createFrameworksInFile(destinationProject, shouldSymbolicallyLink);
+
+    else if (!destinationProject.exists())
     {
-        if (!justFrameworks)
+        exec(["cp", "-vR", sourceTemplate.getCanonicalPath(), destinationProject.getCanonicalPath()], true);
+
+        var files = getFiles(destinationProject),
+            index = 0,
+            count = files.length,
+            name = String(destinationProject.getName()),
+            orgIdentifier = [configuration valueForKey:@"organization.identifier"] || "";
+
+        [configuration setTemporaryValue:name forKey:@"project.name"];
+        [configuration setTemporaryValue:orgIdentifier + '.' +  toIdentifier(name) forKey:@"project.identifier"];
+        [configuration setTemporaryValue:toIdentifier(name) forKey:@"project.nameasidentifier"];
+
+        for (; index < count; ++index)
         {
-            exec(["cp", "-vR", sourceTemplate.getCanonicalPath(), destinationProject.getCanonicalPath()], true);
+            var path = files[index],
+                contents = File.read(path, { charset : "UTF-8" }),
+                key = nil,
+                keyEnumerator = [configuration keyEnumerator];
 
-            var files = getFiles(destinationProject),
-                index = 0,
-                count = files.length,
-                name = String(destinationProject.getName()),
-                orgIdentifier = [configuration valueForKey:@"organization.identifier"] || "";
+            while (key = [keyEnumerator nextObject])
+                contents = contents.replace(new RegExp("__" + key + "__", 'g'), [configuration valueForKey:key]);
 
-            [configuration setTemporaryValue:name forKey:@"project.name"];
-            [configuration setTemporaryValue:orgIdentifier + '.' +  toIdentifier(name) forKey:@"project.identifier"];
-            [configuration setTemporaryValue:toIdentifier(name) forKey:@"project.nameasidentifier"];
-
-            for (; index < count; ++index)
-            {
-                var path = files[index],
-                    contents = File.read(path, { charset : "UTF-8" }),
-                    key = nil,
-                    keyEnumerator = [configuration keyEnumerator];
-
-                while (key = [keyEnumerator nextObject])
-                    contents = contents.replace(new RegExp("__" + key + "__", 'g'), [configuration valueForKey:key]);
-
-                File.write(path, contents, { charset: "UTF-8"});
-            }
+            File.write(path, contents, { charset: "UTF-8"});
         }
 
         createFrameworksInFile(destinationProject, shouldSymbolicallyLink);

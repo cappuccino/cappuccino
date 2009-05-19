@@ -199,6 +199,8 @@ module ObjectiveJ
         attributes :email, :homepage, :github_project, :description, :license_file, :license
         attributes :build_path, :intermediates_path
         attribute :principal_class
+        attribute :index_file
+        attribute :info_plist
         #    attributes :autorequire, :default_executable
         #    attribute :platform,               Gem::Platform::RUBY
         
@@ -402,18 +404,49 @@ module ObjectiveJ
                 end
             end
 
-            info_plist_path = build_path + '/Info.plist'
-            info_plist = { 'CPBundleName' => name, 'CPBundleIdentifier' => identifier, 'CPBundleInfoDictionaryVersion' => 6.0, 'CPBundleVersion' => version, 'CPBundlePackageType' => Bundle::Type.code_string(type) }
+            if type == Bundle::Type::Application and index_file
+
+                index_file_path = File.join(build_path, File.basename(index_file))
+
+                file_d index_file_path => [index_file] do |t|
+                    cp(index_file, t.name)
+                end
+
+                enhance([index_file_path])
+
+                frameworks_path = File.join(build_path, 'Frameworks')
+
+                file_d frameworks_path do
+                    IO.popen("capp gen -f " + build_path) do |capp|
+                        capp.sync = true
+
+                        while str = capp.gets
+                            puts str
+                        end
+                    end
+                end
+
+                enhance([frameworks_path])
+            end
+
+            info_plist_path = File.join(build_path, 'Info.plist')
+            new_info_plist = { 'CPBundleName' => name, 'CPBundleIdentifier' => identifier, 'CPBundleInfoDictionaryVersion' => 6.0, 'CPBundleVersion' => version, 'CPBundlePackageType' => Bundle::Type.code_string(type) }
             
-            info_plist['CPBundlePlatforms'] = platforms;
+            new_info_plist['CPBundlePlatforms'] = platforms;
+
+            if info_plist
+                existing_info_plist = Plist::parse_xml(info_plist)
+                new_info_plist = new_info_plist.merge existing_info_plist
+                file_d info_plist_path => [info_plist]
+            end
 
             if principal_class
-                info_plist['CPPrincipalClass'] = principal_class
+                new_info_plist['CPPrincipalClass'] = principal_class
             end
 
             file_d info_plist_path do
                 File.open(info_plist_path, 'w') do |file|
-                    file.puts info_plist.to_plist
+                    file.puts new_info_plist.to_plist
                 end
             end
 
@@ -488,13 +521,13 @@ module ObjectiveJ
             puts 'Compacting ' + path
             
             info_plist_path = File.join(path, 'Info.plist')
-            info_plist = Plist::parse_xml(info_plist_path)
+            existing_info_plist = Plist::parse_xml(info_plist_path)
             
             absolute_path = File.expand_path(path) + '/'
 
             patterns = patterns.map { |pattern| "#{path}/#{pattern}" }
             
-            bundle_name = info_plist['CPBundleName']
+            bundle_name = existing_info_plist['CPBundleName']
             replaced_files = []
 
             FileList.new(File.join(path, '**', '*.platform')).each do |platform|
@@ -529,11 +562,11 @@ module ObjectiveJ
                 end
             end
 
-            info_plist['CPBundleReplacedFiles'] = replaced_files.uniq
-            info_plist['CPBundleExecutable'] = bundle_name + '.sj'
+            existing_info_plist['CPBundleReplacedFiles'] = replaced_files.uniq
+            existing_info_plist['CPBundleExecutable'] = bundle_name + '.sj'
             
             File.open(info_plist_path, 'w') do |file|
-                file.puts info_plist.to_plist
+                file.puts existing_info_plist.to_plist
             end
             
         end

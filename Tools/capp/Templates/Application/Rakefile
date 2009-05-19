@@ -15,7 +15,8 @@ ObjectiveJ::BundleTask.new(:__project.nameasidentifier__) do |t|
     t.summary       = '__project.name__'
     t.sources       = FileList['*.j']
     t.resources     = FileList['Resources/*']
-    t.license       = ObjectiveJ::License::LGPL_v2_1
+    t.index_file    = 'index.html'
+    t.info_plist    = 'Info.plist'
     t.build_path    = File.join('Build', ENV['CONFIG'], '__project.nameasidentifier__')
     t.flag          = '-DDEBUG' if ENV['CONFIG'] == 'Debug'
     t.flag          = '-O' if ENV['CONFIG'] == 'Release'
