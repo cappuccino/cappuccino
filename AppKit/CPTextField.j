@@ -138,6 +138,64 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
     CPControlSize           _controlSize;
 }
 
++ (CPTextField)textFieldWithStringValue:(CPString)aStringValue placeholder:(CPString)aPlaceholder width:(float)aWidth
+{
+    return [self textFieldWithStringValue:aStringValue placeholder:aPlaceholder width:aWidth theme:[CPTheme defaultTheme]];
+}
+
++ (CPTextField)textFieldWithStringValue:(CPString)aStringValue placeholder:(CPString)aPlaceholder width:(float)aWidth theme:(CPTheme)aTheme
+{
+    var textField = [[self alloc] initWithFrame:CGRectMake(0.0, 0.0, aWidth, 29.0)];
+
+    [textField setTheme:aTheme];
+    [textField setStringValue:aStringValue];
+    [textField setPlaceholderString:aPlaceholder];
+    [textField setBordered:YES];
+    [textField setBezeled:YES];
+    [textField setEditable:YES];
+
+    [textField sizeToFit];
+
+    return textField;
+}
+
++ (CPTextField)roundedTextFieldWithStringValue:(CPString)aStringValue placeholder:(CPString)aPlaceholder width:(float)aWidth
+{
+    return [self roundedTextFieldWithStringValue:aStringValue placeholder:aPlaceholder width:aWidth theme:[CPTheme defaultTheme]];
+}
+
++ (CPTextField)roundedTextFieldWithStringValue:(CPString)aStringValue placeholder:(CPString)aPlaceholder width:(float)aWidth theme:(CPTheme)aTheme
+{
+    var textField = [[CPTextField alloc] initWithFrame:CGRectMake(0.0, 0.0, aWidth, 29.0)];
+
+    [textField setTheme:aTheme];
+    [textField setStringValue:aStringValue];
+    [textField setPlaceholderString:aPlaceholder];
+    [textField setBezelStyle:CPTextFieldRoundedBezel];
+    [textField setBordered:YES];
+    [textField setBezeled:YES];
+    [textField setEditable:YES];
+
+    [textField sizeToFit];
+
+    return textField;
+}
+
++ (CPTextField)labelWithTitle:(CPString)aTitle
+{
+    return [self labelWithTitle:aTitle theme:[CPTheme defaultTheme]];
+}
+
++ (CPTextField)labelWithTitle:(CPString)aTitle theme:(CPTheme)aTheme
+{
+    var textField = [[self alloc] init];
+
+    [textField setStringValue:aTitle];
+    [textField sizeToFit];
+
+    return textField;
+}
+
 + (CPString)themeClass
 {
     return "textfield";
@@ -664,10 +722,24 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 
 - (void)sizeToFit
 {
-    var size = [([self stringValue] || " ") sizeWithFont:[self font]],
-        contentInset = [self currentValueForThemeAttribute:@"content-inset"];
+    var size = [([self stringValue] || " ") sizeWithFont:[self currentValueForThemeAttribute:@"font"]],
+        contentInset = [self currentValueForThemeAttribute:@"content-inset"],
+        minSize = [self currentValueForThemeAttribute:@"min-size"],
+        maxSize = [self currentValueForThemeAttribute:@"max-size"];
 
-    [self setFrameSize:CGSizeMake(size.width + contentInset.left + contentInset.right, size.height + contentInset.top + contentInset.bottom)];
+    size.width = MAX(size.width + contentInset.left + contentInset.right, minSize.width);
+    size.height = MAX(size.height + contentInset.top + contentInset.bottom, minSize.height);
+
+    if (maxSize.width >= 0.0)
+        size.width = MIN(size.width, maxSize.width);
+
+    if (maxSize.height >= 0.0)
+        size.height = MIN(size.height, maxSize.height);
+
+    if ([self isEditable])
+        size.width = CGRectGetWidth([self frame]);
+
+    [self setFrameSize:size];
 }
 
 /*!

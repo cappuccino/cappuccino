@@ -598,7 +598,7 @@ CPSegmentSwitchTrackingMomentary = 2;
         themeState = _themeStates[aSegment] | (_themeState & CPThemeStateDisabled),
         contentInset = [self valueForThemeAttribute:@"content-inset" inState:themeState],
         font = [self valueForThemeAttribute:@"font" inState:themeState];
-    
+
     if (!segmentWidth)
     {
         if (segment.image && segment.label)
@@ -610,9 +610,9 @@ CPSegmentSwitchTrackingMomentary = 2;
         else
             segmentWidth = 0.0;
     }
-    
+
     var delta = segmentWidth - CGRectGetWidth(segment.frame);
-    
+
     if (!delta)
         return;
 

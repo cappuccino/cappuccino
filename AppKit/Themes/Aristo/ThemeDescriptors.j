@@ -152,7 +152,7 @@
 
     [textfield setValue:[CPColor colorWithCalibratedRed:189.0 / 255.0 green:199.0 / 255.0 blue:211.0 / 255.0 alpha:1.0] forThemeAttribute:@"text-color" inState:CPTextFieldStatePlaceholder];
 
-    [textfield setPlaceholderString:"cheese cheese"];
+    [textfield setPlaceholderString:"placeholder"];
     [textfield setStringValue:""];
     [textfield setEditable:YES];
 
@@ -190,9 +190,12 @@
 
     [textfield setValue:[CPColor colorWithCalibratedRed:189.0 / 255.0 green:199.0 / 255.0 blue:211.0 / 255.0 alpha:1.0] forThemeAttribute:@"text-color" inState:CPTextFieldStatePlaceholder];
 
-    [textfield setPlaceholderString:"cheese cheese"];
+    [textfield setPlaceholderString:"placeholder"];
     [textfield setStringValue:""];
     [textfield setEditable:YES];
+
+    [textfield setValue:CGSizeMake(0.0, 30.0) forThemeAttribute:@"min-size" inState:CPThemeStateBezeled|CPTextFieldStateRounded];
+    [textfield setValue:CGSizeMake(-1.0, 30.0) forThemeAttribute:@"max-size" inState:CPThemeStateBezeled|CPTextFieldStateRounded];
 
     return textfield;
 }
@@ -307,7 +310,7 @@
     [button setValue:bezelColor forThemeAttribute:@"bezel-color" inState:CPThemeStateBordered];    
     [button setValue:bezelColorSelected forThemeAttribute:@"bezel-color" inState:CPThemeStateBordered | CPThemeStateSelected];
 
-    [button setValue:CGSizeMake(0.0, 16.0) forThemeAttribute:@"min-size"];
+    [button setValue:CGSizeMake(0.0, 17.0) forThemeAttribute:@"min-size"];
 
     return button;
 }
