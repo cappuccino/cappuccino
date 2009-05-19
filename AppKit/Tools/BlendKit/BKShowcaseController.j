@@ -115,6 +115,7 @@
         
     _view = [anObject valueForKey:@"themedObject"];
 
+    [_view setTheme:nil];
     [_view setAutoresizingMask:CPViewMinXMargin | CPViewMaxXMargin | CPViewMinYMargin | CPViewMaxYMargin];
     [_view setFrameOrigin:CGPointMake((CGRectGetWidth([self bounds]) - CGRectGetWidth([_view frame])) / 2.0, (CGRectGetMinY([_label frame]) - CGRectGetHeight([_view frame])) / 2.0)];
     
