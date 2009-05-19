@@ -36,47 +36,10 @@ _CPButtonBezelStyleHeights[CPRoundedBezelStyle] = 18;
 _CPButtonBezelStyleHeights[CPTexturedRoundedBezelStyle] = 20;
 _CPButtonBezelStyleHeights[CPHUDBezelStyle] = 20;
 
-@implementation CPRadio (NSCoding)
-
-- (id)NS_initWithCoder:(CPCoder)aCoder
-{
-    self = [super NS_initWithCoder:aCoder];
-
-    if (self)
-        _radioGroup = [CPRadioGroup new];
-
-    return self;
-}
-
-@end
-
 @implementation CPButton (NSCoding)
 
 - (id)NS_initWithCoder:(CPCoder)aCoder
 {
-    if (![self isKindOfClass:[CPRadio class]] && ![self isKindOfClass:[CPCheckBox class]])
-    {
-        // We need to do a bit of magic to determine if this is a checkbox or radio button.
-        var cell = [aCoder decodeObjectForKey:@"NSCell"],
-            alternateImage = [cell alternateImage];
-
-        if ([alternateImage isKindOfClass:[NSButtonImageSource class]])
-        {
-            if ([alternateImage imageName] === @"NSSwitch")
-            {
-                CPLog.warn("Detected check box, switching to CPCheckBox");
-
-                return [[CPCheckBox alloc] NS_initWithCoder:aCoder];
-            }
-            else if ([alternateImage imageName] === @"NSRadioButton")
-            {
-                CPLog.warn("Detected radio, switching to CPRadio");
-
-                return [[CPRadio alloc] NS_initWithCoder:aCoder];
-            }
-        }
-    }
-
     self = [super NS_initWithCoder:aCoder];
 
     if (self)
@@ -87,7 +50,7 @@ _CPButtonBezelStyleHeights[CPHUDBezelStyle] = 20;
 
         _title = [cell title];
 
-        if (![self isKindOfClass:[CPCheckBox class]] && ![self isKindOfClass:[CPRadio class]])
+        if (![self NS_isCheckBox] && ![self NS_isRadio])
         {
             [self setBordered:[cell isBordered]];
 
@@ -148,15 +111,39 @@ _CPButtonBezelStyleHeights[CPHUDBezelStyle] = 20;
 
 @implementation NSButton : CPButton
 {
+    BOOL    _isCheckBox @accessors(readonly, getter=NS_isCheckBox);
+    BOOL    _isRadio @accessors(readonly, getter=NS_isRadio);
 }
 
 - (id)initWithCoder:(CPCoder)aCoder
 {
+    // We need to do a bit of magic to determine if this is a checkbox or radio button.
+    var cell = [aCoder decodeObjectForKey:@"NSCell"],
+        alternateImage = [cell alternateImage];
+
+    if ([alternateImage isKindOfClass:[NSButtonImageSource class]])
+    {
+        if ([alternateImage imageName] === @"NSSwitch")
+            _isCheckBox = YES;
+
+        else if ([alternateImage imageName] === @"NSRadioButton")
+        {
+            _isRadio = YES;
+            self._radioGroup = [CPRadioGroup new];
+        }
+    }
+
     return [self NS_initWithCoder:aCoder];
 }
 
 - (Class)classForKeyedArchiver
 {
+    if ([self NS_isCheckBox])
+        return [CPCheckBox class];
+
+    if ([self NS_isRadio])
+        return [CPRadio class];
+
     return [CPButton class];
 }
 
