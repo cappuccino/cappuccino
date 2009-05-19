@@ -259,8 +259,16 @@
 
     [button setTitle:@"Hello Friend!"];
 
-    var bezelColor = PatternColor([_CPCibCustomResource imageResourceWithName:"radio-bezel.png" size:CGSizeMake(17.0, 17.0)]),
-        bezelColorSelected = PatternColor([_CPCibCustomResource imageResourceWithName:"radio-bezel-selected.png" size:CGSizeMake(17.0, 17.0)]);
+    var bezelColor = PatternColor([[CPThreePartImage alloc] initWithImageSlices:
+            [
+                [_CPCibCustomResource imageResourceWithName:"radio-bezel.png" size:CGSizeMake(17.0, 17.0)], nil, nil
+            ]
+        isVertical:NO]),
+        bezelColorSelected = PatternColor([[CPThreePartImage alloc] initWithImageSlices:
+            [
+                [_CPCibCustomResource imageResourceWithName:"radio-bezel-selected.png" size:CGSizeMake(17.0, 17.0)], nil, nil
+            ]
+        isVertical:NO]);
 
     [button setValue:CPLeftTextAlignment forThemeAttribute:@"alignment" inState:CPThemeStateBordered];
     [button setValue:[CPFont boldSystemFontOfSize:12.0] forThemeAttribute:@"font" inState:CPThemeStateBordered];
@@ -277,8 +285,16 @@
     
     [button setTitle:@"Another option"];
 
-    var bezelColor = PatternColor([_CPCibCustomResource imageResourceWithName:"check-box-bezel.png" size:CGSizeMake(15.0, 15.0)]),
-        bezelColorSelected = PatternColor([_CPCibCustomResource imageResourceWithName:"check-box-bezel-selected.png" size:CGSizeMake(15.0, 16.0)]);
+    var bezelColor = PatternColor([[CPThreePartImage alloc] initWithImageSlices:
+            [
+                [_CPCibCustomResource imageResourceWithName:"check-box-bezel.png" size:CGSizeMake(15.0, 16.0)], nil, nil
+            ]
+        isVertical:NO]),
+        bezelColorSelected = PatternColor([[CPThreePartImage alloc] initWithImageSlices:
+            [
+                [_CPCibCustomResource imageResourceWithName:"check-box-bezel-selected.png" size:CGSizeMake(15.0, 16.0)], nil, nil
+            ]
+        isVertical:NO]);
     
     [button setValue:CPLeftTextAlignment forThemeAttribute:@"alignment" inState:CPThemeStateBordered];
     [button setValue:[CPFont boldSystemFontOfSize:12.0] forThemeAttribute:@"font" inState:CPThemeStateBordered];
