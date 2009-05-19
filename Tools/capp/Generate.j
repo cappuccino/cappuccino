@@ -72,6 +72,10 @@ function gen(/*va_args*/)
                 key = nil,
                 keyEnumerator = [configuration keyEnumerator];
 
+            // FIXME: HACK
+            if (path.indexOf('.gif') !== -1)
+                continue;
+
             while (key = [keyEnumerator nextObject])
                 contents = contents.replace(new RegExp("__" + key + "__", 'g'), [configuration valueForKey:key]);
 
