@@ -156,7 +156,7 @@ var CPAlertWarningImage,
     {
         var button = _buttons[i];
         
-        [button setFrameSize:CGSizeMake([button frame].size.width, (styleMask == CPHUDBackgroundWindowMask) ? 20.0 : 18.0)];
+        [button setFrameSize:CGSizeMake([button frame].size.width, (styleMask == CPHUDBackgroundWindowMask) ? 20.0 : 24.0)];
         [button setBezelStyle:(styleMask == CPHUDBackgroundWindowMask) ? CPHUDBezelStyle : CPRoundedBezelStyle];
         
         [[_alertPanel contentView] addSubview:button];
@@ -251,7 +251,7 @@ var CPAlertWarningImage,
 */
 - (void)addButtonWithTitle:(CPString)title
 {
-    var button = [[CPButton alloc] initWithFrame:CGRectMake(200.0 - (_buttonCount * 90.0), 98.0, 80.0, (_windowStyle == CPHUDBackgroundWindowMask) ? 20.0 : 18.0)];
+    var button = [[CPButton alloc] initWithFrame:CGRectMake(200.0 - (_buttonCount * 90.0), 98.0, 80.0, (_windowStyle == CPHUDBackgroundWindowMask) ? 20.0 : 24.0)];
     
     [button setTitle:title];
     [button setTarget:self];
@@ -261,6 +261,9 @@ var CPAlertWarningImage,
     [button setBezelStyle:(_windowStyle == CPHUDBackgroundWindowMask) ? CPHUDBezelStyle : CPRoundRectBezelStyle];
     [[_alertPanel contentView] addSubview:button];
     
+    if (_buttonCount == 0)
+        [_alertPanel setDefaultButton:button];
+
     _buttonCount++;
     [_buttons addObject:button];
 }
