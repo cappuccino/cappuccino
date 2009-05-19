@@ -45,7 +45,7 @@
         highlightedArrowColor = PatternColor([_CPCibCustomResource imageResourceWithName:"scroller-down-arrow-highlighted.png" size:CGSizeMake(17.0, 30.0)]),
         disabledArrowColor = PatternColor([_CPCibCustomResource imageResourceWithName:"scroller-down-arrow-disabled.png" size:CGSizeMake(17.0, 30.0)]);
 
-    [scroller setValue:CGSizeMake(17.0, 30.0) forThemeAttribute:@"increment-line-size"];
+    [scroller setValue:CGSizeMake(17.0, 30.0) forThemeAttribute:@"increment-line-size" inState:CPThemeStateVertical];
     [scroller setValue:arrowColor forThemeAttribute:@"increment-line-color" inState:CPThemeStateVertical];
     [scroller setValue:highlightedArrowColor forThemeAttribute:@"increment-line-color" inState:CPThemeStateVertical | CPThemeStateHighlighted];
     [scroller setValue:disabledArrowColor forThemeAttribute:@"increment-line-color" inState:CPThemeStateVertical | CPThemeStateDisabled];
