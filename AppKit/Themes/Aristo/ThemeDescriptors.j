@@ -25,9 +25,10 @@
         trackColor = PatternColor([_CPCibCustomResource imageResourceWithName:"scroller-vertical-track.png" size:CGSizeMake(17.0, 1.0)]),
         disabledTrackColor = PatternColor([_CPCibCustomResource imageResourceWithName:"scroller-vertical-track-disabled.png" size:CGSizeMake(17.0, 1.0)]);
         
-    [scroller setValue:CGSizeMake(15.0, 19.0) forThemeAttribute:@"minimum-knob-size" inState:CPThemeStateVertical];
+    [scroller setValue:19.0 forThemeAttribute:@"minimum-knob-length" inState:CPThemeStateVertical];
+    [scroller setValue:CGInsetMake(0.0, 1.0, 0.0, 1.0) forThemeAttribute:@"knob-inset" inState:CPThemeStateVertical];
+    [scroller setValue:CGInsetMake(-9.0, 0.0, -9.0, 0.0) forThemeAttribute:@"track-inset" inState:CPThemeStateVertical];
 
-    [scroller setValue:CGInsetMake(9.0, 9.0, 9.0, 9.0) forThemeAttribute:@"track-overlap-inset" inState:CPThemeStateVertical];
     [scroller setValue:trackColor forThemeAttribute:@"knob-slot-color" inState:CPThemeStateVertical];
     [scroller setValue:disabledTrackColor forThemeAttribute:@"knob-slot-color" inState:CPThemeStateVertical | CPThemeStateDisabled];
 
@@ -70,9 +71,10 @@
         trackColor = PatternColor([_CPCibCustomResource imageResourceWithName:"scroller-horizontal-track.png" size:CGSizeMake(1.0, 17.0)]),
         disabledTrackColor = PatternColor([_CPCibCustomResource imageResourceWithName:"scroller-vertical-track-disabled.png" size:CGSizeMake(17.0, 1.0)]);
 
-    [scroller setValue:CGSizeMake(19.0, 15.0) forThemeAttribute:@"minimum-knob-size"];
+    [scroller setValue:19.0 forThemeAttribute:@"minimum-knob-length"];
+    [scroller setValue:CGInsetMake(2.0, 0.0, 0.0, 0.0) forThemeAttribute:@"knob-inset"];
+    [scroller setValue:CGInsetMake(0.0, -9.0, 0.0, -11.0) forThemeAttribute:@"track-inset"];
 
-    [scroller setValue:CGInsetMake(9.0, 9.0, 9.0, 12.0) forThemeAttribute:@"track-overlap-inset" ];
     [scroller setValue:trackColor forThemeAttribute:@"knob-slot-color"];
     [scroller setValue:disabledTrackColor forThemeAttribute:@"knob-slot-color" inState:CPThemeStateDisabled];
 
