@@ -207,7 +207,8 @@ var CPURLConnectionDelegate = nil;
     }
     catch (anException)
     {
-        [_delegate connection:self didFailWithError:anException];
+        if ([_delegate respondsToSelector:@selector(connection:didFailWithError:)])
+            [_delegate connection:self didFailWithError:anException];
     }
 }
 
@@ -240,27 +241,30 @@ var CPURLConnectionDelegate = nil;
     {
         var statusCode = _XMLHTTPRequest.status,
             URL = [_request URL];
-        
+
         if ([_delegate respondsToSelector:@selector(connection:didReceiveResponse:)])
+        {
             if (_isLocalFileConnection)
                 [_delegate connection:self didReceiveResponse:[[CPURLResponse alloc] initWithURL:URL]];
             else
             {
                 var response = [[CPHTTPURLResponse alloc] initWithURL:URL];
-                
+
                 [response _setStatusCode:statusCode];
-                
+
                 [_delegate connection:self didReceiveResponse:response];
             }
-                        
+        }
         if (!_isCanceled)
         {
             if (statusCode == 401 && [CPURLConnectionDelegate respondsToSelector:@selector(connectionDidReceiveAuthenticationChallenge:)])
                 [CPURLConnectionDelegate connectionDidReceiveAuthenticationChallenge:self];
             else
             {
-                [_delegate connection:self didReceiveData:_XMLHTTPRequest.responseText];
-                [_delegate connectionDidFinishLoading:self];
+                if ([_delegate respondsToSelector:@selector(connection:didReceiveData:)])
+                    [_delegate connection:self didReceiveData:_XMLHTTPRequest.responseText];
+                if ([_delegate respondsToSelector:@selector(connectionDidFinishLoading:)])
+                    [_delegate connectionDidFinishLoading:self];
             }
         }
     }
