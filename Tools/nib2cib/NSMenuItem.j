@@ -44,7 +44,7 @@
         _isHidden = [aCoder decodeBoolForKey:"NSIsHidden"];
 
 //      _tag = [aCoder decodeIntForKey:"NSTag"];
-//      _state = [aCoder decodeIntForKey:"NSState"];
+        _state = [aCoder decodeIntForKey:"NSState"];
 
 //      _image = [aCoder decodeObjectForKey:"NSImage"];
 //      _alternateImage = [aCoder decodeObjectForKey:""];

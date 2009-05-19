@@ -829,8 +829,9 @@ var _CPMenuBarVisible               = NO,
 @end
 
 
-var CPMenuTitleKey  = @"CPMenuTitleKey",
-    CPMenuItemsKey  = @"CPMenuItemsKey";
+var CPMenuTitleKey              = @"CPMenuTitleKey",
+    CPMenuItemsKey              = @"CPMenuItemsKey",
+    CPMenuShowsStateColumnKey   = @"CPMenuShowsStateColumnKey";
 
 @implementation CPMenu (CPCoding)
 
@@ -847,6 +848,8 @@ var CPMenuTitleKey  = @"CPMenuTitleKey",
     {
         _title = [aCoder decodeObjectForKey:CPMenuTitleKey];
         _items = [aCoder decodeObjectForKey:CPMenuItemsKey];
+
+        _showsStateColumn = ![aCoder containsValueForKey:CPMenuShowsStateColumnKey] || [aCoder decodeBoolForKey:CPMenuShowsStateColumnKey];
     }
     
     return self;
@@ -860,6 +863,9 @@ var CPMenuTitleKey  = @"CPMenuTitleKey",
 {
     [aCoder encodeObject:_title forKey:CPMenuTitleKey];
     [aCoder encodeObject:_items forKey:CPMenuItemsKey];
+
+    if (!_showsStateColumn)
+        [aCoder encodeBool:_showsStateColumn forKey:CPMenuShowsStateColumnKey];
 }
 
 @end
@@ -1777,8 +1783,11 @@ var _CPMenuBarWindowBackgroundColor = nil,
     {
         if ([_trackingMenuItem submenu] != nil)
         {
+            var action = [_trackingMenuItem action];
+
             // If the item has a submenu, but not direct action, a.k.a. a "pure" menu, simply show the menu.
-            if (![_trackingMenuItem action])
+            // FIXME: (?) should we use submenuAction: or not?
+            if (!action || action === @selector(submenuAction:))
                 return [self showMenu:anEvent];
             
             // If this is a hybrid button/menu, show it in a bit...

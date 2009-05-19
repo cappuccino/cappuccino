@@ -761,6 +761,7 @@ var CPMenuItemTitleKey              = @"CPMenuItemTitleKey",
     CPMenuItemIsHiddenKey           = @"CPMenuItemIsHiddenKey",
 
     CPMenuItemTagKey                = @"CPMenuItemTagKey",
+    CPMenuItemStateKey              = @"CPMenuItemStateKey",
 
     CPMenuItemImageKey              = @"CPMenuItemImageKey",
     CPMenuItemAlternateImageKey     = @"CPMenuItemAlternateImageKey",
@@ -796,7 +797,7 @@ var CPMenuItemTitleKey              = @"CPMenuItemTitleKey",
         _isEnabled = DEFAULT_VALUE(CPMenuItemIsEnabledKey, YES);
         _isHidden = DEFAULT_VALUE(CPMenuItemIsHiddenKey, NO);
         _tag = DEFAULT_VALUE(CPMenuItemTagKey, 0);
-
+        _state = DEFAULT_VALUE(CPMenuItemStateKey, CPOffState);
 //    int             _state;
 
         _image = DEFAULT_VALUE(CPMenuItemImageKey, nil);
@@ -840,6 +841,7 @@ var CPMenuItemTitleKey              = @"CPMenuItemTitleKey",
     ENCODE_IFNOT(CPMenuItemIsHiddenKey, _isHidden, NO);
 
     ENCODE_IFNOT(CPMenuItemTagKey, _tag, 0);
+    ENCODE_IFNOT(CPMenuItemStateKey, _state, CPOffState);
 
     ENCODE_IFNOT(CPMenuItemImageKey, _image, nil);
     ENCODE_IFNOT(CPMenuItemAlternateImageKey, _alternateImage, nil);
@@ -848,7 +850,7 @@ var CPMenuItemTitleKey              = @"CPMenuItemTitleKey",
     ENCODE_IFNOT(CPMenuItemMenuKey, _menu, nil);
 
     ENCODE_IFNOT(CPMenuItemRepresentedObjectKey, _representedObject, nil);
-    ENCODE_IFNOT(CPMenuItemViewKey, _view, nil)
+    ENCODE_IFNOT(CPMenuItemViewKey, _view, nil);
 }
 
 @end

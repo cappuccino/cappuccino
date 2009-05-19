@@ -33,8 +33,10 @@
     
     if (self)
     {
-        _title = [aCoder decodeObjectForKey:"NSTitle"];
-        _items = [aCoder decodeObjectForKey:"NSMenuItems"];
+        _title = [aCoder decodeObjectForKey:@"NSTitle"];
+        _items = [aCoder decodeObjectForKey:@"NSMenuItems"];
+
+        //_showsStateColumn = ![aCoder containsValueForKey:@"NSMenuExcludeMarkColumn"] || ![aCoder decodeBoolForKey:@"NSMenuExcludeMarkColumn"];
     }
     
     return self;
