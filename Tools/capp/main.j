@@ -48,6 +48,7 @@ function printUsage()
     print("    -l                Symlink the Frameworks folder to your $CAPP_BUILD or $STEAM_BUILD directory");
     print("    -t, --template    Specify the template name to use (listed in capp/Resources/Templates)");
     print("    -f, --frameworks  Create only frameworks, not a full application");
+    print("    --force           Overwrite Frameworks directory if it already exists");
     print("");
     print(ANSITextApplyProperties("    config ", ANSI_BOLD));
     print("    name value        Set a value for a given key");
