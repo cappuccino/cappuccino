@@ -12,6 +12,7 @@ function gen(/*va_args*/)
         shouldSymbolicallyLink = false,
         justFrameworks = false,
         noConfig = false,
+        force = false,
         
         template = "Application",
         destination = "";
@@ -37,6 +38,9 @@ function gen(/*va_args*/)
             case "--noconfig":      noConfig = true;
                                     break;
 
+            case "--force":         force = true;
+                                    break;
+
             default:                destination = argument;
         }
     }
@@ -49,7 +53,7 @@ function gen(/*va_args*/)
         configuration = noConfig ? [Configuration defaultConfiguration] : [Configuration userConfiguration];
 
     if (justFrameworks)
-        createFrameworksInFile(destinationProject, shouldSymbolicallyLink);
+        createFrameworksInFile(destinationProject, shouldSymbolicallyLink, force);
 
     else if (!destinationProject.exists())
     {
@@ -89,10 +93,23 @@ function gen(/*va_args*/)
 }
 
 
-function createFrameworksInFile(/*File*/ aFile, /*Boolean*/ shouldSymbolicallyLink)
+function createFrameworksInFile(/*File*/ aFile, /*Boolean*/ shouldSymbolicallyLink, /*Boolean*/ force)
 {
     var destinationFrameworks = new java.io.File(aFile.getCanonicalPath()+ "/Frameworks"),
         destinationDebugFrameworks = new java.io.File(aFile.getCanonicalPath() + "/Frameworks/Debug");
+        
+    if (destinationFrameworks.exists()) {
+        if (force) {
+            print("Updating existing Frameworks directory.");
+            exec(["rm", "-rf", destinationFrameworks.getCanonicalPath()], true);
+        }
+        else {
+            print("Frameworks directory already exists. Use --force to overwrite.");
+            return;
+        }
+    } else {    
+        print("Creating Frameworks directory.");
+    }
 
     if (!shouldSymbolicallyLink)
     {
@@ -100,7 +117,7 @@ function createFrameworksInFile(/*File*/ aFile, /*Boolean*/ shouldSymbolicallyLi
     
         exec(["cp", "-R", sourceFrameworks.getCanonicalPath(), destinationFrameworks.getCanonicalPath()], true);
 
-        return true;
+        return;
     }
     
     var BUILD = system.env["CAPP_BUILD"] || system.env["STEAM_BUILD"];
