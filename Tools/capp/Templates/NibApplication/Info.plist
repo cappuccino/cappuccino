@@ -5,7 +5,7 @@
 	<key>Main cib file base name</key>
 	<string>MainMenu.cib</string>
 	<key>CPBundleName</key>
-	<string>__Product__</string>
+	<string>__project.name__</string>
 	<key>CPPrincipalClass</key>
 	<string>CPApplication</string>
 </dict>
