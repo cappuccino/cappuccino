@@ -15,7 +15,7 @@ $ENVIRONMENT_LIB_PRODUCT = File.join($ENVIRONMENT_LIB_DIR, 'blend')
 ObjectiveJ::BundleTask.new(:blend) do |t|
     t.name          = 'blend'
     t.identifier    = 'com.280n.blend'
-    t.version       = '0.6.5'
+    t.version       = '0.7.0'
     t.author        = '280 North, Inc.'
     t.email         = 'feedback @nospam@ 280north.com'
     t.summary       = 'blend classes for Cappuccino'
