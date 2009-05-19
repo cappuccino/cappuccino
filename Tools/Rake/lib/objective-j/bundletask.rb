@@ -373,7 +373,7 @@ module ObjectiveJ
             resources_path = File.join(build_path, 'Resources')
 
             copied_resources = copy_resources resources, resources_path do |resource, copied_resource|
-                extname = File.extname(copied_resource)
+                extname = File.extname(resource)
 
                 if extname == '.xib' || extname == '.nib'
                     copied_resource = File.join(File.dirname(copied_resource), File.basename(copied_resource, extname)) + '.cib'
@@ -390,7 +390,7 @@ module ObjectiveJ
 
                     copied_resource
                 else
-                    extensionless = File.join(File.dirname(copied_resource), File.basename(copied_resource, extname))
+                    extensionless = File.join(File.dirname(resource), File.basename(resource, extname))
 
                     if extname == '.cib' and (File.exists?(extensionless + '.xib') or File.exists?(extensionless + '.nib'))
                         false
