@@ -20,11 +20,9 @@ System Requirements
 To run Cappuccino applications, all you need is a web browser that understands
 JavaScript.
 
-To build Cappuccino itself, you'll need the following tools:
+To build Cappuccino itself, please read more here :
 
-  - Java 1.5: http://www.java.com/
-  - Rake: http://rake.rubyforge.org/
-  - GCC: http://gcc.gnu.org/
+  - http://wiki.github.com/280north/cappuccino/getting-and-building-the-source
 
 If you're using Windows, you'll also need Cygwin: http://www.cygwin.com/
 
@@ -53,12 +51,12 @@ If you need help with Cappuccino, you can get help from the following sources:
   - Documentation: http://cappuccino.org/learn/
   - Wiki:          http://github.com/280north/cappuccino/wikis
   - Mailing Lists: http://groups.google.com/group/objectivej
-		   http://groups.google.com/group/objectivej-dev
+		           http://groups.google.com/group/objectivej-dev
   - IRC:           irc://irc.freenode.net#cappuccino
 
 If you discover any bugs, please file a ticket at:
 
-    http://cappuccino.lighthouseapp.com.
+    http://github.com/280north/cappuccino/issues.
 
 License
 -------
