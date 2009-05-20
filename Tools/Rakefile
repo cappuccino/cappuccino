@@ -3,7 +3,8 @@
 require 'rake'
 require '../common'
 
-subprojects = %w{Rake capp bake nib2cib press}
+#nib2cib has to come before capp since capp uses nib2cib
+subprojects = %w{Rake nib2cib capp bake press}
 
 %w(build clean clobber).each do |task_name|
   task task_name do
