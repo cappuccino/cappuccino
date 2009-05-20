@@ -45,7 +45,7 @@ This will load the obj-j syntax highlighting when you open files ending in .j
 1. Navigate to Tools (the directory containing this README).
 2. Enter "sudo sh install-tools"
 3. You should see this: "Cappuccino Tools Installed"
-5. You can optionally specify a global Build directory. If you wish to use it, you must set the STEAM_BUILD environment variable. Building Cappuccino from source requires this, for example.
+4. You can optionally specify a global Build directory. If you wish to use it, you must set the CAPP_BUILD environment variable. Building Cappuccino from source requires this, for example. As does using the -l flag in the capp tool.
 
 **********************************************************************
 * objj
@@ -65,4 +65,9 @@ objjc is a static pre-interpreter for Objective-J. It will take Objective-J file
 
 capp is a simple tool for creating Objective-J applications.
 
-    steam /path/to/your/app [options]
+    capp COMMAND [OPTIONS]
+    
+    cap gen PROJECT_PATH [-t TEMPLATE_NAME] [-l] [-f] to create new projects
+    
+    capp config name value to configure capp with your information (such as user.name, user.email, etc.)
+    
