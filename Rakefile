@@ -71,13 +71,13 @@ task :deploy => [:tools_download, :starter_download, :docs] do
     starter_zip_output = File.join($BUILD_DIR, 'Cappuccino', 'Starter.zip')
     rm_rf(starter_zip_output)
 
-    `cd #{cappuccino_output_path} && zip -r -8 Starter.zip Starter`
+    `cd #{cappuccino_output_path} && zip -ry -8 Starter.zip Starter`
 
     #zip the tools pack
     tools_zip_output = File.join($BUILD_DIR, 'Cappuccino', 'Tools.zip')
     rm_rf(tools_zip_output)
 
-    `cd #{cappuccino_output_path} && zip -r -8 Tools.zip Tools`
+    `cd #{cappuccino_output_path} && zip -ry -8 Tools.zip Tools`
 end
 
 file_d $STARTER_DOWNLOAD_APPLICATION => [$TOOLS_DOWNLOAD_ENV] do
