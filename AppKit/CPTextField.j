@@ -717,7 +717,20 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 }
 
 /*!
-    Adjusts the text field's size in the application.
+    Size to fit has two behavior, depending on if the receiver is an editable text field or not.
+    
+    For non-editable text fields (typically, a label), sizeToFit will change the frame of the 
+    receiver to perfectly fit the current text in stringValue in the current font, and respecting
+    the current theme values for content-inset, min-size, and max-size.
+    
+    For editable text fields, sizeToFit will ONLY change the HEIGHT of the text field. It will not 
+    change the width of the text field. You can use setFrameSize: with the current height to set the 
+    width, and you can get the size of a string with [CPString sizeWithFont:]. 
+    
+    The logic behind this decision is that most of the time you do not know what content will be placed
+    in an editable text field, so you want to just choose a fixed width and leave it at that size. 
+    However, since you don't know how tall it needs to be if you change the font, sizeToFit will still be
+    useful for making the textfield an appropriate height.
 */
 
 - (void)sizeToFit
