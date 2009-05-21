@@ -107,6 +107,16 @@ _CPButtonBezelStyleHeights[CPHUDBezelStyle] = 20;
     return self;
 }
 
+- (BOOL)NS_isCheckBox
+{
+    return NO;
+}
+
+- (BOOL)NS_isRadio
+{
+    return NO;
+}
+
 @end
 
 @implementation NSButton : CPButton
