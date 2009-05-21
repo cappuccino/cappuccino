@@ -18,7 +18,7 @@ ObjectiveJ::BundleTask.new(:Foundation) do |t|
     t.author        = '280 North, Inc.'
     t.email         = 'feedback @nospam@ 280north.com'
     t.summary       = 'Foundation classes for Cappuccino'
-    t.sources       = FileList['*.j']
+    t.sources       = FileList['**/*.j']
     t.resources     = FileList['Resources/*'].to_a
     t.license       = ObjectiveJ::License::LGPL_v2_1
     t.build_path    = $BUILD_PATH
