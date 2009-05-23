@@ -1188,7 +1188,7 @@ var _CPMenuItemSelectionColor                   = nil,
 
 - (CPColor)textColor
 {
-    return [_menuItem isEnabled] ? (_textColor ? _textColor : [CPColor colorWithCalibratedRed:70.0 / 255.0 green:69.0 / 255.0 blue:69.0 / 255.0 alpha:1.0]) : [CPColor darkGrayColor];
+    return [_menuItem isEnabled] ? (_textColor ? _textColor : [CPColor colorWithCalibratedRed:70.0 / 255.0 green:69.0 / 255.0 blue:69.0 / 255.0 alpha:1.0]) : [CPColor lightGrayColor];
 }
 
 - (void)setTextShadowColor:(CPColor)aColor
