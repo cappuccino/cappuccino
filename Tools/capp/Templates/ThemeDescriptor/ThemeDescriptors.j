@@ -6,10 +6,10 @@
  * Copyright __project.year__, __organization.name__ All rights reserved.
  */
 
-@import <Foundation/CPObject.j>
+@import <BlendKit/BKThemeDescriptor.j>
 
 
-@implementation __project.nameasidentifier__ThemeDescriptor : CPObject
+@implementation __project.nameasidentifier__ThemeDescriptor : BKThemeDescriptor
 {
 }
 
