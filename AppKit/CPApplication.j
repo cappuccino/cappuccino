@@ -476,6 +476,11 @@ CPRunContinuesResponse  = -1002;
     _mainMenu = aMenu;
 }
 
+- (void)orderFrontColorPanel:(id)aSender
+{
+    [[CPColorPanel sharedColorPanel] orderFront:self];
+}
+
 - (void)orderFrontStandardAboutPanel:(id)aSender
 {
     [self orderFrontStandardAboutPanelWithOptions:nil];
