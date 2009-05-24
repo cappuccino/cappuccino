@@ -10,13 +10,144 @@
 @import <AppKit/AppKit.j>
 
 
-@implementation AristoThemeDescriptor : CPObject
+@implementation AristoThemeDescriptor : BKThemeDescriptor
 {
 }
 
 + (CPString)themeName
 {
     return @"Aristo";
+}
+
++ (CPButton)button
+{
+    var button = [[CPButton alloc] initWithFrame:CGRectMake(0.0, 0.0, 60.0, 24.0)],
+
+        bezelColor = [CPColor colorWithPatternImage:[[CPThreePartImage alloc] initWithImageSlices:
+            [
+                [_CPCibCustomResource imageResourceWithName:"button-bezel-left.png" size:CGSizeMake(4.0, 24.0)],
+                [_CPCibCustomResource imageResourceWithName:"button-bezel-center.png" size:CGSizeMake(1.0, 24.0)],
+                [_CPCibCustomResource imageResourceWithName:"button-bezel-right.png" size:CGSizeMake(4.0, 24.0)]
+            ]
+        isVertical:NO]],
+
+        highlightedBezelColor = [CPColor colorWithPatternImage:[[CPThreePartImage alloc] initWithImageSlices:
+            [
+                [_CPCibCustomResource imageResourceWithName:"button-bezel-highlighted-left.png" size:CGSizeMake(4.0, 24.0)],
+                [_CPCibCustomResource imageResourceWithName:"button-bezel-highlighted-center.png" size:CGSizeMake(1.0, 24.0)],
+                [_CPCibCustomResource imageResourceWithName:"button-bezel-highlighted-right.png" size:CGSizeMake(4.0, 24.0)]
+            ]
+        isVertical:NO]],
+
+        defaultBezelColor = [CPColor colorWithPatternImage:[[CPThreePartImage alloc] initWithImageSlices:
+            [
+                [_CPCibCustomResource imageResourceWithName:"default-button-bezel-left.png" size:CGSizeMake(4.0, 24.0)],
+                [_CPCibCustomResource imageResourceWithName:"default-button-bezel-center.png" size:CGSizeMake(1.0, 24.0)],
+                [_CPCibCustomResource imageResourceWithName:"default-button-bezel-right.png" size:CGSizeMake(4.0, 24.0)]
+            ]
+        isVertical:NO]],
+
+        defaultHighlightedBezelColor = [CPColor colorWithPatternImage:[[CPThreePartImage alloc] initWithImageSlices:
+            [
+                [_CPCibCustomResource imageResourceWithName:"default-button-bezel-highlighted-left.png" size:CGSizeMake(4.0, 24.0)],
+                [_CPCibCustomResource imageResourceWithName:"default-button-bezel-highlighted-center.png" size:CGSizeMake(1.0, 24.0)],
+                [_CPCibCustomResource imageResourceWithName:"default-button-bezel-highlighted-right.png" size:CGSizeMake(4.0, 24.0)]
+            ]
+        isVertical:NO]];
+
+    [button setValue:[CPFont boldSystemFontOfSize:12.0] forThemeAttribute:@"font" inState:CPThemeStateBordered];
+    [button setValue:[CPColor colorWithCalibratedWhite:79.0 / 255.0 alpha:1.0] forThemeAttribute:@"text-color"];
+    [button setValue:[CPColor colorWithCalibratedWhite:240.0 / 255.0 alpha:1.0] forThemeAttribute:@"text-shadow-color" inState:CPThemeStateBordered];
+    [button setValue:CGSizeMake(0.0, 1.0) forThemeAttribute:@"text-shadow-offset" inState:CPThemeStateBordered];
+    [button setValue:CPLineBreakByTruncatingTail forThemeAttribute:@"line-break-mode"];
+    
+    [button setValue:bezelColor forThemeAttribute:@"bezel-color" inState:CPThemeStateBordered];
+    [button setValue:highlightedBezelColor forThemeAttribute:@"bezel-color" inState:CPThemeStateBordered|CPThemeStateHighlighted];
+    [button setValue:CGInsetMake(0.0, 5.0, 0.0, 5.0) forThemeAttribute:@"content-inset" inState:CPThemeStateBordered];
+
+    [button setValue:defaultBezelColor forThemeAttribute:@"bezel-color" inState:CPThemeStateBordered|CPThemeStateDefault];
+    [button setValue:defaultHighlightedBezelColor forThemeAttribute:@"bezel-color" inState:CPThemeStateBordered|CPThemeStateHighlighted|CPThemeStateDefault];
+    [button setValue:[CPColor colorWithCalibratedRed:13.0/255.0 green:51.0/255.0 blue:70.0/255.0 alpha:1.0] forThemeAttribute:@"text-color" inState:CPThemeStateDefault];
+
+    [button setValue:CGSizeMake(0.0, 24.0) forThemeAttribute:@"min-size"];
+    [button setValue:CGSizeMake(-1.0, 24.0) forThemeAttribute:@"max-size"];
+
+    return button;
+}
+
++ (CPButton)themedStandardButton
+{
+    var button = [self button];
+    
+    [button setTitle:@"Cancel"];
+
+    return button;
+}
+
++ (CPButton)themedDefaultButton
+{
+    var button = [self button];
+
+    [button setTitle:@"OK"];
+    [button setDefaultButton:YES];
+
+    return button;
+}
+
++ (CPPopUpButton)themedPopUpButton
+{
+    var button = [[CPPopUpButton alloc] initWithFrame:CGRectMake(0.0, 0.0, 100.0, 24.0) pullsDown:NO],
+        color = [CPColor colorWithPatternImage:[[CPThreePartImage alloc] initWithImageSlices:
+            [
+                [_CPCibCustomResource imageResourceWithName:"button-bezel-left.png" size:CGSizeMake(4.0, 24.0)],
+                [_CPCibCustomResource imageResourceWithName:"button-bezel-center.png" size:CGSizeMake(1.0, 24.0)],
+                [_CPCibCustomResource imageResourceWithName:"popup-bezel-right.png" size:CGSizeMake(27.0, 24.0)]
+            ]
+        isVertical:NO]];
+    
+    [button setTitle:@"Pop Up"];
+    
+    [button setValue:color forThemeAttribute:@"bezel-color" inState:CPThemeStateBordered];
+    [button setValue:CGInsetMake(0, 27.0 + 5.0, 0, 5.0) forThemeAttribute:@"content-inset" inState:CPThemeStateBordered];
+    [button setValue:[CPFont boldSystemFontOfSize:12.0] forThemeAttribute:@"font"];
+    [button setValue:[CPColor colorWithCalibratedWhite:79.0 / 255.0 alpha:1.0] forThemeAttribute:@"text-color"];
+    [button setValue:[CPColor colorWithCalibratedWhite:240.0 / 255.0 alpha:1.0] forThemeAttribute:@"text-shadow-color"];
+    [button setValue:CGSizeMake(0.0, 1.0) forThemeAttribute:@"text-shadow-offset"];
+
+    [button setValue:CGSizeMake(32.0, 24.0) forThemeAttribute:@"min-size"];
+    [button setValue:CGSizeMake(-1.0, 24.0) forThemeAttribute:@"max-size"];    
+
+    [button addItemWithTitle:@"item"];
+    
+    return button;
+}
+
++ (CPPopUpButton)themedPullDownMenu
+{
+    var button = [[CPPopUpButton alloc] initWithFrame:CGRectMake(0.0, 0.0, 100.0, 24.0) pullsDown:YES],
+        color = [CPColor colorWithPatternImage:[[CPThreePartImage alloc] initWithImageSlices:
+            [
+                [_CPCibCustomResource imageResourceWithName:"button-bezel-left.png" size:CGSizeMake(4.0, 24.0)],
+                [_CPCibCustomResource imageResourceWithName:"button-bezel-center.png" size:CGSizeMake(1.0, 24.0)],
+                [_CPCibCustomResource imageResourceWithName:"popup-bezel-right-pullsdown.png" size:CGSizeMake(27.0, 24.0)]
+            ]
+        isVertical:NO]];
+
+    [button setTitle:@"Pull Down"];
+
+    [button setValue:color forThemeAttribute:@"bezel-color" inState:CPPopUpButtonStatePullsDown|CPThemeStateBordered];
+    [button setValue:CGInsetMake(0, 27.0 + 5.0, 0, 5.0) forThemeAttribute:@"content-inset" inState:CPThemeStateBordered];
+    [button setValue:[CPFont boldSystemFontOfSize:12.0] forThemeAttribute:@"font"];
+    [button setValue:[CPColor colorWithCalibratedWhite:79.0 / 255.0 alpha:1.0] forThemeAttribute:@"text-color"];
+    [button setValue:[CPColor colorWithCalibratedWhite:240.0 / 255.0 alpha:1.0] forThemeAttribute:@"text-shadow-color"];
+    [button setValue:CGSizeMake(0.0, 1.0) forThemeAttribute:@"text-shadow-offset"];
+
+    [button setValue:CGSizeMake(32.0, 24.0) forThemeAttribute:@"min-size"];
+    [button setValue:CGSizeMake(-1.0, 24.0) forThemeAttribute:@"max-size"];
+
+    [button addItemWithTitle:@"item"];
+
+    return button;
 }
 
 + (CPScroller)themedVerticalScroller
@@ -69,11 +200,11 @@
 {
     var scroller = [[CPScroller alloc] initWithFrame:CGRectMake(0.0, 0.0, 170.0, 17.0)],
         trackColor = PatternColor([_CPCibCustomResource imageResourceWithName:"scroller-horizontal-track.png" size:CGSizeMake(1.0, 17.0)]),
-        disabledTrackColor = PatternColor([_CPCibCustomResource imageResourceWithName:"scroller-vertical-track-disabled.png" size:CGSizeMake(17.0, 1.0)]);
+        disabledTrackColor = PatternColor([_CPCibCustomResource imageResourceWithName:"scroller-horizontal-track-disabled.png" size:CGSizeMake(17.0, 1.0)]);
 
     [scroller setValue:19.0 forThemeAttribute:@"minimum-knob-length"];
     [scroller setValue:CGInsetMake(2.0, 0.0, 0.0, 0.0) forThemeAttribute:@"knob-inset"];
-    [scroller setValue:CGInsetMake(0.0, -9.0, 0.0, -11.0) forThemeAttribute:@"track-inset"];
+    [scroller setValue:CGInsetMake(0.0, -10.0, 0.0, -11.0) forThemeAttribute:@"track-inset"];
 
     [scroller setValue:trackColor forThemeAttribute:@"knob-slot-color"];
     [scroller setValue:disabledTrackColor forThemeAttribute:@"knob-slot-color" inState:CPThemeStateDisabled];
@@ -200,65 +331,6 @@
     return textfield;
 }
 
-+ (CPButton)themedButton
-{
-    var button = [[CPButton alloc] initWithFrame:CGRectMake(0.0, 0.0, 60.0, 24.0)],
-
-        bezelColor = [CPColor colorWithPatternImage:[[CPThreePartImage alloc] initWithImageSlices:
-            [
-                [_CPCibCustomResource imageResourceWithName:"button-bezel-left.png" size:CGSizeMake(4.0, 24.0)],
-                [_CPCibCustomResource imageResourceWithName:"button-bezel-center.png" size:CGSizeMake(1.0, 24.0)],
-                [_CPCibCustomResource imageResourceWithName:"button-bezel-right.png" size:CGSizeMake(4.0, 24.0)]
-            ]
-        isVertical:NO]],
-
-        highlightedBezelColor = [CPColor colorWithPatternImage:[[CPThreePartImage alloc] initWithImageSlices:
-            [
-                [_CPCibCustomResource imageResourceWithName:"button-bezel-highlighted-left.png" size:CGSizeMake(4.0, 24.0)],
-                [_CPCibCustomResource imageResourceWithName:"button-bezel-highlighted-center.png" size:CGSizeMake(1.0, 24.0)],
-                [_CPCibCustomResource imageResourceWithName:"button-bezel-highlighted-right.png" size:CGSizeMake(4.0, 24.0)]
-            ]
-        isVertical:NO]],
-
-        defaultBezelColor = [CPColor colorWithPatternImage:[[CPThreePartImage alloc] initWithImageSlices:
-            [
-                [_CPCibCustomResource imageResourceWithName:"default-button-bezel-left.png" size:CGSizeMake(4.0, 24.0)],
-                [_CPCibCustomResource imageResourceWithName:"default-button-bezel-center.png" size:CGSizeMake(1.0, 24.0)],
-                [_CPCibCustomResource imageResourceWithName:"default-button-bezel-right.png" size:CGSizeMake(4.0, 24.0)]
-            ]
-        isVertical:NO]],
-
-        defaultHighlightedBezelColor = [CPColor colorWithPatternImage:[[CPThreePartImage alloc] initWithImageSlices:
-            [
-                [_CPCibCustomResource imageResourceWithName:"default-button-bezel-highlighted-left.png" size:CGSizeMake(4.0, 24.0)],
-                [_CPCibCustomResource imageResourceWithName:"default-button-bezel-highlighted-center.png" size:CGSizeMake(1.0, 24.0)],
-                [_CPCibCustomResource imageResourceWithName:"default-button-bezel-highlighted-right.png" size:CGSizeMake(4.0, 24.0)]
-            ]
-        isVertical:NO]];
-
-                
-    [button setTitle:@"Cancel"];
-    
-    [button setValue:[CPFont boldSystemFontOfSize:12.0] forThemeAttribute:@"font" inState:CPThemeStateBordered];
-    [button setValue:[CPColor colorWithCalibratedWhite:79.0 / 255.0 alpha:1.0] forThemeAttribute:@"text-color"];
-    [button setValue:[CPColor colorWithCalibratedWhite:240.0 / 255.0 alpha:1.0] forThemeAttribute:@"text-shadow-color" inState:CPThemeStateBordered];
-    [button setValue:CGSizeMake(0.0, 1.0) forThemeAttribute:@"text-shadow-offset" inState:CPThemeStateBordered];
-    [button setValue:CPLineBreakByTruncatingTail forThemeAttribute:@"line-break-mode"];
-    
-    [button setValue:bezelColor forThemeAttribute:@"bezel-color" inState:CPThemeStateBordered];
-    [button setValue:highlightedBezelColor forThemeAttribute:@"bezel-color" inState:CPThemeStateBordered|CPThemeStateHighlighted];
-    [button setValue:CGInsetMake(0.0, 5.0, 0.0, 5.0) forThemeAttribute:@"content-inset" inState:CPThemeStateBordered];
-
-    [button setValue:defaultBezelColor forThemeAttribute:@"bezel-color" inState:CPThemeStateBordered|CPThemeStateDefault];
-    [button setValue:defaultHighlightedBezelColor forThemeAttribute:@"bezel-color" inState:CPThemeStateBordered|CPThemeStateHighlighted|CPThemeStateDefault];
-    [button setValue:[CPColor colorWithCalibratedRed:13.0/255.0 green:51.0/255.0 blue:70.0/255.0 alpha:1.0] forThemeAttribute:@"text-color" inState:CPThemeStateDefault];
-
-    [button setValue:CGSizeMake(0.0, 24.0) forThemeAttribute:@"min-size"];
-    [button setValue:CGSizeMake(-1.0, 24.0) forThemeAttribute:@"max-size"];
-
-    return button;
-}
-
 + (CPRadioButton)themedRadioButton
 {
     var button = [[CPRadio alloc] initWithFrame:CGRectMake(0.0, 0.0, 120.0, 17.0)];
@@ -311,56 +383,6 @@
     [button setValue:bezelColorSelected forThemeAttribute:@"bezel-color" inState:CPThemeStateBordered | CPThemeStateSelected];
 
     [button setValue:CGSizeMake(0.0, 17.0) forThemeAttribute:@"min-size"];
-
-    return button;
-}
-
-+ (CPPopUpButton)themedPopUpButton
-{
-    var button = [[CPPopUpButton alloc] initWithFrame:CGRectMake(0.0, 0.0, 100.0, 24.0) pullsDown:NO],
-        color = [CPColor colorWithPatternImage:[[CPThreePartImage alloc] initWithImageSlices:
-            [
-                [_CPCibCustomResource imageResourceWithName:"button-bezel-left.png" size:CGSizeMake(4.0, 24.0)],
-                [_CPCibCustomResource imageResourceWithName:"button-bezel-center.png" size:CGSizeMake(1.0, 24.0)],
-                [_CPCibCustomResource imageResourceWithName:"popup-bezel-right.png" size:CGSizeMake(27.0, 24.0)]
-            ]
-        isVertical:NO]];
-    
-    [button setTitle:@"Pop Up"];
-    
-    [button setValue:color forThemeAttribute:@"bezel-color" inState:CPThemeStateBordered];
-    [button setValue:CGInsetMake(0, 27.0 + 5.0, 0, 5.0) forThemeAttribute:@"content-inset" inState:CPThemeStateBordered];
-    [button setValue:[CPFont boldSystemFontOfSize:12.0] forThemeAttribute:@"font"];
-    [button setValue:[CPColor colorWithCalibratedWhite:79.0 / 255.0 alpha:1.0] forThemeAttribute:@"text-color"];
-    [button setValue:[CPColor colorWithCalibratedWhite:240.0 / 255.0 alpha:1.0] forThemeAttribute:@"text-shadow-color"];
-    [button setValue:CGSizeMake(0.0, 1.0) forThemeAttribute:@"text-shadow-offset"];
-
-    [button addItemWithTitle:@"item"];
-    
-    return button;
-}
-
-+ (CPPopUpButton)themedPullDownMenu
-{
-    var button = [[CPPopUpButton alloc] initWithFrame:CGRectMake(0.0, 0.0, 100.0, 24.0) pullsDown:YES],
-        color = [CPColor colorWithPatternImage:[[CPThreePartImage alloc] initWithImageSlices:
-            [
-                [_CPCibCustomResource imageResourceWithName:"button-bezel-left.png" size:CGSizeMake(4.0, 24.0)],
-                [_CPCibCustomResource imageResourceWithName:"button-bezel-center.png" size:CGSizeMake(1.0, 24.0)],
-                [_CPCibCustomResource imageResourceWithName:"popup-bezel-right-pullsdown.png" size:CGSizeMake(27.0, 24.0)]
-            ]
-        isVertical:NO]];
-
-    [button setTitle:@"Pop Up"];
-
-    [button setValue:color forThemeAttribute:@"bezel-color" inState:CPPopUpButtonStatePullsDown|CPThemeStateBordered];
-    [button setValue:CGInsetMake(0, 27.0 + 5.0, 0, 5.0) forThemeAttribute:@"content-inset" inState:CPThemeStateBordered];
-    [button setValue:[CPFont boldSystemFontOfSize:12.0] forThemeAttribute:@"font"];
-    [button setValue:[CPColor colorWithCalibratedWhite:79.0 / 255.0 alpha:1.0] forThemeAttribute:@"text-color"];
-    [button setValue:[CPColor colorWithCalibratedWhite:240.0 / 255.0 alpha:1.0] forThemeAttribute:@"text-shadow-color"];
-    [button setValue:CGSizeMake(0.0, 1.0) forThemeAttribute:@"text-shadow-offset"];
-
-    [button addItemWithTitle:@"item"];
 
     return button;
 }
@@ -527,7 +549,7 @@
 
 @end
 
-@implementation AristoHUDThemeDescriptor : CPObject
+@implementation AristoHUDThemeDescriptor : BKThemeDescriptor
 {
 }
 
@@ -536,7 +558,7 @@
     return @"Aristo-HUD";
 }
 
-+ (CPColor)themeShowcaseBackgroundColor
++ (CPColor)defaultShowcaseBackgroundColor
 {
     return [CPColor blackColor];
 }

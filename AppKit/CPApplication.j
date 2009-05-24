@@ -476,6 +476,11 @@ CPRunContinuesResponse  = -1002;
     _mainMenu = aMenu;
 }
 
+- (void)orderFrontColorPanel:(id)aSender
+{
+    [[CPColorPanel sharedColorPanel] orderFront:self];
+}
+
 - (void)orderFrontStandardAboutPanel:(id)aSender
 {
     [self orderFrontStandardAboutPanelWithOptions:nil];
@@ -841,7 +846,7 @@ var _CPAppBootstrapperActions = nil;
 
     if (mainCibFile)
     {
-        [CPBundle loadCibFile:[mainBundle pathForResource:mainCibFile]
+        [mainBundle loadCibFile:mainCibFile
             externalNameTable:[CPDictionary dictionaryWithObject:CPApp forKey:CPCibOwner]
                  loadDelegate:self];
 

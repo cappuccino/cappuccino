@@ -31,7 +31,6 @@ $TOOLS_DOWNLOAD_INSTALLER           = File.join($TOOLS_DOWNLOAD, 'install-tools'
 $STARTER_README                     = File.join('Tools', 'READMEs', 'STARTER-README')
 $STARTER_DOWNLOAD                   = File.join($BUILD_DIR, 'Cappuccino', 'Starter')
 $STARTER_DOWNLOAD_APPLICATION       = File.join($STARTER_DOWNLOAD, 'NewApplication')
-$STARTER_DOWNLOAD_NIBAPPLICATION    = File.join($STARTER_DOWNLOAD, 'NibApplication')
 $STARTER_DOWNLOAD_README            = File.join($STARTER_DOWNLOAD, 'README')
 
 task :downloads => [:starter_download, :tools_download]
@@ -60,7 +59,7 @@ end
 
 task :tools_download => [$TOOLS_DOWNLOAD_ENV, $TOOLS_DOWNLOAD_EDITORS, $TOOLS_DOWNLOAD_README, $TOOLS_DOWNLOAD_INSTALLER, :objj_gem]
 
-task :starter_download => [$STARTER_DOWNLOAD_NIBAPPLICATION, $STARTER_DOWNLOAD_APPLICATION, $STARTER_DOWNLOAD_README]
+task :starter_download => [$STARTER_DOWNLOAD_APPLICATION, $STARTER_DOWNLOAD_README]
 
 task :deploy => [:downloads, :docs] do
     #copy the docs into the starter pack
@@ -89,15 +88,8 @@ file_d $STARTER_DOWNLOAD_APPLICATION => [$TOOLS_DOWNLOAD_ENV] do
     mkdir_p($STARTER_DOWNLOAD)
     system %{capp gen #{$STARTER_DOWNLOAD_APPLICATION} -t Application --noconfig }
 
-end
-
-file_d $STARTER_DOWNLOAD_NIBAPPLICATION => [$TOOLS_DOWNLOAD_ENV] do
-
-    ENV['PATH'] = "#{File.join($TOOLS_DOWNLOAD_ENV, 'bin')}:#{ENV['PATH']}"
-
-    rm_rf($STARTER_DOWNLOAD_NIBAPPLICATION)
-    mkdir_p($STARTER_DOWNLOAD)
-    system %{capp gen #{$STARTER_DOWNLOAD_NIBAPPLICATION} -t NibApplication --noconfig }
+    # No tools means no objective-j gem
+    rm(File.join($STARTER_DOWNLOAD_APPLICATION, 'Rakefile'))
 
 end
 

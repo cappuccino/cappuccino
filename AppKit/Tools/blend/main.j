@@ -53,7 +53,7 @@ function main()
 
     objj_import(descriptorFiles, YES, function()
     {
-        var themeDescriptorClasses = BKThemeDescriptorClasses(),
+        var themeDescriptorClasses = [BKThemeDescriptor allThemeDescriptorClasses],
             count = [themeDescriptorClasses count];
 
         while (count--)
@@ -63,7 +63,7 @@ function main()
 
             [themeTemplate setValue:[theClass themeName] forKey:@"name"];
 
-            var objectTemplates = BKThemeObjectTemplatesForClass(theClass),
+            var objectTemplates = [theClass themedObjectTemplates],
                 data = cibDataFromTopLevelObjects(objectTemplates.concat([themeTemplate])),
                 temporaryCibFile = Packages.java.io.File.createTempFile("temp", ".cib"),
                 temporaryCibFilePath = String(temporaryCibFile.getAbsolutePath());
