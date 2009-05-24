@@ -1,8 +1,28 @@
+/*
+ * main.j
+ * blend
+ *
+ * Created by Francisco Tolmasky.
+ * Copyright 2009, 280 North, Inc.
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
+ */
+
 
 @import <Foundation/Foundation.j>
 @import <AppKit/AppKit.j>
-@import <AppKit/CPCib.j>
-@import <AppKit/CPTheme.j>
 @import <BlendKit/BlendKit.j>
 
 var File = require("file");
@@ -246,7 +266,7 @@ function exec(/*Array*/ command, /*Boolean*/ showOutput)
 {
     var theClass = [self class];
     
-    if ([theClass isKindOfClass:[BKThemeObjectTemplate class]])
+    if ([theClass isKindOfClass:[BKThemedObjectTemplate class]])
         return [self];
         
     if ([theClass isKindOfClass:[CPView class]])
@@ -266,7 +286,7 @@ function exec(/*Array*/ command, /*Boolean*/ showOutput)
 
 @end
 
-@implementation BKThemeObjectTemplate (BlendAdditions)
+@implementation BKThemedObjectTemplate (BlendAdditions)
 
 - (void)blendAddThemedObjectAttributesToTheme:(CPTheme)aTheme
 {

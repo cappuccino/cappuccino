@@ -1,5 +1,5 @@
 /*
- * BlendKit.j
+ * BKThemeTemplate.j
  * BlendKit
  *
  * Created by Francisco Tolmasky.
@@ -20,7 +20,32 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-@import "BKShowcaseController.j"
-@import "BKThemeDescriptor.j"
-@import "BKThemeTemplate.j"
-@import "BKThemedObjectTemplate.j"
+@import <Foundation/CPObject.j>
+
+
+@implementation BKThemeTemplate : CPObject
+{
+    CPString    _name;
+    CPString    _description;
+}
+
+- (id)initWithCoder:(CPCoder)aCoder
+{
+    self = [super init];
+    
+    if (self)
+    {
+        _name = [aCoder decodeObjectForKey:@"BKThemeTemplateName"];
+        _description = [aCoder decodeObjectForKey:@"BKThemeTemplateDescription"];
+    }
+    
+    return self;
+}
+
+- (void)encodeWithCoder:(CPCoder)aCoder
+{
+    [aCoder encodeObject:_name forKey:@"BKThemeTemplateName"];
+    [aCoder encodeObject:_description forKey:@"BKThemeTemplateDescription"];
+}
+
+@end
