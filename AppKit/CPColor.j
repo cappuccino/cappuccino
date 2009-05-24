@@ -623,6 +623,15 @@ url("data:image/png;base64,BASE64ENCODEDDATA")  // if there is a pattern image
 
 @end
 
+@implementation CPColor (Debugging)
+
++ (CPColor)randomColor
+{
+    return [CPColor colorWithRed:RAND() green:RAND() blue:RAND() alpha:1.0];
+}
+
+@end
+
 var CPColorComponentsKey    = @"CPColorComponentsKey",
     CPColorPatternImageKey  = @"CPColorPatternImageKey";
 
