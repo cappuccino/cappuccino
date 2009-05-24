@@ -5,7 +5,7 @@
 	<key>CPApplicationDelegateClass</key>
 	<string>BKShowcaseController</string>
 	<key>CPBundleName</key>
-	<string>A</string>
+	<string>Aristo</string>
 	<key>CPPrincipalClass</key>
 	<string>CPApplication</string>
 </dict>
