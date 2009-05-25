@@ -301,7 +301,7 @@ objj_search.prototype.request = function(aFilePath, aMethod)
 
     try
     {
-        request.open("GET", aFilePath, YES);
+        request.open("GET", aFilePath.replace(/\+/g, "%2B"), YES);
         request.send("");
     }
     catch (anException)
