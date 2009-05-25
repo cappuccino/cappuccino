@@ -138,6 +138,11 @@ var BKLearnMoreToolbarItemIdentifier                = @"BKLearnMoreToolbarItemId
     [BKShowcaseCell setBackgroundColor:[themeDescriptorClass showcaseBackgroundColor]];
 }
 
+- (BOOL)hasLearnMoreURL
+{
+    return [[CPBundle mainBundle] objectForInfoDictionaryKey:@"BKLearnMoreURL"];
+}
+
 - (CPArray)toolbarAllowedItemIdentifiers:(CPToolbar)aToolbar
 {
     return [BKLearnMoreToolbarItemIdentifier, CPToolbarSpaceItemIdentifier, CPToolbarFlexibleSpaceItemIdentifier, BKBackgroundColorToolbarItemIdentifier, BKStateToolbarItemIdentifier];
@@ -145,7 +150,12 @@ var BKLearnMoreToolbarItemIdentifier                = @"BKLearnMoreToolbarItemId
 
 - (CPArray)toolbarDefaultItemIdentifiers:(CPToolbar)aToolbar
 {
-    return [BKLearnMoreToolbarItemIdentifier, CPToolbarFlexibleSpaceItemIdentifier, BKBackgroundColorToolbarItemIdentifier, BKStateToolbarItemIdentifier];
+    var itemIdentifiers = [CPToolbarFlexibleSpaceItemIdentifier, BKBackgroundColorToolbarItemIdentifier, BKStateToolbarItemIdentifier];
+
+    if ([self hasLearnMoreURL])
+        itemIdentifiers = [BKLearnMoreToolbarItemIdentifier].concat(itemIdentifiers);
+
+    return itemIdentifiers;
 }
 
 - (CPToolbarItem)toolbar:(CPToolbar)aToolbar itemForItemIdentifier:(CPString)anItemIdentifier willBeInsertedIntoToolbar:(BOOL)aFlag
@@ -173,19 +183,19 @@ var BKLearnMoreToolbarItemIdentifier                = @"BKLearnMoreToolbarItemId
     
     else if (anItemIdentifier === BKBackgroundColorToolbarItemIdentifier)
     {
-        var popUpButton = [CPPopUpButton buttonWithTitle:@"Light Checkers"];
+        var popUpButton = [CPPopUpButton buttonWithTitle:@"Window Background"];
 
+        [popUpButton addItemWithTitle:@"Light Checkers"];
         [popUpButton addItemWithTitle:@"Dark Checkers"];
-        [popUpButton addItemWithTitle:@"Window Background Color"];
         [popUpButton addItemWithTitle:@"White"];
         [popUpButton addItemWithTitle:@"Black"];
         [popUpButton addItemWithTitle:@"More Choices..."];
 
         var itemArray = [popUpButton itemArray];
 
-        [itemArray[0] setRepresentedObject:[BKThemeDescriptor lightCheckersColor]];
-        [itemArray[1] setRepresentedObject:[BKThemeDescriptor darkCheckersColor]];
-        [itemArray[2] setRepresentedObject:[BKThemeDescriptor windowBackgroundColor]];
+        [itemArray[0] setRepresentedObject:[BKThemeDescriptor windowBackgroundColor]];
+        [itemArray[1] setRepresentedObject:[BKThemeDescriptor lightCheckersColor]];
+        [itemArray[2] setRepresentedObject:[BKThemeDescriptor darkCheckersColor]];
         [itemArray[3] setRepresentedObject:[CPColor whiteColor]];
         [itemArray[4] setRepresentedObject:[CPColor blackColor]];
 
@@ -201,12 +211,19 @@ var BKLearnMoreToolbarItemIdentifier                = @"BKLearnMoreToolbarItemId
     }
     else if (anItemIdentifier === BKLearnMoreToolbarItemIdentifier)
     {
-        var button = [CPButton buttonWithTitle:@" Aristo Home Page "];
+        var title = [[CPBundle mainBundle] objectForInfoDictionaryKey:@"BKLearnMoreButtonTitle"];
+
+        if (!title)
+            title = [[CPBundle mainBundle] objectForInfoDictionaryKey:@"CPBundleName"] || @"Home Page";
+
+        var button = [CPButton buttonWithTitle:title];
 
         [button setDefaultButton:YES];
 
         [toolbarItem setView:button];
         [toolbarItem setLabel:@"Learn More"];
+        [toolbarItem setTarget:nil];
+        [toolbarItem setAction:@selector(learnMore:)];
 
         var width = CGRectGetWidth([button frame]);
 
@@ -215,6 +232,11 @@ var BKLearnMoreToolbarItemIdentifier                = @"BKLearnMoreToolbarItemId
     }
 
     return toolbarItem;
+}
+
+- (void)learnMore:(id)aSender
+{
+    window.location.href = [[CPBundle mainBundle] objectForInfoDictionaryKey:@"BKLearnMoreURL"];
 }
 
 - (BKThemeDescriptor)selectedThemeDescriptor
