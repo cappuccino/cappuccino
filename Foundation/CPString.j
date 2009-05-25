@@ -58,6 +58,12 @@ CPNumericSearch         = 64;
 
 var CPStringHashes      = new objj_dictionary();
 
+var CPStringRegexSpecialCharacters = [
+      '/', '.', '*', '+', '?', '|', '$', '^',
+      '(', ')', '[', ']', '{', '}', '\\'
+    ],
+    CPStringRegexEscapeExpression = new RegExp("(\\" + CPStringRegexSpecialCharacters.join("|\\") + ")", 'g');
+
 /*! 
     @ingroup foundation
     @class CPString
@@ -359,6 +365,11 @@ var CPStringHashes      = new objj_dictionary();
 
 //Replacing Substrings
 
+- (CPString)stringByEscapingRegexControlCharacters
+{
+    return self.replace(CPStringRegexEscapeExpression, "\\$1");
+}
+
 /*!
     Returns a new string in which all occurrences of a target string in the reciever are replaced by 
     another given string.
@@ -368,7 +379,7 @@ var CPStringHashes      = new objj_dictionary();
 
 - (CPString)stringByReplacingOccurrencesOfString:(CPString)target withString:(CPString)replacement
 {
-    return self.replace(new RegExp(target, "g"), replacement);
+    return self.replace(new RegExp([target stringByEscapingRegexControlCharacters], "g"), replacement);
 }
 
 /*
@@ -385,6 +396,7 @@ var CPStringHashes      = new objj_dictionary();
     var start = substring(0, searchRange.location),
         stringSegmentToSearch = substr(searchRange.location, searchRange.length),
         end = substring(searchRange.location + searchRange.length, self.length),
+        target = [target stringByEscapingRegexControlCharacters],
         regExp;
 
     if (options & CPCaseInsensitiveSearch)
