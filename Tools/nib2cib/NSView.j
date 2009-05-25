@@ -31,14 +31,14 @@
 - (id)NS_initWithCoder:(CPCoder)aCoder
 {
     _frame = CGRectMakeZero();
-    
+
     if ([aCoder containsValueForKey:@"NSFrame"])
         _frame = [aCoder decodeRectForKey:@"NSFrame"];
     else if ([aCoder containsValueForKey:@"NSFrameSize"])
-        _frame.size = [aCoder decodeSizeForKey:@"NSFrameSize"];   
+        _frame.size = [aCoder decodeSizeForKey:@"NSFrameSize"];
 
     self = [super NS_initWithCoder:aCoder];
-    
+
     if (self)
     {
         _tag = -1;

@@ -82,7 +82,7 @@ var ItemSizes               = { },
 
 + (CPColor)defaultShowcaseBackgroundColor
 {
-    return [self lightCheckersColor];
+    return [_CPStandardWindowView bodyBackgroundColor];//[self lightCheckersColor];
 }
 
 + (CPColor)showcaseBackgroundColor
