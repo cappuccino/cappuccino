@@ -61,11 +61,11 @@ var BKLearnMoreToolbarItemIdentifier                = @"BKLearnMoreToolbarItemId
     var label = [CPTextField labelWithTitle:@"THEMES"];
 
     [label setFont:[CPFont boldSystemFontOfSize:11.0]];
-    [label setTextColor:[CPColor colorWithCalibratedRed:92.0 / 255.0 green:110.0 / 255.0 blue:129.0 / 255.0 alpha:1.0]];
+    [label setTextColor:[CPColor colorWithCalibratedRed:93.0 / 255.0 green:93.0 / 255.0 blue:93.0 / 255.0 alpha:1.0]];
     [label setTextShadowColor:[CPColor colorWithCalibratedRed:225.0 / 255.0 green:255.0 / 255.0 blue:255.0 / 255.0 alpha:0.7]];
     [label setTextShadowOffset:CGSizeMake(0.0, 1.0)];
     [label sizeToFit];
-    [label setFrameOrigin:CGPointMake(5.0, 2.0)];
+    [label setFrameOrigin:CGPointMake(5.0, 4.0)];
 
     var themeDescriptorItem = [[CPCollectionViewItem alloc] init];
 
