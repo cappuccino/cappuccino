@@ -31,8 +31,10 @@ CPRangeException                    = "CPRangeException";
 CPInternalInconsistencyException    = "CPInternalInconsistencyException";
 
 /*! 
-    @ingroup foundation
     @class CPException
+    @ingroup foundation
+    @brief Used to implement exception handling (creating & raising).
+
     An example of throwing an exception in Objective-J:
 <pre>
 // some code here...

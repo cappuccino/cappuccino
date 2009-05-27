@@ -26,7 +26,9 @@
 @import "CPURLRequest.j"
 
 /*! 
+    @class CPBundle
     @ingroup foundation
+    @brief A bundle groups information about an application's code & resources.
 */
 
 @implementation CPBundle : CPObject

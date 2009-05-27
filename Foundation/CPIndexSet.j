@@ -25,9 +25,12 @@
 
 
 /*! 
-    @ingroup foundation
     @class CPIndexSet
-    Instances of this class are collections of numbers. Each integer can appear in a collection only once.
+    @ingroup foundation
+    @brief A collection of unique integers.
+
+    Instances of this class are collections of numbers. Each integer can appear
+    in a collection only once.
 */
 @implementation CPIndexSet : CPObject
 {

@@ -87,8 +87,10 @@
 @end
 
 /*! 
-    @ingroup foundation
     @class CPArray
+    @ingroup foundation
+    @brief A mutable array class backed by a JavaScript Array.
+
     A mutable array class backed by a JavaScript Array.
     There is also a CPMutableArray class,
     but it is just a child class of this class with an

@@ -25,11 +25,10 @@
 
 CPJSONPConnectionCallbacks = {};
 
-/*! 
-    @ingroup foundation
-*/
-
 /*! @class CPJSONPConnection
+    @ingroup foundation
+    @brief Allows cross domain connections using JSONP protocol.
+
     Important note: CPJSONPConnection is <strong>only</strong> for JSONP APIs.
     If aren't sure you <strong>need</strong>
     <a href="http://ajaxian.com/archives/jsonp-json-with-padding">JSON<strong>P</strong></a>,
