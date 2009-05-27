@@ -14,7 +14,7 @@ window.args = system.args;
 
 with (window)
 {
-    eval(File.read(OBJJ_HOME+"/lib/Frameworks/Objective-J/rhino.platform/Objective-J.js", { charset : "UTF-8" }));
+    eval(File.read(OBJJ_HOME + "/lib/Frameworks/Objective-J/rhino.platform/Objective-J.js", { charset:"UTF-8" }));
 
     if (system.args.length > 0)
     {

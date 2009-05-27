@@ -125,7 +125,7 @@ function convert(inputFileName, outputFileName, resourcesPath)
         return;
     }
 
-    var data = [CPData dataWithString:File.read(String(temporaryPlistFilePath), { charset:"UTF8" })];
+    var data = [CPData dataWithString:File.read(String(temporaryPlistFilePath), { charset:"UTF-8" })];
 
     // Minor NSKeyedArchive to CPKeyedArchive conversion.
     [data setString:[data string].replace(/\<key\>\s*CF\$UID\s*\<\/key\>/g, "<key>CP$UID</key>")];
@@ -141,7 +141,7 @@ function convert(inputFileName, outputFileName, resourcesPath)
     [archiver encodeObject:objectData forKey:@"CPCibObjectDataKey"];
     [archiver finishEncoding];
     
-    File.write(outputFileName, [data string], { charset:"UTF8" });
+    File.write(outputFileName, [data string], { charset:"UTF-8" });
 }
 
 function loadFrameworks(frameworkPaths, aCallback)
@@ -159,7 +159,7 @@ function loadFrameworks(frameworkPaths, aCallback)
         java.lang.System.exit(1);
     }
     
-    var infoDictionary = CPPropertyListCreateFromData([CPData dataWithString:File.read(frameworkPath + "/Info.plist", { charset:"UTF8" })]);
+    var infoDictionary = CPPropertyListCreateFromData([CPData dataWithString:File.read(frameworkPath + "/Info.plist", { charset:"UTF-8" })]);
     
     if ([infoDictionary objectForKey:@"CPBundlePackageType"] !== "FMWK")
     {

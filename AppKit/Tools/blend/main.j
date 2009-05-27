@@ -88,7 +88,7 @@ function main()
                 temporaryCibFile = Packages.java.io.File.createTempFile("temp", ".cib"),
                 temporaryCibFilePath = String(temporaryCibFile.getAbsolutePath());
 
-            File.write(temporaryCibFilePath, [data string], { charset:"UTF8" });
+            File.write(temporaryCibFilePath, [data string], { charset:"UTF-8" });
             
             cibFiles.push(temporaryCibFilePath);
         }
@@ -171,8 +171,8 @@ function buildBlendFromCibFiles(cibFiles, outputFilePath, resourcesPath)
 
     outputFile.mkdirs();
 
-    File.write(outputFilePath + "/Info.plist", [CPPropertyListCreate280NorthData(infoDictionary) string], { charset:"UTF8" });
-    File.write(outputFilePath + '/' + staticContentName, staticContent, { charset:"UTF8" });
+    File.write(outputFilePath + "/Info.plist", [CPPropertyListCreate280NorthData(infoDictionary) string], { charset:"UTF-8" });
+    File.write(outputFilePath + '/' + staticContentName, staticContent, { charset:"UTF-8" });
     
     if (resourcesPath)
         rsync(new Packages.java.io.File(resourcesPath), new Packages.java.io.File(outputFilePath));
