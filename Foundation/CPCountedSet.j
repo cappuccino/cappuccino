@@ -25,9 +25,7 @@
 /*! 
     @class CPCountedSet
     @ingroup foundation
-    @brief An mutable collection which may contain a specific object
-    numerous times.
-
+    @brief An mutable collection of objects and counts of their instances.
 
 */
 @implementation CPCountedSet : CPMutableSet

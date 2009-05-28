@@ -34,7 +34,7 @@ var XMLHTTPRequestUninitialized = 0,
 
 var CPURLConnectionDelegate = nil;
 
-/*
+/*!
     @class CPURLConnection
     @ingroup foundation
     @brief Provides loading of a URL request. 
@@ -78,7 +78,6 @@ var CPURLConnectionDelegate = nil;
     
     @param connection the connection that received the authentication challenge.
 */
-
 @implementation CPURLConnection : CPObject
 {
     CPURLRequest    _request;

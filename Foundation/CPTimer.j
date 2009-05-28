@@ -28,7 +28,7 @@
 /*!
     @class CPTimer 
     @ingroup foundation
-    @brief A timer object that can send a message after the given time interval.
+    @brief A timer which can send a message after the given time interval.
 
 
 */
