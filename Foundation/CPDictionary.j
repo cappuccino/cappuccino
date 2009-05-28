@@ -597,6 +597,9 @@
 @end
 
 /*!
+    @class CPMutableDictionary
+    @ingroup compatability
+
     This class is just an empty subclass of CPDictionary.
     CPDictionary already implements mutable methods and
     this class only exists for source compatability.

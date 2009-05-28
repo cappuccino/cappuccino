@@ -796,6 +796,9 @@
 @end
 
 /*!
+    @class CPMutableAttributedString
+    @ingroup compatability
+
     This class is just an empty subclass of CPAttributedString.
     CPAttributedString already implements mutable methods and
     this class only exists for source compatability.

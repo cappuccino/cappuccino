@@ -819,6 +819,9 @@ var CPIndexSetCountKey              = @"CPIndexSetCountKey",
 @end
 
 /*!
+    @class CPMutableIndexSet
+    @ingroup compatability
+
     This class is an empty of subclass of CPIndexSet.
     CPIndexSet already implements mutable methods, and
     this class only exists for source compatability.

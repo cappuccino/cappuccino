@@ -1206,6 +1206,9 @@
 @end
 
 /*!
+    @class CPMutableArray
+    @ingroup compatability
+
     This class is just an empty subclass of CPArray.
     CPArray already implements mutable methods and
     this class only exists for source compatability.
