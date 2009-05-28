@@ -25,15 +25,21 @@
 @import "CPNotification.j"
 @import "CPException.j"
 
-/*! 
-    @ingroup foundation
-*/
 
 var CPNotificationDefaultCenter = nil;
 
-/*! @class CPNotificationCenter
+/*!
+    @class CPNotificationCenter
+    @ingroup foundation
+    @brief Sends messages (CPNotification) between objects.
 
-    Cappuccino provides a framework for sending messages between objects within a process called notifications. Objects register with an CPNotificationCenter to be informed whenever other objects post CPNotifications to it matching certain criteria. The notification center processes notifications synchronously -- that is, control is only returned to the notification poster once every recipient of the notification has received it and processed it.
+    Cappuccino provides a framework for sending messages between objects within
+    a process called notifications. Objects register with an
+    CPNotificationCenter to be informed whenever other objects post
+    CPNotifications to it matching certain criteria. The notification center
+    processes notifications synchronously -- that is, control is only returned
+    to the notification poster once every recipient of the notification has
+    received it and processed it.
 */
 @implementation CPNotificationCenter : CPObject
 {

@@ -25,8 +25,12 @@
 @import "CPDate.j"
 @import "CPRunLoop.j"
 
-/*! 
+/*!
+    @class CPTimer 
     @ingroup foundation
+    @brief A timer object that can send a message after the given time interval.
+
+
 */
 @implementation CPTimer : CPObject
 {

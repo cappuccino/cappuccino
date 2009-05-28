@@ -30,7 +30,10 @@
     CPString    _textEncodingName;
 */
 /*!
+    @class CPURLResponse
     @ingroup foundation
+    @brief Protocol agnostic information about a request to a specifc URL.
+
     Contains protocol agnostic information about a request to a specific URL.
 */
 @implementation CPURLResponse : CPObject

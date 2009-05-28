@@ -28,8 +28,10 @@ var __placeholder = new Number(),
     _CPNumberHashes = { };
 
 /*! 
-    @ingroup foundation
     @class CPNumber
+    @ingroup foundation
+    @brief A bridged object to native Javascript numbers.
+
     This class primarily exists for source compatability. The JavaScript
     <code>Number</code> type can be changed on the fly based on context,
     so there is no need to call any of these methods. 

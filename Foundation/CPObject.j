@@ -21,8 +21,9 @@
  */
 
 /*!
-    @ingroup foundation
     @class CPObject
+    @ingroup foundation
+    @brief The root class from which most classes are subclassed.
     
     CPObject is the root class for most Cappuccino classes. Like in Objective-C,
     you have to declare parent class explicitly in Objective-J, so your custom

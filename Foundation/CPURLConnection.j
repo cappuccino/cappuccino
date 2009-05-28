@@ -35,7 +35,9 @@ var XMLHTTPRequestUninitialized = 0,
 var CPURLConnectionDelegate = nil;
 
 /*
+    @class CPURLConnection
     @ingroup foundation
+    @brief Provides loading of a URL request. 
 
     An interface to downloading content at a specified URL. Using one of the
     class methods, you can obtain the data.
