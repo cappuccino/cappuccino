@@ -119,22 +119,19 @@ else if (USER_AGENT.indexOf("KHTML") != -1) // Must follow WebKit check.
 }
 
 // Gecko
-else if (USER_AGENT.indexOf("Gecko") != -1) // Must follow KHTML check.
+else if (USER_AGENT.indexOf("Gecko") !== -1) // Must follow KHTML check.
 {
     PLATFORM_ENGINE = CPGeckoBrowserEngine;
     
     PLATFORM_FEATURES |= CPJavaScriptCanvasDrawFeature;
     
     var index = USER_AGENT.indexOf("Firefox"),
-        version = (index == -1) ? 2.0 : parseFloat(USER_AGENT.substring(index + "Firefox".length + 1));
+        version = (index === -1) ? 2.0 : parseFloat(USER_AGENT.substring(index + "Firefox".length + 1));
     
     if (version >= 3.0)
         PLATFORM_FEATURES |= CPCSSRGBAFeature;
 
-    var geckoIndex = USER_AGENT.indexOf("Gecko"),
-        geckoVersion = (geckoIndex === -1) ? 0.0 : parseFloat(USER_AGENT.substring(geckoIndex + "Gecko".length + 1, USER_AGENT.indexOf(' ', geckoIndex)));
-
-    if (version < 20061028)
+    if (version < 3.0)
         PLATFORM_FEATURES |= CPJavaScriptMouseWheelValues_8_15;
 }
 

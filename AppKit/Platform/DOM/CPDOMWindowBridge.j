@@ -847,7 +847,7 @@ var CTRL_KEY_CODE   = 17;
         {
             var windows = [layers objectForKey:levels[levelCount]]._windows,
                 windowCount = windows.length;
-    
+
             while (windowCount--)
                 [windows[windowCount] resizeWithOldBridgeSize:oldSize];
         }

@@ -1,5 +1,5 @@
 /*
- * BlendKit.j
+ * BKThemedObjectTemplate.j
  * BlendKit
  *
  * Created by Francisco Tolmasky.
@@ -20,7 +20,32 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-@import "BKShowcaseController.j"
-@import "BKThemeDescriptor.j"
-@import "BKThemeTemplate.j"
-@import "BKThemedObjectTemplate.j"
+@import <AppKit/CPView.j>
+
+
+@implementation BKThemedObjectTemplate : CPView
+{
+    CPString    _label;
+    id          _themedObject;
+}
+
+- (id)initWithCoder:(CPCoder)aCoder
+{
+    self = [super init];
+    
+    if (self)
+    {
+        _label = [aCoder decodeObjectForKey:@"BKThemedObjectTemplateLabel"];
+        _themedObject = [aCoder decodeObjectForKey:@"BKThemedObjectTemplateThemedObject"];
+    }
+    
+    return self;
+}
+
+- (void)encodeWithCoder:(CPCoder)aCoder
+{
+    [aCoder encodeObject:_label forKey:@"BKThemedObjectTemplateLabel"];
+    [aCoder encodeObject:_themedObject forKey:@"BKThemedObjectTemplateThemedObject"];
+}
+
+@end

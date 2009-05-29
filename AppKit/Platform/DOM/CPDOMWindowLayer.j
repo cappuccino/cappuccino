@@ -115,7 +115,7 @@
         aWindow._isVisible = YES;
         
         if ([aWindow isFullBridge])
-            [aWindow setFrame:[aWindow._bridge contentBounds]];
+            [aWindow setFrame:[aWindow._bridge visibleFrame]];
     }
 }
 

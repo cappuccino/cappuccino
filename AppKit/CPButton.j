@@ -368,7 +368,7 @@ CPButtonStateMixed  = CPThemeState("mixed");
 
 - (void)setButtonType:(CPButtonType)aButtonType
 {
-    switch (buttonType)
+    switch (aButtonType)
     {
         case CPMomentaryLightButton:    [self setHighlightsBy:CPChangeBackgroundCellMask];
                                         [self setShowsStateBy:CPNoCellMask];
@@ -390,7 +390,7 @@ CPButtonStateMixed  = CPThemeState("mixed");
                                         [self setShowsStateBy:CPChangeBackgroundCellMask];
                                         break;
 
-        case CPToggleButton:            [self setHighlightsBy:CPPushInCellMask | NSContentsCellMask];
+        case CPToggleButton:            [self setHighlightsBy:CPPushInCellMask | CPContentsCellMask];
                                         [self setShowsStateBy:CPContentsCellMask];
                                         break;
 

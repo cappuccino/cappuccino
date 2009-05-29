@@ -13,25 +13,25 @@ subprojects = %w{External Objective-J Foundation AppKit Tools External/ojunit}
     end
 end
 
-$DEBUG_ENV                      = File.join($BUILD_DIR, 'Debug', 'env')
-$RELEASE_ENV                    = File.join($BUILD_DIR, 'Release', 'env')
+$DEBUG_ENV                          = File.join($BUILD_DIR, 'Debug', 'env')
+$RELEASE_ENV                        = File.join($BUILD_DIR, 'Release', 'env')
 
-$DOXYGEN_CONFIG                 = File.join('Tools', 'Documentation', 'Cappuccino.doxygen')
-$DOCUMENTATION_BUILD            = File.join($BUILD_DIR, 'Documentation')
+$DOXYGEN_CONFIG                     = File.join('Tools', 'Documentation', 'Cappuccino.doxygen')
+$DOCUMENTATION_BUILD                = File.join($BUILD_DIR, 'Documentation')
 
-$TOOLS_README                   = File.join('Tools', 'READMEs', 'TOOLS-README')
-$TOOLS_EDITORS                  = File.join('Tools', 'Editors')
-$TOOLS_INSTALLER                = File.join('Tools', 'Install', 'install-tools')
-$TOOLS_DOWNLOAD                 = File.join($BUILD_DIR, 'Cappuccino', 'Tools')
-$TOOLS_DOWNLOAD_ENV             = File.join($TOOLS_DOWNLOAD, 'objj')
-$TOOLS_DOWNLOAD_EDITORS         = File.join($TOOLS_DOWNLOAD, 'Editors')
-$TOOLS_DOWNLOAD_README          = File.join($TOOLS_DOWNLOAD, 'README')
-$TOOLS_DOWNLOAD_INSTALLER       = File.join($TOOLS_DOWNLOAD, 'install-tools')
+$TOOLS_README                       = File.join('Tools', 'READMEs', 'TOOLS-README')
+$TOOLS_EDITORS                      = File.join('Tools', 'Editors')
+$TOOLS_INSTALLER                    = File.join('Tools', 'Install', 'install-tools')
+$TOOLS_DOWNLOAD                     = File.join($BUILD_DIR, 'Cappuccino', 'Tools')
+$TOOLS_DOWNLOAD_ENV                 = File.join($TOOLS_DOWNLOAD, 'objj')
+$TOOLS_DOWNLOAD_EDITORS             = File.join($TOOLS_DOWNLOAD, 'Editors')
+$TOOLS_DOWNLOAD_README              = File.join($TOOLS_DOWNLOAD, 'README')
+$TOOLS_DOWNLOAD_INSTALLER           = File.join($TOOLS_DOWNLOAD, 'install-tools')
 
-$STARTER_README                 = File.join('Tools', 'READMEs', 'STARTER-README')
-$STARTER_DOWNLOAD               = File.join($BUILD_DIR, 'Cappuccino', 'Starter')
-$STARTER_DOWNLOAD_APPLICATION   = File.join($STARTER_DOWNLOAD, 'NewApplication')
-$STARTER_DOWNLOAD_README        = File.join($STARTER_DOWNLOAD, 'README')
+$STARTER_README                     = File.join('Tools', 'READMEs', 'STARTER-README')
+$STARTER_DOWNLOAD                   = File.join($BUILD_DIR, 'Cappuccino', 'Starter')
+$STARTER_DOWNLOAD_APPLICATION       = File.join($STARTER_DOWNLOAD, 'NewApplication')
+$STARTER_DOWNLOAD_README            = File.join($STARTER_DOWNLOAD, 'README')
 
 task :downloads => [:starter_download, :tools_download]
 
@@ -61,7 +61,7 @@ task :tools_download => [$TOOLS_DOWNLOAD_ENV, $TOOLS_DOWNLOAD_EDITORS, $TOOLS_DO
 
 task :starter_download => [$STARTER_DOWNLOAD_APPLICATION, $STARTER_DOWNLOAD_README]
 
-task :deploy => [:tools_download, :starter_download, :docs] do
+task :deploy => [:downloads, :docs] do
     #copy the docs into the starter pack
     cp_r(File.join($DOCUMENTATION_BUILD, 'html', '.'), File.join($STARTER_DOWNLOAD, 'Documentation'))
 
@@ -88,13 +88,16 @@ file_d $STARTER_DOWNLOAD_APPLICATION => [$TOOLS_DOWNLOAD_ENV] do
     mkdir_p($STARTER_DOWNLOAD)
     system %{capp gen #{$STARTER_DOWNLOAD_APPLICATION} -t Application --noconfig }
 
+    # No tools means no objective-j gem
+    rm(File.join($STARTER_DOWNLOAD_APPLICATION, 'Rakefile'))
+
 end
 
 file_d $STARTER_DOWNLOAD_README => [$STARTER_README] do
     cp($STARTER_README, $STARTER_DOWNLOAD_README)
 end
 
-task :install => [:downloads] do
+task :install => [:tools_download] do
     if ENV['prefix']
         prefix = "--prefix #{ENV['prefix']}"
     else

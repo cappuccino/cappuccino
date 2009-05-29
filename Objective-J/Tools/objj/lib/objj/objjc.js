@@ -12,7 +12,7 @@ var OBJJ_HOME = system.prefix + "/..";
 
 with (window)
 {
-    eval(File.read(OBJJ_HOME+"/lib/Frameworks/Objective-J/rhino.platform/Objective-J.js").toString());
+    eval(File.read(OBJJ_HOME + "/lib/Frameworks/Objective-J/rhino.platform/Objective-J.js", { charset:"UTF-8" }).toString());
 
     for (var i = 0; i < exported.length; i++)
         exports[exported[i]] = eval(exported[i]);

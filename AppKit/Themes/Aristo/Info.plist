@@ -5,7 +5,11 @@
 	<key>CPApplicationDelegateClass</key>
 	<string>BKShowcaseController</string>
 	<key>CPBundleName</key>
-	<string>A</string>
+	<string>Aristo</string>
+	<key>BKLearnMoreURL</key>
+	<string>http://cappuccino.org/aristo</string>
+	<key>BKLearnMoreButtonTitle</key>
+	<string>Aristo Home Page</string>
 	<key>CPPrincipalClass</key>
 	<string>CPApplication</string>
 </dict>

@@ -2107,6 +2107,9 @@ setBoundsOrigin:
     for (var attributeName in _themeAttributes)
         if (_themeAttributes.hasOwnProperty(attributeName))
             [_themeAttributes[attributeName] setParentAttribute:[theme _attributeWithName:attributeName forClass:themeClass]];
+
+    [self setNeedsLayout];
+    [self setNeedsDisplay:YES];
 }
 
 - (CPDictionary)_themeAttributeDictionary

@@ -502,7 +502,7 @@ CPPopUpButtonStatePullsDown = CPThemeState("pulls-down");
 {
     if ([self title] === aTitle)
         return;
-    
+
     if ([self pullsDown])
     {
         var items = [_menu itemArray];

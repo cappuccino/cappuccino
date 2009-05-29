@@ -11,9 +11,16 @@
     [self assertTrue:(expectedString === actualString) 
              message:"stringByAppendingFormat: expected:" + expectedString + " actual:" + actualString];
     
-    
-    
 }
+
+- (void)testStringByReplacingWithRegexCharacters
+{
+    var stringToTest = "${foo} {foo}",
+        result = [stringToTest stringByReplacingOccurrencesOfString:"${foo}" withString:"BAR"];
+    
+    [self assert:result equals:"BAR {foo}"];
+}
+
 - (void)testStringByAppendingFormat
 {
     var format = @"%d X %d = %d",
