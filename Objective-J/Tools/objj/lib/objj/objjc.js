@@ -1,6 +1,8 @@
 var File = require("file");
 var window = require("browser/window");
 
+require("./regexp-rhino-patch");
+
 var exported = ["OBJJ_HOME", "objj_preprocess",
     "FRAGMENT_FILE", "FRAGMENT_LOCAL",
     "MARKER_CODE", "MARKER_IMPORT_STD", "MARKER_IMPORT_LOCAL",
