@@ -27,6 +27,7 @@
 
 /*! 
     @ingroup foundation
+    @brief Groups information about an application's code & resources.
 */
 
 @implementation CPBundle : CPObject

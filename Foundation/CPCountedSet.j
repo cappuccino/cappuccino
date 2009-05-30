@@ -3,6 +3,7 @@
 
 /*!
     @ingroup foundation
+    @brief An mutable collection of objects and counts of their instances.
 */
 @implementation CPCountedSet : CPMutableSet
 {

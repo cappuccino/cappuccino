@@ -27,6 +27,7 @@
 
 /*! 
     @ingroup foundation
+    @brief A timer which can send a message after the given time interval.
 */
 @implementation CPTimer : CPObject
 {

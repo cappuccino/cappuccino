@@ -34,7 +34,8 @@ var XMLHTTPRequestUninitialized = 0,
 
 var CPURLConnectionDelegate = nil;
 
-/*
+/*!
+    @class CPURLConnection
     @ingroup foundation
 
     An interface to downloading content at a specified URL. Using one of the
@@ -76,7 +77,6 @@ var CPURLConnectionDelegate = nil;
     
     @param connection the connection that received the authentication challenge.
 */
-
 @implementation CPURLConnection : CPObject
 {
     CPURLRequest    _request;
