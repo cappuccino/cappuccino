@@ -62,7 +62,7 @@ function newMatch(regex)
             var group = matcher.group(index);
             
             if (group != null)
-                groups[i] = group;
+                groups[index] = group;
         }
     }
     
