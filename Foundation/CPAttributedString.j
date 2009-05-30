@@ -486,8 +486,11 @@
 //Changing Characters
 /*! 
     Replaces the characters in the receiver with those of the specified string
-    over the range, <code>aRange</code>. The new characters inherit the
-    attributes of the first character in the range that they replace.
+    over the range, <code>aRange</code>. If the range has a length of 0 then
+    the specified string is inserted at the range location. The new characters
+    inherit the attributes of the first character in the range that they
+    replace or in the case if a 0 range length, the first character before of
+    after the insert (after if the insert is at location 0).
     @note the replacement string need not be the same length as the range
     being replaced. The full <code>aString</code> is inserted and thus the
     receiver's length changes to match this
@@ -793,6 +796,15 @@
 }
 
 @end
+
+/*!
+    @class CPMutableAttributedString    
+    @ingroup compatability
+
+    This class is just an empty subclass of CPAttributedString.
+    CPAttributedString already implements mutable methods and
+    this class only exists for source compatability.
+*/
 
 @implementation CPMutableAttributedString : CPAttributedString {}
 @end
