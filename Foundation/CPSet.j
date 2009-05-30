@@ -466,6 +466,15 @@ var CPSetObjectsKey = @"CPSetObjectsKey";
 
 @end
 
+/*!
+    @class CPMutableSet
+    @ingroup compatability
+
+    This class is just an empty subclass of CPSet.
+    CPSet already implements mutable methods and
+    this class only exists for source compatability.
+*/
+
 @implementation CPMutableSet : CPSet
 @end
 
