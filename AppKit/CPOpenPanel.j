@@ -39,8 +39,6 @@ var SharedOpenPanel = nil;
 - (unsigned)runModalForDirectory:(CPString)absoluteDirectoryPath file:(CPString)filename types:(CPArray)fileTypes
 {
 #if PLATFORM(DOM)
-    console.log("0 "+Titanium);
-    console.log("1 "+window.Titanium);
     if (window.Titanium)
     {
         _files = Titanium.Desktop.openFiles({

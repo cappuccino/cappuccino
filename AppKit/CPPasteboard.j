@@ -39,6 +39,7 @@ CPHTMLPboardType        = @"CPHTMLPboardType";
 CPStringPboardType      = @"CPStringPboardType";
 CPURLPboardType         = @"CPURLPboardType";
 CPImagePboardType       = @"CPImagePboardType";
+CPVideoPboardType       = @"CPVideoPboardType";
 
 var CPPasteboards = nil;
 
