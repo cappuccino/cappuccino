@@ -24,8 +24,10 @@
 
 
 /*! 
-    @ingroup foundation
     @class CPURLRequest
+    @ingroup foundation
+    @brief Contains data obtained during a request made with CPURLConnection.
+
     A helper object for CPURLConnection, that contains
     data obtained during the life of a request.
 */
