@@ -1,5 +1,5 @@
 /*
- * CPObject.j
+ * CPDate.j
  * Foundation
  *
  * Created by Thomas Robinson.
@@ -26,8 +26,12 @@
 
 var CPDateReferenceDate = new Date(Date.UTC(2001,1,1,0,0,0,0));
 
-/*!
+/*! 
+    @class CPDate
     @ingroup foundation
+    @brief A representation of a single point in time.
+
+
 */
 @implementation CPDate : CPObject
 { 

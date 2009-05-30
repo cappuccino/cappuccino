@@ -25,7 +25,8 @@
 @import "CPDictionary.j"
 @import "CPRange.j"
 
-/*! @class CPAttributedString
+/*! 
+    @class CPAttributedString
     @ingroup foundation
     @brief A mutable character string with attributes.
 
@@ -805,7 +806,6 @@
     CPAttributedString already implements mutable methods and
     this class only exists for source compatability.
 */
-
 @implementation CPMutableAttributedString : CPAttributedString {}
 @end
 

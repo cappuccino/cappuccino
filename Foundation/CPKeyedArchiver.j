@@ -60,9 +60,10 @@ var _CPKeyedArchiverStringClass                         = Nil,
 }
 @end
 
-/*! 
-    @ingroup foundation
+/*!
     @class CPKeyedArchiver
+    @ingroup foundation
+    @brief Implements keyed archiving of object graphs (e.g. for storing data).
 
     Implements keyed archiving of object graphs. Archiving means to
     write data out in a format that be read in again later, or possibly

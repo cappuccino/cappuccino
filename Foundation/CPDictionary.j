@@ -57,20 +57,22 @@
 
 @end
 
-/*!  
-    @ingroup foundation
+/*! 
     @class CPDictionary
-     A dictionary is the standard way of passing around key-value pairs in
-     the Cappuccino framework. It is similar to the
-     <a href="http://java.sun.com/javase/6/docs/api/index.html">Java map interface</a>,
-     except all keys are CPStrings and values can be any
-     Cappuccino or JavaScript object.</p>
+    @ingroup foundation
+    @brief A mutable key-value pair collection.
 
-     <p>If you are familiar with dictionaries in Cocoa, you'll notice that
-     there is no CPMutableDictionary class. The regular CPDictionary
-     has <code>setObject:</code> and <code>removeObjectForKey:</code> methods.
-     In Cappuccino there is no distinction between immutable and mutable classes.
-     They are all mutable.
+    A dictionary is the standard way of passing around key-value pairs in
+    the Cappuccino framework. It is similar to the
+    <a href="http://java.sun.com/javase/6/docs/api/index.html">Java map interface</a>,
+    except all keys are CPStrings and values can be any
+    Cappuccino or JavaScript object.
+
+    If you are familiar with dictionaries in Cocoa, you'll notice that
+    there is no CPMutableDictionary class. The regular CPDictionary
+    has <code>setObject:</code> and <code>removeObjectForKey:</code> methods.
+    In Cappuccino there is no distinction between immutable and mutable classes.
+    They are all mutable.
 */
 @implementation CPDictionary : CPObject
 {
