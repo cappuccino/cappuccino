@@ -502,7 +502,7 @@ var CPStringHashes      = new objj_dictionary();
 /*!
     Returns a hash of the string instance.
 */
-- (unsigned)hash
+- (unsigned)UID
 {
     var hash = dictionary_getValue(CPStringHashes, self);
     

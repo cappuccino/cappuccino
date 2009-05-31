@@ -255,18 +255,6 @@
     return self;
 }
 
-/*!
-    Returns a hash of the CPArray.
-    @return an unsigned integer hash
-*/
-- (unsigned)hash
-{
-    if (self.__address == nil)
-        self.__address = _objj_generateObjectHash();
-
-    return self.__address;
-}
-
 // Querying an array
 /*!
     Returns <code>YES</code> if the array contains <code>anObject</code>. Otherwise, it returns <code>NO</code>.
