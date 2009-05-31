@@ -491,6 +491,7 @@ var CPSetObjectsKey = @"CPSetObjectsKey";
     CPSet already implements mutable methods and
     this class only exists for source compatability.
 */
+
 @implementation CPMutableSet : CPSet
 @end
 

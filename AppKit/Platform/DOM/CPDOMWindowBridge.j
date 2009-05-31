@@ -351,7 +351,7 @@ var CPDOMWindowGetFrame,
                 theWindow = candidateWindow;
         }
     }
-    
+
     return theWindow;
 }
 
@@ -462,7 +462,7 @@ var CTRL_KEY_CODE   = 17;
     var theType = _overriddenEventType || aDOMEvent.type;
     
     // IE's event order is down, up, up, dblclick, so we have create these events artificially.
-    if (theType == CPDOMEventDoubleClick)
+    if (theType === CPDOMEventDoubleClick)
     {
         _overriddenEventType = CPDOMEventMouseDown;
         [self _bridgeMouseEvent:aDOMEvent];
@@ -495,7 +495,7 @@ var CTRL_KEY_CODE   = 17;
         {
             var theWindow = [self hitTest:location];
             
-            if (aDOMEvent.type == CPDOMEventMouseDown && theWindow)
+            if ((aDOMEvent.type === CPDOMEventMouseDown) && theWindow)
                 _mouseDownWindow = theWindow;
                 
             windowNumber = [theWindow windowNumber];
@@ -510,12 +510,10 @@ var CTRL_KEY_CODE   = 17;
         }
         
         switch (theType)
-        { 
+        {
             case CPDOMEventMouseUp:     if(_mouseIsDown)
                                         {
-                                            event = [CPEvent mouseEventWithType:CPLeftMouseUp location:location modifierFlags:modifierFlags
-                                                        timestamp:timestamp windowNumber:windowNumber context:nil eventNumber:-1 
-                                                        clickCount:CPDOMEventGetClickCount(_lastMouseUp, timestamp, location) pressure:0];
+                                            event = _CPEventFromNativeMouseEvent(aDOMEvent, CPLeftMouseUp, location, modifierFlags, timestamp, windowNumber, nil, -1, CPDOMEventGetClickCount(_lastMouseUp, timestamp, location), 0);
                                         
                                             _mouseIsDown = NO;
                                             _lastMouseUp = event;
@@ -547,9 +545,7 @@ var CTRL_KEY_CODE   = 17;
                                             return;
                                         }
 
-                                        event = [CPEvent mouseEventWithType:CPLeftMouseDown location:location modifierFlags:modifierFlags
-                                                    timestamp:timestamp windowNumber:windowNumber context:nil eventNumber:-1 
-                                                    clickCount:CPDOMEventGetClickCount(_lastMouseDown, timestamp, location) pressure:0];
+                                        event = _CPEventFromNativeMouseEvent(aDOMEvent, CPLeftMouseDown, location, modifierFlags, timestamp, windowNumber, nil, -1, CPDOMEventGetClickCount(_lastMouseDown, timestamp, location), 0);
                                                     
                                         _mouseIsDown = YES;
                                         _lastMouseDown = event;
@@ -558,10 +554,8 @@ var CTRL_KEY_CODE   = 17;
                                         
             case CPDOMEventMouseMoved:  if (_DOMEventMode)
                                             return;
-            
-                                        event = [CPEvent mouseEventWithType:_mouseIsDown ? CPLeftMouseDragged : CPMouseMoved 
-                                                    location:location modifierFlags:modifierFlags timestamp:timestamp 
-                                                    windowNumber:windowNumber context:nil eventNumber:-1 clickCount:1 pressure:0];
+
+                                        event = _CPEventFromNativeMouseEvent(aDOMEvent, _mouseIsDown ? CPLeftMouseDragged : CPMouseMoved, location, modifierFlags, timestamp, windowNumber, nil, -1, 1, 0);
                                         
                                         break;
         }
@@ -988,15 +982,15 @@ var CPDOMEventStop = function(aDOMEvent)
     // IE Model
     aDOMEvent.cancelBubble = true;
     aDOMEvent.returnValue = false;
-    
+
     // W3C Model
     if (aDOMEvent.preventDefault)
         aDOMEvent.preventDefault();
-    
+
     if (aDOMEvent.stopPropagation)
         aDOMEvent.stopPropagation();
 
-    if (aDOMEvent.type == CPDOMEventMouseDown)
+    if (aDOMEvent.type === CPDOMEventMouseDown)
     {
         CPSharedDOMWindowBridge._DOMFocusElement.focus();
         CPSharedDOMWindowBridge._DOMFocusElement.blur();

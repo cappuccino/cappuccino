@@ -27,7 +27,7 @@
 /*! 
     @class CPIndexSet
     @ingroup foundation
-    @brief A collection of unique integers (indexes).
+    @brief A collection of unique integers.
 
     Instances of this class are collections of numbers. Each integer can appear
     in a collection only once.

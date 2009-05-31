@@ -1,9 +1,3 @@
-importClass(java.util.ArrayList);
-importClass(java.util.List);
-importClass(java.util.regex.Matcher);
-importClass(java.util.regex.Pattern);
-importClass(java.util.regex.PatternSyntaxException);
-
 var CachedRegexData = [];
 
 function regexDataFromRegex(aRegex)
@@ -37,10 +31,10 @@ function regexDataFromRegex(aRegex)
     source = source.replace("(?<!\\\\)\\{(?!\\d)", "\\\\{", "g");
     source = source.replace("(?<!(\\d,?|\\\\))\\}", "\\\\}", "g");
             
-    return CachedRegexData[string] = { pattern:Pattern.compile(source, 0), flags:flags };
+    return CachedRegexData[string] = { pattern:java.util.regex.Pattern.compile(source, 0), flags:flags };
 }
 
-String.prototype.match = function(regex)
+function newMatch(regex)
 {
     var regexData = regexDataFromRegex(regex);
     
@@ -68,9 +62,12 @@ String.prototype.match = function(regex)
             var group = matcher.group(index);
             
             if (group != null)
-                groups[i] = group;
+                groups[index] = group;
         }
     }
     
     return groups;
 }
+
+if (system.platform === "rhino")
+    String.prototype.match = newMatch;

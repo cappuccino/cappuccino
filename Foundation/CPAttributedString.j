@@ -799,7 +799,7 @@
 @end
 
 /*!
-    @class CPMutableAttributedString    
+    @class CPMutableAttributedString
     @ingroup compatability
 
     This class is just an empty subclass of CPAttributedString.

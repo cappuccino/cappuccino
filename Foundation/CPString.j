@@ -516,7 +516,7 @@ var CPStringRegexSpecialCharacters = [
 /*!
     Returns a hash of the string instance.
 */
-- (unsigned)hash
+- (unsigned)UID
 {
     var hash = dictionary_getValue(CPStringHashes, self);
     

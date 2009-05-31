@@ -188,7 +188,7 @@ var __placeholder = new Number(),
     return anUnsignedShort;
 }
 
-- (CPString)hash
+- (CPString)UID
 {
     if (!_CPNumberHashes[self])
         _CPNumberHashes[self] = _objj_generateObjectHash();

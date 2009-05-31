@@ -460,6 +460,14 @@ CPLog(@"Got some class: %@", inst);</pre>
 */
 - (unsigned)hash
 {
+    return [self UID];
+}
+
+- (unsigned)UID
+{
+    if (typeof self.__address === "undefined")
+        self.__address = _objj_generateObjectHash();
+
     return __address;
 }
 

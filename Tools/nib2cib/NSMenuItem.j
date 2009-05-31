@@ -33,6 +33,8 @@
     
     if (self)
     {
+        _isSeparator = [aCoder decodeObjectForKey:@"NSIsSeparator"] || NO;
+
         _title = [aCoder decodeObjectForKey:"NSTitle"];
 
 //      _font = [aCoder decodeObjectForKey:"NSTitle"];
@@ -88,7 +90,6 @@
 }
 
 @end
-
 
 @implementation NSMenuItemCell : NSButtonCell
 {
