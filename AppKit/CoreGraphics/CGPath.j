@@ -250,6 +250,8 @@ function CGPathMoveToPoint(aPath, aTransform, x, y)
         aPath.elements[aPath.count++] = { type:kCGPathElementMoveToPoint, x:point.x, y:point.y };
 }
 
+var KAPPA = 4.0 * ((SQRT2 - 1.0) / 3.0);
+
 function CGPathWithEllipseInRect(aRect)
 {
     var path = CGPathCreateMutable();
