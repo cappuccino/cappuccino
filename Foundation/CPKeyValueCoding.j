@@ -247,9 +247,9 @@ CPUnknownUserInfoKey        = @"CPUnknownUserInfoKey";
             self[ivar] = aValue;
         
             [self didChangeValueForKey:aKey];
+
+            return;
         }
-        
-        return;
     }
     
     [self setValue:aValue forUndefinedKey:aKey];
