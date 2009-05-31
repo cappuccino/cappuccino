@@ -70,4 +70,5 @@
 
     @defgroup appkit AppKit
     @defgroup foundation Foundation
+    @defgroup compatability Cocoa Compatability
 */

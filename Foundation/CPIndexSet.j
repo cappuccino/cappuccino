@@ -25,9 +25,12 @@
 
 
 /*! 
-    @ingroup foundation
     @class CPIndexSet
-    Instances of this class are collections of numbers. Each integer can appear in a collection only once.
+    @ingroup foundation
+    @brief A collection of unique integers.
+
+    Instances of this class are collections of numbers. Each integer can appear
+    in a collection only once.
 */
 @implementation CPIndexSet : CPObject
 {
@@ -816,6 +819,9 @@ var CPIndexSetCountKey              = @"CPIndexSetCountKey",
 @end
 
 /*!
+    @class CPMutableIndexSet
+    @ingroup compatability
+
     This class is an empty of subclass of CPIndexSet.
     CPIndexSet already implements mutable methods, and
     this class only exists for source compatability.

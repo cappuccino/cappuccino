@@ -51,7 +51,9 @@ var _CPKeyedUnarchiverArrayClass                                            = Ni
     _CPKeyedUnarchiverArchiverValueClass                                    = Nil;
 
 /*!
+    @class CPKeyedUnarchiver
     @ingroup foundation
+    @brief Unarchives objects created using CPKeyedArchiver.
 
     CPKeyedUnarchiver is used for creating objects out of
     coded files or CPData objects that were created by

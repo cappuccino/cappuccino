@@ -65,14 +65,16 @@ var CPStringRegexSpecialCharacters = [
     CPStringRegexEscapeExpression = new RegExp("(\\" + CPStringRegexSpecialCharacters.join("|\\") + ")", 'g');
 
 /*! 
-    @ingroup foundation
     @class CPString
+    @ingroup foundation
+    @brief An immutable string (collection of characters).
+
     CPString is an object that allows management of strings. Because CPString is
     based on the JavaScript <code>String</code> object, CPStrings are immutable, although the
     class does have methods that create new CPStrings generated from modifications to the
-    receiving instance.</p>
+    receiving instance.
 
-    <p>A handy feature of CPString instances is that they can be used wherever a JavaScript is
+    A handy feature of CPString instances is that they can be used wherever a JavaScript is
     required, and vice versa.
 */
 @implementation CPString : CPObject

@@ -25,8 +25,10 @@
 
 
 /*! 
-    @ingroup foundation
     @class CPCoder
+    @ingroup foundation
+    @brief Defines methods for use when archiving & restoring (enc/decoding).
+
     Top-level class defining methods for use when archiving (encoding) objects to a byte array 
     or file, and when restoring (decoding) objects. 
 */
