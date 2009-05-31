@@ -38,6 +38,8 @@
 */
 @implementation CPMenuItem : CPObject
 {
+    BOOL            _isSeparator;
+
     CPString        _title;
     //CPAttributedString  _attributedTitle;
     
@@ -89,6 +91,8 @@
     
     if (self)
     {
+        _isSeparator = NO;
+
         _title = aTitle;
         _action = anAction;
         
@@ -479,7 +483,11 @@ CPOffState
 */
 + (CPMenuItem)separatorItem
 {
-    return [[_CPMenuItemSeparator alloc] init];
+    var separatorItem = [[self alloc] initWithTitle:@"" action:nil keyEquivalent:nil];
+
+    separatorItem._isSeparator = YES;
+
+    return separatorItem;
 }
 
 /*!
@@ -487,7 +495,7 @@ CPOffState
 */
 - (BOOL)isSeparatorItem
 {
-    return NO;
+    return _isSeparator;
 }
 
 // Managing the Owning Menu
@@ -731,29 +739,9 @@ CPControlKeyMask
 
 @end
 
-/* @ignore */
-@implementation _CPMenuItemSeparator : CPMenuItem
-{
-}
+var CPMenuItemIsSeparatorKey        = @"CPMenuItemIsSeparatorKey",
 
-- (id)init
-{
-    self = [super initWithTitle:@"" action:nil keyEquivalent:nil];
-    
-    if (self)
-        [self setEnabled:NO];
-    
-    return self;
-}
-
-- (BOOL)isSeparatorItem
-{
-    return YES;
-}
-
-@end
-
-var CPMenuItemTitleKey              = @"CPMenuItemTitleKey",
+    CPMenuItemTitleKey              = @"CPMenuItemTitleKey",
     CPMenuItemTargetKey             = @"CPMenuItemTargetKey",
     CPMenuItemActionKey             = @"CPMenuItemActionKey",
 
@@ -787,6 +775,8 @@ var CPMenuItemTitleKey              = @"CPMenuItemTitleKey",
     
     if (self)
     {
+        _isSeparator = [aCoder containsValueForKey:CPMenuItemIsSeparatorKey] && [aCoder decodeBoolForKey:CPMenuItemIsSeparatorKey];
+
         _title = [aCoder decodeObjectForKey:CPMenuItemTitleKey];
         
 //        _font;
@@ -832,6 +822,9 @@ var CPMenuItemTitleKey              = @"CPMenuItemTitleKey",
 */
 - (void)encodeWithCoder:(CPCoder)aCoder
 {
+    if (_isSeparator)
+        [aCoder encodeBool:_isSeparator forKey:CPMenuItemIsSeparatorKey];
+
     [aCoder encodeObject:_title forKey:CPMenuItemTitleKey];
         
     [aCoder encodeObject:_target forKey:CPMenuItemTargetKey];
