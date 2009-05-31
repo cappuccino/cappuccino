@@ -472,12 +472,9 @@ function objj_msgSend(/*id*/ aReceiver, /*SEL*/ aSelector)
 
     switch(arguments.length)
     {
-        case 2:
-            return implementation(aReceiver, aSelector);
-        case 3:
-            return implementation(aReceiver, aSelector, arguments[2]);
-        case 4:
-            return implementation(aReceiver, aSelector, arguments[2], arguments[3]);
+        case 2: return implementation(aReceiver, aSelector);
+        case 3: return implementation(aReceiver, aSelector, arguments[2]);
+        case 4: return implementation(aReceiver, aSelector, arguments[2], arguments[3]);
     }
 
     return implementation.apply(aReceiver, arguments);
