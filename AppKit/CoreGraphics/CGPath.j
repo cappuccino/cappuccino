@@ -87,20 +87,20 @@ function CGPathAddArc(aPath, aTransform, x, y, aRadius, aStartAngle, anEndAngle,
         var center = _CGPointMake(x, y),
             end = _CGPointMake(COS(anEndAngle), SIN(anEndAngle)),
             start = _CGPointMake(COS(aStartAngle), SIN(aStartAngle));
-            
+
         end = _CGPointApplyAffineTransform(end, aTransform);
         start = _CGPointApplyAffineTransform(start, aTransform);
         center = _CGPointApplyAffineTransform(center, aTransform);
-        
+
         x = center.x;
         y = center.y;
-        
+
         var oldEndAngle = anEndAngle,
             oldStartAngle = aStartAngle;
-        
+
         anEndAngle = ATAN2(end.y - aTransform.ty, end.x - aTransform.tx);
         aStartAngle = ATAN2(start.y - aTransform.ty, start.x - aTransform.tx);
-        
+
         // Angles that equal "modulo" 2 pi return as equal after transforming them,
         // so we have to make sure to make them different again if they were different 
         // to start out with.  It's the difference between no circle and a full circle.
@@ -109,7 +109,7 @@ function CGPathAddArc(aPath, aTransform, x, y, aRadius, aStartAngle, anEndAngle,
                 anEndAngle = anEndAngle - PI2;
             else
                 aStartAngle = aStartAngle - PI2;
-        
+
         aRadius = _CGSizeMake(aRadius, 0);
         aRadius = _CGSizeApplyAffineTransform(aRadius, aTransform);
         aRadius = SQRT(aRadius.width * aRadius.width + aRadius.height * aRadius.height);
@@ -169,23 +169,38 @@ function CGPathAddLineToPoint(aPath, aTransform, x, y)
 
 function CGPathAddPath(aPath, aTransform, anotherPath)
 {
-    var i = 0,
-        count = anotherPath.count;
-        
-    for (; i < count; ++i)
+    for (var i = 0, count = anotherPath.count; i < count; ++i)
     {
         var element = anotherPath.elements[i];
-        
-        aPath.elements[aPath.count] = { type:element.type, x:element.x, y:element.y, 
-                                        cpx:element.cpx, cpy:element.cpy, 
-                                        radius:element.radius, startAngle:element.startAngle, endAngle:element.endAngle, 
-                                        cp1x:element.cp1x, cp1y:element.cp1y, cp2x:element.cp2x, cp2y:element.cp2y,
-                                        points: element.points ? element.points.slice() : nil};
-        
-        aPath.count++
+
+        switch (element.type)
+        {
+            case kCGPathElementAddLineToPoint:      CGPathAddLineToPoint(aPath, aTransform, element.x, element.y);
+                                                    break;
+
+            case kCGPathElementAddCurveToPoint:     CGPathAddCurveToPoint(aPath, aTransform,
+                                                                          element.cp1x, element.cp1y,
+                                                                          element.cp2x, element.cp2y,
+                                                                          element.x, element.y);
+                                                    break;
+
+            case kCGPathElementAddArc:              CGPathAddArc(aPath, aTransform, element.x, element.y,
+                                                                 element.radius, element.startAngle,
+                                                                 element.endAngle, element.isClockwise);
+                                                    break;
+
+            case kCGPathElementAddQuadCurveToPoint: CGPathAddQuadCurveToPoint(aPath, aTransform,
+                                                                              element.cpx, element.cpy,
+                                                                              element.x, element.y);
+                                                    break;
+
+            case kCGPathElementMoveToPoint:         CGPathMoveToPoint(aPath, aTransform, element.x, element.y);
+                                                    break;
+
+            case kCGPathElementCloseSubpath:        CGPathCloseSubpath(aPath);
+                                                    break;
+        }
     }
-    
-    aPath.current = anotherPath.current;
 }
 
 function CGPathAddQuadCurveToPoint(aPath, aTransform, cpx, cpy, x, y)
