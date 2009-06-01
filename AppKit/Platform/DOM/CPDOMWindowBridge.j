@@ -474,9 +474,11 @@ var CTRL_KEY_CODE   = 17;
         
         return;         
     }
-        
+
+#ifndef DEBUG
     try
-    {            
+    {
+#endif
         var event,
             location = _CGPointMake(aDOMEvent.clientX, aDOMEvent.clientY),
             timestamp = aDOMEvent.timeStamp ? aDOMEvent.timeStamp : new Date(),
@@ -571,18 +573,22 @@ var CTRL_KEY_CODE   = 17;
             CPDOMEventStop(aDOMEvent);
             
         [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
+#ifndef DEBUG
     }
     catch (anException)
     {
         objj_exception_report(anException, {path:@"CPDOMWindowBridge.j"});
     }
+#endif
 }
 
 /* @ignore */
 - (void)_bridgeKeyEvent:(DOMEvent)aDOMEvent
 {
+#ifndef DEBUG
     try
-    {    
+    {
+#endif
         var event,
             timestamp = aDOMEvent.timeStamp ? aDOMEvent.timeStamp : new Date(),
             sourceElement = (aDOMEvent.target || aDOMEvent.srcElement),
@@ -717,11 +723,13 @@ var CTRL_KEY_CODE   = 17;
             CPDOMEventStop(aDOMEvent);
             
         [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
+#ifndef DEBUG
     }
     catch (anException)
     {
         objj_exception_report(anException, {path:@"CPDOMWindowBridge.j"});
     }
+#endif
 }
 
 /* @ignore */
@@ -730,8 +738,10 @@ var CTRL_KEY_CODE   = 17;
     if(!aDOMEvent)
         aDOMEvent = window.event;
 
+#ifndef DEBUG
     try
     {
+#endif
         if (CPFeatureIsCompatible(CPJavaScriptMouseWheelValues_8_15))
         {
             var x = 0.0,
@@ -810,19 +820,22 @@ var CTRL_KEY_CODE   = 17;
             CPDOMEventStop(aDOMEvent);
             
         [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
+#ifndef DEBUG
     }
     catch (anException)
     {
         objj_exception_report(anException, {path:@"CPDOMWindowBridge.j"});
     }
-
+#endif
 }
 
 /* @ignore */
 - (void)_bridgeResizeEvent:(DOMEvent)aDOMEvent
 {
+#ifndef DEBUG
     try
     {
+#endif
         // FIXME: This is not the right way to do this.
         // We should pay attention to mouse down and mouse up in conjunction with this.
         //window.liveResize = YES;
@@ -849,11 +862,13 @@ var CTRL_KEY_CODE   = 17;
         //window.liveResize = NO;
         
         [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
+#ifndef DEBUG
     }
     catch (anException)
     {
         objj_exception_report(anException, {path:@"CPDOMWindowBridge.j"});
     }
+#endif
 }
 
 // DOM event properties used in mouse bridge code
@@ -868,8 +883,10 @@ var CTRL_KEY_CODE   = 17;
 /* @ignore */
 - (void)_bridgeTouchEvent:(DOMEvent)aDOMEvent
 {        
+#ifndef DEBUG
     try
     {
+#endif
         if (aDOMEvent.touches && (aDOMEvent.touches.length == 1 || (aDOMEvent.touches.length == 0 && aDOMEvent.changedTouches.length == 1)))
         {
             var newEvent = {};
@@ -911,20 +928,23 @@ var CTRL_KEY_CODE   = 17;
             if (aDOMEvent.stopPropagation)
                 aDOMEvent.stopPropagation();
         }
+#ifndef DEBUG
     }
-    catch(e)
+    catch (anException)
     {
-        objj_exception_report(e, {path:@"CPDOMWindowBridge.j"});
+        objj_exception_report(anException, {path:@"CPDOMWindowBridge.j"});
     }
-    
+#endif
     // handle touch cases specifically
 }
 
 /* @ignore */
 - (void)_checkPasteboardElement
 {
+#ifndef DEBUG
     try
     {
+#endif
         var value = _DOMPasteboardElement.value;
 
         if ([value length])
@@ -946,11 +966,13 @@ var CTRL_KEY_CODE   = 17;
         _pasteboardKeyDownEvent = nil;
         
         [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
+#ifndef DEBUG
     }
     catch (anException)
     {
         objj_exception_report(anException, {path:@"CPDOMWindowBridge.j"});
     }
+#endif
 }
 
 /* @ignore */
