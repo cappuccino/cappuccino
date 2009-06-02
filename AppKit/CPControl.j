@@ -505,10 +505,12 @@ var CPControlBlackColor     = [CPColor blackColor];
 }
 
 #define BRIDGE(UPPERCASE, LOWERCASE, ATTRIBUTENAME) \
+/*! Sets the value for ATTRIBUTENAME */\
 - (void)set##UPPERCASE:(id)aValue\
 {\
 [self setValue:aValue forThemeAttribute:ATTRIBUTENAME];\
 }\
+/*! Returns the current value for ATTRIBUTENAME */\
 - (id)LOWERCASE\
 {\
 return [self valueForThemeAttribute:ATTRIBUTENAME];\

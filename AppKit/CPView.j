@@ -1208,7 +1208,7 @@ var DOMElementPrototype         = nil,
 
         amount = 0 - _DOMImageParts.length;
     }
-    
+
     if (amount > 0)
         while (amount--)
         {
@@ -1236,16 +1236,16 @@ var DOMElementPrototype         = nil,
     else
     {
         var slices = [patternImage imageSlices],
-            count = slices.length,
+            count = MIN(_DOMImageParts.length, slices.length),
             frameSize = _frame.size;
-        
+
         while (count--)
         {
             var image = slices[count],
                 size = _DOMImageSizes[count] = image ? [image size] : _CGSizeMakeZero();
             
             CPDOMDisplayServerSetStyleSize(_DOMImageParts[count], size.width, size.height);
-            
+
             _DOMImageParts[count].style.background = image ? "url(\"" + [image filename] + "\")" : "";
         }
         

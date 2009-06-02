@@ -548,7 +548,9 @@ var KAPPA = 4.0 * ((SQRT2 - 1.0) / 3.0);
 */
 function CGContextAddEllipseInRect(aContext, aRect)
 {
+    CGContextBeginPath(aContext);
     CGContextAddPath(aContext, CGPathWithEllipseInRect(aRect));
+    CGContextClosePath(aContext);
 }
 
 /*!
@@ -658,7 +660,9 @@ function CGContextSetStrokeColor(aContext, aColor)
 */
 function CGContextFillRoundedRectangleInRect(aContext, aRect, aRadius, ne, se, sw, nw)
 {
-    CGContextAddPath(aContext, CGPathWithRoundedRectangleInRect(aRect, aRadius, aRadius, ne, se, sw, nw));	
+    CGContextBeginPath(aContext);
+    CGContextAddPath(aContext, CGPathWithRoundedRectangleInRect(aRect, aRadius, aRadius, ne, se, sw, nw));
+    CGContextClosePath(aContext);
     CGContextFillPath(aContext);
 }
 
@@ -675,7 +679,9 @@ function CGContextFillRoundedRectangleInRect(aContext, aRect, aRadius, ne, se, s
 */
 function CGContextStrokeRoundedRectangleInRect(aContext, aRect, aRadius, ne, se, sw, nw)
 {
+    CGContextBeginPath(aContext);
     CGContextAddPath(aContext, CGPathWithRoundedRectangleInRect(aRect, aRadius, aRadius, ne, se, sw, nw));		
+    CGContextClosePath(aContext);
     CGContextStrokePath(aContext);
 }
 

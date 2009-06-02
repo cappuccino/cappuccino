@@ -87,8 +87,10 @@
 @end
 
 /*! 
-    @ingroup foundation
     @class CPArray
+    @brief A mutable array backed by a JavaScript Array.
+    @ingroup foundation
+
     A mutable array class backed by a JavaScript Array.
     There is also a CPMutableArray class,
     but it is just a child class of this class with an
@@ -253,18 +255,6 @@
     }
 
     return self;
-}
-
-/*!
-    Returns a hash of the CPArray.
-    @return an unsigned integer hash
-*/
-- (unsigned)hash
-{
-    if (self.__address == nil)
-        self.__address = _objj_generateObjectHash();
-
-    return self.__address;
 }
 
 // Querying an array
@@ -1204,6 +1194,9 @@
 @end
 
 /*!
+    @class CPMutableArray
+    @ingroup compatability
+
     This class is just an empty subclass of CPArray.
     CPArray already implements mutable methods and
     this class only exists for source compatability.

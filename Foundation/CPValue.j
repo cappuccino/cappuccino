@@ -25,8 +25,10 @@
 
 
 /*! 
-    @ingroup foundation
     @class CPValue
+    @ingroup foundation
+    @brief A generic "value". Can be subclassed to hold specific data types.
+
     The class can be subclassed to hold different types of scalar values.
 */
 @implementation CPValue : CPObject

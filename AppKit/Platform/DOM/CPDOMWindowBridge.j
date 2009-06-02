@@ -351,7 +351,7 @@ var CPDOMWindowGetFrame,
                 theWindow = candidateWindow;
         }
     }
-    
+
     return theWindow;
 }
 
@@ -462,7 +462,7 @@ var CTRL_KEY_CODE   = 17;
     var theType = _overriddenEventType || aDOMEvent.type;
     
     // IE's event order is down, up, up, dblclick, so we have create these events artificially.
-    if (theType == CPDOMEventDoubleClick)
+    if (theType === CPDOMEventDoubleClick)
     {
         _overriddenEventType = CPDOMEventMouseDown;
         [self _bridgeMouseEvent:aDOMEvent];
@@ -474,9 +474,11 @@ var CTRL_KEY_CODE   = 17;
         
         return;         
     }
-        
+
+#ifndef DEBUG
     try
-    {            
+    {
+#endif
         var event,
             location = _CGPointMake(aDOMEvent.clientX, aDOMEvent.clientY),
             timestamp = aDOMEvent.timeStamp ? aDOMEvent.timeStamp : new Date(),
@@ -495,7 +497,7 @@ var CTRL_KEY_CODE   = 17;
         {
             var theWindow = [self hitTest:location];
             
-            if (aDOMEvent.type == CPDOMEventMouseDown && theWindow)
+            if ((aDOMEvent.type === CPDOMEventMouseDown) && theWindow)
                 _mouseDownWindow = theWindow;
                 
             windowNumber = [theWindow windowNumber];
@@ -510,12 +512,10 @@ var CTRL_KEY_CODE   = 17;
         }
         
         switch (theType)
-        { 
+        {
             case CPDOMEventMouseUp:     if(_mouseIsDown)
                                         {
-                                            event = [CPEvent mouseEventWithType:CPLeftMouseUp location:location modifierFlags:modifierFlags
-                                                        timestamp:timestamp windowNumber:windowNumber context:nil eventNumber:-1 
-                                                        clickCount:CPDOMEventGetClickCount(_lastMouseUp, timestamp, location) pressure:0];
+                                            event = _CPEventFromNativeMouseEvent(aDOMEvent, CPLeftMouseUp, location, modifierFlags, timestamp, windowNumber, nil, -1, CPDOMEventGetClickCount(_lastMouseUp, timestamp, location), 0);
                                         
                                             _mouseIsDown = NO;
                                             _lastMouseUp = event;
@@ -547,9 +547,7 @@ var CTRL_KEY_CODE   = 17;
                                             return;
                                         }
 
-                                        event = [CPEvent mouseEventWithType:CPLeftMouseDown location:location modifierFlags:modifierFlags
-                                                    timestamp:timestamp windowNumber:windowNumber context:nil eventNumber:-1 
-                                                    clickCount:CPDOMEventGetClickCount(_lastMouseDown, timestamp, location) pressure:0];
+                                        event = _CPEventFromNativeMouseEvent(aDOMEvent, CPLeftMouseDown, location, modifierFlags, timestamp, windowNumber, nil, -1, CPDOMEventGetClickCount(_lastMouseDown, timestamp, location), 0);
                                                     
                                         _mouseIsDown = YES;
                                         _lastMouseDown = event;
@@ -558,10 +556,8 @@ var CTRL_KEY_CODE   = 17;
                                         
             case CPDOMEventMouseMoved:  if (_DOMEventMode)
                                             return;
-            
-                                        event = [CPEvent mouseEventWithType:_mouseIsDown ? CPLeftMouseDragged : CPMouseMoved 
-                                                    location:location modifierFlags:modifierFlags timestamp:timestamp 
-                                                    windowNumber:windowNumber context:nil eventNumber:-1 clickCount:1 pressure:0];
+
+                                        event = _CPEventFromNativeMouseEvent(aDOMEvent, _mouseIsDown ? CPLeftMouseDragged : CPMouseMoved, location, modifierFlags, timestamp, windowNumber, nil, -1, 1, 0);
                                         
                                         break;
         }
@@ -577,18 +573,22 @@ var CTRL_KEY_CODE   = 17;
             CPDOMEventStop(aDOMEvent);
             
         [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
+#ifndef DEBUG
     }
     catch (anException)
     {
         objj_exception_report(anException, {path:@"CPDOMWindowBridge.j"});
     }
+#endif
 }
 
 /* @ignore */
 - (void)_bridgeKeyEvent:(DOMEvent)aDOMEvent
 {
+#ifndef DEBUG
     try
-    {    
+    {
+#endif
         var event,
             timestamp = aDOMEvent.timeStamp ? aDOMEvent.timeStamp : new Date(),
             sourceElement = (aDOMEvent.target || aDOMEvent.srcElement),
@@ -723,11 +723,13 @@ var CTRL_KEY_CODE   = 17;
             CPDOMEventStop(aDOMEvent);
             
         [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
+#ifndef DEBUG
     }
     catch (anException)
     {
         objj_exception_report(anException, {path:@"CPDOMWindowBridge.j"});
     }
+#endif
 }
 
 /* @ignore */
@@ -736,8 +738,10 @@ var CTRL_KEY_CODE   = 17;
     if(!aDOMEvent)
         aDOMEvent = window.event;
 
+#ifndef DEBUG
     try
     {
+#endif
         if (CPFeatureIsCompatible(CPJavaScriptMouseWheelValues_8_15))
         {
             var x = 0.0,
@@ -816,19 +820,22 @@ var CTRL_KEY_CODE   = 17;
             CPDOMEventStop(aDOMEvent);
             
         [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
+#ifndef DEBUG
     }
     catch (anException)
     {
         objj_exception_report(anException, {path:@"CPDOMWindowBridge.j"});
     }
-
+#endif
 }
 
 /* @ignore */
 - (void)_bridgeResizeEvent:(DOMEvent)aDOMEvent
 {
+#ifndef DEBUG
     try
     {
+#endif
         // FIXME: This is not the right way to do this.
         // We should pay attention to mouse down and mouse up in conjunction with this.
         //window.liveResize = YES;
@@ -855,11 +862,13 @@ var CTRL_KEY_CODE   = 17;
         //window.liveResize = NO;
         
         [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
+#ifndef DEBUG
     }
     catch (anException)
     {
         objj_exception_report(anException, {path:@"CPDOMWindowBridge.j"});
     }
+#endif
 }
 
 // DOM event properties used in mouse bridge code
@@ -874,8 +883,10 @@ var CTRL_KEY_CODE   = 17;
 /* @ignore */
 - (void)_bridgeTouchEvent:(DOMEvent)aDOMEvent
 {        
+#ifndef DEBUG
     try
     {
+#endif
         if (aDOMEvent.touches && (aDOMEvent.touches.length == 1 || (aDOMEvent.touches.length == 0 && aDOMEvent.changedTouches.length == 1)))
         {
             var newEvent = {};
@@ -917,20 +928,23 @@ var CTRL_KEY_CODE   = 17;
             if (aDOMEvent.stopPropagation)
                 aDOMEvent.stopPropagation();
         }
+#ifndef DEBUG
     }
-    catch(e)
+    catch (anException)
     {
-        objj_exception_report(e, {path:@"CPDOMWindowBridge.j"});
+        objj_exception_report(anException, {path:@"CPDOMWindowBridge.j"});
     }
-    
+#endif
     // handle touch cases specifically
 }
 
 /* @ignore */
 - (void)_checkPasteboardElement
 {
+#ifndef DEBUG
     try
     {
+#endif
         var value = _DOMPasteboardElement.value;
 
         if ([value length])
@@ -952,11 +966,13 @@ var CTRL_KEY_CODE   = 17;
         _pasteboardKeyDownEvent = nil;
         
         [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
+#ifndef DEBUG
     }
     catch (anException)
     {
         objj_exception_report(anException, {path:@"CPDOMWindowBridge.j"});
     }
+#endif
 }
 
 /* @ignore */
@@ -988,15 +1004,15 @@ var CPDOMEventStop = function(aDOMEvent)
     // IE Model
     aDOMEvent.cancelBubble = true;
     aDOMEvent.returnValue = false;
-    
+
     // W3C Model
     if (aDOMEvent.preventDefault)
         aDOMEvent.preventDefault();
-    
+
     if (aDOMEvent.stopPropagation)
         aDOMEvent.stopPropagation();
 
-    if (aDOMEvent.type == CPDOMEventMouseDown)
+    if (aDOMEvent.type === CPDOMEventMouseDown)
     {
         CPSharedDOMWindowBridge._DOMFocusElement.focus();
         CPSharedDOMWindowBridge._DOMFocusElement.blur();
