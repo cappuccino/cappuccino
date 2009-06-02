@@ -659,7 +659,7 @@ var CPStringHashes      = new objj_dictionary();
 */
 + (CPString)JSONFromObject:(JSObject)anObject
 {
-    return CPJSObjectCreateJSON(anObject);
+    return JSON.stringify(anObject);
 }
 
 /*!
@@ -667,7 +667,7 @@ var CPStringHashes      = new objj_dictionary();
 */
 - (JSObject)objectFromJSON
 {
-    return CPJSObjectCreateWithJSON(self);
+    return JSON.parse(self);
 }
 
 @end
