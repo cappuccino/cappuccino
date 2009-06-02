@@ -83,7 +83,7 @@ var CPValueValueKey = @"CPValueValueKey";
     self = [super init];
     
     if (self)
-        _JSObject = CPJSObjectCreateWithJSON([aCoder decodeObjectForKey:CPValueValueKey]);
+        _JSObject = JSON.parse([aCoder decodeObjectForKey:CPValueValueKey]);
 
     return self;
 }
@@ -94,7 +94,7 @@ var CPValueValueKey = @"CPValueValueKey";
 */
 - (void)encodeWithCoder:(CPCoder)aCoder
 {
-    [aCoder encodeObject:CPJSObjectCreateJSON(_JSObject) forKey:CPValueValueKey];
+    [aCoder encodeObject:JSON.stringify(_JSObject) forKey:CPValueValueKey];
 }
 
 @end

@@ -28,7 +28,7 @@ function readConfig(configFile)
     if (!fileData)
         throw new Error("Couldn't read file: " + configFile);
         
-    var configs = CPJSObjectCreateWithJSON(fileData);
+    var configs = JSON.parse(fileData);
     
     return configs;
 }
