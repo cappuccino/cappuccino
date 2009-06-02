@@ -671,7 +671,7 @@ var CPStringRegexSpecialCharacters = [
 */
 + (CPString)JSONFromObject:(JSObject)anObject
 {
-    return CPJSObjectCreateJSON(anObject);
+    return JSON.stringify(anObject);
 }
 
 /*!
@@ -679,7 +679,7 @@ var CPStringRegexSpecialCharacters = [
 */
 - (JSObject)objectFromJSON
 {
-    return CPJSObjectCreateWithJSON(self);
+    return JSON.parse(self);
 }
 
 @end
