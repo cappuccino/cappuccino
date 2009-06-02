@@ -531,7 +531,7 @@ function CPThemeAttributeEncode(aCoder, aThemeAttribute)
 
 function CPThemeAttributeDecode(aCoder, anAttributeName, aDefaultValue, aTheme, aClass)
 {
-    var key =  "$a" + anAttributeName;
+    var key = "$a" + anAttributeName;
 
     if (![aCoder containsValueForKey:key])
         var attribute = [[_CPThemeAttribute alloc] initWithName:anAttributeName defaultValue:aDefaultValue];
