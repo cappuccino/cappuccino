@@ -239,7 +239,7 @@ function main()
         
         // add fake bundle response bookkeeping
         applicationJS.push("var __fakeDidReceiveBundleResponse = " + String(fakeDidReceiveBundleResponse));
-        applicationJS.push("var __fakeBundleArchives = " + CPJSObjectCreateJSON(bundleArchives) + ";");
+        applicationJS.push("var __fakeBundleArchives = " + JSON.stringify(bundleArchives) + ";");
         applicationJS.push("for (var i = 0; i < __fakeBundleArchives.length; i++) __fakeDidReceiveBundleResponse(__fakeBundleArchives[i]);")
         
         // add each fragment, wrapped in a function, along with OBJJ_CURRENT_BUNDLE bookkeeping

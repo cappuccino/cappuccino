@@ -491,7 +491,7 @@ var CPColorPanelSwatchesCookie = "CPColorPanelSwatchesCookie";
     var future = new Date();
     future.setYear(2019);
     
-    [_swatchCookie setValue: CPJSObjectCreateJSON(result) expires:future domain: nil];
+    [_swatchCookie setValue: JSON.stringify(result) expires:future domain: nil];
 }
 
 - (void)setColorPanel:(CPColorPanel)panel
