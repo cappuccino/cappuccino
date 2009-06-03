@@ -789,18 +789,23 @@
 */
 - (CPString)description
 {
-    var i = 0,
+    var index = 0,
         count = [self count],
         description = '(';
-    
-    for(; i < count; ++i)
+
+    for(; index < count; ++index)
     {
-        if (self[i].isa) description += [self[i] description];
-        else description += self[i];
-        
-        if (i != count - 1) description += ", ";
+        var object = self[index];
+
+        if (object && object.isa)
+            description += [object description];
+        else
+            description += object;
+
+        if (index !== count - 1)
+            description += ", ";
     }
-    
+
     return description + ')';
 }
 
