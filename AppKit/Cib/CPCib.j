@@ -24,6 +24,7 @@
 @import <Foundation/CPURLConnection.j>
 @import <Foundation/CPURLRequest.j>
 
+@import "_CPCibClassSwapper.j"
 @import "_CPCibCustomObject.j"
 @import "_CPCibCustomResource.j"
 @import "_CPCibCustomView.j"

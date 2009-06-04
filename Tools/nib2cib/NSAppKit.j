@@ -22,6 +22,7 @@
 
 @import "NSButton.j"
 @import "NSCell.j"
+@import "NSClassSwapper.j"
 @import "NSClipView.j"
 @import "NSColor.j"
 @import "NSColorWell.j"
