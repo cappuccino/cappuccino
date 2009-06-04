@@ -92,6 +92,11 @@ CPLog(@"Got some class: %@", inst);</pre>
     return class_createInstance(self);
 }
 
++ (id)allocWithCoder:(CPCoder)aCoder
+{
+    return [self alloc];
+}
+
 /*!
     Initializes the receiver
     @return the initialized receiver

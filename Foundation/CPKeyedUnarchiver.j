@@ -424,15 +424,16 @@ var _CPKeyedUnarchiverDecodeObjectAtIndex = function(self, anIndex)
         if (!theClass)
             theClass = CPClassFromString(className);
 
-        object = [theClass alloc];
-
-        // It is important to do this before calling initWithCoder so that decoding can be self referential (something = self).    
-        self._objects[anIndex] = object;
-        
         var savedPlistObject = self._plistObject;
         
         self._plistObject = plistObject;
-        var string = className;
+
+        // Should we only call this on _CPCibClassSwapper? (currently the only class that makes use of this).
+        object = [theClass allocWithCoder:self];
+
+        // It is important to do this before calling initWithCoder so that decoding can be self referential (something = self).
+        self._objects[anIndex] = object;
+
         var processedObject = [object initWithCoder:self];
 
         self._plistObject = savedPlistObject;

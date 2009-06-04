@@ -177,8 +177,8 @@ function class_addMethod(/*Class*/ aClass, /*SEL*/ aName, /*IMP*/ anImplementati
     // FIXME: Should this be done here?
     // If this is a root class...
     if (!ISMETA(aClass) && GETMETA(aClass).isa === GETMETA(aClass))
-        class_addMethods(GETMETA(aClass), methods);
-    
+        class_addMethod(GETMETA(aClass), method);
+
     return YES;
 }
 
