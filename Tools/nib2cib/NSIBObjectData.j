@@ -75,9 +75,9 @@
         //_accessibilityOidsKeys = [aCoder decodeObjectForKey:@"NSAccessibilityOidsKeys"];
         //_accessibilityOidsValues = [aCoder decodeObjectForKey:@"NSAccessibilityOidsValues"];
 
-        _classesKeys = [aCoder decodeObjectForKey:@"NSClassesKeys"];print("d");
-        _classesValues = [aCoder decodeObjectForKey:@"NSClassesValues"];print("e");
-      
+        _classesKeys = [aCoder decodeObjectForKey:@"NSClassesKeys"];
+        _classesValues = [aCoder decodeObjectForKey:@"NSClassesValues"];
+
         _connections = [aCoder decodeObjectForKey:@"NSConnections"];
         
         //_fontManager = [aCoder decodeObjectForKey:@"NSFontManager"] retain];
