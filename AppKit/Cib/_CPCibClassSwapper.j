@@ -31,23 +31,46 @@ var _CPCibClassSwapperClassNameKey          = @"_CPCibClassSwapperClassNameKey",
 {
 }
 
-+ (id)allocWithCoder:(CPCoder)aCoder
++ (void)allocObjectWithCoder:(CPCoder)aCoder className:(CPString)aClassName
 {
-    var theClassName = [aCoder decodeObjectForKey:_CPCibClassSwapperClassNameKey],
-        theClass = objj_lookUpClass(theClassName);
+    // FIXME: Also check class classForClassName:
+    var theClass = [aCoder classForClassName:aClassName];
 
     if (!theClass)
     {
-        CPLog.error("Unable to find class " + theClassName + " in cib file.");
-        
-        theClassName = [aCoder decodeObjectForKey:_CPCibClassSwapperOriginalClassNameKey];
-        theClass = objj_lookUpClass(theClassName);
-        
+        theClass = objj_lookUpClass(aClassName);
+
         if (!theClass)
-            [CPException raise:CPInvalidArgumentException reason:@"Unable to find class " + theClassName + " in cib file."];
+            return nil;
     }
 
     return [theClass alloc];
+}
+
++ (id)allocWithCoder:(CPCoder)aCoder
+{
+    if ([aCoder respondsToSelector:@selector(usesOriginalClasses)] && [aCoder usesOriginalClasses])
+    {
+        var theClassName = [aCoder decodeObjectForKey:_CPCibClassSwapperOriginalClassNameKey],
+            object = [self allocObjectWithCoder:aCoder className:theClassName];
+    }
+    else
+    {
+        var theClassName = [aCoder decodeObjectForKey:_CPCibClassSwapperClassNameKey],
+            object = [self allocObjectWithCoder:aCoder className:theClassName];
+
+        if (!object)
+        {
+            CPLog.error("Unable to find class " + theClassName + " in cib file.");
+
+            object = [self allocObjectWithCoder:aCoder className:[aCoder decodeObjectForKey:_CPCibClassSwapperOriginalClassNameKey]];
+        }
+    }
+
+    if (!object)
+        [CPException raise:CPInvalidArgumentException reason:@"Unable to find class " + theClassName + " in cib file."];
+
+    return object;
 }
 
 @end

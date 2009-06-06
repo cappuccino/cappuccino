@@ -684,13 +684,13 @@ var _CPMenuBarVisible               = NO,
 
     [_CPMenuWindow poolMenuWindow:aMenuWindow];
 
-    if([aMenuItem isEnabled])
-        [CPApp sendAction:[aMenuItem action] to:[aMenuItem target] from:aMenuItem];
-
     var delegate = [menu delegate];
 
     if ([delegate respondsToSelector:@selector(menuDidClose:)])
         [delegate menuDidClose:menu];
+
+    if([aMenuItem isEnabled])
+        [CPApp sendAction:[aMenuItem action] to:[aMenuItem target] from:aMenuItem];
 }
 
 // Managing Display of State Column
