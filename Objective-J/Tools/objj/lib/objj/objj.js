@@ -12,6 +12,9 @@ if (system.env["OBJJ_INCLUDE_PATHS"])
 
 window.args = system.args;
 
+// FIXME: ARGS
+system.args.shift();
+
 with (window)
 {
     eval(File.read(OBJJ_HOME + "/lib/Frameworks/Objective-J/rhino.platform/Objective-J.js", { charset:"UTF-8" }));
