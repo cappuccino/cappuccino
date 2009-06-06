@@ -22,6 +22,8 @@
 
 @import "CPTextField.j"
 
+#include "Platform/Platform.h"
+
 /*!
     @global
     @group Menu tags
@@ -101,7 +103,8 @@ var CPSearchFieldSearchImage = nil,
           
           _cancelButton = [[CPButton alloc] initWithFrame:CPMakeRect(frame.size.width - 27,(frame.size.height-22)/2,22,22)];
           [self resetCancelButton];
-          _cancelButton._DOMElement.style.cursor = "default";
+
+
           [_cancelButton setHidden:YES];
           [self addSubview:_cancelButton];
           
@@ -109,7 +112,11 @@ var CPSearchFieldSearchImage = nil,
           [_searchButton setBezelStyle:CPRegularSquareBezelStyle];
           [_searchButton setBordered:NO];
           [_searchButton setImageScaling:CPScaleToFit];
-          _searchButton._DOMElement.style.cursor = "default";
+
+#if PLATFORM(DOM)
+    _cancelButton._DOMElement.style.cursor = "default";
+    _searchButton._DOMElement.style.cursor = "default";
+#endif
           
           [self setSearchMenuTemplate:[self _searchMenuTemplate]];
           [self addSubview:_searchButton];       
