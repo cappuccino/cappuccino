@@ -57,6 +57,7 @@
 @import "CPProgressIndicator.j"
 @import "CPRadio.j"
 @import "CPResponder.j"
+@import "CPSearchField.j"
 @import "CPScrollView.j"
 @import "CPScroller.j"
 @import "CPSecureTextField.j"
