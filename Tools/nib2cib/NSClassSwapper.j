@@ -21,7 +21,7 @@ var _CPCibClassSwapperClassNameKey          = @"_CPCibClassSwapperClassNameKey",
         swapperClass = objj_allocateClassPair(originalClass, swapperClassName);
 
         objj_registerClassPair(swapperClass);
-try{
+
         class_addMethod(swapperClass, @selector(initWithCoder:), function(self, _cmd, aCoder)
         {
             self = objj_msgSendSuper({super_class:originalClass, receiver:self}, _cmd, aCoder);
@@ -36,7 +36,7 @@ try{
 
             return self;
         }, "");
-        }catch(e) { alert("B"); }try{
+
         class_addMethod(swapperClass, @selector(classForKeyedArchiver), function(self, _cmd)
         {
             return [_CPCibClassSwapper class];
@@ -49,7 +49,7 @@ try{
             // FIXME: map class name as well?
             [aCoder encodeObject:aClassName forKey:_CPCibClassSwapperClassNameKey];
             [aCoder encodeObject:CP_NSMapClassName(anOriginalClassName) forKey:_CPCibClassSwapperOriginalClassNameKey];
-        }, "");}catch(e) { alert("C"); }
+        }, "");
     }
 
     return swapperClass;
