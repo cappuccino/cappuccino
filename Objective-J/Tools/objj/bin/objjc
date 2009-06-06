@@ -164,6 +164,9 @@ function preprocess(aFilePath, outFilePath, gccArgs, flags)
 
 function main()
 {
+    // FIXME: ARGS
+    system.args.shift();
+    
     var filePaths = [],
         outFilePaths = [],
         
