@@ -232,7 +232,7 @@
 */
 - (BOOL)containsObject:(id)anObject
 {
-    if (_contents[[anObject hash]] && [_contents[[anObject hash]] isEqual:anObject])
+    if (_contents[[anObject UID]] && [_contents[[anObject UID]] isEqual:anObject])
         return YES;
     
     return NO;
@@ -372,7 +372,7 @@
 */
 - (void)addObject:(id)anObject
 {
-    _contents[[anObject hash]] = anObject;
+    _contents[[anObject UID]] = anObject;
     _count++;
 }
 
@@ -396,7 +396,7 @@
 {
     if ([self containsObject:anObject])
     {
-        delete _contents[[anObject hash]];
+        delete _contents[[anObject UID]];
         _count--;
     }
 }

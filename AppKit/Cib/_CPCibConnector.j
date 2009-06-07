@@ -16,12 +16,12 @@ var _CPCibConnectorSourceKey        = @"_CPCibConnectorSourceKey",
 
 - (void)replaceObjects:(JSObject)replacementObjects
 {
-    var replacement = replacementObjects[[_source hash]];
+    var replacement = replacementObjects[[_source UID]];
 
     if (replacement !== undefined)
         _source = replacement;
 
-    replacement = replacementObjects[[_destination hash]];
+    replacement = replacementObjects[[_destination UID]];
 
     if (replacement !== undefined)
         _destination = replacement;

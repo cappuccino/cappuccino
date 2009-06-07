@@ -725,7 +725,7 @@ var _CPToolbarItemInfoMake = function(anIndex, aView, aLabel, aMinWidth)
 
 - (CPView)viewForItem:(CPToolbarItem)anItem
 {
-    var info = [_itemInfos objectForKey:[anItem hash]];
+    var info = [_itemInfos objectForKey:[anItem UID]];
     
     if (!info)
         return nil;
@@ -735,7 +735,7 @@ var _CPToolbarItemInfoMake = function(anIndex, aView, aLabel, aMinWidth)
 
 - (CPTextField)labelForItem:(CPToolbarItem)anItem
 {
-    var info = [_itemInfos objectForKey:[anItem hash]];
+    var info = [_itemInfos objectForKey:[anItem UID]];
     
     if (!info)
         return nil;
@@ -745,7 +745,7 @@ var _CPToolbarItemInfoMake = function(anIndex, aView, aLabel, aMinWidth)
 
 - (float)minWidthForItem:(CPToolbarItem)anItem
 {
-    var info = [_itemInfos objectForKey:[anItem hash]];
+    var info = [_itemInfos objectForKey:[anItem UID]];
     
     if (!info)
         return 0;
@@ -814,7 +814,7 @@ var _CPToolbarItemInfoMake = function(anIndex, aView, aLabel, aMinWidth)
         var minSize = [item minSize],
             minWidth = MAX(minSize.width, CGRectGetWidth([label frame]));
             
-        [_itemInfos setObject:_CPToolbarItemInfoMake(index, view, label, minWidth) forKey:[item hash]];
+        [_itemInfos setObject:_CPToolbarItemInfoMake(index, view, label, minWidth) forKey:[item UID]];
         
         _minWidth += minWidth + TOOLBAR_ITEM_MARGIN;
         

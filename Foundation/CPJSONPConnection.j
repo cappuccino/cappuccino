@@ -86,7 +86,7 @@ CPJSONPCallbackReplacementString = @"${JSONP_CALLBACK}";
 {
     try
     {
-        CPJSONPConnectionCallbacks["callback"+[self hash]] = function(data)
+        CPJSONPConnectionCallbacks["callback"+[self UID]] = function(data)
         {
             [_delegate connection:self didReceiveData:data];
             [self removeScriptTag];
@@ -100,11 +100,11 @@ CPJSONPCallbackReplacementString = @"${JSONP_CALLBACK}";
         if (_callbackParameter)
         {
             source += (source.indexOf('?') < 0) ? "?" : "&";
-            source += _callbackParameter+"=CPJSONPConnectionCallbacks.callback"+[self hash];
+            source += _callbackParameter+"=CPJSONPConnectionCallbacks.callback"+[self UID];
         }
         else if (source.indexOf(CPJSONPCallbackReplacementString) >= 0)
         {
-            source = [source stringByReplacingOccurrencesOfString:CPJSONPCallbackReplacementString withString:"CPJSONPConnectionCallbacks.callback"+[self hash]];
+            source = [source stringByReplacingOccurrencesOfString:CPJSONPCallbackReplacementString withString:"CPJSONPConnectionCallbacks.callback"+[self UID]];
         }
         else
             return;
@@ -130,8 +130,8 @@ CPJSONPCallbackReplacementString = @"${JSONP_CALLBACK}";
     if(_scriptTag && _scriptTag.parentNode == head)
         head.removeChild(_scriptTag);
 
-    CPJSONPConnectionCallbacks["callback"+[self hash]] = nil;
-    delete CPJSONPConnectionCallbacks["callback"+[self hash]];
+    CPJSONPConnectionCallbacks["callback"+[self UID]] = nil;
+    delete CPJSONPConnectionCallbacks["callback"+[self UID]];
 }
 
 - (void)cancel

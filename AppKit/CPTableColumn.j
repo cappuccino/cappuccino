@@ -72,9 +72,9 @@ CPTableColumnUserResizingMask   = 2;
 
     CPView      _dataView;                  // default data view for this column
 
-    Object      _dataViewData;              // cache of data view archives (key=data view hash, value=data view archive)
-    Object      _dataViewForView;           // mapping from view instances back to their data view prototype (key=view instance hash, value=data view)
-    Object      _purgableInfosForDataView;  // (key=data view hash, value=)
+    Object      _dataViewData;              // cache of data view archives (key=data view UID, value=data view archive)
+    Object      _dataViewForView;           // mapping from view instances back to their data view prototype (key=view instance UID, value=data view)
+    Object      _purgableInfosForDataView;  // (key=data view UID, value=)
 }
 
 /*!
@@ -290,10 +290,10 @@ CPTableColumnUserResizingMask;
 - (void)setDataView:(CPView <CPCoding>)aView
 {
     if (_dataView)
-        _dataViewData[[_dataView hash]] = nil;
+        _dataViewData[[_dataView UID]] = nil;
     
     _dataView = aView;
-    _dataViewData[[aView hash]] = [CPKeyedArchiver archivedDataWithRootObject:aView];
+    _dataViewData[[aView UID]] = [CPKeyedArchiver archivedDataWithRootObject:aView];
 }
 
 /*!
@@ -330,42 +330,42 @@ CPTableColumnUserResizingMask;
 /*
 - (void)_markViewAsPurgable:(CPView)aView
 {
-    var viewHash = [aView hash],
-        dataViewHash = [_dataViewForView[viewHash] hash];
+    var viewUID = [aView UID],
+        dataViewUID = [_dataViewForView[viewUID] UID];
     
-    if (!_purgableInfosForDataView[dataViewHash])
-        _purgableInfosForDataView[dataViewHash] = [CPDictionary dictionary];
+    if (!_purgableInfosForDataView[dataViewUID])
+        _purgableInfosForDataView[dataViewUID] = [CPDictionary dictionary];
     
-    [_purgableInfosForDataView[dataViewHash] setObject:aView forKey:viewHash];
+    [_purgableInfosForDataView[dataViewUID] setObject:aView forKey:viewUID];
 }
 */
 - (void)_markView:(CPView)aView inRow:(unsigned)aRow asPurgable:(BOOL)isPurgable
 {
-    var viewHash = [aView hash],
-        dataViewHash = [_dataViewForView[viewHash] hash];
+    var viewUID = [aView UID],
+        dataViewUID = [_dataViewForView[viewUID] UID];
     
-    if (!_purgableInfosForDataView[dataViewHash])
+    if (!_purgableInfosForDataView[dataViewUID])
     {
         if (!isPurgable)
             return;
         
-        _purgableInfosForDataView[dataViewHash] = {};
+        _purgableInfosForDataView[dataViewUID] = {};
     }
     
     if (!isPurgable) {
-        if (_purgableInfosForDataView[dataViewHash][viewHash])
-            CPLog.warn("removing unpurgable " + _purgableInfosForDataView[dataViewHash][viewHash]);
-        delete _purgableInfosForDataView[dataViewHash][viewHash];   
+        if (_purgableInfosForDataView[dataViewUID][viewUID])
+            CPLog.warn("removing unpurgable " + _purgableInfosForDataView[dataViewUID][viewUID]);
+        delete _purgableInfosForDataView[dataViewUID][viewUID];   
     }
     else
-        _purgableInfosForDataView[dataViewHash][viewHash] = PurgableInfoMake(aView, aRow);
+        _purgableInfosForDataView[dataViewUID][viewUID] = PurgableInfoMake(aView, aRow);
 }
 
 - (CPView)_newDataViewForRow:(int)aRowIndex avoidingRows:(CPRange)rows
 {
     var view = [self dataViewForRow:aRowIndex],
-        viewHash = [view hash],
-        purgableInfos = _purgableInfosForDataView[viewHash];
+        viewUID = [view UID],
+        purgableInfos = _purgableInfosForDataView[viewUID];
     
     if (purgableInfos)
     {
@@ -384,14 +384,14 @@ CPTableColumnUserResizingMask;
     }
     
     // if we haven't cached an archive of the data view, do it now
-    if (!_dataViewData[viewHash])
-        _dataViewData[viewHash] = [CPKeyedArchiver archivedDataWithRootObject:view];
+    if (!_dataViewData[viewUID])
+        _dataViewData[viewUID] = [CPKeyedArchiver archivedDataWithRootObject:view];
 
     // unarchive the data view cache
-    var newView = [CPKeyedUnarchiver unarchiveObjectWithData:_dataViewData[viewHash]];
+    var newView = [CPKeyedUnarchiver unarchiveObjectWithData:_dataViewData[viewUID]];
     
-    // map the new view's hash to it's data view prototype
-    _dataViewForView[[newView hash]] = view;
+    // map the new view's UID to it's data view prototype
+    _dataViewForView[[newView UID]] = view;
     
     CPLog.warn("creating cell: %s", newView);
     
@@ -400,9 +400,9 @@ CPTableColumnUserResizingMask;
 
 - (void)_purge
 {
-    for (var viewHash in _purgableInfosForDataView)
+    for (var viewUID in _purgableInfosForDataView)
     {
-        var purgableInfos = _purgableInfosForDataView[viewHash];
+        var purgableInfos = _purgableInfosForDataView[viewUID];
 
         for (var key in purgableInfos)
         {

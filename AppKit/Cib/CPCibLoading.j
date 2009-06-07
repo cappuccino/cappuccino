@@ -43,7 +43,7 @@ var LoadInfoForCib = {};
 {
     var cib = [[CPCib alloc] initWithContentsOfURL:anAbsolutePath loadDelegate:self];
 
-    LoadInfoForCib[[cib hash]] = { loadDelegate:aDelegate, externalNameTable:aNameTable };
+    LoadInfoForCib[[cib UID]] = { loadDelegate:aDelegate, externalNameTable:aNameTable };
 }
 
 + (void)loadCibNamed:(CPString)aName owner:(id)anOwner loadDelegate:(id)aDelegate
@@ -59,14 +59,14 @@ var LoadInfoForCib = {};
 {
     var cib = [[CPCib alloc] initWithCibNamed:aFileName bundle:self loadDelegate:[self class]];
 
-    LoadInfoForCib[[cib hash]] = { loadDelegate:aDelegate, externalNameTable:aNameTable };
+    LoadInfoForCib[[cib UID]] = { loadDelegate:aDelegate, externalNameTable:aNameTable };
 }
 
 + (void)cibDidFinishLoading:(CPCib)aCib
 {
-    var loadInfo = LoadInfoForCib[[aCib hash]];
+    var loadInfo = LoadInfoForCib[[aCib UID]];
     
-    delete LoadInfoForCib[[aCib hash]];
+    delete LoadInfoForCib[[aCib UID]];
     
     [aCib instantiateCibWithExternalNameTable:loadInfo.externalNameTable];
     

@@ -143,8 +143,6 @@ var DOMElementPrototype         = nil,
     BOOL                _postsBoundsChangedNotifications;
     BOOL                _inhibitFrameAndBoundsChangedNotifications;
     
-    CPString            _displayHash;
-    
 #if PLATFORM(DOM)
     DOMElement          _DOMElement;
     DOMElement          _DOMContentsElement;
@@ -241,8 +239,6 @@ var DOMElementPrototype         = nil,
         _opacity = 1.0;
         _isHidden = NO;
         _hitTests = YES;
-
-        _displayHash = [self hash];
 
 #if PLATFORM(DOM)
         _DOMElement = DOMElementPrototype.cloneNode(false);
@@ -1535,13 +1531,13 @@ setBoundsOrigin:
 - (void)setNeedsDisplayInRect:(CPRect)aRect
 {
 #if PLATFORM(DOM)
-    var hash = [[self class] hash],
-        hasCustomDrawRect = CustomDrawRectViews[hash];
+    var UID = [[self class] UID],
+        hasCustomDrawRect = CustomDrawRectViews[UID];
     
     if (!hasCustomDrawRect && typeof hasCustomDrawRect === "undefined")
     {
         hasCustomDrawRect = [self methodForSelector:@selector(drawRect:)] != [CPView instanceMethodForSelector:@selector(drawRect:)];
-        CustomDrawRectViews[hash] = hasCustomDrawRect;
+        CustomDrawRectViews[UID] = hasCustomDrawRect;
     }
 
     if (!hasCustomDrawRect)
@@ -1666,13 +1662,13 @@ setBoundsOrigin:
     _needsLayout = YES;
     
 #if PLATFORM(DOM)
-    var hash = [[self class] hash],
-        hasCustomLayoutSubviews = CustomLayoutSubviewsViews[hash];
+    var UID = [[self class] UID],
+        hasCustomLayoutSubviews = CustomLayoutSubviewsViews[UID];
     
     if (hasCustomLayoutSubviews === undefined)
     {
         hasCustomLayoutSubviews = [self methodForSelector:@selector(layoutSubviews)] != [CPView instanceMethodForSelector:@selector(layoutSubviews)];
-        CustomLayoutSubviewsViews[hash] = hasCustomLayoutSubviews;
+        CustomLayoutSubviewsViews[UID] = hasCustomLayoutSubviews;
     }
 
     if (!hasCustomLayoutSubviews)
@@ -2256,7 +2252,6 @@ var CPViewAutoresizingMaskKey       = @"CPViewAutoresizingMask",
             //_subviews[index]._superview = self;
         }
 #endif
-        _displayHash = [self hash];
 
         if ([aCoder containsValueForKey:CPViewIsHiddenKey])
             [self setHidden:[aCoder decodeBoolForKey:CPViewIsHiddenKey]];

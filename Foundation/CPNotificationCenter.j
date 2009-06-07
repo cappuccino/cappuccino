@@ -201,12 +201,12 @@ var _CPNotificationCenterPostNotification = function(/* CPNotificationCenter */ 
         anObject = [CPNull null];
     
     // Grab all the listeners for this notification/object pair
-    var observers = [_objectObservers objectForKey:[anObject hash]];
+    var observers = [_objectObservers objectForKey:[anObject UID]];
 
     if (!observers)
     {
         observers = [];
-        [_objectObservers setObject:observers forKey:[anObject hash]];
+        [_objectObservers setObject:observers forKey:[anObject UID]];
     }
     
     if (observers == _postingObservers)
@@ -248,7 +248,7 @@ var _CPNotificationCenterPostNotification = function(/* CPNotificationCenter */ 
     }
     else
     {
-        var key = [anObject hash],
+        var key = [anObject UID],
             observers = [_objectObservers objectForKey:key];
             count = observers ? observers.length : 0;
         
@@ -284,7 +284,7 @@ var _CPNotificationCenterPostNotification = function(/* CPNotificationCenter */ 
     // rigorous testing in those cases.
     var object = [aNotification object];
     
-    if (object != nil && (_postingObservers = [_objectObservers objectForKey:[object hash]]))
+    if (object != nil && (_postingObservers = [_objectObservers objectForKey:[object UID]]))
     {
         var observers = _postingObservers,
             count = observers.length;
@@ -303,7 +303,7 @@ var _CPNotificationCenterPostNotification = function(/* CPNotificationCenter */ 
     }
     
     // Now do the same for the nil object observers...
-    _postingObservers = [_objectObservers objectForKey:[[CPNull null] hash]];
+    _postingObservers = [_objectObservers objectForKey:[[CPNull null] UID]];
     
     if (!_postingObservers)
         return;
