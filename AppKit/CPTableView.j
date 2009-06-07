@@ -81,6 +81,7 @@ var _CPTableViewWillDisplayCellSelector                         = 1 << 0,
     //CPColor             _gridColor;
     //BOOL                _drawsGrid;
     
+    SEL                 _doubleAction;
     
     // Not archived:
     
