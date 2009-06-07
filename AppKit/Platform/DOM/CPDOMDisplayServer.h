@@ -104,20 +104,20 @@
 
 #define CPDOMDisplayServerAddView(aView)\
     {\
-        var ___hash = [aView hash];\
-        if (typeof (CPDOMDisplayServerViewsContext[___hash]) == "undefined")\
+        var ___UID = [aView UID];\
+        if (typeof (CPDOMDisplayServerViewsContext[___UID]) == "undefined")\
         {\
             CPDOMDisplayServerViews[CPDOMDisplayServerViewsCount++] = aView;\
-            CPDOMDisplayServerViewsContext[___hash] = aView;\
+            CPDOMDisplayServerViewsContext[___UID] = aView;\
         }\
     }\
 
 #define CPDOMDisplayServerRemoveView(aView)\
     {\
-        var index = CPDOMDisplayServerViewsContext[[aView hash]];\
+        var index = CPDOMDisplayServerViewsContext[[aView UID]];\
         if (typeof index != "undefined") \
         {\
-            CPDOMDisplayServerViewsContext[[aView hash]];\
+            CPDOMDisplayServerViewsContext[[aView UID]];\
             CPDOMDisplayServerViews[index] = NULL;\
         }\
     }\

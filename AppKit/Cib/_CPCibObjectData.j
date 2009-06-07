@@ -119,7 +119,7 @@
         objectEnumerator = [_visibleWindows objectEnumerator];
 
     while (object = [objectEnumerator nextObject])
-        [_replacementObjects[[object hash]] makeKeyAndOrderFront:self];
+        [_replacementObjects[[object UID]] makeKeyAndOrderFront:self];
 }
 
 @end
@@ -242,7 +242,7 @@ var _CPCibObjectDataNamesKeysKey                = @"_CPCibObjectDataNamesKeysKey
 
             if (instantiatedObject !== object)
             {
-                _replacementObjects[[object hash]] = instantiatedObject;
+                _replacementObjects[[object UID]] = instantiatedObject;
 
                 if ([instantiatedObject isKindOfClass:[CPView class]])
                 {
@@ -266,7 +266,7 @@ var _CPCibObjectDataNamesKeysKey                = @"_CPCibObjectDataNamesKeysKey
 
 - (void)establishConnectionsWithOwner:(id)anOwner topLevelObjects:(CPMutableArray)topLevelObjects
 {
-    _replacementObjects[[_fileOwner hash]] = anOwner;
+    _replacementObjects[[_fileOwner UID]] = anOwner;
 
     var index = 0,
         count = _connections.length;
@@ -287,7 +287,7 @@ var _CPCibObjectDataNamesKeysKey                = @"_CPCibObjectDataNamesKeysKey
     while (count--)
     {
         var object = _objectsKeys[count],
-            instantiatedObject = _replacementObjects[[object hash]];
+            instantiatedObject = _replacementObjects[[object UID]];
 
         if (instantiatedObject)
             object = instantiatedObject;
