@@ -45,9 +45,9 @@ CPUnknownUserInfoKey        = @"CPUnknownUserInfoKey";
     if (!CPObjectAccessorsForClass)
         CPObjectAccessorsForClass = [CPDictionary dictionary];
     
-    var hash = [isa hash],
+    var UID = [isa UID],
         selector = nil,
-        accessors = [CPObjectAccessorsForClass objectForKey:hash];
+        accessors = [CPObjectAccessorsForClass objectForKey:UID];
     
     if (accessors)
     {
@@ -60,7 +60,7 @@ CPUnknownUserInfoKey        = @"CPUnknownUserInfoKey";
     {
         accessors = [CPDictionary dictionary];
         
-        [CPObjectAccessorsForClass setObject:accessors forKey:hash];
+        [CPObjectAccessorsForClass setObject:accessors forKey:UID];
     }
 
     var capitalizedKey = aKey.charAt(0).toUpperCase() + aKey.substr(1);
@@ -88,9 +88,9 @@ CPUnknownUserInfoKey        = @"CPUnknownUserInfoKey";
     if (!CPObjectModifiersForClass)
         CPObjectModifiersForClass = [CPDictionary dictionary];
     
-    var hash = [isa hash],
+    var UID = [isa UID],
         selector = nil,
-        modifiers = [CPObjectModifiersForClass objectForKey:hash];
+        modifiers = [CPObjectModifiersForClass objectForKey:UID];
     
     if (modifiers)
     {
@@ -103,7 +103,7 @@ CPUnknownUserInfoKey        = @"CPUnknownUserInfoKey";
     {
         modifiers = [CPDictionary dictionary];
         
-        [CPObjectModifiersForClass setObject:modifiers forKey:hash];
+        [CPObjectModifiersForClass setObject:modifiers forKey:UID];
     }
     
     if (selector)

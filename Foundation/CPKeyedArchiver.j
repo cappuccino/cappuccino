@@ -208,7 +208,7 @@ var _CPKeyedArchiverStringClass                         = Nil,
         // Do whatever with the class, yo.
         // We call willEncodeObject previously.
         
-        _plistObject = _plistObjects[[_UIDs objectForKey:[object hash]]];
+        _plistObject = _plistObjects[[_UIDs objectForKey:[object UID]]];
         [object encodeWithCoder:self];
 
         if (_delegate && _delegateSelectors & _CPKeyedArchiverDidEncodeObjectSelector)
@@ -480,8 +480,8 @@ var _CPKeyedArchiverEncodeObject = function(self, anObject, isConditional)
         anObject = [_CPKeyedArchiverValue valueWithJSObject:anObject];
     
     // Get the proper replacement object
-    var hash = [anObject hash],
-        object = [self._replacementObjects objectForKey:hash];
+    var GUID = [anObject UID],
+        object = [self._replacementObjects objectForKey:GUID];
 
     // If a replacement object doesn't exist, then actually ask for one.
     // Explicitly compare to nil because object could be === 0.
@@ -506,7 +506,7 @@ var _CPKeyedArchiverEncodeObject = function(self, anObject, isConditional)
             }
         }
         
-        [self._replacementObjects setObject:object forKey:hash];
+        [self._replacementObjects setObject:object forKey:GUID];
     }
     
     // If we still don't have an object by this point, then return a 
@@ -516,7 +516,7 @@ var _CPKeyedArchiverEncodeObject = function(self, anObject, isConditional)
         return _CPKeyedArchiverNullReference;
     
     // If not, then grab the object's UID
-    var UID = [self._UIDs objectForKey:hash = [object hash]];
+    var UID = [self._UIDs objectForKey:GUID = [object UID]];
     
     // If this object doesn't have a unique index in the object table yet, 
     // then it also hasn't been properly encoded.  We explicitly compare 
@@ -527,10 +527,10 @@ var _CPKeyedArchiverEncodeObject = function(self, anObject, isConditional)
         if (isConditional)
         {
             // If we haven't already noted this conditional object...
-            if ((UID = [self._conditionalUIDs objectForKey:hash]) === nil)
+            if ((UID = [self._conditionalUIDs objectForKey:GUID]) === nil)
             {
                 // Use the null object as a placeholder.
-                [self._conditionalUIDs setObject:UID = [self._plistObjects count] forKey:hash];
+                [self._conditionalUIDs setObject:UID = [self._plistObjects count] forKey:GUID];
                 [self._plistObjects addObject:_CPKeyedArchiverNullString];
             }
         }
@@ -582,17 +582,17 @@ var _CPKeyedArchiverEncodeObject = function(self, anObject, isConditional)
                 [plistObject setObject:[CPDictionary dictionaryWithObject:classUID forKey:_CPKeyedArchiverUIDKey] forKey:_CPKeyedArchiverClassKey];
             }
             
-            UID = [self._conditionalUIDs objectForKey:hash];
+            UID = [self._conditionalUIDs objectForKey:GUID];
             
             // If this object WAS previously encoded conditionally...
             if (UID !== nil)
             {
-                [self._UIDs setObject:UID forKey:hash];
+                [self._UIDs setObject:UID forKey:GUID];
                 [self._plistObjects replaceObjectAtIndex:UID withObject:plistObject];
             }
             else
             {
-                [self._UIDs setObject:UID = [self._plistObjects count] forKey:hash];
+                [self._UIDs setObject:UID = [self._plistObjects count] forKey:GUID];
                 [self._plistObjects addObject:plistObject];
             }
         }

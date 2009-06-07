@@ -269,7 +269,7 @@ CPLog(@"Got some class: %@", inst);</pre>
 */
 - (CPString)description
 {
-    return "<" + isa.name + " 0x" + [CPString stringWithHash:[self hash]] + ">";
+    return "<" + isa.name + " 0x" + [CPString stringWithHash:[self UID]] + ">";
 }
 
 // Sending Messages
@@ -357,7 +357,7 @@ CPLog(@"Got some class: %@", inst);</pre>
 {
     [CPException raise:CPInvalidArgumentException reason:
         (class_isMetaClass(isa) ? "+" : "-") + " [" + [self className] + " " + aSelector + "] unrecognized selector sent to " +
-        (class_isMetaClass(isa) ? "class" : "instance") + " 0x" + [CPString stringWithHash:[self hash]]];
+        (class_isMetaClass(isa) ? "class" : "instance") + " 0x" + [CPString stringWithHash:[self UID]]];
 }
 
 // Archiving
@@ -482,7 +482,7 @@ CPLog(@"Got some class: %@", inst);</pre>
 */
 - (BOOL)isEqual:(id)anObject
 {
-    return self === anObject || [self hash] === [anObject hash];
+    return self === anObject || [self UID] === [anObject UID];
 }
 
 /*!
