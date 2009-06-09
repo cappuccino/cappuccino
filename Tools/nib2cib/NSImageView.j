@@ -34,6 +34,7 @@
         var cell = [aCoder decodeObjectForKey:@"NSCell"];
         
         _imageScaling = [cell imageScaling];
+        _isEditable = [cell isEditable];
     }
     
     return self;
