@@ -38,8 +38,12 @@ CPFontPboardType        = @"CPFontPboardType";
 CPHTMLPboardType        = @"CPHTMLPboardType";
 CPStringPboardType      = @"CPStringPboardType";
 CPURLPboardType         = @"CPURLPboardType";
+CPImagesPboardType      = @"CPImagesPboardType";
+CPVideosPboardType      = @"CPVideosPboardType";
+
+// Deprecated
 CPImagePboardType       = @"CPImagePboardType";
-CPVideoPboardType       = @"CPVideoPboardType";
+
 
 var CPPasteboards = nil;
 

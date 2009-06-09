@@ -1465,7 +1465,7 @@ setBoundsOrigin:
 */
 - (void)registerForDraggedTypes:(CPArray)pasteboardTypes
 {
-    if (!pasteboardTypes)
+    if (!pasteboardTypes || ![pasteboardTypes count])
         return;
 
     var theWindow = [self window];
