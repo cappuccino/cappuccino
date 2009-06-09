@@ -344,7 +344,7 @@ var LEFT_SHADOW_INSET       = 3.0,
 - (void)setEditable:(BOOL)shouldBeEditable
 {
     if (_isEditable === shouldBeEditable)
-        return _isEditable;
+        return;
 
     _isEditable = shouldBeEditable;
 
