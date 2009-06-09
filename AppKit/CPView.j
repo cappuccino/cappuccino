@@ -2230,6 +2230,10 @@ var CPViewAutoresizingMaskKey       = @"CPViewAutoresizingMask",
         _subviews = [aCoder decodeObjectForKey:CPViewSubviewsKey] || [];
         _superview = [aCoder decodeObjectForKey:CPViewSuperviewKey];
         
+        // FIXME: Should we encode/decode this?
+        _registeredDraggedTypes = [CPSet set];
+        _registeredDraggedTypesArray = [];
+
         _autoresizingMask = [aCoder decodeIntForKey:CPViewAutoresizingMaskKey] || CPViewNotSizable;
         _autoresizesSubviews = ![aCoder containsValueForKey:CPViewAutoresizesSubviewsKey] || [aCoder decodeBoolForKey:CPViewAutoresizesSubviewsKey];
 
