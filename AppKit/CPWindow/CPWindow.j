@@ -567,7 +567,7 @@ CPTexturedBackgroundWindowMask
 */
 - (CGRect)frame
 {
-    return _frame;
+    return _CGRectMakeCopy(_frame);
 }
 
 /*!
