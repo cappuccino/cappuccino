@@ -71,7 +71,7 @@ var NSBorderlessWindowMask          = 0x00,
                                 (_windowStyleMask & NSResizableWindowMask ? CPResizableWindowMask : 0) |
                                 (_windowStyleMask & NSTexturedBackgroundWindowMask ? NSTexturedBackgroundWindowMask : 0) |
                                 (_windowStyleMask & NSHUDBackgroundWindowMask ? CPHUDBackgroundWindowMask : 0);
-                                
+
         _windowIsFullBridge = [aCoder decodeObjectForKey:"NSFrameAutosaveName"] === "CPBorderlessBridgeWindowMask";
         
         /*if (![_windowClass isEqualToString:@"NSPanel"])

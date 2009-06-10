@@ -52,12 +52,12 @@ var DefaultLineWidth = 1.0;
 
 + (CPBezierPath)bezierPath
 {
-    return [[[self class] alloc] init];
+    return [[self alloc] init];
 }
 
 + (CPBezierPath)bezierPathWithOvalInRect:(CGRect)rect
 {
-    var path = [[self class] bezierPath];
+    var path = [self bezierPath];
     
     [path appendBezierPathWithOvalInRect:rect];
     
@@ -66,7 +66,7 @@ var DefaultLineWidth = 1.0;
 
 + (CPBezierPath)bezierPathWithRect:(CGRect)rect
 {
-    var path = [[self class] bezierPath];
+    var path = [self bezierPath];
     
     [path appendBezierPathWithRect:rect];
     
@@ -83,19 +83,19 @@ var DefaultLineWidth = 1.0;
     DefaultLineWidth = width;
 }
 
-+ (void)fillRect:(CGRect)rect
++ (void)fillRect:(CGRect)aRect
 {
-    [[[self class] bezierPathWithRect:rect] fill];
+    [[self bezierPathWithRect:aRect] fill];
 }
 
-+ (void)strokeRect:(CGRect)rect
++ (void)strokeRect:(CGRect)aRect
 {
-    [[[self class] bezierPathWithRect:rect] stroke];
+    [[self bezierPathWithRect:aRect] stroke];
 }
 
 + (void)strokeLineFromPoint:(CGPoint)point1 toPoint:(CGPoint)point2
 {
-    var path = [[self class] bezierPath];
+    var path = [self bezierPath];
 
     [path moveToPoint:point1];
     [path lineToPoint:point2];
