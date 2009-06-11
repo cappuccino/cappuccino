@@ -516,12 +516,12 @@
 + (CPSlider)themedCircularSlider
 {
     var slider = [[CPSlider alloc] initWithFrame:CGRectMake(0.0, 0.0, 34.0, 34.0)],
-        trackColor = PatternColor([_CPCibCustomResource imageResourceWithName:"circularSliderBezel.png" size:CGSizeMake(34.0, 34.0)]);
+        trackColor = PatternColor([_CPCibCustomResource imageResourceWithName:"slider-circular-bezel.png" size:CGSizeMake(34.0, 34.0)]);
 
     [slider setSliderType:CPCircularSlider];
     [slider setValue:trackColor forThemeAttribute:@"track-color" inState:CPThemeStateCircular];
 
-    var knobColor = [CPColor colorWithPatternImage:[_CPCibCustomResource imageResourceWithName:"circularSliderKnob.png" size:CGSizeMake(5.0, 5.0)]],
+    var knobColor = [CPColor colorWithPatternImage:[_CPCibCustomResource imageResourceWithName:"slider-circular-knob.png" size:CGSizeMake(5.0, 5.0)]],
         knobHighlightedColor = knobColor;
 
     [slider setValue:CGSizeMake(5.0, 5.0) forThemeAttribute:@"knob-size" inState:CPThemeStateCircular];
