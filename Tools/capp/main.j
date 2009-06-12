@@ -24,7 +24,7 @@ function main()
         switch (argument)
         {
             case "version":
-            case "--version":   return print("capp version 0.7.0");
+            case "--version":   return print("capp version 0.7.1");
 
             case "-h":
             case "--help":      return printUsage();

@@ -16,7 +16,7 @@ $ENVIRONMENT_BRIDGE = File.join($ENVIRONMENT_LIB_DIR, 'press', 'bridge.js')
 ObjectiveJ::BundleTask.new(:press) do |t|
     t.name          = 'press'
     t.identifier    = 'com.280n.press'
-    t.version       = '0.7.0'
+    t.version       = '0.7.1'
     t.author        = '280 North, Inc.'
     t.email         = 'feedback @nospam@ 280north.com'
     t.summary       = 'Deployment tool for Cappuccino applications'
