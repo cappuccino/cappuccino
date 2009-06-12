@@ -545,6 +545,8 @@ module ObjectiveJ
                         
                         list.each do |fileName|
                         
+                            fileName = File.expand_path(fileName)
+
                             File.open(fileName) do |file|
                             
                                 if fileName.index(platform_absolute_path) == 0

@@ -70,7 +70,9 @@ var LEFT_SHADOW_INSET       = 3.0,
     
     BOOL            _hasShadow;
     CPView          _shadowView;
-    
+
+    BOOL            _isEditable;
+
     CGRect          _imageRect;
 }
 
@@ -339,11 +341,47 @@ var LEFT_SHADOW_INSET       = 3.0,
     [[self nextResponder] mouseDown:anEvent];
 }
 
+- (void)setEditable:(BOOL)shouldBeEditable
+{
+    if (_isEditable === shouldBeEditable)
+        return _isEditable;
+
+    _isEditable = shouldBeEditable;
+
+    if (_isEditable)
+        [self registerForDraggedTypes:[CPImagesPboardType]];
+
+    else
+    {
+        var draggedTypes = [self registeredDraggedTypes];
+
+        [self unregisterDraggedTypes];
+
+        [draggedTypes removeObjectIdenticalTo:CPImagesPboardType];
+
+        [self registerForDraggedTypes:draggedTypes];
+    }
+}
+
+- (BOOL)isEditable
+{
+    return _isEditable;
+}
+
+- (void)performDragOperation:(CPDraggingInfo)aSender
+{
+    var images = [CPKeyedUnarchiver unarchiveObjectWithData:[[aSender draggingPasteboard] dataForType:CPImagesPboardType]];
+
+    if ([images count])
+        [self setImage:images[0]];
+}
+
 @end
 
 var CPImageViewImageKey         = @"CPImageViewImageKey",
     CPImageViewImageScalingKey  = @"CPImageViewImageScalingKey",
-    CPImageViewHasShadowKey     = @"CPImageViewHasShadowKey";
+    CPImageViewHasShadowKey     = @"CPImageViewHasShadowKey",
+    CPImageViewIsEditableKey    = @"CPImageViewIsEditableKey";
 
 @implementation CPImageView (CPCoding)
 
@@ -372,6 +410,9 @@ var CPImageViewImageKey         = @"CPImageViewImageKey",
 
         [self setHasShadow:[aCoder decodeBoolForKey:CPImageViewHasShadowKey]];
         
+        if ([aCoder decodeBoolForKey:CPImageViewIsEditableKey] || NO)
+            [self setEditable:YES];
+
         [self setNeedsLayout];
         [self setNeedsDisplay:YES];
     }
@@ -402,6 +443,9 @@ var CPImageViewImageKey         = @"CPImageViewImageKey",
         _subviews = actualSubviews;
     
     [aCoder encodeBool:_hasShadow forKey:CPImageViewHasShadowKey];
+
+    if (_isEditable)
+        [aCoder encodeBool:_isEditable forKey:CPImageViewIsEditableKey];
 }
 
 @end
