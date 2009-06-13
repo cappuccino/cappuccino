@@ -253,7 +253,7 @@ var CPWindowSaveImage       = nil,
     CPView                      _contentView;
     CPView                      _toolbarView;
 
-    CPView                      _mouseOverView;
+    CPArray                     _mouseEnteredStack;
     CPView                      _leftMouseDownView;
     CPView                      _rightMouseDownView;
 
@@ -1212,23 +1212,56 @@ CPTexturedBackgroundWindowMask
         
         case CPMouseMoved:          if (!_acceptsMouseMovedEvents)
                                         return;
-                                    
+
+                                    if (!_mouseEnteredStack)
+                                        _mouseEnteredStack = [];
+
                                     var hitTestView = [_windowView hitTest:point];
-        
-                                    if (hitTestView != _mouseOverView)
+
+                                    if ([_mouseEnteredStack count] && [_mouseEnteredStack lastObject] === hitTestView)
+                                        return [hitTestView mouseMoved:anEvent];
+
+                                    var view = hitTestView,
+                                        mouseEnteredStack = [];
+
+                                    while (view)
                                     {
-                                        if (_mouseOverView)
-                                            [_mouseOverView mouseExited:[CPEvent mouseEventWithType:CPMouseExited location:point 
-                                                modifierFlags:[anEvent modifierFlags] timestamp:[anEvent timestamp] windowNumber:_windowNumber context:nil eventNumber:-1 clickCount:1 pressure:0]];
-                                    
-                                        if (hitTestView)
-                                            [hitTestView mouseEntered:[CPEvent mouseEventWithType:CPMouseEntered location:point 
-                                                modifierFlags:[anEvent modifierFlags] timestamp:[anEvent timestamp] windowNumber:_windowNumber context:nil eventNumber:-1 clickCount:1 pressure:0]];
-                            
-                                        _mouseOverView = hitTestView;
+                                        mouseEnteredStack.unshift(view);
+
+                                        view = [view superview];
                                     }
-                                    
-                                    [_mouseOverView mouseMoved:anEvent];
+
+                                    var deviation = MIN(_mouseEnteredStack.length, mouseEnteredStack.length);
+
+                                    while (deviation--)
+                                        if (_mouseEnteredStack[deviation] !== mouseEnteredStack[deviation])
+                                            break;
+
+                                    var index = deviation,
+                                        count = _mouseEnteredStack.length;
+
+                                    if (index < count)
+                                    {
+                                        var event = [CPEvent mouseEventWithType:CPMouseExited location:point modifierFlags:[anEvent modifierFlags] timestamp:[anEvent timestamp] windowNumber:_windowNumber context:nil eventNumber:-1 clickCount:1 pressure:0];
+
+                                        for (; index < count; ++index)
+                                            [_mouseEnteredStack[index] mouseExited:event];
+                                    }
+
+                                    index = deviation;
+                                    count = mouseEnteredStack.length;
+
+                                    if (index < count)
+                                    {
+                                        var event = [CPEvent mouseEventWithType:CPMouseEntered location:point modifierFlags:[anEvent modifierFlags] timestamp:[anEvent timestamp] windowNumber:_windowNumber context:nil eventNumber:-1 clickCount:1 pressure:0];
+
+                                        for (; index < count; ++index)
+                                            [mouseEnteredStack[index] mouseEntered:event];
+                                    }
+
+                                    _mouseEnteredStack = mouseEnteredStack;
+
+                                    [hitTestView mouseMoved:anEvent];
     }
 }
 
