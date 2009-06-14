@@ -14,7 +14,7 @@ task :build => [:Foundation, $ENVIRONMENT_PRODUCT]
 ObjectiveJ::BundleTask.new(:Foundation) do |t|
     t.name          = 'Foundation'
     t.identifier    = 'com.280n.Foundation'
-    t.version       = '0.7.0'
+    t.version       = '0.7.1'
     t.author        = '280 North, Inc.'
     t.email         = 'feedback @nospam@ 280north.com'
     t.summary       = 'Foundation classes for Cappuccino'

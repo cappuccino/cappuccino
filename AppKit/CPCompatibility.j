@@ -106,9 +106,12 @@ else if (USER_AGENT.indexOf("AppleWebKit/") != -1)
     
     var versionStart = USER_AGENT.indexOf("AppleWebKit/") + "AppleWebKit/".length,
         versionEnd = USER_AGENT.indexOf(" ", versionStart),
-        version = parseFloat(USER_AGENT.substring(versionStart, versionEnd), 10);
+        versionString = USER_AGENT.substring(versionStart, versionEnd),
+        versionDivision = versionString.indexOf('.'),
+        majorVersion = parseInt(versionString.substring(0, versionDivision)),
+        minorVersion = parseInt(versionString.substr(versionDivision + 1));
 
-    if(USER_AGENT.indexOf("Plainview") == -1 && version >= 525.14 || USER_AGENT.indexOf("Chrome") != -1)
+    if((USER_AGENT.indexOf("Safari") !== CPNotFound && (majorVersion >= 525 && minorVersion > 14)) || USER_AGENT.indexOf("Chrome") !== CPNotFound)
         PLATFORM_FEATURES |= CPJavascriptRemedialKeySupport;
 }
 
