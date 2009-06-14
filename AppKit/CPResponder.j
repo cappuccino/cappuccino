@@ -96,36 +96,38 @@ CPDownArrowKeyCode  = 40;
 */
 - (void)interpretKeyEvents:(CPArray)events
 {
-    var event,
-        index = 0;
-    
-    while(event = events[index++])
+    var index = 0,
+        count = [events count];
+
+    for (; index < count; ++index)
     {
+        var event = events[index];
+
         switch([event keyCode])
         {
-            case CPLeftArrowKeyCode:    [self moveBackward:self];
+            case CPLeftArrowKeyCode:    [self doCommandBySelector:@selector(moveLeft:)];
                                         break;
-            case CPRightArrowKeyCode:   [self moveForward:self];
+            case CPRightArrowKeyCode:   [self doCommandBySelector:@selector(moveRight:)];
                                         break;
-            case CPUpArrowKeyCode:      [self moveUp:self];
+            case CPUpArrowKeyCode:      [self doCommandBySelector:@selector(moveUp:)];
                                         break;
-            case CPDownArrowKeyCode:    [self moveDown:self];
+            case CPDownArrowKeyCode:    [self doCommandBySelector:@selector(moveDown:)];
                                         break;
-            case CPDeleteKeyCode:       [self deleteBackward:self];
+            case CPDeleteKeyCode:       [self doCommandBySelector:@selector(deleteBackward:)];
                                         break;
             case CPReturnKeyCode:
-            case 3:                     [self insertLineBreak:self];
+            case 3:                     [self doCommandBySelector:@selector(insertLineBreak:)];
                                         break;
             
-            case CPEscapeKeyCode:       [self cancel:self];
+            case CPEscapeKeyCode:       [self doCommandBySelector:@selector(cancel:)];
                                         break;
 
             case CPTabKeyCode:          var shift = [event modifierFlags] & CPShiftKeyMask;
 
                                         if (!shift)
-                                            [self insertTab:self];
+                                            [self doCommandBySelector:@selector(insertTab:)];
                                         else
-                                            [self insertBackTab:self];
+                                            [self doCommandBySelector:@selector(insertBackTab:)];
 
                                         break;
 
@@ -225,14 +227,6 @@ CPDownArrowKeyCode  = 40;
 
 // Action Methods
 /*!
-    Deletes one character backward, or the selection if anything is selected.
-    @param aSender the object requesting this
-*/
-- (void)deleteBackward:(id)aSender
-{
-}
-
-/*!
     Insert a line break at the caret position or selection.
     @param aSender the object requesting this
 */
@@ -278,7 +272,7 @@ CPDownArrowKeyCode  = 40;
 */
 - (void)doCommandBySelector:(SEL)aSelector
 {
-    if([self respondsToSelector:aSelector])
+    if ([self respondsToSelector:aSelector])
         [self performSelector:aSelector];
     else
         [_nextResponder doCommandBySelector:aSelector];
