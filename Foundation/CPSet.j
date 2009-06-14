@@ -380,12 +380,12 @@
     Adds to the receiver each object contained in a given array that is not already a member.
     @param array An array of objects to add to the receiver.
 */
-- (void)addObjectsFromArray:(CPArray)array
+- (void)addObjectsFromArray:(CPArray)objects
 {
-    for (var i = 0, count = array.length; i < count; i++) 
-    {
-        [self addObject:array[i]];
-    }
+    var count = [objects count];
+
+    while (count--)
+        [self addObject:objects[count]];
 }
 
 /*
@@ -399,6 +399,14 @@
         delete _contents[[anObject UID]];
         _count--;
     }
+}
+
+- (void)removeObjectsInArray:(CPArray)objects
+{
+    var count = [objects count];
+
+    while (count--)
+        [self removeObject:objects[count]];
 }
 
 /*
