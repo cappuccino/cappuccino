@@ -670,13 +670,13 @@ CPTexturedBackgroundWindowMask
 {
     if ([_delegate respondsToSelector:@selector(windowWillClose:)])
         [_delegate windowWillClose:self];
-    
+
     [_bridge order:CPWindowOut window:self relativeTo:nil];
-    
+
     if ([CPApp keyWindow] == self)
     {
         [self resignKeyWindow];
-        
+
         CPApp._keyWindow = nil;
     }
 }

@@ -267,13 +267,13 @@ var _CPMenuBarVisible               = NO,
 - (void)insertItem:(CPMenuItem)aMenuItem atIndex:(unsigned)anIndex
 {
     var menu = [aMenuItem menu];
-    
+
     if (menu)
-        if (menu != self)
+        if (menu !== self)
             [CPException raise:CPInternalInconsistencyException reason:@"Attempted to insert item into menu that was already in another menu."];
         else
             return;
-    
+
     [aMenuItem setMenu:self];
     [_items insertObject:aMenuItem atIndex:anIndex];
     
@@ -1735,7 +1735,7 @@ var _CPMenuBarWindowBackgroundColor = nil,
     return frame;
 }
 
-- (CPView)menuItemAtPoint:(CGPoint)aPoint
+- (CPMenuItem)menuItemAtPoint:(CGPoint)aPoint
 {
     var items = [_menu itemArray],
         count = items.length;
