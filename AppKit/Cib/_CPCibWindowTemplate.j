@@ -33,6 +33,25 @@ var _CPCibWindowTemplateMinSizeKey              = @"_CPCibWindowTemplateMinSizeK
     BOOL        _windowIsFullBridge;
 }
 
+- (id)init
+{
+    self = [super init];
+
+    if (self)
+    {
+        _windowClass = @"CPWindow";
+        _windowRect = CGRectMake(0.0, 0.0, 400.0, 200.0);
+        _windowStyleMask = CPTitledWindowMask | CPClosableWindowMask | CPMiniaturizableWindowMask | CPResizableWindowMask;
+
+        _windowTitle = @"Window";
+        _windowView = [[CPView alloc] initWithFrame:CGRectMake(0.0, 0.0, 400.0, 200.0)];
+
+        _windowIsFullBridge = NO;
+    }
+
+    return self;
+}
+
 - (id)initWithCoder:(CPCoder)aCoder
 {
     self = [super init];
