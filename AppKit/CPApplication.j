@@ -28,6 +28,7 @@
 @import "CPResponder.j"
 @import "CPDocumentController.j"
 @import "CPThemeBlend.j"
+@import "CPCibLoading.j"
 
 var CPMainCibFile               = @"CPMainCibFile",
     CPMainCibFileHumanFriendly  = @"Main cib file base name";
