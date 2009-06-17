@@ -14,6 +14,11 @@ var _CPCibCustomObjectClassName = @"_CPCibCustomObjectClassName";
     return _className;
 }
 
+- (void)setCustomClassName:(CPString)aClassName
+{
+    _className = aClassName;
+}
+
 - (CPString)description
 {
     return [super description] + " (" + [self customClassName] + ')';

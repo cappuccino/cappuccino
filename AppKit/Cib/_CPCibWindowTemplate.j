@@ -97,6 +97,17 @@ var _CPCibWindowTemplateMinSizeKey              = @"_CPCibWindowTemplateMinSizeK
     [aCoder encodeObject:_windowIsFullBridge forKey:_CPCibWindowTemplateWindowIsFullBridgeKey];
 }
 
+- (CPString)customClassName
+{
+    return _windowClass;
+}
+
+
+- (void)setCustomClassName:(CPString)aClassName
+{
+    _windowClass = aClassName;
+}
+
 - (CPString)windowClass
 {
     return _windowClass;

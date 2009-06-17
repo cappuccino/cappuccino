@@ -35,6 +35,11 @@
     return _className;
 }
 
+- (void)setCustomClassName:(CPString)aClassName
+{
+    _className = aClassName;
+}
+
 @end
 
 var _CPCibCustomViewClassNameKey    = @"_CPCibCustomViewClassNameKey";
@@ -56,6 +61,11 @@ var _CPCibCustomViewClassNameKey    = @"_CPCibCustomViewClassNameKey";
     [super encodeWithCoder:aCoder];
 
     [aCoder encodeObject:_className forKey:_CPCibCustomViewClassNameKey];
+}
+
+- (CPString)customClassName
+{
+    return _className;
 }
 
 - (id)_cibInstantiate
