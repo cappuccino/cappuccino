@@ -301,7 +301,9 @@ objj_search.prototype.request = function(aFilePath, aMethod)
 
     try
     {
-        request.open("GET", aFilePath.replace(/\+/g, "%2B"), YES);
+        // unclear whether plusses are reserved in the URI path
+        //request.open("GET", aFilePath.replace(/\+/g, "%2B"), YES);
+        request.open("GET", aFilePath, YES);
         request.send("");
     }
     catch (anException)
