@@ -1,14 +1,15 @@
 
-import <Foundation/CPObject.j>
-import <AppKit/CPTableView.j>
+@import <Foundation/CPObject.j>
+@import <AppKit/NEWCPTableColumn.j>
+@import <AppKit/NEWCPTableView.j>
+
 
 CPLogRegister(CPLogConsole);
 
 @implementation AppController : CPObject
 {
-    CPTableView _tableView;
-    CPArray     _data;
-    CPImage     _iconImage;
+    CPTableView tableView;
+    CPImage     iconImage;
 }
 
 - (void)applicationDidFinishLaunching:(CPNotification)aNotification
@@ -18,42 +19,45 @@ CPLogRegister(CPLogConsole);
     [view setBackgroundColor:[CPColor whiteColor]];
     [view enterFullScreenMode:nil withOptions:nil];
     
-    _data = [1, 2];
-    
-    _tableView = [[CPTableView alloc] initWithFrame:[view bounds]];
-    //[_tableView setBackgroundColor:[CPColor blueColor]];
-    
+    tableView = [[NEWCPTableView alloc] initWithFrame:CGRectMake(0.0, 0.0, 500.0, 500.0)];//[view bounds]];
+
+    [tableView setBackgroundColor:[CPColor blueColor]];
+
     var iconView = [[CPImageView alloc] initWithFrame:CGRectMake(16,16,0,0)];
+
     [iconView setImageScaling:CPScaleNone];
 
-    var iconColumn = [[CPTableColumn alloc] initWithIdentifier:"icons"];
-    [iconColumn setWidth:32];
+    var iconColumn = [[NEWCPTableColumn alloc] initWithIdentifier:"icons"];
+
+    [iconColumn setWidth:32.0];
     [iconColumn setDataView:iconView];
-    
-    [_tableView addTableColumn:iconColumn];
+
+    [tableView addTableColumn:iconColumn];
     
     for (var i = 1; i <= 10; i++)
     {
-        var column = [[CPTableColumn alloc] initWithIdentifier:String(i)];
+        var column = [[NEWCPTableColumn alloc] initWithIdentifier:String(i)];
 
-        [[column headerView] setStringValue:"Number"];
-        [[column headerView] sizeToFit];
-        [column setWidth:[[column headerView] frame].size.width];
+//        [[column headerView] setStringValue:"Number"];
+//        [[column headerView] sizeToFit];
+//        [column setWidth:[[column headerView] frame].size.width];
+        
+        [column setWidth:200.0];
 
-        [_tableView addTableColumn:column];
+        [tableView addTableColumn:column];
     }
-    
+
     var scrollView = [[CPScrollView alloc] initWithFrame:[view bounds]];
-    
-    [scrollView setDocumentView:_tableView];
+
+    [scrollView setDocumentView:tableView];
     [scrollView setAutoresizingMask:CPViewWidthSizable | CPViewHeightSizable];
-    
+
     [view addSubview:scrollView];
+
+    [tableView setDelegate:self];
+    [tableView setDataSource:self];
     
-    [_tableView setDelegate:self];
-    [_tableView setDataSource:self];
-    
-    _iconImage = [[CPImage alloc] initWithContentsOfFile:"http://cappuccino.org/images/favicon.png" size:CGSizeMake(16,16)];
+    iconImage = [[CPImage alloc] initWithContentsOfFile:"http://cappuccino.org/images/favicon.png" size:CGSizeMake(16,16)];
 }
 
 - (int)numberOfRowsInTableView:(CPTableView)tableView
@@ -63,8 +67,8 @@ CPLogRegister(CPLogConsole);
 
 - (id)tableView:(CPTableView)tableView objectValueForTableColumn:(CPTableColumn)tableColumn row:(int)row
 {
-    if ([tableColumn identifier] == "icons")
-        return _iconImage
+    if ([tableColumn identifier] === "icons")
+        return iconImage
     else
         return String((row + 1) * [[tableColumn identifier] intValue]);
 }
@@ -90,7 +94,8 @@ CPLogRegister(CPLogConsole);
 	//CPLog.debug(@"shouldSelectRow %d", rowIndex);
 	for (var i = 2, sqrt = SQRT(rowIndex+1); i <= sqrt; i++)
 	    if ((rowIndex+1) % i === 0)
-	        return false
+	        return false;
+
 	return true;
 }
 

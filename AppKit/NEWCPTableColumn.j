@@ -27,6 +27,8 @@ CPTableColumnUserResizingMask   = 2;
 {
     CPTableView         _tableView;
     CPView              _headerView;
+    CPView              _dataView;
+    Object              _dataViewData;
 
     float               _width;
     float               _minWidth;
@@ -45,8 +47,15 @@ CPTableColumnUserResizingMask   = 2;
 
     if (self)
     {
+        _dataViewData = { };
+
+        _width = 100.0;
+        _minWidth = 10.0;
+        _maxWidth = 1000000.0;
+
         [self setIdentifier:anIdentifier];
         [self setHeaderView:[CPTableHeaderView new]];
+        [self setDataView:[CPTextField new]];
     }
 
     return self
@@ -162,7 +171,7 @@ CPTableColumnUserResizingMask   = 2;
 {
     if (!aView)
         [CPException raise:CPInvalidArgumentException reason:@"Attempt to set nil header view on " + [self description]];
-        
+
     _headerView = aView;
 }
 
@@ -190,7 +199,7 @@ CPTableColumnUserResizingMask   = 2;
 
 /*
     Returns the CPView object used by the CPTableView to draw values for the receiver.
-    
+
     By default, this method just calls dataView. Subclassers can override if they need to
     potentially use different cells for different rows. Subclasses should expect this method
     to be invoked with row equal to -1 in cases where no actual row is involved but the table
@@ -204,7 +213,7 @@ CPTableColumnUserResizingMask   = 2;
 - (id)_newDataViewForRow:(int)aRowIndex
 {
     var dataView = [self dataViewForRow:aRowIndex],
-        dataViewUID = [view UID];
+        dataViewUID = [dataView UID];
 
     // if we haven't cached an archive of the data view, do it now
     if (!_dataViewData[dataViewUID])
@@ -213,7 +222,7 @@ CPTableColumnUserResizingMask   = 2;
     // unarchive the data view cache
     var newDataView = [CPKeyedUnarchiver unarchiveObjectWithData:_dataViewData[dataViewUID]];
 
-    return newView;
+    return newDataView;
 }
 
 //Setting the Identifier
@@ -232,7 +241,7 @@ CPTableColumnUserResizingMask   = 2;
 - (id)identifier
 {
     return _identifier;
-}  
+}
 
 //Controlling Editability
 
@@ -252,7 +261,7 @@ CPTableColumnUserResizingMask   = 2;
 {
     return _isEditable;
 }
-  
+
 //Sorting
 - (void)setSortDescriptorPrototype:(CPSortDescriptor)aSortDescriptor
 {
