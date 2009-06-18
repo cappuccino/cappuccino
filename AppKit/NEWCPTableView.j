@@ -1,6 +1,11 @@
-@import <AppKit/CPControl.j>
 
-var CPTableViewDataSource_tableView_setObjectValue_forTableColumn_row_                                  = 1 << 2  
+@import <Foundation/CPArray.j>
+
+@import "CPControl.j"
+@import "CPTableColumn.j"
+
+
+var CPTableViewDataSource_tableView_setObjectValue_forTableColumn_row_                                  = 1 << 2,
 
     CPTableViewDataSource_tableView_acceptDrop_row_dropOperation_                                       = 1 << 3,
     CPTableViewDataSource_tableView_namesOfPromisedFilesDroppedAtDestination_forDraggedRowsWithIndexes_ = 1 << 4,
@@ -8,7 +13,7 @@ var CPTableViewDataSource_tableView_setObjectValue_forTableColumn_row_          
     CPTableViewDataSource_tableView_writeRowsWithIndexes_toPasteboard_                                  = 1 << 6,
 
     CPTableViewDataSource_tableView_sortDescriptorsDidChange_                                           = 1 << 7;
-    
+
 var CPTableViewDelegate_selectionShouldChangeInTableView_                                               = 1 << 0,
     CPTableViewDelegate_tableView_dataViewForTableColumn_row_                                           = 1 << 1,
     CPTableViewDelegate_tableView_didClickTableColumn_                                                  = 1 << 2,
@@ -31,14 +36,19 @@ var CPTableViewDelegate_selectionShouldChangeInTableView_                       
     CPTableViewDelegate_tableViewSelectionIsChanging_                                                   = 1 << 19;
 
 // TODO: add docs
+/*
 CPTableViewSelectionHighlightStyleRegular = 0;
 CPTableViewSelectionHighlightStyleSourceList = 1;
-
+*/
 
 @implementation NEWCPTableView : CPControl
 {
     id          _dataSource;
-    unsigned    _implementedDataSourceMethods;
+    CPInteger   _implementedDataSourceMethods;
+
+    id          _delegate;
+    CPInteger   _implementedDelegateMethods;
+
     CPArray     _tableColumns;
 
     //Configuring Behavior
@@ -59,20 +69,27 @@ CPTableViewSelectionHighlightStyleSourceList = 1;
 
 }
 
-- (void)_init
+- (id)initWithFrame:(CGRect)aFrame
 {
-    //Configuring Behavior
-    _allowsColumnReordering = YES;
-    _allowsColumnResizing = YES;
-    _allowsMultipleSelection = NO;
-    _allowsEmptySelection = YES;
-    _allowsColumnSelection = NO;
-    
-    //Setting Display Attributes
-    _selectionHighlightMask = CPTableViewSelectionHighlightStyleRegular;
+    self = [super initWithFrame:aFrame];
+
+    if (self)
+    {
+        //Configuring Behavior
+        _allowsColumnReordering = YES;
+        _allowsColumnResizing = YES;
+        _allowsMultipleSelection = NO;
+        _allowsEmptySelection = YES;
+        _allowsColumnSelection = NO;
+
+        //Setting Display Attributes
+//        _selectionHighlightMask = CPTableViewSelectionHighlightStyleRegular;
+
+        _tableColumns = [];
+    }
+
+    return self;
 }
-
-
 
 - (void)setDataSource:(id)aDataSource
 {
@@ -87,11 +104,11 @@ CPTableViewSelectionHighlightStyleSourceList = 1;
 
     if (![_dataSource respondsToSelector:@selector(numberOfRowsInTableView:)])
         [CPException raise:CPInternalInconsistencyException
-                reason:[aDataSource description] " does not implement numberOfRowsInTableView:."];
+                reason:[aDataSource description] + " does not implement numberOfRowsInTableView:."];
 
     if (![_dataSource respondsToSelector:@selector(tableView:objectValueForTableColumn:row:)])
         [CPException raise:CPInternalInconsistencyException
-                reason:[aDataSource description] " does not implement tableView:objectValueForTableColumn:row:"];
+                reason:[aDataSource description] + " does not implement tableView:objectValueForTableColumn:row:"];
 
     if ([_dataSource respondsToSelector:@selector(tableView:setObjectValue:forTableColumn:row:)])
         _implementedDataSourceMethods |= CPTableViewDataSource_tableView_setObjectValue_forTableColumn_row_;
@@ -107,6 +124,8 @@ CPTableViewSelectionHighlightStyleSourceList = 1;
 
     if ([_dataSource respondsToSelector:@selector(tableView:writeRowsWithIndexes:toPasteboard:)])
         _implementedDataSourceMethods |= CPTableViewDataSource_tableView_writeRowsWithIndexes_toPasteboard_;
+
+    [self reloadData];
 }
 
 - (id)dataSource
@@ -116,137 +135,113 @@ CPTableViewSelectionHighlightStyleSourceList = 1;
 
 //Loading Data
 
-    * Ð reloadData
+- (void)reloadData
+{
+
+}
 
 //Target-action Behavior
 
-    * Ð setDoubleAction:
-    * Ð doubleAction
-    * Ð clickedColumn
-    * Ð clickedRow
-
-//Configuring Behavior
-
-Ð (void)setAllowsColumnReordering:(BOOL)allowsColumnReordering
+- (void)setDoubleAction:(SEL)anAction
 {
-    _allowsColumnReordering = allowsColumnReordering;
+    _doubleAction = anAction;
 }
 
-Ð (BOOL)allowsColumnReordering
+- (SEL)doubleAction
+{
+    return _doubleAction;
+}
+
+/*
+    * Ð clickedColumn
+    * Ð clickedRow
+*/
+//Configuring Behavior
+
+- (void)setAllowsColumnReordering:(BOOL)shouldAllowColumnReordering
+{
+    _allowsColumnReordering = !!shouldAllowColumnReordering;
+}
+
+- (BOOL)allowsColumnReordering
 {
     return _allowsColumnReordering;
 }
 
-Ð (void)setAllowsColumnResizing:(BOOL)allowsColumnResizing
+- (void)setAllowsColumnResizing:(BOOL)shouldAllowColumnResizing
 {
-    _allowsColumnResizing = allowsColumnResizing;
+    _allowsColumnResizing = !!shouldAllowColumnResizing;
 }
 
-Ð (BOOL)allowsColumnResizing
+- (BOOL)allowsColumnResizing
 {
     return _allowsColumnResizing;
 }
 
-Ð (void)setAllowsMultipleSelection:(BOOL)allowsMultipleSelection
+- (void)setAllowsMultipleSelection:(BOOL)shouldAllowMultipleSelection
 {
-    _allowsMultipleSelection = allowsMultipleSelection;
+    _allowsMultipleSelection = !!shouldAllowMultipleSelection;
 }
 
-
-Ð (BOOL)allowsMultipleSelection
+- (BOOL)allowsMultipleSelection
 {
     return _allowsMultipleSelection;
 }
 
-Ð (void)setAllowsEmptySelection:(BOOL)allowsEmptySelection
+- (void)setAllowsEmptySelection:(BOOL)shouldAllowEmptySelection
 {
-    _allowsEmptySelection = allowsEmptySelection;
+    _allowsEmptySelection = !!shouldAllowEmptySelection;
 }
 
-Ð (BOOL)allowsEmptySelection
+- (BOOL)allowsEmptySelection
 {
     return _allowsEmptySelection;
 }
 
-Ð (void)setAllowsColumnSelection:(BOOL)allowsColumnSelection
+- (void)setAllowsColumnSelection:(BOOL)shouldAllowColumnSelection
 {
-    _allowsColumnSelection = allowsColumnSelection;
+    _allowsColumnSelection = !!shouldAllowColumnSelection;
 }
 
-Ð (BOOL)allowsColumnSelection
+- (BOOL)allowsColumnSelection
 {
-    return allowsColumnSelection;
+    return _allowsColumnSelection;
 }
 
 //Setting Display Attributes
 
-Ð (void)setIntercellSpacing:(CGSize)aSize
+- (void)setIntercellSpacing:(CGSize)aSize
 {
-    if (_intercellSpacing.width != aSize.width)
-    {
-        var i = 1,
-            delta = aSize.width - _intercellSpacing.width;
-            total = delta;
-        
-        for (; i < _tableColumns.length; ++i, total += delta)
-        {
-            var origin = [_tableColumnViews[i] frame].origin;
-            [_tableColumnViews[i] setFrameOrigin:CGPointMake(origin.x + total, origin.y)];
-        }
-    }
-
-    if (_intercellSpacing.height != aSize.height)
-    {
-        var i = 0;
-        
-        for (; i < _tableColumns.length; ++i, total += delta)
-        {
-            [_tableColumnViews[i] setFrameSize:CGSizeMake([_tableColumnViews[i] width], _numberOfRows * (_rowHeight + _intercellSpacing.height))];
-            
-            var j = 1,
-                y = _rowHeight + _intercellSpacing.height;
-            
-            for (; j < _numberOfRows; ++i, y += _rowHeight + _intercellSpacing.height)
-            {
-                if (!_tableCells[i][j])
-                    continue;
-                
-                [_tableCells[i][j] setFrameOrigin:CPPointMake(0.0, y)];
-            }
-        }
-        
-        // FIXME: variable height rows
-    }
-
-    _intercellSpacing = _CGSizeCreateCopy(aSize);
-}
-
-Ð (CPSize)intercellSpacing
-{
-    return _intercellSpacing;
-}
-
-
-Ð (void)setRowHeight:(unsigned)aRowHeight
-{
-    if (_rowHeight == aRowHeight)
+    if (_CGSizeEqualToSize(_intercellSpacing, aSize))
         return;
-    
+
+    _intercellSpacing = _CGSizeMakeCopy(aSize);
+
+    [self setNeedsLayout];
+}
+
+- (CGSize)intercellSpacing
+{
+    return _CGSizeMakeCopy(_intercellSpacing);
+}
+
+- (void)setRowHeight:(unsigned)aRowHeight
+{
+    aRowHeight = +aRowHeight;
+
+    if (_rowHeight === aRowHeight)
+        return;
+
     _rowHeight = aRowHeight;
+
+    [self setNeedsLayout];
 }
 
 - (unsigned)rowHeight
 {
     return _rowHeight;
 }
-
-
-
-// TODO: confirm: comes from superclass CPView
-//Ð setBackgroundColor:
-//Ð backgroundColor
-
-
+/*
 Ð (void)setUsesAlternatingRowBackgroundColors:(BOOL)shouldUseAlternatingRowBackgroundColors
 {
     // TODO:need to look at how one actually sets the alternating row, a tip at: 
@@ -280,18 +275,71 @@ CPTableViewSelectionHighlightStyleSourceList = 1;
     * Ð gridStyleMask
     * Ð indicatorImageInTableColumn:
     * Ð setIndicatorImage:inTableColumn:
-
+*/
 //Column Management
 
-    * Ð addTableColumn:
-    * Ð removeTableColumn:
-    * Ð moveColumn:toColumn:
-    * Ð tableColumns
-    * Ð columnWithIdentifier:
-    * Ð tableColumnWithIdentifier:
+- (void)addTableColumn:(CPTableColumn)aTableColumn
+{
+    [_tableColumns addObject:aTableColumn];
+
+    [self setNeedsLayout];
+}
+
+- (void)removeTableColumn:(CPTableColumn)aTableColumn
+{
+    [_tableColumns removeObjectIdenticalTo:aTableColumn];
+
+    [self setNeedsLayout];
+}
+
+- (void)moveColumn:(unsigned)fromIndex toColumn:(unsigned)toIndex
+{
+    fromIndex = +fromIndex;
+    toIndex = +toIndex;
+
+    if (fromIndex === toIndex)
+        return;
+
+    if (toIndex > fromIndex)
+        --toIndex;
+
+    var tableColumn = _tableColumns[fromIndex];
+
+    [_tableColumns removeObjectAtIndex:fromIndex];
+    [_tableColumns insertObject:tableColumn atIndex:toIndex];
+
+    [self setNeedsLayout];
+}
+
+- (CPArray)tableColumns
+{
+    return _tableColumns;
+}
+
+- (CPInteger)columnWithIdentifier:(CPString)anIdentifier
+{
+    var index = 0,
+        count = _tableColumns.length;
+
+    for (; index < count; ++index)
+        if ([_tableColumns identifier] === anIdentifier)
+            return index;
+
+    return CPNotFound;
+}
+
+- (CPTableColumn)tableColumnWithIdentifier:(CPString)anIdentifier
+{
+    var index = [self columnWithIdentifier:anIdentifier];
+
+    if (index < 0)
+        return nil;
+
+    return _tableColumns[index];
+}
 
 //Selecting Columns and Rows
-
+/*
     * Ð selectColumnIndexes:byExtendingSelection:
     * Ð selectRowIndexes:byExtendingSelection:
     * Ð selectedColumnIndexes
@@ -308,47 +356,58 @@ CPTableViewSelectionHighlightStyleSourceList = 1;
     * Ð deselectAll:
     * Ð allowsTypeSelect
     * Ð setAllowsTypeSelect:
-
+*/
 //Table Dimensions
 
-Ð (int)numberOfColumns
+- (int)numberOfColumns
 {
-    return _numberOfColumns;
+    return _tableColumns.length;
 }
 
 /*
     Returns the number of rows in the receiver.
 */
-Ð (int)numberOfRows
+- (int)numberOfRows
 {
-    return _numberOfRows;
+    if (!_dataSource)
+        return 0;
+
+    return [_dataSource numberOfRowsInTableView:self];
 }
 
 //Displaying Cell
-
-    * Ð tableView:willDisplayCell:forTableColumn:row:  delegate method
+/*
     * Ð preparedCellAtColumn:row:
-    * Ð tableView:dataCellForTableColumn:row:  delegate method
-    * Ð tableView:shouldShowCellExpansionForTableColumn:row:  delegate method
-    * Ð tableView:isGroupRow:  delegate method
-
+*/
 //Editing Cells
-
+/*
     * Ð editColumn:row:withEvent:select:
     * Ð editedColumn
     * Ð editedRow
-    * Ð tableView:shouldEditTableColumn:row:  delegate method
-
+*/
 //Setting Auxiliary Views
-
+/*
     * Ð setHeaderView:
     * Ð headerView
     * Ð setCornerView:
     * Ð cornerView
-
+*/
 //Layout Support
+/*
+- (void)_recalculateTableColumnRects
+{
+    for ()
+        _tabelColumnWidths[index] = CGRectMake();
+}
 
-    * Ð rectOfColumn:
+- (CGRect)rectOfColumn:(CPInteger)aColumnIndex
+{
+    if (?)
+        [self _recalculateTableColumnRects];
+
+    return CGRectMake(_tableColumnWidth[aColumnIndex];
+}
+
     * Ð rectOfRow:
     * Ð rowsInRect:
     * Ð columnIndexesInRect:
@@ -364,40 +423,28 @@ CPTableViewSelectionHighlightStyleSourceList = 1;
     * Ð noteHeightOfRowsWithIndexesChanged:
     * Ð tableView:heightOfRow:  delegate method
     * Ð columnsInRect: Deprecated in Mac OS X v10.5 
-
+*/
 //Drawing
-
+/*
     * Ð drawRow:clipRect:
     * Ð drawGridInClipRect:
     * Ð highlightSelectionInClipRect:
     * Ð drawBackgroundInClipRect:
-
+*/
 //Scrolling
-
+/*
     * Ð scrollRowToVisible:
     * Ð scrollColumnToVisible:
-
+*/
 //Persistence
-
+/*
     * Ð autosaveName
     * Ð autosaveTableColumns
     * Ð setAutosaveName:
     * Ð setAutosaveTableColumns:
-
-//Selecting in the Tableview
-
-    * Ð selectionShouldChangeInTableView:  delegate method
-    * Ð tableView:shouldSelectRow:  delegate method
-    * Ð tableView:selectionIndexesForProposedSelection:  delegate method
-    * Ð tableView:shouldSelectTableColumn:  delegate method
-    * Ð tableViewSelectionIsChanging:  delegate method
-    * Ð tableViewSelectionDidChange:  delegate method
-    * Ð tableView:shouldTypeSelectForEvent:withCurrentSearchString:  delegate method
-    * Ð tableView:typeSelectStringForTableColumn:row:  delegate method
-    * Ð tableView:nextTypeSelectMatchFromRow:toRow:forString:  delegate method
+*/
 
 //Setting the Delegate:(id)aDelegate
-
 
 - (void)setDelegate:(id)aDelegate
 {
@@ -438,7 +485,7 @@ CPTableViewSelectionHighlightStyleSourceList = 1;
 
     if ([_delegate respondsToSelector:@selector(selectionShouldChangeInTableView:)])
         _implementedDelegateMethods |= CPTableViewDelegate_selectionShouldChangeInTableView_;
-    
+
     if ([_delegate respondsToSelector:@selector(tableView:dataViewForTableColumn:row:)])
         _implementedDelegateMethods |= CPTableViewDelegate_tableView_dataViewForTableColumn_row_;
 
@@ -457,7 +504,7 @@ CPTableViewSelectionHighlightStyleSourceList = 1;
     if ([_delegate respondsToSelector:@selector(tableView:mouseDownInHeaderOfTableColumn:)])
         _implementedDelegateMethods |= CPTableViewDelegate_tableView_mouseDownInHeaderOfTableColumn_;
 
-    if ([_delegate respondsToSelector:@selector(tableView:nextTypeSelectMatchFromRow:toRow:forString:)
+    if ([_delegate respondsToSelector:@selector(tableView:nextTypeSelectMatchFromRow:toRow:forString:)])
         _implementedDelegateMethods |= CPTableViewDelegate_tableView_nextTypeSelectMatchFromRow_toRow_forString_;
 
     if ([_delegate respondsToSelector:@selector(tableView:selectionIndexesForProposedSelection:)])
@@ -503,7 +550,7 @@ CPTableViewSelectionHighlightStyleSourceList = 1;
             selector:@selector(tableViewColumnDidMove:)
             name:CPTableViewColumnDidResizeNotification
             object:self];
-            
+
     if ([_delegate respondsToSelector:@selector(tableViewSelectionDidChange:)])
         [defaultCenter
             addObserver:_delegate
@@ -525,53 +572,41 @@ CPTableViewSelectionHighlightStyleSourceList = 1;
 }
 
 //Highlightable Column Headers
-
+/*
 Ð (CPTableColumn)highlightedTableColumn
 {
     
 }
 
     * Ð setHighlightedTableColumn:
-
+*/
 //Dragging
-
+/*
     * Ð dragImageForRowsWithIndexes:tableColumns:event:offset:
     * Ð canDragRowsWithIndexes:atPoint:
     * Ð setDraggingSourceOperationMask:forLocal:
     * Ð setDropRow:dropOperation:
     * Ð setVerticalMotionCanBeginDrag:
     * Ð verticalMotionCanBeginDrag
-
+*/
 //Sorting
-
+/*
     * Ð setSortDescriptors:
     * Ð sortDescriptors
-
-//Moving and Resizing Columns
-
-    * Ð tableView:didDragTableColumn:  delegate method
-    * Ð tableViewColumnDidMove:  delegate method
-    * Ð tableViewColumnDidResize:  delegate method
-
-//Responding to Mouse Events
-
-    * Ð tableView:didClickTableColumn:  delegate method
-    * Ð tableView:mouseDownInHeaderOfTableColumn:  delegate method
-    * Ð tableView:shouldTrackCell:forTableColumn:row:  delegate method
+*/
 
 //Text Delegate Methods
-
+/*
     * Ð textShouldBeginEditing:
     * Ð textDidBeginEditing:
     * Ð textDidChange:
     * Ð textShouldEndEditing:
     * Ð textDidEndEditing:
+*/
 
-//Displaying Tooltips
+- (void)layoutSubviews
+{
 
-    * Ð tableView:toolTipForCell:rect:tableColumn:row:mouseLocation:  delegate method
-
-
-
+}
 
 @end

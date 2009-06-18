@@ -6,6 +6,7 @@
 
 @import "CPTableHeaderView.j"
 
+
 /*
     @global
     @class CPTableColumn
@@ -22,12 +23,11 @@ CPTableColumnAutoresizingMask   = 1;
 */
 CPTableColumnUserResizingMask   = 2;
 
-
 @implementation NEWCPTableColumn : CPObject
 {
     CPTableView         _tableView;
     CPView              _headerView;
-    
+
     float               _width;
     float               _minWidth;
     float               _maxWidth;
@@ -92,7 +92,7 @@ CPTableColumnUserResizingMask   = 2;
     return _width;
 }
 
-– (void)setMinWidth:(float)aMinWidth
+- (void)setMinWidth:(float)aMinWidth
 {
     aMinWidth = +aMinWidth;
 
@@ -103,7 +103,7 @@ CPTableColumnUserResizingMask   = 2;
 
     var width = [self width],
         newWidth = MAX(width, [self minWidth]);
-    
+
     if (width !== newWidth)
         [self setWidth:newWidth];
 }
@@ -113,7 +113,7 @@ CPTableColumnUserResizingMask   = 2;
     return _minWidth;
 }
 
-– (void)setMaxWidth:(float)aMaxWidth
+- (void)setMaxWidth:(float)aMaxWidth
 {
     aMaxWidth = +aMaxWidth;
 
@@ -124,7 +124,7 @@ CPTableColumnUserResizingMask   = 2;
 
     var width = [self width],
         newWidth = MAX(width, [self maxWidth]);
-    
+
     if (width !== newWidth)
         [self setWidth:newWidth];
 }
@@ -134,7 +134,7 @@ CPTableColumnUserResizingMask   = 2;
     return _maxWidth;
 }
 
-– (void)setResizingMask:(unsigned)aResizingMask
+- (void)setResizingMask:(unsigned)aResizingMask
 {
     _resizingMask = aResizingMask;
 }
@@ -160,7 +160,7 @@ CPTableColumnUserResizingMask   = 2;
 //Setting Component Cells
 - (void)setHeaderView:(CPView)aView
 {
-    if (!_headerView)
+    if (!aView)
         [CPException raise:CPInvalidArgumentException reason:@"Attempt to set nil header view on " + [self description]];
         
     _headerView = aView;
@@ -193,10 +193,10 @@ CPTableColumnUserResizingMask   = 2;
     
     By default, this method just calls dataView. Subclassers can override if they need to
     potentially use different cells for different rows. Subclasses should expect this method
-    to be invoked with row equal to –1 in cases where no actual row is involved but the table
+    to be invoked with row equal to -1 in cases where no actual row is involved but the table
     view needs to get some generic cell info.
 */
-– (id)dataViewForRow:(int)aRowIndex
+- (id)dataViewForRow:(int)aRowIndex
 {
     return [self dataView];
 }
@@ -221,7 +221,7 @@ CPTableColumnUserResizingMask   = 2;
 /*
     Sets the receiver’s identifier to anIdentifier.
 */
-– (void)setIdentifier:(id)anIdentifier
+- (void)setIdentifier:(id)anIdentifier
 {
     _identifier = anIdentifier;
 }
@@ -229,18 +229,17 @@ CPTableColumnUserResizingMask   = 2;
 /*
     Returns the object used by the data source to identify the attribute corresponding to the receiver.
 */
-– (id)identifier
+- (id)identifier
 {
     return _identifier;
 }  
-
 
 //Controlling Editability
 
 /*
     Controls whether the user can edit cells in the receiver by double-clicking them.
 */
-– (void)setEditable:(BOOL)shouldBeEditable
+- (void)setEditable:(BOOL)shouldBeEditable
 {
     _isEditable = shouldBeEditable;
 }
@@ -249,11 +248,10 @@ CPTableColumnUserResizingMask   = 2;
     Returns YES if the user can edit cells associated with the receiver by double-clicking the 
     column in the NSTableView, NO otherwise.
 */
-– (BOOL)isEditable
+- (BOOL)isEditable
 {
     return _isEditable;
 }
-
   
 //Sorting
 - (void)setSortDescriptorPrototype:(CPSortDescriptor)aSortDescriptor
@@ -267,17 +265,16 @@ CPTableColumnUserResizingMask   = 2;
 }
 
 //Setting Column Visibility
-– (BOOL)isHidden
-{
-    return _isHidden;
-}
 
-
-– (void)setHidden:(BOOL)shouldBeHidden:
+- (void)setHidden:(BOOL)shouldBeHidden
 {
     _isHidden = shouldBeHidden;
 }
 
+- (BOOL)isHidden
+{
+    return _isHidden;
+}
 
 //Setting Tool Tips
 
@@ -285,51 +282,48 @@ CPTableColumnUserResizingMask   = 2;
     Sets the tooltip string that is displayed when the cursor pauses over the 
     header cell of the receiver.
 */
-
-– (void)setHeaderToolTip:(CPString)aToolTip  
+- (void)setHeaderToolTip:(CPString)aToolTip
 {
     _headerToolTip = aToolTip;
 }
 
-
-– (CPString)headerToolTip
+- (CPString)headerToolTip
 {
     return _headerToolTip;
 }
 
 @end
 
-
 @implementation NEWCPTableColumn (NSInCompatibility)
 
 - (void)setHeaderCell:(CPView)aView
 {
     [CPException raise:CPUnsupportedMethodException
-                reason:"Not supported. -setHeaderCell:aView instead."];
+                reason:@"setHeaderCell: is not supported. -setHeaderCell:aView instead."];
 }
 
 - (CPView)headerCell
 {
     [CPException raise:CPUnsupportedMethodException
-                reason:"Not supported. -headerView instead."];
+                reason:@"headCell is not supported. -headerView instead."];
 }
 
 - (void)setDataCell:(CPView)aView
 {
     [CPException raise:CPUnsupportedMethodException
-                reason:"Not supported. Use -setHeaderCell:aView instead."];
+                reason:@"setDataCell: is not supported. Use -setHeaderCell:aView instead."];
 }
 
 - (CPView)dataCell
 {
     [CPException raise:CPUnsupportedMethodException
-                reason:"Not supported. Use -dataCell instead."];
+                reason:@"dataCell is not supported. Use -dataCell instead."];
 }
 
 - (id)dataCellForRow:(int)row
 {
     [CPException raise:CPUnsupportedMethodException
-                reason:"Not supported. Use -dataViewForRow:row instead."];
+                reason:@"dataCellForRow: is not supported. Use -dataViewForRow:row instead."];
 }
 
 @end
