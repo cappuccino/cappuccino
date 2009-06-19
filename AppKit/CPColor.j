@@ -46,6 +46,11 @@ var cachedBlackColor,
     cachedLightGrayColor,
     cachedDarkGrayColor,
     cachedWhiteColor,
+    cachedBrownColor,
+    cachedCyanColor,
+    cachedMagentaColor,
+    cachedOrangeColor,
+    cachedPurpleColor,
     cachedShadowColor,
     cachedClearColor;
 
@@ -289,6 +294,61 @@ var cachedBlackColor,
         cachedYellowColor = [[CPColor alloc] _initWithRGBA:[1.0, 1.0, 0.0, 1.0]];
 
     return cachedYellowColor;
+}
+
+/*!
+    Returns a brown color object (RGBA=[0.6, 0.4, 0.2, 1.0])
+*/
++ (CPColor)brownColor
+{
+    if (!cachedBrownColor)
+        cachedBrownColor = [[CPColor alloc] _initWithRGBA:[0.6, 0.4, 0.2, 1.0]];
+
+    return cachedBrownColor;
+}
+
+/*!
+    Returns a cyan color object (RGBA=[0.0, 1.0, 1.0, 1.0])
+*/
++ (CPColor)cyanColor
+{
+    if (!cachedCyanColor)
+        cachedCyanColor = [[CPColor alloc] _initWithRGBA:[0.0, 1.0, 1.0, 1.0]];
+
+    return cachedCyanColor;
+}
+
+/*!
+    Returns a magenta color object (RGBA=[1.0, 0.0, 1.0, 1.0])
+*/
++ (CPColor)magentaColor
+{
+    if (!cachedMagentaColor)
+        cachedMagentaColor = [[CPColor alloc] _initWithRGBA:[1.0, 0.0, 1.0, 1.0]];
+
+    return cachedMagentaColor;
+}
+
+/*!
+    Returns a orange color object (RGBA=[1.0, 0.5, 0.0, 1.0])
+*/
++ (CPColor)orangeColor
+{
+    if (!cachedOrangeColor)
+        cachedOrangeColor = [[CPColor alloc] _initWithRGBA:[1.0, 0.5, 0.0, 1.0]];
+
+    return cachedOrangeColor;
+}
+
+/*!
+    Returns a purple color object (RGBA=[0.5, 0.0, 0.5, 1.0])
+*/
++ (CPColor)purpleColor
+{
+    if (!cachedPurpleColor)
+        cachedPurpleColor = [[CPColor alloc] _initWithRGBA:[0.5, 0.0, 0.5, 1.0]];
+
+    return cachedPurpleColor;
 }
 
 /*!
