@@ -43,6 +43,8 @@ CPTableViewSelectionHighlightStyleRegular = 0;
 CPTableViewSelectionHighlightStyleSourceList = 1;
 */
 
+#define NUMBER_OF_COLUMNS() (_tableColumns.length)
+
 @implementation NEWCPTableView : CPControl
 {
     id          _dataSource;
@@ -54,6 +56,7 @@ CPTableViewSelectionHighlightStyleSourceList = 1;
     CPArray     _tableColumns;
     CPArray     _tableColumnRanges;
     CPInteger   _dirtyTableColumnRangeIndex;
+    CPInteger   _numberOfHiddenColumns;
 
     Object      _objectValues;
 
@@ -86,12 +89,15 @@ CPTableViewSelectionHighlightStyleSourceList = 1;
         _allowsEmptySelection = YES;
         _allowsColumnSelection = NO;
 
+        _tableViewFlags = 0;
+
         //Setting Display Attributes
 //        _selectionHighlightMask = CPTableViewSelectionHighlightStyleRegular;
 
         _tableColumns = [];
         _tableColumnRanges = [];
         _dirtyTableColumnRangeIndex = CPNotFound;
+        _numberOfHiddenColumns = 0;
 
         _objectValues = { };
         _numberOfRows = 0;
@@ -152,9 +158,9 @@ CPTableViewSelectionHighlightStyleSourceList = 1;
     if (!_dataSource)
         return;
 
-    _numberOfRows = [_dataSource numberOfRowsInTableView:self];
     _objectValues = { };
-
+    [self noteNumberOfRowsChanged];
+[self _sizeToParent];
     [self layoutSubviews];
 }
 
@@ -305,9 +311,9 @@ CPTableViewSelectionHighlightStyleSourceList = 1;
     [_tableColumns addObject:aTableColumn];
 
     if (_dirtyTableColumnRangeIndex < 0)
-        _dirtyTableColumnRangeIndex = _tableColumns.length - 1;
+        _dirtyTableColumnRangeIndex = NUMBER_OF_COLUMNS() - 1;
     else
-        _dirtyTableColumnRangeIndex = MIN(_tableColumns.length - 1, _dirtyTableColumnRangeIndex);
+        _dirtyTableColumnRangeIndex = MIN(NUMBER_OF_COLUMNS() - 1, _dirtyTableColumnRangeIndex);
 
     [self setNeedsLayout];
 }
@@ -363,7 +369,7 @@ CPTableViewSelectionHighlightStyleSourceList = 1;
 - (CPInteger)columnWithIdentifier:(CPString)anIdentifier
 {
     var index = 0,
-        count = _tableColumns.length;
+        count = NUMBER_OF_COLUMNS();
 
     for (; index < count; ++index)
         if ([_tableColumns identifier] === anIdentifier)
@@ -405,7 +411,7 @@ CPTableViewSelectionHighlightStyleSourceList = 1;
 
 - (int)numberOfColumns
 {
-    return _tableColumns.length;
+    return NUMBER_OF_COLUMNS();
 }
 
 /*
@@ -438,13 +444,15 @@ CPTableViewSelectionHighlightStyleSourceList = 1;
 */
 //Layout Support
 
+// Complexity:
+// O(Columns)
 - (void)_recalculateTableColumnRanges
 {
     if (_dirtyTableColumnRangeIndex < 0)
         return;
 
     var index = _dirtyTableColumnRangeIndex,
-        count = _tableColumns.length,
+        count = NUMBER_OF_COLUMNS(),
         x = index === 0 ? 0.0 : CPMaxRange(_tableColumnRanges[index - 1]);
 
     for (; index < count; ++index)
@@ -468,11 +476,13 @@ CPTableViewSelectionHighlightStyleSourceList = 1;
     _dirtyTableColumnRangeIndex = CPNotFound;
 }
 
+// Complexity:
+// O(1)
 - (CGRect)rectOfColumn:(CPInteger)aColumnIndex
 {
     aColumnIndex = +aColumnIndex;
 
-    if (aColumnIndex < 0 || aColumnIndex >= _tableColumns.length)
+    if (aColumnIndex < 0 || aColumnIndex >= NUMBER_OF_COLUMNS())
         return _CGRectMakeZero();
 
     if (_dirtyTableColumnRangeIndex !== CPNotFound)
@@ -488,23 +498,59 @@ CPTableViewSelectionHighlightStyleSourceList = 1;
     if (NO)
         return NULL;
 
+    // FIXME: WRONG: ASK TABLE COLUMN RANGE
     return _CGRectMake(0.0, (aRowIndex * (_rowHeight + _intercellSpacing.height)), _CGRectGetWidth([self bounds]), _rowHeight);
 }
 
+// Complexity:
+// O(1)
 - (CPRange)rowsInRect:(CGRect)aRect
 {
-    return CPMakeRange( MAX(0, [self rowAtPoint:aRect.origin]),
-                        MIN(_numberOfRows, [self rowAtPoint:_CGPointMake(_CGRectGetMaxX(aRect), _CGRectGetMaxY(aRect))]));
+    var bounds = nil,
+        firstRow = [self rowAtPoint:aRect.origin],
+        lastRow = [self rowAtPoint:_CGPointMake(0.0, _CGRectGetMaxY(aRect))];
+
+    if (firstRow < 0)
+    {
+        bounds = [self bounds];
+
+        if (_CGRectGetMinY(aRect) < _CGRectGetMinY(bounds))
+            firstRow = 0;
+        else
+            firstRow = _numberOfRows - 1;
+    }
+
+    if (lastRow < 0)
+    {
+        if (!bounds)
+            bounds = [self bounds];
+
+        if (_CGRectGetMaxY(aRect) < _CGRectGetMinY(bounds))
+            lastRow = 0;
+        else
+            lastRow = _numberOfRows - 1;
+    }
+
+    return CPMakeRange(firstRow, lastRow - firstRow + 1);
 }
 
+// Complexity:
+// O(lg Columns) if table view contains no hidden columns
+// O(Columns) if table view contains hidden columns
 - (CPIndexSet)columnIndexesInRect:(CGRect)aRect
 {
-    var indexSet = [CPIndexSet indexSet],
-        column = MAX(0, [self columnAtPoint:_CGPointMake(aRect.origin.x, 0.0)]),
+    var column = MAX(0, [self columnAtPoint:_CGPointMake(aRect.origin.x, 0.0)]),
         lastColumn = [self columnAtPoint:_CGPointMake(_CGRectGetMaxX(aRect), 0.0)];
 
     if (lastColumn === CPNotFound)
-        lastColumn = [self numberOfColumns] - 1;
+        lastColumn = NUMBER_OF_COLUMNS() - 1;
+
+    // Don't bother doing the expensive removal of hidden indexes if we have no hidden columns.
+    if (_numberOfHiddenColumns < 0)
+        return [CPIndexSet indexSetWithIndexesInRange:CPMakeRange(column, lastColumn - column)];
+
+    // 
+    var indexSet = [CPIndexSet indexSet];
 
     for (; column <= lastColumn; ++column)
     {
@@ -517,6 +563,9 @@ CPTableViewSelectionHighlightStyleSourceList = 1;
     return indexSet;
 }
 
+// Complexity:
+// O(lg Columns) if table view contains now hidden columns
+// O(Columns) if table view contains hidden columns
 - (CPInteger)columnAtPoint:(CGPoint)aPoint
 {
     if (!CGRectContainsPoint([self bounds], aPoint))
@@ -572,8 +621,41 @@ CPTableViewSelectionHighlightStyleSourceList = 1;
     * Ð frameOfCellAtColumn:row:
     * Ð columnAutoresizingStyle
     * Ð setColumnAutoresizingStyle:
-    * Ð sizeLastColumnToFit
-    * Ð noteNumberOfRowsChanged
+*/
+- (void)sizeLastColumnToFit
+{
+    var superview = [self superview];
+
+    if (!superview)
+        return;
+
+    var superviewSize = [superview bounds].size;
+
+    if (_dirtyTableColumnRangeIndex !== CPNotFound)
+        [self _recalculateTableColumnRanges];
+
+    var count = NUMBER_OF_COLUMNS();
+
+    while (count-- && [_tableColumns[count] isHidden]) ;
+
+    if (count >= 0)
+    {
+        var difference = superviewSize.width - CPMaxRange(_tableColumnRanges[count]),
+            tableColumn = _tableColumns[count];
+
+        [tableColumn setWidth:MAX(0.0, [tableColumn width] + difference)];
+    }
+
+    [self setNeedsLayout];
+}
+
+- (void)noteNumberOfRowsChanged
+{
+    _numberOfRows = [_dataSource numberOfRowsInTableView:self];
+
+    [self setNeedsLayout];
+}
+/*
     * Ð tile
     * Ð sizeToFit
     * Ð noteHeightOfRowsWithIndexesChanged:
@@ -590,6 +672,23 @@ CPTableViewSelectionHighlightStyleSourceList = 1;
     * Ð setAutosaveName:
     * Ð setAutosaveTableColumns:
 */
+
+- (void)_sizeToParent
+{
+    var superviewSize = [[self superview] bounds].size;
+
+    if (_dirtyTableColumnRangeIndex !== CPNotFound)
+        [self _recalculateTableColumnRanges];
+
+    if (_tableColumnRanges.length > 0)
+        var naturalWidth = CPMaxRange([_tableColumnRanges lastObject]);
+
+    else
+        var naturalWidth = 0.0;
+
+    [self setFrameSize:_CGSizeMake( MAX(superviewSize.width, naturalWidth),
+                                    MAX(superviewSize.height, (_rowHeight + _intercellSpacing.height) * _numberOfRows))];
+}
 
 //Setting the Delegate:(id)aDelegate
 
@@ -777,14 +876,14 @@ CPTableViewSelectionHighlightStyleSourceList = 1;
 {
     var superview = [self superview];
 
-    if (!superview)
+    if (![superview isKindOfClass:[CPClipView class]])
         return [self bounds];
 
     return [self convertRect:CGRectIntersection([superview bounds], [self frame]) fromView:superview];
 }
 
 - (void)load
-{console.log("logging.");
+{//console.log("logging.");
     if (!_dataSource)
     {
         // remove?
@@ -830,6 +929,52 @@ CPTableViewSelectionHighlightStyleSourceList = 1;
 - (void)layoutSubviews
 {
     [self load];
+}
+
+- (void)viewWillMoveToSuperview:(CPView)aView
+{
+    var superview = [self superview],
+        defaultCenter = [CPNotificationCenter defaultCenter];
+
+    if (superview)
+    {
+        [defaultCenter
+            removeObserver:self
+                      name:CPViewFrameDidChangeNotification
+                    object:superview];
+
+        [defaultCenter
+            removeObserver:self
+                      name:CPViewBoundsDidChangeNotification
+                    object:superview];
+    }
+
+    if (aView)
+    {
+        [aView setPostsFrameChangedNotifications:YES];
+        [aView setPostsBoundsChangedNotifications:YES];
+
+        [defaultCenter
+            addObserver:self
+               selector:@selector(superviewFrameChanged:)
+                   name:CPViewFrameDidChangeNotification
+                 object:aView];
+
+        [defaultCenter
+            addObserver:self
+               selector:@selector(superviewBoundsChanged:)
+                   name:CPViewBoundsDidChangeNotification
+                 object:aView];
+    }
+}
+
+- (void)superviewBoundsChanged:(CPNotification)aNotification
+{
+    [self setNeedsLayout];
+}
+
+- (void)superviewFrameChanged:(CPNotification)aNotification
+{
 }
 
 @end

@@ -1,5 +1,7 @@
 
 @import <Foundation/CPObject.j>
+
+@import <Foundation/CPIndexSet.j>
 @import <AppKit/NEWCPTableColumn.j>
 @import <AppKit/NEWCPTableView.j>
 
@@ -62,7 +64,7 @@ CPLogRegister(CPLogConsole);
 
 - (int)numberOfRowsInTableView:(CPTableView)tableView
 {
-    return 7000000;
+    return 700000;
 }
 
 - (id)tableView:(CPTableView)tableView objectValueForTableColumn:(CPTableColumn)tableColumn row:(int)row
