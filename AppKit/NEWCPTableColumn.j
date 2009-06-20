@@ -228,7 +228,7 @@ CPTableColumnUserResizingMask   = 2;
 //Setting the Identifier
 
 /*
-    Sets the receiver’s identifier to anIdentifier.
+    Sets the receiver√ïs identifier to anIdentifier.
 */
 - (void)setIdentifier:(id)anIdentifier
 {

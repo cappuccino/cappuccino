@@ -177,8 +177,8 @@ CPTableViewSelectionHighlightStyleSourceList = 1;
 }
 
 /*
-    * Ð clickedColumn
-    * Ð clickedRow
+    * - clickedColumn
+    * - clickedRow
 */
 //Configuring Behavior
 
@@ -270,7 +270,7 @@ CPTableViewSelectionHighlightStyleSourceList = 1;
     return _rowHeight;
 }
 /*
-Ð (void)setUsesAlternatingRowBackgroundColors:(BOOL)shouldUseAlternatingRowBackgroundColors
+- (void)setUsesAlternatingRowBackgroundColors:(BOOL)shouldUseAlternatingRowBackgroundColors
 {
     // TODO:need to look at how one actually sets the alternating row, a tip at: 
     // http://forums.macnn.com/79/developer-center/228347/nstableview-alternating-row-colors/
@@ -280,29 +280,29 @@ CPTableViewSelectionHighlightStyleSourceList = 1;
     _usesAlternatingRowBackgroundColors = shouldUseAlternatingRowBackgroundColors;
 }
 
-Ð (BOOL)usesAlternatingRowBackgroundColors
+- (BOOL)usesAlternatingRowBackgroundColors
 {
     return _usesAlternatingRowBackgroundColors;
 }
 
-Ð (unsigned)selectionHighlightStyle
+- (unsigned)selectionHighlightStyle
 {
     return _selectionHighlightMask;
 }
 
-Ð (void)setSelectionHighlightStyle:(unsigned)aSelectionHighlightStyle
+- (void)setSelectionHighlightStyle:(unsigned)aSelectionHighlightStyle
 {
     _selectionHighlightMask = aSelectionHighlightStyle;
 }
 
-Ð setGridColor:
+- setGridColor:
 
 
-    * Ð gridColor
-    * Ð setGridStyleMask:
-    * Ð gridStyleMask
-    * Ð indicatorImageInTableColumn:
-    * Ð setIndicatorImage:inTableColumn:
+    * - gridColor
+    * - setGridStyleMask:
+    * - gridStyleMask
+    * - indicatorImageInTableColumn:
+    * - setIndicatorImage:inTableColumn:
 */
 //Column Management
 
@@ -390,22 +390,22 @@ CPTableViewSelectionHighlightStyleSourceList = 1;
 
 //Selecting Columns and Rows
 /*
-    * Ð selectColumnIndexes:byExtendingSelection:
-    * Ð selectRowIndexes:byExtendingSelection:
-    * Ð selectedColumnIndexes
-    * Ð selectedRowIndexes
-    * Ð deselectColumn:
-    * Ð deselectRow:
-    * Ð numberOfSelectedColumns
-    * Ð numberOfSelectedRows
-    * Ð selectedColumn
-    * Ð selectedRow
-    * Ð isColumnSelected:
-    * Ð isRowSelected:
-    * Ð selectAll:
-    * Ð deselectAll:
-    * Ð allowsTypeSelect
-    * Ð setAllowsTypeSelect:
+    * - selectColumnIndexes:byExtendingSelection:
+    * - selectRowIndexes:byExtendingSelection:
+    * - selectedColumnIndexes
+    * - selectedRowIndexes
+    * - deselectColumn:
+    * - deselectRow:
+    * - numberOfSelectedColumns
+    * - numberOfSelectedRows
+    * - selectedColumn
+    * - selectedRow
+    * - isColumnSelected:
+    * - isRowSelected:
+    * - selectAll:
+    * - deselectAll:
+    * - allowsTypeSelect
+    * - setAllowsTypeSelect:
 */
 //Table Dimensions
 
@@ -427,20 +427,20 @@ CPTableViewSelectionHighlightStyleSourceList = 1;
 
 //Displaying Cell
 /*
-    * Ð preparedCellAtColumn:row:
+    * - preparedCellAtColumn:row:
 */
 //Editing Cells
 /*
-    * Ð editColumn:row:withEvent:select:
-    * Ð editedColumn
-    * Ð editedRow
+    * - editColumn:row:withEvent:select:
+    * - editedColumn
+    * - editedRow
 */
 //Setting Auxiliary Views
 /*
-    * Ð setHeaderView:
-    * Ð headerView
-    * Ð setCornerView:
-    * Ð cornerView
+    * - setHeaderView:
+    * - headerView
+    * - setCornerView:
+    * - cornerView
 */
 //Layout Support
 
@@ -618,9 +618,9 @@ CPTableViewSelectionHighlightStyleSourceList = 1;
 }
 
 /*
-    * Ð frameOfCellAtColumn:row:
-    * Ð columnAutoresizingStyle
-    * Ð setColumnAutoresizingStyle:
+    * - frameOfCellAtColumn:row:
+    * - columnAutoresizingStyle
+    * - setColumnAutoresizingStyle:
 */
 - (void)sizeLastColumnToFit
 {
@@ -656,21 +656,21 @@ CPTableViewSelectionHighlightStyleSourceList = 1;
     [self setNeedsLayout];
 }
 /*
-    * Ð tile
-    * Ð sizeToFit
-    * Ð noteHeightOfRowsWithIndexesChanged:
+    * - tile
+    * - sizeToFit
+    * - noteHeightOfRowsWithIndexesChanged:
 */
 //Scrolling
 /*
-    * Ð scrollRowToVisible:
-    * Ð scrollColumnToVisible:
+    * - scrollRowToVisible:
+    * - scrollColumnToVisible:
 */
 //Persistence
 /*
-    * Ð autosaveName
-    * Ð autosaveTableColumns
-    * Ð setAutosaveName:
-    * Ð setAutosaveTableColumns:
+    * - autosaveName
+    * - autosaveTableColumns
+    * - setAutosaveName:
+    * - setAutosaveTableColumns:
 */
 
 - (void)_sizeToParent
@@ -819,35 +819,35 @@ CPTableViewSelectionHighlightStyleSourceList = 1;
 
 //Highlightable Column Headers
 /*
-Ð (CPTableColumn)highlightedTableColumn
+- (CPTableColumn)highlightedTableColumn
 {
 
 }
 
-    * Ð setHighlightedTableColumn:
+    * - setHighlightedTableColumn:
 */
 //Dragging
 /*
-    * Ð dragImageForRowsWithIndexes:tableColumns:event:offset:
-    * Ð canDragRowsWithIndexes:atPoint:
-    * Ð setDraggingSourceOperationMask:forLocal:
-    * Ð setDropRow:dropOperation:
-    * Ð setVerticalMotionCanBeginDrag:
-    * Ð verticalMotionCanBeginDrag
+    * - dragImageForRowsWithIndexes:tableColumns:event:offset:
+    * - canDragRowsWithIndexes:atPoint:
+    * - setDraggingSourceOperationMask:forLocal:
+    * - setDropRow:dropOperation:
+    * - setVerticalMotionCanBeginDrag:
+    * - verticalMotionCanBeginDrag
 */
 //Sorting
 /*
-    * Ð setSortDescriptors:
-    * Ð sortDescriptors
+    * - setSortDescriptors:
+    * - sortDescriptors
 */
 
 //Text Delegate Methods
 /*
-    * Ð textShouldBeginEditing:
-    * Ð textDidBeginEditing:
-    * Ð textDidChange:
-    * Ð textShouldEndEditing:
-    * Ð textDidEndEditing:
+    * - textShouldBeginEditing:
+    * - textDidBeginEditing:
+    * - textDidChange:
+    * - textShouldEndEditing:
+    * - textDidEndEditing:
 */
 
 - (id)_objectValueForTableColumn:(CPTableColumn)aTableColumn row:(CPInteger)aRowIndex
