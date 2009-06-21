@@ -35,7 +35,9 @@ CPLogRegister(CPLogConsole);
     [iconColumn setDataView:iconView];
 
     [tableView addTableColumn:iconColumn];
-    
+
+    iconImage = [[CPImage alloc] initWithContentsOfFile:"http://cappuccino.org/images/favicon.png" size:CGSizeMake(16,16)];
+
     for (var i = 1; i <= 10; i++)
     {
         var column = [[NEWCPTableColumn alloc] initWithIdentifier:String(i)];
@@ -58,8 +60,6 @@ CPLogRegister(CPLogConsole);
 
     [tableView setDelegate:self];
     [tableView setDataSource:self];
-    
-    iconImage = [[CPImage alloc] initWithContentsOfFile:"http://cappuccino.org/images/favicon.png" size:CGSizeMake(16,16)];
 }
 
 - (int)numberOfRowsInTableView:(CPTableView)tableView
@@ -70,7 +70,7 @@ CPLogRegister(CPLogConsole);
 - (id)tableView:(CPTableView)tableView objectValueForTableColumn:(CPTableColumn)tableColumn row:(int)row
 {
     if ([tableColumn identifier] === "icons")
-        return iconImage
+        return iconImage;
     else
         return String((row + 1) * [[tableColumn identifier] intValue]);
 }

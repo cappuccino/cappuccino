@@ -59,6 +59,9 @@ CPTableViewSelectionHighlightStyleSourceList = 1;
     CPInteger   _numberOfHiddenColumns;
 
     Object      _objectValues;
+    CPArray     _dataViews;
+    CPRange     _exposedRows;
+    CPIndexSet  _exposedColumns;
 
     //Configuring Behavior
     BOOL        _allowsColumnReordering;
@@ -100,7 +103,10 @@ CPTableViewSelectionHighlightStyleSourceList = 1;
         _numberOfHiddenColumns = 0;
 
         _objectValues = { };
+        _dataViews=  [];
         _numberOfRows = 0;
+        _exposedRows = [CPIndexSet indexSet];
+        _exposedColumns = [CPIndexSet indexSet];
 
         _intercellSpacing = _CGSizeMake(0.0, 0.0);
         _rowHeight = 24.0;
@@ -883,7 +889,7 @@ CPTableViewSelectionHighlightStyleSourceList = 1;
 }
 
 - (void)load
-{//console.log("logging.");
+{
     if (!_dataSource)
     {
         // remove?
@@ -891,26 +897,49 @@ CPTableViewSelectionHighlightStyleSourceList = 1;
     }
 
      // SLOWMO
-    var subviews = [self subviews],
+/*    var subviews = [self subviews],
         count = [subviews count];
 
     while (count--)
         [subviews[count] removeFromSuperview];
-
+*/
     var exposedRect = [self _exposedRect],
-        exposedRows = [self rowsInRect:exposedRect],
+        exposedRows = [CPIndexSet indexSetWithIndexesInRange:[self rowsInRect:exposedRect]],
         exposedColumns = [self columnIndexesInRect:exposedRect],
-        columnIndex = [exposedColumns firstIndex];
+        previouslyExposedRows = [_exposedRows copy],
+        previouslyExposedColumns = [_exposedColumns copy],
+        newlyExposedRows = [exposedRows copy],
+        newlyExposedColumns = [exposedColumns copy];
+
+    [newlyExposedRows removeIndexes:_exposedRows];
+    [newlyExposedColumns removeIndexes:_exposedColumns];
+    [previouslyExposedRows removeIndexes:newlyExposedRows];
+    [previouslyExposedColumns removeIndexes:newlyExposedColumns];
+
+    //console.log("newly exposed rows: " + newlyExposedRows + "\nnewly exposed columns: " + newlyExposedColumns);
+    _exposedRows = exposedRows;
+    _exposedColumns = exposedColumns;
+
+    [self r:previouslyExposedRows c:newlyExposedColumns];
+    [self r:newlyExposedRows c:previouslyExposedColumns];
+    [self r:newlyExposedRows c:newlyExposedColumns];
+}
+
+- (void)r:(CPIndexSet)rows c:(CPIndexSet)columns
+{
+    var columnIndex = [columns firstIndex];
 
     while (columnIndex !== CPNotFound)
     {
+    if (!_dataViews[columnIndex])
+        _dataViews[columnIndex] = [];
+    
         var tableColumn = _tableColumns[columnIndex],
             tableColumnRange = _tableColumnRanges[columnIndex];
 
-        var rowIndex = exposedRows.location,
-            lastRowIndex = CPMaxRange(exposedRows);
+        var rowIndex = [rows firstIndex]
 
-        for (; rowIndex < lastRowIndex; ++rowIndex)
+        while (rowIndex !== CPNotFound)
         {
             var dataView = [tableColumn _newDataViewForRow:rowIndex],
                 rectOfRow = [self rectOfRow:rowIndex];
@@ -920,9 +949,13 @@ CPTableViewSelectionHighlightStyleSourceList = 1;
             [dataView setObjectValue:[self _objectValueForTableColumn:tableColumn row:rowIndex]];
 
             [self addSubview:dataView];
+            
+            _dataViews[columnIndex][rowIndex] = dataView;
+
+            rowIndex = [rows indexGreaterThanIndex:rowIndex];
         }
 
-        columnIndex = [exposedColumns indexGreaterThanIndex:columnIndex];
+        columnIndex = [columns indexGreaterThanIndex:columnIndex];
     }
 }
 
