@@ -35,7 +35,6 @@
 @implementation CPIndexSet : CPObject
 {
     unsigned    _count;
-    unsigned    _cachedRangeIndex;
     CPArray     _ranges;
 }
 
@@ -75,7 +74,6 @@
     {
         _count = 0;
         _ranges = [];
-        _cachedRangeIndex = 0;
     }
     
     return self;
@@ -92,8 +90,7 @@
     if (self)
     {
         _count = 1;
-        _ranges = [CPArray arrayWithObject:CPMakeRange(anIndex, 1)];
-        _cachedRangeIndex = 0;
+        _ranges = [CPMakeRange(anIndex, 1)];
     }
     
     return self;
@@ -111,8 +108,7 @@
     if (self)
     {
         _count = aRange.length;
-        _ranges = [CPArray arrayWithObject:aRange];
-        _cachedRangeIndex = 0;
+        _ranges = [aRange];
     }
     
     return self;
@@ -131,13 +127,12 @@
     {
         _count = [anIndexSet count];
         _ranges = [];
-        _cachedRangeIndex = 0;
-        
-        var index = 0,
-            count = anIndexSet._ranges.length;
-        
-        for (; index < count; ++index)
-            _ranges.push(CPCopyRange(anIndexSet._ranges[index]));
+
+        var otherRanges = anIndexSet._ranges,
+            otherRangesCount = otherRanges.length;
+
+        while (otherRangesCount--)
+            _ranges[otherRangesCount] = CPCopyRange(otherRanges[otherRangesCount]);
     }
     
     return self;
@@ -151,24 +146,26 @@
 */
 - (BOOL)isEqualToIndexSet:(CPIndexSet)anIndexSet
 {
+    if (!anIndexSet)
+        return NO;
+
     // Comparisons to ourself are always return YES.
-	if (self == anIndexSet)
+	if (self === anIndexSet)
 	   return YES;
-	
-    var i = 0,
-        count = _ranges.length;
+
+    var rangesCount = _ranges.length,
         otherRanges = anIndexSet._ranges;
-	
+
 	// If we have a discrepency in the number of ranges or the number of indexes,
 	// simply return NO.
-	if (count != otherRanges.length || _count != [anIndexSet count])
-	   return NO;
-	
-	for (; i < count; ++i)
-		if (!CPEqualRanges(_ranges[i], otherRanges[i]))
-			return NO;
-			
-	return YES;
+    if (rangesCount !== otherRanges.length || _count !== anIndexSet._count)
+        return NO;
+
+    while (count--)
+        if (!CPEqualRanges(_ranges[count], otherRanges[count]))
+            return NO;
+
+    return YES;
 }
 
 /*!
@@ -178,7 +175,7 @@
 */
 - (BOOL)containsIndex:(unsigned)anIndex
 {
-    return [self containsIndexesInRange:CPMakeRange(anIndex, 1)];
+    return positionOfIndex(_ranges, anIndex) !== CPNotFound;
 }
 
 /*!
@@ -187,29 +184,24 @@
 */
 - (BOOL)containsIndexesInRange:(CPRange)aRange
 {
-    if(!_count)
+    if (aRange.length <= 0)
         return NO;
 
-    var i = SOERangeIndex(self, aRange.location),
-    	lower = aRange.location,
-    	upper = CPMaxRange(aRange),
-    	count = _ranges.length;
+    // If we have less total indexes than aRange, we can't possibly contain aRange.
+    if(_count < aRange.length)
+        return NO;
 
-    // Stop if the location is ever bigger than or equal to our 
-    // non-inclusive upper bound    
-    for(;i < count && _ranges[i].location < upper; ++i)
-        // The range must be a subset of one our ranges.
-    	if (_ranges[i].location <= lower && CPMaxRange(_ranges[i]) >= upper)
-    	{
-            _cachedRangeIndex = i;
-            return YES;
-        }
-    
-    // The value isn't here, but values greater than anIndex should 
-    // start from here regardless.
-    _cachedRangeIndex = i;
-    
-    return NO;
+    // Search for first location
+    var rangeIndex = positionOfIndex(_ranges, aRange.location);
+
+    // If we don't have the first location, then we don't contain aRange.
+    if (rangeIndex === CPNotFound)
+        return NO;
+
+    var range = _ranges[rangeIndex];
+
+    // The intersection must contain all the indexes from the original range.
+    return CPIntersectionRange(range, aRange).length === aRange.length;
 }
 
 /*!
@@ -218,22 +210,22 @@
 */
 - (BOOL)containsIndexes:(CPIndexSet)anIndexSet
 {
-    // Return YES if anIndexSet has no indexes
-    if(![anIndexSet count])
+    var otherCount = anIndexSet._count;
+
+    if(otherCount <= 0)
         return YES; 
-    
-    // Return NO if we have no indexes.
-    if(!_count)
+
+    // If we have less total indexes than anIndexSet, we can't possibly contain aRange.
+    if (_count < otherCount)
         return NO;
 
-    var i = 0,
-        count = _ranges.length;
-    
-    // This is fast thanks to the _cachedIndexRange.
-    for(; i < count; ++i)
-        if (![anIndexSet containsIndexesInRange:_ranges[i]])
+    var otherRanges = anIndexSet._ranges,
+        otherRangesCount = otherRanges.length;
+
+    while (otherRangesCount--)
+        if (![self containsIndexesInRange:otherRanges[otherRangesCount]])
             return NO;
-    
+
     return YES;
 }
 
@@ -275,7 +267,10 @@
 */
 - (int)firstIndex
 {
-    return _count ? _ranges[0].location : CPNotFound;
+    if (_count > 0)
+        return _ranges[0].location;
+
+    return CPNotFound;
 }
 
 /*!
@@ -283,32 +278,41 @@
 */
 - (int)lastIndex
 {
-    return _count ? CPMaxRange(_ranges[_ranges.length - 1]) - 1 : CPNotFound;
+    if (_count > 0)
+        return CPMaxRange(_ranges[_ranges.length - 1]) - 1;
+
+    return CPNotFound;
 }
 
 /*!
     Returns the first index value in the receiver which is greater than <code>anIndex</code>.
     @return the closest index or CPNotFound if no match was found
 */
-- (unsigned)indexGreaterThanIndex:(unsigned)anIndex
+- (CPInteger)indexGreaterThanIndex:(CPInteger)anIndex
 {
-    if(!_count)
-        return CPNotFound;
-    
-    var i = SOERangeIndex(self, anIndex++),
-        count = _ranges.length;
-    
-    for(; i < count && anIndex >= CPMaxRange(_ranges[i]); ++i) ;
+    // The first possible index that would satisfy this requirement.
+    ++anIndex;
 
-    if (i == count)
-        return CPNotFound;
-    
-    _cachedRangeIndex = i;
-    
-    if (anIndex < _ranges[i].location)
-        return _ranges[i].location;
+    // Attempt to find it or something bigger.
+    var rangeIndex = assumedPositionOfIndex(_ranges, anIndex);
 
-    return anIndex;
+    // Nothing at all found?
+    if (rangeIndex === CPNotFound)
+        return CPNotFound;
+
+    rangeIndex = CEIL(rangeIndex);
+    
+    if (rangeIndex >= _ranges.length)
+        return CPNotFound;
+
+    var range = _ranges[rangeIndex];
+
+    // Check if it's actually in this range.
+    if (CPLocationInRange(anIndex, range))
+        return anIndex;
+
+    // If not, it must be the first element of this range.
+    return range.location;
 }
 
 /*!
@@ -317,25 +321,29 @@
 */
 - (unsigned)indexLessThanIndex:(unsigned)anIndex
 {
-    if (!_count)
-        return CPNotFound;
-    
-    var i = GOERangeIndex(self, anIndex--);
-    
-    for (; i >= 0 && anIndex < _ranges[i].location; --i) ;
+    // The first possible index that would satisfy this requirement.
+    --anIndex;
 
-    if(i < 0)
-        return CPNotFound;
-    
-    _cachedRangeIndex = i;
+    // Attempt to find it or something smaller.
+    var rangeIndex = assumedPositionOfIndex(_ranges, anIndex);
 
-   if (CPLocationInRange(anIndex, _ranges[i]))
+    // Nothing at all found?
+    if (rangeIndex === CPNotFound)
+        return CPNotFound;
+
+    rangeIndex = FLOOR(rangeIndex);
+    
+    if (rangeIndex < 0)
+        return CPNotFound;
+
+    var range = _ranges[rangeIndex];
+
+    // Check if it's actually in this range.
+    if (CPLocationInRange(anIndex, range))
         return anIndex;
-    
-    if (CPMaxRange(_ranges[i]) - 1 < anIndex)
-        return CPMaxRange(_ranges[i]) - 1;
 
-    return CPNotFound;
+    // If not, it must be the first element of this range.
+    return CPMaxRange(range) - 1;
 }
 
 /*!
@@ -422,7 +430,7 @@
 		for (i = 0; i < _ranges.length; i++)
 		{
 			desc += _ranges[i].location;
-			if (_ranges[i].length > 1) desc += "-" + (CPMaxRange(_ranges[i])-1) + ":"+_ranges[i].length+":";
+			if (_ranges[i].length > 1) desc += "-" + (CPMaxRange(_ranges[i])-1) + "["+_ranges[i].length+"]";
 			if (i+1 < _ranges.length)  desc += " ";
 		}
 		desc += ")]";
@@ -452,13 +460,12 @@
 */
 - (void)addIndexes:(CPIndexSet)anIndexSet
 {
-    var i = 0,
-        ranges = anIndexSet._ranges,
-        count = ranges.length;
-    
+    var otherRanges = anIndexSet._ranges,
+        otherRangesCount = otherRanges.length;
+
     // Simply add each range within anIndexSet.
-    for(; i < count; ++i)
-        [self addIndexesInRange:ranges[i]];
+    while (otherRangesCount--)
+        [self addIndexesInRange:otherRanges[otherRangesCount]];
 }
 
 /*!
@@ -467,91 +474,52 @@
 */
 - (void)addIndexesInRange:(CPRange)aRange
 {
-    if (_ranges.length == 0)
+    // If empty range, bail.
+    if (aRange.length <= 0)
+        return;
+
+    // If we currently don't have any indexes, this represents our entire set.
+    if (_count <= 0)
     {
         _count = aRange.length;
+        _ranges = [aRange];
         
-        return [_ranges addObject:CPCopyRange(aRange)];
+        return;
     }
-    
-    // FIXME: Should we really use SOERangeIndex here? There is no real 
-    // reason the cached index would be a better guess than 0, and it 
-    // would avoid a function call.
-    var i = SOERangeIndex(self, aRange.location),
-        count = _ranges.length,
-        padded = CPMakeRange(aRange.location - 1, aRange.length + 2),
-        maximum = CPMaxRange(aRange);
+var x = aRange.location - 1, y = CPMaxRange(aRange);
+    var rangeCount = _ranges.length,
+        lhsRangeIndex = assumedPositionOfIndex(_ranges, aRange.location - 1),
+        lhsRangeIndexCEIL = CEIL(lhsRangeIndex);
+try{
+    if (lhsRangeIndexCEIL === lhsRangeIndex && lhsRangeIndexCEIL < rangeCount)
+        aRange = CPUnionRange(aRange, _ranges[lhsRangeIndexCEIL]);
+}catch(e) { alert("123456789 " + lhsRangeIndexCEIL + " " + rangeCount + " " + lhsRangeIndex);}
+    var rhsRangeIndex = assumedPositionOfIndex(_ranges, CPMaxRange(aRange)),
+        rhsRangeIndexFLOOR = FLOOR(rhsRangeIndex);
 
-    // If our range won't intersect with the last range, just append it to the end.
-    if (count && CPMaxRange(_ranges[count - 1]) < aRange.location)
-        [_ranges addObject:CPCopyRange(aRange)];
+    if (rhsRangeIndexFLOOR === rhsRangeIndex && rhsRangeIndexFLOOR > 0)
+        aRange = CPUnionRange(aRange, _ranges[rhsRangeIndexFLOOR]);
+//print("the returned indxes were for searching for " + x + " to " + y + " are " + lhsRangeIndex + " and " + rhsRangeIndex);
+    var removalCount = rhsRangeIndexFLOOR - lhsRangeIndexCEIL + 1;
+
+    if (removalCount === 1)
+    {
+        if (lhsRangeIndexCEIL < _ranges.length)
+            _count -= _ranges[lhsRangeIndexCEIL].length;
+        
+        _count += aRange.length;
+        _ranges[lhsRangeIndexCEIL] = aRange;
+    }
+
     else
-        for (; i < count; ++i)
-        {
-            // This range is completely independent of existing ranges,
-            // simply add it to the array.
-            if (maximum < _ranges[i].location)
-            {
-                _count += aRange.length;
-                
-                // Keep _cachedRangeIndex relevant.
-                if (i < _cachedRangeIndex) ++_cachedRangeIndex;
-                
-                return [_ranges insertObject:CPCopyRange(aRange) atIndex:i];
-            }
-    
-            if (CPIntersectionRange(_ranges[i], padded).length)
-            {
-                var union = CPUnionRange(_ranges[i], aRange);
-    
-                // We already contain all the indexes in this range.
-                if (union.length == _ranges[i].length)
-                    return;
-    
-                 // Pad the length to collapse with later ranges.
-                 ++union.length;
-                
-                // We only need to check if we now intersect with any following 
-                // ranges since if we now intersected with the previous range, 
-                // it would have already been handled.  We start at i and not i + 1
-                // to make sure we subtract i's length.
-                var j = i;
-                
-                for(; j < count; ++j)
-                    // Bail as soon as we don't find an intersection.
-                    if(CPIntersectionRange(union, _ranges[j]).length)
-                        _count -= _ranges[j].length;
-                    else
-                        break;
-                
-                // Remove the padding now that we are done.
-                // NOTE: We could have set _ranges[i] = CPCopyRange(union), 
-                // and then not had to bother decerementing here, but this avoids
-                // a lookup above during unioning, and a function call (CPCopyRange).
-                --union.length;
-                _ranges[i] = union;
-                
-                // Now remove indexes [i + 1, j - 1]
-                if (j - i - 1 > 0)
-                {
-                    var remove = CPMakeRange(i + 1, j - i - 1);
-                    
-                    _ranges[i] = CPUnionRange(_ranges[i], _ranges[j - 1]);
-                    [_ranges removeObjectsInRange:remove];
-                    
-                    // Keep _cachedRangeIndex relevant.
-                    if (_cachedRangeIndex >= CPMaxRange(remove)) _cachedRangedIndex -= remove.length;
-                    else if (CPLocationInRange(_cachedRangeIndex, remove)) _cachedRangeIndex = i;
-                }
-    
-                // Update count.
-                _count += _ranges[i].length;
-                
-                return;
-            }
-        }
-    
-    _count += aRange.length;
+    {
+        if (removalCount > 0)
+            [_ranges removeObjectsInRange:CPMakeRange(lhsRangeIndexCEIL, removalCount)];
+        
+        [_ranges insertObject:aRange atIndex:lhsRangeIndexCEIL];
+            
+    //FIXME COUNT!
+    }
 }
 
 // Removing Indexes
@@ -571,13 +539,12 @@
 */
 - (void)removeIndexes:(CPIndexSet)anIndexSet
 {
-    var i = 0,
-        ranges = anIndexSet._ranges,
-        count = ranges.length;
+    var otherRanges = anIndexSet._ranges,
+        otherRangesCount = otherRanges.length;
     
     // Simply remove each index from anIndexSet
-    for(; i < count; ++i)
-        [self removeIndexesInRange:ranges[i]];
+    while (otherRangesCount--)
+        [self removeIndexesInRange:otherRanges[otherRangesCount]];
 }
 
 /*!
@@ -587,7 +554,6 @@
 {
     _ranges = [];
 	_count = 0;
-    _cachedRangeIndex = 0;
 }
 
 /*!
@@ -830,26 +796,72 @@ var CPIndexSetCountKey              = @"CPIndexSetCountKey",
 
 @end
 
-var SOERangeIndex = function(anIndexSet, anIndex)
+var positionOfIndex = function(ranges, anIndex)
 {
-    var ranges = anIndexSet._ranges,
-        cachedRangeIndex = 0;//anIndexSet._cachedRangeIndex;
-    
-    if(cachedRangeIndex < ranges.length && anIndex >= ranges[cachedRangeIndex].location)
-        return cachedRangeIndex;
+    var low = 0,
+        high = ranges.length - 1;
 
-    return 0;
+    while (low <= high)
+    {
+        var middle = FLOOR(low + (high - low) / 2),
+            range = ranges[middle];
+
+        if (anIndex < range.location)
+            high = middle - 1;
+
+        else if (anIndex >= CPMaxRange(range))
+            low = middle + 1;
+
+        else
+            return middle;
+   }
+
+   return CPNotFound;
 }
 
-var GOERangeIndex = function(anIndexSet, anIndex)
+var assumedPositionOfIndex = function(ranges, anIndex)
 {
-    var ranges = anIndexSet._ranges,
-        cachedRangeIndex = anIndexSet._ranges.length;//anIndexSet._cachedRangeIndex;
+    var count = ranges.length;
+
+    if (count <= 0)
+        return CPNotFound;
+
+    var low = 0,
+        high = count * 2;
+
+    while (low <= high)
+    {
+        var middle = FLOOR(low + (high - low) / 2),
+            position = middle / 2,
+            positionFLOOR = FLOOR(position);
         
-    if(cachedRangeIndex < ranges.length && anIndex <= ranges[cachedRangeIndex].location)
-        return cachedRangeIndex;
-        
-    return ranges.length - 1;
+        if (position === positionFLOOR)
+        {try{
+            if (positionFLOOR - 1 >= 0 && anIndex < CPMaxRange(ranges[positionFLOOR - 1]))
+                high = middle - 1;
+
+            else if (positionFLOOR < count && anIndex >= ranges[positionFLOOR].location)
+                low = middle + 1;
+    
+            else
+                return positionFLOOR - 0.5;}catch(e) { alert("here!");}
+        }
+        else
+        {try{
+            var range = ranges[positionFLOOR];
+
+            if (anIndex < range.location)
+                high = middle - 1;
+    
+            else if (anIndex >= CPMaxRange(range))
+                low = middle + 1;
+    
+            else
+                return positionFLOOR;}catch(e){alert("yes!");}
+        }
+    }
+
+   return CPNotFound;
 }
 
 /*

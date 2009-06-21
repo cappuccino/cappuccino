@@ -574,7 +574,9 @@ CPTableViewSelectionHighlightStyleSourceList = 1;
 // O(Columns) if table view contains hidden columns
 - (CPInteger)columnAtPoint:(CGPoint)aPoint
 {
-    if (!CGRectContainsPoint([self bounds], aPoint))
+    var bounds = [self bounds];
+
+    if (!_CGRectContainsPoint(bounds, aPoint))
         return CPNotFound;
 
     if (_dirtyTableColumnRangeIndex !== CPNotFound)
@@ -895,7 +897,7 @@ CPTableViewSelectionHighlightStyleSourceList = 1;
         // remove?
         return;
     }
-
+console.profile("cell-load");
      // SLOWMO
 /*    var subviews = [self subviews],
         count = [subviews count];
@@ -923,6 +925,7 @@ CPTableViewSelectionHighlightStyleSourceList = 1;
     [self r:previouslyExposedRows c:newlyExposedColumns];
     [self r:newlyExposedRows c:previouslyExposedColumns];
     [self r:newlyExposedRows c:newlyExposedColumns];
+console.profileEnd("cell-load");
 }
 
 - (void)r:(CPIndexSet)rows c:(CPIndexSet)columns
