@@ -1234,10 +1234,10 @@ CPTexturedBackgroundWindowMask
                                     var deviation = MIN(_mouseEnteredStack.length, mouseEnteredStack.length);
 
                                     while (deviation--)
-                                        if (_mouseEnteredStack[deviation] !== mouseEnteredStack[deviation])
+                                        if (_mouseEnteredStack[deviation] === mouseEnteredStack[deviation])
                                             break;
 
-                                    var index = deviation,
+                                    var index = deviation + 1,
                                         count = _mouseEnteredStack.length;
 
                                     if (index < count)
@@ -1248,7 +1248,7 @@ CPTexturedBackgroundWindowMask
                                             [_mouseEnteredStack[index] mouseExited:event];
                                     }
 
-                                    index = deviation;
+                                    index = deviation + 1;
                                     count = mouseEnteredStack.length;
 
                                     if (index < count)
