@@ -488,7 +488,7 @@
 */
 - (unsigned)indexOfObject:(id)anObject sortedByDescriptors:(CPArray)descriptors
 {
-    [self indexOfObject:anObject sortedByFunction:function(lhs, rhs)
+    return [self indexOfObject:anObject sortedByFunction:function(lhs, rhs)
     {
         var i = 0,
             count = [descriptors count],
