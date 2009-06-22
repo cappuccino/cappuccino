@@ -552,8 +552,8 @@ CPTableViewSelectionHighlightStyleSourceList = 1;
         lastColumn = NUMBER_OF_COLUMNS() - 1;
 
     // Don't bother doing the expensive removal of hidden indexes if we have no hidden columns.
-    if (_numberOfHiddenColumns < 0)
-        return [CPIndexSet indexSetWithIndexesInRange:CPMakeRange(column, lastColumn - column)];
+    if (_numberOfHiddenColumns <= 0)
+        return [CPIndexSet indexSetWithIndexesInRange:CPMakeRange(column, lastColumn - column + 1)];
 
     // 
     var indexSet = [CPIndexSet indexSet];
@@ -913,12 +913,15 @@ console.profile("cell-load");
         newlyExposedRows = [exposedRows copy],
         newlyExposedColumns = [exposedColumns copy];
 
+//    console.log("exposed rows: " + exposedRows + " exposed columns: " + exposedColumns);
+//    console.log("but rows: " + _exposedRows + " exposed columns: " + _exposedColumns);
+
     [newlyExposedRows removeIndexes:_exposedRows];
     [newlyExposedColumns removeIndexes:_exposedColumns];
     [previouslyExposedRows removeIndexes:newlyExposedRows];
     [previouslyExposedColumns removeIndexes:newlyExposedColumns];
 
-    //console.log("newly exposed rows: " + newlyExposedRows + "\nnewly exposed columns: " + newlyExposedColumns);
+//    console.log("newly exposed rows: " + newlyExposedRows + "\nnewly exposed columns: " + newlyExposedColumns);
     _exposedRows = exposedRows;
     _exposedColumns = exposedColumns;
 

@@ -224,22 +224,20 @@
 */
 - (BOOL)intersectsIndexesInRange:(CPRange)aRange
 {
-    //FIXME: OLD
-    // This is fast thanks to the _cachedIndexRange.
-    if(!_count)
+    if (_count <= 0)
         return NO;
 
-    var i = SOERangeIndex(self, aRange.location),
-        count = _ranges.length,
-        upper = CPMaxRange(aRange);
+    var lhsRangeIndex = assumedPositionOfIndex(_ranges, aRange.location);
 
-    // Stop if the location is ever bigger than or equal to our 
-    // non-inclusive upper bound 
-    for (; i < count && _ranges[i].location < upper; ++i)
-        if(CPIntersectionRange(aRange, _ranges[i]).length)
-            return YES;
+    if (FLOOR(lhsRangeIndex) === lhsRangeIndex)
+        return YES;
 
-    return NO;
+    var rhsRangeIndex = assumedPositionOfIndex(_ranges, CPMaxRange(aRange) - 1);
+
+    if (FLOOR(rhsRangeIndex) === rhsRangeIndex)
+        return YES;
+
+    return lhsRangeIndex !== rhsRangeIndex;
 }
 
 /*!
@@ -411,22 +409,40 @@
 
 - (CPString)description
 {
-    var desc = [super description] + " ";
+    var description = [super description];
 
     if (_count)
     {
-        desc += "[number of indexes: " + _count + " (in " + _ranges.length + " ranges), indexes: (";
-        for (i = 0; i < _ranges.length; i++)
+        var index = 0,
+            count = _ranges.length;
+
+        description += "[number of indexes: " + _count + " (in " + count;
+
+        if (count === 1)
+            description += " range), indexes: (";
+        else
+            description += " ranges), indexes: (";
+
+        for (; index < count; ++index)
         {
-            desc += _ranges[i].location;
-            if (_ranges[i].length > 1) desc += "-" + (CPMaxRange(_ranges[i])-1) + "["+_ranges[i].length+"]";
-            if (i+1 < _ranges.length)  desc += " ";
+            var range = _ranges[index];
+
+            description += range.location;
+
+            if (range.length > 1)
+                description += "-" + (CPMaxRange(range) - 1);
+
+            if (index + 1 < count)
+                description += " ";
         }
-        desc += ")]";
+
+        description += ")]";
     }
+
     else
-        desc += "(no indexes)";
-    return desc;
+        description += "(no indexes)";
+
+    return description;
 }
 
 @end
@@ -475,20 +491,20 @@
 
         return;
     }
-var x = aRange.location - 1, y = CPMaxRange(aRange);
+
     var rangeCount = _ranges.length,
         lhsRangeIndex = assumedPositionOfIndex(_ranges, aRange.location - 1),
         lhsRangeIndexCEIL = CEIL(lhsRangeIndex);
-try{
+
     if (lhsRangeIndexCEIL === lhsRangeIndex && lhsRangeIndexCEIL < rangeCount)
         aRange = CPUnionRange(aRange, _ranges[lhsRangeIndexCEIL]);
-}catch(e) { alert("123456789 " + lhsRangeIndexCEIL + " " + rangeCount + " " + lhsRangeIndex);}
+
     var rhsRangeIndex = assumedPositionOfIndex(_ranges, CPMaxRange(aRange)),
         rhsRangeIndexFLOOR = FLOOR(rhsRangeIndex);
 
     if (rhsRangeIndexFLOOR === rhsRangeIndex && rhsRangeIndexFLOOR > 0)
         aRange = CPUnionRange(aRange, _ranges[rhsRangeIndexFLOOR]);
-//print("the returned indxes were for searching for " + x + " to " + y + " are " + lhsRangeIndex + " and " + rhsRangeIndex);
+
     var removalCount = rhsRangeIndexFLOOR - lhsRangeIndexCEIL + 1;
 
     if (removalCount === _ranges.length)
@@ -566,7 +582,6 @@ try{
 */
 - (void)removeIndexesInRange:(CPRange)aRange
 {
-    // FIXME: OLD
     // If empty range, bail.
     if (aRange.length <= 0)
         return;
@@ -576,36 +591,68 @@ try{
         return;
 
     var rangeCount = _ranges.length,
-        lhsRangeIndex = assumedPositionOfIndex(_ranges, aRange.location - 1),
+        lhsRangeIndex = assumedPositionOfIndex(_ranges, aRange.location),
         lhsRangeIndexCEIL = CEIL(lhsRangeIndex);
 
-    if (lhsRangeIndexCEIL === lhsRangeIndex && lhsRangeIndexCEIL < rangeCount)
-        aRange = CPUnionRange(aRange, _ranges[lhsRangeIndexCEIL]);
+    // Do we fall on an actual existing range?
+    if (lhsRangeIndex === lhsRangeIndexCEIL && lhsRangeIndexCEIL < rangeCount)
+    {
+        var existingRange = _ranges[lhsRangeIndexCEIL];
 
-    var rhsRangeIndex = assumedPositionOfIndex(_ranges, CPMaxRange(aRange)),
+        // If these ranges don't start in the same place, we have to cull it.
+        if (aRange.location !== existingRange.location)
+        {
+            var maxRange = CPMaxRange(aRange),
+                existingMaxRange = CPMaxRange(existingRange);
+
+            existingRange.length = aRange.location - existingRange.location;
+
+            // If this range is internal to the existing range, we have a unique splitting case.
+            if (maxRange < existingMaxRange)
+            {
+                _count -= aRange.length;
+                [_ranges insertObject:CPMakeRange(maxRange, existingMaxRange - maxRange) atIndex:lhsRangeIndexCEIL + 1];
+
+                return;
+            }
+            else
+            {
+                _count -= existingMaxRange - aRange.location;
+                lhsRangeIndexCEIL += 1;
+            }
+        }
+    }
+
+    var rhsRangeIndex = assumedPositionOfIndex(_ranges, CPMaxRange(aRange) - 1),
         rhsRangeIndexFLOOR = FLOOR(rhsRangeIndex);
 
-    if (rhsRangeIndexFLOOR === rhsRangeIndex && rhsRangeIndexFLOOR > 0)
-        aRange = CPUnionRange(aRange, _ranges[rhsRangeIndexFLOOR]);
+    if (rhsRangeIndex === rhsRangeIndexFLOOR && rhsRangeIndexFLOOR >= 0)
+    {
+        var maxRange = CPMaxRange(aRange),
+            existingRange = _ranges[rhsRangeIndexFLOOR],
+            existingMaxRange = CPMaxRange(existingRange);
+
+        if (maxRange !== existingMaxRange)
+        {
+            _count -= maxRange - existingRange.location;
+            rhsRangeIndexFLOOR -= 1; // This is accounted for, and thus as if we got the previous spot.
+
+            existingRange.location = maxRange;
+            existingRange.length = existingMaxRange - maxRange;
+        }
+    }
 
     var removalCount = rhsRangeIndexFLOOR - lhsRangeIndexCEIL + 1;
 
-    if (removalCount === 1)
+    if (removalCount > 0)
     {
-        if (lhsRangeIndexCEIL < _ranges.length)
-            _count -= _ranges[lhsRangeIndexCEIL].length;
+        var removal = lhsRangeIndexCEIL,
+            lastRemoval = lhsRangeIndexCEIL + removalCount - 1;
 
-        _count += aRange.length;
-        _ranges[lhsRangeIndexCEIL] = aRange;
-    }
+        for (; removal <= lastRemoval; ++removal)
+            _count -= _ranges[removal].length;
 
-    else
-    {
-        if (removalCount > 0)
-            [_ranges removeObjectsInRange:CPMakeRange(lhsRangeIndexCEIL, removalCount)];
-
-        [_ranges insertObject:aRange atIndex:lhsRangeIndexCEIL];
-    //FIXME COUNT!
+        [_ranges removeObjectsInRange:CPMakeRange(lhsRangeIndexCEIL, removalCount)];
     }
 }
 
@@ -820,7 +867,7 @@ var assumedPositionOfIndex = function(ranges, anIndex)
             positionFLOOR = FLOOR(position);
 
         if (position === positionFLOOR)
-        {try{
+        {
             if (positionFLOOR - 1 >= 0 && anIndex < CPMaxRange(ranges[positionFLOOR - 1]))
                 high = middle - 1;
 
@@ -828,10 +875,10 @@ var assumedPositionOfIndex = function(ranges, anIndex)
                 low = middle + 1;
 
             else
-                return positionFLOOR - 0.5;}catch(e) { alert("here!");}
+                return positionFLOOR - 0.5;
         }
         else
-        {try{
+        {
             var range = ranges[positionFLOOR];
 
             if (anIndex < range.location)
@@ -841,7 +888,7 @@ var assumedPositionOfIndex = function(ranges, anIndex)
                 low = middle + 1;
 
             else
-                return positionFLOOR;}catch(e){alert("yes!");}
+                return positionFLOOR;
         }
     }
 
