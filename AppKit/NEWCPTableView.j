@@ -59,9 +59,11 @@ CPTableViewSelectionHighlightStyleSourceList = 1;
     CPInteger   _numberOfHiddenColumns;
 
     Object      _objectValues;
-    CPArray     _dataViews;
     CPRange     _exposedRows;
     CPIndexSet  _exposedColumns;
+
+    Object      _dataViewsForTableColumns;
+    Object      _cachedDataViews;
 
     //Configuring Behavior
     BOOL        _allowsColumnReordering;
@@ -103,11 +105,12 @@ CPTableViewSelectionHighlightStyleSourceList = 1;
         _numberOfHiddenColumns = 0;
 
         _objectValues = { };
+        _dataViewsForTableColumns = { };
         _dataViews=  [];
         _numberOfRows = 0;
         _exposedRows = [CPIndexSet indexSet];
         _exposedColumns = [CPIndexSet indexSet];
-
+_cachedDataViews = { };
         _intercellSpacing = _CGSizeMake(0.0, 0.0);
         _rowHeight = 24.0;
     }
@@ -315,6 +318,7 @@ CPTableViewSelectionHighlightStyleSourceList = 1;
 - (void)addTableColumn:(CPTableColumn)aTableColumn
 {
     [_tableColumns addObject:aTableColumn];
+    [aTableColumn setTableView:self];
 
     if (_dirtyTableColumnRangeIndex < 0)
         _dirtyTableColumnRangeIndex = NUMBER_OF_COLUMNS() - 1;
@@ -326,8 +330,15 @@ CPTableViewSelectionHighlightStyleSourceList = 1;
 
 - (void)removeTableColumn:(CPTableColumn)aTableColumn
 {
+    if ([aTableColumn tableView] !== self)
+        return;
+
     var index = [_tableColumns indeOfObjectIdenticalTo:aTableColumn];
 
+    if (index === CPNotFound)
+        return;
+
+    [aTableColumn setTableView:nil];
     [_tableColumns removeObjectAtIndex:index];
 
     var tableColumnUID = [aTableColumn UID];
@@ -594,7 +605,7 @@ CPTableViewSelectionHighlightStyleSourceList = 1;
         if (x < range.location)
             high = middle - 1;
 
-        else if (x > CPMaxRange(range))
+        else if (x >= CPMaxRange(range))
             low = middle + 1;
 
         else
@@ -625,8 +636,14 @@ CPTableViewSelectionHighlightStyleSourceList = 1;
     return FLOOR(y / (_rowHeight + _intercellSpacing.height));
 }
 
+- (CGRect)frameOfDataViewAtColumn:(CPInteger)aColumnIndex row:(CPInteger)aRowIndex
+{
+    var tableColumnRange = _tableColumns[aColumnIndex],
+        rectOfRow = [self rectOfRow:aRowIndex];
+
+    return _CGRectMake(tableColumnRange.location, _CGRectGetMinY(rectOfRow), tableColumnRange.length, _CGRectGetHeight(rectOfRow));
+}
 /*
-    * - frameOfCellAtColumn:row:
     * - columnAutoresizingStyle
     * - setColumnAutoresizingStyle:
 */
@@ -897,71 +914,133 @@ CPTableViewSelectionHighlightStyleSourceList = 1;
         // remove?
         return;
     }
-console.profile("cell-load");
-     // SLOWMO
-/*    var subviews = [self subviews],
-        count = [subviews count];
+    if (window.console && window.console.profile)
+        console.profile("cell-load");
 
-    while (count--)
-        [subviews[count] removeFromSuperview];
-*/
     var exposedRect = [self _exposedRect],
         exposedRows = [CPIndexSet indexSetWithIndexesInRange:[self rowsInRect:exposedRect]],
         exposedColumns = [self columnIndexesInRect:exposedRect],
-        previouslyExposedRows = [_exposedRows copy],
-        previouslyExposedColumns = [_exposedColumns copy],
-        newlyExposedRows = [exposedRows copy],
-        newlyExposedColumns = [exposedColumns copy];
+        obscuredRows = [_exposedRows copy],
+        obscuredColumns = [_exposedColumns copy];
 
-//    console.log("exposed rows: " + exposedRows + " exposed columns: " + exposedColumns);
-//    console.log("but rows: " + _exposedRows + " exposed columns: " + _exposedColumns);
+    [obscuredRows removeIndexes:exposedRows];
+    [obscuredColumns removeIndexes:exposedColumns];
+
+    var newlyExposedRows = [exposedRows copy],
+        newlyExposedColumns = [exposedColumns copy];
 
     [newlyExposedRows removeIndexes:_exposedRows];
     [newlyExposedColumns removeIndexes:_exposedColumns];
+
+    var previouslyExposedRows = [exposedRows copy],
+        previouslyExposedColumns = [exposedColumns copy];
+
     [previouslyExposedRows removeIndexes:newlyExposedRows];
     [previouslyExposedColumns removeIndexes:newlyExposedColumns];
+
+//    console.log("will remove:" + '\n\n' + 
+//        previouslyExposedRows + "\n" + obscuredColumns + "\n\n" +
+//        obscuredRows + "\n" + previouslyExposedColumns + "\n\n" +
+//        obscuredRows + "\n" + obscuredColumns);
+    [self _unloadDataViewsInRows:previouslyExposedRows columns:obscuredColumns];
+    [self _unloadDataViewsInRows:obscuredRows columns:previouslyExposedColumns];
+    [self _unloadDataViewsInRows:obscuredRows columns:obscuredColumns];
+
+    [self _loadDataViewsInRows:previouslyExposedRows columns:newlyExposedColumns];
+    [self _loadDataViewsInRows:newlyExposedRows columns:previouslyExposedColumns];
+    [self _loadDataViewsInRows:newlyExposedRows columns:newlyExposedColumns];
 
 //    console.log("newly exposed rows: " + newlyExposedRows + "\nnewly exposed columns: " + newlyExposedColumns);
     _exposedRows = exposedRows;
     _exposedColumns = exposedColumns;
 
-    [self r:previouslyExposedRows c:newlyExposedColumns];
-    [self r:newlyExposedRows c:previouslyExposedColumns];
-    [self r:newlyExposedRows c:newlyExposedColumns];
-console.profileEnd("cell-load");
+    if (window.console && window.console.profile)
+        console.profileEnd("cell-load");
 }
 
-- (void)r:(CPIndexSet)rows c:(CPIndexSet)columns
+- (void)_unloadDataViewsInRows:(CPIndexSet)rows columns:(CPIndexSet)columns
 {
-    var columnIndex = [columns firstIndex];
+    if (![rows count] || ![columns count])
+        return;
 
-    while (columnIndex !== CPNotFound)
+    var rowArray = [],
+        columnArray = [];
+
+    [rows getIndexes:rowArray maxCount:-1 inIndexRange:nil];
+    [columns getIndexes:columnArray maxCount:-1 inIndexRange:nil];
+
+    var columnIndex = 0,
+        columnsCount = columnArray.length;
+
+    for (; columnIndex < columnsCount; ++columnIndex)
     {
-    if (!_dataViews[columnIndex])
-        _dataViews[columnIndex] = [];
-    
-        var tableColumn = _tableColumns[columnIndex],
-            tableColumnRange = _tableColumnRanges[columnIndex];
+        var column = columnArray[columnIndex],
+            tableColumn = _tableColumns[column],
+            tableColumnUID = [tableColumn UID];
 
-        var rowIndex = [rows firstIndex]
+        var rowIndex = 0,
+            rowsCount = rowArray.length;
 
-        while (rowIndex !== CPNotFound)
+        for (; rowIndex < rowsCount; ++rowIndex)
         {
-            var dataView = [tableColumn _newDataViewForRow:rowIndex],
-                rectOfRow = [self rectOfRow:rowIndex];
+            var row = rowArray[rowIndex],
+                dataView = _dataViewsForTableColumns[tableColumnUID][row];
+
+            _dataViewsForTableColumns[tableColumnUID][row] = nil;
+if (!_cachedDataViews[dataView.identifier])
+_cachedDataViews[dataView.identifier] = [dataView];
+else
+_cachedDataViews[dataView.identifier].push(dataView);
+        }
+    }
+}
+
+- (void)_loadDataViewsInRows:(CPIndexSet)rows columns:(CPIndexSet)columns
+{
+    if (![rows count] || ![columns count])
+        return;
+
+    var rowArray = [],
+        rowRects = [],
+        columnArray = [];
+
+    [rows getIndexes:rowArray maxCount:-1 inIndexRange:nil];
+    [columns getIndexes:columnArray maxCount:-1 inIndexRange:nil];
+
+    var columnIndex = 0,
+        columnsCount = columnArray.length;
+
+    for (; columnIndex < columnsCount; ++columnIndex)
+    {
+        var column = columnArray[columnIndex],
+            tableColumn = _tableColumns[column],
+            tableColumnUID = [tableColumn UID],
+            tableColumnRange = _tableColumnRanges[column];
+
+    if (!_dataViewsForTableColumns[tableColumnUID])
+        _dataViewsForTableColumns[tableColumnUID] = [];
+
+        var rowIndex = 0,
+            rowsCount = rowArray.length;
+
+        for (; rowIndex < rowsCount; ++rowIndex)
+        {
+            var row = rowArray[rowIndex],
+                dataView = [tableColumn _newDataViewForRow:row],
+                rectOfRow = rowRects[row];
+
+            if (!rectOfRow)
+                rectOfRow = rowRects[row] = [self rectOfRow:row];
 
             [dataView setBackgroundColor:[CPColor redColor]];
             [dataView setFrame:_CGRectMake(tableColumnRange.location, _CGRectGetMinY(rectOfRow), tableColumnRange.length, _CGRectGetHeight(rectOfRow))];
-            [dataView setObjectValue:[self _objectValueForTableColumn:tableColumn row:rowIndex]];
+            [dataView setObjectValue:[self _objectValueForTableColumn:tableColumn row:row]];
 
-            [self addSubview:dataView];
-            
-            _dataViews[columnIndex][rowIndex] = dataView;
+            if ([dataView superview] !== self)
+                [self addSubview:dataView];
 
-            rowIndex = [rows indexGreaterThanIndex:rowIndex];
+            _dataViewsForTableColumns[tableColumnUID][row] = dataView;
         }
-
-        columnIndex = [columns indexGreaterThanIndex:columnIndex];
     }
 }
 

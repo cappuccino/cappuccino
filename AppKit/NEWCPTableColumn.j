@@ -215,20 +215,24 @@ CPTableColumnUserResizingMask   = 2;
     var dataView = [self dataViewForRow:aRowIndex],
         dataViewUID = [dataView UID];
 
+var x = [self tableView]._cachedDataViews[dataViewUID];
+if (x && x.length)
+return x.pop();
+
     // if we haven't cached an archive of the data view, do it now
     if (!_dataViewData[dataViewUID])
         _dataViewData[dataViewUID] = [CPKeyedArchiver archivedDataWithRootObject:dataView];
 
     // unarchive the data view cache
     var newDataView = [CPKeyedUnarchiver unarchiveObjectWithData:_dataViewData[dataViewUID]];
-
+newDataView.identifier = dataViewUID;
     return newDataView;
 }
 
 //Setting the Identifier
 
 /*
-    Sets the receiverÕs identifier to anIdentifier.
+    Sets the receiver identifier to anIdentifier.
 */
 - (void)setIdentifier:(id)anIdentifier
 {

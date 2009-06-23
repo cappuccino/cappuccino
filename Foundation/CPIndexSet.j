@@ -23,6 +23,9 @@
 @import "CPRange.j"
 @import "CPObject.j"
 
+#define _CPMaxRange(aRange) ((aRange).location + (aRange).length)
+#define _CPMakeRange(aLocation, aLength) { location:(aLocation), length:aLength }
+#define _CPMakeRangeCopy(aRange) { location:(aRange).location, length:(aRange).length }
 
 /*! 
     @class CPIndexSet
@@ -68,7 +71,7 @@
 
 - (id)init
 {
-    return [self initWithIndexesInRange:CPMakeRange(0, 0)];
+    return [self initWithIndexesInRange:_CPMakeRange(0, 0)];
 }
 
 /*!
@@ -77,7 +80,7 @@
 */
 - (id)initWithIndex:(CPInteger)anIndex
 {
-    return [self initWithIndexesInRange:CPMakeRange(anIndex, 1)];
+    return [self initWithIndexesInRange:_CPMakeRange(anIndex, 1)];
 }
 
 /*!
@@ -120,7 +123,7 @@
             otherRangesCount = otherRanges.length;
 
         while (otherRangesCount--)
-            _ranges[otherRangesCount] = CPCopyRange(otherRanges[otherRangesCount]);
+            _ranges[otherRangesCount] = _CPMakeRangeCopy(otherRanges[otherRangesCount]);
     }
 
     return self;
@@ -232,7 +235,7 @@
     if (FLOOR(lhsRangeIndex) === lhsRangeIndex)
         return YES;
 
-    var rhsRangeIndex = assumedPositionOfIndex(_ranges, CPMaxRange(aRange) - 1);
+    var rhsRangeIndex = assumedPositionOfIndex(_ranges, _CPMaxRange(aRange) - 1);
 
     if (FLOOR(rhsRangeIndex) === rhsRangeIndex)
         return YES;
@@ -266,7 +269,7 @@
 - (CPInteger)lastIndex
 {
     if (_count > 0)
-        return CPMaxRange(_ranges[_ranges.length - 1]) - 1;
+        return _CPMaxRange(_ranges[_ranges.length - 1]) - 1;
 
     return CPNotFound;
 }
@@ -330,7 +333,7 @@
         return anIndex;
 
     // If not, it must be the first element of this range.
-    return CPMaxRange(range) - 1;
+    return _CPMaxRange(range) - 1;
 }
 
 /*!
@@ -360,48 +363,64 @@
     @param aRangePointer the range of indices to add
     @return the number of elements added to the array
 */
-- (unsigned)getIndexes:(CPArray)anArray maxCount:(unsigned)aMaxCount inIndexRange:(CPRange)aRangePointer
+- (CPInteger)getIndexes:(CPArray)anArray maxCount:(CPInteger)aMaxCount inIndexRange:(CPRange)aRange
 {
-    if (!_count || aMaxCount <= 0 || aRangePointer && !aRangePointer.length)
-        return 0;
-
-    var i = SOERangeIndex(self, aRangePointer? aRangePointer.location : 0),
-        total = 0,
-        count = _ranges.length;
-
-    for (; i < count; ++i)
+    if (!_count || aMaxCount === 0 || aRange && !aRange.length)
     {
-        // If aRangePointer is nil, all indexes are acceptable.
-        var intersection = aRangePointer ? CPIntersectionRange(_ranges[i], aRangePointer) : _ranges[i],
-            index = intersection.location,
-            maximum = CPMaxRange(intersection);
+        if (aRange)
+            aRange.length = 0;
 
-        for (; index < maximum; ++index)
+        return 0;
+    }
+
+    var total = 0;
+
+    if (aRange)
+    {
+        var firstIndex = aRange.location,
+            lastIndex = _CPMaxRange(aRange) - 1,
+            rangeIndex = CEIL(assumedPositionOfIndex(_ranges, firstIndex)),
+            lastRangeIndex = FLOOR(assumedPositionOfIndex(_ranges, lastIndex));
+    }
+    else
+    {
+        var firstIndex = [self firstIndex],
+            lastIndex = [self lastIndex],
+            rangeIndex = 0,
+            lastRangeIndex = _ranges.length - 1;
+    }
+
+    while (rangeIndex <= lastRangeIndex)
+    {
+        var range = _ranges[rangeIndex],
+            index = MAX(firstIndex, range.location),
+            maxRange = MIN(lastIndex + 1, _CPMaxRange(range));
+
+        for (; index < maxRange; ++index)
         {
             anArray[total++] = index;
 
-            if (total == aMaxCount)
+            if (total === aMaxCount)
             {
-                // Update aRangePointer if it exists...
-                if (aRangePointer)
+                // Update aRange if it exists...
+                if (aRange)
                 {
-                    var upper = CPMaxRange(aRangePointer);
-
-                    // Don't use CPMakeRange since the values need to persist.
-                    aRangePointer.location = index + 1;
-                    aRangePointer.length = upper - index - 1;
+                    aRange.location = index + 1;
+                    aRange.length = lastIndex + 1 - index - 1;
                 }
 
                 return aMaxCount;
             }
         }
+
+        ++rangeIndex;
     }
 
-    // Update aRangePointer if it exists...
-    if (aRangePointer)
+    // Update aRange if it exists...
+    if (aRange)
     {
-        aRangePointer.location = CPNotFound;
-        aRangePointer.length = 0;
+        aRange.location = CPNotFound;
+        aRange.length = 0;
     }
 
     return total;
@@ -456,7 +475,7 @@
 */
 - (void)addIndex:(CPInteger)anIndex
 {
-    [self addIndexesInRange:CPMakeRange(anIndex, 1)];
+    [self addIndexesInRange:_CPMakeRange(anIndex, 1)];
 }
 
 /*!
@@ -532,7 +551,7 @@
             for (; removal <= lastRemoval; ++removal)
                 _count -= _ranges[removal].length;
 
-            [_ranges removeObjectsInRange:CPMakeRange(lhsRangeIndexCEIL, removalCount)];
+            [_ranges removeObjectsInRange:_CPMakeRange(lhsRangeIndexCEIL, removalCount)];
         }
 
         [_ranges insertObject:aRange atIndex:lhsRangeIndexCEIL];
@@ -548,7 +567,7 @@
 */
 - (void)removeIndex:(CPInteger)anIndex
 {
-    [self removeIndexesInRange:CPMakeRange(anIndex, 1)];
+    [self removeIndexesInRange:_CPMakeRange(anIndex, 1)];
 }
 
 /*!
@@ -611,7 +630,7 @@
             if (maxRange < existingMaxRange)
             {
                 _count -= aRange.length;
-                [_ranges insertObject:CPMakeRange(maxRange, existingMaxRange - maxRange) atIndex:lhsRangeIndexCEIL + 1];
+                [_ranges insertObject:_CPMakeRange(maxRange, existingMaxRange - maxRange) atIndex:lhsRangeIndexCEIL + 1];
 
                 return;
             }
@@ -652,7 +671,7 @@
         for (; removal <= lastRemoval; ++removal)
             _count -= _ranges[removal].length;
 
-        [_ranges removeObjectsInRange:CPMakeRange(lhsRangeIndexCEIL, removalCount)];
+        [_ranges removeObjectsInRange:_CPMakeRange(lhsRangeIndexCEIL, removalCount)];
     }
 }
 

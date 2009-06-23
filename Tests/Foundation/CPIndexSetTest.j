@@ -147,6 +147,31 @@ function descriptionWithoutEntity(aString)
     [self assert:@"[number of indexes: 1 (in 1 range), indexes: (0)]" equals:descriptionWithoutEntity(indexSet)];
 }
 
+- (void)testGetIndexes
+{
+    var indexSet = [CPIndexSet indexSet];
+
+    // Test no indexes
+    [self assert:descriptionWithoutEntity(indexSet) equals:@"(no indexes)"];
+
+    // Test adding initial range
+    [indexSet addIndexesInRange:CPMakeRange(0, 10)];
+
+    [indexSet addIndexesInRange:CPMakeRange(15, 1)];
+
+    [indexSet addIndexesInRange:CPMakeRange(20, 10)];
+
+    [indexSet addIndexesInRange:CPMakeRange(50, 10)];
+
+    [self assert:@"[number of indexes: 31 (in 4 ranges), indexes: (0-9 15 20-29 50-59)]" equals:descriptionWithoutEntity(indexSet)];
+
+    var array = [];
+
+    [indexSet getIndexes:array maxCount:1000 inIndexRange:nil];
+
+    [self assert:[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 15, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59] equals:array];
+}
+
 - (void)setUp
 {
     _set = [CPIndexSet indexSetWithIndexesInRange:CPMakeRange(10, 10)];
