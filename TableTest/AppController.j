@@ -38,15 +38,21 @@ CPLogRegister(CPLogConsole);
 
     iconImage = [[CPImage alloc] initWithContentsOfFile:"http://cappuccino.org/images/favicon.png" size:CGSizeMake(16,16)];
 
-    for (var i = 1; i <= 20; i++)
+    var textDataView = [CPTextField new];
+
+    [textDataView setBackgroundColor:[CPColor redColor]];
+
+    for (var i = 1; i <= 10; i++)
     {
         var column = [[NEWCPTableColumn alloc] initWithIdentifier:String(i)];
 
         [[column headerView] setStringValue:"Number "+i];
         [[column headerView] sizeToFit];
         [column setWidth:[[column headerView] frame].size.width + 20];
-        
-//        [column setWidth:200.0];
+
+        //[column setWidth:200.0];
+
+        [column setDataView:textDataView];
 
         [tableView addTableColumn:column];
     }

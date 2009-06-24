@@ -80,7 +80,11 @@ CPTableViewSelectionHighlightStyleSourceList = 1;
 
     unsigned    _numberOfRows;
 
+
     CPTableHeaderView _headerView;
+
+    CPIndexSet  _selectedColumnIndexes;
+    CPIndexSet  _selectedRowIndexes;
 }
 
 - (id)initWithFrame:(CGRect)aFrame
@@ -112,7 +116,7 @@ CPTableViewSelectionHighlightStyleSourceList = 1;
         _numberOfRows = 0;
         _exposedRows = [CPIndexSet indexSet];
         _exposedColumns = [CPIndexSet indexSet];
-_cachedDataViews = { };
+        _cachedDataViews = { };
         _intercellSpacing = _CGSizeMake(0.0, 0.0);
         _rowHeight = 24.0;
 
@@ -120,6 +124,9 @@ _cachedDataViews = { };
         [_headerView setAutoresizingMask:CPViewWidthSizable];
 
         [_headerView setTableView:self];
+
+        _selectedColumnIndexes = [CPIndexSet indexSet];
+        _selectedRowIndexes = [CPIndexSet indexSet];
     }
 
     return self;
@@ -406,27 +413,75 @@ _cachedDataViews = { };
 {
     var index = [self columnWithIdentifier:anIdentifier];
 
-    if (index < 0)
+    if (index === CPNotFound)
         return nil;
 
     return _tableColumns[index];
 }
 
 //Selecting Columns and Rows
+- (void)selectColumnIndexes:(CPIndexSet)columns byExtendingSelection:(BOOL)shouldExtendSelection
+{
+    if (shouldExtendSelection)
+        [_selectedColumnIndexes addIndexes:columns];
+    else
+        _selectedColumnIndexes = [columns copy];
+}
+
+- (void)selectRowIndexes:(CPIndexSet)rows byExtendingSelection:(BOOL)shouldExtendSelection
+{
+    if (shouldExtendSelection)
+        [_selectedRowIndexes addIndexes:rows];
+    else
+        _selectedRowIndexes = [rows copy];
+}
+
+- (CPIndexSet)selectedColumnIndexes
+{
+    return _selectedColumnIndexes;
+}
+
+- (void)selectedRowIndexes
+{
+    return _selectedRowIndexes;
+}
+
+- (void)deselectColumn:(CPInteger)aColumn
+{
+    [_selectedColumnIndexes removeIndex:aColumn];
+}
+
+- (void)deselectRow:(CPInteger)aRow
+{
+    [_selectedRowIndexes removeIndex:aRow];
+}
+
+- (CPInteger)numberOfSelectedColumns
+{
+    return [_selectedColumnIndexes count];
+}
+
+- (CPInteger)numberOfSelectedRows
+{
+    return [_selectedRowIndexes count];
+}
+
 /*
-    * - selectColumnIndexes:byExtendingSelection:
-    * - selectRowIndexes:byExtendingSelection:
-    * - selectedColumnIndexes
-    * - selectedRowIndexes
-    * - deselectColumn:
-    * - deselectRow:
-    * - numberOfSelectedColumns
-    * - numberOfSelectedRows
-    * - selectedColumn
+- (CPInteger)selectedColumn
     * - selectedRow
-    * - isColumnSelected:
-    * - isRowSelected:
-    * - selectAll:
+*/
+
+- (BOOL)isColumnSelected:(CPInteger)aColumn
+{
+    return [_selectedColumnIndexes containsIndex:aColumn];
+}
+
+- (BOOL)isRowSelected:(CPInteger)aRow
+{
+    return [_selectedRowIndexes containsIndex:aRow];
+}
+/*
+- (void)selectAll:
     * - deselectAll:
     * - allowsTypeSelect
     * - setAllowsTypeSelect:
@@ -1051,7 +1106,6 @@ _cachedDataViews[dataView.identifier].push(dataView);
             if (!rectOfRow)
                 rectOfRow = rowRects[row] = [self rectOfRow:row];
 
-            [dataView setBackgroundColor:[CPColor redColor]];
             [dataView setFrame:_CGRectMake(tableColumnRange.location, _CGRectGetMinY(rectOfRow), tableColumnRange.length, _CGRectGetHeight(rectOfRow))];
             [dataView setObjectValue:[self _objectValueForTableColumn:tableColumn row:row]];
 

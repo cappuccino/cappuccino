@@ -1,6 +1,7 @@
 @import <Foundation/CPArray.j>
 @import <Foundation/CPString.j>
 @import <Foundation/CPNumber.j>
+@import <Foundation/CPSortDescriptor.j>
 
 @implementation CPArrayTest : OJTestCase
 
@@ -92,4 +93,39 @@
 	
 	[self assert:array equals:[@"one", @"two", @"four"]];
 }
+
+- (void)testIndexOfObjectSortedByFunction
+{
+    var array = [0, 1, 2, 3, 4, 7];
+
+    [self assert:[array indexOfObject:3 sortedByFunction:function(a, b){ return a - b; }] equals:3];
+    [self assert:[[array arrayByReversingArray] indexOfObject:3 sortedByFunction:function(a, b){ return b - a; }] equals:2];
+}
+
+- (void)testIndexOfObjectSortedByDescriptors
+{
+    var array = [0, 1, 2, 3, 4, 7];
+
+    [self assert:[array indexOfObject:3
+                  sortedByDescriptors:[[[CPSortDescriptor alloc] initWithKey:@"intValue" ascending:YES]]]
+          equals:3];
+
+    [self assert:[[array arrayByReversingArray] indexOfObject:3
+                  sortedByDescriptors:[[[CPSortDescriptor alloc] initWithKey:@"intValue" ascending:NO]]]
+          equals:2];
+}
+
+@end
+
+@implementation CPArray (reverse)
+
+- (CPArray)arrayByReversingArray
+{
+    var a = [];
+    for (i = length - 1; i>0; --i)
+        a.push(self[i]);
+
+    return a;
+}
+
 @end

@@ -1018,3 +1018,43 @@ var CPDOMEventStop = function(aDOMEvent)
         CPSharedDOMWindowBridge._DOMFocusElement.blur();
     }
 }
+
+function CPWindowObjectList()
+{
+    var bridge = [CPDOMWindowBridge sharedDOMWindowBridge],
+        levels = bridge._windowLevels,
+        layers = bridge._windowLayers,
+        levelCount = levels.length,
+        windowObjects = [];
+
+    while (levelCount--)
+    {
+        var windows = [layers objectForKey:levels[levelCount]]._windows,
+            windowCount = windows.length;
+
+        while (windowCount--)
+            windowObjects.push(windows[windowCount]);
+    }
+
+    return windowObjects;
+}
+
+function CPWindowList()
+{
+    var bridge = [CPDOMWindowBridge sharedDOMWindowBridge],
+        levels = bridge._windowLevels,
+        layers = bridge._windowLayers,
+        levelCount = levels.length,
+        windowNumbers = [];
+
+    while (levelCount--)
+    {
+        var windows = [layers objectForKey:levels[levelCount]]._windows,
+            windowCount = windows.length;
+
+        while (windowCount--)
+            windowNumbers.push([windows[windowCount] windowNumber]);
+    }
+
+    return windowNumbers;
+}
