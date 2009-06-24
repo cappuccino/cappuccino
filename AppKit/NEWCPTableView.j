@@ -1032,7 +1032,6 @@ _cachedDataViews[dataView.identifier].push(dataView);
             if (!rectOfRow)
                 rectOfRow = rowRects[row] = [self rectOfRow:row];
 
-            [dataView setBackgroundColor:[CPColor redColor]];
             [dataView setFrame:_CGRectMake(tableColumnRange.location, _CGRectGetMinY(rectOfRow), tableColumnRange.length, _CGRectGetHeight(rectOfRow))];
             [dataView setObjectValue:[self _objectValueForTableColumn:tableColumn row:row]];
 
