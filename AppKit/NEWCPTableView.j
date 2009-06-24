@@ -79,6 +79,8 @@ CPTableViewSelectionHighlightStyleSourceList = 1;
     unsigned    _currentHighlightedTableColumn;
 
     unsigned    _numberOfRows;
+
+    CPTableHeaderView _headerView;
 }
 
 - (id)initWithFrame:(CGRect)aFrame
@@ -113,6 +115,11 @@ CPTableViewSelectionHighlightStyleSourceList = 1;
 _cachedDataViews = { };
         _intercellSpacing = _CGSizeMake(0.0, 0.0);
         _rowHeight = 24.0;
+
+        _headerView = [[CPTableHeaderView alloc] initWithFrame:CGRectMake(0, 0, [self bounds].size.width, _rowHeight)];
+        [_headerView setAutoresizingMask:CPViewWidthSizable];
+
+        [_headerView setTableView:self];
     }
 
     return self;
@@ -459,6 +466,18 @@ _cachedDataViews = { };
     * - setCornerView:
     * - cornerView
 */
+
+- (CPView)headerView
+{
+    return _headerView;
+}
+
+- (void)setHeaderView:(CPView)aHeaderView
+{
+    _headerView = aHeaderView;
+    [_headerView setTableView:self];
+}
+
 //Layout Support
 
 // Complexity:

@@ -38,7 +38,8 @@
 @implementation CPScrollView : CPView
 {
     CPClipView  _contentView;
-    
+    CPClipView  _headerClipView;
+
     BOOL        _hasVerticalScroller;
     BOOL        _hasHorizontalScroller;
     BOOL        _autohidesScrollers;
@@ -57,23 +58,27 @@
 - (id)initWithFrame:(CGRect)aFrame
 {
     self = [super initWithFrame:aFrame];
-    
+
     if (self)
     {
         _verticalLineScroll = 10.0;
         _verticalPageScroll = 10.0;
-        
+
         _horizontalLineScroll = 10.0;
         _horizontalPageScroll = 10.0;
 
-        _contentView = [[CPClipView alloc] initWithFrame:[self bounds]];
-        
+        _contentView = [[CPClipView alloc] initWithFrame:[self clipViewFrame]];
+
         [self addSubview:_contentView];
-        
+
+        _headerClipView = [[CPClipView alloc] initWithFrame:[self headerClipViewFrame]];
+
+        [self addSubview:_headerClipView];
+
         [self setHasVerticalScroller:YES];
         [self setHasHorizontalScroller:YES];
     }
-    
+
     return self;
 }
 
@@ -114,7 +119,7 @@
     
     _contentView = aContentView;
         
-    [_contentView setFrame:CGRectMake(0.0, 0.0, size.width, size.height)];
+    [_contentView setFrame:[self clipViewFrame]];
     [_contentView setDocumentView:documentView];
 
     [self addSubview:_contentView];
@@ -134,8 +139,13 @@
 */
 - (void)setDocumentView:(CPView)aView
 {
-   [_contentView setDocumentView:aView];
-   [self reflectScrolledClipView:_contentView];
+    [_contentView setDocumentView:aView];
+    [_headerClipView setDocumentView:[self _headerView]];
+
+    [_contentView setFrame:[self clipViewFrame]];
+    [_headerClipView setFrame:[self headerClipViewFrame]];
+
+    [self reflectScrolledClipView:_contentView];
 }
 
 /*!
@@ -167,17 +177,19 @@
 //            [_horizontalScroller setEnabled:NO];
         }
         
-        [_contentView setFrame:[self bounds]];
+        [_contentView setFrame:[self clipViewFrame]];
         
         --_recursionCount;
         
         return;
     }
 
-    var documentFrame = [documentView frame],
-        contentViewFrame = [self bounds],
+    var documentFrame = [documentView frame],   // the size of the whole document
+        clipViewFrame = [self clipViewFrame],   // the size of the visible document, within the scrollbars
+        headerViewFrame = [self headerClipViewFrame],
+        headerViewHeight = _CGRectGetHeight(headerViewFrame),
         scrollPoint = [_contentView bounds].origin,
-        difference = _CGSizeMake(CPRectGetWidth(documentFrame) - CPRectGetWidth(contentViewFrame), CPRectGetHeight(documentFrame) - CPRectGetHeight(contentViewFrame)),
+        difference = _CGSizeMake(CPRectGetWidth(documentFrame) - CPRectGetWidth(clipViewFrame), CPRectGetHeight(documentFrame) - CPRectGetHeight(clipViewFrame)),
         shouldShowVerticalScroller = (!_autohidesScrollers || difference.height > 0.0) && _hasVerticalScroller,
         shouldShowHorizontalScroller = (!_autohidesScrollers || difference.width > 0.0) && _hasHorizontalScroller,
         wasShowingVerticalScroller = ![_verticalScroller isHidden],
@@ -203,17 +215,17 @@
 
     if (shouldShowVerticalScroller)
     {
-        var verticalScrollerHeight = CPRectGetHeight(contentViewFrame);
+        var verticalScrollerHeight = CPRectGetHeight([self bounds]) - headerViewHeight;
         
         if (shouldShowHorizontalScroller)
             verticalScrollerHeight -= horizontalScrollerHeight;
     
         difference.width += verticalScrollerWidth;
-        contentViewFrame.size.width -= verticalScrollerWidth;
+        clipViewFrame.size.width -= verticalScrollerWidth;
     
         [_verticalScroller setFloatValue:(difference.height <= 0.0) ? 0.0 : scrollPoint.y / difference.height
-            knobProportion:CPRectGetHeight(contentViewFrame) / CPRectGetHeight(documentFrame)];
-        [_verticalScroller setFrame:CPRectMake(CPRectGetMaxX(contentViewFrame), 0.0, verticalScrollerWidth, verticalScrollerHeight)];
+            knobProportion:CPRectGetHeight(clipViewFrame) / CPRectGetHeight(documentFrame)];
+        [_verticalScroller setFrame:CPRectMake(CPRectGetMaxX(clipViewFrame), headerViewHeight, verticalScrollerWidth, verticalScrollerHeight)];
     }
     else if (wasShowingVerticalScroller)
         [_verticalScroller setFloatValue:0.0 knobProportion:1.0];
@@ -221,16 +233,17 @@
     if (shouldShowHorizontalScroller)
     {
         difference.height += horizontalScrollerHeight;
-        contentViewFrame.size.height -= horizontalScrollerHeight;
+        clipViewFrame.size.height -= horizontalScrollerHeight;
         
         [_horizontalScroller setFloatValue:(difference.width <= 0.0) ? 0.0 : scrollPoint.x / difference.width
-            knobProportion:CPRectGetWidth(contentViewFrame) / CPRectGetWidth(documentFrame)];
-        [_horizontalScroller setFrame:CPRectMake(0.0, CPRectGetMaxY(contentViewFrame), CPRectGetWidth(contentViewFrame), horizontalScrollerHeight)];
+            knobProportion:CPRectGetWidth(clipViewFrame) / CPRectGetWidth(documentFrame)];
+        [_horizontalScroller setFrame:CPRectMake(0.0, CPRectGetMaxY(clipViewFrame), CPRectGetWidth(clipViewFrame), horizontalScrollerHeight)];
     }
     else if (wasShowingHorizontalScroller)
         [_horizontalScroller setFloatValue:0.0 knobProportion:1.0];
     
-    [_contentView setFrame:contentViewFrame];
+    [_contentView setFrame:clipViewFrame];
+    [_headerClipView setFrame:headerViewFrame];
     
     --_recursionCount;
 }
@@ -384,13 +397,47 @@
 {
     return _autohidesScrollers;
 }
-/*
-- (void)setFrameSize:(CPRect)aSize
+
+
+- (CGRect)insetBounds
 {
-    [super setFrameSize:aSize];
+    return [self bounds];
+}
+
+- (CPView)_headerView
+{
+    var documentView = [self documentView];
     
-    [self reflectScrolledClipView:_contentView];
-}*/
+    if ([documentView respondsToSelector:@selector(headerView)])
+        return [documentView performSelector:@selector(headerView)];
+
+    return nil;
+}
+
+- (CGRect)headerClipViewFrame
+{
+    var headerView = [self _headerView],
+        bounds = [self insetBounds];
+
+    if (!headerView)
+        return CGRectMakeZero();
+
+    bounds.size.height = [headerView bounds].size.height;
+    bounds.size.width -= _verticalScroller ? [_verticalScroller frame].size.width : [CPScroller scrollerWidth];
+
+    return bounds;
+}
+
+- (CGRect)clipViewFrame
+{
+    var bounds = [self insetBounds],
+        headerViewFrame = [self headerClipViewFrame];
+
+    bounds.origin.y += headerViewFrame.size.height;
+    bounds.size.height -= headerViewFrame.size.height;
+
+    return bounds;
+}
 
 /* @ignore */
 - (void)_verticalScrollerDidScroll:(CPScroller)aScroller
@@ -448,6 +495,7 @@
     }
 
     [_contentView scrollToPoint:contentBounds.origin];
+    [_headerClipView scrollToPoint:CGPointMake(contentBounds.origin.x, 0.0)];
 }
 
 /*!
@@ -588,6 +636,7 @@
     contentBounds.origin.y += [anEvent deltaY] * _verticalLineScroll;
 
     [_contentView scrollToPoint:contentBounds.origin];
+    [_headerClipView scrollToPoint:CGPointMake(contentBounds.origin.x, 0.0)];
 }
 
 - (void)keyDown:(CPEvent)anEvent
@@ -627,6 +676,7 @@
     }
 
     [_contentView scrollToPoint:contentBounds.origin];
+    [_headerClipView scrollToPoint:CGPointMake(contentBounds.origin, 0)];
 }
 
 @end

@@ -54,7 +54,7 @@ CPTableColumnUserResizingMask   = 2;
         _maxWidth = 1000000.0;
 
         [self setIdentifier:anIdentifier];
-        [self setHeaderView:[CPTableHeaderView new]];
+        [self setHeaderView:[CPTextField new]];
         [self setDataView:[CPTextField new]];
     }
 
