@@ -145,6 +145,14 @@
     [_contentView setFrame:[self clipViewFrame]];
     [_headerClipView setFrame:[self headerClipViewFrame]];
 
+    var cornerView = [self _cornerView];
+
+    if (cornerView)
+    {
+        [cornerView setFrame:[self cornerViewFrame]];
+        [self addSubview:cornerView];
+    }
+
     [self reflectScrolledClipView:_contentView];
 }
 
@@ -189,6 +197,8 @@
         clipViewFrame = [self clipViewFrame],   // the size of the visible document, within the scrollbars
         headerViewFrame = [self headerClipViewFrame],
         headerViewHeight = _CGRectGetHeight(headerViewFrame),
+        cornerViewFrame = [self cornerViewFrame],
+        cornerViewHeight = _CGRectGetHeight(cornerViewFrame),
         scrollPoint = [_contentView bounds].origin,
         difference = _CGSizeMake(CPRectGetWidth(documentFrame) - CPRectGetWidth(clipViewFrame), CPRectGetHeight(documentFrame) - CPRectGetHeight(clipViewFrame)),
         shouldShowVerticalScroller = (!_autohidesScrollers || difference.height > 0.0) && _hasVerticalScroller,
@@ -216,7 +226,7 @@
 
     if (shouldShowVerticalScroller)
     {
-        var verticalScrollerHeight = CPRectGetHeight([self bounds]) - headerViewHeight;
+        var verticalScrollerHeight = CPRectGetHeight([self bounds]) - (cornerViewHeight ? cornerViewHeight : headerViewHeight);
         
         if (shouldShowHorizontalScroller)
             verticalScrollerHeight -= horizontalScrollerHeight;
@@ -226,7 +236,7 @@
     
         [_verticalScroller setFloatValue:(difference.height <= 0.0) ? 0.0 : scrollPoint.y / difference.height
             knobProportion:CPRectGetHeight(clipViewFrame) / CPRectGetHeight(documentFrame)];
-        [_verticalScroller setFrame:CPRectMake(CPRectGetMaxX(clipViewFrame), headerViewHeight, verticalScrollerWidth, verticalScrollerHeight)];
+        [_verticalScroller setFrame:CPRectMake(CPRectGetMaxX(clipViewFrame), (cornerViewHeight ? cornerViewHeight : headerViewHeight), verticalScrollerWidth, verticalScrollerHeight)];
     }
     else if (wasShowingVerticalScroller)
         [_verticalScroller setFloatValue:0.0 knobProportion:1.0];
@@ -410,21 +420,47 @@
     var documentView = [self documentView];
     
     if ([documentView respondsToSelector:@selector(headerView)])
-        return [documentView performSelector:@selector(headerView)];
+        return [documentView headerView];
 
     return nil;
+}
+
+- (CPView)_cornerView
+{
+    var documentView = [self documentView];
+
+    if ([documentView respondsToSelector:@selector(cornerView)])
+        return [documentView cornerView];
+}
+
+- (CGRect)cornerViewFrame
+{
+    var cornerView = [self _cornerView],
+        cornerBounds = [cornerView bounds],
+        bounds = [self insetBounds];
+
+    if (!cornerView)
+        return CGRectMakeZero();
+
+    cornerBounds.origin.x = CGRectGetMaxX(bounds) - CGRectGetWidth(cornerBounds);
+    cornerBounds.origin.y = 0;
+
+    return cornerBounds;
 }
 
 - (CGRect)headerClipViewFrame
 {
     var headerView = [self _headerView],
+        cornerView = [self _cornerView],
         bounds = [self insetBounds];
 
     if (!headerView)
         return CGRectMakeZero();
 
     bounds.size.height = [headerView bounds].size.height;
-    bounds.size.width -= _verticalScroller ? [_verticalScroller frame].size.width : [CPScroller scrollerWidth];
+
+    if (cornerView)
+        bounds.size.width -= CGRectGetWidth([cornerView bounds]);
 
     return bounds;
 }

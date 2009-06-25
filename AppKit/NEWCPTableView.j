@@ -3,6 +3,8 @@
 
 @import "CPControl.j"
 @import "CPTableColumn.j"
+@import "_CPCornerView.j"
+@import "CPScroller.j"
 
 #include "CoreGraphics/CGGeometry.h"
 
@@ -82,6 +84,7 @@ CPTableViewSelectionHighlightStyleSourceList = 1;
 
 
     CPTableHeaderView _headerView;
+    _CPCornerView     _cornerView;
 
     CPIndexSet  _selectedColumnIndexes;
     CPIndexSet  _selectedRowIndexes;
@@ -123,6 +126,8 @@ CPTableViewSelectionHighlightStyleSourceList = 1;
         _headerView = [[CPTableHeaderView alloc] initWithFrame:CGRectMake(0, 0, [self bounds].size.width, _rowHeight)];
 
         [_headerView setTableView:self];
+
+        _cornerView = [[_CPCornerView alloc] initWithFrame:CGRectMake(0, 0, [CPScroller scrollerWidth], CGRectGetHeight([_headerView frame]))];
 
         _selectedColumnIndexes = [CPIndexSet indexSet];
         _selectedRowIndexes = [CPIndexSet indexSet];
@@ -520,6 +525,16 @@ CPTableViewSelectionHighlightStyleSourceList = 1;
     * - setCornerView:
     * - cornerView
 */
+
+- (CPView)cornerView
+{
+    return _cornerView;
+}
+
+- (void)setCornerView:(CPView)aView
+{
+    _cornerView = aView;
+}
 
 - (CPView)headerView
 {
