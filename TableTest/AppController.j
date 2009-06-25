@@ -48,15 +48,15 @@ CPLogRegister(CPLogConsole);
 
         [[column headerView] setStringValue:"Number "+i];
         [[column headerView] sizeToFit];
-        [column setWidth:[[column headerView] frame].size.width + 20];
+        //[column setWidth:[[column headerView] frame].size.width + 20];
 
-        //[column setWidth:200.0];
+        [column setWidth:170.0];
 
         [column setDataView:textDataView];
 
         [tableView addTableColumn:column];
     }
-
+    
     var scrollView = [[CPScrollView alloc] initWithFrame:[view bounds]];
 
     [scrollView setDocumentView:tableView];

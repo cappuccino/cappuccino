@@ -121,7 +121,6 @@ CPTableViewSelectionHighlightStyleSourceList = 1;
         _rowHeight = 24.0;
 
         _headerView = [[CPTableHeaderView alloc] initWithFrame:CGRectMake(0, 0, [self bounds].size.width, _rowHeight)];
-        [_headerView setAutoresizingMask:CPViewWidthSizable];
 
         [_headerView setTableView:self];
 
@@ -1115,6 +1114,12 @@ _cachedDataViews[dataView.identifier].push(dataView);
             _dataViewsForTableColumns[tableColumnUID][row] = dataView;
         }
     }
+}
+
+- (void)setFrameSize:(CGSize)aSize
+{
+    [super setFrameSize:aSize];
+    [_headerView setFrameSize:CGSizeMake(aSize.width, [_headerView frame].size.height)];
 }
 
 - (void)layoutSubviews

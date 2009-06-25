@@ -176,11 +176,12 @@
 //            [_verticalScroller setEnabled:NO];
 //            [_horizontalScroller setEnabled:NO];
         }
-        
+
         [_contentView setFrame:[self clipViewFrame]];
-        
+        [_headerClipView setFrame:[self headerClipViewFrame]];
+
         --_recursionCount;
-        
+
         return;
     }
 

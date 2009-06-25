@@ -94,21 +94,25 @@
     return bounds;
 }
 
-- (void)drawRect:(CGRect)aRect
+- (void)layoutSubviews
 {
-    var tableColumns    = [_tableView tableColumns];
-    var count           = [tableColumns count];
-    var columnRect      = [self bounds];
-    var spacing         = [_tableView intercellSpacing];
+    var tableColumns    = [_tableView tableColumns],
+        count = [tableColumns count],
+        columnRect = [self bounds],
+        spacing = [_tableView intercellSpacing];
  
-    for (i = 0; i < count; ++i) {
-        var column              = [tableColumns objectAtIndex:i];
-        var headerView          = [column headerView] ;
+    for (i = 0; i < count; ++i) 
+    {
+        var column = [tableColumns objectAtIndex:i],
+            headerView = [column headerView];
+
         columnRect.size.width   = [column width] + spacing.width;
-        // [headerView setHighlighted:[_tableView isColumnSelected:[[_tableView tableColumns] indexOfObject:column]]];
+
         [headerView setFrame:columnRect];
+
         columnRect.origin.x += [column width] + spacing.width;
-        [self addSubview:headerView] ;
+
+        [self addSubview:headerView];
     }
 }
 
