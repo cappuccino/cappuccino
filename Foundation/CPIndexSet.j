@@ -152,8 +152,8 @@
     if (rangesCount !== otherRanges.length || _count !== anIndexSet._count)
         return NO;
 
-    while (count--)
-        if (!CPEqualRanges(_ranges[count], otherRanges[count]))
+    while (rangesCount--)
+        if (!CPEqualRanges(_ranges[rangesCount], otherRanges[rangesCount]))
             return NO;
 
     return YES;
