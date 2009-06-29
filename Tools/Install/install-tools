@@ -37,5 +37,6 @@ done
 chmod +x $INSTALL_DIR/share/objj/bin/*
 
 gem install *.gem
+gem cleanup objective-j
 
 echo "Cappuccino Tools Installed"
