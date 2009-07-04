@@ -119,13 +119,13 @@ CPSegmentSwitchTrackingMomentary = 2;
     }
     else if (aCount < _segments.length)
     {
-        for (var index = aCount; index < _segments.length; ++index)
-            _segments[index] = nil;
+        _segments.length = aCount;
+        _themeStates.length = aCount;
     }
-    
-    if (_selectedSegment < _segments.length)
+
+    if (_selectedSegment >= _segments.length)
         _selectedSegment = -1;
-    
+
     [self tileWithChangedSegment:0];
 }
 
