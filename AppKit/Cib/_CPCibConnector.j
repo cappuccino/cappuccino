@@ -60,26 +60,38 @@ var _CPCibConnectorSourceKey        = @"_CPCibConnectorSourceKey",
 
 - (void)establishConnection
 {
-    var selectorName = _label;
-    
-    if (![selectorName hasSuffix:@":"])
+    var selectorName = _label,
+        selectorNameLength = [selectorName length];
+
+    if (selectorNameLength && selectorName[selectorNameLength - 1] !== ':')
         selectorName += ':';
 
     var selector = CPSelectorFromString(selectorName);
 
+    // Not having a selector is a fatal error.
     if (!selector)
         [CPException
             raise:CPInvalidArgumentException
            reason:@"-[" + [self className] + ' ' + _cmd + @"] selector "  + selectorName + @" does not exist."];
 
+    // If the destination doesn't respond to this selector, warn but don't die.
+    if (_destination && ![_destination respondsToSelector:selector])
+    {
+        CPLog.warn(@"Could not connect the action " + selector + @" to target of class " + [_destination className]);
+
+        return;
+    }
+
+    // Not being able to set the action is a fatal error.
     if ([_source respondsToSelector:@selector(setAction:)])
         objj_msgSend(_source, @selector(setAction:), selector);
-    
+
     else
         [CPException
             raise:CPInvalidArgumentException
            reason:@"-[" + [self className] + ' ' + _cmd + @"] " + [_source description] + " does not respond to setAction:"];
 
+    // Not being able to set the target is a fatal error.
     if ([_source respondsToSelector:@selector(setTarget:)])
         objj_msgSend(_source, @selector(setTarget:), _destination);
 
@@ -97,7 +109,18 @@ var _CPCibConnectorSourceKey        = @"_CPCibConnectorSourceKey",
 
 - (void)establishConnection
 {
-    [_source setValue:_destination forKey:_label];
+    try
+    {
+        [_source setValue:_destination forKey:_label];
+    }
+    catch (anException)
+    {
+        if ([anException name] === CPUndefinedKeyException)
+            CPLog.warn(@"Could not connect the outlet " + _label + @" of target of class " + [_source className]);
+
+        else
+            throw anException;
+    }
 }
 
 @end
