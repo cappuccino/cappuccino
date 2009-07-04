@@ -8,7 +8,6 @@
 
 #include "CoreGraphics/CGGeometry.h"
 
-
 var CPTableViewDataSource_tableView_setObjectValue_forTableColumn_row_                                  = 1 << 2,
 
     CPTableViewDataSource_tableView_acceptDrop_row_dropOperation_                                       = 1 << 3,
@@ -46,6 +45,33 @@ CPTableViewSelectionHighlightStyleSourceList = 1;
 */
 
 #define NUMBER_OF_COLUMNS() (_tableColumns.length)
+
+@implementation _CPTableDrawView : CPView
+{
+    CPTableView _tableView;
+}
+
+- (id)initWithTableView:(CPTableView)aTableView
+{
+    self = [super init];
+
+    if (self)
+        _tableView = aTableView;
+
+    return self;
+}
+
+- (void)drawRect:(CGRect)aRect
+{
+    var frame = [self frame],
+        context = [[CPGraphicsContext currentContext] graphicsPort];
+
+    CGContextTranslateCTM(context, -_CGRectGetMinX(frame), -_CGRectGetMinY(frame));
+
+    [_tableView _drawRect:aRect];
+}
+
+@end
 
 @implementation NEWCPTableView : CPControl
 {
@@ -88,6 +114,9 @@ CPTableViewSelectionHighlightStyleSourceList = 1;
 
     CPIndexSet  _selectedColumnIndexes;
     CPIndexSet  _selectedRowIndexes;
+    CPInteger   _selectionStartRow;
+
+    _CPTableDrawView _tableDrawView;
 }
 
 - (id)initWithFrame:(CGRect)aFrame
@@ -131,6 +160,10 @@ CPTableViewSelectionHighlightStyleSourceList = 1;
 
         _selectedColumnIndexes = [CPIndexSet indexSet];
         _selectedRowIndexes = [CPIndexSet indexSet];
+
+        _tableDrawView = [[_CPTableDrawView alloc] initWithTableView:self];
+        [_tableDrawView setBackgroundColor:[CPColor yellowColor]];
+        [self addSubview:_tableDrawView];
     }
 
     return self;
@@ -426,18 +459,28 @@ CPTableViewSelectionHighlightStyleSourceList = 1;
 //Selecting Columns and Rows
 - (void)selectColumnIndexes:(CPIndexSet)columns byExtendingSelection:(BOOL)shouldExtendSelection
 {
+    // We deselect all columns when selecting rows.
+    _selectedRowIndexes = [CPIndexSet indexSet];
+
     if (shouldExtendSelection)
         [_selectedColumnIndexes addIndexes:columns];
     else
         _selectedColumnIndexes = [columns copy];
+
+    [self setNeedsLayout];
 }
 
 - (void)selectRowIndexes:(CPIndexSet)rows byExtendingSelection:(BOOL)shouldExtendSelection
 {
+    // We deselect all rows when selecting columns.
+    _selectedColumnIndexes = [CPIndexSet indexSet];
+
     if (shouldExtendSelection)
         [_selectedRowIndexes addIndexes:rows];
     else
         _selectedRowIndexes = [rows copy];
+
+    [self setNeedsLayout];
 }
 
 - (CPIndexSet)selectedColumnIndexes
@@ -1002,6 +1045,10 @@ CPTableViewSelectionHighlightStyleSourceList = 1;
         // remove?
         return;
     }
+
+//    if (!window.blah)
+//        return window.setTimeout(function() { window.blah = true; [self load]; window.blah = false}, 0.0);
+
     if (window.console && window.console.profile)
         console.profile("cell-load");
 
@@ -1041,6 +1088,10 @@ CPTableViewSelectionHighlightStyleSourceList = 1;
 //    console.log("newly exposed rows: " + newlyExposedRows + "\nnewly exposed columns: " + newlyExposedColumns);
     _exposedRows = exposedRows;
     _exposedColumns = exposedColumns;
+
+    [_tableDrawView setFrame:exposedRect];
+//    [_tableDrawView setBounds:exposedRect];
+    [_tableDrawView display];
 
     if (window.console && window.console.profile)
         console.profileEnd("cell-load");
@@ -1137,6 +1188,37 @@ _cachedDataViews[dataView.identifier].push(dataView);
     [_headerView setFrameSize:CGSizeMake(aSize.width, [_headerView frame].size.height)];
 }
 
+- (void)_drawRect:(CGRect)aRect
+{
+    [self highlightSelectionInClipRect:[self _exposedRect]];
+}
+
+- (void)highlightSelectionInClipRect:(CGRect)aRect
+{
+    [[CPColor greenColor] set];
+
+    var context = [[CPGraphicsContext currentContext] graphicsPort];
+
+    if ([_selectedRowIndexes count] >= 1)
+    {
+        var exposedRows = [CPIndexSet indexSetWithIndexesInRange:[self rowsInRect:aRect]],
+            exposedRange = CPMakeRange([exposedRows firstIndex], [exposedRows lastIndex] - [exposedRows firstIndex] + 1),
+            rowArray = [];
+
+        [_selectedRowIndexes getIndexes:rowArray maxCount:-1 inIndexRange:exposedRange];
+
+        var rowArrayIndex = 0,
+            rowArrayCount = rowArray.length;
+
+        for (; rowArrayIndex < rowArrayCount; ++rowArrayIndex)
+            CGContextFillRect(context, [self rectOfRow:rowArray[rowArrayIndex]]);
+    }
+    else
+    {
+
+    }
+}
+
 - (void)layoutSubviews
 {
     [self load];
@@ -1186,6 +1268,134 @@ _cachedDataViews[dataView.identifier].push(dataView);
 
 - (void)superviewFrameChanged:(CPNotification)aNotification
 {
+}
+
+//
+
+/*
+    var type = [anEvent type],
+        point = [self convertPoint:[anEvent locationInWindow] fromView:nil],
+        currentRow = MAX(0, MIN(_numberOfRows-1, [self _rowAtY:point.y]));
+
+*/
+
+- (BOOL)startTrackingAt:(CGPoint)aPoint
+{
+    var row = [self rowAtPoint:aPoint];
+
+    if ([self mouseDownFlags] & CPShiftKeyMask)
+        _selectionAnchor = (ABS([_selectedRowIndexes firstIndex] - row) < ABS([_selectedRowIndexes lastIndex] - row)) ?
+            [_selectedRowIndexes firstIndex] : [_selectedRowIndexes lastIndex];
+    else
+        _selectionAnchor = row;
+
+    [self _updateSelectionWithMouseAtRow:row];
+
+    return YES;
+}
+
+- (BOOL)continueTracking:(CGPoint)lastPoint at:(CGPoint)aPoint
+{
+    [self _updateSelectionWithMouseAtRow:[self rowAtPoint:aPoint]];
+
+    return YES;
+}
+
+- (void)stopTracking:(CGPoint)lastPoint at:(CGPoint)aPoint mouseIsUp:(BOOL)mouseIsUp
+{/*
+    _clickedRow = [self rowAtPoint:point];
+    _clickedColumn = [self columnAtPoint:point];
+
+    if ([anEvent clickCount] === 2)
+    {
+        CPLog.warn("edit?!");
+
+        [self sendAction:_doubleAction to:_target];
+    }
+    else
+    {
+        if (![_previousSelectedRowIndexes isEqualToIndexSet:_selectedRowIndexes])
+        {
+            [[CPNotificationCenter defaultCenter] postNotificationName:CPTableViewSelectionDidChangeNotification object:self userInfo:nil];
+        }
+
+        [self sendAction:_action to:_target];
+    }
+*/
+}
+
+- (void)_updateSelectionWithMouseAtRow:(CPInteger)aRow
+{
+    // If cmd/ctrl was held down XOR the old selection with the proposed selection
+    if ([self mouseDownFlags] & (CPCommandKeyMask | CPControlKeyMask | CPAlternateKeyMask))
+    {
+        if ([_selectedRowIndexes containsIndex:aRow])
+        {
+            newSelection = [_selectedRowIndexes copy];
+
+            [newSelection removeIndex:aRow];
+        }
+
+        else if (_allowsMultipleSelection)
+        {
+            newSelection = [_selectedRowIndexes copy];
+
+            [newSelection addIndex:aRow];
+        }
+
+        else
+            newSelection = [CPIndexSet indexSetWithIndex:aRow];
+    }
+
+    else if (_allowsMultipleSelection)
+        newSelection = [CPIndexSet indexSetWithIndexesInRange:CPMakeRange(MIN(aRow, _selectionStartRow), ABS(aRow - _selectionStartRow) + 1)];
+
+    else if (aRow >= 0 && aRow < _numberOfRows)
+        newSelection = [CPIndexSet indexSetWithIndex:aRow];
+
+    else
+        newSelection = [CPIndexSet indexSet];
+
+    if ([newSelection isEqualToIndexSet:_selectedRowIndexes])
+        return;
+
+    if (_implementedDelegateMethods & CPTableViewDelegate_selectionShouldChangeInTableView_ && 
+        ![_delegate selectionShouldChangeInTableView:self])
+        return;
+
+    if (_implementedDelegateMethods & CPTableViewDelegate_tableView_selectionIndexesForProposedSelection_)
+        newSelection = [_delegate tableView:self selectionIndexesForProposedSelection:newSelection];
+
+    if (_implementedDelegateMethods & CPTableViewDelegate_tableView_shouldSelectRow_)
+    {
+        var indexArray = [];
+
+        [newSelection getIndexes:indexArray maxCount:-1 inIndexRange:nil];
+
+        var indexCount = indexArray.length;
+
+        while (indexCount--)
+        {
+            var index = indexArray[indexCount];
+
+            if (![_delegate tableView:self shouldSelectRow:index])
+                [newSelection removeIndex:index];
+        }
+    }
+
+    // if empty selection is not allowed and the new selection has nothing selected, abort
+    if (!_allowsEmptySelection && [newSelection count] === 0)
+        return;
+
+    if ([newSelection isEqualToIndexSet:_selectedRowIndexes])
+        return;
+
+    [self selectRowIndexes:newSelection byExtendingSelection:NO];
+
+    [[CPNotificationCenter defaultCenter]
+        postNotificationName:CPTableViewSelectionIsChangingNotification
+                      object:self
+                    userInfo:nil];
 }
 
 @end

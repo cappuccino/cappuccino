@@ -23,7 +23,9 @@ CPLogRegister(CPLogConsole);
     
     tableView = [[NEWCPTableView alloc] initWithFrame:CGRectMake(0.0, 0.0, 500.0, 500.0)];//[view bounds]];
 
-    [tableView setBackgroundColor:[CPColor blueColor]];
+    [tableView setAllowsMultipleSelection:YES];
+
+//    [tableView setBackgroundColor:[CPColor blueColor]];
 
     var iconView = [[CPImageView alloc] initWithFrame:CGRectMake(16,16,0,0)];
 
@@ -40,7 +42,7 @@ CPLogRegister(CPLogConsole);
 
     var textDataView = [CPTextField new];
 
-    [textDataView setBackgroundColor:[CPColor redColor]];
+    [textDataView setBackgroundColor:[[CPColor redColor] colorWithAlphaComponent:0.5]];
 
     for (var i = 1; i <= 10; i++)
     {
@@ -50,7 +52,7 @@ CPLogRegister(CPLogConsole);
         [[column headerView] sizeToFit];
         //[column setWidth:[[column headerView] frame].size.width + 20];
 
-        [column setWidth:170.0];
+        [column setWidth:200.0];
 
         [column setDataView:textDataView];
 
@@ -103,8 +105,8 @@ CPLogRegister(CPLogConsole);
 {
 	//CPLog.debug(@"shouldSelectRow %d", rowIndex);
 	for (var i = 2, sqrt = SQRT(rowIndex+1); i <= sqrt; i++)
-	    if ((rowIndex+1) % i === 0)
-	        return false;
+	    if ((rowIndex+1) % i === 0){console.log("NO for " + rowIndex);
+	        return false;}
 
 	return true;
 }

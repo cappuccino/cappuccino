@@ -683,7 +683,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 {
     var string = [self stringValue];
 
-    if ((!string || [string length] === 0) && ![self hasThemeState:CPThemeStateEditing])
+    if ((!string || string.length === 0) && ![self hasThemeState:CPThemeStateEditing])
         [self setThemeState:CPTextFieldStatePlaceholder];
     else
         [self unsetThemeState:CPTextFieldStatePlaceholder];
