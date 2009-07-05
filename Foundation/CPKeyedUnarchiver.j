@@ -24,11 +24,14 @@
 @import "CPCoder.j"
 
 
-var _CPKeyedUnarchiverCannotDecodeObjectOfClassNameOriginalClassesSelector  = 1,
-    _CPKeyedUnarchiverDidDecodeObjectSelector                               = 1 << 1,
-    _CPKeyedUnarchiverWillReplaceObjectWithObjectSelector                   = 1 << 2,
-    _CPKeyedUnarchiverWillFinishSelector                                    = 1 << 3,
-    _CPKeyedUnarchiverDidFinishSelector                                     = 1 << 4;
+CPInvalidUnarchiveOperationException    = @"CPInvalidUnarchiveOperationException";
+
+var _CPKeyedUnarchiverCannotDecodeObjectOfClassNameOriginalClassesSelector              = 1 << 0,
+    _CPKeyedUnarchiverDidDecodeObjectSelector                                           = 1 << 1,
+    _CPKeyedUnarchiverWillReplaceObjectWithObjectSelector                               = 1 << 2,
+    _CPKeyedUnarchiverWillFinishSelector                                                = 1 << 3,
+    _CPKeyedUnarchiverDidFinishSelector                                                 = 1 << 4,
+    CPKeyedUnarchiverDelegate_unarchiver_cannotDecodeObjectOfClassName_originalClasses_ = 1 << 5;
 
 var _CPKeyedArchiverNullString                                              = "$null"
     
@@ -384,6 +387,9 @@ var _CPKeyedUnarchiverArrayClass                                            = Ni
         
     if ([_delegate respondsToSelector:@selector(unarchiverDidFinish:)])
         _delegateSelectors |= _CPKeyedUnarchiverDidFinishSelector;
+
+    if ([_delegate respondsToSelector:@selector(unarchiver:cannotDecodeObjectOfClassName:originalClasses:)])
+        _delegateSelectors |= CPKeyedUnarchiverDelegate_unarchiver_cannotDecodeObjectOfClassName_originalClasses_;
 }
 
 - (void)setClass:(Class)aClass forClassName:(CPString)aClassName
@@ -425,6 +431,12 @@ var _CPKeyedUnarchiverDecodeObjectAtIndex = function(self, anIndex)
 
         if (!theClass)
             theClass = CPClassFromString(className);
+
+        if (!theClass && (self._delegateSelectors & CPKeyedUnarchiverDelegate_unarchiver_cannotDecodeObjectOfClassName_originalClasses_))
+            theClass = [_delegate unarchiver:self cannotDecodeObjectOfClassName:className originalClasses:classes];
+
+        if (!theClass)
+            [CPException raise:CPInvalidUnarchiveOperationException reason:@"-[CPKeyedUnarchiver decodeObjectForKey:]: cannot decode object of class (" + className + @")"];
 
         var savedPlistObject = self._plistObject;
         
