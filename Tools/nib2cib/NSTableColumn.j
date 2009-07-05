@@ -28,25 +28,23 @@
 - (id)NS_initWithCoder:(CPCoder)aCoder
 {
     self = [self init];
-    
+
     if (self)
     {
         _identifier = [aCoder decodeObjectForKey:@"NSIdentifier"];
-        
-        var template = [[CPTableColumn alloc] ]
-        
+
         //var dataViewCell = [aCoder decodeObjectForKey:@"NSDataCell"];
-        
+
         _dataView = [[CPTextField alloc] initWithFrame:CPRectMakeZero()];
         [_dataView setValue:[CPColor whiteColor] forThemeAttribute:"text-color" inState:CPThemeStateHighlighted];
-        
+
         //_headerView = [aCoder decodeObjectForKey:@"NSHeaderCell"];
         _headerView = [[CPTextField alloc] initWithFrame:CPRectMakeZero()];
-        
+
         _width = [aCoder decodeFloatForKey:@"NSWidth"];
         _minWidth = [aCoder decodeFloatForKey:@"NSMinWidth"];
         _maxWidth = [aCoder decodeFloatForKey:@"NSMaxWidth"];
-        
+
         _resizingMask  = [aCoder decodeBoolForKey:@"NSIsResizable"];
     }
     

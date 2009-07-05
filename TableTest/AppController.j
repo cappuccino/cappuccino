@@ -2,8 +2,8 @@
 @import <Foundation/CPObject.j>
 
 @import <Foundation/CPIndexSet.j>
-@import <AppKit/NEWCPTableColumn.j>
-@import <AppKit/NEWCPTableView.j>
+@import <AppKit/CPTableColumn.j>
+@import <AppKit/CPTableView.j>
 
 
 CPLogRegister(CPLogConsole);
@@ -21,7 +21,7 @@ CPLogRegister(CPLogConsole);
     [view setBackgroundColor:[CPColor whiteColor]];
     [view enterFullScreenMode:nil withOptions:nil];
     
-    tableView = [[NEWCPTableView alloc] initWithFrame:CGRectMake(0.0, 0.0, 500.0, 500.0)];//[view bounds]];
+    tableView = [[CPTableView alloc] initWithFrame:CGRectMake(0.0, 0.0, 500.0, 500.0)];//[view bounds]];
 
     [tableView setAllowsMultipleSelection:YES];
 
@@ -31,7 +31,7 @@ CPLogRegister(CPLogConsole);
 
     [iconView setImageScaling:CPScaleNone];
 
-    var iconColumn = [[NEWCPTableColumn alloc] initWithIdentifier:"icons"];
+    var iconColumn = [[CPTableColumn alloc] initWithIdentifier:"icons"];
 
     [iconColumn setWidth:32.0];
     [iconColumn setDataView:iconView];
@@ -46,7 +46,7 @@ CPLogRegister(CPLogConsole);
 
     for (var i = 1; i <= 10; i++)
     {
-        var column = [[NEWCPTableColumn alloc] initWithIdentifier:String(i)];
+        var column = [[CPTableColumn alloc] initWithIdentifier:String(i)];
 
         [[column headerView] setStringValue:"Number "+i];
         [[column headerView] sizeToFit];
