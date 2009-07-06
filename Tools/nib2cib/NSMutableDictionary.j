@@ -1,6 +1,9 @@
 /*
- * NSFoundation.j
+ * NSMutableDictionary.j
  * nib2cib
+ *
+ * Portions based on NSCell.m (09/09/2008) in Cocotron (http://www.cocotron.org/)
+ * Copyright (c) 2006-2007 Christopher J. W. Lloyd
  *
  * Created by Francisco Tolmasky.
  * Copyright 2008, 280 North, Inc.
@@ -20,7 +23,13 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-@import "NSArray.j"
-@import "NSMutableDictionary.j"
-@import "NSMutableString.j"
-@import "NSSet.j"
+@implementation NSMutableDictionary : CPObject
+{
+}
+
+- (id)initWithCoder:(CPCoder)aCoder
+{
+    return [CPDictionary dictionaryWithObjects:[aCoder decodeObjectForKey:@"NS.objects"] forKeys:[aCoder decodeObjectForKey:@"NS.keys"]];
+}
+
+@end
