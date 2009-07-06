@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>content</key>
+	<string>- (${1:id})${2:thing}
+{
+	return _$2;
+}
+
+- (void)set${2/./\u$0/}:($1)aValue
+{
+	_$2 = aValue; 
+}</string>
+	<key>name</key>
+	<string>_Accessors</string>
+	<key>scope</key>
+	<string>source.js.objj</string>
+	<key>tabTrigger</key>
+	<string>_acc</string>
+	<key>uuid</key>
+	<string>85B0746B-AE1C-47B3-8B9A-2B9A95F4C71E</string>
+</dict>
+</plist>

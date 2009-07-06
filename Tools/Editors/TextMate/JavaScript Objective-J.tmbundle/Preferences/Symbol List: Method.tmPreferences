@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>name</key>
+	<string>Symbol List: Method</string>
+	<key>scope</key>
+	<string>meta.function.js.objj</string>
+	<key>settings</key>
+	<dict>
+		<key>showInSymbolList</key>
+		<integer>1</integer>
+		<key>symbolTransformation</key>
+		<string>
+		s/^([-+])\s*\(.*?\)\s*/ $1 /; # strip result type
+		s/:\s*\(.*?\)\s*\w+\s*/:/g;   # strip argument variables
+		s/\s*;?$//g;                  # strip terminating ws + semi-colon
+	</string>
+	</dict>
+	<key>uuid</key>
+	<string>85A46AFC-5552-4CE5-BDA0-ED34F0398399</string>
+</dict>
+</plist>

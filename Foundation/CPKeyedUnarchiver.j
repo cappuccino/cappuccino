@@ -309,7 +309,7 @@ var _CPKeyedUnarchiverArrayClass                                            = Ni
     if ([object isKindOfClass:_CPKeyedUnarchiverDictionaryClass])
         return _CPKeyedUnarchiverDecodeObjectAtIndex(self, [object objectForKey:_CPKeyedArchiverUIDKey]);
 
-    else if ([object isKindOfClass:_CPKeyedUnarchiverNumberClass] || [object isKindOfClass:_CPKeyedUnarchiverDataClass])
+    else if ([object isKindOfClass:_CPKeyedUnarchiverNumberClass] || [object isKindOfClass:_CPKeyedUnarchiverDataClass] || [object isKindOfClass:_CPKeyedUnarchiverStringClass])
         return object;
 
     else if ([object isKindOfClass:_CPKeyedUnarchiverArrayClass])
