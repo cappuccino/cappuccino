@@ -56,7 +56,7 @@ var _CPTexturedWindowHeadGradientColor  = nil,
 + (CPColor)solidColor
 {
     if (!_CPTexturedWindowHeadSolidColor)
-        _CPTexturedWindowHeadSolidColor = [CPColor colorWithCalibratedRed:182.0 / 255.0 green:182.0 / 255.0 blue:182.0 / 255.0 alpha:1.0];
+        _CPTexturedWindowHeadSolidColor = [CPColor colorWithCalibratedRed:195.0 / 255.0 green:195.0 / 255.0 blue:195.0 / 255.0 alpha:1.0];
     
     return _CPTexturedWindowHeadSolidColor;
 }
