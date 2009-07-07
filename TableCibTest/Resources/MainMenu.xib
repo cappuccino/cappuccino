@@ -8,7 +8,7 @@
 		<string key="IBDocument.HIToolboxVersion">353.00</string>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
-			<integer value="460"/>
+			<integer value="463"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -1137,7 +1137,7 @@
 										<object class="NSTableView" id="398158805">
 											<reference key="NSNextResponder" ref="927495618"/>
 											<int key="NSvFlags">256</int>
-											<string key="NSFrameSize">{691, 349}</string>
+											<string key="NSFrameSize">{691, 348}</string>
 											<reference key="NSSuperview" ref="927495618"/>
 											<bool key="NSEnabled">YES</bool>
 											<object class="_NSCornerView" key="NSCornerView">
@@ -1148,6 +1148,7 @@
 											<object class="NSMutableArray" key="NSTableColumns">
 												<bool key="EncodedWithXMLCoder">YES</bool>
 												<object class="NSTableColumn" id="594859218">
+													<string key="NSIdentifier">0</string>
 													<double key="NSWidth">6.900000e+01</double>
 													<double key="NSMinWidth">4.000000e+01</double>
 													<double key="NSMaxWidth">1.000000e+03</double>
@@ -1206,6 +1207,7 @@
 													<reference key="NSTableView" ref="398158805"/>
 												</object>
 												<object class="NSTableColumn" id="912901758">
+													<string key="NSIdentifier">1</string>
 													<double key="NSWidth">6.700000e+01</double>
 													<double key="NSMinWidth">4.000000e+01</double>
 													<double key="NSMaxWidth">1.000000e+03</double>
@@ -1232,6 +1234,7 @@
 													<reference key="NSTableView" ref="398158805"/>
 												</object>
 												<object class="NSTableColumn" id="364853502">
+													<string key="NSIdentifier">2</string>
 													<double key="NSWidth">6.400000e+01</double>
 													<double key="NSMinWidth">1.000000e+01</double>
 													<double key="NSMaxWidth">3.402823e+38</double>
@@ -1266,6 +1269,7 @@
 													<reference key="NSTableView" ref="398158805"/>
 												</object>
 												<object class="NSTableColumn" id="337025046">
+													<string key="NSIdentifier">3</string>
 													<double key="NSWidth">6.400000e+01</double>
 													<double key="NSMinWidth">1.000000e+01</double>
 													<double key="NSMaxWidth">3.402823e+38</double>
@@ -1292,6 +1296,7 @@
 													<reference key="NSTableView" ref="398158805"/>
 												</object>
 												<object class="NSTableColumn" id="799543003">
+													<string key="NSIdentifier">4</string>
 													<double key="NSWidth">6.400000e+01</double>
 													<double key="NSMinWidth">1.000000e+01</double>
 													<double key="NSMaxWidth">3.402823e+38</double>
@@ -1318,6 +1323,7 @@
 													<reference key="NSTableView" ref="398158805"/>
 												</object>
 												<object class="NSTableColumn" id="799599903">
+													<string key="NSIdentifier">5</string>
 													<double key="NSWidth">6.400000e+01</double>
 													<double key="NSMinWidth">1.000000e+01</double>
 													<double key="NSMaxWidth">3.402823e+38</double>
@@ -1344,6 +1350,7 @@
 													<reference key="NSTableView" ref="398158805"/>
 												</object>
 												<object class="NSTableColumn" id="398950947">
+													<string key="NSIdentifier">6</string>
 													<double key="NSWidth">6.400000e+01</double>
 													<double key="NSMinWidth">1.000000e+01</double>
 													<double key="NSMaxWidth">3.402823e+38</double>
@@ -1370,6 +1377,7 @@
 													<reference key="NSTableView" ref="398158805"/>
 												</object>
 												<object class="NSTableColumn" id="345897697">
+													<string key="NSIdentifier">7</string>
 													<double key="NSWidth">6.400000e+01</double>
 													<double key="NSMinWidth">1.000000e+01</double>
 													<double key="NSMaxWidth">3.402823e+38</double>
@@ -1396,6 +1404,7 @@
 													<reference key="NSTableView" ref="398158805"/>
 												</object>
 												<object class="NSTableColumn" id="761452158">
+													<string key="NSIdentifier">8</string>
 													<double key="NSWidth">6.400000e+01</double>
 													<double key="NSMinWidth">1.000000e+01</double>
 													<double key="NSMaxWidth">3.402823e+38</double>
@@ -1422,6 +1431,7 @@
 													<reference key="NSTableView" ref="398158805"/>
 												</object>
 												<object class="NSTableColumn" id="790638189">
+													<string key="NSIdentifier">9</string>
 													<double key="NSWidth">6.400000e+01</double>
 													<double key="NSMinWidth">1.000000e+01</double>
 													<double key="NSMaxWidth">3.402823e+38</double>
@@ -1448,6 +1458,7 @@
 													<reference key="NSTableView" ref="398158805"/>
 												</object>
 												<object class="NSTableColumn" id="667348134">
+													<string key="NSIdentifier">10</string>
 													<double key="NSWidth">1.000000e+01</double>
 													<double key="NSMinWidth">1.000000e+01</double>
 													<double key="NSMaxWidth">3.402823e+38</double>
@@ -1494,7 +1505,7 @@
 											<bool key="NSAllowsTypeSelect">YES</bool>
 										</object>
 									</object>
-									<string key="NSFrame">{{1, 0}, {476, 349}}</string>
+									<string key="NSFrame">{{1, 1}, {476, 348}}</string>
 									<reference key="NSSuperview" ref="724534634"/>
 									<reference key="NSNextKeyView" ref="398158805"/>
 									<reference key="NSDocView" ref="398158805"/>
@@ -1504,7 +1515,7 @@
 								<object class="NSScroller" id="20171647">
 									<reference key="NSNextResponder" ref="724534634"/>
 									<int key="NSvFlags">256</int>
-									<string key="NSFrame">{{477, 0}, {15, 349}}</string>
+									<string key="NSFrame">{{477, 1}, {15, 348}}</string>
 									<reference key="NSSuperview" ref="724534634"/>
 									<reference key="NSTarget" ref="724534634"/>
 									<string key="NSAction">_doScroller:</string>
@@ -3351,6 +3362,24 @@
 					<string>466.IBPluginDependency</string>
 					<string>467.IBPluginDependency</string>
 					<string>468.IBPluginDependency</string>
+					<string>469.IBPluginDependency</string>
+					<string>470.IBPluginDependency</string>
+					<string>471.IBPluginDependency</string>
+					<string>472.IBPluginDependency</string>
+					<string>473.IBPluginDependency</string>
+					<string>474.IBPluginDependency</string>
+					<string>475.IBPluginDependency</string>
+					<string>476.IBPluginDependency</string>
+					<string>477.IBPluginDependency</string>
+					<string>478.IBPluginDependency</string>
+					<string>479.IBPluginDependency</string>
+					<string>480.IBPluginDependency</string>
+					<string>481.IBPluginDependency</string>
+					<string>482.IBPluginDependency</string>
+					<string>483.IBPluginDependency</string>
+					<string>484.IBPluginDependency</string>
+					<string>485.IBPluginDependency</string>
+					<string>486.IBPluginDependency</string>
 					<string>5.IBPluginDependency</string>
 					<string>5.ImportedFromIB2</string>
 					<string>56.IBPluginDependency</string>
@@ -3542,6 +3571,24 @@
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>{{523, 2}, {178, 283}}</string>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
