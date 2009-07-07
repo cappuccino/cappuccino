@@ -785,7 +785,7 @@ var CTRL_KEY_CODE   = 17;
             
         location.x -= CGRectGetMinX(windowFrame);
         location.y -= CGRectGetMinY(windowFrame);
-                
+
         if(typeof aDOMEvent.wheelDeltaX != "undefined")
         {
             deltaX = aDOMEvent.wheelDeltaX / 120.0;
@@ -811,8 +811,8 @@ var CTRL_KEY_CODE   = 17;
                 timestamp:timestamp windowNumber:windowNumber context:nil eventNumber:-1 clickCount:1 pressure:0 ];
         
         event._DOMEvent = aDOMEvent;
-        event._deltaX = ROUND(deltaX * 1.5);
-        event._deltaY = ROUND(deltaY * 1.5);
+        event._deltaX = deltaX;
+        event._deltaY = deltaY;
         
         [CPApp sendEvent:event];
             
