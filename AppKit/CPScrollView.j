@@ -67,11 +67,11 @@
         _horizontalLineScroll = 10.0;
         _horizontalPageScroll = 10.0;
 
-        _contentView = [[CPClipView alloc] initWithFrame:[self clipViewFrame]];
+        _contentView = [[CPClipView alloc] initWithFrame:[self bounds]];
 
         [self addSubview:_contentView];
 
-        _headerClipView = [[CPClipView alloc] initWithFrame:[self headerClipViewFrame]];
+        _headerClipView = [[CPClipView alloc] init];
 
         [self addSubview:_headerClipView];
 
@@ -107,22 +107,21 @@
 {
     if (!aContentView)
         return;
-    
+
     var documentView = [aContentView documentView];
-    
+
     if (documentView)
         [documentView removeFromSuperview];
-    
+
     [_contentView removeFromSuperview];
-    
-    var size = [self contentSize];
-    
+
     _contentView = aContentView;
-        
-    [_contentView setFrame:[self clipViewFrame]];
+
     [_contentView setDocumentView:documentView];
 
     [self addSubview:_contentView];
+
+    [self reflectScrolledClipView:_contentView];
 }
 
 /*!
@@ -142,16 +141,10 @@
     [_contentView setDocumentView:aView];
     [_headerClipView setDocumentView:[self _headerView]];
 
-    [_contentView setFrame:[self clipViewFrame]];
-    [_headerClipView setFrame:[self headerClipViewFrame]];
-
     var cornerView = [self _cornerView];
 
     if (cornerView)
-    {
-        [cornerView setFrame:[self cornerViewFrame]];
         [self addSubview:cornerView];
-    }
 
     [self reflectScrolledClipView:_contentView];
 }
@@ -185,77 +178,91 @@
 //            [_horizontalScroller setEnabled:NO];
         }
 
-        [_contentView setFrame:[self clipViewFrame]];
-        [_headerClipView setFrame:[self headerClipViewFrame]];
+        [_contentView setFrame:[self bounds]];
+        [_headerClipView setFrame:_CGRectMakeZero()];
 
         --_recursionCount;
 
         return;
     }
 
-    var documentFrame = [documentView frame],   // the size of the whole document
-        clipViewFrame = [self clipViewFrame],   // the size of the visible document, within the scrollbars
-        headerViewFrame = [self headerClipViewFrame],
-        headerViewHeight = _CGRectGetHeight(headerViewFrame),
-        cornerViewFrame = [self cornerViewFrame],
-        cornerViewHeight = _CGRectGetHeight(cornerViewFrame),
-        scrollPoint = [_contentView bounds].origin,
-        difference = _CGSizeMake(CPRectGetWidth(documentFrame) - CPRectGetWidth(clipViewFrame), CPRectGetHeight(documentFrame) - CPRectGetHeight(clipViewFrame)),
-        shouldShowVerticalScroller = (!_autohidesScrollers || difference.height > 0.0) && _hasVerticalScroller,
-        shouldShowHorizontalScroller = (!_autohidesScrollers || difference.width > 0.0) && _hasHorizontalScroller,
-        wasShowingVerticalScroller = ![_verticalScroller isHidden],
-        wasShowingHorizontalScroller = ![_horizontalScroller isHidden],
-        verticalScrollerWidth = _CGRectGetWidth([_verticalScroller frame]);
-        horizontalScrollerHeight = _CGRectGetHeight([_horizontalScroller frame]);
+    var documentFrame = [documentView frame], // the size of the whole document
+        contentFrame = [self bounds], // assume it takes up the entire size of the scrollview (no scrollers)
+        headerClipViewFrame = [self headerClipViewFrame],
+        headerClipViewHeight = _CGRectGetHeight(headerClipViewFrame);
 
-    if (_autohidesScrollers)
+    contentFrame.origin.y += headerClipViewHeight;
+    contentFrame.size.height -= headerClipViewHeight;
+
+    var difference = _CGSizeMake(_CGRectGetWidth(documentFrame) - _CGRectGetWidth(contentFrame), _CGRectGetHeight(documentFrame) - _CGRectGetHeight(contentFrame)),
+        verticalScrollerWidth = _CGRectGetWidth([_verticalScroller frame]),
+        horizontalScrollerHeight = _CGRectGetHeight([_horizontalScroller frame]),
+        hasVerticalScroll = difference.height > 0.0,
+        hasHorizontalScroll = difference.width > 0.0,
+        shouldShowVerticalScroller = _hasVerticalScroller && (!_autohidesScrollers || hasVerticalScroll),
+        shouldShowHorizontalScroller = _hasHorizontalScroller && (!_autohidesScrollers || hasHorizontalScroll);
+
+    // Now we have to account for the shown scrollers affecting the deltas.
+    if (shouldShowVerticalScroller)
     {
-        // Check to see if either affected the other!
-        if (shouldShowVerticalScroller)
-            shouldShowHorizontalScroller = (!_autohidesScrollers || difference.width > -verticalScrollerWidth) && _hasHorizontalScroller;
-
-        if (shouldShowHorizontalScroller)
-            shouldShowVerticalScroller = (!_autohidesScrollers || difference.height > -horizontalScrollerHeight) && _hasVerticalScroller;
+        difference.width += verticalScrollerWidth;
+        hasHorizontalScroll = difference.width > 0.0;
+        shouldShowHorizontalScroller = _hasHorizontalScroller && (!_autohidesScrollers || hasHorizontalScroll);
     }
 
+    if (shouldShowHorizontalScroller)
+    {
+        difference.height += horizontalScrollerHeight;
+        hasVerticalScroll = difference.height > 0.0;
+        shouldShowVerticalScroller = _hasVerticalScroller && (!_autohidesScrollers || hasVerticalScroll);
+    }
+
+    // We now definitively know which scrollers are shown or not, as well as whether they are showing scroll values.
     [_verticalScroller setHidden:!shouldShowVerticalScroller];
-    [_verticalScroller setEnabled:difference.height > 0.0];
+    [_verticalScroller setEnabled:hasVerticalScroll];
 
     [_horizontalScroller setHidden:!shouldShowHorizontalScroller];
-    [_horizontalScroller setEnabled:difference.width > 0.0];
+    [_horizontalScroller setEnabled:hasHorizontalScroll];
+
+    // We can thus appropriately account for them changing the content size.
+    if (shouldShowVerticalScroller)
+        contentFrame.size.width -= verticalScrollerWidth;
+
+    if (shouldShowHorizontalScroller)
+        contentFrame.size.height -= horizontalScrollerHeight;
+
+    var scrollPoint = [_contentView bounds].origin,
+        wasShowingVerticalScroller = ![_verticalScroller isHidden],
+        wasShowingHorizontalScroller = ![_horizontalScroller isHidden];
 
     if (shouldShowVerticalScroller)
     {
-        var verticalScrollerHeight = CPRectGetHeight([self bounds]) - (cornerViewHeight ? cornerViewHeight : headerViewHeight);
-        
+        var verticalScrollerY = MAX(_CGRectGetHeight([self cornerViewFrame]), headerClipViewHeight),
+            verticalScrollerHeight = _CGRectGetHeight([self bounds]) - verticalScrollerY;
+
         if (shouldShowHorizontalScroller)
             verticalScrollerHeight -= horizontalScrollerHeight;
-    
-        difference.width += verticalScrollerWidth;
-        clipViewFrame.size.width -= verticalScrollerWidth;
-    
+
         [_verticalScroller setFloatValue:(difference.height <= 0.0) ? 0.0 : scrollPoint.y / difference.height
-            knobProportion:CPRectGetHeight(clipViewFrame) / CPRectGetHeight(documentFrame)];
-        [_verticalScroller setFrame:CPRectMake(CPRectGetMaxX(clipViewFrame), (cornerViewHeight ? cornerViewHeight : headerViewHeight), verticalScrollerWidth, verticalScrollerHeight)];
+            knobProportion:_CGRectGetHeight(contentFrame) / _CGRectGetHeight(documentFrame)];
+        [_verticalScroller setFrame:_CGRectMake(_CGRectGetMaxX(contentFrame), verticalScrollerY, verticalScrollerWidth, verticalScrollerHeight)];
     }
     else if (wasShowingVerticalScroller)
         [_verticalScroller setFloatValue:0.0 knobProportion:1.0];
     
     if (shouldShowHorizontalScroller)
     {
-        difference.height += horizontalScrollerHeight;
-        clipViewFrame.size.height -= horizontalScrollerHeight;
-        
         [_horizontalScroller setFloatValue:(difference.width <= 0.0) ? 0.0 : scrollPoint.x / difference.width
-            knobProportion:CPRectGetWidth(clipViewFrame) / CPRectGetWidth(documentFrame)];
-        [_horizontalScroller setFrame:CPRectMake(0.0, CPRectGetMaxY(clipViewFrame), CPRectGetWidth(clipViewFrame), horizontalScrollerHeight)];
+            knobProportion:_CGRectGetWidth(contentFrame) / _CGRectGetWidth(documentFrame)];
+        [_horizontalScroller setFrame:_CGRectMake(0.0, _CGRectGetMaxY(contentFrame), _CGRectGetWidth(contentFrame), horizontalScrollerHeight)];
     }
     else if (wasShowingHorizontalScroller)
         [_horizontalScroller setFloatValue:0.0 knobProportion:1.0];
-    
-    [_contentView setFrame:clipViewFrame];
-    [_headerClipView setFrame:headerViewFrame];
-    
+
+    [_contentView setFrame:contentFrame];
+    [_headerClipView setFrame:headerClipViewFrame];
+    [[self _cornerView] setFrame:[self cornerViewFrame]];
+
     --_recursionCount;
 }
 
@@ -304,7 +311,7 @@
     _hasHorizontalScroller = shouldHaveHorizontalScroller;
     
     if (_hasHorizontalScroller && !_horizontalScroller)
-        [self setHorizontalScroller:[[CPScroller alloc] initWithFrame:CGRectMake(0.0, 0.0, CPRectGetWidth([self bounds]), [CPScroller scrollerWidth])]];
+        [self setHorizontalScroller:[[CPScroller alloc] initWithFrame:CGRectMake(0.0, 0.0, _CGRectGetWidth([self bounds]), [CPScroller scrollerWidth])]];
 
     else if (!_hasHorizontalScroller && _horizontalScroller)
     {
@@ -367,7 +374,7 @@
     _hasVerticalScroller = shouldHaveVerticalScroller;
 
     if (_hasVerticalScroller && !_verticalScroller)
-        [self setVerticalScroller:[[CPScroller alloc] initWithFrame:CPRectMake(0.0, 0.0, [CPScroller scrollerWidth], CPRectGetHeight([self bounds]))]];
+        [self setVerticalScroller:[[CPScroller alloc] initWithFrame:_CGRectMake(0.0, 0.0, [CPScroller scrollerWidth], _CGRectGetHeight([self bounds]))]];
 
     else if (!_hasVerticalScroller && _verticalScroller)
     {
@@ -409,12 +416,6 @@
     return _autohidesScrollers;
 }
 
-
-- (CGRect)insetBounds
-{
-    return [self bounds];
-}
-
 - (CPView)_headerView
 {
     var documentView = [self documentView];
@@ -437,10 +438,10 @@
 {
     var cornerView = [self _cornerView],
         cornerBounds = [cornerView bounds],
-        bounds = [self insetBounds];
+        bounds = [self bounds];
 
     if (!cornerView)
-        return CGRectMakeZero();
+        return _CGRectMakeZero();
 
     cornerBounds.origin.x = CGRectGetMaxX(bounds) - CGRectGetWidth(cornerBounds);
     cornerBounds.origin.y = 0;
@@ -452,26 +453,15 @@
 {
     var headerView = [self _headerView],
         cornerView = [self _cornerView],
-        bounds = [self insetBounds];
+        bounds = [self bounds];
 
     if (!headerView)
-        return CGRectMakeZero();
+        return _CGRectMakeZero();
 
     bounds.size.height = [headerView bounds].size.height;
 
     if (cornerView)
         bounds.size.width -= CGRectGetWidth([cornerView bounds]);
-
-    return bounds;
-}
-
-- (CGRect)clipViewFrame
-{
-    var bounds = [self insetBounds],
-        headerViewFrame = [self headerClipViewFrame];
-
-    bounds.origin.y += headerViewFrame.size.height;
-    bounds.size.height -= headerViewFrame.size.height;
 
     return bounds;
 }
