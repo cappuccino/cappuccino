@@ -6,6 +6,12 @@
 @import "_CPCornerView.j"
 @import "CPScroller.j"
 
+
+CPTableViewColumnDidMoveNotification        = @"CPTableViewColumnDidMoveNotification";
+CPTableViewColumnDidResizeNotification      = @"CPTableViewColumnDidResizeNotification";
+CPTableViewSelectionDidChangeNotification   = @"CPTableViewSelectionDidChangeNotification";
+CPTableViewSelectionIsChangingNotification  = @"CPTableViewSelectionIsChangingNotification";
+
 #include "CoreGraphics/CGGeometry.h"
 
 var CPTableViewDataSource_tableView_setObjectValue_forTableColumn_row_                                  = 1 << 2,
@@ -1268,6 +1274,7 @@ _cachedDataViews[dataView.identifier].push(dataView);
 
 - (void)superviewFrameChanged:(CPNotification)aNotification
 {
+    [self _sizeToParent];
 }
 
 //
@@ -1433,6 +1440,8 @@ var CPTableViewDataSourceKey        = @"CPTableViewDataSourceKey",
 
         [_tableColumns makeObjectsPerformSelector:@selector(setTableView:) withObject:self];
         _dirtyTableColumnRangeIndex = 0;
+
+        [self viewWillMoveToSuperview:[self superview]];
     }
     
     return self;
