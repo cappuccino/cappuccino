@@ -580,8 +580,7 @@
 */
 - (void)scrollWheel:(CPEvent)anEvent
 {
-   var value = [_verticalScroller floatValue],
-       documentFrame = [[self documentView] frame],
+   var documentFrame = [[self documentView] frame],
        contentBounds = [_contentView bounds];
 
     contentBounds.origin.x += [anEvent deltaX] * _horizontalLineScroll;
@@ -593,7 +592,6 @@
 - (void)keyDown:(CPEvent)anEvent
 {
     var keyCode = [anEvent keyCode],
-        value = [_verticalScroller floatValue],
         documentFrame = [[self documentView] frame],
         contentBounds = [_contentView bounds];
     
