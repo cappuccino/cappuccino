@@ -191,7 +191,8 @@
     
     [scroller setValue:knobColor forThemeAttribute:@"knob-color" inState:CPThemeStateVertical];
     
-    [scroller setFloatValue:0.1 knobProportion:0.5];
+    [scroller setFloatValue:0.1];
+    [scroller setKnobProportion:0.5];
 
     return scroller;
 }
@@ -234,10 +235,11 @@
                 [_CPCibCustomResource imageResourceWithName:"scroller-horizontal-knob-right.png" size:CGSizeMake(9.0, 15.0)]
             ]
         isVertical:NO]);
-    
+
     [scroller setValue:knobColor forThemeAttribute:@"knob-color"];
-    
-    [scroller setFloatValue:0.1 knobProportion:0.5];
+
+    [scroller setFloatValue:0.1];
+    [scroller setKnobProportion:0.5];
 
     return scroller;
 }

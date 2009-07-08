@@ -64,9 +64,9 @@ NAMES_FOR_PARTS[CPScrollerKnob]             = @"knob";
 
     BOOL                    _isVertical @accessors(readonly, getter=isVertical);
     float                   _knobProportion;
-    
+
     CPScrollerPart          _hitPart;
-    
+
     CPScrollerPart          _trackingPart;
     float                   _trackingFloatValue;
     CGPoint                 _trackingStartPoint;
@@ -104,11 +104,12 @@ NAMES_FOR_PARTS[CPScrollerKnob]             = @"knob";
         _controlSize = CPRegularControlSize;
         _partRects = [];
 
-        [self setFloatValue:0.0 knobProportion:1.0];
+        [self setFloatValue:0.0];
+        [self setKnobProportion:1.0];
         
         _hitPart = CPScrollerNoPart;
 
-        [self _recalculateIsVertical];
+        [self _calculateIsVertical];
     }
 
     return self;
@@ -155,28 +156,17 @@ NAMES_FOR_PARTS[CPScrollerKnob]             = @"knob";
     return _controlSize;
 }
 
-// Setting the Knob Position
-/*!
-    Sets the scroller's knob position (ranges from 0.0 to 1.0).
-    @param aValue the knob position (ranges from 0.0 to 1.0)
-*/
-- (void)setFloatValue:(float)aValue
+- (void)setObjectValue:(id)aValue
 {
-    [super setFloatValue:MIN(1.0, MAX(0.0, aValue))];
-    
-    [self setNeedsLayout];
+    [super setObjectValue:MIN(1.0, MAX(0.0, +aValue))];
 }
 
-/*!
-    Sets the position and proportion of the knob.
-    @param aValue the knob position (ranges from 0.0 to 1.0)
-    @param aProportion the knob's proportion (ranges from 0.0 to 1.0)
-*/
-- (void)setFloatValue:(float)aValue knobProportion:(float)aProportion
+- (void)setKnobProportion:(float)aProportion
 {
     _knobProportion = MIN(1.0, MAX(0.0001, aProportion));
 
-    [self setFloatValue:aValue];
+    [self setNeedsDisplay:YES];
+    [self setNeedsLayout];
 }
 
 /*!
@@ -533,15 +523,15 @@ NAMES_FOR_PARTS[CPScrollerKnob]             = @"knob";
 
 }
 
-- (void)_recalculateIsVertical
+- (void)_calculateIsVertical
 {
     // Recalculate isVertical.
     var bounds = [self bounds],
         width = _CGRectGetWidth(bounds),
         height = _CGRectGetHeight(bounds);
-    
+
     _isVertical = width < height ? 1 : (width > height ? 0 : -1);
-    
+
     if (_isVertical === 1)
         [self setThemeState:CPThemeStateVertical];
     else if (_isVertical === 0)
@@ -551,8 +541,6 @@ NAMES_FOR_PARTS[CPScrollerKnob]             = @"knob";
 - (void)setFrameSize:(CGSize)aSize
 {
     [super setFrameSize:aSize];
-
-    [self _recalculateIsVertical];
 
     [self checkSpaceForParts];
     [self setNeedsLayout];
@@ -590,18 +578,16 @@ var CPScrollerControlSizeKey = "CPScrollerControlSize",
         _controlSize = CPRegularControlSize;
         if ([aCoder containsValueForKey:CPScrollerControlSizeKey])
             _controlSize = [aCoder decodeIntForKey:CPScrollerControlSizeKey];
-            
+
         _knobProportion = 1.0;
         if ([aCoder containsValueForKey:CPScrollerKnobProportionKey])
             _knobProportion = [aCoder decodeFloatForKey:CPScrollerKnobProportionKey];
-            
+
         _partRects = [];
         
         _hitPart = CPScrollerNoPart;
 
-        [self _recalculateIsVertical];
-//        [self checkSpaceForParts];
-//        [self setNeedsLayout];
+        [self _calculateIsVertical];
     }
     
     return self;
@@ -613,6 +599,21 @@ var CPScrollerControlSizeKey = "CPScrollerControlSize",
     
     [aCoder encodeInt:_controlSize forKey:CPScrollerControlSizeKey];
     [aCoder encodeFloat:_knobProportion forKey:CPScrollerKnobProportionKey];
+}
+
+@end
+
+@implementation CPScroller (Deprecated)
+
+/*!
+    Sets the position and proportion of the knob.
+    @param aValue the knob position (ranges from 0.0 to 1.0)
+    @param aProportion the knob's proportion (ranges from 0.0 to 1.0)
+*/
+- (void)setFloatValue:(float)aValue knobProportion:(float)aProportion
+{
+    [self setFloatValue:aValue];
+    [self setKnobProportion:aProportion];
 }
 
 @end
