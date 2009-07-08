@@ -105,8 +105,8 @@ CPLogRegister(CPLogConsole);
 {
 	//CPLog.debug(@"shouldSelectRow %d", rowIndex);
 	for (var i = 2, sqrt = SQRT(rowIndex+1); i <= sqrt; i++)
-	    if ((rowIndex+1) % i === 0){console.log("NO for " + rowIndex);
-	        return false;}
+	    if ((rowIndex+1) % i === 0)
+	        return false;
 
 	return true;
 }

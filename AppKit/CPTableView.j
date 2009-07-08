@@ -120,7 +120,7 @@ CPTableViewSelectionHighlightStyleSourceList = 1;
 
     CPIndexSet  _selectedColumnIndexes;
     CPIndexSet  _selectedRowIndexes;
-    CPInteger   _selectionStartRow;
+    CPInteger   _selectionAnchorRow;
 
     _CPTableDrawView _tableDrawView;
 }
@@ -1201,7 +1201,7 @@ _cachedDataViews[dataView.identifier].push(dataView);
 
 - (void)highlightSelectionInClipRect:(CGRect)aRect
 {
-    [[CPColor greenColor] set];
+    [[CPColor alternateSelectedControlColor] set];
 
     var context = [[CPGraphicsContext currentContext] graphicsPort];
 
@@ -1286,15 +1286,20 @@ _cachedDataViews[dataView.identifier].push(dataView);
 
 */
 
+- (BOOL)tracksMouseOutsideOfFrame
+{
+    return YES;
+}
+
 - (BOOL)startTrackingAt:(CGPoint)aPoint
 {
     var row = [self rowAtPoint:aPoint];
 
     if ([self mouseDownFlags] & CPShiftKeyMask)
-        _selectionAnchor = (ABS([_selectedRowIndexes firstIndex] - row) < ABS([_selectedRowIndexes lastIndex] - row)) ?
+        _selectionAnchorRow = (ABS([_selectedRowIndexes firstIndex] - row) < ABS([_selectedRowIndexes lastIndex] - row)) ?
             [_selectedRowIndexes firstIndex] : [_selectedRowIndexes lastIndex];
     else
-        _selectionAnchor = row;
+        _selectionAnchorRow = row;
 
     [self _updateSelectionWithMouseAtRow:row];
 
@@ -1355,7 +1360,7 @@ _cachedDataViews[dataView.identifier].push(dataView);
     }
 
     else if (_allowsMultipleSelection)
-        newSelection = [CPIndexSet indexSetWithIndexesInRange:CPMakeRange(MIN(aRow, _selectionStartRow), ABS(aRow - _selectionStartRow) + 1)];
+        newSelection = [CPIndexSet indexSetWithIndexesInRange:CPMakeRange(MIN(aRow, _selectionAnchorRow), ABS(aRow - _selectionAnchorRow) + 1)];
 
     else if (aRow >= 0 && aRow < _numberOfRows)
         newSelection = [CPIndexSet indexSetWithIndex:aRow];
