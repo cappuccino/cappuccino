@@ -115,6 +115,46 @@
           equals:2];
 }
 
+- (void)testIndexOutOfBounds
+{
+    try
+    {
+        [[] objectAtIndex:0];
+        [self assert:false];
+    }
+    catch (anException)
+    {
+        [self assert:[anException name] equals:CPRangeException];
+        [self assert:[anException reason] equals:@"index (0) beyond bounds (0)"];
+    }
+
+    [[0, 1, 2] objectAtIndex:0];
+    [[0, 1, 2] objectAtIndex:1];
+    [[0, 1, 2] objectAtIndex:2];
+
+    try
+    {
+        [[0, 1, 2] objectAtIndex:3];
+        [self assert:false];
+    }
+    catch (anException)
+    {
+        [self assert:[anException name] equals:CPRangeException];
+        [self assert:[anException reason] equals:@"index (3) beyond bounds (3)"];
+    }
+
+    try
+    {
+        [[0, 1, 2] objectAtIndex:4];
+        [self assert:false];
+    }
+    catch (anException)
+    {
+        [self assert:[anException name] equals:CPRangeException];
+        [self assert:[anException reason] equals:@"index (4) beyond bounds (3)"];
+    }
+}
+
 @end
 
 @implementation CPArray (reverse)

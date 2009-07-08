@@ -26,6 +26,7 @@
 @import "CPSortDescriptor.j"
 @import "CPException.j"
 
+
 /* @ignore */
 @implementation _CPArrayEnumerator : CPEnumerator
 {
@@ -520,6 +521,9 @@
 */
 - (id)objectAtIndex:(int)anIndex
 {
+    if (anIndex >= length)
+        [CPException raise:CPRangeException reason:@"index (" + anIndex + @") beyond bounds (" + length + @")"];
+
     return self[anIndex];
 }
 
