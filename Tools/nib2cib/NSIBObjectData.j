@@ -20,20 +20,6 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-/*#import "NSIBObjectData.h"
-#import <Foundation/NSArray.h>
-#import <Foundation/NSMutableIndexSet.h>
-#import <Foundation/NSString.h>
-#import <Foundation/NSSet.h>
-#import <Foundation/NSDebug.h>
-#import "NSNibKeyedUnarchiver.h"
-#import "NSCustomObject.h"
-#import <AppKit/NSNibConnector.h>
-#import <AppKit/NSFontManager.h>
-#import <AppKit/NSNib.h>*/
-
-@import <Foundation/CPObject.j>
-
 @import <AppKit/_CPCibObjectData.j>
 
 
