@@ -735,10 +735,11 @@ var CPCollectionViewMinItemSizeKey      = @"CPCollectionViewMinItemSizeKey",
         _cachedItems = [];
 
         _itemSize = CGSizeMakeZero();
+        
         _minItemSize = [aCoder decodeSizeForKey:CPCollectionViewMinItemSizeKey];
         _maxItemSize = [aCoder decodeSizeForKey:CPCollectionViewMaxItemSizeKey];
-
-        _verticalMargin = [aCoder decodeSizeForKey:CPCollectionViewVerticalMarginKey];
+        _verticalMargin = [aCoder decodeFloatForKey:CPCollectionViewVerticalMarginKey];
+          
         _tileWidth = -1.0;
 
         _selectionIndexes = [CPIndexSet indexSet];
@@ -751,10 +752,14 @@ var CPCollectionViewMinItemSizeKey      = @"CPCollectionViewMinItemSizeKey",
 {
     [super encodeWithCoder:aCoder];
 
-    [aCoder encodeSize:_minItemSize forKey:CPCollectionViewMinItemSizeKey];
-    [aCoder encodeSize:_maxItemSize forKey:CPCollectionViewMaxItemSizeKey];
+    if (_minItemSize != nil)
+      [aCoder encodeSize:_minItemSize forKey:CPCollectionViewMinItemSizeKey];
+      
+    if (_maxItemSize != nil)
+      [aCoder encodeSize:_maxItemSize forKey:CPCollectionViewMaxItemSizeKey];
 
-    [aCoder encodeSize:_verticalMargin forKey:CPCollectionViewVerticalMarginKey];
+    if (_verticalMargin != nil)
+      [aCoder encodeFloat:_verticalMargin forKey:CPCollectionViewVerticalMarginKey];
 }
 
 @end
