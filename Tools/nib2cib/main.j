@@ -46,30 +46,29 @@ function loadFrameworks(frameworkPaths, aCallback)
 {
     if (!frameworkPaths || frameworkPaths.length === 0)
         return aCallback();
-    
+
     var frameworkPath = frameworkPaths.shift(),
-        
-        infoPlist = new java.io.File(frameworkPath + "/Info.plist");
-        
-    if (!infoPlist.exists())
+        infoPlistPath = frameworkPath + "/Info.plist";
+
+    if (!File.isReadable(infoPlistPath))
     {
-        java.lang.System.out.println("'" + frameworkPath + "' is not a framework or could not be found.");
+        print("'" + frameworkPath + "' is not a framework or could not be found.");
         java.lang.System.exit(1);
     }
-    
-    var infoDictionary = CPPropertyListCreateFromData([CPData dataWithString:File.read(frameworkPath + "/Info.plist", { charset:"UTF-8" })]);
+
+    var infoDictionary = CPPropertyListCreateFromData([CPData dataWithString:File.read(infoPlistPath, { charset:"UTF-8" })]);
     
     if ([infoDictionary objectForKey:@"CPBundlePackageType"] !== "FMWK")
     {
-        java.lang.System.out.println("'" + frameworkPath + "' is not a framework.");
+        print("'" + frameworkPath + "' is not a framework.");
         java.lang.System.exit(1);
     }
     
     print("Loading " + [infoDictionary objectForKey:@"CPBundleName"]);
-    
+
     var files = [infoDictionary objectForKey:@"CPBundleReplacedFiles"],
         count = files.length;
-    
+
     if (count)
     {
         var context = new objj_context();
