@@ -108,7 +108,7 @@ var _CPKeyedUnarchiverArrayClass                                            = Ni
 
     CPDictionary    _replacementClasses;
     
-    CPDictionary    _objects;
+    CPArray         _objects;
     CPDictionary    _archive;
     
     CPDictionary    _plistObject;

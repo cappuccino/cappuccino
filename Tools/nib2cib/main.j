@@ -20,14 +20,15 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-
 @import <Foundation/Foundation.j>
 
 @import <AppKit/CPCib.j>
 
 @import "NSFoundation.j"
 @import "NSAppKit.j"
+
 @import "Nib2CibKeyedUnarchiver.j"
+@import "Converter.j"
 
 var File = require("file");
 
@@ -35,118 +36,15 @@ importPackage(java.io);
 
 CPLogRegister(CPLogPrint);
 
-function exec(command)
-{
-	var p = Packages.java.lang.Runtime.getRuntime().exec(command);
-	var result = p.waitFor();
-	
-	var reader = new Packages.java.io.BufferedReader(new Packages.java.io.InputStreamReader(p.getInputStream()));
-	while (s = reader.readLine())
-		print(s);
-
-	var reader = new Packages.java.io.BufferedReader(new Packages.java.io.InputStreamReader(p.getErrorStream()));
-	while (s = reader.readLine())
-		print(s);
-		
-	return result;
-}
-
 function printUsage()
 {
-    java.lang.System.out.println("usage: nib2cib INPUT_FILE [OUTPUT_FILE] [-F /path/to/required/framework]");    
+    print("usage: nib2cib INPUT_FILE [OUTPUT_FILE] [-F /path/to/required/framework] [-R path/to/resources]");
     java.lang.System.exit(1);
-}
-
-function cibExtension(aPath)
-{
-    var start = aPath.length - 1;
-    
-    while (aPath.charAt(start) === '/')
-        start--;
-
-    aPath = aPath.substr(0, start + 1);
-
-    var dotIndex = aPath.lastIndexOf('.');
-    
-    if (dotIndex == -1)
-        return aPath + ".cib";
-    
-    var slashIndex = aPath.lastIndexOf('/');
-    
-    if (slashIndex > dotIndex)
-        return aPath + ".cib";
-    
-    return aPath.substr(0, dotIndex) + ".cib";
-}
-
-function convert(inputFileName, outputFileName, resourcesPath)
-{
-    var resourcesFile = nil;
-    
-    if (resourcesPath)
-    {
-        resourcesFile = new java.io.File(resourcesPath).getCanonicalFile();
-     
-        if (!resourcesFile.canRead())
-        {
-            print("Could not find Resources at " + resourcesFile);
-            return;
-        }
-    }
-    
-    // Make sure we can read the file
-    if (!(new Packages.java.io.File(inputFileName)).canRead())
-    {
-        print("Could not read file at " + inputFileName);
-        return;
-    }
-
-    // Compile xib or nib to make sure we have a non-new format nib.
-    var temporaryNibFile = java.io.File.createTempFile("temp", ".nib"),
-        temporaryNibFilePath = temporaryNibFile.getAbsolutePath();
-    
-    temporaryNibFile.deleteOnExit();
-    
-    if (exec(["/usr/bin/ibtool", inputFileName, "--compile", temporaryNibFilePath]))
-    {
-        print("Could not compile file at " + inputFileName);
-        return;
-    }
-
-    // Convert from binary plist to XML plist
-    var temporaryPlistFile = java.io.File.createTempFile("temp", ".plist"),
-        temporaryPlistFilePath = String(temporaryPlistFile.getAbsolutePath());
-    
-    temporaryPlistFile.deleteOnExit();
-    
-    if (exec(["/usr/bin/plutil", "-convert", "xml1", temporaryNibFilePath, "-o", temporaryPlistFilePath]))
-    {
-        print("Could not convert to xml plist for file at " + inputFileName);
-        return;
-    }
-
-    var data = [CPData dataWithString:File.read(String(temporaryPlistFilePath), { charset:"UTF-8" })];
-
-    // Minor NSKeyedArchive to CPKeyedArchive conversion.
-    [data setString:[data string].replace(/\<key\>\s*CF\$UID\s*\<\/key\>/g, "<key>CP$UID</key>")];
-    
-    // Unarchive the NS data
-    var unarchiver = [[Nib2CibKeyedUnarchiver alloc] initForReadingWithData:data resourcesFile:resourcesFile],
-        objectData = [unarchiver decodeObjectForKey:@"IB.objectdata"],
-        
-        data = [CPData data],
-        archiver = [[CPKeyedArchiver alloc] initForWritingWithMutableData:data];
-
-    // Re-archive the CP data.
-    [archiver encodeObject:objectData forKey:@"CPCibObjectDataKey"];
-    [archiver finishEncoding];
-    
-    File.write(outputFileName, [data string], { charset:"UTF-8" });
 }
 
 function loadFrameworks(frameworkPaths, aCallback)
 {
-    if (frameworkPaths.length === 0)
+    if (!frameworkPaths || frameworkPaths.length === 0)
         return aCallback();
     
     var frameworkPath = frameworkPaths.shift(),
@@ -167,6 +65,8 @@ function loadFrameworks(frameworkPaths, aCallback)
         java.lang.System.exit(1);
     }
     
+    print("Loading " + [infoDictionary objectForKey:@"CPBundleName"]);
+    
     var files = [infoDictionary objectForKey:@"CPBundleReplacedFiles"],
         count = files.length;
     
@@ -175,14 +75,18 @@ function loadFrameworks(frameworkPaths, aCallback)
         var context = new objj_context();
 
         context.didCompleteCallback = function() { loadFrameworks(frameworkPaths, aCallback) };
-
+print("2he");
         while (count--)
+        {
+            print(frameworkPath + '/' + files[count]);
             context.pushFragment(fragment_create_file(frameworkPath + '/' + files[count], new objj_bundle(""), YES, NULL));
-
-        context.evaluate();
+        }
+print("hmmm");
+        context.evaluate();print("wha???");
     }
     else
         loadFrameworks(frameworkPaths, aCallback);
+print("so far so good...");
 }
 
 function main()
@@ -190,41 +94,39 @@ function main()
     var count = arguments.length;
     
     if (count < 1)
-        printUsage();
+        return printUsage();
     
     var index = 0,
-    
-        inputFileName = nil,
-        outputFileName = nil,
-        resourcesPath = nil,
-        frameworkPaths = [];
+
+        frameworkPaths = [],
+        converter = [[Converter alloc] init];
     
     for (; index < count; ++index)
     {
         switch(arguments[index])
         {
             case "-help":
-            case "--help":  printUsage();
-            
-            case "-F":      frameworkPaths.push(arguments[++index]);
-                            break;
-                            
-            case "-R":      resourcesPath = arguments[++index];
-                            break;
-            
-            default:        if (inputFileName && inputFileName.length > 0)
-                                outputFileName = arguments[index];
-                            else
-                                inputFileName = arguments[index];
+            case "--help":      printUsage();
+                                break;
+
+            case "--mac":       [converter setFormat:NibFormatMac];
+                                break;
+
+            case "-F":          frameworkPaths.push(arguments[++index]);
+                                break;
+
+            case "-R":          [converter setResourcesPath:arguments[++index]];
+                                break;
+
+            default:            if ([converter inputPath])
+                                    [converter setOutputPath:arguments[index]];
+                                else
+                                    [converter setInputPath:arguments[index]];
         }
     }
 
-    if (!outputFileName || outputFileName.length < 1)
-        outputFileName = cibExtension(inputFileName);
-
-    if (frameworkPaths.length)
-        loadFrameworks(frameworkPaths, function() { convert(inputFileName, outputFileName, resourcesPath); });
-    
-    else
-        convert(inputFileName, outputFileName, resourcesPath);
+    loadFrameworks(frameworkPaths, function()
+    {
+        [converter convert];
+    });
 }

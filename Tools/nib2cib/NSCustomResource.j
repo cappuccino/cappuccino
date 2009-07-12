@@ -49,13 +49,13 @@ importClass(javax.imageio.ImageIO);
         }
         else
         {
-            var resourceFile = [aCoder resourceFileForName:_resourceName];
-            
-            if (!resourceFile)
+            var resourcePath = [aCoder resourcePathForName:_resourceName];
+
+            if (!resourcePath)
                 CPLog.warn("***WARNING: Resource named " + _resourceName + " not found in supplied resources path.");
             else
             {
-                var imageStream = ImageIO.createImageInputStream(resourceFile),
+                var imageStream = ImageIO.createImageInputStream(new Packages.java.io.File(resourcePath).getCanonicalFile()),
                     readers = ImageIO.getImageReaders(imageStream),
                     reader = null;
                 
