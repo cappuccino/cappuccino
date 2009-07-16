@@ -736,13 +736,16 @@ var CPCollectionViewMinItemSizeKey      = @"CPCollectionViewMinItemSizeKey",
 
         _itemSize = CGSizeMakeZero();
         
-        _minItemSize = [aCoder decodeSizeForKey:CPCollectionViewMinItemSizeKey];
-        _maxItemSize = [aCoder decodeSizeForKey:CPCollectionViewMaxItemSizeKey];
+        _minItemSize = [aCoder decodeSizeForKey:CPCollectionViewMinItemSizeKey] || CGSizeMakeZero();
+        _maxItemSize = [aCoder decodeSizeForKey:CPCollectionViewMaxItemSizeKey] || CGSizeMakeZero();
         _verticalMargin = [aCoder decodeFloatForKey:CPCollectionViewVerticalMarginKey];
           
         _tileWidth = -1.0;
 
         _selectionIndexes = [CPIndexSet indexSet];
+        
+        _allowsEmptySelection = YES;
+        _isSelectable = YES;
     }
 
     return self;
@@ -752,14 +755,13 @@ var CPCollectionViewMinItemSizeKey      = @"CPCollectionViewMinItemSizeKey",
 {
     [super encodeWithCoder:aCoder];
 
-    if (_minItemSize != nil)
+    if (!CGSizeEqualToSize(_minItemSize, CGSizeMakeZero()))
       [aCoder encodeSize:_minItemSize forKey:CPCollectionViewMinItemSizeKey];
       
-    if (_maxItemSize != nil)
+    if (!CGSizeEqualToSize(_maxItemSize, CGSizeMakeZero()))
       [aCoder encodeSize:_maxItemSize forKey:CPCollectionViewMaxItemSizeKey];
 
-    if (_verticalMargin != nil)
-      [aCoder encodeFloat:_verticalMargin forKey:CPCollectionViewVerticalMarginKey];
+    [aCoder encodeFloat:_verticalMargin forKey:CPCollectionViewVerticalMarginKey];
 }
 
 @end

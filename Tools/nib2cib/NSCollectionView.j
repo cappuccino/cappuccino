@@ -26,6 +26,21 @@
 
 - (id)NS_initWithCoder:(CPCoder)aCoder
 {
+    _items = [];
+    _content = [];
+  
+    _cachedItems = [];
+    
+    _itemSize = CGSizeMakeZero();
+    _minItemSize = CGSizeMakeZero();
+    _maxItemSize = CGSizeMakeZero();
+
+    _verticalMargin = 5.0;
+    _tileWidth = -1.0;
+    
+    _selectionIndexes = [CPIndexSet indexSet];
+    _allowsEmptySelection = YES;
+        
     if (self = [super NS_initWithCoder:aCoder])
     {
         _maxNumberOfRows    = [aCoder decodeIntForKey:@"NSMaxNumberOfGridRows"];
@@ -33,7 +48,6 @@
         
         _isSelectable             = [aCoder decodeBoolForKey:@"NSSelectable"];
         _allowsMultipleSelection  = [aCoder decodeBoolForKey:@"NSAllowsMultipleSelection"];
-        
     }
     
     return self;
