@@ -8,14 +8,31 @@
 	<string>Tom Robinson</string>
 	<key>description</key>
 	<string>&lt;a href="http://cappuccino.org/"&gt;Cappuccino&lt;/a&gt; is an open source framework that makes it easy to build desktop-caliber applications that run in a web browser.</string>
+	<key>mainMenu</key>
+	<dict>
+		<key>items</key>
+		<array>
+			<string>96C39647-4346-4750-9F96-58070F24EDE6</string>
+			<string>AA41BEF8-5F81-4A5A-85DE-2E81A112778B</string>
+			<string>85B0746B-AE1C-47B3-8B9A-2B9A95F4C71E</string>
+			<string>------------------------------------</string>
+			<string>36FD3695-1051-401E-8536-89FB9CEEEAB4</string>
+			<string>033BC36A-97DA-4F48-9ACB-B58C80D1A689</string>
+		</array>
+		<key>submenus</key>
+		<dict/>
+	</dict>
 	<key>name</key>
 	<string>JavaScript Objective-J</string>
 	<key>ordering</key>
 	<array>
 		<string>58D4B98A-2110-423E-9C80-CC9E202816E7</string>
+		<string>85A46AFC-5552-4CE5-BDA0-ED34F0398399</string>
 		<string>96C39647-4346-4750-9F96-58070F24EDE6</string>
 		<string>AA41BEF8-5F81-4A5A-85DE-2E81A112778B</string>
 		<string>85B0746B-AE1C-47B3-8B9A-2B9A95F4C71E</string>
+		<string>36FD3695-1051-401E-8536-89FB9CEEEAB4</string>
+		<string>033BC36A-97DA-4F48-9ACB-B58C80D1A689</string>
 	</array>
 	<key>uuid</key>
 	<string>1FB3D538-84E1-4002-AA46-5705529A27E1</string>
