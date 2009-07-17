@@ -26,6 +26,7 @@
 @import "NSClipView.j"
 @import "NSColor.j"
 @import "NSColorWell.j"
+@import "NSCollectionView.j"
 @import "NSControl.j"
 @import "NSCustomObject.j"
 @import "NSCustomResource.j"

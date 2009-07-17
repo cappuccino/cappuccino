@@ -735,13 +735,17 @@ var CPCollectionViewMinItemSizeKey      = @"CPCollectionViewMinItemSizeKey",
         _cachedItems = [];
 
         _itemSize = CGSizeMakeZero();
-        _minItemSize = [aCoder decodeSizeForKey:CPCollectionViewMinItemSizeKey];
-        _maxItemSize = [aCoder decodeSizeForKey:CPCollectionViewMaxItemSizeKey];
-
-        _verticalMargin = [aCoder decodeSizeForKey:CPCollectionViewVerticalMarginKey];
+        
+        _minItemSize = [aCoder decodeSizeForKey:CPCollectionViewMinItemSizeKey] || CGSizeMakeZero();
+        _maxItemSize = [aCoder decodeSizeForKey:CPCollectionViewMaxItemSizeKey] || CGSizeMakeZero();
+        _verticalMargin = [aCoder decodeFloatForKey:CPCollectionViewVerticalMarginKey];
+          
         _tileWidth = -1.0;
 
         _selectionIndexes = [CPIndexSet indexSet];
+        
+        _allowsEmptySelection = YES;
+        _isSelectable = YES;
     }
 
     return self;
@@ -751,10 +755,13 @@ var CPCollectionViewMinItemSizeKey      = @"CPCollectionViewMinItemSizeKey",
 {
     [super encodeWithCoder:aCoder];
 
-    [aCoder encodeSize:_minItemSize forKey:CPCollectionViewMinItemSizeKey];
-    [aCoder encodeSize:_maxItemSize forKey:CPCollectionViewMaxItemSizeKey];
+    if (!CGSizeEqualToSize(_minItemSize, CGSizeMakeZero()))
+      [aCoder encodeSize:_minItemSize forKey:CPCollectionViewMinItemSizeKey];
+      
+    if (!CGSizeEqualToSize(_maxItemSize, CGSizeMakeZero()))
+      [aCoder encodeSize:_maxItemSize forKey:CPCollectionViewMaxItemSizeKey];
 
-    [aCoder encodeSize:_verticalMargin forKey:CPCollectionViewVerticalMarginKey];
+    [aCoder encodeFloat:_verticalMargin forKey:CPCollectionViewVerticalMarginKey];
 }
 
 @end
