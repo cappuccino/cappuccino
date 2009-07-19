@@ -2,5 +2,6 @@
     "author": "Tom Robinson",
     "dependencies": [],
     "lib": "lib-js",
-    "jars": "jars/"
+    "jars": "jars/",
+    "plugins": ["objj/loader"]
 }

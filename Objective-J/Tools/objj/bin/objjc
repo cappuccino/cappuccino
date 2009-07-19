@@ -1,9 +1,11 @@
 #!/usr/bin/env narwhal
 
-var objjc = require("objj/objjc"),
+var objj = require("objj/objj"),
     File = require("file");
 
-with (objjc)
+require("objj/regexp-rhino-patch");
+
+with (objj)
 {
 
 importPackage(java.lang);

@@ -29,6 +29,7 @@ task :build => [:update_submodules, $ENVIRONMENT_DIR] do
   cp_r('narwhal', $ENVIRONMENT_NARWHAL_PRODUCT)
   cp_r('browserjs', $ENVIRONMENT_BROWSERJS_PRODUCT)
   cp_r('jack', $ENVIRONMENT_JACK_PRODUCT)
+  symlink_executable(File.join($ENVIRONMENT_JACK_PRODUCT, "bin", "jackup"))
 end
 
 CLOBBER.include($ENVIRONMENT_NARWHAL_PRODUCT)
