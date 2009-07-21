@@ -175,7 +175,7 @@ function objj_profileEnd()
 
 // Type checking version of objj_msgSend:
 
-function objj_msgSendTypeCheck(/*id*/ aReceiver, /*SEL*/ aSelector)
+function objj_msgSend_TypeCheck(/*id*/ aReceiver, /*SEL*/ aSelector)
 {
     if (aReceiver == nil)
         return nil;
@@ -251,4 +251,4 @@ function runtimeTypeCheck(typeName, actual)
     throw("Expected " + typeName + ", was [" + ((actual && actual.isa) ? "<"+actual.isa.name+">" : actual) +"]");
 }
 
-objj_msgSend = objj_msgSendTypeCheck;
+objj_msgSend = objj_msgSend_TypeCheck;
