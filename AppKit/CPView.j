@@ -209,6 +209,11 @@ var DOMElementPrototype         = nil,
     CachedNotificationCenter = [CPNotificationCenter defaultCenter];
 }
 
++ (CPSet)keyPathsForValuesAffectingFrame
+{
+    return [CPSet setWithObjects:@"frameOrigin", @"frameSize"];
+}
+
 - (id)init
 {
     return [self initWithFrame:CGRectMakeZero()];
@@ -621,6 +626,16 @@ var DOMElementPrototype         = nil,
 - (CGRect)frame
 {
     return _CGRectMakeCopy(_frame);
+}
+
+- (CGPoint)frameOrigin
+{
+    return _CGPointMakeCopy(_frame.origin);
+}
+
+- (CGSize)frameSize
+{
+    return _CGSizeMakeCopy(_frame.size);
 }
 
 /*!

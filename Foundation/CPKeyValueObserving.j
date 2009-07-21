@@ -68,8 +68,8 @@
 
 + (CPSet)keyPathsForValuesAffectingValueForKey:(CPString)aKey
 {
-    var capitalizedKey = aKey.charAt(0).toUpperCase()+aKey.substring(1);
-        selector = "keyPathsForValuesAffectingValueFor"+capitalizedKey;
+    var capitalizedKey = aKey.charAt(0).toUpperCase() + aKey.substring(1);
+        selector = "keyPathsForValuesAffecting" + capitalizedKey;
 
     if ([[self class] respondsToSelector:selector])
         return objj_msgSend([self class], selector);
@@ -202,17 +202,12 @@ var KVOProxyMap = [CPDictionary dictionary],
             var theMethod = class_getInstanceMethod(_nativeClass, theSelector);
 
             class_addMethod(_targetObject.isa, theSelector, theReplacementMethod(aKey, theMethod), "");
-
-            found = true;
         }
     }
 
-    if (found)
-        return;
+    var affectingKeys = [[_nativeClass keyPathsForValuesAffectingValueForKey:aKey] allObjects];
 
-    var composedOfKeys = [[_nativeClass keyPathsForValuesAffectingValueForKey:aKey] allObjects];
-
-    if (!composedOfKeys)
+    if (![affectingKeys count])
         return;
 
     var dependentKeysForClass = [DependentKeysMap objectForKey:[_nativeClass UID]];
@@ -223,19 +218,21 @@ var KVOProxyMap = [CPDictionary dictionary],
         [DependentKeysMap setObject:dependentKeysForClass forKey:[_nativeClass UID]];
     }
 
-    for (var i=0, count=composedOfKeys.length; i<count; i++)
-    {
-        var componentKey = composedOfKeys[i],
-            keysComposedOfKey = [dependentKeysForClass objectForKey:componentKey];
+    var count = [affectingKeys count];
 
-        if (!keysComposedOfKey)
+    while (count--)
+    {
+        var affectingKey = affectingKeys[count],
+            affectedKeys = [dependentKeysForClass objectForKey:affectingKey];
+
+        if (!affectedKeys)
         {
-            keysComposedOfKey = [CPSet new];
-            [dependentKeysForClass setObject:keysComposedOfKey forKey:componentKey];
+            affectedKeys = [CPSet new];
+            [dependentKeysForClass setObject:affectedKeys forKey:affectingKey];
         }
 
-        [keysComposedOfKey addObject:aKey];
-        [self _replaceSetterForKey:componentKey];
+        [affectedKeys addObject:aKey];
+        [self _replaceSetterForKey:affectingKey];
     }
 }
 
