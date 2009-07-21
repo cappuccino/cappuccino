@@ -655,7 +655,7 @@ objj_preprocessor.prototype.method = function(tokens)
 
     CONCAT(buffer, ")\n{ with(self)\n{");
     CONCAT(buffer, this.preprocess(tokens, NULL, TOKEN_CLOSE_BRACE, TOKEN_OPEN_BRACE));
-    CONCAT(buffer, "}\n},"+types.toSource()+")");
+    CONCAT(buffer, "}\n},"+JSON.stringify(types)+")");
 
     return buffer;
 }
