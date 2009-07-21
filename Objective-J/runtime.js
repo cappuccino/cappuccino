@@ -542,3 +542,84 @@ function sel_registerName(aName)
 {
     return aName;
 }
+
+
+// Type checking version of objj_msgSend:
+
+function objj_msgSendTypeCheck(/*id*/ aReceiver, /*SEL*/ aSelector)
+{
+    if (aReceiver == nil)
+        return nil;
+
+    CLASS_GET_METHOD_IMPLEMENTATION(var implementation, aReceiver.isa, aSelector);
+
+    var types = method.types;
+
+    for (var i = 2; i < arguments.length; i++)
+    {
+        try
+        {
+            runtimeTypeCheck(types[i-1], arguments[i]);
+        }
+        catch (e)
+        {
+            objj_fprintf(warning_stream, "Type check failure: "+
+                "aReceiver="+String(aReceiver).substring(0,100)+", "+
+                "aSelector="+String(aSelector).substring(0,100)+", "+
+                "argument #"+(i-2)+": " + e);
+        }
+    }
+
+    var result = implementation.apply(aReceiver, arguments);
+
+    try
+    {
+        runtimeTypeCheck(types[0], result);
+    }
+    catch (e)
+    {
+        objj_fprintf(warning_stream, "Type check failure: "+
+            "aReceiver="+String(aReceiver).substring(0,100)+", "+
+            "aSelector="+String(aSelector).substring(0,100)+", "+
+            "return value: " + e);
+    }
+
+    return result;
+}
+
+function runtimeTypeCheck(typeName, actual)
+{
+    var objjClass;
+
+    if (!typeName)
+    {
+        return;
+    }
+    if (typeName === "id")
+    {
+        return;
+    }
+    else if (typeName === "void")
+    {
+        if (actual === undefined)
+            return;
+    }
+    else if (objjClass = objj_getClass(typeName))
+    {
+        if (actual && actual.isa)
+        {
+            var theClass = actual.isa;
+            for(; theClass; theClass = theClass.super_class)
+            if (theClass === objjClass)
+                return;
+        }
+    }
+    else
+    {
+        return;
+    }
+
+    throw("Expected " + typeName + ", was [" + actual +"]");
+}
+
+objj_msgSend = objj_msgSendTypeCheck;

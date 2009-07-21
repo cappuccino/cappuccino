@@ -578,12 +578,15 @@ objj_preprocessor.prototype.method = function(tokens)
     var buffer = new objj_stringBuffer(),
         token,
         selector = "",
-        parameters = [];
+        parameters = [],
+        types = [null];
     
     while((token = tokens.skip_whitespace()) && token != TOKEN_OPEN_BRACE)
     {
         if (token == TOKEN_COLON)
         {
+            var type = "";
+
             // Colons are part of the selector name
             selector += token;
             
@@ -592,18 +595,30 @@ objj_preprocessor.prototype.method = function(tokens)
             if (token == TOKEN_OPEN_PARENTHESIS)
             {
                 // Swallow parameter/return type.  Perhaps later we can use this for debugging?
-                while((token = tokens.skip_whitespace()) && token != TOKEN_CLOSE_PARENTHESIS) ;
+                while((token = tokens.skip_whitespace()) && token != TOKEN_CLOSE_PARENTHESIS)
+                    type += token;
     
                 token = tokens.skip_whitespace();
             }
             
+            // Add the type. If it's empty, add null instead.
+            types[parameters.length+1] = type || null;
+
             // Since this follows a colon, this must be the parameter name.
             parameters[parameters.length] = token;
         }
         
         else if (token == TOKEN_OPEN_PARENTHESIS)
+        {
+            var type = "";
+
             // Since :( is handled above, this must be the return type, just swallow it.
-            while((token = tokens.skip_whitespace()) && token != TOKEN_CLOSE_PARENTHESIS) ;
+            while((token = tokens.skip_whitespace()) && token != TOKEN_CLOSE_PARENTHESIS)
+                type += token;
+
+            // types[0] is the return argument
+            types[0] = type || null;
+        }
         
         // Argument list ", ..."
         else if (token == TOKEN_COMMA)
@@ -640,7 +655,7 @@ objj_preprocessor.prototype.method = function(tokens)
 
     CONCAT(buffer, ")\n{ with(self)\n{");
     CONCAT(buffer, this.preprocess(tokens, NULL, TOKEN_CLOSE_BRACE, TOKEN_OPEN_BRACE));
-    CONCAT(buffer, "}\n})");
+    CONCAT(buffer, "}\n},"+types.toSource()+")");
 
     return buffer;
 }
