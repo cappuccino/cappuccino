@@ -684,11 +684,6 @@ var _CPMenuBarVisible               = NO,
 
     [_CPMenuWindow poolMenuWindow:aMenuWindow];
 
-    var delegate = [menu delegate];
-
-    if ([delegate respondsToSelector:@selector(menuDidClose:)])
-        [delegate menuDidClose:menu];
-
     if([aMenuItem isEnabled])
         [CPApp sendAction:[aMenuItem action] to:[aMenuItem target] from:aMenuItem];
 }
@@ -1259,23 +1254,23 @@ var STICKY_TIME_INTERVAL        = 500,
         
         [menu _highlightItemAtIndex:CPNotFound];
         
-        // Clear these now so its faster next time around.
-        [_menuView setMenu:nil];
-        
         [self orderOut:self];
-        
-        if (_sessionDelegate && _didEndSelector)
-            objj_msgSend(_sessionDelegate, _didEndSelector, self, highlightedItem);
-        
-        [[CPNotificationCenter defaultCenter]
-            postNotificationName:CPMenuDidEndTrackingNotification
-                          object:menu];
-        
+
         var delegate = [menu delegate];
         
         if ([delegate respondsToSelector:@selector(menuDidClose:)])
             [delegate menuDidClose:menu];
-        
+
+        if (_sessionDelegate && _didEndSelector)
+            objj_msgSend(_sessionDelegate, _didEndSelector, self, highlightedItem);
+
+        [[CPNotificationCenter defaultCenter]
+            postNotificationName:CPMenuDidEndTrackingNotification
+                          object:menu];
+
+        // Clear these now so its faster next time around.
+        [_menuView setMenu:nil];
+
         return;
     }
             
