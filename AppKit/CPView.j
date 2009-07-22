@@ -233,6 +233,11 @@ var CPViewFlags                     = { },
     _viewClassFlags = CPViewFlags[classUID];
 }
 
++ (CPSet)keyPathsForValuesAffectingFrame
+{
+    return [CPSet setWithObjects:@"frameOrigin", @"frameSize"];
+}
+
 - (id)init
 {
     return [self initWithFrame:CGRectMakeZero()];
@@ -647,6 +652,16 @@ var CPViewFlags                     = { },
 - (CGRect)frame
 {
     return _CGRectMakeCopy(_frame);
+}
+
+- (CGPoint)frameOrigin
+{
+    return _CGPointMakeCopy(_frame.origin);
+}
+
+- (CGSize)frameSize
+{
+    return _CGSizeMakeCopy(_frame.size);
 }
 
 /*!
