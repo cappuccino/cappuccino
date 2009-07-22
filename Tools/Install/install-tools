@@ -36,28 +36,7 @@ done
 
 chmod +x $INSTALL_DIR/share/objj/bin/*
 
-cat <<EOT
-    
-    Installation of the Objective-J tools to $INSTALL_DIR is almost complete!
-    
-    Several environment variables should be set:
-    
-    - PATH should include $INSTALL_DIR/bin:
+gem install *.gem
+gem cleanup objective-j
 
-        export PATH=\$PATH:$INSTALL_DIR/bin
-        
-        (currently: $PATH)
-
-    - OBJJ_HOME should be set to $INSTALL_DIR/share/objj:
-
-        export OBJJ_HOME=$INSTALL_DIR/share/objj
-        
-        (currently: $OBJJ_HOME)
-    
-    - STEAM_BUILD should be set (required) to the build directory of your choice (e.x. $HOME/objj_build):
-
-        export STEAM_BUILD=$HOME/objj_build
-        
-        (currently: $STEAM_BUILD)
-    
-EOT
+echo "Cappuccino Tools Installed"

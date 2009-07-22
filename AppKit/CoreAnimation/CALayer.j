@@ -779,9 +779,9 @@ if (_DOMContentsElement && aLayer._zPosition > _DOMContentsElement.style.zIndex)
 + (void)runLoopUpdateLayers
 {if (window.oops) {alert(window.latest); objj_debug_print_backtrace();}
     window.loop = true;
-    for (hash in CALayerRegisteredRunLoopUpdates)
+    for (UID in CALayerRegisteredRunLoopUpdates)
     {
-        var layer = CALayerRegisteredRunLoopUpdates[hash],
+        var layer = CALayerRegisteredRunLoopUpdates[UID],
             mask = layer._runLoopUpdateMask;
 
         if (mask & CALayerDOMUpdateMask)
@@ -813,7 +813,7 @@ if (_DOMContentsElement && aLayer._zPosition > _DOMContentsElement.style.zIndex)
     }
     
     _runLoopUpdateMask |= anUpdateMask;
-    CALayerRegisteredRunLoopUpdates[[self hash]] = self;
+    CALayerRegisteredRunLoopUpdates[[self UID]] = self;
 }
 
 /*

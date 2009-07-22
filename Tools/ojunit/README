@@ -1,7 +1,0 @@
-OJUnit resides in a separate repository. This build.xml pulls it from that repo:
-
-	git://github.com/280north/ojunit.git
-
-Project page:
-
-	http://github.com/280north/ojunit

@@ -66,6 +66,12 @@ function objj_context()
 #define IS_FILE(aFragment) (aFragment.type & FRAGMENT_FILE)
 #define IS_LOCAL(aFragment) (aFragment.type & FRAGMENT_LOCAL)
 
+objj_fragment.prototype.toMarkedString = function()
+{
+    return IS_FILE(this) ?  (IS_LOCAL(this) ? MARKER_IMPORT_LOCAL : MARKER_IMPORT_STD) + ';' + GET_PATH(this).length + ';' + GET_PATH(this) :
+                            MARKER_CODE + ';' + GET_CODE(this).length + ';' + GET_CODE(this);
+}
+
 function fragment_create_code(aCode, aBundle, aFile)
 {
     var fragment = new objj_fragment();
@@ -152,9 +158,11 @@ function fragment_evaluate_code(aFragment)
     try
     {
 #if RHINO
-        compiled = Packages.org.mozilla.javascript.Context.getCurrentContext().compileFunction(window, "function(){"+GET_CODE(aFragment)+"}", GET_FILE(aFragment).path, 0, null);
+        compiled = eval("function(){"+GET_CODE(aFragment)+"}");
+        //compiled = Packages.org.mozilla.javascript.Context.getCurrentContext().compileFunction(window, "function(){"+GET_CODE(aFragment)+"}", GET_FILE(aFragment).path, 0, null);
 #else
         compiled = new Function(GET_CODE(aFragment));
+        compiled.displayName = GET_FILE(aFragment).path;
 #endif
     }
     catch(anException)
@@ -233,12 +241,21 @@ function fragment_evaluate_file(aFragment)
     return requiresSleep;
 }
 
-function objj_import(aPath, isLocal, didCompleteCallback)
+function objj_import(/*String | Array*/ pathOrPaths, /*BOOL*/ isLocal, /*Function*/ didCompleteCallback)
 {
-    var context = new objj_context();
-    
+    var context = new objj_context(),
+        paths = pathOrPaths;
+
+    if (typeof paths === "string")
+        paths = [paths];
+
+    var index = 0,
+        count = paths.length;
+
+    for (; index < count; ++index)
+        context.pushFragment(fragment_create_file(paths[index], new objj_bundle(""), isLocal, NULL));
+
     context.didCompleteCallback = didCompleteCallback;
-    context.pushFragment(fragment_create_file(aPath, new objj_bundle(""), isLocal, NULL));
-        
+
     context.evaluate();
 }

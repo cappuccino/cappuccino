@@ -27,7 +27,11 @@
 var __placeholder = new Number(),
     _CPNumberHashes = { };
 
-/*! @class CPNumber
+/*! 
+    @class CPNumber
+    @ingroup foundation
+    @brief A bridged object to native Javascript numbers.
+
     This class primarily exists for source compatability. The JavaScript
     <code>Number</code> type can be changed on the fly based on context,
     so there is no need to call any of these methods. 
@@ -184,7 +188,7 @@ var __placeholder = new Number(),
     return anUnsignedShort;
 }
 
-- (CPString)hash
+- (CPString)UID
 {
     if (!_CPNumberHashes[self])
         _CPNumberHashes[self] = _objj_generateObjectHash();

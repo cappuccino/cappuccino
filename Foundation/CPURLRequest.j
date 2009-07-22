@@ -23,7 +23,11 @@
 @import "CPObject.j"
 
 
-/*! @class CPURLRequest
+/*! 
+    @class CPURLRequest
+    @ingroup foundation
+    @brief Contains data obtained during a request made with CPURLConnection.
+
     A helper object for CPURLConnection, that contains
     data obtained during the life of a request.
 */
@@ -65,6 +69,7 @@
         
         [self setValue:"Thu, 1 Jan 1970 00:00:00 GMT" forHTTPHeaderField:"If-Modified-Since"];
         [self setValue:"no-cache" forHTTPHeaderField:"Cache-Control"];
+        [self setValue:"XMLHttpRequest" forHTTPHeaderField:"X-Requested-With"];
     }
     
     return self;

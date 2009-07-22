@@ -86,7 +86,7 @@ var HUD_TITLEBAR_HEIGHT             = 26.0;
 {
     var contentRect = [[self class] contentRectForFrameRect:aFrameRect];
     
-    if ([[[self owningWindow] toolbar] isVisible])
+    if ([[[self window] toolbar] isVisible])
     {
         toolbarHeight = CGRectGetHeight([[self toolbarView] frame]);
         
@@ -101,7 +101,7 @@ var HUD_TITLEBAR_HEIGHT             = 26.0;
 {
     var frameRect = [[self class] frameRectForContentRect:aContentRect];
     
-    if ([[[self owningWindow] toolbar] isVisible])
+    if ([[[self window] toolbar] isVisible])
     {
         toolbarHeight = CGRectGetHeight([[self toolbarView] frame]);
         
@@ -112,9 +112,9 @@ var HUD_TITLEBAR_HEIGHT             = 26.0;
     return frameRect;
 }
 
-- (id)initWithFrame:(CPRect)aFrame styleMask:(unsigned)aStyleMask owningWindow:(CPWindow)aWindow
+- (id)initWithFrame:(CPRect)aFrame styleMask:(unsigned)aStyleMask
 {
-    self = [super initWithFrame:aFrame styleMask:aStyleMask owningWindow:aWindow];
+    self = [super initWithFrame:aFrame styleMask:aStyleMask];
     
     if (self)
     {
@@ -127,7 +127,8 @@ var HUD_TITLEBAR_HEIGHT             = 26.0;
         [_titleField setHitTests:NO];
         [_titleField setFont:[CPFont systemFontOfSize:11.0]];
         [_titleField setTextColor:[CPColor whiteColor]];
-        [_titleField setTextShadow:[CPShadow shadowWithOffset:CPSizeMake(0.0, 1.0) blurRadius:2.0 color:[CPColor blackColor]]];
+        [_titleField setTextShadowColor:[CPColor blackColor]];
+        [_titleField setTextShadowOffset:CGSizeMake(0.0, 1.0)];
         [_titleField setAutoresizingMask:CPViewWidthSizable];
         
         // FIXME: Make this to CPLineBreakByTruncatingMiddle once it's implemented.
@@ -154,9 +155,6 @@ var HUD_TITLEBAR_HEIGHT             = 26.0;
             [_closeButton setImage:_CPHUDWindowViewCloseImage];
             [_closeButton setAlternateImage:_CPHUDWindowViewCloseActiveImage];
             
-            [_closeButton setTarget:aWindow];
-            [_closeButton setAction:@selector(performClose:)];
-            
             [self addSubview:_closeButton];
         }
         
@@ -164,6 +162,12 @@ var HUD_TITLEBAR_HEIGHT             = 26.0;
     }
     
     return self;
+}
+
+- (void)viewDidMoveToWindow
+{
+    [_closeButton setTarget:[self window]];
+    [_closeButton setAction:@selector(performClose:)];
 }
 
 - (void)setTitle:(CPString)aTitle
@@ -181,6 +185,11 @@ var HUD_TITLEBAR_HEIGHT             = 26.0;
     return [CPColor whiteColor];
 }
 
+- (CPColor)toolbarLabelShadowColor
+{
+    return [CPColor blackColor];
+}
+
 - (CGSize)toolbarOffset
 {
     return CGSizeMake(0.0, HUD_TITLEBAR_HEIGHT);
@@ -190,9 +199,15 @@ var HUD_TITLEBAR_HEIGHT             = 26.0;
 {
     [super tile];
 
-    var owningWindow = [self owningWindow];
-    
-    [[owningWindow contentView] setFrameOrigin:CGPointMake(0.0, [self toolbarMaxY])];//HUD_TITLEBAR_HEIGHT + toolbarHeight)];
+    var theWindow = [self window],
+        bounds = [self bounds],
+        width = CGRectGetWidth(bounds);
+
+    [_titleField setFrame:CGRectMake(20.0, 3.0, width - 40.0, CGRectGetHeight([_titleField frame]))];
+
+    var maxY = [self toolbarMaxY];
+
+    [[theWindow contentView] setFrameOrigin:CGPointMake(0.0, maxY, width, CGRectGetHeight(bounds) - maxY)];
 }
 
 @end

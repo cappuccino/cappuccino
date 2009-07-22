@@ -33,6 +33,8 @@
     
     if (self)
     {
+        _isSeparator = [aCoder decodeObjectForKey:@"NSIsSeparator"] || NO;
+
         _title = [aCoder decodeObjectForKey:"NSTitle"];
 
 //      _font = [aCoder decodeObjectForKey:"NSTitle"];
@@ -44,7 +46,7 @@
         _isHidden = [aCoder decodeBoolForKey:"NSIsHidden"];
 
 //      _tag = [aCoder decodeIntForKey:"NSTag"];
-//      _state = [aCoder decodeIntForKey:"NSState"];
+        _state = [aCoder decodeIntForKey:"NSState"];
 
 //      _image = [aCoder decodeObjectForKey:"NSImage"];
 //      _alternateImage = [aCoder decodeObjectForKey:""];
@@ -88,7 +90,6 @@
 }
 
 @end
-
 
 @implementation NSMenuItemCell : NSButtonCell
 {

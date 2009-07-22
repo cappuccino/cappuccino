@@ -20,9 +20,27 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-@import <Foundation/CPObject.j>
-@import <Foundation/CPString.j>
+@import "CPObject.j"
+@import "CPString.j"
+@import "CPDictionary.j"
+@import "CPRange.j"
 
+/*! 
+    @class CPAttributedString
+    @ingroup foundation
+    @brief A mutable character string with attributes.
+
+    A character string with sets of attributes that apply to single or ranges of
+    characters. The attributes are containted within a CPDictionary class.
+    Attributes can be any name/value pair. The data type of the value is not
+    restricted.
+    This class is mutable.
+
+    @note Cocoa developers: in Cappuccino CPAttributedString is mutable. It
+    implements functionality from both NSAttributedString and
+    NSMutableAttributedString. However, to ease converting of existing
+    Objective-C code a CPMutableAttributedString alias to this class exists.
+*/
 @implementation CPAttributedString : CPObject
 {
     CPString    _string;
@@ -30,11 +48,21 @@
 }
 
 //Creating an NSAttributedString Object
+/*!
+    Creates a new attributed string from a character string.
+    @param aString is the string to initialise from.
+    @return a new CPAttributedString containing the string <code>aString</code>.
+*/
 - (id)initWithString:(CPString)aString
 {
     return [self initWithString:aString attributes:nil];
 }
- 
+
+/*!
+    Creates a new attributed string from an existing attributed string.
+    @param aString is the attributed string to initialise from.
+    @return a new CPAttributedString containing the string <code>aString</code>.
+*/ 
 - (id)initWithAttributedString:(CPAttributedString)aString
 {
     var string = [self initWithString:"" attributes:nil];
@@ -44,6 +72,14 @@
     return string;
 }
 
+/*!
+    Creates a new attributed string from a character string and the specified
+    dictionary of attributes.
+    @param aString is the attributed string to initialise from.
+    @param attributes is a dictionary of string attributes.
+    @return a new CPAttributedString containing the string <code>aString</code>
+    with associated attributes, <code>attributes</code>.
+*/ 
 - (id)initWithString:(CPString)aString attributes:(CPDictionary)attributes
 {
     self = [super init];
@@ -58,21 +94,37 @@
 }
 
 //Retrieving Character Information
+/*!
+    Returns a string containing the receiver's character data without
+    attributes.
+    @return a string of type CPString.
+*/ 
 - (CPString)string
 {
     return _string;
 }
 
+/*!
+    Returns a string containing the receiver's character data without
+    attributes.
+    @return a string of type CPString.
+*/ 
 - (CPString)mutableString
 {
     return [self string];
 }   
 
+/*!
+    Get the length of the string.
+    @return an unsigned integer equivalent to the number of characters in the
+    string.
+*/ 
 - (unsigned)length
 {
     return _string.length;
 }
 
+// private method
 - (unsigned)_indexOfEntryWithIndex:(unsigned)anIndex
 {
     if (anIndex < 0 || anIndex > _string.length || anIndex === undefined)
@@ -94,6 +146,24 @@
 }
 
 //Retrieving Attribute Information
+/*!
+    Returns a dictionary of attributes for the character at a given index. The
+    range in which this character resides in which the attributes are the
+    same, can be returned if desired. 
+    @note there is no guarantee that the range returned is in fact the complete
+    range of the particular attributes. To ensure this use
+    <code>attributesAtIndex:longestEffectiveRange:inRange:</code> instead. Note
+    however that it may take significantly longer to execute.
+    @param anIndex is an unsigned integer index. It must lie within the bounds
+    of the string.
+    @param aRange is a reference to a CPRange object
+    that is set (upon return) to the range over which the attributes are the
+    same as those at index, <code>anIndex</code>. If not required pass
+    <code>nil</code>.
+    @return a CPDictionary containing the attributes associated with the 
+    character at index <code>anIndex</code>. Returns <code>nil</code> if index
+    is out of bounds.
+*/ 
 - (CPDictionary)attributesAtIndex:(unsigned)anIndex effectiveRange:(CPRangePointer)aRange
 {
     //find the range entry that contains anIndex.
@@ -112,6 +182,27 @@
     return matchingRange.attributes;
 }
 
+/*!
+    Returns a dictionary of all attributes for the character at a given index
+    and, by reference, the range over which the attributes apply. This is the
+    maximum range both forwards and backwards in the string over which the
+    attributes apply, bounded in both directions by the range limit parameter,
+    <code>rangeLimit</code>.
+    @note this method performs a search to find this range which may be
+    computationally intensive. Use the <code>rangeLimit</code> to limit the
+    search space or use <code>attributesAtIndex:effectiveRange:</code> but
+    note that it is not guaranteed to return the full range of the current
+    character's attributes.
+    @param anIndex is the unsigned integer index. It must lie within the bounds
+    of the string.
+    @param aRange is a reference to a CPRange object that is set (upon return)
+    to the range over which the attributes apply.
+    @param rangeLimit a range limiting the search for the attributes' applicable
+    range.
+    @return a CPDictionary containing the attributes associated with the 
+    character at index <code>anIndex</code>. Returns <code>nil</code> if index
+    is out of bounds.
+*/ 
 - (CPDictionary)attributesAtIndex:(unsigned)anIndex longestEffectiveRange:(CPRangePointer)aRange inRange:(CPRange)rangeLimit
 {    
     var startingEntryIndex = [self _indexOfEntryWithIndex:anIndex];
@@ -172,6 +263,22 @@
     return comparisonDict;
 }
 
+/*!
+    Returns the specified named attribute for the given character index and, if
+    required, the range over which the attribute applies. 
+    @note there is no guarantee that the range returned is in fact the complete
+    range of a particular attribute. To ensure this use
+    <code>attribute:atIndex:longestEffectiveRange:inRange:</code> instead but
+    note that it may take significantly longer to execute.
+    @param attribute the name of the desired attribute.
+    @param anIndex is an unsigned integer character index from which to retrieve
+    the attribute. It must lie within the bounds of the string.
+    @param aRange is a reference to a CPRange object, that is set upon return
+    to the range over which the named attribute applies.  If not required pass
+    <code>nil</code>.
+    @return the named attribute or <code>nil</code> is the attribute does not
+    exist.
+*/ 
 - (id)attribute:(CPString)attribute atIndex:(unsigned)index effectiveRange:(CPRangePointer)aRange
 {
     if (!attribute)
@@ -188,6 +295,27 @@
     return [[self attributesAtIndex:index effectiveRange:aRange] valueForKey:attribute];
 }
 
+/*!
+    Returns the specified named attribute for the given character index and the
+    range over which the attribute applies. This is the maximum range both
+    forwards and backwards in the string over which the attribute applies,
+    bounded in both directions by the range limit parameter,
+    <code>rangeLimit</code>.
+    @note this method performs a search to find this range which may be
+    computationally intensive. Use the <code>rangeLimit</code> to limit the
+    search space or use <code>attribute:atIndex:effectiveRange:</code> but
+    note that it is not guaranteed to return the full range of the current
+    character's named attribute.
+    @param attribute the name of the desired attribute.
+    @param anIndex is an unsigned integer character index from which to retrieve
+    the attribute. It must lie within the bounds of the string.
+    @param aRange  is a reference to a CPRange object, that is set upon return
+    to the range over which the named attribute applies.
+    @param rangeLimit a range limiting the search for the attribute's applicable
+    range.
+    @return the named attribute or <code>nil</code> is the attribute does not
+    exist.
+*/
 - (id)attribute:(CPString)attribute atIndex:(unsigned)anIndex longestEffectiveRange:(CPRangePointer)aRange inRange:(CPRange)rangeLimit
 {
     //find the range entry that contains anIndex.
@@ -250,6 +378,12 @@
 }
 
 //Comparing Attributed Strings
+/*!
+    Compares the receiver's characters and attributes to the specified
+    attributed string, <code>aString</code>, and tests for equality.
+    @param aString the CPAttributedString to compare.
+    @return a boolean indicating equality.
+*/
 - (BOOL)isEqualToAttributedString:(CPAttributedString)aString
 {
 	if(!aString)
@@ -277,6 +411,13 @@
     return YES;
 }
 
+/*!
+    Determine whether the given object is the same as the receiver. If the
+    specified object is an attributed string then an attributed string compare
+    is performed.
+    @param anObject an object to test for equality.
+    @return a boolean indicating equality.
+*/
 - (BOOL)isEqual:(id)anObject
 {
 	if (anObject == self)
@@ -289,6 +430,13 @@
 }
 
 //Extracting a Substring
+/*!
+    Extracts a substring from the receiver, both characters and attributes,
+    within the range given by <code>aRange</code>.
+    @param aRange the range of the substring to extract.
+    @return a CPAttributedString containing the desired substring.
+    @exception CPRangeException if the range lies outside the receiver's bounds.
+*/
 - (CPAttributedString)attributedSubstringFromRange:(CPRange)aRange
 {
     if (!aRange || CPMaxRange(aRange) > _string.length || aRange.location < 0)
@@ -337,6 +485,20 @@
 }
 
 //Changing Characters
+/*! 
+    Replaces the characters in the receiver with those of the specified string
+    over the range, <code>aRange</code>. If the range has a length of 0 then
+    the specified string is inserted at the range location. The new characters
+    inherit the attributes of the first character in the range that they
+    replace or in the case if a 0 range length, the first character before of
+    after the insert (after if the insert is at location 0).
+    @note the replacement string need not be the same length as the range
+    being replaced. The full <code>aString</code> is inserted and thus the
+    receiver's length changes to match this
+    @param aRange the range of characters to replace.
+    @param aString the string to replace the specified characters in the
+    receiver.
+*/
 - (void)replaceCharactersInRange:(CPRange)aRange withString:(CPString)aString
 {
     [self beginEditing];
@@ -346,7 +508,7 @@
         
     var startingIndex = [self _indexOfEntryWithIndex:aRange.location],
         startingRangeEntry = _rangeEntries[startingIndex],
-        endingIndex = [self _indexOfEntryWithIndex:CPMaxRange(aRange)-1],
+        endingIndex = [self _indexOfEntryWithIndex:MAX(CPMaxRange(aRange)-1, 0)],
         endingRangeEntry = _rangeEntries[endingIndex],
         additionalLength = aString.length - aRange.length;
 
@@ -372,12 +534,27 @@
     [self endEditing];
 }
 
+/*!
+    Deletes a range of characters and their associated attributes.
+    @param aRange a CPRange indicating the range of characters to delete.
+*/
 - (void)deleteCharactersInRange:(CPRange)aRange
 {
     [self replaceCharactersInRange:aRange withString:nil];
 }
 
 //Changing Attributes
+/*!
+    Sets the attributes of the specified character range. 
+
+    @note This process removes the attributes already associated with the 
+    character range. If you wish to retain the current attributes use
+    <code>addAttributes:range:</code>.
+    @param aDictionary a CPDictionary of attributes (names and values) to set
+    to.
+    @param aRange a CPRange indicating the range of characters to set their
+    associated attributes to <code>aDictionary</code>.
+*/
 - (void)setAttributes:(CPDictionary)aDictionary range:(CPRange)aRange
 {
     [self beginEditing];
@@ -398,6 +575,16 @@
     [self endEditing];
 }
 
+/*!
+    Add a collection of attributes to the specified character range. 
+
+    @note Attributes currently associated with the characters in the range are
+    untouched. To remove all previous attributes when adding use
+    <code>setAttributes:range:</code>.  
+    @param aDictionary a CPDictionary of attributes (names and values) to add.
+    @param aRange a CPRange indicating the range of characters to add the
+    attributes to.
+*/
 - (void)addAttributes:(CPDictionary)aDictionary range:(CPRange)aRange
 {
     [self beginEditing];
@@ -426,23 +613,55 @@
     [self endEditing];
 }
 
+/*!
+    Add an attribute with the given name and value to the specified character
+    range.
+
+    @note Attributes currently associated with the characters in the range are
+    untouched. To remove all previous attributes when adding use
+    <code>setAttributes:range:</code>.
+    @param anAttribute a CPString of the attribute name.
+    @param aValue a value to assign to the attribute. Can be of any type.
+    @param aRange a CPRange indicating the range of characters to add the
+    attribute too.
+*/
 - (void)addAttribute:(CPString)anAttribute value:(id)aValue range:(CPRange)aRange
 {
     [self addAttributes:[CPDictionary dictionaryWithObject:aValue forKey:anAttribute] range:aRange];
 }
 
+/*!
+    Remove a named attribute from a character range.
+    @param anAttribute a CPString specifying the name of the attribute.
+    @param aRange a CPRange indicating the range of character from which the
+    attribute will be removed.
+*/
 - (void)removeAttribute:(CPString)anAttribute range:(CPRange)aRange
 {
     [self addAttribute:anAttribute value:nil range:aRange];
 }
 
 //Changing Characters and Attributes
+/*!
+    Append an attributed string (characters and attributes) on to the end of
+    the receiver.
+    @param aString a CPAttributedString to append.
+*/
 - (void)appendAttributedString:(CPAttributedString)aString
 {
     [self insertAttributedString:aString atIndex:_string.length];
 }
 
-- (void)insertAttributedString:(CPAttributedString)aString atIndex:(CPString)anIndex
+/*!
+    Inserts an attributed string (characters and attributes) at index,
+    <code>anIndex</code>, into the receiver. The portion of the
+    receiver's attributed string from the specified index to the end is shifted
+    until after the inserted string.
+    @param aString a CPAttributedString to insert.
+    @param anIndex the index at which the insert is to occur.
+    @exception CPRangeException If the index is out of bounds.
+*/
+- (void)insertAttributedString:(CPAttributedString)aString atIndex:(unsigned)anIndex
 {
     [self beginEditing];
 
@@ -479,6 +698,14 @@
     [self endEditing];
 }
 
+/*!
+    Replaces characters and attributes in the range <code>aRange</code> with
+    those of the given attributed string, <code>aString</code>.
+    @param aRange a CPRange object specifying the range of characters and
+    attributes in the object to replace.
+    @param aString a CPAttributedString containing the data to be used for
+    replacement.
+*/
 - (void)replaceCharactersInRange:(CPRange)aRange withAttributedString:(CPAttributedString)aString
 {
     [self beginEditing];
@@ -489,6 +716,11 @@
     [self endEditing];
 }
 
+/*!
+    Sets the objects characters and attributes to those of <code>aString</code>.
+    @param aString is a CPAttributedString from which the contents will be
+    copied.
+*/
 - (void)setAttributedString:(CPAttributedString)aString
 {
     [self beginEditing];
@@ -546,11 +778,19 @@
 }
 
 //Grouping Changes
+/*!
+    This function is deliberately empty. It is provided to ease code converting
+    from Cocoa.
+*/
 - (void)beginEditing
 {
     //do nothing (says cocotron and gnustep)
 }
 
+/*!
+    This function is deliberately empty. It is provided to ease code converting
+    from Cocoa.
+*/
 - (void)endEditing
 {
     //do nothing (says cocotron and gnustep)
@@ -558,6 +798,14 @@
 
 @end
 
+/*!
+    @class CPMutableAttributedString
+    @ingroup compatability
+
+    This class is just an empty subclass of CPAttributedString.
+    CPAttributedString already implements mutable methods and
+    this class only exists for source compatability.
+*/
 @implementation CPMutableAttributedString : CPAttributedString {}
 @end
 

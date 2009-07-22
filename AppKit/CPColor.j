@@ -37,7 +37,26 @@ var _hueComponent        = 0,
     _saturationComponent = 1,
     _brightnessComponent = 2;
 
-/*! @code CPColor
+var cachedBlackColor,
+    cachedRedColor,
+    cachedGreenColor,
+    cachedBlueColor,
+    cachedYellowColor,
+    cachedGrayColor,
+    cachedLightGrayColor,
+    cachedDarkGrayColor,
+    cachedWhiteColor,
+    cachedBrownColor,
+    cachedCyanColor,
+    cachedMagentaColor,
+    cachedOrangeColor,
+    cachedPurpleColor,
+    cachedShadowColor,
+    cachedClearColor;
+
+/*! 
+    @ingroup appkit
+    @code CPColor
 
     <code>CPColor</code> can be used to represent color
     in an RGB or HSB model with an optional transparency value.</p>
@@ -71,10 +90,31 @@ var _hueComponent        = 0,
     
     @return a color initialized to the values specified
 */
-+ (CPColor)colorWithCalibratedRed:(float)red green:(float)green blue:(float)blue alpha:(float)alpha
++ (CPColor)colorWithRed:(float)red green:(float)green blue:(float)blue alpha:(float)alpha
 {
     return [[CPColor alloc] _initWithRGBA:[red, green, blue, alpha]];
 }
+
+/*!
+    @deprecated in favor of colorWithRed:green:blue:alpha:
+    
+    Creates a color in the RGB color space, with an alpha value.
+    Each component should be between the range of 0.0 to 1.0. For
+    the alpha component, a value of 1.0 is opaque, and 0.0 means
+    completely transparent.
+    
+    @param red the red component of the color
+    @param green the green component of the color
+    @param blue the blue component of the color
+    @param alpha the alpha component
+    
+    @return a color initialized to the values specified
+*/
++ (CPColor)colorWithCalibratedRed:(float)red green:(float)green blue:(float)blue alpha:(float)alpha
+{
+    return [self colorWithRed:red green:green blue:blue alpha:alpha];
+}
+
 
 /*!
     Creates a new color object with <code>white</code> for the RGB components.
@@ -85,9 +125,25 @@ var _hueComponent        = 0,
     
     @return a color initialized to the values specified
 */
-+ (CPColor)colorWithCalibratedWhite:(float)white alpha:(float)alpha
++ (CPColor)colorWithWhite:(float)white alpha:(float)alpha
 {
     return [[CPColor alloc] _initWithRGBA:[white, white, white, alpha]];
+}
+
+/*!
+    @deprecated in favor of colorWithWhite:apha:
+    
+    Creates a new color object with <code>white</code> for the RGB components.
+    For the alpha component, a value of 1.0 is opaque, and 0.0 means completely transparent.
+    
+    @param white a float between 0.0 and 1.0
+    @param alpha the alpha component between 0.0 and 1.0
+    
+    @return a color initialized to the values specified
+*/
++ (CPColor)colorWithCalibratedWhite:(float)white alpha:(float)alpha
+{
+    return [self colorWithWhite:white alpha:alpha];
 }
 
 /*!
@@ -101,8 +157,13 @@ var _hueComponent        = 0,
 */
 + (CPColor)colorWithHue:(float)hue saturation:(float)saturation brightness:(float)brightness
 {
-    if(saturation == 0.0)
-        return [CPColor colorWithCalibratedWhite: brightness/100.0 alpha: 1.0];
+    return [self colorWithHue:hue saturation:saturation brightness:brightness alpha:1.0];
+}
+
++ (CPColor)colorWithHue:(float)hue saturation:(float)saturation brightness:(float)brightness alpha:(float)alpha
+{
+    if(saturation === 0.0)
+        return [CPColor colorWithCalibratedWhite:brightness / 100.0 alpha:alpha];
     
     var f = hue % 60,
         p = (brightness * (100 - saturation)) / 10000,
@@ -112,12 +173,12 @@ var _hueComponent        = 0,
         
     switch(FLOOR(hue / 60))
     {
-        case 0: return [CPColor colorWithCalibratedRed: b green: t blue: p alpha: 1.0];
-        case 1: return [CPColor colorWithCalibratedRed: q green: b blue: p alpha: 1.0];
-        case 2: return [CPColor colorWithCalibratedRed: p green: b blue: t alpha: 1.0];
-        case 3: return [CPColor colorWithCalibratedRed: p green: q blue: b alpha: 1.0];
-        case 4: return [CPColor colorWithCalibratedRed: t green: p blue: b alpha: 1.0];
-        case 5: return [CPColor colorWithCalibratedRed: b green: p blue: q alpha: 1.0];            
+        case 0: return [CPColor colorWithCalibratedRed: b green: t blue: p alpha: alpha];
+        case 1: return [CPColor colorWithCalibratedRed: q green: b blue: p alpha: alpha];
+        case 2: return [CPColor colorWithCalibratedRed: p green: b blue: t alpha: alpha];
+        case 3: return [CPColor colorWithCalibratedRed: p green: q blue: b alpha: alpha];
+        case 4: return [CPColor colorWithCalibratedRed: t green: p blue: b alpha: alpha];
+        case 5: return [CPColor colorWithCalibratedRed: b green: p blue: q alpha: alpha];
     }
 }
 
@@ -141,7 +202,10 @@ var _hueComponent        = 0,
 */
 + (CPColor)blackColor
 {
-    return [[CPColor alloc] _initWithRGBA:[0.0, 0.0, 0.0, 1.0]];
+    if (!cachedBlackColor)
+        cachedBlackColor = [[CPColor alloc] _initWithRGBA:[0.0, 0.0, 0.0, 1.0]];
+
+    return cachedBlackColor;
 }
 
 /*!
@@ -149,7 +213,10 @@ var _hueComponent        = 0,
 */
 + (CPColor)blueColor
 {
-    return [[CPColor alloc] _initWithRGBA:[0.0, 0.0, 1.0, 1.0]];
+    if (!cachedBlueColor)
+        cachedBlueColor = [[CPColor alloc] _initWithRGBA:[0.0, 0.0, 1.0, 1.0]];
+
+    return cachedBlueColor;
 }
 
 /*!
@@ -157,7 +224,10 @@ var _hueComponent        = 0,
 */
 + (CPColor)darkGrayColor
 {
-    return [CPColor colorWithCalibratedWhite:1.0 / 3.0 alpha:1.0];
+    if (!cachedDarkGrayColor)
+        cachedDarkGrayColor = [CPColor colorWithCalibratedWhite:1.0 / 3.0 alpha:1.0];
+
+    return cachedDarkGrayColor;
 }
 
 /*!
@@ -165,7 +235,10 @@ var _hueComponent        = 0,
 */
 + (CPColor)grayColor
 {
-    return [CPColor colorWithCalibratedWhite:0.5 alpha: 1.0];
+    if (!cachedGrayColor)
+        cachedGrayColor = [CPColor colorWithCalibratedWhite:0.5 alpha: 1.0];
+
+    return cachedGrayColor;
 }
 
 /*!
@@ -173,7 +246,10 @@ var _hueComponent        = 0,
 */
 + (CPColor)greenColor
 {
-    return [[CPColor alloc] _initWithRGBA:[0.0, 1.0, 0.0, 1.0]];
+    if (!cachedGreenColor)
+        cachedGreenColor = [[CPColor alloc] _initWithRGBA:[0.0, 1.0, 0.0, 1.0]];
+
+    return cachedGreenColor;
 }
 
 /*!
@@ -181,7 +257,10 @@ var _hueComponent        = 0,
 */
 + (CPColor)lightGrayColor
 {
-    return [CPColor colorWithCalibratedWhite:2.0 / 3.0 alpha:1.0];
+    if (!cachedLightGrayColor)
+        cachedLightGrayColor = [CPColor colorWithCalibratedWhite:2.0 / 3.0 alpha:1.0];
+
+    return cachedLightGrayColor;
 }
 
 /*!
@@ -189,7 +268,10 @@ var _hueComponent        = 0,
 */
 + (CPColor)redColor
 {
-    return [[CPColor alloc] _initWithRGBA:[1.0, 0.0, 0.0, 1.0]];
+    if (!cachedRedColor)
+        cachedRedColor = [[CPColor alloc] _initWithRGBA:[1.0, 0.0, 0.0, 1.0]];
+
+    return cachedRedColor;
 }
 
 /*!
@@ -197,7 +279,10 @@ var _hueComponent        = 0,
 */
 + (CPColor)whiteColor
 {
-    return [[CPColor alloc] _initWithRGBA:[1.0, 1.0, 1.0, 1.0]];
+    if (!cachedWhiteColor)
+        cachedWhiteColor = [[CPColor alloc] _initWithRGBA:[1.0, 1.0, 1.0, 1.0]];
+
+    return cachedWhiteColor;
 }
 
 /*!
@@ -205,15 +290,89 @@ var _hueComponent        = 0,
 */
 + (CPColor)yellowColor
 {
-    return [[CPColor alloc] _initWithRGBA:[1.0, 1.0, 0.0, 1.0]];
+    if (!cachedYellowColor)
+        cachedYellowColor = [[CPColor alloc] _initWithRGBA:[1.0, 1.0, 0.0, 1.0]];
+
+    return cachedYellowColor;
+}
+
+/*!
+    Returns a brown color object (RGBA=[0.6, 0.4, 0.2, 1.0])
+*/
++ (CPColor)brownColor
+{
+    if (!cachedBrownColor)
+        cachedBrownColor = [[CPColor alloc] _initWithRGBA:[0.6, 0.4, 0.2, 1.0]];
+
+    return cachedBrownColor;
+}
+
+/*!
+    Returns a cyan color object (RGBA=[0.0, 1.0, 1.0, 1.0])
+*/
++ (CPColor)cyanColor
+{
+    if (!cachedCyanColor)
+        cachedCyanColor = [[CPColor alloc] _initWithRGBA:[0.0, 1.0, 1.0, 1.0]];
+
+    return cachedCyanColor;
+}
+
+/*!
+    Returns a magenta color object (RGBA=[1.0, 0.0, 1.0, 1.0])
+*/
++ (CPColor)magentaColor
+{
+    if (!cachedMagentaColor)
+        cachedMagentaColor = [[CPColor alloc] _initWithRGBA:[1.0, 0.0, 1.0, 1.0]];
+
+    return cachedMagentaColor;
+}
+
+/*!
+    Returns a orange color object (RGBA=[1.0, 0.5, 0.0, 1.0])
+*/
++ (CPColor)orangeColor
+{
+    if (!cachedOrangeColor)
+        cachedOrangeColor = [[CPColor alloc] _initWithRGBA:[1.0, 0.5, 0.0, 1.0]];
+
+    return cachedOrangeColor;
+}
+
+/*!
+    Returns a purple color object (RGBA=[0.5, 0.0, 0.5, 1.0])
+*/
++ (CPColor)purpleColor
+{
+    if (!cachedPurpleColor)
+        cachedPurpleColor = [[CPColor alloc] _initWithRGBA:[0.5, 0.0, 0.5, 1.0]];
+
+    return cachedPurpleColor;
 }
 
 /*!
     Returns a shadow looking color (RGBA=[0.0, 0.0, 0.0, 0.33])
 */
+
 + (CPColor)shadowColor
 {
-    return [[CPColor alloc] _initWithRGBA:[0.0, 0.0, 0.0, 1.0 / 3.0]];
+    if (!cachedShadowColor)
+        cachedShadowColor = [[CPColor alloc] _initWithRGBA:[0.0, 0.0, 0.0, 1.0 / 3.0]];
+
+    return cachedShadowColor;
+}
+
+/*!
+    Returns a clear color (RGBA=[0.0, 0.0, 0.0, 0.0])
+*/
+
++ (CPColor)clearColor
+{
+    if (!cachedClearColor)
+        cachedClearColor = [self colorWithCalibratedWhite:0.0 alpha:0.0];
+
+    return cachedClearColor;
 }
 
 /*!
@@ -324,7 +483,7 @@ var _hueComponent        = 0,
     if (self)
     {
         _patternImage = anImage;
-        _cssString = "url(\"" + _patternImage._filename + "\")";
+        _cssString = "url(\"" + [_patternImage filename] + "\")";
     }
        
     return self;
@@ -475,9 +634,60 @@ url("data:image/png;base64,BASE64ENCODEDDATA")  // if there is a pattern image
     return rgbToHex([self redComponent], [self greenComponent], [self blueComponent])
 }
 
+- (BOOL)isEqual:(CPColor)aColor
+{
+    if (!aColor)
+        return NO;
+
+    if (aColor === self)
+        return YES;
+
+    return [aColor isKindOfClass:CPColor] && [aColor cssString] === [self cssString];
+}
+
 - (CPString)description
 {
     return [super description]+" "+[self cssString];
+}
+
+@end
+
+@implementation CPColor (CoreGraphicsExtensions)
+
+/*! 
+    Set's the receiver to be the fill and stroke color in the current graphics context
+*/
+- (void)set
+{
+    [self setFill];
+    [self setStroke];
+}
+
+/*! 
+    Set's the receiver to be the fill color in the current graphics context
+*/
+- (void)setFill
+{
+    var ctx = [[CPGraphicsContext currentContext] graphicsPort];
+    CGContextSetFillColor(ctx, self);   
+}
+
+/*! 
+    Set's the receiver to be the stroke color in the current graphics context
+*/
+- (void)setStroke
+{
+    var ctx = [[CPGraphicsContext currentContext] graphicsPort];
+    CGContextSetStrokeColor(ctx, self);
+}
+
+@end
+
+@implementation CPColor (Debugging)
+
++ (CPColor)randomColor
+{
+    return [CPColor colorWithRed:RAND() green:RAND() blue:RAND() alpha:1.0];
 }
 
 @end
@@ -523,6 +733,8 @@ var hexCharacters = "0123456789ABCDEF";
 */
 function hexToRGB(hex) 
 {
+    if ( hex.length == 3 )
+        hex = hex.charAt(0) + hex.charAt(0) + hex.charAt(1) + hex.charAt(1) + hex.charAt(2) + hex.charAt(2);
     if(hex.length != 6)
         return null;
 

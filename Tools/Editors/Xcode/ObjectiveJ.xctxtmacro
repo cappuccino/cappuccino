@@ -1,0 +1,541 @@
+/**
+    Objective J text macro specifications derived from
+    	Objective C text macro specifications and C text macro specifications which are
+    	Copyright © 2004-2007 Apple Inc. All rights reserved.
+
+*/
+
+(
+    //
+    // Objective-J language macros
+    //
+    {
+        Identifier = objj;
+        Name = "Objective J";
+        IsMenu = YES;
+// Can be set (for all languages) with the XCCodeSenseFormattingOptions user default
+//        DefaultSettings = {
+//            PreExpressionsSpacing = " ";
+//            InExpressionsSpacing = "";
+//            BlockSeparator = " ";
+//            PostBlockSeparator = "\n";
+//        };
+        IncludeContexts = ( "xcode.lang.objj");
+        ExcludeContexts = ( "xcode.lang.string", "xcode.lang.character", "xcode.lang.comment", "xcode.lang.c.preprocessor" );
+    },
+
+        {
+            Identifier = objj.try;
+            BasedOn = objj;
+            IsMenuItem = YES;
+            Name = "Try / Catch Block";
+            TextString = "@try$(BlockSeparator){\n\t<#!statements!#>\n}$(PostBlockSeparator)@catch$(PreExpressionsSpacing)($(InExpressionsSpacing)CPException * e$(InExpressionsSpacing))$(BlockSeparator){\n\t<#handler#>\n}$(PostBlockSeparator)@finally$(BlockSeparator){\n\t<#statements#>\n}";
+            CompletionPrefix = "@try";
+            IncludeContexts = ( "xcode.lang.objj.block" );
+        },
+        
+        {
+            Identifier = objj.catch;
+            BasedOn = objj;
+            IsMenuItem = YES;
+            Name = "Catch Block";
+            TextString = "@catch$(PreExpressionsSpacing)($(InExpressionsSpacing)<#exception#>$(InExpressionsSpacing))$(BlockSeparator){\n\t<#!handler!#>\n}";
+            CompletionPrefix = "@catch";
+            IncludeContexts = ( "xcode.lang.objj.block" );
+        },
+
+        {
+            Identifier = objj.finally;
+            BasedOn = objj;
+            IsMenuItem = YES;
+            Name = "Finally Block";
+            TextString = "@finally$(BlockSeparator){\n\t<#!handler!#>\n}";
+            CompletionPrefix = "@finally";
+            IncludeContexts = ( "xcode.lang.objj.block" );
+        },
+
+        {
+            Identifier = objj.log;
+            BasedOn = objj;
+            IsMenuItem = YES;
+            Name = "CPLog() Call";
+            TextString = "CPLog$(PreFunctionArgsSpacing)($(InFunctionArgsSpacing)@\"<#message#>\"$(InFunctionArgsSpacing));";
+            CompletionPrefix = log;
+            IncludeContexts = ( "xcode.lang.objj.block" );
+        },
+
+        {
+            Identifier = objj.bracket;
+            BasedOn = objj;
+            IsMenuItem = YES;
+            Name = "Bracket Expression";
+            TextString = "[<#!expression!#> ]";
+            CompletionPrefix = "[";
+        },
+
+        {
+            Identifier = objj.allocinit;
+            BasedOn = objj;
+            IsMenuItem = YES;
+            Name = "Alloc / Init Call";
+            TextString = "[[<#!class!#> alloc] init]";
+            CompletionPrefix = a;
+        },
+
+        {
+            Identifier = objj.array;
+            BasedOn = objj;
+            IsMenuItem = YES;
+            Name = "Array Declaration";
+            TextString = "CPArray * array;";
+            CompletionPrefix = aa;
+        },
+
+        {
+            Identifier = objj.mutablearray;
+            BasedOn = objj;
+            IsMenuItem = YES;
+            Name = "Mutable Array Declaration";
+            TextString = "CPMutableArray * array;";
+            CompletionPrefix = ma;
+        },
+        
+        {
+            Identifier = objj.arrayiteration;
+            BasedOn = objj;
+            IsMenuItem = YES;
+            Name = "Array For Loop";
+            TextString = "CPUInteger i, count = [<#array#> count];\nfor$(PreExpressionsSpacing)($(InExpressionsSpacing)i = 0; i < count; i++$(InExpressionsSpacing))$(BlockSeparator){\n\tCPObject * obj = [<#array#> objectAtIndex:i];\n\t<#!statements!#>\n}";
+            CompletionPrefix = fora;
+            IncludeContexts = ( "xcode.lang.objj.block" );
+        },
+        
+        {
+            Identifier = objj.arrayiteration.foreach;
+            BasedOn = objj;
+            IsMenuItem = YES;
+            Name = "Array Foreach Loop";
+            TextString = "for$(PreExpressionsSpacing)($(InExpressionsSpacing)<#object#> in <#array#>$(InExpressionsSpacing))$(BlockSeparator){\n\t<#!statements!#>\n}";
+            CompletionPrefix = fore;
+            IncludeContexts = ( "xcode.lang.objj.block" );
+        },
+        
+// MARK: Block Statements
+        {
+            Identifier = objj.block;
+            BasedOn = objj;
+            TextString = "$(Statement)$(BlockSeparator){\n\t<#!statements!#>\n}";
+            Statement = "$(Command)$(PreExpressionsSpacing)($(InExpressionsSpacing)$(Expressions)$(InExpressionsSpacing))";
+            IncludeContexts = ( "xcode.lang.objj.block", "xcode.lang.java.block" );    // these all work in Java too
+            ExcludeContexts = ( "xcode.lang.string", "xcode.lang.character", "xcode.lang.comment", "xcode.lang.c.preprocessor", "xcode.lang.objj.parenexpr", "xcode.lang.objj.bracketexpr" );
+        },
+            {
+                Identifier = objj.block.if;
+                BasedOn = objj.block;
+                Name = "If Block";
+                IsMenuItem = YES;
+                Command = "if";
+                Expressions = "<#condition#>";
+                CompletionPrefix = if;
+                CycleList = (
+                    objj.block.if,
+                    objj.block.ifelse,
+                );
+            },
+            {
+                Identifier = objj.block.ifelse;
+                BasedOn = objj.block;
+                Name = "If / Else Block";
+                IsMenuItem = NO;
+                Command = "if";
+                Expressions = "<#condition#>";
+                TextString = "$(Statement)$(BlockSeparator){\n\t<#!statements!#>\n}$(PostBlockSeparator)else$(BlockSeparator){\n\t<#statements#>\n}";
+                CompletionPrefix = ifelse;
+            },
+            {
+                Identifier = objj.block.elseif;
+                BasedOn = objj.block;
+                Name = "Else If Block";
+                IsMenuItem = NO;
+                Command = "else if";
+                Expressions = "<#condition#>";
+                CompletionPrefix = elseif;
+            },
+
+            {
+                Identifier = objj.block.for;
+                BasedOn = objj.block;
+                Name = "For Loop";
+                IsMenuItem = YES;
+                Command = "for";
+                Expressions = "<#initial#>; <#condition#>; <#increment#>";
+                CompletionPrefix = for;
+                CycleList = (
+                    objj.block.for,
+                    objj.block.for.i,
+                );
+            },
+            {
+                Identifier = objj.block.for.i;
+                BasedOn = objj.block;
+                Name = "For i Loop";
+                IsMenuItem = NO;
+                Command = "for";
+                Expressions = "int i = 0; i < <#limit#>; i++";
+                CompletionPrefix = fori;
+            },
+            
+            {
+                Identifier = objj.block.while;
+                BasedOn = objj.block;
+                Name = "While Loop";
+                IsMenuItem = YES;
+                Command = "while";
+                Expressions = "<#condition#>";
+                CompletionPrefix = while;
+            },
+            {
+                Identifier = objj.block.dowhile;
+                BasedOn = objj.block;
+                Name = "Do While Loop";
+                IsMenuItem = YES;
+                Command = "while";
+                TextString = "do$(BlockSeparator){\n\t<#!statements!#>\n}$(PreExpressionsSpacing)$(Statement)";
+                Expressions = "<#condition#>";
+                CompletionPrefix = do;
+            },
+            {
+                Identifier = objj.block.switch;
+                BasedOn = objj.block;
+                Name = "Switch Block";
+                IsMenuItem = YES;
+                Command = "switch";
+                TextString = "$(Statement)$(BlockSeparator){\n$(CaseStatementSpacing)case <#constant#>:\n$(CaseStatementSpacing)\t<#!statements!#>\n$(CaseStatementSpacing)\tbreak;\n$(CaseStatementSpacing)default:\n$(CaseStatementSpacing)\tbreak;\n}";
+                Expressions = "<#expression#>";
+                CompletionPrefix = switch;
+            },
+
+        {
+            Identifier = objj.caseblock;
+            BasedOn = objj;
+            IsMenuItem = YES;
+            Name = "Case Block";
+            TextString = "case <#constant#>:\n\t<#!statements!#>\n\tbreak;\n";
+            CompletionPrefix = case;
+            IncludeContexts = ( "xcode.lang.objj.block", "xcode.lang.java.block" );    // this works in Java too
+            ExcludeContexts = ( "xcode.lang.string", "xcode.lang.character", "xcode.lang.comment", "xcode.lang.c.preprocessor", "xcode.lang.objj.parenexpr", "xcode.lang.objj.bracketexpr" );
+        },
+
+        {
+            Identifier = objj.elseblock;
+            BasedOn = objj;
+            IsMenuItem = YES;
+            Name = "Else Block";
+            TextString = "else$(BlockSeparator){\n\t<#!statements!#>\n}\n";
+            CompletionPrefix = else;
+            IncludeContexts = ( "xcode.lang.objj.block", "xcode.lang.java.block" );    // this works in Java too
+            ExcludeContexts = ( "xcode.lang.string", "xcode.lang.character", "xcode.lang.comment", "xcode.lang.c.preprocessor", "xcode.lang.objj.parenexpr", "xcode.lang.objj.bracketexpr" );
+            CycleList = (
+                objj.elseblock,
+                objj.block.elseif,
+            );
+        },
+        
+        {
+            Identifier = objj.paren;
+            BasedOn = objj;
+            IsMenuItem = YES;
+            Name = "Parenthesize Selection";
+            TextString = "($(InExpressionsSpacing)<#!expression!#>$(InExpressionsSpacing))";
+            IncludeContexts = ( "xcode.lang.objj");
+        },
+        {
+            Identifier = objj.quote;
+            BasedOn = objj;
+            IsMenuItem = YES;
+            Name = "Quote Selection";
+            TextString = "\"<#!text!#>\"";
+            IncludeContexts = ( "xcode.lang.objj");
+        },
+
+        {
+            Identifier = objj.pragmamark;
+            BasedOn = objj;
+            IsMenuItem = YES;
+            Name = "#Pragma Mark";
+            TextString = "#pragma mark <#!label!#>";
+            CompletionPrefix = pm;
+        },
+        {
+            Identifier = objj.pp.pragmamark;
+            BasedOn = objj;
+            IsMenuItem = NO;
+            Name = "Pragma Mark";
+            TextString = "pragma mark <#!label!#>";
+            CompletionPrefix = pragma;
+            IncludeContexts = ( "xcode.lang.c.preprocessor" );
+        },
+        {
+            Identifier = objj.import;
+            BasedOn = objj;
+            IsMenuItem = YES;
+            Name = "#Import Statement";
+            TextString = "#import \"<#!file!#>\"";
+            CompletionPrefix = pim;
+            CycleList = (
+                objj.import,
+                objj.import.sys,
+                objj.import.fw
+            );
+            ExcludeContexts = ( "xcode.lang.objj.block", "xcode.lang.string", "xcode.lang.character", "xcode.lang.comment", "xcode.lang.c.preprocessor" );
+        },
+        {
+            Identifier = objj.import.sys;
+            BasedOn = objj.import;
+            IsMenuItem = NO;
+            Name = "#Import Statement (System)";
+            TextString = "#import <<#!file!#>>";
+            CompletionPrefix = pims;
+        },
+        {
+            Identifier = objj.import.fw;
+            BasedOn = objj.import;
+            IsMenuItem = NO;
+            Name = "#Import Statement (Framework)";
+            TextString = "#import <<#framework#>/<#!file!#>>";
+            CompletionPrefix = pimf;
+        },
+
+        {
+            Identifier = objj.pif;
+            BasedOn = objj;
+            IsMenuItem = YES;
+            Name = "#If Block";
+            IfText = "if";
+            TextString = "#$(IfText) $(Expression)\n<#!statements!#>\n#endif";
+            Expression = "<#expression#>";
+            CompletionPrefix = pif;
+            CycleList = (
+                objj.pif,
+                objj.pifzero,
+                objj.pifdef,
+                objj.pifelse,
+                objj.pifdefelse
+            );
+        },
+        {
+            Identifier = objj.pifdef;
+            BasedOn = objj.pif;
+            IsMenuItem = NO;
+            Name = "#Ifdef Block";
+            IfText = "ifdef";
+            CompletionPrefix = pifd;
+        },
+        {
+            Identifier = objj.pifelse;
+            BasedOn = objj.pif;
+            IsMenuItem = NO;
+            Name = "#If / Else Block";
+            TextString = "#$(IfText) $(Expression)\n<#!statements!#>\n#else\n<#statements#>\n#endif";
+            CompletionPrefix = pife;
+        },
+        {
+            Identifier = objj.pifdefelse;
+            BasedOn = objj.pifelse;
+            IsMenuItem = NO;
+            IfText = "ifdef";
+            Name = "#Ifdef / Else Block";
+            CompletionPrefix = pifde;
+        },
+        {
+            Identifier = objj.pifzero;
+            BasedOn = objj.pif;
+            IsMenuItem = NO;
+            Name = "#If 0 Block";
+            Expression = "0";
+            CompletionPrefix = pifz;
+        },
+
+        {
+            Identifier = objj.copyright;
+            BasedOn = objj;
+            IsMenuItem = YES;
+            Name = "Copyright Comment";
+            TextString = "//\n// Copyright (c) $(YEAR), $(ORGANIZATIONNAME)\n// All rights reserved.\n//\n";
+            CompletionPrefix = copyright;
+            IncludeContexts = ( "xcode.lang.objj");
+        },
+
+        {
+            Identifier = objj.comment;
+            BasedOn = objj;
+            IsMenuItem = YES;
+            Name = "Comment Selection";
+            TextString = "/* <#!comment!#> */";
+            CompletionPrefix = comment;
+            IncludeContexts = ( "xcode.lang.objj");
+        },
+
+        {
+            Identifier = objj.separatorcomment;
+            BasedOn = objj;
+            IsMenuItem = YES;
+            Name = "Separator Comment";
+            TextString = "/****************************************************************************/\n";
+            CompletionPrefix = cseparator;
+            IncludeContexts = ( "xcode.lang.objj");
+        },
+
+// MARK: methods templates
+        {
+            Identifier = objj.init;
+            BasedOn = objj;
+            IsMenuItem = YES;
+            Name = "init Definition";
+            TextString = "-$(PreMethodTypeSpacing)(id)$(PreMethodDeclSpacing)init$(FunctionBlockSeparator){\n\tself = [super init];\n\tif$(PreExpressionsSpacing)($(InExpressionsSpacing)self != nil$(InExpressionsSpacing))$(BlockSeparator){\n\t\t<#!initializations!#>\n\t}\n\treturn self;\n}\n";
+            CompletionPrefix = init;
+            IncludeContexts = ( "xcode.lang.objj.implementation" );
+            ExcludeContexts = ( "xcode.lang.objj.block" );
+        },
+        
+        {
+            Identifier = objj.dealloc;
+            BasedOn = objj;
+            IsMenuItem = YES;
+            Name = "dealloc Definition";
+            TextString = "-$(PreMethodTypeSpacing)(void)$(PreMethodDeclSpacing)dealloc$(FunctionBlockSeparator){\n\t<#!deallocations!#>\n\t[super dealloc];\n}\n";
+            CompletionPrefix = dealloc;
+            IncludeContexts = ( "xcode.lang.objj.implementation" );
+            ExcludeContexts = ( "xcode.lang.objj.block" );
+        },
+
+        {
+            Identifier = objj.observe;
+            BasedOn = objj;
+            IsMenuItem = YES;
+            Name = "observeValueForKeyPath: Definition";
+            TextString =
+"-$(PreMethodTypeSpacing)(void)$(PreMethodDeclSpacing)observeValueForKeyPath$(PreColonSpacing):$(PostColonSpacing)(CPString *)$(MessageArgSpacing)keyPath ofObject$(PreColonSpacing):$(PostColonSpacing)(id)$(MessageArgSpacing)object change$(PreColonSpacing):$(PostColonSpacing)(CPDictionary *)$(MessageArgSpacing)change context$(PreColonSpacing):$(PostColonSpacing)(void *)$(MessageArgSpacing)context$(FunctionBlockSeparator){
+    if$(PreExpressionsSpacing)($(InExpressionsSpacing)context == <#context#>$(InExpressionsSpacing))$(BlockSeparator){
+		<#work#>
+	}$(PostBlockSeparator)\telse$(BlockSeparator){
+		[$(InMessageSpacing)super observeValueForKeyPath$(PreColonSpacing):$(PostColonSpacing)keyPath ofObject$(PreColonSpacing):$(PostColonSpacing)object change$(PreColonSpacing):$(PostColonSpacing)change context$(PreColonSpacing):$(PostColonSpacing)context$(InMessageSpacing)];
+	}
+}
+";
+            CompletionPrefix = observeValueForKeyPath;
+            IncludeContexts = ( "xcode.lang.objj.implementation" );
+            ExcludeContexts = ( "xcode.lang.objj.block" );
+        },
+
+        {
+            Identifier = objj.observe.decl;
+            BasedOn = objj;
+            IsMenuItem = YES;
+            Name = "observeValueForKeyPath: Declaration";
+            TextString = "-$(PreMethodTypeSpacing)(void)$(PreMethodDeclSpacing)observeValueForKeyPath$(PreColonSpacing):$(PostColonSpacing)(CPString *)$(MessageArgSpacing)keyPath ofObject$(PreColonSpacing):$(PostColonSpacing)(id)$(MessageArgSpacing)object change$(PreColonSpacing):$(PostColonSpacing)(CPDictionary *)$(MessageArgSpacing)change context$(PreColonSpacing):$(PostColonSpacing)(void *)$(MessageArgSpacing)context;\n";
+            CompletionPrefix = observeValueForKeyPath;
+            IncludeContexts = ( "xcode.lang.objj.interface" );
+            ExcludeContexts = ( "xcode.lang.objj.block" );
+        },
+
+        {
+            Identifier = objj.bind;
+            BasedOn = objj;
+            IsMenuItem = YES;
+            Name = "bind: Definition";
+            TextString =
+"-$(PreMethodTypeSpacing)(void)$(PreMethodDeclSpacing)bind$(PreColonSpacing):$(PostColonSpacing)(CPString *)$(MessageArgSpacing)binding toObject$(PreColonSpacing):$(PostColonSpacing)(id)$(MessageArgSpacing)observable withKeyPath$(PreColonSpacing):$(PostColonSpacing)(CPString *)$(MessageArgSpacing)keyPath options$(PreColonSpacing):$(PostColonSpacing)(CPDictionary *)$(MessageArgSpacing)options$(FunctionBlockSeparator){
+	if$(PreExpressionsSpacing)($(InExpressionsSpacing)[$(InMessageSpacing)binding isEqualToString$(PreColonSpacing):$(PostColonSpacing)<#bindingName#>$(InMessageSpacing)]$(InExpressionsSpacing))$(BlockSeparator){
+		[$(InMessageSpacing)observable addObserver$(PreColonSpacing):$(PostColonSpacing)self forKeyPath$(PreColonSpacing):$(PostColonSpacing)keyPath options$(PreColonSpacing):$(PostColonSpacing)0 context$(PreColonSpacing):$(PostColonSpacing)<#context#>$(InMessageSpacing)];
+		<#store binding info#>
+	}$(PostBlockSeparator)\telse$(BlockSeparator){
+		[$(InMessageSpacing)super bind$(PreColonSpacing):$(PostColonSpacing)binding toObject$(PreColonSpacing):$(PostColonSpacing)observable withKeyPath$(PreColonSpacing):$(PostColonSpacing)keyPath options$(PreColonSpacing):$(PostColonSpacing)options$(InMessageSpacing)];
+	}
+}
+";
+            CompletionPrefix = bind;
+            IncludeContexts = ( "xcode.lang.objj.implementation" );
+            ExcludeContexts = ( "xcode.lang.objj.block" );
+        },
+
+        {
+            Identifier = objj.observe.bind;
+            BasedOn = objj;
+            IsMenuItem = YES;
+            Name = "bind: Declaration";
+            TextString = "-$(PreMethodTypeSpacing)(void)$(PreMethodDeclSpacing)bind$(PreColonSpacing):$(PostColonSpacing)(CPString *)$(MessageArgSpacing)binding toObject$(PreColonSpacing):$(PostColonSpacing)(id)$(MessageArgSpacing)observable withKeyPath$(PreColonSpacing):$(PostColonSpacing)(CPString *)$(MessageArgSpacing)keyPath options$(PreColonSpacing):$(PostColonSpacing)(CPDictionary *)$(MessageArgSpacing)options;\n";
+            CompletionPrefix = bind;
+            IncludeContexts = ( "xcode.lang.objj.interface" );
+            ExcludeContexts = ( "xcode.lang.objj.block" );
+        },
+
+
+// MARK: classes and protocols
+
+        {
+            Identifier = objj.interface;
+            BasedOn = objj;
+            IsMenuItem = YES;
+            Name = "@interface Definition";
+            TextString = "@interface <#class#> : <#superclass#>$(FunctionBlockSeparator){\n\t<#ivars#>\n}\n\n<#methods#>\n\n@end\n";
+            CompletionPrefix = "@interface";
+            ExcludeContexts = ( "xcode.lang.objj.implementation", "xcode.lang.objj.interface", "xcode.lang.objj.protocol" );
+        },
+
+        {
+            Identifier = objj.implementation;
+            BasedOn = objj;
+            IsMenuItem = YES;
+            Name = "@implementation Definition";
+            TextString = "@implementation <#class#>\n\n<#methods#>\n\n@end\n";
+            CompletionPrefix = "@implementation";
+            ExcludeContexts = ( "xcode.lang.objj.implementation", "xcode.lang.objj.interface", "xcode.lang.objj.protocol" );
+        },
+
+        {
+            Identifier = objj.protocol;
+            BasedOn = objj;
+            IsMenuItem = YES;
+            Name = "@protocol Definition";
+            TextString = "@protocol <#protocol#>\n\n<#methods#>\n\n@end\n";
+            CompletionPrefix = "@protocol";
+            ExcludeContexts = ( "xcode.lang.objj.implementation", "xcode.lang.objj.interface", "xcode.lang.objj.protocol" );
+        },
+
+
+
+// MARK: Common Class shorthands
+        {
+            Identifier = objj.cps;
+            BasedOn = objj;
+            IsMenuItem = NO;
+            Name = "CPString";
+            TextString = "CPString";
+            CompletionPrefix = cps;
+        },
+        {
+            Identifier = objj.cpa;
+            BasedOn = objj;
+            IsMenuItem = NO;
+            Name = "CPArray";
+            TextString = "CPArray";
+            CompletionPrefix = cpa;
+        },
+        {
+            Identifier = objj.cpma;
+            BasedOn = objj;
+            IsMenuItem = NO;
+            Name = "CPMutableArray";
+            TextString = "CPMutableArray";
+            CompletionPrefix = cpma;
+        },
+        {
+            Identifier = objj.cpd;
+            BasedOn = objj;
+            IsMenuItem = NO;
+            Name = "CPDictionary";
+            TextString = "CPDictionary";
+            CompletionPrefix = cpd;
+        },
+)

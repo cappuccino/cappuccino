@@ -144,7 +144,7 @@ function class_addIvars(/*Class*/ aClass, /*Array*/ivars)
         var ivar = ivars[index],
             name = ivar.name;
 
-        if (typeof thePrototype[name] == "undefined")
+        if (typeof thePrototype[name] === "undefined")
         {
             aClass.ivars.push(ivar); 
             thePrototype[name] = NULL;
@@ -159,6 +159,8 @@ function class_copyIvarList(/*Class*/ aClass)
 
 //#define class_copyIvarList(aClass) (aClass.ivars.slice(0))
 
+#define METHOD_DISPLAY_NAME(aClass, aMethod) (ISMETA(aClass) ? '+' : '-') + " [" + class_getName(aClass) + ' ' + method_getName(aMethod) + ']'
+
 function class_addMethod(/*Class*/ aClass, /*SEL*/ aName, /*IMP*/ anImplementation, /*String*/aType)
 {
     if (aClass.method_hash[aName])
@@ -168,12 +170,15 @@ function class_addMethod(/*Class*/ aClass, /*SEL*/ aName, /*IMP*/ anImplementati
     
     aClass.method_list.push(method); 
     aClass.method_dtable[aName] = method;
-    
+
+    // Give this function a "pretty" name for the console.
+    method.method_imp.displayName = METHOD_DISPLAY_NAME(aClass, method);
+
     // FIXME: Should this be done here?
     // If this is a root class...
-    if (!ISMETA(aClass) && GETMETA(aClass).isa == GETMETA(aClass))
-        class_addMethods(GETMETA(aClass), methods);
-    
+    if (!ISMETA(aClass) && GETMETA(aClass).isa === GETMETA(aClass))
+        class_addMethod(GETMETA(aClass), method);
+
     return YES;
 }
 
@@ -194,10 +199,13 @@ function class_addMethods(/*Class*/ aClass, /*Array*/ methods)
         
         method_list.push(method); 
         method_dtable[method.name] = method;
+
+        // Give this function a "pretty" name for the console.
+        method.method_imp.displayName = METHOD_DISPLAY_NAME(aClass, method);
     }
 
     // If this is a root class...
-    if (!ISMETA(aClass) && GETMETA(aClass).isa == GETMETA(aClass))
+    if (!ISMETA(aClass) && GETMETA(aClass).isa === GETMETA(aClass))
         class_addMethods(GETMETA(aClass), methods);
 }
 
@@ -224,6 +232,22 @@ function class_getClassMethod(/*Class*/ aClass, /*SEL*/ aSelector)
 function class_copyMethodList(/*Class*/ aClass)
 {
     return aClass.method_list.slice(0);
+}
+
+function class_replaceMethod(/*Class*/ aClass, /*SEL*/ aSelector, /*IMP*/ aMethodImplementation)
+{
+    if (!aClass || !aSelector)
+        return NULL;
+
+    var method = aClass.method_dtable[aSelector],
+        method_imp = NULL;
+
+    if (method)
+        method_imp = method.method_imp;
+
+    method.method_imp = aMethodImplementation;
+
+    return method_imp;
 }
 
 var _class_initialize = function(/*Class*/ aClass)
@@ -272,7 +296,7 @@ function class_getMethodImplementation(/*Class*/ aClass, /*SEL*/ aSelector)
 
 // Adding Classes
 
-var GLOBAL_NAMESPACE    = this,
+var GLOBAL_NAMESPACE    = window,
     REGISTERED_CLASSES  = {};
 
 function objj_allocateClassPair(/*Class*/ superclass, /*String*/ aName)
@@ -446,6 +470,13 @@ function objj_msgSend(/*id*/ aReceiver, /*SEL*/ aSelector)
         
     CLASS_GET_METHOD_IMPLEMENTATION(var implementation, aReceiver.isa, aSelector);
 
+    switch(arguments.length)
+    {
+        case 2: return implementation(aReceiver, aSelector);
+        case 3: return implementation(aReceiver, aSelector, arguments[2]);
+        case 4: return implementation(aReceiver, aSelector, arguments[2], arguments[3]);
+    }
+
     return implementation.apply(aReceiver, arguments);
 }
 
@@ -504,7 +535,7 @@ function sel_getUid(/*String*/ aName)
 
 function sel_isEqual(/*SEL*/ lhs, /*SEL*/ rhs)
 {
-    return lhs == rhs;
+    return lhs === rhs;
 }
 
 function sel_registerName(aName)

@@ -24,12 +24,16 @@
 
 
 CPDeleteKeyCode     = 8;
-CPUpArrowKeyCode    = 63232;
-CPDownArrowKeyCode  = 63233;
-CPLeftArrowKeyCode  = 63234;
-CPRightArrowKeyCode = 63235;
+CPTabKeyCode        = 9;
+CPReturnKeyCode     = 13;
+CPEscapeKeyCode     = 27;
+CPLeftArrowKeyCode  = 37;
+CPUpArrowKeyCode    = 38;
+CPRightArrowKeyCode = 39;
+CPDownArrowKeyCode  = 40;
 
 /*!
+    @ingroup appkit
     @class CPResponder
     
     Subclasses of CPResonder can be part of the responder chain.
@@ -92,26 +96,41 @@ CPRightArrowKeyCode = 63235;
 */
 - (void)interpretKeyEvents:(CPArray)events
 {
-    var event,
-        index = 0;
-    
-    while(event = events[index++])
+    var index = 0,
+        count = [events count];
+
+    for (; index < count; ++index)
     {
+        var event = events[index];
+
         switch([event keyCode])
         {
-            case CPLeftArrowKeyCode:    [self moveBackward:self];
+            case CPLeftArrowKeyCode:    [self doCommandBySelector:@selector(moveLeft:)];
                                         break;
-            case CPRightArrowKeyCode:   [self moveForward:self];
+            case CPRightArrowKeyCode:   [self doCommandBySelector:@selector(moveRight:)];
                                         break;
-            case CPUpArrowKeyCode:      [self moveUp:self];
+            case CPUpArrowKeyCode:      [self doCommandBySelector:@selector(moveUp:)];
                                         break;
-            case CPDownArrowKeyCode:    [self moveDown:self];
+            case CPDownArrowKeyCode:    [self doCommandBySelector:@selector(moveDown:)];
                                         break;
-            case CPDeleteKeyCode:       [self deleteBackward:self];
+            case CPDeleteKeyCode:       [self doCommandBySelector:@selector(deleteBackward:)];
                                         break;
-            case 3:
-            case 13:                    [self insertLineBreak:self];
+            case CPReturnKeyCode:
+            case 3:                     [self doCommandBySelector:@selector(insertLineBreak:)];
                                         break;
+            
+            case CPEscapeKeyCode:       [self doCommandBySelector:@selector(cancel:)];
+                                        break;
+
+            case CPTabKeyCode:          var shift = [event modifierFlags] & CPShiftKeyMask;
+
+                                        if (!shift)
+                                            [self doCommandBySelector:@selector(insertTab:)];
+                                        else
+                                            [self doCommandBySelector:@selector(insertBackTab:)];
+
+                                        break;
+
             default:                    [self insertText:[event characters]];
         }
     }
@@ -208,18 +227,32 @@ CPRightArrowKeyCode = 63235;
 
 // Action Methods
 /*!
-    Deletes one character backward, or the selection if anything is selected.
+    Insert a line break at the caret position or selection.
     @param aSender the object requesting this
 */
-- (void)deleteBackward:(id)aSender
+- (void)insertLineBreak:(id)aSender
 {
+    [self insertNewline:aSender];
 }
 
 /*!
     Insert a line break at the caret position or selection.
     @param aSender the object requesting this
 */
-- (void)insertLineBreak:(id)aSender
+- (void)insertNewline:(id)aSender
+{
+    [self insertNewline:aSender];
+}
+
+- (void)cancel:(id)sender
+{
+}
+
+- (void)insertTab:(id)sender
+{
+}
+
+- (void)insertBackTab:(id)sender
 {
 }
 
@@ -239,7 +272,7 @@ CPRightArrowKeyCode = 63235;
 */
 - (void)doCommandBySelector:(SEL)aSelector
 {
-    if([self respondsToSelector:aSelector])
+    if ([self respondsToSelector:aSelector])
         [self performSelector:aSelector];
     else
         [_nextResponder doCommandBySelector:aSelector];
@@ -321,7 +354,9 @@ var CPResponderNextResponderKey = @"CPResponderNextResponderKey";
 */
 - (void)encodeWithCoder:(CPCoder)aCoder
 {
-    [aCoder encodeConditionalObject:_nextResponder forKey:CPResponderNextResponderKey];
+    // This will come out nil on the other side with decodeObjectForKey:
+    if (_nextResponder !== nil)
+        [aCoder encodeConditionalObject:_nextResponder forKey:CPResponderNextResponderKey];
 }
 
 @end

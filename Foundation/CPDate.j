@@ -1,5 +1,5 @@
 /*
- * CPObject.j
+ * CPDate.j
  * Foundation
  *
  * Created by Thomas Robinson.
@@ -26,6 +26,13 @@
 
 var CPDateReferenceDate = new Date(Date.UTC(2001,1,1,0,0,0,0));
 
+/*! 
+    @class CPDate
+    @ingroup foundation
+    @brief A representation of a single point in time.
+
+
+*/
 @implementation CPDate : CPObject
 { 
 }
@@ -39,10 +46,17 @@ var CPDateReferenceDate = new Date(Date.UTC(2001,1,1,0,0,0,0));
 {
     return [[self alloc] init];
 }
+
 + (id)dateWithTimeIntervalSinceNow:(CPTimeInterval)seconds
 {
     return [[CPDate alloc] initWithTimeIntervalSinceNow:seconds];
 }
+
++ (id)dateWithTimeIntervalSince1970:(CPTimeInterval)seconds 
+{
+    return [[CPDate alloc] initWithTimeIntervalSince1970:seconds];
+}
+
 + (id)dateWithTimeIntervalSinceReferenceDate:(CPTimeInterval)seconds
 {
     return [[CPDate alloc] initWithTimeIntervalSinceReferenceDate:seconds];
@@ -63,22 +77,30 @@ var CPDateReferenceDate = new Date(Date.UTC(2001,1,1,0,0,0,0));
     self = new Date((new Date()).getTime() + seconds * 1000);
     return self;
 }
+
+- (id)initWithTimeIntervalSince1970:(CPTimeInterval)seconds
+{
+    self = new Date(seconds * 1000);
+    return self;
+}
+
 - (id)initWithTimeIntervalSinceReferenceDate:(CPTimeInterval)seconds
 {
     self = [self initWithTimeInterval:seconds sinceDate:CPDateReferenceDate];
     return self;
 }
+
 - (id)initWithTimeInterval:(CPTimeInterval)seconds sinceDate:(CPDate)refDate
 {
     self = new Date(refDate.getTime() + seconds * 1000);
     return self;
 }
+
 - (id)initWithString:(CPString)description
 {
     self = new Date(description); // FIXME: not same format as NSString
     return self;
 }
-
 
 - (CPTimeInterval)timeIntervalSinceDate:(CPDate)anotherDate
 {
@@ -89,14 +111,17 @@ var CPDateReferenceDate = new Date(Date.UTC(2001,1,1,0,0,0,0));
 {
     return [self timeIntervalSinceDate:[CPDate date]];
 }
+
 - (CPTimeInterval)timeIntervalSince1970
 {
     return self.getTime() / 1000.0;
 }
+
 - (CPTimeInterval)timeIntervalSinceReferenceDate
 {
     return (self.getTime() - CPDateReferenceDate.getTime()) / 1000.0;
 }
+
 + (CPTimeInterval)timeIntervalSinceReferenceDate
 {
     return [[CPDate date] timeIntervalSinceReferenceDate];

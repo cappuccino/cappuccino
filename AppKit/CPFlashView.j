@@ -24,7 +24,9 @@
 @import "CPFlashMovie.j"
 @import "CPView.j"
 
-
+/*!
+    @ingroup appkit
+*/
 @implementation CPFlashView : CPView
 {
     CPFlashMovie    _flashMovie;

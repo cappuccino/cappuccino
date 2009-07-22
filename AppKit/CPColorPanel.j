@@ -52,7 +52,9 @@ CPSliderColorPickerMode = 2;
 CPColorPickerViewWidth  = 265,
 CPColorPickerViewHeight = 370;
 
-/*! @class CPColorPanel
+/*! 
+    @ingroup appkit
+    @class CPColorPanel
 
     CPColorPanel provides a reusable panel that can be used
     displayed on screen to prompt the user for a color selection. To
@@ -63,20 +65,19 @@ CPColorPickerViewHeight = 370;
     _CPColorPanelToolbar    _toolbar;
     _CPColorPanelSwatches   _swatchView;
     _CPColorPanelPreview    _previewView;
-    
-    CPTextField     _previewLabel;
-    CPTextField     _swatchLabel;
-        
+
+    CPSlider        _opacitySlider;
+
     CPArray         _colorPickers;
-    CPView          _currentView; 
-    id              _activePicker;   
-    
+    CPView          _currentView;
+    id              _activePicker;
+
     CPColor         _color;
-    
+
     id              _target;
-    SEL             _action;       
-    
-    int             _mode;             
+    SEL             _action;
+
+    int             _mode;
 }
 
 /*! 
@@ -115,19 +116,21 @@ CPColorPickerViewHeight = 370;
 */
 - (id)init
 {
-    self = [super initWithContentRect:CGRectMake(500.0, 50.0, 218.0, 360.0) 
-                            styleMask:(CPHUDBackgroundWindowMask | CPTitledWindowMask | CPClosableWindowMask | CPResizableWindowMask)];
-    
+    self = [super initWithContentRect:CGRectMake(500.0, 50.0, 219.0, 370.0) 
+                            styleMask:(CPTitledWindowMask | CPClosableWindowMask | CPResizableWindowMask)];
+
     if (self)
     {
+        [[self contentView] setBackgroundColor:[CPColor colorWithWhite:0.95 alpha:1.0]];
+
         [self setTitle:@"Color Panel"];
         [self setLevel:CPFloatingWindowLevel];
         
         [self setFloatingPanel:YES];
         [self setBecomesKeyOnlyIfNeeded:YES];
         
-        [self setMinSize:CGSizeMake(218.0, 360.0)];
-        [self setMaxSize:CGSizeMake(327.0, 540.0)];
+        [self setMinSize:CGSizeMake(219.0, 342.0)];
+        [self setMaxSize:CGSizeMake(323.0, 537.0)];
     }
     
     return self;
@@ -151,6 +154,7 @@ CPColorPickerViewHeight = 370;
                       object:self];
 
     [_activePicker setColor:_color];
+    [_opacitySlider setFloatValue:[_color alphaComponent]];
 }
 
 /*!
@@ -172,6 +176,11 @@ CPColorPickerViewHeight = 370;
 - (CPColor)color
 {
     return _color;
+}
+
+- (float)opacity
+{
+    return [_opacitySlider floatValue];
 }
 
 /*!
@@ -234,7 +243,7 @@ CPColorPickerViewHeight = 370;
         [view setFrame:[_currentView frame]];
     else
     {
-        var height = (TOOLBAR_HEIGHT+10+PREVIEW_HEIGHT+5+SWATCH_HEIGHT+10),
+        var height = (TOOLBAR_HEIGHT+10+PREVIEW_HEIGHT+5+SWATCH_HEIGHT+32),
             bounds = [[self contentView] bounds];
 
         [view setFrameSize: CPSizeMake(bounds.size.width - 10, bounds.size.height - height)];
@@ -269,28 +278,31 @@ CPColorPickerViewHeight = 370;
 {
     if (_toolbar)
         return;
-            
+
+    if (!_color)
+        _color = [CPColor whiteColor];
+
     _colorPickers = [];
-    
+
     var count = [ColorPickerClasses count];
     for (var i=0; i<count; i++)
     {
         var currentPickerClass = ColorPickerClasses[i],
             currentPicker = [[currentPickerClass alloc] initWithPickerMask:0 colorPanel:self];
-            
+
         _colorPickers.push(currentPicker);
     }
 
     var contentView = [self contentView],
         bounds = [contentView bounds];
-    
-    _toolbar = [[CPView alloc] initWithFrame:CGRectMake(0, 0, CGRectGetWidth(bounds), TOOLBAR_HEIGHT)];
+
+    _toolbar = [[CPView alloc] initWithFrame:CGRectMake(0, 6, CGRectGetWidth(bounds), TOOLBAR_HEIGHT)];
     [_toolbar setAutoresizingMask: CPViewWidthSizable];  
 
     var totalToolbarWidth = count * ICON_WIDTH + (count - 1) * ICON_PADDING,
         leftOffset = (CGRectGetWidth(bounds) - totalToolbarWidth) / 2.0,
         buttonForLater = nil;
-    
+
     for (var i=0; i<count; i++)
     {
         var image = [_colorPickers[i] provideNewButtonImage],
@@ -314,55 +326,78 @@ CPColorPickerViewHeight = 370;
 
     // FIXME: http://280north.lighthouseapp.com/projects/13294-cappuccino/tickets/25-implement-cpbox
     var previewBox = [[CPView alloc] initWithFrame:CGRectMake(76, TOOLBAR_HEIGHT + 10, CGRectGetWidth(bounds) - 86, PREVIEW_HEIGHT)];
-    
+
     _previewView = [[_CPColorPanelPreview alloc] initWithFrame:CGRectInset([previewBox bounds], 2.0, 2.0)];
-                                                         
+
     [_previewView setColorPanel:self];
     [_previewView setAutoresizingMask:CPViewWidthSizable];  
-    
-    [previewBox setBackgroundColor:[CPColor grayColor]];
+
+    [previewBox setBackgroundColor:[CPColor colorWithWhite:0.8 alpha:1.0]];
     [previewBox setAutoresizingMask:CPViewWidthSizable];
-    
+
     [previewBox addSubview:_previewView];
-        
-    _previewLabel = [[CPTextField alloc] initWithFrame: CPRectMake(10, TOOLBAR_HEIGHT + 14, 60, 15)];
+
+    var _previewLabel = [[CPTextField alloc] initWithFrame: CPRectMake(10, TOOLBAR_HEIGHT + 10, 60, 15)];
     [_previewLabel setStringValue: "Preview:"];
-    [_previewLabel setTextColor:[CPColor whiteColor]];
+    [_previewLabel setTextColor:[CPColor blackColor]];
     [_previewLabel setAlignment:CPRightTextAlignment];
 
     // FIXME: http://280north.lighthouseapp.com/projects/13294-cappuccino/tickets/25-implement-cpbox
     var swatchBox = [[CPView alloc] initWithFrame:CGRectMake(76, TOOLBAR_HEIGHT + 10 + PREVIEW_HEIGHT + 5, CGRectGetWidth(bounds) - 86, SWATCH_HEIGHT + 2.0)];
 
-    [swatchBox setBackgroundColor:[CPColor grayColor]];
+    [swatchBox setBackgroundColor:[CPColor colorWithWhite:0.8 alpha:1.0]];
     [swatchBox setAutoresizingMask:CPViewWidthSizable];
-    
+
     _swatchView = [[_CPColorPanelSwatches alloc] initWithFrame:CGRectInset([swatchBox bounds], 1.0, 1.0)];
-                                                                     
+
     [_swatchView setColorPanel: self];
     [_swatchView setAutoresizingMask: CPViewWidthSizable];  
 
     [swatchBox addSubview:_swatchView];
 
-    _swatchLabel = [[CPTextField alloc] initWithFrame: CPRectMake(10, TOOLBAR_HEIGHT + 8 + PREVIEW_HEIGHT + 5, 60, 15)];
+    var _swatchLabel = [[CPTextField alloc] initWithFrame: CPRectMake(10, TOOLBAR_HEIGHT + 8 + PREVIEW_HEIGHT + 6, 60, 15)];
     [_swatchLabel setStringValue: "Swatches:"];
-    [_swatchLabel setTextColor:[CPColor whiteColor]];
+    [_swatchLabel setTextColor:[CPColor blackColor]];
     [_swatchLabel setAlignment:CPRightTextAlignment];
 
 
-    [contentView addSubview: _toolbar];
-    [contentView addSubview: previewBox];
-    [contentView addSubview: _previewLabel];
-    [contentView addSubview: swatchBox];
-    [contentView addSubview: _swatchLabel];
+    var opacityLabel = [[CPTextField alloc] initWithFrame: CPRectMake(10, TOOLBAR_HEIGHT + PREVIEW_HEIGHT + 35, 60, 20)];
+    [opacityLabel setStringValue: "Opacity:"];
+    [opacityLabel setTextColor:[CPColor blackColor]];
+    [opacityLabel setAlignment:CPRightTextAlignment];
+
+    _opacitySlider = [[CPSlider alloc] initWithFrame:CGRectMake(76, TOOLBAR_HEIGHT + PREVIEW_HEIGHT + 34, CGRectGetWidth(bounds) - 86, 20.0)];
     
+    [_opacitySlider setMinValue:0.0];
+    [_opacitySlider setMaxValue:1.0];
+
+    [_opacitySlider setTarget:self];
+    [_opacitySlider setAction:@selector(setOpacity:)];
+
+    [contentView addSubview:_toolbar];
+    [contentView addSubview:previewBox];
+    [contentView addSubview:_previewLabel];
+    [contentView addSubview:swatchBox];
+    [contentView addSubview:_swatchLabel];
+    [contentView addSubview:opacityLabel];
+    [contentView addSubview:_opacitySlider];
+
     _target = nil;
     _action = nil;
     _activePicker = nil;
-    
-    [_previewView setBackgroundColor: _color ? _color : [CPColor whiteColor]];
-    
+
+    [_previewView setBackgroundColor: _color];
+
     if (buttonForLater)
         [self _setPicker:buttonForLater];
+}
+
+- (void)setOpacity:(id)sender
+{
+    var components = [[self color] components],
+        alpha = [sender floatValue];
+
+    [self setColor:[_color colorWithAlphaComponent:alpha] updatePicker:YES];
 }
 
 @end
@@ -456,7 +491,7 @@ var CPColorPanelSwatchesCookie = "CPColorPanelSwatchesCookie";
     var future = new Date();
     future.setYear(2019);
     
-    [_swatchCookie setValue: CPJSObjectCreateJSON(result) expires:future domain: nil];
+    [_swatchCookie setValue: JSON.stringify(result) expires:future domain: nil];
 }
 
 - (void)setColorPanel:(CPColorPanel)panel

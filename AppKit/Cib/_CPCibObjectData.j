@@ -57,36 +57,69 @@
     _CPCibCustomObject  _fileOwner;
     
     CPSet               _visibleWindows;
+
+    JSObject            _replacementObjects;
 }
 
-- (CPArray)topLevelObjects
+- (id)init
 {
-    var count = [_objectsValues count],
-        topLevelObjects = [];
-    
-    while (count--)
+    self = [super init];
+
+    if (self)
     {
-        var eachObject = _objectsValues[count];
-        
-        if (eachObject == _fileOwner)
-        {
-            var anObject = _objectsKeys[count];
-            
-            if (anObject != _fileOwner)
-                topLevelObjects.push(anObject);
-        }
+        _namesKeys = [];
+        _namesValues = [];
+
+        //CPArray         _accessibilityConnectors;
+        //CPArray         _accessibilityOidsKeys;
+        //CPArray         _accessibilityOidsValues;
+
+        _classesKeys = [];
+        _classesValues = [];
+
+        _connections = [];
+        //id              _fontManager;
+
+        _framework = @"";
+
+        _nextOid = [];
+
+        _objectsKeys = [];
+        _objectsValues = [];
+
+        _oidKeys = [];
+        _oidValues = [];
+
+        _fileOwner = nil;
+
+        _visibleWindows = [CPSet set];
     }
-    
-    return topLevelObjects;
+
+    return self;
 }
 
 - (CPMenu)mainMenu
 {
     var index = [_namesValues indexOfObjectIdenticalTo:"MainMenu"];
+
     if (index === CPNotFound)
-        return nil;
-    
+    {
+        index = [_namesValues indexOfObjectIdenticalTo:"Main Menu"];
+
+        if (index === CPNotFound)
+            return nil;
+    }
+
     return _namesKeys[index];
+}
+
+- (void)displayVisibleWindows
+{
+    var object = nil,
+        objectEnumerator = [_visibleWindows objectEnumerator];
+
+    while (object = [objectEnumerator nextObject])
+        [_replacementObjects[[object UID]] makeKeyAndOrderFront:self];
 }
 
 @end
@@ -123,9 +156,11 @@ var _CPCibObjectDataNamesKeysKey                = @"_CPCibObjectDataNamesKeysKey
 - (id)initWithCoder:(CPCoder)aCoder
 {
     self = [super init];
-    
+
     if (self)
     {
+        _replacementObjects = {};
+
         _namesKeys = [aCoder decodeObjectForKey:_CPCibObjectDataNamesKeysKey];
         _namesValues = [aCoder decodeObjectForKey:_CPCibObjectDataNamesValuesKey];
 
@@ -138,22 +173,22 @@ var _CPCibObjectDataNamesKeysKey                = @"_CPCibObjectDataNamesKeysKey
 
         _connections = [aCoder decodeObjectForKey:_CPCibObjectDataConnectionsKey];
         //id              _fontManager;
-        
+
         _framework = [aCoder decodeObjectForKey:_CPCibObjectDataFrameworkKey];
-    
+
         _nextOid = [aCoder decodeIntForKey:_CPCibObjectDataNextOidKey];
-        
+
         _objectsKeys = [aCoder decodeObjectForKey:_CPCibObjectDataObjectsKeysKey];
         _objectsValues = [aCoder decodeObjectForKey:_CPCibObjectDataObjectsValuesKey];
-        
+
         _oidKeys = [aCoder decodeObjectForKey:_CPCibObjectDataOidKeysKey];
         _oidValues = [aCoder decodeObjectForKey:_CPCibObjectDataOidValuesKey];
 
         _fileOwner = [aCoder decodeObjectForKey:_CPCibObjectDataFileOwnerKey];
-    
-    //    CPSet           _visibleWindows;
+
+        _visibleWindows = [aCoder decodeObjectForKey:_CPCibObjectDataVisibleWindowsKey];
     }
-    
+
     return self;
 }
 
@@ -161,16 +196,16 @@ var _CPCibObjectDataNamesKeysKey                = @"_CPCibObjectDataNamesKeysKey
 {
     [aCoder encodeObject:_namesKeys forKey:_CPCibObjectDataNamesKeysKey];
     [aCoder encodeObject:_namesValues forKey:_CPCibObjectDataNamesValuesKey];
-    
+
     //CPArray         _accessibilityConnectors;
     //CPArray         _accessibilityOidsKeys;
     //CPArray         _accessibilityOidsValues;
-    
+
     [aCoder encodeObject:_classesKeys forKey:_CPCibObjectDataClassesKeysKey];
     [aCoder encodeObject:_classesValues forKey:_CPCibObjectDataClassesValuesKey];
-    
+
     [aCoder encodeObject:_connections forKey:_CPCibObjectDataConnectionsKey];
-    
+
     //id              _fontManager;
     
     [aCoder encodeObject:_framework forKey:_CPCibObjectDataFrameworkKey];
@@ -186,22 +221,84 @@ var _CPCibObjectDataNamesKeysKey                = @"_CPCibObjectDataNamesKeysKey
     [aCoder encodeObject:_fileOwner forKey:_CPCibObjectDataFileOwnerKey];
 //    CPCustomObject  _fileOwner;
 
-//    CPSet           _visibleWindows;
+    [aCoder encodeObject:_visibleWindows forKey:_CPCibObjectDataVisibleWindowsKey];
 }
 
-- (void)establishConnectionsWithExternalNameTable:(CPDictionary)anExternalNameTable
+- (void)instantiateWithOwner:(id)anOwner topLevelObjects:(CPMutableArray)topLevelObjects
 {
+    // _objectsValues -> parent
+    // _objectsKeys -> child
+    var count = [_objectsKeys count];
+
+    while (count--)
+    {
+        var object = _objectsKeys[count],
+            parent = _objectsValues[count],
+            instantiatedObject = object;
+
+        if ([object respondsToSelector:@selector(_cibInstantiate)])
+        {
+            var instantiatedObject = [object _cibInstantiate];
+
+            if (instantiatedObject !== object)
+            {
+                _replacementObjects[[object UID]] = instantiatedObject;
+
+                if ([instantiatedObject isKindOfClass:[CPView class]])
+                {
+                    var clipView = [instantiatedObject superview];
+
+                    if ([clipView isKindOfClass:[CPClipView class]])
+                    {
+                        var scrollView = [clipView superview];
+
+                        if ([scrollView isKindOfClass:[CPScrollView class]])
+                            [scrollView setDocumentView:instantiatedObject];
+                    }
+                }
+            }
+        }
+
+        if (topLevelObjects && parent === _fileOwner && object !== _fileOwner)
+            topLevelObjects.push(instantiatedObject);
+    }
+}
+
+- (void)establishConnectionsWithOwner:(id)anOwner topLevelObjects:(CPMutableArray)topLevelObjects
+{
+    _replacementObjects[[_fileOwner UID]] = anOwner;
+
     var index = 0,
-        count = _connections.length,
-        cibOwner = [anExternalNameTable objectForKey:CPCibOwner];
+        count = _connections.length;
 
     for (; index < count; ++index)
     {
         var connection = _connections[index];
-        
-        [connection replaceObject:_fileOwner withObject:cibOwner];
+
+        [connection replaceObjects:_replacementObjects];
         [connection establishConnection];
     }
+}
+
+- (void)awakeWithOwner:(id)anOwner topLevelObjects:(CPMutableArray)topLevelObjects
+{
+    var count = [_objectsKeys count];
+
+    while (count--)
+    {
+        var object = _objectsKeys[count],
+            instantiatedObject = _replacementObjects[[object UID]];
+
+        if (instantiatedObject)
+            object = instantiatedObject;
+
+        // Don't use _fileOwner, by this point its been replaced with anOwner.
+        if (object !== anOwner && [object respondsToSelector:@selector(awakeFromCib)])
+            [object awakeFromCib];
+    }
+
+    if ([anOwner respondsToSelector:@selector(awakeFromCib)])
+        [anOwner awakeFromCib];
 }
 
 @end

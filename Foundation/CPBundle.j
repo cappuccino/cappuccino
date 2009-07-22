@@ -25,6 +25,11 @@
 
 @import "CPURLRequest.j"
 
+/*! 
+    @class CPBundle
+    @ingroup foundation
+    @brief Groups information about an application's code & resources.
+*/
 
 @implementation CPBundle : CPObject
 {
@@ -93,6 +98,11 @@
     return className ? CPClassFromString(className) : Nil;
 }
 
+- (CPString)pathForResource:(CPString)aFilename
+{
+    return [self resourcePath] + '/' + aFilename;
+}
+
 - (CPDictionary)infoDictionary
 {
     return info;
@@ -117,7 +127,16 @@
     {
         info = CPPropertyListCreateFromData([CPData dataWithString:data]);
 
-        [CPURLConnection connectionWithRequest:[CPURLRequest requestWithURL:[self bundlePath] + "/" + [self objectForInfoDictionaryKey:"CPBundleExecutable"]] delegate:self];
+        var platform = '/',
+            platforms = [self objectForInfoDictionaryKey:"CPBundlePlatforms"];
+
+        if (platforms)
+        {
+            platform = [platforms firstObjectCommonWithArray:OBJJ_PLATFORMS];
+            platform = platform ? '/' + platform + ".platform/" : '/';
+        }
+
+        [CPURLConnection connectionWithRequest:[CPURLRequest requestWithURL:[self bundlePath] + platform + [self objectForInfoDictionaryKey:"CPBundleExecutable"]] delegate:self];
     }
     else
     {
@@ -129,13 +148,27 @@
             context.didCompleteCallback = function() { [_delegate bundleDidFinishLoading:self]; };
     
         var files = [self objectForInfoDictionaryKey:@"CPBundleReplacedFiles"],
-            count = files.length;
+            count = files.length,
+            bundlePath = [self bundlePath];
             
         while (count--)
-            context.pushFragment(fragment_create_file([self bundlePath] + '/' + files[count], new objj_bundle(""), YES, NULL));
+        {
+            var fileName = files[count];
+            
+            if (fileName.indexOf(".j") === fileName.length - 2)
+                context.pushFragment(fragment_create_file(bundlePath + '/' + fileName, new objj_bundle(""), YES, NULL));
+        }
         
-        context.evaluate();
+        if (context.fragments.length)
+            context.evaluate();
+        else
+            [_delegate bundleDidFinishLoading:self];
     }
+}
+
+- (void)connection:(CPURLConnection)aConnection didFailWithError:(CPError)anError
+{
+    alert("Couldnot find bundle:" + anError)
 }
 
 - (void)connectionDidFinishLoading:(CPURLConnection)aConnection

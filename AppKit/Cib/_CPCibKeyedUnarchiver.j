@@ -5,15 +5,17 @@
 @implementation _CPCibKeyedUnarchiver : CPKeyedUnarchiver
 {
     CPBundle    _bundle;
+    BOOL        _awakenCustomResources;
 }
 
-- (id)initForReadingWithData:(CPData)data bundle:(CPBundle)aBundle
+- (id)initForReadingWithData:(CPData)data bundle:(CPBundle)aBundle awakenCustomResources:(BOOL)shouldAwakenCustomResources
 {
     self = [super initForReadingWithData:data];
     
     if (self)
     {
         _bundle = aBundle;
+        _awakenCustomResources = shouldAwakenCustomResources;
         
         [self setDelegate:self];
     }
@@ -26,12 +28,9 @@
     return _bundle;
 }
 
-- (id)unarchiver:(CPKeyedUnarchiver)aKeyedUnarchiver didDecodeObject:(id)anObject
+- (BOOL)awakenCustomResources
 {
-    if ([anObject respondsToSelector:@selector(_cibInstantiate)])
-        return [anObject _cibInstantiate];
-
-    return anObject;
+    return _awakenCustomResources;
 }
 
 - (void)replaceObjectAtUID:(int)aUID withObject:(id)anObject

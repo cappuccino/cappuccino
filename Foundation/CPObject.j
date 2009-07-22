@@ -22,9 +22,44 @@
 
 /*!
     @class CPObject
+    @ingroup foundation
+    @brief The root class from which most classes are subclassed.
     
-    CPObject is the root class for most Cappuccino classes. Your custom classes 
-    should almost always subclass CPObject or one of its children.
+    CPObject is the root class for most Cappuccino classes. Like in Objective-C,
+    you have to declare parent class explicitly in Objective-J, so your custom
+    classes should almost always subclass CPObject or one of its children.
+    
+    CPObject provides facilities for class allocation and initialization,
+    querying runtime about parent classes and available selectors, using KVC
+    (key-value coding).
+    
+    When you subclass CPObject, most of the time you override one selector - init.
+    It is called for default initialization of custom object. You must call
+    parent class init in your overriden code:
+    <pre>- (id)init
+{
+    self = [super init];
+    if(self) {
+        ... provide default initialization code for your object ...
+    }
+    return self;
+}</pre>
+    
+    One more useful thing to override is description(). This selector
+    is used to provide developer-readable information about object. description
+    selector is often used with CPLog debugging:
+    <pre>- (CPString)description
+{
+    return [CPString stringWithFormat:@"<SomeClass %d>", someValue];
+}</pre>
+    To get description value you can use %@ specifier everywhere where format
+    specifiers are allowed:
+    <pre>var inst = [[SomeClass alloc] initWithSomeValue:10];
+CPLog(@"Got some class: %@", inst);</pre>
+    would output:
+    <pre>Got some class: <SomeClass 10></pre>
+    
+    @todo document KVC usage.
 */
 @implementation CPObject
 {
@@ -56,6 +91,11 @@
 {
 //    CPLog("calling alloc on " + self.name + ".");
     return class_createInstance(self);
+}
+
++ (id)allocWithCoder:(CPCoder)aCoder
+{
+    return [self alloc];
 }
 
 /*!
@@ -177,7 +217,7 @@
 */
 + (BOOL)instancesRespondToSelector:(SEL)aSelector
 {
-    return class_getInstanceMethod(self, aSelector);
+    return !!class_getInstanceMethod(self, aSelector);
 }
 
 /*!
@@ -187,29 +227,29 @@
 */
 - (BOOL)respondsToSelector:(SEL)aSelector
 {
-    return class_getInstanceMethod(isa, aSelector) != NULL;
+    return !!class_getInstanceMethod(isa, aSelector);
 }
 
 // Obtaining method information
 
 /*!
-    Returns the address of the receiver's method for the provided selector.
+    Returns the implementation of the receiver's method for the provided selector.
     @param aSelector the selector for the method to return
-    @return the address of the method's implementation
+    @return the method implementation ( a function )
 */
 - (IMP)methodForSelector:(SEL)aSelector
 {
-    return class_getInstanceMethod(isa, aSelector);
+    return class_getMethodImplementation(isa, aSelector);
 }
 
 /*!
-    Returns the address of the receiving class' method for the provided selector.
+    Returns the implementation of the receiving class' method for the provided selector.
     @param aSelector the selector for the class method to return
-    @return the address of the method's implementation
+    @return the method implementation ( a function )
 */
 + (IMP)instanceMethodForSelector:(SEL)aSelector
 {
-    return class_getInstanceMethod(self, aSelector);
+    return class_getMethodImplementation(self, aSelector);
 }
 
 /*!
@@ -229,7 +269,7 @@
 */
 - (CPString)description
 {
-    return "<" + isa.name + " 0x" + [CPString stringWithHash:[self hash]] + ">";
+    return "<" + isa.name + " 0x" + [CPString stringWithHash:[self UID]] + ">";
 }
 
 // Sending Messages
@@ -317,7 +357,7 @@
 {
     [CPException raise:CPInvalidArgumentException reason:
         (class_isMetaClass(isa) ? "+" : "-") + " [" + [self className] + " " + aSelector + "] unrecognized selector sent to " +
-        (class_isMetaClass(isa) ? "class" : "instance") + " 0x" + [CPString stringWithHash:[self hash]]];
+        (class_isMetaClass(isa) ? "class" : "instance") + " 0x" + [CPString stringWithHash:[self UID]]];
 }
 
 // Archiving
@@ -425,6 +465,14 @@
 */
 - (unsigned)hash
 {
+    return [self UID];
+}
+
+- (unsigned)UID
+{
+    if (typeof self.__address === "undefined")
+        self.__address = _objj_generateObjectHash();
+
     return __address;
 }
 
@@ -434,7 +482,7 @@
 */
 - (BOOL)isEqual:(id)anObject
 {
-    return self === anObject || [self hash] === [anObject hash];
+    return self === anObject || [self UID] === [anObject UID];
 }
 
 /*!

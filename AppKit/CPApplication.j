@@ -27,7 +27,11 @@
 @import "CPMenu.j"
 @import "CPResponder.j"
 @import "CPDocumentController.j"
+@import "CPThemeBlend.j"
+@import "CPCibLoading.j"
 
+var CPMainCibFile               = @"CPMainCibFile",
+    CPMainCibFileHumanFriendly  = @"Main cib file base name";
 
 CPApp = nil;
 
@@ -38,7 +42,9 @@ CPRunStoppedResponse    = -1000;
 CPRunAbortedResponse    = -1001;
 CPRunContinuesResponse  = -1002;
 
-/*! @class CPApplication
+/*! 
+    @ingroup appkit
+    @class CPApplication
 
     CPApplication is THE way to start up the Cappucino framework for your application to use.
     Every GUI application has exactly one instance of CPApplication (or of a custom subclass of
@@ -471,6 +477,21 @@ CPRunContinuesResponse  = -1002;
     _mainMenu = aMenu;
 }
 
+- (void)orderFrontColorPanel:(id)aSender
+{
+    [[CPColorPanel sharedColorPanel] orderFront:self];
+}
+
+- (void)orderFrontStandardAboutPanel:(id)aSender
+{
+    [self orderFrontStandardAboutPanelWithOptions:nil];
+}
+
+- (void)orderFrontStandardAboutPanelWithOptions:(CPDictionary)aDictionary
+{
+    // FIXME: Implement.
+}
+
 // Posting Actions
 /*!
     Tries to perform the action with an argument. Performs
@@ -739,28 +760,27 @@ var _CPRunModalLoop = function(anEvent)
     @class CPApplication
     @return void
 */
+
 function CPApplicationMain(args, namedArgs)
 {
     var mainBundle = [CPBundle mainBundle],
         principalClass = [mainBundle principalClass];
-        
+
     if (!principalClass)
         principalClass = [CPApplication class];
 
     [principalClass sharedApplication];
-    
-    //[NSBundle loadNibNamed:@"myMain" owner:NSApp];
-    
+
     //FIXME?
     if (!args && !namedArgs)
     {
         var args = [CPApp arguments],
             searchParams = window.location.search.substring(1).split("&");
             namedArgs = [CPDictionary dictionary];
-        
+
         if([args containsObject:"debug"])
             CPLogRegister(CPLogPopup);
-    
+
         for(var i=0; i<searchParams.length; i++)
         {
             var index = searchParams[i].indexOf('=');
@@ -770,9 +790,76 @@ function CPApplicationMain(args, namedArgs)
                 [namedArgs setObject: searchParams[i].substring(index+1) forKey: searchParams[i].substring(0, index)];
         }
     }
-    
+
     CPApp._args = args;
     CPApp._namedArgs = namedArgs;
-    
+
+    [_CPAppBootstrapper performActions];
+}
+
+var _CPAppBootstrapperActions = nil;
+
+@implementation _CPAppBootstrapper : CPObject
+{
+}
+
++ (void)actions
+{
+    return [@selector(loadDefaultTheme), @selector(loadMainCibFile)];
+}
+
++ (void)performActions
+{
+    if (!_CPAppBootstrapperActions)
+        _CPAppBootstrapperActions = [self actions];
+
+    while (_CPAppBootstrapperActions.length)
+    {
+        var action = _CPAppBootstrapperActions.shift();
+
+        if (objj_msgSend(self, action))
+            return;
+    }
+
     [CPApp run];
 }
+
++ (BOOL)loadDefaultTheme
+{
+    var blend = [[CPThemeBlend alloc] initWithContentsOfURL:[[CPBundle bundleForClass:[CPApplication class]] pathForResource:@"Aristo.blend"]];
+
+    [blend loadWithDelegate:self];
+
+    return YES;
+}
+
++ (void)blendDidFinishLoading:(CPBundle)aBundle
+{
+    [CPTheme setDefaultTheme:[CPTheme themeNamed:@"Aristo"]];
+
+    [self performActions];
+}
+
++ (BOOL)loadMainCibFile
+{
+    var mainBundle = [CPBundle mainBundle],
+        mainCibFile = [mainBundle objectForInfoDictionaryKey:CPMainCibFile] || [mainBundle objectForInfoDictionaryKey:CPMainCibFileHumanFriendly];
+
+    if (mainCibFile)
+    {
+        [mainBundle loadCibFile:mainCibFile
+            externalNameTable:[CPDictionary dictionaryWithObject:CPApp forKey:CPCibOwner]
+                 loadDelegate:self];
+
+        return YES;
+    }
+
+    return NO;
+}
+
++ (void)cibDidFinishLoading:(CPCib)aCib
+{
+    [self performActions];
+}
+
+@end

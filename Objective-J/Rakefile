@@ -1,0 +1,95 @@
+#!/usr/bin/env ruby
+
+require '../common'
+require 'objective-j'
+require 'rake'
+require 'rake/clean'
+
+
+$PRODUCT                = File.join($PRODUCT_DIR, 'Objective-J')
+$ENVIRONMENT_PRODUCT    = File.join($ENVIRONMENT_FRAMEWORKS_DIR, 'Objective-J')
+$LICENSE_PRODUCT        = File.join($PRODUCT, 'LICENSE')
+
+$LICENSE_FILE           = File.join($HOME_DIR, 'Tools', 'Rake', 'lib', 'licenses', 'LGPL-v2.1')
+
+$BROWSER_FILE           = File.join($PRODUCT, 'Objective-J.js')
+$RHINO_FILE             = File.join($PRODUCT, 'rhino.platform', 'Objective-J.js')
+
+task :Products => [$BROWSER_FILE, $RHINO_FILE, $LICENSE_PRODUCT]
+
+Files = [   'constants.js', 
+            'utilities.js', 
+            'json2.js',
+            'runtime.js', 
+            'dictionary.js', 
+            'plist.js', 
+            'file.js', 
+            'exception.js', 
+            'preprocess.js', 
+            'evaluate.js', 
+            'debug.js', 
+            'bootstrap.js'];
+
+file_d $BROWSER_FILE => Files do |t|
+    build_product(t.name, platform_flags(ObjectiveJ::Platform::Browser, ObjectiveJ::Platform::ObjJ))
+end
+
+file_d $RHINO_FILE => Files do |t|
+    flags = platform_flags(ObjectiveJ::Platform::Rhino, ObjectiveJ::Platform::ObjJ)
+    flags += ' -DRHINO'
+
+    build_product(t.name, flags)
+end
+
+#Framework in environment directory
+file_d $ENVIRONMENT_PRODUCT => [:Products] do
+    cp_r(File.join($PRODUCT, '.'), $ENVIRONMENT_PRODUCT)
+end
+
+file_d $LICENSE_PRODUCT => [$LICENSE_FILE] do
+    cp($LICENSE_FILE, $LICENSE_PRODUCT)
+end
+
+def platform_flags(*platforms)
+    return '-DPLATFORMS="[' + platforms.uniq.map { |platform| '\"' + platform + '\"' }.join(', ') + ']"'
+end
+
+def build_product(path, flags)
+
+    IO.popen("gcc #{flags} -E -x c -P -", "w+") do |preprocessor|
+
+        Files.select { |name| name.match(/\.js$/) }.each do |fileName|
+          preprocessor.puts IO.read(fileName)
+        end
+        
+        preprocessor.close_write
+
+        File.open(path, "w") do |file|
+            file.write(IO.read("header.txt") + preprocessor.read)
+        end
+
+    end
+end
+
+task :build => [:Products, $ENVIRONMENT_PRODUCT, :build_subprojects]
+
+task :clean => :clean_suprojects
+
+task :clobber => :clobber_subprojects
+
+subprojects = %w{Tools}
+
+task :build_subprojects do
+    subrake(subprojects, :build)
+end
+
+task :clean_suprojects do
+    subrake(subprojects, :clean)
+end
+
+task :clobber_subprojects do
+    subrake(subprojects, :clobber)
+end
+
+#CLEAN.include() no temporary files.
+CLOBBER.include($PRODUCT, $ENVIRONMENT_PRODUCT)

@@ -68,12 +68,12 @@
     [_contentView setAutoresizingMask:CPViewWidthSizable|CPViewHeightSizable];
     
     _rgbLabel = [[CPTextField alloc] initWithFrame: CPRectMake(0, 10, 100, 20)];
-    [_rgbLabel setStringValue: "RGB"];
-    [_rgbLabel setTextColor:[CPColor whiteColor]];
+    [_rgbLabel setStringValue: "Red, Green, Blue"];
+    [_rgbLabel setTextColor:[CPColor blackColor]];
 
     _redLabel = [[CPTextField alloc] initWithFrame: CPRectMake(0, 35, 15, 20)];
     [_redLabel setStringValue: "R"];
-    [_redLabel setTextColor:[CPColor whiteColor]];
+    [_redLabel setTextColor:[CPColor blackColor]];
     
     _redSlider = [[CPSlider alloc] initWithFrame: CPRectMake(15, 35, aFrame.size.width - 70, 20)];
     [_redSlider setMaxValue: 1.0];
@@ -138,8 +138,8 @@
     _redValue = document.createElement("input");
     _redValue.style.width = "40px";
     _redValue.style.backgroundColor = "transparent";
-    _redValue.style.border = "1px solid white";
-    _redValue.style.color = "white";
+    _redValue.style.border = "1px solid black";
+    _redValue.style.color = "black";
     _redValue.style.position = "absolute";
     _redValue.style.top = "0px";
     _redValue.style.left = "0px";
@@ -150,7 +150,7 @@
 
     _greenLabel = [[CPTextField alloc] initWithFrame: CPRectMake(0, 58, 15, 20)];
     [_greenLabel setStringValue: "G"];
-    [_greenLabel setTextColor:[CPColor whiteColor]];
+    [_greenLabel setTextColor:[CPColor blackColor]];
 
     _greenSlider = [[CPSlider alloc] initWithFrame: CPRectMake(15, 58, aFrame.size.width - 70, 20)];
     [_greenSlider setMaxValue: 1.0];
@@ -171,7 +171,7 @@
 
     _blueLabel = [[CPTextField alloc] initWithFrame: CPRectMake(0, 81, 15, 20)];
     [_blueLabel setStringValue: "B"];
-    [_blueLabel setTextColor:[CPColor whiteColor]];
+    [_blueLabel setTextColor:[CPColor blackColor]];
 
     _blueSlider = [[CPSlider alloc] initWithFrame: CPRectMake(15, 81, aFrame.size.width - 70, 20)];
     [_blueSlider setMaxValue: 1.0];
@@ -190,13 +190,13 @@
     blueValue._DOMElement.appendChild(_blueValue);
     [_contentView addSubview: blueValue];
 
-    _hsbLabel = [[CPTextField alloc] initWithFrame: CPRectMake(0, 120, 100, 20)];
-    [_hsbLabel setStringValue: "HSB"];
-    [_hsbLabel setTextColor:[CPColor whiteColor]];
+    _hsbLabel = [[CPTextField alloc] initWithFrame: CPRectMake(0, 120, 190, 20)];
+    [_hsbLabel setStringValue: "Hue, Saturation, Brightness"];
+    [_hsbLabel setTextColor:[CPColor blackColor]];
 
     _hueLabel = [[CPTextField alloc] initWithFrame: CPRectMake(0, 145, 15, 20)];
     [_hueLabel setStringValue: "H"];
-    [_hueLabel setTextColor:[CPColor whiteColor]];
+    [_hueLabel setTextColor:[CPColor blackColor]];
     
     _hueSlider = [[CPSlider alloc] initWithFrame: CPRectMake(15, 145, aFrame.size.width - 70, 20)];
     [_hueSlider setMaxValue: 359.0];
@@ -217,7 +217,7 @@
     
     _saturationLabel = [[CPTextField alloc] initWithFrame: CPRectMake(0, 168, 15, 20)];
     [_saturationLabel setStringValue: "S"];
-    [_saturationLabel setTextColor:[CPColor whiteColor]];
+    [_saturationLabel setTextColor:[CPColor blackColor]];
 
     _saturationSlider = [[CPSlider alloc] initWithFrame: CPRectMake(15, 168, aFrame.size.width - 70, 20)];
     [_saturationSlider setMaxValue: 100.0];
@@ -238,7 +238,7 @@
 
     _brightnessLabel = [[CPTextField alloc] initWithFrame: CPRectMake(0, 191, 15, 20)];
     [_brightnessLabel setStringValue: "B"];
-    [_brightnessLabel setTextColor:[CPColor whiteColor]];
+    [_brightnessLabel setTextColor:[CPColor blackColor]];
 
     _brightnessSlider = [[CPSlider alloc] initWithFrame: CPRectMake(15, 191, aFrame.size.width - 70, 20)];
     [_brightnessSlider setMaxValue: 100.0];
@@ -257,15 +257,15 @@
     brightnessValue._DOMElement.appendChild(_brightnessValue);
     [_contentView addSubview: brightnessValue];
 
-    _hexLabel = [[CPTextField alloc] initWithFrame: CPRectMake(0, 230, 100, 20)];
+    _hexLabel = [[CPTextField alloc] initWithFrame: CPRectMake(0, 230, 30, 20)];
     [_hexLabel setStringValue: "Hex"];
-    [_hexLabel setTextColor:[CPColor whiteColor]];
+    [_hexLabel setTextColor:[CPColor blackColor]];
     
     //hex input box
     _hexValue = _redValue.cloneNode(false);
-    _hexValue.style.top = "255px";
+    _hexValue.style.top = "228px";
     _hexValue.style.width = "80px";
-    _hexValue.style.left = "0px";
+    _hexValue.style.left = "35px";
     _hexValue.onkeypress = function(aDOMEvent) 
     { 
         aDOMEvent = aDOMEvent || window.event;
@@ -329,7 +329,9 @@
 
 -(void)sliderChanged:(id)sender
 {
-    var newColor;
+    var newColor,
+        colorPanel = [self colorPanel],
+        alpha = [colorPanel opacity];
 
     switch(sender)
     {
@@ -337,7 +339,8 @@
         case    _saturationSlider:
         case    _brightnessSlider:      newColor = [CPColor colorWithHue: [_hueSlider floatValue]
                                                               saturation: [_saturationSlider floatValue]
-                                                              brightness: [_brightnessSlider floatValue]];
+                                                              brightness: [_brightnessSlider floatValue]
+                                                                   alpha: alpha];
                                                               
                                         [self updateRGBSliders: newColor];
                                         break;
@@ -347,7 +350,7 @@
         case    _blueSlider:            newColor = [CPColor colorWithCalibratedRed: [_redSlider floatValue]
                                                                              green: [_greenSlider floatValue]
                                                                               blue: [_blueSlider floatValue]
-                                                                             alpha: 1.0];
+                                                                             alpha: alpha];
                                                               
                                         [self updateHSBSliders: newColor];
                                         break;
@@ -355,7 +358,7 @@
         
     [self updateLabels];
     [self updateHex: newColor];
-    [[self colorPanel] setColor: newColor];
+    [colorPanel setColor: newColor];
 }
 
 -(void)setColor:(CPColor)aColor

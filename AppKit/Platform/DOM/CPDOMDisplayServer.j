@@ -150,8 +150,9 @@ CPDOMDisplayServerViewsContext          = {};
         {
             var view = views[index];
             
-            delete CPDOMDisplayServerViewsContext[[view hash]];
+            delete CPDOMDisplayServerViewsContext[[view UID]];
             
+            [view layoutIfNeeded];
             [view displayIfNeeded];
         }
     }

@@ -119,7 +119,7 @@ function objj_backtrace_set_enabled(enabled)
 
 function objj_debug_print_backtrace()
 {
-    CPLog.trace(objj_debug_backtrace_string());
+    alert(objj_debug_backtrace_string());
 }
 
 function objj_debug_backtrace_string()

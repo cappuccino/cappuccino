@@ -20,11 +20,9 @@ System Requirements
 To run Cappuccino applications, all you need is a web browser that understands
 JavaScript.
 
-To build Cappuccino itself, you'll need the following tools:
+To build Cappuccino itself, please read more here :
 
-  - Java 1.5: http://www.java.com/
-  - Apache Ant: http://ant.apache.org/
-  - GCC: http://gcc.gnu.org/
+  - http://wiki.github.com/280north/cappuccino/getting-and-building-the-source
 
 If you're using Windows, you'll also need Cygwin: http://www.cygwin.com/
 
@@ -40,22 +38,10 @@ instead download a pre-compiled copy of Cappuccino from:
 
     http://cappuccino.org/download/
 
-Before building Cappuccino, you will need to install a pre-compiled copy of
-the Cappuccino Tools:
-
-    1. Download the Cappuccino Tools from http://cappuccino.org/tools.
-    2. Unarchive the downloaded file.
-    3. Run: chmod +x install-tools
-    4. Run: sudo sh ./install-tools
-    5. Set your environment variables:
-       export PATH=$PATH:/usr/local/bin
-       export OBJJ_HOME=/usr/local/share/objj
-       export STEAM_BUILD=~/objj_build
-
-Refer to the Cappuccino Tools README file for more information on the tools
-that were installed and these environment variables.
-
-Once both the Cappuccino Tools are installed, you can build Cappuccino running "ant" from within the root of the Cappuccino directory.
+To build Cappuccino from source, simply type "rake"  from within the root of the Cappuccino directory. 
+This will build a "release" copy of the frameworks. Typing "rake debug" will build a debug version.
+"rake install" will build Cappuccino and associated tools and install them for general use (similar to 
+downloading the tools from the website).
 
 Getting Help
 ------------
@@ -64,12 +50,13 @@ If you need help with Cappuccino, you can get help from the following sources:
   - FAQ:           http://cappuccino.org/discuss/faq.php
   - Documentation: http://cappuccino.org/learn/
   - Wiki:          http://github.com/280north/cappuccino/wikis
-  - Mailing List:  http://groups.google.com/group/objectivej
+  - Mailing Lists: http://groups.google.com/group/objectivej
+		           http://groups.google.com/group/objectivej-dev
   - IRC:           irc://irc.freenode.net#cappuccino
 
 If you discover any bugs, please file a ticket at:
 
-    http://cappuccino.lighthouseapp.com.
+    http://github.com/280north/cappuccino/issues.
 
 License
 -------

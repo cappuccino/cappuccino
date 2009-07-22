@@ -25,24 +25,30 @@
 @import "CPMenu.j"
 @import "CPMenuItem.j"
 
+#include "CoreGraphics/CGGeometry.h"
+
 
 var VISIBLE_MARGIN  = 7.0;
 
-var CPPopUpButtonArrowsImage = nil;
+CPPopUpButtonStatePullsDown = CPThemeState("pulls-down");
 
-/*! @class CPPopUpButton
+/*! 
+    @ingroup appkit
+    @class CPPopUpButton
 
     A CPPopUpButton contains a pop-up menu of items that a user can select from.
 */
 @implementation CPPopUpButton : CPButton
 {
-    BOOL        _pullsDown;
     int         _selectedIndex;
     CPRectEdge  _preferredEdge;
     
-    CPImageView _arrowsView;
-    
     CPMenu      _menu;
+}
+
++ (CPString)themeClass
+{
+    return "popup-button";
 }
 
 /*!
@@ -57,17 +63,16 @@ var CPPopUpButtonArrowsImage = nil;
     
     if (self)
     {
-        _pullsDown = shouldPullDown;
         _selectedIndex = CPNotFound;
         _preferredEdge = CPMaxYEdge;
         
-        [self setBezelStyle:CPTexturedRoundedBezelStyle];
-        
-        [self setImagePosition:CPImageLeft];
-        [self setAlignment:CPLeftTextAlignment];
-        [self setLineBreakMode:CPLineBreakByTruncatingTail];
+        [self setValue:CPImageLeft forThemeAttribute:@"image-position"];
+        [self setValue:CPLeftTextAlignment forThemeAttribute:@"alignment"];
+        [self setValue:CPLineBreakByTruncatingTail forThemeAttribute:@"line-break-mode"];
         
         [self setMenu:[[CPMenu alloc] initWithTitle:@""]];
+
+        [self setPullsDown:shouldPullDown];
     }
     
     return self;
@@ -76,33 +81,6 @@ var CPPopUpButtonArrowsImage = nil;
 - (id)initWithFrame:(CGRect)aFrame
 {
     return [self initWithFrame:aFrame pullsDown:NO];
-}
-
-- (void)setBordered:(BOOL)shouldBeBordered
-{
-    if (shouldBeBordered)
-    {
-        var bounds = [self bounds];
-        
-        _arrowsView = [[CPImageView alloc] initWithFrame:CGRectMake(CGRectGetWidth(bounds) - 10.0, (CGRectGetHeight(bounds) - 8.0) / 2.0, 5.0, 8.0)];
-        
-        if (!CPPopUpButtonArrowsImage)
-            CPPopUpButtonArrowsImage = [[CPImage alloc] initWithContentsOfFile:[[CPBundle bundleForClass:[CPPopUpButton class]] pathForResource:@"CPPopUpButton/CPPopUpButtonArrows.png"] size:CGSizeMake(5.0, 8.0)];
-        
-        [_arrowsView setImage:CPPopUpButtonArrowsImage];
-        [_arrowsView setAutoresizingMask:CPViewMaxXMargin | CPViewMinYMargin | CPViewMaxYMargin];
-        
-        
-        [self addSubview:_arrowsView];
-    }
-    else
-    {
-        [_arrowsView removeFromSuperview];
-        
-        _arrowsView = nil;
-    }
-    
-    [super setBordered:shouldBeBordered];
 }
 
 // Setting the Type of Menu
@@ -114,18 +92,21 @@ var CPPopUpButtonArrowsImage = nil;
 */
 - (void)setPullsDown:(BOOL)shouldPullDown
 {
-    if (_pullsDown == shouldPullDown)
+    if (shouldPullDown)
+        var changed = [self setThemeState:CPPopUpButtonStatePullsDown];
+    else
+        var changed = [self unsetThemeState:CPPopUpButtonStatePullsDown];
+
+    if (!changed)
         return;
-    
-    _pullsDown = shouldPullDown;
 
     var items = [_menu itemArray];
-    
-    if (items.length <= 0)
+
+    if ([items count] <= 0)
         return;
-    
-    [items[0] setHidden:_pullsDown];
-    
+
+    [items[0] setHidden:[self pullsDown]];
+
     [self synchronizeTitleAndSelectedItem];
 }
 
@@ -134,7 +115,7 @@ var CPPopUpButtonArrowsImage = nil;
 */
 - (BOOL)pullsDown
 {
-    return _pullsDown;
+    return [self hasThemeState:CPPopUpButtonStatePullsDown];
 }
 
 // Inserting and Deleting Items
@@ -273,12 +254,12 @@ var CPPopUpButtonArrowsImage = nil;
     if (_selectedIndex == anIndex)
         return;
     
-    if (_selectedIndex >= 0 && !_pullsDown)
+    if (_selectedIndex >= 0 && ![self pullsDown])
         [[self selectedItem] setState:CPOffState];
     
     _selectedIndex = anIndex;
 
-    if (_selectedIndex >= 0 && !_pullsDown)
+    if (_selectedIndex >= 0 && ![self pullsDown])
         [[self selectedItem] setState:CPOnState];
     
     [self synchronizeTitleAndSelectedItem];
@@ -325,7 +306,7 @@ var CPPopUpButtonArrowsImage = nil;
 */
 - (void)setMenu:(CPMenu)aMenu
 {
-    if (_menu == aMenu)
+    if (_menu === aMenu)
         return;
 
     var defaultCenter = [CPNotificationCenter defaultCenter];
@@ -476,7 +457,7 @@ var CPPopUpButtonArrowsImage = nil;
 */
 - (int)indexOfItemWithRepresentedObject:(id)anObject
 {
-    return [_menu indexOfItemWithRepresentedObejct:anObject];
+    return [_menu indexOfItemWithRepresentedObject:anObject];
 }
 
 /*!
@@ -519,13 +500,21 @@ var CPPopUpButtonArrowsImage = nil;
 */
 - (void)setTitle:(CPString)aTitle
 {
-    if ([self title] == aTitle)
+    if ([self title] === aTitle)
         return;
-    
-    if (_pullsDown)
+
+    if ([self pullsDown])
     {
-        [_items[0] setTitle:aTitle];
-        [self synchronizeTitleAndSelectedItem];
+        var items = [_menu itemArray];
+
+        if ([items count] <= 0)
+            [self addItemWithTitle:aTitle];
+
+        else
+        {
+            [items[0] setTitle:aTitle];
+            [self synchronizeTitleAndSelectedItem];
+        }
     }
     else
     {
@@ -562,11 +551,11 @@ var CPPopUpButtonArrowsImage = nil;
 {
     var item = nil;
 
-    if (_pullsDown)
+    if ([self pullsDown])
     {
         var items = [_menu itemArray];
         
-        if (items.length > 0)
+        if ([items count] > 0)
             item = items[0];
     }
     else
@@ -594,7 +583,7 @@ var CPPopUpButtonArrowsImage = nil;
     else if (index < _selectedIndex)
         ++_selectedIndex;
         
-    if (index == 0 && _pullsDown)
+    if (index == 0 && [self pullsDown])
     {
         var items = [_menu itemArray];
         
@@ -602,6 +591,15 @@ var CPPopUpButtonArrowsImage = nil;
         
         if (items.length > 0)
             [items[1] setHidden:NO];
+    }
+
+    var item = [_menu itemArray][index],
+        action = [item action];
+
+    if (!action || (action === @selector(_popUpItemAction:)))
+    {
+        [item setTarget:self];
+        [item setAction:@selector(_popUpItemAction:)];
     }
 }
 
@@ -613,10 +611,10 @@ var CPPopUpButtonArrowsImage = nil;
 {
     var index = [[aNotification userInfo] objectForKey:@"CPMenuItemIndex"];
 
-    if (_pullsDown && index != 0)
+    if ([self pullsDown] && index != 0)
         return;
     
-    if (!_pullsDown && index != _selectedIndex)
+    if (![self pullsDown] && index != _selectedIndex)
         return;
     
     [self synchronizeTitleAndSelectedItem];
@@ -649,7 +647,7 @@ var CPPopUpButtonArrowsImage = nil;
     [menuWindow setBackgroundStyle:_CPMenuWindowPopUpBackgroundStyle];
     
     // Pull Down Menus show up directly below their buttons.
-    if (_pullsDown)
+    if ([self pullsDown])
         var menuOrigin = [theWindow convertBaseToBridge:[self convertPoint:CGPointMake(0.0, CGRectGetMaxY([self bounds])) toView:nil]];
     
     // Pop Up Menus attempt to show up "on top" of the selected item.
@@ -674,7 +672,7 @@ var CPPopUpButtonArrowsImage = nil;
         buttonMaxX = [theWindow convertBaseToBridge:CGPointMake(CGRectGetMaxX([self convertRect:[self bounds] toView:nil]), 0.0)].x;
         
     if (menuMaxX < buttonMaxX)
-        [menuWindow setMinWidth:CGRectGetWidth([menuWindow frame]) + buttonMaxX - menuMaxX - VISIBLE_MARGIN];
+        [menuWindow setMinWidth:CGRectGetWidth([menuWindow frame]) + buttonMaxX - menuMaxX - ([self pullsDown] ? 0.0 : VISIBLE_MARGIN)];
     
     [menuWindow orderFront:self];
     [menuWindow beginTrackingWithEvent:anEvent sessionDelegate:self didEndSelector:@selector(menuWindowDidFinishTracking:highlightedItem:)];
@@ -696,35 +694,12 @@ var CPPopUpButtonArrowsImage = nil;
     
     [self selectItemAtIndex:index];
     
-    var selectedItem = [self selectedItem],
-        target = nil,
-        action = [selectedItem action];
-    
-    if (!action)
-    {
-        target = [self target];
-        action = [self action];
-    }
-    
-    // FIXME: If [selectedItem target] == nil do we use our own target?
-    else
-        target = [selectedItem target];
-
-    [self sendAction:action to:target];
+    [CPApp sendAction:[aMenuItem action] to:[aMenuItem target] from:aMenuItem];
 }
 
-- (CGRect)contentRectForBounds:(CGRect)bounds
+- (void)_popUpItemAction:(id)aSender
 {
-    var contentRect = [super contentRectForBounds:bounds];
-    
-    if ([self isBordered])
-    {
-        contentRect.size.width -= 16.0;
-
-        return contentRect;
-    }
-    
-    return contentRect;
+    [self sendAction:[self action] to:[self target]];
 }
 
 @end
@@ -749,10 +724,9 @@ var CPPopUpButtonMenuKey            = @"CPPopUpButtonMenuKey",
     {
         // Nothing is currently selected
         _selectedIndex = -1;
-        
+
         [self setMenu:[aCoder decodeObjectForKey:CPPopUpButtonMenuKey]];
         [self selectItemAtIndex:[aCoder decodeObjectForKey:CPPopUpButtonSelectedIndexKey]];
-        [self setPullsDown:[aCoder decodeBoolForKey:CPPopUpButtonPullsDownKey]];
     }
     
     return self;
@@ -769,7 +743,6 @@ var CPPopUpButtonMenuKey            = @"CPPopUpButtonMenuKey",
     
     [aCoder encodeObject:_menu forKey:CPPopUpButtonMenuKey];
     [aCoder encodeInt:_selectedIndex forKey:CPPopUpButtonSelectedIndexKey];
-    [aCoder encodeBool:_pullsDown forKey:CPPopUpButtonPullsDownKey];
 }
 
 @end

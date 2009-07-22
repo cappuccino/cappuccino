@@ -25,7 +25,11 @@
 
 var CPNullSharedNull = nil;
 
-/*! @class CPNull
+/*! 
+    @class CPNull
+    @ingroup foundation
+    @brief An object representation of <code>nil</code>.
+
     This class is used as an object representation of <code>nil</code>. This is handy when a collection
     only accepts objects as values, but you would like a <code>nil</code> representation in there.
 */

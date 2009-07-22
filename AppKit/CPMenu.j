@@ -48,12 +48,17 @@ var _CPMenuBarVisible               = NO,
     _CPMenuBarAttributes            = nil,
     _CPMenuBarSharedWindow          = nil;
 
-/*! @class CPMenu
+/*! 
+    @ingroup appkit
+    @class CPMenu
 
-    Menus provide the user with a list of actions and/or submenus. Submenus themselves are full fledged menus and so a heirarchical structure appears.
+    Menus provide the user with a list of actions and/or submenus. Submenus themselves are full fledged menus 
+    and so a heirarchical structure appears.
 */
 @implementation CPMenu : CPObject
 {
+    CPMenu          _supermenu;
+
     CPString        _title;
     
     CPMutableArray  _items;
@@ -61,7 +66,7 @@ var _CPMenuBarVisible               = NO,
     
     BOOL            _autoenablesItems;
     BOOL            _showsStateColumn;
-    
+
     id              _delegate;
     
     CPMenuItem      _highlightedIndex;
@@ -69,6 +74,11 @@ var _CPMenuBarVisible               = NO,
 }
 
 // Managing the Menu Bar
+
++ (void)initialize
+{
+    [[self class] setMenuBarAttributes:[CPDictionary dictionary]];
+}
 
 + (BOOL)menuBarVisible
 {
@@ -96,6 +106,11 @@ var _CPMenuBarVisible               = NO,
         [_CPMenuBarSharedWindow setColor:[_CPMenuBarAttributes objectForKey:@"CPMenuBarBackgroundColor"]];
         [_CPMenuBarSharedWindow setTextColor:[_CPMenuBarAttributes objectForKey:@"CPMenuBarTextColor"]];
         [_CPMenuBarSharedWindow setTitleColor:[_CPMenuBarAttributes objectForKey:@"CPMenuBarTitleColor"]];
+        [_CPMenuBarSharedWindow setTextShadowColor:[_CPMenuBarAttributes objectForKey:@"CPMenuBarTextShadowColor"]];
+        [_CPMenuBarSharedWindow setTitleShadowColor:[_CPMenuBarAttributes objectForKey:@"CPMenuBarTitleShadowColor"]];
+        [_CPMenuBarSharedWindow setHighlightColor:[_CPMenuBarAttributes objectForKey:@"CPMenuBarHighlightColor"]];
+        [_CPMenuBarSharedWindow setHighlightTextColor:[_CPMenuBarAttributes objectForKey:@"CPMenuBarHighlightTextColor"]];
+        [_CPMenuBarSharedWindow setHighlightTextShadowColor:[_CPMenuBarAttributes objectForKey:@"CPMenuBarHighlightTextShadowColor"]];
         
         [_CPMenuBarSharedWindow orderFront:self];
     }
@@ -130,6 +145,7 @@ var _CPMenuBarVisible               = NO,
     return _CPMenuBarImage;
 }
 
+
 + (void)setMenuBarAttributes:(CPDictionary)attributes
 {
     if (_CPMenuBarAttributes == attributes)
@@ -138,7 +154,12 @@ var _CPMenuBarVisible               = NO,
     _CPMenuBarAttributes = [attributes copy];
     
     var textColor = [attributes objectForKey:@"CPMenuBarTextColor"],
-        titleColor = [attributes objectForKey:@"CPMenuBarTitleColor"];
+        titleColor = [attributes objectForKey:@"CPMenuBarTitleColor"],
+        textShadowColor = [attributes objectForKey:@"CPMenuBarTextShadowColor"],
+        titleShadowColor = [attributes objectForKey:@"CPMenuBarTitleShadowColor"],
+        highlightColor = [attributes objectForKey:@"CPMenuBarHighlightColor"],
+        highlightTextColor = [attributes objectForKey:@"CPMenuBarHighlightTextColor"],
+        highlightTextShadowColor = [attributes objectForKey:@"CPMenuBarHighlightTextShadowColor"];
     
     if (!textColor && titleColor)
         [_CPMenuBarAttributes setObject:titleColor forKey:@"CPMenuBarTextColor"];
@@ -148,15 +169,41 @@ var _CPMenuBarVisible               = NO,
     
     else if (!textColor && !titleColor)
     {
-        [_CPMenuBarAttributes setObject:[CPColor blackColor] forKey:@"CPMenuBarTextColor"];
-        [_CPMenuBarAttributes setObject:[CPColor blackColor] forKey:@"CPMenuBarTitleColor"];
+        [_CPMenuBarAttributes setObject:[CPColor colorWithRed:0.051 green:0.2 blue:0.275 alpha:1.0] forKey:@"CPMenuBarTextColor"];
+        [_CPMenuBarAttributes setObject:[CPColor colorWithRed:0.051 green:0.2 blue:0.275 alpha:1.0] forKey:@"CPMenuBarTitleColor"];
     }
+    
+    if (!textShadowColor && titleShadowColor)
+        [_CPMenuBarAttributes setObject:titleShadowColor forKey:@"CPMenuBarTextShadowColor"];
+    
+    else if (textShadowColor && !titleShadowColor)
+        [_CPMenuBarAttributes setObject:textShadowColor forKey:@"CPMenuBarTitleShadowColor"];
+    
+    else if (!textShadowColor && !titleShadowColor)
+    {
+        [_CPMenuBarAttributes setObject:[CPColor whiteColor] forKey:@"CPMenuBarTextShadowColor"];
+        [_CPMenuBarAttributes setObject:[CPColor whiteColor] forKey:@"CPMenuBarTitleShadowColor"];
+    }
+    
+    if (!highlightColor)
+        [_CPMenuBarAttributes setObject:[CPColor colorWithCalibratedRed:94.0/255.0 green:130.0/255.0 blue:186.0/255.0 alpha:1.0] forKey:@"CPMenuBarHighlightColor"];
+    
+    if (!highlightTextColor)
+        [_CPMenuBarAttributes setObject:[CPColor whiteColor] forKey:@"CPMenuBarHighlightTextColor"];
+    
+    if (!highlightTextShadowColor)
+        [_CPMenuBarAttributes setObject:[CPColor blackColor] forKey:@"CPMenuBarHighlightTextShadowColor"];
     
     if (_CPMenuBarSharedWindow)
     {
         [_CPMenuBarSharedWindow setColor:[_CPMenuBarAttributes objectForKey:@"CPMenuBarBackgroundColor"]];
         [_CPMenuBarSharedWindow setTextColor:[_CPMenuBarAttributes objectForKey:@"CPMenuBarTextColor"]];
         [_CPMenuBarSharedWindow setTitleColor:[_CPMenuBarAttributes objectForKey:@"CPMenuBarTitleColor"]];
+        [_CPMenuBarSharedWindow setTextShadowColor:[_CPMenuBarAttributes objectForKey:@"CPMenuBarTextShadowColor"]];
+        [_CPMenuBarSharedWindow setTitleShadowColor:[_CPMenuBarAttributes objectForKey:@"CPMenuBarTitleShadowColor"]];
+        [_CPMenuBarSharedWindow setHighlightColor:[_CPMenuBarAttributes objectForKey:@"CPMenuBarHighlightColor"]];
+        [_CPMenuBarSharedWindow setHighlightTextColor:[_CPMenuBarAttributes objectForKey:@"CPMenuBarHighlightTextColor"]];
+        [_CPMenuBarSharedWindow setHighlightTextShadowColor:[_CPMenuBarAttributes objectForKey:@"CPMenuBarHighlightTextShadowColor"]];
     }
 }
 
@@ -220,13 +267,13 @@ var _CPMenuBarVisible               = NO,
 - (void)insertItem:(CPMenuItem)aMenuItem atIndex:(unsigned)anIndex
 {
     var menu = [aMenuItem menu];
-    
+
     if (menu)
-        if (menu != self)
+        if (menu !== self)
             [CPException raise:CPInternalInconsistencyException reason:@"Attempted to insert item into menu that was already in another menu."];
         else
             return;
-    
+
     [aMenuItem setMenu:self];
     [_items insertObject:aMenuItem atIndex:anIndex];
     
@@ -618,10 +665,10 @@ var _CPMenuBarVisible               = NO,
     
     if (!aFont)
         aFont = [CPFont systemFontOfSize:12.0];
-    
+
     var theWindow = [aView window],
         menuWindow = [_CPMenuWindow menuWindowWithMenu:aMenu font:aFont];
-    
+
     [menuWindow setDelegate:self];
     [menuWindow setBackgroundStyle:isForMenuBar ? _CPMenuWindowMenuBarBackgroundStyle : _CPMenuWindowPopUpBackgroundStyle];
 
@@ -633,28 +680,12 @@ var _CPMenuBarVisible               = NO,
 
 + (void)_menuWindowDidFinishTracking:(_CPMenuWindow)aMenuWindow highlightedItem:(CPMenuItem)aMenuItem
 {
+    var menu = [aMenuWindow menu];
+
     [_CPMenuWindow poolMenuWindow:aMenuWindow];
-    
-//    var index = [self indexOfItem:aMenuItem];
-    
-//    if (index == CPNotFound)
-//        return;
-    
-    var target = nil,
-        action = [aMenuItem action];
-    
-    if (!action)
-    {
-//        target = [self target];
-//        action = [self action];
-    }
-    
-    // FIXME: If [selectedItem target] == nil do we use our own target?
-    else
-        target = [aMenuItem target];
 
     if([aMenuItem isEnabled])
-        [CPApp sendAction:action to:target from:nil];
+        [CPApp sendAction:[aMenuItem action] to:[aMenuItem target] from:aMenuItem];
 }
 
 // Managing Display of State Column
@@ -793,8 +824,9 @@ var _CPMenuBarVisible               = NO,
 @end
 
 
-var CPMenuTitleKey  = @"CPMenuTitleKey",
-    CPMenuItemsKey  = @"CPMenuItemsKey";
+var CPMenuTitleKey              = @"CPMenuTitleKey",
+    CPMenuItemsKey              = @"CPMenuItemsKey",
+    CPMenuShowsStateColumnKey   = @"CPMenuShowsStateColumnKey";
 
 @implementation CPMenu (CPCoding)
 
@@ -811,6 +843,8 @@ var CPMenuTitleKey  = @"CPMenuTitleKey",
     {
         _title = [aCoder decodeObjectForKey:CPMenuTitleKey];
         _items = [aCoder decodeObjectForKey:CPMenuItemsKey];
+
+        _showsStateColumn = ![aCoder containsValueForKey:CPMenuShowsStateColumnKey] || [aCoder decodeBoolForKey:CPMenuShowsStateColumnKey];
     }
     
     return self;
@@ -824,6 +858,9 @@ var CPMenuTitleKey  = @"CPMenuTitleKey",
 {
     [aCoder encodeObject:_title forKey:CPMenuTitleKey];
     [aCoder encodeObject:_items forKey:CPMenuItemsKey];
+
+    if (!_showsStateColumn)
+        [aCoder encodeBool:_showsStateColumn forKey:CPMenuShowsStateColumnKey];
 }
 
 @end
@@ -1217,23 +1254,23 @@ var STICKY_TIME_INTERVAL        = 500,
         
         [menu _highlightItemAtIndex:CPNotFound];
         
-        // Clear these now so its faster next time around.
-        [_menuView setMenu:nil];
-        
         [self orderOut:self];
-        
-        if (_sessionDelegate && _didEndSelector)
-            objj_msgSend(_sessionDelegate, _didEndSelector, self, highlightedItem);
-        
-        [[CPNotificationCenter defaultCenter]
-            postNotificationName:CPMenuDidEndTrackingNotification
-                          object:menu];
-        
+
         var delegate = [menu delegate];
         
         if ([delegate respondsToSelector:@selector(menuDidClose:)])
             [delegate menuDidClose:menu];
-        
+
+        if (_sessionDelegate && _didEndSelector)
+            objj_msgSend(_sessionDelegate, _didEndSelector, self, highlightedItem);
+
+        [[CPNotificationCenter defaultCenter]
+            postNotificationName:CPMenuDidEndTrackingNotification
+                          object:menu];
+
+        // Clear these now so its faster next time around.
+        [_menuView setMenu:nil];
+
         return;
     }
             
@@ -1389,6 +1426,13 @@ var _CPMenuBarWindowBackgroundColor = nil,
     
     CPColor     _textColor;
     CPColor     _titleColor;
+    
+    CPColor     _textShadowColor;
+    CPColor     _titleShadowColor;
+    
+    CPColor     _highlightColor;
+    CPColor     _highlightTextColor;
+    CPColor     _highlightTextShadowColor;
 }
 
 + (void)initialize
@@ -1428,6 +1472,7 @@ var _CPMenuBarWindowBackgroundColor = nil,
         
         [_titleField setFont:[CPFont boldSystemFontOfSize:12.0]];
         [_titleField setAlignment:CPCenterTextAlignment];
+        [_titleField setTextShadowOffset:CGSizeMake(0, 1)];
         
         [contentView addSubview:_titleField];
     }
@@ -1498,6 +1543,54 @@ var _CPMenuBarWindowBackgroundColor = nil,
     _titleColor = aColor;
     
     [_titleField setTextColor:aColor ? aColor : [CPColor blackColor]];
+}
+
+- (void)setTextShadowColor:(CPColor)aColor
+{
+    if (_textShadowColor == aColor)
+        return;
+    
+    _textShadowColor = aColor;
+    
+    [_menuItemViews makeObjectsPerformSelector:@selector(setTextShadowColor:) withObject:_textShadowColor];
+}
+
+- (void)setTitleShadowColor:(CPColor)aColor
+{
+    if (_titleShadowColor == aColor)
+        return;
+    
+    _titleShadowColor = aColor;
+    
+    [_titleField setTextShadowColor:aColor ? aColor : [CPColor whiteColor]];
+}
+
+- (void)setHighlightColor:(CPColor)aColor
+{
+    if (_highlightColor == aColor)
+        return;
+    
+    _highlightColor = aColor;
+}
+
+- (void)setHighlightTextColor:(CPColor)aColor
+{
+    if (_highlightTextColor == aColor)
+        return;
+    
+    _highlightTextColor = aColor;
+    
+    [_menuItemViews makeObjectsPerformSelector:@selector(setActivateColor:) withObject:_highlightTextColor];
+}
+
+- (void)setHighlightTextShadowColor:(CPColor)aColor
+{
+    if (_highlightTextShadowColor == aColor)
+        return;
+    
+    _highlightTextShadowColor = aColor;
+    
+    [_menuItemViews makeObjectsPerformSelector:@selector(setActivateShadowColor:) withObject:_highlightTextShadowColor];
 }
 
 - (void)setMenu:(CPMenu)aMenu
@@ -1637,7 +1730,7 @@ var _CPMenuBarWindowBackgroundColor = nil,
     return frame;
 }
 
-- (CPView)menuItemAtPoint:(CGPoint)aPoint
+- (CPMenuItem)menuItemAtPoint:(CGPoint)aPoint
 {
     var items = [_menu itemArray],
         count = items.length;
@@ -1685,8 +1778,11 @@ var _CPMenuBarWindowBackgroundColor = nil,
     {
         if ([_trackingMenuItem submenu] != nil)
         {
+            var action = [_trackingMenuItem action];
+
             // If the item has a submenu, but not direct action, a.k.a. a "pure" menu, simply show the menu.
-            if (![_trackingMenuItem action])
+            // FIXME: (?) should we use submenuAction: or not?
+            if (!action || action === @selector(submenuAction:))
                 return [self showMenu:anEvent];
             
             // If this is a hybrid button/menu, show it in a bit...
@@ -1711,7 +1807,7 @@ var _CPMenuBarWindowBackgroundColor = nil,
         [menuItemView highlight:NO];
         
         if (onMenuItemView)
-            [CPApp sendAction:[_trackingMenuItem action] to:[_trackingMenuItem target] from:nil];
+            [CPApp sendAction:[_trackingMenuItem action] to:[_trackingMenuItem target] from:_trackingMenuItem];
         
         return;
     }
@@ -1730,7 +1826,7 @@ var _CPMenuBarWindowBackgroundColor = nil,
     {
         _highlightView = [[CPView alloc] initWithFrame:frame];
     
-        [_highlightView setBackgroundColor:[CPColor colorWithCalibratedRed:81.0 / 255.0 green:83.0 / 255.0 blue:109.0 / 255.0 alpha:1.0]];
+        [_highlightView setBackgroundColor:_highlightColor ? _highlightColor : [CPColor colorWithRed:95.0/255.0 green:131.0/255.0 blue:185.0/255.0 alpha:1.0]];
     }
     else
         [_highlightView setFrame:frame];

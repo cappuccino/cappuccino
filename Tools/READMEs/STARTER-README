@@ -4,9 +4,10 @@ Included you should find the following:
 
 1. Documentation
 2. NewApplication
-3. README
+4. README
 
 NewApplication is a stand alone Cappuccino application that you can use as a template to start building your own apps.  To get started, just open up NewApplication/index.html in your favorite web browser.  A great place to go from there is to read the "Downloading and Getting Started" tutorial found at http://cappuccino.org/learn/tutorials/starter-tutorial.php.  This will walk you through these initial steps as well as getting you to do a little coding. If you want to debug your application, try running it with index-debug.html instead, which should make it easier.
 
-You can build your entire application right from this sample project, but if you want to dig a little deeper, you can also download the Tools package found at http://cappuccino.org/download/.  This will set you up with some great additions like syntax modules for certain text editors and build tools to get extra performance.
+You can build your entire application right from either of these sample projects, but if you want to dig a little deeper, you can also download the Tools package found at http://cappuccino.org/download/.  This will set you up with some great additions like syntax modules for certain text editors and build tools to get extra performance.
 
+NOTE: If you'd like to make a nib-based application, you will need to download the Tools package from cappuccino.org/download

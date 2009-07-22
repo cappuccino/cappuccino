@@ -58,13 +58,23 @@ CPNumericSearch         = 64;
 
 var CPStringHashes      = new objj_dictionary();
 
-/*! @class CPString
+var CPStringRegexSpecialCharacters = [
+      '/', '.', '*', '+', '?', '|', '$', '^',
+      '(', ')', '[', ']', '{', '}', '\\'
+    ],
+    CPStringRegexEscapeExpression = new RegExp("(\\" + CPStringRegexSpecialCharacters.join("|\\") + ")", 'g');
+
+/*! 
+    @class CPString
+    @ingroup foundation
+    @brief An immutable string (collection of characters).
+
     CPString is an object that allows management of strings. Because CPString is
     based on the JavaScript <code>String</code> object, CPStrings are immutable, although the
     class does have methods that create new CPStrings generated from modifications to the
-    receiving instance.</p>
+    receiving instance.
 
-    <p>A handy feature of CPString instances is that they can be used wherever a JavaScript is
+    A handy feature of CPString instances is that they can be used wherever a JavaScript is
     required, and vice versa.
 */
 @implementation CPString : CPObject
@@ -91,7 +101,7 @@ var CPStringHashes      = new objj_dictionary();
 */
 + (id)stringWithHash:(unsigned)aHash
 {
-    var hashString = String(aHash);
+    var hashString = parseInt(aHash, 10).toString(16);
     return "000000".substring(0, MAX(6-hashString.length, 0)) + hashString;
 }
 
@@ -155,7 +165,7 @@ var CPStringHashes      = new objj_dictionary();
 */
 - (CPString)description
 {
-    return "<" + self.isa.name + " 0x" + [CPString stringWithHash:[self hash]] + " \"" + self + "\">";
+    return self;
 }
 
 /*!
@@ -222,13 +232,16 @@ var CPStringHashes      = new objj_dictionary();
         return substr(0, aLength);
 
     var string = self,
-        substring = aString.substr(anIndex),
+        substring = aString.substring(anIndex),
         difference = aLength - length;
 
-    while ((difference -= substring.length) > 0)
+    while ((difference -= substring.length) >= 0)
         string += substring;
     
-    if (difference) string += substring.substr(difference + substring.length);
+    if (-difference < substring.length) 
+        string += substring.substring(0, -difference);
+
+    return string;
 }
 
 //Dividing Strings
@@ -354,6 +367,11 @@ var CPStringHashes      = new objj_dictionary();
 
 //Replacing Substrings
 
+- (CPString)stringByEscapingRegexControlCharacters
+{
+    return self.replace(CPStringRegexEscapeExpression, "\\$1");
+}
+
 /*!
     Returns a new string in which all occurrences of a target string in the reciever are replaced by 
     another given string.
@@ -363,7 +381,7 @@ var CPStringHashes      = new objj_dictionary();
 
 - (CPString)stringByReplacingOccurrencesOfString:(CPString)target withString:(CPString)replacement
 {
-    return self.replace(new RegExp(target, "g"), replacement);
+    return self.replace(new RegExp([target stringByEscapingRegexControlCharacters], "g"), replacement);
 }
 
 /*
@@ -380,6 +398,7 @@ var CPStringHashes      = new objj_dictionary();
     var start = substring(0, searchRange.location),
         stringSegmentToSearch = substr(searchRange.location, searchRange.length),
         end = substring(searchRange.location + searchRange.length, self.length),
+        target = [target stringByEscapingRegexControlCharacters],
         regExp;
 
     if (options & CPCaseInsensitiveSearch)
@@ -497,7 +516,7 @@ var CPStringHashes      = new objj_dictionary();
 /*!
     Returns a hash of the string instance.
 */
-- (unsigned)hash
+- (unsigned)UID
 {
     var hash = dictionary_getValue(CPStringHashes, self);
     
@@ -584,7 +603,12 @@ var CPStringHashes      = new objj_dictionary();
 */
 - (CPArray)pathComponents
 {
-    return split('/');
+    var result = split('/');
+    if (result[0] === "")
+        result[0] = "/";
+    if (result[result.length - 1] === "")
+        result.pop();
+    return result;
 }
 
 /*!
@@ -649,7 +673,7 @@ var CPStringHashes      = new objj_dictionary();
 */
 + (CPString)JSONFromObject:(JSObject)anObject
 {
-    return CPJSObjectCreateJSON(anObject);
+    return JSON.stringify(anObject);
 }
 
 /*!
@@ -657,7 +681,7 @@ var CPStringHashes      = new objj_dictionary();
 */
 - (JSObject)objectFromJSON
 {
-    return CPJSObjectCreateWithJSON(self);
+    return JSON.parse(self);
 }
 
 @end

@@ -24,11 +24,14 @@
 @import "CPCoder.j"
 
 
-var _CPKeyedUnarchiverCannotDecodeObjectOfClassNameOriginalClassesSelector  = 1,
-    _CPKeyedUnarchiverDidDecodeObjectSelector                               = 1 << 1,
-    _CPKeyedUnarchiverWillReplaceObjectWithObjectSelector                   = 1 << 2,
-    _CPKeyedUnarchiverWillFinishSelector                                    = 1 << 3,
-    _CPKeyedUnarchiverDidFinishSelector                                     = 1 << 4;
+CPInvalidUnarchiveOperationException    = @"CPInvalidUnarchiveOperationException";
+
+var _CPKeyedUnarchiverCannotDecodeObjectOfClassNameOriginalClassesSelector              = 1 << 0,
+    _CPKeyedUnarchiverDidDecodeObjectSelector                                           = 1 << 1,
+    _CPKeyedUnarchiverWillReplaceObjectWithObjectSelector                               = 1 << 2,
+    _CPKeyedUnarchiverWillFinishSelector                                                = 1 << 3,
+    _CPKeyedUnarchiverDidFinishSelector                                                 = 1 << 4,
+    CPKeyedUnarchiverDelegate_unarchiver_cannotDecodeObjectOfClassName_originalClasses_ = 1 << 5;
 
 var _CPKeyedArchiverNullString                                              = "$null"
     
@@ -46,9 +49,15 @@ var _CPKeyedArchiverNullString                                              = "$
 var _CPKeyedUnarchiverArrayClass                                            = Nil,
     _CPKeyedUnarchiverStringClass                                           = Nil,
     _CPKeyedUnarchiverDictionaryClass                                       = Nil,
+    _CPKeyedUnarchiverNumberClass                                           = Nil,
+    _CPKeyedUnarchiverDataClass                                             = Nil,
     _CPKeyedUnarchiverArchiverValueClass                                    = Nil;
 
-/*
+/*!
+    @class CPKeyedUnarchiver
+    @ingroup foundation
+    @brief Unarchives objects created using CPKeyedArchiver.
+
     CPKeyedUnarchiver is used for creating objects out of
     coded files or CPData objects that were created by
     CPKeyedArchiver. More specifically, this class unarchives
@@ -97,8 +106,7 @@ var _CPKeyedUnarchiverArrayClass                                            = Ni
     
     CPData          _data;
 
-    // FIXME: We need to support this!
-    CPDictionary    _replacementClassNames;
+    CPDictionary    _replacementClasses;
     
     CPDictionary    _objects;
     CPDictionary    _archive;
@@ -112,12 +120,14 @@ var _CPKeyedUnarchiverArrayClass                                            = Ni
 */
 + (void)initialize
 {
-    if (self != [CPKeyedUnarchiver class])
+    if (self !== [CPKeyedUnarchiver class])
         return;
     
     _CPKeyedUnarchiverArrayClass = [CPArray class];
     _CPKeyedUnarchiverStringClass = [CPString class];
     _CPKeyedUnarchiverDictionaryClass = [CPDictionary class];
+    _CPKeyedUnarchiverNumberClass = [CPNumber class];
+    _CPKeyedUnarchiverDataClass = [CPData class];
     _CPKeyedUnarchiverArchiverValueClass = [_CPKeyedArchiverValue class];
 }
 
@@ -137,6 +147,8 @@ var _CPKeyedUnarchiverArrayClass                                            = Ni
         
         _plistObject = [_archive objectForKey:_CPKeyedArchiverTopKey];
         _plistObjects = [_archive objectForKey:_CPKeyedArchiverObjectsKey];
+
+        _replacementClasses = [CPDictionary dictionary];
     }
     
     return self;
@@ -297,7 +309,7 @@ var _CPKeyedUnarchiverArrayClass                                            = Ni
     if ([object isKindOfClass:_CPKeyedUnarchiverDictionaryClass])
         return _CPKeyedUnarchiverDecodeObjectAtIndex(self, [object objectForKey:_CPKeyedArchiverUIDKey]);
 
-    else if ([object isKindOfClass:[CPNumber class]] || [object isKindOfClass:[CPData class]])
+    else if ([object isKindOfClass:_CPKeyedUnarchiverNumberClass] || [object isKindOfClass:_CPKeyedUnarchiverDataClass] || [object isKindOfClass:_CPKeyedUnarchiverStringClass])
         return object;
 
     else if ([object isKindOfClass:_CPKeyedUnarchiverArrayClass])
@@ -375,6 +387,19 @@ var _CPKeyedUnarchiverArrayClass                                            = Ni
         
     if ([_delegate respondsToSelector:@selector(unarchiverDidFinish:)])
         _delegateSelectors |= _CPKeyedUnarchiverDidFinishSelector;
+
+    if ([_delegate respondsToSelector:@selector(unarchiver:cannotDecodeObjectOfClassName:originalClasses:)])
+        _delegateSelectors |= CPKeyedUnarchiverDelegate_unarchiver_cannotDecodeObjectOfClassName_originalClasses_;
+}
+
+- (void)setClass:(Class)aClass forClassName:(CPString)aClassName
+{
+    [_replacementClasses setObject:aClass forKey:aClassName];
+}
+
+- (Class)classForClassName:(CPString)aClassName
+{
+    return [_replacementClasses objectForKey:aClassName];
 }
 
 - (BOOL)allowsKeyedCoding
@@ -402,17 +427,27 @@ var _CPKeyedUnarchiverDecodeObjectAtIndex = function(self, anIndex)
         var plistClass = self._plistObjects[[[plistObject objectForKey:_CPKeyedArchiverClassKey] objectForKey:_CPKeyedArchiverUIDKey]],
             className = [plistClass objectForKey:_CPKeyedArchiverClassNameKey],
             classes = [plistClass objectForKey:_CPKeyedArchiverClassesKey],
+            theClass = [self classForClassName:className];
+
+        if (!theClass)
             theClass = CPClassFromString(className);
 
-        object = [theClass alloc];
+        if (!theClass && (self._delegateSelectors & CPKeyedUnarchiverDelegate_unarchiver_cannotDecodeObjectOfClassName_originalClasses_))
+            theClass = [_delegate unarchiver:self cannotDecodeObjectOfClassName:className originalClasses:classes];
 
-        // It is important to do this before calling initWithCoder so that decoding can be self referential (something = self).    
-        self._objects[anIndex] = object;
-        
+        if (!theClass)
+            [CPException raise:CPInvalidUnarchiveOperationException reason:@"-[CPKeyedUnarchiver decodeObjectForKey:]: cannot decode object of class (" + className + @")"];
+
         var savedPlistObject = self._plistObject;
         
         self._plistObject = plistObject;
-        var string = className;
+
+        // Should we only call this on _CPCibClassSwapper? (currently the only class that makes use of this).
+        object = [theClass allocWithCoder:self];
+
+        // It is important to do this before calling initWithCoder so that decoding can be self referential (something = self).
+        self._objects[anIndex] = object;
+
         var processedObject = [object initWithCoder:self];
 
         self._plistObject = savedPlistObject;

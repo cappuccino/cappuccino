@@ -42,12 +42,12 @@ var _CPToolbarViewBackgroundColor = nil;
 {
     [super tile];
     
-    var owningWindow = [self owningWindow],
+    var theWindow = [self window],
         bounds = [self bounds];
         
-    [[owningWindow contentView] setFrame:CGRectMake(0.0, [self toolbarMaxY], CGRectGetWidth(bounds), CGRectGetHeight(bounds) - [self toolbarMaxY])];
+    [[theWindow contentView] setFrame:CGRectMake(0.0, [self toolbarMaxY], CGRectGetWidth(bounds), CGRectGetHeight(bounds) - [self toolbarMaxY])];
     
-    if (![[owningWindow toolbar] isVisible])
+    if (![[theWindow toolbar] isVisible])
     {
         [_toolbarBackgroundView removeFromSuperview];
     

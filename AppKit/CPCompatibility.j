@@ -53,9 +53,18 @@ CPJavaScriptMouseWheelValues_8_15       = 1 << 23
 
 CPOpacityRequiresFilterFeature          = 1 << 24;
 
+//Internet explorer does not allow dynamically changing the type of an input element
+CPInputTypeCanBeChangedFeature          = 1 << 25;  
+
+
+
 var USER_AGENT                          = "",
     PLATFORM_ENGINE                     = CPUnknownBrowserEngine,
     PLATFORM_FEATURES                   = 0;
+
+// default these features to true
+
+PLATFORM_FEATURES |= CPInputTypeCanBeChangedFeature;
 
 if (typeof window != "undfined" && typeof window.navigator != "undefined")
     USER_AGENT = window.navigator.userAgent;
@@ -79,6 +88,8 @@ else if (window.attachEvent) // Must follow Opera check.
     PLATFORM_FEATURES |= CPJavaScriptShadowFeature;
     
     PLATFORM_FEATURES |= CPOpacityRequiresFilterFeature;
+
+    PLATFORM_FEATURES &= ~CPInputTypeCanBeChangedFeature;
 }
 
 // WebKit
@@ -95,9 +106,12 @@ else if (USER_AGENT.indexOf("AppleWebKit/") != -1)
     
     var versionStart = USER_AGENT.indexOf("AppleWebKit/") + "AppleWebKit/".length,
         versionEnd = USER_AGENT.indexOf(" ", versionStart),
-        version = parseFloat(USER_AGENT.substring(versionStart, versionEnd), 10);
+        versionString = USER_AGENT.substring(versionStart, versionEnd),
+        versionDivision = versionString.indexOf('.'),
+        majorVersion = parseInt(versionString.substring(0, versionDivision)),
+        minorVersion = parseInt(versionString.substr(versionDivision + 1));
 
-    if(USER_AGENT.indexOf("Plainview") == -1 && version >= 525.14 || USER_AGENT.indexOf("Chrome") != -1)
+    if((USER_AGENT.indexOf("Safari") !== CPNotFound && (majorVersion >= 525 && minorVersion > 14)) || USER_AGENT.indexOf("Chrome") !== CPNotFound)
         PLATFORM_FEATURES |= CPJavascriptRemedialKeySupport;
 }
 
@@ -108,22 +122,19 @@ else if (USER_AGENT.indexOf("KHTML") != -1) // Must follow WebKit check.
 }
 
 // Gecko
-else if (USER_AGENT.indexOf("Gecko") != -1) // Must follow KHTML check.
+else if (USER_AGENT.indexOf("Gecko") !== -1) // Must follow KHTML check.
 {
     PLATFORM_ENGINE = CPGeckoBrowserEngine;
     
     PLATFORM_FEATURES |= CPJavaScriptCanvasDrawFeature;
     
     var index = USER_AGENT.indexOf("Firefox"),
-        version = (index == -1) ? 2.0 : parseFloat(USER_AGENT.substring(index + "Firefox".length + 1));
+        version = (index === -1) ? 2.0 : parseFloat(USER_AGENT.substring(index + "Firefox".length + 1));
     
     if (version >= 3.0)
         PLATFORM_FEATURES |= CPCSSRGBAFeature;
 
-    var geckoIndex = USER_AGENT.indexOf("Gecko"),
-        geckoVersion = (geckoIndex === -1) ? 0.0 : parseFloat(USER_AGENT.substring(geckoIndex + "Gecko".length + 1, USER_AGENT.indexOf(' ', geckoIndex)));
-
-    if (version < 20061028)
+    if (version < 3.0)
         PLATFORM_FEATURES |= CPJavaScriptMouseWheelValues_8_15;
 }
 

@@ -27,10 +27,11 @@
 // Look inside bundleResponseCallback.
 
 
+var OBJJ_PLATFORMS = PLATFORMS;
 #define DIRECTORY(aPath) (aPath).substr(0, (aPath).lastIndexOf('/') + 1)
 
-OBJJFileNotFoundException       = "OBJJFileNotFoundException";
-OBJJExecutableNotFoundException = "OBJJExecutableNotFoundException";
+var OBJJFileNotFoundException       = "OBJJFileNotFoundException",
+    OBJJExecutableNotFoundException = "OBJJExecutableNotFoundException";
 
 var objj_files              = { },
     objj_bundles            = { },
@@ -39,8 +40,8 @@ var objj_files              = { },
 
 var OBJJ_NO_FILE            = {};
 
-if (!window.OBJJ_INCLUDE_PATHS)
-    var OBJJ_INCLUDE_PATHS  = ["Frameworks", "SomethingElse"];
+if (typeof OBJJ_INCLUDE_PATHS === "undefined")
+    OBJJ_INCLUDE_PATHS  = ["Frameworks", "SomethingElse"];
 
 var OBJJ_BASE_URI           = "";
 
@@ -127,7 +128,7 @@ objj_search.prototype.attemptNextSearchPath = function()
 {
     var searchPath = this.nextSearchPath(),
         file = objj_files[searchPath];
-        
+
     objj_alert("Will attempt to find " + this.filePath + " at " + searchPath);
         
     // If a file for this search path already exists, then it has already been downloaded.
@@ -135,6 +136,14 @@ objj_search.prototype.attemptNextSearchPath = function()
     if (file)
     {
         objj_alert("The file request at " + this.filePath + " has already been downloaded at " + searchPath);
+        // FIXME: Do we need this for everything?
+#if RHINO
+        var index = 0,
+            count = this.searchedPaths.length;
+            
+        for (; index < count; ++index)
+            objj_files[this.searchedPaths[index]] = file;
+#endif
         if (this.didCompleteCallback)
             this.didCompleteCallback(file);
             
@@ -142,7 +151,7 @@ objj_search.prototype.attemptNextSearchPath = function()
     }
     
     var existingSearch = objj_searches[searchPath];
-    
+
     // If there is already an ongoing search for this search path, then we can let it find 
     // the file for us.  Make sure to assign it our callback, if we have one, since only 
     // one search can have a callback at a time.
@@ -160,7 +169,7 @@ objj_search.prototype.attemptNextSearchPath = function()
     
     // Before we kick off our ajax requests, see whether this directory already has 
     // a bundle associated with it.
-    var infoPath = objj_standardize_path(DIRECTORY(searchPath) + "Info.plist")
+    var infoPath = objj_standardize_path(DIRECTORY(searchPath) + "Info.plist"),
         bundle = objj_bundles[infoPath];
     
     // If there is, then simply look for the file in question.
@@ -292,6 +301,8 @@ objj_search.prototype.request = function(aFilePath, aMethod)
 
     try
     {
+        // unclear whether plusses are reserved in the URI path
+        //request.open("GET", aFilePath.replace(/\+/g, "%2B"), YES);
         request.open("GET", aFilePath, YES);
         request.send("");
     }
@@ -356,6 +367,28 @@ objj_search.prototype.didReceiveBundleResponse = function(aResponse)
     
     if (executablePath)
     {
+        var platform = NULL,
+            platforms = dictionary_getValue(bundle.info, "CPBundlePlatforms"),
+            index = 0,
+            count = OBJJ_PLATFORMS.length,
+            innerCount = platforms.length;
+
+        // Ugh, no indexOf, no objects-in-common.
+        for(; index < count; ++index)
+        {
+            var innerIndex = 0,
+                currentPlatform = OBJJ_PLATFORMS[index];
+            
+            for (; innerIndex < innerCount; ++innerIndex)
+                if(currentPlatform === platforms[innerIndex])
+                {
+                    platform = currentPlatform;
+                    break;
+                }
+        }
+        
+        executablePath = platform + ".platform/" + executablePath;
+
         this.request(DIRECTORY(aResponse.filePath) + executablePath, this.didReceiveExecutableResponse);
         
         // FIXME: Is this the right approach?
@@ -471,7 +504,7 @@ function objj_standardize_path(aPath)
 
 IF (ACTIVE_X)
 
-objj_standardize_xml = function(aRequest)
+var objj_standardize_xml = function(aRequest)
 {
     var XMLData = new ActiveXObject("Microsoft.XMLDOM");
     XMLData.loadXML(aRequest.responseText.substr(aRequest.responseText.indexOf(".dtd\">") + 6));
@@ -481,7 +514,7 @@ objj_standardize_xml = function(aRequest)
 
 ELSE
 
-objj_standardize_xml = function(aRequest)
+var objj_standardize_xml = function(aRequest)
 {
     return aRequest.responseXML;
 }
@@ -503,7 +536,7 @@ function objj_response_xmlhttp()
 
 IF (NATIVE_XMLHTTPREQUEST)
 
-objj_request_xmlhttp = function()
+var objj_request_xmlhttp = function()
 {
     return new XMLHttpRequest();
 }
@@ -532,7 +565,7 @@ var MSXML_XMLHTTP = MSXML_XMLHTTP_OBJECTS[index];
 delete index;
 delete MSXML_XMLHTTP_OBJECTS;
 
-objj_request_xmlhttp = function()
+var objj_request_xmlhttp = function()
 {
     return new ActiveXObject(MSXML_XMLHTTP);
 }
@@ -540,11 +573,13 @@ objj_request_xmlhttp = function()
 ENDIF
 
 
-OBJJUnrecognizedFormatException = "OBJJUnrecognizedFormatException";
+var OBJJUnrecognizedFormatException = "OBJJUnrecognizedFormatException";
 
 var STATIC_MAGIC_NUMBER     = "@STATIC",
     MARKER_PATH             = "p",
     MARKER_CODE             = "c",
+    MARKER_BUNDLE           = "b",
+    MARKER_TEXT             = "t",
     MARKER_IMPORT_STD       = 'I',
     MARKER_IMPORT_LOCAL     = 'i';
 
@@ -561,7 +596,8 @@ function objj_decompile(aString, bundle)
         objj_exception_throw(new objj_exception(OBJJUnrecognizedFormatException, "*** Could not recognize executable code format."));
     
     var file = NULL,
-        files = [];
+        files = [],
+        marker;
     
     while (marker = stream.getMarker())   
     {
@@ -569,7 +605,10 @@ function objj_decompile(aString, bundle)
         
         switch (marker)
         {
-            case MARKER_PATH:           file = new objj_file();
+            case MARKER_PATH:           if (file && file.contents && file.path === file.bundle.path)
+                                            file.bundle.info = CPPropertyListCreateWithData({string:file.contents});
+
+                                        file = new objj_file();
                                         file.path = DIRECTORY(bundle.path) + text;
                                         file.bundle = bundle;
                                         file.fragments = [];
@@ -579,6 +618,24 @@ function objj_decompile(aString, bundle)
                                         objj_files[file.path] = file;
                                         
                                         break;
+                                        
+            case MARKER_BUNDLE:         var bundlePath = DIRECTORY(bundle.path) + '/' + text;
+            
+                                        file.bundle = objj_getBundleWithPath(bundlePath);
+                                        
+                                        if (!file.bundle)
+                                        {
+                                            file.bundle = new objj_bundle();
+                                            file.bundle.path = bundlePath;
+                                            
+                                            objj_setBundleForPath(file.bundle, bundlePath);
+                                        }
+                                        
+                                        break;
+                                        
+            case MARKER_TEXT:           file.contents = text;
+                                        break;
+                                        
             case MARKER_CODE:           file.fragments.push(fragment_create_code(text, bundle, file));
                                         break;
             case MARKER_IMPORT_STD:     file.fragments.push(fragment_create_file(text, bundle, NO, file));
@@ -587,6 +644,9 @@ function objj_decompile(aString, bundle)
                                         break;
         }
     }
+    
+    if (file && file.contents && file.path === file.bundle.path)
+        file.bundle.info = CPPropertyListCreateWithData({string:file.contents});
     
     return files;    
 }

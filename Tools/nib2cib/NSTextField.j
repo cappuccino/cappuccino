@@ -1,7 +1,30 @@
+/*
+ * NSTextField.j
+ * AppKit
+ *
+ * Created by Francisco Tolmasky.
+ * Copyright 2008, 280 North, Inc.
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
+ */
+
 @import <AppKit/CPTextField.j>
 
 @import "NSControl.j"
 @import "NSCell.j"
+
 
 @implementation CPTextField (NSCoding)
 
@@ -30,6 +53,11 @@
         
         [self setTextColor:[cell textColor]];
 		
+        var frame = [self frame];
+
+        [self setFrameOrigin:CGPointMake(frame.origin.x - 4.0, frame.origin.y - 4.0)];
+        [self setFrameSize:CGSizeMake(frame.size.width + 8.0, frame.size.height + 8.0)];
+
         CPLog.debug([self stringValue] + " => isBordered=" + [self isBordered] + ", isBezeled="  + [self isBezeled] + ", bezelStyle=" + [self bezelStyle] + "("+[cell stringValue]+", " + [cell placeholderString] + ")");
 	}
 	

@@ -34,7 +34,11 @@ var XMLHTTPRequestUninitialized = 0,
 
 var CPURLConnectionDelegate = nil;
 
-/*
+/*!
+    @class CPURLConnection
+    @ingroup foundation
+    @brief Provides loading of a URL request. 
+
     An interface to downloading content at a specified URL. Using one of the
     class methods, you can obtain the data.
     
@@ -74,7 +78,6 @@ var CPURLConnectionDelegate = nil;
     
     @param connection the connection that received the authentication challenge.
 */
-
 @implementation CPURLConnection : CPObject
 {
     CPURLRequest    _request;
@@ -153,9 +156,11 @@ var CPURLConnectionDelegate = nil;
         
         var path = [_request URL];
         
+        // Browsers use "file:", Titanium uses "app:"
         _isLocalFileConnection =    path.indexOf("file:") === 0 || 
                                     ((path.indexOf("http:") !== 0 || path.indexOf("https:") !== 0) && 
-                                    window.location && window.location.protocol === "file:");
+                                    window.location &&
+                                    (window.location.protocol === "file:" || window.location.protocol === "app:"));
         
         _XMLHTTPRequest = objj_request_xmlhttp();
             
@@ -203,7 +208,8 @@ var CPURLConnectionDelegate = nil;
     }
     catch (anException)
     {
-        [_delegate connection:self didFailWithError:anException];
+        if ([_delegate respondsToSelector:@selector(connection:didFailWithError:)])
+            [_delegate connection:self didFailWithError:anException];
     }
 }
 
@@ -236,30 +242,31 @@ var CPURLConnectionDelegate = nil;
     {
         var statusCode = _XMLHTTPRequest.status,
             URL = [_request URL];
-        
+
         if ([_delegate respondsToSelector:@selector(connection:didReceiveResponse:)])
+        {
             if (_isLocalFileConnection)
                 [_delegate connection:self didReceiveResponse:[[CPURLResponse alloc] initWithURL:URL]];
             else
             {
                 var response = [[CPHTTPURLResponse alloc] initWithURL:URL];
-                
+
                 [response _setStatusCode:statusCode];
-                
+
                 [_delegate connection:self didReceiveResponse:response];
             }
-                        
+        }
         if (!_isCanceled)
         {
-            if (statusCode == 200 || (statusCode === 0 && _isLocalFileConnection))
-            {
-                [_delegate connection:self didReceiveData:_XMLHTTPRequest.responseText];
-                [_delegate connectionDidFinishLoading:self];
-            }
-            else if (statusCode == 401 && [CPURLConnectionDelegate respondsToSelector:@selector(connectionDidReceiveAuthenticationChallenge:)])
+            if (statusCode == 401 && [CPURLConnectionDelegate respondsToSelector:@selector(connectionDidReceiveAuthenticationChallenge:)])
                 [CPURLConnectionDelegate connectionDidReceiveAuthenticationChallenge:self];
             else
-                [_delegate connection:self didFailWithError:_XMLHTTPRequest.status]
+            {
+                if ([_delegate respondsToSelector:@selector(connection:didReceiveData:)])
+                    [_delegate connection:self didReceiveData:_XMLHTTPRequest.responseText];
+                if ([_delegate respondsToSelector:@selector(connectionDidFinishLoading:)])
+                    [_delegate connectionDidFinishLoading:self];
+            }
         }
     }
 

@@ -45,6 +45,9 @@
         
         [self setEnabled:[aCoder decodeObjectForKey:@"NSEnabled"]];
         [self setContinuous:[cell isContinuous]];
+
+        [self setTarget:[aCoder decodeObjectForKey:@"NSTarget"]];
+        [self setAction:[aCoder decodeObjectForKey:@"NSAction"]];
     }
     
     return self;

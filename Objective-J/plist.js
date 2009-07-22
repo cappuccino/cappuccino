@@ -20,13 +20,13 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-kCFPropertyListOpenStepFormat       = 1;
-kCFPropertyListXMLFormat_v1_0       = 100;
-kCFPropertyListBinaryFormat_v1_0    = 200;
-kCFPropertyList280NorthFormat_v1_0  = -1000;
+var kCFPropertyListOpenStepFormat       = 1,
+    kCFPropertyListXMLFormat_v1_0       = 100,
+    kCFPropertyListBinaryFormat_v1_0    = 200,
+    kCFPropertyList280NorthFormat_v1_0  = -1000;
 
-OBJJPlistParseException = "OBJJPlistParseException";
-OBJJPlistSerializeException = "OBJJPlistSerializeException";
+var OBJJPlistParseException = "OBJJPlistParseException",
+    OBJJPlistSerializeException = "OBJJPlistSerializeException";
 
 var kCFPropertyList280NorthMagicNumber  = "280NPLIST";
 
@@ -191,7 +191,7 @@ var XML_XML                 = "xml",
     PLIST_BOOLEAN_TRUE      = "true",
     PLIST_BOOLEAN_FALSE     = "false",
     PLIST_NUMBER_REAL       = "real",
-    PLIST_NUMBER_INTEGER    = "integer";
+    PLIST_NUMBER_INTEGER    = "integer",
     PLIST_DATA              = "data";
 
 
@@ -279,10 +279,6 @@ function CPPropertyListCreateFromXMLData(XMLNodeOrData)
     
     if (XMLNode.string)
     {
-#if RHINO
-        XMLNode = DOCUMENT_ELEMENT(_documentBuilder.parse(
-            new Packages.org.xml.sax.InputSource(new Packages.java.io.StringReader(XMLNode.string))));
-#else
         if (window.ActiveXObject)
         {
             XMLNode = new ActiveXObject("Microsoft.XMLDOM");
@@ -290,7 +286,6 @@ function CPPropertyListCreateFromXMLData(XMLNodeOrData)
         }
         else
             XMLNode = DOCUMENT_ELEMENT(new DOMParser().parseFromString(XMLNodeOrData.string, "text/xml"));
-#endif
     }
 
     // Skip over DOCTYPE and so forth.
@@ -496,7 +491,7 @@ function CPPropertyListCreateFrom280NorthData(aData)
 
     while (marker = stream.getMarker())
     {
-        if (marker == END_MARKER)
+        if (marker === END_MARKER)
         {
             containers.pop();
             continue;
@@ -507,7 +502,7 @@ function CPPropertyListCreateFrom280NorthData(aData)
         if (count)
             currentContainer = containers[count - 1];
         
-        if (marker == KEY_MARKER)
+        if (marker === KEY_MARKER)
         {
             key = stream.getString();
             marker = stream.getMarker();

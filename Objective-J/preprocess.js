@@ -20,13 +20,13 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-OBJJ_PREPROCESSOR_DEBUG_SYMBOLS = 1 << 0;
+var OBJJ_PREPROCESSOR_DEBUG_SYMBOLS = 1 << 0;
 
 function objj_preprocess(/*String*/ aString, /*objj_bundle*/ aBundle, /*objj_file*/ aSourceFile, /*unsigned*/ flags) 
 {    
     try
     {
-        return new objj_preprocessor(aString, aSourceFile, aBundle, flags).fragments();
+        return new objj_preprocessor(aString.replace(/^#[^\n]+\n/, "\n"), aSourceFile, aBundle, flags).fragments();
     }
     catch (anException)
     {
@@ -36,8 +36,8 @@ function objj_preprocess(/*String*/ aString, /*objj_bundle*/ aBundle, /*objj_fil
     return [];
 }
 
-OBJJParseException          = "OBJJParseException";
-OBJJClassNotFoundException  = "OBJJClassNotFoundException";
+var OBJJParseException          = "OBJJParseException",
+    OBJJClassNotFoundException  = "OBJJClassNotFoundException";
 
 var TOKEN_ACCESSORS         = "accessors",
     TOKEN_CLASS             = "class",
@@ -864,7 +864,7 @@ objj_preprocessor.prototype.selector = function(tokens, aStringBuffer)
     
     // Swallow open parenthesis.
     if (tokens.skip_whitespace() != TOKEN_OPEN_PARENTHESIS)
-        objj_exception_throw(new objj_exception(OBJJParseException, "*** Expected ')'"));
+        objj_exception_throw(new objj_exception(OBJJParseException, "*** Expected '('"));
     
     // Eat leading whitespace
     var selector = tokens.skip_whitespace();

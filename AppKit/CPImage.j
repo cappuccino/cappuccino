@@ -58,7 +58,9 @@ function CPImageInBundle(aFilename, aSize, aBundle)
 
 @end
 
-/*! @class CPImage
+/*! 
+    @ingroup appkit
+    @class CPImage
 
     CPImage is used to represent images in the Cappuccino framework. It supports loading
     all image types supported by the browser.
@@ -219,6 +221,7 @@ function CPImageInBundle(aFilename, aSize, aBundle)
                 [self _imageDidLoad];
                 [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
             }
+            [self _derefFromImage];
         }
     
     _image.onerror = function ()
@@ -230,6 +233,7 @@ function CPImageInBundle(aFilename, aSize, aBundle)
                 [self _imageDidError];
                 [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
             }
+            [self _derefFromImage];
         }
     
     _image.onabort = function ()
@@ -241,6 +245,7 @@ function CPImageInBundle(aFilename, aSize, aBundle)
                 [self _imageDidAbort];
                 [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
             }
+            [self _derefFromImage];
         }
         
     _image.src = _filename;
@@ -256,6 +261,14 @@ function CPImageInBundle(aFilename, aSize, aBundle)
 - (BOOL)isNinePartImage
 {
     return NO;
+}
+
+/* @ignore */
+- (void)_derefFromImage
+{
+    _image.onload = null;
+    _image.onerror = null;
+    _image.onabort = null;
 }
 
 /* @ignore */
@@ -338,6 +351,11 @@ function CPImageInBundle(aFilename, aSize, aBundle)
     return self;
 }
 
+- (CPString)filename
+{
+    return @"";
+}
+
 - (CPArray)imageSlices
 {
     return _imageSlices;
@@ -400,6 +418,11 @@ var CPThreePartImageImageSlicesKey  = @"CPThreePartImageImageSlicesKey",
         _imageSlices = imageSlices;
     
     return self;
+}
+
+- (CPString)filename
+{
+    return @"";
 }
 
 - (CPArray)imageSlices

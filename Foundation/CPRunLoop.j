@@ -137,7 +137,10 @@ var _CPRunLoopPerformPool           = [],
 
 var CPRunLoopLastNativeRunLoop = 0;
 
-/*! @class CPRunLoop
+/*!
+    @class CPRunLoop
+    @ingroup foundation
+    @brief The main run loop for the application.
 
     CPRunLoop instances handle various utility tasks that must be performed repetitively in an application, such as processing input events.
 

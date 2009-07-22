@@ -30,7 +30,11 @@ CPUnsupportedMethodException        = "CPUnsupportedMethodException";
 CPRangeException                    = "CPRangeException";
 CPInternalInconsistencyException    = "CPInternalInconsistencyException";
 
-/*! @class CPException
+/*! 
+    @class CPException
+    @ingroup foundation
+    @brief Used to implement exception handling (creating & raising).
+
     An example of throwing an exception in Objective-J:
 <pre>
 // some code here...
@@ -146,6 +150,10 @@ if (input == nil)
 
 @end
 
+var CPExceptionNameKey = "CPExceptionNameKey",
+    CPExceptionReasonKey = "CPExceptionReasonKey",
+    CPExceptionUserInfoKey = "CPExceptionUserInfoKey";
+
 @implementation CPException (CPCoding)
 
 /*!
@@ -161,7 +169,7 @@ if (input == nil)
     {
         name = [aCoder decodeObjectForKey:CPExceptionNameKey];
         reason = [aCoder decodeObjectForKey:CPExceptionReasonKey];
-        userInfo = [aCoer decodeObjectForKey:CPExceptionUserInfoKey];
+        userInfo = [aCoder decodeObjectForKey:CPExceptionUserInfoKey];
     }
     
     return self;

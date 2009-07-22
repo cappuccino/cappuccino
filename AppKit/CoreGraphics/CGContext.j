@@ -41,146 +41,43 @@ kCGPathStroke               = 2;
 kCGPathFillStroke           = 3;
 kCGPathEOFillStroke         = 4;
 
-/*
-    @global
+/*!
     @group CGBlendMode
 */
+
 kCGBlendModeNormal          = 0;
-/*
-    @global
-    @group CGBlendMode
-*/
 kCGBlendModeMultiply        = 1;
-/*
-    @global
-    @group CGBlendMode
-*/
 kCGBlendModeScreen          = 2;
-/*
-    @global
-    @group CGBlendMode
-*/
 kCGBlendModeOverlay         = 3;
-/*
-    @global
-    @group CGBlendMode
-*/
 kCGBlendModeDarken          = 4;
-/*
-    @global
-    @group CGBlendMode
-*/
 kCGBlendModeLighten         = 5;
-/*
-    @global
-    @group CGBlendMode
-*/
 kCGBlendModeColorDodge      = 6;
-/*
-    @global
-    @group CGBlendMode
-*/
 kCGBlendModeColorBurn       = 7;
-/*
-    @global
-    @group CGBlendMode
-*/
 kCGBlendModeSoftLight       = 8;
-/*
-    @global
-    @group CGBlendMode
-*/
 kCGBlendModeHardLight       = 9;
-/*
-    @global
-    @group CGBlendMode
-*/
 kCGBlendModeDifference      = 10;
-/*
-    @global
-    @group CGBlendMode
-*/
 kCGBlendModeExclusion       = 11;
-/*
-    @global
-    @group CGBlendMode
-*/
 kCGBlendModeHue             = 12;
-/*
-    @global
-    @group CGBlendMode
-*/
 kCGBlendModeSaturation      = 13;
-/*
-    @global
-    @group CGBlendMode
-*/
 kCGBlendModeColor           = 14;
-/*
-    @global
-    @group CGBlendMode
-*/
 kCGBlendModeLuminosity      = 15;
-/*
-    @global
-    @group CGBlendMode
-*/
 kCGBlendModeClear           = 16;
-/*
-    @global
-    @group CGBlendMode
-*/
 kCGBlendModeCopy            = 17;
-/*
-    @global
-    @group CGBlendMode
-*/
 kCGBlendModeSourceIn        = 18;
-/*
-    @global
-    @group CGBlendMode
-*/
 kCGBlendModeSourceOut       = 19;
-/*
-    @global
-    @group CGBlendMode
-*/
 kCGBlendModeSourceAtop      = 20;
-/*
-    @global
-    @group CGBlendMode
-*/
 kCGBlendModeDestinationOver = 21;
-/*
-    @global
-    @group CGBlendMode
-*/
 kCGBlendModeDestinationIn   = 22;
-/*
-    @global
-    @group CGBlendMode
-*/
 kCGBlendModeDestinationOut  = 23;
-/*
-    @global
-    @group CGBlendMode
-*/
 kCGBlendModeDestinationAtop = 24;
-/*
-    @global
-    @group CGBlendMode
-*/
 kCGBlendModeXOR             = 25;
-/*
-    @global
-    @group CGBlendMode
-*/
 kCGBlendModePlusDarker      = 26;
-/*
-    @global
-    @group CGBlendMode
-*/
 kCGBlendModePlusLighter     = 27;
+
+/*!
+    @defgroup coregraphics CoreGraphics
+    @{
+*/
 
 /*!
     This function is just here for source compatability.
@@ -202,10 +99,20 @@ function CGContextRetain(aContext)
     return aContext;
 }
 
+/*!
+@cond
+*/
 // BEGIN CANVAS IF
 if (!CPFeatureIsCompatible(CPHTMLCanvasFeature))
 {
+/*!
+@endcond
+*/
 
+/*!
+    Creates a new graphics state, which describes all the current values for drawing.
+    @return a graphics state
+*/
 function CGGStateCreate()
 {
     return { alpha:1.0, strokeStyle:"#000", fillStyle:"#ccc", lineWidth:1.0, lineJoin:kCGLineJoinMiter, lineCap:kCGLineCapButt, miterLimit:10.0, globalAlpha:1.0, 
@@ -213,6 +120,11 @@ function CGGStateCreate()
         shadowOffset:_CGSizeMakeZero(), shadowBlur:0.0, shadowColor:NULL, CTM:_CGAffineTransformMakeIdentity() };
 }
 
+/*!
+    Creates a copy of the given graphics state.
+    @param aGState the graphics state to copy
+    @return a copy of the given graphics state
+*/
 function CGGStateCreateCopy(aGState)
 {
     return { alpha:aGState.alpha, strokeStyle:aGState.strokeStyle, fillStyle:aGState.fillStyle, lineWidth:aGState.lineWidth, 
@@ -221,16 +133,30 @@ function CGGStateCreateCopy(aGState)
         shadowOffset:aGState.shadowOffset, shadowBlur:aGState.shadowBlur, shadowColor:aGState.shadowColor, CTM:_CGAffineTransformMakeCopy(aGState.CTM) };
 }
 
+/*!
+    Returns a new graphics context.
+    @return CGContext a new graphics context which can be drawn into
+*/
 function CGBitmapGraphicsContextCreate()
 {
     return { DOMElement:document.createElement("div"), path:NULL, gState:CGGStateCreate(), gStateStack:[] };
 }
 
+/*!
+    Pushes the current graphics state of aContext onto the top of a stack.
+    @param aContext the CGContext to edit
+    @return void
+*/
 function CGContextSaveGState(aContext)
 {
     aContext.gStateStack.push(CGGStateCreateCopy(aContext.gState));
 }
 
+/*!
+    Pops the most recent graphics state of the top of the graphics stack and restores it.
+    @param aContext the CGContext to edit
+    @return void
+*/
 function CGContextRestoreGState(aContext)
 {
     aContext.gState = aContext.gStateStack.pop();
@@ -266,26 +192,67 @@ function CGContextAddArc(aContext, x, y, radius, startAngle, endAngle, clockwise
     CGPathAddArc(aContext.path, aContext.gState.CTM, x, y, radius, startAngle, endAngle, clockwise);
 }
 
+/*!
+    Adds an arc to the current context that ends in the specified point.
+    @param aContext the CGContext to edit
+    @param x1 the x coordinate of the beginning of the arc
+    @param y1 the y coordinate of the beginning of the arc
+    @param x2 the x coordinate of the end of the arc
+    @param y2 the y coordinate of the end of the arc
+    @param radius the radius of the arc to be drawn
+    @return void
+*/
 function CGContextAddArcToPoint(aContext, x1, y1, x2, y2, radius)
 {
     CGPathAddArcToPoint(aContext.path, aContext.gState.CTM, x1, y1, x2, y2, radius);
 }
 
+/*!
+    Adds a cubic curve to the current context
+    @param aContext the CGContext to edit
+    @param cp1x the x coordinate of the first control point
+    @param cp1y the y coordinate of the first control point
+    @param cp2x the x coordinate of the second control point
+    @param cp2y the y coordinate of the second control point
+    @param x the x coordinate of the end of the curve
+    @param y the y coordinate of the end of the curve
+    @return void
+*/
 function CGContextAddCurveToPoint(aContext, cp1x, cp1y, cp2x, cp2y, x, y)
 {
     CGPathAddCurveToPoint(aContext.path, aContext.gState.CTM, cp1x, cp1y, cp2x, cp2y, x, y);
 }
 
+/*!
+    Adds a line to each element in the points array
+    @param aContext the CGContext to move
+    @param points an array of points that are to be consecutively executed as if they were individual addToPoint calls
+    @param count an upper bound on the number of points to use
+    @return void
+*/
 function CGContextAddLines(aContext, points, count)
 {
     CGPathAddLines(aContext.path, aContext.gState.CTM, points, count);
 }
 
+/*!
+    Adds a line from the current point to the x/y
+    @param aContext the CGContext to move
+    @param x the x coordinate of the end point of the line
+    @param y the y coordinate of the end point of the line
+    @return void
+*/
 function CGContextAddLineToPoint(aContext, x, y)
 {
     CGPathAddLineToPoint(aContext.path, aContext.gState.CTM, x, y);
 }
 
+/*!
+    Adds aPath to the current path in aContext
+    @param aContext the CGContext to add to
+    @param aPath the path to be added
+    @return void
+*/
 function CGContextAddPath(aContext, aPath)
 {
     if (!aContext || CGPathIsEmpty(aPath))
@@ -297,32 +264,71 @@ function CGContextAddPath(aContext, aPath)
     CGPathAddPath(aContext.path, aContext.gState.CTM, aPath);
 }
 
+/*!
+    Adds a quadratic curve from the current point to the point specified by x/y, using the control point specified by cpx/cpy
+    @param aContext the CGContext to add the curve to
+    @param cpx the x coordinate for the curve's control point
+    @param cpy the y coordinate for the curve's control point
+    @param x the x coordinate for the end point of the curve
+    @param y the y coordinate for the end point of the curve
+    @return void
+*/
 function CGContextAddQuadCurveToPoint(aContext, cpx, cpy, x, y)
 {
     CGPathAddQuadCurveToPoint(aContext.path, aContext.gState.CTM, cpx, cpy, x, y);
 }
 
+/*!
+    Adds aRect to the current path in the given context
+    @param aContext the CGContext to add to
+    @param aRect the dimensions of the rectangle to add
+    @return void
+*/
 function CGContextAddRect(aContext, aRect)
 {
     CGPathAddRect(aContext.path, aContext.gState.CTM, aRect);
 }
 
+/*!
+    Adds up to count elements from rects to the current path in aContext
+    @param aContext the CGContext to add to
+    @param rects an array of CGRects to be added to the context's path
+    @param the upper bound of elements to be added
+    @return void
+*/
 function CGContextAddRects(aContext, rects, count)
 {
     CGPathAddRects(aContext.path, aContext.gState.CTM, rects, count);
 }
 
+/*!
+    Begins a new subpath in the given context
+    @param aContext the CGContext to create a new path in
+    @return void
+*/
 function CGContextBeginPath(aContext)
 {
     // This clears any previous path.
     aContext.path = CGPathCreateMutable();
 }
 
+/*!
+    Closes the currently open subpath, if any, in aContext
+    @param aContext the CGContext to close a path in
+    @return void
+*/
 function CGContextClosePath(aContext)
 {
     CGPathCloseSubpath(aContext.path);
 }
 
+/*!
+    Moves the current location of aContext to the given x and y coordinates
+    @param aContext the CGContext to move
+    @param x the x location to move the context to
+    @param y the y location to move the context to
+    @return void
+*/
 function CGContextMoveToPoint(aContext, x, y)
 {
     if (!aContext.path)
@@ -331,11 +337,24 @@ function CGContextMoveToPoint(aContext, x, y)
     CGPathMoveToPoint(aContext.path, aContext.gState.CTM, x, y);
 }
 
+/*!
+    Fills a rectangle in the given context with aRect dimensions, using the context's current fill color
+    @param aContext the CGContext to draw into
+    @param aRect the dimensions of the rectangle to fill
+    @return void
+*/
 function CGContextFillRect(aContext, aRect)
 {
     CGContextFillRects(aContext, [aRect], 1);
 }
 
+/*!
+    Fills a rectangle in the given context for each CGRect in the given array, up to a total of count rects
+    @param aContext the CGContext to draw into
+    @param rects an array of rects to fill
+    @param count the maximum number of rects from the given array to fill
+    @return void
+*/
 function CGContextFillRects(aContext, rects, count)
 {
     if (arguments[2] === undefined)
@@ -348,6 +367,12 @@ function CGContextFillRects(aContext, rects, count)
     CGContextDrawPath(aContext, kCGPathFill);
 }
 
+/*!
+    Strokes a rectangle with the given location into the given context, using the context's current width and color
+    @param aContext the CGContext to draw into
+    @param aRect a CGRect indicating the dimensions of the rectangle to be drawn
+    @return void
+*/
 function CGContextStrokeRect(aContext, aRect)
 {   
     CGContextBeginPath(aContext);
@@ -357,6 +382,13 @@ function CGContextStrokeRect(aContext, aRect)
     CGContextDrawPath(aContext, kCGPathStroke);
 }
 
+/*!
+    Strokes a rectangle with the given dimensions and the given stroke width
+    @param aContext the CGContext to draw into
+    @param aRect the CGRect indicating the bounds of the rect to be drawn
+    @param aWidth the width with which to stroke the rect
+    @return void
+*/
 function CGContextStrokeRectWithWidth(aContext, aRect, aWidth)
 {
     CGContextSaveGState(aContext);
@@ -367,6 +399,12 @@ function CGContextStrokeRectWithWidth(aContext, aRect, aWidth)
     CGContextRestoreGState(aContext);
 }
 
+/*!
+    Concatenates the given transformation matrix onto the current transformation matrix in aContext
+    @param aContext the CGContext to transform
+    @param aTransform the CGAffineTransform to apply to the given context
+    @return void
+*/
 function CGContextConcatCTM(aContext, aTransform)
 {
     var CTM = aContext.gState.CTM;
@@ -374,10 +412,22 @@ function CGContextConcatCTM(aContext, aTransform)
     _CGAffineTransformConcatTo(CTM, aTransform, CTM);
 }
 
+/*!
+    Returns the current transformation matrix for the given context
+    @param aContext the CGContext for which we are asking for the transform
+    @return CGAffineTransform the current transformation matrix of the given context
+*/
 function CGContextGetCTM(aContext)
 {
     return aContext.gState.CTM;
 }
+
+/*!
+    Rotates the current context by anAngle radians
+    @param aContext the CGContext to rotate
+    @param anAngle the amount to rotate, in radians
+    @return void
+*/
 
 function CGContextRotateCTM(aContext, anAngle)
 {
@@ -386,6 +436,13 @@ function CGContextRotateCTM(aContext, anAngle)
     gState.CTM = CGAffineTransformRotate(gState.CTM, anAngle);
 }
 
+/*!
+    Scales the current context by sx/sy
+    @param aContext the CGContext to scale
+    @param sx the amount to scale in the x direction
+    @param sy the amount to scale in the y direction
+    @return void
+*/
 function CGContextScaleCTM(aContext, sx, sy)
 {
     var gState = aContext.gState;
@@ -393,12 +450,27 @@ function CGContextScaleCTM(aContext, sx, sy)
     gState.CTM = _CGAffineTransformScale(gState.CTM, sx, sy);
 }
 
+/*!
+    Translates the given context by tx in the x direction and ty in the y direction
+    @param aContext the CGContext to translate
+    @param tx the amount to move in the x direction
+    @param ty the amount to move in the y direction
+    @return void
+*/
 function CGContextTranslateCTM(aContext, tx, ty)
 {
     var gState = aContext.gState;
     
     gState.CTM = _CGAffineTransformTranslate(gState.CTM, tx, ty);
 }
+
+/*!
+    Sets the current offset, and blur for shadows in core graphics drawing operations
+    @param aContext the CGContext of the shadow
+    @param aSize a CGSize indicating the offset of the shaodw
+    @param aBlur a float indicating the blur radius
+    @return void
+*/
 
 function CGContextSetShadow(aContext, aSize, aBlur)
 {
@@ -409,6 +481,14 @@ function CGContextSetShadow(aContext, aSize, aBlur)
     gState.shadowColor = [CPColor shadowColor];
 }
 
+/*!
+    Sets the current offset, blur, and color for shadows in core graphics drawing operations
+    @param aContext the CGContext of the shadow
+    @param aSize a CGSize indicating the offset of the shaodw
+    @param aBlur a float indicating the blur radius
+    @param aColor a CPColor object indicating the color of the shadow
+    @return void
+*/
 function CGContextSetShadowWithColor(aContext, aSize, aBlur, aColor)
 {
     var gState = aContext.gState;
@@ -418,19 +498,30 @@ function CGContextSetShadowWithColor(aContext, aSize, aBlur, aColor)
     gState.shadowColor = aColor;
 }
 
+/*!
+    Sets the current alpha value for core graphics drawing operations in the given context .
+    @param aContext the CGContext who's alpha value should be updated
+    @param anAlpha the new alpha value. 1.0 is completely opaque, 0.0 is completely transparent.
+    @return void
+*/
 function CGContextSetAlpha(aContext, anAlpha)
 {
     aContext.gState.alpha = MAX(MIN(anAlpha, 1.0), 0.0);
 }
 
+/*!
+@cond
+*/
 }   // END CANVAS IF
+/*!
+@endcond
+*/
 
 // GOOD.
 /*!
     Fills in the area of the current path, using the even-odd fill rule.
     @param aContext the CGContext of the path
     @return void
-    @group CGContext
 */
 function CGContextEOFillPath(aContext)
 {
@@ -441,7 +532,6 @@ function CGContextEOFillPath(aContext)
     Fills in the area of the current path, using  the non-zero winding number rule.
     @param aContext the CGContext of the path
     @return void
-    @group CGContext
 */
 function CGContextFillPath(aContext)
 {
@@ -455,28 +545,12 @@ var KAPPA = 4.0 * ((SQRT2 - 1.0) / 3.0);
     @param aContext CGContext to draw on
     @param aRect the rectangle bounding the ellipse
     @return void
-    @group CGContext
 */
 function CGContextAddEllipseInRect(aContext, aRect)
 {
-	CGContextBeginPath(aContext);
-	
-	if (_CGRectGetWidth(aRect) == _CGRectGetHeight(aRect))
-	    CGContextAddArc(aContext, _CGRectGetMidX(aRect), _CGRectGetMidY(aRect), _CGRectGetWidth(aRect) / 2.0, 0.0, 2 * PI, YES);
-	else
-	{
-	    var axis = _CGSizeMake(_CGRectGetWidth(aRect) / 2.0, _CGRectGetHeight(aRect) / 2.0),
-	        center = _CGPointMake(_CGRectGetMinX(aRect) + axis.width, _CGRectGetMinY(aRect) + axis.height);
-	
-	    CGContextMoveToPoint(aContext, center.x, center.y - axis.height);
-	
-	    CGContextAddCurveToPoint(aContext, center.x + (KAPPA * axis.width), center.y - axis.height,  center.x + axis.width, center.y - (KAPPA * axis.height), center.x + axis.width, center.y);
-	    CGContextAddCurveToPoint(aContext, center.x + axis.width, center.y + (KAPPA * axis.height), center.x + (KAPPA * axis.width), center.y + axis.height, center.x, center.y + axis.height);
-	    CGContextAddCurveToPoint(aContext, center.x - (KAPPA * axis.width), center.y + axis.height, center.x - axis.width, center.y + (KAPPA * axis.height), center.x - axis.width, center.y);
-	    CGContextAddCurveToPoint(aContext, center.x - axis.width, center.y - (KAPPA * axis.height), center.x - (KAPPA * axis.width), center.y - axis.height, center.x, center.y - axis.height);
-	}
-	
-	CGContextClosePath(aContext);
+    CGContextBeginPath(aContext);
+    CGContextAddPath(aContext, CGPathWithEllipseInRect(aRect));
+    CGContextClosePath(aContext);
 }
 
 /*!
@@ -484,11 +558,12 @@ function CGContextAddEllipseInRect(aContext, aRect)
     @param aContext CGContext to draw on
     @param aRect the rectangle bounding the ellipse
     @return void
-    @group CGContext
 */
 function CGContextFillEllipseInRect(aContext, aRect)
 {
+    CGContextBeginPath(aContext);
     CGContextAddEllipseInRect(aContext, aRect);
+    CGContextClosePath(aContext);
     CGContextFillPath(aContext);
 }
 
@@ -497,11 +572,12 @@ function CGContextFillEllipseInRect(aContext, aRect)
     @param aContext CGContext to draw on
     @param aRect the rectangle bounding the ellipse
     @return void
-    @group CGContext
 */
 function CGContextStrokeEllipseInRect(aContext, aRect)
 {
+    CGContextBeginPath(aContext);
     CGContextAddEllipseInRect(aContext, aRect);
+    CGContextClosePath(aContext);
     CGContextStrokePath(aContext);
 }
 
@@ -509,7 +585,6 @@ function CGContextStrokeEllipseInRect(aContext, aRect)
     Paints a line in the current path of the current context.
     @param aContext CGContext to draw on
     @return void
-    @group CGContext
 */
 function CGContextStrokePath(aContext)
 {
@@ -525,7 +600,6 @@ function CGContextStrokePath(aContext)
     the beginning of second line segment, etc.
     @param count the number of points in the array
     @return void
-    @group CGContext
 */
 function CGContextStrokeLineSegments(aContext, points, count)
 {
@@ -553,7 +627,6 @@ function CGContextStrokeLineSegments(aContext, points, count)
     @param aContext the CGContext
     @param aColor the new color for the fill
     @return void
-    @group CGContext
 */
 
 function CGContextSetFillColor(aContext, aColor)
@@ -567,7 +640,6 @@ function CGContextSetFillColor(aContext, aColor)
     @param aContext the CGContext
     @param aColor the new color for the stroke
     @return void
-    @group CGContext
 */
 function CGContextSetStrokeColor(aContext, aColor)
 {
@@ -585,100 +657,41 @@ function CGContextSetStrokeColor(aContext, aColor)
     @param sw set it to <code>YES</code> for a rounded southwest corner
     @param nw set it to <code>YES</code> for a rounded northwest corner
     @return void
-    @group CGContext
 */
 function CGContextFillRoundedRectangleInRect(aContext, aRect, aRadius, ne, se, sw, nw)
 {
-    var xMin = _CGRectGetMinX(aRect),
-        xMax = _CGRectGetMaxX(aRect),
-        yMin = _CGRectGetMinY(aRect),
-        yMax = _CGRectGetMaxY(aRect);
-
     CGContextBeginPath(aContext);
-    CGContextMoveToPoint(aContext, xMin + aRadius, yMin);
-	
-	if (ne)
-	{
-		CGContextAddLineToPoint(aContext, xMax - aRadius, yMin);
-		CGContextAddCurveToPoint(aContext, xMax - aRadius, yMin, xMax, yMin, xMax, yMin + aRadius);
-	}
-	else
-		CGContextAddLineToPoint(aContext, xMax, yMin);
-	
-	if (se)
-	{
-		CGContextAddLineToPoint(aContext, xMax, yMax - aRadius);
-		CGContextAddCurveToPoint(aContext, xMax, yMax - aRadius, xMax, yMax, xMax - aRadius, yMax);
-	}
-	else
-		CGContextAddLineToPoint(aContext, xMax, yMax);
-	
-	if (sw)
-	{
-		CGContextAddLineToPoint(aContext, xMin + aRadius, yMax);
-		CGContextAddCurveToPoint(aContext, xMin + aRadius, yMax, xMin, yMax, xMin, yMax - aRadius);
-	}
-	else
-		CGContextAddLineToPoint(aContext, xMin, yMax);
-	
-	if (nw)
-	{
-		CGContextAddLineToPoint(aContext, xMin, yMin + aRadius);
-		CGContextAddCurveToPoint(aContext, xMin, yMin + aRadius, xMin, yMin, xMin + aRadius, yMin);
-	} else
-		CGContextAddLineToPoint(aContext, xMin, yMin);
-	
-	CGContextClosePath(aContext);
-	
+    CGContextAddPath(aContext, CGPathWithRoundedRectangleInRect(aRect, aRadius, aRadius, ne, se, sw, nw));
+    CGContextClosePath(aContext);
     CGContextFillPath(aContext);
 }
 
+/*!
+    Strokes a rounded rectangle.
+    @param aContext the CGContext to draw into
+    @param aRect the base rectangle
+    @param aRadius the distance from the rectange corner to the rounded corner
+    @param ne set it to <code>YES</code> for a rounded northeast corner
+    @param se set it to <code>YES</code> for a rounded southeast corner
+    @param sw set it to <code>YES</code> for a rounded southwest corner
+    @param nw set it to <code>YES</code> for a rounded northwest corner
+    @return void
+*/
 function CGContextStrokeRoundedRectangleInRect(aContext, aRect, aRadius, ne, se, sw, nw)
 {
-    var xMin = _CGRectGetMinX(aRect),
-        xMax = _CGRectGetMaxX(aRect),
-        yMin = _CGRectGetMinY(aRect),
-        yMax = _CGRectGetMaxY(aRect);
-
     CGContextBeginPath(aContext);
-    CGContextMoveToPoint(aContext, xMin + aRadius, yMin);
-	
-	if (ne)
-	{
-		CGContextAddLineToPoint(aContext, xMax - aRadius, yMin);
-		CGContextAddCurveToPoint(aContext, xMax - aRadius, yMin, xMax, yMin, xMax, yMin + aRadius);
-	}
-	else
-		CGContextAddLineToPoint(aContext, xMax, yMin);
-	
-	if (se)
-	{
-		CGContextAddLineToPoint(aContext, xMax, yMax - aRadius);
-		CGContextAddCurveToPoint(aContext, xMax, yMax - aRadius, xMax, yMax, xMax - aRadius, yMax);
-	}
-	else
-		CGContextAddLineToPoint(aContext, xMax, yMax);
-	
-	if (sw)
-	{
-		CGContextAddLineToPoint(aContext, xMin + aRadius, yMax);
-		CGContextAddCurveToPoint(aContext, xMin + aRadius, yMax, xMin, yMax, xMin, yMax - aRadius);
-	}
-	else
-		CGContextAddLineToPoint(aContext, xMin, yMax);
-	
-	if (nw)
-	{
-		CGContextAddLineToPoint(aContext, xMin, yMin + aRadius);
-		CGContextAddCurveToPoint(aContext, xMin, yMin + aRadius, xMin, yMin, xMin + aRadius, yMin);
-	} else
-		CGContextAddLineToPoint(aContext, xMin, yMin);
-	
-	CGContextClosePath(aContext);
-	
+    CGContextAddPath(aContext, CGPathWithRoundedRectangleInRect(aRect, aRadius, aRadius, ne, se, sw, nw));		
+    CGContextClosePath(aContext);
     CGContextStrokePath(aContext);
 }
 
+/*! 
+    @}
+*/
+
+/*!
+@cond
+*/
 if (CPFeatureIsCompatible(CPHTMLCanvasFeature))
 {
 #include "CGContextCanvas.j"
@@ -687,3 +700,6 @@ else if (CPFeatureIsCompatible(CPVMLFeature))
 {
 #include "CGContextVML.j"
 }
+/*!
+@endcond
+*/

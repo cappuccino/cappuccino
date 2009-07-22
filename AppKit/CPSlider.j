@@ -3,7 +3,7 @@
  * AppKit
  *
  * Created by Francisco Tolmasky.
- * Copyright 2008, 280 North, Inc.
+ * Copyright 2009, 280 North, Inc.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -22,131 +22,364 @@
 
 @import "CPControl.j"
 
+#include "CoreGraphics/CGGeometry.h"
 
-var CPSliderHorizontalKnobImage         = nil,
-    CPSliderHorizontalBarLeftImage      = nil,
-    CPSliderHorizontalBarRightImage     = nil,
-    CPSliderHorizontalBarCenterImage    = nil;
+/*! SLIDER STATES */
 
-/*! @class CPSlider
+CPLinearSlider      = 0;
+CPCircularSlider    = 1;
 
-    An CPSlider displays, and allows control of, some value in the application. It represents a continuous stream of values of type <code>float</code>, which can be retrieved by the method <code>floatValue</code> and set by the method <code>setFloatValue:</code>.
+/*!
+    @ingroup appkit
 */
+
 @implementation CPSlider : CPControl
 {
-    double      _minValue;
-    double      _maxValue;
-    double      _altIncrementValue;
-    BOOL        _isVertical;
-    
-    CPView      _bar;
-    CPView      _knob;
+    double          _minValue;
+    double          _maxValue;
+    double          _altIncrementValue;
 
-    CPImageView _standardKnob;
-    CPView      _standardVerticalBar;
-    CPView      _standardHorizontalBar;
+    BOOL            _isVertical;
 }
 
-/*
-    @ignore
-*/
-+ (void)initialize
++ (CPString)themeClass
 {
-    if (self != [CPSlider class])
-        return;
+    return "slider";
+}
 
-    var bundle = [CPBundle bundleForClass:self];
-    
-    CPSliderKnobImage = [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:"CPSlider/CPSliderKnobRegular.png"] size:CPSizeMake(11.0, 11.0)],
-    CPSliderKnobPushedImage = [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:"CPSlider/CPSliderKnobRegularPushed.png"] size:CPSizeMake(11.0, 11.0)],
-    CPSliderHorizontalBarLeftImage = [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:"CPSlider/CPSliderTrackHorizontalLeft.png"] size:CPSizeMake(2.0, 4.0)],
-    CPSliderHorizontalBarRightImage = [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:"CPSlider/CPSliderTrackHorizontalRight.png"] size:CPSizeMake(2.0, 4.0)],
-    CPSliderHorizontalBarCenterImage = [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:"CPSlider/CPSliderTrackHorizontalCenter.png"] size:CPSizeMake(1.0, 4.0)];
++ (id)themeAttributes
+{
+    return [CPDictionary dictionaryWithObjects:[nil, _CGSizeMakeZero(), 0.0, nil]
+                                       forKeys:[@"knob-color", @"knob-size", @"track-width", @"track-color"]];
 }
 
 - (id)initWithFrame:(CGRect)aFrame
 {
     self = [super initWithFrame:aFrame];
-    
+
     if (self)
     {
-        _value = 50.0;
         _minValue = 0.0;
         _maxValue = 100.0;
-    
-        _bar = [self bar];
-        _knob = [self knob];
-        _knobSize = [[self knobImage] size];
-        _isVertical = [self isVertical];
+        
+        [self setObjectValue:50.0];
         
         [self setContinuous:YES];
-        
-        [_knob setFrameOrigin:[self knobPosition]];
-        
-        [self addSubview:_bar];
-        [self addSubview:_knob];
+
+        [self _recalculateIsVertical];
     }
     
     return self;
 }
-    
-- (void)setFrameSize:(CGSize)aSize
+
+- (void)setMinValue:(float)aMinimumValue
 {
-    if (aSize.height > 21.0)
-        aSize.height = 21.0;
+    if (_minValue === aMinimumValue)
+        return;
     
-    if (_isVertical != [self isVertical])
+    _minValue = aMinimumValue;
+
+    var doubleValue = [self doubleValue];
+    
+    if (doubleValue < _minValue)
+        [self setDoubleValue:_minValue];
+}
+
+- (float)minValue
+{
+    return _minValue;
+}
+
+- (void)setMaxValue:(float)aMaximumValue
+{
+    if (_maxValue === aMaximumValue)
+        return;
+    
+    _maxValue = aMaximumValue;
+    
+    var doubleValue = [self doubleValue];
+    
+    if (doubleValue > _maxValue)
+        [self setDoubleValue:_maxValue];
+}
+
+- (float)maxValue
+{
+    return _maxValue;
+}
+
+- (void)setObjectValue:(id)aValue
+{
+    [super setObjectValue:MIN(MAX(aValue, _minValue), _maxValue)];
+
+    [self setNeedsLayout];
+    [self setNeedsDisplay:YES];
+}
+
+- (void)setSliderType:(CPSliderType)aSliderType
+{
+    if (aSliderType === CPCircularSlider)
+        [self setThemeState:CPThemeStateCircular];
+    else
+        [self unsetThemeState:CPThemeStateCircular];
+}
+
+- (CPSliderType)sliderType
+{
+    return [self hasThemeState:CPThemeStateCircular] ? CPCircularSlider : CPLinearSlider;
+}
+
+- (CGRect)trackRectForBounds:(CGRect)bounds
+{
+    if ([self hasThemeState:CPThemeStateCircular])
     {
-        _isVertical = [self isVertical];
-        
-        var bar = [self bar],
-            knob = [self knob];
-        
-        if (_bar != bar)
-            [self replaceSubview:_bar = bar withView:_bar];
-        
-        if (_knob != knob)
+        var originalBounds = CGRectCreateCopy(bounds);
+
+        bounds.size.width = MIN(bounds.size.width, bounds.size.height);
+        bounds.size.height = bounds.size.width;
+
+        if (bounds.size.width < originalBounds.size.width)
+            bounds.origin.x += (originalBounds.size.width - bounds.size.width) / 2.0;
+        else
+            bounds.origin.y += (originalBounds.size.height - bounds.size.height) / 2.0;
+    }
+    else
+    {
+        var trackWidth = [self currentValueForThemeAttribute:@"track-width"];
+
+        if (trackWidth <= 0)
+            return _CGRectMakeZero();
+
+        if ([self isVertical])
         {
-            [self replaceSubview:knob withView:_knob];
-            
-            _knob = knob;
-            [_knob setFrameOrigin:[self knobPosition]];
+            bounds.origin.x = (_CGRectGetWidth(bounds) - trackWidth) / 2.0;
+            bounds.size.width = trackWidth;
+        }
+        else
+        {
+            bounds.origin.y = (_CGRectGetHeight(bounds) - trackWidth) / 2.0;
+            bounds.size.height = trackWidth;
         }
     }
     
-    [super setFrameSize:aSize];
-    
-    [_knob setFrameOrigin:[self knobPosition]];
+    return bounds;
 }
 
-/*!
-    Returns the value by which the slider will be
-    incremented if the user holds down the <code>ALT</code>s key.
-*/
-- (double)altIncrementValue
+- (CGRect)knobRectForBounds:(CGRect)bounds
+{
+    var knobSize = [self currentValueForThemeAttribute:@"knob-size"];
+    
+    if (knobSize.width <= 0 || knobSize.height <= 0)
+        return _CGRectMakeZero();
+    
+    var knobRect = _CGRectMake(0.0, 0.0, knobSize.width, knobSize.height),
+        trackRect = [self trackRectForBounds:bounds];
+    
+    // No track, do our best to approximate a place for this thing.
+    if (!trackRect || _CGRectIsEmpty(trackRect))
+        trackRect = bounds;
+
+    if ([self hasThemeState:CPThemeStateCircular])
+    {
+        var angle = 3*PI_2 - (1.0 - [self doubleValue] - _minValue) / (_maxValue - _minValue) * PI2,
+            radius = CGRectGetWidth(trackRect) / 2.0 - 8.0;
+
+        knobRect.origin.x = radius * COS(angle) + CGRectGetMidX(trackRect) - 3.0;
+        knobRect.origin.y = radius * SIN(angle) + CGRectGetMidY(trackRect) - 2.0;
+    }
+    else if ([self isVertical])
+    {
+        knobRect.origin.x = _CGRectGetMidX(trackRect) - knobSize.width / 2.0;
+        knobRect.origin.y = (([self doubleValue] - _minValue) / (_maxValue - _minValue)) * (_CGRectGetHeight(trackRect) - knobSize.height);
+    }
+    else
+    {
+        knobRect.origin.x = (([self doubleValue] - _minValue) / (_maxValue - _minValue)) * (_CGRectGetWidth(trackRect) - knobSize.width);
+        knobRect.origin.y = _CGRectGetMidY(trackRect) - knobSize.height / 2.0;
+    }
+
+    return knobRect;
+}
+
+- (CGRect)rectForEphemeralSubviewNamed:(CPString)aName
+{
+    if (aName === "track-view")
+        return [self trackRectForBounds:[self bounds]];
+    
+    else if (aName === "knob-view")
+        return [self knobRectForBounds:[self bounds]];
+    
+    return [super rectForEphemeralSubviewNamed:aName];
+}
+
+- (CPView)createEphemeralSubviewNamed:(CPString)aName
+{
+    if (aName === "track-view" || aName === "knob-view")
+    {
+        var view = [[CPView alloc] init];
+        
+        [view setHitTests:NO];
+        
+        return view;
+    }
+    
+    return [super createEphemeralSubviewNamed:aName];
+}
+
+- (void)setAltIncrementValue:(float)anAltIncrementValue
+{
+    _altIncrementValue = anAltIncrementValue;
+}
+
+- (float)altIncrementValue
 {
     return _altIncrementValue;
 }
 
-/*!
-    Sets the value the slider will be incremented if the user holds the <code>ALT</code> key.
-*/
-- (void)setAltIncrementValue:(double)anIncrementValue
+- (void)setFrameSize:(CGSize)aSize
 {
-    _altIncrementValue = anIncrementValue;
+    [super setFrameSize:aSize];
+    [self _recalculateIsVertical];
+}
+
+- (void)_recalculateIsVertical
+{
+    // Recalculate isVertical.
+    var bounds = [self bounds],
+        width = _CGRectGetWidth(bounds),
+        height = _CGRectGetHeight(bounds);
+    
+    _isVertical = width < height ? 1 : (width > height ? 0 : -1);
+
+    if (_isVertical === 1)
+        [self setThemeState:CPThemeStateVertical];
+    else if (_isVertical === 0)
+        [self unsetThemeState:CPThemeStateVertical];
+}
+
+- (int)isVertical
+{
+    return _isVertical;
+}
+
+- (void)layoutSubviews
+{
+    var trackView = [self layoutEphemeralSubviewNamed:@"track-view"
+                                           positioned:CPWindowBelow
+                      relativeToEphemeralSubviewNamed:@"knob-view"];
+
+    if (trackView)
+        [trackView setBackgroundColor:[self currentValueForThemeAttribute:@"track-color"]];
+
+    var knobView = [self layoutEphemeralSubviewNamed:@"knob-view"
+                                          positioned:CPWindowAbove
+                     relativeToEphemeralSubviewNamed:@"track-view"];
+      
+    if (knobView)
+        [knobView setBackgroundColor:[self currentValueForThemeAttribute:"knob-color"]];
+}
+
+- (BOOL)tracksMouseOutsideOfFrame
+{
+    return YES;
+}
+
+- (float)_valueAtPoint:(CGPoint)aPoint
+{
+    var bounds = [self bounds],
+        knobRect = [self knobRectForBounds:bounds],
+        trackRect = [self trackRectForBounds:bounds];
+
+    if ([self hasThemeState:CPThemeStateCircular])
+    {
+        var knobWidth = _CGRectGetWidth(knobRect);
+
+        trackRect.origin.x += knobWidth / 2;
+        trackRect.size.width -= knobWidth;
+
+        var minValue = [self minValue],
+            dx = aPoint.x - _CGRectGetMidX(trackRect),
+            dy = aPoint.y - _CGRectGetMidY(trackRect);
+
+        return MAX(0.0, MIN(1.0, 1.0 - (3 * PI_2 - ATAN2(dy, dx)) % PI2 / PI2)) * ([self maxValue] - minValue) + minValue;
+    }
+    else if ([self isVertical])
+    {
+        var knobHeight = _CGRectGetHeight(knobRect);
+
+        trackRect.origin.y += knobHeight / 2;
+        trackRect.size.height -= knobHeight;
+
+        var minValue = [self minValue];
+
+        return MAX(0.0, MIN(1.0, (aPoint.y - _CGRectGetMinY(trackRect)) / _CGRectGetHeight(trackRect))) * ([self maxValue] - minValue) + minValue;
+    }
+    else
+    {
+        var knobWidth = _CGRectGetWidth(knobRect);
+
+        trackRect.origin.x += knobWidth / 2;
+        trackRect.size.width -= knobWidth;
+
+        var minValue = [self minValue];
+
+        return MAX(0.0, MIN(1.0, (aPoint.x - _CGRectGetMinX(trackRect)) / _CGRectGetWidth(trackRect))) * ([self maxValue] - minValue) + minValue;
+    }
+}
+
+- (BOOL)startTrackingAt:(CGPoint)aPoint
+{
+    var bounds = [self bounds],
+        knobRect = [self knobRectForBounds:_CGRectMakeCopy(bounds)];
+    
+    if (_CGRectContainsPoint(knobRect, aPoint))
+        _dragOffset = _CGSizeMake(_CGRectGetMidX(knobRect) - aPoint.x, _CGRectGetMidY(knobRect) - aPoint.y);
+    
+    else 
+    {
+        var trackRect = [self trackRectForBounds:bounds];
+        
+        if (trackRect && _CGRectContainsPoint(trackRect, aPoint))
+        {
+            _dragOffset = _CGSizeMakeZero();
+            
+            [self setObjectValue:[self _valueAtPoint:aPoint]];
+        }
+    
+        else
+            return NO;
+    }
+    
+    [self setHighlighted:YES];
+    
+    [self setNeedsLayout];
+    [self setNeedsDisplay:YES];
+
+    return YES;   
+}
+
+- (BOOL)continueTracking:(CGPoint)lastPoint at:(CGPoint)aPoint
+{
+    [self setObjectValue:[self _valueAtPoint:_CGPointMake(aPoint.x + _dragOffset.width, aPoint.y + _dragOffset.height)]];
+
+    return YES;
+}
+
+- (void)stopTracking:(CGPoint)lastPoint at:(CGPoint)aPoint mouseIsUp:(BOOL)mouseIsUp
+{
+    [self setHighlighted:NO];
+    
+    if ([_target respondsToSelector:@selector(sliderDidFinish:)])
+        [_target sliderDidFinish:self];
+
+    [self setNeedsLayout];
+    [self setNeedsDisplay:YES];
 }
 
 /*!
-    Returns whether the control can continuously send its action messages.
+    @ignore
+    shoudl we have _continuous?
 */
-- (BOOL)isContinuous
-{
-    return (_sendActionOn & CPLeftMouseDraggedMask) != 0;
-}
-
-/*!
-    Sets whether the cell can continuously send its action messages.
- */
 - (void)setContinuous:(BOOL)flag
 {
     if (flag)
@@ -155,298 +388,61 @@ var CPSliderHorizontalKnobImage         = nil,
         _sendActionOn &= ~CPLeftMouseDraggedMask;
 }
 
-/*!
-    Returns the thickness of the slider's knob. This value is in pixels, 
-    and is the size of the knob along the slider's track.
-*/
-- (float)knobThickness
-{
-    return CPRectGetWidth([_knob frame]);
-}
+@end
 
-/*
-    @ignore
-*/
-- (CPImage)leftTrackImage
-{
-    return CPSliderHorizontalBarLeftImage;
-}
+var CPSliderMinValueKey             = "CPSliderMinValueKey",
+    CPSliderMaxValueKey             = "CPSliderMaxValueKey",
+    CPSliderAltIncrValueKey         = "CPSliderAltIncrValueKey";
 
-/*
-    @ignore
-*/
-- (CPImage)rightTrackImage
-{
-    return CPSliderHorizontalBarRightImage;
-}
+@implementation CPSlider (CPCoding)
 
-/*
-    @ignore
-*/
-- (CPImage)centerTrackImage
+- (id)initWithCoder:(CPCoder)aCoder
 {
-    return CPSliderHorizontalBarCenterImage
-}
+    _minValue = [aCoder decodeDoubleForKey:CPSliderMinValueKey];
+    _maxValue = [aCoder decodeDoubleForKey:CPSliderMaxValueKey];
 
-/*
-    @ignore
-*/
-- (CPImage)knobImage
-{
-    return CPSliderKnobImage;
-}
+    self = [super initWithCoder:aCoder];
 
-/*
-    @ignore
-*/
-- (CPImage)pushedKnobImage
-{
-    return CPSliderKnobPushedImage;
-}
-
-/*!
-    Returns the slider's knob.
-*/
-- (CPView)knob
-{
-    if (!_standardKnob)
+    if (self)
     {
-        var knobImage = [self knobImage],
-            knobSize = [knobImage size];
-        
-        _standardKnob = [[CPImageView alloc] initWithFrame:CPRectMake(0.0, 0.0, knobSize.width, knobSize.height)];
-        
-        [_standardKnob setHitTests:NO];
-        [_standardKnob setImage:knobImage];
+        _altIncrementValue = [aCoder decodeDoubleForKey:CPSliderAltIncrValueKey];
+
+        [self setContinuous:YES];
+
+        [self _recalculateIsVertical];
+
+        [self setNeedsLayout];
+        [self setNeedsDisplay:YES];
     }
-    
-    return _standardKnob;
+
+    return self;
 }
 
-/*!
-    Returns the slider's bar.
-*/
-- (CPView)bar
+- (void)encodeWithCoder:(CPCoder)aCoder
 {
-    // FIXME: veritcal.
-    if ([self isVertical])
-        return nil;
-    else
-    {
-        if (!_standardHorizontalBar)
-        {
-            var frame = [self frame],
-                barFrame = CPRectMake(0.0, 0.0, CPRectGetWidth(frame), 4.0);
-                
-            _standardHorizontalBar = [[CPView alloc] initWithFrame:barFrame];
-            
-            [_standardHorizontalBar setBackgroundColor:[CPColor colorWithPatternImage:[[CPThreePartImage alloc] initWithImageSlices:
-                [[self leftTrackImage], [self centerTrackImage], [self rightTrackImage]] isVertical:NO]]];
+    [super encodeWithCoder:aCoder];
 
-            [_standardHorizontalBar setFrame:CPRectMake(0.0, (CPRectGetHeight(frame) - CPRectGetHeight(barFrame)) / 2.0, CPRectGetWidth(_isVertical ? barFrame : frame), CPRectGetHeight(_isVertical ? frame : barFrame))];
-            [_standardHorizontalBar setAutoresizingMask:_isVertical ? CPViewHeightSizable : CPViewWidthSizable];
-        }
-        
-        return _standardHorizontalBar;
-    }
-}
-
-/*!
-    Returns <code>YES</code> if the slider is vertical.
-*/
-- (BOOL)isVertical
-{
-    var frame = [self frame];
-    
-    if (CPRectGetWidth(frame) == CPRectGetHeight(frame))
-        return -1;
-    
-    return CPRectGetWidth(frame) < CPRectGetHeight(frame);
-}
-
-/*!
-    Returns the slider's maximum value
-*/
-- (double)maxValue
-{
-    return _maxValue;
-}
-
-/*!
-    Returns the slider's minimum value
-*/
-- (double)minValue
-{
-    return _minValue;
-}
-
-/*!
-    Sets the slider's maximum value
-    @param aMaxValue the new maximum value
-*/
-- (void)setMaxValue:(double)aMaxValue
-{
-    _maxValue = aMaxValue;
-}
-
-/*!
-    Sets the slider's minimum value
-    @param aMinValue the new minimum value
-*/
-- (void)setMinValue:(double)aMinValue
-{
-    _minValue = aMinValue;
-}
-
-/*!
-    Sets the slider's value
-    @param aValue the new slider value
-    @deprecated Use setFloatValue, setObjectValue, etc
-*/
-- (void)setValue:(double)aValue
-{
-    [self setObjectValue:aValue];
-}
-
-/*!
-    Returns the slider's value
-    @deprecated Use floatValue, objectValue, etc
-*/
-- (double)value
-{
-    return [self floatValue];
-}
-
-- (void)setObjectValue:(id)anObject
-{
-    [super setObjectValue:anObject];
-    
-    if (_knob)
-        [_knob setFrameOrigin:[self knobPosition]];
-}
-
-/*
-    Returns the knob's position
-    @ignore
-*/
-- (CGPoint)knobPosition
-{
-    if ([self isVertical])
-        return CPPointMake(0.0, 0.0);
-    else
-        return CPPointMake(
-            (([self floatValue] - _minValue) / (_maxValue - _minValue)) * (CPRectGetWidth([self frame]) - CPRectGetWidth([_knob frame])), 
-            (CPRectGetHeight([self frame]) - CPRectGetHeight([_knob frame])) / 2.0);
-}
-
-/*
-    @ignore
-*/
-- (float)valueForKnobPosition:(CGPoint)aPoint
-{
-    if ([self isVertical])
-        return 0.0;
-    else
-        return MAX(MIN((aPoint.x) * (_maxValue - _minValue) / ( CPRectGetWidth([self frame]) - CPRectGetWidth([_knob frame]) ) + _minValue, _maxValue), _minValue);
-}
-
-- (CGPoint)constrainKnobPosition:(CGPoint)aPoint
-{
-    //FIXME
-    aPoint.x -= _knobSize.width / 2.0;
-    return CPPointMake(MAX(MIN(CPRectGetWidth([self bounds]) - _knobSize.width, aPoint.x), 0.0), (CPRectGetHeight([self bounds]) - CPRectGetHeight([_knob frame])) / 2.0);
-}
-
-- (BOOL)tracksMouseOutsideOfFrame
-{
-    return YES;
-}
-
-- (BOOL)startTrackingAt:(CGPoint)aPoint
-{
-    [[self knob] setImage:[self pushedKnobImage]];
-    
-    [_knob setFrameOrigin:[self constrainKnobPosition:aPoint]];
-
-    [self setObjectValue:[self valueForKnobPosition:[_knob frame].origin]];
-    
-    return YES;   
-}
-
-- (BOOL)continueTracking:(CGPoint)lastPoint at:(CGPoint)aPoint
-{
-    [_knob setFrameOrigin:[self constrainKnobPosition:aPoint]];
-    
-    [self setObjectValue:[self valueForKnobPosition:[_knob frame].origin]];
-    
-    return YES;
-}
-
-- (void)stopTracking:(CGPoint)lastPoint at:(CGPoint)aPoint mouseIsUp:(BOOL)mouseIsUp
-{
-    [[self knob] setImage:[self knobImage]];
-    
-    if ([_target respondsToSelector:@selector(sliderDidFinish:)])
-        [_target sliderDidFinish:self];
+    [aCoder encodeDouble:_minValue forKey:CPSliderMinValueKey];
+    [aCoder encodeDouble:_maxValue forKey:CPSliderMaxValueKey];
+    [aCoder encodeDouble:_altIncrementValue forKey:CPSliderAltIncrValueKey];
 }
 
 @end
 
-var CPSliderMinValueKey     = "CPSliderMinValueKey",
-    CPSliderMaxValueKey     = "CPSliderMaxValueKey",
-    CPSliderAltIncrValueKey = "CPSliderAltIncrValueKey",
-    CPSliderIsVerticalKey   = "CPSliderIsVerticalKey";
+@implementation CPSlider (Deprecated)
 
-@implementation CPSlider (CPCoding)
-
-/*!
-    Initializes the slider from the data in a coder.
-    @param aCoder the coder from which to read the data
-    @return the initialized slider
-*/
-- (id)initWithCoder:(CPCoder)aCoder
+- (id)value
 {
-    self = [super initWithCoder:aCoder];
+    CPLog.warn("[CPSlider value] is deprecated, use doubleValue or objectValue instead.");
     
-    if (self)
-    {
-        _minValue = [aCoder decodeDoubleForKey:CPSliderMinValueKey];
-        _maxValue = [aCoder decodeDoubleForKey:CPSliderMaxValueKey];
-        _altIncrementValue = [aCoder decodeDoubleForKey:CPSliderAltIncrValueKey];
-        _isVertical = [aCoder decodeDoubleForKey:CPSliderIsVerticalKey];
-    
-        _bar = [self bar];
-        _knob = [self knob];
-        _knobSize = [[self knobImage] size];
-        _isVertical = [self isVertical];
-        
-        [_knob setFrameOrigin:[self knobPosition]];
-        
-        [self addSubview:_bar];
-        [self addSubview:_knob];
-    }
-    
-    return self;
+    return [self doubleValue];    
 }
 
-/*!
-    Writes out the slider's instance information to a coder.
-    @param aCoder the coder to which to write the data
-*/
-- (void)encodeWithCoder:(CPCoder)aCoder
+- (void)setValue:(id)aValue
 {
-    var subviews = _subviews;
+    CPLog.warn("[CPSlider setValue:] is deprecated, use setDoubleValue: or setObjectValue: instead.");
     
-    _subviews = [];
-         
-    [super encodeWithCoder:aCoder];
-    
-    _subviews = subviews;
-    
-    [aCoder encodeDouble:_minValue forKey:CPSliderMinValueKey];
-    [aCoder encodeDouble:_maxValue forKey:CPSliderMaxValueKey];
-    [aCoder encodeDouble:_altIncrementValue forKey:CPSliderAltIncrValueKey];
-    [aCoder encodeBool:_isVertical forKey:CPSliderIsVerticalKey];
+    [self setObjectValue:aValue];
 }
 
 @end

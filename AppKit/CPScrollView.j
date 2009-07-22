@@ -27,7 +27,9 @@
 #include "CoreGraphics/CGGeometry.h"
 
 
-/*! @class CPScrollView
+/*! 
+    @ingroup appkit
+    @class CPScrollView
 
     Used to display views that are too large for the viewing area. the CPScrollView
     places scroll bars on the side of the view to allow the user to scroll and see the entire
@@ -142,7 +144,7 @@
 */
 - (void)reflectScrolledClipView:(CPClipView)aClipView
 {
-    if(_contentView != aClipView)
+    if(_contentView !== aClipView)
         return;
 
     if (_recursionCount > 5)
@@ -161,8 +163,8 @@
         }
         else
         {
-            [_verticalScroller setEnabled:NO];
-            [_horizontalScroller setEnabled:NO];
+//            [_verticalScroller setEnabled:NO];
+//            [_horizontalScroller setEnabled:NO];
         }
         
         [_contentView setFrame:[self bounds]];
@@ -180,22 +182,24 @@
         shouldShowHorizontalScroller = (!_autohidesScrollers || difference.width > 0.0) && _hasHorizontalScroller,
         wasShowingVerticalScroller = ![_verticalScroller isHidden],
         wasShowingHorizontalScroller = ![_horizontalScroller isHidden],
-        verticalScrollerWidth = [CPScroller scrollerWidthForControlSize:[_verticalScroller controlSize]],
-        horizontalScrollerHeight = [CPScroller scrollerWidthForControlSize:[_horizontalScroller controlSize]];
+        verticalScrollerWidth = _CGRectGetWidth([_verticalScroller frame]);
+        horizontalScrollerHeight = _CGRectGetHeight([_horizontalScroller frame]);
 
     if (_autohidesScrollers)
     {
+        // Check to see if either affected the other!
         if (shouldShowVerticalScroller)
             shouldShowHorizontalScroller = (!_autohidesScrollers || difference.width > -verticalScrollerWidth) && _hasHorizontalScroller;
+
         if (shouldShowHorizontalScroller)
             shouldShowVerticalScroller = (!_autohidesScrollers || difference.height > -horizontalScrollerHeight) && _hasVerticalScroller;
     }
-    
+
     [_verticalScroller setHidden:!shouldShowVerticalScroller];
-    [_verticalScroller setEnabled:!_autohidesScrollers && difference.height < 0];
+    [_verticalScroller setEnabled:difference.height > 0.0];
 
     [_horizontalScroller setHidden:!shouldShowHorizontalScroller];
-    [_horizontalScroller setEnabled:!_autohidesScrollers && difference.width < 0];
+    [_horizontalScroller setEnabled:difference.width > 0.0];
 
     if (shouldShowVerticalScroller)
     {
@@ -238,7 +242,7 @@
 */
 - (void)setHorizontalScroller:(CPScroller)aScroller
 {
-    if (_horizontalScroller == aScroller)
+    if (_horizontalScroller === aScroller)
         return;
     
     [_horizontalScroller removeFromSuperview];
@@ -270,13 +274,13 @@
 */
 - (void)setHasHorizontalScroller:(BOOL)shouldHaveHorizontalScroller
 {
-    if (_hasHorizontalScroller == shouldHaveHorizontalScroller)
+    if (_hasHorizontalScroller === shouldHaveHorizontalScroller)
         return;
 
     _hasHorizontalScroller = shouldHaveHorizontalScroller;
     
     if (_hasHorizontalScroller && !_horizontalScroller)
-        [self setHorizontalScroller:[[CPScroller alloc] initWithFrame:CPRectMake(0.0, 0.0, CPRectGetWidth([self bounds]), [CPScroller scrollerWidth])]];
+        [self setHorizontalScroller:[[CPScroller alloc] initWithFrame:CGRectMake(0.0, 0.0, CPRectGetWidth([self bounds]), [CPScroller scrollerWidth])]];
 
     else if (!_hasHorizontalScroller && _horizontalScroller)
     {
@@ -300,7 +304,7 @@
 */
 - (void)setVerticalScroller:(CPScroller)aScroller
 {
-    if (_verticalScroller == aScroller)
+    if (_verticalScroller === aScroller)
         return;
     
     [_verticalScroller removeFromSuperview];
@@ -333,7 +337,7 @@
 */
 - (void)setHasVerticalScroller:(BOOL)shouldHaveVerticalScroller
 {
-    if (_hasVerticalScroller == shouldHaveVerticalScroller)
+    if (_hasVerticalScroller === shouldHaveVerticalScroller)
         return;
 
     _hasVerticalScroller = shouldHaveVerticalScroller;
@@ -352,9 +356,9 @@
 /*!
     Returns <code>YES</code> if the scroll view can have a vertical scroller.
 */
-- (BOOL)hasHorizontalScroller
+- (BOOL)hasVerticalScroller
 {
-    return _hasHorizontalScroller;
+    return _hasVerticalScroller;
 }
 
 /*!
@@ -576,8 +580,7 @@
 */
 - (void)scrollWheel:(CPEvent)anEvent
 {
-   var value = [_verticalScroller floatValue],
-       documentFrame = [[self documentView] frame],
+   var documentFrame = [[self documentView] frame],
        contentBounds = [_contentView bounds];
 
     contentBounds.origin.x += [anEvent deltaX] * _horizontalLineScroll;
@@ -589,7 +592,6 @@
 - (void)keyDown:(CPEvent)anEvent
 {
     var keyCode = [anEvent keyCode],
-        value = [_verticalScroller floatValue],
         documentFrame = [[self documentView] frame],
         contentBounds = [_contentView bounds];
     

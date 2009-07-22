@@ -130,6 +130,13 @@ CPOtherMouseUp                          = 26;
     @group CPEventType
 */
 CPOtherMouseDragged                     = 27;
+
+// iPhone Event Types
+CPTouchStart                            = 28;
+CPTouchMove                             = 29;
+CPTouchEnd                              = 30;
+CPTouchCancel                           = 31;
+                                        
                                         
 CPAlphaShiftKeyMask                     = 1 << 16;
 CPShiftKeyMask                          = 1 << 17;
@@ -175,11 +182,17 @@ CPDOMEventKeyPress                      = "keypress";
 CPDOMEventCopy                          = "copy";
 CPDOMEventPaste                         = "paste";
 CPDOMEventScrollWheel                   = "mousewheel";
+CPDOMEventTouchStart                    = "touchstart";
+CPDOMEventTouchMove                     = "touchmove";
+CPDOMEventTouchEnd                      = "touchend";
+CPDOMEventTouchCancel                   = "touchcancel";
 
 var _CPEventPeriodicEventPeriod         = 0,
     _CPEventPeriodicEventTimer          = nil;
 
-/*! @class CPEvent
+/*! 
+    @ingroup appkit
+    @class CPEvent
     CPEvent encapsulates the details of a Cappuccino keyboard or mouse event.
 */
 @implementation CPEvent : CPObject
@@ -193,6 +206,7 @@ var _CPEventPeriodicEventPeriod         = 0,
     unsigned            _clickCount;
     float               _pressure;
     CPWindow            _window;
+    Number              _windowNumber;
     CPString            _characters;
     CPString            _charactersIgnoringModifiers
     BOOL                _isARepeat;
@@ -314,7 +328,7 @@ var _CPEventPeriodicEventPeriod         = 0,
         _charactersIgnoringModifiers = unmodCharacters;
         _isARepeat = isARepeat;
         _keyCode = code;
-        _window = [CPApp windowWithWindowNumber:aWindowNumber];
+        _windowNumber = aWindowNumber;
     }
     
     return self;
@@ -384,6 +398,9 @@ var _CPEventPeriodicEventPeriod         = 0,
 */
 - (CPWindow)window
 {
+    if (!_window)
+        _window = [CPApp windowWithWindowNumber:_windowNumber];
+
     return _window;
 }
 
@@ -517,5 +534,25 @@ var _CPEventPeriodicEventPeriod         = 0,
 function _CPEventFirePeriodEvent()
 {
     [CPApp sendEvent:[CPEvent otherEventWithType:CPPeriodic location:_CGPointMakeZero() modifierFlags:0 timestamp:0 windowNumber:0 context:nil subtype:0 data1:0 data2:0]];
+}
+
+var CPEventClass = [CPEvent class];
+
+function _CPEventFromNativeMouseEvent(aNativeEvent, anEventType, aPoint, modifierFlags, aTimestamp, aWindowNumber, aGraphicsContext, anEventNumber, aClickCount, aPressure)
+{
+    aNativeEvent.isa = CPEventClass;
+
+    aNativeEvent._type = anEventType;
+    aNativeEvent._location = aPoint;
+    aNativeEvent._modifierFlags = modifierFlags;
+    aNativeEvent._timestamp = aTimestamp;
+    aNativeEvent._windowNumber = aWindowNumber;
+    aNativeEvent._window = nil;
+    aNativeEvent._context = aGraphicsContext;
+    aNativeEvent._eventNumber = anEventNumber;
+    aNativeEvent._clickCount = aClickCount;
+    aNativeEvent._pressure = aPressure;
+
+    return aNativeEvent;
 }
 

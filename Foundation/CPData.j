@@ -23,6 +23,13 @@
 @import "CPObject.j"
 @import "CPString.j"
 
+/*! 
+    @class CPData
+    @ingroup foundation
+    @brief A Cappuccino wrapper for any data type.
+
+
+*/
 
 @implementation CPData : CPObject
 {

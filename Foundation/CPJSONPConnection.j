@@ -25,7 +25,12 @@
 
 CPJSONPConnectionCallbacks = {};
 
-/*! @class CPJSONPConnection
+CPJSONPCallbackReplacementString = @"${JSONP_CALLBACK}";
+
+/*! 
+    @ingroup foundation
+    @brief Allows cross domain connections using JSONP protocol.
+
     Important note: CPJSONPConnection is <strong>only</strong> for JSONP APIs.
     If aren't sure you <strong>need</strong>
     <a href="http://ajaxian.com/archives/jsonp-json-with-padding">JSON<strong>P</strong></a>,
@@ -68,13 +73,8 @@ CPJSONPConnectionCallbacks = {};
     
     _callbackParameter = aString;
     
-    CPJSONPConnectionCallbacks["callback"+[self hash]] = function(data)
-    {
-        [_delegate connection:self didReceiveData:data];
-        [self removeScriptTag];
-
-        [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
-    };
+    if (!_callbackParameter && [_request URL].indexOf(CPJSONPCallbackReplacementString) < 0)
+         [CPException raise:CPInvalidArgumentException reason:@"JSONP source specified without callback parameter or CPJSONPCallbackReplacementString in URL."];
 
     if(shouldStartImmediately)
         [self start];
@@ -86,12 +86,29 @@ CPJSONPConnectionCallbacks = {};
 {
     try
     {
-        var head = document.getElementsByTagName("head").item(0);
-        
-        var source = [_request URL];    
-        source += (source.indexOf('?') < 0) ? "?" : "&";
-        source += _callbackParameter+"=CPJSONPConnectionCallbacks.callback"+[self hash];
+        CPJSONPConnectionCallbacks["callback"+[self UID]] = function(data)
+        {
+            [_delegate connection:self didReceiveData:data];
+            [self removeScriptTag];
+    
+            [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
+        };
 
+        var head = document.getElementsByTagName("head").item(0),
+            source = [_request URL];    
+
+        if (_callbackParameter)
+        {
+            source += (source.indexOf('?') < 0) ? "?" : "&";
+            source += _callbackParameter+"=CPJSONPConnectionCallbacks.callback"+[self UID];
+        }
+        else if (source.indexOf(CPJSONPCallbackReplacementString) >= 0)
+        {
+            source = [source stringByReplacingOccurrencesOfString:CPJSONPCallbackReplacementString withString:"CPJSONPConnectionCallbacks.callback"+[self UID]];
+        }
+        else
+            return;
+        
         _scriptTag = document.createElement("script");
         _scriptTag.setAttribute("type", "text/javascript");
         _scriptTag.setAttribute("charset", "utf-8");
@@ -110,11 +127,11 @@ CPJSONPConnectionCallbacks = {};
 {
     var head = document.getElementsByTagName("head").item(0);
     
-    if(_scriptTag.parentNode == head)
+    if(_scriptTag && _scriptTag.parentNode == head)
         head.removeChild(_scriptTag);
 
-    CPJSONPConnectionCallbacks["callback"+[self hash]] = nil;
-    delete CPJSONPConnectionCallbacks["callback"+[self hash]];
+    CPJSONPConnectionCallbacks["callback"+[self UID]] = nil;
+    delete CPJSONPConnectionCallbacks["callback"+[self UID]];
 }
 
 - (void)cancel

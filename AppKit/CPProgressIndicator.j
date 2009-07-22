@@ -49,7 +49,9 @@ var CPProgressIndicatorSpinningStyleColors  = nil,
     CPProgressIndicatorStyleIdentifiers     = nil,
     CPProgressIndicatorStyleSizes           = nil;
 
-/*! @class CPProgressIndicator
+/*! 
+    @ingroup appkit
+    @class CPProgressIndicator
 
     This class is used in a Cappuccino GUI to display the progress of a
     function or task. If the duration of the task is unknown, there is

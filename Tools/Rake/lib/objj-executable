@@ -1,0 +1,24 @@
+#!/bin/bash
+
+# get path of the executable
+SELF_PATH=$(cd -P -- "$(dirname -- "$0")" && pwd -P) && SELF_PATH=$SELF_PATH/$(basename -- "$0")
+
+# resolve symlinks
+if [ -h $SELF_PATH ]; then
+	SELF_PATH=`readlink $SELF_PATH`
+fi
+
+SELF_DIR=`dirname $SELF_PATH`
+SELF_HOME=`dirname $SELF_DIR`
+SELF_LIB="$SELF_HOME/lib"
+
+FRAMEWORKS="$SELF_LIB/Frameworks"
+MAIN="$SELF_LIB/$(basename $SELF_PATH)/main.j"
+
+# convert paths for Cygwin
+if [[ `uname` == CYGWIN* ]]; then
+    FRAMEWORKS=`cygpath -w "$FRAMEWORKS"`
+    MAIN=`cygpath -w "$MAIN"`
+fi
+
+objj -I$FRAMEWORKS $MAIN "$@"

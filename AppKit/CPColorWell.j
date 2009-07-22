@@ -29,7 +29,9 @@
 
 var _CPColorWellDidBecomeExclusiveNotification = @"_CPColorWellDidBecomeExclusiveNotification";
 
-/*! @class CPColorWell
+/*! 
+    @ingroup appkit
+    @class CPColorWell
 
     CPColorWell is a CPControl for selecting and displaying a single color value. An example of a CPColorWell object (or simply color well) is found in CPColorPanel, which uses a color well to display the current color selection.</p>
 

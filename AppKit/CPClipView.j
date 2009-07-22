@@ -25,7 +25,9 @@
 #include "CoreGraphics/CGGeometry.h"
 
 
-/*! @class CPClipView
+/*! 
+    @ingroup appkit
+    @class CPClipView
 
     CPClipView allows you to define a clip rect and display only that portion of its containing view.  
     It is used to hold the document view in a CPScrollView.
@@ -65,9 +67,6 @@
     
     if (_documentView)
     {
-        // FIXME: remove when bounds.
-        [_documentView setFrameOrigin:CGPointMake(0.0, 0.0)];
-            
         [self addSubview:_documentView];
         
 		[_documentView setPostsFrameChangedNotifications:YES];
@@ -103,6 +102,9 @@
 */
 - (CGPoint)constrainScrollPoint:(CGPoint)aPoint
 {
+    if (!_documentView)
+        return _CGPointMakeZero();
+
     var documentFrame = [_documentView frame];
     
     aPoint.x = MAX(0.0, MIN(aPoint.x, MAX(_CGRectGetWidth(documentFrame) - _CGRectGetWidth(_bounds), 0.0)));
@@ -139,7 +141,7 @@
 */
 - (void)viewBoundsChanged:(CPNotification)aNotification
 {
-    [self viewFrameChanged:aNotification];
+    [self _constrainScrollPoint];
 }
 
 /*!
@@ -147,6 +149,17 @@
     @param aNotification the notification event
 */
 - (void)viewFrameChanged:(CPNotification)aNotification
+{
+    [self _constrainScrollPoint];
+}
+
+- (void)resizeSubviewsWithOldSize:(CGSize)aSize
+{
+    [super resizeSubviewsWithOldSize:aSize];
+    [self _constrainScrollPoint];
+}
+
+- (void)_constrainScrollPoint
 {
     var oldScrollPoint = [self bounds].origin;
     
@@ -166,6 +179,22 @@
         [superview reflectScrolledClipView:self];
 }
 
+- (BOOL)autoscroll:(CPEvent)anEvent 
+{
+    var bounds = [self bounds],
+        eventLocation = [self convertPoint:[anEvent locationInWindow] fromView:nil];
+
+    if (CPRectContainsPoint(bounds, eventLocation))
+        return NO;
+
+    var newRect = CGRectMakeZero();
+
+    newRect.origin = eventLocation;
+    newRect.size = CPSizeMake(10, 10);
+
+	return [_documentView scrollRectToVisible:newRect];
+}
+
 @end
 
 
@@ -176,29 +205,7 @@ var CPClipViewDocumentViewKey = @"CPScrollViewDocumentView";
 - (id)initWithCoder:(CPCoder)aCoder
 {
     if (self = [super initWithCoder:aCoder])
-    {
-        _documentView = [aCoder decodeObjectForKey:CPClipViewDocumentViewKey];
-        
-        if (_documentView)
-        {
-    		[_documentView setPostsFrameChangedNotifications:YES];
-    		[_documentView setPostsBoundsChangedNotifications:YES];
-
-            var defaultCenter = [CPNotificationCenter defaultCenter];
-            
-    		[defaultCenter
-                addObserver:self
-                   selector:@selector(viewFrameChanged:)
-                       name:CPViewFrameDidChangeNotification 
-                     object:_documentView];
-
-    		[defaultCenter
-                addObserver:self
-                   selector:@selector(viewBoundsChanged:)
-                       name:CPViewBoundsDidChangeNotification 
-                     object:_documentView];
-        }
-    }
+        [self setDocumentView:[aCoder decodeObjectForKey:CPClipViewDocumentViewKey]];
     
     return self;
 }

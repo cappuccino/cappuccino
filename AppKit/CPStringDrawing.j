@@ -22,6 +22,9 @@
 
 @import <Foundation/CPString.j>
 
+#include "CoreGraphics/CGGeometry.h"
+#include "Platform/Platform.h"
+
 
 var CPStringReferenceElement    = nil,
     CPStringDefaultFont         = nil;
@@ -43,6 +46,7 @@ var CPStringReferenceElement    = nil,
 
 - (CGSize)sizeWithFont:(CPFont)aFont inWidth:(float)aWidth
 {
+#if PLATFORM(DOM)
     if (!CPStringReferenceElement)
     {
         CPStringReferenceElement = document.createElement("span");
@@ -94,7 +98,7 @@ var CPStringReferenceElement    = nil,
             style.whiteSpace = "pre-wrap";
         }
     }
-    
+
     style.font = [aFont cssString];
 
     if (CPFeatureIsCompatible(CPJavascriptInnerTextFeature))
@@ -103,7 +107,14 @@ var CPStringReferenceElement    = nil,
     else if (CPFeatureIsCompatible(CPJavascriptTextContentFeature))
         CPStringReferenceElement.textContent = self;
 
-    return CGSizeMake(CPStringReferenceElement.clientWidth, CPStringReferenceElement.clientHeight);
+    return _CGSizeMake(CPStringReferenceElement.clientWidth, CPStringReferenceElement.clientHeight);
+#endif
+    return _CGSizeMakeZero();
+}
+
++ (void)_resetSize
+{
+    CPStringReferenceElement = nil;
 }
 
 @end

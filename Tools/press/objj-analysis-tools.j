@@ -1,5 +1,5 @@
-var objjPath    = OBJJ_LIB+'/Frameworks-Rhino/Objective-J/Objective-J.js',
-    bridgePath  = OBJJ_LIB+'/bridge.js',
+var objjPath    = OBJJ_HOME+'/lib/Frameworks/Objective-J/rhino.platform/Objective-J.js',
+    bridgePath  = OBJJ_HOME+'/lib/press/bridge.js',
     envPath     = "/Users/tlrobinson/280North/git/cappuccino/Tools/press/env.js";
     
 /*
@@ -83,9 +83,9 @@ function traverseDependencies(context, file)
             var token;
             while (token = lexer.skip_whitespace())
             {
-                if (context.dependencies[token])
+                if (context.dependencies.hasOwnProperty(token))
                 {
-                    var files = context.dependencies[token]
+                    var files = context.dependencies[token];
                     for (var j = 0; j < files.length; j++)
                     {
                         // don't record references to self
@@ -153,7 +153,7 @@ function traverseDependencies(context, file)
             if (context.referenceCallback)
                 context.referenceCallback(file.path, referencedFile, referencedFiles[referencedFile]);
                 
-            if (context.scope.objj_files[referencedFile])
+            if (context.scope.objj_files.hasOwnProperty(referencedFile))
                 traverseDependencies(context, context.scope.objj_files[referencedFile]);
             else
                 CPLog.error("Missing referenced file: " + referencedFile);
@@ -232,7 +232,7 @@ function findGlobalDefines(context, scope, rootPath, evaledFragments)
         
         if (evaledFragments)
         {
-                evaledFragments.push(aFragment);
+            evaledFragments.push(aFragment);
         }
         
         var result = fragment_evaluate_code_original(aFragment);

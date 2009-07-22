@@ -26,6 +26,7 @@
 @import "CPSortDescriptor.j"
 @import "CPException.j"
 
+
 /* @ignore */
 @implementation _CPArrayEnumerator : CPEnumerator
 {
@@ -86,7 +87,11 @@
 
 @end
 
-/*! @class CPArray
+/*! 
+    @class CPArray
+    @brief A mutable array backed by a JavaScript Array.
+    @ingroup foundation
+
     A mutable array class backed by a JavaScript Array.
     There is also a CPMutableArray class,
     but it is just a child class of this class with an
@@ -251,18 +256,6 @@
     }
 
     return self;
-}
-
-/*!
-    Returns a hash of the CPArray.
-    @return an unsigned integer hash
-*/
-- (unsigned)hash
-{
-    if (self.__address == nil)
-        self.__address = _objj_generateObjectHash();
-
-    return self.__address;
 }
 
 // Querying an array
@@ -502,7 +495,7 @@
 */
 - (unsigned)indexOfObject:(id)anObject sortedByDescriptors:(CPArray)descriptors
 {
-    [self indexOfObject:anObject sortedByFunction:function(lhs, rhs)
+    return [self indexOfObject:anObject sortedByFunction:function(lhs, rhs)
     {
         var i = 0,
             count = [descriptors count],
@@ -555,6 +548,9 @@
 */
 - (id)objectAtIndex:(int)anIndex
 {
+    if (anIndex >= length)
+        [CPException raise:CPRangeException reason:@"index (" + anIndex + @") beyond bounds (" + length + @")"];
+
     return self[anIndex];
 }
 
@@ -701,7 +697,7 @@
 */
 - (CPArray)arrayByAddingObject:(id)anObject
 {
-    if (!anObject)
+    if (anObject === nil || anObject === undefined)
         [CPException raise:CPInvalidArgumentException
                     reason:"arrayByAddingObject: object can't be nil"];
 
@@ -824,18 +820,23 @@
 */
 - (CPString)description
 {
-    var i = 0,
+    var index = 0,
         count = [self count],
         description = '(';
-    
-    for(; i < count; ++i)
+
+    for(; index < count; ++index)
     {
-        if (self[i].isa) description += [self[i] description];
-        else description += self[i];
-        
-        if (i != count - 1) description += ", ";
+        var object = self[index];
+
+        if (object && object.isa)
+            description += [object description];
+        else
+            description += object;
+
+        if (index !== count - 1)
+            description += ", ";
     }
-    
+
     return description + ')';
 }
 
@@ -1229,6 +1230,9 @@
 @end
 
 /*!
+    @class CPMutableArray
+    @ingroup compatability
+
     This class is just an empty subclass of CPArray.
     CPArray already implements mutable methods and
     this class only exists for source compatability.

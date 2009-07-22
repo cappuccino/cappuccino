@@ -65,6 +65,16 @@ _function(CGRectIsNull(aRect))
 
 _function(CGRectContainsPoint(aRect, aPoint))
 
+_function(CGInsetMake(top, right, bottom, left))
+_function(CGInsetMakeZero())
+_function(CGInsetMakeCopy(anInset))
+_function(CGInsetIsEmpty(anInset))
+
+/*!
+    @addtogroup appkit
+    @{
+*/
+
 /*!
     Returns a <code>BOOL</code> indicating whether CGRect <code>lhsRect</code>
     contains CGRect <code>rhsRect</code>.
@@ -203,3 +213,21 @@ function CGPointFromEvent(anEvent)
 {
     return _CGPointMake(anEvent.clientX, anEvent.clientY);
 }
+
+function CGInsetFromString(aString)
+{
+    var numbers = aString.substr(1, aString.length - 2).split(',');
+
+    return _CGInsetMake(parseFloat(numbers[0]), parseFloat(numbers[1]), parseFloat(numbers[2]), parseFloat(numbers[3]));
+}
+
+CGInsetFromCPString = CGInsetFromString;
+
+function CPStringFromCGInset(anInset)
+{
+    return '{' + anInset.top + ", " + anInset.left + ", " + anInset.bottom + ", " + anInset.right + '}';
+}
+
+/*! 
+    @} 
+*/

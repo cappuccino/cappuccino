@@ -54,6 +54,7 @@ var CPToolbarsByIdentifier              = nil;
 var CPToolbarConfigurationsByIdentifier = nil;
 
 /*!
+    @ingroup appkit
     @class CPToolbar
     
     A CPToolbar is displayed at the top of a window with multiple
@@ -448,6 +449,7 @@ var _CPToolbarItemInfoMake = function(anIndex, aView, aLabel, aMinWidth)
     
     CPPopUpButton       _additionalItemsButton;
     CPColor             _labelColor;
+    CPColor             _labelShadowColor;
     
     float               _minWidth;
 }
@@ -473,6 +475,7 @@ var _CPToolbarItemInfoMake = function(anIndex, aView, aLabel, aMinWidth)
         _minWidth = 0;
         
         _labelColor = [CPColor blackColor];
+        _labelShadowColor = [CPColor colorWithWhite:1.0 alpha:0.75];
         
         _additionalItemsButton = [[CPPopUpButton alloc] initWithFrame:CGRectMake(0.0, 0.0, 10.0, 15.0) pullsDown:YES];
         [_additionalItemsButton setBordered:NO];
@@ -508,6 +511,20 @@ var _CPToolbarItemInfoMake = function(anIndex, aView, aLabel, aMinWidth)
     
     while (count--)
         [[self labelForItem:items[count]] setTextColor:_labelColor];
+}
+
+- (void)setLabelShadowColor:(CPColor)aColor
+{
+    if (_labelShadowColor === aColor)
+        return;
+    
+    _labelShadowColor = aColor;
+    
+    var items = [_toolbar items],
+        count = [items count];
+    
+    while (count--)
+        [[self labelForItem:items[count]] setTextShadowColor:_labelShadowColor];
 }
 
 // This *should* be roughly O(3N) = O(N)
@@ -708,7 +725,7 @@ var _CPToolbarItemInfoMake = function(anIndex, aView, aLabel, aMinWidth)
 
 - (CPView)viewForItem:(CPToolbarItem)anItem
 {
-    var info = [_itemInfos objectForKey:[anItem hash]];
+    var info = [_itemInfos objectForKey:[anItem UID]];
     
     if (!info)
         return nil;
@@ -718,7 +735,7 @@ var _CPToolbarItemInfoMake = function(anIndex, aView, aLabel, aMinWidth)
 
 - (CPTextField)labelForItem:(CPToolbarItem)anItem
 {
-    var info = [_itemInfos objectForKey:[anItem hash]];
+    var info = [_itemInfos objectForKey:[anItem UID]];
     
     if (!info)
         return nil;
@@ -728,7 +745,7 @@ var _CPToolbarItemInfoMake = function(anIndex, aView, aLabel, aMinWidth)
 
 - (float)minWidthForItem:(CPToolbarItem)anItem
 {
-    var info = [_itemInfos objectForKey:[anItem hash]];
+    var info = [_itemInfos objectForKey:[anItem UID]];
     
     if (!info)
         return 0;
@@ -785,6 +802,8 @@ var _CPToolbarItemInfoMake = function(anIndex, aView, aLabel, aMinWidth)
         [label setStringValue:[item label]];
         [label setFont:[CPFont systemFontOfSize:11.0]];
         [label setTextColor:_labelColor];
+        [label setTextShadowColor:_labelShadowColor];
+        [label setTextShadowOffset:CGSizeMake(0, 1)];
         [label sizeToFit];
 
         [label setTarget:[item target]];
@@ -795,7 +814,7 @@ var _CPToolbarItemInfoMake = function(anIndex, aView, aLabel, aMinWidth)
         var minSize = [item minSize],
             minWidth = MAX(minSize.width, CGRectGetWidth([label frame]));
             
-        [_itemInfos setObject:_CPToolbarItemInfoMake(index, view, label, minWidth) forKey:[item hash]];
+        [_itemInfos setObject:_CPToolbarItemInfoMake(index, view, label, minWidth) forKey:[item UID]];
         
         _minWidth += minWidth + TOOLBAR_ITEM_MARGIN;
         

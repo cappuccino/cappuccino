@@ -1,5 +1,5 @@
 
-import <Foundation/CPAttributedString.j>
+@import <Foundation/CPAttributedString.j>
 
 var sharedObject = [CPObject new];
 
@@ -553,13 +553,18 @@ var sharedObject = [CPObject new];
 
 @end
 
+function isEqualAllowingUndefinedCast(a, b)
+{
+    return a === b || (a === undefined && a == b) || (b === undefined && a == b);
+}
+
 function testAttributesAtIndexWithValues(aString, anIndex, values, aSelf)
 {
     var range = CPMakeRange(0, 0),
         attributes = [aString attributesAtIndex:anIndex effectiveRange:range];
 
     for(key in values)
-        [aSelf assertTrue:[attributes objectForKey:key] === values[key] message: "expecting '"+key+"' to be '"+values[key]+"', was '"+[attributes objectForKey:key]];
+        [aSelf assertTrue:isEqualAllowingUndefinedCast([attributes objectForKey:key], values[key]) message: "expecting '"+key+"' to be '"+values[key]+"', was '"+[attributes objectForKey:key]];
 
     var index = range.location;
     while(index < CPMaxRange(range))
@@ -567,7 +572,7 @@ function testAttributesAtIndexWithValues(aString, anIndex, values, aSelf)
         attributes = [aString attributesAtIndex:index++ effectiveRange:nil];
         
         for(key in values)
-            [aSelf assertTrue:[attributes objectForKey:key] === values[key] message: "expecting '"+key+"' in loop to be '"+values[key]+"', was '"+[attributes objectForKey:key]];
+            [aSelf assertTrue:isEqualAllowingUndefinedCast([attributes objectForKey:key], values[key]) message: "expecting '"+key+"' in loop to be '"+values[key]+"', was '"+[attributes objectForKey:key]];
     }
 }
 
@@ -576,14 +581,14 @@ function testAttributeAtIndexWithValue(aString, anIndex, aKey, aValue, aSelf)
     var range = CPMakeRange(0, 0),
         attribute = [aString attribute:aKey atIndex:anIndex effectiveRange:range];
 
-    [aSelf assertTrue: attribute === aValue message: "expecting '"+aKey+"' to be '"+aValue+"', was '"+attribute];
+    [aSelf assertTrue: isEqualAllowingUndefinedCast(attribute, aValue) message: "expecting '"+aKey+"' to be '"+aValue+"', was '"+attribute];
 
     var index = range.location;
     while(index < CPMaxRange(range))
     {
         attribute = [aString attribute:aKey atIndex:index++ effectiveRange:nil];
         
-        [aSelf assertTrue: attribute === aValue message: "expecting '"+aKey+"' to be '"+aValue+"', was '"+attribute];
+        [aSelf assertTrue: isEqualAllowingUndefinedCast(attribute, aValue) message: "expecting '"+aKey+"' to be '"+aValue+"', was '"+attribute];
     }
 }
 

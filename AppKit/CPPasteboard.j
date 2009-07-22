@@ -38,11 +38,18 @@ CPFontPboardType        = @"CPFontPboardType";
 CPHTMLPboardType        = @"CPHTMLPboardType";
 CPStringPboardType      = @"CPStringPboardType";
 CPURLPboardType         = @"CPURLPboardType";
+CPImagesPboardType      = @"CPImagesPboardType";
+CPVideosPboardType      = @"CPVideosPboardType";
+
+// Deprecated
 CPImagePboardType       = @"CPImagePboardType";
+
 
 var CPPasteboards = nil;
 
-/*! @class CPPasteboard
+/*! 
+    @ingroup appkit
+    @class CPPasteboard
 
     CPPasteBoard is the object responsible for cut/copy/paste and drag&drop operations. 
 */

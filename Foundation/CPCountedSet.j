@@ -1,6 +1,33 @@
+/*
+ * CPCountedSet.j
+ * Foundation
+ *
+ * Created by .
+ * Copyright 2008, 280 North, Inc.
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
+ */
 
 @import "CPSet.j"
 
+/*! 
+    @class CPCountedSet
+    @ingroup foundation
+    @brief An mutable collection which may contain a specific object
+    numerous times.
+*/
 @implementation CPCountedSet : CPMutableSet
 {
     Object  _counts;
@@ -13,12 +40,12 @@
     
     [super addObject:anObject];
     
-    var hash = [anObject hash];
+    var UID = [anObject UID];
     
-    if (_counts[hash] === undefined)
-        _counts[hash] = 1;
+    if (_counts[UID] === undefined)
+        _counts[UID] = 1;
     else
-        ++_counts[hash];
+        ++_counts[UID];
 }
 
 - (void)removeObject:(id)anObject
@@ -26,18 +53,18 @@
     if (!_counts)
         return;
         
-    var hash = [anObject hash];
+    var UID = [anObject UID];
     
-    if (_counts[hash] === undefined)
+    if (_counts[UID] === undefined)
         return;
     
     else
     {
-        --_counts[hash];
+        --_counts[UID];
         
-        if (_counts[hash] === 0)
+        if (_counts[UID] === 0)
         {
-            delete _counts[hash];
+            delete _counts[UID];
             [super removeObject:anObject];
         }
     }
@@ -58,12 +85,12 @@
     if (!_counts)
         _counts = {};
     
-    var hash = [anObject hash];
+    var UID = [anObject UID];
     
-    if (_counts[hash] === undefined)
+    if (_counts[UID] === undefined)
         return 0;
     
-    return _counts[hash];
+    return _counts[UID];
 }
 
 

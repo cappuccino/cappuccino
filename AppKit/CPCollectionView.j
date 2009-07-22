@@ -29,7 +29,9 @@
 @import <AppKit/CPView.j>
 
 
-/*! @class CPCollectionView
+/*! 
+    @ingroup appkit
+    @class CPCollectionView
 
     This class displays an array as a grid of objects, where each object is represented by a view. 
     The view is controlled by creating a CPCollectionViewItem and specifying its view, then 
@@ -79,6 +81,7 @@
     
     BOOL                    _isSelectable;
     BOOL                    _allowsMultipleSelection;
+    BOOL                    _allowsEmptySelection;
     CPIndexSet              _selectionIndexes;
     
     CGSize                  _itemSize;
@@ -111,6 +114,8 @@
         _tileWidth = -1.0;
         
         _selectionIndexes = [CPIndexSet indexSet];
+        _allowsEmptySelection = YES;
+        _isSelectable = YES;
     }
     
     return self;
@@ -124,6 +129,7 @@
 {
     _itemData = [CPKeyedArchiver archivedDataWithRootObject:anItem];
     _itemForDragging = anItem//[CPKeyedUnarchiver unarchiveObjectWithData:_itemData];
+    _itemPrototype = anItem;
     
     [self reloadContent];
 }
@@ -236,6 +242,23 @@
 }
 
 /*!
+    Sets whether the user may have no items selected. If YES, mouse clicks not on any item will empty the current selection. The first item will also start off as selected.
+    @param shouldAllowMultipleSelection <code>YES</code> allows the user to select multiple items
+*/
+- (void)setAllowsEmptySelection:(BOOL)shouldAllowEmptySelection
+{
+    _allowsEmptySelection = shouldAllowEmptySelection;
+}
+
+/*!
+    Returns <code>YES</code> if the user can select no items, <code>NO</code> otherwise.
+*/
+- (BOOL)allowsEmptySelection
+{
+    return _allowsEmptySelection;
+}
+
+/*!
     Sets whether the user can select multiple items.
     @param shouldAllowMultipleSelection <code>YES</code> allows the user to select multiple items
 */
@@ -258,21 +281,21 @@
 */
 - (void)setSelectionIndexes:(CPIndexSet)anIndexSet
 {
-    if (_selectionIndexes == anIndexSet)
+    if (_selectionIndexes == anIndexSet || !_isSelectable)
         return;
     
     var index = CPNotFound;
     
     while ((index = [_selectionIndexes indexGreaterThanIndex:index]) != CPNotFound)
         [_items[index] setSelected:NO];
-
+    
     _selectionIndexes = anIndexSet;
-
+    
     var index = CPNotFound;
-
+    
     while ((index = [_selectionIndexes indexGreaterThanIndex:index]) != CPNotFound)
         [_items[index] setSelected:YES];
-
+    
     if ([_delegate respondsToSelector:@selector(collectionViewDidChangeSelection:)])
         [_delegate collectionViewDidChangeSelection:self]
 }
@@ -512,6 +535,8 @@
         
     if (index >= 0 && index < _items.length)
         [self setSelectionIndexes:[CPIndexSet indexSetWithIndex:index]];
+    else if (_allowsEmptySelection)
+        [self setSelectionIndexes:[CPIndexSet indexSet]];
 }
 
 - (void)mouseDragged:(CPEvent)anEvent
@@ -687,6 +712,56 @@
 - (CPCollectionView)collectionView
 {
     return [_view superview];
+}
+
+@end
+
+var CPCollectionViewMinItemSizeKey      = @"CPCollectionViewMinItemSizeKey",
+    CPCollectionViewMaxItemSizeKey      = @"CPCollectionViewMaxItemSizeKey",
+    CPCollectionViewVerticalMarginKey   = @"CPCollectionViewVerticalMarginKey";
+
+
+@implementation CPCollectionView (CPCoding)
+
+- (id)initWithCoder:(CPCoder)aCoder
+{
+    self = [super initWithCoder:aCoder];
+
+    if (self)
+    {
+        _items = [];
+        _content = [];
+
+        _cachedItems = [];
+
+        _itemSize = CGSizeMakeZero();
+        
+        _minItemSize = [aCoder decodeSizeForKey:CPCollectionViewMinItemSizeKey] || CGSizeMakeZero();
+        _maxItemSize = [aCoder decodeSizeForKey:CPCollectionViewMaxItemSizeKey] || CGSizeMakeZero();
+        _verticalMargin = [aCoder decodeFloatForKey:CPCollectionViewVerticalMarginKey];
+          
+        _tileWidth = -1.0;
+
+        _selectionIndexes = [CPIndexSet indexSet];
+        
+        _allowsEmptySelection = YES;
+        _isSelectable = YES;
+    }
+
+    return self;
+}
+
+- (void)encodeWithCoder:(CPCoder)aCoder
+{
+    [super encodeWithCoder:aCoder];
+
+    if (!CGSizeEqualToSize(_minItemSize, CGSizeMakeZero()))
+      [aCoder encodeSize:_minItemSize forKey:CPCollectionViewMinItemSizeKey];
+      
+    if (!CGSizeEqualToSize(_maxItemSize, CGSizeMakeZero()))
+      [aCoder encodeSize:_maxItemSize forKey:CPCollectionViewMaxItemSizeKey];
+
+    [aCoder encodeFloat:_verticalMargin forKey:CPCollectionViewVerticalMarginKey];
 }
 
 @end

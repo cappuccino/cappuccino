@@ -1,0 +1,21 @@
+
+require 'objective-j'
+require 'objective-j/bundletask'
+
+if !ENV['CONFIG']
+    ENV['CONFIG'] = 'Debug'
+end
+
+$BLEND_PRODUCT = File.join('Build', ENV['CONFIG'], '__project.nameasidentifier__.blend');
+
+file_d $BLEND_PRODUCT => ['ThemeDescriptors.j'] do
+    File.popen("blend -d ThemeDescriptors.j -o #{$BLEND_PRODUCT} -R Resources") do |blend|
+        blend.sync = true
+
+        while str = blend.gets
+            puts str
+        end
+    end
+end
+
+task :default => [$BLEND_PRODUCT]

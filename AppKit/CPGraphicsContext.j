@@ -23,6 +23,7 @@
 var CPGraphicsContextCurrent    = nil;
 
 /*!
+    @ingroup appkit
     Provides an interface for drawing to the screen.
 */
 @implementation CPGraphicsContext : CPObject

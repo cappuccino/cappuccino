@@ -1,0 +1,15 @@
+#!/usr/bin/env ruby
+
+require 'rake'
+require '../common'
+
+#nib2cib has to come before capp since capp uses nib2cib
+subprojects = %w{Rake nib2cib capp bake press}
+
+%w(build clean clobber).each do |task_name|
+  task task_name do
+    subrake(subprojects, task_name)
+  end
+end
+
+#task :deploy => [:build]

@@ -24,11 +24,18 @@
 @import "CPException.j"
 
 
-/*! @class CPNotification
-    Represents a notification for posting to an CPNotificationCenter. Consists of a name, an object, and an optional dictionary. The notification center will check for observers registered to receive either notifications with the name, the object, or both and pass the notification instance on to them.
+/*!
+    @class CPNotification
+    @ingroup foundation
+    @brief A notification that can be posted to a CPNotificationCenter.
 
-    To create a notification use one of the class methods. The default init method will throw a
-    CPUnsupportedMethodException.
+    Represents a notification for posting to an CPNotificationCenter. Consists
+    of a name, an object, and an optional dictionary. The notification center
+    will check for observers registered to receive either notifications with
+    the name, the object, or both and pass the notification instance on to them.
+
+    To create a notification use one of the class methods. The default init
+    method will throw a CPUnsupportedMethodException.
 */
 @implementation CPNotification : CPObject
 {

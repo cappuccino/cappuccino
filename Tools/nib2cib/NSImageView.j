@@ -34,6 +34,7 @@
         var cell = [aCoder decodeObjectForKey:@"NSCell"];
         
         _imageScaling = [cell imageScaling];
+        _isEditable = [cell isEditable];
     }
     
     return self;
@@ -91,7 +92,7 @@ NSImageScalingToCPImageScaling[NSImageScaleProportionallyUpOrDown]  = CPScalePro
 @implementation NSImageCell : NSCell
 {
     BOOL                _animates       @accessors; 
-    NSImageAlignmenr    _imageAlignment @accessors;
+    NSImageAlignment    _imageAlignment @accessors;
     NSImageScaling      _imageScaling   @accessors(readonly, getter=imageScaling);
     NSImageFrameStyle   _frameStyle     @accessors;
 }

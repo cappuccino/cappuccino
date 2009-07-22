@@ -57,13 +57,13 @@ var NSBorderlessWindowMask          = 0x00,
         _windowStyleMask = [aCoder decodeIntForKey:@"NSWindowStyleMask"];
         _windowTitle = [aCoder decodeObjectForKey:@"NSWindowTitle"];
         _windowView = [aCoder decodeObjectForKey:@"NSWindowView"];
-        
+
         // Flip Y coordinate
         _windowRect.origin.y = _screenRect.size.height - _windowRect.origin.y - _windowRect.size.height;
-        
+
         if (_windowStyleMask === NSBorderlessWindowMask)
             _windowStyleMask = CPBorderlessWindowMask;
-        
+
         else
             _windowStyleMask =  (_windowStyleMask & NSTitledWindowMask ? CPTitledWindowMask : 0) | 
                                 (_windowStyleMask & NSClosableWindowMask ? CPClosableWindowMask : 0) |
@@ -71,6 +71,8 @@ var NSBorderlessWindowMask          = 0x00,
                                 (_windowStyleMask & NSResizableWindowMask ? CPResizableWindowMask : 0) |
                                 (_windowStyleMask & NSTexturedBackgroundWindowMask ? NSTexturedBackgroundWindowMask : 0) |
                                 (_windowStyleMask & NSHUDBackgroundWindowMask ? CPHUDBackgroundWindowMask : 0);
+
+        _windowIsFullBridge = [aCoder decodeObjectForKey:"NSFrameAutosaveName"] === "CPBorderlessBridgeWindowMask";
         
         /*if (![_windowClass isEqualToString:@"NSPanel"])
            _windowRect.origin.y -= [NSMainMenuView menuHeight];   // compensation for the additional menu bar

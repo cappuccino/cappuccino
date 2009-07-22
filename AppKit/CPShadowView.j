@@ -46,6 +46,10 @@ var LIGHT_LEFT_INSET    = 3.0,
     HEAVY_TOP_INSET     = 5.0,
     HEAVY_BOTTOM_INSET  = 5.0;
 
+/*!
+    @ingroup appkit
+*/
+
 @implementation CPShadowView : CPView
 {
     CPShadowWeight  _weight;

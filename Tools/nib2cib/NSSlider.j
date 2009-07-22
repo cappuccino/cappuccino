@@ -29,16 +29,25 @@
 
 - (id)NS_initWithCoder:(CPCoder)aCoder
 {
+    var cell = [aCoder decodeObjectForKey:@"NSCell"];
+
+    // We need to do these first or setObjectValue: will 0 anything we put in it.
+    _minValue = [cell minValue];
+    _maxValue = [cell maxValue];
+
     self = [super NS_initWithCoder:aCoder];
-    
+
     if (self)
     {
-        var cell = [aCoder decodeObjectForKey:@"NSCell"];
-        
-        _minValue           = [cell minValue];
-        _maxValue           = [cell maxValue];
         _altIncrementValue  = [cell altIncrementValue];
-        _isVertical         = [cell isVertical];
+
+        [self setSliderType:[cell sliderType]];
+        
+        if ([self sliderType] === CPCircularSlider)
+        {
+            var frame = [self frame];
+            [self setFrameSize:CGSizeMake(frame.size.width + 4.0, frame.size.height + 2.0)];
+        }
     }
     
     return self;
@@ -68,6 +77,7 @@
     double  _maxValue           @accessors(readonly, getter=maxValue);
     double  _altIncrementValue  @accessors(readonly, getter=altIncrementValue);
     BOOL    _vertical           @accessors(readonly, getter=isVertical);
+    int     _sliderType         @accessors(readonly, getter=sliderType);
 }
 
 - (id)initWithCoder:(CPCoder)aCoder
@@ -82,6 +92,8 @@
         _maxValue           = [aCoder decodeDoubleForKey:@"NSMaxValue"];
         _altIncrementValue  = [aCoder decodeDoubleForKey:@"NSAltIncValue"];
         _isVertical         = [aCoder decodeBoolForKey:@"NSVertical"];
+        
+        _sliderType         = [aCoder decodeIntForKey:@"NSSliderType"] || 0;
     }
     
     return self;

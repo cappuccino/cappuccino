@@ -14,13 +14,17 @@ var _CPCibConnectorSourceKey        = @"_CPCibConnectorSourceKey",
     CPString    _label;
 }
 
-- (void)replaceObject:(id)anObject withObject:(id)anotherObject
+- (void)replaceObjects:(JSObject)replacementObjects
 {
-    if (_source == anObject)
-        _source = anotherObject;
-    
-    else if (_destination == anObject)
-        _destination = anotherObject;
+    var replacement = replacementObjects[[_source UID]];
+
+    if (replacement !== undefined)
+        _source = replacement;
+
+    replacement = replacementObjects[[_destination UID]];
+
+    if (replacement !== undefined)
+        _destination = replacement;
 }
 
 @end
@@ -36,10 +40,6 @@ var _CPCibConnectorSourceKey        = @"_CPCibConnectorSourceKey",
         _source = [aCoder decodeObjectForKey:_CPCibConnectorSourceKey];
         _destination = [aCoder decodeObjectForKey:_CPCibConnectorDestinationKey];
         _label = [aCoder decodeObjectForKey:_CPCibConnectorLabelKey];
-        
-#if DEBUG
-        CPLog("Connection from " + [_source description] + " to " + [_destination description] + " and label " + _label + " decoded.");
-#endif
     }
     
     return self;
@@ -60,31 +60,38 @@ var _CPCibConnectorSourceKey        = @"_CPCibConnectorSourceKey",
 
 - (void)establishConnection
 {
-#if DEBUG
-    CPLog('[' + [_source description] + " setTarget: " + [_destination description] + ']');
-    CPLog('[' + [_source description] + " setAction: " + _label + ']');
-#endif
+    var selectorName = _label,
+        selectorNameLength = [selectorName length];
 
-    var selectorName = _label;
-    
-    if (![selectorName hasSuffix:@":"])
+    if (selectorNameLength && selectorName[selectorNameLength - 1] !== ':')
         selectorName += ':';
 
     var selector = CPSelectorFromString(selectorName);
 
+    // Not having a selector is a fatal error.
     if (!selector)
         [CPException
             raise:CPInvalidArgumentException
            reason:@"-[" + [self className] + ' ' + _cmd + @"] selector "  + selectorName + @" does not exist."];
 
+    // If the destination doesn't respond to this selector, warn but don't die.
+    if (_destination && ![_destination respondsToSelector:selector])
+    {
+        CPLog.warn(@"Could not connect the action " + selector + @" to target of class " + [_destination className]);
+
+        return;
+    }
+
+    // Not being able to set the action is a fatal error.
     if ([_source respondsToSelector:@selector(setAction:)])
         objj_msgSend(_source, @selector(setAction:), selector);
-    
+
     else
         [CPException
             raise:CPInvalidArgumentException
            reason:@"-[" + [self className] + ' ' + _cmd + @"] " + [_source description] + " does not respond to setAction:"];
 
+    // Not being able to set the target is a fatal error.
     if ([_source respondsToSelector:@selector(setTarget:)])
         objj_msgSend(_source, @selector(setTarget:), _destination);
 
@@ -102,11 +109,18 @@ var _CPCibConnectorSourceKey        = @"_CPCibConnectorSourceKey",
 
 - (void)establishConnection
 {
-#if DEBUG
-    CPLog([_source description] + " setValue: " + [_destination description] + " forKey: " + _label);
-#endif
-    
-    [_source setValue:_destination forKey:_label];
+    try
+    {
+        [_source setValue:_destination forKey:_label];
+    }
+    catch (anException)
+    {
+        if ([anException name] === CPUndefinedKeyException)
+            CPLog.warn(@"Could not connect the outlet " + _label + @" of target of class " + [_source className]);
+
+        else
+            throw anException;
+    }
 }
 
 @end

@@ -25,19 +25,23 @@
 @import <AppKit/CPPasteboard.j>
 @import <AppKit/CPImageView.j>
 
+#import "CoreGraphics/CGGeometry.h"
+
 
 #define DRAGGING_WINDOW(anObject) ([anObject isKindOfClass:[CPWindow class]] ? anObject : [anObject window])
 
 var CPSharedDragServer     = nil;
     
-var CPDragServerView              = nil,
-    CPDragServerSource            = nil,
-    CPDragServerWindow            = nil,
-    CPDragServerOffset            = nil,
-    CPDragServerLocation          = nil,
-    CPDragServerPasteboard        = nil,
-    CPDragServerDestination       = nil,
-    CPDragServerDraggingInfo      = nil;
+var CPDragServerView               = nil,
+    CPDragServerSource             = nil,
+    CPDragServerWindow             = nil,
+    CPDragServerOffset             = nil,
+    CPDragServerLocation           = nil,
+    CPDragServerPasteboard         = nil,
+    CPDragServerDestination        = nil,
+    CPDragServerDraggingInfo       = nil,
+    CPDragServerPreviousEvent      = nil,
+    CPDragServerAutoscrollInterval = nil;
 
 var CPDragServerIsDraggingImage                           = NO,
 
@@ -46,6 +50,11 @@ var CPDragServerIsDraggingImage                           = NO,
     
     CPDragServerShouldSendDraggedViewEndedAtOperation     = NO,
     CPDragServerShouldSendDraggedImageEndedAtOperation    = NO;
+
+var CPDragServerAutoscroll = function()
+{
+    [CPDragServerSource autoscroll:CPDragServerPreviousEvent];
+}
 
 var CPDragServerStartDragging = function(anEvent)
 {
@@ -57,6 +66,11 @@ var CPDragServerUpdateDragging = function(anEvent)
     // If this is a mouse up, then complete the drag.
     if([anEvent type] == CPLeftMouseUp)
     {
+        if (CPDragServerAutoscrollInterval !== nil)
+            clearInterval(CPDragServerAutoscrollInterval);
+
+        CPDragServerAutoscrollInterval = nil;
+
         CPDragServerLocation = [DRAGGING_WINDOW(CPDragServerDestination) convertBridgeToBase:[[anEvent window] convertBaseToBridge:[anEvent locationInWindow]]];
         
         [CPDragServerView removeFromSuperview];
@@ -75,9 +89,17 @@ var CPDragServerUpdateDragging = function(anEvent)
         
         CPDragServerIsDraggingImage = NO;
         CPDragServerDestination = nil;
-        
+
         return;
     }
+
+    if (CPDragServerAutoscrollInterval === nil)
+    {
+        if ([CPDragServerSource respondsToSelector:@selector(autoscroll:)])
+            CPDragServerAutoscrollInterval = setInterval(CPDragServerAutoscroll, 100);
+    }
+
+    CPDragServerPreviousEvent = anEvent;
 
     // If we're not a mouse up, then we're going to want to grab the next event.
     [CPApp setCallback:CPDragServerUpdateDragging 
@@ -289,20 +311,28 @@ var CPDragServerUpdateDragging = function(anEvent)
 @implementation CPWindow (CPDraggingAdditions)
 
 /* @ignore */
-- (id)_dragHitTest:(CPPoint)aPoint pasteboard:(CPPasteboard)aPasteboard
+- (id)_dragHitTest:(CGPoint)aPoint pasteboard:(CPPasteboard)aPasteboard
 {
-    if (![self containsPoint:aPoint])
+    // If none of our views or ourselves has registered for drag events...
+    if (!_inclusiveRegisteredDraggedTypes)
         return nil;
-    
-    var hitView = [_windowView hitTest:aPoint];
-    
+
+// We don't need to do this because the only place this gets called
+// -_dragHitTest: in CPDOMWindowBridge does this already. Perhaps to
+// be safe?
+//    if (![self containsPoint:aPoint])
+//        return nil;
+
+    var adjustedPoint = _CGPointMake(aPoint.x - _CGRectGetMinX(_frame), aPoint.y - _CGRectGetMinY(_frame)),
+        hitView = [_windowView hitTest:adjustedPoint];
+
     while (hitView && ![aPasteboard availableTypeFromArray:[hitView registeredDraggedTypes]])
         hitView = [hitView superview];
     
     if (hitView)
         return hitView;
     
-    if ([aPasteboard availableTypeFromArray:_registeredDraggedTypes])
+    if ([aPasteboard availableTypeFromArray:[self registeredDraggedTypes]])
         return self;
     
     return nil;

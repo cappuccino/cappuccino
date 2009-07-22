@@ -57,18 +57,22 @@
 
 @end
 
-/*!  @class CPDictionary
-     A dictionary is the standard way of passing around key-value pairs in
-     the Cappuccino framework. It is similar to the
-     <a href="http://java.sun.com/javase/6/docs/api/index.html">Java map interface</a>,
-     except all keys are CPStrings and values can be any
-     Cappuccino or JavaScript object.</p>
+/*! 
+    @class CPDictionary
+    @ingroup foundation
+    @brief A mutable key-value pair collection.
 
-     <p>If you are familiar with dictionaries in Cocoa, you'll notice that
-     there is no CPMutableDictionary class. The regular CPDictionary
-     has <code>setObject:</code> and <code>removeObjectForKey:</code> methods.
-     In Cappuccino there is no distinction between immutable and mutable classes.
-     They are all mutable.
+    A dictionary is the standard way of passing around key-value pairs in
+    the Cappuccino framework. It is similar to the
+    <a href="http://java.sun.com/javase/6/docs/api/index.html">Java map interface</a>,
+    except all keys are CPStrings and values can be any
+    Cappuccino or JavaScript object.
+
+    If you are familiar with dictionaries in Cocoa, you'll notice that
+    there is no CPMutableDictionary class. The regular CPDictionary
+    has <code>setObject:</code> and <code>removeObjectForKey:</code> methods.
+    In Cappuccino there is no distinction between immutable and mutable classes.
+    They are all mutable.
 */
 @implementation CPDictionary : CPObject
 {
@@ -124,6 +128,63 @@
 }
 
 /*!
+    Creates a dictionary with multiple key-value pairs.
+    @param JavaScript object
+    @return the new CPDictionary
+*/
++ (id)dictionaryWithJSObject:(JSObject)object
+{
+    return [self dictionaryWithJSObject:object recursively:NO];
+}
+
+/*!
+    Creates a dictionary with multiple key-value pairs, recursively.
+    @param JavaScript object
+    @return the new CPDictionary
+*/
++ (id)dictionaryWithJSObject:(JSObject)object recursively:(BOOL)recursively
+{
+    var dictionary = [[self alloc] init];
+        
+    for (var key in object)
+    {
+        var value = object[key];
+    
+        if (recursively && value.constructor === Object)
+            value = [CPDictionary dictionaryWithJSObject:value recursively:YES];
+    
+        [dictionary setObject:value forKey:key];
+    }
+    
+    return dictionary;
+}
+
+/*!
+    Creates and returns a dictionary constructed by a given pairs of keys and values.
+    @param firstObject first object value
+    @param ... key for the first object and ongoing value-key pairs for more objects.
+    @throws CPInvalidArgumentException if the number of objects and keys is different
+    @return the new CPDictionary
+    
+    Assuming that there's no object retaining in Cappuccino, you can create
+    dictionaries same way as with alloc and initWithObjectsAndKeys:
+    var dict = [CPDictionary dictionaryWithObjectsAndKeys:
+    @"value1", @"key1",
+    @"value2", @"key2"];
+    
+    Note, that there's no final nil like in Objective-C/Cocoa.
+    
+    @see [CPDictionary initWithObjectsAndKeys:]
+*/
++ (id)dictionaryWithObjectsAndKeys:(id)firstObject, ...
+{
+    arguments[0] = [self alloc];
+    arguments[1] = @selector(initWithObjectsAndKeys:);
+    
+    return objj_msgSend.apply(this, arguments);
+}
+
+/*!
     Initializes the dictionary with the contents of another dictionary.
     @param aDictionary the dictionary to copy key-value pairs from
     @return the initialized dictionary
@@ -161,6 +222,48 @@
             [self setObject:objects[i] forKey:keyArray[i]];
     }
     
+    return self;
+}
+
+/*!
+    Creates and returns a dictionary constructed by a given pairs of keys and values.
+    @param firstObject first object value
+    @param ... key for the first object and ongoing value-key pairs for more objects.
+    @throws CPInvalidArgumentException if the number of objects and keys is different
+    @return the new CPDictionary
+    
+    You can create dictionaries this way:
+    var dict = [[CPDictionary alloc] initWithObjectsAndKeys:
+    @"value1", @"key1",
+    @"value2", @"key2"];
+    
+    Note, that there's no final nil like in Objective-C/Cocoa.
+*/
+- (id)initWithObjectsAndKeys:(id)firstObject, ...
+{
+    var argCount = arguments.length;
+    
+    if (argCount % 2 !== 0)
+        [CPException raise:CPInvalidArgumentException reason:"Key-value count is mismatched. (" + argCount + " arguments passed)"];
+
+    self = [super init];
+    
+    if (self)
+    {
+        // The arguments array contains self and _cmd, so the first object is at position 2.
+        var index = 2;
+        
+        for(; index < argCount; index += 2)
+        {
+            var value = arguments[index];
+
+            if (value === nil)
+                break;
+
+            [self setObject:value forKey:arguments[index + 1]];
+        }
+    }
+
     return self;
 }
 
@@ -223,7 +326,7 @@
 */
 - (BOOL)isEqualToDictionary:(CPDictionary)aDictionary
 {
-    if (count != [aDictionary count])
+    if (count !== [aDictionary count])
         return NO;
 
     var index = count;
@@ -236,7 +339,7 @@
         if (lhsObject === rhsObject)
             continue;
             
-        if ([lhsObject respondsToSelector:@selector(isEqual:)] && [lhsObject isEqual:rhsObject])
+        if (lhsObject.isa && rhsObject.isa && [lhsObject respondsToSelector:@selector(isEqual:)] && [lhsObject isEqual:rhsObject])
             continue;
         
         return NO;
@@ -366,8 +469,10 @@
 */
 - (void)removeObjectsForKeys:(CPArray)allKeys
 {
-    for (var i=0, count = allKeys.length; i<count; i++)
-        dictionary_removeValue(self, allKeys[i]);
+    var index = allKeys.length;
+
+    while (index--)
+        dictionary_removeValue(self, allKeys[index]);
 }
 
 /*
@@ -427,12 +532,14 @@
     if (!aDictionary)
         return;
         
-    var allKeys = [aDictionary allKeys];
+    var keys = [aDictionary allKeys],
+        index = [keys count];
     
-    for (var i=0, count = [allKeys count]; i<count; i++)
+    while (index--)
     {
-        var thisKey = allKeys[i];
-        [self setObject:[aDictionary objectForKey:thisKey] forKey:thisKey];
+        var key = keys[index];
+
+        [self setObject:[aDictionary objectForKey:key] forKey:key];
     }
 }
 
@@ -446,10 +553,21 @@
     var i = _keys.length;
     
     while (i--)
-        description += _keys[i] +":"+[_buckets[_keys[i]] description]+"\n";
-        
+    {
+        description += _keys[i] + ":";
+
+        var object = _buckets[_keys[i]];
+
+        if (object && object.isa)
+            description += [object description];
+        else
+            description += object;
+
+        description += "\n";
+    }
+
     description += "}";
-    
+
     return description;
 }
 
@@ -475,6 +593,18 @@
 {
     [aCoder _encodeDictionaryOfObjects:self forKey:@"CP.objects"];
 }
+
+@end
+
+/*!
+    @class CPMutableDictionary
+    @ingroup compatability
+
+    This class is just an empty subclass of CPDictionary.
+    CPDictionary already implements mutable methods and
+    this class only exists for source compatability.
+*/
+@implementation CPMutableDictionary : CPDictionary
 
 @end
 

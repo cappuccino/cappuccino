@@ -56,7 +56,9 @@ CPToolbarShowFontsItemIdentifier        = @"CPToolbarShowFontsItemIdentifier";
 CPToolbarCustomizeToolbarItemIdentifier = @"CPToolbarCustomizeToolbarItemIdentifier";
 CPToolbarPrintItemIdentifier            = @"CPToolbarPrintItemIdentifier";
 
-/*! @class CPToolbarItem
+/*! 
+    @ingroup appkit
+    @class CPToolbarItem
 
     A representation of an item in a CPToolbar.
 */
@@ -456,15 +458,16 @@ CPToolbarItemVisibilityPriorityUser
     [copy setLabel:_label];
     [copy setPaletteLabel:_paletteLabel];
     [copy setToolTip:[self toolTip]];
-    
+
     [copy setTag:[self tag]];
     [copy setTarget:[self target]];
     [copy setAction:[self action]];
     
     [copy setEnabled:[self isEnabled]];
-    [copy setImage:_image];
-    [copy setAlternateImage:_alternateImage];
-    
+
+    [copy setImage:[self image]];
+    [copy setAlternateImage:[self alternateImage]];
+
     [copy setMinSize:_minSize];
     [copy setMaxSize:_maxSize];
     
