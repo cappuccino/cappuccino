@@ -46,6 +46,12 @@ function objj_msgSend_set_decorators()
 // backtrace decorator
 
 var objj_backtrace = [];
+
+function objj_backtrace_print(stream) {
+    for (var i = 0; i < objj_backtrace.length; i++)
+        objj_fprintf(stream, objj_debug_message_format(objj_backtrace[i].receiver, objj_backtrace[i].selector));
+}
+
 function objj_backtrace_decorator(msgSend)
 {
     return function(aReceiverOrSuper, aSelector)
@@ -62,8 +68,7 @@ function objj_backtrace_decorator(msgSend)
         {
             // print the exception and backtrace
             objj_fprintf(warning_stream, "Exception " + anException + " in " + objj_debug_message_format(aReceiver, aSelector));
-            for (var i = 0; i < objj_backtrace.length; i++)
-                objj_fprintf(warning_stream, objj_debug_message_format(objj_backtrace[i].receiver, objj_backtrace[i].selector));
+            objj_backtrace_print(warning_stream);
         }
         finally
         {
@@ -75,7 +80,9 @@ function objj_backtrace_decorator(msgSend)
 
 // type checking decorator
 
-var objj_typechecks_reported = {};
+var objj_typechecks_reported = {},
+    objj_typecheck_prints_backtrace = false;
+
 function objj_typecheck_decorator(msgSend)
 {
     return function(aReceiverOrSuper, aSelector)
@@ -98,6 +105,8 @@ function objj_typecheck_decorator(msgSend)
                 if (!objj_typechecks_reported[key]) {
                     objj_typechecks_reported[key] = true;
                     objj_fprintf(warning_stream, "Type check failed on argument " + (i-2) + " of " + objj_debug_message_format(aReceiver, aSelector) + ": " + e);
+                    if (objj_typecheck_prints_backtrace)
+                        objj_backtrace_fprint(warning_stream);
                 }
             }
         }
@@ -114,6 +123,8 @@ function objj_typecheck_decorator(msgSend)
             if (!objj_typechecks_reported[key]) {
                 objj_typechecks_reported[key] = true;
                 objj_fprintf(warning_stream, "Type check failed on return val of " + objj_debug_message_format(aReceiver, aSelector) + ": " + e);
+                if (objj_typecheck_prints_backtrace)
+                    objj_backtrace_fprint(warning_stream);
             }
         }
 
@@ -146,7 +157,7 @@ function objj_debug_typecheck(expectedType, object)
         {
             return;
         }
-        else if (object.isa)
+        else if (object && object.isa)
         {
             var theClass = object.isa;
             for (; theClass; theClass = theClass.super_class)
