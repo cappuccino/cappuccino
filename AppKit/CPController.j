@@ -10,7 +10,6 @@
 // Released under the LGPL.
 // 
 
-@import "CPKeyValueBinding.j"
 
 var CPControllerDeclaredKeysKey = @"CPControllerDeclaredKeysKey";
 
@@ -35,15 +34,19 @@ var CPControllerDeclaredKeysKey = @"CPControllerDeclaredKeysKey";
 
 - (void)encodeWithCoder:(CPCoder)aCoder
 {
-    [aCoder encodeObject:_declaredKeys forKey:CPControllerDeclaredKeysKey];
+    if ([_declaredKeys count] > 0)
+        [aCoder encodeObject:_declaredKeys forKey:CPControllerDeclaredKeysKey];
 }
 
 - (id)initWithCoder:(CPCoder)aDecoder
 {
-    self = [self init];
+    self = [super init];
     
     if (self)
-        _declaredKeys = [aDecoder decodeObjectForKey:CPControllerDeclaredKeysKey] || _declaredKeys;
+    {
+        _editors = [];
+        _declaredKeys = [aDecoder decodeObjectForKey:CPControllerDeclaredKeysKey] || [];
+    }
 
     return nil;
 }
@@ -55,28 +58,29 @@ var CPControllerDeclaredKeysKey = @"CPControllerDeclaredKeysKey";
 
 - (BOOL)commitEditing
 {
-    for (var i=0, count=_editors.length; i<count; i++)
-    {
+    var index = 0,
+        count = _editors.length;
+
+    for (; index < count; ++index)
         if (![[_editors objectAtIndex:i] commitEditing])
             return NO;
-    }
 
     return YES;
 }
 
 - (void)discardEditing
 {
-    [_editors makeObjectsPerformSelector: @selector(discardEditing)];
+    [_editors makeObjectsPerformSelector:@selector(discardEditing)];
 }
 
-- (void)objectDidBeginEditing:(id)editor
+- (void)objectDidBeginEditing:(id)anEditor
 {
-    [_editors addObject:editor];
+    [_editors addObject:anEditor];
 }
 
-- (void)objectDidEndEditing:(id)editor
+- (void)objectDidEndEditing:(id)anEditor
 {
-    [_editors removeObject:editor];
+    [_editors removeObject:anEditor];
 }
 
 @end

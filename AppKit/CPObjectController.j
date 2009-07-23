@@ -1,22 +1,26 @@
 
+@import <Foundation/CPDictionary.j>
+
 @import "CPController.j"
+
 
 @implementation CPObjectController : CPController 
 {
     id              _contentObject;
     id              _selection;
-    
-    CPString        _defaultClassName;
-    
-    BOOL            _editable;
+
+    Class           _objectClass;
+
+    BOOL            _isEditable;
     BOOL            _automaticallyPreparesContent;
-    
+
     CPCountedSet    _observedKeys;
 }
 
 + (id)initialize
 {
-    [self exposeBinding:"contentObject"];
+    [self exposeBinding:@"editable"];
+    [self exposeBinding:@"contentObject"];
 }
 
 + (CPSet)keyPathsForValuesAffectingValueForContentObject
@@ -47,39 +51,121 @@
     return [CPSet setWithObjects:"editable", "selection"];
 }
 
+- (id)initWithContent:(id)aContent
+{
+    self = [super init];
+
+    if (self)
+    {
+        [self setContent:aContent];
+        [self setEditable:YES];
+        [self setObjectClass:[CPMutableDictionary class]];
+    }
+
+    return self;
+}
+
 - (id)content
 {
     return _contentObject;
 }
 
-- (void)setContent:(id)aValue
+- (void)setContent:(id)aContent
 {
-    [self setContent:aValue usingKVO:YES];
+    [self willChangeValueForKey:@"contentObject"];
+    [self _selectionWillChange];
+
+    _contentObject = aContent;
+
+    [self didChangeValueForKey:@"contentObject"];
+    [self _selectionDidChange];
 }
 
-- (void)setContent:(id)aValue usingKVO:(BOOL)kvo
+- (void)_setContentObject:(id)aContent
 {
-    if (_contentObject === aValue)
-        return;
-
-    if (kvo)
-    {
-        [self willChangeValueForKey:@"contentObject"];
-        [self _selectionWillChange];
-    }
-    
-    _contentObject = aValue;
-    
-    if (kvo)
-    {  
-        [self didChangeValueForKey:@"contentObject"];
-        [self _selectionDidChange];
-    }
+    [self setContent:aContent];
 }
 
-- (void)_setContentObject:(id)aValue
+- (id)_contentObject
 {
-    [self setContent:aValue usingKVO:YES];
+    return [self content];
+}
+
+- (void)setAutomaticallyPreparesContent:(BOOL)shouldAutomaticallyPrepareContent
+{
+    _automaticallyPreparesContent = shouldAutomaticallyPrepareContent;
+}
+
+- (BOOL)automaticallyPreparesContent
+{
+    return _automaticallyPreparesContent;
+}
+
+- (void)prepareContent
+{
+    [self setContent:[self newObject]];
+}
+
+- (void)setObjectClass:(Class)aClass
+{
+    _objectClass = aClass;
+}
+
+- (Class)objectClass
+{
+    return _objectClass;
+}
+
+- (id)newObject
+{
+    return [[[self objectClass] alloc] init];
+}
+
+- (void)addObject:(id)anObject
+{
+    [self setContent:anObject];
+
+    [[CPKeyValueBinding getBinding:@"contentObject" forObject:self] reverseSetValueFor:@"contentObject"];
+}
+
+- (void)removeObject:(id)anObject
+{
+    if ([self content] === anObject)
+        [self setContent:nil];
+
+    [[CPKeyValueBinding getBinding:@"contentObject" forObject:self] reverseSetValueFor:@"contentObject"];
+}
+
+- (void)add:(id)aSender
+{
+    // FIXME: This should happen on the next run loop?
+    [self addObject:[self newObject]];
+}
+
+- (BOOL)canAdd
+{
+    return [self isEditable];
+}
+
+- (void)remove:(id)aSender
+{
+    // FIXME: This should happen on the next run loop?
+    [self removeObject:[self content]];
+}
+
+- (BOOL)canRemove
+{
+    return [self isEditable] && [[self selectedObjects] count];
+}
+
+- (void)setEditable:(BOOL)shouldBeEditable
+{
+    _isEditable = shouldBeEditable;
+}
+
+- (BOOL)isEditable
+{
+    return _isEditable;
 }
 
 - (CPArray)selectedObjects
@@ -90,26 +176,6 @@
 - (id)selection
 {
     return _selection;
-}
-
-- (void)setObjectClass:(Class)aClass
-{
-    _defaultClassName = [aClass className];
-}
-
-- (Class)objectClass
-{
-    return CPClassFromString(_defaultClassName);
-}
-
-- (id)_defaultNewObject
-{
-    return [[[self objectClass] alloc] init];
-}
-
-- (id)newObject
-{
-    return [self _defaultNewObject];
 }
 
 - (void)_selectionWillChange
@@ -125,36 +191,6 @@
 
     [_selection controllerDidChange];
     [self didChangeValueForKey:@"selection"];
-}
-
-- (BOOL)canAdd
-{
-    return [self isEditable];
-}
-
-- (BOOL)canRemove
-{
-    return [self isEditable] && [[self selectedObjects] count];
-}
-
-- (BOOL)isEditable
-{
-    return _editable;
-}
-
-- (void)setEditable:(BOOL)isEditable
-{
-    _editable = isEditable;
-}
-
-- (BOOL)automaticallyPreparesContent
-{
-    return _automaticallyPreparesContent;
-}
-
-- (void)setAutomaticallyPreparesContent:(BOOL)aFlag
-{
-    _automaticallyPreparesContent = aFlag;
 }
 
 - (id)observedKeys
@@ -174,18 +210,42 @@
    [super removeObserver:anObserver forKeyPath:aKeyPath];
 }
 
--(id)initWithCoder:(CPCoder)aCoder
+@end
+
+var CPObjectControllerObjectClassNameKey                = @"CPObjectControllerObjectClassNameKey",
+    CPObjectControllerIsEditableKey                     = @"CPObjectControllerIsEditableKey",
+    CPObjectControllerAutomaticallyPreparesContentKey   = @"CPObjectControllerAutomaticallyPreparesContentKey";
+
+@implementation CPObjectController (CPCoding)
+
+- (id)initWithCoder:(CPCoder)aCoder
 {
-    if (self = [super init])
+    self = [super init];
+
+    if (self)
     {
-        _defaultClassName = [aCoder decodeObjectForKey:@"CPObjectClassName"];
-        _editable = [aCoder decodeBoolForKey:@"CPEditable"];
-        _automaticallyPreparesContent = [aCoder decodeBoolForKey:@"CPAutomaticallyPreparesContent"];
-        
+        var objectClassName = [aCoder decodeObjectForKey:CPObjectControllerObjectClassNameKey],
+            objectClass = CPClassFromString(objectClassName);
+
+        // FIXME: Error if objectClass === nil
+
+        [self setObjectClass:objectClass];
+        [self setEditable:[aCoder decodeBoolForKey:CPObjectControllerIsEditableKey]];
+        [self setAutomaticallyPreparesContent:[aCoder decodeBoolForKey:CPObjectControllerAutomaticallyPreparesContentKey] || NO];
+
         _observedKeys = [[CPCountedSet alloc] init];
     }
-    
+
     return self;
+}
+
+- (void)encodeWithCoder:(CPCoder)aCoder
+{
+    [aCoder encodeObject:CPStringFromClass(objectClass) forKey:CPObjectControllerObjectClassNameKey];
+    [aCoder encodeObject:[self isEditable] forKey:CPObjectControllerIsEditableKey];
+
+    if (![self automaticallyPreparesContent])
+        [aCoder encodeBOOL:YES forKey:CPObjectControllerAutomaticallyPreparesContentKey];
 }
 
 @end

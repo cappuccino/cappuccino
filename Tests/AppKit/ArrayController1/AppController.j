@@ -9,12 +9,15 @@
 @import <Foundation/CPObject.j>
 @import <AppKit/CPArrayController.j>
 
+
 CPLogRegister(CPLogConsole);
 
 @implementation AppController : CPObject
 {
-    CPArray             itemsArray;
-    
+//    CPArray             itemsArray;
+    CPSet               itemsSet;
+    CPWindow            theWindow;
+
     //CPTableView         tableView;
     //CPTextField         selectedNameField;
     //CPTextField         selectedPriceField;
@@ -23,14 +26,23 @@ CPLogRegister(CPLogConsole);
     CPArrayController   arrayController;
 }
 
-- (void)applicationDidFinishLaunching:(CPNotification)aNotification
+- (void)awakeFromCib
 {
-    var theWindow = [[CPWindow alloc] initWithContentRect:CGRectMakeZero() styleMask:CPBorderlessBridgeWindowMask],
-        contentView = [theWindow contentView];
+    var contentView = [theWindow contentView];
 
     //create our non ui objects
-    
+
+    /*var objectController = [[CPObjectController alloc] init];
+    self.managed = 5;
+    [objectController bind:@"contentObject" toObject:self withKeyPath:@"managed" options:nil];
+    console.log([objectController content]);
+    console.log("f!: " + [self.managed description]);
+    [objectController addObject:[CPDictionary dictionary]];
+    console.log("f!: " + [self.managed description]);
+    */
+
     itemsArray = [[Item new]];
+    itemsSet = [[Item new]];
 
     arrayController = [[CPArrayController alloc] init];
 
@@ -42,59 +54,45 @@ CPLogRegister(CPLogConsole);
     [arrayController setAvoidsEmptySelection:YES];
 
     //create our UI elements
-    
+
     //tableView = [[CPTableView alloc] initWithFrame:CGRectMake(0, 0, 400, 200)];
     //[tableView setCenter:[contentView center]];
-    
-    totalCountField = [[CPTextField alloc] initWithFrame:CGRectMake(0, 0, 300, 20)];
-    [totalCountField setCenter:[contentView center]];
-    
-    [totalCountField setStringValue:@"HELLO WORLD"];
-    
-    [contentView addSubview:totalCountField];
-    
-    var frame = [totalCountField frame],
-        button = [[CPButton alloc] initWithFrame:CGRectMake(CGRectGetMinX(frame)+100, CGRectGetMaxY(frame)+10, 100, 18)];
-
-    [button setTitle:"ADD"];
-    [button setTarget:arrayController];
-    [button setAction:@selector(add:)];
-    
-    [contentView addSubview:button];
-    
-    button = [[CPButton alloc] initWithFrame:CGRectMake(CGRectGetMinX(frame)+100, CGRectGetMaxY(frame)+38, 100, 18)];
-
-    [button setTitle:"REMOVE"];
-    [button setTarget:arrayController];
-    [button setAction:@selector(remove:)];
-    
-    [contentView addSubview:button];
 
     //create our bindings
-    
+
     [self createBindings];
-    
+
     //order front window
-    
+
+    [theWindow setFullBridge:YES];
     [theWindow orderFront:self];
+}
+
+- (void)add:(id)aSender
+{
+    [arrayController add:self];
+}
+
+- (void)remove:(id)aSender
+{
+    [arrayController remove:self];
 }
 
 - (void)createBindings
 {
  	// bind array controller to self's itemsArray
-    [arrayController bind:@"contentArray" toObject: self
-			  withKeyPath:@"itemsArray" options:nil];
+    [arrayController bind:@"contentSet" toObject:self
+			  withKeyPath:@"itemsSet" options:nil];
 
    // bind the total field -- no options on this one
 	[totalCountField bind:CPValueBinding toObject:arrayController
 			  withKeyPath:@"arrangedObjects.@sum.price" options:nil];
-	
-	
+
 	//var bindingOptions = [CPDictionary dictionary];
-	
+
 	// binding options for "name"
 	//[bindingOptions setObject:@"No Name" forKey:@"NSNullPlaceholder"];
-	
+
 	// binding for selected "name" field
     //[selectedNameField bind: @"value" toObject: arrayController
 	//			withKeyPath:@"selection.name" options:bindingOptions];
@@ -123,10 +121,8 @@ CPLogRegister(CPLogConsole);
 	
     //[tableColumn bind:@"value" toObject: arrayController
 	//	  withKeyPath:@"arrangedObjects.price" options:bindingOptions];
-	
-	
 }
-
+/*
 - (unsigned int)countOfItemsArray 
 {
     return [itemsArray count];
@@ -151,7 +147,7 @@ CPLogRegister(CPLogConsole);
 {
     [itemsArray replaceObjectAtIndex:index withObject:anObject];
 }
-
+*/
 @end
 
 @implementation Item : CPObject
@@ -162,7 +158,7 @@ CPLogRegister(CPLogConsole);
 - (id)init
 {
     self = [super init];
-    price = 1.0;
+    price = 7.0;
     return self;
 }
 

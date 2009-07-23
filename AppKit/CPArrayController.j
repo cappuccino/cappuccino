@@ -44,10 +44,11 @@
 
 + (void)initialize
 {
-    if (self !== [self class])
+    if (self !== [CPArrayController class])
         return;
 
-    [[self class] exposeBinding:@"contentArray"];
+    [self exposeBinding:@"contentArray"];
+    [self exposeBinding:@"contentSet"];
 }
 
 + (CPSet)keyPathsForValuesAffectingValueForContentArray
@@ -57,22 +58,22 @@
 
 + (CPSet)keyPathsForValuesAffectingValueForArrangedObjects
 {
-    return [CPSet setWithObjects:"content", "contentArray", "filterPredicate", "sortDescriptors"];
+    return [CPSet setWithObjects:"content", "contentArray", "contentSet", "filterPredicate", "sortDescriptors"];
 }
 
 + (CPSet)keyPathsForValuesAffectingValueForSelection
 {
-    return [CPSet setWithObjects:"content", "contentArray", "selectionIndexes"];
+    return [CPSet setWithObjects:"content", "contentArray", "contentSet", "selectionIndexes"];
 }
 
 + (CPSet)keyPathsForValuesAffectingValueForSelectionIndex
 {
-    return [CPSet setWithObjects:"content", "contentArray", "selectionIndexes", "selection"];
+    return [CPSet setWithObjects:"content", "contentArray", "contentSet", "selectionIndexes", "selection"];
 }
 
 + (CPSet)keyPathsForValuesAffectingValueForSelectedObjects
 {
-    return [CPSet setWithObjects:"content", "contentArray", "selectionIndexes", "selection"];
+    return [CPSet setWithObjects:"content", "contentArray", "contentSet", "selectionIndexes", "selection"];
 }
 
 + (CPSet)keyPathsForValuesAffectingValueForCanRemove
@@ -150,12 +151,22 @@
         [self setSelectionIndexes:oldSelectionIndexes];
 }
 
-- (void)_setContentArray:(id)value 
+- (void)_setContentArray:(id)anArray
 {
-   [self setContent:value];
+   [self setContent:anArray];
+}
+
+- (void)_setContentSet:(id)aSet
+{
+    [self setContent:aSet];
 }
 
 - (id)contentArray 
+{
+    return [self content];
+}
+
+- (id)contentSet
 {
     return [self content];
 }

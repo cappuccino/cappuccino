@@ -232,7 +232,6 @@ var CPBindingOperationAnd = 0,
     var exposedBindings = [],
         theClass = [self class];
 
-
     while (theClass && theClass !== [CPObject class])
     {
         var temp = [CPKeyValueBinding exposedBindingsForClass:theClass];
