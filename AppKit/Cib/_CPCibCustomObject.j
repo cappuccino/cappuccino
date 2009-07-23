@@ -47,10 +47,21 @@ var _CPCibCustomObjectClassName = @"_CPCibCustomObjectClassName";
 {
     var theClass = CPClassFromString(_className);
 
-#if DEBUG    
+    // Hey this is us!
+    if (theClass === [self class])
+    {
+        _className = @"CPObject";
+
+        return self;
+    }
+
     if (!theClass)
+    {
+#if DEBUG
         CPLog("Unknown class \"" + _className + "\" in cib file");
 #endif
+        theClass = [CPObject class];
+    }
 
     if (theClass === [CPApplication class])
         return [CPApplication sharedApplication];
