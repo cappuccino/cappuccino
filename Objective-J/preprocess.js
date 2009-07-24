@@ -170,6 +170,7 @@ var objj_preprocessor = function(aString, aSourceFile, aBundle, flags)
 {
     this._currentClass = "";
     this._currentSuperClass = "";
+    this._currentSuperMetaClass = "";
     
     this._file = aSourceFile;
     this._fragments = [];
@@ -177,6 +178,7 @@ var objj_preprocessor = function(aString, aSourceFile, aBundle, flags)
     this._tokens = new objj_lexer(aString);
     this._flags = flags;
     this._bundle = aBundle;
+    this._classMethod = false;
     
     this.preprocess(this._tokens, this._preprocessed);
     //alert(this._preprocessed + "");
@@ -262,8 +264,7 @@ objj_preprocessor.prototype.brackets = function(/*objj_lexer*/ tokens, /*objj_st
         if (tuples[0][0].atoms[0] == TOKEN_SUPER)
         {
             CONCAT(aStringBuffer, "objj_msgSendSuper(");
-            CONCAT(aStringBuffer, "{ receiver:self, super_class:" + this._currentSuperClass + " }");
-            
+            CONCAT(aStringBuffer, "{ receiver:self, super_class:" + (this._classMethod ? this._currentSuperMetaClass : this._currentSuperClass ) + " }");
         }
         else
         {
@@ -350,7 +351,7 @@ objj_preprocessor.prototype.implementation = function(tokens, /*objj_stringBuffe
         category = NO,
         class_name = tokens.skip_whitespace(),
         superclass_name = "Nil",
-        
+
         instance_methods = new objj_stringBuffer(),
         class_methods = new objj_stringBuffer();
     
@@ -358,6 +359,7 @@ objj_preprocessor.prototype.implementation = function(tokens, /*objj_stringBuffe
         objj_exception_throw(new objj_exception(OBJJParseException, "*** Expected class name, found \"" + class_name + "\"."));
     
     this._currentSuperClass = NULL;
+    this._currentSuperMetaClass = NULL;
     this._currentClass = class_name;
     
     // If we reach an open parenthesis, we are declaring a category.
@@ -376,12 +378,18 @@ objj_preprocessor.prototype.implementation = function(tokens, /*objj_stringBuffe
         CONCAT(buffer, "var meta_class = the_class.isa;");
         
         var superclass_name = dictionary_getValue(SUPER_CLASSES, class_name);
-        
+
         // FIXME: We should have a better solution for this case, although it's actually not much slower than the real case.
         if (!superclass_name)
+        {
             this._currentSuperClass = "objj_getClass(\"" + class_name + "\").super_class";
+            this._currentSuperMetaClass = "objj_getMetaClass(\"" + class_name + "\").super_class";
+        }
         else
+        {
             this._currentSuperClass = "objj_getClass(\"" + superclass_name + "\")";
+            this._currentSuperMetaClass = "objj_getMeraClass(\"" + superclass_name + "\")";
+        }
     }
     else
     {
@@ -394,7 +402,9 @@ objj_preprocessor.prototype.implementation = function(tokens, /*objj_stringBuffe
                 objj_exception_throw(new objj_exception(OBJJParseException, "*** Expected class name, found \"" + token + "\"."));
             
             superclass_name = token;
+
             this._currentSuperClass = "objj_getClass(\"" + superclass_name + "\")";
+            this._currentSuperMetaClass = "objj_getMetaClass(\"" + superclass_name + "\")";
             
             dictionary_setValue(SUPER_CLASSES, class_name, superclass_name);
 
@@ -503,6 +513,8 @@ objj_preprocessor.prototype.implementation = function(tokens, /*objj_stringBuffe
     {
         if (token == TOKEN_PLUS)
         {
+            this._classMethod = true;
+
             if (IS_NOT_EMPTY(class_methods))
                 CONCAT(class_methods, ", ");
             
@@ -511,6 +523,8 @@ objj_preprocessor.prototype.implementation = function(tokens, /*objj_stringBuffe
         
         else if (token == TOKEN_MINUS)
         {
+            this._classMethod = false;
+
             if (IS_NOT_EMPTY(instance_methods))
                 CONCAT(instance_methods, ", ");
             
