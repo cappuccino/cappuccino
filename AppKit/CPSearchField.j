@@ -143,8 +143,7 @@ var CPSearchFieldSearchImage = nil,
 // Managing Buttons
 /*!
     Sets the button used to display the search-button image
-    @param button 
-    @param The search button.
+    @param button The search button.
 */
 - (void)setSearchButton:(CPButton)button
 { 
@@ -567,7 +566,7 @@ var CPSearchFieldSearchImage = nil,
 
 - (void)_showMenu:(id)sender
 {
-    if(_searchMenu == nil)
+    if(_searchMenu == nil || ![self isEnabled])
         return;
         
     [super selectText:nil];
@@ -690,13 +689,15 @@ var CPSearchButtonKey                   = @"CPSearchButtonKey",
     self = [super initWithCoder:coder];
     
     _searchButton             = [coder decodeObjectForKey:CPSearchButtonKey];
-    _searchButton             = [coder decodeObjectForKey:CPCancelButtonKey];
+    _cancelButton             = [coder decodeObjectForKey:CPCancelButtonKey];
     _recentsAutosaveName      = [coder decodeObjectForKey:CPRecentsAutosaveNameKey];
     _sendsWholeSearchString   = [coder decodeBoolForKey:CPSendsWholeSearchStringKey];
     _sendsSearchStringImmediately = [coder decodeBoolForKey:CPSendsSearchStringImmediatelyKey];
     _maximumRecents           = [coder decodeIntForKey:CPMaximumRecentsKey];
     [self setSearchMenuTemplate:[coder decodeObjectForKey:CPSearchMenuTemplateKey]];
-    
+    [self resetCancelButton];
+    [self setDelegate:self];
+
     return self;
 }
 
