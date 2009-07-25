@@ -119,7 +119,7 @@ var _CPMenuBarVisible               = NO,
         
 // FIXME: There must be a better way to do this.
 #if PLATFORM(DOM)
-    [[CPDOMWindowBridge sharedDOMWindowBridge] _bridgeResizeEvent:nil];
+    [window.platformWindow resizeEvent:nil];
 #endif
 }
 

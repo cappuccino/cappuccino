@@ -27,6 +27,7 @@
 @import "CGGeometry.j"
 @import "CPAnimation.j"
 @import "CPResponder.j"
+@import "CPPlatformWindow.j"
 
 #include "../Platform/Platform.h"
 #include "../Platform/DOM/CPDOMDisplayServer.h"
