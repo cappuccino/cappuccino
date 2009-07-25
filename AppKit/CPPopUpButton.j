@@ -204,7 +204,7 @@ CPPopUpButtonStatePullsDown = CPThemeState("pulls-down");
 */
 - (CPMenuItem)selectedItem
 {
-    if (_selectedIndex < 0)
+    if (_selectedIndex < 0 || _selectedIndex > [self numberOfItems] - 1)
         return nil;
     
     return [_menu itemAtIndex:_selectedIndex];
@@ -550,7 +550,7 @@ CPPopUpButtonStatePullsDown = CPThemeState("pulls-down");
 - (void)synchronizeTitleAndSelectedItem
 {
     var item = nil;
-
+debugger;
     if ([self pullsDown])
     {
         var items = [_menu itemArray];
@@ -628,13 +628,15 @@ CPPopUpButtonStatePullsDown = CPThemeState("pulls-down");
 {
     var numberOfItems = [self numberOfItems];
     
-    if (numberOfItems <= _selectedIndex)
+    if (numberOfItems <= _selectedIndex && numberOfItems > 0)
         [self selectItemAtIndex:numberOfItems - 1];
+    else
+        [self synchronizeTitleAndSelectedItem];
 }
 
 - (void)mouseDown:(CPEvent)anEvent
 {
-    if (![self isEnabled])
+    if (![self isEnabled] || ![self numberOfItems])
         return;
         
     [self highlight:YES];
