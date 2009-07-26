@@ -395,6 +395,17 @@ CPTexturedBackgroundWindowMask
     return self;
 }
 
+- (CPPlatformWindow)platformWindow
+{
+    return _platformWindow;
+}
+
+- (void)setPlatformWindow:(CPPlatformWindow)aPlatformWindow
+{
+    // FIXME: already visible.
+    _platformWindow = aPlatformWindow;
+}
+
 /*!
     @ignore
 */
@@ -626,9 +637,7 @@ CPTexturedBackgroundWindowMask
 */
 - (void)orderFront:(id)aSender
 {
-    if (![_platformWindow isVisible])
-        [_platformWindow orderFront:self];
-
+    [_platformWindow orderFront:self];
     [_platformWindow order:CPWindowAbove window:self relativeTo:nil];
 }
 

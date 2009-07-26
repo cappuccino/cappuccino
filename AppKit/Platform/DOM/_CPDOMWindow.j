@@ -254,6 +254,9 @@ var CTRL_KEY_CODE   = 17;
         theDocument.addEventListener("touchmove", touchEventCallback, NO);
         theDocument.addEventListener("touchcancel", touchEventCallback, NO);
 
+        _DOMWindow.addEventListener("DOMMouseScroll", scrollEventCallback, NO);
+        _DOMWindow.addEventListener("mousewheel", scrollEventCallback, NO);
+
         _DOMWindow.addEventListener("resize", resizeEventCallback, NO);        
 
         _DOMWindow.addEventListener("beforeunload", function()

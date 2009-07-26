@@ -26,6 +26,7 @@
 @import <AppKit/CPImageView.j>
 
 #import "CoreGraphics/CGGeometry.h"
+#import "Platform/Platform.h"
 
 
 #define DRAGGING_WINDOW(anObject) ([anObject isKindOfClass:[CPWindow class]] ? anObject : [anObject window])
@@ -241,14 +242,20 @@ var CPDragServerUpdateDragging = function(anEvent)
 - (void)dragView:(CPView)aView fromWindow:(CPWindow)aWindow at:(CGPoint)viewLocation offset:(CGSize)mouseOffset event:(CPEvent)anEvent pasteboard:(CPPasteboard)aPasteboard source:(id)aSourceObject slideBack:(BOOL)slideBack
 {
     var eventLocation = [anEvent locationInWindow];
-    
+
     CPDragServerView = aView;
     CPDragServerSource = aSourceObject;
     CPDragServerWindow = aWindow;
     CPDragServerOffset = CPPointMake(eventLocation.x - viewLocation.x, eventLocation.y - viewLocation.y);
     CPDragServerPasteboard = [CPPasteboard pasteboardWithName:CPDragPboard];//aPasteboard;
 
-    [_dragWindow setFrameSize:CGSizeMakeCopy([[CPDOMWindowBridge sharedDOMWindowBridge] frame].size)];
+#if PLATFORM(BROWSER)
+    var platformWindow = [aWindow platformWindow];
+
+    [_dragWindow setPlatformWindow:platformWindow];
+    [_dragWindow setFrameSize:[platformWindow contentBounds]];
+#endif
+
     [_dragWindow orderFront:self];
 
     [aView setFrameOrigin:viewLocation];
