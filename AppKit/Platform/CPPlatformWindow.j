@@ -118,6 +118,14 @@ var PlatformWindowClass = NULL;
     [self setContentRect:[self nativeContentRect]];
 }
 
+- (BOOL)isVisible
+{
+#if PLATFORM(DOM)
+    return _DOMWindow !== NULL;
+#endif
+    return NO;
+}
+
 @end
 
 #if PLATFORM(BROWSER)

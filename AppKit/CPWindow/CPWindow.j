@@ -626,6 +626,9 @@ CPTexturedBackgroundWindowMask
 */
 - (void)orderFront:(id)aSender
 {
+    if (![_platformWindow isVisible])
+        [_platformWindow orderFront:self];
+
     [_platformWindow order:CPWindowAbove window:self relativeTo:nil];
 }
 
