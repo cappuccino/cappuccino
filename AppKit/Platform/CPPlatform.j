@@ -21,7 +21,7 @@
 #endif
 
     [CPPlatformString bootstrap];
-    window.firstWindow = [[CPPlatformWindow alloc] _init];
+    [CPPlatformWindow setPrimaryPlatformWindow:[[CPPlatformWindow alloc] _init]];
 }
 
 @end

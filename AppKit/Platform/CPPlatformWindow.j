@@ -5,13 +5,33 @@
 #import "../CoreGraphics/CGGeometry.h"
 
 
-var PlatformWindowClass = NULL;
+var PlatformWindowClass = NULL,
+    PrimaryPlatformWindow   = NULL;
 
 @implementation CPPlatformWindow : CPObject
 {
     CGRect  _contentRect;
 }
 
++ (CPPlatformWindow)primaryPlatformWindow
+{
+    return PrimaryPlatformWindow;
+}
+
++ (void)setPrimaryPlatformWindow:(CPPlatformWindow)aPlatformWindow
+{
+    PrimaryPlatformWindow = aPlatformWindow;
+}
+/*
++ (BOOL)supportsMultipleWindows
+{
+#if PLATFORM(BROWSER)
+    return YES;
+#else
+    return NO;
+#endif
+}
+*/
 + (void)_setPlatformWindowClass:(Class)aClass
 {
     PlatformWindowClass = aClass;

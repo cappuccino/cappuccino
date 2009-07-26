@@ -336,7 +336,7 @@ CPTexturedBackgroundWindowMask
     
     if (self)
     {
-        _platformWindow = window.firstWindow;
+        [self setPlatformWindow:[CPPlatformWindow primaryPlatformWindow]];
 
         _isFullBridge = NO;
         _registeredDraggedTypes = [CPSet set];

@@ -73,12 +73,12 @@ var CPDOMWindowGetFrame,
 
 - (CGRect)visibleFrame
 {
-    return [window.firstWindow usableContentFrame];
+    return [[CPPlatformWindow primaryPlatformWindow] usableContentFrame];
 }
 
 - (CPRect)contentBounds
 {
-    var contentBounds = [window.firstWindow contentRect];
+    var contentBounds = [[CPPlatformWindow primaryPlatformWindow] contentRect];
     contentBounds.origin = CGPointMake(0,0);
 
     return contentBounds;
@@ -86,34 +86,34 @@ var CPDOMWindowGetFrame,
 
 - (CPArray)orderedWindowsAtLevel:(int)aLevel
 {
-    return [window.firstWindow orderedWindowsAtLevel:aLevel];
+    return [[CPPlatformWindow primaryPlatformWindow] orderedWindowsAtLevel:aLevel];
 }
 
 - (CPDOMWindowLayer)layerAtLevel:(int)aLevel create:(BOOL)aFlag
 {
-    return [window.firstWindow layerAtLevel:aLevel create:aFlag];
+    return [[CPPlatformWindow primaryPlatformWindow] layerAtLevel:aLevel create:aFlag];
 }
 
 - (void)order:(CPWindowOrderingMode)aPlace window:(CPWindow)aWindow relativeTo:(CPWindow)otherWindow
 {
-    return [window.firstWindow order:aPlace window:aWindow relativeTo:otherWindow];
+    return [[CPPlatformWindow primaryPlatformWindow] order:aPlace window:aWindow relativeTo:otherWindow];
 }
 
 /* @ignore */
 - (id)_dragHitTest:(CPPoint)aPoint pasteboard:(CPPasteboard)aPasteboard
 {
-    return [window.firstWindow _dragHitTest:aPoint pasteboard:aPasteboard];
+    return [[CPPlatformWindow primaryPlatformWindow] _dragHitTest:aPoint pasteboard:aPasteboard];
 }
 
 /* @ignore */
 - (void)_propagateCurrentDOMEvent:(BOOL)aFlag
 {
-    return [window.firstWindow _propagateCurrentDOMEvent:aFlag];
+    return [[CPPlatformWindow primaryPlatformWindow] _propagateCurrentDOMEvent:aFlag];
 }
 
 - (CPWindow)hitTest:(CPPoint)location
 {
-    return [window.firstWindow hitTest:location];
+    return [[CPPlatformWindow primaryPlatformWindow] hitTest:location];
 }
 
 @end
