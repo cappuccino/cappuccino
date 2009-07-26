@@ -236,6 +236,8 @@ var CPWindowSaveImage       = nil,
 */
 @implementation CPWindow : CPResponder
 {
+    CPPlatformWindow            _platformWindow;
+
     int                         _windowNumber;
     unsigned                    _styleMask;
     CGRect                      _frame;
@@ -290,7 +292,7 @@ var CPWindowSaveImage       = nil,
 #if PLATFORM(DOM)
     DOMElement                  _DOMElement;
 #endif
-    CPDOMWindowBridge           _bridge;
+
     unsigned                    _autoresizingMask;
     
     BOOL                        _delegateRespondsToWindowWillReturnUndoManagerSelector;
@@ -330,36 +332,12 @@ CPTexturedBackgroundWindowMask
 */
 - (id)initWithContentRect:(CGRect)aContentRect styleMask:(unsigned int)aStyleMask
 {
-#if PLATFORM(DOM)
-    return [self initWithContentRect:aContentRect styleMask:aStyleMask bridge:[CPDOMWindowBridge sharedDOMWindowBridge]];
-#else
-    return [self initWithContentRect:aContentRect styleMask:aStyleMask bridge:nil];
-#endif
-}
-
-/*!
-    Initializes the window. The method also takes a style bit mask made up
-    of any of the following values:
-<pre>
-CPBorderlessWindowMask
-CPTitledWindowMask
-CPClosableWindowMask
-CPMiniaturizableWindowMask
-CPResizableWindowMask
-CPTexturedBackgroundWindowMask
-</pre>
-    @param aContentRect the size and location of the window in screen space
-    @param aStyleMask a style mask
-    @param aBridge a DOM-Window bridge object
-    @return the initialized window
-    @ignore
-*/
-- (id)initWithContentRect:(CGRect)aContentRect styleMask:(unsigned int)aStyleMask bridge:(CPDOMWindowBridge)aBridge
-{
     self = [super init];
     
     if (self)
     {
+        _platformWindow = window.firstWindow;
+
         _isFullBridge = NO;
         _registeredDraggedTypes = [CPSet set];
         _registeredDraggedTypesArray = [];
@@ -402,8 +380,6 @@ CPTexturedBackgroundWindowMask
         
         CPDOMDisplayServerAppendChild(_DOMElement, _windowView._DOMElement);
 #endif
-
-        [self setBridge:aBridge];
 
         [self setNextResponder:CPApp];
 
@@ -504,7 +480,7 @@ CPTexturedBackgroundWindowMask
         [self setLevel:CPBackgroundWindowLevel];
         [self setHasShadow:NO];
         [self setAutoresizingMask:CPWindowWidthSizable | CPWindowHeightSizable];
-        [self setFrame:[_bridge visibleFrame]];
+        [self setFrame:[_platformWindow usableContentFrame]];
     }
     else
     {
@@ -650,7 +626,7 @@ CPTexturedBackgroundWindowMask
 */
 - (void)orderFront:(id)aSender
 {
-    [_bridge order:CPWindowAbove window:self relativeTo:nil];
+    [_platformWindow order:CPWindowAbove window:self relativeTo:nil];
 }
 
 /*
@@ -660,7 +636,7 @@ CPTexturedBackgroundWindowMask
 */
 - (void)orderBack:(id)aSender
 {
-    //[_bridge order:CPWindowBelow
+    //[_platformWindow order:CPWindowBelow
 }
 
 /*!
@@ -672,7 +648,7 @@ CPTexturedBackgroundWindowMask
     if ([_delegate respondsToSelector:@selector(windowWillClose:)])
         [_delegate windowWillClose:self];
 
-    [_bridge order:CPWindowOut window:self relativeTo:nil];
+    [_platformWindow order:CPWindowOut window:self relativeTo:nil];
 
     if ([CPApp keyWindow] == self)
     {
@@ -689,7 +665,7 @@ CPTexturedBackgroundWindowMask
 */
 - (void)orderWindow:(CPWindowOrderingMode)aPlace relativeTo:(int)otherWindowNumber
 {
-    [_bridge order:aPlace window:self relativeTo:CPApp._windows[otherWindowNumber]];
+    [_platformWindow order:aPlace window:self relativeTo:CPApp._windows[otherWindowNumber]];
 }
 
 /*!
@@ -1154,9 +1130,9 @@ CPTexturedBackgroundWindowMask
 - (void)center
 {
     var size = [self frame].size,
-        bridgeSize = [_bridge contentBounds].size;
+        containerSize = [_platformWindow contentBounds].size;
     
-    [self setFrameOrigin:CGPointMake((bridgeSize.width - size.width) / 2.0, (bridgeSize.height - size.height) / 2.0)];
+    [self setFrameOrigin:CGPointMake((containerSize.width - size.width) / 2.0, (containerSize.height - size.height) / 2.0)];
 }
 
 /*!
@@ -1641,7 +1617,7 @@ CPTexturedBackgroundWindowMask
     [_windowView noteToolbarChanged];
 
     if (_isFullBridge)
-        newFrame = [_bridge visibleFrame];
+        newFrame = [_platformWindow usableContentFrame];
     else
     {
         newFrame = CGRectMakeCopy([self frame]);
@@ -1708,7 +1684,7 @@ CPTexturedBackgroundWindowMask
     [self _setAttachedSheetFrameOrigin];
     
     // Place this window above ourselves.
-    [_bridge order:CPWindowAbove window:aSheet relativeTo:self];
+    [_platformWindow order:CPWindowAbove window:aSheet relativeTo:self];
 }
 
 /*!
@@ -1930,38 +1906,17 @@ var keyViewComparator = function(a, b, context)
 @implementation CPWindow (BridgeSupport)
 
 /*
-    Sets the DOM-Window bridge for this window.
-    @ignore
-*/
-- (void)setBridge:(CPDOMWindowBridge)aBridge
-{
-    if (_bridge == aBridge)
-        return;
-        
-    if (_bridge)
-    {
-        [self orderOut:self];
-        // FIXME: If the bridge changes, then we have to recreate all of our subviews' DOM Elements.
-    }
-
-    _bridge = aBridge;
-    
-    if ([self isFullBridge])
-        [self setFrame:[aBridge contentBounds]];
-}
-
-/*
     @ignore
 */
 - (void)resizeWithOldBridgeSize:(CGSize)aSize
 {
     if ([self isFullBridge])
-        return [self setFrame:[_bridge visibleFrame]];
+        return [self setFrame:[_platformWindow usableContentFrame]];
     
     if (_autoresizingMask == CPWindowNotSizable)
         return;
 
-    var frame = [_bridge contentBounds],
+    var frame = [_platformWindow contentBounds],
         newFrame = CGRectMakeCopy(_frame),
         dX = (CGRectGetWidth(frame) - aSize.width) /
             (((_autoresizingMask & CPWindowMinXMargin) ? 1 : 0) + (_autoresizingMask & CPWindowWidthSizable ? 1 : 0) + (_autoresizingMask & CPWindowMaxXMargin ? 1 : 0)),

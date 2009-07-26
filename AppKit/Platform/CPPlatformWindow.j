@@ -50,6 +50,32 @@ var PlatformWindowClass = NULL;
     return _CGRectMakeCopy(_contentRect);
 }
 
+- (CGRect)contentBounds
+{
+    var contentBounds = [self contentRect];
+
+    contentBounds.origin = _CGPointMakeZero();
+
+    return contentBounds;
+}
+
+- (void)usableContentFrame
+{
+    var frame = [self contentBounds];
+
+    frame.origin = CGPointMakeZero();
+
+    if ([CPMenu menuBarVisible])
+    {
+        var menuBarHeight = [[CPApp mainMenu] menuBarHeight];
+
+        frame.origin.y += menuBarHeight;
+        frame.size.height -= menuBarHeight;
+    }
+
+    return frame;
+}
+
 - (void)setContentRect:(CGRect)aRect
 {
     if (!aRect || _CGRectEqualToRect(_contentRect, aRect))

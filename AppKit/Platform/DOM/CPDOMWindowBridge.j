@@ -73,19 +73,7 @@ var CPDOMWindowGetFrame,
 
 - (CGRect)visibleFrame
 {
-    var frame = [self contentBounds];
-
-    frame.origin = CGPointMakeZero();
-    
-    if ([CPMenu menuBarVisible])
-    {
-        var menuBarHeight = [[CPApp mainMenu] menuBarHeight];
-        
-        frame.origin.y += menuBarHeight;
-        frame.size.height -= menuBarHeight;
-    }
-    
-    return frame;
+    return [window.firstWindow usableContentFrame];
 }
 
 - (CPRect)contentBounds

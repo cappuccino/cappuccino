@@ -477,7 +477,7 @@ var CTRL_KEY_CODE   = 17;
     }
         
     if (StopDOMEventPropagation)
-        CPDOMEventStop(aDOMEvent);
+        CPDOMEventStop(aDOMEvent, self);
         
     [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
 
@@ -564,7 +564,7 @@ var CTRL_KEY_CODE   = 17;
     [CPApp sendEvent:event];
         
     if (StopDOMEventPropagation)
-        CPDOMEventStop(aDOMEvent);
+        CPDOMEventStop(aDOMEvent, self);
         
     [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
 }
@@ -753,7 +753,7 @@ var CTRL_KEY_CODE   = 17;
     }
 
     if (StopDOMEventPropagation)
-        CPDOMEventStop(aDOMEvent);
+        CPDOMEventStop(aDOMEvent, self);
 
     [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
 }
@@ -1002,7 +1002,7 @@ var CPDOMEventGetClickCount = function(aComparisonEvent, aTimestamp, aLocation)
         ABS(comparisonLocation.y - aLocation.y) < CLICK_SPACE_DELTA) ? [aComparisonEvent clickCount] + 1 : 1;
 }
 
-var CPDOMEventStop = function(aDOMEvent)
+var CPDOMEventStop = function(aDOMEvent, aPlatformWindow)
 {
     // IE Model
     aDOMEvent.cancelBubble = true;
@@ -1017,8 +1017,8 @@ var CPDOMEventStop = function(aDOMEvent)
 
     if (aDOMEvent.type === CPDOMEventMouseDown)
     {
-        CPSharedDOMWindowBridge._DOMFocusElement.focus();
-        CPSharedDOMWindowBridge._DOMFocusElement.blur();
+        aPlatformWindow._DOMFocusElement.focus();
+        aPlatformWindow._DOMFocusElement.blur();
     }
 }
 
