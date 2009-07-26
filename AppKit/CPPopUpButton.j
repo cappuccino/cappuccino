@@ -550,7 +550,7 @@ CPPopUpButtonStatePullsDown = CPThemeState("pulls-down");
 - (void)synchronizeTitleAndSelectedItem
 {
     var item = nil;
-debugger;
+
     if ([self pullsDown])
     {
         var items = [_menu itemArray];
