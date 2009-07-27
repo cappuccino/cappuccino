@@ -970,7 +970,7 @@ var DOMElementPrototype         = nil,
 {
     _fullScreenModeState = _CPViewFullScreenModeStateMake(self);
     
-    var fullScreenWindow = [[CPWindow alloc] initWithContentRect:[[CPDOMWindowBridge sharedDOMWindowBridge] contentBounds] styleMask:CPBorderlessWindowMask];
+    var fullScreenWindow = [[CPWindow alloc] initWithContentRect:[[CPPlatformWindow primaryPlatformWindow] contentBounds] styleMask:CPBorderlessWindowMask];
     
     [fullScreenWindow setLevel:CPScreenSaverWindowLevel];
     [fullScreenWindow setAutoresizingMask:CPViewWidthSizable | CPViewHeightSizable];

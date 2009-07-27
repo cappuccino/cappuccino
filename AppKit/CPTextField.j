@@ -597,7 +597,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
     //post CPControlTextDidBeginEditingNotification
     [self textDidBeginEditing:[CPNotification notificationWithName:CPControlTextDidBeginEditingNotification object:self userInfo:nil]];
     
-    [[CPDOMWindowBridge sharedDOMWindowBridge] _propagateCurrentDOMEvent:YES];
+    [[[self window] platformWindow] _propagateCurrentDOMEvent:YES];
     
     CPTextFieldInputIsActive = YES;
 

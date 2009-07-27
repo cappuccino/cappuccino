@@ -20,9 +20,9 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-@import "CPDOMWindowBridge.j"
 @import "CPFlashMovie.j"
 @import "CPView.j"
+
 
 /*!
     @ingroup appkit
@@ -96,17 +96,17 @@
 
 - (void)mouseDragged:(CPEvent)anEvent
 {
-    [[CPDOMWindowBridge sharedDOMWindowBridge] _propagateCurrentDOMEvent:YES];
+    [[[self window] platformWindow] _propagateCurrentDOMEvent:YES];
 }
 
 - (void)mouseDown:(CPEvent)anEvent
 {
-    [[CPDOMWindowBridge sharedDOMWindowBridge] _propagateCurrentDOMEvent:YES];
+    [[[self window] platformWindow] _propagateCurrentDOMEvent:YES];
 }
 
 - (void)mouseUp:(CPEvent)anEvent
 {
-    [[CPDOMWindowBridge sharedDOMWindowBridge] _propagateCurrentDOMEvent:YES];
+    [[[self window] platformWindow] _propagateCurrentDOMEvent:YES];
 }
 
 @end

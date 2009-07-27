@@ -22,12 +22,8 @@
 
 @import <Foundation/CPString.j>
 
-#include "CoreGraphics/CGGeometry.h"
-#include "Platform/Platform.h"
+@import "CPPlatformString.j"
 
-
-var CPStringReferenceElement    = nil,
-    CPStringDefaultFont         = nil;
 
 @implementation CPString (CPStringDrawing)
 
@@ -46,75 +42,7 @@ var CPStringReferenceElement    = nil,
 
 - (CGSize)sizeWithFont:(CPFont)aFont inWidth:(float)aWidth
 {
-#if PLATFORM(DOM)
-    if (!CPStringReferenceElement)
-    {
-        CPStringReferenceElement = document.createElement("span");
-        
-        var style = CPStringReferenceElement.style;
-        
-        style.position = "absolute";
-        style.whiteSpace = "pre";
-        style.visibility = "visible";
-        style.padding = "0px";
-        style.margin = "0px";
-        
-        style.left = "-100000px";
-        style.top = "-100000px";
-        style.zIndex = "10000";
-        style.background = "red";
-        
-        document.getElementsByTagName("body")[0].appendChild(CPStringReferenceElement);
-    }
-
-    if (!aFont)
-    {
-        if (!CPStringDefaultFont)
-            CPStringDefaultFont = [CPFont systemFontOfSize:12.0];
-        
-        aFont = CPStringDefaultFont;
-    }
-
-    var style = CPStringReferenceElement.style;
-    
-    if (aWidth === NULL)
-    {
-        style.width = "";
-        style.whiteSpace = "pre";
-    }
-    
-    else
-    {
-        style.width = ROUND(aWidth) + "px";
-        
-        if (document.attachEvent)
-            style.wordWrap = "break-word";
-        
-        else
-        {
-            style.whiteSpace = "-o-pre-wrap";
-            style.whiteSpace = "-pre-wrap";
-            style.whiteSpace = "-moz-pre-wrap";
-            style.whiteSpace = "pre-wrap";
-        }
-    }
-
-    style.font = [aFont cssString];
-
-    if (CPFeatureIsCompatible(CPJavascriptInnerTextFeature))
-        CPStringReferenceElement.innerText = self;
-    
-    else if (CPFeatureIsCompatible(CPJavascriptTextContentFeature))
-        CPStringReferenceElement.textContent = self;
-
-    return _CGSizeMake(CPStringReferenceElement.clientWidth, CPStringReferenceElement.clientHeight);
-#endif
-    return _CGSizeMakeZero();
-}
-
-+ (void)_resetSize
-{
-    CPStringReferenceElement = nil;
+    return [CPPlatformString sizeOfString:self withFont:aFont forWidth:aWidth];
 }
 
 @end
