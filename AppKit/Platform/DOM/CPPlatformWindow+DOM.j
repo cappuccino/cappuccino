@@ -992,9 +992,9 @@ var CPDOMEventStop = function(aDOMEvent, aPlatformWindow)
 
 function CPWindowObjectList()
 {
-    var bridge = [CPDOMWindowBridge sharedDOMWindowBridge],
-        levels = bridge._windowLevels,
-        layers = bridge._windowLayers,
+    var platformWindow = [CPPlatformWindow primaryPlatformWindow],
+        levels = platformWindow._windowLevels,
+        layers = platformWindow._windowLayers,
         levelCount = levels.length,
         windowObjects = [];
 
@@ -1012,9 +1012,9 @@ function CPWindowObjectList()
 
 function CPWindowList()
 {
-    var bridge = [CPDOMWindowBridge sharedDOMWindowBridge],
-        levels = bridge._windowLevels,
-        layers = bridge._windowLayers,
+    var platformWindow = [CPPlatformWindow primaryPlatformWindow],
+        levels = platformWindow._windowLevels,
+        layers = platformWindow._windowLayers,
         levelCount = levels.length,
         windowNumbers = [];
 

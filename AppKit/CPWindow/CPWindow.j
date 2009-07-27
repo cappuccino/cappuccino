@@ -2086,5 +2086,4 @@ function _CPWindowFullBridgeSessionMake(aWindowView, aContentRect, hasShadow, aL
 @import "_CPBorderlessWindowView.j"
 @import "_CPBorderlessBridgeWindowView.j"
 @import "CPDragServer.j"
-@import "CPDOMWindowBridge.j"
 @import "CPView.j"
