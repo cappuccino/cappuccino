@@ -99,7 +99,7 @@ CPKeyValueChangeRemoval     = 3;
 CPKeyValueChangeReplacement = 4;
 
 var kvoNewAndOld = CPKeyValueObservingOptionNew|CPKeyValueObservingOptionOld,
-    DependentKeysMap = {},
+    DependentKeysKey = "$KVODEPENDENT",
     KVOProxyKey = "$KVOPROXY";
 
 //rule of thumb: _ methods are called on the real proxy object, others are called on the "fake" proxy object (aka the real object)
@@ -210,12 +210,12 @@ var kvoNewAndOld = CPKeyValueObservingOptionNew|CPKeyValueObservingOptionOld,
     if (!affectingKeysCount)
         return;
 
-    var dependentKeysForClass = DependentKeysMap[[_nativeClass UID]];
+    var dependentKeysForClass = _nativeClass[DependentKeysKey];
 
     if (!dependentKeysForClass)
     {
         dependentKeysForClass = {};
-        DependentKeysMap[[_nativeClass UID]] = dependentKeysForClass;
+        _nativeClass[DependentKeysKey] = dependentKeysForClass;
     }
 
     while (affectingKeysCount--)
@@ -374,7 +374,7 @@ var kvoNewAndOld = CPKeyValueObservingOptionNew|CPKeyValueObservingOptionOld,
             [observerInfo.observer observeValueForKeyPath:aKey ofObject:_targetObject change:changes context:observerInfo.context];
     }
     
-    var dependentKeysMap = DependentKeysMap[[_nativeClass UID]];
+    var dependentKeysMap = _nativeClass[DependentKeysKey];
 
     if (!dependentKeysMap)
         return;
