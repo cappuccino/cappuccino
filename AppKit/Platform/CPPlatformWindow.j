@@ -16,24 +16,24 @@ var PrimaryPlatformWindow   = NULL;
 
     DOMElement      _DOMBodyElement;
     DOMElement      _DOMFocusElement;
-    
+
     CPArray         _windowLevels;
     CPDictionary    _windowLayers;
-    
+
     BOOL            _mouseIsDown;
     CPWindow        _mouseDownWindow;
     CPTimeInterval  _lastMouseUp;
     CPTimeInterval  _lastMouseDown;
-    
+
     Object          _charCodes;
     unsigned        _keyCode;
-    
+
     BOOL            _DOMEventMode;
-    
+
     // Native Pasteboard Support
     DOMElement      _DOMPasteboardElement;
     CPEvent         _pasteboardKeyDownEvent;
-    
+
     CPString        _overriddenEventType;
 #endif
 }
