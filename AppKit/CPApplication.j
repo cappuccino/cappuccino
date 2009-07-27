@@ -772,14 +772,18 @@ function CPApplicationMain(args, namedArgs)
     [principalClass sharedApplication];
 
     //FIXME?
-    if (!args && !namedArgs)
+    if (!args)
     {
-        var args = [CPApp arguments],
-            searchParams = window.location.search.substring(1).split("&");
-            namedArgs = [CPDictionary dictionary];
+        var args = [CPApp arguments];
 
         if([args containsObject:"debug"])
             CPLogRegister(CPLogPopup);
+    }
+
+    if (!namedArgs)
+    {
+        var searchParams = window.location.search.substring(1).split("&");
+            namedArgs = [CPDictionary dictionary];
 
         for(var i=0; i<searchParams.length; i++)
         {
