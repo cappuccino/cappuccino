@@ -5,12 +5,37 @@
 #import "../CoreGraphics/CGGeometry.h"
 
 
-var PlatformWindowClass = NULL,
-    PrimaryPlatformWindow   = NULL;
+var PrimaryPlatformWindow   = NULL;
 
 @implementation CPPlatformWindow : CPObject
 {
     CGRect  _contentRect;
+
+#if PLATFORM(DOM)
+    DOMWindow       _DOMWindow;
+
+    DOMElement      _DOMBodyElement;
+    DOMElement      _DOMFocusElement;
+    
+    CPArray         _windowLevels;
+    CPDictionary    _windowLayers;
+    
+    BOOL            _mouseIsDown;
+    CPWindow        _mouseDownWindow;
+    CPTimeInterval  _lastMouseUp;
+    CPTimeInterval  _lastMouseDown;
+    
+    Object          _charCodes;
+    unsigned        _keyCode;
+    
+    BOOL            _DOMEventMode;
+    
+    // Native Pasteboard Support
+    DOMElement      _DOMPasteboardElement;
+    CPEvent         _pasteboardKeyDownEvent;
+    
+    CPString        _overriddenEventType;
+#endif
 }
 
 + (CPPlatformWindow)primaryPlatformWindow
@@ -22,40 +47,22 @@ var PlatformWindowClass = NULL,
 {
     PrimaryPlatformWindow = aPlatformWindow;
 }
-/*
-+ (BOOL)supportsMultipleWindows
-{
-#if PLATFORM(BROWSER)
-    return YES;
-#else
-    return NO;
-#endif
-}
-*/
-+ (void)_setPlatformWindowClass:(Class)aClass
-{
-    PlatformWindowClass = aClass;
-}
-
-+ (Class)_platformWindowClass
-{
-    return PlatformWindowClass;
-}
-
-+ (id)alloc
-{
-    if (self === [CPPlatformWindow class])
-        return [PlatformWindowClass alloc];
-
-    return [super alloc];
-}
 
 - (id)initWithContentRect:(CGRect)aRect
 {
     self = [super init];
 
     if (self)
+    {
         _contentRect = _CGRectMakeCopy(aRect);
+
+#if PLATFORM(DOM)
+        _windowLevels = [];
+        _windowLayers = [CPDictionary dictionary];
+        
+        _charCodes = {};
+#endif
+    }
 
     return self;
 }
@@ -137,19 +144,25 @@ var PlatformWindowClass = NULL,
 {
     [self setContentRect:[self nativeContentRect]];
 }
-
+/*
 - (BOOL)isVisible
 {
-#if PLATFORM(DOM)
-    return _DOMWindow !== NULL;
-#endif
     return NO;
 }
+
+/*
++ (BOOL)supportsMultipleWindows
+{
+#if PLATFORM(BROWSER)
+    return YES;
+#else
+    return NO;
+#endif
+}
+*/
 
 @end
 
 #if PLATFORM(BROWSER)
-@import "_CPBrowserWindow.j"
-#else
-[CPPlatformWindow _setPlatformWindowClass:[CPPlatformWindow class]];
+@import "CPPlatformWindow+DOM.j"
 #endif

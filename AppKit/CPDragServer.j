@@ -252,8 +252,9 @@ var CPDragServerUpdateDragging = function(anEvent)
 #if PLATFORM(BROWSER)
     var platformWindow = [aWindow platformWindow];
 
+    // FIXME: We should just have the window be the size of the view and move the window around.
     [_dragWindow setPlatformWindow:platformWindow];
-    [_dragWindow setFrameSize:[platformWindow contentBounds]];
+    [_dragWindow setFrameSize:[platformWindow contentBounds].size];
 #endif
 
     [_dragWindow orderFront:self];

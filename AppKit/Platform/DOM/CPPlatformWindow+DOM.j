@@ -70,32 +70,7 @@ var KeyCodesToPrevent = {},
 
 var CTRL_KEY_CODE   = 17;
 
-@implementation _CPDOMWindow : CPPlatformWindow
-{
-    DOMWindow       _DOMWindow;
-
-    DOMElement      _DOMBodyElement;
-    DOMElement      _DOMFocusElement;
-    
-    CPArray         _windowLevels;
-    CPDictionary    _windowLayers;
-    
-    BOOL            _mouseIsDown;
-    CPWindow        _mouseDownWindow;
-    CPTimeInterval  _lastMouseUp;
-    CPTimeInterval  _lastMouseDown;
-    
-    JSObject        _charCodes;
-    unsigned        _keyCode;
-    
-    BOOL            _DOMEventMode;
-    
-    // Native Pasteboard Support
-    DOMElement      _DOMPasteboardElement;
-    CPEvent         _pasteboardKeyDownEvent;
-    
-    CPString        _overriddenEventType;
-}
+@implementation CPPlatformWindow (DOM)
 
 - (id)_init
 {
@@ -104,6 +79,7 @@ var CTRL_KEY_CODE   = 17;
     if (self)
     {
         _DOMWindow = window;
+        _contentRect = _CGRectMakeZero();
 
         [self registerDOMWindow];
         [self updateFromNativeContentRect];
@@ -112,21 +88,6 @@ var CTRL_KEY_CODE   = 17;
 
         _windowLevels = [];
         _windowLayers = [CPDictionary dictionary];
-    }
-
-    return self;
-}
-
-- (id)initWithContentRect:(CGRect)aRect
-{
-    self = [super initWithContentRect:aRect];
-
-    if (self)
-    {
-        _windowLevels = [];
-        _windowLayers = [CPDictionary dictionary];
-        
-        _charCodes = {};
     }
 
     return self;
@@ -331,6 +292,11 @@ var CTRL_KEY_CODE   = 17;
             self._DOMWindow = nil;
         }, NO);
     }
+}
+
+- (BOOL)isVisible
+{
+    return _DOMWindow !== NULL;
 }
 
 - (void)orderFront:(id)aSender
@@ -918,7 +884,7 @@ var CTRL_KEY_CODE   = 17;
     
     @param characters a list of characters to stop propagating keypresses to the browser.
 */
-- (void)preventCharacterKeysFromPropagating:(CPArray)characters
++ (void)preventCharacterKeysFromPropagating:(CPArray)characters
 {
     for(var i=characters.length; i>0; i--)
         CharacterKeysToPrevent[""+characters[i-1].toLowerCase()] = YES;
@@ -927,7 +893,7 @@ var CTRL_KEY_CODE   = 17;
 /*!
     @param character a character to stop propagating keypresses to the browser.
 */
-- (void)preventCharacterKeyFromPropagating:(CPString)character
++ (void)preventCharacterKeyFromPropagating:(CPString)character
 {
     CharacterKeysToPrevent[character.toLowerCase()] = YES;
 }
@@ -935,7 +901,7 @@ var CTRL_KEY_CODE   = 17;
 /*!
     Clear the list of characters for which we are not sending keypresses to the browser.
 */
-- (void)clearCharacterKeysToPreventFromPropagating
++ (void)clearCharacterKeysToPreventFromPropagating
 {
     CharacterKeysToPrevent = {};
 }
@@ -944,7 +910,7 @@ var CTRL_KEY_CODE   = 17;
     Prevent these keyCodes from sending their keypresses to the browser.
     @param keyCodes an array of keycodes to prevent propagation.
 */
-- (void)preventKeyCodesFromPropagating:(CPArray)keyCodes
++ (void)preventKeyCodesFromPropagating:(CPArray)keyCodes
 {
     for(var i=keyCodes.length; i>0; i--)
         KeyCodesToPrevent[keyCodes[i-1]] = YES;
@@ -954,7 +920,7 @@ var CTRL_KEY_CODE   = 17;
     Prevent this keyCode from sending its key events to the browser.
     @param keyCode a keycode to prevent propagation.
 */
-- (void)preventKeyCodeFromPropagating:(CPString)keyCode
++ (void)preventKeyCodeFromPropagating:(CPString)keyCode
 {
     KeyCodesToPrevent[keyCode] = YES;
 }
@@ -962,11 +928,10 @@ var CTRL_KEY_CODE   = 17;
 /*!
     Clear the list of keyCodes for which we are not sending keypresses to the browser.
 */
-- (void)clearKeyCodesToPreventFromPropagating
++ (void)clearKeyCodesToPreventFromPropagating
 {
     KeyCodesToPrevent = {};
 }
-
 
 @end
 
