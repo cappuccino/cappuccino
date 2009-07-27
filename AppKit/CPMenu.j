@@ -119,7 +119,7 @@ var _CPMenuBarVisible               = NO,
         
 // FIXME: There must be a better way to do this.
 #if PLATFORM(DOM)
-    [window.platformWindow resizeEvent:nil];
+    [[CPPlatformWindow primaryPlatformWindow] resizeEvent:nil];
 #endif
 }
 
@@ -1078,7 +1078,7 @@ var STICKY_TIME_INTERVAL        = 500,
 {
     _unconstrainedFrame = CGRectMakeCopy([self frame]);
 
-    var screenBounds = CGRectInset([[CPDOMWindowBridge sharedDOMWindowBridge] contentBounds], 5.0, 5.0),
+    var screenBounds = CGRectInset([[self platformWindow] contentBounds], 5.0, 5.0),
         constrainedFrame = CGRectIntersection(_unconstrainedFrame, screenBounds),
         menuViewOrigin = [self convertBaseToBridge:CGPointMake(LEFT_MARGIN, TOP_MARGIN)];
     
@@ -1158,7 +1158,7 @@ var STICKY_TIME_INTERVAL        = 500,
     
     if (type == CPPeriodic)
     {
-        var constrainedBounds = CGRectInset([[CPDOMWindowBridge sharedDOMWindowBridge] contentBounds], 5.0, 5.0);
+        var constrainedBounds = CGRectInset([[self platformWindow] contentBounds], 5.0, 5.0);
         
         if (_scrollingState == _CPMenuWindowScrollingStateUp)
         {
@@ -1447,9 +1447,9 @@ var _CPMenuBarWindowBackgroundColor = nil,
 
 - (id)init
 {
-    var bridgeWidth = CGRectGetWidth([[CPDOMWindowBridge sharedDOMWindowBridge] contentBounds]);
+    var platformWindowWidth = CGRectGetWidth([[CPPlatformWindow primaryPlatformWindow] contentBounds]);
     
-    self = [super initWithContentRect:CGRectMake(0.0, 0.0, bridgeWidth, MENUBAR_HEIGHT) styleMask:CPBorderlessWindowMask];
+    self = [super initWithContentRect:CGRectMake(0.0, 0.0, platformWindowWidth, MENUBAR_HEIGHT) styleMask:CPBorderlessWindowMask];
     
     if (self)
     {

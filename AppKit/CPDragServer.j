@@ -112,7 +112,7 @@ var CPDragServerUpdateDragging = function(anEvent)
         bridgeLocation = [[anEvent window] convertBaseToBridge:location];
 
     // We have to convert base to bridge since the drag event comes from the source window, not the drag window.
-    var draggingDestination = [[CPDOMWindowBridge sharedDOMWindowBridge] _dragHitTest:bridgeLocation pasteboard:CPDragServerPasteboard];
+    var draggingDestination = [[CPPlatformWindow primaryPlatformWindow] _dragHitTest:bridgeLocation pasteboard:CPDragServerPasteboard];
     
     CPDragServerLocation = [DRAGGING_WINDOW(draggingDestination) convertBridgeToBase:bridgeLocation];
     
@@ -326,7 +326,7 @@ var CPDragServerUpdateDragging = function(anEvent)
         return nil;
 
 // We don't need to do this because the only place this gets called
-// -_dragHitTest: in CPDOMWindowBridge does this already. Perhaps to
+// -_dragHitTest: in CPPlatformWindow does this already. Perhaps to
 // be safe?
 //    if (![self containsPoint:aPoint])
 //        return nil;
