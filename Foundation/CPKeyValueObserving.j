@@ -58,7 +58,7 @@
     if (!anObserver || !aPath)
         return;
 
-    [[KVOProxyMap objectForKey:[self UID]] _removeObserver:anObserver forKeyPath:aPath];
+    [self[KVOProxyKey] _removeObserver:anObserver forKeyPath:aPath];
 }
 
 + (BOOL)automaticallyNotifiesObserversForKey:(CPString)aKey
@@ -98,12 +98,9 @@ CPKeyValueChangeInsertion   = 2;
 CPKeyValueChangeRemoval     = 3;
 CPKeyValueChangeReplacement = 4;
 
-//convenience
-var kvoNewAndOld = CPKeyValueObservingOptionNew|CPKeyValueObservingOptionOld;
-
-// Map of real objects to their KVO proxy
-var KVOProxyMap = [CPDictionary dictionary],
-    DependentKeysMap = [CPDictionary dictionary];
+var kvoNewAndOld = CPKeyValueObservingOptionNew|CPKeyValueObservingOptionOld,
+    DependentKeysMap = [CPDictionary dictionary],
+    KVOProxyKey = "$KVOPROXY";
 
 //rule of thumb: _ methods are called on the real proxy object, others are called on the "fake" proxy object (aka the real object)
 
@@ -119,7 +116,7 @@ var KVOProxyMap = [CPDictionary dictionary],
 
 + (id)proxyForObject:(CPObject)anObject
 {
-    var proxy = [KVOProxyMap objectForKey:[anObject UID]];
+    var proxy = anObject[KVOProxyKey];
 
     if (proxy)
         return proxy;
@@ -128,7 +125,7 @@ var KVOProxyMap = [CPDictionary dictionary],
 
     [proxy _replaceClass];
 
-    [KVOProxyMap setObject:proxy forKey:[anObject UID]];
+    anObject[KVOProxyKey] = proxy;
 
     return proxy;
 }
@@ -205,9 +202,10 @@ var KVOProxyMap = [CPDictionary dictionary],
         }
     }
 
-    var affectingKeys = [[_nativeClass keyPathsForValuesAffectingValueForKey:aKey] allObjects];
+    var affectingKeys = [[_nativeClass keyPathsForValuesAffectingValueForKey:aKey] allObjects],
+        affectingKeysCount = affectingKeys ? affectingKeys.length : 0;
 
-    if (![affectingKeys count])
+    if (!affectingKeysCount)
         return;
 
     var dependentKeysForClass = [DependentKeysMap objectForKey:[_nativeClass UID]];
@@ -218,11 +216,9 @@ var KVOProxyMap = [CPDictionary dictionary],
         [DependentKeysMap setObject:dependentKeysForClass forKey:[_nativeClass UID]];
     }
 
-    var count = [affectingKeys count];
-
-    while (count--)
+    while (affectingKeysCount--)
     {
-        var affectingKey = affectingKeys[count],
+        var affectingKey = affectingKeys[affectingKeysCount],
             affectedKeys = [dependentKeysForClass objectForKey:affectingKey];
 
         if (!affectedKeys)
@@ -288,7 +284,7 @@ var KVOProxyMap = [CPDictionary dictionary],
     if (![_observersForKey count])
     {
         _targetObject.isa = _nativeClass; //restore the original class
-        [KVOProxyMap removeObjectForKey:[_targetObject UID]];
+        delete _targetObject[KVOProxyKey];
     }
 }
 
@@ -360,7 +356,7 @@ var KVOProxyMap = [CPDictionary dictionary],
     }
     
     var observers = [[_observersForKey objectForKey:aKey] allValues],
-        count = [observers count];
+        count = observers ? observers.length : 0;
 
     while (count--)
     {
@@ -425,7 +421,7 @@ var KVOProxyMap = [CPDictionary dictionary],
 
 - (Class)class
 {
-    return [KVOProxyMap objectForKey:[self UID]]._nativeClass;
+    return self[KVOProxyKey]._nativeClass;
 }
 
 - (Class)superclass
