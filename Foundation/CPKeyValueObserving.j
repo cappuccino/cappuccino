@@ -99,7 +99,7 @@ CPKeyValueChangeRemoval     = 3;
 CPKeyValueChangeReplacement = 4;
 
 var kvoNewAndOld = CPKeyValueObservingOptionNew|CPKeyValueObservingOptionOld,
-    DependentKeysMap = [CPDictionary dictionary],
+    DependentKeysMap = {},
     KVOProxyKey = "$KVOPROXY";
 
 //rule of thumb: _ methods are called on the real proxy object, others are called on the "fake" proxy object (aka the real object)
@@ -110,7 +110,8 @@ var kvoNewAndOld = CPKeyValueObservingOptionNew|CPKeyValueObservingOptionOld,
     id              _targetObject;
     Class           _nativeClass;
     CPDictionary    _changesForKey;
-    CPDictionary    _observersForKey;
+    Object          _observersForKey;
+    int             _observersForKeyLength;
     CPSet           _replacedKeys;
 }
 
@@ -136,9 +137,10 @@ var kvoNewAndOld = CPKeyValueObservingOptionNew|CPKeyValueObservingOptionOld,
 
     _targetObject       = aTarget;
     _nativeClass        = [aTarget class];
-    _observersForKey    = [CPDictionary dictionary];
-    _changesForKey      = [CPDictionary dictionary];
     _replacedKeys       = [CPSet set];
+    _observersForKey    = {};
+    _changesForKey      = {};
+    _observersForKeyLength = 0;
 
     return self;
 }
@@ -208,23 +210,23 @@ var kvoNewAndOld = CPKeyValueObservingOptionNew|CPKeyValueObservingOptionOld,
     if (!affectingKeysCount)
         return;
 
-    var dependentKeysForClass = [DependentKeysMap objectForKey:[_nativeClass UID]];
+    var dependentKeysForClass = DependentKeysMap[[_nativeClass UID]];
 
     if (!dependentKeysForClass)
     {
-        dependentKeysForClass = [CPDictionary new];
-        [DependentKeysMap setObject:dependentKeysForClass forKey:[_nativeClass UID]];
+        dependentKeysForClass = {};
+        DependentKeysMap[[_nativeClass UID]] = dependentKeysForClass;
     }
 
     while (affectingKeysCount--)
     {
         var affectingKey = affectingKeys[affectingKeysCount],
-            affectedKeys = [dependentKeysForClass objectForKey:affectingKey];
+            affectedKeys = dependentKeysForClass[affectingKey];
 
         if (!affectedKeys)
         {
             affectedKeys = [CPSet new];
-            [dependentKeysForClass setObject:affectedKeys forKey:affectingKey];
+            dependentKeysForClass[affectingKey] = affectedKeys;
         }
 
         [affectedKeys addObject:aKey];
@@ -244,12 +246,13 @@ var kvoNewAndOld = CPKeyValueObservingOptionNew|CPKeyValueObservingOptionOld,
     else
         [self _replaceSetterForKey:aPath];
 
-    var observers = [_observersForKey objectForKey:aPath];
+    var observers = _observersForKey[aPath];
 
     if (!observers)
     {
         observers = [CPDictionary dictionary];
-        [_observersForKey setObject:observers forKey:aPath];
+        _observersForKey[aPath] = observers;
+        _observersForKeyLength++;
     }
 
     [observers setObject:_CPKVOInfoMake(anObserver, options, aContext, forwarder) forKey:[anObserver UID]];
@@ -268,7 +271,7 @@ var kvoNewAndOld = CPKeyValueObservingOptionNew|CPKeyValueObservingOptionOld,
 
 - (void)_removeObserver:(id)anObserver forKeyPath:(CPString)aPath
 {
-    var observers = [_observersForKey objectForKey:aPath];
+    var observers = _observersForKey[aPath];
 
     if (aPath.indexOf('.') != CPNotFound)
     {
@@ -279,9 +282,12 @@ var kvoNewAndOld = CPKeyValueObservingOptionNew|CPKeyValueObservingOptionOld,
     [observers removeObjectForKey:[anObserver UID]];
 
     if (![observers count])
-        [_observersForKey removeObjectForKey:aPath];
+    {
+        _observersForKeyLength--;
+        delete _observersForKey[aPath];
+    }
 
-    if (![_observersForKey count])
+    if (!_observersForKeyLength)
     {
         _targetObject.isa = _nativeClass; //restore the original class
         delete _targetObject[KVOProxyKey];
@@ -292,7 +298,7 @@ var kvoNewAndOld = CPKeyValueObservingOptionNew|CPKeyValueObservingOptionOld,
 
 - (void)_sendNotificationsForKey:(CPString)aKey changeOptions:(CPDictionary)changeOptions isBefore:(BOOL)isBefore
 {
-    var changes = [_changesForKey objectForKey:aKey];
+    var changes = _changesForKey[aKey];
 
     if (isBefore)
     {
@@ -324,7 +330,7 @@ var kvoNewAndOld = CPKeyValueObservingOptionNew|CPKeyValueObservingOptionOld,
         
         [changes setObject:1 forKey:CPKeyValueChangeNotificationIsPriorKey];
 
-        [_changesForKey setObject:changes forKey:aKey];
+        _changesForKey[aKey] = changes;
     }
     else
     {
@@ -355,7 +361,7 @@ var kvoNewAndOld = CPKeyValueObservingOptionNew|CPKeyValueObservingOptionOld,
         }
     }
     
-    var observers = [[_observersForKey objectForKey:aKey] allValues],
+    var observers = [_observersForKey[aKey] allValues],
         count = observers ? observers.length : 0;
 
     while (count--)
@@ -368,7 +374,12 @@ var kvoNewAndOld = CPKeyValueObservingOptionNew|CPKeyValueObservingOptionOld,
             [observerInfo.observer observeValueForKeyPath:aKey ofObject:_targetObject change:changes context:observerInfo.context];
     }
     
-    var keysComposedOfKey = [[[DependentKeysMap objectForKey:[_nativeClass UID]] objectForKey:aKey] allObjects];
+    var dependentKeysMap = DependentKeysMap[[_nativeClass UID]];
+
+    if (!dependentKeysMap)
+        return;
+
+    var keysComposedOfKey = [dependentKeysMap[aKey] allObjects];
     
     if (!keysComposedOfKey)
         return;
