@@ -358,6 +358,16 @@
             [
                 [_CPCibCustomResource imageResourceWithName:"radio-bezel-selected.png" size:CGSizeMake(17.0, 17.0)], nil, nil
             ]
+        isVertical:NO]),
+        bezelColorSelectedHighlighted = PatternColor([[CPThreePartImage alloc] initWithImageSlices:
+            [
+                [_CPCibCustomResource imageResourceWithName:"radio-bezel-selected-highlighted.png" size:CGSizeMake(17.0, 17.0)], nil, nil
+            ]
+        isVertical:NO]),
+        bezelColorHighlighted = PatternColor([[CPThreePartImage alloc] initWithImageSlices:
+            [
+                [_CPCibCustomResource imageResourceWithName:"radio-bezel-highlighted.png" size:CGSizeMake(17.0, 17.0)], nil, nil
+            ]
         isVertical:NO]);
 
     [button setValue:CPLeftTextAlignment forThemeAttribute:@"alignment" inState:CPThemeStateBordered];
@@ -365,6 +375,8 @@
     [button setValue:CGInsetMake(0.0, 0.0, 0.0, 20.0) forThemeAttribute:@"content-inset" inState:CPThemeStateBordered];
     [button setValue:bezelColor forThemeAttribute:@"bezel-color" inState:CPThemeStateBordered];    
     [button setValue:bezelColorSelected forThemeAttribute:@"bezel-color" inState:CPThemeStateBordered | CPThemeStateSelected];
+    [button setValue:bezelColorSelectedHighlighted forThemeAttribute:@"bezel-color" inState:CPThemeStateBordered | CPThemeStateSelected | CPThemeStateHighlighted];
+    [button setValue:bezelColorHighlighted forThemeAttribute:@"bezel-color" inState:CPThemeStateBordered | CPThemeStateHighlighted];
 
     [button setValue:CGSizeMake(0.0, 17.0) forThemeAttribute:@"min-size"];
 
