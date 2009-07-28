@@ -54,7 +54,7 @@ CPPopUpButtonStatePullsDown = CPThemeState("pulls-down");
 /*!
     Initializes the pop-up button to the specified size.
     @param aFrame the size for the button
-    @param shouldPullDown <code>YES</code> makes this a pull-down menu, <code>NO</code> makes it a pop-up menu.
+    @param shouldPullDown \c YES makes this a pull-down menu, \c NO makes it a pop-up menu.
     @return the initialized pop-up button
 */
 - (id)initWithFrame:(CGRect)aFrame pullsDown:(BOOL)shouldPullDown
@@ -87,8 +87,8 @@ CPPopUpButtonStatePullsDown = CPThemeState("pulls-down");
 
 /*!
     Specifies whether the object is a pull-down or a pop-up menu.
-    @param shouldPullDown <code>YES</code> makes the pop-up button
-    a pull-down menu. <code>NO</code> makes it a pop-up menu.
+    @param shouldPullDown \c YES makes the pop-up button
+    a pull-down menu. \c NO makes it a pop-up menu.
 */
 - (void)setPullsDown:(BOOL)shouldPullDown
 {
@@ -111,7 +111,7 @@ CPPopUpButtonStatePullsDown = CPThemeState("pulls-down");
 }
 
 /*!
-    Returns <code>YES</code> if the button is a pull-down menu. <code>NO</code> if the button is a pop-up menu.
+    Returns \c YES if the button is a pull-down menu. \c NO if the button is a pop-up menu.
 */
 - (BOOL)pullsDown
 {
@@ -200,7 +200,7 @@ CPPopUpButtonStatePullsDown = CPThemeState("pulls-down");
 
 // Getting the User's Selection
 /*!
-    Returns the selected item or <code>nil</code> if no item is selected.
+    Returns the selected item or \c nil if no item is selected.
 */
 - (CPMenuItem)selectedItem
 {
@@ -211,7 +211,7 @@ CPPopUpButtonStatePullsDown = CPThemeState("pulls-down");
 }
 
 /*!
-    Returns the title of the selected item or <code>nil</code> if no item is selected.
+    Returns the title of the selected item or \c nil if no item is selected.
 */
 - (CPString)titleOfSelectedItem
 {
@@ -372,7 +372,7 @@ CPPopUpButtonStatePullsDown = CPThemeState("pulls-down");
 }
 
 /*!
-    Returns the item at the specified index or <code>nil</code> if the item does not exist.
+    Returns the item at the specified index or \c nil if the item does not exist.
     @param anIndex the index of the item to obtain
 */
 - (CPMenuItem)itemAtIndex:(unsigned)anIndex
@@ -381,7 +381,7 @@ CPPopUpButtonStatePullsDown = CPThemeState("pulls-down");
 }
 
 /*!
-    Returns the title of the item at the specified index or <code>nil</code> if no item exists.
+    Returns the title of the item at the specified index or \c nil if no item exists.
     @param anIndex the index of the item
 */
 - (CPString)itemTitleAtIndex:(unsigned)anIndex

@@ -241,7 +241,7 @@ CPTableColumnUserResizingMask;
 
 /*!
     Sets whether the column in this data is editable.
-    @param aFlag <code>YES</code> means the column data is editable
+    @param aFlag \c YES means the column data is editable
 */
 - (void)setEditable:(BOOL)aFlag
 {
@@ -249,7 +249,7 @@ CPTableColumnUserResizingMask;
 }
 
 /*!
-    Returns <code>YES</code> if the column data is editable.
+    Returns \c YES if the column data is editable.
 */
 - (BOOL)isEditable
 {
@@ -313,7 +313,7 @@ CPTableColumnUserResizingMask;
 }
 
 /*!
-    By default returns the value from <code>dataCell</code>. This can
+    By default returns the value from \c -dataCell. This can
     be overridden by a subclass to return different cells for different
     rows.
     @param aRowIndex the index of the row to obtain the cell for

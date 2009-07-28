@@ -172,7 +172,7 @@ CPButtonStateMixed  = CPThemeState("mixed");
 
 // Setting the state
 /*!
-    Returns <code>YES</code> if the button has a 'mixed' state in addition to on and off.
+    Returns \c YES if the button has a 'mixed' state in addition to on and off.
 */
 - (BOOL)allowsMixedState
 {
@@ -248,9 +248,9 @@ CPButtonStateMixed  = CPThemeState("mixed");
 }
 
 /*!
-    Sets the button's state to <code>aState</code>.
+    Sets the button's state to \c aState.
     @param aState Possible states are any of the CPButton globals:
-    <code>CPOffState, CPOnState, CPMixedState</code>
+    \c CPOffState, \c CPOnState, \c CPMixedState
 */
 - (void)setState:(CPInteger)aState
 {
@@ -602,7 +602,7 @@ var CPButtonImageKey                = @"CPButtonImageKey",
 @implementation CPButton (CPCoding)
 
 /*!
-    Initializes the button by unarchiving data from <code>aCoder</code>.
+    Initializes the button by unarchiving data from \c aCoder.
     @param aCoder the coder containing the archived CPButton.
 */
 - (id)initWithCoder:(CPCoder)aCoder

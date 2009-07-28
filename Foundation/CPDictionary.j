@@ -70,7 +70,7 @@
 
     If you are familiar with dictionaries in Cocoa, you'll notice that
     there is no CPMutableDictionary class. The regular CPDictionary
-    has <code>setObject:</code> and <code>removeObjectForKey:</code> methods.
+    has \c -setObject:forKey: and \c -removeObjectForKey: methods.
     In Cappuccino there is no distinction between immutable and mutable classes.
     They are all mutable.
 */
@@ -95,7 +95,7 @@
 }
 
 /*!
-    Returns a new dictionary, initialized with the contents of <code>aDictionary</code>.
+    Returns a new dictionary, initialized with the contents of \c aDictionary.
     @param aDictionary the dictionary to copy key-value pairs from
     @return the new CPDictionary
 */
@@ -402,7 +402,7 @@
     }
 */
 /*!
-    Returns the object for the entry with key <code>aKey</code>.
+    Returns the object for the entry with key \c aKey.
     @param aKey the key for the object's entry
     @return the object for the entry
 */

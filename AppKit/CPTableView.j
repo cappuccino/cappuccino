@@ -561,7 +561,7 @@ var _CPTableViewWillDisplayCellSelector                         = 1 << 0,
 - (id)tableView:(CPTableView)aTableView objectValueForTableColumn:(CPTableColumn)aTableColumn row:(int)rowIndex
 </pre>
     @param aDataSource the object with the table data
-    @throws CPInternalInconsistencyException if <code>aDataSource</code> doesn't implement all the required methods
+    @throws CPInternalInconsistencyException if \c aDataSource doesn't implement all the required methods
 */
 - (void)setDataSource:(id)aDataSource
 {
@@ -687,7 +687,7 @@ var _CPTableViewWillDisplayCellSelector                         = 1 << 0,
 }
 
 /*
-    Adjusts column widths to make them all visible at once. Same as <code>tile</code>.
+    Adjusts column widths to make them all visible at once. Same as \c -tile.
 */
 - (void)sizeToFit
 {   
@@ -730,7 +730,7 @@ var _CPTableViewWillDisplayCellSelector                         = 1 << 0,
 }
 
 /*
-    Reloads the data from the <code>dataSource</code>. This is an
+    Reloads the data from the \c -dataSource. This is an
     expensive method, so use it lightly.
 */
 - (void)reloadData

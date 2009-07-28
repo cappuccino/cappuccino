@@ -62,11 +62,11 @@ function CPPointMake(x, y)
 }
 
 /*!
-    Makes a CGRect with an origin and size equal to <code>aRect</code> less the <code>dX/dY</code> insets specified.
+    Makes a CGRect with an origin and size equal to \c aRect less the \c dX/dY insets specified.
     @param dX the size of the inset in the x-axis
     @param dY the size of the inset in the y-axis
     @group CGRect
-    @return CGRect a rectangle like <code>aRect</code> with an inset
+    @return CGRect a rectangle like \c aRect with an inset
 */
 function CPRectInset(aRect, dX, dY)
 {
@@ -132,7 +132,7 @@ function CPRectMake(x, y, width, height)
 }
 
 /*!
-    Creates a new rectangle with its origin offset by <code>dX</code> and <code>dY</code>.
+    Creates a new rectangle with its origin offset by \c dX and \c dY.
     @group CGRect
     @param aRect the rectangle to copy the origin and size from
     @param dX the amount added to the x-size of the new rectangle
@@ -171,7 +171,7 @@ function CPRectStandardize(aRect)
 }
 
 /*!
-    Returns the smallest rectangle that can contain the two argument <code>CGRect</code>s.
+    Returns the smallest rectangle that can contain the two argument \c CGRects.
     @group CGRect
     @param lhsRect the first CGRect to use for the union calculation
     @param rhsRect the second CGRect to use for the union calculation
@@ -211,12 +211,12 @@ function CPSizeMake(width, height)
 }
 
 /*!
-    Returns <code>YES</code> if the CGRect, <code>aRect</code>, contains
-    the CGPoint, <code>aPoint</code>.
+    Returns \c YES if the CGRect, \c aRect, contains
+    the CGPoint, \c aPoint.
     @param aRect the rectangle to test with
     @param aPoint the point to test with
     @group CGRect
-    @return BOOL <code>YES</code> if the rectangle contains the point, <code>NO</code> otherwise.
+    @return BOOL \c YES if the rectangle contains the point, \c NO otherwise.
 */
 function CPRectContainsPoint(aRect, aPoint)
 {
@@ -227,12 +227,12 @@ function CPRectContainsPoint(aRect, aPoint)
 }
 
 /*!
-    Returns a <code>BOOL</code> indicating whether CGRect <code>possibleOuter</code>
-    contains CGRect <code>possibleInner</code>.
+    Returns a \c BOOL indicating whether CGRect \c possibleOuter
+    contains CGRect \c possibleInner.
     @group CGRect
-    @param possibleOuter the CGRect to test if <code>possibleInner</code> is inside of
-    @param possibleInner the CGRect to test if it fits inside <code>possibleOuter</code>.
-    @return BOOL <code>YES</code> if <code>possibleInner</code> fits inside <code>possibleOuter</code>.
+    @param possibleOuter the CGRect to test if \c possibleInner is inside of
+    @param possibleInner the CGRect to test if it fits inside \c possibleOuter.
+    @return BOOL \c YES if \c possibleInner fits inside \c possibleOuter.
 */
 function CPRectContainsRect(lhsRect, rhsRect)
 {
@@ -241,11 +241,11 @@ function CPRectContainsRect(lhsRect, rhsRect)
 
 /*!
     Tests whether the two CGPoints are equal to each other by comparing their
-    <code>x</code> and <code>y</code> members.
+    \c x and \c y members.
     @group @CGPoint
     @param lhsPoint the first CGPoint to check
     @param rhsPoint the second CGPoint to check
-    @return BOOL <code>YES</code> if the two points have the same x's, and the same y's.
+    @return BOOL \c YES if the two points have the same x's, and the same y's.
 */
 function CPPointEqualToPoint(lhsPoint, rhsPoint)
 {
@@ -257,7 +257,7 @@ function CPPointEqualToPoint(lhsPoint, rhsPoint)
     @group CGRect
     @param lhsRect the first CGRect to compare
     @param rhsRect the second CGRect to compare
-    @return BOOL <code>YES</code> if the two rectangles have the same origin and size. <code>NO</code>, otherwise.
+    @return BOOL \c YES if the two rectangles have the same origin and size. \c NO, otherwise.
 */
 function CPRectEqualToRect(lhsRect, rhsRect)
 {
@@ -346,11 +346,11 @@ function CPRectGetWidth(aRect)
 }
 
 /*!
-    Returns <code>YES</code> if the two rectangles intersect
+    Returns \c YES if the two rectangles intersect
     @group CGRect
     @param lhsRect the first CGRect
     @param rhsRect the second CGRect
-    @return BOOL <code>YES</code> if the two rectangles have any common spaces, and <code>NO</code>, otherwise.
+    @return BOOL \c YES if the two rectangles have any common spaces, and \c NO, otherwise.
 */
 function CPRectIntersectsRect(lhsRect, rhsRect)
 {
@@ -358,11 +358,11 @@ function CPRectIntersectsRect(lhsRect, rhsRect)
 }
 
 /*!
-    Returns <code>YES</code> if the CGRect has no area.
+    Returns \c YES if the CGRect has no area.
     The test is performed by checking if the width and height are both zero.
     @group CGRect
     @param aRect the CGRect to test
-    @return BOOL <code>YES</code> if the CGRect has no area, and <code>NO</code>, otherwise.
+    @return BOOL \c YES if the CGRect has no area, and \c NO, otherwise.
 */
 function CPRectIsEmpty(aRect)
 {
@@ -370,10 +370,10 @@ function CPRectIsEmpty(aRect)
 }
 
 /*!
-    Returns <code>YES</code> if the CGRect has no area.
+    Returns \c YES if the CGRect has no area.
     The test is performed by checking if the width and height are both zero.
     @group CGRect
-    @return BOOL <code>YES</code> if the CGRect has no area, and <code>NO</code>, otherwise.
+    @return BOOL \c YES if the CGRect has no area, and \c NO, otherwise.
 */
 function CPRectIsNull(aRect)
 {
@@ -381,11 +381,11 @@ function CPRectIsNull(aRect)
 }
 
 /*!
-    Returns <code>YES</code> if the two CGSizes are identical.
+    Returns \c YES if the two CGSizes are identical.
     @group CGSize
     @param lhsSize the first CGSize to compare
     @param rhsSize the second CGSize to compare
-    @return BOOL <code>YES</code> if the two sizes are identical. <code>NO</code>, otherwise.
+    @return BOOL \c YES if the two sizes are identical. \c NO, otherwise.
 */
 function CPSizeEqualToSize(lhsSize, rhsSize)
 {
@@ -454,7 +454,7 @@ function CPSizeFromString(aString)
 /*!
     Returns a CGRect created from a string.
     @group CGRect
-    @param aString a string in the form generated by <code>CPStringFromRect</code>
+    @param aString a string in the form generated by \c CPStringFromRect
     @return CGRect the rectangle created from the string
 */
 function CPRectFromString(aString)
@@ -477,7 +477,7 @@ function CPPointFromEvent(anEvent)
 /*!
     Returns a zero sized CGSize.
     @group CGSize
-    @return CGSize a size object with zeros for <code>width</code> and <code>height</code>
+    @return CGSize a size object with zeros for \c width and \c height
 */
 function CPSizeMakeZero()
 {
@@ -485,7 +485,7 @@ function CPSizeMakeZero()
 }
 
 /*!
-    Returns a rectangle at origin <code>(0,0)</code> and size of <code>(0,0)</code>.
+    Returns a rectangle at origin \c (0,0) and size of \c (0,0).
     @group CGRect
     @return CGRect a zeroed out CGRect
 */
@@ -495,9 +495,9 @@ function CPRectMakeZero()
 }
 
 /*!
-    Returns a point located at <code>(0, 0)</code>.
+    Returns a point located at \c (0, 0).
     @group CGPoint
-    @return CGPoint a point located at <code>(0, 0)</code>
+    @return CGPoint a point located at \c (0, 0)
 */
 function CPPointMakeZero()
 {

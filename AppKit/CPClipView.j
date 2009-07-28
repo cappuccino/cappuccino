@@ -38,8 +38,8 @@
 }
 
 /*!
-    Sets the document view to be <code>aView</code>.
-    @param aView the new document view. It's frame origin will be changed to <code>(0,0)</code> after calling this method.
+    Sets the document view to be \c aView.
+    @param aView the new document view. It's frame origin will be changed to \c (0,0) after calling this method.
 */
 - (void)setDocumentView:(CPView)aView
 {
@@ -95,7 +95,7 @@
 }
 
 /*!
-    Returns a new point that may be adjusted from <code>aPoint</code>
+    Returns a new point that may be adjusted from \c aPoint
     to make sure it lies within the document view.
     @param aPoint
     @return the adjusted point
@@ -128,7 +128,7 @@
 
 /*!
     Scrolls the clip view to the specified point. The method
-    sets its bounds origin to <code>aPoint</code>.
+    sets its bounds origin to \c aPoint.
 */
 - (void)scrollToPoint:(CGPoint)aPoint
 {

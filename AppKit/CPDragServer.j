@@ -236,7 +236,7 @@ var CPDragServerUpdateDragging = function(anEvent)
     @param anEvent
     @param aPasteboard the pasteboard that contains the drag data
     @param aSourceObject the object where the drag started
-    @param slideBack if <code>YES</code>, <code>aView</code> slides back to
+    @param slideBack if \c YES, \c aView slides back to
     its origin on a failed drop
 */
 - (void)dragView:(CPView)aView fromWindow:(CPWindow)aWindow at:(CGPoint)viewLocation offset:(CGSize)mouseOffset event:(CPEvent)anEvent pasteboard:(CPPasteboard)aPasteboard source:(id)aSourceObject slideBack:(BOOL)slideBack
@@ -298,7 +298,7 @@ var CPDragServerUpdateDragging = function(anEvent)
     @param anEvent
     @param aPasteboard the pasteboard where the drag data is located
     @param aSourceObject the object where the drag started
-    @param slideBack if <code>YES</code>, <code>aView</code> slides back to
+    @param slideBack if \c YES, \c aView slides back to
     its origin on a failed drop
 */
 - (void)dragImage:(CPImage)anImage fromWindow:(CPWindow)aWindow at:(CGPoint)imageLocation offset:(CGSize)mouseOffset event:(CPEvent)anEvent pasteboard:(CPPasteboard)aPasteboard source:(id)aSourceObject slideBack:(BOOL)slideBack
