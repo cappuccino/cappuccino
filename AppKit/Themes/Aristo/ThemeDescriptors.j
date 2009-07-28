@@ -416,6 +416,16 @@
                 [_CPCibCustomResource imageResourceWithName:"check-box-bezel-selected-highlighted.png" size:CGSizeMake(15.0, 16.0)], nil, nil
             ]
         isVertical:NO]),
+        bezelColorSelectedDisabled = PatternColor([[CPThreePartImage alloc] initWithImageSlices:
+            [
+                [_CPCibCustomResource imageResourceWithName:"check-box-bezel-selected-disabled.png" size:CGSizeMake(15.0, 16.0)], nil, nil
+            ]
+        isVertical:NO]),
+        bezelColorDisabled = PatternColor([[CPThreePartImage alloc] initWithImageSlices:
+            [
+                [_CPCibCustomResource imageResourceWithName:"check-box-bezel-disabled.png" size:CGSizeMake(15.0, 16.0)], nil, nil
+            ]
+        isVertical:NO]),
         bezelColorHighlighted = PatternColor([[CPThreePartImage alloc] initWithImageSlices:
             [
                 [_CPCibCustomResource imageResourceWithName:"check-box-bezel-highlighted.png" size:CGSizeMake(15.0, 16.0)], nil, nil
@@ -429,6 +439,8 @@
     [button setValue:bezelColorSelected forThemeAttribute:@"bezel-color" inState:CPThemeStateBordered | CPThemeStateSelected];
     [button setValue:bezelColorSelectedHighlighted forThemeAttribute:@"bezel-color" inState:CPThemeStateBordered | CPThemeStateSelected | CPThemeStateHighlighted];
     [button setValue:bezelColorHighlighted forThemeAttribute:@"bezel-color" inState:CPThemeStateBordered | CPThemeStateHighlighted];
+    [button setValue:bezelColorDisabled forThemeAttribute:@"bezel-color" inState:CPThemeStateBordered | CPThemeStateDisabled];
+    [button setValue:bezelColorSelectedDisabled forThemeAttribute:@"bezel-color" inState:CPThemeStateBordered | CPThemeStateDisabled | CPThemeStateSelected];
 
     [button setValue:CGSizeMake(0.0, 17.0) forThemeAttribute:@"min-size"];
 
