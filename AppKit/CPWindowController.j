@@ -41,10 +41,22 @@
 */
 @implementation CPWindowController : CPResponder
 {
-    id          _owner;
     CPWindow    _window;
+
     CPDocument  _document;
+    BOOL        _shouldCloseDocument;
+
+    id          _cibOwner;
     CPString    _windowCibName;
+    CPString    _windowCibPath;
+
+    BOOL        _isWindowLoading;
+    BOOL        _shouldDisplayWindowWhenLoaded;
+}
+
+- (id)init
+{
+    return [self initWithWindow:nil];
 }
 
 /*!
@@ -55,14 +67,15 @@
 - (id)initWithWindow:(CPWindow)aWindow
 {
     self = [super init];
-    
+
     if (self)
     {
         [self setWindow:aWindow];
-    
+        [self setShouldCloseDocument:NO];
+
         [self setNextResponder:CPApp];
     }
-    
+
     return self;
 }
 
@@ -84,37 +97,78 @@
 */
 - (id)initWithWindowCibName:(CPString)aWindowCibName owner:(id)anOwner
 {
-    self = [super init];
-    
+    self = [self initWithWindow:nil];
+
     if (self)
     {
-        _owner = anOwner;
+        _cibOwner = anOwner;
         _windowCibName = aWindowCibName;
-        
-        [self setNextResponder:CPApp];
     }
-    
+
+    return self;
+}
+
+- (id)initWithWindowCibPath:(CPString)aWindowCibPath owner:(id)anOwner
+{
+    self = [self initWithWindow:nil];
+
+    if (self)
+    {
+        _cibOwner = anOwner;
+        _windowCibPath = aWindowCibPath;
+    }
+
     return self;
 }
 
 /*!
     Loads the window
 */
-- (void)loadWindow
+- (BOOL)loadWindow
 {
-    [self windowWillLoad];
-    //FIXME: ACTUALLY LOAD WINDOW!!!
-    [self setWindow:CPApp._keyWindow = [[CPWindow alloc] initWithContentRect:CPRectMakeZero() styleMask:CPBorderlessBridgeWindowMask|CPTitledWindowMask|CPClosableWindowMask|CPResizableWindowMask]];
-    
+    if ([self isWindowLoaded])
+        return YES;
+
+    if (![self isWindowLoading])
+    {
+        _isWindowLoading = YES;
+
+        [self windowWillLoad];
+
+        [CPBundle loadCibFile:[self windowCibPath]
+            externalNameTable:[CPDictionary dictionaryWithObject:_cibOwner forKey:CPCibOwner]
+                 loadDelegate:self];
+    }
+
+    return NO;
+}
+
+- (void)cibDidFinishLoading:(CPCib)aCib
+{
+    if (_window === nil && _document !== nil && _cibOwner === _document)
+        [self setWindow:[_document valueForKey:@"window"]];
+
+    [self synchronizeWindowTitleWithDocumentName];
+
     [self windowDidLoad];
+
+    if (_shouldDisplayWindowWhenLoaded)
+        [self showWindow:self];
 }
 
 /*!
     Shows the window.
     @param aSender the object requesting the show
 */
-- (CFAction)showWindow:(id)aSender
+- (@action)showWindow:(id)aSender
 {
+    if (![self loadWindow])
+    {
+        _shouldDisplayWindowWhenLoaded = YES;
+
+        return;
+    }
+
     var theWindow = [self window];
 
 	if ([theWindow respondsToSelector:@selector(becomesKeyOnlyIfNeeded)] && [theWindow becomesKeyOnlyIfNeeded])
@@ -129,7 +183,12 @@
 */
 - (BOOL)isWindowLoaded
 {
-    return _window;
+    return _window !== nil;
+}
+
+- (BOOL)isWindowLoading
+{
+    return _isWindowLoading;
 }
 
 /*!
@@ -149,8 +208,10 @@
 */
 - (void)setWindow:(CPWindow)aWindow
 {
+    [_window setWindowController:nil];
+
     _window = aWindow;
-    
+
     [_window setWindowController:self];
     [_window setNextResponder:self];
 }
@@ -160,8 +221,8 @@
 */
 - (void)windowDidLoad
 {
-    [_document windowControllerDidLoadNib:self];
-    
+    [_document windowControllerDidLoadCib:self];
+
     [self synchronizeWindowTitleWithDocumentName];
 }
 
@@ -170,7 +231,7 @@
 */
 - (void)windowWillLoad
 {
-    [_document windowControllerWillLoadNib:self];
+    [_document windowControllerWillLoadCib:self];
 }
 
 /*!
@@ -179,17 +240,17 @@
 */
 - (void)setDocument:(CPDocument)aDocument
 {
-    if (_document == aDocument)
+    if (_document === aDocument)
         return;
-    
+
     var defaultCenter = [CPNotificationCenter defaultCenter];
-    
+
     if (_document)
     {
         [defaultCenter removeObserver:self
                                  name:CPDocumentWillSaveNotification
                                object:_document];
-                               
+
         [defaultCenter removeObserver:self
                                  name:CPDocumentDidSaveNotification
                                object:_document];
@@ -198,16 +259,16 @@
                                  name:CPDocumentDidFailToSaveNotification
                                object:_document];
     }
-    
+
     _document = aDocument;
-    
+
     if (_document)
     {
         [defaultCenter addObserver:self
                           selector:@selector(_documentWillSave:)
                               name:CPDocumentWillSaveNotification
                             object:_document];
-                            
+
         [defaultCenter addObserver:self
                           selector:@selector(_documentDidSave:)
                               name:CPDocumentDidSaveNotification
@@ -217,10 +278,10 @@
                           selector:@selector(_documentDidFailToSave:)
                               name:CPDocumentDidFailToSaveNotification
                             object:_document];
-                            
+
         [self setDocumentEdited:[_document isDocumentEdited]];
-    }    
-    
+    }
+
     [self synchronizeWindowTitleWithDocumentName];
 }
 
@@ -259,6 +320,42 @@
     [[self window] setDocumentEdited:isEdited];
 }
 
+- (void)close
+{
+    [[self window] close];
+}
+
+- (void)setShouldCloseDocument:(BOOL)shouldCloseDocument
+{
+    _shouldCloseDocument = shouldCloseDocument;
+}
+
+- (BOOL)shouldCloseDocument
+{
+    return _shouldCloseDocument;
+}
+
+- (id)owner
+{
+    return _cibOwner;
+}
+
+- (CPString)windowCibName
+{
+    if (_windowCibName)
+        return _windowCibName;
+
+    return [[_windowCibPath lastPathComponent] stringByDeletingPathExtension];
+}
+
+- (CPString)windowCibPath
+{
+    if (_windowCibPath)
+        return _windowCibPath;
+
+    return [[CPBundle bundleForClass:[_cibOwner class]] pathForResource:_windowCibName + @".cib"];
+}
+
 // Setting and Getting Window Attributes
 
 /*!
@@ -268,7 +365,7 @@
 {
     if (!_document || !_window)
         return;
-    
+
     // [_window setRepresentedFilename:];
     [_window setTitle:[self windowTitleForDocumentDisplayName:[_document displayName]]];
 }
