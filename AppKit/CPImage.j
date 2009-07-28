@@ -187,9 +187,9 @@ function CPImageInBundle(aFilename, aSize, aBundle)
 }
 
 /*!
-    Returns <code>YES</code> if the image data has already been loaded.
+    Returns the load status, which will be CPImageLoadStatusCompleted if the image data has already been loaded.
 */
-- (BOOL)loadStatus
+- (unsigned)loadStatus
 {
     return _loadStatus;
 }
