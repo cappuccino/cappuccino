@@ -558,7 +558,7 @@ var CTRL_KEY_CODE   = 17;
             windowCount = windows.length;
 
         while (windowCount--)
-            [windows[windowCount] resizeWithOldBridgeSize:oldSize];
+            [windows[windowCount] resizeWithOldPlatformWindowSize:oldSize];
     }
 
     //window.liveResize = NO;

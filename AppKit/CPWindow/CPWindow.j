@@ -236,69 +236,69 @@ var CPWindowSaveImage       = nil,
 */
 @implementation CPWindow : CPResponder
 {
-    CPPlatformWindow            _platformWindow;
+    CPPlatformWindow                    _platformWindow;
 
-    int                         _windowNumber;
-    unsigned                    _styleMask;
-    CGRect                      _frame;
-    int                         _level;
-    BOOL                        _isVisible;
-    BOOL                        _isAnimating;
-    BOOL                        _hasShadow;
-    BOOL                        _isMovableByWindowBackground;
+    int                                 _windowNumber;
+    unsigned                            _styleMask;
+    CGRect                              _frame;
+    int                                 _level;
+    BOOL                                _isVisible;
+    BOOL                                _isAnimating;
+    BOOL                                _hasShadow;
+    BOOL                                _isMovableByWindowBackground;
 
-    BOOL                        _isDocumentEdited;
-    BOOL                        _isDocumentSaving;
+    BOOL                                _isDocumentEdited;
+    BOOL                                _isDocumentSaving;
 
-    CPImageView                 _shadowView;
+    CPImageView                         _shadowView;
 
-    CPView                      _windowView;
-    CPView                      _contentView;
-    CPView                      _toolbarView;
+    CPView                              _windowView;
+    CPView                              _contentView;
+    CPView                              _toolbarView;
 
-    CPArray                     _mouseEnteredStack;
-    CPView                      _leftMouseDownView;
-    CPView                      _rightMouseDownView;
+    CPArray                             _mouseEnteredStack;
+    CPView                              _leftMouseDownView;
+    CPView                              _rightMouseDownView;
 
-    CPToolbar                   _toolbar;
-    CPResponder                 _firstResponder;
-    CPResponder                 _initialFirstResponder;
-    id                          _delegate;
+    CPToolbar                           _toolbar;
+    CPResponder                         _firstResponder;
+    CPResponder                         _initialFirstResponder;
+    id                                  _delegate;
 
-    CPString                    _title;
+    CPString                            _title;
 
-    BOOL                        _acceptsMouseMovedEvents;
-    BOOL                        _ignoresMouseEvents;
+    BOOL                                _acceptsMouseMovedEvents;
+    BOOL                                _ignoresMouseEvents;
 
-    CPWindowController          _windowController;
+    CPWindowController                  _windowController;
 
-    CGSize                      _minSize;
-    CGSize                      _maxSize;
+    CGSize                              _minSize;
+    CGSize                              _maxSize;
 
-    CPUndoManager               _undoManager;
-    CPURL                       _representedURL;
+    CPUndoManager                       _undoManager;
+    CPURL                               _representedURL;
 
-    CPSet                       _registeredDraggedTypes;
-    CPArray                     _registeredDraggedTypesArray;
-    CPCountedSet                _inclusiveRegisteredDraggedTypes;
+    CPSet                               _registeredDraggedTypes;
+    CPArray                             _registeredDraggedTypesArray;
+    CPCountedSet                        _inclusiveRegisteredDraggedTypes;
 
-    CPButton                    _defaultButton;
-    BOOL                        _defaultButtonEnabled;
+    CPButton                            _defaultButton;
+    BOOL                                _defaultButtonEnabled;
 
-    BOOL                        _autorecalculatesKeyViewLoop;
-    BOOL                        _keyViewLoopIsDirty;
+    BOOL                                _autorecalculatesKeyViewLoop;
+    BOOL                                _keyViewLoopIsDirty;
 
     // Bridge Support
 #if PLATFORM(DOM)
-    DOMElement                  _DOMElement;
+    DOMElement                          _DOMElement;
 #endif
 
-    unsigned                    _autoresizingMask;
+    unsigned                            _autoresizingMask;
     
-    BOOL                        _delegateRespondsToWindowWillReturnUndoManagerSelector;
+    BOOL                                _delegateRespondsToWindowWillReturnUndoManagerSelector;
 
-    BOOL                        _isFullBridge;
-    _CPWindowFullBridgeSession _fullBridgeSession;
+    BOOL                                _isFullPlatformWindow;
+    _CPWindowFullPlatformWindowSession  _fullPlatformWindowSession;
 }
 
 /*
@@ -338,7 +338,7 @@ CPTexturedBackgroundWindowMask
     {
         [self setPlatformWindow:[CPPlatformWindow primaryPlatformWindow]];
 
-        _isFullBridge = NO;
+        _isFullPlatformWindow = NO;
         _registeredDraggedTypes = [CPSet set];
         _registeredDraggedTypesArray = [];
 
@@ -375,7 +375,9 @@ CPTexturedBackgroundWindowMask
         _DOMElement.style.visibility = "visible";
         _DOMElement.style.zIndex = 0;
         
+#if 0
         CPDOMDisplayServerSetStyleLeftTop(_DOMElement, NULL, _CGRectGetMinX(_frame), _CGRectGetMinY(_frame));
+#endif
         CPDOMDisplayServerSetStyleSize(_DOMElement, 1, 1);
         
         CPDOMDisplayServerAppendChild(_DOMElement, _windowView._DOMElement);
@@ -386,7 +388,7 @@ CPTexturedBackgroundWindowMask
         [self setHasShadow:aStyleMask !== CPBorderlessWindowMask];
 
         if (aStyleMask & CPBorderlessBridgeWindowMask)
-            [self setFullBridge:YES];
+            [self setFullPlatformWindow:YES];
 
         _defaultButtonEnabled = YES;
         _keyViewLoopIsDirty = YES;
@@ -420,7 +422,7 @@ CPTexturedBackgroundWindowMask
     return _CPStandardWindowView;
 }
 
-+ (Class)_windowViewClassForFullBridgeStyleMask:(unsigned)aStyleMask
++ (Class)_windowViewClassForFullPlatformWindowStyleMask:(unsigned)aStyleMask
 {
     return _CPBorderlessBridgeWindowView;
 }
@@ -470,21 +472,24 @@ CPTexturedBackgroundWindowMask
 #endif
 }
 
-- (void)setFullBridge:(BOOL)shouldBeFullBridge
+- (void)setFullPlatformWindow:(BOOL)shouldBeFullPlatformWindow
 {
-    shouldBeFullBridge = !!shouldBeFullBridge;
-
-    if (_isFullBridge === shouldBeFullBridge)
+    if (![_platformWindow supportsFullPlatformWindows])
         return;
 
-    _isFullBridge = shouldBeFullBridge;
+    shouldBeFullPlatformWindow = !!shouldBeFullPlatformWindow;
 
-    if (_isFullBridge)
+    if (_isFullPlatformWindow === shouldBeFullPlatformWindow)
+        return;
+
+    _isFullPlatformWindow = shouldBeFullPlatformWindow;
+
+    if (_isFullPlatformWindow)
     {
-        _fullBridgeSession = _CPWindowFullBridgeSessionMake(_windowView, [self contentRectForFrameRect:[self frame]], [self hasShadow], [self level]);
+        _fullPlatformWindowSession = _CPWindowFullPlatformWindowSessionMake(_windowView, [self contentRectForFrameRect:[self frame]], [self hasShadow], [self level]);
 
-        var fullBridgeWindowViewClass = [[self class] _windowViewClassForFullBridgeStyleMask:_styleMask],
-            windowView = [[fullBridgeWindowViewClass alloc] initWithFrame:CGRectMakeZero() styleMask:_styleMask];
+        var fullPlatformWindowViewClass = [[self class] _windowViewClassForFullPlatformWindowStyleMask:_styleMask],
+            windowView = [[fullPlatformWindowViewClass alloc] initWithFrame:CGRectMakeZero() styleMask:_styleMask];
 
         [self _setWindowView:windowView];
 
@@ -495,21 +500,21 @@ CPTexturedBackgroundWindowMask
     }
     else
     {
-        var windowView = _fullBridgeSession.windowView;
+        var windowView = _fullPlatformWindowSession.windowView;
 
         [self _setWindowView:windowView];
 
-        [self setLevel:_fullBridgeSession.level];
-        [self setHasShadow:_fullBridgeSession.hasShadow];
+        [self setLevel:_fullPlatformWindowSession.level];
+        [self setHasShadow:_fullPlatformWindowSession.hasShadow];
         [self setAutoresizingMask:CPWindowNotSizable];
 
-        [self setFrame:[windowView frameRectForContentRect:_fullBridgeSession.contentRect]];
+        [self setFrame:[windowView frameRectForContentRect:_fullPlatformWindowSession.contentRect]];
     }
 }
 
-- (BOOL)isFullBridge
+- (BOOL)isFullPlatformWindow
 {
-    return _isFullBridge;
+    return _isFullPlatformWindow;
 }
 
 /*!
@@ -601,7 +606,7 @@ CPTexturedBackgroundWindowMask
     
     origin.x = anOrigin.x;
     origin.y = anOrigin.y;
-    
+
 #if PLATFORM(DOM)
     CPDOMDisplayServerSetStyleLeftTop(_DOMElement, NULL, origin.x, origin.y);
 #endif
@@ -621,9 +626,9 @@ CPTexturedBackgroundWindowMask
         return;
     
     _frame.size = aSize;
-    
+
     [_windowView setFrameSize:aSize];
-    
+
     if (_hasShadow)
         [_shadowView setFrameSize:_CGSizeMake(SHADOW_MARGIN_LEFT + aSize.width + SHADOW_MARGIN_RIGHT, SHADOW_MARGIN_BOTTOM + aSize.height + SHADOW_MARGIN_TOP + SHADOW_DISTANCE)];
     
@@ -1628,7 +1633,7 @@ CPTexturedBackgroundWindowMask
 
     [_windowView noteToolbarChanged];
 
-    if (_isFullBridge)
+    if (_isFullPlatformWindow)
         newFrame = [_platformWindow usableContentFrame];
     else
     {
@@ -1920,9 +1925,9 @@ var keyViewComparator = function(a, b, context)
 /*
     @ignore
 */
-- (void)resizeWithOldBridgeSize:(CGSize)aSize
+- (void)resizeWithOldPlatformWindowSize:(CGSize)aSize
 {
-    if ([self isFullBridge])
+    if ([self isFullPlatformWindow])
         return [self setFrame:[_platformWindow usableContentFrame]];
     
     if (_autoresizingMask == CPWindowNotSizable)
@@ -2024,6 +2029,20 @@ var keyViewComparator = function(a, b, context)
 
 @end
 
+@implementation CPWindow (Deprecated)
+
+- (void)setFullBridge:(BOOL)shouldBeFullBridge
+{
+    [self setFullPlatformWindow:shouldBeFullBridge];
+}
+
+- (BOOL)isFullBridge
+{
+    return [self isFullPlatformWindow];
+}
+
+@end
+
 var interpolate = function(fromValue, toValue, progress)
 {
     return fromValue + (toValue - fromValue) * progress;
@@ -2075,7 +2094,7 @@ var interpolate = function(fromValue, toValue, progress)
 
 @end
 
-function _CPWindowFullBridgeSessionMake(aWindowView, aContentRect, hasShadow, aLevel)
+function _CPWindowFullPlatformWindowSessionMake(aWindowView, aContentRect, hasShadow, aLevel)
 {
     return { windowView:aWindowView, contentRect:aContentRect, hasShadow:hasShadow, level:aLevel };
 }

@@ -74,6 +74,9 @@
         [self setShouldCloseDocument:NO];
 
         [self setNextResponder:CPApp];
+
+        if (aWindow)
+            [self windowDidLoad];
     }
 
     return self;

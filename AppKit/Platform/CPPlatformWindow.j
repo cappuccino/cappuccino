@@ -161,6 +161,15 @@ var PrimaryPlatformWindow   = NULL;
 }
 */
 
+- (BOOL)supportsFullPlatformWindows
+{
+#if PLATFORM(BROWSER)
+    return YES;
+#else
+    return NO;
+#endif
+}
+
 @end
 
 #if PLATFORM(BROWSER)
