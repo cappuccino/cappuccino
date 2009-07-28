@@ -62,7 +62,8 @@ var CPStringRegexSpecialCharacters = [
       '/', '.', '*', '+', '?', '|', '$', '^',
       '(', ')', '[', ']', '{', '}', '\\'
     ],
-    CPStringRegexEscapeExpression = new RegExp("(\\" + CPStringRegexSpecialCharacters.join("|\\") + ")", 'g');
+    CPStringRegexEscapeExpression = new RegExp("(\\" + CPStringRegexSpecialCharacters.join("|\\") + ")", 'g'),
+    CPStringRegexTrimWhitespace = new RegExp("(^\\s+|\\s+$)", 'g');
 
 /*! 
     @class CPString
@@ -421,6 +422,13 @@ var CPStringRegexSpecialCharacters = [
 	return '' + substring(0, range.location) + replacement + substring(range.location + range.length, self.length);
 }
 
+/*!
+    Returns a new string with leading and trailing whitespace trimmed
+*/
+- (CPString)stringByTrimmingWhitespace
+{
+    return self.replace(CPStringRegexTrimWhitespace, "");
+}
 
 // Identifying and comparing strings
 
