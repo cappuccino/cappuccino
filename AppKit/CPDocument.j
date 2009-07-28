@@ -90,7 +90,9 @@ var CPDocumentUntitledCount = 0;
     CPDocuments should be used to represent this.
 */
 @implementation CPDocument : CPResponder
-{    
+{
+    CPWindow        _window; // For outlet purposes.
+
     CPURL           _fileURL;
     CPString        _fileType;
     CPArray         _windowControllers;
@@ -228,9 +230,10 @@ var CPDocumentUntitledCount = 0;
 */
 - (void)makeWindowControllers
 {
-    var controller = [[CPWindowController alloc] initWithWindowCibName:nil];
-    
-    [self addWindowController:controller];
+    var windowCibName = [self windowCibName];
+
+    if (windowCibName)
+        [self addWindowController:[[CPWindowController alloc] initWithWindowCibName:windowCibName owner:self]];
 }
 
 /*!
@@ -250,7 +253,7 @@ var CPDocumentUntitledCount = 0;
 {
     [_windowControllers addObject:aWindowController];
     
-    if ([aWindowController document] != self)
+    if ([aWindowController document] !== self)
     {
         [aWindowController setNextResponder:self];
         [aWindowController setDocument:self];
@@ -295,7 +298,7 @@ var CPDocumentUntitledCount = 0;
     Called after <code>aWindowController<code> loads the document's Nib file.
     @param aWindowController the controller that loaded the Nib file
 */
-- (void)windowControllerDidLoadNib:(CPWindowController)aWindowController
+- (void)windowControllerDidLoadCib:(CPWindowController)aWindowController
 {
 }
 
@@ -303,7 +306,7 @@ var CPDocumentUntitledCount = 0;
     Called before <code>aWindowController</code> will load the document's Nib file.
     @param aWindowController the controller that will load the Nib file
 */
-- (void)windowControllerWillLoadNib:(CPWindowController)aWindowController
+- (void)windowControllerWillLoadCib:(CPWindowController)aWindowController
 {
 }
 
