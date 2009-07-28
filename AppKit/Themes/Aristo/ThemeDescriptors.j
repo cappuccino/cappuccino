@@ -53,6 +53,14 @@
                 [_CPCibCustomResource imageResourceWithName:"default-button-bezel-highlighted-center.png" size:CGSizeMake(1.0, 24.0)],
                 [_CPCibCustomResource imageResourceWithName:"default-button-bezel-highlighted-right.png" size:CGSizeMake(4.0, 24.0)]
             ]
+        isVertical:NO]],
+        
+        disabledBezelColor = [CPColor colorWithPatternImage:[[CPThreePartImage alloc] initWithImageSlices:
+            [
+                [_CPCibCustomResource imageResourceWithName:"button-bezel-disabled-left.png" size:CGSizeMake(4.0, 24.0)],
+                [_CPCibCustomResource imageResourceWithName:"button-bezel-disabled-center.png" size:CGSizeMake(1.0, 24.0)],
+                [_CPCibCustomResource imageResourceWithName:"button-bezel-disabled-right.png" size:CGSizeMake(4.0, 24.0)]
+            ]
         isVertical:NO]];
 
     [button setValue:[CPFont boldSystemFontOfSize:12.0] forThemeAttribute:@"font" inState:CPThemeStateBordered];
@@ -65,6 +73,10 @@
     [button setValue:highlightedBezelColor forThemeAttribute:@"bezel-color" inState:CPThemeStateBordered|CPThemeStateHighlighted];
     [button setValue:CGInsetMake(0.0, 5.0, 0.0, 5.0) forThemeAttribute:@"content-inset" inState:CPThemeStateBordered];
 
+    [button setValue:[CPColor colorWithCalibratedWhite:0.6 alpha:1.0] forThemeAttribute:@"text-color" inState:CPThemeStateDisabled];
+    [button setValue:disabledBezelColor forThemeAttribute:@"bezel-color" inState:CPThemeStateDisabled];
+    [button setValue:disabledBezelColor forThemeAttribute:@"bezel-color" inState:CPThemeStateDefault|CPThemeStateDisabled];
+    
     [button setValue:defaultBezelColor forThemeAttribute:@"bezel-color" inState:CPThemeStateBordered|CPThemeStateDefault];
     [button setValue:defaultHighlightedBezelColor forThemeAttribute:@"bezel-color" inState:CPThemeStateBordered|CPThemeStateHighlighted|CPThemeStateDefault];
     [button setValue:[CPColor colorWithCalibratedRed:13.0/255.0 green:51.0/255.0 blue:70.0/255.0 alpha:1.0] forThemeAttribute:@"text-color" inState:CPThemeStateDefault];
@@ -346,6 +358,26 @@
             [
                 [_CPCibCustomResource imageResourceWithName:"radio-bezel-selected.png" size:CGSizeMake(17.0, 17.0)], nil, nil
             ]
+        isVertical:NO]),
+        bezelColorSelectedHighlighted = PatternColor([[CPThreePartImage alloc] initWithImageSlices:
+            [
+                [_CPCibCustomResource imageResourceWithName:"radio-bezel-selected-highlighted.png" size:CGSizeMake(17.0, 17.0)], nil, nil
+            ]
+        isVertical:NO]),
+        bezelColorSelectedDisabled = PatternColor([[CPThreePartImage alloc] initWithImageSlices:
+            [
+                [_CPCibCustomResource imageResourceWithName:"radio-bezel-selected-disabled.png" size:CGSizeMake(17.0, 17.0)], nil, nil
+            ]
+        isVertical:NO]),
+        bezelColorDisabled = PatternColor([[CPThreePartImage alloc] initWithImageSlices:
+            [
+                [_CPCibCustomResource imageResourceWithName:"radio-bezel-disabled.png" size:CGSizeMake(17.0, 17.0)], nil, nil
+            ]
+        isVertical:NO]),
+        bezelColorHighlighted = PatternColor([[CPThreePartImage alloc] initWithImageSlices:
+            [
+                [_CPCibCustomResource imageResourceWithName:"radio-bezel-highlighted.png" size:CGSizeMake(17.0, 17.0)], nil, nil
+            ]
         isVertical:NO]);
 
     [button setValue:CPLeftTextAlignment forThemeAttribute:@"alignment" inState:CPThemeStateBordered];
@@ -353,6 +385,10 @@
     [button setValue:CGInsetMake(0.0, 0.0, 0.0, 20.0) forThemeAttribute:@"content-inset" inState:CPThemeStateBordered];
     [button setValue:bezelColor forThemeAttribute:@"bezel-color" inState:CPThemeStateBordered];    
     [button setValue:bezelColorSelected forThemeAttribute:@"bezel-color" inState:CPThemeStateBordered | CPThemeStateSelected];
+    [button setValue:bezelColorSelectedHighlighted forThemeAttribute:@"bezel-color" inState:CPThemeStateBordered | CPThemeStateSelected | CPThemeStateHighlighted];
+    [button setValue:bezelColorHighlighted forThemeAttribute:@"bezel-color" inState:CPThemeStateBordered | CPThemeStateHighlighted];
+    [button setValue:bezelColorDisabled forThemeAttribute:@"bezel-color" inState:CPThemeStateBordered | CPThemeStateDisabled];
+    [button setValue:bezelColorSelectedDisabled forThemeAttribute:@"bezel-color" inState:CPThemeStateBordered | CPThemeStateDisabled | CPThemeStateSelected];
 
     [button setValue:CGSizeMake(0.0, 17.0) forThemeAttribute:@"min-size"];
 
@@ -374,6 +410,26 @@
             [
                 [_CPCibCustomResource imageResourceWithName:"check-box-bezel-selected.png" size:CGSizeMake(15.0, 16.0)], nil, nil
             ]
+        isVertical:NO]),
+        bezelColorSelectedHighlighted = PatternColor([[CPThreePartImage alloc] initWithImageSlices:
+            [
+                [_CPCibCustomResource imageResourceWithName:"check-box-bezel-selected-highlighted.png" size:CGSizeMake(15.0, 16.0)], nil, nil
+            ]
+        isVertical:NO]),
+        bezelColorSelectedDisabled = PatternColor([[CPThreePartImage alloc] initWithImageSlices:
+            [
+                [_CPCibCustomResource imageResourceWithName:"check-box-bezel-selected-disabled.png" size:CGSizeMake(15.0, 16.0)], nil, nil
+            ]
+        isVertical:NO]),
+        bezelColorDisabled = PatternColor([[CPThreePartImage alloc] initWithImageSlices:
+            [
+                [_CPCibCustomResource imageResourceWithName:"check-box-bezel-disabled.png" size:CGSizeMake(15.0, 16.0)], nil, nil
+            ]
+        isVertical:NO]),
+        bezelColorHighlighted = PatternColor([[CPThreePartImage alloc] initWithImageSlices:
+            [
+                [_CPCibCustomResource imageResourceWithName:"check-box-bezel-highlighted.png" size:CGSizeMake(15.0, 16.0)], nil, nil
+            ]
         isVertical:NO]);
     
     [button setValue:CPLeftTextAlignment forThemeAttribute:@"alignment" inState:CPThemeStateBordered];
@@ -381,6 +437,10 @@
     [button setValue:CGInsetMake(0.0, 0.0, 0.0, 20.0) forThemeAttribute:@"content-inset" inState:CPThemeStateBordered];
     [button setValue:bezelColor forThemeAttribute:@"bezel-color" inState:CPThemeStateBordered];    
     [button setValue:bezelColorSelected forThemeAttribute:@"bezel-color" inState:CPThemeStateBordered | CPThemeStateSelected];
+    [button setValue:bezelColorSelectedHighlighted forThemeAttribute:@"bezel-color" inState:CPThemeStateBordered | CPThemeStateSelected | CPThemeStateHighlighted];
+    [button setValue:bezelColorHighlighted forThemeAttribute:@"bezel-color" inState:CPThemeStateBordered | CPThemeStateHighlighted];
+    [button setValue:bezelColorDisabled forThemeAttribute:@"bezel-color" inState:CPThemeStateBordered | CPThemeStateDisabled];
+    [button setValue:bezelColorSelectedDisabled forThemeAttribute:@"bezel-color" inState:CPThemeStateBordered | CPThemeStateDisabled | CPThemeStateSelected];
 
     [button setValue:CGSizeMake(0.0, 17.0) forThemeAttribute:@"min-size"];
 
