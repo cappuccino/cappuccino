@@ -374,10 +374,8 @@ CPTexturedBackgroundWindowMask
         _DOMElement.style.position = "absolute";
         _DOMElement.style.visibility = "visible";
         _DOMElement.style.zIndex = 0;
-        
-#if 0
+
         CPDOMDisplayServerSetStyleLeftTop(_DOMElement, NULL, _CGRectGetMinX(_frame), _CGRectGetMinY(_frame));
-#endif
         CPDOMDisplayServerSetStyleSize(_DOMElement, 1, 1);
         
         CPDOMDisplayServerAppendChild(_DOMElement, _windowView._DOMElement);
