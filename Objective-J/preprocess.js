@@ -671,7 +671,8 @@ objj_preprocessor.prototype.method = function(tokens)
     CONCAT(buffer, ")\n{ with(self)\n{");
     CONCAT(buffer, this.preprocess(tokens, NULL, TOKEN_CLOSE_BRACE, TOKEN_OPEN_BRACE));
     CONCAT(buffer, "}\n}");
-    if (this._flags & OBJJ_PREPROCESSOR_TYPE_SIGNATURES)
+    // TODO: actually use OBJJ_PREPROCESSOR_TYPE_SIGNATURES flag instead of tying to OBJJ_PREPROCESSOR_DEBUG_SYMBOLS
+    if (this._flags & OBJJ_PREPROCESSOR_DEBUG_SYMBOLS) //OBJJ_PREPROCESSOR_TYPE_SIGNATURES)
         CONCAT(buffer, ","+JSON.stringify(types));
     CONCAT(buffer, ")");
 

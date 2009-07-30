@@ -106,7 +106,7 @@ function objj_typecheck_decorator(msgSend)
                     objj_typechecks_reported[key] = true;
                     objj_fprintf(warning_stream, "Type check failed on argument " + (i-2) + " of " + objj_debug_message_format(aReceiver, aSelector) + ": " + e);
                     if (objj_typecheck_prints_backtrace)
-                        objj_backtrace_fprint(warning_stream);
+                        objj_backtrace_print(warning_stream);
                 }
             }
         }
@@ -124,7 +124,7 @@ function objj_typecheck_decorator(msgSend)
                 objj_typechecks_reported[key] = true;
                 objj_fprintf(warning_stream, "Type check failed on return val of " + objj_debug_message_format(aReceiver, aSelector) + ": " + e);
                 if (objj_typecheck_prints_backtrace)
-                    objj_backtrace_fprint(warning_stream);
+                    objj_backtrace_print(warning_stream);
             }
         }
 
