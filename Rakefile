@@ -86,7 +86,9 @@ file_d $STARTER_DOWNLOAD_APPLICATION => [$TOOLS_DOWNLOAD_ENV] do
 
     rm_rf($STARTER_DOWNLOAD_APPLICATION)
     mkdir_p($STARTER_DOWNLOAD)
+    
     system %{capp gen #{$STARTER_DOWNLOAD_APPLICATION} -t Application --noconfig }
+    rake abort if ($? != 0)
 
     # No tools means no objective-j gem
     rm(File.join($STARTER_DOWNLOAD_APPLICATION, 'Rakefile'))
@@ -103,7 +105,9 @@ task :install => [:tools_download] do
     else
         prefix = ''
     end
+    
     system %{cd #{$TOOLS_DOWNLOAD} && sudo sh ./install-tools #{prefix} }
+    rake abort if ($? != 0)
 end
 
 task :test => [:build] do
@@ -122,6 +126,8 @@ end
 task :docs do
     if executable_exists? "doxygen"
       system %{doxygen #{$DOXYGEN_CONFIG} }
+      rake abort if ($? != 0)
+      
       rm_rf $DOCUMENTATION_BUILD
       mv "debug.txt", "Documentation"
       mv "Documentation", $DOCUMENTATION_BUILD
@@ -133,6 +139,7 @@ end
 task :submodules do
     if executable_exists? "git"
         system %{git submodule init && git submodule update}
+        rake abort if ($? != 0)
     else
         puts "Git not installed"
         rake abort

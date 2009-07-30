@@ -390,6 +390,7 @@ module ObjectiveJ
                                 puts str
                             end
                         end
+                        rake abort if ($? != 0)
                     end
 
                     { 'copy' => include_nibs, 'copied_resources' => [copied_resource] }
@@ -424,6 +425,7 @@ module ObjectiveJ
                             puts str
                         end
                     end
+                    rake abort if ($? != 0)
                 end
 
                 enhance([frameworks_path])
@@ -510,6 +512,7 @@ module ObjectiveJ
                             puts str
                         end
                     end
+                    rake abort if ($? != 0)
                 end
 
                 BundleTask.compact(build_path) if needs_compact
