@@ -17,18 +17,11 @@ $RHINO_FILE             = File.join($PRODUCT, 'rhino.platform', 'Objective-J.js'
 
 task :Products => [$BROWSER_FILE, $RHINO_FILE, $LICENSE_PRODUCT]
 
-Files = [   'constants.js', 
-            'utilities.js', 
-            'json2.js',
-            'runtime.js', 
-            'dictionary.js', 
-            'plist.js', 
-            'file.js', 
-            'exception.js', 
-            'preprocess.js', 
-            'evaluate.js', 
-            'debug.js', 
-            'bootstrap.js'];
+Files = FileList['constants.js', 'utilities.js', 'json2.js', 'runtime.js', 'dictionary.js', 'plist.js', 'file.js', 'exception.js', 'preprocess.js', 'evaluate.js', 'bootstrap.js']
+
+if $CONFIGURATION == 'Debug'
+    Files.add('debug.js')
+end
 
 file_d $BROWSER_FILE => Files do |t|
     build_product(t.name, platform_flags(ObjectiveJ::Platform::Browser, ObjectiveJ::Platform::ObjJ))
