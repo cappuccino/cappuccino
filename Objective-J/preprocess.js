@@ -20,7 +20,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-var OBJJ_PREPROCESSOR_DEBUG_SYMBOLS = 1 << 0;
+var OBJJ_PREPROCESSOR_DEBUG_SYMBOLS = 1 << 0,
+    OBJJ_PREPROCESSOR_TYPE_SIGNATURES = 1 << 1;
 
 function objj_preprocess(/*String*/ aString, /*objj_bundle*/ aBundle, /*objj_file*/ aSourceFile, /*unsigned*/ flags) 
 {    
@@ -669,7 +670,10 @@ objj_preprocessor.prototype.method = function(tokens)
 
     CONCAT(buffer, ")\n{ with(self)\n{");
     CONCAT(buffer, this.preprocess(tokens, NULL, TOKEN_CLOSE_BRACE, TOKEN_OPEN_BRACE));
-    CONCAT(buffer, "}\n},"+JSON.stringify(types)+")");
+    CONCAT(buffer, "}\n}");
+    if (this._flags & OBJJ_PREPROCESSOR_TYPE_SIGNATURES)
+        CONCAT(buffer, ","+JSON.stringify(types));
+    CONCAT(buffer, ")");
 
     return buffer;
 }
