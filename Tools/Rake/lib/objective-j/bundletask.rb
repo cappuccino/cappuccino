@@ -390,7 +390,7 @@ module ObjectiveJ
                                 puts str
                             end
                         end
-                        rake abort if ($? != 0)
+                        #rake abort if ($? != 0)
                     end
 
                     { 'copy' => include_nibs, 'copied_resources' => [copied_resource] }
