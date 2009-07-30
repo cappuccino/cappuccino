@@ -48,9 +48,7 @@ def platform_flags(*platforms)
 end
 
 def build_product(path, flags)
-
     IO.popen("gcc #{flags} -E -x c -P -", "w+") do |preprocessor|
-
         Files.select { |name| name.match(/\.js$/) }.each do |fileName|
           preprocessor.puts IO.read(fileName)
         end
@@ -60,8 +58,8 @@ def build_product(path, flags)
         File.open(path, "w") do |file|
             file.write(IO.read("header.txt") + preprocessor.read)
         end
-
     end
+    rake abort if ($? != 0)
 end
 
 task :build => [:Products, $ENVIRONMENT_PRODUCT, :build_subprojects]

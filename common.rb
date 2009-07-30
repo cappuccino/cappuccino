@@ -77,8 +77,8 @@ end
 def subrake(directories, task_name)
     directories.each do |directory|
       if (File.directory?(directory) && File.file?(File.join(directory, "Rakefile")))
-        ok = system(%{cd #{directory} && #{$serialized_env} #{$0} #{task_name}})
-        rake abort unless ok
+        system(%{cd #{directory} && #{$serialized_env} #{$0} #{task_name}})
+        rake abort if ($? != 0)
       else
         puts "warning: subrake missing: " + directory +" (this is not necessarily an error, "+directory+" may be optional)"
       end
@@ -147,4 +147,5 @@ task :clobberall => ['clobber-all']
 
 def spawn_rake(task_name)
     system %{#{$serialized_env} #{$0} #{task_name}}
+    rake abort if ($? != 0)
 end
