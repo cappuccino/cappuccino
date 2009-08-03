@@ -491,16 +491,15 @@ var CTRL_KEY_CODE   = 17;
                         (aDOMEvent.metaKey ? CPCommandKeyMask : 0);
           
     StopDOMEventPropagation = YES;
-    
-    windowNumber = [[self hitTest:location] windowNumber];
 
-    if (!windowNumber)
+    var theWindow = [self hitTest:location];
+
+    if (!theWindow)
         return;
 
-    var windowFrame = CPApp._windows[windowNumber]._frame;
-        
-    location.x -= CGRectGetMinX(windowFrame);
-    location.y -= CGRectGetMinY(windowFrame);
+    var windowNumber = [theWindow windowNumber];
+
+    location = [theWindow convertBridgeToBase:location];
 
     if(typeof aDOMEvent.wheelDeltaX != "undefined")
     {
@@ -656,12 +655,7 @@ var CTRL_KEY_CODE   = 17;
     }
 
     if (windowNumber)
-    {
-        var windowFrame = CPApp._windows[windowNumber]._frame;
-
-        location.x -= _CGRectGetMinX(windowFrame);
-        location.y -= _CGRectGetMinY(windowFrame);
-    }
+        location = [CPApp._windows[windowNumber] convertBridgeToBase:location];
 
     if (type === "mouseup")
     {

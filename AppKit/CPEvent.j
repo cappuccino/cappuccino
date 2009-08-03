@@ -366,7 +366,7 @@ var _CPEventPeriodicEventPeriod         = 0,
 */
 - (CGPoint)locationInWindow
 {
-    return _location;
+    return _CGPointMakeCopy(_location);
 }
 
 /*!
