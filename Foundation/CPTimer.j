@@ -87,7 +87,7 @@
 */
 + (CPTimer)timerWithTimeInterval:(CPTimeInterval)seconds invocation:(CPInvocation)anInvocation repeats:(BOOL)shouldRepeat 
 {
-    return [[self alloc] initWithFireDate:nil interval:seconds invocation:anInvocation repeats:shouldRepeat];
+    return [[self alloc] initWithFireDate:[CPDate dateWithTimeIntervalSinceNow:seconds] interval:seconds invocation:anInvocation repeats:shouldRepeat];
 }
 
 /*!
@@ -95,7 +95,7 @@
 */
 + (CPTimer)timerWithTimeInterval:(CPTimeInterval)seconds target:(id)aTarget selector:(SEL)aSelector userInfo:(id)userInfo repeats:(BOOL)shouldRepeat
 {
-    return [[self alloc] initWithFireDate:nil interval:seconds target:aTarget selector:aSelector userInfo:userInfo repeats:shouldRepeat];
+    return [[self alloc] initWithFireDate:[CPDate dateWithTimeIntervalSinceNow:seconds] interval:seconds target:aTarget selector:aSelector userInfo:userInfo repeats:shouldRepeat];
 }
 
 /*!
@@ -103,7 +103,7 @@
 */
 + (CPTimer)timerWithTimeInterval:(CPTimeInterval)seconds callback:(Function)aFunction repeats:(BOOL)shouldRepeat 
 {
-    return [[self alloc] initWithFireDate:nil interval:seconds callback:aFunction repeats:shouldRepeat];
+    return [[self alloc] initWithFireDate:[CPDate dateWithTimeIntervalSinceNow:seconds] interval:seconds callback:aFunction repeats:shouldRepeat];
 }
 
 /*!
