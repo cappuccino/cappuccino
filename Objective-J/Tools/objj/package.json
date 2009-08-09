@@ -1,6 +1,6 @@
 {
     "author": "Tom Robinson",
     "dependencies": [],
-    "js": "lib",
+    "lib": "lib-js",
     "jars": "jars/"
 }

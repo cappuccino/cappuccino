@@ -7,18 +7,12 @@ require 'rake/clean'
 
 require 'fileutils'
 
-$ENVIRONMENT_NARWHAL_PRODUCT = File.join($ENVIRONMENT_DIR, 'narwhal')
+$ENVIRONMENT_NARWHAL_PRODUCT = $ENVIRONMENT_DIR
 $ENVIRONMENT_BROWSERJS_PRODUCT = File.join($ENVIRONMENT_NARWHAL_PRODUCT, 'packages', 'browserjs')
 $ENVIRONMENT_JACK_PRODUCT = File.join($ENVIRONMENT_NARWHAL_PRODUCT, 'packages', 'jack')
 
-$ENVIRONMENT_NARWHAL_EXECUTABLE = File.join($ENVIRONMENT_BIN_DIR, 'narwhal')
-
 file_d $ENVIRONMENT_DIR do
   mkdir_p $ENVIRONMENT_DIR
-end
-
-file_d $ENVIRONMENT_NARWHAL_EXECUTABLE do
-  FileUtils.ln_sf('../narwhal/bin/narwhal', $ENVIRONMENT_NARWHAL_EXECUTABLE)
 end
 
 task :update_submodules do
@@ -30,11 +24,11 @@ task :update_submodules do
   end
 end
 
-task :build => [:update_submodules, $ENVIRONMENT_DIR, $ENVIRONMENT_NARWHAL_EXECUTABLE] do
+task :build => [:update_submodules, $ENVIRONMENT_DIR] do
   rm_rf($ENVIRONMENT_NARWHAL_PRODUCT)
   cp_r('narwhal', $ENVIRONMENT_NARWHAL_PRODUCT)
   cp_r('browserjs', $ENVIRONMENT_BROWSERJS_PRODUCT)
   cp_r('jack', $ENVIRONMENT_JACK_PRODUCT)
 end
 
-CLOBBER.include($ENVIRONMENT_NARWHAL_PRODUCT, $ENVIRONMENT_NARWHAL_EXECUTABLE)
+CLOBBER.include($ENVIRONMENT_NARWHAL_PRODUCT)

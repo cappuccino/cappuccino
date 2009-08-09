@@ -23,18 +23,19 @@ while [ $# -ge 1 ]; do
 done
 
 mkdir -p $INSTALL_DIR/bin
-mkdir -p $INSTALL_DIR/share/objj
+mkdir -p $INSTALL_DIR/share
 
-cp -fR objj/* $INSTALL_DIR/share/objj/.
+rm -rf $INSTALL_DIR/share/narwhal
+cp -fR objj $INSTALL_DIR/share/narwhal
 
 BINS=`ls objj/bin`
 for BIN in $BINS
 do
-    ln -sf $INSTALL_DIR/share/objj/bin/$BIN $INSTALL_DIR/bin/$BIN
+    ln -sf $INSTALL_DIR/share/narwhal/bin/$BIN $INSTALL_DIR/bin/$BIN
     chmod +x $INSTALL_DIR/bin/$BIN
 done
 
-chmod +x $INSTALL_DIR/share/objj/bin/*
+chmod +x $INSTALL_DIR/share/narwhal/bin/*
 
 gem install *.gem
 gem cleanup objective-j

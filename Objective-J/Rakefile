@@ -43,7 +43,8 @@ end
 
 #Framework in environment directory
 file_d $ENVIRONMENT_PRODUCT => [:Products] do
-    cp_r(File.join($PRODUCT, '.'), $ENVIRONMENT_PRODUCT)
+  rm_rf $ENVIRONMENT_PRODUCT
+  cp_r($PRODUCT, $ENVIRONMENT_PRODUCT)
 end
 
 file_d $LICENSE_PRODUCT => [$LICENSE_FILE] do
@@ -69,7 +70,7 @@ def build_product(path, flags)
     rake abort if ($? != 0)
 end
 
-task :build => [:Products, $ENVIRONMENT_PRODUCT, :build_subprojects]
+task :build => [:Products, :build_subprojects, $ENVIRONMENT_PRODUCT]
 
 task :clean => :clean_suprojects
 

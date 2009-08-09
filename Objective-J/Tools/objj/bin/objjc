@@ -10,6 +10,8 @@ importPackage(java.lang);
 
 importClass(java.io.BufferedReader);
 
+var SHRINKSAFE_PATH = File.join(OBJJ_HOME, "shrinksafe", "shrinksafe.jar"),
+    RHINO_PATH = File.join(OBJJ_HOME, "shrinksafe", "js.jar")
 
 OBJJ_PREPROCESSOR_PREPROCESS    = 1 << 10;
 OBJJ_PREPROCESSOR_COMPRESS      = 1 << 11;
@@ -53,7 +55,7 @@ function compress(/*String*/ aCode, /*Object*/ flags, /*File*/ tmpFile)
 {
     File.write(tmpFile, aCode, { charset:"UTF-8" });
 
-    return exec(["java", "-Dfile.encoding=UTF-8", "-classpath", OBJJ_HOME + "/lib/js.jar" + ":" + OBJJ_HOME + "/lib/shrinksafe.jar", "org.dojotoolkit.shrinksafe.Main", tmpFile.getCanonicalPath()]);
+    return exec(["java", "-Dfile.encoding=UTF-8", "-classpath", [RHINO_PATH, SHRINKSAFE_PATH].join(":"), "org.dojotoolkit.shrinksafe.Main", tmpFile.getCanonicalPath()]);
 }
 
 //#define SET_CONTEXT(aFragment, aContext) aFragment.context = aContext
