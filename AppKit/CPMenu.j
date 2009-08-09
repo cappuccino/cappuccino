@@ -369,7 +369,7 @@ var _CPMenuBarVisible               = NO,
 /*!
     Returns the menu item with the specified tag
     @param the tag of the desired menu item
-    @return the menu item or <code>nil</code> if a match was not found
+    @return the menu item or \c nil if a match was not found
 */
 - (CPMenuItem)menuWithTag:(int)aTag
 {
@@ -384,7 +384,7 @@ var _CPMenuBarVisible               = NO,
 /*!
     Returns the menu item with the specified title.
     @param aTitle the title of the menu item
-    @return the menu item or <code>nil</code> if a match was not found
+    @return the menu item or \c nil if a match was not found
 */
 - (CPMenuItem)menuWithTitle:(CPString)aTitle
 {
@@ -551,7 +551,7 @@ var _CPMenuBarVisible               = NO,
 }
 
 /*!
-    Returns the attaced menu, or <code>nil</code> if there isn't one.
+    Returns the attaced menu, or \c nil if there isn't one.
 */
 - (CPMenu)attachedMenu
 {
@@ -559,7 +559,7 @@ var _CPMenuBarVisible               = NO,
 }
 
 /*!
-    Returns <code>YES</code> if the menu is attached to another menu.
+    Returns \c YES if the menu is attached to another menu.
 */
 - (BOOL)isAttached
 {
@@ -575,7 +575,7 @@ var _CPMenuBarVisible               = NO,
 }
 
 /*!
-    Returns the super menu or <code>nil</code> if there is none.
+    Returns the super menu or \c nil if there is none.
 */
 - (CPMenu)supermenu
 {
@@ -592,8 +592,8 @@ var _CPMenuBarVisible               = NO,
 }
 
 /*!
-    If there are two instances of this menu visible, return <code>NO</code>.
-    Otherwise, return <code>YES</code> if we are a detached menu and visible.
+    If there are two instances of this menu visible, return \c NO.
+    Otherwise, return \c YES if we are a detached menu and visible.
 */
 - (BOOL)isTornOff
 {
@@ -603,7 +603,7 @@ var _CPMenuBarVisible               = NO,
 // Enabling and Disabling Menu Items
 /*!
     Sets whether the menu automatically enables menu items.
-    @param aFlag <code>YES</code> sets the menu to automatically enable items.
+    @param aFlag \c YES sets the menu to automatically enable items.
 */
 - (void)setAutoenablesItems:(BOOL)aFlag
 {
@@ -611,7 +611,7 @@ var _CPMenuBarVisible               = NO,
 }
 
 /*!
-    Returns <code>YES</code> if the menu auto enables items.
+    Returns \c YES if the menu auto enables items.
 */
 - (BOOL)autoenablesItems
 {
@@ -691,7 +691,7 @@ var _CPMenuBarVisible               = NO,
 // Managing Display of State Column
 /*!
     Sets whether to show the state column
-    @param shouldShowStateColumn <code>YES</code> shows the state column
+    @param shouldShowStateColumn \c YES shows the state column
 */
 - (void)setShowsStateColumn:(BOOL)shouldShowStateColumn
 {
@@ -699,7 +699,7 @@ var _CPMenuBarVisible               = NO,
 }
 
 /*!
-    Returns <code>YES</code> if the menu shows the state column
+    Returns \c YES if the menu shows the state column
 */
 - (BOOL)showsStateColumn
 {
@@ -709,7 +709,7 @@ var _CPMenuBarVisible               = NO,
 // Handling Highlighting
 /*!
     Returns the currently highlighted menu item.
-    @return the highlighted menu item or <code>nil</code> if no item is currently highlighted
+    @return the highlighted menu item or \c nil if no item is currently highlighted
 */
 - (CPMenuItem)highlightedItem
 {
@@ -745,9 +745,9 @@ var _CPMenuBarVisible               = NO,
 
 /*!
     Initiates the action of the menu item that
-    has a keyboard shortcut equivalent to <code>anEvent</code>
+    has a keyboard shortcut equivalent to \c anEvent
     @param anEvent the keyboard event
-    @return <code>YES</code> if it was handled.
+    @return \c YES if it was handled.
 */
 - (BOOL)performKeyEquivalent:(CPEvent)anEvent
 {

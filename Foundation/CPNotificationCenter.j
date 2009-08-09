@@ -72,7 +72,7 @@ var CPNotificationDefaultCenter = nil;
 
 /*!
     Adds an object as an observer. The observer will receive notifications with the specified name
-    and/or containing the specified object (depending on if they are <code>nil</code>.
+    and/or containing the specified object (depending on if they are \c nil.
     @param anObserver the observing object
     @param aSelector the message sent to the observer when a notification occurrs
     @param aNotificationName the name of the notification the observer wants to watch

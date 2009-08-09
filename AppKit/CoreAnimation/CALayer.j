@@ -56,12 +56,12 @@ var CALayerRegisteredRunLoopUpdates             = nil;
 
     @delegate -(void)drawLayer:(CALayer)layer inContext:(CGContextRef)ctx;
     If the delegate implements this method, the CALayer will
-    call this in place of its <code>drawInContext:</code>.
+    call this in place of its \c -drawInContext:.
     @param layer the layer to draw for
     @param ctx the context to draw on
 
     @delegate  -(void)displayLayer:(CALayer)layer;
-    The delegate can override the layer's <code>display</code> method
+    The delegate can override the layer's \c -display method
     by implementing this method.
 */
 @implementation CALayer : CPObject
@@ -419,7 +419,7 @@ var CALayerRegisteredRunLoopUpdates             = nil;
 // Providing Layer Content
 /*!
     Returns the CGImage contents of this layer.
-    The default contents are <code>nil</code>.
+    The default contents are \c nil.
 */
 - (CGImage)contents
 {
@@ -547,7 +547,7 @@ var CALayerRegisteredRunLoopUpdates             = nil;
 // Style Attributes
 /*!
     Returns the opacity of the layer. The value is between
-    <code>0.0</code> (transparent) and <code>1.0</code> (opaque).
+    \c 0.0 (transparent) and \c 1.0 (opaque).
 */
 - (float)opacity
 {
@@ -556,7 +556,7 @@ var CALayerRegisteredRunLoopUpdates             = nil;
 
 /*!
     Sets the opacity for the layer.
-    @param anOpacity the new opacity (between <code>0.0</code> (transparent) and <code>1.0</code> (opaque)).
+    @param anOpacity the new opacity (between \c 0.0 (transparent) and \c 1.0 (opaque)).
 */
 - (void)setOpacity:(float)anOpacity
 {
@@ -571,7 +571,7 @@ var CALayerRegisteredRunLoopUpdates             = nil;
 
 /*!
     Sets whether the layer is hidden.
-    @param isHidden <code>YES</code> means the layer will be hidden. <code>NO</code> means the layer will be visible.
+    @param isHidden \c YES means the layer will be hidden. \c NO means the layer will be visible.
 */
 - (void)setHidden:(BOOL)isHidden
 {
@@ -580,7 +580,7 @@ var CALayerRegisteredRunLoopUpdates             = nil;
 }
 
 /*!
-    Returns <code>YES</code> if the layer is hidden.
+    Returns \c YES if the layer is hidden.
 */
 - (BOOL)hidden
 {
@@ -588,7 +588,7 @@ var CALayerRegisteredRunLoopUpdates             = nil;
 }
 
 /*!
-    Returns <code>YES</code> if the layer is hidden.
+    Returns \c YES if the layer is hidden.
 */
 - (BOOL)isHidden
 {
@@ -597,7 +597,7 @@ var CALayerRegisteredRunLoopUpdates             = nil;
 
 /*!
     Sets whether content that goes lies outside the bounds is hidden or visible.
-    @param masksToBounds <code>YES</code> hides the excess content. <code>NO</code> makes it visible.
+    @param masksToBounds \c YES hides the excess content. \c NO makes it visible.
 */
 - (void)setMasksToBounds:(BOOL)masksToBounds
 {
@@ -724,7 +724,7 @@ if (_DOMContentsElement && aLayer._zPosition > _DOMContentsElement.style.zIndex)
     Inserts a layer below another layer.
     @param aLayer the layer to insert
     @param aSublayer the layer to insert below
-    @throws CALayerNotFoundException if <code>aSublayer</code> is not in the array of sublayers
+    @throws CALayerNotFoundException if \c aSublayer is not in the array of sublayers
 */
 - (void)insertSublayer:(CALayer)aLayer below:(CALayer)aSublayer
 {
@@ -737,7 +737,7 @@ if (_DOMContentsElement && aLayer._zPosition > _DOMContentsElement.style.zIndex)
     Inserts a layer above another layer.
     @param aLayer the layer to insert
     @param aSublayer the layer to insert above
-    @throws CALayerNotFoundException if <code>aSublayer</code> is not in the array of sublayers
+    @throws CALayerNotFoundException if \c aSublayer is not in the array of sublayers
 */
 - (void)insertSublayer:(CALayer)aLayer above:(CALayer)aSublayer
 {
@@ -834,7 +834,7 @@ if (_DOMContentsElement && aLayer._zPosition > _DOMContentsElement.style.zIndex)
 
 /*!
     Sets whether the layer needs to be redrawn when its bounds are changed.
-    @param needsDisplayOnBoundsChange <code>YES</code> means the display is redraw on a bounds change.
+    @param needsDisplayOnBoundsChange \c YES means the display is redraw on a bounds change.
 */
 - (void)setNeedsDisplayOnBoundsChange:(BOOL)needsDisplayOnBoundsChange
 {
@@ -842,7 +842,7 @@ if (_DOMContentsElement && aLayer._zPosition > _DOMContentsElement.style.zIndex)
 }
 
 /*!
-    Returns <code>YES</code> if the display should be redrawn on a bounds change.
+    Returns \c YES if the display should be redrawn on a bounds change.
 */
 - (BOOL)needsDisplayOnBoundsChange
 {
@@ -906,7 +906,7 @@ if (_DOMContentsElement && aLayer._zPosition > _DOMContentsElement.style.zIndex)
 
 // Hit Testing
 /*!
-    Returns <code>YES</code> if the layer contains the point.
+    Returns \c YES if the layer contains the point.
     @param aPoint the point to test
 */
 - (BOOL)containsPoint:(CGPoint)aPoint
@@ -917,7 +917,7 @@ if (_DOMContentsElement && aLayer._zPosition > _DOMContentsElement.style.zIndex)
 /*!
     Returns the farthest descendant of this layer that contains the specified point.
     @param aPoint the point to test
-    @return the containing layer or <code>nil</code> if there was no hit.
+    @return the containing layer or \c nil if there was no hit.
 */
 - (CALayer)hitTest:(CGPoint)aPoint
 {

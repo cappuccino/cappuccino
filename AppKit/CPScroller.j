@@ -208,7 +208,7 @@ NAMES_FOR_PARTS[CPScrollerKnob]             = @"knob";
 }
 
 /*!
-    Returns the part of the scroller that would be hit by <code>aPoint</code>.
+    Returns the part of the scroller that would be hit by \c aPoint.
     @param aPoint the simulated point hit
     @return the part of the scroller that intersects the point
 */

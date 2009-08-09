@@ -54,8 +54,8 @@
 }
 
 /*!
-    Returns <code>YES</code>
-    @return <code>YES</code>
+    Returns \c YES
+    @return \c YES
 */
 - (void)shouldArchiveValueForKey:(CPString)aKey
 {
@@ -63,8 +63,8 @@
 }
 
 /*!
-    Returns <code>nil</code>
-    @return <code>nil</code>
+    Returns \c nil
+    @return \c nil
 */
 + (id)defaultValueForKey:(CPString)aKey
 {
@@ -73,7 +73,7 @@
 
 /*!
     Specifies whether this animation should be removed after it has completed.
-    @param <code>YES</code> means the animation should be removed
+    @param \c YES means the animation should be removed
 */
 - (void)setRemovedOnCompletion:(BOOL)isRemovedOnCompletion
 {
@@ -81,7 +81,7 @@
 }
 
 /*!
-    Returns <code>YES</code> if the animation is removed after completion
+    Returns \c YES if the animation is removed after completion
 */
 - (BOOL)removedOnCompletion
 {
@@ -89,7 +89,7 @@
 }
 
 /*!
-    Returns <code>YES</code> if the animation is removed after completion
+    Returns \c YES if the animation is removed after completion
 */
 - (BOOL)isRemovedOnCompletion
 {
@@ -97,7 +97,7 @@
 }
 
 /*!
-    Returns the animation's timing function. If <code>nil</code>, then it has a linear pacing.
+    Returns the animation's timing function. If \c nil, then it has a linear pacing.
 */
 - (CAMediaTimingFunction)timingFunction
 {
