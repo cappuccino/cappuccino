@@ -1,4 +1,6 @@
-var File = require("file");
+var File = require("file"),
+    readline = require("readline").readline;
+
 var window = require("browser/window");
 
 // variables to be exported from the module, for use in objjc, etc
@@ -67,7 +69,7 @@ exports.run = function(args)
             try {
                 system.stdout.write("objj> ").flush();
 
-                var input = system.stdin.readLine(),
+                var input = readline(),
                     result = objj_eval(input);
                 
                 if (result !== undefined)
