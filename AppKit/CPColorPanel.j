@@ -58,7 +58,7 @@ CPColorPickerViewHeight = 370;
 
     CPColorPanel provides a reusable panel that can be used
     displayed on screen to prompt the user for a color selection. To
-    obtain the panel, call the <code>sharedColorPanel</code> method.
+    obtain the panel, call the \c +sharedColorPanel method.
 */
 @implementation CPColorPanel : CPPanel
 {    
@@ -111,7 +111,7 @@ CPColorPickerViewHeight = 370;
 }
 
 /*
-    To obtain the color panel, use <code>sharedColorPanel</code>.
+    To obtain the color panel, use \c +sharedColorPanel.
     @ignore
 */
 - (id)init
@@ -137,7 +137,7 @@ CPColorPickerViewHeight = 370;
 }
 
 /*!
-    Sets the color of the panel, and updates the picker. Also posts a <code>CPColorPanelDidChangeNotification</code>.
+    Sets the color of the panel, and updates the picker. Also posts a \c CPColorPanelDidChangeNotification.
 */
 - (void)setColor:(CPColor)aColor
 {    

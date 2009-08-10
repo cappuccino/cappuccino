@@ -90,7 +90,9 @@ var CPDocumentUntitledCount = 0;
     CPDocuments should be used to represent this.
 */
 @implementation CPDocument : CPResponder
-{    
+{
+    CPWindow        _window; // For outlet purposes.
+
     CPURL           _fileURL;
     CPString        _fileType;
     CPArray         _windowControllers;
@@ -174,8 +176,8 @@ var CPDocumentUntitledCount = 0;
     @param absoluteContentsURL the location of the document's contents
     @param aType the type of the contents
     @param aDelegate this object will receive a callback after the document's contents are loaded
-    @param aDidReadSelector the message selector that will be sent to <code>aDelegate</code>
-    @param aContextInfo passed as the argument to the message sent to the <code>aDelegate</code>
+    @param aDidReadSelector the message selector that will be sent to \c aDelegate
+    @param aContextInfo passed as the argument to the message sent to the \c aDelegate
     @return the initialized document
 */
 - (id)initForURL:(CPURL)anAbsoluteURL withContentsOfURL:(CPURL)absoluteContentsURL ofType:(CPString)aType delegate:(id)aDelegate didReadSelector:(SEL)aDidReadSelector contextInfo:(id)aContextInfo
@@ -228,9 +230,10 @@ var CPDocumentUntitledCount = 0;
 */
 - (void)makeWindowControllers
 {
-    var controller = [[CPWindowController alloc] initWithWindowCibName:nil];
-    
-    [self addWindowController:controller];
+    var windowCibName = [self windowCibName];
+
+    if (windowCibName)
+        [self addWindowController:[[CPWindowController alloc] initWithWindowCibName:windowCibName owner:self]];
 }
 
 /*!
@@ -250,7 +253,7 @@ var CPDocumentUntitledCount = 0;
 {
     [_windowControllers addObject:aWindowController];
     
-    if ([aWindowController document] != self)
+    if ([aWindowController document] !== self)
     {
         [aWindowController setNextResponder:self];
         [aWindowController setDocument:self];
@@ -292,18 +295,18 @@ var CPDocumentUntitledCount = 0;
 }
 
 /*!
-    Called after <code>aWindowController<code> loads the document's Nib file.
+    Called after \c aWindowController loads the document's Nib file.
     @param aWindowController the controller that loaded the Nib file
 */
-- (void)windowControllerDidLoadNib:(CPWindowController)aWindowController
+- (void)windowControllerDidLoadCib:(CPWindowController)aWindowController
 {
 }
 
 /*!
-    Called before <code>aWindowController</code> will load the document's Nib file.
+    Called before \c aWindowController will load the document's Nib file.
     @param aWindowController the controller that will load the Nib file
 */
-- (void)windowControllerWillLoadNib:(CPWindowController)aWindowController
+- (void)windowControllerWillLoadCib:(CPWindowController)aWindowController
 {
 }
 
@@ -502,7 +505,7 @@ var CPDocumentUntitledCount = 0;
 
 // Managing Document Status
 /*!
-    Returns <code>YES</code> if there are any unsaved changes.
+    Returns \c YES if there are any unsaved changes.
 */
 - (BOOL)isDocumentEdited
 {
@@ -548,7 +551,7 @@ var CPDocumentUntitledCount = 0;
 
 // Working with Undo Manager
 /*!
-    Returns <code>YES</code> if the document has a
+    Returns \c YES if the document has a
     CPUndoManager.
 */
 - (BOOL)hasUndoManager
@@ -558,7 +561,7 @@ var CPDocumentUntitledCount = 0;
 
 /*!
     Sets whether the document should have a CPUndoManager.
-    @param aFlag <code>YES</code> makes the document have an undo manager
+    @param aFlag \c YES makes the document have an undo manager
 */
 - (void)setHasUndoManager:(BOOL)aFlag
 {
@@ -642,7 +645,7 @@ var CPDocumentUntitledCount = 0;
 
 /*!
     Returns the document's undo manager. If the document
-    should have one, but the manager is <code>nil</code>, it
+    should have one, but the manager is \c nil, it
     will be created and then returned.
     @return the document's undo manager
 */
@@ -666,8 +669,8 @@ var CPDocumentUntitledCount = 0;
 // Handling User Actions
 /*!
     Saves the document. If the document does not
-    have a file path to save to (<code>fileURL</code>)
-    then <code>saveDocumentAs:</code> will be called.
+    have a file path to save to (\c fileURL)
+    then \c -saveDocumentAs: will be called.
     @param aSender the object requesting the save
 */
 - (void)saveDocument:(id)aSender

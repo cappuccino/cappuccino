@@ -35,7 +35,7 @@ var _CPColorWellDidBecomeExclusiveNotification = @"_CPColorWellDidBecomeExclusiv
 
     CPColorWell is a CPControl for selecting and displaying a single color value. An example of a CPColorWell object (or simply color well) is found in CPColorPanel, which uses a color well to display the current color selection.</p>
 
-    <p>An application can have one or more active CPColorWells. You can activate multiple CPColorWells by invoking the <code>activate:</code> method with <code>NO</code> as its argument. When a mouse-down event occurs on an CPColorWell's border, it becomes the only active color well. When a color well becomes active, it brings up the color panel also.
+    <p>An application can have one or more active CPColorWells. You can activate multiple CPColorWells by invoking the \c -activate: method with \c NO as its argument. When a mouse-down event occurs on an CPColorWell's border, it becomes the only active color well. When a color well becomes active, it brings up the color panel also.
 */
 @implementation CPColorWell : CPControl
 {
@@ -127,7 +127,7 @@ var _CPColorWellDidBecomeExclusiveNotification = @"_CPColorWellDidBecomeExclusiv
 }
 
 /*!
-    Changes the color of the well to that of <code>aSender</code>.
+    Changes the color of the well to that of \c aSender.
     @param aSender the object from which to retrieve the color
 */
 - (void)takeColorFrom:(id)aSender
@@ -138,7 +138,7 @@ var _CPColorWellDidBecomeExclusiveNotification = @"_CPColorWellDidBecomeExclusiv
 // Activating and Deactivating Color Wells
 /*!
     Activates the color well, displays the color panel, and makes the panel's current color the same as its own. 
-    If exclusive is <code>YES</code>, deactivates any other CPColorWells. <code>NO</code>, keeps them active.
+    If exclusive is \c YES, deactivates any other CPColorWells. \c NO, keeps them active.
     @param shouldBeExclusive whether other color wells should be deactivated.
 */
 - (void)activate:(BOOL)shouldBeExclusive
@@ -179,7 +179,7 @@ var _CPColorWellDidBecomeExclusiveNotification = @"_CPColorWellDidBecomeExclusiv
 }
 
 /*!
-    Returns <code>YES</code> if the color well is active.
+    Returns \c YES if the color well is active.
 */
 - (BOOL)isActive
 {
@@ -262,7 +262,7 @@ var CPColorWellColorKey     = "CPColorWellColorKey",
 @implementation CPColorWell (CPCoding)
 
 /*!
-    Initializes the color well by unarchiving data from <code>aCoder</code>.
+    Initializes the color well by unarchiving data from \c aCoder.
     @param aCoder the coder containing the archived CPColorWell.
 */
 - (id)initWithCoder:(CPCoder)aCoder

@@ -770,7 +770,12 @@ CPTableViewSelectionHighlightStyleSourceList = 1;
     {
     }
 
-    return FLOOR(y / (_rowHeight + _intercellSpacing.height));
+    var row = FLOOR(y / (_rowHeight + _intercellSpacing.height));
+
+    if (row >= _numberOfRows)
+        return -1;
+
+    return row;
 }
 
 - (CGRect)frameOfDataViewAtColumn:(CPInteger)aColumnIndex row:(CPInteger)aRowIndex

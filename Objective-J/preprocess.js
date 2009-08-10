@@ -20,7 +20,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-var OBJJ_PREPROCESSOR_DEBUG_SYMBOLS = 1 << 0;
+var OBJJ_PREPROCESSOR_DEBUG_SYMBOLS = 1 << 0,
+    OBJJ_PREPROCESSOR_TYPE_SIGNATURES = 1 << 1;
 
 function objj_preprocess(/*String*/ aString, /*objj_bundle*/ aBundle, /*objj_file*/ aSourceFile, /*unsigned*/ flags) 
 {    
@@ -170,6 +171,7 @@ var objj_preprocessor = function(aString, aSourceFile, aBundle, flags)
 {
     this._currentClass = "";
     this._currentSuperClass = "";
+    this._currentSuperMetaClass = "";
     
     this._file = aSourceFile;
     this._fragments = [];
@@ -177,6 +179,7 @@ var objj_preprocessor = function(aString, aSourceFile, aBundle, flags)
     this._tokens = new objj_lexer(aString);
     this._flags = flags;
     this._bundle = aBundle;
+    this._classMethod = false;
     
     this.preprocess(this._tokens, this._preprocessed);
     //alert(this._preprocessed + "");
@@ -262,8 +265,7 @@ objj_preprocessor.prototype.brackets = function(/*objj_lexer*/ tokens, /*objj_st
         if (tuples[0][0].atoms[0] == TOKEN_SUPER)
         {
             CONCAT(aStringBuffer, "objj_msgSendSuper(");
-            CONCAT(aStringBuffer, "{ receiver:self, super_class:" + this._currentSuperClass + " }");
-            
+            CONCAT(aStringBuffer, "{ receiver:self, super_class:" + (this._classMethod ? this._currentSuperMetaClass : this._currentSuperClass ) + " }");
         }
         else
         {
@@ -350,7 +352,7 @@ objj_preprocessor.prototype.implementation = function(tokens, /*objj_stringBuffe
         category = NO,
         class_name = tokens.skip_whitespace(),
         superclass_name = "Nil",
-        
+
         instance_methods = new objj_stringBuffer(),
         class_methods = new objj_stringBuffer();
     
@@ -358,6 +360,7 @@ objj_preprocessor.prototype.implementation = function(tokens, /*objj_stringBuffe
         objj_exception_throw(new objj_exception(OBJJParseException, "*** Expected class name, found \"" + class_name + "\"."));
     
     this._currentSuperClass = NULL;
+    this._currentSuperMetaClass = NULL;
     this._currentClass = class_name;
     
     // If we reach an open parenthesis, we are declaring a category.
@@ -376,12 +379,18 @@ objj_preprocessor.prototype.implementation = function(tokens, /*objj_stringBuffe
         CONCAT(buffer, "var meta_class = the_class.isa;");
         
         var superclass_name = dictionary_getValue(SUPER_CLASSES, class_name);
-        
+
         // FIXME: We should have a better solution for this case, although it's actually not much slower than the real case.
         if (!superclass_name)
+        {
             this._currentSuperClass = "objj_getClass(\"" + class_name + "\").super_class";
+            this._currentSuperMetaClass = "objj_getMetaClass(\"" + class_name + "\").super_class";
+        }
         else
+        {
             this._currentSuperClass = "objj_getClass(\"" + superclass_name + "\")";
+            this._currentSuperMetaClass = "objj_getMeraClass(\"" + superclass_name + "\")";
+        }
     }
     else
     {
@@ -394,7 +403,9 @@ objj_preprocessor.prototype.implementation = function(tokens, /*objj_stringBuffe
                 objj_exception_throw(new objj_exception(OBJJParseException, "*** Expected class name, found \"" + token + "\"."));
             
             superclass_name = token;
+
             this._currentSuperClass = "objj_getClass(\"" + superclass_name + "\")";
+            this._currentSuperMetaClass = "objj_getMetaClass(\"" + superclass_name + "\")";
             
             dictionary_setValue(SUPER_CLASSES, class_name, superclass_name);
 
@@ -503,6 +514,8 @@ objj_preprocessor.prototype.implementation = function(tokens, /*objj_stringBuffe
     {
         if (token == TOKEN_PLUS)
         {
+            this._classMethod = true;
+
             if (IS_NOT_EMPTY(class_methods))
                 CONCAT(class_methods, ", ");
             
@@ -511,6 +524,8 @@ objj_preprocessor.prototype.implementation = function(tokens, /*objj_stringBuffe
         
         else if (token == TOKEN_MINUS)
         {
+            this._classMethod = false;
+
             if (IS_NOT_EMPTY(instance_methods))
                 CONCAT(instance_methods, ", ");
             
@@ -578,12 +593,15 @@ objj_preprocessor.prototype.method = function(tokens)
     var buffer = new objj_stringBuffer(),
         token,
         selector = "",
-        parameters = [];
+        parameters = [],
+        types = [null];
     
     while((token = tokens.skip_whitespace()) && token != TOKEN_OPEN_BRACE)
     {
         if (token == TOKEN_COLON)
         {
+            var type = "";
+
             // Colons are part of the selector name
             selector += token;
             
@@ -592,18 +610,30 @@ objj_preprocessor.prototype.method = function(tokens)
             if (token == TOKEN_OPEN_PARENTHESIS)
             {
                 // Swallow parameter/return type.  Perhaps later we can use this for debugging?
-                while((token = tokens.skip_whitespace()) && token != TOKEN_CLOSE_PARENTHESIS) ;
+                while((token = tokens.skip_whitespace()) && token != TOKEN_CLOSE_PARENTHESIS)
+                    type += token;
     
                 token = tokens.skip_whitespace();
             }
             
+            // Add the type. If it's empty, add null instead.
+            types[parameters.length+1] = type || null;
+
             // Since this follows a colon, this must be the parameter name.
             parameters[parameters.length] = token;
         }
         
         else if (token == TOKEN_OPEN_PARENTHESIS)
+        {
+            var type = "";
+
             // Since :( is handled above, this must be the return type, just swallow it.
-            while((token = tokens.skip_whitespace()) && token != TOKEN_CLOSE_PARENTHESIS) ;
+            while((token = tokens.skip_whitespace()) && token != TOKEN_CLOSE_PARENTHESIS)
+                type += token;
+
+            // types[0] is the return argument
+            types[0] = type || null;
+        }
         
         // Argument list ", ..."
         else if (token == TOKEN_COMMA)
@@ -640,7 +670,11 @@ objj_preprocessor.prototype.method = function(tokens)
 
     CONCAT(buffer, ")\n{ with(self)\n{");
     CONCAT(buffer, this.preprocess(tokens, NULL, TOKEN_CLOSE_BRACE, TOKEN_OPEN_BRACE));
-    CONCAT(buffer, "}\n})");
+    CONCAT(buffer, "}\n}");
+    // TODO: actually use OBJJ_PREPROCESSOR_TYPE_SIGNATURES flag instead of tying to OBJJ_PREPROCESSOR_DEBUG_SYMBOLS
+    if (this._flags & OBJJ_PREPROCESSOR_DEBUG_SYMBOLS) //OBJJ_PREPROCESSOR_TYPE_SIGNATURES)
+        CONCAT(buffer, ","+JSON.stringify(types));
+    CONCAT(buffer, ")");
 
     return buffer;
 }

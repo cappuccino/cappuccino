@@ -261,9 +261,9 @@ function main()
         // call main once the page has loaded
         applicationJS.push(
             "if (window.addEventListener) \
-                window.addEventListener('load', main, false); \
+                window.addEventListener('load', function(){main()}, false); \
             else if (window.attachEvent) \
-                window.attachEvent('onload', main);"
+                window.attachEvent('onload', function(){main()});"
         );
         
         // comment out any OBJJ_MAIN_FILE defintions or objj_import() calls

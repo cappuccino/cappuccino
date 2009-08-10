@@ -5,35 +5,18 @@ require 'objective-j'
 require 'rake'
 require 'rake/clean'
 
-$ENVIRONMENT_NARWHAL_PRODUCT = File.join($ENVIRONMENT_DIR, 'narwhal')
+$ENVIRONMENT_NARWHAL_PRODUCT = $ENVIRONMENT_DIR
 $ENVIRONMENT_OBJJ_PRODUCT = File.join($ENVIRONMENT_NARWHAL_PRODUCT, 'packages', 'objj')
 
-$OBJJC_JS_COMPILER = File.join($ENVIRONMENT_LIB_DIR, 'shrinksafe.jar')
-$OBJJC_JS_COMPILER_RHINO = File.join($ENVIRONMENT_LIB_DIR, 'js.jar')
-
 $EXECUTABLES = ['objj', 'objjc', 'cplutil']
-$EXECUTABLES_PRODUCTS = $EXECUTABLES.map {|e| File.join($ENVIRONMENT_BIN_DIR, e) }
 
-$EXECUTABLES.each do |executable|
-  source = File.join('objj', 'bin', executable)
-  dest = File.join($ENVIRONMENT_BIN_DIR, executable)
-  file_d dest => source do
-    #cp(source, dest)
-    FileUtils.ln_sf("../narwhal/packages/objj/bin/#{executable}", dest)
+task :build do
+  rm_rf($ENVIRONMENT_OBJJ_PRODUCT)
+  cp_r('objj', $ENVIRONMENT_OBJJ_PRODUCT)
+  
+  $EXECUTABLES.each do |executable|
+    symlink_executable File.join($ENVIRONMENT_BIN_DIR, executable)
   end
 end
 
-file_d $OBJJC_JS_COMPILER => 'shrinksafe.jar' do
-  cp('shrinksafe.jar', $OBJJC_JS_COMPILER)
-end
-
-file_d $OBJJC_JS_COMPILER_RHINO => 'js.jar' do
-  cp('js.jar', $OBJJC_JS_COMPILER_RHINO)
-end
-
-task :build => [$OBJJC_JS_COMPILER, $OBJJC_JS_COMPILER_RHINO].concat($EXECUTABLES_PRODUCTS) do
-  rm_rf($ENVIRONMENT_OBJJ_PRODUCT)
-  cp_r('objj', $ENVIRONMENT_OBJJ_PRODUCT)
-end
-
-CLOBBER.include($ENVIRONMENT_OBJJ_PRODUCT, $EXECUTABLES_PRODUCTS, $OBJJC_JS_COMPILER, $OBJJC_JS_COMPILER_RHINO)
+CLOBBER.include($ENVIRONMENT_OBJJ_PRODUCT)

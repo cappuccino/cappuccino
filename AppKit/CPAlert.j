@@ -62,12 +62,12 @@ var CPAlertWarningImage,
     CPAlert is an alert panel that can be displayed modally to present the
     user with a message and one or more options.
 
-    It can be used to display an information message (<pre>CPInformationalAlertStyle</pre>),
-    a warning message (<pre>CPWarningAlertStyle</pre> - which is the default), or a critical
-    alert (<pre>CPCriticalAlertStyle</pre>). In each case the user can be presented with one
-    or more options by adding buttons using the <pre>addButtonWithTitle:</pre> method.
+    It can be used to display an information message \c CPInformationalAlertStyle,
+    a warning message \c CPWarningAlertStyle (the default), or a critical
+    alert \c CPCriticalAlertStyle. In each case the user can be presented with one
+    or more options by adding buttons using the \c -addButtonWithTitle: method.
 
-    The panel is displayed modally by calling <pre>runModal</pre> and once the user has
+    The panel is displayed modally by calling \c -runModal and once the user has
     dismissed the panel, a message will be sent to the panel's delegate (if set), informing
     it which button was clicked (see delegate methods).
 
@@ -112,7 +112,7 @@ var CPAlertWarningImage,
 }
 
 /*!
-    Initializes a <pre>CPAlert</pre> panel with the default alert style (<pre>CPWarningAlertStyle</pre>).
+    Initializes a \c CPAlert panel with the default alert style \c CPWarningAlertStyle.
 */
 - (id)init
 {
@@ -244,7 +244,7 @@ var CPAlertWarningImage,
 
 /*!
     Adds a button with a given title to the receiver.
-    Buttons will be added starting from the right hand side of the <pre>CPAlert</pre> panel.
+    Buttons will be added starting from the right hand side of the \c CPAlert panel.
     The first button will have the index 0, the second button 1 and so on.
 
     You really shouldn't need more than 3 buttons.
@@ -269,7 +269,7 @@ var CPAlertWarningImage,
 }
 
 /*!
-    Displays the <pre>CPAlert</pre> panel as a modal dialog. The user will not be
+    Displays the \c CPAlert panel as a modal dialog. The user will not be
     able to interact with any other controls until s/he has dismissed the alert
     by clicking on one of the buttons.
 */

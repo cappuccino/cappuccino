@@ -114,7 +114,7 @@ var CPViewFlags                     = { },
     headed by the window's content view. Every other view in a window is a descendant
     of this view.</p>
 
-    <p>Subclasses can override <code>-drawRect:</code> in order to implement their
+    <p>Subclasses can override \c -drawRect: in order to implement their
     appearance. Other methods of CPView and CPResponder can
     also be overridden to handle user generated events.
 */
@@ -329,10 +329,10 @@ var CPViewFlags                     = { },
 }
 
 /*!
-    Makes <code>aSubview</code> a subview of the receiver. It is positioned relative to <code>anotherView</code>
+    Makes \c aSubview a subview of the receiver. It is positioned relative to \c anotherView
     @param aSubview the view to add as a subview
-    @param anOrderingMode specifies <code>aSubview</code>'s ordering relative to <code>anotherView</code>
-    @param anotherView <code>aSubview</code> will be positioned relative to this argument
+    @param anOrderingMode specifies \c aSubview's ordering relative to \c anotherView
+    @param anotherView \c aSubview will be positioned relative to this argument
 */
 - (void)addSubview:(CPView)aSubview positioned:(CPWindowOrderingMode)anOrderingMode relativeTo:(CPView)anotherView
 {
@@ -420,7 +420,7 @@ var CPViewFlags                     = { },
 }
 
 /*!
-    Called when the receiver has added <code>aSubview</code> to it's child views.
+    Called when the receiver has added \c aSubview to it's child views.
     @param aSubview the view that was added
 */
 - (void)didAddSubview:(CPView)aSubview
@@ -504,7 +504,7 @@ var CPViewFlags                     = { },
 }
 
 /*!
-    Returns <code>YES</code> if the receiver is, or is a descendant of, <code>aView</code>.
+    Returns \c YES if the receiver is, or is a descendant of, \c aView.
     @param aView the view to test for ancestry
 */
 - (BOOL)isDescendantOf:(CPView)aView
@@ -562,7 +562,7 @@ var CPViewFlags                     = { },
 
 /*!
     Returns the menu item containing the receiver or one of its ancestor views.
-    @return a menu item, or <code>nil</code> if the view or one of its ancestors wasn't found
+    @return a menu item, or \c nil if the view or one of its ancestors wasn't found
 */
 - (CPMenuItem)enclosingMenuItem
 {
@@ -615,7 +615,7 @@ var CPViewFlags                     = { },
 
 /*!
     Returns whether the view is flipped.
-    @return <code>YES</code> if the view is flipped. <code>NO</code>, otherwise.
+    @return \c YES if the view is flipped. \c NO, otherwise.
 */
 - (BOOL)isFlipped
 {
@@ -711,7 +711,7 @@ var CPViewFlags                     = { },
 }
 
 /*!
-    Sets the receiver's frame size. If <code>aSize</code> is the same as the frame's current dimensions, this
+    Sets the receiver's frame size. If \c aSize is the same as the frame's current dimensions, this
     method simply returns. The method posts a CPViewFrameDidChangeNotification to the
     default notification center if the receiver is configured to do so.
     @param aSize the new size for the frame
@@ -928,7 +928,7 @@ var CPViewFlags                     = { },
 }
 
 /*!
-    Initiates <code>superviewSizeChanged:</code> messages to subviews.
+    Initiates \c -superviewSizeChanged: messages to subviews.
     @param aSize the size for the subviews
 */
 - (void)resizeSubviewsWithOldSize:(CGSize)aSize
@@ -941,9 +941,9 @@ var CPViewFlags                     = { },
 
 /*!
     Specifies whether the receiver view should automatically resize its
-    subviews when its <code>setFrameSize:</code> method receives a change.
-    @param aFlag If <code>YES</code>, then subviews will automatically be resized
-    when this view is resized. <code>NO</code> means the views will not
+    subviews when its \c -setFrameSize: method receives a change.
+    @param aFlag If \c YES, then subviews will automatically be resized
+    when this view is resized. \c NO means the views will not
     be resized automatically.
 */
 - (void)setAutoresizesSubviews:(BOOL)aFlag
@@ -953,7 +953,7 @@ var CPViewFlags                     = { },
 
 /*!
     Reports whether the receiver automatically resizes its subviews when its frame size changes.
-    @return <code>YES</code> means it resizes its subviews on a frame size change.
+    @return \c YES means it resizes its subviews on a frame size change.
 */
 - (BOOL)autoresizesSubviews
 {
@@ -996,7 +996,7 @@ var CPViewFlags                     = { },
 {
     _fullScreenModeState = _CPViewFullScreenModeStateMake(self);
     
-    var fullScreenWindow = [[CPWindow alloc] initWithContentRect:[[CPDOMWindowBridge sharedDOMWindowBridge] contentBounds] styleMask:CPBorderlessWindowMask];
+    var fullScreenWindow = [[CPWindow alloc] initWithContentRect:[[CPPlatformWindow primaryPlatformWindow] contentBounds] styleMask:CPBorderlessWindowMask];
     
     [fullScreenWindow setLevel:CPScreenSaverWindowLevel];
     [fullScreenWindow setAutoresizingMask:CPViewWidthSizable | CPViewHeightSizable];
@@ -1045,7 +1045,7 @@ var CPViewFlags                     = { },
 }
 
 /*!
-    Returns <code>YES</code> if the receiver is currently in full screen mode.
+    Returns \c YES if the receiver is currently in full screen mode.
 */
 - (BOOL)isInFullScreenMode
 {
@@ -1054,7 +1054,7 @@ var CPViewFlags                     = { },
 
 /*!
     Sets whether the receiver should be hidden.
-    @param aFlag <code>YES</code> makes the receiver hidden.
+    @param aFlag \c YES makes the receiver hidden.
 */
 - (void)setHidden:(BOOL)aFlag
 {
@@ -1090,7 +1090,7 @@ var CPViewFlags                     = { },
 }
 
 /*!
-    Returns <code>YES</code> if the receiver is hidden.
+    Returns \c YES if the receiver is hidden.
 */
 - (BOOL)isHidden
 {
@@ -1134,8 +1134,8 @@ var CPViewFlags                     = { },
 }
 
 /*!
-    Returns <code>YES</code> if the receiver is hidden, or one
-    of it's ancestor views is hidden. <code>NO</code>, otherwise.
+    Returns \c YES if the receiver is hidden, or one
+    of it's ancestor views is hidden. \c NO, otherwise.
 */   
 - (BOOL)isHiddenOrHasHiddenAncestor
 {
@@ -1148,9 +1148,9 @@ var CPViewFlags                     = { },
 }
 
 /*!
-    Returns whether the receiver should be sent a <code>mouseDown:</code> message for <code>anEvent</code>.<br/>
-    Returns <code>YES</code> by default.
-    @return <code>YES</code>, if the view object accepts first mouse-down event. <code>NO</code>, otherwise.
+    Returns whether the receiver should be sent a \c -mouseDown: message for \c anEvent.<br/>
+    Returns \c YES by default.
+    @return \c YES, if the view object accepts first mouse-down event. \c NO, otherwise.
 */
 //FIXME: should be NO by default? 
 - (BOOL)acceptsFirstMouse:(CPEvent)anEvent
@@ -1160,7 +1160,7 @@ var CPViewFlags                     = { },
 
 /*!
     Returns whether or not the view responds to hit tests.
-    @return <code>YES</code> if this view listens to hitTest messages, <code>NO</code> otherwise.
+    @return \c YES if this view listens to \c -hitTest messages, \c NO otherwise.
 */
 - (BOOL)hitTests
 {
@@ -1169,7 +1169,7 @@ var CPViewFlags                     = { },
 
 /*!
     Set whether or not the view should respond to hit tests.
-    @param shouldHitTest should be <code>YES</code> if this view should respond to hit tests, <code>NO</code> otherwise.
+    @param shouldHitTest should be \c YES if this view should respond to hit tests, \c NO otherwise.
 */
 - (void)setHitTests:(BOOL)shouldHitTest
 {
@@ -1201,8 +1201,8 @@ var CPViewFlags                     = { },
 }
 
 /*!
-    Returns <code>YES</code> if mouse events aren't needed by the receiver and can be sent to the superview. The
-    default implementation returns <code>NO</code> if the view is opaque.
+    Returns \c YES if mouse events aren't needed by the receiver and can be sent to the superview. The
+    default implementation returns \c NO if the view is opaque.
 */
 - (BOOL)mouseDownCanMoveWindow
 {
@@ -1340,7 +1340,7 @@ var CPViewFlags                     = { },
 
 // Converting Coordinates
 /*!
-    Converts <code>aPoint</code> from the coordinate space of <code>aView</code> to the coordinate space of the receiver.
+    Converts \c aPoint from the coordinate space of \c aView to the coordinate space of the receiver.
     @param aPoint the point to convert
     @param aView the view space to convert from
     @return the converted point
@@ -1351,7 +1351,7 @@ var CPViewFlags                     = { },
 }
 
 /*!
-    Converts <code>aPoint</code> from the receiver's coordinate space to the coordinate space of <code>aView</code>.
+    Converts \c aPoint from the receiver's coordinate space to the coordinate space of \c aView.
     @param aPoint the point to convert
     @param aView the coordinate space to which the point will be converted
     @return the converted point
@@ -1362,7 +1362,7 @@ var CPViewFlags                     = { },
 }
 
 /*!
-    Convert's <code>aSize</code> from <code>aView</code>'s coordinate space to the receiver's coordinate space.
+    Convert's \c aSize from \c aView's coordinate space to the receiver's coordinate space.
     @param aSize the size to convert
     @param aView the coordinate space to convert from
     @return the converted size
@@ -1373,7 +1373,7 @@ var CPViewFlags                     = { },
 }
 
 /*!
-    Convert's <code>aSize</code> from the receiver's coordinate space to <code>aView</code>'s coordinate space.
+    Convert's \c aSize from the receiver's coordinate space to \c aView's coordinate space.
     @param aSize the size to convert
     @param the coordinate space to which the size will be converted
     @return the converted size
@@ -1384,7 +1384,7 @@ var CPViewFlags                     = { },
 }
 
 /*!
-    Converts <code>aRect</code> from <code>aView</code>'s coordinate space to the receiver's space.
+    Converts \c aRect from \c aView's coordinate space to the receiver's space.
     @param aRect the rectangle to convert
     @param aView the coordinate space from which to convert
     @return the converted rectangle
@@ -1395,7 +1395,7 @@ var CPViewFlags                     = { },
 }
 
 /*!
-    Converts <code>aRect</code> from the receiver's coordinate space to <code>aView</code>'s coordinate space.
+    Converts \c aRect from the receiver's coordinate space to \c aView's coordinate space.
     @param aRect the rectangle to convert
     @param aView the coordinate space to which the rectangle will be converted
     @return the converted rectangle
@@ -1407,14 +1407,14 @@ var CPViewFlags                     = { },
 
 /*!
     Sets whether the receiver posts a CPViewFrameDidChangeNotification notification
-    to the default notification center when its frame is changed. The default is <code>NO</code>.
+    to the default notification center when its frame is changed. The default is \c NO.
     Methods that could cause a frame change notification are:
 <pre>
 setFrame:
 setFrameSize:
 setFrameOrigin:
 </pre>
-    @param shouldPostFrameChangedNotifications <code>YES</code> makes the receiver post
+    @param shouldPostFrameChangedNotifications \c YES makes the receiver post
     notifications on frame changes (size or origin)
 */
 - (void)setPostsFrameChangedNotifications:(BOOL)shouldPostFrameChangedNotifications
@@ -1431,7 +1431,7 @@ setFrameOrigin:
 }
 
 /*!
-    Returns <code>YES</code> if the receiver posts a CPViewFrameDidChangeNotification if its frame is changed.
+    Returns \c YES if the receiver posts a CPViewFrameDidChangeNotification if its frame is changed.
 */
 - (BOOL)postsFrameChangedNotifications
 {
@@ -1440,14 +1440,14 @@ setFrameOrigin:
 
 /*!
     Sets whether the receiver posts a CPViewBoundsDidChangeNotification notification
-    to the default notification center when its bounds is changed. The default is <code>NO</code>.
+    to the default notification center when its bounds is changed. The default is \c NO.
     Methods that could cause a bounds change notification are:
 <pre>
 setBounds:
 setBoundsSize:
 setBoundsOrigin:
 </pre>
-    @param shouldPostBoundsChangedNotifications <code>YES</code> makes the receiver post
+    @param shouldPostBoundsChangedNotifications \c YES makes the receiver post
     notifications on bounds changes
 */
 - (void)setPostsBoundsChangedNotifications:(BOOL)shouldPostBoundsChangedNotifications
@@ -1464,7 +1464,7 @@ setBoundsOrigin:
 }
 
 /*!
-    Returns <code>YES</code> if the receiver posts a
+    Returns \c YES if the receiver posts a
     CPViewBoundsDidChangeNotification when its
     bounds is changed.
 */
@@ -1476,9 +1476,9 @@ setBoundsOrigin:
 /*!
     Initiates a drag operation from the receiver to another view that accepts dragged data.
     @param anImage the image to be dragged
-    @param aLocation the lower-left corner coordinate of <code>anImage</code>
-    @param mouseOffset the distance from the <code>mouseDown:</code> location and the current location
-    @param anEvent the <code>mouseDown:</code> that triggered the drag
+    @param aLocation the lower-left corner coordinate of \c anImage
+    @param mouseOffset the distance from the \c -mouseDown: location and the current location
+    @param anEvent the \c -mouseDown: that triggered the drag
     @param aPastebaord the pasteboard that holds the drag data
     @param aSourceObject the drag operation controller
     @param slideBack Whether the image should 'slide back' if the drag is rejected
@@ -1491,9 +1491,9 @@ setBoundsOrigin:
 /*!
     Initiates a drag operation from the receiver to another view that accepts dragged data.
     @param aView the view to be dragged
-    @param aLocation the top-left corner coordinate of <code>aView</code>
-    @param mouseOffset the distance from the <code>mouseDown:</code> location and the current location
-    @param anEvent the <code>mouseDown:</code> that triggered the drag
+    @param aLocation the top-left corner coordinate of \c aView
+    @param mouseOffset the distance from the \c -mouseDown: location and the current location
+    @param anEvent the \c -mouseDown: that triggered the drag
     @param aPastebaord the pasteboard that holds the drag data
     @param aSourceObject the drag operation controller
     @param slideBack Whether the view should 'slide back' if the drag is rejected
@@ -1545,7 +1545,7 @@ setBoundsOrigin:
 }
 
 /*!
-    Draws the receiver into <code>aRect</code>. This method should be overridden by subclasses.
+    Draws the receiver into \c aRect. This method should be overridden by subclasses.
     @param aRect the area that should be drawn into
 */
 - (void)drawRect:(CPRect)aRect
@@ -1569,7 +1569,7 @@ setBoundsOrigin:
 }
 
 /*!
-    Marks the area denoted by <code>aRect</code> as dirty, and initiates a redraw on it.
+    Marks the area denoted by \c aRect as dirty, and initiates a redraw on it.
     @param aRect the area that needs to be redrawn
 */
 - (void)setNeedsDisplayInRect:(CPRect)aRect
@@ -1607,7 +1607,7 @@ setBoundsOrigin:
 }
 
 /*!
-    Draws the entire area of the receiver as defined by its <code>bounds</code>.
+    Draws the entire area of the receiver as defined by its \c -bounds.
 */
 - (void)display
 {
@@ -1621,7 +1621,7 @@ setBoundsOrigin:
 }
 
 /*!
-    Draws the receiver into the area defined by <code>aRect</code>.
+    Draws the receiver into the area defined by \c aRect.
     @param aRect the area to be drawn
 */
 - (void)displayRect:(CPRect)aRect
@@ -1719,7 +1719,7 @@ setBoundsOrigin:
 }
 
 /*!
-    Returns whether the receiver is completely opaque. By default, returns <code>NO</code>.
+    Returns whether the receiver is completely opaque. By default, returns \c NO.
 */
 - (BOOL)isOpaque
 {
@@ -1751,7 +1751,7 @@ setBoundsOrigin:
 }
 
 /*!
-    Changes the receiver's frame origin to a 'constrained' <code>aPoint</code>.
+    Changes the receiver's frame origin to a 'constrained' \c aPoint.
     @param aPoint the proposed frame origin
 */
 - (void)scrollPoint:(CGPoint)aPoint
@@ -1765,9 +1765,9 @@ setBoundsOrigin:
 }
 
 /*!
-    Scrolls the nearest ancestor CPClipView a minimum amount so <code>aRect</code> can become visible.
+    Scrolls the nearest ancestor CPClipView a minimum amount so \c aRect can become visible.
     @param aRect the area to become visible
-    @return <codeYES</code> if any scrolling occurred, <code>NO</code> otherwise.
+    @return <codeYES if any scrolling occurred, \c NO otherwise.
 */
 - (BOOL)scrollRectToVisible:(CGRect)aRect
 {
@@ -1961,7 +1961,7 @@ setBoundsOrigin:
 
 /*!
     Sets whether the receiver wants a core animation layer.
-    @param <code>YES</code> means the receiver wants a layer.
+    @param \c YES means the receiver wants a layer.
 */
 - (void)setWantsLayer:(BOOL)aFlag
 {
@@ -1969,8 +1969,8 @@ setBoundsOrigin:
 }
 
 /*!
-    Returns <code>YES</code> if the receiver uses a CALayer
-    @returns <code>YES</code> if the receiver uses a CALayer
+    Returns \c YES if the receiver uses a CALayer
+    @returns \c YES if the receiver uses a CALayer
 */
 - (BOOL)wantsLayer
 {

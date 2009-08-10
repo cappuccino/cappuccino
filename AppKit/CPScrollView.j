@@ -306,7 +306,7 @@
 
 /*!
     Specifies whether the scroll view can have a horizontal scroller.
-    @param hasHorizontalScroller <code>YES</code> lets the scroll view
+    @param hasHorizontalScroller \c YES lets the scroll view
     allocate a horizontal scroller if necessary.
 */
 - (void)setHasHorizontalScroller:(BOOL)shouldHaveHorizontalScroller
@@ -328,7 +328,7 @@
 }
 
 /*!
-    Returns <code>YES</code> if the scroll view can have a horizontal scroller.
+    Returns \c YES if the scroll view can have a horizontal scroller.
 */
 - (BOOL)hasHorizontalScroller
 {
@@ -369,7 +369,7 @@
 /*!
     Specifies whether the scroll view has can have
     a vertical scroller. It allocates it if necessary.
-    @param hasVerticalScroller <code>YES</code> allows
+    @param hasVerticalScroller \c YES allows
     the scroll view to display a vertical scroller
 */
 - (void)setHasVerticalScroller:(BOOL)shouldHaveVerticalScroller
@@ -391,7 +391,7 @@
 }
 
 /*!
-    Returns <code>YES</code> if the scroll view can have a vertical scroller.
+    Returns \c YES if the scroll view can have a vertical scroller.
 */
 - (BOOL)hasVerticalScroller
 {
@@ -400,7 +400,7 @@
 
 /*!
     Sets whether the scroll view hides its scoll bars when not needed.
-    @param autohidesScrollers <code>YES</code> causes the scroll bars
+    @param autohidesScrollers \c YES causes the scroll bars
     to be hidden when not needed.
 */
 - (void)setAutohidesScrollers:(BOOL)autohidesScrollers
@@ -414,7 +414,7 @@
 }
 
 /*!
-    Returns <code>YES</code> if the scroll view hides its scroll
+    Returns \c YES if the scroll view hides its scroll
     bars when not necessary.
 */
 - (BOOL)autohidesScrollers

@@ -26,6 +26,7 @@
 @import <AppKit/CPImageView.j>
 
 #import "CoreGraphics/CGGeometry.h"
+#import "Platform/Platform.h"
 
 
 #define DRAGGING_WINDOW(anObject) ([anObject isKindOfClass:[CPWindow class]] ? anObject : [anObject window])
@@ -111,7 +112,7 @@ var CPDragServerUpdateDragging = function(anEvent)
         bridgeLocation = [[anEvent window] convertBaseToBridge:location];
 
     // We have to convert base to bridge since the drag event comes from the source window, not the drag window.
-    var draggingDestination = [[CPDOMWindowBridge sharedDOMWindowBridge] _dragHitTest:bridgeLocation pasteboard:CPDragServerPasteboard];
+    var draggingDestination = [[CPPlatformWindow primaryPlatformWindow] _dragHitTest:bridgeLocation pasteboard:CPDragServerPasteboard];
     
     CPDragServerLocation = [DRAGGING_WINDOW(draggingDestination) convertBridgeToBase:bridgeLocation];
     
@@ -235,20 +236,27 @@ var CPDragServerUpdateDragging = function(anEvent)
     @param anEvent
     @param aPasteboard the pasteboard that contains the drag data
     @param aSourceObject the object where the drag started
-    @param slideBack if <code>YES</code>, <code>aView</code> slides back to
+    @param slideBack if \c YES, \c aView slides back to
     its origin on a failed drop
 */
 - (void)dragView:(CPView)aView fromWindow:(CPWindow)aWindow at:(CGPoint)viewLocation offset:(CGSize)mouseOffset event:(CPEvent)anEvent pasteboard:(CPPasteboard)aPasteboard source:(id)aSourceObject slideBack:(BOOL)slideBack
 {
     var eventLocation = [anEvent locationInWindow];
-    
+
     CPDragServerView = aView;
     CPDragServerSource = aSourceObject;
     CPDragServerWindow = aWindow;
     CPDragServerOffset = CPPointMake(eventLocation.x - viewLocation.x, eventLocation.y - viewLocation.y);
     CPDragServerPasteboard = [CPPasteboard pasteboardWithName:CPDragPboard];//aPasteboard;
 
-    [_dragWindow setFrameSize:CGSizeMakeCopy([[CPDOMWindowBridge sharedDOMWindowBridge] frame].size)];
+#if PLATFORM(BROWSER)
+    var platformWindow = [aWindow platformWindow];
+
+    // FIXME: We should just have the window be the size of the view and move the window around.
+    [_dragWindow setPlatformWindow:platformWindow];
+    [_dragWindow setFrameSize:[platformWindow contentBounds].size];
+#endif
+
     [_dragWindow orderFront:self];
 
     [aView setFrameOrigin:viewLocation];
@@ -290,7 +298,7 @@ var CPDragServerUpdateDragging = function(anEvent)
     @param anEvent
     @param aPasteboard the pasteboard where the drag data is located
     @param aSourceObject the object where the drag started
-    @param slideBack if <code>YES</code>, <code>aView</code> slides back to
+    @param slideBack if \c YES, \c aView slides back to
     its origin on a failed drop
 */
 - (void)dragImage:(CPImage)anImage fromWindow:(CPWindow)aWindow at:(CGPoint)imageLocation offset:(CGSize)mouseOffset event:(CPEvent)anEvent pasteboard:(CPPasteboard)aPasteboard source:(id)aSourceObject slideBack:(BOOL)slideBack
@@ -318,7 +326,7 @@ var CPDragServerUpdateDragging = function(anEvent)
         return nil;
 
 // We don't need to do this because the only place this gets called
-// -_dragHitTest: in CPDOMWindowBridge does this already. Perhaps to
+// -_dragHitTest: in CPPlatformWindow does this already. Perhaps to
 // be safe?
 //    if (![self containsPoint:aPoint])
 //        return nil;

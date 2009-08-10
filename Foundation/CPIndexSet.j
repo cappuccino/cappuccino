@@ -133,7 +133,7 @@
 /*!
     Compares the receiver with the provided index set.
     @param anIndexSet the index set to compare to
-    @return <code>YES</code> if the receiver and the index set are functionally equivalent
+    @return \c YES if the receiver and the index set are functionally equivalent
 */
 - (BOOL)isEqualToIndexSet:(CPIndexSet)anIndexSet
 {
@@ -160,9 +160,9 @@
 }
 
 /*!
-    Returns <code>YES</code> if the index set contains the specified index.
+    Returns \c YES if the index set contains the specified index.
     @param anIndex the index to check for in the set
-    @return <code>YES</code> if <code>anIndex</code> is in the receiver index set
+    @return \c YES if \c anIndex is in the receiver index set
 */
 - (BOOL)containsIndex:(CPInteger)anIndex
 {
@@ -170,7 +170,7 @@
 }
 
 /*!
-    Returns <code>YES</code> if the index set contains all the numbers in the specified range.
+    Returns \c YES if the index set contains all the numbers in the specified range.
     @param aRange the range of numbers to check for in the index set
 */
 - (BOOL)containsIndexesInRange:(CPRange)aRange
@@ -196,7 +196,7 @@
 }
 
 /*!
-    Returns <code>YES</code> if the receving index set contains all the indices in the argument.
+    Returns \c YES if the receving index set contains all the indices in the argument.
     @param anIndexSet the set of indices to check for in the receiving index set
 */
 - (BOOL)containsIndexes:(CPIndexSet)anIndexSet
@@ -221,9 +221,9 @@
 }
 
 /*!
-    Checks if the receiver contains at least one number in <code>aRange</code>.
+    Checks if the receiver contains at least one number in \c aRange.
     @param aRange the range of numbers to check.
-    @return <code>YES</code> if the receiving index set contains at least one number in the provided range
+    @return \c YES if the receiving index set contains at least one number in the provided range
 */
 - (BOOL)intersectsIndexesInRange:(CPRange)aRange
 {
@@ -275,7 +275,7 @@
 }
 
 /*!
-    Returns the first index value in the receiver which is greater than <code>anIndex</code>.
+    Returns the first index value in the receiver which is greater than \c anIndex.
     @return the closest index or CPNotFound if no match was found
 */
 - (CPInteger)indexGreaterThanIndex:(CPInteger)anIndex
@@ -306,7 +306,7 @@
 }
 
 /*!
-    Returns the first index value in the receiver which is less than <code>anIndex</code>.
+    Returns the first index value in the receiver which is less than \c anIndex.
     @return the closest index or CPNotFound if no match was found
 */
 - (CPInteger)indexLessThanIndex:(CPInteger)anIndex
@@ -337,7 +337,7 @@
 }
 
 /*!
-    Returns the first index value in the receiver which is greater than or equal to <code>anIndex</code>.
+    Returns the first index value in the receiver which is greater than or equal to \c anIndex.
     @return the matching index or CPNotFound if no match was found
 */
 - (CPInteger)indexGreaterThanOrEqualToIndex:(CPInteger)anIndex
@@ -346,7 +346,7 @@
 }
 
 /*!
-    Returns the first index value in the receiver which is less than or equal to <code>anIndex</code>.
+    Returns the first index value in the receiver which is less than or equal to \c anIndex.
     @return the matching index or CPNotFound if no match was found
 */
 - (CPInteger)indexLessThanOrEqualToIndex:(CPInteger)anIndex
@@ -357,7 +357,7 @@
 /*!
     Fills up the specified array with numbers from the index set within
     the specified range. The method stops filling up the array until the
-    <code>aMaxCount</code> number have been added or the range maximum is reached.
+    \c aMaxCount number have been added or the range maximum is reached.
     @param anArray the array to fill up
     @param aMaxCount the maximum number of numbers to adds
     @param aRangePointer the range of indices to add

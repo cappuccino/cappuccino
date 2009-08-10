@@ -103,7 +103,7 @@
 }
 
 /*!
-    Sets a method argument for the invocation. Arguments 0 and 1 are <code>self</code> and <code>_cmd</code>.
+    Sets a method argument for the invocation. Arguments 0 and 1 are \c self and \c _cmd.
     @param anArgument the argument to add
     @param anIndex the index of the argument in the method
 */
@@ -114,7 +114,7 @@
 
 /*!
     Returns the argument at the specified index. Arguments 0 and 1 are
-    <code>self</code> and <code>_cmd</code> respectively. Thus, method arguments start at 2.
+    \c self and \c _cmd respectively. Thus, method arguments start at 2.
     @param anIndex the index of the argument to return
     @throws CPInvalidArgumentException if anIndex is greater than or equal to the invocation's number of arguments.
 */

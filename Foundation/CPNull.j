@@ -28,10 +28,10 @@ var CPNullSharedNull = nil;
 /*! 
     @class CPNull
     @ingroup foundation
-    @brief An object representation of <code>nil</code>.
+    @brief An object representation of \c nil.
 
-    This class is used as an object representation of <code>nil</code>. This is handy when a collection
-    only accepts objects as values, but you would like a <code>nil</code> representation in there.
+    This class is used as an object representation of \c nil. This is handy when a collection
+    only accepts objects as values, but you would like a \c nil representation in there.
 */
 @implementation CPNull : CPObject
 {
@@ -46,7 +46,7 @@ var CPNullSharedNull = nil;
 }*/
 /*!
     Returns the singleton instance of the CPNull
-    object. While CPNull and <code>nil</code> should
+    object. While CPNull and \c nil should
     be <i>interpreted</i> as the same, they are not equal ('==').
 */
 + (CPNull)null

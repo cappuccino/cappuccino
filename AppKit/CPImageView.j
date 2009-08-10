@@ -161,8 +161,8 @@ var LEFT_SHADOW_INSET       = 3.0,
 }
 
 /*!
-    Returns <code>YES</code> if the image view draws with
-    a drop shadow. The default is <code>NO</code>.
+    Returns \c YES if the image view draws with
+    a drop shadow. The default is \c NO.
 */
 - (BOOL)hasShadow
 {

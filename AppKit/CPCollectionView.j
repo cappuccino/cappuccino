@@ -122,7 +122,7 @@
 }
 
 /*!
-    Sets the item prototype to <code>anItem</code>
+    Sets the item prototype to \c anItem
     @param anItem the new item prototype
 */
 - (void)setItemPrototype:(CPCollectionViewItem)anItem
@@ -143,7 +143,7 @@
 }
 
 /*!
-    Returns a collection view item for <code>anObject</code>.
+    Returns a collection view item for \c anObject.
     @param anObject the object to be represented.
 */
 - (CPCollectionViewItem)newItemForRepresentedObject:(id)anObject
@@ -163,7 +163,7 @@
 
 // Working with the Responder Chain
 /*!
-    Returns <code>YES</code> by default.
+    Returns \c YES by default.
 */
 - (BOOL)acceptsFirstResponder
 {
@@ -180,8 +180,8 @@
 
 // Setting the Content
 /*!
-    Sets the content of the collection view to the content in <code>anArray</code>. 
-    This array can be of any type, and each element will be passed to the <code>setRepresentedObject:</code> method.  
+    Sets the content of the collection view to the content in \c anArray. 
+    This array can be of any type, and each element will be passed to the \c -setRepresentedObject: method.  
     It's the responsibility of your custom collection view item to interpret the object.
     @param anArray the content array
 */
@@ -214,7 +214,7 @@
 // Setting the Selection Mode
 /*!
     Sets whether the user is allowed to select items
-    @param isSelectable <code>YES</code> allows the user to select items.
+    @param isSelectable \c YES allows the user to select items.
 */
 - (void)setSelectable:(BOOL)isSelectable
 {
@@ -233,8 +233,8 @@
 }
 
 /*!
-    Returns <code>YES</code> if the collection view is
-    selected, and <code>NO</code> otherwise.
+    Returns \c YES if the collection view is
+    selected, and \c NO otherwise.
 */
 - (BOOL)isSelected
 {
@@ -243,7 +243,7 @@
 
 /*!
     Sets whether the user may have no items selected. If YES, mouse clicks not on any item will empty the current selection. The first item will also start off as selected.
-    @param shouldAllowMultipleSelection <code>YES</code> allows the user to select multiple items
+    @param shouldAllowMultipleSelection \c YES allows the user to select multiple items
 */
 - (void)setAllowsEmptySelection:(BOOL)shouldAllowEmptySelection
 {
@@ -251,7 +251,7 @@
 }
 
 /*!
-    Returns <code>YES</code> if the user can select no items, <code>NO</code> otherwise.
+    Returns \c YES if the user can select no items, \c NO otherwise.
 */
 - (BOOL)allowsEmptySelection
 {
@@ -260,7 +260,7 @@
 
 /*!
     Sets whether the user can select multiple items.
-    @param shouldAllowMultipleSelection <code>YES</code> allows the user to select multiple items
+    @param shouldAllowMultipleSelection \c YES allows the user to select multiple items
 */
 - (void)setAllowsMultipleSelection:(BOOL)shouldAllowMultipleSelection
 {
@@ -268,7 +268,7 @@
 }
 
 /*!
-    Returns <code>YES</code> if the user can select multiple items, <code>NO</code> otherwise.
+    Returns \c YES if the user can select multiple items, \c NO otherwise.
 */
 - (BOOL)allowsMultipleSelection
 {
@@ -684,7 +684,7 @@
 // Modifying the Selection
 /*!
     Sets whether this view item should be selected.
-    @param shouldBeSelected <code>YES</code> makes the item selected. <code>NO</code> deselects it.
+    @param shouldBeSelected \c YES makes the item selected. \c NO deselects it.
 */
 - (void)setSelected:(BOOL)shouldBeSelected
 {
@@ -698,7 +698,7 @@
 }
 
 /*!
-    Returns <code>YES</code> if the item is currently selected. <code>NO</code> if the item is not selected.
+    Returns \c YES if the item is currently selected. \c NO if the item is not selected.
 */
 - (BOOL)isSelected
 {

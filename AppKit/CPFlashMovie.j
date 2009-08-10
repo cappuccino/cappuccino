@@ -34,7 +34,7 @@
 }
 
 /*!
-    Creates a new Flash movie with the swf at <code>aFileName</code>.
+    Creates a new Flash movie with the swf at \c aFileName.
     @param aFilename the swf to load
     @return the initialized CPFlashMovie
 */

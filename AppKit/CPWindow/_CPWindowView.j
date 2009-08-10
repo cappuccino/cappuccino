@@ -145,7 +145,7 @@ var _CPWindowViewResizeIndicatorImage = nil;
     var visibleFrame = _cachedScreenFrame;
 
     if (!visibleFrame)
-        visibleFrame = [[CPDOMWindowBridge sharedDOMWindowBridge] visibleFrame];
+        visibleFrame = [[CPPlatformWindow primaryPlatformWindow] usableContentFrame];
 
     var restrictedPoint = CGPointMake(0, 0);
 
@@ -167,7 +167,7 @@ var _CPWindowViewResizeIndicatorImage = nil;
     else if (type === CPLeftMouseDown)
     {
         _mouseDraggedPoint = [[self window] convertBaseToBridge:[anEvent locationInWindow]];
-        _cachedScreenFrame = [[CPDOMWindowBridge sharedDOMWindowBridge] visibleFrame];
+        _cachedScreenFrame = [[CPPlatformWindow primaryPlatformWindow] usableContentFrame];
     }
     else if (type === CPLeftMouseDragged)
     {
