@@ -98,7 +98,7 @@ var CPURLConnectionDelegate = nil;
     @param aRequest contains the URL to request the data from
     @param aURLResponse not used
     @param anError not used
-    @return the data at the URL or <code>nil</code> if there was an error
+    @return the data at the URL or \c nil if there was an error
 */
 + (CPData)sendSynchronousRequest:(CPURLRequest)aRequest returningResponse:({CPURLResponse})aURLResponse error:({CPError})anError
 {
@@ -130,7 +130,7 @@ var CPURLConnectionDelegate = nil;
     Creates a url connection with a delegate to monitor the request progress.
     @param aRequest contains the URL to obtain data from
     @param aDelegate will be sent messages related to the request progress
-    @return a connection that can be <code>start<code>ed to initiate the request
+    @return a connection that can be \c started to initiate the request
 */
 + (CPURLConnection)connectionWithRequest:(CPURLRequest)aRequest delegate:(id)aDelegate
 {
@@ -141,7 +141,7 @@ var CPURLConnectionDelegate = nil;
     Default class initializer. Use one of the class methods instead.
     @param aRequest contains the URL to contact
     @param aDelegate will receive progress messages
-    @param shouldStartImmediately whether the <code>start</code> method should be called from here
+    @param shouldStartImmediately whether the \c -start method should be called from here
     @return the initialized url connection
 */
 - (id)initWithRequest:(CPURLRequest)aRequest delegate:(id)aDelegate startImmediately:(BOOL)shouldStartImmediately

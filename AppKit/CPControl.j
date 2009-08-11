@@ -178,7 +178,7 @@ var CPControlBlackColor     = [CPColor blackColor];
 }
 
 /*!
-    Causes <code>anAction</code> to be sent to <code>anObject</code>.
+    Causes \c anAction to be sent to \c anObject.
     @param anAction the action to send
     @param anObject the object to which the action will be sent
 */

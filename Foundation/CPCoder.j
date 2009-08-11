@@ -39,7 +39,7 @@
 
 /*!
     Returns a flag indicating whether the receiver supports keyed coding. The default implementation returns
-    <code>NO</code>. Subclasses supporting keyed coding must override this to return <code>YES</code>.
+    \c NO. Subclasses supporting keyed coding must override this to return \c YES.
 */
 -(BOOL)allowsKeyedCoding
 {
@@ -148,7 +148,7 @@
 
 /*!
     Called after an object is unarchived in case a different object should be used in place of it.
-    The defaut method returns <code>self</code>. Interested subclasses should override this.
+    The defaut method returns \c self. Interested subclasses should override this.
     @param aDecoder
     @return the original object or it's substitute.
 */

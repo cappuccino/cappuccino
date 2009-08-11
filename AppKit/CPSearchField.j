@@ -294,7 +294,7 @@ var CPSearchFieldSearchImage = nil,
 // Managing Search Modes
 /*!
     Returns a Boolean value indicating whether the receiver sends the search action message when the user clicks the search button (or presses return) or after each keystroke.
-    @return <code>YES</code> if the action message is sent all at once when the user clicks the search button or presses return; otherwise, NO if the search string is sent after each keystroke. The default value is NO.
+    @return \c YES if the action message is sent all at once when the user clicks the search button or presses return; otherwise, NO if the search string is sent after each keystroke. The default value is NO.
 */
 - (BOOL)sendsWholeSearchString
 { 
@@ -303,7 +303,7 @@ var CPSearchFieldSearchImage = nil,
 
 /*!
     Sets whether the receiver sends the search action message when the user clicks the search button (or presses return) or after each keystroke.
-    @param flag <code>YES</code> to send the action message all at once when the user clicks the search button or presses return; otherwise, NO to send the search string after each keystroke.
+    @param flag \c YES to send the action message all at once when the user clicks the search button or presses return; otherwise, NO to send the search string after each keystroke.
 */
 - (void)setSendsWholeSearchString:(BOOL)flag
 {
@@ -312,7 +312,7 @@ var CPSearchFieldSearchImage = nil,
 
 /*!
     Returns a Boolean value indicating whether the receiver sends its action immediately upon being notified of changes to the search field text or after a brief pause.
-    @return <code>YES</code> if the text field sends its action immediately upon notification of any changes to the search field; otherwise, NO.
+    @return \c YES if the text field sends its action immediately upon notification of any changes to the search field; otherwise, NO.
 */
 - (BOOL)sendsSearchStringImmediately
 { 
@@ -321,7 +321,7 @@ var CPSearchFieldSearchImage = nil,
 
 /*!
     Sets whether the text field sends its action message to the target immediately upon notification of any changes to the search field text or after a brief pause.
-    @param flag <code>YES</code> to send the text field's action immediately upon notification of any changes to the search field; otherwise, NO if you want the text field to pause briefly before sending its action message. Pausing gives the user the opportunity to type more text into the search field before initiating the search.
+    @param flag \c YES to send the text field's action immediately upon notification of any changes to the search field; otherwise, NO if you want the text field to pause briefly before sending its action message. Pausing gives the user the opportunity to type more text into the search field before initiating the search.
 */
 - (void)setSendsSearchStringImmediately:(BOOL)flag
 {
@@ -354,7 +354,7 @@ var CPSearchFieldSearchImage = nil,
 
 /*!
     Returns the list of recent search strings for the control.
-    @return An array of <code><CPString</code> objects, each of which contains a search string either displayed in the search menu or from a recent autosave archive. If there have been no recent searches and no prior searches saved under an autosave name, this array may be empty. 
+    @return An array of \c CPString objects, each of which contains a search string either displayed in the search menu or from a recent autosave archive. If there have been no recent searches and no prior searches saved under an autosave name, this array may be empty. 
  */
 - (CPArray)recentSearches
 {

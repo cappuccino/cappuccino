@@ -232,7 +232,7 @@ var CPWindowSaveImage       = nil,
     @delegate -(BOOL)windowShouldClose:(id)window;
     Called when the user tries to close the window.
     @param window the window to close
-    @return <code>YES</code> allows the window to close. <code>NO</code>
+    @return \c YES allows the window to close. \c NO
     vetoes the close operation and leaves the window open.
 */
 @implementation CPWindow : CPResponder
@@ -705,7 +705,7 @@ CPTexturedBackgroundWindowMask
 
 /*!
     Relocates the window in the screen list.
-    @param aPlace the positioning relative to <code>otherWindowNumber</code>
+    @param aPlace the positioning relative to \c otherWindowNumber
     @param otherWindowNumber the window relative to which the receiver should be placed
 */
 - (void)orderWindow:(CPWindowOrderingMode)aPlace relativeTo:(int)otherWindowNumber
@@ -734,7 +734,7 @@ CPTexturedBackgroundWindowMask
 }
 
 /*!
-    Returns <code>YES</code> if the window is visible. It does not mean that the window is not obscured by other windows.
+    Returns \c YES if the window is visible. It does not mean that the window is not obscured by other windows.
 */
 - (BOOL)isVisible
 {
@@ -742,7 +742,7 @@ CPTexturedBackgroundWindowMask
 }
 
 /*!
-    Returns <code>YES</code> if the window's resize indicator is showing. <code>NO</code> otherwise.
+    Returns \c YES if the window's resize indicator is showing. \c NO otherwise.
 */
 - (BOOL)showsResizeIndicator
 {
@@ -751,7 +751,7 @@ CPTexturedBackgroundWindowMask
 
 /*!
     Sets the window's resize indicator.
-    @param shouldShowResizeIndicator <code>YES</code> sets the window to show its resize indicator.
+    @param shouldShowResizeIndicator \c YES sets the window to show its resize indicator.
 */
 - (void)setShowsResizeIndicator:(BOOL)shouldShowResizeIndicator
 {       
@@ -899,7 +899,7 @@ CPTexturedBackgroundWindowMask
 }
 
 /*!
-    Returns <code>YES</code> if the window has a drop shadow. <code>NO</code> otherwise.
+    Returns \c YES if the window has a drop shadow. \c NO otherwise.
 */
 - (BOOL)hasShadow
 {
@@ -908,7 +908,7 @@ CPTexturedBackgroundWindowMask
 
 /*!
     Sets whether the window should have a drop shadow.
-    @param shouldHaveShadow <code>YES</code> to have a drop shadow.
+    @param shouldHaveShadow \c YES to have a drop shadow.
 */
 - (void)setHasShadow:(BOOL)shouldHaveShadow
 {
@@ -964,7 +964,7 @@ CPTexturedBackgroundWindowMask
 }
 
 /*!
-    Sets the delegate for the window. Passing <code>nil</code> will just remove the window's current delegate.
+    Sets the delegate for the window. Passing \c nil will just remove the window's current delegate.
     @param aDelegate an object to respond to the various delegate methods of CPWindow
 */
 - (void)setDelegate:(id)aDelegate
@@ -1038,11 +1038,11 @@ CPTexturedBackgroundWindowMask
 }
 
 /*!
-    Attempts to make the <code>aResponder</code> the first responder. Before trying
+    Attempts to make the \c aResponder the first responder. Before trying
     to make it the first responder, the receiver will ask the current first responder
     to resign its first responder status. If it resigns, it will ask
-    <code>aResponder</code> accept first responder, then finally tell it to become first responder.
-    @return <code>YES</code> if the attempt was successful. <code>NO</code> otherwise.
+    \c aResponder accept first responder, then finally tell it to become first responder.
+    @return \c YES if the attempt was successful. \c NO otherwise.
 */
 - (void)makeFirstResponder:(CPResponder)aResponder
 {
@@ -1165,7 +1165,7 @@ CPTexturedBackgroundWindowMask
 
 /*!
     Sets whether the window can be moved by dragging its background. The default is based on the window style.
-    @param shouldBeMovableByWindowBackground <code>YES</code> makes the window move from a background drag.
+    @param shouldBeMovableByWindowBackground \c YES makes the window move from a background drag.
 */
 - (void)setMovableByWindowBackground:(BOOL)shouldBeMovableByWindowBackground
 {
@@ -1173,7 +1173,7 @@ CPTexturedBackgroundWindowMask
 }
 
 /*!
-    Returns <code>YES</code> if the window can be moved by dragging its background.
+    Returns \c YES if the window can be moved by dragging its background.
 */
 - (BOOL)isMovableByWindowBackground
 {
@@ -1308,7 +1308,7 @@ CPTexturedBackgroundWindowMask
 
 /*!
     Called when the receiver should become the key window. It also sends
-    the <code>becomeKeyWindow</code> message to the first responder.
+    the \c -becomeKeyWindow message to the first responder.
 */
 - (void)becomeKeyWindow
 {
@@ -1318,7 +1318,7 @@ CPTexturedBackgroundWindowMask
 
 /*!
     Determines if the window can become the key window.
-    @return <code>YES</code> means the window can become the key window.
+    @return \c YES means the window can become the key window.
 */
 - (BOOL)canBecomeKeyWindow
 {
@@ -1326,7 +1326,7 @@ CPTexturedBackgroundWindowMask
 }
 
 /*!
-    Returns <code>YES</code> if the window is the key window.
+    Returns \c YES if the window is the key window.
 */
 - (BOOL)isKeyWindow
 {
@@ -1375,9 +1375,9 @@ CPTexturedBackgroundWindowMask
 /*!
     Initiates a drag operation from the receiver to another view that accepts dragged data.
     @param anImage the image to be dragged
-    @param aLocation the lower-left corner coordinate of <code>anImage</code>
-    @param mouseOffset the distance from the <code>mouseDown:</code> location and the current location
-    @param anEvent the <code>mouseDown:</code> that triggered the drag
+    @param aLocation the lower-left corner coordinate of \c anImage
+    @param mouseOffset the distance from the \c -mouseDown: location and the current location
+    @param anEvent the \c -mouseDown: that triggered the drag
     @param aPastebaord the pasteboard that holds the drag data
     @param aSourceObject the drag operation controller
     @param slideBack Whether the image should 'slide back' if the drag is rejected
@@ -1412,9 +1412,9 @@ CPTexturedBackgroundWindowMask
 /*!
     Initiates a drag operation from the receiver to another view that accepts dragged data.
     @param aView the view to be dragged
-    @param aLocation the lower-left corner coordinate of <code>aView</code>
-    @param mouseOffset the distance from the <code>mouseDown:</code> location and the current location
-    @param anEvent the <code>mouseDown:</code> that triggered the drag
+    @param aLocation the lower-left corner coordinate of \c aView
+    @param mouseOffset the distance from the \c -mouseDown: location and the current location
+    @param anEvent the \c -mouseDown: that triggered the drag
     @param aPastebaord the pasteboard that holds the drag data
     @param aSourceObject the drag operation controller
     @param slideBack Whether the view should 'slide back' if the drag is rejected
@@ -1467,7 +1467,7 @@ CPTexturedBackgroundWindowMask
 
 /*!
     Sets whether the document has been edited.
-    @param isDocumentEdited <code>YES</code> if the document has been edited.
+    @param isDocumentEdited \c YES if the document has been edited.
 */
 - (void)setDocumentEdited:(BOOL)isDocumentEdited
 {
@@ -1480,7 +1480,7 @@ CPTexturedBackgroundWindowMask
 }
 
 /*!
-    Returns <code>YES</code> if the document has been edited.
+    Returns \c YES if the document has been edited.
 */
 - (BOOL)isDocumentEdited
 {
@@ -1557,7 +1557,7 @@ CPTexturedBackgroundWindowMask
 }
 
 /*!
-    Closes the window. Posts a <code>CPWindowWillCloseNotification</code> to the
+    Closes the window. Posts a \c CPWindowWillCloseNotification to the
     notification center before closing the window.
 */
 - (void)close
@@ -1569,7 +1569,7 @@ CPTexturedBackgroundWindowMask
 
 // Managing Main Status
 /*!
-    Returns <code>YES</code> if this the main window.
+    Returns \c YES if this the main window.
 */
 - (BOOL)isMainWindow
 {
@@ -1577,7 +1577,7 @@ CPTexturedBackgroundWindowMask
 }
 
 /*!
-    Returns <code>YES</code> if the window can become the main window.
+    Returns \c YES if the window can become the main window.
 */
 - (BOOL)canBecomeMainWindow
 {
@@ -1752,7 +1752,7 @@ CPTexturedBackgroundWindowMask
 }
 
 /*!
-    Returns <code>YES</code> if the window has ever run as a sheet.
+    Returns \c YES if the window has ever run as a sheet.
 */
 - (BOOL)isSheet
 {
@@ -1770,7 +1770,7 @@ CPTexturedBackgroundWindowMask
 }
 
 /*!
-    Returns <code>YES</code> if the receiver is able to receive input events
+    Returns \c YES if the receiver is able to receive input events
     even when a modal session is active.
 */
 - (BOOL)worksWhenModal
@@ -2078,7 +2078,7 @@ var keyViewComparator = function(a, b, context)
 }
 
 /*!
-    Sends the undo manager an <code>undo</code> message.
+    Sends the undo manager an \c -undo: message.
     @param aSender the object requesting this
 */
 - (void)undo:(id)aSender
@@ -2087,7 +2087,7 @@ var keyViewComparator = function(a, b, context)
 }
 
 /*!
-    Sends the undo manager a <code>redo:</code> message.
+    Sends the undo manager a \c -redo: message.
     @param aSender the object requesting this
 */
 - (void)redo:(id)aSender

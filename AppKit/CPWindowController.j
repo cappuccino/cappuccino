@@ -181,7 +181,7 @@
 }
 
 /*!
-    Returns <code>YES</code> if the window has been loaded. Specifically,
+    Returns \c YES if the window has been loaded. Specifically,
     if loadWindow has been called.
 */
 - (BOOL)isWindowLoaded
@@ -316,7 +316,7 @@
 
 /*!
     Sets whether the document has unsaved changes. The window can use this as a hint to 
-    @param isEdited <code>YES</code> means the document has unsaved changes.
+    @param isEdited \c YES means the document has unsaved changes.
 */
 - (void)setDocumentEdited:(BOOL)isEdited
 {

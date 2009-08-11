@@ -92,7 +92,7 @@ function CPImageInBundle(aFilename, aSize, aBundle)
 
 /*!
     Initializes the image, by associating it with a filename. The image
-    denoted in <code>aFilename</code> is not actually loaded. It will
+    denoted in \c aFilename is not actually loaded. It will
     be loaded once needed.
     @param aFilename the file containing the image
     @param aSize the image's size

@@ -94,7 +94,7 @@ CPOrderedDescending     =  1;
 
 // Getting information about a sort descriptor
 /*!
-    Returns <code>YES</code> if the sort descriptor's order is ascending.
+    Returns \c YES if the sort descriptor's order is ascending.
 */
 - (BOOL)ascending
 {

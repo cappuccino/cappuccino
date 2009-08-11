@@ -101,8 +101,8 @@ function CGColorCreateCopy(aColor)
 
 /*!
     Creates a gray color object.
-    @param gray the value to use for the color intensities (<code>0.0-1.0</code>)
-    @param alpha the gray's alpha value (<code>0.0-1.0</code>)
+    @param gray the value to use for the color intensities (\c 0.\c 0-\c 1.\c 0).
+    @param alpha the gray's alpha value (\c 0.\c 0-\c 1.\c 0).
     @return CGColor the new gray color object
     @group CGColor
 */
@@ -113,10 +113,10 @@ function CGColorCreateGenericGray(gray, alpha)
 
 /*!
     Creates an RGB color.
-    @param red the red component (<code>0.0-1.0</code>)
-    @param green the green component (<code>0.0-1.0</code>)
-    @param blue the blue component (<code>0.0-1.0</code>)
-    @param alpha the alpha component (<code>0.0-1.0</code>)
+    @param red the red component (\c 0.\c 0-\c 1.\c 0)..
+    @param green the green component (\c 0.\c 0-\c 1.\c 0).
+    @param blue the blue component (\c 0.\c 0-\c 1.\c 0).
+    @param alpha the alpha component (\c 0.\c 0-\c 1.\c 0).
     @return CGColor the RGB based color
     @group CGColor
 */
@@ -127,11 +127,11 @@ function CGColorCreateGenericRGB(red, green, blue, alpha)
 
 /*!
     Creates a CMYK color.
-    @param cyan the cyan component (<code>0.0-1.0</code>)
-    @param magenta the magenta component (<code>0.0-1.0</code>)
-    @param yellow the yellow component (<code>0.0-1.0</code>)
-    @param black the black component (<code>0.0-1.0</code>)
-    @param alpha the alpha component (<code>0.0-1.0</code>)
+    @param cyan the cyan component (\c 0.\c 0-\c 1.\c 0).
+    @param magenta the magenta component (\c 0.\c 0-\c 1.\c 0).
+    @param yellow the yellow component (\c 0.\c 0-\c 1.\c 0).
+    @param black the black component (\c 0.\c 0-\c 1.\c 0).
+    @param alpha the alpha component (\c 0.\c 0-\c 1.\c 0).
     @return CGColor the CMYK based color
     @group CGColor
 */
@@ -143,7 +143,7 @@ function CGColorCreateGenericCMYK(cyan, magenta, yellow, black, alpha)
 /*!
     Creates a copy of the color with a specified alpha.
     @param aColor the color object to copy
-    @param anAlpha the new alpha component for the copy (<code>0.0-1.0</code>)
+    @param anAlpha the new alpha component for the copy (\c 0.\c 0-\c 1.\c 0).
     @return CGColor the new copy
     @group CGColor
 */
@@ -184,8 +184,8 @@ function CGColorCreateWithPattern(aColorSpace, aPattern, components)
     Determines if two colors are the same.
     @param lhs the first CGColor
     @param rhs the second CGColor
-    @return <code>YES</code> if the two colors are equal.
-    <code>NO</code> otherwise.
+    @return \c YES if the two colors are equal.
+    \c NO otherwise.
 */
 function CGColorEqualToColor(lhs, rhs)
 {
@@ -218,7 +218,7 @@ function CGColorEqualToColor(lhs, rhs)
 /*!
     Returns the color's alpha component.
     @param aColor the color
-    @return float the alpha component (<code>0.0-1.0</code>)
+    @return float the alpha component (\c 0.\c 0-\c 1.\c 0).
     @group CGColor
 */
 function CGColorGetAlpha(aColor)

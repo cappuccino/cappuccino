@@ -38,7 +38,7 @@
 }
 
 /*!
-    Initializes a cookie with a given name <code>aName</code>.
+    Initializes a cookie with a given name \c aName.
     @param the name for the cookie
 */
 - (id)initWithName:(CPString)aName
