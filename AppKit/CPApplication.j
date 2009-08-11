@@ -403,6 +403,8 @@ CPRunContinuesResponse  = -1002;
 */
 - (void)sendEvent:(CPEvent)anEvent
 {
+    _currentEvent = anEvent;
+
     // Check if this is a candidate for key equivalent...
     if ([anEvent type] == CPKeyDown &&
         [anEvent modifierFlags] & (CPCommandKeyMask | CPControlKeyMask) && 
@@ -668,6 +670,11 @@ CPRunContinuesResponse  = -1002;
 - (CPEvent)setTarget:(id)aTarget selector:(SEL)aSelector forNextEventMatchingMask:(unsigned int)aMask untilDate:(CPDate)anExpiration inMode:(CPString)aMode dequeue:(BOOL)shouldDequeue
 {
     _eventListeners.push(_CPEventListenerMake(aMask, function (anEvent) { objj_msgSend(aTarget, aSelector, anEvent); }));
+}
+
+- (CPEvent)currentEvent
+{
+    return _currentEvent;
 }
 
 // Managing Sheets

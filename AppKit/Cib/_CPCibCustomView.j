@@ -71,7 +71,7 @@ var _CPCibCustomViewClassNameKey    = @"_CPCibCustomViewClassNameKey";
 - (id)_cibInstantiate
 {
     var theClass = CPClassFromString(_className);
-    
+
     // If we don't have this class, just use CPView.
     // FIXME: Should we instead throw an exception?
     if (!theClass)

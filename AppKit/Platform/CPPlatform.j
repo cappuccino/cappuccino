@@ -24,4 +24,9 @@
     [CPPlatformWindow setPrimaryPlatformWindow:[[CPPlatformWindow alloc] _init]];
 }
 
++ (BOOL)isBrowser
+{
+    return YES;
+}
+
 @end

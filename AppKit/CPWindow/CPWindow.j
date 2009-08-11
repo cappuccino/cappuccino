@@ -27,6 +27,7 @@
 @import "CGGeometry.j"
 @import "CPAnimation.j"
 @import "CPResponder.j"
+@import "CPScreen.j"
 @import "CPPlatformWindow.j"
 
 #include "../Platform/Platform.h"
@@ -96,61 +97,61 @@ CPBackgroundWindowLevel         = -1;
     @group CPWindowLevel
     @global
 */
-CPNormalWindowLevel             = 4;
+CPNormalWindowLevel             = 0;
 /*
     Floating palette type window
     @group CPWindowLevel
     @global
 */
-CPFloatingWindowLevel           = 5;
+CPFloatingWindowLevel           = 3;
 /*
     Submenu type window
     @group CPWindowLevel
     @global
 */
-CPSubmenuWindowLevel            = 6;
+CPSubmenuWindowLevel            = 3;
 /*
     For a torn-off menu
     @group CPWindowLevel
     @global
 */
-CPTornOffMenuWindowLevel        = 6;
+CPTornOffMenuWindowLevel        = 3;
 /*
     For the application's main menu
     @group CPWindowLevel
     @global
 */
-CPMainMenuWindowLevel           = 8;
+CPMainMenuWindowLevel           = 24;
 /*
     Status window level
     @group CPWindowLevel
     @global
 */
-CPStatusWindowLevel             = 9;
+CPStatusWindowLevel             = 25;
 /*
     Level for a modal panel
     @group CPWindowLevel
     @global
 */
-CPModalPanelWindowLevel         = 10;
+CPModalPanelWindowLevel         = 8;
 /*
     Level for a pop up menu
     @group CPWindowLevel
     @global
 */
-CPPopUpMenuWindowLevel          = 11;
+CPPopUpMenuWindowLevel          = 101;
 /*
     Level for a window being dragged
     @group CPWindowLevel
     @global
 */
-CPDraggingWindowLevel           = 12;
+CPDraggingWindowLevel           = 500;
 /*
     Level for the screens saver
     @group CPWindowLevel
     @global
 */
-CPScreenSaverWindowLevel        = 13;
+CPScreenSaverWindowLevel        = 1000;
 
 /*
     The receiver is removed from the screen list and hidden.
@@ -288,6 +289,8 @@ var CPWindowSaveImage       = nil,
     BOOL                                _autorecalculatesKeyViewLoop;
     BOOL                                _keyViewLoopIsDirty;
 
+    BOOL                                _sharesChromeWithPlatformWindow;
+
     // Bridge Support
 #if PLATFORM(DOM)
     DOMElement                          _DOMElement;
@@ -336,7 +339,19 @@ CPTexturedBackgroundWindowMask
     
     if (self)
     {
-        [self setPlatformWindow:[CPPlatformWindow primaryPlatformWindow]];
+        var windowViewClass = [[self class] _windowViewClassForStyleMask:aStyleMask];
+
+        _frame = [windowViewClass frameRectForContentRect:aContentRect];
+
+        [self _setSharesChromeWithPlatformWindow:![CPPlatform isBrowser]];
+
+        if ([CPPlatform isBrowser])
+            [self setPlatformWindow:[CPPlatformWindow primaryPlatformWindow]];
+        else
+        {
+            [self setPlatformWindow:[[CPPlatformWindow alloc] initWithContentRect:_frame]];
+            [self platformWindow]._only = self;
+        }
 
         _isFullPlatformWindow = NO;
         _registeredDraggedTypes = [CPSet set];
@@ -347,15 +362,13 @@ CPTexturedBackgroundWindowMask
         CPApp._windows[_windowNumber] = self;
         
         _styleMask = aStyleMask;
-        _level = CPNormalWindowLevel;
-        
+
+        [self setLevel:CPNormalWindowLevel];
+
         _minSize = CGSizeMake(0.0, 0.0);
         _maxSize = CGSizeMake(1000000.0, 1000000.0);
 
         // Create our border view which is the actual root of our view hierarchy.
-        var windowViewClass = [[self class] _windowViewClassForStyleMask:aStyleMask];
-        
-        _frame = [windowViewClass frameRectForContentRect:aContentRect];
         _windowView = [[windowViewClass alloc] initWithFrame:CGRectMake(0.0, 0.0, CGRectGetWidth(_frame), CGRectGetHeight(_frame)) styleMask:aStyleMask];
 
         [_windowView _setWindow:self];
@@ -375,9 +388,12 @@ CPTexturedBackgroundWindowMask
         _DOMElement.style.visibility = "visible";
         _DOMElement.style.zIndex = 0;
 
-        CPDOMDisplayServerSetStyleLeftTop(_DOMElement, NULL, _CGRectGetMinX(_frame), _CGRectGetMinY(_frame));
+        if (![self _sharesChromeWithPlatformWindow])
+        {
+            CPDOMDisplayServerSetStyleLeftTop(_DOMElement, NULL, _CGRectGetMinX(_frame), _CGRectGetMinY(_frame));
+        }
+
         CPDOMDisplayServerSetStyleSize(_DOMElement, 1, 1);
-        
         CPDOMDisplayServerAppendChild(_DOMElement, _windowView._DOMElement);
 #endif
 
@@ -442,22 +458,25 @@ CPTexturedBackgroundWindowMask
 
     _windowView = aWindowView;
 
-#if PLATFORM(DOM)
     if (oldWindowView)
     {
         [oldWindowView _setWindow:nil];
         [oldWindowView noteToolbarChanged];
 
+#if PLATFORM(DOM)
         CPDOMDisplayServerRemoveChild(_DOMElement, oldWindowView._DOMElement);
+#endif
     }
 
     if (_windowView)
     {
+#if PLATFORM(DOM)
         CPDOMDisplayServerAppendChild(_DOMElement, _windowView._DOMElement);
+#endif
 
         var contentRect = [_contentView convertRect:[_contentView bounds] toView:nil];
 
-        contentRect.origin = [self convertBaseToBridge:contentRect.origin];
+        contentRect.origin = [self convertBaseToGlobal:contentRect.origin];
 
         [_windowView _setWindow:self];
         [_windowView setNextResponder:self];
@@ -467,7 +486,6 @@ CPTexturedBackgroundWindowMask
 
         [self setFrame:[self frameRectForContentRect:contentRect]];
     }
-#endif
 }
 
 - (void)setFullPlatformWindow:(BOOL)shouldBeFullPlatformWindow
@@ -494,7 +512,7 @@ CPTexturedBackgroundWindowMask
         [self setLevel:CPBackgroundWindowLevel];
         [self setHasShadow:NO];
         [self setAutoresizingMask:CPWindowWidthSizable | CPWindowHeightSizable];
-        [self setFrame:[_platformWindow usableContentFrame]];
+        [self setFrame:[_platformWindow visibleFrame]];
     }
     else
     {
@@ -598,16 +616,22 @@ CPTexturedBackgroundWindowMask
 - (void)setFrameOrigin:(CGPoint)anOrigin
 {
     var origin = _frame.origin;
-    
+
     if (_CGPointEqualToPoint(origin, anOrigin))
         return;
-    
+
     origin.x = anOrigin.x;
     origin.y = anOrigin.y;
 
+    if ([self _sharesChromeWithPlatformWindow])
+        [_platformWindow setContentOrigin:origin];
+
+    else
+    {
 #if PLATFORM(DOM)
-    CPDOMDisplayServerSetStyleLeftTop(_DOMElement, NULL, origin.x, origin.y);
+        CPDOMDisplayServerSetStyleLeftTop(_DOMElement, NULL, origin.x, origin.y);
 #endif
+    }
 
     [[CPNotificationCenter defaultCenter] postNotificationName:CPWindowDidMoveNotification object:self];
 }
@@ -627,9 +651,12 @@ CPTexturedBackgroundWindowMask
 
     [_windowView setFrameSize:aSize];
 
+    if ([self _sharesChromeWithPlatformWindow])
+        [_platformWindow setContentSize:aSize];
+
     if (_hasShadow)
         [_shadowView setFrameSize:_CGSizeMake(SHADOW_MARGIN_LEFT + aSize.width + SHADOW_MARGIN_RIGHT, SHADOW_MARGIN_BOTTOM + aSize.height + SHADOW_MARGIN_TOP + SHADOW_DISTANCE)];
-    
+
     if (!_isAnimating && [_delegate respondsToSelector:@selector(windowDidResize:)])
         [_delegate windowDidResize:self];
 }
@@ -671,6 +698,9 @@ CPTexturedBackgroundWindowMask
 
         CPApp._keyWindow = nil;
     }
+
+    if ([self _sharesChromeWithPlatformWindow])
+        [_platformWindow orderOut:self];
 }
 
 /*!
@@ -690,6 +720,9 @@ CPTexturedBackgroundWindowMask
 - (void)setLevel:(int)aLevel
 {
     _level = aLevel;
+
+    if ([self _sharesChromeWithPlatformWindow])
+        [_platformWindow setLevel:aLevel];
 }
 
 /*!
@@ -881,9 +914,12 @@ CPTexturedBackgroundWindowMask
 {
     if (_hasShadow === shouldHaveShadow)
         return;
-    
+
     _hasShadow = shouldHaveShadow;
-    
+
+    if ([self _sharesChromeWithPlatformWindow])
+        return [_platformWindow setHasShadow:shouldHaveShadow];
+
     if (_hasShadow)
     {
         var bounds = [_windowView bounds];
@@ -1120,6 +1156,11 @@ CPTexturedBackgroundWindowMask
     return _representedURL;
 }
 
+- (CPScreen)screen
+{
+    return [[CPScreen alloc] init];
+}
+
 // Moving
 
 /*!
@@ -1175,7 +1216,7 @@ CPTexturedBackgroundWindowMask
                                     
                                     return;
         case CPLeftMouseDown:       _leftMouseDownView = [_windowView hitTest:point];
-                                    
+
                                     if (_leftMouseDownView != _firstResponder && [_leftMouseDownView acceptsFirstResponder])
                                         [self makeFirstResponder:_leftMouseDownView];
                 
@@ -1343,7 +1384,7 @@ CPTexturedBackgroundWindowMask
 */
 - (void)dragImage:(CPImage)anImage at:(CGPoint)imageLocation offset:(CGSize)mouseOffset event:(CPEvent)anEvent pasteboard:(CPPasteboard)aPasteboard source:(id)aSourceObject slideBack:(BOOL)slideBack
 {
-    [[CPDragServer sharedDragServer] dragImage:anImage fromWindow:self at:[self convertBaseToBridge:imageLocation] offset:mouseOffset event:anEvent pasteboard:aPasteboard source:aSourceObject slideBack:slideBack];
+    [[CPDragServer sharedDragServer] dragImage:anImage fromWindow:self at:[self convertBaseToGlobal:imageLocation] offset:mouseOffset event:anEvent pasteboard:aPasteboard source:aSourceObject slideBack:slideBack];
 }
 
 - (void)_noteRegisteredDraggedTypes:(CPSet)pasteboardTypes
@@ -1378,9 +1419,9 @@ CPTexturedBackgroundWindowMask
     @param aSourceObject the drag operation controller
     @param slideBack Whether the view should 'slide back' if the drag is rejected
 */
-- (void)dragView:(CPView)aView at:(CGPoint)imageLocation offset:(CGSize)mouseOffset event:(CPEvent)anEvent pasteboard:(CPPasteboard)aPasteboard source:(id)aSourceObject slideBack:(BOOL)slideBack
+- (void)dragView:(CPView)aView at:(CGPoint)viewLocation offset:(CGSize)mouseOffset event:(CPEvent)anEvent pasteboard:(CPPasteboard)aPasteboard source:(id)aSourceObject slideBack:(BOOL)slideBack
 {
-    [[CPDragServer sharedDragServer] dragView:aView fromWindow:self at:[self convertBaseToBridge:imageLocation] offset:mouseOffset event:anEvent pasteboard:aPasteboard source:aSourceObject slideBack:slideBack];
+    [[CPDragServer sharedDragServer] dragView:aView fromWindow:self at:[self convertBaseToGlobal:viewLocation] offset:mouseOffset event:anEvent pasteboard:aPasteboard source:aSourceObject slideBack:slideBack];
 }
 
 /*!
@@ -1632,7 +1673,7 @@ CPTexturedBackgroundWindowMask
     [_windowView noteToolbarChanged];
 
     if (_isFullPlatformWindow)
-        newFrame = [_platformWindow usableContentFrame];
+        newFrame = [_platformWindow visibleFrame];
     else
     {
         newFrame = CGRectMakeCopy([self frame]);
@@ -1926,7 +1967,7 @@ var keyViewComparator = function(a, b, context)
 - (void)resizeWithOldPlatformWindowSize:(CGSize)aSize
 {
     if ([self isFullPlatformWindow])
-        return [self setFrame:[_platformWindow usableContentFrame]];
+        return [self setFrame:[_platformWindow visibleFrame]];
     
     if (_autoresizingMask == CPWindowNotSizable)
         return;
@@ -1967,24 +2008,58 @@ var keyViewComparator = function(a, b, context)
     return _autoresizingMask;
 }
 
-/*
-    @ignore
-*/
-- (CGPoint)convertBaseToBridge:(CGPoint)aPoint
+- (CGPoint)convertBaseToGlobal:(CGPoint)aPoint
 {
-    var origin = [self frame].origin;
-    
-    return CGPointMake(aPoint.x + origin.x, aPoint.y + origin.y);
+    return [CPPlatform isBrowser] ? [self convertBaseToPlatformWindow:aPoint] : [self convertBaseToScreen:aPoint];
 }
 
-/*
-    @ignore
-*/
-- (CGPoint)convertBridgeToBase:(CGPoint)aPoint
+- (CGPoint)convertGlobalToBase:(CGPoint)aPoint
 {
+    return [CPPlatform isBrowser] ? [self convertPlatformWindowToBase:aPoint] : [self convertScreenToBase:aPoint];
+}
+
+- (CGPoint)convertBaseToPlatformWindow:(CGPoint)aPoint
+{
+    if ([self _sharesChromeWithPlatformWindow])
+        return aPoint;
+
     var origin = [self frame].origin;
-    
-    return CGPointMake(aPoint.x - origin.x, aPoint.y - origin.y);
+
+    return _CGPointMake(aPoint.x + origin.x, aPoint.y + origin.y);
+}
+
+- (CGPoint)convertPlatformWindowToBase:(CGPoint)aPoint
+{
+    if ([self _sharesChromeWithPlatformWindow])
+        return aPoint;
+
+    var origin = [self frame].origin;
+
+    return _CGPointMake(aPoint.x - origin.x, aPoint.y - origin.y);
+}
+
+- (CGPoint)convertScreenToBase:(CGPoint)aPoint
+{
+    return [self convertPlatformWindowToBase:[_platformWindow convertScreenToBase:aPoint]];
+}
+
+- (CGPoint)convertBaseToScreen:(CGPoint)aPoint
+{
+    return [_platformWindow convertBaseToScreen:[self convertBaseToPlatformWindow:aPoint]];
+}
+
+- (void)_setSharesChromeWithPlatformWindow:(BOOL)shouldShareFrameWithPlatformWindow
+{
+    // We canna' do it captain! We just don't have the power!
+    if (shouldShareFrameWithPlatformWindow && [CPPlatform isBrowser])
+        return;
+
+    _sharesChromeWithPlatformWindow = shouldShareFrameWithPlatformWindow;
+}
+
+- (BOOL)_sharesChromeWithPlatformWindow
+{
+    return _sharesChromeWithPlatformWindow;
 }
 
 // Undo and Redo Support
@@ -2037,6 +2112,22 @@ var keyViewComparator = function(a, b, context)
 - (BOOL)isFullBridge
 {
     return [self isFullPlatformWindow];
+}
+
+/*
+    @ignore
+*/
+- (CGPoint)convertBaseToBridge:(CGPoint)aPoint
+{
+    return [self convertBaseToPlatformWindow:aPoint];
+}
+
+/*
+    @ignore
+*/
+- (CGPoint)convertBridgeToBase:(CGPoint)aPoint
+{
+    return [self convertPlatformWindowToBase:aPoint];
 }
 
 @end

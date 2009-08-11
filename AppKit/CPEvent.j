@@ -465,6 +465,18 @@ var _CPEventPeriodicEventPeriod         = 0,
     return _keyCode;
 }
 
++ (CGPoint)mouseLocation
+{
+    // FIXME: this is incorrect, we shouldn't depend on the current event.
+    var event = [CPApp currentEvent],
+        eventWindow = [event window];
+
+    if (eventWindow)
+        return [eventWindow convertBaseToGlobal:[event locationInWindow]];
+
+    return [event locationInWindow];
+}
+
 - (float)pressure
 {
     return _pressure;
