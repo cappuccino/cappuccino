@@ -672,7 +672,7 @@ var _CPMenuBarVisible               = NO,
     [menuWindow setDelegate:self];
     [menuWindow setBackgroundStyle:isForMenuBar ? _CPMenuWindowMenuBarBackgroundStyle : _CPMenuWindowPopUpBackgroundStyle];
 
-    [menuWindow setFrameOrigin:[[anEvent window] convertBaseToBridge:[anEvent locationInWindow]]];
+    [menuWindow setFrameOrigin:[[anEvent window] convertBaseToGlobal:[anEvent locationInWindow]]];
 
     [menuWindow orderFront:self];
     [menuWindow beginTrackingWithEvent:anEvent sessionDelegate:self didEndSelector:@selector(_menuWindowDidFinishTracking:highlightedItem:)];
@@ -904,7 +904,7 @@ var STICKY_TIME_INTERVAL        = 500,
     
     CPTimeInterval      _startTime;
     int                 _scrollingState;
-    CGPoint             _lastScreenLocation;
+    CGPoint             _lastGlobalLocation;
     
     BOOL                _isShowingTopScrollIndicator;
     BOOL                _isShowingBottomScrollIndicator;
@@ -921,10 +921,10 @@ var STICKY_TIME_INTERVAL        = 500,
         menuWindow = _CPMenuWindowPool.pop();
     else
         menuWindow = [[_CPMenuWindow alloc] init];
-    
+
     [menuWindow setFont:aFont];
     [menuWindow setMenu:aMenu];
-    
+
     return menuWindow;
 }
 
@@ -1076,35 +1076,42 @@ var STICKY_TIME_INTERVAL        = 500,
 
 - (void)constrainToScreen
 {
+    // FIXME: There are integral window issues with platform windows.
+    // FIXME: This gets called far too often.
     _unconstrainedFrame = CGRectMakeCopy([self frame]);
 
-    var screenBounds = CGRectInset([[self platformWindow] contentBounds], 5.0, 5.0),
-        constrainedFrame = CGRectIntersection(_unconstrainedFrame, screenBounds),
-        menuViewOrigin = [self convertBaseToBridge:CGPointMake(LEFT_MARGIN, TOP_MARGIN)];
-    
+    var isBrowser = [CPPlatform isBrowser],
+        visibleFrame =  CGRectInset([isBrowser ? [self platformWindow] : [self screen] visibleFrame], 5.0, 5.0),
+        constrainedFrame = CGRectIntersection(_unconstrainedFrame, visibleFrame);
+
+    // We don't want to simply intersect the visible frame and the unconstrained frame.
+    // We should be allowing as much of the width to fit as possible (pushing back and forward).
     constrainedFrame.origin.x = CGRectGetMinX(_unconstrainedFrame);
     constrainedFrame.size.width = CGRectGetWidth(_unconstrainedFrame);
-    
-    if (CGRectGetWidth(constrainedFrame) > CGRectGetWidth(screenBounds))
-        constrainedFrame.size.width = CGRectGetWidth(screenBounds);
-    
-    if (CGRectGetMaxX(constrainedFrame) > CGRectGetMaxX(screenBounds))
-        constrainedFrame.origin.x -= CGRectGetMaxX(constrainedFrame) - CGRectGetMaxX(screenBounds);
-    
-    if (CGRectGetMinX(constrainedFrame) < CGRectGetMinX(screenBounds))
-        constrainedFrame.origin.x = CGRectGetMinX(screenBounds);
-    
+
+    if (CGRectGetWidth(constrainedFrame) > CGRectGetWidth(visibleFrame))
+        constrainedFrame.size.width = CGRectGetWidth(visibleFrame);
+
+    if (CGRectGetMaxX(constrainedFrame) > CGRectGetMaxX(visibleFrame))
+        constrainedFrame.origin.x -= CGRectGetMaxX(constrainedFrame) - CGRectGetMaxX(visibleFrame);
+
+    if (CGRectGetMinX(constrainedFrame) < CGRectGetMinX(visibleFrame))
+        constrainedFrame.origin.x = CGRectGetMinX(visibleFrame);
+
+    // This needs to happen before changing the frame.
+    var menuViewOrigin = [self convertBaseToGlobal:CGPointMake(LEFT_MARGIN, TOP_MARGIN)];
+
     [super setFrame:constrainedFrame];
-    
-    var topMargin = TOP_MARGIN,
+
+    var moreAbove = menuViewOrigin.y < CGRectGetMinY(constrainedFrame) + TOP_MARGIN,
+        moreBelow = menuViewOrigin.y + CGRectGetHeight([_menuView frame]) > CGRectGetMaxY(constrainedFrame) - BOTTOM_MARGIN,
+
+        topMargin = TOP_MARGIN,
         bottomMargin = BOTTOM_MARGIN,
         
         contentView = [self contentView],
         bounds = [contentView bounds];
-    
-    var moreAbove = menuViewOrigin.y < CGRectGetMinY(constrainedFrame) + TOP_MARGIN,
-        moreBelow = menuViewOrigin.y + CGRectGetHeight([_menuView frame]) > CGRectGetMaxY(constrainedFrame) - BOTTOM_MARGIN;
-    
+
     if (moreAbove)
     {
         topMargin += SCROLL_INDICATOR_HEIGHT;
@@ -1113,9 +1120,9 @@ var STICKY_TIME_INTERVAL        = 500,
         
         [_moreAboveView setFrameOrigin:CGPointMake((CGRectGetWidth(bounds) - CGRectGetWidth(frame)) / 2.0, (TOP_MARGIN + SCROLL_INDICATOR_HEIGHT - CGRectGetHeight(frame)) / 2.0)];
     }
-    
+
     [_moreAboveView setHidden:!moreAbove];
-    
+
     if (moreBelow)
     {
         bottomMargin += SCROLL_INDICATOR_HEIGHT;
@@ -1124,13 +1131,13 @@ var STICKY_TIME_INTERVAL        = 500,
     }
     
     [_moreBelowView setHidden:!moreBelow];
-    
+
     var clipFrame = CGRectMake(LEFT_MARGIN, topMargin, CGRectGetWidth(constrainedFrame) - LEFT_MARGIN - RIGHT_MARGIN, CGRectGetHeight(constrainedFrame) - topMargin - bottomMargin)
-    
+
     [_menuClipView setFrame:clipFrame];
     [_menuView setFrameSize:CGSizeMake(CGRectGetWidth(clipFrame), CGRectGetHeight([_menuView frame]))];
-    
-    [_menuView scrollPoint:CGPointMake(0.0, [self convertBaseToBridge:clipFrame.origin].y - menuViewOrigin.y)];
+
+    [_menuView scrollPoint:CGPointMake(0.0, [self convertBaseToGlobal:clipFrame.origin].y - menuViewOrigin.y)];
 }
 
 - (void)cancelTracking
@@ -1154,11 +1161,12 @@ var STICKY_TIME_INTERVAL        = 500,
 {
     var type = [anEvent type],
         theWindow = [anEvent window],
-        screenLocation = theWindow ? [theWindow convertBaseToBridge:[anEvent locationInWindow]] : [anEvent locationInWindow];
-    
-    if (type == CPPeriodic)
+        globalLocation = theWindow ? [theWindow convertBaseToGlobal:[anEvent locationInWindow]] : [anEvent locationInWindow];
+
+    if (type === CPPeriodic)
     {
-        var constrainedBounds = CGRectInset([[self platformWindow] contentBounds], 5.0, 5.0);
+        var constraintContext = [CPPlatform isBrowser] ? [self platformWindow] : [self screen];
+            constrainedBounds =  CGRectInset([constraintContext visibleFrame], 5.0, 5.0);
         
         if (_scrollingState == _CPMenuWindowScrollingStateUp)
         {
@@ -1172,13 +1180,13 @@ var STICKY_TIME_INTERVAL        = 500,
         [self setFrame:_unconstrainedFrame];
         [self constrainToScreen];
         
-        screenLocation = _lastScreenLocation;
+        globalLocation = _lastGlobalLocation;
     }
 
-    _lastScreenLocation = screenLocation;
+    _lastGlobalLocation = globalLocation;
     
     var menu = [_menuView menu],
-        menuLocation = [self convertBridgeToBase:screenLocation],
+        menuLocation = [self convertGlobalToBase:globalLocation],
         activeItemIndex = [_menuView itemIndexAtPoint:[_menuView convertPoint:menuLocation fromView:nil]],
         mouseOverMenuView = [[menu itemAtIndex:activeItemIndex] view];
     
@@ -1209,7 +1217,7 @@ var STICKY_TIME_INTERVAL        = 500,
             _lastMouseOverMenuView = nil;
         }
         
-        [menu _highlightItemAtIndex:[_menuView itemIndexAtPoint:[_menuView convertPoint:[self convertBridgeToBase:screenLocation] fromView:nil]]];
+        [menu _highlightItemAtIndex:[_menuView itemIndexAtPoint:[_menuView convertPoint:[self convertGlobalToBase:globalLocation] fromView:nil]]];
         
         if (type == CPMouseMoved || type == CPLeftMouseDragged || type == CPLeftMouseDown)
         {
@@ -1219,11 +1227,11 @@ var STICKY_TIME_INTERVAL        = 500,
             _scrollingState = _CPMenuWindowScrollingStateNone;
             
             // If we're at or above of the top scroll indicator...
-            if (screenLocation.y < CGRectGetMinY(frame) + TOP_MARGIN + SCROLL_INDICATOR_HEIGHT)
+            if (globalLocation.y < CGRectGetMinY(frame) + TOP_MARGIN + SCROLL_INDICATOR_HEIGHT)
                 _scrollingState = _CPMenuWindowScrollingStateUp;
         
             // If we're at or below the bottom scroll indicator...
-            else if (screenLocation.y > CGRectGetMaxY(frame) - BOTTOM_MARGIN - SCROLL_INDICATOR_HEIGHT)
+            else if (globalLocation.y > CGRectGetMaxY(frame) - BOTTOM_MARGIN - SCROLL_INDICATOR_HEIGHT)
                 _scrollingState = _CPMenuWindowScrollingStateDown;
             
             if (_scrollingState != oldScrollingState)
@@ -1447,10 +1455,12 @@ var _CPMenuBarWindowBackgroundColor = nil,
 
 - (id)init
 {
-    var platformWindowWidth = CGRectGetWidth([[CPPlatformWindow primaryPlatformWindow] contentBounds]);
-    
-    self = [super initWithContentRect:CGRectMake(0.0, 0.0, platformWindowWidth, MENUBAR_HEIGHT) styleMask:CPBorderlessWindowMask];
-    
+    var contentRect = [CPPlatform isBrowser] ? [[CPPlatformWindow primaryPlatformWindow] contentBounds] : [[self screen] visibleFrame];
+
+    contentRect.size.height = MENUBAR_HEIGHT;
+
+    self = [super initWithContentRect:contentRect styleMask:CPBorderlessWindowMask];
+
     if (self)
     {
         // FIXME: http://280north.lighthouseapp.com/projects/13294-cappuccino/tickets/39-dont-allow-windows-to-go-above-menubar

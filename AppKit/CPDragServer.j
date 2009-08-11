@@ -64,6 +64,8 @@ var CPDragServerStartDragging = function(anEvent)
 
 var CPDragServerUpdateDragging = function(anEvent)
 {
+    var globalLocation = [[anEvent window] convertBaseToGlobal:[anEvent locationInWindow]];
+
     // If this is a mouse up, then complete the drag.
     if([anEvent type] == CPLeftMouseUp)
     {
@@ -72,8 +74,8 @@ var CPDragServerUpdateDragging = function(anEvent)
 
         CPDragServerAutoscrollInterval = nil;
 
-        CPDragServerLocation = [DRAGGING_WINDOW(CPDragServerDestination) convertBridgeToBase:[[anEvent window] convertBaseToBridge:[anEvent locationInWindow]]];
-        
+        CPDragServerLocation = [DRAGGING_WINDOW(CPDragServerDestination) convertGlobalToBase:globalLocation];
+
         [CPDragServerView removeFromSuperview];
         [CPSharedDragServer._dragWindow orderOut:nil];
 
@@ -107,16 +109,12 @@ var CPDragServerUpdateDragging = function(anEvent)
         forNextEventMatchingMask:CPMouseMovedMask | CPLeftMouseDraggedMask | CPLeftMouseUpMask
         untilDate:nil inMode:0 dequeue:NO];
 
-    var location = [anEvent locationInWindow],
-        operation = 
-        bridgeLocation = [[anEvent window] convertBaseToBridge:location];
-
     // We have to convert base to bridge since the drag event comes from the source window, not the drag window.
-    var draggingDestination = [[CPPlatformWindow primaryPlatformWindow] _dragHitTest:bridgeLocation pasteboard:CPDragServerPasteboard];
-    
-    CPDragServerLocation = [DRAGGING_WINDOW(draggingDestination) convertBridgeToBase:bridgeLocation];
-    
-    if(draggingDestination != CPDragServerDestination) 
+    var draggingDestination = [[CPPlatformWindow primaryPlatformWindow] _dragHitTest:globalLocation pasteboard:CPDragServerPasteboard];
+
+    CPDragServerLocation = [DRAGGING_WINDOW(draggingDestination) convertGlobalToBase:globalLocation];
+
+    if(draggingDestination !== CPDragServerDestination)
     {
         if (CPDragServerDestination && [CPDragServerDestination respondsToSelector:@selector(draggingExited:)])
             [CPDragServerDestination draggingExited:CPDragServerDraggingInfo];
@@ -128,16 +126,16 @@ var CPDragServerUpdateDragging = function(anEvent)
     }
     else if (CPDragServerDestination && [CPDragServerDestination respondsToSelector:@selector(draggingUpdated:)])
         [CPDragServerDestination draggingUpdated:CPDragServerDraggingInfo];
-    
-    location.x -= CPDragServerOffset.x;
-    location.y -= CPDragServerOffset.y;
-    
-    [CPDragServerView setFrameOrigin:location];
-    
+
+    globalLocation.x -= CPDragServerOffset.x;
+    globalLocation.y -= CPDragServerOffset.y;
+
+    [[CPDragServerView window] setFrameOrigin:globalLocation];
+
     if (CPDragServerShouldSendDraggedImageMovedTo)
-        [CPDragServerSource draggedImage:[CPDragServerView image] movedTo:location];
+        [CPDragServerSource draggedImage:[CPDragServerView image] movedTo:globalLocation];
     else if (CPDragServerShouldSendDraggedViewMovedTo)
-        [CPDragServerSource draggedView:CPDragServerView movedTo:location];
+        [CPDragServerSource draggedView:CPDragServerView movedTo:globalLocation];
 }
 
 /*
@@ -197,7 +195,7 @@ var CPDragServerUpdateDragging = function(anEvent)
 */
 + (void)initialize
 {
-    if (self != [CPDragServer class])
+    if (self !== [CPDragServer class])
         return;
     
     CPDragServerDraggingInfo = [[CPDraggingInfo alloc] init];
@@ -220,7 +218,8 @@ var CPDragServerUpdateDragging = function(anEvent)
     
     if (self)
     {
-        _dragWindow = [[CPWindow alloc] initWithContentRect:CPRectMakeZero() styleMask:CPBorderlessWindowMask];
+        _dragWindow = [[CPWindow alloc] initWithContentRect:_CGRectMakeZero() styleMask:CPBorderlessWindowMask];
+
         [_dragWindow setLevel:CPDraggingWindowLevel];
     }
     
@@ -239,28 +238,42 @@ var CPDragServerUpdateDragging = function(anEvent)
     @param slideBack if \c YES, \c aView slides back to
     its origin on a failed drop
 */
-- (void)dragView:(CPView)aView fromWindow:(CPWindow)aWindow at:(CGPoint)viewLocation offset:(CGSize)mouseOffset event:(CPEvent)anEvent pasteboard:(CPPasteboard)aPasteboard source:(id)aSourceObject slideBack:(BOOL)slideBack
+- (void)dragView:(CPView)aView fromWindow:(CPWindow)aWindow at:(CGPoint)viewLocation offset:(CGSize)mouseOffset event:(CPEvent)mouseDownEvent pasteboard:(CPPasteboard)aPasteboard source:(id)aSourceObject slideBack:(BOOL)slideBack
 {
-    var eventLocation = [anEvent locationInWindow];
-
     CPDragServerView = aView;
     CPDragServerSource = aSourceObject;
     CPDragServerWindow = aWindow;
-    CPDragServerOffset = CPPointMake(eventLocation.x - viewLocation.x, eventLocation.y - viewLocation.y);
     CPDragServerPasteboard = [CPPasteboard pasteboardWithName:CPDragPboard];//aPasteboard;
 
-#if PLATFORM(BROWSER)
-    var platformWindow = [aWindow platformWindow];
+    // The offset is based on the distance from where we want the view to be initially from where the mouse is initially
+    // Hence the use of mouseDownEvent's location and view's location in global coordinates.
+    var mouseDownWindow = [mouseDownEvent window],
+        mouseDownEventLocation = [mouseDownEvent locationInWindow];
 
-    // FIXME: We should just have the window be the size of the view and move the window around.
-    [_dragWindow setPlatformWindow:platformWindow];
-    [_dragWindow setFrameSize:[platformWindow contentBounds].size];
-#endif
+    if (mouseDownEventLocation)
+    {
+        if (mouseDownWindow)
+            mouseDownEventLocation = [mouseDownWindow convertBaseToGlobal:mouseDownEventLocation];
+
+        CPDragServerOffset = _CGPointMake(mouseDownEventLocation.x - viewLocation.x, mouseDownEventLocation.y - viewLocation.y);
+    }
+    else
+        CPDragServerOffset = _CGPointMakeZero();
+
+    if ([CPPlatform isBrowser])
+        [_dragWindow setPlatformWindow:[aWindow platformWindow]];
+
+    [aView setFrameOrigin:_CGPointMakeZero()];
+
+    var mouseLocation = [CPEvent mouseLocation];
+
+    // Place it where the mouse pointer is.
+    [_dragWindow setFrameOrigin:_CGPointMake(mouseLocation.x - CPDragServerOffset.x, mouseLocation.y - CPDragServerOffset.y)];
+    [_dragWindow setFrameSize:[aView frame].size];
+
+    [[_dragWindow contentView] addSubview:aView];
 
     [_dragWindow orderFront:self];
-
-    [aView setFrameOrigin:viewLocation];
-    [[_dragWindow contentView] addSubview:aView];
 
     if (CPDragServerIsDraggingImage)
     {
@@ -286,7 +299,14 @@ var CPDragServerUpdateDragging = function(anEvent)
         CPDragServerShouldSendDraggedImageEndedAtOperation = NO;
     }
 
-    CPDragServerStartDragging(anEvent);
+    if (mouseDownWindow)
+        mouseLocation = [mouseDownWindow convertGlobalToBase:mouseLocation];
+
+    var updatedEvent = [CPEvent mouseEventWithType:CPLeftMouseDragged location:mouseLocation modifierFlags:[mouseDownEvent modifierFlags]
+                        timestamp:[mouseDownEvent timestamp] windowNumber:[mouseDownEvent windowNumber] context:nil
+                        eventNumber:0 clickCount:[mouseDownEvent clickCount] pressure:[mouseDownEvent pressure]];
+
+    CPDragServerStartDragging(updatedEvent);
 }
 
 /*!
