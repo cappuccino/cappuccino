@@ -650,7 +650,7 @@ CPPopUpButtonStatePullsDown = CPThemeState("pulls-down");
     
     // Pull Down Menus show up directly below their buttons.
     if ([self pullsDown])
-        var menuOrigin = [theWindow convertBaseToBridge:[self convertPoint:CGPointMake(0.0, CGRectGetMaxY([self bounds])) toView:nil]];
+        var menuOrigin = [theWindow convertBaseToGlobal:[self convertPoint:CGPointMake(0.0, CGRectGetMaxY([self bounds])) toView:nil]];
     
     // Pop Up Menus attempt to show up "on top" of the selected item.
     else
@@ -661,21 +661,21 @@ CPPopUpButtonStatePullsDown = CPThemeState("pulls-down");
         // 2. Move LEFT by whatever indentation we have (offsetWidths, aka, window margin, item margin, etc).
         // 3. MOVE UP by the difference in sizes of the content and menu item, this will only work if the content is vertically centered.
         var contentRect = [self convertRect:[self contentRectForBounds:[self bounds]] toView:nil],
-            menuOrigin = [theWindow convertBaseToBridge:contentRect.origin],
+            menuOrigin = [theWindow convertBaseToGlobal:contentRect.origin],
             menuItemRect = [menuWindow rectForItemAtIndex:_selectedIndex];
         
         menuOrigin.x -= CGRectGetMinX(menuItemRect) + [menuWindow overlapOffsetWidth] + [[[menu itemAtIndex:_selectedIndex] _menuItemView] overlapOffsetWidth];
         menuOrigin.y -= CGRectGetMinY(menuItemRect) + (CGRectGetHeight(menuItemRect) - CGRectGetHeight(contentRect)) / 2.0;
     }
-    
+
     [menuWindow setFrameOrigin:menuOrigin];
-    
+
     var menuMaxX = CGRectGetMaxX([menuWindow frame]),
-        buttonMaxX = [theWindow convertBaseToBridge:CGPointMake(CGRectGetMaxX([self convertRect:[self bounds] toView:nil]), 0.0)].x;
-        
+        buttonMaxX = [theWindow convertBaseToGlobal:CGPointMake(CGRectGetMaxX([self convertRect:[self bounds] toView:nil]), 0.0)].x;
+
     if (menuMaxX < buttonMaxX)
         [menuWindow setMinWidth:CGRectGetWidth([menuWindow frame]) + buttonMaxX - menuMaxX - ([self pullsDown] ? 0.0 : VISIBLE_MARGIN)];
-    
+
     [menuWindow orderFront:self];
     [menuWindow beginTrackingWithEvent:anEvent sessionDelegate:self didEndSelector:@selector(menuWindowDidFinishTracking:highlightedItem:)];
 }

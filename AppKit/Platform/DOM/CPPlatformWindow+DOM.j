@@ -81,13 +81,13 @@ var CTRL_KEY_CODE   = 17;
         _DOMWindow = window;
         _contentRect = _CGRectMakeZero();
 
+        _windowLevels = [];
+        _windowLayers = [CPDictionary dictionary];
+
         [self registerDOMWindow];
         [self updateFromNativeContentRect];
 
         _charCodes = {};
-
-        _windowLevels = [];
-        _windowLayers = [CPDictionary dictionary];
     }
 
     return self;
@@ -220,7 +220,7 @@ var CTRL_KEY_CODE   = 17;
 
         _DOMWindow.addEventListener("resize", resizeEventCallback, NO);        
 
-        _DOMWindow.addEventListener("beforeunload", function()
+        _DOMWindow.addEventListener("unload", function()
         {
             [self updateFromNativeContentRect];
 
@@ -294,23 +294,30 @@ var CTRL_KEY_CODE   = 17;
     }
 }
 
-- (BOOL)isVisible
-{
-    return _DOMWindow !== NULL;
-}
-
 - (void)orderFront:(id)aSender
 {
     if (_DOMWindow)
         return _DOMWindow.focus();
 
-    _DOMWindow = window.open("", "", "menubar=no,location=no,resizable=yes,scrollbars=no,status=no,left=" + _CGRectGetMinX(_contentRect) + ",top=" + _CGRectGetMinY(_contentRect) + ",width=" + _CGRectGetWidth(_contentRect) + ",height=" + _CGRectGetHeight(_contentRect));
+    _DOMWindow = window.open("", "_blank", "menubar=no,location=no,resizable=yes,scrollbars=no,status=no,left=" + _CGRectGetMinX(_contentRect) + ",top=" + _CGRectGetMinY(_contentRect) + ",width=" + _CGRectGetWidth(_contentRect) + ",height=" + _CGRectGetHeight(_contentRect));
+
+    _DOMWindow.document.write("<html><head></head><body style = 'background-color:transparent;'></body></html>");
+    _DOMWindow.document.close();
+
+    if (![CPPlatform isBrowser])
+    {
+        _DOMWindow.cpSetLevel(_level);
+        _DOMWindow.cpSetHasShadow(_hasShadow);
+    }
 
     [self registerDOMWindow];
 }
 
 - (void)orderOut:(id)aSender
 {
+    if (!_DOMWindow)
+        return;
+
     _DOMWindow.close();
 }
 
@@ -616,7 +623,7 @@ var CTRL_KEY_CODE   = 17;
     var type = _overriddenEventType || aDOMEvent.type;
 
     // IE's event order is down, up, up, dblclick, so we have create these events artificially.
-    if (type === CPDOMEventDoubleClick)
+    if (type === @"dblclick")
     {
         _overriddenEventType = CPDOMEventMouseDown;
         [self _bridgeMouseEvent:aDOMEvent];
@@ -655,7 +662,7 @@ var CTRL_KEY_CODE   = 17;
     }
 
     if (windowNumber)
-        location = [CPApp._windows[windowNumber] convertBridgeToBase:location];
+        location = [CPApp._windows[windowNumber] convertPlatformWindowToBase:location];
 
     if (type === "mouseup")
     {
@@ -817,7 +824,7 @@ var CTRL_KEY_CODE   = 17;
 }
 
 - (CPWindow)hitTest:(CPPoint)location
-{
+{if (self._only) return self._only;
     var levels = _windowLevels,
         layers = _windowLayers,
         levelCount = levels.length,

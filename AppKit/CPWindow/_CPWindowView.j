@@ -100,7 +100,7 @@ var _CPWindowViewResizeIndicatorImage = nil;
 - (void)mouseDown:(CPEvent)anEvent
 {
     var theWindow = [self window];
-    
+
     if ((_styleMask & CPResizableWindowMask) && _resizeIndicator)
     {
         // FIXME: This should be better
@@ -145,7 +145,7 @@ var _CPWindowViewResizeIndicatorImage = nil;
     var visibleFrame = _cachedScreenFrame;
 
     if (!visibleFrame)
-        visibleFrame = [[CPPlatformWindow primaryPlatformWindow] usableContentFrame];
+        visibleFrame = [[CPPlatformWindow primaryPlatformWindow] visibleFrame];
 
     var restrictedPoint = CGPointMake(0, 0);
 
@@ -158,22 +158,24 @@ var _CPWindowViewResizeIndicatorImage = nil;
 - (void)trackMoveWithEvent:(CPEvent)anEvent
 {
     var type = [anEvent type];
-        
+
     if (type === CPLeftMouseUp)
     {
         _cachedScreenFrame = nil;
         return;
     }
+
     else if (type === CPLeftMouseDown)
     {
-        _mouseDraggedPoint = [[self window] convertBaseToBridge:[anEvent locationInWindow]];
-        _cachedScreenFrame = [[CPPlatformWindow primaryPlatformWindow] usableContentFrame];
+        _mouseDraggedPoint = [[self window] convertBaseToGlobal:[anEvent locationInWindow]];
+        _cachedScreenFrame = [[CPPlatformWindow primaryPlatformWindow] visibleFrame];
     }
+
     else if (type === CPLeftMouseDragged)
     {
         var theWindow = [self window],
             frame = [theWindow frame],
-            location = [theWindow convertBaseToBridge:[anEvent locationInWindow]],
+            location = [theWindow convertBaseToGlobal:[anEvent locationInWindow]],
             origin = [self _pointWithinScreenFrame:CGPointMake(_CGRectGetMinX(frame) + (location.x - _mouseDraggedPoint.x), 
                                                                _CGRectGetMinY(frame) + (location.y - _mouseDraggedPoint.y))];
 
@@ -322,7 +324,7 @@ var _CPWindowViewResizeIndicatorImage = nil;
     {
         var contentRect = [self convertRect:[[theWindow contentView] frame] toView:nil];
 
-        contentRect.origin = [theWindow convertBaseToBridge:contentRect.origin];
+        contentRect.origin = [theWindow convertBaseToGlobal:contentRect.origin];
 
         [self setAutoresizesSubviews:NO];
         [theWindow setFrame:[theWindow frameRectForContentRect:contentRect]];
