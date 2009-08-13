@@ -98,6 +98,9 @@ var CTRL_KEY_CODE   = 17;
     if (!_DOMWindow)
         return [self contentRect];
 
+    if (_DOMWindow.cpFrame)
+        return _DOMWindow.cpFrame();
+
     var contentRect = _CGRectMakeZero();
 
     if (window.screenTop)
@@ -126,6 +129,9 @@ var CTRL_KEY_CODE   = 17;
     if (!_DOMWindow)
         return;
 
+    if (_DOMWindow.cpSetFrame)
+        return _DOMWindow.cpSetFrame([self contentRect]);
+
     var origin = [self contentRect].origin,
         nativeOrigin = [self nativeContentRect].origin;
 
@@ -136,6 +142,9 @@ var CTRL_KEY_CODE   = 17;
 {
     if (!_DOMWindow)
         return;
+
+    if (_DOMWindow.cpSetFrame)
+        return _DOMWindow.cpSetFrame([self contentRect]);
 
     var size = [self contentRect].size,
         nativeSize = [self nativeContentRect].size;
@@ -301,6 +310,7 @@ var CTRL_KEY_CODE   = 17;
 
     _DOMWindow = window.open("", "_blank", "menubar=no,location=no,resizable=yes,scrollbars=no,status=no,left=" + _CGRectGetMinX(_contentRect) + ",top=" + _CGRectGetMinY(_contentRect) + ",width=" + _CGRectGetWidth(_contentRect) + ",height=" + _CGRectGetHeight(_contentRect));
 
+    // FIXME: cpSetFrame?
     _DOMWindow.document.write("<html><head></head><body style = 'background-color:transparent;'></body></html>");
     _DOMWindow.document.close();
 
