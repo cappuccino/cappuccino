@@ -1081,7 +1081,7 @@ var STICKY_TIME_INTERVAL        = 500,
     _unconstrainedFrame = CGRectMakeCopy([self frame]);
 
     var isBrowser = [CPPlatform isBrowser],
-        visibleFrame =  CGRectInset([isBrowser ? [self platformWindow] : [self screen] visibleFrame], 5.0, 5.0),
+        visibleFrame =  CGRectInset(isBrowser ? [[self platformWindow] contentBounds] : [[self screen] visibleFrame], 5.0, 5.0),
         constrainedFrame = CGRectIntersection(_unconstrainedFrame, visibleFrame);
 
     // We don't want to simply intersect the visible frame and the unconstrained frame.
@@ -1165,8 +1165,7 @@ var STICKY_TIME_INTERVAL        = 500,
 
     if (type === CPPeriodic)
     {
-        var constraintContext = [CPPlatform isBrowser] ? [self platformWindow] : [self screen];
-            constrainedBounds =  CGRectInset([constraintContext visibleFrame], 5.0, 5.0);
+        var constrainedBounds =  CGRectInset([CPPlatform isBrowser] ? [[self platformWindow] contentBounds] : [[self screen] visibleFrame], 5.0, 5.0);
         
         if (_scrollingState == _CPMenuWindowScrollingStateUp)
         {
