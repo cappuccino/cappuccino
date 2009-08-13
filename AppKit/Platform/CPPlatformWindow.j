@@ -198,11 +198,7 @@ var PrimaryPlatformWindow   = NULL;
 
 - (BOOL)supportsFullPlatformWindows
 {
-#if PLATFORM(BROWSER)
-    return YES;
-#else
-    return NO;
-#endif
+    return [CPPlatform isBrowser];
 }
 
 @end
