@@ -26,7 +26,12 @@
 
 + (BOOL)isBrowser
 {
-    return YES;
+    return typeof window.cpIsDesktop === "undefined";
+}
+
++ (BOOL)supportsDragAndDrop
+{
+    return CPFeatureIsCompatible(CPHTMLDragAndDropFeature);
 }
 
 @end

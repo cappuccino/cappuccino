@@ -142,6 +142,10 @@ var _CPWindowViewResizeIndicatorImage = nil;
 
 - (CGPoint)_pointWithinScreenFrame:(CGPoint)aPoint
 {
+    // FIXME: this is WRONG, all of this is WRONG
+    if (![CPPlatform isBrowser])
+        return aPoint;
+
     var visibleFrame = _cachedScreenFrame;
 
     if (!visibleFrame)

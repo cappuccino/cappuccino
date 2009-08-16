@@ -35,17 +35,18 @@ CPCSSRGBAFeature                        = 1 << 5;
 
 CPHTMLCanvasFeature                     = 1 << 6;
 CPHTMLContentEditableFeature            = 1 << 7;
+CPHTMLDragAndDropFeature                = 1 << 8;
 
-CPJavascriptInnerTextFeature            = 1 << 8;
-CPJavascriptTextContentFeature          = 1 << 9;
-CPJavascriptClipboardEventsFeature      = 1 << 10;
-CPJavascriptClipboardAccessFeature      = 1 << 11;
-CPJavaScriptCanvasDrawFeature           = 1 << 12;
-CPJavaScriptCanvasTransformFeature      = 1 << 13;
+CPJavascriptInnerTextFeature            = 1 << 9;
+CPJavascriptTextContentFeature          = 1 << 10;
+CPJavascriptClipboardEventsFeature      = 1 << 11;
+CPJavascriptClipboardAccessFeature      = 1 << 12;
+CPJavaScriptCanvasDrawFeature           = 1 << 13;
+CPJavaScriptCanvasTransformFeature      = 1 << 14;
 
-CPVMLFeature                            = 1 << 14;
+CPVMLFeature                            = 1 << 15;
 
-CPJavascriptRemedialKeySupport          = 1 << 15;
+CPJavascriptRemedialKeySupport          = 1 << 16;
 CPJavaScriptShadowFeature               = 1 << 20;
 
 CPJavaScriptNegativeMouseWheelValues    = 1 << 22;
@@ -54,7 +55,8 @@ CPJavaScriptMouseWheelValues_8_15       = 1 << 23
 CPOpacityRequiresFilterFeature          = 1 << 24;
 
 //Internet explorer does not allow dynamically changing the type of an input element
-CPInputTypeCanBeChangedFeature          = 1 << 25;  
+CPInputTypeCanBeChangedFeature          = 1 << 25;
+
 
 
 
@@ -100,6 +102,7 @@ else if (USER_AGENT.indexOf("AppleWebKit/") != -1)
     // Features we can only be sure of with WebKit (no known independent tests)
     PLATFORM_FEATURES |= CPCSSRGBAFeature;
     PLATFORM_FEATURES |= CPHTMLContentEditableFeature;
+    PLATFORM_FEATURES |= CPHTMLDragAndDropFeature;
     PLATFORM_FEATURES |= CPJavascriptClipboardEventsFeature;
     PLATFORM_FEATURES |= CPJavascriptClipboardAccessFeature;
     PLATFORM_FEATURES |= CPJavaScriptShadowFeature;

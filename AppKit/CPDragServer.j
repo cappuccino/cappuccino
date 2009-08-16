@@ -29,72 +29,24 @@
 #import "Platform/Platform.h"
 
 
+CPDragOperationNone     = 0,
+CPDragOperationCopy     = 1 << 1,
+CPDragOperationLink     = 1 << 1,
+CPDragOperationGeneric  = 1 << 2,
+CPDragOperationPrivate  = 1 << 3,
+CPDragOperationMove     = 1 << 4,
+CPDragOperationDelete   = 1 << 5,
+CPDragOperationEvery    = -1;
+
 #define DRAGGING_WINDOW(anObject) ([anObject isKindOfClass:[CPWindow class]] ? anObject : [anObject window])
 
-var CPSharedDragServer     = nil;
-    
-var CPDragServerView               = nil,
-    CPDragServerSource             = nil,
-    CPDragServerWindow             = nil,
-    CPDragServerOffset             = nil,
-    CPDragServerLocation           = nil,
-    CPDragServerPasteboard         = nil,
-    CPDragServerDestination        = nil,
-    CPDragServerDraggingInfo       = nil,
-    CPDragServerPreviousEvent      = nil,
-    CPDragServerAutoscrollInterval = nil;
-
-var CPDragServerIsDraggingImage                           = NO,
-
-    CPDragServerShouldSendDraggedViewMovedTo              = NO,
-    CPDragServerShouldSendDraggedImageMovedTo             = NO,
-    
-    CPDragServerShouldSendDraggedViewEndedAtOperation     = NO,
-    CPDragServerShouldSendDraggedImageEndedAtOperation    = NO;
-
+var    CPDragServerPreviousEvent      = nil,
+CPDragServerAutoscrollInterval = nil;
+/*
 var CPDragServerAutoscroll = function()
 {
     [CPDragServerSource autoscroll:CPDragServerPreviousEvent];
 }
-
-var CPDragServerStartDragging = function(anEvent)
-{
-    CPDragServerUpdateDragging(anEvent);
-}
-
-var CPDragServerUpdateDragging = function(anEvent)
-{
-    var globalLocation = [[anEvent window] convertBaseToGlobal:[anEvent locationInWindow]];
-
-    // If this is a mouse up, then complete the drag.
-    if([anEvent type] == CPLeftMouseUp)
-    {
-        if (CPDragServerAutoscrollInterval !== nil)
-            clearInterval(CPDragServerAutoscrollInterval);
-
-        CPDragServerAutoscrollInterval = nil;
-
-        CPDragServerLocation = [DRAGGING_WINDOW(CPDragServerDestination) convertGlobalToBase:globalLocation];
-
-        [CPDragServerView removeFromSuperview];
-        [CPSharedDragServer._dragWindow orderOut:nil];
-
-        if (CPDragServerDestination && 
-            (![CPDragServerDestination respondsToSelector:@selector(prepareForDragOperation:)] || [CPDragServerDestination prepareForDragOperation:CPDragServerDraggingInfo]) && 
-            (![CPDragServerDestination respondsToSelector:@selector(performDragOperation:)] || [CPDragServerDestination performDragOperation:CPDragServerDraggingInfo]) &&
-            [CPDragServerDestination respondsToSelector:@selector(concludeDragOperation:)])
-            [CPDragServerDestination concludeDragOperation:CPDragServerDraggingInfo];
- 
-        if (CPDragServerShouldSendDraggedImageEndedAtOperation)
-            [CPDragServerSource draggedImage:[CPDragServerView image] endedAt:CPDragServerLocation operation:NO];
-        else if (CPDragServerShouldSendDraggedViewEndedAtOperation)
-            [CPDragServerSource draggedView:CPDragServerView endedAt:CPDragServerLocation operation:NO];
-        
-        CPDragServerIsDraggingImage = NO;
-        CPDragServerDestination = nil;
-
-        return;
-    }
 
     if (CPDragServerAutoscrollInterval === nil)
     {
@@ -104,39 +56,16 @@ var CPDragServerUpdateDragging = function(anEvent)
 
     CPDragServerPreviousEvent = anEvent;
 
-    // If we're not a mouse up, then we're going to want to grab the next event.
-    [CPApp setCallback:CPDragServerUpdateDragging 
-        forNextEventMatchingMask:CPMouseMovedMask | CPLeftMouseDraggedMask | CPLeftMouseUpMask
-        untilDate:nil inMode:0 dequeue:NO];
+        if (CPDragServerAutoscrollInterval !== nil)
+            clearInterval(CPDragServerAutoscrollInterval);
 
-    // We have to convert base to bridge since the drag event comes from the source window, not the drag window.
-    var draggingDestination = [[CPPlatformWindow primaryPlatformWindow] _dragHitTest:globalLocation pasteboard:CPDragServerPasteboard];
+        CPDragServerAutoscrollInterval = nil;
+*/
 
-    CPDragServerLocation = [DRAGGING_WINDOW(draggingDestination) convertGlobalToBase:globalLocation];
+var CPSharedDragServer     = nil;
 
-    if(draggingDestination !== CPDragServerDestination)
-    {
-        if (CPDragServerDestination && [CPDragServerDestination respondsToSelector:@selector(draggingExited:)])
-            [CPDragServerDestination draggingExited:CPDragServerDraggingInfo];
-        
-        CPDragServerDestination = draggingDestination;
-        
-        if (CPDragServerDestination && [CPDragServerDestination respondsToSelector:@selector(draggingEntered:)])
-            [CPDragServerDestination draggingEntered:CPDragServerDraggingInfo];
-    }
-    else if (CPDragServerDestination && [CPDragServerDestination respondsToSelector:@selector(draggingUpdated:)])
-        [CPDragServerDestination draggingUpdated:CPDragServerDraggingInfo];
-
-    globalLocation.x -= CPDragServerOffset.x;
-    globalLocation.y -= CPDragServerOffset.y;
-
-    [[CPDragServerView window] setFrameOrigin:globalLocation];
-
-    if (CPDragServerShouldSendDraggedImageMovedTo)
-        [CPDragServerSource draggedImage:[CPDragServerView image] movedTo:globalLocation];
-    else if (CPDragServerShouldSendDraggedViewMovedTo)
-        [CPDragServerSource draggedView:CPDragServerView movedTo:globalLocation];
-}
+var CPDragServerSource             = nil;
+var CPDragServerDraggingInfo       = nil;
 
 /*
     CPDraggingInfo is a container of information about a specific dragging session.
@@ -146,24 +75,36 @@ var CPDragServerUpdateDragging = function(anEvent)
 {
 }
 
+- (CPPasteboard)draggingPasteboard
+{
+    if ([CPPlatform supportsDragAndDrop])
+        return [_CPDOMDataTransferPasteboard DOMDataTransferPasteboard];
+
+    return [[CPDragServer sharedDragServer] draggingPasteboard];
+}
+
 - (id)draggingSource
 {
-    return CPDragServerSource;
+    return [[CPDragServer sharedDragServer] draggingSource];
 }
+
+/*
+- (unsigned)draggingSourceOperationMask
+*/
 
 - (CPPoint)draggingLocation
 {
-    return CPDragServerLocation;
+    return [[CPDragServer sharedDragServer] draggingLocation];
 }
 
-- (CPPasteboard)draggingPasteboard
+- (CPWindow)draggingDestinationWindow
 {
-    return CPDragServerPasteboard;
+    return DRAGGING_WINDOW([[CPDragServer sharedDragServer] draggingDestination]);
 }
 
 - (CPImage)draggedImage
 {
-    return [CPDragServerView image];
+    return [[self draggedView] image];
 }
 
 - (CGPoint)draggedImageLocation
@@ -171,22 +112,44 @@ var CPDragServerUpdateDragging = function(anEvent)
     return [self draggedViewLocation];
 }
 
-- (CGPoint)draggedViewLocation
-{
-    return [DRAGGING_WINDOW(CPDragServerDestination) convertBridgeToBase:[CPDragServerView frame].origin];
-}
-
 - (CPView)draggedView
 {
-    return CPDragServerView;
+    return [[CPDragServer sharedDragServer] draggedView];
+}
+
+- (CGPoint)draggedViewLocation
+{
+    var dragServer = [CPDragServer sharedDragServer];
+
+    return [DRAGGING_WINDOW([dragServer draggingDestination]) convertPlatformWindowToBase:[[dragServer draggedView] frame].origin];
 }
 
 @end
 
+var CPDraggingSource_draggedImage_movedTo_          = 1 << 0,
+    CPDraggingSource_draggedImage_endAt_operation_  = 1 << 1,
+    CPDraggingSource_draggedView_movedTo_           = 1 << 2,
+    CPDraggingSource_draggedView_endedAt_operation_ = 1 << 3;
+
 @implementation CPDragServer : CPObject
 {
-    CPWindow    _dragWindow;
-    CPImageView _imageView;
+    BOOL            _isDragging @accessors(readonly, getter=isDragging);
+
+    CPWindow        _draggedWindow @accessors(readonly, getter=draggedWindow);
+    CPView          _draggedView @accessors(readonly, getter=draggedView);
+    CPImageView     _imageView;
+
+    BOOL            _isDraggingImage;
+
+    CGSize          _draggingOffset @accessors(readonly, getter=draggingOffset);
+
+    CPPasteboard    _draggingPasteboard @accessors(readonly, getter=draggingPasteboard);
+
+    id              _draggingSource @accessors(readonly, getter=draggingSource);
+    unsigned        _implementedDraggingSourceMethods;
+
+    CGPoint         _draggingLocation;
+    id              _draggingDestination;
 }
 
 /*
@@ -197,7 +160,7 @@ var CPDragServerUpdateDragging = function(anEvent)
 {
     if (self !== [CPDragServer class])
         return;
-    
+
     CPDragServerDraggingInfo = [[CPDraggingInfo alloc] init];
 }
 
@@ -205,7 +168,7 @@ var CPDragServerUpdateDragging = function(anEvent)
 {
     if (!CPSharedDragServer)
         CPSharedDragServer = [[CPDragServer alloc] init];
-        
+
     return CPSharedDragServer;
 }
 
@@ -215,15 +178,102 @@ var CPDragServerUpdateDragging = function(anEvent)
 - (id)init
 {
     self = [super init];
-    
+
     if (self)
     {
-        _dragWindow = [[CPWindow alloc] initWithContentRect:_CGRectMakeZero() styleMask:CPBorderlessWindowMask];
+        _draggedWindow = [[CPWindow alloc] initWithContentRect:_CGRectMakeZero() styleMask:CPBorderlessWindowMask];
 
-        [_dragWindow setLevel:CPDraggingWindowLevel];
+        [_draggedWindow setLevel:CPDraggingWindowLevel];
     }
-    
+
     return self;
+}
+
+- (CGPoint)draggingLocation
+{
+    return _draggingLocation
+}
+
+- (void)draggingStartedInPlatformWindow:(CPPlatformWindow)aPlatformWindow location:(CGPoint)aLocation
+{
+    if (_isDraggingImage)
+    {
+        if ([_draggingSource respondsToSelector:@selector(draggedImage:beganAt:)])
+            [_draggingSource draggedImage:[_draggedView image] beganAt:aLocation];
+    }
+    else
+    {
+        if ([_draggingSource respondsToSelector:@selector(draggedView:beganAt:)])
+            [_draggingSource draggedView:_draggedView beganAt:aLocation];
+    }
+
+    if (![CPPlatform supportsDragAndDrop])
+        [_draggedWindow orderFront:self];
+}
+
+- (void)draggingSourceUpdatedWithLocation:(CGPoint)aGlobalLocation
+{
+    if (![CPPlatform supportsDragAndDrop])
+        [_draggedWindow setFrameOrigin:_CGPointMake(aGlobalLocation.x - _draggingOffset.width, aGlobalLocation.y - _draggingOffset.height)];
+
+    if (_implementedDraggingSourceMethods & CPDraggingSource_draggedImage_movedTo_)
+        [_draggingSource draggedImage:[_draggedView image] movedTo:aGlobalLocation];
+
+    else if (_implementedDraggingSourceMethods & CPDraggingSource_draggedView_movedTo_)
+        [_draggingSource draggedView:_draggedView movedTo:aGlobalLocation];
+}
+
+- (CPDragOperation)draggingUpdatedInPlatformWindow:(CPPlatformWindow)aPlatformWindow location:(CGPoint)aLocation
+{
+    var dragOperation = CPDragOperationCopy;
+    // We have to convert base to bridge since the drag event comes from the source window, not the drag window.
+    var draggingDestination = [aPlatformWindow _dragHitTest:aLocation pasteboard:[CPDragServerDraggingInfo draggingPasteboard]];
+
+    if (draggingDestination)
+        _draggingLocation = [DRAGGING_WINDOW(draggingDestination) convertPlatformWindowToBase:aLocation];
+
+    if(draggingDestination !== _draggingDestination)
+    {
+        if (_draggingDestination && [_draggingDestination respondsToSelector:@selector(draggingExited:)])
+            [_draggingDestination draggingExited:CPDragServerDraggingInfo];
+
+        _draggingDestination = draggingDestination;
+
+        if (_draggingDestination && [_draggingDestination respondsToSelector:@selector(draggingEntered:)])
+            dragOperation = [_draggingDestination draggingEntered:CPDragServerDraggingInfo];
+    }
+    else if (_draggingDestination && [_draggingDestination respondsToSelector:@selector(draggingUpdated:)])
+        dragOperation = [_draggingDestination draggingUpdated:CPDragServerDraggingInfo];
+
+    if (!_draggingDestination)
+        dragOperation = CPDragOperationNone;
+
+    return dragOperation;
+}
+
+- (void)draggingEndedInPlatformWindow:(CPPlatformWindow)aPlatformWindow
+{
+    [_draggedView removeFromSuperview];
+
+    if (![CPPlatform supportsDragAndDrop])
+        [_draggedWindow orderOut:self];
+
+    if (_implementedDraggingSourceMethods & CPDraggingSource_draggedImage_endAt_operation_)
+        [_draggingSource draggedImage:[_draggedView image] endedAt:_draggingLocation operation:NO];
+
+    else if (_implementedDraggingSourceMethods & CPDraggingSource_draggedView_endedAt_operation_)
+        [_draggingSource draggedView:_draggedView endedAt:_draggingLocation operation:NO];
+
+    _isDragging = NO;
+}
+
+- (void)performDragOperationInPlatformWindow:(CPPlatformWindow)aPlatformWindow
+{
+    if (_draggingDestination && 
+        (![_draggingDestination respondsToSelector:@selector(prepareForDragOperation:)] || [_draggingDestination prepareForDragOperation:CPDragServerDraggingInfo]) && 
+        (![_draggingDestination respondsToSelector:@selector(performDragOperation:)] || [_draggingDestination performDragOperation:CPDragServerDraggingInfo]) &&
+        [_draggingDestination respondsToSelector:@selector(concludeDragOperation:)])
+        [_draggingDestination concludeDragOperation:CPDragServerDraggingInfo];
 }
 
 /*!
@@ -240,10 +290,12 @@ var CPDragServerUpdateDragging = function(anEvent)
 */
 - (void)dragView:(CPView)aView fromWindow:(CPWindow)aWindow at:(CGPoint)viewLocation offset:(CGSize)mouseOffset event:(CPEvent)mouseDownEvent pasteboard:(CPPasteboard)aPasteboard source:(id)aSourceObject slideBack:(BOOL)slideBack
 {
-    CPDragServerView = aView;
-    CPDragServerSource = aSourceObject;
-    CPDragServerWindow = aWindow;
-    CPDragServerPasteboard = [CPPasteboard pasteboardWithName:CPDragPboard];//aPasteboard;
+    _isDragging = YES;
+
+    _draggedView = aView;
+    _draggingPasteboard = aPasteboard || [CPPasteboard pasteboardWithName:CPDragPboard];
+    _draggingSource = aSourceObject;
+    _draggingDestination = nil;
 
     // The offset is based on the distance from where we want the view to be initially from where the mouse is initially
     // Hence the use of mouseDownEvent's location and view's location in global coordinates.
@@ -255,58 +307,48 @@ var CPDragServerUpdateDragging = function(anEvent)
         if (mouseDownWindow)
             mouseDownEventLocation = [mouseDownWindow convertBaseToGlobal:mouseDownEventLocation];
 
-        CPDragServerOffset = _CGPointMake(mouseDownEventLocation.x - viewLocation.x, mouseDownEventLocation.y - viewLocation.y);
+        _draggingOffset = _CGSizeMake(mouseDownEventLocation.x - viewLocation.x, mouseDownEventLocation.y - viewLocation.y);
     }
     else
-        CPDragServerOffset = _CGPointMakeZero();
+        _draggingOffset = _CGSizeMakerZero();
 
     if ([CPPlatform isBrowser])
-        [_dragWindow setPlatformWindow:[aWindow platformWindow]];
+        [_draggedWindow setPlatformWindow:[aWindow platformWindow]];
 
     [aView setFrameOrigin:_CGPointMakeZero()];
 
     var mouseLocation = [CPEvent mouseLocation];
 
     // Place it where the mouse pointer is.
-    [_dragWindow setFrameOrigin:_CGPointMake(mouseLocation.x - CPDragServerOffset.x, mouseLocation.y - CPDragServerOffset.y)];
-    [_dragWindow setFrameSize:[aView frame].size];
+    [_draggedWindow setFrameOrigin:_CGPointMake(mouseLocation.x - _draggingOffset.width, mouseLocation.y - _draggingOffset.height)];
+    [_draggedWindow setFrameSize:[aView frame].size];
 
-    [[_dragWindow contentView] addSubview:aView];
+    [[_draggedWindow contentView] addSubview:aView];
 
-    [_dragWindow orderFront:self];
+    _implementedDraggingSourceMethods = 0;
 
-    if (CPDragServerIsDraggingImage)
+    if (_draggedView === _imageView)
     {
-        if ([CPDragServerSource respondsToSelector:@selector(draggedImage:beganAt:)])
-            [CPDragServerSource draggedImage:[aView image] beganAt:viewLocation];
-        
-        CPDragServerShouldSendDraggedImageMovedTo = [CPDragServerSource respondsToSelector:@selector(draggedImage:movedTo:)];
-        CPDragServerShouldSendDraggedImageEndedAtOperation = [CPDragServerSource respondsToSelector:@selector(draggedImage:endAt:operation:)];
-        
-        CPDragServerShouldSendDraggedViewMovedTo = NO;
-        CPDragServerShouldSendDraggedViewEndedAtOperation = NO;
+        if ([_draggingSource respondsToSelector:@selector(draggedImage:movedTo:)])
+            _implementedDraggingSourceMethods |= CPDraggingSource_draggedImage_movedTo_;
+
+        if ([_draggingSource respondsToSelector:@selector(draggedImage:endAt:operation:)])
+            _implementedDraggingSourceMethods |= CPDraggingSource_draggedImage_endAt_operation_;
     }
     else
     {
-        if ([CPDragServerSource respondsToSelector:@selector(draggedView:beganAt:)])
-            [CPDragServerSource draggedView:aView beganAt:viewLocation];
-     
-        CPDragServerShouldSendDraggedViewMovedTo = [CPDragServerSource respondsToSelector:@selector(draggedView:movedTo:)];
-        CPDragServerShouldSendDraggedViewEndedAtOperation = [CPDragServerSource respondsToSelector:@selector(draggedView:endedAt:operation:)];
-        
+        if ([_draggingSource respondsToSelector:@selector(draggedView:movedTo:)])
+            _implementedDraggingSourceMethods |= CPDraggingSource_draggedView_movedTo_;
 
-        CPDragServerShouldSendDraggedImageMovedTo = NO;
-        CPDragServerShouldSendDraggedImageEndedAtOperation = NO;
+        if ([_draggingSource respondsToSelector:@selector(draggedView:endedAt:operation:)])
+            _implementedDraggingSourceMethods |= CPDraggingSource_draggedView_endedAt_operation_;
     }
 
-    if (mouseDownWindow)
-        mouseLocation = [mouseDownWindow convertGlobalToBase:mouseLocation];
-
-    var updatedEvent = [CPEvent mouseEventWithType:CPLeftMouseDragged location:mouseLocation modifierFlags:[mouseDownEvent modifierFlags]
-                        timestamp:[mouseDownEvent timestamp] windowNumber:[mouseDownEvent windowNumber] context:nil
-                        eventNumber:0 clickCount:[mouseDownEvent clickCount] pressure:[mouseDownEvent pressure]];
-
-    CPDragServerStartDragging(updatedEvent);
+    if (![CPPlatform supportsDragAndDrop])
+    {
+        [self draggingStartedInPlatformWindow:[aWindow platformWindow] location:mouseLocation];
+        [self trackDragging:mouseDownEvent];
+    }
 }
 
 /*!
@@ -323,15 +365,40 @@ var CPDragServerUpdateDragging = function(anEvent)
 */
 - (void)dragImage:(CPImage)anImage fromWindow:(CPWindow)aWindow at:(CGPoint)imageLocation offset:(CGSize)mouseOffset event:(CPEvent)anEvent pasteboard:(CPPasteboard)aPasteboard source:(id)aSourceObject slideBack:(BOOL)slideBack
 {
-    CPDragServerIsDraggingImage = YES;
-    
+    _isDraggingImage = YES;
+
+    var imageSize = [anImage size];
+
     if (!_imageView)
-        _imageView = [[CPImageView alloc] initWithFrame:CPRectMakeZero()];
-    
+        _imageView = [[CPImageView alloc] initWithFrame:_CGRectMake(0.0, 0.0, imageSize.width, imageSize.height)];
+
     [_imageView setImage:anImage];
-    [_imageView setFrameSize:CGSizeMakeCopy([anImage size])];
-    
+
     [self dragView:_imageView fromWindow:aWindow at:imageLocation offset:mouseOffset event:anEvent pasteboard:aPasteboard source:aSourceObject slideBack:slideBack];
+}
+
+- (void)trackDragging:(CPEvent)anEvent
+{
+    var type = [anEvent type],
+        platformWindow = [_draggedWindow platformWindow],
+        platformWindowLocation = [[anEvent window] convertBaseToPlatformWindow:[anEvent locationInWindow]];
+
+    if (type === CPLeftMouseUp)
+    {
+        [self performDragOperationInPlatformWindow:platformWindow];
+        [self draggingEndedInPlatformWindow:platformWindow];
+
+        // Stop tracking events.
+        return;
+    }
+
+    [self draggingSourceUpdatedWithLocation:platformWindowLocation];
+    [self draggingUpdatedInPlatformWindow:platformWindow location:platformWindowLocation];
+
+    // If we're not a mouse up, then we're going to want to grab the next event.
+    [CPApp setTarget:self selector:@selector(trackDragging:)
+        forNextEventMatchingMask:CPMouseMovedMask | CPLeftMouseDraggedMask | CPLeftMouseUpMask
+        untilDate:nil inMode:0 dequeue:NO];
 }
 
 @end
@@ -351,18 +418,18 @@ var CPDragServerUpdateDragging = function(anEvent)
 //    if (![self containsPoint:aPoint])
 //        return nil;
 
-    var adjustedPoint = _CGPointMake(aPoint.x - _CGRectGetMinX(_frame), aPoint.y - _CGRectGetMinY(_frame)),
+    var adjustedPoint = [self convertPlatformWindowToBase:aPoint],
         hitView = [_windowView hitTest:adjustedPoint];
 
     while (hitView && ![aPasteboard availableTypeFromArray:[hitView registeredDraggedTypes]])
         hitView = [hitView superview];
-    
+
     if (hitView)
         return hitView;
-    
+
     if ([aPasteboard availableTypeFromArray:[self registeredDraggedTypes]])
         return self;
-    
+
     return nil;
 }
 

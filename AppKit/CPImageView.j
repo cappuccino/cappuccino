@@ -87,7 +87,13 @@ var LEFT_SHADOW_INSET       = 3.0,
         _DOMImageElement.style.position = "absolute";
         _DOMImageElement.style.left = "0px";
         _DOMImageElement.style.top = "0px";
-    
+
+        if ([CPPlatform supportsDragAndDrop])
+        {
+            _DOMImageElement.setAttribute("draggable", "true");
+            _DOMImageElement.style["-khtml-user-drag"] = "element";
+        }
+
         CPDOMDisplayServerAppendChild(_DOMElement, _DOMImageElement);
         
         _DOMImageElement.style.visibility = "hidden";
@@ -398,6 +404,11 @@ var CPImageViewImageKey         = @"CPImageViewImageKey",
     _DOMImageElement.style.left = "0px";
     _DOMImageElement.style.top = "0px";
     _DOMImageElement.style.visibility = "hidden";
+    if ([CPPlatform supportsDragAndDrop])
+    {
+        _DOMImageElement.setAttribute("draggable", "true");
+        _DOMImageElement.style["-khtml-user-drag"] = "element";
+    }
 #endif
 
     self = [super initWithCoder:aCoder];
