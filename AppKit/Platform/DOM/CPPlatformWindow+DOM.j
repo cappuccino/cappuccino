@@ -918,7 +918,10 @@ var CTRL_KEY_CODE   = 17;
         while (windowCount--)
         {
             var theWindow = windows[windowCount];
-            
+
+            if ([theWindow _sharesChromeWithPlatformWindow])
+                return [theWindow _dragHitTest:aPoint pasteboard:aPasteboard];
+
             if ([theWindow containsPoint:aPoint])
                 return [theWindow _dragHitTest:aPoint pasteboard:aPasteboard];
         }
