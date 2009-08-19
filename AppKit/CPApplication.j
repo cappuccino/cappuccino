@@ -268,8 +268,13 @@ CPRunContinuesResponse  = -1002;
     [defaultCenter
         postNotificationName:CPApplicationWillFinishLaunchingNotification
         object:self];
-    
-    if (_documentController)
+
+    var needsUntitled = !!_documentController;
+
+    if (needsUntitled && [_delegate respondsToSelector: @selector(applicationShouldOpenUntitledFile:)])
+        needsUntitled = [_delegate applicationShouldOpenUntitledFile:self];
+
+    if (needsUntitled)
         [_documentController newDocument:self];
     
     [defaultCenter
