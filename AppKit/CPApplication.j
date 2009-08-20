@@ -86,6 +86,7 @@ CPRunContinuesResponse  = -1002;
     
     //
     id                      _delegate;
+    BOOL                    _finishedLaunching;
     
     CPDictionary            _namedArgs;
     CPArray                 _args;
@@ -269,7 +270,15 @@ CPRunContinuesResponse  = -1002;
         postNotificationName:CPApplicationWillFinishLaunchingNotification
         object:self];
 
-    var needsUntitled = !!_documentController;
+    var filename = window.cpOpeningFilename(),
+        needsUntitled = !!_documentController;
+
+    if ([filename length])
+    {
+        [self _openFile:filename];
+
+        needsUntitled = NO;
+    }
 
     if (needsUntitled && [_delegate respondsToSelector: @selector(applicationShouldOpenUntitledFile:)])
         needsUntitled = [_delegate applicationShouldOpenUntitledFile:self];
@@ -280,8 +289,10 @@ CPRunContinuesResponse  = -1002;
     [defaultCenter
         postNotificationName:CPApplicationDidFinishLaunchingNotification
         object:self];
-    
+
     [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
+
+    _finishedLaunching = YES;
 }
 
 /*!
@@ -743,6 +754,11 @@ CPRunContinuesResponse  = -1002;
 - (CPDictionary)namedArguments
 {
     return _namedArgs;
+}
+
+- (void)_openFile:(CPString)aFilename
+{
+    [_documentController openDocumentWithContentsOfURL:aFilename display:YES error:NULL];
 }
 
 @end
