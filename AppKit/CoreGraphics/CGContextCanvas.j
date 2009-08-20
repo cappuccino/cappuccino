@@ -239,7 +239,7 @@ function CGContextSetAlpha(aContext, anAlpha)
 }
 
 function CGContextSetFillColor(aContext, aColor)
-{
+{	
     aContext.fillStyle = [aColor cssString];
 }
 
