@@ -270,7 +270,7 @@ CPRunContinuesResponse  = -1002;
         postNotificationName:CPApplicationWillFinishLaunchingNotification
         object:self];
 
-    var filename = window.cpOpeningFilename(),
+    var filename = window.cpOpeningFilename && window.cpOpeningFilename(),
         needsUntitled = !!_documentController;
 
     if ([filename length])
