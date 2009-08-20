@@ -81,13 +81,13 @@ var CTRL_KEY_CODE   = 17;
         _DOMWindow = window;
         _contentRect = _CGRectMakeZero();
 
+        _windowLevels = [];
+        _windowLayers = [CPDictionary dictionary];
+
         [self registerDOMWindow];
         [self updateFromNativeContentRect];
 
         _charCodes = {};
-
-        _windowLevels = [];
-        _windowLayers = [CPDictionary dictionary];
     }
 
     return self;
@@ -97,6 +97,9 @@ var CTRL_KEY_CODE   = 17;
 {
     if (!_DOMWindow)
         return [self contentRect];
+
+    if (_DOMWindow.cpFrame)
+        return _DOMWindow.cpFrame();
 
     var contentRect = _CGRectMakeZero();
 
@@ -126,6 +129,9 @@ var CTRL_KEY_CODE   = 17;
     if (!_DOMWindow)
         return;
 
+    if (_DOMWindow.cpSetFrame)
+        return _DOMWindow.cpSetFrame([self contentRect]);
+
     var origin = [self contentRect].origin,
         nativeOrigin = [self nativeContentRect].origin;
 
@@ -136,6 +142,9 @@ var CTRL_KEY_CODE   = 17;
 {
     if (!_DOMWindow)
         return;
+
+    if (_DOMWindow.cpSetFrame)
+        return _DOMWindow.cpSetFrame([self contentRect]);
 
     var size = [self contentRect].size,
         nativeSize = [self nativeContentRect].size;
@@ -154,6 +163,10 @@ var CTRL_KEY_CODE   = 17;
     var theDocument = _DOMWindow.document;
 
     _DOMBodyElement = theDocument.getElementsByTagName("body")[0];
+
+    // FIXME: Always do this?
+    if ([CPPlatform supportsDragAndDrop])
+        _DOMBodyElement.style["-khtml-user-select"] = "none";
 
     _DOMBodyElement.webkitTouchCallout = "none";
 
@@ -180,6 +193,9 @@ var CTRL_KEY_CODE   = 17;
 
     var theClass = [self class],
 
+        dragEventImplementation = class_getMethodImplementation(theClass, @selector(dragEvent:)),
+        dragEventCallback = function (anEvent) { dragEventImplementation(self, nil, anEvent); },
+
         resizeEventSelector = @selector(resizeEvent:),
         resizeEventImplementation = class_getMethodImplementation(theClass, resizeEventSelector),
         resizeEventCallback = function (anEvent) { resizeEventImplementation(self, nil, anEvent); },
@@ -202,6 +218,16 @@ var CTRL_KEY_CODE   = 17;
 
     if (theDocument.addEventListener)
     {
+        if ([CPPlatform supportsDragAndDrop])
+        {
+            theDocument.addEventListener("dragstart", dragEventCallback, NO);
+            theDocument.addEventListener("drag", dragEventCallback, NO);
+            theDocument.addEventListener("dragend", dragEventCallback, NO);
+            theDocument.addEventListener("dragover", dragEventCallback, NO);
+            theDocument.addEventListener("dragleave", dragEventCallback, NO);
+            theDocument.addEventListener("drop", dragEventCallback, NO);
+        }
+
         theDocument.addEventListener("mouseup", mouseEventCallback, NO);
         theDocument.addEventListener("mousedown", mouseEventCallback, NO);
         theDocument.addEventListener("mousemove", mouseEventCallback, NO);
@@ -220,7 +246,7 @@ var CTRL_KEY_CODE   = 17;
 
         _DOMWindow.addEventListener("resize", resizeEventCallback, NO);        
 
-        _DOMWindow.addEventListener("beforeunload", function()
+        _DOMWindow.addEventListener("unload", function()
         {
             [self updateFromNativeContentRect];
 
@@ -294,24 +320,104 @@ var CTRL_KEY_CODE   = 17;
     }
 }
 
-- (BOOL)isVisible
-{
-    return _DOMWindow !== NULL;
-}
-
 - (void)orderFront:(id)aSender
 {
     if (_DOMWindow)
         return _DOMWindow.focus();
 
-    _DOMWindow = window.open("", "", "menubar=no,location=no,resizable=yes,scrollbars=no,status=no,left=" + _CGRectGetMinX(_contentRect) + ",top=" + _CGRectGetMinY(_contentRect) + ",width=" + _CGRectGetWidth(_contentRect) + ",height=" + _CGRectGetHeight(_contentRect));
+    _DOMWindow = window.open("", "_blank", "menubar=no,location=no,resizable=yes,scrollbars=no,status=no,left=" + _CGRectGetMinX(_contentRect) + ",top=" + _CGRectGetMinY(_contentRect) + ",width=" + _CGRectGetWidth(_contentRect) + ",height=" + _CGRectGetHeight(_contentRect));
+
+    // FIXME: cpSetFrame?
+    _DOMWindow.document.write("<html><head></head><body style = 'background-color:transparent;'></body></html>");
+    _DOMWindow.document.close();
+
+    if (![CPPlatform isBrowser])
+    {
+        _DOMWindow.cpSetLevel(_level);
+        _DOMWindow.cpSetHasShadow(_hasShadow);
+    }
 
     [self registerDOMWindow];
 }
 
 - (void)orderOut:(id)aSender
 {
+    if (!_DOMWindow)
+        return;
+
     _DOMWindow.close();
+}
+
+- (void)dragEvent:(DOMEvent)aDOMEvent
+{
+    var type = aDOMEvent.type,
+        dragServer = [CPDragServer sharedDragServer],
+        location = _CGPointMake(aDOMEvent.clientX, aDOMEvent.clientY),
+        pasteboard = [_CPDOMDataTransferPasteboard DOMDataTransferPasteboard];
+
+    [pasteboard _setDataTransfer:aDOMEvent.dataTransfer];
+
+    if (aDOMEvent.type === "dragstart")
+    {
+        [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
+
+        [pasteboard _setPasteboard:[dragServer draggingPasteboard]];
+
+        var draggedWindow = [dragServer draggedWindow],
+            draggedWindowFrame = [draggedWindow frame],
+            DOMDragElement = draggedWindow._DOMElement;
+
+        DOMDragElement.style.left = -_CGRectGetWidth(draggedWindowFrame) + "px";
+        DOMDragElement.style.top = -_CGRectGetHeight(draggedWindowFrame) + "px";
+
+        document.getElementsByTagName("body")[0].appendChild(DOMDragElement);
+
+        var draggingOffset = [dragServer draggingOffset];
+
+        aDOMEvent.dataTransfer.setDragImage(DOMDragElement, draggingOffset.width, draggingOffset.height);
+
+        [dragServer draggingStartedInPlatformWindow:self location:[CPPlatform isBrowser] ? location : _CGPointMake(aDOMEvent.screenX, aDOMEvent.screenY)];
+    }
+
+    else if (type === "drag")
+        [dragServer draggingSourceUpdatedWithLocation:[CPPlatform isBrowser] ? location : _CGPointMake(aDOMEvent.screenX, aDOMEvent.screenY)];
+
+    else if (type === "dragover" || type === "dragleave")
+    {
+        if (aDOMEvent.preventDefault)
+            aDOMEvent.preventDefault();
+
+        var dropEffect = "none",
+            dragOperation = [dragServer draggingUpdatedInPlatformWindow:self location:location];
+
+        if (dragOperation === CPDragOperationMove || dragOperation === CPDragOperationGeneric || dragOperation === CPDragOperationPrivate)
+            dropEffect = "move";
+
+        else if (dragOperation === CPDragOperationCopy)
+            dropEffect = "copy";
+
+        else if (dragOperation === CPDragOperationLink)
+            dropEffect = "link";
+
+        aDOMEvent.dataTransfer.dropEffect = dropEffect;
+    }
+
+    else if (type === "dragend")
+        [dragServer draggingEndedInPlatformWindow:self];
+
+    else //if (type === "drop")
+    {
+        [dragServer performDragOperationInPlatformWindow:self];
+
+        // W3C Model
+        if (aDOMEvent.preventDefault)
+            aDOMEvent.preventDefault();
+
+        if (aDOMEvent.stopPropagation)
+            aDOMEvent.stopPropagation();
+    }
+
+    [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
 }
 
 - (void)keyEvent:(DOMEvent)aDOMEvent
@@ -616,7 +722,7 @@ var CTRL_KEY_CODE   = 17;
     var type = _overriddenEventType || aDOMEvent.type;
 
     // IE's event order is down, up, up, dblclick, so we have create these events artificially.
-    if (type === CPDOMEventDoubleClick)
+    if (type === @"dblclick")
     {
         _overriddenEventType = CPDOMEventMouseDown;
         [self _bridgeMouseEvent:aDOMEvent];
@@ -655,7 +761,7 @@ var CTRL_KEY_CODE   = 17;
     }
 
     if (windowNumber)
-        location = [CPApp._windows[windowNumber] convertBridgeToBase:location];
+        location = [CPApp._windows[windowNumber] convertPlatformWindowToBase:location];
 
     if (type === "mouseup")
     {
@@ -676,9 +782,15 @@ var CTRL_KEY_CODE   = 17;
     }
     
     else if (type === "mousedown")
-    {                               
+    {
         if (ExcludedDOMElements[sourceElement.tagName] && sourceElement != _DOMFocusElement)
         {
+            if ([CPPlatform supportsDragAndDrop])
+            {
+                _DOMBodyElement.setAttribute("draggable", "false");
+                _DOMBodyElement.style["-khtml-user-drag"] = "none";
+            }
+
             _DOMEventMode = YES;
             _mouseIsDown = YES;
 
@@ -693,6 +805,11 @@ var CTRL_KEY_CODE   = 17;
 
             return;
         }
+        else if ([CPPlatform supportsDragAndDrop])
+        {
+            _DOMBodyElement.setAttribute("draggable", "true");
+            _DOMBodyElement.style["-khtml-user-drag"] = "element";
+        }
 
         event = _CPEventFromNativeMouseEvent(aDOMEvent, CPLeftMouseDown, location, modifierFlags, timestamp, windowNumber, nil, -1, CPDOMEventGetClickCount(_lastMouseDown, timestamp, location), 0);
                     
@@ -700,7 +817,7 @@ var CTRL_KEY_CODE   = 17;
         _lastMouseDown = event;
     }
     
-    else // if (type === "mousemove")                    
+    else // if (type === "mousemove" || type === "drag")
     {
         if (_DOMEventMode)
             return;
@@ -715,7 +832,7 @@ var CTRL_KEY_CODE   = 17;
         [CPApp sendEvent:event];
     }
 
-    if (StopDOMEventPropagation)
+    if (StopDOMEventPropagation && (![CPPlatform supportsDragAndDrop] || type !== "mousedown" && ![[CPDragServer sharedDragServer] isDragging]))
         CPDOMEventStop(aDOMEvent, self);
 
     [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
@@ -801,7 +918,10 @@ var CTRL_KEY_CODE   = 17;
         while (windowCount--)
         {
             var theWindow = windows[windowCount];
-            
+
+            if ([theWindow _sharesChromeWithPlatformWindow])
+                return [theWindow _dragHitTest:aPoint pasteboard:aPasteboard];
+
             if ([theWindow containsPoint:aPoint])
                 return [theWindow _dragHitTest:aPoint pasteboard:aPasteboard];
         }
@@ -817,7 +937,7 @@ var CTRL_KEY_CODE   = 17;
 }
 
 - (CPWindow)hitTest:(CPPoint)location
-{
+{if (self._only) return self._only;
     var levels = _windowLevels,
         layers = _windowLayers,
         levelCount = levels.length,

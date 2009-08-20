@@ -423,7 +423,7 @@ var CPSplitViewHorizontalImage = nil,
         frameA = [viewA frame],
         viewB = _subviews[dividerIndex + 1],
         frameB = [viewB frame];
-    
+
     var realPosition = MAX(MIN(position, actualMax), actualMin);
     
     if (position <  proposedMin + (actualMin - proposedMin) / 2)
@@ -488,8 +488,9 @@ var CPSplitViewHorizontalImage = nil,
         totalSizableSpace = 0;
 
     var nonSizableSpace = totalSizableSpace ? bounds.size[_sizeComponent] - totalSizableSpace : 0,
-        ratio = (bounds.size[_sizeComponent] - totalDividers*dividerThickness - nonSizableSpace) / (oldSize[_sizeComponent]- totalDividers*dividerThickness - nonSizableSpace),
-        remainingFlexibleSpace = bounds.size[_sizeComponent] - oldSize[_sizeComponent];
+        remainingFlexibleSpace = bounds.size[_sizeComponent] - oldSize[_sizeComponent],
+        oldDimension = (oldSize[_sizeComponent]- totalDividers*dividerThickness - nonSizableSpace),
+        ratio = oldDimension <= 0 ? 0 : (bounds.size[_sizeComponent] - totalDividers*dividerThickness - nonSizableSpace) / oldDimension;
 
     for (index = 0; index < count; ++index)
     {
@@ -510,7 +511,7 @@ var CPSplitViewHorizontalImage = nil,
                 viewFrame.size[_sizeComponent] = [view frame].size[_sizeComponent];
             else
                 alert("SHOULD NEVER GET HERE");
-                
+
         bounds.origin[_originComponent] += viewFrame.size[_sizeComponent] + dividerThickness;        
 
         [view setFrame:viewFrame];

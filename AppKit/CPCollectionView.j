@@ -93,6 +93,8 @@
     unsigned                _numberOfColumns;
     
     id                      _delegate;
+
+    CPEvent                 _mouseDownEvent;
 }
 
 - (id)initWithFrame:(CGRect)aFrame
@@ -528,13 +530,16 @@
 
 - (void)mouseDown:(CPEvent)anEvent
 {
+    _mouseDownEvent = anEvent;
+
     var location = [self convertPoint:[anEvent locationInWindow] fromView:nil],
         row = FLOOR(location.y / (_itemSize.height + _verticalMargin)),
         column = FLOOR(location.x / (_itemSize.width + _horizontalMargin)),
         index = row * _numberOfColumns + column;
-        
+
     if (index >= 0 && index < _items.length)
         [self setSelectionIndexes:[CPIndexSet indexSetWithIndex:index]];
+
     else if (_allowsEmptySelection)
         [self setSelectionIndexes:[CPIndexSet indexSet]];
 }
@@ -566,7 +571,7 @@
     [self dragView:view
         at:[[_items[[_selectionIndexes firstIndex]] view] frame].origin
         offset:CGPointMakeZero()
-        event:anEvent
+        event:_mouseDownEvent
         pasteboard:nil
         source:self
         slideBack:YES];

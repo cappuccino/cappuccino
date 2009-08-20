@@ -86,6 +86,7 @@ CPRunContinuesResponse  = -1002;
     
     //
     id                      _delegate;
+    BOOL                    _finishedLaunching;
     
     CPDictionary            _namedArgs;
     CPArray                 _args;
@@ -268,15 +269,30 @@ CPRunContinuesResponse  = -1002;
     [defaultCenter
         postNotificationName:CPApplicationWillFinishLaunchingNotification
         object:self];
-    
-    if (_documentController)
+
+    var filename = window.cpOpeningFilename(),
+        needsUntitled = !!_documentController;
+
+    if ([filename length])
+    {
+        [self _openFile:filename];
+
+        needsUntitled = NO;
+    }
+
+    if (needsUntitled && [_delegate respondsToSelector: @selector(applicationShouldOpenUntitledFile:)])
+        needsUntitled = [_delegate applicationShouldOpenUntitledFile:self];
+
+    if (needsUntitled)
         [_documentController newDocument:self];
     
     [defaultCenter
         postNotificationName:CPApplicationDidFinishLaunchingNotification
         object:self];
-    
+
     [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
+
+    _finishedLaunching = YES;
 }
 
 /*!
@@ -403,6 +419,8 @@ CPRunContinuesResponse  = -1002;
 */
 - (void)sendEvent:(CPEvent)anEvent
 {
+    _currentEvent = anEvent;
+
     // Check if this is a candidate for key equivalent...
     if ([anEvent type] == CPKeyDown &&
         [anEvent modifierFlags] & (CPCommandKeyMask | CPControlKeyMask) && 
@@ -670,6 +688,11 @@ CPRunContinuesResponse  = -1002;
     _eventListeners.push(_CPEventListenerMake(aMask, function (anEvent) { objj_msgSend(aTarget, aSelector, anEvent); }));
 }
 
+- (CPEvent)currentEvent
+{
+    return _currentEvent;
+}
+
 // Managing Sheets
 
 /*!
@@ -731,6 +754,11 @@ CPRunContinuesResponse  = -1002;
 - (CPDictionary)namedArguments
 {
     return _namedArgs;
+}
+
+- (void)_openFile:(CPString)aFilename
+{
+    [_documentController openDocumentWithContentsOfURL:aFilename display:YES error:NULL];
 }
 
 @end

@@ -25,6 +25,8 @@
 @import <Foundation/CPDictionary.j>
 @import <Foundation/CPPropertyListSerialization.j>
 
+#include "Platform/Platform.h"
+
 
 CPGeneralPboard         = @"CPGeneralPboard";
 CPFontPboard            = @"CPFontPboard";
@@ -213,7 +215,7 @@ var CPPasteboards = nil;
 */
 - (CPString)availableTypeFromArray:(CPArray)anArray
 {
-    return [_types firstObjectCommonWithArray:anArray];
+    return [[self types] firstObjectCommonWithArray:anArray];
 }
 
 /*!
@@ -304,3 +306,70 @@ var CPPasteboards = nil;
 }
 
 @end
+
+#if PLATFORM(DOM)
+
+var DOMDataTransferPasteboard = nil;
+
+@implementation _CPDOMDataTransferPasteboard : CPPasteboard
+{
+    DataTransfer    _dataTransfer;
+}
+
++ (_CPDOMDataTransferPasteboard)DOMDataTransferPasteboard
+{
+    if (!DOMDataTransferPasteboard)
+        DOMDataTransferPasteboard = [[_CPDOMDataTransferPasteboard alloc] init];
+
+    return DOMDataTransferPasteboard;
+}
+
+- (void)_setDataTransfer:(DataTransfer)aDataTransfer
+{
+    _dataTransfer = aDataTransfer;
+}
+
+- (void)_setPasteboard:(CPPasteboard)aPasteboard
+{
+    _dataTransfer.clearData();
+
+    var types = [aPasteboard types],
+        count = types.length;
+
+    while (count--)
+    {
+        var type = types[count];
+
+        if (type === CPStringPboardType)
+            _dataTransfer.setData(type, [aPasteboard stringForType:type]);
+        else
+            _dataTransfer.setData(type, [[aPasteboard dataForType:type] string]);
+    }
+}
+
+- (CPArray)types
+{
+    return Array.prototype.slice.apply(_dataTransfer.types);
+}
+
+- (CPData)dataForType:(CPString)aType
+{
+    var dataString = _dataTransfer.getData(aType);
+
+    if (aType === CPStringPboardType)
+        return [CPData dataFromPropertyList:dataString format:kCFPropertyList280NorthFormat_v1_0 errorDescription:0];
+
+    return [CPData dataWithString:dataString];
+}
+
+- (id)propertyListForType:(CPString)aType
+{
+    if (aType === CPStringPboardType)
+        return _dataTransfer.getData(aType);
+
+    return [CPPropertyListSerialization propertyListFromData:[self dataForType:aType] format:CPPropertyListUnknownFormat errorDescription:nil];
+}
+
+@end
+
+#endif

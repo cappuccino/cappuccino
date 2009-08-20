@@ -24,4 +24,14 @@
     [CPPlatformWindow setPrimaryPlatformWindow:[[CPPlatformWindow alloc] _init]];
 }
 
++ (BOOL)isBrowser
+{
+    return typeof window.cpIsDesktop === "undefined";
+}
+
++ (BOOL)supportsDragAndDrop
+{
+    return CPFeatureIsCompatible(CPHTMLDragAndDropFeature);
+}
+
 @end

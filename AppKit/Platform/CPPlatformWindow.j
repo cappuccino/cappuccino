@@ -9,7 +9,10 @@ var PrimaryPlatformWindow   = NULL;
 
 @implementation CPPlatformWindow : CPObject
 {
-    CGRect  _contentRect;
+    CGRect          _contentRect;
+
+    CPInteger       _level;
+    BOOL            _hasShadow;
 
 #if PLATFORM(DOM)
     DOMWindow       _DOMWindow;
@@ -86,7 +89,7 @@ var PrimaryPlatformWindow   = NULL;
     return contentBounds;
 }
 
-- (void)usableContentFrame
+- (CGRect)visibleFrame
 {
     var frame = [self contentBounds];
 
@@ -101,6 +104,11 @@ var PrimaryPlatformWindow   = NULL;
     }
 
     return frame;
+}
+
+- (void)usableContentFrame
+{
+    return [self visibleFrame];
 }
 
 - (void)setContentRect:(CGRect)aRect
@@ -144,30 +152,53 @@ var PrimaryPlatformWindow   = NULL;
 {
     [self setContentRect:[self nativeContentRect]];
 }
-/*
-- (BOOL)isVisible
+
+- (CGPoint)convertBaseToScreen:(CGPoint)aPoint
 {
-    return NO;
+    var contentRect = [self contentRect];
+
+    return _CGPointMake(aPoint.x + _CGRectGetMinX(contentRect), aPoint.y + _CGRectGetMinY(contentRect));
 }
 
-/*
-+ (BOOL)supportsMultipleWindows
+- (CGPoint)convertScreenToBase:(CGPoint)aPoint
 {
-#if PLATFORM(BROWSER)
-    return YES;
+    var contentRect = [self contentRect];
+
+    return _CGPointMake(aPoint.x - _CGRectGetMinX(contentRect), aPoint.y - _CGRectGetMinY(contentRect));
+}
+
+- (BOOL)isVisible
+{
+#if PLATFORM(DOM)
+    return _DOMWindow !== NULL;
 #else
     return NO;
 #endif
 }
-*/
+
+- (void)setLevel:(CPInteger)aLevel
+{
+    _level = aLevel;
+
+#if PLATFORM(DOM)
+    if (_DOMWindow && _DOMWindow.cpSetLevel)
+        _DOMWindow.cpSetLevel(aLevel);
+#endif
+}
+
+- (void)setHasShadow:(BOOL)shouldHaveShadow
+{
+    _hasShadow = shouldHaveShadow;
+
+#if PLATFORM(DOM)
+    if (_DOMWindow && _DOMWindow.cpSetHasShadow)
+        _DOMWindow.cpSetHasShadow(shouldHaveShadow);
+#endif
+}
 
 - (BOOL)supportsFullPlatformWindows
 {
-#if PLATFORM(BROWSER)
-    return YES;
-#else
-    return NO;
-#endif
+    return [CPPlatform isBrowser];
 }
 
 @end
