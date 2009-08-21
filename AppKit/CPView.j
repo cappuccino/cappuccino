@@ -2457,6 +2457,7 @@ var _CPViewGetTransform = function(/*CPView*/ fromView, /*CPView */ toView)
     {
         var view = fromView;
         
+        // FIXME: This doesn't handle the case when the outside views are equal.
         // If we have a fromView, "climb up" the view tree until 
         // we hit the root node or we hit the toLayer.
         while (view && view != toView)

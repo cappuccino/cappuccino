@@ -113,7 +113,10 @@ CPTableViewSolidHorizontalGridLineMask = 1 << 1;
     //Setting Display Attributes
     CGSize		_intercellSpacing;
     float       _rowHeight;
+
     BOOL        _usesAlternatingRowBackgroundColors;
+    CPArray     _alternatingRowBackgroundColors;
+
     unsigned    _selectionHighlightMask;
     unsigned    _currentHighlightedTableColumn;
 	unsigned	_gridStyleMask;
@@ -149,7 +152,9 @@ CPTableViewSolidHorizontalGridLineMask = 1 << 1;
 
         //Setting Display Attributes
         _selectionHighlightMask = CPTableViewSelectionHighlightStyleRegular;
-        _usesAlternatingRowBackgroundColors = NO;
+
+        [self setUsesAlternatingRowBackgroundColors:NO];
+        [self setAlternatingRowBackgroundColors:[[CPColor whiteColor], [CPColor colorWithHexString:@"e4e7ff"]]];
 
         _tableColumns = [];
         _tableColumnRanges = [];
@@ -181,6 +186,7 @@ CPTableViewSolidHorizontalGridLineMask = 1 << 1;
         _tableDrawView = [[_CPTableDrawView alloc] initWithTableView:self];
         [_tableDrawView setBackgroundColor:[CPColor clearColor]];
         [self addSubview:_tableDrawView];
+
     }
 
     return self;
@@ -236,9 +242,12 @@ CPTableViewSolidHorizontalGridLineMask = 1 << 1;
         return;
 
     _objectValues = { };
+
     [self noteNumberOfRowsChanged];
-	[self _sizeToParent];
-    [self layoutSubviews];
+    [self _sizeToParent];
+
+    [self setNeedsLayout];
+    [self setNeedsDisplay:YES];
 }
 
 //Target-action Behavior
@@ -337,7 +346,7 @@ CPTableViewSolidHorizontalGridLineMask = 1 << 1;
     if (_rowHeight === aRowHeight)
         return;
 
-    _rowHeight = aRowHeight;
+    _rowHeight = MAX(0.0, aRowHeight);
 
     [self setNeedsLayout];
 }
@@ -360,6 +369,21 @@ CPTableViewSolidHorizontalGridLineMask = 1 << 1;
 - (BOOL)usesAlternatingRowBackgroundColors
 {
     return _usesAlternatingRowBackgroundColors;
+}
+
+- (void)setAlternatingRowBackgroundColors:(CPArray)alternatingRowBackgroundColors
+{
+    if ([_alternatingRowBackgroundColors isEqual:alternatingRowBackgroundColors])
+        return;
+
+    _alternatingRowBackgroundColors = alternatingRowBackgroundColors;
+
+    [self setNeedsDisplay:YES];
+}
+
+- (CPArray)alternatingRowBackgroundColors
+{
+    return _alternatingRowBackgroundColors;
 }
 
 - (unsigned)selectionHighlightStyle
@@ -1284,49 +1308,89 @@ _cachedDataViews[dataView.identifier].push(dataView);
     [super setFrameSize:aSize];
     [_headerView setFrameSize:CGSizeMake(aSize.width, [_headerView frame].size.height)];
 }
-/*
-- (void)drawRect:(CGRect)aRect
+
+- (CGRect)exposedClipRect
 {
-	//implemented for compatability for resizing...
-	//This might need to be sent to the _tableDrawView object instead.
-	//maybe?
-	[self _drawRect:aRect]; 
+    var superview = [self superview];
+
+    if (![superview isKindOfClass:[CPClipView class]])
+        return [self bounds];
+
+    return [self convertRect:CGRectIntersection([superview bounds], [self frame]) fromView:superview];
 }
-*/
+
 - (void)_drawRect:(CGRect)aRect
-{	
-	var exposedRect = [self _exposedRect];
+{
+    var exposedRect = [self _exposedRect];
 
-	if([self usesAlternatingRowBackgroundColors])
-		[self colorAlternatingRowsInClipRect:exposedRect];
-
+    [self drawBackgroundInClipRect:exposedRect];
     [self highlightSelectionInClipRect:exposedRect];	
     [self drawGridInClipRect:exposedRect];	
 }
 
-- (void)setNeedsDisplay:(BOOL)needsDisplay
+- (void)drawBackgroundInClipRect:(CGRect)aRect
 {
-    [_tableDrawView setNeedsDisplay:needsDisplay];
-}
+    if (![self usesAlternatingRowBackgroundColors])
+        return;
 
-- (void)colorAlternatingRowsInClipRect:(CGRect)aRect
-{
-	var context = [[CPGraphicsContext currentContext] graphicsPort];
-	var exposedRows = [self drawnRowsInRect:aRect];
+    var rowColors = [self alternatingRowBackgroundColors],
+        colorCount = [rowColors count];
 
-	var row = exposedRows.location,
-        maxRow = CPMaxRange(exposedRows);
-		
-    for (; row < maxRow; ++row)
+    if (colorCount === 0)
+        return;
+
+    var context = [[CPGraphicsContext currentContext] graphicsPort];
+
+    if (colorCount === 1)
     {
-		if(row % 2 == 0)
-			[[CPColor evenRowColor] setFill];
-		else
-			[[CPColor oddRowColor] setFill];
-		
-	    var rowToStroke = [self rectOfRow:row];
-	    CGContextFillRect(context, [self rectOfRow:row]);		
-	}
+        CGContextSetFillColor(context, rowColors[0]);
+        CGContextFillRect(context, aRect);
+
+	    return;
+    }
+    // CGContextFillRect(context, CGRectIntersection(aRect, fillRect));
+    // console.profile("row-paint");
+    var exposedRows = [self rowsInRect:aRect],
+        firstRow = exposedRows.location,
+        lastRow = CPMaxRange(exposedRows) - 1,
+        colorIndex = MIN(exposedRows.length, colorCount);
+
+    while (colorIndex--)
+    {
+        var row = firstRow % colorCount + firstRow + colorIndex,
+            fillRect = nil;
+
+        CGContextBeginPath(context);
+
+        for (; row <= lastRow; row += colorCount)
+            CGContextAddRect(context, CGRectIntersection(aRect, fillRect = [self rectOfRow:row]));
+
+        if (row - colorCount === lastRow)
+            heightFilled = _CGRectGetMaxY(fillRect);
+
+        CGContextClosePath(context);
+
+        CGContextSetFillColor(context, rowColors[colorIndex]);
+        CGContextFillPath(context);
+    }
+    // console.profileEnd("row-paint");
+
+    var totalHeight = _CGRectGetMaxY(aRect);
+
+    if (heightFilled >= totalHeight || _rowHeight <= 0.0)
+        return;
+
+    var rowHeight = _rowHeight + _intercellSpacing.height,
+        fillRect = _CGRectMake(_CGRectGetMinX(aRect), _CGRectGetMinY(aRect) + heightFilled, _CGRectGetWidth(aRect), rowHeight);
+
+    for (row = lastRow + 1; heightFilled < totalHeight; ++row)
+    {
+        CGContextSetFillColor(context, rowColors[row % colorCount]);
+        CGContextFillRect(context, fillRect);
+
+        heightFilled += rowHeight;
+        fillRect.origin.y += rowHeight;
+    }
 }
 
 - (void)drawGridInClipRect:(CGRect)aRect
@@ -1389,8 +1453,8 @@ _cachedDataViews[dataView.identifier].push(dataView);
 - (void)highlightSelectionInClipRect:(CGRect)aRect
 {
 	[[CPColor whiteColor] setStroke];
-	
-	if([self selectionHighlightStyle] == CPTableViewSelectionHighlightStyleSourceList)
+
+	if([self selectionHighlightStyle] === CPTableViewSelectionHighlightStyleSourceList)
 	    [[CPColor selectionColorSourceView] setFill];
 	else
 		[[CPColor selectionColor] setFill];
@@ -1473,12 +1537,16 @@ _cachedDataViews[dataView.identifier].push(dataView);
 
 - (void)superviewBoundsChanged:(CPNotification)aNotification
 {
+    [self setNeedsDisplay:YES];
     [self setNeedsLayout];
 }
 
 - (void)superviewFrameChanged:(CPNotification)aNotification
 {
     [self _sizeToParent];
+
+    // Call this explicitly because *our* size may not change, but the exposedRect may change.
+    [self setNeedsDisplay:YES];
     [self setNeedsLayout];
 }
 
@@ -1685,16 +1753,6 @@ var CPTableViewDataSourceKey        = @"CPTableViewDataSourceKey",
 + (CPColor)selectionColorSourceView
 {
 	return [CPColor colorWithPatternImage:[[CPImage alloc] initByReferencingFile:@"Resources/tableviewselection.png" size:CGSizeMake(6,22)]];
-}
-
-+ (CPColor)oddRowColor
-{
-	return [CPColor whiteColor];
-}
-
-+ (CPColor)evenRowColor
-{
-	return [CPColor colorWithHexString:@"e4e7ff"];
 }
 
 + (CPColor)gridColor

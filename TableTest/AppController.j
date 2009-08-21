@@ -24,6 +24,7 @@ CPLogRegister(CPLogConsole);
     tableView = [[CPTableView alloc] initWithFrame:CGRectMake(0.0, 0.0, 500.0, 500.0)];//[view bounds]];
 
     [tableView setAllowsMultipleSelection:YES];
+    [tableView setUsesAlternatingRowBackgroundColors:YES];
 
 //    [tableView setBackgroundColor:[CPColor blueColor]];
 
