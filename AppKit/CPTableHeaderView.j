@@ -89,9 +89,7 @@
     bounds.size.width = [tableColumns[aColumnIndex] width] + tableSpacing.width;
 
     while (--aColumnIndex >= 0)
-    {
         bounds.origin.x += [tableColumns[aColumnIndex] width] + tableSpacing.width;
-    }
 
     return bounds;
 }
@@ -108,7 +106,7 @@
         var column = [tableColumns objectAtIndex:i],
             headerView = [column headerView];
 
-        columnRect.size.width    = [column width] + spacing.width;
+        columnRect.size.width = [column width] + spacing.width;
 
         [headerView setFrame:columnRect];
 
@@ -120,33 +118,30 @@
 
 - (void)drawRect:(CGRect)aRect
 {
-	[_tableView sizeLastColumnToFit];
-	[[_tableView gridColor] setStroke];
-	
-	if ([_tableView gridStyleMask] & CPTableViewSolidVerticalGridLineMask)
-	{
-		var context = [[CPGraphicsContext currentContext] graphicsPort];	
-		
-		var exposedColumnIndexes = exposedColumnIndexes = [_tableView columnIndexesInRect:aRect],
-			columnsArray = [];
+    // FIXME: this is necessary why?
+    [_tableView sizeLastColumnToFit];
+    [[_tableView gridColor] setStroke];
 
-		[exposedColumnIndexes getIndexes:columnsArray maxCount:-1 inIndexRange:nil]; //may have to set inIndexRange: to a range if nil doesn't work after compilation.
+    var context = [[CPGraphicsContext currentContext] graphicsPort],
+        exposedColumnIndexes = exposedColumnIndexes = [_tableView columnIndexesInRect:aRect],
+        columnsArray = [];
 
-		var columnArrayIndex = 0,
-    	          columnArrayCount = columnsArray.length;
-    	    	
-		for(; columnArrayIndex < columnArrayCount; ++columnArrayIndex)
-    	{
-		    // grab each column rect and add horizontal lines
-		    var columnToStroke = [self headerRectOfColumn:columnArrayIndex];
-		    CGContextBeginPath(context);
-			CGContextMoveToPoint(context, ROUND(columnToStroke.origin.x + columnToStroke.size.width) - 0.5, ROUND(columnToStroke.origin.y) - 0.5);
-			CGContextAddLineToPoint(context, ROUND(columnToStroke.origin.x + columnToStroke.size.width) - 0.5, ROUND(columnToStroke.origin.y + columnToStroke.size.height) - 0.5);
-			CGContextSetLineWidth(context, 1);
-			CGContextStrokePath(context);
-		}
-		
-	}
+    [exposedColumnIndexes getIndexes:columnsArray maxCount:-1 inIndexRange:nil];
+
+    var columnArrayIndex = 0,
+        columnArrayCount = columnsArray.length;
+
+    for(; columnArrayIndex < columnArrayCount; ++columnArrayIndex)
+    {
+        // grab each column rect and add horizontal lines
+        var columnToStroke = [self headerRectOfColumn:columnArrayIndex];
+
+        CGContextBeginPath(context);
+        CGContextMoveToPoint(context, ROUND(columnToStroke.origin.x + columnToStroke.size.width) - 0.5, ROUND(columnToStroke.origin.y) - 0.5);
+        CGContextAddLineToPoint(context, ROUND(columnToStroke.origin.x + columnToStroke.size.width) - 0.5, ROUND(columnToStroke.origin.y + columnToStroke.size.height) - 0.5);
+        CGContextSetLineWidth(context, 1);
+        CGContextStrokePath(context);
+    }
 }
 
 @end

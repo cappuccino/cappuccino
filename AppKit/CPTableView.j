@@ -55,6 +55,7 @@ CPTableViewSolidHorizontalGridLineMask = 1 << 1;
 
 
 #define NUMBER_OF_COLUMNS() (_tableColumns.length)
+//#define ENSURE_COLUMN_WIDTHS()
 
 @implementation _CPTableDrawView : CPView
 {
@@ -116,7 +117,7 @@ CPTableViewSolidHorizontalGridLineMask = 1 << 1;
     unsigned    _selectionHighlightMask;
     unsigned    _currentHighlightedTableColumn;
 	unsigned	_gridStyleMask;
-	CPColor		_gridLineColor;
+	CPColor		_gridColor;
 
     unsigned    _numberOfRows;
 
@@ -164,10 +165,10 @@ CPTableViewSolidHorizontalGridLineMask = 1 << 1;
         _cachedDataViews = { };
         _intercellSpacing = _CGSizeMake(0.0, 0.0);
         _rowHeight = 19.0;
-		
-		_gridLineColor = [CPColor grayColor];
-		_gridStyleMask = CPTableViewGridNone;
-		
+
+        [self setGridColor:[CPColor grayColor]];
+        [self setGridStyleMask:CPTableViewGridNone];
+
         _headerView = [[CPTableHeaderView alloc] initWithFrame:CGRectMake(0, 0, [self bounds].size.width, _rowHeight)];
 
         [_headerView setTableView:self];
@@ -383,12 +384,17 @@ CPTableViewSolidHorizontalGridLineMask = 1 << 1;
 
 - (void)setGridColor:(CPColor)aColor
 {
-	_gridLineColor = aColor;
+    if (_gridColor === aColor)
+        return;
+
+    _gridColor = aColor;
+
+    [self setNeedsDisplay:YES];
 }
 
 - (CPColor)gridColor
 {
-	return _gridLineColor;
+    return _gridColor;
 }
 
 - (unsigned)gridStyleMask
@@ -398,7 +404,12 @@ CPTableViewSolidHorizontalGridLineMask = 1 << 1;
 
 - (void)setGridStyleMask:(unsigned)aGrideStyleMask
 {
-	_gridStyleMask = aGrideStyleMask
+    if (_gridStyleMask === aGrideStyleMask)
+        return;
+
+    _gridStyleMask = aGrideStyleMask
+
+    [self setNeedsDisplay:YES];
 }
 
 //Column Management
@@ -881,16 +892,12 @@ CPTableViewSolidHorizontalGridLineMask = 1 << 1;
 
     var count = NUMBER_OF_COLUMNS();
 
-    while (count-- && [_tableColumns[count] isHidden]);
+    while (count-- && [_tableColumns[count] isHidden]) ;
 
     if (count >= 0)
-    {
-        var tableColumn = _tableColumns[count],
-        	difference = superviewSize.width - [self rectOfColumn:count].origin.x;
+        [_tableColumns[count] setWidth:MAX(0.0, superviewSize.width - _CGRectGetMinX([self rectOfColumn:count]))];
 
-        [tableColumn setWidth:MAX(0.0, difference)];
-    }
-    //[self setNeedsLayout];
+    [self setNeedsLayout];
 }
 
 - (void)noteNumberOfRowsChanged
@@ -1179,6 +1186,7 @@ CPTableViewSolidHorizontalGridLineMask = 1 << 1;
     _exposedColumns = exposedColumns;
 
     [_tableDrawView setFrame:exposedRect];
+
 //    [_tableDrawView setBounds:exposedRect];
     [_tableDrawView display];
 
@@ -1287,9 +1295,8 @@ _cachedDataViews[dataView.identifier].push(dataView);
 */
 - (void)_drawRect:(CGRect)aRect
 {	
-	[self sizeLastColumnToFit];
 	var exposedRect = [self _exposedRect];
-	
+
 	if([self usesAlternatingRowBackgroundColors])
 		[self colorAlternatingRowsInClipRect:exposedRect];
 
@@ -1324,7 +1331,7 @@ _cachedDataViews[dataView.identifier].push(dataView);
 
 - (void)drawGridInClipRect:(CGRect)aRect
 {
-	[_gridLineColor setStroke];
+	[_gridColor setStroke];
 	
 	if ([self gridStyleMask] & CPTableViewSolidVerticalGridLineMask)
 	{
@@ -1368,7 +1375,7 @@ _cachedDataViews[dataView.identifier].push(dataView);
 			if([_selectedRowIndexes containsIndex:row])
 				[[CPColor whiteColor] setStroke];
 			else
-				[_gridLineColor setStroke];
+				[_gridColor setStroke];
 				
 			CGContextMoveToPoint(context, ROUND(rowToStroke.origin.x) - 0.5, ROUND(rowToStroke.origin.y + rowToStroke.size.height) - 0.5);
 			CGContextAddLineToPoint(context, ROUND(rowToStroke.origin.x + rowToStroke.size.width) - 0.5, ROUND(rowToStroke.origin.y + rowToStroke.size.height) - 0.5);
