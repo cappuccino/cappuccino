@@ -1,7 +1,8 @@
 #!/usr/bin/env narwhal
 
 var objj = require("objj/objj"),
-    File = require("file");
+    File = require("file"),
+    os = require("os");
 
 require("objj/regexp-rhino-patch");
 
@@ -75,7 +76,7 @@ function GET_PATH(aFragment) { return aFragment.info; }
 //#define GET_BUNDLE(aFragment) aFragment.bundle
 //#define SET_BUNDLE(aFragment, aBundle) aFragment.bundle = aBundle
 
-//#define GET_FILE(aFragment) aFragment.file
+function GET_FILE(aFragment) { return aFragment.file; }
 //#define SET_FILE(aFragment, aFile) aFragment.file = aFile
 
 function IS_FILE(aFragment) { return (aFragment.type & FRAGMENT_FILE); }
@@ -139,15 +140,14 @@ function preprocess(aFilePath, outFilePath, gccArgs, flags)
                 }
                 catch (e)
                 {
-                    var lines = e.fragment.info.split("\n"),
+                    var lines = code.split("\n"),
                         PAD = 3;
                         
-                    System.out.println(
-                            "Syntax error in "+e.fragment.file.path+
+                    print("Syntax error in "+GET_FILE(fragment).path+
                             " on preprocessed line number "+e.lineNumber+"\n"+
-                            "\t"+lines.slice(e.lineNumber-1-PAD<0 ? 0 : e.lineNumber-1-PAD, e.lineNumber+PAD).join("\n\t"));
+                            "\t"+lines.slice(Math.max(0, e.lineNumber - 1 - PAD), e.lineNumber+PAD).join("\n\t"));
                         
-                    System.exit(1);
+                    os.exit(1);
                 }
             }
             
