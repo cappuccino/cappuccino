@@ -1276,8 +1276,7 @@ _cachedDataViews[dataView.identifier].push(dataView);
     [super setFrameSize:aSize];
     [_headerView setFrameSize:CGSizeMake(aSize.width, [_headerView frame].size.height)];
 }
-
-
+/*
 - (void)drawRect:(CGRect)aRect
 {
 	//implemented for compatability for resizing...
@@ -1285,7 +1284,7 @@ _cachedDataViews[dataView.identifier].push(dataView);
 	//maybe?
 	[self _drawRect:aRect]; 
 }
-
+*/
 - (void)_drawRect:(CGRect)aRect
 {	
 	[self sizeLastColumnToFit];
@@ -1296,6 +1295,11 @@ _cachedDataViews[dataView.identifier].push(dataView);
 
     [self highlightSelectionInClipRect:exposedRect];	
     [self drawGridInClipRect:exposedRect];	
+}
+
+- (void)setNeedsDisplay:(BOOL)needsDisplay
+{
+    [_tableDrawView setNeedsDisplay:needsDisplay];
 }
 
 - (void)colorAlternatingRowsInClipRect:(CGRect)aRect
@@ -1468,6 +1472,7 @@ _cachedDataViews[dataView.identifier].push(dataView);
 - (void)superviewFrameChanged:(CPNotification)aNotification
 {
     [self _sizeToParent];
+    [self setNeedsLayout];
 }
 
 //
