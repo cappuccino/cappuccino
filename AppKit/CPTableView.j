@@ -754,36 +754,6 @@ CPTableViewSolidHorizontalGridLineMask = 1 << 1;
     return CPMakeRange(firstRow, lastRow - firstRow + 1);
 }
 
-- (CPRange)drawnRowsInRect:(CGRect)aRect
-{
-    var bounds = nil,
-        firstRow = [self drawnRowAtPoint:aRect.origin],
-        lastRow = [self drawnRowAtPoint:_CGPointMake(0.0, _CGRectGetMaxY(aRect))];
-
-    if (firstRow < 0)
-    {
-        bounds = [self bounds];
-
-        if (_CGRectGetMinY(aRect) < _CGRectGetMinY(bounds))
-            firstRow = 0;
-        else
-            firstRow = _numberOfRows - 1;
-    }
-
-    if (lastRow < 0)
-    {
-        if (!bounds)
-            bounds = [self bounds];
-
-        if (_CGRectGetMaxY(aRect) < _CGRectGetMinY(bounds))
-            lastRow = 0;
-        else
-            lastRow = _numberOfRows - 1;
-    }
-
-    return CPMakeRange(firstRow, lastRow - firstRow + 1);
-}
-
 // Complexity:
 // O(lg Columns) if table view contains no hidden columns
 // O(Columns) if table view contains hidden columns
@@ -856,23 +826,6 @@ CPTableViewSolidHorizontalGridLineMask = 1 << 1;
    }
 
    return CPNotFound;
-}
-
-
-- (CPInteger)drawnRowAtPoint:(CGPoint)aPoint
-{
-    var y = aPoint.y;
-
-    if (NO)
-    {
-    }
-
-    var row = FLOOR(y / (_rowHeight + _intercellSpacing.height));
-
-    //if (row >= _numberOfRows)
-      //  return -1;
-
-    return row;
 }
 
 - (CPInteger)rowAtPoint:(CGPoint)aPoint
