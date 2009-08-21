@@ -1395,58 +1395,73 @@ _cachedDataViews[dataView.identifier].push(dataView);
 
 - (void)drawGridInClipRect:(CGRect)aRect
 {
-	[_gridColor setStroke];
-	
-	if ([self gridStyleMask] & CPTableViewSolidVerticalGridLineMask)
-	{
-		var context = [[CPGraphicsContext currentContext] graphicsPort];	
-		
-		var exposedColumnIndexes = [self columnIndexesInRect:aRect],
-			columnsArray = [];
+    var context = [[CPGraphicsContext currentContext] graphicsPort],
+        gridStyleMask = [self gridStyleMask];
 
-		[exposedColumnIndexes getIndexes:columnsArray maxCount:-1 inIndexRange:nil];
+    if (!(gridStyleMask & (CPTableViewSolidHorizontalGridLineMask | CPTableViewSolidVerticalGridLineMask)))
+        return;
 
-		var columnArrayIndex = 0,
-    	          columnArrayCount = columnsArray.length - 1; // the -1 prevents drawing the last gird line.
-    	    	
-		for(; columnArrayIndex < columnArrayCount; ++columnArrayIndex)
-    	{
-		    var columnToStroke = [self rectOfColumn:columnArrayIndex];
-		    
-		    CGContextBeginPath(context);
-			CGContextMoveToPoint(context, ROUND(columnToStroke.origin.x + [_tableColumns[columnArrayIndex] width]) - 0.5 , ROUND(columnToStroke.origin.y) - 0.5);
-			CGContextAddLineToPoint(context, ROUND(columnToStroke.origin.x + [_tableColumns[columnArrayIndex] width]) - 0.5, ROUND(columnToStroke.origin.y + columnToStroke.size.height) - 0.5);
-			CGContextSetLineWidth(context, 1);
-			CGContextStrokePath(context);
-		}				
-	}
-		
-	if ([self gridStyleMask] & CPTableViewSolidHorizontalGridLineMask)
-	{
-	    var context = [[CPGraphicsContext currentContext] graphicsPort];	
-		
-		var exposedRows = [self drawnRowsInRect:aRect];
+    CGContextBeginPath(context);
 
-		var row = exposedRows.location,
-            maxRow = CPMaxRange(exposedRows);
-		
-        for (; row < maxRow; ++row)
+    if (gridStyleMask & CPTableViewSolidHorizontalGridLineMask)
+    {
+		var exposedRows = [self rowsInRect:aRect];
+            row = exposedRows.location,
+            lastRow = CPMaxRange(exposedRows) - 1,
+            rowY = 0.0,
+            minX = _CGRectGetMinX(aRect),
+            maxX = _CGRectGetMaxX(aRect);
+
+        for (; row <= lastRow; ++row)
         {
-			// grab each row rect and add the top and bottom lines
-			var rowToStroke = [self rectOfRow:row];
-			
-			CGContextBeginPath(context);
-			if([_selectedRowIndexes containsIndex:row])
-				[[CPColor whiteColor] setStroke];
-			else
-				[_gridColor setStroke];
-				
-			CGContextMoveToPoint(context, ROUND(rowToStroke.origin.x) - 0.5, ROUND(rowToStroke.origin.y + rowToStroke.size.height) - 0.5);
-			CGContextAddLineToPoint(context, ROUND(rowToStroke.origin.x + rowToStroke.size.width) - 0.5, ROUND(rowToStroke.origin.y + rowToStroke.size.height) - 0.5);
-			CGContextSetLineWidth(context, 1);
-			CGContextStrokePath(context);
-		}
-	}
+            // grab each row rect and add the top and bottom lines
+            var rowRect = [self rectOfRow:row],
+                rowY = _CGRectGetMaxY(rowRect) - 0.5;
+
+            CGContextMoveToPoint(context, minX, rowY);
+            CGContextAddLineToPoint(context, maxX, rowY);
+        }
+
+        if (_rowHeight > 0.0)
+        {
+            var rowHeight = _rowHeight + _intercellSpacing.height,
+                totalHeight = _CGRectGetMaxY(aRect);
+
+            while (rowY < totalHeight)
+            {
+                rowY += rowHeight;
+
+                CGContextMoveToPoint(context, minX, rowY);
+                CGContextAddLineToPoint(context, maxX, rowY);
+            }
+        }
+    }
+
+    if (gridStyleMask & CPTableViewSolidVerticalGridLineMask)
+    {
+        var exposedColumnIndexes = [self columnIndexesInRect:aRect],
+            columnsArray = [];
+
+        [exposedColumnIndexes getIndexes:columnsArray maxCount:-1 inIndexRange:nil];
+
+        var columnArrayIndex = 0,
+            columnArrayCount = columnsArray.length,
+            minY = _CGRectGetMinY(aRect),
+            maxY = _CGRectGetMaxY(aRect);
+
+        for (; columnArrayIndex < columnArrayCount; ++columnArrayIndex)
+        {
+            var columnRect = [self rectOfColumn:columnArrayIndex],
+                columnX = _CGRectGetMaxX(columnRect) - 0.5;
+
+            CGContextMoveToPoint(context, columnX, minY);
+            CGContextAddLineToPoint(context, columnX, maxY);
+        }
+    }
+
+    CGContextClosePath(context);
+    CGContextSetStrokeColor(context, _gridColor);
+    CGContextStrokePath(context);
 }
 
 
