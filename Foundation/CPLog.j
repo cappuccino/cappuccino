@@ -25,7 +25,7 @@ window.CPLogDisable = false;
 var CPLogDefaultTitle = "Cappuccino";
 
 var CPLogLevels = ["fatal", "error", "warn", "info", "debug", "trace"];
-var CPLogDefaultLevel = CPLogLevels[0];
+var CPLogDefaultLevel = CPLogLevels[3];
 
 var _CPLogLevelsInverted = {};
 for (var i = 0; i < CPLogLevels.length; i++)
