@@ -44,7 +44,7 @@ CPLogRegister(CPLogConsole);
 
     var textDataView = [CPTextField new];
 
-    [textDataView setBackgroundColor:[[CPColor redColor] colorWithAlphaComponent:0.5]];
+//    [textDataView setBackgroundColor:[[CPColor redColor] colorWithAlphaComponent:0.5]];
 
     for (var i = 1; i <= 10; i++)
     {
@@ -60,7 +60,9 @@ CPLogRegister(CPLogConsole);
 
         [tableView addTableColumn:column];
     }
-    
+
+    [tableView selectColumnIndexes:[CPIndexSet indexSetWithIndexesInRange:CPMakeRange(0,2)] byExtendingSelection:YES];
+
     var scrollView = [[CPScrollView alloc] initWithFrame:[view bounds]];
 
     [scrollView setDocumentView:tableView];

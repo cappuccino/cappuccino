@@ -119,8 +119,8 @@ CPTableViewSolidHorizontalGridLineMask = 1 << 1;
 
     unsigned    _selectionHighlightMask;
     unsigned    _currentHighlightedTableColumn;
-	unsigned	_gridStyleMask;
-	CPColor		_gridColor;
+    unsigned    _gridStyleMask;
+    CPColor     _gridColor;
 
     unsigned    _numberOfRows;
 
@@ -395,13 +395,8 @@ CPTableViewSolidHorizontalGridLineMask = 1 << 1;
 {
     _selectionHighlightMask = aSelectionHighlightStyle;
 }
+
 /*
-- setGridColor:
-
-
-    * - gridColor 
-    * - setGridStyleMask: --done
-    * - gridStyleMask     --done
     * - indicatorImageInTableColumn:
     * - setIndicatorImage:inTableColumn:
 */
@@ -421,11 +416,6 @@ CPTableViewSolidHorizontalGridLineMask = 1 << 1;
     return _gridColor;
 }
 
-- (unsigned)gridStyleMask
-{
-	return _gridStyleMask;
-}
-
 - (void)setGridStyleMask:(unsigned)aGrideStyleMask
 {
     if (_gridStyleMask === aGrideStyleMask)
@@ -434,6 +424,11 @@ CPTableViewSolidHorizontalGridLineMask = 1 << 1;
     _gridStyleMask = aGrideStyleMask
 
     [self setNeedsDisplay:YES];
+}
+
+- (unsigned)gridStyleMask
+{
+    return _gridStyleMask;
 }
 
 //Column Management
@@ -916,7 +911,6 @@ CPTableViewSolidHorizontalGridLineMask = 1 << 1;
 
     [self setFrameSize:_CGSizeMake( MAX(superviewSize.width, naturalWidth),
                                     MAX(superviewSize.height, (_rowHeight + _intercellSpacing.height) * _numberOfRows))];
-   
 }
 
 //Setting the Delegate:(id)aDelegate
@@ -1277,8 +1271,8 @@ _cachedDataViews[dataView.identifier].push(dataView);
     var exposedRect = [self _exposedRect];
 
     [self drawBackgroundInClipRect:exposedRect];
-    [self highlightSelectionInClipRect:exposedRect];	
-    [self drawGridInClipRect:exposedRect];	
+    [self highlightSelectionInClipRect:exposedRect];
+    [self drawGridInClipRect:exposedRect];
 }
 
 - (void)drawBackgroundInClipRect:(CGRect)aRect
@@ -1358,7 +1352,7 @@ _cachedDataViews[dataView.identifier].push(dataView);
 
     if (gridStyleMask & CPTableViewSolidHorizontalGridLineMask)
     {
-		var exposedRows = [self rowsInRect:aRect];
+        var exposedRows = [self rowsInRect:aRect];
             row = exposedRows.location,
             lastRow = CPMaxRange(exposedRows) - 1,
             rowY = 0.0,
@@ -1420,45 +1414,48 @@ _cachedDataViews[dataView.identifier].push(dataView);
 
 - (void)highlightSelectionInClipRect:(CGRect)aRect
 {
-	[[CPColor whiteColor] setStroke];
-
-	if([self selectionHighlightStyle] === CPTableViewSelectionHighlightStyleSourceList)
-	    [[CPColor selectionColorSourceView] setFill];
+    // FIXME: This color thingy is terrible probably.
+    if ([self selectionHighlightStyle] === CPTableViewSelectionHighlightStyleSourceList)
+        [[CPColor selectionColorSourceView] setFill];
 	else
-		[[CPColor selectionColor] setFill];
+	   [[CPColor selectionColor] setFill];
 
-    var context = [[CPGraphicsContext currentContext] graphicsPort];
+    var context = [[CPGraphicsContext currentContext] graphicsPort],
+        indexes = [],
+        rectSelector = @selector(rectOfRow:);
 
     if ([_selectedRowIndexes count] >= 1)
     {
         var exposedRows = [CPIndexSet indexSetWithIndexesInRange:[self rowsInRect:aRect]],
-            exposedRange = CPMakeRange([exposedRows firstIndex], [exposedRows lastIndex] - [exposedRows firstIndex] + 1),
-            rowArray = [];
+            firstRow = [exposedRows firstIndex],
+            exposedRange = CPMakeRange(firstRow, [exposedRows lastIndex] - firstRow + 1);
 
-        [_selectedRowIndexes getIndexes:rowArray maxCount:-1 inIndexRange:exposedRange];
-
-        var rowArrayIndex = 0,
-            rowArrayCount = rowArray.length;
-
-        for (; rowArrayIndex < rowArrayCount; ++rowArrayIndex)
-        {
-        	var rowToStroke = [self rectOfRow:rowArray[rowArrayIndex]];
-        	
-            CGContextFillRect(context, rowToStroke);
-            //CGContextStrokeRect(context, rowToStroke);
-            
-            CGContextBeginPath(context);
-			CGContextMoveToPoint(context, rowToStroke.origin.x, rowToStroke.origin.y + rowToStroke.size.height);
-			CGContextAddLineToPoint(context, rowToStroke.origin.x + rowToStroke.size.width, rowToStroke.origin.y + rowToStroke.size.height);
-			CGContextSetLineWidth(context, 1);
-			CGContextStrokePath(context);
-            
-        }
+        [_selectedRowIndexes getIndexes:indexes maxCount:-1 inIndexRange:exposedRange];
     }
-    else
+
+    else if ([_selectedColumnIndexes count] >= 1)
     {
+        rectSelector = @selector(rectOfColumn:);
 
+        var exposedColumns = [self columnIndexesInRect:aRect],
+            firstColumn = [exposedColumns firstIndex],
+            exposedRange = CPMakeRange(firstColumn, [exposedColumns lastIndex] - firstColumn + 1);
+
+        [_selectedColumnIndexes getIndexes:indexes maxCount:-1 inIndexRange:exposedRange];
     }
+
+    var count = [indexes count];
+
+    if (!count)
+        return;
+
+    CGContextBeginPath(context);
+
+    while (count--)
+        CGContextAddRect(context, CGRectIntersection(objj_msgSend(self, rectSelector, indexes[count]), aRect));
+
+    CGContextClosePath(context);
+    CGContextFillPath(context);
 }
 
 - (void)layoutSubviews
@@ -1723,9 +1720,5 @@ var CPTableViewDataSourceKey        = @"CPTableViewDataSourceKey",
 	return [CPColor colorWithPatternImage:[[CPImage alloc] initByReferencingFile:@"Resources/tableviewselection.png" size:CGSizeMake(6,22)]];
 }
 
-+ (CPColor)gridColor
-{
-	return [CPColor colorWithHexString:@"999999"];
-}
 
 @end
