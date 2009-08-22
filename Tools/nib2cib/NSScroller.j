@@ -45,6 +45,8 @@
         if ([aCoder containsValueForKey:"NSCurValue"])
             _value = [aCoder decodeFloatForKey:"NSCurValue"];
 
+        [self _calculateIsVertical];
+
         var isVertical = [self isVertical];
 
         if (CPStringFromSelector([self action]) === @"_doScroller:")

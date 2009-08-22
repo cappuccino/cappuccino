@@ -177,7 +177,7 @@
 */
 - (BOOL)isFirstResponder
 {
-    return [[self window] firstResponder] == self;
+    return [[self window] firstResponder] === self;
 }
 
 // Setting the Content

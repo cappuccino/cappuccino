@@ -1,52 +1,87 @@
+/*
+ * NSKeyedArchiver.j
+ * nib2cib
+ *
+ * Created by Francisco Tolmasky.
+ * Copyright 2008, 280 North, Inc.
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
+ */
 
 @import <Foundation/CPKeyedUnarchiver.j>
+
+var File = require("file");
 
 
 @implementation Nib2CibKeyedUnarchiver : CPKeyedUnarchiver
 {
-    File    resourcesFile;
+    CPString    resourcesPath @accessors(readonly);
 }
 
-- (id)initForReadingWithData:(CPData)data resourcesFile:(File)aResourcesFile
+- (id)initForReadingWithData:(CPData)data resourcesPath:(CPString)aResourcesPath
 {
     self = [super initForReadingWithData:data];
-    
+
     if (self)
-        resourcesFile = aResourcesFile;
-    
+        resourcesPath = aResourcesPath;
+
     return self;
 }
 
-- (File)resourcesFile
+- (CPArray)allObjects
 {
-    return resourcesFile;
+    return _objects;
 }
 
-- (File)resourceFileForName:(CPString)aName
+- (CPString)resourcePathForName:(CPString)aName
 {
-    var moreFiles = [resourcesFile.listFiles()];
+    if (!resourcesPath)
+        return NULL;
 
-    do
+    var pathGroups = [File.listPaths(resourcesPath)];
+
+    while (pathGroups.length > 0)
     {
-        var files = moreFiles.shift(),
+        var paths = pathGroups.shift(),
             index = 0,
-            count = files.length;
-        
+            count = paths.length;
+
         for (; index < count; ++index)
         {
-            var file = files[index].getCanonicalFile(),
-                name = String(file.getName());
-                
-            if (name === aName)
-                return file;
-            
-            if (file.isDirectory())
-                moreFiles.push(file.listFiles());
+            var path = paths[index];
+
+            if (File.basename(path) === aName)
+                return path;
+
+            if (File.isDirectory(path))
+                pathGroups.push(File.listPaths(path));
         }
     }
-    while (moreFiles.length > 0)
-    
+
     return NULL;
 }
 
 @end
+
+File.listPaths = function(aPath)
+{
+    var paths = File.list(aPath),
+        count = paths.length;
+
+    while (count--)
+        paths[count] = File.join(aPath, paths[count]);
+
+    return paths;
+}
