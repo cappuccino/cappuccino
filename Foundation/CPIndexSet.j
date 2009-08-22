@@ -521,7 +521,7 @@
     var rhsRangeIndex = assumedPositionOfIndex(_ranges, CPMaxRange(aRange)),
         rhsRangeIndexFLOOR = FLOOR(rhsRangeIndex);
 
-    if (rhsRangeIndexFLOOR === rhsRangeIndex && rhsRangeIndexFLOOR > 0)
+    if (rhsRangeIndexFLOOR === rhsRangeIndex && rhsRangeIndexFLOOR >= 0)
         aRange = CPUnionRange(aRange, _ranges[rhsRangeIndexFLOOR]);
 
     var removalCount = rhsRangeIndexFLOOR - lhsRangeIndexCEIL + 1;

@@ -16,6 +16,11 @@ CPLogRegister(CPLogConsole);
 
 - (void)applicationDidFinishLaunching:(CPNotification)aNotification
 {
+        indexes = [CPMutableIndexSet indexSetWithIndex:5];
+    
+    [indexes addIndexesInRange:CPMakeRange(4, 1)];
+    alert(indexes);
+    return;
     var view = [[CPView alloc] initWithFrame:CGRectMake(0.0, 0.0, 100.0, 100.0)];
     
     [view setBackgroundColor:[CPColor whiteColor]];

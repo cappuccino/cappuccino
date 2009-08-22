@@ -55,9 +55,14 @@ function descriptionWithoutEntity(aString)
     [self assert:@"[number of indexes: 41 (in 3 ranges), indexes: (10-19 23 30-59)]" equals:descriptionWithoutEntity(indexSet)];
 
     // Test adding range across two empty slots forcing a combination
-    [indexSet addIndexesInRange:CPMakeRange(0,70)];
+    [indexSet addIndexesInRange:CPMakeRange(5,70)];
 
-    [self assert:@"[number of indexes: 70 (in 1 range), indexes: (0-69)]" equals:descriptionWithoutEntity(indexSet)];
+    [self assert:@"[number of indexes: 70 (in 1 range), indexes: (5-74)]" equals:descriptionWithoutEntity(indexSet)];
+
+    // Test adding to extend the beginning of the first range
+    [indexSet addIndex:4];
+
+    [self assert:@"[number of indexes: 71 (in 1 range), indexes: (4-74)]" equals:descriptionWithoutEntity(indexSet)];
 }
 
 - (void)testRemoveIndexes
