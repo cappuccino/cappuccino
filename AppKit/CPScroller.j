@@ -121,7 +121,7 @@ NAMES_FOR_PARTS[CPScrollerKnob]             = @"knob";
 */
 + (float)scrollerWidth
 {
-    return 17.0;//[self scrollerWidthForControlSize:CPRegularControlSize];
+    return 15.0;//[self scrollerWidthForControlSize:CPRegularControlSize];
 }
 
 /*!
@@ -130,7 +130,7 @@ NAMES_FOR_PARTS[CPScrollerKnob]             = @"knob";
 */
 + (float)scrollerWidthForControlSize:(CPControlSize)aControlSize
 {
-    return 17.0;//_CPScrollerWidths[aControlSize];
+    return 15.0;//_CPScrollerWidths[aControlSize];
 }
 
 /*!
