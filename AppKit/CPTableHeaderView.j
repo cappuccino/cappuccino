@@ -118,8 +118,6 @@
 
 - (void)drawRect:(CGRect)aRect
 {
-    // FIXME: this is necessary why?
-    [_tableView sizeLastColumnToFit];
     [[_tableView gridColor] setStroke];
 
     var context = [[CPGraphicsContext currentContext] graphicsPort],
