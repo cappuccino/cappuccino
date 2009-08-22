@@ -105,7 +105,7 @@
 */
 - (void)setContentView:(CPClipView)aContentView
 {
-    if (!aContentView)
+    if (_contentView !== aContentView || !aContentView)
         return;
 
     var documentView = [aContentView documentView];
@@ -121,6 +121,7 @@
 
     [self addSubview:_contentView];
 
+    // This will size the content view appropriately, so no need to size it in this method.
     [self reflectScrolledClipView:_contentView];
 }
 
