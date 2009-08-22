@@ -41,7 +41,7 @@ importClass(javax.imageio.ImageIO);
         
         var size = CGSizeMakeZero();
         
-        if (![aCoder resourcesFile])
+        if (![[aCoder resourcesPath] length])
         {
             CPLog.warn("***WARNING: Resources found in nib, but no resources path specified with -R option.");
             
@@ -53,15 +53,16 @@ importClass(javax.imageio.ImageIO);
 
             if (!resourcePath)
                 CPLog.warn("***WARNING: Resource named " + _resourceName + " not found in supplied resources path.");
+
             else
             {
                 var imageStream = ImageIO.createImageInputStream(new Packages.java.io.File(resourcePath).getCanonicalFile()),
                     readers = ImageIO.getImageReaders(imageStream),
                     reader = null;
-                
+
                 if(readers.hasNext())
                     reader = readers.next();
-                
+
                 else
                 {
                     imageStream.close();

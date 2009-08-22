@@ -27,7 +27,7 @@ var File = require("file");
 
 @implementation Nib2CibKeyedUnarchiver : CPKeyedUnarchiver
 {
-    CPString    resourcesPath;
+    CPString    resourcesPath @accessors(readonly);
 }
 
 - (id)initForReadingWithData:(CPData)data resourcesPath:(CPString)aResourcesPath
@@ -50,7 +50,7 @@ var File = require("file");
     if (!resourcesPath)
         return NULL;
 
-    var pathGroups = [File.list(resourcesPath)];
+    var pathGroups = [File.listPaths(resourcesPath)];
 
     while (pathGroups.length > 0)
     {
@@ -60,13 +60,13 @@ var File = require("file");
 
         for (; index < count; ++index)
         {
-            var path = files[index];
+            var path = paths[index];
 
             if (File.basename(path) === aName)
                 return path;
 
             if (File.isDirectory(path))
-                pathGroups.push(File.list(path));
+                pathGroups.push(File.listPaths(path));
         }
     }
 
@@ -74,3 +74,14 @@ var File = require("file");
 }
 
 @end
+
+File.listPaths = function(aPath)
+{
+    var paths = File.list(aPath),
+        count = paths.length;
+
+    while (count--)
+        paths[count] = File.join(aPath, paths[count]);
+
+    return paths;
+}
