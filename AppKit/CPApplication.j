@@ -275,9 +275,7 @@ CPRunContinuesResponse  = -1002;
 
     if ([filename length])
     {
-        [self _openFile:filename];
-
-        needsUntitled = NO;
+        needsUntitled = ![self _openFile:filename];
     }
 
     if (needsUntitled && [_delegate respondsToSelector: @selector(applicationShouldOpenUntitledFile:)])
@@ -756,9 +754,12 @@ CPRunContinuesResponse  = -1002;
     return _namedArgs;
 }
 
-- (void)_openFile:(CPString)aFilename
+- (BOOL)_openFile:(CPString)aFilename
 {
-    [_documentController openDocumentWithContentsOfURL:aFilename display:YES error:NULL];
+    if (_delegate && [_delegate respondsToSelector:@selector(application:openFile:)])
+        return [_delegate application:self openFile:aFilename];
+    else
+        return [_documentController openDocumentWithContentsOfURL:aFilename display:YES error:NULL];
 }
 
 @end
