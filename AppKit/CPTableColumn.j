@@ -111,10 +111,18 @@ CPTableColumnUserResizingMask   = 2;
     var tableView = [self tableView];
 
     if (tableView)
+    {
+        var index = [[tableView tableColumns] indexOfObjectIdenticalTo:self];
+
+        tableView._dirtyTableColumnRangeIndex = tableView._dirtyTableColumnRangeIndex < 0 ? index : MIN(index,  tableView._dirtyTableColumnRangeIndex);
+
+        [tableView tile];
+
         [[CPNotificationCenter defaultCenter]
             postNotificationName:CPTableViewColumnDidResizeNotification
                           object:tableView
                         userInfo:[CPDictionary dictionaryWithObjects:[self, oldWidth] forKeys:[@"CPTableColumn", "CPOldWidth"]]];
+    }
 }
 
 - (float)width
