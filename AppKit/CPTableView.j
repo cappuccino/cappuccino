@@ -742,30 +742,27 @@ CPTableViewSolidHorizontalGridLineMask = 1 << 1;
 // O(1)
 - (CPRange)rowsInRect:(CGRect)aRect
 {
-    var bounds = nil,
-        firstRow = [self rowAtPoint:aRect.origin],
-        lastRow = [self rowAtPoint:_CGPointMake(0.0, _CGRectGetMaxY(aRect))];
+    // If we have no rows, then we won't intersect anything.
+    if (_numberOfRows <= 0)
+        return CPMakeRange(0, 0);
 
+    var bounds = [self bounds];
+
+    // No rows if the rect doesn't even intersect us.
+    if (!CGRectIntersectsRect(aRect, bounds))
+        return CPMakeRange(0, 0);
+
+    var firstRow = [self rowAtPoint:aRect.origin];
+
+    // first row has to be undershot, because if not we wouldn't be intersecting.
     if (firstRow < 0)
-    {
-        bounds = [self bounds];
+        firstRow = 0;
 
-        if (_CGRectGetMinY(aRect) < _CGRectGetMinY(bounds))
-            firstRow = 0;
-        else
-            firstRow = _numberOfRows - 1;
-    }
+    var lastRow = [self rowAtPoint:_CGPointMake(0.0, _CGRectGetMaxY(aRect))];
 
+    // last row has to be overshot, because if not we wouldn't be intersecting.
     if (lastRow < 0)
-    {
-        if (!bounds)
-            bounds = [self bounds];
-
-        if (_CGRectGetMaxY(aRect) < _CGRectGetMinY(bounds))
-            lastRow = 0;
-        else
-            lastRow = _numberOfRows - 1;
-    }
+        lastRow = _numberOfRows - 1;
 
     return CPMakeRange(firstRow, lastRow - firstRow + 1);
 }
