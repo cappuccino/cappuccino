@@ -20,10 +20,12 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-@import <AppKit/_CPCibConnector.j>
+@import <AppKit/CPCibConnector.j>
+@import <AppKit/CPCibControlConnector.j>
+@import <AppKit/CPCibOutletConnector.j>
 
 
-@implementation _CPCibConnector (NSCoding)
+@implementation CPCibConnector (NSCoding)
 
 - (id)NS_initWithCoder:(CPCoder)aCoder
 {
@@ -43,7 +45,7 @@
 
 @end
 
-@implementation NSNibConnector : _CPCibConnector
+@implementation NSNibConnector : CPCibConnector
 {
 }
 
@@ -54,12 +56,12 @@
 
 - (Class)classForKeyedArchiver
 {
-    return [_CPCibConnector class];
+    return [CPCibConnector class];
 }
 
 @end
 
-@implementation NSNibControlConnector : _CPCibControlConnector
+@implementation NSNibControlConnector : CPCibControlConnector
 {
 }
 
@@ -70,12 +72,12 @@
 
 - (Class)classForKeyedArchiver
 {
-    return [_CPCibControlConnector class];
+    return [CPCibControlConnector class];
 }
 
 @end
 
-@implementation NSNibOutletConnector : _CPCibOutletConnector
+@implementation NSNibOutletConnector : CPCibOutletConnector
 {
 }
 
@@ -86,7 +88,7 @@
 
 - (Class)classForKeyedArchiver
 {
-    return [_CPCibOutletConnector class];
+    return [CPCibOutletConnector class];
 }
 
 @end

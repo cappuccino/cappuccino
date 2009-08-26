@@ -25,7 +25,9 @@
 @import <Foundation/CPString.j>
 
 @import "CPCib.j"
-@import "_CPCibConnector.j"
+@import "CPCibConnector.j"
+@import "CPCibControlConnector.j"
+@import "CPCibOutletConnector.j"
 
 
 @implementation _CPCibObjectData : CPObject
