@@ -33,7 +33,9 @@ $STARTER_DOWNLOAD                   = File.join($BUILD_DIR, 'Cappuccino', 'Start
 $STARTER_DOWNLOAD_APPLICATION       = File.join($STARTER_DOWNLOAD, 'NewApplication')
 $STARTER_DOWNLOAD_README            = File.join($STARTER_DOWNLOAD, 'README')
 
-task :downloads => [:starter_download, :tools_download]
+$NARWHAL_PACKAGE                    = File.join($BUILD_DIR, 'Cappuccino', 'objj')
+
+task :downloads => [:starter_download, :tools_download, :narwhal_package]
 
 file_d $TOOLS_DOWNLOAD_ENV => [:debug, :release] do
     rm_rf($TOOLS_DOWNLOAD_ENV)
@@ -60,6 +62,11 @@ end
 task :tools_download => [$TOOLS_DOWNLOAD_ENV, $TOOLS_DOWNLOAD_EDITORS, $TOOLS_DOWNLOAD_README, $TOOLS_DOWNLOAD_INSTALLER, :objj_gem]
 
 task :starter_download => [$STARTER_DOWNLOAD_APPLICATION, $STARTER_DOWNLOAD_README]
+
+task :narwhal_package => [$TOOLS_DOWNLOAD_ENV] do
+  rm_rf($NARWHAL_PACKAGE)
+  cp_r(File.join($TOOLS_DOWNLOAD_ENV, 'packages', 'objj'), $NARWHAL_PACKAGE)
+end
 
 task :deploy => [:downloads, :docs] do
     #copy the docs into the starter pack
