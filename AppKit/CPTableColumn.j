@@ -114,6 +114,8 @@ CPTableColumnUserResizingMask   = 2;
     {
         var index = [[tableView tableColumns] indexOfObjectIdenticalTo:self];
 
+        // FIXME: THIS IS HORRIBLE. Don't just reload everything when a table column changes, just relayout the changed widths.
+        tableView._reloadAllRows = YES;
         tableView._dirtyTableColumnRangeIndex = tableView._dirtyTableColumnRangeIndex < 0 ? index : MIN(index,  tableView._dirtyTableColumnRangeIndex);
 
         [tableView tile];
