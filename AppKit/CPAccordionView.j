@@ -75,7 +75,6 @@
         _itemViews = [];
         _expandedItemIndexes = [CPIndexSet indexSet];
 
-        //
         [self setItemHeaderPrototype:[[CPButton alloc] initWithFrame:_CGRectMake(0.0, 0.0, 100.0, 24.0)]];
     }
 
@@ -233,6 +232,9 @@
         width = _CGRectGetWidth([self bounds]),
         y = index > 0 ? CGRectGetMaxY([_itemViews[index - 1] frame]) : 0.0;
 
+    // Do this now (instead of after looping), so that if we are made dirty again in the middle we don't blow this value away.
+    _dirtyItemIndex = CPNotFound;
+
     for (; index < count; ++index)
     {
         var itemView = _itemViews[index];
@@ -241,8 +243,6 @@
 
         y = CGRectGetMaxY([itemView frame]);
     }
-
-    _dirtyItemIndex = CPNotFound;
 
     [self setFrameSize:_CGSizeMake(_CGRectGetWidth([self frame]), y)];
 }
@@ -333,7 +333,7 @@
     else
     {
         var contentHeight = _CGRectGetHeight([_contentView frame]);
-    
+
         [_contentView setFrameSize:_CGSizeMake(aWidth, contentHeight)];
         [self setFrame:_CGRectMake(0.0, aY, aWidth, contentHeight + headerHeight)];
     }    
@@ -344,9 +344,8 @@
                         change:(CPDictionary)aChange
                        context:(id)aContext
 {
-    if (aKeyPath === "frame")
+    if (aKeyPath === "frame" && !CGRectEqualToRect([aChange objectForKey:CPKeyValueChangeOldKey], [aChange objectForKey:CPKeyValueChangeNewKey]))
         [_accordionView _invalidateItemsStartingAtIndex:[self index]];
-
 /*
     else if (aKeyPath === "itemHeaderPrototype")
     {
