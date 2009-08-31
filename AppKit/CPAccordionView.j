@@ -339,6 +339,10 @@
     }    
 }
 
+- (void)resizeSubviewsWithOldSize:(CGSize)aSize
+{
+}
+
 - (void)observeValueForKeyPath:(CPString)aKeyPath
                       ofObject:(id)anObject
                         change:(CPDictionary)aChange

@@ -3,7 +3,7 @@
  * AppKit
  *
  * Created by Francisco Tolmasky.
- * Copyright 2008, 280 North, Inc.
+ * Copyright 2009, 280 North, Inc.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public

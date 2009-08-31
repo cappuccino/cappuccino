@@ -39,6 +39,28 @@ var LoadInfoForCib = {};
 
 @implementation CPBundle (CPCibLoading)
 
++ (void)loadCibFile:(CPString)anAbsolutePath externalNameTable:(CPDictionary)aNameTable
+{
+    [[[CPCib alloc] initWithContentsOfURL:anAbsolutePath] instantiateCibWithExternalNameTable:aNameTable];
+}
+
++ (void)loadCibNamed:(CPString)aName owner:(id)anOwner
+{
+    if (![aName hasSuffix:@".cib"])
+        aName = [aName stringByAppendingString:@".cib"];
+
+    // Path is based solely on anOwner:
+    var bundle = anOwner ? [CPBundle bundleForClass:[anOwner class]] : [CPBundle mainBundle],
+        path = [bundle pathForResource:aName];
+
+    [self loadCibFile:path externalNameTable:[CPDictionary dictionaryWithObject:anOwner forKey:CPCibOwner]];
+}
+
+- (void)loadCibFile:(CPString)aFileName externalNameTable:(CPDictionary)aNameTable loadDelegate:(id)aDelegate
+{
+    [[[CPCib alloc] initWithCibNamed:aFileName bundle:self] instantiateCibWithExternalNameTable:aNameTable];
+}
+
 + (void)loadCibFile:(CPString)anAbsolutePath externalNameTable:(CPDictionary)aNameTable loadDelegate:aDelegate
 {
     var cib = [[CPCib alloc] initWithContentsOfURL:anAbsolutePath loadDelegate:self];
@@ -48,7 +70,10 @@ var LoadInfoForCib = {};
 
 + (void)loadCibNamed:(CPString)aName owner:(id)anOwner loadDelegate:(id)aDelegate
 {
-    // Path is based solely on anOwner:    
+    if (![aName hasSuffix:@".cib"])
+        aName = [aName stringByAppendingString:@".cib"];
+
+    // Path is based solely on anOwner:
     var bundle = anOwner ? [CPBundle bundleForClass:[anOwner class]] : [CPBundle mainBundle],
         path = [bundle pathForResource:aName];
     
