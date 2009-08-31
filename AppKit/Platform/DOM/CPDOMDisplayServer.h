@@ -20,6 +20,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+#define DOM_OPTIMIZATION 1
+
 #define SetStyleOrigin      0
 #define SetStyleLeftTop     0
 #define SetStyleRightTop    1
@@ -45,7 +47,49 @@
     CPDOMDisplayServerInstructions[__index + 2] = aTransform;\
     CPDOMDisplayServerInstructions[__index + 3] = x;\
     CPDOMDisplayServerInstructions[__index + 4] = y;
-    
+#if !DOM_OPTIMIZATION
+#define CPDOMDisplayServerSetStyleLeftTop(aDOMElement, aTransform, aLeft, aTop) \
+if (aTransform) var ____p = _CGPointApplyAffineTransform(CGPointMake(aLeft, aTop), aTransform); \
+else var ____p = _CGPointMake(aLeft, aTop); \
+aDOMElement.style.left = ROUND(____p.x) + "px";\
+aDOMElement.style.top = ROUND(____p.y) + "px";
+
+#define CPDOMDisplayServerSetStyleRightTop(aDOMElement, aTransform, aRight, aTop) \
+if (aTransform) var ____p = _CGPointApplyAffineTransform(CGPointMake(aRight, aTop), aTransform); \
+else var ____p = _CGPointMake(aRight, aTop); \
+aDOMElement.style.right = ROUND(____p.x) + "px";\
+aDOMElement.style.top = ROUND(____p.y) + "px";
+
+#define CPDOMDisplayServerSetStyleLeftBottom(aDOMElement, aTransform, aLeft, aBottom) \
+if (aTransform) var ____p = _CGPointApplyAffineTransform(CGPointMake(aLeft, aBottom), aTransform); \
+else var ____p = _CGPointMake(aLeft, aBottom); \
+aDOMElement.style.left = ROUND(____p.x) + "px";\
+aDOMElement.style.bottom = ROUND(____p.y) + "px";
+
+#define CPDOMDisplayServerSetStyleRightBottom(aDOMElement, aTransform, aRight, aBottom) \
+if (aTransform) var ____p = _CGPointApplyAffineTransform(CGPointMake(aRight, aBottom), aTransform); \
+else var ____p = _CGPointMake(aRight, aBottom); \
+aDOMElement.style.right = ROUND(____p.x) + "px";\
+aDOMElement.style.bottom = ROUND(____p.y) + "px";
+
+#define CPDOMDisplayServerSetStyleSize(aDOMElement, aWidth, aHeight) \
+    aDOMElement.style.width = MAX(0.0, ROUND(aWidth)) + "px";\
+    aDOMElement.style.height = MAX(0.0, ROUND(aHeight)) + "px";
+
+#define CPDOMDisplayServerSetSize(aDOMElement, aWidth, aHeight) \
+    aDOMElement.width = MAX(0.0, ROUND(aWidth));\
+    aDOMElement.height = MAX(0.0, ROUND(aHeight));
+
+#define CPDOMDisplayServerAppendChild(aParentElement, aChildElement) aParentElement.appendChild(aChildElement)
+
+#define CPDOMDisplayServerInsertBefore(aParentElement, aChildElement, aBeforeElement) aParentElement.insertBefore(aChildElement, aBeforeElement)
+
+#define CPDOMDisplayServerRemoveChild(aParentElement, aChildElement) aParentElement.removeChild(aChildElement)
+
+#define PREPARE_DOM_OPTIMIZATION()
+#define EXECUTE_DOM_INSTRUCTIONS()
+
+#else
 #define CPDOMDisplayServerSetStyleLeftTop(aDOMElement, aTransform, aLeft, aTop) CPDOMDisplayServerSetStyleOrigin(SetStyleLeftTop, aDOMElement, aTransform, aLeft, aTop)
 
 #define CPDOMDisplayServerSetStyleRightTop(aDOMElement, aTransform, aRight, aTop) CPDOMDisplayServerSetStyleOrigin(SetStyleRightTop, aDOMElement, aTransform, aRight, aTop)
@@ -99,27 +143,70 @@
     CPDOMDisplayServerInstructions[CPDOMDisplayServerInstructionCount++] = RemoveChild;\
     CPDOMDisplayServerInstructions[CPDOMDisplayServerInstructionCount++] = aParentElement;\
     CPDOMDisplayServerInstructions[CPDOMDisplayServerInstructionCount++] = aChildElement;
-    
-//#dfeine CPDOMDisplayServerCustomAction()
 
-#define CPDOMDisplayServerAddView(aView)\
+#define PREPARE_DOM_OPTIMIZATION()\
+CPDOMDisplayServerInstructions = [];\
+CPDOMDisplayServerInstructionCount = 0;
+#define EXECUTE_DOM_INSTRUCTIONS()\
+    var index = 0;\
+    while (index < CPDOMDisplayServerInstructionCount)\
     {\
-        var ___UID = [aView UID];\
-        if (typeof (CPDOMDisplayServerViewsContext[___UID]) == "undefined")\
-        {\
-            CPDOMDisplayServerViews[CPDOMDisplayServerViewsCount++] = aView;\
-            CPDOMDisplayServerViewsContext[___UID] = aView;\
+        var instruction = CPDOMDisplayServerInstructions[index++];\
+        try{\
+            switch (instruction)\
+            {\
+                case SetStyleLeftTop:\
+                case SetStyleRightTop:\
+                case SetStyleLeftBottom:\
+                case SetStyleRightBottom:   var element = CPDOMDisplayServerInstructions[index],\
+                                                style = element.style,\
+                                                x = (instruction == SetStyleLeftTop || instruction == SetStyleLeftBottom) ? "left" : "right",\
+                                                y = (instruction == SetStyleLeftTop || instruction == SetStyleRightTop) ? "top" : "bottom";\
+                                            CPDOMDisplayServerInstructions[index++] = nil;\
+                                            var transform = CPDOMDisplayServerInstructions[index++];\
+                                            if (transform)\
+                                            {\
+                                                var point = _CGPointMake(CPDOMDisplayServerInstructions[index++], CPDOMDisplayServerInstructions[index++]),\
+                                                    transformed = _CGPointApplyAffineTransform(point, transform);\
+                                                style[x] = ROUND(transformed.x) + "px";\
+                                                style[y] = ROUND(transformed.y) + "px";\
+                                            }\
+                                            else\
+                                            {\
+                                                style[x] = ROUND(CPDOMDisplayServerInstructions[index++]) + "px";\
+                                                style[y] = ROUND(CPDOMDisplayServerInstructions[index++]) + "px";\
+                                            }\
+                                            element.CPDOMDisplayContext[SetStyleOrigin] = -1;\
+                                            break;\
+                case SetStyleSize:          var element = CPDOMDisplayServerInstructions[index],\
+                                                style = element.style;\
+                                            CPDOMDisplayServerInstructions[index++] = nil;\
+                                            element.CPDOMDisplayContext[SetStyleSize] = -1;\
+                                            style.width = MAX(0.0, ROUND(CPDOMDisplayServerInstructions[index++])) + "px";\
+                                            style.height = MAX(0.0, ROUND(CPDOMDisplayServerInstructions[index++])) + "px";\
+                                            break;\
+                case SetSize:               var element = CPDOMDisplayServerInstructions[index];\
+                                            CPDOMDisplayServerInstructions[index++] = nil;\
+                                            element.CPDOMDisplayContext[SetSize] = -1;\
+                                            element.width = MAX(0.0, ROUND(CPDOMDisplayServerInstructions[index++]));\
+                                            element.height = MAX(0.0, ROUND(CPDOMDisplayServerInstructions[index++]));\
+                                            break;\
+                case AppendChild:           CPDOMDisplayServerInstructions[index].appendChild(CPDOMDisplayServerInstructions[index + 1]);\
+                                            CPDOMDisplayServerInstructions[index++] = nil;\
+                                            CPDOMDisplayServerInstructions[index++] = nil;\
+                                            break;\
+                case InsertBefore:          CPDOMDisplayServerInstructions[index].insertBefore(CPDOMDisplayServerInstructions[index + 1], CPDOMDisplayServerInstructions[index + 2]);\
+                                            CPDOMDisplayServerInstructions[index++] = nil;\
+                                            CPDOMDisplayServerInstructions[index++] = nil;\
+                                            CPDOMDisplayServerInstructions[index++] = nil;\
+                                            break;\
+                case RemoveChild:           CPDOMDisplayServerInstructions[index].removeChild(CPDOMDisplayServerInstructions[index + 1]);\
+                                            CPDOMDisplayServerInstructions[index++] = nil;\
+                                            CPDOMDisplayServerInstructions[index++] = nil;\
+                                            break;\
+                }\
+            }\
+            catch(e) { CPLog("e " + e + " " + instruction); }\
         }\
-    }\
-
-#define CPDOMDisplayServerRemoveView(aView)\
-    {\
-        var index = CPDOMDisplayServerViewsContext[[aView UID]];\
-        if (typeof index != "undefined") \
-        {\
-            CPDOMDisplayServerViewsContext[[aView UID]];\
-            CPDOMDisplayServerViews[index] = NULL;\
-        }\
-    }\
-
-    
+        CPDOMDisplayServerInstructionCount = 0;
+#endif

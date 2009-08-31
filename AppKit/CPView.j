@@ -27,11 +27,11 @@
 @import "CGGeometry.j"
 
 @import "CPColor.j"
-@import "CPDOMDisplayServer.j"
 @import "CPGeometry.j"
 @import "CPGraphicsContext.j"
 @import "CPResponder.j"
 @import "CPTheme.j"
+@import "_CPDisplayServer.j"
 
 
 #include "Platform/Platform.h"
@@ -1562,10 +1562,6 @@ setBoundsOrigin:
 {
     if (aFlag)
         [self setNeedsDisplayInRect:[self bounds]];
-#if PLATFORM(DOM)
-    else
-        CPDOMDisplayServerRemoveView(self);
-#endif
 }
 
 /*!
@@ -1574,22 +1570,18 @@ setBoundsOrigin:
 */
 - (void)setNeedsDisplayInRect:(CPRect)aRect
 {
-#if PLATFORM(DOM)
     if (!(_viewClassFlags & CPViewHasCustomDrawRect))
         return;
-#endif
-        
+
     if (_CGRectIsEmpty(aRect))
         return;
-    
+
     if (_dirtyRect && !_CGRectIsEmpty(_dirtyRect))
         _dirtyRect = CGRectUnion(aRect, _dirtyRect);
     else
         _dirtyRect = _CGRectMakeCopy(aRect);
 
-#if PLATFORM(DOM)
-    CPDOMDisplayServerAddView(self);
-#endif
+    _CPDisplayServerAddDisplayObject(self);
 }
 
 - (BOOL)needsDisplay
@@ -1695,13 +1687,11 @@ setBoundsOrigin:
 - (void)setNeedsLayout
 {
     _needsLayout = YES;
-    
-#if PLATFORM(DOM)
+
     if (!(_viewClassFlags & CPViewHasCustomLayoutSubviews))
         return;
 
-    CPDOMDisplayServerAddView(self);
-#endif
+    _CPDisplayServerAddLayoutObject(self);
 }
 
 - (void)layoutIfNeeded
