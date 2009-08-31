@@ -1686,10 +1686,10 @@ setBoundsOrigin:
 
 - (void)setNeedsLayout
 {
-    _needsLayout = YES;
-
     if (!(_viewClassFlags & CPViewHasCustomLayoutSubviews))
         return;
+
+    _needsLayout = YES;
 
     _CPDisplayServerAddLayoutObject(self);
 }

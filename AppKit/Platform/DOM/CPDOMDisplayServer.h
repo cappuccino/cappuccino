@@ -20,7 +20,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#define DOM_OPTIMIZATION 1
+#define DOM_OPTIMIZATION 0
 
 #define SetStyleOrigin      0
 #define SetStyleLeftTop     0

@@ -66,32 +66,42 @@ function _CPDisplayServerAddLayoutObject(anObject)
 
 + (void)run
 {
-    var index = 0;
-
-    for (; index < layoutObjects.length; ++index)
+    while (layoutObjects.length || displayObjects.length)
     {
-        var object = layoutObjects[index];
+        var index = 0;
 
-        delete layoutObjectsByUID[[object UID]];
-        [object layoutIfNeeded];
+        for (; index < layoutObjects.length; ++index)
+        {
+            var object = layoutObjects[index];
+
+            delete layoutObjectsByUID[[object UID]];
+            [object layoutIfNeeded];
+        }
+
+        layoutObjects = [];
+        layoutObjectsByUID = { };
+
+        index = 0;
+
+        for (; index < displayObjects.length; ++index)
+        {
+            if (layoutObjects.length)
+                break;
+
+            var object = displayObjects[index];
+
+            delete displayObjectsByUID[[object UID]];
+            [object displayIfNeeded];
+        }
+
+        if (index === displayObjects.length)
+        {
+            displayObjects = [];
+            displayObjectsByUID = { };
+        }
+        else
+            displayObjects = displayObjects.splice(0, index);
     }
-
-    EXECUTE_DOM_INSTRUCTIONS();
-
-    layoutObjects = [];
-    layoutObjectsByUID = { };
-
-    index = 0;
-
-    var count = displayObjects.length;
-
-    for (; index < count; ++index)
-        [displayObjects[index] displayIfNeeded];
-
-    EXECUTE_DOM_INSTRUCTIONS();
-
-    displayObjects = [];
-    displayObjectsByUID = { };
 
     [runLoop performSelector:@selector(run) target:self argument:nil order:0 modes:[CPDefaultRunLoopMode]];
 }

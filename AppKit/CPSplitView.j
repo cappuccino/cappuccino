@@ -210,7 +210,7 @@ var CPSplitViewHorizontalImage = nil,
         _DOMDividerElements[_drawingDivider].style.cursor = "move";
         _DOMDividerElements[_drawingDivider].style.position = "absolute";
         _DOMDividerElements[_drawingDivider].style.backgroundRepeat = "repeat";
-        
+
         CPDOMDisplayServerAppendChild(_DOMElement, _DOMDividerElements[_drawingDivider]);
 
         if (_isPaneSplitter)
@@ -224,7 +224,7 @@ var CPSplitViewHorizontalImage = nil,
             _DOMDividerElements[_drawingDivider].style.backgroundImage = "url('"+_dividerImagePath+"')";
         }
     }    
-        
+
     CPDOMDisplayServerSetStyleLeftTop(_DOMDividerElements[_drawingDivider], NULL, _CGRectGetMinX(aRect), _CGRectGetMinY(aRect));
     CPDOMDisplayServerSetStyleSize(_DOMDividerElements[_drawingDivider], _CGRectGetWidth(aRect), _CGRectGetHeight(aRect));
 #endif
@@ -303,7 +303,7 @@ var CPSplitViewHorizontalImage = nil,
 - (void)trackDivider:(CPEvent)anEvent
 {
     var type = [anEvent type];
-    
+
     if (type == CPLeftMouseUp)
     {
         if (_currentDivider != CPNotFound)
@@ -359,6 +359,9 @@ var CPSplitViewHorizontalImage = nil,
                 }
             }
         }
+
+        if (_currentDivider === CPNotFound)
+            return;
     }
     
     else if (type == CPLeftMouseDragged && _currentDivider != CPNotFound)
