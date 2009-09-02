@@ -371,7 +371,7 @@ var _CPMenuBarVisible               = NO,
     @param the tag of the desired menu item
     @return the menu item or \c nil if a match was not found
 */
-- (CPMenuItem)menuWithTag:(int)aTag
+- (CPMenuItem)itemWithTag:(int)aTag
 {
     var index = [self indexOfItemWithTag:aTag];
     
@@ -386,7 +386,7 @@ var _CPMenuBarVisible               = NO,
     @param aTitle the title of the menu item
     @return the menu item or \c nil if a match was not found
 */
-- (CPMenuItem)menuWithTitle:(CPString)aTitle
+- (CPMenuItem)itemWithTitle:(CPString)aTitle
 {
     var index = [self indexOfItemWithTitle:aTitle];
     
