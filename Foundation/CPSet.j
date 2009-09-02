@@ -372,6 +372,9 @@
 */
 - (void)addObject:(id)anObject
 {
+    if ([self containsObject:anObject])
+        return;
+
     _contents[[anObject UID]] = anObject;
     _count++;
 }
