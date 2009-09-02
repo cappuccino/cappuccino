@@ -169,7 +169,7 @@
         disabledTrackColor = PatternColor([_CPCibCustomResource imageResourceWithName:"scroller-vertical-track-disabled.png" size:CGSizeMake(15.0, 1.0)]);
         
     [scroller setValue:17.0 forThemeAttribute:@"minimum-knob-length" inState:CPThemeStateVertical];
-    [scroller setValue:CGInsetMake(0.0, 1.0, 0.0, 1.0) forThemeAttribute:@"knob-inset" inState:CPThemeStateVertical];
+    [scroller setValue:CGInsetMake(0.0, 0.0, 0.0, 1.0) forThemeAttribute:@"knob-inset" inState:CPThemeStateVertical];
     [scroller setValue:CGInsetMake(-10.0, 0.0, -10.0, 0.0) forThemeAttribute:@"track-inset" inState:CPThemeStateVertical];
 
     [scroller setValue:trackColor forThemeAttribute:@"knob-slot-color" inState:CPThemeStateVertical];
