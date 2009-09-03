@@ -293,6 +293,11 @@ CPRunContinuesResponse  = -1002;
     _finishedLaunching = YES;
 }
 
+- (void)terminate:(id)aSender
+{
+    [CPPlatform terminateApplication];
+}
+
 /*!
     Calls \c -finishLaunching method which results in starting
     the main event loop.
@@ -407,7 +412,7 @@ CPRunContinuesResponse  = -1002;
 {
     if ([_mainMenu performKeyEquivalent:anEvent])
         return YES;
-    
+
     return NO;
 }
 
@@ -492,7 +497,13 @@ CPRunContinuesResponse  = -1002;
 */
 - (void)setMainMenu:(CPMenu)aMenu
 {
+    if (_mainMenu === aMenu)
+        return;
+
     _mainMenu = aMenu;
+
+    if ([CPPlatform supportsNativeMainMenu])
+        window.cpSetMainMenu(_mainMenu);
 }
 
 - (void)orderFrontColorPanel:(id)aSender

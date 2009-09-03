@@ -34,4 +34,15 @@
     return CPFeatureIsCompatible(CPHTMLDragAndDropFeature);
 }
 
++ (BOOL)supportsNativeMainMenu
+{
+    return (typeof window["cpSetMainMenu"] === "function");
+}
+
++ (void)terminateApplication
+{
+    if (typeof window["cpTerminate"] === "function")
+        window.cpTerminate();
+}
+
 @end

@@ -91,7 +91,10 @@ var _CPMenuBarVisible               = NO,
         return;
     
     _CPMenuBarVisible = menuBarShouldBeVisible;
-    
+
+    if ([CPPlatform supportsNativeMainMenu])
+        return;
+
     if (menuBarShouldBeVisible)
     {
         if (!_CPMenuBarSharedWindow)
