@@ -59,9 +59,9 @@
 
         // FIXME:SIZE
         if (isVertical)
-            [self setFrameSize:CGSizeMake(17.0, CGRectGetHeight([self frame]))];
+            [self setFrameSize:CGSizeMake(15.0, CGRectGetHeight([self frame]))];
         else
-            [self setFrameSize:CGSizeMake(CGRectGetWidth([self frame]), 17.0)];
+            [self setFrameSize:CGSizeMake(CGRectGetWidth([self frame]), 15.0)];
     }
 
     return self;
