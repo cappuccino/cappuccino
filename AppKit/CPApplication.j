@@ -497,13 +497,18 @@ CPRunContinuesResponse  = -1002;
 */
 - (void)setMainMenu:(CPMenu)aMenu
 {
-    if (_mainMenu === aMenu)
-        return;
+    if ([aMenu _menuName] === "CPMainMenu")
+    {
+        if (_mainMenu === aMenu)
+            return;
 
-    _mainMenu = aMenu;
+        _mainMenu = aMenu;
 
-    if ([CPPlatform supportsNativeMainMenu])
-        window.cpSetMainMenu(_mainMenu);
+        if ([CPPlatform supportsNativeMainMenu])
+            window.cpSetMainMenu(_mainMenu);
+    }
+    else
+        [aMenu _setMenuName:@"CPMainMenu"];
 }
 
 - (void)orderFrontColorPanel:(id)aSender

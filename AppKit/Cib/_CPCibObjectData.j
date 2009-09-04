@@ -100,21 +100,6 @@
     return self;
 }
 
-- (CPMenu)mainMenu
-{
-    var index = [_namesValues indexOfObjectIdenticalTo:"MainMenu"];
-
-    if (index === CPNotFound)
-    {
-        index = [_namesValues indexOfObjectIdenticalTo:"Main Menu"];
-
-        if (index === CPNotFound)
-            return nil;
-    }
-
-    return _namesKeys[index];
-}
-
 - (void)displayVisibleWindows
 {
     var object = nil,

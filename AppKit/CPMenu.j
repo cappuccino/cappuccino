@@ -60,6 +60,7 @@ var _CPMenuBarVisible               = NO,
     CPMenu          _supermenu;
 
     CPString        _title;
+    CPString        _name;
     
     CPMutableArray  _items;
     CPMenu          _attachedMenu;
@@ -824,10 +825,36 @@ var _CPMenuBarVisible               = NO,
         [[_items[_highlightedIndex] _menuItemView] highlight:YES];
 }
 
+- (void)_setMenuName:(CPString)aName
+{
+    if (_name === aName)
+        return;
+
+    _name = aName;
+
+    if (_name === @"CPMainMenu")
+        [CPApp setMainMenu:self];
+}
+
+- (CPString)_menuName
+{
+    return _name;
+}
+
+- (void)awakeFromCib
+{
+    if (_name === @"_CPMainMenu")
+    {
+        [self _setMenuName:@"CPMainMenu"];
+        [CPMenu setMenuBarVisible:YES];
+    }
+}
+
 @end
 
 
 var CPMenuTitleKey              = @"CPMenuTitleKey",
+    CPMenuNameKey               = @"CPMenuNameKey",
     CPMenuItemsKey              = @"CPMenuItemsKey",
     CPMenuShowsStateColumnKey   = @"CPMenuShowsStateColumnKey";
 
@@ -847,6 +874,8 @@ var CPMenuTitleKey              = @"CPMenuTitleKey",
         _title = [aCoder decodeObjectForKey:CPMenuTitleKey];
         _items = [aCoder decodeObjectForKey:CPMenuItemsKey];
 
+        [self _setMenuName:[aCoder decodeObjectForKey:CPMenuNameKey]];
+
         _showsStateColumn = ![aCoder containsValueForKey:CPMenuShowsStateColumnKey] || [aCoder decodeBoolForKey:CPMenuShowsStateColumnKey];
     }
     
@@ -860,6 +889,10 @@ var CPMenuTitleKey              = @"CPMenuTitleKey",
 - (void)encodeWithCoder:(CPCoder)aCoder
 {
     [aCoder encodeObject:_title forKey:CPMenuTitleKey];
+
+    if (_name)
+        [aCoder encodeObject:_name forKey:CPMenuNameKey];
+
     [aCoder encodeObject:_items forKey:CPMenuItemsKey];
 
     if (!_showsStateColumn)

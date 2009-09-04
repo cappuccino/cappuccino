@@ -25,6 +25,17 @@
 @import "NSMenuItem.j"
 
 
+NS_CPMenuNameMap =
+{
+    _NSMainMenu             : @"_CPMainMenu",
+    _NSAppleMenu            : @"_CPApplicationMenu",
+    _NSServicesMenu         : @"_CPServicesMenu",
+    _NSWindowsMenu          : @"_CPWindowsMenu",
+    _NSFontMenu             : @"_CPFontMenu",
+    _NSRecentDocumentsMenu  : @"_CPRecentDocumentsMenu",
+    _NSOpenDocumentsMenu    : @"_CPOpenDocumentsMenu"
+};
+
 @implementation CPMenu (NSCoding)
 
 - (id)NS_initWithCoder:(CPCoder)aCoder
@@ -35,6 +46,12 @@
     {
         _title = [aCoder decodeObjectForKey:@"NSTitle"];
         _items = [aCoder decodeObjectForKey:@"NSMenuItems"];
+        _name = [aCoder decodeObjectForKey:@"NSName"];
+
+        var mappedName = NS_CPMenuNameMap[_name];
+
+        if (mappedName)
+            _name = mappedName;
 
         _showsStateColumn = YES;
         //_showsStateColumn = ![aCoder containsValueForKey:@"NSMenuExcludeMarkColumn"] || ![aCoder decodeBoolForKey:@"NSMenuExcludeMarkColumn"];

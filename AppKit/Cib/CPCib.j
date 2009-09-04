@@ -150,14 +150,6 @@ var CPCibObjectDataKey  = @"CPCibObjectDataKey";
     [objectData establishConnectionsWithOwner:owner topLevelObjects:topLevelObjects];
     [objectData awakeWithOwner:owner topLevelObjects:topLevelObjects];
 
-    var menu;
-
-    if ((menu = [objectData mainMenu]) != nil)
-    {
-         [CPApp setMainMenu:menu];
-         [CPMenu setMenuBarVisible:YES];
-    }
-
     // Display Visible Windows.
     [objectData displayVisibleWindows];
 
