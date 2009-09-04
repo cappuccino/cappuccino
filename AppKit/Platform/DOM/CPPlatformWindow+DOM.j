@@ -376,11 +376,11 @@ var CTRL_KEY_CODE   = 17;
 
         aDOMEvent.dataTransfer.setDragImage(DOMDragElement, draggingOffset.width, draggingOffset.height);
 
-        [dragServer draggingStartedInPlatformWindow:self location:[CPPlatform isBrowser] ? location : _CGPointMake(aDOMEvent.screenX, aDOMEvent.screenY)];
+        [dragServer draggingStartedInPlatformWindow:self globalLocation:[CPPlatform isBrowser] ? location : _CGPointMake(aDOMEvent.screenX, aDOMEvent.screenY)];
     }
 
     else if (type === "drag")
-        [dragServer draggingSourceUpdatedWithLocation:[CPPlatform isBrowser] ? location : _CGPointMake(aDOMEvent.screenX, aDOMEvent.screenY)];
+        [dragServer draggingSourceUpdatedWithGlobalLocation:[CPPlatform isBrowser] ? location : _CGPointMake(aDOMEvent.screenX, aDOMEvent.screenY)];
 
     else if (type === "dragover" || type === "dragleave")
     {
@@ -403,7 +403,7 @@ var CTRL_KEY_CODE   = 17;
     }
 
     else if (type === "dragend")
-        [dragServer draggingEndedInPlatformWindow:self];
+        [dragServer draggingEndedInPlatformWindow:self globalLocation:[CPPlatform isBrowser] ? location : _CGPointMake(aDOMEvent.screenX, aDOMEvent.screenY)];
 
     else //if (type === "drop")
     {

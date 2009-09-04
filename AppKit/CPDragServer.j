@@ -194,7 +194,7 @@ var CPDraggingSource_draggedImage_movedTo_          = 1 << 0,
     return _draggingLocation
 }
 
-- (void)draggingStartedInPlatformWindow:(CPPlatformWindow)aPlatformWindow location:(CGPoint)aLocation
+- (void)draggingStartedInPlatformWindow:(CPPlatformWindow)aPlatformWindow globalLocation:(CGPoint)aLocation
 {
     if (_isDraggingImage)
     {
@@ -211,7 +211,7 @@ var CPDraggingSource_draggedImage_movedTo_          = 1 << 0,
         [_draggedWindow orderFront:self];
 }
 
-- (void)draggingSourceUpdatedWithLocation:(CGPoint)aGlobalLocation
+- (void)draggingSourceUpdatedWithGlobalLocation:(CGPoint)aGlobalLocation
 {
     if (![CPPlatform supportsDragAndDrop])
         [_draggedWindow setFrameOrigin:_CGPointMake(aGlobalLocation.x - _draggingOffset.width, aGlobalLocation.y - _draggingOffset.height)];
@@ -251,7 +251,7 @@ var CPDraggingSource_draggedImage_movedTo_          = 1 << 0,
     return dragOperation;
 }
 
-- (void)draggingEndedInPlatformWindow:(CPPlatformWindow)aPlatformWindow
+- (void)draggingEndedInPlatformWindow:(CPPlatformWindow)aPlatformWindow globalLocation:(CGPoint)aLocation
 {
     [_draggedView removeFromSuperview];
 
@@ -259,10 +259,10 @@ var CPDraggingSource_draggedImage_movedTo_          = 1 << 0,
         [_draggedWindow orderOut:self];
 
     if (_implementedDraggingSourceMethods & CPDraggingSource_draggedImage_endAt_operation_)
-        [_draggingSource draggedImage:[_draggedView image] endedAt:_draggingLocation operation:NO];
+        [_draggingSource draggedImage:[_draggedView image] endedAt:aLocation operation:NO];
 
     else if (_implementedDraggingSourceMethods & CPDraggingSource_draggedView_endedAt_operation_)
-        [_draggingSource draggedView:_draggedView endedAt:_draggingLocation operation:NO];
+        [_draggingSource draggedView:_draggedView endedAt:aLocation operation:NO];
 
     _isDragging = NO;
 }
@@ -346,7 +346,7 @@ var CPDraggingSource_draggedImage_movedTo_          = 1 << 0,
 
     if (![CPPlatform supportsDragAndDrop])
     {
-        [self draggingStartedInPlatformWindow:[aWindow platformWindow] location:mouseLocation];
+        [self draggingStartedInPlatformWindow:[aWindow platformWindow] globalLocation:mouseLocation];
         [self trackDragging:mouseDownEvent];
     }
 }
@@ -386,13 +386,13 @@ var CPDraggingSource_draggedImage_movedTo_          = 1 << 0,
     if (type === CPLeftMouseUp)
     {
         [self performDragOperationInPlatformWindow:platformWindow];
-        [self draggingEndedInPlatformWindow:platformWindow];
+        [self draggingEndedInPlatformWindow:platformWindow globalLocation:platformWindowLocation];
 
         // Stop tracking events.
         return;
     }
 
-    [self draggingSourceUpdatedWithLocation:platformWindowLocation];
+    [self draggingSourceUpdatedWithGlobalLocation:platformWindowLocation];
     [self draggingUpdatedInPlatformWindow:platformWindow location:platformWindowLocation];
 
     // If we're not a mouse up, then we're going to want to grab the next event.
