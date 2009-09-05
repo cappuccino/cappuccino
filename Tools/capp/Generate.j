@@ -45,8 +45,8 @@ function gen(/*va_args*/)
         }
     }
 
-    if (!justFrameworks && destination.length === 0)
-        destination = "Untitled";
+    if (destination.length === 0)
+        destination = justFrameworks ? "." : "Untitled";
 
     var sourceTemplate = null;
     if (File.isAbsolute(template))
