@@ -129,10 +129,11 @@
 */
 - (void)setItemPrototype:(CPCollectionViewItem)anItem
 {
-    _itemData = [CPKeyedArchiver archivedDataWithRootObject:anItem];
-    _itemForDragging = anItem//[CPKeyedUnarchiver unarchiveObjectWithData:_itemData];
+    _cachedItems = [];
+    _itemData = nil;
+    _itemForDragging = anItem;//[CPKeyedUnarchiver unarchiveObjectWithData:_itemData];
     _itemPrototype = anItem;
-    
+
     [self reloadContent];
 }
 
@@ -151,11 +152,18 @@
 - (CPCollectionViewItem)newItemForRepresentedObject:(id)anObject
 {
     var item = nil;
-    
+
     if (_cachedItems.length)
         item = _cachedItems.pop();
+
     else
+    {
+        if (!_itemData)
+            if (_itemPrototype)
+                _itemData = [CPKeyedArchiver archivedDataWithRootObject:_itemPrototype];
+
         item = [CPKeyedUnarchiver unarchiveObjectWithData:_itemData];
+    }
 
     [item setRepresentedObject:anObject];
     [[item view] setFrameSize:_itemSize];
@@ -324,13 +332,13 @@
     
     _items = [];
 
-    if (!_itemData || !_content)
+    if (!_itemPrototype || !_content)
         return;
-    
+
     var index = 0;
-    
+
     count = _content.length;
-        
+
     for (; index < count; ++index)
     {
         _items.push([self newItemForRepresentedObject:_content[index]]);
@@ -762,7 +770,7 @@ var CPCollectionViewMinItemSizeKey      = @"CPCollectionViewMinItemSizeKey",
 
     if (!CGSizeEqualToSize(_minItemSize, CGSizeMakeZero()))
       [aCoder encodeSize:_minItemSize forKey:CPCollectionViewMinItemSizeKey];
-      
+
     if (!CGSizeEqualToSize(_maxItemSize, CGSizeMakeZero()))
       [aCoder encodeSize:_maxItemSize forKey:CPCollectionViewMaxItemSizeKey];
 
