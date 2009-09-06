@@ -30,12 +30,14 @@
 @import "_CPCibCustomView.j"
 @import "_CPCibKeyedUnarchiver.j"
 @import "_CPCibObjectData.j"
+@import "_CPCibProxyObject.j"
 @import "_CPCibWindowTemplate.j"
 
 
 CPCibOwner              = @"CPCibOwner",
 CPCibTopLevelObjects    = @"CPCibTopLevelObjects",
-CPCibReplacementClasses = @"CPCibReplacementClasses";
+CPCibReplacementClasses = @"CPCibReplacementClasses",
+CPCibExternalObjects    = @"CPCibExternalObjects";
     
 var CPCibObjectDataKey  = @"CPCibObjectDataKey";
 
@@ -138,6 +140,8 @@ var CPCibObjectDataKey  = @"CPCibObjectDataKey";
         while (key = [keyEnumerator nextObject])
             [unarchiver setClass:[replacementClasses objectForKey:key] forClassName:key];
     }
+
+    [unarchiver setExternalObjectsForProxyIdentifiers:[anExternalNameTable objectForKey:CPCibExternalObjects]];
 
     var objectData = [unarchiver decodeObjectForKey:CPCibObjectDataKey];
 
