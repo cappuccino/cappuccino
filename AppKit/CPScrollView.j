@@ -39,6 +39,7 @@
 {
     CPClipView  _contentView;
     CPClipView  _headerClipView;
+    CPView      _cornerView;
 
     BOOL        _hasVerticalScroller;
     BOOL        _hasHorizontalScroller;
@@ -140,13 +141,9 @@
 - (void)setDocumentView:(CPView)aView
 {
     [_contentView setDocumentView:aView];
-    [_headerClipView setDocumentView:[self _headerView]];
 
-    var cornerView = [self _cornerView];
-
-    if (cornerView)
-        [self addSubview:cornerView];
-
+    // FIXME: This should be observed.
+    [self _updateCornerAndHeaderView];
     [self reflectScrolledClipView:_contentView];
 }
 
@@ -189,7 +186,7 @@
 
     var documentFrame = [documentView frame], // the size of the whole document
         contentFrame = [self bounds], // assume it takes up the entire size of the scrollview (no scrollers)
-        headerClipViewFrame = [self headerClipViewFrame],
+        headerClipViewFrame = [self _headerClipViewFrame],
         headerClipViewHeight = _CGRectGetHeight(headerClipViewFrame);
 
     contentFrame.origin.y += headerClipViewHeight;
@@ -238,7 +235,7 @@
 
     if (shouldShowVerticalScroller)
     {
-        var verticalScrollerY = MAX(_CGRectGetHeight([self cornerViewFrame]), headerClipViewHeight),
+        var verticalScrollerY = MAX(_CGRectGetHeight([self _cornerViewFrame]), headerClipViewHeight),
             verticalScrollerHeight = _CGRectGetHeight([self bounds]) - verticalScrollerY;
 
         if (shouldShowHorizontalScroller)
@@ -268,7 +265,7 @@
 
     [_contentView setFrame:contentFrame];
     [_headerClipView setFrame:headerClipViewFrame];
-    [[self _cornerView] setFrame:[self cornerViewFrame]];
+    [_cornerView setFrame:[self _cornerViewFrame]];
 
     --_recursionCount;
 }
@@ -423,54 +420,67 @@
     return _autohidesScrollers;
 }
 
+- (void)_updateCornerAndHeaderView
+{
+    var documentView = [self documentView],
+        currentHeaderView = [self _headerView],
+        documentHeaderView = [documentView respondsToSelector:@selector(headerView)] ? [documentView headerView] : nil;
+
+    if (currentHeaderView !== documentHeaderView)
+    {
+        [currentHeaderView removeFromSuperview];
+        [_headerClipView setDocumentView:documentHeaderView];
+    }
+
+    var documentCornerView = [documentView respondsToSelector:@selector(cornerView)] ? [documentView cornerView] : nil;
+
+    if (_cornerView !== documentCornerView)
+    {
+        [_cornerView removeFromSuperview];
+
+        _cornerView = documentCornerView;
+
+        if (_cornerView)
+            [self addSubview:_cornerView];
+    }
+
+    [self reflectScrolledClipView:_contentView];
+}
+
 - (CPView)_headerView
 {
-    var documentView = [self documentView];
-    
-    if ([documentView respondsToSelector:@selector(headerView)])
-        return [documentView headerView];
+    var headerClipViewSubviews = [_headerClipView subviews];
 
-    return nil;
+    return [headerClipViewSubviews count] ? headerClipViewSubviews[0] : nil;
 }
 
-- (CPView)_cornerView
+- (CGRect)_cornerViewFrame
 {
-    var documentView = [self documentView];
-
-    if ([documentView respondsToSelector:@selector(cornerView)])
-        return [documentView cornerView];
-}
-
-- (CGRect)cornerViewFrame
-{
-    var cornerView = [self _cornerView],
-        cornerBounds = [cornerView bounds],
-        bounds = [self bounds];
-
-    if (!cornerView)
+    if (!_cornerView)
         return _CGRectMakeZero();
 
-    cornerBounds.origin.x = CGRectGetMaxX(bounds) - CGRectGetWidth(cornerBounds);
-    cornerBounds.origin.y = 0;
+    var bounds = [self bounds],
+        frame = [_cornerView frame];
 
-    return cornerBounds;
+    frame.origin.x = _CGRectGetMaxX(bounds) - _CGRectGetWidth(frame);
+    frame.origin.y = 0;
+
+    return frame;
 }
 
-- (CGRect)headerClipViewFrame
+- (CGRect)_headerClipViewFrame
 {
-    var headerView = [self _headerView],
-        cornerView = [self _cornerView],
-        bounds = [self bounds];
+    var headerView = [self _headerView];
 
     if (!headerView)
         return _CGRectMakeZero();
 
-    bounds.size.height = [headerView bounds].size.height;
+    var frame = [self bounds];
 
-    if (cornerView)
-        bounds.size.width -= CGRectGetWidth([cornerView bounds]);
+    frame.size.height = _CGRectGetHeight([headerView frame]);
+    frame.size.width -= _CGRectGetWidth([self _cornerViewFrame]);
 
-    return bounds;
+    return frame;
 }
 
 /* @ignore */

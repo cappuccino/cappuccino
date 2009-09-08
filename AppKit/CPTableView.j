@@ -666,7 +666,15 @@ CPTableViewSolidHorizontalGridLineMask = 1 << 1;
 
 - (void)setCornerView:(CPView)aView
 {
+    if (_cornerView === aView)
+        return;
+
     _cornerView = aView;
+
+    var scrollView = [[self superview] superview];
+
+    if ([scrollView isKindOfClass:[CPScrollView class]] && [scrollView documentView] === self)
+        [scrollView _updateCornerAndHeaderView];
 }
 
 - (CPView)headerView
@@ -676,8 +684,23 @@ CPTableViewSolidHorizontalGridLineMask = 1 << 1;
 
 - (void)setHeaderView:(CPView)aHeaderView
 {
+    if (_headerView === aHeaderView)
+        return;
+
+    [_headerView setTableView:nil];
+
     _headerView = aHeaderView;
-    [_headerView setTableView:self];
+
+    if (_headerView)
+    {
+        [_headerView setTableView:self];
+        [_headerView setFrameSize:_CGSizeMake(aSize.width, [_headerView frame].size.height)];
+    }
+
+    var scrollView = [[self superview] superview];
+
+    if ([scrollView isKindOfClass:[CPScrollView class]] && [scrollView documentView] === self)
+        [scrollView _updateCornerAndHeaderView];
 }
 
 //Layout Support
@@ -1294,7 +1317,9 @@ _cachedDataViews[dataView.identifier].push(dataView);
 - (void)setFrameSize:(CGSize)aSize
 {
     [super setFrameSize:aSize];
-    [_headerView setFrameSize:CGSizeMake(aSize.width, [_headerView frame].size.height)];
+
+    if (_headerView)
+        [_headerView setFrameSize:_CGSizeMake(aSize.width, [_headerView frame].size.height)];
 }
 
 - (CGRect)exposedClipRect
