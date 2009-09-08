@@ -474,7 +474,7 @@ CPTableViewSolidHorizontalGridLineMask = 1 << 1;
     if ([aTableColumn tableView] !== self)
         return;
 
-    var index = [_tableColumns indeOfObjectIdenticalTo:aTableColumn];
+    var index = [_tableColumns indexOfObjectIdenticalTo:aTableColumn];
 
     if (index === CPNotFound)
         return;
