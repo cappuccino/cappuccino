@@ -13,6 +13,11 @@ $ENVIRONMENT_PACKAGES_PRODUCT = File.join($ENVIRONMENT_NARWHAL_PRODUCT, 'package
 $EXTERNALS = ['browserjs', 'jack', 'narwhal', 'ojunit']
 $PACKAGES = ['browserjs', 'jack']
 
+def git_export(source, dest)
+  dest = File.join(File.expand_path(dest), '');
+  system %{cd "#{source}" && git checkout-index -a -f "--prefix=#{dest}"}
+end
+
 file_d $ENVIRONMENT_DIR do
   mkdir_p $ENVIRONMENT_DIR
 end
@@ -31,10 +36,10 @@ end
 task :build => [:update_submodules, $ENVIRONMENT_DIR] do
   rm_rf($ENVIRONMENT_NARWHAL_PRODUCT)
   
-  cp_r('narwhal', $ENVIRONMENT_NARWHAL_PRODUCT)
+  git_export('narwhal', $ENVIRONMENT_NARWHAL_PRODUCT)
   
   $PACKAGES.each do |package|
-    cp_r(package, File.join($ENVIRONMENT_PACKAGES_PRODUCT, package))
+    git_export(package, File.join($ENVIRONMENT_PACKAGES_PRODUCT, package))
   end
   
   symlink_executable(File.join($ENVIRONMENT_PACKAGES_PRODUCT, 'jack', 'bin', 'jackup'))
