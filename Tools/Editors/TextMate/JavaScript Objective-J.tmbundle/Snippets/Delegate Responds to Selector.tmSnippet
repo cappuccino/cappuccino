@@ -3,27 +3,16 @@
 <plist version="1.0">
 <dict>
 	<key>content</key>
-	<string>@implementation ${1:class} : ${2:CPObject}
-{
-}
-
-- (id)init
-{
-	if(self = [super init])
-	{$0
-	}
-	return self;
-}
-
-@end
+	<string>if([${1:[self delegate]} respondsToSelector:@selector(${2:selfDidSomething:})])
+	[$1 ${3:${2/((^\s*([A-Za-z0-9_]*:)\s*)|(:\s*$)|(:\s*))/(?2:$2self :\:&lt;&gt;)(?4::)(?5: :)/g}}];
 </string>
 	<key>name</key>
-	<string>Class</string>
+	<string>Delegate Responds to Selector</string>
 	<key>scope</key>
 	<string>source.js.objj</string>
 	<key>tabTrigger</key>
-	<string>objj</string>
+	<string>delegate</string>
 	<key>uuid</key>
-	<string>96C39647-4346-4750-9F96-58070F24EDE6</string>
+	<string>3B5B858C-645E-499C-813B-BBEEED943E9B</string>
 </dict>
 </plist>

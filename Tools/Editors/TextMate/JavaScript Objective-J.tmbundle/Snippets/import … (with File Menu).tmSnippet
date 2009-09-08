@@ -3,27 +3,15 @@
 <plist version="1.0">
 <dict>
 	<key>content</key>
-	<string>@implementation ${1:class} : ${2:CPObject}
-{
-}
-
-- (id)init
-{
-	if(self = [super init])
-	{$0
-	}
-	return self;
-}
-
-@end
+	<string>@import "${1:`"$TM_BUNDLE_SUPPORT/bin/import_FileMenu.sh" ".j"`}"
 </string>
 	<key>name</key>
-	<string>Class</string>
+	<string>import "…" (with File Menu)</string>
 	<key>scope</key>
 	<string>source.js.objj</string>
 	<key>tabTrigger</key>
-	<string>objj</string>
+	<string>impp</string>
 	<key>uuid</key>
-	<string>96C39647-4346-4750-9F96-58070F24EDE6</string>
+	<string>9BABD784-3DBE-4DA3-8A70-4E32FC7FDBB8</string>
 </dict>
 </plist>

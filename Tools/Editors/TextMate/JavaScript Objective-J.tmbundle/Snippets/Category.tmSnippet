@@ -3,27 +3,19 @@
 <plist version="1.0">
 <dict>
 	<key>content</key>
-	<string>@implementation ${1:class} : ${2:CPObject}
-{
-}
-
-- (id)init
-{
-	if(self = [super init])
-	{$0
-	}
-	return self;
-}
-
+	<string>@interface ${1:NSObject} (${2:Category})
 @end
-</string>
+
+@implementation ${1:NSObject} (${2:Category})
+$0
+@end</string>
 	<key>name</key>
-	<string>Class</string>
+	<string>Category</string>
 	<key>scope</key>
 	<string>source.js.objj</string>
 	<key>tabTrigger</key>
-	<string>objj</string>
+	<string>cat</string>
 	<key>uuid</key>
-	<string>96C39647-4346-4750-9F96-58070F24EDE6</string>
+	<string>8C001067-8A50-4BAB-9A88-BA957A84E8CF</string>
 </dict>
 </plist>

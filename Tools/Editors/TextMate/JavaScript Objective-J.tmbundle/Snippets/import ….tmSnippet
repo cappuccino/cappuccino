@@ -3,27 +3,15 @@
 <plist version="1.0">
 <dict>
 	<key>content</key>
-	<string>@implementation ${1:class} : ${2:CPObject}
-{
-}
-
-- (id)init
-{
-	if(self = [super init])
-	{$0
-	}
-	return self;
-}
-
-@end
+	<string>@import "${1:}"
 </string>
 	<key>name</key>
-	<string>Class</string>
+	<string>import "…"</string>
 	<key>scope</key>
 	<string>source.js.objj</string>
 	<key>tabTrigger</key>
-	<string>objj</string>
+	<string>imp</string>
 	<key>uuid</key>
-	<string>96C39647-4346-4750-9F96-58070F24EDE6</string>
+	<string>686B995F-3183-418B-A15F-CA517DFEFE2E</string>
 </dict>
 </plist>

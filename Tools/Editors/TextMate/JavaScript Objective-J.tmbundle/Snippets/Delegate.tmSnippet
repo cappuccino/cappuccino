@@ -3,27 +3,22 @@
 <plist version="1.0">
 <dict>
 	<key>content</key>
-	<string>@implementation ${1:class} : ${2:CPObject}
+	<string>- (id)delegate
 {
+	return $1;
 }
 
-- (id)init
+- (void)setDelegate:(id)aDelegate
 {
-	if(self = [super init])
-	{$0
-	}
-	return self;
-}
-
-@end
-</string>
+	${1:delegate} = aDelegate;
+}</string>
 	<key>name</key>
-	<string>Class</string>
+	<string>Delegate</string>
 	<key>scope</key>
 	<string>source.js.objj</string>
 	<key>tabTrigger</key>
-	<string>objj</string>
+	<string>delacc</string>
 	<key>uuid</key>
-	<string>96C39647-4346-4750-9F96-58070F24EDE6</string>
+	<string>0B3D4C4C-7D75-49E6-9CEC-E4BF4069223A</string>
 </dict>
 </plist>

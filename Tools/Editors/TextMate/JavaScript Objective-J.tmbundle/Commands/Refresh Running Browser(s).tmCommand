@@ -37,8 +37,6 @@ ps -xc|grep -sq Camino &amp;&amp; osascript -e 'tell app "Camino"' -e 'activate'
 </string>
 	<key>input</key>
 	<string>none</string>
-	<key>keyEquivalent</key>
-	<string>@r</string>
 	<key>name</key>
 	<string>Refresh Running Browser(s)</string>
 	<key>output</key>
