@@ -258,6 +258,14 @@ CPTableViewSolidHorizontalGridLineMask = 1 << 1;
 
 //Loading Data
 
+- (void)reloadDataForRowIndexes:(CPIndexSet)rowIndexes columnIndexes:(CPIndexSet)columnIndexes
+{
+    [self reloadData];
+//    [_previouslyExposedRows removeIndexes:rowIndexes];
+//    [_previouslyExposedColumns removeIndexes:columnIndexes];
+}
+
+
 - (void)reloadData
 {
     if (!_dataSource)
@@ -1256,10 +1264,8 @@ CPTableViewSolidHorizontalGridLineMask = 1 << 1;
                 dataView = _dataViewsForTableColumns[tableColumnUID][row];
 
             _dataViewsForTableColumns[tableColumnUID][row] = nil;
-if (!_cachedDataViews[dataView.identifier])
-_cachedDataViews[dataView.identifier] = [dataView];
-else
-_cachedDataViews[dataView.identifier].push(dataView);
+
+            [self _enqueueReusableDataView:dataView];
         }
     }
 }
@@ -1297,7 +1303,7 @@ _cachedDataViews[dataView.identifier].push(dataView);
         for (; rowIndex < rowsCount; ++rowIndex)
         {
             var row = rowArray[rowIndex],
-                dataView = [tableColumn _newDataViewForRow:row],
+                dataView = [self _newDataViewForRow:row tableColumn:tableColumn],
                 rectOfRow = rowRects[row];
 
             if (!rectOfRow)
@@ -1312,6 +1318,22 @@ _cachedDataViews[dataView.identifier].push(dataView);
             _dataViewsForTableColumns[tableColumnUID][row] = dataView;
         }
     }
+}
+
+- (CPView)_newDataViewForRow:(CPInteger)aRow tableColumn:(CPTableColumn)aTableColumn
+{
+    return [aTableColumn _newDataViewForRow:aRow];
+}
+
+- (void)_enqueueReusableDataView:(CPView)aDataView
+{
+    // FIXME: yuck!
+    var identifier = aDataView.identifier;
+
+    if (!_cachedDataViews[identifier])
+        _cachedDataViews[identifier] = [aDataView];
+    else
+        _cachedDataViews[identifier].push(aDataView);
 }
 
 - (void)setFrameSize:(CGSize)aSize
