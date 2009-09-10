@@ -26,12 +26,29 @@
 #include "CoreGraphics/CGGeometry.h"
 
 
+var CPOutlineViewDataSource_outlineView_setObjectValue_forTableColumn_byItem_                       = 1 << 1,
+    CPOutlineViewDataSource_outlineView_shouldDeferDisplayingChildrenOfItem_                        = 1 << 2,
+
+    CPOutlineViewDataSource_outlineView_acceptDrop_item_childIndex_                                 = 1 << 3,
+    CPOutlineViewDataSource_outlineView_validateDrop_proposedItem_proposedChildIndex_               = 1 << 4,
+    CPOutlineViewDataSource_outlineView_validateDrop_proposedRow_proposedDropOperation_             = 1 << 5,
+    CPOutlineViewDataSource_outlineView_namesOfPromisedFilesDroppedAtDestination_forDraggedItems_   = 1 << 6,
+
+    CPOutlineViewDataSource_outlineView_itemForPersistentObject_                                    = 1 << 7,
+    CPOutlineViewDataSource_outlineView_persistentObjectForItem_                                    = 1 << 8,
+
+    CPOutlineViewDataSource_outlineView_writeItems_toPasteboard_                                    = 1 << 9,
+
+    CPOutlineViewDataSource_outlineView_sortDescriptorsDidChange_                                   = 1 << 10;
+
 @implementation CPOutlineView : CPTableView
 {
     id              _outlineViewDataSource;
     CPTableColumn   _outlineTableColumn;
 
     float           _indentationPerLevel;
+
+    CPInteger       _implementedOutlineViewDataSourceMethods;
 
     Object          _rootItemInfo;
     CPMutableArray  _itemsForRows;
@@ -75,6 +92,37 @@
         [CPException raise:CPInternalInconsistencyException reason:"Data source must implement 'outlineView:objectValueForTableColumn:byItem:'"];
 
     _outlineViewDataSource = aDataSource;
+    _implementedOutlineViewDataSourceMethods = 0;
+
+    if ([_outlineViewDataSource respondsToSelector:@selector(outlineView:setObjectValue:forTableColumn:byItem:)])
+        _implementedOutlineViewDataSourceMethods |= CPOutlineViewDataSource_outlineView_setObjectValue_forTableColumn_byItem_;
+
+    if ([_outlineViewDataSource respondsToSelector:@selector(outlineView:shouldDeferDisplayingChildrenOfItem:)])
+        _implementedOutlineViewDataSourceMethods |= CPOutlineViewDataSource_outlineView_shouldDeferDisplayingChildrenOfItem_;
+
+    if ([_outlineViewDataSource respondsToSelector:@selector(outlineView:acceptDrop:item:childIndex:)])
+        _implementedOutlineViewDataSourceMethods |= CPOutlineViewDataSource_outlineView_acceptDrop_item_childIndex_;
+
+    if ([_outlineViewDataSource respondsToSelector:@selector(outlineView:validateDrop:proposedItem:proposedChildIndex:)])
+        _implementedOutlineViewDataSourceMethods |= CPOutlineViewDataSource_outlineView_validateDrop_proposedItem_proposedChildIndex_;
+
+    if ([_outlineViewDataSource respondsToSelector:@selector(outlineView:validateDrop:proposedRow:proposedDropOperation:)])
+        _implementedOutlineViewDataSourceMethods |= CPOutlineViewDataSource_outlineView_validateDrop_proposedRow_proposedDropOperation_;
+
+    if ([_outlineViewDataSource respondsToSelector:@selector(outlineView:namesOfPromisedFilesDroppedAtDestination:forDraggedItems:)])
+        _implementedOutlineViewDataSourceMethods |= CPOutlineViewDataSource_outlineView_namesOfPromisedFilesDroppedAtDestination_forDraggedItems_;
+
+    if ([_outlineViewDataSource respondsToSelector:@selector(outlineView:itemForPersistentObject:)])
+        _implementedOutlineViewDataSourceMethods |= CPOutlineViewDataSource_outlineView_itemForPersistentObject_;
+
+    if ([_outlineViewDataSource respondsToSelector:@selector(outlineView:persistentObjectForItem:)])
+        _implementedOutlineViewDataSourceMethods |= CPOutlineViewDataSource_outlineView_persistentObjectForItem_;
+
+    if ([_outlineViewDataSource respondsToSelector:@selector(outlineView:writeItems:toPasteboard:)])
+        _implementedOutlineViewDataSourceMethods |= CPOutlineViewDataSource_outlineView_writeItems_toPasteboard_;
+
+    if ([_outlineViewDataSource respondsToSelector:@selector(outlineView:sortDescriptorsDidChange:)])
+        _implementedOutlineViewDataSourceMethods |= CPOutlineViewDataSource_outlineView_sortDescriptorsDidChange_;
 
     [self reloadData];
 }
@@ -295,7 +343,9 @@ var _loadItemInfoForItem = function(/*CPOutlineView*/ anOutlineView, /*id*/ anIt
     var weight = itemInfo.weight,
         descendants = [anItem];
 
-    if (itemInfo.isExpanded && shouldLoadChildren)
+    if (itemInfo.isExpanded && (shouldReloadData || shouldLoadChildren) &&
+        (!(anOutlineView._implementedOutlineViewDataSourceMethods & CPOutlineViewDataSource_outlineView_shouldDeferDisplayingChildrenOfItem_) ||
+        ![dataSource outlineView:anOutlineView shouldDeferDisplayingChildrenOfItem:anItem]))
     {
         var index = 0,
             count = [dataSource outlineView:anOutlineView numberOfChildrenOfItem:anItem],
