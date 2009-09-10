@@ -656,7 +656,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 #endif
 
     //post CPControlTextDidEndEditingNotification
-    [self textDidEndEditing:[CPNotification notificationWithName:CPControlTextDidBeginEditingNotification object:self userInfo:nil]];
+    [self textDidEndEditing:[CPNotification notificationWithName:CPControlTextDidEndEditingNotification object:self userInfo:nil]];
 
     return YES;
 }

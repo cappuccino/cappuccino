@@ -1849,7 +1849,10 @@ CPTexturedBackgroundWindowMask
 
     _autorecalculatesKeyViewLoop = shouldRecalculate;
     
-    [self _dirtyKeyViewLoop];
+    if (_keyViewLoopIsDirty)
+        [self recalculateKeyViewLoop];
+    else if (_autorecalculatesKeyViewLoop)
+        [self _dirtyKeyViewLoop];
 }
 
 - (BOOL)autorecalculatesKeyViewLoop
