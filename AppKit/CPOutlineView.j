@@ -47,12 +47,18 @@ var CPOutlineViewDataSource_outlineView_setObjectValue_forTableColumn_byItem_   
     CPTableColumn   _outlineTableColumn;
 
     float           _indentationPerLevel;
+    BOOL            _indentationMarkerFollowsDataView;
 
     CPInteger       _implementedOutlineViewDataSourceMethods;
 
     Object          _rootItemInfo;
     CPMutableArray  _itemsForRows;
     Object          _itemInfosForItems;
+
+    CPControl       _disclosureControlPrototype;
+    CPArray         _disclosureControlsForRows;
+    CPData          _disclosureControlData;
+    CPArray         _disclosureControlQueue;
 }
 
 - (id)initWithFrame:(CGRect)aFrame
@@ -65,10 +71,14 @@ var CPOutlineViewDataSource_outlineView_setObjectValue_forTableColumn_byItem_   
 
         _itemsForRows = [nil];
         _itemInfosForItems = { };
+        _disclosureControlsForRows = [];
 
         [self setIndentationPerLevel:25.0];
+        [self setIndentationMarkerFollowsDataView:YES];
 
         [super setDataSource:[[_CPOutlineViewTableViewDataSource alloc] initWithOutlineView:self]];
+
+        [self setDisclosureControlPrototype:[[CPButton alloc] initWithFrame:CGRectMake(0.0, 0.0, 16.0, 16.0)]];
     }
 
     return self;
@@ -181,16 +191,6 @@ var CPOutlineViewDataSource_outlineView_setObjectValue_forTableColumn_byItem_   
     [self reloadItem:anItem reloadChildren:YES];
 }
 
-- (void)mouseDown:(CPEvent)anEvent
-{
-    var row = [self rowAtPoint:[self convertPoint:[anEvent locationInWindow] fromView:nil]];
-
-    if ([self isItemExpanded:[self itemAtRow:row]])
-        [self collapseItem:[self itemAtRow:row]];
-    else
-        [self expandItem:[self itemAtRow:row]];
-}
-
 - (void)reloadItem:(id)anItem
 {
     [self reloadItem:anItem reloadChildren:NO];
@@ -215,7 +215,7 @@ var CPOutlineViewDataSource_outlineView_setObjectValue_forTableColumn_byItem_   
 
     var itemInfo = _itemInfosForItems[[anItem UID]];
 
-    if (typeof itemInfo === "undefined")
+    if (!itemInfo)
         return CPNotFound;
 
     return itemInfo.row;
@@ -271,6 +271,22 @@ var CPOutlineViewDataSource_outlineView_setObjectValue_forTableColumn_byItem_   
     return _indentationPerLevel;
 }
 
+- (void)setIndentationMarkerFollowsDataView:(BOOL)indentationMarkerShouldFollowDataView
+{
+    if (_indentationMarkerFollowsDataView === indentationMarkerShouldFollowDataView)
+        return;
+
+    _indentationMarkerFollowsDataView = indentationMarkerShouldFollowDataView;
+
+    // !!!!
+    [self reloadData];
+}
+
+- (BOOL)indentationMarkerFollowsDataView
+{
+    return _indentationMarkerFollowsDataView;
+}
+
 - (id)parentForItem:(id)anItem
 {
     if (!anItem)
@@ -287,12 +303,22 @@ var CPOutlineViewDataSource_outlineView_setObjectValue_forTableColumn_byItem_   
 - (CGRect)frameOfOutlineDataViewAtColumn:(CPInteger)aColumn row:(CPInteger)aRow
 {
     var frame = [super frameOfDataViewAtColumn:aColumn row:aRow],
-        indentationWidth = [self levelForRow:aRow] * [self indentationPerLevel];
+        indentationWidth = [self levelForRow:aRow] * [self indentationPerLevel] + (_disclosureControlPrototype ? _CGRectGetWidth([_disclosureControlPrototype frame]) : 0.0);
 
     frame.origin.x += indentationWidth;
     frame.size.width -= indentationWidth;
 
     return frame;
+}
+
+- (void)setDisclosureControlPrototype:(CPControl)aControl
+{
+    _disclosureControlPrototype = aControl;
+    _disclosureControlData = nil;
+    _disclosureControlQueue = [];
+
+    // fIXME: reall?
+    [self reloadData];
 }
 
 - (void)reloadData
@@ -308,6 +334,105 @@ var CPOutlineViewDataSource_outlineView_setObjectValue_forTableColumn_byItem_   
         return [self frameOfOutlineDataViewAtColumn:aColumn row:aRow];
 
     return [super frameOfDataViewAtColumn:aColumn row:aRow];
+}
+
+- (void)_loadDataViewsInRows:(CPIndexSet)rows columns:(CPIndexSet)columns
+{
+    [super _loadDataViewsInRows:rows columns:columns];
+
+    var outlineColumn = [[self tableColumns] indexOfObjectIdenticalTo:[self outlineTableColumn]];
+
+    if (![columns containsIndex:outlineColumn])
+        return;
+
+    var rowArray = [];
+
+    [rows getIndexes:rowArray maxCount:-1 inIndexRange:nil];
+
+    var rowIndex = 0,
+        rowsCount = rowArray.length;
+
+    for (; rowIndex < rowsCount; ++rowIndex)
+    {
+        var row = rowArray[rowIndex],
+            control = [self _dequeueDisclosureControl],
+            frame = [control frame],
+            dataViewFrame = [self frameOfDataViewAtColumn:outlineColumn row:row];
+
+        frame.origin.x = _indentationMarkerFollowsDataView ? _CGRectGetMinX(dataViewFrame) - _CGRectGetWidth(frame) : 0.0;
+        frame.origin.y = _CGRectGetMidY(dataViewFrame) - _CGRectGetHeight(frame) / 2.0;
+
+        _disclosureControlsForRows[row] = control;
+
+        [control setFrame:frame];
+
+        [self addSubview:control];
+    }
+}
+
+- (void)_unloadDataViewsInRows:(CPIndexSet)rows columns:(CPIndexSet)columns
+{
+    [super _unloadDataViewsInRows:rows columns:columns];
+
+    var outlineColumn = [[self tableColumns] indexOfObjectIdenticalTo:[self outlineTableColumn]];
+
+    if (![columns containsIndex:outlineColumn])
+        return;
+
+    var rowArray = [];
+
+    [rows getIndexes:rowArray maxCount:-1 inIndexRange:nil];
+
+    var rowIndex = 0,
+        rowsCount = rowArray.length;
+
+    for (; rowIndex < rowsCount; ++rowIndex)
+    {
+        var row = rowArray[rowIndex],
+            control = _disclosureControlsForRows[row];
+
+        [control removeFromSuperview];
+
+        [self _enqueueDisclosureControl:control];
+
+        _disclosureControlsForRows[row] = nil;
+    }
+}
+
+- (void)_toggleFromDisclosureControl:(CPControl)aControl
+{
+    var controlFrame = [aControl frame],
+        item = [self itemAtRow:[self rowAtPoint:_CGPointMake(_CGRectGetMinX(controlFrame), _CGRectGetMidY(controlFrame))]];
+
+    if ([self isItemExpanded:item])
+        [self collapseItem:item];
+
+    else
+        [self expandItem:item];
+}
+
+- (void)_enqueueDisclosureControl:(CPControl)aControl
+{
+    _disclosureControlQueue.push(aControl);
+}
+
+- (CPControl)_dequeueDisclosureControl
+{
+    if (_disclosureControlQueue.length)
+        return _disclosureControlQueue.pop();
+
+    if (!_disclosureControlData)
+        if (!_disclosureControlPrototype)
+            return nil;
+        else
+            _disclosureControlData = [CPKeyedArchiver archivedDataWithRootObject:_disclosureControlPrototype];
+
+    var disclosureControl = [CPKeyedUnarchiver unarchiveObjectWithData:_disclosureControlData];
+
+    [disclosureControl setTarget:self];
+    [disclosureControl setAction:@selector(_toggleFromDisclosureControl:)];
+
+    return disclosureControl;
 }
 
 @end

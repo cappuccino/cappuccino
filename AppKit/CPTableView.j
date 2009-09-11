@@ -890,6 +890,8 @@ CPTableViewSolidHorizontalGridLineMask = 1 << 1;
 
 - (CGRect)frameOfDataViewAtColumn:(CPInteger)aColumn row:(CPInteger)aRow
 {
+    UPDATE_COLUMN_RANGES_IF_NECESSARY();
+
     var tableColumnRange = _tableColumnRanges[aColumn],
         rectOfRow = [self rectOfRow:aRow];
 
@@ -1291,9 +1293,8 @@ CPTableViewSolidHorizontalGridLineMask = 1 << 1;
     {
         var column = columnArray[columnIndex],
             tableColumn = _tableColumns[column],
-            tableColumnUID = [tableColumn UID];/*,
-            tableColumnRange = _tableColumnRanges[column];
-*/
+            tableColumnUID = [tableColumn UID];
+
     if (!_dataViewsForTableColumns[tableColumnUID])
         _dataViewsForTableColumns[tableColumnUID] = [];
 
