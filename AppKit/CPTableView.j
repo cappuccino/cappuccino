@@ -888,10 +888,10 @@ CPTableViewSolidHorizontalGridLineMask = 1 << 1;
     return row;
 }
 
-- (CGRect)frameOfDataViewAtColumn:(CPInteger)aColumnIndex row:(CPInteger)aRowIndex
+- (CGRect)frameOfDataViewAtColumn:(CPInteger)aColumn row:(CPInteger)aRow
 {
-    var tableColumnRange = _tableColumns[aColumnIndex],
-        rectOfRow = [self rectOfRow:aRowIndex];
+    var tableColumnRange = _tableColumnRanges[aColumn],
+        rectOfRow = [self rectOfRow:aRow];
 
     return _CGRectMake(tableColumnRange.location, _CGRectGetMinY(rectOfRow), tableColumnRange.length, _CGRectGetHeight(rectOfRow));
 }
@@ -1291,9 +1291,9 @@ CPTableViewSolidHorizontalGridLineMask = 1 << 1;
     {
         var column = columnArray[columnIndex],
             tableColumn = _tableColumns[column],
-            tableColumnUID = [tableColumn UID],
+            tableColumnUID = [tableColumn UID];/*,
             tableColumnRange = _tableColumnRanges[column];
-
+*/
     if (!_dataViewsForTableColumns[tableColumnUID])
         _dataViewsForTableColumns[tableColumnUID] = [];
 
@@ -1303,13 +1303,9 @@ CPTableViewSolidHorizontalGridLineMask = 1 << 1;
         for (; rowIndex < rowsCount; ++rowIndex)
         {
             var row = rowArray[rowIndex],
-                dataView = [self _newDataViewForRow:row tableColumn:tableColumn],
-                rectOfRow = rowRects[row];
+                dataView = [self _newDataViewForRow:row tableColumn:tableColumn];
 
-            if (!rectOfRow)
-                rectOfRow = rowRects[row] = [self rectOfRow:row];
-
-            [dataView setFrame:_CGRectMake(tableColumnRange.location, _CGRectGetMinY(rectOfRow), tableColumnRange.length, _CGRectGetHeight(rectOfRow))];
+            [dataView setFrame:[self frameOfDataViewAtColumn:column row:row]];
             [dataView setObjectValue:[self _objectValueForTableColumn:tableColumn row:row]];
 
             if ([dataView superview] !== self)

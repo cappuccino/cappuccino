@@ -244,7 +244,7 @@ var CPOutlineViewDataSource_outlineView_setObjectValue_forTableColumn_byItem_   
 
     var itemInfo = _itemInfosForItems[[anItem UID]];
 
-    if (typeof itemInfo === "undefined")
+    if (!itemInfo)
         return CPNotFound;
 
     return itemInfo.level;
@@ -271,35 +271,43 @@ var CPOutlineViewDataSource_outlineView_setObjectValue_forTableColumn_byItem_   
     return _indentationPerLevel;
 }
 
+- (id)parentForItem:(id)anItem
+{
+    if (!anItem)
+        return nil;
+
+    var itemInfo = _itemInfosForItems[[anItem UID]];
+
+    if (!itemInfo)
+        return nil;
+
+    return itemInfo.parent;
+}
+
+- (CGRect)frameOfOutlineDataViewAtColumn:(CPInteger)aColumn row:(CPInteger)aRow
+{
+    var frame = [super frameOfDataViewAtColumn:aColumn row:aRow],
+        indentationWidth = [self levelForRow:aRow] * [self indentationPerLevel];
+
+    frame.origin.x += indentationWidth;
+    frame.size.width -= indentationWidth;
+
+    return frame;
+}
+
 - (void)reloadData
 {
     [self reloadItem:nil reloadChildren:YES];
 }
 
-- (void)_enqueueReusableDataView:(CPView)aDataView
+- (CGRect)frameOfDataViewAtColumn:(CPInteger)aColumn row:(CPInteger)aRow
 {
-    if ([aDataView isKindOfClass:[_CPOutlineViewHierarchicalView class]])
-    {
-        [aDataView removeFromSuperview];
-        [super _enqueueReusableDataView:[aDataView dataView]];
-    }
-    else
-        [super _enqueueReusableDataView:aDataView];
-}
+    var tableColumn = [self tableColumns][aColumn];
 
-- (CPView)_newDataViewForRow:(CPInteger)aRow tableColumn:(CPTableColumn)aTableColumn
-{
-    var dataView = [super _newDataViewForRow:aRow tableColumn:aTableColumn];
+    if (tableColumn === _outlineTableColumn)
+        return [self frameOfOutlineDataViewAtColumn:aColumn row:aRow];
 
-    if (aTableColumn !== _outlineTableColumn)
-        return dataView;
-
-    var hierarchicalView = [[_CPOutlineViewHierarchicalView alloc] init];
-
-    [hierarchicalView setIndentationWidth:[self levelForRow:aRow] * [self indentationPerLevel]];
-    [hierarchicalView setDataView:dataView];
-
-    return hierarchicalView;
+    return [super frameOfDataViewAtColumn:aColumn row:aRow];
 }
 
 @end
@@ -436,57 +444,3 @@ var _loadItemInfoForItem = function(/*CPOutlineView*/ anOutlineView, /*id*/ anIt
 
 @end
 
-@implementation _CPOutlineViewHierarchicalView : CPView
-{
-    float   _indentationWidth;
-    CPView  _dataView;
-}
-
-- (void)updateDataViewFrame
-{
-    var size = [self bounds].size;
-
-    [_dataView setFrame:_CGRectMake(_indentationWidth, 0.0, size.width - _indentationWidth, size.height)];
-}
-
-- (void)setIndentationWidth:(float)aWidth
-{
-    if (_indentationWidth === aWidth)
-        return;
-
-    _indentationWidth = aWidth;
-
-    [self updateDataViewFrame];
-}
-
-- (void)setDataView:(CPView)aDataView
-{
-    if (_dataView === aDataView)
-        return;
-
-    [_dataView removeFromSuperview];
-
-    _dataView = aDataView;
-
-    [self updateDataViewFrame];
-
-    [self addSubview:_dataView];
-}
-
-- (CPView)dataView
-{
-    return _dataView;
-}
-
-- (void)setObjectValue:(id)anObjectValue
-{
-    [_dataView setObjectValue:anObjectValue];
-}
-
-- (void)setFrameSize:(CGSize)aSize
-{
-    [super setFrameSize:aSize];
-    [self updateDataViewFrame];
-}
-
-@end
