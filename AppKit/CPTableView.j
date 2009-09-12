@@ -1621,6 +1621,8 @@ CPTableViewSolidHorizontalGridLineMask = 1 << 1;
     else
         _selectionAnchorRow = row;
 
+    _previouslySelectedRowIndexes = nil;
+
     [self _updateSelectionWithMouseAtRow:row];
 
     return YES;
@@ -1634,26 +1636,9 @@ CPTableViewSolidHorizontalGridLineMask = 1 << 1;
 }
 
 - (void)stopTracking:(CGPoint)lastPoint at:(CGPoint)aPoint mouseIsUp:(BOOL)mouseIsUp
-{/*
-    _clickedRow = [self rowAtPoint:point];
-    _clickedColumn = [self columnAtPoint:point];
-
-    if ([anEvent clickCount] === 2)
-    {
-        CPLog.warn("edit?!");
-
-        [self sendAction:_doubleAction to:_target];
-    }
-    else
-    {
-        if (![_previousSelectedRowIndexes isEqualToIndexSet:_selectedRowIndexes])
-        {
-            [[CPNotificationCenter defaultCenter] postNotificationName:CPTableViewSelectionDidChangeNotification object:self userInfo:nil];
-        }
-
-        [self sendAction:_action to:_target];
-    }
-*/
+{
+    if (![_previouslySelectedRowIndexes isEqualToIndexSet:_selectedRowIndexes])
+        [self _noteSelectionDidChange];
 }
 
 - (void)_updateSelectionWithMouseAtRow:(CPInteger)aRow
@@ -1722,10 +1707,26 @@ CPTableViewSolidHorizontalGridLineMask = 1 << 1;
     if ([newSelection isEqualToIndexSet:_selectedRowIndexes])
         return;
 
+    if (!_previouslySelectedRowIndexes)
+        _previouslySelectedRowIndexes = [_selectedRowIndexes copy];
+
     [self selectRowIndexes:newSelection byExtendingSelection:NO];
 
+    [self _noteSelectionIsChanging];
+}
+
+- (void)_noteSelectionIsChanging
+{
     [[CPNotificationCenter defaultCenter]
         postNotificationName:CPTableViewSelectionIsChangingNotification
+                      object:self
+                    userInfo:nil];
+}
+
+- (void)_noteSelectionDidChange
+{
+    [[CPNotificationCenter defaultCenter]
+        postNotificationName:CPTableViewSelectionDidChangeNotification
                       object:self
                     userInfo:nil];
 }
