@@ -105,4 +105,9 @@ var exampleProtocol = "http",
     
 }
 
+- (void)testURLToString
+{
+    [self assert:String([CPURL URLWithString:exampleURL]) equals:exampleURL];
+}
+
 @end

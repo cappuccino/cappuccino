@@ -152,6 +152,11 @@
     return [self scheme] === "file";
 }
 
+- (CPString)description
+{
+    return [self absoluteString];
+}
+
 @end
 
 @implementation CPURL (CPCoding)
