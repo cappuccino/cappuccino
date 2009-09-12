@@ -1,4 +1,31 @@
+
 @import <Foundation/CPObject.j>
+
+CPURLNameKey                        = @"CPURLNameKey";
+CPURLLocalizedNameKey               = @"CPURLLocalizedNameKey";
+CPURLIsRegularFileKey               = @"CPURLIsRegularFileKey";
+CPURLIsDirectoryKey                 = @"CPURLIsDirectoryKey";
+CPURLIsSymbolicLinkKey              = @"CPURLIsSymbolicLinkKey";
+CPURLIsVolumeKey                    = @"CPURLIsVolumeKey";
+CPURLIsPackageKey                   = @"CPURLIsPackageKey";
+CPURLIsSystemImmutableKey           = @"CPURLIsSystemImmutableKey";
+CPURLIsUserImmutableKey             = @"CPURLIsUserImmutableKey";
+CPURLIsHiddenKey                    = @"CPURLIsHiddenKey";
+CPURLHasHiddenExtensionKey          = @"CPURLHasHiddenExtensionKey";
+CPURLCreationDateKey                = @"CPURLCreationDateKey";
+CPURLContentAccessDateKey           = @"CPURLContentAccessDateKey";
+CPURLContentModificationDateKey     = @"CPURLContentModificationDateKey";
+CPURLAttributeModificationDateKey   = @"CPURLAttributeModificationDateKey";
+CPURLLinkCountKey                   = @"CPURLLinkCountKey";
+CPURLParentDirectoryURLKey          = @"CPURLParentDirectoryURLKey";
+CPURLVolumeURLKey                   = @"CPURLTypeIdentifierKey";
+CPURLTypeIdentifierKey              = @"CPURLTypeIdentifierKey";
+CPURLLocalizedTypeDescriptionKey    = @"CPURLLocalizedTypeDescriptionKey";
+CPURLLabelNumberKey                 = @"CPURLLabelNumberKey";
+CPURLLabelColorKey                  = @"CPURLLabelColorKey";
+CPURLLocalizedLabelKey              = @"CPURLLocalizedLabelKey";
+CPURLEffectiveIconKey               = @"CPURLEffectiveIconKey";
+CPURLCustomIconKey                  = @"CPURLCustomIconKey";
 
 @implementation CPURL : CPObject
 {
