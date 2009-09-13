@@ -515,10 +515,14 @@ var CPOutlineViewDataSource_outlineView_setObjectValue_forTableColumn_byItem_   
             dataViewFrame = [self frameOfDataViewAtColumn:outlineColumn row:row];
 
         frame.origin.x = _indentationMarkerFollowsDataView ? _CGRectGetMinX(dataViewFrame) - _CGRectGetWidth(frame) : 0.0;
-        frame.origin.y = _CGRectGetMidY(dataViewFrame) - _CGRectGetHeight(frame) / 2.0;
+        frame.origin.y = _CGRectGetMinY(dataViewFrame);
+        frame.size.height = _CGRectGetHeight(dataViewFrame);
+        // FIXME: center instead?
+        //frame.origin.y = _CGRectGetMidY(dataViewFrame) - _CGRectGetHeight(frame) / 2.0;
 
         _disclosureControlsForRows[row] = control;
 
+        [control setState:[self isItemExpanded:item] ? CPOnState : CPOffState];
         [control setFrame:frame];
 
         [self addSubview:control];
@@ -764,6 +768,7 @@ var _loadItemInfoForItem = function(/*CPOutlineView*/ anOutlineView, /*id*/ anIt
 
 @implementation CPDisclosureButton : CPButton
 {
+    float _angle;
 }
 
 - (id)initWithFrame:(CGRect)aFrame
@@ -776,13 +781,30 @@ var _loadItemInfoForItem = function(/*CPOutlineView*/ anOutlineView, /*id*/ anIt
     return self;
 }
 
+- (void)setState:(CPState)aState
+{
+    [super setState:aState];
+
+    if ([self state] === CPOnState)
+        _angle = 0.0;
+
+    else
+        _angle = -PI_2;
+}
+
 - (void)drawRect:(CGRect)aRect
 {
-    var context = [[CPGraphicsContext currentContext] graphicsPort];
+    var bounds = [self bounds],
+        context = [[CPGraphicsContext currentContext] graphicsPort];
 
     CGContextBeginPath(context);
 
-//    CGContextRotateCTM(context, PI_2);
+    CGContextTranslateCTM(context, _CGRectGetWidth(bounds) / 2.0, _CGRectGetHeight(bounds) / 2.0);
+    CGContextRotateCTM(context, _angle);
+    CGContextTranslateCTM(context, -_CGRectGetWidth(bounds) / 2.0, -_CGRectGetHeight(bounds) / 2.0);
+
+    // Center, but crisp.
+    CGContextTranslateCTM(context, FLOOR((_CGRectGetWidth(bounds) - 9.0) / 2.0), FLOOR((_CGRectGetHeight(bounds) - 8.0) / 2.0));
 
     CGContextMoveToPoint(context, 0.0, 0.0);
     CGContextAddLineToPoint(context, 9.0, 0.0);
@@ -791,9 +813,8 @@ var _loadItemInfoForItem = function(/*CPOutlineView*/ anOutlineView, /*id*/ anIt
 
     CGContextClosePath(context);
 
-    CGContextSetFillColor(context, [CPColor grayColor]);
+    CGContextSetFillColor(context, ([self themeState] & CPThemeState("highlighted")) ? [CPColor blackColor] : [CPColor grayColor]);
     CGContextFillPath(context);
 }
 
 @end
-
