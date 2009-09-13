@@ -49,9 +49,6 @@
     id          _cibOwner;
     CPString    _windowCibName;
     CPString    _windowCibPath;
-
-    BOOL        _isWindowLoading;
-    BOOL        _shouldDisplayWindowWhenLoaded;
 }
 
 - (id)init
@@ -74,9 +71,6 @@
         [self setShouldCloseDocument:NO];
 
         [self setNextResponder:CPApp];
-
-        if (aWindow)
-            [self windowDidLoad];
     }
 
     return self;
@@ -127,36 +121,12 @@
 /*!
     Loads the window
 */
-- (BOOL)loadWindow
+- (void)loadWindow
 {
-    if ([self isWindowLoaded])
-        return YES;
+    if (_window)
+        return;
 
-    if (![self isWindowLoading])
-    {
-        _isWindowLoading = YES;
-
-        [self windowWillLoad];
-
-        [CPBundle loadCibFile:[self windowCibPath]
-            externalNameTable:[CPDictionary dictionaryWithObject:_cibOwner forKey:CPCibOwner]
-                 loadDelegate:self];
-    }
-
-    return NO;
-}
-
-- (void)cibDidFinishLoading:(CPCib)aCib
-{
-    if (_window === nil && _document !== nil && _cibOwner === _document)
-        [self setWindow:[_document valueForKey:@"window"]];
-
-    [self synchronizeWindowTitleWithDocumentName];
-
-    [self windowDidLoad];
-
-    if (_shouldDisplayWindowWhenLoaded)
-        [self showWindow:self];
+    [[CPBundle bundleForClass:[_cibOwner class]] loadCibFile:[self windowCibPath] externalNameTable:[CPDictionary dictionaryWithObject:_cibOwner forKey:CPCibOwner]];
 }
 
 /*!
@@ -165,13 +135,6 @@
 */
 - (@action)showWindow:(id)aSender
 {
-    if (![self loadWindow])
-    {
-        _shouldDisplayWindowWhenLoaded = YES;
-
-        return;
-    }
-
     var theWindow = [self window];
 
 	if ([theWindow respondsToSelector:@selector(becomesKeyOnlyIfNeeded)] && [theWindow becomesKeyOnlyIfNeeded])
@@ -189,18 +152,26 @@
     return _window !== nil;
 }
 
-- (BOOL)isWindowLoading
-{
-    return _isWindowLoading;
-}
-
 /*!
     Returns the window this object controls.
 */
 - (CPWindow)window
 {
     if (!_window)
-         [self loadWindow];
+    {
+        [self windowWillLoad];
+        [_document windowControllerWillLoadCib:self];
+
+        [self loadWindow];
+
+        if (_window === nil && _document !== nil && _cibOwner === _document)
+            [self setWindow:[_document valueForKey:@"window"]];
+
+        [self windowDidLoad];
+        [_document windowControllerDidLoadCib:self];
+
+        [self synchronizeWindowTitleWithDocumentName];
+    }
 
     return _window;
 }

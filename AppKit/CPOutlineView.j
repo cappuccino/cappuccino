@@ -84,7 +84,7 @@ var CPOutlineViewDataSource_outlineView_setObjectValue_forTableColumn_byItem_   
         _itemInfosForItems = { };
         _disclosureControlsForRows = [];
 
-        [self setIndentationPerLevel:25.0];
+        [self setIndentationPerLevel:16.0];
         [self setIndentationMarkerFollowsDataView:YES];
 
         [super setDataSource:[[_CPOutlineViewTableViewDataSource alloc] initWithOutlineView:self]];
@@ -327,7 +327,7 @@ var CPOutlineViewDataSource_outlineView_setObjectValue_forTableColumn_byItem_   
 - (CGRect)frameOfOutlineDataViewAtColumn:(CPInteger)aColumn row:(CPInteger)aRow
 {
     var frame = [super frameOfDataViewAtColumn:aColumn row:aRow],
-        indentationWidth = [self levelForRow:aRow] * [self indentationPerLevel] + (_disclosureControlPrototype ? _CGRectGetWidth([_disclosureControlPrototype frame]) : 0.0);
+        indentationWidth = ([self levelForRow:aRow] + 1) * [self indentationPerLevel];
 
     frame.origin.x += indentationWidth;
     frame.size.width -= indentationWidth;

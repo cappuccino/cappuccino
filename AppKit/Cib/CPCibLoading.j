@@ -56,9 +56,9 @@ var LoadInfoForCib = {};
     [self loadCibFile:path externalNameTable:[CPDictionary dictionaryWithObject:anOwner forKey:CPCibOwner]];
 }
 
-- (void)loadCibFile:(CPString)aFileName externalNameTable:(CPDictionary)aNameTable loadDelegate:(id)aDelegate
+- (void)loadCibFile:(CPString)aFileName externalNameTable:(CPDictionary)aNameTable
 {
-    [[[CPCib alloc] initWithCibNamed:aFileName bundle:self] instantiateCibWithExternalNameTable:aNameTable];
+    [[[CPCib alloc] initWithContentsOfURL:aFileName] instantiateCibWithExternalNameTable:aNameTable];
 }
 
 + (void)loadCibFile:(CPString)anAbsolutePath externalNameTable:(CPDictionary)aNameTable loadDelegate:aDelegate
