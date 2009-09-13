@@ -77,9 +77,10 @@ var CPOutlineViewDataSource_outlineView_setObjectValue_forTableColumn_byItem_   
 
     if (self)
     {
-        _rootItemInfo = { isExpanded:YES, isExpandable:NO, level:-1, row:-1, children:[], weight:1 };
+        // The root item has weight "0", thus represents the weight solely of its descendants.
+        _rootItemInfo = { isExpanded:YES, isExpandable:NO, level:-1, row:-1, children:[], weight:0 };
 
-        _itemsForRows = [nil];
+        _itemsForRows = [];
         _itemInfosForItems = { };
         _disclosureControlsForRows = [];
 
@@ -152,6 +153,19 @@ var CPOutlineViewDataSource_outlineView_setObjectValue_forTableColumn_byItem_   
     return _outlineViewDataSource;
 }
 
+- (BOOL)isExpandable:(id)anItem
+{
+    if (!anItem)
+        return YES;
+
+    var itemInfo = _itemInfosForItems[[anItem UID]];
+
+    if (!itemInfo)
+        return NO;
+
+    return itemInfo.isExpandable;
+}
+
 - (void)isItemExpanded:(id)anItem
 {
     if (!anItem)
@@ -215,7 +229,7 @@ var CPOutlineViewDataSource_outlineView_setObjectValue_forTableColumn_byItem_   
 
 - (id)itemAtRow:(CPInteger)aRow
 {
-    return _itemsForRows[aRow + 1] || nil;
+    return _itemsForRows[aRow] || nil;
 }
 
 - (CPInteger)rowForItem:(id)aItem
@@ -490,7 +504,13 @@ var CPOutlineViewDataSource_outlineView_setObjectValue_forTableColumn_byItem_   
     for (; rowIndex < rowsCount; ++rowIndex)
     {
         var row = rowArray[rowIndex],
-            control = [self _dequeueDisclosureControl],
+            item = _itemsForRows[row],
+            isExpandable = [self isExpandable:item];
+
+       if (!isExpandable)
+            continue;
+
+        var control = [self _dequeueDisclosureControl],
             frame = [control frame],
             dataViewFrame = [self frameOfDataViewAtColumn:outlineColumn row:row];
 
@@ -525,6 +545,9 @@ var CPOutlineViewDataSource_outlineView_setObjectValue_forTableColumn_byItem_   
     {
         var row = rowArray[rowIndex],
             control = _disclosureControlsForRows[row];
+
+        if (!control)
+            continue;
 
         [control removeFromSuperview];
 
@@ -624,8 +647,9 @@ var _loadItemInfoForItem = function(/*CPOutlineView*/ anOutlineView, /*id*/ anIt
         }
     }
 
+    // The root item does not count as a descendant.
     var weight = itemInfo.weight,
-        descendants = [anItem];
+        descendants = anItem ? [anItem] : [];
 
     if (itemInfo.isExpanded && (shouldReloadData || shouldLoadChildren) &&
         (!(anOutlineView._implementedOutlineViewDataSourceMethods & CPOutlineViewDataSource_outlineView_shouldDeferDisplayingChildrenOfItem_) ||
@@ -662,7 +686,8 @@ var _loadItemInfoForItem = function(/*CPOutlineView*/ anOutlineView, /*id*/ anIt
 
     if (shouldReloadData)
     {
-        var index = itemInfo.row + 1,
+        // row = -1 is the root item, so just go to row 0 since it is ignored.
+        var index = MAX(itemInfo.row, 0),
             itemsForRows = anOutlineView._itemsForRows;
 
         descendants.unshift(index, weight);
@@ -672,8 +697,7 @@ var _loadItemInfoForItem = function(/*CPOutlineView*/ anOutlineView, /*id*/ anIt
         var count = itemsForRows.length;
 
         for (; index < count; ++index)
-            if (index > 0)
-                itemInfosForItems[[itemsForRows[index] UID]].row = index - 1;
+            itemInfosForItems[[itemsForRows[index] UID]].row = index;
 
         var deltaWeight = itemInfo.weight - weight;
 
@@ -711,12 +735,12 @@ var _loadItemInfoForItem = function(/*CPOutlineView*/ anOutlineView, /*id*/ anIt
 
 - (CPInteger)numberOfRowsInTableView:(CPTableView)anOutlineView
 {
-    return _outlineView._itemsForRows.length - 1;
+    return _outlineView._itemsForRows.length;
 }
 
 - (id)tableView:(CPTableView)aTableView objectValueForTableColumn:(CPTableColumn)aTableColumn row:(CPInteger)aRow
 {
-    return [_outlineView._outlineViewDataSource outlineView:_outlineView objectValueForTableColumn:aTableColumn byItem:_outlineView._itemsForRows[aRow + 1]];
+    return [_outlineView._outlineViewDataSource outlineView:_outlineView objectValueForTableColumn:aTableColumn byItem:_outlineView._itemsForRows[aRow]];
 }
 
 @end
