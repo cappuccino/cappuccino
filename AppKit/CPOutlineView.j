@@ -685,6 +685,8 @@ var _loadItemInfoForItem = function(/*CPOutlineView*/ anOutlineView, /*id*/ anIt
             descendants = descendants.concat(childDescendants);
         }
     }
+    // FIXME:
+    // else { }
 
     itemInfo.weight = descendants.length;
 
@@ -716,6 +718,9 @@ var _loadItemInfoForItem = function(/*CPOutlineView*/ anOutlineView, /*id*/ anIt
                 parentItemInfo.weight += deltaWeight;
                 parent = parentItemInfo.parent;
             }
+
+            if (anItem)
+                anOutlineView._rootItemInfo.weight += deltaWeight;
         }
     }
 
