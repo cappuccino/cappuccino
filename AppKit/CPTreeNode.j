@@ -66,4 +66,17 @@
     return _childNodes[anIndex];
 }
 
+- (void)sortWithSortDescriptors:(CPArray)sortDescriptors recursively:(BOOL)shouldSortRecursively
+{
+    [_childNodes sortUsingDescriptors:sortDescriptors];
+
+    if (!shouldSortRecursively)
+        return;
+
+    var count = [_childNodes count];
+
+    while (count--)
+        [_childNodes[count] sortWithSortDescriptors:sortDescriptors recursively:YES];
+}
+
 @end
