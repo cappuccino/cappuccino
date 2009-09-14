@@ -24,6 +24,7 @@
 @import <Foundation/CPArray.j>
 
 @import "CPResponder.j"
+@import "CPViewController.j"
 @import "CPWindowController.j"
 
 
@@ -91,20 +92,22 @@ var CPDocumentUntitledCount = 0;
 */
 @implementation CPDocument : CPResponder
 {
-    CPWindow        _window; // For outlet purposes.
+    CPWindow            _window; // For outlet purposes.
+    CPView              _view; // For outlet purposes
+    CPDictionary        _viewControllersForWindowControllers;
 
-    CPURL           _fileURL;
-    CPString        _fileType;
-    CPArray         _windowControllers;
-    unsigned        _untitledDocumentIndex;
+    CPURL               _fileURL;
+    CPString            _fileType;
+    CPArray             _windowControllers;
+    unsigned            _untitledDocumentIndex;
 
-    BOOL            _hasUndoManager;
-    CPUndoManager   _undoManager;
-    
-    int             _changeCount;
-    
-    CPURLConnection _readConnection;
-    CPURLRequest    _writeRequest;
+    BOOL                _hasUndoManager;
+    CPUndoManager       _undoManager;
+
+    int                 _changeCount;
+
+    CPURLConnection     _readConnection;
+    CPURLRequest        _writeRequest;
 }
 
 /*!
@@ -118,10 +121,11 @@ var CPDocumentUntitledCount = 0;
     if (self)
     {
         _windowControllers = [];
-        
+        _viewControllersForWindowControllers = [CPDictionary dictionary];
+
         _hasUndoManager = YES;
         _changeCount = 0;
-        
+
         [self setNextResponder:CPApp];
     }
     
@@ -161,10 +165,10 @@ var CPDocumentUntitledCount = 0;
     
     if (self)
     {
-        [self readFromURL:anAbsoluteURL ofType:aType delegate:aDelegate didReadSelector:aDidReadSelector contextInfo:aContextInfo];
-        
         [self setFileURL:anAbsoluteURL];
         [self setFileType:aType];
+
+        [self readFromURL:anAbsoluteURL ofType:aType delegate:aDelegate didReadSelector:aDidReadSelector contextInfo:aContextInfo];
     }
     
     return self;
@@ -186,10 +190,10 @@ var CPDocumentUntitledCount = 0;
     
     if (self)
     {
-        [self readFromURL:absoluteContentsURL ofType:aType delegate:aDelegate didReadSelector:aDidReadSelector contextInfo:aContextInfo];
-        
         [self setFileURL:anAbsoluteURL];
         [self setFileType:aType];
+
+        [self readFromURL:absoluteContentsURL ofType:aType delegate:aDelegate didReadSelector:aDidReadSelector contextInfo:aContextInfo];
     }
     
     return self;
@@ -224,16 +228,68 @@ var CPDocumentUntitledCount = 0;
                 reason:"readFromData:ofType: must be overridden by the document subclass."];
 }
 
+- (void)viewControllerWillLoadCib:(CPViewController)aViewController
+{
+}
+
+- (void)viewControllerDidLoadCib:(CPViewController)aViewController
+{
+}
+
+- (CPWindowController)firstEligibleExistingWindowController
+{
+    return nil;
+}
+
 // Creating and managing window controllers
 /*!
     Creates the window controller for this document.
 */
 - (void)makeWindowControllers
 {
-    var windowCibName = [self windowCibName];
+    [self makeViewAndWindowControllers];
+}
 
-    if (windowCibName)
-        [self addWindowController:[[CPWindowController alloc] initWithWindowCibName:windowCibName owner:self]];
+- (void)makeViewAndWindowControllers
+{
+    var viewCibName = [self viewCibName],
+        viewController = nil,
+        windowController = nil;
+
+    // Create our view controller if we have a cib for it.
+    if ([viewCibName length])
+        viewController = [[CPViewController alloc] initWithCibName:viewCibName bundle:nil owner:self];
+
+    // If we have a view controller, check if we have a free window for it.
+    if (viewController)
+        windowController = [self firstEligibleExistingWindowController];
+
+    // If not, create one.
+    if (!windowController)
+    {
+        var windowCibName = [self windowCibName];
+
+        // From a cib if we have one.
+        if ([windowCibName length])
+            windowController = [[CPWindowController alloc] initWithWindowCibName:windowCibName owner:self];
+
+        // If not you get a standard window capable of displaying multiple documents and view
+        else if (viewController)
+        {
+            var view = [viewController view],
+                theWindow = [[CPWindow alloc] initWithContentRect:[view frame] styleMask:CPTitledWindowMask | CPClosableWindowMask | CPMiniaturizableWindowMask | CPResizableWindowMask];
+
+            [theWindow setSupportsMultipleDocuments:YES];
+
+            windowController = [[CPWindowController alloc] initWithWindow:theWindow];
+        }
+    }
+
+    if (windowController)
+        [self addWindowController:windowController];
+
+    if (viewController)
+        [self addViewController:viewController forWindowController:windowController];
 }
 
 /*!
@@ -252,12 +308,41 @@ var CPDocumentUntitledCount = 0;
 - (void)addWindowController:(CPWindowController)aWindowController
 {
     [_windowControllers addObject:aWindowController];
-    
+
     if ([aWindowController document] !== self)
     {
         [aWindowController setNextResponder:self];
         [aWindowController setDocument:self];
     }
+}
+
+- (CPView)view
+{
+    return _view;
+}
+
+- (CPArray)viewControllers
+{
+    return [_viewControllersForWindowControllers allObjects];
+}
+
+- (void)addViewController:(CPViewController)aViewController forWindowController:(CPWindowController)aWindowController
+{
+    // FIXME: exception if we don't own the window controller?
+    [_viewControllersForWindowControllers setObject:aViewController forKey:[aWindowController UID]];
+
+    if ([aWindowController document] === self)
+        [aWindowController setViewController:aViewController];
+}
+
+- (void)removeViewController:(CPViewController)aViewController
+{
+    [_viewControllersForWindowControllers removeObject:aViewController];
+}
+
+- (CPViewController)viewControllerForWindowController:(CPWindowController)aWindowController
+{
+    return [_viewControllersForWindowControllers objectForKey:[aWindowController UID]];
 }
 
 // Managing Document Windows
@@ -266,6 +351,7 @@ var CPDocumentUntitledCount = 0;
 */
 - (void)showWindows
 {
+    [_windowControllers makeObjectsPerformSelector:@selector(setDocument:) withObject:self];
     [_windowControllers makeObjectsPerformSelector:@selector(showWindow:) withObject:self];
 }
 
@@ -284,6 +370,11 @@ var CPDocumentUntitledCount = 0;
 	   return @"Untitled";
 
 	return @"Untitled " + _untitledDocumentIndex;
+}
+
+- (CPString)viewCibName
+{
+    return nil;
 }
 
 /*!
@@ -343,7 +434,7 @@ var CPDocumentUntitledCount = 0;
 */
 - (void)setFileURL:(CPURL)aFileURL
 {
-    if (_fileURL == aFileURL)
+    if (_fileURL === aFileURL)
         return;
 
     _fileURL = aFileURL;

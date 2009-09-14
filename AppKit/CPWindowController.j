@@ -41,14 +41,17 @@
 */
 @implementation CPWindowController : CPResponder
 {
-    CPWindow    _window;
+    CPWindow            _window;
 
-    CPDocument  _document;
-    BOOL        _shouldCloseDocument;
+    CPDocument          _document;
+    BOOL                _shouldCloseDocument;
 
-    id          _cibOwner;
-    CPString    _windowCibName;
-    CPString    _windowCibPath;
+    id                  _cibOwner;
+    CPString            _windowCibName;
+    CPString            _windowCibPath;
+
+    CPViewController    _viewController;
+    CPView              _viewControllerContainerView;
 }
 
 - (id)init
@@ -164,8 +167,8 @@
 
         [self loadWindow];
 
-        if (_window === nil && _document !== nil && _cibOwner === _document)
-            [self setWindow:[_document valueForKey:@"window"]];
+        if (_window === nil && [_cibOwner isKindOfClass:[CPDocument class]])
+            [self setWindow:[_cibOwner valueForKey:@"window"]];
 
         [self windowDidLoad];
         [_document windowControllerDidLoadCib:self];
@@ -256,7 +259,65 @@
         [self setDocumentEdited:[_document isDocumentEdited]];
     }
 
+    var viewController = [_document viewControllerForWindowController:self];
+
+    if (viewController)
+        [self setViewController:viewController];
+
     [self synchronizeWindowTitleWithDocumentName];
+}
+
+- (void)setViewController:(CPViewController)aViewController
+{
+    var containerView = [self viewControllerContainerView] || [[self window] contentView],
+        view = [_viewController view],
+        frame = view ? [view frame] : [containerView bounds];
+
+    [view removeFromSuperview];
+
+    _viewController = aViewController;
+
+    view = [_viewController view];
+
+    if (view)
+    {
+        [view setFrame:frame];
+        [containerView addSubview:view];
+    }
+}
+
+- (void)setViewControllerContainerView:(CPView)aView
+{
+    _viewControllerContainerView = aView;
+}
+
+- (void)viewControllerContainerView
+{
+    return _viewControllerContainerView;
+}
+
+- (void)setViewController:(CPViewController)aViewController
+{
+    var containerView = [self viewControllerContainerView] || [[self window] contentView],
+        view = [_viewController view],
+        frame = view ? [view frame] : [containerView bounds];
+
+    [view removeFromSuperview];
+
+    _viewController = aViewController;
+
+    view = [_viewController view];
+
+    if (view)
+    {
+        [view setFrame:frame];
+        [containerView addSubview:view];
+    }
+}
+
+- (CPViewController)viewController
+{
+    return _viewController;
 }
 
 /* @ignore */
