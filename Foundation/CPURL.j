@@ -31,6 +31,8 @@ CPURLCustomIconKey                  = @"CPURLCustomIconKey";
 {
     CPURL       _base @accessors(readonly, property=baseURL);
     CPString    _relative @accessors(readonly, property=relativeString);
+
+    CPDictionary    _resourceValues;
 }
 
 - (id)initWithScheme:(CPString)scheme host:(CPString)host path:(CPString)path
@@ -57,9 +59,13 @@ CPURLCustomIconKey                  = @"CPURLCustomIconKey";
     if (!URI_RE.test(URLString))
         return nil;
     
-    _base = baseURL;
-    _relative = URLString;
-    
+    if (self)
+    {
+        _base = baseURL;
+        _relative = URLString;
+        _resourceValues = [CPDictionary dictionary];
+    }
+
     return self;
 }
 
@@ -182,6 +188,16 @@ CPURLCustomIconKey                  = @"CPURLCustomIconKey";
 - (CPString)description
 {
     return [self absoluteString];
+}
+
+- (id)resourceValueForKey:(CPString)aKey
+{
+    return [_resourceValues objectForKey:aKey];
+}
+
+- (id)setResourceValue:(id)anObject forKey:(CPString)aKey
+{
+    [_resourceValues setObject:anObject forKey:aKey];
 }
 
 @end

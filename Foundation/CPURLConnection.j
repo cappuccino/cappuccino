@@ -106,17 +106,17 @@ var CPURLConnectionDelegate = nil;
     {
         var request = objj_request_xmlhttp();
         
-        request.open([aRequest HTTPMethod], [aRequest URL], NO);
-        
+        request.open([aRequest HTTPMethod], [[aRequest URL] absoluteString], NO);
+
         var fields = [aRequest allHTTPHeaderFields],
             key = nil,
             keys = [fields keyEnumerator];
-        
+
         while (key = [keys nextObject])
             request.setRequestHeader(key, [fields objectForKey:key]);
-        
+
         request.send([aRequest HTTPBody]);
-        
+
         return [CPData dataWithString:request.responseText];
     }
     catch (anException)
@@ -154,20 +154,21 @@ var CPURLConnectionDelegate = nil;
         _delegate = aDelegate;
         _isCanceled = NO;
         
-        var path = [_request URL];
-        
+        var URL = [_request URL],
+            scheme = [URL scheme];
+
         // Browsers use "file:", Titanium uses "app:"
-        _isLocalFileConnection =    path.indexOf("file:") === 0 || 
-                                    ((path.indexOf("http:") !== 0 || path.indexOf("https:") !== 0) && 
+        _isLocalFileConnection =    scheme === "file" ||
+                                    ((scheme !== "http" || scheme !== "https:") &&
                                     window.location &&
                                     (window.location.protocol === "file:" || window.location.protocol === "app:"));
-        
+
         _XMLHTTPRequest = objj_request_xmlhttp();
-            
+
         if (shouldStartImmediately)
             [self start];
     }
-    
+
     return self;
 }
 
@@ -193,7 +194,7 @@ var CPURLConnectionDelegate = nil;
 
     try
     {   
-        _XMLHTTPRequest.open([_request HTTPMethod], [_request URL], YES);
+        _XMLHTTPRequest.open([_request HTTPMethod], [[_request URL] absoluteString], YES);
         
         _XMLHTTPRequest.onreadystatechange = function() { [self _readyStateDidChange]; }
 
