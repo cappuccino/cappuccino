@@ -76,7 +76,9 @@
     
     CGSize                  _minItemSize;
     CGSize                  _maxItemSize;
-    
+
+    CPArray                 _backgroundColors;
+
     float                   _tileWidth;
     
     BOOL                    _isSelectable;
@@ -111,7 +113,9 @@
         _itemSize = CGSizeMakeZero();
         _minItemSize = CGSizeMakeZero();
         _maxItemSize = CGSizeMakeZero();
-        
+
+        [self setBackgroundColors:nil];
+
         _verticalMargin = 5.0;
         _tileWidth = -1.0;
         
@@ -530,6 +534,30 @@
     return _maxItemSize;
 }
 
+- (void)setBackgroundColors:(CPArray)backgroundColors
+{
+    if (_backgroundColors === backgroundColors)
+        return;
+
+    _backgroundColors = backgroundColors;
+
+    if (!_backgroundColors)
+        _backgroundColors = [CPColor whiteColor];
+
+    if ([_backgroundColors count] === 1)
+        [self setBackgroundColor:_backgroundColors[0]];
+
+    else
+        [self setBackgroundColor:nil];
+
+    [self setNeedsDisplay:YES];
+}
+
+- (CPArray)backgroundColors
+{
+    return _backgroundColors;
+}
+
 - (void)mouseUp:(CPEvent)anEvent
 {
     if ([_selectionIndexes count] && [anEvent clickCount] == 2 && [_delegate respondsToSelector:@selector(collectionView:didDoubleClickOnItemAtIndex:)])
@@ -731,7 +759,8 @@
 
 var CPCollectionViewMinItemSizeKey      = @"CPCollectionViewMinItemSizeKey",
     CPCollectionViewMaxItemSizeKey      = @"CPCollectionViewMaxItemSizeKey",
-    CPCollectionViewVerticalMarginKey   = @"CPCollectionViewVerticalMarginKey";
+    CPCollectionViewVerticalMarginKey   = @"CPCollectionViewVerticalMarginKey",
+    CPCollectionViewBackgroundColorsKey = @"CPCollectionViewBackgroundColorsKey";
 
 
 @implementation CPCollectionView (CPCoding)
@@ -752,6 +781,8 @@ var CPCollectionViewMinItemSizeKey      = @"CPCollectionViewMinItemSizeKey",
         _minItemSize = [aCoder decodeSizeForKey:CPCollectionViewMinItemSizeKey] || CGSizeMakeZero();
         _maxItemSize = [aCoder decodeSizeForKey:CPCollectionViewMaxItemSizeKey] || CGSizeMakeZero();
         _verticalMargin = [aCoder decodeFloatForKey:CPCollectionViewVerticalMarginKey];
+
+        [self setBackgroundColors:[aCoder decodeObjectForKey:CPCollectionViewBackgroundColorsKey]];
           
         _tileWidth = -1.0;
 
@@ -775,6 +806,8 @@ var CPCollectionViewMinItemSizeKey      = @"CPCollectionViewMinItemSizeKey",
       [aCoder encodeSize:_maxItemSize forKey:CPCollectionViewMaxItemSizeKey];
 
     [aCoder encodeFloat:_verticalMargin forKey:CPCollectionViewVerticalMarginKey];
+
+    [aCoder encodeObject:_backgroundColors forKey:CPCollectionViewBackgroundColorsKey];
 }
 
 @end

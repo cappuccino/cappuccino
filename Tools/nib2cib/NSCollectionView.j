@@ -43,7 +43,9 @@
         
     if (self = [super NS_initWithCoder:aCoder])
     {
-        _maxNumberOfRows    = [aCoder decodeIntForKey:@"NSMaxNumberOfGridRows"];
+        _backgroundColors = [aCoder decodeObjectForKey:@"NSBackgroundColors"];
+
+        _maxNumberOfRows = [aCoder decodeIntForKey:@"NSMaxNumberOfGridRows"];
         _maxNumberOfColumns = [aCoder decodeIntForKey:@"NSMaxNumberOfGridColumns"];
         
         _isSelectable             = [aCoder decodeBoolForKey:@"NSSelectable"];
