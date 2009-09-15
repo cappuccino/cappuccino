@@ -702,7 +702,7 @@ CPTableViewSolidHorizontalGridLineMask = 1 << 1;
     if (_headerView)
     {
         [_headerView setTableView:self];
-        [_headerView setFrameSize:_CGSizeMake(aSize.width, [_headerView frame].size.height)];
+        [_headerView setFrameSize:_CGSizeMake(_CGRectGetWidth([self frame]), _CGRectGetHeight([_headerView frame]))];
     }
 
     var scrollView = [[self superview] superview];
@@ -1338,7 +1338,7 @@ CPTableViewSolidHorizontalGridLineMask = 1 << 1;
     [super setFrameSize:aSize];
 
     if (_headerView)
-        [_headerView setFrameSize:_CGSizeMake(aSize.width, [_headerView frame].size.height)];
+        [_headerView setFrameSize:_CGSizeMake(_CGRectGetWidth([self frame]), _CGRectGetHeight([_headerView frame]))];
 }
 
 - (CGRect)exposedClipRect
