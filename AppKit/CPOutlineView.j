@@ -222,7 +222,10 @@ var CPOutlineViewDataSource_outlineView_setObjectValue_forTableColumn_byItem_   
 
 - (void)reloadItem:(id)anItem reloadChildren:(BOOL)shouldReloadChildren
 {
-    _loadItemInfoForItem(self, anItem, shouldReloadChildren);
+    if (!!shouldReloadChildren || !anItem)
+        _loadItemInfoForItem(self, anItem);
+    else
+        _reloadItem(self, anItem);
 
     [super reloadData];
 }
@@ -615,14 +618,46 @@ var CPOutlineViewDataSource_outlineView_setObjectValue_forTableColumn_byItem_   
 
 @end
 
-var _loadItemInfoForItem = function(/*CPOutlineView*/ anOutlineView, /*id*/ anItem, /*BOOL*/ shouldLoadChildren,  /*id*/ parentItemInfo)
+var _reloadItem = function(/*CPOutlineView*/ anOutlineView, /*id*/ anItem)
 {
-    // FIXME: remote...
-    var dataSource = anOutlineView._outlineViewDataSource,
-        itemInfosForItems = anOutlineView._itemInfosForItems,
-        shouldReloadData = !parentItemInfo;
+    if (!anItem)
+        return;
 
-    // If we are the root, just use the "static" root item info.
+    // Get the existing info if it exists.
+    var itemInfosForItems = anOutlineView._itemInfosForItems,
+        dataSource = anOutlineView._outlineViewDataSource,
+        itemUID = [anItem UID],
+        itemInfo = itemInfosForItems[itemUID];
+
+    // If we're not in the tree, then just bail.
+    if (!itemInfo)
+        return [];
+
+    // See if the item itself can be swapped out.
+    var parent = itemInfo.parent,
+        parentItemInfo = parent ? itemInfosForItems[[parent UID]] : anOutlineView._rootItemInfo,
+        parentChildren = parentItemInfo.children,
+        index = [parentChildren indexOfObjectIdenticalTo:anItem],
+        newItem = [dataSource outlineView:anOutlineView child:index ofItem:parent];
+
+    if (anItem !== newItem)
+    {
+        itemInfosForItems[[anItem UID]] = nil;
+        itemInfosForItems[[newItem UID]] = itemInfo;
+
+        parentChildren[index] = newItem;
+        anOutlineView._itemsForRows[itemInfo.row] = newItem;
+    }
+
+    itemInfo.isExpandable = [dataSource outlineView:anOutlineView isItemExpandable:newItem];
+    itemInfo.isExpanded = itemInfo.isExpandable && itemInfo.isExpanded;
+}
+
+var _loadItemInfoForItem = function(/*CPOutlineView*/ anOutlineView, /*id*/ anItem,  /*BOOL*/ isIntermediate)
+{
+    var itemInfosForItems = anOutlineView._itemInfosForItems,
+        dataSource = anOutlineView._outlineViewDataSource;
+
     if (!anItem)
         var itemInfo = anOutlineView._rootItemInfo;
 
@@ -635,10 +670,6 @@ var _loadItemInfoForItem = function(/*CPOutlineView*/ anOutlineView, /*id*/ anIt
         // If we're not in the tree, then just bail.
         if (!itemInfo)
             return [];
-
-        // If no state, then we are the initiator, no need to update row/level.
-        if (!parentItemInfo)
-            parentItemInfo = itemInfo.parentItemInfo;
 
         itemInfo.isExpandable = [dataSource outlineView:anOutlineView isItemExpandable:anItem];
 
@@ -655,8 +686,7 @@ var _loadItemInfoForItem = function(/*CPOutlineView*/ anOutlineView, /*id*/ anIt
     var weight = itemInfo.weight,
         descendants = anItem ? [anItem] : [];
 
-    if (itemInfo.isExpanded && (shouldReloadData || shouldLoadChildren) &&
-        (!(anOutlineView._implementedOutlineViewDataSourceMethods & CPOutlineViewDataSource_outlineView_shouldDeferDisplayingChildrenOfItem_) ||
+    if (itemInfo.isExpanded && (!(anOutlineView._implementedOutlineViewDataSourceMethods & CPOutlineViewDataSource_outlineView_shouldDeferDisplayingChildrenOfItem_) ||
         ![dataSource outlineView:anOutlineView shouldDeferDisplayingChildrenOfItem:anItem]))
     {
         var index = 0,
@@ -678,19 +708,17 @@ var _loadItemInfoForItem = function(/*CPOutlineView*/ anOutlineView, /*id*/ anIt
 
             itemInfo.children[index] = childItem;
 
-            var childDescendants = _loadItemInfoForItem(anOutlineView, childItem, shouldLoadChildren, itemInfo);
+            var childDescendants = _loadItemInfoForItem(anOutlineView, childItem, YES);
 
             childItemInfo.parent = anItem;
             childItemInfo.level = level;
             descendants = descendants.concat(childDescendants);
         }
     }
-    // FIXME:
-    // else { }
 
     itemInfo.weight = descendants.length;
 
-    if (shouldReloadData)
+    if (!isIntermediate)
     {
         // row = -1 is the root item, so just go to row 0 since it is ignored.
         var index = MAX(itemInfo.row, 0),

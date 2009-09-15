@@ -198,9 +198,6 @@
 */
 - (void)windowDidLoad
 {
-    [_document windowControllerDidLoadCib:self];
-
-    [self synchronizeWindowTitleWithDocumentName];
 }
 
 /*!
@@ -208,7 +205,6 @@
 */
 - (void)windowWillLoad
 {
-    [_document windowControllerWillLoadCib:self];
 }
 
 /*!
