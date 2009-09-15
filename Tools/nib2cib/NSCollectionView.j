@@ -72,29 +72,3 @@
 }
 
 @end
-
-
-@implementation CPCollectionViewItem (NSCoding)
-
-- (id)NS_initWithCoder:(CPCoder)aCoder
-{
-    return [super init];
-}
-
-@end
-
-@implementation NSCollectionViewItem : CPCollectionViewItem
-{
-}
-
-- (id)initWithCoder:(CPCoder)aCoder
-{
-    return [self NS_initWithCoder:aCoder];
-}
-
-- (Class)classForKeyedArchiver
-{
-    return [CPCollectionViewItem class];
-}
-
-@end

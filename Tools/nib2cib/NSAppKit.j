@@ -27,6 +27,7 @@
 @import "NSColor.j"
 @import "NSColorWell.j"
 @import "NSCollectionView.j"
+@import "NSCollectionViewItem.j"
 @import "NSControl.j"
 @import "NSCustomObject.j"
 @import "NSCustomResource.j"
@@ -54,6 +55,7 @@
 @import "NSTextField.j"
 @import "NSToolbar.j"
 @import "NSView.j"
+@import "NSViewController.j"
 @import "NSWindowTemplate.j"
 @import "WebView.j"
 

@@ -163,3 +163,41 @@
 }
 
 @end
+
+
+var CPViewControllerViewKey     = @"CPViewControllerViewKey",
+    CPViewControllerTitleKey    = @"CPViewControllerTitleKey";
+
+@implementation CPViewController (CPCoding)
+
+/*!
+    Initializes the view item by unarchiving data from a coder.
+    @param aCoder the coder from which the data will be unarchived
+    @return the initialized collection view item
+*/
+- (id)initWithCoder:(CPCoder)aCoder
+{
+    self = [super initWithCoder:aCoder];
+
+    if (self)
+    {
+        _view = [aCoder decodeObjectForKey:CPViewControllerViewKey];
+        _title = [aCoder decodeObjectForKey:CPViewControllerTitleKey];
+    }
+
+    return self;
+}
+
+/*!
+    Archives the colletion view item to the provided coder.
+    @param aCoder the coder to which the view item should be archived
+*/
+- (void)encodeWithCoder:(CPCoder)aCoder
+{
+    [super encodeWithCoder:aCoder];
+
+    [aCoder encodeObject:_view forKey:CPViewControllerViewKey];
+    [aCoder encodeObject:_title forKey:CPViewControllerTitleKey];
+}
+
+@end

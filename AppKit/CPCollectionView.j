@@ -26,7 +26,8 @@
 @import <Foundation/CPKeyedArchiver.j>
 @import <Foundation/CPKeyedUnarchiver.j>
 
-@import <AppKit/CPView.j>
+@import "CPView.j"
+@import "CPCollectionViewItem.j"
 
 
 /*! 
@@ -61,6 +62,7 @@
     @param indices the indices to obtain drag types
     @return an array of drag types (CPString)
 */
+
 @implementation CPCollectionView : CPView
 {
     CPArray                 _content;
@@ -668,95 +670,6 @@
 
 @end
 
-/*!
-    Represents an object inside a CPCollectionView.
-*/
-@implementation CPCollectionViewItem : CPObject
-{
-    id      _representedObject;
-    
-    CPView  _view;
-    
-    BOOL    _isSelected;
-}
-
-// Setting the Represented Object
-/*!
-    Sets the object to be represented by this item.
-    @param anObject the object to be represented
-*/
-- (void)setRepresentedObject:(id)anObject
-{
-    if (_representedObject == anObject)
-        return;
-    
-    _representedObject = anObject;
-    
-    // FIXME: This should be set up by bindings
-    [_view setRepresentedObject:anObject];
-}
-
-/*!
-    Returns the object represented by this view item
-*/
-- (id)representedObject
-{
-    return _representedObject;
-}
-
-// Modifying the View
-/*!
-    Sets the view that is used represent this object.
-    @param aView the view used to represent this object
-*/
-- (void)setView:(CPView)aView
-{
-    _view = aView;
-}
-
-/*!
-    Returns the view that represents this object.
-*/
-- (CPView)view
-{
-    return _view;
-}
-
-// Modifying the Selection
-/*!
-    Sets whether this view item should be selected.
-    @param shouldBeSelected \c YES makes the item selected. \c NO deselects it.
-*/
-- (void)setSelected:(BOOL)shouldBeSelected
-{
-    if (_isSelected == shouldBeSelected)
-        return;
-    
-    _isSelected = shouldBeSelected;
-    
-    // FIXME: This should be set up by bindings
-    [_view setSelected:_isSelected];
-}
-
-/*!
-    Returns \c YES if the item is currently selected. \c NO if the item is not selected.
-*/
-- (BOOL)isSelected
-{
-    return _isSelected;
-}
-
-// Parent Collection View
-/*!
-    Returns the collection view of which this item is a part.
-*/
-- (CPCollectionView)collectionView
-{
-    return [_view superview];
-}
-
-@end
-
 var CPCollectionViewMinItemSizeKey      = @"CPCollectionViewMinItemSizeKey",
     CPCollectionViewMaxItemSizeKey      = @"CPCollectionViewMaxItemSizeKey",
     CPCollectionViewVerticalMarginKey   = @"CPCollectionViewVerticalMarginKey",
@@ -808,50 +721,6 @@ var CPCollectionViewMinItemSizeKey      = @"CPCollectionViewMinItemSizeKey",
     [aCoder encodeFloat:_verticalMargin forKey:CPCollectionViewVerticalMarginKey];
 
     [aCoder encodeObject:_backgroundColors forKey:CPCollectionViewBackgroundColorsKey];
-}
-
-@end
-
-var CPCollectionViewItemViewKey = @"CPCollectionViewItemViewKey";
-
-@implementation CPCollectionViewItem (CPCoding)
-
-/*
-    FIXME Not yet implemented
-*/
-- (id)copy
-{
-    
-}
-
-@end
-
-var CPCollectionViewItemViewKey = @"CPCollectionViewItemViewKey";
-
-@implementation CPCollectionViewItem (CPCoding)
-
-/*!
-    Initializes the view item by unarchiving data from a coder.
-    @param aCoder the coder from which the data will be unarchived
-    @return the initialized collection view item
-*/
-- (id)initWithCoder:(CPCoder)aCoder
-{
-    self = [super init];
-    
-    if (self)
-        _view = [aCoder decodeObjectForKey:CPCollectionViewItemViewKey];
-    
-    return self;
-}
-
-/*!
-    Archives the colletion view item to the provided coder.
-    @param aCoder the coder to which the view item should be archived
-*/
-- (void)encodeWithCoder:(CPCoder)aCoder
-{
-    [aCoder encodeObject:_view forKey:CPCollectionViewItemViewKey];
 }
 
 @end
