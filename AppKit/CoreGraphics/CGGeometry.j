@@ -155,26 +155,20 @@ function CGRectStandardize(aRect)
 {
     var width = _CGRectGetWidth(aRect),
         height = _CGRectGetHeight(aRect),
-        standardized = aRect;
+        standardized = _CGRectMakeCopy(aRect);
 
     if (width < 0.0)
     {
-        if (standardized == aRect)
-            standardized = _CGRectMakeCopy(aRect);
-    
         standardized.origin.x += width;
         standardized.size.width = -width;
     }
-    
+
     if (height < 0.0)
     {
-        if (standardized == aRect)
-            standardized = _CGRectMakeCopy(aRect);
-
         standardized.origin.y += height;
         standardized.size.height = -height;
     }
-    
+
     return standardized;
 }
 

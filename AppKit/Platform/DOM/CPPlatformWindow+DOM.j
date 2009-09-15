@@ -124,27 +124,18 @@ var CTRL_KEY_CODE   = 17;
     return contentRect;
 }
 
-- (void)updateNativeContentOrigin
+- (void)updateNativeContentRect
 {
     if (!_DOMWindow)
         return;
 
-    if (_DOMWindow.cpSetFrame)
+    if (typeof _DOMWindow["cpSetFrame"] === "function")
         return _DOMWindow.cpSetFrame([self contentRect]);
 
     var origin = [self contentRect].origin,
         nativeOrigin = [self nativeContentRect].origin;
 
     _DOMWindow.moveBy(origin.x - nativeOrigin.x, origin.y - nativeOrigin.y);
-}
-
-- (void)updateNativeContentSize
-{
-    if (!_DOMWindow)
-        return;
-
-    if (_DOMWindow.cpSetFrame)
-        return _DOMWindow.cpSetFrame([self contentRect]);
 
     var size = [self contentRect].size,
         nativeSize = [self nativeContentRect].size;

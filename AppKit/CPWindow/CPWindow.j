@@ -610,9 +610,49 @@ CPTexturedBackgroundWindowMask
     }
     else
     {
-        [self setFrameOrigin:aFrame.origin];
-        [self setFrameSize:aFrame.size];
+        var origin = _frame.origin,
+            newOrigin = aFrame.origin;
+
+        if (!_CGPointEqualToPoint(origin, newOrigin))
+        {
+            origin.x = newOrigin.x;
+            origin.y = newOrigin.y;
+
+#if PLATFORM(DOM)
+            if (![self _sharesChromeWithPlatformWindow])
+            {
+                CPDOMDisplayServerSetStyleLeftTop(_DOMElement, NULL, origin.x, origin.y);
+            }
+#endif
+
+            [[CPNotificationCenter defaultCenter] postNotificationName:CPWindowDidMoveNotification object:self];
+        }
+
+        var size = _frame.size,
+            newSize = aFrame.size;
+
+        if (!_CGSizeEqualToSize(size, newSize))
+        {
+            size.width = MIN(MAX(newSize.width, _minSize.width), _maxSize.width);
+            size.height = MIN(MAX(newSize.height, _minSize.height), _maxSize.height);
+
+            [_windowView setFrameSize:size];
+
+            if (_hasShadow)
+                [_shadowView setFrameSize:_CGSizeMake(SHADOW_MARGIN_LEFT + size.width + SHADOW_MARGIN_RIGHT, SHADOW_MARGIN_BOTTOM + size.height + SHADOW_MARGIN_TOP + SHADOW_DISTANCE)];
+
+            if (!_isAnimating && [_delegate respondsToSelector:@selector(windowDidResize:)])
+                [_delegate windowDidResize:self];
+        }
+
+        if ([self _sharesChromeWithPlatformWindow])
+            [_platformWindow setContentRect:_frame];
     }
+}
+
+- (void)setFrame:(CGRect)aFrame display:(BOOL)shouldDisplay
+{
+    [super setFrame:aFrame display:shouldDisplay animate:NO];
 }
 
 /*!
@@ -629,25 +669,7 @@ CPTexturedBackgroundWindowMask
 */
 - (void)setFrameOrigin:(CGPoint)anOrigin
 {
-    var origin = _frame.origin;
-
-    if (_CGPointEqualToPoint(origin, anOrigin))
-        return;
-
-    origin.x = anOrigin.x;
-    origin.y = anOrigin.y;
-
-    if ([self _sharesChromeWithPlatformWindow])
-        [_platformWindow setContentOrigin:origin];
-
-    else
-    {
-#if PLATFORM(DOM)
-        CPDOMDisplayServerSetStyleLeftTop(_DOMElement, NULL, origin.x, origin.y);
-#endif
-    }
-
-    [[CPNotificationCenter defaultCenter] postNotificationName:CPWindowDidMoveNotification object:self];
+    [self setFrame:_CGRectMake(anOrigin.x, anOrigin.y, _CGRectGetWidth(_frame), _CGRectGetHeight(_frame)) display:YES animate:NO];
 }
 
 /*!
@@ -656,23 +678,7 @@ CPTexturedBackgroundWindowMask
 */
 - (void)setFrameSize:(CGSize)aSize
 {
-    aSize = _CGSizeMake(MIN(MAX(aSize.width, _minSize.width), _maxSize.width), MIN(MAX(aSize.height, _minSize.height), _maxSize.height));
-    
-    if (_CGSizeEqualToSize(_frame.size, aSize))
-        return;
-    
-    _frame.size = aSize;
-
-    [_windowView setFrameSize:aSize];
-
-    if ([self _sharesChromeWithPlatformWindow])
-        [_platformWindow setContentSize:aSize];
-
-    if (_hasShadow)
-        [_shadowView setFrameSize:_CGSizeMake(SHADOW_MARGIN_LEFT + aSize.width + SHADOW_MARGIN_RIGHT, SHADOW_MARGIN_BOTTOM + aSize.height + SHADOW_MARGIN_TOP + SHADOW_DISTANCE)];
-
-    if (!_isAnimating && [_delegate respondsToSelector:@selector(windowDidResize:)])
-        [_delegate windowDidResize:self];
+    [self setFrame:_CGRectMake(_CGRectGetMinX(_frame), _CGRectGetMinY(_frame), aSize.width, aSize.height) display:YES animate:NO];
 }
 
 /*!
