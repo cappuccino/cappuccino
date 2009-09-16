@@ -28,6 +28,7 @@
 
 @import "CPDOMWindowLayer.j"
 
+@import "CPPlatform.j"
 @import "CPPlatformWindow.j"
 
 #import "../../CoreGraphics/CGGeometry.h"
@@ -69,6 +70,8 @@ var KeyCodesToPrevent = {},
     KeyCodesWithoutKeyPressEvents = { '8':1, '9':1, '16':1, '37':1, '38':1, '39':1, '40':1, '46':1, '33':1, '34':1 };
 
 var CTRL_KEY_CODE   = 17;
+
+var supportsNativeDragAndDrop = [CPPlatform supportsDragAndDrop];
 
 @implementation CPPlatformWindow (DOM)
 
@@ -816,14 +819,16 @@ var CTRL_KEY_CODE   = 17;
         event = _CPEventFromNativeMouseEvent(aDOMEvent, _mouseIsDown ? CPLeftMouseDragged : CPMouseMoved, location, modifierFlags, timestamp, windowNumber, nil, -1, 1, 0);
     }
 
-    if (event)
+    var isDragging = [[CPDragServer sharedDragServer] isDragging];
+
+    if (event && (!isDragging || !supportsNativeDragAndDrop))
     {
         event._DOMEvent = aDOMEvent;
         
         [CPApp sendEvent:event];
     }
 
-    if (StopDOMEventPropagation && (![CPPlatform supportsDragAndDrop] || type !== "mousedown" && ![[CPDragServer sharedDragServer] isDragging]))
+    if (StopDOMEventPropagation && (!supportsNativeDragAndDrop || type !== "mousedown" && !isDragging))
         CPDOMEventStop(aDOMEvent, self);
 
     [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];

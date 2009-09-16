@@ -137,7 +137,7 @@
 {
     _cachedItems = [];
     _itemData = nil;
-    _itemForDragging = anItem;//[CPKeyedUnarchiver unarchiveObjectWithData:_itemData];
+    _itemForDragging = nil;
     _itemPrototype = anItem;
 
     [self reloadContent];
@@ -586,29 +586,31 @@
 {
     if (![_delegate respondsToSelector:@selector(collectionView:dragTypesForItemsAtIndexes:)])
         return;
-        
+
     // If we don't have any selected items, we've clicked away, and thus the drag is meaningless.
     if (![_selectionIndexes count])
         return;
-        
+
     // Set up the pasteboard
     var dragTypes = [_delegate collectionView:self dragTypesForItemsAtIndexes:_selectionIndexes];
-    
+
     [[CPPasteboard pasteboardWithName:CPDragPboard] declareTypes:dragTypes owner:self];
-    
+
     var point = [self convertPoint:[anEvent locationInWindow] fromView:nil];
 
-    [_itemForDragging setRepresentedObject:_content[[_selectionIndexes firstIndex]]];
+    if (!_itemForDragging)
+        _itemForDragging = [self newItemForRepresentedObject:_content[[_selectionIndexes firstIndex]]];
+    else
+        [_itemForDragging setRepresentedObject:_content[[_selectionIndexes firstIndex]]];
 
-    var view = [_itemForDragging view],
-        frame = [view frame];
-    
+    var view = [_itemForDragging view];
+
     [view setFrameSize:_itemSize];
     [view setAlphaValue:0.7];
-    
+
     [self dragView:view
         at:[[_items[[_selectionIndexes firstIndex]] view] frame].origin
-        offset:CGPointMakeZero()
+        offset:CGSizeMakeZero()
         event:_mouseDownEvent
         pasteboard:nil
         source:self
