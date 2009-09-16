@@ -323,7 +323,7 @@ var CPDocumentUntitledCount = 0;
 
 - (CPArray)viewControllers
 {
-    return [_viewControllersForWindowControllers allObjects];
+    return [_viewControllersForWindowControllers allValues];
 }
 
 - (void)addViewController:(CPViewController)aViewController forWindowController:(CPWindowController)aWindowController
