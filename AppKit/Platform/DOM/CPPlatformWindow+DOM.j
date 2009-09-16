@@ -138,12 +138,18 @@ var supportsNativeDragAndDrop = [CPPlatform supportsDragAndDrop];
     var origin = [self contentRect].origin,
         nativeOrigin = [self nativeContentRect].origin;
 
-    _DOMWindow.moveBy(origin.x - nativeOrigin.x, origin.y - nativeOrigin.y);
+    if (origin.x !== nativeOrigin.x || origin.y !== nativeOrigin.y)
+    {
+        _DOMWindow.moveBy(origin.x - nativeOrigin.x, origin.y - nativeOrigin.y);
+    }
 
     var size = [self contentRect].size,
         nativeSize = [self nativeContentRect].size;
 
-    _DOMWindow.resizeBy(size.width - nativeSize.width, size.height - nativeSize.height);
+    if (size.width !== nativeSize.width || size.height !== nativeSize.height)
+    {
+        _DOMWindow.resizeBy(size.width - nativeSize.width, size.height - nativeSize.height);
+    }
 }
 
 - (void)orderBack:(id)aSender
