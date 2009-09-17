@@ -706,7 +706,9 @@ var CPViewFlags                     = { },
         [CachedNotificationCenter postNotificationName:CPViewFrameDidChangeNotification object:self];
 
 #if PLATFORM(DOM)
-    CPDOMDisplayServerSetStyleLeftTop(_DOMElement, _superview ? _superview._boundsTransform : NULL, origin.x, origin.y);
+    var transform = _superview ? _superview._boundsTransform : NULL;
+
+    CPDOMDisplayServerSetStyleLeftTop(_DOMElement, transform, origin.x, origin.y);
 #endif
 }
 
