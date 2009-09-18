@@ -164,7 +164,17 @@ function fragment_evaluate_code(aFragment)
         else
             compiled = eval(functionText);
 #else
-        compiled = new Function(GET_CODE(aFragment));
+        // "//@ sourceURL=" at the end lets us name our eval'd files for debuggers, etc.
+        // * WebKit:  http://pmuellr.blogspot.com/2009/06/debugger-friendly.html
+        // * Firebug: http://blog.getfirebug.com/2009/08/11/give-your-eval-a-name-with-sourceurl/
+        //if (true) {
+            var functionText = GET_CODE(aFragment)+"/**/\n//@ sourceURL="+GET_FILE(aFragment).path;
+            compiled = new Function(functionText);
+        //} else {
+        //    // Firebug only does it for "eval()", not "new Function()". Ugh. Slower.
+        //    var functionText = "(function(){"+GET_CODE(aFragment)+"/**/\n})\n//@ sourceURL="+GET_FILE(aFragment).path;
+        //    compiled = eval(functionText);
+        //}
         compiled.displayName = GET_FILE(aFragment).path;
 #endif
     }
