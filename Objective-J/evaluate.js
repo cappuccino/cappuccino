@@ -158,8 +158,11 @@ function fragment_evaluate_code(aFragment)
     try
     {
 #if RHINO
-        compiled = eval("function(){"+GET_CODE(aFragment)+"}");
-        //compiled = Packages.org.mozilla.javascript.Context.getCurrentContext().compileFunction(window, "function(){"+GET_CODE(aFragment)+"}", GET_FILE(aFragment).path, 0, null);
+        var functionText = "function(){"+GET_CODE(aFragment)+"/**/\n}";
+        if (window.isRhino)
+            compiled = Packages.org.mozilla.javascript.Context.getCurrentContext().compileFunction(window, functionText, GET_FILE(aFragment).path, 0, null);
+        else
+            compiled = eval(functionText);
 #else
         compiled = new Function(GET_CODE(aFragment));
         compiled.displayName = GET_FILE(aFragment).path;
@@ -170,6 +173,9 @@ function fragment_evaluate_code(aFragment)
         objj_exception_report(anException, GET_FILE(aFragment));
     }
     
+#if RHINO
+    compiled();
+#else
     try
     {
         compiled();
@@ -178,6 +184,7 @@ function fragment_evaluate_code(aFragment)
     {
         objj_exception_report(anException, GET_FILE(aFragment));
     }
+#endif
     
     return NO;
 }

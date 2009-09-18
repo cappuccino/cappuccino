@@ -2,6 +2,12 @@ var file = require("file"),
     readline = require("readline").readline;
 
 var window = require("browser/window");
+window.isRhino = true
+
+if (window.isRhino) {
+    window.__parent__ = null;
+    window.__proto__ = global;
+}
 
 // setup OBJJ_HOME, OBJJ_INCLUDE_PATHS, etc
 var OBJJ_HOME = exports.OBJJ_HOME = file.resolve(module.path, "..", ".."),
@@ -17,7 +23,10 @@ if (system.env["OBJJ_INCLUDE_PATHS"])
 with (window)
 {
     // read and eval Objective-J.js with the module's scope
-    eval(file.read(objectivejPath, { charset:"UTF-8" }));
+    if (window.isRhino)
+        Packages.org.mozilla.javascript.Context.getCurrentContext().evaluateString(window, file.read(objectivejPath, { charset:"UTF-8" }), "Objective-J.js", 0, null);
+    else
+        eval(file.read(objectivejPath, { charset:"UTF-8" }));
     
     // export desired variables. must eval variable name to obtain a reference.
     [
@@ -113,7 +122,10 @@ exports.run = function(args)
 // synchronously evals Objective-J code
 var objj_eval = exports.objj_eval = function(code)
 {
-    var result = eval(objj_preprocess_sync(code));
+    if (window.isRhino)
+        var result = Packages.org.mozilla.javascript.Context.getCurrentContext().evaluateString(window, objj_preprocess_sync(code), "objj_eval", 0, null);
+    else
+        var result = eval(objj_preprocess_sync(code));
     
     //require("browser/timeout").serviceTimeouts();
     
@@ -155,11 +167,12 @@ var objj_import_sync = function(pathOrPaths, isLocal)
 exports.make_narwhal_factory = function(code, path) {
     var OBJJ_CURRENT_BUNDLE = new objj_bundle();
     
-    return eval(
-        "(function(require,exports,module,system,print){" +
-        objj_preprocess_sync(code, path) +
-        "/**/\n})"
-    );
+    var factoryText = "(function(require,exports,module,system,print){" + objj_preprocess_sync(code, path) + "/**/\n})";
+    
+    if (window.isRhino)
+        return Packages.org.mozilla.javascript.Context.getCurrentContext().compileFunction(window, factoryText, path, 0, null);
+    else
+        return eval(factoryText);
 }
 
 } // end "with"
