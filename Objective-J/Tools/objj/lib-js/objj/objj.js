@@ -10,8 +10,9 @@ if (window.isRhino) {
 }
 
 // setup OBJJ_HOME, OBJJ_INCLUDE_PATHS, etc
-var OBJJ_HOME = exports.OBJJ_HOME = file.resolve(module.path, "..", ".."),
-    frameworksPath = file.resolve(OBJJ_HOME, "lib/", "Frameworks/"),
+window.OBJJ_HOME = exports.OBJJ_HOME = file.resolve(module.path, "..", "..");
+
+var frameworksPath = file.resolve(window.OBJJ_HOME, "lib/", "Frameworks/"),
     objectivejPath = file.resolve(frameworksPath, "Objective-J/", "rhino.platform/", "Objective-J.js");
 
 window.OBJJ_INCLUDE_PATHS = [frameworksPath];
