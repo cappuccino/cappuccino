@@ -309,6 +309,8 @@ var CPWindowSaveImage       = nil,
 
     BOOL                                _isFullPlatformWindow;
     _CPWindowFullPlatformWindowSession  _fullPlatformWindowSession;
+    
+    CPDictionary						_sheetContext;
 }
 
 /*
@@ -439,7 +441,10 @@ CPTexturedBackgroundWindowMask
     
     else if (aStyleMask === CPBorderlessWindowMask)
         return _CPBorderlessWindowView;
-    
+                
+    else if (aStyleMask & CPDocModalWindowMask)
+    	return _CPDocModalWindowView;
+
     return _CPStandardWindowView;
 }
 
@@ -1722,57 +1727,146 @@ CPTexturedBackgroundWindowMask
     */
 }
 
+- (void)_setFrame:(CGRect)aFrame delegate:(id)delegate duration:(int)duration curve:(CPAnimationCurve)curve
+{
+	var animation = [[_CPWindowFrameAnimation alloc] initWithWindow:self targetFrame:aFrame];
+	[animation setDelegate:delegate];
+	[animation setAnimationCurve:curve];
+	[animation setDuration:duration];
+	[animation startAnimation];
+}
+
 /* @ignore */
 - (void)_setAttachedSheetFrameOrigin
 {
     // Position the sheet above the contentRect.
+    var attachedSheet = [self attachedSheet];
     var contentRect = [[self contentView] frame],
-        sheetFrame = CGRectMakeCopy([_attachedSheet frame]);
+        sheetFrame = CGRectMakeCopy([attachedSheet frame]);
         
    sheetFrame.origin.y = CGRectGetMinY(_frame) + CGRectGetMinY(contentRect);
    sheetFrame.origin.x = CGRectGetMinX(_frame) + FLOOR((CGRectGetWidth(_frame) - CGRectGetWidth(sheetFrame)) / 2.0);
    
-   [_attachedSheet setFrameOrigin:sheetFrame.origin];
-}
-
-/* @ignore */
-- (void)_animateAttachedSheet
-{
-/*    NSWindow *sheet = [sheetContext sheet];
-    NSRect sheetFrame;
-
-    [_sheetContext autorelease];
-   _sheetContext=[sheetContext retain];
-
-   [self _setSheetOrigin];
-   sheetFrame = [sheet frame];
-   
-   [(NSWindowBackgroundView *)[sheet _backgroundView] setBorderType:NSButtonBorder];
-   [[sheet contentView] setAutoresizesSubviews:NO];
-   [[sheet contentView] setAutoresizingMask:NSViewNotSizable];
-   
-//   [(NSWindowBackgroundView *)[sheet _backgroundView] cacheImageForAnimation];
-   
-   [_attachedSheet setFrame:CPRectMake(CGRectGetMinX(sheetFrame), CGRectGetMinY(sheetFrame), CGRectGetWidth(sheetFrame), 0.0) display:YES];
-   [sheet setFrame:NSMakeRect(sheetFrame.origin.x, NSMaxY([self frame]), sheetFrame.size.width, 0) display:YES];
-   [self _setSheetOriginAndFront];
-   
-   [sheet setFrame:sheetFrame display:YES animate:YES];*/
+   [attachedSheet setFrameOrigin:sheetFrame.origin];
 }
 
 /* @ignore */
 - (void)_attachSheet:(CPWindow)aSheet modalDelegate:(id)aModalDelegate didEndSelector:(SEL)aDidEndSelector contextInfo:(id)aContextInfo
 {
-    // Set this as our attached sheet.
-    _attachedSheet = aSheet;
+	var sheetFrame = [aSheet frame];
+
+// setup contexts
+    _sheetContext = {"sheet":aSheet, "modalDelegate":aModalDelegate, "endSelector":aDidEndSelector, "contextInfo":aContextInfo, "frame":CGRectMakeCopy(sheetFrame), "returnCode":-1, "opened": NO};	
+	
+	[self _attachSheetWindow:aSheet];
+}
+
+/* @ignore */
+- (void)_attachSheetWindow:(CPWindow)aSheet
+{
+    var sheetFrame = [aSheet frame],
+    	frame = [self frame],
+     	sheetContent = [aSheet contentView];
     
-    // If a window is ever run as a sheet, then it's sheet bit is set to YES.
+// Configure sheet.
+//   if ([aSheet styleMask] & CPHUDBackgroundWindowMask)
+//        	[aSheet setMovableByWindowBackground:NO];
+
+	_sheetContext["autoresizingMask"] = [sheetContent autoresizingMask];
+    [sheetContent setAutoresizingMask:CPViewMinYMargin];
+    [sheetContent setAutoresizesSubviews:NO];
     aSheet._isSheet = YES;
+    aSheet._parentView = self;
     
-    [self _setAttachedSheetFrameOrigin];
+// calculate start/end frames
+	var originx = frame.origin.x + FLOOR((frame.size.width - sheetFrame.size.width)/2);
+	var originy = frame.origin.y + [[self contentView] frame].origin.y;
+    var startFrame = CGRectMake(originx, originy , sheetFrame.size.width, 0);
+	var endFrame = CGRectMake(originx, originy ,sheetFrame.size.width,sheetFrame.size.height);
+
+// Notify the world we will open the sheet
+    [[CPNotificationCenter defaultCenter] postNotificationName:@"CPWindowWillBeginSheetNotification" object:self];
+// Start modal    
+	[CPApp runModalForWindow:aSheet];
+	
+// Order front and animate the sheet
+//	aSheet._isAnimating = YES;
+    [aSheet orderFront:self];
+    [aSheet setFrame:startFrame];
+    _sheetContext["opened"] = YES;
+
+    [aSheet _setFrame:endFrame delegate:self duration:0.3 curve:CPAnimationEaseOut];
+
+	// Should run the main loop here until _isAnimating = FALSE
+    [aSheet becomeKeyWindow];    
+}
+
+/* @ignore */
+- (void)_detachSheetWindow
+{
+    var sheet = [self attachedSheet];
     
-    // Place this window above ourselves.
-    [_platformWindow order:CPWindowAbove window:aSheet relativeTo:self];
+// End frame for animation    
+    var startFrame = [sheet frame];
+    var endFrame = CGRectMakeCopy(startFrame);
+    endFrame.size.height = 0;
+    
+// Set the new frame in case the sheet have been resized
+	_sheetContext["frame"] = startFrame;
+	 
+// Autoresizing
+	var sheetContent = [sheet contentView];
+    [sheetContent setAutoresizingMask:CPViewMinYMargin];
+    [sheetContent setAutoresizesSubviews:NO];
+	    
+// Start animation with delegate    
+	_sheetContext["opened"] = NO;
+
+	[sheet _setFrame:endFrame delegate:self duration:0.2 curve:CPAnimationLinear];
+}
+
+/* @ignore */
+- (void)animationDidEnd:(id)anim
+{
+	var sheet = _sheetContext["sheet"];
+	if (anim._window != sheet)
+		return;
+
+// Retore autoresizing
+	var sheetContent = [sheet contentView];
+	[sheetContent setAutoresizingMask:_sheetContext["autoresizingMask"]];
+	[sheetContent setAutoresizesSubviews:YES];
+
+// If we are opened return now		
+	if (_sheetContext["opened"] == YES)
+		return;
+	
+// Stop modal
+	[CPApp stopModal];    
+	
+// Notify the world we closed the sheet
+	[[CPNotificationCenter defaultCenter] postNotificationName:@"CPWindowDidEndSheetNotification" object:self];
+
+// check first if front ? 
+	[sheet orderOut:self];
+
+// Set the sheet frame to its last open state. 
+	var lastFrame = _sheetContext["frame"];
+	[sheet setFrame:lastFrame];
+		
+// Send didEndSelector	
+	var delegate = _sheetContext["modalDelegate"];
+	var endSelector = _sheetContext["endSelector"]; 	
+	if(delegate != nil && endSelector != nil)   
+	    objj_msgSend(_sheetContext["modalDelegate"],
+	    			 _sheetContext["endSelector"],
+	    			 sheet,
+	    			 _sheetContext["returnCode"],
+	    			 _sheetContext["contextInfo"]);
+		 
+// reset contexts   
+	_sheetContext = nil;
+	sheet._parentView = nil;
 }
 
 /*!
@@ -1780,7 +1874,10 @@ CPTexturedBackgroundWindowMask
 */
 - (CPWindow)attachedSheet
 {
-    return _attachedSheet;
+	if (_sheetContext == nil)
+		return nil;
+		
+   return _sheetContext["sheet"];
 }
 
 /*!
@@ -2225,6 +2322,7 @@ function _CPWindowFullPlatformWindowSessionMake(aWindowView, aContentRect, hasSh
 
 @import "_CPWindowView.j"
 @import "_CPStandardWindowView.j"
+@import "_CPDocModalWindowView.j"
 @import "_CPHUDWindowView.j"
 @import "_CPBorderlessWindowView.j"
 @import "_CPBorderlessBridgeWindowView.j"
