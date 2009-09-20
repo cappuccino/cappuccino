@@ -12,7 +12,7 @@ $BUILD_PATH = File.join($BUILD_DIR, $CONFIGURATION, 'BlendKit')
 ObjectiveJ::BundleTask.new(:BlendKit) do |t|
     t.name          = 'BlendKit'
     t.identifier    = 'com.280n.BlendKit'
-    t.version       = '0.7.0'
+    t.version       = '0.7.1'
     t.author        = '280 North, Inc.'
     t.email         = 'feedback @nospam@ 280north.com'
     t.summary       = 'BlendKit classes for Cappuccino'

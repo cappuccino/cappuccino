@@ -531,7 +531,7 @@ function CPThemeAttributeEncode(aCoder, aThemeAttribute)
 
 function CPThemeAttributeDecode(aCoder, anAttributeName, aDefaultValue, aTheme, aClass)
 {
-    var key =  "$a" + anAttributeName;
+    var key = "$a" + anAttributeName;
 
     if (![aCoder containsValueForKey:key])
         var attribute = [[_CPThemeAttribute alloc] initWithName:anAttributeName defaultValue:aDefaultValue];
@@ -555,3 +555,34 @@ function CPThemeAttributeDecode(aCoder, anAttributeName, aDefaultValue, aTheme, 
 
     return attribute;
 }
+
+/* TO AUTO CREATE THESE:
+function bit_count(bits)
+    {
+        var count = 0;
+
+        while (bits)
+        {
+            ++count;
+            bits &= (bits - 1);
+        }
+
+        return count ;
+    }
+
+zeros = "000000000";
+
+function pad(string, digits)
+{
+    return zeros.substr(0, digits - string.length) + string;
+}
+
+var str = ""
+str += '[';
+for (i = 0;i < Math.pow(2,6);++i)
+{
+    str += bit_count(i) + " /*" + pad(i.toString(2),6) + "*" + "/, ";
+}
+print(str+']');
+
+*/

@@ -50,52 +50,76 @@ var DefaultLineWidth = 1.0;
     float   _lineWidth;
 }
 
+/*!
+    Create a new CPBezierPath object.
+*/
 + (CPBezierPath)bezierPath
 {
-    return [[[self class] alloc] init];
+    return [[self alloc] init];
 }
 
+/*!
+    Create a new CPBezierPath object initialized with an oval path drawn within a rectangular path.
+*/
 + (CPBezierPath)bezierPathWithOvalInRect:(CGRect)rect
 {
-    var path = [[self class] bezierPath];
+    var path = [self bezierPath];
     
     [path appendBezierPathWithOvalInRect:rect];
     
     return path;
 }
 
+/*!
+    Create a new CPBezierPath object initialized with a rectangular path.
+*/
 + (CPBezierPath)bezierPathWithRect:(CGRect)rect
 {
-    var path = [[self class] bezierPath];
+    var path = [self bezierPath];
     
     [path appendBezierPathWithRect:rect];
     
     return path;
 }
 
+/*!
+    Get default line width.
+*/
 + (float)defaultLineWidth
 {
     return DefaultLineWidth;
 }
 
+/*!
+    Set default line width.
+*/
 + (void)setDefaultLineWidth:(float)width
 {
     DefaultLineWidth = width;
 }
 
-+ (void)fillRect:(CGRect)rect
+/*!
+    Fill rectangular path with current fill color.
+*/
++ (void)fillRect:(CGRect)aRect
 {
-    [[[self class] bezierPathWithRect:rect] fill];
+    [[self bezierPathWithRect:aRect] fill];
 }
 
-+ (void)strokeRect:(CGRect)rect
+/*!
+    Using the current stroke color and default drawing attributes, strokes a counterclockwise path beginning at the rectangle's origin.
+*/
++ (void)strokeRect:(CGRect)aRect
 {
-    [[[self class] bezierPathWithRect:rect] stroke];
+    [[self bezierPathWithRect:aRect] stroke];
 }
 
+/*!
+    Using the current stroke color and default drawing attributes, strokes a line between two points.
+*/
 + (void)strokeLineFromPoint:(CGPoint)point1 toPoint:(CGPoint)point2
 {
-    var path = [[self class] bezierPath];
+    var path = [self bezierPath];
 
     [path moveToPoint:point1];
     [path lineToPoint:point2];
@@ -103,6 +127,9 @@ var DefaultLineWidth = 1.0;
     [path stroke];
 }
 
+/*!
+    Create a new CPBezierPath object using the default line width.
+*/
 - (id)init
 {
     if (self = [super init])
@@ -114,26 +141,41 @@ var DefaultLineWidth = 1.0;
     return self;
 }
 
+/*!
+    Moves the current point to another location.
+*/
 - (void)moveToPoint:(CGPoint)point
 {
     CGPathMoveToPoint(_path, nil, point.x, point.y);
 }
 
+/*!
+    Append a straight line to the path.
+*/
 - (void)lineToPoint:(CGPoint)point
 {
     CGPathAddLineToPoint(_path, nil, point.x, point.y);
 }
 
+/*!
+    Add a cubic Bezier curve to the path.
+*/
 - (void)curveToPoint:(CGPoint)endPoint controlPoint1:(CGPoint)controlPoint1 controlPoint2:(CGPoint)controlPoint2
 {
     CGPathAddCurveToPoint(_path, nil, controlPoint1.x, controlPoint1.y, controlPoint2.x, controlPoint2.y, endPoint.x, endPoint.y);
 }
 
+/*!
+    Create a line segment between the first and last points in the subpath, closing it.
+*/
 - (void)closePath
 {
     CGPathCloseSubpath(_path);
 }
 
+/*!
+    Draw a line along the path with the current stroke color and default drawing attributes.
+*/
 - (void)stroke
 {
     var ctx = [[CPGraphicsContext currentContext] graphicsPort];
@@ -145,6 +187,9 @@ var DefaultLineWidth = 1.0;
     CGContextStrokePath(ctx);
 }
 
+/*!
+    Fill the path with the current fill color.
+*/
 - (void)fill
 {
     var ctx = [[CPGraphicsContext currentContext] graphicsPort];
@@ -156,56 +201,88 @@ var DefaultLineWidth = 1.0;
     CGContextFillPath(ctx);
 }
 
+/*!
+    Get the line width.
+*/
 - (float)lineWidth
 {
     return _lineWidth;
 }
 
+/*!
+    Set the line width.
+*/
 - (void)setLineWidth:(float)lineWidth
 {
     _lineWidth = lineWidth;
 }
 
+/*!
+    Get the total number of elements.
+*/
 - (unsigned)elementCount
 {
     return _path.count;
 }
 
+/*!
+    Check if receiver is empty, returns appropriate Boolean value.
+*/
 - (BOOL)isEmpty
 {
     return CGPathIsEmpty(_path);
 }
 
+/*!
+    Get the current point.
+*/
 - (CGPoint)currentPoint
 {
     return CGPathGetCurrentPoint(_path);
 }
 
+/*!
+    Append a series of line segments.
+*/
 - (void)appendBezierPathWithPoints:(CPArray)points count:(unsigned)count
 {
     CGPathAddLines(_path, nil, points, count);
 }
 
+/*!
+    Append a rectangular path.
+*/
 - (void)appendBezierPathWithRect:(CGRect)rect
 {
     CGPathAddRect(_path, nil, rect);
 }
 
+/*!
+    Append an oval path; oval is drawn within the rectangular path.
+*/
 - (void)appendBezierPathWithOvalInRect:(CGRect)rect
 {
     CGPathAddPath(_path, nil, CGPathWithEllipseInRect(rect));
 }
 
+/*!
+    Append a rounded rectangular path.
+*/
 - (void)appendBezierPathWithRoundedRect:(CGRect)rect xRadius:(float)xRadius yRadius:(float)yRadius
 {
     CGPathAddPath(_path, nil, CGPathWithRoundedRectangleInRect(rect, xRadius, yRadius, YES, YES, YES, YES));
 }
 
+/*!
+    Append the contents of a CPBezierPath object.
+*/
 - (void)appendBezierPath:(NSBezierPath *)other
 {
     CGPathAddPath(_path, nil, other._path);
 }
-
+/*!
+    Remove all path elements; clears path.
+*/
 - (void)removeAllPoints
 {
     _path = CGPathCreateMutable();

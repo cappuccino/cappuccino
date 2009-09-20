@@ -46,7 +46,7 @@ CPDownArrowKeyCode  = 40;
 
 // Changing the first responder
 /*!
-    Returns <code>YES</code> if the receiver is able to become the first responder. <code>NO</code> otherwise.
+    Returns \c YES if the receiver is able to become the first responder. \c NO otherwise.
 */
 - (BOOL)acceptsFirstResponder
 {
@@ -55,8 +55,8 @@ CPDownArrowKeyCode  = 40;
 
 /*!
     Notifies the receiver that it will become the first responder. The receiver can reject first
-    responder if it returns <code>NO</code>. The default implementation always returns <code>YES</code>.
-    @return <code>YES</code> if the receiver accepts first responder status.
+    responder if it returns \c NO. The default implementation always returns \c YES.
+    @return \c YES if the receiver accepts first responder status.
 */
 - (BOOL)becomeFirstResponder
 {
@@ -65,7 +65,7 @@ CPDownArrowKeyCode  = 40;
 
 /*!
     Notifies the receiver that it has been asked to give up first responder status.
-    @return <code>YES</code> if the receiver is willing to give up first responder status.
+    @return \c YES if the receiver is willing to give up first responder status.
 */
 - (BOOL)resignFirstResponder
 {
@@ -96,36 +96,38 @@ CPDownArrowKeyCode  = 40;
 */
 - (void)interpretKeyEvents:(CPArray)events
 {
-    var event,
-        index = 0;
-    
-    while(event = events[index++])
+    var index = 0,
+        count = [events count];
+
+    for (; index < count; ++index)
     {
+        var event = events[index];
+
         switch([event keyCode])
         {
-            case CPLeftArrowKeyCode:    [self moveBackward:self];
+            case CPLeftArrowKeyCode:    [self doCommandBySelector:@selector(moveLeft:)];
                                         break;
-            case CPRightArrowKeyCode:   [self moveForward:self];
+            case CPRightArrowKeyCode:   [self doCommandBySelector:@selector(moveRight:)];
                                         break;
-            case CPUpArrowKeyCode:      [self moveUp:self];
+            case CPUpArrowKeyCode:      [self doCommandBySelector:@selector(moveUp:)];
                                         break;
-            case CPDownArrowKeyCode:    [self moveDown:self];
+            case CPDownArrowKeyCode:    [self doCommandBySelector:@selector(moveDown:)];
                                         break;
-            case CPDeleteKeyCode:       [self deleteBackward:self];
+            case CPDeleteKeyCode:       [self doCommandBySelector:@selector(deleteBackward:)];
                                         break;
             case CPReturnKeyCode:
-            case 3:                     [self insertLineBreak:self];
+            case 3:                     [self doCommandBySelector:@selector(insertLineBreak:)];
                                         break;
             
-            case CPEscapeKeyCode:       [self cancel:self];
+            case CPEscapeKeyCode:       [self doCommandBySelector:@selector(cancel:)];
                                         break;
 
             case CPTabKeyCode:          var shift = [event modifierFlags] & CPShiftKeyMask;
 
                                         if (!shift)
-                                            [self insertTab:self];
+                                            [self doCommandBySelector:@selector(insertTab:)];
                                         else
-                                            [self insertBackTab:self];
+                                            [self doCommandBySelector:@selector(insertBackTab:)];
 
                                         break;
 
@@ -214,9 +216,9 @@ CPDownArrowKeyCode  = 40;
 
 /*
     FIXME This description is bad.
-    Based on <code>anEvent</code>, the receiver should simulate the event.
+    Based on \c anEvent, the receiver should simulate the event.
     @param anEvent the event to simulate
-    @return <code>YES</code> if the event receiver simulated the  event
+    @return \c YES if the event receiver simulated the  event
 */
 - (BOOL)performKeyEquivalent:(CPEvent)anEvent
 {
@@ -224,14 +226,6 @@ CPDownArrowKeyCode  = 40;
 }
 
 // Action Methods
-/*!
-    Deletes one character backward, or the selection if anything is selected.
-    @param aSender the object requesting this
-*/
-- (void)deleteBackward:(id)aSender
-{
-}
-
 /*!
     Insert a line break at the caret position or selection.
     @param aSender the object requesting this
@@ -273,12 +267,12 @@ CPDownArrowKeyCode  = 40;
 // Dispatch methods
 /*!
     The receiver will attempt to perform the command,
-    if it responds to it. If not, the <code>nextResponder</code> will be called to do it.
+    if it responds to it. If not, the \c -nextResponder will be called to do it.
     @param aSelector the command to attempt
 */
 - (void)doCommandBySelector:(SEL)aSelector
 {
-    if([self respondsToSelector:aSelector])
+    if ([self respondsToSelector:aSelector])
         [self performSelector:aSelector];
     else
         [_nextResponder doCommandBySelector:aSelector];
@@ -288,7 +282,7 @@ CPDownArrowKeyCode  = 40;
     The receiver will attempt to perform the command, or pass it on to the next responder if it doesn't respond to it.
     @param aSelector the command to perform
     @param anObject the argument to the method
-    @return <code>YES</code> if the receiver was able to perform the command, or a responder down the chain was
+    @return \c YES if the receiver was able to perform the command, or a responder down the chain was
     able to perform the command.
 */
 - (BOOL)tryToPerform:(SEL)aSelector with:(id)anObject

@@ -40,6 +40,11 @@
     return self;
 }
 
+- (BOOL)NS_isFlipped
+{
+    return YES;
+}
+
 @end
 
 @implementation NSClipView : CPClipView

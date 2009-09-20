@@ -17,7 +17,7 @@ AppKitFiles = FileList['**/*.j'].exclude('CoreGraphics/CGContextCanvas.j', 'Core
 ObjectiveJ::BundleTask.new(:AppKit) do |t|
     t.name          = 'AppKit'
     t.identifier    = 'com.280n.AppKit'
-    t.version       = '0.7.0'
+    t.version       = '0.7.1'
     t.author        = '280 North, Inc.'
     t.email         = 'feedback @nospam@ 280north.com'
     t.summary       = 'AppKit classes for Cappuccino'
@@ -53,6 +53,7 @@ file_d $THEME_PRODUCT => ThemeFiles << $ENVIRONMENT_PRODUCT do
             puts str
         end
     end
+    rake abort if ($? != 0)
 end
 
 task :build => [:build_subprojects, :AppKit, $ENVIRONMENT_PRODUCT, $THEME_PRODUCT, $ENVIRONMENT_THEME_PRODUCT]

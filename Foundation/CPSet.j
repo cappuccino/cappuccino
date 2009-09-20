@@ -232,7 +232,7 @@
 */
 - (BOOL)containsObject:(id)anObject
 {
-    if (_contents[[anObject hash]] && [_contents[[anObject hash]] isEqual:anObject])
+    if (_contents[[anObject UID]] && [_contents[[anObject UID]] isEqual:anObject])
         return YES;
     
     return NO;
@@ -372,7 +372,10 @@
 */
 - (void)addObject:(id)anObject
 {
-    _contents[[anObject hash]] = anObject;
+    if ([self containsObject:anObject])
+        return;
+
+    _contents[[anObject UID]] = anObject;
     _count++;
 }
 
@@ -380,12 +383,12 @@
     Adds to the receiver each object contained in a given array that is not already a member.
     @param array An array of objects to add to the receiver.
 */
-- (void)addObjectsFromArray:(CPArray)array
+- (void)addObjectsFromArray:(CPArray)objects
 {
-    for (var i = 0, count = array.length; i < count; i++) 
-    {
-        [self addObject:array[i]];
-    }
+    var count = [objects count];
+
+    while (count--)
+        [self addObject:objects[count]];
 }
 
 /*
@@ -396,9 +399,17 @@
 {
     if ([self containsObject:anObject])
     {
-        delete _contents[[anObject hash]];
+        delete _contents[[anObject UID]];
         _count--;
     }
+}
+
+- (void)removeObjectsInArray:(CPArray)objects
+{
+    var count = [objects count];
+
+    while (count--)
+        [self removeObject:objects[count]];
 }
 
 /*

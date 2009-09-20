@@ -3,7 +3,7 @@
  * AppKit
  *
  * Created by Francisco Tolmasky.
- * Copyright 2008, 280 North, Inc.
+ * Copyright 2009, 280 North, Inc.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -20,12 +20,13 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-@import <Foundation/Foundation.j>
+@import <Foundation/CPDictionary.j>
+@import <Foundation/CPObject.j>
+@import <Foundation/CPSortDescriptor.j>
+@import <Foundation/CPString.j>
 
+@import "CPTableHeaderView.j"
 
-/*
-@ignore
-*/
 
 /*
     @global
@@ -43,388 +44,299 @@ CPTableColumnAutoresizingMask   = 1;
 */
 CPTableColumnUserResizingMask   = 2;
 
-#define PurgableInfoMake(aView, aRow) { view:(aView), row:(aRow) }
-#define PurgableInfoView(anInfo) ((anInfo).view)
-#define PurgableInfoRow(anInfo) ((anInfo).row)
-
-/*! 
-    @ingroup appkit
-    @class CPTableColumn
-
-    An CPTableColumn object mainly keeps information about the width of the column, its minimum and maximum width; whether the column can be edited or resized; and the cells used to draw the column header and the data in the column. You can change all these attributes of the column by calling the appropriate methods. Please note that the table column does not hold nor has access to the data to be displayed in the column; this data is maintained in the table view's data source.</p>
-    
-    <p>Each CPTableColumn object is identified by a CPString, called the column identifier. The reason is that, after a column has been added to a table view, the user might move the columns around, so there is a need to identify the columns regardless of its position in the table.
-    
-    @ignore
-*/
 @implementation CPTableColumn : CPObject
 {
-    CPString    _identifier;
-    CPView      _headerView;
-    
-    CPTableView _tableView;
-    
-    float       _width;
-    float       _minWidth;
-    float       _maxWidth;
-    
-    unsigned    _resizingMask;
+    CPTableView         _tableView;
+    CPView              _headerView;
+    CPView              _dataView;
+    Object              _dataViewData;
 
-    CPView      _dataView;                  // default data view for this column
+    float               _width;
+    float               _minWidth;
+    float               _maxWidth;
 
-    Object      _dataViewData;              // cache of data view archives (key=data view hash, value=data view archive)
-    Object      _dataViewForView;           // mapping from view instances back to their data view prototype (key=view instance hash, value=data view)
-    Object      _purgableInfosForDataView;  // (key=data view hash, value=)
+    id                  _identifier;
+    BOOL                _isEditable;
+    CPSortDescriptor    _sortDescriptorPrototype;
+    BOOL                _isHidden;
+    CPString            _headerToolTip;
 }
 
-/*!
-    Initializes the table column with the specified identifier.
-    @param anIdentifier the identifier
-    @return the initialized table column
-*/
-- (id)initWithIdentifier:(CPString)anIdentifier
+- (id)initWithIdentifier:(id)anIdentifier
 {
     self = [super init];
-    
+
     if (self)
     {
-        [self _init];
-        
-        _identifier = anIdentifier;
-        
-        _width = 40.0;
-        _minWidth = 8.0;
-        _maxWidth = 1000.0;
-        
-        var dataView = [[CPTextField alloc] initWithFrame:CPRectMakeZero()];
-        [dataView setValue:[CPColor whiteColor] forThemeAttribute:"text-color" inState:CPThemeStateHighlighted];
-        
-        [self setDataView:dataView];
-        
-        _headerView = [[CPTextField alloc] initWithFrame:CPRectMakeZero()];
-        [_headerView setBackgroundColor:[CPColor greenColor]];
+        _dataViewData = { };
+
+        _width = 100.0;
+        _minWidth = 10.0;
+        _maxWidth = 1000000.0;
+
+        [self setIdentifier:anIdentifier];
+        [self setHeaderView:[CPTextField new]];
+        [self setDataView:[CPTextField new]];
     }
-    
+
     return self;
 }
 
-- (void)_init
-{
-    _dataViewData = {};
-    _dataViewForView = {};
-    _purgableInfosForDataView = {};
-}
-
-/*!
-    Sets the table column's identifier
-    @param anIdentifier the new identifier
-*/
-- (void)setIdentifier:(CPString)anIdentifier
-{
-    _identifier = anIdentifier;
-}
-
-/*!
-    Returns the table column's identifier
-*/
-- (CPString)identifier
-{
-    return _identifier;
-}
-
-// Setting the CPTableView
-/*!
-    Sets the table's view. This is called automatically by Cappuccino.
-    @param aTableView the new table view
-*/
 - (void)setTableView:(CPTableView)aTableView
 {
     _tableView = aTableView;
 }
 
-/*!
-    Returns the column's table view.
-*/
 - (CPTableView)tableView
 {
     return _tableView;
 }
 
-// Controlling size
-/*!
-    Sets the column's width.
-    @param aWidth the new column width
-*/
 - (void)setWidth:(float)aWidth
 {
-    _width = aWidth;
+    aWidth = +aWidth;
+
+    if (_width === aWidth)
+        return;
+
+    var newWidth = MIN(MAX(aWidth, [self minWidth]), [self maxWidth]);
+
+    if (_width === newWidth)
+        return;
+
+    var oldWidth = _width;
+
+    _width = newWidth;
+
+    var tableView = [self tableView];
+
+    if (tableView)
+    {
+        var index = [[tableView tableColumns] indexOfObjectIdenticalTo:self];
+
+        // FIXME: THIS IS HORRIBLE. Don't just reload everything when a table column changes, just relayout the changed widths.
+        tableView._reloadAllRows = YES;
+        tableView._dirtyTableColumnRangeIndex = tableView._dirtyTableColumnRangeIndex < 0 ? index : MIN(index,  tableView._dirtyTableColumnRangeIndex);
+
+        [tableView tile];
+
+        [[CPNotificationCenter defaultCenter]
+            postNotificationName:CPTableViewColumnDidResizeNotification
+                          object:tableView
+                        userInfo:[CPDictionary dictionaryWithObjects:[self, oldWidth] forKeys:[@"CPTableColumn", "CPOldWidth"]]];
+    }
 }
 
-/*!
-    Returns the column's width
-*/
 - (float)width
 {
     return _width;
 }
 
-/*!
-    Sets column's minimum width.
-    @param aWidth the new minimum column width
-*/
-- (void)setMinWidth:(float)aWidth
+- (void)setMinWidth:(float)aMinWidth
 {
-    if (_width < (_minWidth = aWidth))
-        [self setWidth:_minWidth];
+    aMinWidth = +aMinWidth;
+
+    if (_minWidth === aMinWidth)
+        return;
+
+    _minWidth = aMinWidth;
+
+    var width = [self width],
+        newWidth = MAX(width, [self minWidth]);
+
+    if (width !== newWidth)
+        [self setWidth:newWidth];
 }
 
-/*!
-    The column's minimum width
-*/
 - (float)minWidth
 {
     return _minWidth;
 }
 
-/*!
-    Sets the column's maximum width.
-    @param aWidth the new maximum width
-*/
-- (void)setMaxWidth:(float)aWidth
+- (void)setMaxWidth:(float)aMaxWidth
 {
-    if (_width > (_maxmimumWidth = aWidth))
-        [self setWidth:_maxWidth];
+    aMaxWidth = +aMaxWidth;
+
+    if (_maxWidth === aMaxWidth)
+        return;
+
+    _maxWidth = aMaxWidth;
+
+    var width = [self width],
+        newWidth = MAX(width, [self maxWidth]);
+
+    if (width !== newWidth)
+        [self setWidth:newWidth];
 }
 
-/*!
-    Sets the resizing mask. The mask is one of:
-<pre>
-CPTableColumnNoResizing;
-CPTableColumnAutoresizingMask;
-CPTableColumnUserResizingMask;
-</pre>
-    @param aMask the new resizing mask 
-*/
-- (void)setResizingMask:(unsigned)aMask
+- (float)maxWidth
 {
-    _resizingMask = aMask;
+    return _maxWidth;
 }
 
-/*!
-    Returns the column's resizing mask. One of:
-<pre>
-CPTableColumnNoResizing;
-CPTableColumnAutoresizingMask;
-CPTableColumnUserResizingMask;
-</pre>
-*/
-- (unsigned)resizingMask
+- (void)setResizingMask:(unsigned)aResizingMask
+{
+    _resizingMask = aResizingMask;
+}
+
+- (float)resizingMask
 {
     return _resizingMask;
 }
 
-/*!
-    Resizes the column according to the min, max and set width.
-*/
 - (void)sizeToFit
 {
-    var width = CPRectGetWidth([_headerView frame]);
-    
-    if (width < _minWidth)
+    var width = _CGRectGetWidth([_headerView frame]);
+
+    if (width < [self minWidth])
         [self setMinWidth:width];
-    else if (width > _maxWidth)
+    else if (width > [self maxWidth])
         [self setMaxWidth:width]
 
-    if (_width != width)
+    if (_width !== width)
         [self setWidth:width];
 }
 
-/*!
-    Sets whether the column in this data is editable.
-    @param aFlag <code>YES</code> means the column data is editable
-*/
-- (void)setEditable:(BOOL)aFlag
+//Setting Component Cells
+- (void)setHeaderView:(CPView)aView
 {
-    _isEditable = aFlag;
+    if (!aView)
+        [CPException raise:CPInvalidArgumentException reason:@"Attempt to set nil header view on " + [self description]];
+
+    _headerView = aView;
 }
 
-/*!
-    Returns <code>YES</code> if the column data is editable.
+- (CPView)headerView
+{
+    return _headerView;
+}
+
+- (void)setDataView:(CPView)aView
+{
+    if (_dataView === aView)
+        return;
+
+    if (_dataView)
+        _dataViewData[[_dataView UID]] = nil;
+
+    _dataView = aView;
+    _dataViewData[[aView UID]] = [CPKeyedArchiver archivedDataWithRootObject:aView];
+}
+
+- (CPView)dataView
+{
+    return _dataView;
+}
+
+/*
+    Returns the CPView object used by the CPTableView to draw values for the receiver.
+
+    By default, this method just calls dataView. Subclassers can override if they need to
+    potentially use different cells for different rows. Subclasses should expect this method
+    to be invoked with row equal to -1 in cases where no actual row is involved but the table
+    view needs to get some generic cell info.
+*/
+- (id)dataViewForRow:(int)aRowIndex
+{
+    return [self dataView];
+}
+
+- (id)_newDataViewForRow:(int)aRowIndex
+{
+    var dataView = [self dataViewForRow:aRowIndex],
+        dataViewUID = [dataView UID];
+
+var x = [self tableView]._cachedDataViews[dataViewUID];
+if (x && x.length)
+return x.pop();
+
+    // if we haven't cached an archive of the data view, do it now
+    if (!_dataViewData[dataViewUID])
+        _dataViewData[dataViewUID] = [CPKeyedArchiver archivedDataWithRootObject:dataView];
+
+    // unarchive the data view cache
+    var newDataView = [CPKeyedUnarchiver unarchiveObjectWithData:_dataViewData[dataViewUID]];
+newDataView.identifier = dataViewUID;
+    return newDataView;
+}
+
+//Setting the Identifier
+
+/*
+    Sets the receiver identifier to anIdentifier.
+*/
+- (void)setIdentifier:(id)anIdentifier
+{
+    _identifier = anIdentifier;
+}
+
+/*
+    Returns the object used by the data source to identify the attribute corresponding to the receiver.
+*/
+- (id)identifier
+{
+    return _identifier;
+}
+
+//Controlling Editability
+
+/*
+    Controls whether the user can edit cells in the receiver by double-clicking them.
+*/
+- (void)setEditable:(BOOL)shouldBeEditable
+{
+    _isEditable = shouldBeEditable;
+}
+
+/*
+    Returns YES if the user can edit cells associated with the receiver by double-clicking the 
+    column in the NSTableView, NO otherwise.
 */
 - (BOOL)isEditable
 {
     return _isEditable;
 }
 
-//Setting the column header view
-
-/*!
-    Sets the view that draws the column's header.
-    @param aHeaderView the view that will draws the column header
-*/
-
-- (void)setHeaderView:(CPView)aView
+//Sorting
+- (void)setSortDescriptorPrototype:(CPSortDescriptor)aSortDescriptor
 {
-    _headerView = aView;
+    _sortDescriptorPrototype = aSortDescriptor;
 }
 
-/*!
-    Return the view that draws the column's header
-*/
-- (CPView)headerView
+- (CPSortDescriptor)sortDescriptorPrototype
 {
-    return _headerView;
+    return _sortDescriptorPrototype;
 }
 
-/*!
-    Sets the data cell that draws rows in this column.
-*/
-- (void)setDataCell:(CPView <CPCoding>)aView
+//Setting Column Visibility
+
+- (void)setHidden:(BOOL)shouldBeHidden
 {
-    [self setDataView:aView];
+    _isHidden = shouldBeHidden;
 }
+
+- (BOOL)isHidden
+{
+    return _isHidden;
+}
+
+//Setting Tool Tips
 
 /*
-    Sets the data view that draws rows in this column.
+    Sets the tooltip string that is displayed when the cursor pauses over the 
+    header cell of the receiver.
 */
-- (void)setDataView:(CPView <CPCoding>)aView
+- (void)setHeaderToolTip:(CPString)aToolTip
 {
-    if (_dataView)
-        _dataViewData[[_dataView hash]] = nil;
-    
-    _dataView = aView;
-    _dataViewData[[aView hash]] = [CPKeyedArchiver archivedDataWithRootObject:aView];
+    _headerToolTip = aToolTip;
 }
 
-/*!
-    Returns the data cell that draws rows in this column
-*/
-- (CPCell)dataCell
+- (CPString)headerToolTip
 {
-    return _dataView;
-}
-
-/*
-    Returns the data view that draws rows in this column
-*/
-- (CPView)dataView
-{
-    return [self dataCell];
-}
-
-/*!
-    By default returns the value from <code>dataCell</code>. This can
-    be overridden by a subclass to return different cells for different
-    rows.
-    @param aRowIndex the index of the row to obtain the cell for
-*/
-- (CPCell)dataCellForRow:(int)aRowIndex
-{
-    return [self dataView];
-}
-
-- (CPView)dataViewForRow:(int)aRowIndex
-{
-    return [self dataCellForRow:aRowIndex];
-}
-/*
-- (void)_markViewAsPurgable:(CPView)aView
-{
-    var viewHash = [aView hash],
-        dataViewHash = [_dataViewForView[viewHash] hash];
-    
-    if (!_purgableInfosForDataView[dataViewHash])
-        _purgableInfosForDataView[dataViewHash] = [CPDictionary dictionary];
-    
-    [_purgableInfosForDataView[dataViewHash] setObject:aView forKey:viewHash];
-}
-*/
-- (void)_markView:(CPView)aView inRow:(unsigned)aRow asPurgable:(BOOL)isPurgable
-{
-    var viewHash = [aView hash],
-        dataViewHash = [_dataViewForView[viewHash] hash];
-    
-    if (!_purgableInfosForDataView[dataViewHash])
-    {
-        if (!isPurgable)
-            return;
-        
-        _purgableInfosForDataView[dataViewHash] = {};
-    }
-    
-    if (!isPurgable) {
-        if (_purgableInfosForDataView[dataViewHash][viewHash])
-            CPLog.warn("removing unpurgable " + _purgableInfosForDataView[dataViewHash][viewHash]);
-        delete _purgableInfosForDataView[dataViewHash][viewHash];   
-    }
-    else
-        _purgableInfosForDataView[dataViewHash][viewHash] = PurgableInfoMake(aView, aRow);
-}
-
-- (CPView)_newDataViewForRow:(int)aRowIndex avoidingRows:(CPRange)rows
-{
-    var view = [self dataViewForRow:aRowIndex],
-        viewHash = [view hash],
-        purgableInfos = _purgableInfosForDataView[viewHash];
-    
-    if (purgableInfos)
-    {
-        for (var key in purgableInfos)
-        {
-            var info = purgableInfos[key];
-            //if (!CPLocationInRange(PurgableInfoRow(info), rows))
-            //{
-                //CPLog.debug("yes, a purged view is usable, its called: " + PurgableInfoView(info));
-                delete purgableInfos[key];
-                return PurgableInfoView(info);
-            //}
-            //else
-            //    CPLog.warn("avoiding");
-        }
-    }
-    
-    // if we haven't cached an archive of the data view, do it now
-    if (!_dataViewData[viewHash])
-        _dataViewData[viewHash] = [CPKeyedArchiver archivedDataWithRootObject:view];
-
-    // unarchive the data view cache
-    var newView = [CPKeyedUnarchiver unarchiveObjectWithData:_dataViewData[viewHash]];
-    
-    // map the new view's hash to it's data view prototype
-    _dataViewForView[[newView hash]] = view;
-    
-    CPLog.warn("creating cell: %s", newView);
-    
-    return newView;
-}
-
-- (void)_purge
-{
-    for (var viewHash in _purgableInfosForDataView)
-    {
-        var purgableInfos = _purgableInfosForDataView[viewHash];
-
-        for (var key in purgableInfos)
-        {
-            var view = PurgableInfoView(purgableInfos[key]);
-            
-            if (!view)
-                CPLog.info("key="+key+" view=" + view + " purgableInfos[key]="+purgableInfos[key])
-            else if (view._superview) {
-                //CPLog.error("PURGING: (removing)" + view);
-                //[view removeFromSuperview];
-                [view setHidden:YES];
-            } 
-            //else
-            //    CPLog.warn("PURGING: (already removed)" + view);
-            
-            //delete purgableInfos[key];
-        }
-    }
+    return _headerToolTip;
 }
 
 @end
-
 
 var CPTableColumnIdentifierKey   = @"CPTableColumnIdentifierKey",
     CPTableColumnHeaderViewKey   = @"CPTableColumnHeaderViewKey",
@@ -438,18 +350,26 @@ var CPTableColumnIdentifierKey   = @"CPTableColumnIdentifierKey",
 
 - (id)initWithCoder:(CPCoder)aCoder
 {
-    [self _init];
-    
-    _identifier = [aCoder decodeObjectForKey:CPTableColumnIdentifierKey];
+    self = [super init];
 
-    [self setHeaderView:[aCoder decodeObjectForKey:CPTableColumnHeaderViewKey]];
-    [self setDataView:[aCoder decodeObjectForKey:CPTableColumnDataViewKey]];
-    
-    _width = [aCoder decodeFloatForKey:CPTableColumnWidthKey];
-    _minWidth = [aCoder decodeFloatForKey:CPTableColumnMinWidthKey];
-    _maxWidth = [aCoder decodeFloatForKey:CPTableColumnMaxWidthKey];
-    
-    _resizingMask  = [aCoder decodeBoolForKey:CPTableColumnResizingMaskKey];
+    if (self)
+    {
+        _dataViewData = { };
+
+        _width = [aCoder decodeFloatForKey:CPTableColumnWidthKey];
+        _minWidth = [aCoder decodeFloatForKey:CPTableColumnMinWidthKey];
+        _maxWidth = [aCoder decodeFloatForKey:CPTableColumnMaxWidthKey];
+
+        [self setIdentifier:[aCoder decodeObjectForKey:CPTableColumnIdentifierKey]];
+    //    [self setHeaderView:[aCoder decodeObjectForKey:CPTableColumnHeaderViewKey]];
+    //    [self setDataView:[aCoder decodeObjectForKey:CPTableColumnDataViewKey]];
+
+        [self setHeaderView:[CPTextField new]];
+        [self setDataView:[CPTextField new]];
+
+
+    //    _resizingMask  = [aCoder decodeBoolForKey:CPTableColumnResizingMaskKey];
+    }
 
     return self;
 }
@@ -457,15 +377,49 @@ var CPTableColumnIdentifierKey   = @"CPTableColumnIdentifierKey",
 - (void)encodeWithCoder:(CPCoder)aCoder
 {
     [aCoder encodeObject:_identifier forKey:CPTableColumnIdentifierKey];
-    
-    [aCoder encodeObject:_headerView forKey:CPTableColumnHeaderViewKey];
-    [aCoder encodeObject:_dataView forKey:CPTableColumnDataViewKey];
-    
+
     [aCoder encodeObject:_width forKey:CPTableColumnWidthKey];
     [aCoder encodeObject:_minWidth forKey:CPTableColumnMinWidthKey];
     [aCoder encodeObject:_maxWidth forKey:CPTableColumnMaxWidthKey];
-    
-    [aCoder encodeObject:_resizingMask forKey:CPTableColumnResizingMaskKey];
+
+//    [aCoder encodeObject:_headerView forKey:CPTableColumnHeaderViewKey];
+//    [aCoder encodeObject:_dataView forKey:CPTableColumnDataViewKey];
+
+//    [aCoder encodeObject:_resizingMask forKey:CPTableColumnResizingMaskKey];
+}
+
+@end
+
+@implementation CPTableColumn (NSInCompatibility)
+
+- (void)setHeaderCell:(CPView)aView
+{
+    [CPException raise:CPUnsupportedMethodException
+                reason:@"setHeaderCell: is not supported. -setHeaderCell:aView instead."];
+}
+
+- (CPView)headerCell
+{
+    [CPException raise:CPUnsupportedMethodException
+                reason:@"headCell is not supported. -headerView instead."];
+}
+
+- (void)setDataCell:(CPView)aView
+{
+    [CPException raise:CPUnsupportedMethodException
+                reason:@"setDataCell: is not supported. Use -setHeaderCell:aView instead."];
+}
+
+- (CPView)dataCell
+{
+    [CPException raise:CPUnsupportedMethodException
+                reason:@"dataCell is not supported. Use -dataCell instead."];
+}
+
+- (id)dataCellForRow:(int)row
+{
+    [CPException raise:CPUnsupportedMethodException
+                reason:@"dataCellForRow: is not supported. Use -dataViewForRow:row instead."];
 }
 
 @end

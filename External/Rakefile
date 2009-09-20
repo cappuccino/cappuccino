@@ -7,34 +7,48 @@ require 'rake/clean'
 
 require 'fileutils'
 
-$ENVIRONMENT_NARWHAL_PRODUCT = File.join($ENVIRONMENT_DIR, 'narwhal')
-$ENVIRONMENT_BROWSERJS_PRODUCT = File.join($ENVIRONMENT_NARWHAL_PRODUCT, 'packages', 'browserjs')
-$ENVIRONMENT_JACK_PRODUCT = File.join($ENVIRONMENT_NARWHAL_PRODUCT, 'packages', 'jack')
+$ENVIRONMENT_NARWHAL_PRODUCT = $ENVIRONMENT_DIR
+$ENVIRONMENT_PACKAGES_PRODUCT = File.join($ENVIRONMENT_NARWHAL_PRODUCT, 'packages')
 
-$ENVIRONMENT_NARWHAL_EXECUTABLE = File.join($ENVIRONMENT_BIN_DIR, 'narwhal')
+$EXTERNALS = ['browserjs', 'jack', 'narwhal', 'ojunit']
+$PACKAGES = ['browserjs', 'jack']
+
+def git_export(source, dest)
+  dest = File.join(File.expand_path(dest), '');
+  system %{cd "#{source}" && git checkout-index -a -f "--prefix=#{dest}"}
+end
 
 file_d $ENVIRONMENT_DIR do
   mkdir_p $ENVIRONMENT_DIR
 end
 
-file_d $ENVIRONMENT_NARWHAL_EXECUTABLE do
-  FileUtils.ln_sf('../narwhal/bin/narwhal', $ENVIRONMENT_NARWHAL_EXECUTABLE)
-end
-
 task :update_submodules do
-  if executable_exists? "git"
-    system %{cd .. && git submodule init && git submodule update}
-  else
-    puts "Git not installed"
-    rake abort
+  if !ENV['NOSUBUP'] then
+    if executable_exists? "git"
+      system %{cd .. && git submodule init && git submodule update}
+    else
+      puts "Git not installed"
+      rake abort
+    end
   end
 end
 
-task :build => [:update_submodules, $ENVIRONMENT_DIR, $ENVIRONMENT_NARWHAL_EXECUTABLE] do
+task :build => [:update_submodules, $ENVIRONMENT_DIR] do
   rm_rf($ENVIRONMENT_NARWHAL_PRODUCT)
-  cp_r('narwhal', $ENVIRONMENT_NARWHAL_PRODUCT)
-  cp_r('browserjs', $ENVIRONMENT_BROWSERJS_PRODUCT)
-  cp_r('jack', $ENVIRONMENT_JACK_PRODUCT)
+  
+  git_export('narwhal', $ENVIRONMENT_NARWHAL_PRODUCT)
+  
+  $PACKAGES.each do |package|
+    git_export(package, File.join($ENVIRONMENT_PACKAGES_PRODUCT, package))
+  end
+  
+  symlink_executable(File.join($ENVIRONMENT_PACKAGES_PRODUCT, 'jack', 'bin', 'jackup'))
 end
 
-CLOBBER.include($ENVIRONMENT_NARWHAL_PRODUCT, $ENVIRONMENT_NARWHAL_EXECUTABLE)
+CLOBBER.include($ENVIRONMENT_NARWHAL_PRODUCT)
+
+task :pull do
+  $EXTERNALS.each do |external|
+    system "cd #{external} && git pull origin master"
+  end
+end

@@ -119,13 +119,13 @@ CPSegmentSwitchTrackingMomentary = 2;
     }
     else if (aCount < _segments.length)
     {
-        for (var index = aCount; index < _segments.length; ++index)
-            _segments[index] = nil;
+        _segments.length = aCount;
+        _themeStates.length = aCount;
     }
-    
-    if (_selectedSegment < _segments.length)
+
+    if (_selectedSegment >= _segments.length)
         _selectedSegment = -1;
-    
+
     [self tileWithChangedSegment:0];
 }
 
@@ -141,7 +141,7 @@ CPSegmentSwitchTrackingMomentary = 2;
 /*!
     Selects a segment.
     @param aSegment the segment to select
-    @throws CPRangeException if <code>aSegment</code> is out of bounds
+    @throws CPRangeException if \c aSegment is out of bounds
 */
 - (void)setSelectedSegment:(unsigned)aSegment
 {
@@ -225,7 +225,7 @@ CPSegmentSwitchTrackingMomentary = 2;
     Sets the width of the specified segment.
     @param aWidth the new width for the segment
     @param aSegment the segment to set the width for
-    @throws CPRangeException if <code>aSegment</code> is out of bounds
+    @throws CPRangeException if \c aSegment is out of bounds
 */
 - (void)setWidth:(float)aWidth forSegment:(unsigned)aSegment
 {
@@ -237,7 +237,7 @@ CPSegmentSwitchTrackingMomentary = 2;
 /*!
     Returns the width for the specified segment.
     @param aSegment the segment to get the width for
-    @throws CPRangeException if <code>aSegment</code> is out of bounds
+    @throws CPRangeException if \c aSegment is out of bounds
 */
 - (float)widthForSegment:(unsigned)aSegment
 {
@@ -248,7 +248,7 @@ CPSegmentSwitchTrackingMomentary = 2;
     Sets the image for the specified segment.
     @param anImage the image for the segment
     @param aSegment the segment to set the image on
-    @throws CPRangeException if <code>aSegment</code> is out of bounds
+    @throws CPRangeException if \c aSegment is out of bounds
 */
 - (void)setImage:(CPImage)anImage forSegment:(unsigned)aSegment
 {
@@ -262,7 +262,7 @@ CPSegmentSwitchTrackingMomentary = 2;
 /*!
     Returns the image for the specified segment
     @param aSegment the segment to obtain the image for
-    @throws CPRangeException if <code>aSegment</code> is out of bounds
+    @throws CPRangeException if \c aSegment is out of bounds
 */
 - (CPImage)imageForSegment:(unsigned)aSegment
 {
@@ -273,7 +273,7 @@ CPSegmentSwitchTrackingMomentary = 2;
     Sets the label for the specified segment
     @param aLabel the label for the segment
     @param aSegment the segment to label
-    @throws CPRangeException if <code>aSegment</code> is out of bounds
+    @throws CPRangeException if \c aSegment is out of bounds
 */
 - (void)setLabel:(CPString)aLabel forSegment:(unsigned)aSegment
 {
@@ -287,7 +287,7 @@ CPSegmentSwitchTrackingMomentary = 2;
 /*!
     Returns the label for the specified segment
     @param the segment to obtain the label for
-    @throws CPRangeException if <code>aSegment</code> is out of bounds
+    @throws CPRangeException if \c aSegment is out of bounds
 */
 - (CPString)labelForSegment:(unsigned)aSegment
 {
@@ -298,7 +298,7 @@ CPSegmentSwitchTrackingMomentary = 2;
     Sets the menu for the specified segment
     @param aMenu the menu to set
     @param aSegment the segment to set the menu on
-    @throws CPRangeException if <code>aSegment</code> is out of bounds
+    @throws CPRangeException if \c aSegment is out of bounds
 */
 - (void)setMenu:(CPMenu)aMenu forSegment:(unsigned)aSegment
 {
@@ -308,7 +308,7 @@ CPSegmentSwitchTrackingMomentary = 2;
 /*!
     Returns the menu for the specified segment.
     @param aSegment the segment to obtain the menu for
-    @throws CPRangeException if <code>aSegment</code> is out of bounds
+    @throws CPRangeException if \c aSegment is out of bounds
 */
 - (CPMenu)menuForSegment:(unsigned)aSegment
 {
@@ -318,9 +318,9 @@ CPSegmentSwitchTrackingMomentary = 2;
 /*!
     Sets the selection for the specified segment. If only one segment
     can be selected at a time, any other segment will be deselected.
-    @param isSelected <code>YES</code> selects the segment. <code>NO</code> deselects it.
+    @param isSelected \c YES selects the segment. \c NO deselects it.
     @param aSegment the segment to set the selection for
-    @throws CPRangeException if <code>aSegment</code> is out of bounds
+    @throws CPRangeException if \c aSegment is out of bounds
 */
 - (void)setSelected:(BOOL)isSelected forSegment:(unsigned)aSegment
 {
@@ -358,9 +358,9 @@ CPSegmentSwitchTrackingMomentary = 2;
 }
 
 /*!
-    Returns <code>YES</code> if the specified segment is selected.
+    Returns \c YES if the specified segment is selected.
     @param aSegment the segment to check for selection
-    @throws CPRangeException if <code>aSegment</code> is out of bounds
+    @throws CPRangeException if \c aSegment is out of bounds
 */
 - (BOOL)isSelectedForSegment:(unsigned)aSegment
 {
@@ -369,9 +369,9 @@ CPSegmentSwitchTrackingMomentary = 2;
 
 /*!
     Enables/diables the specified segment.
-    @param isEnabled <code>YES</code> enables the segment
+    @param isEnabled \c YES enables the segment
     @param aSegment the segment to enable/disble
-    @throws CPRangeException if <code>aSegment</code> is out of bounds
+    @throws CPRangeException if \c aSegment is out of bounds
 */
 - (void)setEnabled:(BOOL)isEnabled forSegment:(unsigned)aSegment
 {
@@ -382,9 +382,9 @@ CPSegmentSwitchTrackingMomentary = 2;
 }
 
 /*!
-    Returns <code>YES</code> if the specified segment is enabled.
+    Returns \c YES if the specified segment is enabled.
     @param aSegment the segment to check
-    @throws CPRangeException if <code>aSegment</code> is out of bounds
+    @throws CPRangeException if \c aSegment is out of bounds
 */
 - (BOOL)isEnabledForSegment:(unsigned)aSegment
 {
@@ -414,7 +414,7 @@ CPSegmentSwitchTrackingMomentary = 2;
 /*!
     Draws the specified segment bezel
     @param aSegment the segment to draw the bezel for
-    @param shouldHighlight <code>YES</code> highlights the bezel
+    @param shouldHighlight \c YES highlights the bezel
 */
 - (void)drawSegmentBezel:(int)aSegment highlight:(BOOL)shouldHighlight
 {
@@ -439,6 +439,16 @@ CPSegmentSwitchTrackingMomentary = 2;
     return [self _leftOffsetForSegment:segment - 1] + [self widthForSegment:segment - 1] + thickness;
 }
 
+- (unsigned)_indexOfLastSegment
+{
+    var lastSegmentIndex = [_segments count] - 1;
+
+    if (lastSegmentIndex < 0)
+        lastSegmentIndex = 0;
+
+    return lastSegmentIndex;
+}
+
 - (CGRect)rectForEphemeralSubviewNamed:(CPString)aName
 {
     var height = [self currentValueForThemeAttribute:@"default-height"],
@@ -452,7 +462,12 @@ CPSegmentSwitchTrackingMomentary = 2;
     }
     else if (aName === "right-segment-bezel")
     {
-        return CGRectMake(CGRectGetMaxX(bounds) - contentInset.right - bezelInset.right, bezelInset.top, contentInset.right, height);
+        var lastSegmentLeftOffset = [self _leftOffsetForSegment:[self _indexOfLastSegment]];
+
+        return CPRectMake(lastSegmentLeftOffset + [self widthForSegment:[self _indexOfLastSegment]] - contentInset.right,
+                            bezelInset.top,
+                            contentInset.right,
+                            height);
     }
     else if (aName.substring(0, "segment-bezel".length) == "segment-bezel")
     {
@@ -499,6 +514,9 @@ CPSegmentSwitchTrackingMomentary = 2;
 
 - (void)layoutSubviews
 {
+    if (_segments.length <= 0)
+        return;
+
     var leftCapColor = [self valueForThemeAttribute:@"left-segment-bezel-color" 
                                             inState:_themeStates[0]];
 
@@ -582,7 +600,7 @@ CPSegmentSwitchTrackingMomentary = 2;
 /*!
     Draws the specified segment
     @param aSegment the segment to draw
-    @param shouldHighlight <code>YES</code> highlights the bezel
+    @param shouldHighlight \c YES highlights the bezel
 */
 - (void)drawSegment:(int)aSegment highlight:(BOOL)shouldHighlight
 {

@@ -92,7 +92,7 @@ function CPImageInBundle(aFilename, aSize, aBundle)
 
 /*!
     Initializes the image, by associating it with a filename. The image
-    denoted in <code>aFilename</code> is not actually loaded. It will
+    denoted in \c aFilename is not actually loaded. It will
     be loaded once needed.
     @param aFilename the file containing the image
     @param aSize the image's size
@@ -187,9 +187,9 @@ function CPImageInBundle(aFilename, aSize, aBundle)
 }
 
 /*!
-    Returns <code>YES</code> if the image data has already been loaded.
+    Returns the load status, which will be CPImageLoadStatusCompleted if the image data has already been loaded.
 */
-- (BOOL)loadStatus
+- (unsigned)loadStatus
 {
     return _loadStatus;
 }

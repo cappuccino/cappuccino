@@ -26,7 +26,8 @@
 @import <Foundation/CPKeyedArchiver.j>
 @import <Foundation/CPKeyedUnarchiver.j>
 
-@import <AppKit/CPView.j>
+@import "CPView.j"
+@import "CPCollectionViewItem.j"
 
 
 /*! 
@@ -61,6 +62,7 @@
     @param indices the indices to obtain drag types
     @return an array of drag types (CPString)
 */
+
 @implementation CPCollectionView : CPView
 {
     CPArray                 _content;
@@ -76,7 +78,9 @@
     
     CGSize                  _minItemSize;
     CGSize                  _maxItemSize;
-    
+
+    CPArray                 _backgroundColors;
+
     float                   _tileWidth;
     
     BOOL                    _isSelectable;
@@ -93,6 +97,8 @@
     unsigned                _numberOfColumns;
     
     id                      _delegate;
+
+    CPEvent                 _mouseDownEvent;
 }
 
 - (id)initWithFrame:(CGRect)aFrame
@@ -109,7 +115,9 @@
         _itemSize = CGSizeMakeZero();
         _minItemSize = CGSizeMakeZero();
         _maxItemSize = CGSizeMakeZero();
-        
+
+        [self setBackgroundColors:nil];
+
         _verticalMargin = 5.0;
         _tileWidth = -1.0;
         
@@ -122,15 +130,16 @@
 }
 
 /*!
-    Sets the item prototype to <code>anItem</code>
+    Sets the item prototype to \c anItem
     @param anItem the new item prototype
 */
 - (void)setItemPrototype:(CPCollectionViewItem)anItem
 {
-    _itemData = [CPKeyedArchiver archivedDataWithRootObject:anItem];
-    _itemForDragging = anItem//[CPKeyedUnarchiver unarchiveObjectWithData:_itemData];
+    _cachedItems = [];
+    _itemData = nil;
+    _itemForDragging = nil;
     _itemPrototype = anItem;
-    
+
     [self reloadContent];
 }
 
@@ -143,17 +152,24 @@
 }
 
 /*!
-    Returns a collection view item for <code>anObject</code>.
+    Returns a collection view item for \c anObject.
     @param anObject the object to be represented.
 */
 - (CPCollectionViewItem)newItemForRepresentedObject:(id)anObject
 {
     var item = nil;
-    
+
     if (_cachedItems.length)
         item = _cachedItems.pop();
+
     else
+    {
+        if (!_itemData)
+            if (_itemPrototype)
+                _itemData = [CPKeyedArchiver archivedDataWithRootObject:_itemPrototype];
+
         item = [CPKeyedUnarchiver unarchiveObjectWithData:_itemData];
+    }
 
     [item setRepresentedObject:anObject];
     [[item view] setFrameSize:_itemSize];
@@ -163,7 +179,7 @@
 
 // Working with the Responder Chain
 /*!
-    Returns <code>YES</code> by default.
+    Returns \c YES by default.
 */
 - (BOOL)acceptsFirstResponder
 {
@@ -175,13 +191,13 @@
 */
 - (BOOL)isFirstResponder
 {
-    return [[self window] firstResponder] == self;
+    return [[self window] firstResponder] === self;
 }
 
 // Setting the Content
 /*!
-    Sets the content of the collection view to the content in <code>anArray</code>. 
-    This array can be of any type, and each element will be passed to the <code>setRepresentedObject:</code> method.  
+    Sets the content of the collection view to the content in \c anArray. 
+    This array can be of any type, and each element will be passed to the \c -setRepresentedObject: method.  
     It's the responsibility of your custom collection view item to interpret the object.
     @param anArray the content array
 */
@@ -214,7 +230,7 @@
 // Setting the Selection Mode
 /*!
     Sets whether the user is allowed to select items
-    @param isSelectable <code>YES</code> allows the user to select items.
+    @param isSelectable \c YES allows the user to select items.
 */
 - (void)setSelectable:(BOOL)isSelectable
 {
@@ -233,8 +249,8 @@
 }
 
 /*!
-    Returns <code>YES</code> if the collection view is
-    selected, and <code>NO</code> otherwise.
+    Returns \c YES if the collection view is
+    selected, and \c NO otherwise.
 */
 - (BOOL)isSelected
 {
@@ -243,7 +259,7 @@
 
 /*!
     Sets whether the user may have no items selected. If YES, mouse clicks not on any item will empty the current selection. The first item will also start off as selected.
-    @param shouldAllowMultipleSelection <code>YES</code> allows the user to select multiple items
+    @param shouldAllowMultipleSelection \c YES allows the user to select multiple items
 */
 - (void)setAllowsEmptySelection:(BOOL)shouldAllowEmptySelection
 {
@@ -251,7 +267,7 @@
 }
 
 /*!
-    Returns <code>YES</code> if the user can select no items, <code>NO</code> otherwise.
+    Returns \c YES if the user can select no items, \c NO otherwise.
 */
 - (BOOL)allowsEmptySelection
 {
@@ -260,7 +276,7 @@
 
 /*!
     Sets whether the user can select multiple items.
-    @param shouldAllowMultipleSelection <code>YES</code> allows the user to select multiple items
+    @param shouldAllowMultipleSelection \c YES allows the user to select multiple items
 */
 - (void)setAllowsMultipleSelection:(BOOL)shouldAllowMultipleSelection
 {
@@ -268,7 +284,7 @@
 }
 
 /*!
-    Returns <code>YES</code> if the user can select multiple items, <code>NO</code> otherwise.
+    Returns \c YES if the user can select multiple items, \c NO otherwise.
 */
 - (BOOL)allowsMultipleSelection
 {
@@ -322,13 +338,13 @@
     
     _items = [];
 
-    if (!_itemData || !_content)
+    if (!_itemPrototype || !_content)
         return;
-    
+
     var index = 0;
-    
+
     count = _content.length;
-        
+
     for (; index < count; ++index)
     {
         _items.push([self newItemForRepresentedObject:_content[index]]);
@@ -520,6 +536,30 @@
     return _maxItemSize;
 }
 
+- (void)setBackgroundColors:(CPArray)backgroundColors
+{
+    if (_backgroundColors === backgroundColors)
+        return;
+
+    _backgroundColors = backgroundColors;
+
+    if (!_backgroundColors)
+        _backgroundColors = [CPColor whiteColor];
+
+    if ([_backgroundColors count] === 1)
+        [self setBackgroundColor:_backgroundColors[0]];
+
+    else
+        [self setBackgroundColor:nil];
+
+    [self setNeedsDisplay:YES];
+}
+
+- (CPArray)backgroundColors
+{
+    return _backgroundColors;
+}
+
 - (void)mouseUp:(CPEvent)anEvent
 {
     if ([_selectionIndexes count] && [anEvent clickCount] == 2 && [_delegate respondsToSelector:@selector(collectionView:didDoubleClickOnItemAtIndex:)])
@@ -528,13 +568,16 @@
 
 - (void)mouseDown:(CPEvent)anEvent
 {
+    _mouseDownEvent = anEvent;
+
     var location = [self convertPoint:[anEvent locationInWindow] fromView:nil],
         row = FLOOR(location.y / (_itemSize.height + _verticalMargin)),
         column = FLOOR(location.x / (_itemSize.width + _horizontalMargin)),
         index = row * _numberOfColumns + column;
-        
+
     if (index >= 0 && index < _items.length)
         [self setSelectionIndexes:[CPIndexSet indexSetWithIndex:index]];
+
     else if (_allowsEmptySelection)
         [self setSelectionIndexes:[CPIndexSet indexSet]];
 }
@@ -543,30 +586,32 @@
 {
     if (![_delegate respondsToSelector:@selector(collectionView:dragTypesForItemsAtIndexes:)])
         return;
-        
+
     // If we don't have any selected items, we've clicked away, and thus the drag is meaningless.
     if (![_selectionIndexes count])
         return;
-        
+
     // Set up the pasteboard
     var dragTypes = [_delegate collectionView:self dragTypesForItemsAtIndexes:_selectionIndexes];
-    
+
     [[CPPasteboard pasteboardWithName:CPDragPboard] declareTypes:dragTypes owner:self];
-    
+
     var point = [self convertPoint:[anEvent locationInWindow] fromView:nil];
 
-    [_itemForDragging setRepresentedObject:_content[[_selectionIndexes firstIndex]]];
+    if (!_itemForDragging)
+        _itemForDragging = [self newItemForRepresentedObject:_content[[_selectionIndexes firstIndex]]];
+    else
+        [_itemForDragging setRepresentedObject:_content[[_selectionIndexes firstIndex]]];
 
-    var view = [_itemForDragging view],
-        frame = [view frame];
-    
+    var view = [_itemForDragging view];
+
     [view setFrameSize:_itemSize];
     [view setAlphaValue:0.7];
-    
+
     [self dragView:view
         at:[[_items[[_selectionIndexes firstIndex]] view] frame].origin
-        offset:CGPointMakeZero()
-        event:anEvent
+        offset:CGSizeMakeZero()
+        event:_mouseDownEvent
         pasteboard:nil
         source:self
         slideBack:YES];
@@ -627,98 +672,10 @@
 
 @end
 
-/*!
-    Represents an object inside a CPCollectionView.
-*/
-@implementation CPCollectionViewItem : CPObject
-{
-    id      _representedObject;
-    
-    CPView  _view;
-    
-    BOOL    _isSelected;
-}
-
-// Setting the Represented Object
-/*!
-    Sets the object to be represented by this item.
-    @param anObject the object to be represented
-*/
-- (void)setRepresentedObject:(id)anObject
-{
-    if (_representedObject == anObject)
-        return;
-    
-    _representedObject = anObject;
-    
-    // FIXME: This should be set up by bindings
-    [_view setRepresentedObject:anObject];
-}
-
-/*!
-    Returns the object represented by this view item
-*/
-- (id)representedObject
-{
-    return _representedObject;
-}
-
-// Modifying the View
-/*!
-    Sets the view that is used represent this object.
-    @param aView the view used to represent this object
-*/
-- (void)setView:(CPView)aView
-{
-    _view = aView;
-}
-
-/*!
-    Returns the view that represents this object.
-*/
-- (CPView)view
-{
-    return _view;
-}
-
-// Modifying the Selection
-/*!
-    Sets whether this view item should be selected.
-    @param shouldBeSelected <code>YES</code> makes the item selected. <code>NO</code> deselects it.
-*/
-- (void)setSelected:(BOOL)shouldBeSelected
-{
-    if (_isSelected == shouldBeSelected)
-        return;
-    
-    _isSelected = shouldBeSelected;
-    
-    // FIXME: This should be set up by bindings
-    [_view setSelected:_isSelected];
-}
-
-/*!
-    Returns <code>YES</code> if the item is currently selected. <code>NO</code> if the item is not selected.
-*/
-- (BOOL)isSelected
-{
-    return _isSelected;
-}
-
-// Parent Collection View
-/*!
-    Returns the collection view of which this item is a part.
-*/
-- (CPCollectionView)collectionView
-{
-    return [_view superview];
-}
-
-@end
-
 var CPCollectionViewMinItemSizeKey      = @"CPCollectionViewMinItemSizeKey",
     CPCollectionViewMaxItemSizeKey      = @"CPCollectionViewMaxItemSizeKey",
-    CPCollectionViewVerticalMarginKey   = @"CPCollectionViewVerticalMarginKey";
+    CPCollectionViewVerticalMarginKey   = @"CPCollectionViewVerticalMarginKey",
+    CPCollectionViewBackgroundColorsKey = @"CPCollectionViewBackgroundColorsKey";
 
 
 @implementation CPCollectionView (CPCoding)
@@ -735,13 +692,19 @@ var CPCollectionViewMinItemSizeKey      = @"CPCollectionViewMinItemSizeKey",
         _cachedItems = [];
 
         _itemSize = CGSizeMakeZero();
-        _minItemSize = [aCoder decodeSizeForKey:CPCollectionViewMinItemSizeKey];
-        _maxItemSize = [aCoder decodeSizeForKey:CPCollectionViewMaxItemSizeKey];
+        
+        _minItemSize = [aCoder decodeSizeForKey:CPCollectionViewMinItemSizeKey] || CGSizeMakeZero();
+        _maxItemSize = [aCoder decodeSizeForKey:CPCollectionViewMaxItemSizeKey] || CGSizeMakeZero();
+        _verticalMargin = [aCoder decodeFloatForKey:CPCollectionViewVerticalMarginKey];
 
-        _verticalMargin = [aCoder decodeSizeForKey:CPCollectionViewVerticalMarginKey];
+        [self setBackgroundColors:[aCoder decodeObjectForKey:CPCollectionViewBackgroundColorsKey]];
+          
         _tileWidth = -1.0;
 
         _selectionIndexes = [CPIndexSet indexSet];
+        
+        _allowsEmptySelection = YES;
+        _isSelectable = YES;
     }
 
     return self;
@@ -751,54 +714,15 @@ var CPCollectionViewMinItemSizeKey      = @"CPCollectionViewMinItemSizeKey",
 {
     [super encodeWithCoder:aCoder];
 
-    [aCoder encodeSize:_minItemSize forKey:CPCollectionViewMinItemSizeKey];
-    [aCoder encodeSize:_maxItemSize forKey:CPCollectionViewMaxItemSizeKey];
+    if (!CGSizeEqualToSize(_minItemSize, CGSizeMakeZero()))
+      [aCoder encodeSize:_minItemSize forKey:CPCollectionViewMinItemSizeKey];
 
-    [aCoder encodeSize:_verticalMargin forKey:CPCollectionViewVerticalMarginKey];
-}
+    if (!CGSizeEqualToSize(_maxItemSize, CGSizeMakeZero()))
+      [aCoder encodeSize:_maxItemSize forKey:CPCollectionViewMaxItemSizeKey];
 
-@end
+    [aCoder encodeFloat:_verticalMargin forKey:CPCollectionViewVerticalMarginKey];
 
-var CPCollectionViewItemViewKey = @"CPCollectionViewItemViewKey";
-
-@implementation CPCollectionViewItem (CPCoding)
-
-/*
-    FIXME Not yet implemented
-*/
-- (id)copy
-{
-    
-}
-
-@end
-
-var CPCollectionViewItemViewKey = @"CPCollectionViewItemViewKey";
-
-@implementation CPCollectionViewItem (CPCoding)
-
-/*!
-    Initializes the view item by unarchiving data from a coder.
-    @param aCoder the coder from which the data will be unarchived
-    @return the initialized collection view item
-*/
-- (id)initWithCoder:(CPCoder)aCoder
-{
-    self = [super init];
-    
-    if (self)
-        _view = [aCoder decodeObjectForKey:CPCollectionViewItemViewKey];
-    
-    return self;
-}
-
-/*!
-    Archives the colletion view item to the provided coder.
-    @param aCoder the coder to which the view item should be archived
-*/
-- (void)encodeWithCoder:(CPCoder)aCoder
-{
-    [aCoder encodeObject:_view forKey:CPCollectionViewItemViewKey];
+    [aCoder encodeObject:_backgroundColors forKey:CPCollectionViewBackgroundColorsKey];
 }
 
 @end

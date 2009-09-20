@@ -100,9 +100,6 @@ var CPControlBlackColor     = [CPColor blackColor];
     BOOL                _trackingWasWithinFrame;
     unsigned            _trackingMouseDownFlags;
     CGPoint             _previousTrackingLocation;
-    
-    JSObject            _ephemeralSubviewsForNames;
-    CPSet               _ephereralSubviews;
 
     CPString            _toolTip;
 }
@@ -181,7 +178,7 @@ var CPControlBlackColor     = [CPColor blackColor];
 }
 
 /*!
-    Causes <code>anAction</code> to be sent to <code>anObject</code>.
+    Causes \c anAction to be sent to \c anObject.
     @param anAction the action to send
     @param anObject the object to which the action will be sent
 */
@@ -302,6 +299,15 @@ var CPControlBlackColor     = [CPColor blackColor];
     [self setState:[self nextState]];
     [self sendAction:[self action] to:[self target]];
     [self highlight:NO];
+}
+
+- (void)setState:(int)state
+{
+}
+
+- (int)nextState
+{
+    return 0;
 }
 
 - (unsigned)mouseDownFlags
@@ -505,10 +511,12 @@ var CPControlBlackColor     = [CPColor blackColor];
 }
 
 #define BRIDGE(UPPERCASE, LOWERCASE, ATTRIBUTENAME) \
+/*! Sets the value for ATTRIBUTENAME */\
 - (void)set##UPPERCASE:(id)aValue\
 {\
 [self setValue:aValue forThemeAttribute:ATTRIBUTENAME];\
 }\
+/*! Returns the current value for ATTRIBUTENAME */\
 - (id)LOWERCASE\
 {\
 return [self valueForThemeAttribute:ATTRIBUTENAME];\
@@ -555,54 +563,6 @@ BRIDGE(ImageScaling, imageScaling, "image-scaling")
     return [self hasThemeState:CPThemeStateHighlighted];
 }
 
-- (CPView)createEphemeralSubviewNamed:(CPString)aViewName
-{
-    return nil;
-}
-
-- (CGRect)rectForEphemeralSubviewNamed:(CPString)aViewName
-{
-    return _CGRectMakeZero();
-}
-
-- (CPView)layoutEphemeralSubviewNamed:(CPString)aViewName 
-                           positioned:(CPWindowOrderingMode)anOrderingMode
-      relativeToEphemeralSubviewNamed:(CPString)relativeToViewName
-{
-    if (!_ephemeralSubviewsForNames)
-    {
-        _ephemeralSubviewsForNames = {};
-        _ephemeralSubviews = [CPSet set];
-    }
-    
-    var frame = [self rectForEphemeralSubviewNamed:aViewName];
-
-    if (frame && !_CGRectIsEmpty(frame))
-    {
-        if (!_ephemeralSubviewsForNames[aViewName])
-        {
-            _ephemeralSubviewsForNames[aViewName] = [self createEphemeralSubviewNamed:aViewName];
-        
-            [_ephemeralSubviews addObject:_ephemeralSubviewsForNames[aViewName]];
-        
-            if (_ephemeralSubviewsForNames[aViewName])
-                [self addSubview:_ephemeralSubviewsForNames[aViewName] positioned:anOrderingMode relativeTo:_ephemeralSubviewsForNames[relativeToViewName]];
-        }
-        
-        if (_ephemeralSubviewsForNames[aViewName])
-            [_ephemeralSubviewsForNames[aViewName] setFrame:frame];
-    }
-    else if (_ephemeralSubviewsForNames[aViewName])
-    {
-        [_ephemeralSubviewsForNames[aViewName] removeFromSuperview];
-        
-        [_ephemeralSubviews removeObject:_ephemeralSubviewsForNames[aViewName]];
-        delete _ephemeralSubviewsForNames[aViewName];
-    }
-    
-    return _ephemeralSubviewsForNames[aViewName];
-}
-
 @end
 
 var CPControlValueKey           = "CPControlValueKey",
@@ -645,23 +605,7 @@ var __Deprecated__CPImageViewImageKey   = @"CPImageViewImageKey";
 */
 - (void)encodeWithCoder:(CPCoder)aCoder
 {
-    var count = [_subviews count],
-        ephemeral
-        subviews = nil;
-
-    if (count > 0 && [_ephemeralSubviews count] > 0)
-    {
-        subviews = [_subviews.slice(0) copy];
-        
-        while (count--)
-            if ([_ephemeralSubviews containsObject:_subviews[count]])
-                _subviews.splice(count, 1);
-    }
-
     [super encodeWithCoder:aCoder];
-
-    if (subviews)
-        _subviews = subviews;
 
     if (_value !== nil)
         [aCoder encodeObject:_value forKey:CPControlValueKey];

@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>content</key>
+	<string>@implementation ${1:class} : ${2:CPObject}
+{
+}
+
+- (id)init
+{
+	if(self = [super init])
+	{$0
+	}
+	return self;
+}
+
+@end
+</string>
+	<key>name</key>
+	<string>Class</string>
+	<key>scope</key>
+	<string>source.js.objj</string>
+	<key>tabTrigger</key>
+	<string>objj</string>
+	<key>uuid</key>
+	<string>96C39647-4346-4750-9F96-58070F24EDE6</string>
+</dict>
+</plist>

@@ -14,7 +14,7 @@ $ENVIRONMENT_LIB_PRODUCT = File.join($ENVIRONMENT_LIB_DIR, 'nib2cib')
 ObjectiveJ::BundleTask.new(:nib2cib) do |t|
     t.name          = 'nib2cib'
     t.identifier    = 'com.280n.nib2cib'
-    t.version       = '0.7.0'
+    t.version       = '0.7.1'
     t.author        = '280 North, Inc.'
     t.email         = 'feedback @nospam@ 280north.com'
     t.summary       = 'nib2cib converts Cocoa nib and xibs to Cappuccino cibs'

@@ -24,11 +24,14 @@
 @import "CPCoder.j"
 
 
-var _CPKeyedUnarchiverCannotDecodeObjectOfClassNameOriginalClassesSelector  = 1,
-    _CPKeyedUnarchiverDidDecodeObjectSelector                               = 1 << 1,
-    _CPKeyedUnarchiverWillReplaceObjectWithObjectSelector                   = 1 << 2,
-    _CPKeyedUnarchiverWillFinishSelector                                    = 1 << 3,
-    _CPKeyedUnarchiverDidFinishSelector                                     = 1 << 4;
+CPInvalidUnarchiveOperationException    = @"CPInvalidUnarchiveOperationException";
+
+var _CPKeyedUnarchiverCannotDecodeObjectOfClassNameOriginalClassesSelector              = 1 << 0,
+    _CPKeyedUnarchiverDidDecodeObjectSelector                                           = 1 << 1,
+    _CPKeyedUnarchiverWillReplaceObjectWithObjectSelector                               = 1 << 2,
+    _CPKeyedUnarchiverWillFinishSelector                                                = 1 << 3,
+    _CPKeyedUnarchiverDidFinishSelector                                                 = 1 << 4,
+    CPKeyedUnarchiverDelegate_unarchiver_cannotDecodeObjectOfClassName_originalClasses_ = 1 << 5;
 
 var _CPKeyedArchiverNullString                                              = "$null"
     
@@ -72,7 +75,7 @@ var _CPKeyedUnarchiverArrayClass                                            = Ni
     @param an array of class names describing the encoded object's
     class hierarchy. The first index is the encoded class name, and
     each superclass is after that.
-    @return the Class to use instead or <code>nil</code>
+    @return the Class to use instead or \c nil
     to abort the unarchiving operation
 
     @delegate -(id)unarchiver:(CPKeyedUnarchiver)unarchiver didDecodeObject:(id)object;
@@ -80,10 +83,10 @@ var _CPKeyedUnarchiverArrayClass                                            = Ni
     @param unarchiver the unarchiver doing the decoding
     @param object the decoded objec
     @return a substitute to use for the decoded object. This can be the same object argument provide,
-    another object or <code>nil</code>.
+    another object or \c nil.
 
     @delegate -(void)unarchiver:(CPKeyedUnarchiver)unarchiver willReplaceObject:(id)object withObject:(id)newObject;
-    Called when a decoded object has been substituted with another. (for example, from <code>unarchiver:didDecodeObject:</code>.
+    Called when a decoded object has been substituted with another. (for example, from \c -unarchiver:didDecodeObject:.
     @param unarchiver the unarchiver that decoded the object
     @param object the original decoded object
     @param newObject the replacement object
@@ -105,7 +108,7 @@ var _CPKeyedUnarchiverArrayClass                                            = Ni
 
     CPDictionary    _replacementClasses;
     
-    CPDictionary    _objects;
+    CPArray         _objects;
     CPDictionary    _archive;
     
     CPDictionary    _plistObject;
@@ -181,7 +184,7 @@ var _CPKeyedUnarchiverArrayClass                                            = Ni
 }
 
 /*
-    Returns <code>YES</code> if an object exists for <code>aKey</code>.
+    Returns \c YES if an object exists for \c aKey.
     @param aKey the object's associated key
 */
 - (BOOL)containsValueForKey:(CPString)aKey
@@ -210,9 +213,9 @@ var _CPKeyedUnarchiverArrayClass                                            = Ni
 }
 
 /*
-    Decodes a <code>BOOL</code> from the archive
-    @param aKey the <code>BOOL</code>'s associated key
-    @return the decoded <code>BOOL</code>
+    Decodes a \c BOOL from the archive
+    @param aKey the \c BOOL's associated key
+    @return the decoded \c BOOL
 */
 - (BOOL)decodeBoolForKey:(CPString)aKey
 {
@@ -220,9 +223,9 @@ var _CPKeyedUnarchiverArrayClass                                            = Ni
 }
 
 /*
-    Decodes a <code>float</code> from the archive
-    @param aKey the <code>float</code>'s associated key
-    @return the decoded <code>float</code>
+    Decodes a \c float from the archive
+    @param aKey the \c float's associated key
+    @return the decoded \c float
 */
 - (float)decodeFloatForKey:(CPString)aKey
 {
@@ -230,9 +233,9 @@ var _CPKeyedUnarchiverArrayClass                                            = Ni
 }
 
 /*
-    Decodes a <code>double</code> from the archive.
-    @param aKey the <code>double</code>'s associated key
-    @return the decoded <code>double</code>
+    Decodes a \c double from the archive.
+    @param aKey the \c double's associated key
+    @return the decoded \c double
 */
 - (double)decodeDoubleForKey:(CPString)aKey
 {
@@ -240,9 +243,9 @@ var _CPKeyedUnarchiverArrayClass                                            = Ni
 }
 
 /*
-    Decodes an <code>int</code> from the archive.
-    @param aKey the <code>int</code>'s associated key
-    @return the decoded <code>int</code>
+    Decodes an \c int from the archive.
+    @param aKey the \c int's associated key
+    @return the decoded \c int
 */
 - (int)decodeIntForKey:(CPString)aKey
 {
@@ -306,7 +309,7 @@ var _CPKeyedUnarchiverArrayClass                                            = Ni
     if ([object isKindOfClass:_CPKeyedUnarchiverDictionaryClass])
         return _CPKeyedUnarchiverDecodeObjectAtIndex(self, [object objectForKey:_CPKeyedArchiverUIDKey]);
 
-    else if ([object isKindOfClass:_CPKeyedUnarchiverNumberClass] || [object isKindOfClass:_CPKeyedUnarchiverDataClass])
+    else if ([object isKindOfClass:_CPKeyedUnarchiverNumberClass] || [object isKindOfClass:_CPKeyedUnarchiverDataClass] || [object isKindOfClass:_CPKeyedUnarchiverStringClass])
         return object;
 
     else if ([object isKindOfClass:_CPKeyedUnarchiverArrayClass])
@@ -384,6 +387,9 @@ var _CPKeyedUnarchiverArrayClass                                            = Ni
         
     if ([_delegate respondsToSelector:@selector(unarchiverDidFinish:)])
         _delegateSelectors |= _CPKeyedUnarchiverDidFinishSelector;
+
+    if ([_delegate respondsToSelector:@selector(unarchiver:cannotDecodeObjectOfClassName:originalClasses:)])
+        _delegateSelectors |= CPKeyedUnarchiverDelegate_unarchiver_cannotDecodeObjectOfClassName_originalClasses_;
 }
 
 - (void)setClass:(Class)aClass forClassName:(CPString)aClassName
@@ -426,15 +432,22 @@ var _CPKeyedUnarchiverDecodeObjectAtIndex = function(self, anIndex)
         if (!theClass)
             theClass = CPClassFromString(className);
 
-        object = [theClass alloc];
+        if (!theClass && (self._delegateSelectors & CPKeyedUnarchiverDelegate_unarchiver_cannotDecodeObjectOfClassName_originalClasses_))
+            theClass = [_delegate unarchiver:self cannotDecodeObjectOfClassName:className originalClasses:classes];
 
-        // It is important to do this before calling initWithCoder so that decoding can be self referential (something = self).    
-        self._objects[anIndex] = object;
-        
+        if (!theClass)
+            [CPException raise:CPInvalidUnarchiveOperationException reason:@"-[CPKeyedUnarchiver decodeObjectForKey:]: cannot decode object of class (" + className + @")"];
+
         var savedPlistObject = self._plistObject;
         
         self._plistObject = plistObject;
-        var string = className;
+
+        // Should we only call this on _CPCibClassSwapper? (currently the only class that makes use of this).
+        object = [theClass allocWithCoder:self];
+
+        // It is important to do this before calling initWithCoder so that decoding can be self referential (something = self).
+        self._objects[anIndex] = object;
+
         var processedObject = [object initWithCoder:self];
 
         self._plistObject = savedPlistObject;

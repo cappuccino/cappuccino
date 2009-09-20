@@ -27,7 +27,7 @@
     @ingroup appkit
     @class CPColorPicker
 
-    CPColorPicker is an abstract superclass for all color picker subclasses. If you want a particular color picker, use CPColorPanel's <code>setPickerMode:</code> method. The simplest way to implement your own color picker is to create a subclass of CPColorPicker.
+    CPColorPicker is an abstract superclass for all color picker subclasses. If you want a particular color picker, use CPColorPanel's \c +setPickerMode: method. The simplest way to implement your own color picker is to create a subclass of CPColorPicker.
 */
 @implementation CPColorPicker : CPObject
 {
@@ -60,7 +60,7 @@
 
 /*
     FIXME Not implemented.
-    @return <code>nil</code>
+    @return \c nil
     @ignore
 */
 - (CPImage)provideNewButtonImage

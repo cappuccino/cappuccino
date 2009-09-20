@@ -50,6 +50,7 @@
 @import "CPString.j"
 @import "CPTimer.j"
 @import "CPUndoManager.j"
+@import "CPURL.j"
 @import "CPURLConnection.j"
 @import "CPURLRequest.j"
 @import "CPURLResponse.j"

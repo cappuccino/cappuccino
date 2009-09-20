@@ -100,7 +100,7 @@ var CPSecureTextFieldCharacter = "\u2022";
 @implementation CPString (CPTextFieldAdditions)
 
 /*!
-    Returns the string (<code>self</code>).
+    Returns the string (\c self).
 */
 - (CPString)string
 {
@@ -389,7 +389,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 }
 
 /*!
-    Returns <code>YES</code> if the textfield is currently editable by the user.
+    Returns \c YES if the textfield is currently editable by the user.
 */
 - (BOOL)isEditable
 {
@@ -398,7 +398,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 
 /*!
     Sets whether the field's text is selectable by the user.
-    @param aFlag <code>YES</code> makes the text selectable
+    @param aFlag \c YES makes the text selectable
 */
 - (void)setSelectable:(BOOL)aFlag
 {
@@ -406,7 +406,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 }
 
 /*!
-    Returns <code>YES</code> if the field's text is selectable by the user.
+    Returns \c YES if the field's text is selectable by the user.
 */
 - (BOOL)isSelectable
 {
@@ -415,7 +415,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 
 /*!
     Sets whether the field's text is secure.
-    @param aFlag <code>YES</code> makes the text secure
+    @param aFlag \c YES makes the text secure
 */
 - (void)setSecure:(BOOL)aFlag
 {
@@ -423,7 +423,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 }
 
 /*!
-    Returns <code>YES</code> if the field's text is secure (password entry).
+    Returns \c YES if the field's text is secure (password entry).
 */
 - (BOOL)isSecure
 {
@@ -433,7 +433,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 // Setting the Bezel Style
 /*!
     Sets whether the textfield will have a bezeled border.
-    @param shouldBeBezeled <code>YES</code> means the textfield will draw a bezeled border
+    @param shouldBeBezeled \c YES means the textfield will draw a bezeled border
 */
 - (void)setBezeled:(BOOL)shouldBeBezeled
 {
@@ -444,7 +444,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 }
 
 /*!
-    Returns <code>YES</code> if the textfield draws a bezeled border.
+    Returns \c YES if the textfield draws a bezeled border.
 */
 - (BOOL)isBezeled
 {
@@ -478,7 +478,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 
 /*!
     Sets whether the textfield will have a border drawn.
-    @param shouldBeBordered <code>YES</code> makes the textfield draw a border
+    @param shouldBeBordered \c YES makes the textfield draw a border
 */
 - (void)setBordered:(BOOL)shouldBeBordered
 {
@@ -489,7 +489,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 }
 
 /*!
-    Returns <code>YES</code> if the textfield has a border.
+    Returns \c YES if the textfield has a border.
 */
 - (BOOL)isBordered
 {
@@ -498,7 +498,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 
 /*!
     Sets whether the textfield will have a background drawn.
-    @param shouldDrawBackground <code>YES</code> makes the textfield draw a background
+    @param shouldDrawBackground \c YES makes the textfield draw a background
 */
 - (void)setDrawsBackground:(BOOL)shouldDrawBackground
 {
@@ -512,7 +512,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 }
 
 /*!
-    Returns <code>YES</code> if the textfield draws a background.
+    Returns \c YES if the textfield draws a background.
 */
 - (BOOL)drawsBackground
 {
@@ -570,6 +570,15 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
     element.style.font = [[self currentValueForThemeAttribute:@"font"] cssString];
     element.style.zIndex = 1000;
 
+    switch ([self alignment])
+    {
+        case CPCenterTextAlignment: element.style.textAlign = "center";
+                                    break;
+        case CPRightTextAlignment:  element.style.textAlign = "right";
+                                    break;
+        default:                    element.style.textAlign = "left";
+    }
+
     var contentRect = [self contentRectForBounds:[self bounds]];
 
     element.style.top = _CGRectGetMinY(contentRect) + "px";
@@ -588,7 +597,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
     //post CPControlTextDidBeginEditingNotification
     [self textDidBeginEditing:[CPNotification notificationWithName:CPControlTextDidBeginEditingNotification object:self userInfo:nil]];
     
-    [[CPDOMWindowBridge sharedDOMWindowBridge] _propagateCurrentDOMEvent:YES];
+    [[[self window] platformWindow] _propagateCurrentDOMEvent:YES];
     
     CPTextFieldInputIsActive = YES;
 
@@ -647,7 +656,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 #endif
 
     //post CPControlTextDidEndEditingNotification
-    [self textDidEndEditing:[CPNotification notificationWithName:CPControlTextDidBeginEditingNotification object:self userInfo:nil]];
+    [self textDidEndEditing:[CPNotification notificationWithName:CPControlTextDidEndEditingNotification object:self userInfo:nil]];
 
     return YES;
 }
@@ -683,7 +692,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 {
     var string = [self stringValue];
 
-    if ((!string || [string length] === 0) && ![self hasThemeState:CPThemeStateEditing])
+    if ((!string || string.length === 0) && ![self hasThemeState:CPThemeStateEditing])
         [self setThemeState:CPTextFieldStatePlaceholder];
     else
         [self unsetThemeState:CPTextFieldStatePlaceholder];
@@ -763,8 +772,8 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 #if PLATFORM(DOM)
     var element = [self _inputElement];
     
-    if (element.parentNode == _DOMElement && ([self isEditable] || [self isSelectable]))
-        element.select();
+    if (element.parentNode === _DOMElement && ([self isEditable] || [self isSelectable]))
+        window.setTimeout(function() { element.select(); }, 0);
 #endif
 }
 

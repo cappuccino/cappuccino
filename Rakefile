@@ -33,12 +33,14 @@ $STARTER_DOWNLOAD                   = File.join($BUILD_DIR, 'Cappuccino', 'Start
 $STARTER_DOWNLOAD_APPLICATION       = File.join($STARTER_DOWNLOAD, 'NewApplication')
 $STARTER_DOWNLOAD_README            = File.join($STARTER_DOWNLOAD, 'README')
 
-task :downloads => [:starter_download, :tools_download]
+$NARWHAL_PACKAGE                    = File.join($BUILD_DIR, 'Cappuccino', 'objj')
+
+task :downloads => [:starter_download, :tools_download, :narwhal_package]
 
 file_d $TOOLS_DOWNLOAD_ENV => [:debug, :release] do
     rm_rf($TOOLS_DOWNLOAD_ENV)
-    cp_r(File.join($RELEASE_ENV, '.'), $TOOLS_DOWNLOAD_ENV)
-    cp_r(File.join($DEBUG_ENV, 'lib', 'Frameworks', '.'), File.join($TOOLS_DOWNLOAD_ENV, 'lib', 'Frameworks', 'Debug'))
+    cp_r(File.join($RELEASE_ENV), $TOOLS_DOWNLOAD_ENV)
+    cp_r(File.join($DEBUG_ENV, 'packages', 'objj', 'lib', 'Frameworks'), File.join($TOOLS_DOWNLOAD_ENV, 'packages', 'objj', 'lib', 'Frameworks', 'Debug'))
 end
 
 file_d $TOOLS_DOWNLOAD_EDITORS => [$TOOLS_EDITORS] do
@@ -60,6 +62,11 @@ end
 task :tools_download => [$TOOLS_DOWNLOAD_ENV, $TOOLS_DOWNLOAD_EDITORS, $TOOLS_DOWNLOAD_README, $TOOLS_DOWNLOAD_INSTALLER, :objj_gem]
 
 task :starter_download => [$STARTER_DOWNLOAD_APPLICATION, $STARTER_DOWNLOAD_README]
+
+task :narwhal_package => [$TOOLS_DOWNLOAD_ENV] do
+  rm_rf($NARWHAL_PACKAGE)
+  cp_r(File.join($TOOLS_DOWNLOAD_ENV, 'packages', 'objj'), $NARWHAL_PACKAGE)
+end
 
 task :deploy => [:downloads, :docs] do
     #copy the docs into the starter pack
@@ -86,7 +93,9 @@ file_d $STARTER_DOWNLOAD_APPLICATION => [$TOOLS_DOWNLOAD_ENV] do
 
     rm_rf($STARTER_DOWNLOAD_APPLICATION)
     mkdir_p($STARTER_DOWNLOAD)
+    
     system %{capp gen #{$STARTER_DOWNLOAD_APPLICATION} -t Application --noconfig }
+    rake abort if ($? != 0)
 
     # No tools means no objective-j gem
     rm(File.join($STARTER_DOWNLOAD_APPLICATION, 'Rakefile'))
@@ -103,7 +112,9 @@ task :install => [:tools_download] do
     else
         prefix = ''
     end
+    
     system %{cd #{$TOOLS_DOWNLOAD} && sudo sh ./install-tools #{prefix} }
+    rake abort if ($? != 0)
 end
 
 task :test => [:build] do
@@ -122,6 +133,8 @@ end
 task :docs do
     if executable_exists? "doxygen"
       system %{doxygen #{$DOXYGEN_CONFIG} }
+      rake abort if ($? != 0)
+      
       rm_rf $DOCUMENTATION_BUILD
       mv "debug.txt", "Documentation"
       mv "Documentation", $DOCUMENTATION_BUILD
@@ -133,6 +146,7 @@ end
 task :submodules do
     if executable_exists? "git"
         system %{git submodule init && git submodule update}
+        rake abort if ($? != 0)
     else
         puts "Git not installed"
         rake abort

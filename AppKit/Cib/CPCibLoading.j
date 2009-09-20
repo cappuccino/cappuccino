@@ -39,16 +39,41 @@ var LoadInfoForCib = {};
 
 @implementation CPBundle (CPCibLoading)
 
++ (void)loadCibFile:(CPString)anAbsolutePath externalNameTable:(CPDictionary)aNameTable
+{
+    [[[CPCib alloc] initWithContentsOfURL:anAbsolutePath] instantiateCibWithExternalNameTable:aNameTable];
+}
+
++ (void)loadCibNamed:(CPString)aName owner:(id)anOwner
+{
+    if (![aName hasSuffix:@".cib"])
+        aName = [aName stringByAppendingString:@".cib"];
+
+    // Path is based solely on anOwner:
+    var bundle = anOwner ? [CPBundle bundleForClass:[anOwner class]] : [CPBundle mainBundle],
+        path = [bundle pathForResource:aName];
+
+    [self loadCibFile:path externalNameTable:[CPDictionary dictionaryWithObject:anOwner forKey:CPCibOwner]];
+}
+
+- (void)loadCibFile:(CPString)aFileName externalNameTable:(CPDictionary)aNameTable
+{
+    [[[CPCib alloc] initWithContentsOfURL:aFileName] instantiateCibWithExternalNameTable:aNameTable];
+}
+
 + (void)loadCibFile:(CPString)anAbsolutePath externalNameTable:(CPDictionary)aNameTable loadDelegate:aDelegate
 {
     var cib = [[CPCib alloc] initWithContentsOfURL:anAbsolutePath loadDelegate:self];
 
-    LoadInfoForCib[[cib hash]] = { loadDelegate:aDelegate, externalNameTable:aNameTable };
+    LoadInfoForCib[[cib UID]] = { loadDelegate:aDelegate, externalNameTable:aNameTable };
 }
 
 + (void)loadCibNamed:(CPString)aName owner:(id)anOwner loadDelegate:(id)aDelegate
 {
-    // Path is based solely on anOwner:    
+    if (![aName hasSuffix:@".cib"])
+        aName = [aName stringByAppendingString:@".cib"];
+
+    // Path is based solely on anOwner:
     var bundle = anOwner ? [CPBundle bundleForClass:[anOwner class]] : [CPBundle mainBundle],
         path = [bundle pathForResource:aName];
     
@@ -59,14 +84,14 @@ var LoadInfoForCib = {};
 {
     var cib = [[CPCib alloc] initWithCibNamed:aFileName bundle:self loadDelegate:[self class]];
 
-    LoadInfoForCib[[cib hash]] = { loadDelegate:aDelegate, externalNameTable:aNameTable };
+    LoadInfoForCib[[cib UID]] = { loadDelegate:aDelegate, externalNameTable:aNameTable };
 }
 
 + (void)cibDidFinishLoading:(CPCib)aCib
 {
-    var loadInfo = LoadInfoForCib[[aCib hash]];
+    var loadInfo = LoadInfoForCib[[aCib UID]];
     
-    delete LoadInfoForCib[[aCib hash]];
+    delete LoadInfoForCib[[aCib UID]];
     
     [aCib instantiateCibWithExternalNameTable:loadInfo.externalNameTable];
     

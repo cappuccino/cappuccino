@@ -62,7 +62,11 @@
     
     if (self)
     {
-        _URL = aURL;
+        if ([aURL isKindOfClass:[CPString class]])
+            _URL = [CPURL URLWithString:aURL];
+        else
+            _URL = aURL;
+
         _HTTPBody = @"";
         _HTTPMethod = @"GET";
         _HTTPHeaderFields = [CPDictionary dictionary];

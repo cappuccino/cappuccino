@@ -58,7 +58,7 @@
     if (!anObserver || !aPath)
         return;
 
-    [[KVOProxyMap objectForKey:[self hash]] _removeObserver:anObserver forKeyPath:aPath];
+    [self[KVOProxyKey] _removeObserver:anObserver forKeyPath:aPath];
 }
 
 + (BOOL)automaticallyNotifiesObserversForKey:(CPString)aKey
@@ -68,8 +68,8 @@
 
 + (CPSet)keyPathsForValuesAffectingValueForKey:(CPString)aKey
 {
-    var capitalizedKey = aKey.charAt(0).toUpperCase()+aKey.substring(1);
-        selector = "keyPathsForValuesAffectingValueFor"+capitalizedKey;
+    var capitalizedKey = aKey.charAt(0).toUpperCase() + aKey.substring(1);
+        selector = "keyPathsForValuesAffecting" + capitalizedKey;
 
     if ([[self class] respondsToSelector:selector])
         return objj_msgSend([self class], selector);
@@ -98,12 +98,9 @@ CPKeyValueChangeInsertion   = 2;
 CPKeyValueChangeRemoval     = 3;
 CPKeyValueChangeReplacement = 4;
 
-//convenience
-var kvoNewAndOld = CPKeyValueObservingOptionNew|CPKeyValueObservingOptionOld;
-
-// Map of real objects to their KVO proxy
-var KVOProxyMap = [CPDictionary dictionary],
-    DependentKeysMap = [CPDictionary dictionary];
+var kvoNewAndOld = CPKeyValueObservingOptionNew|CPKeyValueObservingOptionOld,
+    DependentKeysKey = "$KVODEPENDENT",
+    KVOProxyKey = "$KVOPROXY";
 
 //rule of thumb: _ methods are called on the real proxy object, others are called on the "fake" proxy object (aka the real object)
 
@@ -113,13 +110,14 @@ var KVOProxyMap = [CPDictionary dictionary],
     id              _targetObject;
     Class           _nativeClass;
     CPDictionary    _changesForKey;
-    CPDictionary    _observersForKey;
+    Object          _observersForKey;
+    int             _observersForKeyLength;
     CPSet           _replacedKeys;
 }
 
 + (id)proxyForObject:(CPObject)anObject
 {
-    var proxy = [KVOProxyMap objectForKey:[anObject hash]];
+    var proxy = anObject[KVOProxyKey];
 
     if (proxy)
         return proxy;
@@ -128,7 +126,7 @@ var KVOProxyMap = [CPDictionary dictionary],
 
     [proxy _replaceClass];
 
-    [KVOProxyMap setObject:proxy forKey:[anObject hash]];
+    anObject[KVOProxyKey] = proxy;
 
     return proxy;
 }
@@ -139,9 +137,10 @@ var KVOProxyMap = [CPDictionary dictionary],
 
     _targetObject       = aTarget;
     _nativeClass        = [aTarget class];
-    _observersForKey    = [CPDictionary dictionary];
-    _changesForKey      = [CPDictionary dictionary];
     _replacedKeys       = [CPSet set];
+    _observersForKey    = {};
+    _changesForKey      = {};
+    _observersForKeyLength = 0;
 
     return self;
 }
@@ -202,40 +201,36 @@ var KVOProxyMap = [CPDictionary dictionary],
             var theMethod = class_getInstanceMethod(_nativeClass, theSelector);
 
             class_addMethod(_targetObject.isa, theSelector, theReplacementMethod(aKey, theMethod), "");
-
-            found = true;
         }
     }
 
-    if (found)
+    var affectingKeys = [[_nativeClass keyPathsForValuesAffectingValueForKey:aKey] allObjects],
+        affectingKeysCount = affectingKeys ? affectingKeys.length : 0;
+
+    if (!affectingKeysCount)
         return;
 
-    var composedOfKeys = [[_nativeClass keyPathsForValuesAffectingValueForKey:aKey] allObjects];
-
-    if (!composedOfKeys)
-        return;
-
-    var dependentKeysForClass = [DependentKeysMap objectForKey:[_nativeClass hash]];
+    var dependentKeysForClass = _nativeClass[DependentKeysKey];
 
     if (!dependentKeysForClass)
     {
-        dependentKeysForClass = [CPDictionary new];
-        [DependentKeysMap setObject:dependentKeysForClass forKey:[_nativeClass hash]];
+        dependentKeysForClass = {};
+        _nativeClass[DependentKeysKey] = dependentKeysForClass;
     }
 
-    for (var i=0, count=composedOfKeys.length; i<count; i++)
+    while (affectingKeysCount--)
     {
-        var componentKey = composedOfKeys[i],
-            keysComposedOfKey = [dependentKeysForClass objectForKey:componentKey];
+        var affectingKey = affectingKeys[affectingKeysCount],
+            affectedKeys = dependentKeysForClass[affectingKey];
 
-        if (!keysComposedOfKey)
+        if (!affectedKeys)
         {
-            keysComposedOfKey = [CPSet new];
-            [dependentKeysForClass setObject:keysComposedOfKey forKey:componentKey];
+            affectedKeys = [CPSet new];
+            dependentKeysForClass[affectingKey] = affectedKeys;
         }
 
-        [keysComposedOfKey addObject:aKey];
-        [self _replaceSetterForKey:componentKey];
+        [affectedKeys addObject:aKey];
+        [self _replaceSetterForKey:affectingKey];
     }
 }
 
@@ -251,15 +246,16 @@ var KVOProxyMap = [CPDictionary dictionary],
     else
         [self _replaceSetterForKey:aPath];
 
-    var observers = [_observersForKey objectForKey:aPath];
+    var observers = _observersForKey[aPath];
 
     if (!observers)
     {
         observers = [CPDictionary dictionary];
-        [_observersForKey setObject:observers forKey:aPath];
+        _observersForKey[aPath] = observers;
+        _observersForKeyLength++;
     }
 
-    [observers setObject:_CPKVOInfoMake(anObserver, options, aContext, forwarder) forKey:[anObserver hash]];
+    [observers setObject:_CPKVOInfoMake(anObserver, options, aContext, forwarder) forKey:[anObserver UID]];
     
     if (options & CPKeyValueObservingOptionInitial)
     {
@@ -275,23 +271,26 @@ var KVOProxyMap = [CPDictionary dictionary],
 
 - (void)_removeObserver:(id)anObserver forKeyPath:(CPString)aPath
 {
-    var observers = [_observersForKey objectForKey:aPath];
+    var observers = _observersForKey[aPath];
 
     if (aPath.indexOf('.') != CPNotFound)
     {
-        var forwarder = [observers objectForKey:[anObserver hash]].forwarder;
+        var forwarder = [observers objectForKey:[anObserver UID]].forwarder;
         [forwarder finalize];
     }
 
-    [observers removeObjectForKey:[anObserver hash]];
+    [observers removeObjectForKey:[anObserver UID]];
 
     if (![observers count])
-        [_observersForKey removeObjectForKey:aPath];
+    {
+        _observersForKeyLength--;
+        delete _observersForKey[aPath];
+    }
 
-    if (![_observersForKey count])
+    if (!_observersForKeyLength)
     {
         _targetObject.isa = _nativeClass; //restore the original class
-        [KVOProxyMap removeObjectForKey:[_targetObject hash]];
+        delete _targetObject[KVOProxyKey];
     }
 }
 
@@ -299,7 +298,7 @@ var KVOProxyMap = [CPDictionary dictionary],
 
 - (void)_sendNotificationsForKey:(CPString)aKey changeOptions:(CPDictionary)changeOptions isBefore:(BOOL)isBefore
 {
-    var changes = [_changesForKey objectForKey:aKey];
+    var changes = _changesForKey[aKey];
 
     if (isBefore)
     {
@@ -331,7 +330,7 @@ var KVOProxyMap = [CPDictionary dictionary],
         
         [changes setObject:1 forKey:CPKeyValueChangeNotificationIsPriorKey];
 
-        [_changesForKey setObject:changes forKey:aKey];
+        _changesForKey[aKey] = changes;
     }
     else
     {
@@ -362,8 +361,8 @@ var KVOProxyMap = [CPDictionary dictionary],
         }
     }
     
-    var observers = [[_observersForKey objectForKey:aKey] allValues],
-        count = [observers count];
+    var observers = [_observersForKey[aKey] allValues],
+        count = observers ? observers.length : 0;
 
     while (count--)
     {
@@ -375,7 +374,12 @@ var KVOProxyMap = [CPDictionary dictionary],
             [observerInfo.observer observeValueForKeyPath:aKey ofObject:_targetObject change:changes context:observerInfo.context];
     }
     
-    var keysComposedOfKey = [[[DependentKeysMap objectForKey:[_nativeClass hash]] objectForKey:aKey] allObjects];
+    var dependentKeysMap = _nativeClass[DependentKeysKey];
+
+    if (!dependentKeysMap)
+        return;
+
+    var keysComposedOfKey = [dependentKeysMap[aKey] allObjects];
     
     if (!keysComposedOfKey)
         return;
@@ -428,7 +432,7 @@ var KVOProxyMap = [CPDictionary dictionary],
 
 - (Class)class
 {
-    return [KVOProxyMap objectForKey:[self hash]]._nativeClass;
+    return self[KVOProxyKey]._nativeClass;
 }
 
 - (Class)superclass

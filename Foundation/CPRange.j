@@ -60,7 +60,7 @@ function CPMakeRangeCopy(aRange)
 }
 
 /*!
-    Sets a range's <code>length</code> to 0.
+    Sets a range's \c length to 0.
     @param aRange the range to empty
     @group CPRange
     @return CPRange the empty range (same as the argument)
@@ -71,7 +71,7 @@ function CPEmptyRange(aRange)
 }
 
 /*!
-    Finds the range maximum. (<code>location + length</code>)
+    Finds the range maximum. (\c location + length)
     @param aRange the range to calculate a maximum from
     @group CPRange
     @return int the range maximum
@@ -85,7 +85,7 @@ function CPMaxRange(aRange)
     Determines if two CPRanges are equal.
     @param lhsRange the first CPRange
     @param rhsRange the second CPRange
-    @return BOOL <code>YES</code> if the two CPRanges are equal.
+    @return BOOL \c YES if the two CPRanges are equal.
 */
 function CPEqualRanges(lhsRange, rhsRange)
 {
@@ -97,7 +97,7 @@ function CPEqualRanges(lhsRange, rhsRange)
     @param aLocation the number to check
     @param aRange the CPRange to check within
     @group CPRange
-    @return BOOL <code>YES</code> if <code>aLocation/code> is within the range
+    @return BOOL \c YES if \c aLocation is within the range
 */
 function CPLocationInRange(aLocation, aRange)
 {
@@ -105,8 +105,8 @@ function CPLocationInRange(aLocation, aRange)
 }
 
 /*!
-    Creates a new range with the minimum <code>location</code> and a <code>length</code> 
-    that extends to the maximum <code>length</code>.
+    Creates a new range with the minimum \c location and a \c length 
+    that extends to the maximum \c length.
     @param lhsRange the first CPRange
     @param rhsRange the second CPRange
     @group CPRange

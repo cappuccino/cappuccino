@@ -548,7 +548,9 @@ var KAPPA = 4.0 * ((SQRT2 - 1.0) / 3.0);
 */
 function CGContextAddEllipseInRect(aContext, aRect)
 {
+    CGContextBeginPath(aContext);
     CGContextAddPath(aContext, CGPathWithEllipseInRect(aRect));
+    CGContextClosePath(aContext);
 }
 
 /*!
@@ -650,15 +652,17 @@ function CGContextSetStrokeColor(aContext, aColor)
     @param aContext the CGContext to draw into
     @param aRect the base rectangle
     @param aRadius the distance from the rectange corner to the rounded corner
-    @param ne set it to <code>YES</code> for a rounded northeast corner
-    @param se set it to <code>YES</code> for a rounded southeast corner
-    @param sw set it to <code>YES</code> for a rounded southwest corner
-    @param nw set it to <code>YES</code> for a rounded northwest corner
+    @param ne set it to \c YES for a rounded northeast corner
+    @param se set it to \c YES for a rounded southeast corner
+    @param sw set it to \c YES for a rounded southwest corner
+    @param nw set it to \c YES for a rounded northwest corner
     @return void
 */
 function CGContextFillRoundedRectangleInRect(aContext, aRect, aRadius, ne, se, sw, nw)
 {
-    CGContextAddPath(aContext, CGPathWithRoundedRectangleInRect(aRect, aRadius, aRadius, ne, se, sw, nw));	
+    CGContextBeginPath(aContext);
+    CGContextAddPath(aContext, CGPathWithRoundedRectangleInRect(aRect, aRadius, aRadius, ne, se, sw, nw));
+    CGContextClosePath(aContext);
     CGContextFillPath(aContext);
 }
 
@@ -667,15 +671,17 @@ function CGContextFillRoundedRectangleInRect(aContext, aRect, aRadius, ne, se, s
     @param aContext the CGContext to draw into
     @param aRect the base rectangle
     @param aRadius the distance from the rectange corner to the rounded corner
-    @param ne set it to <code>YES</code> for a rounded northeast corner
-    @param se set it to <code>YES</code> for a rounded southeast corner
-    @param sw set it to <code>YES</code> for a rounded southwest corner
-    @param nw set it to <code>YES</code> for a rounded northwest corner
+    @param ne set it to \c YES for a rounded northeast corner
+    @param se set it to \c YES for a rounded southeast corner
+    @param sw set it to \c YES for a rounded southwest corner
+    @param nw set it to \c YES for a rounded northwest corner
     @return void
 */
 function CGContextStrokeRoundedRectangleInRect(aContext, aRect, aRadius, ne, se, sw, nw)
 {
+    CGContextBeginPath(aContext);
     CGContextAddPath(aContext, CGPathWithRoundedRectangleInRect(aRect, aRadius, aRadius, ne, se, sw, nw));		
+    CGContextClosePath(aContext);
     CGContextStrokePath(aContext);
 }
 

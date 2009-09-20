@@ -17,17 +17,11 @@ $RHINO_FILE             = File.join($PRODUCT, 'rhino.platform', 'Objective-J.js'
 
 task :Products => [$BROWSER_FILE, $RHINO_FILE, $LICENSE_PRODUCT]
 
-Files = [   'constants.js', 
-            'utilities.js', 
-            'runtime.js', 
-            'dictionary.js', 
-            'plist.js', 
-            'file.js', 
-            'exception.js', 
-            'preprocess.js', 
-            'evaluate.js', 
-            'debug.js', 
-            'bootstrap.js'];
+Files = FileList['constants.js', 'utilities.js', 'json2.js', 'runtime.js', 'dictionary.js', 'plist.js', 'file.js', 'exception.js', 'preprocess.js', 'evaluate.js', 'bootstrap.js']
+
+if $CONFIGURATION == 'Debug'
+    Files.add('debug.js')
+end
 
 file_d $BROWSER_FILE => Files do |t|
     build_product(t.name, platform_flags(ObjectiveJ::Platform::Browser, ObjectiveJ::Platform::ObjJ))
@@ -42,7 +36,8 @@ end
 
 #Framework in environment directory
 file_d $ENVIRONMENT_PRODUCT => [:Products] do
-    cp_r(File.join($PRODUCT, '.'), $ENVIRONMENT_PRODUCT)
+  rm_rf $ENVIRONMENT_PRODUCT
+  cp_r($PRODUCT, $ENVIRONMENT_PRODUCT)
 end
 
 file_d $LICENSE_PRODUCT => [$LICENSE_FILE] do
@@ -54,9 +49,7 @@ def platform_flags(*platforms)
 end
 
 def build_product(path, flags)
-
     IO.popen("gcc #{flags} -E -x c -P -", "w+") do |preprocessor|
-
         Files.select { |name| name.match(/\.js$/) }.each do |fileName|
           preprocessor.puts IO.read(fileName)
         end
@@ -66,11 +59,11 @@ def build_product(path, flags)
         File.open(path, "w") do |file|
             file.write(IO.read("header.txt") + preprocessor.read)
         end
-
     end
+    rake abort if ($? != 0)
 end
 
-task :build => [:Products, $ENVIRONMENT_PRODUCT, :build_subprojects]
+task :build => [:Products, :build_subprojects, $ENVIRONMENT_PRODUCT]
 
 task :clean => :clean_suprojects
 

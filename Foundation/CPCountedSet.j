@@ -40,12 +40,12 @@
     
     [super addObject:anObject];
     
-    var hash = [anObject hash];
+    var UID = [anObject UID];
     
-    if (_counts[hash] === undefined)
-        _counts[hash] = 1;
+    if (_counts[UID] === undefined)
+        _counts[UID] = 1;
     else
-        ++_counts[hash];
+        ++_counts[UID];
 }
 
 - (void)removeObject:(id)anObject
@@ -53,18 +53,18 @@
     if (!_counts)
         return;
         
-    var hash = [anObject hash];
+    var UID = [anObject UID];
     
-    if (_counts[hash] === undefined)
+    if (_counts[UID] === undefined)
         return;
     
     else
     {
-        --_counts[hash];
+        --_counts[UID];
         
-        if (_counts[hash] === 0)
+        if (_counts[UID] === 0)
         {
-            delete _counts[hash];
+            delete _counts[UID];
             [super removeObject:anObject];
         }
     }
@@ -85,12 +85,12 @@
     if (!_counts)
         _counts = {};
     
-    var hash = [anObject hash];
+    var UID = [anObject UID];
     
-    if (_counts[hash] === undefined)
+    if (_counts[UID] === undefined)
         return 0;
     
-    return _counts[hash];
+    return _counts[UID];
 }
 
 

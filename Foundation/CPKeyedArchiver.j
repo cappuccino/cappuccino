@@ -68,7 +68,7 @@ var _CPKeyedArchiverStringClass                         = Nil,
     Implements keyed archiving of object graphs. Archiving means to
     write data out in a format that be read in again later, or possibly
     stored in a file. To read the data back in, use a
-    <code>CPKeyedUnarchiver</code>.
+    \c CPKeyedUnarchiver.
 
     @par Delegate Methods
     
@@ -87,7 +87,7 @@ var _CPKeyedArchiverStringClass                         = Nil,
 
     @delegate -(id)archiver:(CPKeyedArchiver)archiver willEncodeObject:(id)object;
     Called when an object is about to be encoded. Allows the delegate to replace
-    the object that gets encoded with a substitute or <code>nil</code>.
+    the object that gets encoded with a substitute or \c nil.
     @param archiver the archiver encoding the object
     @param object the candidate object for encoding
     @return the object to encode
@@ -158,7 +158,7 @@ var _CPKeyedArchiverStringClass                         = Nil,
 
 // Initializing an NSKeyedArchiver object
 /*!
-    Initializes the keyed archiver with the specified <code>CPMutableData</code> for writing.
+    Initializes the keyed archiver with the specified \c CPMutableData for writing.
     @param data the object to archive to
     @return the initialized keyed archiver
 */
@@ -208,7 +208,7 @@ var _CPKeyedArchiverStringClass                         = Nil,
         // Do whatever with the class, yo.
         // We call willEncodeObject previously.
         
-        _plistObject = _plistObjects[[_UIDs objectForKey:[object hash]]];
+        _plistObject = _plistObjects[[_UIDs objectForKey:[object UID]]];
         [object encodeWithCoder:self];
 
         if (_delegate && _delegateSelectors & _CPKeyedArchiverDidEncodeObjectSelector)
@@ -246,9 +246,9 @@ var _CPKeyedArchiverStringClass                         = Nil,
 }
 
 /*!
-    Encodes a <code>BOOL</code> value
-    @param aBool the <code>BOOL</code> value
-    @param aKey the key to associate with the <code>BOOL</code>
+    Encodes a \c BOOL value
+    @param aBool the \c BOOL value
+    @param aKey the key to associate with the \c BOOL
 */
 - (void)encodeBool:(BOOL)aBOOL forKey:(CPString)aKey
 {
@@ -256,9 +256,9 @@ var _CPKeyedArchiverStringClass                         = Nil,
 }
 
 /*!
-    Encodes a <code>double</code> value
-    @param aDouble the <code>double</code> value
-    @param aKey the key to associate with the <code>double</code>
+    Encodes a \c double value
+    @param aDouble the \c double value
+    @param aKey the key to associate with the \c double
 */
 - (void)encodeDouble:(double)aDouble forKey:(CPString)aKey
 {
@@ -266,9 +266,9 @@ var _CPKeyedArchiverStringClass                         = Nil,
 }
 
 /*!
-    Encodes a <code>float</code> value
-    @param aFloat the <code>float</code> value
-    @param aKey the key to associate with the <code>float</code>
+    Encodes a \c float value
+    @param aFloat the \c float value
+    @param aKey the key to associate with the \c float
 */
 - (void)encodeFloat:(float)aFloat forKey:(CPString)aKey
 {
@@ -276,9 +276,9 @@ var _CPKeyedArchiverStringClass                         = Nil,
 }
 
 /*!
-    Encodes a <code>int</code> value
-    @param anInt the <code>int</code> value
-    @param aKey the key to associate with the <code>int</code>
+    Encodes a \c int value
+    @param anInt the \c int value
+    @param aKey the key to associate with the \c int
 */
 - (void)encodeInt:(float)anInt forKey:(CPString)aKey
 {
@@ -409,8 +409,8 @@ var _CPKeyedArchiverStringClass                         = Nil,
 // Managing classes and class names
 /*!
     Allows substitution of class types for encoding. Specifically classes
-    of type <code>aClass</code> encountered by all keyed archivers will
-    instead be archived as a class of type <code>aClassName</code>.
+    of type \c aClass encountered by all keyed archivers will
+    instead be archived as a class of type \c aClassName.
     @param aClassName the substitute class name
     @param aClass the class to substitute
 */
@@ -424,9 +424,9 @@ var _CPKeyedArchiverStringClass                         = Nil,
 
 /*!
     Returns the name of the substitute class used for encoding
-    <code>aClass</code> by all keyed archivers.
+    \c aClass by all keyed archivers.
     @param aClass the class to substitute
-    @return the name of the substitute class, or <code>nil</code> if there
+    @return the name of the substitute class, or \c nil if there
     is no substitute class
 */
 + (CPString)classNameForClass:(Class)aClass
@@ -441,8 +441,8 @@ var _CPKeyedArchiverStringClass                         = Nil,
 
 /*!
     Allows substitution of class types for encoding. Specifically classes
-    of type <code>aClass</code> encountered by this keyed archiver will
-    instead be archived as a class of type <code>aClassName</code>.
+    of type \c aClass encountered by this keyed archiver will
+    instead be archived as a class of type \c aClassName.
     @param aClassName the substitute class name
     @param aClass the class to substitute
 */
@@ -455,9 +455,9 @@ var _CPKeyedArchiverStringClass                         = Nil,
 }
 
 /*!
-    Returns the name of the substitute class used for encoding <code>aClass</code> by this keyed archiver.
+    Returns the name of the substitute class used for encoding \c aClass by this keyed archiver.
     @param aClass the class to substitute
-    @return the name of the substitute class, or <code>nil</code> if there is no substitute class
+    @return the name of the substitute class, or \c nil if there is no substitute class
 */
 - (CPString)classNameForClass:(Class)aClass
 {
@@ -480,8 +480,8 @@ var _CPKeyedArchiverEncodeObject = function(self, anObject, isConditional)
         anObject = [_CPKeyedArchiverValue valueWithJSObject:anObject];
     
     // Get the proper replacement object
-    var hash = [anObject hash],
-        object = [self._replacementObjects objectForKey:hash];
+    var GUID = [anObject UID],
+        object = [self._replacementObjects objectForKey:GUID];
 
     // If a replacement object doesn't exist, then actually ask for one.
     // Explicitly compare to nil because object could be === 0.
@@ -506,7 +506,7 @@ var _CPKeyedArchiverEncodeObject = function(self, anObject, isConditional)
             }
         }
         
-        [self._replacementObjects setObject:object forKey:hash];
+        [self._replacementObjects setObject:object forKey:GUID];
     }
     
     // If we still don't have an object by this point, then return a 
@@ -516,7 +516,7 @@ var _CPKeyedArchiverEncodeObject = function(self, anObject, isConditional)
         return _CPKeyedArchiverNullReference;
     
     // If not, then grab the object's UID
-    var UID = [self._UIDs objectForKey:hash = [object hash]];
+    var UID = [self._UIDs objectForKey:GUID = [object UID]];
     
     // If this object doesn't have a unique index in the object table yet, 
     // then it also hasn't been properly encoded.  We explicitly compare 
@@ -527,10 +527,10 @@ var _CPKeyedArchiverEncodeObject = function(self, anObject, isConditional)
         if (isConditional)
         {
             // If we haven't already noted this conditional object...
-            if ((UID = [self._conditionalUIDs objectForKey:hash]) === nil)
+            if ((UID = [self._conditionalUIDs objectForKey:GUID]) === nil)
             {
                 // Use the null object as a placeholder.
-                [self._conditionalUIDs setObject:UID = [self._plistObjects count] forKey:hash];
+                [self._conditionalUIDs setObject:UID = [self._plistObjects count] forKey:GUID];
                 [self._plistObjects addObject:_CPKeyedArchiverNullString];
             }
         }
@@ -582,17 +582,17 @@ var _CPKeyedArchiverEncodeObject = function(self, anObject, isConditional)
                 [plistObject setObject:[CPDictionary dictionaryWithObject:classUID forKey:_CPKeyedArchiverUIDKey] forKey:_CPKeyedArchiverClassKey];
             }
             
-            UID = [self._conditionalUIDs objectForKey:hash];
+            UID = [self._conditionalUIDs objectForKey:GUID];
             
             // If this object WAS previously encoded conditionally...
             if (UID !== nil)
             {
-                [self._UIDs setObject:UID forKey:hash];
+                [self._UIDs setObject:UID forKey:GUID];
                 [self._plistObjects replaceObjectAtIndex:UID withObject:plistObject];
             }
             else
             {
-                [self._UIDs setObject:UID = [self._plistObjects count] forKey:hash];
+                [self._UIDs setObject:UID = [self._plistObjects count] forKey:GUID];
                 [self._plistObjects addObject:plistObject];
             }
         }

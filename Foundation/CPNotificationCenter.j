@@ -72,7 +72,7 @@ var CPNotificationDefaultCenter = nil;
 
 /*!
     Adds an object as an observer. The observer will receive notifications with the specified name
-    and/or containing the specified object (depending on if they are <code>nil</code>.
+    and/or containing the specified object (depending on if they are \c nil.
     @param anObserver the observing object
     @param aSelector the message sent to the observer when a notification occurrs
     @param aNotificationName the name of the notification the observer wants to watch
@@ -181,16 +181,20 @@ var _CPNotificationCenterPostNotification = function(/* CPNotificationCenter */ 
 @implementation _CPNotificationRegistry : CPObject
 {
     CPDictionary    _objectObservers;
-    BOOL            _observerRemoval;
-    CPArray         _postingObservers;
+    BOOL            _observerRemovalCount;
 }
 
 - (id)init
 {
-    if (self)
-        _objectObservers = [CPDictionary dictionary];
+    self = [super init];
 
-   return self;
+    if (self)
+    {
+        _observerRemovalCount = 0;
+        _objectObservers = [CPDictionary dictionary];
+    }
+
+    return self;
 }
 
 -(void)addObserver:(_CPNotificationObserver)anObserver object:(id)anObject
@@ -201,16 +205,13 @@ var _CPNotificationCenterPostNotification = function(/* CPNotificationCenter */ 
         anObject = [CPNull null];
     
     // Grab all the listeners for this notification/object pair
-    var observers = [_objectObservers objectForKey:[anObject hash]];
+    var observers = [_objectObservers objectForKey:[anObject UID]];
 
     if (!observers)
     {
         observers = [];
-        [_objectObservers setObject:observers forKey:[anObject hash]];
+        [_objectObservers setObject:observers forKey:[anObject UID]];
     }
-    
-    if (observers == _postingObservers)
-        _postingObservers = [observers copy];
 
     // Add this observer.    
     observers.push(anObserver);
@@ -235,10 +236,7 @@ var _CPNotificationCenterPostNotification = function(/* CPNotificationCenter */ 
             while (count--)
                 if ([observers[count] observer] == anObserver)
                 {
-                    _observerRemoval = YES;
-                    if (observers == _postingObservers)
-                        _postingObservers = [observers copy];
-                        
+                    ++_observerRemovalCount;
                     observers.splice(count, 1);
                 }
                 
@@ -248,17 +246,14 @@ var _CPNotificationCenterPostNotification = function(/* CPNotificationCenter */ 
     }
     else
     {
-        var key = [anObject hash],
+        var key = [anObject UID],
             observers = [_objectObservers objectForKey:key];
             count = observers ? observers.length : 0;
         
         while (count--)
             if ([observers[count] observer] == anObserver)
             {
-                _observerRemoval = YES;
-                if (observers == _postingObservers)
-                    _postingObservers = [observers copy];
-
+                ++_observerRemovalCount;
                 observers.splice(count, 1)
             }
             
@@ -282,47 +277,45 @@ var _CPNotificationCenterPostNotification = function(/* CPNotificationCenter */ 
     // However, this is a very expensive operation (O(N) => O(N^2)), so to avoid it,
     // we keep track of whether observers are added or removed, and only do our 
     // rigorous testing in those cases.
-    var object = [aNotification object];
-    
-    if (object != nil && (_postingObservers = [_objectObservers objectForKey:[object hash]]))
+    var observerRemovalCount = _observerRemovalCount,
+        object = [aNotification object],
+        observers = nil;
+
+    if (object != nil && (observers = [[_objectObservers objectForKey:[object UID]] copy]))
     {
-        var observers = _postingObservers,
+        var currentObservers = observers,
             count = observers.length;
         
-        _observerRemoval = NO;
         while (count--)
         {
-            var observer = _postingObservers[count];
+            var observer = observers[count];
         
             // if there wasn't removal of an observer during this posting, or there 
             // was but we are still in the observer list... 
-            if (!_observerRemoval || [observers indexOfObjectIdenticalTo:observer] != CPNotFound)
+            if ((observerRemovalCount === _observerRemovalCount) || [currentObservers indexOfObjectIdenticalTo:observer] !== CPNotFound)
                 [observer postNotification:aNotification];
-    
         }
     }
     
     // Now do the same for the nil object observers...
-    _postingObservers = [_objectObservers objectForKey:[[CPNull null] hash]];
-    
-    if (!_postingObservers)
+    observers = [[_objectObservers objectForKey:[[CPNull null] UID]] copy];
+
+    if (!observers)
         return;
-    
-    var observers = _postingObservers,
-        count = observers.length;
-    
-    _observerRemoval = NO;
+
+    var observerRemovalCount = _observerRemovalCount,
+        count = observers.length,
+        currentObservers = observers;
+
     while (count--)
     {
-        var observer = _postingObservers[count];
-        
+        var observer = observers[count];
+
         // if there wasn't removal of an observer during this posting, or there 
         // was but we are still in the observer list... 
-        if (!_observerRemoval || [observers indexOfObjectIdenticalTo:observer] != CPNotFound)
+        if ((observerRemovalCount === _observerRemovalCount) || [currentObservers indexOfObjectIdenticalTo:observer] !== CPNotFound)
             [observer postNotification:aNotification];
     }
-    
-    _postingObservers = nil;
 }
 
 - (unsigned)count

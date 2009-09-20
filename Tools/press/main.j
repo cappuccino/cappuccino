@@ -239,7 +239,7 @@ function main()
         
         // add fake bundle response bookkeeping
         applicationJS.push("var __fakeDidReceiveBundleResponse = " + String(fakeDidReceiveBundleResponse));
-        applicationJS.push("var __fakeBundleArchives = " + CPJSObjectCreateJSON(bundleArchives) + ";");
+        applicationJS.push("var __fakeBundleArchives = " + JSON.stringify(bundleArchives) + ";");
         applicationJS.push("for (var i = 0; i < __fakeBundleArchives.length; i++) __fakeDidReceiveBundleResponse(__fakeBundleArchives[i]);")
         
         // add each fragment, wrapped in a function, along with OBJJ_CURRENT_BUNDLE bookkeeping
@@ -261,9 +261,9 @@ function main()
         // call main once the page has loaded
         applicationJS.push(
             "if (window.addEventListener) \
-                window.addEventListener('load', main, false); \
+                window.addEventListener('load', function(){main()}, false); \
             else if (window.attachEvent) \
-                window.attachEvent('onload', main);"
+                window.attachEvent('onload', function(){main()});"
         );
         
         // comment out any OBJJ_MAIN_FILE defintions or objj_import() calls

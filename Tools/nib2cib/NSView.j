@@ -56,42 +56,13 @@
             _subviews = [];
         
         var vFlags = [aCoder decodeIntForKey:@"NSvFlags"];
-        
-        var autoresizingMaskNS = vFlags & 0x3F;
-        
-        // swap Y coordinate flags:
-        _autoresizingMask = autoresizingMaskNS & ~(CPViewMaxYMargin | CPViewMinYMargin)
-        if (!(autoresizingMaskNS & (CPViewMaxYMargin | CPViewMinYMargin | CPViewHeightSizable)))
-        {
-            _autoresizingMask |= CPViewMinYMargin;
-        }
-        else
-        {
-            if (autoresizingMaskNS & CPViewMaxYMargin)
-                _autoresizingMask |= CPViewMinYMargin;
-            if (autoresizingMaskNS & CPViewMinYMargin)
-                _autoresizingMask |= CPViewMaxYMargin;
-        }
-        
+
+        _autoresizingMask = vFlags & 0x3F;
         _autoresizesSubviews = vFlags & (1 << 8);
         
         _hitTests = YES;
         _isHidden = NO;//[aCoder decodeObjectForKey:CPViewIsHiddenKey];
         _opacity = 1.0;//[aCoder decodeIntForKey:CPViewOpacityKey];
-        
-        if (YES/*[_superview isFlipped]*/)
-        {
-            var height = CGRectGetHeight([self bounds]),
-                count = [_subviews count];
-          
-            while (count--)
-            {
-                var subview = _subviews[count],
-                    frame = [subview frame];
-                
-                [subview setFrameOrigin:CGPointMake(CGRectGetMinX(frame), height - CGRectGetMaxY(frame))];
-            }
-        }
 
         _themeAttributes = {};
         _themeState = CPThemeStateNormal;
@@ -99,6 +70,11 @@
     }
     
     return self;
+}
+
+- (BOOL)NS_isFlipped
+{
+    return NO;
 }
 
 @end

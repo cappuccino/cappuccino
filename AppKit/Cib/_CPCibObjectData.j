@@ -25,7 +25,9 @@
 @import <Foundation/CPString.j>
 
 @import "CPCib.j"
-@import "_CPCibConnector.j"
+@import "CPCibConnector.j"
+@import "CPCibControlConnector.j"
+@import "CPCibOutletConnector.j"
 
 
 @implementation _CPCibObjectData : CPObject
@@ -98,28 +100,13 @@
     return self;
 }
 
-- (CPMenu)mainMenu
-{
-    var index = [_namesValues indexOfObjectIdenticalTo:"MainMenu"];
-
-    if (index === CPNotFound)
-    {
-        index = [_namesValues indexOfObjectIdenticalTo:"Main Menu"];
-
-        if (index === CPNotFound)
-            return nil;
-    }
-
-    return _namesKeys[index];
-}
-
 - (void)displayVisibleWindows
 {
     var object = nil,
         objectEnumerator = [_visibleWindows objectEnumerator];
 
     while (object = [objectEnumerator nextObject])
-        [_replacementObjects[[object hash]] makeKeyAndOrderFront:self];
+        [_replacementObjects[[object UID]] makeKeyAndOrderFront:self];
 }
 
 @end
@@ -242,7 +229,7 @@ var _CPCibObjectDataNamesKeysKey                = @"_CPCibObjectDataNamesKeysKey
 
             if (instantiatedObject !== object)
             {
-                _replacementObjects[[object hash]] = instantiatedObject;
+                _replacementObjects[[object UID]] = instantiatedObject;
 
                 if ([instantiatedObject isKindOfClass:[CPView class]])
                 {
@@ -266,7 +253,7 @@ var _CPCibObjectDataNamesKeysKey                = @"_CPCibObjectDataNamesKeysKey
 
 - (void)establishConnectionsWithOwner:(id)anOwner topLevelObjects:(CPMutableArray)topLevelObjects
 {
-    _replacementObjects[[_fileOwner hash]] = anOwner;
+    _replacementObjects[[_fileOwner UID]] = anOwner;
 
     var index = 0,
         count = _connections.length;
@@ -287,7 +274,7 @@ var _CPCibObjectDataNamesKeysKey                = @"_CPCibObjectDataNamesKeysKey
     while (count--)
     {
         var object = _objectsKeys[count],
-            instantiatedObject = _replacementObjects[[object hash]];
+            instantiatedObject = _replacementObjects[[object UID]];
 
         if (instantiatedObject)
             object = instantiatedObject;

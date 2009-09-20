@@ -13,6 +13,9 @@ function printUsage()
 
 function main()
 {
+    // FIXME: ARGS
+    system.args.shift();
+
     if (system.args.length < 1)
         return printUsage();
     

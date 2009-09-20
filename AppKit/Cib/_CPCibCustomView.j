@@ -35,6 +35,11 @@
     return _className;
 }
 
+- (void)setCustomClassName:(CPString)aClassName
+{
+    _className = aClassName;
+}
+
 @end
 
 var _CPCibCustomViewClassNameKey    = @"_CPCibCustomViewClassNameKey";
@@ -47,33 +52,26 @@ var _CPCibCustomViewClassNameKey    = @"_CPCibCustomViewClassNameKey";
 
     if (self)
         _className = [aCoder decodeObjectForKey:_CPCibCustomViewClassNameKey];
-    
+
     return self;
 }
 
 - (void)encodeWithCoder:(CPCoder)aCoder
 {
     [super encodeWithCoder:aCoder];
-    
+
     [aCoder encodeObject:_className forKey:_CPCibCustomViewClassNameKey];
 }
 
-- (void)drawRect:(CGRect)aRect
+- (CPString)customClassName
 {
-    var bounds = [self bounds],
-        context = [[CPGraphicsContext currentContext] graphicsPort];
-
-    CGContextSetLineWidth(context, 1.0);
-    CGContextSetStrokeColor(context, [CPColor colorWithCalibratedRed:169.0 / 255.0 green:173.0 / 255.0 blue:178.0 / 255.0 alpha:1.0]);
-    CGContextStrokeRect(context, CGRectInset(CGRectIntegral(bounds), 0.5, 0.5));
-    CGContextSetFillColor(context, [CPColor colorWithCalibratedRed:224.0 / 255.0 green:236.0 / 255.0 blue:250.0 / 255.0 alpha:1.0]);
-    CGContextFillRect(context, CGRectInset(bounds, 2.0, 2.0));
+    return _className;
 }
 
 - (id)_cibInstantiate
 {
     var theClass = CPClassFromString(_className);
-    
+
     // If we don't have this class, just use CPView.
     // FIXME: Should we instead throw an exception?
     if (!theClass)
@@ -83,7 +81,7 @@ var _CPCibCustomViewClassNameKey    = @"_CPCibCustomViewClassNameKey";
 #endif        
         theClass = [CPView class];
     }
-    
+
     // Hey this is us!
     if (theClass === [self class])
     {
@@ -110,7 +108,7 @@ var _CPCibCustomViewClassNameKey    = @"_CPCibCustomViewClassNameKey";
 
         [view setAutoresizingMask:[self autoresizingMask]];
         [view setAutoresizesSubviews:[self autoresizesSubviews]];
-    
+
         [view setHitTests:[self hitTests]];
         [view setHidden:[self isHidden]];
         [view setAlphaValue:[self alphaValue]];
@@ -119,7 +117,7 @@ var _CPCibCustomViewClassNameKey    = @"_CPCibCustomViewClassNameKey";
 
         [view setBackgroundColor:[self backgroundColor]];
     }
-    
+
     return view;
 }
 

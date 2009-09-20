@@ -205,7 +205,7 @@ var CPProgressIndicatorSpinningStyleColors  = nil,
 }
 
 /*!
-    Always returns <code>NO</code>. Cappuccino does not have multiple threads.
+    Always returns \c NO. Cappuccino does not have multiple threads.
 */
 - (BOOL)usesThreadedAnimation
 {
@@ -329,7 +329,7 @@ var CPProgressIndicatorSpinningStyleColors  = nil,
 
 /*!
     Specifies whether this progress indicator should be indeterminate or display progress based on it's max and min.
-    @param isDeterminate <code>YES</code> makes the indicator indeterminate
+    @param isDeterminate \c YES makes the indicator indeterminate
 */
 - (void)setIndeterminate:(BOOL)isIndeterminate
 {
@@ -342,7 +342,7 @@ var CPProgressIndicatorSpinningStyleColors  = nil,
 }
 
 /*!
-    Returns <code>YES</code> if the progress bar is indeterminate.
+    Returns \c YES if the progress bar is indeterminate.
 */
 - (BOOL)isIndeterminate
 {
@@ -377,9 +377,9 @@ var CPProgressIndicatorSpinningStyleColors  = nil,
 }
 
 /*!
-    Sets whether the indicator should be displayed when it isn't animating. By default this is <code>YES</code> if the style
-    is CPProgressIndicatorBarStyle, and <code>NO</code> if it's CPProgressIndicatorSpinningStyle.
-    @param isDisplayedWhenStopped <code>YES</code> means the indicator will be displayed when it's not animating.
+    Sets whether the indicator should be displayed when it isn't animating. By default this is \c YES if the style
+    is CPProgressIndicatorBarStyle, and \c NO if it's CPProgressIndicatorSpinningStyle.
+    @param isDisplayedWhenStopped \c YES means the indicator will be displayed when it's not animating.
 */
 - (void)setDisplayedWhenStopped:(BOOL)isDisplayedWhenStopped
 {
@@ -394,7 +394,7 @@ var CPProgressIndicatorSpinningStyleColors  = nil,
 }
 
 /*!
-    Returns <code>YES</code> if the progress bar is displayed when not animating.
+    Returns \c YES if the progress bar is displayed when not animating.
 */
 - (BOOL)isDisplayedWhenStopped
 {
