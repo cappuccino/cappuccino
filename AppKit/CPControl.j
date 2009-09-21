@@ -574,6 +574,14 @@ BRIDGE(ImageScaling, imageScaling, "image-scaling")
     return [self hasThemeState:CPThemeStateHighlighted];
 }
 
+- (id)_replacementKeyPathForBinding:(CPString)binding
+{
+    if ([binding isEqual:@"value"])
+        return @"objectValue";
+
+    return binding;
+}
+
 @end
 
 var CPControlValueKey           = "CPControlValueKey",

@@ -72,6 +72,11 @@ var CPBindingOperationAnd = 0,
     return nil;
 }
 
++ (CPDictionary)allBindingsForObject:(id)anObject
+{
+    return [bindingsMap objectForKey:[anObject hash]];
+}
+
 + (void)unbind:(CPString)aBinding forObject:(id)anObject
 {
     var bindings = [bindingsMap objectForKey:[anObject hash]];
@@ -272,9 +277,6 @@ var CPBindingOperationAnd = 0,
 
 - (id)_replacementKeyPathForBinding:(CPString)binding
 {
-    if ([binding isEqual:@"value"])
-        return @"objectValue";
-
     return binding;
 }
 

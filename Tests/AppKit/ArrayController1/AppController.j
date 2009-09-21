@@ -14,11 +14,10 @@ CPLogRegister(CPLogConsole);
 
 @implementation AppController : CPObject
 {
-//    CPArray             itemsArray;
-    CPSet               itemsSet;
+    CPArray             itemsArray;
     CPWindow            theWindow;
 
-    //CPTableView         tableView;
+    CPTableView         tableView;
     //CPTextField         selectedNameField;
     //CPTextField         selectedPriceField;
     CPTextField         totalCountField;
@@ -32,17 +31,7 @@ CPLogRegister(CPLogConsole);
 
     //create our non ui objects
 
-    /*var objectController = [[CPObjectController alloc] init];
-    self.managed = 5;
-    [objectController bind:@"contentObject" toObject:self withKeyPath:@"managed" options:nil];
-    console.log([objectController content]);
-    console.log("f!: " + [self.managed description]);
-    [objectController addObject:[CPDictionary dictionary]];
-    console.log("f!: " + [self.managed description]);
-    */
-
     itemsArray = [[Item new]];
-    itemsSet = [[Item new]];
 
     arrayController = [[CPArrayController alloc] init];
 
@@ -55,9 +44,22 @@ CPLogRegister(CPLogConsole);
 
     //create our UI elements
 
-    //tableView = [[CPTableView alloc] initWithFrame:CGRectMake(0, 0, 400, 200)];
+    tableView = [[CPTableView alloc] initWithFrame:CGRectMake(0, 0, 400, 200)];
     //[tableView setCenter:[contentView center]];
+    [tableView setBackgroundColor:[CPColor redColor]];
+    
+    var column = [[CPTableColumn alloc] initWithIdentifier:@"name"];
+    
+    [tableView addTableColumn:column];
 
+    column = [[CPTableColumn alloc] initWithIdentifier:@"price"];
+    
+    [tableView addTableColumn:column];
+    
+    //[tableView setDataSource:self];
+    
+    [contentView addSubview:tableView];
+    
     //create our bindings
 
     [self createBindings];
@@ -67,7 +69,17 @@ CPLogRegister(CPLogConsole);
     [theWindow setFullBridge:YES];
     [theWindow orderFront:self];
 }
+/*
+- (int)numberOfRowsInTableView:(CPTableView)tableView
+{
+    return [itemsArray count];
+}
 
+- (id)tableView:(CPTableView)tableView objectValueForTableColumn:(CPTableColumn)tableColumn row:(int)row
+{
+    return "foo";
+}
+*/
 - (void)add:(id)aSender
 {
     [arrayController add:self];
@@ -81,14 +93,14 @@ CPLogRegister(CPLogConsole);
 - (void)createBindings
 {
  	// bind array controller to self's itemsArray
-    [arrayController bind:@"contentSet" toObject:self
-			  withKeyPath:@"itemsSet" options:nil];
+    [arrayController bind:@"contentArray" toObject:self
+			  withKeyPath:@"itemsArray" options:nil];
 
    // bind the total field -- no options on this one
 	[totalCountField bind:CPValueBinding toObject:arrayController
 			  withKeyPath:@"arrangedObjects.@sum.price" options:nil];
 
-	//var bindingOptions = [CPDictionary dictionary];
+	var bindingOptions = [CPDictionary dictionary];
 
 	// binding options for "name"
 	//[bindingOptions setObject:@"No Name" forKey:@"NSNullPlaceholder"];
@@ -98,10 +110,10 @@ CPLogRegister(CPLogConsole);
 	//			withKeyPath:@"selection.name" options:bindingOptions];
 	
 	// binding for "name" column
-    //var tableColumn = [tableView tableColumnWithIdentifier:@"name"];
+    var tableColumn = [tableView tableColumnWithIdentifier:@"name"];
 	
-	//[tableColumn bind:@"value" toObject: arrayController
-	//	  withKeyPath:@"arrangedObjects.name" options:bindingOptions];
+	[tableColumn bind:@"value" toObject: arrayController
+		  withKeyPath:@"arrangedObjects.name" options:bindingOptions];
     
 	
     // binding options for "price"
@@ -117,12 +129,12 @@ CPLogRegister(CPLogConsole);
 	
 	
 	// binding for "price" column
-    //tableColumn = [tableView tableColumnWithIdentifier:@"price"];
+    tableColumn = [tableView tableColumnWithIdentifier:@"price"];
 	
-    //[tableColumn bind:@"value" toObject: arrayController
-	//	  withKeyPath:@"arrangedObjects.price" options:bindingOptions];
+    [tableColumn bind:@"value" toObject: arrayController
+		  withKeyPath:@"arrangedObjects.price" options:bindingOptions];
 }
-/*
+
 - (unsigned int)countOfItemsArray 
 {
     return [itemsArray count];
@@ -147,18 +159,20 @@ CPLogRegister(CPLogConsole);
 {
     [itemsArray replaceObjectAtIndex:index withObject:anObject];
 }
-*/
+
 @end
 
 @implementation Item : CPObject
 {
     float price @accessors;
+    CPString name @accessors;
 }
 
 - (id)init
 {
     self = [super init];
     price = 7.0;
+    name = "bob";
     return self;
 }
 

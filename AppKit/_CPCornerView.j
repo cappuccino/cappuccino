@@ -9,7 +9,7 @@
 {
     if (self = [super initWithFrame:aFrame])
     {
-        [self setBackgroundColor:[CPColor purpleColor]];
+        [self setBackgroundColor:[CPColor blueColor]];
     }
     
     return self;

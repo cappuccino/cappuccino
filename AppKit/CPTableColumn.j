@@ -338,6 +338,45 @@ newDataView.identifier = dataViewUID;
 
 @end
 
+@implementation CPTableColumn (Bindings)
+
+- (void)bind:(CPString)aBinding toObject:(id)anObject withKeyPath:(CPString)aKeyPath options:(CPDictionary)options
+{
+    [super bind:aBinding toObject:anObject withKeyPath:aKeyPath options:options];
+
+    if (![aBinding isEqual:@"someListOfExceptedBindings(notAcceptedBindings)"])
+        [[self tableView] _establishBindingsIfUnbound:anObject];
+}
+
+- (void)prepareDataView:(CPView)aDataView forRow:(unsigned)aRow
+{
+    var bindingsDictionary = [CPKeyValueBinding allBindingsForObject:self],
+        keys = [bindingsDictionary allKeys];
+
+    for (var i=0, count = [keys count]; i<count; i++)
+    {
+        var bindingName = keys[i],
+            bindingPath = [aDataView _replacementKeyPathForBinding:bindingName],
+            bindingInfo = [bindingsDictionary objectForKey:bindingName]._info,
+            destination = [bindingInfo objectForKey:CPObservedObjectKey],
+            keyPath = [bindingInfo objectForKey:CPObservedKeyPathKey];
+        console.log(bindingName+" : "+keyPath+" : "+aRow+" : "+[[destination valueForKeyPath:keyPath] objectAtIndex:aRow]);
+        [aDataView setValue:[[destination valueForKeyPath:keyPath] objectAtIndex:aRow] forKey:bindingPath];
+    }
+}
+
+//- (void)objectValue
+//{
+//    return nil;
+//}
+
+- (void)setValue:(CPArray)content
+{
+    [[self tableView] reloadData];
+}
+
+@end
+
 var CPTableColumnIdentifierKey   = @"CPTableColumnIdentifierKey",
     CPTableColumnHeaderViewKey   = @"CPTableColumnHeaderViewKey",
     CPTableColumnDataViewKey     = @"CPTableColumnDataViewKey",

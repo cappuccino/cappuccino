@@ -321,7 +321,7 @@
 */
 - (int)indexOfObject:(id)anObject inRange:(CPRange)aRange
 {
-    if (anObject === nil)
+    if (anObject === nil || anObject === undefined)
         return CPNotFound;
     
     var i = aRange.location, 

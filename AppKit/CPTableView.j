@@ -200,7 +200,7 @@ CPTableViewSolidHorizontalGridLineMask = 1 << 1;
 
         [_headerView setTableView:self];
 
-        _cornerView = [[_CPCornerView alloc] initWithFrame:CGRectMake(0, 0, [CPScroller scrollerWidth], CGRectGetHeight([_headerView frame]))];
+        _cornerView = nil; //[[_CPCornerView alloc] initWithFrame:CGRectMake(0, 0, [CPScroller scrollerWidth], CGRectGetHeight([_headerView frame]))];
 
         _selectedColumnIndexes = [CPIndexSet indexSet];
         _selectedRowIndexes = [CPIndexSet indexSet];
@@ -268,8 +268,8 @@ CPTableViewSolidHorizontalGridLineMask = 1 << 1;
 
 - (void)reloadData
 {
-    if (!_dataSource)
-        return;
+    //if (!_dataSource)
+    //    return;
 
     _reloadAllRows = YES;
     _objectValues = { };
@@ -538,7 +538,7 @@ CPTableViewSolidHorizontalGridLineMask = 1 << 1;
         count = NUMBER_OF_COLUMNS();
 
     for (; index < count; ++index)
-        if ([_tableColumns identifier] === anIdentifier)
+        if ([_tableColumns[index] identifier] === anIdentifier)
             return index;
 
     return CPNotFound;
@@ -643,10 +643,23 @@ CPTableViewSolidHorizontalGridLineMask = 1 << 1;
 */
 - (int)numberOfRows
 {
-    if (!_dataSource)
-        return 0;
+    if (_numberOfRows)
+        return _numberOfRows;
 
-    return [_dataSource numberOfRowsInTableView:self];
+    var contentBindingInfo = [self infoForBinding:@"content"];
+
+    if (contentBindingInfo)
+    {
+        var destination = [contentBindingInfo objectForKey:CPObservedObjectKey],
+            keyPath = [contentBindingInfo objectForKey:CPObservedKeyPathKey];
+            
+        return [[destination valueForKeyPath:keyPath] count];
+    }
+
+    else if (_dataSource)
+        return [_dataSource numberOfRowsInTableView:self];
+    
+    return 0;
 }
 
 //Displaying Cell
@@ -924,7 +937,8 @@ CPTableViewSolidHorizontalGridLineMask = 1 << 1;
 
 - (void)noteNumberOfRowsChanged
 {
-    _numberOfRows = [_dataSource numberOfRowsInTableView:self];
+    _numberOfRows = nil;
+    _numberOfRows = [self numberOfRows];
 
     [self tile];
 }
@@ -1308,7 +1322,12 @@ CPTableViewSolidHorizontalGridLineMask = 1 << 1;
 
             [dataView setFrame:[self frameOfDataViewAtColumn:column row:row]];
             [dataView setObjectValue:[self _objectValueForTableColumn:tableColumn row:row]];
-
+            
+            //This gives the table column an opportunity to apply the bindings. 
+            //It will override the value set in the data source, if there is a data source.
+            //It will do nothing if there is no value binding set.
+            [tableColumn prepareDataView:dataView forRow:row];
+            
             if ([dataView superview] !== self)
                 [self addSubview:dataView];
 
@@ -1733,6 +1752,25 @@ CPTableViewSolidHorizontalGridLineMask = 1 << 1;
 
 @end
 
+@implementation CPTableView (Bindings)
+
+- (void)_establishBindingsIfUnbound:(id)destination
+{
+    if ([[self infoForBinding:@"content"] objectForKey:CPObservedObjectKey] !== destination)
+    {
+        [self bind:@"content" toObject:destination withKeyPath:@"arrangedObjects" options:nil];
+        //[self bind:@"sortDescriptors" toObject:destination withKeyPath:@"sortDescriptors" options:nil];
+        //[self bind:@"selectionIndexes" toObject:destination withKeyPath:@"selectionIndexes" options:nil];
+    }
+}
+
+- (void)setContent:(CPArray)content
+{
+    [self reloadData];
+}
+
+@end
+
 var CPTableViewDataSourceKey        = @"CPTableViewDataSourceKey",
     CPTableViewDelegateKey          = @"CPTableViewDelegateKey",
     CPTableViewHeaderViewKey        = @"CPTableViewHeaderViewKey",
@@ -1789,7 +1827,7 @@ var CPTableViewDataSourceKey        = @"CPTableViewDataSourceKey",
 
         [_headerView setTableView:self];
 
-        _cornerView = [[_CPCornerView alloc] initWithFrame:CGRectMake(0, 0, [CPScroller scrollerWidth], CGRectGetHeight([_headerView frame]))];
+        _cornerView = nil; //[[_CPCornerView alloc] initWithFrame:CGRectMake(0, 0, [CPScroller scrollerWidth], CGRectGetHeight([_headerView frame]))];
 
         _selectedColumnIndexes = [CPIndexSet indexSet];
         _selectedRowIndexes = [CPIndexSet indexSet];
