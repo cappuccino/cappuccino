@@ -506,7 +506,8 @@
         
         case CPScrollerKnobSlot:
         case CPScrollerKnob:
-        default:                        contentBounds.origin.y = value * (_CGRectGetHeight(documentFrame) - _CGRectGetHeight(contentBounds));
+                                        // We want integral bounds!
+        default:                        contentBounds.origin.y = ROUND(value * (_CGRectGetHeight(documentFrame) - _CGRectGetHeight(contentBounds)));
     }
     
     [_contentView scrollToPoint:contentBounds.origin];
@@ -535,7 +536,8 @@
         
         case CPScrollerKnobSlot:
         case CPScrollerKnob:
-        default:                        contentBounds.origin.x = value * (_CGRectGetWidth(documentFrame) - _CGRectGetWidth(contentBounds));
+                                        // We want integral bounds!
+        default:                        contentBounds.origin.x = ROUND(value * (_CGRectGetWidth(documentFrame) - _CGRectGetWidth(contentBounds)));
     }
 
     [_contentView scrollToPoint:contentBounds.origin];
@@ -675,8 +677,9 @@
    var documentFrame = [[self documentView] frame],
        contentBounds = [_contentView bounds];
 
-    contentBounds.origin.x += [anEvent deltaX] * _horizontalLineScroll;
-    contentBounds.origin.y += [anEvent deltaY] * _verticalLineScroll;
+    // We want integral bounds!
+    contentBounds.origin.x = ROUND(contentBounds.origin.x + [anEvent deltaX] * _horizontalLineScroll);
+    contentBounds.origin.y = ROUND(contentBounds.origin.y + [anEvent deltaY] * _verticalLineScroll);
 
     [_contentView scrollToPoint:contentBounds.origin];
     [_headerClipView scrollToPoint:CGPointMake(contentBounds.origin.x, 0.0)];

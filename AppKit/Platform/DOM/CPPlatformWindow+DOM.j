@@ -60,7 +60,8 @@ ExcludedDOMElements["OPTION"]    = YES;
 
 // Define up here so compressor knows about em.
 var CPDOMEventGetClickCount,
-    CPDOMEventStop;
+    CPDOMEventStop,
+    StopDOMEventPropagation;
 
 //right now we hard code q, w, r and t as keys to propogate
 //these aren't normal keycodes, they are with modifier key codes
