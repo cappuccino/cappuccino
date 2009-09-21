@@ -719,32 +719,32 @@ CPRunContinuesResponse  = -1002;
 */
 - (void)beginSheet:(CPWindow)aSheet modalForWindow:(CPWindow)aWindow modalDelegate:(id)aModalDelegate didEndSelector:(SEL)aDidEndSelector contextInfo:(id)aContextInfo
 {    
-	var styleMask = [aSheet styleMask];
-	if (!(styleMask & CPDocModalWindowMask))
-	{
-		[CPException raise:CPInternalInconsistencyException reason:@"Currently only CPDocModalWindowMask style mask is supported for attached sheets"];
-		return;
-	}
-	
+    var styleMask = [aSheet styleMask];
+    if (!(styleMask & CPDocModalWindowMask))
+    {
+        [CPException raise:CPInternalInconsistencyException reason:@"Currently only CPDocModalWindowMask style mask is supported for attached sheets"];
+        return;
+    }
+    
     [aWindow _attachSheet:aSheet modalDelegate:aModalDelegate didEndSelector:aDidEndSelector contextInfo:aContextInfo];
 }
 
 - (void)endSheet:(CPWindow)sheet returnCode:(int)returnCode
 {
-	var count = [_windows count];
-	
-	while (--count >= 0)
-	{
-		var aWindow = [_windows objectAtIndex:count];
-		var context = aWindow._sheetContext;
-	
-		if (context != nil && context["sheet"] === sheet)
-		{
-			context["returnCode"] = returnCode;	
-			[aWindow _detachSheetWindow];
-			return;
-		}
-	}
+    var count = [_windows count];
+    
+    while (--count >= 0)
+    {
+        var aWindow = [_windows objectAtIndex:count];
+        var context = aWindow._sheetContext;
+    
+        if (context != nil && context["sheet"] === sheet)
+        {
+            context["returnCode"] = returnCode; 
+            [aWindow _detachSheetWindow];
+            return;
+        }
+    }
 }
 
 - (void)endSheet:(CPWindow)sheet

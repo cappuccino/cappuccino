@@ -5,7 +5,7 @@ var _CPStandardWindowViewBodyBackgroundColor = nil;
 
 @implementation _CPDocModalWindowView : _CPWindowView
 {
-	CPView _bodyView;
+    CPView _bodyView;
 }
 
 + (CPColor)bodyBackgroundColor
@@ -22,9 +22,9 @@ var _CPStandardWindowViewBodyBackgroundColor = nil;
     
     if (self)
     {
-    	var theClass = [self class],
+        var theClass = [self class],
               bounds = [self bounds];
-    	
+        
        _bodyView = [[CPView alloc] initWithFrame:CGRectMake(0.0, 0.0, CGRectGetWidth(bounds), CGRectGetHeight(bounds))];
         
         [_bodyView setAutoresizingMask:CPViewWidthSizable | CPViewHeightSizable];
@@ -34,7 +34,7 @@ var _CPStandardWindowViewBodyBackgroundColor = nil;
         [self addSubview:_bodyView];
      }
 
- 	return self;    
+    return self;    
 }
 
 - (CGRect)contentRectForFrameRect:(CGRect)aFrameRect
