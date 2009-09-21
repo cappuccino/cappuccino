@@ -25,7 +25,9 @@
 @import <Foundation/CPString.j>
 
 @import "CPCib.j"
-@import "_CPCibConnector.j"
+@import "CPCibConnector.j"
+@import "CPCibControlConnector.j"
+@import "CPCibOutletConnector.j"
 
 
 @implementation _CPCibObjectData : CPObject
@@ -96,21 +98,6 @@
     }
 
     return self;
-}
-
-- (CPMenu)mainMenu
-{
-    var index = [_namesValues indexOfObjectIdenticalTo:"MainMenu"];
-
-    if (index === CPNotFound)
-    {
-        index = [_namesValues indexOfObjectIdenticalTo:"Main Menu"];
-
-        if (index === CPNotFound)
-            return nil;
-    }
-
-    return _namesKeys[index];
 }
 
 - (void)displayVisibleWindows

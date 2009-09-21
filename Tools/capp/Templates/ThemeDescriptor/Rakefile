@@ -16,6 +16,7 @@ file_d $BLEND_PRODUCT => ['ThemeDescriptors.j'] do
             puts str
         end
     end
+    rake abort if ($? != 0)
 end
 
 task :default => [$BLEND_PRODUCT]

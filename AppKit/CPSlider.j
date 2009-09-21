@@ -83,6 +83,10 @@ CPCircularSlider    = 1;
     
     if (doubleValue < _minValue)
         [self setDoubleValue:_minValue];
+
+    // The relative position may have (did) change.
+    [self setNeedsLayout];
+    [self setNeedsDisplay:YES];
 }
 
 - (float)minValue
@@ -101,6 +105,10 @@ CPCircularSlider    = 1;
     
     if (doubleValue > _maxValue)
         [self setDoubleValue:_maxValue];
+
+    // The relative position may have (did) change.
+    [self setNeedsLayout];
+    [self setNeedsDisplay:YES];
 }
 
 - (float)maxValue

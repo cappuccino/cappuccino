@@ -158,10 +158,23 @@ function fragment_evaluate_code(aFragment)
     try
     {
 #if RHINO
-        compiled = eval("function(){"+GET_CODE(aFragment)+"}");
-        //compiled = Packages.org.mozilla.javascript.Context.getCurrentContext().compileFunction(window, "function(){"+GET_CODE(aFragment)+"}", GET_FILE(aFragment).path, 0, null);
+        var functionText = "function(){"+GET_CODE(aFragment)+"/**/\n}";
+        if (window.isRhino)
+            compiled = Packages.org.mozilla.javascript.Context.getCurrentContext().compileFunction(window, functionText, GET_FILE(aFragment).path, 0, null);
+        else
+            compiled = eval(functionText);
 #else
-        compiled = new Function(GET_CODE(aFragment));
+        // "//@ sourceURL=" at the end lets us name our eval'd files for debuggers, etc.
+        // * WebKit:  http://pmuellr.blogspot.com/2009/06/debugger-friendly.html
+        // * Firebug: http://blog.getfirebug.com/2009/08/11/give-your-eval-a-name-with-sourceurl/
+        //if (true) {
+            var functionText = GET_CODE(aFragment)+"/**/\n//@ sourceURL="+GET_FILE(aFragment).path;
+            compiled = new Function(functionText);
+        //} else {
+        //    // Firebug only does it for "eval()", not "new Function()". Ugh. Slower.
+        //    var functionText = "(function(){"+GET_CODE(aFragment)+"/**/\n})\n//@ sourceURL="+GET_FILE(aFragment).path;
+        //    compiled = eval(functionText);
+        //}
         compiled.displayName = GET_FILE(aFragment).path;
 #endif
     }
@@ -170,6 +183,9 @@ function fragment_evaluate_code(aFragment)
         objj_exception_report(anException, GET_FILE(aFragment));
     }
     
+#if RHINO
+    compiled();
+#else
     try
     {
         compiled();
@@ -178,6 +194,7 @@ function fragment_evaluate_code(aFragment)
     {
         objj_exception_report(anException, GET_FILE(aFragment));
     }
+#endif
     
     return NO;
 }

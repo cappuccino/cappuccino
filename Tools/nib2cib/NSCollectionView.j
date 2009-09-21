@@ -43,7 +43,9 @@
         
     if (self = [super NS_initWithCoder:aCoder])
     {
-        _maxNumberOfRows    = [aCoder decodeIntForKey:@"NSMaxNumberOfGridRows"];
+        _backgroundColors = [aCoder decodeObjectForKey:@"NSBackgroundColors"];
+
+        _maxNumberOfRows = [aCoder decodeIntForKey:@"NSMaxNumberOfGridRows"];
         _maxNumberOfColumns = [aCoder decodeIntForKey:@"NSMaxNumberOfGridColumns"];
         
         _isSelectable             = [aCoder decodeBoolForKey:@"NSSelectable"];
@@ -67,32 +69,6 @@
 - (Class)classForKeyedArchiver
 {
     return [CPCollectionView class];
-}
-
-@end
-
-
-@implementation CPCollectionViewItem (NSCoding)
-
-- (id)NS_initWithCoder:(CPCoder)aCoder
-{
-    return [super init];
-}
-
-@end
-
-@implementation NSCollectionViewItem : CPCollectionViewItem
-{
-}
-
-- (id)initWithCoder:(CPCoder)aCoder
-{
-    return [self NS_initWithCoder:aCoder];
-}
-
-- (Class)classForKeyedArchiver
-{
-    return [CPCollectionViewItem class];
 }
 
 @end

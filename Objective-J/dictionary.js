@@ -28,6 +28,13 @@ function objj_dictionary()
     this.__address   = _objj_generateObjectHash();
 }
 
+
+objj_dictionary.prototype.containsKey = function(aKey) { return dictionary_containsKey(this, aKey); }
+objj_dictionary.prototype.getCount = function() { return dictionary_getCount(this); }
+objj_dictionary.prototype.getValue = function(aKey) { return dictionary_getValue(this, aKey); }
+objj_dictionary.prototype.setValue = function(aKey, aValue) { return dictionary_setValue(this, aKey, aValue); }
+objj_dictionary.prototype.removeValue = function(aKey) { return dictionary_removeValue(this, aKey); }
+
 function dictionary_containsKey(aDictionary, aKey)
 {
     return aDictionary._buckets[aKey] != NULL;

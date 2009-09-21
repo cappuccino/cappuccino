@@ -58,13 +58,13 @@ var cachedBlackColor,
     @ingroup appkit
     @code CPColor
 
-    <code>CPColor</code> can be used to represent color
+    \c CPColor can be used to represent color
     in an RGB or HSB model with an optional transparency value.</p>
 
     <p>It also provides some class helper methods that
     returns instances of commonly used colors.</p>
 
-    <p>The class does not have a <code>set:</code> method
+    <p>The class does not have a \c -set: method
     like NextStep based frameworks to change the color of
     the current context. To change the color of the current
     context, use CGContextSetFillColor().
@@ -117,7 +117,7 @@ var cachedBlackColor,
 
 
 /*!
-    Creates a new color object with <code>white</code> for the RGB components.
+    Creates a new color object with \c white for the RGB components.
     For the alpha component, a value of 1.0 is opaque, and 0.0 means completely transparent.
     
     @param white a float between 0.0 and 1.0
@@ -133,7 +133,7 @@ var cachedBlackColor,
 /*!
     @deprecated in favor of colorWithWhite:apha:
     
-    Creates a new color object with <code>white</code> for the RGB components.
+    Creates a new color object with \c white for the RGB components.
     For the alpha component, a value of 1.0 is opaque, and 0.0 means completely transparent.
     
     @param white a float between 0.0 and 1.0
@@ -375,8 +375,18 @@ var cachedBlackColor,
     return cachedClearColor;
 }
 
++ (CPColor)alternateSelectedControlColor
+{
+    return [[CPColor alloc] _initWithRGBA:[0.22, 0.46, 0.84, 1.0]];
+}
+
++ (CPColor)secondarySelectedControlColor
+{
+    return [[CPColor alloc] _initWithRGBA:[0.83, 0.83, 0.83, 1.0]];
+}
+
 /*!
-    Creates a color using a tile pattern with <code>anImage</code>
+    Creates a color using a tile pattern with \c anImage
     @param the image to tile
     @return a tiled image color object
 */
@@ -726,7 +736,7 @@ var CPColorComponentsKey    = @"CPColorComponentsKey",
 var hexCharacters = "0123456789ABCDEF";
 
 /*!
-    Used for the CPColor <code>colorWithHexString:</code> implementation
+    Used for the CPColor \c +colorWithHexString: implementation
     @ignore
     @class CPColor
     @return an array of rgb components

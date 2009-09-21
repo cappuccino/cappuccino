@@ -98,7 +98,14 @@ var NSUnknownColorSpaceModel    = -1,
             {
                 var //display = [NSDisplay currentDisplay],
                     result = null;//[display colorWithName: colorName];
-                if (!result)
+
+                if (colorName === @"controlColor")
+                    result = nil;
+
+                else if (colorName === @"controlBackgroundColor")
+                    result = [CPColor whiteColor];
+
+                else if (!result)
                 {
                     result = color;
                     //[display _addSystemColor: result forName: colorName];

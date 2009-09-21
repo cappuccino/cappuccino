@@ -45,11 +45,21 @@ function gen(/*va_args*/)
         }
     }
 
-    if (!justFrameworks && destination.length === 0)
-        destination = "Untitled";
+    if (destination.length === 0)
+        destination = justFrameworks ? "." : "Untitled";
 
-    var sourceTemplate = new java.io.File(OBJJ_HOME + "/lib/capp/Resources/Templates/" + template),
-        destinationProject = new java.io.File(destination),
+    var sourceTemplate = null;
+    if (File.isAbsolute(template))
+        sourceTemplate = new java.io.File(template);
+    else
+        sourceTemplate = new java.io.File(OBJJ_HOME + "/lib/capp/Resources/Templates/" + template);
+    
+    var configFile = File.join(sourceTemplate, "template.config"),
+        config = {};
+    if (File.isFile(configFile))
+        config = JSON.parse(File.read(configFile));
+    print(config.FrameworksPath)
+    var destinationProject = new java.io.File(destination),
         configuration = noConfig ? [Configuration defaultConfiguration] : [Configuration userConfiguration];
 
     if (justFrameworks)
@@ -86,36 +96,43 @@ function gen(/*va_args*/)
             File.write(path, contents, { charset: "UTF-8"});
         }
 
-        createFrameworksInFile(destinationProject, shouldSymbolicallyLink);
+        var frameworkDestination = destinationProject.getCanonicalPath();
+        if (config.FrameworksPath)
+            frameworkDestination = File.join(frameworkDestination, config.FrameworksPath);
+
+        createFrameworksInFile(frameworkDestination, shouldSymbolicallyLink);
     }
     else
         print("Directory already exists");
 }
 
 
-function createFrameworksInFile(/*File*/ aFile, /*Boolean*/ shouldSymbolicallyLink, /*Boolean*/ force)
+function createFrameworksInFile(/*String*/ aFile, /*Boolean*/ shouldSymbolicallyLink, /*Boolean*/ force)
 {
-    var destinationFrameworks = new java.io.File(aFile.getCanonicalPath()+ "/Frameworks"),
-        destinationDebugFrameworks = new java.io.File(aFile.getCanonicalPath() + "/Frameworks/Debug");
+    if (!File.isDirectory(aFile))
+        throw new Error("Can't create Frameworks. Directory does not exist: " + aFile);
+        
+    var destinationFrameworks = new java.io.File(aFile+ "/Frameworks"),
+        destinationDebugFrameworks = new java.io.File(aFile + "/Frameworks/Debug");
         
     if (destinationFrameworks.exists()) {
         if (force) {
             print("Updating existing Frameworks directory.");
-            exec(["rm", "-rf", destinationFrameworks.getCanonicalPath()], true);
+            exec(["rm", "-rf", destinationFrameworks], true);
         }
         else {
             print("Frameworks directory already exists. Use --force to overwrite.");
             return;
         }
     } else {    
-        print("Creating Frameworks directory.");
+        print("Creating Frameworks directory in "+destinationFrameworks+".");
     }
 
     if (!shouldSymbolicallyLink)
     {
         var sourceFrameworks = new java.io.File(OBJJ_HOME + "/lib/Frameworks");
     
-        exec(["cp", "-R", sourceFrameworks.getCanonicalPath(), destinationFrameworks.getCanonicalPath()], true);
+        exec(["cp", "-R", sourceFrameworks.getCanonicalPath(), destinationFrameworks], true);
 
         return;
     }
@@ -129,25 +146,25 @@ function createFrameworksInFile(/*File*/ aFile, /*Boolean*/ shouldSymbolicallyLi
     new java.io.File(destinationFrameworks).mkdir();
     
     exec(["ln", "-s",   new java.io.File(BUILD + "/Release/Objective-J").getCanonicalPath(),
-                        new java.io.File(aFile.getCanonicalPath() + "/Frameworks/Objective-J").getCanonicalPath()], true);
+                        new java.io.File(aFile + "/Frameworks/Objective-J").getCanonicalPath()], true);
 
     exec(["ln", "-s",   new java.io.File(BUILD + "/Release/Foundation").getCanonicalPath(),
-                        new java.io.File(aFile.getCanonicalPath() + "/Frameworks/Foundation").getCanonicalPath()], true);
+                        new java.io.File(aFile + "/Frameworks/Foundation").getCanonicalPath()], true);
 
     exec(["ln", "-s",   new java.io.File(BUILD + "/Release/AppKit").getCanonicalPath(),
-                        new java.io.File(aFile.getCanonicalPath() + "/Frameworks/AppKit").getCanonicalPath()], true);
+                        new java.io.File(aFile + "/Frameworks/AppKit").getCanonicalPath()], true);
 
     // Debug Frameworks
     new java.io.File(destinationDebugFrameworks).mkdir();
     
     exec(["ln", "-s",   new java.io.File(BUILD + "/Debug/Objective-J").getCanonicalPath(),
-                        new java.io.File(aFile.getCanonicalPath() + "/Frameworks/Debug/Objective-J").getCanonicalPath()], true);
+                        new java.io.File(aFile + "/Frameworks/Debug/Objective-J").getCanonicalPath()], true);
 
     exec(["ln", "-s",   new java.io.File(BUILD + "/Debug/Foundation").getCanonicalPath(),
-                        new java.io.File(aFile.getCanonicalPath() + "/Frameworks/Debug/Foundation").getCanonicalPath()], true);
+                        new java.io.File(aFile + "/Frameworks/Debug/Foundation").getCanonicalPath()], true);
 
     exec(["ln", "-s",   new java.io.File(BUILD + "/Debug/AppKit").getCanonicalPath(),
-                        new java.io.File(aFile.getCanonicalPath() + "/Frameworks/Debug/AppKit").getCanonicalPath()], true);
+                        new java.io.File(aFile + "/Frameworks/Debug/AppKit").getCanonicalPath()], true);
 }
 
 function toIdentifier(/*String*/ aString)

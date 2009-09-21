@@ -57,10 +57,10 @@ ACTUAL_FRAME_RATE = 0;
     @par Delegate Methods
     
     @delegate -(BOOL)animationShouldStart:(CPAnimation)animation;
-    Called at the beginning of <code>startAnimation</code>.
+    Called at the beginning of \c -startAnimation.
     @param animation the animation that will start
-    @return <code>YES</code> allows the animation to start.
-    <code>NO</code> stops the animation.
+    @return \c YES allows the animation to start.
+    \c NO stops the animation.
 
     @delegate -(void)animationDidEnd:(CPAnimation)animation;
     Called when an animation has completed.
@@ -72,7 +72,7 @@ ACTUAL_FRAME_RATE = 0;
 
     @delegate - (float)animation:(CPAnimation)animation valueForProgress:(float)progress;
     The value from this method will be returned when CPAnimation's
-    <code>currentValue</code> method is called.
+    \c currentValue method is called.
     @param animation the animation to obtain the curve value for
     @param progress the current animation progress
     @return the curve value
@@ -154,7 +154,7 @@ ACTUAL_FRAME_RATE = 0;
 /*!
     Sets the animation's length.
     @param aDuration the new animation length
-    @throws CPInvalidArgumentException if <code>aDuration</code> is negative
+    @throws CPInvalidArgumentException if \c aDuration is negative
 */
 - (void)setDuration:(CPTimeInterval)aDuration
 {
@@ -175,7 +175,7 @@ ACTUAL_FRAME_RATE = 0;
 /*!
     Sets the animation frame rate. This is not a guaranteed frame rate. 0 means to go as fast as possible.
     @param frameRate the new desired frame rate
-    @throws CPInvalidArgumentException if <code>frameRate</code> is negative
+    @throws CPInvalidArgumentException if \c frameRate is negative
 */
 - (void)setFrameRate:(float)frameRate
 {
@@ -211,7 +211,7 @@ ACTUAL_FRAME_RATE = 0;
 }
 
 /*!
-    Starts the animation. The method calls <code>animationShouldStart:</code>
+    Starts the animation. The method calls \c -animationShouldStart:
     on the delegate (if it implements it) to see if the animation
     should begin.
 */
@@ -270,7 +270,7 @@ ACTUAL_FRAME_RATE = 0;
 }
 
 /*!
-    Returns <code>YES</code> if the animation
+    Returns \c YES if the animation
     is running.
 */
 - (BOOL)isAnimating

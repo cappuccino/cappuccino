@@ -117,7 +117,7 @@
 }
 
 /*!
-    Creates a new array containing the objects in <code>anArray</code>.
+    Creates a new array containing the objects in \c anArray.
     @param anArray Objects in this array will be added to the new array
     @return a new CPArray of the provided objects
 */
@@ -127,7 +127,7 @@
 }
 
 /*!
-    Creates a new array with <code>anObject</code> in it.
+    Creates a new array with \c anObject in it.
     @param anObject the object to be added to the array
     @return a new CPArray containing a single object
 */
@@ -175,9 +175,9 @@
 
 // Creating an Array
 /*!
-    Creates a new CPArray from <code>anArray</code>.
+    Creates a new CPArray from \c anArray.
     @param anArray objects in this array will be added to the new array
-    @return a new CPArray containing the objects of <code>anArray</code>
+    @return a new CPArray containing the objects of \c anArray
 */
 - (id)initWithArray:(CPArray)anArray
 {
@@ -190,10 +190,10 @@
 }
 
 /*!
-    Initializes a the array with the contents of <code>anArray</code>
-    and optionally performs a deep copy of the objects based on <code>copyItems</code>.
+    Initializes a the array with the contents of \c anArray
+    and optionally performs a deep copy of the objects based on \c copyItems.
     @param anArray the array to copy the data from
-    @param copyItems if <code>YES</code>, each object will be copied by having a <code>copy</code> message sent to it, and the
+    @param copyItems if \c YES, each object will be copied by having a \c -copy message sent to it, and the
     returned object will be added to the receiver. Otherwise, no copying will be performed.
     @return the initialized array of objects
 */
@@ -240,7 +240,7 @@
 /*!
     Initializes the array with a JavaScript array of objects.
     @param objects the array of objects to add to the receiver
-    @param aCount the number of objects in <code>objects</code>
+    @param aCount the number of objects in \c objects
     @return the initialized CPArray
 */
 - (id)initWithObjects:(id)objects count:(unsigned)aCount
@@ -260,7 +260,7 @@
 
 // Querying an array
 /*!
-    Returns <code>YES</code> if the array contains <code>anObject</code>. Otherwise, it returns <code>NO</code>.
+    Returns \c YES if the array contains \c anObject. Otherwise, it returns \c NO.
     @param anObject the method checks if this object is already in the array
 */
 - (BOOL)containsObject:(id)anObject
@@ -277,10 +277,10 @@
 }
 
 /*!
-    Returns the index of <code>anObject</code> in this array.
-    If the object is <code>nil</code> or not in the array,
-    returns <code>CPNotFound</code>. It first attempts to find
-    a match using <code>isEqual:</code>, then <code>==</code>.
+    Returns the index of \c anObject in this array.
+    If the object is \c nil or not in the array,
+    returns \c CPNotFound. It first attempts to find
+    a match using \c -isEqual:, then \c ==.
     @param anObject the object to search for
 */
 - (int)indexOfObject:(id)anObject
@@ -291,7 +291,7 @@
     var i = 0, 
         count = length;
 
-    // Only use isEqual: if our object is a CPObject.
+    // Only use -isEqual: if our object is a CPObject.
     if (anObject.isa)
     {
         for(; i < count; ++i)
@@ -312,12 +312,12 @@
 }
 
 /*!
-    Returns the index of <code>anObject</code> in the array
-    within <code>aRange</code>. It first attempts to find
-    a match using <code>isEqual:</code>, then <code>==</code>.
+    Returns the index of \c anObject in the array
+    within \c aRange. It first attempts to find
+    a match using \c -isEqual:, then \c ==.
     @param anObject the object to search for
     @param aRange the range to search within
-    @return the index of the object, or <code>CPNotFound</code> if it was not found.
+    @return the index of the object, or \c CPNotFound if it was not found.
 */
 - (int)indexOfObject:(id)anObject inRange:(CPRange)aRange
 {
@@ -344,9 +344,9 @@
 }
 
 /*!
-    Returns the index of <code>anObject</code> in the array. The test for equality is done using only <code>==</code>.
+    Returns the index of \c anObject in the array. The test for equality is done using only \c ==.
     @param anObject the object to search for
-    @return the index of the object in the array. <code>CPNotFound</code> if the object is not in the array.
+    @return the index of the object in the array. \c CPNotFound if the object is not in the array.
 */
 - (int)indexOfObjectIdenticalTo:(id)anObject
 {
@@ -373,12 +373,12 @@
 }
 
 /*!
-    Returns the index of <code>anObject</code> in the array
-    within <code>aRange</code>. The test for equality is
-    done using only <code>==</code>.
+    Returns the index of \c anObject in the array
+    within \c aRange. The test for equality is
+    done using only \c ==.
     @param anObject the object to search for
     @param aRange the range to search within
-    @return the index of the object, or <code>CPNotFound</code> if it was not found.
+    @return the index of the object, or \c CPNotFound if it was not found.
 */
 - (int)indexOfObjectIdenticalTo:(id)anObject inRange:(CPRange)aRange
 {
@@ -410,12 +410,12 @@
 }
 
 /*!
-    Returns the index of <code>anObject</code> in the array, which must be sorted in the same order as
+    Returns the index of \c anObject in the array, which must be sorted in the same order as
     calling sortUsingSelector: with the selector passed to this method would result in. 
     @param anObject the object to search for
     @param aSelector the comparison selector to call on each item in the list, the same
     selector should have been used to sort the array (or to maintain its sorted order).
-    @return the index of the object, or <code>CPNotFound</code> if it was not found.
+    @return the index of the object, or \c CPNotFound if it was not found.
 */
 - (unsigned)indexOfObject:(id)anObject sortedBySelector:(SEL)aSelector
 {
@@ -423,7 +423,7 @@
 }
 
 /*!
-    Returns the index of <code>anObject</code> in the array, which must be sorted in the same order as
+    Returns the index of \c anObject in the array, which must be sorted in the same order as
     calling sortUsingFunction: with the selector passed to this method would result in. 
     The function will be called like so:
     <pre>
@@ -432,7 +432,7 @@
     @param anObject the object to search for
     @param aFunction the comparison function to call on each item in the array that we search. the same
     selector should have been used to sort the array (or to maintain its sorted order).
-    @return the index of the object, or <code>CPNotFound</code> if it was not found.
+    @return the index of the object, or \c CPNotFound if it was not found.
 */
 - (unsigned)indexOfObject:(id)anObject sortedByFunction:(Function)aFunction
 {
@@ -440,7 +440,7 @@
 }
 
 /*!
-    Returns the index of <code>anObject</code> in the array, which must be sorted in the same order as
+    Returns the index of \c anObject in the array, which must be sorted in the same order as
     calling sortUsingFunction: with the selector passed to this method would result in. 
     The function will be called like so:
     <pre>
@@ -450,7 +450,7 @@
     @param aFunction the comparison function to call on each item in the array that we search. the same
     function should have been used to sort the array (or to maintain its sorted order).
     @param aContext a context object that will be passed to the sort function
-    @return the index of the object, or <code>CPNotFound</code> if it was not found.
+    @return the index of the object, or \c CPNotFound if it was not found.
 */
 - (unsigned)indexOfObject:(id)anObject sortedByFunction:(Function)aFunction context:(id)aContext
 {
@@ -486,12 +486,12 @@
 }
 
 /*!
-    Returns the index of <code>anObject</code> in the array, which must be sorted in the same order as
+    Returns the index of \c anObject in the array, which must be sorted in the same order as
     calling sortUsingDescriptors: with the descriptors passed to this method would result in. 
     @param anObject the object to search for
     @param descriptors the array of descriptors to use to compare each item in the array that we search. the same
     descriptors should have been used to sort the array (or to maintain its sorted order).
-    @return the index of the object, or <code>CPNotFound</code> if it was not found.
+    @return the index of the object, or \c CPNotFound if it was not found.
 */
 - (unsigned)indexOfObject:(id)anObject sortedByDescriptors:(CPArray)descriptors
 {
@@ -531,7 +531,7 @@
 }
 
 /*!
-    Returns the last object in the array. If the array is empty, returns <code>nil</code>/
+    Returns the last object in the array. If the array is empty, returns \c nil/
 */
 - (id)lastObject
 {
@@ -543,8 +543,8 @@
 }
 
 /*!
-    Returns the object at index <code>anIndex</code>.
-    @throws CPRangeException if <code>anIndex</code> is out of bounds
+    Returns the object at index \c anIndex.
+    @throws CPRangeException if \c anIndex is out of bounds
 */
 - (id)objectAtIndex:(int)anIndex
 {
@@ -555,7 +555,7 @@
 }
 
 /*!
-    Returns the objects at <code>indexes</code> in a new CPArray.
+    Returns the objects at \c indexes in a new CPArray.
     @param indexes the set of indices
     @throws CPRangeException if any of the indices is greater than or equal to the length of the array
 */
@@ -597,7 +597,7 @@
 /*!
     Sends each element in the array a message.
     @param aSelector the selector of the message to send
-    @throws CPInvalidArgumentException if <code>aSelector</code> is <code>nil</code>
+    @throws CPInvalidArgumentException if \c aSelector is \c nil
 */
 - (void)makeObjectsPerformSelector:(SEL)aSelector
 {
@@ -615,7 +615,7 @@
     Sends each element in the array a message with an argument.
     @param aSelector the selector of the message to send
     @param anObject the first argument of the message
-    @throws CPInvalidArgumentException if <code>aSelector</code> is <code>nil</code>
+    @throws CPInvalidArgumentException if \c aSelector is \c nil
 */
 - (void)makeObjectsPerformSelector:(SEL)aSelector withObject:(id)anObject
 {
@@ -632,8 +632,8 @@
 // Comparing arrays
 /*!
     Returns the first object found in the receiver (starting at index 0) which is present in the
-    <code>otherArray</code> as determined by using the <code>-containsObject:</code> method.
-    @return the first object found, or <code>nil</code> if no common object was found.
+    \c otherArray as determined by using the \c -containsObject: method.
+    @return the first object found, or \c nil if no common object was found.
 */
 - (id)firstObjectCommonWithArray:(CPArray)anArray
 {
@@ -690,9 +690,9 @@
 
 // Deriving new arrays
 /*!
-    Returns a copy of this array plus <code>anObject</code> inside the copy.
+    Returns a copy of this array plus \c anObject inside the copy.
     @param anObject the object to be added to the array copy
-    @throws CPInvalidArgumentException if <code>anObject</code> is <code>nil</code>
+    @throws CPInvalidArgumentException if \c anObject is \c nil
     @return a new array that should be n+1 in size compared to the receiver.
 */
 - (CPArray)arrayByAddingObject:(id)anObject
@@ -709,7 +709,7 @@
 }
 
 /*!
-    Returns a new array which is the concatenation of <code>self</code> and otherArray (in this precise order).
+    Returns a new array which is the concatenation of \c self and otherArray (in this precise order).
     @param anArray the array that will be concatenated to the receiver's copy
 */
 - (CPArray)arrayByAddingObjectsFromArray:(CPArray)anArray
@@ -733,7 +733,7 @@
 */
 
 /*!
-    Returns a subarray of the receiver containing the objects found in the specified range <code>aRange</code>.
+    Returns a subarray of the receiver containing the objects found in the specified range \c aRange.
     @param aRange the range of objects to be copied into the subarray
     @throws CPRangeException if the specified range exceeds the bounds of the array
 */
@@ -768,8 +768,8 @@
 
 /*!
     Returns an array in which the objects are ordered according
-    to a sort with <code>aFunction</code>. This invokes
-    <code>-sortUsingFunction:context</code>.
+    to a sort with \c aFunction. This invokes
+    \c -sortUsingFunction:context.
     @param aFunction a JavaScript 'Function' type that compares objects
     @param aContext context information
     @return a new sorted array
@@ -784,7 +784,7 @@
 }
 
 /*!
-    Returns a new array in which the objects are ordered according to a sort with <code>aSelector</code>.
+    Returns a new array in which the objects are ordered according to a sort with \c aSelector.
     @param aSelector the selector that will perform object comparisons
 */
 - (CPArray)sortedArrayUsingSelector:(SEL)aSelector
@@ -801,7 +801,7 @@
 /*!
     Returns a string formed by concatenating the objects in the
     receiver, with the specified separator string inserted between each part.
-    If the element is a Objective-J object, then the <code>description</code>
+    If the element is a Objective-J object, then the \c -description
     of that object will be used, otherwise the default JavaScript representation will be used.
     @param aString the separator that will separate each object string
     @return the string representation of the array
@@ -843,7 +843,7 @@
 // Collecting paths
 /*!
     Returns a new array subset formed by selecting the elements that have
-    filename extensions from <code>filterTypes</code>. Only elements
+    filename extensions from \c filterTypes. Only elements
     that are of type CPString are candidates for inclusion in the returned array.
     @param filterTypes an array of CPString objects that contain file extensions (without the '.')
     @return a new array with matching paths
@@ -877,7 +877,7 @@
 }
 
 /*!
-    Returns the value for <code>aKey</code> from each element in the array.
+    Returns the value for \c aKey from each element in the array.
     @param aKey the key to return the value for
     @return an array of containing a value for each element in the array
 */
@@ -910,7 +910,7 @@
 
 // Creating arrays
 /*!
-    Creates an array able to store at least  <code>aCapacity</code>
+    Creates an array able to store at least  \c aCapacity
     items. Because CPArray is backed by JavaScript arrays,
     this method ends up simply returning a regular array.
 */
@@ -920,7 +920,7 @@
 }
 
 /*!
-    Initializes an array able to store at least <code>aCapacity</code> items. Because CPArray
+    Initializes an array able to store at least \c aCapacity items. Because CPArray
     is backed by JavaScript arrays, this method ends up simply returning a regular array.
 */
 - (id)initWithCapacity:(unsigned)aCapacity
@@ -930,7 +930,7 @@
 
 // Adding and replacing objects
 /*!
-    Adds <code>anObject</code> to the end of the array.
+    Adds \c anObject to the end of the array.
     @param anObject the object to add to the array
 */
 - (void)addObject:(id)anObject
@@ -939,7 +939,7 @@
 }
 
 /*!
-    Adds the objects in <code>anArray</code> to the receiver array.
+    Adds the objects in \c anArray to the receiver array.
     @param anArray the array of objects to add to the end of the receiver
 */
 - (void)addObjectsFromArray:(CPArray)anArray
@@ -950,7 +950,7 @@
 /*!
     Inserts an object into the receiver at the specified location.
     @param anObject the object to insert into the array
-    @param anIndex the location to insert <code>anObject</code> at
+    @param anIndex the location to insert \c anObject at
 */
 - (void)insertObject:(id)anObject atIndex:(int)anIndex
 {
@@ -983,9 +983,9 @@
 }
 
 /*!
-    Replaces the element at <code>anIndex</code> with <code>anObject</code>.
-    The current element at position <code>anIndex</code> will be removed from the array.
-    @param anIndex the position in the array to place <code>anObject</code>
+    Replaces the element at \c anIndex with \c anObject.
+    The current element at position \c anIndex will be removed from the array.
+    @param anIndex the position in the array to place \c anObject
 */
 - (void)replaceObjectAtIndex:(int)anIndex withObject:(id)anObject
 {
@@ -993,8 +993,8 @@
 }
 
 /*!
-    Replace the elements at the indices specified by <code>anIndexSet</code> with
-    the objects in <code>objects</code>.
+    Replace the elements at the indices specified by \c anIndexSet with
+    the objects in \c objects.
     @param anIndexSet the set of indices to array positions that will be replaced
     @param objects the array of objects to place in the specified indices
 */
@@ -1011,12 +1011,12 @@
 }
 
 /*!
-    Replaces some of the receiver's objects with objects from <code>anArray</code>. Specifically, the elements of the
-    receiver in the range specified by <code>aRange</code>,
-    with the elements of <code>anArray</code> in the range specified by <code>otherRange</code>.
+    Replaces some of the receiver's objects with objects from \c anArray. Specifically, the elements of the
+    receiver in the range specified by \c aRange,
+    with the elements of \c anArray in the range specified by \c otherRange.
     @param aRange the range of elements to be replaced in the receiver
     @param anArray the array to retrieve objects for placement into the receiver
-    @param otherRange the range of objects in <code>anArray</code> to pull from for placement into the receiver
+    @param otherRange the range of objects in \c anArray to pull from for placement into the receiver
 */
 - (void)replaceObjectsInRange:(CPRange)aRange withObjectsFromArray:(CPArray)anArray range:(CPRange)otherRange
 {
@@ -1028,8 +1028,8 @@
 
 /*!
     Replaces some of the receiver's objects with the objects from
-    <code>anArray</code>. Specifically, the elements of the
-    receiver in the range specified by <code>aRange</code>.
+    \c anArray. Specifically, the elements of the
+    receiver in the range specified by \c aRange.
     @param aRange the range of elements to be replaced in the receiver
     @param anArray the array to retrieve objects for placement into the receiver
 */
@@ -1039,7 +1039,7 @@
 }
 
 /*!
-    Sets the contents of the receiver to be identical to the contents of <code>anArray</code>.
+    Sets the contents of the receiver to be identical to the contents of \c anArray.
     @param anArray the array of objects used to replace the receiver's objects
 */
 - (void)setArray:(CPArray)anArray
@@ -1067,7 +1067,7 @@
 }
 
 /*!
-    Removes all entries of <code>anObject</code> from the array.
+    Removes all entries of \c anObject from the array.
     @param anObject the object whose entries are to be removed
 */
 - (void)removeObject:(id)anObject
@@ -1076,7 +1076,7 @@
 }
 
 /*!
-    Removes all entries of <code>anObject</code> from the array, in the range specified by <code>aRange</code>.
+    Removes all entries of \c anObject from the array, in the range specified by \c aRange.
     @param anObject the object to remove
     @param aRange the range to search in the receiver for the object
 */
@@ -1092,7 +1092,7 @@
 }
 
 /*!
-    Removes the object at <code>anIndex</code>.
+    Removes the object at \c anIndex.
     @param anIndex the location of the element to be removed
 */
 - (void)removeObjectAtIndex:(int)anIndex
@@ -1101,7 +1101,7 @@
 }
 
 /*!
-    Removes the objects at the indices specified by <code>CPIndexSet</code>.
+    Removes the objects at the indices specified by \c CPIndexSet.
     @param anIndexSet the indices of the elements to be removed from the array
 */
 - (void)removeObjectsAtIndexes:(CPIndexSet)anIndexSet
@@ -1116,8 +1116,8 @@
 }
 
 /*!
-    Remove the first instance of <code>anObject</code> from the array.
-    The search for the object is done using <code>==</code>.
+    Remove the first instance of \c anObject from the array.
+    The search for the object is done using \c ==.
     @param anObject the object to remove
 */
 - (void)removeObjectIdenticalTo:(id)anObject
@@ -1126,9 +1126,9 @@
 }
 
 /*!
-    Remove the first instance of <code>anObject</code> from the array,
-    within the range specified by <code>aRange</code>.
-    The search for the object is done using <code>==</code>.
+    Remove the first instance of \c anObject from the array,
+    within the range specified by \c aRange.
+    The search for the object is done using \c ==.
     @param anObject the object to remove
     @param aRange the range in the array to search for the object
 */
@@ -1144,7 +1144,7 @@
 }
 
 /*!
-    Remove the objects in <code>anArray</code> from the receiver array.
+    Remove the objects in \c anArray from the receiver array.
     @param anArray the array of objects to remove from the receiver
 */
 - (void)removeObjectsInArray:(CPArray)anArray
@@ -1197,7 +1197,7 @@
 /*!
     Sorts the receiver array using a JavaScript function as a comparator, and a specified context.
     @param aFunction a JavaScript function that will be called to compare objects
-    @param aContext an object that will be passed to <code>aFunction</code> with comparison
+    @param aContext an object that will be passed to \c aFunction with comparison
 */
 - (void)sortUsingFunction:(Function)aFunction context:(id)aContext
 {

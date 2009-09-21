@@ -210,7 +210,7 @@ var CPSplitViewHorizontalImage = nil,
         _DOMDividerElements[_drawingDivider].style.cursor = "move";
         _DOMDividerElements[_drawingDivider].style.position = "absolute";
         _DOMDividerElements[_drawingDivider].style.backgroundRepeat = "repeat";
-        
+
         CPDOMDisplayServerAppendChild(_DOMElement, _DOMDividerElements[_drawingDivider]);
 
         if (_isPaneSplitter)
@@ -224,7 +224,7 @@ var CPSplitViewHorizontalImage = nil,
             _DOMDividerElements[_drawingDivider].style.backgroundImage = "url('"+_dividerImagePath+"')";
         }
     }    
-        
+
     CPDOMDisplayServerSetStyleLeftTop(_DOMDividerElements[_drawingDivider], NULL, _CGRectGetMinX(aRect), _CGRectGetMinY(aRect));
     CPDOMDisplayServerSetStyleSize(_DOMDividerElements[_drawingDivider], _CGRectGetWidth(aRect), _CGRectGetHeight(aRect));
 #endif
@@ -303,7 +303,7 @@ var CPSplitViewHorizontalImage = nil,
 - (void)trackDivider:(CPEvent)anEvent
 {
     var type = [anEvent type];
-    
+
     if (type == CPLeftMouseUp)
     {
         if (_currentDivider != CPNotFound)
@@ -359,6 +359,9 @@ var CPSplitViewHorizontalImage = nil,
                 }
             }
         }
+
+        if (_currentDivider === CPNotFound)
+            return;
     }
     
     else if (type == CPLeftMouseDragged && _currentDivider != CPNotFound)
@@ -423,7 +426,7 @@ var CPSplitViewHorizontalImage = nil,
         frameA = [viewA frame],
         viewB = _subviews[dividerIndex + 1],
         frameB = [viewB frame];
-    
+
     var realPosition = MAX(MIN(position, actualMax), actualMin);
     
     if (position <  proposedMin + (actualMin - proposedMin) / 2)
@@ -488,8 +491,9 @@ var CPSplitViewHorizontalImage = nil,
         totalSizableSpace = 0;
 
     var nonSizableSpace = totalSizableSpace ? bounds.size[_sizeComponent] - totalSizableSpace : 0,
-        ratio = (bounds.size[_sizeComponent] - totalDividers*dividerThickness - nonSizableSpace) / (oldSize[_sizeComponent]- totalDividers*dividerThickness - nonSizableSpace),
-        remainingFlexibleSpace = bounds.size[_sizeComponent] - oldSize[_sizeComponent];
+        remainingFlexibleSpace = bounds.size[_sizeComponent] - oldSize[_sizeComponent],
+        oldDimension = (oldSize[_sizeComponent]- totalDividers*dividerThickness - nonSizableSpace),
+        ratio = oldDimension <= 0 ? 0 : (bounds.size[_sizeComponent] - totalDividers*dividerThickness - nonSizableSpace) / oldDimension;
 
     for (index = 0; index < count; ++index)
     {
@@ -510,7 +514,7 @@ var CPSplitViewHorizontalImage = nil,
                 viewFrame.size[_sizeComponent] = [view frame].size[_sizeComponent];
             else
                 alert("SHOULD NEVER GET HERE");
-                
+
         bounds.origin[_originComponent] += viewFrame.size[_sizeComponent] + dividerThickness;        
 
         [view setFrame:viewFrame];
@@ -559,7 +563,7 @@ var CPSplitViewDelegateKey          = "CPSplitViewDelegateKey",
 @implementation CPSplitView (CPCoding)
 
 /*
-    Initializes the split view by unarchiving data from <code>aCoder</code>.
+    Initializes the split view by unarchiving data from \c aCoder.
     @param aCoder the coder containing the archived CPSplitView.
 */
 - (id)initWithCoder:(CPCoder)aCoder

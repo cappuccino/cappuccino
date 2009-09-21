@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>content</key>
+	<string>@implementation ${1:CLASS} (CPCoding)
+
+- (id)initWithCoder:(CPCoder)aCoder
+{
+    if (self = [super initWithCoder:aCoder])
+    {
+		${2:IVAR} = [aCoder decodeObjectForKey:${3:KEY}];
+    }
+    return self;
+}
+
+- (void)encodeWithCoder:(CPCoder)aCoder
+{
+    [super encodeWithCoder:aCoder];
+    
+    [aCoder encodeObject:${2:IVAR} forKey:${3:KEY}];
+}
+
+@end
+</string>
+	<key>name</key>
+	<string>Archiving</string>
+	<key>uuid</key>
+	<string>A840A98A-0C5B-49CB-8235-2CCD1BF7AFC1</string>
+</dict>
+</plist>

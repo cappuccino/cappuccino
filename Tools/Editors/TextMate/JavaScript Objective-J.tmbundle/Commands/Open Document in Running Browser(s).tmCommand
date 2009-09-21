@@ -53,8 +53,10 @@ else
 end</string>
 	<key>input</key>
 	<string>none</string>
+	<key>keyEquivalent</key>
+	<string>@R</string>
 	<key>name</key>
-	<string>Open Document in Running Browser(s)</string>
+	<string>Run in Browsers</string>
 	<key>output</key>
 	<string>discard</string>
 	<key>scope</key>

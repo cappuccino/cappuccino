@@ -98,7 +98,7 @@ var CPURLConnectionDelegate = nil;
     @param aRequest contains the URL to request the data from
     @param aURLResponse not used
     @param anError not used
-    @return the data at the URL or <code>nil</code> if there was an error
+    @return the data at the URL or \c nil if there was an error
 */
 + (CPData)sendSynchronousRequest:(CPURLRequest)aRequest returningResponse:({CPURLResponse})aURLResponse error:({CPError})anError
 {
@@ -106,17 +106,17 @@ var CPURLConnectionDelegate = nil;
     {
         var request = objj_request_xmlhttp();
         
-        request.open([aRequest HTTPMethod], [aRequest URL], NO);
-        
+        request.open([aRequest HTTPMethod], [[aRequest URL] absoluteString], NO);
+
         var fields = [aRequest allHTTPHeaderFields],
             key = nil,
             keys = [fields keyEnumerator];
-        
+
         while (key = [keys nextObject])
             request.setRequestHeader(key, [fields objectForKey:key]);
-        
+
         request.send([aRequest HTTPBody]);
-        
+
         return [CPData dataWithString:request.responseText];
     }
     catch (anException)
@@ -130,7 +130,7 @@ var CPURLConnectionDelegate = nil;
     Creates a url connection with a delegate to monitor the request progress.
     @param aRequest contains the URL to obtain data from
     @param aDelegate will be sent messages related to the request progress
-    @return a connection that can be <code>start<code>ed to initiate the request
+    @return a connection that can be \c started to initiate the request
 */
 + (CPURLConnection)connectionWithRequest:(CPURLRequest)aRequest delegate:(id)aDelegate
 {
@@ -141,7 +141,7 @@ var CPURLConnectionDelegate = nil;
     Default class initializer. Use one of the class methods instead.
     @param aRequest contains the URL to contact
     @param aDelegate will receive progress messages
-    @param shouldStartImmediately whether the <code>start</code> method should be called from here
+    @param shouldStartImmediately whether the \c -start method should be called from here
     @return the initialized url connection
 */
 - (id)initWithRequest:(CPURLRequest)aRequest delegate:(id)aDelegate startImmediately:(BOOL)shouldStartImmediately
@@ -154,20 +154,21 @@ var CPURLConnectionDelegate = nil;
         _delegate = aDelegate;
         _isCanceled = NO;
         
-        var path = [_request URL];
-        
+        var URL = [_request URL],
+            scheme = [URL scheme];
+
         // Browsers use "file:", Titanium uses "app:"
-        _isLocalFileConnection =    path.indexOf("file:") === 0 || 
-                                    ((path.indexOf("http:") !== 0 || path.indexOf("https:") !== 0) && 
+        _isLocalFileConnection =    scheme === "file" ||
+                                    ((scheme !== "http" || scheme !== "https:") &&
                                     window.location &&
                                     (window.location.protocol === "file:" || window.location.protocol === "app:"));
-        
+
         _XMLHTTPRequest = objj_request_xmlhttp();
-            
+
         if (shouldStartImmediately)
             [self start];
     }
-    
+
     return self;
 }
 
@@ -193,7 +194,7 @@ var CPURLConnectionDelegate = nil;
 
     try
     {   
-        _XMLHTTPRequest.open([_request HTTPMethod], [_request URL], YES);
+        _XMLHTTPRequest.open([_request HTTPMethod], [[_request URL] absoluteString], YES);
         
         _XMLHTTPRequest.onreadystatechange = function() { [self _readyStateDidChange]; }
 

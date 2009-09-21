@@ -59,6 +59,11 @@ CPOrderedDescending     =  1;
     BOOL        _ascending;
 }
 
++ (id)sortDescriptorWithKey:(CPString)aKey ascending:(BOOL)isAscending
+{
+    return [[self alloc] initWithKey:aKey ascending:isAscending];
+}
+
 // Initializing a sort descriptor
 /*!
     Initializes the sort descriptor.
@@ -69,6 +74,11 @@ CPOrderedDescending     =  1;
 - (id)initWithKey:(CPString)aKey ascending:(BOOL)isAscending
 {
     return [self initWithKey:aKey ascending:isAscending selector:@selector(compare:)];
+}
+
++ (id)sortDescriptorWithKey:(CPString)aKey ascending:(BOOL)isAscending selector:(SEL)aSelector
+{
+    return [[self alloc] initWithKey:aKey ascending:isAscending selector:aSelector];
 }
 
 /*!
@@ -94,7 +104,7 @@ CPOrderedDescending     =  1;
 
 // Getting information about a sort descriptor
 /*!
-    Returns <code>YES</code> if the sort descriptor's order is ascending.
+    Returns \c YES if the sort descriptor's order is ascending.
 */
 - (BOOL)ascending
 {

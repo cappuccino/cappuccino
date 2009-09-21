@@ -73,7 +73,7 @@ CPJSONPCallbackReplacementString = @"${JSONP_CALLBACK}";
     
     _callbackParameter = aString;
     
-    if (!_callbackParameter && [_request URL].indexOf(CPJSONPCallbackReplacementString) < 0)
+    if (!_callbackParameter && [[_request URL] absoluteString].indexOf(CPJSONPCallbackReplacementString) < 0)
          [CPException raise:CPInvalidArgumentException reason:@"JSONP source specified without callback parameter or CPJSONPCallbackReplacementString in URL."];
 
     if(shouldStartImmediately)
@@ -95,7 +95,7 @@ CPJSONPCallbackReplacementString = @"${JSONP_CALLBACK}";
         };
 
         var head = document.getElementsByTagName("head").item(0),
-            source = [_request URL];    
+            source = [[_request URL] absoluteString];
 
         if (_callbackParameter)
         {

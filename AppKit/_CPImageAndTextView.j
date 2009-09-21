@@ -511,7 +511,13 @@ var HORIZONTAL_MARGIN   = 3.0,
         else
         {
             _DOMImageElement = document.createElement("img");
-            
+
+            if ([CPPlatform supportsDragAndDrop])
+            {
+                _DOMImageElement.setAttribute("draggable", "true");
+                _DOMImageElement.style["-khtml-user-drag"] = "element";
+            }
+
             var imageStyle = _DOMImageElement.style;
 
             imageStyle.top = "0px";

@@ -113,7 +113,7 @@
 // Enabling a Menu Item
 /*!
     Sets whether the menu item is enabled or not
-    @param isEnabled <code>YES</code> enables the item. <code>NO</code> disables it.
+    @param isEnabled \c YES enables the item. \c NO disables it.
 */
 - (void)setEnabled:(BOOL)isEnabled
 {
@@ -128,7 +128,7 @@
 }
 
 /*!
-    Returns <code>YES</code> if the item is enabled.
+    Returns \c YES if the item is enabled.
 */
 - (BOOL)isEnabled
 {
@@ -138,7 +138,7 @@
 // Managing Hidden Status
 /*!
     Sets whether the item should be hidden. A hidden item can not be triggered by keyboard shortcuts.
-    @param isHidden <code>YES</code> hides the item. <code>NO</code> reveals it.
+    @param isHidden \c YES hides the item. \c NO reveals it.
 */
 - (void)setHidden:(BOOL)isHidden
 {
@@ -151,7 +151,7 @@
 }
 
 /*!
-    Returns <code>YES</code> if the item is hidden.
+    Returns \c YES if the item is hidden.
 */
 - (BOOL)isHidden
 {
@@ -159,7 +159,7 @@
 }
 
 /*!
-    Returns <code>YES</code> if the item is hidden or if one of it's supermenus is hidden.
+    Returns \c YES if the item is hidden or if one of it's supermenus is hidden.
 */
 - (BOOL)isHiddenOrHasHiddenAncestor
 {
@@ -461,7 +461,7 @@ CPOffState
 }
 
 /*!
-    Returns the submenu of the item. <code>nil</code> if there is no submenu.
+    Returns the submenu of the item. \c nil if there is no submenu.
 */
 - (CPMenu)submenu
 {
@@ -469,7 +469,7 @@ CPOffState
 }
 
 /*!
-    Returns <code>YES</code> if the menu item has a submenu.
+    Returns \c YES if the menu item has a submenu.
 */
 - (BOOL)hasSubmenu
 {
@@ -491,7 +491,7 @@ CPOffState
 }
 
 /*!
-    Returns <code>YES</code> if the menu item is a separator.
+    Returns \c YES if the menu item is a separator.
 */
 - (BOOL)isSeparatorItem
 {
@@ -613,7 +613,7 @@ CPControlKeyMask
 
 /*!
     Sets whether this item is an alternate for the previous menu item.
-    @param isAlternate <code>YES</code> denotes that this menu item is an alternate
+    @param isAlternate \c YES denotes that this menu item is an alternate
 */
 - (void)setAlternate:(BOOL)isAlternate
 {
@@ -621,7 +621,7 @@ CPControlKeyMask
 }
 
 /*!
-    Returns <code>YES</code> if the menu item is an alternate for the previous item.
+    Returns \c YES if the menu item is an alternate for the previous item.
 */
 - (BOOL)isAlternate
 {
@@ -717,7 +717,7 @@ CPControlKeyMask
 // Getting Highlighted Status
 
 /*!
-    Returns <code>YES</code> if the menu item is highlighted.
+    Returns \c YES if the menu item is highlighted.
 */
 - (BOOL)isHighlighted
 {

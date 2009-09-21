@@ -195,7 +195,7 @@ var CPControlBlackColor     = [CPColor blackColor];
 }
 
 /*!
-    Causes <code>anAction</code> to be sent to <code>anObject</code>.
+    Causes \c anAction to be sent to \c anObject.
     @param anAction the action to send
     @param anObject the object to which the action will be sent
 */
@@ -321,6 +321,15 @@ var CPControlBlackColor     = [CPColor blackColor];
     [self setState:[self nextState]];
     [self sendAction:[self action] to:[self target]];
     [self highlight:NO];
+}
+
+- (void)setState:(int)state
+{
+}
+
+- (int)nextState
+{
+    return 0;
 }
 
 - (unsigned)mouseDownFlags

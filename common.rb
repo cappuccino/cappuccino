@@ -1,4 +1,5 @@
 require 'rake'
+require 'pathname'
 
 def gem_command
     case RUBY_PLATFORM
@@ -48,8 +49,9 @@ $CONFIGURATION              = ENV['CONFIG']
 $BUILD_DIR                  = ENV['BUILD_PATH']
 $PRODUCT_DIR                = File.join($BUILD_DIR, $CONFIGURATION)
 $ENVIRONMENT_DIR            = File.join($BUILD_DIR, $CONFIGURATION, 'env')
-$ENVIRONMENT_BIN_DIR        = File.join($ENVIRONMENT_DIR, 'bin')
-$ENVIRONMENT_LIB_DIR        = File.join($ENVIRONMENT_DIR, 'lib') 
+$ENVIRONMENT_NARWHAL_BIN_DIR= File.join($ENVIRONMENT_DIR, 'bin')
+$ENVIRONMENT_BIN_DIR        = File.join($ENVIRONMENT_DIR, 'packages', 'objj', 'bin')
+$ENVIRONMENT_LIB_DIR        = File.join($ENVIRONMENT_DIR, 'packages', 'objj', 'lib') 
 $ENVIRONMENT_FRAMEWORKS_DIR = File.join($ENVIRONMENT_LIB_DIR, 'Frameworks')
 
 $HOME_DIR        = File.expand_path(File.dirname(__FILE__))
@@ -60,7 +62,7 @@ if !(defined? COMMON_DO_ONCE)
     COMMON_DO_ONCE = true
     
     $LOAD_PATH << File.join($HOME_DIR, 'Tools', 'Rake', 'lib')
-    ENV['PATH'] = $ENVIRONMENT_BIN_DIR + ':' + ENV['PATH']
+    ENV['PATH'] = $ENVIRONMENT_NARWHAL_BIN_DIR + ':' + ENV['PATH']
 end
 
 require 'objective-j'
@@ -77,8 +79,8 @@ end
 def subrake(directories, task_name)
     directories.each do |directory|
       if (File.directory?(directory) && File.file?(File.join(directory, "Rakefile")))
-        ok = system(%{cd #{directory} && #{$serialized_env} #{$0} #{task_name}})
-        rake abort unless ok
+        system(%{cd #{directory} && #{$serialized_env} #{$0} #{task_name}})
+        rake abort if ($? != 0)
       else
         puts "warning: subrake missing: " + directory +" (this is not necessarily an error, "+directory+" may be optional)"
       end
@@ -93,7 +95,14 @@ $OBJJ_TEMPLATE_EXECUTABLE   = File.join($HOME_DIR, 'Tools', 'Rake', 'lib', 'objj
 
 def make_objj_executable(path)
     cp($OBJJ_TEMPLATE_EXECUTABLE, path)
-    File.chmod 0755, path
+    File.chmod(0755, path)
+    symlink_executable(path)
+end
+
+def symlink_executable(source)
+    relative = Pathname.new(source).relative_path_from(Pathname.new($ENVIRONMENT_NARWHAL_BIN_DIR))
+    destination = File.join($ENVIRONMENT_NARWHAL_BIN_DIR, File.basename(source))
+    FileUtils.ln_sf(relative, destination)
 end
 
 task :build
@@ -147,4 +156,5 @@ task :clobberall => ['clobber-all']
 
 def spawn_rake(task_name)
     system %{#{$serialized_env} #{$0} #{task_name}}
+    rake abort if ($? != 0)
 end

@@ -53,6 +53,7 @@ file_d $THEME_PRODUCT => ThemeFiles << $ENVIRONMENT_PRODUCT do
             puts str
         end
     end
+    rake abort if ($? != 0)
 end
 
 task :build => [:build_subprojects, :AppKit, $ENVIRONMENT_PRODUCT, $THEME_PRODUCT, $ENVIRONMENT_THEME_PRODUCT]
