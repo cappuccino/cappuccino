@@ -149,17 +149,6 @@ var CPControlBlackColor     = [CPColor blackColor];
     return self;
 }
 
-- (void)bind:(CPString)binding toObject:(id)anObject withKeyPath:(CPString)keyPath options:(CPDictionary)options
-{
-    if ([binding isEqual: CPValueBinding])
-    {
-        [self unbind: binding];
-        [[CPKeyValueBinding alloc] initWithBinding: @"objectValue" name:CPValueBinding to:anObject  keyPath:keyPath options:options from:self];
-    }
-    else
-        [super bind:binding toObject:anObject withKeyPath:keyPath options:options];
-}
-
 /*!
     Sets the receiver's target action
     @param anAction Sets the action message that gets sent to the target.

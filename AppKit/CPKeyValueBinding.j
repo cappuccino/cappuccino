@@ -119,8 +119,6 @@ var CPBindingOperationAnd = 0,
         if (options)
             [_info setObject:options forKey:CPOptionsKey];
         
-        //_replacementKeyPathForBinding
-        
         [aDestination addObserver:self forKeyPath:aKeyPath options:CPKeyValueObservingOptionNew context:aBinding];
         
         var bindings = [bindingsMap objectForKey:[_source hash]];
@@ -259,7 +257,7 @@ var CPBindingOperationAnd = 0,
         CPLog.warn("No binding exposed on "+self+" for "+aBinding);
 
     [self unbind:aBinding];
-    [[CPKeyValueBinding alloc] initWithBinding:aBinding name:aBinding to:anObject keyPath:aKeyPath options:options from:self];
+    [[CPKeyValueBinding alloc] initWithBinding:[anObject _replacementKeyPathForBinding:aBinding] name:aBinding to:anObject keyPath:aKeyPath options:options from:self];
 }
 
 - (CPDictionary)infoForBinding:(CPString)aBinding
@@ -270,6 +268,14 @@ var CPBindingOperationAnd = 0,
 - (void)unbind:(CPString)aBinding
 {
     [CPKeyValueBinding unbind:aBinding forObject:self];
+}
+
+- (id)_replacementKeyPathForBinding:(CPString)binding
+{
+    if ([binding isEqual:@"value"])
+        return @"objectValue";
+
+    return binding;
 }
 
 @end
@@ -398,7 +404,7 @@ CPHiddenBinding         = @"CPHiddenBinding";
 CPSelectedIndexBinding  = @"CPSelectedIndexBinding";
 CPTextColorBinding      = @"CPTextColorBinding";
 CPToolTipBinding        = @"CPToolTipBinding";
-CPValueBinding          = @"objectValue";
+CPValueBinding          = @"value";
 
 //Binding options constants
 CPAllowsEditingMultipleValuesSelectionBindingOption = @"CPAllowsEditingMultipleValuesSelectionBindingOption";
