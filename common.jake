@@ -8,7 +8,7 @@ var ENV = require("system").env,
 
 global.task = Jake.task;
 global.directory = Jake.directory;
-global.file = Jake.file;
+//global.file = Jake.file;
 global.filedir = Jake.filedir;
 
 /*
@@ -65,6 +65,19 @@ global.$ENVIRONMENT_FRAMEWORKS_DIR = FILE.join($ENVIRONMENT_LIB_DIR, 'Frameworks
 
 global.$HOME_DIR        = FILE.absolute(FILE.dirname(module.path));
 global.$LICENSE_FILE    = FILE.absolute(FILE.join(FILE.dirname(module.path), 'LICENSE'));
+
+var objectiveJLib = FILE.join($BUILD_DIR, "objective-j", "lib");
+
+if (FILE.exists(objectiveJLib))
+{
+    require.paths.unshift(objectiveJLib);
+
+    var OBJECTIVE_J_JAKE = require("objective-j/jake");
+
+    global.bundle = OBJECTIVE_J_JAKE.bundle;
+    global.framework = OBJECTIVE_J_JAKE.framework;
+    global.BundleTask = OBJECTIVE_J_JAKE.BundleTask;
+}
 
 global.rm_rf = function(/*String*/ aFilename)
 {
