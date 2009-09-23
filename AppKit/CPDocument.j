@@ -24,6 +24,7 @@
 @import <Foundation/CPArray.j>
 
 @import "CPResponder.j"
+@import "CPSavePanel.j"
 @import "CPViewController.j"
 @import "CPWindowController.j"
 
@@ -416,7 +417,7 @@ var CPDocumentUntitledCount = 0;
 
     // FIXME: Oh man is this every looking for trouble, we need to handle login at the Cappuccino level, with HTTP Errors.
     _readConnection = [CPURLConnection connectionWithRequest:[CPURLRequest requestWithURL:anAbsoluteURL] delegate:self];
-    
+
     _readConnection.session = _CPReadSessionMake(aType, aDelegate, aDidReadSelector, aContextInfo);
 }
 
@@ -459,17 +460,17 @@ var CPDocumentUntitledCount = 0;
 
     _writeRequest = [CPURLRequest requestWithURL:anAbsoluteURL];
 
-    [_writeRequest setHTTPMethod:@"POST"];
+    [_writeRequest setHTTPMethod:@"PUT"];
     [_writeRequest setHTTPBody:[data string]];
-    
+
     [_writeRequest setValue:@"close" forHTTPHeaderField:@"Connection"];
 
     if (aSaveOperation == CPSaveOperation)
         [_writeRequest setValue:@"true" forHTTPHeaderField:@"x-cappuccino-overwrite"];
-    
+
     if (aSaveOperation != CPSaveToOperation)
         [self updateChangeCount:CPChangeCleared];
-    
+
     // FIXME: Oh man is this every looking for trouble, we need to handle login at the Cappuccino level, with HTTP Errors.
     var connection = [CPURLConnection connectionWithRequest:_writeRequest delegate:self];
 
@@ -784,16 +785,19 @@ var CPDocumentUntitledCount = 0;
 */
 - (void)saveDocumentAs:(id)aSender
 {
-    _documentName = window.prompt("Document Name:");
+    var savePanel = [CPSavePanel savePanel],
+        response = [savePanel runModal];
 
-    if (!_documentName)
+    if (!response)
         return;
-        
+
+    var saveURL = [savePanel filename];
+
     [[CPNotificationCenter defaultCenter]
         postNotificationName:CPDocumentWillSaveNotification
                       object:self];
-    
-    [self saveToURL:[self proposedFileURL] ofType:[self fileType] forSaveOperation:CPSaveAsOperation delegate:self didSaveSelector:@selector(document:didSave:contextInfo:) contextInfo:NULL];
+
+    [self saveToURL:saveURL ofType:[self fileType] forSaveOperation:CPSaveAsOperation delegate:self didSaveSelector:@selector(document:didSave:contextInfo:) contextInfo:NULL];
 }
 
 /*

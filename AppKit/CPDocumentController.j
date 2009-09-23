@@ -24,6 +24,7 @@
 @import <Foundation/CPBundle.j>
 
 @import "CPDocument.j"
+@import "CPOpenPanel.j";
 
 
 var CPSharedDocumentController = nil;
@@ -138,11 +139,11 @@ var CPSharedDocumentController = nil;
 - (CPDocument)openDocumentWithContentsOfURL:(CPURL)anAbsoluteURL display:(BOOL)shouldDisplay error:(CPError)anError
 {
     var result = [self documentForURL:anAbsoluteURL];
-    
+
     if (!result)
     {
         var type = [self typeForContentsOfURL:anAbsoluteURL error:anError];
-        
+
         result = [self makeDocumentWithContentsOfURL:anAbsoluteURL ofType:type delegate:self didReadSelector:@selector(document:didRead:contextInfo:) contextInfo:[CPDictionary dictionaryWithObject:shouldDisplay forKey:@"shouldDisplay"]];
     }
     else if (shouldDisplay)
@@ -217,6 +218,20 @@ var CPSharedDocumentController = nil;
 - (CFAction)newDocument:(id)aSender
 {
     [self openUntitledDocumentOfType:[[_documentTypes objectAtIndex:0] objectForKey:@"CPBundleTypeName"] display:YES];
+}
+
+-(void)openDocument:(id)aSender
+{
+    var openPanel = [CPOpenPanel openPanel];
+    
+    [openPanel runModalForTypes:nil];//[@"nib", @"xib", @"cib"]];
+    
+    var filenames = [openPanel filenames],
+        index = 0,
+        count = [filenames count];
+
+    for (; index < count; ++index)
+        [self openDocumentWithContentsOfURL:[CPURL URLWithString:filenames[index]] display:YES error:nil];
 }
 
 // Managing Documents

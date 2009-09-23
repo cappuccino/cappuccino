@@ -2,60 +2,84 @@
 @import <AppKit/CPPanel.j>
 #include "Platform/Platform.h"
 
-var SharedOpenPanel = nil;
 
 @implementation CPOpenPanel : CPPanel
 {
-    CPArray _files;
-    BOOL    _canChooseFiles @accessors(property=canChooseFiles);
-    BOOL    _canChooseDirectories @accessors(property=canChooseDirectories);
-    BOOL    _allowsMultipleSelection @accessors(property=allowsMultipleSelection);
+    JSObject    _openPanel;
 }
 
 + (id)openPanel
 {
-    if (!SharedOpenPanel)
-        SharedOpenPanel = [[CPOpenPanel alloc] init];
-
-    return SharedOpenPanel;
+    return [[CPOpenPanel alloc] init];
 }
 
 - (id)init
 {
     if (self = [super init])
-    {
-        _files = [];
-        _canChooseFiles = YES;
-    }
+        _openPanel = window.application.createOpenPanel();
 
     return self;
 }
 
+- (BOOL)canChooseFiles
+{
+    return _openPanel.canChooseFiles;
+}
+
+- (void)setCanChooseFiles:(BOOL)shouldChooseFiles
+{
+    _openPanel.canChooseFiles = shouldChooseFiles;
+}
+
+- (BOOL)canChooseDirectories
+{
+    return _openPanel.canChooseDirectories;
+}
+
+- (void)setCanChooseDirectories:(BOOL)shouldChooseDirectories
+{
+    _openPanel.canChooseDirectories = shouldChooseDirectories;
+}
+
+- (BOOL)resolvesAliases
+{
+    return _openPanel.resolvesAliases;
+}
+
+- (BOOL)setResolvesAliases:(BOOL)shouldResolveAliases
+{
+    return _openPanel.resolvesAliases = shouldResolveAliases;
+}
+
+- (BOOL)allowsMultipleSelections
+{
+    return _openPanel.resolvesAliases;
+}
+
+- (BOOL)setAllowsMultipleSelections:(BOOL)shouldAllowMultipleSelection
+{
+    return _openPanel.allowsMultipleSelection = shouldAllowMultipleSelection;
+}
+
 - (void)filenames
 {
-    return _files;
+    return _openPanel.filenames;
 }
 
-- (unsigned)runModalForDirectory:(CPString)absoluteDirectoryPath file:(CPString)filename types:(CPArray)fileTypes
+- (CPInteger)runModalForDirectory:(CPString)anAbsoluteDirectoryPath file:(CPString)aFilename types:(CPArray)fileTypes
 {
-#if PLATFORM(DOM)
-    if (window.Titanium)
-    {
-        _files = Titanium.Desktop.openFiles({
-            path:absoluteDirectoryPath,
-            types:fileTypes,
-            multiple:_allowsMultipleSelection,
-            filename:filename,
-            directories:_canChooseDirectories,
-            files:_canChooseFiles
-        });
-    }
-#endif
+    // FIXME: Is this correct???
+    [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
+
+    return _openPanel.runModal(anAbsoluteDirectoryPath, aFilename, fileTypes);
 }
 
-- (unsigned)runModalForTypes:(CPArray)fileTypes 
-{alert("HERE");
-    [self runModalForDirectory:"/" file:nil types:fileTypes];
+- (CPInteger)runModalForTypes:(CPArray)fileTypes 
+{
+    // FIXME: Is this correct???
+    [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
+
+    return _openPanel.runModal(fileTypes);
 }
 
 @end
