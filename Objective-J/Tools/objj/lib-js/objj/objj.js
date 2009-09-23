@@ -37,7 +37,8 @@ with (window)
         "OBJJ_PREPROCESSOR_DEBUG_SYMBOLS",
         "objj_data",
         "CPPropertyListCreateData", "CPPropertyListCreateFromData",
-        "kCFPropertyListXMLFormat_v1_0", "kCFPropertyList280NorthFormat_v1_0"
+        "kCFPropertyListXMLFormat_v1_0", "kCFPropertyList280NorthFormat_v1_0",
+        "objj_dictionary"
     ].forEach(function(v) {
         exports[v] = eval(v);
     });

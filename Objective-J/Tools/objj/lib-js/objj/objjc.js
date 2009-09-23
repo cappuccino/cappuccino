@@ -1,6 +1,14 @@
-var file = require("file"),
-    os = require("os")
-    objj = require("./objj");
+var FILE = require("file"),
+    OS = require("os"),
+    objj = require("./objj"),
+    objj_preprocess = objj.objj_preprocess,
+    IS_FILE = objj.IS_FILE,
+    GET_CODE = objj.GET_CODE,
+    IS_LOCAL = objj.IS_LOCAL,
+    MARKER_IMPORT_STD = objj.MARKER_IMPORT_STD,
+    MARKER_IMPORT_LOCAL = objj.MARKER_IMPORT_LOCAL,
+    MARKER_CODE = objj.MARKER_CODE,
+    GET_PATH = objj.GET_PATH;
 
 require("objj/regexp-rhino-patch");
 
@@ -10,21 +18,24 @@ var OBJJ_PREPROCESSOR_PREPROCESS      = exports.OBJJ_PREPROCESSOR_PREPROCESS    
 var OBJJ_PREPROCESSOR_COMPRESS        = exports.OBJJ_PREPROCESSOR_COMPRESS        = 1 << 11;
 var OBJJ_PREPROCESSOR_SYNTAX          = exports.OBJJ_PREPROCESSOR_SYNTAX          = 1 << 12;
 
-var SHRINKSAFE_PATH = file.join(objj.OBJJ_HOME, "shrinksafe", "shrinksafe.jar"),
-    RHINO_PATH = file.join(objj.OBJJ_HOME, "shrinksafe", "js.jar")
+var SHRINKSAFE_PATH = FILE.join(objj.OBJJ_HOME, "shrinksafe", "shrinksafe.jar"),
+    RHINO_PATH = FILE.join(objj.OBJJ_HOME, "shrinksafe", "js.jar")
 
-function compress(/*String*/ aCode, /*Object*/ flags, /*String*/ tmpFile)
+function compress(/*String*/ aCode, /*String*/ FIXME)
 {
-    file.write(tmpFile, aCode, { charset:"UTF-8" });
+    // FIXME: figure out why this doesn't work on Windows/Cygwin
+    //var tmpFile = java.io.File.createTempFile("OBJJC", "");
+    var tmpFile = new java.io.File(FIXME + ".tmp");
+    tmpFile.deleteOnExit();
+    tmpFile = tmpFile.getAbsolutePath();
 
-    return os.command(["java", "-Dfile.encoding=UTF-8", "-classpath", [RHINO_PATH, SHRINKSAFE_PATH].join(":"), "org.dojotoolkit.shrinksafe.Main", tmpFile]);
+    FILE.write(tmpFile, aCode, { charset:"UTF-8" });
+
+    return OS.command(["java", "-Dfile.encoding=UTF-8", "-classpath", [RHINO_PATH, SHRINKSAFE_PATH].join(":"), "org.dojotoolkit.shrinksafe.Main", tmpFile]);
 }
 
 exports.preprocess = function(inFile, outFile, flags, gccArgs)
 {
-    with(objj)
-    {
-
     print("Statically Preprocessing " + inFile);
     
     if (flags === undefined)
@@ -33,31 +44,28 @@ exports.preprocess = function(inFile, outFile, flags, gccArgs)
     var shouldObjjPreprocess = flags & OBJJ_PREPROCESSOR_PREPROCESS,
         shouldCheckSyntax = flags & OBJJ_PREPROCESSOR_SYNTAX,
         shouldCompress = flags & OBJJ_PREPROCESSOR_COMPRESS;
-    
-    // FIXME: figure out why this doesn't work on Windows/Cygwin
-    //var tmpFile = java.io.File.createTempFile("OBJJC", "");
-    var tmpFile = new java.io.File(outFile + ".tmp");
-    tmpFile.deleteOnExit();
-    tmpFile = tmpFile.getAbsolutePath();
-    
-    // -E JUST preprocess.
-    // -x c Interpret language as C -- closest thing to JavaScript.
-    // -P Don't generate #line directives
-    var gccComponents = ["gcc"]
-        .concat("-E", "-x", "c", "-P", inFile)
-        .concat(gccArgs || [])
-        .concat("-o", shouldObjjPreprocess ? tmpFile : outFile);
-    
-    os.system(gccComponents);
+
+    gccArgs = gccArgs ? gccArgs.join(" ") : "";
+
+    var gccCommand = "gcc -E -x c -P " + gccArgs + " " + inFile;
     
     if (!shouldObjjPreprocess)
+    {
+        OS.system(gccCommand + " -o" + outFile);
         return;
-    
+    }
+
+    var gcc = OS.popen(gccCommand);
+
     // Read file and preprocess it.
-    var fileContents = file.read(tmpFile, { charset: "UTF-8" });
+    var fileContents = "",
+        chunk = "";
+
+    while (chunk = gcc.stdout.read())
+        fileContents += chunk;
 
     // Preprocess contents into fragments.
-    var fragments = objj_preprocess(fileContents, { path : "/x" }, { path: file.basename(inFile) }, flags),
+    var fragments = objj_preprocess(fileContents, { path : "/x" }, { path: FILE.basename(inFile) }, flags),
         preprocessed = "";
 
     // Writer preprocessed fragments out.
@@ -86,13 +94,13 @@ exports.preprocess = function(inFile, outFile, flags, gccArgs)
                             " on preprocessed line number "+e.lineNumber+"\n"+
                             "\t"+lines.slice(Math.max(0, e.lineNumber - 1 - PAD), e.lineNumber+PAD).join("\n\t"));
                         
-                    os.exit(1);
+                    OS.exit(1);
                 }
             }
             
             if (shouldCompress)
             {
-                code = compress("function(){" + code + '}', 0, tmpFile);
+                code = compress("function(){" + code + '}', outFile);
             
                 code = code.substr("function(){".length, code.length - "function(){};\n\n".length);
             }
@@ -100,11 +108,9 @@ exports.preprocess = function(inFile, outFile, flags, gccArgs)
             preprocessed += MARKER_CODE + ';' + code.length + ';' + code;
         }
     }
-    
+
     // Write file.
-    file.write(outFile, preprocessed, { charset: "UTF-8" });
-        
-    }
+    FILE.write(outFile, preprocessed, { charset: "UTF-8" });
 }
 
 exports.main = function(args)
