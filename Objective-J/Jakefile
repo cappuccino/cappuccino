@@ -89,7 +89,7 @@ task ("clean", ["clean_suprojects"]);
 
 task ("clobber", ["clobber_subprojects"]);
 
-subprojects = ["Tools"];
+subprojects = ["CommonJS"];
 
 task ("build_subprojects", function()
 {

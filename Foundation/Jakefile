@@ -1,17 +1,15 @@
 #!/usr/bin/env narwhal
-print("ok");
-var FILE = require("file"),
-    bundle = require(FILE.absolute("/Users/tolmasky/Development/Cappuccino/Objective-J/commonJS/objective-j/lib/jake/bundletask")).bundle,
-    BundleTask = require(FILE.absolute("/Users/tolmasky/Development/Cappuccino/Objective-J/commonJS/objective-j/lib/jake/bundletask")).BundleTask;
+
+
+var FILE = require("file");
 
 require(FILE.absolute("../common.jake"));
 
-$ENVIRONMENT_PRODUCT = FILE.join($ENVIRONMENT_FRAMEWORKS_DIR, "Foundation");
 $BUILD_PATH = FILE.join($BUILD_DIR, $CONFIGURATION, "Foundation");
 
-task ("build", ["Foundation", $ENVIRONMENT_PRODUCT]);
+task ("build", ["Foundation"]);
 
-bundle ("Foundation", function(foundationTask)
+framework ("Foundation", function(foundationTask)
 {
     foundationTask.setBuildIntermediatesPath(FILE.join($BUILD_DIR, "Foundation.build", $CONFIGURATION))
     foundationTask.setBuildPath(FILE.join($BUILD_DIR, $CONFIGURATION));
@@ -20,12 +18,6 @@ bundle ("Foundation", function(foundationTask)
     foundationTask.setLicense(BundleTask.License.LGPL_v2_1);
     foundationTask.setSources(FILE.glob("**/*.j").concat(FILE.glob("*.j")));//terrible!
     foundationTask.setResources(FILE.glob("Resources/*"));
-});
-
-// Framework in environment directory
-filedir ($ENVIRONMENT_PRODUCT, ["Foundation"], function()
-{
-    cp_r(FILE.join($BUILD_PATH, '.'), $ENVIRONMENT_PRODUCT);
 });
 
 //CLOBBER.include($ENVIRONMENT_PRODUCT)

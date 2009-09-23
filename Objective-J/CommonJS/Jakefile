@@ -1,0 +1,17 @@
+#!/usr/bin/env narwhal
+
+var FILE = require("file");
+
+require("../../common.jake");
+
+$COMMON_JS_PRODUCT = FILE.join($BUILD_DIR, "objective-j");
+
+task ("build", [$COMMON_JS_PRODUCT]);
+
+filedir ($COMMON_JS_PRODUCT, FILE.glob("objective-j/**/*"), function()
+{
+    rm_rf($COMMON_JS_PRODUCT);
+    cp_r('objective-j', $COMMON_JS_PRODUCT);
+});
+
+//CLOBBER.include($ENVIRONMENT_OBJJ_PRODUCT)

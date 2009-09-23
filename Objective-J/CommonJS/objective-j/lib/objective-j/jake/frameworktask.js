@@ -1,13 +1,13 @@
 
-BundleTask = require("objective-j/bundletask").BundleTask;
+BundleTask = require("objective-j/jake/bundletask").BundleTask;
 
-function FrameworkTask()
-{
+function FrameworkTask(aName)
+{print(aName + " so far so good");
     BundleTask.apply(this, arguments);
 }
 
 FrameworkTask.__proto__ = BundleTask;
-FrameworkTask.prototype.__proto__ = BundleTask;
+FrameworkTask.prototype.__proto__ = BundleTask.prototype;
 
 FrameworkTask.prototype.packageTask = function()
 {
@@ -19,5 +19,5 @@ exports.FrameworkTask = FrameworkTask;
 exports.framework = function(aName, aFunction)
 {
     // No .apply necessary because the parameters aren't variable.
-    return Framework.defineTask(aName, aFunction);
+    return FrameworkTask.defineTask(aName, aFunction);
 }

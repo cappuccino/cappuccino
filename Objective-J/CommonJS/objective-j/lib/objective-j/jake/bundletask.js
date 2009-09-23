@@ -105,19 +105,19 @@ BundleTask.defineTask = function(/*String*/ aName, /*Function*/ aFunction)
 
 BundleTask.Platform =   {
                             "ObjJ"      : "ObjJ",
-                            "Rhino"     : "Rhino",
+                            "CommonJS"  : "CommonJS",
                             "Browser"   : "Browser"
                         };
 
 BundleTask.PLATFORM_DIRECTORIES =   {
                                         "ObjJ"      : "objj.platform",
-                                        "Rhino"     : "rhino.platform",
+                                        "CommonJS"  : "commonjs.platform",
                                         "Browser"   : "browser.platform"
                                     };
 
 BundleTask.PLATFORM_DEFAULT_FLAGS = {
                                         "ObjJ"      : [],
-                                        "Rhino"     : ['-DPLATFORM_RHINO'],
+                                        "CommonJS"  : ['-DPLATFORM_RHINO -DPLATFORM_COMMONJS'],
                                         "Browser"   : ['-DPLATFORM_BROWSER', '-DPLATFORM_DOM']
                                     };
         
@@ -321,7 +321,7 @@ var LICENSES_PATH   = FILE.join(FILE.absolute(FILE.dirname(module.path)), "LICEN
                             "LGPL_v2_1" : FILE.join(LICENSES_PATH, "LGPL-v2.1"),
                             "MIT"       : FILE.join(LICENSES_PATH, "MIT")
                         };
-print(LICENSE_PATHS.LGPL_v2_1);
+
 BundleTask.prototype.defineLicenseTask = function()
 {
     var license = this.license();
@@ -405,7 +405,7 @@ BundleTask.prototype.resourcesPath = function()
 
 BundleTask.prototype.defineResourceTask = function(aResourcePath, aDestinationPath)
 {
-    var extname = FILE.extname(aResourcePath);
+    var extname = FILE.extension(aResourcePath);
 
     // NOT:
     // (extname === ".cib" && (FILE.exists(extensionless + '.xib') || FILE.exists(extensionless + '.nib')) ||
@@ -447,9 +447,9 @@ BundleTask.prototype.defineResourceTasks = function()
 
         if (FILE.isDirectory(aResourcePath))
         {
-            FILE.glob(aPath + "/**/*").forEach(function(aSubresourcePath)
+            FILE.glob(aResourcePath + "/**").forEach(function(aSubresourcePath)
             {
-                this.defineResourceTask(resourcePath, FILE.join(resourcesPath, aSubresourcePath.substring(aSubresourcePath.length - baselength)));
+                this.defineResourceTask(aSubresourcePath, FILE.join(resourcesPath, aSubresourcePath.substring(aResourcePath.length - baselength)));
             }, this);
         }
         else
@@ -495,7 +495,8 @@ BundleTask.prototype.defineSourceTasks = function()
     {
         var platformSources = sources,
             platformBuildIntermediatesPath = FILE.join(this.buildIntermediatesProductPath(), BundleTask.PLATFORM_DIRECTORIES[aPlatform]),
-            staticPath = this.buildProductStaticPathForPlatform(aPlatform);
+            staticPath = this.buildProductStaticPathForPlatform(aPlatform),
+            flags = BundleTask.PLATFORM_DEFAULT_FLAGS[aPlatform];
 
         if (!Array.isArray(platformSources))
             platformSources = platformSources[aPlatform];
@@ -503,14 +504,14 @@ BundleTask.prototype.defineSourceTasks = function()
         platformSources.forEach(function(/*String*/ aFilename)
         {
             // if this file doesn't exist or isn't a .j file, don't preprocess it.
-            if (!FILE.exists(aFilename) || FILE.extname(aFilename) !== '.j')
+            if (!FILE.exists(aFilename) || FILE.extension(aFilename) !== '.j')
                 return;
 
             var compiledPlatformSource = FILE.join(platformBuildIntermediatesPath, FILE.basename(aFilename));
 
             filedir (compiledPlatformSource, [aFilename], function()
-            {
-                objjc.preprocess(aFilename, compiledPlatformSource);
+            {//#{flags.join(' ')} #{PLATFORM_FLAGS[platform].join(' ')}
+                objjc.preprocess(aFilename, compiledPlatformSource, flags);
             });
 
             filedir (staticPath, [compiledPlatformSource]);
