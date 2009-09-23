@@ -1,0 +1,24 @@
+#!/usr/bin/env narwhal
+
+var FILE = require("file");
+
+//require("jake/clean");
+require(FILE.absolute("../../common.jake"));
+
+$ENVIRONMENT_NARWHAL_PRODUCT = $ENVIRONMENT_DIR
+$ENVIRONMENT_OBJJ_PRODUCT = FILE.join($ENVIRONMENT_NARWHAL_PRODUCT, 'packages', 'objj')
+
+$EXECUTABLES = ['objj', 'objjc', 'cplutil'];
+
+task ("build", function()
+{
+    rm_rf($ENVIRONMENT_OBJJ_PRODUCT);
+    cp_r("objj", $ENVIRONMENT_OBJJ_PRODUCT);
+
+    $EXECUTABLES.forEach(function(executable)
+    {
+        symlink_executable(FILE.join($ENVIRONMENT_BIN_DIR, executable));
+    });
+});
+
+//CLOBBER.include($ENVIRONMENT_OBJJ_PRODUCT);
