@@ -45,7 +45,9 @@ exports.preprocess = function(inFile, outFile, flags, gccArgs)
         shouldCheckSyntax = flags & OBJJ_PREPROCESSOR_SYNTAX,
         shouldCompress = flags & OBJJ_PREPROCESSOR_COMPRESS;
 
-    var gccCommand = "gcc -E -x c -P " + (gccArgs.join(" ") || "") + " " + inFile;
+    gccArgs = gccArgs ? gccArgs.join(" ") : "";
+
+    var gccCommand = "gcc -E -x c -P " + gccArgs + " " + inFile;
     
     if (!shouldObjjPreprocess)
     {
