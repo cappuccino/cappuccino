@@ -25,12 +25,16 @@ function BundleTask(aName, anApplication)
     this._resources = null;
     this._identifier = null;
     this._version = 0.1;
+
     this._compilerFlags = null;
+    this._flattensSources = false;
 
     this._productName = this.name();
     
     this._buildIntermediatesPath = null;
     this._buildPath = FILE.cwd();
+
+    this._replacedFiles = new objj_dictionary();
 
 //    this._nib2cibFlags = [];
 //   this.shouldnib
@@ -109,12 +113,6 @@ BundleTask.Platform =   {
                             "CommonJS"  : "CommonJS",
                             "Browser"   : "Browser"
                         };
-
-BundleTask.PLATFORM_DIRECTORIES =   {
-                                        "ObjJ"      : "objj.platform",
-                                        "CommonJS"  : "commonjs.platform",
-                                        "Browser"   : "browser.platform"
-                                    };
 
 BundleTask.PLATFORM_DEFAULT_FLAGS = {
                                         "ObjJ"      : [],
@@ -221,6 +219,16 @@ BundleTask.prototype.compilerFlags = function()
     return this._compilerFlags;
 }
 
+BundleTask.prototype.flattensSources = function()
+{
+    return this._flattensSources;
+}
+
+BundleTask.prototype.setFlattensSources = function(/*Boolean*/ shouldFlattenSources)
+{
+    this._flattensSources = shouldFlattenSources;
+}
+
 BundleTask.prototype.setLicense = function(aLicense)
 {
     this._license = aLicense;
@@ -263,7 +271,7 @@ BundleTask.prototype.buildIntermediatesProductPath = function()
 
 BundleTask.prototype.buildProductStaticPathForPlatform = function(aPlatform)
 {
-    return FILE.join(this.buildProductPath(), BundleTask.PLATFORM_DIRECTORIES[aPlatform], this.productName() + ".sj");
+    return FILE.join(this.buildProductPath(), aPlatform + ".platform", this.productName() + ".sj");
 }
 
 BundleTask.prototype.defineTasks = function()
@@ -290,13 +298,12 @@ BundleTask.prototype.infoPlist = function()
     infoPlist.setValue("CPBundleIdentifier", this.identifier());
     infoPlist.setValue("CPBundleVersion", this.version());
     infoPlist.setValue("CPBundlePackageType", this.packageType());
+    infoPlist.setValue("CPBundleReplacedFiles", this._replacedFiles);
+    infoPlist.setValue("CPBundlePlatforms", this.platforms());
+    infoPlist.setValue("CPBundleExecutable", this.productName() + ".sj");
 
     return infoPlist;
 /*
-    info_plist_path = File.join(build_path, 'Info.plist')
-    new_info_plist = { 'CPBundleName' => name, 'CPBundleIdentifier' => identifier, 'CPBundleInfoDictionaryVersion' => 6.0, 'CPBundleVersion' => version, 'CPBundlePackageType' => Bundle::Type.code_string(type) }
-    
-    new_info_plist['CPBundlePlatforms'] = platforms;
 
     if info_plist
         existing_info_plist = Plist::parse_xml(info_plist)
@@ -474,20 +481,32 @@ BundleTask.prototype.defineStaticTask = function()
 {
     this.platforms().forEach(function(/*String*/ aPlatform)
     {
-        var staticPath = this.buildProductStaticPathForPlatform(aPlatform);
+        var sourcesPath = FILE.join(this.buildIntermediatesProductPath(), aPlatform + ".platform", ""),
+            staticPath = this.buildProductStaticPathForPlatform(aPlatform),
+            flattensSources = this.flattensSources();
 
         filedir (staticPath, function(aTask)
         {
-            print("Creating static file...");
+            print("Creating static file... " + staticPath);
 
-            FILE.write(staticPath, "@STATIC;1.0;", { charset:"UTF-8" });
+            var fileStream = FILE.open(staticPath, "w+", { charset:"UTF-8" });
+
+            fileStream.write("@STATIC;1.0;");
 
             aTask.prerequisites().forEach(function(aFilename)
             {
                 // Our prerequisites will contain directories due to filedir.
                 if (FILE.isFile(aFilename))
-                    OS.system("cat " + aFilename + " >> " + staticPath);
+                {
+                    var relativePath = flattensSources ? FILE.basename(aFilename) : FILE.relative(sourcesPath, aFilename);
+
+                    // FIXME: We need to do this for now due to file.read adding newlines. Revert when fixed.
+                    fileStream.write("p;" + relativePath.length + ";" + relativePath);
+                    fileStream.write(FILE.read(aFilename, { mode:"b" }).decodeToString("UTF-8"));
+                }
             }, this);
+
+            fileStream.close();
         });
 
         this.enhance([staticPath]);
@@ -501,7 +520,8 @@ BundleTask.prototype.defineSourceTasks = function()
     if (!sources)
         return;
 
-    var compilerFlags = this.compilerFlags();
+    var compilerFlags = this.compilerFlags(),
+        flattensSources = this.flattensSources();
 
     if (!compilerFlags)
         compilerFlags = "";
@@ -512,12 +532,14 @@ BundleTask.prototype.defineSourceTasks = function()
     this.platforms().forEach(function(/*String*/ aPlatform)
     {
         var platformSources = sources,
-            platformBuildIntermediatesPath = FILE.join(this.buildIntermediatesProductPath(), BundleTask.PLATFORM_DIRECTORIES[aPlatform]),
+            sourcesPath = FILE.join(this.buildIntermediatesProductPath(), aPlatform + ".platform", ""),
             staticPath = this.buildProductStaticPathForPlatform(aPlatform),
             flags = BundleTask.PLATFORM_DEFAULT_FLAGS[aPlatform].join(" ");
 
         if (!Array.isArray(platformSources))
             platformSources = platformSources[aPlatform];
+
+        var replacedFiles = [];
 
         platformSources.forEach(function(/*String*/ aFilename)
         {
@@ -525,7 +547,7 @@ BundleTask.prototype.defineSourceTasks = function()
             if (!FILE.exists(aFilename) || FILE.extension(aFilename) !== '.j')
                 return;
 
-            var compiledPlatformSource = FILE.join(platformBuildIntermediatesPath, FILE.basename(aFilename));
+            var compiledPlatformSource = FILE.join(sourcesPath, FILE.basename(aFilename));
 
             filedir (compiledPlatformSource, [aFilename], function()
             {
@@ -535,7 +557,10 @@ BundleTask.prototype.defineSourceTasks = function()
 
             filedir (staticPath, [compiledPlatformSource]);
 
+            replacedFiles.push(flattensSources ? FILE.basename(aFilename) : FILE.relative(sourcesPath, aFilename));
         }, this);
+
+        this._replacedFiles.setValue(aPlatform, replacedFiles);
     }, this);
 /*
                     list.each do |fileName|

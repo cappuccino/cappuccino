@@ -1,0 +1,97 @@
+#!/usr/bin/env ruby
+
+var FILE = require("file");
+
+require(FILE.absolute("../common.jake"));
+
+
+$BUILD_PATH                 = FILE.join($BUILD_DIR, $CONFIGURATION, 'AppKit');
+$ENVIRONMENT_PRODUCT        = FILE.join($ENVIRONMENT_FRAMEWORKS_DIR, 'AppKit');
+
+$THEME_PRODUCT              = FILE.join($BUILD_PATH, 'Resources', 'Aristo.blend');
+$ENVIRONMENT_THEME_PRODUCT  = FILE.join($ENVIRONMENT_PRODUCT, 'Resources', 'Aristo.blend');
+
+//AppKitFiles = FileList['**/*.j'].exclude('CoreGraphics/CGContextCanvas.j', 'CoreGraphics/CGContextVML.j', 'Themes/**', 'Tools/**')
+
+framework ("AppKit", function(AppKitTask)
+{
+    AppKitTask.setBuildIntermediatesPath(FILE.join($BUILD_DIR, "AppKit.build", $CONFIGURATION))
+    AppKitTask.setBuildPath(FILE.join($BUILD_DIR, $CONFIGURATION));
+
+    AppKitTask.setIdentifier("com.280n.AppKit");
+    AppKitTask.setLicense(BundleTask.License.LGPL_v2_1);
+    AppKitTask.setSources(FILE.glob("**/*.j").concat(FILE.glob("*.j")));//terrible!
+    AppKitTask.setResources(FILE.glob("Resources/*"));
+    AppKitTask.setPlatforms([BundleTask.Platform.Browser, BundleTask.Platform.CommonJS]);
+    AppKitTask.setFlattensSources(true);
+
+    if ($CONFIGURATION === "Release")
+        AppKitTask.setCompilerFlags("-O");
+    else
+        AppKitTask.setCompilerFlags("-DDEBUG -g");
+});
+/*
+ObjectiveJ::BundleTask.new(:AppKit) do |t|
+    t.name          = 'AppKit'
+    t.identifier    = 'com.280n.AppKit'
+    t.version       = '0.7.1'
+    t.author        = '280 North, Inc.'
+    t.email         = 'feedback @nospam@ 280north.com'
+    t.summary       = 'AppKit classes for Cappuccino'
+    t.sources       = AppKitFiles
+    t.resources     = FileList['Resources/*']
+    t.license       = ObjectiveJ::License::LGPL_v2_1
+    t.build_path    = $BUILD_PATH
+    t.flag          = '-DDEBUG -g' if $CONFIGURATION == 'Debug'
+    t.flag          = '-O' if $CONFIGURATION == 'Release'
+    t.platforms     = [ObjectiveJ::Platform::Browser, ObjectiveJ::Platform::Rhino]
+    t.type          = ObjectiveJ::Bundle::Type::Framework
+end*/
+
+//# It would be nice to just have ENVIRONMENT_PRODUCT depend on THEME_PRODUCT,
+//# but this would be a circular dependency because THEME_PRODUCT needs
+//# ENVIRONMENT_PRODUCT up-to-date since it runs an objj application that uses
+//# AppKit.
+//file_d $ENVIRONMENT_PRODUCT => [:AppKit] do
+//    cp_r(File.join($BUILD_PATH, '.'), $ENVIRONMENT_PRODUCT)
+//end
+
+//file_d $ENVIRONMENT_THEME_PRODUCT => $THEME_PRODUCT do
+//    cp_r(File.join($THEME_PRODUCT, '.'), $ENVIRONMENT_THEME_PRODUCT)
+//end
+
+//ThemeFiles = FileList['Themes/Aristo/*']
+
+//file_d $THEME_PRODUCT => ThemeFiles << $ENVIRONMENT_PRODUCT do
+//    File.popen("blend -d Themes/Aristo/ThemeDescriptors.j -o #{$THEME_PRODUCT} -R Themes/Aristo/Resources") do |blend|
+//        blend.sync = true
+//
+//        while str = blend.gets
+//            puts str
+//        end
+//    end
+//    rake abort if ($? != 0)
+//end
+
+task ("build", ["AppKit"]);//, $ENVIRONMENT_PRODUCT, $THEME_PRODUCT, $ENVIRONMENT_THEME_PRODUCT]
+
+subprojects = ["Tools"];
+
+function subtasks(subprojects, taskNames)
+{
+    taskNames.forEach(function(aTaskName)
+    {
+        var subtaskName = taskNames + "_subprojects";
+
+        task (aTaskName, [subtaskName]);
+
+        task (subtaskName, function()
+        {
+            subjake(subprojects, aTaskName);
+        });
+    });
+}
+
+subtasks (subprojects, ["build", "clean", "clobber"]);
+
+//CLOBBER.include($ENVIRONMENT_PRODUCT)

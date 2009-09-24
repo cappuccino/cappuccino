@@ -18,6 +18,7 @@ framework ("Foundation", function(FoundationTask)
     FoundationTask.setLicense(BundleTask.License.LGPL_v2_1);
     FoundationTask.setSources(FILE.glob("**/*.j").concat(FILE.glob("*.j")));//terrible!
     FoundationTask.setResources(FILE.glob("Resources/*"));
+    FoundationTask.setFlattensSources(true);
 
     if ($CONFIGURATION === "Release")
         FoundationTask.setCompilerFlags("-O");

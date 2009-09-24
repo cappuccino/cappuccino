@@ -394,7 +394,7 @@ objj_search.prototype.didReceiveBundleResponse = function(aResponse)
         // FIXME: Is this the right approach?
         // Request the compiled file regardless of whether our current inquiry 
         var directory = DIRECTORY(aResponse.filePath),
-            replacedFiles = dictionary_getValue(bundle.info, "CPBundleReplacedFiles"),
+            replacedFiles = dictionary_getValue(dictionary_getValue(bundle.info, "CPBundleReplacedFiles"), platform),
             index = 0,
             count = replacedFiles.length;
         
