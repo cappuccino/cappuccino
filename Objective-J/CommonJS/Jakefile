@@ -4,14 +4,20 @@ var FILE = require("file");
 
 require("../../common.jake");
 
-$COMMON_JS_PRODUCT = FILE.join($BUILD_DIR, "objective-j");
+$COMMONJS_PRODUCT               = FILE.join($BUILD_DIR, $CONFIGURATION, "objective-j"),
+$COMMONJS_OBJECTIVE_J_PRODUCT   = FILE.join($COMMONJS_PRODUCT, "lib", "Frameworks", "Objective-J");
 
-task ("build", [$COMMON_JS_PRODUCT]);
+task ("build", [$COMMONJS_PRODUCT, $COMMONJS_OBJECTIVE_J_PRODUCT]);
 
-filedir ($COMMON_JS_PRODUCT, FILE.glob("objective-j/**/*"), function()
+filedir ($COMMONJS_PRODUCT, FILE.glob("objective-j/**/*"), function()
 {
-    rm_rf($COMMON_JS_PRODUCT);
-    cp_r('objective-j', $COMMON_JS_PRODUCT);
+    rm_rf($COMMONJS_PRODUCT);
+    cp_r('objective-j', $COMMONJS_PRODUCT);
+});
+
+filedir ($COMMONJS_OBJECTIVE_J_PRODUCT, function()
+{
+    cp_r(FILE.join($BUILD_DIR, $CONFIGURATION, "Objective-J"), $COMMONJS_OBJECTIVE_J_PRODUCT);
 });
 
 //CLOBBER.include($ENVIRONMENT_OBJJ_PRODUCT)

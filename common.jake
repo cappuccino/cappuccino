@@ -66,11 +66,11 @@ global.$ENVIRONMENT_FRAMEWORKS_DIR = FILE.join($ENVIRONMENT_LIB_DIR, 'Frameworks
 global.$HOME_DIR        = FILE.absolute(FILE.dirname(module.path));
 global.$LICENSE_FILE    = FILE.absolute(FILE.join(FILE.dirname(module.path), 'LICENSE'));
 
-var objectiveJLib = FILE.join($BUILD_DIR, "objective-j", "lib");
+var objectiveJLibJS = FILE.join($BUILD_DIR, $CONFIGURATION, "CommonJS", "objective-j", "lib-js");
 
-if (FILE.exists(objectiveJLib))
+if (FILE.exists(objectiveJLibJS))
 {
-    require.paths.unshift(objectiveJLib);
+    require.paths.unshift(objectiveJLibJS);
 
     var OBJECTIVE_J_JAKE = require("objective-j/jake");
 

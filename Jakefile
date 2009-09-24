@@ -7,7 +7,7 @@ var FILE = require("file"),
 
 require(FILE.absolute("common.jake"));
 
-var subprojects = ["External", "Objective-J", "Foundation", "AppKit", "Tools", "External/ojunit"];
+var subprojects = [/*"External", */"Objective-J", "Foundation", "AppKit", "Tools", "External/ojunit"];
 
 ["build", "clean", "clobber"].forEach(function(/*String*/ aTaskName)
 {

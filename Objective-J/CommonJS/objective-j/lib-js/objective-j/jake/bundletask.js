@@ -2,9 +2,9 @@
 var FILE = require("file"),
     OS = require("os"),
     Jake = require("jake"),
-    objj = require("objj/objj"),
-    objjc = require("objj/objjc"),
-    plist = require("objj/plist");
+    objj_dictionary = require("objective-j").objj_dictionary,
+    compiler = require("objective-j/compiler"),
+    plist = require("objective-j/plist");
 
 var Task = Jake.Task,
     filedir = Jake.filedir;
@@ -25,6 +25,7 @@ function BundleTask(aName, anApplication)
     this._resources = null;
     this._identifier = null;
     this._version = 0.1;
+    this._compilerFlags = null;
 
     this._productName = this.name();
     
@@ -210,6 +211,16 @@ BundleTask.prototype.productName = function()
     return this._productName;
 }
 
+BundleTask.prototype.setCompilerFlags = function(flags)
+{
+    this._compilerFlags = flags;
+}
+
+BundleTask.prototype.compilerFlags = function()
+{
+    return this._compilerFlags;
+}
+
 BundleTask.prototype.setLicense = function(aLicense)
 {
     this._license = aLicense;
@@ -272,7 +283,7 @@ BundleTask.prototype.packageType = function()
 
 BundleTask.prototype.infoPlist = function()
 {
-    var infoPlist = new objj.objj_dictionary();
+    var infoPlist = new objj_dictionary();
     //util = require("util"),
     infoPlist.setValue("CPBundleInfoDictionaryVersion", 6.0);
     infoPlist.setValue("CPBundleName", this.productName());
@@ -469,8 +480,7 @@ BundleTask.prototype.defineStaticTask = function()
         {
             print("Creating static file...");
 
-            // No newline!
-            OS.system("echo -n \"@STATIC;1.0;\" > " + staticPath);
+            FILE.write(staticPath, "@STATIC;1.0;", { charset:"UTF-8" });
 
             aTask.prerequisites().forEach(function(aFilename)
             {
@@ -491,12 +501,20 @@ BundleTask.prototype.defineSourceTasks = function()
     if (!sources)
         return;
 
+    var compilerFlags = this.compilerFlags();
+
+    if (!compilerFlags)
+        compilerFlags = "";
+
+    else if (compilerFlags.join)
+        compilerFlags = compilerFlags.join(" ");
+
     this.platforms().forEach(function(/*String*/ aPlatform)
     {
         var platformSources = sources,
             platformBuildIntermediatesPath = FILE.join(this.buildIntermediatesProductPath(), BundleTask.PLATFORM_DIRECTORIES[aPlatform]),
             staticPath = this.buildProductStaticPathForPlatform(aPlatform),
-            flags = BundleTask.PLATFORM_DEFAULT_FLAGS[aPlatform];
+            flags = BundleTask.PLATFORM_DEFAULT_FLAGS[aPlatform].join(" ");
 
         if (!Array.isArray(platformSources))
             platformSources = platformSources[aPlatform];
@@ -510,8 +528,9 @@ BundleTask.prototype.defineSourceTasks = function()
             var compiledPlatformSource = FILE.join(platformBuildIntermediatesPath, FILE.basename(aFilename));
 
             filedir (compiledPlatformSource, [aFilename], function()
-            {//#{flags.join(' ')} #{PLATFORM_FLAGS[platform].join(' ')}
-                objjc.preprocess(aFilename, compiledPlatformSource, flags);
+            {
+                print("Compiling " + aFilename + "...");
+                FILE.write(compiledPlatformSource, compiler.compile(aFilename, flags + " " + compilerFlags), { charset:"UTF-8" });
             });
 
             filedir (staticPath, [compiledPlatformSource]);

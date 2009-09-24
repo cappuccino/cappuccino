@@ -6,33 +6,23 @@ var FILE = require("file"),
 
 require(FILE.absolute("../common.jake"));
 
-task = Jake.task;
-file = Jake.file;
-filedir = Jake.filedir;
-FileList = Jake.FileList;
+$PRODUCT                    = FILE.join($PRODUCT_DIR, "Objective-J")
+$COMMONJS_PRODUCT           = FILE.join($PRODUCT_DIR, "CommonJS", "objective-j");
+$COMMONJS_FRAMEWORK_PRODUCT = FILE.join($COMMONJS_PRODUCT, "lib", "Frameworks", "Objective-J");
 
-/*
-require '../common'
-require 'objective-j'
-require 'rake'
-require 'rake/clean'
-*/
-
-$PRODUCT                = FILE.join($PRODUCT_DIR, 'Objective-J')
-$ENVIRONMENT_PRODUCT    = FILE.join($ENVIRONMENT_FRAMEWORKS_DIR, 'Objective-J')
 $LICENSE_PRODUCT        = FILE.join($PRODUCT, 'LICENSE')
-
 $LICENSE_FILE           = FILE.join($HOME_DIR, 'Tools', 'Rake', 'lib', 'licenses', 'LGPL-v2.1')
 
 $BROWSER_FILE           = FILE.join($PRODUCT, 'Objective-J.js')
 $RHINO_FILE             = FILE.join($PRODUCT, 'rhino.platform', 'Objective-J.js')
 
-task ("Products", [$BROWSER_FILE, $RHINO_FILE, $LICENSE_PRODUCT]);
-Files = ["constants.js", "utilities.js", "json2.js", "runtime.js", "dictionary.js", "plist.js", "file.js", "exception.js", "preprocess.js", "evaluate.js", "bootstrap.js"];
+Files = ["Runtime/constants.js", "Runtime/utilities.js", "Runtime/json2.js", "Runtime/runtime.js", "Runtime/dictionary.js", "Runtime/plist.js", "Runtime/file.js", "Runtime/exception.js", "Runtime/preprocess.js", "Runtime/evaluate.js", "Runtime/bootstrap.js"];
 //Files = new FileList("constants.js", "utilities.js", "json2.js", "runtime.js", "dictionary.js", "plist.js", "file.js", "exception.js", "preprocess.js", "evaluate.js", "bootstrap.js");
 
 if ($CONFIGURATION === "Debug")
-    Files.push("debug.js")//Files.add('debug.js');
+    Files.push("Runtime/debug.js")//Files.add('debug.js');
+
+task ("build", [$BROWSER_FILE, $RHINO_FILE, $LICENSE_PRODUCT, $COMMONJS_PRODUCT, $COMMONJS_FRAMEWORK_PRODUCT]);
 
 filedir ($BROWSER_FILE, Files, function(aTask)
 {
@@ -47,17 +37,23 @@ filedir ($RHINO_FILE, Files, function(aTask)
     build_product(aTask.name(), flags)
 });
 
-// Framework in environment directory
-filedir ($ENVIRONMENT_PRODUCT, ["Products"], function()
-{
-    rm_rf($ENVIRONMENT_PRODUCT);
-    cp_r($PRODUCT, $ENVIRONMENT_PRODUCT);
-});
-
 filedir ($LICENSE_PRODUCT, [$LICENSE_FILE], function()
 {
     FILE.copy($LICENSE_FILE, $LICENSE_PRODUCT);
 });
+
+filedir ($COMMONJS_PRODUCT, FILE.glob("CommonJS/objective-j/**/*"), function()
+{
+    rm_rf($COMMONJS_PRODUCT);
+    cp_r(FILE.join("CommonJS", "objective-j"), $COMMONJS_PRODUCT);
+});
+
+filedir ($COMMONJS_FRAMEWORK_PRODUCT, function()
+{
+    cp_r(FILE.join($BUILD_DIR, $CONFIGURATION, "Objective-J"), $COMMONJS_FRAMEWORK_PRODUCT);
+});
+
+//CLOBBER.include($ENVIRONMENT_OBJJ_PRODUCT)
 
 function platform_flags()
 {
@@ -69,9 +65,7 @@ function platform_flags()
 
 function build_product(path, flags)
 {
-    var preprocessor = OS.popen("gcc " + flags + " -E -x c -P -");
-
-    OS.system("cat header.txt > " + OS.enquote(path));
+    OS.system("cat Runtime/header.txt > " + OS.enquote(path));
     OS.system("cat " + 
     Files.filter(function(aName)
     {
@@ -79,32 +73,9 @@ function build_product(path, flags)
     }).map(function(aName)
     {
         return OS.enquote(aName);
-    }).join(' ') + " | gcc -E -x c -P - >> " + OS.enquote(path));
+    }).join(' ') + " | gcc " + flags + " -E -x c -P - >> " + OS.enquote(path));
     //    rake abort if ($? != 0)
 }
-
-task ("build", ["Products", "build_subprojects", $ENVIRONMENT_PRODUCT]);
-
-task ("clean", ["clean_suprojects"]);
-
-task ("clobber", ["clobber_subprojects"]);
-
-subprojects = ["CommonJS"];
-
-task ("build_subprojects", function()
-{
-    subjake(subprojects, "build");
-});
-
-task ("clean_suprojects", function()
-{
-    subjake(subprojects, "clean");
-});
-
-task ("clobber_subprojects", function()
-{
-    subjake(subprojects, "clobber");
-});
 
 //CLEAN.include() no temporary files.
 //CLOBBER.include($PRODUCT, $ENVIRONMENT_PRODUCT);

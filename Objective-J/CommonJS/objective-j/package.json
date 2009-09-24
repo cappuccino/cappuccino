@@ -1,5 +1,7 @@
 {
     "name": "objective-j",
+    "dependencies": ["narwhal", "jack", "browserjs"],
+    "lib": "lib-js",
     "author": "280 North, Inc. (http://280north.com/)",
     "description": "Objective-J module",
     "keywords": ["objective-j", "objj", "objective j", "cappuccino"],

@@ -9,15 +9,20 @@ $BUILD_PATH = FILE.join($BUILD_DIR, $CONFIGURATION, "Foundation");
 
 task ("build", ["Foundation"]);
 
-framework ("Foundation", function(foundationTask)
+framework ("Foundation", function(FoundationTask)
 {
-    foundationTask.setBuildIntermediatesPath(FILE.join($BUILD_DIR, "Foundation.build", $CONFIGURATION))
-    foundationTask.setBuildPath(FILE.join($BUILD_DIR, $CONFIGURATION));
+    FoundationTask.setBuildIntermediatesPath(FILE.join($BUILD_DIR, "Foundation.build", $CONFIGURATION))
+    FoundationTask.setBuildPath(FILE.join($BUILD_DIR, $CONFIGURATION));
     
-    foundationTask.setIdentifier("com.280n.Foundation");
-    foundationTask.setLicense(BundleTask.License.LGPL_v2_1);
-    foundationTask.setSources(FILE.glob("**/*.j").concat(FILE.glob("*.j")));//terrible!
-    foundationTask.setResources(FILE.glob("Resources/*"));
+    FoundationTask.setIdentifier("com.280n.Foundation");
+    FoundationTask.setLicense(BundleTask.License.LGPL_v2_1);
+    FoundationTask.setSources(FILE.glob("**/*.j").concat(FILE.glob("*.j")));//terrible!
+    FoundationTask.setResources(FILE.glob("Resources/*"));
+
+    if ($CONFIGURATION === "Release")
+        FoundationTask.setCompilerFlags("-O");
+    else
+        FoundationTask.setCompilerFlags("-DDEBUG -g");
 });
 
 //CLOBBER.include($ENVIRONMENT_PRODUCT)
