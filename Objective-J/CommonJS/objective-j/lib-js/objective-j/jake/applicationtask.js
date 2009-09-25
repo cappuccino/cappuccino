@@ -3,7 +3,7 @@ BundleTask = require("objective-j/jake/bundletask").BundleTask;
 
 function ApplicationTask(aName)
 {
-    ApplicationTask.apply(this, arguments);
+    BundleTask.apply(this, arguments);
 }
 
 ApplicationTask.__proto__ = BundleTask;
@@ -16,7 +16,7 @@ ApplicationTask.prototype.packageTask = function()
 
 exports.ApplicationTask = ApplicationTask;
 
-exports.application = function(aName, aFunction)
+exports.app = function(aName, aFunction)
 {
     // No .apply necessary because the parameters aren't variable.
     return ApplicationTask.defineTask(aName, aFunction);

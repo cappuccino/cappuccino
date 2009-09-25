@@ -1,0 +1,42 @@
+#!/usr/bin/env ruby
+
+var FILE = require("file");
+
+require ("../../common.jake");
+
+
+app ("capp", function(cappTask)
+{
+    cappTask.setBuildIntermediatesPath(FILE.join($BUILD_DIR, "capp.build", $CONFIGURATION))
+    cappTask.setBuildPath($COMMONJS_PRODUCT_LIB);
+
+    cappTask.setIdentifier("com.280n.capp");
+    cappTask.setLicense(BundleTask.License.LGPL_v2_1);
+    cappTask.setVersion("0.7.1");
+//    t.author        = '280 North, Inc.'
+//    t.email         = 'feedback @nospam@ 280north.com'
+//    t.summary       = 'Setup up Cappuccino projects'
+    cappTask.setSources(FILE.glob("*.j"));
+    cappTask.setResources(["Templates"]);
+    cappTask.setIncludesNibsAndXibs(true);
+    cappTask.setPlatforms([BundleTask.Platform.CommonJS]);
+
+    if ($CONFIGURATION === "Release")
+        cappTask.setCompilerFlags("-O");
+    else
+        cappTask.setCompilerFlags("-DDEBUG -g");
+});
+
+$COMMONJS_CAPP_BIN_PRODUCT = FILE.join($COMMONJS_PRODUCT_BIN, 'nib2cib');
+
+// executable in environment directory
+filedir($COMMONJS_CAPP_BIN_PRODUCT, ["capp"], function()
+{
+    make_objj_executable($COMMONJS_CAPP_BIN_PRODUCT);
+});
+
+task ("build", ["capp", $COMMONJS_CAPP_BIN_PRODUCT]);
+
+/*
+CLOBBER.include($ENVIRONMENT_BIN_PRODUCT, $ENVIRONMENT_LIB_PRODUCT)
+*/

@@ -1,0 +1,41 @@
+#!/usr/bin/env narwhal
+
+var FILE = require("file");
+
+require("../../common.jake");
+
+
+app ("nib2cib", function(nib2cibTask)
+{
+    nib2cibTask.setBuildIntermediatesPath(FILE.join($BUILD_DIR, "nib2cib.build", $CONFIGURATION))
+    nib2cibTask.setBuildPath($COMMONJS_PRODUCT_LIB);
+
+    nib2cibTask.setIdentifier("com.280n.nib2cib");
+    nib2cibTask.setLicense(BundleTask.License.LGPL_v2_1);
+    nib2cibTask.setVersion("0.7.1");
+//    t.author        = '280 North, Inc.'
+//    t.email         = 'feedback @nospam@ 280north.com'
+//    t.summary       = 'nib2cib converts Cocoa nib and xibs to Cappuccino cibs'
+    nib2cibTask.setSources(FILE.glob("*.j"));//    t.sources       = FileList['**/*.j']
+    nib2cibTask.setResources(FILE.glob("Resources/*"));
+    nib2cibTask.setPlatforms([BundleTask.Platform.CommonJS]);
+    nib2cibTask.setFlattensSources(true);
+
+    if ($CONFIGURATION === "Release")
+        nib2cibTask.setCompilerFlags("-O");
+    else
+        nib2cibTask.setCompilerFlags("-DDEBUG -g");
+});
+
+$COMMONJS_NIB2CIB_BIN_PRODUCT = FILE.join($COMMONJS_PRODUCT_BIN, 'nib2cib');
+
+// executable in environment directory
+filedir($COMMONJS_NIB2CIB_BIN_PRODUCT, ["nib2cib"], function()
+{
+    make_objj_executable($COMMONJS_NIB2CIB_BIN_PRODUCT);
+});
+
+task ("build", ["nib2cib", $COMMONJS_NIB2CIB_BIN_PRODUCT]);
+
+/*
+CLOBBER.include($ENVIRONMENT_BIN_PRODUCT, $ENVIRONMENT_LIB_PRODUCT )*/

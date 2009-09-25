@@ -11,28 +11,6 @@ global.directory = Jake.directory;
 //global.file = Jake.file;
 global.filedir = Jake.filedir;
 
-/*
-def gem_command
-    case RUBY_PLATFORM
-    when /win32/
-        'gem.bat'
-    when /java/
-        'jruby -S gem'
-    else
-        'gem'
-    end
-end
-
-begin
-    require 'rubygems'
-    require 'plist'
-rescue LoadError
-    puts 'Plist gem not installed, installing...'
-    cmd = "#{gem_command} install plist"
-    puts cmd
-    puts %x(#{cmd})
-end
-*/
 // Read in and set up development environment variables.
 if (!ENV["BUILD_PATH"])
 {
@@ -54,8 +32,13 @@ ENV["BUILD_PATH"] = FILE.absolute(ENV["BUILD_PATH"]);
 if (!ENV["CONFIG"])
     ENV["CONFIG"] = "Release";
 
-global.$CONFIGURATION              = ENV['CONFIG'];
-global.$BUILD_DIR                  = ENV['BUILD_PATH'];
+global.$CONFIGURATION           = ENV['CONFIG'];
+global.$BUILD_DIR               = ENV['BUILD_PATH'];
+global.$COMMONJS_PRODUCT        = FILE.join($BUILD_DIR, $CONFIGURATION, "CommonJS", "objective-j");
+global.$COMMONJS_PRODUCT_BIN    = FILE.join($COMMONJS_PRODUCT, "bin");
+global.$COMMONJS_PRODUCT_LIB    = FILE.join($COMMONJS_PRODUCT, "lib");
+
+
 global.$PRODUCT_DIR                = FILE.join($BUILD_DIR, $CONFIGURATION);
 global.$ENVIRONMENT_DIR            = FILE.join($BUILD_DIR, $CONFIGURATION, 'env');
 global.$ENVIRONMENT_NARWHAL_BIN_DIR= FILE.join($ENVIRONMENT_DIR, 'bin', '');
@@ -66,17 +49,28 @@ global.$ENVIRONMENT_FRAMEWORKS_DIR = FILE.join($ENVIRONMENT_LIB_DIR, 'Frameworks
 global.$HOME_DIR        = FILE.absolute(FILE.dirname(module.path));
 global.$LICENSE_FILE    = FILE.absolute(FILE.join(FILE.dirname(module.path), 'LICENSE'));
 
-var objectiveJLibJS = FILE.join($BUILD_DIR, $CONFIGURATION, "CommonJS", "objective-j", "lib-js");
-
-if (FILE.exists(objectiveJLibJS))
+if(!global.COMMON_DO_ONCE)
 {
-    require.paths.unshift(objectiveJLibJS);
+    global.COMMON_DO_ONCE = true;
 
-    var OBJECTIVE_J_JAKE = require("objective-j/jake");
+    var objectiveJBin = FILE.join($BUILD_DIR, $CONFIGURATION, "CommonJS", "objective-j", "bin"),
+        objectiveJLibJS = FILE.join($BUILD_DIR, $CONFIGURATION, "CommonJS", "objective-j", "lib-js");
 
-    global.bundle = OBJECTIVE_J_JAKE.bundle;
-    global.framework = OBJECTIVE_J_JAKE.framework;
-    global.BundleTask = OBJECTIVE_J_JAKE.BundleTask;
+    if (FILE.exists(objectiveJLibJS))
+    {
+        require.paths.unshift(objectiveJLibJS);
+
+        var OBJECTIVE_J_JAKE = require("objective-j/jake");
+
+        global.app = OBJECTIVE_J_JAKE.app;
+        global.bundle = OBJECTIVE_J_JAKE.bundle;
+        global.framework = OBJECTIVE_J_JAKE.framework;
+
+        global.BundleTask = OBJECTIVE_J_JAKE.BundleTask;
+    }
+
+    if (FILE.exists(objectiveJBin))
+        OS.system("PATH=$PATH:" + objectiveJBin);
 }
 
 global.rm_rf = function(/*String*/ aFilename)
@@ -87,20 +81,13 @@ global.rm_rf = function(/*String*/ aFilename)
 
 global.cp_r = function(/*String*/ from, /*String*/ to)
 {
+    rm_rf(to);
     FILE.copyTree(from, to);
 }
 
 global.cp = function(/*String*/ from, /*String*/ to)
 {
     FILE.copy(from, to);
-}
-
-if(!global.COMMON_DO_ONCE)
-{
-    COMMON_DO_ONCE = true
-    
-//    $LOAD_PATH << File.join($HOME_DIR, 'Tools', 'Rake', 'lib')
-    ENV["PATH"] = $ENVIRONMENT_NARWHAL_BIN_DIR + ":" + ENV["PATH"];
 }
 
 //require 'objective-j'
@@ -143,14 +130,14 @@ global.executableExists = function(/*String*/ aFileName)
     });
 }
 
-$OBJJ_TEMPLATE_EXECUTABLE   = FILE.join($HOME_DIR, 'Tools', 'Rake', 'lib', 'objj-executable')
-/*
-def make_objj_executable(path)
-    cp($OBJJ_TEMPLATE_EXECUTABLE, path)
-    File.chmod(0755, path)
-    symlink_executable(path)
-end
-*/
+$OBJJ_TEMPLATE_EXECUTABLE   = FILE.join($HOME_DIR, "Objective-J", "CommonJS", "objj-executable");
+
+global.make_objj_executable = function(aPath)
+{
+    cp($OBJJ_TEMPLATE_EXECUTABLE, aPath);
+    FILE.chmod(aPath, 0755);
+}
+
 global.symlink_executable = function(source)
 {
     relative = FILE.relative($ENVIRONMENT_NARWHAL_BIN_DIR, source);
@@ -218,4 +205,19 @@ function spawnJake(/*String*/ aTaskName)
     OS.system(serializedENV() + " " + ARGV[0] + " " + aTaskName);
     //system %{#{$serialized_env} #{$0} #{task_name}}
     //rake abort if ($? != 0)
+}
+
+global.subtasks = function(subprojects, taskNames)
+{
+    taskNames.forEach(function(aTaskName)
+    {
+        var subtaskName = taskNames + "_subprojects";
+
+        task (aTaskName, [subtaskName]);
+
+        task (subtaskName, function()
+        {
+            subjake(subprojects, aTaskName);
+        });
+    });
 }
