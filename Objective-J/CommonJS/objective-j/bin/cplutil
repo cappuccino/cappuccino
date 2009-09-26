@@ -1,0 +1,79 @@
+#!/usr/bin/env narwhal
+
+var FILE = require("file");
+
+
+function printUsage()
+{
+    print("this is where you say the usage");
+}
+
+function main()
+{
+    // FIXME: ARGS
+    system.args.shift();
+
+    if (system.args.length < 1)
+        return printUsage();
+    
+    var allFiles = NO,
+        format = nil,
+        filePaths = [],
+        outPath = nil,
+        outExtension = nil;
+    
+        index = 0,
+        count = system.args.length;
+    
+    for (; index < count; ++index)
+    {
+        var argument = system.args[index];
+        
+        if (argument.charAt(0) === '-' && !allFiles)
+        {
+            if (filePaths.length > 0)
+                return printUsage();
+            
+            else if (argument === "-convert")
+                format = system.args[++index];
+            
+            else if (argument === "-o")
+                outPath = system.args[++index];
+            
+            else if (argument === "-e")
+                outExtension = system.args[++index];
+            
+            else if (argument === "--")
+                allFiles = YES;
+                
+            else if (argument === "-help")
+                return printUsage();
+        }
+        else
+            filePaths.push(system.args[index]);
+    }
+    
+    index = 0;
+    count = filePaths.length;
+    
+    for (; index < count; ++index)
+    {
+        var filePath = filePaths[index],
+            data = new objj_data();
+        
+        data.string = FILE.read(filePaths[index], { charset:"UTF-8" });
+
+        var plistObject = new CPPropertyListCreateFromData(data);
+    
+        if (format === "280north1")
+            data = CPPropertyListCreate280NorthData(plistObject);
+    
+        else if (format === "xml1")
+            data = CPPropertyListCreateXMLData(plistObject);
+
+        // outextension?
+        FILE.write(outPath || filePath, data.string, { charset:"UTF-8" });
+    }
+}
+
+main();
