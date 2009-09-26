@@ -1,0 +1,44 @@
+#!/usr/bin/env narwhal
+
+require ("../../common.jake");
+
+
+app ("press", function(pressTask)
+{
+    pressTask.setBuildIntermediatesPath(FILE.join($BUILD_DIR, "press.build", $CONFIGURATION))
+    pressTask.setBuildPath($COMMONJS_PRODUCT_LIB);
+
+    pressTask.setAuthor("280 North, Inc.");
+    pressTask.setEmail("feedback @nospam@ 280north.com");
+    pressTask.setSummary("Deployment tool for Cappuccino applications");
+    pressTask.setIdentifier("com.280n.press");
+    pressTask.setLicense(BundleTask.License.LGPL_v2_1);
+    pressTask.setVersion("0.7.1");
+    pressTask.setSources(FILE.glob("*.j"));
+    pressTask.setResources(FILE.glob("Resources/*"));
+    pressTask.setPlatforms([BundleTask.Platform.CommonJS]);
+
+    if ($CONFIGURATION === "Release")
+        pressTask.setCompilerFlags("-O");
+    else
+        pressTask.setCompilerFlags("-DDEBUG -g");
+});
+
+$COMMONJS_PRESS_BIN_PRODUCT = FILE.join($COMMONJS_PRODUCT_BIN, 'press');
+
+// executable in environment directory
+filedir($COMMONJS_PRESS_BIN_PRODUCT, ["press"], function()
+{
+    make_objj_executable($COMMONJS_PRESS_BIN_PRODUCT);
+});
+
+task ("build", ["press", $COMMONJS_PRESS_BIN_PRODUCT]);
+
+/*
+
+file_d $ENVIRONMENT_BRIDGE => [File.join($HOME_DIR, 'Tools', 'Utilities', 'bridge.js')] do
+    cp(File.join($HOME_DIR, 'Tools', 'Utilities', 'bridge.js'), $ENVIRONMENT_BRIDGE)
+end
+
+CLOBBER.include($ENVIRONMENT_BIN_PRODUCT, $ENVIRONMENT_LIB_PRODUCT)
+*/
