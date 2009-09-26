@@ -2,7 +2,7 @@
 BundleTask = require("objective-j/jake/bundletask").BundleTask;
 
 function FrameworkTask(aName)
-{print(aName + " so far so good");
+{
     BundleTask.apply(this, arguments);
 }
 

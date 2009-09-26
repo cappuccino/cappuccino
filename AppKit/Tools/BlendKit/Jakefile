@@ -1,0 +1,35 @@
+#!/usr/bin/env narwhal
+
+require("../../../common.jake");
+
+
+blendKitTask = framework ("BlendKit", function(blendKitTask)
+{
+    blendKitTask.setBuildIntermediatesPath(FILE.join($BUILD_DIR, "BlendKit.build", $CONFIGURATION))
+    blendKitTask.setBuildPath(FILE.join($BUILD_DIR, $CONFIGURATION));
+
+    blendKitTask.setIdentifier("com.280n.BlendKit");
+    blendKitTask.setVersion("0.7.1");
+//    t.author        = '280 North, Inc.'
+//    t.email         = 'feedback @nospam@ 280north.com'
+//    t.summary       = 'BlendKit classes for Cappuccino'
+    blendKitTask.setSources(FILE.glob("*.j")); //t.sources       = FileList['*.j']
+    blendKitTask.setResources(FILE.glob("Resources/*"));
+    blendKitTask.setLicense(BundleTask.License.LGPL_v2_1);
+
+    if ($CONFIGURATION === "Release")
+        blendKitTask.setCompilerFlags("-O");
+    else
+        blendKitTask.setCompilerFlags("-DDEBUG -g");
+});
+
+$COMMONJS_PRODUCT_BLENDKIT = FILE.join($COMMONJS_PRODUCT_FRAMEWORKS, "BlendKit");
+
+filedir ($COMMONJS_PRODUCT_BLENDKIT, ["BlendKit"], function()
+{print("copying...");
+    cp_r(blendKitTask.buildProductPath(), $COMMONJS_PRODUCT_BLENDKIT);
+});
+print("here?...");
+task ("build", ["BlendKit", $COMMONJS_PRODUCT_BLENDKIT]);
+
+//CLOBBER.include($ENVIRONMENT_PRODUCT)

@@ -1,29 +1,35 @@
 #!/usr/bin/env narwhal
 
+require("../common.jake");
 
-var FILE = require("file");
 
-require(FILE.absolute("../common.jake"));
-
-$BUILD_PATH = FILE.join($BUILD_DIR, $CONFIGURATION, "Foundation");
-
-task ("build", ["Foundation"]);
-
-framework ("Foundation", function(FoundationTask)
+foundationTask = framework ("Foundation", function(foundationTask)
 {
-    FoundationTask.setBuildIntermediatesPath(FILE.join($BUILD_DIR, "Foundation.build", $CONFIGURATION))
-    FoundationTask.setBuildPath(FILE.join($BUILD_DIR, $CONFIGURATION));
-    
-    FoundationTask.setIdentifier("com.280n.Foundation");
-    FoundationTask.setLicense(BundleTask.License.LGPL_v2_1);
-    FoundationTask.setSources(FILE.glob("**/*.j").concat(FILE.glob("*.j")));//terrible!
-    FoundationTask.setResources(FILE.glob("Resources/*"));
-    FoundationTask.setFlattensSources(true);
+    foundationTask.setBuildIntermediatesPath(FILE.join($BUILD_DIR, "Foundation.build", $CONFIGURATION))
+    foundationTask.setBuildPath(FILE.join($BUILD_DIR, $CONFIGURATION));
+
+    foundationTask.setAuthor("280 North, Inc.");
+    foundationTask.setEmail("feedback @nospam@ 280north.com");
+    foundationTask.setSummary("Foundation classes for Cappuccino");
+    foundationTask.setIdentifier("com.280n.Foundation");
+    foundationTask.setLicense(BundleTask.License.LGPL_v2_1);
+    foundationTask.setSources(FILE.glob("**/*.j").concat(FILE.glob("*.j")));//terrible!
+    foundationTask.setResources(FILE.glob("Resources/*"));
+    foundationTask.setFlattensSources(true);
 
     if ($CONFIGURATION === "Release")
-        FoundationTask.setCompilerFlags("-O");
+        foundationTask.setCompilerFlags("-O");
     else
-        FoundationTask.setCompilerFlags("-DDEBUG -g");
+        foundationTask.setCompilerFlags("-DDEBUG -g");
 });
+
+$COMMONJS_PRODUCT_FOUNDATION = FILE.join($COMMONJS_PRODUCT_FRAMEWORKS, "Foundation");
+
+filedir ($COMMONJS_PRODUCT_FOUNDATION, ["Foundation"], function()
+{
+    cp_r(foundationTask.buildProductPath(), $COMMONJS_PRODUCT_FOUNDATION);
+});
+
+task ("build", ["Foundation", $COMMONJS_PRODUCT_FOUNDATION]);
 
 //CLOBBER.include($ENVIRONMENT_PRODUCT)

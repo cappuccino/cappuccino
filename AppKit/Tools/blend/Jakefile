@@ -1,0 +1,38 @@
+#!/usr/bin/env narwhal
+
+require("../../../common.jake");
+
+
+app ("blend", function(blendTask)
+{
+    blendTask.setBuildIntermediatesPath(FILE.join($BUILD_DIR, "blend.build", $CONFIGURATION));
+    blendTask.setBuildPath($COMMONJS_PRODUCT_LIB);
+
+    blendTask.setAuthor("280 North, Inc.");
+    blendTask.setEmail("feedback @nospam@ 280north.com");
+    blendTask.setSummary("blend classes for Cappuccino");
+    blendTask.setIdentifier("blend");
+    blendTask.setVersion("0.7.1");
+    blendTask.setSources(FILE.glob("*.j"));//       = FileList['**/*.j']
+    blendTask.setResources(FILE.glob("Resources/*"));//    t.resources     = FileList['Resources/*']
+    blendTask.setLicense(BundleTask.License.LGPL_v2_1);
+
+    if ($CONFIGURATION === "Release")
+        blendTask.setCompilerFlags("-O");
+    else
+        blendTask.setCompilerFlags("-DDEBUG -g");
+});
+
+$COMMONJS_BLEND_BIN_PRODUCT = FILE.join($COMMONJS_PRODUCT_BIN, "blend");
+
+// executable in environment directory
+filedir($COMMONJS_BLEND_BIN_PRODUCT, ["blend"], function()
+{
+    make_objj_executable($COMMONJS_BLEND_BIN_PRODUCT);
+});
+
+task ("build", ["blend", $COMMONJS_BLEND_BIN_PRODUCT]);
+
+/*
+CLOBBER.include($ENVIRONMENT_BIN_PRODUCT, $ENVIRONMENT_LIB_PRODUCT)
+*/

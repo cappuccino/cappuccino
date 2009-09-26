@@ -1,6 +1,4 @@
-#!/usr/bin/env ruby
-
-var FILE = require("file");
+#!/usr/bin/env narwhal
 
 require ("../../common.jake");
 
@@ -10,12 +8,12 @@ app ("capp", function(cappTask)
     cappTask.setBuildIntermediatesPath(FILE.join($BUILD_DIR, "capp.build", $CONFIGURATION))
     cappTask.setBuildPath($COMMONJS_PRODUCT_LIB);
 
+    cappTask.setAuthor("280 North, Inc.");
+    cappTask.setEmail("feedback @nospam@ 280north.com");
+    cappTask.setSummary("Setup up Cappuccino projects");
     cappTask.setIdentifier("com.280n.capp");
     cappTask.setLicense(BundleTask.License.LGPL_v2_1);
     cappTask.setVersion("0.7.1");
-//    t.author        = '280 North, Inc.'
-//    t.email         = 'feedback @nospam@ 280north.com'
-//    t.summary       = 'Setup up Cappuccino projects'
     cappTask.setSources(FILE.glob("*.j"));
     cappTask.setResources(["Templates"]);
     cappTask.setIncludesNibsAndXibs(true);

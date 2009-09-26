@@ -1,10 +1,10 @@
 
-var ENV = require("system").env,
-    ARGV = require("system").args,
-    FILE = require("file"),
-    OS = require("os"),
-    
-    Jake = require("jake");
+var Jake = require("jake");
+
+global.ENV  = require("system").env;
+global.ARGV = require("system").args
+global.FILE = require("file");
+global.OS   = require("os");
 
 global.task = Jake.task;
 global.directory = Jake.directory;
@@ -32,11 +32,12 @@ ENV["BUILD_PATH"] = FILE.absolute(ENV["BUILD_PATH"]);
 if (!ENV["CONFIG"])
     ENV["CONFIG"] = "Release";
 
-global.$CONFIGURATION           = ENV['CONFIG'];
-global.$BUILD_DIR               = ENV['BUILD_PATH'];
-global.$COMMONJS_PRODUCT        = FILE.join($BUILD_DIR, $CONFIGURATION, "CommonJS", "objective-j");
-global.$COMMONJS_PRODUCT_BIN    = FILE.join($COMMONJS_PRODUCT, "bin");
-global.$COMMONJS_PRODUCT_LIB    = FILE.join($COMMONJS_PRODUCT, "lib");
+global.$CONFIGURATION               = ENV['CONFIG'];
+global.$BUILD_DIR                   = ENV['BUILD_PATH'];
+global.$COMMONJS_PRODUCT            = FILE.join($BUILD_DIR, $CONFIGURATION, "CommonJS", "objective-j");
+global.$COMMONJS_PRODUCT_BIN        = FILE.join($COMMONJS_PRODUCT, "bin");
+global.$COMMONJS_PRODUCT_LIB        = FILE.join($COMMONJS_PRODUCT, "lib");
+global.$COMMONJS_PRODUCT_FRAMEWORKS = FILE.join($COMMONJS_PRODUCT_LIB, "Frameworks");
 
 
 global.$PRODUCT_DIR                = FILE.join($BUILD_DIR, $CONFIGURATION);
@@ -70,7 +71,15 @@ if(!global.COMMON_DO_ONCE)
     }
 
     if (FILE.exists(objectiveJBin))
-        OS.system("PATH=$PATH:" + objectiveJBin);
+    {
+        var system = OS.system;
+
+        // FIXME: is there a better way to do this???
+        OS.system = function(aCommand)
+        {
+            system("PATH=$PATH:" + OS.enquote(objectiveJBin) + " " + aCommand)
+        }
+    }
 }
 
 global.rm_rf = function(/*String*/ aFilename)

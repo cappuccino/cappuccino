@@ -4,20 +4,19 @@ var FILE = require("file"),
     Jake = require("jake"),
     objj_dictionary = require("objective-j").objj_dictionary,
     compiler = require("objective-j/compiler"),
-    plist = require("objective-j/plist");
+    plist = require("objective-j/plist"),
+    base64 = require("base64");
 
 var Task = Jake.Task,
     filedir = Jake.filedir;
 
-exports.bundle = function(aName, aFunction)
-{
-    // No .apply necessary because the parameters aren't variable.
-    return BundleTask.defineTask(aName, aFunction);
-}
-
 function BundleTask(aName, anApplication)
 {
     Task.apply(this, arguments);
+
+    this._author = null;
+    this._email = null;
+    this._summary = null;
 
     this._license = null;
     this._platforms = [BundleTask.Platform.ObjJ];
@@ -28,6 +27,7 @@ function BundleTask(aName, anApplication)
 
     this._compilerFlags = null;
     this._flattensSources = false;
+    this._includesNibsAndXibs = false;
 
     this._productName = this.name();
     
@@ -37,7 +37,6 @@ function BundleTask(aName, anApplication)
     this._replacedFiles = new objj_dictionary();
 
 //    this._nib2cibFlags = [];
-//   this.shouldnib
 }
 
 BundleTask.__proto__ = Task;
@@ -55,59 +54,6 @@ BundleTask.defineTask = function(/*String*/ aName, /*Function*/ aFunction)
     return bundleTask;
 }
 
-/*
-        required_attribute :name
-        required_attribute :version
-
-        required_attribute :summary
-        required_attribute :identifier
-        required_attribute :include_nibs, false
-        required_attribute :nib2cib_flags, []
-        required_attribute :platforms, [Platform::ObjJ]
-        required_attribute :type, Bundle::Type::Application
-        
-        # ------------------------- OPTIONAL gemspec attributes.
-        
-        attributes :email, :homepage, :github_project, :description, :license_file, :license
-        attributes :build_path, :intermediates_path
-        attribute :principal_class
-        attribute :index_file
-        attribute :info_plist
-        #    attributes :autorequire, :default_executable
-        #    attribute :platform,               Gem::Platform::RUBY
-        
-        array_attribute :authors
-        attributes :sources
-        array_attribute :resources
-        array_attribute :flags
-        #    array_attribute :test_files
-        #    array_attribute :executables
-        #    array_attribute :extensions
-        #    array_attribute :requirements
-        #    array_attribute :dependencies
-        
-        #read_only :dependencies
-        
-        # ------------------------- ALIASED gemspec attributes.
-        
-        #    attribute_alias_singular :executable,   :executables
-        attribute_alias_singular :author, :authors
-        attribute_alias_singular :flag, :flags
-        attribute_alias_singular :nib2cib_flag, :nib2cib_flags
-        attribute_alias_singular :platform, :platforms
-        #    attribute_alias_singular :require_path, :require_paths
-        #    attribute_alias_singular :test_file,    :test_files
-        
-        # ------------------------- RUNTIME attributes (not persisted).
-        
-        attr_writer :loaded
-        attr_accessor :loaded_from
-        
-
-    this._sources = 
-}
-*/
-
 BundleTask.Platform =   {
                             "ObjJ"      : "ObjJ",
                             "CommonJS"  : "CommonJS",
@@ -119,35 +65,36 @@ BundleTask.PLATFORM_DEFAULT_FLAGS = {
                                         "CommonJS"  : ['-DPLATFORM_RHINO -DPLATFORM_COMMONJS'],
                                         "Browser"   : ['-DPLATFORM_BROWSER', '-DPLATFORM_DOM']
                                     };
-        
-/*
-if type == Bundle::Type::Application and index_file
 
-                index_file_path = File.join(build_path, File.basename(index_file))
+BundleTask.prototype.setAuthor = function(anAuthor)
+{
+    this._author = anAuthor;
+}
 
-                file_d index_file_path => [index_file] do |t|
-                    cp(index_file, t.name)
-                end
+BundleTask.prototype.author = function()
+{
+    return this._author;
+}
 
-                enhance([index_file_path])
+BundleTask.prototype.setEmail = function(anEmail)
+{
+    this._email = anEmail;
+}
 
-                frameworks_path = File.join(build_path, 'Frameworks')
+BundleTask.prototype.email = function()
+{
+    return this._email;
+}
 
-                file_d frameworks_path do
-                    IO.popen("capp gen -f " + build_path) do |capp|
-                        capp.sync = true
+BundleTask.prototype.setSummary = function(aSummary)
+{
+    this._summary = aSummary;
+}
 
-                        while str = capp.gets
-                            puts str
-                        end
-                    end
-                    rake abort if ($? != 0)
-                end
-
-                enhance([frameworks_path])
-            end
-
-*/
+BundleTask.prototype.summary = function()
+{
+    return this._summary;
+}
 
 BundleTask.prototype.setIdentifier = function(anIdentifier)
 {
@@ -197,6 +144,16 @@ BundleTask.prototype.setResources = function(resources)
 BundleTask.prototype.resources = function(resources)
 {
     this._resources = resources;
+}
+
+BundleTask.prototype.setIncludesNibsAndXibs = function(shouldIncludeNibsAndXibs)
+{
+    this._includesNibsAndXibs = shouldIncludeNibsAndXibs;
+}
+
+BundleTask.prototype.includesNibsAndXibs = function()
+{
+    return this._includesNibsAndXibs;
 }
 
 BundleTask.prototype.setProductName = function(aProductName)
@@ -357,98 +314,67 @@ BundleTask.prototype.defineLicenseTask = function()
 
     this.enhance([licenseProductPath]);
 }
-/*
-BundleTask.prototype.compact = function(path, *patterns)
-{
-            puts 'Compacting ' + path
-            
-            info_plist_path = File.join(path, 'Info.plist')
-            existing_info_plist = Plist::parse_xml(info_plist_path)
-            
-            absolute_path = File.expand_path(path) + '/'
 
-            patterns = patterns.map { |pattern| "#{path}/#{pattern}" }
-            
-            bundle_name = existing_info_plist['CPBundleName']
-            replaced_files = []
-
-            FileList.new(File.join(path, '**', '*.platform')).each do |platform|
-            
-                FileList.new(File.join(platform, '*.j')) do |list|
-                    
-                    list.include(*patterns)
-                    
-                    executable_path = File.join(platform, bundle_name) + '.sj'
-                    platform_absolute_path = File.expand_path(platform) + '/'
-                    
-                    File.open(executable_path, 'w+') do |executable|
-                    
-                        executable.write '@STATIC;1.0;'
-                        
-                        list.each do |fileName|
-                        
-                            fileName = File.expand_path(fileName)
-
-                            File.open(fileName) do |file|
-                            
-                                if fileName.index(platform_absolute_path) == 0
-                                    fileName = File.expand_path(fileName)[platform_absolute_path.length..-1]
-                                else
-                                    fileName = File.expand_path(fileName)[absolute_path.length..-1]
-                                end
-                                
-                                executable.write "p;#{fileName.length};#{fileName}#{file.read}"
-                                
-                                replaced_files << fileName
-                            end
-                        end
-                    end                    
-                end
-            end
-
-            existing_info_plist['CPBundleReplacedFiles'] = replaced_files.uniq
-            existing_info_plist['CPBundleExecutable'] = bundle_name + '.sj'
-            
-            File.open(info_plist_path, 'w') do |file|
-                file.puts existing_info_plist.to_plist
-            end
-            
-        end
-}
-*/
 BundleTask.prototype.resourcesPath = function()
 {
-    return FILE.join(this.buildProductPath(), "Resources");
+    return FILE.join(this.buildProductPath(), "Resources", "");
 }
+
+var IMAGE_EXTENSIONS =  [ ".png", ".jpg", ".jpeg", ".gif", ".tif", ".tiff"];
+
+var MIME_TYPES =    {
+                        ".png"  : "image/png",
+                        ".jpg"  : "image/jpeg",
+                        ".jpeg" : "image/jpeg",
+                        ".gif"  : "image/gif",
+                        ".tif"  : "image/tiff",
+                        ".tiff" : "image/tiff"
+                    };
 
 BundleTask.prototype.defineResourceTask = function(aResourcePath, aDestinationPath)
 {
-    var extname = FILE.extension(aResourcePath);
+    var extension = FILE.extension(aResourcePath).toLowerCase(),
+        extensionless = aResourcePath.substr(0, aResourcePath.length - extension.length);
+
+    if (IMAGE_EXTENSIONS.indexOf(extension) !== -1)
+    {
+        aDestinationPath = FILE.join(this.buildIntermediatesProductPath(), "Browser" + ".platform", "Resources", FILE.relative(this.resourcesPath(), aDestinationPath));
+
+        filedir (aDestinationPath, function()
+        {
+            var dataURI = "data:" + MIME_TYPES[extension] + ";base64," + base64.encode(FILE.read(aResourcePath, { mode : 'b'}));
+            FILE.write(aDestinationPath, dataURI.length + ";" + dataURI, { charset:"UTF-8" });
+        });
+
+        filedir (this.buildProductStaticPathForPlatform("Browser"), [aDestinationPath]);
+        return;
+    }
 
     // NOT:
     // (extname === ".cib" && (FILE.exists(extensionless + '.xib') || FILE.exists(extensionless + '.nib')) ||
     // (extname === ".xib" || extname === ".nib") && !this.shouldIncludeNibsAndXibs())
-    if ((extname !== ".cib" || !FILE.exists(extensionsless + ".xib") && FILE.exists(extensionless + ".nib")) &&
-        ((extname !== ".xib" && extname !== ".nib") || this.shouldIncludeNibsAndXibs()))
+    if ((extension !== ".cib" || !FILE.exists(extensionless + ".xib") && FILE.exists(extensionless + ".nib")) &&
+        ((extension !== ".xib" && extension !== ".nib") || this.includesNibsAndXibs()))
     {
         filedir (aDestinationPath, [aResourcePath], function()
         {
-            cp_r(aResourcePath, aDestinationPath);
+            cp(aResourcePath, aDestinationPath);
         });
 
         this.enhance([aDestinationPath]);
     }
 
-    if (extname === ".xib" || extname === ".nib")
+    if (extension === ".xib" || extension === ".nib")
     {
-        aDestinationPath = FILE.join(FILE.dirname(aDestinationPath), FILE.basename(aDestinationPath, extname)) + ".cib";
+        var cibDestinationPath = FILE.join(FILE.dirname(aDestinationPath), FILE.basename(aDestinationPath, extension)) + ".cib";
 
-        filedir (aDestinationPath, [aResourcePath], function()
+        filedir (cibDestinationPath, [aResourcePath], function()
         {
-            OS.system("nib2cib " + aResourcePath + " "  + aCopiedResource + " " + (this._nib2cibFlags || ""));
+            OS.system("echo $PATH");
+            OS.system("nib2cib " + aResourcePath + " "  + cibDestinationPath + " " + (this._nib2cibFlags || ""));
         });
 
-        this.enhance([aDestinationPath]);
+        this.enhance([cibDestinationPath]);
     }
 }
 
@@ -467,7 +393,9 @@ BundleTask.prototype.defineResourceTasks = function()
         {
             FILE.glob(aResourcePath + "/**").forEach(function(aSubresourcePath)
             {
-                this.defineResourceTask(aSubresourcePath, FILE.join(resourcesPath, aSubresourcePath.substring(aResourcePath.length - baselength)));
+                // Is this the right way to go? Or should we include empty directories as well?
+                if (!FILE.isDirectory(aSubresourcePath))
+                    this.defineResourceTask(aSubresourcePath, FILE.join(resourcesPath, aSubresourcePath.substring(aResourcePath.length - baselength)));
             }, this);
         }
         else
@@ -481,7 +409,8 @@ BundleTask.prototype.defineStaticTask = function()
 {
     this.platforms().forEach(function(/*String*/ aPlatform)
     {
-        var sourcesPath = FILE.join(this.buildIntermediatesProductPath(), aPlatform + ".platform", ""),
+        var sourcesPath = FILE.join(this.buildIntermediatesProductPath(), aPlatform + ".platform", "Sources", ""),
+            resourcesPath = FILE.join(this.buildIntermediatesProductPath(), aPlatform + ".platform", "Resources", ""),
             staticPath = this.buildProductStaticPathForPlatform(aPlatform),
             flattensSources = this.flattensSources();
 
@@ -496,14 +425,27 @@ BundleTask.prototype.defineStaticTask = function()
             aTask.prerequisites().forEach(function(aFilename)
             {
                 // Our prerequisites will contain directories due to filedir.
-                if (FILE.isFile(aFilename))
+                if (!FILE.isFile(aFilename))
+                    return;
+
+                var dirname = FILE.dirname(aFilename);
+
+                if (aFilename.indexOf(sourcesPath) === 0)
                 {
                     var relativePath = flattensSources ? FILE.basename(aFilename) : FILE.relative(sourcesPath, aFilename);
 
-                    // FIXME: We need to do this for now due to file.read adding newlines. Revert when fixed.
                     fileStream.write("p;" + relativePath.length + ";" + relativePath);
-                    fileStream.write(FILE.read(aFilename, { mode:"b" }).decodeToString("UTF-8"));
                 }
+
+                else if (aFilename.indexOf(resourcesPath) === 0)
+                {
+                    var resourcePath = "Resources/" + FILE.relative(resourcesPath, aFilename);
+
+                    fileStream.write("u;" + resourcePath.length + ";" + resourcePath);
+                }
+
+                // FIXME: We need to do this for now due to file.read adding newlines. Revert when fixed.
+                fileStream.write(FILE.read(aFilename, { mode:"b" }).decodeToString("UTF-8"));
             }, this);
 
             fileStream.close();
@@ -532,7 +474,7 @@ BundleTask.prototype.defineSourceTasks = function()
     this.platforms().forEach(function(/*String*/ aPlatform)
     {
         var platformSources = sources,
-            sourcesPath = FILE.join(this.buildIntermediatesProductPath(), aPlatform + ".platform", ""),
+            sourcesPath = FILE.join(this.buildIntermediatesProductPath(), aPlatform + ".platform", "Sources", ""),
             staticPath = this.buildProductStaticPathForPlatform(aPlatform),
             flags = BundleTask.PLATFORM_DEFAULT_FLAGS[aPlatform].join(" ");
 
@@ -562,30 +504,12 @@ BundleTask.prototype.defineSourceTasks = function()
 
         this._replacedFiles.setValue(aPlatform, replacedFiles);
     }, this);
-/*
-                    list.each do |fileName|
-                    
-                        fileName = File.expand_path(fileName)
-
-                        File.open(fileName) do |file|
-                        
-                            if fileName.index(platform_absolute_path) == 0
-                                fileName = File.expand_path(fileName)[platform_absolute_path.length..-1]
-                            else
-                                fileName = File.expand_path(fileName)[absolute_path.length..-1]
-                            end
-                            
-                            executable.write "p;#{fileName.length};#{fileName}#{file.read}"
-                            
-                            replaced_files << fileName
-                        end
-                    end
-
-        existing_info_plist['CPBundleReplacedFiles'] = replaced_files.uniq
-        existing_info_plist['CPBundleExecutable'] = bundle_name + '.sj'
-
-    });
-});*/
 }
 
 exports.BundleTask = BundleTask;
+
+exports.bundle = function(aName, aFunction)
+{
+    // No .apply necessary because the parameters aren't variable.
+    return BundleTask.defineTask(aName, aFunction);
+}

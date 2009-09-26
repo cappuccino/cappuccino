@@ -1,0 +1,6 @@
+#!/usr/bin/env ruby
+
+require("../../common.jake");
+
+
+subtasks(["BlendKit", "blend"], ["build"/*, "clean", "clobber"*/]);
