@@ -22,13 +22,13 @@ while [ $# -ge 1 ]; do
     shift
 done
 
-mkdir -p $INSTALL_DIR/bin
-mkdir -p $INSTALL_DIR/share
+//mkdir -p $INSTALL_DIR/bin
+//mkdir -p $INSTALL_DIR/share
 
-rm -rf $INSTALL_DIR/share/narwhal
-cp -fR objj $INSTALL_DIR/share/narwhal
+//rm -rf $INSTALL_DIR/share/narwhal
+cp -fR CommonJS/objective-j $INSTALL_DIR/share/narwhal
 
-BINS=`ls objj/bin`
+BINS=`ls CommonJS/objective-j/bin`
 for BIN in $BINS
 do
     ln -sf $INSTALL_DIR/share/narwhal/bin/$BIN $INSTALL_DIR/bin/$BIN
@@ -36,8 +36,5 @@ do
 done
 
 chmod +x $INSTALL_DIR/share/narwhal/bin/*
-
-gem install *.gem
-gem cleanup objective-j
 
 echo "Cappuccino Tools Installed"

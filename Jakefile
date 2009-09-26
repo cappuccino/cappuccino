@@ -37,16 +37,9 @@ global.$STARTER_DOWNLOAD                = FILE.join($BUILD_DIR, 'Cappuccino', 'S
 global.$STARTER_DOWNLOAD_APPLICATION    = FILE.join($STARTER_DOWNLOAD, 'NewApplication');
 global.$STARTER_DOWNLOAD_README         = FILE.join($STARTER_DOWNLOAD, 'README');
 
-global.$NARWHAL_PACKAGE                 = FILE.join($BUILD_DIR, 'Cappuccino', 'objj');
+global.$TOOLS_COMMONJS                  = FILE.join($BUILD_DIR, "Cappuccino", "Tools", "CommonJS", "objective-j");
 
 task ("downloads", ["starter_download", "tools_download", "narwhal_package"]);
-
-filedir ($TOOLS_DOWNLOAD_ENV, ["debug", "release"], function()
-{
-    rm_rf($TOOLS_DOWNLOAD_ENV);
-    cp_r(FILE.join($RELEASE_ENV), $TOOLS_DOWNLOAD_ENV);
-    cp_r(FILE.join($DEBUG_ENV, 'packages', 'objj', 'lib', 'Frameworks'), FILE.join($TOOLS_DOWNLOAD_ENV, 'packages', 'objj', 'lib', 'Frameworks', 'Debug'));
-});
 
 filedir ($TOOLS_DOWNLOAD_EDITORS, [$TOOLS_EDITORS], function()
 {
@@ -63,19 +56,14 @@ filedir ($TOOLS_DOWNLOAD_INSTALLER, [$TOOLS_INSTALLER], function()
     cp($TOOLS_INSTALLER, $TOOLS_DOWNLOAD_INSTALLER);
 });
 
-task ("objj_gem", function()
-{
-    subjake('Tools/Rake', "objj_gem");
-});
-
-task ("tools_download", [$TOOLS_DOWNLOAD_ENV, $TOOLS_DOWNLOAD_EDITORS, $TOOLS_DOWNLOAD_README, $TOOLS_DOWNLOAD_INSTALLER, "objj_gem"]);
+task ("tools_download", [$TOOLS_DOWNLOAD_EDITORS, $TOOLS_DOWNLOAD_README, $TOOLS_DOWNLOAD_INSTALLER, $TOOLS_COMMONJS]);
 
 task ("starter_download", [$STARTER_DOWNLOAD_APPLICATION, $STARTER_DOWNLOAD_README]);
 
-task ("narwhal_package", [$TOOLS_DOWNLOAD_ENV], function()
+filedir ($TOOLS_COMMONJS, ["build"], function()
 {
-  rm_rf($NARWHAL_PACKAGE);
-  cp_r(FILE.join($TOOLS_DOWNLOAD_ENV, 'packages', 'objj'), $NARWHAL_PACKAGE);
+    rm_rf($TOOLS_COMMONJS);
+    cp_r($COMMONJS_PRODUCT, $TOOLS_COMMONJS);
 });
 
 task ("deploy", ["downloads", "docs"], function()
@@ -98,9 +86,9 @@ task ("deploy", ["downloads", "docs"], function()
     OS.system("cd " + cappuccino_output_path + " && zip -ry -8 Tools.zip Tools");
 });
 
-filedir ($STARTER_DOWNLOAD_APPLICATION, [$TOOLS_DOWNLOAD_ENV], function()
+filedir ($STARTER_DOWNLOAD_APPLICATION, ["build"], function()
 {
-    ENV["PATH"] = FILE.join($TOOLS_DOWNLOAD_ENV, "bin") + ':' + ENV["PATH"];
+    //ENV["PATH"] = FILE.join($TOOLS_DOWNLOAD_ENV, "bin") + ':' + ENV["PATH"];
 
     rm_rf($STARTER_DOWNLOAD_APPLICATION);
     FILE.mkdirs($STARTER_DOWNLOAD);
@@ -109,7 +97,7 @@ filedir ($STARTER_DOWNLOAD_APPLICATION, [$TOOLS_DOWNLOAD_ENV], function()
 //    rake abort if ($? != 0)
 
     // No tools means no objective-j gem
-    FILE.rm(FILE.join($STARTER_DOWNLOAD_APPLICATION, 'Rakefile'))
+    // FILE.rm(FILE.join($STARTER_DOWNLOAD_APPLICATION, 'Rakefile'))
 });
 
 filedir ($STARTER_DOWNLOAD_README, [$STARTER_README], function()
