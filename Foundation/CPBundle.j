@@ -99,8 +99,15 @@
 }
 
 - (CPString)pathForResource:(CPString)aFilename
-{
-    return [self resourcePath] + '/' + aFilename;
+{console.log("?!!!!!!!");
+    var path = [self resourcePath] + '/' + aFilename,
+        mappedPath = _URIMap["Resources/" + aFilename];//path];
+console.log("~!THE MAPPED PATH FOR " + path + " IS " + mappedPath);
+
+    if (mappedPath)
+        return mappedPath;
+
+    return path;
 }
 
 - (CPDictionary)infoDictionary

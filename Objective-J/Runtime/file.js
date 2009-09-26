@@ -69,7 +69,9 @@ function objj_bundle()
 {
     this.path       = NULL;
     this.info       = NULL;
-    
+
+    this._URIMap    = { };
+
     this.__address  = _objj_generateObjectHash();
 }
 
@@ -577,6 +579,7 @@ var OBJJUnrecognizedFormatException = "OBJJUnrecognizedFormatException";
 
 var STATIC_MAGIC_NUMBER     = "@STATIC",
     MARKER_PATH             = "p",
+    MARKER_URI              = "u",
     MARKER_CODE             = "c",
     MARKER_BUNDLE           = "b",
     MARKER_TEXT             = "t",
@@ -618,7 +621,10 @@ function objj_decompile(aString, bundle)
                                         objj_files[file.path] = file;
                                         
                                         break;
-                                        
+
+            case MARKER_URI:            bundle._URIMap[text] = stream.getString();
+                                        break;
+
             case MARKER_BUNDLE:         var bundlePath = DIRECTORY(bundle.path) + '/' + text;
             
                                         file.bundle = objj_getBundleWithPath(bundlePath);

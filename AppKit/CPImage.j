@@ -49,15 +49,6 @@ function CPImageInBundle(aFilename, aSize, aBundle)
     return [[CPImage alloc] initWithContentsOfFile:[aBundle pathForResource:aFilename]];
 }
 
-@implementation CPBundle (CPImageAdditions)
-
-- (CPString)pathForResource:(CPString)aFilename
-{
-    return [self resourcePath] + '/' + aFilename;
-}
-
-@end
-
 /*! 
     @ingroup appkit
     @class CPImage

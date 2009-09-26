@@ -499,6 +499,7 @@ BundleTask.prototype.defineSourceTasks = function()
             filedir (staticPath, [compiledPlatformSource]);
 
             // FIXME: how do we non flatten?
+            // dir in common
             replacedFiles.push(flattensSources ? FILE.basename(aFilename) : FILE.relative(sourcesPath, aFilename));
         }, this);
 
