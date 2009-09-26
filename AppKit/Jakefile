@@ -11,7 +11,7 @@ $ENVIRONMENT_THEME_PRODUCT  = FILE.join($ENVIRONMENT_PRODUCT, 'Resources', 'Aris
 
 //AppKitFiles = FileList['**/*.j'].exclude('CoreGraphics/CGContextCanvas.j', 'CoreGraphics/CGContextVML.j', 'Themes/**', 'Tools/**')
 
-AppKitFiles = FILE.glob("*.j").concat(FILE.glob("Cib/*.j")).concat(FILE.glob("CoreAnimation/*.j")).concat(FILE.glob("CPWindow/*.j")).concat(FILE.glob("Platform/*.j")).concat(FILE.glob("CoreGraphics/*.j"));
+AppKitFiles = FILE.glob("*.j").concat(FILE.glob("Cib/*.j")).concat(FILE.glob("CoreAnimation/*.j")).concat(FILE.glob("CPWindow/*.j")).concat(FILE.glob("Platform/**/*.j")).concat(FILE.glob("Platform/*.j")).concat(FILE.glob("CoreGraphics/*.j"));
 
 appKitTask = framework ("AppKit", function(appKitTask)
 {
@@ -57,13 +57,9 @@ $THEME_PRODUCT = FILE.join(appKitTask.buildProductPath(), "Resources", "Aristo.b
 ThemeFiles = FILE.glob("Themes/Aristo/*");//FileList['Themes/Aristo/*']
 
 filedir ($THEME_PRODUCT, ThemeFiles, function()
-{print("IN HERE");
-    var blend = OS.popen("blend -d Themes/Aristo/ThemeDescriptors.j -o " + $THEME_PRODUCT + " -R Themes/Aristo/Resources"),
-        output = "";
-
-    while (output = blend.stdout.read())
-        print(output);
-//    rake abort if ($? != 0)
+{
+    OS.system("PATH=$PATH:" + OS.enquote(FILE.join($BUILD_DIR, $CONFIGURATION, "CommonJS", "objective-j", "bin")) + " blend -d Themes/Aristo/ThemeDescriptors.j -o " + $THEME_PRODUCT + " -R Themes/Aristo/Resources");
+    //    rake abort if ($? != 0)
 });
 
 task ("build", ["AppKit", $COMMONJS_PRODUCT_APPKIT, $THEME_PRODUCT]);

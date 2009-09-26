@@ -16,6 +16,7 @@ app ("blend", function(blendTask)
     blendTask.setSources(FILE.glob("*.j"));//       = FileList['**/*.j']
     blendTask.setResources(FILE.glob("Resources/*"));//    t.resources     = FileList['Resources/*']
     blendTask.setLicense(BundleTask.License.LGPL_v2_1);
+    blendTask.setFlattensSources(true);
 
     if ($CONFIGURATION === "Release")
         blendTask.setCompilerFlags("-O");

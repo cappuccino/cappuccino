@@ -16,6 +16,7 @@ blendKitTask = framework ("BlendKit", function(blendKitTask)
     blendKitTask.setSources(FILE.glob("*.j")); //t.sources       = FileList['*.j']
     blendKitTask.setResources(FILE.glob("Resources/*"));
     blendKitTask.setLicense(BundleTask.License.LGPL_v2_1);
+    blendKitTask.setFlattensSources(true); // FIXME: how do we non flatten?
 
     if ($CONFIGURATION === "Release")
         blendKitTask.setCompilerFlags("-O");

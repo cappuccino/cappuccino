@@ -370,7 +370,6 @@ BundleTask.prototype.defineResourceTask = function(aResourcePath, aDestinationPa
 
         filedir (cibDestinationPath, [aResourcePath], function()
         {
-            OS.system("echo $PATH");
             OS.system("nib2cib " + aResourcePath + " "  + cibDestinationPath + " " + (this._nib2cibFlags || ""));
         });
 
@@ -499,6 +498,7 @@ BundleTask.prototype.defineSourceTasks = function()
 
             filedir (staticPath, [compiledPlatformSource]);
 
+            // FIXME: how do we non flatten?
             replacedFiles.push(flattensSources ? FILE.basename(aFilename) : FILE.relative(sourcesPath, aFilename));
         }, this);
 
