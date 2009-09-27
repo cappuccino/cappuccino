@@ -159,7 +159,7 @@ function fragment_evaluate_code(aFragment)
     {
 #if RHINO
         var functionText = "function(){"+GET_CODE(aFragment)+"/**/\n}";
-        if (window.isRhino)
+        if (system.engine === "rhino")
             compiled = Packages.org.mozilla.javascript.Context.getCurrentContext().compileFunction(window, functionText, GET_FILE(aFragment).path, 0, null);
         else
             compiled = eval(functionText);
