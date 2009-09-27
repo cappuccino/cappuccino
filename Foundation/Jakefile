@@ -13,7 +13,7 @@ foundationTask = framework ("Foundation", function(foundationTask)
     foundationTask.setSummary("Foundation classes for Cappuccino");
     foundationTask.setIdentifier("com.280n.Foundation");
     foundationTask.setLicense(BundleTask.License.LGPL_v2_1);
-    foundationTask.setSources(FILE.glob("**/*.j").concat(FILE.glob("*.j")));//terrible!
+    foundationTask.setSources(FILE.glob("**/*.j"));//terrible!
     foundationTask.setResources(FILE.glob("Resources/*"));
     foundationTask.setFlattensSources(true);
 
