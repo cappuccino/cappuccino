@@ -9,9 +9,7 @@ $ENVIRONMENT_PRODUCT        = FILE.join($ENVIRONMENT_FRAMEWORKS_DIR, 'AppKit');
 $THEME_PRODUCT              = FILE.join($BUILD_PATH, 'Resources', 'Aristo.blend');
 $ENVIRONMENT_THEME_PRODUCT  = FILE.join($ENVIRONMENT_PRODUCT, 'Resources', 'Aristo.blend');
 
-//AppKitFiles = FileList['**/*.j'].exclude('CoreGraphics/CGContextCanvas.j', 'CoreGraphics/CGContextVML.j', 'Themes/**', 'Tools/**')
-
-AppKitFiles = FILE.glob("*.j").concat(FILE.glob("Cib/*.j")).concat(FILE.glob("CoreAnimation/*.j")).concat(FILE.glob("CPWindow/*.j")).concat(FILE.glob("Platform/**/*.j")).concat(FILE.glob("Platform/*.j")).concat(FILE.glob("CoreGraphics/*.j"));
+AppKitFiles = new FileList("**/*.j").exclude('CoreGraphics/CGContextCanvas.j', 'CoreGraphics/CGContextVML.j', 'Themes/**/*', 'Tools/**/*');
 
 appKitTask = framework ("AppKit", function(appKitTask)
 {
@@ -24,7 +22,7 @@ appKitTask = framework ("AppKit", function(appKitTask)
     appKitTask.setIdentifier("com.280n.AppKit");
     appKitTask.setLicense(BundleTask.License.LGPL_v2_1);
     appKitTask.setSources(AppKitFiles);//terrible!
-    appKitTask.setResources(FILE.glob("Resources/*"));
+    appKitTask.setResources(new FileList("Resources/**/*"));
     appKitTask.setPlatforms([BundleTask.Platform.Browser, BundleTask.Platform.CommonJS]);
     appKitTask.setFlattensSources(true);
 
@@ -53,17 +51,17 @@ filedir ($COMMONJS_PRODUCT_APPKIT, ["AppKit"], function()
 //    cp_r(File.join($THEME_PRODUCT, '.'), $ENVIRONMENT_THEME_PRODUCT)
 //end
 
+subtasks (["Tools"], ["build"/*, "clean", "clobber"*/]);
+
 $THEME_PRODUCT = FILE.join(appKitTask.buildProductPath(), "Resources", "Aristo.blend");
-ThemeFiles = FILE.glob("Themes/Aristo/*");//FileList['Themes/Aristo/*']
+ThemeFiles = new FileList("Themes/Aristo/*");
 
 filedir ($THEME_PRODUCT, ThemeFiles, function()
 {
-    OS.system("PATH=$PATH:" + OS.enquote(FILE.join($BUILD_DIR, $CONFIGURATION, "CommonJS", "objective-j", "bin")) + " blend -d Themes/Aristo/ThemeDescriptors.j -o " + $THEME_PRODUCT + " -R Themes/Aristo/Resources");
+    OS.system("PATH=" + OS.enquote(FILE.join($BUILD_DIR, $CONFIGURATION, "CommonJS", "objective-j", "bin")) + ":$PATH blend -d Themes/Aristo/ThemeDescriptors.j -o " + $THEME_PRODUCT + " -R Themes/Aristo/Resources");
     //    rake abort if ($? != 0)
 });
 
 task ("build", ["AppKit", $COMMONJS_PRODUCT_APPKIT, $THEME_PRODUCT]);
-
-subtasks (["Tools"], ["build"/*, "clean", "clobber"*/]);
 
 //CLOBBER.include($ENVIRONMENT_PRODUCT)

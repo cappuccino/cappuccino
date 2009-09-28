@@ -477,7 +477,7 @@ BundleTask.prototype.defineSourceTasks = function()
             staticPath = this.buildProductStaticPathForPlatform(aPlatform),
             flags = BundleTask.PLATFORM_DEFAULT_FLAGS[aPlatform].join(" ");
 
-        if (!Array.isArray(platformSources))
+        if (!Array.isArray(platformSources) && platformSources.constructor !== Jake.FileList)
             platformSources = platformSources[aPlatform];
 
         var replacedFiles = [];

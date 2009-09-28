@@ -13,8 +13,8 @@ app ("blend", function(blendTask)
     blendTask.setSummary("blend classes for Cappuccino");
     blendTask.setIdentifier("blend");
     blendTask.setVersion("0.7.1");
-    blendTask.setSources(FILE.glob("*.j"));//       = FileList['**/*.j']
-    blendTask.setResources(FILE.glob("Resources/*"));//    t.resources     = FileList['Resources/*']
+    blendTask.setSources(new FileList("**/*.j"));
+    blendTask.setResources(new FileList("Resources/**/*"));
     blendTask.setLicense(BundleTask.License.LGPL_v2_1);
     blendTask.setFlattensSources(true);
 

@@ -10,6 +10,7 @@ global.task = Jake.task;
 global.directory = Jake.directory;
 //global.file = Jake.file;
 global.filedir = Jake.filedir;
+global.FileList = Jake.FileList;
 
 // Read in and set up development environment variables.
 if (!ENV["BUILD_PATH"])
@@ -77,7 +78,7 @@ if(!global.COMMON_DO_ONCE)
         // FIXME: is there a better way to do this???
         OS.system = function(aCommand)
         {
-            system("PATH=$PATH:" + OS.enquote(objectiveJBin) + " " + aCommand)
+            system("PATH=" + OS.enquote(objectiveJBin) + ":$PATH " + aCommand)
         }
     }
 }
