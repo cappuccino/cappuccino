@@ -30,6 +30,30 @@
 var OBJJ_PLATFORMS = PLATFORMS;
 #define DIRECTORY(aPath) (aPath).substr(0, (aPath).lastIndexOf('/') + 1)
 
+function objj_firstCompatibleEngineFromArray(engines)
+{
+    var engine = NULL,
+        index = 0,
+        count = OBJJ_PLATFORMS.length,
+        innerCount = engines.length;
+
+    // Ugh, no indexOf, no objects-in-common.
+    for(; index < count; ++index)
+    {
+        var innerIndex = 0,
+            currentEngine = OBJJ_PLATFORMS[index];
+        
+        for (; innerIndex < innerCount; ++innerIndex)
+            if(currentEngine=== engines[innerIndex])
+            {
+                engine = currentEngine;
+                break;
+            }
+    }
+
+    return engine;
+}
+
 var OBJJFileNotFoundException       = "OBJJFileNotFoundException",
     OBJJExecutableNotFoundException = "OBJJExecutableNotFoundException";
 
@@ -369,25 +393,7 @@ objj_search.prototype.didReceiveBundleResponse = function(aResponse)
     
     if (executablePath)
     {
-        var platform = NULL,
-            platforms = dictionary_getValue(bundle.info, "CPBundlePlatforms"),
-            index = 0,
-            count = OBJJ_PLATFORMS.length,
-            innerCount = platforms.length;
-
-        // Ugh, no indexOf, no objects-in-common.
-        for(; index < count; ++index)
-        {
-            var innerIndex = 0,
-                currentPlatform = OBJJ_PLATFORMS[index];
-            
-            for (; innerIndex < innerCount; ++innerIndex)
-                if(currentPlatform === platforms[innerIndex])
-                {
-                    platform = currentPlatform;
-                    break;
-                }
-        }
+        var platform = objj_firstCompatibleEngineFromArray(dictionary_getValue(bundle.info, "CPBundlePlatforms"));
         
         executablePath = platform + ".platform/" + executablePath;
 

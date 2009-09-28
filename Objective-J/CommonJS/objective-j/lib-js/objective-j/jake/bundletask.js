@@ -30,13 +30,12 @@ function BundleTask(aName, anApplication)
     this._includesNibsAndXibs = false;
 
     this._productName = this.name();
-    
+
     this._buildIntermediatesPath = null;
     this._buildPath = FILE.cwd();
 
     this._replacedFiles = new objj_dictionary();
-
-//    this._nib2cibFlags = [];
+    this._nib2cibFlags = null;
 }
 
 BundleTask.__proto__ = Task;
@@ -174,6 +173,18 @@ BundleTask.prototype.setCompilerFlags = function(flags)
 BundleTask.prototype.compilerFlags = function()
 {
     return this._compilerFlags;
+}
+
+BundleTask.prototype.setNib2cibFlags = function(flags)
+{
+    this._nib2cibFlags = flags;
+}
+
+BundleTask.prototype.setNib2CibFlags = BundleTask.prototype.setNib2cibFlags;
+
+BundleTask.prototype.nib2cibFlags = function()
+{
+    return this._nib2cibFlags;
 }
 
 BundleTask.prototype.flattensSources = function()
@@ -368,9 +379,17 @@ BundleTask.prototype.defineResourceTask = function(aResourcePath, aDestinationPa
     {
         var cibDestinationPath = FILE.join(FILE.dirname(aDestinationPath), FILE.basename(aDestinationPath, extension)) + ".cib";
 
+        var nib2cibFlags = this.nib2cibFlags();
+
+        if (!nib2cibFlags)
+            nib2cibFlags = "";
+
+        else if (nib2cibFlags.join)
+            nib2cibFlags = nib2cibFlags.join(" ");
+
         filedir (cibDestinationPath, [aResourcePath], function()
         {
-            OS.system("nib2cib " + aResourcePath + " "  + cibDestinationPath + " " + (this._nib2cibFlags || ""));
+            OS.system("nib2cib " + aResourcePath + " "  + cibDestinationPath + " " + nib2cibFlags);
         });
 
         this.enhance([cibDestinationPath]);

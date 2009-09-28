@@ -9,7 +9,7 @@ function FrameworkTask(aName)
 FrameworkTask.__proto__ = BundleTask;
 FrameworkTask.prototype.__proto__ = BundleTask.prototype;
 
-FrameworkTask.prototype.packageTask = function()
+FrameworkTask.prototype.packageType = function()
 {
     return "FMWK";
 }

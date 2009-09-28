@@ -9,7 +9,7 @@ function ApplicationTask(aName)
 ApplicationTask.__proto__ = BundleTask;
 ApplicationTask.prototype.__proto__ = BundleTask.prototype;
 
-ApplicationTask.prototype.packageTask = function()
+ApplicationTask.prototype.packageType = function()
 {
     return "APPL";
 }

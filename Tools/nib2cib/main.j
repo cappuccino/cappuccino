@@ -66,7 +66,7 @@ function loadFrameworks(frameworkPaths, aCallback)
     
     print("Loading " + [infoDictionary objectForKey:@"CPBundleName"]);
 
-    var files = [infoDictionary objectForKey:@"CPBundleReplacedFiles"],
+    var files = [[infoDictionary objectForKey:@"CPBundleReplacedFiles"] objectForKey:[CPBundle firstCompatibleEngineFromArray:[infoDictionary objectForKey:@"CPBundlePlatforms"]]],
         count = files.length;
 
     if (count)

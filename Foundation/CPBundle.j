@@ -98,6 +98,11 @@
     return className ? CPClassFromString(className) : Nil;
 }
 
++ (CPString)firstCompatibleEngineFromArray:(CPArray)engines
+{
+    return objj_firstCompatibleEngineFromArray(engines);
+}
+
 - (CPString)pathForResource:(CPString)aFilename
 {console.log("?!!!!!!!");
     var path = [self resourcePath] + '/' + aFilename,
