@@ -2,9 +2,8 @@ var file = require("file"),
     readline = require("readline").readline;
 
 var window = require("browser/window");
-window.isRhino = true
 
-if (window.isRhino) {
+if (system.engine === "rhino") {
     window.__parent__ = null;
     window.__proto__ = global;
 }
@@ -24,7 +23,7 @@ if (system.env["OBJJ_INCLUDE_PATHS"])
 with (window)
 {
     // read and eval Objective-J.js with the module's scope
-    if (window.isRhino)
+    if (system.engine === "rhino")
         Packages.org.mozilla.javascript.Context.getCurrentContext().evaluateString(window, file.read(objectivejPath, { charset:"UTF-8" }), "Objective-J.js", 0, null);
     else
         eval(file.read(objectivejPath, { charset:"UTF-8" }));
@@ -124,7 +123,7 @@ exports.run = function(args)
 // synchronously evals Objective-J code
 var objj_eval = exports.objj_eval = function(code)
 {
-    if (window.isRhino)
+    if (system.engine === "rhino")
         var result = Packages.org.mozilla.javascript.Context.getCurrentContext().evaluateString(window, objj_preprocess_sync(code), "objj_eval", 0, null);
     else
         var result = eval(objj_preprocess_sync(code));
@@ -171,7 +170,7 @@ exports.make_narwhal_factory = function(code, path) {
     
     var factoryText = "(function(require,exports,module,system,print){" + objj_preprocess_sync(code, path) + "/**/\n})";
     
-    if (window.isRhino)
+    if (system.engine === "rhino")
         return Packages.org.mozilla.javascript.Context.getCurrentContext().compileFunction(window, factoryText, path, 0, null);
     else
         return eval(factoryText);
