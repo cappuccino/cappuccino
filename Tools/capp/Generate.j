@@ -1,7 +1,10 @@
 
 @import "Configuration.j"
 
-var File = require("file");
+var OS = require("OS"),
+    SYSTEM = require("system"),
+    FILE = require("file"),
+    OBJJ = require("objective-j");
 
 
 function gen(/*va_args*/)
@@ -49,32 +52,38 @@ function gen(/*va_args*/)
         destination = justFrameworks ? "." : "Untitled";
 
     var sourceTemplate = null;
-    if (File.isAbsolute(template))
-        sourceTemplate = new java.io.File(template);
+
+    if (FILE.isAbsolute(template))
+        sourceTemplate = FILE.join(template);
     else
-        sourceTemplate = new java.io.File(OBJJ_HOME + "/lib/capp/Resources/Templates/" + template);
+        sourceTemplate = FILE.join(OBJJ.OBJJ_HOME, "lib", "capp", "Resources", "Templates", template);
     
-    var configFile = File.join(sourceTemplate, "template.config"),
+    var configFile = FILE.join(sourceTemplate, "template.config"),
         config = {};
-    if (File.isFile(configFile))
-        config = JSON.parse(File.read(configFile));
-    print(config.FrameworksPath)
-    var destinationProject = new java.io.File(destination),
+
+    if (FILE.isFile(configFile))
+        config = JSON.parse(FILE.read(configFile, { charset:"UTF-8" }));
+
+    var destinationProject = destination,
         configuration = noConfig ? [Configuration defaultConfiguration] : [Configuration userConfiguration];
 
     if (justFrameworks)
         createFrameworksInFile(destinationProject, shouldSymbolicallyLink, force);
 
-    else if (!destinationProject.exists())
+    else if (!FILE.exists(destinationProject))
     {
-        exec(["cp", "-vR", sourceTemplate.getCanonicalPath(), destinationProject.getCanonicalPath()], true);
+        // FIXME???
+        OS.system("cp -vR " + sourceTemplate + " " + destinationProject);
 
-        var files = getFiles(destinationProject),
+        // FIXME: *JUST* for fixed glob
+        require("jake");
+
+        var files = FILE.glob(FILE.join(destinationProject, "**", "*")),
             index = 0,
             count = files.length,
-            name = String(destinationProject.getName()),
+            name = FILE.basename(destinationProject),
             orgIdentifier = [configuration valueForKey:@"organization.identifier"] || "";
-
+print("yo!"+files);
         [configuration setTemporaryValue:name forKey:@"project.name"];
         [configuration setTemporaryValue:orgIdentifier + '.' +  toIdentifier(name) forKey:@"project.identifier"];
         [configuration setTemporaryValue:toIdentifier(name) forKey:@"project.nameasidentifier"];
@@ -82,7 +91,7 @@ function gen(/*va_args*/)
         for (; index < count; ++index)
         {
             var path = files[index],
-                contents = File.read(path, { charset : "UTF-8" }),
+                contents = FILE.read(path, { charset : "UTF-8" }),
                 key = nil,
                 keyEnumerator = [configuration keyEnumerator];
 
@@ -93,12 +102,13 @@ function gen(/*va_args*/)
             while (key = [keyEnumerator nextObject])
                 contents = contents.replace(new RegExp("__" + key + "__", 'g'), [configuration valueForKey:key]);
 
-            File.write(path, contents, { charset: "UTF-8"});
+            FILE.write(path, contents, { charset: "UTF-8"});
         }
 
-        var frameworkDestination = destinationProject.getCanonicalPath();
+        var frameworkDestination = destinationProject;
+
         if (config.FrameworksPath)
-            frameworkDestination = File.join(frameworkDestination, config.FrameworksPath);
+            frameworkDestination = FILE.join(frameworkDestination, config.FrameworksPath);
 
         createFrameworksInFile(frameworkDestination, shouldSymbolicallyLink);
     }
@@ -109,62 +119,56 @@ function gen(/*va_args*/)
 
 function createFrameworksInFile(/*String*/ aFile, /*Boolean*/ shouldSymbolicallyLink, /*Boolean*/ force)
 {
-    if (!File.isDirectory(aFile))
+    if (!FILE.isDirectory(aFile))
         throw new Error("Can't create Frameworks. Directory does not exist: " + aFile);
         
-    var destinationFrameworks = new java.io.File(aFile+ "/Frameworks"),
-        destinationDebugFrameworks = new java.io.File(aFile + "/Frameworks/Debug");
+    var destinationFrameworks = FILE.join(aFile, "Frameworks"),
+        destinationDebugFrameworks = FILE.join(aFile, "Frameworks", "Debug");
         
-    if (destinationFrameworks.exists()) {
-        if (force) {
+    if (FILE.exists(destinationFrameworks))
+    {
+        if (force)
+        {
             print("Updating existing Frameworks directory.");
-            exec(["rm", "-rf", destinationFrameworks], true);
+            
+            FILE.rmTree(destinationFrameworks);
         }
-        else {
+        else
+        {
             print("Frameworks directory already exists. Use --force to overwrite.");
             return;
         }
-    } else {    
-        print("Creating Frameworks directory in "+destinationFrameworks+".");
     }
+    else    
+        print("Creating Frameworks directory in " + destinationFrameworks + ".");
 
     if (!shouldSymbolicallyLink)
     {
-        var sourceFrameworks = new java.io.File(OBJJ_HOME + "/lib/Frameworks");
+        var sourceFrameworks = FILE.join(OBJJ.OBJJ_HOME + "lib", "Frameworks");
     
-        exec(["cp", "-R", sourceFrameworks.getCanonicalPath(), destinationFrameworks], true);
+        FILE.copyTree(sourceFrameworks, destinationFrameworks);
 
         return;
     }
     
-    var BUILD = system.env["CAPP_BUILD"] || system.env["STEAM_BUILD"];
+    var BUILD = SYSTEM.env["CAPP_BUILD"] || SYSTEM.env["STEAM_BUILD"];
     
     if (!BUILD)
         throw "CAPP_BUILD or STEAM_BUILD must be defined";
-    
+
     // Release Frameworks
-    new java.io.File(destinationFrameworks).mkdir();
+    FILE.mkdirs(destinationFrameworks);
     
-    exec(["ln", "-s",   new java.io.File(BUILD + "/Release/Objective-J").getCanonicalPath(),
-                        new java.io.File(aFile + "/Frameworks/Objective-J").getCanonicalPath()], true);
-
-    exec(["ln", "-s",   new java.io.File(BUILD + "/Release/Foundation").getCanonicalPath(),
-                        new java.io.File(aFile + "/Frameworks/Foundation").getCanonicalPath()], true);
-
-    exec(["ln", "-s",   new java.io.File(BUILD + "/Release/AppKit").getCanonicalPath(),
-                        new java.io.File(aFile + "/Frameworks/AppKit").getCanonicalPath()], true);
+    FILE.symlink(FILE.join(BUILD + "Release", "Objective-J"), FILE.join(destinationFrameworks, "Objective-J"));
+    FILE.symlink(FILE.join(BUILD + "Release", "Foundation"), FILE.join(destinationFrameworks, "Foundation"));
+    FILE.symlink(FILE.join(BUILD + "Release", "AppKit"), FILE.join(destinationFrameworks, "AppKit"));
 
     // Debug Frameworks
-    new java.io.File(destinationDebugFrameworks).mkdir();
-    
-    exec(["ln", "-s",   new java.io.File(BUILD + "/Debug/Objective-J").getCanonicalPath(),
-                        new java.io.File(aFile + "/Frameworks/Debug/Objective-J").getCanonicalPath()], true);
+    FILE.mkdirs(destinationDebugFrameworks);
 
-    exec(["ln", "-s",   new java.io.File(BUILD + "/Debug/Foundation").getCanonicalPath(),
-                        new java.io.File(aFile + "/Frameworks/Debug/Foundation").getCanonicalPath()], true);
-
-    exec(["ln", "-s",   new java.io.File(BUILD + "/Debug/AppKit").getCanonicalPath(),
-                        new java.io.File(aFile + "/Frameworks/Debug/AppKit").getCanonicalPath()], true);
+    FILE.symlink(FILE.join(BUILD + "Debug", "Objective-J"), FILE.join(destinationDebugFrameworks, "Objective-J"));
+    FILE.symlink(FILE.join(BUILD + "Debug", "Foundation"), FILE.join(destinationDebugFrameworks, "Foundation"));
+    FILE.symlink(FILE.join(BUILD + "Debug", "AppKit"), FILE.join(destinationDebugFrameworks, "AppKit"));
 }
 
 function toIdentifier(/*String*/ aString)

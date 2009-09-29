@@ -14,10 +14,12 @@ app ("capp", function(cappTask)
     cappTask.setIdentifier("com.280n.capp");
     cappTask.setLicense(BundleTask.License.LGPL_v2_1);
     cappTask.setVersion("0.7.1");
-    cappTask.setSources(FILE.glob("*.j"));
-    cappTask.setResources(["Templates"]);
+    cappTask.setSources(new FileList("*.j"));
+    cappTask.setResources(new FileList("Resources/*"));
     cappTask.setIncludesNibsAndXibs(true);
     cappTask.setPlatforms([BundleTask.Platform.CommonJS]);
+    cappTask.setFlattensSources(true);
+    cappTask.setSpritesResources(false);
 
     if ($CONFIGURATION === "Release")
         cappTask.setCompilerFlags("-O");
@@ -25,7 +27,7 @@ app ("capp", function(cappTask)
         cappTask.setCompilerFlags("-DDEBUG -g");
 });
 
-$COMMONJS_CAPP_BIN_PRODUCT = FILE.join($COMMONJS_PRODUCT_BIN, 'nib2cib');
+$COMMONJS_CAPP_BIN_PRODUCT = FILE.join($COMMONJS_PRODUCT_BIN, "capp");
 
 // executable in environment directory
 filedir($COMMONJS_CAPP_BIN_PRODUCT, ["capp"], function()

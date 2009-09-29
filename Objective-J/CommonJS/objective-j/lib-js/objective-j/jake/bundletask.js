@@ -1,6 +1,7 @@
 
 var FILE = require("file"),
     OS = require("os"),
+    UTIL = require("util"),
     Jake = require("jake"),
     objj_dictionary = require("objective-j").objj_dictionary,
     compiler = require("objective-j/compiler"),
@@ -22,6 +23,7 @@ function BundleTask(aName, anApplication)
     this._platforms = [BundleTask.Platform.ObjJ];
     this._sources = null;
     this._resources = null;
+    this._spritesResources = true;
     this._identifier = null;
     this._version = 0.1;
 
@@ -145,6 +147,16 @@ BundleTask.prototype.resources = function(resources)
     this._resources = resources;
 }
 
+BundleTask.prototype.setSpritesResources = function(shouldSpriteResources)
+{
+    this._spritesResources = shouldSpriteResources;
+}
+
+BundleTask.prototype.spritesResources = function()
+{
+    return this._spritesResources;
+}
+
 BundleTask.prototype.setIncludesNibsAndXibs = function(shouldIncludeNibsAndXibs)
 {
     this._includesNibsAndXibs = shouldIncludeNibsAndXibs;
@@ -157,7 +169,7 @@ BundleTask.prototype.includesNibsAndXibs = function()
 
 BundleTask.prototype.setProductName = function(aProductName)
 {
-    this._productName = aName;
+    this._productName = aProductName;
 }
 
 BundleTask.prototype.productName = function()
@@ -347,7 +359,7 @@ BundleTask.prototype.defineResourceTask = function(aResourcePath, aDestinationPa
     var extension = FILE.extension(aResourcePath).toLowerCase(),
         extensionless = aResourcePath.substr(0, aResourcePath.length - extension.length);
 
-    if (IMAGE_EXTENSIONS.indexOf(extension) !== -1)
+    if (this.spritesResources() && IMAGE_EXTENSIONS.indexOf(extension) !== -1)
     {
         aDestinationPath = FILE.join(this.buildIntermediatesProductPath(), "Browser" + ".platform", "Resources", FILE.relative(this.resourcesPath(), aDestinationPath));
 
@@ -358,7 +370,6 @@ BundleTask.prototype.defineResourceTask = function(aResourcePath, aDestinationPa
         });
 
         filedir (this.buildProductStaticPathForPlatform("Browser"), [aDestinationPath]);
-        return;
     }
 
     // NOT:
@@ -369,7 +380,7 @@ BundleTask.prototype.defineResourceTask = function(aResourcePath, aDestinationPa
     {
         filedir (aDestinationPath, [aResourcePath], function()
         {
-            cp(aResourcePath, aDestinationPath);
+            cp_r(aResourcePath, aDestinationPath);
         });
 
         this.enhance([aDestinationPath]);
@@ -396,30 +407,62 @@ BundleTask.prototype.defineResourceTask = function(aResourcePath, aDestinationPa
     }
 }
 
-BundleTask.prototype.defineResourceTasks = function()
+function directoryInCommon(filenames)
 {
-    if (!this.resources)
-        return;
+    var aCommonDirectory = null;
 
-    var resourcesPath = this.resourcesPath();
-
-    this._resources.forEach(function(aResourcePath)
+    filenames.forEach(function(aFilename)
     {
-        var baselength = FILE.basename(aResourcePath).length;
+        var directory = FILE.dirname(aFilename);
 
-        if (FILE.isDirectory(aResourcePath))
-        {
-            FILE.glob(aResourcePath + "/**").forEach(function(aSubresourcePath)
-            {
-                // Is this the right way to go? Or should we include empty directories as well?
-                if (!FILE.isDirectory(aSubresourcePath))
-                    this.defineResourceTask(aSubresourcePath, FILE.join(resourcesPath, aSubresourcePath.substring(aResourcePath.length - baselength)));
-            }, this);
-        }
+        if (!aCommonDirectory)
+            aCommonDirectory = directory;
+        
         else
         {
-            this.defineResourceTask(aResourcePath, FILE.join(resourcesPath, FILE.basename(aResourcePath)));
+            var index = 0,
+                count = Math.min(directory.length, aFilename.length);
+    
+            for (; index < count && aCommonDirectory.charAt(index) === directory.charAt(index); ++index) ;
+    
+            aCommonDirectory = directory.substr(0, index);
         }
+    });
+print("DIRECTORY IN COMMON IS " + aCommonDirectory);
+    return aCommonDirectory;
+}
+
+BundleTask.prototype.defineResourceTasks = function()
+{
+    if (!this._resources)
+        return;
+
+    var resources = [],
+        basePath = null;
+
+    // Resolve resources. Consider any file passed in as a resource.
+    this._resources.forEach(function(aResourcePath)
+    {
+        if (FILE.isDirectory(aResourcePath))
+        {
+            // Add the directory itself as well since it is a legitimate resource as well.
+            resources = resources.concat(aResourcePath, FILE.glob(aResourcePath + "/**"));
+        }
+        else
+            resources.push(aResourcePath);
+    });
+
+    resources = UTIL.unique(resources);
+
+    if (resources.length <= 0)
+        return;
+
+    var basePathLength = directoryInCommon(resources).length,
+        resourcesPath = this.resourcesPath();
+
+    resources.forEach(function(aResourcePath)
+    {
+        this.defineResourceTask(aResourcePath, FILE.join(resourcesPath, aResourcePath.substring(basePathLength)));
     }, this);
 }
 

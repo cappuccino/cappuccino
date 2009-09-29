@@ -1,22 +1,19 @@
-importClass(java.io.FileWriter);
-importClass(java.io.FileOutputStream);
-importClass(java.io.BufferedWriter);
-importClass(java.io.OutputStreamWriter);
 
 @import <Foundation/Foundation.j>
 
 @import "Configuration.j"
 @import "Generate.j"
 
+print("what?...");
 
 function main()
-{
+{print("insdie?...");
     if (system.args.length < 1)
         return printUsage();
 
     var index = 0,
         count = system.args.length;
-
+print("p;!");
     for (; index < count; ++index)
     {
         var argument = system.args[index];
@@ -31,7 +28,7 @@ function main()
 
             case "config":      return config.apply(this, system.args.slice(index + 1));
 
-            case "gen":         return gen.apply(this, system.args.slice(index + 1));
+            case "gen":         print("!");return gen.apply(this, system.args.slice(index + 1));
             
             default:            print("unknown command " + argument);
         }
@@ -56,49 +53,6 @@ function printUsage()
     print("    --get name        Get the value for a given key");
 }
 
-function writeContentsToFile(/*String*/ aString, /*File*/ aFile)
-{
-    var writer = new BufferedWriter(new FileWriter(aFile));
-
-    writer.write(aString);
-
-    writer.close();
-}
-
-function exec(/*Array*/ command, /*Boolean*/ showOutput)
-{
-    var line = "",
-        output = "",
-        
-        process = Packages.java.lang.Runtime.getRuntime().exec(command),//jsArrayToJavaArray(command));
-        reader = new Packages.java.io.BufferedReader(new Packages.java.io.InputStreamReader(process.getInputStream()));
-    
-    while (line = reader.readLine())
-    {
-        if (showOutput)
-            Packages.java.lang.System.out.println(line);
-        
-        output += line + '\n';
-    }
-    
-    reader = new Packages.java.io.BufferedReader(new Packages.java.io.InputStreamReader(process.getErrorStream()));
-    
-    while (line = reader.readLine())
-        Packages.java.lang.System.out.println(line);
-
-    try
-    {
-        if (process.waitFor() != 0)
-            Packages.java.lang.System.err.println("exit value = " + process.exitValue());
-    }
-    catch (anException)
-    {
-        Packages.java.lang.System.err.println(anException);
-    }
-    
-    return output;
-}
-
 function getFiles(/*File*/ sourceDirectory, /*nil|String|Array<String>*/ extensions, /*Array*/ exclusions)
 {
     var matches = [],
@@ -112,8 +66,8 @@ function getFiles(/*File*/ sourceDirectory, /*nil|String|Array<String>*/ extensi
         
         for (; index < count; ++index)
         {
-            var file = files[index].getCanonicalFile(),
-                name = String(file.getName()),
+            var file = files[index],
+                name = FILE.basename(file),
                 isValidExtension = !extensions;
             
             if (exclusions && fileArrayContainsFile(exclusions, file))
@@ -135,10 +89,10 @@ function getFiles(/*File*/ sourceDirectory, /*nil|String|Array<String>*/ extensi
                 else if (name.substring(name.length - extensions.length - 1) === ("." + extensions))
                     isValidExtension = true;
                 
-            if (file.isDirectory())
+            if (FILE.isDirectory(file))
                 matches = matches.concat(getFiles(file, extensions, exclusions));
             else if (isValidExtension)
-                matches.push(String(file.getCanonicalPath()));
+                matches.push(file);
         }
     }
     
