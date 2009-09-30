@@ -178,6 +178,11 @@ CPWindowDidResignMainNotification   = @"CPWindowDidResignMainNotification";
 CPWindowDidMoveNotification         = @"CPWindowDidMoveNotification";
 
 
+CPWindowShadowStyleStandard = 0;
+CPWindowShadowStyleMenu     = 1;
+CPWindowShadowStylePanel    = 2;
+
+
 var SHADOW_MARGIN_LEFT      = 20.0,
     SHADOW_MARGIN_RIGHT     = 19.0,
     SHADOW_MARGIN_TOP       = 10.0,
@@ -247,6 +252,7 @@ var CPWindowSaveImage       = nil,
     BOOL                                _isAnimating;
     BOOL                                _hasShadow;
     BOOL                                _isMovableByWindowBackground;
+    unsigned                            _shadowStyle;
 
     BOOL                                _supportsMultipleDocuments;
     BOOL                                _isDocumentEdited;
@@ -981,6 +987,12 @@ CPTexturedBackgroundWindowMask
 #endif
         _shadowView = nil;
     }
+}
+
+- (void)setShadowStyle:(unsigned)aStyle
+{
+    _shadowStyle = aStyle;
+    [[self platformWindow] setShadowStyle:_shadowStyle];
 }
 
 /*!

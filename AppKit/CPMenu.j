@@ -1017,6 +1017,8 @@ var STICKY_TIME_INTERVAL        = 500,
         [_moreBelowView setFrameSize:[_CPMenuWindowMoreBelowImage size]];
         
         [contentView addSubview:_moreBelowView];
+
+        [self setShadowStyle:CPWindowShadowStyleMenu];
     }
     
     return self;
