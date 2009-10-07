@@ -60,6 +60,11 @@ CPPressedTab    = 2;
     CPView      _auxiliaryView;
 }
 
+- (id)init
+{
+    return [self initWithIdentifier:@""];
+}
+
 /*!
     Initializes the tab view item with the specified identifier.
     @return the initialized CPTabViewItem
