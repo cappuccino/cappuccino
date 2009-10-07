@@ -1772,10 +1772,8 @@ CPTexturedBackgroundWindowMask
         frame = [self frame],
         sheetContent = [aSheet contentView];
     
-// Configure sheet.
-    _sheetContext["autoresizingMask"] = [sheetContent autoresizingMask];
-    [sheetContent setAutoresizingMask:CPViewMinYMargin];
-    [self _hookSubviews:sheetContent];
+// Autoresizing
+    [self _setUpMasksForView:sheetContent];
          
     aSheet._isSheet = YES;
     aSheet._parentView = self;
@@ -1818,8 +1816,7 @@ CPTexturedBackgroundWindowMask
      
 // Autoresizing
     var sheetContent = [sheet contentView];
-    [sheetContent setAutoresizingMask:CPViewMinYMargin];
-    [self _hookSubviews:sheetContent];
+    [self _setUpMasksForView:sheetContent];
             
     _sheetContext["opened"] = NO;
 // Start animation with delegate    
@@ -1833,14 +1830,12 @@ CPTexturedBackgroundWindowMask
     if (anim._window != sheet)
         return;
 
-// Retore autoresizing
     var sheetContent = [sheet contentView];
-    [sheetContent setAutoresizingMask:_sheetContext["autoresizingMask"]];
-
-// If we are opened return now      
+    
+// If we are opened restore autoresizing return now      
     if (_sheetContext["opened"] === YES)
     {
-        [self _unHookSubviews:sheetContent];
+        [self _restoreMasksForView:sheetContent];
         return;
     }
     
@@ -1857,7 +1852,7 @@ CPTexturedBackgroundWindowMask
     var lastFrame = _sheetContext["frame"];
     [sheet setFrame:lastFrame];
     
-    [self _unHookSubviews:sheetContent];
+    [self _restoreMasksForView:sheetContent];
 
 // Send didEndSelector  
     var delegate = _sheetContext["modalDelegate"];
@@ -1874,27 +1869,31 @@ CPTexturedBackgroundWindowMask
     sheet._parentView = nil;
 }
 
-- (void)_hookSubviews:(CPView)view
+- (void)_setUpMasksForView:(CPView)aView
 {
-    var subviews = [view subviews];
-    for (var i = 0; i < [subviews count]; i++)
+    var views = [CPArray arrayWithArray:[aView subviews]];
+    [views addObject:aView];
+    
+    for (var i = 0; i < [views count]; i++)
     {
-        var subview = [subviews objectAtIndex:i];
-        var mask = [subview autoresizingMask];
-        var addMask = (mask & CPViewMinYMargin) ? 128 : CPViewMinYMargin;
-        [subview setAutoresizingMask:(mask | addMask)];
+        var view = [views objectAtIndex:i];
+        var mask = [view autoresizingMask];
+        var maskToAdd = (mask & CPViewMinYMargin) ? 128 : CPViewMinYMargin;
+        [view setAutoresizingMask:(mask | maskToAdd)];
     }
 }
 
-- (void)_unHookSubviews:(CPView)view
+- (void)_restoreMasksForView:(CPView)aView
 {
-    var subviews = [view subviews];
-    for (var i = 0; i < [subviews count]; i++)
+    var views = [CPArray arrayWithArray:[aView subviews]];
+    [views addObject:aView];
+    
+    for (var i = 0; i < [views count]; i++)
     {
-        var subview = [subviews objectAtIndex:i];
-        var mask = [subview autoresizingMask];
-        var subMask = (mask & 128) ? 128 : CPViewMinYMargin;
-        [subview setAutoresizingMask:(mask & (~ subMask))];
+        var view = [views objectAtIndex:i];
+        var mask = [view autoresizingMask];
+        var maskToRemove = (mask & 128) ? 128 : CPViewMinYMargin;
+        [view setAutoresizingMask:(mask & (~ maskToRemove))];
     }
 }
 

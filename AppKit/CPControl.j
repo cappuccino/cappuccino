@@ -301,15 +301,6 @@ var CPControlBlackColor     = [CPColor blackColor];
     [self highlight:NO];
 }
 
-- (void)setState:(int)state
-{
-}
-
-- (int)nextState
-{
-    return 0;
-}
-
 - (unsigned)mouseDownFlags
 {
     return _trackingMouseDownFlags;
