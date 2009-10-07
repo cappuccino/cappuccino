@@ -176,7 +176,8 @@ CPWindowWillCloseNotification       = @"CPWindowWillCloseNotification";
 CPWindowDidBecomeMainNotification   = @"CPWindowDidBecomeMainNotification";
 CPWindowDidResignMainNotification   = @"CPWindowDidResignMainNotification";
 CPWindowDidMoveNotification         = @"CPWindowDidMoveNotification";
-
+CPWindowWillBeginSheetNotification  = @"CPWindowWillBeginSheetNotification";
+CPWindowDidEndSheetNotification     = @"CPWindowDidEndSheetNotification";
 
 CPWindowShadowStyleStandard = 0;
 CPWindowShadowStyleMenu     = 1;
@@ -311,6 +312,8 @@ var CPWindowSaveImage       = nil,
     _CPWindowFullPlatformWindowSession  _fullPlatformWindowSession;
     
     CPDictionary                        _sheetContext;
+    CPWindow                            _parentView;
+    BOOL                                _isSheet;
 }
 
 /*
@@ -365,6 +368,7 @@ CPTexturedBackgroundWindowMask
         _isFullPlatformWindow = NO;
         _registeredDraggedTypes = [CPSet set];
         _registeredDraggedTypesArray = [];
+        _isSheet = NO;
 
         // Set up our window number.
         _windowNumber = [CPApp._windows count];
@@ -1769,12 +1773,10 @@ CPTexturedBackgroundWindowMask
         sheetContent = [aSheet contentView];
     
 // Configure sheet.
-//   if ([aSheet styleMask] & CPHUDBackgroundWindowMask)
-//          [aSheet setMovableByWindowBackground:NO];
-
     _sheetContext["autoresizingMask"] = [sheetContent autoresizingMask];
     [sheetContent setAutoresizingMask:CPViewMinYMargin];
-    [sheetContent setAutoresizesSubviews:NO];
+    [self _hookSubviews:sheetContent];
+         
     aSheet._isSheet = YES;
     aSheet._parentView = self;
     
@@ -1785,7 +1787,7 @@ CPTexturedBackgroundWindowMask
     var endFrame = CGRectMake(originx, originy, sheetFrame.size.width, sheetFrame.size.height);
 
 // Notify the world we will open the sheet
-    [[CPNotificationCenter defaultCenter] postNotificationName:@"CPWindowWillBeginSheetNotification" object:self];
+    [[CPNotificationCenter defaultCenter] postNotificationName:CPWindowWillBeginSheetNotification object:self];
 // Start modal    
     [CPApp runModalForWindow:aSheet];
     
@@ -1817,8 +1819,8 @@ CPTexturedBackgroundWindowMask
 // Autoresizing
     var sheetContent = [sheet contentView];
     [sheetContent setAutoresizingMask:CPViewMinYMargin];
-    [sheetContent setAutoresizesSubviews:NO];
-        
+    [self _hookSubviews:sheetContent];
+            
     _sheetContext["opened"] = NO;
 // Start animation with delegate    
     [sheet _setFrame:endFrame delegate:self duration:0.2 curve:CPAnimationLinear];
@@ -1834,17 +1836,19 @@ CPTexturedBackgroundWindowMask
 // Retore autoresizing
     var sheetContent = [sheet contentView];
     [sheetContent setAutoresizingMask:_sheetContext["autoresizingMask"]];
-    [sheetContent setAutoresizesSubviews:YES];
 
 // If we are opened return now      
     if (_sheetContext["opened"] === YES)
+    {
+        [self _unHookSubviews:sheetContent];
         return;
+    }
     
 // Stop modal
     [CPApp stopModal];    
     
 // Notify the world we closed the sheet
-    [[CPNotificationCenter defaultCenter] postNotificationName:@"CPWindowDidEndSheetNotification" object:self];
+    [[CPNotificationCenter defaultCenter] postNotificationName:CPWindowDidEndSheetNotification object:self];
 
 // check first if front ? 
     [sheet orderOut:self];
@@ -1852,13 +1856,15 @@ CPTexturedBackgroundWindowMask
 // Set the sheet frame to its last open state. 
     var lastFrame = _sheetContext["frame"];
     [sheet setFrame:lastFrame];
-        
+    
+    [self _unHookSubviews:sheetContent];
+
 // Send didEndSelector  
     var delegate = _sheetContext["modalDelegate"];
     var endSelector = _sheetContext["endSelector"];     
     if (delegate != nil && endSelector != nil)   
-        objj_msgSend(_sheetContext["modalDelegate"],
-                     _sheetContext["endSelector"],
+        objj_msgSend(delegate,
+                     endSelector,
                      sheet,
                      _sheetContext["returnCode"],
                      _sheetContext["contextInfo"]);
@@ -1866,6 +1872,30 @@ CPTexturedBackgroundWindowMask
 // reset contexts   
     _sheetContext = nil;
     sheet._parentView = nil;
+}
+
+- (void)_hookSubviews:(CPView)view
+{
+    var subviews = [view subviews];
+    for (var i = 0; i < [subviews count]; i++)
+    {
+        var subview = [subviews objectAtIndex:i];
+        var mask = [subview autoresizingMask];
+        var addMask = (mask & CPViewMinYMargin) ? 128 : CPViewMinYMargin;
+        [subview setAutoresizingMask:(mask | addMask)];
+    }
+}
+
+- (void)_unHookSubviews:(CPView)view
+{
+    var subviews = [view subviews];
+    for (var i = 0; i < [subviews count]; i++)
+    {
+        var subview = [subviews objectAtIndex:i];
+        var mask = [subview autoresizingMask];
+        var subMask = (mask & 128) ? 128 : CPViewMinYMargin;
+        [subview setAutoresizingMask:(mask & (~ subMask))];
+    }
 }
 
 /*!

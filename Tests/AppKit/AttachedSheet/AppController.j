@@ -10,16 +10,16 @@
 
 @implementation AppController : CPObject
 {
-	CPWindow window;
-	CPWindow sheet;
-	CPTextField textField; 
+	CPWindow 	window;
+	CPWindow 	sheet;
+	CPTextField textField;
 }
 
 - (void)applicationDidFinishLaunching:(CPNotification)aNotification
 {
     window = [[CPWindow alloc] initWithContentRect:CGRectMake(100,100,500,300) styleMask:CPResizableWindowMask],
         contentView = [window contentView];
-   	            
+   	
     sheet = [[CPWindow alloc] initWithContentRect:CGRectMake(0,0,300,100) styleMask:CPDocModalWindowMask|CPResizableWindowMask];
  //   [sheet setMinSize:CGSizeMake(300,100)];
     
@@ -28,7 +28,7 @@
     textField = [[CPTextField alloc] initWithFrame:CGRectMake(10,30,280,30)];
     [textField setEditable:YES];
     [textField setBezeled:YES];
-    [textField setAutoresizingMask:CPViewMinYMargin|CPViewWidthSizable];
+    [textField setAutoresizingMask:CPViewWidthSizable];
     
     var okButton = [[CPButton alloc] initWithFrame:CGRectMake(230,70,50,24)];
     [okButton setTitle:"OK"];
@@ -47,13 +47,13 @@
     [sheetContent addSubview:textField];
     [sheetContent addSubview:okButton];
     [sheetContent addSubview:cancelButton];
-    
+
     var displayButton = [[CPButton alloc] initWithFrame:CGRectMake(200,150,100,24)];
     [displayButton setTitle:"Display Sheet"];
     [displayButton setTarget:self];
     [displayButton setAction:@selector(displaySheet:)];    
-	
 	[contentView addSubview:displayButton];
+	
 	[window orderFront:self]
 }
 
@@ -62,7 +62,12 @@
     [textField setStringValue:""];
     [sheet makeFirstResponder:textField];
 
-    [CPApp beginSheet:sheet modalForWindow:window modalDelegate:self didEndSelector:@selector(didEndSheet:returnCode:contextInfo:) contextInfo:nil];    
+    [CPApp beginSheet:sheet modalForWindow:window modalDelegate:self didEndSelector:@selector(didEndSheet:returnCode:contextInfo:) contextInfo:nil];
+}
+
+- (void)alertDidEnd:(CPWindow)sheet returnCode:(int)returnCode contextInfo:(id)contextInfo
+{
+	CPLogConsole(_cmd+" returnCode " + returnCode);
 }
 
 - (void)closeSheet:(id)sender
