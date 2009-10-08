@@ -1,0 +1,25 @@
+
+require 'objective-j'
+require 'objective-j/bundletask'
+
+if !ENV['CONFIG']
+    ENV['CONFIG'] = 'Debug'
+end
+
+ObjectiveJ::BundleTask.new(:SplitView) do |t|
+    t.name          = 'SplitView'
+    t.identifier    = 'com.yourcompany.SplitView'
+    t.version       = '1.0'
+    t.author        = 'Your Company'
+    t.email         = 'feedback @nospam@ yourcompany.com'
+    t.summary       = 'SplitView'
+    t.sources       = FileList['*.j']
+    t.resources     = FileList['Resources/*']
+    t.index_file    = 'index.html'
+    t.info_plist    = 'Info.plist'
+    t.build_path    = File.join('Build', ENV['CONFIG'], 'SplitView')
+    t.flag          = '-DDEBUG' if ENV['CONFIG'] == 'Debug'
+    t.flag          = '-O' if ENV['CONFIG'] == 'Release'
+end
+
+task :default => [:SplitView]

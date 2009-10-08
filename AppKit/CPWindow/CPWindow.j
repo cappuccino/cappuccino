@@ -176,12 +176,12 @@ CPWindowWillCloseNotification       = @"CPWindowWillCloseNotification";
 CPWindowDidBecomeMainNotification   = @"CPWindowDidBecomeMainNotification";
 CPWindowDidResignMainNotification   = @"CPWindowDidResignMainNotification";
 CPWindowDidMoveNotification         = @"CPWindowDidMoveNotification";
-
+CPWindowWillBeginSheetNotification  = @"CPWindowWillBeginSheetNotification";
+CPWindowDidEndSheetNotification     = @"CPWindowDidEndSheetNotification";
 
 CPWindowShadowStyleStandard = 0;
 CPWindowShadowStyleMenu     = 1;
 CPWindowShadowStylePanel    = 2;
-
 
 var SHADOW_MARGIN_LEFT      = 20.0,
     SHADOW_MARGIN_RIGHT     = 19.0,
@@ -311,6 +311,8 @@ var CPWindowSaveImage       = nil,
     _CPWindowFullPlatformWindowSession  _fullPlatformWindowSession;
     
     CPDictionary                        _sheetContext;
+    CPWindow                            _parentView;
+    BOOL                                _isSheet;
 }
 
 /*
@@ -365,6 +367,7 @@ CPTexturedBackgroundWindowMask
         _isFullPlatformWindow = NO;
         _registeredDraggedTypes = [CPSet set];
         _registeredDraggedTypesArray = [];
+        _isSheet = NO;
 
         // Set up our window number.
         _windowNumber = [CPApp._windows count];
@@ -1767,27 +1770,24 @@ CPTexturedBackgroundWindowMask
         frame = [self frame],
         sheetContent = [aSheet contentView];
     
-    // Autoresizing
     [self _setUpMasksForView:sheetContent];
          
     aSheet._isSheet = YES;
     aSheet._parentView = self;
     
-    // calculate start/end frames
     var originx = frame.origin.x + FLOOR((frame.size.width - sheetFrame.size.width)/2),
         originy = frame.origin.y + [[self contentView] frame].origin.y,
         startFrame = CGRectMake(originx, originy, sheetFrame.size.width, 0),
         endFrame = CGRectMake(originx, originy, sheetFrame.size.width, sheetFrame.size.height);
 
-    [[CPNotificationCenter defaultCenter] postNotificationName:@"CPWindowWillBeginSheetNotification" object:self];
+    [[CPNotificationCenter defaultCenter] postNotificationName:CPWindowWillBeginSheetNotification object:self];
     [CPApp runModalForWindow:aSheet];
     
-    // Order front and animate the sheet
     [aSheet orderFront:self];
     [aSheet setFrame:startFrame];
     _sheetContext["opened"] = YES;
 
-    [aSheet _setFrame:endFrame delegate:self duration:0.3 curve:CPAnimationEaseOut];
+    [aSheet _setFrame:endFrame delegate:self duration:0.2 curve:CPAnimationEaseOut];
 
     // Should run the main loop here until _isAnimating = FALSE
     [aSheet becomeKeyWindow];    
@@ -1801,14 +1801,14 @@ CPTexturedBackgroundWindowMask
         endFrame = CGRectMakeCopy(startFrame);
 
     endFrame.size.height = 0;
+    
     _sheetContext["frame"] = startFrame;
      
     var sheetContent = [sheet contentView];
-
     [self _setUpMasksForView:sheetContent];
             
     _sheetContext["opened"] = NO;
-    [sheet _setFrame:endFrame delegate:self duration:0.2 curve:CPAnimationLinear];
+    [sheet _setFrame:endFrame delegate:self duration:0.2 curve:CPAnimationEaseIn];
 }
 
 /* @ignore */
@@ -1824,10 +1824,10 @@ CPTexturedBackgroundWindowMask
     {
         [self _restoreMasksForView:sheetContent];
         return;
-    }    
-
+    }
+    
     [CPApp stopModal];    
-    [[CPNotificationCenter defaultCenter] postNotificationName:@"CPWindowDidEndSheetNotification" object:self];
+    [[CPNotificationCenter defaultCenter] postNotificationName:CPWindowDidEndSheetNotification object:self];
 
     [sheet orderOut:self];
 
@@ -1837,11 +1837,11 @@ CPTexturedBackgroundWindowMask
     [self _restoreMasksForView:sheetContent];
 
     var delegate = _sheetContext["modalDelegate"],
-        endSelector = _sheetContext["endSelector"];     
+        endSelector = _sheetContext["endSelector"];
 
     if (delegate != nil && endSelector != nil)   
-        objj_msgSend(_sheetContext["modalDelegate"], _sheetContext["endSelector"], sheet, _sheetContext["returnCode"], _sheetContext["contextInfo"]);
-         
+        objj_msgSend(delegate, endSelector, sheet, _sheetContext["returnCode"], _sheetContext["contextInfo"]);
+
     _sheetContext = nil;
     sheet._parentView = nil;
 }
