@@ -1787,7 +1787,7 @@ CPTexturedBackgroundWindowMask
     [aSheet setFrame:startFrame];
     _sheetContext["opened"] = YES;
 
-    [aSheet _setFrame:endFrame delegate:self duration:0.3 curve:CPAnimationEaseOut];
+    [aSheet _setFrame:endFrame delegate:self duration:0.2 curve:CPAnimationEaseOut];
 
     // Should run the main loop here until _isAnimating = FALSE
     [aSheet becomeKeyWindow];    
@@ -1808,7 +1808,7 @@ CPTexturedBackgroundWindowMask
     [self _setUpMasksForView:sheetContent];
             
     _sheetContext["opened"] = NO;
-    [sheet _setFrame:endFrame delegate:self duration:0.2 curve:CPAnimationLinear];
+    [sheet _setFrame:endFrame delegate:self duration:0.2 curve:CPAnimationEaseIn];
 }
 
 /* @ignore */
