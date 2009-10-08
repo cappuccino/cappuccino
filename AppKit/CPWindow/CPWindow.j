@@ -183,7 +183,6 @@ CPWindowShadowStyleStandard = 0;
 CPWindowShadowStyleMenu     = 1;
 CPWindowShadowStylePanel    = 2;
 
-
 var SHADOW_MARGIN_LEFT      = 20.0,
     SHADOW_MARGIN_RIGHT     = 19.0,
     SHADOW_MARGIN_TOP       = 10.0,
@@ -1759,7 +1758,6 @@ CPTexturedBackgroundWindowMask
 {
     var sheetFrame = [aSheet frame];
 
-// setup contexts
     _sheetContext = {"sheet":aSheet, "modalDelegate":aModalDelegate, "endSelector":aDidEndSelector, "contextInfo":aContextInfo, "frame":CGRectMakeCopy(sheetFrame), "returnCode":-1, "opened": NO}; 
     
     [self _attachSheetWindow:aSheet];
@@ -1772,25 +1770,19 @@ CPTexturedBackgroundWindowMask
         frame = [self frame],
         sheetContent = [aSheet contentView];
     
-// Autoresizing
     [self _setUpMasksForView:sheetContent];
          
     aSheet._isSheet = YES;
     aSheet._parentView = self;
     
-// calculate start/end frames
-    var originx = frame.origin.x + FLOOR((frame.size.width - sheetFrame.size.width)/2);
-    var originy = frame.origin.y + [[self contentView] frame].origin.y;
-    var startFrame = CGRectMake(originx, originy, sheetFrame.size.width, 0);
-    var endFrame = CGRectMake(originx, originy, sheetFrame.size.width, sheetFrame.size.height);
+    var originx = frame.origin.x + FLOOR((frame.size.width - sheetFrame.size.width)/2),
+        originy = frame.origin.y + [[self contentView] frame].origin.y,
+        startFrame = CGRectMake(originx, originy, sheetFrame.size.width, 0),
+        endFrame = CGRectMake(originx, originy, sheetFrame.size.width, sheetFrame.size.height);
 
-// Notify the world we will open the sheet
     [[CPNotificationCenter defaultCenter] postNotificationName:CPWindowWillBeginSheetNotification object:self];
-// Start modal    
     [CPApp runModalForWindow:aSheet];
     
-// Order front and animate the sheet
-//  aSheet._isAnimating = YES;
     [aSheet orderFront:self];
     [aSheet setFrame:startFrame];
     _sheetContext["opened"] = YES;
@@ -1804,22 +1796,18 @@ CPTexturedBackgroundWindowMask
 /* @ignore */
 - (void)_detachSheetWindow
 {
-    var sheet = [self attachedSheet];
-    
-// End frame for animation    
-    var startFrame = [sheet frame];
-    var endFrame = CGRectMakeCopy(startFrame);
+    var sheet = [self attachedSheet],
+        startFrame = [sheet frame],
+        endFrame = CGRectMakeCopy(startFrame);
+
     endFrame.size.height = 0;
     
-// Set the new frame in case the sheet have been resized
     _sheetContext["frame"] = startFrame;
      
-// Autoresizing
     var sheetContent = [sheet contentView];
     [self _setUpMasksForView:sheetContent];
             
     _sheetContext["opened"] = NO;
-// Start animation with delegate    
     [sheet _setFrame:endFrame delegate:self duration:0.2 curve:CPAnimationLinear];
 }
 
@@ -1832,39 +1820,28 @@ CPTexturedBackgroundWindowMask
 
     var sheetContent = [sheet contentView];
     
-// If we are opened restore autoresizing return now      
     if (_sheetContext["opened"] === YES)
     {
         [self _restoreMasksForView:sheetContent];
         return;
     }
     
-// Stop modal
     [CPApp stopModal];    
-    
-// Notify the world we closed the sheet
     [[CPNotificationCenter defaultCenter] postNotificationName:CPWindowDidEndSheetNotification object:self];
 
-// check first if front ? 
     [sheet orderOut:self];
 
-// Set the sheet frame to its last open state. 
     var lastFrame = _sheetContext["frame"];
     [sheet setFrame:lastFrame];
     
     [self _restoreMasksForView:sheetContent];
 
-// Send didEndSelector  
-    var delegate = _sheetContext["modalDelegate"];
-    var endSelector = _sheetContext["endSelector"];     
+    var delegate = _sheetContext["modalDelegate"],
+        endSelector = _sheetContext["endSelector"];
+
     if (delegate != nil && endSelector != nil)   
-        objj_msgSend(delegate,
-                     endSelector,
-                     sheet,
-                     _sheetContext["returnCode"],
-                     _sheetContext["contextInfo"]);
-         
-// reset contexts   
+        objj_msgSend(delegate, endSelector, sheet, _sheetContext["returnCode"], _sheetContext["contextInfo"]);
+
     _sheetContext = nil;
     sheet._parentView = nil;
 }
@@ -1874,11 +1851,12 @@ CPTexturedBackgroundWindowMask
     var views = [CPArray arrayWithArray:[aView subviews]];
     [views addObject:aView];
     
-    for (var i = 0; i < [views count]; i++)
+    for (var i = 0, count = [views count]; i < count; i++)
     {
-        var view = [views objectAtIndex:i];
-        var mask = [view autoresizingMask];
-        var maskToAdd = (mask & CPViewMinYMargin) ? 128 : CPViewMinYMargin;
+        var view = [views objectAtIndex:i],
+            mask = [view autoresizingMask],
+            maskToAdd = (mask & CPViewMinYMargin) ? 128 : CPViewMinYMargin;
+
         [view setAutoresizingMask:(mask | maskToAdd)];
     }
 }
@@ -1888,11 +1866,12 @@ CPTexturedBackgroundWindowMask
     var views = [CPArray arrayWithArray:[aView subviews]];
     [views addObject:aView];
     
-    for (var i = 0; i < [views count]; i++)
+    for (var i = 0, count = [views count]; i < count; i++)
     {
-        var view = [views objectAtIndex:i];
-        var mask = [view autoresizingMask];
-        var maskToRemove = (mask & 128) ? 128 : CPViewMinYMargin;
+        var view = [views objectAtIndex:i],
+            mask = [view autoresizingMask],
+            maskToRemove = (mask & 128) ? 128 : CPViewMinYMargin;
+
         [view setAutoresizingMask:(mask & (~ maskToRemove))];
     }
 }
