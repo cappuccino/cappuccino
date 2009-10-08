@@ -120,7 +120,7 @@ ACTUAL_FRAME_RATE = 0;
 */
 - (void)setAnimationCurve:(CPAnimationCurve)anAnimationCurve
 {
-    switch (_animationCurve)
+    switch (anAnimationCurve)
     {
         case CPAnimationEaseInOut:  timingFunctionName = kCAMediaTimingFunctionEaseInEaseOut;
                                     break;
