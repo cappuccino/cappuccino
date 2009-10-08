@@ -26,13 +26,24 @@ function compress(/*String*/ aCode, /*String*/ FIXME)
 {
     // FIXME: figure out why this doesn't work on Windows/Cygwin
     //var tmpFile = java.io.File.createTempFile("OBJJC", "");
-    var tmpFile = new java.io.File("/tmp/" + FIXME + Math.random() + ".tmp");
+    /*var tmpFile = new java.io.File("/tmp/" + FIXME + Math.random() + ".tmp");
     tmpFile.deleteOnExit();
     tmpFile = tmpFile.getAbsolutePath();
+    */
+
+    var tmpFile = FILE.join("/tmp", FIXME + Math.random() + ".tmp");
 
     FILE.write(tmpFile, aCode, { charset:"UTF-8" });
 
-    return OS.command(["java", "-Dfile.encoding=UTF-8", "-classpath", [RHINO_PATH, SHRINKSAFE_PATH].join(":"), "org.dojotoolkit.shrinksafe.Main", tmpFile]);
+    var shrinksafe = OS.popen("java -Dfile.encoding=UTF-8 -classpath " + RHINO_PATH + ":" +  SHRINKSAFE_PATH + " org.dojotoolkit.shrinksafe.Main " + tmpFile),
+        output = "",
+        chunk = "";
+
+    while (chunk = shrinksafe.stdout.read())
+        output += chunk;
+
+    return output;
+//    return OS.command(["java", "-Dfile.encoding=UTF-8", "-classpath", [RHINO_PATH, SHRINKSAFE_PATH].join(":"), "org.dojotoolkit.shrinksafe.Main", tmpFile]);
 }
 
 function compileWithResolvedFlags(aFilePath, objjcFlags, gccFlags)

@@ -91,8 +91,13 @@ global.rm_rf = function(/*String*/ aFilename)
 
 global.cp_r = function(/*String*/ from, /*String*/ to)
 {
-    rm_rf(to);
-    FILE.copyTree(from, to);
+    if (FILE.exists(to))
+        rm_rf(to);
+
+    if (FILE.isDirectory(from))
+        FILE.copyTree(from, to);
+    else
+        FILE.copy(from, to);
 }
 
 global.cp = function(/*String*/ from, /*String*/ to)
