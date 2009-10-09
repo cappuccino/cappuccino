@@ -675,6 +675,7 @@
 var CPCollectionViewMinItemSizeKey      = @"CPCollectionViewMinItemSizeKey",
     CPCollectionViewMaxItemSizeKey      = @"CPCollectionViewMaxItemSizeKey",
     CPCollectionViewVerticalMarginKey   = @"CPCollectionViewVerticalMarginKey",
+    CPCollectionViewSelectable          = @"CPCollectionViewSelectable",
     CPCollectionViewBackgroundColorsKey = @"CPCollectionViewBackgroundColorsKey";
 
 
@@ -695,7 +696,10 @@ var CPCollectionViewMinItemSizeKey      = @"CPCollectionViewMinItemSizeKey",
         
         _minItemSize = [aCoder decodeSizeForKey:CPCollectionViewMinItemSizeKey] || CGSizeMakeZero();
         _maxItemSize = [aCoder decodeSizeForKey:CPCollectionViewMaxItemSizeKey] || CGSizeMakeZero();
+        
         _verticalMargin = [aCoder decodeFloatForKey:CPCollectionViewVerticalMarginKey];
+        
+        _isSelectable = [aCoder decodeBoolForKey:CPCollectionViewSelectable];
 
         [self setBackgroundColors:[aCoder decodeObjectForKey:CPCollectionViewBackgroundColorsKey]];
           
@@ -704,7 +708,6 @@ var CPCollectionViewMinItemSizeKey      = @"CPCollectionViewMinItemSizeKey",
         _selectionIndexes = [CPIndexSet indexSet];
         
         _allowsEmptySelection = YES;
-        _isSelectable = YES;
     }
 
     return self;
@@ -716,10 +719,12 @@ var CPCollectionViewMinItemSizeKey      = @"CPCollectionViewMinItemSizeKey",
 
     if (!CGSizeEqualToSize(_minItemSize, CGSizeMakeZero()))
       [aCoder encodeSize:_minItemSize forKey:CPCollectionViewMinItemSizeKey];
-
+    
     if (!CGSizeEqualToSize(_maxItemSize, CGSizeMakeZero()))
       [aCoder encodeSize:_maxItemSize forKey:CPCollectionViewMaxItemSizeKey];
-
+    
+    [aCoder encodeBool:_isSelectable forKey:CPCollectionViewSelectable];
+    
     [aCoder encodeFloat:_verticalMargin forKey:CPCollectionViewVerticalMarginKey];
 
     [aCoder encodeObject:_backgroundColors forKey:CPCollectionViewBackgroundColorsKey];
