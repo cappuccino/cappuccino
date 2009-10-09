@@ -86,6 +86,11 @@ CPToolbarPrintItemIdentifier            = @"CPToolbarPrintItemIdentifier";
     int         _visibilityPriority;
 }
 
+- (id)init
+{
+    return [self initWithItemIdentifier:@""];
+}
+
 // Creating a Toolbar Item
 /*!
     Initializes the toolbar item with a specified identifier.

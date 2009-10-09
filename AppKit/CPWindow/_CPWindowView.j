@@ -135,7 +135,14 @@ var _CPWindowViewResizeIndicatorImage = nil;
     }
     
     else if (type === CPLeftMouseDragged)
-        [theWindow setFrameSize:CGSizeMake(CGRectGetWidth(_resizeFrame) + location.x - CGRectGetMinX(_resizeFrame), CGRectGetHeight(_resizeFrame) + location.y - CGRectGetMinY(_resizeFrame))];
+    {	
+    	var newSize = CGSizeMake(CGRectGetWidth(_resizeFrame) + location.x - CGRectGetMinX(_resizeFrame), CGRectGetHeight(_resizeFrame) + location.y - CGRectGetMinY(_resizeFrame));
+        
+        if (theWindow._isSheet && theWindow._parentView && (theWindow._frame.size.width !== newSize.width))
+    	[theWindow._parentView _setAttachedSheetFrameOrigin];
+		
+		[theWindow setFrameSize:newSize];
+    }
     
     [CPApp setTarget:self selector:@selector(trackResizeWithEvent:) forNextEventMatchingMask:CPLeftMouseDraggedMask | CPLeftMouseUpMask untilDate:nil inMode:nil dequeue:YES];
 }

@@ -149,7 +149,7 @@ var CPAlertWarningImage,
     [_alertPanel setFloatingPanel:YES];
     [_alertPanel center];
     
-    [_messageLabel setTextColor:(styleMask == CPHUDBackgroundWindowMask) ? [CPColor whiteColor] : [CPColor blackColor]];
+    [_messageLabel setTextColor:(styleMask & CPHUDBackgroundWindowMask) ? [CPColor whiteColor] : [CPColor blackColor]];
     
     var count = [_buttons count];
     for(var i=0; i < count; i++)
@@ -157,7 +157,7 @@ var CPAlertWarningImage,
         var button = _buttons[i];
         
         [button setFrameSize:CGSizeMake([button frame].size.width, (styleMask == CPHUDBackgroundWindowMask) ? 20.0 : 24.0)];
-        [button setBezelStyle:(styleMask == CPHUDBackgroundWindowMask) ? CPHUDBezelStyle : CPRoundedBezelStyle];
+        [button setBezelStyle:(styleMask & CPHUDBackgroundWindowMask) ? CPHUDBezelStyle : CPRoundedBezelStyle];
         
         [[_alertPanel contentView] addSubview:button];
     }

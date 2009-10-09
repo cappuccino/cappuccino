@@ -58,7 +58,9 @@ CPGrooveBorder  = 3;
 
 - (id)initWithFrame:(CPRect)frameRect
 {
-    if (self = [super initWithFrame:frameRect])
+    self = [super initWithFrame:frameRect];
+    
+    if (self)
     {
         _fillColor = [CPColor clearColor];
         _borderColor = [CPColor blackColor];
