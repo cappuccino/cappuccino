@@ -239,11 +239,14 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
             return true;
         }
 
-        CPTextFieldKeyDownFunction = function(anEvent)
+        CPTextFieldKeyDownFunction = function(aDOMEvent)
         {
             CPTextFieldTextDidChangeValue = [CPTextFieldInputOwner stringValue];
 
-            //CPTextFieldKeyPressFunction(anEvent);
+            aDOMEvent = aDOMEvent || window.event;
+
+            if (aDOMEvent.keyCode == CPReturnKeyCode || aDOMEvent.keyCode == CPTabKeyCode) 
+                CPTextFieldKeyPressFunction(aDOMEvent);
 
             return true;
         }
@@ -276,7 +279,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
                     else
                         [[owner window] selectPreviousKeyView:owner];
                 }
-            }    
+            }
 
             [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
         }
