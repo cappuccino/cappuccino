@@ -16,7 +16,7 @@
     var itemPrototype = [[CPCollectionViewItem alloc] init];
     [_collectionView setItemPrototype:itemPrototype];
     
-    [self assert:[CPCollectionViewItem class] equals:[[_collectionView itemPrototype] class]];
+    [self assert:itemPrototype same:[_collectionView itemPrototype]];
 }
 
 - (void)testIsSelectableActuallyReturnsSelectableStatus
