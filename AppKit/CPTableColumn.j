@@ -62,6 +62,11 @@ CPTableColumnUserResizingMask   = 2;
     CPString            _headerToolTip;
 }
 
+- (id)init
+{
+    return [self initWithIdentifier:@""];
+}
+
 - (id)initWithIdentifier:(id)anIdentifier
 {
     self = [super init];
