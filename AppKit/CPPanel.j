@@ -46,6 +46,13 @@ CPCancelButton  = 0;
     <li>A panel can be made to work even when there's an attention panel on-screen. This permits actions within the panel to affect the attention panel.</li>
 </ul>
 */
+
+/*
+    @global
+    @class CPWindow
+*/
+CPDocModalWindowMask			= 1 << 6;
+
 @implementation CPPanel : CPWindow
 {
     BOOL    _becomesKeyOnlyIfNeeded;

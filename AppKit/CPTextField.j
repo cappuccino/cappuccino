@@ -243,7 +243,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
         {
             CPTextFieldTextDidChangeValue = [CPTextFieldInputOwner stringValue];
 
-            CPTextFieldKeyPressFunction(anEvent);
+            //CPTextFieldKeyPressFunction(anEvent);
 
             return true;
         }
@@ -251,6 +251,8 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
         CPTextFieldKeyPressFunction = function(aDOMEvent)
         {
             aDOMEvent = aDOMEvent || window.event;
+
+            CPTextFieldKeyUpFunction();
 
             if (aDOMEvent.keyCode == CPReturnKeyCode || aDOMEvent.keyCode == CPTabKeyCode) 
             {
@@ -281,12 +283,12 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 
         CPTextFieldKeyUpFunction = function()
         {
-            [CPTextFieldInputOwner setStringValue:CPTextFieldDOMInputElement.value];
+            [CPTextFieldInputOwner _setStringValue:CPTextFieldDOMInputElement.value];
 
             if ([CPTextFieldInputOwner stringValue] !== CPTextFieldTextDidChangeValue)
             {
-                CPTextFieldTextDidChangeValue = [CPTextFieldInputOwner stringValue];
                 [CPTextFieldInputOwner textDidChange:[CPNotification notificationWithName:CPControlTextDidChangeNotification object:CPTextFieldInputOwner userInfo:nil]];
+                CPTextFieldTextDidChangeValue = [CPTextFieldInputOwner stringValue];
             }
 
             [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
@@ -551,8 +553,10 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 /* @ignore */
 - (BOOL)becomeFirstResponder
 {
+#if PLATFORM(DOM)
     if (CPTextFieldInputOwner && [CPTextFieldInputOwner window] !== [self window])
         [[CPTextFieldInputOwner window] makeFirstResponder:nil];
+#endif
 
     [self setThemeState:CPThemeStateEditing];
 
@@ -590,7 +594,8 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 
     window.setTimeout(function() 
     { 
-        element.focus(); 
+        element.value = [self stringValue];
+        element.focus();
         CPTextFieldInputOwner = self;
     }, 0.0);
  
@@ -681,9 +686,20 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 /*
     @ignore
 */
+- (void)_setStringValue:(id)aValue
+{
+    [super setObjectValue:String(aValue)];
+    [self _updatePlaceholderState];
+}
+
 - (void)setObjectValue:(id)aValue
 {
     [super setObjectValue:aValue];
+
+#if PLATFORM(DOM)
+    if (CPTextFieldInputOwner === self)
+        [self _inputElement].value = aValue;
+#endif
 
     [self _updatePlaceholderState];
 }
