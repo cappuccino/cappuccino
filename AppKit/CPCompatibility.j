@@ -114,7 +114,7 @@ else if (USER_AGENT.indexOf("AppleWebKit/") != -1)
         majorVersion = parseInt(versionString.substring(0, versionDivision)),
         minorVersion = parseInt(versionString.substr(versionDivision + 1));
 
-    if((USER_AGENT.indexOf("Safari") !== CPNotFound && (majorVersion >= 525 && minorVersion > 14)) || USER_AGENT.indexOf("Chrome") !== CPNotFound)
+    if((USER_AGENT.indexOf("Safari") !== CPNotFound && (majorVersion > 525 || (majorVersion === 525 && minorVersion > 14))) || USER_AGENT.indexOf("Chrome") !== CPNotFound)
         PLATFORM_FEATURES |= CPJavascriptRemedialKeySupport;
 }
 
