@@ -4,7 +4,6 @@
 #import "Platform.h"
 #import "../CoreGraphics/CGGeometry.h"
 
-
 var PrimaryPlatformWindow   = NULL;
 
 @implementation CPPlatformWindow : CPObject
@@ -13,6 +12,7 @@ var PrimaryPlatformWindow   = NULL;
 
     CPInteger       _level;
     BOOL            _hasShadow;
+    unsigned        _shadowStyle;
 
 #if PLATFORM(DOM)
     DOMWindow       _DOMWindow;
@@ -166,6 +166,16 @@ var PrimaryPlatformWindow   = NULL;
 #if PLATFORM(DOM)
     if (_DOMWindow && _DOMWindow.cpSetHasShadow)
         _DOMWindow.cpSetHasShadow(shouldHaveShadow);
+#endif
+}
+
+- (void)setShadowStyle:(int)aStyle
+{
+    _shadowStyle = aStyle;
+
+#if PLATFORM(DOM)
+    if (_DOMWindow && _DOMWindow.cpSetShadowStyle)
+        _shadowStyle.cpSetShadowStyle(aStyle);
 #endif
 }
 

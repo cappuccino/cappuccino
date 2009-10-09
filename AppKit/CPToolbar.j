@@ -128,6 +128,11 @@ var CPToolbarConfigurationsByIdentifier = nil;
     [toolbarsSharingIdentifier addObject:toolbar];
 }
 
+- (id)init
+{
+    return [self initWithIdentifier:@""];
+}
+
 /*!
     Initializes the toolbar with the specified identifier.
     @param anIdentifier the identifier for the toolbar

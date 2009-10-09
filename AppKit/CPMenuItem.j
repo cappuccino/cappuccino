@@ -78,6 +78,11 @@
     _CPMenuItemView _menuItemView;
 }
 
+- (id)init
+{
+    return [self initWithTitle:@"" action:nil keyEquivalent:nil];
+}
+
 /*!
     Initializes the menu item with a title, action, and keyboard equivalent.
     @param aTitle the menu item's title
