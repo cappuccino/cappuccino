@@ -250,11 +250,11 @@
 
 /*!
     Returns \c YES if the collection view is
-    selected, and \c NO otherwise.
+    selectable, and \c NO otherwise.
 */
-- (BOOL)isSelected
+- (BOOL)isSelectable
 {
-    return _isSelected;
+    return _isSelectable;
 }
 
 /*!
