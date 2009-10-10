@@ -178,6 +178,9 @@ CPWindowDidResignMainNotification   = @"CPWindowDidResignMainNotification";
 CPWindowDidMoveNotification         = @"CPWindowDidMoveNotification";
 CPWindowWillBeginSheetNotification  = @"CPWindowWillBeginSheetNotification";
 CPWindowDidEndSheetNotification     = @"CPWindowDidEndSheetNotification";
+CPWindowDidMiniaturizeNotification  = @"CPWindowDidMiniaturizeNotification";
+CPWindowWillMiniaturizeNotification = @"CPWindowWillMiniaturizeNotification";
+CPWindowDidDeminiaturizeNotification = @"CPWindowDidDeminiaturizeNotification";
 
 CPWindowShadowStyleStandard = 0;
 CPWindowShadowStyleMenu     = 1;
@@ -249,6 +252,7 @@ var CPWindowSaveImage       = nil,
     CGRect                              _frame;
     int                                 _level;
     BOOL                                _isVisible;
+    BOOL                                _isMiniaturized;
     BOOL                                _isAnimating;
     BOOL                                _hasShadow;
     BOOL                                _isMovableByWindowBackground;
@@ -441,10 +445,10 @@ CPTexturedBackgroundWindowMask
 {
     if (aStyleMask & CPHUDBackgroundWindowMask)
         return _CPHUDWindowView;
-    
+
     else if (aStyleMask === CPBorderlessWindowMask)
         return _CPBorderlessWindowView;
-                
+
     else if (aStyleMask & CPDocModalWindowMask)
         return _CPDocModalWindowView;
 
@@ -964,17 +968,17 @@ CPTexturedBackgroundWindowMask
         if (!_CPWindowShadowColor)
         {
             var bundle = [CPBundle bundleForClass:[CPWindow class]];
-            
+
             _CPWindowShadowColor = [CPColor colorWithPatternImage:[[CPNinePartImage alloc] initWithImageSlices:
                 [
                     [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"CPWindow/CPWindowShadow0.png"] size:CGSizeMake(20.0, 19.0)],
                     [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"CPWindow/CPWindowShadow1.png"] size:CGSizeMake(1.0, 19.0)],
                     [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"CPWindow/CPWindowShadow2.png"] size:CGSizeMake(19.0, 19.0)],
-                    
+
                     [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"CPWindow/CPWindowShadow3.png"] size:CGSizeMake(20.0, 1.0)],
                     [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"CPWindow/CPWindowShadow4.png"] size:CGSizeMake(1.0, 1.0)],
                     [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"CPWindow/CPWindowShadow5.png"] size:CGSizeMake(19.0, 1.0)],
-                    
+
                     [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"CPWindow/CPWindowShadow6.png"] size:CGSizeMake(20.0, 18.0)],
                     [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"CPWindow/CPWindowShadow7.png"] size:CGSizeMake(1.0, 18.0)],
                     [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"CPWindow/CPWindowShadow8.png"] size:CGSizeMake(19.0, 18.0)]
@@ -1249,33 +1253,33 @@ CPTexturedBackgroundWindowMask
 
         case CPLeftMouseUp:         if (!_leftMouseDownView)
                                         return [[_windowView hitTest:point] mouseUp:anEvent];
-                                    
+
                                     [_leftMouseDownView mouseUp:anEvent]
-                                    
+
                                     _leftMouseDownView = nil;
-                                    
+
                                     return;
         case CPLeftMouseDown:       _leftMouseDownView = [_windowView hitTest:point];
 
                                     if (_leftMouseDownView != _firstResponder && [_leftMouseDownView acceptsFirstResponder])
                                         [self makeFirstResponder:_leftMouseDownView];
-                
+
                                     var theWindow = [anEvent window];
-                                    
+
                                     if ([theWindow isKeyWindow] || [theWindow becomesKeyOnlyIfNeeded])
                                         return [_leftMouseDownView mouseDown:anEvent];
                                     else
                                     {
                                         // FIXME: delayed ordering?
                                         [self makeKeyAndOrderFront:self];
-                                        
+
                                         if ([_leftMouseDownView acceptsFirstMouse:anEvent])
                                             return [_leftMouseDownView mouseDown:anEvent]
                                     }
                                     break;
         case CPLeftMouseDragged:    if (!_leftMouseDownView)
                                         return [[_windowView hitTest:point] mouseDragged:anEvent];
-                                    
+
                                     return [_leftMouseDownView mouseDragged:anEvent];
         
         case CPRightMouseUp:        return [_rightMouseDownView mouseUp:anEvent];
@@ -1574,6 +1578,53 @@ CPTexturedBackgroundWindowMask
     }
 }
 
+// Minimizing Windows
+
+/*!
+    Simulates the user minimizing the window, then minimizes the window.
+    @param aSender the object making this request
+*/
+- (void)performMiniaturize:(id)aSender
+{
+    //FIXME show stuff
+    [self miniaturize:aSender];
+}
+
+/*!
+    Minimizes the window. Posts a \c CPWindowWillMiniaturizeNotification to the
+    notification center before minimizing the window.
+*/
+- (void)miniaturize:(id)sender
+{
+    [[CPNotificationCenter defaultCenter] postNotificationName:CPWindowWillMiniaturizeNotification object:self];
+
+    [[self platformWindow] miniaturize:sender];
+
+    [[CPNotificationCenter defaultCenter] postNotificationName:CPWindowDidMiniaturizeNotification object:self];
+
+    _isMiniaturized = YES;
+}
+
+/*!
+    Restores a mimized window to it's original size.
+*/
+- (void)deminiaturize:(id)sender
+{
+    [[self platformWindow] deminiaturize:sender];
+
+    [[CPNotificationCenter defaultCenter] postNotificationName:CPWindowDidDeminiaturizeNotification object:self];
+
+    _isMiniaturized = NO;
+}
+
+/*!
+    Returns YES if the window is minimized.
+*/
+- (void)isMiniaturized
+{
+    return _isMiniaturized;
+}
+
 // Closing Windows
 
 /*!
@@ -1806,7 +1857,7 @@ CPTexturedBackgroundWindowMask
      
     var sheetContent = [sheet contentView];
     [self _setUpMasksForView:sheetContent];
-            
+
     _sheetContext["opened"] = NO;
     [sheet _setFrame:endFrame delegate:self duration:0.2 curve:CPAnimationEaseIn];
 }
