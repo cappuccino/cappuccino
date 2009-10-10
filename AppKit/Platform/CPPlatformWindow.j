@@ -149,6 +149,22 @@ var PrimaryPlatformWindow   = NULL;
 #endif
 }
 
+- (void)deminiaturize:(id)sender
+{
+#if PLATFORM(DOM)
+    if (_DOMWindow && typeof _DOMWindow["cpDeminiaturize"] === "function")
+        _DOMWindow.cpDeminiaturize();
+#endif
+}
+
+- (void)miniaturize:(id)sender
+{
+#if PLATFORM(DOM)
+    if (_DOMWindow && typeof _DOMWindow["cpMiniaturize"] === "function")
+        _DOMWindow.cpMiniaturize();
+#endif
+}
+
 - (void)setLevel:(CPInteger)aLevel
 {
     _level = aLevel;
