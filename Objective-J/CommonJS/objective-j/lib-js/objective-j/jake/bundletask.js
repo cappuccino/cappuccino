@@ -361,15 +361,15 @@ BundleTask.prototype.defineResourceTask = function(aResourcePath, aDestinationPa
 
     if (this.spritesResources() && IMAGE_EXTENSIONS.indexOf(extension) !== -1)
     {
-        aDestinationPath = FILE.join(this.buildIntermediatesProductPath(), "Browser" + ".platform", "Resources", FILE.relative(this.resourcesPath(), aDestinationPath));
+        var spritedDestinationPath = FILE.join(this.buildIntermediatesProductPath(), "Browser" + ".platform", "Resources", FILE.relative(this.resourcesPath(), aDestinationPath));
 
-        filedir (aDestinationPath, function()
+        filedir (spritedDestinationPath, function()
         {
             var dataURI = "data:" + MIME_TYPES[extension] + ";base64," + base64.encode(FILE.read(aResourcePath, { mode : 'b'}));
-            FILE.write(aDestinationPath, dataURI.length + ";" + dataURI, { charset:"UTF-8" });
+            FILE.write(spritedDestinationPath, dataURI.length + ";" + dataURI, { charset:"UTF-8" });
         });
 
-        filedir (this.buildProductStaticPathForPlatform("Browser"), [aDestinationPath]);
+        filedir (this.buildProductStaticPathForPlatform("Browser"), [spritedDestinationPath]);
     }
 
     // NOT:
@@ -506,7 +506,7 @@ BundleTask.prototype.defineStaticTask = function()
                 }
 
                 // FIXME: We need to do this for now due to file.read adding newlines. Revert when fixed.
-                fileStream.write(FILE.read(aFilename, { mode:"b" }).decodeToString("UTF-8"));
+                fileStream.write(FILE.read(aFilename, { charset:"UTF-8" }));
             }, this);
 
             fileStream.close();
