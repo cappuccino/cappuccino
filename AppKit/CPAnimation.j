@@ -106,8 +106,9 @@ ACTUAL_FRAME_RATE = 0;
     {
         _progress = 0.0;
         _duration = MAX(0.0, aDuration);
-        _animationCurve = anAnimationCurve;
         _frameRate = 60.0;
+
+        [self setAnimationCurve:anAnimationCurve];
     }
     
     return self;

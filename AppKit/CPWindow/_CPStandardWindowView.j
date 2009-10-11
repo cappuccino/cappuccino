@@ -98,7 +98,9 @@ var _CPStandardWindowViewBodyBackgroundColor            = nil,
     _CPStandardWindowViewDividerBackgroundColor         = nil,
     _CPStandardWindowViewTitleBackgroundColor           = nil,
     _CPStandardWindowViewCloseButtonImage               = nil,
-    _CPStandardWindowViewCloseButtonHighlightedImage    = nil;
+    _CPStandardWindowViewCloseButtonHighlightedImage    = nil,
+    _CPStandardWindowViewMinimizeButtonImage            = nil,
+    _CPStandardWindowViewMinimizeButtonHighlightedImage = nil;
 
 var STANDARD_GRADIENT_HEIGHT                    = 41.0;
     STANDARD_TITLEBAR_HEIGHT                    = 25.0;
@@ -112,6 +114,7 @@ var STANDARD_GRADIENT_HEIGHT                    = 41.0;
     
     CPTextField                 _titleField;
     CPButton                    _closeButton;
+    CPButton                    _minimizeButton;
 }
 
 + (CPColor)bodyBackgroundColor
@@ -230,7 +233,7 @@ var STANDARD_GRADIENT_HEIGHT                    = 41.0;
         [_bodyView setHitTests:NO];
         
         [self addSubview:_bodyView];
-                
+
         [self setResizeIndicatorOffset:CGSizeMake(2.0, 2.0)];
         
         _titleField = [[CPTextField alloc] initWithFrame:CGRectMakeZero()];
@@ -256,24 +259,44 @@ var STANDARD_GRADIENT_HEIGHT                    = 41.0;
             if (!_CPStandardWindowViewCloseButtonImage)
             {
                 var bundle = [CPBundle bundleForClass:[CPWindow class]];
-            
+
                 _CPStandardWindowViewCloseButtonImage = [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"CPWindow/Standard/CPWindowStandardCloseButton.png"] size:CGSizeMake(16.0, 16.0)];
                 _CPStandardWindowViewCloseButtonHighlightedImage  = [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"CPWindow/Standard/CPWindowStandardCloseButtonHighlighted.png"] size:CGSizeMake(16.0, 16.0)];
             }
-            
+
             _closeButton = [[CPButton alloc] initWithFrame:CGRectMake(8.0, 7.0, 16.0, 16.0)];
-            
+
             [_closeButton setBordered:NO];
-            
+
             [_closeButton setImage:_CPStandardWindowViewCloseButtonImage];
             [_closeButton setAlternateImage:_CPStandardWindowViewCloseButtonHighlightedImage];
-            
+
             [self addSubview:_closeButton];
         }
-        
+
+        if (_styleMask & CPMiniaturizableWindowMask && ![CPPlatform isBrowser])
+        {
+            if (!_CPStandardWindowViewMinimizeButtonImage)
+            {
+                var bundle = [CPBundle bundleForClass:[CPWindow class]];
+
+                _CPStandardWindowViewMinimizeButtonImage = [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"CPWindow/Standard/CPWindowStandardMinimizeButton.png"] size:CGSizeMake(16.0, 16.0)];
+                _CPStandardWindowViewMinimizeButtonHighlightedImage  = [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"CPWindow/Standard/CPWindowStandardMinimizeButtonHighlighted.png"] size:CGSizeMake(16.0, 16.0)];
+            }
+
+            _minimizeButton = [[CPButton alloc] initWithFrame:CGRectMake(27.0, 7.0, 16.0, 16.0)];
+
+            [_minimizeButton setBordered:NO];
+
+            [_minimizeButton setImage:_CPStandardWindowViewMinimizeButtonImage];
+            [_minimizeButton setAlternateImage:_CPStandardWindowViewMinimizeButtonHighlightedImage];
+
+            [self addSubview:_minimizeButton];
+        }
+
         [self tile];
     }
-    
+
     return self;
 }
 
@@ -281,6 +304,9 @@ var STANDARD_GRADIENT_HEIGHT                    = 41.0;
 {
     [_closeButton setTarget:[self window]];
     [_closeButton setAction:@selector(performClose:)];
+
+    [_minimizeButton setTarget:[self window]];
+    [_minimizeButton setAction:@selector(performMiniaturize:)];
 }
 
 - (CGSize)toolbarOffset
@@ -303,7 +329,14 @@ var STANDARD_GRADIENT_HEIGHT                    = 41.0;
 
     [_bodyView setFrame:CGRectMake(0.0, dividerMaxY, width, CGRectGetHeight(bounds) - dividerMaxY)];
 
-    [_titleField setFrame:CGRectMake(10.0, 3.0, width - 20.0, CGRectGetHeight([_titleField frame]))];
+    var leftOffset = 8;
+
+    if (_closeButton)
+        leftOffset += 19.0;
+    if (_minimizeButton)
+        leftOffset += 19.0;
+
+    [_titleField setFrame:CGRectMake(leftOffset, 5.0, width - leftOffset*2.0, CGRectGetHeight([_titleField frame]))];
 
     [[theWindow contentView] setFrameOrigin:CGPointMake(0.0, CGRectGetMaxY([_dividerView frame]))];
 }
