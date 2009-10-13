@@ -503,7 +503,7 @@ BundleTask.prototype.defineStaticTask = function()
                 {
                     var resourcePath = "Resources/" + FILE.relative(resourcesPath, aFilename);
 
-                    if (IMAGE_EXTENSIONS.indexOf(FILE.extname(aFilename)) !== -1)
+                    if (IMAGE_EXTENSIONS.indexOf(FILE.extension(aFilename)) !== -1)
                         fileStream.write("u;");
                     else
                         fileStream.write("p;");
