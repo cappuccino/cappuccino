@@ -62,6 +62,8 @@ if(!global.COMMON_DO_ONCE)
     {
         require.paths.unshift(objectiveJLibJS);
 
+        require("objective-j/loader");
+
         var OBJECTIVE_J_JAKE = require("objective-j/jake");
 
         global.app = OBJECTIVE_J_JAKE.app;
