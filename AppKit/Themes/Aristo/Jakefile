@@ -2,8 +2,6 @@
 
 require("../../../common.jake");
 
-var blend = require("objective-j/jake/blendtask").blend;
-
 
 blend("Aristo.blend", function(aristoTask)
 {

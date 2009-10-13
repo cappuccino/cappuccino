@@ -68,6 +68,9 @@ if(!global.COMMON_DO_ONCE)
         global.bundle = OBJECTIVE_J_JAKE.bundle;
         global.framework = OBJECTIVE_J_JAKE.framework;
 
+        if (OBJECTIVE_J_JAKE.blend)
+            global.blend = OBJECTIVE_J_JAKE.blend;
+
         global.BundleTask = OBJECTIVE_J_JAKE.BundleTask;
     }
 
