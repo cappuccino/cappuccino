@@ -22,6 +22,7 @@
 
 @import "CPArray.j"
 @import "CPBundle.j"
+@import "CPCharacterSet.j"
 @import "CPCoder.j"
 @import "CPData.j"
 @import "CPDate.j"
