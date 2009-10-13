@@ -1,6 +1,0 @@
-#!/usr/bin/env narwhal
-
-require("../../common.jake");
-
-print("WHAT");
-subtasks(["BlendKit", "CommonJS"], ["build"/*, "clean", "clobber"*/]);

@@ -93,6 +93,8 @@ print("IS WRONG");
                 data = cibDataFromTopLevelObjects(objectTemplates.concat([themeTemplate])),
                 fileContents = themeFromCibData(data);
 print("will write to" + FILE.join(intermediatesPath, [aClass themeName] + ".keyedtheme"));
+            // No filedir in this case, so we have to make it ourselves.
+            FILE.mkdirs(intermediatesPath);
             FILE.write(FILE.join(intermediatesPath, [aClass themeName] + ".keyedtheme"), MARKER_TEXT + ";" + fileContents.length + ";" + fileContents, { charset:"UTF-8" });
         });
     }); 
