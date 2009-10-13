@@ -4,10 +4,7 @@ require("../common.jake");
 
 
 $BUILD_PATH                 = FILE.join($BUILD_DIR, $CONFIGURATION, 'AppKit');
-$ENVIRONMENT_PRODUCT        = FILE.join($ENVIRONMENT_FRAMEWORKS_DIR, 'AppKit');
-
 $THEME_PRODUCT              = FILE.join($BUILD_PATH, 'Resources', 'Aristo.blend');
-$ENVIRONMENT_THEME_PRODUCT  = FILE.join($ENVIRONMENT_PRODUCT, 'Resources', 'Aristo.blend');
 
 AppKitFiles = new FileList("**/*.j").exclude('CoreGraphics/CGContextCanvas.j', 'CoreGraphics/CGContextVML.j', 'Themes/**/*', 'Tools/**/*');
 
@@ -39,20 +36,14 @@ filedir ($COMMONJS_PRODUCT_APPKIT, ["AppKit"], function()
     cp_r(appKitTask.buildProductPath(), $COMMONJS_PRODUCT_APPKIT);
 });
 
-//# It would be nice to just have ENVIRONMENT_PRODUCT depend on THEME_PRODUCT,
-//# but this would be a circular dependency because THEME_PRODUCT needs
-//# ENVIRONMENT_PRODUCT up-to-date since it runs an objj application that uses
-//# AppKit.
-//file_d $ENVIRONMENT_PRODUCT => [:AppKit] do
-//    cp_r(File.join($BUILD_PATH, '.'), $ENVIRONMENT_PRODUCT)
-//end
-
-//file_d $ENVIRONMENT_THEME_PRODUCT => $THEME_PRODUCT do
-//    cp_r(File.join($THEME_PRODUCT, '.'), $ENVIRONMENT_THEME_PRODUCT)
-//end
-
 subtasks (["Tools"], ["build"/*, "clean", "clobber"*/]);
 
-task ("build", ["AppKit", $COMMONJS_PRODUCT_APPKIT]);//, $THEME_PRODUCT]);
+task ($THEME_PRODUCT, [$COMMONJS_PRODUCT_APPKIT], function()
+{
+    subjake(["Themes"], "build");
+    cp_r(FILE.join($BUILD_DIR, $CONFIGURATION, 'Aristo.blend'), $THEME_PRODUCT);
+});
+
+task ("build", ["AppKit", $THEME_PRODUCT, $COMMONJS_PRODUCT_APPKIT]);
 
 //CLOBBER.include($ENVIRONMENT_PRODUCT)
