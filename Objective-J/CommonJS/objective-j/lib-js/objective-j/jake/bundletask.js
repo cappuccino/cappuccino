@@ -502,11 +502,17 @@ BundleTask.prototype.defineStaticTask = function()
                 {
                     var resourcePath = "Resources/" + FILE.relative(resourcesPath, aFilename);
 
-                    fileStream.write("u;" + resourcePath.length + ";" + resourcePath);
+                    if (IMAGE_EXTENSIONS.indexOf(FILE.extname(aFilename)) !== -1)
+                        fileStream.write("u;");
+                    else
+                        fileStream.write("p;");
+
+                    fileStream.write(resourcePath.length + ";" + resourcePath);
                 }
 
                 // FIXME: We need to do this for now due to file.read adding newlines. Revert when fixed.
-                fileStream.write(FILE.read(aFilename, { charset:"UTF-8" }));
+                //fileStream.write(FILE.read(aFilename, { charset:"UTF-8" }));
+                fileStream.write(FILE.read(aFilename, { mode:"b" }).decodeToString("UTF-8"));
             }, this);
 
             fileStream.close();

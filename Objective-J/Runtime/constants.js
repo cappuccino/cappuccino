@@ -105,8 +105,8 @@ function objj_printf(string)
     objj_fprintf(alert, string);
 }
 
-#if RHINO
-var warning_stream = function (aString) { Packages.java.lang.System.out.println(aString) };
+#if COMMON_JS
+var warning_stream = function (aString) { print(aString) };
 #else
 if (window.console && window.console.warn)
     var warning_stream = function(aString) { window.console.warn(aString); }

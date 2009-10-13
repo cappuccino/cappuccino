@@ -152,8 +152,9 @@ var objj_preprocess_sync = function(code, path)
     return preprocessed.join("\n");
 }
 
+// FIXME: Why does this need to be global?
 // synchronously perform an import
-var objj_import_sync = function(pathOrPaths, isLocal)
+global.objj_import_sync = function(pathOrPaths, isLocal)
 {
     var context = new objj_context();
     context.pushFragment(fragment_create_file(pathOrPaths, new objj_bundle(), isLocal, NULL));
@@ -168,12 +169,14 @@ var objj_import_sync = function(pathOrPaths, isLocal)
 exports.make_narwhal_factory = function(code, path) {
     var OBJJ_CURRENT_BUNDLE = new objj_bundle();
     
-    var factoryText = "(function(require,exports,module,system,print){" + objj_preprocess_sync(code, path) + "/**/\n})";
-    
+    var factoryText = "function(require,exports,module,system,print){" + objj_preprocess_sync(code, path) + "/**/\n}";
+
     if (system.engine === "rhino")
         return Packages.org.mozilla.javascript.Context.getCurrentContext().compileFunction(window, factoryText, path, 0, null);
+
+    // eval requires parenthesis, but parenthesis break compileFunction.
     else
-        return eval(factoryText);
+        return eval("(" + factoryText + ")");
 }
 
 } // end "with"

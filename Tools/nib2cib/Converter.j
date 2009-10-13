@@ -24,6 +24,7 @@
 @import <Foundation/CPData.j>
 
 var File = require("file"),
+    FILE = require("file"),
     popen = require("os").popen;
 
 
@@ -98,13 +99,13 @@ ConverterConversionException    = @"ConverterConversionException";
 - (CPData)CPCompliantNibDataAtFilePath:(CPString)aFilePath
 {
     // Compile xib or nib to make sure we have a non-new format nib.
-    var temporaryNibFilePath = File.createTempFile("temp", ".nib", true);
+    var temporaryNibFilePath = FILE.join("/tmp", aFilePath + ".tmp.nib");
 
     if (popen("/usr/bin/ibtool " + aFilePath + " --compile " + temporaryNibFilePath).wait() === 1)
         throw "Could not compile file at " + aFilePath;
 
     // Convert from binary plist to XML plist
-    var temporaryPlistFilePath = File.createTempFile("temp", ".plist", true);
+    var temporaryPlistFilePath = FILE.join("/tmp", aFilePath + ".tmp.plist");
 
     if (popen("/usr/bin/plutil " + " -convert xml1 " + temporaryNibFilePath + " -o " + temporaryPlistFilePath).wait() === 1)
         throw "Could not convert to xml plist for file at " + aFilePath;
@@ -123,17 +124,6 @@ ConverterConversionException    = @"ConverterConversionException";
 }
 
 @end
-
-File.createTempFile = function(aName, anExtension, shouldDeleteOnExit)
-{
-    var tempFile = Packages.java.io.File.createTempFile(aName, anExtension),
-        tempFilePath = String(tempFile.getAbsolutePath());
-
-    if (shouldDeleteOnExit)
-        tempFile.deleteOnExit();
-
-    return String(tempFilePath);
-}
 
 function cibExtension(aPath)
 {

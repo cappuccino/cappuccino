@@ -53,15 +53,6 @@ filedir ($COMMONJS_PRODUCT_APPKIT, ["AppKit"], function()
 
 subtasks (["Tools"], ["build"/*, "clean", "clobber"*/]);
 
-$THEME_PRODUCT = FILE.join(appKitTask.buildProductPath(), "Resources", "Aristo.blend");
-ThemeFiles = new FileList("Themes/Aristo/*");
-
-filedir ($THEME_PRODUCT, ThemeFiles, function()
-{
-    OS.system("PATH=" + OS.enquote(FILE.join($BUILD_DIR, $CONFIGURATION, "CommonJS", "objective-j", "bin")) + ":$PATH blend -d Themes/Aristo/ThemeDescriptors.j -o " + $THEME_PRODUCT + " -R Themes/Aristo/Resources");
-    //    rake abort if ($? != 0)
-});
-
-task ("build", ["AppKit", $COMMONJS_PRODUCT_APPKIT, $THEME_PRODUCT]);
+task ("build", ["AppKit", $COMMONJS_PRODUCT_APPKIT]);//, $THEME_PRODUCT]);
 
 //CLOBBER.include($ENVIRONMENT_PRODUCT)
