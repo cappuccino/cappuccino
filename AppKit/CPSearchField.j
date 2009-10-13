@@ -106,10 +106,12 @@ var CPSearchFieldSearchImage = nil,
 
 
           [_cancelButton setHidden:YES];
+          [_cancelButton setAutoresizingMask:CPViewMinXMargin];
           [self addSubview:_cancelButton];
           
           _searchButton = [[CPButton alloc] initWithFrame:CPMakeRect(5,(frame.size.height-25)/2,25,25)];
           [_searchButton setBezelStyle:CPRegularSquareBezelStyle];
+          [_searchButton setAutoresizingMask:CPViewMaxXMargin]
           [_searchButton setBordered:NO];
           [_searchButton setImageScaling:CPScaleToFit];
 
