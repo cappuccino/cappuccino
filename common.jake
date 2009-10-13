@@ -99,8 +99,8 @@ global.cp_r = function(/*String*/ from, /*String*/ to)
 
     if (FILE.isDirectory(from))
         FILE.copyTree(from, to);
-    else
-        FILE.copy(from, to);
+    else{try{
+        FILE.copy(from, to);}catch(e) { print(e + FILE.exists(from) + " " + FILE.exists(FILE.dirname(to))); }}
 }
 
 global.cp = function(/*String*/ from, /*String*/ to)

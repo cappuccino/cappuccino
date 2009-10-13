@@ -380,6 +380,7 @@ BundleTask.prototype.defineResourceTask = function(aResourcePath, aDestinationPa
     {
         filedir (aDestinationPath, [aResourcePath], function()
         {
+            // HEY TOM THIS ONE
             cp_r(aResourcePath, aDestinationPath);
         });
 

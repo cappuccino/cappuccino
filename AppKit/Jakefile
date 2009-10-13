@@ -4,7 +4,6 @@ require("../common.jake");
 
 
 $BUILD_PATH                 = FILE.join($BUILD_DIR, $CONFIGURATION, 'AppKit');
-$THEME_PRODUCT              = FILE.join($BUILD_PATH, 'Resources', 'Aristo.blend');
 
 AppKitFiles = new FileList("**/*.j").exclude('CoreGraphics/CGContextCanvas.j', 'CoreGraphics/CGContextVML.j', 'Themes/**/*', 'Tools/**/*');
 
@@ -36,14 +35,16 @@ filedir ($COMMONJS_PRODUCT_APPKIT, ["AppKit"], function()
     cp_r(appKitTask.buildProductPath(), $COMMONJS_PRODUCT_APPKIT);
 });
 
-subtasks (["Tools"], ["build"/*, "clean", "clobber"*/]);
+//subtasks (["Themes"], ["clean", "clobber"]);
 
-task ($THEME_PRODUCT, [$COMMONJS_PRODUCT_APPKIT], function()
+task ("Theme", [$COMMONJS_PRODUCT_APPKIT], function()
 {
     subjake(["Themes"], "build");
-    cp_r(FILE.join($BUILD_DIR, $CONFIGURATION, 'Aristo.blend'), $THEME_PRODUCT);
+
+    cp_r(FILE.join($BUILD_DIR, $CONFIGURATION, 'Aristo.blend'), FILE.join($BUILD_PATH, 'Resources', 'Aristo.blend'));
+    cp_r(FILE.join($BUILD_DIR, $CONFIGURATION, 'Aristo.blend'), FILE.join($COMMONJS_PRODUCT_APPKIT, "Resources", "Aristo.blend"));
 });
 
-task ("build", ["AppKit", $THEME_PRODUCT, $COMMONJS_PRODUCT_APPKIT]);
+task ("build", ["AppKit", $COMMONJS_PRODUCT_APPKIT, "Theme"]);
 
 //CLOBBER.include($ENVIRONMENT_PRODUCT)
