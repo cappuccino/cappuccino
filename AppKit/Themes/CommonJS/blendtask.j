@@ -56,16 +56,16 @@ BlendTask.prototype.defineSourceTasks = function()
 }
 
 BlendTask.prototype.defineThemeDescriptorTasks = function()
-{print("in");
+{
     var themeDescriptors = this.themeDescriptors(),
         resourcesPath = this.resourcesPath(),
         intermediatesPath = FILE.join(this.buildIntermediatesProductPath(), "Browser" + ".platform", "Resources"),
         staticPath = this.buildProductStaticPathForPlatform("Browser"),
         keyedThemes = this._keyedThemes,
         themesTaskName = this.name() + ":themes";
-print("out");
+
     this.enhance(themesTaskName);
-print("uuuuhmmm");
+
     objj_import(themeDescriptors.toArray(), YES, function()
     {
         [BKThemeDescriptor allThemeDescriptorClasses].forEach(function(aClass)
@@ -78,11 +78,11 @@ print("uuuuhmmm");
             keyedThemes.push([aClass themeName] + ".keyedtheme");
         });
     });
-print("WHAT");
+
     require("browser/timeout").serviceTimeouts();
-print("IS WRONG");
+
     task (themesTaskName, function()
-    {print("wtf");
+    {
         [BKThemeDescriptor allThemeDescriptorClasses].forEach(function(aClass)
         {
             var themeTemplate = [[BKThemeTemplate alloc] init];
