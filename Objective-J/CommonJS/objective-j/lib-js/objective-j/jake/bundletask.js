@@ -359,7 +359,8 @@ BundleTask.prototype.defineResourceTask = function(aResourcePath, aDestinationPa
     var extension = FILE.extension(aResourcePath).toLowerCase(),
         extensionless = aResourcePath.substr(0, aResourcePath.length - extension.length);
 
-    if (this.spritesResources() && IMAGE_EXTENSIONS.indexOf(extension) !== -1)
+    // Don't sprite images larger than 32KB, IE 8 doesn't like it.
+    if (this.spritesResources() && IMAGE_EXTENSIONS.indexOf(extension) !== -1 && FILE.size(aResourcePath) < 32768)
     {
         var spritedDestinationPath = FILE.join(this.buildIntermediatesProductPath(), "Browser" + ".platform", "Resources", FILE.relative(this.resourcesPath(), aDestinationPath));
 
