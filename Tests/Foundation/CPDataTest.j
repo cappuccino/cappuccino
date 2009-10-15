@@ -11,10 +11,10 @@
 -(void)setUp
 {
     string_data = [[CPData alloc] initWithString:@"CPData Test"];
-    
+
     // Plist helpers
-    keys = [CPArray arrayWithObjects:@"key1", @"key2", @"key3", @"key4", nil];
-    objects = [CPArray arrayWithObjects:@"Some random characters", [CPNumber numberWithBool:NO], [CPNumber numberWithDouble:9.9], [CPNumber numberWithDouble:8.8], nil];
+    keys = [@"key1", @"key2", @"key3", @"key4"];
+    objects = [@"Some random characters", NO, 9.9, 8.8];
     dict = [CPDictionary dictionaryWithObjects:objects forKeys:keys];
 
     plist_data = [[CPData alloc] initWithPlistObject:dict];
@@ -23,19 +23,19 @@
 -(void)testStringLength
 {
     var data = [[CPData alloc] initWithString:@"CPData Test"];
-    [self assert:[data length] equals:[CPNumber numberWithInt:11]];
-    
+    [self assert:[data length] equals:11];
+
     var data_cm = [CPData dataWithString:@"CPData Test"];
-    [self assert:[data_cm length] equals:[CPNumber numberWithInt:11]];
+    [self assert:[data_cm length] equals:11];
 }
 
 -(void)testPlistLength
 {
     var data = [[CPData alloc] initWithPlistObject:dict];
-    [self assert:[data length] equals:[CPNumber numberWithInt:93]];
+    [self assert:[data length] equals:93];
 
     var data_cm = [CPData dataWithPlistObject:dict];
-    [self assert:[data length] equals:[CPNumber numberWithInt:93]];
+    [self assert:[data length] equals:93];
 }
 
 -(void)testDescription
@@ -67,7 +67,7 @@
 {
     var data = [[CPData alloc] init];
     [data setPlistObject:dict];
-    
+
     [self assert:[data plistObject] equals:dict];
 }
 
@@ -75,7 +75,8 @@
 {
     var data = [[CPData alloc] init];
     [data setString:@"CPData Test"];
-    
+
     [self assert:[data string] equals:@"CPData Test"];
 }
+
 @end
