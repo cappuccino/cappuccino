@@ -4,16 +4,15 @@
 @import "Configuration.j"
 @import "Generate.j"
 
-print("what?...");
 
 function main()
-{print("insdie?...");
+{
     if (system.args.length < 1)
         return printUsage();
 
     var index = 0,
         count = system.args.length;
-print("p;!");
+
     for (; index < count; ++index)
     {
         var argument = system.args[index];
@@ -28,7 +27,7 @@ print("p;!");
 
             case "config":      return config.apply(this, system.args.slice(index + 1));
 
-            case "gen":         print("!");return gen.apply(this, system.args.slice(index + 1));
+            case "gen":         return gen.apply(this, system.args.slice(index + 1));
             
             default:            print("unknown command " + argument);
         }

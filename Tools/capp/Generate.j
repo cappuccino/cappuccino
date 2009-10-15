@@ -83,15 +83,19 @@ function gen(/*va_args*/)
             count = files.length,
             name = FILE.basename(destinationProject),
             orgIdentifier = [configuration valueForKey:@"organization.identifier"] || "";
-print("yo!"+files);
+
         [configuration setTemporaryValue:name forKey:@"project.name"];
         [configuration setTemporaryValue:orgIdentifier + '.' +  toIdentifier(name) forKey:@"project.identifier"];
         [configuration setTemporaryValue:toIdentifier(name) forKey:@"project.nameasidentifier"];
 
         for (; index < count; ++index)
         {
-            var path = files[index],
-                contents = FILE.read(path, { charset : "UTF-8" }),
+            var path = files[index];
+
+            if (FILE.isDirectory(path))
+                continue;
+
+            var contents = FILE.read(path, { charset : "UTF-8" }),
                 key = nil,
                 keyEnumerator = [configuration keyEnumerator];
 
@@ -158,17 +162,17 @@ function createFrameworksInFile(/*String*/ aFile, /*Boolean*/ shouldSymbolically
 
     // Release Frameworks
     FILE.mkdirs(destinationFrameworks);
-    
-    FILE.symlink(FILE.join(BUILD + "Release", "Objective-J"), FILE.join(destinationFrameworks, "Objective-J"));
-    FILE.symlink(FILE.join(BUILD + "Release", "Foundation"), FILE.join(destinationFrameworks, "Foundation"));
-    FILE.symlink(FILE.join(BUILD + "Release", "AppKit"), FILE.join(destinationFrameworks, "AppKit"));
+
+    FILE.symlink(FILE.join(BUILD, "Release", "Objective-J"), FILE.join(destinationFrameworks, "Objective-J"));
+    FILE.symlink(FILE.join(BUILD, "Release", "Foundation"), FILE.join(destinationFrameworks, "Foundation"));
+    FILE.symlink(FILE.join(BUILD, "Release", "AppKit"), FILE.join(destinationFrameworks, "AppKit"));
 
     // Debug Frameworks
     FILE.mkdirs(destinationDebugFrameworks);
 
-    FILE.symlink(FILE.join(BUILD + "Debug", "Objective-J"), FILE.join(destinationDebugFrameworks, "Objective-J"));
-    FILE.symlink(FILE.join(BUILD + "Debug", "Foundation"), FILE.join(destinationDebugFrameworks, "Foundation"));
-    FILE.symlink(FILE.join(BUILD + "Debug", "AppKit"), FILE.join(destinationDebugFrameworks, "AppKit"));
+    FILE.symlink(FILE.join(BUILD, "Debug", "Objective-J"), FILE.join(destinationDebugFrameworks, "Objective-J"));
+    FILE.symlink(FILE.join(BUILD, "Debug", "Foundation"), FILE.join(destinationDebugFrameworks, "Foundation"));
+    FILE.symlink(FILE.join(BUILD, "Debug", "AppKit"), FILE.join(destinationDebugFrameworks, "AppKit"));
 }
 
 function toIdentifier(/*String*/ aString)
