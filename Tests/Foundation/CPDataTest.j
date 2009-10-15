@@ -2,7 +2,6 @@
 @import <Foundation/CPData.j>
 @import <Foundation/CPDictionary.j>
 @import <Foundation/CPKeyedArchiver.j>
-@import <Foundation/CPLog.j>
 @import <Foundation/CPNumber.j>
 
 @implementation CPDataTest : OJTestCase
