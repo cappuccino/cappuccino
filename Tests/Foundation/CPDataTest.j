@@ -16,13 +16,14 @@
     
     // Plist helpers
     keys = [CPArray arrayWithObjects:@"key1", @"key2", @"key3", @"key4", nil];
-	objects = [CPArray arrayWithObjects:@"Some random characters", [CPNumber numberWithBool:NO], [CPNumber numberWithDouble:9.9], [CPNumber numberWithDouble:8.8], nil];
-	dict = [CPDictionary dictionaryWithObjects:objects forKeys:keys];
+    objects = [CPArray arrayWithObjects:@"Some random characters", [CPNumber numberWithBool:NO], [CPNumber numberWithDouble:9.9], [CPNumber numberWithDouble:8.8], nil];
+    dict = [CPDictionary dictionaryWithObjects:objects forKeys:keys];
 }
 
 -(void)testStringLength
 {
-    [self assert:[string_data length] equals:[CPNumber numberWithInt:11]];
+    var data = [[CPData alloc] initWithString:@"CPData Test"];
+    [self assert:[data length] equals:[CPNumber numberWithInt:11]];
     
     var data_cm = [CPData dataWithString:@"CPData Test"];
     [self assert:[data_cm length] equals:[CPNumber numberWithInt:11]];
@@ -31,6 +32,9 @@
 -(void)testPlistLength
 {
     var data = [[CPData alloc] initWithPlistObject:dict];
+    [self assert:[data length] equals:[CPNumber numberWithInt:93]];
+
+    var data_cm = [CPData dataWithPlistObject:dict];
     [self assert:[data length] equals:[CPNumber numberWithInt:93]];
 }
 
