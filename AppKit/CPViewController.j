@@ -31,7 +31,7 @@
 
     You use each instance of CPViewController to manage a single view (and hierarchy). For a simple view controller,
     this entails managing the view hierarchy responsible for presenting your application content.
-    A typical view hierarchy consists of a root view—a reference to which is available in the view property of this class—
+    A typical view hierarchy consists of a root view≈Éa reference to which is available in the view property of this class≈É
     and one or more subviews presenting the actual content. In the case of navigation and tab bar controllers, the view
     controller manages not only the high-level view hierarchy (which provides the navigation controls) but also one
     or more additional view controllers that handle the presentation of the application content.
@@ -104,8 +104,8 @@
     If you create your views manually, you must override this method and use it to create your view and assign it to the view property.
     The default implementation for programmatic views is to create a plain view. You can invoke super to utilize this view.
 
-    If you use Interface Builder to create your views and initialize the view controller—that is, you initialize the view using the
-    initWithCibName:bundle: method—then you must not override this method. The consequences risk shattering the space-time continuum.
+    If you use Interface Builder to create your views and initialize the view controller≈Éthat is, you initialize the view using the
+    initWithCibName:bundle: method≈Éthen you must not override this method. The consequences risk shattering the space-time continuum.
 
     Note: The cib loading system is currently asynchronous.
 */
