@@ -1,0 +1,37 @@
+/*
+ * Jakefile
+ * __project.name__
+ *
+ * Created by __user.name__ on __project.date__.
+ * Copyright __project.year__, __organization.name__ All rights reserved.
+ */
+
+var ENV = require("system").env,
+    FILE = require("file"),
+    task = require("jake").task,
+    FileList = require("jake").FileList,
+    app = require("objective-j/jake").app,
+    configuration = ENV["CONFIG"] || ENV["CONFIGURATION"] || ENV["c"] || "Debug";
+
+app ("__project.nameasidentifier__", function(task)
+{
+    task.setBuildIntermediatesPath(FILE.join("Build", "__project.nameasidentifier__.build", configuration));
+    task.setBuildPath(FILE.join("Build", configuration));
+
+    task.setProductName("__project.name__");
+    task.setIdentifier("__project.identifier__");
+    task.setVersion("1.0");
+//    t.author        = '__organization.name__'
+//    t.email         = '__organization.email__'
+//    t.summary       = '__project.name__'
+    task.setSources(new FileList("*.j"));
+    task.setResources(new FileList("Resources/*"));
+//    t.info_plist    = 'Info.plist'
+
+    if (configuration === "Debug")
+        task.setCompilerFlags("-DDEBUG -g");
+    else
+        task.setCompilerFlags("-O");
+});
+
+task ("default", ["__project.nameasidentifier__"]);

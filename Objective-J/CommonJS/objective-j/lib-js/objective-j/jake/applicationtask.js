@@ -1,12 +1,13 @@
 
-var Jake = require("jake"),
+var FILE = require("file"),
+    Jake = require("jake"),
     BundleTask = require("objective-j/jake/bundletask").BundleTask;
 
 function ApplicationTask(aName)
 {
     BundleTask.apply(this, arguments);
 
-    if (require("file").exists("index.html"))
+    if (FILE.exists("index.html"))
         this._indexFilePath = "index.html";
     else
         this._indexFilePath = null;
@@ -65,7 +66,7 @@ ApplicationTask.prototype.defineIndexFileTask = function()
 
     Jake.filedir (buildIndexFilePath, [indexFilePath], function()
     {
-        cp(indexFilePath, buildIndexFilePath);
+        FILE.copy(indexFilePath, buildIndexFilePath);
     });
 
     this.enhance([buildIndexFilePath]);
