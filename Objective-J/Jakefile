@@ -16,11 +16,10 @@ $LICENSE_FILE           = FILE.join("CommonJS", "objective-j", "lib-js", "object
 $BROWSER_FILE           = FILE.join($PRODUCT, 'Objective-J.js')
 $RHINO_FILE             = FILE.join($PRODUCT, 'CommonJS.platform', 'Objective-J.js')
 
-Files = ["Runtime/constants.js", "Runtime/utilities.js", "Runtime/json2.js", "Runtime/runtime.js", "Runtime/dictionary.js", "Runtime/plist.js", "Runtime/file.js", "Runtime/exception.js", "Runtime/preprocess.js", "Runtime/evaluate.js", "Runtime/bootstrap.js"];
-//Files = new FileList("constants.js", "utilities.js", "json2.js", "runtime.js", "dictionary.js", "plist.js", "file.js", "exception.js", "preprocess.js", "evaluate.js", "bootstrap.js");
+Files = new FileList("Runtime/constants.js", "Runtime/utilities.js", "Runtime/json2.js", "Runtime/runtime.js", "Runtime/dictionary.js", "Runtime/plist.js", "Runtime/file.js", "Runtime/exception.js", "Runtime/preprocess.js", "Runtime/evaluate.js", "Runtime/bootstrap.js");
 
 if ($CONFIGURATION === "Debug")
-    Files.push("Runtime/debug.js")//Files.add('debug.js');
+    Files.add("Runtime/debug.js");
 
 task ("build", [$BROWSER_FILE, $RHINO_FILE, $LICENSE_PRODUCT, $COMMONJS_PRODUCT, $COMMONJS_FRAMEWORK_PRODUCT]);
 

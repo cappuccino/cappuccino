@@ -105,13 +105,13 @@
 
 - (CPString)pathForResource:(CPString)aFilename
 {
-    var path = [self resourcePath] + '/' + aFilename,
+    var actualPath = [self resourcePath] + '/' + aFilename,
         mappedPath = _URIMap["Resources/" + aFilename];
 
     if (mappedPath)
         return mappedPath;
 
-    return path;
+    return actualPath;
 }
 
 - (CPDictionary)infoDictionary
@@ -148,7 +148,7 @@
         var platform = [self firstEligiblePlatform];
 
         if (!platform)
-            throw "Engine not supported.";
+            throw "Engine not supported for " + [self bundlePath] + ". Supported engines: " + [self objectForInfoDictionaryKey:"CPBundlePlatforms"] + ".";
 
         [CPURLConnection connectionWithRequest:[CPURLRequest requestWithURL:[self bundlePath] + '/' + platform + ".platform/" + [self objectForInfoDictionaryKey:"CPBundleExecutable"]] delegate:self];
     }
