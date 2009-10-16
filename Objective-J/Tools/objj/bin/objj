@@ -1,3 +1,0 @@
-#!/usr/bin/env narwhal
-
-require("objj/objj").run(system.args);
