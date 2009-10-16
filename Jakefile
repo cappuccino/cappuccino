@@ -39,7 +39,7 @@ global.$STARTER_DOWNLOAD_README         = FILE.join($STARTER_DOWNLOAD, 'README')
 
 global.$TOOLS_COMMONJS                  = FILE.join($BUILD_DIR, "Cappuccino", "Tools", "CommonJS", "objective-j");
 
-task ("downloads", ["starter_download", "tools_download", "narwhal_package"]);
+task ("downloads", ["starter_download", "tools_download"]);
 
 filedir ($TOOLS_DOWNLOAD_EDITORS, [$TOOLS_EDITORS], function()
 {
@@ -93,8 +93,8 @@ filedir ($STARTER_DOWNLOAD_APPLICATION, ["build"], function()
     rm_rf($STARTER_DOWNLOAD_APPLICATION);
     FILE.mkdirs($STARTER_DOWNLOAD);
 
-    OS.system("capp gen " + $STARTER_DOWNLOAD_APPLICATION + " -t Application --noconfig");
-//    rake abort if ($? != 0)
+    if (OS.system("capp gen " + $STARTER_DOWNLOAD_APPLICATION + " -t Application --noconfig"))
+        OS.exit(1); // rake abort if ($? != 0)
 
     // No tools means no objective-j gem
     // FILE.rm(FILE.join($STARTER_DOWNLOAD_APPLICATION, 'Rakefile'))
@@ -109,8 +109,8 @@ task ("install", ["tools_download"], function()
 {
     var prefix = ENV["prefix"] ? ("--prefix " + ENV["prefix"]) : "";
 
-    OS.system("cd " + $TOOLS_DOWNLOAD + " && sudo sh ./install-tools " + prefix);
-//    rake abort if ($? != 0)
+    if (OS.system("cd " + $TOOLS_DOWNLOAD + " && sudo sh ./install-tools " + prefix))
+        OS.exist(1); // rake abort if ($? != 0)
 });
 
 task ("test", ["build"], function()
@@ -122,24 +122,26 @@ task ("test", ["build"], function()
     {
         print("tests failed, aborting the build");
         print (build_result);
-        //rake abort
+
+        OS.exit(1);
     }
     else
         print(build_result);
 });
 
 task ("docs", function()
-{/*
-    if executable_exists? "doxygen"
-      system %{doxygen #{$DOXYGEN_CONFIG} }
-      rake abort if ($? != 0)
-      
-      rm_rf $DOCUMENTATION_BUILD
-      mv "debug.txt", "Documentation"
-      mv "Documentation", $DOCUMENTATION_BUILD
+{
+    if (executableExists("doxygen"))
+    {
+        if (OS.system("doxygen " + $DOXYGEN_CONFIG))
+            OS.exit(1); //rake abort if ($? != 0)
+
+        rm_rf($DOCUMENTATION_BUILD);
+        mv("debug.txt", FILE.join("Documentation", "debug.txt"));
+        mv("Documentation", $DOCUMENTATION_BUILD);
+    }
     else
-        puts 'doxygen not installed. skipping documentation generation.'
-    end*/
+        print("doxygen not installed. skipping documentation generation.");
 });
 
 task ("submodules", function()
@@ -155,8 +157,6 @@ task ("submodules", function()
 */
 });
 
-/*     
-TODO: documentation
-
+/*
 TODO: zip/tar.        
 */

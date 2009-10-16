@@ -110,6 +110,11 @@ global.cp = function(/*String*/ from, /*String*/ to)
     FILE.copy(from, to);
 }
 
+global.mv = function(/*String*/ from, /*String*/ to)
+{
+    FILE.move(from, to);
+}
+
 //require 'objective-j'
 
 function serializedENV()
