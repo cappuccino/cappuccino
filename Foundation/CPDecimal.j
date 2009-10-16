@@ -664,9 +664,9 @@ function CPDecimalSubtract(result, leftOperand, rightOperand, roundingMode)
 	        n1._isNegative = NO;
 	        error1 = CPDecimalAdd(result, n1, rightOperand, roundingMode);
 	        result._isNegative = YES;
-	        if (CPCalculationUnderflow == error1)
+	        if (error1 == CPCalculationUnderflow)
 	            error1 = CPCalculationOverflow;
-	        else if (CPCalculationOverflow == error1) // gnustep has bug here
+	        else if (error1 == CPCalculationOverflow) // gnustep has bug here
 	            error1 = CPCalculationUnderflow;
 	        return error1;
 	    }
@@ -680,7 +680,7 @@ function CPDecimalSubtract(result, leftOperand, rightOperand, roundingMode)
     var error = CPDecimalNormalize(n1, n2, roundingMode);
     var comp = CPDecimalCompare(leftOperand, rightOperand);
 
-    if (CPOrderedSame == comp)
+    if (comp == CPOrderedSame)
     {
         _CPDecimalSetZero(result);
         return CPCalculationNoError;
@@ -691,7 +691,7 @@ function CPDecimalSubtract(result, leftOperand, rightOperand, roundingMode)
     {
         n1._isNegative = NO;
         n2._isNegative = NO;
-        if (CPOrderedAscending == comp)
+        if (comp == CPOrderedAscending)
         {
 	        error1 = _SimpleSubtract(result, n1, n2, roundingMode);
 	        result._isNegative = YES;
@@ -703,7 +703,7 @@ function CPDecimalSubtract(result, leftOperand, rightOperand, roundingMode)
     }
     else
     {
-        if (CPOrderedAscending == comp)
+        if (comp == CPOrderedAscending)
         {
 	        error1 = _SimpleSubtract(result, n2, n1, roundingMode);
 	        result._isNegative = YES;
@@ -716,7 +716,7 @@ function CPDecimalSubtract(result, leftOperand, rightOperand, roundingMode)
 
     CPDecimalCompact(result);
 
-    if (CPCalculationNoError == error1)
+    if (error1 == CPCalculationNoError)
         return error;
     else
         return error1;
@@ -765,7 +765,7 @@ function _SimpleDivide(result, leftOperand, rightOperand, roundingMode)
                 }
                 else
                 {
-                    if (CPDecimalMinExponent == result._exponent)
+                    if (result._exponent == CPDecimalMinExponent)
                     {
                         // use this as an end flag
                         k = stopk;
@@ -805,7 +805,7 @@ function _SimpleDivide(result, leftOperand, rightOperand, roundingMode)
         }
 
         error1 = CPDecimalSubtract(n1, n1, rightOperand, roundingMode);
-        if (CPCalculationNoError != error1)
+        if (error1 != CPCalculationNoError)
             error = error1;
 
         result._mantissa[k-1]++;
@@ -905,7 +905,7 @@ function _SimpleMultiply(result, leftOperand, rightOperand, roundingMode, powerM
         carry = 0;
         d = rightOperand._mantissa[i];
 
-        if (0 == d)
+        if (d == 0)
 	        continue;
 
         var j =0;
@@ -929,7 +929,7 @@ function _SimpleMultiply(result, leftOperand, rightOperand, roundingMode, powerM
 
         error1 = CPDecimalAdd(result, result, n, roundingMode, YES);
 
-        if (CPCalculationNoError != error1)
+        if (error1 != CPCalculationNoError)
 	        error = error1;
     }
 
@@ -1012,7 +1012,7 @@ function CPDecimalMultiply(result, leftOperand, rightOperand, roundingMode, powe
         comp = CPOrderedAscending;
 
 
-    if (CPOrderedDescending == comp)
+    if (comp == CPOrderedDescending)
     {
         error = _SimpleMultiply(result, n1, n2, roundingMode, powerMode);
     }
@@ -1311,7 +1311,7 @@ function CPDecimalRound(result, dcm, scale ,roundingMode)
 	            up = NO;
 	        else
 	        {
-		        if (0 == l)
+		        if (l == 0)
 		            c = 0;
 		        else
 		            c = result._mantissa[l-1];
@@ -1337,11 +1337,11 @@ function CPDecimalRound(result, dcm, scale ,roundingMode)
 	            result._mantissa[i] = 0;
 	        }
 	        // Final overflow?
-	        if (-1 == i)
+	        if (i == -1)
 	        {
 	            // As all digits are zeros, just change the first
 	            result._mantissa[0] = 1;
-	            if (CPDecimalMaxExponent <= result._exponent)
+	            if (result._exponent >= CPDecimalMaxExponent)
 	            {
 		            // Overflow in rounding.
 		            // Add one zero add the end. There must be space as
