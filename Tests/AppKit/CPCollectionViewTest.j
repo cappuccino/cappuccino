@@ -19,13 +19,15 @@
     [self assert:itemPrototype same:[_collectionView itemPrototype]];
 }
 
-- (void)testIsSelectableActuallyReturnsSelectableStatus
+- (void)testIsSelectableGetter
 {
-    [_collectionView setSelectable:YES];
-    [self assertTrue:[_collectionView isSelectable]];
+    var collectionView = [[CPCollectionView alloc] initWithFrame:CGRectMakeZero()];
     
-    [_collectionView setSelectable:NO];
-    [self assertFalse:[_collectionView isSelectable]];
+    [collectionView setSelectable:YES];
+    [self assertTrue:[collectionView isSelectable]];
+    
+    [collectionView setSelectable:NO];
+    [self assertFalse:[collectionView isSelectable]];
 }
 
 @end
