@@ -675,7 +675,7 @@
 var CPCollectionViewMinItemSizeKey      = @"CPCollectionViewMinItemSizeKey",
     CPCollectionViewMaxItemSizeKey      = @"CPCollectionViewMaxItemSizeKey",
     CPCollectionViewVerticalMarginKey   = @"CPCollectionViewVerticalMarginKey",
-    CPCollectionViewSelectable          = @"CPCollectionViewSelectable",
+    CPCollectionViewSelectableKey       = @"CPCollectionViewSelectableKey",
     CPCollectionViewBackgroundColorsKey = @"CPCollectionViewBackgroundColorsKey";
 
 
@@ -699,7 +699,7 @@ var CPCollectionViewMinItemSizeKey      = @"CPCollectionViewMinItemSizeKey",
         
         _verticalMargin = [aCoder decodeFloatForKey:CPCollectionViewVerticalMarginKey];
         
-        _isSelectable = [aCoder decodeBoolForKey:CPCollectionViewSelectable];
+        _isSelectable = [aCoder decodeBoolForKey:CPCollectionViewSelectableKey];
 
         [self setBackgroundColors:[aCoder decodeObjectForKey:CPCollectionViewBackgroundColorsKey]];
           
@@ -723,7 +723,7 @@ var CPCollectionViewMinItemSizeKey      = @"CPCollectionViewMinItemSizeKey",
     if (!CGSizeEqualToSize(_maxItemSize, CGSizeMakeZero()))
       [aCoder encodeSize:_maxItemSize forKey:CPCollectionViewMaxItemSizeKey];
     
-    [aCoder encodeBool:_isSelectable forKey:CPCollectionViewSelectable];
+    [aCoder encodeBool:_isSelectable forKey:CPCollectionViewSelectableKey];
     
     [aCoder encodeFloat:_verticalMargin forKey:CPCollectionViewVerticalMarginKey];
 
