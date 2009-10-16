@@ -162,7 +162,7 @@
             context.didCompleteCallback = function() { [_delegate bundleDidFinishLoading:self]; };
 
         var files = [[self objectForInfoDictionaryKey:@"CPBundleReplacedFiles"] objectForKey:[self firstEligiblePlatform]],
-            count = files.length,
+            count = files ? files.length : 0, // Perhaps no files? Be liberal in what you accept...
             bundlePath = [self bundlePath];
 
         while (count--)
