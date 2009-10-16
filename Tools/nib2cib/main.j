@@ -30,16 +30,16 @@
 @import "Nib2CibKeyedUnarchiver.j"
 @import "Converter.j"
 
-var File = require("file");
+var FILE = require("file"),
+    OS = require("os");
 
-importPackage(java.io);
 
 CPLogRegister(CPLogPrint);
 
 function printUsage()
 {
     print("usage: nib2cib INPUT_FILE [OUTPUT_FILE] [-F /path/to/required/framework] [-R path/to/resources]");
-    java.lang.System.exit(1);
+    OS.exit(1);
 }
 
 function loadFrameworks(frameworkPaths, aCallback)
@@ -47,59 +47,40 @@ function loadFrameworks(frameworkPaths, aCallback)
     if (!frameworkPaths || frameworkPaths.length === 0)
         return aCallback();
 
-    var frameworkPath = frameworkPaths.shift(),
-        infoPlistPath = frameworkPath + "/Info.plist";
-
-    if (!File.isReadable(infoPlistPath))
+    frameworkPaths.forEach(function(aFrameworkPath)
     {
-        print("'" + frameworkPath + "' is not a framework or could not be found.");
-        java.lang.System.exit(1);
-    }
+        var infoPlistPath = FILE.join(aFrameworkPath, "Info.plist");
 
-    var infoDictionary = CPPropertyListCreateFromData([CPData dataWithString:File.read(infoPlistPath, { charset:"UTF-8" })]);
-    
-    if ([infoDictionary objectForKey:@"CPBundlePackageType"] !== "FMWK")
-    {
-        print("'" + frameworkPath + "' is not a framework.");
-        java.lang.System.exit(1);
-    }
-    
-    print("Loading " + [infoDictionary objectForKey:@"CPBundleName"]);
-
-    var files = [[infoDictionary objectForKey:@"CPBundleReplacedFiles"] objectForKey:[CPBundle firstCompatibleEngineFromArray:[infoDictionary objectForKey:@"CPBundlePlatforms"]]],
-        count = files.length;
-
-    if (count)
-    {
-        var context = new objj_context();
-
-        context.didCompleteCallback = function() { loadFrameworks(frameworkPaths, aCallback) };
-print("2he");
-        while (count--)
+        if (!FILE.isReadable(infoPlistPath))
         {
-            print(frameworkPath + '/' + files[count]);
-            context.pushFragment(fragment_create_file(frameworkPath + '/' + files[count], new objj_bundle(""), YES, NULL));
+            print("'" + aFrameworkPath + "' is not a framework or could not be found.");
+            OS.exit(1);
         }
-print("hmmm");
-        context.evaluate();print("wha???");
-    }
-    else
-        loadFrameworks(frameworkPaths, aCallback);
-print("so far so good...");
+
+        print("Loading " + aFrameworkPath);
+
+        var frameworkBundle = [[CPBundle alloc] initWithPath:infoPlistPath];
+
+        [frameworkBundle loadWithDelegate:nil];
+
+        require("browser/timeout").serviceTimeouts();
+    });
+
+    aCallback();
 }
 
 function main()
 {
     var count = arguments.length;
-    
+
     if (count < 1)
         return printUsage();
-    
+
     var index = 0,
 
         frameworkPaths = [],
         converter = [[Converter alloc] init];
-    
+
     for (; index < count; ++index)
     {
         switch(arguments[index])

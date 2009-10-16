@@ -381,8 +381,13 @@ BundleTask.prototype.defineResourceTask = function(aResourcePath, aDestinationPa
     {
         filedir (aDestinationPath, [aResourcePath], function()
         {
-            // HEY TOM THIS ONE
-            cp_r(aResourcePath, aDestinationPath);
+            if (FILE.exists(aDestinationPath))
+                rm_rf(aDestinationPath);
+
+            if (FILE.isDirectory(aResourcePath))
+                FILE.copyTree(aResourcePath, aDestinationPath);
+            else
+                FILE.copy(aResourcePath, aDestinationPath);
         });
 
         this.enhance([aDestinationPath]);

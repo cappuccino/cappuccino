@@ -3,7 +3,8 @@ var file = require("file"),
 
 var window = require("browser/window");
 
-if (system.engine === "rhino") {
+if (system.engine === "rhino")
+{
     window.__parent__ = null;
     window.__proto__ = global;
 }

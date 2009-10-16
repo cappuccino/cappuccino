@@ -23,8 +23,7 @@
 @import <Foundation/CPObject.j>
 @import <Foundation/CPData.j>
 
-var File = require("file"),
-    FILE = require("file"),
+var FILE = require("file"),
     popen = require("os").popen;
 
 
@@ -56,10 +55,10 @@ ConverterConversionException    = @"ConverterConversionException";
 {   
     try
     {
-        if ([resourcesPath length] && !File.isReadable(resourcesPath))
+        if ([resourcesPath length] && !FILE.isReadable(resourcesPath))
             [CPException raise:ConverterConversionException reason:@"Could not read Resources at path \"" + resourcesPath + "\""];
 
-        var stringContents = File.read(inputPath, { charset:"UTF-8" }),
+        var stringContents = FILE.read(inputPath, { charset:"UTF-8" }),
             inferredFormat = format;
 
         if (inferredFormat === NibFormatUndetermined)
@@ -68,7 +67,7 @@ ConverterConversionException    = @"ConverterConversionException";
             inferredFormat = NibFormatMac;
 
             // Some .xibs are iPhone nibs, check the actual contents in this case.
-            if (File.extname(inputPath) !== ".nib" && 
+            if (FILE.extension(inputPath) !== ".nib" && 
                 stringContents.indexOf("<archive type=\"com.apple.InterfaceBuilder3.CocoaTouch.XIB\"") !== -1)
                 inferredFormat = NibFormatIPhone;
 
@@ -86,9 +85,9 @@ ConverterConversionException    = @"ConverterConversionException";
             [CPException raise:ConverterConversionException reason:@"nib2cib does not understand this nib format."];
 
         if (![outputPath length])
-            outputPath = cibExtension(inputPath);
+            outputPath = inputPath.substr(0, inputPath.length - FILE.extension(inputPath).length) + ".cib";
 
-        File.write(outputPath, [convertedData string], { charset:"UTF-8" });
+        FILE.write(outputPath, [convertedData string], { charset:"UTF-8" });
     }
     catch(anException)
     {
@@ -99,52 +98,33 @@ ConverterConversionException    = @"ConverterConversionException";
 - (CPData)CPCompliantNibDataAtFilePath:(CPString)aFilePath
 {
     // Compile xib or nib to make sure we have a non-new format nib.
-    var temporaryNibFilePath = FILE.join("/tmp", aFilePath + ".tmp.nib");
+    var temporaryNibFilePath = FILE.join("/tmp", FILE.basename(aFilePath) + ".tmp.nib");
 
     if (popen("/usr/bin/ibtool " + aFilePath + " --compile " + temporaryNibFilePath).wait() === 1)
         throw "Could not compile file at " + aFilePath;
 
     // Convert from binary plist to XML plist
-    var temporaryPlistFilePath = FILE.join("/tmp", aFilePath + ".tmp.plist");
+    var temporaryPlistFilePath = FILE.join("/tmp", FILE.basename(aFilePath) + ".tmp.plist");
 
     if (popen("/usr/bin/plutil " + " -convert xml1 " + temporaryNibFilePath + " -o " + temporaryPlistFilePath).wait() === 1)
         throw "Could not convert to xml plist for file at " + aFilePath;
 
-    if (!File.isReadable(temporaryPlistFilePath))
+    if (!FILE.isReadable(temporaryPlistFilePath))
         [CPException raise:ConverterConversionException reason:@"Unable to convert nib file."];
 
-    var plistContents = File.read(temporaryPlistFilePath, { charset:"UTF-8" });
+    var plistContents = FILE.read(temporaryPlistFilePath, { charset:"UTF-8" });
 
     // Minor NS keyed archive to CP keyed archive conversion.
     // Use Java directly because rhino's string.replace is *so slow*. 4 seconds vs. 1 millisecond.
     // plistContents = plistContents.replace(/\<key\>\s*CF\$UID\s*\<\/key\>/g, "<key>CP$UID</key>");
-    plistContents = String(java.lang.String(plistContents).replaceAll("\\<key\\>\\s*CF\\$UID\\s*\\<\/key\\>", "<key>CP\\$UID</key>"));
+    if (system.engine === "rhino")
+        plistContents = String(java.lang.String(plistContents).replaceAll("\\<key\\>\\s*CF\\$UID\\s*\\<\/key\\>", "<key>CP\\$UID</key>"));
+    else
+        plistContents = plistContents.replace(/\<key\>\s*CF\$UID\s*\<\/key\>/g, "<key>CP$UID</key>");
 
     return [CPData dataWithString:plistContents];
 }
 
 @end
-
-function cibExtension(aPath)
-{
-    var start = aPath.length - 1;
-    
-    while (aPath.charAt(start) === '/')
-        start--;
-
-    aPath = aPath.substr(0, start + 1);
-
-    var dotIndex = aPath.lastIndexOf('.');
-    
-    if (dotIndex == -1)
-        return aPath + ".cib";
-    
-    var slashIndex = aPath.lastIndexOf('/');
-    
-    if (slashIndex > dotIndex)
-        return aPath + ".cib";
-    
-    return aPath.substr(0, dotIndex) + ".cib";
-}
 
 @import "Converter+Mac.j"
