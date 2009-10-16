@@ -227,9 +227,8 @@ task ("clobberall", ["clobber-all"]);
 
 function spawnJake(/*String*/ aTaskName)
 {
-    OS.system(serializedENV() + " " + ARGV[0] + " " + aTaskName);
-    //system %{#{$serialized_env} #{$0} #{task_name}}
-    //rake abort if ($? != 0)
+    if (OS.system(serializedENV() + " " + ARGV[0] + " " + aTaskName))
+        OS.exit(1);//rake abort if ($? != 0)
 }
 
 global.subtasks = function(subprojects, taskNames)

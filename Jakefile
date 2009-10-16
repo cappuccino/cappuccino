@@ -1,5 +1,5 @@
 #!/usr/bin/env narwhal
-print("top");
+
 var FILE = require("file"),
     ENV = require("system").env,
     OS = require("os"),
@@ -17,17 +17,10 @@ var subprojects = [/*"External", */"Objective-J", "Foundation", "AppKit", "Tools
     });
 });
 
-global.$DEBUG_ENV                       = FILE.join($BUILD_DIR, 'Debug', 'env');
-global.$RELEASE_ENV                     = FILE.join($BUILD_DIR, 'Release', 'env');
-
-global.$DOXYGEN_CONFIG                  = FILE.join('Tools', 'Documentation', 'Cappuccino.doxygen');
-global.$DOCUMENTATION_BUILD             = FILE.join($BUILD_DIR, 'Documentation');
-
 global.$TOOLS_README                    = FILE.join('Tools', 'READMEs', 'TOOLS-README');
 global.$TOOLS_EDITORS                   = FILE.join('Tools', 'Editors');
 global.$TOOLS_INSTALLER                 = FILE.join('Tools', 'Install', 'install-tools');
 global.$TOOLS_DOWNLOAD                  = FILE.join($BUILD_DIR, 'Cappuccino', 'Tools');
-global.$TOOLS_DOWNLOAD_ENV              = FILE.join($TOOLS_DOWNLOAD, 'objj');
 global.$TOOLS_DOWNLOAD_EDITORS          = FILE.join($TOOLS_DOWNLOAD, 'Editors');
 global.$TOOLS_DOWNLOAD_README           = FILE.join($TOOLS_DOWNLOAD, 'README');
 global.$TOOLS_DOWNLOAD_INSTALLER        = FILE.join($TOOLS_DOWNLOAD, 'install-tools');
@@ -37,7 +30,52 @@ global.$STARTER_DOWNLOAD                = FILE.join($BUILD_DIR, 'Cappuccino', 'S
 global.$STARTER_DOWNLOAD_APPLICATION    = FILE.join($STARTER_DOWNLOAD, 'NewApplication');
 global.$STARTER_DOWNLOAD_README         = FILE.join($STARTER_DOWNLOAD, 'README');
 
+global.$COMMONJS_DEBUG_FRAMEWORKS       = FILE.join($BUILD_DIR, "Release", "CommonJS", "objective-j", "lib", "Frameworks", "Debug");
 global.$TOOLS_COMMONJS                  = FILE.join($BUILD_DIR, "Cappuccino", "Tools", "CommonJS", "objective-j");
+
+filedir ($COMMONJS_DEBUG_FRAMEWORKS, ["debug", "release"], function()
+{
+    FILE.mkdirs($COMMONJS_DEBUG_FRAMEWORKS);
+
+    cp_r(FILE.join($BUILD_DIR, "Debug", "Objective-J"), FILE.join($COMMONJS_DEBUG_FRAMEWORKS, "Objective-J"));
+    cp_r(FILE.join($BUILD_DIR, "Debug", "Foundation"), FILE.join($COMMONJS_DEBUG_FRAMEWORKS, "Foundation"));
+    cp_r(FILE.join($BUILD_DIR, "Debug", "AppKit"), FILE.join($COMMONJS_DEBUG_FRAMEWORKS, "AppKit"));
+    cp_r(FILE.join($BUILD_DIR, "Debug", "BlendKit"), FILE.join($COMMONJS_DEBUG_FRAMEWORKS, "BlendKit"));
+});
+
+task ("install", [$COMMONJS_DEBUG_FRAMEWORKS, "release", "debug"], function()
+{
+    print("this is where i install...");
+//    if (OS.system("cd " + $TOOLS_DOWNLOAD + " && tusk install objective-j"))
+//        OS.exist(1); // rake abort if ($? != 0)
+//    var prefix = ENV["prefix"] ? ("--prefix " + ENV["prefix"]) : "";
+
+//    if (OS.system("cd " + $TOOLS_DOWNLOAD + " && sudo sh ./install-tools " + prefix))
+//        OS.exist(1); // rake abort if ($? != 0)
+});
+
+// Documentation
+
+$DOCUMENTATION_BUILD = FILE.join($BUILD_DIR, "Documentation");
+
+task ("documentation", function()
+{
+    if (executableExists("doxygen"))
+    {
+        if (OS.system("doxygen " + FILE.join("Tools", "Documentation", "Cappuccino.doxygen")))
+            OS.exit(1); //rake abort if ($? != 0)
+
+        rm_rf($DOCUMENTATION_BUILD);
+        mv("debug.txt", FILE.join("Documentation", "debug.txt"));
+        mv("Documentation", $DOCUMENTATION_BUILD);
+    }
+    else
+        print("doxygen not installed. skipping documentation generation.");
+});
+
+task ("docs", ["documentation"]);
+
+// Downloads
 
 task ("downloads", ["starter_download", "tools_download"]);
 
@@ -105,17 +143,9 @@ filedir ($STARTER_DOWNLOAD_README, [$STARTER_README], function()
     cp($STARTER_README, $STARTER_DOWNLOAD_README);
 });
 
-task ("install", ["tools_download"], function()
-{
-    var prefix = ENV["prefix"] ? ("--prefix " + ENV["prefix"]) : "";
-
-    if (OS.system("cd " + $TOOLS_DOWNLOAD + " && sudo sh ./install-tools " + prefix))
-        OS.exist(1); // rake abort if ($? != 0)
-});
-
 task ("test", ["build"], function()
 {
-    var tests = "'" + FILEList('Tests/**/*.j').join("' '") + "'",
+    var tests = "'" + FileList('Tests/**/*.j').join("' '") + "'",
         build_result = OS.system("ojtest " + tests);
 
     if (build_result.match(/Test suite failed/i))
@@ -127,34 +157,6 @@ task ("test", ["build"], function()
     }
     else
         print(build_result);
-});
-
-task ("docs", function()
-{
-    if (executableExists("doxygen"))
-    {
-        if (OS.system("doxygen " + $DOXYGEN_CONFIG))
-            OS.exit(1); //rake abort if ($? != 0)
-
-        rm_rf($DOCUMENTATION_BUILD);
-        mv("debug.txt", FILE.join("Documentation", "debug.txt"));
-        mv("Documentation", $DOCUMENTATION_BUILD);
-    }
-    else
-        print("doxygen not installed. skipping documentation generation.");
-});
-
-task ("submodules", function()
-{
-/*
-    if executable_exists? "git"
-        system %{git submodule init && git submodule update}
-        rake abort if ($? != 0)
-    else
-        puts "Git not installed"
-        rake abort
-    end
-*/
 });
 
 /*
