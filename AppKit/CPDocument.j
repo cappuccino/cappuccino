@@ -791,7 +791,7 @@ var CPDocumentUntitledCount = 0;
     if (!response)
         return;
 
-    var saveURL = [savePanel filename];
+    var saveURL = [savePanel URL];
 
     [[CPNotificationCenter defaultCenter]
         postNotificationName:CPDocumentWillSaveNotification
