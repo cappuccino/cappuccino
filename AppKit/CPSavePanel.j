@@ -14,15 +14,10 @@
 
 - (CPInteger)runModal
 {
-    return [self runModalForDirectory:nil];
-}
-
-- (CPInteger)runModalForDirectory:(CPString)anAbsoluteDirectoryPath
-{
     // FIXME: Is this correct???
     [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
 
-    var result = window.cpSavePanel(anAbsoluteDirectoryPath);
+    result = window.cpSavePanel();
 
     return result.button;
 }
