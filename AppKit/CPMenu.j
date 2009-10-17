@@ -1970,11 +1970,12 @@ var _CPMenuBarWindowBackgroundColor = nil,
     }
 }
 
-- (void)setFrameSize:(CGSize)aSize
+- (void)setFrame:(CGRect)aRect
 {
-    [super setFrameSize:aSize];
-    
-    [self tile];
+    var oldSize = CGSizeMakeCopy([self frame].size);
+    [super setFrame:aRect];
+    if (!CGSizeEqualToSize(oldSize, [self frame].size))
+        [self tile];
 }
 
 @end
