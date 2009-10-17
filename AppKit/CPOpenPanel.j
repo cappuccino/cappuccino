@@ -5,7 +5,11 @@
 
 @implementation CPOpenPanel : CPPanel
 {
-    JSObject    _openPanel;
+    BOOL    _canChooseFiles             @accessors(property=canChooseFiles);
+    BOOL    _canChooseDirectories       @accessors(property=canChooseDirectories);
+    BOOL    _allowsMultipleSelection    @accessors(property=allowsMultipleSelection);
+    CPURL   _directoryURL               @accessors(property=directoryURL);
+    CPArray _URLs;
 }
 
 + (id)openPanel
@@ -13,73 +17,26 @@
     return [[CPOpenPanel alloc] init];
 }
 
-- (id)init
-{
-    if (self = [super init])
-        _openPanel = window.application.createOpenPanel();
-
-    return self;
-}
-
-- (BOOL)canChooseFiles
-{
-    return _openPanel.canChooseFiles;
-}
-
-- (void)setCanChooseFiles:(BOOL)shouldChooseFiles
-{
-    _openPanel.canChooseFiles = shouldChooseFiles;
-}
-
-- (BOOL)canChooseDirectories
-{
-    return _openPanel.canChooseDirectories;
-}
-
-- (void)setCanChooseDirectories:(BOOL)shouldChooseDirectories
-{
-    _openPanel.canChooseDirectories = shouldChooseDirectories;
-}
-
-- (BOOL)resolvesAliases
-{
-    return _openPanel.resolvesAliases;
-}
-
-- (BOOL)setResolvesAliases:(BOOL)shouldResolveAliases
-{
-    return _openPanel.resolvesAliases = shouldResolveAliases;
-}
-
-- (BOOL)allowsMultipleSelections
-{
-    return _openPanel.resolvesAliases;
-}
-
-- (BOOL)setAllowsMultipleSelections:(BOOL)shouldAllowMultipleSelection
-{
-    return _openPanel.allowsMultipleSelection = shouldAllowMultipleSelection;
-}
-
-- (void)filenames
-{
-    return _openPanel.filenames;
-}
-
-- (CPInteger)runModalForDirectory:(CPString)anAbsoluteDirectoryPath file:(CPString)aFilename types:(CPArray)fileTypes
+- (CPInteger)runModal
 {
     // FIXME: Is this correct???
     [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
 
-    return _openPanel.runModal(anAbsoluteDirectoryPath, aFilename, fileTypes);
+    var options = { directoryURL: [self directoryURL],
+                    canChooseFiles: [self canChooseFiles],
+                    canChooseDirectories: [self canChooseDirectories],
+                    allowsMultipleSelection: [self allowsMultipleSelection] };
+
+    var result = window.cpOpenPanel(options);
+
+    _URLs = result.URLs;
+
+    return result.button;
 }
 
-- (CPInteger)runModalForTypes:(CPArray)fileTypes 
+- (CPArray)URLs
 {
-    // FIXME: Is this correct???
-    [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
-
-    return _openPanel.runModal(fileTypes);
+    return _URLs;
 }
 
 @end

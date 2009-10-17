@@ -223,15 +223,15 @@ var CPSharedDocumentController = nil;
 -(void)openDocument:(id)aSender
 {
     var openPanel = [CPOpenPanel openPanel];
-    
-    [openPanel runModalForTypes:nil];//[@"nib", @"xib", @"cib"]];
-    
-    var filenames = [openPanel filenames],
+
+    [openPanel runModal];
+
+    var URLs = [openPanel URLs],
         index = 0,
-        count = [filenames count];
+        count = [URLs count];
 
     for (; index < count; ++index)
-        [self openDocumentWithContentsOfURL:[CPURL URLWithString:filenames[index]] display:YES error:nil];
+        [self openDocumentWithContentsOfURL:[CPURL URLWithString:URLs[index]] display:YES error:nil];
 }
 
 // Managing Documents

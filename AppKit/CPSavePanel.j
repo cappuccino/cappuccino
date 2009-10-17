@@ -4,7 +4,7 @@
 
 @implementation CPSavePanel : CPPanel
 {
-    JSObject    _savePanel;
+    Object result;
 }
 
 + (id)savePanel
@@ -12,33 +12,19 @@
     return [[CPSavePanel alloc] init];
 }
 
-- (id)init
-{
-    if (self = [super init])
-        _savePanel = window.application.createSavePanel();
-
-    return self;
-}
-
 - (CPInteger)runModal
 {
     // FIXME: Is this correct???
     [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
 
-    return _savePanel.runModal();
+    result = window.cpSavePanel();
+
+    return result.button;
 }
 
-- (CPInteger)runModalForDirectory:(CPString)anAbsoluteDirectoryPath
+- (CPURL)URL
 {
-    // FIXME: Is this correct???
-    [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
-
-    return _savePanel.runModal(anAbsoluteDirectoryPath);
-}
-
-- (CPString)filename
-{
-    return _savePanel.filename;
+    return [CPURL URLWithString:result.URL];
 }
 
 @end
