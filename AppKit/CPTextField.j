@@ -597,14 +597,14 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 
     window.setTimeout(function() 
     { 
-        element.value = [self stringValue];
         element.focus();
         CPTextFieldInputOwner = self;
     }, 0.0);
  
     //post CPControlTextDidBeginEditingNotification
     [self textDidBeginEditing:[CPNotification notificationWithName:CPControlTextDidBeginEditingNotification object:self userInfo:nil]];
-    
+    element.value = [self stringValue];
+
     [[[self window] platformWindow] _propagateCurrentDOMEvent:YES];
     
     CPTextFieldInputIsActive = YES;
