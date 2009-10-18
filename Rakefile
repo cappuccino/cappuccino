@@ -118,7 +118,7 @@ task :install => [:tools_download] do
 end
 
 task :test => [:build] do
-  tests = "'" + FileList['Tests/**/*.j'].join("' '") + "'"
+  tests = "'" + FileList['Tests/**/*Test.j'].join("' '") + "'"
   build_result = %x{ojtest #{tests} }
   
   if build_result.match(/Test suite failed/i)

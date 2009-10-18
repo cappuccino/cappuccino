@@ -134,7 +134,7 @@ var objj_eval = exports.objj_eval = function(code)
 }
 
 // prepocesses Objective-J code into JavaScript, which will perform imports synchronously when eval'd
-var objj_preprocess_sync = function(code, path)
+window.objj_preprocess_sync = function(code, path)
 {
     var fragments = objj_preprocess(code, new objj_bundle(), new objj_file(), OBJJ_PREPROCESSOR_DEBUG_SYMBOLS)
 
@@ -153,7 +153,7 @@ var objj_preprocess_sync = function(code, path)
 }
 
 // synchronously perform an import
-var objj_import_sync = function(pathOrPaths, isLocal)
+window.objj_import_sync = function(pathOrPaths, isLocal)
 {
     var context = new objj_context();
     context.pushFragment(fragment_create_file(pathOrPaths, new objj_bundle(), isLocal, NULL));
