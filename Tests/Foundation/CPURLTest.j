@@ -1,4 +1,4 @@
-@import "CPURL.j"
+@import <Foundation/CPURL.j>
 
 var exampleProtocol = "http",
     exampleUser = "foo",

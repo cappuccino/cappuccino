@@ -298,6 +298,11 @@ CPRunContinuesResponse  = -1002;
     [CPPlatform terminateApplication];
 }
 
+- (void)activateIgnoringOtherApps:(BOOL)shouldIgnoreOtherApps
+{
+    [CPPlatform activateIgnoringOtherApps:shouldIgnoreOtherApps];
+}
+
 /*!
     Calls \c -finishLaunching method which results in starting
     the main event loop.

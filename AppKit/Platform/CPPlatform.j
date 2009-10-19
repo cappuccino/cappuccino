@@ -45,4 +45,12 @@
         window.cpTerminate();
 }
 
++ (void)activateIgnoringOtherApps:(BOOL)shouldIgnoreOtherApps
+{
+#if PLATFORM(DOM)
+    if (typeof window["cpActivateIgnoringOtherApps"] === "function")
+        window.cpActivateIgnoringOtherApps(!!shouldIgnoreOtherApps);
+#endif
+}
+
 @end
