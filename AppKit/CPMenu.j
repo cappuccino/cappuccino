@@ -1492,7 +1492,8 @@ var _CPMenuBarWindowBackgroundColor = nil,
 
 - (id)init
 {
-    var contentRect = [CPPlatform isBrowser] ? [[CPPlatformWindow primaryPlatformWindow] contentBounds] : [[self screen] visibleFrame];
+    // This only shows up in browser land, so don't bother calculating metrics in desktop.
+    var contentRect = [[CPPlatformWindow primaryPlatformWindow] contentBounds];
 
     contentRect.size.height = MENUBAR_HEIGHT;
 
@@ -1501,9 +1502,7 @@ var _CPMenuBarWindowBackgroundColor = nil,
     if (self)
     {
         // FIXME: http://280north.lighthouseapp.com/projects/13294-cappuccino/tickets/39-dont-allow-windows-to-go-above-menubar
-        if ([CPPlatform isBrowser])
-            [self setLevel:-1];//CPTornOffMenuWindowLevel];
-
+        [self setLevel:-1];//CPTornOffMenuWindowLevel];
         [self setAutoresizingMask:CPWindowWidthSizable];
      
         var contentView = [self contentView];
