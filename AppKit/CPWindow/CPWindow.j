@@ -1264,6 +1264,8 @@ CPTexturedBackgroundWindowMask
                                     if (_leftMouseDownView != _firstResponder && [_leftMouseDownView acceptsFirstResponder])
                                         [self makeFirstResponder:_leftMouseDownView];
 
+                                    [CPApp activateIgnoringOtherApps:YES];
+
                                     var theWindow = [anEvent window];
 
                                     if ([theWindow isKeyWindow] || [theWindow becomesKeyOnlyIfNeeded])
