@@ -581,7 +581,7 @@ CPTexturedBackgroundWindowMask
 */
 + (CGRect)frameRectForContentRect:(CGRect)aContentRect styleMask:(unsigned)aStyleMask
 {
-    return [[[self class] _windowViewClassForStyleMask:_styleMask] frameRectForContentRect:aContentRect];
+    return [[[self class] _windowViewClassForStyleMask:aStyleMask] frameRectForContentRect:aContentRect];
 }
 
 /*!
