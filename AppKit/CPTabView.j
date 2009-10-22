@@ -260,9 +260,11 @@ var CPTabViewDidSelectTabViewItemSelector           = 1,
 */
 - (void)removeTabViewItem:(CPTabViewItem)aTabViewItem
 {
+    var index = [self indexOfTabViewItem:aTabViewItem];
+
     [_tabViewItems removeObjectIdenticalTo:aTabViewItem];
 
-    [_labelsView tabView:self didRemoveTabViewItem:aTabViewItem];
+    [_labelsView tabView:self didRemoveTabViewItemAtIndex:index];
     
     if (_delegateSelectors & CPTabViewDidChangeNumberOfTabViewItemsSelector)
         [_delegate tabViewDidChangeNumberOfTabViewItems:self];
@@ -648,10 +650,9 @@ var _CPTabLabelsViewBackgroundColor = nil,
     [self layoutSubviews];
 }
 
-- (void)tabView:(CPTabView)aTabView didRemoveTabViewItem:(CPTabViewItem)aTabViewItem
+- (void)tabView:(CPTabView)aTabView didRemoveTabViewItemAtIndex:(unsigned)index
 {
-    var index = [aTabView indexOfTabViewItem:aTabViewItem],
-        label = _tabLabels[index];
+    var label = _tabLabels[index];
     
     [_tabLabels removeObjectAtIndex:index];
 
