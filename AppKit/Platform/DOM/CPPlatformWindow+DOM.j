@@ -338,6 +338,7 @@ var supportsNativeDragAndDrop = [CPPlatform supportsDragAndDrop];
 
     if (![CPPlatform isBrowser])
     {
+        _DOMWindow.cpWindowNumber = [self._only windowNumber];
         _DOMWindow.cpSetFrame(_contentRect);
         _DOMWindow.cpSetLevel(_level);
         _DOMWindow.cpSetHasShadow(_hasShadow);
