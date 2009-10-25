@@ -460,7 +460,12 @@ var CPDocumentUntitledCount = 0;
 
     _writeRequest = [CPURLRequest requestWithURL:anAbsoluteURL];
 
-    [_writeRequest setHTTPMethod:@"PUT"];
+    // FIXME: THIS IS WRONG! We need a way to decide
+    if ([CPPlatform isBrowser])
+        [_writeRequest setHTTPMethod:@"POST"];
+    else
+        [_writeRequest setHTTPMethod:@"PUT"];
+
     [_writeRequest setHTTPBody:[data string]];
 
     [_writeRequest setValue:@"close" forHTTPHeaderField:@"Connection"];

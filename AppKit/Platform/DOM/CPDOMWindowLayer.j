@@ -68,7 +68,7 @@
         count = _windows.length - 1;
 
     CPDOMDisplayServerRemoveChild(_DOMElement, aWindow._DOMElement);
-      
+
     [_windows removeObjectAtIndex:aWindow._index];
 
     for (; index < count; ++index)
@@ -107,11 +107,12 @@
         _windows[zIndex]._index = zIndex;
         _windows[zIndex]._DOMElement.style.zIndex = zIndex;
     }
+
     // If the window is not already a resident of this layer, add it.
-    if (!isVisible)
+    if (aWindow._DOMElement.parentNode !== _DOMElement)
     {
         CPDOMDisplayServerAppendChild(_DOMElement, aWindow._DOMElement);
-        
+
         aWindow._isVisible = YES;
         
         if ([aWindow isFullBridge])

@@ -814,6 +814,12 @@ CPRunContinuesResponse  = -1002;
         return [_documentController openDocumentWithContentsOfURL:aFilename display:YES error:NULL];
 }
 
+- (void)_didResignActive
+{
+    if (self._activeMenu)
+        [self._activeMenu cancelTracking];
+}
+
 @end
 
 var _CPModalSessionMake = function(aWindow, aStopCode)

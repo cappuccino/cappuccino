@@ -192,6 +192,8 @@ var supportsNativeDragAndDrop = [CPPlatform supportsDragAndDrop];
     // Make sure the pastboard element is blurred.
     _DOMPasteboardElement.blur();
 
+    [self _addLayers];
+
     var theClass = [self class],
 
         dragEventImplementation = class_getMethodImplementation(theClass, @selector(dragEvent:)),
@@ -250,6 +252,7 @@ var supportsNativeDragAndDrop = [CPPlatform supportsDragAndDrop];
         _DOMWindow.addEventListener("unload", function()
         {
             [self updateFromNativeContentRect];
+            [self _removeLayers];
 
             theDocument.removeEventListener("mouseup", mouseEventCallback, NO);
             theDocument.removeEventListener("mousedown", mouseEventCallback, NO);
@@ -296,6 +299,7 @@ var supportsNativeDragAndDrop = [CPPlatform supportsDragAndDrop];
         _DOMWindow.attachEvent("onbeforeunload", function()
         {
             [self updateFromNativeContentRect];
+            [self _removeLayers];
 
             theDocument.removeEvent("onmouseup", mouseEventCallback);
             theDocument.removeEvent("onmousedown", mouseEventCallback);
@@ -334,6 +338,7 @@ var supportsNativeDragAndDrop = [CPPlatform supportsDragAndDrop];
 
     if (![CPPlatform isBrowser])
     {
+        _DOMWindow.cpWindowNumber = [self._only windowNumber];
         _DOMWindow.cpSetFrame(_contentRect);
         _DOMWindow.cpSetLevel(_level);
         _DOMWindow.cpSetHasShadow(_hasShadow);
@@ -902,6 +907,34 @@ var supportsNativeDragAndDrop = [CPPlatform supportsDragAndDrop];
 
     // Place the window at the appropriate index.
     [layer insertWindow:aWindow atIndex:(otherWindow ? (aPlace == CPWindowAbove ? otherWindow._index + 1 : otherWindow._index) : CPNotFound)];
+}
+
+- (void)_removeLayers
+{
+    var levels = _windowLevels,
+        layers = _windowLayers,
+        levelCount = levels.length;
+
+    while (levelCount--)
+    {
+        var layer = [layers objectForKey:levels[levelCount]];
+
+        _DOMBodyElement.removeChild(layer._DOMElement);
+    }
+}
+
+- (void)_addLayers
+{
+    var levels = _windowLevels,
+        layers = _windowLayers,
+        levelCount = levels.length;
+
+    while (levelCount--)
+    {
+        var layer = [layers objectForKey:levels[levelCount]];
+
+        _DOMBodyElement.appendChild(layer._DOMElement);
+    }
 }
 
 /* @ignore */

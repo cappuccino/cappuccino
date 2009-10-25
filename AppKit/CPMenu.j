@@ -30,6 +30,7 @@
 @import "CPMenuItem.j"
 @import "CPPanel.j"
 
+#include "CoreGraphics/CGGeometry.h"
 #include "Platform/Platform.h"
 
 
@@ -738,7 +739,21 @@ var _CPMenuBarVisible               = NO,
 */
 - (void)cancelTracking
 {
-    [_menuWindow cancelTracking];
+    [[CPRunLoop currentRunLoop] performSelector:@selector(_fireCancelTrackingEvent) target:self argument:nil order:0 modes:[CPDefaultRunLoopMode]];
+}
+
+- (void)_fireCancelTrackingEvent
+{
+    [CPApp sendEvent:[CPEvent
+        otherEventWithType:CPAppKitDefined
+                  location:_CGPointMakeZero()
+             modifierFlags:0
+                 timestamp:0
+              windowNumber:0
+                   context:0
+                   subtype:0
+                     data1:0
+                     data2:0]];
 }
 
 /* @ignore */
@@ -767,7 +782,7 @@ var _CPMenuBarVisible               = NO,
     {
         var item = _items[index],
             modifierMask = [item keyEquivalentModifierMask];
-        
+
         if ((modifierFlags & (CPShiftKeyMask | CPAlternateKeyMask | CPCommandKeyMask | CPControlKeyMask)) == modifierMask &&
             [characters caseInsensitiveCompare:[item keyEquivalent]] == CPOrderedSame)
         {
@@ -928,7 +943,7 @@ var STICKY_TIME_INTERVAL        = 500,
 */
 @implementation _CPMenuWindow : CPWindow
 {
-    _CPMenuView         _menuView;    
+    _CPMenuView         _menuView;
     CPClipView          _menuClipView;
     CPView              _lastMouseOverMenuView;
     
@@ -1178,13 +1193,10 @@ var STICKY_TIME_INTERVAL        = 500,
     [_menuView scrollPoint:CGPointMake(0.0, [self convertBaseToGlobal:clipFrame.origin].y - menuViewOrigin.y)];
 }
 
-- (void)cancelTracking
-{
-    _trackingCanceled = YES;
-}
-
 - (void)beginTrackingWithEvent:(CPEvent)anEvent sessionDelegate:(id)aSessionDelegate didEndSelector:(SEL)aDidEndSelector
 {
+    CPApp._activeMenu = [_menuView menu];
+
     _startTime = [anEvent timestamp];//new Date();
     _scrollingState = _CPMenuWindowScrollingStateNone;
     _trackingCanceled = NO;
@@ -1198,7 +1210,41 @@ var STICKY_TIME_INTERVAL        = 500,
 - (void)trackEvent:(CPEvent)anEvent
 {
     var type = [anEvent type],
-        theWindow = [anEvent window],
+        menu = [_menuView menu];
+
+    // Close Menu Event.
+    if (type === CPAppKitDefined)
+    {
+        // Stop all periodic events at this point.
+        [CPEvent stopPeriodicEvents];
+
+        var highlightedItem = [[_menuView menu] highlightedItem];
+
+        [menu _highlightItemAtIndex:CPNotFound];
+
+        [self orderOut:self];
+
+        var delegate = [menu delegate];
+
+        if ([delegate respondsToSelector:@selector(menuDidClose:)])
+            [delegate menuDidClose:menu];
+
+        if (_sessionDelegate && _didEndSelector)
+            objj_msgSend(_sessionDelegate, _didEndSelector, self, highlightedItem);
+
+        [[CPNotificationCenter defaultCenter]
+            postNotificationName:CPMenuDidEndTrackingNotification
+                          object:menu];
+
+        // Clear these now so its faster next time around.
+        [_menuView setMenu:nil];
+
+        CPApp._activeMenu = nil;
+
+        return;
+    }
+
+    var theWindow = [anEvent window],
         globalLocation = theWindow ? [theWindow convertBaseToGlobal:[anEvent locationInWindow]] : [anEvent locationInWindow];
 
     if (type === CPPeriodic)
@@ -1222,8 +1268,7 @@ var STICKY_TIME_INTERVAL        = 500,
 
     _lastGlobalLocation = globalLocation;
     
-    var menu = [_menuView menu],
-        menuLocation = [self convertGlobalToBase:globalLocation],
+    var menuLocation = [self convertGlobalToBase:globalLocation],
         activeItemIndex = [_menuView itemIndexAtPoint:[_menuView convertPoint:menuLocation fromView:nil]],
         mouseOverMenuView = [[menu itemAtIndex:activeItemIndex] view];
     
@@ -1279,47 +1324,11 @@ var STICKY_TIME_INTERVAL        = 500,
                 else if (oldScrollingState == _CPMenuWindowScrollingStateNone)
                     [CPEvent startPeriodicEventsAfterDelay:0.0 withPeriod:0.04];
         }
-        
         else if (type == CPLeftMouseUp && ([anEvent timestamp] - _startTime > STICKY_TIME_INTERVAL))
-        {
-            // Stop these if they're still goin'.
-            if (_scrollingState != _CPMenuWindowScrollingStateNone)
-                [CPEvent stopPeriodicEvents];
-    
-            [self cancelTracking];
-        }
+            [menu cancelTracking];
     }
-        
-    if (_trackingCanceled)
-    {
-        // Stop all periodic events at this point.
-        [CPEvent stopPeriodicEvents];
-        
-        var highlightedItem = [[_menuView menu] highlightedItem];
-        
-        [menu _highlightItemAtIndex:CPNotFound];
-        
-        [self orderOut:self];
 
-        var delegate = [menu delegate];
-        
-        if ([delegate respondsToSelector:@selector(menuDidClose:)])
-            [delegate menuDidClose:menu];
-
-        if (_sessionDelegate && _didEndSelector)
-            objj_msgSend(_sessionDelegate, _didEndSelector, self, highlightedItem);
-
-        [[CPNotificationCenter defaultCenter]
-            postNotificationName:CPMenuDidEndTrackingNotification
-                          object:menu];
-
-        // Clear these now so its faster next time around.
-        [_menuView setMenu:nil];
-
-        return;
-    }
-            
-    [CPApp setTarget:self selector:@selector(trackEvent:) forNextEventMatchingMask:CPPeriodicMask | CPMouseMovedMask | CPLeftMouseDraggedMask | CPLeftMouseUpMask untilDate:nil inMode:nil dequeue:YES];
+    [CPApp setTarget:self selector:@selector(trackEvent:) forNextEventMatchingMask:CPPeriodicMask | CPMouseMovedMask | CPLeftMouseDraggedMask | CPLeftMouseUpMask | CPAppKitDefinedMask untilDate:nil inMode:nil dequeue:YES];
 }
 
 @end
@@ -1492,7 +1501,8 @@ var _CPMenuBarWindowBackgroundColor = nil,
 
 - (id)init
 {
-    var contentRect = [CPPlatform isBrowser] ? [[CPPlatformWindow primaryPlatformWindow] contentBounds] : [[self screen] visibleFrame];
+    // This only shows up in browser land, so don't bother calculating metrics in desktop.
+    var contentRect = [[CPPlatformWindow primaryPlatformWindow] contentBounds];
 
     contentRect.size.height = MENUBAR_HEIGHT;
 
@@ -1501,9 +1511,7 @@ var _CPMenuBarWindowBackgroundColor = nil,
     if (self)
     {
         // FIXME: http://280north.lighthouseapp.com/projects/13294-cappuccino/tickets/39-dont-allow-windows-to-go-above-menubar
-        if ([CPPlatform isBrowser])
-            [self setLevel:-1];//CPTornOffMenuWindowLevel];
-
+        [self setLevel:-1];//CPTornOffMenuWindowLevel];
         [self setAutoresizingMask:CPWindowWidthSizable];
      
         var contentView = [self contentView];
@@ -1971,11 +1979,14 @@ var _CPMenuBarWindowBackgroundColor = nil,
     }
 }
 
-- (void)setFrameSize:(CGSize)aSize
+- (void)setFrame:(CGRect)aRect display:(BOOL)shouldDisplay animate:(BOOL)shouldAnimate
 {
-    [super setFrameSize:aSize];
-    
-    [self tile];
+    var size = [self frame].size;
+
+    [super setFrame:aRect display:shouldDisplay animate:shouldAnimate];
+
+    if (_CGSizeEqualToSize(size, aRect.size))
+        [self tile];
 }
 
 @end

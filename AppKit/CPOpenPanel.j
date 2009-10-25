@@ -1,6 +1,5 @@
 
 @import <AppKit/CPPanel.j>
-#include "Platform/Platform.h"
 
 
 @implementation CPOpenPanel : CPPanel
@@ -19,19 +18,24 @@
 
 - (CPInteger)runModal
 {
-    // FIXME: Is this correct???
-    [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
+    if (typeof window["cpOpenPanel"] === "function")
+    {
+        // FIXME: Is this correct???
+        [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
 
-    var options = { directoryURL: [self directoryURL],
-                    canChooseFiles: [self canChooseFiles],
-                    canChooseDirectories: [self canChooseDirectories],
-                    allowsMultipleSelection: [self allowsMultipleSelection] };
+        var options = { directoryURL: [self directoryURL],
+                        canChooseFiles: [self canChooseFiles],
+                        canChooseDirectories: [self canChooseDirectories],
+                        allowsMultipleSelection: [self allowsMultipleSelection] };
 
-    var result = window.cpOpenPanel(options);
+        var result = window.cpOpenPanel(options);
 
-    _URLs = result.URLs;
+        _URLs = result.URLs;
 
-    return result.button;
+        return result.button;
+    }
+
+    throw "-runModal is unimplemented.";
 }
 
 - (CPArray)URLs
