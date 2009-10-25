@@ -1985,7 +1985,7 @@ var _CPMenuBarWindowBackgroundColor = nil,
 
     [super setFrame:aRect display:shouldDisplay animate:shouldAnimate];
 
-    if (_CGSizeEqualToSize(size, aRect.size))
+    if (!_CGSizeEqualToSize(size, aRect.size))
         [self tile];
 }
 
