@@ -209,6 +209,11 @@ CPTableColumnUserResizingMask   = 2;
         [CPException raise:CPInvalidArgumentException reason:@"Attempt to set nil header view on " + [self description]];
 
     _headerView = aView;
+
+    var tableHeaderView = [_tableView headerView];
+
+    [tableHeaderView setNeedsLayout];
+    [tableHeaderView setNeedsDisplay:YES];
 }
 
 - (CPView)headerView
