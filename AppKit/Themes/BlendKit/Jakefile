@@ -33,4 +33,4 @@ filedir ($COMMONJS_PRODUCT_BLENDKIT, ["BlendKit"], function()
 print("here?...");
 task ("build", ["BlendKit", $COMMONJS_PRODUCT_BLENDKIT]);
 
-//CLOBBER.include($ENVIRONMENT_PRODUCT)
+CLOBBER.include( $COMMONJS_PRODUCT_BLENDKIT);

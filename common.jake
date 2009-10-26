@@ -80,15 +80,12 @@ var objectiveJBin = FILE.join($BUILD_DIR, $CONFIGURATION, "CommonJS", "objective
 if (!FILE.exists(objectiveJBin))
     objectiveJBin = FILE.join($HOME_DIR, "Objective-J", "CommonJS", "objective-j", "bin");
 
-if (FILE.exists(objectiveJBin))
-{
-    var system = OS.system;
+var system = OS.system;
 
-    // FIXME: is there a better way to do this???
-    OS.system = function(aCommand)
-    {
-        system("PATH=" + OS.enquote(objectiveJBin) + ":$PATH " + aCommand)
-    }
+// FIXME: is there a better way to do this???
+OS.system = function(aCommand)
+{
+    system("PATH=" + OS.enquote(objectiveJBin) + ":$PATH " + aCommand)
 }
 
 global.rm_rf = function(/*String*/ aFilename)
@@ -238,7 +235,7 @@ global.subtasks = function(subprojects, taskNames)
 {
     taskNames.forEach(function(aTaskName)
     {
-        var subtaskName = taskNames + "_subprojects";
+        var subtaskName = aTaskName + "_subprojects";
 
         task (aTaskName, [subtaskName]);
 

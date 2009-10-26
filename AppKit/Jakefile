@@ -35,7 +35,7 @@ filedir ($COMMONJS_PRODUCT_APPKIT, ["AppKit"], function()
     cp_r(appKitTask.buildProductPath(), $COMMONJS_PRODUCT_APPKIT);
 });
 
-//subtasks (["Themes"], ["clean", "clobber"]);
+subtasks (["Themes"], ["clean", "clobber"]);
 
 task ("Theme", [$COMMONJS_PRODUCT_APPKIT], function()
 {

@@ -262,7 +262,7 @@ BundleTask.prototype.defineTasks = function()
     this.defineStaticTask();
 
     CLEAN.include(this.buildIntermediatesProductPath());
-    CLOBBER.include(this.buildPath());
+    CLOBBER.include(this.buildProductPath());
 }
 
 BundleTask.prototype.packageType = function()
