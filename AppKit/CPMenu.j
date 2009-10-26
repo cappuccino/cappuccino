@@ -1006,6 +1006,7 @@ var STICKY_TIME_INTERVAL        = 500,
     {
         [self setLevel:CPPopUpMenuWindowLevel];
         [self setHasShadow:YES];
+        [self setShadowStyle:CPMenuWindowShadowStyle];
         [self setAcceptsMouseMovedEvents:YES];
         
         _unconstrainedFrame = CGRectMakeZero();

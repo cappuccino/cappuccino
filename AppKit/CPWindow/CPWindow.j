@@ -581,7 +581,7 @@ CPTexturedBackgroundWindowMask
 */
 + (CGRect)frameRectForContentRect:(CGRect)aContentRect styleMask:(unsigned)aStyleMask
 {
-    return [[[self class] _windowViewClassForStyleMask:_styleMask] frameRectForContentRect:aContentRect];
+    return [[[self class] _windowViewClassForStyleMask:aStyleMask] frameRectForContentRect:aContentRect];
 }
 
 /*!
@@ -1004,6 +1004,7 @@ CPTexturedBackgroundWindowMask
 - (void)setShadowStyle:(unsigned)aStyle
 {
     _shadowStyle = aStyle;
+
     [[self platformWindow] setShadowStyle:_shadowStyle];
 }
 
@@ -2379,6 +2380,12 @@ function _CPWindowFullPlatformWindowSessionMake(aWindowView, aContentRect, hasSh
 {
     return { windowView:aWindowView, contentRect:aContentRect, hasShadow:hasShadow, level:aLevel };
 }
+
+CPStandardWindowShadowStyle = 0;
+CPMenuWindowShadowStyle     = 1;
+CPPanelWindowShadowStyle    = 2;
+CPCustomWindowShadowStyle   = 3;
+
 
 @import "_CPWindowView.j"
 @import "_CPStandardWindowView.j"

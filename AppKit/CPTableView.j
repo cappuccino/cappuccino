@@ -538,7 +538,7 @@ CPTableViewSolidHorizontalGridLineMask = 1 << 1;
         count = NUMBER_OF_COLUMNS();
 
     for (; index < count; ++index)
-        if ([_tableColumns identifier] === anIdentifier)
+        if ([_tableColumns[index] identifier] === anIdentifier)
             return index;
 
     return CPNotFound;
