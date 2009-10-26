@@ -32,4 +32,4 @@ filedir ($COMMONJS_PRODUCT_FOUNDATION, ["Foundation"], function()
 
 task ("build", ["Foundation", $COMMONJS_PRODUCT_FOUNDATION]);
 
-//CLOBBER.include($ENVIRONMENT_PRODUCT)
+CLOBBER.include($COMMONJS_PRODUCT_FOUNDATION);

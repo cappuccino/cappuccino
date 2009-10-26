@@ -3,7 +3,7 @@
 require("../common.jake");
 
 
-$BUILD_PATH                 = FILE.join($BUILD_DIR, $CONFIGURATION, 'AppKit');
+$BUILD_PATH = FILE.join($BUILD_DIR, $CONFIGURATION, 'AppKit');
 
 AppKitFiles = new FileList("**/*.j").exclude('CoreGraphics/CGContextCanvas.j', 'CoreGraphics/CGContextVML.j', 'Themes/**/*', 'Tools/**/*');
 
@@ -17,7 +17,7 @@ appKitTask = framework ("AppKit", function(appKitTask)
     appKitTask.setSummary("AppKit classes for Cappuccino");
     appKitTask.setIdentifier("com.280n.AppKit");
     appKitTask.setLicense(BundleTask.License.LGPL_v2_1);
-    appKitTask.setSources(AppKitFiles);//terrible!
+    appKitTask.setSources(AppKitFiles);
     appKitTask.setResources(new FileList("Resources/**/*"));
     appKitTask.setPlatforms([BundleTask.Platform.Browser, BundleTask.Platform.CommonJS]);
     appKitTask.setFlattensSources(true);
@@ -47,4 +47,4 @@ task ("Theme", [$COMMONJS_PRODUCT_APPKIT], function()
 
 task ("build", ["AppKit", $COMMONJS_PRODUCT_APPKIT, "Theme"]);
 
-//CLOBBER.include($ENVIRONMENT_PRODUCT)
+CLOBBER.include($COMMONJS_PRODUCT_APPKIT);

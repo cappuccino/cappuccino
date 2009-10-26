@@ -3,9 +3,8 @@ var FILE = require("file"),
     OS = require("os"),
     UTIL = require("util"),
     Jake = require("jake"),
-    objj_dictionary = require("objective-j").objj_dictionary,
-    compiler = require("objective-j/compiler"),
-    plist = require("objective-j/plist"),
+    CLEAN = require("jake/clean").CLEAN,
+    CLOBBER = require("jake/clean").CLOBBER,
     base64 = require("base64");
 
 var Task = Jake.Task,
@@ -36,7 +35,7 @@ function BundleTask(aName, anApplication)
     this._buildIntermediatesPath = null;
     this._buildPath = FILE.cwd();
 
-    this._replacedFiles = new objj_dictionary();
+    this._replacedFiles = { };
     this._nib2cibFlags = null;
 }
 
@@ -261,7 +260,9 @@ BundleTask.prototype.defineTasks = function()
     this.defineInfoPlistTask();
     this.defineLicenseTask();
     this.defineStaticTask();
-//    CLOBBER.include(build_path)
+
+    CLEAN.include(this.buildIntermediatesProductPath());
+    CLOBBER.include(this.buildPath());
 }
 
 BundleTask.prototype.packageType = function()
@@ -271,16 +272,25 @@ BundleTask.prototype.packageType = function()
 
 BundleTask.prototype.infoPlist = function()
 {
-    var infoPlist = new objj_dictionary();
-    //util = require("util"),
+    var objj_dictionary = require("objective-j").objj_dictionary,
+        infoPlist = new objj_dictionary();
+
     infoPlist.setValue("CPBundleInfoDictionaryVersion", 6.0);
     infoPlist.setValue("CPBundleName", this.productName());
     infoPlist.setValue("CPBundleIdentifier", this.identifier());
     infoPlist.setValue("CPBundleVersion", this.version());
     infoPlist.setValue("CPBundlePackageType", this.packageType());
-    infoPlist.setValue("CPBundleReplacedFiles", this._replacedFiles);
     infoPlist.setValue("CPBundlePlatforms", this.platforms());
     infoPlist.setValue("CPBundleExecutable", this.productName() + ".sj");
+
+    var replacedFiles = this._replacedFiles,
+        replacedFilesDictionary = new objj_dictionary();
+
+    for (var engine in replacedFiles)
+        if (replacedFiles.hasOwnProperty(engine))
+            replacedFilesDictionary.setValue(engine, replacedFiles[engine]);
+
+    infoPlist.setValue("CPBundleReplacedFiles", replacedFilesDictionary);
 
     return infoPlist;
 /*
@@ -303,7 +313,7 @@ BundleTask.prototype.defineInfoPlistTask = function()
 
     filedir (infoPlistProductPath, function()
     {
-        plist.writePlist(infoPlistProductPath, bundleTask.infoPlist());
+        require("objective-j/plist").writePlist(infoPlistProductPath, bundleTask.infoPlist());
     });
 
     this.enhance([infoPlistProductPath]);
@@ -568,7 +578,7 @@ BundleTask.prototype.defineSourceTasks = function()
             filedir (compiledPlatformSource, [aFilename], function()
             {
                 print("Compiling " + aFilename + "...");
-                FILE.write(compiledPlatformSource, compiler.compile(aFilename, flags + " " + compilerFlags), { charset:"UTF-8" });
+                FILE.write(compiledPlatformSource, require("objective-j/compiler").compile(aFilename, flags + " " + compilerFlags), { charset:"UTF-8" });
             });
 
             filedir (staticPath, [compiledPlatformSource]);
@@ -578,7 +588,7 @@ BundleTask.prototype.defineSourceTasks = function()
             replacedFiles.push(flattensSources ? FILE.basename(aFilename) : FILE.relative(sourcesPath, aFilename));
         }, this);
 
-        this._replacedFiles.setValue(aPlatform, replacedFiles);
+        this._replacedFiles[aPlatform] = replacedFiles;
     }, this);
 }
 
