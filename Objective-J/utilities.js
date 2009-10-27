@@ -168,10 +168,7 @@ var _sprintf_justify = function(sign, prefix, string, suffix, width, leftJustify
 
 var _sprintf_pad = function(n, ch)
 {
-    var result = "";
-    for (var i = 0; i < n; i++)
-        result += ch;
-    return result;
+    return Array(MAX(0,n)).join(ch);
 }
 
 // Base64 encoding and decoding
