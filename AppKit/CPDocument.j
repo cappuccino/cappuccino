@@ -311,10 +311,7 @@ var CPDocumentUntitledCount = 0;
     [_windowControllers addObject:aWindowController];
 
     if ([aWindowController document] !== self)
-    {
-        [aWindowController setNextResponder:self];
         [aWindowController setDocument:self];
-    }
 }
 
 - (CPView)view
