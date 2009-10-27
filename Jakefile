@@ -30,7 +30,8 @@ global.$STARTER_DOWNLOAD                = FILE.join($BUILD_DIR, 'Cappuccino', 'S
 global.$STARTER_DOWNLOAD_APPLICATION    = FILE.join($STARTER_DOWNLOAD, 'NewApplication');
 global.$STARTER_DOWNLOAD_README         = FILE.join($STARTER_DOWNLOAD, 'README');
 
-global.$COMMONJS_DEBUG_FRAMEWORKS       = FILE.join($BUILD_DIR, "Release", "CommonJS", "objective-j", "lib", "Frameworks", "Debug");
+global.$COMMONJS                        = FILE.join($BUILD_DIR, "Release", "CommonJS", "objective-j");
+global.$COMMONJS_DEBUG_FRAMEWORKS       = FILE.join($COMMONJS, "objective-j", "lib", "Frameworks", "Debug");
 global.$TOOLS_COMMONJS                  = FILE.join($BUILD_DIR, "Cappuccino", "Tools", "CommonJS", "objective-j");
 
 filedir ($COMMONJS_DEBUG_FRAMEWORKS, ["debug", "release"], function()
@@ -45,13 +46,9 @@ filedir ($COMMONJS_DEBUG_FRAMEWORKS, ["debug", "release"], function()
 
 task ("install", [$COMMONJS_DEBUG_FRAMEWORKS, "release", "debug"], function()
 {
-    print("this is where i install...");
-//    if (OS.system("cd " + $TOOLS_DOWNLOAD + " && tusk install objective-j"))
-//        OS.exist(1); // rake abort if ($? != 0)
-//    var prefix = ENV["prefix"] ? ("--prefix " + ENV["prefix"]) : "";
-
-//    if (OS.system("cd " + $TOOLS_DOWNLOAD + " && sudo sh ./install-tools " + prefix))
-//        OS.exist(1); // rake abort if ($? != 0)
+    // FIXME: require("narwhal/tusk/install").install({}, $COMMONJS);
+    // Doesn't work due to some weird this.print business.
+    OS.system("tusk install " + $COMMONJS);
 });
 
 // Documentation
