@@ -109,6 +109,8 @@ var CPDocumentUntitledCount = 0;
 
     CPURLConnection     _readConnection;
     CPURLRequest        _writeRequest;
+
+    CPAlert             _canCloseAlert;
 }
 
 /*!
@@ -529,6 +531,7 @@ var CPDocumentUntitledCount = 0;
                 _writeRequest = nil;
     
                 objj_msgSend(session.delegate, session.didSaveSelector, self, NO, session.contextInfo);
+                [self _sendDocumentSavedNotification:NO];
             }
         }
     }
@@ -557,6 +560,7 @@ var CPDocumentUntitledCount = 0;
         _writeRequest = nil;
         
         objj_msgSend(session.delegate, session.didSaveSelector, self, YES, session.contextInfo);
+        [self _sendDocumentSavedNotification:YES];
     }
 }
 
@@ -584,6 +588,7 @@ var CPDocumentUntitledCount = 0;
         alert("There was an error saving the document.");
 
         objj_msgSend(session.delegate, session.didSaveSelector, self, NO, session.contextInfo);
+        [self _sendDocumentSavedNotification:NO];
     }
 }
 
@@ -769,16 +774,21 @@ var CPDocumentUntitledCount = 0;
 */
 - (void)saveDocument:(id)aSender
 {
+    [self saveDocumentWithDelegate:nil didSaveSelector:nil contextInfo:nil];
+}
+
+- (void)saveDocumentWithDelegate:(id)delegate didSaveSelector:(SEL)didSaveSelector contextInfo:(Object)contextInfo
+{
     if (_fileURL)
     {
         [[CPNotificationCenter defaultCenter]
             postNotificationName:CPDocumentWillSaveNotification
                           object:self];
         
-        [self saveToURL:_fileURL ofType:[self fileType] forSaveOperation:CPSaveOperation delegate:self didSaveSelector:@selector(document:didSave:contextInfo:) contextInfo:NULL];
+        [self saveToURL:_fileURL ofType:[self fileType] forSaveOperation:CPSaveOperation delegate:delegate didSaveSelector:didSaveSelector contextInfo:contextInfo];
     }
     else
-        [self saveDocumentAs:self];
+        [self _saveDocumentAsWithDelegate:delegate didSaveSelector:didSaveSelector contextInfo:contextInfo];
 }
 
 /*!
@@ -786,6 +796,11 @@ var CPDocumentUntitledCount = 0;
     @param aSender the object requesting the operation
 */
 - (void)saveDocumentAs:(id)aSender
+{
+    [self _saveDocumentAsWithDelegate:nil didSaveSelector:nil contextInfo:nil];
+}
+
+- (void)_saveDocumentAsWithDelegate:(id)delegate didSaveSelector:(SEL)didSaveSelector contextInfo:(Object)contextInfo
 {
     var savePanel = [CPSavePanel savePanel],
         response = [savePanel runModal];
@@ -799,13 +814,13 @@ var CPDocumentUntitledCount = 0;
         postNotificationName:CPDocumentWillSaveNotification
                       object:self];
 
-    [self saveToURL:saveURL ofType:[self fileType] forSaveOperation:CPSaveAsOperation delegate:self didSaveSelector:@selector(document:didSave:contextInfo:) contextInfo:NULL];
+    [self saveToURL:saveURL ofType:[self fileType] forSaveOperation:CPSaveAsOperation delegate:delegate didSaveSelector:didSaveSelector contextInfo:contextInfo];
 }
 
 /*
     @ignore
 */
-- (void)document:(id)aDocument didSave:(BOOL)didSave contextInfo:(id)aContextInfo
+- (void)_sendDocumentSavedNotification:(BOOL)didSave
 {
     if (didSave)
         [[CPNotificationCenter defaultCenter]
@@ -815,6 +830,57 @@ var CPDocumentUntitledCount = 0;
         [[CPNotificationCenter defaultCenter]
             postNotificationName:CPDocumentDidFailToSaveNotification
                           object:self];
+}
+
+@end
+
+@implementation CPDocument (ClosingDocuments)
+
+- (void)shouldCloseWindowController:(CPWindowController)controller delegate:(id)delegate shouldCloseSelector:(SEL)selector contextInfo:(Object)info 
+{
+    if ([controller shouldCloseDocument] || ([_windowControllers count] < 2 && [_windowControllers indexOfObject:controller] !== CPNotFound))
+        [self canCloseDocumentWithDelegate:delegate shouldCloseSelector:selector contextInfo:info];
+    else if ([delegate respondsToSelector:selector])
+        objj_msgSend(delegate, selector, self, YES, info);
+}
+
+- (void)canCloseDocumentWithDelegate:(id)aDelegate shouldCloseSelector:(SEL)aSelector contextInfo:(Object)context 
+{
+    if (![self isDocumentEdited])
+        return [aDelegate respondsToSelector:aSelector] && objj_msgSend(aDelegate, aSelector, self, YES, context);
+
+    _canCloseAlert = [[CPAlert alloc] init];
+
+    [_canCloseAlert setDelegate:self];
+    [_canCloseAlert setAlertStyle:CPWarningAlertStyle];
+    [_canCloseAlert setTitle:@"Unsaved Document"];
+    [_canCloseAlert setMessageText:sprintf(@"Do you want to save the changes you've made to the document \"%@\"?", 
+                                        [self displayName] || [self fileName])];
+
+    [_canCloseAlert addButtonWithTitle:@"Save"];
+    [_canCloseAlert addButtonWithTitle:@"Cancel"];
+    [_canCloseAlert addButtonWithTitle:@"Don't Save"];
+
+    _canCloseAlert._context = {delegate:aDelegate, selector:aSelector, context:context};
+
+    [_canCloseAlert runModal];
+}
+
+- (void)alertDidEnd:(CPAlert)alert returnCode:(int)returnCode
+{
+    if (alert !== _canCloseAlert)
+        return;
+
+    var delegate = alert._context.delegate,
+        selector = alert._context.selector,
+        context = alert._context.context;
+
+    if (returnCode === 0)
+        [self saveDocumentWithDelegate:delegate didSaveSelector:selector contextInfo:context];
+    else
+        objj_msgSend(delegate, selector, self, returnCode === 2, context);
+
+    _canCloseAlert = nil;
 }
 
 @end

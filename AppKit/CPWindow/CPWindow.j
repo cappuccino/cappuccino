@@ -1636,6 +1636,9 @@ CPTexturedBackgroundWindowMask
 */
 - (void)performClose:(id)aSender
 {
+    if (!(_styleMask & CPClosableWindowMask))
+        return;
+
     // Only send ONE windowShouldClose: message.
     if ([_delegate respondsToSelector:@selector(windowShouldClose:)])
     {
@@ -1646,8 +1649,23 @@ CPTexturedBackgroundWindowMask
     // Only check self is delegate does NOT implement this.  This also ensures this when delegate == self (returns true).
     else if ([self respondsToSelector:@selector(windowShouldClose:)] && ![self windowShouldClose:self])
         return;
-    
-    [self close];
+
+    var document = [_windowController document];
+    if (document)
+    {
+        [document shouldCloseWindowController:_windowController 
+                                     delegate:self 
+                          shouldCloseSelector:@selector(_document:shouldClose:contextInfo:)
+                                  contextInfo:nil];
+    }
+    else
+        [self close];
+}
+
+- (void)_document:(CPDocument)document shouldClose:(BOOL)shouldClose contextInfo:(Object)context
+{
+    if (shouldClose)
+        [self close];
 }
 
 /*!
