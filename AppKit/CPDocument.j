@@ -836,6 +836,12 @@ var CPDocumentUntitledCount = 0;
 
 @implementation CPDocument (ClosingDocuments)
 
+- (void)close
+{
+    [_windowControllers makeObjectsPerformSelector:@selector(close)];
+    [[CPDocumentController sharedDocumentController] removeDocument:self];
+}
+
 - (void)shouldCloseWindowController:(CPWindowController)controller delegate:(id)delegate shouldCloseSelector:(SEL)selector contextInfo:(Object)info 
 {
     if ([controller shouldCloseDocument] || ([_windowControllers count] < 2 && [_windowControllers indexOfObject:controller] !== CPNotFound))
