@@ -186,7 +186,9 @@ var CPViewControllerViewKey     = @"CPViewControllerViewKey",
         _view = [aCoder decodeObjectForKey:CPViewControllerViewKey];
         _title = [aCoder decodeObjectForKey:CPViewControllerTitleKey];
         _cibName = [aCoder decodeObjectForKey:CPViewControllerCibNameKey];
-        _cibBundle = [aCoder decodeObjectForKey:CPViewControllerBundleKey] || [CPBundle mainBundle];
+
+        var bundlePath = [aCoder decodeObjectForKey:CPViewControllerBundleKey];
+        _cibBundle = bundlePath ? [CPBundle bundleWithPath:bundlePath] : [CPBundle mainBundle];
 
         _cibExternalNameTable = [CPDictionary dictionaryWithObject:self forKey:CPCibOwner];
     }
@@ -205,7 +207,7 @@ var CPViewControllerViewKey     = @"CPViewControllerViewKey",
     [aCoder encodeObject:_view forKey:CPViewControllerViewKey];
     [aCoder encodeObject:_title forKey:CPViewControllerTitleKey];
     [aCoder encodeObject:_cibName forKey:CPViewControllerCibNameKey];
-    [aCoder encodeObject:_cibBundle forKey:CPViewControllerBundleKey];
+    [aCoder encodeObject:[_cibBundle bundlePath] forKey:CPViewControllerBundleKey];
 }
 
 @end
