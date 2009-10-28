@@ -258,7 +258,6 @@ var CPWindowSaveImage       = nil,
     BOOL                                _isMovableByWindowBackground;
     unsigned                            _shadowStyle;
 
-    BOOL                                _supportsMultipleDocuments;
     BOOL                                _isDocumentEdited;
     BOOL                                _isDocumentSaving;
 
@@ -458,19 +457,6 @@ CPTexturedBackgroundWindowMask
 + (Class)_windowViewClassForFullPlatformWindowStyleMask:(unsigned)aStyleMask
 {
     return _CPBorderlessBridgeWindowView;
-}
-
-- (void)setSupportsMultipleDocuments:(BOOL)shouldSupportMultipleDocuments
-{
-    shouldSupportMultipleDocuments = !!shouldSupportMultipleDocuments;
-
-    // FIXME: throw exception if window controller already has multiple documents and shouldSupportMultipleDocuments === NO
-    _supportsMultipleDocuments = shouldSupportMultipleDocuments;
-}
-
-- (BOOL)supportsMultipleDocuments
-{
-    return _supportsMultipleDocuments;
 }
 
 - (void)awakeFromCib
@@ -1636,6 +1622,9 @@ CPTexturedBackgroundWindowMask
 */
 - (void)performClose:(id)aSender
 {
+    if (!(_styleMask & CPClosableWindowMask))
+        return;
+
     // Only send ONE windowShouldClose: message.
     if ([_delegate respondsToSelector:@selector(windowShouldClose:)])
     {
@@ -1646,8 +1635,45 @@ CPTexturedBackgroundWindowMask
     // Only check self is delegate does NOT implement this.  This also ensures this when delegate == self (returns true).
     else if ([self respondsToSelector:@selector(windowShouldClose:)] && ![self windowShouldClose:self])
         return;
-    
-    [self close];
+
+    var documents = [_windowController documents];
+    if ([documents count])
+    {
+        var index = [documents indexOfObject:[_windowController document]];
+
+        [documents[index] shouldCloseWindowController:_windowController 
+                                             delegate:self 
+                                  shouldCloseSelector:@selector(_document:shouldClose:contextInfo:)
+                                          contextInfo:index];
+    }
+    else
+        [self close];
+}
+
+- (void)_document:(CPDocument)document shouldClose:(BOOL)shouldClose contextInfo:(Object)context
+{
+    if (shouldClose)
+    {
+        var windowController = [self windowController],
+            documents = [windowController documents];
+
+        [documents[context] close];
+
+        var count = [documents count];
+        if (count)
+        {
+            var index = context % count;
+
+            [windowController setDocument:documents[index]];
+
+            [documents[index] shouldCloseWindowController:_windowController 
+                                                 delegate:self 
+                                      shouldCloseSelector:@selector(_document:shouldClose:contextInfo:)
+                                              contextInfo:index];
+        }
+        else
+            [self close];
+    }
 }
 
 /*!

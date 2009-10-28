@@ -2,18 +2,19 @@
 @import <Foundation/CPObject.j>
 
 
-var _CPCibWindowTemplateMinSizeKey              = @"_CPCibWindowTemplateMinSizeKey",
-    _CPCibWindowTemplateMaxSizeKey              = @"_CPCibWindowTemplateMaxSizeKey",
+var _CPCibWindowTemplateMinSizeKey                  = @"_CPCibWindowTemplateMinSizeKey",
+    _CPCibWindowTemplateMaxSizeKey                  = @"_CPCibWindowTemplateMaxSizeKey",
     
-    _CPCibWindowTemplateViewClassKey            = @"_CPCibWindowTemplateViewClassKey",
-    _CPCibWindowTemplateWindowClassKey          = @"_CPCibWindowTemplateWindowClassKey",
+    _CPCibWindowTemplateViewClassKey                = @"_CPCibWindowTemplateViewClassKey",
+    _CPCibWindowTemplateWindowClassKey              = @"_CPCibWindowTemplateWindowClassKey",
     
-    _CPCibWindowTemplateWindowRectKey           = @"_CPCibWindowTemplateWindowRectKey",
-    _CPCibWindowTemplateWindowStyleMaskKey      = @"_CPCibWindowTempatStyleMaskKey",
-    _CPCibWindowTemplateWindowTitleKey          = @"_CPCibWindowTemplateWindowTitleKey",
-    _CPCibWindowTemplateWindowViewKey           = @"_CPCibWindowTemplateWindowViewKey",
+    _CPCibWindowTemplateWindowRectKey               = @"_CPCibWindowTemplateWindowRectKey",
+    _CPCibWindowTemplateWindowStyleMaskKey          = @"_CPCibWindowTempatStyleMaskKey",
+    _CPCibWindowTemplateWindowTitleKey              = @"_CPCibWindowTemplateWindowTitleKey",
+    _CPCibWindowTemplateWindowViewKey               = @"_CPCibWindowTemplateWindowViewKey",
 
-    _CPCibWindowTemplateWindowIsFullBridgeKey   = @"_CPCibWindowTemplateWindowIsFullBridgeKey";
+    _CPCibWindowTemplateWindowAutorecalculatesKeyViewLoop = @"_CPCibWindowTemplateWindowAutorecalculatesKeyViewLoop";
+    _CPCibWindowTemplateWindowIsFullPlatformWindowKey       = @"_CPCibWindowTemplateWindowIsFullPlatformWindowKey";
 
 @implementation _CPCibWindowTemplate : CPObject
 {
@@ -30,7 +31,8 @@ var _CPCibWindowTemplateMinSizeKey              = @"_CPCibWindowTemplateMinSizeK
     CPString    _windowTitle;
     CPView      _windowView;
 
-    BOOL        _windowIsFullBridge;
+    BOOL        _windowAutorecalculatesKeyViewLoop;
+    BOOL        _windowIsFullPlatformWindow;
 }
 
 - (id)init
@@ -46,7 +48,7 @@ var _CPCibWindowTemplateMinSizeKey              = @"_CPCibWindowTemplateMinSizeK
         _windowTitle = @"Window";
         _windowView = [[CPView alloc] initWithFrame:CGRectMake(0.0, 0.0, 400.0, 200.0)];
 
-        _windowIsFullBridge = NO;
+        _windowIsFullPlatformWindow = NO;
     }
 
     return self;
@@ -72,7 +74,8 @@ var _CPCibWindowTemplateMinSizeKey              = @"_CPCibWindowTemplateMinSizeK
         _windowTitle = [aCoder decodeObjectForKey:_CPCibWindowTemplateWindowTitleKey];
         _windowView = [aCoder decodeObjectForKey:_CPCibWindowTemplateWindowViewKey];
 
-        _windowIsFullBridge = [aCoder decodeObjectForKey:_CPCibWindowTemplateWindowIsFullBridgeKey];
+        _windowAutorecalculatesKeyViewLoop = !![aCoder decodeObjectForKey:_CPCibWindowTemplateWindowAutorecalculatesKeyViewLoop];
+        _windowIsFullPlatformWindow = !![aCoder decodeObjectForKey:_CPCibWindowTemplateWindowIsFullPlatformWindowKey];
     }
     
     return self;
@@ -94,7 +97,11 @@ var _CPCibWindowTemplateMinSizeKey              = @"_CPCibWindowTemplateMinSizeK
     [aCoder encodeObject:_windowTitle forKey:_CPCibWindowTemplateWindowTitleKey];
     [aCoder encodeObject:_windowView forKey:_CPCibWindowTemplateWindowViewKey];
 
-    [aCoder encodeObject:_windowIsFullBridge forKey:_CPCibWindowTemplateWindowIsFullBridgeKey];
+    if (_windowAutorecalculatesKeyViewLoop)
+        [aCoder encodeObject:_windowAutorecalculatesKeyViewLoop forKey:_CPCibWindowTemplateWindowAutorecalculatesKeyViewLoop];
+
+    if (_windowIsFullPlatformWindow)
+        [aCoder encodeObject:_windowIsFullPlatformWindow forKey:_CPCibWindowTemplateWindowIsFullPlatformWindowKey];
 }
 
 - (CPString)customClassName
@@ -144,7 +151,8 @@ var _CPCibWindowTemplateMinSizeKey              = @"_CPCibWindowTemplateMinSizeK
        [theWindow setToolbar:_viewClass];
     }
 
-    [theWindow setFullBridge:_windowIsFullBridge];
+    [theWindow setAutorecalculatesKeyViewLoop:_windowAutorecalculatesKeyViewLoop];
+    [theWindow setFullBridge:_windowIsFullPlatformWindow];
 
     return theWindow;
 }
