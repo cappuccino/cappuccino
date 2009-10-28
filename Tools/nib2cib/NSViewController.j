@@ -30,7 +30,11 @@
     self = [super NS_initWithCoder:aCoder];
 
     if (self)
+    {
+        _title = [aCoder decodeObjectForKey:@"NSTitle"];
         _cibName = [aCoder decodeObjectForKey:@"NSNibName"];
+        _cibBundle = [aCoder decodeObjectForKey:@"NSNibBundleIdentifier"];
+    }
 
     return self;
 }

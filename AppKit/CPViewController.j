@@ -167,7 +167,8 @@
 
 var CPViewControllerViewKey     = @"CPViewControllerViewKey",
     CPViewControllerTitleKey    = @"CPViewControllerTitleKey",
-    CPViewControllerCibNameKey  = @"CPViewControllerCibNameKey";
+    CPViewControllerCibNameKey  = @"CPViewControllerCibNameKey",
+    CPViewControllerBundleKey   = @"CPViewControllerBundleKey";
 
 @implementation CPViewController (CPCoding)
 
@@ -185,7 +186,8 @@ var CPViewControllerViewKey     = @"CPViewControllerViewKey",
         _view = [aCoder decodeObjectForKey:CPViewControllerViewKey];
         _title = [aCoder decodeObjectForKey:CPViewControllerTitleKey];
         _cibName = [aCoder decodeObjectForKey:CPViewControllerCibNameKey];
-        _cibBundle = [CPBundle mainBundle];
+        _cibBundle = [aCoder decodeObjectForKey:CPViewControllerBundleKey] || [CPBundle mainBundle];
+
         _cibExternalNameTable = [CPDictionary dictionaryWithObject:self forKey:CPCibOwner];
     }
 
@@ -200,9 +202,10 @@ var CPViewControllerViewKey     = @"CPViewControllerViewKey",
 {
     [super encodeWithCoder:aCoder];
 
-    [aCoder encodeObject:_cibName forKey:CPViewControllerCibNameKey];
     [aCoder encodeObject:_view forKey:CPViewControllerViewKey];
     [aCoder encodeObject:_title forKey:CPViewControllerTitleKey];
+    [aCoder encodeObject:_cibName forKey:CPViewControllerCibNameKey];
+    [aCoder encodeObject:_cibBundle forKey:CPViewControllerBundleKey];
 }
 
 @end
