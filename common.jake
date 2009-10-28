@@ -55,38 +55,43 @@ global.$ENVIRONMENT_FRAMEWORKS_DIR = FILE.join($ENVIRONMENT_LIB_DIR, 'Frameworks
 global.$HOME_DIR        = FILE.absolute(FILE.dirname(module.path));
 global.$LICENSE_FILE    = FILE.absolute(FILE.join(FILE.dirname(module.path), 'LICENSE'));
 
-var objectiveJLibJS = FILE.join($BUILD_DIR, $CONFIGURATION, "CommonJS", "objective-j", "lib-js");
-
-if (!FILE.exists(objectiveJLibJS))
-    objectiveJLibJS = FILE.join($HOME_DIR, "Objective-J", "CommonJS", "objective-j", "lib-js");
-
-require.paths.unshift(objectiveJLibJS);
-
-require("objective-j/loader");
-
-var OBJECTIVE_J_JAKE = require("objective-j/jake");
-
-global.app = OBJECTIVE_J_JAKE.app;
-global.bundle = OBJECTIVE_J_JAKE.bundle;
-global.framework = OBJECTIVE_J_JAKE.framework;
-
-if (OBJECTIVE_J_JAKE.blend)
-    global.blend = OBJECTIVE_J_JAKE.blend;
-
-global.BundleTask = OBJECTIVE_J_JAKE.BundleTask;
-
-var objectiveJBin = FILE.join($BUILD_DIR, $CONFIGURATION, "CommonJS", "objective-j", "bin")
-
-if (!FILE.exists(objectiveJBin))
-    objectiveJBin = FILE.join($HOME_DIR, "Objective-J", "CommonJS", "objective-j", "bin");
-
-var system = OS.system;
-
-// FIXME: is there a better way to do this???
-OS.system = function(aCommand)
+global.setupEnvironment = function()
 {
-    system("PATH=" + OS.enquote(objectiveJBin) + ":$PATH " + aCommand)
+    var objectiveJLibJS = FILE.join($BUILD_DIR, $CONFIGURATION, "CommonJS", "objective-j", "lib-js");
+
+    if (!FILE.exists(objectiveJLibJS))
+        objectiveJLibJS = FILE.join($HOME_DIR, "Objective-J", "CommonJS", "objective-j", "lib-js");
+
+    require.paths.unshift(objectiveJLibJS);
+
+    require("objective-j/loader");
+
+    var OBJECTIVE_J_JAKE = require("objective-j/jake");
+
+    global.app = OBJECTIVE_J_JAKE.app;
+    global.bundle = OBJECTIVE_J_JAKE.bundle;
+    global.framework = OBJECTIVE_J_JAKE.framework;
+
+    if (OBJECTIVE_J_JAKE.blend)
+        global.blend = OBJECTIVE_J_JAKE.blend;
+
+    global.BundleTask = OBJECTIVE_J_JAKE.BundleTask;
+
+    var objectiveJBin = FILE.join($BUILD_DIR, $CONFIGURATION, "CommonJS", "objective-j", "bin")
+
+    if (!FILE.exists(objectiveJBin))
+        objectiveJBin = FILE.join($HOME_DIR, "Objective-J", "CommonJS", "objective-j", "bin");
+
+    var system = OS.system;
+
+    // FIXME: is there a better way to do this???
+    OS.system = function(aCommand)
+    {
+        return system("PATH=" + OS.enquote(objectiveJBin) + ":$PATH " + aCommand);
+    }
 }
+
+setupEnvironment();
 
 global.rm_rf = function(/*String*/ aFilename)
 {

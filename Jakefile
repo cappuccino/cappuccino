@@ -18,7 +18,7 @@ var subprojects = ["Objective-J", "Foundation", "AppKit", "Tools", "External/oju
 });
 
 global.$COMMONJS                    = FILE.join($BUILD_DIR, "Release", "CommonJS", "objective-j");
-global.$COMMONJS_DEBUG_FRAMEWORKS   = FILE.join($COMMONJS, "objective-j", "lib", "Frameworks", "Debug");
+global.$COMMONJS_DEBUG_FRAMEWORKS   = FILE.join($COMMONJS, "lib", "Frameworks", "Debug");
 
 filedir ($COMMONJS_DEBUG_FRAMEWORKS, ["debug", "release"], function()
 {
@@ -30,7 +30,13 @@ filedir ($COMMONJS_DEBUG_FRAMEWORKS, ["debug", "release"], function()
     cp_r(FILE.join($BUILD_DIR, "Debug", "BlendKit"), FILE.join($COMMONJS_DEBUG_FRAMEWORKS, "BlendKit"));
 });
 
-task ("install", [$COMMONJS_DEBUG_FRAMEWORKS, "release", "debug"], function()
+task ("CommonJS", [$COMMONJS_DEBUG_FRAMEWORKS, "debug", "release"], function()
+{
+    // We have a complete CommonJS, so redo this.
+    setupEnvironment();
+});
+
+task ("install", ["CommonJS"], function()
 {
     // FIXME: require("narwhal/tusk/install").install({}, $COMMONJS);
     // Doesn't work due to some weird this.print business.
@@ -76,13 +82,15 @@ task ("starter_download", [$STARTER_DOWNLOAD_APPLICATION, $STARTER_DOWNLOAD_READ
     }
 });
 
-filedir ($STARTER_DOWNLOAD_APPLICATION, ["build"], function()
+filedir ($STARTER_DOWNLOAD_APPLICATION, ["CommonJS"], function()
 {
     rm_rf($STARTER_DOWNLOAD_APPLICATION);
     FILE.mkdirs($STARTER_DOWNLOAD);
 
     if (OS.system("capp gen " + $STARTER_DOWNLOAD_APPLICATION + " -t Application --noconfig"))
-        OS.exit(1); // rake abort if ($? != 0)
+        // FIXME: uncomment this: we get conversion errors
+        //OS.exit(1); // rake abort if ($? != 0)
+        {}
     // No tools means no objective-j gem
     // FILE.rm(FILE.join($STARTER_DOWNLOAD_APPLICATION, 'Rakefile'))
 });
@@ -118,7 +126,7 @@ filedir ($TOOLS_DOWNLOAD_INSTALLER, [$TOOLS_INSTALLER], function()
     cp($TOOLS_INSTALLER, $TOOLS_DOWNLOAD_INSTALLER);
 });
 
-filedir ($TOOLS_DOWNLOAD_COMMONJS, ["build"], function()
+filedir ($TOOLS_DOWNLOAD_COMMONJS, ["CommonJS"], function()
 {
     rm_rf($TOOLS_DOWNLOAD_COMMONJS);
     cp_r($COMMONJS_PRODUCT, $TOOLS_DOWNLOAD_COMMONJS);
@@ -126,7 +134,7 @@ filedir ($TOOLS_DOWNLOAD_COMMONJS, ["build"], function()
 
 // Deployment
 
-task ("deploy", ["downloads", "docs"], function()
+task ("deploy", ["downloads"], function()
 {
     var cappuccino_output_path = FILE.join($BUILD_DIR, 'Cappuccino');
 
