@@ -166,14 +166,16 @@
 
 
 var CPViewControllerViewKey     = @"CPViewControllerViewKey",
-    CPViewControllerTitleKey    = @"CPViewControllerTitleKey";
+    CPViewControllerTitleKey    = @"CPViewControllerTitleKey",
+    CPViewControllerCibNameKey  = @"CPViewControllerCibNameKey",
+    CPViewControllerBundleKey   = @"CPViewControllerBundleKey";
 
 @implementation CPViewController (CPCoding)
 
 /*!
-    Initializes the view item by unarchiving data from a coder.
+    Initializes the view controller by unarchiving data from a coder.
     @param aCoder the coder from which the data will be unarchived
-    @return the initialized collection view item
+    @return the initialized view controller
 */
 - (id)initWithCoder:(CPCoder)aCoder
 {
@@ -183,14 +185,20 @@ var CPViewControllerViewKey     = @"CPViewControllerViewKey",
     {
         _view = [aCoder decodeObjectForKey:CPViewControllerViewKey];
         _title = [aCoder decodeObjectForKey:CPViewControllerTitleKey];
+        _cibName = [aCoder decodeObjectForKey:CPViewControllerCibNameKey];
+
+        var bundlePath = [aCoder decodeObjectForKey:CPViewControllerBundleKey];
+        _cibBundle = bundlePath ? [CPBundle bundleWithPath:bundlePath] : [CPBundle mainBundle];
+
+        _cibExternalNameTable = [CPDictionary dictionaryWithObject:self forKey:CPCibOwner];
     }
 
     return self;
 }
 
 /*!
-    Archives the colletion view item to the provided coder.
-    @param aCoder the coder to which the view item should be archived
+    Archives the view controller to the provided coder.
+    @param aCoder the coder to which the view controller should be archived
 */
 - (void)encodeWithCoder:(CPCoder)aCoder
 {
@@ -198,6 +206,8 @@ var CPViewControllerViewKey     = @"CPViewControllerViewKey",
 
     [aCoder encodeObject:_view forKey:CPViewControllerViewKey];
     [aCoder encodeObject:_title forKey:CPViewControllerTitleKey];
+    [aCoder encodeObject:_cibName forKey:CPViewControllerCibNameKey];
+    [aCoder encodeObject:[_cibBundle bundlePath] forKey:CPViewControllerBundleKey];
 }
 
 @end

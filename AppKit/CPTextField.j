@@ -269,8 +269,8 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 
                 if (aDOMEvent && aDOMEvent.keyCode == CPReturnKeyCode)
                 {
-                    [owner sendAction:[owner action] to:[owner target]];    
-                    [[owner window] makeFirstResponder:nil];
+                    [owner sendAction:[owner action] to:[owner target]];
+                    [owner selectText:nil];
                 }
                 else if (aDOMEvent && aDOMEvent.keyCode == CPTabKeyCode)
                 {
@@ -665,6 +665,9 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 
     //post CPControlTextDidEndEditingNotification
     [self textDidEndEditing:[CPNotification notificationWithName:CPControlTextDidEndEditingNotification object:self userInfo:nil]];
+
+    if ([self sendsActionOnEndEditing])
+        [self sendAction:[self action] to:[self target]];    
 
     return YES;
 }

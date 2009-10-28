@@ -323,3 +323,38 @@ var CPSharedDocumentController = nil;
 }
 
 @end
+
+@implementation CPDocumentController (Closing)
+
+- (void)closeAllDocumentsWithDelegate:(id)aDelegate didCloseAllSelector:(SEL)didCloseSelector contextInfo:(Object)info 
+{
+    var context = {
+        delegate: aDelegate,
+        selector: didCloseSelector,
+        context: info
+    };
+
+    [self _closeDocumentsStartingWith:nil shouldClose:YES context:context];
+}
+
+// Recursive callback method. Start it by passing in a document of nil.
+- (void)_closeDocumentsStartingWith:(CPDocument)aDocument shouldClose:(BOOL)shouldClose context:(Object)context
+{
+    if (shouldClose)
+    {
+        [aDocument close];
+
+        if ([[self documents] count] > 0)
+        {
+            [[[self documents] lastObject] canCloseDocumentWithDelegate:self
+                                                    shouldCloseSelector:@selector(_closeDocumentsStartingWith:shouldClose:context:)
+                                                            contextInfo:context];
+            return;
+        }
+    }
+
+    if ([context.delegate respondsToSelector:context.selector])
+        objj_msgSend(context.delegate, context.selector, self, [[self documents] count] === 0, context.context);
+}
+
+@end
