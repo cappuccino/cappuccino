@@ -120,59 +120,60 @@ function gen(/*va_args*/)
         print("Directory already exists");
 }
 
-
-function createFrameworksInFile(/*String*/ aFile, /*Boolean*/ shouldSymbolicallyLink, /*Boolean*/ force)
+function createFrameworksInFile(/*String*/ aFile, /*Boolean*/ symlink, /*Boolean*/ force)
 {
-    if (!FILE.isDirectory(aFile))
-        throw new Error("Can't create Frameworks. Directory does not exist: " + aFile);
+    var destination = FILE.path(aFile);
+    
+    if (!destination.isDirectory())
+        throw new Error("Can't create Frameworks. Directory does not exist: " + destination);
+    
+    if (symlink && !(SYSTEM.env["CAPP_BUILD"] || SYSTEM.env["STEAM_BUILD"]))
+        throw "CAPP_BUILD or STEAM_BUILD must be defined";
+
+    var installedFrameworks = FILE.path(FILE.join(OBJJ.OBJJ_HOME, "lib", "Frameworks")),
+        builtFrameworks = FILE.path(SYSTEM.env["CAPP_BUILD"] || SYSTEM.env["STEAM_BUILD"]);
+    
+    var sourceFrameworks = symlink ? builtFrameworks.join("Release") : installedFrameworks,
+        sourceDebugFrameworks = symlink ? builtFrameworks.join("Debug") : installedFrameworks.join("Debug");
         
-    var destinationFrameworks = FILE.join(aFile, "Frameworks"),
-        destinationDebugFrameworks = FILE.join(aFile, "Frameworks", "Debug");
-        
-    if (FILE.exists(destinationFrameworks))
-    {
-        if (force)
-        {
-            print("Updating existing Frameworks directory.");
-            
-            FILE.rmTree(destinationFrameworks);
-        }
-        else
-        {
-            print("Frameworks directory already exists. Use --force to overwrite.");
+    var destinationFrameworks = destination.join("Frameworks"),
+        destinationDebugFrameworks = destination.join("Frameworks", "Debug");
+    
+    print("Creating Frameworks directory in " + destinationFrameworks + ".");
+    
+    //destinationFrameworks.mkdirs(); // redundant
+    destinationDebugFrameworks.mkdirs();
+    
+    ["Objective-J", "Foundation", "AppKit"].forEach(function(framework) {
+        installFramework(
+            sourceFrameworks.join(framework),
+            destinationFrameworks.join(framework),
+            force, symlink);
+        installFramework(
+            sourceDebugFrameworks.join(framework),
+            destinationDebugFrameworks.join(framework),
+            force, symlink);
+    });
+}
+
+function installFramework(source, dest, force, symlink) {
+    if (dest.exists()) {
+        if (force) {
+            dest.rmtree();
+        } else {
+            print("Warning: " + dest + " already exists. Use --force to overwrite.");
             return;
         }
     }
-    else    
-        print("Creating Frameworks directory in " + destinationFrameworks + ".");
-
-    if (!shouldSymbolicallyLink)
-    {
-        var sourceFrameworks = FILE.join(OBJJ.OBJJ_HOME + "lib", "Frameworks");
-    
-        FILE.copyTree(sourceFrameworks, destinationFrameworks);
-
-        return;
+    if (source.exists()) {
+        print((symlink ? "Symlinking " : "Copying ") + source + " to " + dest);
+        if (symlink)
+            FILE.symlink(source, dest);
+        else
+            FILE.copyTree(source, dest);
     }
-    
-    var BUILD = SYSTEM.env["CAPP_BUILD"] || SYSTEM.env["STEAM_BUILD"];
-    
-    if (!BUILD)
-        throw "CAPP_BUILD or STEAM_BUILD must be defined";
-
-    // Release Frameworks
-    FILE.mkdirs(destinationFrameworks);
-
-    FILE.symlink(FILE.join(BUILD, "Release", "Objective-J"), FILE.join(destinationFrameworks, "Objective-J"));
-    FILE.symlink(FILE.join(BUILD, "Release", "Foundation"), FILE.join(destinationFrameworks, "Foundation"));
-    FILE.symlink(FILE.join(BUILD, "Release", "AppKit"), FILE.join(destinationFrameworks, "AppKit"));
-
-    // Debug Frameworks
-    FILE.mkdirs(destinationDebugFrameworks);
-
-    FILE.symlink(FILE.join(BUILD, "Debug", "Objective-J"), FILE.join(destinationDebugFrameworks, "Objective-J"));
-    FILE.symlink(FILE.join(BUILD, "Debug", "Foundation"), FILE.join(destinationDebugFrameworks, "Foundation"));
-    FILE.symlink(FILE.join(BUILD, "Debug", "AppKit"), FILE.join(destinationDebugFrameworks, "AppKit"));
+    else
+        print("Warning: "+source+" doesn't exist.");
 }
 
 function toIdentifier(/*String*/ aString)
