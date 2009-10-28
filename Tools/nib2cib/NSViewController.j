@@ -27,14 +27,17 @@
 
 - (id)NS_initWithCoder:(CPCoder)aCoder
 {
-    return [super NS_initWithCoder:aCoder];
+    self = [super NS_initWithCoder:aCoder];
+
+    if (self)
+        _cibName = [aCoder decodeObjectForKey:@"NSNibName"];
+
+    return self;
 }
 
 @end
 
 @implementation NSViewController : CPViewController
-{
-}
 
 - (id)initWithCoder:(CPCoder)aCoder
 {
