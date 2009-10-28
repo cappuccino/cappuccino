@@ -43,7 +43,7 @@
 
 - (Class)classForKeyedArchiver
 {
-    return [CPCollectionView class];
+    return [CPViewController class];
 }
 
 @end
