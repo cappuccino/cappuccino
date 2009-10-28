@@ -7,9 +7,9 @@ var FILE = require("file"),
 
 require(FILE.absolute("common.jake"));
 
-var subprojects = [/*"External", */"Objective-J", "Foundation", "AppKit", "Tools", "External/ojunit"];
+var subprojects = ["Objective-J", "Foundation", "AppKit", "Tools", "External/ojunit"];
 
-["build", "clean", "clobber"].forEach(function(/*String*/ aTaskName)
+["build", "clean", "clobber"].forEach(function(aTaskName)
 {
     task (aTaskName, function()
     {
@@ -17,22 +17,8 @@ var subprojects = [/*"External", */"Objective-J", "Foundation", "AppKit", "Tools
     });
 });
 
-global.$TOOLS_README                    = FILE.join('Tools', 'READMEs', 'TOOLS-README');
-global.$TOOLS_EDITORS                   = FILE.join('Tools', 'Editors');
-global.$TOOLS_INSTALLER                 = FILE.join('Tools', 'Install', 'install-tools');
-global.$TOOLS_DOWNLOAD                  = FILE.join($BUILD_DIR, 'Cappuccino', 'Tools');
-global.$TOOLS_DOWNLOAD_EDITORS          = FILE.join($TOOLS_DOWNLOAD, 'Editors');
-global.$TOOLS_DOWNLOAD_README           = FILE.join($TOOLS_DOWNLOAD, 'README');
-global.$TOOLS_DOWNLOAD_INSTALLER        = FILE.join($TOOLS_DOWNLOAD, 'install-tools');
-
-global.$STARTER_README                  = FILE.join('Tools', 'READMEs', 'STARTER-README');
-global.$STARTER_DOWNLOAD                = FILE.join($BUILD_DIR, 'Cappuccino', 'Starter');
-global.$STARTER_DOWNLOAD_APPLICATION    = FILE.join($STARTER_DOWNLOAD, 'NewApplication');
-global.$STARTER_DOWNLOAD_README         = FILE.join($STARTER_DOWNLOAD, 'README');
-
-global.$COMMONJS                        = FILE.join($BUILD_DIR, "Release", "CommonJS", "objective-j");
-global.$COMMONJS_DEBUG_FRAMEWORKS       = FILE.join($COMMONJS, "objective-j", "lib", "Frameworks", "Debug");
-global.$TOOLS_COMMONJS                  = FILE.join($BUILD_DIR, "Cappuccino", "Tools", "CommonJS", "objective-j");
+global.$COMMONJS                    = FILE.join($BUILD_DIR, "Release", "CommonJS", "objective-j");
+global.$COMMONJS_DEBUG_FRAMEWORKS   = FILE.join($COMMONJS, "objective-j", "lib", "Frameworks", "Debug");
 
 filedir ($COMMONJS_DEBUG_FRAMEWORKS, ["debug", "release"], function()
 {
@@ -55,6 +41,8 @@ task ("install", [$COMMONJS_DEBUG_FRAMEWORKS, "release", "debug"], function()
 
 $DOCUMENTATION_BUILD = FILE.join($BUILD_DIR, "Documentation");
 
+task ("docs", ["documentation"]);
+
 task ("documentation", function()
 {
     if (executableExists("doxygen"))
@@ -70,11 +58,50 @@ task ("documentation", function()
         print("doxygen not installed. skipping documentation generation.");
 });
 
-task ("docs", ["documentation"]);
-
 // Downloads
 
 task ("downloads", ["starter_download", "tools_download"]);
+
+$STARTER_README                 = FILE.join('Tools', 'READMEs', 'STARTER-README');
+$STARTER_DOWNLOAD               = FILE.join($BUILD_DIR, 'Cappuccino', 'Starter');
+$STARTER_DOWNLOAD_APPLICATION   = FILE.join($STARTER_DOWNLOAD, 'NewApplication');
+$STARTER_DOWNLOAD_README        = FILE.join($STARTER_DOWNLOAD, 'README');
+
+task ("starter_download", [$STARTER_DOWNLOAD_APPLICATION, $STARTER_DOWNLOAD_README, "documentation"], function()
+{
+    if (FILE.exists($DOCUMENTATION_BUILD))
+    {
+        rm_rf(FILE.join($STARTER_DOWNLOAD, 'Documentation'));
+        cp_r(FILE.join($DOCUMENTATION_BUILD, 'html', '.'), FILE.join($STARTER_DOWNLOAD, 'Documentation'));
+    }
+});
+
+filedir ($STARTER_DOWNLOAD_APPLICATION, ["build"], function()
+{
+    rm_rf($STARTER_DOWNLOAD_APPLICATION);
+    FILE.mkdirs($STARTER_DOWNLOAD);
+
+    if (OS.system("capp gen " + $STARTER_DOWNLOAD_APPLICATION + " -t Application --noconfig"))
+        OS.exit(1); // rake abort if ($? != 0)
+    // No tools means no objective-j gem
+    // FILE.rm(FILE.join($STARTER_DOWNLOAD_APPLICATION, 'Rakefile'))
+});
+
+filedir ($STARTER_DOWNLOAD_README, [$STARTER_README], function()
+{
+    cp($STARTER_README, $STARTER_DOWNLOAD_README);
+});
+
+$TOOLS_README                   = FILE.join('Tools', 'READMEs', 'TOOLS-README');
+$TOOLS_EDITORS                  = FILE.join('Tools', 'Editors');
+$TOOLS_INSTALLER                = FILE.join('Tools', 'Install', 'install-tools');
+$TOOLS_DOWNLOAD                 = FILE.join($BUILD_DIR, 'Cappuccino', 'Tools');
+$TOOLS_DOWNLOAD_EDITORS         = FILE.join($TOOLS_DOWNLOAD, 'Editors');
+$TOOLS_DOWNLOAD_README          = FILE.join($TOOLS_DOWNLOAD, 'README');
+$TOOLS_DOWNLOAD_INSTALLER       = FILE.join($TOOLS_DOWNLOAD, 'install-tools');
+$TOOLS_DOWNLOAD_COMMONJS        = FILE.join($BUILD_DIR, "Cappuccino", "Tools", "CommonJS", "objective-j");
+
+task ("tools_download", [$TOOLS_DOWNLOAD_EDITORS, $TOOLS_DOWNLOAD_README, $TOOLS_DOWNLOAD_INSTALLER, $TOOLS_DOWNLOAD_COMMONJS]);
 
 filedir ($TOOLS_DOWNLOAD_EDITORS, [$TOOLS_EDITORS], function()
 {
@@ -91,21 +118,16 @@ filedir ($TOOLS_DOWNLOAD_INSTALLER, [$TOOLS_INSTALLER], function()
     cp($TOOLS_INSTALLER, $TOOLS_DOWNLOAD_INSTALLER);
 });
 
-task ("tools_download", [$TOOLS_DOWNLOAD_EDITORS, $TOOLS_DOWNLOAD_README, $TOOLS_DOWNLOAD_INSTALLER, $TOOLS_COMMONJS]);
-
-task ("starter_download", [$STARTER_DOWNLOAD_APPLICATION, $STARTER_DOWNLOAD_README]);
-
-filedir ($TOOLS_COMMONJS, ["build"], function()
+filedir ($TOOLS_DOWNLOAD_COMMONJS, ["build"], function()
 {
-    rm_rf($TOOLS_COMMONJS);
-    cp_r($COMMONJS_PRODUCT, $TOOLS_COMMONJS);
+    rm_rf($TOOLS_DOWNLOAD_COMMONJS);
+    cp_r($COMMONJS_PRODUCT, $TOOLS_DOWNLOAD_COMMONJS);
 });
+
+// Deployment
 
 task ("deploy", ["downloads", "docs"], function()
 {
-    // copy the docs into the starter pack
-    cp_r(FILE.join($DOCUMENTATION_BUILD, 'html', '.'), FILE.join($STARTER_DOWNLOAD, 'Documentation'));
-
     var cappuccino_output_path = FILE.join($BUILD_DIR, 'Cappuccino');
 
     // zip the starter pack
@@ -121,24 +143,7 @@ task ("deploy", ["downloads", "docs"], function()
     OS.system("cd " + cappuccino_output_path + " && zip -ry -8 Tools.zip Tools");
 });
 
-filedir ($STARTER_DOWNLOAD_APPLICATION, ["build"], function()
-{
-    //ENV["PATH"] = FILE.join($TOOLS_DOWNLOAD_ENV, "bin") + ':' + ENV["PATH"];
-
-    rm_rf($STARTER_DOWNLOAD_APPLICATION);
-    FILE.mkdirs($STARTER_DOWNLOAD);
-
-    if (OS.system("capp gen " + $STARTER_DOWNLOAD_APPLICATION + " -t Application --noconfig"))
-        OS.exit(1); // rake abort if ($? != 0)
-
-    // No tools means no objective-j gem
-    // FILE.rm(FILE.join($STARTER_DOWNLOAD_APPLICATION, 'Rakefile'))
-});
-
-filedir ($STARTER_DOWNLOAD_README, [$STARTER_README], function()
-{
-    cp($STARTER_README, $STARTER_DOWNLOAD_README);
-});
+// Testing
 
 task ("test", ["build"], function()
 {
@@ -155,7 +160,3 @@ task ("test", ["build"], function()
     else
         print(build_result);
 });
-
-/*
-TODO: zip/tar.        
-*/
