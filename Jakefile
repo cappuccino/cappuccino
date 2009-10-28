@@ -48,7 +48,7 @@ task ("install", [$COMMONJS_DEBUG_FRAMEWORKS, "release", "debug"], function()
 {
     // FIXME: require("narwhal/tusk/install").install({}, $COMMONJS);
     // Doesn't work due to some weird this.print business.
-    OS.system("tusk install " + $COMMONJS);
+    OS.system("tusk install --force " + $COMMONJS);
 });
 
 // Documentation
