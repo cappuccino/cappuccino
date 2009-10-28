@@ -258,7 +258,6 @@ var CPWindowSaveImage       = nil,
     BOOL                                _isMovableByWindowBackground;
     unsigned                            _shadowStyle;
 
-    BOOL                                _supportsMultipleDocuments;
     BOOL                                _isDocumentEdited;
     BOOL                                _isDocumentSaving;
 
@@ -458,19 +457,6 @@ CPTexturedBackgroundWindowMask
 + (Class)_windowViewClassForFullPlatformWindowStyleMask:(unsigned)aStyleMask
 {
     return _CPBorderlessBridgeWindowView;
-}
-
-- (void)setSupportsMultipleDocuments:(BOOL)shouldSupportMultipleDocuments
-{
-    shouldSupportMultipleDocuments = !!shouldSupportMultipleDocuments;
-
-    // FIXME: throw exception if window controller already has multiple documents and shouldSupportMultipleDocuments === NO
-    _supportsMultipleDocuments = shouldSupportMultipleDocuments;
-}
-
-- (BOOL)supportsMultipleDocuments
-{
-    return _supportsMultipleDocuments;
 }
 
 - (void)awakeFromCib
@@ -1650,13 +1636,15 @@ CPTexturedBackgroundWindowMask
     else if ([self respondsToSelector:@selector(windowShouldClose:)] && ![self windowShouldClose:self])
         return;
 
-    var document = [_windowController document];
-    if (document)
+    var documents = [_windowController documents];
+    if ([documents count])
     {
-        [document shouldCloseWindowController:_windowController 
-                                     delegate:self 
-                          shouldCloseSelector:@selector(_document:shouldClose:contextInfo:)
-                                  contextInfo:nil];
+        var index = [documents indexOfObject:[_windowController document]];
+
+        [documents[index] shouldCloseWindowController:_windowController 
+                                             delegate:self 
+                                  shouldCloseSelector:@selector(_document:shouldClose:contextInfo:)
+                                          contextInfo:index];
     }
     else
         [self close];
@@ -1665,7 +1653,27 @@ CPTexturedBackgroundWindowMask
 - (void)_document:(CPDocument)document shouldClose:(BOOL)shouldClose contextInfo:(Object)context
 {
     if (shouldClose)
-        [self close];
+    {
+        var windowController = [self windowController],
+            documents = [windowController documents];
+
+        [documents[context] close];
+
+        var count = [documents count];
+        if (count)
+        {
+            var index = context % count;
+
+            [windowController setDocument:documents[index]];
+
+            [documents[index] shouldCloseWindowController:_windowController 
+                                                 delegate:self 
+                                      shouldCloseSelector:@selector(_document:shouldClose:contextInfo:)
+                                              contextInfo:index];
+        }
+        else
+            [self close];
+    }
 }
 
 /*!

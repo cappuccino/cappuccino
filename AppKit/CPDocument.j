@@ -282,11 +282,12 @@ var CPDocumentUntitledCount = 0;
             var view = [viewController view],
                 theWindow = [[CPWindow alloc] initWithContentRect:[view frame] styleMask:CPTitledWindowMask | CPClosableWindowMask | CPMiniaturizableWindowMask | CPResizableWindowMask];
 
-            [theWindow setSupportsMultipleDocuments:YES];
-
             windowController = [[CPWindowController alloc] initWithWindow:theWindow];
         }
     }
+
+    if (windowController && viewController)
+        [windowController setSupportsMultipleDocuments:YES];
 
     if (windowController)
         [self addWindowController:windowController];
@@ -838,7 +839,7 @@ var CPDocumentUntitledCount = 0;
 
 - (void)close
 {
-    [_windowControllers makeObjectsPerformSelector:@selector(close)];
+    [_windowControllers makeObjectsPerformSelector:@selector(removeDocumentAndCloseIfNecessary:) withObject:self];
     [[CPDocumentController sharedDocumentController] removeDocument:self];
 }
 
@@ -846,6 +847,7 @@ var CPDocumentUntitledCount = 0;
 {
     if ([controller shouldCloseDocument] || ([_windowControllers count] < 2 && [_windowControllers indexOfObject:controller] !== CPNotFound))
         [self canCloseDocumentWithDelegate:delegate shouldCloseSelector:selector contextInfo:info];
+
     else if ([delegate respondsToSelector:selector])
         objj_msgSend(delegate, selector, self, YES, info);
 }

@@ -43,8 +43,10 @@
 {
     CPWindow            _window;
 
+    CPArray             _documents;
     CPDocument          _document;
     BOOL                _shouldCloseDocument;
+    BOOL                _supportsMultipleDocuments;
 
     id                  _cibOwner;
     CPString            _windowCibName;
@@ -74,6 +76,8 @@
         [self setShouldCloseDocument:NO];
 
         [self setNextResponder:CPApp];
+
+        _documents = [];
     }
 
     return self;
@@ -220,6 +224,9 @@
 
     if (_document)
     {
+        if (![self supportsMultipleDocuments])
+            [self removeDocument:_document];
+        
         [defaultCenter removeObserver:self
                                  name:CPDocumentWillSaveNotification
                                object:_document];
@@ -237,6 +244,8 @@
 
     if (_document)
     {
+        [self addDocument:_document];
+
         [defaultCenter addObserver:self
                           selector:@selector(_documentWillSave:)
                               name:CPDocumentWillSaveNotification
@@ -261,6 +270,48 @@
         [self setViewController:viewController];
 
     [self synchronizeWindowTitleWithDocumentName];
+}
+
+- (void)setSupportsMultipleDocuments:(BOOL)shouldSupportMultipleDocuments
+{
+    _supportsMultipleDocuments = shouldSupportMultipleDocuments;
+}
+
+- (BOOL)supportsMultipleDocuments
+{
+    return _supportsMultipleDocuments;
+}
+
+- (void)addDocument:(CPDocument)aDocument
+{
+    if (aDocument && ![_documents containsObject:aDocument])
+        [_documents addObject:aDocument];
+}
+
+- (void)removeDocument:(CPDocument)aDocument
+{
+    var index = [_documents indexOfObjectIdenticalTo:aDocument];
+
+    if (index === CPNotFound)
+        return;
+
+    [_documents removeObjectAtIndex:index];
+
+    if (_document === aDocument && [_documents count])
+        [self setDocument:[_documents objectAtIndex:MIN(index, [_documents count] - 1)]];
+}
+
+- (void)removeDocumentAndCloseIfNecessary:(CPDocument)aDocument
+{
+    [self removeDocument:aDocument];
+
+    if (![_documents count])
+        [self close];
+}
+
+- (CPArray)documents
+{
+    return _documents;
 }
 
 - (void)setViewController:(CPViewController)aViewController

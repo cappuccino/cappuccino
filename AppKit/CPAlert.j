@@ -302,11 +302,11 @@ var CPAlertWarningImage,
 /* @ignore */
 - (void)_notifyDelegate:(id)button
 {
-    if (_delegate && [_delegate respondsToSelector:@selector(alertDidEnd:returnCode:)])
-        [_delegate alertDidEnd:self returnCode:[button tag]];
-
     [CPApp abortModal];
     [_alertPanel close];
+
+    if (_delegate && [_delegate respondsToSelector:@selector(alertDidEnd:returnCode:)])
+        [_delegate alertDidEnd:self returnCode:[button tag]];
 }
 
 @end
