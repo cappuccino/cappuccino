@@ -27,6 +27,7 @@
 
 @import "NSFont.j"
 
+
 @implementation NSCell : CPObject
 {
     int             _state          @accessors(readonly, getter=state);
