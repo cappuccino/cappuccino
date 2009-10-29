@@ -701,8 +701,10 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 */
 - (void)_setStringValue:(id)aValue
 {
+    [self willChangeValueForKey:@"objectValue"];
     [super setObjectValue:String(aValue)];
     [self _updatePlaceholderState];
+    [self didChangeValueForKey:@"objectValue"];
 }
 
 - (void)setObjectValue:(id)aValue
