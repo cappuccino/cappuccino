@@ -22,6 +22,8 @@
 
 @import <AppKit/_CPCibObjectData.j>
 
+@import "NSCell.j"
+
 
 @implementation _CPCibObjectData (NSCoding)
 
