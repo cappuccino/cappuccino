@@ -22,6 +22,8 @@
 
 @import <AppKit/_CPCibObjectData.j>
 
+@import "NSCell.j"
+
 
 @implementation _CPCibObjectData (NSCoding)
 
@@ -58,6 +60,8 @@
         _objectsKeys = [aCoder decodeObjectForKey:@"NSObjectsKeys"];
         _objectsValues = [aCoder decodeObjectForKey:@"NSObjectsValues"];
 
+        [self removeCellsFromObjectGraph];
+
         //_oidKeys = [aCoder decodeObjectForKey:@"NSOidsKeys"];
         //_oidValues = [aCoder decodeObjectForKey:@"NSOidsValues"];
 
@@ -66,6 +70,68 @@
     }
 
     return self;
+}
+
+- (void)removeCellsFromObjectGraph
+{
+    // FIXME: Remove from top level objects and connections?
+
+    // Most cell references should be naturally removed by the fact that we don't manually 
+    // encode them anywhere, however, they remain in our object graph. For each cell found, 
+    // take its children and promote them to our parent object's children.
+    var count = _objectsKeys.length,
+        parentForCellUIDs = { },
+        promotedChildrenForCellUIDs = { };
+
+    while (count--)
+    {
+        var child = _objectsKeys[count];
+
+        if (!child)
+            continue;
+
+        var parent = _objectsValues[count];
+
+        // If this object is a cell, remember it's parent.
+        if ([child isKindOfClass:[NSCell class]])
+        {
+            parentForCellUIDs[[child UID]] = parent;
+            continue;
+        }
+
+        // If parent also isn't a cell, we don't care about it.
+        if (![parent isKindOfClass:[NSCell class]])
+            continue;
+
+        // Remember this child for later promotion.
+        var parentUID = [parent UID],
+            children = promotedChildrenForCellUIDs[parentUID];
+
+        if (!children)
+        {
+            children = [];
+            promotedChildrenForCellUIDs[parentUID] = children;
+        }
+
+        children.push(child);
+
+        _objectsKeys.splice(count, 1);
+        _objectsValues.splice(count, 1);
+    }
+
+    for (var cellUID in promotedChildrenForCellUIDs)
+        if (promotedChildrenForCellUIDs.hasOwnProperty(cellUID))
+        {
+            var children = promotedChildrenForCellUIDs[cellUID],
+                parent = parentForCellUIDs[cellUID];
+
+            children.forEach(function(aChild)
+            {
+                CPLog.warn("Promoted " + aChild + " to child of " + parent);
+                _objectsKeys.push(aChild);
+                _objectsValues.push(parent);
+            });
+        }
 }
 
 @end
