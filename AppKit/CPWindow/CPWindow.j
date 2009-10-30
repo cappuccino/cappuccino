@@ -1643,33 +1643,33 @@ CPTexturedBackgroundWindowMask
 
         [documents[index] shouldCloseWindowController:_windowController 
                                              delegate:self 
-                                  shouldCloseSelector:@selector(_document:shouldClose:contextInfo:)
-                                          contextInfo:index];
+                                  shouldCloseSelector:@selector(_windowControllerContainingDocument:shouldClose:contextInfo:)
+                                          contextInfo:{documents:[documents copy], visited:0, index:index}];
     }
     else
         [self close];
 }
 
-- (void)_document:(CPDocument)document shouldClose:(BOOL)shouldClose contextInfo:(Object)context
+- (void)_windowControllerContainingDocument:(CPDocument)document shouldClose:(BOOL)shouldClose contextInfo:(Object)context
 {
     if (shouldClose)
     {
         var windowController = [self windowController],
-            documents = [windowController documents];
+            documents = context.documents,
+            count = [documents count],
+            visited = ++context.visited,
+            index = ++context.index % count;
 
-        [documents[context] close];
+        [document removeWindowController:windowController];
 
-        var count = [documents count];
-        if (count)
+        if (visited < count)
         {
-            var index = context % count;
-
             [windowController setDocument:documents[index]];
 
             [documents[index] shouldCloseWindowController:_windowController 
                                                  delegate:self 
-                                      shouldCloseSelector:@selector(_document:shouldClose:contextInfo:)
-                                              contextInfo:index];
+                                      shouldCloseSelector:@selector(_windowControllerContainingDocument:shouldClose:contextInfo:)
+                                              contextInfo:context];
         }
         else
             [self close];
@@ -1682,9 +1682,9 @@ CPTexturedBackgroundWindowMask
 */
 - (void)close
 {
-   [[CPNotificationCenter defaultCenter] postNotificationName:CPWindowWillCloseNotification object:self];
+    [[CPNotificationCenter defaultCenter] postNotificationName:CPWindowWillCloseNotification object:self];
 
-   [self orderOut:nil];
+    [self orderOut:nil];
 }
 
 // Managing Main Status

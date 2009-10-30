@@ -127,6 +127,11 @@ var CPDateReferenceDate = new Date(Date.UTC(2001,1,1,0,0,0,0));
     return [[CPDate date] timeIntervalSinceReferenceDate];
 }
 
+- (BOOL)isEqual:(CPDate)aDate
+{
+    return [self isEqualToDate:aDate];
+}
+
 - (BOOL)isEqualToDate:(CPDate)anotherDate
 {
     return !(self < anotherDate || self > anotherDate);
