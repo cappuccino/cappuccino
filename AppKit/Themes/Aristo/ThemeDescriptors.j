@@ -449,6 +449,41 @@
     return button;
 }
 
++ (CPRadioButton)themedMixedCheckBoxButton
+{
+    button = [self themedCheckBoxButton];
+
+    [button setAllowsMixedState:YES];
+    [button setState:CPMixedState];
+
+    var mixedSelectedColor = 
+        PatternColor([[CPThreePartImage alloc] initWithImageSlices:
+            [
+                [_CPCibCustomResource imageResourceWithName:"check-box-bezel-mixed-highlighted.png" size:CGSizeMake(15.0, 16.0)], nil, nil
+            ]
+        isVertical:NO]),
+        
+        mixedDisabledColor = 
+        PatternColor([[CPThreePartImage alloc] initWithImageSlices:
+            [
+                [_CPCibCustomResource imageResourceWithName:"check-box-bezel-mixed-disabled.png" size:CGSizeMake(15.0, 16.0)], nil, nil
+            ]
+        isVertical:NO]),
+        
+        mixedColor = 
+        PatternColor([[CPThreePartImage alloc] initWithImageSlices:
+            [
+                [_CPCibCustomResource imageResourceWithName:"check-box-bezel-mixed.png" size:CGSizeMake(15.0, 16.0)], nil, nil
+            ]
+        isVertical:NO]);
+
+    [button setValue:mixedSelectedColor forThemeAttribute:@"bezel-color" inState:CPThemeStateBordered|CPThemeState("mixed")|CPThemeStateHighlighted];
+    [button setValue:mixedColor forThemeAttribute:@"bezel-color" inState:CPThemeStateBordered|CPThemeState("mixed")];
+    [button setValue:mixedDisabledColor forThemeAttribute:@"bezel-color" inState:CPThemeStateBordered|CPThemeState("mixed")|CPThemeStateDisabled];
+    
+    return button;
+}
+
 + (CPPopUpButton)themedSegmentedControl
 {
     var segmentedControl = [[CPSegmentedControl alloc] initWithFrame:CGRectMake(0.0, 0.0, 0.0, 24.0)];
