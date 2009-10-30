@@ -94,13 +94,15 @@ var _CPTexturedWindowHeadGradientColor  = nil,
 
 @end
 
-var _CPStandardWindowViewBodyBackgroundColor            = nil,
-    _CPStandardWindowViewDividerBackgroundColor         = nil,
-    _CPStandardWindowViewTitleBackgroundColor           = nil,
-    _CPStandardWindowViewCloseButtonImage               = nil,
-    _CPStandardWindowViewCloseButtonHighlightedImage    = nil,
-    _CPStandardWindowViewMinimizeButtonImage            = nil,
-    _CPStandardWindowViewMinimizeButtonHighlightedImage = nil;
+var _CPStandardWindowViewBodyBackgroundColor                = nil,
+    _CPStandardWindowViewDividerBackgroundColor             = nil,
+    _CPStandardWindowViewTitleBackgroundColor               = nil,
+    _CPStandardWindowViewCloseButtonImage                   = nil,
+    _CPStandardWindowViewCloseButtonHighlightedImage        = nil,
+    _CPStandardWindowViewCloseButtonUnsavedImage            = nil,
+    _CPStandardWindowViewCloseButtonUnsavedHighlightedImage = nil,
+    _CPStandardWindowViewMinimizeButtonImage                = nil,
+    _CPStandardWindowViewMinimizeButtonHighlightedImage     = nil;
 
 var STANDARD_GRADIENT_HEIGHT                    = 41.0;
     STANDARD_TITLEBAR_HEIGHT                    = 25.0;
@@ -115,6 +117,8 @@ var STANDARD_GRADIENT_HEIGHT                    = 41.0;
     CPTextField                 _titleField;
     CPButton                    _closeButton;
     CPButton                    _minimizeButton;
+
+    BOOL                        _isDocumentEdited;
 }
 
 + (CPColor)bodyBackgroundColor
@@ -262,14 +266,14 @@ var STANDARD_GRADIENT_HEIGHT                    = 41.0;
 
                 _CPStandardWindowViewCloseButtonImage = [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"CPWindow/Standard/CPWindowStandardCloseButton.png"] size:CGSizeMake(16.0, 16.0)];
                 _CPStandardWindowViewCloseButtonHighlightedImage  = [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"CPWindow/Standard/CPWindowStandardCloseButtonHighlighted.png"] size:CGSizeMake(16.0, 16.0)];
+                _CPStandardWindowViewCloseButtonUnsavedImage = [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"CPWindow/Standard/CPWindowStandardCloseButtonUnsaved.png"] size:CGSizeMake(16.0, 16.0)];
+                _CPStandardWindowViewCloseButtonUnsavedHighlightedImage  = [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"CPWindow/Standard/CPWindowStandardCloseButtonUnsavedHighlighted.png"] size:CGSizeMake(16.0, 16.0)];
             }
 
             _closeButton = [[CPButton alloc] initWithFrame:CGRectMake(8.0, 7.0, 16.0, 16.0)];
 
             [_closeButton setBordered:NO];
-
-            [_closeButton setImage:_CPStandardWindowViewCloseButtonImage];
-            [_closeButton setAlternateImage:_CPStandardWindowViewCloseButtonHighlightedImage];
+            [self _updateCloseButton];
 
             [self addSubview:_closeButton];
         }
@@ -367,6 +371,27 @@ var STANDARD_GRADIENT_HEIGHT                    = 41.0;
     }
 }
 */
+
+- (void)_updateCloseButton
+{
+    if (_isDocumentEdited)
+    {
+        [_closeButton setImage:_CPStandardWindowViewCloseButtonUnsavedImage];
+        [_closeButton setAlternateImage:_CPStandardWindowViewCloseButtonUnsavedHighlightedImage];
+    }
+    else
+    {
+        [_closeButton setImage:_CPStandardWindowViewCloseButtonImage];
+        [_closeButton setAlternateImage:_CPStandardWindowViewCloseButtonHighlightedImage];
+    }
+}
+
+- (void)setDocumentEdited:(BOOL)isEdited
+{
+    _isDocumentEdited = isEdited;
+    [self _updateCloseButton];
+}
+
 - (void)setTitle:(CPString)aTitle
 {
     [_titleField setStringValue:aTitle];

@@ -399,6 +399,27 @@
 */
 - (void)setDocumentEdited:(BOOL)isEdited
 {
+    // we ignore this. in a multi-doc world, we base this flag on the logical OR
+    // of all the open documents edited state. so this is just a hint to re-check that state.
+    //[[self window] setDocumentEdited:isEdited];
+    [self _synchronizeDocumentEditedState];
+}
+
+- (void)_synchronizeDocumentEditedState
+{
+    var docs = [self documents],
+        count = [docs count],
+        isEdited = NO;
+
+    while (count--)
+    {
+        if ([docs[count] isDocumentEdited])
+        {
+            isEdited = YES;
+            break;
+        }
+    }
+
     [[self window] setDocumentEdited:isEdited];
 }
 

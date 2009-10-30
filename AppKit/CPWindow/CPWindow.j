@@ -1510,6 +1510,8 @@ CPTexturedBackgroundWindowMask
     _isDocumentEdited = isDocumentEdited;
     
     [CPMenu _setMenuBarIconImageAlphaValue:_isDocumentEdited ? 0.5 : 1.0];
+
+    [_windowView setDocumentEdited:isDocumentEdited];
 }
 
 /*!
