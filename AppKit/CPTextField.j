@@ -30,50 +30,18 @@
 #include "Platform/DOM/CPDOMDisplayServer.h"
 
 
-/*
-    @global
-    @group CPLineBreakMode
-*/
 CPLineBreakByWordWrapping       = 0;
-/*
-    @global
-    @group CPLineBreakMode
-*/
 CPLineBreakByCharWrapping       = 1;
-/*
-    @global
-    @group CPLineBreakMode
-*/
 CPLineBreakByClipping           = 2;
-/*
-    @global
-    @group CPLineBreakMode
-*/
 CPLineBreakByTruncatingHead     = 3;
-/*
-    @global
-    @group CPLineBreakMode
-*/
 CPLineBreakByTruncatingTail     = 4;
-/*
-    @global
-    @group CPLineBreakMode
-*/
 CPLineBreakByTruncatingMiddle   = 5;
 
-/*
-    A textfield bezel with a squared corners.
-	@global
-	@group CPTextFieldBezelStyle
-*/
-CPTextFieldSquareBezel          = 0;
-/*
-    A textfield bezel with rounded corners.
-	@global
-	@group CPTextFieldBezelStyle
-*/
-CPTextFieldRoundedBezel         = 1;
+CPTextFieldSquareBezel          = 0;    /*! A textfield bezel with a squared corners. */
+CPTextFieldRoundedBezel         = 1;    /*! A textfield bezel with rounded corners. */
 
+CPTextFieldDidFocusNotification = @"CPTextFieldDidFocusNotification";
+CPTextFieldDidBlurNotification  = @"CPTextFieldDidBlurNotification";
 
 #if PLATFORM(DOM)
 
@@ -118,6 +86,8 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 */
 @implementation CPTextField : CPControl
 {
+    BOOL                    _isEditing;
+
     BOOL                    _isEditable;
     BOOL                    _isSelectable;
     BOOL                    _isSecure;
@@ -269,6 +239,12 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 
                 if (aDOMEvent && aDOMEvent.keyCode == CPReturnKeyCode)
                 {
+                    if (owner._isEditing)
+                    {
+                        owner._isEditing = NO;
+                        [owner textDidEndEditing:[CPNotification notificationWithName:CPControlTextDidEndEditingNotification object:owner userInfo:nil]];
+                    }
+
                     [owner sendAction:[owner action] to:[owner target]];
                     [owner selectText:nil];
                 }
@@ -290,6 +266,12 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 
             if ([CPTextFieldInputOwner stringValue] !== CPTextFieldTextDidChangeValue)
             {
+                if (!CPTextFieldInputOwner._isEditing)
+                {
+                    CPTextFieldInputOwner._isEditing = YES;
+                    [CPTextFieldInputOwner textDidBeginEditing:[CPNotification notificationWithName:CPControlTextDidBeginEditingNotification object:CPTextFieldInputOwner userInfo:nil]];
+                }
+
                 [CPTextFieldInputOwner textDidChange:[CPNotification notificationWithName:CPControlTextDidChangeNotification object:CPTextFieldInputOwner userInfo:nil]];
                 CPTextFieldTextDidChangeValue = [CPTextFieldInputOwner stringValue];
             }
@@ -567,6 +549,8 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 
     [self setNeedsLayout];
 
+    _isEditing = NO;
+
 #if PLATFORM(DOM)
 
     var string = [self stringValue],
@@ -601,8 +585,6 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
         CPTextFieldInputOwner = self;
     }, 0.0);
  
-    //post CPControlTextDidBeginEditingNotification
-    [self textDidBeginEditing:[CPNotification notificationWithName:CPControlTextDidBeginEditingNotification object:self userInfo:nil]];
     element.value = [self stringValue];
 
     [[[self window] platformWindow] _propagateCurrentDOMEvent:YES];
@@ -618,6 +600,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
         document.body.onselectstart = function () {};
     }
     
+    [self textDidFocus:[CPNotification notificationWithName:CPTextFieldDidFocusNotification object:self userInfo:nil]];
 #endif
 
     return YES;
@@ -664,12 +647,36 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 #endif
 
     //post CPControlTextDidEndEditingNotification
-    [self textDidEndEditing:[CPNotification notificationWithName:CPControlTextDidEndEditingNotification object:self userInfo:nil]];
+    if (_isEditing)
+    {
+        _isEditing = NO;
+        [self textDidEndEditing:[CPNotification notificationWithName:CPControlTextDidEndEditingNotification object:self userInfo:nil]];
 
-    if ([self sendsActionOnEndEditing])
-        [self sendAction:[self action] to:[self target]];    
+        if ([self sendsActionOnEndEditing])
+            [self sendAction:[self action] to:[self target]];
+    }
+
+    [self textDidBlur:[CPNotification notificationWithName:CPTextFieldDidBlurNotification object:self userInfo:nil]];
 
     return YES;
+}
+
+- (void)textDidBlur:(CPNotification)note
+{
+    //this looks to prevent false propagation of notifications for other objects
+    if([note object] != self)
+        return;
+
+    [[CPNotificationCenter defaultCenter] postNotification:note];
+}
+
+- (void)textDidFocus:(CPNotification)note
+{
+    //this looks to prevent false propagation of notifications for other objects
+    if([note object] != self)
+        return;
+
+    [[CPNotificationCenter defaultCenter] postNotification:note];
 }
 
 - (void)mouseDown:(CPEvent)anEvent
@@ -694,8 +701,10 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 */
 - (void)_setStringValue:(id)aValue
 {
+    [self willChangeValueForKey:@"objectValue"];
     [super setObjectValue:String(aValue)];
     [self _updatePlaceholderState];
+    [self didChangeValueForKey:@"objectValue"];
 }
 
 - (void)setObjectValue:(id)aValue
@@ -811,6 +820,8 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
         [defaultCenter removeObserver:_delegate name:CPControlTextDidBeginEditingNotification object:self];
         [defaultCenter removeObserver:_delegate name:CPControlTextDidChangeNotification object:self];
         [defaultCenter removeObserver:_delegate name:CPControlTextDidEndEditingNotification object:self];
+        [defaultCenter removeObserver:_delegate name:CPTextFieldDidFocusNotification object:self];
+        [defaultCenter removeObserver:_delegate name:CPTextFieldDidBlurNotification object:self];
     }
     
     _delegate = aDelegate;
@@ -837,6 +848,19 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
                    name:CPControlTextDidEndEditingNotification
                  object:self];
 
+    if ([_delegate respondsToSelector:@selector(controlTextDidFocus:)])
+        [defaultCenter
+            addObserver:_delegate
+               selector:@selector(controlTextDidFocus:)
+                   name:CPTextFieldDidFocusNotification
+                 object:self];
+
+    if ([_delegate respondsToSelector:@selector(controlTextDidBlur:)])
+        [defaultCenter
+            addObserver:_delegate
+               selector:@selector(controlTextDidBlur:)
+                   name:CPTextFieldDidBlurNotification
+                 object:self];
 }
 
 - (id)delegate

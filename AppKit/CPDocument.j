@@ -317,6 +317,20 @@ var CPDocumentUntitledCount = 0;
         [aWindowController setDocument:self];
 }
 
+/*!
+    Remove a controller to the document's list of controllers. This should
+    be called after closing the controller's window.
+    @param aWindowController the controller to remove
+*/
+- (void)removeWindowController:(CPWindowController)aWindowController
+{
+    if (aWindowController)
+        [_windowControllers removeObject:aWindowController];
+
+    if ([aWindowController document] === self)
+        [aWindowController setDocument:nil];
+}
+
 - (CPView)view
 {
     return _view;
@@ -846,10 +860,18 @@ var CPDocumentUntitledCount = 0;
 - (void)shouldCloseWindowController:(CPWindowController)controller delegate:(id)delegate shouldCloseSelector:(SEL)selector contextInfo:(Object)info 
 {
     if ([controller shouldCloseDocument] || ([_windowControllers count] < 2 && [_windowControllers indexOfObject:controller] !== CPNotFound))
-        [self canCloseDocumentWithDelegate:delegate shouldCloseSelector:selector contextInfo:info];
+        [self canCloseDocumentWithDelegate:self shouldCloseSelector:@selector(_document:shouldClose:context:) contextInfo:{delegate:delegate, selector:selector, context:info}];
 
     else if ([delegate respondsToSelector:selector])
         objj_msgSend(delegate, selector, self, YES, info);
+}
+
+- (void)_document:(CPDocument)aDocument shouldClose:(BOOL)shouldClose context:(Object)context
+{
+    if (aDocument === self && shouldClose)
+        [self close];
+
+    objj_msgSend(context.delegate, context.selector, aDocument, shouldClose, context.context);
 }
 
 - (void)canCloseDocumentWithDelegate:(id)aDelegate shouldCloseSelector:(SEL)aSelector contextInfo:(Object)context 
