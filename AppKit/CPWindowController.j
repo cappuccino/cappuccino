@@ -144,7 +144,7 @@
 {
     var theWindow = [self window];
 
-	if ([theWindow respondsToSelector:@selector(becomesKeyOnlyIfNeeded)] && [theWindow becomesKeyOnlyIfNeeded])
+    if ([theWindow respondsToSelector:@selector(becomesKeyOnlyIfNeeded)] && [theWindow becomesKeyOnlyIfNeeded])
         [theWindow orderFront:aSender];
     else
         [theWindow makeKeyAndOrderFront:aSender];
@@ -163,7 +163,7 @@
     Returns the window this object controls.
 */
 - (CPWindow)window
-{
+{    
     if (!_window)
     {
         [self windowWillLoad];
@@ -173,7 +173,15 @@
 
         if (_window === nil && [_cibOwner isKindOfClass:[CPDocument class]])
             [self setWindow:[_cibOwner valueForKey:@"window"]];
+        
+        if (!_window) 
+        {
+            var reason = [CPString stringWithFormat:@"Window for %@ could not be loaded from Cib or no window specified. \
+                                                        Override loadWindow to load the window manually.", self];
 
+            [CPException raise:CPInternalInconsistencyException reason:reason];
+        }
+        
         [self windowDidLoad];
         [_document windowControllerDidLoadCib:self];
 
