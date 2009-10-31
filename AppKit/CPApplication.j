@@ -288,7 +288,9 @@ CPRunContinuesResponse  = -1002;
 
     if (needsUntitled)
         [_documentController newDocument:self];
-    
+
+    [_documentController _updateRecentDocumentsMenu];
+
     [defaultCenter
         postNotificationName:CPApplicationDidFinishLaunchingNotification
         object:self];

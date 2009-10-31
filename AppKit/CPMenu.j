@@ -865,6 +865,22 @@ var _CPMenuBarVisible               = NO,
     }
 }
 
+- (void)_menuWithName:(CPString)aName
+{
+    if (aName === _name)
+        return self;
+
+    for (var i = 0, count = [_items count]; i < count; i++)
+    {
+        var menu = [[_items[i] submenu] _menuWithName:aName];
+
+        if (menu)
+            return menu;
+    }
+
+    return nil;
+}
+
 @end
 
 
