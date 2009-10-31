@@ -1066,7 +1066,7 @@ var STICKY_TIME_INTERVAL        = 500,
     [_menuView setFont:aFont];
 }
 
-- (void)setBackgroundStyle:(_CPMenuWindowBackgroundStyle)aBackgroundStyle
++ (CPColor)backgroundColorForBackgroundStyle:(_CPMenuWindowBackgroundStyle)aBackgroundStyle
 {
     var color = _CPMenuWindowBackgroundColors[aBackgroundStyle];
     
@@ -1108,8 +1108,13 @@ var STICKY_TIME_INTERVAL        = 500,
                 
         _CPMenuWindowBackgroundColors[aBackgroundStyle] = color;
     }
-    
-    [self setBackgroundColor:color];
+
+    return color;
+}
+
+- (void)setBackgroundStyle:(_CPMenuWindowBackgroundStyle)aBackgroundStyle
+{
+    [self setBackgroundColor:[[self class] backgroundColorForBackgroundStyle:aBackgroundStyle]];
 }
 
 - (void)setMenu:(CPMenu)aMenu

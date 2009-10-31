@@ -602,6 +602,23 @@
         objj_msgSend(self[index], aSelector, anObject);
 }
 
+- (void)makeObjectsPerformSelector:(SEL)aSelector withObjects:(CPArray)objects
+{
+    if (!aSelector)
+        [CPException raise:CPInvalidArgumentException reason:"makeObjectsPerformSelector:withObjects: 'aSelector' can't be nil"];
+
+    var index = 0,
+        count = length,
+        argumentsArray = [nil, aSelector].concat(objects || []);
+
+    for(; index < count; ++index)
+    {
+        argumentsArray[0] = self[index];
+        objj_msgSend.apply(this, argumentsArray);
+    }
+}
+
+
 // Comparing arrays
 /*!
     Returns the first object found in the receiver (starting at index 0) which is present in the
