@@ -55,7 +55,7 @@ function CP_NSMapKeyMask(anNSKeyMask)
     if (anNSKeyMask & NSHelpKeyMask)
         keyMask |= CPHelpKeyMask;
 
-    if (aKeyMask & NSFunctionKeyMask)
+    if (anNSKeyMask & NSFunctionKeyMask)
         keyMask |= CPFunctionKeyMask;
 
     return keyMask;
