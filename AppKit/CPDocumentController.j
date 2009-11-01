@@ -388,8 +388,8 @@ var CPSharedDocumentController = nil;
 
 - (void)noteNewRecentDocumentURL:(CPString)aURL
 {
-    if (typeof window["cpNoteNewRecentDocumentURL"] === 'function')
-        window.cpNoteNewRecentDocumentURL(aURL);
+    if (typeof window["cpNoteNewRecentDocumentPath"] === 'function')
+        window.cpNoteNewRecentDocumentPath(aURL);
 
    [self _updateRecentDocumentsMenu];
 }
