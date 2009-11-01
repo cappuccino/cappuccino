@@ -445,10 +445,8 @@ CPRunContinuesResponse  = -1002;
 /* @ignore */
 - (BOOL)_handleKeyEquivalent:(CPEvent)anEvent
 {
-    if ([_mainMenu performKeyEquivalent:anEvent])
-        return YES;
-
-    return [[self keyWindow] performKeyEquivalent:anEvent];
+    return  [[self keyWindow] performKeyEquivalent:anEvent] ||
+            [_mainMenu performKeyEquivalent:anEvent];
 }
 
 /*!
