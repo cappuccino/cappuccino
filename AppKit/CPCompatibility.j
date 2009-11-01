@@ -179,7 +179,7 @@ function CPBrowserIsEngine(anEngine)
 if (USER_AGENT.indexOf("Mac") != -1)
 {
     CPPlatformActionKeyMask = CPCommandKeyMask;
-    
+
     CPUndoKeyEquivalent = @"Z";
     CPRedoKeyEquivalent = @"Z";
 
@@ -189,10 +189,10 @@ if (USER_AGENT.indexOf("Mac") != -1)
 else
 {
     CPPlatformActionKeyMask = CPControlKeyMask;
-    
+
     CPUndoKeyEquivalent = @"Z";
     CPRedoKeyEquivalent = @"Y";
-    
+
     CPUndoKeyEquivalentModifierMask = CPControlKeyMask;
     CPRedoKeyEquivalentModifierMask = CPControlKeyMask;
 }
