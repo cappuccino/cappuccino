@@ -288,7 +288,9 @@ CPRunContinuesResponse  = -1002;
 
     if (needsUntitled)
         [_documentController newDocument:self];
-    
+
+    [_documentController _updateRecentDocumentsMenu];
+
     [defaultCenter
         postNotificationName:CPApplicationDidFinishLaunchingNotification
         object:self];
@@ -443,10 +445,8 @@ CPRunContinuesResponse  = -1002;
 /* @ignore */
 - (BOOL)_handleKeyEquivalent:(CPEvent)anEvent
 {
-    if ([_mainMenu performKeyEquivalent:anEvent])
-        return YES;
-
-    return NO;
+    return  [[self keyWindow] performKeyEquivalent:anEvent] ||
+            [_mainMenu performKeyEquivalent:anEvent];
 }
 
 /*!
@@ -458,10 +458,7 @@ CPRunContinuesResponse  = -1002;
     _currentEvent = anEvent;
 
     // Check if this is a candidate for key equivalent...
-    if ([anEvent type] == CPKeyDown &&
-        [anEvent modifierFlags] & (CPCommandKeyMask | CPControlKeyMask) && 
-        [[anEvent characters] length] > 0 &&
-        [self _handleKeyEquivalent:anEvent])
+    if ([anEvent _couldBeKeyEquivalent] && [self _handleKeyEquivalent:anEvent])
         return;
 
     if (_eventListeners.length)

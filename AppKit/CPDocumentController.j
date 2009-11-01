@@ -114,7 +114,7 @@ var CPSharedDocumentController = nil;
         [theDocument makeWindowControllers];
         [theDocument showWindows];
     }
-        
+
     return theDocument;
 }
 
@@ -145,10 +145,13 @@ var CPSharedDocumentController = nil;
         var type = [self typeForContentsOfURL:anAbsoluteURL error:anError];
 
         result = [self makeDocumentWithContentsOfURL:anAbsoluteURL ofType:type delegate:self didReadSelector:@selector(document:didRead:contextInfo:) contextInfo:[CPDictionary dictionaryWithObject:shouldDisplay forKey:@"shouldDisplay"]];
+
+        if (result)
+            [self noteNewRecentDocument:result];
     }
     else if (shouldDisplay)
         [result showWindows];
-    
+
     return result;
 }
 
@@ -355,6 +358,93 @@ var CPSharedDocumentController = nil;
 
     if ([context.delegate respondsToSelector:context.selector])
         objj_msgSend(context.delegate, context.selector, self, [[self documents] count] === 0, context.context);
+}
+
+@end
+
+@implementation CPDocumentController (Recents)
+
+- (CPArray)recentDocumentURLs
+{
+    // FIXME move this to CP land
+    if (typeof window["cpRecentDocumentURLs"] === 'function')
+        return window.cpRecentDocumentURLs();
+
+    return [];
+}
+
+- (void)clearRecentDocuments:(id)sender
+{
+    if (typeof window["cpClearRecentDocuments"] === 'function')
+        window.cpClearRecentDocuments();
+
+   [self _updateRecentDocumentsMenu];
+}
+
+- (void)noteNewRecentDocument:(CPDocument)aDocument
+{
+    [self noteNewRecentDocumentURL:[[aDocument fileURL] absoluteString]];
+}
+
+- (void)noteNewRecentDocumentURL:(CPString)aURL
+{
+    if (typeof window["cpNoteNewRecentDocumentPath"] === 'function')
+        window.cpNoteNewRecentDocumentPath(aURL);
+
+   [self _updateRecentDocumentsMenu];
+}
+
+- (void)_removeAllRecentDocumentsFromMenu:(CPMenu)aMenu
+{
+    var items = [aMenu itemArray],
+        count = [items count];
+
+    while (count--)
+    {
+        var item = items[count];
+
+        if ([item action] === @selector(_openRecentDocument:))
+            [aMenu removeItemAtIndex:count];
+    }
+}
+
+- (void)_updateRecentDocumentsMenu
+{
+    var menu = [[CPApp mainMenu] _menuWithName:@"_CPRecentDocumentsMenu"],
+        recentDocuments = [self recentDocumentURLs],
+        menuItems = [menu itemArray],
+        documentCount = [recentDocuments count],
+        menuItemCount = [menuItems count];
+
+    [self _removeAllRecentDocumentsFromMenu:menu];
+
+    if (menuItemCount)
+    {
+        if (!documentCount)
+        {
+            if ([menuItems[0] isSeparatorItem])
+                [menu removeItemAtIndex:0];
+        }
+        else
+        {
+            if (![menuItems[0] isSeparatorItem])
+                [menu insertItem:[CPMenuItem separatorItem] atIndex:0];
+        }
+    }
+
+    while (documentCount--)
+    {
+        var path = recentDocuments[documentCount],
+            item = [[CPMenuItem alloc] initWithTitle:[path lastPathComponent] action:@selector(_openRecentDocument:) keyEquivalent:nil];
+
+        [item setTag:path];
+        [menu insertItem:item atIndex:0];
+    }
+}
+
+- (void)_openRecentDocument:(id)sender
+{
+    [self openDocumentWithContentsOfURL:[sender tag] display:YES error:nil];
 }
 
 @end

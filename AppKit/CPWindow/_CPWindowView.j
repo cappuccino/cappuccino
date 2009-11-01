@@ -88,6 +88,10 @@ var _CPWindowViewResizeIndicatorImage = nil;
     return self;
 }
 
+- (void)setDocumentEdited:(BOOL)isEdited
+{
+}
+
 - (void)setTitle:(CPString)aTitle
 {
 }

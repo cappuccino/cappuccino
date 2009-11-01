@@ -865,6 +865,22 @@ var _CPMenuBarVisible               = NO,
     }
 }
 
+- (void)_menuWithName:(CPString)aName
+{
+    if (aName === _name)
+        return self;
+
+    for (var i = 0, count = [_items count]; i < count; i++)
+    {
+        var menu = [[_items[i] submenu] _menuWithName:aName];
+
+        if (menu)
+            return menu;
+    }
+
+    return nil;
+}
+
 @end
 
 
@@ -1050,7 +1066,7 @@ var STICKY_TIME_INTERVAL        = 500,
     [_menuView setFont:aFont];
 }
 
-- (void)setBackgroundStyle:(_CPMenuWindowBackgroundStyle)aBackgroundStyle
++ (CPColor)backgroundColorForBackgroundStyle:(_CPMenuWindowBackgroundStyle)aBackgroundStyle
 {
     var color = _CPMenuWindowBackgroundColors[aBackgroundStyle];
     
@@ -1092,8 +1108,13 @@ var STICKY_TIME_INTERVAL        = 500,
                 
         _CPMenuWindowBackgroundColors[aBackgroundStyle] = color;
     }
-    
-    [self setBackgroundColor:color];
+
+    return color;
+}
+
+- (void)setBackgroundStyle:(_CPMenuWindowBackgroundStyle)aBackgroundStyle
+{
+    [self setBackgroundColor:[[self class] backgroundColorForBackgroundStyle:aBackgroundStyle]];
 }
 
 - (void)setMenu:(CPMenu)aMenu

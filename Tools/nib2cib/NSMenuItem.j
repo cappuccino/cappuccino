@@ -22,6 +22,7 @@
 
 @import <AppKit/CPMenuItem.j>
 
+@import "NSEvent.j"
 @import "NSMenu.j"
 
 
@@ -57,9 +58,9 @@
         _submenu = [aCoder decodeObjectForKey:"NSSubmenu"];
         _menu = [aCoder decodeObjectForKey:"NSMenu"];
 
-//      _keyEquivalent = [aCoder decodeObjectForKey:"NSKeyEquiv"];
-//      _keyEquivalentModifierMask = [aCoder decodeObjectForKey:"NSKeyEquivModMask"];
-        
+        _keyEquivalent = [aCoder decodeObjectForKey:"NSKeyEquiv"];
+        _keyEquivalentModifierMask = CP_NSMapKeyMask([aCoder decodeObjectForKey:"NSKeyEquivModMask"]);
+
 //      _mnemonicLocation = [aCoder decodeObjectForKey:"NSMnemonicLoc"];
         
 //      _isAlternate = [aCoder decodeBoolForKey:"NSIsAlternate"];

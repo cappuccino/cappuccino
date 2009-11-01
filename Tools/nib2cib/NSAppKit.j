@@ -32,6 +32,7 @@
 @import "NSCustomObject.j"
 @import "NSCustomResource.j"
 @import "NSCustomView.j"
+@import "NSEvent.j"
 @import "NSFont.j"
 @import "NSIBObjectData.j"
 @import "NSImageView.j"
