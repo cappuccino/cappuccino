@@ -1861,6 +1861,19 @@ setBoundsOrigin:
 
 @implementation CPView (KeyView)
 
+- (BOOL)performKeyEquivalent:(CPEvent)anEvent
+{
+    var subviews = [self subviews],
+        count = [subviews count];
+
+    // Is reverse iteration correct here? It matches the other (correct) code like hit testing.
+    while (count--)
+        if ([subviews[count] performKeyEquivalent:anEvent])
+            return YES;
+
+    return NO;
+}
+
 - (BOOL)canBecomeKeyView
 {
     return [self acceptsFirstResponder] && ![self isHiddenOrHasHiddenAncestor];

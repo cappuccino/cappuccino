@@ -1996,10 +1996,19 @@ CPTexturedBackgroundWindowMask
     return NO;
 }
 
-- (void)keyDown:(CPEvent)event
+- (void)performKeyEquivalent:(CPEvent)anEvent
 {
-    if (![self performKeyEquivalent:event])
-        [self interpretKeyEvents:[event]];
+    // FIXME: should we be starting at the root, in other words _windowView?
+    // The evidence seems to point to no...
+    return [[self contentView] performKeyEquivalent:anEvent];
+}
+
+- (void)keyDown:(CPEvent)anEvent
+{
+    // It's not clear why we do performKeyEquivalent again here...
+    // Perhaps to allow something to happen between sendEvent: and keyDown:?
+    if (![anEvent _couldBeKeyEquivalent] || ![self performKeyEquivalent:anEvent])
+        [self interpretKeyEvents:[anEvent]];
 }
 
 - (void)insertNewline:(id)sender
