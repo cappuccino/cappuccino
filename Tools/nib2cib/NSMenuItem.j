@@ -22,6 +22,7 @@
 
 @import <AppKit/CPMenuItem.j>
 
+@import "NSEvent.j"
 @import "NSMenu.j"
 
 
