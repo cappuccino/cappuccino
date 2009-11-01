@@ -744,26 +744,29 @@ CPControlKeyMask
 
 @end
 
-var CPMenuItemIsSeparatorKey        = @"CPMenuItemIsSeparatorKey",
+var CPMenuItemIsSeparatorKey                = @"CPMenuItemIsSeparatorKey",
 
-    CPMenuItemTitleKey              = @"CPMenuItemTitleKey",
-    CPMenuItemTargetKey             = @"CPMenuItemTargetKey",
-    CPMenuItemActionKey             = @"CPMenuItemActionKey",
+    CPMenuItemTitleKey                      = @"CPMenuItemTitleKey",
+    CPMenuItemTargetKey                     = @"CPMenuItemTargetKey",
+    CPMenuItemActionKey                     = @"CPMenuItemActionKey",
 
-    CPMenuItemIsEnabledKey          = @"CPMenuItemIsEnabledKey",
-    CPMenuItemIsHiddenKey           = @"CPMenuItemIsHiddenKey",
+    CPMenuItemIsEnabledKey                  = @"CPMenuItemIsEnabledKey",
+    CPMenuItemIsHiddenKey                   = @"CPMenuItemIsHiddenKey",
 
-    CPMenuItemTagKey                = @"CPMenuItemTagKey",
-    CPMenuItemStateKey              = @"CPMenuItemStateKey",
+    CPMenuItemTagKey                        = @"CPMenuItemTagKey",
+    CPMenuItemStateKey                      = @"CPMenuItemStateKey",
 
-    CPMenuItemImageKey              = @"CPMenuItemImageKey",
-    CPMenuItemAlternateImageKey     = @"CPMenuItemAlternateImageKey",
+    CPMenuItemImageKey                      = @"CPMenuItemImageKey",
+    CPMenuItemAlternateImageKey             = @"CPMenuItemAlternateImageKey",
 
-    CPMenuItemSubmenuKey            = @"CPMenuItemSubmenuKey",
-    CPMenuItemMenuKey               = @"CPMenuItemMenuKey",
+    CPMenuItemSubmenuKey                    = @"CPMenuItemSubmenuKey",
+    CPMenuItemMenuKey                       = @"CPMenuItemMenuKey",
 
-    CPMenuItemRepresentedObjectKey  = @"CPMenuItemRepresentedObjectKey",
-    CPMenuItemViewKey               = @"CPMenuItemViewKey";
+    CPMenuItemKeyEquivalentKey              = @"CPMenuItemKeyEquivalentKey",
+    CPMenuItemKeyEquivalentModifierMaskKey  = @"CPMenuItemKeyEquivalentModifierMaskKey",
+
+    CPMenuItemRepresentedObjectKey          = @"CPMenuItemRepresentedObjectKey",
+    CPMenuItemViewKey                       = @"CPMenuItemViewKey";
 
 #define DEFAULT_VALUE(aKey, aDefaultValue) [aCoder containsValueForKey:(aKey)] ? [aCoder decodeObjectForKey:(aKey)] : (aDefaultValue)
 #define ENCODE_IFNOT(aKey, aValue, aDefaultValue) if ((aValue) !== (aDefaultValue)) [aCoder encodeObject:(aValue) forKey:(aKey)];
@@ -804,8 +807,8 @@ var CPMenuItemIsSeparatorKey        = @"CPMenuItemIsSeparatorKey",
         _submenu = DEFAULT_VALUE(CPMenuItemSubmenuKey, nil);
         _menu = DEFAULT_VALUE(CPMenuItemMenuKey, nil);
 
-//    CPString        _keyEquivalent;
-//    unsigned        _keyEquivalentModifierMask;
+        _keyEquivalent = [aCoder decodeObjectForKey:CPMenuItemKeyEquivalentKey] || @"";
+        _keyEquivalentModifierMask = [aCoder decodeObjectForKey:CPMenuItemKeyEquivalentModifierMaskKey] || 0;
 
 //    int             _mnemonicLocation;
 
@@ -846,6 +849,12 @@ var CPMenuItemIsSeparatorKey        = @"CPMenuItemIsSeparatorKey",
     
     ENCODE_IFNOT(CPMenuItemSubmenuKey, _submenu, nil);
     ENCODE_IFNOT(CPMenuItemMenuKey, _menu, nil);
+
+    if (_keyEquivalent && _keyEquivalent.length)
+        [aCoder encodeObject:_keyEquivalent forKey:CPMenuItemKeyEquivalentKey];
+
+    if (_keyEquivalentModifierMask)
+        [aCoder encodeObject:_keyEquivalentModifierMask forKey:CPMenuItemKeyEquivalentModifierMaskKey];
 
     ENCODE_IFNOT(CPMenuItemRepresentedObjectKey, _representedObject, nil);
     ENCODE_IFNOT(CPMenuItemViewKey, _view, nil);

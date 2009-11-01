@@ -515,6 +515,14 @@ var _CPEventPeriodicEventPeriod         = 0,
     return _deltaZ;
 }
 
+- (BOOL)_couldBeKeyEquivalent
+{
+    // FIXME: More cases? Space?
+    return  _type === CPKeyDown &&
+            _modifierFlags & (CPCommandKeyMask | CPControlKeyMask) &&
+            [_characters length] > 0;
+}
+
 /*!
     Generates periodic events every \c aPeriod seconds.
     @param aDelay the number of seconds before the first event
