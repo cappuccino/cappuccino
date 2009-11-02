@@ -54,7 +54,6 @@ fi
 
 echo "Installing Objective-J and Cappuccino tools..."
 tusk install browserjs
-tusk install jack
 tusk install jake
 
 if [ `uname` = "Darwin" ]; then
