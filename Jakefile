@@ -7,7 +7,7 @@ var FILE = require("file"),
 
 require(FILE.absolute("common.jake"));
 
-var subprojects = ["Objective-J", "CommonJS", "Foundation", "AppKit", "Tools", "External/ojunit"];
+var subprojects = ["Objective-J", "CommonJS", "Foundation", "AppKit", "Tools"];
 
 ["build", "clean", "clobber"].forEach(function(aTaskName)
 {
@@ -154,16 +154,11 @@ task ("deploy", ["downloads"], function()
 
 task ("test", ["build"], function()
 {
-    var tests = "'" + FileList('Tests/**/*.j').join("' '") + "'",
-        build_result = OS.system("ojtest " + tests);
-
-    if (build_result.match(/Test suite failed/i))
-    {
-        print("tests failed, aborting the build");
-        print (build_result);
-
-        OS.exit(1);
-    }
-    else
-        print(build_result);
+    var tests = new FileList('Tests/**/*Test.j');
+    var cmd = ["ojtest"].concat(tests.items());
+    var cmdString = cmd.map(OS.enquote).join(" ");
+    
+    var code = OS.system(cmdString);
+    if (code !== 0)
+        OS.exit(code);
 });
