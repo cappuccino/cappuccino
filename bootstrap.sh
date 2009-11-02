@@ -65,6 +65,8 @@ if ! which -s "narwhal"; then
         SHELL_CONFIG="$HOME/.bash_profile"
     elif [ -f "$HOME/.profile" ]; then
         SHELL_CONFIG="$HOME/.profile"
+    elif [ -f "$HOME/.bash_login" ]; then
+        SHELL_CONFIG="$HOME/.bash_login"
     fi
 
     EXPORT_PATH_STRING="export PATH=$INSTALL_DIRECTORY/bin:\$PATH"
