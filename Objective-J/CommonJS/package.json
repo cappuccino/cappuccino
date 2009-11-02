@@ -1,6 +1,6 @@
 {
     "name": "objective-j",
-    "dependencies": ["narwhal", "browserjs"],
+    "dependencies": ["narwhal", "browserjs", "jake"],
     "preload": ["objective-j/loader"],
     "description": "Objective-J and Cappuccino module",
     "keywords": ["objective-j", "objj", "objective j", "cappuccino"],
