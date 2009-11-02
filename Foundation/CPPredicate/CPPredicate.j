@@ -181,7 +181,7 @@
 {
     var count = [self count];
 
-    while (--count >= 0)
+    while (count--)
     {
         var object = [self objectAtIndex:count];
 

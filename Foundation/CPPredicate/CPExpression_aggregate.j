@@ -84,7 +84,7 @@
         count = [_aggregate count],   
         result = "{";
    
-    for (i = 0;i < count;i++)
+    for (i = 0; i < count; i++)
         result = result + [CPString stringWithFormat:@"%s%s", [[_aggregate objectAtIndex:i] description], (i + 1 < count) ? @", " : @""];
     
     result = result + "}";
