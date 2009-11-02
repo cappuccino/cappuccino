@@ -37,6 +37,9 @@ function BundleTask(aName, anApplication)
 
     this._replacedFiles = { };
     this._nib2cibFlags = null;
+
+    this._infoPlistPath = null;
+    this._principalClass = null;
 }
 
 BundleTask.__proto__ = Task;
@@ -176,6 +179,26 @@ BundleTask.prototype.productName = function()
     return this._productName;
 }
 
+BundleTask.prototype.setInfoPlistPath = function(anInfoPlistPath)
+{
+    this._infoPlistPath = anInfoPlistPath;
+}
+
+BundleTask.prototype.infoPlistPath = function()
+{
+    return this._infoPlistPath;
+}
+
+BundleTask.prototype.setPrincipalClass = function(aPrincipalClass)
+{
+    this._principalClass = aPrincipalClass;
+}
+
+BundleTask.prototype.principalClass = function()
+{
+    return this._principalClass;
+}
+
 BundleTask.prototype.setCompilerFlags = function(flags)
 {
     this._compilerFlags = flags;
@@ -272,9 +295,15 @@ BundleTask.prototype.packageType = function()
 
 BundleTask.prototype.infoPlist = function()
 {
-    var objj_dictionary = require("objective-j").objj_dictionary,
-        infoPlist = new objj_dictionary();
+    var infoPlistPath = this.infoPlistPath(),
+        objj_dictionary = require("objective-j").objj_dictionary;
 
+    if (infoPlistPath)
+        var infoPlist = require("objective-j/plist").readPlist(infoPlistPath);
+    else
+        var infoPlist = new objj_dictionary();
+
+    // FIXME: Should all of these unconditionally overwrite?
     infoPlist.setValue("CPBundleInfoDictionaryVersion", 6.0);
     infoPlist.setValue("CPBundleName", this.productName());
     infoPlist.setValue("CPBundleIdentifier", this.identifier());
@@ -282,6 +311,11 @@ BundleTask.prototype.infoPlist = function()
     infoPlist.setValue("CPBundlePackageType", this.packageType());
     infoPlist.setValue("CPBundlePlatforms", this.platforms());
     infoPlist.setValue("CPBundleExecutable", this.productName() + ".sj");
+
+    var principalClass = this.principalClass();
+
+    if (principalClass)
+        infoPlist.setValue("CPPrincipalClass", principalClass);
 
     var replacedFiles = this._replacedFiles,
         replacedFilesDictionary = new objj_dictionary();
@@ -293,17 +327,6 @@ BundleTask.prototype.infoPlist = function()
     infoPlist.setValue("CPBundleReplacedFiles", replacedFilesDictionary);
 
     return infoPlist;
-/*
-
-    if info_plist
-        existing_info_plist = Plist::parse_xml(info_plist)
-        new_info_plist = new_info_plist.merge existing_info_plist
-        file_d info_plist_path => [info_plist]
-    end
-
-    if principal_class
-        new_info_plist['CPPrincipalClass'] = principal_class
-    end*/
 }
 
 BundleTask.prototype.defineInfoPlistTask = function()

@@ -37,6 +37,7 @@ foundationTask = framework ("Foundation", function(foundationTask)
     foundationTask.setSources(new FileList("**/*.j"));
     foundationTask.setResources(new FileList("Resources/**/*"));
     foundationTask.setFlattensSources(true);
+    foundationTask.setInfoPlistPath("Info.plist");
 
     if ($CONFIGURATION === "Release")
         foundationTask.setCompilerFlags("-O");

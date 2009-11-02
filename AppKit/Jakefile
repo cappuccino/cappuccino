@@ -21,6 +21,7 @@ appKitTask = framework ("AppKit", function(appKitTask)
     appKitTask.setResources(new FileList("Resources/**/*"));
     appKitTask.setPlatforms([BundleTask.Platform.Browser, BundleTask.Platform.CommonJS]);
     appKitTask.setFlattensSources(true);
+    appKitTask.setInfoPlistPath("Info.plist");
 
     if ($CONFIGURATION === "Release")
         appKitTask.setCompilerFlags("-O");
