@@ -1,4 +1,3 @@
-#!/usr/bin/env narwhal
 
 require("../common.jake");
 
@@ -10,12 +9,13 @@ AppKitFiles = new FileList("**/*.j").exclude('CoreGraphics/CGContextCanvas.j', '
 appKitTask = framework ("AppKit", function(appKitTask)
 {
     appKitTask.setBuildIntermediatesPath(FILE.join($BUILD_DIR, "AppKit.build", $CONFIGURATION))
-    appKitTask.setBuildPath(FILE.join($BUILD_DIR, $CONFIGURATION));
+    appKitTask.setBuildPath($BUILD_CONFIGURATION_DIR);
 
     appKitTask.setAuthor("280 North, Inc.");
     appKitTask.setEmail("feedback @nospam@ 280north.com");
     appKitTask.setSummary("AppKit classes for Cappuccino");
     appKitTask.setIdentifier("com.280n.AppKit");
+    appKitTask.setVersion("0.7.9");
     appKitTask.setLicense(BundleTask.License.LGPL_v2_1);
     appKitTask.setSources(AppKitFiles);
     appKitTask.setResources(new FileList("Resources/**/*"));
@@ -28,23 +28,23 @@ appKitTask = framework ("AppKit", function(appKitTask)
         appKitTask.setCompilerFlags("-DDEBUG -g");
 });
 
-$COMMONJS_PRODUCT_APPKIT = FILE.join($COMMONJS_PRODUCT_FRAMEWORKS, "AppKit");
+$BUILD_CJS_CAPPUCCINO_APPKIT = FILE.join($BUILD_CJS_CAPPUCCINO_FRAMEWORKS, "AppKit");
 
-filedir ($COMMONJS_PRODUCT_APPKIT, ["AppKit"], function()
+filedir ($BUILD_CJS_CAPPUCCINO_APPKIT, ["AppKit"], function()
 {
-    cp_r(appKitTask.buildProductPath(), $COMMONJS_PRODUCT_APPKIT);
+    cp_r(appKitTask.buildProductPath(), $BUILD_CJS_CAPPUCCINO_APPKIT);
 });
 
 subtasks (["Themes"], ["clean", "clobber"]);
 
-task ("Theme", [$COMMONJS_PRODUCT_APPKIT], function()
+task ("Theme", [$BUILD_CJS_CAPPUCCINO_APPKIT], function()
 {
     subjake(["Themes"], "build");
 
     cp_r(FILE.join($BUILD_DIR, $CONFIGURATION, 'Aristo.blend'), FILE.join($BUILD_PATH, 'Resources', 'Aristo.blend'));
-    cp_r(FILE.join($BUILD_DIR, $CONFIGURATION, 'Aristo.blend'), FILE.join($COMMONJS_PRODUCT_APPKIT, "Resources", "Aristo.blend"));
+    cp_r(FILE.join($BUILD_DIR, $CONFIGURATION, 'Aristo.blend'), FILE.join($BUILD_CJS_CAPPUCCINO_APPKIT, "Resources", "Aristo.blend"));
 });
 
-task ("build", ["AppKit", $COMMONJS_PRODUCT_APPKIT, "Theme"]);
+task ("build", ["AppKit", $BUILD_CJS_CAPPUCCINO_APPKIT, "Theme"]);
 
-CLOBBER.include($COMMONJS_PRODUCT_APPKIT);
+CLOBBER.include($BUILD_CJS_CAPPUCCINO_APPKIT);

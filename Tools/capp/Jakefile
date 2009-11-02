@@ -1,4 +1,4 @@
-#!/usr/bin/env narwhal
+
 
 require ("../../common.jake");
 
@@ -6,7 +6,7 @@ require ("../../common.jake");
 app ("capp", function(cappTask)
 {
     cappTask.setBuildIntermediatesPath(FILE.join($BUILD_DIR, "capp.build", $CONFIGURATION))
-    cappTask.setBuildPath($COMMONJS_PRODUCT_LIB);
+    cappTask.setBuildPath($BUILD_CJS_CAPPUCCINO_LIB);
 
     cappTask.setAuthor("280 North, Inc.");
     cappTask.setEmail("feedback @nospam@ 280north.com");
@@ -27,16 +27,14 @@ app ("capp", function(cappTask)
         cappTask.setCompilerFlags("-DDEBUG -g");
 });
 
-$COMMONJS_CAPP_BIN_PRODUCT = FILE.join($COMMONJS_PRODUCT_BIN, "capp");
+$BUILD_CJS_CAPP = FILE.join($BUILD_CJS_CAPPUCCINO_BIN, "capp");
 
 // executable in environment directory
-filedir($COMMONJS_CAPP_BIN_PRODUCT, ["capp"], function()
+filedir($BUILD_CJS_CAPP, ["capp"], function()
 {
-    make_objj_executable($COMMONJS_CAPP_BIN_PRODUCT);
+    make_objj_executable($BUILD_CJS_CAPP);
 });
 
-task ("build", ["capp", $COMMONJS_CAPP_BIN_PRODUCT]);
+task ("build", ["capp", $BUILD_CJS_CAPP]);
 
-/*
-CLOBBER.include($ENVIRONMENT_BIN_PRODUCT, $ENVIRONMENT_LIB_PRODUCT)
-*/
+CLOBBER.include($BUILD_CJS_CAPPUCCINO_BIN);

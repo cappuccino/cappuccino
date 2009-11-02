@@ -5,7 +5,8 @@
 @import <BlendKit/BlendKit.j>
 
 
-var Jake = require("jake"),
+var FILE = require("file"),
+    Jake = require("jake"),
     BundleTask = require("objective-j/jake/bundletask").BundleTask;
 
 

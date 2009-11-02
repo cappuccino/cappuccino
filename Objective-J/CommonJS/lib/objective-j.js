@@ -1,4 +1,4 @@
-var file = require("file"),
+var FILE = require("file"),
     readline = require("readline").readline;
 
 var window = require("browser/window");
@@ -10,12 +10,63 @@ if (system.engine === "rhino")
 }
 
 // setup OBJJ_HOME, OBJJ_INCLUDE_PATHS, etc
-window.OBJJ_HOME = exports.OBJJ_HOME = file.resolve(module.path, "..");
+window.OBJJ_HOME = exports.OBJJ_HOME = FILE.resolve(module.path, "..");
 
-var frameworksPath = file.resolve(window.OBJJ_HOME, "lib/", "Frameworks/"),
-    objectivejPath = file.resolve(frameworksPath, "Objective-J/", "CommonJS.platform/", "Objective-J.js");
+var frameworksPath = FILE.resolve(window.OBJJ_HOME, "Frameworks/"),
+    objectivejPath = FILE.resolve(frameworksPath, "Objective-J/", "CommonJS.platform/", "Objective-J.js");
 
 window.OBJJ_INCLUDE_PATHS = [frameworksPath];
+
+// Find all narwhal packages with Objective-J frameworks.
+
+var name = null,
+    catalog = require("packages").catalog;
+
+for (name in catalog)
+{
+    if (!catalog.hasOwnProperty(name))
+        return;
+
+    var info = catalog[name];
+
+    if (!info)
+        continue;
+
+    var frameworks =    info["objective-j-frameworks"] ||
+                        info["objj-frameworks"] || 
+                        info["cappuccino-frameworks"] ||
+                        info["capp-frameworks"] ||
+                        info["frameworks"];
+
+    if (frameworks)
+    {
+        if (!Array.isArray(frameworks))
+            frameworks = [frameworks + ""];
+
+        window.OBJJ_INCLUDE_PATHS = window.OBJJ_INCLUDE_PATHS.concat(frameworks.map(function(aFrameworkPath)
+        {
+            return FILE.join(info.directory, aFrameworkPath);
+        }));
+    }
+
+     var debugFrameworks =  info["objective-j-debug-frameworks"] || 
+                            info["objj-debug-frameworks"] || 
+                            info["cappuccino-debug-frameworks"] ||
+                            info["capp-debug-frameworks"] ||
+                            info["debug-frameworks"];
+
+    if (debugFrameworks)
+    {
+        if (!Array.isArray(debugFrameworks))
+            debugFrameworks = [debugFrameworks + ""];
+
+        window.OBJJ_INCLUDE_PATHS = window.OBJJ_INCLUDE_PATHS.concat(debugFrameworks.map(function(aFrameworkPath)
+        {
+            return FILE.join(info.directory, aFrameworkPath);
+        }));
+    }
+}
+
 if (system.env["OBJJ_INCLUDE_PATHS"])
     window.OBJJ_INCLUDE_PATHS = system.env["OBJJ_INCLUDE_PATHS"].split(":").concat(window.OBJJ_INCLUDE_PATHS);
 
@@ -25,9 +76,9 @@ with (window)
 {
     // read and eval Objective-J.js with the module's scope
     if (system.engine === "rhino")
-        Packages.org.mozilla.javascript.Context.getCurrentContext().evaluateString(window, file.read(objectivejPath, { charset:"UTF-8" }), "Objective-J.js", 0, null);
+        Packages.org.mozilla.javascript.Context.getCurrentContext().evaluateString(window, FILE.read(objectivejPath, { charset:"UTF-8" }), "Objective-J.js", 0, null);
     else
-        eval(file.read(objectivejPath, { charset:"UTF-8" }));
+        eval(FILE.read(objectivejPath, { charset:"UTF-8" }));
     
     // export desired variables. must eval variable name to obtain a reference.
     [
@@ -90,7 +141,7 @@ exports.run = function(args)
         while (args.length && args[0].indexOf('-I') === 0)
             OBJJ_INCLUDE_PATHS = args.shift().substr(2).split(':').concat(OBJJ_INCLUDE_PATHS);
                 
-        var mainFilePath = file.canonical(args.shift());
+        var mainFilePath = FILE.canonical(args.shift());
     
         objj_import(mainFilePath, YES, function() {
             if (typeof main === "function")
@@ -145,7 +196,7 @@ window.objj_preprocess_sync = function(code, path)
         if (fragment.type & FRAGMENT_CODE)
             preprocessed.push(fragment.info);
         else if (fragment.type & FRAGMENT_LOCAL)
-            preprocessed.push("objj_import_sync('"+(path ? file.join(file.dirname(path), fragment.info) : fragment.info)+"',YES);");
+            preprocessed.push("objj_import_sync('"+(path ? FILE.join(FILE.dirname(path), fragment.info) : fragment.info)+"',YES);");
         else
             preprocessed.push("objj_import_sync('"+fragment.info+"',NO);");
     });

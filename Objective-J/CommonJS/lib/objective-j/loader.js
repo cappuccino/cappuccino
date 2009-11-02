@@ -1,5 +1,5 @@
 var objj = null;
-
+print("objj loader~");
 function ObjectiveJLoader() {
     var loader = {};
     var factories = {};

@@ -7,7 +7,7 @@ var FILE = require("file"),
 
 require(FILE.absolute("common.jake"));
 
-var subprojects = ["Objective-J", "Foundation", "AppKit", "Tools", "External/ojunit"];
+var subprojects = ["Objective-J", "CommonJS", "Foundation", "AppKit", "Tools", "External/ojunit"];
 
 ["build", "clean", "clobber"].forEach(function(aTaskName)
 {
@@ -17,20 +17,19 @@ var subprojects = ["Objective-J", "Foundation", "AppKit", "Tools", "External/oju
     });
 });
 
-global.$COMMONJS                    = FILE.join($BUILD_DIR, "Release", "CommonJS", "objective-j");
-global.$COMMONJS_DEBUG_FRAMEWORKS   = FILE.join($COMMONJS, "lib", "Frameworks", "Debug");
+$BUILD_CJS_CAPPUCCINO_DEBUG_FRAMEWORKS = FILE.join($BUILD_CJS_CAPPUCCINO, "Frameworks", "Debug");
 
-filedir ($COMMONJS_DEBUG_FRAMEWORKS, ["debug", "release"], function()
+filedir ($BUILD_CJS_CAPPUCCINO_DEBUG_FRAMEWORKS, ["debug", "release"], function()
 {
-    FILE.mkdirs($COMMONJS_DEBUG_FRAMEWORKS);
+    FILE.mkdirs($BUILD_CJS_CAPPUCCINO_DEBUG_FRAMEWORKS);
 
-    cp_r(FILE.join($BUILD_DIR, "Debug", "Objective-J"), FILE.join($COMMONJS_DEBUG_FRAMEWORKS, "Objective-J"));
-    cp_r(FILE.join($BUILD_DIR, "Debug", "Foundation"), FILE.join($COMMONJS_DEBUG_FRAMEWORKS, "Foundation"));
-    cp_r(FILE.join($BUILD_DIR, "Debug", "AppKit"), FILE.join($COMMONJS_DEBUG_FRAMEWORKS, "AppKit"));
-    cp_r(FILE.join($BUILD_DIR, "Debug", "BlendKit"), FILE.join($COMMONJS_DEBUG_FRAMEWORKS, "BlendKit"));
+    cp_r(FILE.join($BUILD_DIR, "Debug", "Objective-J"), FILE.join($BUILD_CJS_CAPPUCCINO_DEBUG_FRAMEWORKS, "Objective-J"));
+    cp_r(FILE.join($BUILD_DIR, "Debug", "Foundation"), FILE.join($BUILD_CJS_CAPPUCCINO_DEBUG_FRAMEWORKS, "Foundation"));
+    cp_r(FILE.join($BUILD_DIR, "Debug", "AppKit"), FILE.join($BUILD_CJS_CAPPUCCINO_DEBUG_FRAMEWORKS, "AppKit"));
+    cp_r(FILE.join($BUILD_DIR, "Debug", "BlendKit"), FILE.join($BUILD_CJS_CAPPUCCINO_DEBUG_FRAMEWORKS, "BlendKit"));
 });
 
-task ("CommonJS", [$COMMONJS_DEBUG_FRAMEWORKS, "debug", "release"], function()
+task ("CommonJS", [$BUILD_CJS_CAPPUCCINO_DEBUG_FRAMEWORKS, "debug", "release"], function()
 {
     // We have a complete CommonJS, so redo this.
     setupEnvironment();
@@ -40,7 +39,7 @@ task ("install", ["CommonJS"], function()
 {
     // FIXME: require("narwhal/tusk/install").install({}, $COMMONJS);
     // Doesn't work due to some weird this.print business.
-    OS.system("tusk install --force " + $COMMONJS);
+    OS.system("tusk install --force " + $BUILD_CJS_OBJECTIVE_J + " " + $BUILD_CJS_CAPPUCCINO);
 });
 
 // Documentation

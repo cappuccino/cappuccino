@@ -1,18 +1,17 @@
-#!/usr/bin/env narwhal
 
 require("../../../common.jake");
 
 var FILE = require("file");
 
-print("???");
-$BLENDTASK                  = "blendtask.j";
-$COMMONJS_BLENDTASK_PRODUCT = FILE.join($COMMONJS_PRODUCT, "lib-js", "objective-j", "jake", "blendtask.j");
 
-filedir($COMMONJS_BLENDTASK_PRODUCT, [$BLENDTASK], function()
+$BLENDTASK              = "blendtask.j";
+$BUILD_CJS_BLENDTASK    = FILE.join($BUILD_CJS_CAPPUCCINO, "lib", "cappuccino", "jake", "blendtask.j");
+
+filedir($BUILD_CJS_BLENDTASK, [$BLENDTASK], function()
 {
-    cp_r($BLENDTASK, $COMMONJS_BLENDTASK_PRODUCT);
+    cp_r($BLENDTASK, $BUILD_CJS_BLENDTASK);
 });
 
-task("build", [$COMMONJS_BLENDTASK_PRODUCT]);
+task("build", [$BUILD_CJS_BLENDTASK]);
 
-CLOBBER.include($COMMONJS_BLENDTASK_PRODUCT);
+CLOBBER.include($BUILD_CJS_BLENDTASK);

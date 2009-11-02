@@ -37,57 +37,86 @@ ENV["BUILD_PATH"] = FILE.absolute(ENV["BUILD_PATH"]);
 if (!ENV["CONFIG"])
     ENV["CONFIG"] = "Release";
 
-global.$CONFIGURATION               = ENV['CONFIG'];
-global.$BUILD_DIR                   = ENV['BUILD_PATH'];
-global.$COMMONJS_PRODUCT            = FILE.join($BUILD_DIR, $CONFIGURATION, "CommonJS", "objective-j");
-global.$COMMONJS_PRODUCT_BIN        = FILE.join($COMMONJS_PRODUCT, "bin");
-global.$COMMONJS_PRODUCT_LIB        = FILE.join($COMMONJS_PRODUCT, "lib");
-global.$COMMONJS_PRODUCT_FRAMEWORKS = FILE.join($COMMONJS_PRODUCT_LIB, "Frameworks");
+global.$CONFIGURATION                   = ENV['CONFIG'];
+global.$BUILD_DIR                       = ENV['BUILD_PATH'];
+global.$BUILD_CONFIGURATION_DIR         = FILE.join($BUILD_DIR, $CONFIGURATION);
 
+global.$BUILD_CJS_OBJECTIVE_J           = FILE.join($BUILD_CONFIGURATION_DIR, "CommonJS", "objective-j");
 
-global.$PRODUCT_DIR                = FILE.join($BUILD_DIR, $CONFIGURATION);
-global.$ENVIRONMENT_DIR            = FILE.join($BUILD_DIR, $CONFIGURATION, 'env');
-global.$ENVIRONMENT_NARWHAL_BIN_DIR= FILE.join($ENVIRONMENT_DIR, 'bin', '');
-global.$ENVIRONMENT_BIN_DIR        = FILE.join($ENVIRONMENT_DIR, 'packages', 'objj', 'bin');
-global.$ENVIRONMENT_LIB_DIR        = FILE.join($ENVIRONMENT_DIR, 'packages', 'objj', 'lib') ;
-global.$ENVIRONMENT_FRAMEWORKS_DIR = FILE.join($ENVIRONMENT_LIB_DIR, 'Frameworks');
+global.$BUILD_CJS_CAPPUCCINO            = FILE.join($BUILD_DIR, $CONFIGURATION, "CommonJS", "cappuccino");
+global.$BUILD_CJS_CAPPUCCINO_BIN        = FILE.join($BUILD_CJS_CAPPUCCINO, "bin");
+global.$BUILD_CJS_CAPPUCCINO_LIB        = FILE.join($BUILD_CJS_CAPPUCCINO, "lib");
+global.$BUILD_CJS_CAPPUCCINO_FRAMEWORKS = FILE.join($BUILD_CJS_CAPPUCCINO, "Frameworks");
 
 global.$HOME_DIR        = FILE.absolute(FILE.dirname(module.path));
 global.$LICENSE_FILE    = FILE.absolute(FILE.join(FILE.dirname(module.path), 'LICENSE'));
 
-global.setupEnvironment = function()
+function partial_require(path, exports)
 {
-    var objectiveJLibJS = FILE.join($BUILD_DIR, $CONFIGURATION, "CommonJS", "objective-j", "lib-js");
+    var lib = FILE.join(path, "lib");
 
-    if (!FILE.exists(objectiveJLibJS))
-        objectiveJLibJS = FILE.join($HOME_DIR, "Objective-J", "CommonJS", "objective-j", "lib-js");
+    if (!FILE.exists(lib))
+        return false;
 
-    require.paths.unshift(objectiveJLibJS);
+    require.paths.unshift(lib);
 
-    require("objective-j/loader");
+    if (FILE.exists(FILE.join(path, "package.json")))
+    {
+        var catalog = require("json").parse(FILE.read(FILE.join(path, "package.json"), { charset:"UTF8" }));
 
-    var OBJECTIVE_J_JAKE = require("objective-j/jake");
+        if (catalog.preload)
+        {
+            if (!Array.isArray(catalog.preload))
+                catalog.preload = [catalog.preload];
 
-    global.app = OBJECTIVE_J_JAKE.app;
-    global.bundle = OBJECTIVE_J_JAKE.bundle;
-    global.framework = OBJECTIVE_J_JAKE.framework;
+            catalog.preload.forEach(function(preload)
+            {
+                require(preload);
+            });
+        }
+    }
 
-    if (OBJECTIVE_J_JAKE.blend)
-        global.blend = OBJECTIVE_J_JAKE.blend;
-
-    global.BundleTask = OBJECTIVE_J_JAKE.BundleTask;
-
-    var objectiveJBin = FILE.join($BUILD_DIR, $CONFIGURATION, "CommonJS", "objective-j", "bin")
-
-    if (!FILE.exists(objectiveJBin))
-        objectiveJBin = FILE.join($HOME_DIR, "Objective-J", "CommonJS", "objective-j", "bin");
-
-    var system = OS.system;
+    var bin = FILE.join(path, "bin"),
+        system = OS.system;
 
     // FIXME: is there a better way to do this???
     OS.system = function(aCommand)
     {
-        return system("PATH=" + OS.enquote(objectiveJBin) + ":$PATH " + aCommand);
+        return system("PATH=" + OS.enquote(bin) + ":$PATH " + aCommand);
+    }
+
+    return true;
+}
+
+global.setupEnvironment = function()
+{
+    if (partial_require(FILE.join($BUILD_CONFIGURATION_DIR, "CommonJS", "objective-j")) ||
+        partial_require(FILE.join($HOME_DIR, "Objective-J", "CommonJS", "objective-j")))
+    {
+        var OBJECTIVE_J_JAKE = require("objective-j/jake");
+
+        global.app = OBJECTIVE_J_JAKE.app;
+        global.bundle = OBJECTIVE_J_JAKE.bundle;
+        global.framework = OBJECTIVE_J_JAKE.framework;
+
+        global.BundleTask = OBJECTIVE_J_JAKE.BundleTask;
+    }
+
+    if (partial_require(FILE.join($BUILD_CONFIGURATION_DIR, "CommonJS", "cappuccino")))
+    {
+        require("objective-j");
+        require("browser/window").OBJJ_INCLUDE_PATHS.push(FILE.join($BUILD_CONFIGURATION_DIR, "CommonJS", "cappuccino", "Frameworks"));
+
+        try
+        {
+            var CAPPUCCINO_JAKE = require("cappuccino/jake");
+
+            if (CAPPUCCINO_JAKE.blend)
+                global.blend = CAPPUCCINO_JAKE.blend;
+        }
+        catch (anException)
+        {
+        }
     }
 }
 
@@ -113,6 +142,7 @@ global.cp_r = function(/*String*/ from, /*String*/ to)
 global.cp = function(/*String*/ from, /*String*/ to)
 {
     FILE.copy(from, to);
+//    FILE.chmod(to, FILE.mod(from));  
 }
 
 global.mv = function(/*String*/ from, /*String*/ to)

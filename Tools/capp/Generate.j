@@ -56,8 +56,8 @@ function gen(/*va_args*/)
     if (FILE.isAbsolute(template))
         sourceTemplate = FILE.join(template);
     else
-        sourceTemplate = FILE.join(OBJJ.OBJJ_HOME, "lib", "capp", "Resources", "Templates", template);
-    
+        sourceTemplate = FILE.join(SYSTEM.env["SELF_HOME"], "lib", "capp", "Resources", "Templates", template);
+
     var configFile = FILE.join(sourceTemplate, "template.config"),
         config = {};
 

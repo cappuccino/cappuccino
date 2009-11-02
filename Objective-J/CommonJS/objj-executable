@@ -11,11 +11,12 @@ while [ -h "$SELF_PATH" ]; do
 done
 
 SELF_DIR=`dirname $SELF_PATH`
-SELF_HOME=`dirname $SELF_DIR`
+export SELF_HOME=`dirname $SELF_DIR`
 SELF_LIB="$SELF_HOME/lib"
 
-FRAMEWORKS="$SELF_LIB/Frameworks"
+FRAMEWORKS="$SELF_HOME/Frameworks"
 MAIN="$SELF_LIB/$(basename $SELF_PATH)/main.j"
+
 
 # convert paths for Cygwin
 if [[ `uname` == CYGWIN* ]]; then

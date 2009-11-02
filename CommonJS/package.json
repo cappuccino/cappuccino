@@ -1,11 +1,12 @@
 {
-    "name": "objective-j",
+    "name": "cappuccino",
     "dependencies": ["narwhal", "jack", "browserjs"],
-    "lib": "lib-js",
-    "preload": ["objective-j/loader"],
-    "description": "Objective-J and Cappuccino module",
-    "keywords": ["objective-j", "objj", "objective j", "cappuccino"],
+    "description": "Cappuccino module",
+    "keywords": ["objective-j", "objj", "objective j", "capp", "cappuccino"],
     "author": "280 North, Inc. (http://280north.com/)",
+    "version": "0.7.9",
+    "objj-frameworks": ["Frameworks"],
+    "objj-debug-frameworks": ["Frameworks/Debug"],
     "contributors": [
         "Francisco Tolmasky (http://tolmasky.com/)",
         "Ross Boucher (http://rossboucher.com/)",

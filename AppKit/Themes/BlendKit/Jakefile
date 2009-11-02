@@ -1,4 +1,3 @@
-#!/usr/bin/env narwhal
 
 require("../../../common.jake");
 
@@ -9,11 +8,11 @@ blendKitTask = framework ("BlendKit", function(blendKitTask)
     blendKitTask.setBuildPath(FILE.join($BUILD_DIR, $CONFIGURATION));
 
     blendKitTask.setIdentifier("com.280n.BlendKit");
-    blendKitTask.setVersion("0.7.1");
-//    t.author        = '280 North, Inc.'
-//    t.email         = 'feedback @nospam@ 280north.com'
-//    t.summary       = 'BlendKit classes for Cappuccino'
-    blendKitTask.setSources(FILE.glob("*.j")); //t.sources       = FileList['*.j']
+    blendKitTask.setVersion("0.7.9");
+    blendKitTask.setAuthor("280 North, Inc.");
+    blendKitTask.setEmail("feedback @nospam@ 280north.com");
+    blendKitTask.setSummary("BlendKit classes for Cappuccino");
+    blendKitTask.setSources(FILE.glob("*.j"));
     blendKitTask.setResources(FILE.glob("Resources/*"));
     blendKitTask.setLicense(BundleTask.License.LGPL_v2_1);
     blendKitTask.setFlattensSources(true); // FIXME: how do we non flatten?
@@ -24,13 +23,13 @@ blendKitTask = framework ("BlendKit", function(blendKitTask)
         blendKitTask.setCompilerFlags("-DDEBUG -g");
 });
 
-$COMMONJS_PRODUCT_BLENDKIT = FILE.join($COMMONJS_PRODUCT_FRAMEWORKS, "BlendKit");
+$BUILD_CJS_PRODUCT_BLENDKIT = FILE.join($BUILD_CJS_CAPPUCCINO_FRAMEWORKS, "BlendKit");
 
-filedir ($COMMONJS_PRODUCT_BLENDKIT, ["BlendKit"], function()
-{print("copying...");
-    cp_r(blendKitTask.buildProductPath(), $COMMONJS_PRODUCT_BLENDKIT);
+filedir ($BUILD_CJS_PRODUCT_BLENDKIT, ["BlendKit"], function()
+{
+    cp_r(blendKitTask.buildProductPath(), $BUILD_CJS_PRODUCT_BLENDKIT);
 });
-print("here?...");
-task ("build", ["BlendKit", $COMMONJS_PRODUCT_BLENDKIT]);
 
-CLOBBER.include( $COMMONJS_PRODUCT_BLENDKIT);
+task ("build", ["BlendKit", $BUILD_CJS_PRODUCT_BLENDKIT]);
+
+CLOBBER.include( $BUILD_CJS_PRODUCT_BLENDKIT);
