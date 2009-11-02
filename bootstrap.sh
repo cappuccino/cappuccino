@@ -55,6 +55,16 @@ fi
 echo "Installing Objective-J and Cappuccino tools..."
 tusk install objj
 
+if [ `uname` = "Darwin" ]; then
+    echo "Would you like to install the JavaScriptCore engine for Narwhal? This is optional but will make building and running Objective-J much faster."
+    if prompt; then
+        tusk install narwhal-jsc
+        pushd "$INSTALL_DIRECTORY/packages/narwhal-jsc"
+        make webkit
+        popd
+    fi
+fi
+
 export PATH="$ORIGINAL_PATH"
 if ! which -s "narwhal"; then
     
@@ -69,7 +79,7 @@ if ! which -s "narwhal"; then
         SHELL_CONFIG="$HOME/.bash_login"
     fi
 
-    EXPORT_PATH_STRING="export PATH=$INSTALL_DIRECTORY/bin:\$PATH"
+    EXPORT_PATH_STRING="\nexport PATH=\"$INSTALL_DIRECTORY/bin:\$PATH\""
 
     echo "You must add Narwhal's \"bin\" directory to your PATH environment variable. Do this automatically now?"
     echo "\"$EXPORT_PATH_STRING\" will be appended to \"$SHELL_CONFIG\"."
