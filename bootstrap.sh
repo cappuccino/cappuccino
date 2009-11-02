@@ -27,7 +27,7 @@ INSTALL_DIRECTORY="/usr/local/narwhal"
 ORIGINAL_PATH="$PATH"
 
 if ! which -s "narwhal"; then
-    echo "Narwhal JavaScript platform is required. Installyes it into \"$INSTALL_DIRECTORY\"?"
+    echo "Narwhal JavaScript platform is required. Install it into \"$INSTALL_DIRECTORY\"?"
     if prompt; then
         echo "Downloading Narwhal..."
         curl -L -o "$TEMPZIP" "http://github.com/tlrobinson/narwhal/zipball/master"
