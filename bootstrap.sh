@@ -53,7 +53,9 @@ if ! which -s "narwhal"; then
 fi
 
 echo "Installing Objective-J and Cappuccino tools..."
-tusk install objj
+tusk install browserjs
+tusk install jack
+tusk install jake
 
 if [ `uname` = "Darwin" ]; then
     echo "Would you like to install the JavaScriptCore engine for Narwhal? This is optional but will make building and running Objective-J much faster."
