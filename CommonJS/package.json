@@ -1,6 +1,6 @@
 {
     "name": "cappuccino",
-    "dependencies": ["narwhal", "browserjs", "jake"],
+    "dependencies": ["narwhal", "browserjs", "jake", "objective-j"],
     "description": "Cappuccino module",
     "keywords": ["objective-j", "objj", "objective j", "capp", "cappuccino"],
     "author": "280 North, Inc. (http://280north.com/)",
