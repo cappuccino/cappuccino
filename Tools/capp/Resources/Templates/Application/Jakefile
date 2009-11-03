@@ -10,7 +10,7 @@ var ENV = require("system").env,
     FILE = require("file"),
     task = require("jake").task,
     FileList = require("jake").FileList,
-    app = require("objective-j/jake").app,
+    app = require("cappuccino/jake").app,
     configuration = ENV["CONFIG"] || ENV["CONFIGURATION"] || ENV["c"] || "Debug";
 
 app ("__project.nameasidentifier__", function(task)
@@ -21,12 +21,13 @@ app ("__project.nameasidentifier__", function(task)
     task.setProductName("__project.name__");
     task.setIdentifier("__project.identifier__");
     task.setVersion("1.0");
-//    t.author        = '__organization.name__'
-//    t.email         = '__organization.email__'
-//    t.summary       = '__project.name__'
-    task.setSources(new FileList("*.j"));
+    task.setAuthor("__organization.name__");
+    task.setEmail("__organization.email__");
+    task.setSummary("__project.name__");
+    task.setSources(new FileList("**/*.j"));
     task.setResources(new FileList("Resources/*"));
-//    t.info_plist    = 'Info.plist'
+    task.setIndexFilePath("index.html");
+    task.setInfoPlistPath("Info.plist");
 
     if (configuration === "Debug")
         task.setCompilerFlags("-DDEBUG -g");

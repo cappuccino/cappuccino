@@ -6,7 +6,8 @@
 
 
 var FILE = require("file"),
-    Jake = require("jake"),
+    task = require("jake").task,
+    filedir = require("jake").filedir,
     BundleTask = require("objective-j/jake/bundletask").BundleTask;
 
 

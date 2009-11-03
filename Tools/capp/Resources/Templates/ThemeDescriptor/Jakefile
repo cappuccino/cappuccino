@@ -1,0 +1,29 @@
+/*
+ * Jakefile
+ * __project.name__
+ *
+ * Created by __user.name__ on __project.date__.
+ * Copyright __project.year__, __organization.name__ All rights reserved.
+ */
+
+var ENV = require("system").env,
+    FILE = require("file"),
+    task = require("jake").task,
+    FileList = require("jake").FileList,
+    blend = require("cappuccino/jake").blend,
+    configuration = ENV["CONFIG"] || ENV["CONFIGURATION"] || ENV["c"] || "Debug";
+
+
+blend ("__project.nameasidentifier__.blend", function(__project.nameasidentifier__Task)
+{
+    __project.nameasidentifier__Task.setBuildIntermediatesPath(FILE.join("Build", "__project.nameasidentifier__.build", configuration))
+    __project.nameasidentifier__Task.setBuildPath(FILE.join("Build", configuration));
+
+    __project.nameasidentifier__Task.setThemeDescriptors(new FileList("ThemeDescriptors.j"));
+    __project.nameasidentifier__Task.setPlatforms([BundleTask.Platform.Browser, BundleTask.Platform.CommonJS]);
+    __project.nameasidentifier__Task.setIdentifier("com.280n.__project.identifier__");
+    __project.nameasidentifier__Task.setResources(new FileList("Resources/*"));
+});
+
+task ("build", ["__project.nameasidentifier__.blend"]);
+task ("default", ["build"]);
