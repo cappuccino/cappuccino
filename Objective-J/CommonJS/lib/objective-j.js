@@ -15,7 +15,7 @@ window.OBJJ_HOME = exports.OBJJ_HOME = FILE.resolve(module.path, "..");
 var frameworksPath = FILE.resolve(window.OBJJ_HOME, "Frameworks/"),
     objectivejPath = FILE.resolve(frameworksPath, "Objective-J/", "CommonJS.platform/", "Objective-J.js");
 
-window.OBJJ_INCLUDE_PATHS = [frameworksPath];
+window.OBJJ_INCLUDE_PATHS = exports.OBJJ_INCLUDE_PATHS = [frameworksPath];
 
 // Find all narwhal packages with Objective-J frameworks.
 
