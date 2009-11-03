@@ -75,9 +75,6 @@ function gen(/*va_args*/)
         // FIXME???
         OS.system("cp -vR " + sourceTemplate + " " + destinationProject);
 
-        // FIXME: *JUST* for fixed glob
-        require("jake");
-
         var files = FILE.glob(FILE.join(destinationProject, "**", "*")),
             index = 0,
             count = files.length,
@@ -95,16 +92,16 @@ function gen(/*va_args*/)
             if (FILE.isDirectory(path))
                 continue;
 
-            var contents = FILE.read(path, { charset : "UTF-8" }),
-                key = nil,
-                keyEnumerator = [configuration keyEnumerator];
-
             // FIXME: HACK
             if (path.indexOf('.gif') !== -1)
                 continue;
 
+            var contents = FILE.read(path, { charset : "UTF-8" }),
+                key = nil,
+                keyEnumerator = [configuration keyEnumerator];
+
             while (key = [keyEnumerator nextObject])
-                contents = contents.replace(new RegExp("__" + key + "__", 'g'), [configuration valueForKey:key]);
+                contents = contents.replace(new RegExp("__" + RegExp.escape(key) + "__", 'g'), [configuration valueForKey:key]);
 
             FILE.write(path, contents, { charset: "UTF-8"});
         }

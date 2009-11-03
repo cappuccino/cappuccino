@@ -16,6 +16,7 @@ var DefaultDictionary       = nil,
 {
     CPString        path;
     CPDictionary    dictionary;
+    CPDictionary    temporaryDictionary;
 }
 
 + (void)initialize
@@ -62,11 +63,14 @@ var DefaultDictionary       = nil,
     if (self)
     {
         path = aPath;
-        dictionary = [CPDictionary dictionary],
         temporaryDictionary = [CPDictionary dictionary];
 
         if (path && FILE.isReadable(path))
             dictionary = plist.readPlist(path);
+
+        // readPlist will return nil if the file is empty
+        if (!dictionary)
+            dictionary = [CPDictionary dictionary];
     }
 
     return self;
