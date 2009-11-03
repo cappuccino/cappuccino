@@ -409,7 +409,7 @@ BundleTask.prototype.defineResourceTask = function(aResourcePath, aDestinationPa
     // NOT:
     // (extname === ".cib" && (FILE.exists(extensionless + '.xib') || FILE.exists(extensionless + '.nib')) ||
     // (extname === ".xib" || extname === ".nib") && !this.shouldIncludeNibsAndXibs())
-    if ((extension !== ".cib" || !FILE.exists(extensionless + ".xib") && FILE.exists(extensionless + ".nib")) &&
+    if ((extension !== ".cib" || !FILE.exists(extensionless + ".xib") && !FILE.exists(extensionless + ".nib")) &&
         ((extension !== ".xib" && extension !== ".nib") || this.includesNibsAndXibs()))
     {
         filedir (aDestinationPath, [aResourcePath], function()
