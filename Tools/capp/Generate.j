@@ -92,8 +92,8 @@ function gen(/*va_args*/)
             if (FILE.isDirectory(path))
                 continue;
 
-            // FIXME: HACK
-            if (path.indexOf('.gif') !== -1)
+            // Don't do this for images.
+            if ([".png", ".jpg", ".jpeg", ".gif", ".tif", ".tiff"].indexOf(FILE.extension(path)) !== -1)
                 continue;
 
             var contents = FILE.read(path, { charset : "UTF-8" }),
