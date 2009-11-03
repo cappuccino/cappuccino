@@ -15,60 +15,49 @@ window.OBJJ_HOME = exports.OBJJ_HOME = FILE.resolve(module.path, "..");
 var frameworksPath = FILE.resolve(window.OBJJ_HOME, "Frameworks/"),
     objectivejPath = FILE.resolve(frameworksPath, "Objective-J/", "CommonJS.platform/", "Objective-J.js");
 
-window.OBJJ_INCLUDE_PATHS = exports.OBJJ_INCLUDE_PATHS = [frameworksPath];
+var OBJJ_INCLUDE_PATHS = window.OBJJ_INCLUDE_PATHS = exports.OBJJ_INCLUDE_PATHS = [];
 
 // Find all narwhal packages with Objective-J frameworks.
+exports.objj_frameworks = [];
+exports.objj_debug_frameworks = [];
 
-var name = null,
-    catalog = require("packages").catalog;
-
-for (name in catalog)
+var catalog = require("packages").catalog;
+for (var name in catalog)
 {
     if (!catalog.hasOwnProperty(name))
-        return;
+        continue;
 
     var info = catalog[name];
-
     if (!info)
         continue;
 
-    var frameworks =    info["objective-j-frameworks"] ||
-                        info["objj-frameworks"] || 
-                        info["cappuccino-frameworks"] ||
-                        info["capp-frameworks"] ||
-                        info["frameworks"];
-
-    if (frameworks)
-    {
+    var frameworks = info["objj-frameworks"];
+    if (frameworks) {
         if (!Array.isArray(frameworks))
-            frameworks = [frameworks + ""];
+            frameworks = [String(frameworks)];
 
-        window.OBJJ_INCLUDE_PATHS = window.OBJJ_INCLUDE_PATHS.concat(frameworks.map(function(aFrameworkPath)
-        {
+        exports.objj_frameworks.push.apply(exports.objj_frameworks, frameworks.map(function(aFrameworkPath) {
             return FILE.join(info.directory, aFrameworkPath);
         }));
     }
 
-     var debugFrameworks =  info["objective-j-debug-frameworks"] || 
-                            info["objj-debug-frameworks"] || 
-                            info["cappuccino-debug-frameworks"] ||
-                            info["capp-debug-frameworks"] ||
-                            info["debug-frameworks"];
-
-    if (debugFrameworks)
-    {
+    var debugFrameworks = info["objj-debug-frameworks"];
+    if (debugFrameworks) {
         if (!Array.isArray(debugFrameworks))
-            debugFrameworks = [debugFrameworks + ""];
+            debugFrameworks = [String(debugFrameworks)];
 
-        window.OBJJ_INCLUDE_PATHS = window.OBJJ_INCLUDE_PATHS.concat(debugFrameworks.map(function(aFrameworkPath)
-        {
+        exports.objj_debug_frameworks.push.apply(exports.objj_debug_frameworks, debugFrameworks.map(function(aFrameworkPath) {
             return FILE.join(info.directory, aFrameworkPath);
         }));
     }
 }
 
+// push to the front of the array lowest priority first.
+OBJJ_INCLUDE_PATHS.unshift.apply(OBJJ_INCLUDE_PATHS, exports.objj_debug_frameworks);
+OBJJ_INCLUDE_PATHS.unshift.apply(OBJJ_INCLUDE_PATHS, exports.objj_frameworks);
+
 if (system.env["OBJJ_INCLUDE_PATHS"])
-    window.OBJJ_INCLUDE_PATHS = system.env["OBJJ_INCLUDE_PATHS"].split(":").concat(window.OBJJ_INCLUDE_PATHS);
+    OBJJ_INCLUDE_PATHS.unshift.apply(OBJJ_INCLUDE_PATHS, system.env["OBJJ_INCLUDE_PATHS"].split(":"));
 
 // bring the "window" object into scope.
 // TODO: somehow make window object the top scope?

@@ -120,37 +120,67 @@ function gen(/*va_args*/)
 function createFrameworksInFile(/*String*/ aFile, /*Boolean*/ symlink, /*Boolean*/ force)
 {
     var destination = FILE.path(aFile);
+    var frameworks = ["Foundation", "AppKit"];
     
     if (!destination.isDirectory())
         throw new Error("Can't create Frameworks. Directory does not exist: " + destination);
-    
-    if (symlink && !(SYSTEM.env["CAPP_BUILD"] || SYSTEM.env["STEAM_BUILD"]))
-        throw "CAPP_BUILD or STEAM_BUILD must be defined";
 
-    var installedFrameworks = FILE.path(FILE.join(OBJJ.OBJJ_HOME, "lib", "Frameworks")),
-        builtFrameworks = FILE.path(SYSTEM.env["CAPP_BUILD"] || SYSTEM.env["STEAM_BUILD"]);
-    
-    var sourceFrameworks = symlink ? builtFrameworks.join("Release") : installedFrameworks,
-        sourceDebugFrameworks = symlink ? builtFrameworks.join("Debug") : installedFrameworks.join("Debug");
-        
     var destinationFrameworks = destination.join("Frameworks"),
         destinationDebugFrameworks = destination.join("Frameworks", "Debug");
-    
+
     print("Creating Frameworks directory in " + destinationFrameworks + ".");
-    
+
     //destinationFrameworks.mkdirs(); // redundant
     destinationDebugFrameworks.mkdirs();
-    
-    ["Objective-J", "Foundation", "AppKit"].forEach(function(framework) {
-        installFramework(
-            sourceFrameworks.join(framework),
-            destinationFrameworks.join(framework),
-            force, symlink);
-        installFramework(
-            sourceDebugFrameworks.join(framework),
-            destinationDebugFrameworks.join(framework),
-            force, symlink);
-    });
+
+    if (symlink) {
+        if (!(SYSTEM.env["CAPP_BUILD"] || SYSTEM.env["STEAM_BUILD"]))
+            throw "CAPP_BUILD or STEAM_BUILD must be defined";
+
+        var builtFrameworks = FILE.path(SYSTEM.env["CAPP_BUILD"] || SYSTEM.env["STEAM_BUILD"]);
+
+        var sourceFrameworks = builtFrameworks.join("Release"),
+            sourceDebugFrameworks = builtFrameworks.join("Debug");
+
+        frameworks.concat("Objective-J").forEach(function(framework) {
+            installFramework(sourceFrameworks.join(framework), destinationFrameworks.join(framework), force, true);
+            installFramework(sourceDebugFrameworks.join(framework), destinationDebugFrameworks.join(framework), force, true);
+        });
+    }
+    else {
+        // Objective-J. Take from OBJJ_HOME.
+        var objjHome = FILE.path(OBJJ.OBJJ_HOME);
+        var objjPath = objjHome.join("Frameworks", "Objective-J");
+        var objjDebugPath = objjHome.join("Frameworks", "Debug", "Objective-J");
+        
+        installFramework(objjPath, destinationFrameworks.join("Objective-J"), force, false);
+        installFramework(objjDebugPath, destinationDebugFrameworks.join("Objective-J"), force, false);
+        
+        // Frameworks. Search frameworks paths
+        frameworks.forEach(function(framework) {
+            var found;
+            
+            for (var i = 0, found = false; !found && i < OBJJ.objj_frameworks.length; i++) {
+                var sourceFramework = FILE.path(OBJJ.objj_frameworks[i]).join(framework);
+                if (FILE.isDirectory(sourceFramework)) {
+                    installFramework(sourceFramework, destinationFrameworks.join(framework), force, false);
+                    found = true;
+                }
+            }
+            if (!found)
+                print("Warning: Couldn't find framework \"" + framework +"\"");
+            
+            for (var i = 0, found = false; !found && i < OBJJ.objj_debug_frameworks.length; i++) {
+                var sourceDebugFramework = FILE.path(OBJJ.objj_debug_frameworks[i]).join(framework);
+                if (FILE.isDirectory(sourceDebugFramework)) {
+                    installFramework(sourceDebugFramework, destinationDebugFrameworks.join(framework), force, false);
+                    found = true;
+                }
+            }
+            if (!found)
+                print("Warning: Couldn't find debug framework \"" + framework +"\"");
+        });
+    }
 }
 
 function installFramework(source, dest, force, symlink) {
