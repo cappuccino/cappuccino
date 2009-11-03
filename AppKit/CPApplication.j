@@ -459,7 +459,10 @@ CPRunContinuesResponse  = -1002;
 
     // Check if this is a candidate for key equivalent...
     if ([anEvent _couldBeKeyEquivalent] && [self _handleKeyEquivalent:anEvent])
+    {
+        [[[anEvent window] platformWindow] _propagateCurrentDOMEvent:NO];
         return;
+    }
 
     if (_eventListeners.length)
     {

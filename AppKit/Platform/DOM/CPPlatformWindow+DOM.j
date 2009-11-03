@@ -448,14 +448,16 @@ var supportsNativeDragAndDrop = [CPPlatform supportsDragAndDrop];
                               KeyCodesToPrevent[aDOMEvent.keyCode];
 
     var isNativePasteEvent = NO,
-        isNativeCopyOrCutEvent = NO;
+        isNativeCopyOrCutEvent = NO,
+        overrideCharacters = nil;
     
     switch (aDOMEvent.type)
     {
         case "keydown":     // Grab and store the keycode now since it is correct and consistent at this point.
                             _keyCode = aDOMEvent.keyCode;
-                            
+
                             var characters = String.fromCharCode(_keyCode).toLowerCase();
+                            overrideCharacters = modifierFlags & CPShiftKeyMask ? characters.toUpperCase() : characters;
                             
                             // If this could be a native PASTE event, then we need to further examine it before 
                             // sending a CPEvent.  Select our element to see if anything gets pasted in it.
@@ -474,7 +476,7 @@ var supportsNativeDragAndDrop = [CPPlatform supportsDragAndDrop];
                             // can capture our internal Cappuccino pasteboard.
                             else if ((characters == "c" || characters == "x") && (modifierFlags & CPPlatformActionKeyMask))
                                 isNativeCopyOrCutEvent = YES;
-    
+
                             // Also, certain browsers (IE and Safari), have broken keyboard supportwhere they don't send keypresses for certain events.
                             // So, allow the keypress event to handle the event if we are not a browser with broken (remedial) key support...
                             else if (!CPFeatureIsCompatible(CPJavascriptRemedialKeySupport))
@@ -487,6 +489,7 @@ var supportsNativeDragAndDrop = [CPPlatform supportsDragAndDrop];
                             // If this is in fact our broke state, continue to keypress and send the keydown.
         case "keypress":    // If the source of this event is our pasteboard element, then simply let it continue 
                             // as normal, so that the paste event can successfully complete.
+
                             if ((aDOMEvent.target || aDOMEvent.srcElement) == _DOMPasteboardElement)
                                 return;
                             
@@ -495,20 +498,22 @@ var supportsNativeDragAndDrop = [CPPlatform supportsDragAndDrop];
                                 isARepeat = (_charCodes[keyCode] != nil);
 
                             _charCodes[keyCode] = charCode;
-                                
-                            var characters = String.fromCharCode(charCode),
+
+                            var characters = overrideCharacters || String.fromCharCode(charCode),
                                 charactersIgnoringModifiers = characters.toLowerCase();
-                                                                        
+
+                            // Safari won't send proper capitalization during cmd-key events
+                            if (!overrideCharacters && (modifierFlags & CPCommandKeyMask) && (modifierFlags & CPShiftKeyMask))
+                                characters = characters.toUpperCase();
+
                             event = [CPEvent keyEventWithType:CPKeyDown location:location modifierFlags:modifierFlags
                                         timestamp:timestamp windowNumber:windowNumber context:nil
                                         characters:characters charactersIgnoringModifiers:charactersIgnoringModifiers isARepeat:isARepeat keyCode:keyCode];
-                            
+
                             if (isNativePasteEvent)
                             {
                                 _pasteboardKeyDownEvent = event;
-                                
                                 window.setNativeTimeout(function () { [self _checkPasteboardElement] }, 0);
-                                
                                 return;
                             }
 
