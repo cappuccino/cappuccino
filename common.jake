@@ -1,4 +1,28 @@
 
+function ensurePackageUpToDate(packageName, requiredVersion)
+{
+    var version = require("packages").catalog[packageName].version;
+
+    if (version && require("util").compare(version.split("."), requiredVersion.split(".")) !== -1)
+        return;
+
+    print("Your copy of " + packageName + " is out of date (version " + version + "). Update? yes or no:");
+
+    var response = system.stdin.readLine();
+
+    if (response !== "yes\n")
+    {
+        print("Jake aborted.");
+        require("os").exit(1);
+    }
+
+    require("os").system("NARWHAL_ENGINE_HOME='' NARWHAL_ENGINE=rhino tusk install --force " + packageName);
+}
+
+// UPDATE THESE TO PICK UP CORRESPONDING CHANGES IN DEPENDENCIES
+ensurePackageUpToDate("jake", "0.1.1");
+ensurePackageUpToDate("browserjs", "0.1");
+
 var Jake = require("jake");
 
 global.ENV  = require("system").env;
