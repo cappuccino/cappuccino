@@ -978,7 +978,8 @@ var secureStringForString = function(aString)
     // This is true for when aString === "" and null/undefined.
     if (!aString)
         return "";
-    return Array(aString.length).join(CPSecureTextFieldCharacter);
+
+    return Array(aString.length+1).join(CPSecureTextFieldCharacter);
 }
 
 
