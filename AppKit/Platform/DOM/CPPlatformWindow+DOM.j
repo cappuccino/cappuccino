@@ -715,7 +715,7 @@ var supportsNativeDragAndDrop = [CPPlatform supportsDragAndDrop];
         newEvent.preventDefault = function(){if(aDOMEvent.preventDefault) aDOMEvent.preventDefault()};
         newEvent.stopPropagation = function(){if(aDOMEvent.stopPropagation) aDOMEvent.stopPropagation()};
         
-        [self _bridgeMouseEvent:newEvent];
+        [self mouseEvent:newEvent];
     
         return;
     }
@@ -738,10 +738,10 @@ var supportsNativeDragAndDrop = [CPPlatform supportsDragAndDrop];
     if (type === @"dblclick")
     {
         _overriddenEventType = CPDOMEventMouseDown;
-        [self _bridgeMouseEvent:aDOMEvent];
+        [self mouseEvent:aDOMEvent];
 
         _overriddenEventType = CPDOMEventMouseUp;
-        [self _bridgeMouseEvent:aDOMEvent];
+        [self mouseEvent:aDOMEvent];
 
         _overriddenEventType = nil;
 
