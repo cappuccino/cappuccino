@@ -154,9 +154,25 @@ BundleTask.prototype.version = function()
     return this._version;
 }
 
-BundleTask.prototype.setSources = function(sources)
+BundleTask.prototype.setSources = function(sources, environments)
 {
-    this._sources = sources;
+    if (!environments)
+        this._sources = sources;
+    else
+    {
+        if (Array.isArray(environments))
+            environments = environment.Environment.flattenedEnvironments(environments);
+        else
+            environments = environments.flattenedEnvironments();
+
+        if (!this._sources)
+            this._sources = { };
+
+        environments.forEach(function(anEnvironment)
+        {
+            this._sources[anEnvironment] = sources;
+        }, this);
+    }
 }
 
 BundleTask.prototype.sources = function()
@@ -688,7 +704,12 @@ BundleTask.prototype.defineSourceTasks = function()
             staticPath = this.buildProductStaticPathForEnvironment(anEnvironment);
 
         if (!Array.isArray(environmentSources) && environmentSources.constructor !== Jake.FileList)
+        {
             environmentSources = environmentSources[anEnvironment];
+
+            if (!environmentSources)
+                return;
+        }
 
         var replacedFiles = [],
             environmentCompilerFlags = anEnvironment.compilerFlags().join(" ") + " " + compilerFlags;
