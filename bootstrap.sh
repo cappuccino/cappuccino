@@ -52,7 +52,7 @@ if ! which -s "narwhal"; then
     exit 1
 fi
 
-echo "Installing Objective-J and Cappuccino tools..."
+echo "Installing necessary dependencies..."
 tusk install browserjs
 tusk install jake
 
