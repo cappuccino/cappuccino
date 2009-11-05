@@ -22,24 +22,29 @@ var OBJJ_PREPROCESSOR_SYNTAX          = exports.OBJJ_PREPROCESSOR_SYNTAX        
 var SHRINKSAFE_PATH = FILE.join(objj.OBJJ_HOME, "shrinksafe", "shrinksafe.jar"),
     RHINO_PATH = FILE.join(objj.OBJJ_HOME, "shrinksafe", "js.jar")
 
+var compressor = null;
+
+function sharedCompressor()
+{
+    if (!compressor)
+        compressor = OS.popen("java -server -Dfile.encoding=UTF-8 -classpath " + RHINO_PATH + ":" +  SHRINKSAFE_PATH + " org.dojotoolkit.shrinksafe.Main");
+
+    return compressor;
+}
+
 function compress(/*String*/ aCode, /*String*/ FIXME)
 {
-    // FIXME: figure out why this doesn't work on Windows/Cygwin
-    //var tmpFile = java.io.File.createTempFile("OBJJC", "");
-    /*var tmpFile = new java.io.File("/tmp/" + FIXME + Math.random() + ".tmp");
-    tmpFile.deleteOnExit();
-    tmpFile = tmpFile.getAbsolutePath();
-    */
-
     var tmpFile = FILE.join("/tmp", FIXME + Math.random() + ".tmp");
 
     FILE.write(tmpFile, aCode, { charset:"UTF-8" });
 
-    var shrinksafe = OS.popen("java -Dfile.encoding=UTF-8 -classpath " + RHINO_PATH + ":" +  SHRINKSAFE_PATH + " org.dojotoolkit.shrinksafe.Main " + tmpFile),
+    var compressor = sharedCompressor();
         output = "",
         chunk = "";
 
-    while (chunk = shrinksafe.stdout.read())
+    compressor.stdin.write(tmpFile + "\n");
+
+    while ((chunk = compressor.stdout.readLine()) !== "/*----*/\n")
         output += chunk;
 
     return output;
@@ -77,7 +82,7 @@ function compileWithResolvedFlags(aFilePath, objjcFlags, gccFlags)
         else
         {            
             var code = GET_CODE(fragment);
-            
+
             if (shouldCheckSyntax)
             {
                 try
