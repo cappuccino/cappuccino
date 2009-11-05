@@ -16,9 +16,9 @@ app ("nib2cib", function(nib2cibTask)
     nib2cibTask.setAuthor("280 North, Inc.");
     nib2cibTask.setEmail("feedback @nospam@ 280north.com");
     nib2cibTask.setSummary("nib2cib converts Cocoa nib and xibs to Cappuccino cibs");
-    nib2cibTask.setSources(FILE.glob("*.j"));//    t.sources       = FileList['**/*.j']
+    nib2cibTask.setSources(FILE.glob("**/*.j"));
     nib2cibTask.setResources(FILE.glob("Resources/*"));
-    nib2cibTask.setPlatforms([BundleTask.Platform.CommonJS]);
+    nib2cibTask.setEnvironments(require("objective-j/jake/environment").CommonJS);
     nib2cibTask.setFlattensSources(true);
 
     if ($CONFIGURATION === "Release")

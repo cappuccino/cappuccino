@@ -115,7 +115,7 @@ function partial_require(path, exports)
 global.setupEnvironment = function()
 {
     if (partial_require(FILE.join($BUILD_CONFIGURATION_DIR, "CommonJS", "objective-j")) ||
-        partial_require(FILE.join($HOME_DIR, "Objective-J", "CommonJS", "objective-j")))
+        partial_require(FILE.join($HOME_DIR, "Objective-J", "CommonJS")))
     {
         var OBJECTIVE_J_JAKE = require("objective-j/jake");
 
@@ -173,8 +173,6 @@ global.mv = function(/*String*/ from, /*String*/ to)
 {
     FILE.move(from, to);
 }
-
-//require 'objective-j'
 
 function serializedENV()
 {

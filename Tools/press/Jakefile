@@ -16,7 +16,8 @@ app ("press", function(pressTask)
     pressTask.setVersion("0.7.9");
     pressTask.setSources(FILE.glob("*.j"));
     pressTask.setResources(FILE.glob("Resources/*"));
-    pressTask.setPlatforms([BundleTask.Platform.CommonJS]);
+    pressTask.setEnvironments(require("objective-j/jake/environment").CommonJS);
+    pressTask.setFlattensSources(true);
 
     if ($CONFIGURATION === "Release")
         pressTask.setCompilerFlags("-O");

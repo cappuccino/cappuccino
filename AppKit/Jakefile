@@ -19,7 +19,6 @@ appKitTask = framework ("AppKit", function(appKitTask)
     appKitTask.setLicense(BundleTask.License.LGPL_v2_1);
     appKitTask.setSources(AppKitFiles);
     appKitTask.setResources(new FileList("Resources/**/*"));
-    appKitTask.setPlatforms([BundleTask.Platform.Browser, BundleTask.Platform.CommonJS]);
     appKitTask.setFlattensSources(true);
     appKitTask.setInfoPlistPath("Info.plist");
 

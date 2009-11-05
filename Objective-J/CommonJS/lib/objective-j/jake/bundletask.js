@@ -5,21 +5,41 @@ var FILE = require("file"),
     Jake = require("jake"),
     CLEAN = require("jake/clean").CLEAN,
     CLOBBER = require("jake/clean").CLOBBER,
-    base64 = require("base64");
+    base64 = require("base64"),
+    environment = require("objective-j/jake/environment");
 
 var Task = Jake.Task,
     filedir = Jake.filedir;
 
+function isImage(/*String*/ aFilename)
+{
+    return  FILE.isFile(aFilename) &&
+            UTIL.has([".png", ".jpg", ".jpeg", ".gif", ".tif", ".tiff"], FILE.extension(aFilename).toLowerCase());
+}
+
+function mimeType(/*String*/ aFilename)
+{
+    return  {
+                ".png"  : "image/png",
+                ".jpg"  : "image/jpeg",
+                ".jpeg" : "image/jpeg",
+                ".gif"  : "image/gif",
+                ".tif"  : "image/tiff",
+                ".tiff" : "image/tiff"
+            }[FILE.extension(aFilename).toLowerCase()];
+}
+
 function BundleTask(aName, anApplication)
 {
     Task.apply(this, arguments);
+
+    this.setEnvironments([environment.Browsers, environment.CommonJS]);
 
     this._author = null;
     this._email = null;
     this._summary = null;
 
     this._license = null;
-    this._platforms = [BundleTask.Platform.ObjJ];
     this._sources = null;
     this._resources = null;
     this._spritesResources = true;
@@ -57,17 +77,32 @@ BundleTask.defineTask = function(/*String*/ aName, /*Function*/ aFunction)
     return bundleTask;
 }
 
-BundleTask.Platform =   {
-                            "ObjJ"      : "ObjJ",
-                            "CommonJS"  : "CommonJS",
-                            "Browser"   : "Browser"
-                        };
+BundleTask.prototype.setEnvironments = function(environments)
+{
+    if (arguments.length < 1)
+        this._environments = [];
 
-BundleTask.PLATFORM_DEFAULT_FLAGS = {
-                                        "ObjJ"      : [],
-                                        "CommonJS"  : ['-DPLATFORM_RHINO -DPLATFORM_COMMONJS'],
-                                        "Browser"   : ['-DPLATFORM_BROWSER', '-DPLATFORM_DOM']
-                                    };
+    else if (arguments.length > 1)
+        this._environments = Array.prototype.slice.apply(environments);
+
+    else if (typeof environments.slice === "function")
+        this._environments = environments.slice();
+
+    else
+        this._environments = [environments];
+
+    this._flattenedEnvironments = environment.Environment.flattenedEnvironments(this._environments);
+}
+
+BundleTask.prototype.environments = function()
+{
+    return this._environments;
+}
+
+BundleTask.prototype.flattenedEnvironments = function()
+{
+    return this._flattenedEnvironments;
+}
 
 BundleTask.prototype.setAuthor = function(anAuthor)
 {
@@ -117,16 +152,6 @@ BundleTask.prototype.setVersion = function(aVersion)
 BundleTask.prototype.version = function()
 {
     return this._version;
-}
-
-BundleTask.prototype.setPlatforms = function(platforms)
-{
-    this._platforms = platforms;
-}
-
-BundleTask.prototype.platforms = function()
-{
-    return this._platforms;
 }
 
 BundleTask.prototype.setSources = function(sources)
@@ -271,9 +296,14 @@ BundleTask.prototype.buildIntermediatesProductPath = function()
     return this.buildIntermediatesPath() || FILE.join(this.buildPath(), this.productName() + ".build");
 }
 
-BundleTask.prototype.buildProductStaticPathForPlatform = function(aPlatform)
+BundleTask.prototype.buildProductStaticPathForEnvironment = function(anEnvironment)
 {
-    return FILE.join(this.buildProductPath(), aPlatform + ".platform", this.productName() + ".sj");
+    return FILE.join(this.buildProductPath(), anEnvironment.name() + ".environment", this.productName() + ".sj");
+}
+
+BundleTask.prototype.buildProductMHTMLPathForEnvironment = function(anEnvironment)
+{
+    return FILE.join(this.buildProductPath(), anEnvironment.name() + ".environment", this.productName() + ".mhtml");
 }
 
 BundleTask.prototype.defineTasks = function()
@@ -283,6 +313,7 @@ BundleTask.prototype.defineTasks = function()
     this.defineInfoPlistTask();
     this.defineLicenseTask();
     this.defineStaticTask();
+    this.defineMHTMLTask();
 
     CLEAN.include(this.buildIntermediatesProductPath());
     CLOBBER.include(this.buildProductPath());
@@ -309,7 +340,10 @@ BundleTask.prototype.infoPlist = function()
     infoPlist.setValue("CPBundleIdentifier", this.identifier());
     infoPlist.setValue("CPBundleVersion", this.version());
     infoPlist.setValue("CPBundlePackageType", this.packageType());
-    infoPlist.setValue("CPBundlePlatforms", this.platforms());
+    infoPlist.setValue("CPBundleEnvironments", this.flattenedEnvironments().map(function(anEnvironment)
+    {
+        return anEnvironment.name();
+    }));
     infoPlist.setValue("CPBundleExecutable", this.productName() + ".sj");
 
     var principalClass = this.principalClass();
@@ -376,36 +410,34 @@ BundleTask.prototype.resourcesPath = function()
     return FILE.join(this.buildProductPath(), "Resources", "");
 }
 
-var IMAGE_EXTENSIONS =  [ ".png", ".jpg", ".jpeg", ".gif", ".tif", ".tiff"];
-
-var MIME_TYPES =    {
-                        ".png"  : "image/png",
-                        ".jpg"  : "image/jpeg",
-                        ".jpeg" : "image/jpeg",
-                        ".gif"  : "image/gif",
-                        ".tif"  : "image/tiff",
-                        ".tiff" : "image/tiff"
-                    };
-
 BundleTask.prototype.defineResourceTask = function(aResourcePath, aDestinationPath)
 {
-    var extension = FILE.extension(aResourcePath).toLowerCase(),
-        extensionless = aResourcePath.substr(0, aResourcePath.length - extension.length);
-
     // Don't sprite images larger than 32KB, IE 8 doesn't like it.
-    if (this.spritesResources() && IMAGE_EXTENSIONS.indexOf(extension) !== -1 && FILE.size(aResourcePath) < 32768)
+    if (this.spritesResources() && isImage(aResourcePath) && FILE.size(aResourcePath) < 32768)
     {
-        var spritedDestinationPath = FILE.join(this.buildIntermediatesProductPath(), "Browser" + ".platform", "Resources", FILE.relative(this.resourcesPath(), aDestinationPath));
-
-        filedir (spritedDestinationPath, function()
+        this.flattenedEnvironments().forEach(function(/*Environment*/ anEnvironment)
         {
-            var dataURI = "data:" + MIME_TYPES[extension] + ";base64," + base64.encode(FILE.read(aResourcePath, { mode : 'b'}));
-            FILE.write(spritedDestinationPath, dataURI.length + ";" + dataURI, { charset:"UTF-8" });
-        });
+            if (!anEnvironment.spritesImages())
+                return;
 
-        filedir (this.buildProductStaticPathForPlatform("Browser"), [spritedDestinationPath]);
+            var folder = anEnvironment.name() + ".environment",
+                spritedDestinationPath = FILE.join(this.buildIntermediatesProductPath(), folder, "Resources", FILE.relative(this.resourcesPath(), aDestinationPath));
+
+            filedir (spritedDestinationPath, function()
+            {
+                FILE.write(spritedDestinationPath, base64.encode(FILE.read(aResourcePath, { mode : 'b'})), { charset:"UTF-8" });
+            });
+
+            if (anEnvironment.spritesImagesToMHTMLFile())
+                filedir (this.buildProductMHTMLPathForEnvironment(anEnvironment), [spritedDestinationPath]);
+
+            // Add this as a dependency unconditionally because we need to set up the URL map either way.
+            filedir (this.buildProductStaticPathForEnvironment(anEnvironment), [spritedDestinationPath]);
+        }, this);
     }
 
+    var extension = FILE.extension(aResourcePath),
+        extensionless = aResourcePath.substr(0, aResourcePath.length - extension.length);
     // NOT:
     // (extname === ".cib" && (FILE.exists(extensionless + '.xib') || FILE.exists(extensionless + '.nib')) ||
     // (extname === ".xib" || extname === ".nib") && !this.shouldIncludeNibsAndXibs())
@@ -457,18 +489,18 @@ function directoryInCommon(filenames)
 
         if (!aCommonDirectory)
             aCommonDirectory = directory;
-        
+
         else
         {
             var index = 0,
                 count = Math.min(directory.length, aFilename.length);
-    
+
             for (; index < count && aCommonDirectory.charAt(index) === directory.charAt(index); ++index) ;
-    
+
             aCommonDirectory = directory.substr(0, index);
         }
     });
-print("DIRECTORY IN COMMON IS " + aCommonDirectory);
+
     return aCommonDirectory;
 }
 
@@ -508,12 +540,14 @@ BundleTask.prototype.defineResourceTasks = function()
 
 BundleTask.prototype.defineStaticTask = function()
 {
-    this.platforms().forEach(function(/*String*/ aPlatform)
+    this.flattenedEnvironments().forEach(function(/*Environment*/ anEnvironment)
     {
-        var sourcesPath = FILE.join(this.buildIntermediatesProductPath(), aPlatform + ".platform", "Sources", ""),
-            resourcesPath = FILE.join(this.buildIntermediatesProductPath(), aPlatform + ".platform", "Resources", ""),
-            staticPath = this.buildProductStaticPathForPlatform(aPlatform),
-            flattensSources = this.flattensSources();
+        var folder = anEnvironment.name() + ".environment",
+            sourcesPath = FILE.join(this.buildIntermediatesProductPath(), folder, "Sources", ""),
+            resourcesPath = FILE.join(this.buildIntermediatesProductPath(), folder, "Resources", ""),
+            staticPath = this.buildProductStaticPathForEnvironment(anEnvironment),
+            flattensSources = this.flattensSources(),
+            productName = this.productName();
 
         filedir (staticPath, function(aTask)
         {
@@ -536,29 +570,95 @@ BundleTask.prototype.defineStaticTask = function()
                     var relativePath = flattensSources ? FILE.basename(aFilename) : FILE.relative(sourcesPath, aFilename);
 
                     fileStream.write("p;" + relativePath.length + ";" + relativePath);
+
+                    // FIXME: We need to do this for now due to file.read adding newlines. Revert when fixed.
+                    //fileStream.write(FILE.read(aFilename, { charset:"UTF-8" }));
+                    fileStream.write(FILE.read(aFilename, { mode:"b" }).decodeToString("UTF-8"));
                 }
 
                 else if (aFilename.indexOf(resourcesPath) === 0)
                 {
-                    var resourcePath = "Resources/" + FILE.relative(resourcesPath, aFilename);
+                    var contents = "",
+                        resourcePath = "Resources/" + FILE.relative(resourcesPath, aFilename);
 
-                    if (IMAGE_EXTENSIONS.indexOf(FILE.extension(aFilename)) !== -1)
+                    if (isImage(aFilename))
+                    {
                         fileStream.write("u;");
+
+                        if (anEnvironment.spritesImagesToStaticFile())
+                            contents += "data:" + mimeType(aFilename) + ";base64," + FILE.read(aFilename, { charset:"UTF-8" });
+                        else if (anEnvironment.spritesImagesToMHTMLFile())
+                            contents = "mhtml:" + FILE.join(folder, productName + ".mhtml!") + resourcePath;
+
+                        contents = contents.length + ";" + contents;
+                    }
                     else
+                    {
                         fileStream.write("p;");
+                        contents = FILE.read(aFilename, { charset:"UTF-8" });
+                    }
 
-                    fileStream.write(resourcePath.length + ";" + resourcePath);
+                    fileStream.write(resourcePath.length + ";" + resourcePath + contents);
                 }
-
-                // FIXME: We need to do this for now due to file.read adding newlines. Revert when fixed.
-                //fileStream.write(FILE.read(aFilename, { charset:"UTF-8" }));
-                fileStream.write(FILE.read(aFilename, { mode:"b" }).decodeToString("UTF-8"));
             }, this);
 
             fileStream.close();
         });
 
         this.enhance([staticPath]);
+    }, this);
+}
+
+BundleTask.prototype.defineMHTMLTask = function()
+{
+    var environments = this.flattenedEnvironments();
+
+    if (!environments.some(function(anEnvironment)
+    {
+        return anEnvironment.spritesImagesToMHTMLFile();
+    }))
+        return;
+
+    environments.filter(function(/*Environment*/ anEnvironment)
+    {
+        return anEnvironment.spritesImagesToMHTMLFile();
+    }).forEach(function(/*Environment*/ anEnvironment)
+    {
+        var folder = anEnvironment.name() + ".environment",
+            resourcesPath = FILE.join(this.buildIntermediatesProductPath(), folder, "Resources", ""),
+            MHTMLPath = this.buildProductMHTMLPathForEnvironment(anEnvironment);
+
+        filedir (MHTMLPath, function(aTask)
+        {
+            print("Creating MHTML file... " + MHTMLPath);
+
+            var fileStream = FILE.open(MHTMLPath, "w+", { charset:"UTF-8" });
+
+            fileStream.write("/*\r\nContent-Type: multipart/related; boundary=\"_ANY_STRING_WILL_DO_AS_A_SEPARATOR\"\r\n\r\n");
+
+            aTask.prerequisites().forEach(function(aFilename)
+            {
+                // Our prerequisites will contain directories due to filedir.
+                if (!isImage(aFilename))
+                    return;
+
+                var resourcePath = "Resources/" + FILE.relative(resourcesPath, aFilename);
+
+                fileStream.write("--_ANY_STRING_WILL_DO_AS_A_SEPARATOR\r\n");
+                fileStream.write("Content-Location:" + resourcePath + "\r\nContent-Transfer-Encoding:base64\r\n\r\n");
+
+                var contents = FILE.read(aFilename, { charset:"UTF-8" });
+
+                fileStream.write(contents);
+                fileStream.write("\r\n");
+
+            }, this);
+
+            fileStream.write("*/");
+            fileStream.close();
+        });
+
+        this.enhance([MHTMLPath]);
     }, this);
 }
 
@@ -578,40 +678,43 @@ BundleTask.prototype.defineSourceTasks = function()
     else if (compilerFlags.join)
         compilerFlags = compilerFlags.join(" ");
 
-    this.platforms().forEach(function(/*String*/ aPlatform)
+    var environments = this.flattenedEnvironments();
+
+    environments.forEach(function(/*Environment*/ anEnvironment)
     {
-        var platformSources = sources,
-            sourcesPath = FILE.join(this.buildIntermediatesProductPath(), aPlatform + ".platform", "Sources", ""),
-            staticPath = this.buildProductStaticPathForPlatform(aPlatform),
-            flags = BundleTask.PLATFORM_DEFAULT_FLAGS[aPlatform].join(" ");
+        var environmentSources = sources,
+            folder = anEnvironment.name() + ".environment",
+            sourcesPath = FILE.join(this.buildIntermediatesProductPath(), folder, "Sources", ""),
+            staticPath = this.buildProductStaticPathForEnvironment(anEnvironment);
 
-        if (!Array.isArray(platformSources) && platformSources.constructor !== Jake.FileList)
-            platformSources = platformSources[aPlatform];
+        if (!Array.isArray(environmentSources) && environmentSources.constructor !== Jake.FileList)
+            environmentSources = environmentSources[anEnvironment];
 
-        var replacedFiles = [];
+        var replacedFiles = [],
+            environmentCompilerFlags = anEnvironment.compilerFlags().join(" ") + " " + compilerFlags;
 
-        platformSources.forEach(function(/*String*/ aFilename)
+        environmentSources.forEach(function(/*String*/ aFilename)
         {
             // if this file doesn't exist or isn't a .j file, don't preprocess it.
             if (!FILE.exists(aFilename) || FILE.extension(aFilename) !== '.j')
                 return;
 
-            var compiledPlatformSource = FILE.join(sourcesPath, FILE.basename(aFilename));
+            var compiledEnvironmentSource = FILE.join(sourcesPath, FILE.basename(aFilename));
 
-            filedir (compiledPlatformSource, [aFilename], function()
+            filedir (compiledEnvironmentSource, [aFilename], function()
             {
-                print("Compiling " + aFilename + "...");
-                FILE.write(compiledPlatformSource, require("objective-j/compiler").compile(aFilename, flags + " " + compilerFlags), { charset:"UTF-8" });
+                print("Compiling [" + anEnvironment + "] " + aFilename + "...");
+                FILE.write(compiledEnvironmentSource, require("objective-j/compiler").compile(aFilename, environmentCompilerFlags), { charset:"UTF-8" });
             });
 
-            filedir (staticPath, [compiledPlatformSource]);
+            filedir (staticPath, [compiledEnvironmentSource]);
 
             // FIXME: how do we non flatten?
             // dir in common
             replacedFiles.push(flattensSources ? FILE.basename(aFilename) : FILE.relative(sourcesPath, aFilename));
         }, this);
 
-        this._replacedFiles[aPlatform] = replacedFiles;
+        this._replacedFiles[anEnvironment] = replacedFiles;
     }, this);
 }
 

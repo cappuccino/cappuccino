@@ -13,7 +13,7 @@ if (system.engine === "rhino")
 window.OBJJ_HOME = exports.OBJJ_HOME = FILE.resolve(module.path, "..");
 
 var frameworksPath = FILE.resolve(window.OBJJ_HOME, "Frameworks/"),
-    objectivejPath = FILE.resolve(frameworksPath, "Objective-J/", "CommonJS.platform/", "Objective-J.js");
+    objectivejPath = FILE.resolve(frameworksPath, "Objective-J/", "CommonJS.environment/", "Objective-J.js");
 
 var OBJJ_INCLUDE_PATHS = window.OBJJ_INCLUDE_PATHS = exports.OBJJ_INCLUDE_PATHS = [];
 

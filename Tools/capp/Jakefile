@@ -17,7 +17,7 @@ app ("capp", function(cappTask)
     cappTask.setSources(new FileList("*.j"));
     cappTask.setResources(new FileList("Resources/*"));
     cappTask.setIncludesNibsAndXibs(true);
-    cappTask.setPlatforms([BundleTask.Platform.CommonJS]);
+    cappTask.setEnvironments(require("objective-j/jake/environment").CommonJS);
     cappTask.setFlattensSources(true);
     cappTask.setSpritesResources(false);
 

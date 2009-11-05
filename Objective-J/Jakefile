@@ -34,16 +34,16 @@ if ($CONFIGURATION === "Debug")
     Files.include("Runtime/debug.js");
 
 $BUILD_BROWSER_FILE = FILE.join($BUILD_OBJECTIVE_J, "Objective-J.js");
-$BUILD_CJS_FILE     = FILE.join($BUILD_OBJECTIVE_J, "CommonJS.platform", "Objective-J.js");
+$BUILD_CJS_FILE     = FILE.join($BUILD_OBJECTIVE_J, "CommonJS.environment", "Objective-J.js");
 
 filedir ($BUILD_BROWSER_FILE, Files, function(aTask)
 {
-    build_product(aTask.name(), platform_flags('Browser', 'ObjJ'));
+    build_product(aTask.name(), environmentFlags("ObjJ") + " -DPLATFORM_USERAGENT");
 });
 
 filedir ($BUILD_CJS_FILE, Files, function(aTask)
 {
-    flags = platform_flags('CommonJS', 'ObjJ');
+    flags = environmentFlags("CommonJS", "ObjJ");
     flags += ' -DRHINO'
 
     build_product(aTask.name(), flags)
@@ -90,11 +90,11 @@ filedir ($BUILD_CJS_OBJECTIVE_J_FRAMEWORK, function()
 
 CLOBBER.include($BUILD_OBJECTIVE_J);
 
-function platform_flags()
+function environmentFlags()
 {
-    return "-DPLATFORMS=\"[" + Array.prototype.map.apply(arguments, [function(aPlatform)
+    return "-DENVIRONMENTS=\"[" + Array.prototype.map.apply(arguments, [function(anEnvironment)
     {
-        return "\\\"" + aPlatform + "\\\"";
+        return "\\\"" + anEnvironment + "\\\"";
     }]).join(", ") + "]\"";
 }
 

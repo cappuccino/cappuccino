@@ -14,7 +14,7 @@ var FILE = require("file"),
 function BlendTask(aName)
 {
     BundleTask.apply(this, arguments);
-    
+
     this._themeDescriptors = [];
     this._keyedThemes = [];
 }
@@ -31,7 +31,7 @@ BlendTask.prototype.infoPlist = function()
 {
     var infoPlist = BundleTask.prototype.infoPlist.apply(this, arguments);
 
-    infoPlist.setValue("CPKeyedThemes", this._keyedThemes);
+    infoPlist.setValue("CPKeyedThemes", require("util").unique(this._keyedThemes));
 
     return infoPlist;
 }
@@ -54,52 +54,56 @@ BlendTask.prototype.defineTasks = function()
 }
 
 BlendTask.prototype.defineSourceTasks = function()
-{ 
+{
 }
 
 BlendTask.prototype.defineThemeDescriptorTasks = function()
 {
-    var themeDescriptors = this.themeDescriptors(),
-        resourcesPath = this.resourcesPath(),
-        intermediatesPath = FILE.join(this.buildIntermediatesProductPath(), "Browser" + ".platform", "Resources"),
-        staticPath = this.buildProductStaticPathForPlatform("Browser"),
-        keyedThemes = this._keyedThemes,
-        themesTaskName = this.name() + ":themes";
-
-    this.enhance(themesTaskName);
-
-    objj_import(themeDescriptors.toArray(), YES, function()
+    this.flattenedEnvironments().forEach(function(anEnvironment)
     {
-        [BKThemeDescriptor allThemeDescriptorClasses].forEach(function(aClass)
+        var folder = anEnvironment.name() + ".environment",
+            themeDescriptors = this.themeDescriptors(),
+            resourcesPath = this.resourcesPath(),
+            intermediatesPath = FILE.join(this.buildIntermediatesProductPath(), folder, "Resources"),
+            staticPath = this.buildProductStaticPathForEnvironment(anEnvironment),
+            keyedThemes = this._keyedThemes,
+            themesTaskName = this.name() + ":themes";
+
+        this.enhance(themesTaskName);
+
+        objj_import(themeDescriptors.toArray(), YES, function()
         {
-            var keyedThemePath = FILE.join(intermediatesPath, [aClass themeName] + ".keyedtheme");
+            [BKThemeDescriptor allThemeDescriptorClasses].forEach(function(aClass)
+            {
+                var keyedThemePath = FILE.join(intermediatesPath, [aClass themeName] + ".keyedtheme");
 
-            filedir (keyedThemePath, themesTaskName);
-            filedir (staticPath, [keyedThemePath]);
+                filedir (keyedThemePath, themesTaskName);
+                filedir (staticPath, [keyedThemePath]);
 
-            keyedThemes.push([aClass themeName] + ".keyedtheme");
+                keyedThemes.push([aClass themeName] + ".keyedtheme");
+            });
         });
-    });
 
-    require("browser/timeout").serviceTimeouts();
+        require("browser/timeout").serviceTimeouts();
 
-    task (themesTaskName, function()
-    {
-        [BKThemeDescriptor allThemeDescriptorClasses].forEach(function(aClass)
+        task (themesTaskName, function()
         {
-            var themeTemplate = [[BKThemeTemplate alloc] init];
+            [BKThemeDescriptor allThemeDescriptorClasses].forEach(function(aClass)
+            {
+                var themeTemplate = [[BKThemeTemplate alloc] init];
 
-            [themeTemplate setValue:[aClass themeName] forKey:@"name"];
+                [themeTemplate setValue:[aClass themeName] forKey:@"name"];
 
-            var objectTemplates = [aClass themedObjectTemplates],
-                data = cibDataFromTopLevelObjects(objectTemplates.concat([themeTemplate])),
-                fileContents = themeFromCibData(data);
+                var objectTemplates = [aClass themedObjectTemplates],
+                    data = cibDataFromTopLevelObjects(objectTemplates.concat([themeTemplate])),
+                    fileContents = themeFromCibData(data);
 
-            // No filedir in this case, so we have to make it ourselves.
-            FILE.mkdirs(intermediatesPath);
-            FILE.write(FILE.join(intermediatesPath, [aClass themeName] + ".keyedtheme"), MARKER_TEXT + ";" + fileContents.length + ";" + fileContents, { charset:"UTF-8" });
+                // No filedir in this case, so we have to make it ourselves.
+                FILE.mkdirs(intermediatesPath);
+                FILE.write(FILE.join(intermediatesPath, [aClass themeName] + ".keyedtheme"), MARKER_TEXT + ";" + fileContents.length + ";" + fileContents, { charset:"UTF-8" });
+            });
         });
-    }); 
+    }, this);
 }
 
 function cibDataFromTopLevelObjects(objects)
@@ -113,7 +117,7 @@ function cibDataFromTopLevelObjects(objects)
 
     var index = 0,
         count = objects.length;
-        
+
     for (; index < count; ++index)
     {
         objectData._objectsValues[index] = objectData._fileOwner;
@@ -131,7 +135,7 @@ function themeFromCibData(data)
 {
     var cib = [[CPCib alloc] initWithData:data],
         topLevelObjects = [];
-    
+
     [cib _setAwakenCustomResources:NO];
     [cib instantiateCibWithExternalNameTable:[CPDictionary dictionaryWithObject:topLevelObjects forKey:CPCibTopLevelObjects]];
 
@@ -142,7 +146,7 @@ function themeFromCibData(data)
     while (count--)
     {
         var object = topLevelObjects[count];
-        
+
         templates = templates.concat([object blendThemeObjectTemplates]);
 
         if ([object isKindOfClass:[BKThemeTemplate class]])
@@ -175,22 +179,22 @@ function themeFromCibData(data)
 - (CPArray)blendThemeObjectTemplates
 {
     var theClass = [self class];
-    
+
     if ([theClass isKindOfClass:[BKThemedObjectTemplate class]])
         return [self];
-        
+
     if ([theClass isKindOfClass:[CPView class]])
     {
         var templates = [],
             subviews = [self subviews],
             count = [subviews count];
-        
+
         while (count--)
             templates = templates.concat([subviews[count] blendThemeObjectTemplates]);
-        
+
         return templates;
     }
-    
+
     return [];
 }
 
@@ -201,19 +205,19 @@ function themeFromCibData(data)
 - (void)blendAddThemedObjectAttributesToTheme:(CPTheme)aTheme
 {
     var themedObject = [self valueForKey:@"themedObject"];
-    
+
     if (!themedObject)
     {
         var subviews = [self subviews];
-        
+
         if ([subviews count] > 0)
             themedObject = subviews[0];
     }
-    
+
     if (themedObject)
     {
         print(" Recording themed properties for " + [themedObject className] + ".");
-        
+
         [aTheme takeThemeFromObject:themedObject];
     }
 }

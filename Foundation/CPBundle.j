@@ -98,9 +98,9 @@
     return className ? CPClassFromString(className) : Nil;
 }
 
-+ (CPString)firstCompatibleEngineFromArray:(CPArray)engines
++ (CPString)mostEligibleEnvironmentFromArray:(CPArray)environments
 {
-    return objj_firstCompatibleEngineFromArray(engines);
+    return objj_mostEligibleEnvironmentFromArray(environments);
 }
 
 - (CPString)pathForResource:(CPString)aFilename
@@ -132,11 +132,14 @@
     self._infoConnection = [CPURLConnection connectionWithRequest:[CPURLRequest requestWithURL:[self bundlePath] + "/Info.plist"] delegate:self];
 }
 
-- (CPString)firstEligiblePlatform
+- (CPArray)supportedEnvironments
 {
-    var platforms = [self objectForInfoDictionaryKey:"CPBundlePlatforms"];
+    return [self objectForInfoDictionaryKey:"CPBundleEnvironments"] || ["ObjJ"];
+}
 
-    return [platforms firstObjectCommonWithArray:OBJJ_PLATFORMS] || nil;
+- (CPString)mostEligibleEnvironment
+{
+    return [[self class] mostEligibleEnvironmentFromArray:[self supportedEnvironments]];
 }
 
 - (void)connection:(CPURLConnection)aConnection didReceiveData:(CPString)data
@@ -145,12 +148,12 @@
     {
         info = CPPropertyListCreateFromData([CPData dataWithString:data]);
 
-        var platform = [self firstEligiblePlatform];
+        var environment = [self mostEligibleEnvironment];
 
-        if (!platform)
-            throw "Engine not supported for " + [self bundlePath] + ". Supported engines: " + [self objectForInfoDictionaryKey:"CPBundlePlatforms"] + ".";
+        if (!environment)
+            throw "Environment not supported for " + [self bundlePath] + ". Supported environments: " + [self objectForInfoDictionaryKey:"CPBundleEnvironments"] + ".";
 
-        [CPURLConnection connectionWithRequest:[CPURLRequest requestWithURL:[self bundlePath] + '/' + platform + ".platform/" + [self objectForInfoDictionaryKey:"CPBundleExecutable"]] delegate:self];
+        [CPURLConnection connectionWithRequest:[CPURLRequest requestWithURL:[self bundlePath] + '/' + environment + ".environment/" + [self objectForInfoDictionaryKey:"CPBundleExecutable"]] delegate:self];
     }
     else
     {
@@ -161,7 +164,7 @@
         if ([_delegate respondsToSelector:@selector(bundleDidFinishLoading:)])
             context.didCompleteCallback = function() { [_delegate bundleDidFinishLoading:self]; };
 
-        var files = [[self objectForInfoDictionaryKey:@"CPBundleReplacedFiles"] objectForKey:[self firstEligiblePlatform]],
+        var files = [[self objectForInfoDictionaryKey:@"CPBundleReplacedFiles"] objectForKey:[self mostEligibleEnvironment]],
             count = files ? files.length : 0, // Perhaps no files? Be liberal in what you accept...
             bundlePath = [self bundlePath];
 

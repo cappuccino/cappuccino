@@ -8,7 +8,6 @@ blend ("Aristo.blend", function(aristoTask)
     aristoTask.setBuildPath(FILE.join($BUILD_DIR, $CONFIGURATION));
 
     aristoTask.setThemeDescriptors(new FileList("ThemeDescriptors.j"));
-    aristoTask.setPlatforms([BundleTask.Platform.Browser, BundleTask.Platform.CommonJS]);
     aristoTask.setIdentifier("com.280n.blend.Aristo");
     aristoTask.setResources(new FileList("Resources/*"));
 });

@@ -38,6 +38,7 @@ foundationTask = framework ("Foundation", function(foundationTask)
     foundationTask.setResources(new FileList("Resources/**/*"));
     foundationTask.setFlattensSources(true);
     foundationTask.setInfoPlistPath("Info.plist");
+    foundationTask.setEnvironments(require("objective-j/jake/environment").ObjJ);
 
     if ($CONFIGURATION === "Release")
         foundationTask.setCompilerFlags("-O");

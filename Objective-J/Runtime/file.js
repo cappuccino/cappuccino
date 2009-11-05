@@ -27,31 +27,39 @@
 // Look inside bundleResponseCallback.
 
 
-var OBJJ_PLATFORMS = PLATFORMS;
+var OBJJ_ENVIRONMENTS = ENVIRONMENTS;
+
+#ifdef PLATFORM_USERAGENT
+var userAgent = window.navigator.userAgent;
+
+if (userAgent.indexOf("MSIE 7") !== -1)
+    OBJJ_ENVIRONMENTS.unshift("IE7");
+if (userAgent.indexOf("MSIE 8") !== -1)
+    OBJJ_ENVIRONMENTS.unshift("IE8");
+else
+    OBJJ_ENVIRONMENTS.unshift("W3C");
+#endif
+
 #define DIRECTORY(aPath) (aPath).substr(0, (aPath).lastIndexOf('/') + 1)
 
-function objj_firstCompatibleEngineFromArray(engines)
+function objj_mostEligibleEnvironmentFromArray(environments)
 {
-    var engine = NULL,
-        index = 0,
-        count = OBJJ_PLATFORMS.length,
-        innerCount = engines.length;
+    var index = 0,
+        count = OBJJ_ENVIRONMENTS.length,
+        innerCount = environments.length;
 
     // Ugh, no indexOf, no objects-in-common.
     for(; index < count; ++index)
     {
         var innerIndex = 0,
-            currentEngine = OBJJ_PLATFORMS[index];
+            environment = OBJJ_ENVIRONMENTS[index];
         
         for (; innerIndex < innerCount; ++innerIndex)
-            if(currentEngine=== engines[innerIndex])
-            {
-                engine = currentEngine;
-                break;
-            }
+            if(environment === environments[innerIndex])
+                return environment;
     }
 
-    return engine;
+    return NULL;
 }
 
 var OBJJFileNotFoundException       = "OBJJFileNotFoundException",
@@ -393,16 +401,16 @@ objj_search.prototype.didReceiveBundleResponse = function(aResponse)
     
     if (executablePath)
     {
-        var platform = objj_firstCompatibleEngineFromArray(dictionary_getValue(bundle.info, "CPBundlePlatforms"));
+        var environment = objj_mostEligibleEnvironmentFromArray(dictionary_getValue(bundle.info, "CPBundleEnvironments"));
         
-        executablePath = platform + ".platform/" + executablePath;
+        executablePath = environment + ".environment/" + executablePath;
 
         this.request(DIRECTORY(aResponse.filePath) + executablePath, this.didReceiveExecutableResponse);
         
         // FIXME: Is this the right approach?
         // Request the compiled file regardless of whether our current inquiry 
         var directory = DIRECTORY(aResponse.filePath),
-            replacedFiles = dictionary_getValue(dictionary_getValue(bundle.info, "CPBundleReplacedFiles"), platform),
+            replacedFiles = dictionary_getValue(dictionary_getValue(bundle.info, "CPBundleReplacedFiles"), environment),
             index = 0,
             count = replacedFiles.length;
         
@@ -628,7 +636,11 @@ function objj_decompile(aString, bundle)
                                         
                                         break;
 
-            case MARKER_URI:            bundle._URIMap[text] = stream.getString();
+            case MARKER_URI:            var URI = stream.getString();
+                                        if (URI.toLowerCase().indexOf("mhtml:") === 0)
+                                            URI = "mhtml:" + DIRECTORY(window.location.href) + '/' + DIRECTORY(bundle.path) + '/' + URI.substr("mhtml:".length);
+                                        bundle._URIMap[text] = URI;
+
                                         break;
 
             case MARKER_BUNDLE:         var bundlePath = DIRECTORY(bundle.path) + '/' + text;
