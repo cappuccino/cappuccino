@@ -510,7 +510,7 @@ var CPStringRegexSpecialCharacters = [
 */
 - (BOOL)hasSuffix:(CPString)aString
 {
-    return aString && aString != "" && lastIndexOf(aString) == (length - aString.length);
+    return aString && aString != "" && length >= aString.length && lastIndexOf(aString) == (length - aString.length);
 }
 
 /*!
