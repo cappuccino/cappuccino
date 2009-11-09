@@ -65,7 +65,7 @@ Environment.prototype.spritesImagesAsMHTML = function()
 
 Environment.prototype.setSpritesImagesAsDataURLs = function(/*Boolean*/ shouldSpriteImagesAsDataURLs)
 {
-    this._setSpritesImagesAsDataURLs = !!shouldSpriteImagesAsDataURLs;
+    this._spritesImagesAsDataURLs = !!shouldSpriteImagesAsDataURLs;
 }
 
 Environment.prototype.spritesImagesAsDataURLs = function()
