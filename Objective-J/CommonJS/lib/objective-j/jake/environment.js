@@ -5,8 +5,8 @@ function Environment(/*String*/ aName)
 {
     this._name = aName;
     this._compilerFlags = [];
-    this._spritesImagesToMHTMLFile = false;
-    this._spritesImagesToStaticFile = false;
+    this._spritesImagesAsMHTML = false;
+    this._spritesImagesAsDataURLs = false;
     
     environments[aName] = this;
 }
@@ -53,29 +53,29 @@ Environment.prototype.setCompilerFlags = function(flags)
     this._compilerFlags = flags;
 }
 
-Environment.prototype.setSpritesImagesToMHTMLFile = function(/*Boolean*/ shouldSpriteImagesToMHTMLFile)
+Environment.prototype.setSpritesImagesAsMHTML = function(/*Boolean*/ shouldSpriteImagesAsMHTML)
 {
-    this._spritesImagesToMHTMLFile = !!shouldSpriteImagesToMHTMLFile;
+    this._spritesImagesAsMHTML = !!shouldSpriteImagesAsMHTML;
 }
 
-Environment.prototype.spritesImagesToMHTMLFile = function()
+Environment.prototype.spritesImagesAsMHTML = function()
 {
-    return this._spritesImagesToMHTMLFile;
+    return this._spritesImagesAsMHTML;
 }
 
-Environment.prototype.setSpritesImagesToStaticFile = function(/*Boolean*/ shouldSpriteImagesToStaticFile)
+Environment.prototype.setSpritesImagesAsDataURLs = function(/*Boolean*/ shouldSpriteImagesAsDataURLs)
 {
-    this._spritesImagesToStaticFile = !!shouldSpriteImagesToStaticFile;
+    this._spritesImagesAsDataURLs = !!shouldSpriteImagesAsDataURLs;
 }
 
-Environment.prototype.spritesImagesToStaticFile = function()
+Environment.prototype.spritesImagesAsDataURLs = function()
 {
-    return this._spritesImagesToStaticFile;
+    return this._spritesImagesAsDataURLs;
 }
 
 Environment.prototype.spritesImages = function()
 {
-    return this.spritesImagesToMHTMLFile() || this.spritesImagesToStaticFile();
+    return this.spritesImagesAsMHTML() || this.spritesImagesAsDataURLs();
 }
 
 exports.Environment = Environment;
@@ -91,21 +91,21 @@ exports.CommonJS = CommonJS;
 var W3C = new Environment("W3C");
 
 W3C.setCompilerFlags(["-DPLATFORM_BROWSER", "-DPLATFORM_DOM"]);
-W3C.setSpritesImagesToStaticFile(true);
+W3C.setSpritesImagesAsDataURLs(true);
 
 exports.W3C = W3C;
 
 var IE7 = new Environment("IE7");
 
 IE7.setCompilerFlags(["-DPLATFORM_BROWSER", "-DPLATFORM_DOM"]);
-IE7.setSpritesImagesToMHTMLFile(true);
+IE7.setSpritesImagesAsMHTML(true);
 
 exports.IE7 = IE7;
 
 var IE8 = new Environment("IE8");
 
 IE8.setCompilerFlags(["-DPLATFORM_BROWSER", "-DPLATFORM_DOM"]);
-IE8.setSpritesImagesToStaticFile(true);
+IE8.setSpritesImagesAsDataURLs(true);
 
 exports.IE8 = IE8;
 

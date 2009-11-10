@@ -69,14 +69,17 @@ objj_markedStream.prototype.getMarker = function()
     
     if (location >= string.length)
         return NULL;
-        
+
     var next = string.indexOf(';', location);
-    
+
     if (next < 0)
         return NULL;
-        
+
     var marker = string.substring(location, next);
-    
+
+    if (marker === 'e')
+        return NULL;
+
     this._location = next + 1;
 
     return marker;
