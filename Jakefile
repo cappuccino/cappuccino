@@ -171,3 +171,33 @@ task ("test", ["build"], function()
     if (code !== 0)
         OS.exit(code);
 });
+
+task("push-packages", ["CommonJS"], function() {
+    pushPackage(
+        FILE.join(ENV["CAPP_BUILD"], "Release", "CommonJS", "cappuccino"),
+        "git@github.com:280north/cappuccino-package.git"
+    );
+    pushPackage(
+        FILE.join(ENV["CAPP_BUILD"], "Release", "CommonJS", "objective-j"),
+        "git@github.com:280north/objective-j-package.git"
+    );
+});
+
+function pushPackage(path, remote) {
+    // FIXME: this will probably fail next time...
+    var cmds = [
+        ["cd", path],
+        //["rm", "-rf", ".git*"],
+        ["git", "init"],
+        ["git", "add", "."],
+        ["git", "commit", "-m", "Pushed on " + new Date()],
+        ["git", "remote", "add", "origin", remote],
+        ["git", "push", "origin", "master"]
+    ];
+    
+    var cmdString = cmds.map(function(cmd) {
+        return cmd.map(OS.enquote).join(" ");
+    }).join(" && ");
+    
+    OS.system(cmdString);
+}
