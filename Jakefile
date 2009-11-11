@@ -172,20 +172,23 @@ task ("test", ["build"], function()
         OS.exit(code);
 });
 
-task("push-packages", ["CommonJS"], function() {
+task("push-packages", ["CommonJS"], function()
+{
     pushPackage(
-        FILE.join(ENV["CAPP_BUILD"], "Release", "CommonJS", "cappuccino"),
+        BUILD_CJS_CAPPUCCINO,
         "git@github.com:280north/cappuccino-package.git"
     );
     pushPackage(
-        FILE.join(ENV["CAPP_BUILD"], "Release", "CommonJS", "objective-j"),
+        BUILD_CJS_OBJECTIVE_J,
         "git@github.com:280north/objective-j-package.git"
     );
 });
 
-function pushPackage(path, remote) {
+function pushPackage(path, remote)
+{
     // FIXME: this will probably fail next time...
-    var cmds = [
+    var cmds =
+    [
         ["cd", path],
         //["rm", "-rf", ".git*"],
         ["git", "init"],
@@ -195,7 +198,8 @@ function pushPackage(path, remote) {
         ["git", "push", "origin", "master"]
     ];
     
-    var cmdString = cmds.map(function(cmd) {
+    var cmdString = cmds.map(function(cmd)
+    {
         return cmd.map(OS.enquote).join(" ");
     }).join(" && ");
     

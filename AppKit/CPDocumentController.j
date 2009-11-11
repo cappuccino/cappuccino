@@ -286,7 +286,7 @@ var CPSharedDocumentController = nil;
             extensionCount = extensions.length;
         
         for (; extensionIndex < extensionCount; ++extensionIndex)
-            if ([extensions[extensionIndex] lowercaseString] == extension)
+            if ([extensions[extensionIndex] lowercaseString] === extension)
                 return [documentType objectForKey:@"CPBundleTypeName"];
     }
 
