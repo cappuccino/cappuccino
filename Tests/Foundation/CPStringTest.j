@@ -233,4 +233,28 @@
         [self assert:testStrings[i][1] equals:[testStrings[i][0] lastPathComponent]];
 }
 
+- (void)testHasPrefix
+{
+    [self assertTrue: ["abc" hasPrefix:"a"]];
+    [self assertTrue: ["abc" hasPrefix:"ab"]];
+    [self assertTrue: ["abc" hasPrefix:"abc"]];
+    [self assertFalse:["abc" hasPrefix:"abcd"]];
+    [self assertFalse:["abc" hasPrefix:"dbc"]];
+    [self assertFalse:["abc" hasPrefix:"bc"]];
+    [self assertFalse:["abc" hasPrefix:"c"]];
+    [self assertFalse:["abc" hasPrefix:""]];
+}
+
+- (void)testHasSuffix
+{
+    [self assertTrue: ["abc" hasSuffix:"c"]];
+    [self assertTrue: ["abc" hasSuffix:"bc"]];
+    [self assertTrue: ["abc" hasSuffix:"abc"]];
+    [self assertFalse:["abc" hasSuffix:"abcd"]];
+    [self assertFalse:["abc" hasSuffix:"ab"]];
+    [self assertFalse:["abc" hasSuffix:"b"]];
+    [self assertFalse:["abc" hasSuffix:"cat"]];
+    [self assertFalse:["abc" hasSuffix:""]];
+}
+
 @end
