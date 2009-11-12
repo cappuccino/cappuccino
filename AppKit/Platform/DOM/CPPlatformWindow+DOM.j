@@ -294,16 +294,16 @@ var supportsNativeDragAndDrop = [CPPlatform supportsDragAndDrop];
             [self updateFromNativeContentRect];
             [self _removeLayers];
 
-            theDocument.removeEvent("onmouseup", mouseEventCallback);
-            theDocument.removeEvent("onmousedown", mouseEventCallback);
-            theDocument.removeEvent("onmousemove", mouseEventCallback);
-            theDocument.removeEvent("ondblclick", mouseEventCallback);
+            theDocument.detachEvent("onmouseup", mouseEventCallback);
+            theDocument.detachEvent("onmousedown", mouseEventCallback);
+            theDocument.detachEvent("onmousemove", mouseEventCallback);
+            theDocument.detachEvent("ondblclick", mouseEventCallback);
 
-            theDocument.removeEvent("onkeyup", keyEventCallback);
-            theDocument.removeEvent("onkeydown", keyEventCallback);
-            theDocument.removeEvent("onkeypress", keyEventCallback);
+            theDocument.detachEvent("onkeyup", keyEventCallback);
+            theDocument.detachEvent("onkeydown", keyEventCallback);
+            theDocument.detachEvent("onkeypress", keyEventCallback);
 
-            _DOMWindow.removeEvent("onresize", resizeEventCallback);
+            _DOMWindow.detachEvent("onresize", resizeEventCallback);
 
             _DOMWindow.onmousewheel = NULL;
             theDocument.onmousewheel = NULL;
