@@ -51,13 +51,6 @@ var DoubleClick = "dblclick",
     TouchEnd    = "touchend",
     TouchCancel = "touchcancel";
 
-var ExcludedDOMElements = [];
-
-ExcludedDOMElements["INPUT"]     = YES;
-ExcludedDOMElements["SELECT"]    = YES;
-ExcludedDOMElements["TEXTAREA"]  = YES;
-ExcludedDOMElements["OPTION"]    = YES;
-
 // Define up here so compressor knows about em.
 var CPDOMEventGetClickCount,
     CPDOMEventStop,
@@ -439,8 +432,6 @@ var supportsNativeDragAndDrop = [CPPlatform supportsDragAndDrop];
                         (aDOMEvent.altKey ? CPAlternateKeyMask : 0) | 
                         (aDOMEvent.metaKey ? CPCommandKeyMask : 0);
                         
-    if (ExcludedDOMElements[sourceElement.tagName] && sourceElement != _DOMFocusElement && sourceElement != _DOMPasteboardElement)
-        return;
         
     //We want to stop propagation if this is a command key AND this character or keycode has been added to our blacklist
     StopDOMEventPropagation = !(modifierFlags & (CPControlKeyMask | CPCommandKeyMask)) ||
@@ -796,7 +787,7 @@ var supportsNativeDragAndDrop = [CPPlatform supportsDragAndDrop];
     
     else if (type === "mousedown")
     {
-        if (ExcludedDOMElements[sourceElement.tagName] && sourceElement != _DOMFocusElement)
+        if (sourceElement.tagName === "INPUT" && sourceElement != _DOMFocusElement)
         {
             if ([CPPlatform supportsDragAndDrop])
             {

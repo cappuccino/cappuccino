@@ -209,95 +209,11 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
             return true;
         }
 
-        CPTextFieldKeyDownFunction = function(aDOMEvent)
-        {
-            CPTextFieldTextDidChangeValue = [CPTextFieldInputOwner stringValue];
-
-            aDOMEvent = aDOMEvent || window.event;
-
-            if (aDOMEvent.keyCode == CPReturnKeyCode || aDOMEvent.keyCode == CPTabKeyCode) 
-                CPTextFieldKeyPressFunction(aDOMEvent);
-
-            return true;
-        }
-
-        CPTextFieldKeyPressFunction = function(aDOMEvent)
-        {
-            aDOMEvent = aDOMEvent || window.event;
-
-            CPTextFieldKeyUpFunction();
-
-            if (aDOMEvent.keyCode == CPReturnKeyCode || aDOMEvent.keyCode == CPTabKeyCode) 
-            {
-                if (aDOMEvent.preventDefault)
-                    aDOMEvent.preventDefault(); 
-                if (aDOMEvent.stopPropagation)
-                    aDOMEvent.stopPropagation();
-                aDOMEvent.cancelBubble = true;
-
-                var owner = CPTextFieldInputOwner;
-
-                if (aDOMEvent && aDOMEvent.keyCode == CPReturnKeyCode)
-                {
-                    if (owner._isEditing)
-                    {
-                        owner._isEditing = NO;
-                        [owner textDidEndEditing:[CPNotification notificationWithName:CPControlTextDidEndEditingNotification object:owner userInfo:nil]];
-                    }
-
-                    [owner sendAction:[owner action] to:[owner target]];
-                    [owner selectText:nil];
-                }
-                else if (aDOMEvent && aDOMEvent.keyCode == CPTabKeyCode)
-                {
-                    if (!aDOMEvent.shiftKey)
-                        [[owner window] selectNextKeyView:owner];
-                    else
-                        [[owner window] selectPreviousKeyView:owner];
-                }
-            }
-
-            [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
-        }
-
-        CPTextFieldKeyUpFunction = function()
-        {
-            [CPTextFieldInputOwner _setStringValue:CPTextFieldDOMInputElement.value];
-
-            if ([CPTextFieldInputOwner stringValue] !== CPTextFieldTextDidChangeValue)
-            {
-                if (!CPTextFieldInputOwner._isEditing)
-                {
-                    CPTextFieldInputOwner._isEditing = YES;
-                    [CPTextFieldInputOwner textDidBeginEditing:[CPNotification notificationWithName:CPControlTextDidBeginEditingNotification object:CPTextFieldInputOwner userInfo:nil]];
-                }
-
-                [CPTextFieldInputOwner textDidChange:[CPNotification notificationWithName:CPControlTextDidChangeNotification object:CPTextFieldInputOwner userInfo:nil]];
-                CPTextFieldTextDidChangeValue = [CPTextFieldInputOwner stringValue];
-            }
-
-            [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
-        }
-
         CPTextFieldHandleBlur = function(anEvent)
         {            
-            var owner = CPTextFieldInputOwner;
             CPTextFieldInputOwner = nil;
 
             [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
-        }
-
-        if (document.attachEvent)
-        {
-            CPTextFieldDOMInputElement.attachEvent("on" + CPDOMEventKeyUp, CPTextFieldKeyUpFunction);
-            CPTextFieldDOMInputElement.attachEvent("on" + CPDOMEventKeyDown, CPTextFieldKeyDownFunction);
-            CPTextFieldDOMInputElement.attachEvent("on" + CPDOMEventKeyPress, CPTextFieldKeyPressFunction);
-        }
-        else
-        {
-            CPTextFieldDOMInputElement.addEventListener(CPDOMEventKeyUp, CPTextFieldKeyUpFunction, NO);
-            CPTextFieldDOMInputElement.addEventListener(CPDOMEventKeyDown, CPTextFieldKeyDownFunction, NO);
-            CPTextFieldDOMInputElement.addEventListener(CPDOMEventKeyPress, CPTextFieldKeyPressFunction, NO);
         }
 
         //FIXME make this not onblur
@@ -661,6 +577,73 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
     return YES;
 }
 
+- (void)mouseDown:(CPEvent)anEvent
+{
+    // Don't track! (ever?)
+    if ([self isEditable] && [self isEnabled])
+        return [[self window] makeFirstResponder:self];
+    else
+        return [[self nextResponder] mouseDown:anEvent];
+}
+
+- (void)mouseUp:(CPEvent)anEvent
+{
+}
+
+- (void)mouseDragged:(CPEvent)anEvent
+{
+}
+
+- (void)keyUp:(CPEvent)anEvent
+{
+    var oldValue = [self stringValue];
+    [self _setStringValue:[self _inputElement].value];
+
+    if (oldValue !== [self stringValue])
+    {
+        if (!_isEditing)
+        {
+            _isEditing = YES;
+            [self textDidBeginEditing:[CPNotification notificationWithName:CPControlTextDidBeginEditingNotification object:self userInfo:nil]];
+        }
+
+        [self textDidChange:[CPNotification notificationWithName:CPControlTextDidChangeNotification object:self userInfo:nil]];
+    }
+
+    [[[self window] platformWindow] _propagateCurrentDOMEvent:YES];
+}
+
+- (void)keyDown:(CPEvent)anEvent
+{
+    if ([anEvent keyCode] === CPReturnKeyCode)
+    {
+        if (_isEditing)
+        {
+            _isEditing = NO;
+            [self textDidEndEditing:[CPNotification notificationWithName:CPControlTextDidEndEditingNotification object:self userInfo:nil]];
+        }
+
+        [self sendAction:[self action] to:[self target]];
+        [self selectText:nil];
+
+        [[[self window] platformWindow] _propagateCurrentDOMEvent:NO];
+    }
+    else if ([anEvent keyCode] === CPTabKeyCode)
+    {
+        if ([anEvent modifierFlags] & CPShiftKeyMask)
+            [[self window] selectPreviousKeyView:self];
+        else
+            [[self window] selectNextKeyView:self];
+
+        [[[self window] platformWindow] _propagateCurrentDOMEvent:NO];
+    }
+    else
+        [[[self window] platformWindow] _propagateCurrentDOMEvent:YES];
+
+    [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
+}
+
+
 - (void)textDidBlur:(CPNotification)note
 {
     //this looks to prevent false propagation of notifications for other objects
@@ -677,15 +660,6 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
         return;
 
     [[CPNotificationCenter defaultCenter] postNotification:note];
-}
-
-- (void)mouseDown:(CPEvent)anEvent
-{
-    // Don't track! (ever?)
-    if ([self isEditable] && [self isEnabled])
-        return [[self window] makeFirstResponder:self];
-    else
-        return [[self nextResponder] mouseDown:anEvent];
 }
 
 /*!
