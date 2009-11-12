@@ -404,7 +404,20 @@ var supportsNativeDragAndDrop = [CPPlatform supportsDragAndDrop];
     }
 
     else if (type === "dragend")
-        [dragServer draggingEndedInPlatformWindow:self globalLocation:[CPPlatform isBrowser] ? location : _CGPointMake(aDOMEvent.screenX, aDOMEvent.screenY)];
+    {
+        var dropEffect = aDOMEvent.dataTransfer.dropEffect;
+
+        if (dropEffect === "move")
+            dragOperation = CPDragOperationMove;
+        else if (dropEffect === "copy")
+            dragOperation = CPDragOperationCopy;
+        else if (dropEffect === "link")
+            dragOperation = CPDragOperationLink;
+        else
+            dragOperation = CPDragOperationNone;
+
+        [dragServer draggingEndedInPlatformWindow:self globalLocation:[CPPlatform isBrowser] ? location : _CGPointMake(aDOMEvent.screenX, aDOMEvent.screenY) operation:dragOperation];
+    }
 
     else //if (type === "drop")
     {

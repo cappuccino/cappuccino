@@ -251,7 +251,7 @@ var CPDraggingSource_draggedImage_movedTo_          = 1 << 0,
     return dragOperation;
 }
 
-- (void)draggingEndedInPlatformWindow:(CPPlatformWindow)aPlatformWindow globalLocation:(CGPoint)aLocation
+- (void)draggingEndedInPlatformWindow:(CPPlatformWindow)aPlatformWindow globalLocation:(CGPoint)aLocation operation:(CPDragOperation)anOperation
 {
     [_draggedView removeFromSuperview];
 
@@ -259,10 +259,10 @@ var CPDraggingSource_draggedImage_movedTo_          = 1 << 0,
         [_draggedWindow orderOut:self];
 
     if (_implementedDraggingSourceMethods & CPDraggingSource_draggedImage_endAt_operation_)
-        [_draggingSource draggedImage:[_draggedView image] endedAt:aLocation operation:NO];
+        [_draggingSource draggedImage:[_draggedView image] endedAt:aLocation operation:anOperation];
 
     else if (_implementedDraggingSourceMethods & CPDraggingSource_draggedView_endedAt_operation_)
-        [_draggingSource draggedView:_draggedView endedAt:aLocation operation:NO];
+        [_draggingSource draggedView:_draggedView endedAt:aLocation operation:anOperation];
 
     _isDragging = NO;
 }
@@ -386,7 +386,7 @@ var CPDraggingSource_draggedImage_movedTo_          = 1 << 0,
     if (type === CPLeftMouseUp)
     {
         [self performDragOperationInPlatformWindow:platformWindow];
-        [self draggingEndedInPlatformWindow:platformWindow globalLocation:platformWindowLocation];
+        [self draggingEndedInPlatformWindow:platformWindow globalLocation:platformWindowLocation operation:CPDragOperationNone];
 
         // Stop tracking events.
         return;

@@ -930,21 +930,24 @@ CPTexturedBackgroundWindowMask
     return _hasShadow;
 }
 
-/*!
-    Sets whether the window should have a drop shadow.
-    @param shouldHaveShadow \c YES to have a drop shadow.
-*/
-- (void)setHasShadow:(BOOL)shouldHaveShadow
+- (void)_updateShadow
 {
-    if (_hasShadow === shouldHaveShadow)
-        return;
-
-    _hasShadow = shouldHaveShadow;
-
     if ([self _sharesChromeWithPlatformWindow])
-        return [_platformWindow setHasShadow:shouldHaveShadow];
+    {
+        if (_shadowView)
+        {
+#if PLATFORM(DOM)
+            CPDOMDisplayServerRemoveChild(_DOMElement, _shadowView._DOMElement);
+#endif
+            _shadowView = nil;
+        }
 
-    if (_hasShadow)
+        [_platformWindow setHasShadow:_hasShadow];
+
+        return;
+    }
+
+    if (_hasShadow && !_shadowView)
     {
         var bounds = [_windowView bounds];
         
@@ -978,13 +981,27 @@ CPTexturedBackgroundWindowMask
         CPDOMDisplayServerInsertBefore(_DOMElement, _shadowView._DOMElement, _windowView._DOMElement);
 #endif
     }
-    else if (_shadowView)
+    else if (!_hasShadow && _shadowView)
     {
 #if PLATFORM(DOM)
         CPDOMDisplayServerRemoveChild(_DOMElement, _shadowView._DOMElement);
 #endif
         _shadowView = nil;
     }
+}
+
+/*!
+    Sets whether the window should have a drop shadow.
+    @param shouldHaveShadow \c YES to have a drop shadow.
+*/
+- (void)setHasShadow:(BOOL)shouldHaveShadow
+{
+    if (_hasShadow === shouldHaveShadow)
+        return;
+
+    _hasShadow = shouldHaveShadow;
+
+    [self _updateShadow];
 }
 
 - (void)setShadowStyle:(unsigned)aStyle
@@ -2285,6 +2302,8 @@ var keyViewComparator = function(a, b, context)
         return;
 
     _sharesChromeWithPlatformWindow = shouldShareFrameWithPlatformWindow;
+
+    [self _updateShadow];
 }
 
 - (BOOL)_sharesChromeWithPlatformWindow
