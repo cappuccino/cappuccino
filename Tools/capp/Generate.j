@@ -119,7 +119,7 @@ function gen(/*va_args*/)
 
 function createFrameworksInFile(/*String*/ aFile, /*Boolean*/ symlink, /*Boolean*/ force)
 {
-    var destination = FILE.path(aFile);
+    var destination = FILE.path(FILE.absolute(aFile));
     var frameworks = ["Foundation", "AppKit"];
     
     if (!destination.isDirectory())
