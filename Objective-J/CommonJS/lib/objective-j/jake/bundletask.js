@@ -58,7 +58,7 @@ function BundleTask(aName, anApplication)
     this._replacedFiles = { };
     this._nib2cibFlags = null;
 
-    this._infoPlistPath = null;
+    this._infoPlistPath = "Info.plist";
     this._principalClass = null;
 }
 
@@ -339,7 +339,7 @@ BundleTask.prototype.infoPlist = function()
     var infoPlistPath = this.infoPlistPath(),
         objj_dictionary = require("objective-j").objj_dictionary;
 
-    if (infoPlistPath)
+    if (infoPlistPath && FILE.exists(infoPlistPath))
         var infoPlist = require("objective-j/plist").readPlist(infoPlistPath);
     else
         var infoPlist = new objj_dictionary();
@@ -454,7 +454,7 @@ BundleTask.prototype.defineResourceTask = function(aResourcePath, aDestinationPa
         filedir (aDestinationPath, [aResourcePath], function()
         {
             if (FILE.exists(aDestinationPath))
-                rm_rf(aDestinationPath);
+                try { FILE.rmtree(aDestinationPath); } catch (anException) { }
 
             if (FILE.isDirectory(aResourcePath))
                 FILE.copyTree(aResourcePath, aDestinationPath);
