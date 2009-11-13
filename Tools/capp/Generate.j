@@ -92,18 +92,28 @@ function gen(/*va_args*/)
             if (FILE.isDirectory(path))
                 continue;
 
-            // Don't do this for images.
-            if ([".png", ".jpg", ".jpeg", ".gif", ".tif", ".tiff"].indexOf(FILE.extension(path)) !== -1)
+            if (FILE.basename(path) === ".DS_Store")
                 continue;
 
-            var contents = FILE.read(path, { charset : "UTF-8" }),
-                key = nil,
-                keyEnumerator = [configuration keyEnumerator];
+            // Don't do this for images.
+            if ([".png", ".jpg", ".jpeg", ".gif", ".tif", ".tiff"].indexOf(FILE.extension(path).toLowerCase()) !== -1)
+                continue;
 
-            while (key = [keyEnumerator nextObject])
-                contents = contents.replace(new RegExp("__" + RegExp.escape(key) + "__", 'g'), [configuration valueForKey:key]);
+            try
+            {
+                var contents = FILE.read(path, { charset : "UTF-8" }),
+                    key = nil,
+                    keyEnumerator = [configuration keyEnumerator];
 
-            FILE.write(path, contents, { charset: "UTF-8"});
+                while (key = [keyEnumerator nextObject])
+                    contents = contents.replace(new RegExp("__" + RegExp.escape(key) + "__", 'g'), [configuration valueForKey:key]);
+
+                FILE.write(path, contents, { charset: "UTF-8"});
+            }
+            catch (anException)
+            {
+                print("Copying and modifying " + path + " failed.");
+            }
         }
 
         var frameworkDestination = destinationProject;
