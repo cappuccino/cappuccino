@@ -276,7 +276,8 @@ var CPSharedDocumentController = nil;
     var index = 0,
         count = _documentTypes.length,
         
-        extension = [[anAbsoluteURL pathExtension] lowercaseString];
+        extension = [[anAbsoluteURL pathExtension] lowercaseString],
+        starType = nil;
     
     for (; index < count; ++index)
     {
@@ -286,12 +287,17 @@ var CPSharedDocumentController = nil;
             extensionCount = extensions.length;
         
         for (; extensionIndex < extensionCount; ++extensionIndex)
-            if ([extensions[extensionIndex] lowercaseString] === extension)
+        {
+            var thisExtension = [extensions[extensionIndex] lowercaseString];
+            if (thisExtension === extension)
                 return [documentType objectForKey:@"CPBundleTypeName"];
+
+            if (thisExtension === "****")
+                starType = [documentType objectForKey:@"CPBundleTypeName"];
+        }
     }
 
-    // FIXME?
-    return [self defaultType];//nil;
+    return starType || [self defaultType];
 }
 
 // Managing Document Types

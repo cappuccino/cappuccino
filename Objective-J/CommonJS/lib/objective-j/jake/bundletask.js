@@ -383,6 +383,11 @@ BundleTask.prototype.defineInfoPlistTask = function()
         require("objective-j/plist").writePlist(infoPlistProductPath, bundleTask.infoPlist());
     });
 
+    var infoPlistPath = this.infoPlistPath();
+
+    if (infoPlistPath && FILE.exists(infoPlistPath))
+        filedir (infoPlistProductPath, [infoPlistPath]);
+
     this.enhance([infoPlistProductPath]);
 }
 
