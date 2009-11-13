@@ -66,13 +66,13 @@ if [ `uname` = "Darwin" ]; then
         make webkit
         popd
         
-        echo "================================================================================"
-        echo "Rhino is the default Narwhal engine, should we change the default to JavaScriptCore for you?"
-        echo "This can by overridden by setting the NARWHAL_ENGINE environment variable to \"jsc\" or \"rhino\"."
-        echo "(Note: you must use Rhino for certain tools such as \"tusk\")"
-        if prompt; then
-            tusk engine jsc
-        fi
+        # echo "================================================================================"
+        # echo "Rhino is the default Narwhal engine, should we change the default to JavaScriptCore for you?"
+        # echo "This can by overridden by setting the NARWHAL_ENGINE environment variable to \"jsc\" or \"rhino\"."
+        # echo "(Note: you must use Rhino for certain tools such as \"tusk\")"
+        # if prompt; then
+        #     tusk engine jsc
+        # fi
     fi
 fi
 
@@ -108,3 +108,5 @@ if ! which -s "narwhal"; then
         path_instructions
     fi
 fi
+
+echo "Bootstrapping of Narwhal and other required tools is complete. You can now build Cappuccino."
