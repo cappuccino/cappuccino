@@ -1,7 +1,14 @@
 
 function ensurePackageUpToDate(packageName, requiredVersion)
 {
-    var version = require("packages").catalog[packageName].version;
+    var packageInfo = require("packages").catalog[packageName];
+    if (!packageInfo)
+    {
+        print("You are missing package \"" + packageName + "\", version " + requiredVersion + " or later. Please install using \"tusk install "+packageName+"\" and re-run jake");
+        require("os").exit(1);
+    }
+    
+    var version = packageInfo.version;
 
     if (version && require("util").compare(version.split("."), requiredVersion.split(".")) !== -1)
         return;
