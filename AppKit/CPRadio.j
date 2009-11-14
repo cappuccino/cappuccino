@@ -98,7 +98,7 @@
     
     if (self)
     {
-        [self setRadioGroup:aRadioGroup || [CPRadioGroup new]];
+        [self setRadioGroup:aRadioGroup];
 
         [self setHighlightsBy:CPContentsCellMask];
         [self setShowsStateBy:CPContentsCellMask];
@@ -115,7 +115,7 @@
 
 - (id)initWithFrame:(CGRect)aFrame
 {
-    return [self initWithFrame:aFrame radioGroup:nil];
+    return [self initWithFrame:aFrame radioGroup:[CPRadioGroup new]];
 }
 
 - (CPInteger)nextState

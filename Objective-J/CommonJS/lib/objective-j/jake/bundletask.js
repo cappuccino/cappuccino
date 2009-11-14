@@ -388,6 +388,16 @@ BundleTask.prototype.defineInfoPlistTask = function()
     if (infoPlistPath && FILE.exists(infoPlistPath))
         filedir (infoPlistProductPath, [infoPlistPath]);
 
+    // FIXME: ? We do this because adding a .j file should cause Info.plist to be updated.
+    // Any better way to handle this? Perhaps this should happen unconditionally.
+    this.flattenedEnvironments().forEach(function(/*Environment*/ anEnvironment)
+    {
+        if (!anEnvironment.spritesImages())
+            return;
+
+        filedir (infoPlistProductPath, this.buildProductStaticPathForEnvironment(anEnvironment));
+    }, this);
+
     this.enhance([infoPlistProductPath]);
 }
 
