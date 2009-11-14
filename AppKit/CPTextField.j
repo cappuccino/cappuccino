@@ -588,10 +588,14 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 
 - (void)mouseUp:(CPEvent)anEvent
 {
+    if (![self isEditable] || ![self isEnabled])
+        [[self nextResponder] mouseUp:anEvent];
 }
 
 - (void)mouseDragged:(CPEvent)anEvent
 {
+    if (![self isEditable] || ![self isEnabled])
+        [[self nextResponder] mouseDragged:anEvent];
 }
 
 - (void)keyUp:(CPEvent)anEvent
