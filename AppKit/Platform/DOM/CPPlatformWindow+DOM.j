@@ -381,7 +381,14 @@ var supportsNativeDragAndDrop = [CPPlatform supportsDragAndDrop];
     }
 
     else if (type === "drag")
-        [dragServer draggingSourceUpdatedWithGlobalLocation:[CPPlatform isBrowser] ? location : _CGPointMake(aDOMEvent.screenX, aDOMEvent.screenY)];
+    {
+        var y = aDOMEvent.screenY;
+
+        if (CPFeatureIsCompatible(CPHTML5DragAndDropSourceYOffBy1))
+            y -= 1;
+
+        [dragServer draggingSourceUpdatedWithGlobalLocation:[CPPlatform isBrowser] ? location : _CGPointMake(aDOMEvent.screenX, y)];
+    }
 
     else if (type === "dragover" || type === "dragleave")
     {

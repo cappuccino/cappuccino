@@ -606,6 +606,30 @@ CPTexturedBackgroundWindowMask
 */
 - (void)setFrame:(CGRect)aFrame display:(BOOL)shouldDisplay animate:(BOOL)shouldAnimate
 {
+    var value = aFrame.origin.x,
+        delta = value - FLOOR(value);
+
+    if (delta)
+        aFrame.origin.x = value > 0.879 ? CEIL(value) : FLOOR(value);
+
+    value = aFrame.origin.y;
+    delta = value - FLOOR(value);
+
+    if (delta)
+        aFrame.origin.y = value > 0.879 ? CEIL(value) : FLOOR(value);
+
+    value = aFrame.size.width;
+    delta = value - FLOOR(value);
+
+    if (delta)
+        aFrame.size.width = value > 0.15 ? CEIL(value) : FLOOR(value);
+
+    value = aFrame.size.height;
+    delta = value - FLOOR(value);
+
+    if (delta)
+        aFrame.size.height = value > 0.15 ? CEIL(value) : FLOOR(value);
+
     if (shouldAnimate)
     {
         var animation = [[_CPWindowFrameAnimation alloc] initWithWindow:self targetFrame:aFrame];

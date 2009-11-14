@@ -627,10 +627,10 @@ BundleTask.prototype.defineStaticTask = function()
                 }
             }, this);
 
-            fileStream.write("e;", { charset:"UTF-8" });
+            fileStream.write("e;");
 
             if (MHTMLContents.length > 0)
-                fileStream.write(MHTMLContents + "*/", { charset:"UTF-8" });
+                fileStream.write(MHTMLContents + "*/");
 
             fileStream.close();
         });
