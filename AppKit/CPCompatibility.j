@@ -21,6 +21,7 @@
  */
 
 @import "CPEvent.j"
+@import "CPPlatform.j"
 
 // Browser Engines
 CPUnknownBrowserEngine                  = 0;
@@ -116,6 +117,11 @@ else if (USER_AGENT.indexOf("AppleWebKit/") != -1)
         minorVersion = parseInt(versionString.substr(versionDivision + 1));
 
     if((USER_AGENT.indexOf("Safari") !== CPNotFound && (majorVersion > 525 || (majorVersion === 525 && minorVersion > 14))) || USER_AGENT.indexOf("Chrome") !== CPNotFound)
+        PLATFORM_FEATURES |= CPJavascriptRemedialKeySupport;
+
+    // FIXME this is a terrible hack to get around this bug:
+    // https://bugs.webkit.org/show_bug.cgi?id=21548
+    if (![CPPlatform isBrowser])
         PLATFORM_FEATURES |= CPJavascriptRemedialKeySupport;
 
     if (majorVersion < 532 || (majorVersion === 532 && minorVersion < 6))
