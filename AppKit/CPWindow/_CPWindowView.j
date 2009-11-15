@@ -320,11 +320,8 @@ var _CPWindowViewResizeIndicatorImage = nil;
         if (toolbarView)
         {
             [toolbarView removeFromSuperview];
-            [toolbarView setLabelColor:[self toolbarLabelColor]];
-            
-            if ([self respondsToSelector:@selector(toolbarLabelShadowColor)])
-                [toolbarView setLabelShadowColor:[self toolbarLabelShadowColor]];
-               
+            [toolbarView FIXME_setIsHUD:_styleMask & CPHUDBackgroundWindowMask];
+
             [self addSubview:toolbarView];
         }
         

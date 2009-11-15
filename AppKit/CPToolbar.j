@@ -28,6 +28,8 @@
 @import "CPPopUpButton.j"
 @import "CPToolbarItem.j"
 
+#include "CoreGraphics/CGGeometry.h"
+
 
 /*
     @global
@@ -316,6 +318,15 @@ var CPToolbarConfigurationsByIdentifier = nil;
     return _itemsSortedByVisibilityPriority;
 }
 
+- (void)validateVisibleToolbarItems
+{
+    var toolbarItems = [self visibleItems],
+        count = [toolbarItems count];
+
+    while (count--)
+        [toolbarItems[count] validate];
+}
+
 /* @ignore */
 - (id)_itemForItemIdentifier:(CPString)identifier willBeInsertedIntoToolbar:(BOOL)toolbar
 {
@@ -448,15 +459,18 @@ var _CPToolbarItemInfoMake = function(anIndex, aView, aLabel, aMinWidth)
     CPIndexSet          _visibleFlexibleWidthIndexes;
     
     CPDictionary        _itemInfos;
-    
-    CPArray             _visibleItems;
+    JSObject            _viewsForToolbarItems;
+
+    CPArray             _visibleItems @accessors(readonly, property=visibleItems);
     CPArray             _invisibleItems;
-    
+
     CPPopUpButton       _additionalItemsButton;
     CPColor             _labelColor;
     CPColor             _labelShadowColor;
     
     float               _minWidth;
+
+    BOOL                _FIXME_isHUD;
 }
 
 + (void)initialize
@@ -504,108 +518,110 @@ var _CPToolbarItemInfoMake = function(anIndex, aView, aLabel, aMinWidth)
     return _toolbar;
 }
 
-- (void)setLabelColor:(CPColor)aColor
+- (void)FIXME_setIsHUD:(BOOL)shouldBeHUD
 {
-    if (_labelColor === aColor)
+    if (_FIXME_isHUD === shouldBeHUD)
         return;
-    
-    _labelColor = aColor;
-    
-    var items = [_toolbar items],
-        count = [items count];
-    
-    while (count--)
-        [[self labelForItem:items[count]] setTextColor:_labelColor];
-}
 
-- (void)setLabelShadowColor:(CPColor)aColor
-{
-    if (_labelShadowColor === aColor)
-        return;
-    
-    _labelShadowColor = aColor;
-    
+    _FIXME_isHUD = shouldBeHUD;
+
     var items = [_toolbar items],
         count = [items count];
-    
+
     while (count--)
-        [[self labelForItem:items[count]] setTextShadowColor:_labelShadowColor];
+        [[self viewForItem:items[count]] FIXME_setIsHUD:shouldBeHUD];
 }
 
 // This *should* be roughly O(3N) = O(N)
 - (void)resizeSubviewsWithOldSize:(CGSize)aSize
 {
-    [self layoutSubviews];
+    [self tile];
 }
 
-- (void)layoutSubviews
+- (_CPToolbarItemView)viewForItem:(CPToolbarItem)anItem
+{
+    return _viewsForToolbarItems[[anItem UID]] || nil;
+}
+
+- (void)tile
 {
     // We begin by recalculating the visible items.
     var items = [_toolbar items],
-        width = CGRectGetWidth([self bounds]),
+        itemsWidth = CGRectGetWidth([self bounds]),
         minWidth = _minWidth,
-        flexibleItemIndexes = [CPIndexSet indexSet],
         // FIXME: This should be a CPSet.
         invisibleItemsSortedByPriority = [];
     
     _visibleItems = items;
-    
+
     // We only have hidden items if our actual width is smaller than our 
     // minimum width for hiding items.
-    if (width < minWidth)
+    if (itemsWidth < minWidth)
     {
-        width -= TOOLBAR_EXTRA_ITEMS_WIDTH;
+        itemsWidth -= TOOLBAR_EXTRA_ITEMS_WIDTH;
                 
         _visibleItems = [_visibleItems copy];
         
         var itemsSortedByVisibilityPriority = [_toolbar itemsSortedByVisibilityPriority],
             count = itemsSortedByVisibilityPriority.length;
-        
-        // While our items take up too much space...
-        while (minWidth > width)
+
+        // Remove items until we fit:
+        // The assumption here is that there are more visible items than there are
+        // invisible items, if not it would be faster to add items until we *no
+        // longer fit*.
+        while (minWidth > itemsWidth && count)
         {
-            var item = itemsSortedByVisibilityPriority[count--];
-            
-            minWidth -= [self minWidthForItem:item] + TOOLBAR_ITEM_MARGIN;
-            
+            var item = itemsSortedByVisibilityPriority[--count],
+                view = [self viewForItem:item];
+
+            minWidth -= [view minSize].width + TOOLBAR_ITEM_MARGIN;
+
             [_visibleItems removeObjectIdenticalTo:item];
             [invisibleItemsSortedByPriority addObject:item];
-            
-            [[self viewForItem:item] setHidden:YES];
-            [[self labelForItem:item] setHidden:YES];
+
+            [view setHidden:YES];
+            [view FIXME_setIsHUD:_FIXME_isHUD];
         }
+    }
+
+    // FIXME: minHeight?
+    var count = [items count],
+        height = 0.0;
+
+    while (count--)
+    {
+        var view = [self viewForItem:items[count]],
+            minSize = [view minSize];
+
+        if (height < minSize.height)
+            height = minSize.height;
     }
 
     // Determine all the items that have flexible width.
     // Also determine the height of the toolbar.
-    // NOTE: height is height without top margin, and bottom margin/label.
-    var index = _visibleItems.length,
-        height = 0.0;
+    var count = _visibleItems.length
+        flexibleItemIndexes = [CPIndexSet indexSet];
 
-    while (index--)
+    while (count--)
     {
-        var item = _visibleItems[index],
-            minSize = [item minSize],
-            view = [self viewForItem:item];
-        
-        if (minSize.width != [item maxSize].width)
-            [flexibleItemIndexes addIndex:index];
-        
-        // If the item doesn't have flexible width, then make sure it's set to the static width (min==max)
-        // This handles the case where the user did setView: with a view of a different size than minSize/maxSize
-        else
-            [view setFrameSize:CGSizeMake([item minSize].width, CGRectGetHeight([view frame]))];
+        var item = _visibleItems[count],
+            view = [self viewForItem:item],
+            minSize = [view minSize];
 
-        // FIXME: minHeight?
+        if (minSize.width !== [view maxSize].width)
+            [flexibleItemIndexes addIndex:count];
+
+        // FIXME: Is this still necessary? (probably not since we iterate them all below).
+        // If the item doesn't have flexible width, then make sure it's set to the
+        // static width (min==max). This handles the case where the user did setView:
+        // with a view of a different size than minSize/maxSize
+        else
+            [view setFrameSize:CGSizeMake(minSize.width, height)];
 
         [view setHidden:NO];
-        [[self labelForItem:item] setHidden:NO];
-        
-        if (height < minSize.height)
-            height = minSize.height;
     }
     
-    var remainingSpace = width - minWidth,
+    var remainingSpace = itemsWidth - minWidth,
         proportionate = 0.0;
 
     // Continue to distribute space proportionately while we have it, 
@@ -618,69 +634,43 @@ var _CPToolbarItemInfoMake = function(anIndex, aView, aLabel, aMinWidth)
         
         // Reset the remaining space to 0
         remainingSpace = 0.0;
-        
+
         var index = CPNotFound;
 
-        while ((index = [flexibleItemIndexes indexGreaterThanIndex:index]) != CPNotFound)
+        while ((index = [flexibleItemIndexes indexGreaterThanIndex:index]) !== CPNotFound)
         {
-            var item = _visibleItems[index];
+            var item = _visibleItems[index],
                 view = [self viewForItem:item],
-                viewFrame = [view frame],
-                // FIXME: Should this be minWidthForItem: ?
-                proposedWidth = [item minSize].width + proportionate,
-                constrainedWidth = MIN(proposedWidth, [item maxSize].width);
-            
+                proposedWidth = [view minSize].width + proportionate,
+                constrainedWidth = MIN(proposedWidth, [view maxSize].width);
+
             if (constrainedWidth < proposedWidth)
             {
                 [flexibleItemIndexes removeIndex:index];
-                
+
                 remainingSpace += proposedWidth - constrainedWidth;
             }
-            
-            [view setFrameSize:CGSizeMake(constrainedWidth, CGRectGetHeight(viewFrame))];
+
+            [view setFrameSize:CGSizeMake(constrainedWidth, height)];
         }
     }
     
-    // Now that all the visible items are the correct width, position them accordingly.
-    var count = _visibleItems.length,
-        x = TOOLBAR_ITEM_MARGIN,
-        fullHeightItems = [];
+    // Now that all the visible items are the correct width, give them their final frames.
+    var index = 0,
+        count = _visibleItems.length,
+        x = TOOLBAR_ITEM_MARGIN;
 
-    for (index = 0; index < count; ++index)
+    for (; index < count; ++index)
     {
-        var item = _visibleItems[index],
-            view = [self viewForItem:item],
-            
-            viewFrame = [view frame],
-            viewWidth = CGRectGetWidth(viewFrame),
-            
-            label = [self labelForItem:item],
-            labelFrame = [label frame],
-            labelWidth = CGRectGetWidth(labelFrame),
-            
-            itemWidth = MAX([self minWidthForItem:item], viewWidth),
-            
-            viewHeight = CGRectGetHeight(viewFrame);
+        var view = [self viewForItem:_visibleItems[index]],
+            viewWidth = CGRectGetWidth([view frame]);
 
-        // itemWidth != viewWidth.  itemWidth is MAX(size of view, size of label).  If the label is larger,
-        // *center* the view, don't resize it.
-        [view setFrame:CGRectMake(x + (itemWidth - viewWidth) / 2.0, TOOLBAR_TOP_MARGIN + (height - viewHeight) / 2.0, viewWidth, viewHeight)];
-        [label setFrameOrigin:CGPointMake(x + (itemWidth - labelWidth) / 2.0, TOOLBAR_TOP_MARGIN + height + 2.0)];
+        [view setFrame:CGRectMake(x, 0.0, viewWidth, height)];
 
-        x += itemWidth + TOOLBAR_ITEM_MARGIN;
-        
-        if ([item itemIdentifier] == CPToolbarSeparatorItemIdentifier)
-            fullHeightItems.push(item);
+        x += viewWidth + TOOLBAR_ITEM_MARGIN;
     }
-    
-    for (index = 0, count = fullHeightItems.length; index < count; ++index)
-    {
-        var view = [self viewForItem:fullHeightItems[index]],
-            viewHeight = 53.0;
-        
-        // FIXME: Variable Height
-        [view setFrame:CGRectMake(CGRectGetMinX([view frame]), (59.0 - viewHeight) / 2.0, CGRectGetWidth([view frame]), viewHeight)];
-    }
+
+    var needsAdditionalItemsButton = NO;
 
     if ([invisibleItemsSortedByPriority count])
     {
@@ -692,27 +682,55 @@ var _CPToolbarItemInfoMake = function(anIndex, aView, aLabel, aMinWidth)
         for (; index < count; ++index)
         {
             var item = items[index];
-            
-            if ([invisibleItemsSortedByPriority indexOfObjectIdenticalTo:item] != CPNotFound)
+
+            if ([invisibleItemsSortedByPriority indexOfObjectIdenticalTo:item] !== CPNotFound)
+            {
                 [_invisibleItems addObject:item];
+
+                var identifier = [item itemIdentifier];
+
+                if (identifier !== CPToolbarSpaceItemIdentifier &&
+                    identifier !== CPToolbarFlexibleSpaceItemIdentifier &&
+                    identifier !== CPToolbarSeparatorItemIdentifier)
+                    needsAdditionalItemsButton = YES;
+            }
         }
-        
-        [_additionalItemsButton setFrameOrigin:CGPointMake(width + 5.0, (CGRectGetHeight([self bounds]) - CGRectGetHeight([_additionalItemsButton frame])) / 2.0)];
-        
+    }
+
+    if (needsAdditionalItemsButton)
+    {
+        [_additionalItemsButton setFrameOrigin:CGPointMake(itemsWidth + 5.0, (CGRectGetHeight([self bounds]) - CGRectGetHeight([_additionalItemsButton frame])) / 2.0)];
+
         [self addSubview:_additionalItemsButton];
-        
+
         [_additionalItemsButton removeAllItems];
-        
-        var index = 0,
-            count = [_invisibleItems count];
 
         [_additionalItemsButton addItemWithTitle:@"Additional Items"];
         [[_additionalItemsButton itemArray][0] setImage:_CPToolbarViewExtraItemsImage];
-        
+
+        var index = 0,
+            count = [_invisibleItems count],
+            hasNonSeparatorItem = NO;
+
         for (; index < count; ++index)
         {
-            var item = _invisibleItems[index];
-            
+            var item = _invisibleItems[index],
+                identifier = [item itemIdentifier];
+
+            if (identifier === CPToolbarSpaceItemIdentifier ||
+                identifier === CPToolbarFlexibleSpaceItemIdentifier)
+                continue;
+
+            if (identifier === CPToolbarSeparatorItemIdentifier)
+            {
+                if (hasNonSeparatorItem)
+                    [_additionalItemsButton addItem:[CPMenuItem separatorItem]];
+
+                continue;
+            }
+
+            hasNonSeparatorItem = YES;
+
             [_additionalItemsButton addItemWithTitle:[item label]];
             
             var menuItem = [_additionalItemsButton itemArray][index + 1];
@@ -726,36 +744,6 @@ var _CPToolbarItemInfoMake = function(anIndex, aView, aLabel, aMinWidth)
     else
         [_additionalItemsButton removeFromSuperview];
     
-}
-
-- (CPView)viewForItem:(CPToolbarItem)anItem
-{
-    var info = [_itemInfos objectForKey:[anItem UID]];
-    
-    if (!info)
-        return nil;
-    
-    return info.view;
-}
-
-- (CPTextField)labelForItem:(CPToolbarItem)anItem
-{
-    var info = [_itemInfos objectForKey:[anItem UID]];
-    
-    if (!info)
-        return nil;
-    
-    return info.label;
-}
-
-- (float)minWidthForItem:(CPToolbarItem)anItem
-{
-    var info = [_itemInfos objectForKey:[anItem UID]];
-    
-    if (!info)
-        return 0;
-    
-    return info.minWidth;
 }
 
 - (void)reloadToolbarItems
@@ -772,63 +760,22 @@ var _CPToolbarItemInfoMake = function(anIndex, aView, aLabel, aMinWidth)
         index = 0;
     
     count = items.length;
-        
-    _itemInfos = [CPDictionary dictionary];
+
     _minWidth = TOOLBAR_ITEM_MARGIN;
+    _viewsForToolbarItems = { };
 
     for (; index < count; ++index)
     {
         var item = items[index],
-            view = [item view];
-        
-        // If this item doesn't have a custom view, create a standard one.
-        if (!view)
-        {
-            view = [[CPButton alloc] initWithFrame:CGRectMake(0.0, 0.0, 32.0, 32.0)];
-        
-            [view setBordered:NO];
-            
-            [view setImage:[item image]];
-            [view setAlternateImage:[item alternateImage]];
-            
-            [view setTarget:[item target]];
-            [view setAction:[item action]];
-            
-            [view setTag:[item tag]];
-        
-            [view setImagePosition:CPImageOnly];
-        }
-               
+            view = [[_CPToolbarItemView alloc] initWithToolbarItem:item toolbar:self];
+
+        _viewsForToolbarItems[[item UID]] = view;
         [self addSubview:view];
-        
-        // Create a lable for this item.
-        var label = [[CPTextField alloc] initWithFrame:CGRectMakeZero()];
-        
-        [label setStringValue:[item label]];
-        [label setFont:[CPFont systemFontOfSize:11.0]];
-        [label setTextColor:_labelColor];
-        [label setTextShadowColor:_labelShadowColor];
-        [label setTextShadowOffset:CGSizeMake(0, 1)];
-        [label sizeToFit];
 
-        [label setTarget:[item target]];
-        [label setAction:[item action]];
-
-        [self addSubview:label];
-        
-        var minSize = [item minSize],
-            minWidth = MAX(minSize.width, CGRectGetWidth([label frame]));
-            
-        [_itemInfos setObject:_CPToolbarItemInfoMake(index, view, label, minWidth) forKey:[item UID]];
-        
-        _minWidth += minWidth + TOOLBAR_ITEM_MARGIN;
-        
-        // If the minSize is different than the maxSize, then this item has flexible width.
-        //if (minSize.width != [item maxSize].width)
-        //    [_flexibleWidthIndexes addIndex:index];
+        _minWidth += [view minSize].width + TOOLBAR_ITEM_MARGIN;
     }
     
-    [self layoutSubviews];
+    [self tile];
 }
 
 @end
@@ -847,3 +794,240 @@ var _CPToolbarItemVisibilityPriorityCompare = function(lhs, rhs)
     
     return CPOrderedDescending;
 }
+
+var TOP_MARGIN      = 5.0,
+    LABEL_MARGIN    = 2.0;
+
+@implementation _CPToolbarItemView : CPControl
+{
+    CGSize          _minSize @accessors(readonly, property=minSize);
+    CGSize          _maxSize @accessors(readonly, property=maxSize);
+    CGSize          _labelSize;
+
+    CPToolbarItem   _toolbarItem;
+    CPToolbar       _toolbar;
+
+    CPImageView     _imageView;
+    CPView          _view;
+
+    CPTextField     _labelField;
+
+    BOOL            _FIXME_isHUD;
+}
+
+- (id)initWithToolbarItem:(CPToolbarItem)aToolbarItem toolbar:(CPToolbar)aToolbar
+{
+    self = [super init];
+
+    if (self)
+    {
+        _toolbarItem = aToolbarItem;
+
+        _labelField = [[CPTextField alloc] initWithFrame:CGRectMakeZero()];
+
+        [_labelField setFont:[CPFont systemFontOfSize:11.0]];
+        [_labelField setTextColor:[self FIXME_labelColor]];
+        [_labelField setTextShadowColor:[self FIXME_labelShadowColor]];
+        [_labelField setTextShadowOffset:CGSizeMake(0.0, 1.0)];
+        [_labelField setAutoresizingMask:CPViewWidthSizable | CPViewMinXMargin];
+
+        [self addSubview:_labelField];
+
+        [self updateFromItem];
+
+        _toolbar = aToolbar;
+
+        [_toolbarItem addObserver:self forKeyPath:"enabled" options:0 context:NULL];
+    }
+
+    return self;
+}
+
+- (void)FIXME_setIsHUD:(BOOL)shouldBeHUD
+{
+    _FIXME_isHUD = shouldBeHUD;
+    [_labelField setTextColor:[self FIXME_labelColor]];
+    [_labelField setTextShadowColor:[self FIXME_labelShadowColor]];
+}
+
+- (void)updateFromItem
+{
+    var identifier = [_toolbarItem itemIdentifier];
+
+    if (identifier === CPToolbarSpaceItemIdentifier ||
+        identifier === CPToolbarFlexibleSpaceItemIdentifier ||
+        identifier === CPToolbarSeparatorItemIdentifier)
+    {
+        [_view removeFromSuperview];
+        [_imageView removeFromSuperview];
+
+        _minSize = [_toolbarItem minSize];
+        _maxSize = [_toolbarItem maxSize];
+
+        if (identifier === CPToolbarSeparatorItemIdentifier)
+        {
+            _view = [[CPView alloc] initWithFrame:CGRectMake(0.0, 0.0, 2.0, 32.0)];
+
+            // FIXME: Get rid of this old API!!!
+            sizes = {};
+            sizes[@"CPToolbarItemSeparator"] = [CGSizeMake(2.0, 26.0), CGSizeMake(2.0, 1.0), CGSizeMake(2.0, 26.0)];
+            [_view setBackgroundColor:_CPControlThreePartImagePattern(YES, sizes, @"CPToolbarItem", @"Separator")];
+
+            [self addSubview:_view];
+        }
+
+        return;
+    }
+
+    [self setTarget:[_toolbarItem target]];
+    [self setAction:[_toolbarItem action]];
+
+    var view = [_toolbarItem view] || nil;
+
+    if (view !== _view)
+    {
+        if (!view)
+            [_view removeFromSuperview];
+
+        else
+        {
+            [self addSubview:view];
+            [_imageView removeFromSuperview];
+        }
+
+        _view = view;
+    }
+
+    if (!_view)
+    {
+        if (!_imageView)
+        {
+            _imageView = [[CPImageView alloc] initWithFrame:[self bounds]];
+
+            [_imageView setImageScaling:CPScaleNone];
+
+            [self addSubview:_imageView];
+        }
+
+        [_imageView setImage:[_toolbarItem image]];
+    }
+
+    var minSize = [_toolbarItem minSize],
+        maxSize = [_toolbarItem maxSize];
+
+    [_labelField setStringValue:[_toolbarItem label]];
+    [_labelField sizeToFit]; // FIXME
+
+    _labelSize = [_labelField frame].size;
+
+    _minSize = CGSizeMake(MAX(_labelSize.width, minSize.width), _labelSize.height + minSize.height + LABEL_MARGIN + TOP_MARGIN);
+    _maxSize = CGSizeMake(MAX(_labelSize.width, minSize.width), 100000000.0);
+
+    [_toolbar tile];
+}
+
+- (void)layoutSubviews
+{
+    var identifier = [_toolbarItem itemIdentifier];
+
+    if (identifier === CPToolbarSpaceItemIdentifier ||
+        identifier === CPToolbarFlexibleSpaceItemIdentifier)
+        return;
+
+    var bounds = [self bounds],
+        width = _CGRectGetWidth(bounds);
+
+    if (identifier === CPToolbarSeparatorItemIdentifier)
+        return [_view setFrame:CGRectMake(ROUND((width - 2.0) / 2.0), 0.0, 2.0, _CGRectGetHeight(bounds))];
+
+    var view = _view || _imageView,
+        itemMaxSize = [_toolbarItem maxSize],
+        height = _CGRectGetHeight(bounds) - _labelSize.height - LABEL_MARGIN - TOP_MARGIN,
+        viewWidth = MIN(itemMaxSize.width, width),
+        viewHeight =  MIN(itemMaxSize.height, height);
+
+    [view setFrame:CGRectMake(  ROUND((width - viewWidth) / 2.0),
+                                TOP_MARGIN + ROUND((height - viewHeight) / 2.0),
+                                viewWidth,
+                                viewHeight)];
+
+    [_labelField setFrameOrigin:CGPointMake(ROUND((width - _labelSize.width) / 2.0), TOP_MARGIN + height + LABEL_MARGIN)];
+}
+
+- (void)mouseDown:(CPEvent)anEvent
+{
+    if ([_toolbarItem view])
+        return;
+
+    [super mouseDown:anEvent];
+}
+
+- (void)setEnabled:(BOOL)shouldBeEnabled
+{
+    [super setEnabled:shouldBeEnabled];
+
+    if (shouldBeEnabled)
+    {
+        [_imageView setAlphaValue:1.0];
+        [_labelField setAlphaValue:1.0];
+    }
+    else
+    {
+        [_imageView setAlphaValue:0.5];
+        [_labelField setAlphaValue:0.5];
+    }
+}
+
+- (CPColor)FIXME_labelColor
+{
+    if (_FIXME_isHUD)
+        return [CPColor whiteColor];
+
+    return [CPColor blackColor];
+}
+
+- (CPColor)FIXME_labelShadowColor
+{
+    if (_FIXME_isHUD)
+        return [self isHighlighted] ? [CPColor colorWithWhite:1.0 alpha:0.5] : [CPColor clearColor];
+
+    return [self isHighlighted] ? [CPColor colorWithWhite:0.0 alpha:0.3] : [CPColor colorWithWhite:1.0 alpha:0.75];
+}
+
+- (void)setHighlighted:(BOOL)shouldBeHighlighted
+{
+    [super setHighlighted:shouldBeHighlighted];
+
+    if (shouldBeHighlighted)
+    {
+        var alternateImage = [_toolbarItem alternateImage];
+
+        if (alternateImage)
+            [_imageView setImage:alternateImage];
+
+        [_labelField setTextShadowOffset:CGSizeMakeZero()];
+    }
+    else
+    {
+        var image = [_toolbarItem image];
+
+        if (image)
+            [_imageView setImage:image];
+
+        [_labelField setTextShadowOffset:CGSizeMake(0.0, 1.0)];
+    }
+
+    [_labelField setTextShadowColor:[self FIXME_labelShadowColor]];
+}
+
+- (void)observeValueForKeyPath:(CPString)aKeyPath
+                      ofObject:(id)anObject
+                        change:(CPDictionary)aChange
+                       context:(id)aContext
+{
+    // FIXME: Not clear if -synchronizeWindowTitleWithDocumentName is the best way to go.
+    if (aKeyPath === "enabled")
+        [self setEnabled:[anObject isEnabled]];
+}
+
+@end
