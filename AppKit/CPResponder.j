@@ -241,7 +241,7 @@ CPDownArrowKeyCode  = 40;
 */
 - (void)insertNewline:(id)aSender
 {
-    [self insertNewline:aSender];
+    [[self nextResponder] insertNewline:aSender];
 }
 
 - (void)cancel:(id)sender
