@@ -739,6 +739,9 @@ CPTexturedBackgroundWindowMask
 */
 - (void)orderOut:(id)aSender
 {
+    if ([self _sharesChromeWithPlatformWindow])
+        [_platformWindow orderOut:self];
+
     if ([_delegate respondsToSelector:@selector(windowWillClose:)])
         [_delegate windowWillClose:self];
 
@@ -750,9 +753,6 @@ CPTexturedBackgroundWindowMask
 
         CPApp._keyWindow = nil;
     }
-
-    if ([self _sharesChromeWithPlatformWindow])
-        [_platformWindow orderOut:self];
 }
 
 /*!
