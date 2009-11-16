@@ -845,7 +845,7 @@ CPRunContinuesResponse  = -1002;
     if (_delegate && [_delegate respondsToSelector:@selector(application:openURL:)])
         return [_delegate application:self openURL:aURL];
 
-    return [_documentController openDocumentWithContentsOfURL:aURL display:YES error:NULL];
+    return !![_documentController openDocumentWithContentsOfURL:aURL display:YES error:NULL];
 }
 
 - (void)_didResignActive
