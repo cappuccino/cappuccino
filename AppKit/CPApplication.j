@@ -275,15 +275,15 @@ CPRunContinuesResponse  = -1002;
         postNotificationName:CPApplicationWillFinishLaunchingNotification
         object:self];
 
-    var filename = window.cpOpeningFilename && window.cpOpeningFilename(),
-        needsUntitled = !!_documentController;
+    var needsUntitled = !!_documentController,
+        URLStrings = window.cpOpeningURLStrings && window.cpOpeningURLStrings(),
+        index = 0,
+        count = [URLStrings count];
 
-    if ([filename length])
-    {
-        needsUntitled = ![self _openFile:filename];
-    }
+    for (; index < count; ++index)
+        needsUntitled = ![self _openURL:[CPURL URLWithString:URLStrings[index]]] || needsUntitled;
 
-    if (needsUntitled && [_delegate respondsToSelector: @selector(applicationShouldOpenUntitledFile:)])
+    if (needsUntitled && [_delegate respondsToSelector:@selector(applicationShouldOpenUntitledFile:)])
         needsUntitled = [_delegate applicationShouldOpenUntitledFile:self];
 
     if (needsUntitled)
@@ -834,12 +834,18 @@ CPRunContinuesResponse  = -1002;
     return _namedArgs;
 }
 
-- (BOOL)_openFile:(CPString)aFilename
+- (BOOL)_openURL:(CPURL)aURL
 {
     if (_delegate && [_delegate respondsToSelector:@selector(application:openFile:)])
-        return [_delegate application:self openFile:aFilename];
-    else
-        return [_documentController openDocumentWithContentsOfURL:aFilename display:YES error:NULL];
+    {
+        CPLog.warn("application:openFile: is deprecated, use application:openURL: instead.");
+        return [_delegate application:self openFile:[aURL absoluteString]];
+    }
+
+    if (_delegate && [_delegate respondsToSelector:@selector(application:openURL:)])
+        return [_delegate application:self openURL:aURL];
+
+    return [_documentController openDocumentWithContentsOfURL:aURL display:YES error:NULL];
 }
 
 - (void)_didResignActive

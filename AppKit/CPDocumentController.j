@@ -146,6 +146,8 @@ var CPSharedDocumentController = nil;
 
         result = [self makeDocumentWithContentsOfURL:anAbsoluteURL ofType:type delegate:self didReadSelector:@selector(document:didRead:contextInfo:) contextInfo:[CPDictionary dictionaryWithObject:shouldDisplay forKey:@"shouldDisplay"]];
 
+        [self addDocument:result];
+
         if (result)
             [self noteNewRecentDocument:result];
     }
@@ -207,7 +209,6 @@ var CPSharedDocumentController = nil;
     if (!didRead)
         return;
 
-    [self addDocument:aDocument];
     [aDocument makeWindowControllers];
     
     if ([aContextInfo objectForKey:@"shouldDisplay"])
