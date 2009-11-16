@@ -1,7 +1,7 @@
 
 @import "Configuration.j"
 
-var OS = require("OS"),
+var OS = require("os"),
     SYSTEM = require("system"),
     FILE = require("file"),
     OBJJ = require("objective-j");
