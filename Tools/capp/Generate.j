@@ -73,7 +73,7 @@ function gen(/*va_args*/)
     else if (!FILE.exists(destinationProject))
     {
         // FIXME???
-        OS.system("cp -vR " + sourceTemplate + " " + destinationProject);
+        FILE.copyTree(sourceTemplate, destinationProject);
 
         var files = FILE.glob(FILE.join(destinationProject, "**", "*")),
             index = 0,

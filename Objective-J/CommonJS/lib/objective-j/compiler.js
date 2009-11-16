@@ -64,7 +64,7 @@ function compileWithResolvedFlags(aFilePath, objjcFlags, gccFlags)
     else
     {
         // GCC preprocess the file.
-        var gcc = OS.popen("gcc -E -x c -P " + (gccFlags ? gccFlags.join(" ") : "") + " " + aFilePath),
+        var gcc = OS.popen("gcc -E -x c -P " + (gccFlags ? gccFlags.join(" ") : "") + " " + OS.enquote(aFilePath)),
             chunk = "";
 
         while (chunk = gcc.stdout.read())
