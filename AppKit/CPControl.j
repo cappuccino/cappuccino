@@ -103,7 +103,6 @@ var CPControlBlackColor     = [CPColor blackColor];
     CGPoint             _previousTrackingLocation;
 
     CPString            _toolTip;
-    Function            _actionFunction;
 }
 
 + (CPDictionary)themeAttributes
@@ -152,7 +151,6 @@ var CPControlBlackColor     = [CPColor blackColor];
 - (void)setAction:(SEL)anAction
 {
     _action = anAction;
-    _actionFunction = nil;
 }
 
 /*!
@@ -178,19 +176,6 @@ var CPControlBlackColor     = [CPColor blackColor];
 - (id)target
 {
     return _target;
-}
-
-- (void)setActionFunction:(Function)aFunction
-{
-    [self setTarget:self];
-    [self setAction:@selector(performActionFunction:)];
-    _actionFunction = aFunction;
-}
-
-- (void)performActionFunction:(Object)sender
-{
-    if (_actionFunction)
-        _actionFunction(sender);
 }
 
 /*!
