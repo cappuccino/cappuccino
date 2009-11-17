@@ -333,6 +333,11 @@ CPRunContinuesResponse  = -1002;
     [CPPlatform activateIgnoringOtherApps:shouldIgnoreOtherApps];
 }
 
+- (void)hideOtherApplications:(id)aSender
+{
+    [CPPlatform hideOtherApplications:self];
+}
+
 /*!
     Calls \c -finishLaunching method which results in starting
     the main event loop.
@@ -513,6 +518,11 @@ CPRunContinuesResponse  = -1002;
 - (CPArray)windows
 {
     return _windows;
+}
+
+- (void)hide:(id)aSender
+{
+    [CPPlatform hide:self];
 }
 
 // Accessing the Main Menu
