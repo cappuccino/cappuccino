@@ -236,7 +236,7 @@ CPTableViewSolidHorizontalGridLineMask = 1 << 1;
     if ([_dataSource respondsToSelector:@selector(tableView:setObjectValue:forTableColumn:row:)])
         _implementedDataSourceMethods |= CPTableViewDataSource_tableView_setObjectValue_forTableColumn_row_;
 
-    if ([_dataSource respondsToSelector:@selector(tableView:setObjectValue:forTableColumn:row:)])
+    if ([_dataSource respondsToSelector:@selector(tableView:acceptDrop:row:dropOperation:)])
         _implementedDataSourceMethods |= CPTableViewDataSource_tableView_acceptDrop_row_dropOperation_;
 
     if ([_dataSource respondsToSelector:@selector(tableView:namesOfPromisedFilesDroppedAtDestination:forDraggedRowsWithIndexes:)])
