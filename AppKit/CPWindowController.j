@@ -163,7 +163,7 @@
     Returns the window this object controls.
 */
 - (CPWindow)window
-{    
+{
     if (!_window)
     {
         [self windowWillLoad];
@@ -181,7 +181,7 @@
 
             [CPException raise:CPInternalInconsistencyException reason:reason];
         }
-        
+
         [self windowDidLoad];
         [_document windowControllerDidLoadCib:self];
 
