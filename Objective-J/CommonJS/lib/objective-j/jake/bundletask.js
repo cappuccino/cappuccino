@@ -509,7 +509,11 @@ function directoryInCommon(filenames)
     {
         var directory = FILE.dirname(aFilename);
 
-        if (!aCommonDirectory)
+        if (directory === ".")
+            directory = "";
+
+        // Empty string is an acceptable common directory.
+        if (aCommonDirectory === null)
             aCommonDirectory = directory;
 
         else
@@ -665,7 +669,8 @@ BundleTask.prototype.defineSourceTasks = function()
     else if (compilerFlags.join)
         compilerFlags = compilerFlags.join(" ");
 
-    var environments = this.flattenedEnvironments();
+    var environments = this.flattenedEnvironments(),
+        flattensSources = this.flattensSources();
 
     environments.forEach(function(/*Environment*/ anEnvironment)
     {
@@ -683,7 +688,9 @@ BundleTask.prototype.defineSourceTasks = function()
         }
 
         var replacedFiles = [],
-            environmentCompilerFlags = anEnvironment.compilerFlags().join(" ") + " " + compilerFlags;
+            environmentCompilerFlags = anEnvironment.compilerFlags().join(" ") + " " + compilerFlags,
+            flattensSources = this.flattensSources(),
+            basePathLength = directoryInCommon(environmentSources).length;
 
         environmentSources.forEach(function(/*String*/ aFilename)
         {
@@ -691,7 +698,8 @@ BundleTask.prototype.defineSourceTasks = function()
             if (!FILE.exists(aFilename) || FILE.extension(aFilename) !== '.j')
                 return;
 
-            var compiledEnvironmentSource = FILE.join(sourcesPath, FILE.basename(aFilename));
+            var relativePath = aFilename.substring(basePathLength),
+                compiledEnvironmentSource = FILE.join(sourcesPath, relativePath);
 
             filedir (compiledEnvironmentSource, [aFilename], function()
             {
@@ -701,9 +709,7 @@ BundleTask.prototype.defineSourceTasks = function()
 
             filedir (staticPath, [compiledEnvironmentSource]);
 
-            // FIXME: how do we non flatten?
-            // dir in common
-            replacedFiles.push(flattensSources ? FILE.basename(aFilename) : FILE.relative(sourcesPath, aFilename));
+            replacedFiles.push(flattensSources ? FILE.basename(aFilename) : relativePath);
         }, this);
 
         this._replacedFiles[anEnvironment] = replacedFiles;

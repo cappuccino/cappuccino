@@ -1,5 +1,4 @@
-var FILE = require("file"),
-    readline = require("readline").readline;
+var FILE = require("file");
 
 var window = require("browser/window");
 
@@ -144,9 +143,8 @@ exports.run = function(args)
             try {
                 system.stdout.write("objj> ").flush();
 
-                var input = readline(),
-                    result = objj_eval(input);
-                
+                var result = objj_eval(require("readline").readline());
+
                 if (result !== undefined)
                     print(result);
                     
