@@ -15,6 +15,10 @@ function prompt () {
     done
 }
 
+function which () {
+    echo "$PATH" | tr ":" "\n" | while read line; do [ -f "$line/$1" ] && return 0; done
+}
+
 function path_instructions () {
     echo "Add \"$INSTALL_DIRECTORY/bin\" to your PATH environment variable in your shell configuration file (e.x. .profile, .bashrc, .bash_profile)."
     echo "For example:"
@@ -26,20 +30,20 @@ INSTALL_DIRECTORY="/usr/local/narwhal"
 
 ORIGINAL_PATH="$PATH"
 
-if ! which -s "narwhal"; then
+if ! which "narwhal"; then
     echo "================================================================================"
     echo "Narwhal JavaScript platform is required. Install it into \"$INSTALL_DIRECTORY\"?"
     if prompt; then
         echo "Downloading Narwhal..."
-        curl -L -o "$TEMPZIP" "http://github.com/tlrobinson/narwhal/zipball/master"
+        curl -L -o "$TEMPZIP" "http://github.com/280north/narwhal/zipball/master"
         echo "Installing Narwhal..."
         unzip "$TEMPZIP" -d "$INSTALL_DIRECTORY"
         rm "$TEMPZIP"
         
-        mv $INSTALL_DIRECTORY/tlrobinson-narwhal-*/* $INSTALL_DIRECTORY/.
-        rm -rf $INSTALL_DIRECTORY/tlrobinson-narwhal-*
+        mv $INSTALL_DIRECTORY/280north-narwhal-*/* $INSTALL_DIRECTORY/.
+        rm -rf $INSTALL_DIRECTORY/280north-narwhal-*
         
-        if ! which -s "narwhal"; then
+        if ! which "narwhal"; then
             export PATH="$INSTALL_DIRECTORY/bin:$PATH"
         fi
     else
@@ -48,7 +52,7 @@ if ! which -s "narwhal"; then
     fi
 fi
 
-if ! which -s "narwhal"; then
+if ! which "narwhal"; then
     echo "Error: problem installing Narwhal"
     exit 1
 fi
@@ -77,7 +81,7 @@ if [ `uname` = "Darwin" ]; then
 fi
 
 export PATH="$ORIGINAL_PATH"
-if ! which -s "narwhal"; then
+if ! which "narwhal"; then
     
     SHELL_CONFIG=""
     if [ -f "$HOME/.profile" ]; then
