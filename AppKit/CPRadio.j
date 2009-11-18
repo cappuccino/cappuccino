@@ -175,6 +175,9 @@ var CPRadioRadioGroupKey    = @"CPRadioRadioGroupKey";
 {
     CPSet   _radios;
     CPRadio _selectedRadio;
+
+    id      _target @accessors(property=target);
+    SEL     _action @accessors(property=action);
 }
 
 - (id)init
@@ -213,6 +216,8 @@ var CPRadioRadioGroupKey    = @"CPRadioRadioGroupKey";
 
     [_selectedRadio setState:CPOffState];
     _selectedRadio = aRadio;
+
+    [CPApp sendAction:_action to:_target from:self];
 }
 
 - (CPRadio)selectedRadio

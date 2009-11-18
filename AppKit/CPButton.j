@@ -192,8 +192,8 @@ CPButtonStateMixed  = CPThemeState("mixed");
 
     _allowsMixedState = aFlag;
 
-    if (!_allowsMixedState)
-        [self unsetThemeState:CPButtonStateMixed];
+    if (!_allowsMixedState && [self state] === CPMixedState)
+        [self setState:CPOnState];
 }
 
 - (void)setObjectValue:(id)anObjectValue
