@@ -84,14 +84,15 @@ export PATH="$ORIGINAL_PATH"
 if ! which "narwhal"; then
     
     SHELL_CONFIG=""
-    if [ -f "$HOME/.profile" ]; then
-        SHELL_CONFIG="$HOME/.profile"
-    elif [ -f "$HOME/.bashrc" ]; then
-        SHELL_CONFIG="$HOME/.bashrc"
-    elif [ -f "$HOME/.bash_profile" ]; then
+    # use order outlined by http://hayne.net/MacDev/Notes/unixFAQ.html#shellStartup
+    if [ -f "$HOME/.bash_profile" ]; then
         SHELL_CONFIG="$HOME/.bash_profile"
     elif [ -f "$HOME/.bash_login" ]; then
         SHELL_CONFIG="$HOME/.bash_login"
+    elif [ -f "$HOME/.profile" ]; then
+        SHELL_CONFIG="$HOME/.profile"
+    elif [ -f "$HOME/.bashrc" ]; then
+        SHELL_CONFIG="$HOME/.bashrc"
     fi
 
     EXPORT_PATH_STRING="export PATH=\"$INSTALL_DIRECTORY/bin:\$PATH\""
