@@ -43,6 +43,7 @@ function compress(/*String*/ aCode, /*String*/ FIXME)
         chunk = "";
 
     compressor.stdin.write(tmpFile + "\n");
+    compressor.stdin.flush();
 
     while ((chunk = compressor.stdout.readLine()) !== "/*----*/\n")
         output += chunk;
