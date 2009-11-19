@@ -105,7 +105,7 @@ function compileWithResolvedFlags(aFilePath, objjcFlags, gccFlags)
                             " on preprocessed line number "+e.lineNumber+"\n"+
                             "\t"+lines.slice(Math.max(0, e.lineNumber - 1 - PAD), e.lineNumber+PAD).join("\n\t"));
                         
-                    OS.exit(1);
+                    throw e;
                 }
             }
             
