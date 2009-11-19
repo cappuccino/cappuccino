@@ -43,6 +43,7 @@ function compress(/*String*/ aCode, /*String*/ FIXME)
         chunk = "";
 
     compressor.stdin.write(tmpFile + "\n");
+    compressor.stdin.flush();
 
     while ((chunk = compressor.stdout.readLine()) !== "/*----*/\n")
         output += chunk;
@@ -55,15 +56,21 @@ function compileWithResolvedFlags(aFilePath, objjcFlags, gccFlags)
 {
     var shouldObjjPreprocess = objjcFlags & OBJJ_PREPROCESSOR_PREPROCESS,
         shouldCheckSyntax = objjcFlags & OBJJ_PREPROCESSOR_SYNTAX,
-        shouldCompress = objjcFlags & OBJJ_PREPROCESSOR_COMPRESS;
+        shouldCompress = objjcFlags & OBJJ_PREPROCESSOR_COMPRESS,
+        fileContents = "";
 
-    // GCC preprocess the file.
-    var gcc = OS.popen("gcc -E -x c -P " + (gccFlags ? gccFlags.join(" ") : "") + " " + aFilePath),
-        fileContents = "",
-        chunk = "";
+    if (OS.popen("which gcc").stdout.read().length === 0)
+        fileContents = FILE.read(aFilePath, { charset:"UTF-8" });
 
-    while (chunk = gcc.stdout.read())
-        fileContents += chunk;
+    else
+    {
+        // GCC preprocess the file.
+        var gcc = OS.popen("gcc -E -x c -P " + (gccFlags ? gccFlags.join(" ") : "") + " " + OS.enquote(aFilePath)),
+            chunk = "";
+
+        while (chunk = gcc.stdout.read())
+            fileContents += chunk;
+    }
 
     if (!shouldObjjPreprocess)
         return fileContents;

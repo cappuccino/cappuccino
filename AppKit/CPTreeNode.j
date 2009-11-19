@@ -47,7 +47,7 @@
 
 - (void)removeObjectFromChildNodesAtIndex:(CPInteger)anIndex
 {
-    anObject._parentNode = nil;
+    [_childNodes objectAtIndex:anIndex]._parentNode = nil;
 
     [_childNodes removeObjectAtIndex:anIndex];
 }

@@ -53,4 +53,20 @@
 #endif
 }
 
++ (void)hideOtherApplications:(id)aSender
+{
+#if PLATFORM(DOM)
+    if (typeof window["cpHideOtherApplications"] === "function")
+        window.cpHideOtherApplications();
+#endif
+}
+
++ (void)hide:(id)aSender
+{
+#if PLATFORM(DOM)
+    if (typeof window["cpHide"] === "function")
+        window.cpHide();
+#endif
+}
+
 @end

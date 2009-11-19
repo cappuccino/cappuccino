@@ -383,6 +383,21 @@ BundleTask.prototype.defineInfoPlistTask = function()
         require("objective-j/plist").writePlist(infoPlistProductPath, bundleTask.infoPlist());
     });
 
+    var infoPlistPath = this.infoPlistPath();
+
+    if (infoPlistPath && FILE.exists(infoPlistPath))
+        filedir (infoPlistProductPath, [infoPlistPath]);
+
+    // FIXME: ? We do this because adding a .j file should cause Info.plist to be updated.
+    // Any better way to handle this? Perhaps this should happen unconditionally.
+    this.flattenedEnvironments().forEach(function(/*Environment*/ anEnvironment)
+    {
+        if (!anEnvironment.spritesImages())
+            return;
+
+        filedir (infoPlistProductPath, this.buildProductStaticPathForEnvironment(anEnvironment));
+    }, this);
+
     this.enhance([infoPlistProductPath]);
 }
 
@@ -494,7 +509,11 @@ function directoryInCommon(filenames)
     {
         var directory = FILE.dirname(aFilename);
 
-        if (!aCommonDirectory)
+        if (directory === ".")
+            directory = "";
+
+        // Empty string is an acceptable common directory.
+        if (aCommonDirectory === null)
             aCommonDirectory = directory;
 
         else
@@ -622,10 +641,10 @@ BundleTask.prototype.defineStaticTask = function()
                 }
             }, this);
 
-            fileStream.write("e;", { charset:"UTF-8" });
+            fileStream.write("e;");
 
             if (MHTMLContents.length > 0)
-                fileStream.write(MHTMLContents + "*/", { charset:"UTF-8" });
+                fileStream.write(MHTMLContents + "*/");
 
             fileStream.close();
         });
@@ -650,7 +669,8 @@ BundleTask.prototype.defineSourceTasks = function()
     else if (compilerFlags.join)
         compilerFlags = compilerFlags.join(" ");
 
-    var environments = this.flattenedEnvironments();
+    var environments = this.flattenedEnvironments(),
+        flattensSources = this.flattensSources();
 
     environments.forEach(function(/*Environment*/ anEnvironment)
     {
@@ -668,7 +688,9 @@ BundleTask.prototype.defineSourceTasks = function()
         }
 
         var replacedFiles = [],
-            environmentCompilerFlags = anEnvironment.compilerFlags().join(" ") + " " + compilerFlags;
+            environmentCompilerFlags = anEnvironment.compilerFlags().join(" ") + " " + compilerFlags,
+            flattensSources = this.flattensSources(),
+            basePathLength = directoryInCommon(environmentSources).length;
 
         environmentSources.forEach(function(/*String*/ aFilename)
         {
@@ -676,7 +698,8 @@ BundleTask.prototype.defineSourceTasks = function()
             if (!FILE.exists(aFilename) || FILE.extension(aFilename) !== '.j')
                 return;
 
-            var compiledEnvironmentSource = FILE.join(sourcesPath, FILE.basename(aFilename));
+            var relativePath = aFilename.substring(basePathLength),
+                compiledEnvironmentSource = FILE.join(sourcesPath, relativePath);
 
             filedir (compiledEnvironmentSource, [aFilename], function()
             {
@@ -686,9 +709,7 @@ BundleTask.prototype.defineSourceTasks = function()
 
             filedir (staticPath, [compiledEnvironmentSource]);
 
-            // FIXME: how do we non flatten?
-            // dir in common
-            replacedFiles.push(flattensSources ? FILE.basename(aFilename) : FILE.relative(sourcesPath, aFilename));
+            replacedFiles.push(flattensSources ? FILE.basename(aFilename) : relativePath);
         }, this);
 
         this._replacedFiles[anEnvironment] = replacedFiles;

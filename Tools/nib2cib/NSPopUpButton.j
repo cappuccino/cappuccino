@@ -38,7 +38,7 @@
         //FIXME push this check to CPPopUpButton?
         _selectedIndex  = [cell selectedIndex] || 0;
         
-        _pullsDown      = [cell pullsDown];
+        [self setPullsDown:[cell pullsDown]];
         _preferredEdge  = [cell preferredEdge];
     }
     

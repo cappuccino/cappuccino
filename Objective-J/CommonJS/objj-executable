@@ -1,27 +1,15 @@
-#!/bin/bash
+#!/usr/bin/env narwhal
 
-# get the absolute path of the executable
-SELF_PATH=$(cd -P -- "$(dirname -- "$0")" && pwd -P) && SELF_PATH=$SELF_PATH/$(basename -- "$0")
+var FILE = require("file");
 
-# resolve symlinks
-while [ -h "$SELF_PATH" ]; do
-	DIR=$(dirname -- "$SELF_PATH")
-	SYM=$(readlink -- "$SELF_PATH")
-	SELF_PATH=$(cd -- "$DIR" && cd -- $(dirname -- "$SYM") && pwd)/$(basename -- "$SYM")
-done
+var cappuccinoPackage = FILE.path(module.path).dirname().dirname();
+var mainPath = cappuccinoPackage.join("lib", FILE.basename(module.path), "main.j");
+var frameworksPath = cappuccinoPackage.join("Frameworks");
 
-SELF_DIR=`dirname $SELF_PATH`
-export SELF_HOME=`dirname $SELF_DIR`
-SELF_LIB="$SELF_HOME/lib"
+// TODO: is specifying the Frameworks necessary?
+system.args.splice(1, 0, "-I"+frameworksPath, String(mainPath));
 
-FRAMEWORKS="$SELF_HOME/Frameworks"
-MAIN="$SELF_LIB/$(basename $SELF_PATH)/main.j"
+// HACK: remove use of SELF_HOME from capp gen
+system.env["SELF_HOME"] = cappuccinoPackage;
 
-
-# convert paths for Cygwin
-if [[ `uname` == CYGWIN* ]]; then
-    FRAMEWORKS=`cygpath -w "$FRAMEWORKS"`
-    MAIN=`cygpath -w "$MAIN"`
-fi
-
-objj -I$FRAMEWORKS $MAIN "$@"
+require("objective-j").run(system.args);

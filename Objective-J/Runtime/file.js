@@ -34,7 +34,7 @@ var userAgent = window.navigator.userAgent;
 
 if (userAgent.indexOf("MSIE 7") !== -1)
     OBJJ_ENVIRONMENTS.unshift("IE7");
-if (userAgent.indexOf("MSIE 8") !== -1)
+else if (userAgent.indexOf("MSIE 8") !== -1)
     OBJJ_ENVIRONMENTS.unshift("IE8");
 else
     OBJJ_ENVIRONMENTS.unshift("W3C");

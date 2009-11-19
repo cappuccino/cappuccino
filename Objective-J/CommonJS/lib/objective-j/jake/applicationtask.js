@@ -56,13 +56,18 @@ ApplicationTask.prototype.defineFrameworksTask = function()
     this.enhance([frameworks]);
 }
 
+ApplicationTask.prototype.buildIndexFilePath = function()
+{
+    return FILE.join(this.buildProductPath(), FILE.basename(this.indexFilePath()));
+}
+
 ApplicationTask.prototype.defineIndexFileTask = function()
 {
     if (!this._indexFilePath)
         return;
 
     var indexFilePath = this.indexFilePath(),
-        buildIndexFilePath = FILE.join(this.buildProductPath(), FILE.basename(this.indexFilePath()));
+        buildIndexFilePath = this.buildIndexFilePath();
 
     Jake.filedir (buildIndexFilePath, [indexFilePath], function()
     {

@@ -81,8 +81,6 @@ var _CPWindowViewResizeIndicatorImage = nil;
         _styleMask = aStyleMask;
         _resizeIndicatorOffset = CGSizeMake(0.0, 0.0);
         _toolbarOffset = CGSizeMake(0.0, 0.0);
-        
-        [self setShowsResizeIndicator:!(_styleMask & CPBorderlessBridgeWindowMask) && (_styleMask & CPResizableWindowMask)];
     }
     
     return self;
@@ -213,13 +211,13 @@ var _CPWindowViewResizeIndicatorImage = nil;
         
         [_resizeIndicator setImage:_CPWindowViewResizeIndicatorImage];
         [_resizeIndicator setAutoresizingMask:CPViewMinXMargin | CPViewMinYMargin];
-        
+
         [self addSubview:_resizeIndicator];
     }
     else
     {
         [_resizeIndicator removeFromSuperview];
-        
+
         _resizeIndicator = nil;
     }
 }
@@ -322,11 +320,8 @@ var _CPWindowViewResizeIndicatorImage = nil;
         if (toolbarView)
         {
             [toolbarView removeFromSuperview];
-            [toolbarView setLabelColor:[self toolbarLabelColor]];
-            
-            if ([self respondsToSelector:@selector(toolbarLabelShadowColor)])
-                [toolbarView setLabelShadowColor:[self toolbarLabelShadowColor]];
-               
+            [toolbarView FIXME_setIsHUD:_styleMask & CPHUDBackgroundWindowMask];
+
             [self addSubview:toolbarView];
         }
         

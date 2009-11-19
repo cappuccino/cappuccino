@@ -35,12 +35,9 @@
         _horizontalScroller = [aCoder decodeObjectForKey:"NSHScroller"];
         _contentView        = [aCoder decodeObjectForKey:"NSContentView"];
 
-        _hasVerticalScroller    = !Boolean(flags & (1 << 4));
-        _hasHorizontalScroller  = !Boolean(flags & (1 << 5));
-        _autohidesScrollers     = Boolean(flags & (1 << 9));
-
-        [self setHasHorizontalScroller:!_hasHorizontalScroller];
-        [self setHasVerticalScroller:!_hasVerticalScroller];
+        _hasVerticalScroller    = !!(flags & (1 << 4));
+        _hasHorizontalScroller  = !!(flags & (1 << 5));
+        _autohidesScrollers     = !!(flags & (1 << 9));
 
         //[aCoder decodeBytesForKey:"NSScrollAmts"];
         _verticalLineScroll = 10.0;

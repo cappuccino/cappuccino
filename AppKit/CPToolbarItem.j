@@ -65,9 +65,9 @@ CPToolbarPrintItemIdentifier            = @"CPToolbarPrintItemIdentifier";
 @implementation CPToolbarItem : CPObject
 {
     CPString    _itemIdentifier;
-    
+
     CPToolbar   _toolbar;
-    
+
     CPString    _label;
     CPString    _paletteLabel;
     CPString    _toolTip;
@@ -77,13 +77,15 @@ CPToolbarPrintItemIdentifier            = @"CPToolbarPrintItemIdentifier";
     BOOL        _isEnabled;
     CPImage     _image;
     CPImage     _alternateImage;
-    
+
     CPView      _view;
-    
+
     CGSize      _minSize;
     CGSize      _maxSize;    
-    
+
     int         _visibilityPriority;
+
+    BOOL        _autovalidates;
 }
 
 - (id)init
@@ -449,6 +451,48 @@ CPToolbarItemVisibilityPriorityUser
     _visibilityPriority = aVisibilityPriority;
 }
 
+- (void)validate
+{
+    // View items do not do any target-action analysis.
+    if (_view)
+    {
+        if ([target respondsToSelector:@selector(validateToolbarItem:)])
+            [self setEnabled:[target validateToolbarItem:self]];
+
+        return;
+    }
+
+    var action = [self action];
+
+    if (!action)
+        return [self setEnabled:NO];
+
+    var target = [self target];
+
+    if (target && ![target respondsToSelector:action])
+        return [self setEnabled:NO];
+
+    target = [CPApp targetForAction:action to:target from:self];
+
+    if (!target)
+        return [self setEnabled:NO];
+
+    if ([target respondsToSelector:@selector(validateToolbarItem:)])
+        [self setEnabled:[target validateToolbarItem:self]];
+    else
+        [self setEnabled:YES];
+}
+
+- (BOOL)autovalidates
+{
+    return _autovalidates;
+}
+
+- (void)setAutovalidates:(BOOL)shouldAutovalidate
+{
+    _autovalidates = !!shouldAutovalidate;
+}
+
 @end
 
 @implementation CPToolbarItem (CPCopying)
@@ -485,32 +529,7 @@ CPToolbarItemVisibilityPriorityUser
 
 // Standard toolbar identifiers
 
-var _CPToolbarSeparatorItemView = nil,
-    _CPToolbarSpaceItemView     = nil;
-
 @implementation CPToolbarItem (Standard)
-
-+ (CPView)_separatorItemView
-{
-    if (!_CPToolbarSeparatorItemView)
-    {
-        _CPToolbarSeparatorItemView = [[CPView alloc] initWithFrame:CGRectMake(0.0, 0.0, 2.0, 32.0)];
-        
-        sizes = {};
-        sizes[@"CPToolbarItemSeparator"] = [CGSizeMake(2.0, 26.0), CGSizeMake(2.0, 1.0), CGSizeMake(2.0, 26.0)];
-        [_CPToolbarSeparatorItemView setBackgroundColor:_CPControlThreePartImagePattern(YES, sizes, @"CPToolbarItem", @"Separator")];
-    }
-
-    return _CPToolbarSeparatorItemView;
-}
-
-+ (CPView)_spaceItemView
-{
-    if (!_CPToolbarSpaceItemView)
-        _CPToolbarSpaceItemView = [[CPView alloc] initWithFrame:CGRectMakeZero()];
-    
-    return _CPToolbarSpaceItemView;
-}
 
 /* @ignore */
 + (CPToolbarItem)_standardItemWithItemIdentifier:(CPString)anItemIdentifier
@@ -519,23 +538,17 @@ var _CPToolbarSeparatorItemView = nil,
 
     switch (anItemIdentifier)
     {
-        case CPToolbarSeparatorItemIdentifier:          [item setView:[self _separatorItemView]];
-                                                        
-                                                        [item setMinSize:CGSizeMake(2.0, 0.0)];
+        case CPToolbarSeparatorItemIdentifier:          [item setMinSize:CGSizeMake(2.0, 0.0)];
                                                         [item setMaxSize:CGSizeMake(2.0, 100000.0)];
                                                         
                                                         return item;
 
-        case CPToolbarSpaceItemIdentifier:              [item setView:[self _spaceItemView]];
-                                                        
-                                                        [item setMinSize:CGSizeMake(32.0, 32.0)];
+        case CPToolbarSpaceItemIdentifier:              [item setMinSize:CGSizeMake(32.0, 32.0)];
                                                         [item setMaxSize:CGSizeMake(32.0, 32.0)];
                                                         
                                                         return item;
                                                         
-        case CPToolbarFlexibleSpaceItemIdentifier:      [item setView:[self _spaceItemView]];
-        
-                                                        [item setMinSize:CGSizeMake(32.0, 32.0)];
+        case CPToolbarFlexibleSpaceItemIdentifier:      [item setMinSize:CGSizeMake(32.0, 32.0)];
                                                         [item setMaxSize:CGSizeMake(10000.0, 32.0)];
                                                         
                                                         return item;

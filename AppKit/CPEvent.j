@@ -25,110 +25,26 @@
 #include "CoreGraphics/CGGeometry.h"
 
 
-/*
-    @global
-    @group CPEventType
-*/
 CPLeftMouseDown                         = 1;
-/*
-    @global
-    @group CPEventType
-*/
 CPLeftMouseUp                           = 2;
-/*
-    @global
-    @group CPEventType
-*/
 CPRightMouseDown                        = 3;
-/*
-    @global
-    @group CPEventType
-*/
 CPRightMouseUp                          = 4;
-/*
-    @global
-    @group CPEventType
-*/
 CPMouseMoved                            = 5;
-/*
-    @global
-    @group CPEventType
-*/
 CPLeftMouseDragged                      = 6;
-/*
-    @global
-    @group CPEventType
-*/
 CPRightMouseDragged                     = 7;
-/*
-    @global
-    @group CPEventType
-*/
 CPMouseEntered                          = 8;
-/*
-    @global
-    @group CPEventType
-*/
 CPMouseExited                           = 9;
-/*
-    @global
-    @group CPEventType
-*/
 CPKeyDown                               = 10;
-/*
-    @global
-    @group CPEventType
-*/
 CPKeyUp                                 = 11;
-/*
-    @global
-    @group CPEventType
-*/
 CPFlagsChanged                          = 12;
-/*
-    @global
-    @group CPEventType
-*/
 CPAppKitDefined                         = 13;
-/*
-    @global
-    @group CPEventType
-*/
 CPSystemDefined                         = 14;
-/*
-    @global
-    @group CPEventType
-*/
 CPApplicationDefined                    = 15;
-/*
-    @global
-    @group CPEventType
-*/
 CPPeriodic                              = 16;
-/*
-    @global
-    @group CPEventType
-*/
 CPCursorUpdate                          = 17; 
-/*
-    @global
-    @group CPEventType
-*/
 CPScrollWheel                           = 22;
-/*
-    @global
-    @group CPEventType
-*/
 CPOtherMouseDown                        = 25;
-/*
-    @global
-    @group CPEventType
-*/
 CPOtherMouseUp                          = 26;
-/*
-    @global
-    @group CPEventType
-*/
 CPOtherMouseDragged                     = 27;
 
 // iPhone Event Types

@@ -38,6 +38,11 @@ var _CPToolbarViewBackgroundColor = nil;
     return _CPToolbarViewBackgroundColor;
 }
 
+- (void)setShowsResizeIndicator:(BOOL)shouldShowResizeIndicator
+{
+    // We don't ever want to show the resize indicator.
+}
+
 - (void)tile
 {
     [super tile];

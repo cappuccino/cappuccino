@@ -781,7 +781,7 @@ var _CPMenuBarVisible               = NO,
     for(; index < count; ++index)
     {
         var item = _items[index],
-            modifierMask = [item keyEquivalentModifierMask];
+            modifierMask = [item keyEquivalentModifierMask] | ([item keyEquivalent] === [[item keyEquivalent] uppercaseString] ? CPShiftKeyMask : 0);
 
         if ((modifierFlags & (CPShiftKeyMask | CPAlternateKeyMask | CPCommandKeyMask | CPControlKeyMask)) == modifierMask &&
             [characters caseInsensitiveCompare:[item keyEquivalent]] == CPOrderedSame)
