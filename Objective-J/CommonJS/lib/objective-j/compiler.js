@@ -83,11 +83,11 @@ function compileWithResolvedFlags(aFilePath, objjcFlags, gccFlags)
     for (var index = 0; index < fragments.length; index++)
     {
         var fragment = fragments[index];
-        
+
         if (IS_FILE(fragment))
             preprocessed += (IS_LOCAL(fragment) ? MARKER_IMPORT_LOCAL : MARKER_IMPORT_STD) + ';' + GET_PATH(fragment).length + ';' + GET_PATH(fragment);
         else
-        {            
+        {
             var code = GET_CODE(fragment);
 
             if (shouldCheckSyntax)
@@ -99,23 +99,25 @@ function compileWithResolvedFlags(aFilePath, objjcFlags, gccFlags)
                 catch (e)
                 {
                     var lines = code.split("\n"),
-                        PAD = 3;
-                        
-                    print("Syntax error in "+GET_FILE(fragment).path+
-                            " on preprocessed line number "+e.lineNumber+"\n"+
-                            "\t"+lines.slice(Math.max(0, e.lineNumber - 1 - PAD), e.lineNumber+PAD).join("\n\t"));
-                        
-                    throw e;
+                        PAD = 3,
+                        lineNumber = e.lineNumber || e.line,
+                        errorInfo = "Syntax error in "+GET_FILE(fragment).path+
+                                    " on preprocessed line number "+lineNumber+"\n\n"+
+                                    "\t"+lines.slice(Math.max(0, lineNumber - 1 - PAD), lineNumber+PAD).join("\n\t");
+
+                    print(errorInfo);
+
+                    throw errorInfo;
                 }
             }
-            
+
             if (shouldCompress)
             {
                 code = compress("function(){" + code + '}', FILE.basename(aFilePath));
-            
+
                 code = code.substr("function(){".length, code.length - "function(){};\n\n".length);
             }
-            
+
             preprocessed += MARKER_CODE + ';' + code.length + ';' + code;
         }
     }
