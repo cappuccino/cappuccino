@@ -161,12 +161,12 @@ function class_copyIvarList(/*Class*/ aClass)
 
 #define METHOD_DISPLAY_NAME(aClass, aMethod) (ISMETA(aClass) ? '+' : '-') + " [" + class_getName(aClass) + ' ' + method_getName(aMethod) + ']'
 
-function class_addMethod(/*Class*/ aClass, /*SEL*/ aName, /*IMP*/ anImplementation, /*String*/aType)
+function class_addMethod(/*Class*/ aClass, /*SEL*/ aName, /*IMP*/ anImplementation, /*Array<String>*/ types)
 {
     if (aClass.method_hash[aName])
         return NO;
     
-    var method = new objj_method(aName, anImplementation, aType);
+    var method = new objj_method(aName, anImplementation, types);
     
     aClass.method_list.push(method); 
     aClass.method_dtable[aName] = method;
@@ -177,7 +177,7 @@ function class_addMethod(/*Class*/ aClass, /*SEL*/ aName, /*IMP*/ anImplementati
     // FIXME: Should this be done here?
     // If this is a root class...
     if (!ISMETA(aClass) && GETMETA(aClass).isa === GETMETA(aClass))
-        class_addMethod(GETMETA(aClass), method);
+        class_addMethod(GETMETA(aClass), aName, anImplementation, types);
 
     return YES;
 }
