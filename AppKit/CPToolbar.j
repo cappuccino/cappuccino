@@ -957,7 +957,14 @@ var TOP_MARGIN      = 5.0,
 - (void)mouseDown:(CPEvent)anEvent
 {
     if ([_toolbarItem view])
-        return;
+        return [[self nextResponder] mouseDown:anEvent];
+
+    var identifier = [_toolbarItem itemIdentifier];
+
+    if (identifier === CPToolbarSpaceItemIdentifier ||
+        identifier === CPToolbarFlexibleSpaceItemIdentifier ||
+        identifier === CPToolbarSeparatorItemIdentifier)
+        return [[self nextResponder] mouseDown:anEvent];
 
     [super mouseDown:anEvent];
 }
