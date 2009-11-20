@@ -96,9 +96,30 @@ var CPDateReferenceDate = new Date(Date.UTC(2001,1,1,0,0,0,0));
     return self;
 }
 
+/*!
+    Returns a CPDate initialized with a date and time specified by the given
+    string in international date format YYYY-MM-DD HH:MM:SS ±HHMM (e.g.
+    2009-11-17 17:52:04 +0000).
+*/
 - (id)initWithString:(CPString)description
 {
-    self = new Date(description); // FIXME: not same format as NSString
+    var format = /(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2}):(\d{2}) ([-+])(\d{2})(\d{2})/;
+    var d = description.match(new RegExp(format));
+
+    if (d == null || d.length != 10)
+        [CPException raise:CPInvalidArgumentException
+                    reason:"initWithString: the string must be of YYYY-MM-DD HH:MM:SS ±HHMM format"];
+
+    var date = new Date(d[1], d[2]-1, d[3]);
+    date.setHours(d[4]);
+    date.setMinutes(d[5]);
+    date.setSeconds(d[6]);
+
+    var tzOffset = Number(d[8]) * 60 + Number(d[9]);
+    if (d[7] == '-')
+        tzOffset = -tzOffset;
+    
+    self = new Date(date.getTime() +  (tzOffset - date.getTimezoneOffset()) * 60 * 1000);
     return self;
 }
 
@@ -152,9 +173,15 @@ var CPDateReferenceDate = new Date(Date.UTC(2001,1,1,0,0,0,0));
     return (self > anotherDate) ? self : anotherDate;
 }
 
+/*!
+    Returns the date as a string in the international format 
+    YYYY-MM-DD HH:MM:SS ±HHMM.
+*/
 - (CPString)description
 {
-    return self.toString(); // FIXME: not same format as NSDate
+    var hours = Math.floor(self.getTimezoneOffset() / 60);
+    var minutes = self.getTimezoneOffset() - hours * 60;
+    return [CPString stringWithFormat:@"%04d-%02d-%02d %02d:%02d:%02d +%02d%02d", self.getFullYear(), self.getMonth()+1, self.getDate(), self.getHours(), self.getMinutes(), self.getSeconds(), hours, minutes];
 }
 
 @end

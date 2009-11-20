@@ -25,4 +25,33 @@
     [self assert:middle equals:[middle laterDate:past] message:"laterDate incorrect"];
 }
 
+- (void)testInitWithString
+{
+    var tests = [
+        ["1970-01-01 00:00:00 +0000", 0],
+        ["1970-01-01 00:01:00 +0000", 60],
+        ["1970-01-01 01:00:00 +0000", 60*60],
+        ["1970-01-02 00:00:00 +0000", 24*60*60],
+        ["2009-11-17 17:52:04 +0000", 1258480324],
+    ];
+    
+    for (var i = 0; i < tests.length; i++)
+    {
+        var parsed = [[CPDate alloc] initWithString:tests[i][0]];
+        var correctSeconds = tests[i][1];
+        [self assert:correctSeconds equals:[parsed timeIntervalSince1970]];
+    }
+}
+
+- (void)testDescription
+{
+    // Unfortunately the result will be different depending on the testing machine's timezone.
+    var expectedHour = 23
+    var expectedMinute = 31;
+    var offsetHours = Math.floor(new Date().getTimezoneOffset() / 60);
+    var offsetMinutes = new Date().getTimezoneOffset() - offsetHours * 60;
+    var expectedString = [CPString stringWithFormat:"2009-02-13 %02d:%02d:30 +%02d%02d", expectedHour-offsetHours, expectedMinute-offsetMinutes, offsetHours, offsetMinutes];
+    [self assert:expectedString equals: [[CPDate dateWithTimeIntervalSince1970: 1234567890] description]];
+}
+
 @end
