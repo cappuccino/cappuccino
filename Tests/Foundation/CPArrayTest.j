@@ -207,6 +207,33 @@
     array = [];
     [array insertObject: 3 inArraySortedByDescriptors:descriptors];
     [self assert:[3] equals:array];
+
+    descriptors = [[[CPSortDescriptor alloc] initWithKey:@"intValue" ascending:NO]];
+
+    array = [5, 3, 1];
+    [array insertObject: 0 inArraySortedByDescriptors:descriptors];
+    [self assert:[5, 3, 1, 0] equals:array];    
+
+    array = [5, 3, 1];
+    [array insertObject: 2 inArraySortedByDescriptors:descriptors];
+    [self assert:[5, 3, 2, 1] equals:array];    
+
+    array = [5, 3, 1];
+    [array insertObject: 1 inArraySortedByDescriptors:descriptors];
+    [self assert:[5, 3, 1, 1] equals:array];    
+
+    array = [5, 3, 1];
+    [array insertObject: 6 inArraySortedByDescriptors:descriptors];
+    [self assert:[6, 5, 3, 1] equals:array];    
+
+    array = [5, 3, 1];
+    [array insertObject: 3 inArraySortedByDescriptors:descriptors];
+    [self assert:[5, 3, 3, 1] equals:array];    
+
+    array = [];
+    [array insertObject: 3 inArraySortedByDescriptors:descriptors];
+    [self assert:[3] equals:array];
+
 }
 
 - (void)testInitWithArrayCopyItems
