@@ -73,7 +73,7 @@ var _CPMenuItemSelectionColor                   = nil,
         _isDirty = YES;
         
         [self setAutoresizingMask:CPViewWidthSizable];
-        
+
         [self synchronizeWithMenuItem];
     }
     
@@ -127,7 +127,9 @@ var _CPMenuItemSelectionColor                   = nil,
         [_view update];
 
     _minSize = [_view frame].size;
+    [self setAutoresizesSubviews:NO];
     [self setFrameSize:_minSize];
+    [self setAutoresizesSubviews:YES];
 }
 
 - (CGFloat)overlapOffsetWidth

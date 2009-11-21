@@ -644,7 +644,7 @@ CPPopUpButtonStatePullsDown = CPThemeState("pulls-down");
     var menu = [self menu],
         theWindow = [self window],
         menuWindow = [_CPMenuWindow menuWindowWithMenu:menu font:[self font]];
-    
+
     [menuWindow setDelegate:self];
     [menuWindow setBackgroundStyle:_CPMenuWindowPopUpBackgroundStyle];
     

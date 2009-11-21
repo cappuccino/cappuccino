@@ -72,7 +72,7 @@ var STICKY_TIME_INTERVAL        = 500,
 {
     if (!aMenuWindow || _CPMenuWindowPool.length >= _CPMenuWindowPoolCapacity)
         return;
-    
+
     _CPMenuWindowPool.push(aMenuWindow);
 }
 
@@ -338,24 +338,21 @@ var STICKY_TIME_INTERVAL        = 500,
     var count = _menuWindowStack.length,
         index = count;
 
+    // Hide all menus up to the base menu...
     while (index--)
     {
         var menuWindow = _menuWindowStack[index];
 
-        if ([menuWindow menu] !== baseMenu)
-            continue;
+        if ([menuWindow menu] === baseMenu)
+            break;
 
-        // If we're already showing this menu, then hide all submenus...
-        while (count-- > index + 1)
-        {
-            var menuWindow = _menuWindowStack[count];
+        [[menuWindow menu] _highlightItemAtIndex:CPNotFound];
 
-            [menuWindow orderOut:self];
-            [menuWindow setMenu:nil];
-    
-            [_CPMenuWindow poolMenuWindow:menuWindow];
-            [_menuWindowStack removeObjectAtIndex:count];
-        }
+        [menuWindow orderOut:self];
+        [menuWindow setMenu:nil];
+
+        [_CPMenuWindow poolMenuWindow:menuWindow];
+        [_menuWindowStack removeObjectAtIndex:index];
     }
 
     if (!newMenu)
@@ -383,9 +380,11 @@ var STICKY_TIME_INTERVAL        = 500,
 
         var highlightedItem = [[_menuView menu] highlightedItem];
 
-        [menu _highlightItemAtIndex:CPNotFound];
+        // Hide all submenus.
+        [self showMenu:nil fromMenu:menu atPoint:nil];
 
-        [_menuWindowStack makeObjectsPerformSelector:@selector(orderOut:) withObject:self];
+        [self orderOut:self];
+        [self setMenu:nil];
 
         var delegate = [menu delegate];
 
@@ -398,9 +397,6 @@ var STICKY_TIME_INTERVAL        = 500,
         [[CPNotificationCenter defaultCenter]
             postNotificationName:CPMenuDidEndTrackingNotification
                           object:menu];
-
-        // Clear these now so its faster next time around.
-        [_menuView setMenu:nil];
 
         CPApp._activeMenu = nil;
 

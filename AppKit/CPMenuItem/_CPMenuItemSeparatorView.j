@@ -1,3 +1,7 @@
+
+@import <AppKit/CPView.j>
+
+
 @implementation _CPMenuItemSeparatorView : CPView
 {
 }

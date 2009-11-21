@@ -1,5 +1,5 @@
 var LEFT_MARGIN                 = 3.0,
-    RIGHT_MARGIN                = 16.0,
+    RIGHT_MARGIN                = 14.0 + 3.0,
     STATE_COLUMN_WIDTH          = 14.0,
     INDENTATION_WIDTH           = 17.0,
     VERTICAL_MARGIN             = 4.0,
@@ -16,7 +16,7 @@ var SUBMENU_INDICATOR_COLOR                     = nil,
 
 @implementation _CPMenuItemStandardView : CPView
 {
-    CPMenuItem              _menuItem @accessors(property = menuItem);
+    CPMenuItem              _menuItem @accessors(property=menuItem);
 
     CPFont                  _font;
     CPColor                 _textColor;
@@ -90,7 +90,7 @@ var SUBMENU_INDICATOR_COLOR                     = nil,
         [_submenuIndicatorView setAutoresizingMask:CPViewMinXMargin];
 
         [self addSubview:_submenuIndicatorView];
-        
+
         [self setAutoresizingMask:CPViewWidthSizable];
     }
 
@@ -180,8 +180,10 @@ var SUBMENU_INDICATOR_COLOR                     = nil,
 
         var submenuViewFrame = [_submenuIndicatorView frame];
 
-        height = MAX(height, CGRectGetHeight(submenuViewFrame));
         submenuViewFrame.origin.x = x;
+
+        x += CGRectGetWidth(submenuViewFrame);
+        height = MAX(height, CGRectGetHeight(submenuViewFrame));
     }
     else
         [_submenuIndicatorView setHidden:YES];
@@ -203,7 +205,7 @@ var SUBMENU_INDICATOR_COLOR                     = nil,
         [_submenuIndicatorView setFrame:submenuViewFrame];
     }
 
-    _minSize = CGSizeMake(x + RIGHT_MARGIN + 3.0, height);
+    _minSize = CGSizeMake(x + RIGHT_MARGIN, height);
     
     [self setAutoresizesSubviews:NO];
     [self setFrameSize:_minSize];
