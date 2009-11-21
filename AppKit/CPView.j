@@ -596,7 +596,7 @@ var CPViewFlags                     = { },
 
 - (void)viewWithTag:(CPInteger)aTag
 {
-    if ([self tag] === aTag)
+    if ([self tag] == aTag)
         return self;
 
     var index = 0,
