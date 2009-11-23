@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/usr/bin/env bash
 
 function prompt () {
     while true; do
@@ -25,23 +25,39 @@ function path_instructions () {
     echo "    export PATH=$INSTALL_DIRECTORY/bin:\$PATH"
 }
 
-TEMPZIP="/tmp/narwhal.zip"
+if [ "--clone" = "$1" ]; then
+    GITCLONE=1
+fi
+
 INSTALL_DIRECTORY="/usr/local/narwhal"
+TEMPZIP="/tmp/narwhal.zip"
 
 ORIGINAL_PATH="$PATH"
 
 if ! which "narwhal"; then
     echo "================================================================================"
-    echo "Narwhal JavaScript platform is required. Install it into \"$INSTALL_DIRECTORY\"?"
+    echo "Narwhal JavaScript platform is required. Install it automatically?"
     if prompt; then
-        echo "Downloading Narwhal..."
-        curl -L -o "$TEMPZIP" "http://github.com/280north/narwhal/zipball/master"
-        echo "Installing Narwhal..."
-        unzip "$TEMPZIP" -d "$INSTALL_DIRECTORY"
-        rm "$TEMPZIP"
-        
-        mv $INSTALL_DIRECTORY/280north-narwhal-*/* $INSTALL_DIRECTORY/.
-        rm -rf $INSTALL_DIRECTORY/280north-narwhal-*
+        echo "================================================================================"
+        echo "To use the default location, \"$INSTALL_DIRECTORY\", just hit enter/return, or enter another path:"
+        read INSTALL_DIRECTORY_INPUT
+        if [ "$INSTALL_DIRECTORY_INPUT" ]; then
+            INSTALL_DIRECTORY="$INSTALL_DIRECTORY_INPUT"
+        fi
+
+        if [ "$GITCLONE" ]; then
+            echo "Cloning Narwhal..."
+            git clone git://github.com/280north/narwhal.git "$INSTALL_DIRECTORY"
+        else
+            echo "Downloading Narwhal..."
+            curl -L -o "$TEMPZIP" "http://github.com/280north/narwhal/zipball/master"
+            echo "Installing Narwhal..."
+            unzip "$TEMPZIP" -d "$INSTALL_DIRECTORY"
+            rm "$TEMPZIP"
+
+            mv $INSTALL_DIRECTORY/280north-narwhal-*/* $INSTALL_DIRECTORY/.
+            rm -rf $INSTALL_DIRECTORY/280north-narwhal-*
+        fi
         
         if ! which "narwhal"; then
             export PATH="$INSTALL_DIRECTORY/bin:$PATH"
@@ -58,14 +74,24 @@ if ! which "narwhal"; then
 fi
 
 echo "Installing necessary dependencies..."
-tusk install browserjs jake
+
+if [ "$GITCLONE" ]; then
+    tusk update
+    tusk clone browserjs jake
+else
+    tusk install browserjs jake
+fi
 
 if [ `uname` = "Darwin" ]; then
     echo "================================================================================"
     echo "Would you like to install the JavaScriptCore engine for Narwhal?"
     echo "This is optional but will make building and running Objective-J much faster."
     if prompt; then
-        tusk install narwhal-jsc
+        if [ "$GITCLONE" ]; then
+            tusk clone narwhal-jsc
+        else
+            tusk install narwhal-jsc
+        fi
         pushd "$INSTALL_DIRECTORY/packages/narwhal-jsc"
         make webkit
         popd

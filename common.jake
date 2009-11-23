@@ -203,8 +203,9 @@ global.subjake = function(/*Array<String>*/ directories, /*String*/ aTaskName)
     {
         if (FILE.isDirectory(aDirectory) && FILE.isFile(FILE.join(aDirectory, "Jakefile")))
         {
-            OS.system("cd " + aDirectory + " && " + serializedENV() + " " + ARGV[0] + " " + aTaskName);
-        //rake abort if ($? != 0)
+            var returnCode = OS.system("cd " + aDirectory + " && " + serializedENV() + " " + ARGV[0] + " " + aTaskName);
+            if (returnCode)
+                OS.exit(returnCode);
         }
         else
             print("warning: subjake missing: " + aDirectory + " (this is not necessarily an error, " + aDirectory + " may be optional)");

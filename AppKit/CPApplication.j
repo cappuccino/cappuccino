@@ -96,6 +96,10 @@ CPRunContinuesResponse  = -1002;
     CPDictionary            _namedArgs;
     CPArray                 _args;
     CPString                _fullArgsString;
+
+    CPImage                 _applicationIconImage;
+
+    CPPanel                 _aboutPanel;
 }
 
 /*!
@@ -302,10 +306,87 @@ CPRunContinuesResponse  = -1002;
 
 - (void)terminate:(id)aSender
 {
-    [[CPDocumentController sharedDocumentController] closeAllDocumentsWithDelegate:self
-                                                              didCloseAllSelector:@selector(_documentController:didCloseAll:context:)
-                                                                      contextInfo:nil];
+    if (![CPPlatform isBrowser])
+    {
+        [[CPDocumentController sharedDocumentController] closeAllDocumentsWithDelegate:self
+                                                                  didCloseAllSelector:@selector(_documentController:didCloseAll:context:)
+                                                                          contextInfo:nil];
+    }
+    else
+    {
+        [[[CPApp mainWindow] platformWindow] _propagateCurrentDOMEvent:YES];
+    }
 }
+
+- (void)setApplicationIconImage:(CPImage)anImage
+{
+    _applicationIconImage = anImage;
+}
+
+- (CPImage)applicationIconImage
+{
+    if (_applicationIconImage)
+        return _applicationIconImage;
+
+    var imagePath = [[CPBundle mainBundle] objectForInfoDictionaryKey:@"CPApplicationIcon"];
+    if (imagePath)
+        _applicationIconImage = [[CPImage alloc] initWithContentsOfFile:imagePath];
+
+    return _applicationIconImage;
+}
+
+- (void)orderFrontStandardAboutPanel:(id)sender
+{
+    [self orderFrontStandardAboutPanelWithOptions:nil];
+}
+
+- (void)orderFrontStandardAboutPanelWithOptions:(CPDictionary)options
+{
+    if (!_aboutPanel)
+    {
+        var mainInfo = [[CPBundle mainBundle] infoDictionary],
+            applicationTitle = [options objectForKey:"ApplicationName"] || [mainInfo objectForKey:@"CPBundleName"],
+            applicationIcon = [options objectForKey:@"ApplicationIcon"] || [self applicationIconImage],
+            version = [options objectForKey:@"Version"] || [mainInfo objectForKey:@"CPBundleVersion"],
+            applicationVersion = [options objectForKey:@"ApplicationVersion"] || [mainInfo objectForKey:@"CPBundleShortVersionString"],
+            copyright = [options objectForKey:@"Copyright"] || [mainInfo objectForKey:@"CPHumanReadableCopyright"];
+
+        var aboutPanelController = [[CPWindowController alloc] initWithWindowCibName:@"AboutPanel"],
+            aboutPanel = [aboutPanelController window],
+            contentView = [aboutPanel contentView],
+            imageView = [contentView viewWithTag:1],
+            applicationLabel = [contentView viewWithTag:2],
+            versionLabel = [contentView viewWithTag:3],
+            copyrightLabel = [contentView viewWithTag:4],
+            standardPath = [[CPBundle bundleForClass:[self class]] pathForResource:@"standardApplicationIcon.png"];
+    
+        // FIXME move this into the CIB eventually
+        [applicationLabel setFont:[CPFont boldSystemFontOfSize:14.0]];
+        [applicationLabel setAlignment:CPCenterTextAlignment];
+        [versionLabel setAlignment:CPCenterTextAlignment];
+        [copyrightLabel setAlignment:CPCenterTextAlignment];
+
+        [imageView setImage:applicationIcon || [[CPImage alloc] initWithContentsOfFile:standardPath 
+                                                                                  size:CGSizeMake(256, 256)]];
+
+        [applicationLabel setStringValue:applicationTitle || ""];
+
+        if (version && applicationVersion)
+            [versionLabel setStringValue:sprintf(@"Version %@ (%@)", applicationVersion, version)];
+        else if (applicationVersion || version)
+            [versionLabel setStringValue:sprintf(@"Version %@", applicationVersion || version)];
+        else
+            [versionLabel setStringValue:@""];
+
+        [copyrightLabel setStringValue:copyright || ""];
+        [aboutPanel center];
+
+        _aboutPanel = aboutPanel;
+    }
+
+    [_aboutPanel orderFront:self];
+}
+
 
 - (void)_documentController:(NSDocumentController *)docController didCloseAll:(BOOL)didCloseAll context:(Object)info
 {
@@ -557,16 +638,6 @@ CPRunContinuesResponse  = -1002;
 - (void)orderFrontColorPanel:(id)aSender
 {
     [[CPColorPanel sharedColorPanel] orderFront:self];
-}
-
-- (void)orderFrontStandardAboutPanel:(id)aSender
-{
-    [self orderFrontStandardAboutPanelWithOptions:nil];
-}
-
-- (void)orderFrontStandardAboutPanelWithOptions:(CPDictionary)aDictionary
-{
-    // FIXME: Implement.
 }
 
 // Posting Actions
