@@ -49,6 +49,7 @@ var STICKY_TIME_INTERVAL        = 500,
     BOOL                _trackingCanceled;
     
     CGRect              _unconstrainedFrame;
+    CGRect              _constraintRect;
 
     CPArray             _menuWindowStack;
 }
@@ -237,6 +238,33 @@ var STICKY_TIME_INTERVAL        = 500,
     [super orderFront:aSender];
 }
 
+- (void)setConstraintRect:(CGRect)aRect
+{
+    _constraintRect = aRect;
+}
+
+- (void)scrollUp
+{
+    if (CGRectGetMinY(_unconstrainedFrame) >= CGRectGetMinY(_constraintRect))
+        return;
+
+    _unconstrainedFrame.origin.y += 10;
+
+    [self setFrame:_unconstrainedFrame];
+    [self constrainToScreen];
+}
+
+- (void)scrollDown
+{
+    if (CGRectGetMaxY(_unconstrainedFrame) <= CGRectGetHeight(_constraintRect))
+        return;
+
+    _unconstrainedFrame.origin.y -= 10;
+
+    [self setFrame:_unconstrainedFrame];
+    [self constrainToScreen];
+}
+
 - (void)constrainToScreen
 {
     // FIXME: There are integral window issues with platform windows.
@@ -315,6 +343,9 @@ var STICKY_TIME_INTERVAL        = 500,
     _sessionDelegate = aSessionDelegate;
     _didEndSelector = aDidEndSelector;
     
+    // bleh
+    [self setConstraintRect:CGRectInset([CPPlatform isBrowser] ? [[self platformWindow] contentBounds] : [[self screen] visibleFrame], 5.0, 5.0)];
+
     [self trackEvent:anEvent];
 }
 
@@ -362,6 +393,7 @@ var STICKY_TIME_INTERVAL        = 500,
 
     _menuWindowStack.push(menuWindow);
 
+    [menuWindow setConstraintRect:CGRectInset([CPPlatform isBrowser] ? [[self platformWindow] contentBounds] : [[self screen] visibleFrame], 5.0, 5.0)];
     [menuWindow setBackgroundStyle:_CPMenuWindowPopUpBackgroundStyle];
     [menuWindow setFrameOrigin:aGlobalLocation];
     [menuWindow orderFront:self];
@@ -405,53 +437,30 @@ var STICKY_TIME_INTERVAL        = 500,
 
     [CPApp setTarget:self selector:@selector(trackEvent:) forNextEventMatchingMask:CPPeriodicMask | CPMouseMovedMask | CPLeftMouseDraggedMask | CPLeftMouseUpMask | CPAppKitDefinedMask untilDate:nil inMode:nil dequeue:YES];
 
-    var theWindow = [anEvent window],
-        globalLocation = [anEvent locationInWindow];
+    // Periodic events don't have a valid location.
+    var globalLocation = type === CPPeriodic ? _lastGlobalLocation : [anEvent globalLocation];
 
-    if (theWindow)
-        globalLocation = [theWindow convertBaseToGlobal:globalLocation];
-
-    if (type === CPPeriodic)
-    {
-        var constrainedBounds =  CGRectInset([CPPlatform isBrowser] ? [[self platformWindow] contentBounds] : [[self screen] visibleFrame], 5.0, 5.0);
-        
-        if (_scrollingState == _CPMenuWindowScrollingStateUp)
-        {
-            if (CGRectGetMinY(_unconstrainedFrame) < CGRectGetMinY(constrainedBounds))
-                _unconstrainedFrame.origin.y += 10;
-        }
-        else if (_scrollingState == _CPMenuWindowScrollingStateDown)
-            if (CGRectGetMaxY(_unconstrainedFrame) > CGRectGetHeight(constrainedBounds))
-                _unconstrainedFrame.origin.y -= 10;
-                
-        [self setFrame:_unconstrainedFrame];
-        [self constrainToScreen];
-        
-        globalLocation = _lastGlobalLocation;
-    }
-
+    // Remember this for the next periodic event.
     _lastGlobalLocation = globalLocation;
 
     // Find which menu window the mouse is currently on top of
-    var activeMenuWindow = [self menuWindowAtPoint:globalLocation];
+    var activeMenuWindow = [self menuWindowAtPoint:globalLocation],
+        menuLocation = [activeMenuWindow convertGlobalToBase:globalLocation],
+        activeItemIndex = activeMenuWindow ? [activeMenuWindow itemIndexAtPoint:menuLocation] :CPNotFound,
+        activeMenu = activeMenuWindow ? [activeMenuWindow menu] : nil,
+        activeItem = activeMenuWindow ? [activeMenu itemAtIndex:activeItemIndex] : nil,
+        mouseOverMenuView = activeMenuWindow ? [activeItem view] : nil;
 
-    if (activeMenuWindow)
-    {
-        var menuLocation = [activeMenuWindow convertGlobalToBase:globalLocation],
-            activeItemIndex = [activeMenuWindow itemIndexAtPoint:menuLocation],
-            activeMenu = [activeMenuWindow menu],
-            activeItem = [activeMenu itemAtIndex:activeItemIndex],
-            mouseOverMenuView = [activeItem view];
-    }
-    else
-    {
-        var activeMenuItemIndex = CPNotFound,
-            activeMenu = nil,
-            activeItem = nil,
-            mouseOverMenuView = nil;
-    }
-    
     _lastActiveMenu = activeMenu || _lastActiveMenu;
+
+    if (type === CPPeriodic)
+    {
+        if (_scrollingState === _CPMenuWindowScrollingStateUp)
+            [activeMenuWindow scrollUp];
+
+        else if (_scrollingState === _CPMenuWindowScrollingStateDown)
+            [activeMenuWindow scrollDown];
+    }
 
     // If we're over a custom menu view...
     if (mouseOverMenuView)
