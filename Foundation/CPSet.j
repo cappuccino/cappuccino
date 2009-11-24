@@ -232,7 +232,9 @@
 */
 - (BOOL)containsObject:(id)anObject
 {
-    if (_contents[[anObject UID]] && [_contents[[anObject UID]] isEqual:anObject])
+    var obj = _contents[[anObject UID]];
+
+    if (obj !== undefined && [obj isEqual:anObject])
         return YES;
     
     return NO;
