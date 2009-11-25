@@ -235,7 +235,7 @@ var CPOutlineViewDataSource_outlineView_setObjectValue_forTableColumn_byItem_   
     return _itemsForRows[aRow] || nil;
 }
 
-- (CPInteger)rowForItem:(id)aItem
+- (CPInteger)rowForItem:(id)anItem
 {
     if (!anItem)
         return _rootItemInfo.row;
