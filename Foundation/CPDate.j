@@ -185,4 +185,25 @@ var CPDateReferenceDate = new Date(Date.UTC(2001,1,1,0,0,0,0));
 
 @end
 
+var CPDateTimeKey = @"CPDateTimeKey";
+
+@implementation CPDate (CPCoding)
+
+- (id)initWithCoder:(CPCoder)aCoder
+{
+    if (self)
+    {
+        self.setTime([aCoder decodeIntForKey:CPDateTimeKey]);
+    }
+
+    return self;
+}
+
+- (void)encodeWithCoder:(CPCoder)aCoder
+{
+    [aCoder encodeInt:self.getTime() forKey:CPDateTimeKey];
+}
+
+@end
+
 Date.prototype.isa = CPDate;

@@ -43,6 +43,15 @@
     }
 }
 
+- (void)testEncoding
+{
+    var date = new Date(),
+        encodedDate = [CPKeyedArchiver archivedDataWithRootObject:date],
+        decodedDate = [CPKeyedUnarchiver unarchiveObjectWithData:encodedDate];
+
+    [self assert:date equals:decodedDate];
+}
+
 - (void)testDescription
 {
     // Unfortunately the result will be different depending on the testing machine's timezone.
