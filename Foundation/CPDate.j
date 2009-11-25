@@ -103,23 +103,21 @@ var CPDateReferenceDate = new Date(Date.UTC(2001,1,1,0,0,0,0));
 */
 - (id)initWithString:(CPString)description
 {
-    var format = /(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2}):(\d{2}) ([-+])(\d{2})(\d{2})/;
-    var d = description.match(new RegExp(format));
+    var format = /(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2}):(\d{2}) ([-+])(\d{2})(\d{2})/,
+        d = description.match(new RegExp(format));
 
-    if (d == null || d.length != 10)
+    if (!d || d.length != 10)
         [CPException raise:CPInvalidArgumentException
                     reason:"initWithString: the string must be of YYYY-MM-DD HH:MM:SS ±HHMM format"];
 
-    var date = new Date(d[1], d[2]-1, d[3]);
+    var date = new Date(d[1], d[2]-1, d[3]),
+        timeZoneOffset =  (Number(d[8]) * 60 + Number(d[9])) * (d[7] === '-' ? -1 : 1);
+
     date.setHours(d[4]);
     date.setMinutes(d[5]);
     date.setSeconds(d[6]);
-
-    var tzOffset = Number(d[8]) * 60 + Number(d[9]);
-    if (d[7] == '-')
-        tzOffset = -tzOffset;
     
-    self = new Date(date.getTime() +  (tzOffset - date.getTimezoneOffset()) * 60 * 1000);
+    self = new Date(date.getTime() +  (timeZoneOffset - date.getTimezoneOffset()) * 60 * 1000);
     return self;
 }
 
@@ -179,8 +177,9 @@ var CPDateReferenceDate = new Date(Date.UTC(2001,1,1,0,0,0,0));
 */
 - (CPString)description
 {
-    var hours = Math.floor(self.getTimezoneOffset() / 60);
-    var minutes = self.getTimezoneOffset() - hours * 60;
+    var hours = Math.floor(self.getTimezoneOffset() / 60),
+        minutes = self.getTimezoneOffset() - hours * 60;
+
     return [CPString stringWithFormat:@"%04d-%02d-%02d %02d:%02d:%02d +%02d%02d", self.getFullYear(), self.getMonth()+1, self.getDate(), self.getHours(), self.getMinutes(), self.getSeconds(), hours, minutes];
 }
 
