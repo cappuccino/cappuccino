@@ -538,6 +538,44 @@ var CPStringRegexSpecialCharacters = [
 }
 
 /*!
+    Returns a string containing characters the receiver and a given string have in common, starting from
+    the beginning of each up to the first characters that aren't equivalent.
+    @param aString the string with which to compare the receiver
+*/
+- (CPString)commonPrefixWithString:(CPString)aString
+{
+    return [self commonPrefixWithString: aString options: 0];
+}
+
+/*!
+    Returns a string containing characters the receiver and a given string have in common, starting from
+    the beginning of each up to the first characters that aren't equivalent.
+    @param aString the string with which to compare the receiver
+    @param aMask options for comparision
+*/
+- (CPString)commonPrefixWithString:(CPString)aString options:(int)aMask
+{
+    var len = 0, // length of common prefix
+        min = MIN([aString length], [self length]);
+
+    for ( len = 0; len < min; len++ )
+    {
+        var lhs = [self characterAtIndex: len],
+            rhs = [aString characterAtIndex: len];
+
+        if (aMask & CPCaseInsensitiveSearch)
+        {
+            lhs = [lhs lowercaseString];
+            rhs = [rhs lowercaseString];
+        }
+        
+        if ( lhs != rhs )
+            break;
+    }
+    return [self substringToIndex: len];
+}
+
+/*!
     Returns a copy of the receiver with all the first letters of words capitalized.
 */
 - (CPString)capitalizedString
