@@ -557,19 +557,19 @@ var CPStringRegexSpecialCharacters = [
 {
     var len = 0, // length of common prefix
         min = MIN([aString length], [self length]);
+    
+    var lhs = self,
+        rhs = aString;
+    
+    if (aMask & CPCaseInsensitiveSearch)
+    {
+        lhs = [lhs lowercaseString];
+        rhs = [rhs lowercaseString];
+    }
 
     for ( len = 0; len < min; len++ )
     {
-        var lhs = [self characterAtIndex: len],
-            rhs = [aString characterAtIndex: len];
-
-        if (aMask & CPCaseInsensitiveSearch)
-        {
-            lhs = [lhs lowercaseString];
-            rhs = [rhs lowercaseString];
-        }
-        
-        if ( lhs != rhs )
+        if ( [lhs characterAtIndex: len] != [rhs characterAtIndex: len] )
             break;
     }
     return [self substringToIndex: len];
