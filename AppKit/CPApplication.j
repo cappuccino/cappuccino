@@ -39,6 +39,11 @@ CPApp = nil;
 
 CPApplicationWillFinishLaunchingNotification    = @"CPApplicationWillFinishLaunchingNotification";
 CPApplicationDidFinishLaunchingNotification     = @"CPApplicationDidFinishLaunchingNotification";
+CPApplicationWillTerminateNotification          = @"CPApplicationWillTerminateNotification";
+
+CPTerminateNow      = YES;
+CPTerminateCancel   = NO;
+CPTerminateLater    = -1; // not currently supported
 
 CPRunStoppedResponse    = -1000;
 CPRunAbortedResponse    = -1001;
@@ -283,7 +288,9 @@ CPRunContinuesResponse  = -1002;
 
     if (needsUntitled)
         [_documentController newDocument:self];
-    
+
+    [_documentController _updateRecentDocumentsMenu];
+
     [defaultCenter
         postNotificationName:CPApplicationDidFinishLaunchingNotification
         object:self];
@@ -295,7 +302,35 @@ CPRunContinuesResponse  = -1002;
 
 - (void)terminate:(id)aSender
 {
-    [CPPlatform terminateApplication];
+    [[CPDocumentController sharedDocumentController] closeAllDocumentsWithDelegate:self
+                                                              didCloseAllSelector:@selector(_documentController:didCloseAll:context:)
+                                                                      contextInfo:nil];
+}
+
+- (void)_documentController:(NSDocumentController *)docController didCloseAll:(BOOL)didCloseAll context:(Object)info
+{
+    // callback method for terminate:
+    if (didCloseAll)
+    {
+        if ([_delegate respondsToSelector:@selector(applicationShouldTerminate:)])
+            [self replyToApplicationShouldTerminate:[_delegate applicationShouldTerminate:self]];
+        else
+            [self replyToApplicationShouldTerminate:YES];
+    }
+}
+
+- (void)replyToApplicationShouldTerminate:(BOOL)terminate
+{
+    if (terminate == CPTerminateNow)
+    {
+        [[CPNotificationCenter defaultCenter] postNotificationName:CPApplicationWillTerminateNotification object:self];
+        [CPPlatform terminateApplication];
+    }
+}
+
+- (void)activateIgnoringOtherApps:(BOOL)shouldIgnoreOtherApps
+{
+    [CPPlatform activateIgnoringOtherApps:shouldIgnoreOtherApps];
 }
 
 /*!
@@ -410,10 +445,8 @@ CPRunContinuesResponse  = -1002;
 /* @ignore */
 - (BOOL)_handleKeyEquivalent:(CPEvent)anEvent
 {
-    if ([_mainMenu performKeyEquivalent:anEvent])
-        return YES;
-
-    return NO;
+    return  [[self keyWindow] performKeyEquivalent:anEvent] ||
+            [_mainMenu performKeyEquivalent:anEvent];
 }
 
 /*!
@@ -425,11 +458,11 @@ CPRunContinuesResponse  = -1002;
     _currentEvent = anEvent;
 
     // Check if this is a candidate for key equivalent...
-    if ([anEvent type] == CPKeyDown &&
-        [anEvent modifierFlags] & (CPCommandKeyMask | CPControlKeyMask) && 
-        [[anEvent characters] length] > 0 &&
-        [self _handleKeyEquivalent:anEvent])
+    if ([anEvent _couldBeKeyEquivalent] && [self _handleKeyEquivalent:anEvent])
+    {
+        [[[anEvent window] platformWindow] _propagateCurrentDOMEvent:NO];
         return;
+    }
 
     if (_eventListeners.length)
     {
@@ -807,6 +840,12 @@ CPRunContinuesResponse  = -1002;
         return [_delegate application:self openFile:aFilename];
     else
         return [_documentController openDocumentWithContentsOfURL:aFilename display:YES error:NULL];
+}
+
+- (void)_didResignActive
+{
+    if (self._activeMenu)
+        [self._activeMenu cancelTracking];
 }
 
 @end

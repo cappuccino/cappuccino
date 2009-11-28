@@ -11,7 +11,7 @@ var _CPStandardWindowViewBodyBackgroundColor = nil;
 + (CPColor)bodyBackgroundColor
 {
     if (!_CPStandardWindowViewBodyBackgroundColor)
-        _CPStandardWindowViewBodyBackgroundColor = [CPColor colorWithWhite:0.96 alpha:1.0];
+        _CPStandardWindowViewBodyBackgroundColor = [CPColor colorWithWhite:0.96 alpha:0.9];
         
     return _CPStandardWindowViewBodyBackgroundColor;    
 }

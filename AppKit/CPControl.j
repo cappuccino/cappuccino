@@ -94,7 +94,8 @@ var CPControlBlackColor     = [CPColor blackColor];
     id                  _target;
     SEL                 _action;
     int                 _sendActionOn;
-    
+    BOOL                _sendsActionOnEndEditing @accessors(property=sendsActionOnEndEditing);
+
     // Mouse Tracking Support
     BOOL                _continuousTracking;
     BOOL                _trackingWasWithinFrame;

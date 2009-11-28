@@ -3,6 +3,9 @@
 
 var File = require("file");
 
+var FILE = File;
+var OBJJ = require("objj/objj");
+var SYSTEM = require("system");
 
 function gen(/*va_args*/)
 {
@@ -58,12 +61,12 @@ function gen(/*va_args*/)
         config = {};
     if (File.isFile(configFile))
         config = JSON.parse(File.read(configFile));
-    print(config.FrameworksPath)
+    
     var destinationProject = new java.io.File(destination),
         configuration = noConfig ? [Configuration defaultConfiguration] : [Configuration userConfiguration];
 
     if (justFrameworks)
-        createFrameworksInFile(destinationProject, shouldSymbolicallyLink, force);
+        createFrameworksInFile(String(destinationProject.getCanonicalPath()), shouldSymbolicallyLink, force);
 
     else if (!destinationProject.exists())
     {
@@ -106,65 +109,60 @@ function gen(/*va_args*/)
         print("Directory already exists");
 }
 
-
-function createFrameworksInFile(/*String*/ aFile, /*Boolean*/ shouldSymbolicallyLink, /*Boolean*/ force)
+function createFrameworksInFile(/*String*/ aFile, /*Boolean*/ symlink, /*Boolean*/ force)
 {
-    if (!File.isDirectory(aFile))
-        throw new Error("Can't create Frameworks. Directory does not exist: " + aFile);
+    var destination = FILE.path(aFile);
+    
+    if (!destination.isDirectory())
+        throw new Error("Can't create Frameworks. Directory does not exist: " + destination);
+    
+    if (symlink && !(SYSTEM.env["CAPP_BUILD"] || SYSTEM.env["STEAM_BUILD"]))
+        throw "CAPP_BUILD or STEAM_BUILD must be defined";
+
+    var installedFrameworks = FILE.path(FILE.join(OBJJ.OBJJ_HOME, "lib", "Frameworks")),
+        builtFrameworks = FILE.path(SYSTEM.env["CAPP_BUILD"] || SYSTEM.env["STEAM_BUILD"]);
+    
+    var sourceFrameworks = symlink ? builtFrameworks.join("Release") : installedFrameworks,
+        sourceDebugFrameworks = symlink ? builtFrameworks.join("Debug") : installedFrameworks.join("Debug");
         
-    var destinationFrameworks = new java.io.File(aFile+ "/Frameworks"),
-        destinationDebugFrameworks = new java.io.File(aFile + "/Frameworks/Debug");
-        
-    if (destinationFrameworks.exists()) {
+    var destinationFrameworks = destination.join("Frameworks"),
+        destinationDebugFrameworks = destination.join("Frameworks", "Debug");
+    
+    print("Creating Frameworks directory in " + destinationFrameworks + ".");
+    
+    //destinationFrameworks.mkdirs(); // redundant
+    destinationDebugFrameworks.mkdirs();
+    
+    ["Objective-J", "Foundation", "AppKit"].forEach(function(framework) {
+        installFramework(
+            sourceFrameworks.join(framework),
+            destinationFrameworks.join(framework),
+            force, symlink);
+        installFramework(
+            sourceDebugFrameworks.join(framework),
+            destinationDebugFrameworks.join(framework),
+            force, symlink);
+    });
+}
+
+function installFramework(source, dest, force, symlink) {
+    if (dest.exists()) {
         if (force) {
-            print("Updating existing Frameworks directory.");
-            exec(["rm", "-rf", destinationFrameworks], true);
-        }
-        else {
-            print("Frameworks directory already exists. Use --force to overwrite.");
+            dest.rmtree();
+        } else {
+            print("Warning: " + dest + " already exists. Use --force to overwrite.");
             return;
         }
-    } else {    
-        print("Creating Frameworks directory in "+destinationFrameworks+".");
     }
-
-    if (!shouldSymbolicallyLink)
-    {
-        var sourceFrameworks = new java.io.File(OBJJ_HOME + "/lib/Frameworks");
-    
-        exec(["cp", "-R", sourceFrameworks.getCanonicalPath(), destinationFrameworks], true);
-
-        return;
+    if (source.exists()) {
+        print((symlink ? "Symlinking " : "Copying ") + source + " to " + dest);
+        if (symlink)
+            FILE.symlink(source, dest);
+        else
+            FILE.copyTree(source, dest);
     }
-    
-    var BUILD = system.env["CAPP_BUILD"] || system.env["STEAM_BUILD"];
-    
-    if (!BUILD)
-        throw "CAPP_BUILD or STEAM_BUILD must be defined";
-    
-    // Release Frameworks
-    new java.io.File(destinationFrameworks).mkdir();
-    
-    exec(["ln", "-s",   new java.io.File(BUILD + "/Release/Objective-J").getCanonicalPath(),
-                        new java.io.File(aFile + "/Frameworks/Objective-J").getCanonicalPath()], true);
-
-    exec(["ln", "-s",   new java.io.File(BUILD + "/Release/Foundation").getCanonicalPath(),
-                        new java.io.File(aFile + "/Frameworks/Foundation").getCanonicalPath()], true);
-
-    exec(["ln", "-s",   new java.io.File(BUILD + "/Release/AppKit").getCanonicalPath(),
-                        new java.io.File(aFile + "/Frameworks/AppKit").getCanonicalPath()], true);
-
-    // Debug Frameworks
-    new java.io.File(destinationDebugFrameworks).mkdir();
-    
-    exec(["ln", "-s",   new java.io.File(BUILD + "/Debug/Objective-J").getCanonicalPath(),
-                        new java.io.File(aFile + "/Frameworks/Debug/Objective-J").getCanonicalPath()], true);
-
-    exec(["ln", "-s",   new java.io.File(BUILD + "/Debug/Foundation").getCanonicalPath(),
-                        new java.io.File(aFile + "/Frameworks/Debug/Foundation").getCanonicalPath()], true);
-
-    exec(["ln", "-s",   new java.io.File(BUILD + "/Debug/AppKit").getCanonicalPath(),
-                        new java.io.File(aFile + "/Frameworks/Debug/AppKit").getCanonicalPath()], true);
+    else
+        print("Warning: "+source+" doesn't exist.");
 }
 
 function toIdentifier(/*String*/ aString)

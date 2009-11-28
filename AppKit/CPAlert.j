@@ -116,21 +116,12 @@ var CPAlertWarningImage,
 */
 - (id)init
 {
-    self = [super init];
-    
-    if (self)
+    if (self = [super init])
     {
         _buttonCount = 0;
         _buttons = [CPArray array];
         _alertStyle = CPWarningAlertStyle;
-        
-        _messageLabel = [[CPTextField alloc] initWithFrame:CGRectMake(57.0, 10.0, 220.0, 80.0)];
-        [_messageLabel setFont:[CPFont systemFontOfSize:12.0]];
-        [_messageLabel setLineBreakMode:CPLineBreakByWordWrapping];
-        [_messageLabel setAlignment:CPJustifiedTextAlignment];
-        
-        _alertImageView = [[CPImageView alloc] initWithFrame:CGRectMake(15.0, 12.0, 32.0, 32.0)];
-        
+
         [self setWindowStyle:nil];
     }
     
@@ -145,12 +136,12 @@ var CPAlertWarningImage,
 {
     _windowStyle = styleMask;
     
-    _alertPanel = [[CPPanel alloc] initWithContentRect:CGRectMake(0.0, 0.0, 300.0, 130.0) styleMask:styleMask ? styleMask | CPTitledWindowMask : CPTitledWindowMask];
+    _alertPanel = [[CPPanel alloc] initWithContentRect:CGRectMake(0.0, 0.0, 400.0, 110.0) styleMask:styleMask ? styleMask | CPTitledWindowMask : CPTitledWindowMask];
     [_alertPanel setFloatingPanel:YES];
     [_alertPanel center];
-    
+
     [_messageLabel setTextColor:(styleMask & CPHUDBackgroundWindowMask) ? [CPColor whiteColor] : [CPColor blackColor]];
-    
+
     var count = [_buttons count];
     for(var i=0; i < count; i++)
     {
@@ -162,6 +153,18 @@ var CPAlertWarningImage,
         [[_alertPanel contentView] addSubview:button];
     }
     
+    if (!_messageLabel)
+    {
+        var bounds = [[_alertPanel contentView] bounds];
+
+        _messageLabel = [[CPTextField alloc] initWithFrame:CGRectMake(57.0, 10.0, CGRectGetWidth(bounds) - 73.0, 62.0)];
+        [_messageLabel setFont:[CPFont boldSystemFontOfSize:13.0]];
+        [_messageLabel setLineBreakMode:CPLineBreakByWordWrapping];
+        [_messageLabel setAlignment:CPJustifiedTextAlignment];
+
+        _alertImageView = [[CPImageView alloc] initWithFrame:CGRectMake(15.0, 12.0, 32.0, 32.0)];
+    }
+
     [[_alertPanel contentView] addSubview:_messageLabel];
     [[_alertPanel contentView] addSubview:_alertImageView];
 }
@@ -251,7 +254,8 @@ var CPAlertWarningImage,
 */
 - (void)addButtonWithTitle:(CPString)title
 {
-    var button = [[CPButton alloc] initWithFrame:CGRectMake(200.0 - (_buttonCount * 90.0), 98.0, 80.0, (_windowStyle == CPHUDBackgroundWindowMask) ? 20.0 : 24.0)];
+    var bounds = [[_alertPanel contentView] bounds],
+        button = [[CPButton alloc] initWithFrame:CGRectMake(CGRectGetWidth(bounds) - ((_buttonCount + 1) * 90.0), CGRectGetHeight(bounds) - 34.0, 80.0, (_windowStyle == CPHUDBackgroundWindowMask) ? 20.0 : 24.0)];
     
     [button setTitle:title];
     [button setTarget:self];
@@ -298,11 +302,11 @@ var CPAlertWarningImage,
 /* @ignore */
 - (void)_notifyDelegate:(id)button
 {
-    if (_delegate && [_delegate respondsToSelector:@selector(alertDidEnd:returnCode:)])
-        [_delegate alertDidEnd:self returnCode:[button tag]];
-
     [CPApp abortModal];
     [_alertPanel close];
+
+    if (_delegate && [_delegate respondsToSelector:@selector(alertDidEnd:returnCode:)])
+        [_delegate alertDidEnd:self returnCode:[button tag]];
 }
 
 @end
