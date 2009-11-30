@@ -254,6 +254,11 @@ CPRunContinuesResponse  = -1002;
 */
 - (void)finishLaunching
 {
+    // At this point we clear the window.status to eliminate Safari's "Cancelled" error message
+    // The message shouldn't be displayed, because only an XHR is cancelled, but it is a usability issue.
+    // We do it here so that applications can change it in willFinish or didFinishLaunching
+    window.status = " ";
+
     var bundle = [CPBundle mainBundle],
         types = [bundle objectForInfoDictionaryKey:@"CPBundleDocumentTypes"];
         
