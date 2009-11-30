@@ -90,16 +90,17 @@ var STICKY_TIME_INTERVAL        = 500,
 - (id)init
 {
     self = [super initWithContentRect:CGRectMakeZero() styleMask:CPBorderlessWindowMask];
-    
+
     if (self)
     {
         [self setLevel:CPPopUpMenuWindowLevel];
         [self setHasShadow:YES];
         [self setShadowStyle:CPMenuWindowShadowStyle];
         [self setAcceptsMouseMovedEvents:YES];
-        
+
+        _constraintRect = _CGRectMakeZero();
         _unconstrainedFrame = CGRectMakeZero();
-        
+
         var contentView = [self contentView];
         
         _menuView = [[_CPMenuView alloc] initWithFrame:CGRectMakeZero()];
@@ -232,7 +233,7 @@ var STICKY_TIME_INTERVAL        = 500,
 
 - (void)orderFront:(id)aSender
 {
-    [self setFrameWithConstraint:_unconstrainedFrame];
+    [self setFrame:_unconstrainedFrame];
     
     [super orderFront:aSender];
 }
@@ -240,6 +241,8 @@ var STICKY_TIME_INTERVAL        = 500,
 - (void)setConstraintRect:(CGRect)aRect
 {
     _constraintRect = aRect;
+
+    [self setFrame:_unconstrainedFrame];
 }
 
 - (void)scrollUp
@@ -249,7 +252,7 @@ var STICKY_TIME_INTERVAL        = 500,
 
     _unconstrainedFrame.origin.y += 10;
 
-    [self setFrameWithConstraint:_unconstrainedFrame];
+    [self setFrame:_unconstrainedFrame];
 }
 
 - (void)scrollDown
@@ -259,49 +262,44 @@ var STICKY_TIME_INTERVAL        = 500,
 
     _unconstrainedFrame.origin.y -= 10;
 
-    [self setFrameWithConstraint:_unconstrainedFrame];
+    [self setFrame:_unconstrainedFrame];
+}
+
+- (CGRect)unconstrainedFrame
+{
+    return _unconstrainedFrame;
+}
+
+// We need this because if not this will call setFrame: with -frame instead of -unconstrainedFrame, turning
+// the constrained frame into the unconstrained frame.
+- (void)setFrameOrigin:(CGPoint)aPoint
+{
+    [super setFrame:_CGRectMake(aPoint.x, aPoint.y, _CGRectGetWidth(_unconstrainedFrame), _CGRectGetHeight(_unconstrainedFrame))];
 }
 
 - (void)setFrame:(CGRect)aFrame display:(BOOL)shouldDisplay animate:(BOOL)shouldAnimate
 {
-    [super setFrame:aFrame display:shouldDisplay animate:shouldAnimate];
-
-    if (!window.letitbe)
-    {
-        _unconstrainedFrame = aFrame;
-        console.log("setting unconstrained frame to : " + CPStringFromRect(_unconstrainedFrame));
-    }
-    else
-        console.log("in here for some reason");
-}
-
-- (void)setFrameWithConstraint:(CGRect)aFrame
-{console.log("setFrameWithConstraint:");
     // FIXME: There are integral window issues with platform windows.
     // FIXME: This gets called far too often.
-    _unconstrainedFrame = aFrame;
+    _unconstrainedFrame = _CGRectMakeCopy(aFrame);
 
-    var isBrowser = [CPPlatform isBrowser],
-        visibleFrame =  CGRectInset(isBrowser ? [[self platformWindow] contentBounds] : [[self screen] visibleFrame], 5.0, 5.0),
-        constrainedFrame = CGRectIntersection(_unconstrainedFrame, visibleFrame);
+    var constrainedFrame = CGRectIntersection(_unconstrainedFrame, _constraintRect);
 
     // We don't want to simply intersect the visible frame and the unconstrained frame.
     // We should be allowing as much of the width to fit as possible (pushing back and forward).
     constrainedFrame.origin.x = CGRectGetMinX(_unconstrainedFrame);
     constrainedFrame.size.width = CGRectGetWidth(_unconstrainedFrame);
 
-    if (CGRectGetWidth(constrainedFrame) > CGRectGetWidth(visibleFrame))
-        constrainedFrame.size.width = CGRectGetWidth(visibleFrame);
+    if (CGRectGetWidth(constrainedFrame) > CGRectGetWidth(_constraintRect))
+        constrainedFrame.size.width = CGRectGetWidth(_constraintRect);
 
-    if (CGRectGetMaxX(constrainedFrame) > CGRectGetMaxX(visibleFrame))
-        constrainedFrame.origin.x -= CGRectGetMaxX(constrainedFrame) - CGRectGetMaxX(visibleFrame);
+    if (CGRectGetMaxX(constrainedFrame) > CGRectGetMaxX(_constraintRect))
+        constrainedFrame.origin.x -= CGRectGetMaxX(constrainedFrame) - CGRectGetMaxX(_constraintRect);
 
-    if (CGRectGetMinX(constrainedFrame) < CGRectGetMinX(visibleFrame))
-        constrainedFrame.origin.x = CGRectGetMinX(visibleFrame);
+    if (CGRectGetMinX(constrainedFrame) < CGRectGetMinX(_constraintRect))
+        constrainedFrame.origin.x = CGRectGetMinX(_constraintRect);
 
-    window.letitbe = true;
-    [self setFrame:constrainedFrame];
-    window.letitbe = false;
+    [super setFrame:constrainedFrame display:shouldDisplay animate:shouldAnimate];
 
     // This needs to happen before changing the frame.
     var menuViewOrigin = CGPointMake(CGRectGetMinX(aFrame) + LEFT_MARGIN, CGRectGetMinY(aFrame) + TOP_MARGIN),
@@ -429,7 +427,7 @@ var STICKY_TIME_INTERVAL        = 500,
 
     _menuWindowStack.push(menuWindow);
 
-    [menuWindow setConstraintRect:CGRectInset([CPPlatform isBrowser] ? [[self platformWindow] contentBounds] : [[self screen] visibleFrame], 5.0, 5.0)];
+    [menuWindow setConstraintRect:_constraintRect];
     [menuWindow setBackgroundStyle:_CPMenuWindowPopUpBackgroundStyle];
     [menuWindow setFrameOrigin:aGlobalLocation];
     [menuWindow orderFront:self];

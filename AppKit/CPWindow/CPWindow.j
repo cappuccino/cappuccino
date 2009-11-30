@@ -610,6 +610,8 @@ CPTexturedBackgroundWindowMask
 */
 - (void)setFrame:(CGRect)aFrame display:(BOOL)shouldDisplay animate:(BOOL)shouldAnimate
 {
+    aFrame = _CGRectMakeCopy(aFrame);
+
     var value = aFrame.origin.x,
         delta = value - FLOOR(value);
 

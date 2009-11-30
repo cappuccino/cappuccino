@@ -638,7 +638,7 @@ CPPopUpButtonStatePullsDown = CPThemeState("pulls-down");
 {
     if (![self isEnabled] || ![self numberOfItems])
         return;
-        
+
     [self highlight:YES];
 
     var menu = [self menu],
@@ -647,11 +647,13 @@ CPPopUpButtonStatePullsDown = CPThemeState("pulls-down");
 
     [menuWindow setDelegate:self];
     [menuWindow setBackgroundStyle:_CPMenuWindowPopUpBackgroundStyle];
-    
+
+    var bounds = [self bounds];
+
     // Pull Down Menus show up directly below their buttons.
     if ([self pullsDown])
-        var menuOrigin = [theWindow convertBaseToGlobal:[self convertPoint:CGPointMake(0.0, CGRectGetMaxY([self bounds])) toView:nil]];
-    
+        var menuOrigin = [theWindow convertBaseToGlobal:[self convertPoint:CGPointMake(0.0, CGRectGetMaxY(bounds)) toView:nil]];
+
     // Pop Up Menus attempt to show up "on top" of the selected item.
     else
     {
@@ -660,21 +662,22 @@ CPPopUpButtonStatePullsDown = CPThemeState("pulls-down");
         // 1. So calculate where our content is, then calculate where the menu item is.
         // 2. Move LEFT by whatever indentation we have (offsetWidths, aka, window margin, item margin, etc).
         // 3. MOVE UP by the difference in sizes of the content and menu item, this will only work if the content is vertically centered.
-        var contentRect = [self convertRect:[self contentRectForBounds:[self bounds]] toView:nil],
+        var contentRect = [self convertRect:[self contentRectForBounds:bounds] toView:nil],
             menuOrigin = [theWindow convertBaseToGlobal:contentRect.origin],
             menuItemRect = [menuWindow rectForItemAtIndex:_selectedIndex];
-        
+
         menuOrigin.x -= CGRectGetMinX(menuItemRect) + [menuWindow overlapOffsetWidth] + [[[menu itemAtIndex:_selectedIndex] _menuItemView] overlapOffsetWidth];
         menuOrigin.y -= CGRectGetMinY(menuItemRect) + (CGRectGetHeight(menuItemRect) - CGRectGetHeight(contentRect)) / 2.0;
     }
 
     [menuWindow setFrameOrigin:menuOrigin];
 
-    var menuMaxX = CGRectGetMaxX([menuWindow frame]),
-        buttonMaxX = [theWindow convertBaseToGlobal:CGPointMake(CGRectGetMaxX([self convertRect:[self bounds] toView:nil]), 0.0)].x;
+    var menuWindowFrame = [menuWindow unconstrainedFrame],
+        menuMaxX = CGRectGetMaxX(menuWindowFrame),
+        buttonMaxX = [theWindow convertBaseToGlobal:CGPointMake(CGRectGetMaxX([self convertRect:bounds toView:nil]), 0.0)].x;
 
     if (menuMaxX < buttonMaxX)
-        [menuWindow setMinWidth:CGRectGetWidth([menuWindow frame]) + buttonMaxX - menuMaxX - ([self pullsDown] ? 0.0 : VISIBLE_MARGIN)];
+        [menuWindow setMinWidth:CGRectGetWidth(menuWindowFrame) + buttonMaxX - menuMaxX - ([self pullsDown] ? 0.0 : VISIBLE_MARGIN)];
 
     [menuWindow orderFront:self];
     [menuWindow beginTrackingWithEvent:anEvent sessionDelegate:self didEndSelector:@selector(menuWindowDidFinishTracking:highlightedItem:)];
