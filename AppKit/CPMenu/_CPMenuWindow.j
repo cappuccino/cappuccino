@@ -42,7 +42,6 @@ var STICKY_TIME_INTERVAL        = 500,
     CPTimeInterval      _startTime;
     int                 _scrollingState;
     CGPoint             _lastGlobalLocation;
-    CPMenu              _lastActiveMenu;
     
     BOOL                _isShowingTopScrollIndicator;
     BOOL                _isShowingBottomScrollIndicator;
@@ -233,7 +232,7 @@ var STICKY_TIME_INTERVAL        = 500,
 
 - (void)orderFront:(id)aSender
 {
-    [self constrainToScreen];
+    [self setFrameWithConstraint:_unconstrainedFrame];
     
     [super orderFront:aSender];
 }
@@ -250,8 +249,7 @@ var STICKY_TIME_INTERVAL        = 500,
 
     _unconstrainedFrame.origin.y += 10;
 
-    [self setFrame:_unconstrainedFrame];
-    [self constrainToScreen];
+    [self setFrameWithConstraint:_unconstrainedFrame];
 }
 
 - (void)scrollDown
@@ -261,15 +259,27 @@ var STICKY_TIME_INTERVAL        = 500,
 
     _unconstrainedFrame.origin.y -= 10;
 
-    [self setFrame:_unconstrainedFrame];
-    [self constrainToScreen];
+    [self setFrameWithConstraint:_unconstrainedFrame];
 }
 
-- (void)constrainToScreen
+- (void)setFrame:(CGRect)aFrame display:(BOOL)shouldDisplay animate:(BOOL)shouldAnimate
 {
+    [super setFrame:aFrame display:shouldDisplay animate:shouldAnimate];
+
+    if (!window.letitbe)
+    {
+        _unconstrainedFrame = aFrame;
+        console.log("setting unconstrained frame to : " + CPStringFromRect(_unconstrainedFrame));
+    }
+    else
+        console.log("in here for some reason");
+}
+
+- (void)setFrameWithConstraint:(CGRect)aFrame
+{console.log("setFrameWithConstraint:");
     // FIXME: There are integral window issues with platform windows.
     // FIXME: This gets called far too often.
-    _unconstrainedFrame = CGRectMakeCopy([self frame]);
+    _unconstrainedFrame = aFrame;
 
     var isBrowser = [CPPlatform isBrowser],
         visibleFrame =  CGRectInset(isBrowser ? [[self platformWindow] contentBounds] : [[self screen] visibleFrame], 5.0, 5.0),
@@ -289,12 +299,13 @@ var STICKY_TIME_INTERVAL        = 500,
     if (CGRectGetMinX(constrainedFrame) < CGRectGetMinX(visibleFrame))
         constrainedFrame.origin.x = CGRectGetMinX(visibleFrame);
 
+    window.letitbe = true;
+    [self setFrame:constrainedFrame];
+    window.letitbe = false;
+
     // This needs to happen before changing the frame.
-    var menuViewOrigin = [self convertBaseToGlobal:CGPointMake(LEFT_MARGIN, TOP_MARGIN)];
-
-    [super setFrame:constrainedFrame];
-
-    var moreAbove = menuViewOrigin.y < CGRectGetMinY(constrainedFrame) + TOP_MARGIN,
+    var menuViewOrigin = CGPointMake(CGRectGetMinX(aFrame) + LEFT_MARGIN, CGRectGetMinY(aFrame) + TOP_MARGIN),
+        moreAbove = menuViewOrigin.y < CGRectGetMinY(constrainedFrame) + TOP_MARGIN,
         moreBelow = menuViewOrigin.y + CGRectGetHeight([_menuView frame]) > CGRectGetMaxY(constrainedFrame) - BOTTOM_MARGIN,
 
         topMargin = TOP_MARGIN,
@@ -349,19 +360,44 @@ var STICKY_TIME_INTERVAL        = 500,
     [self trackEvent:anEvent];
 }
 
-- (_CPMenuWindow)menuWindowAtPoint:(CGPoint)aGlobalLocation
+- (_CPMenuWindow)menuWindowForPoint:(float)aGlobalLocation
 {
-    var count = _menuWindowStack.length;
+    var count = [_menuWindowStack count];
 
-    while (count--)
+    // Trivial case.
+    if (count === 1)
+        return _menuWindowStack[0];
+
+    var index = count,
+        x = aGlobalLocation.x,
+        closerDeltaX = Infinity,
+        closerMenuWindow = nil;
+
+    while (index--)
     {
-        var menuWindow = _menuWindowStack[count];
+        var menuWindow = _menuWindowStack[index],
+            menuWindowFrame = [menuWindow frame],
+            menuWindowMinX = _CGRectGetMinX(menuWindowFrame),
+            menuWindowMaxX = _CGRectGetMaxX(menuWindowFrame);
 
-        if (CGRectContainsPoint([menuWindow frame], aGlobalLocation))
+        // If within the x bounds of this menu window, return it.
+        if (x < menuWindowMaxX && x >= menuWindowMinX)
             return menuWindow;
+
+        // If this is either the first or last menu, check to see how close we are to it.
+        if (index === 0 || index === count - 1)
+        {
+            var deltaX = ABS(x < menuWindowMinX ? menuWindowMinX - x : menuWindowMaxX - x);
+
+            if (deltaX < closerDeltaX)
+            {
+                closerMenuWindow = menuWindow;
+                closerDeltaX = deltaX;
+            }
+        }
     }
 
-    return nil;
+    return closerMenuWindow;
 }
 
 - (void)showMenu:(CPMenu)newMenu fromMenu:(CPMenu)baseMenu atPoint:(CGPoint)aGlobalLocation
@@ -444,14 +480,12 @@ var STICKY_TIME_INTERVAL        = 500,
     _lastGlobalLocation = globalLocation;
 
     // Find which menu window the mouse is currently on top of
-    var activeMenuWindow = [self menuWindowAtPoint:globalLocation],
+    var activeMenuWindow = [self menuWindowForPoint:globalLocation],
         menuLocation = [activeMenuWindow convertGlobalToBase:globalLocation],
         activeItemIndex = activeMenuWindow ? [activeMenuWindow itemIndexAtPoint:menuLocation] :CPNotFound,
         activeMenu = activeMenuWindow ? [activeMenuWindow menu] : nil,
         activeItem = activeMenuWindow ? [activeMenu itemAtIndex:activeItemIndex] : nil,
         mouseOverMenuView = activeMenuWindow ? [activeItem view] : nil;
-
-    _lastActiveMenu = activeMenu || _lastActiveMenu;
 
     if (type === CPPeriodic)
     {
@@ -489,7 +523,7 @@ var STICKY_TIME_INTERVAL        = 500,
             _lastMouseOverMenuView = nil;
         }
         
-        [_lastActiveMenu _highlightItemAtIndex:activeItemIndex];
+        [activeMenu _highlightItemAtIndex:activeItemIndex];
         
         if (type === CPMouseMoved || type === CPLeftMouseDragged || type === CPLeftMouseDown)
         {
@@ -518,18 +552,21 @@ var STICKY_TIME_INTERVAL        = 500,
             [menu cancelTracking];
     }
 
-    if (activeItem)
-        if ([activeItem hasSubmenu])// && [activeItem action] === @selector(submenuAction:))
-        {
-            var activeItemRect = [activeMenuWindow rectForItemAtIndex:activeItemIndex],
-                newMenuOrigin = CGPointMake(CGRectGetMaxX(activeItemRect), CGRectGetMinY(activeItemRect));
-    
-            newMenuOrigin = [activeMenuWindow convertBaseToGlobal:newMenuOrigin];
-    
-            [self showMenu:[activeItem submenu] fromMenu:[activeItem menu] atPoint:newMenuOrigin];
-        }
-        else
-            [self showMenu:nil fromMenu:[activeItem menu] atPoint:CGPointMakeZero()];
+    // If the item has a submenu, show it.
+    if ([activeItem hasSubmenu])// && [activeItem action] === @selector(submenuAction:))
+    {
+        var activeItemRect = [activeMenuWindow rectForItemAtIndex:activeItemIndex],
+            newMenuOrigin = CGPointMake(CGRectGetMaxX(activeItemRect), CGRectGetMinY(activeItemRect));
+
+        newMenuOrigin = [activeMenuWindow convertBaseToGlobal:newMenuOrigin];
+
+        [self showMenu:[activeItem submenu] fromMenu:[activeItem menu] atPoint:newMenuOrigin];
+    }
+
+    // This handles both the case where we've moved away from the menu, and where 
+    // we've moved to an item without a submenu.
+    else
+        [self showMenu:nil fromMenu:activeMenu atPoint:CGPointMakeZero()];
 }
 
 @end
