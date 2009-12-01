@@ -449,10 +449,10 @@ CPOffState
 */
 - (void)setSubmenu:(CPMenu)aMenu
 {
-    var supermenu = [_submenu supermenu];
-
-    if (supermenu === self)
+    if (_submenu === aMenu)
         return;
+
+    var supermenu = [_submenu supermenu];
 
     if (supermenu)
         [CPException raise:CPInvalidArgumentException
