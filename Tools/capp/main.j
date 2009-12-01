@@ -5,17 +5,19 @@
 @import "Generate.j"
 
 
-function main()
+function main(args)
 {
-    if (system.args.length < 1)
+    args.shift();
+    
+    if (args.length < 1)
         return printUsage();
 
     var index = 0,
-        count = system.args.length;
+        count = args.length;
 
     for (; index < count; ++index)
     {
-        var argument = system.args[index];
+        var argument = args[index];
         
         switch (argument)
         {
@@ -25,9 +27,9 @@ function main()
             case "-h":
             case "--help":      return printUsage();
 
-            case "config":      return config.apply(this, system.args.slice(index + 1));
+            case "config":      return config.apply(this, args.slice(index + 1));
 
-            case "gen":         return gen.apply(this, system.args.slice(index + 1));
+            case "gen":         return gen.apply(this, args.slice(index + 1));
             
             default:            print("unknown command " + argument);
         }

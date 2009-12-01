@@ -69,21 +69,24 @@ function loadFrameworks(frameworkPaths, aCallback)
     aCallback();
 }
 
-function main()
+function main(args)
 {
-    var count = arguments.length;
+    // TODO: args parser
+    args.shift();
+    
+    var count = args.length;
 
-    if (count < 1)
+    if (count < 2)
         return printUsage();
 
-    var index = 0,
+    var index = 1,
 
         frameworkPaths = [],
         converter = [[Converter alloc] init];
 
     for (; index < count; ++index)
     {
-        switch(arguments[index])
+        switch(args[index])
         {
             case "-help":
             case "--help":      printUsage();
@@ -92,16 +95,16 @@ function main()
             case "--mac":       [converter setFormat:NibFormatMac];
                                 break;
 
-            case "-F":          frameworkPaths.push(arguments[++index]);
+            case "-F":          frameworkPaths.push(args[++index]);
                                 break;
 
-            case "-R":          [converter setResourcesPath:arguments[++index]];
+            case "-R":          [converter setResourcesPath:args[++index]];
                                 break;
 
             default:            if ([converter inputPath])
-                                    [converter setOutputPath:arguments[index]];
+                                    [converter setOutputPath:args[index]];
                                 else
-                                    [converter setInputPath:arguments[index]];
+                                    [converter setInputPath:args[index]];
         }
     }
 

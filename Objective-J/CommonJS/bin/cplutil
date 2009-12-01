@@ -8,12 +8,12 @@ function printUsage()
     print("this is where you say the usage");
 }
 
-function main()
+exports.main = function(args)
 {
-    // FIXME: ARGS
-    system.args.shift();
+    // TODO: args parser
+    args.shift();
 
-    if (system.args.length < 1)
+    if (args.length < 1)
         return printUsage();
     
     var allFiles = NO,
@@ -23,11 +23,11 @@ function main()
         outExtension = nil;
     
         index = 0,
-        count = system.args.length;
+        count = args.length;
     
     for (; index < count; ++index)
     {
-        var argument = system.args[index];
+        var argument = args[index];
         
         if (argument.charAt(0) === '-' && !allFiles)
         {
@@ -35,13 +35,13 @@ function main()
                 return printUsage();
             
             else if (argument === "-convert")
-                format = system.args[++index];
+                format = args[++index];
             
             else if (argument === "-o")
-                outPath = system.args[++index];
+                outPath = args[++index];
             
             else if (argument === "-e")
-                outExtension = system.args[++index];
+                outExtension = args[++index];
             
             else if (argument === "--")
                 allFiles = YES;
@@ -50,7 +50,7 @@ function main()
                 return printUsage();
         }
         else
-            filePaths.push(system.args[index]);
+            filePaths.push(args[index]);
     }
     
     index = 0;
@@ -76,4 +76,5 @@ function main()
     }
 }
 
-main();
+if (require.main == module.id)
+    exports.main(system.args);

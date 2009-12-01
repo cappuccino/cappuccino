@@ -1,6 +1,6 @@
 var FILE = require("file");
 
-var window = require("browser/window");
+var window = exports.window = require("browser/window");
 
 if (system.engine === "rhino")
 {
@@ -104,37 +104,26 @@ with (window)
     exports.IS_FILE = function(aFragment) { return (aFragment.type & FRAGMENT_FILE); }
     exports.IS_LOCAL = function(aFragment) { return (aFragment.type & FRAGMENT_LOCAL); }
     exports.IS_IMPORT = function(aFragment) { return (aFragment.type & FRAGMENT_IMPORT); }
-    
-/*
-    objj_set_evaluator(function(code) {
-        return function(OBJJ_CURRENT_BUNDLE) {
-            with (window) {
-                return eval("function(OBJJ_CURRENT_BUNDLE){"+code+"}");
-            }
-        }
-    });
-*/
 
 // runs the objj repl or file provided in args
 exports.run = function(args)
 {
-    args = args || [];
-    window.args = args;
-    
-    // FIXME: ARGS
-    args.shift();
-
-    if (args.length > 0)
+    if (args && args.length > 1)
     {
-        while (args.length && args[0].indexOf('-I') === 0)
-            OBJJ_INCLUDE_PATHS = args.shift().substr(2).split(':').concat(OBJJ_INCLUDE_PATHS);
-                
-        var mainFilePath = FILE.canonical(args.shift());
-    
+        var arg0 = args.slice(0,1),
+            argv = args.slice(1);
+
+        while (argv.length && argv[0].indexOf('-I') === 0)
+            OBJJ_INCLUDE_PATHS = argv.shift().substr(2).split(':').concat(OBJJ_INCLUDE_PATHS);
+
+        var mainFilePath = FILE.canonical(argv.shift());
+
         objj_import(mainFilePath, YES, function() {
             if (typeof main === "function")
-                main.apply(main, args);
+                main(arg0.concat(argv));
         });
+
+        require("browser/timeout").serviceTimeouts();
     }
     else
     {
@@ -155,8 +144,6 @@ exports.run = function(args)
             require("browser/timeout").serviceTimeouts();
         }
     }
-
-    require("browser/timeout").serviceTimeouts();
 }
 
 // synchronously evals Objective-J code
