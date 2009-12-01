@@ -691,12 +691,28 @@ var aFont = nil;
         [delegate menuWillOpen:aMenu];
 
     [menuWindow orderFront:self];
-    [menuWindow beginTrackingWithEvent:[CPApp currentEvent] callback:function(aMenuWindow, aMenu)
+    [menuWindow
+        beginTrackingWithEvent:[CPApp currentEvent]
+                      callback:[CPMenu trackingCallbackWithCallback:aCallback]];
+}
+
++ (Function)trackingCallbackWithCallback:(Function)aCallback
+{
+    return function(aMenuWindow, aMenu)
     {
         [_CPMenuWindow poolMenuWindow:aMenuWindow];
 
-        aCallback(aMenu);
-    }];
+        if (aCallback)
+            aCallback(aMenu);
+
+        var highlightedItem = [aMenu highlightedItem];
+
+        while ([highlightedItem submenu] && [highlightedItem action] === @selector(submenuAction:))
+            highlightedItem = [[highlightedItem submenu] highlightedItem];
+
+        if (highlightedItem)
+            [CPApp sendAction:[highlightedItem action] to:[highlightedItem target] from:highlightedItem];
+    }
 }
 
 + (void)popUpContextMenu:(CPMenu)aMenu withEvent:(CPEvent)anEvent forView:(CPView)aView
@@ -729,20 +745,9 @@ var aFont = nil;
     [menuWindow setFrameOrigin:[[anEvent window] convertBaseToGlobal:[anEvent locationInWindow]]];
 
     [menuWindow orderFront:self];
-    [menuWindow beginTrackingWithEvent:anEvent callback:function(aMenuWindow, aMenu)
-    {
-        [_CPMenuWindow poolMenuWindow:aMenuWindow];
-
-        aCallback(aMenu);
-
-        var highlightedItem = [aMenu highlightedItem];
-
-        while ([highlightedItem submenu] && [highlightedItem action] === @selector(submenuAction:))
-            highlightedItem = [[highlightedItem submenu] highlightedItem];
-
-        if (highlightedItem)
-            [CPApp sendAction:[highlightedItem action] to:[highlightedItem target] from:highlightedItem];
-    }];
+    [menuWindow
+        beginTrackingWithEvent:anEvent
+                      callback:[CPMenu trackingCallbackWithCallback:nil]];
 }
 
 // Managing Display of State Column

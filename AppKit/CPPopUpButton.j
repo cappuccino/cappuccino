@@ -664,14 +664,8 @@ CPPopUpButtonStatePullsDown = CPThemeState("pulls-down");
 
             var highlightedItem = [aMenu highlightedItem];
 
-            while ([highlightedItem submenu] && [highlightedItem action] === @selector(submenuAction:))
-                highlightedItem = [[highlightedItem submenu] highlightedItem];
-
-            if ([highlightedItem menu] === [self menu])
+            if ([highlightedItem _isSelectable])
                 [self selectItem:highlightedItem];
-
-            if (highlightedItem)
-                [CPApp sendAction:[highlightedItem action] to:[highlightedItem target] from:highlightedItem];
         }];
 /*
     var menu = [self menu],

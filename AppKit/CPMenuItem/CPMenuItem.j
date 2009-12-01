@@ -450,19 +450,31 @@ CPOffState
 - (void)setSubmenu:(CPMenu)aMenu
 {
     var supermenu = [_submenu supermenu];
-    
-    if (supermenu == self)
+
+    if (supermenu === self)
         return;
-    
+
     if (supermenu)
-        return alert("bad");
-    
-    [_submenu setSupermenu:_menu];
-    
+        [CPException raise:CPInvalidArgumentException
+		   reason: @"Can't add submenu \"" + [aMenu title] + "\" to item \"" + [self title] + "\", because it is already submenu of \"" + [[aMenu supermenu] title] + "\""];
+
     _submenu = aMenu;
-    
+
+    if (_submenu)
+    {
+        [_submenu setSupermenu:_menu];
+
+        [self setTarget:_menu];
+        [self setAction:@selector(submenuAction:)];
+    }
+    else
+    {
+        [self setTarget:nil];
+        [self setAction:NULL];
+    }
+
     [_menuItemView setDirty];
-    
+
     [_menu itemChanged:self];
 }
 
@@ -762,6 +774,11 @@ CPControlKeyMask
     return _menuItemView;
 }
 
+- (BOOL)_isSelectable
+{
+    return ![self submenu] || [self action] !== @selector(submenuAction:) || [self target] !== [self menu];
+}
+
 @end
 
 var CPMenuItemIsSeparatorKey                = @"CPMenuItemIsSeparatorKey",
@@ -824,8 +841,9 @@ var CPMenuItemIsSeparatorKey                = @"CPMenuItemIsSeparatorKey",
 //    CPImage         _offStateImage;
 //    CPImage         _mixedStateImage;
 
-        _submenu = DEFAULT_VALUE(CPMenuItemSubmenuKey, nil);
+        // This order matters because setSubmenu: needs _menu to be around.
         _menu = DEFAULT_VALUE(CPMenuItemMenuKey, nil);
+        [self setSubmenu:DEFAULT_VALUE(CPMenuItemSubmenuKey, nil)];
 
         _keyEquivalent = [aCoder decodeObjectForKey:CPMenuItemKeyEquivalentKey] || @"";
         _keyEquivalentModifierMask = [aCoder decodeObjectForKey:CPMenuItemKeyEquivalentModifierMaskKey] || 0;
