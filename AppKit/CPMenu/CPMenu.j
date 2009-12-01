@@ -62,9 +62,10 @@ var _CPMenuBarVisible               = NO,
 
     CPString        _title;
     CPString        _name;
-    
+
+    float           _minimumWidth;
+
     CPMutableArray  _items;
-    CPMenu          _attachedMenu;
     
     BOOL            _autoenablesItems;
     BOOL            _showsStateColumn;
@@ -555,30 +556,6 @@ var _CPMenuBarVisible               = NO,
 - (void)submenuAction:(id)aSender
 {
 
-}
-
-/*!
-    Returns the attaced menu, or \c nil if there isn't one.
-*/
-- (CPMenu)attachedMenu
-{
-    return _attachedMenu;
-}
-
-/*!
-    Returns \c YES if the menu is attached to another menu.
-*/
-- (BOOL)isAttached
-{
-    return _isAttached;
-}
-
-/*!
-    Not yet implemented
-*/
-- (CGPoint)locationOfSubmenu:(CPMenu)aMenu
-{
-    // FIXME: IMPLEMENT.
 }
 
 /*!

@@ -36,14 +36,11 @@ var STICKY_TIME_INTERVAL        = 500,
     CPImageView         _moreAboveView;
     CPImageView         _moreBelowView;
 
-    Function            _trackingCallback;
-    
     CPTimeInterval      _startTime;
     int                 _scrollingState;
     CGPoint             _lastGlobalLocation;
-    
-    BOOL                _isShowingTopScrollIndicator;
-    BOOL                _isShowingBottomScrollIndicator;
+
+    Function            _trackingCallback;
     BOOL                _trackingCanceled;
     
     CGRect              _unconstrainedFrame;
