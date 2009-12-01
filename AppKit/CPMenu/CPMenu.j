@@ -434,7 +434,7 @@ var _CPMenuBarVisible               = NO,
 */
 - (int)indexOfItem:(CPMenuItem)aMenuItem
 {
-    if ([aMenuItem menu] != self)
+    if ([aMenuItem menu] !== self)
         return CPNotFound;
         
     return [_items indexOfObjectIdenticalTo:aMenuItem];
@@ -650,6 +650,54 @@ var _CPMenuBarVisible               = NO,
 }
 
 //
+- (void)popUpMenuPositioningItem:(CPMenuItem)anItem atLocation:(CGPoint)aLocation inView:(CPView)aView callback:(Function)aCallback
+{
+    var itemIndex = [self indexOfItem:anItem];
+
+    if (anItem && itemIndex === CPNotFound)
+        throw "uh oh";
+
+    if (aView && ![aView window])
+        throw "uh oh 2";
+var aFont = nil;
+    if (!aFont)
+        aFont = [CPFont systemFontOfSize:12.0];
+
+    var theWindow = [aView window],
+        menuWindow = [_CPMenuWindow menuWindowWithMenu:self font:aFont];
+
+    [menuWindow setDelegate:self];
+    [menuWindow setBackgroundStyle:_CPMenuWindowPopUpBackgroundStyle];
+
+    var globalLocation = aLocation;
+
+    if (aView)
+        globalLocation = [[aView window] convertBaseToGlobal:[aView convertPoint:aLocation toView:nil]];
+
+    if (anItem)
+    {
+        // Don't convert this value to global, we care about the distance (delta) from the
+        // the edge of the window, which is equivalent to its origin.
+        var itemOrigin = [menuWindow rectForItemAtIndex:itemIndex].origin;
+
+        globalLocation.y -= itemOrigin.y;
+    }
+
+    [menuWindow setFrameOrigin:globalLocation];
+
+    var delegate = [self delegate];
+
+    if ([delegate respondsToSelector:@selector(menuWillOpen:)])
+        [delegate menuWillOpen:aMenu];
+
+    [menuWindow orderFront:self];
+    [menuWindow beginTrackingWithEvent:[CPApp currentEvent] callback:function(aMenuWindow, aMenu)
+    {
+        [_CPMenuWindow poolMenuWindow:aMenuWindow];
+
+        aCallback(aMenu);
+    }];
+}
 
 + (void)popUpContextMenu:(CPMenu)aMenu withEvent:(CPEvent)anEvent forView:(CPView)aView
 {
@@ -674,23 +722,27 @@ var _CPMenuBarVisible               = NO,
     var theWindow = [aView window],
         menuWindow = [_CPMenuWindow menuWindowWithMenu:aMenu font:aFont];
 
+    // FIXME: Why do we need this?
     [menuWindow setDelegate:self];
     [menuWindow setBackgroundStyle:isForMenuBar ? _CPMenuWindowMenuBarBackgroundStyle : _CPMenuWindowPopUpBackgroundStyle];
 
     [menuWindow setFrameOrigin:[[anEvent window] convertBaseToGlobal:[anEvent locationInWindow]]];
 
     [menuWindow orderFront:self];
-    [menuWindow beginTrackingWithEvent:anEvent sessionDelegate:self didEndSelector:@selector(_menuWindowDidFinishTracking:highlightedItem:)];
-}
+    [menuWindow beginTrackingWithEvent:anEvent callback:function(aMenuWindow, aMenu)
+    {
+        [_CPMenuWindow poolMenuWindow:aMenuWindow];
 
-+ (void)_menuWindowDidFinishTracking:(_CPMenuWindow)aMenuWindow highlightedItem:(CPMenuItem)aMenuItem
-{
-    var menu = [aMenuWindow menu];
+        aCallback(aMenu);
 
-    [_CPMenuWindow poolMenuWindow:aMenuWindow];
+        var highlightedItem = [aMenu highlightedItem];
 
-    if([aMenuItem isEnabled])
-        [CPApp sendAction:[aMenuItem action] to:[aMenuItem target] from:aMenuItem];
+        while ([highlightedItem submenu] && [highlightedItem action] === @selector(submenuAction:))
+            highlightedItem = [[highlightedItem submenu] highlightedItem];
+
+        if (highlightedItem)
+            [CPApp sendAction:[highlightedItem action] to:[highlightedItem target] from:highlightedItem];
+    }];
 }
 
 // Managing Display of State Column
@@ -833,10 +885,10 @@ var _CPMenuBarVisible               = NO,
     
     _highlightedIndex = anIndex;
     
-    if (previousHighlightedIndex != CPNotFound)
+    if (previousHighlightedIndex !== CPNotFound)
         [[_items[previousHighlightedIndex] _menuItemView] highlight:NO];
     
-    if (_highlightedIndex != CPNotFound)
+    if (_highlightedIndex !== CPNotFound)
         [[_items[_highlightedIndex] _menuItemView] highlight:YES];
 }
 

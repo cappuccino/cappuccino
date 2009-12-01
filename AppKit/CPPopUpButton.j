@@ -641,6 +641,39 @@ CPPopUpButtonStatePullsDown = CPThemeState("pulls-down");
 
     [self highlight:YES];
 
+    var bounds = [self bounds];
+
+    if ([self pullsDown])
+    {
+        var positionedItem = nil,
+            location = CGPointMake(0.0, CGRectGetMaxY(bounds));
+    }
+    else
+    {
+        var positionedItem = [self selectedItem],
+            location = CGPointMake(0.0, 0.0);
+    }
+
+    [[self menu]
+        popUpMenuPositioningItem:positionedItem
+                      atLocation:location
+                          inView:self
+                        callback:function(aMenu)
+        {
+            [self highlight:NO];
+
+            var highlightedItem = [aMenu highlightedItem];
+
+            while ([highlightedItem submenu] && [highlightedItem action] === @selector(submenuAction:))
+                highlightedItem = [[highlightedItem submenu] highlightedItem];
+
+            if ([highlightedItem menu] === [self menu])
+                [self selectItem:highlightedItem];
+
+            if (highlightedItem)
+                [CPApp sendAction:[highlightedItem action] to:[highlightedItem target] from:highlightedItem];
+        }];
+/*
     var menu = [self menu],
         theWindow = [self window],
         menuWindow = [_CPMenuWindow menuWindowWithMenu:menu font:[self font]];
@@ -681,25 +714,7 @@ CPPopUpButtonStatePullsDown = CPThemeState("pulls-down");
 
     [menuWindow orderFront:self];
     [menuWindow beginTrackingWithEvent:anEvent sessionDelegate:self didEndSelector:@selector(menuWindowDidFinishTracking:highlightedItem:)];
-}
-
-/*
-    @ignore
 */
-- (void)menuWindowDidFinishTracking:(_CPMenuWindow)aMenuWindow highlightedItem:(CPMenuItem)aMenuItem
-{
-    [_CPMenuWindow poolMenuWindow:aMenuWindow];
-
-    [self highlight:NO];
-    
-    var index = [_menu indexOfItem:aMenuItem];
-    
-    if (index == CPNotFound)
-        return;
-    
-    [self selectItemAtIndex:index];
-    
-    [CPApp sendAction:[aMenuItem action] to:[aMenuItem target] from:aMenuItem];
 }
 
 - (void)_popUpItemAction:(id)aSender

@@ -35,9 +35,8 @@ var STICKY_TIME_INTERVAL        = 500,
     
     CPImageView         _moreAboveView;
     CPImageView         _moreBelowView;
-    
-    id                  _sessionDelegate;
-    SEL                 _didEndSelector;
+
+    Function            _trackingCallback;
     
     CPTimeInterval      _startTime;
     int                 _scrollingState;
@@ -340,7 +339,7 @@ var STICKY_TIME_INTERVAL        = 500,
     [_menuView scrollPoint:CGPointMake(0.0, [self convertBaseToGlobal:clipFrame.origin].y - menuViewOrigin.y)];
 }
 
-- (void)beginTrackingWithEvent:(CPEvent)anEvent sessionDelegate:(id)aSessionDelegate didEndSelector:(SEL)aDidEndSelector
+- (void)beginTrackingWithEvent:(CPEvent)anEvent callback:(Function)aCallback
 {
     CPApp._activeMenu = [_menuView menu];
 
@@ -348,9 +347,8 @@ var STICKY_TIME_INTERVAL        = 500,
     _scrollingState = _CPMenuWindowScrollingStateNone;
     _trackingCanceled = NO;
     _menuWindowStack = [self];
-    
-    _sessionDelegate = aSessionDelegate;
-    _didEndSelector = aDidEndSelector;
+
+    _trackingCallback = aCallback;
     
     // bleh
     [self setConstraintRect:CGRectInset([CPPlatform isBrowser] ? [[self platformWindow] contentBounds] : [[self screen] visibleFrame], 5.0, 5.0)];
@@ -423,6 +421,9 @@ var STICKY_TIME_INTERVAL        = 500,
     if (!newMenu)
         return;
 
+    // Unhighlight any previously highlighted item.
+    [newMenu _highlightItemAtIndex:CPNotFound];
+
     var menuWindow = [_CPMenuWindow menuWindowWithMenu:newMenu font:[self font]];
 
     _menuWindowStack.push(menuWindow);
@@ -457,8 +458,8 @@ var STICKY_TIME_INTERVAL        = 500,
         if ([delegate respondsToSelector:@selector(menuDidClose:)])
             [delegate menuDidClose:menu];
 
-        if (_sessionDelegate && _didEndSelector)
-            objj_msgSend(_sessionDelegate, _didEndSelector, self, highlightedItem);
+        if (_trackingCallback)
+            _trackingCallback(self, menu);
 
         [[CPNotificationCenter defaultCenter]
             postNotificationName:CPMenuDidEndTrackingNotification
@@ -480,7 +481,7 @@ var STICKY_TIME_INTERVAL        = 500,
     // Find which menu window the mouse is currently on top of
     var activeMenuWindow = [self menuWindowForPoint:globalLocation],
         menuLocation = [activeMenuWindow convertGlobalToBase:globalLocation],
-        activeItemIndex = activeMenuWindow ? [activeMenuWindow itemIndexAtPoint:menuLocation] :CPNotFound,
+        activeItemIndex = activeMenuWindow ? [activeMenuWindow itemIndexAtPoint:menuLocation] : CPNotFound,
         activeMenu = activeMenuWindow ? [activeMenuWindow menu] : nil,
         activeItem = activeMenuWindow ? [activeMenu itemAtIndex:activeItemIndex] : nil,
         mouseOverMenuView = activeMenuWindow ? [activeItem view] : nil;
