@@ -22,7 +22,7 @@
 
 @import <AppKit/CPResponder.j>
 
-var _cachedCibs;
+var CPViewControllerCachedCibs;
 
 /*! @class CPViewController
     The CPViewController class provides the fundamental view-management controller for Cappuccino applications.
@@ -55,6 +55,12 @@ var _cachedCibs;
     CPString        _cibName @accessors(property=cibName, readonly);
     CPBundle        _cibBundle @accessors(property=cibBundle, readonly);
     CPDictionary    _cibExternalNameTable @accessors(property=cibExternalNameTable, readonly);
+}
+
++ (void)initialize
+{
+    if (self === CPViewController)
+        CPViewControllerCachedCibs = [CPDictionary dictionary];
 }
 
 /*!
@@ -114,22 +120,15 @@ var _cachedCibs;
 {
     if (_view)
         return;
-
-//    if (_cibName)
-//        [CPException raise: reason:];
-
-    // initialize the dictionary
-    if (!_cachedCibs)
-        _cachedCibs = [CPDictionary dictionary];
     
     // check if a cib is already cached for the current _cibName
-    var cib = [_cachedCibs objectForKey:_cibName];
+    var cib = [CPViewControllerCachedCibs objectForKey:_cibName];
 
     if (!cib)
     {
         // if the cib isn't cached yet : fetch it and cache it
         cib = [[CPCib alloc] initWithContentsOfURL:[_cibBundle pathForResource:_cibName + @".cib"]];
-        [_cachedCibs setObject:cib forKey:_cibName];
+        [CPViewControllerCachedCibs setObject:cib forKey:_cibName];
     }
 
     [cib instantiateCibWithExternalNameTable:_cibExternalNameTable];
