@@ -253,6 +253,8 @@ var _CPMenuBarVisible               = NO,
         
         _autoenablesItems = YES;
         _showsStateColumn = YES;
+
+        [self setMinimumWidth:0];
     }
     
     return self;
@@ -649,6 +651,16 @@ var _CPMenuBarVisible               = NO,
     return _title;
 }
 
+- (void)setMinimumWidth:(float)aMinimumWidth
+{
+    _minimumWidth = aMinimumWidth;
+}
+
+- (float)minimumWidth
+{
+    return _minimumWidth;
+}
+
 //
 - (void)popUpMenuPositioningItem:(CPMenuItem)anItem atLocation:(CGPoint)aLocation inView:(CPView)aView callback:(Function)aCallback
 {
@@ -965,6 +977,8 @@ var CPMenuTitleKey              = @"CPMenuTitleKey",
         [self _setMenuName:[aCoder decodeObjectForKey:CPMenuNameKey]];
 
         _showsStateColumn = ![aCoder containsValueForKey:CPMenuShowsStateColumnKey] || [aCoder decodeBoolForKey:CPMenuShowsStateColumnKey];
+
+        [self setMinimumWidth:0];
     }
     
     return self;

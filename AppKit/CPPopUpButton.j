@@ -654,6 +654,8 @@ CPPopUpButtonStatePullsDown = CPThemeState("pulls-down");
             location = CGPointMake(0.0, 0.0);
     }
 
+    [[self menu] setMinimumWidth:CGRectGetWidth(bounds)];
+
     [[self menu]
         popUpMenuPositioningItem:positionedItem
                       atLocation:location

@@ -63,6 +63,7 @@ var STICKY_TIME_INTERVAL        = 500,
 
     [menuWindow setFont:aFont];
     [menuWindow setMenu:aMenu];
+    [menuWindow setMinWidth:[aMenu minimumWidth]];
 
     return menuWindow;
 }
@@ -210,8 +211,8 @@ var STICKY_TIME_INTERVAL        = 500,
 
 - (void)setMinWidth:(float)aWidth
 {
-    var size = [self frame].size;
-    
+    var size = [self unconstrainedFrame].size;
+
     [self setFrameSize:CGSizeMake(MAX(size.width, aWidth), size.height)];
 }
 
@@ -274,6 +275,11 @@ var STICKY_TIME_INTERVAL        = 500,
 - (void)setFrameOrigin:(CGPoint)aPoint
 {
     [super setFrame:_CGRectMake(aPoint.x, aPoint.y, _CGRectGetWidth(_unconstrainedFrame), _CGRectGetHeight(_unconstrainedFrame))];
+}
+
+- (void)setFrameSize:(CGSize)aSize
+{
+    [super setFrame:_CGRectMake(_CGRectGetMinX(_unconstrainedFrame), _CGRectGetMinY(_unconstrainedFrame), aSize.width, aSize.height)];
 }
 
 - (void)setFrame:(CGRect)aFrame display:(BOOL)shouldDisplay animate:(BOOL)shouldAnimate
