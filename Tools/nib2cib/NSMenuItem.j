@@ -74,6 +74,19 @@
     return self;
 }
 
+- (void)swapCellsForParents:(JSObject)parentsForCellUIDs
+{
+    var target = [self target];
+
+    if (!target)
+        return;
+
+    var parent = parentsForCellUIDs[[[self target] UID]];
+
+    if (parent)
+        [self setTarget:parent];
+}
+
 @end
 
 @implementation NSMenuItem : CPMenuItem
