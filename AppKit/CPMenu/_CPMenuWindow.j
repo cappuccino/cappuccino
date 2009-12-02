@@ -41,7 +41,6 @@ var STICKY_TIME_INTERVAL        = 500,
     CGPoint             _lastGlobalLocation;
 
     Function            _trackingCallback;
-    BOOL                _trackingCanceled;
     
     CGRect              _unconstrainedFrame;
     CGRect              _constraintRect;
@@ -84,9 +83,12 @@ var STICKY_TIME_INTERVAL        = 500,
     _CPMenuWindowMoreBelowImage = [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"_CPMenuWindow/_CPMenuWindowMoreBelow.png"] size:CGSizeMake(38.0, 18.0)];
 }
 
-- (id)init
+- (id)initWithContentRect:(CGRect)aRect styleMask:(unsigned)aStyleMask
 {
-    self = [super initWithContentRect:CGRectMakeZero() styleMask:CPBorderlessWindowMask];
+    _constraintRect = _CGRectMakeZero();
+    _unconstrainedFrame = _CGRectMakeZero();
+
+    self = [super initWithContentRect:aRect styleMask:CPBorderlessWindowMask];
 
     if (self)
     {
@@ -94,9 +96,6 @@ var STICKY_TIME_INTERVAL        = 500,
         [self setHasShadow:YES];
         [self setShadowStyle:CPMenuWindowShadowStyle];
         [self setAcceptsMouseMovedEvents:YES];
-
-        _constraintRect = _CGRectMakeZero();
-        _unconstrainedFrame = CGRectMakeZero();
 
         var contentView = [self contentView];
         
@@ -344,11 +343,10 @@ var STICKY_TIME_INTERVAL        = 500,
 
 - (void)beginTrackingWithEvent:(CPEvent)anEvent callback:(Function)aCallback
 {
-    CPApp._activeMenu = [_menuView menu];
+    CPApp._activeMenu = [self menu];
 
     _startTime = [anEvent timestamp];//new Date();
     _scrollingState = _CPMenuWindowScrollingStateNone;
-    _trackingCanceled = NO;
     _menuWindowStack = [self];
 
     _trackingCallback = aCallback;
@@ -440,7 +438,7 @@ var STICKY_TIME_INTERVAL        = 500,
 - (void)trackEvent:(CPEvent)anEvent
 {
     var type = [anEvent type],
-        menu = [_menuView menu];
+        menu = [self menu];
 
     // Close Menu Event.
     if (type === CPAppKitDefined)
@@ -448,7 +446,7 @@ var STICKY_TIME_INTERVAL        = 500,
         // Stop all periodic events at this point.
         [CPEvent stopPeriodicEvents];
 
-        var highlightedItem = [[_menuView menu] highlightedItem];
+        var highlightedItem = [menu highlightedItem];
 
         // Hide all submenus.
         [self showMenu:nil fromMenu:menu atPoint:nil];
