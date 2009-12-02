@@ -4,7 +4,7 @@
 @import "_CPMenuWindow.j"
 
 
-var MENUBAR_HEIGHT          = 29.0,
+var MENUBAR_HEIGHT          = 28.0,
     MENUBAR_MARGIN          = 10.0,
     MENUBAR_LEFT_MARGIN     = 10.0,
     MENUBAR_RIGHT_MARGIN    = 10.0;
@@ -261,9 +261,7 @@ var _CPMenuBarWindowBackgroundColor = nil,
             menuItemView = [item _menuItemView];
             
         _menuItemViews.push(menuItemView);
-        
-        [menuItemView setShowsStateColumn:NO];
-        [menuItemView setBelongsToMenuBar:YES];
+
         [menuItemView setFont:_CPMenuBarWindowFont];
         [menuItemView setTextColor:_textColor];
         [menuItemView setHidden:[item isHidden]];
@@ -295,8 +293,6 @@ var _CPMenuBarWindowBackgroundColor = nil,
 
     [_menuItemViews insertObject:menuItemView atIndex:index];
 
-    [menuItemView setShowsStateColumn:NO];
-    [menuItemView setBelongsToMenuBar:YES];
     [menuItemView setFont:_CPMenuBarWindowFont];
     [menuItemView setTextColor:_textColor];
     [menuItemView setHidden:[menuItem isHidden]];

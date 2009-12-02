@@ -1,6 +1,7 @@
 
 @import "_CPMenuItemSeparatorView.j"
 @import "_CPMenuItemStandardView.j"
+@import "_CPMenuItemMenuBarView.j"
 
 
 var LEFT_MARGIN                 = 3.0,
@@ -30,7 +31,6 @@ var _CPMenuItemSelectionColor                   = nil,
     CGSize                  _minSize;
     BOOL                    _isDirty;
     BOOL                    _showsStateColumn;
-    BOOL                    _belongsToMenuBar;
 
     CPImageView             _stateView;
     _CPImageAndTextView     _imageAndTextView;
@@ -109,6 +109,16 @@ var _CPMenuItemSelectionColor                   = nil,
         _view = view;
     }
     
+    else if ([_menuItem menu] == [CPApp mainMenu])
+    {
+        if (![_view isKindOfClass:[_CPMenuItemMenuBarView class]])
+        {
+            [_view removeFromSuperview];
+            _view = [_CPMenuItemMenuBarView view];
+        }
+
+        [_view setMenuItem:_menuItem];
+    }
     else
     {
         if (![_view isKindOfClass:[_CPMenuItemStandardView class]])
@@ -140,11 +150,6 @@ var _CPMenuItemSelectionColor                   = nil,
 - (void)setShowsStateColumn:(BOOL)shouldShowStateColumn
 {
     _showsStateColumn = shouldShowStateColumn;
-}
-
-- (void)setBelongsToMenuBar:(BOOL)shouldBelongToMenuBar
-{
-    _belongsToMenuBar = shouldBelongToMenuBar;
 }
 
 - (void)highlight:(BOOL)shouldHighlight
