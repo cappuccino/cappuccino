@@ -61,14 +61,17 @@ var SUBMENU_INDICATOR_COLOR                     = nil,
 
         [_imageAndTextView setImagePosition:CPImageLeft];
         [_imageAndTextView setTextShadowOffset:CGSizeMake(0.0, 1.0)];
+        [_imageAndTextView setAutoresizingMask:CPViewMinYMargin | CPViewMaxYMargin];
 
         [self addSubview:_imageAndTextView];
 
         _submenuIndicatorView = [[_CPMenuItemMenuBarSubmenuIndicatorView alloc] initWithFrame:CGRectMake(0.0, 0.0, 9.0, 6.0)];
 
-        [_submenuIndicatorView setAutoresizingMask:CPViewMinXMargin];
+        [_submenuIndicatorView setAutoresizingMask:CPViewMinYMargin | CPViewMaxYMargin];
 
         [self addSubview:_submenuIndicatorView];
+
+        [self setAutoresizingMask:CPViewWidthSizable | CPViewHeightSizable];
     }
 
     return self;
@@ -155,26 +158,15 @@ var SUBMENU_INDICATOR_COLOR                     = nil,
         [self setBackgroundColor:_CPMenuItemSelectionColor];
 
         [_imageAndTextView setTextColor:[CPColor whiteColor]];
-        [_keyEquivalentView setTextColor:[CPColor whiteColor]];
-
         [_imageAndTextView setTextShadowColor:_CPMenuItemTextShadowColor];
-        [_keyEquivalentView setTextShadowColor:_CPMenuItemTextShadowColor];
     }
     else
     {
         [self setBackgroundColor:nil];
         
         [_imageAndTextView setTextColor:[self textColor]];
-        [_keyEquivalentView setTextColor:[self textColor]];
-
         [_imageAndTextView setTextShadowColor:[self textShadowColor]];
-        [_keyEquivalentView setTextShadowColor:[self textShadowColor]];
     }
-    
-    if (shouldHighlight)
-        [_stateView setImage:_CPMenuItemDefaultStateHighlightedImages[[_menuItem state]] || nil];
-    else
-        [_stateView setImage:_CPMenuItemDefaultStateImages[[_menuItem state]] || nil];
 }
 
 @end

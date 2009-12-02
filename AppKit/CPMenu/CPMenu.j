@@ -25,6 +25,7 @@
 @import <Foundation/CPNotificationCenter.j>
 @import <Foundation/CPString.j>
 
+@import "_CPMenuManager.j"
 @import "CPApplication.j"
 @import "CPClipView.j"
 @import "CPMenuItem.j"
@@ -40,7 +41,7 @@ CPMenuDidRemoveItemNotification     = @"CPMenuDidRemoveItemNotification";
 
 CPMenuDidEndTrackingNotification    = @"CPMenuDidEndTrackingNotification";
 
-var MENUBAR_HEIGHT = 19.0;
+var MENUBAR_HEIGHT = 28.0;
 
 var _CPMenuBarVisible               = NO,
     _CPMenuBarTitle                 = @"",
@@ -226,7 +227,7 @@ var _CPMenuBarVisible               = NO,
 
 - (float)menuBarHeight
 {
-    if (self == [CPApp mainMenu])
+    if (self === [CPApp mainMenu])
         return MENUBAR_HEIGHT;
     
     return 0.0;
@@ -639,6 +640,14 @@ var _CPMenuBarVisible               = NO,
 }
 
 //
++ (CGRect)_constraintRectForView:(CPView)aView
+{
+    if ([CPPlatform isBrowser])
+        return CGRectInset([[[aView window] platformWindow] contentBounds], 5.0, 5.0);
+
+    return CGRectInset([[[aView window] screen] visibleFrame], 5.0, 5.0);
+}
+
 - (void)popUpMenuPositioningItem:(CPMenuItem)anItem atLocation:(CGPoint)aLocation inView:(CPView)aView callback:(Function)aCallback
 {
     var itemIndex = [self indexOfItem:anItem];
@@ -679,16 +688,25 @@ var aFont = nil;
     if ([delegate respondsToSelector:@selector(menuWillOpen:)])
         [delegate menuWillOpen:aMenu];
 
+    var constraintRect = [CPMenu _constraintRectForView:aView];
+
+    [menuWindow setConstraintRect:constraintRect];
     [menuWindow orderFront:self];
-    [menuWindow
-        beginTrackingWithEvent:[CPApp currentEvent]
-                      callback:[CPMenu trackingCallbackWithCallback:aCallback]];
+
+    [[_CPMenuManager sharedMenuManager]
+        beginTracking:[CPApp currentEvent]
+        menuContainer:menuWindow
+       constraintRect:constraintRect
+             callback:[CPMenu trackingCallbackWithCallback:aCallback]];
 }
 
 + (Function)trackingCallbackWithCallback:(Function)aCallback
 {
     return function(aMenuWindow, aMenu)
     {
+        [aMenuWindow setMenu:nil];
+        [aMenuWindow orderOut:self];
+
         [_CPMenuWindow poolMenuWindow:aMenuWindow];
 
         if (aCallback)
@@ -731,12 +749,18 @@ var aFont = nil;
     [menuWindow setDelegate:self];
     [menuWindow setBackgroundStyle:isForMenuBar ? _CPMenuWindowMenuBarBackgroundStyle : _CPMenuWindowPopUpBackgroundStyle];
 
-    [menuWindow setFrameOrigin:[[anEvent window] convertBaseToGlobal:[anEvent locationInWindow]]];
 
+    var constraintRect = [CPMenu _constraintRectForView:aView];
+
+    [menuWindow setConstraintRect:constraintRect];
+    [menuWindow setFrameOrigin:[[anEvent window] convertBaseToGlobal:[anEvent locationInWindow]]];
     [menuWindow orderFront:self];
-    [menuWindow
-        beginTrackingWithEvent:anEvent
-                      callback:[CPMenu trackingCallbackWithCallback:nil]];
+
+    [[_CPMenuManager sharedMenuManager]
+        beginTracking:anEvent
+        menuContainer:menuWindow
+       constraintRect:[CPMenu _constraintRectForView:aView]
+             callback:[CPMenu trackingCallbackWithCallback:nil]];
 }
 
 // Managing Display of State Column

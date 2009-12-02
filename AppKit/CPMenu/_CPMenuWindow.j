@@ -5,11 +5,7 @@
 var _CPMenuWindowPool                       = [],
     _CPMenuWindowPoolCapacity               = 5,
     
-    _CPMenuWindowBackgroundColors           = [],
-    
-    _CPMenuWindowScrollingStateUp           = -1,
-    _CPMenuWindowScrollingStateDown         = 1,
-    _CPMenuWindowScrollingStateNone         = 0;
+    _CPMenuWindowBackgroundColors           = [];
     
 _CPMenuWindowMenuBarBackgroundStyle         = 0;
 _CPMenuWindowPopUpBackgroundStyle           = 1;
@@ -31,21 +27,12 @@ var STICKY_TIME_INTERVAL        = 500,
 {
     _CPMenuView         _menuView;
     CPClipView          _menuClipView;
-    CPView              _lastMouseOverMenuView;
     
     CPImageView         _moreAboveView;
     CPImageView         _moreBelowView;
-
-    CPTimeInterval      _startTime;
-    int                 _scrollingState;
-    CGPoint             _lastGlobalLocation;
-
-    Function            _trackingCallback;
     
     CGRect              _unconstrainedFrame;
     CGRect              _constraintRect;
-
-    CPArray             _menuWindowStack;
 }
 
 + (id)menuWindowWithMenu:(CPMenu)aMenu font:(CPFont)aFont
@@ -124,6 +111,11 @@ var STICKY_TIME_INTERVAL        = 500,
     }
     
     return self;
+}
+
+- (BOOL)canScroll
+{
+    return ![_moreAboveView isHidden] || ![_moreBelowView isHidden];
 }
 
 - (CGFloat)overlapOffsetWidth
@@ -212,16 +204,6 @@ var STICKY_TIME_INTERVAL        = 500,
     [self setFrameSize:CGSizeMake(MAX(size.width, aWidth), size.height)];
 }
 
-- (CGPoint)rectForItemAtIndex:(int)anIndex
-{
-    return [_menuView convertRect:[_menuView rectForItemAtIndex:anIndex] toView:nil];
-}
-
-- (int)itemIndexAtPoint:(CGPoint)aPoint
-{
-    return [_menuView itemIndexAtPoint:[_menuView convertPoint:aPoint fromView:nil]];
-}
-
 - (CPMenu)menu
 {
     return [_menuView menu];
@@ -237,26 +219,6 @@ var STICKY_TIME_INTERVAL        = 500,
 - (void)setConstraintRect:(CGRect)aRect
 {
     _constraintRect = aRect;
-
-    [self setFrame:_unconstrainedFrame];
-}
-
-- (void)scrollUp
-{
-    if (CGRectGetMinY(_unconstrainedFrame) >= CGRectGetMinY(_constraintRect))
-        return;
-
-    _unconstrainedFrame.origin.y += 10;
-
-    [self setFrame:_unconstrainedFrame];
-}
-
-- (void)scrollDown
-{
-    if (CGRectGetMaxY(_unconstrainedFrame) <= CGRectGetHeight(_constraintRect))
-        return;
-
-    _unconstrainedFrame.origin.y -= 10;
 
     [self setFrame:_unconstrainedFrame];
 }
@@ -341,232 +303,66 @@ var STICKY_TIME_INTERVAL        = 500,
     [_menuView scrollPoint:CGPointMake(0.0, [self convertBaseToGlobal:clipFrame.origin].y - menuViewOrigin.y)];
 }
 
-- (void)beginTrackingWithEvent:(CPEvent)anEvent callback:(Function)aCallback
+- (void)scrollUp
 {
-    CPApp._activeMenu = [self menu];
-
-    _startTime = [anEvent timestamp];//new Date();
-    _scrollingState = _CPMenuWindowScrollingStateNone;
-    _menuWindowStack = [self];
-
-    _trackingCallback = aCallback;
-    
-    // bleh
-    [self setConstraintRect:CGRectInset([CPPlatform isBrowser] ? [[self platformWindow] contentBounds] : [[self screen] visibleFrame], 5.0, 5.0)];
-
-    [self trackEvent:anEvent];
-}
-
-- (_CPMenuWindow)menuWindowForPoint:(float)aGlobalLocation
-{
-    var count = [_menuWindowStack count];
-
-    // Trivial case.
-    if (count === 1)
-        return _menuWindowStack[0];
-
-    var index = count,
-        x = aGlobalLocation.x,
-        closerDeltaX = Infinity,
-        closerMenuWindow = nil;
-
-    while (index--)
-    {
-        var menuWindow = _menuWindowStack[index],
-            menuWindowFrame = [menuWindow frame],
-            menuWindowMinX = _CGRectGetMinX(menuWindowFrame),
-            menuWindowMaxX = _CGRectGetMaxX(menuWindowFrame);
-
-        // If within the x bounds of this menu window, return it.
-        if (x < menuWindowMaxX && x >= menuWindowMinX)
-            return menuWindow;
-
-        // If this is either the first or last menu, check to see how close we are to it.
-        if (index === 0 || index === count - 1)
-        {
-            var deltaX = ABS(x < menuWindowMinX ? menuWindowMinX - x : menuWindowMaxX - x);
-
-            if (deltaX < closerDeltaX)
-            {
-                closerMenuWindow = menuWindow;
-                closerDeltaX = deltaX;
-            }
-        }
-    }
-
-    return closerMenuWindow;
-}
-
-- (void)showMenu:(CPMenu)newMenu fromMenu:(CPMenu)baseMenu atPoint:(CGPoint)aGlobalLocation
-{
-    var count = _menuWindowStack.length,
-        index = count;
-
-    // Hide all menus up to the base menu...
-    while (index--)
-    {
-        var menuWindow = _menuWindowStack[index];
-
-        if ([menuWindow menu] === baseMenu)
-            break;
-
-        [[menuWindow menu] _highlightItemAtIndex:CPNotFound];
-
-        [menuWindow orderOut:self];
-        [menuWindow setMenu:nil];
-
-        [_CPMenuWindow poolMenuWindow:menuWindow];
-        [_menuWindowStack removeObjectAtIndex:index];
-    }
-
-    if (!newMenu)
+    if (CGRectGetMinY(_unconstrainedFrame) >= CGRectGetMinY(_constraintRect))
         return;
 
-    // Unhighlight any previously highlighted item.
-    [newMenu _highlightItemAtIndex:CPNotFound];
+    _unconstrainedFrame.origin.y += 10;
 
-    var menuWindow = [_CPMenuWindow menuWindowWithMenu:newMenu font:[self font]];
-
-    _menuWindowStack.push(menuWindow);
-
-    [menuWindow setConstraintRect:_constraintRect];
-    [menuWindow setBackgroundStyle:_CPMenuWindowPopUpBackgroundStyle];
-    [menuWindow setFrameOrigin:aGlobalLocation];
-    [menuWindow orderFront:self];
+    [self setFrame:_unconstrainedFrame];
 }
 
-- (void)trackEvent:(CPEvent)anEvent
+- (void)scrollDown
 {
-    var type = [anEvent type],
-        menu = [self menu];
-
-    // Close Menu Event.
-    if (type === CPAppKitDefined)
-    {
-        // Stop all periodic events at this point.
-        [CPEvent stopPeriodicEvents];
-
-        var highlightedItem = [menu highlightedItem];
-
-        // Hide all submenus.
-        [self showMenu:nil fromMenu:menu atPoint:nil];
-
-        [self orderOut:self];
-        [self setMenu:nil];
-
-        var delegate = [menu delegate];
-
-        if ([delegate respondsToSelector:@selector(menuDidClose:)])
-            [delegate menuDidClose:menu];
-
-        if (_trackingCallback)
-            _trackingCallback(self, menu);
-
-        [[CPNotificationCenter defaultCenter]
-            postNotificationName:CPMenuDidEndTrackingNotification
-                          object:menu];
-
-        CPApp._activeMenu = nil;
-
+    if (CGRectGetMaxY(_unconstrainedFrame) <= CGRectGetHeight(_constraintRect))
         return;
-    }
 
-    [CPApp setTarget:self selector:@selector(trackEvent:) forNextEventMatchingMask:CPPeriodicMask | CPMouseMovedMask | CPLeftMouseDraggedMask | CPLeftMouseUpMask | CPAppKitDefinedMask untilDate:nil inMode:nil dequeue:YES];
+    _unconstrainedFrame.origin.y -= 10;
 
-    // Periodic events don't have a valid location.
-    var globalLocation = type === CPPeriodic ? _lastGlobalLocation : [anEvent globalLocation];
+    [self setFrame:_unconstrainedFrame];
+}
 
-    // Remember this for the next periodic event.
-    _lastGlobalLocation = globalLocation;
+@end
 
-    // Find which menu window the mouse is currently on top of
-    var activeMenuWindow = [self menuWindowForPoint:globalLocation],
-        menuLocation = [activeMenuWindow convertGlobalToBase:globalLocation],
-        activeItemIndex = activeMenuWindow ? [activeMenuWindow itemIndexAtPoint:menuLocation] : CPNotFound,
-        activeMenu = activeMenuWindow ? [activeMenuWindow menu] : nil,
-        activeItem = activeMenuWindow ? [activeMenu itemAtIndex:activeItemIndex] : nil,
-        mouseOverMenuView = activeMenuWindow ? [activeItem view] : nil;
+@implementation _CPMenuWindow (CPMenuContainer)
 
-    if (type === CPPeriodic)
-    {
-        if (_scrollingState === _CPMenuWindowScrollingStateUp)
-            [activeMenuWindow scrollUp];
+- (CGRect)globalFrame
+{
+    return [self frame];
+}
 
-        else if (_scrollingState === _CPMenuWindowScrollingStateDown)
-            [activeMenuWindow scrollDown];
-    }
+- (BOOL)isMenuBar
+{
+    return NO;
+}
 
-    // If we're over a custom menu view...
-    if (mouseOverMenuView)
-    {
-        if (!_lastMouseOverMenuView)
-            [menu _highlightItemAtIndex:CPNotFound];
-        
-        if (_lastMouseOverMenuView != mouseOverMenuView)
-        {
-            [mouseOverMenuView mouseExited:anEvent];
-            // FIXME: Possibly multiple of these?
-            [_lastMouseOverMenuView mouseEntered:anEvent];
-            
-            _lastMouseOverMenuView = mouseOverMenuView;
-        }
-        
-        [self sendEvent:[CPEvent mouseEventWithType:type location:menuLocation modifierFlags:[anEvent modifierFlags] 
-            timestamp:[anEvent timestamp] windowNumber:[self windowNumber] context:nil 
-            eventNumber:0 clickCount:[anEvent clickCount] pressure:[anEvent pressure]]];
-    }
-    else
-    {
-        if (_lastMouseOverMenuView)
-        {
-            [_lastMouseOverMenuView mouseExited:anEvent];
-            _lastMouseOverMenuView = nil;
-        }
-        
-        [activeMenu _highlightItemAtIndex:activeItemIndex];
-        
-        if (type === CPMouseMoved || type === CPLeftMouseDragged || type === CPLeftMouseDown)
-        {
-            var frame = [self frame],
-                oldScrollingState = _scrollingState;
-            
-            _scrollingState = _CPMenuWindowScrollingStateNone;
-            
-            // If we're at or above of the top scroll indicator...
-            if (globalLocation.y < CGRectGetMinY(frame) + TOP_MARGIN + SCROLL_INDICATOR_HEIGHT)
-                _scrollingState = _CPMenuWindowScrollingStateUp;
-        
-            // If we're at or below the bottom scroll indicator...
-            else if (globalLocation.y > CGRectGetMaxY(frame) - BOTTOM_MARGIN - SCROLL_INDICATOR_HEIGHT)
-                _scrollingState = _CPMenuWindowScrollingStateDown;
-            
-            if (_scrollingState != oldScrollingState)
-            
-                if (_scrollingState == _CPMenuWindowScrollingStateNone)
-                    [CPEvent stopPeriodicEvents];
-            
-                else if (oldScrollingState == _CPMenuWindowScrollingStateNone)
-                    [CPEvent startPeriodicEventsAfterDelay:0.0 withPeriod:0.04];
-        }
-        else if (type === CPLeftMouseUp && ([anEvent timestamp] - _startTime > STICKY_TIME_INTERVAL))
-            [menu cancelTracking];
-    }
+- (_CPManagerScrollingState)scrollingStateForPoint:(CGPoint)aGlobalLocation
+{
+    var frame = [self frame];
 
-    // If the item has a submenu, show it.
-    if ([activeItem hasSubmenu])// && [activeItem action] === @selector(submenuAction:))
-    {
-        var activeItemRect = [activeMenuWindow rectForItemAtIndex:activeItemIndex],
-            newMenuOrigin = CGPointMake(CGRectGetMaxX(activeItemRect), CGRectGetMinY(activeItemRect));
+    if (![self canScroll])
+        return _CPMenuManagerScrollingStateNone;
 
-        newMenuOrigin = [activeMenuWindow convertBaseToGlobal:newMenuOrigin];
+    // If we're at or above of the top scroll indicator...
+    if (aGlobalLocation.y < CGRectGetMinY(frame) + TOP_MARGIN + SCROLL_INDICATOR_HEIGHT)
+        return _CPMenuManagerScrollingStateUp;
 
-        [self showMenu:[activeItem submenu] fromMenu:[activeItem menu] atPoint:newMenuOrigin];
-    }
+    // If we're at or below the bottom scroll indicator...
+    if (aGlobalLocation.y > CGRectGetMaxY(frame) - BOTTOM_MARGIN - SCROLL_INDICATOR_HEIGHT)
+        return _CPMenuManagerScrollingStateDown;
 
-    // This handles both the case where we've moved away from the menu, and where 
-    // we've moved to an item without a submenu.
-    else
-        [self showMenu:nil fromMenu:activeMenu atPoint:CGPointMakeZero()];
+    return _CPMenuManagerScrollingStateNone;
+}
+
+- (CGPoint)rectForItemAtIndex:(int)anIndex
+{
+    return [_menuView convertRect:[_menuView rectForItemAtIndex:anIndex] toView:nil];
+}
+
+- (int)itemIndexAtPoint:(CGPoint)aPoint
+{
+    return [_menuView itemIndexAtPoint:[_menuView convertPoint:aPoint fromView:nil]];
 }
 
 @end

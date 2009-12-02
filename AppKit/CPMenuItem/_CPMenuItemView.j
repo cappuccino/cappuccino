@@ -65,7 +65,7 @@ var _CPMenuItemSelectionColor                   = nil,
 - (id)initWithFrame:(CGRect)aFrame forMenuItem:(CPMenuItem)aMenuItem
 {
     self = [super initWithFrame:aFrame];
-    
+
     if (self)
     {
         _menuItem = aMenuItem;
@@ -106,7 +106,7 @@ var _CPMenuItemSelectionColor                   = nil,
     else if (menuItemView && _view !== menuItemView)
     {
         [_view removeFromSuperview];
-        _view = view;
+        _view = menuItemView;
     }
     
     else if ([_menuItem menu] == [CPApp mainMenu])
