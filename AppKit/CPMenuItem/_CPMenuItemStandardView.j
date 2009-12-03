@@ -58,6 +58,11 @@ var SUBMENU_INDICATOR_COLOR                     = nil,
     return [[self alloc] init];
 }
 
++ (float)_standardLeftMargin
+{
+    return LEFT_MARGIN + STATE_COLUMN_WIDTH;
+}
+
 - (id)initWithFrame:(CGRect)aFrame
 {
     self = [super initWithFrame:aFrame];

@@ -641,7 +641,8 @@ CPPopUpButtonStatePullsDown = CPThemeState("pulls-down");
 
     [self highlight:YES];
 
-    var bounds = [self bounds];
+    var bounds = [self bounds],
+        minimumWidth = CGRectGetWidth(bounds);
 
     if ([self pullsDown])
     {
@@ -650,11 +651,15 @@ CPPopUpButtonStatePullsDown = CPThemeState("pulls-down");
     }
     else
     {
-        var positionedItem = [self selectedItem],
-            location = CGPointMake(0.0, 0.0);
+        var contentRect = [self contentRectForBounds:bounds],
+            positionedItem = [self selectedItem],
+            standardLeftMargin = [_CPMenuItemStandardView _standardLeftMargin],
+            location = CGPointMake(CGRectGetMinX(contentRect) - standardLeftMargin, 0.0);
+
+        minimumWidth += standardLeftMargin;
     }
 
-    [[self menu] setMinimumWidth:CGRectGetWidth(bounds)];
+    [[self menu] setMinimumWidth:minimumWidth];
 
     [[self menu]
         popUpMenuPositioningItem:positionedItem
