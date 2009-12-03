@@ -639,6 +639,9 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
         else
             [[self window] selectNextKeyView:self];
 
+        if ([[[self window] firstResponder] respondsToSelector:@selector(selectText:)])
+            [[[self window] firstResponder] selectText:self];
+
         [[[self window] platformWindow] _propagateCurrentDOMEvent:NO];
     }
     else
@@ -781,9 +784,22 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 #if PLATFORM(DOM)
     var element = [self _inputElement];
     
-    if (element.parentNode === _DOMElement && ([self isEditable] || [self isSelectable]))
-        window.setTimeout(function() { element.select(); }, 0);
+    if (([self isEditable] || [self isSelectable]))
+    {
+        if ([[self window] firstResponder] === self)
+            window.setTimeout(function() { element.select(); }, 0);
+        else
+        {
+            [[self window] makeFirstResponder:self];
+            window.setTimeout(function() {[self selectText:sender];}, 0);
+        }
+    }
 #endif
+}
+
+- (void)selectAll:(id)sender
+{
+    [self selectText:sender];
 }
 
 #pragma mark Setting the Delegate

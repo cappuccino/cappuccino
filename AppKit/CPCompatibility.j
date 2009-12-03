@@ -31,6 +31,11 @@ CPKHTMLBrowserEngine                    = 3;
 CPOperaBrowserEngine                    = 4;
 CPWebKitBrowserEngine                   = 5;
 
+// Operating Systems
+CPMacOperatingSystem                    = 0;
+CPWindowsOperatingSystem                = 1;
+CPOtherOperatingSystem                  = 2;
+
 // Features
 CPCSSRGBAFeature                        = 1 << 5;
 
@@ -183,11 +188,20 @@ function CPFeatureIsCompatible(aFeature)
 
 function CPBrowserIsEngine(anEngine)
 {
-    return PLATFORM_ENGINE == anEngine;
+    return PLATFORM_ENGINE === anEngine;
 }
 
-if (USER_AGENT.indexOf("Mac") != -1)
+function CPBrowserIsOperatingSystem(anOperatingSystem)
 {
+    return OPERATING_SYSTEM === anOperatingSystem;
+}
+
+OPERATING_SYSTEM = CPOtherOperatingSystem;
+
+if (USER_AGENT.indexOf("Mac") !== -1)
+{
+    OPERATING_SYSTEM = CPMacOperatingSystem;
+
     CPPlatformActionKeyMask = CPCommandKeyMask;
 
     CPUndoKeyEquivalent = @"Z";
@@ -198,6 +212,9 @@ if (USER_AGENT.indexOf("Mac") != -1)
 }
 else
 {
+    if (USER_AGENT.indexOf("Windows") !== -1)
+        OPERATING_SYSTEM = CPWindowsOperatingSystem;
+
     CPPlatformActionKeyMask = CPControlKeyMask;
 
     CPUndoKeyEquivalent = @"Z";

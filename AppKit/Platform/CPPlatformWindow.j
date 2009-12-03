@@ -30,6 +30,10 @@ var PrimaryPlatformWindow   = NULL;
 
     Object          _charCodes;
     unsigned        _keyCode;
+    unsigned        _lastKey;
+    BOOL            _capsLockActive;
+    BOOL            _ignoreNativeCopyOrCutEvent;
+    BOOL            _ignoreNativePastePreparation;
 
     BOOL            _DOMEventMode;
 

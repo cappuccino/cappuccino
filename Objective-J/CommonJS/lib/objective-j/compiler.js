@@ -183,7 +183,7 @@ exports.compile = function(aFilePath, flags)
 
 exports.main = function(args)
 {
-    // FIXME: ARGS
+    // TODO: args parser
     args.shift();
 
     var resolved = resolveFlags(args),
