@@ -116,7 +116,7 @@ var SharedMenuManager = nil;
         menuLocation = [activeMenuContainer convertGlobalToBase:globalLocation],
         activeItemIndex = activeMenuContainer ? [activeMenuContainer itemIndexAtPoint:menuLocation] : CPNotFound,
         activeMenu = activeMenuContainer ? [activeMenuContainer menu] : nil,
-        activeItem = activeMenuContainer ? [activeMenu itemAtIndex:activeItemIndex] : nil,
+        activeItem = activeItemIndex !== CPNotFound ? [activeMenu itemAtIndex:activeItemIndex] : nil,
         mouseOverMenuView = activeMenuContainer ? [activeItem view] : nil;
 
     if (type === CPPeriodic)
