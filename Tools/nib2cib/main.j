@@ -79,7 +79,7 @@ function main(args)
     if (count < 2)
         return printUsage();
 
-    var index = 1,
+    var index = 0,
 
         frameworkPaths = [],
         converter = [[Converter alloc] init];
