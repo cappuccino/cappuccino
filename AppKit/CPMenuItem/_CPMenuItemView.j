@@ -198,11 +198,14 @@ var _CPMenuItemSelectionColor                   = nil,
 
 - (void)setFont:(CPFont)aFont
 {
-    if (_font == aFont)
+    if (_font === aFont)
         return;
-    
+
     _font = aFont;
-    
+
+    if ([_view respondsToSelector:@selector(setFont:)])
+        [_view setFont:aFont];
+
     [self setDirty];
 }
 

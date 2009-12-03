@@ -24,7 +24,6 @@ var SUBMENU_INDICATOR_COLOR                     = nil,
 
     CGSize                  _minSize @accessors(readonly, property=minSize);
     BOOL                    _isDirty;
-    BOOL                    _showsStateColumn;
 
     CPImageView             _stateView;
     _CPImageAndTextView     _imageAndTextView;
@@ -66,6 +65,8 @@ var SUBMENU_INDICATOR_COLOR                     = nil,
     if (self)
     {
         _stateView = [[CPImageView alloc] initWithFrame:CGRectMake(0.0, 0.0, 0.0, 0.0)];
+
+        [_stateView setImageScaling:CPScaleNone];
 
         [self addSubview:_stateView];
 
@@ -116,12 +117,12 @@ var SUBMENU_INDICATOR_COLOR                     = nil,
 - (void)update
 {
     var x = LEFT_MARGIN + [_menuItem indentationLevel] * INDENTATION_WIDTH,
-        height = 0.0;
+        height = 0.0,
+        hasStateColumn = [[_menuItem menu] showsStateColumn];
 
-    if (_showsStateColumn)
+    if (hasStateColumn)
     {
         [_stateView setHidden:NO];
-        [_stateView setFrameSize:CGSizeMake(STATE_COLUMN_WIDTH, STATE_COLUMN_WIDTH)];
         [_stateView setImage:_CPMenuItemDefaultStateImages[[_menuItem state]] || nil];
 
         x += STATE_COLUMN_WIDTH;
@@ -192,6 +193,9 @@ var SUBMENU_INDICATOR_COLOR                     = nil,
 
     imageAndTextViewFrame.origin.y = FLOOR((height - CGRectGetHeight(imageAndTextViewFrame)) / 2.0);
     [_imageAndTextView setFrame:imageAndTextViewFrame];
+
+    if (hasStateColumn)
+        [_stateView setFrameSize:CGSizeMake(STATE_COLUMN_WIDTH, height)];
 
     if (hasKeyEquivalent)
     {

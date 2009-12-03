@@ -41,7 +41,7 @@ var _CPMenuBarWindowBackgroundColor = nil,
         
     var bundle = [CPBundle bundleForClass:self];
     
-    _CPMenuBarWindowFont = [CPFont systemFontOfSize:11.0];
+    _CPMenuBarWindowFont = [CPFont boldSystemFontOfSize:13.0];
 }
 
 - (id)init
@@ -72,7 +72,7 @@ var _CPMenuBarWindowBackgroundColor = nil,
         
         _titleField = [[CPTextField alloc] initWithFrame:CGRectMakeZero()];
         
-        [_titleField setFont:[CPFont boldSystemFontOfSize:12.0]];
+        [_titleField setFont:[CPFont boldSystemFontOfSize:13.0]];
         [_titleField setAlignment:CPCenterTextAlignment];
         [_titleField setTextShadowOffset:CGSizeMake(0, 1)];
         
