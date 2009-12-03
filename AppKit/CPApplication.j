@@ -319,7 +319,7 @@ CPRunContinuesResponse  = -1002;
     }
     else
     {
-        [[[CPApp mainWindow] platformWindow] _propagateCurrentDOMEvent:YES];
+        [[[self keyWindow] platformWindow] _propagateCurrentDOMEvent:YES];
     }
 }
 
@@ -548,12 +548,27 @@ CPRunContinuesResponse  = -1002;
 {
     _currentEvent = anEvent;
 
+    var willPropagate = [[[anEvent window] platformWindow] _willPropagateCurrentDOMEvent];
+
+    // temporarily pretend we won't propagate the event. we'll restore the saved value later
+    // we do this outside the if so that changes user code might make in _handleKeyEquiv. are preserved
+    [[[anEvent window] platformWindow] _propagateCurrentDOMEvent:NO];
+
     // Check if this is a candidate for key equivalent...
     if ([anEvent _couldBeKeyEquivalent] && [self _handleKeyEquivalent:anEvent])
     {
-        [[[anEvent window] platformWindow] _propagateCurrentDOMEvent:NO];
+        var characters = [anEvent characters],
+            modifierFlags = [anEvent modifierFlags];
+
+        // Unconditionally propagate on these keys to solve browser copy paste bugs
+        if ((characters == "c" || characters == "x" || characters == "v") && (modifierFlags & CPPlatformActionKeyMask))
+            [[[anEvent window] platformWindow] _propagateCurrentDOMEvent:YES];
+
         return;
     }
+
+    // if we make it this far, then restore the original willPropagate value
+    [[[anEvent window] platformWindow] _propagateCurrentDOMEvent:willPropagate];
 
     if (_eventListeners.length)
     {

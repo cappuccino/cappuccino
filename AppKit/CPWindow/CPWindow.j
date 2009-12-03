@@ -1738,6 +1738,9 @@ CPTexturedBackgroundWindowMask
     [[CPNotificationCenter defaultCenter] postNotificationName:CPWindowWillCloseNotification object:self];
 
     [self orderOut:nil];
+
+    if ([self isFullBridge])
+        [[self platformWindow] _propagateCurrentDOMEvent:YES];
 }
 
 // Managing Main Status
