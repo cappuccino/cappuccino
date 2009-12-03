@@ -1,5 +1,5 @@
 var HORIZONTAL_MARGIN           = 8.0,
-    SUBMENU_INDICATOR_MARGIN    = 5.0,
+    SUBMENU_INDICATOR_MARGIN    = 3.0,
     VERTICAL_MARGIN             = 4.0;
 
 var SelectionColor                              = nil,
@@ -106,7 +106,7 @@ var SelectionColor                              = nil,
     [_imageAndTextView setText:[_menuItem title]];
     [_imageAndTextView setTextColor:[self textColor]];
     [_imageAndTextView setTextShadowColor:[self textShadowColor]];
-    [_imageAndTextView setTextShadowOffset:CGSizeMake(0, 1)];
+    [_imageAndTextView setTextShadowOffset:CGSizeMake(0.0, 1.0)];
     [_imageAndTextView sizeToFit];
 
     var imageAndTextViewFrame = [_imageAndTextView frame];
@@ -120,6 +120,8 @@ var SelectionColor                              = nil,
     if (hasSubmenuIndicator)
     {
         [_submenuIndicatorView setHidden:NO];
+        [_submenuIndicatorView setColor:[self textColor]];
+        [_submenuIndicatorView setShadowColor:[self textShadowColor]];
 
         var submenuViewFrame = [_submenuIndicatorView frame];
 
@@ -138,7 +140,7 @@ var SelectionColor                              = nil,
     
     if (hasSubmenuIndicator)
     {
-        submenuViewFrame.origin.y = FLOOR((height - CGRectGetHeight(submenuViewFrame)) / 2.0);
+        submenuViewFrame.origin.y = FLOOR((height - CGRectGetHeight(submenuViewFrame)) / 2.0) + 1.0;
         [_submenuIndicatorView setFrame:submenuViewFrame];
     }
 
@@ -161,13 +163,19 @@ var SelectionColor                              = nil,
 
         [_imageAndTextView setTextColor:[CPColor whiteColor]];
         [_imageAndTextView setTextShadowColor:_CPMenuItemTextShadowColor];
+
+        [_submenuIndicatorView setColor:[CPColor whiteColor]];
+        [_submenuIndicatorView setShadowColor:[CPColor colorWithWhite:0.1 alpha:0.7]];
     }
     else
     {
         [self setBackgroundColor:nil];
-        
+
         [_imageAndTextView setTextColor:[self textColor]];
         [_imageAndTextView setTextShadowColor:[self textShadowColor]];
+
+        [_submenuIndicatorView setColor:[self textColor]];
+        [_submenuIndicatorView setShadowColor:[self textShadowColor]];
     }
 }
 
@@ -175,6 +183,28 @@ var SelectionColor                              = nil,
 
 @implementation _CPMenuItemMenuBarSubmenuIndicatorView : CPView
 {
+    CPColor _color;
+    CPColor _shadowColor;
+}
+
+- (void)setColor:(CPColor)aColor
+{
+    if (_color === aColor)
+        return;
+
+    _color = aColor;
+
+    [self setNeedsDisplay:YES];
+}
+
+- (void)setShadowColor:(CPColor)aColor
+{
+    if (_shadowColor === aColor)
+        return;
+
+    _shadowColor = aColor;
+
+    [self setNeedsDisplay:YES];
 }
 
 - (void)drawRect:(CGRect)aRect
@@ -182,24 +212,9 @@ var SelectionColor                              = nil,
     var context = [[CPGraphicsContext currentContext] graphicsPort],
         bounds = [self bounds];
     
-    bounds.origin.y += 1.0;
     bounds.size.height -= 1.0;
-
-    // Draw Inset
-    CGContextBeginPath(context);
-    
-    CGContextMoveToPoint(context, CGRectGetMinX(bounds), CGRectGetMinY(bounds));
-    CGContextAddLineToPoint(context, CGRectGetMidX(bounds), CGRectGetMaxY(bounds));
-    CGContextAddLineToPoint(context, CGRectGetMaxX(bounds), CGRectGetMinY(bounds));
-    
-    CGContextClosePath(context);
-    
-    CGContextSetStrokeColor(context, [CPColor colorWithWhite:1.0 alpha:0.3]);
-    CGContextStrokePath(context);
-
     bounds.size.width -= 2.0;
     bounds.origin.x += 1.0;
-    bounds.origin.y -= 1.0;
 
     CGContextBeginPath(context);
     
@@ -209,19 +224,9 @@ var SelectionColor                              = nil,
     
     CGContextClosePath(context);
     
-    CGContextSetFillColor(context, [CPColor colorWithWhite:0.1 alpha:0.7]);
+    CGContextSetShadowWithColor(context, CGSizeMake(0.0, 1.0), 1.1, _shadowColor);
+    CGContextSetFillColor(context, _color);
     CGContextFillPath(context);
-
-    CGContextSetStrokeColor(context, [CPColor colorWithWhite:0.1 alpha:0.1]);
-
-    // Top dark inset
-    CGContextBeginPath(context);
-
-    CGContextMoveToPoint(context, CGRectGetMinX(bounds), CGRectGetMinY(bounds) + 0.5);
-    CGContextAddLineToPoint(context, CGRectGetMaxX(bounds), CGRectGetMinY(bounds) + 0.5);
-
-    CGContextClosePath(context);
-    CGContextStrokePath(context);
 }
 
 @end

@@ -143,10 +143,20 @@ var SharedMenuManager = nil;
             
             _lastMouseOverMenuView = mouseOverMenuView;
         }
-        
-        [self sendEvent:[CPEvent mouseEventWithType:type location:menuLocation modifierFlags:[anEvent modifierFlags] 
-            timestamp:[anEvent timestamp] windowNumber:[self windowNumber] context:nil 
-            eventNumber:0 clickCount:[anEvent clickCount] pressure:[anEvent pressure]]];
+
+        var menuContainerWindow = activeMenuContainer;
+
+        if (![menuContainerWindow isKindOfClass:[CPWindow class]])
+            menuContainerWindow = [menuContainerWindow window];
+
+        [menuContainerWindow
+            sendEvent:[CPEvent mouseEventWithType:type location:menuLocation modifierFlags:[anEvent modifierFlags]
+            timestamp:[anEvent timestamp]
+         windowNumber:menuContainerWindow
+              context:nil
+          eventNumber:0
+           clickCount:[anEvent clickCount]
+             pressure:[anEvent pressure]]];
     }
     else
     {
