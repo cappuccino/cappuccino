@@ -1685,6 +1685,17 @@ CPTexturedBackgroundWindowMask
     if (!(_styleMask & CPClosableWindowMask))
         return;
 
+    if ([self isFullBridge])
+    {
+        var event = [CPApp currentEvent];
+
+        if ([event type] === CPKeyDown && [event characters] === "w" && ([event modifierFlags] & CPPlatformActionKeyMask))
+        {
+            [[self platformWindow] _propagateCurrentDOMEvent:YES];
+            return;
+        }
+    }
+
     // Only send ONE windowShouldClose: message.
     if ([_delegate respondsToSelector:@selector(windowShouldClose:)])
     {
@@ -1745,9 +1756,6 @@ CPTexturedBackgroundWindowMask
     [[CPNotificationCenter defaultCenter] postNotificationName:CPWindowWillCloseNotification object:self];
 
     [self orderOut:nil];
-
-    if ([self isFullBridge])
-        [[self platformWindow] _propagateCurrentDOMEvent:YES];
 }
 
 // Managing Main Status
