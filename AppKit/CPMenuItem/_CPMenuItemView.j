@@ -92,8 +92,7 @@ var _CPMenuItemSelectionColor                   = nil,
 
 - (void)synchronizeWithMenuItem
 {
-    var oldView = nil,
-        menuItemView = [_menuItem view];
+    var menuItemView = [_menuItem view];
 
     if ([_menuItem isSeparatorItem])
     {
@@ -103,10 +102,13 @@ var _CPMenuItemSelectionColor                   = nil,
             _view = [_CPMenuItemSeparatorView view];
         }
     }
-    else if (menuItemView && _view !== menuItemView)
+    else if (menuItemView)
     {
-        [_view removeFromSuperview];
-        _view = menuItemView;
+        if (_view !== menuItemView)
+        {
+            [_view removeFromSuperview];
+            _view = menuItemView;
+        }
     }
     
     else if ([_menuItem menu] == [CPApp mainMenu])

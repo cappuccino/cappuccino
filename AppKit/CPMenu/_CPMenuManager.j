@@ -80,24 +80,23 @@ var SharedMenuManager = nil;
         // Stop all periodic events at this point.
         [CPEvent stopPeriodicEvents];
 
-        // Get the original menu.
-        var menu = [self trackingMenu],
-            highlightedItem = [menu highlightedItem];
+        // Get the highlighted item from the original menu.
+        var highlightedItem = [trackingMenu highlightedItem];
 
         // Hide all submenus.
-        [self showMenu:nil fromMenu:menu atPoint:nil];
+        [self showMenu:nil fromMenu:trackingMenu atPoint:nil];
 
-        var delegate = [menu delegate];
+        var delegate = [trackingMenu delegate];
 
         if ([delegate respondsToSelector:@selector(menuDidClose:)])
-            [delegate menuDidClose:menu];
+            [delegate menuDidClose:trackingMenu];
 
         if (_trackingCallback)
-            _trackingCallback([self trackingMenuContainer], menu);
+            _trackingCallback([self trackingMenuContainer], trackingMenu);
 
         [[CPNotificationCenter defaultCenter]
             postNotificationName:CPMenuDidEndTrackingNotification
-                          object:menu];
+                          object:trackingMenu];
 
         CPApp._activeMenu = nil;
 
@@ -133,7 +132,7 @@ var SharedMenuManager = nil;
     if (mouseOverMenuView)
     {
         if (!_lastMouseOverMenuView)
-            [menu _highlightItemAtIndex:CPNotFound];
+            [activeMenu _highlightItemAtIndex:CPNotFound];
         
         if (_lastMouseOverMenuView != mouseOverMenuView)
         {
@@ -184,7 +183,7 @@ var SharedMenuManager = nil;
             }
         }
         else if (type === CPLeftMouseUp && ([anEvent timestamp] - _startTime > STICKY_TIME_INTERVAL))
-            [[self trackingMenu] cancelTracking];
+            [trackingMenu cancelTracking];
     }
 
     // If the item has a submenu, show it.
