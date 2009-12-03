@@ -1,9 +1,9 @@
-var LEFT_MARGIN                 = 5.0,
-    RIGHT_MARGIN                = 5.0,
+var HORIZONTAL_MARGIN           = 8.0,
     SUBMENU_INDICATOR_MARGIN    = 5.0,
     VERTICAL_MARGIN             = 4.0;
 
-var SUBMENU_INDICATOR_COLOR                     = nil,
+var SelectionColor                              = nil,
+    SUBMENU_INDICATOR_COLOR                     = nil,
     _CPMenuItemSelectionColor                   = nil,
     _CPMenuItemTextShadowColor                  = nil,
     
@@ -26,15 +26,17 @@ var SUBMENU_INDICATOR_COLOR                     = nil,
 
 + (void)initialize
 {
-    if (self !== [_CPMenuItemStandardView class])
+    if (self !== [_CPMenuItemMenuBarView class])
         return;
+
+    var bundle = [CPBundle bundleForClass:self];
+
+    SelectionColor = [CPColor colorWithPatternImage:[[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"_CPMenuBarWindow/_CPMenuBarWindowBackgroundSelected.png"] size:CGSizeMake(1.0, 28.0)]];
 
     SUBMENU_INDICATOR_COLOR = [CPColor grayColor];
 
     _CPMenuItemSelectionColor =  [CPColor colorWithCalibratedRed:95.0 / 255.0 green:131.0 / 255.0 blue:185.0 / 255.0 alpha:1.0];
-    _CPMenuItemTextShadowColor = [CPColor colorWithCalibratedRed:26.0 / 255.0 green: 73.0 / 255.0 blue:109.0 / 255.0 alpha:1.0]
-    
-    var bundle = [CPBundle bundleForClass:self];
+    _CPMenuItemTextShadowColor = [CPColor colorWithCalibratedRed:26.0 / 255.0 green: 73.0 / 255.0 blue:109.0 / 255.0 alpha:1.0];
     
     _CPMenuItemDefaultStateImages[CPOffState]               = nil;
     _CPMenuItemDefaultStateHighlightedImages[CPOffState]    = nil;
@@ -57,7 +59,7 @@ var SUBMENU_INDICATOR_COLOR                     = nil,
 
     if (self)
     {
-        _imageAndTextView = [[_CPImageAndTextView alloc] initWithFrame:CGRectMake(LEFT_MARGIN, 0.0, 0.0, 0.0)];
+        _imageAndTextView = [[_CPImageAndTextView alloc] initWithFrame:CGRectMake(HORIZONTAL_MARGIN, 0.0, 0.0, 0.0)];
 
         [_imageAndTextView setImagePosition:CPImageLeft];
         [_imageAndTextView setTextShadowOffset:CGSizeMake(0.0, 1.0)];
@@ -95,7 +97,7 @@ var SUBMENU_INDICATOR_COLOR                     = nil,
 
 - (void)update
 {
-    var x = LEFT_MARGIN,
+    var x = HORIZONTAL_MARGIN,
         height = 0.0;
 
     [_imageAndTextView setFont:[_menuItem font] || _font];
@@ -123,7 +125,7 @@ var SUBMENU_INDICATOR_COLOR                     = nil,
 
         submenuViewFrame.origin.x = x + SUBMENU_INDICATOR_MARGIN;
 
-        x += CGRectGetWidth(submenuViewFrame);
+        x = CGRectGetMaxX(submenuViewFrame);
         height = MAX(height, CGRectGetHeight(submenuViewFrame));
     }
     else
@@ -140,7 +142,7 @@ var SUBMENU_INDICATOR_COLOR                     = nil,
         [_submenuIndicatorView setFrame:submenuViewFrame];
     }
 
-    _minSize = CGSizeMake(x + RIGHT_MARGIN, height);
+    _minSize = CGSizeMake(x + HORIZONTAL_MARGIN, height);
     
     [self setAutoresizesSubviews:NO];
     [self setFrameSize:_minSize];
@@ -155,7 +157,7 @@ var SUBMENU_INDICATOR_COLOR                     = nil,
 
     if (shouldHighlight)
     {
-        [self setBackgroundColor:_CPMenuItemSelectionColor];
+        [self setBackgroundColor:SelectionColor];
 
         [_imageAndTextView setTextColor:[CPColor whiteColor]];
         [_imageAndTextView setTextShadowColor:_CPMenuItemTextShadowColor];

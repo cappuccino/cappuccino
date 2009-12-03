@@ -119,7 +119,7 @@ var _CPMenuBarWindowBackgroundColor = nil,
     if (!aColor)
     {
         if (!_CPMenuBarWindowBackgroundColor)
-            _CPMenuBarWindowBackgroundColor = [CPColor colorWithPatternImage:[[CPImage alloc] initWithContentsOfFile:[[CPBundle bundleForClass:[_CPMenuBarWindow class]] pathForResource:@"_CPMenuBarWindow/_CPMenuBarWindowBackground.png"] size:CGSizeMake(1.0, 18.0)]];
+            _CPMenuBarWindowBackgroundColor = [CPColor colorWithPatternImage:[[CPImage alloc] initWithContentsOfFile:[[CPBundle bundleForClass:[_CPMenuBarWindow class]] pathForResource:@"_CPMenuBarWindow/_CPMenuBarWindowBackground.png"] size:CGSizeMake(1.0, 28.0)]];
             
         [[self contentView] setBackgroundColor:_CPMenuBarWindowBackgroundColor];
     }
@@ -326,7 +326,10 @@ var _CPMenuBarWindowBackgroundColor = nil,
         beginTracking:anEvent
         menuContainer:self
        constraintRect:constraintRect
-             callback:nil];
+             callback:function(aMenuContainer, aMenu)
+             {
+                [aMenu _highlightItemAtIndex:CPNotFound];
+             }];
 }
 
 - (CPFont)font
@@ -366,13 +369,13 @@ var _CPMenuBarWindowBackgroundColor = nil,
         {
             [menuItemView setFrame:CGRectMake(x, 0.0, CGRectGetWidth(frame), MENUBAR_HEIGHT)];
 
-            x += CGRectGetWidth([menuItemView frame]) + MENUBAR_MARGIN;
+            x += CGRectGetWidth([menuItemView frame]);
         }
         else
         {
             [menuItemView setFrame:CGRectMake(x - CGRectGetWidth(frame), 0.0, CGRectGetWidth(frame), MENUBAR_HEIGHT)];
      
-            x = CGRectGetMinX([menuItemView frame]) - MENUBAR_MARGIN;
+            x = CGRectGetMinX([menuItemView frame]);
         }
     }
     
