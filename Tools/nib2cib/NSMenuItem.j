@@ -64,7 +64,7 @@
 //      _mnemonicLocation = [aCoder decodeObjectForKey:"NSMnemonicLoc"];
         
 //      _isAlternate = [aCoder decodeBoolForKey:"NSIsAlternate"];
-//      _indentationLevel = [aCoder decodeBoolForKey:"NSIndent"];
+        _indentationLevel = [aCoder decodeIntForKey:"NSIndent"];
         
 //      _toolTip;
 

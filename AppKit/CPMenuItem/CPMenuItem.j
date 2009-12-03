@@ -109,7 +109,9 @@
         
         _keyEquivalent = aKeyEquivalent || @"";
         _keyEquivalentModifierMask = CPPlatformActionKeyMask;
-        
+
+        _indentationLevel = 0;
+
         _mnemonicLocation = CPNotFound;
     }
     
@@ -675,7 +677,7 @@ CPControlKeyMask
 - (void)setIndentationLevel:(unsigned)aLevel
 {
     if (aLevel < 0)
-        [CPException raise:CPInvalidArgumentException reason:"setIndentationLevel: argument must be greater than 0."];
+        [CPException raise:CPInvalidArgumentException reason:"setIndentationLevel: argument must be greater than or equal to 0."];
         
     _indentationLevel = MIN(15, aLevel);
 }
@@ -802,6 +804,8 @@ var CPMenuItemIsSeparatorKey                = @"CPMenuItemIsSeparatorKey",
     CPMenuItemKeyEquivalentKey              = @"CPMenuItemKeyEquivalentKey",
     CPMenuItemKeyEquivalentModifierMaskKey  = @"CPMenuItemKeyEquivalentModifierMaskKey",
 
+    CPMenuItemIndentationLevelKey           = @"CPMenuItemIndentationLevelKey",
+
     CPMenuItemRepresentedObjectKey          = @"CPMenuItemRepresentedObjectKey",
     CPMenuItemViewKey                       = @"CPMenuItemViewKey";
 
@@ -851,7 +855,9 @@ var CPMenuItemIsSeparatorKey                = @"CPMenuItemIsSeparatorKey",
 //    int             _mnemonicLocation;
 
 //    BOOL            _isAlternate;
-//    int             _indentationLevel;
+
+        // Default is 0.
+        [self setIndentationLevel:[aCoder decodeIntForKey:CPMenuItemIndentationLevelKey] || 0];
 
 //    CPString        _toolTip;
 
@@ -893,6 +899,9 @@ var CPMenuItemIsSeparatorKey                = @"CPMenuItemIsSeparatorKey",
 
     if (_keyEquivalentModifierMask)
         [aCoder encodeObject:_keyEquivalentModifierMask forKey:CPMenuItemKeyEquivalentModifierMaskKey];
+
+    if (_indentationLevel > 0)
+        [aCoder encodeInt:_indentationLevel forKey:CPMenuItemIndentationLevelKey];
 
     ENCODE_IFNOT(CPMenuItemRepresentedObjectKey, _representedObject, nil);
     ENCODE_IFNOT(CPMenuItemViewKey, _view, nil);
