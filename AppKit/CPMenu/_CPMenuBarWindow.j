@@ -41,7 +41,12 @@ var _CPMenuBarWindowBackgroundColor = nil,
         
     var bundle = [CPBundle bundleForClass:self];
     
-    _CPMenuBarWindowFont = [CPFont boldSystemFontOfSize:13.0];
+    _CPMenuBarWindowFont = [CPFont boldSystemFontOfSize:12.0];
+}
+
++ (CPFont)font
+{
+    return _CPMenuBarWindowFont;
 }
 
 - (id)init
@@ -71,7 +76,7 @@ var _CPMenuBarWindowBackgroundColor = nil,
         [contentView addSubview:_iconImageView];
         
         _titleField = [[CPTextField alloc] initWithFrame:CGRectMakeZero()];
-        
+
         [_titleField setFont:[CPFont boldSystemFontOfSize:13.0]];
         [_titleField setAlignment:CPCenterTextAlignment];
         [_titleField setTextShadowOffset:CGSizeMake(0, 1)];
@@ -262,7 +267,6 @@ var _CPMenuBarWindowBackgroundColor = nil,
             
         _menuItemViews.push(menuItemView);
 
-        [menuItemView setFont:_CPMenuBarWindowFont];
         [menuItemView setTextColor:_textColor];
         [menuItemView setHidden:[item isHidden]];
         
@@ -293,7 +297,6 @@ var _CPMenuBarWindowBackgroundColor = nil,
 
     [_menuItemViews insertObject:menuItemView atIndex:index];
 
-    [menuItemView setFont:_CPMenuBarWindowFont];
     [menuItemView setTextColor:_textColor];
     [menuItemView setHidden:[menuItem isHidden]];
 
@@ -328,6 +331,7 @@ var _CPMenuBarWindowBackgroundColor = nil,
        constraintRect:constraintRect
              callback:function(aMenuContainer, aMenu)
              {
+                [aMenu _performActionOfHighlightedItemChain];
                 [aMenu _highlightItemAtIndex:CPNotFound];
              }];
 }

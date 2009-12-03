@@ -274,8 +274,6 @@ var SharedMenuManager = nil;
         if ([menuContainer menu] === baseMenu)
             break;
 
-        [[menuContainer menu] _highlightItemAtIndex:CPNotFound];
-
         [menuContainer orderOut:self];
         [menuContainer setMenu:nil];
 

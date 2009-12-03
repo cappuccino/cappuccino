@@ -639,6 +639,17 @@ var _CPMenuBarVisible               = NO,
     return _minimumWidth;
 }
 
+- (void)_performActionOfHighlightedItemChain
+{
+    var highlightedItem = [self highlightedItem];
+
+    while ([highlightedItem submenu] && [highlightedItem action] === @selector(submenuAction:))
+        highlightedItem = [[highlightedItem submenu] highlightedItem];
+
+    if (highlightedItem)
+        [CPApp sendAction:[highlightedItem action] to:[highlightedItem target] from:highlightedItem];
+}
+
 //
 + (CGRect)_constraintRectForView:(CPView)aView
 {
@@ -712,13 +723,7 @@ var aFont = nil;
         if (aCallback)
             aCallback(aMenu);
 
-        var highlightedItem = [aMenu highlightedItem];
-
-        while ([highlightedItem submenu] && [highlightedItem action] === @selector(submenuAction:))
-            highlightedItem = [[highlightedItem submenu] highlightedItem];
-
-        if (highlightedItem)
-            [CPApp sendAction:[highlightedItem action] to:[highlightedItem target] from:highlightedItem];
+        [aMenu _performActionOfHighlightedItemChain];
     }
 }
 

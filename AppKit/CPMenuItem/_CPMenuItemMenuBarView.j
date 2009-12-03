@@ -100,7 +100,7 @@ var SelectionColor                              = nil,
     var x = HORIZONTAL_MARGIN,
         height = 0.0;
 
-    [_imageAndTextView setFont:[_menuItem font] || _font];
+    [_imageAndTextView setFont:[_menuItem font] || [_CPMenuBarWindow font]];
     [_imageAndTextView setVerticalAlignment:CPCenterVerticalTextAlignment];
     [_imageAndTextView setImage:[_menuItem image]];
     [_imageAndTextView setText:[_menuItem title]];
