@@ -24,9 +24,10 @@
 @import <Foundation/CPObject.j>
 @import <Foundation/CPString.j>
 
-@import <AppKit/CPImage.j>
-@import <AppKit/CPMenu.j>
-@import <AppKit/CPView.j>
+@import "CPImage.j"
+@import "CPMenu.j"
+@import "CPView.j"
+@import "_CPMenuItemView.j"
 
 /*! 
     @ingroup appkit
@@ -108,7 +109,9 @@
         
         _keyEquivalent = aKeyEquivalent || @"";
         _keyEquivalentModifierMask = CPPlatformActionKeyMask;
-        
+
+        _indentationLevel = 0;
+
         _mnemonicLocation = CPNotFound;
     }
     
@@ -448,20 +451,32 @@ CPOffState
 */
 - (void)setSubmenu:(CPMenu)aMenu
 {
-    var supermenu = [_submenu supermenu];
-    
-    if (supermenu == self)
+    if (_submenu === aMenu)
         return;
-    
+
+    var supermenu = [_submenu supermenu];
+
     if (supermenu)
-        return alert("bad");
-    
-    [_submenu setSupermenu:_menu];
-    
+        [CPException raise:CPInvalidArgumentException
+		   reason: @"Can't add submenu \"" + [aMenu title] + "\" to item \"" + [self title] + "\", because it is already submenu of \"" + [[aMenu supermenu] title] + "\""];
+
     _submenu = aMenu;
-    
+
+    if (_submenu)
+    {
+        [_submenu setSupermenu:_menu];
+
+        [self setTarget:_menu];
+        [self setAction:@selector(submenuAction:)];
+    }
+    else
+    {
+        [self setTarget:nil];
+        [self setAction:NULL];
+    }
+
     [_menuItemView setDirty];
-    
+
     [_menu itemChanged:self];
 }
 
@@ -570,6 +585,25 @@ CPControlKeyMask
     return _keyEquivalentModifierMask;
 }
 
+- (CPString)keyEquivalentStringRepresentation
+{
+    if (![_keyEquivalent length])
+        return @"";
+
+    var string = _keyEquivalent.toUpperCase();
+
+    if (_keyEquivalentModifierMask & CPCommandKeyMask)
+        string = "⌘" + string;
+
+    if (_keyEquivalentModifierMask & CPShiftKeyMask)
+        string = "⇧" + string;
+
+    if (_keyEquivalentModifierMask & CPControlKeyMask)
+        string = "^" + string;
+
+    return string;
+}
+
 // Managing Mnemonics
 /*!
     Sets the index of the mnemonic character in the title. The character
@@ -643,7 +677,7 @@ CPControlKeyMask
 - (void)setIndentationLevel:(unsigned)aLevel
 {
     if (aLevel < 0)
-        [CPException raise:CPInvalidArgumentException reason:"setIndentationLevel: argument must be greater than 0."];
+        [CPException raise:CPInvalidArgumentException reason:"setIndentationLevel: argument must be greater than or equal to 0."];
         
     _indentationLevel = MIN(15, aLevel);
 }
@@ -742,6 +776,11 @@ CPControlKeyMask
     return _menuItemView;
 }
 
+- (BOOL)_isSelectable
+{
+    return ![self submenu] || [self action] !== @selector(submenuAction:) || [self target] !== [self menu];
+}
+
 @end
 
 var CPMenuItemIsSeparatorKey                = @"CPMenuItemIsSeparatorKey",
@@ -764,6 +803,8 @@ var CPMenuItemIsSeparatorKey                = @"CPMenuItemIsSeparatorKey",
 
     CPMenuItemKeyEquivalentKey              = @"CPMenuItemKeyEquivalentKey",
     CPMenuItemKeyEquivalentModifierMaskKey  = @"CPMenuItemKeyEquivalentModifierMaskKey",
+
+    CPMenuItemIndentationLevelKey           = @"CPMenuItemIndentationLevelKey",
 
     CPMenuItemRepresentedObjectKey          = @"CPMenuItemRepresentedObjectKey",
     CPMenuItemViewKey                       = @"CPMenuItemViewKey";
@@ -804,8 +845,9 @@ var CPMenuItemIsSeparatorKey                = @"CPMenuItemIsSeparatorKey",
 //    CPImage         _offStateImage;
 //    CPImage         _mixedStateImage;
 
-        _submenu = DEFAULT_VALUE(CPMenuItemSubmenuKey, nil);
+        // This order matters because setSubmenu: needs _menu to be around.
         _menu = DEFAULT_VALUE(CPMenuItemMenuKey, nil);
+        [self setSubmenu:DEFAULT_VALUE(CPMenuItemSubmenuKey, nil)];
 
         _keyEquivalent = [aCoder decodeObjectForKey:CPMenuItemKeyEquivalentKey] || @"";
         _keyEquivalentModifierMask = [aCoder decodeObjectForKey:CPMenuItemKeyEquivalentModifierMaskKey] || 0;
@@ -813,7 +855,9 @@ var CPMenuItemIsSeparatorKey                = @"CPMenuItemIsSeparatorKey",
 //    int             _mnemonicLocation;
 
 //    BOOL            _isAlternate;
-//    int             _indentationLevel;
+
+        // Default is 0.
+        [self setIndentationLevel:[aCoder decodeIntForKey:CPMenuItemIndentationLevelKey] || 0];
 
 //    CPString        _toolTip;
 
@@ -856,423 +900,11 @@ var CPMenuItemIsSeparatorKey                = @"CPMenuItemIsSeparatorKey",
     if (_keyEquivalentModifierMask)
         [aCoder encodeObject:_keyEquivalentModifierMask forKey:CPMenuItemKeyEquivalentModifierMaskKey];
 
+    if (_indentationLevel > 0)
+        [aCoder encodeInt:_indentationLevel forKey:CPMenuItemIndentationLevelKey];
+
     ENCODE_IFNOT(CPMenuItemRepresentedObjectKey, _representedObject, nil);
     ENCODE_IFNOT(CPMenuItemViewKey, _view, nil);
-}
-
-@end
-
-var LEFT_MARGIN                 = 3.0,
-    RIGHT_MARGIN                = 16.0,
-    STATE_COLUMN_WIDTH          = 14.0,
-    INDENTATION_WIDTH           = 17.0,
-    VERTICAL_MARGIN             = 4.0;
-    
-var _CPMenuItemSelectionColor                   = nil,
-    _CPMenuItemTextShadowColor                  = nil,
-    
-    _CPMenuItemDefaultStateImages               = [],
-    _CPMenuItemDefaultStateHighlightedImages    = [];
-
-/*
-    @ignore
-*/
-@implementation _CPMenuItemView : CPView
-{
-    CPMenuItem              _menuItem;
-
-    CPFont                  _font;
-    CPColor                 _textColor;
-    CPColor                 _textShadowColor;
-    CPColor                 _activateColor;
-    CPColor                 _activateShadowColor;
-
-    CGSize                  _minSize;
-    BOOL                    _isDirty;
-    BOOL                    _showsStateColumn;
-    BOOL                    _belongsToMenuBar;
-
-    CPImageView             _stateView;
-    _CPImageAndTextView     _imageAndTextView;
-    CPView                  _submenuView;
-}
-
-+ (void)initialize
-{
-    if (self != [_CPMenuItemView class])
-        return;
-    
-    _CPMenuItemSelectionColor =  [CPColor colorWithCalibratedRed:95.0 / 255.0 green:131.0 / 255.0 blue:185.0 / 255.0 alpha:1.0];
-    _CPMenuItemTextShadowColor = [CPColor colorWithCalibratedRed:26.0 / 255.0 green: 73.0 / 255.0 blue:109.0 / 255.0 alpha:1.0]
-    
-    var bundle = [CPBundle bundleForClass:self];
-    
-    _CPMenuItemDefaultStateImages[CPOffState]               = nil;
-    _CPMenuItemDefaultStateHighlightedImages[CPOffState]    = nil;
-
-    _CPMenuItemDefaultStateImages[CPOnState]               = [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"CPMenuItem/CPMenuItemOnState.png"] size:CGSizeMake(14.0, 14.0)];
-    _CPMenuItemDefaultStateHighlightedImages[CPOnState]    = [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"CPMenuItem/CPMenuItemOnStateHighlighted.png"] size:CGSizeMake(14.0, 14.0)];
-
-    _CPMenuItemDefaultStateImages[CPMixedState]             = nil;
-    _CPMenuItemDefaultStateHighlightedImages[CPMixedState]  = nil;
-}
-
-+ (float)leftMargin
-{
-    return LEFT_MARGIN + STATE_COLUMN_WIDTH;
-}
-
-- (id)initWithFrame:(CGRect)aFrame forMenuItem:(CPMenuItem)aMenuItem
-{
-    self = [super initWithFrame:aFrame];
-    
-    if (self)
-    {
-        _menuItem = aMenuItem;
-        _showsStateColumn = YES;
-        _isDirty = YES;
-        
-        [self setAutoresizingMask:CPViewWidthSizable];
-        
-        [self synchronizeWithMenuItem];
-    }
-    
-    return self;
-}
-
-- (CGSize)minSize
-{
-    return _minSize;
-}
-
-- (void)setDirty
-{
-    _isDirty = YES;
-}
-
-- (void)synchronizeWithMenuItem
-{
-    if (!_isDirty)
-        return;
-        
-    _isDirty = NO;
-        
-    var view = [_menuItem view];
-    
-    if ([_menuItem isSeparatorItem])
-    {
-        var line = [[CPView alloc] initWithFrame:CGRectMake(0.0, 5.0, 10.0, 1.0)];
-        
-        view = [[CPView alloc] initWithFrame:CGRectMake(0.0, 0.0, 0.0, 10.0)];
-        
-        [view setAutoresizingMask:CPViewWidthSizable];
-        [line setAutoresizingMask:CPViewWidthSizable];
-        
-        [line setBackgroundColor:[CPColor lightGrayColor]];
-        
-        [view addSubview:line];
-    }
-    
-    if (view)
-    {
-        [_imageAndTextView removeFromSuperview];
-        _imageAndTextView = nil;
-        
-        [_stateView removeFromSuperview];
-        _stateView = nil;
-        
-        [_submenuView removeFromSuperview];
-        _submenuView = nil;
-        
-        _minSize = [view frame].size;
-        
-        [self setFrameSize:_minSize];
-        
-        [self addSubview:view];
-        
-        return;
-    }
-    
-    // State Column
-    var x = _belongsToMenuBar ? 0.0 : (LEFT_MARGIN + [_menuItem indentationLevel] * INDENTATION_WIDTH);
-    
-    if (_showsStateColumn)
-    {
-        if (!_stateView)
-        {
-            _stateView = [[CPImageView alloc] initWithFrame:CGRectMake(x, (CGRectGetHeight([self frame]) - STATE_COLUMN_WIDTH) / 2.0, STATE_COLUMN_WIDTH, STATE_COLUMN_WIDTH)];
-            
-            [_stateView setAutoresizingMask:CPViewMinYMargin | CPViewMaxYMargin];
-            
-            [self addSubview:_stateView];
-        }
-        
-        var state = [_menuItem state];
-            
-        switch (state)
-        {
-            case CPOffState:
-            case CPOnState:
-            case CPMixedState:  [_stateView setImage:_CPMenuItemDefaultStateImages[state]];
-                                break;
-                                
-            default:            [_stateView setImage:nil];
-        }
-        
-        x += STATE_COLUMN_WIDTH;
-    }
-    else
-    {
-        [_stateView removeFromSuperview];
-        
-        _stateView = nil;
-    }
-    
-    // Image and Title
-    
-    if (!_imageAndTextView)
-    {
-        _imageAndTextView = [[_CPImageAndTextView alloc] initWithFrame:CGRectMake(0.0, 0.0, 0.0, 0.0)];
-        
-        [_imageAndTextView setImagePosition:CPImageLeft];
-        [_imageAndTextView setTextShadowOffset:CGSizeMake(0.0, 1.0)];
-        
-        [self addSubview:_imageAndTextView];
-    }
-    
-    var font = [_menuItem font];
-    
-    if (!font)
-        font = _font;
-
-    [_imageAndTextView setFont:font];
-    [_imageAndTextView setVerticalAlignment:CPCenterVerticalTextAlignment];
-    [_imageAndTextView setImage:[_menuItem image]];
-    [_imageAndTextView setText:[_menuItem title]];
-    [_imageAndTextView setTextColor:[self textColor]];
-    [_imageAndTextView setTextShadowColor:[self textShadowColor]];
-    [_imageAndTextView setTextShadowOffset:CGSizeMake(0, 1)];
-    [_imageAndTextView setFrameOrigin:CGPointMake(x, VERTICAL_MARGIN)];
-    [_imageAndTextView sizeToFit];
-    
-    var frame = [_imageAndTextView frame];
-    
-//    frame.size.height += 1.0;
-//    [_imageAndTextView setFrame:frame];
-    
-    frame.size.height += 2 * VERTICAL_MARGIN;
-    
-    x += CGRectGetWidth(frame);
-    
-    // Submenu Arrow
-    if ([_menuItem hasSubmenu])
-    {
-        x += 3.0;
-        
-        if (!_submenuView)
-        {
-            _submenuView = [[_CPMenuItemArrowView alloc] initWithFrame:CGRectMake(0.0, 0.0, 10.0, 10.0)];
-            
-            [self addSubview:_submenuView];
-        }
-        
-        [_submenuView setHidden:NO];
-        [_submenuView setColor:_belongsToMenuBar ? [self textColor] : nil];
-        [_submenuView setFrameOrigin:CGPointMake(x, (CGRectGetHeight(frame) - 10.0) / 2.0)];
-        
-        x += 10.0;
-    }
-    else
-        [_submenuView setHidden:YES];
-
-    _minSize = CGSizeMake(x + (_belongsToMenuBar ? 0.0 : RIGHT_MARGIN) + 3.0, CGRectGetHeight(frame));
- 
-    [self setFrameSize:_minSize];
-}
-
-- (CGFloat)overlapOffsetWidth
-{
-    return LEFT_MARGIN + ([[_menuItem menu] showsStateColumn] ? STATE_COLUMN_WIDTH : 0.0);
-}
-
-- (void)setShowsStateColumn:(BOOL)shouldShowStateColumn
-{
-    _showsStateColumn = shouldShowStateColumn;
-}
-
-- (void)setBelongsToMenuBar:(BOOL)shouldBelongToMenuBar
-{
-    _belongsToMenuBar = shouldBelongToMenuBar;
-}
-
-- (void)highlight:(BOOL)shouldHighlight
-{
-    // ASSERT(![_menuItem view]);
-    
-    if (_belongsToMenuBar)
-        [_imageAndTextView setImage:shouldHighlight ? [_menuItem alternateImage] : [_menuItem image]];
-    
-    else if ([_menuItem isEnabled])
-    {
-        if (shouldHighlight)
-        {
-            [self setBackgroundColor:_CPMenuItemSelectionColor];
-    
-            [_imageAndTextView setTextColor:[CPColor whiteColor]];
-            [_imageAndTextView setTextShadowColor:_CPMenuItemTextShadowColor];
-        }
-        else
-        {
-            [self setBackgroundColor:nil];
-            
-            [_imageAndTextView setTextColor:[self textColor]];
-            [_imageAndTextView setTextShadowColor:[self textShadowColor]];
-        }
-        
-        var state = [_menuItem state];
-        
-        switch (state)
-        {
-            case CPOffState:
-            case CPOnState:
-            case CPMixedState:  [_stateView setImage:shouldHighlight ? _CPMenuItemDefaultStateHighlightedImages[state] : _CPMenuItemDefaultStateImages[state]];
-                            break;
-                            
-            default:            [_stateView setImage:nil];
-        }
-    }
-}
-
-- (void)activate:(BOOL)shouldActivate
-{
-    [_imageAndTextView setImage:[_menuItem image]];
-    
-    if (shouldActivate)
-    {
-        [_imageAndTextView setTextColor:[self activateColor] || [CPColor whiteColor]];
-        [_imageAndTextView setTextShadowColor:[self activateShadowColor] || [CPColor blackColor]];
-        [_submenuView setColor:[self activateColor] || [CPColor whiteColor]];
-    }
-    else
-    {
-        [_imageAndTextView setTextColor:[self textColor]];
-        [_imageAndTextView setTextShadowColor:[self textShadowColor]];
-        [_submenuView setColor:[self textColor]];
-    }
-}
-
-- (BOOL)eventOnSubmenu:(CPEvent)anEvent
-{
-    if (![_menuItem hasSubmenu])
-        return NO;
-        
-    return CGRectContainsPoint([_submenuView frame], [self convertPoint:[anEvent locationInWindow] fromView:nil]);
-}
-
-- (BOOL)isHidden
-{
-    return [_menuItem isHidden];
-}
-
-- (CPMenuItem)menuItem
-{
-    return _menuItem;
-}
-
-- (void)setFont:(CPFont)aFont
-{
-    if (_font == aFont)
-        return;
-    
-    _font = aFont;
-    
-    [self setDirty];
-}
-
-- (void)setTextColor:(CPColor)aColor
-{
-    if (_textColor == aColor)
-        return;
-    
-    _textColor = aColor;
-
-    [_imageAndTextView setTextColor:[self textColor]];
-    [_submenuView setColor:[self textColor]];
-}
-
-- (CPColor)textColor
-{
-    return [_menuItem isEnabled] ? (_textColor ? _textColor : [CPColor colorWithCalibratedRed:70.0 / 255.0 green:69.0 / 255.0 blue:69.0 / 255.0 alpha:1.0]) : [CPColor lightGrayColor];
-}
-
-- (void)setTextShadowColor:(CPColor)aColor
-{
-    if (_textShadowColor == aColor)
-        return;
-    
-    _textShadowColor = aColor;
-
-    [_imageAndTextView setTextShadowColor:[self textShadowColor]];
-    //[_submenuView setColor:[self textColor]];
-}
-
-- (CPColor)textShadowColor
-{
-    return [_menuItem isEnabled] ? (_textShadowColor ? _textShadowColor : [CPColor colorWithWhite:1.0 alpha:0.8]) : [CPColor colorWithWhite:0.8 alpha:0.8];
-}
-
-- (void)setActivateColor:(CPColor)aColor
-{
-    _activateColor = aColor;
-}
-
-- (CPColor)activateColor
-{
-    return _activateColor;
-}
-
-- (void)setActivateShadowColor:(CPColor)aColor
-{
-    _activateShadowColor = aColor;
-}
-
-- (CPColor)activateShadowColor
-{
-    return _activateShadowColor;
-}
-
-@end
-
-@implementation _CPMenuItemArrowView : CPView
-{
-    CPColor _color;
-}
-
-- (void)setColor:(CPColor)aColor
-{
-    if (_color == aColor)
-        return;
-
-    _color = aColor;
-    
-    [self setNeedsDisplay:YES];
-}
-
-- (void)drawRect:(CGRect)aRect
-{
-    var context = [[CPGraphicsContext currentContext] graphicsPort];
-    
-    CGContextBeginPath(context);
-    
-    CGContextMoveToPoint(context, 1.0, 4.0);
-    CGContextAddLineToPoint(context, 9.0, 4.0);
-    CGContextAddLineToPoint(context, 5.0, 8.0);
-    CGContextAddLineToPoint(context, 1.0, 4.0);
-    
-    CGContextClosePath(context);
-    
-    CGContextSetFillColor(context, _color);
-    CGContextFillPath(context);
 }
 
 @end

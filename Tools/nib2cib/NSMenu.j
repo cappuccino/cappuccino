@@ -53,8 +53,7 @@ NS_CPMenuNameMap =
         if (mappedName)
             _name = mappedName;
 
-        _showsStateColumn = YES;
-        //_showsStateColumn = ![aCoder containsValueForKey:@"NSMenuExcludeMarkColumn"] || ![aCoder decodeBoolForKey:@"NSMenuExcludeMarkColumn"];
+        _showsStateColumn = ![aCoder containsValueForKey:@"NSMenuExcludeMarkColumn"] || ![aCoder decodeBoolForKey:@"NSMenuExcludeMarkColumn"];
     }
     
     return self;

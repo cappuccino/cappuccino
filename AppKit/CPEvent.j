@@ -285,6 +285,17 @@ var _CPEventPeriodicEventPeriod         = 0,
     return _CGPointMakeCopy(_location);
 }
 
+- (CGPoint)globalLocation
+{
+    var theWindow = [self window],
+        location = [self locationInWindow];
+
+    if (theWindow)
+        return [theWindow convertBaseToGlobal:location];
+
+    return location;
+}
+
 /*!
     Returns event information as a bit mask
 */

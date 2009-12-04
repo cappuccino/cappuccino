@@ -333,6 +333,11 @@ var CPWindowSaveImage       = nil,
     CPWindowSavingImage = [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"CPProgressIndicator/CPProgressIndicatorSpinningStyleRegular.gif"] size:CGSizeMake(16.0, 16.0)]
 }
 
+- (id)init
+{
+    return [self initWithContentRect:_CGRectMakeZero() styleMask:CPTitledWindowMask];
+}
+
 /*!
     Initializes the window. The method also takes a style bit mask made up
     of any of the following values:
@@ -610,6 +615,8 @@ CPTexturedBackgroundWindowMask
 */
 - (void)setFrame:(CGRect)aFrame display:(BOOL)shouldDisplay animate:(BOOL)shouldAnimate
 {
+    aFrame = _CGRectMakeCopy(aFrame);
+
     var value = aFrame.origin.x,
         delta = value - FLOOR(value);
 
