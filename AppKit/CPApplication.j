@@ -1095,4 +1095,9 @@ var _CPAppBootstrapperActions = nil;
     [self performActions];
 }
 
++ (void)reset
+{
+	_CPAppBootstrapperActions = nil;
+}
+
 @end
