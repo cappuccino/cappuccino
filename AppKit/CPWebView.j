@@ -150,8 +150,10 @@ CPWebViewScrollNative                           = 2;
 	
 	
     _frameView = [[CPView alloc] initWithFrame:[self bounds]];
+    [_frameView setAutoresizingMask:CPViewWidthSizable|CPViewHeightSizable];
 
     _scrollView = [[CPScrollView alloc] initWithFrame:[self bounds]];
+    [_scrollView setAutohidesScrollers:YES];
     [_scrollView setAutoresizingMask:CPViewWidthSizable|CPViewHeightSizable];
     [_scrollView setDocumentView:_frameView];
 	
@@ -166,7 +168,6 @@ CPWebViewScrollNative                           = 2;
 - (void)setFrameSize:(CPSize)aSize
 {   
     [super setFrameSize:aSize];
-    
     [self _resizeWebFrame];
 }
 
@@ -180,7 +181,7 @@ CPWebViewScrollNative                           = 2;
         }
         else
         {
-            [_frameView setFrameSize:[_scrollView bounds].size];
+            [_frameView setFrameSize:[_scrollView contentSize]];
             
             // try to get the document size so we can correctly set the frame
             var win = null;
