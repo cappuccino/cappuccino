@@ -89,40 +89,35 @@ var CPSearchFieldSearchImage = nil,
 {
     self = [super initWithFrame:frame];
     if (self != nil)
-      {
-          _recentSearches = [CPArray array];
-          _maximumRecents = 10;
-          _sendsWholeSearchString = NO;
-          _sendsSearchStringImmediately = NO;
-           
-          [self setBezeled:YES];
-          [self setBezelStyle:CPTextFieldRoundedBezel];
-          [self setBordered:YES];
-          [self setEditable:YES];
-          [self setDelegate:self];
-          
-          _cancelButton = [[CPButton alloc] initWithFrame:CPMakeRect(frame.size.width - 27,(frame.size.height-22)/2,22,22)];
-          [self resetCancelButton];
-
-
-          [_cancelButton setHidden:YES];
-          [_cancelButton setAutoresizingMask:CPViewMinXMargin];
-          [self addSubview:_cancelButton];
-          
-          _searchButton = [[CPButton alloc] initWithFrame:CPMakeRect(5,(frame.size.height-25)/2,25,25)];
-          [_searchButton setBezelStyle:CPRegularSquareBezelStyle];
-          [_searchButton setAutoresizingMask:CPViewMaxXMargin]
-          [_searchButton setBordered:NO];
-          [_searchButton setImageScaling:CPScaleToFit];
+    {
+        _recentSearches = [CPArray array];
+        _maximumRecents = 10;
+        _sendsWholeSearchString = NO;
+        _sendsSearchStringImmediately = NO;
+        _recentsAutosaveName = nil;
+         
+        [self setBezeled:YES];
+        [self setBezelStyle:CPTextFieldRoundedBezel];
+        [self setBordered:YES];
+        [self setEditable:YES];
+        [self setDelegate:self];
+        
+        _cancelButton = [[CPButton alloc] initWithFrame:CPMakeRect(frame.size.width - 27,(frame.size.height-22)/2,22,22)];
+        [self resetCancelButton];
+        [_cancelButton setHidden:YES];
+        [_cancelButton setAutoresizingMask:CPViewMinXMargin];
+        [self addSubview:_cancelButton];
+        
+        _searchButton = [[CPButton alloc] initWithFrame:CPMakeRect(5,(frame.size.height-25)/2,25,25)];
+        [self resetSearchButton];
+        [self addSubview:_searchButton];
 
 #if PLATFORM(DOM)
     _cancelButton._DOMElement.style.cursor = "default";
     _searchButton._DOMElement.style.cursor = "default";
 #endif
           
-          [self setSearchMenuTemplate:[self _searchMenuTemplate]];
-          [self addSubview:_searchButton];       
-       }
+    }
     
     return self;
 }
@@ -133,11 +128,13 @@ var CPSearchFieldSearchImage = nil,
     
     [copy setCancelButton:[_cancelButton copy]];
     [copy setSearchButton:[_searchButton copy]];
-    [copy setrecentsAutosaveName:[_recentsAutosaveName copy]];
     [copy setSendsWholeSearchString:[_sendsWholeSearchString copy]];
     [copy setSendsSearchStringImmediately:[_sendsSearchStringImmediately copy]];
     [copy setMaximumRecents:_maximumRecents];
-    [copy setSearchMenutemplate:[_searchMenuTemplate copy]];
+    if (_recentsAutosaveName)
+        [copy setrecentsAutosaveName:[_recentsAutosaveName copy]];
+    if (_searchMenuTemplate)
+        [copy setSearchMenutemplate:[_searchMenuTemplate copy]];
     
     return copy;
 }
@@ -172,11 +169,11 @@ var CPSearchFieldSearchImage = nil,
         target,
         button = [self searchButton];
         
-    if (_searchMenuTemplate == nil)
+    if (_searchMenuTemplate === nil)
     {
         searchButtonImage = CPSearchFieldSearchImage;
-        action = [self action];
-        target = [self target];
+        action = @selector(_sendAction:);
+        target = self;
     }
     else
     {
@@ -185,7 +182,10 @@ var CPSearchFieldSearchImage = nil,
         target = self;
     }
     
+    [button setBordered:NO];
+    [button setImageScaling:CPScaleToFit];
     [button setImage:searchButtonImage];
+    [button setAutoresizingMask:CPViewMaxXMargin];
     [button setTarget:target];
     [button setAction:action];
 }
@@ -215,11 +215,11 @@ var CPSearchFieldSearchImage = nil,
 - (void)resetCancelButton
 {
     var button = [self cancelButton];
-    [button setBezelStyle:CPRegularSquareBezelStyle];
     [button setBordered:NO];
     [button setImageScaling:CPScaleToFit];
     [button setImage:CPSearchFieldCancelImage];
     [button setAlternateImage:CPSearchFieldCancelPressedImage];
+    [button setAutoresizingMask:CPViewMinXMargin];
     [button setTarget:self];
     [button setAction:@selector(_searchFieldCancel:)];
 }
@@ -255,7 +255,7 @@ var CPSearchFieldSearchImage = nil,
     @param rect The current bounding rectangle for the search button.
     Subclasses can override this method to return a new bounding rectangle for the search button. You might use this method to provide a custom layout for the search field control.
 */
-- (CPRect)searchButtonRectForBounds:(CPRect)rect // fix
+- (CPRect)searchButtonRectForBounds:(CPRect)rect
 {
     return [_searchButton frame];
 }
@@ -290,6 +290,7 @@ var CPSearchFieldSearchImage = nil,
     _searchMenuTemplate = menu;
     
     [self resetSearchButton];
+    [self _loadRecentSearchList];
     [self _updateSearchMenu];
 }
 
@@ -370,10 +371,10 @@ var CPSearchFieldSearchImage = nil,
 */
 - (void)setRecentSearches:(CPArray)searches
 {
-    var max = MIN([self maximumRecents],[searches count]);
-    var searches = [searches subarrayWithRange:CPMakeRange(0,max)];
-    _recentSearches = searches;
+    var max = MIN([self maximumRecents], [searches count]),
+        searches = [searches subarrayWithRange:CPMakeRange(0, max)];
     
+    _recentSearches = searches;    
     [self _autosaveRecentSearchList];
 }
 
@@ -392,12 +393,13 @@ var CPSearchFieldSearchImage = nil,
 */
 - (void)setRecentsAutosaveName:(CPString)name
 {
+    if (_recentsAutosaveName != nil)
+        [self _deregisterForAutosaveNotification];
+        
     _recentsAutosaveName = name;
     
-    if(name != nil)
+    if (_recentsAutosaveName != nil)
       [self _registerForAutosaveNotification];
-    else
-      [self _deregisterForAutosaveNotification];
 }
 
 // Private methods and subclassing
@@ -425,24 +427,34 @@ var CPSearchFieldSearchImage = nil,
 
 - (void)_updateCancelButtonVisibility
 {
-    [_cancelButton setHidden:([[self stringValue] length] == 0)];
+    [_cancelButton setHidden:([[self stringValue] length] === 0)];
 }
 
 - (void)controlTextDidChange:(CPNotification)aNotification
 {
-    if(!_sendsWholeSearchString)
+    if (![self sendsWholeSearchString])
     {
-        if(_sendsSearchStringImmediately)
+        if ([self sendsSearchStringImmediately])
             [self _sendPartialString];
         else
         {
             [_partialStringTimer invalidate];
             var timeInterval = [CPSearchField _keyboardDelayForPartialSearchString:[self stringValue]];
     
-            _partialStringTimer = [CPTimer scheduledTimerWithTimeInterval:timeInterval target:self selector:@selector(_sendPartialString) userInfo:nil repeats:NO];         
+            _partialStringTimer = [CPTimer scheduledTimerWithTimeInterval:timeInterval 
+                                                                   target:self 
+                                                                 selector:@selector(_sendPartialString) 
+                                                                 userInfo:nil 
+                                                                  repeats:NO];         
         }
     }
+    
     [self _updateCancelButtonVisibility];
+}
+
+- (void)_sendAction:(id)sender
+{
+    [self sendAction:[self action] to:[self target]];
 }
 
 - (void)sendAction:(SEL)anAction to:(id)anObject
@@ -451,69 +463,74 @@ var CPSearchFieldSearchImage = nil,
 
     [_partialStringTimer invalidate];
 
-    var current_value = [self objectValue];
-    if(current_value != nil && current_value != "" && ![_recentSearches containsObject:current_value])
-    {
-        [self _addStringToRecentSearches:current_value];
-        [self _updateSearchMenu];
-    }
-    
+    [self _addStringToRecentSearches:[self stringValue]];
     [self _updateCancelButtonVisibility];
 }
 
 - (void)_addStringToRecentSearches:(CPString)string
 {
-    var newSearches = [CPMutableArray arrayWithArray:_recentSearches];
-    [newSearches addObject:string];
-    [self setRecentSearches:newSearches];
+    if (string === nil || string === @"" || [_recentSearches containsObject:string])
+        return;
+        
+    var searches = [CPMutableArray arrayWithArray:_recentSearches];
+    [searches addObject:string];
+    [self setRecentSearches:searches];
+    [self _updateSearchMenu];
 }
 
 - (BOOL)trackMouse:(CPEvent)event
 {
-    var rect;
-    var point;
-    var location = [event locationInWindow];
+    var rect,
+        point,
+        location = [event locationInWindow];
     
     point = [self convertPoint:location fromView:nil];
     
     rect = [self searchButtonRectForBounds:[self frame]];
-    
     if (CPRectContainsPoint(rect,point))
-      {
-          return [[self searchButton] trackMouse:event];
-      }
+    {
+        return [[self searchButton] trackMouse:event];
+    }
     
     rect = [self cancelButtonRectForBounds:[self frame]];
     if (CPRectContainsPoint(rect,point))
-      {
-          return [[self cancelButton] trackMouse:event];
-      }
+    {
+        return [[self cancelButton] trackMouse:event];
+    }
     
     return [super trackMouse:event];
 }
 
-- (CPMenu)_searchMenuTemplate
+- (CPMenu)_defaultSearchMenuTemplate
 {
     var template, item;
     
     template = [[CPMenu alloc] init];
     
-    item = [[CPMenuItem alloc] initWithTitle:@"Recent searches" action:NULL keyEquivalent:@""];
+    item = [[CPMenuItem alloc] initWithTitle:@"Recent searches" 
+                                      action:NULL 
+                               keyEquivalent:@""];
     [item setTag:CPSearchFieldRecentsTitleMenuItemTag];
     [item setEnabled:NO];
     [template addItem:item];
     
-    item = [[CPMenuItem alloc] initWithTitle:@"Recent search item" action:@selector(_searchFieldSearch:) keyEquivalent:@""];
+    item = [[CPMenuItem alloc] initWithTitle:@"Recent search item" 
+                                      action:@selector(_searchFieldSearch:) 
+                               keyEquivalent:@""];
     [item setTag:CPSearchFieldRecentsMenuItemTag];
     [item setTarget:self];
     [template addItem:item];
     
-    item = [[CPMenuItem alloc] initWithTitle:@"Clear recent searches" action:@selector(_searchFieldClearRecents:) keyEquivalent:@""];
+    item = [[CPMenuItem alloc] initWithTitle:@"Clear recent searches" 
+                                      action:@selector(_searchFieldClearRecents:) 
+                               keyEquivalent:@""];
     [item setTag:CPSearchFieldClearRecentsMenuItemTag];
     [item setTarget:self];
     [template addItem:item];
     
-    item = [[CPMenuItem alloc] initWithTitle:@"No recent searches" action:NULL keyEquivalent:@""];
+    item = [[CPMenuItem alloc] initWithTitle:@"No recent searches" 
+                                      action:NULL 
+                               keyEquivalent:@""];
     [item setTag:CPSearchFieldNoRecentsMenuItemTag];
     [item setEnabled:NO];
     [template addItem:item];
@@ -523,41 +540,56 @@ var CPSearchFieldSearchImage = nil,
 
 - (void)_updateSearchMenu
 {
-    if(_searchMenuTemplate == nil)
+    if (_searchMenuTemplate === nil)
         return;
         
-    var i, menu = [[CPMenu alloc] init];
-    var countOfRecents = [_recentSearches count];
+    var i, menu = [[CPMenu alloc] init],
+        countOfRecents = [_recentSearches count],
+        numberOfItems = [_searchMenuTemplate numberOfItems];
     
-    for (i = 0; i < [_searchMenuTemplate numberOfItems]; i++)
+    for (i = 0; i < numberOfItems; i++)
     {
-        var item = [_searchMenuTemplate itemAtIndex:i];
-        var tag = [item tag];
+        var item = [_searchMenuTemplate itemAtIndex:i],
+            tag = [item tag];
         
-        if(tag == CPSearchFieldClearRecentsMenuItemTag && countOfRecents != 0)
+        if (!(tag === CPSearchFieldRecentsTitleMenuItemTag && countOfRecents === 0) &&
+            !(tag === CPSearchFieldClearRecentsMenuItemTag && countOfRecents === 0) &&
+            !(tag === CPSearchFieldNoRecentsMenuItemTag && countOfRecents != 0)    &&
+            !(tag === CPSearchFieldRecentsMenuItemTag))
         {
-            var separator = [CPMenuItem separatorItem];
-            [menu addItem:separator];
-        }
+            var itemAction, itemTarget;
+            switch (tag)
+            {
+                case CPSearchFieldRecentsTitleMenuItemTag : itemAction = NULL; itemTarget = NULL; break;
+                case CPSearchFieldClearRecentsMenuItemTag : itemAction = @selector(_searchFieldClearRecents:); itemTarget = self; break;
+                case CPSearchFieldNoRecentsMenuItemTag : itemAction = NULL; itemTarget = NULL; break;
+                default: itemAction = [item action]; itemTarget = [item target]; break;
+            }
+            
+            if (tag === CPSearchFieldClearRecentsMenuItemTag || tag === CPSearchFieldRecentsTitleMenuItemTag)
+            {
+                var separator = [CPMenuItem separatorItem];
+                [separator setEnabled:NO];
+                [menu addItem:separator];
+            }
         
-        if (!(tag == CPSearchFieldRecentsTitleMenuItemTag && countOfRecents == 0) &&
-            !(tag == CPSearchFieldClearRecentsMenuItemTag && countOfRecents == 0) &&
-            !(tag == CPSearchFieldNoRecentsMenuItemTag && countOfRecents != 0)    &&
-            !(tag == CPSearchFieldRecentsMenuItemTag))
-        {     
-            var templateItem = [[CPMenuItem alloc] initWithTitle:[item title] action:[item action] keyEquivalent:[item keyEquivalent]];
-            [templateItem setTarget:[item target]];
-            [templateItem setEnabled:[item isEnabled]];
-            [templateItem setTag:[item tag]];
+            var templateItem = [[CPMenuItem alloc] initWithTitle:[item title] 
+                                                          action:itemAction 
+                                                   keyEquivalent:[item keyEquivalent]];
+            [templateItem setTarget:itemTarget];
+            [templateItem setEnabled:([item isEnabled] && itemAction != NULL)];
+            [templateItem setTag:tag];
             [menu addItem:templateItem];
         }
-        else if (tag == CPSearchFieldRecentsMenuItemTag)
+        else if (tag === CPSearchFieldRecentsMenuItemTag)
         {
             var j;
             for (j = 0; j < countOfRecents; j++)
             {
-                var rencentItem = [[CPMenuItem alloc] initWithTitle:[_recentSearches objectAtIndex:j] action:[item action] keyEquivalent:[item keyEquivalent]];
-                [rencentItem setTarget:[item target]];
+                var rencentItem = [[CPMenuItem alloc] initWithTitle:[_recentSearches objectAtIndex:j] 
+                                                             action:@selector(_searchFieldSearch:) 
+                                                      keyEquivalent:[item keyEquivalent]];
+                [rencentItem setTarget:self];
                 [menu addItem:rencentItem];
             }
         }
@@ -565,16 +597,15 @@ var CPSearchFieldSearchImage = nil,
     _searchMenu = menu;
 }
 
-
 - (void)_showMenu:(id)sender
 {
-    if(_searchMenu == nil || ![self isEnabled])
+    if (_searchMenu === nil || [_searchMenu numberOfItems] === 0 || ![self isEnabled])
         return;
         
-    [super selectText:nil];
+    var aFrame = [[self superview] convertRect:[self frame] toView:nil],
+        location = CPMakePoint(aFrame.origin.x + 10, aFrame.origin.y + aFrame.size.height - 4);
     
-    var origin = CPMakePoint([self frame].origin.x, [self frame].origin.y + [self frame].size.height);
-    var anEvent = [CPEvent keyEventWithType:CPRightMouseDown location:origin modifierFlags:0 timestamp:[CPDate date] windowNumber:1 context:[[CPGraphicsContext currentContext] graphicsPort] characters:"" charactersIgnoringModifiers:"" isARepeat:NO keyCode:0];
+    var anEvent = [CPEvent mouseEventWithType:CPRightMouseDown location:location modifierFlags:0 timestamp:[[CPApp currentEvent] timestamp] windowNumber:[[self window] windowNumber] context:nil eventNumber:1 clickCount:1 pressure:0];
     
     [CPMenu popUpContextMenu:_searchMenu withEvent:anEvent forView:sender];
 }
@@ -586,16 +617,21 @@ var CPSearchFieldSearchImage = nil,
 
 - (void)_searchFieldCancel:(id)sender
 {   
-    [self setObjectValue:nil];
+    [self setObjectValue:@""];
     [self _sendPartialString];
     [self _updateCancelButtonVisibility];
-    [sender setHidden:YES];
 }
 
 - (void)_searchFieldSearch:(id)sender
 {
-    [self setObjectValue:[sender title]];
+    var searchString = [sender title];
+    
+    if ([sender tag] != CPSearchFieldRecentsMenuItemTag)
+        [self _addStringToRecentSearches:searchString];
+    
+    [self setObjectValue:searchString];
     [self _sendPartialString];
+
     [self _updateCancelButtonVisibility];
 }
 
@@ -615,19 +651,25 @@ var CPSearchFieldSearchImage = nil,
     [[CPNotificationCenter defaultCenter] removeObserver:self name:@"CPAutosavedRecentsChangedNotification" object:nil];
 }
 
-- (void)_updateAutosavedRecents:(id)notification
-{
-    var name = [notification object];
-    var list = [self recentSearches];
-
-    [[CPUserDefaults standardUserDefaults] setObject:list forKey:name];
-
-}
-
 - (void)_autosaveRecentSearchList
 {  
-    if(_recentsAutosaveName != nil) 
+    if (_recentsAutosaveName != nil) 
         [[CPNotificationCenter defaultCenter] postNotificationName:@"CPAutosavedRecentsChangedNotification" object:_recentsAutosaveName];
+}
+
+- (void)_updateAutosavedRecents:(id)notification
+{
+    var list = [self recentSearches],
+        name = [notification object],
+        bundle_name = [[[CPBundle mainBundle] infoDictionary] objectForKey:"CPBundleName"],
+        cookie_name = [bundle_name lowercaseString] + "." + [notification object],
+
+        cookie = [[CPCookie alloc] initWithName:cookie_name],
+        cookie_value = [list componentsJoinedByString:@","];
+    
+    [cookie setValue:cookie_value 
+             expires:[[CPDate alloc] initWithTimeIntervalSinceNow:3600*24*365] 
+              domain:(window.location.href.hostname)];
 }
 
 - (void)_loadRecentSearchList
@@ -635,31 +677,21 @@ var CPSearchFieldSearchImage = nil,
     var list,
         name = [self recentsAutosaveName];
     
-    list = [[CPUserDefaults standardUserDefaults] objectForKey:name];
-    _recentSearches = list;
-}
+    if (name === nil)
+        return;
 
-/*
-- (BOOL)trackMouse:(CPEvent)theEvent inRect:(CPRect)cellFrame ofView:(CPView)aTextView untilMouseUp:(BOOL)flag
-{
-}
+    var bundle_name = [[[CPBundle mainBundle] infoDictionary] objectForKey:"CPBundleName"],
+        cookie_name = [bundle_name lowercaseString] + "." + name,     
 
-- (BOOL)_trimRecentSearchList
-{
-}
+        cookie = [[CPCookie alloc] initWithName:cookie_name];
 
-- (void)_trackButton:(CPButton)button forEvent:(CPEvent)event inRect:(CPRect)rect ofView:(id)view
-{
+    if (cookie != nil)
+    {
+        var cookie_value = [cookie value];
+        list = (cookie_value != @"") ? [cookie_value componentsSeparatedByString:@","] : [CPArray array];
+        _recentSearches = list;
+    }
 }
-
-- (id)_selectOrEdit:(CPRect)rect inView:(id)view target:(id)target editor:(id)editor event:(id)event start:(int)start end:(int)end
-{
-}
-
-- (void)resetCursorRect:(CPRect)rect inView:(id)view
-{
-}
-*/
 
 @end
 
@@ -679,11 +711,13 @@ var CPSearchButtonKey                   = @"CPSearchButtonKey",
     
     [coder encodeObject:_searchButton forKey:CPSearchButtonKey];
     [coder encodeObject:_cancelButton forKey:CPCancelButtonKey];
-    [coder encodeObject:_recentsAutosaveName forKey:CPRecentsAutosaveNameKey];
     [coder encodeBool:_sendsWholeSearchString forKey:CPSendsWholeSearchStringKey];
     [coder encodeBool:_sendsSearchStringImmediately forKey:CPSendsSearchStringImmediatelyKey];
     [coder encodeInt:_maximumRecents forKey:CPMaximumRecentsKey];
-    [coder encodeObject:_searchMenuTemplate forKey:CPSearchMenuTemplateKey];
+    if (_recentsAutosaveName)
+        [coder encodeObject:_recentsAutosaveName forKey:CPRecentsAutosaveNameKey];
+    if (_searchMenuTemplate)
+        [coder encodeObject:_searchMenuTemplate forKey:CPSearchMenuTemplateKey];
 }
 
 - (id)initWithCoder:(CPCoder)coder
@@ -696,8 +730,10 @@ var CPSearchButtonKey                   = @"CPSearchButtonKey",
     _sendsWholeSearchString   = [coder decodeBoolForKey:CPSendsWholeSearchStringKey];
     _sendsSearchStringImmediately = [coder decodeBoolForKey:CPSendsSearchStringImmediatelyKey];
     _maximumRecents           = [coder decodeIntForKey:CPMaximumRecentsKey];
-    [self setSearchMenuTemplate:[coder decodeObjectForKey:CPSearchMenuTemplateKey]];
-    [self resetCancelButton];
+    var template              = [coder decodeObjectForKey:CPSearchMenuTemplateKey];
+    if (template)
+        [self setSearchMenuTemplate:template];
+        
     [self setDelegate:self];
 
     return self;
