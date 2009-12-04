@@ -661,49 +661,95 @@ var _CPMenuBarVisible               = NO,
 
 - (void)popUpMenuPositioningItem:(CPMenuItem)anItem atLocation:(CGPoint)aLocation inView:(CPView)aView callback:(Function)aCallback
 {
-    var itemIndex = [self indexOfItem:anItem];
+    [self _popUpMenuPositioningItem:anItem
+                         atLocation:aLocation
+                               topY:aLocation.y
+                            bottomY:aLocation.y
+                             inView:aView
+                           callback:aCallback];
+}
 
-    if (anItem && itemIndex === CPNotFound)
-        throw "uh oh";
-
-    if (aView && ![aView window])
-        throw "uh oh 2";
-var aFont = nil;
-    if (!aFont)
-        aFont = [CPFont systemFontOfSize:12.0];
-
-    var theWindow = [aView window],
-        menuWindow = [_CPMenuWindow menuWindowWithMenu:self font:aFont];
-
-    [menuWindow setDelegate:self];
-    [menuWindow setBackgroundStyle:_CPMenuWindowPopUpBackgroundStyle];
-
-    var globalLocation = aLocation;
-
-    if (aView)
-        globalLocation = [[aView window] convertBaseToGlobal:[aView convertPoint:aLocation toView:nil]];
+- (void)_popUpMenuPositioningItem:(CPMenuItem)anItem atLocation:(CGPoint)aLocation topY:(float)aTopY bottomY:(float)aBottomY inView:(CPView)aView callback:(Function)aCallback
+{
+    var itemIndex = 0;
 
     if (anItem)
     {
-        // Don't convert this value to global, we care about the distance (delta) from the
-        // the edge of the window, which is equivalent to its origin.
-        var itemOrigin = [menuWindow rectForItemAtIndex:itemIndex].origin;
+        itemIndex = [self indexOfItem:anItem];
 
-        globalLocation.y -= itemOrigin.y;
+        if (itemIndex === CPNotFound)
+            throw   "In call to popUpMenuPositioningItem:atLocation:inView:callback:, menu item " + 
+                    anItem  + " is not present in menu " + self;
     }
 
-    [menuWindow setFrameOrigin:globalLocation];
+    var theWindow = [aView window];
+
+    if (aView && !theWindow)
+        throw "In call to popUpMenuPositioningItem:atLocation:inView:callback:, view is not in any window.";
+
+    var aFont = nil;
+
+    if (!aFont)
+        aFont = [CPFont systemFontOfSize:12.0];
 
     var delegate = [self delegate];
 
     if ([delegate respondsToSelector:@selector(menuWillOpen:)])
         [delegate menuWillOpen:aMenu];
 
+    // Convert location to global coordinates if not already in them.
+    if (aView)
+        aLocation = [theWindow convertBaseToGlobal:[aView convertPoint:aLocation toView:nil]];
+
+    // Create the window for our menu.
+    var menuWindow = [_CPMenuWindow menuWindowWithMenu:self font:aFont];
+
+    [menuWindow setBackgroundStyle:_CPMenuWindowPopUpBackgroundStyle];
+
+    if (anItem)
+        // Don't convert this value to global, we care about the distance (delta) from the
+        // the edge of the window, which is equivalent to its origin.
+        aLocation.y -= [menuWindow rectForItemAtIndex:itemIndex].origin.y;
+
+    // Grab the constraint rect for this view.
     var constraintRect = [CPMenu _constraintRectForView:aView];
 
+    [menuWindow setFrameOrigin:aLocation];
     [menuWindow setConstraintRect:constraintRect];
+
+    // If we aren't showing enough items, reposition the view in a better place.
+    if (![menuWindow hasMinimumNumberOfVisibleItems])
+    {
+        var unconstrainedFrame = [menuWindow unconstrainedFrame],
+            unconstrainedY = CGRectGetMinY(unconstrainedFrame);
+
+        // If we scroll to early downwards, or are offscreen (!), move it up.
+        if (unconstrainedY >= CGRectGetMaxY(constraintRect) || [menuWindow canScrollDown])
+        {
+            // Convert this to global if it isn't already.
+            if (aView)
+                aTopY = [theWindow convertBaseToGlobal:[aView convertPoint:CGPointMake(0.0, aTopY) toView:nil]].y;
+
+            unconstrainedFrame.origin.y = MIN(CGRectGetMaxY(constraintRect), aTopY) - CGRectGetHeight(unconstrainedFrame);
+        }
+
+        // If we scroll to early upwards, or are offscreen (!), move it down.
+        else if (unconstrainedY < CGRectGetMinY(constraintRect) || [menuWindow canScrollUp])
+        {
+            // Convert this to global if it isn't already.
+            if (aView)
+                aBottomY = [theWindow convertBaseToGlobal:[aView convertPoint:CGPointMake(0.0, aBottomY) toView:nil]].y;
+
+            unconstrainedFrame.origin.y = MAX(CGRectGetMinY(constraintRect), aBottomY);
+        }
+
+        [menuWindow setFrameOrigin:CGRectIntersection(unconstrainedFrame, constraintRect).origin];
+    }
+
+    // Show it.
     [menuWindow orderFront:self];
 
+    // Track it.
     [[_CPMenuManager sharedMenuManager]
         beginTracking:[CPApp currentEvent]
         menuContainer:menuWindow
@@ -750,8 +796,6 @@ var aFont = nil;
     var theWindow = [aView window],
         menuWindow = [_CPMenuWindow menuWindowWithMenu:aMenu font:aFont];
 
-    // FIXME: Why do we need this?
-    [menuWindow setDelegate:self];
     [menuWindow setBackgroundStyle:isForMenuBar ? _CPMenuWindowMenuBarBackgroundStyle : _CPMenuWindowPopUpBackgroundStyle];
 
 

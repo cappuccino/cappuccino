@@ -40,7 +40,12 @@ var STICKY_TIME_INTERVAL        = 500,
     var menuWindow = nil;
 
     if (_CPMenuWindowPool.length)
+    {
         menuWindow = _CPMenuWindowPool.pop();
+
+        // Do this so that coordinates will be accurate.
+        [menuWindow setFrameOrigin:CGPointMakeZero()];
+    }
     else
         menuWindow = [[_CPMenuWindow alloc] init];
 
@@ -113,9 +118,19 @@ var STICKY_TIME_INTERVAL        = 500,
     return self;
 }
 
+- (BOOL)canScrollUp
+{
+    return ![_moreAboveView isHidden];
+}
+
+- (BOOL)canScrollDown
+{
+    return ![_moreBelowView isHidden];
+}
+
 - (BOOL)canScroll
 {
-    return ![_moreAboveView isHidden] || ![_moreBelowView isHidden];
+    return [self canScrollUp] || [self canScrollDown];
 }
 
 - (CGFloat)overlapOffsetWidth
@@ -225,7 +240,7 @@ var STICKY_TIME_INTERVAL        = 500,
 
 - (CGRect)unconstrainedFrame
 {
-    return _unconstrainedFrame;
+    return _CGRectMakeCopy(_unconstrainedFrame);
 }
 
 // We need this because if not this will call setFrame: with -frame instead of -unconstrainedFrame, turning
@@ -303,6 +318,36 @@ var STICKY_TIME_INTERVAL        = 500,
     [_menuView scrollPoint:CGPointMake(0.0, [self convertBaseToGlobal:clipFrame.origin].y - menuViewOrigin.y)];
 }
 
+- (BOOL)hasMinimumNumberOfVisibleItems
+{
+    var visibleRect = [_menuView visibleRect];
+
+    // Clearly if the entire view isn't visible the minimum won't be visible.
+    if (CGRectIsEmpty(visibleRect))
+        return NO;
+
+    var numberOfUnhiddenItems = [_menuView numberOfUnhiddenItems],
+        minimumNumberOfVisibleItems = MIN(numberOfUnhiddenItems, 3),
+        count = 0,
+        index = [_menuView itemIndexAtPoint:[_menuView convertPoint:[_menuClipView frame].origin fromView:nil]];
+
+    for (; index < numberOfUnhiddenItems && count < minimumNumberOfVisibleItems; ++index)
+    {
+        var itemRect = [_menuView rectForUnhiddenItemAtIndex:index],
+            visibleItemRect = CGRectIntersection(visibleRect, itemRect);
+
+        // As soon as we get to the first unhidden item that is no longer visible, stop.
+        if (CGRectIsEmpty(visibleItemRect))
+            break;
+
+        // If the item is *completely* visible, count it.
+        if (CGRectEqualToRect(visibleItemRect, itemRect))
+            ++count;
+    }
+
+    return count >= minimumNumberOfVisibleItems;
+}
+
 - (void)scrollUp
 {
     if (CGRectGetMinY(_unconstrainedFrame) >= CGRectGetMinY(_constraintRect))
@@ -377,6 +422,16 @@ var STICKY_TIME_INTERVAL        = 500,
     CPArray _visibleMenuItemInfos;
     
     CPFont  _font @accessors(property=font);
+}
+
+- (unsigned)numberOfUnhiddenItems
+{
+    return _visibleMenuItemInfos.length;
+}
+
+- (CGRect)rectForUnhiddenItemAtIndex:(int)anIndex
+{
+    return [self rectForItemAtIndex:_visibleMenuItemInfos[anIndex].index];
 }
 
 - (CGRect)rectForItemAtIndex:(int)anIndex

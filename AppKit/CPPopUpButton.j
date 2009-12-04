@@ -641,7 +641,8 @@ CPPopUpButtonStatePullsDown = CPThemeState("pulls-down");
 
     [self highlight:YES];
 
-    var bounds = [self bounds],
+    var menu = [self menu],
+        bounds = [self bounds],
         minimumWidth = CGRectGetWidth(bounds);
 
     if ([self pullsDown])
@@ -659,13 +660,15 @@ CPPopUpButtonStatePullsDown = CPThemeState("pulls-down");
         minimumWidth += standardLeftMargin;
     }
 
-    [[self menu] setMinimumWidth:minimumWidth];
+    [menu setMinimumWidth:minimumWidth];
 
-    [[self menu]
-        popUpMenuPositioningItem:positionedItem
-                      atLocation:location
-                          inView:self
-                        callback:function(aMenu)
+    [menu
+        _popUpMenuPositioningItem:positionedItem
+                       atLocation:location
+                             topY:CGRectGetMinY(bounds)
+                          bottomY:CGRectGetMaxY(bounds)
+                           inView:self
+                         callback:function(aMenu)
         {
             [self highlight:NO];
 
@@ -675,20 +678,6 @@ CPPopUpButtonStatePullsDown = CPThemeState("pulls-down");
                 [self selectItem:highlightedItem];
         }];
 /*
-    var menu = [self menu],
-        theWindow = [self window],
-        menuWindow = [_CPMenuWindow menuWindowWithMenu:menu font:[self font]];
-
-    [menuWindow setDelegate:self];
-    [menuWindow setBackgroundStyle:_CPMenuWindowPopUpBackgroundStyle];
-
-    var bounds = [self bounds];
-
-    // Pull Down Menus show up directly below their buttons.
-    if ([self pullsDown])
-        var menuOrigin = [theWindow convertBaseToGlobal:[self convertPoint:CGPointMake(0.0, CGRectGetMaxY(bounds)) toView:nil]];
-
-    // Pop Up Menus attempt to show up "on top" of the selected item.
     else
     {
         // This is confusing, I KNOW, so let me explain it to you.
@@ -703,18 +692,6 @@ CPPopUpButtonStatePullsDown = CPThemeState("pulls-down");
         menuOrigin.x -= CGRectGetMinX(menuItemRect) + [menuWindow overlapOffsetWidth] + [[[menu itemAtIndex:_selectedIndex] _menuItemView] overlapOffsetWidth];
         menuOrigin.y -= CGRectGetMinY(menuItemRect) + (CGRectGetHeight(menuItemRect) - CGRectGetHeight(contentRect)) / 2.0;
     }
-
-    [menuWindow setFrameOrigin:menuOrigin];
-
-    var menuWindowFrame = [menuWindow unconstrainedFrame],
-        menuMaxX = CGRectGetMaxX(menuWindowFrame),
-        buttonMaxX = [theWindow convertBaseToGlobal:CGPointMake(CGRectGetMaxX([self convertRect:bounds toView:nil]), 0.0)].x;
-
-    if (menuMaxX < buttonMaxX)
-        [menuWindow setMinWidth:CGRectGetWidth(menuWindowFrame) + buttonMaxX - menuMaxX - ([self pullsDown] ? 0.0 : VISIBLE_MARGIN)];
-
-    [menuWindow orderFront:self];
-    [menuWindow beginTrackingWithEvent:anEvent sessionDelegate:self didEndSelector:@selector(menuWindowDidFinishTracking:highlightedItem:)];
 */
 }
 
