@@ -144,11 +144,6 @@ var _CPMenuItemSelectionColor                   = nil,
     [self setAutoresizesSubviews:YES];
 }
 
-- (CGFloat)overlapOffsetWidth
-{
-    return LEFT_MARGIN + ([[_menuItem menu] showsStateColumn] ? STATE_COLUMN_WIDTH : 0.0);
-}
-
 - (void)setShowsStateColumn:(BOOL)shouldShowStateColumn
 {
     _showsStateColumn = shouldShowStateColumn;

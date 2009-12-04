@@ -657,7 +657,7 @@ CPPopUpButtonStatePullsDown = CPThemeState("pulls-down");
     {
         var contentRect = [self contentRectForBounds:bounds],
             positionedItem = [self selectedItem],
-            standardLeftMargin = [_CPMenuItemStandardView _standardLeftMargin],
+            standardLeftMargin = [_CPMenuWindow _standardLeftMargin] + [_CPMenuItemStandardView _standardLeftMargin],
             location = CGPointMake(CGRectGetMinX(contentRect) - standardLeftMargin, 0.0);
 
         minimumWidth += standardLeftMargin;

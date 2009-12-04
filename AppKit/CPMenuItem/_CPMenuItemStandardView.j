@@ -114,7 +114,7 @@ var SUBMENU_INDICATOR_COLOR                     = nil,
 - (CPColor)textShadowColor
 {
     if (![_menuItem isEnabled])
-        return [CPColor colorWithWhite:0.8 alpha:0.8];
+        return nil;
 
     return _textShadowColor || [CPColor colorWithWhite:1.0 alpha:0.8];
 }
@@ -146,7 +146,7 @@ var SUBMENU_INDICATOR_COLOR                     = nil,
     [_imageAndTextView setText:[_menuItem title]];
     [_imageAndTextView setTextColor:[self textColor]];
     [_imageAndTextView setTextShadowColor:[self textShadowColor]];
-    [_imageAndTextView setTextShadowOffset:CGSizeMake(0, 1)];
+    [_imageAndTextView setTextShadowOffset:CGSizeMake(0.0, 1.0)];
     [_imageAndTextView sizeToFit];
 
     var imageAndTextViewFrame = [_imageAndTextView frame];
