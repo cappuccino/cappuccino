@@ -262,17 +262,23 @@ var SharedMenuManager = nil;
 }
 
 - (void)showMenu:(CPMenu)newMenu fromMenu:(CPMenu)baseMenu atPoint:(CGPoint)aGlobalLocation
-{//console.log("SM: " + [self trackingMenu] + " SHOW MENU: " + newMenu + " from menu " + baseMenu);
+{
     var count = _menuContainerStack.length,
         index = count;
 
     // Hide all menus up to the base menu...
     while (index--)
     {
-        var menuContainer = _menuContainerStack[index];
+        var menuContainer = _menuContainerStack[index],
+            menu = [menuContainer menu];
 
-        if ([menuContainer menu] === baseMenu)
+        // If we reach the base menu, or this menu is already being shown, break.
+        if (menu === baseMenu)
             break;
+
+        // If this menu is already being shown, unhighlight and return.
+        if (menu === newMenu)//&& [menu supermenu] === baseMenu)
+            return [newMenu _highlightItemAtIndex:CPNotFound];
 
         [menuContainer orderOut:self];
         [menuContainer setMenu:nil];
