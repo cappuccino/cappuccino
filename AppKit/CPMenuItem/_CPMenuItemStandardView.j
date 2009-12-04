@@ -119,6 +119,11 @@ var SUBMENU_INDICATOR_COLOR                     = nil,
     return _textShadowColor || [CPColor colorWithWhite:1.0 alpha:0.8];
 }
 
+- (void)setFont:(CPFont)aFont
+{
+    _font = aFont;
+}
+
 - (void)update
 {
     var x = LEFT_MARGIN + [_menuItem indentationLevel] * INDENTATION_WIDTH,
