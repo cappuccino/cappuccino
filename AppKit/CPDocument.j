@@ -280,7 +280,11 @@ var CPDocumentUntitledCount = 0;
         else if (viewController)
         {
             var view = [viewController view],
-                theWindow = [[CPWindow alloc] initWithContentRect:[view frame] styleMask:CPTitledWindowMask | CPClosableWindowMask | CPMiniaturizableWindowMask | CPResizableWindowMask];
+                viewFrame = [view frame];
+            
+            viewFrame.origin = CGPointMake(50, 50);
+
+            var theWindow = [[CPWindow alloc] initWithContentRect:viewFrame styleMask:CPTitledWindowMask | CPClosableWindowMask | CPMiniaturizableWindowMask | CPResizableWindowMask];
 
             windowController = [[CPWindowController alloc] initWithWindow:theWindow];
         }
