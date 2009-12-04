@@ -1292,7 +1292,7 @@ var STICKY_TIME_INTERVAL        = 500,
     
     var menuLocation = [self convertGlobalToBase:globalLocation],
         activeItemIndex = [_menuView itemIndexAtPoint:[_menuView convertPoint:menuLocation fromView:nil]],
-        mouseOverMenuView = [[menu itemAtIndex:activeItemIndex] view];
+        mouseOverMenuView = activeItemIndex !== CPNotFound ? [[menu itemAtIndex:activeItemIndex] view] : nil;
     
     // If we're over a custom menu view...
     if (mouseOverMenuView)
