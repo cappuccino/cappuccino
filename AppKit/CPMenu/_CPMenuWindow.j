@@ -118,26 +118,6 @@ var STICKY_TIME_INTERVAL        = 500,
     return self;
 }
 
-- (BOOL)canScrollUp
-{
-    return ![_moreAboveView isHidden];
-}
-
-- (BOOL)canScrollDown
-{
-    return ![_moreBelowView isHidden];
-}
-
-- (BOOL)canScroll
-{
-    return [self canScrollUp] || [self canScrollDown];
-}
-
-- (CGFloat)overlapOffsetWidth
-{
-    return LEFT_MARGIN;
-}
-
 - (void)setFont:(CPFont)aFont
 {
     [_menuView setFont:aFont];
@@ -348,6 +328,21 @@ var STICKY_TIME_INTERVAL        = 500,
     return count >= minimumNumberOfVisibleItems;
 }
 
+- (BOOL)canScrollUp
+{
+    return ![_moreAboveView isHidden];
+}
+
+- (BOOL)canScrollDown
+{
+    return ![_moreBelowView isHidden];
+}
+
+- (BOOL)canScroll
+{
+    return [self canScrollUp] || [self canScrollDown];
+}
+
 - (void)scrollUp
 {
     if (CGRectGetMinY(_unconstrainedFrame) >= CGRectGetMinY(_constraintRect))
@@ -407,6 +402,10 @@ var STICKY_TIME_INTERVAL        = 500,
 
 - (int)itemIndexAtPoint:(CGPoint)aPoint
 {
+    // Don't return indexes of items that aren't visible.
+    if (!CGRectContainsPoint([_menuClipView bounds], [_menuClipView convertPoint:aPoint fromView:nil]))
+        return NO;
+
     return [_menuView itemIndexAtPoint:[_menuView convertPoint:aPoint fromView:nil]];
 }
 
