@@ -395,6 +395,11 @@ var STICKY_TIME_INTERVAL        = 500,
     return _CPMenuManagerScrollingStateNone;
 }
 
+- (float)deltaYForItemAtIndex:(int)anIndex
+{
+    return TOP_MARGIN + CGRectGetMinY([_menuView rectForItemAtIndex:anIndex]);
+}
+
 - (CGPoint)rectForItemAtIndex:(int)anIndex
 {
     return [_menuView convertRect:[_menuView rectForItemAtIndex:anIndex] toView:nil];

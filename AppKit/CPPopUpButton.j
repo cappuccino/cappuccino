@@ -645,6 +645,9 @@ CPPopUpButtonStatePullsDown = CPThemeState("pulls-down");
         bounds = [self bounds],
         minimumWidth = CGRectGetWidth(bounds);
 
+    // FIXME: setFont: should set the font on the menu.
+    [menu setFont:[self font]];
+
     if ([self pullsDown])
     {
         var positionedItem = nil,

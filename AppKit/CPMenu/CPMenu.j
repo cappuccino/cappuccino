@@ -64,6 +64,8 @@ var _CPMenuBarVisible               = NO,
     CPString        _title;
     CPString        _name;
 
+    CPFont          _font;
+
     float           _minimumWidth;
 
     CPMutableArray  _items;
@@ -687,11 +689,6 @@ var _CPMenuBarVisible               = NO,
     if (aView && !theWindow)
         throw "In call to popUpMenuPositioningItem:atLocation:inView:callback:, view is not in any window.";
 
-    var aFont = nil;
-
-    if (!aFont)
-        aFont = [CPFont systemFontOfSize:12.0];
-
     var delegate = [self delegate];
 
     if ([delegate respondsToSelector:@selector(menuWillOpen:)])
@@ -702,14 +699,14 @@ var _CPMenuBarVisible               = NO,
         aLocation = [theWindow convertBaseToGlobal:[aView convertPoint:aLocation toView:nil]];
 
     // Create the window for our menu.
-    var menuWindow = [_CPMenuWindow menuWindowWithMenu:self font:aFont];
+    var menuWindow = [_CPMenuWindow menuWindowWithMenu:self font:[self font]];
 
     [menuWindow setBackgroundStyle:_CPMenuWindowPopUpBackgroundStyle];
 
     if (anItem)
         // Don't convert this value to global, we care about the distance (delta) from the
         // the edge of the window, which is equivalent to its origin.
-        aLocation.y -= [menuWindow rectForItemAtIndex:itemIndex].origin.y;
+        aLocation.y -= [menuWindow deltaYForItemAtIndex:itemIndex];
 
     // Grab the constraint rect for this view.
     var constraintRect = [CPMenu _constraintRectForView:aView];
@@ -879,6 +876,16 @@ var _CPMenuBarVisible               = NO,
 - (void)_setMenuWindow:(_CPMenuWindow)aMenuWindow
 {
     _menuWindow = aMenuWindow;
+}
+
+- (void)setFont:(CPFont)aFont
+{
+    _font = aFont;
+}
+
+- (CPFont)font
+{
+    return _font;
 }
 
 /*!
