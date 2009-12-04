@@ -340,7 +340,7 @@ var HORIZONTAL_MARGIN   = 3.0,
             
             textStyle.position = "absolute";
             textStyle.whiteSpace = "pre";
-            //textStyle.cursor = "default";
+
             textStyle.zIndex = 200;
             textStyle.overflow = "hidden";
     
@@ -376,7 +376,7 @@ var HORIZONTAL_MARGIN   = 3.0,
             shadowStyle.font = [_font ? _font : [CPFont systemFontOfSize:12.0] cssString];
             shadowStyle.position = "absolute";
             shadowStyle.whiteSpace = textStyle.whiteSpace;
-            //shadowStyle.cursor = "default";
+
             shadowStyle.zIndex = 150;
             shadowStyle.textOverflow = textStyle.textOverflow;
             
