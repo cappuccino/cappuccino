@@ -777,11 +777,6 @@ var _CPMenuBarVisible               = NO,
 
 + (void)popUpContextMenu:(CPMenu)aMenu withEvent:(CPEvent)anEvent forView:(CPView)aView withFont:(CPFont)aFont
 {
-    [self _popUpContextMenu:aMenu withEvent:anEvent forView:aView withFont:aFont forMenuBar:NO];
-}
-
-+ (void)_popUpContextMenu:(CPMenu)aMenu withEvent:(CPEvent)anEvent forView:(CPView)aView withFont:(CPFont)aFont forMenuBar:(BOOL)isForMenuBar
-{
     var delegate = [aMenu delegate];
     
     if ([delegate respondsToSelector:@selector(menuWillOpen:)])
@@ -793,13 +788,31 @@ var _CPMenuBarVisible               = NO,
     var theWindow = [aView window],
         menuWindow = [_CPMenuWindow menuWindowWithMenu:aMenu font:aFont];
 
-    [menuWindow setBackgroundStyle:isForMenuBar ? _CPMenuWindowMenuBarBackgroundStyle : _CPMenuWindowPopUpBackgroundStyle];
+    [menuWindow setBackgroundStyle:_CPMenuWindowPopUpBackgroundStyle];
 
-
-    var constraintRect = [CPMenu _constraintRectForView:aView];
+    var constraintRect = [CPMenu _constraintRectForView:aView],
+        aLocation = [[anEvent window] convertBaseToGlobal:[anEvent locationInWindow]];
 
     [menuWindow setConstraintRect:constraintRect];
-    [menuWindow setFrameOrigin:[[anEvent window] convertBaseToGlobal:[anEvent locationInWindow]]];
+    [menuWindow setFrameOrigin:aLocation];
+
+    // If we aren't showing enough items, reposition the view in a better place.
+    if (![menuWindow hasMinimumNumberOfVisibleItems])
+    {
+        var unconstrainedFrame = [menuWindow unconstrainedFrame],
+            unconstrainedY = CGRectGetMinY(unconstrainedFrame);
+
+        // If we scroll to early downwards, or are offscreen (!), move it up.
+        if (unconstrainedY >= CGRectGetMaxY(constraintRect) || [menuWindow canScrollDown])
+            unconstrainedFrame.origin.y = MIN(CGRectGetMaxY(constraintRect), aLocation.y) - CGRectGetHeight(unconstrainedFrame);
+
+        // If we scroll to early upwards, or are offscreen (!), move it down.
+        else if (unconstrainedY < CGRectGetMinY(constraintRect) || [menuWindow canScrollUp])
+            unconstrainedFrame.origin.y = MAX(CGRectGetMinY(constraintRect), aLocation.y);
+
+        [menuWindow setFrameOrigin:CGRectIntersection(unconstrainedFrame, constraintRect).origin];
+    }
+
     [menuWindow orderFront:self];
 
     [[_CPMenuManager sharedMenuManager]
