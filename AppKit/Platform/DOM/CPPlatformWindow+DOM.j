@@ -121,6 +121,9 @@
 
 #import "../../CoreGraphics/CGGeometry.h"
 
+// List of all open native windows
+var PlatformWindows = [CPSet set];
+
 // Define up here so compressor knows about em.
 var CPDOMEventGetClickCount,
     CPDOMEventStop,
@@ -358,6 +361,8 @@ var supportsNativeDragAndDrop = [CPPlatform supportsDragAndDrop];
 
             //_DOMWindow.removeEventListener("beforeunload", this, NO);
 
+            [PlatformWindows removeObject:self];
+
             self._DOMWindow = nil;
         }, NO);
     }
@@ -404,9 +409,16 @@ var supportsNativeDragAndDrop = [CPPlatform supportsDragAndDrop];
 
             //_DOMWindow.removeEvent("beforeunload", this);
 
+            [PlatformWindows removeObject:self];
+
             self._DOMWindow = nil;
         }, NO);
     }
+}
+
++ (CPSet)visiblePlatformWindows
+{
+    return PlatformWindows;
 }
 
 - (void)orderFront:(id)aSender
@@ -415,6 +427,8 @@ var supportsNativeDragAndDrop = [CPPlatform supportsDragAndDrop];
         return _DOMWindow.focus();
 
     _DOMWindow = window.open("", "_blank", "menubar=no,location=no,resizable=yes,scrollbars=no,status=no,left=" + _CGRectGetMinX(_contentRect) + ",top=" + _CGRectGetMinY(_contentRect) + ",width=" + _CGRectGetWidth(_contentRect) + ",height=" + _CGRectGetHeight(_contentRect));
+
+    [PlatformWindows addObject:self];
 
     // FIXME: cpSetFrame?
     _DOMWindow.document.write("<html><head></head><body style = 'background-color:transparent;'></body></html>");
@@ -428,6 +442,8 @@ var supportsNativeDragAndDrop = [CPPlatform supportsDragAndDrop];
         _DOMWindow.cpSetHasShadow(_hasShadow);
         _DOMWindow.cpSetShadowStyle(_shadowStyle);
     }
+
+    _DOMWindow.document.body.style.cursor = [[CPCursor currentCursor] _cssString];
 
     [self registerDOMWindow];
 }

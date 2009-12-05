@@ -45,6 +45,11 @@ var PrimaryPlatformWindow   = NULL;
 #endif
 }
 
++ (CPSet)visiblePlatformWindows
+{
+    return [CPSet set];
+}
+
 + (CPPlatformWindow)primaryPlatformWindow
 {
     return PrimaryPlatformWindow;
