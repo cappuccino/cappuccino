@@ -177,8 +177,8 @@ var BKLearnMoreToolbarItemIdentifier                = @"BKLearnMoreToolbarItemId
 
         var width = CGRectGetWidth([popUpButton frame]);
 
-        [toolbarItem setMinSize:CGSizeMake(width + 20.0, 32.0)];
-        [toolbarItem setMaxSize:CGSizeMake(width + 20.0, 32.0)];
+        [toolbarItem setMinSize:CGSizeMake(width + 20.0, 24.0)];
+        [toolbarItem setMaxSize:CGSizeMake(width + 20.0, 24.0)];
     }
     
     else if (anItemIdentifier === BKBackgroundColorToolbarItemIdentifier)
@@ -206,8 +206,8 @@ var BKLearnMoreToolbarItemIdentifier                = @"BKLearnMoreToolbarItemId
 
         var width = CGRectGetWidth([popUpButton frame]);
 
-        [toolbarItem setMinSize:CGSizeMake(width, 32.0)];
-        [toolbarItem setMaxSize:CGSizeMake(width, 32.0)];
+        [toolbarItem setMinSize:CGSizeMake(width, 24.0)];
+        [toolbarItem setMaxSize:CGSizeMake(width, 24.0)];
     }
     else if (anItemIdentifier === BKLearnMoreToolbarItemIdentifier)
     {
@@ -227,8 +227,8 @@ var BKLearnMoreToolbarItemIdentifier                = @"BKLearnMoreToolbarItemId
 
         var width = CGRectGetWidth([button frame]);
 
-        [toolbarItem setMinSize:CGSizeMake(width, 32.0)];
-        [toolbarItem setMaxSize:CGSizeMake(width, 32.0)];
+        [toolbarItem setMinSize:CGSizeMake(width, 24.0)];
+        [toolbarItem setMaxSize:CGSizeMake(width, 24.0)];
     }
 
     return toolbarItem;

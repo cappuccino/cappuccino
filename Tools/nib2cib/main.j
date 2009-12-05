@@ -76,7 +76,7 @@ function main(args)
     
     var count = args.length;
 
-    if (count < 2)
+    if (count < 1)
         return printUsage();
 
     var index = 0,

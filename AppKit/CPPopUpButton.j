@@ -638,21 +638,49 @@ CPPopUpButtonStatePullsDown = CPThemeState("pulls-down");
 {
     if (![self isEnabled] || ![self numberOfItems])
         return;
-        
+
     [self highlight:YES];
 
     var menu = [self menu],
-        theWindow = [self window],
-        menuWindow = [_CPMenuWindow menuWindowWithMenu:menu font:[self font]];
-    
-    [menuWindow setDelegate:self];
-    [menuWindow setBackgroundStyle:_CPMenuWindowPopUpBackgroundStyle];
-    
-    // Pull Down Menus show up directly below their buttons.
+        bounds = [self bounds],
+        minimumWidth = CGRectGetWidth(bounds);
+
+    // FIXME: setFont: should set the font on the menu.
+    [menu setFont:[self font]];
+
     if ([self pullsDown])
-        var menuOrigin = [theWindow convertBaseToGlobal:[self convertPoint:CGPointMake(0.0, CGRectGetMaxY([self bounds])) toView:nil]];
-    
-    // Pop Up Menus attempt to show up "on top" of the selected item.
+    {
+        var positionedItem = nil,
+            location = CGPointMake(0.0, CGRectGetMaxY(bounds));
+    }
+    else
+    {
+        var contentRect = [self contentRectForBounds:bounds],
+            positionedItem = [self selectedItem],
+            standardLeftMargin = [_CPMenuWindow _standardLeftMargin] + [_CPMenuItemStandardView _standardLeftMargin],
+            location = CGPointMake(CGRectGetMinX(contentRect) - standardLeftMargin, 0.0);
+
+        minimumWidth += standardLeftMargin;
+    }
+
+    [menu setMinimumWidth:minimumWidth];
+
+    [menu
+        _popUpMenuPositioningItem:positionedItem
+                       atLocation:location
+                             topY:CGRectGetMinY(bounds)
+                          bottomY:CGRectGetMaxY(bounds)
+                           inView:self
+                         callback:function(aMenu)
+        {
+            [self highlight:NO];
+
+            var highlightedItem = [aMenu highlightedItem];
+
+            if ([highlightedItem _isSelectable])
+                [self selectItem:highlightedItem];
+        }];
+/*
     else
     {
         // This is confusing, I KNOW, so let me explain it to you.
@@ -660,43 +688,14 @@ CPPopUpButtonStatePullsDown = CPThemeState("pulls-down");
         // 1. So calculate where our content is, then calculate where the menu item is.
         // 2. Move LEFT by whatever indentation we have (offsetWidths, aka, window margin, item margin, etc).
         // 3. MOVE UP by the difference in sizes of the content and menu item, this will only work if the content is vertically centered.
-        var contentRect = [self convertRect:[self contentRectForBounds:[self bounds]] toView:nil],
+        var contentRect = [self convertRect:[self contentRectForBounds:bounds] toView:nil],
             menuOrigin = [theWindow convertBaseToGlobal:contentRect.origin],
             menuItemRect = [menuWindow rectForItemAtIndex:_selectedIndex];
-        
+
         menuOrigin.x -= CGRectGetMinX(menuItemRect) + [menuWindow overlapOffsetWidth] + [[[menu itemAtIndex:_selectedIndex] _menuItemView] overlapOffsetWidth];
         menuOrigin.y -= CGRectGetMinY(menuItemRect) + (CGRectGetHeight(menuItemRect) - CGRectGetHeight(contentRect)) / 2.0;
     }
-
-    [menuWindow setFrameOrigin:menuOrigin];
-
-    var menuMaxX = CGRectGetMaxX([menuWindow frame]),
-        buttonMaxX = [theWindow convertBaseToGlobal:CGPointMake(CGRectGetMaxX([self convertRect:[self bounds] toView:nil]), 0.0)].x;
-
-    if (menuMaxX < buttonMaxX)
-        [menuWindow setMinWidth:CGRectGetWidth([menuWindow frame]) + buttonMaxX - menuMaxX - ([self pullsDown] ? 0.0 : VISIBLE_MARGIN)];
-
-    [menuWindow orderFront:self];
-    [menuWindow beginTrackingWithEvent:anEvent sessionDelegate:self didEndSelector:@selector(menuWindowDidFinishTracking:highlightedItem:)];
-}
-
-/*
-    @ignore
 */
-- (void)menuWindowDidFinishTracking:(_CPMenuWindow)aMenuWindow highlightedItem:(CPMenuItem)aMenuItem
-{
-    [_CPMenuWindow poolMenuWindow:aMenuWindow];
-
-    [self highlight:NO];
-    
-    var index = [_menu indexOfItem:aMenuItem];
-    
-    if (index == CPNotFound)
-        return;
-    
-    [self selectItemAtIndex:index];
-    
-    [CPApp sendAction:[aMenuItem action] to:[aMenuItem target] from:aMenuItem];
 }
 
 - (void)_popUpItemAction:(id)aSender

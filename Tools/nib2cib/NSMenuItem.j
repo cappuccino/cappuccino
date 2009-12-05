@@ -64,7 +64,7 @@
 //      _mnemonicLocation = [aCoder decodeObjectForKey:"NSMnemonicLoc"];
         
 //      _isAlternate = [aCoder decodeBoolForKey:"NSIsAlternate"];
-//      _indentationLevel = [aCoder decodeBoolForKey:"NSIndent"];
+        _indentationLevel = [aCoder decodeIntForKey:"NSIndent"];
         
 //      _toolTip;
 
@@ -72,6 +72,19 @@
     }
     
     return self;
+}
+
+- (void)swapCellsForParents:(JSObject)parentsForCellUIDs
+{
+    var target = [self target];
+
+    if (!target)
+        return;
+
+    var parent = parentsForCellUIDs[[[self target] UID]];
+
+    if (parent)
+        [self setTarget:parent];
 }
 
 @end
