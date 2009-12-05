@@ -690,7 +690,8 @@ BundleTask.prototype.defineSourceTasks = function()
         var replacedFiles = [],
             environmentCompilerFlags = anEnvironment.compilerFlags().join(" ") + " " + compilerFlags,
             flattensSources = this.flattensSources(),
-            basePathLength = directoryInCommon(environmentSources).length;
+            basePath = directoryInCommon(environmentSources),
+            basePathLength = basePath.length;
 
         environmentSources.forEach(function(/*String*/ aFilename)
         {
@@ -698,7 +699,7 @@ BundleTask.prototype.defineSourceTasks = function()
             if (!FILE.exists(aFilename) || FILE.extension(aFilename) !== '.j')
                 return;
 
-            var relativePath = aFilename.substring(basePathLength),
+            var relativePath = aFilename.substring(basePathLength ? basePathLength + 1 : basePathLength),
                 compiledEnvironmentSource = FILE.join(sourcesPath, relativePath);
 
             filedir (compiledEnvironmentSource, [aFilename], function()
