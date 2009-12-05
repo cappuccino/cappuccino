@@ -221,7 +221,7 @@ var currentCursor = nil,
     currentCursor = self; 
 
 #if PLATFORM(DOM)
-    var platformWindows = [[CPPlatformWindow platformWindows] allObjects];
+    var platformWindows = [[CPPlatformWindow visiblePlatformWindows] allObjects];
     for (var i = 0, count = [platformWindows count]; i < count; i++)
         platformWindows[i]._DOMWindow.document.body.style.cursor = _cssString;
 #endif
