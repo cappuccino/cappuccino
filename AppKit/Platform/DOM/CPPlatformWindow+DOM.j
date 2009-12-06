@@ -583,7 +583,7 @@ var supportsNativeDragAndDrop = [CPPlatform supportsDragAndDrop];
                             if (_keyCode === CPKeyCodes.CAPS_LOCK)
                                 _capsLockActive = YES;
 
-                            if (modifierFlags & (CPControlKeyMask | CPCommandKeyMask | CPAlternateKeyMask))
+                            if (modifierFlags & (CPControlKeyMask | CPCommandKeyMask))
                             {
                                 //we are simply going to skip all keypress events that use cmd/ctrl key
                                 //this lets us be consistent in all browsers and send on the keydown
@@ -630,7 +630,7 @@ var supportsNativeDragAndDrop = [CPPlatform supportsDragAndDrop];
         case "keypress":
                             // we unconditionally break on keypress events with modifiers, 
                             // because we forced the event to be sent on the keydown 
-                            if (aDOMEvent.type === "keypress" && (modifierFlags & (CPControlKeyMask | CPCommandKeyMask | CPAlternateKeyMask)))
+                            if (aDOMEvent.type === "keypress" && (modifierFlags & (CPControlKeyMask | CPCommandKeyMask)))
                                 break;
 
                             var keyCode = _keyCode,
