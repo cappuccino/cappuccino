@@ -816,15 +816,18 @@
 
     for(; index < count; ++index)
     {
-        var object = self[index];
+        if (index === 0)
+            description += '\n';
 
-        if (object && object.isa)
-            description += [object description];
-        else
-            description += object;
+        var object = self[index],
+            objectDescription = object && object.isa ? [object description] : object + "";
+
+        description += "\t" + objectDescription.split('\n').join("\n\t");
 
         if (index !== count - 1)
             description += ", ";
+
+        description += '\n';
     }
 
     return description + ')';
