@@ -577,7 +577,9 @@ CPTableViewSolidHorizontalGridLineMask = 1 << 1;
         [_selectedRowIndexes addIndexes:rows];
     else
         _selectedRowIndexes = [rows copy];
-
+    
+    [self _noteSelectionDidChange];
+    
     [self setNeedsLayout];
 }
 
@@ -1637,8 +1639,7 @@ CPTableViewSolidHorizontalGridLineMask = 1 << 1;
 
 - (void)stopTracking:(CGPoint)lastPoint at:(CGPoint)aPoint mouseIsUp:(BOOL)mouseIsUp
 {
-    if (![_previouslySelectedRowIndexes isEqualToIndexSet:_selectedRowIndexes])
-        [self _noteSelectionDidChange];
+    
 }
 
 - (void)_updateSelectionWithMouseAtRow:(CPInteger)aRow
@@ -1709,10 +1710,10 @@ CPTableViewSolidHorizontalGridLineMask = 1 << 1;
 
     if (!_previouslySelectedRowIndexes)
         _previouslySelectedRowIndexes = [_selectedRowIndexes copy];
-
-    [self selectRowIndexes:newSelection byExtendingSelection:NO];
-
+    
     [self _noteSelectionIsChanging];
+    
+    [self selectRowIndexes:newSelection byExtendingSelection:NO];
 }
 
 - (void)_noteSelectionIsChanging
