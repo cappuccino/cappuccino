@@ -416,7 +416,7 @@ CPTableColumnUserResizingMask   = 1 << 1;
             bindingInfo = [bindingsDictionary objectForKey:bindingName]._info,
             destination = [bindingInfo objectForKey:CPObservedObjectKey],
             keyPath = [bindingInfo objectForKey:CPObservedKeyPathKey];
-        console.log(bindingName+" : "+keyPath+" : "+aRow+" : "+[[destination valueForKeyPath:keyPath] objectAtIndex:aRow]);
+        // console.log(bindingName+" : "+keyPath+" : "+aRow+" : "+[[destination valueForKeyPath:keyPath] objectAtIndex:aRow]);
         [aDataView setValue:[[destination valueForKeyPath:keyPath] objectAtIndex:aRow] forKey:bindingPath];
     }
 }
