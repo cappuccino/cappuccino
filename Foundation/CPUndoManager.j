@@ -22,6 +22,7 @@
 
 @import "CPObject.j"
 @import "CPInvocation.j"
+@import "CPProxy.j"
 
 
 var CPUndoManagerNormal     = 0,
@@ -177,8 +178,10 @@ var _CPUndoGroupingParentKey        = @"_CPUndoGroupingParentKey",
     id              _currentGrouping;
     int             _state;
     CPString        _actionName;
+
     id              _preparedTarget;
-    
+    id              _undoManagerProxy;
+
     CPArray         _runLoopModes;
     BOOL            _registeredWithRunLoop;
 }
@@ -200,7 +203,9 @@ var _CPUndoGroupingParentKey        = @"_CPUndoGroupingParentKey",
         
         [self setRunLoopModes:[CPDefaultRunLoopMode]];
         [self setGroupsByEvent:YES];
-        _performRegistered = NO;
+
+        _undoManagerProxy = [_CPUndoManagerProxy alloc];
+        _undoManagerProxy._undoManager = self;
     }
     
     return self;
@@ -244,14 +249,14 @@ var _CPUndoGroupingParentKey        = @"_CPUndoGroupingParentKey",
 {
     _preparedTarget = aTarget;
     
-    return self;
+    return _undoManagerProxy;
 }
 
 /*
     FIXME This method doesn't seem to do anything right
     @ignore
 */
--(CPMethodSignature)methodSignatureForSelector:(SEL)aSelector
+- (CPMethodSignature)_methodSignatureOfPreparedTargetForSelector:(SEL)aSelector
 {
     if ([_preparedTarget respondsToSelector:aSelector])
         return 1;
@@ -264,7 +269,7 @@ var _CPUndoGroupingParentKey        = @"_CPUndoGroupingParentKey",
     target on the invocation, and adds it to the current grouping.
     @param anInvocation the message to record
 */
-- (void)forwardInvocation:(CPInvocation)anInvocation
+- (void)_forwardInvocationToPreparedTarget:(CPInvocation)anInvocation
 {
     if (_disableCount > 0)
         return;
@@ -715,6 +720,23 @@ var CPUndoManagerRedoStackKey       = @"CPUndoManagerRedoStackKey",
 
     [aCoder encodeObject:_runLoopModes forKey:CPUndoManagerRunLoopModesKey];
     [aCoder encodeBool:_groupsByEvent forKey:CPUndoManagerGroupsByEventKey];
+}
+
+@end
+
+@implementation _CPUndoManagerProxy : CPProxy
+{
+    CPUndoManager   _undoManager;
+}
+
+- (CPMethodSignature)methodSignatureForSelector:(SEL)aSelector
+{
+    return [_undoManager _methodSignatureOfPreparedTargetForSelector:aSelector];
+}
+
+- (void)forwardInvocation:(CPInvocation)anInvocation
+{
+    [_undoManager _forwardInvocationToPreparedTarget:anInvocation];
 }
 
 @end

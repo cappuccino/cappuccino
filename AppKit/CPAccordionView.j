@@ -312,7 +312,7 @@
 
     _contentView = aView;
 
-    [_contentView addObserver:self forKeyPath:@"frame" options:0 context:NULL];
+    [_contentView addObserver:self forKeyPath:@"frame" options:CPKeyValueObservingOptionOld | CPKeyValueObservingOptionNew context:NULL];
 
     [self addSubview:_contentView];
 

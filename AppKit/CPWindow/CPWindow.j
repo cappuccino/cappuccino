@@ -2369,9 +2369,21 @@ var keyViewComparator = function(a, b, context)
 */
 - (CPUndoManager)undoManager
 {
+    // If we've ever created an undo manager, return it.
+    if (_undoManager)
+        return _undoManager;
+
+    // If not, check to see if the document has one.
+    var documentUndoManager = [[_windowController document] undoManager];
+
+    if (documentUndoManager)
+        return documentUndoManager;
+
+    // If not, check to see if the delegate has one.
     if (_delegateRespondsToWindowWillReturnUndoManagerSelector)
         return [_delegate windowWillReturnUndoManager:self];
-    
+
+    // If not, create one.
     if (!_undoManager)
         _undoManager = [[CPUndoManager alloc] init];
 
