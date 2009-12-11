@@ -160,6 +160,7 @@
     bob.name = "paul";    
 
     [bob addObserver:self forKeyPath:@"bobName" options:0 context:"testDependentKeyObservation"];
+    [bob addObserver:self forKeyPath:@"twiceRemoved" options:0 context:"testDependentKeyObservation2"];
 
     [bob setValue:@"bob" forKey:@"name"];
 
@@ -497,7 +498,18 @@
                      message:@"expected key value change for bobName, got: " + aKeyPath];
 
             [self assertTrue:oldValue === "BOB! paul"
-                     message:@"expected old value to be \"BOB! paul\", got: " + oldValue];
+                     message:@"expected old value of " + aKeyPath + " to be \"BOB! paul\", got: " + oldValue];
+
+            _sawDependentObservation = YES;
+            break;
+
+        case "testDependentKeyObservation2":
+
+            [self assertTrue:aKeyPath === "twiceRemoved"
+                     message:@"expected key value change for twiceRemoved, got: " + aKeyPath];
+
+            [self assertTrue:oldValue === "BOB! paul twice"
+                     message:@"expected old value to be \"BOB! paul twice\", got: " + oldValue];
 
             _sawDependentObservation = YES;
             break;
@@ -547,6 +559,11 @@
     CarTester   car;
 }
 
++ (CPSet)keyPathsForValuesAffectingTwiceRemoved
+{
+    return [CPSet setWithObject:"bobName"];
+}
+
 + (CPSet)keyPathsForValuesAffectingBobName
 {
     return [CPSet setWithObject:"name"];
@@ -560,6 +577,11 @@
 - (CPString)bobName
 {
     return "BOB! " + name;
+}
+
+- (CPString)twiceRemoved
+{
+    return [self bobName] + " twice";
 }
 
 @end
