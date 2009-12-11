@@ -389,7 +389,7 @@ var kvoNewAndOld = CPKeyValueObservingOptionNew|CPKeyValueObservingOptionOld,
 
     for (; index < count; ++index)
     {
-        var key = dependentKeyPaths[index];
+        var keyPath = dependentKeyPaths[index];
 
         [self _sendNotificationsForKey:keyPath
                          changeOptions:isBefore ? [changeOptions copy] : _changesForKey[keyPath]
