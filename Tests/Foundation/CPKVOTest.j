@@ -163,7 +163,7 @@
 
     [bob setValue:@"bob" forKey:@"name"];
 
-    [self assertTrue: _sawDependentObservation message: "asked for bobName but did not recieve corresponding notification"];
+    [self assertTrue:_sawDependentObservation message:"asked for bobName but did not recieve corresponding notification"];
     [self assertTrue: [bob valueForKey:@"bobName"] === @"BOB! set_bob" message: "should have been BOB! set_bob, was "+[bob valueForKey:@"bobName"]];    
 }
 
@@ -492,7 +492,13 @@
             break;
             
         case "testDependentKeyObservation":
-            [self assertTrue: aKeyPath == "bobName" message: @"expected key value change for bobName, got: "+aKeyPath];
+
+            [self assertTrue:aKeyPath === "bobName"
+                     message:@"expected key value change for bobName, got: " + aKeyPath];
+
+            [self assertTrue:oldValue === "BOB! paul"
+                     message:@"expected old value to be \"BOB! paul\", got: " + oldValue];
+
             _sawDependentObservation = YES;
             break;
 
@@ -553,7 +559,7 @@
 
 - (CPString)bobName
 {
-    return "BOB! "+name;
+    return "BOB! " + name;
 }
 
 @end
