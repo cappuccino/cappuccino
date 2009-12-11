@@ -33,6 +33,10 @@
 
 @implementation CPBundle : CPObject
 {
+    //properties set up in file.js
+    //this.path       = NULL;
+    //this.info       = NULL;
+    //this._URIMap    = { };
 }
 
 + (id)alloc
@@ -185,13 +189,25 @@
 
 - (void)connection:(CPURLConnection)aConnection didFailWithError:(CPError)anError
 {
-    alert("Couldnot find bundle:" + anError)
+    if ([_delegate respondsToSelector:@selector(bundle:didFailWithError:)])
+        [_delegate bundle:self didFailWithError:anError];
+
+    CPLog.error("Could not find bundle: " + self);
 }
 
 - (void)connectionDidFinishLoading:(CPURLConnection)aConnection
 {
 }
 
+- (CPString)description
+{
+    return [super description] + "(" + path + ")";
+}
+
 @end
 
 objj_bundle.prototype.isa = CPBundle;
+objj_bundle.prototype.toString = function()
+{
+    return [this description];
+}

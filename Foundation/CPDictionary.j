@@ -609,3 +609,7 @@
 @end
 
 objj_dictionary.prototype.isa = CPDictionary;
+objj_bundle.prototype.toString = function()
+{
+    return [this description];
+}
