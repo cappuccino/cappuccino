@@ -607,10 +607,10 @@ function objj_decompile(aString, bundle)
     var stream = new objj_markedStream(aString);
     
     if (stream.magicNumber() != STATIC_MAGIC_NUMBER)
-        objj_exception_throw(new objj_exception(OBJJUnrecognizedFormatException, "*** Could not recognize executable code format."));
+        objj_exception_throw(new objj_exception(OBJJUnrecognizedFormatException, "*** Could not recognize executable code format in bundle: "+bundle));
     
     if (stream.version() != 1.0)
-        objj_exception_throw(new objj_exception(OBJJUnrecognizedFormatException, "*** Could not recognize executable code format."));
+        objj_exception_throw(new objj_exception(OBJJUnrecognizedFormatException, "*** Could not recognize executable code format in bundle: "+bundle));
     
     var file = NULL,
         files = [],
