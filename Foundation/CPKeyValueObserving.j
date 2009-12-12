@@ -373,19 +373,28 @@ var kvoNewAndOld = CPKeyValueObservingOptionNew|CPKeyValueObservingOptionOld,
         else if (!isBefore)
             [observerInfo.observer observeValueForKeyPath:aKey ofObject:_targetObject change:changes context:observerInfo.context];
     }
-    
+
     var dependentKeysMap = _nativeClass[DependentKeysKey];
 
     if (!dependentKeysMap)
         return;
 
-    var keysComposedOfKey = [dependentKeysMap[aKey] allObjects];
-    
-    if (!keysComposedOfKey)
+    var dependentKeyPaths = [dependentKeysMap[aKey] allObjects];
+
+    if (!dependentKeyPaths)
         return;
 
-    for (var i=0, count=keysComposedOfKey.length; i<count; i++)
-        [self _sendNotificationsForKey:keysComposedOfKey[i] changeOptions:changeOptions isBefore:isBefore];
+    var index = 0,
+        count = [dependentKeyPaths count];
+
+    for (; index < count; ++index)
+    {
+        var keyPath = dependentKeyPaths[index];
+
+        [self _sendNotificationsForKey:keyPath
+                         changeOptions:isBefore ? [changeOptions copy] : _changesForKey[keyPath]
+                              isBefore:isBefore];
+    }
 }
 
 @end

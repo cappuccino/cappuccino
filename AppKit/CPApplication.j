@@ -701,7 +701,7 @@ CPRunContinuesResponse  = -1002;
 - (BOOL)sendAction:(SEL)anAction to:(id)aTarget from:(id)aSender
 {
     var target = [self targetForAction:anAction to:aTarget from:aSender];
-    
+
     if (!target)
         return NO;
     
