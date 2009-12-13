@@ -82,7 +82,7 @@ var CPPasteboards = nil,
     
     CPPasteboards = [CPDictionary dictionary];
 
-    if (typeof window.cpPasteboardWithName !== undefined)
+    if (typeof window.cpPasteboardWithName !== "undefined")
         supportsNativePasteboard = YES;
 }
 
