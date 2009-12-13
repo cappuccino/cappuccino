@@ -43,11 +43,14 @@ CPURLPboardType         = @"CPURLPboardType";
 CPImagesPboardType      = @"CPImagesPboardType";
 CPVideosPboardType      = @"CPVideosPboardType";
 
+UTF8PboardType          = @"public.utf8-plain-text";
+
 // Deprecated
 CPImagePboardType       = @"CPImagePboardType";
 
 
-var CPPasteboards = nil;
+var CPPasteboards = nil,
+    supportsNativePasteboard = NO;
 
 /*! 
     @ingroup appkit
@@ -63,6 +66,8 @@ var CPPasteboards = nil;
     
     unsigned        _changeCount;
     CPString        _stateUID;
+
+    WebScriptObject _nativePasteboard;
 }
 
 /*
@@ -76,6 +81,9 @@ var CPPasteboards = nil;
     [self setVersion:1.0];
     
     CPPasteboards = [CPDictionary dictionary];
+
+    if (typeof window.cpPasteboardWithName !== "undefined")
+        supportsNativePasteboard = YES;
 }
 
 /*!
@@ -94,7 +102,7 @@ var CPPasteboards = nil;
 + (id)pasteboardWithName:(CPString)aName
 {
     var pasteboard = [CPPasteboards objectForKey:aName];
-    
+
     if (pasteboard)
         return pasteboard;
     
@@ -118,6 +126,9 @@ var CPPasteboards = nil;
         _provided = [CPDictionary dictionary];
         
         _changeCount = 0;
+
+        if (supportsNativePasteboard)
+            _nativePasteboard = window.cpPasteboardWithName(aName);
     }
     
     return self;
@@ -146,7 +157,16 @@ var CPPasteboards = nil;
         
         [_owners setObject:anOwner forKey:type];
     }
-    
+
+    if (_nativePasteboard)
+    {
+        var nativeTypes = [types copy];
+        if ([types containsObject:CPStringPboardType])
+            nativeTypes.push(UTF8PboardType);
+
+        _nativePasteboard.addTypes_(nativeTypes);
+    }
+
     return ++_changeCount;
 }
 
@@ -167,7 +187,16 @@ var CPPasteboards = nil;
     
     while (count--)
         [_owners setObject:anOwner forKey:_types[count]];
-        
+
+    if (_nativePasteboard)
+    {
+        var nativeTypes = [types copy];
+        if ([types containsObject:CPStringPboardType])
+            nativeTypes.push(UTF8PboardType);
+
+        _nativePasteboard.declareTypes_(nativeTypes);
+    }
+
     return ++_changeCount;
 }
 
@@ -180,7 +209,10 @@ var CPPasteboards = nil;
 - (BOOL)setData:(CPData)aData forType:(CPString)aType
 {
     [_provided setObject:aData forKey:aType];
-    
+
+    if (aType === CPStringPboardType)
+        [self setData:aData forType:UTF8PboardType];
+
     return YES;
 }
 
@@ -203,7 +235,7 @@ var CPPasteboards = nil;
 */
 - (void)setString:(CPString)aString forType:(CPString)aType
 {
-    return [self setPropertyList:aString forType:aType];
+    [self setPropertyList:aString forType:aType];
 }
 
 // Determining Types

@@ -376,6 +376,7 @@ var HORIZONTAL_MARGIN   = 3.0,
             shadowStyle.font = [_font ? _font : [CPFont systemFontOfSize:12.0] cssString];
             shadowStyle.position = "absolute";
             shadowStyle.whiteSpace = textStyle.whiteSpace;
+            shadowStyle.color = [_textShadowColor cssString];
 
             shadowStyle.zIndex = 150;
             shadowStyle.textOverflow = textStyle.textOverflow;
