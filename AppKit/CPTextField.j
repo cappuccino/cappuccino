@@ -789,9 +789,127 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 #endif
 }
 
+- (void)copy:(id)sender
+{
+    var selectedRange = [self selectedRange];
+
+    if (selectedRange.length < 1)
+        return;
+
+    var pasteboard = [CPPasteboard generalPasteboard],
+        stringValue = [self stringValue],
+        stringForPasting = [stringValue substringWithRange:selectedRange];
+
+    [pasteboard declareTypes:[CPStringPboardType] owner:nil];
+    [pasteboard setString:stringForPasting forType:CPStringPboardType];    
+}
+
+- (void)cut:(id)sender
+{
+    [self copy:sender];
+    [self deleteBackwards:sender];
+}
+
+- (void)paste:(id)sender
+{
+    var pasteboard = [CPPasteboard generalPasteboard];
+    
+    if (![[pasteboard types] containsObject:CPStringPboardType])
+        return;
+
+    [self deleteBackwards:sender];
+
+    var selectedRange = [self selectedRange],
+        stringValue = [self stringValue],
+        pasteString = [pasteboard stringForType:CPStringPboardType],
+        newValue = [stringValue stringByReplacingCharactersInRange:selectedRange withString:pasteString];
+
+    [self setStringValue:newValue];
+    [self setSelectedRange:CPMakeRange(selectedRange.location+pasteString.length, 0)];
+}
+
+- (CPRange)selectedRange
+{
+    if ([[self window] firstResponder] !== self)
+        return CPMakeRange(0, 0);
+
+    // we wrap this in try catch because firefox will throw an exception in certain instances
+    try 
+    {
+        var inputElement = [self _inputElement],
+            selectionStart = inputElement.selectionStart,
+            selectionEnd = inputElement.selectionEnd;
+
+        if ([selectionStart isKindOfClass:CPNumber])
+            return CPMakeRange(selectionStart, selectionEnd - selectionStart);    
+
+        // browsers which don't support selectionStart/selectionEnd (aka IE).
+        var theDocument = inputElement.ownerDocument || inputElement.document,
+            selectionRange = theDocument.selection.createRange(),
+            range = inputElement.createTextRange();
+
+        if (range.inRange(selectionRange))
+        {
+            range.setEndPoint('EndToStart', selectionRange);
+            return CPMakeRange(range.text.length, selectionRange.text.length);
+        }
+    } 
+    catch (e) 
+    {
+        // fall through to the return
+    }
+
+    return CGMakeRange(0, 0);
+}
+
+- (void)setSelectedRange:(CPRange)aRange
+{
+    if (![[self window] firstResponder] === self)
+        return;
+
+    var inputElement = [self _inputElement];
+
+    try 
+    {
+        if ([inputElement.selectionStart isKindOfClass:CPNumber])
+        {
+            inputElement.selectionStart = aRange.location;
+            inputElement.selectionEnd = CPMaxRange(aRange);
+        }
+        else
+        {
+            // browsers which don't support selectionStart/selectionEnd (aka IE).
+            var theDocument = inputElement.ownerDocument || inputElement.document,
+                existingRange = theDocument.selection.createRange(),
+                range = inputElement.createTextRange();
+    
+            if (range.inRange(existingRange))
+            {
+                range.collapse(true);
+                range.move('character', aRange.location);
+                range.moveEnd('character', aRange.length);
+                range.select();
+            }
+        }
+    }
+    catch (e)
+    {
+    }
+}
+
 - (void)selectAll:(id)sender
 {
     [self selectText:sender];
+}
+
+- (void)deleteBackwards:(id)sender
+{
+    var selectedRange = [self selectedRange],
+        stringValue = [self stringValue],
+        newValue = [stringValue stringByReplacingCharactersInRange:selectedRange withString:""];
+
+    [self setStringValue:newValue];
+    [self setSelectedRange:CPMakeRange(selectedRange.location, 0)];
 }
 
 #pragma mark Setting the Delegate
