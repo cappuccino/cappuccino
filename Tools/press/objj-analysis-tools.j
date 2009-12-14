@@ -1,21 +1,23 @@
-var objjPath    = OBJJ_HOME+'/lib/Frameworks/Objective-J/rhino.platform/Objective-J.js',
-    bridgePath  = OBJJ_HOME+'/lib/press/bridge.js',
-    envPath     = "/Users/tlrobinson/280North/git/cappuccino/Tools/press/env.js";
-    
+var FILE = require("file");
+
 /*
     param context includes
         scope:                  a global variable containing objj_files hash
-        processedFiles:         hash containing file paths which have already been analyzed
+        ctx:                    js context
         dependencies:           hash mapping from paths to an array of global variables defined by that file
         [importCallback]:       callback function that is called for each imported file (takes importing file path, and imported file path parameters)
         [referencedCallback]:   callback function that is called for each referenced file (takes referencing file path, referenced file path parameters, and list of tokens)
         [importedFiles]:        hash that will contain a mapping of file names to a hash of imported files
         [referencedFiles]:      hash that will contain a mapping of file names to a hash of referenced files (which contains a hash of tokens referenced)
+        [processedFiles]:       hash containing file paths which have already been analyzed
         
     param file is an objj_file object containing path, fragments, content, bundle, etc
 */
 function traverseDependencies(context, file)
 {
+    if (!context.processedFiles)
+        context.processedFiles = {};
+    
     if (context.processedFiles[file.path])
         return;
     context.processedFiles[file.path] = true;
@@ -23,7 +25,7 @@ function traverseDependencies(context, file)
     var ignoreImports = false;
     if (context.ignoreAllImports)
     {
-        CPLog.warn("Ignoring all import fragments. ("+file.path+")");
+        CPLog.warn("Ignoring all import fragments. ("+context.relativeToRootPath(file.path)+")");
         ignoreImports = true;
     }
     else if (context.ignoreFrameworkImports)
@@ -31,7 +33,7 @@ function traverseDependencies(context, file)
         var matches = file.path.match(new RegExp("([^\\/]+)\\/([^\\/]+)\\.j$")); // Matches "ZZZ/ZZZ.j" (e.x. AppKit/AppKit.j and Foundation/Foundation.j)
         if (matches && matches[1] === matches[2])
         {
-            CPLog.warn("Framework import file! Ignoring all import fragments. ("+file.path+")");
+            CPLog.warn("Framework import file! Ignoring all import fragments. ("+context.relativeToRootPath(file.path)+")");
             ignoreImports = true;
         }
     }
@@ -40,9 +42,9 @@ function traverseDependencies(context, file)
     if (!file.fragments)
     {
         if (file.included)
-            CPLog.warn(file.path + " is included but missing fragments");
+            CPLog.warn(context.relativeToRootPath(file.path) + " is included but missing fragments");
         else
-            CPLog.warn("Preprocessing " + file.path);
+            CPLog.warn("Preprocessing " + context.relativeToRootPath(file.path));
         
         file.fragments = objj_preprocess(file.contents, file.bundle, file);
     }
@@ -53,17 +55,18 @@ function traverseDependencies(context, file)
     
     if (!context.bundleImages[file.bundle.path])
     {
-        var resourcesFile = new java.io.File(dirname(file.bundle.path) + "/Resources");
-        if (resourcesFile.exists())
+        var resourcesPath = FILE.path(file.bundle.path).dirname().join("/Resources");
+        if (resourcesPath.exists())
         {
             context.bundleImages[file.bundle.path] = {};
             
-            var pngFiles = find(resourcesFile, (new RegExp("\\.png$")));
-            for (var i = 0; i < pngFiles.length; i++)
-            {
-                var path = pathRelativeTo(pngFiles[i].getCanonicalPath(), resourcesFile.getCanonicalPath());
-                context.bundleImages[file.bundle.path][path] = 1;
-            }
+            resourcesPath.glob("**/*.png").forEach(function(png) {
+                var pngPath = resourcesPath.join(png);
+                var relativePath = pathRelativeTo(pngPath.absolute(), resourcesPath.absolute());
+                
+                // this is used as a bit mask, not a boolean
+                context.bundleImages[file.bundle.path][relativePath] = 1;
+            });
         }
     }
     var images = context.bundleImages[file.bundle.path];
@@ -71,7 +74,7 @@ function traverseDependencies(context, file)
     var referencedFiles = {},
         importedFiles = {};
     
-    CPLog.debug("Processing " + file.path + " fragments ("+file.fragments.length+")");
+    CPLog.debug("Processing " + file.fragments.length + " fragments in " + context.relativeToRootPath(file.path));
     for (var i = 0; i < file.fragments.length; i++)
     {
         var fragment = file.fragments[i];
@@ -119,10 +122,10 @@ function traverseDependencies(context, file)
                     if (importedFile != file.path)
                         importedFiles[importedFile] = true;
                     else
-                        CPLog.error("Ignoring self import (why are you importing yourself!?): " + file.path);
+                        CPLog.error("Ignoring self import (why are you importing yourself?!): " + context.relativeToRootPath(file.path));
                 }
                 else
-                    CPLog.error("Couldn't find file for import " + fragment.info + "("+fragment.type+")");
+                    CPLog.error("Couldn't find file for import " + fragment.info + " ("+fragment.type+")");
             }
         }
     }
@@ -197,11 +200,9 @@ function findImportInObjjFiles(scope, fragment)
 }
 
 // given a fresh scope and the path to a root source file, determine which files define each global variable
-function findGlobalDefines(context, scope, rootPath, evaledFragments)
+function findGlobalDefines(context, mainPath, evaledFragments)
 {
-    addMockBrowserEnvironment(scope);
-    
-    var ignore = cloneProperties(scope, true);
+    var ignore = cloneProperties(context.scope, true);
     ignore['bundle'] = true;
     
     var dependencies = {};
@@ -217,18 +218,18 @@ function findGlobalDefines(context, scope, rootPath, evaledFragments)
     //}
     
     // OVERRIDE fragment_evaluate_file
-    var fragment_evaluate_file_original = scope.fragment_evaluate_file;
-    scope.fragment_evaluate_file = function(aFragment) {
+    var fragment_evaluate_file_original = context.scope.fragment_evaluate_file;
+    context.scope.fragment_evaluate_file = function(aFragment) {
         return fragment_evaluate_file_original(aFragment);
     }
 
     // OVERRIDE fragment_evaluate_code
-    var fragment_evaluate_code_original = scope.fragment_evaluate_code;
-    scope.fragment_evaluate_code = function(aFragment) {
+    var fragment_evaluate_code_original = context.scope.fragment_evaluate_code;
+    context.scope.fragment_evaluate_code = function(aFragment) {
         
-        CPLog.debug("Evaling "+aFragment.file.path + " / " + aFragment.bundle.path);
+        CPLog.debug("Evaluating " + context.relativeToRootPath(aFragment.file.path) + " (" + context.relativeToRootPath(aFragment.bundle.path) + ")");
     
-        var before = cloneProperties(scope);
+        var before = cloneProperties(context.scope);
         
         if (evaledFragments)
         {
@@ -238,20 +239,23 @@ function findGlobalDefines(context, scope, rootPath, evaledFragments)
         var result = fragment_evaluate_code_original(aFragment);
     
         var definedGlobals = {};
-        diff(before, scope, ignore, definedGlobals, definedGlobals, null);
+        diff(before, context.scope, ignore, definedGlobals, definedGlobals, null);
         dependencies[aFragment.file.path] = definedGlobals;
     
         return result;
     }
 
-
-    runWithScope(context, scope, function(importName) {    
+    runWithScope(context, function(importName) {    
         objj_import(importName, true, NULL);
-    }, [rootPath]);
+    }, [mainPath]);
     
     return dependencies;
 }
 
+// takes a hash mapping from file names to hashes of global names defined in each file
+//    globals = { fileName { globalName : true }}
+// returns a hash mapping from global names to arrays of file names in which those globals are defined
+//    dependencies = { globalName : [fileName] }
 function coalesceGlobalDefines(globals)
 {
     var dependencies = {};
@@ -269,69 +273,70 @@ function coalesceGlobalDefines(globals)
     return dependencies;
 }
 
-// create a new scope loaded with Objective-J
-function makeObjjScope(context, debug)
+// create a new scope loaded with Narwhal and Objective-J
+function makeObjjScope(ctx, debug)
 {
-    // init standard js scope objects
-    var scope = context.initStandardObjects();
-
-    if (debug)
-    {
-        scope.objj_alert = print;
-        scope.debug = true;
-    }
+    // init standard JS scope objects
+    var scope = ctx.initStandardObjects();
     
-    // give the scope "print"
-    scope.print = function(value) { Packages.java.lang.System.out.println(String(value)); };
+    // set these properties required for Narwhal bootstrapping
+    scope.NARWHAL_HOME = system.prefix;
+    scope.NARWHAL_ENGINE_HOME = FILE.join(system.prefix, "engines", "rhino");
     
-    // load and eval fake browser environment
-    //var envSource = readFile(envPath);
-    //if (envSource)
-    //    context.evaluateString(scope, envSource, "env.js", 1, null);
-    //else
-    //     CPLog.warn("Missing env.js");
-        
-    // load and eval the bridge
-    var bridgeSource = readFile(bridgePath);
-    if (bridgeSource)
-        context.evaluateString(scope, bridgeSource, "bridge.js", 1, null);
-    else
-        CPLog.warn("Missing bridge.js");
-
-    // load and eval obj-j
-    var objjSource = readFile(objjPath);
-    if (objjSource)
-        context.evaluateString(scope, objjSource, "Objective-J.js", 1, null);
-    else
-        CPLog.warn("Missing Objective-J.js");
+    // load the bootstrap.js for narwhal-rhino
+    var bootstrapPath = FILE.join(scope.NARWHAL_ENGINE_HOME, "bootstrap.js");
+    ctx.evaluateReader(scope,
+        new Packages.java.io.FileReader(bootstrapPath),
+        "bootstrap.js",
+        1,
+        null
+    );
     
-    return scope;
-}
-
-// run a function within the given scope (func can be a function object if the source of the function is returned by toString() as it is by default)
-function runWithScope(context, scope, func, arguments)
-{
-    scope.__runWithScopeArgs = arguments || [];
-
-    var code = "("+func+").apply(this, this.__runWithScopeArgs); serviceTimeouts();";
-
-    return context.evaluateString(scope, code, "<cmd>", 1, null);
+    // get the Objective-J module from this scope, return the window object.
+    var OBJJ = scope.require("objective-j");
+    
+    addMockBrowserEnvironment(OBJJ.window);
+    
+    return OBJJ.window;
 }
 
 // add a mock browser environment to the provided scope
 function addMockBrowserEnvironment(scope)
 {
     // TODO: complete this. or use env.js?
-    
-    scope.Element = function() {
-        this.style = {}
-    }
-    
-    scope.document = {
-        createElement : function() {
-            return new scope.Element();
+
+    if (!scope.window)
+        scope.window = scope;
+
+    if (!scope.location)
+        scope.location = {};
+
+    if (!scope.location.href)
+        scope.location.href = "";
+
+    if (!scope.Element)
+        scope.Element = function() {
+            this.style = {}
         }
-    }
+
+    if (!scope.document)
+        scope.document = {
+            createElement : function() {
+                return new scope.Element();
+            }
+        }
+}
+
+// run a function within the given scope (func can be a function object if the source of the function is returned by toString() as it is by default)
+function runWithScope(context, func, args)
+{
+    var functionInScope = context.ctx.compileFunction(context.scope, String(func), "<runWithScope>", 1, null);
+
+    var result = functionInScope.apply(context.scope, args);
+
+    context.scope.require('browser/timeout').serviceTimeouts();    
+
+    return result;
 }
 
 // does a shallow copy of an object. if onlyList is true, it sets each property to "true" instead of the actual value
@@ -362,18 +367,4 @@ function allKeys(object)
     for (var i in object)
         result.push(i)
     return result.sort();
-}
-
-function find(src, regex)
-{
-    var results = [];
-    var files = src.listFiles();
-    for (var i = 0; i < files.length; i++)
-    {
-        if (files[i].isFile() && regex.test(files[i].getAbsolutePath()))
-            results.push(files[i]);
-        else if (files[i].isDirectory())
-            results = Array.prototype.concat.apply(results, find(files[i], regex));
-    }
-    return results;
 }

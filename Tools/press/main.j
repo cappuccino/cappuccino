@@ -1,139 +1,182 @@
+var OS = require("os");
+if (system.engine !== "rhino") {
+    system.args.splice(1,2); // remove library path and main.j
+    var cmd = "NARWHAL_ENGINE_HOME='' NARWHAL_ENGINE='rhino' " + system.args.map(OS.enquote).join(" ");
+    OS.exit(OS.system(cmd));
+}
+
 @import <Foundation/Foundation.j>
 
 @import "objj-analysis-tools.j"
 
-var defaultMain = "main.j",
-    defaultFrameworks = "Frameworks";
+var ARGS = require("args");
+var FILE = require("file");
+var OS = require("os");
+var DOM = require("browser/dom");
 
-var usageMessage =
-"Usage: press root_directory output_directory [options]\n\
-        --main path         The relative path (from root_directory) to the main file (default: 'main.j')\n\
-        --frameworks path   The relative path (from root_directory) to the frameworks directory (default: 'Frameworks')\n\
-        --platforms         Platform names, colon separated (default: 'browser:objj')\n\
-        --png               Run pngcrush on all PNGs (pngcrush must be installed!)\n\
-        --flatten           Flatten all code into a single Application.js file and attempt add script tag to index.html (useful for Adobe AIR and CDN deployment)\n\
-        --nostrip           Don't strip any files\n\
-        --v                 Verbose";
+var serializer = new DOM.XMLSerializer();
 
-function main()
+var parser = new ARGS.Parser();
+
+parser.usage("INPUT_PROJECT OUTPUT_PROJECT");
+parser.help("Optimizes Cappuccino applications for deployment to the web.");
+
+parser.option("-m", "--main", "main")
+    .def("main.j")
+    .set()
+    .help("The relative path (from INPUT_PROJECT) to the main file (default: 'main.j')");
+
+parser.option("-F", "--framework", "frameworks")
+    .def(["Frameworks"])
+    .push()
+    .help("Add a frameworks directory, relative to INPUT_PROJECT (default: ['Frameworks'])");
+
+parser.option("-E", "--environment", "environments")
+    .def(['W3C', 'IE7', 'IE8'])
+    .push()
+    .help("Add a platform name (default: ['W3C', 'IE7', 'IE8'])");
+
+parser.option("-f", "--flatten", "flatten")
+    .def(false)
+    .set(true)
+    .help("Flatten all code into a single Application.js file and attempt add script tag to index.html (useful for Adobe AIR and CDN deployment)");
+
+parser.option("-n", "--nostrip", "strip")
+    .def(true)
+    .set(false)
+    .help("Do not strip any files");
+
+parser.option("-p", "--pngcrush", "png")    
+    .def(false)
+    .set(true)
+    .help("Run pngcrush on all PNGs (pngcrush must be installed!)");
+
+parser.option("-v", "--verbose", "verbose")
+    .def(false)
+    .set(true)
+    .help("Verbose logging");
+
+parser.helpful();
+
+function main(args)
 {
-    var rootDirectory = null,
-        outputDirectory = null,
-        mainFilename = null,
-        frameworksDirectory = null,
-        platforms = ['browser', 'objj'],
-        optimizePNG = false,
-        flatten = false,
-        noStrip = false,
-        verbose = false;
+    var options = parser.parse(args);
     
-    var usageError = false;
-    while (system.args.length && !usageError)
-    {
-        var arg = system.args.shift();
-        switch(arg)
-        {
-            case "--main":
-                if (system.args.length)
-                    mainFilename = system.args.shift();
-                else
-                    usageError = true;
-                break;
-            case "--frameworks":
-                if (system.args.length)
-                    frameworksDirectory = system.args.shift().replace(/\/$/, "");
-                else
-                    usageError = true;
-                break;
-            case "--platforms":
-                if (system.args.length)
-                    platforms = system.args.shift().split(":");
-                else
-                    usageError = true;
-                break;
-            case "--png":
-                optimizePNG = true;
-                break;
-            case "--flatten":
-                flatten = true;
-                break;
-            case "--nostrip":
-                noStrip = true;
-                break;
-            case "--v":
-                verbose = true;
-                break;
-            default:
-                if (rootDirectory == null)
-                    rootDirectory = arg.replace(/\/$/, "");
-                else if (outputDirectory == null)
-                    outputDirectory = arg.replace(/\/$/, "");
-                else
-                    usageError = true;
-        }
-    }
-    
-    if (verbose)
-        CPLogRegister(CPLogPrint);
-    else
-        CPLogRegisterRange(CPLogPrint, "fatal", "info");
-        
-    if (usageError || rootDirectory == null || outputDirectory == null || !platforms.length)   
-    {
-        print(usageMessage);
+    if (options.args.length < 2) {
+        parser.printUsage(options);
         return;
     }
     
-    rootDirectory = absolutePath(rootDirectory);
+    //if (options.verbose)
+        CPLogRegister(CPLogPrint);
+    //else
+    //    CPLogRegisterRange(CPLogPrint, "fatal", "info");
+
+    var rootPath = FILE.path(options.args[0]).absolute();
+    var outputPath = FILE.path(options.args[1]).absolute();
+
+    press(rootPath, outputPath, options);
+}
+
+function press(rootPath, outputPath, options) {
+    CPLog.info("===========================================");
+    CPLog.info("Application root:    " + rootPath);
+    CPLog.info("Output directory:    " + outputPath);
     
-    // determine main and frameworks paths
-    var mainPath = rootDirectory + "/" + (mainFilename || defaultMain),
-        frameworksPath = rootDirectory + "/" + (frameworksDirectory || defaultFrameworks);
+    var outputFiles = {};
+    
+    // analyze and gather files for each environment:
+    options.environments.forEach(function(environment) {
+        pressEnvironment(rootPath, outputFiles, environment, options);
+    });
+    
+    // phase 4: copy everything and write out the new files
+    CPLog.error("PHASE 4: copy to output ("+rootPath+" to "+outputPath+")");
+    
+    FILE.copyTree(rootPath, outputPath);
+    
+    for (var path in outputFiles) {
+        CPLog.trace("Writing: " + path);
         
-    CPLog.info("Application root:    " + rootDirectory);
-    CPLog.info("Output directory:    " + outputDirectory);
+        var file = outputPath.join(relativeToRootPath(path));
+        
+        var parent = file.dirname();
+        if (!parent.exists()) {
+            CPLog.warn(parent + " doesn't exist, creating directories.");
+            parent.mkdirs();
+        }
+        
+        if (typeof outputFiles[path] !== "string")
+            outputFiles[path] = outputFiles[path].join("");
+        
+        CPLog.info((file.exists() ? "Overwriting: " : "Writing:     ") + file);
+        FILE.write(file, outputFiles[path], { charset : "UTF-8" });
+    }
+    
+    // outputPath.glob("**/Frameworks/Debug").forEach(function(debugFramework) {
+    //     outputPath.join(debugFramework).rmtree();
+    // });
+    // outputPath.join("index-debug.html").remove();
+    
+    if (options.png) {
+        pngcrushDirectory(outputPath);
+    }
+}
+
+function pressEnvironment(rootPath, outputFiles, environment, options) {
+    
+    function relativeToRootPath(path) {
+        return pathRelativeTo(path, rootPath);
+    }
+    
+    var mainPath = String(rootPath.join(options.main));
+    var frameworks = options.frameworks.map(function(framework) { return rootPath.join(framework); });
+    
+    CPLog.info("===========================================");
     CPLog.info("Main file:           " + mainPath)
-    CPLog.info("Frameworks:          " + frameworksPath);
+    CPLog.info("Frameworks:          " + frameworks);
+    CPLog.info("Environment:         " + environment);
     
     // get a Rhino context
-    var cx = Packages.org.mozilla.javascript.Context.getCurrentContext(),
-        scope = makeObjjScope(cx);
+    var ctx = Packages.org.mozilla.javascript.Context.getCurrentContext();
+    var scope = makeObjjScope(ctx); // "scope" is the same as require("objective-j").window;
     
-    // set OBJJ_INCLUDE_PATHS to include the frameworks path
-    scope.OBJJ_INCLUDE_PATHS = [frameworksPath];
-    scope.OBJJ_PLATFORMS = platforms;
+    scope.OBJJ_INCLUDE_PATHS = frameworks;
+    scope.OBJJ_ENVIRONMENTS = [environment, "ObjJ"];
     
     // flattening bookkeeping. keep track of the bundles and evaled code (in the correct order!)
-    var bundleArchives = [],
-        evaledFragments = [];
+    var bundleArchiveResponses = [];
+    var evaledFragments = [];
 
+    // here we hook into didReceiveBundleResponse to record the responses for --flattening
     scope.objj_search.prototype.didReceiveBundleResponseOriginal = scope.objj_search.prototype.didReceiveBundleResponse;
     scope.objj_search.prototype.didReceiveBundleResponse = function(aResponse) {
-        //CPLog.trace("RESPONSE: " + aResponse);
-    
-        var __fakeResponse = {
+        var fakeResponse = {
             success : aResponse.success,
-            filePath : pathRelativeTo(aResponse.filePath, rootDirectory)
+            filePath : relativeToRootPath(aResponse.filePath)
         };
     
         if (aResponse.success)
         {
-            var xmlOutput = new Packages.java.io.ByteArrayOutputStream();
-            outputTransformer(xmlOutput, aResponse.xml, "UTF-8");
-            //__fakeResponse.xml = String(xmlOutput.toString());
-            __fakeResponse.text = CPPropertyListCreate280NorthData(CPPropertyListCreateFromXMLData({ string:String(xmlOutput.toString())})).string;
-            //CPLog.trace("SERIALIZED: " + __fakeResponse.xml.substring(0,100));
+            var xmlString = serializer.serializeToString(aResponse.xml);
+            fakeResponse.text = CPPropertyListCreate280NorthData(CPPropertyListCreateFromXMLData({ string: xmlString })).string;
         }
         
-        bundleArchives.push(__fakeResponse);
-    
+        bundleArchiveResponses.push(fakeResponse);
+        
         this.didReceiveBundleResponseOriginal.apply(this, arguments);
     }
+    
+    var context = {
+        ctx : ctx,
+        scope : scope,
+        relativeToRootPath : relativeToRootPath
+    };
     
     // phase 1: get global defines
     CPLog.error("PHASE 1: Loading application...");
     
-    var globals = findGlobalDefines(cx, scope, mainPath, evaledFragments);
+    var globals = findGlobalDefines(context, mainPath, evaledFragments);
     
     // coalesce the results
     var dependencies = coalesceGlobalDefines(globals);
@@ -141,14 +184,14 @@ function main()
     // Log 
     CPLog.trace("Global defines:");
     for (var i in dependencies)
-        CPLog.trace("    " + i + " => " + dependencies[i]);
+        CPLog.trace("    " + i + " => " + relativeToRootPath(dependencies[i]));
     
     // phase 2: walk the dependency tree (both imports and references) to determine exactly which files need to be included
     CPLog.error("PHASE 2: Walk dependency tree...");
     
     var requiredFiles = {};
     
-    if (noStrip)
+    if (options.nostrip)
     {
         // all files are required. no need for analysis
         requiredFiles = scope.objj_files;
@@ -163,20 +206,13 @@ function main()
         
         CPLog.warn("Analyzing dependencies...");
         
-        var context = {
-            scope : scope,
-            dependencies : dependencies,
-            processedFiles : {},
-            ignoreFrameworkImports : true,
-            importCallback : function(importing, imported) {
-                requiredFiles[imported] = true;
-            },
-            referenceCallback : function(referencing, referenced) {
-                requiredFiles[referenced] = true;
-            }
-        }
+        context.dependencies = dependencies;
+        context.ignoreFrameworkImports = true; // ignores "XXX/XXX.j" imports
+        context.importCallback = function(importing, imported) { requiredFiles[imported] = true; };
+        context.referenceCallback = function(referencing, referenced) { requiredFiles[referenced] = true; }
         
         requiredFiles[mainPath] = true;
+        
         traverseDependencies(context, scope.objj_files[mainPath]);
         
         var count = 0,
@@ -185,12 +221,12 @@ function main()
         {
             if (requiredFiles[path])
             {
-                CPLog.debug("Included: " + path);
+                CPLog.debug("Included: " + relativeToRootPath(path));
                 count++;
             }
             else
             {
-                CPLog.info("Excluded: " + path);
+                CPLog.info("Excluded: " + relativeToRootPath(path));
             }    
             total++;
         }
@@ -207,17 +243,14 @@ function main()
         //}
     }
     
-    var outputFiles = {};
-    
-    if (flatten)
+    if (options.flatten)
     {
         // phase 3a: build single Application.js file (and modified index.html)
         CPLog.error("PHASE 3a: Flattening...");
         
-        var applicationJS = [],
-            indexHTML = readFile(rootDirectory + "/index.html");
-        
-        // shim for faking bundle stuff. kind of a giant hack.
+        // Shim for faking bundle responses.
+        // We're just defining it here so we can serialize the function. It's not used within press.
+        // **************************************************
         var fakeDidReceiveBundleResponse = function(aResponse)
         {
             var bundle = new objj_bundle();
@@ -236,45 +269,52 @@ function main()
 
             objj_bundles[aResponse.filePath] = bundle;
         }
+        // **************************************************
+        
+        var applicationScript = [];
         
         // add fake bundle response bookkeeping
-        applicationJS.push("var __fakeDidReceiveBundleResponse = " + String(fakeDidReceiveBundleResponse));
-        applicationJS.push("var __fakeBundleArchives = " + JSON.stringify(bundleArchives) + ";");
-        applicationJS.push("for (var i = 0; i < __fakeBundleArchives.length; i++) __fakeDidReceiveBundleResponse(__fakeBundleArchives[i]);")
+        applicationScript.push("(function() {")
+        applicationScript.push("    var didReceiveBundleResponse = " + String(fakeDidReceiveBundleResponse));
+        applicationScript.push("    var bundleArchiveResponses = " + JSON.stringify(bundleArchiveResponses) + ";");
+        applicationScript.push("    for (var i = 0; i < bundleArchiveResponses.length; i++)");
+        applicationScript.push("        didReceiveBundleResponse(bundleArchiveResponses[i]);");
+        applicationScript.push("})();");
         
         // add each fragment, wrapped in a function, along with OBJJ_CURRENT_BUNDLE bookkeeping
-        for (var i = 0; i < evaledFragments.length; i++)
-        {
-            if (requiredFiles[evaledFragments[i].file.path])
+        evaledFragments.forEach(function(fragment) {
+            if (requiredFiles[fragment.file.path])
             {
-                applicationJS.push("(function() {");
-                applicationJS.push("var OBJJ_CURRENT_BUNDLE = objj_bundles['"+pathRelativeTo(evaledFragments[i].bundle.path, rootDirectory)+"'];");
-                applicationJS.push(evaledFragments[i].info);
-                applicationJS.push("})();");
+                applicationScript.push("(function(OBJJ_CURRENT_BUNDLE) {");
+                applicationScript.push(fragment.info);
+                applicationScript.push("})(objj_bundles['"+relativeToRootPath(fragment.bundle.path)+"']);");
             }
             else
             {
-                CPLog.info("Stripping " + evaledFragments[i].file.path);
+                CPLog.info("Stripping " + relativeToRootPath(fragment.file.path));
             }
-        }
+        });
         
-        // call main once the page has loaded
-        applicationJS.push(
-            "if (window.addEventListener) \
-                window.addEventListener('load', function(){main()}, false); \
-            else if (window.attachEvent) \
-                window.attachEvent('onload', function(){main()});"
-        );
+        // call main once the page has loaded. FIXME: assumes synchronous script loading?
+        applicationScript.push("if (window.addEventListener)");
+        applicationScript.push("    window.addEventListener('load', main, false);")
+        applicationScript.push("else if (window.attachEvent)")
+        applicationScript.push("    window.attachEvent('onload', main);");
+        
+        var indexHTML = FILE.read(FILE.join(rootPath, "index.html"), { charset : "UTF-8" });
         
         // comment out any OBJJ_MAIN_FILE defintions or objj_import() calls
         indexHTML = indexHTML.replace(/(\bOBJJ_MAIN_FILE\s*=|\bobjj_import\s*\()/g, '//$&');
         
+        var applicationScriptName = "Application-"+environment+".js";
+        var indexHTMLName = "index-"+environment+".html";
+        
         // add a script tag for Application.js at the very end of the <head> block
-        indexHTML = indexHTML.replace(/([ \t]*)(<\/head>)/, '$1    <script src = "Application.js" type = "text/javascript"></script>\n$1$2');
+        indexHTML = indexHTML.replace(/([ \t]*)(<\/head>)/, '$1    <script src = "'+applicationScriptName+'" type = "text/javascript"></script>\n$1$2');
         
         // output Application.js and index.html
-        outputFiles[rootDirectory + "/Application.js"] = applicationJS.join("\n");
-        outputFiles[rootDirectory + "/index.html"] = indexHTML;
+        outputFiles[rootPath.join(applicationScriptName)] = applicationScript.join("\n");
+        outputFiles[rootPath.join(indexHTMLName)] = indexHTML;
     }
     else
     {
@@ -282,43 +322,40 @@ function main()
         CPLog.error("PHASE 3b: Rebuild .sj");
 
         var bundles = {};
-        
+
         for (var path in requiredFiles)
         {
             var file = scope.objj_files[path],
-                filename = basename(path),
-                directory = dirname(path);
-    
+                filename = FILE.basename(path),
+                directory = FILE.dirname(path);
+
             if (file.path != path)
                 CPLog.warn("Sanity check failed (file path): " + file.path + " vs. " + path);
-    
+
             if (file.bundle)
             {
-                var bundleDirectory = dirname(file.bundle.path);
-        
+                var bundleDirectory = FILE.path(file.bundle.path).dirname();
+
                 if (!bundles[file.bundle.path])
                     bundles[file.bundle.path] = file.bundle;
-            
+
                 if (bundleDirectory != directory)
                     CPLog.warn("Sanity check failed (directory path): " + directory + " vs. " + bundleDirectory);
-        
+
                 // if it's in a .sj
                 var dict = file.bundle.info,
-                    replacedFiles = [dict objectForKey:"CPBundleReplacedFiles"];
+                    bundlePlatforms = [dict objectForKey:"CPBundlePlatforms"],
+                    replacedFilePlatforms = [dict objectForKey:"CPBundleReplacedFiles"];
+
+                // compute the platform used for this bundle
+                var platform = "";
+                if (bundlePlatforms)
+                    platform = [bundlePlatforms firstObjectCommonWithArray:scope.OBJJ_PLATFORMS];
+
+                var replacedFiles = [replacedFilePlatforms objectForKey:platform];
                 if (replacedFiles && [replacedFiles containsObject:filename])
                 {
-                    // compute the platform used for this bundle
-                    var platform = "",
-                        bundlePlatforms = [dict objectForKey:"CPBundlePlatforms"];
-                    
-                    if (bundlePlatforms)
-                    {
-                        platform = [bundlePlatforms firstObjectCommonWithArray:scope.OBJJ_PLATFORMS];
-                        if (platform)
-                            platform = platform + ".platform/";
-                    }
-                    
-                    var staticPath = bundleDirectory + "/" + platform + [dict objectForKey:"CPBundleExecutable"];
+                    var staticPath = bundleDirectory.join(platform + ".platform", [dict objectForKey:"CPBundleExecutable"]);
                     if (!outputFiles[staticPath])
                     {
                         outputFiles[staticPath] = [];
@@ -366,7 +403,7 @@ function main()
                                 }
                             }
                             else
-                                CPLog.info("Ignoring import fragment " + file.fragments[i].info + " in " + path);
+                                CPLog.info("Ignoring import fragment " + file.fragments[i].info + " in " + relativeToRootPath(path));
                         }
                         else
                             CPLog.error("Unknown fragment type");
@@ -379,7 +416,7 @@ function main()
                 }
             }
             else
-                CPLog.warn("No bundle for " + path)
+                CPLog.warn("No bundle for " + relativeToRootPath(path))
         }
 
         // phase 3.5: fix bundle plists
@@ -387,11 +424,11 @@ function main()
         
         for (var path in bundles)
         {
-            var directory = dirname(path),
+            var directory = FILE.dirname(path),
                 dict = bundles[path].info,
                 replacedFiles = [dict objectForKey:"CPBundleReplacedFiles"];
             
-            CPLog.info("Modifying .sj: " + path);
+            CPLog.info("Modifying .sj: " + relativeToRootPath(path));
             
             if (replacedFiles)
             {
@@ -415,171 +452,31 @@ function main()
             outputFiles[path] = CPPropertyListCreateXMLData(dict).string;
         }
     }
+}
+
+function pngcrushDirectory(directory) {
+    var directoryPath = FILE.path(directory);
+    var pngs = directoryPath.glob("**/*.png");
     
-    // phase 4: copy everything and write out the new files
-    CPLog.error("PHASE 4: copy to output");
-    
-    var rootDirectoryFile = new Packages.java.io.File(rootDirectory),
-        outputDirectoryFile = new Packages.java.io.File(outputDirectory);
-    
-    // FIXME: intelligently copy only what we need (Resources directories?)
-    copyDirectory(rootDirectoryFile, outputDirectoryFile, optimizePNG);
-    
-    for (var path in outputFiles)
-    {
-        var file = new java.io.File(outputDirectoryFile, pathRelativeTo(path, rootDirectory));
+    system.stderr.print("Running pngcrush on " + pngs.length + " pngs:");
+    pngs.forEach(function(dst) {
+        var dstPath = directoryPath.join(dst);
+        var tmpPath = FILE.path(dstPath+".tmp");
         
-        var parent = file.getParentFile();
-        if (!parent.exists())
-        {
-            CPLog.warn(parent + " doesn't exist, creating directories.");
-            parent.mkdirs();
+        var p = OS.popen(["pngcrush", "-rem", "alla", "-reduce", /*"-brute",*/ dstPath, tmpPath]);
+        if (p.wait()) {
+            CPLog.warn("pngcrush failed. Ensure it's installed and on your PATH.");
         }
-        
-        CPLog.info("Writing out " + file);
-        
-        var writer = new java.io.BufferedWriter(new java.io.FileWriter(file));
-        
-        if (typeof outputFiles[path] == "string")
-            writer.write(outputFiles[path]);
-        else
-            writer.write(outputFiles[path].join("")); 
-        
-        writer.close();
-    }
-}
-
-// Helper Utilities
-
-// TODO: moved elsewhere?
-
-function copyDirectory(src, dst, optimizePNG)
-{
-    CPLog.trace("Copying directory " + src);
-    
-    dst.mkdirs();
-
-    var files = src.listFiles();
-    for (var i = 0; i < files.length; i++)
-    {
-        if (files[i].isFile())
-            copyFile(files[i], new Packages.java.io.File(dst, files[i].getName()), optimizePNG);
-        else if (files[i].isDirectory())
-            copyDirectory(files[i], new Packages.java.io.File(dst, files[i].getName()), optimizePNG);
-    }
-}
-
-function copyFile(src, dst, optimizePNG)
-{
-    if (optimizePNG && (/.png$/).test(src.getName()))
-    {
-        CPLog.warn("Optimizing .png " + src);
-        exec(["pngcrush", "-rem", "alla", "-reduce", /*"-brute",*/ src.getAbsolutePath(), dst.getAbsolutePath()]);
-    }
-    else
-    {
-        CPLog.trace("Copying file " + src);
-        
-        var input = (new Packages.java.io.FileInputStream(src)).getChannel(),
-            output = (new Packages.java.io.FileOutputStream(dst)).getChannel();
-
-        input.transferTo(0, input.size(), output);
-
-        input.close();
-        output.close();
-    }
-}
-
-function dirname(path)
-{
-    return path.substring(0, path.lastIndexOf("/"));
-}
-
-function basename(path)
-{
-    return path.substring(path.lastIndexOf("/") + 1);
-}
-
-function absolutePath(path)
-{
-    return String((new Packages.java.io.File(path)).getCanonicalPath());
+        else {
+            FILE.move(tmpPath, dstPath);
+            system.stderr.write(".").flush();
+        }
+    });
+    system.stderr.print("");
 }
 
 function pathRelativeTo(target, relativeTo)
 {
-    var components = [],
-        targetParts = target.split("/"),
-        relativeParts = relativeTo ? relativeTo.split("/") : [];
-
-    var i = 0;
-    while (i < targetParts.length)
-    {
-        if (targetParts[i] != relativeParts[i])
-            break;
-        i++;
-    }
-    
-    for (var j = i; j < relativeParts.length; j++)
-        components.push("..");
-    
-    for (var j = i; j < targetParts.length; j++)
-        components.push(targetParts[j]);
-    
-    var result = components.join("/");
-    
-    return result;
-}
-
-function exec()
-{
-    var printOutput = false;
-    
-    var runtime = Packages.java.lang.Runtime.getRuntime()
-	var p = runtime.exec.apply(runtime, arguments);
-	
-	var stdout = new Packages.java.io.BufferedReader(new Packages.java.io.InputStreamReader(p.getInputStream())),
-	    stdoutString = "",
-	    stderr = new Packages.java.io.BufferedReader(new Packages.java.io.InputStreamReader(p.getErrorStream())),
-	    stderrString = "";
-	
-	var done = false;
-	while (!done)
-	{
-	    done = true;
-	    if (s = stdout.readLine())
-	    {
-    	    stdoutString += s;
-    	    if (printOutput)
-        	    CPLog.info("exec: " + s);
-        	done = false;
-	    }
-	    if (s = stderr.readLine())
-    	{
-    	    stderrString += s;
-    	    //if (printOutput)
-        	    CPLog.warn("exec: " + s);
-        	done = false;
-    	}
-	}
-
-	var code = p.waitFor();
-		
-	return { code : code, stdout : stdoutString, stderr : stderrString };
-}
-
-function outputTransformer(os, document, encoding, standalone)
-{
-	var domSource       = new Packages.javax.xml.transform.dom.DOMSource(document);
-	var streamResult    = new Packages.javax.xml.transform.stream.StreamResult(os);
-	var tf              =     Packages.javax.xml.transform.TransformerFactory.newInstance();
-
-	var serializer = tf.newTransformer();
-	serializer.setOutputProperty(Packages.javax.xml.transform.OutputKeys.VERSION, "1.0");
-	serializer.setOutputProperty(Packages.javax.xml.transform.OutputKeys.INDENT, "yes");
-	if (encoding)
-		serializer.setOutputProperty(Packages.javax.xml.transform.OutputKeys.ENCODING, encoding);
-	if (standalone)
-		serializer.setOutputProperty(Packages.javax.xml.transform.OutputKeys.STANDALONE,	(standalone ? "yes" : "no"));
-
-	String(serializer.transform(domSource, streamResult));
+    // TODO: fix FILE.relative to always treat the source as a directory
+    return FILE.relative(FILE.join(relativeTo, ""), target);
 }
