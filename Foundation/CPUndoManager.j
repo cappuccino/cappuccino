@@ -171,7 +171,7 @@ var _CPUndoGroupingParentKey        = @"_CPUndoGroupingParentKey",
 {
     CPMutableArray  _redoStack;
     CPMutableArray  _undoStack;
-    
+
     BOOL            _groupsByEvent;
     int             _disableCount;
     int             _levelsOfUndo;
@@ -211,6 +211,21 @@ var _CPUndoGroupingParentKey        = @"_CPUndoGroupingParentKey",
     return self;
 }
 
+- (void)_addUndoInvocation:(CPInvocation)anInvocation
+{
+    if (!_currentGrouping)
+        // Remember that we create these lazily...
+        if ([self groupsByEvent])
+            [self _beginUndoGroupingForEvent];
+        else
+            [CPException raise:CPInternalInconsistencyException reason:"No undo group is currently open"];
+
+    [_currentGrouping addInvocation:anInvocation];
+
+    if (_state === CPUndoManagerNormal)
+        [_redoStack removeAllObjects];
+}
+
 // Registering Undo Operations
 /*!
     Registers an undo operation. You invoke this method with the target of the undo action providing the selector which can perform the undo with the provided object. The object is often a dictionary of the identifying the attribute and their values before the change. The invocation will be added to the current grouping. If the registrations have been disabled through \c -disableUndoRegistration, this method does nothing.
@@ -221,9 +236,7 @@ var _CPUndoGroupingParentKey        = @"_CPUndoGroupingParentKey",
 */
 - (void)registerUndoWithTarget:(id)aTarget selector:(SEL)aSelector object:(id)anObject
 {
-    if (!_currentGrouping)
-        [CPException raise:CPInternalInconsistencyException reason:"No undo group is currently open"];
-
+    // Don't do anything if we're disabled.
     if (_disableCount > 0)
         return;
 
@@ -235,10 +248,7 @@ var _CPUndoGroupingParentKey        = @"_CPUndoGroupingParentKey",
     [invocation setSelector:aSelector];
     [invocation setArgument:anObject atIndex:2];
 
-    [_currentGrouping addInvocation:invocation];
-
-    if (_state == CPUndoManagerNormal)
-        [_redoStack removeAllObjects];
+    [self _addUndoInvocation:invocation];
 }
 /*!
     Prepares the specified target for the undo action.
@@ -271,21 +281,18 @@ var _CPUndoGroupingParentKey        = @"_CPUndoGroupingParentKey",
 */
 - (void)_forwardInvocationToPreparedTarget:(CPInvocation)anInvocation
 {
+    // Don't do anything if we're disabled.
     if (_disableCount > 0)
         return;
-        
-/*    if (_preparedTarget == nil)
-        [NSException raise:NSInternalInconsistencyException
-                    format:@"forwardInvocation called without first preparing a target"];
-    if (_currentGroup == nil)
+
+/*
+if (_currentGroup == nil)
         [NSException raise:NSInternalInconsistencyException
                     format:@"forwardInvocation called without first opening an undo group"];
 */
     [anInvocation setTarget:_preparedTarget];
-    [_currentGrouping addInvocation:anInvocation];
 
-    if (_state == CPUndoManagerNormal)
-        [_redoStack removeAllObjects];
+    [self _addUndoInvocation:anInvocation];
 
     _preparedTarget = nil;
 }
@@ -296,7 +303,11 @@ var _CPUndoGroupingParentKey        = @"_CPUndoGroupingParentKey",
 */
 - (BOOL)canRedo
 {
-    return _redoStack.length > 0;
+    [[CPNotificationCenter defaultCenter]
+        postNotificationName:CPUndoManagerCheckpointNotification
+                      object:self];
+
+    return [_redoStack count] > 0;
 }
 
 /*!
@@ -316,9 +327,9 @@ var _CPUndoGroupingParentKey        = @"_CPUndoGroupingParentKey",
 */
 - (void)undo
 {
-    if ([self groupingLevel] == 1)
+    if ([self groupingLevel] === 1)
         [self endUndoGrouping];
-    
+
     [self undoNestedGroup];
 }
 
@@ -327,28 +338,31 @@ var _CPUndoGroupingParentKey        = @"_CPUndoGroupingParentKey",
 */
 - (void)undoNestedGroup
 { 
-    if (_undoStack.length == 0)
+    if ([_undoStack count] <= 0)
         return;
-    
+
     var defaultCenter = [CPNotificationCenter defaultCenter];
-/*    [[NSNotificationCenter defaultCenter] postNotificationName:NSUndoManagerCheckpointNotification
-                                                        object:self];
-*/
-    [defaultCenter postNotificationName:CPUndoManagerWillUndoChangeNotification object:self];
+
+    [defaultCenter postNotificationName:CPUndoManagerCheckpointNotification
+                                 object:self];
+
+    [defaultCenter postNotificationName:CPUndoManagerWillUndoChangeNotification
+                                 object:self];
 
     var undoGrouping = _undoStack.pop();
-    
+
     _state = CPUndoManagerUndoing;
 
-    [self beginUndoGrouping];
+    [self _beginUndoGrouping];
     [undoGrouping invoke];
     [self endUndoGrouping];
-    
+
     [_CPUndoGrouping _poolUndoGrouping:undoGrouping];
-    
+
     _state = CPUndoManagerNormal;
 
-    [defaultCenter postNotificationName:CPUndoManagerDidUndoChangeNotification object:self];
+    [defaultCenter postNotificationName:CPUndoManagerDidUndoChangeNotification
+                                 object:self];
 }
 
 /*!
@@ -357,19 +371,21 @@ var _CPUndoGroupingParentKey        = @"_CPUndoGroupingParentKey",
 - (void)redo
 {
     // Don't do anything if we have no redos.
-    if (_redoStack.length == 0)
+    if ([_redoStack count] <= 0)
         return;
     
 /*    if (_state == NSUndoManagerUndoing)
         [NSException raise:NSInternalInconsistencyException
                     format:@"redo called while undoing"];
-
-    [[NSNotificationCenter defaultCenter] postNotificationName:NSUndoManagerCheckpointNotification
-                                                        object:self];
 */
+
     var defaultCenter = [CPNotificationCenter defaultCenter];
 
-    [defaultCenter postNotificationName:CPUndoManagerWillRedoChangeNotification object:self];
+    [defaultCenter postNotificationName:CPUndoManagerCheckpointNotification
+                                 object:self];
+
+    [defaultCenter postNotificationName:CPUndoManagerWillRedoChangeNotification
+                                 object:self];
     
     var oldUndoGrouping = _currentGrouping,
         undoGrouping = _redoStack.pop();
@@ -377,7 +393,7 @@ var _CPUndoGroupingParentKey        = @"_CPUndoGroupingParentKey",
     _currentGrouping = nil;
     _state = CPUndoManagerRedoing;
 
-    [self beginUndoGrouping];
+    [self _beginUndoGrouping];
     [undoGrouping invoke];
     [self endUndoGrouping];
     
@@ -395,6 +411,29 @@ var _CPUndoGroupingParentKey        = @"_CPUndoGroupingParentKey",
 */
 - (void)beginUndoGrouping
 {
+    // It doesn't matter that the user is creating a group themselves, we are
+    // pretending to have opened the group at the beginning of the run loop,
+    // so create an implicit one here.
+    if (!_currentGrouping && [self groupsByEvent])
+        [self _beginUndoGroupingForEvent];
+
+    [[CPNotificationCenter defaultCenter]
+        postNotificationName:CPUndoManagerCheckpointNotification
+                      object:self];
+
+    [self _beginUndoGrouping];
+}
+
+/* @ignore */
+- (void)_beginUndoGroupingForEvent
+{
+    [self _beginUndoGrouping];
+    [self _registerWithRunLoop];
+}
+
+/* @ignore */
+- (void)_beginUndoGrouping
+{
     _currentGrouping = [_CPUndoGrouping undoGroupingWithParent:_currentGrouping];
 }
 
@@ -407,17 +446,22 @@ var _CPUndoGroupingParentKey        = @"_CPUndoGroupingParentKey",
     if (!_currentGrouping)
         [CPException raise:CPInternalInconsistencyException reason:"endUndoGrouping. No undo group is currently open."];
 
+    var defaultCenter = [CPNotificationCenter defaultCenter];
+
+    [defaultCenter postNotificationName:CPUndoManagerCheckpointNotification
+                                 object:self];
+
     var parent = [_currentGrouping parent];
     
     if (!parent && [_currentGrouping invocations].length > 0)
     {
-        [[CPNotificationCenter defaultCenter]
+        [defaultCenter
             postNotificationName:CPUndoManagerWillCloseUndoGroupNotification
                           object:self];
                               
-        // Put this group on the redo stack if we are currently undoing, otherwise 
+        // Put this group on the redo stack if we are currently undoing, otherwise
         // put it on the undo stack.  That way, "undos" become "redos".
-        var stack = _state == CPUndoManagerUndoing ? _redoStack : _undoStack;
+        var stack = _state === CPUndoManagerUndoing ? _redoStack : _undoStack;
         
         stack.push(_currentGrouping);
     
@@ -465,21 +509,14 @@ var _CPUndoGroupingParentKey        = @"_CPUndoGroupingParentKey",
 */
 - (void)setGroupsByEvent:(BOOL)aFlag
 {
-    if (_groupsByEvent == aFlag)
+    aFlag = !!aFlag;
+
+    if (_groupsByEvent === aFlag)
         return;
 
     _groupsByEvent = aFlag;
-    
-    if (_groupsByEvent)
-    {
-        [self _registerWithRunLoop];
-    
-        // There is a chance that the event loop selector won't fire before our first register,
-        // so kick it off here.
-        if (!_currentGrouping)
-            [self beginUndoGrouping];
-    }    
-    else
+
+    if (![self groupsByEvent])
         [self _unregisterWithRunLoop];
 }
 
@@ -520,7 +557,7 @@ var _CPUndoGroupingParentKey        = @"_CPUndoGroupingParentKey",
 */
 - (BOOL)isUndoing
 {
-    return _state == CPUndoManagerUndoing;
+    return _state === CPUndoManagerUndoing;
 }
 
 /*!
@@ -528,7 +565,7 @@ var _CPUndoGroupingParentKey        = @"_CPUndoGroupingParentKey",
 */
 - (BOOL)isRedoing
 {
-    return _state == CPUndoManagerRedoing;
+    return _state === CPUndoManagerRedoing;
 }
 
 // Clearing Undo Operations
@@ -628,27 +665,19 @@ var _CPUndoGroupingParentKey        = @"_CPUndoGroupingParentKey",
 */
 - (void)setRunLoopModes:(CPArray)modes
 {
-    _runLoopModes = modes;
-    
-    [self _unregisterWithRunLoop];
-    
-    if (_groupsByEvent)
+    _runLoopModes = [modes copy];
+
+    if (_registeredWithRunLoop)
+    {
+        [self _unregisterWithRunLoop];
         [self _registerWithRunLoop];
+    }
 }
 
-/* @ignore */
-- (void)beginUndoGroupingForEvent
+- (void)_runLoopEndUndoGrouping
 {
-    if (!_groupsByEvent)
-        return;
-    
-    if (_currentGrouping != nil)
-        [self endUndoGrouping];
-
-    [self beginUndoGrouping];
-
-    [[CPRunLoop currentRunLoop] performSelector:@selector(beginUndoGroupingForEvent)
-        target:self argument:nil order:CPUndoCloseGroupingRunLoopOrdering modes:_runLoopModes];
+    [self endUndoGrouping];
+    _registeredWithRunLoop = NO;
 }
 
 /* @ignore */
@@ -658,8 +687,12 @@ var _CPUndoGroupingParentKey        = @"_CPUndoGroupingParentKey",
         return;
 
     _registeredWithRunLoop = YES;
-    [[CPRunLoop currentRunLoop] performSelector:@selector(beginUndoGroupingForEvent)
-        target:self argument:nil order:CPUndoCloseGroupingRunLoopOrdering modes:_runLoopModes];
+    [[CPRunLoop currentRunLoop]
+        performSelector:@selector(_runLoopEndUndoGrouping)
+                 target:self
+               argument:nil
+                  order:CPUndoCloseGroupingRunLoopOrdering
+                  modes:_runLoopModes];
 }
 
 /* @ignore */
@@ -669,7 +702,10 @@ var _CPUndoGroupingParentKey        = @"_CPUndoGroupingParentKey",
         return;
 
     _registeredWithRunLoop = NO;
-    [[CPRunLoop currentRunLoop] cancelPerformSelector:@selector(beginUndoGroupingForEvent) target:self argument:nil];
+    [[CPRunLoop currentRunLoop]
+        cancelPerformSelector:@selector(_runLoopEndUndoGrouping)
+                       target:self
+                     argument:nil];
 }
 
 @end
