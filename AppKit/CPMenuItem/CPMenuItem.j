@@ -595,7 +595,8 @@ CPControlKeyMask
     if (_keyEquivalentModifierMask & CPCommandKeyMask)
         string = "⌘" + string;
 
-    if (_keyEquivalentModifierMask & CPShiftKeyMask)
+    // Either of these means shift is required.
+    if (_keyEquivalentModifierMask & CPShiftKeyMask || string === _keyEquivalent)
         string = "⇧" + string;
 
     if (_keyEquivalentModifierMask & CPControlKeyMask)
