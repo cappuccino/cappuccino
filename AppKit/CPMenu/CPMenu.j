@@ -920,7 +920,16 @@ var _CPMenuBarVisible               = NO,
     for(; index < count; ++index)
     {
         var item = _items[index],
-            modifierMask = [item keyEquivalentModifierMask] | ([item keyEquivalent] === [[item keyEquivalent] uppercaseString] ? CPShiftKeyMask : 0);
+            modifierMask = [item keyEquivalentModifierMask];
+
+        if ([item keyEquivalent] === [[item keyEquivalent] uppercaseString])
+            modifierMask |= CPShiftKeyMask;
+
+        if (CPBrowserIsOperatingSystem(CPWindowsOperatingSystem) && (modifierMask & CPCommandKeyMask))
+        {
+            modifierMask |= CPControlKeyMask;
+            modifierMask &= ~CPCommandKeyMask;
+        }
 
         if ((modifierFlags & (CPShiftKeyMask | CPAlternateKeyMask | CPCommandKeyMask | CPControlKeyMask)) == modifierMask &&
             [characters caseInsensitiveCompare:[item keyEquivalent]] == CPOrderedSame)

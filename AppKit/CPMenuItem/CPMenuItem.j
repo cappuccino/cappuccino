@@ -590,16 +590,34 @@ CPControlKeyMask
     if (![_keyEquivalent length])
         return @"";
 
-    var string = _keyEquivalent.toUpperCase();
+    var string = _keyEquivalent.toUpperCase(),
+        needsShift = _keyEquivalentModifierMask & CPShiftKeyMask || string === _keyEquivalent;
 
-    if (_keyEquivalentModifierMask & CPCommandKeyMask)
-        string = "⌘" + string;
+    if (CPBrowserIsOperatingSystem(CPMacOperatingSystem))
+    {
+        if (_keyEquivalentModifierMask & CPCommandKeyMask)
+            string = "⌘" + string;
 
-    if (_keyEquivalentModifierMask & CPShiftKeyMask)
-        string = "⇧" + string;
+        if (needsShift)
+            string = "⇧" + string;
 
-    if (_keyEquivalentModifierMask & CPControlKeyMask)
-        string = "^" + string;
+        if (_keyEquivalentModifierMask & CPAlternateKeyMask)
+            string = "⌥" + string;
+
+        if (_keyEquivalentModifierMask & CPControlKeyMask)
+            string = "^" + string;
+    }
+    else
+    {
+        if (needsShift)
+            string = "Shift-" + string;
+
+        if (_keyEquivalentModifierMask & CPAlternateKeyMask)
+            string = "Alt-" + string;
+
+        if (_keyEquivalentModifierMask & CPControlKeyMask || _keyEquivalentModifierMask & CPCommandKeyMask)
+            string = "Ctrl-" + string;
+    }
 
     return string;
 }
