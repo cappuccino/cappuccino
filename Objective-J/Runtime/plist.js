@@ -419,12 +419,12 @@ var _CPDictionaryAppendXMLData = function(XMLData, aDictionary)
 
 var _encodeHTMLComponent = function(aString)
 {
-    return aString.replace('<', "&lt;").replace('>', "&gt;").replace('\"', "&quot;").replace('\'', "&apos;").replace('&', "&amp;");
+    return aString.replace(/&/g,'&amp;').replace(/"/g, '&quot;').replace(/'/g, '&apos;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 }
 
 var _decodeHTMLComponent = function(aString)
 {
-    return aString.replace("&lt;", '<').replace("&gt;", '>').replace("&quot;", '\"').replace("&apos;", '\'').replace("&amp;", '&');
+    return aString.replace(/&quot;/g, '"').replace(/&apos;/g, '\'').replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&amp;/g,'&');
 }
 
 var _CPPropertyListAppendXMLData = function(XMLData, aPlist)
