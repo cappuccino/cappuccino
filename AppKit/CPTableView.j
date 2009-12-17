@@ -588,7 +588,7 @@ CPTableViewSolidHorizontalGridLineMask = 1 << 1;
     return _selectedColumnIndexes;
 }
 
-- (void)selectedRowIndexes
+- (CPIndexSet)selectedRowIndexes
 {
     return _selectedRowIndexes;
 }
