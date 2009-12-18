@@ -648,7 +648,7 @@ var _CPMenuBarVisible               = NO,
     while ([highlightedItem submenu] && [highlightedItem action] === @selector(submenuAction:))
         highlightedItem = [[highlightedItem submenu] highlightedItem];
 
-    if (highlightedItem)
+    if (highlightedItem && [highlightedItem isEnabled])
         [CPApp sendAction:[highlightedItem action] to:[highlightedItem target] from:highlightedItem];
 }
 
