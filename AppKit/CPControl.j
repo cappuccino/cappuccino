@@ -572,7 +572,9 @@ var CPControlValueKey           = "CPControlValueKey",
     
     CPControlTargetKey          = "CPControlTargetKey",
     CPControlActionKey          = "CPControlActionKey",
-    CPControlSendActionOnKey    = "CPControlSendActionOnKey";
+    CPControlSendActionOnKey    = "CPControlSendActionOnKey",
+
+    CPControlSendsActionOnEndEditingKey = "CPControlSendsActionOnEndEditingKey";
 
 var __Deprecated__CPImageViewImageKey   = @"CPImageViewImageKey";
 
@@ -595,6 +597,7 @@ var __Deprecated__CPImageViewImageKey   = @"CPImageViewImageKey";
         [self setAction:[aCoder decodeObjectForKey:CPControlActionKey]];
 
         [self sendActionOn:[aCoder decodeIntForKey:CPControlSendActionOnKey]];
+        [self setSendsActionOnEndEditing:[aCoder decodeBoolForKey:CPControlSendsActionOnEndEditingKey]];
     }
     
     return self;
@@ -607,6 +610,9 @@ var __Deprecated__CPImageViewImageKey   = @"CPImageViewImageKey";
 - (void)encodeWithCoder:(CPCoder)aCoder
 {
     [super encodeWithCoder:aCoder];
+
+    if (_sendsActionOnEndEditing)
+        [aCoder encodeBool:_sendsActionOnEndEditing forKey:CPControlSendsActionOnEndEditingKey];
 
     if (_value !== nil)
         [aCoder encodeObject:_value forKey:CPControlValueKey];
