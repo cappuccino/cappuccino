@@ -302,27 +302,53 @@
 - (void)testInsertIntoToManyProperty
 {
     var tester = [ToManyTester new];
-    
+
     [tester setValue:[1, 2, 3, 4] forKey:@"managedObjects"];
-    
-    
+
     [tester addObserver:self forKeyPath:@"managedObjects" options:0 context:"testInsertIntoToManyProperty"];
-    
+
     [tester insertObject:5 inManagedObjectsAtIndex:4];
-    
+
     [self assertTrue: _sawObservation message:"Never recieved an observation"];
 }
 
 - (void)testRemoveFromToManyProperty
 {
     var tester = [ToManyTester new];
-    
+
     [tester setValue:[1, 2, 3, 4] forKey:@"managedObjects"];
-    
+
     [tester addObserver:self forKeyPath:@"managedObjects" options:0 context:"testRemoveFromToManyProperty"];
-    
+
     [tester removeObjectFromManagedObjectsAtIndex:0];
-    
+
+    [self assertTrue: _sawObservation message:"Never recieved an observation"];
+}
+
+- (void)testInsertIntoToManyPropertyIndirectly
+{
+    var tester = [IndirectToManyTester new];
+
+    tester.tester = [ToManyTester new];
+    [tester.tester setValue:[1, 2, 3, 4] forKey:@"managedObjects"];
+    [tester addObserver:self forKeyPath:@"tester.managedObjects" options:0 context:"testInsertIntoToManyPropertyIndirectly"];
+
+    [tester.tester insertObject:5 inManagedObjectsAtIndex:4];
+
+    [self assertTrue: _sawObservation message:"Never recieved an observation"];
+}
+
+- (void)testInsertIntoArrayPropertyIndirectly
+{
+    var tester = [IndirectToManyTester new];
+
+    tester.tester = [ToManyTester new];
+
+    [tester.tester setValue:[1, 2, 3, 4] forKey:@"subviews"];
+    [tester addObserver:self forKeyPath:@"tester.subviews" options:0 context:"testInsertIntoArrayPropertyIndirectly"];
+
+    [tester.tester insertSubview:5 atIndex:4];
+
     [self assertTrue: _sawObservation message:"Never recieved an observation"];
 }
 
@@ -517,22 +543,47 @@
         case "testInsertIntoToManyProperty":
             var type = [changes objectForKey:CPKeyValueChangeKindKey];
             [self assertTrue: type == CPKeyValueChangeInsertion message: "Should have been an insertion, was: "+type];
-            
+
             var values = [changes objectForKey:CPKeyValueChangeNewKey];
             [self assertTrue: [values isEqual:[5]] message: "array should have contained 5, was: "+values+" type: "+[values.isa description]+" length: "+values.length];
-            
+
+            break;
+
+        case "testInsertIntoToManyPropertyIndirectly":
+            var type = [changes objectForKey:CPKeyValueChangeKindKey];
+            [self assertTrue: type == CPKeyValueChangeInsertion message: "Should have been an insertion, was: "+type];
+
+            var values = [changes objectForKey:CPKeyValueChangeNewKey];
+            [self assertTrue: [values isEqual:[5]] message: "array should have contained 5, was: "+values+" type: "+[values.isa description]+" length: "+values.length];
+
+            [self assert:aKeyPath equals:"tester.managedObjects"];
+            [self assert:[anObject valueForKeyPath:@"tester.managedObjects"] equals:[1, 2, 3, 4, 5]];
+
+            break;
+
+        case "testInsertIntoArrayPropertyIndirectly":
+            var type = [changes objectForKey:CPKeyValueChangeKindKey];
+            [self assertTrue: type == CPKeyValueChangeInsertion message: "Should have been an insertion, was: "+type];
+
+            var values = [changes objectForKey:CPKeyValueChangeNewKey];
+            [self assertTrue: [values isEqual:[5]] message: "array should have contained 5, was: "+values+" type: "+[values.isa description]+" length: "+values.length];
+
+            [self assert:aKeyPath equals:"tester.subviews"];
+            [self assert:[anObject valueForKeyPath:aKeyPath] equals:[1, 2, 3, 4, 5]];
+
             break;
 
         case "testRemoveFromToManyProperty":
             var type = [changes objectForKey:CPKeyValueChangeKindKey];
             [self assertTrue: type == CPKeyValueChangeRemoval message: "Should have been a removal, was: "+type];
-            
+
             var values = [changes objectForKey:CPKeyValueChangeOldKey];
             [self assertTrue: [values isEqual:[1]] message: "array should have contained 1, was: "+values+" type: "+[values.isa description]+" length: "+values.length];
-            [[anObject valueForKey:@"managedObjects"] isEqual:[2, 3, 4]];
-            
+            [self assert:[anObject valueForKey:@"managedObjects"] equals:[2, 3, 4]];
+            [self assert:aKeyPath equals:"managedObjects"];
+
             break;
-            
+
         default:
             [self assertFalse:YES message:"unhandled observation, must be an error"];
             return;
@@ -612,9 +663,32 @@
 
 @end
 
+@implementation IndirectToManyTester : CPObject
+{
+    ToManyTester tester @accessors;
+}
+
+@end
+
 @implementation ToManyTester : CPObject
 {
     CPArray managedObjects;
+    CPArray subviews;
+}
+
+- (void)insertSubview:(CPView)aSubview atIndex:(int)anIndex
+{
+    var mutatedIndexes = [CPIndexSet indexSetWithIndex:anIndex];
+
+    [self willChange:CPKeyValueChangeInsertion
+     valuesAtIndexes:mutatedIndexes
+              forKey:@"subviews"];
+
+    [subviews insertObject:aSubview atIndex:anIndex];
+
+    [self didChange:CPKeyValueChangeInsertion
+    valuesAtIndexes:mutatedIndexes
+             forKey:@"subviews"];
 }
 
 - (unsigned int)countOfManagedObjects
