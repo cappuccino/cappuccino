@@ -648,6 +648,9 @@ var _CPMenuBarVisible               = NO,
     while ([highlightedItem submenu] && [highlightedItem action] === @selector(submenuAction:))
         highlightedItem = [[highlightedItem submenu] highlightedItem];
 
+    // FIXME: It is theoretically not necessarily to check isEnabled here since
+    // highlightedItem is always enabled. Do there exist edge cases: disabling on closing a menu,
+    // etc.? Requires further investigation and tests.
     if (highlightedItem && [highlightedItem isEnabled])
         [CPApp sendAction:[highlightedItem action] to:[highlightedItem target] from:highlightedItem];
 }

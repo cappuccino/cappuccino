@@ -113,11 +113,21 @@ var SharedMenuManager = nil;
 
     // Find which menu window the mouse is currently on top of
     var activeMenuContainer = [self menuContainerForPoint:globalLocation],
-        menuLocation = [activeMenuContainer convertGlobalToBase:globalLocation],
-        activeItemIndex = activeMenuContainer ? [activeMenuContainer itemIndexAtPoint:menuLocation] : CPNotFound,
-        activeMenu = activeMenuContainer ? [activeMenuContainer menu] : nil,
-        activeItem = activeItemIndex !== CPNotFound ? [activeMenu itemAtIndex:activeItemIndex] : nil,
-        mouseOverMenuView = activeMenuContainer ? [activeItem view] : nil;
+        activeMenu = [activeMenuContainer menu],
+        menuLocation = [activeMenuContainer convertGlobalToBase:globalLocation];
+
+    // Find out the item the mouse is currently on top of
+    var activeItemIndex = activeMenuContainer ? [activeMenuContainer itemIndexAtPoint:menuLocation] : CPNotFound,
+        activeItem = activeItemIndex !== CPNotFound ? [activeMenu itemAtIndex:activeItemIndex] : nil;
+
+    // If the item isn't enabled its as if we clicked on nothing.
+    if (![activeItem isEnabled])
+    {
+        activeItemIndex = CPNotFound;
+        activeItem = nil;
+    }
+
+    var mouseOverMenuView = [activeItem view];
 
     if (type === CPPeriodic)
     {
