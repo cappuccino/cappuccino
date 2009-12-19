@@ -113,6 +113,9 @@ function partial_require(path, exports)
     // FIXME: is there a better way to do this???
     OS.system = function(aCommand)
     {
+        if (Array.isArray(aCommand))
+            aCommand = aCommand.map(OS.enquote).join(" ");
+        
         return system("PATH=" + OS.enquote(bin) + ":$PATH " + aCommand);
     }
 
