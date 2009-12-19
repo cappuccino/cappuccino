@@ -510,7 +510,7 @@ var kvoNewAndOld = CPKeyValueObservingOptionNew|CPKeyValueObservingOptionOld,
 
 - (void)observeValueForKeyPath:(CPString)aKeyPath ofObject:(id)anObject change:(CPDictionary)changes context:(id)aContext
 {
-    if (anObject == _object)
+    if (aKeyPath === _firstPart)
     {
         [_observer observeValueForKeyPath:_firstPart ofObject:_object change:changes context:_context];
         
@@ -523,7 +523,7 @@ var kvoNewAndOld = CPKeyValueObservingOptionNew|CPKeyValueObservingOptionOld,
         if (_value)
             [_value addObserver:self forKeyPath:_secondPart options:kvoNewAndOld context:nil];
     }
-    else /* if (anObject == _value || !_value) */
+    else
     {
         //a is the same, but a.b has changed -- nothing to do but forward this message along
         [_observer observeValueForKeyPath:_firstPart+"."+aKeyPath ofObject:_object change:changes context:_context];

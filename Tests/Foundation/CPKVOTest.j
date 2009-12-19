@@ -172,7 +172,7 @@
 {
     cs101 = [ClassTester new];
     bob = [PersonTester new];
-    
+
     [cs101 setTeacher:bob];
     
     [cs101 addObserver:self forKeyPath:@"teacher.name" options:0 context:"testMultipartKey"];
@@ -183,12 +183,26 @@
     [self assertTrue: _sawObservation message:"Never recieved an observation"];
 }
 
+- (void)testMultiPartKeysWhereValuesEvaluateToSelf
+{
+    focus = [CarTester new];
+    bob = [PersonTester new];
+
+    [bob setValue:focus forKey:"car"];
+
+    [bob addObserver:self forKeyPath:@"self.car.thisCar.model" options:0 context:"testMultiPartKeysWhereValuesEvaluateToSelf"];
+
+    [focus setValue:"ford focus" forKey:"model"];
+
+    [self assertTrue: _sawObservation message:"Never recieved an observation"];
+}
+
 - (void)testThreePartKey
 {
     focus = [CarTester new];
     cs101 = [ClassTester new];
     bob = [PersonTester new];
-        
+
     [cs101 setTeacher:bob];
     [bob setValue:focus forKey:"car"];
 
@@ -203,7 +217,7 @@
     focus = [CarTester new];
     cs101 = [ClassTester new];
     bob = [PersonTester new];
-        
+
     [cs101 setTeacher:bob];
     [focus setValue:"2000" forKey:"year"];
 
@@ -218,7 +232,7 @@
 {
     cs101 = [ClassTester new];
     bob = [PersonTester new];
-    
+
     [cs101 setTeacher:bob];
     
     [cs101 addObserver:self forKeyPath:@"teacher.name" options:0 context:"testRemoveMultipartKey"];
@@ -235,7 +249,7 @@
     focus = [CarTester new];
     cs101 = [ClassTester new];
     bob = [PersonTester new];
-        
+
     [cs101 setTeacher:bob];
     [bob setValue:focus forKey:"car"];
 
@@ -367,7 +381,7 @@
 - (void)testPerformance
 {
     bob = [PersonTester new];
-    
+
     [bob setValue:"initial bob" forKey:"name"];
 
     var startTime = new Date();
@@ -584,6 +598,13 @@
 
             break;
 
+        case "testMultiPartKeysWhereValuesEvaluateToSelf":
+
+            [self assert:aKeyPath equals:"self.car.thisCar.model"];
+            [self assert:newValue equals:"ford focus"];
+            [self assert:anObject equals:bob];
+            break;
+
         default:
             [self assertFalse:YES message:"unhandled observation, must be an error"];
             return;
@@ -659,6 +680,11 @@
 - (void)setModel:(CPString)aModel
 {
     model = aModel;
+}
+
+- (void)thisCar
+{
+    return self;
 }
 
 @end
