@@ -283,7 +283,7 @@ function descriptionWithoutEntity(aString)
     [self assert:[_set lastIndex] equals:19];
     [self assert:[[CPIndexSet indexSet] lastIndex] equals:CPNotFound];
 }
-
+/*
 - (void)testAddSpeed
 {
     var startTime = [CPDate date];
@@ -296,7 +296,7 @@ function descriptionWithoutEntity(aString)
     print([startTime timeIntervalSinceNow]);
     //[self assertTrue: ABS([startTime timeIntervalSinceNow]) < 2];  
 }
-
+*/
 - (void)testIndexGreaterThanIndex
 {
     [self assert:[_set indexGreaterThanIndex:5] equals:10];

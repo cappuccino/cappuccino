@@ -48,7 +48,7 @@ task ("install", ["CommonJS"], function()
 {
     // FIXME: require("narwhal/tusk/install").install({}, $COMMONJS);
     // Doesn't work due to some weird this.print business.
-    OS.system("sudo tusk install --force " + $BUILD_CJS_OBJECTIVE_J + " " + $BUILD_CJS_CAPPUCCINO);
+    OS.system(["sudo", "tusk", "install", "--force", $BUILD_CJS_OBJECTIVE_J, $BUILD_CJS_CAPPUCCINO]);
 });
 
 // Documentation
@@ -61,7 +61,7 @@ task ("documentation", function()
 {
     if (executableExists("doxygen"))
     {
-        if (OS.system("doxygen " + FILE.join("Tools", "Documentation", "Cappuccino.doxygen")))
+        if (OS.system(["doxygen", FILE.join("Tools", "Documentation", "Cappuccino.doxygen")]))
             OS.exit(1); //rake abort if ($? != 0)
 
         rm_rf($DOCUMENTATION_BUILD);
@@ -95,7 +95,7 @@ filedir ($STARTER_DOWNLOAD_APPLICATION, ["CommonJS"], function()
     rm_rf($STARTER_DOWNLOAD_APPLICATION);
     FILE.mkdirs($STARTER_DOWNLOAD);
 
-    if (OS.system("capp gen " + $STARTER_DOWNLOAD_APPLICATION + " -t Application --noconfig"))
+    if (OS.system(["capp", "gen", $STARTER_DOWNLOAD_APPLICATION, "-t", "Application", "--noconfig"]))
         // FIXME: uncomment this: we get conversion errors
         //OS.exit(1); // rake abort if ($? != 0)
         {}
@@ -161,13 +161,14 @@ task ("deploy", ["downloads"], function()
 
 // Testing
 
-task ("test", ["build"], function()
+task("test", ["build", "test-only"]);
+
+task("test-only", function()
 {
     var tests = new FileList('Tests/**/*Test.j');
     var cmd = ["ojtest"].concat(tests.items());
-    var cmdString = cmd.map(OS.enquote).join(" ");
     
-    var code = OS.system(cmdString);
+    var code = OS.system(cmd);
     if (code !== 0)
         OS.exit(code);
 });
@@ -198,8 +199,7 @@ function pushPackage(path, remote)
         ["git", "push", "origin", "master"]
     ];
     
-    var cmdString = cmds.map(function(cmd)
-    {
+    var cmdString = cmds.map(function(cmd) {
         return cmd.map(OS.enquote).join(" ");
     }).join(" && ");
     

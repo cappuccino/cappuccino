@@ -25,15 +25,18 @@ var OBJJ_EXCEPTION_OUTPUT_STREAM = NULL;
 function objj_exception(aName, aReason, aUserInfo)
 {
     this.name = aName;
-    this.reason = aReason;
+    this.message = aReason;
     this.userInfo = aUserInfo;
     this.__address = _objj_generateObjectHash();
+    
+    // add rhinoException to get better stack traces
+    if (typeof Packages !== "undefined" && Packages && Packages.org)
+        this.rhinoException = Packages.org.mozilla.javascript.JavaScriptException(this, null, 0);
 }
 
-objj_exception.prototype.toString = function()
-{
-    return this.reason;
-}
+// make objj_exception a subclass of Error
+// later we toll-free bridge Error to CPException
+objj_exception.prototype = new Error();
 
 function objj_exception_throw(anException)
 {

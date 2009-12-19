@@ -28,20 +28,32 @@ require("../common.jake");
 
 $BUILD_OBJECTIVE_J  = FILE.join($BUILD_CONFIGURATION_DIR, "Objective-J");
 
-Files = new FileList("Runtime/constants.js", "Runtime/utilities.js", "Runtime/json2.js", "Runtime/runtime.js", "Runtime/dictionary.js", "Runtime/plist.js", "Runtime/file.js", "Runtime/exception.js", "Runtime/preprocess.js", "Runtime/evaluate.js", "Runtime/bootstrap.js");
+var OBJECTIVE_J_FILES = new FileList(
+    "Runtime/constants.js",
+    "Runtime/utilities.js",
+    "Runtime/json2.js",
+    "Runtime/runtime.js",
+    "Runtime/dictionary.js",
+    "Runtime/plist.js",
+    "Runtime/file.js",
+    "Runtime/exception.js",
+    "Runtime/preprocess.js",
+    "Runtime/evaluate.js",
+    "Runtime/bootstrap.js"
+);
 
 if ($CONFIGURATION === "Debug")
-    Files.include("Runtime/debug.js");
+    OBJECTIVE_J_FILES.include("Runtime/debug.js");
 
 $BUILD_BROWSER_FILE = FILE.join($BUILD_OBJECTIVE_J, "Objective-J.js");
 $BUILD_CJS_FILE     = FILE.join($BUILD_OBJECTIVE_J, "CommonJS.environment", "Objective-J.js");
 
-filedir ($BUILD_BROWSER_FILE, Files, function(aTask)
+filedir($BUILD_BROWSER_FILE, OBJECTIVE_J_FILES, function(aTask)
 {
     build_product(aTask.name(), environmentFlags("ObjJ") + " -DPLATFORM_USERAGENT");
 });
 
-filedir ($BUILD_CJS_FILE, Files, function(aTask)
+filedir($BUILD_CJS_FILE, OBJECTIVE_J_FILES, function(aTask)
 {
     flags = environmentFlags("CommonJS", "ObjJ");
     flags += ' -DRHINO'
@@ -52,7 +64,7 @@ filedir ($BUILD_CJS_FILE, Files, function(aTask)
 $LICENSE        = FILE.join("CommonJS", "lib", "objective-j", "jake", "LICENSES", "LGPL-v2.1");
 $BUILD_LICENSE  = FILE.join($BUILD_OBJECTIVE_J, "LICENSE");
 
-filedir ($BUILD_LICENSE, [$LICENSE], function()
+filedir($BUILD_LICENSE, [$LICENSE], function()
 {
     FILE.copy($LICENSE, $BUILD_LICENSE);
 });
@@ -83,7 +95,7 @@ new FileList("CommonJS/**/*").forEach(function(aFilename)
 
 $BUILD_CJS_OBJECTIVE_J_FRAMEWORK = FILE.join($BUILD_CJS_OBJECTIVE_J, "Frameworks", "Objective-J");
 
-filedir ($BUILD_CJS_OBJECTIVE_J_FRAMEWORK, function()
+filedir($BUILD_CJS_OBJECTIVE_J_FRAMEWORK, function()
 {
     cp_r($BUILD_OBJECTIVE_J, $BUILD_CJS_OBJECTIVE_J_FRAMEWORK);
 });
@@ -92,24 +104,45 @@ CLOBBER.include($BUILD_OBJECTIVE_J);
 
 function environmentFlags()
 {
-    return "-DENVIRONMENTS=\"[" + Array.prototype.map.apply(arguments, [function(anEnvironment)
-    {
+    return "-DENVIRONMENTS=\"[" + Array.prototype.map.apply(arguments, [function(anEnvironment) {
         return "\\\"" + anEnvironment + "\\\"";
     }]).join(", ") + "]\"";
 }
 
 function build_product(path, flags)
 {
-    OS.system("cat Runtime/header.txt > " + OS.enquote(path));
-    OS.system("cat " + 
-    Files.filter(function(aName)
-    {
-        return !!aName.match(/\.js$/);
-    }).map(function(aName)
-    {
-        return OS.enquote(aName);
-    }).join(' ') + " | gcc " + flags + " -E -x c -P - >> " + OS.enquote(path));
+    var sources = OBJECTIVE_J_FILES.filter(function(aName) { return !!aName.match(/\.js$/); });
+
+    var productOut = FILE.open(path, "w", { charset : "UTF-8" });
+    
+    FILE.open("Runtime/header.txt", "r", { charset : "UTF-8" })
+        .copy(productOut)
+        .close();
+    
+    var preprocessor = OS.popen("gcc " + flags + " -E -x c -P -");
+    
+    sources.forEach(function(source) {
+        FILE.open(source, "r", { charset : "UTF-8" })
+            .copy(preprocessor.stdin)
+            .close();
+    });
+    
+    preprocessor.stdin.close();
+    preprocessor.stdout.copy(productOut);
+        
+    productOut.close();
+    
+    var code = preprocessor.wait();
+    
+    // this is equivalent to the above, but less cross platform:
+    //OS.system(["cp", "Runtime/header.txt", path]);
+    //var code = OS.system("cat " + sources.map(OS.enquote).join(' ') + " | gcc " + flags + " -E -x c -P - >> " + OS.enquote(path));
+    
+    if (code !== 0) {
+        FILE.remove(path);
+        OS.exit(1);
+    }
     //    rake abort if ($? != 0)
 }
 
-task ("build", [$BUILD_BROWSER_FILE, $BUILD_CJS_FILE, $BUILD_LICENSE, $BUILD_CJS_OBJECTIVE_J_FRAMEWORK]);
+task("build", [$BUILD_BROWSER_FILE, $BUILD_CJS_FILE, $BUILD_LICENSE, $BUILD_CJS_OBJECTIVE_J_FRAMEWORK]);
