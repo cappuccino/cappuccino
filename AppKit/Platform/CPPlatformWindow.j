@@ -104,7 +104,7 @@ var PrimaryPlatformWindow   = NULL;
 
     frame.origin = CGPointMakeZero();
 
-    if ([CPMenu menuBarVisible])
+    if ([CPMenu menuBarVisible] && [CPPlatformWindow primaryPlatformWindow] === self)
     {
         var menuBarHeight = [[CPApp mainMenu] menuBarHeight];
 
