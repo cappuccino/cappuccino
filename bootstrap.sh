@@ -16,128 +16,162 @@ function prompt () {
 }
 
 function which () {
-    echo "$PATH" | tr ":" "\n" | while read line; do [ -f "$line/$1" ] && return 0; done
+    echo "$PATH" | tr ":" "\n" | while read line; do [ -f "$line/$1" ] && echo "$line/$1" && return 0; done
 }
 
-function path_instructions () {
-    echo "Add \"$INSTALL_DIRECTORY/bin\" to your PATH environment variable in your shell configuration file (e.x. .profile, .bashrc, .bash_profile)."
-    echo "For example:"
-    echo "    export PATH=$INSTALL_DIRECTORY/bin:\$PATH"
+function ask_remove_dir () {
+    dir="$1"
+    if [ -d "$dir" ]; then
+        echo "================================================================================"
+        echo "Found an existing Narwhal/Cappuccino installation, $dir. Remove it automatically now?"
+        if prompt; then
+            rm -rf "$dir"
+        fi
+    fi
+}
+
+function ask_append_shell_config () {
+    config_string="$1"
+    
+    shell_config_file=""
+    # use order outlined by http://hayne.net/MacDev/Notes/unixFAQ.html#shellStartup
+    if [ -f "$HOME/.bash_profile" ]; then
+        shell_config_file="$HOME/.bash_profile"
+    elif [ -f "$HOME/.bash_login" ]; then
+        shell_config_file="$HOME/.bash_login"
+    elif [ -f "$HOME/.profile" ]; then
+        shell_config_file="$HOME/.profile"
+    elif [ -f "$HOME/.bashrc" ]; then
+        shell_config_file="$HOME/.bashrc"
+    fi
+
+    echo "    \"$config_string\" will be appended to \"$shell_config_file\"."
+    if prompt; then
+        if [ "$shell_config_file" ]; then
+            echo >> "$shell_config_file"
+            echo "$config_string" >> "$shell_config_file"
+            echo "Added to \"$shell_config_file\". Restart your shell or run \"source $shell_config_file\"."
+            return 0
+        else
+            echo "Couldn't find a shell configuration file."
+        fi
+    fi
+    return 1
 }
 
 if [ "--clone" = "$1" ]; then
-    GITCLONE=1
+    tusk_install_command="clone"
+    git_clone=1
+else
+    tusk_install_command="install"
 fi
 
-INSTALL_DIRECTORY="/usr/local/narwhal"
-TEMPZIP="/tmp/narwhal.zip"
+install_directory="/usr/local/narwhal"
+tmp_zip="/tmp/narwhal.zip"
 
-ORIGINAL_PATH="$PATH"
+PATH_SAVED="$PATH"
 
-if ! which "narwhal"; then
+ask_remove_dir "/usr/local/share/objj"
+ask_remove_dir "/usr/local/share/narwhal"
+ask_remove_dir "/usr/local/narwhal"
+
+if ! which "narwhal" > /dev/null; then
     echo "================================================================================"
-    echo "Narwhal JavaScript platform is required. Install it automatically?"
+    echo "Narwhal JavaScript platform is required. Install it automatically now?"
     if prompt; then
         echo "================================================================================"
-        echo "To use the default location, \"$INSTALL_DIRECTORY\", just hit enter/return, or enter another path:"
-        read INSTALL_DIRECTORY_INPUT
-        if [ "$INSTALL_DIRECTORY_INPUT" ]; then
-            INSTALL_DIRECTORY="$INSTALL_DIRECTORY_INPUT"
+        echo "To use the default location, \"$install_directory\", just hit enter/return, or enter another path:"
+        read input
+        if [ "$input" ]; then
+            install_directory="$input"
         fi
 
-        if [ "$GITCLONE" ]; then
+        if [ "$git_clone" ]; then
             echo "Cloning Narwhal..."
-            git clone git://github.com/280north/narwhal.git "$INSTALL_DIRECTORY"
+            git clone git://github.com/280north/narwhal.git "$install_directory"
         else
             echo "Downloading Narwhal..."
-            curl -L -o "$TEMPZIP" "http://github.com/280north/narwhal/zipball/master"
+            curl -L -o "$tmp_zip" "http://github.com/280north/narwhal/zipball/master"
             echo "Installing Narwhal..."
-            unzip "$TEMPZIP" -d "$INSTALL_DIRECTORY"
-            rm "$TEMPZIP"
+            unzip "$tmp_zip" -d "$install_directory"
+            rm "$tmp_zip"
 
-            mv $INSTALL_DIRECTORY/280north-narwhal-*/* $INSTALL_DIRECTORY/.
-            rm -rf $INSTALL_DIRECTORY/280north-narwhal-*
+            mv $install_directory/280north-narwhal-*/* $install_directory/.
+            rm -rf $install_directory/280north-narwhal-*
         fi
         
-        if ! which "narwhal"; then
-            export PATH="$INSTALL_DIRECTORY/bin:$PATH"
+        if ! which "narwhal" > /dev/null; then
+            export PATH="$install_directory/bin:$PATH"
         fi
-    else
-        echo "Narwhal required, aborting installation. To install Narwhal manually follow the instructions at http://narwhaljs.org/"
-        exit 1
     fi
 fi
 
-if ! which "narwhal"; then
-    echo "Error: problem installing Narwhal"
+if ! which "narwhal" > /dev/null; then
+    echo "Problem installing Narwhal. To install Narwhal manually follow the instructions at http://narwhaljs.org/"
+    exit 1
+fi
+
+install_directory=$(dirname $(dirname $(which narwhal)))
+
+echo "================================================================================"
+echo "Using Narwhal installation at $install_directory. Is this correct?"
+if ! prompt; then
     exit 1
 fi
 
 echo "Installing necessary dependencies..."
 
-if [ "$GITCLONE" ]; then
-    tusk update
-    tusk clone browserjs jake
-else
-    tusk install browserjs jake
+if ! tusk update; then
+    echo "Error: unable to update tusk catalog. Check that you have sufficient permissions."
+    exit 1
 fi
+
+tusk $tusk_install_command browserjs jake
 
 if [ `uname` = "Darwin" ]; then
     echo "================================================================================"
     echo "Would you like to install the JavaScriptCore engine for Narwhal?"
     echo "This is optional but will make building and running Objective-J much faster."
     if prompt; then
-        if [ "$GITCLONE" ]; then
-            tusk clone narwhal-jsc
-        else
-            tusk install narwhal-jsc
-        fi
-        pushd "$INSTALL_DIRECTORY/packages/narwhal-jsc"
-        make webkit
-        popd
+        tusk $tusk_install_command narwhal-jsc
+        (cd "$install_directory/packages/narwhal-jsc" && make webkit)
         
-        # echo "================================================================================"
-        # echo "Rhino is the default Narwhal engine, should we change the default to JavaScriptCore for you?"
-        # echo "This can by overridden by setting the NARWHAL_ENGINE environment variable to \"jsc\" or \"rhino\"."
-        # echo "(Note: you must use Rhino for certain tools such as \"tusk\")"
-        # if prompt; then
-        #     tusk engine jsc
-        # fi
+        if ! [ "$NARWHAL_ENGINE" = "jsc" ]; then
+            echo "================================================================================"
+            echo "Rhino is the default Narwhal engine, should we change the default to JavaScriptCore for you?"
+            echo "This can by overridden by setting the NARWHAL_ENGINE environment variable to \"jsc\" or \"rhino\"."
+            ask_append_shell_config "export NARWHAL_ENGINE=jsc"
+        fi
     fi
 fi
 
-export PATH="$ORIGINAL_PATH"
-if ! which "narwhal"; then
-    
-    SHELL_CONFIG=""
-    # use order outlined by http://hayne.net/MacDev/Notes/unixFAQ.html#shellStartup
-    if [ -f "$HOME/.bash_profile" ]; then
-        SHELL_CONFIG="$HOME/.bash_profile"
-    elif [ -f "$HOME/.bash_login" ]; then
-        SHELL_CONFIG="$HOME/.bash_login"
-    elif [ -f "$HOME/.profile" ]; then
-        SHELL_CONFIG="$HOME/.profile"
-    elif [ -f "$HOME/.bashrc" ]; then
-        SHELL_CONFIG="$HOME/.bashrc"
-    fi
-
-    EXPORT_PATH_STRING="export PATH=\"$INSTALL_DIRECTORY/bin:\$PATH\""
-    
+export PATH="$PATH_SAVED"
+if ! which "narwhal" > /dev/null; then
     echo "================================================================================"
     echo "You must add Narwhal's \"bin\" directory to your PATH environment variable. Do this automatically now?"
-    echo "\"$EXPORT_PATH_STRING\" will be appended to \"$SHELL_CONFIG\"."
-    if prompt; then
-        if [ "$SHELL_CONFIG" ]; then
-            echo >> "$SHELL_CONFIG"
-            echo "$EXPORT_PATH_STRING" >> "$SHELL_CONFIG"
-            echo "Added to \"$SHELL_CONFIG\". Restart your shell or run \"source $SHELL_CONFIG\"."
-        else
-            echo "Couldn't find a shell configuration file."
-            path_instructions
-        fi
-    else
-        path_instructions
+    
+    export_path_string="export PATH=\"$install_directory/bin:\$PATH\""
+    
+    if ! ask_append_shell_config "$export_path_string"; then
+        echo "Add \"$install_directory/bin\" to your PATH environment variable in your shell configuration file (e.x. .profile, .bashrc, .bash_profile)."
+        echo "For example:"
+        echo "    $export_path_string"
     fi
 fi
 
+if [ "$CAPP_BUILD" ]; then
+    if [ -d "$CAPP_BUILD" ]; then
+        echo "================================================================================"
+        echo "An existing \$CAPP_BUILD directory at $CAPP_BUILD exists. The previous build may be incompatible. Remove it automatically now?"
+        if prompt; then
+            rm -rf "$CAPP_BUILD"
+        fi
+    fi
+else    
+    echo "================================================================================"
+    echo "Before building Cappuccino we recommend you set the \$CAPP_BUILD environment variable to a path where you wish to build Cappuccino."
+    echo "If you have previously set \$CAPP_BUILD and built Cappuccino you may want to delete the directory before rebuilding."
+fi
+
+echo "================================================================================"
 echo "Bootstrapping of Narwhal and other required tools is complete. You can now build Cappuccino."
