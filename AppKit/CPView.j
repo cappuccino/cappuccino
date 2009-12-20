@@ -308,7 +308,7 @@ var CPViewFlags                     = { },
 */
 - (CPArray)subviews
 {
-    return _subviews;
+    return [_subviews copy];
 }
 
 /*!
@@ -441,7 +441,7 @@ var CPViewFlags                     = { },
 
     [_superview willRemoveSubview:self];
     
-    [[_superview subviews] removeObject:self];
+    [_superview._subviews removeObject:self];
 
 #if PLATFORM(DOM)
         CPDOMDisplayServerRemoveChild(_superview._DOMElement, _DOMElement);
@@ -466,6 +466,73 @@ var CPViewFlags                     = { },
     [aSubview removeFromSuperview];
     
     [self _insertSubview:aView atIndex:index];
+}
+
+- (void)setSubviews:(CPArray)newSubviews
+{
+    if (!newSubviews)
+        [CPException raise:CPInvalidArgumentException reason:"newSubviews cannot be nil in -[CPView setSubviews:]"];
+
+    // Trivial Case 0: Same array somehow
+    if ([_subviews isEqual:newSubviews])
+        return;
+
+    // Trivial Case 1: No current subviews, simply add all new subviews.
+    if ([_subviews count] === 0)
+    {
+        var index = 0,
+            count = [newSubviews count];
+
+        for (; index < count; ++index)
+            [self addSubview:newSubviews[index]];
+
+        return;
+    }
+
+    // Trivial Case 2: No new subviews, simply remove all current subviews.
+    if ([newSubviews count] === 0)
+    {
+        var count = [subviews count];
+
+        while (count--)
+            [_subviews[count] removeFromSuperview];
+
+        return;
+    }
+
+    // Find out the views that were removed.
+    var removedSubviews = [CPMutableSet setWithArray:_subviews];
+
+    [removedSubviews removeObjectsInArray:newSubviews];
+    [removedSubviews makeObjectsPerformSelector:@selector(removeFromSuperview)];
+
+    // Find out which views need to be added.
+    var addedSubviews = [CPMutableSet setWithArray:newSubviews];
+
+    [addedSubviews removeObjectsInArray:_subviews];
+
+    var addedSubview = nil,
+        addedSubviewEnumerator = [addedSubviews objectEnumerator];
+
+    while (addedSubview = [addedSubviewEnumerator nextObject])
+        [self addSubview:addedSubview];
+
+    // If the order is fine, no need to reorder.
+    if ([_subviews isEqual:newSubviews])
+        return;
+
+    _subviews = [newSubviews copy];
+
+    var index = 0,
+        count = [_subviews count];
+
+    for (; index < count; ++index)
+    {
+        var subview = _subviews[index];
+
+        CPDOMDisplayServerRemoveChild(_DOMElement, subview._DOMElement);
+        CPDOMDisplayServerAppendChild(_DOMElement, subview._DOMElement);
+    }
 }
 
 /* @ignore */
@@ -1863,12 +1930,11 @@ setBoundsOrigin:
 
 - (BOOL)performKeyEquivalent:(CPEvent)anEvent
 {
-    var subviews = [self subviews],
-        count = [subviews count];
+    var count = [_subviews count];
 
     // Is reverse iteration correct here? It matches the other (correct) code like hit testing.
     while (count--)
-        if ([subviews[count] performKeyEquivalent:anEvent])
+        if ([_subviews[count] performKeyEquivalent:anEvent])
             return YES;
 
     return NO;

@@ -1999,7 +1999,8 @@ CPTexturedBackgroundWindowMask
 
 - (void)_setUpMasksForView:(CPView)aView
 {
-    var views = [CPArray arrayWithArray:[aView subviews]];
+    var views = [aView subviews];
+
     [views addObject:aView];
     
     for (var i = 0, count = [views count]; i < count; i++)
@@ -2014,7 +2015,8 @@ CPTexturedBackgroundWindowMask
 
 - (void)_restoreMasksForView:(CPView)aView
 {
-    var views = [CPArray arrayWithArray:[aView subviews]];
+    var views = [aView subviews];
+
     [views addObject:aView];
     
     for (var i = 0, count = [views count]; i < count; i++)
