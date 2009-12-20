@@ -159,7 +159,7 @@ var CPURLConnectionDelegate = nil;
 
         // Browsers use "file:", Titanium uses "app:"
         _isLocalFileConnection =    scheme === "file" ||
-                                    ((scheme !== "http" || scheme !== "https:") &&
+                                    ((scheme === "http" || scheme === "https:") &&
                                     window.location &&
                                     (window.location.protocol === "file:" || window.location.protocol === "app:"));
 
