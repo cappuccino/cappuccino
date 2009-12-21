@@ -148,11 +148,32 @@
         
     for (var key in object)
     {
+        if (!object.hasOwnProperty(key))
+            continue;
+
         var value = object[key];
     
-        if (recursively && value.constructor === Object)
-            value = [CPDictionary dictionaryWithJSObject:value recursively:YES];
-    
+        if (recursively)
+        {
+            if (value.constructor === Object)
+                value = [CPDictionary dictionaryWithJSObject:value recursively:YES];
+            else if ([value isKindOfClass:CPArray])
+            {
+                var newValue = [];
+                for (var i = 0, count = value.length; i < count; i++)
+                {
+                    var thisValue = value[i];
+
+                    if (thisValue.constructor === Object)
+                        newValue.push([CPDictionary dictionaryWithJSObject:thisValue recursively:YES]);
+                    else
+                        newValue.push(thisValue);
+                }
+
+                value = newValue;
+            }
+        }
+
         [dictionary setObject:value forKey:key];
     }
     
@@ -609,7 +630,7 @@
 @end
 
 objj_dictionary.prototype.isa = CPDictionary;
-objj_bundle.prototype.toString = function()
+objj_dictionary.prototype.toString = function()
 {
     return [this description];
 }
