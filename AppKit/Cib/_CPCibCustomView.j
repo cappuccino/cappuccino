@@ -37,7 +37,13 @@
 
 - (void)setCustomClassName:(CPString)aClassName
 {
+    if (_className === aClassName)
+        return;
+
     _className = aClassName;
+
+    [self setNeedsDisplay:YES];
+    [self setNeedsLayout];
 }
 
 @end
@@ -97,9 +103,7 @@ var _CPCibCustomViewClassNameKey    = @"_CPCibCustomViewClassNameKey";
         [view setBounds:[self bounds]];
         
         // Since the object replacement logic hasn't had a chance to kick in yet, we need to do it manually:
-        
-        // we need to copy subviews since each time we add a subview to a different view its removed from the original subviews array
-        var subviews = [[self subviews] copy],
+        var subviews = [self subviews],
             index = 0,
             count = subviews.length;
         
