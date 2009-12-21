@@ -716,15 +716,16 @@
 
 @end
 
-var CPScrollViewContentViewKey = "CPScrollViewContentView",
-    CPScrollViewVLineScrollKey = "CPScrollViewVLineScroll",
-    CPScrollViewHLineScrollKey = "CPScrollViewHLineScroll",
-    CPScrollViewVPageScrollKey = "CPScrollViewVPageScroll",
-    CPScrollViewHPageScrollKey = "CPScrollViewHPageScroll",
-    CPScrollViewHasVScrollerKey = "CPScrollViewHasVScroller",
-    CPScrollViewHasHScrollerKey = "CPScrollViewHasHScroller",
-    CPScrollViewVScrollerKey = "CPScrollViewVScroller",
-    CPScrollViewHScrollerKey = "CPScrollViewHScroller",
+var CPScrollViewContentViewKey       = "CPScrollViewContentView",
+    CPScrollViewHeaderClipViewKey    = "CPScrollViewHeaderClipViewKey",
+    CPScrollViewVLineScrollKey       = "CPScrollViewVLineScroll",
+    CPScrollViewHLineScrollKey       = "CPScrollViewHLineScroll",
+    CPScrollViewVPageScrollKey       = "CPScrollViewVPageScroll",
+    CPScrollViewHPageScrollKey       = "CPScrollViewHPageScroll",
+    CPScrollViewHasVScrollerKey      = "CPScrollViewHasVScroller",
+    CPScrollViewHasHScrollerKey      = "CPScrollViewHasHScroller",
+    CPScrollViewVScrollerKey         = "CPScrollViewVScroller",
+    CPScrollViewHScrollerKey         = "CPScrollViewHScroller",
     CPScrollViewAutohidesScrollerKey = "CPScrollViewAutohidesScroller";
 
 @implementation CPScrollView (CPCoding)
@@ -740,6 +741,7 @@ var CPScrollViewContentViewKey = "CPScrollViewContentView",
         _horizontalPageScroll   = [aCoder decodeFloatForKey:CPScrollViewHPageScrollKey];
         
         _contentView            = [aCoder decodeObjectForKey:CPScrollViewContentViewKey];
+        _headerClipView         = [aCoder decodeObjectForKey:CPScrollViewHeaderClipViewKey];
         
         _verticalScroller       = [aCoder decodeObjectForKey:CPScrollViewVScrollerKey];
         _horizontalScroller     = [aCoder decodeObjectForKey:CPScrollViewHScrollerKey];
@@ -760,7 +762,8 @@ var CPScrollViewContentViewKey = "CPScrollViewContentView",
     [super encodeWithCoder:aCoder];
     
     [aCoder encodeObject:_contentView           forKey:CPScrollViewContentViewKey];
-    
+    [aCoder encodeObject:_headerClipView        forKey:CPScrollViewHeaderClipViewKey];
+
     [aCoder encodeObject:_verticalScroller      forKey:CPScrollViewVScrollerKey];
     [aCoder encodeObject:_horizontalScroller    forKey:CPScrollViewHScrollerKey];
     
