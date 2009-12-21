@@ -37,7 +37,13 @@
 
 - (void)setCustomClassName:(CPString)aClassName
 {
+    if (_className === aClassName)
+        return;
+
     _className = aClassName;
+
+    [self setNeedsDisplay:YES];
+    [self setNeedsLayout];
 }
 
 @end

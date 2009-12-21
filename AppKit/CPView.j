@@ -238,6 +238,11 @@ var CPViewFlags                     = { },
     return [CPSet setWithObjects:@"frameOrigin", @"frameSize"];
 }
 
++ (CPSet)keyPathsForValuesAffectingBounds
+{
+    return [CPSet setWithObjects:@"boundsOrigin", @"boundsSize"];
+}
+
 - (id)init
 {
     return [self initWithFrame:CGRectMakeZero()];
@@ -881,6 +886,16 @@ var CPViewFlags                     = { },
 - (CGRect)bounds
 {
     return _CGRectMakeCopy(_bounds);
+}
+
+- (CGPoint)boundsOrigin
+{
+    return _CGPointMakeCopy(_bounds.origin);
+}
+
+- (CGSize)boundsSize
+{
+    return _CGSizeMakeCopy(_bounds.size);
 }
 
 /*!
