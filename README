@@ -48,6 +48,11 @@ install it and all of its dependencies:
 
 $ sudo ./bootstrap.sh
 
+Editors
+------------
+The Cappuccino TextMate Bundle: http://github.com/malkomalko/Cappuccino.tmbundle
+The Cappuccino Xcode Plugin: http://github.com/rbartolome/xcode-cappuccino
+
 Getting Help
 ------------
 If you need help with Cappuccino, you can get help from the following sources:
