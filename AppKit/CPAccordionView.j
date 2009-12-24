@@ -197,6 +197,18 @@
     return indexSet;
 }
 
+- (void)setEnabled:(BOOL)isEnabled forItemAtIndex:(CPInteger)anIndex
+{
+    var itemView = _itemViews[anIndex];
+    if (!itemView)
+        return;
+    
+    if (!isEnabled)
+        [self collapseItemAtIndex:anIndex];
+    
+    [itemView setEnabled:isEnabled];
+}
+
 - (void)_invalidateItemsStartingAtIndex:(CPInteger)anIndex
 {
     if (_dirtyItemIndex === CPNotFound)
@@ -299,6 +311,12 @@
 
     else if ([_headerView respondsToSelector:@selector(setStringValue:)])
         [_headerView setStringValue:aLabel];
+}
+
+- (void)setEnabled:(BOOL)isEnabled
+{
+    if ([_headerView respondsToSelector:@selector(setEnabled:)])
+        [_headerView setEnabled:isEnabled];
 }
 
 - (void)setContentView:(CPView)aView
