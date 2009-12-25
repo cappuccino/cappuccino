@@ -365,7 +365,7 @@
             count = length;
         
         for(; index < count; ++index)
-            if(self[index] == anObject)
+            if(self[index] === anObject)
                 return index;
     }
     
@@ -1115,7 +1115,7 @@
 */
 - (void)removeObjectIdenticalTo:(id)anObject
 {
-    [self removeObjectIdenticalTo:anObject inRange:CPMakeRange(0, length)];
+    [self removeObjectIdenticalTo:anObject inRange:CPMakeRange(0, [self count])];
 }
 
 /*!
@@ -1127,12 +1127,13 @@
 */
 - (void)removeObjectIdenticalTo:(id)anObject inRange:(CPRange)aRange
 {
-    var index;
+    var index,
+        count = [self count];
     
-    while ((index = [self indexOfObjectIdenticalTo:anObject inRange:aRange]) != CPNotFound)
+    while ((index = [self indexOfObjectIdenticalTo:anObject inRange:aRange]) !== CPNotFound)
     {
         [self removeObjectAtIndex:index];
-        aRange = CPIntersectionRange(CPMakeRange(index, length - index), aRange);
+        aRange = CPIntersectionRange(CPMakeRange(index, (--count) - index), aRange);
     }
 }
 
