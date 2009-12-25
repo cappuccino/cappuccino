@@ -77,6 +77,81 @@
     return [CPSet set];
 }
 
+- (void)applyChange:(CPDictionary)aChange toKeyPath:(CPString)aKeyPath
+{
+    var changeKind = [aChange objectForKey:CPKeyValueChangeKindKey];
+
+    if (changeKind === CPKeyValueChangeSetting)
+    {
+        var value = [aChange objectForKey:CPKeyValueChangeNewKey];
+
+        [self setValue:value === [CPNull null] ? nil : value forKeyPath:aKeyPath];
+    }
+
+    else if (changeKind === CPKeyValueChangeInsertion)
+        [[self mutableArrayValueForKeyPath:aKeyPath]
+            insertObjects:[aChange objectForKey:CPKeyValueChangeNewKey]
+                atIndexes:[aChange objectForKey:CPKeyValueChangeIndexesKey]];
+
+    else if (changeKind === CPKeyValueChangeRemoval)
+        [[self mutableArrayValueForKeyPath:aKeyPath]
+            removeObjectsAtIndexes:[aChange objectForKey:CPKeyValueChangeIndexesKey]];
+
+    else if (changeKind === CPKeyValueChangeReplacement)
+        [[self mutableArrayValueForKeyPath:aKeyPath]
+            replaceObjectAtIndexes:[aChange objectForKey:CPKeyValueChangeIndexesKey]
+                       withObjects:[aChange objectForKey:CPKeyValueChangeNewKey]];
+}
+
+@end
+
+@implementation CPDictionary (KeyValueObserving)
+
+- (CPDictionary)inverseChangeDictionary
+{
+    var inverseChangeDictionary = [self mutableCopy],
+        changeKind = [self objectForKey:CPKeyValueChangeKindKey];
+
+    if (changeKind === CPKeyValueChangeSetting || changeKind === CPKeyValueChangeReplacement)
+    {
+        [inverseChangeDictionary
+            setObject:[self objectForKey:CPKeyValueChangeOldKey]
+               forKey:CPKeyValueChangeNewKey];
+
+        [inverseChangeDictionary
+            setObject:[self objectForKey:CPKeyValueChangeNewKey]
+               forKey:CPKeyValueChangeOldKey];
+    }
+
+    else if (changeKind === CPKeyValueChangeInsertion)
+    {
+        [inverseChangeDictionary
+            setObject:CPKeyValueChangeRemoval
+               forKey:CPKeyValueChangeKindKey];
+
+        [inverseChangeDictionary
+            setObject:[self objectForKey:CPKeyValueChangeNewKey]
+               forKey:CPKeyValueChangeOldKey];
+
+        [inverseChangeDictionary removeObjectForKey:CPKeyValueChangeNewKey];
+    }
+
+    else if (changeKind === CPKeyValueChangeRemoval)
+    {
+        [inverseChangeDictionary
+            setObject:CPKeyValueChangeInsertion
+               forKey:CPKeyValueChangeKindKey];
+
+        [inverseChangeDictionary
+            setObject:[self objectForKey:CPKeyValueChangeOldKey]
+               forKey:CPKeyValueChangeNewKey];
+
+        [inverseChangeDictionary removeObjectForKey:CPKeyValueChangeOldKey];
+    }
+
+    return inverseChangeDictionary;
+}
+
 @end
 
 // KVO Options
