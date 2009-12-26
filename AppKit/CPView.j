@@ -497,7 +497,7 @@ var CPViewFlags                     = { },
     // Trivial Case 2: No new subviews, simply remove all current subviews.
     if ([newSubviews count] === 0)
     {
-        var count = [subviews count];
+        var count = [_subviews count];
 
         while (count--)
             [_subviews[count] removeFromSuperview];
