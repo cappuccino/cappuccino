@@ -181,6 +181,45 @@
     return [[self _representedObject] count];
 }
 
+- (int)indexOfObject:(CPObject)anObject inRange:(CPRange)aRange
+{
+    var index = aRange.location,
+        count = aRange.length,
+        shouldIsEqual = !!anObject.isa;
+
+    for (; index < count; ++index)
+    {
+        var object = [self objectAtIndex:index];
+
+        if (anObject === object || shouldIsEqual && !!object.isa && [anObject isEqual:object])
+            return index;
+    }
+
+    return CPNotFound;
+}
+
+- (int)indexOfObject:(CPObject)anObject
+{
+    return [self indexOfObject:anObject range:CPMakeRange(0, [self count])];
+}
+
+- (int)indexOfObjectIdenticalTo:(CPObject)anObject inRange:(CPRange)aRange
+{
+    var index = aRange.location,
+        count = aRange.length;
+
+    for (; index < count; ++index)
+        if (anObject === [self objectAtIndex:index])
+            return index;
+
+    return CPNotFound;
+}
+
+- (int)indexOfObjectIdenticalTo:(CPObject)anObject
+{
+    return [self indexOfObjectIdenticalTo:anObject inRange:CPMakeRange(0, [self count])];
+}
+
 - (id)objectAtIndex:(unsigned)anIndex
 {
     if(_objectAtIndex)
@@ -198,6 +237,15 @@
     
     [target addObject:anObject];
     [self _setRepresentedObject:target];
+}
+
+- (void)addObjectsFromArray:(CPArray)anArray
+{
+    var index = 0,
+        count = [anArray count];
+
+    for (; index < count; ++index)
+        [self addObject:[anArray objectAtIndex:index]];
 }
 
 - (void)insertObject:(id)anObject atIndex:(unsigned)anIndex
