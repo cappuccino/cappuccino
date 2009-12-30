@@ -37,7 +37,7 @@ var _CPWindowViewResizeIndicatorImage = nil;
     
     CPView      _toolbarView;
 //    BOOL        _isAnimatingToolbar;
-_isFullPlatformWindow
+
     
     CGRect      _resizeFrame;
     CGPoint     _mouseDraggedPoint;
