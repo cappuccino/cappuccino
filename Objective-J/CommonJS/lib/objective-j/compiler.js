@@ -27,7 +27,7 @@ var compressor = null;
 function sharedCompressor()
 {
     if (!compressor)
-        compressor = OS.popen("java -server -Dfile.encoding=UTF-8 -classpath " + RHINO_PATH + ":" +  SHRINKSAFE_PATH + " org.dojotoolkit.shrinksafe.Main");
+        compressor = OS.popen("java -server -Dfile.encoding=UTF-8 -classpath " + RHINO_PATH + ":" +  SHRINKSAFE_PATH + " org.dojotoolkit.shrinksafe.Main", { charset:"UTF-8" });
 
     return compressor;
 }
@@ -65,7 +65,7 @@ function compileWithResolvedFlags(aFilePath, objjcFlags, gccFlags)
     else
     {
         // GCC preprocess the file.
-        var gcc = OS.popen("gcc -E -x c -P " + (gccFlags ? gccFlags.join(" ") : "") + " " + OS.enquote(aFilePath)),
+        var gcc = OS.popen("gcc -E -x c -P " + (gccFlags ? gccFlags.join(" ") : "") + " " + OS.enquote(aFilePath), { charset:"UTF-8" }),
             chunk = "";
 
         while (chunk = gcc.stdout.read())
