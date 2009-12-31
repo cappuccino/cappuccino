@@ -205,6 +205,8 @@
     
     if (!isEnabled)
         [self collapseItemAtIndex:anIndex];
+    else
+        [self expandItemAtIndex:anIndex];
     
     [itemView setEnabled:isEnabled];
 }

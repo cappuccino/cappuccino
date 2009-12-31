@@ -66,6 +66,8 @@ else
     tusk_install_command="install"
 fi
 
+github_project="tlrobinson-narwhal"
+github_path=$(echo "$github_project" | tr '-' '/')
 install_directory="/usr/local/narwhal"
 tmp_zip="/tmp/narwhal.zip"
 
@@ -87,17 +89,19 @@ if ! which "narwhal" > /dev/null; then
         fi
 
         if [ "$git_clone" ]; then
-            echo "Cloning Narwhal..."
-            git clone git://github.com/280north/narwhal.git "$install_directory"
+            git_repo="git://github.com/$github_path.git"
+            echo "Cloning Narwhal from \"$git_repo\"..."
+            git clone "$git_repo" "$install_directory"
         else
-            echo "Downloading Narwhal..."
-            curl -L -o "$tmp_zip" "http://github.com/280north/narwhal/zipball/master"
+            zip_ball="http://github.com/$github_path/zipball/master"
+            echo "Downloading Narwhal from \"$zip_ball\"..."
+            curl -L -o "$tmp_zip" "$zip_ball"
             echo "Installing Narwhal..."
             unzip "$tmp_zip" -d "$install_directory"
             rm "$tmp_zip"
 
-            mv $install_directory/280north-narwhal-*/* $install_directory/.
-            rm -rf $install_directory/280north-narwhal-*
+            mv $install_directory/$github_project-*/* $install_directory/.
+            rm -rf $install_directory/$github_project-*
         fi
         
         if ! which "narwhal" > /dev/null; then
@@ -114,7 +118,7 @@ fi
 install_directory=$(dirname $(dirname $(which narwhal)))
 
 echo "================================================================================"
-echo "Using Narwhal installation at $install_directory. Is this correct?"
+echo "Using Narwhal installation at \"$install_directory\". Is this correct?"
 if ! prompt; then
     exit 1
 fi
@@ -162,7 +166,7 @@ fi
 if [ "$CAPP_BUILD" ]; then
     if [ -d "$CAPP_BUILD" ]; then
         echo "================================================================================"
-        echo "An existing \$CAPP_BUILD directory at $CAPP_BUILD exists. The previous build may be incompatible. Remove it automatically now?"
+        echo "An existing \$CAPP_BUILD directory at \"$CAPP_BUILD\" exists. The previous build may be incompatible. Remove it automatically now?"
         if prompt; then
             rm -rf "$CAPP_BUILD"
         fi
