@@ -235,21 +235,21 @@ NAMES_FOR_PARTS[CPScrollerKnob]             = @"knob";
 */
 - (void)checkSpaceForParts
 {
-    var bounds = [self bounds];
+ var bounds = [self bounds];
 
     // Assume we won't be needing the arrows.
     if (_knobProportion === 1.0)
     {
         _usableParts = CPNoScrollerParts;
     
-        _partRects[CPScrollerDecrementPage] = _CGRectMakeZero();
-        _partRects[CPScrollerKnob]          = _CGRectMakeZero();
-        _partRects[CPScrollerIncrementPage] = _CGRectMakeZero();
-        _partRects[CPScrollerDecrementLine] = _CGRectMakeZero();
-        _partRects[CPScrollerIncrementLine] = _CGRectMakeZero();
+        _partRects[CPScrollerDecrementPage] = CGRectMakeZero();
+        _partRects[CPScrollerKnob]          = CGRectMakeZero();
+        _partRects[CPScrollerIncrementPage] = CGRectMakeZero();
+        _partRects[CPScrollerDecrementLine] = CGRectMakeZero();
+        _partRects[CPScrollerIncrementLine] = CGRectMakeZero();
 
         // In this case, the slot is the entirety of the scroller.
-        _partRects[CPScrollerKnobSlot] = _CGRectMakeCopy(bounds);
+        _partRects[CPScrollerKnobSlot] = CGRectMakeCopy(bounds);
         
         return;
     }
@@ -259,8 +259,8 @@ NAMES_FOR_PARTS[CPScrollerKnob]             = @"knob";
 
     var knobInset = [self currentValueForThemeAttribute:@"knob-inset"],
         trackInset = [self currentValueForThemeAttribute:@"track-inset"],
-        width = _CGRectGetWidth(bounds),
-        height = _CGRectGetHeight(bounds); 
+        width = CGRectGetWidth(bounds),
+        height = CGRectGetHeight(bounds); 
     
     if ([self isVertical])
     {
@@ -274,13 +274,23 @@ NAMES_FOR_PARTS[CPScrollerKnob]             = @"knob";
             knobHeight = MAX(minimumKnobLength, (slotHeight * _knobProportion)),
             knobLocation = effectiveDecrementLineHeight + (slotHeight - knobHeight) * [self floatValue];
 
-        _partRects[CPScrollerDecrementPage] = _CGRectMake(0.0, effectiveDecrementLineHeight, width, knobLocation - effectiveDecrementLineHeight);
-        _partRects[CPScrollerKnob]          = _CGRectMake(knobInset.left, knobLocation, knobWidth, knobHeight);
-        _partRects[CPScrollerIncrementPage] = _CGRectMake(0.0, knobLocation + knobHeight, width, height - (knobLocation + knobHeight) - effectiveIncrementLineHeight);
-        _partRects[CPScrollerKnobSlot]      = _CGRectMake(trackInset.left, effectiveDecrementLineHeight, width - trackInset.left - trackInset.right, slotHeight);
-        _partRects[CPScrollerDecrementLine] = _CGRectMake(0.0, 0.0, decrementLineSize.width, decrementLineSize.height);
-        _partRects[CPScrollerIncrementLine] = _CGRectMake(0.0, height - incrementLineSize.height, incrementLineSize.width, incrementLineSize.height);  
-    }
+        _partRects[CPScrollerDecrementPage] = CGRectMake(0.0, effectiveDecrementLineHeight, width, knobLocation - effectiveDecrementLineHeight);
+        _partRects[CPScrollerKnob]          = CGRectMake(knobInset.left, knobLocation, knobWidth, knobHeight);
+        _partRects[CPScrollerIncrementPage] = CGRectMake(0.0, knobLocation + knobHeight, width, height - (knobLocation + knobHeight) - effectiveIncrementLineHeight);
+        _partRects[CPScrollerKnobSlot]      = CGRectMake(trackInset.left, effectiveDecrementLineHeight, width - trackInset.left - trackInset.right, slotHeight);
+        _partRects[CPScrollerDecrementLine] = CGRectMake(0.0, 0.0, decrementLineSize.width, decrementLineSize.height);
+        _partRects[CPScrollerIncrementLine] = CGRectMake(0.0, height - incrementLineSize.height, incrementLineSize.width, incrementLineSize.height);
+        
+        if(height < knobHeight + decrementLineSize.height + incrementLineSize.height + trackInset.top + trackInset.bottom)
+            _partRects[CPScrollerKnob] = CGRectMakeZero();
+        
+        if(height < decrementLineSize.height + incrementLineSize.height - 2)
+        {
+            _partRects[CPScrollerIncrementLine] = CGRectMakeZero();
+            _partRects[CPScrollerDecrementLine] = CGRectMakeZero();
+            _partRects[CPScrollerKnobSlot]      = CGRectMake(trackInset.left, 0,  width - trackInset.left - trackInset.right, height);
+        }
+}
 
     else
     {
@@ -294,12 +304,22 @@ NAMES_FOR_PARTS[CPScrollerKnob]             = @"knob";
             knobHeight = height - knobInset.top - knobInset.bottom,
             knobLocation = effectiveDecrementLineWidth + (slotWidth - knobWidth) * [self floatValue];
 
-        _partRects[CPScrollerDecrementPage] = _CGRectMake(effectiveDecrementLineWidth, 0.0, knobLocation - effectiveDecrementLineWidth, height);
-        _partRects[CPScrollerKnob]          = _CGRectMake(knobLocation, knobInset.top, knobWidth, knobHeight);
-        _partRects[CPScrollerIncrementPage] = _CGRectMake(knobLocation + knobWidth, 0.0, width - (knobLocation + knobWidth) - effectiveIncrementLineWidth, height);
-        _partRects[CPScrollerKnobSlot]      = _CGRectMake(effectiveDecrementLineWidth, trackInset.top, slotWidth, height - trackInset.top - trackInset.bottom);
-        _partRects[CPScrollerDecrementLine] = _CGRectMake(0.0, 0.0, decrementLineSize.width, decrementLineSize.height);
-        _partRects[CPScrollerIncrementLine] = _CGRectMake(width - incrementLineSize.width, 0.0, incrementLineSize.width, incrementLineSize.height);
+        _partRects[CPScrollerDecrementPage] = CGRectMake(effectiveDecrementLineWidth, 0.0, knobLocation - effectiveDecrementLineWidth, height);
+        _partRects[CPScrollerKnob]          = CGRectMake(knobLocation, knobInset.top, knobWidth, knobHeight);
+        _partRects[CPScrollerIncrementPage] = CGRectMake(knobLocation + knobWidth, 0.0, width - (knobLocation + knobWidth) - effectiveIncrementLineWidth, height);
+        _partRects[CPScrollerKnobSlot]      = CGRectMake(effectiveDecrementLineWidth, trackInset.top, slotWidth, height - trackInset.top - trackInset.bottom);
+        _partRects[CPScrollerDecrementLine] = CGRectMake(0.0, 0.0, decrementLineSize.width, decrementLineSize.height);
+        _partRects[CPScrollerIncrementLine] = CGRectMake(width - incrementLineSize.width, 0.0, incrementLineSize.width, incrementLineSize.height);
+        
+        if(width < knobWidth + decrementLineSize.width + incrementLineSize.width + trackInset.left + trackInset.right)
+            _partRects[CPScrollerKnob] = CGRectMakeZero();
+        
+        if(width < decrementLineSize.width + incrementLineSize.width - 2)
+        {
+            _partRects[CPScrollerIncrementLine] = CGRectMakeZero();
+            _partRects[CPScrollerDecrementLine] = CGRectMakeZero();
+            _partRects[CPScrollerKnobSlot]      = CGRectMake(0, 0,  width, slotWidth, slotHeight);
+        }
     }
 }
 
