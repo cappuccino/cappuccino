@@ -37,6 +37,7 @@ var _CPWindowViewResizeIndicatorImage = nil;
     
     CPView      _toolbarView;
 //    BOOL        _isAnimatingToolbar;
+
     
     CGRect      _resizeFrame;
     CGPoint     _mouseDraggedPoint;
@@ -160,10 +161,15 @@ var _CPWindowViewResizeIndicatorImage = nil;
     if (!visibleFrame)
         visibleFrame = [[CPPlatformWindow primaryPlatformWindow] visibleFrame];
 
+    var minPointY = 0;
+    
+    if([CPMenu menuBarVisible])
+        minPointY = [[CPApp mainMenu] menuBarHeight];
+    
     var restrictedPoint = CGPointMake(0, 0);
 
     restrictedPoint.x = MIN(MAX(aPoint.x, -_frame.size.width + 4.0), CGRectGetMaxX(visibleFrame) - 4.0);
-    restrictedPoint.y = MIN(MAX(aPoint.y, 0.0), CGRectGetMaxY(visibleFrame) - 8.0);
+    restrictedPoint.y = MIN(MAX(aPoint.y, minPointY), CGRectGetMaxY(visibleFrame) - 8.0);
 
     return restrictedPoint;
 }

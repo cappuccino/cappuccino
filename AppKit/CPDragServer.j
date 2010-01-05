@@ -310,7 +310,7 @@ var CPDraggingSource_draggedImage_movedTo_          = 1 << 0,
         _draggingOffset = _CGSizeMake(mouseDownEventLocation.x - viewLocation.x, mouseDownEventLocation.y - viewLocation.y);
     }
     else
-        _draggingOffset = _CGSizeMakerZero();
+        _draggingOffset = _CGSizeMakeZero();
 
     if ([CPPlatform isBrowser])
         [_draggedWindow setPlatformWindow:[aWindow platformWindow]];

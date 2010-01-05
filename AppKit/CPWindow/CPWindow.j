@@ -175,6 +175,7 @@ CPWindowBelow                   = 2;
 CPWindowWillCloseNotification       = @"CPWindowWillCloseNotification";
 CPWindowDidBecomeMainNotification   = @"CPWindowDidBecomeMainNotification";
 CPWindowDidResignMainNotification   = @"CPWindowDidResignMainNotification";
+CPWindowDidResizeNotification       = @"CPWindowDidResizeNotification";
 CPWindowDidMoveNotification         = @"CPWindowDidMoveNotification";
 CPWindowWillBeginSheetNotification  = @"CPWindowWillBeginSheetNotification";
 CPWindowDidEndSheetNotification     = @"CPWindowDidEndSheetNotification";
@@ -680,8 +681,8 @@ CPTexturedBackgroundWindowMask
             if (_hasShadow)
                 [_shadowView setFrameSize:_CGSizeMake(SHADOW_MARGIN_LEFT + size.width + SHADOW_MARGIN_RIGHT, SHADOW_MARGIN_BOTTOM + size.height + SHADOW_MARGIN_TOP + SHADOW_DISTANCE)];
 
-            if (!_isAnimating && [_delegate respondsToSelector:@selector(windowDidResize:)])
-                [_delegate windowDidResize:self];
+            if (!_isAnimating)
+                [[CPNotificationCenter defaultCenter] postNotificationName:CPWindowDidResizeNotification object:self];
         }
 
         if ([self _sharesChromeWithPlatformWindow])
@@ -1085,6 +1086,13 @@ CPTexturedBackgroundWindowMask
             addObserver:_delegate
                selector:@selector(windowDidMove:)
                    name:CPWindowDidMoveNotification
+                 object:self];
+
+    if ([_delegate respondsToSelector:@selector(windowDidResize:)])
+        [defaultCenter
+            addObserver:_delegate
+               selector:@selector(windowDidResize:)
+                   name:CPWindowDidResizeNotification
                  object:self];
 }
 
