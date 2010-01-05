@@ -708,6 +708,29 @@ if (_currentGroup == nil)
                      argument:nil];
 }
 
+- (void)observeChangesForKeyPath:(CPString)aKeyPath ofObject:(id)anObject
+{
+    [anObject addObserver:self
+              forKeyPath:aKeyPath
+                 options:CPKeyValueObservingOptionOld | CPKeyValueObservingOptionNew
+                 context:NULL];
+}
+
+- (void)stopObservingChangesForKeyPath:(CPString)aKeyPath ofObject:(id)anObject
+{
+    [anObject removeObserver:self forKeyPath:aKeyPath];
+}
+
+- (void)observeValueForKeyPath:(CPString)aKeyPath
+                      ofObject:(id)anObject
+                        change:(CPDictionary)aChange
+                       context:(id)aContext
+{
+    [[self prepareWithInvocationTarget:anObject]
+        applyChange:[aChange inverseChangeDictionary]
+          toKeyPath:aKeyPath];
+}
+
 @end
 
 var CPUndoManagerRedoStackKey       = @"CPUndoManagerRedoStackKey",

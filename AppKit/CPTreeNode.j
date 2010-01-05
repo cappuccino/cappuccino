@@ -7,7 +7,7 @@
     id              _representedObject @accessors(readonly, property=representedObject);
     
     CPTreeNode      _parentNode @accessors(readonly, property=parentNode);
-    CPMutableArray  _childNodes @accessors(readonly, property=childNodes);
+    CPMutableArray  _childNodes;
 }
 
 + (id)treeNodeWithRepresentedObject:(id)anObject
@@ -31,6 +31,11 @@
 - (BOOL)isLeaf
 {
     return [_childNodes count] <= 0;
+}
+
+- (CPArray)childNodes
+{
+    return [_childNodes copy];
 }
 
 - (CPMutableArray)mutableChildNodes
@@ -77,6 +82,35 @@
 
     while (count--)
         [_childNodes[count] sortWithSortDescriptors:sortDescriptors recursively:YES];
+}
+
+@end
+
+var CPTreeNodeRepresentedObjectKey  = @"CPTreeNodeRepresentedObjectKey",
+    CPTreeNodeParentNodeKey         = @"CPTreeNodeParentNodeKey",
+    CPTreeNodeChildNodesKey         = @"CPTreeNodeChildNodesKey";
+
+@implementation CPTreeNode (CPCoding)
+
+- (id)initWithCoder:(CPCoder)aCoder
+{
+    self = [super init];
+
+    if (self)
+    {
+        _representedObject = [aCoder decodeObjectForKey:CPTreeNodeRepresentedObjectKey];
+        _parentNode = [aCoder decodeObjectForKey:CPTreeNodeParentNodeKey];
+        _childNodes = [aCoder decodeObjectForKey:CPTreeNodeChildNodesKey];
+    }
+
+    return self;
+}
+
+- (void)encodeWithCoder:(CPCoder)aCoder
+{
+    [aCoder encodeObject:_representedObject forKey:CPTreeNodeRepresentedObjectKey];
+    [aCoder encodeConditionalObject:_parentNode forKey:CPTreeNodeParentNodeKey];
+    [aCoder encodeObject:_childNodes forKey:CPTreeNodeChildNodesKey];
 }
 
 @end

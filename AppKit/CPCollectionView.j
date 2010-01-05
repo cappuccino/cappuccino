@@ -321,7 +321,7 @@
 */
 - (CPIndexSet)selectionIndexes
 {
-    return _selectionIndexes;
+    return [_selectionIndexes copy];
 }
 
 /* @ignore */
