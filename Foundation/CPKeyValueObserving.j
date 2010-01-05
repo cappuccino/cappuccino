@@ -386,11 +386,11 @@ var kvoNewAndOld = CPKeyValueObservingOptionNew|CPKeyValueObservingOptionOld,
             var type = [changes objectForKey:CPKeyValueChangeKindKey];
             
             // for to-many relationships, oldvalue is only sensible for replace and remove
-            if (type == CPKeyValueChangeReplacement || type == CPKeyValueChangeRemoval)
+            if (type === CPKeyValueChangeReplacement || type === CPKeyValueChangeRemoval)
             {
                 //FIXME: do we need to go through and replace "" with CPNull? 
-                var oldValues = [[_targetObject mutableArrayValueForKeyPath:aKey] objectsAtIndexes:indexes];
-                [changes setValue:oldValues forKey:CPKeyValueChangeOldKey];
+                var newValues = [[_targetObject mutableArrayValueForKeyPath:aKey] objectsAtIndexes:indexes];
+                [changes setValue:newValues forKey:CPKeyValueChangeOldKey];
             }
         }
         else

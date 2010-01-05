@@ -534,14 +534,11 @@
 */
 - (CPArray)objectsAtIndexes:(CPIndexSet)indexes
 {
-    var index = [indexes firstIndex],
+    var index = CPNotFound,
         objects = [];
 
-    while(index != CPNotFound)
-    { 
-        [objects addObject:self[index]];
-        index = [indexes indexGreaterThanIndex:index];
-    }
+    while((index = [indexes indexGreaterThanIndex:index]) !== CPNotFound)
+        [objects addObject:[self objectAtIndex:index]];
 
     return objects;
 }
