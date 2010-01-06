@@ -896,7 +896,8 @@ var supportsNativeDragAndDrop = [CPPlatform supportsDragAndDrop];
     // We should pay attention to mouse down and mouse up in conjunction with this.
     //window.liveResize = YES;
 
-    [CPApp._activeMenu cancelTracking];
+    if ([CPPlatform isBrowser])
+        [CPApp._activeMenu cancelTracking];
 
     var oldSize = [self contentRect].size;
 
