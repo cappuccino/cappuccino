@@ -91,6 +91,18 @@
     return [CPSet setWithObjects:"selectionIndexes"];
 }
 
+- (id)init
+{
+    self = [super init];
+    
+    if (self)
+    {
+        _selectionIndexes = [CPIndexSet indexSet];
+    }
+    
+    return self;
+}
+
 -(void)prepareContent
 {
     [self _setContentArray:[[self newObject]]];
