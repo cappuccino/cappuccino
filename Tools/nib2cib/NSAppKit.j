@@ -55,6 +55,7 @@
 @import "NSTabViewItem.j"
 @import "NSTextField.j"
 @import "NSToolbar.j"
+@import "NSToolbarItem.j"
 @import "NSView.j"
 @import "NSViewController.j"
 @import "NSWindowTemplate.j"

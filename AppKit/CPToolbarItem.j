@@ -495,6 +495,83 @@ CPToolbarItemVisibilityPriorityUser
 
 @end
 
+var CPToolbarItemIdentifierKey          = @"CPToolbarItemIdentifierKey",
+    CPToolbarItemLabelKey               = @"CPToolbarItemLabelKey",
+    CPToolbarItemPaletteLabelKey        = @"CPToolbarItemPaletteLabelKey",
+    CPToolbarItemToolTipKey             = @"CPToolbarItemToolTipKey",
+    CPToolbarItemTagKey                 = @"CPToolbarItemTagKey",
+    CPToolbarItemTargetKey              = @"CPToolbarItemTargetKey",
+    CPToolbarItemActionKey              = @"CPToolbarItemActionKey",
+    CPToolbarItemEnabledKey             = @"CPToolbarItemEnabledKey",
+    CPToolbarItemImageKey               = @"CPToolbarItemImageKey",
+    CPToolbarItemAlternateImageKey      = @"CPToolbarItemAlternateImageKey",
+    CPToolbarItemViewKey                = @"CPToolbarItemViewKey",
+    CPToolbarItemMinSizeKey             = @"CPToolbarItemMinSizeKey",
+    CPToolbarItemMaxSizeKey             = @"CPToolbarItemMaxSizeKey",
+    CPToolbarItemVisibilityPriorityKey  = @"CPToolbarItemVisibilityPriorityKey";
+
+@implementation CPToolbarItem (CPCoding)
+
+- (id)initWithCoder:(CPCoder)aCoder
+{
+    self = [super init];
+
+    if (self)
+    {
+        _itemIdentifier = [aCoder decodeObjectForKey:CPToolbarItemIdentifierKey];
+
+        [self setLabel:[aCoder decodeObjectForKey:CPToolbarItemLabelKey]];
+        [self setPaletteLabel:[aCoder decodeObjectForKey:CPToolbarItemPaletteLabelKey]];
+        [self setToolTip:[aCoder decodeObjectForKey:CPToolbarItemToolTipKey]];
+
+        [self setTag:[aCoder decodeObjectForKey:CPToolbarItemTagKey]];
+        [self setTarget:[aCoder decodeObjectForKey:CPToolbarItemTargetKey]];
+        [self setAction:[aCoder decodeObjectForKey:CPToolbarItemActionKey]];
+
+        [self setEnabled:[aCoder decodeBoolForKey:CPToolbarItemEnabledKey]];
+
+        [self setImage:[aCoder decodeBoolForKey:CPToolbarItemImageKey]];
+        [self setAlternateImage:[aCoder decodeBoolForKey:CPToolbarItemAlternateImageKey]];
+
+        [self setView:[aCoder decodeObjectForKey:CPToolbarItemViewKey]];
+
+        [self setMinSize:[aCoder decodeSizeForKey:CPToolbarItemMinSizeKey]];
+        [self setMaxSize:[aCoder decodeSizeForKey:CPToolbarItemMaxSizeKey]];
+
+        [self setVisibilityPriority:[aCoder decodeIntForKey:CPToolbarItemVisibilityPriorityKey]];
+    }
+
+    return self;
+}
+
+- (void)encodeWithCoder:(CPCoder)aCoder
+{
+    [aCoder encodeObject:_itemIdentifier forKey:CPToolbarItemItemIdentifierKey];
+
+    [aCoder encodeObject:[self label] forKey:CPToolbarItemLabelKey];
+    [aCoder encodeObject:[self paletteLabel] forKey:CPToolbarItemPaletteLabelKey];
+
+    [aCoder encodeObject:[self toolTip] forKey:CPToolbarItemToolTipKey];
+
+    [aCoder encodeObject:[self tag] forKey:CPToolbarItemTagKey];
+    [aCoder encodeObject:[self target] forKey:CPToolbarItemTargetKey];
+    [aCoder encodeObject:[self action] forKey:CPToolbarItemActionKey];
+
+    [aCoder encodeObject:[self isEnabled] forKey:CPToolbarItemEnabledKey];
+
+    [aCoder encodeObject:[self image] forKey:CPToolbarItemImageKey];
+    [aCoder encodeObject:[self alternateImage] forKey:CPToolbarItemAlternateImageKey];
+
+    [aCoder encodeObject:[self view] forKey:CPToolbarItemViewKey];
+
+    [aCoder encodeSize:[self minSize] forKey:CPToolbarItemMinSizeKey];
+    [aCoder encodeSize:[self maxSize] forKey:CPToolbarItemMaxSizeKey];
+
+    [aCoder encodeObject:[self visibilityPriority] forKey:CPToolbarItemVisibilityPriorityKey];
+}
+
+@end
+
 @implementation CPToolbarItem (CPCopying)
 
 - (id)copy
