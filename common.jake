@@ -7,10 +7,14 @@ function ensurePackageUpToDate(packageName, requiredVersion)
         print("You are missing package \"" + packageName + "\", version " + requiredVersion + " or later. Please install using \"tusk install "+packageName+"\" and re-run jake");
         require("os").exit(1);
     }
-    
-    var version = packageInfo.version;
 
-    if (version && require("util").compare(version.split("."), requiredVersion.split(".")) !== -1)
+    // newer versions of packages provide already split versions
+    var version = typeof packageInfo.version === "string" ? packageInfo.version.split(".") : packageInfo;
+
+    if (typeof requiredVersion === "string")
+        requiredVersion = requiredVersion.split(".");
+
+    if (version && require("util").compare(version, requiredVersion) !== -1)
         return;
 
     print("Your copy of " + packageName + " is out of date (version " + version + "). Update? yes or no:");
@@ -28,7 +32,7 @@ function ensurePackageUpToDate(packageName, requiredVersion)
 
 // UPDATE THESE TO PICK UP CORRESPONDING CHANGES IN DEPENDENCIES
 ensurePackageUpToDate("jake", "0.1.1");
-ensurePackageUpToDate("browserjs", "0.1");
+ensurePackageUpToDate("browserjs", "0.1.1");
 
 var Jake = require("jake");
 

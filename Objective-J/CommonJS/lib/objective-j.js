@@ -62,12 +62,14 @@ if (system.env["OBJJ_INCLUDE_PATHS"])
 // TODO: somehow make window object the top scope?
 with (window)
 {
+    var objectivejSource = FILE.read(objectivejPath, { charset:"UTF-8" });
+
     // read and eval Objective-J.js with the module's scope
     if (system.engine === "rhino")
-        Packages.org.mozilla.javascript.Context.getCurrentContext().evaluateString(window, FILE.read(objectivejPath, { charset:"UTF-8" }), "Objective-J.js", 0, null);
+        Packages.org.mozilla.javascript.Context.getCurrentContext().evaluateString(window, objectivejSource, objectivejPath, 0, null);
     else
-        eval(FILE.read(objectivejPath, { charset:"UTF-8" }));
-    
+        eval(objectivejSource);
+
     // export desired variables. must eval variable name to obtain a reference.
     [
         "objj_preprocess",
