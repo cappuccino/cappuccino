@@ -16,7 +16,7 @@ function prompt () {
 }
 
 function which () {
-    echo "$PATH" | tr ":" "\n" | while read line; do [ -f "$line/$1" ] && echo "$line/$1" && return 0; done
+    echo "$PATH" | tr ":" "\n" | while read line; do [ -x "$line/$1" ] && echo "$line/$1" && return 0; done
 }
 
 function ask_remove_dir () {
@@ -66,7 +66,7 @@ else
     tusk_install_command="install"
 fi
 
-github_project="tlrobinson-narwhal"
+github_project="280north-narwhal"
 github_path=$(echo "$github_project" | tr '-' '/')
 install_directory="/usr/local/narwhal"
 tmp_zip="/tmp/narwhal.zip"
@@ -123,7 +123,7 @@ if ! prompt; then
     exit 1
 fi
 
-echo "Installing necessary dependencies..."
+echo "Installing necessary packages..."
 
 if ! tusk update; then
     echo "Error: unable to update tusk catalog. Check that you have sufficient permissions."
@@ -138,9 +138,13 @@ if [ `uname` = "Darwin" ]; then
     echo "This is optional but will make building and running Objective-J much faster."
     if prompt; then
         tusk $tusk_install_command narwhal-jsc
-        (cd "$install_directory/packages/narwhal-jsc" && make webkit)
         
-        if ! [ "$NARWHAL_ENGINE" = "jsc" ]; then
+        if ! (cd "$install_directory/packages/narwhal-jsc" && make webkit); then
+            echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+            echo "WARNING: building narwhal-jsc failed. Hit enter to continue."
+            echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+            read
+        elif ! [ "$NARWHAL_ENGINE" = "jsc" ]; then
             echo "================================================================================"
             echo "Rhino is the default Narwhal engine, should we change the default to JavaScriptCore for you?"
             echo "This can by overridden by setting the NARWHAL_ENGINE environment variable to \"jsc\" or \"rhino\"."
