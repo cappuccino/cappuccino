@@ -34,7 +34,7 @@ var DefaultDictionary       = nil,
     [DefaultDictionary setObject:@"com.yourcompany" forKey:@"organization.identifier"];
     
     var date = new Date(),
-        months = ["Janurary", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+        months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 
     [DefaultDictionary setObject:date.getFullYear() forKey:@"project.year"];
     [DefaultDictionary setObject:months[date.getMonth()] + ' ' + date.getDate() + ", " + date.getFullYear() forKey:@"project.date"];
