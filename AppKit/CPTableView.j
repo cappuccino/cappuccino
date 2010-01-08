@@ -2134,10 +2134,11 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     // begin the drag is the datasource lets us, we've move at least +-3px vertical or horizontal, or we're dragging from selected rows and we haven't begun a drag session
     if
     (
+        !_isSelectingSession && 
         (_implementedDataSourceMethods & CPTableViewDataSource_tableView_writeRowsWithIndexes_toPasteboard_) && 
         (
             (lastPoint.x - aPoint.x > 3 || (_verticalMotionCanDrag && ABS(lastPoint.y - aPoint.y) > 3)) 
-            || ([_selectedRowIndexes containsIndex:row] && !_isSelectingSession)
+            || ([_selectedRowIndexes containsIndex:row])
         )
     )
     {
@@ -2213,10 +2214,12 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     if (![_previouslySelectedRowIndexes isEqualToIndexSet:_selectedRowIndexes])
         [self _noteSelectionDidChange];
     
+    
     if (mouseIsUp
         && (_implementedDataSourceMethods & CPTableViewDataSource_tableView_setObjectValue_forTableColumn_row_)
         && !_trackingPointMovedOutOfClickSlop
-        && (((new Date()).getTime() - _startTrackingTimestamp.getTime()) <= CLICK_TIME_DELTA))
+        //&& (((new Date()).getTime() - _startTrackingTimestamp.getTime()) <= CLICK_TIME_DELTA))
+        && ([[CPApp currentEvent] clickCount] > 1))
     {
         columnIndex = [self columnAtPoint:lastPoint];
         if (columnIndex !== -1) 
@@ -2235,12 +2238,18 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
                         _editingCellIndex = CGPointMake(columnIndex, rowIndex);
                         [self reloadDataForRowIndexes:[CPIndexSet indexSetWithIndex:rowIndex]
                             columnIndexes:[CPIndexSet indexSetWithIndex:columnIndex]];
+                        
+                        return;
                     }
                 }
             }
         }
         
-    }
+    } //end of editing conditional
+    
+    //double click actions
+    if([[CPApp currentEvent] clickCount] === 2 && _doubleAction && _target)
+        [self sendAction:_doubleAction to:_target];
 }
 
 /* 
@@ -2509,16 +2518,6 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 - (BOOL)acceptsFirstResponder
 {
     return YES;
-}
- 
-- (void)mouseDown:(CPEvent)anEvent
-{
-    [super mouseDown:anEvent];
-    
-    if([anEvent clickCount] === 2 && _doubleAction)
-        [self sendAction:_doubleAction to:_target]; 
-        //[_target performSelector:_doubleAction];
-        
 }
  
 - (void)keyDown:(CPEvent)anEvent 
