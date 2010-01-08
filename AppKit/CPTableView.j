@@ -2134,10 +2134,11 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     // begin the drag is the datasource lets us, we've move at least +-3px vertical or horizontal, or we're dragging from selected rows and we haven't begun a drag session
     if
     (
+        !_isSelectingSession && 
         (_implementedDataSourceMethods & CPTableViewDataSource_tableView_writeRowsWithIndexes_toPasteboard_) && 
         (
             (lastPoint.x - aPoint.x > 3 || (_verticalMotionCanDrag && ABS(lastPoint.y - aPoint.y) > 3)) 
-            || ([_selectedRowIndexes containsIndex:row] && !_isSelectingSession)
+            || ([_selectedRowIndexes containsIndex:row])
         )
     )
     {
