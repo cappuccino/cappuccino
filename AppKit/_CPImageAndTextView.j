@@ -285,11 +285,26 @@ var HORIZONTAL_MARGIN   = 3.0,
 {
     if (_image == anImage)
         return;
-    
+
+    if ([_image delegate] === self)
+        [_image setDelegate:nil];
+
     _image = anImage;
     _flags |= _CPImageAndTextViewImageChangedFlag;
-    
+
+    if ([_image loadStatus] !== CPImageLoadStatusCompleted)
+        [_image setDelegate:self];
+
     [self setNeedsLayout];
+}
+
+- (void)imageDidLoad:(id)anImage
+{
+    if (anImage === _image)
+    {
+        _flags |= _CPImageAndTextViewImageChangedFlag;
+        [self setNeedsLayout];
+    }
 }
 
 - (CPImage)image
