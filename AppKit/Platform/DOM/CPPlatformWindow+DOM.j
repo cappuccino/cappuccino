@@ -1,5 +1,5 @@
 /*
- * _CPDOMWindow.j
+ * CPPlatformWindow+DOM.j
  * AppKit
  *
  * Created by Francisco Tolmasky.
@@ -228,11 +228,21 @@ var supportsNativeDragAndDrop = [CPPlatform supportsDragAndDrop];
         _DOMWindow.blur();
 }
 
+- (void)DOMSafeElement
+{
+    if (_DOMWindow === window)
+        return [CPPlatform DOMSafeElement];
+
+    return _DOMBodyElement;
+}
+
 - (void)registerDOMWindow
 {
     var theDocument = _DOMWindow.document;
 
     _DOMBodyElement = theDocument.getElementsByTagName("body")[0];
+
+    var DOMSafeElement = [self DOMSafeElement];
 
     // FIXME: Always do this?
     if ([CPPlatform supportsDragAndDrop])
@@ -248,7 +258,7 @@ var supportsNativeDragAndDrop = [CPPlatform supportsDragAndDrop];
     _DOMFocusElement.style.opacity = "0";
     _DOMFocusElement.style.filter = "alpha(opacity=0)";
     
-    _DOMBodyElement.appendChild(_DOMFocusElement);
+    DOMSafeElement.appendChild(_DOMFocusElement);
 
     // Create Native Pasteboard handler.
     _DOMPasteboardElement = theDocument.createElement("textarea");
@@ -257,7 +267,7 @@ var supportsNativeDragAndDrop = [CPPlatform supportsDragAndDrop];
     _DOMPasteboardElement.style.top = "-10000px";
     _DOMPasteboardElement.style.zIndex = "999";
 
-    _DOMBodyElement.appendChild(_DOMPasteboardElement);
+    DOMSafeElement.appendChild(_DOMPasteboardElement);
 
     // Make sure the pastboard element is blurred.
     _DOMPasteboardElement.blur();
@@ -1138,6 +1148,8 @@ var supportsNativeDragAndDrop = [CPPlatform supportsDragAndDrop];
 
 - (void)order:(CPWindowOrderingMode)aPlace window:(CPWindow)aWindow relativeTo:(CPWindow)otherWindow
 {
+    [CPPlatform initializeScreenIfNecessary];
+
     // Grab the appropriate level for the layer, and create it if 
     // necessary (if we are not simply removing the window).
     var layer = [self layerAtLevel:[aWindow level] create:aPlace != CPWindowOut];

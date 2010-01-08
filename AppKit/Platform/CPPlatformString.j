@@ -19,6 +19,8 @@ var DOMIFrameElement    = nil,
 + (void)bootstrap
 {
 #if PLATFORM(DOM)
+    var DOMSafeElement = [CPPlatform DOMSafeElement];
+
     DOMIFrameElement = document.createElement("iframe");
     
     DOMIFrameElement.name = name = "iframe_" + FLOOR(RAND() * 10000);
@@ -32,7 +34,7 @@ var DOMIFrameElement    = nil,
     DOMIFrameElement.style.overflow = "hidden";
     DOMIFrameElement.style.zIndex = 100000000000;
 
-    document.getElementsByTagName("body")[0].appendChild(DOMIFrameElement);
+    DOMSafeElement.appendChild(DOMIFrameElement);
 
     var DOMIFrameDocument = (DOMIFrameElement.contentDocument || DOMIFrameElement.contentWindow.document);
 
@@ -48,7 +50,7 @@ var DOMIFrameElement    = nil,
     DOMSpanElement.style.margin = "0px";
     DOMSpanElement.style.background = "red";
 
-    DOMIFrameDocument.getElementsByTagName("body")[0].appendChild(DOMSpanElement);
+    DOMIFrameDocument.body.appendChild(DOMSpanElement);
 #endif
 }
 
