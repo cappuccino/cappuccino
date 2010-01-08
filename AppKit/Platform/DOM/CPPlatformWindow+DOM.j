@@ -228,27 +228,9 @@ var supportsNativeDragAndDrop = [CPPlatform supportsDragAndDrop];
         _DOMWindow.blur();
 }
 
-- (void)DOMSafeElement
-{
-    if (_DOMWindow === window)
-        return [CPPlatform DOMSafeElement];
-
-    return _DOMBodyElement;
-}
-
-- (void)registerDOMWindow
+- (void)createDOMElements
 {
     var theDocument = _DOMWindow.document;
-
-    _DOMBodyElement = theDocument.getElementsByTagName("body")[0];
-
-    var DOMSafeElement = [self DOMSafeElement];
-
-    // FIXME: Always do this?
-    if ([CPPlatform supportsDragAndDrop])
-        _DOMBodyElement.style["-khtml-user-select"] = "none";
-
-    _DOMBodyElement.webkitTouchCallout = "none";
 
     // This guy fixes an issue in Firefox where if you focus the URL field, we stop getting key events
     _DOMFocusElement = theDocument.createElement("input");
@@ -257,8 +239,8 @@ var supportsNativeDragAndDrop = [CPPlatform supportsDragAndDrop];
     _DOMFocusElement.style.zIndex = "-1000";
     _DOMFocusElement.style.opacity = "0";
     _DOMFocusElement.style.filter = "alpha(opacity=0)";
-    
-    DOMSafeElement.appendChild(_DOMFocusElement);
+
+    _DOMBodyElement.appendChild(_DOMFocusElement);
 
     // Create Native Pasteboard handler.
     _DOMPasteboardElement = theDocument.createElement("textarea");
@@ -267,10 +249,37 @@ var supportsNativeDragAndDrop = [CPPlatform supportsDragAndDrop];
     _DOMPasteboardElement.style.top = "-10000px";
     _DOMPasteboardElement.style.zIndex = "999";
 
-    DOMSafeElement.appendChild(_DOMPasteboardElement);
+    _DOMBodyElement.appendChild(_DOMPasteboardElement);
 
     // Make sure the pastboard element is blurred.
     _DOMPasteboardElement.blur();
+}
+
+- (void)platformDidClearBodyElement:(CPNotification)aNotification
+{
+    [self createDOMElements];
+}
+
+- (void)registerDOMWindow
+{
+    var theDocument = _DOMWindow.document;
+
+    _DOMBodyElement = theDocument.body;
+
+    // FIXME: Always do this?
+    if ([CPPlatform supportsDragAndDrop])
+        _DOMBodyElement.style["-khtml-user-select"] = "none";
+
+    _DOMBodyElement.webkitTouchCallout = "none";
+
+    [self createDOMElements];
+
+    if (window === _DOMWindow)
+        [[CPNotificationCenter defaultCenter]
+            addObserver:self
+               selector:@selector(platformDidClearBodyElement:)
+                   name:CPPlatformDidClearBodyElementNotification
+                 object:CPPlatform];
 
     [self _addLayers];
 
@@ -488,7 +497,7 @@ var supportsNativeDragAndDrop = [CPPlatform supportsDragAndDrop];
         DOMDragElement.style.left = -_CGRectGetWidth(draggedWindowFrame) + "px";
         DOMDragElement.style.top = -_CGRectGetHeight(draggedWindowFrame) + "px";
 
-        document.getElementsByTagName("body")[0].appendChild(DOMDragElement);
+        document.body.appendChild(DOMDragElement);
 
         var draggingOffset = [dragServer draggingOffset];
 
@@ -709,7 +718,7 @@ var supportsNativeDragAndDrop = [CPPlatform supportsDragAndDrop];
 
     if (StopDOMEventPropagation)
         CPDOMEventStop(aDOMEvent, self);
-        
+
     [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
 }
 
@@ -896,7 +905,7 @@ var supportsNativeDragAndDrop = [CPPlatform supportsDragAndDrop];
         
     if (StopDOMEventPropagation)
         CPDOMEventStop(aDOMEvent, self);
-        
+
     [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
 }
 

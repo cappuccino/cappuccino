@@ -25,7 +25,7 @@
 #include "Platform.h"
 
 
-@implementation CPPlatform : CPObject
+@implementation CPBasePlatform : CPObject
 {
 }
 
@@ -37,51 +37,42 @@
 
 + (BOOL)isBrowser
 {
-    return typeof window.cpIsDesktop === "undefined";
+    return NO;
 }
 
 + (BOOL)supportsDragAndDrop
 {
-    return CPFeatureIsCompatible(CPHTMLDragAndDropFeature);
+    return NO;
 }
 
 + (BOOL)supportsNativeMainMenu
 {
-    return (typeof window["cpSetMainMenu"] === "function");
+    return NO;
 }
 
 + (void)terminateApplication
 {
-    if (typeof window["cpTerminate"] === "function")
-        window.cpTerminate();
 }
 
 + (void)activateIgnoringOtherApps:(BOOL)shouldIgnoreOtherApps
 {
-#if PLATFORM(DOM)
-    if (typeof window["cpActivateIgnoringOtherApps"] === "function")
-        window.cpActivateIgnoringOtherApps(!!shouldIgnoreOtherApps);
-#endif
 }
 
 + (void)hideOtherApplications:(id)aSender
 {
-#if PLATFORM(DOM)
-    if (typeof window["cpHideOtherApplications"] === "function")
-        window.cpHideOtherApplications();
-#endif
 }
 
 + (void)hide:(id)aSender
 {
-#if PLATFORM(DOM)
-    if (typeof window["cpHide"] === "function")
-        window.cpHide();
-#endif
 }
 
 @end
 
 #if PLATFORM(DOM)
-@import "CPPlatform+DOM.j"
+#include "DOM/CPPlatform.j"
+#else
+@implementation CPPlatform : CPBasePlatform
+{
+}
+@end
 #endif

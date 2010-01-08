@@ -245,8 +245,10 @@ function CPImageInBundle(aFilename, aSize, aBundle)
         }
         
     _image.src = _filename;
-    
-    isSynchronous = NO;
+
+    // onload and friends may fire after this point but BEFORE the end of the run loop,
+    // crazy, I know. So don't set isSynchronous here, rather wait a bit longer.
+    window.setTimeout(function() { isSynchronous = NO; }, 0);
 }
 
 - (BOOL)isThreePartImage

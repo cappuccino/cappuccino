@@ -4,7 +4,7 @@ require("../common.jake");
 
 $BUILD_PATH = FILE.join($BUILD_DIR, $CONFIGURATION, 'AppKit');
 
-AppKitFiles = new FileList("**/*.j").exclude('CoreGraphics/CGContextCanvas.j', 'CoreGraphics/CGContextVML.j', 'Themes/**/*', 'Tools/**/*');
+AppKitFiles = new FileList("**/*.j").exclude('CoreGraphics/CGContextCanvas.j', 'CoreGraphics/CGContextVML.j', 'Themes/**/*', 'Tools/**/*', "Platform/DOM/CPPlatform.j", "Platform/DOM/CPPlatformString.j");
 
 appKitTask = framework ("AppKit", function(appKitTask)
 {
