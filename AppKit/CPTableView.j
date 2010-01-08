@@ -2168,7 +2168,6 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     
     _isSelectingSession = YES;
     [self _updateSelectionWithMouseAtRow:row];
-    [self scrollRowToVisible:row];
     [self _updateSelectionWithMouseAtRow:[self rowAtPoint:aPoint]];
     
     if ((_implementedDataSourceMethods & CPTableViewDataSource_tableView_setObjectValue_forTableColumn_row_)
@@ -2218,7 +2217,6 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     if (mouseIsUp
         && (_implementedDataSourceMethods & CPTableViewDataSource_tableView_setObjectValue_forTableColumn_row_)
         && !_trackingPointMovedOutOfClickSlop
-        //&& (((new Date()).getTime() - _startTrackingTimestamp.getTime()) <= CLICK_TIME_DELTA))
         && ([[CPApp currentEvent] clickCount] > 1))
     {
         columnIndex = [self columnAtPoint:lastPoint];
