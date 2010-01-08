@@ -20,10 +20,13 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-var _CPFonts                = {};
-    _CPFontSystemFontFace   = @"Arial";
+var _CPFonts                = {},
+    _CPFontSystemFontFace   = @"Arial, sans-serif",
+    _CPWrapRegExp           = new RegExp("\\s*,\\s*", "g");
 
-#define _CPCachedFont(aName, aSize, isBold) _CPFonts[(isBold ? @"bold " : @"") + ROUND(aSize) + @"px '" + aName + @"'"]
+
+#define _CPCreateCSSString(aName, aSize, isBold) (isBold ? @"bold " : @"") + ROUND(aSize) + @"px " + ((aName === _CPFontSystemFontFace) ? aName : (@"\"" + aName.replace(_CPWrapRegExp, '", "') + @"\", " + _CPFontSystemFontFace))
+#define _CPCachedFont(aName, aSize, isBold) _CPFonts[_CPCreateCSSString(aName, aSize, isBold)]
 
 /*! 
     @ingroup appkit
@@ -95,7 +98,7 @@ var _CPFonts                = {};
         _size = aSize;
         _isBold = isBold;
         
-        _cssString = (_isBold ? @"bold " : @"") + ROUND(aSize) + @"px '" + aName + @"'";
+        _cssString = _CPCreateCSSString(_name, _size, _isBold);
         
         _CPFonts[_cssString] = self;
     }
