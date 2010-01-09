@@ -204,7 +204,6 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
         _allowsMultipleSelection = NO;
         _allowsEmptySelection = YES;
         _allowsColumnSelection = NO;
-        _draggedRowIndexes = nil;
 
         _tableViewFlags = 0;
 
@@ -239,14 +238,14 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 
         _cornerView = [[_CPCornerView alloc] initWithFrame:CGRectMake(0, 0, [CPScroller scrollerWidth], CGRectGetHeight([_headerView frame]))];
 
+
         _selectedColumnIndexes = [CPIndexSet indexSet];
         _selectedRowIndexes = [CPIndexSet indexSet];
 
+        _draggedRowIndexes = [CPIndexSet indexSet];
         _verticalMotionCanDrag = YES;
         _destinationDragStyle = CPTableViewDraggingDestinationFeedbackStyleRegular;
-
         _dropOperationFeedbackView = [[_dropOperationDrawingView alloc] initWithFrame:_CGRectMakeZero()];
-
         [self addSubview:_dropOperationFeedbackView];
         [_dropOperationFeedbackView setHidden:YES];
         [_dropOperationFeedbackView setTableView:self];
@@ -2520,7 +2519,6 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 
 - (void)keyDown:(CPEvent)anEvent
 {
-    [super keyDown:anEvent];
     [self interpretKeyEvents:[CPArray arrayWithObject:anEvent]];
 }
 
@@ -2623,7 +2621,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
          {
             [self scrollRowToVisible:i];
             [self _noteSelectionDidChange];
-          }
+         }
 	   }
     }
 }
