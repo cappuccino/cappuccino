@@ -52,25 +52,18 @@ global.CLOBBER = require("jake/clean").CLOBBER;
 
 
 // Read in and set up development environment variables.
-if (!ENV["BUILD_PATH"])
-{
-    // Global Cappuccino build directory
-    if (ENV["CAPP_BUILD"])
-        ENV["BUILD_PATH"] = ENV["CAPP_BUILD"];
+    
+ENV["BUILD_PATH"] = FILE.absolute(
+    ENV["BUILD_PATH"] ||
+    ENV["CAPP_BUILD"] || // Global Cappuccino build directory.
+    ENV["STEAM_BUILD"] || // Maintain backwards compatibility with steam.
+    FILE.join(FILE.dirname(module.path), "Build") // Just build here.
+);
 
-    // Maintain backwards compatibility with steam.
-    else if(ENV["STEAM_BUILD"])
-        ENV["BUILD_PATH"] = ENV["STEAM_BUILD"];
-
-    // Just build here.
-    else 
-        ENV["BUILD_PATH"] = FILE.join(FILE.dirname(module.path), 'Build');
-}
-
-ENV["BUILD_PATH"] = FILE.absolute(ENV["BUILD_PATH"]);
-
-if (!ENV["CONFIG"])
-    ENV["CONFIG"] = "Release";
+if (!ENV["CAPP_BUILD"] && ENV["STEAM_BUILD"])
+    system.stderr.print("STEAM_BUILD is deprecated, please use CAPP_BUILD instead");
+    
+ENV["CONFIG"] = ENV["CONFIG"] || "Release";
 
 global.$CONFIGURATION                   = ENV['CONFIG'];
 global.$BUILD_DIR                       = ENV['BUILD_PATH'];
