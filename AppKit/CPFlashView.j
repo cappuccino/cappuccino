@@ -30,6 +30,10 @@
 @implementation CPFlashView : CPView
 {
     CPFlashMovie    _flashMovie;
+    CPDictionary    _flashVars;
+    
+    CPDictionary    _params;
+    CPDictionary    _paramElements;
     
     DOMElement      _DOMEmbedElement;
     DOMElement      _DOMMParamElement;
@@ -61,12 +65,12 @@
         _DOMObjectElement.appendChild(param);
         
         _DOMEmbedElement = document.createElement("embed");
-
+        
         _DOMEmbedElement.type = "application/x-shockwave-flash";
         _DOMEmbedElement.setAttribute("wmode", "transparent");
         _DOMEmbedElement.width = "100%";
         _DOMEmbedElement.height = "100%";
-
+        
         // IE requires this thing to be in the _DOMElement and not the _DOMObjectElement.
         _DOMElement.appendChild(_DOMEmbedElement);
                 
@@ -92,6 +96,72 @@
 - (CPFlashMovie)flashMovie
 {
     return _flashMovie;
+}
+
+- (void)setFlashVars:(CPDictionary)aDictionary
+{
+    if (_flashVars === aDictionary)
+        return;
+    
+    _flashVars = aDictionary;
+    
+    var varString = @"",
+        enumerator = [_flashVars keyEnumerator];
+    
+    var key;
+    while (key = [enumerator nextObject])
+        varString = [[CPString alloc] stringByAppendingFormat:@"%@&%@=%@", varString, key, [_flashVars objectForKey:key]];
+    
+    var param = document.createElement(@"param");
+    param.name = @"flashvars";
+    param.value = varString;
+    
+    _DOMObjectElement.appendChild(param);
+    
+    if (_DOMEmbedElement)
+        _DOMEmbedElement.setAttribute(@"flashvars", varString);
+}
+
+- (CPDictionary)flashVars
+{
+    return _flashVars;
+}
+
+- (void)setParameters:(CPDictionary)aDictionary
+{
+    if (_params == aDictionary)
+        return;
+    
+    if (_paramElements)
+    {
+        var elements = [_paramElements allValues],
+            count = [elements count];
+        
+        for (var i = 0; i < count; i++)
+            _DOMObjectElement.removeChild(param);
+    }
+    
+    _params = aDictionary;
+    _paramElements = [CPDictionary dictionary];
+    
+    var enumerator = [_params keyEnumerator],
+        key;
+    
+    while (key = [enumerator nextObject])
+    {
+        var param = document.createElement(@"param");
+        param.name = key;
+        param.value = [_params objectForKey:key];
+        
+        _DOMObjectElement.appendChild(param);
+        
+        [_paramElements setObject:param forKey:key];
+    }
+}
+
+- (CPDictionary)parameters
+{
+    return _params;
 }
 
 - (void)mouseDragged:(CPEvent)anEvent
