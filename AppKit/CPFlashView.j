@@ -100,9 +100,6 @@
 
 - (void)setFlashVars:(CPDictionary)aDictionary
 {
-    if (_flashVars === aDictionary)
-        return;
-    
     _flashVars = aDictionary;
     
     var varString = @"",
@@ -110,7 +107,7 @@
     
     var key;
     while (key = [enumerator nextObject])
-        varString = [[CPString alloc] stringByAppendingFormat:@"%@&%@=%@", varString, key, [_flashVars objectForKey:key]];
+        varString = [varString stringByAppendingFormat:@"&%@=%@", key, [_flashVars objectForKey:key]];
     
     var param = document.createElement(@"param");
     param.name = @"flashvars";
@@ -129,16 +126,13 @@
 
 - (void)setParameters:(CPDictionary)aDictionary
 {
-    if (_params == aDictionary)
-        return;
-    
     if (_paramElements)
     {
         var elements = [_paramElements allValues],
             count = [elements count];
         
         for (var i = 0; i < count; i++)
-            _DOMObjectElement.removeChild(param);
+            _DOMObjectElement.removeChild([elements objectAtIndex:i]);
     }
     
     _params = aDictionary;
