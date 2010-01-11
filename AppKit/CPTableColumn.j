@@ -81,7 +81,11 @@ CPTableColumnUserResizingMask   = 2;
 
         [self setIdentifier:anIdentifier];
         [self setHeaderView:[CPTextField new]];
-        [self setDataView:[CPTextField new]];
+        
+        var textDataView = [CPTextField new];
+        [textDataView setValue:[CPColor whiteColor] forThemeAttribute:@"text-color" inState:CPThemeStateHighlighted];
+        [textDataView setValue:[CPFont boldSystemFontOfSize:12] forThemeAttribute:@"font" inState:CPThemeStateHighlighted];
+        [self setDataView:textDataView];
     }
 
     return self;
