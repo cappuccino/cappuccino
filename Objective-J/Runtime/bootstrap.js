@@ -22,7 +22,7 @@
 
 if (window.OBJJ_MAIN_FILE)
 {
-    var addOnload = function(handler
+    var addOnload = function(handler)
     {
         if (window.addEventListener)
             window.addEventListener("load", handler, false);
