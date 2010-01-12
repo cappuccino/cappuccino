@@ -21,8 +21,9 @@
  */
 
 @import "CPArray.j"
-@import "CPObject.j"
 @import "CPDictionary.j"
+@import "CPNull.j"
+@import "CPObject.j"
 
 
 var CPObjectAccessorsForClass   = nil,

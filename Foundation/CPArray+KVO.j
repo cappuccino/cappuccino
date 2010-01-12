@@ -21,6 +21,7 @@
  */
 
 @import "CPArray.j"
+@import "CPNull.j"
 
 @implementation CPObject (CPArrayKVO)
 
