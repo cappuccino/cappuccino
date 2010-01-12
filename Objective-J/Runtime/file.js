@@ -32,10 +32,13 @@ var OBJJ_ENVIRONMENTS = ENVIRONMENTS;
 #ifdef PLATFORM_USERAGENT
 var userAgent = window.navigator.userAgent;
 
-if (userAgent.indexOf("MSIE 7") !== -1)
-    OBJJ_ENVIRONMENTS.unshift("IE7");
-else if (userAgent.indexOf("MSIE 8") !== -1)
-    OBJJ_ENVIRONMENTS.unshift("IE8");
+if (userAgent.indexOf("MSIE") !== -1)
+{
+    if (userAgent.indexOf("MSIE 8") !== -1)
+        OBJJ_ENVIRONMENTS.unshift("IE8");
+    else
+        OBJJ_ENVIRONMENTS.unshift("IE7");
+}
 else
     OBJJ_ENVIRONMENTS.unshift("W3C");
 #endif

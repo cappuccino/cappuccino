@@ -31,7 +31,7 @@ function ensurePackageUpToDate(packageName, requiredVersion)
 }
 
 // UPDATE THESE TO PICK UP CORRESPONDING CHANGES IN DEPENDENCIES
-ensurePackageUpToDate("jake", "0.1.1");
+ensurePackageUpToDate("jake", "0.1.2");
 ensurePackageUpToDate("browserjs", "0.1.1");
 
 var Jake = require("jake");
