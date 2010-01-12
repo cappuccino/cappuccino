@@ -24,6 +24,7 @@ function ask_remove_dir () {
     if [ -d "$dir" ]; then
         echo "================================================================================"
         echo "Found an existing Narwhal/Cappuccino installation, $dir. Remove it automatically now?"
+        echo "WARNING: custom modifications and installed packages in this installation WILL BE DELETED."
         if prompt; then
             rm -rf "$dir"
         fi
@@ -76,38 +77,55 @@ PATH_SAVED="$PATH"
 ask_remove_dir "/usr/local/share/objj"
 ask_remove_dir "/usr/local/share/narwhal"
 ask_remove_dir "/usr/local/narwhal"
+if which "narwhal" > /dev/null; then
+    dir=$(dirname -- $(dirname -- $(which "narwhal")))
+    ask_remove_dir "$dir"
+fi
 
-if ! which "narwhal" > /dev/null; then
+install_narwhal=""
+if which "narwhal" > /dev/null; then
+    dir=$(dirname -- $(dirname -- $(which "narwhal")))
+    echo "Using Narwhal installation at \"$dir\". Is this correct?"
+    if ! prompt; then
+        echo "================================================================================"
+        echo "Narwhal JavaScript platform is required. Install it automatically now?"
+        if prompt; then
+            install_narwhal="yes"
+        fi
+    fi
+else
     echo "================================================================================"
     echo "Narwhal JavaScript platform is required. Install it automatically now?"
     if prompt; then
-        echo "================================================================================"
-        echo "To use the default location, \"$install_directory\", just hit enter/return, or enter another path:"
-        read input
-        if [ "$input" ]; then
-            install_directory="$input"
-        fi
-
-        if [ "$git_clone" ]; then
-            git_repo="git://github.com/$github_path.git"
-            echo "Cloning Narwhal from \"$git_repo\"..."
-            git clone "$git_repo" "$install_directory"
-        else
-            zip_ball="http://github.com/$github_path/zipball/master"
-            echo "Downloading Narwhal from \"$zip_ball\"..."
-            curl -L -o "$tmp_zip" "$zip_ball"
-            echo "Installing Narwhal..."
-            unzip "$tmp_zip" -d "$install_directory"
-            rm "$tmp_zip"
-
-            mv $install_directory/$github_project-*/* $install_directory/.
-            rm -rf $install_directory/$github_project-*
-        fi
-        
-        if ! which "narwhal" > /dev/null; then
-            export PATH="$install_directory/bin:$PATH"
-        fi
+        install_narwhal="yes"
     fi
+fi
+
+if [ "$install_narwhal" ]; then
+    echo "================================================================================"
+    echo "To use the default location, \"$install_directory\", just hit enter/return, or enter another path:"
+    read input
+    if [ "$input" ]; then
+        install_directory="$input"
+    fi
+
+    if [ "$git_clone" ]; then
+        git_repo="git://github.com/$github_path.git"
+        echo "Cloning Narwhal from \"$git_repo\"..."
+        git clone "$git_repo" "$install_directory"
+    else
+        zip_ball="http://github.com/$github_path/zipball/master"
+        echo "Downloading Narwhal from \"$zip_ball\"..."
+        curl -L -o "$tmp_zip" "$zip_ball"
+        echo "Installing Narwhal..."
+        unzip "$tmp_zip" -d "$install_directory"
+        rm "$tmp_zip"
+
+        mv $install_directory/$github_project-*/* $install_directory/.
+        rm -rf $install_directory/$github_project-*
+    fi
+    
+    export PATH="$install_directory/bin:$PATH"
 fi
 
 if ! which "narwhal" > /dev/null; then
