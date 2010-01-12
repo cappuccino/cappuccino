@@ -10,6 +10,9 @@ function ensurePackageUpToDate(packageName, requiredVersion, options)
     var packageInfo = require("packages").catalog[packageName];
     if (!packageInfo)
     {
+        if (options.optional)
+            return;
+
         print("You are missing package \"" + packageName + "\", version " + requiredVersion + " or later. Please install using \"tusk install "+packageName+"\" and re-run jake");
         OS.exit(1);
     }
@@ -52,6 +55,7 @@ ensurePackageUpToDate("narwhal",        "0.2.1", {
     message : "Update Narwhal to 0.2.1 by running bootstrap.sh, or pulling the latest from git (see: http://github.com/280north/narwhal)."
 });
 ensurePackageUpToDate("narwhal-jsc",    "0.1.1", {
+    optional : true,
     message : "Rebuild narwhal-jsc by changing to the narwhal-jsc package directory and running \"make webkit\"."
 });
 
