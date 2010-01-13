@@ -25,7 +25,7 @@ function traverseDependencies(context, file)
     var ignoreImports = false;
     if (context.ignoreAllImports)
     {
-        CPLog.warn("Ignoring all import fragments. ("+context.relativeToRootPath(file.path)+")");
+        CPLog.warn("Ignoring all import fragments. ("+context.rootPath.relative(file.path)+")");
         ignoreImports = true;
     }
     else if (context.ignoreFrameworkImports)
@@ -33,7 +33,7 @@ function traverseDependencies(context, file)
         var matches = file.path.match(new RegExp("([^\\/]+)\\/([^\\/]+)\\.j$")); // Matches "ZZZ/ZZZ.j" (e.x. AppKit/AppKit.j and Foundation/Foundation.j)
         if (matches && matches[1] === matches[2])
         {
-            CPLog.warn("Framework import file! Ignoring all import fragments. ("+context.relativeToRootPath(file.path)+")");
+            CPLog.warn("Framework import file! Ignoring all import fragments. ("+context.rootPath.relative(file.path)+")");
             ignoreImports = true;
         }
     }
@@ -42,9 +42,9 @@ function traverseDependencies(context, file)
     if (!file.fragments)
     {
         if (file.included)
-            CPLog.warn(context.relativeToRootPath(file.path) + " is included but missing fragments");
+            CPLog.warn(context.rootPath.relative(file.path) + " is included but missing fragments");
         else
-            CPLog.warn("Preprocessing " + context.relativeToRootPath(file.path));
+            CPLog.warn("Preprocessing " + context.rootPath.relative(file.path));
         
         file.fragments = objj_preprocess(file.contents, file.bundle, file);
     }
@@ -74,7 +74,7 @@ function traverseDependencies(context, file)
     var referencedFiles = {},
         importedFiles = {};
     
-    CPLog.debug("Processing " + file.fragments.length + " fragments in " + context.relativeToRootPath(file.path));
+    CPLog.debug("Processing " + file.fragments.length + " fragments in " + context.rootPath.relative(file.path));
     for (var i = 0; i < file.fragments.length; i++)
     {
         var fragment = file.fragments[i];
@@ -122,7 +122,7 @@ function traverseDependencies(context, file)
                     if (importedFile != file.path)
                         importedFiles[importedFile] = true;
                     else
-                        CPLog.error("Ignoring self import (why are you importing yourself?!): " + context.relativeToRootPath(file.path));
+                        CPLog.error("Ignoring self import (why are you importing yourself?!): " + context.rootPath.relative(file.path));
                 }
                 else
                     CPLog.error("Couldn't find file for import " + fragment.info + " ("+fragment.type+")");
@@ -227,7 +227,7 @@ function findGlobalDefines(context, mainPath, evaledFragments)
     var fragment_evaluate_code_original = context.scope.fragment_evaluate_code;
     context.scope.fragment_evaluate_code = function(aFragment) {
         
-        CPLog.debug("Evaluating " + context.relativeToRootPath(aFragment.file.path) + " (" + context.relativeToRootPath(aFragment.bundle.path) + ")");
+        CPLog.debug("Evaluating " + context.rootPath.relative(aFragment.file.path) + " (" + context.rootPath.relative(aFragment.bundle.path) + ")");
     
         var before = cloneProperties(context.scope);
         

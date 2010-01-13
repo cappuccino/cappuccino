@@ -99,7 +99,7 @@ function press(rootPath, outputPath, options) {
     for (var path in outputFiles) {
         CPLog.trace("Writing: " + path);
         
-        var file = outputPath.join(relativeToRootPath(path));
+        var file = outputPath.join(rootPath.relative(path));
         
         var parent = file.dirname();
         if (!parent.exists()) {
@@ -126,10 +126,6 @@ function press(rootPath, outputPath, options) {
 
 function pressEnvironment(rootPath, outputFiles, environment, options) {
     
-    function relativeToRootPath(path) {
-        return pathRelativeTo(path, rootPath);
-    }
-    
     var mainPath = String(rootPath.join(options.main));
     var frameworks = options.frameworks.map(function(framework) { return rootPath.join(framework); });
     
@@ -154,7 +150,7 @@ function pressEnvironment(rootPath, outputFiles, environment, options) {
     scope.objj_search.prototype.didReceiveBundleResponse = function(aResponse) {
         var fakeResponse = {
             success : aResponse.success,
-            filePath : relativeToRootPath(aResponse.filePath)
+            filePath : rootPath.relative(aResponse.filePath).toString()
         };
     
         if (aResponse.success)
@@ -171,7 +167,7 @@ function pressEnvironment(rootPath, outputFiles, environment, options) {
     var context = {
         ctx : ctx,
         scope : scope,
-        relativeToRootPath : relativeToRootPath
+        rootPath : rootPath
     };
     
     // phase 1: get global defines
@@ -185,7 +181,7 @@ function pressEnvironment(rootPath, outputFiles, environment, options) {
     // Log 
     CPLog.trace("Global defines:");
     for (var i in dependencies)
-        CPLog.trace("    " + i + " => " + relativeToRootPath(dependencies[i]));
+        CPLog.trace("    " + i + " => " + rootPath.relative(dependencies[i]));
     
     // phase 2: walk the dependency tree (both imports and references) to determine exactly which files need to be included
     CPLog.error("PHASE 2: Walk dependency tree...");
@@ -222,12 +218,12 @@ function pressEnvironment(rootPath, outputFiles, environment, options) {
         {
             if (requiredFiles[path])
             {
-                CPLog.debug("Included: " + relativeToRootPath(path));
+                CPLog.debug("Included: " + rootPath.relative(path));
                 count++;
             }
             else
             {
-                CPLog.info("Excluded: " + relativeToRootPath(path));
+                CPLog.info("Excluded: " + rootPath.relative(path));
             }    
             total++;
         }
@@ -299,11 +295,11 @@ function pressEnvironment(rootPath, outputFiles, environment, options) {
             {
                 applicationScript.push("(function(OBJJ_CURRENT_BUNDLE) {");
                 applicationScript.push(fragment.info);
-                applicationScript.push("})(objj_bundles['"+relativeToRootPath(fragment.bundle.path)+"']);");
+                applicationScript.push("})(objj_bundles['"+rootPath.relative(fragment.bundle.path)+"']);");
             }
             else
             {
-                CPLog.info("Stripping " + relativeToRootPath(fragment.file.path));
+                CPLog.info("Stripping " + rootPath.relative(fragment.file.path));
             }
         });
         
@@ -415,7 +411,7 @@ function pressEnvironment(rootPath, outputFiles, environment, options) {
                                 }
                             }
                             else
-                                CPLog.info("Ignoring import fragment " + file.fragments[i].info + " in " + relativeToRootPath(path));
+                                CPLog.info("Ignoring import fragment " + file.fragments[i].info + " in " + rootPath.relative(path));
                         }
                         else
                             CPLog.error("Unknown fragment type");
@@ -428,7 +424,7 @@ function pressEnvironment(rootPath, outputFiles, environment, options) {
                 }
             }
             else
-                CPLog.warn("No bundle for " + relativeToRootPath(path))
+                CPLog.warn("No bundle for " + rootPath.relative(path))
         }
 
         // phase 3.5: fix bundle plists
@@ -440,7 +436,7 @@ function pressEnvironment(rootPath, outputFiles, environment, options) {
                 dict = bundles[path].info,
                 replacedFiles = [dict objectForKey:"CPBundleReplacedFiles"];
             
-            CPLog.info("Modifying .sj: " + relativeToRootPath(path));
+            CPLog.info("Modifying .sj: " + rootPath.relative(path));
             
             if (replacedFiles)
             {
