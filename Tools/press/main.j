@@ -81,9 +81,13 @@ function main(args)
     var rootPath = FILE.path(options.args[0]).join("").absolute();
     var outputPath = FILE.path(options.args[1]).join("").absolute();
 
-    if (!options.force && outputPath.exists()) {
-        CPLog.error("OUTPUT_PROJECT " + outputPath + " exists. Use -f to overwrite.");
-        OS.exit(1);
+    if (outputPath.exists()) {
+        if (options.force) {
+            outputPath.rmtree();
+        } else {
+            CPLog.error("OUTPUT_PROJECT " + outputPath + " exists. Use -f to overwrite.");
+            OS.exit(1);
+        }
     }
 
     press(rootPath, outputPath, options);
