@@ -32,14 +32,19 @@ parser.option("-F", "--framework", "frameworks")
     .help("Add a frameworks directory, relative to INPUT_PROJECT (default: ['Frameworks'])");
 
 parser.option("-E", "--environment", "environments")
-    .def(['W3C', 'IE7', 'IE8'])
+    .def(['W3C'])//, 'IE7', 'IE8'])
     .push()
     .help("Add a platform name (default: ['W3C', 'IE7', 'IE8'])");
 
-parser.option("-f", "--flatten", "flatten")
+parser.option("-l", "--flatten", "flatten")
     .def(false)
     .set(true)
     .help("Flatten all code into a single Application.js file and attempt add script tag to index.html (useful for Adobe AIR and CDN deployment)");
+
+parser.option("-f", "--force", "force")
+   .def(false)
+   .set(true)
+   .help("Force overwriting OUTPUT_PROJECT if it exists");
 
 parser.option("-n", "--nostrip", "strip")
     .def(true)
@@ -76,6 +81,11 @@ function main(args)
     var rootPath = FILE.path(options.args[0]).join("").absolute();
     var outputPath = FILE.path(options.args[1]).join("").absolute();
 
+    if (!options.force && outputPath.exists()) {
+        CPLog.error("OUTPUT_PROJECT " + outputPath + " exists. Use -f to overwrite.");
+        OS.exit(1);
+    }
+
     press(rootPath, outputPath, options);
 }
 
@@ -97,8 +107,6 @@ function press(rootPath, outputPath, options) {
     FILE.copyTree(rootPath, outputPath);
     
     for (var path in outputFiles) {
-        CPLog.trace("Writing: " + path);
-        
         var file = outputPath.join(rootPath.relative(path));
         
         var parent = file.dirname();
@@ -114,6 +122,7 @@ function press(rootPath, outputPath, options) {
         FILE.write(file, outputFiles[path], { charset : "UTF-8" });
     }
     
+    // strip known unnecessary files
     // outputPath.glob("**/Frameworks/Debug").forEach(function(debugFramework) {
     //     outputPath.join(debugFramework).rmtree();
     // });
