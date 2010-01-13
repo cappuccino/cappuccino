@@ -45,7 +45,10 @@ NS_CPToolbarItemIdentifierMap =
     {
         var NS_itemIdentifier = [aCoder decodeObjectForKey:@"NSToolbarItemIdentifier"];
 
-        _itemIdentifier = NS_CPToolbarItemIdentifierMap[NS_itemIdentifier] || _itemIdentifier;
+        _itemIdentifier = NS_CPToolbarItemIdentifierMap[NS_itemIdentifier] || NS_itemIdentifier;
+
+        _minSize = [aCoder decodeSizeForKey:@"NSToolbarItemMinSize"] || CGSizeMakeZero();
+        _maxSize = [aCoder decodeSizeForKey:@"NSToolbarItemMaxSize"] || CGSizeMakeZero();
 
         [self setLabel:[aCoder decodeObjectForKey:@"NSToolbarItemLabel"]];
         [self setPaletteLabel:[aCoder decodeObjectForKey:@"NSToolbarItemPaletteLabel"]];
@@ -56,16 +59,13 @@ NS_CPToolbarItemIdentifierMap =
         [self setAction:CPSelectorFromString([aCoder decodeObjectForKey:@"NSToolbarItemAction"])];
 
         [self setEnabled:[aCoder decodeBoolForKey:@"NSToolbarItemEnabled"]];
-        [self setAutovalidates:[aCoder decodeBoolForKey:"NSToolbarItemAutovalidates"]];
 
         [self setImage:[aCoder decodeBoolForKey:@"NSToolbarItemImage"]];
 
         [self setView:[aCoder decodeObjectForKey:@"NSToolbarItemView"]];
 
-        _minSize = [aCoder decodeSizeForKey:@"NSToolbarItemMinSize"];
-        _maxSize = [aCoder decodeSizeForKey:@"NSToolbarItemMaxSize"];
-
         [self setVisibilityPriority:[aCoder decodeIntForKey:@"NSToolbarItemVisibilityPriority"]];
+        [self setAutovalidates:[aCoder decodeBoolForKey:"NSToolbarItemAutovalidates"]];
     }
 
     return self;

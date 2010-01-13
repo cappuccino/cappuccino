@@ -44,6 +44,7 @@
 @import "NSResponder.j"
 @import "NSScrollView.j"
 @import "NSScroller.j"
+@import "NSSearchField.j"
 @import "NSSet.j"
 @import "NSSecureTextField.j"
 @import "NSSegmentedControl.j"

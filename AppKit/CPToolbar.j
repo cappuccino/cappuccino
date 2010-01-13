@@ -220,7 +220,7 @@ var CPToolbarConfigurationsByIdentifier = nil;
 */
 - (void)setDelegate:(id)aDelegate
 {
-    if (_delegate == aDelegate)
+    if (_delegate === aDelegate)
         return;
         
     _delegate = aDelegate;
@@ -252,19 +252,22 @@ var CPToolbarConfigurationsByIdentifier = nil;
 /* @ignore */
 - (void)_reloadToolbarItems
 {
-    // As of OS X 10.5 (Leopard), toolbar items can be set in IB and a toolbar delegate is optional.
-    // Toolbar items can be combined from both IB and a delegate (see Apple's NSToolbar guide for IB, for more details).
+    // As of OS X 10.5 (Leopard), toolbar items can be set in IB and a
+    // toolbar delegate is optional. Toolbar items can be combined from
+    // both IB and a delegate (see Apple's NSToolbar guide for IB, for more details).
 
-    // _defaultItems may have been loaded from Nib
-     _itemIdentifiers = [_defaultItems valueForKey:"_itemIdentifier"];
-         
-     if (_delegate)
-     {
-         var itemIdentifiersFromDelegate = [[_delegate toolbarDefaultItemIdentifiers:self] mutableCopy];
-         if(itemIdentifiersFromDelegate)
-             _itemIdentifiers = [_itemIdentifiers arrayByAddingObjectsFromArray:itemIdentifiersFromDelegate];
-     }
-     var count = [_itemIdentifiers count];
+    // _defaultItems may have been loaded from Cib
+    _itemIdentifiers = [_defaultItems valueForKey:@"itemIdentifier"] || [];
+
+    if (_delegate)
+    {
+        var itemIdentifiersFromDelegate = [[_delegate toolbarDefaultItemIdentifiers:self] mutableCopy];
+
+        if (itemIdentifiersFromDelegate)
+            _itemIdentifiers = [_itemIdentifiers arrayByAddingObjectsFromArray:itemIdentifiersFromDelegate];
+    }
+
+    var count = [_itemIdentifiers count];
 
     _items = [];
 
@@ -275,17 +278,18 @@ var CPToolbarConfigurationsByIdentifier = nil;
         var identifier = _itemIdentifiers[index],
             item = [CPToolbarItem _standardItemWithItemIdentifier:identifier];
         
+        // May come from a Cib.
         if (!item)
-            item = [_identifiedItems objectForKey:identifier];  // may have been loaded from Nib
+            item = [_identifiedItems objectForKey:identifier];
 
         if (!item && _delegate)
             item = [_delegate toolbar:self itemForItemIdentifier:identifier willBeInsertedIntoToolbar:YES];
-        
+
         item = [item copy];
-        
-        if (item == nil)
+
+        if (item === nil)
             [CPException raise:CPInvalidArgumentException
-                         reason:sprintf(@"_delegate %s returned nil toolbar item returned for identifier %s", _delegate, identifier)];
+                         reason:@"Toolbar delegate " + _delegate + " returned nil toolbar item for identifier \"" + identifier + "\""];
         
         item._toolbar = self;
             
@@ -296,9 +300,9 @@ var CPToolbarConfigurationsByIdentifier = nil;
     
     // Store items sorted by priority.  We want items to be removed first at the end of the array,
     // items to be removed last at the front.
-    
+
     _itemsSortedByVisibilityPriority = [_items sortedArrayUsingFunction:_CPToolbarItemVisibilityPriorityCompare context:NULL];
-    
+
     [_toolbarView reloadToolbarItems];
 }
 
@@ -369,10 +373,18 @@ var CPToolbarConfigurationsByIdentifier = nil;
 /* @ignore */
 - (id)_defaultToolbarItems
 {
-    if (!_defaultItems)
-        if ([_delegate respondsToSelector:@selector(toolbarDefaultItemIdentifiers:)])
-            _defaultItems = [self _itemsWithIdentifiers:[_delegate toolbarDefaultItemIdentifiers:self]];
-    
+    if (!_defaultItems && [_delegate respondsToSelector:@selector(toolbarDefaultItemIdentifiers:)])
+    {
+        _defaultItems = [];
+
+        var identifiers = [_delegate toolbarDefaultItemIdentifiers:self],
+            index = 0,
+            count = [identifiers count];
+
+        for (; index < count; ++index)
+            [_defaultItems addObject:[self _itemForItemIdentifier:identifiers[index] willBeInsertedIntoToolbar:NO]];
+    }
+
     return _defaultItems;
 }
 
@@ -382,35 +394,39 @@ var CPToolbarConfigurationsByIdentifier = nil;
 */
 - (void)toolbarItemDidChange:(CPToolbarItem)anItem
 {
-    if([_identifiedItems objectForKey:[anItem itemIdentifier]])
+    if ([_identifiedItems objectForKey:[anItem itemIdentifier]])
         [_identifiedItems setObject:anItem forKey:[anItem itemIdentifier]];
-        
-    for(var index = 0; index <= _items.length; index++)
+
+    var index = 0,
+        count = [_items count];
+
+    for (; index <= count; ++index)
     {
         var item = _items[index];
-        if([item itemIdentifier] === [anItem itemIdentifier])
+
+        if ([item itemIdentifier] === [anItem itemIdentifier])
         {
             _items[index] = anItem;
             _itemsSortedByVisibilityPriority = [_items sortedArrayUsingFunction:_CPToolbarItemVisibilityPriorityCompare context:NULL];
+
             [_toolbarView reloadToolbarItems];
-            break;
-         }
+        }
     }
 }
 
 @end
 
 
-var CPToolbarIdentifierKey              = "CPToolbarIdentifierKey",
-    CPToolbarDisplayModeKey             = "CPToolbarDisplayModeKey",
-    CPToolbarShowsBaselineSeparatorKey  = "CPToolbarShowsBaselineSeparatorKey",
-    CPToolbarAllowsUserCustomizationKey = "CPToolbarAllowsUserCustomizationKey",
-    CPToolbarIsVisibleKey               = "CPToolbarIsVisibleKey",
-    CPToolbarDelegateKey                = "CPToolbarDelegateKey",
-    CPToolbarIdentifiedItemsKey         = "CPToolbarIdentifiedItemsKey",
-    CPToolbarDefaultItemsKey            = "CPToolbarDefaultItemsKey",
-    CPToolbarAllowedItemsKey            = "CPToolbarAllowedItemsKey",
-    CPToolbarSelectableItemsKey         = "CPToolbarSelectableItemsKey";
+var CPToolbarIdentifierKey              = @"CPToolbarIdentifierKey",
+    CPToolbarDisplayModeKey             = @"CPToolbarDisplayModeKey",
+    CPToolbarShowsBaselineSeparatorKey  = @"CPToolbarShowsBaselineSeparatorKey",
+    CPToolbarAllowsUserCustomizationKey = @"CPToolbarAllowsUserCustomizationKey",
+    CPToolbarIsVisibleKey               = @"CPToolbarIsVisibleKey",
+    CPToolbarDelegateKey                = @"CPToolbarDelegateKey",
+    CPToolbarIdentifiedItemsKey         = @"CPToolbarIdentifiedItemsKey",
+    CPToolbarDefaultItemsKey            = @"CPToolbarDefaultItemsKey",
+    CPToolbarAllowedItemsKey            = @"CPToolbarAllowedItemsKey",
+    CPToolbarSelectableItemsKey         = @"CPToolbarSelectableItemsKey";
 
 @implementation CPToolbar (CPCoding)
 
@@ -424,38 +440,36 @@ var CPToolbarIdentifierKey              = "CPToolbarIdentifierKey",
     
     if (self)
     {
-        _identifier                 = [aCoder decodeObjectForKey:CPToolbarIdentifierKey];
-        _displayMode                = [aCoder decodeIntForKey:CPToolbarDisplayModeKey];
-        _showsBaselineSeparator     = [aCoder decodeBoolForKey:CPToolbarShowsBaselineSeparatorKey];
-        _allowsUserCustomization    = [aCoder decodeBoolForKey:CPToolbarAllowsUserCustomizationKey];
-        _isVisible                  = [aCoder decodeBoolForKey:CPToolbarIsVisibleKey];
-        
-        _identifiedItems            = [aCoder decodeObjectForKey:CPToolbarIdentifiedItemsKey];
-        _defaultItems               = [aCoder decodeObjectForKey:CPToolbarDefaultItemsKey];
-        _allowedItems               = [aCoder decodeObjectForKey:CPToolbarAllowedItemsKey];
-        _selectableItems            = [aCoder decodeObjectForKey:CPToolbarSelectableItemsKey];
-        
-         var identifiedItems = [_identifiedItems allValues];
-        [identifiedItems  makeObjectsPerformSelector:@selector(_setToolbar:) withObject:self];
+        _identifier = [aCoder decodeObjectForKey:CPToolbarIdentifierKey];
+        _displayMode = [aCoder decodeIntForKey:CPToolbarDisplayModeKey];
+        _showsBaselineSeparator = [aCoder decodeBoolForKey:CPToolbarShowsBaselineSeparatorKey];
+        _allowsUserCustomization = [aCoder decodeBoolForKey:CPToolbarAllowsUserCustomizationKey];
+        _isVisible = [aCoder decodeBoolForKey:CPToolbarIsVisibleKey];
+
+        _identifiedItems = [aCoder decodeObjectForKey:CPToolbarIdentifiedItemsKey];
+        _defaultItems = [aCoder decodeObjectForKey:CPToolbarDefaultItemsKey];
+        _allowedItems = [aCoder decodeObjectForKey:CPToolbarAllowedItemsKey];
+        _selectableItems = [aCoder decodeObjectForKey:CPToolbarSelectableItemsKey];
+
+        [[_identifiedItems allValues] makeObjectsPerformSelector:@selector(_setToolbar:) withObject:self];
 
         _items = [];
+
         [CPToolbar _addToolbar:self forIdentifier:_identifier];
 
-//      [self setDelegate:[aCoder decodeObjectForKey:CPToolbarDelegateKey]];
-        /*
-           The delegate is actually set by reference in the "IBObjectContainer" node of the Nib and not in the "NSToolbar" node,
-           and therefore we cannot read it here (otherwise we'll only read NULL). The correct delegate is read later outside this class
-           when node "IBObjectContainer" is processed, which triggers [setDelegate:].
-          
-           Because we don't know if a delegate will be set later (it is optional as if OS X 10.5), we need to call [_reloadToolbarItems] here
-           in order to load any toolbar items that may have been configured in the Nib. Unfortunatelly this means that if there is a delegate
-           specified, it will be read later and the resulting call to [setDelegate:] will cause [_reloadToolbarItems] to run again :-(
-           
-           Can we make this better?
-        */
+        // This won't come from a Cib, but can come from manual encoding.
+        [self setDelegate:[aCoder decodeObjectForKey:CPToolbarDelegateKey]];
+
+        // Because we don't know if a delegate will be set later (it is optional
+        // as of OS X 10.5), we need to call -_reloadToolbarItems here.
+        // In order to load any toolbar items that may have been configured in the
+        // Cib. Unfortunatelly this means that if there is a delegate
+        // specified, it will be read later and the resulting call to -setDelegate:
+        // will cause -_reloadToolbarItems] to run again :-(
+        // FIXME: Can we make this better?
         [self _reloadToolbarItems];
     }
-    
+
     return self;
 }
 
@@ -465,18 +479,18 @@ var CPToolbarIdentifierKey              = "CPToolbarIdentifierKey",
 */
 - (void)encodeWithCoder:(CPCoder)aCoder
 {
-    [aCoder encodeObject:_identifier            forKey:CPToolbarIdentifierKey];
-    [aCoder encodeInt:_displayMode              forKey:CPToolbarDisplayModeKey];
-    [aCoder encodeBool:_showsBaselineSeparator  forKey:CPToolbarShowsBaselineSeparatorKey];
+    [aCoder encodeObject:_identifier forKey:CPToolbarIdentifierKey];
+    [aCoder encodeInt:_displayMode forKey:CPToolbarDisplayModeKey];
+    [aCoder encodeBool:_showsBaselineSeparator forKey:CPToolbarShowsBaselineSeparatorKey];
     [aCoder encodeBool:_allowsUserCustomization forKey:CPToolbarAllowsUserCustomizationKey];
-    [aCoder encodeBool:_isVisible               forKey:CPToolbarIsVisibleKey];
-    
-    [aCoder encodeObject:_identifiedItems       forKey:CPToolbarIdentifiedItemsKey];
-    [aCoder encodeObject:_defaultItems          forKey:CPToolbarDefaultItemsKey];
-    [aCoder encodeObject:_allowedItems          forKey:CPToolbarAllowedItemsKey];
-    [aCoder encodeObject:_selectableItems       forKey:CPToolbarSelectableItemsKey];
-    
-    [aCoder encodeConditionalObject:_delegate   forKey:CPToolbarDelegateKey];
+    [aCoder encodeBool:_isVisible forKey:CPToolbarIsVisibleKey];
+
+    [aCoder encodeObject:_identifiedItems forKey:CPToolbarIdentifiedItemsKey];
+    [aCoder encodeObject:_defaultItems forKey:CPToolbarDefaultItemsKey];
+    [aCoder encodeObject:_allowedItems forKey:CPToolbarAllowedItemsKey];
+    [aCoder encodeObject:_selectableItems forKey:CPToolbarSelectableItemsKey];
+
+    [aCoder encodeConditionalObject:_delegate forKey:CPToolbarDelegateKey];
 }
 
 @end
@@ -520,7 +534,7 @@ var _CPToolbarItemInfoMake = function(anIndex, aView, aLabel, aMinWidth)
 
 + (void)initialize
 {
-    if (self != [_CPToolbarView class])
+    if (self !== [_CPToolbarView class])
         return;
     
     var bundle = [CPBundle bundleForClass:self];
@@ -819,7 +833,7 @@ var _CPToolbarItemInfoMake = function(anIndex, aView, aLabel, aMinWidth)
 
         _minWidth += [view minSize].width + TOOLBAR_ITEM_MARGIN;
     }
-    
+
     [self tile];
 }
 
@@ -882,7 +896,16 @@ var TOP_MARGIN      = 5.0,
 
         _toolbar = aToolbar;
 
-        [_toolbarItem addObserver:self forKeyPath:"enabled" options:0 context:NULL];
+        var keyPaths = [@"label", @"image", @"alternateImage", @"minSize", @"maxSize", @"enabled"],
+            index = 0,
+            count = [keyPaths count];
+
+        for (; index < count; ++index)
+            [_toolbarItem
+                addObserver:self
+                 forKeyPath:keyPaths[index]
+                    options:0
+                    context:NULL];
     }
 
     return self;
@@ -1077,9 +1100,10 @@ var TOP_MARGIN      = 5.0,
                         change:(CPDictionary)aChange
                        context:(id)aContext
 {
-    // FIXME: Not clear if -synchronizeWindowTitleWithDocumentName is the best way to go.
     if (aKeyPath === "enabled")
         [self setEnabled:[anObject isEnabled]];
+    else
+        [self updateFromItem];
 }
 
 @end
