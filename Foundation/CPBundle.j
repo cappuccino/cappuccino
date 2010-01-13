@@ -133,7 +133,7 @@
 - (void)loadWithDelegate:(id)aDelegate
 {
     self._delegate = aDelegate;
-    self._infoConnection = [CPURLConnection connectionWithRequest:[CPURLRequest requestWithURL:[self bundlePath] + "/Info.plist"] delegate:self];
+    self._infoConnection = [CPURLConnection connectionWithRequest:[CPURLRequest requestWithURL:[CPURL URLWithString:[self bundlePath] + "/Info.plist"]] delegate:self];
 }
 
 - (CPArray)supportedEnvironments

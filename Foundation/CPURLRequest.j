@@ -62,10 +62,7 @@
     
     if (self)
     {
-        if ([aURL isKindOfClass:[CPString class]])
-            _URL = [CPURL URLWithString:aURL];
-        else
-            _URL = aURL;
+        [self setURL:aURL];
 
         _HTTPBody = @"";
         _HTTPMethod = @"GET";
@@ -93,7 +90,10 @@
 */
 - (void)setURL:(CPURL)aURL
 {
-    _URL = aURL;
+    if ([aURL isKindOfClass:[CPURL class]])
+        _URL = aURL;
+    else
+        _URL = [CPURL URLWithString:String(aURL)];
 }
 
 /*!
