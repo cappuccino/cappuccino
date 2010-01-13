@@ -106,7 +106,7 @@ if [ "$install_narwhal" ]; then
     echo "To use the default location, \"$install_directory\", just hit enter/return, or enter another path:"
     read input
     if [ "$input" ]; then
-        install_directory="$input"
+        install_directory="`cd \`dirname $input\`; pwd`/`basename $input`"
     fi
 
     if [ "$git_clone" ]; then
