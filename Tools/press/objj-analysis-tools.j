@@ -246,7 +246,15 @@ function findGlobalDefines(context, mainPath, evaledFragments)
     }
 
     runWithScope(context, function(importName) {
-        objj_import(importName, true, NULL);
+        objj_import(importName, true, function() {
+            // Doesn't work due to lack of complete browser environment
+            //[_CPAppBootstrapper loadDefaultTheme];
+            
+            var themePath = [[CPBundle bundleForClass:[CPApplication class]] pathForResource:[CPApplication defaultThemeName]];
+            var themeBundle = [[CPBundle alloc] initWithPath:themePath + "/Info.plist"];
+            [themeBundle loadWithDelegate:nil];
+            // FIXME: doesn't use objj_search mechanism. need to hook CPBundle or CPURLConnection instead.
+        });
     }, [mainPath]);
 
     return dependencies;
