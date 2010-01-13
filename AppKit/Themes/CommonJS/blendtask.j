@@ -6,6 +6,7 @@
 
 
 var FILE = require("file"),
+    TERM = require("term"),
     task = require("jake").task,
     filedir = require("jake").filedir,
     BundleTask = require("objective-j/jake/bundletask").BundleTask;
@@ -153,7 +154,7 @@ function themeFromCibData(data)
             theme = [[CPTheme alloc] initWithName:[object valueForKey:@"name"]];
     }
 
-    print("Building " + [theme name] + " theme");
+    TERM.stream.print("Building \0green(" + [theme name] + "\0) theme");
 
     [templates makeObjectsPerformSelector:@selector(blendAddThemedObjectAttributesToTheme:) withObject:theme];
 
@@ -216,7 +217,7 @@ function themeFromCibData(data)
 
     if (themedObject)
     {
-        print(" Recording themed properties for " + [themedObject className] + ".");
+        TERM.stream.print(" Recording themed properties for \0purple(" + [themedObject className] + "\0).");
 
         [aTheme takeThemeFromObject:themedObject];
     }

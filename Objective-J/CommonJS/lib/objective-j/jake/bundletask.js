@@ -2,6 +2,7 @@
 var FILE = require("file"),
     OS = require("os"),
     UTIL = require("util"),
+    TERM = require("term"),
     Jake = require("jake"),
     CLEAN = require("jake/clean").CLEAN,
     CLOBBER = require("jake/clean").CLOBBER,
@@ -577,7 +578,7 @@ BundleTask.prototype.defineStaticTask = function()
 
         filedir (staticPath, function(aTask)
         {
-            print("Creating static file... " + staticPath);
+            TERM.stream.print("Creating static file... \0green(" + staticPath +"\0)");
 
             var fileStream = FILE.open(staticPath, "w+", { charset:"UTF-8" }),
                 MHTMLContents = "";
@@ -704,8 +705,10 @@ BundleTask.prototype.defineSourceTasks = function()
 
             filedir (compiledEnvironmentSource, [aFilename], function()
             {
-                print("Compiling [" + anEnvironment + "] " + aFilename + "...");
-                FILE.write(compiledEnvironmentSource, require("objective-j/compiler").compile(aFilename, environmentCompilerFlags), { charset:"UTF-8" });
+                TERM.stream.write("Compiling [\0blue(" + anEnvironment + "\0)] \0purple(" + aFilename + "\0)").flush();
+                var compiled = require("objective-j/compiler").compile(aFilename, environmentCompilerFlags);
+                TERM.stream.print(Array(Math.round(compiled.length / 1024) + 3).join("."));
+                FILE.write(compiledEnvironmentSource, compiled, { charset:"UTF-8" });
             });
 
             filedir (staticPath, [compiledEnvironmentSource]);
