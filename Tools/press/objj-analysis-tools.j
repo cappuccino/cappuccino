@@ -10,22 +10,22 @@ var FILE = require("file");
         [importedFiles]:        hash that will contain a mapping of file names to a hash of imported files
         [referencedFiles]:      hash that will contain a mapping of file names to a hash of referenced files (which contains a hash of tokens referenced)
         [processedFiles]:       hash containing file paths which have already been analyzed
-        
+
     param file is an objj_file object containing path, fragments, content, bundle, etc
 */
 function traverseDependencies(context, file)
 {
     if (!context.processedFiles)
         context.processedFiles = {};
-    
+
     if (context.processedFiles[file.path])
         return;
     context.processedFiles[file.path] = true;
-    
+
     var ignoreImports = false;
     if (context.ignoreAllImports)
     {
-        CPLog.warn("Ignoring all import fragments. ("+context.relativeToRootPath(file.path)+")");
+        CPLog.warn("Ignoring all import fragments. ("+context.rootPath.relative(file.path)+")");
         ignoreImports = true;
     }
     else if (context.ignoreFrameworkImports)
@@ -33,56 +33,56 @@ function traverseDependencies(context, file)
         var matches = file.path.match(new RegExp("([^\\/]+)\\/([^\\/]+)\\.j$")); // Matches "ZZZ/ZZZ.j" (e.x. AppKit/AppKit.j and Foundation/Foundation.j)
         if (matches && matches[1] === matches[2])
         {
-            CPLog.warn("Framework import file! Ignoring all import fragments. ("+context.relativeToRootPath(file.path)+")");
+            CPLog.warn("Framework import file! Ignoring all import fragments. ("+context.rootPath.relative(file.path)+")");
             ignoreImports = true;
         }
     }
-    
+
     // if fragments are missing, preprocess the contents
     if (!file.fragments)
     {
         if (file.included)
-            CPLog.warn(context.relativeToRootPath(file.path) + " is included but missing fragments");
+            CPLog.warn(context.rootPath.relative(file.path) + " is included but missing fragments");
         else
-            CPLog.warn("Preprocessing " + context.relativeToRootPath(file.path));
-        
+            CPLog.warn("Preprocessing " + context.rootPath.relative(file.path));
+
         file.fragments = objj_preprocess(file.contents, file.bundle, file);
     }
-        
+
     // sprite: look for pngs in the Resources directory
     if (!context.bundleImages)
         context.bundleImages = {};
-    
+
     if (!context.bundleImages[file.bundle.path])
     {
         var resourcesPath = FILE.path(file.bundle.path).dirname().join("/Resources");
         if (resourcesPath.exists())
         {
             context.bundleImages[file.bundle.path] = {};
-            
+
             resourcesPath.glob("**/*.png").forEach(function(png) {
                 var pngPath = resourcesPath.join(png);
                 var relativePath = pathRelativeTo(pngPath.absolute(), resourcesPath.absolute());
-                
+
                 // this is used as a bit mask, not a boolean
                 context.bundleImages[file.bundle.path][relativePath] = 1;
             });
         }
     }
     var images = context.bundleImages[file.bundle.path];
-    
+
     var referencedFiles = {},
         importedFiles = {};
-    
-    CPLog.debug("Processing " + file.fragments.length + " fragments in " + context.relativeToRootPath(file.path));
+
+    CPLog.debug("Processing " + file.fragments.length + " fragments in " + context.rootPath.relative(file.path));
     for (var i = 0; i < file.fragments.length; i++)
     {
         var fragment = file.fragments[i];
-        
+
         if (fragment.type & FRAGMENT_CODE)
         {
             var lexer = new objj_lexer(fragment.info, NULL);
-            
+
             var token;
             while (token = lexer.skip_whitespace())
             {
@@ -101,7 +101,7 @@ function traverseDependencies(context, file)
                         }
                     }
                 }
-                
+
                 var matches = token.match(new RegExp("^['\"](.*)['\"]$"));
                 if (matches && images && images[matches[1]])
                     images[matches[1]] = (images[matches[1]] | 2);
@@ -122,14 +122,14 @@ function traverseDependencies(context, file)
                     if (importedFile != file.path)
                         importedFiles[importedFile] = true;
                     else
-                        CPLog.error("Ignoring self import (why are you importing yourself?!): " + context.relativeToRootPath(file.path));
+                        CPLog.error("Ignoring self import (why are you importing yourself?!): " + context.rootPath.relative(file.path));
                 }
                 else
                     CPLog.error("Couldn't find file for import " + fragment.info + " ("+fragment.type+")");
             }
         }
     }
-    
+
     // check each imported file
     for (var importedFile in importedFiles)
     {
@@ -144,10 +144,10 @@ function traverseDependencies(context, file)
                 CPLog.error("Missing imported file: " + importedFile);
         }
     }
-    
+
     if (context.importedFiles)
         context.importedFiles[file.path] = importedFiles;
-    
+
     // check each referenced file
     for (var referencedFile in referencedFiles)
     {
@@ -155,14 +155,14 @@ function traverseDependencies(context, file)
         {
             if (context.referenceCallback)
                 context.referenceCallback(file.path, referencedFile, referencedFiles[referencedFile]);
-                
+
             if (context.scope.objj_files.hasOwnProperty(referencedFile))
                 traverseDependencies(context, context.scope.objj_files[referencedFile]);
             else
                 CPLog.error("Missing referenced file: " + referencedFile);
         }
     }
-    
+
     if (context.referencedFiles)
         context.referencedFiles[file.path] = referencedFiles;
 }
@@ -176,7 +176,7 @@ function findImportInObjjFiles(scope, fragment)
         var searchPath = fragment.info;
         //CPLog.trace("Looking for " + searchPath);
         //for (var i in scope.objj_files) CPLog.debug("    " + i);
-        
+
         if (scope.objj_files[searchPath])
         {
             importPath = searchPath;
@@ -195,7 +195,7 @@ function findImportInObjjFiles(scope, fragment)
             }
         }
     }
-    
+
     return importPath;
 }
 
@@ -204,19 +204,19 @@ function findGlobalDefines(context, mainPath, evaledFragments)
 {
     var ignore = cloneProperties(context.scope, true);
     ignore['bundle'] = true;
-    
+
     var dependencies = {};
-    
+
     //scope.fragment_evaluate_file_original = scope.fragment_evaluate_file;
     //scope.fragment_evaluate_file = function(aFragment)
     //{
     //    //CPLog.trace("Loading "+aFragment.info);
-    //    
+    //
     //    var result = scope.fragment_evaluate_file_original(aFragment);
-    //    
+    //
     //    return result;
     //}
-    
+
     // OVERRIDE fragment_evaluate_file
     var fragment_evaluate_file_original = context.scope.fragment_evaluate_file;
     context.scope.fragment_evaluate_file = function(aFragment) {
@@ -226,29 +226,29 @@ function findGlobalDefines(context, mainPath, evaledFragments)
     // OVERRIDE fragment_evaluate_code
     var fragment_evaluate_code_original = context.scope.fragment_evaluate_code;
     context.scope.fragment_evaluate_code = function(aFragment) {
-        
-        CPLog.debug("Evaluating " + context.relativeToRootPath(aFragment.file.path) + " (" + context.relativeToRootPath(aFragment.bundle.path) + ")");
-    
+
+        CPLog.debug("Evaluating " + context.rootPath.relative(aFragment.file.path) + " (" + context.rootPath.relative(aFragment.bundle.path) + ")");
+
         var before = cloneProperties(context.scope);
-        
+
         if (evaledFragments)
         {
             evaledFragments.push(aFragment);
         }
-        
+
         var result = fragment_evaluate_code_original(aFragment);
-    
+
         var definedGlobals = {};
         diff(before, context.scope, ignore, definedGlobals, definedGlobals, null);
         dependencies[aFragment.file.path] = definedGlobals;
-    
+
         return result;
     }
 
-    runWithScope(context, function(importName) {    
+    runWithScope(context, function(importName) {
         objj_import(importName, true, NULL);
     }, [mainPath]);
-    
+
     return dependencies;
 }
 
@@ -262,7 +262,7 @@ function coalesceGlobalDefines(globals)
     for (var fileName in globals)
     {
         var fileGlobals = globals[fileName];
-        
+
         for (var globalName in fileGlobals)
         {
             if (!dependencies[globalName])
@@ -278,11 +278,11 @@ function makeObjjScope(ctx, debug)
 {
     // init standard JS scope objects
     var scope = ctx.initStandardObjects();
-    
+
     // set these properties required for Narwhal bootstrapping
     scope.NARWHAL_HOME = system.prefix;
     scope.NARWHAL_ENGINE_HOME = FILE.join(system.prefix, "engines", "rhino");
-    
+
     // load the bootstrap.js for narwhal-rhino
     var bootstrapPath = FILE.join(scope.NARWHAL_ENGINE_HOME, "bootstrap.js");
     ctx.evaluateReader(scope,
@@ -291,12 +291,12 @@ function makeObjjScope(ctx, debug)
         1,
         null
     );
-    
+
     // get the Objective-J module from this scope, return the window object.
     var OBJJ = scope.require("objective-j");
-    
+
     addMockBrowserEnvironment(OBJJ.window);
-    
+
     return OBJJ.window;
 }
 
@@ -334,7 +334,7 @@ function runWithScope(context, func, args)
 
     var result = functionInScope.apply(context.scope, args);
 
-    context.scope.require('browser/timeout').serviceTimeouts();    
+    context.scope.require('browser/timeout').serviceTimeouts();
 
     return result;
 }
