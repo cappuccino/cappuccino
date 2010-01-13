@@ -189,8 +189,9 @@ function pressEnvironment(rootPath, outputFiles, environment, options) {
     
     // Log 
     CPLog.trace("Global defines:");
-    for (var i in dependencies)
-        CPLog.trace("    " + i + " => " + rootPath.relative(dependencies[i]));
+    Object.keys(dependencies).sort().forEach(function(identifier) {
+        CPLog.trace("    " + identifier + " => " + rootPath.relative(dependencies[identifier]));
+    });
     
     // phase 2: walk the dependency tree (both imports and references) to determine exactly which files need to be included
     CPLog.error("PHASE 2: Walk dependency tree...");
@@ -253,6 +254,9 @@ function pressEnvironment(rootPath, outputFiles, environment, options) {
     {
         // phase 3a: build single Application.js file (and modified index.html)
         CPLog.error("PHASE 3a: Flattening...");
+        
+        var applicationScriptName = "Application-"+environment+".js";
+        var indexHTMLName = "index-"+environment+".html";
         
         // Shim for faking bundle responses.
         // We're just defining it here so we can serialize the function. It's not used within press.
@@ -322,9 +326,6 @@ function pressEnvironment(rootPath, outputFiles, environment, options) {
         
         // comment out any OBJJ_MAIN_FILE defintions or objj_import() calls
         indexHTML = indexHTML.replace(/(\bOBJJ_MAIN_FILE\s*=|\bobjj_import\s*\()/g, '//$&');
-        
-        var applicationScriptName = "Application-"+environment+".js";
-        var indexHTMLName = "index-"+environment+".html";
         
         // add a script tag for Application.js at the very end of the <head> block
         indexHTML = indexHTML.replace(/([ \t]*)(<\/head>)/, '$1    <script src = "'+applicationScriptName+'" type = "text/javascript"></script>\n$1$2');
