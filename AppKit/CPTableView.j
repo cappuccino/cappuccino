@@ -182,10 +182,10 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     SEL         _doubleAction;
     unsigned    _columnAutoResizingStyle;
 
-    BOOL        _verticalMotionCanDrag;
+//    BOOL        _verticalMotionCanDrag;
     unsigned    _destinationDragStyle;
     BOOL        _isSelectingSession;
-    CPIndexSet  _draggedRowIndexes;
+//    CPIndexSet  _draggedRowIndexes;
     _dropOperationDrawingView _dropOperationFeedbackView;
     CPDragOperation _dragOperationDefaultMask;
     int         _retargetedDropRow;
@@ -241,9 +241,9 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 
         _selectedColumnIndexes = [CPIndexSet indexSet];
         _selectedRowIndexes = [CPIndexSet indexSet];
-
-        _draggedRowIndexes = [CPIndexSet indexSet];
-        _verticalMotionCanDrag = YES;
+window.setTimeout(function(){
+        self._draggedRowIndexes = [CPIndexSet indexSet];
+        self._verticalMotionCanDrag = YES;}, 0);
         _destinationDragStyle = CPTableViewDraggingDestinationFeedbackStyleRegular;
         _dropOperationFeedbackView = [[_dropOperationDrawingView alloc] initWithFrame:_CGRectMakeZero()];
         [self addSubview:_dropOperationFeedbackView];
