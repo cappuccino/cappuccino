@@ -2,8 +2,9 @@
  * NSToolbarItem.j
  * nib2cib
  *
- * Created by Francisco Tolmasky.
+ * Created by Francisco Tolmasky and Dimitris Tsitses.
  * Copyright 2010, 280 North, Inc.
+ * Copyright 2010, Blueberry Associates LLC.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -23,6 +24,17 @@
 @import <AppKit/CPToolbarItem.j>
 
 
+NS_CPToolbarItemIdentifierMap =
+{
+    @"NSToolbarSeparatorItem"           : CPToolbarSeparatorItemIdentifier,
+    @"NSToolbarSpaceItem"               : CPToolbarSpaceItemIdentifier,
+    @"NSToolbarFlexibleSpaceItem"       : CPToolbarFlexibleSpaceItemIdentifier,
+    @"NSToolbarShowColorsItem"          : CPToolbarShowColorsItemIdentifier,
+    @"NSToolbarShowFontsItem"           : CPToolbarShowFontsItemIdentifier,
+    @"NSToolbarCustomizeToolbarItem"    : CPToolbarCustomizeToolbarItemIdentifier,
+    @"NSToolbarPrintItem"               : CPToolbarPrintItemIdentifier
+};
+
 @implementation CPToolbarItem (NSCoding)
 
 - (id)NS_initWithCoder:(CPCoder)aCoder
@@ -31,7 +43,9 @@
 
     if (self)
     {
-        _itemIdentifier = [aCoder decodeObjectForKey:@"NSToolbarItemIdentifier"];
+        var NS_itemIdentifier = [aCoder decodeObjectForKey:@"NSToolbarItemIdentifier"];
+
+        _itemIdentifier = NS_CPToolbarItemIdentifierMap[NS_itemIdentifier] || _itemIdentifier;
 
         [self setLabel:[aCoder decodeObjectForKey:@"NSToolbarItemLabel"]];
         [self setPaletteLabel:[aCoder decodeObjectForKey:@"NSToolbarItemPaletteLabel"]];
@@ -42,6 +56,7 @@
         [self setAction:CPSelectorFromString([aCoder decodeObjectForKey:@"NSToolbarItemAction"])];
 
         [self setEnabled:[aCoder decodeBoolForKey:@"NSToolbarItemEnabled"]];
+        [self setAutovalidates:[aCoder decodeBoolForKey:"NSToolbarItemAutovalidates"]];
 
         [self setImage:[aCoder decodeBoolForKey:@"NSToolbarItemImage"]];
 
@@ -72,13 +87,4 @@
     return [CPToolbarItem class];
 }
 
-@end
-
-@implementation NSToolbarSpaceItem : NSToolbarItem
-@end
-
-@implementation NSToolbarFlexibleSpaceItem : NSToolbarItem
-@end
-
-@implementation NSToolbarSeparatorItem : NSToolbarItem
 @end

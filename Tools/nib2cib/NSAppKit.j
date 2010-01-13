@@ -1,4 +1,4 @@
-/*
+ /*
  * NSAppKit.j
  * nib2cib
  *
@@ -56,6 +56,9 @@
 @import "NSTextField.j"
 @import "NSToolbar.j"
 @import "NSToolbarItem.j"
+@import "NSToolbarFlexibleSpaceItem.j"
+@import "NSToolbarSeparatorItem.j"
+@import "NSToolbarSpaceItem.j"
 @import "NSView.j"
 @import "NSViewController.j"
 @import "NSWindowTemplate.j"

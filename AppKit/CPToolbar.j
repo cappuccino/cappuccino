@@ -252,16 +252,19 @@ var CPToolbarConfigurationsByIdentifier = nil;
 /* @ignore */
 - (void)_reloadToolbarItems
 {
-    if (!_delegate)
-        return;
+    // As of OS X 10.5 (Leopard), toolbar items can be set in IB and a toolbar delegate is optional.
+    // Toolbar items can be combined from both IB and a delegate (see Apple's NSToolbar guide for IB, for more details).
 
-    var count = [_itemIdentifiers count];
-    
-    if (!count)
-    {
-         _itemIdentifiers = [[_delegate toolbarDefaultItemIdentifiers:self] mutableCopy];
-         count = [_itemIdentifiers count];
-    }
+    // _defaultItems may have been loaded from Nib
+     _itemIdentifiers = [_defaultItems valueForKey:"_itemIdentifier"];
+         
+     if (_delegate)
+     {
+         var itemIdentifiersFromDelegate = [[_delegate toolbarDefaultItemIdentifiers:self] mutableCopy];
+         if(itemIdentifiersFromDelegate)
+             _itemIdentifiers = [_itemIdentifiers arrayByAddingObjectsFromArray:itemIdentifiersFromDelegate];
+     }
+     var count = [_itemIdentifiers count];
 
     _items = [];
 
@@ -273,6 +276,9 @@ var CPToolbarConfigurationsByIdentifier = nil;
             item = [CPToolbarItem _standardItemWithItemIdentifier:identifier];
         
         if (!item)
+            item = [_identifiedItems objectForKey:identifier];  // may have been loaded from Nib
+
+        if (!item && _delegate)
             item = [_delegate toolbar:self itemForItemIdentifier:identifier willBeInsertedIntoToolbar:YES];
         
         item = [item copy];
@@ -280,6 +286,8 @@ var CPToolbarConfigurationsByIdentifier = nil;
         if (item == nil)
             [CPException raise:CPInvalidArgumentException
                          reason:sprintf(@"_delegate %s returned nil toolbar item returned for identifier %s", _delegate, identifier)];
+        
+        item._toolbar = self;
             
         [_items addObject:item];
     }
@@ -359,13 +367,35 @@ var CPToolbarConfigurationsByIdentifier = nil;
 }
 
 /* @ignore */
--(id)_defaultToolbarItems
+- (id)_defaultToolbarItems
 {
     if (!_defaultItems)
         if ([_delegate respondsToSelector:@selector(toolbarDefaultItemIdentifiers:)])
             _defaultItems = [self _itemsWithIdentifiers:[_delegate toolbarDefaultItemIdentifiers:self]];
     
     return _defaultItems;
+}
+
+/*!
+    Notifies the toolbar that an item has been changed. This will cause the toolbar to reload its items.
+    @param anItem the item that has been changed
+*/
+- (void)toolbarItemDidChange:(CPToolbarItem)anItem
+{
+    if([_identifiedItems objectForKey:[anItem itemIdentifier]])
+        [_identifiedItems setObject:anItem forKey:[anItem itemIdentifier]];
+        
+    for(var index = 0; index <= _items.length; index++)
+    {
+        var item = _items[index];
+        if([item itemIdentifier] === [anItem itemIdentifier])
+        {
+            _items[index] = anItem;
+            _itemsSortedByVisibilityPriority = [_items sortedArrayUsingFunction:_CPToolbarItemVisibilityPriorityCompare context:NULL];
+            [_toolbarView reloadToolbarItems];
+            break;
+         }
+    }
 }
 
 @end
@@ -405,10 +435,25 @@ var CPToolbarIdentifierKey              = "CPToolbarIdentifierKey",
         _allowedItems               = [aCoder decodeObjectForKey:CPToolbarAllowedItemsKey];
         _selectableItems            = [aCoder decodeObjectForKey:CPToolbarSelectableItemsKey];
         
+         var identifiedItems = [_identifiedItems allValues];
+        [identifiedItems  makeObjectsPerformSelector:@selector(_setToolbar:) withObject:self];
+
         _items = [];
         [CPToolbar _addToolbar:self forIdentifier:_identifier];
-        
-        [self setDelegate:[aCoder decodeObjectForKey:CPToolbarDelegateKey]];
+
+//      [self setDelegate:[aCoder decodeObjectForKey:CPToolbarDelegateKey]];
+        /*
+           The delegate is actually set by reference in the "IBObjectContainer" node of the Nib and not in the "NSToolbar" node,
+           and therefore we cannot read it here (otherwise we'll only read NULL). The correct delegate is read later outside this class
+           when node "IBObjectContainer" is processed, which triggers [setDelegate:].
+          
+           Because we don't know if a delegate will be set later (it is optional as if OS X 10.5), we need to call [_reloadToolbarItems] here
+           in order to load any toolbar items that may have been configured in the Nib. Unfortunatelly this means that if there is a delegate
+           specified, it will be read later and the resulting call to [setDelegate:] will cause [_reloadToolbarItems] to run again :-(
+           
+           Can we make this better?
+        */
+        [self _reloadToolbarItems];
     }
     
     return self;

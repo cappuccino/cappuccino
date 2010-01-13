@@ -65,9 +65,9 @@ CPToolbarPrintItemIdentifier            = @"CPToolbarPrintItemIdentifier";
 @implementation CPToolbarItem : CPObject
 {
     CPString    _itemIdentifier;
-
+    
     CPToolbar   _toolbar;
-
+    
     CPString    _label;
     CPString    _paletteLabel;
     CPString    _toolTip;
@@ -77,12 +77,12 @@ CPToolbarPrintItemIdentifier            = @"CPToolbarPrintItemIdentifier";
     BOOL        _isEnabled;
     CPImage     _image;
     CPImage     _alternateImage;
-
+    
     CPView      _view;
-
+    
     CGSize      _minSize;
     CGSize      _maxSize;    
-
+    
     int         _visibilityPriority;
 
     BOOL        _autovalidates;
@@ -136,6 +136,12 @@ CPToolbarPrintItemIdentifier            = @"CPToolbarPrintItemIdentifier";
     return _toolbar;
 }
 
+/* @ignore */
+- (void)_setToolbar:(CPToolbar)aToolbar
+{
+    _toolbar = aToolbar;
+}
+
 /*!
     Returns the item's label
 */
@@ -151,6 +157,9 @@ CPToolbarPrintItemIdentifier            = @"CPToolbarPrintItemIdentifier";
 - (void)setLabel:(CPString)aLabel
 {
     _label = aLabel;
+    
+    if(_toolbar)
+        [_toolbar toolbarItemDidChange:self];
 }
 
 /*!
@@ -168,6 +177,9 @@ CPToolbarPrintItemIdentifier            = @"CPToolbarPrintItemIdentifier";
 - (void)setPaletteLabel:(CPString)aPaletteLabel
 {
     _paletteLabel = aPaletteLabel;
+    
+    if(_toolbar)
+        [_toolbar toolbarItemDidChange:self];
 }
 
 /*!
@@ -193,6 +205,9 @@ CPToolbarPrintItemIdentifier            = @"CPToolbarPrintItemIdentifier";
         [view setToolTip:aToolTip];
     
     _toolTip = aToolTip;
+    
+    if(_toolbar)
+        [_toolbar toolbarItemDidChange:self];
 }
 
 /*!
@@ -216,6 +231,9 @@ CPToolbarPrintItemIdentifier            = @"CPToolbarPrintItemIdentifier";
         [_view setTag:aTag];
     
     _tag = aTag;
+    
+    if(_toolbar)
+        [_toolbar toolbarItemDidChange:self];
 }
 
 /*!
@@ -241,6 +259,9 @@ CPToolbarPrintItemIdentifier            = @"CPToolbarPrintItemIdentifier";
     
     else if ([_view respondsToSelector:@selector(setTarget:)])
         [_view setTarget:aTarget];
+        
+    if(_toolbar)
+        [_toolbar toolbarItemDidChange:self];
 }
 
 /*!
@@ -265,6 +286,9 @@ CPToolbarPrintItemIdentifier            = @"CPToolbarPrintItemIdentifier";
 
     else if ([_view respondsToSelector:@selector(setAction:)])
         [_view setAction:anAction];
+        
+    if(_toolbar)
+        [_toolbar toolbarItemDidChange:self];
 }
 
 /*!
@@ -288,6 +312,9 @@ CPToolbarPrintItemIdentifier            = @"CPToolbarPrintItemIdentifier";
         [_view setEnabled:shouldBeEnabled];
     
     _isEnabled = shouldBeEnabled;
+    
+    if(_toolbar)
+        [_toolbar toolbarItemDidChange:self];
 }
 
 /*!
@@ -313,7 +340,12 @@ CPToolbarPrintItemIdentifier            = @"CPToolbarPrintItemIdentifier";
     _image = anImage;
     
     if (!_image)
+    {
+        if(_toolbar)
+            [_toolbar toolbarItemDidChange:self];
+            
         return;
+    }
     
     if (_minSize.width == 0 && _minSize.height == 0 && 
         _maxSize.width == 0 && _maxSize.height == 0)
@@ -326,6 +358,9 @@ CPToolbarPrintItemIdentifier            = @"CPToolbarPrintItemIdentifier";
             [self setMaxSize:imageSize];
         }
     }
+    
+    if(_toolbar)
+        [_toolbar toolbarItemDidChange:self];
 }
 
 /*!
@@ -338,6 +373,9 @@ CPToolbarPrintItemIdentifier            = @"CPToolbarPrintItemIdentifier";
         [_view setAlternateImage:anImage];
     
     _alternateImage = anImage;
+    
+    if(_toolbar)
+        [_toolbar toolbarItemDidChange:self];
 }
 
 /*!
@@ -379,6 +417,9 @@ CPToolbarPrintItemIdentifier            = @"CPToolbarPrintItemIdentifier";
         _target = nil;
         _action = nil;
     }
+    
+    if(_toolbar)
+        [_toolbar toolbarItemDidChange:self];
 }
 
 /*!
@@ -395,10 +436,16 @@ CPToolbarPrintItemIdentifier            = @"CPToolbarPrintItemIdentifier";
 */
 - (void)setMinSize:(CGSize)aMinSize
 {
+    if(!aMinSize.height || !aMinSize.width)
+        return;
+
     _minSize = CGSizeMakeCopy(aMinSize);
     
     // Try to provide some sanity: Make maxSize >= minSize
     _maxSize = CGSizeMake(MAX(_minSize.width, _maxSize.width), MAX(_minSize.height, _maxSize.height));
+    
+    if(_toolbar)
+        [_toolbar toolbarItemDidChange:self];
 }
 
 /*!
@@ -415,10 +462,16 @@ CPToolbarPrintItemIdentifier            = @"CPToolbarPrintItemIdentifier";
 */
 - (void)setMaxSize:(CGSize)aMaxSize
 {
+    if(!aMaxSize.height || !aMaxSize.width)
+        return;
+        
     _maxSize = CGSizeMakeCopy(aMaxSize);
     
     // Try to provide some sanity: Make minSize <= maxSize
     _minSize = CGSizeMake(MIN(_minSize.width, _maxSize.width), MIN(_minSize.height, _maxSize.height));
+    
+    if(_toolbar)
+        [_toolbar toolbarItemDidChange:self];
 }
 
 // Visibility Priority
@@ -449,6 +502,9 @@ CPToolbarItemVisibilityPriorityUser
 - (void)setVisibilityPriority:(int)aVisibilityPriority
 {
     _visibilityPriority = aVisibilityPriority;
+    
+    if(_toolbar)
+        [_toolbar toolbarItemDidChange:self];
 }
 
 - (void)validate
@@ -581,6 +637,8 @@ var CPToolbarItemIdentifierKey          = @"CPToolbarItemIdentifierKey",
     if (_view)
         [copy setView:[CPKeyedUnarchiver unarchiveObjectWithData:[CPKeyedArchiver archivedDataWithRootObject:_view]]];
     
+    [copy _setToolbar:_toolbar];
+    
     [copy setLabel:_label];
     [copy setPaletteLabel:_paletteLabel];
     [copy setToolTip:[self toolTip]];
@@ -603,6 +661,90 @@ var CPToolbarItemIdentifierKey          = @"CPToolbarItemIdentifierKey",
 }
 
 @end
+
+
+var CPToolbarItemIdentifierKey          = "CPToolbarItemIdentifierKey",
+    CPToolbarItemLabelKey               = "CPToolbarItemLabelKey",
+    CPToolbarItemPaletteLabelKey        = "CPToolbarItemPaletteLabelKey",
+    CPToolbarItemToolTipKey             = "CPToolbarItemToolTipKey",
+    CPToolbarItemTagKey                 = "CPToolbarItemTagKey",
+    CPToolbarItemTargetKey              = "CPToolbarItemTargetKey",
+    CPToolbarItemActionKey              = "CPToolbarItemActionKey",
+    CPToolbarItemEnabledKey             = "CPToolbarItemEnabledKey",
+    CPToolbarItemImageKey               = "CPToolbarItemImageKey",
+    CPToolbarItemAlternateImageKey      = "CPToolbarItemAlternateImageKey",
+    CPToolbarItemViewKey                = "CPToolbarItemViewKey",
+    CPToolbarItemMinSizeKey             = "CPToolbarItemMinSizeKey",
+    CPToolbarItemMaxSizeKey             = "CPToolbarItemMaxSizeKey",
+    CPToolbarItemVisibilityPriorityKey  = "CPToolbarItemVisibilityPriorityKey";
+    CPToolbarItemAutovalidatesKey       = "CPToolbarItemAutovalidatesKey";
+
+@implementation CPToolbarItem (CPCoding)
+
+/*
+    Initializes the toolbar item by unarchiving data from <code>aCoder</code>.
+    @param aCoder the coder containing the archived CPToolbarItem.
+*/
+- (id)initWithCoder:(CPCoder)aCoder
+{
+    self = [super init];
+    
+    if (self)
+    {
+        _itemIdentifier             = [aCoder decodeObjectForKey:CPToolbarItemIdentifierKey];
+        
+        _label                      = [aCoder decodeObjectForKey:CPToolbarItemLabelKey];
+        _paletteLabel               = [aCoder decodeObjectForKey:CPToolbarItemPaletteLabelKey];
+        _toolTip                    = [aCoder decodeObjectForKey:CPToolbarItemToolTipKey];
+        _tag                        = [aCoder decodeIntForKey:CPToolbarItemTagKey];
+        _target                     = [aCoder decodeObjectForKey:CPToolbarItemTargetKey];
+        _action                     = [aCoder decodeObjectForKey:CPToolbarItemActionKey];
+        _isEnabled                  = [aCoder decodeBoolForKey:CPToolbarItemEnabledKey];
+        _view                       = [aCoder decodeObjectForKey:CPToolbarItemViewKey];
+        _minSize                    = [aCoder decodeSizeForKey:CPToolbarItemMinSizeKey];
+        _maxSize                    = [aCoder decodeSizeForKey:CPToolbarItemMaxSizeKey];
+        _visibilityPriority         = [aCoder decodeIntForKey:CPToolbarItemVisibilityPriorityKey];
+        _autovalidates              = [aCoder decodeBoolForKey:CPToolbarItemAutovalidatesKey];
+        
+        if(!_minSize.height || !_minSize.width)
+            _minSize = CGSizeMakeZero();
+
+        if(!_maxSize.height || !_maxSize.width)
+            _maxSize = CGSizeMakeZero();
+        
+        [self setImage:             [aCoder decodeObjectForKey:CPToolbarItemImageKey]];
+//      [self setAlternateImage:    [aCoder decodeObjectForKey:CPToolbarItemAlternateImageKey]];   // no altImage in Nib
+    }
+    
+    return self;
+}
+
+/*
+    Archives this toolbar item into the provided coder.
+    @param aCoder the coder to which the toolbar item's instance data will be written.
+*/
+- (void)encodeWithCoder:(CPCoder)aCoder
+{
+    [aCoder encodeObject:_itemIdentifier  forKey:CPToolbarItemIdentifierKey];
+    
+    [aCoder encodeObject:_label           forKey:CPToolbarItemLabelKey];
+    [aCoder encodeObject:_paletteLabel    forKey:CPToolbarItemPaletteLabelKey];
+    [aCoder encodeObject:_toolTip         forKey:CPToolbarItemToolTipKey];
+    [aCoder encodeInt:_tag                forKey:CPToolbarItemTagKey];
+    [aCoder encodeBool:_isEnabled         forKey:CPToolbarItemEnabledKey];
+    [aCoder encodeObject:_view            forKey:CPToolbarItemViewKey];    
+    [aCoder encodeSize:_minSize           forKey:CPToolbarItemMinSizeKey];
+    [aCoder encodeSize:_maxSize           forKey:CPToolbarItemMaxSizeKey];
+    [aCoder encodeInt:_visibilityPriority forKey:CPToolbarItemVisibilityPriorityKey];
+    [aCoder encodeBool:_autovalidates     forKey:CPToolbarItemAutovalidatesKey];
+    
+    [aCoder encodeObject:_image           forKey:CPToolbarItemImageKey];
+//  [aCoder encodeObject:_alternateImage  forKey:CPToolbarItemAlternateImageKey];                  // no altImage in IB
+
+}
+
+@end
+
 
 // Standard toolbar identifiers
 
