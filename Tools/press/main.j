@@ -72,8 +72,9 @@ function main(args)
     //else
     //    CPLogRegisterRange(CPLogPrint, "fatal", "info");
 
-    var rootPath = FILE.path(options.args[0]).absolute();
-    var outputPath = FILE.path(options.args[1]).absolute();
+    // HACK: ensure trailing slashes for "relative" to work correctly
+    var rootPath = FILE.path(options.args[0]).join("").absolute();
+    var outputPath = FILE.path(options.args[1]).join("").absolute();
 
     press(rootPath, outputPath, options);
 }
@@ -273,12 +274,23 @@ function pressEnvironment(rootPath, outputFiles, environment, options) {
         
         var applicationScript = [];
         
+        var URIMaps = {};
+        Object.keys(scope.objj_bundles).forEach(function(bundleName) {
+            var bundle = scope.objj_bundles[bundleName];
+            var path = rootPath.relative(bundle.path);
+            if (bundle._URIMap)
+                URIMaps[path] = bundle._URIMap;
+        });
+
         // add fake bundle response bookkeeping
         applicationScript.push("(function() {")
         applicationScript.push("    var didReceiveBundleResponse = " + String(fakeDidReceiveBundleResponse));
         applicationScript.push("    var bundleArchiveResponses = " + JSON.stringify(bundleArchiveResponses) + ";");
         applicationScript.push("    for (var i = 0; i < bundleArchiveResponses.length; i++)");
         applicationScript.push("        didReceiveBundleResponse(bundleArchiveResponses[i]);");
+        applicationScript.push("    var URIMaps = " + JSON.stringify(URIMaps) + ";");
+        applicationScript.push("    for (var bundleName in URIMaps)");
+        applicationScript.push("        objj_bundles[bundleName]._URIMap = URIMaps[bundleName];");
         applicationScript.push("})();");
         
         // add each fragment, wrapped in a function, along with OBJJ_CURRENT_BUNDLE bookkeeping
