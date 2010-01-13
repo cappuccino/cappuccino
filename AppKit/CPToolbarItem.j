@@ -48,13 +48,13 @@ CPToolbarItemVisibilityPriorityHigh     = 1000;
 */
 CPToolbarItemVisibilityPriorityUser     = 2000;
 
-CPToolbarSeparatorItemIdentifier        = @"CPToolbarSeparatorItemIdentifier";
-CPToolbarSpaceItemIdentifier            = @"CPToolbarSpaceItemIdentifier";
-CPToolbarFlexibleSpaceItemIdentifier    = @"CPToolbarFlexibleSpaceItemIdentifier";
-CPToolbarShowColorsItemIdentifier       = @"CPToolbarShowColorsItemIdentifier";
-CPToolbarShowFontsItemIdentifier        = @"CPToolbarShowFontsItemIdentifier";
-CPToolbarCustomizeToolbarItemIdentifier = @"CPToolbarCustomizeToolbarItemIdentifier";
-CPToolbarPrintItemIdentifier            = @"CPToolbarPrintItemIdentifier";
+CPToolbarSeparatorItemIdentifier        = @"CPToolbarSeparatorItem";
+CPToolbarSpaceItemIdentifier            = @"CPToolbarSpaceItem";
+CPToolbarFlexibleSpaceItemIdentifier    = @"CPToolbarFlexibleSpaceItem";
+CPToolbarShowColorsItemIdentifier       = @"CPToolbarShowColorsItem";
+CPToolbarShowFontsItemIdentifier        = @"CPToolbarShowFontsItem";
+CPToolbarCustomizeToolbarItemIdentifier = @"CPToolbarCustomizeToolbarItem";
+CPToolbarPrintItemIdentifier            = @"CPToolbarPrintItem";
 
 /*! 
     @ingroup appkit
@@ -65,9 +65,9 @@ CPToolbarPrintItemIdentifier            = @"CPToolbarPrintItemIdentifier";
 @implementation CPToolbarItem : CPObject
 {
     CPString    _itemIdentifier;
-
+    
     CPToolbar   _toolbar;
-
+    
     CPString    _label;
     CPString    _paletteLabel;
     CPString    _toolTip;
@@ -77,12 +77,12 @@ CPToolbarPrintItemIdentifier            = @"CPToolbarPrintItemIdentifier";
     BOOL        _isEnabled;
     CPImage     _image;
     CPImage     _alternateImage;
-
+    
     CPView      _view;
-
+    
     CGSize      _minSize;
     CGSize      _maxSize;    
-
+    
     int         _visibilityPriority;
 
     BOOL        _autovalidates;
@@ -114,6 +114,7 @@ CPToolbarPrintItemIdentifier            = @"CPToolbarPrintItemIdentifier";
         _maxSize = CGSizeMakeZero();
      
         _visibilityPriority = CPToolbarItemVisibilityPriorityStandard;
+        _autovalidates = YES;
     }
     
     return self;
@@ -134,6 +135,12 @@ CPToolbarPrintItemIdentifier            = @"CPToolbarPrintItemIdentifier";
 - (CPToolbar)toolbar
 {
     return _toolbar;
+}
+
+/* @ignore */
+- (void)_setToolbar:(CPToolbar)aToolbar
+{
+    _toolbar = aToolbar;
 }
 
 /*!
@@ -313,7 +320,12 @@ CPToolbarPrintItemIdentifier            = @"CPToolbarPrintItemIdentifier";
     _image = anImage;
     
     if (!_image)
+    {
+        if(_toolbar)
+            [_toolbar toolbarItemDidChange:self];
+            
         return;
+    }
     
     if (_minSize.width == 0 && _minSize.height == 0 && 
         _maxSize.width == 0 && _maxSize.height == 0)
@@ -395,6 +407,9 @@ CPToolbarPrintItemIdentifier            = @"CPToolbarPrintItemIdentifier";
 */
 - (void)setMinSize:(CGSize)aMinSize
 {
+    if(!aMinSize.height || !aMinSize.width)
+        return;
+
     _minSize = CGSizeMakeCopy(aMinSize);
     
     // Try to provide some sanity: Make maxSize >= minSize
@@ -415,6 +430,9 @@ CPToolbarPrintItemIdentifier            = @"CPToolbarPrintItemIdentifier";
 */
 - (void)setMaxSize:(CGSize)aMaxSize
 {
+    if(!aMaxSize.height || !aMaxSize.width)
+        return;
+        
     _maxSize = CGSizeMakeCopy(aMaxSize);
     
     // Try to provide some sanity: Make minSize <= maxSize
@@ -495,7 +513,7 @@ CPToolbarItemVisibilityPriorityUser
 
 @end
 
-var CPToolbarItemIdentifierKey          = @"CPToolbarItemIdentifierKey",
+var CPToolbarItemItemIdentifierKey      = @"CPToolbarItemItemIdentifierKey",
     CPToolbarItemLabelKey               = @"CPToolbarItemLabelKey",
     CPToolbarItemPaletteLabelKey        = @"CPToolbarItemPaletteLabelKey",
     CPToolbarItemToolTipKey             = @"CPToolbarItemToolTipKey",
@@ -508,7 +526,8 @@ var CPToolbarItemIdentifierKey          = @"CPToolbarItemIdentifierKey",
     CPToolbarItemViewKey                = @"CPToolbarItemViewKey",
     CPToolbarItemMinSizeKey             = @"CPToolbarItemMinSizeKey",
     CPToolbarItemMaxSizeKey             = @"CPToolbarItemMaxSizeKey",
-    CPToolbarItemVisibilityPriorityKey  = @"CPToolbarItemVisibilityPriorityKey";
+    CPToolbarItemVisibilityPriorityKey  = @"CPToolbarItemVisibilityPriorityKey",
+    CPToolbarItemAutovalidatesKey       = @"CPToolbarItemAutovalidatesKey";
 
 @implementation CPToolbarItem (CPCoding)
 
@@ -518,7 +537,10 @@ var CPToolbarItemIdentifierKey          = @"CPToolbarItemIdentifierKey",
 
     if (self)
     {
-        _itemIdentifier = [aCoder decodeObjectForKey:CPToolbarItemIdentifierKey];
+        _itemIdentifier = [aCoder decodeObjectForKey:CPToolbarItemItemIdentifierKey];
+
+        _minSize = [aCoder decodeSizeForKey:CPToolbarItemMinSizeKey];
+        _maxSize = [aCoder decodeSizeForKey:CPToolbarItemMaxSizeKey];
 
         [self setLabel:[aCoder decodeObjectForKey:CPToolbarItemLabelKey]];
         [self setPaletteLabel:[aCoder decodeObjectForKey:CPToolbarItemPaletteLabelKey]];
@@ -535,10 +557,8 @@ var CPToolbarItemIdentifierKey          = @"CPToolbarItemIdentifierKey",
 
         [self setView:[aCoder decodeObjectForKey:CPToolbarItemViewKey]];
 
-        [self setMinSize:[aCoder decodeSizeForKey:CPToolbarItemMinSizeKey]];
-        [self setMaxSize:[aCoder decodeSizeForKey:CPToolbarItemMaxSizeKey]];
-
         [self setVisibilityPriority:[aCoder decodeIntForKey:CPToolbarItemVisibilityPriorityKey]];
+        [self setAutovalidates:[aCoder decodeBoolForKey:CPToolbarItemAutovalidatesKey]];
     }
 
     return self;
@@ -568,6 +588,7 @@ var CPToolbarItemIdentifierKey          = @"CPToolbarItemIdentifierKey",
     [aCoder encodeSize:[self maxSize] forKey:CPToolbarItemMaxSizeKey];
 
     [aCoder encodeObject:[self visibilityPriority] forKey:CPToolbarItemVisibilityPriorityKey];
+    [aCoder encodeBool:[self autovalidates] forKey:CPToolbarItemAutovalidatesKey];
 }
 
 @end
@@ -577,10 +598,12 @@ var CPToolbarItemIdentifierKey          = @"CPToolbarItemIdentifierKey",
 - (id)copy
 {
     var copy = [[[self class] alloc] initWithItemIdentifier:_itemIdentifier];
-    
+
     if (_view)
         [copy setView:[CPKeyedUnarchiver unarchiveObjectWithData:[CPKeyedArchiver archivedDataWithRootObject:_view]]];
-    
+
+    [copy _setToolbar:_toolbar];
+
     [copy setLabel:_label];
     [copy setPaletteLabel:_paletteLabel];
     [copy setToolTip:[self toolTip]];
@@ -588,7 +611,7 @@ var CPToolbarItemIdentifierKey          = @"CPToolbarItemIdentifierKey",
     [copy setTag:[self tag]];
     [copy setTarget:[self target]];
     [copy setAction:[self action]];
-    
+
     [copy setEnabled:[self isEnabled]];
 
     [copy setImage:[self image]];
@@ -596,9 +619,10 @@ var CPToolbarItemIdentifierKey          = @"CPToolbarItemIdentifierKey",
 
     [copy setMinSize:_minSize];
     [copy setMaxSize:_maxSize];
-    
-    [copy setVisibilityPriority:_visibilityPriority];
-    
+
+    [copy setVisibilityPriority:[self visibilityPriority]];
+    [copy setAutovalidates:[self autovalidates]];
+
     return copy;
 }
 
