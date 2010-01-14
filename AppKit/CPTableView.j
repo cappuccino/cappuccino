@@ -241,6 +241,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 
         _selectedColumnIndexes = [CPIndexSet indexSet];
         _selectedRowIndexes = [CPIndexSet indexSet];
+window.setTimeout(function(){
         self._draggedRowIndexes = [CPIndexSet indexSet];
         self._verticalMotionCanDrag = YES;
         self._isSelectingSession = NO;
@@ -252,6 +253,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
         [self addSubview:_dropOperationFeedbackView];
         [_dropOperationFeedbackView setHidden:YES];
         [_dropOperationFeedbackView setTableView:self];
+},0);
 
         _tableDrawView = [[_CPTableDrawView alloc] initWithTableView:self];
         [_tableDrawView setBackgroundColor:[CPColor clearColor]];
