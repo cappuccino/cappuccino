@@ -112,17 +112,17 @@ exports.run = function(args)
 {
     if (args && args.length > 1)
     {
-        var arg0 = args.slice(1,2),
-            argv = args.slice(2);
+        var argv = args.slice(1);
 
         while (argv.length && argv[0].indexOf('-I') === 0)
             OBJJ_INCLUDE_PATHS = argv.shift().substr(2).split(':').concat(OBJJ_INCLUDE_PATHS);
 
+        var arg0 = argv.shift();
         var mainFilePath = FILE.canonical(arg0);
 
         objj_import(mainFilePath, YES, function() {
             if (typeof main === "function")
-                main(arg0.concat(argv));
+                main([arg0].concat(argv));
         });
 
         require("browser/timeout").serviceTimeouts();
