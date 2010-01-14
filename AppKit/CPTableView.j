@@ -183,13 +183,13 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     unsigned    _columnAutoResizingStyle;
 
 //    BOOL        _verticalMotionCanDrag;
-    unsigned    _destinationDragStyle;
-    BOOL        _isSelectingSession;
+//    unsigned    _destinationDragStyle;
+//    BOOL        _isSelectingSession;
 //    CPIndexSet  _draggedRowIndexes;
-    _dropOperationDrawingView _dropOperationFeedbackView;
-    CPDragOperation _dragOperationDefaultMask;
-    int         _retargetedDropRow;
-    CPDragOperation _retargetedDropOperation;
+//    _dropOperationDrawingView _dropOperationFeedbackView;
+//    CPDragOperation _dragOperationDefaultMask;
+//    int         _retargetedDropRow;
+//    CPDragOperation _retargetedDropOperation;
 }
 
 - (id)initWithFrame:(CGRect)aFrame
