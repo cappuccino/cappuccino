@@ -27,21 +27,8 @@
 
 @import "CPTableHeaderView.j"
 
-
-/*
-    @global
-    @class CPTableColumn
-*/
 CPTableColumnNoResizing         = 0;
-/*
-    @global
-    @class CPTableColumn
-*/
 CPTableColumnAutoresizingMask   = 1;
-/*
-    @global
-    @class CPTableColumn
-*/
 CPTableColumnUserResizingMask   = 2;
 
 @implementation CPTableColumn : CPObject
