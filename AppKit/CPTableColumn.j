@@ -27,21 +27,10 @@
 
 @import "CPTableHeaderView.j"
 
+#include "CoreGraphics/CGGeometry.h"
 
-/*
-    @global
-    @class CPTableColumn
-*/
 CPTableColumnNoResizing         = 0;
-/*
-    @global
-    @class CPTableColumn
-*/
 CPTableColumnAutoresizingMask   = 1;
-/*
-    @global
-    @class CPTableColumn
-*/
 CPTableColumnUserResizingMask   = 2;
 
 @implementation CPTableColumn : CPObject
@@ -54,6 +43,7 @@ CPTableColumnUserResizingMask   = 2;
     float               _width;
     float               _minWidth;
     float               _maxWidth;
+    unsigned            _resizingMask;
 
     id                  _identifier;
     BOOL                _isEditable;
