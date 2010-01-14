@@ -87,12 +87,3 @@ NS_CPToolbarItemIdentifierMap =
 }
 
 @end
-
-@implementation NSToolbarSpaceItem : NSToolbarItem
-@end
-
-@implementation NSToolbarFlexibleSpaceItem : NSToolbarItem
-@end
-
-@implementation NSToolbarSeparatorItem : NSToolbarItem
-@end

@@ -267,17 +267,16 @@ var CPToolbarConfigurationsByIdentifier = nil;
             _itemIdentifiers = [_itemIdentifiers arrayByAddingObjectsFromArray:itemIdentifiersFromDelegate];
     }
 
-    var count = [_itemIdentifiers count];
+    var index = 0,
+        count = [_itemIdentifiers count];
 
     _items = [];
 
-    var index = 0;
-    
     for (; index < count; ++index)
     {
         var identifier = _itemIdentifiers[index],
             item = [CPToolbarItem _standardItemWithItemIdentifier:identifier];
-        
+
         // May come from a Cib.
         if (!item)
             item = [_identifiedItems objectForKey:identifier];
@@ -610,7 +609,7 @@ var _CPToolbarItemInfoMake = function(anIndex, aView, aLabel, aMinWidth)
         minWidth = _minWidth,
         // FIXME: This should be a CPSet.
         invisibleItemsSortedByPriority = [];
-    
+
     _visibleItems = items;
 
     // We only have hidden items if our actual width is smaller than our 
@@ -802,7 +801,6 @@ var _CPToolbarItemInfoMake = function(anIndex, aView, aLabel, aMinWidth)
     }
     else
         [_additionalItemsButton removeFromSuperview];
-    
 }
 
 - (void)reloadToolbarItems

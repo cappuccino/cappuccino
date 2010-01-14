@@ -19,7 +19,7 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
- 
+
 @import <Foundation/CPBundle.j>
 @import <Foundation/CPNotificationCenter.j>
 @import <Foundation/CPObject.j>
@@ -38,15 +38,30 @@ CPImageLoadStatusReadError      = 6;
 
 CPImageDidLoadNotification      = @"CPImageDidLoadNotification";
 
+// Image Names
+CPImageNameColorPanel               = @"CPImageNameColorPanel";
+CPImageNameColorPanelHighlighted    = @"CPImageNameColorPanelHighlighted";
+
+var imagesForNames = { },
+    AppKitImageForNames = { };
+
+AppKitImageForNames[CPImageNameColorPanel]              = CGSizeMake(26.0, 29.0);
+AppKitImageForNames[CPImageNameColorPanelHighlighted]   = CGSizeMake(26.0, 29.0);
+
 function CPImageInBundle(aFilename, aSize, aBundle)
 {
     if (!aBundle)
         aBundle = [CPBundle mainBundle];
-    
+
     if (aSize)
         return [[CPImage alloc] initWithContentsOfFile:[aBundle pathForResource:aFilename] size:aSize];
-    
+
     return [[CPImage alloc] initWithContentsOfFile:[aBundle pathForResource:aFilename]];
+}
+
+function CPAppKitImage(aFilename, aSize)
+{
+    return CPImageInBundle(aFilename, aSize, [CPBundle bundleForClass:[CPView class]]);
 }
 
 /*! 
@@ -74,10 +89,11 @@ function CPImageInBundle(aFilename, aSize, aBundle)
 {
     CGSize      _size;
     CPString    _filename;
-    
+    CPString    _name;
+
     id          _delegate;
     unsigned    _loadStatus;
-    
+
     Image       _image;
 }
 
@@ -97,14 +113,14 @@ function CPImageInBundle(aFilename, aSize, aBundle)
 - (id)initByReferencingFile:(CPString)aFilename size:(CGSize)aSize
 {
     self = [super init];
-    
+
     if (self)
     {
         _size = CPSizeCreateCopy(aSize);
         _filename = aFilename;
         _loadStatus = CPImageLoadStatusInitialized;
     }
-    
+
     return self;
 }
 
@@ -117,10 +133,10 @@ function CPImageInBundle(aFilename, aSize, aBundle)
 - (id)initWithContentsOfFile:(CPString)aFilename size:(CGSize)aSize
 {
     self = [self initByReferencingFile:aFilename size:aSize];
-    
+
     if (self)
         [self load];
-    
+
     return self;
 }
 
@@ -133,10 +149,10 @@ function CPImageInBundle(aFilename, aSize, aBundle)
 - (id)initWithContentsOfFile:(CPString)aFilename
 {
     self = [self initByReferencingFile:aFilename size:CGSizeMake(-1, -1)];
-    
+
     if (self)
         [self load];
-    
+
     return self;
 }
 
@@ -163,6 +179,45 @@ function CPImageInBundle(aFilename, aSize, aBundle)
 - (CGSize)size
 {
     return _size;
+}
+
++ (id)imageNamed:(CPString)aName
+{
+    var image = imagesForNames[aName];
+
+    if (image)
+        return image;
+
+    var imageOrSize = AppKitImageForNames[aName];
+
+    if (!imageOrSize.isa)
+    {
+        imageOrSize = CPAppKitImage("CPImage/" + aName + ".png", imageOrSize);
+
+        [imageOrSize setName:aName];
+
+        AppKitImageForNames[aName] = imageOrSize;
+    }
+
+    return imageOrSize;
+}
+
+- (void)setName:(CPString)aName
+{
+    if (_name === aName)
+        return;
+
+    if (imagesForNames[aName] === self)
+        imagesForNames[aName] = nil;
+
+    _name = aName;
+
+    imagesForNames[aName] = self;
+}
+
+- (CPString)name
+{
+    return _name;
 }
 
 /*!
@@ -200,7 +255,7 @@ function CPImageInBundle(aFilename, aSize, aBundle)
 {
     if (_loadStatus == CPImageLoadStatusLoading || _loadStatus == CPImageLoadStatusCompleted)
         return;
-        
+
     _loadStatus = CPImageLoadStatusLoading;
 
     _image = new Image();
@@ -219,7 +274,7 @@ function CPImageInBundle(aFilename, aSize, aBundle)
             }
             [self _derefFromImage];
         }
-    
+
     _image.onerror = function ()
         {
             if (isSynchronous)
@@ -231,7 +286,7 @@ function CPImageInBundle(aFilename, aSize, aBundle)
             }
             [self _derefFromImage];
         }
-    
+
     _image.onabort = function ()
         {
             if (isSynchronous)
@@ -243,7 +298,7 @@ function CPImageInBundle(aFilename, aSize, aBundle)
             }
             [self _derefFromImage];
         }
-        
+
     _image.src = _filename;
 
     // onload and friends may fire after this point but BEFORE the end of the run loop,
@@ -281,7 +336,7 @@ function CPImageInBundle(aFilename, aSize, aBundle)
     [[CPNotificationCenter defaultCenter]
         postNotificationName:CPImageDidLoadNotification
         object:self];
-        
+
     if ([_delegate respondsToSelector:@selector(imageDidLoad:)])
         [_delegate imageDidLoad:self];
 }
@@ -290,7 +345,7 @@ function CPImageInBundle(aFilename, aSize, aBundle)
 - (void)_imageDidError
 {
     _loadStatus = CPImageLoadStatusReadError;
-    
+
     if ([_delegate respondsToSelector:@selector(imageDidError:)])
         [_delegate imageDidError:self];
 }
@@ -299,7 +354,7 @@ function CPImageInBundle(aFilename, aSize, aBundle)
 - (void)_imageDidAbort
 {
     _loadStatus = CPImageLoadStatusCancelled;
-    
+
     if ([_delegate respondsToSelector:@selector(imageDidAbort:)])
         [_delegate imageDidAbort:self];
 }
@@ -339,7 +394,7 @@ function CPImageInBundle(aFilename, aSize, aBundle)
 - (id)initWithImageSlices:(CPArray)imageSlices isVertical:(BOOL)isVertical
 {
     self = [super init];
-    
+
     if (self)
     {
         _imageSlices = imageSlices;
@@ -384,13 +439,13 @@ var CPThreePartImageImageSlicesKey  = @"CPThreePartImageImageSlicesKey",
 - (id)initWithCoder:(CPCoder)aCoder
 {
     self = [super init];
-    
+
     if (self)
     {
         _imageSlices = [aCoder decodeObjectForKey:CPThreePartImageImageSlicesKey];
         _isVertical = [aCoder decodeBoolForKey:CPThreePartImageIsVerticalKey];
     }
-    
+
     return self;
 }
 
@@ -411,10 +466,10 @@ var CPThreePartImageImageSlicesKey  = @"CPThreePartImageImageSlicesKey",
 - (id)initWithImageSlices:(CPArray)imageSlices
 {
     self = [super init];
-    
+
     if (self)
         _imageSlices = imageSlices;
-    
+
     return self;
 }
 
@@ -447,10 +502,10 @@ var CPNinePartImageImageSlicesKey   = @"CPNinePartImageImageSlicesKey";
 - (id)initWithCoder:(CPCoder)aCoder
 {
     self = [super init];
-    
+
     if (self)
         _imageSlices = [aCoder decodeObjectForKey:CPNinePartImageImageSlicesKey];
-    
+
     return self;
 }
 
