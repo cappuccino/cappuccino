@@ -112,13 +112,13 @@ exports.run = function(args)
 {
     if (args && args.length > 1)
     {
-        var arg0 = args.slice(0,1),
-            argv = args.slice(1);
+        var arg0 = args.slice(1,2),
+            argv = args.slice(2);
 
         while (argv.length && argv[0].indexOf('-I') === 0)
             OBJJ_INCLUDE_PATHS = argv.shift().substr(2).split(':').concat(OBJJ_INCLUDE_PATHS);
 
-        var mainFilePath = FILE.canonical(argv.shift());
+        var mainFilePath = FILE.canonical(arg0);
 
         objj_import(mainFilePath, YES, function() {
             if (typeof main === "function")
