@@ -320,15 +320,10 @@ CPToolbarPrintItemIdentifier            = @"CPToolbarPrintItem";
     _image = anImage;
     
     if (!_image)
-    {
-        if(_toolbar)
-            [_toolbar toolbarItemDidChange:self];
-            
         return;
-    }
     
-    if (_minSize.width == 0 && _minSize.height == 0 && 
-        _maxSize.width == 0 && _maxSize.height == 0)
+    if (_minSize.width === 0 && _minSize.height === 0 && 
+        _maxSize.width === 0 && _maxSize.height === 0)
     {
         var imageSize = [_image size];
 
@@ -548,12 +543,12 @@ var CPToolbarItemItemIdentifierKey      = @"CPToolbarItemItemIdentifierKey",
 
         [self setTag:[aCoder decodeObjectForKey:CPToolbarItemTagKey]];
         [self setTarget:[aCoder decodeObjectForKey:CPToolbarItemTargetKey]];
-        [self setAction:[aCoder decodeObjectForKey:CPToolbarItemActionKey]];
+        [self setAction:CPSelectorFromString([aCoder decodeObjectForKey:CPToolbarItemActionKey])];
 
         [self setEnabled:[aCoder decodeBoolForKey:CPToolbarItemEnabledKey]];
 
-        [self setImage:[aCoder decodeBoolForKey:CPToolbarItemImageKey]];
-        [self setAlternateImage:[aCoder decodeBoolForKey:CPToolbarItemAlternateImageKey]];
+        [self setImage:[aCoder decodeObjectForKey:CPToolbarItemImageKey]];
+        [self setAlternateImage:[aCoder decodeObjectForKey:CPToolbarItemAlternateImageKey]];
 
         [self setView:[aCoder decodeObjectForKey:CPToolbarItemViewKey]];
 
@@ -635,26 +630,12 @@ var CPToolbarItemItemIdentifierKey      = @"CPToolbarItemItemIdentifierKey",
 /* @ignore */
 + (CPToolbarItem)_standardItemWithItemIdentifier:(CPString)anItemIdentifier
 {
-    var item = [[CPToolbarItem alloc] initWithItemIdentifier:anItemIdentifier];                                                        
-
     switch (anItemIdentifier)
     {
-        case CPToolbarSeparatorItemIdentifier:          [item setMinSize:CGSizeMake(2.0, 0.0)];
-                                                        [item setMaxSize:CGSizeMake(2.0, 100000.0)];
-                                                        
-                                                        return item;
-
-        case CPToolbarSpaceItemIdentifier:              [item setMinSize:CGSizeMake(32.0, 32.0)];
-                                                        [item setMaxSize:CGSizeMake(32.0, 32.0)];
-                                                        
-                                                        return item;
-                                                        
-        case CPToolbarFlexibleSpaceItemIdentifier:      [item setMinSize:CGSizeMake(32.0, 32.0)];
-                                                        [item setMaxSize:CGSizeMake(10000.0, 32.0)];
-                                                        
-                                                        return item;
-                                                        
-        case CPToolbarShowColorsItemIdentifier:         return nil;
+        case CPToolbarSeparatorItemIdentifier:          return [_CPToolbarSeparatorItem new];
+        case CPToolbarSpaceItemIdentifier:              return [_CPToolbarSpaceItem new];
+        case CPToolbarFlexibleSpaceItemIdentifier:      return [_CPToolbarFlexibleSpaceItem new];
+        case CPToolbarShowColorsItemIdentifier:         return [_CPToolbarShowColorsItem new];
         case CPToolbarShowFontsItemIdentifier:          return nil;
         case CPToolbarCustomizeToolbarItemIdentifier:   return nil;
         case CPToolbarPrintItemIdentifier:              return nil;
@@ -664,3 +645,9 @@ var CPToolbarItemItemIdentifierKey      = @"CPToolbarItemItemIdentifierKey",
 }
 
 @end
+
+@import "_CPToolbarFlexibleSpaceItem.j"
+@import "_CPToolbarShowColorsItem.j"
+@import "_CPToolbarSeparatorItem.j"
+@import "_CPToolbarSpaceItem.j"
+

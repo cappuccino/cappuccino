@@ -57,7 +57,6 @@ NS_CPToolbarItemIdentifierMap =
         [self setTag:[aCoder decodeObjectForKey:@"NSToolbarItemTag"]];
         [self setTarget:[aCoder decodeObjectForKey:@"NSToolbarItemTarget"]];
         [self setAction:CPSelectorFromString([aCoder decodeObjectForKey:@"NSToolbarItemAction"])];
-
         [self setEnabled:[aCoder decodeBoolForKey:@"NSToolbarItemEnabled"]];
 
         [self setImage:[aCoder decodeBoolForKey:@"NSToolbarItemImage"]];
@@ -87,13 +86,4 @@ NS_CPToolbarItemIdentifierMap =
     return [CPToolbarItem class];
 }
 
-@end
-
-@implementation NSToolbarSpaceItem : NSToolbarItem
-@end
-
-@implementation NSToolbarFlexibleSpaceItem : NSToolbarItem
-@end
-
-@implementation NSToolbarSeparatorItem : NSToolbarItem
 @end

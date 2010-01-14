@@ -267,17 +267,16 @@ var CPToolbarConfigurationsByIdentifier = nil;
             _itemIdentifiers = [_itemIdentifiers arrayByAddingObjectsFromArray:itemIdentifiersFromDelegate];
     }
 
-    var count = [_itemIdentifiers count];
+    var index = 0,
+        count = [_itemIdentifiers count];
 
     _items = [];
 
-    var index = 0;
-    
     for (; index < count; ++index)
     {
         var identifier = _itemIdentifiers[index],
             item = [CPToolbarItem _standardItemWithItemIdentifier:identifier];
-        
+
         // May come from a Cib.
         if (!item)
             item = [_identifiedItems objectForKey:identifier];
@@ -610,7 +609,7 @@ var _CPToolbarItemInfoMake = function(anIndex, aView, aLabel, aMinWidth)
         minWidth = _minWidth,
         // FIXME: This should be a CPSet.
         invisibleItemsSortedByPriority = [];
-    
+
     _visibleItems = items;
 
     // We only have hidden items if our actual width is smaller than our 
@@ -802,7 +801,6 @@ var _CPToolbarItemInfoMake = function(anIndex, aView, aLabel, aMinWidth)
     }
     else
         [_additionalItemsButton removeFromSuperview];
-    
 }
 
 - (void)reloadToolbarItems
@@ -896,7 +894,7 @@ var TOP_MARGIN      = 5.0,
 
         _toolbar = aToolbar;
 
-        var keyPaths = [@"label", @"image", @"alternateImage", @"minSize", @"maxSize", @"enabled"],
+        var keyPaths = [@"label", @"image", @"alternateImage", @"minSize", @"maxSize", @"target", @"action", @"enabled"],
             index = 0,
             count = [keyPaths count];
 
@@ -1102,6 +1100,13 @@ var TOP_MARGIN      = 5.0,
 {
     if (aKeyPath === "enabled")
         [self setEnabled:[anObject isEnabled]];
+
+    else if (aKeyPath === @"target")
+        [self setTarget:[anObject target]];
+
+    else if (aKeyPath === @"action")
+        [self setAction:[anObject action]];
+
     else
         [self updateFromItem];
 }
