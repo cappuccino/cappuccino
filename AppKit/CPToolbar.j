@@ -896,7 +896,7 @@ var TOP_MARGIN      = 5.0,
 
         _toolbar = aToolbar;
 
-        var keyPaths = [@"label", @"image", @"alternateImage", @"minSize", @"maxSize", @"enabled"],
+        var keyPaths = [@"label", @"image", @"alternateImage", @"minSize", @"maxSize", @"target", @"action", @"enabled"],
             index = 0,
             count = [keyPaths count];
 
@@ -1102,6 +1102,13 @@ var TOP_MARGIN      = 5.0,
 {
     if (aKeyPath === "enabled")
         [self setEnabled:[anObject isEnabled]];
+
+    else if (aKeyPath === @"target")
+        [self setTarget:[anObject target]];
+
+    else if (aKeyPath === @"action")
+        [self setAction:[anObject action]];
+
     else
         [self updateFromItem];
 }

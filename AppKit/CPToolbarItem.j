@@ -548,7 +548,7 @@ var CPToolbarItemItemIdentifierKey      = @"CPToolbarItemItemIdentifierKey",
 
         [self setTag:[aCoder decodeObjectForKey:CPToolbarItemTagKey]];
         [self setTarget:[aCoder decodeObjectForKey:CPToolbarItemTargetKey]];
-        [self setAction:[aCoder decodeObjectForKey:CPToolbarItemActionKey]];
+        [self setAction:CPSelectorFromString([aCoder decodeObjectForKey:CPToolbarItemActionKey])];
 
         [self setEnabled:[aCoder decodeBoolForKey:CPToolbarItemEnabledKey]];
 
