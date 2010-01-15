@@ -569,6 +569,14 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
     return YES;
 }
 
+/*!
+    Text fields require panels to become key window, so this returns \c YES.
+*/
+- (BOOL)needsPanelToBecomeKey
+{
+    return YES;
+}
+
 - (void)mouseDown:(CPEvent)anEvent
 {
     // Don't track! (ever?)
@@ -1027,6 +1035,8 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
     {
         var view = [[_CPImageAndTextView alloc] initWithFrame:_CGRectMakeZero()];
         //[view setImagePosition:CPNoImage];
+        
+        [view setHitTests:NO];
         
         return view;
     }

@@ -1321,7 +1321,7 @@ CPTexturedBackgroundWindowMask
 
                                     var theWindow = [anEvent window];
 
-                                    if ([theWindow isKeyWindow] || [theWindow becomesKeyOnlyIfNeeded])
+                                    if ([theWindow isKeyWindow] || [theWindow becomesKeyOnlyIfNeeded] && ![_leftMouseDownView needsPanelToBecomeKey])
                                         return [_leftMouseDownView mouseDown:anEvent];
                                     else
                                     {
