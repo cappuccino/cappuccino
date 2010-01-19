@@ -199,8 +199,27 @@ function findImportInObjjFiles(scope, fragment)
     return importPath;
 }
 
+@implementation PressBundleDelgate : CPObject
+{
+    Function didFinishLoadingCallback;
+}
+- (id)initWithCallback:(Function)aCallback
+{
+    if (self = [super init]) {
+        didFinishLoadingCallback = aCallback;
+    }
+    return self;
+}
+- (void)bundleDidFinishLoading:(CPBundle)aBundle
+{
+    print("didFinishLoading: "+aBundle);
+    if (didFinishLoadingCallback)
+        didFinishLoadingCallback(aBundle);
+}
+@end
+
 // given a fresh scope and the path to a root source file, determine which files define each global variable
-function findGlobalDefines(context, mainPath, evaledFragments)
+function findGlobalDefines(context, mainPath, evaledFragments, bundleCallback)
 {
     var ignore = cloneProperties(context.scope, true);
     ignore['bundle'] = true;
@@ -245,17 +264,30 @@ function findGlobalDefines(context, mainPath, evaledFragments)
         return result;
     }
 
-    runWithScope(context, function(importName) {
-        objj_import(importName, true, function() {
-            // Doesn't work due to lack of complete browser environment
-            //[_CPAppBootstrapper loadDefaultTheme];
-            
+    var bundleDelegate = [[PressBundleDelgate alloc] initWithCallback:bundleCallback];
+    var bundlePaths = [];
+
+    runWithScope(context, function(mainPath, bundleDelegate, bundlePaths) {
+        // **************************************************
+        objj_import(mainPath, true, function() {
+            print("bundleDelegate="+bundleDelegate)
+            [bundleDelegate bundleDidFinishLoading:"foo"];
+
+            bundlePaths = bundlePaths || [];
+
+            // load default theme bundle
             var themePath = [[CPBundle bundleForClass:[CPApplication class]] pathForResource:[CPApplication defaultThemeName]];
             var themeBundle = [[CPBundle alloc] initWithPath:themePath + "/Info.plist"];
-            [themeBundle loadWithDelegate:nil];
-            // FIXME: doesn't use objj_search mechanism. need to hook CPBundle or CPURLConnection instead.
+            [themeBundle loadWithDelegate:bundleDelegate];
+
+            // load additional bundles
+            bundlePaths.forEach(function(bundlePath) {
+                var bundle = [[CPBundle alloc] initWithPath:bundlePath];
+                [bundle loadWithDelegate:bundleDelegate];
+            })
         });
-    }, [mainPath]);
+        // **************************************************
+    }, [mainPath, bundleDelegate, bundlePaths]);
 
     return dependencies;
 }
