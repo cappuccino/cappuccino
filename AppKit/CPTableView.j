@@ -137,7 +137,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 
     BOOL        _reloadAllRows;
     Object      _objectValues;
-    CPRange     _exposedRows;
+    CPIndexSet  _exposedRows;
     CPIndexSet  _exposedColumns;
 
     Object      _dataViewsForTableColumns;
@@ -1057,10 +1057,6 @@ window.setTimeout(function(){
 {
     var y = aPoint.y;
 
-    if (NO)
-    {
-    }
-
     var row = FLOOR(y / (_rowHeight + _intercellSpacing.height));
 
     if (row >= _numberOfRows)
@@ -1269,28 +1265,13 @@ window.setTimeout(function(){
 
 - (void)scrollRowToVisible:(int)rowIndex
 {
-    var scrollView = [[self superview] superview];
-
-    if ([scrollView isKindOfClass:[CPScrollView class]] && [scrollView documentView] === self)
-    {
-        var rect = CGRectMake([scrollView._contentView bounds].origin.x, rowIndex*[self rowHeight], 1, [self rowHeight]);
-        [[[scrollView contentView] documentView] scrollRectToVisible: rect];
-    }
+    [self scrollRectToVisible:[self rectOfRow:rowIndex]];
 }
 
 - (void)scrollColumnToVisible:(int)columnIndex
 {
-    var rect = [self rectOfColumn:columnIndex];
-
-    var scrollView = [[self superview] superview];
-
-    if ([scrollView isKindOfClass:[CPScrollView class]] && [scrollView documentView] === self)
-    {
-        var rect = CGRectMake(rect.origin.x, [scrollView._contentView bounds].origin.y, rect.size.width, 1);
-        [[[scrollView contentView] documentView] scrollRectToVisible: rect];
-
-        /*FIX ME: tableview header isn't rendered until you click the horizontal scroller (or scroll)*/
-    }
+    [self scrollRectToVisible:[self rectOfColumn:columnIndex]];
+    /*FIX ME: tableview header isn't rendered until you click the horizontal scroller (or scroll)*/
 }
 
 //Persistence
@@ -1404,7 +1385,7 @@ window.setTimeout(function(){
     if ([_delegate respondsToSelector:@selector(tableViewColumnDidResize:)])
         [defaultCenter
             addObserver:_delegate
-            selector:@selector(tableViewColumnDidMove:)
+            selector:@selector(tableViewColumnDidResize:)
             name:CPTableViewColumnDidResizeNotification
             object:self];
 
@@ -1459,6 +1440,64 @@ window.setTimeout(function(){
     var image = [[CPImage alloc] initWithContentsOfFile:@"Frameworks/AppKit/Resources/GenericFile.png" size:CGSizeMake(32,32)];
     //return theDragView;
     return image;
+}
+
+- (CPImage)dragViewForRowsWithIndexes:(CPIndexSet)dragRows tableColumns:(CPArray)theTableColumns event:(CPEvent)dragEvent offset:(CPPointPointer)dragImageOffset
+{
+    var draggedRowsArray = [],
+        colCount = [theTableColumns count],
+        rowsCount = [dragRows count],
+        firstRowIndex = [dragRows firstIndex],
+        rowIndexesLength = [dragRows lastIndex] - firstRowIndex + 1,
+        
+        firstRowRect = [self rectOfRow:firstRowIndex],
+        exposedMinX = CGRectGetMinX([self exposedClipRect]),
+        dragViewWidth = CGRectGetWidth([self exposedClipRect]),
+        dragViewHeight = rowIndexesLength * _rowHeight,
+        
+        location = [self convertPoint:[dragEvent locationInWindow] fromView:nil];
+        
+    dragImageOffset.x = exposedMinX + CGRectGetMinX(firstRowRect) - location.x + dragViewWidth/2;
+    dragImageOffset.y = CGRectGetMinY(firstRowRect) - location.y + dragViewHeight/2;
+    
+    var draggedView = [[CPView alloc] initWithFrame:CGRectMake(0, 0, dragViewWidth, dragViewHeight)];
+
+    [dragRows getIndexes:draggedRowsArray maxCount:-1 inIndexRange:CPMakeRange(firstRowIndex, rowIndexesLength)];
+    
+    // calculate the dragImageOffset : we want the ghost row to be where the real row is.    
+
+    for (var i = 0; i < rowsCount ; i++)
+    {
+        var rowIndex = draggedRowsArray[i];
+        var dataViewOriginY = (rowIndex - firstRowIndex) * [self rowHeight];
+        for (var c = 0; c < colCount; c++)
+        {
+            var column = [theTableColumns objectAtIndex:c],
+                tableColumnUID = [column UID],
+                dataView = _dataViewsForTableColumns[tableColumnUID][rowIndex];
+            
+            var frame = [dataView frame];
+            frame.origin.y = dataViewOriginY;
+            frame.origin.x -= exposedMinX;
+            
+            // Mega hack: The default CPView impl. doesn't implement -copy so we copy the innerHTML
+            // It ok because it's a temporary view and we won't have to interact with it later ...
+            // ... except we want the text to be normal when it's a selected row (unset the highlighted theme state)
+            // and that does'nt work.
+            // Possible fix: only for default dataviews (CPTextField), we can implement -copy and unset the state
+            var html = dataView._DOMElement.innerHTML;
+            var dataViewCopy = [[CPView alloc] initWithFrame:frame];
+            dataViewCopy._DOMElement.innerHTML = html;
+            
+            // This works (don't know how ?!). Until we fix the previous bug, we can stay with a white transparent bg 
+            // so at least we have a visible feedback of the dragged row. Maybe less opaque ...
+            [dataViewCopy setBackgroundColor:[CPColor colorWithWhite:1 alpha:0.7]];
+            
+            [draggedView addSubview:dataViewCopy];
+        }    
+    }
+    
+    return draggedView;
 }
 
 - (void)setDraggingSourceOperationMask:(CPDragOperation)mask forLocal:(BOOL)isLocal
@@ -1793,7 +1832,11 @@ window.setTimeout(function(){
     [self drawBackgroundInClipRect:exposedRect];
     [self drawGridInClipRect:exposedRect];
     [self highlightSelectionInClipRect:exposedRect];
+}
 
+- (void)drawRect:(CGRect)aRect
+{
+    [_tableDrawView display];
 }
 
 - (void)drawBackgroundInClipRect:(CGRect)aRect
@@ -2097,7 +2140,7 @@ window.setTimeout(function(){
     var row = [self rowAtPoint:aPoint];
 
     //if the user clicks outside a row then deslect everything
-    if(row < 0 && _allowsEmptySelection)
+    if (row < 0 && _allowsEmptySelection)
         [self selectRowIndexes:[CPIndexSet indexSet] byExtendingSelection:NO];
 
     [self _noteSelectionIsChanging];
@@ -2158,9 +2201,29 @@ window.setTimeout(function(){
         if([self canDragRowsWithIndexes:_draggedRowIndexes atPoint:aPoint] && [_dataSource tableView:self writeRowsWithIndexes:_draggedRowIndexes toPasteboard:pboard])
         {
             //create drag view/image
-            var theDragImage = [self dragImageForRowsWithIndexes:_draggedRowIndexes tableColumns:_exposedColumns event:[CPApp currentEvent] offset:CGSizeMakeZero()];
-            //we should begin the drag opperation here
-            [self dragImage:theDragImage at:aPoint offset:CGSizeMakeZero() event:[CPApp currentEvent] pasteboard:pboard source:self slideBack:YES];
+            var draggedColumns = [_tableColumns objectsAtIndexes:_exposedColumns];                
+            
+            var dragViewOffset = CGPointMakeZero();
+            var theDragView = [self dragViewForRowsWithIndexes:_draggedRowIndexes tableColumns:draggedColumns event:[CPApp currentEvent] offset:dragViewOffset];
+                        
+             //we should begin the drag opperation here
+            if (theDragView != nil) // special behavior: if the subclass returns nil, ask the subclass for an image
+            {
+                var bounds = [theDragView bounds];
+                // Cocoa doc:"A dragImageOffset of NSZeroPoint will cause the image to be centered under the cursor."
+                var dragViewLocation = CGPointMake(aPoint.x + dragViewOffset.x - CGRectGetWidth(bounds)/2, aPoint.y + dragViewOffset.y - CGRectGetHeight(bounds)/2);
+                [self dragView:theDragView at:dragViewLocation offset:CGSizeMakeZero() event:[CPApp currentEvent] pasteboard:pboard source:self slideBack:YES];
+            }
+            else
+            {
+                var dragImageOffset = CGPointMakeZero();
+                var theDragImage = [self dragImageForRowsWithIndexes:_draggedRowIndexes tableColumns:draggedColumns event:[CPApp currentEvent] offset:dragImageOffset];
+                
+                var imageSize = [theDragImage size];
+                var dragImageLocation = CGPointMake(aPoint.x + dragImageOffset.x - imageSize.width/2, aPoint.y + dragImageOffset.y - imageSize.height/2);
+
+                [self dragImage:theDragImage at:dragImageLocation offset:CGSizeMakeZero() event:[CPApp currentEvent] pasteboard:pboard source:self slideBack:YES];
+            }
             //console.log([[CPDragServer sharedDragServer] draggingSource])
             // FIX ME: figure out what to do with the damn operation mask, does capp not support this yet?
             // FIX ME: set the operation mask to _dragOperationDefaultMask
@@ -2259,7 +2322,28 @@ window.setTimeout(function(){
 */
 - (CPDragOperation)draggingEntered:(id)sender
 {
+    var dropOperation = [self _proposedDropOperation],
+        draggingLocation = [sender draggingLocation],
+        row;
 
+    var location = [self convertPoint:draggingLocation fromView:nil];
+
+    row = [self _proposedRowAtPoint:location];
+    
+    if(_retargetedDropRow !== nil)
+        row = _retargetedDropRow;
+    
+    var draggedTypes = [self registeredDraggedTypes], 
+        count = [draggedTypes count],
+        i;
+        
+    for (i = 0; i < count; i++) 
+    { 
+        if ([[[sender draggingPasteboard] types] containsObject:[draggedTypes objectAtIndex: i]]) 
+            return [self _validateDrop:sender proposedRow:row proposedDropOperation:dropOperation]; 
+    }
+    
+    return CPDragOperationNone;
 }
 
 /*
@@ -2275,11 +2359,16 @@ window.setTimeout(function(){
 */
 - (void)draggingEnded:(id)sender
 {
-    _retargetedDropOperation = nil;
-    _retargetedDropRow = nil;
-    [_dropOperationFeedbackView setHidden:YES];
+    [self _draggingEnded];
 }
 
+- (void)_draggingEnded
+{
+    _retargetedDropOperation = nil;
+    _retargetedDropRow = nil;
+    _draggedRowIndexes = [CPIndexSet indexSet];
+    [_dropOperationFeedbackView setHidden:YES];
+}
 /*
     @ignore
 */
@@ -2304,58 +2393,75 @@ window.setTimeout(function(){
 /*
     @ignore
 */
+- (CPInteger)_proposedRowAtPoint:(CGPoint)dragPoint
+{
+    var numberOfRows = [self numberOfRows],
+        row;
+    // cocoa seems to jump to the next row when we approach the below row
+    dragPoint.y += FLOOR(_rowHeight/4);
+    
+    if (dragPoint.y > numberOfRows * (_rowHeight + _intercellSpacing.height))
+    {
+        if ([self _proposedDropOperation] === CPTableViewDropAbove) 
+            row = numberOfRows;
+        else
+            row = numberOfRows - 1;
+    }
+    else
+        row = [self rowAtPoint:dragPoint];
+    
+    return row;
+}
+
+- (void)_validateDrop:(id)info proposedRow:(CPInteger)row proposedDropOperation:(CPTableViewDropOperation)dropOperation
+{
+    if(_implementedDataSourceMethods & CPTableViewDataSource_tableView_validateDrop_proposedRow_proposedDropOperation_)
+        return [_dataSource tableView:self validateDrop:info proposedRow:row proposedDropOperation:dropOperation];
+
+    return CPDragOperationNone;
+}
+
 - (CPDragOperation)draggingUpdated:(id)sender
 {
+    var dropOperation = [self _proposedDropOperation],
+        numberOfRows = [self numberOfRows],
+        draggingLocation = [sender draggingLocation],
+        dragOperation,
+        row;
 
+    var location = [self convertPoint:draggingLocation fromView:nil];
 
-    var location = [sender draggingLocation],
-        scrollview = [[self superview] superview],
-        contentview = [scrollview contentView],
-        dropOperation = [self _proposedDropOperation];
-
-       location = [contentview convertPoint:location fromView:nil];
-        if(_headerView)
-            location.y += CGRectGetHeight([_headerView bounds]);
-
-        var row = [self rowAtPoint:location] - 1;
-
-    //FIX ME: if the operation is CPTableViewDropAbove, we should be able to drop BELOW...
-    if(row < 0 && dropOperation === CPTableViewDropOn)
-        row = [self numberOfRows] - 1;
-    else if(row < 0)
-        row = [self numberOfRows] - 1;
-
-    if(!(_implementedDataSourceMethods & CPTableViewDataSource_tableView_validateDrop_proposedRow_proposedDropOperation_))
-        var operation = CPDragOperationNone;
-    else
-        var operation = [_dataSource tableView:self validateDrop:sender proposedRow:row proposedDropOperation:dropOperation];
-
-
-
+    row = [self _proposedRowAtPoint:location];
+    dragOperation = [self _validateDrop:sender proposedRow:row proposedDropOperation:dropOperation];
+    
     if(_retargetedDropRow !== nil)
         row = _retargetedDropRow;
 
     //if the user forces -1 then we should highlight the whole tabelview
+    var rowRect;
     if(_retargetedDropRow === -1)
-        var rowRect = [self exposedClipRect];
+        rowRect = [self exposedClipRect];
     else
-        var rowRect = [self rectOfRow:row];
+        rowRect = [self rectOfRow:row];
+    
+    var exposedClipRect = [self exposedClipRect];
+    var visibleWidth = _CGRectGetWidth(exposedClipRect);
 
-    if([[[self superview] superview] isKindOfClass:[CPScrollView class]])
-        var visibleWidth = _CGRectGetWidth([[[self superview] superview] bounds]);
-    else
-        var visibleWidth = row.size.width;
+    rowRect = _CGRectMake(_CGRectGetMinX(exposedClipRect), rowRect.origin.y, visibleWidth, rowRect.size.height);
 
-    rowRect = _CGRectMake(_CGRectGetMinX([self _exposedRect]), rowRect.origin.y, visibleWidth, rowRect.size.height);
-
-    [_dropOperationFeedbackView setDropOperation:[self _proposedDropOperation]];
-    [_dropOperationFeedbackView setHidden:NO];
+    [_dropOperationFeedbackView setDropOperation:dropOperation];
+    [_dropOperationFeedbackView setHidden:(dragOperation == CPDragOperationNone)];
     [_dropOperationFeedbackView setFrame:rowRect];
     [_dropOperationFeedbackView setCurrentRow:row];
     [self addSubview:_dropOperationFeedbackView];
-
-    return operation;
-
+    
+    // FIXME : Maybe we should do this in a timer outside this method. Problem: we don't know when the scroll ends and neighter when the next -draggingUpdated is called. Which one will come first ?
+    if (row > 0 && location.y - CGRectGetMinY(exposedClipRect) < _rowHeight)
+        [self scrollRowToVisible:row - 1];
+    else if (row < numberOfRows && CGRectGetMaxY(exposedClipRect) - location.y < _rowHeight)
+        [self scrollRowToVisible:row + 1];
+        
+    return dragOperation;
 }
 
 /*
@@ -2376,11 +2482,9 @@ window.setTimeout(function(){
 - (BOOL)performDragOperation:(id)sender
 {
     var operation = [self _proposedDropOperation],
-        location = [sender draggingLocation],
-        scrollview = [[self superview] superview],
-        contentview = [scrollview contentView];
+        draggingLocation = [sender draggingLocation];
 
-    location = [contentview convertPoint:location fromView:scrollview];
+    var location = [self convertPoint:draggingLocation fromView:nil];
 
     if(_retargetedDropRow !== nil)
         var row = _retargetedDropRow;
@@ -2412,7 +2516,8 @@ window.setTimeout(function(){
     we're using this because we drag views instead of images so we can get the rows themselves to actually drag
 */
 - (void)draggedView:(CPImage)aView endedAt:(CGPoint)aLocation operation:(CPDragOperation)anOperation
-{
+{   
+    [self _draggingEnded];
     [self draggedImage:aView endedAt:aLocation operation:anOperation];
 }
 
