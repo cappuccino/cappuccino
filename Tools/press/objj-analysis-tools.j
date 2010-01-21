@@ -2,8 +2,7 @@ var FILE = require("file");
 
 /*
     param context includes
-        scope:                  a global variable containing objj_files hash
-        ctx:                    js context
+        scope:                  the objective-j scope
         dependencies:           hash mapping from paths to an array of global variables defined by that file
         [importCallback]:       callback function that is called for each imported file (takes importing file path, and imported file path parameters)
         [referencedCallback]:   callback function that is called for each referenced file (takes referencing file path, referenced file path parameters, and list of tokens)
@@ -267,27 +266,27 @@ function findGlobalDefines(context, mainPath, evaledFragments, bundleCallback)
     var bundleDelegate = [[PressBundleDelgate alloc] initWithCallback:bundleCallback];
     var bundlePaths = [];
 
-    runWithScope(context, function(mainPath, bundleDelegate, bundlePaths) {
-        // **************************************************
-        objj_import(mainPath, true, function() {
-            print("bundleDelegate="+bundleDelegate)
-            [bundleDelegate bundleDidFinishLoading:"foo"];
+    (context.eval("("+(function(mainPath, bundleDelegate, bundlePaths) {
+        with (require("objective-j").window) {
+            objj_import(mainPath, true, function() {
+                bundlePaths = bundlePaths || [];
 
-            bundlePaths = bundlePaths || [];
+                // load default theme bundle
+                var themePath = [[CPBundle bundleForClass:[CPApplication class]] pathForResource:[CPApplication defaultThemeName]];
+                var themeBundle = [[CPBundle alloc] initWithPath:themePath + "/Info.plist"];
+                [themeBundle loadWithDelegate:bundleDelegate];
 
-            // load default theme bundle
-            var themePath = [[CPBundle bundleForClass:[CPApplication class]] pathForResource:[CPApplication defaultThemeName]];
-            var themeBundle = [[CPBundle alloc] initWithPath:themePath + "/Info.plist"];
-            [themeBundle loadWithDelegate:bundleDelegate];
+                // load additional bundles
+                bundlePaths.forEach(function(bundlePath) {
+                    var bundle = [[CPBundle alloc] initWithPath:bundlePath];
+                    [bundle loadWithDelegate:bundleDelegate];
+                });
+            });
+        }
+    })+")"))(mainPath, bundleDelegate, bundlePaths);
 
-            // load additional bundles
-            bundlePaths.forEach(function(bundlePath) {
-                var bundle = [[CPBundle alloc] initWithPath:bundlePath];
-                [bundle loadWithDelegate:bundleDelegate];
-            })
-        });
-        // **************************************************
-    }, [mainPath, bundleDelegate, bundlePaths]);
+    // run the "event loop"
+    context.scope.require('browser/timeout').serviceTimeouts();
 
     return dependencies;
 }
@@ -314,26 +313,18 @@ function coalesceGlobalDefines(globals)
 }
 
 // create a new scope loaded with Narwhal and Objective-J
-function makeObjjScope(ctx, debug)
+function setupObjectiveJ(context, debug)
 {
-    // init standard JS scope objects
-    var scope = ctx.initStandardObjects();
-
     // set these properties required for Narwhal bootstrapping
-    scope.NARWHAL_HOME = system.prefix;
-    scope.NARWHAL_ENGINE_HOME = FILE.join(system.prefix, "engines", "rhino");
+    context.global.NARWHAL_HOME = system.prefix;
+    context.global.NARWHAL_ENGINE_HOME = FILE.join(system.prefix, "engines", "rhino");
 
     // load the bootstrap.js for narwhal-rhino
-    var bootstrapPath = FILE.join(scope.NARWHAL_ENGINE_HOME, "bootstrap.js");
-    ctx.evaluateReader(scope,
-        new Packages.java.io.FileReader(bootstrapPath),
-        "bootstrap.js",
-        1,
-        null
-    );
+    var bootstrapPath = FILE.join(context.global.NARWHAL_ENGINE_HOME, "bootstrap.js");
+    context.evalFile(bootstrapPath);
 
     // get the Objective-J module from this scope, return the window object.
-    var OBJJ = scope.require("objective-j");
+    var OBJJ = context.global.require("objective-j");
 
     addMockBrowserEnvironment(OBJJ.window);
 
@@ -365,18 +356,6 @@ function addMockBrowserEnvironment(scope)
                 return new scope.Element();
             }
         }
-}
-
-// run a function within the given scope (func can be a function object if the source of the function is returned by toString() as it is by default)
-function runWithScope(context, func, args)
-{
-    var functionInScope = context.ctx.compileFunction(context.scope, String(func), "<runWithScope>", 1, null);
-
-    var result = functionInScope.apply(context.scope, args);
-
-    context.scope.require('browser/timeout').serviceTimeouts();
-
-    return result;
 }
 
 // does a shallow copy of an object. if onlyList is true, it sets each property to "true" instead of the actual value

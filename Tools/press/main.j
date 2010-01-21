@@ -13,6 +13,7 @@ var ARGS = require("args");
 var FILE = require("file");
 var OS = require("os");
 var DOM = require("browser/dom");
+var INTERPRETER = require("interpreter");
 
 var serializer = new DOM.XMLSerializer();
 
@@ -148,8 +149,8 @@ function pressEnvironment(rootPath, outputFiles, environment, options) {
     CPLog.info("Environment:         " + environment);
     
     // get a Rhino context
-    var ctx = Packages.org.mozilla.javascript.Context.getCurrentContext();
-    var scope = makeObjjScope(ctx); // "scope" is the same as require("objective-j").window;
+    var context = new INTERPRETER.Context();
+    var scope = setupObjectiveJ(context);
     
     scope.OBJJ_INCLUDE_PATHS = frameworks;
     scope.OBJJ_ENVIRONMENTS = [environment, "ObjJ"];
@@ -178,11 +179,9 @@ function pressEnvironment(rootPath, outputFiles, environment, options) {
         exectuableResponses.push(aResponse);
     });
     
-    var context = {
-        ctx : ctx,
-        scope : scope,
-        rootPath : rootPath
-    };
+    // lets just use the Context object as our con
+    context.rootPath = rootPath;
+    context.scope = scope;
     
     // phase 1: get global defines
     CPLog.error("PHASE 1: Loading application...");
