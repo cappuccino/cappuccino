@@ -23,8 +23,7 @@
 #include "../CoreGraphics/CGGeometry.h"
 
 
-var DOMIFrameElement    = nil,
-    DOMSpanElement      = nil,
+var DOMSpanElement      = nil,
     DefaultFont         = nil;
 
 @implementation CPPlatformString : CPBasePlatformString
@@ -48,12 +47,12 @@ var DOMIFrameElement    = nil,
 
     DOMIFrameElement.name = name = "iframe_" + FLOOR(RAND() * 10000);
     DOMIFrameElement.style.position = "absolute";
-    DOMIFrameElement.style.left = "-100px";
-    DOMIFrameElement.style.top = "-100px";
-    DOMIFrameElement.style.width = "1px";
-    DOMIFrameElement.style.height = "1px";
+    DOMIFrameElement.style.left = "-1000px";
+    DOMIFrameElement.style.top = "-1000px";
+    // TODO: investigate a better way to make this work in IE:
+    DOMIFrameElement.style.width = "1000px";
+    DOMIFrameElement.style.height = "1000px";
     DOMIFrameElement.style.borderWidth = "0px";
-    DOMIFrameElement.style.background = "blue";
     DOMIFrameElement.style.overflow = "hidden";
     DOMIFrameElement.style.zIndex = 100000000000;
 

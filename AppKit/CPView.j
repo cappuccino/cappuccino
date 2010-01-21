@@ -1285,6 +1285,14 @@ var CPViewFlags                     = { },
 }
 
 /*!
+    Returns \c YES if this view requires a panel to become key. Normally only text fields, so this returns \c NO.
+*/
+- (BOOL)needsPanelToBecomeKey
+{
+    return NO;
+}
+
+/*!
     Returns \c YES if mouse events aren't needed by the receiver and can be sent to the superview. The
     default implementation returns \c NO if the view is opaque.
 */

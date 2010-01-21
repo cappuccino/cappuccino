@@ -1,9 +1,10 @@
 #!/usr/bin/env narwhal
 
 var FILE = require("file"),
-    ENV = require("system").env,
+    SYSTEM = require("system"),
     OS = require("os"),
-    jake = require("jake");
+    jake = require("jake"),
+    stream = require("term").stream;
 
 require(FILE.absolute("common.jake"));
 
@@ -44,7 +45,19 @@ task ("install", ["CommonJS"], function()
 {
     // FIXME: require("narwhal/tusk/install").install({}, $COMMONJS);
     // Doesn't work due to some weird this.print business.
-    OS.system(["sudo", "tusk", "install", "--force", $BUILD_CJS_OBJECTIVE_J, $BUILD_CJS_CAPPUCCINO]);
+    if (OS.system(["tusk", "install", "--force", $BUILD_CJS_OBJECTIVE_J, $BUILD_CJS_CAPPUCCINO])) {
+        stream.print("\0red(Installation failed, possibly because you do not have permissions.\0)");
+        stream.print("\0red(Try re-running using '\0yellow(jake sudo-install\0)'.\0)");
+        OS.exit(1); //rake abort if ($? != 0)
+    }
+});
+
+task ("sudo-install", ["CommonJS"], function()
+{
+    // FIXME: require("narwhal/tusk/install").install({}, $COMMONJS);
+    // Doesn't work due to some weird this.print business.
+    if (OS.system(["sudo", "tusk", "install", "--force", $BUILD_CJS_OBJECTIVE_J, $BUILD_CJS_CAPPUCCINO]))
+        OS.exit(1); //rake abort if ($? != 0)
 });
 
 // Documentation
