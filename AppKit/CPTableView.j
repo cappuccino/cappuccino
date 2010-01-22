@@ -481,10 +481,10 @@ window.setTimeout(function(){
         [self setSelectionHightlightColor:[CPColor selectionColorSourceView]];
         _destinationDragStyle = CPTableViewDraggingDestinationFeedbackStyleSourceList;
     }
-	else
-	{
-	    [self setSelectionHightlightColor:[CPColor selectionColor]];
-	    _destinationDragStyle = CPTableViewDraggingDestinationFeedbackStyleRegular;
+    else
+    {
+        [self setSelectionHightlightColor:[CPColor selectionColor]];
+        _destinationDragStyle = CPTableViewDraggingDestinationFeedbackStyleRegular;
     }
 }
 
@@ -1452,55 +1452,55 @@ window.setTimeout(function(){
 }
 
 - (CPImage)dragImageForRowsWithIndexes:(CPIndexSet)dragRows 
-						  tableColumns:(CPArray)theTableColumns 
-								 event:(CPEvent)dragEvent 
-								offset:(CPPointPointer)dragImageOffset
+                          tableColumns:(CPArray)theTableColumns 
+                                 event:(CPEvent)dragEvent 
+                                offset:(CPPointPointer)dragImageOffset
 {
     return [[CPImage alloc] initWithContentsOfFile:@"Frameworks/AppKit/Resources/GenericFile.png" size:CGSizeMake(32,32)];
 }
 
 - (CPView)dragViewForRowsWithIndexes:(CPIndexSet)theDraggedRows 
-						tableColumns:(CPArray)theTableColumns 
-							   event:(CPEvent)theDragEvent 
-							  offset:(CPPoint)dragViewOffset
+                        tableColumns:(CPArray)theTableColumns 
+                               event:(CPEvent)theDragEvent 
+                              offset:(CPPoint)dragViewOffset
 {
-	var size = [self bounds].size,
-		view = [[CPView alloc] initWithFrame:CPMakeRect(dragViewOffset.x, dragViewOffset.y, size.width, size.height)];
-		
-	[view setBackgroundColor:[CPColor clearColor]];
-	[view setAlphaValue:0.7];
-	
-	// We have to fetch all the data views for the selected rows and columns
-	// After that we can copy these add them to a transparent drag view and use that drag view 
-	// to make it appear we are dragging images of those rows (as you would do in regular Cocoa)
-	var firstExposedColumn = [_exposedColumns firstIndex],
-		exposedLength = [_exposedColumns lastIndex] - firstExposedColumn + 1,
-		columns = [];
-		
-	[_exposedColumns getIndexes:columns maxCount:-1 inIndexRange:CPMakeRange(firstExposedColumn, exposedLength)];
-	
-	var columnIndex = [columns count],
-		draggedDataViews = [],
-		dragViewHeight = 0.0;
-		
-	while (columnIndex--) {
-		var column = [_tableColumns objectAtIndex:columnIndex],
-			yOffset = 0,
-			rowIndex = CPNotFound;
-		
-		while ((rowIndex = [_selectedRowIndexes indexGreaterThanIndex:rowIndex]) !== CPNotFound)
-		{
-			var dataView = [self _newDataViewForRow:rowIndex tableColumn:column];
-			
-			[dataView setBackgroundColor:[CPColor clearColor]];
-			[dataView setFrame:[self frameOfDataViewAtColumn:columnIndex row:rowIndex]];
-			[dataView setObjectValue:[self _objectValueForTableColumn:column row:rowIndex]];
-			
-			[view addSubview:dataView];
-		}
-	}
-	
-	return view;
+    var size = [self bounds].size,
+        view = [[CPView alloc] initWithFrame:CPMakeRect(dragViewOffset.x, dragViewOffset.y, size.width, size.height)];
+        
+    [view setBackgroundColor:[CPColor clearColor]];
+    [view setAlphaValue:0.7];
+    
+    // We have to fetch all the data views for the selected rows and columns
+    // After that we can copy these add them to a transparent drag view and use that drag view 
+    // to make it appear we are dragging images of those rows (as you would do in regular Cocoa)
+    var firstExposedColumn = [_exposedColumns firstIndex],
+        exposedLength = [_exposedColumns lastIndex] - firstExposedColumn + 1,
+        columns = [];
+        
+    [_exposedColumns getIndexes:columns maxCount:-1 inIndexRange:CPMakeRange(firstExposedColumn, exposedLength)];
+    
+    var columnIndex = [columns count],
+        draggedDataViews = [],
+        dragViewHeight = 0.0;
+        
+    while (columnIndex--) {
+        var column = [_tableColumns objectAtIndex:columnIndex],
+            yOffset = 0,
+            rowIndex = CPNotFound;
+        
+        while ((rowIndex = [_selectedRowIndexes indexGreaterThanIndex:rowIndex]) !== CPNotFound)
+        {
+            var dataView = [self _newDataViewForRow:rowIndex tableColumn:column];
+            
+            [dataView setBackgroundColor:[CPColor clearColor]];
+            [dataView setFrame:[self frameOfDataViewAtColumn:columnIndex row:rowIndex]];
+            [dataView setObjectValue:[self _objectValueForTableColumn:column row:rowIndex]];
+            
+            [view addSubview:dataView];
+        }
+    }
+    
+    return view;
 }
 
 - (void)setDraggingSourceOperationMask:(CPDragOperation)mask forLocal:(BOOL)isLocal
@@ -1573,7 +1573,7 @@ window.setTimeout(function(){
 
 - (id)_objectValueForTableColumn:(CPTableColumn)aTableColumn row:(CPInteger)aRowIndex
 {
-	CPLog.debug(@"_objectValueForTableColumn:%@ row: %@", aTableColumn, aRowIndex);
+    CPLog.debug(@"_objectValueForTableColumn:%@ row: %@", aTableColumn, aRowIndex);
     var tableColumnUID = [aTableColumn UID],
         tableColumnObjectValues = _objectValues[tableColumnUID];
 
@@ -1591,7 +1591,7 @@ window.setTimeout(function(){
         tableColumnObjectValues[aRowIndex] = objectValue;
     }
 
-	CPLog.debug(@"return %@", objectValue);
+    CPLog.debug(@"return %@", objectValue);
     return objectValue;
 }
 
@@ -1991,7 +1991,7 @@ window.setTimeout(function(){
         indexes = [],
         rectSelector = @selector(rectOfRow:);
 
-	   [_selectionHightlightColor setFill];
+       [_selectionHightlightColor setFill];
 
 
     if ([_selectedRowIndexes count] >= 1)
@@ -2201,30 +2201,30 @@ window.setTimeout(function(){
 
         if([self canDragRowsWithIndexes:_draggedRowIndexes atPoint:aPoint] && [_dataSource tableView:self writeRowsWithIndexes:_draggedRowIndexes toPasteboard:pboard])
         {
-			var currentEvent = [CPApp currentEvent],
-				offset = CPPointMakeZero();
-				
-			// We deviate from the default Cocoa implementation here by asking for a view in stead of an image
-			// We support both, but the view prefered over the image because we can mimic the rows we are dragging
-			// by re-creating the data views for the dragged rows
-			var view = [self dragViewForRowsWithIndexes:_draggedRowIndexes 
-										   tableColumns:_exposedColumns 
-												  event:currentEvent 
-												 offset:CPPointMakeZero()];
-			
-			if (!view) {
-				var image = [self dragImageForRowsWithIndexes:_draggedRowIndexes 
-												 tableColumns:_exposedColumns 
-														event:currentEvent 
-													   offset:CPPointMakeZero()];
-				
-				view = [[CPImageView alloc] initWithFrame:CPMakeRect(aPoint.x, aPoint.y, [image size].width, [image size].height)];
-				[view setImage:image];
-				
-				offset = aPoint;
-			}
-			
-			[self dragView:view at:offset offset:CPPointMakeZero() event:[CPApp currentEvent] pasteboard:pboard source:self slideBack:YES];
+            var currentEvent = [CPApp currentEvent],
+                offset = CPPointMakeZero();
+                
+            // We deviate from the default Cocoa implementation here by asking for a view in stead of an image
+            // We support both, but the view prefered over the image because we can mimic the rows we are dragging
+            // by re-creating the data views for the dragged rows
+            var view = [self dragViewForRowsWithIndexes:_draggedRowIndexes 
+                                           tableColumns:_exposedColumns 
+                                                  event:currentEvent 
+                                                 offset:CPPointMakeZero()];
+            
+            if (!view) {
+                var image = [self dragImageForRowsWithIndexes:_draggedRowIndexes 
+                                                 tableColumns:_exposedColumns 
+                                                        event:currentEvent 
+                                                       offset:CPPointMakeZero()];
+                
+                view = [[CPImageView alloc] initWithFrame:CPMakeRect(aPoint.x, aPoint.y, [image size].width, [image size].height)];
+                [view setImage:image];
+                
+                offset = aPoint;
+            }
+            
+            [self dragView:view at:offset offset:CPPointMakeZero() event:[CPApp currentEvent] pasteboard:pboard source:self slideBack:YES];
             return NO;
         }
     }
@@ -2595,32 +2595,32 @@ window.setTimeout(function(){
        var anEvent = [events objectAtIndex:i],
            key = [anEvent keyCode];
 
-	   if(key === CPDeleteKeyCode && [_delegate respondsToSelector: @selector(tableViewDeleteKeyPressed:)])
+       if(key === CPDeleteKeyCode && [_delegate respondsToSelector: @selector(tableViewDeleteKeyPressed:)])
                [_delegate tableViewDeleteKeyPressed:self];
 
-	   if(key === CPUpArrowKeyCode)
-	   {
-	      if([[self selectedRowIndexes] count] > 0)
-	      {
-	         var extend = NO;
+       if(key === CPUpArrowKeyCode)
+       {
+          if([[self selectedRowIndexes] count] > 0)
+          {
+             var extend = NO;
 
-	         if(([anEvent modifierFlags] & CPShiftKeyMask) && _allowsMultipleSelection)
+             if(([anEvent modifierFlags] & CPShiftKeyMask) && _allowsMultipleSelection)
                extend = YES;
 
-	          var i = [[self selectedRowIndexes] firstIndex];
-	          if(i > 0)
-	              i--; //set index to the prev row before the first row selected
-	    }
+              var i = [[self selectedRowIndexes] firstIndex];
+              if(i > 0)
+                  i--; //set index to the prev row before the first row selected
+        }
         else
-	    {
-	      var extend = NO;
-	      //no rows are currently selected
-	        if([self numberOfRows] > 0)
-	            var i = [self numberOfRows] - 1; //select the first row
-	     }
+        {
+          var extend = NO;
+          //no rows are currently selected
+            if([self numberOfRows] > 0)
+                var i = [self numberOfRows] - 1; //select the first row
+         }
 
 
-	     if(_implementedDelegateMethods & CPTableViewDelegate_tableView_shouldSelectRow_)
+         if(_implementedDelegateMethods & CPTableViewDelegate_tableView_shouldSelectRow_)
          {
 
               while((![_delegate tableView:self shouldSelectRow:i]) && i > 0)
@@ -2641,31 +2641,31 @@ window.setTimeout(function(){
             [self scrollRowToVisible:i];
             [self _noteSelectionDidChange];
          }
-	   }
+       }
 
-	   if(key == CPDownArrowKeyCode)
-	   {
-	      if([[self selectedRowIndexes] count] > 0)
-	      {
-	         var extend = NO;
+       if(key == CPDownArrowKeyCode)
+       {
+          if([[self selectedRowIndexes] count] > 0)
+          {
+             var extend = NO;
 
-	         if(([anEvent modifierFlags] & CPShiftKeyMask) && _allowsMultipleSelection)
+             if(([anEvent modifierFlags] & CPShiftKeyMask) && _allowsMultipleSelection)
                extend = YES;
 
-	          var i = [[self selectedRowIndexes] lastIndex];
-	          if(i<[self numberOfRows] - 1)
-	              i++; //set index to the next row after the last row selected
-	    }
+              var i = [[self selectedRowIndexes] lastIndex];
+              if(i<[self numberOfRows] - 1)
+                  i++; //set index to the next row after the last row selected
+        }
         else
-	    {
-	      var extend = NO;
-	      //no rows are currently selected
-	        if([self numberOfRows] > 0)
-	            var i = 0; //select the first row
-	    }
+        {
+          var extend = NO;
+          //no rows are currently selected
+            if([self numberOfRows] > 0)
+                var i = 0; //select the first row
+        }
 
 
-	     if(_implementedDelegateMethods & CPTableViewDelegate_tableView_shouldSelectRow_)
+         if(_implementedDelegateMethods & CPTableViewDelegate_tableView_shouldSelectRow_)
          {
 
               while((![_delegate tableView:self shouldSelectRow:i]) && i<[self numberOfRows])
@@ -2686,7 +2686,7 @@ window.setTimeout(function(){
             [self scrollRowToVisible:i];
             [self _noteSelectionDidChange];
          }
-	   }
+       }
     }
 }
 
