@@ -226,7 +226,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
         _exposedColumns = [CPIndexSet indexSet];
         _cachedDataViews = { };
         _intercellSpacing = _CGSizeMake(0.0, 0.0);
-        _rowHeight = 19.0;
+        _rowHeight = 23.0;
 
         [self setSelectionHightlightColor:[CPColor selectionColor]];
         [self setGridColor:[CPColor grayColor]];
