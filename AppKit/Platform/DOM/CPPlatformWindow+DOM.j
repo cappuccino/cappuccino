@@ -503,7 +503,7 @@ var supportsNativeDragAndDrop = [CPPlatform supportsDragAndDrop];
 
         aDOMEvent.dataTransfer.setDragImage(DOMDragElement, draggingOffset.width, draggingOffset.height);
         aDOMEvent.dataTransfer.effectAllowed = "all";
-        
+
         [dragServer draggingStartedInPlatformWindow:self globalLocation:[CPPlatform isBrowser] ? location : _CGPointMake(aDOMEvent.screenX, aDOMEvent.screenY)];
     }
 

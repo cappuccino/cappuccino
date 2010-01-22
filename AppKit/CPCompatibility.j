@@ -109,7 +109,10 @@ else if (USER_AGENT.indexOf("AppleWebKit/") != -1)
     // Features we can only be sure of with WebKit (no known independent tests)
     PLATFORM_FEATURES |= CPCSSRGBAFeature;
     PLATFORM_FEATURES |= CPHTMLContentEditableFeature;
-    PLATFORM_FEATURES |= CPHTMLDragAndDropFeature;
+
+    if (USER_AGENT.indexOf("Chrome") === -1)
+        PLATFORM_FEATURES |= CPHTMLDragAndDropFeature;
+
     PLATFORM_FEATURES |= CPJavascriptClipboardEventsFeature;
     PLATFORM_FEATURES |= CPJavascriptClipboardAccessFeature;
     PLATFORM_FEATURES |= CPJavaScriptShadowFeature;
