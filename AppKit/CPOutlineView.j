@@ -145,6 +145,8 @@ var CPOutlineViewDataSource_outlineView_setObjectValue_forTableColumn_byItem_   
     if ([_outlineViewDataSource respondsToSelector:@selector(outlineView:sortDescriptorsDidChange:)])
         _implementedOutlineViewDataSourceMethods |= CPOutlineViewDataSource_outlineView_sortDescriptorsDidChange_;
 
+	[[super dataSource] setImplementedDataSourceMethods:_implementedOutlineViewDataSourceMethods];
+
     [self reloadData];
 }
 
@@ -488,6 +490,48 @@ var CPOutlineViewDataSource_outlineView_setObjectValue_forTableColumn_byItem_   
     return [super frameOfDataViewAtColumn:aColumn row:aRow];
 }
 
+// -  (BOOL)continueTracking:(CGPoint)lastPoint at:(CGPoint)aPoint
+// {
+// 	if (!_isSelectingSession && _implementedOutlineViewDataSourceMethods & CPOutlineViewDataSource_outlineView_writeItems_toPasteboard_)
+// 	{		// Start dragging of the current rows is selected or the mouse was moved enough to initiate a drag
+// 		// This isn't the best way to do this because this requires the user to move the mouse at a certain speed
+// 		// TODO: mouseDown currently always selects a row
+// 		var offset = CPMakePoint(lastPoint.x - aPoint.x, ABS(lastPoint.y - aPoint.y));
+// 		if (offset.x > 3.0 || ([self verticalMotionCanBeginDrag] && ABS(offset.y) > 3) || ([_selectedRowIndexes containsIndex:row]))
+// 		{
+// 			var row = [self rowAtPoint:aPoint];
+// 			
+// 			CPLog.debug(@"start drag")
+// 			
+// 			var draggedItems = [];
+// 			// Check if we are dragging a selection or a single row
+// 			if ([_selectedRowIndexes containsIndex:row]) 
+// 			{
+// 				// Get all the items from the current selection
+// 				var draggedIndexes = [];
+// 				[_selectedRowIndexes getIndexes:draggedIndexes maxCount:[_selectedRowIndexes count] inIndexRange:nil]
+// 				
+// 				var index = [draggedIndexes count];
+// 				while (index--)
+// 					[draggedItems addObject:[self itemAtRow:draggedIndexes[index]]];
+// 				
+// 				var pasteboard = [CPPasteboard pasteboardWithName:CPDragPboard];
+// 			}
+// 			else 
+// 				[draggedItems addObject:[self itemAtRow:row]];
+// 				
+// 			// Tell the datasource to write the items to the paste board
+// 			// We stop the drag if it's not allowed
+// 			if (![_outlineViewDataSource writeItems:draggedIndexes toPasteboard:pasteboard])
+// 				return [super continueTracking:lastPoint at:aPoint];
+// 				
+// 			CPLog.debug(@"dragged items: %@", draggedItems);
+// 		}
+// 	}
+// 	
+// 	return [super continueTracking:lastPoint at:aPoint];
+// }
+
 - (void)_loadDataViewsInRows:(CPIndexSet)rows columns:(CPIndexSet)columns
 {
     [super _loadDataViewsInRows:rows columns:columns];
@@ -757,6 +801,7 @@ var _loadItemInfoForItem = function(/*CPOutlineView*/ anOutlineView, /*id*/ anIt
 
 @implementation _CPOutlineViewTableViewDataSource : CPObject
 {
+	int _implementedDataSourceMethods @accessors(property=implementedDataSourceMethods);
     CPObject _outlineView;
 }
 
@@ -778,6 +823,42 @@ var _loadItemInfoForItem = function(/*CPOutlineView*/ anOutlineView, /*id*/ anIt
 - (id)tableView:(CPTableView)aTableView objectValueForTableColumn:(CPTableColumn)aTableColumn row:(CPInteger)aRow
 {
     return [_outlineView._outlineViewDataSource outlineView:_outlineView objectValueForTableColumn:aTableColumn byItem:_outlineView._itemsForRows[aRow]];
+}
+
+- (BOOL)tableView:(CPTableView)aTableColumn writeRowsWithIndexes:(CPIndexSet)theIndexes toPasteboard:(CPPasteboard)thePasteboard
+{
+	if (!_outlineView._implementedOutlineViewDataSourceMethods & CPOutlineViewDataSource_outlineView_writeItems_toPasteboard_)
+		return NO;
+	
+	var rowIndexes = [];
+	[theIndexes getIndexes:rowIndexes maxCount:[theIndexes count] inIndexRange:nil];
+	
+	var rowIndex = [rowIndexes count],
+		items = [];
+		
+	while (rowIndex--)
+		[items addObject:[_outlineView itemAtRow:[rowIndexes objectAtIndex:rowIndex]]];
+		
+	return [_outlineView._outlineViewDataSource outlineView:_outlineView writeItems:items toPasteboard:thePasteboard];
+}
+
+- (CPDragOperation)tableView:(CPTableView)aTableView validateDrop:(id < CPDraggingInfo >)theInfo 
+	proposedRow:(int)theRow proposedDropOperation:(CPTableViewDropOperation)theOperation
+{
+	if (!_outlineView._implementedOutlineViewDataSourceMethods & CPOutlineViewDataSource_outlineView_validateDrop_proposedItem_proposedChildIndex_)
+		return CPDragOperationNone;
+	
+	return [_outlineView._outlineViewDataSource outlineView:_outlineView validateDrop:theInfo proposedItem:[_outlineView itemAtRow:theRow] proposedChildIndex:theRow];
+}
+
+- (BOOL)tableView:(CPTableView)aTableView acceptDrop:(id <CPDraggingInfo>)theInfo row:(int)theRow dropOperation:(CPTableViewDropOperation)theOperation
+{
+	
+	CPLog.debug(@"tableview accept dorp");
+	if (!_outlineView._implementedOutlineViewDataSourceMethods & CPOutlineViewDataSource_outlineView_acceptDrop_item_childIndex_)
+		return NO;
+		
+	return [_outlineView._outlineViewDataSource outlineView:_outlineView acceptDrop:theInfo item:[_outlineView itemAtRow:theRow] childIndex:0];
 }
 
 @end
