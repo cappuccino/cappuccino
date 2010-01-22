@@ -135,8 +135,8 @@
         var columnToStroke = [self headerRectOfColumn:columnArrayIndex];
 
         CGContextBeginPath(context);
-        CGContextMoveToPoint(context, ROUND(columnToStroke.origin.x + columnToStroke.size.width) - 0.5, ROUND(columnToStroke.origin.y) - 0.5);
-        CGContextAddLineToPoint(context, ROUND(columnToStroke.origin.x + columnToStroke.size.width) - 0.5, ROUND(columnToStroke.origin.y + columnToStroke.size.height) - 0.5);
+        CGContextMoveToPoint(context, ROUND(columnToStroke.origin.x + columnToStroke.size.width) + 0.5, ROUND(columnToStroke.origin.y) + 0.5);
+        CGContextAddLineToPoint(context, ROUND(columnToStroke.origin.x + columnToStroke.size.width) + 0.5, ROUND(columnToStroke.origin.y + columnToStroke.size.height) + 0.5);
         CGContextSetLineWidth(context, 1);
         CGContextStrokePath(context);
     }

@@ -70,7 +70,10 @@ CPTableColumnUserResizingMask   = 2;
         _maxWidth = 1000000.0;
 
         [self setIdentifier:anIdentifier];
-        [self setHeaderView:[CPTextField new]];
+
+        var header = [CPTextField new];
+        [header setBackgroundColor:[CPColor colorWithPatternImage:CPAppKitImage("tableview-headerview.png", CGSizeMake(1.0, 23.0))]];
+        [self setHeaderView:header];
         
         var textDataView = [CPTextField new];
         [textDataView setValue:[CPColor whiteColor] forThemeAttribute:@"text-color" inState:CPThemeStateHighlighted];
@@ -80,6 +83,7 @@ CPTableColumnUserResizingMask   = 2;
 
     return self;
 }
+
 
 - (void)setTableView:(CPTableView)aTableView
 {
