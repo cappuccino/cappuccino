@@ -12,6 +12,8 @@ Implemented class methods:
     Opera       : All except resizeLeftRightCursor resizeUpDownCursor operationNotAllowedCursor dragCopyCursor dragLinkCursor contextualMenuCursor openHandCursor closedHandCursor disappearingItemCursor // Opera does not support url cursors so these won't work with images
 */
 
+#include "Platform/Platform.h"
+
 var currentCursor = nil,
     cursorStack = [],
     cursors = {},
@@ -186,12 +188,12 @@ var currentCursor = nil,
 
 + (void)hide
 {
-    document.body.style.cursor = 'none'; // Not supported in IE
+    [self _setCursorCSS:"none"]; // Not supported in IE
 }
 
 + (void)unhide
 {
-    document.body.style.cursor = [currentCursor _cssString];
+    [self _setCursorCSS:[currentCursor _cssString]]
 }
 
 + (void)setHiddenUntilMouseMoves:(BOOL)flag
@@ -217,15 +219,23 @@ var currentCursor = nil,
 
 - (void)set
 {
-    document.body.style.cursor = _cssString;
     currentCursor = self; 
 
 #if PLATFORM(DOM)
-    var platformWindows = [[CPPlatformWindow visiblePlatformWindows] allObjects];
-    for (var i = 0, count = [platformWindows count]; i < count; i++)
-        platformWindows[i]._DOMWindow.document.body.style.cursor = _cssString;
+    [[self class] _setCursorCSS:_cssString];
 #endif
 
+}
+
++ (void)_setCursorCSS:(CPString)aString
+{
+#if PLATFORM(DOM)
+    [CPPlatformWindow primaryPlatformWindow]._DOMBodyElement.style.cursor = aString;
+
+    var platformWindows = [[CPPlatformWindow visiblePlatformWindows] allObjects];
+    for (var i = 0, count = [platformWindows count]; i < count; i++)
+        platformWindows[i]._DOMBodyElement.style.cursor = aString;
+#endif
 }
 
 - (void)push

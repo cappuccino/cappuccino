@@ -56,7 +56,9 @@ var DOMSpanElement      = nil,
     DOMIFrameElement.style.overflow = "hidden";
     DOMIFrameElement.style.zIndex = 100000000000;
 
-    document.body.appendChild(DOMIFrameElement);
+    var bodyElement = [CPPlatform mainBodyElement];
+
+    bodyElement.appendChild(DOMIFrameElement);
 
     var DOMIFrameDocument = (DOMIFrameElement.contentDocument || DOMIFrameElement.contentWindow.document);
 
