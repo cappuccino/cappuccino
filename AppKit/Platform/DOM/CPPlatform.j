@@ -22,7 +22,8 @@
 
 CPPlatformDidClearBodyElementNotification   = @"CPPlatformDidClearBodyElementNotification";
 
-var screenNeedsInitialization   = NO;
+var screenNeedsInitialization   = NO,
+    mainBodyElement = nil;
 
 @implementation CPPlatform : CPBasePlatform
 {
@@ -75,6 +76,14 @@ var screenNeedsInitialization   = NO;
         window.cpHide();
 }
 
++ (DOMElement)mainBodyElement
+{
+    if (!mainBodyElement)
+        mainBodyElement = document.getElementById("cappuccino-body") || document.body;
+
+    return mainBodyElement;
+}
+
 + (void)initializeScreenIfNecessary
 {
     if (!screenNeedsInitialization)
@@ -82,11 +91,11 @@ var screenNeedsInitialization   = NO;
 
     screenNeedsInitialization = NO;
 
-    var DOMBodyElement = document.body;
+    var bodyElement = [self mainBodyElement];
 
     // Get rid of any of the original contents of the page.
-    DOMBodyElement.innerHTML = "";
-    DOMBodyElement.style.overflow = "hidden";
+    bodyElement.innerHTML = "";
+    bodyElement.style.overflow = "hidden";
 
     if (document.documentElement)
         document.documentElement.style.overflow = "hidden";

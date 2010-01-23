@@ -79,7 +79,6 @@ if (!SYSTEM.env["CAPP_BUILD"] && SYSTEM.env["STEAM_BUILD"])
 if (!SYSTEM.env["CONFIG"])
     SYSTEM.env["CONFIG"] = "Release";
 
-// TODO: deprecate these globals
 global.ENV  = SYSTEM.env;
 global.ARGV = SYSTEM.args
 global.FILE = FILE;
@@ -87,7 +86,7 @@ global.OS   = OS;
 
 global.task = JAKE.task;
 global.directory = JAKE.directory;
-//global.file = JAKE.file;
+global.file = JAKE.file;
 global.filedir = JAKE.filedir;
 global.FileList = JAKE.FileList;
 
@@ -108,6 +107,12 @@ global.$BUILD_CJS_CAPPUCCINO_FRAMEWORKS = FILE.join($BUILD_CJS_CAPPUCCINO, "Fram
 global.$HOME_DIR        = FILE.absolute(FILE.dirname(module.path));
 global.$LICENSE_FILE    = FILE.absolute(FILE.join(FILE.dirname(module.path), 'LICENSE'));
 
+global.FIXME_fileDependency = function(destinationPath, sourcePath)
+{
+    file(destinationPath, [sourcePath], function(){
+        FILE.touch(destinationPath);
+    });
+};
 
 // logic to determine which packages should be loaded but are not.
 // used in serializedENV()
