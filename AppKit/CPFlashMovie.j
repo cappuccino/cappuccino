@@ -59,3 +59,21 @@
 }
 
 @end
+
+var CPFlashMovieFileNameKey = "CPFlashMovieFileNameKey";
+
+@implementation CPFlashMovie (CPCoding)
+
+- (id)initWithCoder:(CPCoder)aCoder
+{
+    _fileName = [aCoder decodeObjectForKey:CPFlashMovieFileNameKey];
+
+    return self;
+}
+
+- (void)encodeWithCoder:(CPCoder)aCoder
+{
+    [aCoder encodeObject:_fileName forKey:CPFlashMovieFileNameKey];
+}
+
+@end
