@@ -462,9 +462,9 @@ var supportsNativeDragAndDrop = [CPPlatform supportsDragAndDrop];
         _DOMWindow.cpSetShadowStyle(_shadowStyle);
     }
 
-    _DOMBodyElement.style.cursor = [[CPCursor currentCursor] _cssString];
-
     [self registerDOMWindow];
+
+    _DOMBodyElement.style.cursor = [[CPCursor currentCursor] _cssString];
 }
 
 - (void)orderOut:(id)aSender
