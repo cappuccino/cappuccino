@@ -58,6 +58,11 @@
     return self;
 }
 
+- (CPString)fileName
+{
+    return _fileName;
+}
+
 @end
 
 var CPFlashMovieFileNameKey = "CPFlashMovieFileNameKey";
