@@ -1432,72 +1432,56 @@ window.setTimeout(function(){
     return YES;
 }
 
-- (CPImage)dragImageForRowsWithIndexes:(CPIndexSet)dragRows tableColumns:(CPArray)theTableColumns event:(CPEvent)dragEvent offset:(CPPointPointer)dragImageOffset
+- (CPImage)dragImageForRowsWithIndexes:(CPIndexSet)dragRows 
+						  tableColumns:(CPArray)theTableColumns 
+								 event:(CPEvent)dragEvent 
+								offset:(CPPointPointer)dragImageOffset
 {
-    // FIXME: by default we should construct an image/view of the selcted rows which are visible
-    //var theDragView = [[CPImageView alloc] initWithFrame:_CGRectMake(0,0,32,32)];
-    //[theDragView setImage:[[CPImage alloc] initWithContentsOfFile:@"Frameworks/AppKit/Resources/GenericFile.png" size:CGSizeMake(32,32)]];
-    var image = [[CPImage alloc] initWithContentsOfFile:@"Frameworks/AppKit/Resources/GenericFile.png" size:CGSizeMake(32,32)];
-    //return theDragView;
-    return image;
+    return [[CPImage alloc] initWithContentsOfFile:@"Frameworks/AppKit/Resources/GenericFile.png" size:CGSizeMake(32,32)];
 }
 
-- (CPImage)dragViewForRowsWithIndexes:(CPIndexSet)dragRows tableColumns:(CPArray)theTableColumns event:(CPEvent)dragEvent offset:(CPPointPointer)dragImageOffset
+- (CPView)dragViewForRowsWithIndexes:(CPIndexSet)theDraggedRows 
+						tableColumns:(CPArray)theTableColumns 
+							   event:(CPEvent)theDragEvent 
+							  offset:(CPPoint)dragViewOffset
 {
-    var draggedRowsArray = [],
-        colCount = [theTableColumns count],
-        rowsCount = [dragRows count],
-        firstRowIndex = [dragRows firstIndex],
-        rowIndexesLength = [dragRows lastIndex] - firstRowIndex + 1,
-        
-        firstRowRect = [self rectOfRow:firstRowIndex],
-        exposedMinX = CGRectGetMinX([self exposedClipRect]),
-        dragViewWidth = CGRectGetWidth([self exposedClipRect]),
-        dragViewHeight = rowIndexesLength * _rowHeight,
-        
-        location = [self convertPoint:[dragEvent locationInWindow] fromView:nil];
-        
-    dragImageOffset.x = exposedMinX + CGRectGetMinX(firstRowRect) - location.x + dragViewWidth/2;
-    dragImageOffset.y = CGRectGetMinY(firstRowRect) - location.y + dragViewHeight/2;
-    
-    var draggedView = [[CPView alloc] initWithFrame:CGRectMake(0, 0, dragViewWidth, dragViewHeight)];
-
-    [dragRows getIndexes:draggedRowsArray maxCount:-1 inIndexRange:CPMakeRange(firstRowIndex, rowIndexesLength)];
-    
-    // calculate the dragImageOffset : we want the ghost row to be where the real row is.    
-
-    for (var i = 0; i < rowsCount ; i++)
-    {
-        var rowIndex = draggedRowsArray[i];
-        var dataViewOriginY = (rowIndex - firstRowIndex) * [self rowHeight];
-        for (var c = 0; c < colCount; c++)
-        {
-            var column = [theTableColumns objectAtIndex:c],
-                tableColumnUID = [column UID],
-                dataView = _dataViewsForTableColumns[tableColumnUID][rowIndex];
-            
-            var frame = [dataView frame];
-            frame.origin.y = dataViewOriginY;
-            frame.origin.x -= exposedMinX;
-            
-            // Mega hack: The default CPView impl. doesn't implement -copy so we copy the innerHTML
-            // It ok because it's a temporary view and we won't have to interact with it later ...
-            // ... except we want the text to be normal when it's a selected row (unset the highlighted theme state)
-            // and that does'nt work.
-            // Possible fix: only for default dataviews (CPTextField), we can implement -copy and unset the state
-            var html = dataView._DOMElement.innerHTML;
-            var dataViewCopy = [[CPView alloc] initWithFrame:frame];
-            dataViewCopy._DOMElement.innerHTML = html;
-            
-            // This works (don't know how ?!). Until we fix the previous bug, we can stay with a white transparent bg 
-            // so at least we have a visible feedback of the dragged row. Maybe less opaque ...
-            [dataViewCopy setBackgroundColor:[CPColor colorWithWhite:1 alpha:0.7]];
-            
-            [draggedView addSubview:dataViewCopy];
-        }    
-    }
-    
-    return draggedView;
+	var size = [self bounds].size,
+		view = [[CPView alloc] initWithFrame:CPMakeRect(dragViewOffset.x, dragViewOffset.y, size.width, size.height)];
+		
+	[view setBackgroundColor:[CPColor clearColor]];
+	[view setAlphaValue:0.7];
+	
+	// We have to fetch all the data views for the selected rows and columns
+	// After that we can copy these add them to a transparent drag view and use that drag view 
+	// to make it appear we are dragging images of those rows (as you would do in regular Cocoa)
+	var firstExposedColumn = [_exposedColumns firstIndex],
+		exposedLength = [_exposedColumns lastIndex] - firstExposedColumn + 1,
+		columns = [];
+		
+	[_exposedColumns getIndexes:columns maxCount:-1 inIndexRange:CPMakeRange(firstExposedColumn, exposedLength)];
+	
+	var columnIndex = [columns count],
+		draggedDataViews = [],
+		dragViewHeight = 0.0;
+		
+	while (columnIndex--) {
+		var column = [_tableColumns objectAtIndex:columnIndex],
+			yOffset = 0,
+			rowIndex = CPNotFound;
+		
+		while ((rowIndex = [_selectedRowIndexes indexGreaterThanIndex:rowIndex]) !== CPNotFound)
+		{
+			var dataView = [self _newDataViewForRow:rowIndex tableColumn:column];
+			
+			[dataView setBackgroundColor:[CPColor clearColor]];
+			[dataView setFrame:[self frameOfDataViewAtColumn:columnIndex row:rowIndex]];
+			[dataView setObjectValue:[self _objectValueForTableColumn:column row:rowIndex]];
+			
+			[view addSubview:dataView];
+		}
+	}
+	
+	return view;
 }
 
 - (void)setDraggingSourceOperationMask:(CPDragOperation)mask forLocal:(BOOL)isLocal
@@ -2200,35 +2184,30 @@ window.setTimeout(function(){
 
         if([self canDragRowsWithIndexes:_draggedRowIndexes atPoint:aPoint] && [_dataSource tableView:self writeRowsWithIndexes:_draggedRowIndexes toPasteboard:pboard])
         {
-            //create drag view/image
-            var draggedColumns = [_tableColumns objectsAtIndexes:_exposedColumns];                
-            
-            var dragViewOffset = CGPointMakeZero();
-            var theDragView = [self dragViewForRowsWithIndexes:_draggedRowIndexes tableColumns:draggedColumns event:[CPApp currentEvent] offset:dragViewOffset];
-                        
-             //we should begin the drag opperation here
-            if (theDragView != nil) // special behavior: if the subclass returns nil, ask the subclass for an image
-            {
-                var bounds = [theDragView bounds];
-                // Cocoa doc:"A dragImageOffset of NSZeroPoint will cause the image to be centered under the cursor."
-                var dragViewLocation = CGPointMake(aPoint.x + dragViewOffset.x - CGRectGetWidth(bounds)/2, aPoint.y + dragViewOffset.y - CGRectGetHeight(bounds)/2);
-                [self dragView:theDragView at:dragViewLocation offset:CGSizeMakeZero() event:[CPApp currentEvent] pasteboard:pboard source:self slideBack:YES];
-            }
-            else
-            {
-                var dragImageOffset = CGPointMakeZero();
-                var theDragImage = [self dragImageForRowsWithIndexes:_draggedRowIndexes tableColumns:draggedColumns event:[CPApp currentEvent] offset:dragImageOffset];
-                
-                var imageSize = [theDragImage size];
-                var dragImageLocation = CGPointMake(aPoint.x + dragImageOffset.x - imageSize.width/2, aPoint.y + dragImageOffset.y - imageSize.height/2);
-
-                [self dragImage:theDragImage at:dragImageLocation offset:CGSizeMakeZero() event:[CPApp currentEvent] pasteboard:pboard source:self slideBack:YES];
-            }
-            //console.log([[CPDragServer sharedDragServer] draggingSource])
-            // FIX ME: figure out what to do with the damn operation mask, does capp not support this yet?
-            // FIX ME: set the operation mask to _dragOperationDefaultMask
-
-            //stop tracking
+			var currentEvent = [CPApp currentEvent],
+				offset = CPPointMakeZero();
+				
+			// We deviate from the default Cocoa implementation here by asking for a view in stead of an image
+			// We support both, but the view prefered over the image because we can mimic the rows we are dragging
+			// by re-creating the data views for the dragged rows
+			var view = [self dragViewForRowsWithIndexes:_draggedRowIndexes 
+										   tableColumns:_exposedColumns 
+												  event:currentEvent 
+												 offset:CPPointMakeZero()];
+			
+			if (!view) {
+				var image = [self dragImageForRowsWithIndexes:_draggedRowIndexes 
+												 tableColumns:_exposedColumns 
+														event:currentEvent 
+													   offset:CPPointMakeZero()];
+				
+				view = [[CPImageView alloc] initWithFrame:CPMakeRect(aPoint.x, aPoint.y, [image size].width, [image size].height)];
+				[view setImage:image];
+				
+				offset = aPoint;
+			}
+			
+			[self dragView:view at:offset offset:CPPointMakeZero() event:[CPApp currentEvent] pasteboard:pboard source:self slideBack:YES];
             return NO;
         }
     }
