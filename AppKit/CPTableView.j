@@ -2611,108 +2611,102 @@ window.setTimeout(function(){
     [self interpretKeyEvents:[CPArray arrayWithObject:anEvent]];
 }
 
-- (void)interpretKeyEvents:(CPArray)events
+- (void)moveDown:(id)sender
 {
-    [super interpretKeyEvents:events];
-
-    for(var i = 0; i < [events count]; i++)
+    var anEvent = [CPApp currentEvent];
+    if([[self selectedRowIndexes] count] > 0)
     {
-       var anEvent = [events objectAtIndex:i],
-           key = [anEvent keyCode];
+       var extend = NO;
 
-	   if(key === CPDeleteKeyCode && [_delegate respondsToSelector: @selector(tableViewDeleteKeyPressed:)])
-               [_delegate tableViewDeleteKeyPressed:self];
+       if(([anEvent modifierFlags] & CPShiftKeyMask) && _allowsMultipleSelection)
+           extend = YES;
 
-	   if(key === CPUpArrowKeyCode)
-	   {
-	      if([[self selectedRowIndexes] count] > 0)
-	      {
-	         var extend = NO;
-
-	         if(([anEvent modifierFlags] & CPShiftKeyMask) && _allowsMultipleSelection)
-               extend = YES;
-
-	          var i = [[self selectedRowIndexes] firstIndex];
-	          if(i > 0)
-	              i--; //set index to the prev row before the first row selected
-	    }
-        else
-	    {
-	      var extend = NO;
-	      //no rows are currently selected
-	        if([self numberOfRows] > 0)
-	            var i = [self numberOfRows] - 1; //select the first row
-	     }
-
-
-	     if(_implementedDelegateMethods & CPTableViewDelegate_tableView_shouldSelectRow_)
-         {
-
-              while((![_delegate tableView:self shouldSelectRow:i]) && i > 0)
-              {
-                  //check to see if the row can be selected if it can't be then see if the prev row can be selected
-                  i--;
-              }
-
-              //if the index still can be selected after the loop then just return
-               if(![_delegate tableView:self shouldSelectRow:i])
-                   return;
-         }
-
-         [self selectRowIndexes:[CPIndexSet indexSetWithIndex:i] byExtendingSelection:extend];
-
-         if(i)
-         {
-            [self scrollRowToVisible:i];
-            [self _noteSelectionDidChange];
-         }
-	   }
-
-	   if(key == CPDownArrowKeyCode)
-	   {
-	      if([[self selectedRowIndexes] count] > 0)
-	      {
-	         var extend = NO;
-
-	         if(([anEvent modifierFlags] & CPShiftKeyMask) && _allowsMultipleSelection)
-               extend = YES;
-
-	          var i = [[self selectedRowIndexes] lastIndex];
-	          if(i<[self numberOfRows] - 1)
-	              i++; //set index to the next row after the last row selected
-	    }
-        else
-	    {
-	      var extend = NO;
-	      //no rows are currently selected
-	        if([self numberOfRows] > 0)
-	            var i = 0; //select the first row
-	    }
-
-
-	     if(_implementedDelegateMethods & CPTableViewDelegate_tableView_shouldSelectRow_)
-         {
-
-              while((![_delegate tableView:self shouldSelectRow:i]) && i<[self numberOfRows])
-              {
-                  //check to see if the row can be selected if it can't be then see if the next row can be selected
-                  i++;
-              }
-
-              //if the index still can be selected after the loop then just return
-               if(![_delegate tableView:self shouldSelectRow:i])
-                   return;
-         }
-
-         [self selectRowIndexes:[CPIndexSet indexSetWithIndex:i] byExtendingSelection:extend];
-
-         if(i)
-         {
-            [self scrollRowToVisible:i];
-            [self _noteSelectionDidChange];
-         }
-	   }
+        var i = [[self selectedRowIndexes] lastIndex];
+        if(i<[self numberOfRows] - 1)
+            i++; //set index to the next row after the last row selected
     }
+    else
+    {
+        var extend = NO;
+        //no rows are currently selected
+        if([self numberOfRows] > 0)
+            var i = 0; //select the first row
+    }
+
+
+    if(_implementedDelegateMethods & CPTableViewDelegate_tableView_shouldSelectRow_)
+    {
+
+        while((![_delegate tableView:self shouldSelectRow:i]) && i<[self numberOfRows])
+        {
+            //check to see if the row can be selected if it can't be then see if the next row can be selected
+            i++;
+        }
+
+        //if the index still can be selected after the loop then just return
+         if(![_delegate tableView:self shouldSelectRow:i])
+             return;
+    }
+
+    [self selectRowIndexes:[CPIndexSet indexSetWithIndex:i] byExtendingSelection:extend];
+
+    if(i)
+    {
+        [self scrollRowToVisible:i];
+        [self _noteSelectionDidChange];
+    }
+}
+
+- (void)moveUp:(id)sender
+{
+    var anEvent = [CPApp currentEvent];
+    if([[self selectedRowIndexes] count] > 0)
+	{
+         var extend = NO;
+    
+         if(([anEvent modifierFlags] & CPShiftKeyMask) && _allowsMultipleSelection)
+           extend = YES;
+    
+          var i = [[self selectedRowIndexes] firstIndex];
+          if(i > 0)
+              i--; //set index to the prev row before the first row selected
+    }
+    else
+    {
+      var extend = NO;
+      //no rows are currently selected
+        if([self numberOfRows] > 0)
+            var i = [self numberOfRows] - 1; //select the first row
+     }
+    
+    
+     if(_implementedDelegateMethods & CPTableViewDelegate_tableView_shouldSelectRow_)
+     {
+    
+          while((![_delegate tableView:self shouldSelectRow:i]) && i > 0)
+          {
+              //check to see if the row can be selected if it can't be then see if the prev row can be selected
+              i--;
+          }
+    
+          //if the index still can be selected after the loop then just return
+           if(![_delegate tableView:self shouldSelectRow:i])
+               return;
+     }
+    
+     [self selectRowIndexes:[CPIndexSet indexSetWithIndex:i] byExtendingSelection:extend];
+    
+     if(i)
+     {
+        [self scrollRowToVisible:i];
+        [self _noteSelectionDidChange];
+     }
+}
+
+- (void)deleteBackward:(id)sender
+{
+    if([_delegate respondsToSelector: @selector(tableViewDeleteKeyPressed:)])
+        [_delegate tableViewDeleteKeyPressed:self];
 }
 
 @end
