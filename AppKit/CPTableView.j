@@ -2146,10 +2146,7 @@ window.setTimeout(function(){
     // if the table has drag support then we use mouseUp to select a single row.
     // otherwise it uses mouse down.
     if(!(_implementedDataSourceMethods & CPTableViewDataSource_tableView_writeRowsWithIndexes_toPasteboard_))
-    {
-        _previouslySelectedRowIndexes = nil;
         [self _updateSelectionWithMouseAtRow:row];
-    }
 
     [[self window] makeFirstResponder:self];
     return YES;
@@ -2251,7 +2248,7 @@ window.setTimeout(function(){
                 return;
             }
             // if the table has drag support then we use mouseUp to select a single row.
-            _previouslySelectedRowIndexes = nil;
+             _previouslySelectedRowIndexes = [_selectedRowIndexes copy];
             [self _updateSelectionWithMouseAtRow:rowIndex];
         }
     }
@@ -2571,8 +2568,6 @@ window.setTimeout(function(){
     if ([newSelection isEqualToIndexSet:_selectedRowIndexes])
         return;
 
-    if (!_previouslySelectedRowIndexes)
-        _previouslySelectedRowIndexes = [_selectedRowIndexes copy];
 
     [self selectRowIndexes:newSelection byExtendingSelection:NO];
 
@@ -2613,6 +2608,10 @@ window.setTimeout(function(){
 
 - (void)moveDown:(id)sender
 {
+    if (_implementedDelegateMethods & CPTableViewDelegate_selectionShouldChangeInTableView_ &&
+        ![_delegate selectionShouldChangeInTableView:self])
+        return;
+
     var anEvent = [CPApp currentEvent];
     if([[self selectedRowIndexes] count] > 0)
     {
@@ -2659,6 +2658,10 @@ window.setTimeout(function(){
 
 - (void)moveUp:(id)sender
 {
+    if (_implementedDelegateMethods & CPTableViewDelegate_selectionShouldChangeInTableView_ &&
+        ![_delegate selectionShouldChangeInTableView:self])
+        return;
+
     var anEvent = [CPApp currentEvent];
     if([[self selectedRowIndexes] count] > 0)
 	{
