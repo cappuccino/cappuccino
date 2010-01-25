@@ -220,8 +220,9 @@ if [ "$CAPP_BUILD" ]; then
 else
     echo "================================================================================"
     echo "Before building Cappuccino we recommend you set the \$CAPP_BUILD environment variable to a path where you wish to build Cappuccino."
-    echo "If you have previously set \$CAPP_BUILD and built Cappuccino you may want to delete the directory before rebuilding."
+    echo "NOTE: If you have previously set \$CAPP_BUILD and built Cappuccino you may want to delete the directory before rebuilding."
 fi
 
 echo "================================================================================"
 echo "Bootstrapping of Narwhal and other required tools is complete. You can now build Cappuccino."
+echo "NOTE: any changes made to the shell configuration files won't take place until you restart the shell."
