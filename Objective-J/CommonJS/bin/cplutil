@@ -1,79 +1,91 @@
 #!/usr/bin/env narwhal
 
 var FILE = require("file");
+var SYSTEM = require("system");
+var OS = require("os");
+var OBJJ = require("objective-j");
 
+var parser = new (require("args").Parser)();
 
-function printUsage()
-{
-    print("this is where you say the usage");
-}
+parser.usage("file...");
+parser.help("Cappuccino plist converter.");
+
+parser.option("-c", "--convert", "format")
+    .help("rewrite property list files in format")
+    .choices({
+        "280north1" : OBJJ.kCFPropertyList280NorthFormat_v1_0,
+        "xml1": OBJJ.kCFPropertyListXMLFormat_v1_0
+    });
+
+parser.option("-l", "--lint", "lint")
+    .help("check the property list files for syntax errors")
+    .set(true);
+
+parser.option("-h", "--help")
+    .action(parser.printHelp);
+
+parser.option("-o", "outPath")
+    .help("specify alternate file path name for result;\n\
+the -o option is used with -convert, and is only\n\
+useful with one file argument (last file overwrites);\n\
+the path '-' means stdout.")
+    .set();
+
+parser.option("-e", "outExtension")
+    .help("specify alternate extension for converted files")
+    .set();
+
+parser.option("-s", "silent")
+    .help("be silent on success")
+    .set(true);
 
 exports.main = function(args)
 {
-    // TODO: args parser
-    args.shift();
+    // HACK: add extra "-" to "-convert", etc, for plutil compatibility
+    var args = args.map(function(arg) { return arg.replace(/^(-[^-].+)$/, "-$1"); });
+    var options = parser.parse(args);
 
-    if (args.length < 1)
-        return printUsage();
-    
-    var allFiles = NO,
-        format = nil,
-        filePaths = [],
-        outPath = nil,
-        outExtension = nil;
-    
-        index = 0,
-        count = args.length;
-    
-    for (; index < count; ++index)
+    var ok = false;
+
+    if (typeof options.format !== "undefined" || options.lint)
     {
-        var argument = args[index];
-        
-        if (argument.charAt(0) === '-' && !allFiles)
-        {
-            if (filePaths.length > 0)
-                return printUsage();
-            
-            else if (argument === "-convert")
-                format = args[++index];
-            
-            else if (argument === "-o")
-                outPath = args[++index];
-            
-            else if (argument === "-e")
-                outExtension = args[++index];
-            
-            else if (argument === "--")
-                allFiles = YES;
-                
-            else if (argument === "-help")
-                return printUsage();
-        }
-        else
-            filePaths.push(args[index]);
+        ok = true;
+        options.args.forEach(function(filePath) {
+            var data = new OBJJ.objj_data();
+            data.string = FILE.read(filePath, { charset:"UTF-8" });
+
+            var plistObject = OBJJ.CPPropertyListCreateFromData(data);
+            if (!plistObject)
+            {
+                // FIXME: more useful error messages
+                SYSTEM.stderr.print(filePath + ": parse error");
+                ok = false;
+                return;
+            }
+
+            if (options.lint)
+            {
+                if (!options.silent)
+                    SYSTEM.stderr.print(filePath + ": OK");
+            }
+            else
+            {
+                data = OBJJ.CPPropertyListCreateData(plistObject, options.format);
+
+                // outextension?
+                if (options.outPath === "-")
+                    SYSTEM.stdout.write(data.string);
+                else
+                    FILE.write(options.outPath || filePath, data.string, { charset:"UTF-8" });
+            }
+        });
     }
-    
-    index = 0;
-    count = filePaths.length;
-    
-    for (; index < count; ++index)
+    else
     {
-        var filePath = filePaths[index],
-            data = new objj_data();
-        
-        data.string = FILE.read(filePaths[index], { charset:"UTF-8" });
-
-        var plistObject = new CPPropertyListCreateFromData(data);
-    
-        if (format === "280north1")
-            data = CPPropertyListCreate280NorthData(plistObject);
-    
-        else if (format === "xml1")
-            data = CPPropertyListCreateXMLData(plistObject);
-
-        // outextension?
-        FILE.write(outPath || filePath, data.string, { charset:"UTF-8" });
+        parser.printHelp(options);
     }
+
+    OS.exit(ok ? 0 : 1);
 }
 
 if (require.main == module.id)
