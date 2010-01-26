@@ -165,6 +165,14 @@ if ! prompt; then
     exit 1
 fi
 
+echo "================================================================================"
+echo "Would you like to install the pre-built Objective-J and Cappuccino packages?"
+echo "If you intend to build Cappuccino yourself this is not neccessary."
+extra_packages=""
+if prompt; then
+    extra_packages="objective-j cappuccino"
+fi
+
 echo "Installing necessary packages..."
 
 if ! tusk update; then
@@ -172,7 +180,7 @@ if ! tusk update; then
     exit 1
 fi
 
-tusk $tusk_install_command browserjs jake
+tusk $tusk_install_command browserjs jake $extra_packages
 
 if [ `uname` = "Darwin" ]; then
     echo "================================================================================"
@@ -224,5 +232,5 @@ else
 fi
 
 echo "================================================================================"
-echo "Bootstrapping of Narwhal and other required tools is complete. You can now build Cappuccino."
+echo "Bootstrapping of Narwhal and other required tools is complete."
 echo "NOTE: any changes made to the shell configuration files won't take place until you restart the shell."
