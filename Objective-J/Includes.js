@@ -1,4 +1,5 @@
 
+#include "DebugOptions.js"
 #include "Constants.js"
 #include "EventDispatcher.js"
 #include "HTTPRequest.js"

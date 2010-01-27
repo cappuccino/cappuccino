@@ -1,0 +1,4 @@
+
+#define DEPENDENCY_LOGGING      1
+#define STATIC_RESOURCE_LOGGING 1
+#define EXECUTION_LOGGING       1

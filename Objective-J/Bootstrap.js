@@ -1,3 +1,6 @@
+
+makeExportsGlobal();
+
 var rootNode = new StaticResourceNode("", null, StaticResourceNode.DirectoryType, YES),
     cwd = FILE.cwd();
 

@@ -1,4 +1,11 @@
 
+function makeExportsGlobal()
+{
+    for (var exportName in exports)
+        if (hasOwnProperty.apply(exports, [exportName]))
+            global[exportName] = exports[exportName];
+}
+
 var cachedExportedNames     = [],
     cachedExportedValues    = [];
 
@@ -66,7 +73,7 @@ function fileExecuterForPath(/*String*/ referencePath)
     
             if (0 && !fileExecutable.hasLoadedFileDependencies())
                 throw "No executable loaded for file at path " + aPath;
-        console.log("executing " + aPath);
+        //console.log("executing " + aPath);
         //console.log(aPath + " " + (isLocal ? 1 : 0) + " " + executable.isLoaded() + " " + executable.hasLoadedDependencies());
     
     

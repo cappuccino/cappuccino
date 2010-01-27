@@ -71,42 +71,6 @@ FileExecutable.prototype.hasExecuted = function()
     return this._hasExecuted;
 }
 
-function importFile(/*String*/ aPath, /*BOOL*/ isLocal, /*Function*/ aCallback)
-{
-    aPath = FILE.normal(aPath);
-
-    if (isLocal)
-        aPath = FILE.absolute(aPath);
-
-    var search = new FileExecutableSearch(aPath, isLocal);
-
-    function searchComplete(/*FileExecutableSearch*/ aFileExecutableSearch)
-    {console.log("search complete: " + aFileExecutableSearch);
-        var fileExecutable = aFileExecutableSearch.result();
-
-        if (!fileExecutable.hasLoadedFileDependencies())
-        {
-            fileExecutable.loadFileDependencies();
-
-            fileExecutable.addEventListener("dependenciesload", function()
-            {
-                executeFile(aPath, isLocal);
-            });
-        }
-        else
-            executeFile(aPath, isLocal);
-    }
-
-    if (search.isComplete())
-        searchComplete(search);
-    else
-        search.addEventListener("complete", function(/*Event*/ anEvent)
-        {
-            console.log("completed...");
-            searchComplete(anEvent.fileExecutableSearch);
-        });
-}
-
 function decompile(/*String*/ aString, /*String*/ aPath)
 {
     var stream = new MarkedStream(aString);

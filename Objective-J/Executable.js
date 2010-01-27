@@ -71,7 +71,7 @@ if (code.indexOf("/Users/tolmasky/Desktop/LoadTest/main.j/**/") !== -1)
 
 Executable.prototype.path = function()
 {
-    return FILE.cwd();
+    return FILE.join(FILE.cwd(), "(Anonymous)");
 }
 
 Executable.prototype.functionParameters = function()
@@ -88,6 +88,9 @@ Executable.prototype.functionArguments = function()
 
 Executable.prototype.execute = function()
 {
+#if EXECUTION_LOGGING
+    console.log("EXECUTION: " + this.path());
+#endif
     var oldContextBundle = CONTEXT_BUNDLE;
 
     CONTEXT_BUNDLE = Bundle.bundleContainingPath(this.path());
@@ -102,9 +105,8 @@ Executable.prototype.code = function()
     return this._code;
 }
 
-Executable.prototype.fileDependencies = function()
+Executable.prototype.filePathDependencies = function()
 {
-    return this._fileDependencies;
 }
 
 Executable.prototype.scope = function()
@@ -117,14 +119,18 @@ Executable.prototype.hasLoadedFileDependencies = function()
     return this._fileDependencyLoadStatus === ExecutableLoadedFileDependencies;
 }
 var globalIteration = 0;
+
 Executable.prototype.loadFileDependencies = function()
-{console.log("load deps for " + this.scope());
+{
+#if DEPENDENCY_LOGGING
+    console.log("DEPENDENCY: initiated by " + this.scope());
+#endif
     if (this._fileDependencyLoadStatus !== ExecutableUnloadedFileDependencies)
         return;
 
     this._fileDependencyLoadStatus = ExecutableLoadingFileDependencies;
 
-    var searchedPaths = { },
+    var searchedPaths = [{ }, { }],
         foundExecutablePaths = { },
         fileExecutableSearches = new MutableDictionary(),
         incompleteFileExecutableSearches = new MutableDictionary();
@@ -136,79 +142,90 @@ Executable.prototype.loadFileDependencies = function()
         if (anExecutable.hasLoadedFileDependencies())
             return;
 
-        var fileDependencies = anExecutable.fileDependencies(),
-            index = 0,
-            count = fileDependencies.length;
+        var executables = [anExecutable],
+            executableIndex = 0,
+            executableCount = executables.length;
 
-        for (; index < count; ++index)
+        for (; executableIndex < executableCount; ++executableIndex)
         {
-            var fileDependency = fileDependencies[index],
-                path = fileDependency.path(),
-                isLocal = fileDependency.isLocal();
-    
-            if (isLocal)
-                path = FILE.join(anExecutable.path ? FILE.dirname(anExecutable.path()) : FILE.cwd(), path);
+            var executable = executables[executableIndex],
+                cwd = FILE.dirname(executable.path()),
+                fileDependencies = executable.fileDependencies(),
+                fileDependencyIndex = 0,
+                fileDependencyCount = fileDependencies.length;
 
-            if (searchedPaths[path])
-                continue;
-
-            searchedPaths[path] = YES;
-
-            var fileExecutableSearch = new FileExecutableSearch(path, isLocal),
-                fileExecutableSearchUID = fileExecutableSearch.UID();
-
-            if (fileExecutableSearches.containsKey(fileExecutableSearchUID))
-                continue;
-
-            fileExecutableSearches.setValueForKey(fileExecutableSearchUID, fileExecutableSearch);
-
-            if (fileExecutableSearch.isComplete())
-                searchForFileDependencies(fileExecutableSearch.result());
-
-            else
+            for (; fileDependencyIndex < fileDependencyCount; ++fileDependencyIndex)
             {
-                incompleteFileExecutableSearches.setValueForKey(fileExecutableSearchUID, fileExecutableSearch);
-    
-                fileExecutableSearch.addEventListener("complete", function(/*Event*/ anEvent)
+                var fileDependency = fileDependencies[fileDependencyIndex],
+                    isLocal = fileDependency.isLocal(),
+                    path = importablePath(fileDependency.path(), isLocal, cwd);
+
+                if (searchedPaths[isLocal ? 1 : 0][path])
+                    continue;
+
+                searchedPaths[isLocal ? 1 : 0][path] = YES;
+
+                var fileExecutableSearch = new FileExecutableSearch(path, isLocal),
+                    fileExecutableSearchUID = fileExecutableSearch.UID();
+
+                if (fileExecutableSearches.containsKey(fileExecutableSearchUID))
+                    continue;
+
+                fileExecutableSearches.setValueForKey(fileExecutableSearchUID, fileExecutableSearch);
+
+                if (fileExecutableSearch.isComplete())
                 {
-                    var fileExecutableSearch = anEvent.fileExecutableSearch,
-                        fileExecutable = fileExecutableSearch.result();
-    //console.log("DONE FOR: " + search.UID() + " " + search.resultantFilePath());
-                    foundExecutablePaths[fileExecutable.path()] = fileExecutable;
-                    incompleteFileExecutableSearches.removeValueForKey(fileExecutableSearch.UID());
-    
-                    searchForFileDependencies(fileExecutableSearch.result());
-                });
+                    var newFileExecutable = fileExecutableSearch.result();
+
+                    foundExecutablePaths[newFileExecutable.path()] = executable;
+                    executables.push(newFileExecutable);
+                    ++executableCount;
+                }
+
+                else
+                {
+                    incompleteFileExecutableSearches.setValueForKey(fileExecutableSearchUID, fileExecutableSearch);
+
+                    fileExecutableSearch.addEventListener("complete", function( anEvent)
+                    {
+                        var fileExecutableSearch = anEvent.fileExecutableSearch,
+                            fileExecutable = fileExecutableSearch.result();
+
+                        foundExecutablePaths[fileExecutable.path()] = fileExecutable;
+                        incompleteFileExecutableSearches.removeValueForKey(fileExecutableSearch.UID());
+
+                        searchForFileDependencies(fileExecutable);
+                    });
+                }
             }
         }
 
         if (incompleteFileExecutableSearches.count() > 0)
-        {
-            if (globalIteration++ > 200)
-                throw "too many.";
-            console.log("keep going");
-            var keys = incompleteFileExecutableSearches.keys(),
-                index = 0,
-                count = keys.length;
-            for(; index < count; ++index)
-                console.log(":::"+keys[index] + " " + incompleteFileExecutableSearches.valueForKey(keys[index])._path);
+#if !DEPENDENCY_LOGGING
             return;
-}
-console.log("what?");
+#else
+        {
+            console.log("DEPENDENCY: more dependencies: ");
+            console.log(incompleteFileExecutableSearches.toString());
+            return;
+        }
+
+        console.log("DEPENDENCY: Ended");
+#end
         var fileExecutablesNeedingEventDispatch = [];
 
         for (var executablePath in foundExecutablePaths)
             if (hasOwnProperty.apply(foundExecutablePaths, [executablePath]))
             {
                 var fileExecutable = new FileExecutable(executablePath);
-                console.log("no go for... " + fileExecutable.path());
+                //console.log("no go for... " + fileExecutable.path());
                 if (fileExecutable.hasLoadedFileDependencies())
                     continue;
 
                 fileExecutablesNeedingEventDispatch.push(fileExecutable);
                 fileExecutable._fileDependencyLoadStatus = FileExecutableLoadedDependencies;
             }
-    
+
         var index = 0,
             count = fileExecutablesNeedingEventDispatch.length;
 

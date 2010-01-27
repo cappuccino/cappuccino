@@ -98,3 +98,10 @@ FileExecutableSearch.prototype.removeEventListener = function(/*String*/ anEvent
 {
     this._eventDispatcher.removeEventListener(anEventName, aListener);
 }
+
+#if DEPENDENCY_LOGGING
+FileExecutableSearch.prototype.toString = function()
+{
+    return "<FileExecutableSearch: " + this.path() + ">";
+}
+#endif

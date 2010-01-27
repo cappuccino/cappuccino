@@ -285,8 +285,6 @@ function class_getMethodImplementation(/*Class*/ aClass, /*SEL*/ aSelector)
 var GLOBAL_NAMESPACE    = global,
     REGISTERED_CLASSES  = { };
 
-var CONTEXT_BUNDLE = nil;
-
 function objj_allocateClassPair(/*Class*/ superclass, /*String*/ aName)
 {
     var classObject = new objj_class(),
@@ -331,12 +329,14 @@ function objj_allocateClassPair(/*Class*/ superclass, /*String*/ aName)
     return classObject;
 }
 
+var CONTEXT_BUNDLE = nil;
+
 function objj_registerClassPair(/*Class*/ aClass)
 {
     GLOBAL_NAMESPACE[aClass.name] = aClass;
     REGISTERED_CLASSES[aClass.name] = aClass;
 
-    addClassToBundle(CONTEXT_BUNDLE, aClass);
+    addClassToBundle(aClass, CONTEXT_BUNDLE);
 }
 
 // Instantiating Classes
