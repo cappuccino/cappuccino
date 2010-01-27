@@ -168,7 +168,7 @@ CPOperationQueuePriorityVeryHigh = 8;
     The JS function that should be run after the main method
     @return JS function
 */
-– (JSObject)completionFunction 
+- (JSObject)completionFunction 
 {
     return _completionFunction;
 }
