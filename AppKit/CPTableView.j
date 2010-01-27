@@ -658,6 +658,9 @@ window.setTimeout(function(){
 {
     if (([rows firstIndex] != CPNotFound && [rows firstIndex] < 0) || [rows lastIndex] >= [self numberOfRows])
         return;
+    
+    if ([rows isEqualToIndexSet:_selectedRowIndexes])
+        return;
 
     // We deselect all columns when selecting rows.
     if ([_selectedColumnIndexes count] > 0)
@@ -2261,10 +2264,6 @@ window.setTimeout(function(){
         }
     }
 
-    if (![_previouslySelectedRowIndexes isEqualToIndexSet:_selectedRowIndexes])
-        [self _noteSelectionDidChange];
-
-
     if (mouseIsUp
         && (_implementedDataSourceMethods & CPTableViewDataSource_tableView_setObjectValue_forTableColumn_row_)
         && !_trackingPointMovedOutOfClickSlop
@@ -2660,7 +2659,6 @@ window.setTimeout(function(){
     if(i)
     {
         [self scrollRowToVisible:i];
-        [self _noteSelectionDidChange];
     }
 }
 
@@ -2710,7 +2708,6 @@ window.setTimeout(function(){
      if(i)
      {
         [self scrollRowToVisible:i];
-        [self _noteSelectionDidChange];
      }
 }
 
