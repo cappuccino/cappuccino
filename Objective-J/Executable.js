@@ -3,7 +3,7 @@
  * Objective-J
  *
  * Created by Francisco Tolmasky.
- * Copyright 2008, 280 North, Inc.
+ * Copyright 2010, 280 North, Inc.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -64,9 +64,6 @@ function Executable(/*String*/ aCode, /*Array*/ fileDependencies, /*String*/ aSc
     //}
     this._function.displayName = this._scope;
 #endif
-
-if (code.indexOf("/Users/tolmasky/Desktop/LoadTest/main.j/**/") !== -1)
-    throw "why?";
 }
 
 Executable.prototype.path = function()
@@ -105,8 +102,9 @@ Executable.prototype.code = function()
     return this._code;
 }
 
-Executable.prototype.filePathDependencies = function()
+Executable.prototype.fileDependencies = function()
 {
+    return this._fileDependencies;
 }
 
 Executable.prototype.scope = function()

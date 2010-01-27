@@ -6,6 +6,14 @@ exports.environments = function()
     return ENVIRONMENTS;
 }
 
+if (window)
+{
+    window.setNativeTimeout = window.setTimeout;
+    window.clearNativeTimeout = window.clearTimeout;
+    window.setNativeInterval = window.setInterval;
+    window.clearNativeInterval = window.clearNativeInterval;
+}
+
 // Objective-J Constants
 var NO      = false,
     YES     = true,
