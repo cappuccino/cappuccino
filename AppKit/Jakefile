@@ -6,6 +6,9 @@ $BUILD_PATH = FILE.join($BUILD_DIR, $CONFIGURATION, 'AppKit');
 
 AppKitFiles = new FileList("**/*.j").exclude('CoreGraphics/CGContextCanvas.j', 'CoreGraphics/CGContextVML.j', 'Themes/**/*', 'Tools/**/*', "Platform/DOM/CPPlatform.j", "Platform/DOM/CPPlatformString.j");
 
+FIXME_fileDependency (FILE.join("Platform", "CPPlatform.j"), FILE.join("Platform", "DOM", "CPPlatform.j"));
+FIXME_fileDependency (FILE.join("Platform", "CPPlatformString.j"), FILE.join("Platform", "DOM", "CPPlatformString.j"));
+
 appKitTask = framework ("AppKit", function(appKitTask)
 {
     appKitTask.setBuildIntermediatesPath(FILE.join($BUILD_DIR, "AppKit.build", $CONFIGURATION))

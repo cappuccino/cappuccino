@@ -264,7 +264,7 @@ var supportsNativeDragAndDrop = [CPPlatform supportsDragAndDrop];
 {
     var theDocument = _DOMWindow.document;
 
-    _DOMBodyElement = theDocument.body;
+    _DOMBodyElement = theDocument.getElementById("cappuccino-body") || theDocument.body;
 
     // FIXME: Always do this?
     if ([CPPlatform supportsDragAndDrop])
@@ -401,8 +401,8 @@ var supportsNativeDragAndDrop = [CPPlatform supportsDragAndDrop];
         _DOMWindow.onmousewheel = scrollEventCallback;
         theDocument.onmousewheel = scrollEventCallback;
         
-        theDocument.body.ondrag = function () { return NO; };
-        theDocument.body.onselectstart = function () { return _DOMWindow.event.srcElement === _DOMPasteboardElement; };
+        _DOMBodyElement.ondrag = function () { return NO; };
+        _DOMBodyElement.onselectstart = function () { return _DOMWindow.event.srcElement === _DOMPasteboardElement; };
 
         _DOMWindow.attachEvent("onbeforeunload", function()
         {
@@ -423,8 +423,8 @@ var supportsNativeDragAndDrop = [CPPlatform supportsDragAndDrop];
             _DOMWindow.onmousewheel = NULL;
             theDocument.onmousewheel = NULL;
 
-            theDocument.body.ondrag = NULL;
-            theDocument.body.onselectstart = NULL;
+            _DOMBodyElement.ondrag = NULL;
+            _DOMBodyElement.onselectstart = NULL;
 
             //_DOMWindow.removeEvent("beforeunload", this);
 
@@ -462,7 +462,7 @@ var supportsNativeDragAndDrop = [CPPlatform supportsDragAndDrop];
         _DOMWindow.cpSetShadowStyle(_shadowStyle);
     }
 
-    _DOMWindow.document.body.style.cursor = [[CPCursor currentCursor] _cssString];
+    _DOMBodyElement.style.cursor = [[CPCursor currentCursor] _cssString];
 
     [self registerDOMWindow];
 }
@@ -497,7 +497,7 @@ var supportsNativeDragAndDrop = [CPPlatform supportsDragAndDrop];
         DOMDragElement.style.left = -_CGRectGetWidth(draggedWindowFrame) + "px";
         DOMDragElement.style.top = -_CGRectGetHeight(draggedWindowFrame) + "px";
 
-        document.body.appendChild(DOMDragElement);
+        _DOMBodyElement.appendChild(DOMDragElement);
 
         var draggingOffset = [dragServer draggingOffset];
 

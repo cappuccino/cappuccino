@@ -22,12 +22,11 @@ CPLogRegister(CPLogConsole);
     dataSet1 = [],
     dataSet2 = [];
     
-    for(var i = 1; i < 11; i++)
+    for(var i = 1; i < 100; i++)
     {
         dataSet1[i - 1] = i;
         dataSet2[i - 1] = i + 10;
     }
-    
     
     var window1 = [[CPWindow alloc] initWithContentRect:CGRectMake(50, 50, 500, 400) styleMask:CPTitledWindowMask],
         view = [window1 contentView];
@@ -57,16 +56,12 @@ CPLogRegister(CPLogConsole);
 
     iconImage = [[CPImage alloc] initWithContentsOfFile:"http://cappuccino.org/images/favicon.png" size:CGSizeMake(16,16)];
 
-    var textDataView = [CPTextField new];
 //    [textDataView setFrameSize:CGSizeMake(200,32)];
   //  [textDataView setValue:CGInsetMake(9.0, 7.0, 5.0, 8.0) forThemeAttribute:@"content-inset"];
     //[textDataView setValue:CGInsetMake(9.0, 7.0, 5.0, 8.0) forThemeAttribute:@"content-inset"];
     //[textDataView setValue:CGInsetMake(4.0, 4.0, 3.0, 4.0) forThemeAttribute:@"bezel-inset"];
 //    [textDataView setValue:CGInsetMake(2, 0, 0, 0) forThemeAttribute:@"focus-inset"];
   //  [textDataView setValue:CGInsetMake(0, 0, 0, 0) forThemeAttribute:@"focus-inset" inState:CPThemeStateBezeled|CPThemeStateEditing];
-    
-    [textDataView setValue:[CPColor whiteColor] forThemeAttribute:@"text-color" inState:CPThemeStateHighlighted];
-    [textDataView setValue:[CPFont systemFontOfSize:12] forThemeAttribute:@"font" inState:CPThemeStateHighlighted];
 
     //[textDataView setValue:CGSizeMake(1,1) forThemeAttribute:@"text-shadow-offset"];
 	//[textDataView setValue:[CPColor blackColor] forThemeAttribute:@"text-shadow-color" inState:CPThemeStateHighlighted];
@@ -84,7 +79,6 @@ CPLogRegister(CPLogConsole);
         [column setWidth:200.0];
         [column setMinWidth:150.0];
 
-        [column setDataView:textDataView];
         [column setEditable:YES];
         [tableView addTableColumn:column];
     }
@@ -94,7 +88,7 @@ CPLogRegister(CPLogConsole);
     [tableView setColumnAutoresizingStyle:CPTableViewUniformColumnAutoresizingStyle];
 
     var scrollView = [[CPScrollView alloc] initWithFrame:CGRectMake(100, 100, CGRectGetWidth([view bounds]), CGRectGetHeight([view bounds]))];
-    [tableView setRowHeight:32.0];
+    [tableView setRowHeight:22.0];
     [scrollView setDocumentView:tableView];
     [scrollView setAutoresizingMask:CPViewWidthSizable | CPViewHeightSizable];
     
@@ -104,7 +98,6 @@ CPLogRegister(CPLogConsole);
 
     [tableView setDelegate:self];
     [tableView setDataSource:self];
-    [tableView setRowHeight:22.0];
     [tableView setVerticalMotionCanBeginDrag:NO];
     [tableView setDraggingDestinationFeedbackStyle:CPTableViewDropOn];
     [tableView registerForDraggedTypes:[CPArray arrayWithObject:tableTestDragType]];
@@ -259,9 +252,19 @@ CPLogRegister(CPLogConsole);
 	return YES;
 }
 
-- (void)tableViewSelectionDidChange:(id)blah
+- (void)tableViewSelectionDidChange:(id)notification
 {
-    
+    CPLogConsole(_cmd + [notification description]);
+}
+
+- (void)tableViewSelectionIsChanging:(id)notification
+{
+    CPLogConsole(_cmd + [notification description]);
+}
+
+- (void)tableViewColumnDidResize:(id)notification
+{
+    CPLogConsole(_cmd + [notification description]);
 }
 
 //- (CPIndexSet)tableView:(CPTableView)tableView selectionIndexesForProposedSelection:(CPIndexSet)proposedSelectionIndexes
@@ -283,14 +286,7 @@ CPLogRegister(CPLogConsole);
 
 - (BOOL)tableView:(CPTableView)aTableView writeRowsWithIndexes:(CPIndexSet)rowIndexes toPasteboard:(CPPasteboard)pboard
 {
-    //var selectedRows = [aTableView selectedRowIndexes];
-    [pboard declareTypes:[CPArray arrayWithObject:tableTestDragType] owner:self];
-    
-    if(aTableView === tableView)
-        var data = [dataSet1 objectsAtIndexes:rowIndexes];
-    else if(aTableView === tableView2)
-        var data = [dataSet2 objectsAtIndexes:rowIndexes];
-        
+    var data = [rowIndexes, [aTableView UID]];
     
     var encodedData = [CPKeyedArchiver archivedDataWithRootObject:data];
     [pboard declareTypes:[CPArray arrayWithObject:tableTestDragType] owner:self];
@@ -306,42 +302,57 @@ CPLogRegister(CPLogConsole);
 {
  //   console.log([aTableView rectOfRow:0]);
     //console.log(row)
+
+    [[aTableView window] orderFront:nil];
+
     if(aTableView === tableView)
         [aTableView setDropRow:row dropOperation:CPTableViewDropOn];
     else 
         [aTableView setDropRow:row dropOperation:CPTableViewDropAbove];
+        
     return CPDragOperationMove;
 }
 
 - (BOOL)tableView:(CPTableView)aTableView acceptDrop:(id)info row:(int)row dropOperation:(CPTableViewDropOperation)operation
-{
-    
+{    
     var pboard = [info draggingPasteboard],
-        rowData = [pboard dataForType:tableTestDragType];    
+        rowData = [pboard dataForType:tableTestDragType],
+        tables = [tableView, tableView2],
+        dataSets = [dataSet1, dataSet2];   
     
     rowData = [CPKeyedUnarchiver unarchiveObjectWithData:rowData];
+    
+    var sourceIndexes = rowData[0],
+        sourceTableUID = rowData[1];
+     
+    var index = (aTableView == tableView) ? 1 : 0;
+        
+    var destinationTable = tables[1 - index],
+        sourceTable = tables[index],
+        destinationDataSet = dataSets[1 - index],
+        sourceDataSet = dataSets[index];
 
-    //remember to check the operation/info
-    if(aTableView === tableView)
+    if(operation | CPDragOperationMove)
     {
-        //[dataSet1 insertObjects:(CPArray)objects atIndexes:(CPIndexSet)indexes];
-    }
-    else if(aTableView === tableView2)
-    {
-        //setup indices
-        
-        //console.log("drag source");
-        //console.log([[CPDragServer sharedDragServer] draggingSource]);
-        
-        var indices = [CPIndexSet indexSetWithIndexesInRange:CPMakeRange(row, [rowData count])];
-        [dataSet2 insertObjects:rowData atIndexes:indices]; 
-        
-        console.log(operation);
-        if(operation | CPDragOperationMove)
+        if (sourceTableUID == [aTableView UID])
         {
-            [dataSet1 removeObjectsInArray:rowData];
-            [tableView reloadData];
-            [tableView selectRowIndexes:[CPIndexSet indexSet] byExtendingSelection:NO];
+            [destinationDataSet moveIndexes:sourceIndexes toIndex:row];
+            [destinationTable reloadData];
+            var destIndexes = [CPIndexSet indexSetWithIndexesInRange:CPMakeRange(row, [sourceIndexes count])];
+            [destinationTable selectRowIndexes:destIndexes byExtendingSelection:NO];            
+        }
+        else
+        {
+            var destIndexes = [CPIndexSet indexSetWithIndexesInRange:CPMakeRange(row, [sourceIndexes count])];
+            var sourceObjects = [sourceDataSet objectsAtIndexes:sourceIndexes];
+
+            [destinationDataSet insertObjects:sourceObjects atIndexes:destIndexes];
+            [destinationTable reloadData];
+            [destinationTable selectRowIndexes:destIndexes byExtendingSelection:NO];
+            
+            [sourceDataSet removeObjectsAtIndexes:sourceIndexes];
+            [sourceTable reloadData];
+            [sourceTable selectRowIndexes:[CPIndexSet indexSet] byExtendingSelection:NO];                
         }
     }
         
@@ -351,6 +362,39 @@ CPLogRegister(CPLogConsole);
 - (void)tableView:(CPTableView)aTableView didEndDraggedImage:(CPImage)anImage atPosition:(CGPoint)aPoint operation:(CPDragOperation)anOperation
 {
     //for convenience     
+}
+
+@end
+
+@implementation CPArray (MoveIndexes)
+
+- (void)moveIndexes:(CPIndexSet)indexes toIndex:(int)insertIndex
+{
+    var aboveCount = 0,
+        object,
+        removeIndex;
+	
+	var index = [indexes lastIndex];
+	
+    while (index != CPNotFound)
+	{
+		if (index >= insertIndex)
+		{
+			removeIndex = index + aboveCount;
+			aboveCount ++;
+		}
+		else
+		{
+			removeIndex = index;
+			insertIndex --;
+		}
+		
+		object = [self objectAtIndex:removeIndex];
+		[self removeObjectAtIndex:removeIndex];
+		[self insertObject:object atIndex:insertIndex];
+		
+		index = [indexes indexLessThanIndex:index];
+	}
 }
 
 @end

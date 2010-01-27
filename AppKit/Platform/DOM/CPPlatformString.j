@@ -44,34 +44,40 @@ var DOMSpanElement      = nil,
 + (void)createDOMElements
 {
     var DOMIFrameElement = document.createElement("iframe");
-
-    DOMIFrameElement.name = name = "iframe_" + FLOOR(RAND() * 10000);
+    // necessary for Safari caching bug:
+    DOMIFrameElement.name = "iframe_" + FLOOR(RAND() * 10000);
     DOMIFrameElement.style.position = "absolute";
-    DOMIFrameElement.style.left = "-1000px";
-    DOMIFrameElement.style.top = "-1000px";
-    // TODO: investigate a better way to make this work in IE:
-    DOMIFrameElement.style.width = "1000px";
-    DOMIFrameElement.style.height = "1000px";
+    DOMIFrameElement.style.left = "-100px";
+    DOMIFrameElement.style.top = "-100px";
+    DOMIFrameElement.style.width = "1px";
+    DOMIFrameElement.style.height = "1px";
     DOMIFrameElement.style.borderWidth = "0px";
     DOMIFrameElement.style.overflow = "hidden";
     DOMIFrameElement.style.zIndex = 100000000000;
 
-    document.body.appendChild(DOMIFrameElement);
+    var bodyElement = [CPPlatform mainBodyElement];
+
+    bodyElement.appendChild(DOMIFrameElement);
 
     var DOMIFrameDocument = (DOMIFrameElement.contentDocument || DOMIFrameElement.contentWindow.document);
-
     DOMIFrameDocument.write("<html><head></head><body></body></html>");
     DOMIFrameDocument.close();
 
-    DOMSpanElement = DOMIFrameDocument.createElement("span");
+    // IE needs this wide <div> to prevent unwanted text wrapping:
+    var DOMDivElement = DOMIFrameDocument.createElement("div");
+    DOMDivElement.style.position = "absolute";
+    DOMDivElement.style.width = "100000px";
 
+    DOMIFrameDocument.body.appendChild(DOMDivElement);
+
+    DOMSpanElement = DOMIFrameDocument.createElement("span");
     DOMSpanElement.style.position = "absolute";
     DOMSpanElement.style.whiteSpace = "pre";
     DOMSpanElement.style.visibility = "visible";
     DOMSpanElement.style.padding = "0px";
     DOMSpanElement.style.margin = "0px";
 
-    DOMIFrameDocument.body.appendChild(DOMSpanElement);
+    DOMDivElement.appendChild(DOMSpanElement);
 }
 
 + (void)platformDidClearBodyElement:(CPNotification)aNotification
