@@ -370,9 +370,9 @@ if (new prototype_bug().member)
 {
 
 var fast_class_createInstance = class_createInstance;
-alert('THE BUG');
+
 class_createInstance = function(/*Class*/ aClass)
-{alert("theee bugggg");
+{
     var object = fast_class_createInstance(aClass);
     
     if (object)

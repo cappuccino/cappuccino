@@ -17,7 +17,7 @@ function cacheExportedNamesAndValues()
             cachedExportedNames.push(exportName);
             cachedExportedValues.push(exports[exportName]);
         }
-alert(cachedExportedNames);
+
     exportedNames = function()
     {
         return cachedExportedNames;
