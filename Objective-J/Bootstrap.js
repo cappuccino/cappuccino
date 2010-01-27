@@ -13,11 +13,33 @@ rootNode.resolveSubPath(cwd, StaticResourceNode.DirectoryType, function(cwdNode)
 
     for (; index < count; ++index)
         cwdNode.nodeAtSubPath(FILE.normal(includePaths[index]), YES);
-#ifndef RHINO
+#ifdef BROWSER
+    OBJJ_MAIN_FILE = "main.j";
+
     fileImporterForPath(FILE.join(cwd, "main.j"))("main.j", YES, function()
     {
-        console.log(rootNode.toString(true));
-        console.log("done.");
+        afterDocumentLoad(main);
     });
 #endif
 });
+
+#ifdef BROWSER
+function afterDocumentLoad(/*Function*/ aFunction)
+{
+    if (documentLoaded)
+        return aFunction();
+
+    if (window.addEventListener)
+        window.addEventListener("load", aFunction, false);
+
+    else if (window.attachEvent)
+        window.attachEvent("onload", aFunction);
+}
+
+var documentLoaded = NO;
+
+afterDocumentLoad(function()
+{
+    documentLoaded = YES;
+});
+#endif

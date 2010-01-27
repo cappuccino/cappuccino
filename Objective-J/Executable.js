@@ -43,8 +43,8 @@ function Executable(/*String*/ aCode, /*Array*/ fileDependencies, /*String*/ aSc
 
     var code = this._code;
 
-#if RHINO
-    code = "function(\"" + this.functionParameters().join("\",\"" + "\"){" + code + "/**/\n}";
+#if COMMONJS
+    code = "function(" + this.functionParameters().join(" , ") + "){" + code + "/**/\n}";
 
     if (typeof system !== "undefined" && system.engine === "rhino")
         this._function = Packages.org.mozilla.javascript.Context.getCurrentContext().compileFunction(window, code, this._scope, 0, null);

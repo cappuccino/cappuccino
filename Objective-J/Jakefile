@@ -88,7 +88,11 @@ CLOBBER.include($BUILD_OBJECTIVE_J);
 
 function environmentFlags()
 {
-    return "-DENVIRONMENTS=\"[" + Array.prototype.map.apply(arguments, [function(anEnvironment) {
+    return Array.prototype.map.apply(arguments, [function(anEnvironment)
+    {
+        return "-D" + anEnvironment.toUpperCase();
+    }]).join(" ") +
+    " -DENVIRONMENTS=\"[" + Array.prototype.map.apply(arguments, [function(anEnvironment) {
         return "\\\"" + anEnvironment + "\\\"";
     }]).join(", ") + "]\"";
 }

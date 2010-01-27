@@ -114,10 +114,14 @@ function fileImporterForPath(/*String*/ referencePath)
                     fileExecutable.addEventListener("dependenciesload", function()
                     {
                         fileExecuter(aPath, isLocal);
+                        aCallback();
                     });
                 }
                 else
+                {
                     fileExecuter(aPath, isLocal);
+                    aCallback();
+                }
             }
     
             if (fileExecutableSearch.isComplete())
