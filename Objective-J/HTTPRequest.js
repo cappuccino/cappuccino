@@ -167,3 +167,38 @@ function determineAndDispatchHTTPRequestEvents(/*HTTPRequest*/ aRequest)
         eventDispatcher.dispatchEvent({ type: result, request: aRequest});
     }
 }
+
+function FileRequest(/*String*/ aFilePath, onsuccess, onfailure)
+{
+#if BROWSER
+    var request = new HTTPRequest();
+
+    request.onsuccess = onsuccess;
+    request.onfailure = onfailure;
+
+    request.open("GET", aFilePath, YES);
+    request.send("");
+#else
+    if (!require("file").exists(aFilePath))
+        return onfailure();
+
+    onsuccess({ type:"success", request:this });
+#endif
+}
+
+#if COMMONJS
+FileRequest.prototype.responseText = function()
+{
+    return this._responseText;
+}
+
+FileRequest.prototype.responseXML = function()
+{
+    return new DOMParser().parseFromString(anXMLString, "text/xml");
+}
+
+FileRequest.prototype.responsePropertyList = function()
+{
+    return PropertyList.createFromString(responseText);
+}
+#endif

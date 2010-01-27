@@ -130,14 +130,15 @@ Bundle.prototype.load = function(/*BOOL*/ shouldEvaluate)
     var self = this;
 
     self._loadStatus = Bundle.Loading | Bundle.LoadingInfoPlist;
-
+/*    print(FILE.cwd());
+    print(self.path());
+    print(rootNode);
+print("will resolve: " + FILE.dirname(self.path()));*/
     rootNode.resolveSubPath(FILE.dirname(self.path()), StaticResourceNode.DirectoryType, function(aStaticResourceNode)
-    {
+    {//print("found: " + FILE.dirname(self.path()));
         self._staticResourceNode = new StaticResourceNode(FILE.basename(self.path()), aStaticResourceNode, StaticResourceNode.DirectoryType, NO);
 
-        var request = new HTTPRequest();
-
-        request.onsuccess = function(/*Event*/ anEvent)
+        function onsuccess(/*Event*/ anEvent)
         {
             self._loadStatus &= ~Bundle.LoadingInfoPlist;
             self._infoDictionary = anEvent.request.responsePropertyList();
@@ -156,7 +157,7 @@ Bundle.prototype.load = function(/*BOOL*/ shouldEvaluate)
             loadExecutableAndResources(self);
         }
 
-        request.onfailure = function()
+        function onfailure()
         {
             self._loadStatus = Bundle.Unloaded;
             self._eventDispatcher.dispatchEvent(
@@ -166,8 +167,7 @@ Bundle.prototype.load = function(/*BOOL*/ shouldEvaluate)
             });
         }
 
-        request.open("GET", FILE.join(self.path(), "Info.plist"), YES);
-        request.send("");
+        new FileRequest(FILE.join(self.path(), "Info.plist"), onsuccess, onfailure);
     });
 }
 

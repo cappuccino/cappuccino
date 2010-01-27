@@ -20,7 +20,11 @@ var FILE =
 
     cwd: function()
     {
+#if BROWSER
         return FILE.dirname(window.location.pathname);
+#else
+        return require("file").cwd();
+#endif
     },
 
     normal: function(/*String*/ aPath)
@@ -179,26 +183,24 @@ StaticResourceNode.prototype.write = function(/*String*/ aString)
 
 StaticResourceNode.prototype.resolveAsFile = function()
 {console.log("NOW LOOKING FOR FILE!");
-    var self = this,
-        request = new HTTPRequest();
+    var self = this;
 
-    request.onsuccess = function()
+    function onsuccess(/*anEvent*/ anEvent)
     {
         self._type = StaticResourceNode.FileType;
-        self._contents = request.responseText();
+        self._contents = anEvent.request.responseText();
 
         resolveStaticResourceNode(self, YES);
     }
 
-    request.onfailure = function()
+    function onfailure()
     {console.log("FIALE");
         self._type = StaticResourceNode.NotFoundType;
 
         resolveStaticResourceNode(self, YES);
     }
 
-    request.open("GET", this.path(), true);
-    request.send("");
+    new FileRequest(this.path(), onsuccess, onfailure);
 }
 
 StaticResourceNode.prototype.resolveSubPath = function(/*String*/ aPath, /*Type*/ aType, /*Function*/ aCallback)
