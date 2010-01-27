@@ -1484,64 +1484,6 @@ window.setTimeout(function(){
 	return view;
 }
 
-- (CPImage)dragViewForRowsWithIndexes:(CPIndexSet)dragRows tableColumns:(CPArray)theTableColumns event:(CPEvent)dragEvent offset:(CPPointPointer)dragImageOffset
-{
-    var draggedRowsArray = [],
-        colCount = [theTableColumns count],
-        rowsCount = [dragRows count],
-        firstRowIndex = [dragRows firstIndex],
-        rowIndexesLength = [dragRows lastIndex] - firstRowIndex + 1,
-        
-        firstRowRect = [self rectOfRow:firstRowIndex],
-        exposedMinX = CGRectGetMinX([self exposedClipRect]),
-        dragViewWidth = CGRectGetWidth([self exposedClipRect]),
-        dragViewHeight = rowIndexesLength * _rowHeight,
-        
-        location = [self convertPoint:[dragEvent locationInWindow] fromView:nil];
-        
-    dragImageOffset.x = exposedMinX + CGRectGetMinX(firstRowRect) - location.x + dragViewWidth/2;
-    dragImageOffset.y = CGRectGetMinY(firstRowRect) - location.y + dragViewHeight/2;
-    
-    var draggedView = [[CPView alloc] initWithFrame:CGRectMake(0, 0, dragViewWidth, dragViewHeight)];
-
-    [dragRows getIndexes:draggedRowsArray maxCount:-1 inIndexRange:CPMakeRange(firstRowIndex, rowIndexesLength)];
-    
-    // calculate the dragImageOffset : we want the ghost row to be where the real row is.    
-
-    for (var i = 0; i < rowsCount ; i++)
-    {
-        var rowIndex = draggedRowsArray[i];
-        var dataViewOriginY = (rowIndex - firstRowIndex) * [self rowHeight];
-        for (var c = 0; c < colCount; c++)
-        {
-            var column = [theTableColumns objectAtIndex:c],
-                tableColumnUID = [column UID],
-                dataView = _dataViewsForTableColumns[tableColumnUID][rowIndex];
-            
-            var frame = [dataView frame];
-            frame.origin.y = dataViewOriginY;
-            frame.origin.x -= exposedMinX;
-            
-            // Mega hack: The default CPView impl. doesn't implement -copy so we copy the innerHTML
-            // It ok because it's a temporary view and we won't have to interact with it later ...
-            // ... except we want the text to be normal when it's a selected row (unset the highlighted theme state)
-            // and that does'nt work.
-            // Possible fix: only for default dataviews (CPTextField), we can implement -copy and unset the state
-            var html = dataView._DOMElement.innerHTML;
-            var dataViewCopy = [[CPView alloc] initWithFrame:frame];
-            dataViewCopy._DOMElement.innerHTML = html;
-            
-            // This works (don't know how ?!). Until we fix the previous bug, we can stay with a white transparent bg 
-            // so at least we have a visible feedback of the dragged row. Maybe less opaque ...
-            [dataViewCopy setBackgroundColor:[CPColor colorWithWhite:1 alpha:0.7]];
-            
-            [draggedView addSubview:dataViewCopy];
-        }    
-    }
-    
-    return draggedView;
-}
-
 - (void)setDraggingSourceOperationMask:(CPDragOperation)mask forLocal:(BOOL)isLocal
 {
     //ignoral local for the time being since only one capp app can run at a time...
@@ -2243,7 +2185,7 @@ window.setTimeout(function(){
         var pboard = [CPPasteboard pasteboardWithName:CPDragPboard];
 
         if([self canDragRowsWithIndexes:_draggedRowIndexes atPoint:aPoint] && [_dataSource tableView:self writeRowsWithIndexes:_draggedRowIndexes toPasteboard:pboard])
-        {§
+        {
 			var currentEvent = [CPApp currentEvent],
 				offset = CPPointMakeZero();
 				
