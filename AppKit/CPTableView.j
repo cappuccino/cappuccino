@@ -1554,7 +1554,6 @@ window.setTimeout(function(){
 
 - (id)_objectValueForTableColumn:(CPTableColumn)aTableColumn row:(CPInteger)aRowIndex
 {
-	CPLog.debug(@"_objectValueForTableColumn:%@ row: %@", aTableColumn, aRowIndex);
     var tableColumnUID = [aTableColumn UID],
         tableColumnObjectValues = _objectValues[tableColumnUID];
 
@@ -1572,7 +1571,6 @@ window.setTimeout(function(){
         tableColumnObjectValues[aRowIndex] = objectValue;
     }
 
-	CPLog.debug(@"return %@", objectValue);
     return objectValue;
 }
 
