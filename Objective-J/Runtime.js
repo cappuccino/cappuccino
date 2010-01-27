@@ -73,17 +73,6 @@ function objj_object()
     this.__address  = -1;
 }
 
-// Addressing Objects
-
-var OBJECT_COUNT   = 0;
-
-function _objj_generateObjectHash()
-{
-    return OBJECT_COUNT++;
-}
-
-#define _objj_generateObjectHash() (OBJECT_COUNT++)
-
 // Working with Classes
 
 function class_getName(/*Class*/ aClass)
@@ -112,12 +101,9 @@ function class_getSuperclass(/*Class*/ aClass)
 
 function class_setSuperclass(/*Class*/ aClass, /*Class*/ aSuperClass)
 {
-    // FIXME: implement.
-}
-
-function class_isMetaClass(/*Class*/ aClass)
-{
-    return ISMETA(aClass);
+    // Set up the actual class hierarchy.
+    aClass.super_class = aSuperClass;
+    aClass.isa.super_class = aSuperClass.isa;
 }
 
 function class_addIvar(/*Class*/ aClass, /*String*/ aName, /*String*/ aType)
@@ -296,8 +282,10 @@ function class_getMethodImplementation(/*Class*/ aClass, /*SEL*/ aSelector)
 
 // Adding Classes
 
-var GLOBAL_NAMESPACE    = window,
-    REGISTERED_CLASSES  = {};
+var GLOBAL_NAMESPACE    = global,
+    REGISTERED_CLASSES  = { };
+
+var CONTEXT_BUNDLE = nil;
 
 function objj_allocateClassPair(/*Class*/ superclass, /*String*/ aName)
 {
@@ -333,12 +321,12 @@ function objj_allocateClassPair(/*Class*/ superclass, /*String*/ aName)
     classObject.isa = metaClassObject;
     classObject.name = aName;
     classObject.info = CLS_CLASS;
-    classObject.__address = _objj_generateObjectHash();
+    classObject.__address = generateObjectUID();
     
     metaClassObject.isa = rootClassObject.isa;
     metaClassObject.name = aName;
     metaClassObject.info = CLS_META;
-    metaClassObject.__address = _objj_generateObjectHash();
+    metaClassObject.__address = generateObjectUID();
     
     return classObject;
 }
@@ -347,6 +335,8 @@ function objj_registerClassPair(/*Class*/ aClass)
 {
     GLOBAL_NAMESPACE[aClass.name] = aClass;
     REGISTERED_CLASSES[aClass.name] = aClass;
+
+    addClassToBundle(CONTEXT_BUNDLE, aClass);
 }
 
 // Instantiating Classes
@@ -358,7 +348,7 @@ function class_createInstance(/*Class*/ aClass)
 
     var object = new aClass.allocator;
 
-    object.__address = _objj_generateObjectHash();
+    object.__address = generateObjectUID();
     object.isa = aClass;
 
     return object;
@@ -380,9 +370,9 @@ if (new prototype_bug().member)
 {
 
 var fast_class_createInstance = class_createInstance;
-
+alert('THE BUG');
 class_createInstance = function(/*Class*/ aClass)
-{
+{alert("theee bugggg");
     var object = fast_class_createInstance(aClass);
     
     if (object)
@@ -542,3 +532,57 @@ function sel_registerName(aName)
 {
     return aName;
 }
+
+// Exports
+
+exports.objj_ivar = objj_ivar;
+exports.objj_method = objj_method;
+
+exports.objj_class = objj_class;
+exports.objj_object = objj_object;
+
+exports.class_getName = class_getName;
+exports.class_getSuperclass = class_getSuperclass;
+exports.class_setSuperclass = class_setSuperclass;
+exports.class_isMetaClass = class_isMetaClass;
+
+exports.class_addIvar = class_addIvar;
+exports.class_addIvars = class_addIvars;
+exports.class_copyIvarList = class_copyIvarList;
+
+exports.class_addMethod = class_addMethod;
+exports.class_addMethods = class_addMethods;
+exports.class_getInstanceMethod = class_getInstanceMethod;
+
+exports.class_getClassMethod = class_getClassMethod;
+exports.class_copyMethodList = class_copyMethodList;
+
+exports.class_replaceMethod = class_replaceMethod;
+exports.class_getMethodImplementation = class_getMethodImplementation;
+
+exports.objj_allocateClassPair = objj_allocateClassPair;
+exports.objj_registerClassPair = objj_registerClassPair;
+exports.class_createInstance = class_createInstance;
+
+exports.object_getClassName = object_getClassName;
+exports.objj_lookUpClass = objj_lookUpClass;
+exports.objj_getClass = objj_getClass;
+exports.objj_getMetaClass = objj_getMetaClass;
+
+exports.ivar_getName = ivar_getTypeEncoding;
+exports.ivar_getTypeEncoding = ivar_getTypeEncoding;
+
+exports.objj_msgSend = objj_msgSend;
+exports.objj_msgSendSuper = objj_msgSendSuper;
+
+exports.method_getName = method_getName;
+exports.method_getImplementation = method_getImplementation;
+exports.method_setImplementation = method_setImplementation;
+exports.method_exchangeImplementations = method_exchangeImplementations;
+
+exports.sel_getName = sel_getName;
+exports.sel_getUid = sel_getUid;
+exports.sel_isEqual = sel_isEqual;
+exports.sel_registerName = sel_registerName;
+
+global._objj_generateObjectHash = generateObjectUID;

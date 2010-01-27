@@ -1,20 +1,13 @@
+
 var FILE = require("file"),
     OS = require("os"),
     objj = require("objective-j"),
-    objj_preprocess = objj.objj_preprocess,
-    IS_FILE = objj.IS_FILE,
-    IS_LOCAL = objj.IS_LOCAL,
-    GET_CODE = objj.GET_CODE,
-    GET_FILE = objj.GET_FILE,
-    MARKER_IMPORT_STD = objj.MARKER_IMPORT_STD,
-    MARKER_IMPORT_LOCAL = objj.MARKER_IMPORT_LOCAL,
-    MARKER_CODE = objj.MARKER_CODE,
-    GET_PATH = objj.GET_PATH;
+    ObjectiveJ = require("objective-j/core");
 
 require("objective-j/rhino/regexp-rhino-patch");
 
-var OBJJ_PREPROCESSOR_DEBUG_SYMBOLS   = exports.OBJJ_PREPROCESSOR_DEBUG_SYMBOLS   = objj.OBJJ_PREPROCESSOR_DEBUG_SYMBOLS;
-var OBJJ_PREPROCESSOR_TYPE_SIGNATURES = exports.OBJJ_PREPROCESSOR_TYPE_SIGNATURES = objj.OBJJ_PREPROCESSOR_TYPE_SIGNATURES;
+var OBJJ_PREPROCESSOR_DEBUG_SYMBOLS   = exports.OBJJ_PREPROCESSOR_DEBUG_SYMBOLS   = ObjectiveJ.OBJJ_PREPROCESSOR_DEBUG_SYMBOLS;
+var OBJJ_PREPROCESSOR_TYPE_SIGNATURES = exports.OBJJ_PREPROCESSOR_TYPE_SIGNATURES = ObjectiveJ.OBJJ_PREPROCESSOR_TYPE_SIGNATURES;
 var OBJJ_PREPROCESSOR_PREPROCESS      = exports.OBJJ_PREPROCESSOR_PREPROCESS      = 1 << 10;
 var OBJJ_PREPROCESSOR_COMPRESS        = exports.OBJJ_PREPROCESSOR_COMPRESS        = 1 << 11;
 var OBJJ_PREPROCESSOR_SYNTAX          = exports.OBJJ_PREPROCESSOR_SYNTAX          = 1 << 12;
@@ -76,51 +69,43 @@ function compileWithResolvedFlags(aFilePath, objjcFlags, gccFlags)
         return fileContents;
 
     // Preprocess contents into fragments.
-    var fragments = objj_preprocess(fileContents, { path : "/x" }, { path: FILE.basename(aFilePath) }, objjcFlags),
-        preprocessed = "";
-
-    // Writer preprocessed fragments out.
-    for (var index = 0; index < fragments.length; index++)
+    // FIXME: should calculate relative path, etc.
+    try
     {
-        var fragment = fragments[index];
-
-        if (IS_FILE(fragment))
-            preprocessed += (IS_LOCAL(fragment) ? MARKER_IMPORT_LOCAL : MARKER_IMPORT_STD) + ';' + GET_PATH(fragment).length + ';' + GET_PATH(fragment);
-        else
-        {
-            var code = GET_CODE(fragment);
-
-            if (shouldCheckSyntax)
-            {
-                try
-                {
-                    new Function(GET_CODE(fragment));
-                }
-                catch (e)
-                {
-                    var lines = code.split("\n"),
-                        PAD = 3,
-                        lineNumber = e.lineNumber || e.line,
-                        errorInfo = "Syntax error in "+GET_FILE(fragment).path+
-                                    " on preprocessed line number "+lineNumber+"\n\n"+
-                                    "\t"+lines.slice(Math.max(0, lineNumber - 1 - PAD), lineNumber+PAD).join("\n\t");
-
-                    print(errorInfo);
-
-                    throw errorInfo;
-                }
-            }
-
-            if (shouldCompress)
-            {
-                code = compress("function(){" + code + '}', FILE.basename(aFilePath));
-
-                code = code.substr("function(){".length, code.length - "function(){};\n\n".length);
-            }
-
-            preprocessed += MARKER_CODE + ';' + code.length + ';' + code;
-        }
+        var executable = ObjectiveJ.preprocess(fileContents, FILE.basename(aFilePath), objjcFlags);
     }
+    catch (anException)
+    {print(anException);
+        var lines = fileContents.split("\n"),
+            PAD = 3,
+            lineNumber = anException.lineNumber || anException.line,
+            errorInfo = "Syntax error in " + aFilePath +
+                        " on preprocessed line number " + lineNumber + "\n\n" +
+                        "\t" + lines.slice(Math.max(0, lineNumber - 1 - PAD), lineNumber + PAD).join("\n\t");
+
+        print(errorInfo);
+
+        throw errorInfo;
+    }
+
+    var preprocessed = "@STATIC;1.0;",
+        fileDependencies = executable.fileDependencies(),
+        index = 0,
+        count = fileDependencies.length;
+
+    for (; index < count; ++index)
+        preprocessed += fileDependencies[index].toMarkedString();
+
+    var code = executable.code();
+
+    if (shouldCompress)
+    {
+        var code = compress("function(){" + code + "}", FILE.basename(aFilePath));
+
+        code = code.substr("function(){".length, code.length - "function(){};\n\n".length);
+    }
+
+    preprocessed += "t;" + code.length + ";" + code;
 
     return preprocessed;
 }

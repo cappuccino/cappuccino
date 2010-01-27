@@ -1,5 +1,5 @@
 /*
- * preprocessor.js
+ * Preprocessor.js
  * Objective-J
  *
  * Created by Francisco Tolmasky.
@@ -27,7 +27,7 @@ function objj_preprocess(/*String*/ aString, /*objj_bundle*/ aBundle, /*objj_fil
 {    
     try
     {
-        return new objj_preprocessor(aString.replace(/^#[^\n]+\n/, "\n"), aSourceFile, aBundle, flags).fragments();
+        return new objj_preprocessor(aString.replace(/^#[^\n]+\n/, "\n"), aSourceFile, aBundle, flags);
     }
     catch (anException)
     {
@@ -76,15 +76,8 @@ var TOKEN_ACCESSORS         = "accessors",
     
 #define IS_WORD(token) /^\w+$/.test(token)
 
-#define IS_NOT_EMPTY(buffer) buffer.atoms.length !== 0
-#define CONCAT(buffer, atom) buffer.atoms[buffer.atoms.length] = atom
-
-var SUPER_CLASSES           = new objj_dictionary();
-
-var OBJJ_CURRENT_BUNDLE     = NULL;
-
 // FIXME: Used fixed regex
-var objj_lexer = function(aString)
+function Lexer(/*String*/ aString)
 {
     this._index = -1;
     this._tokens = (aString + '\n').match(/\/\/.*(\r|\n)?|\/\*(?:.|\n|\r)*?\*\/|\w+\b|[+-]?\d+(([.]\d+)*([eE][+-]?\d+))?|"[^"\\]*(\\[\s\S][^"\\]*)*"|'[^'\\]*(\\[\s\S][^'\\]*)*'|\s+|./g);
@@ -93,17 +86,17 @@ var objj_lexer = function(aString)
     return this;
 }
 
-objj_lexer.prototype.push = function()
+Lexer.prototype.push = function()
 {
     this._context.push(this._index);
 }
 
-objj_lexer.prototype.pop = function()
+Lexer.prototype.pop = function()
 {
     this._index = this._context.pop();
 }
 
-objj_lexer.prototype.peak = function(shouldSkipWhitespace)
+Lexer.prototype.peak = function(shouldSkipWhitespace)
 {
     if (shouldSkipWhitespace)
     {
@@ -117,17 +110,17 @@ objj_lexer.prototype.peak = function(shouldSkipWhitespace)
     return this._tokens[this._index + 1];
 }
 
-objj_lexer.prototype.next = function()
+Lexer.prototype.next = function()
 {
     return this._tokens[++this._index];
 }
 
-objj_lexer.prototype.previous = function()
+Lexer.prototype.previous = function()
 {
     return this._tokens[--this._index];
 }
 
-objj_lexer.prototype.last = function()
+Lexer.prototype.last = function()
 {
     if (this._index < 0)
         return NULL;
@@ -135,7 +128,7 @@ objj_lexer.prototype.last = function()
     return this._tokens[this._index - 1];
 }
 
-objj_lexer.prototype.skip_whitespace= function(shouldMoveBackwards)
+Lexer.prototype.skip_whitespace= function(shouldMoveBackwards)
 {   
     var token;
     
@@ -147,52 +140,54 @@ objj_lexer.prototype.skip_whitespace= function(shouldMoveBackwards)
     return token;
 }
 
-var objj_stringBuffer = function()
+#define IS_NOT_EMPTY(buffer) buffer.atoms.length !== 0
+#define CONCAT(buffer, atom) buffer.atoms[buffer.atoms.length] = atom
+
+function StringBuffer()
 {
     this.atoms = [];
 }
 
-objj_stringBuffer.prototype.toString = function()
+StringBuffer.prototype.toString = function()
 {
     return this.atoms.join("");
 }
 
-objj_stringBuffer.prototype.clear = function()
+function preprocess(/*String*/ aString, /*String*/ aPath, /*unsigned*/ flags)
 {
-    this.atoms = [];
+    return new Preprocessor(aString, aPath, flags).executable();
 }
 
-objj_stringBuffer.prototype.isEmpty = function()
-{
-    return (this.atoms.length === 0);
-}
-
-var objj_preprocessor = function(aString, aSourceFile, aBundle, flags)
+function Preprocessor(/*String*/ aString, /*String*/ aPath, /*unsigned*/ flags)
 {
     this._currentSelector = "";
     this._currentClass = "";
     this._currentSuperClass = "";
     this._currentSuperMetaClass = "";
-    
-    this._file = aSourceFile;
-    this._fragments = [];
-    this._preprocessed = new objj_stringBuffer();
-    this._tokens = new objj_lexer(aString);
+
+    this._filePath = aPath;
+
+    this._buffer = new StringBuffer();
+    this._preprocessed = NULL;
+    this._dependencies = [];
+
+    this._tokens = new Lexer(aString);
     this._flags = flags;
-    this._bundle = aBundle;
     this._classMethod = false;
-    
-    this.preprocess(this._tokens, this._preprocessed);
-    //alert(this._preprocessed + "");
-    this.fragment();
+    this._executable = NULL;
+
+    this.preprocess(this._tokens, this._buffer);
 }
 
-objj_preprocessor.prototype.fragments = function()
+Preprocessor.prototype.executable = function()
 {
-    return this._fragments;
+    if (!this._executable)
+        this._executable = new Executable(this._buffer.toString(), this._dependencies);
+
+    return this._executable;
 }
 
-objj_preprocessor.prototype.accessors = function(tokens)
+Preprocessor.prototype.accessors = function(tokens)
 {
     var token = tokens.skip_whitespace(),
         attributes = {};
@@ -242,7 +237,7 @@ objj_preprocessor.prototype.accessors = function(tokens)
     return attributes;
 }
 
-objj_preprocessor.prototype.brackets = function(/*objj_lexer*/ tokens, /*objj_stringBuffer*/ aStringBuffer)
+Preprocessor.prototype.brackets = function(/*Lexer*/ tokens, /*StringBuffer*/ aStringBuffer)
 {
     var tuples = [];
         
@@ -252,7 +247,7 @@ objj_preprocessor.prototype.brackets = function(/*objj_lexer*/ tokens, /*objj_st
     {
         CONCAT(aStringBuffer, '[');
         
-        // When we have an empty array literal ([]), tuples[0][0] will be an empty objj_stringBuffer
+        // When we have an empty array literal ([]), tuples[0][0] will be an empty StringBuffer
         CONCAT(aStringBuffer, tuples[0][0]);
         
         CONCAT(aStringBuffer, ']');
@@ -260,7 +255,7 @@ objj_preprocessor.prototype.brackets = function(/*objj_lexer*/ tokens, /*objj_st
     
     else
     {
-        var selector = new objj_stringBuffer();
+        var selector = new StringBuffer();
         //alert(tuples[0][0].toString() + "]" );
         // The first two arguments are always the receiver and the selector.
         if (tuples[0][0].atoms[0] == TOKEN_SUPER)
@@ -273,12 +268,12 @@ objj_preprocessor.prototype.brackets = function(/*objj_lexer*/ tokens, /*objj_st
             CONCAT(aStringBuffer, "objj_msgSend(");
             CONCAT(aStringBuffer, tuples[0][0]);
         }
-        
+
         CONCAT(selector, tuples[0][1]);
-        
+
         var index = 1,
             count = tuples.length,
-            marg_list = new objj_stringBuffer();
+            marg_list = new StringBuffer();
         
         for(; index < count; ++index)
         {
@@ -296,10 +291,10 @@ objj_preprocessor.prototype.brackets = function(/*objj_lexer*/ tokens, /*objj_st
     }
 }
 
-objj_preprocessor.prototype.directive = function(tokens, aStringBuffer, allowedDirectivesFlags)
+Preprocessor.prototype.directive = function(tokens, aStringBuffer, allowedDirectivesFlags)
 {
     // Grab the next token, preprocessor directives follow '@' immediately.
-    var buffer = aStringBuffer ? aStringBuffer : new objj_stringBuffer(),
+    var buffer = aStringBuffer ? aStringBuffer : new StringBuffer(),
         token = tokens.next();
             
     // To provide compatibility with Objective-C files, we convert NSString literals into 
@@ -335,18 +330,7 @@ objj_preprocessor.prototype.directive = function(tokens, aStringBuffer, allowedD
         return buffer;
 }
 
-objj_preprocessor.prototype.fragment = function()
-{
-    var preprocessed = this._preprocessed.toString();
-    
-    // But make sure it's not just all whitespace!
-    if ((/[^\s]/).test(preprocessed))
-        this._fragments.push(fragment_create_code(preprocessed, this._bundle, this._file));
-    
-    this._preprocessed.clear();
-}
-
-objj_preprocessor.prototype.implementation = function(tokens, /*objj_stringBuffer*/ aStringBuffer)
+Preprocessor.prototype.implementation = function(tokens, /*StringBuffer*/ aStringBuffer)
 {
     var buffer = aStringBuffer,
         token = "",
@@ -354,14 +338,15 @@ objj_preprocessor.prototype.implementation = function(tokens, /*objj_stringBuffe
         class_name = tokens.skip_whitespace(),
         superclass_name = "Nil",
 
-        instance_methods = new objj_stringBuffer(),
-        class_methods = new objj_stringBuffer();
+        instance_methods = new StringBuffer(),
+        class_methods = new StringBuffer();
     
     if (!(/^\w/).test(class_name))
         objj_exception_throw(new objj_exception(OBJJParseException, this.error_message("*** Expected class name, found \"" + class_name + "\".")));
-    
-    this._currentSuperClass = NULL;
-    this._currentSuperMetaClass = NULL;
+
+    this._currentSuperClass = "objj_getClass(\"" + class_name + "\").super_class";
+    this._currentSuperMetaClass = "objj_getMetaClass(\"" + class_name + "\").super_class";
+
     this._currentClass = class_name;
     this._currentSelector = "";
 
@@ -379,20 +364,6 @@ objj_preprocessor.prototype.implementation = function(tokens, /*objj_stringBuffe
         CONCAT(buffer, "{\nvar the_class = objj_getClass(\"" + class_name + "\")\n");
         CONCAT(buffer, "if(!the_class) objj_exception_throw(new objj_exception(OBJJClassNotFoundException, \"*** Could not find definition for class \\\"" + class_name + "\\\"\"));\n");
         CONCAT(buffer, "var meta_class = the_class.isa;");
-        
-        var superclass_name = dictionary_getValue(SUPER_CLASSES, class_name);
-
-        // FIXME: We should have a better solution for this case, although it's actually not much slower than the real case.
-        if (!superclass_name)
-        {
-            this._currentSuperClass = "objj_getClass(\"" + class_name + "\").super_class";
-            this._currentSuperMetaClass = "objj_getMetaClass(\"" + class_name + "\").super_class";
-        }
-        else
-        {
-            this._currentSuperClass = "objj_getClass(\"" + superclass_name + "\")";
-            this._currentSuperMetaClass = "objj_getMeraClass(\"" + superclass_name + "\")";
-        }
     }
     else
     {
@@ -405,11 +376,6 @@ objj_preprocessor.prototype.implementation = function(tokens, /*objj_stringBuffe
                 objj_exception_throw(new objj_exception(OBJJParseException, this.error_message("*** Expected class name, found \"" + token + "\".")));
             
             superclass_name = token;
-
-            this._currentSuperClass = "objj_getClass(\"" + superclass_name + "\")";
-            this._currentSuperMetaClass = "objj_getMetaClass(\"" + superclass_name + "\")";
-            
-            dictionary_setValue(SUPER_CLASSES, class_name, superclass_name);
 
             token = tokens.skip_whitespace();
         }
@@ -475,7 +441,7 @@ objj_preprocessor.prototype.implementation = function(tokens, /*objj_stringBuffe
                 if (IS_NOT_EMPTY(instance_methods))
                     CONCAT(instance_methods, ",\n");
                 
-                CONCAT(instance_methods, this.method(new objj_lexer(getterCode)));
+                CONCAT(instance_methods, this.method(new Lexer(getterCode)));
                 
                 // setter
                 if (accessor["readonly"])
@@ -499,7 +465,7 @@ objj_preprocessor.prototype.implementation = function(tokens, /*objj_stringBuffe
                 if (IS_NOT_EMPTY(instance_methods))
                     CONCAT(instance_methods, ",\n");
                 
-                CONCAT(instance_methods, this.method(new objj_lexer(setterCode)));
+                CONCAT(instance_methods, this.method(new Lexer(setterCode)));
             }
         }
         else
@@ -507,9 +473,6 @@ objj_preprocessor.prototype.implementation = function(tokens, /*objj_stringBuffe
         
         // We must make a new class object for our class definition.
         CONCAT(buffer, "objj_registerClassPair(the_class);\n");
-
-        // Add this class to the current bundle.
-        CONCAT(buffer, "objj_addClassForBundle(the_class, objj_getBundleWithPath(OBJJ_CURRENT_BUNDLE.path));\n");
     }
     
     while ((token = tokens.skip_whitespace()))
@@ -565,16 +528,13 @@ objj_preprocessor.prototype.implementation = function(tokens, /*objj_stringBuffe
     this._currentClass = "";
 }
 
-objj_preprocessor.prototype._import = function(tokens)
+Preprocessor.prototype._import = function(tokens)
 {
-    // The introduction of an import statement forces the creation of a code fragment.
-    this.fragment();
-    
     var path = "",
         token = tokens.skip_whitespace(),
         isLocal = (token != TOKEN_LESS_THAN);
 
-    if (token == TOKEN_LESS_THAN)
+    if (token === TOKEN_LESS_THAN)
     {
         while((token = tokens.next()) && token != TOKEN_GREATER_THAN)
             path += token;
@@ -588,13 +548,17 @@ objj_preprocessor.prototype._import = function(tokens)
     
     else
         objj_exception_throw(new objj_exception(OBJJParseException, this.error_message("*** Expecting '<' or '\"', found \"" + token + "\".")));
-    
-    this._fragments.push(fragment_create_file(path, NULL, isLocal, this._file));
+
+    CONCAT(this._buffer, "objj_executeFile(\"");
+    CONCAT(this._buffer, path);
+    CONCAT(this._buffer, isLocal ? "\", true);" : "\", false);");
+
+    this._dependencies.push(new FileDependency(path, isLocal));
 }
 
-objj_preprocessor.prototype.method = function(tokens)
+Preprocessor.prototype.method = function(/*Lexer*/ tokens)
 {
-    var buffer = new objj_stringBuffer(),
+    var buffer = new StringBuffer(),
         token,
         selector = "",
         parameters = [],
@@ -687,9 +651,9 @@ objj_preprocessor.prototype.method = function(tokens)
     return buffer;
 }
 
-objj_preprocessor.prototype.preprocess = function(tokens, /*objj_stringBuffer*/ aStringBuffer, terminator, instigator, tuple)
+Preprocessor.prototype.preprocess = function(tokens, /*StringBuffer*/ aStringBuffer, terminator, instigator, tuple)
 {
-    var buffer = aStringBuffer ? aStringBuffer : new objj_stringBuffer(),
+    var buffer = aStringBuffer ? aStringBuffer : new StringBuffer(),
         count = 0,
         token = "";
 
@@ -819,19 +783,11 @@ objj_preprocessor.prototype.preprocess = function(tokens, /*objj_stringBuffer*/ 
             else if (token == terminator) 
                 --count;    
         }
-        
-        // imports are deprecated in favor of @imort
-        if(token == TOKEN_IMPORT)
-        {
-            objj_fprintf(warning_stream, this._file.path + ": import keyword is deprecated, use @import instead.");
-            
-            this._import(tokens);
-        }
-        
+
         // Safari can't handle function declarations of the form function [name]([arguments]) { } 
         // in evals.  It requires them to be in the form [name] = function([arguments]) { }.  So we 
         // need to find these and fix them.
-        else if (token === TOKEN_FUNCTION)
+        if (token === TOKEN_FUNCTION)
         {//if (window.p) alert("function");
             var accumulator = "";
         
@@ -893,14 +849,14 @@ objj_preprocessor.prototype.preprocess = function(tokens, /*objj_stringBuffer*/ 
     // If we get this far and we're parsing an objj_msgSend (or array), then we have a problem.
     if (tuple)
         objj_exception_throw(new objj_exception(OBJJParseException, this.error_message("*** Expected ']' - Unterminated message send or array.")));
-    
+
     if (!aStringBuffer)
         return buffer;
 }
 
-objj_preprocessor.prototype.selector = function(tokens, aStringBuffer)
+Preprocessor.prototype.selector = function(tokens, aStringBuffer)
 {
-    var buffer = aStringBuffer ? aStringBuffer : new objj_stringBuffer();
+    var buffer = aStringBuffer ? aStringBuffer : new StringBuffer();
     
     CONCAT(buffer, "sel_getUid(\"");
     
@@ -943,9 +899,12 @@ objj_preprocessor.prototype.selector = function(tokens, aStringBuffer)
         return buffer;
 }
 
-objj_preprocessor.prototype.error_message = function(errorMessage)
+Preprocessor.prototype.error_message = function(errorMessage)
 {
-    return errorMessage + " <Context File: "+ this._file.path +
+    return errorMessage + " <Context File: "+ this._filePath +
                                 (this._currentClass ? " Class: "+this._currentClass : "") +
                                 (this._currentSelector ? " Method: "+this._currentSelector : "") +">";
 }
+
+exports.Preprocessor = Preprocessor;
+exports.preprocess = preprocess;

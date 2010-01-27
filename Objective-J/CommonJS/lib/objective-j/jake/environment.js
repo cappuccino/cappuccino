@@ -88,26 +88,12 @@ CommonJS.setCompilerFlags(["-DPLATFORM_COMMONJS"]);
 
 exports.CommonJS = CommonJS;
 
-var W3C = new Environment("W3C");
+var Browser = new Environment("Browser");
 
-W3C.setCompilerFlags(["-DPLATFORM_BROWSER", "-DPLATFORM_DOM"]);
-W3C.setSpritesImagesAsDataURLs(true);
+Browser.setCompilerFlags(["-DPLATFORM_BROWSER", "-DPLATFORM_DOM"]);
+//Browser.setSpritesImagesAsDataURLs(true);
 
-exports.W3C = W3C;
-
-var IE7 = new Environment("IE7");
-
-IE7.setCompilerFlags(["-DPLATFORM_BROWSER", "-DPLATFORM_DOM"]);
-IE7.setSpritesImagesAsMHTML(true);
-
-exports.IE7 = IE7;
-
-var IE8 = new Environment("IE8");
-
-IE8.setCompilerFlags(["-DPLATFORM_BROWSER", "-DPLATFORM_DOM"]);
-IE8.setSpritesImagesAsDataURLs(true);
-
-exports.IE8 = IE8;
+exports.Browser = Browser;
 
 function EnvironmentCollection(/*String*/ aName, /*Array*/ environments)
 {
@@ -138,6 +124,3 @@ EnvironmentCollection.prototype.flattenedEnvironments = function()
 
     return environments;
 }
-
-exports.Browsers = new EnvironmentCollection("Browsers", [W3C, IE7, IE8]);
-

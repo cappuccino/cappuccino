@@ -1,9 +1,9 @@
 /*
- * Object.j
+ * FileDependency.js
  * Objective-J
  *
  * Created by Francisco Tolmasky.
- * Copyright 2008, 280 North, Inc.
+ * Copyright 2010, 280 North, Inc.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -20,22 +20,31 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-@implementation Object
+function FileDependency(/*String*/ aPath, /*BOOL*/ isLocal)
 {
-    Class isa;
+    this._path = FILE.normal(aPath);
+    this._isLocal = isLocal;
 }
 
-+ (void)initialize
+FileDependency.prototype.path = function()
 {
+    return this._path;
 }
 
-- (void)doesNotRecognizeSelector:(SEL)aSelector
+FileDependency.prototype.isLocal = function()
 {
+    return this._isLocal;
 }
 
-- (id)forwardSelector:(SEL)selector arguments:(void)args
+FileDependency.prototype.toMarkedString = function()
 {
-    return nil;
+    return  (this.isLocal() ? MARKER_IMPORT_LOCAL : MARKER_IMPORT_STD) + ";" +
+            this.path().length + ";" + this.path();
 }
 
-@end
+FileDependency.prototype.toString = function()
+{
+    return (this.isLocal() ? "LOCAL: " : "STD: ") + this.path(); 
+}
+
+exports.FileDependency = FileDependency;

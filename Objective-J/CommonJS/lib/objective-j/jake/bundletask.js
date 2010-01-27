@@ -7,7 +7,8 @@ var FILE = require("file"),
     CLEAN = require("jake/clean").CLEAN,
     CLOBBER = require("jake/clean").CLOBBER,
     base64 = require("base64"),
-    environment = require("objective-j/jake/environment");
+    environment = require("objective-j/jake/environment"),
+    PropertyList = require("objective-j/core").PropertyList;
 
 var Task = Jake.Task,
     filedir = Jake.filedir;
@@ -34,7 +35,7 @@ function BundleTask(aName, anApplication)
 {
     Task.apply(this, arguments);
 
-    this.setEnvironments([environment.Browsers, environment.CommonJS]);
+    this.setEnvironments([environment.Browser, environment.CommonJS]);
 
     this._author = null;
     this._email = null;
@@ -337,39 +338,29 @@ BundleTask.prototype.packageType = function()
 
 BundleTask.prototype.infoPlist = function()
 {
-    var infoPlistPath = this.infoPlistPath(),
-        objj_dictionary = require("objective-j").objj_dictionary;
+    var infoPlistPath = this.infoPlistPath();
 
     if (infoPlistPath && FILE.exists(infoPlistPath))
-        var infoPlist = require("objective-j/plist").readPlist(infoPlistPath);
+        var infoPlist = PropertyList.createFromString(FILE.read(infoPlistPath, { charset:"UTF-8" }));
     else
-        var infoPlist = new objj_dictionary();
+        var infoPlist = new require("objective-j/core").Dictionary();
 
     // FIXME: Should all of these unconditionally overwrite?
-    infoPlist.setValue("CPBundleInfoDictionaryVersion", 6.0);
-    infoPlist.setValue("CPBundleName", this.productName());
-    infoPlist.setValue("CPBundleIdentifier", this.identifier());
-    infoPlist.setValue("CPBundleVersion", this.version());
-    infoPlist.setValue("CPBundlePackageType", this.packageType());
-    infoPlist.setValue("CPBundleEnvironments", this.flattenedEnvironments().map(function(anEnvironment)
+    infoPlist.setValueForKey("CPBundleInfoDictionaryVersion", 6.0);
+    infoPlist.setValueForKey("CPBundleName", this.productName());
+    infoPlist.setValueForKey("CPBundleIdentifier", this.identifier());
+    infoPlist.setValueForKey("CPBundleVersion", this.version());
+    infoPlist.setValueForKey("CPBundlePackageType", this.packageType());
+    infoPlist.setValueForKey("CPBundleEnvironments", this.flattenedEnvironments().map(function(anEnvironment)
     {
         return anEnvironment.name();
     }));
-    infoPlist.setValue("CPBundleExecutable", this.productName() + ".sj");
+    infoPlist.setValueForKey("CPBundleExecutable", this.productName() + ".sj");
 
     var principalClass = this.principalClass();
 
     if (principalClass)
-        infoPlist.setValue("CPPrincipalClass", principalClass);
-
-    var replacedFiles = this._replacedFiles,
-        replacedFilesDictionary = new objj_dictionary();
-
-    for (var engine in replacedFiles)
-        if (replacedFiles.hasOwnProperty(engine))
-            replacedFilesDictionary.setValue(engine, replacedFiles[engine]);
-
-    infoPlist.setValue("CPBundleReplacedFiles", replacedFilesDictionary);
+        infoPlist.setValueForKey("CPPrincipalClass", principalClass);
 
     return infoPlist;
 }
@@ -381,7 +372,7 @@ BundleTask.prototype.defineInfoPlistTask = function()
 
     filedir (infoPlistProductPath, function()
     {
-        require("objective-j/plist").writePlist(infoPlistProductPath, bundleTask.infoPlist());
+        FILE.write(infoPlistProductPath, PropertyList.createStringWithFormat(bundleTask.infoPlist(), PropertyList.Format280North_v1_0), { charset:"UTF-8" });
     });
 
     var infoPlistPath = this.infoPlistPath();
@@ -597,11 +588,13 @@ BundleTask.prototype.defineStaticTask = function()
                 {
                     var relativePath = flattensSources ? FILE.basename(aFilename) : FILE.relative(sourcesPath, aFilename);
 
-                    fileStream.write("p;" + relativePath.length + ";" + relativePath);
-
                     // FIXME: We need to do this for now due to file.read adding newlines. Revert when fixed.
                     //fileStream.write(FILE.read(aFilename, { charset:"UTF-8" }));
-                    fileStream.write(FILE.read(aFilename, { mode:"b" }).decodeToString("UTF-8"));
+                    fileStream.write("p;" + relativePath.length + ";" + relativePath);
+
+                    var fileContents = FILE.read(aFilename, { mode:"b" }).decodeToString("UTF-8");
+
+                    fileStream.write("t;" + fileContents.length + ";" + fileContents);
                 }
 
                 else if (aFilename.indexOf(resourcesPath) === 0)
