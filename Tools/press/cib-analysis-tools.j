@@ -3,20 +3,20 @@
 
 function findCibClassDependencies(cibPath) {
     var cib = [[CPCib alloc] initWithContentsOfURL:cibPath];
-    
+
     var dependencies = {};
-    
+
     var CPClassFromStringOriginal = CPClassFromString;
     CPClassFromString = function(aClassName) {
         var result = CPClassFromStringOriginal(aClassName);
-        
+
         // print("CPClassFromString: " + Array.prototype.slice.call(arguments) + " => " + result);
         dependencies[aClassName] = true;
-        
+
         return result;
     }
-    
-    // make sure CPApp is init'd    
+
+    // make sure CPApp is init'd
     [CPApplication sharedApplication]
 
     try {
@@ -26,7 +26,7 @@ function findCibClassDependencies(cibPath) {
     } finally {
         CPClassFromString = CPClassFromStringOriginal;
     }
-    
+
     return Object.keys(dependencies);
 }
 // this is copied from CPCib's "instantiateCibWithExternalNameTable:"
@@ -55,16 +55,16 @@ function findCibClassDependencies(cibPath) {
     [unarchiver setExternalObjectsForProxyIdentifiers:nil/*[anExternalNameTable objectForKey:CPCibExternalObjects]*/];
 
     var objectData = [unarchiver decodeObjectForKey:"CPCibObjectDataKey"];
-    
+
     if (!objectData || ![objectData isKindOfClass:[_CPCibObjectData class]])
         return NO;
-    
+
     var topLevelObjects = nil;//[anExternalNameTable objectForKey:CPCibTopLevelObjects];
-    
+
     [objectData instantiateWithOwner:owner topLevelObjects:topLevelObjects]
     // [objectData establishConnectionsWithOwner:owner topLevelObjects:topLevelObjects];
     // [objectData awakeWithOwner:owner topLevelObjects:topLevelObjects];
-     
+
     // Display Visible Windows.
     // [objectData displayVisibleWindows];
 
