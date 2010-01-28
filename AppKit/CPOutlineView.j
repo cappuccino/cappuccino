@@ -340,6 +340,45 @@ var CPOutlineViewDataSource_outlineView_setObjectValue_forTableColumn_byItem_   
     return frame;
 }
 
+- (void)selectRowIndexes:(CPIndexSet)rows byExtendingSelection:(BOOL)shouldExtendSelection
+{
+	// First un highlight the old disclosure controls	
+	var previousSelectedRows = [];
+	[[self selectedRowIndexes] getIndexes:previousSelectedRows maxCount:-1 inIndexRange:nil];
+	
+	var index = [previousSelectedRows count];
+	while (index--)
+	{
+		var rowIndex = previousSelectedRows[index],
+			item = [self itemAtRow:rowIndex];
+		
+		if (![self isExpandable:item])
+			return;
+		
+		var control = _disclosureControlsForRows[rowIndex];
+		[control setHighlighted:NO];
+	}
+	
+	[super selectRowIndexes:rows byExtendingSelection:shouldExtendSelection];
+	
+	// Now highlight the new disclosure controls
+	var selectedRows = [];
+    [rows getIndexes:selectedRows maxCount:-1 inIndexRange:nil];
+	
+    var index = [selectedRows count];
+	while (index--)
+	{
+		var rowIndex = selectedRows[index],
+			item = [self itemAtRow:rowIndex];
+		
+		if (![self isExpandable:item])
+			return;
+		
+		var control = _disclosureControlsForRows[rowIndex];
+		[control setHighlighted:YES];
+	}
+}
+
 - (void)setDelegate:(id)aDelegate
 {
     if (_outlineViewDelegate === aDelegate)
@@ -907,7 +946,7 @@ var _loadItemInfoForItem = function(/*CPOutlineView*/ anOutlineView, /*id*/ anIt
 
     CGContextClosePath(context);
 
-    CGContextSetFillColor(context, ([self themeState] & CPThemeState("highlighted")) ? [CPColor blackColor] : [CPColor grayColor]);
+    CGContextSetFillColor(context, [self isHighlighted] ? [CPColor whiteColor] : [CPColor grayColor]);
     CGContextFillPath(context);
 }
 
