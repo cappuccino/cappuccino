@@ -75,9 +75,10 @@ CPTableColumnUserResizingMask   = 2;
         [header setBackgroundColor:[CPColor colorWithPatternImage:CPAppKitImage("tableview-headerview.png", CGSizeMake(1.0, 23.0))]];
         [self setHeaderView:header];
         
-        var textDataView = [CPTextField new];
+        var textDataView = [[CPTextField alloc] init];
         [textDataView setValue:[CPColor whiteColor] forThemeAttribute:@"text-color" inState:CPThemeStateHighlighted];
         [textDataView setValue:[CPFont boldSystemFontOfSize:12] forThemeAttribute:@"font" inState:CPThemeStateHighlighted];
+		[textDataView setValue:CPCenterVerticalTextAlignment forThemeAttribute:@"vertical-alignment"];
         [self setDataView:textDataView];
     }
 
