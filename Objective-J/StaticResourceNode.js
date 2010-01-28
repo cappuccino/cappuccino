@@ -1,5 +1,8 @@
 
 var FILE =
+#ifdef COMMONJS
+require("file");
+#else
 {
     absolute: function(/*String*/ aPath)
     {
@@ -20,11 +23,7 @@ var FILE =
 
     cwd: function()
     {
-#if BROWSER
         return FILE.dirname(window.location.pathname);
-#else
-        return require("file").cwd();
-#endif
     },
 
     normal: function(/*String*/ aPath)
@@ -69,7 +68,12 @@ var FILE =
 
     dirname: function(/*String*/ aPath)
     {
-        var components = FILE.split(FILE.normal(aPath));
+        var aPath = FILE.normal(aPath);
+
+        if (aPath === "/")
+            return aPath;
+
+        var components = FILE.split(aPath);
 
         return FILE.join.apply(FILE, components.slice(0, components.length - 1));
     },
@@ -89,6 +93,7 @@ var FILE =
         return FILE.normal(aPath).split("/");
     }
 }
+#endif
 
 StaticResourceNode.FileType             = 0;
 StaticResourceNode.DirectoryType        = 1;
@@ -182,7 +187,7 @@ StaticResourceNode.prototype.write = function(/*String*/ aString)
 }
 
 StaticResourceNode.prototype.resolveAsFile = function()
-{console.log("NOW LOOKING FOR FILE!");
+{
     var self = this;
 
     function onsuccess(/*anEvent*/ anEvent)
@@ -194,7 +199,7 @@ StaticResourceNode.prototype.resolveAsFile = function()
     }
 
     function onfailure()
-    {console.log("FIALE");
+    {
         self._type = StaticResourceNode.NotFoundType;
 
         resolveStaticResourceNode(self, YES);
@@ -205,9 +210,16 @@ StaticResourceNode.prototype.resolveAsFile = function()
 
 StaticResourceNode.prototype.resolveSubPath = function(/*String*/ aPath, /*Type*/ aType, /*Function*/ aCallback)
 {
-    var components = FILE.split(FILE.normal(FILE.join(this.path(), aPath))),
+    aPath = FILE.normal(aPath);
+
+    if (aPath === "/")
+        return aCallback(rootNode);
+
+    if (!FILE.isAbsolute(aPath))
+        aPath = FILE.join(this.path(), aPath);
+
+    var components = FILE.split(aPath),
         index = this === this.rootNode() ? 1 : FILE.split(this.path()).length;
-//console.log("request for " + FILE.normal(this.path() + "/" + aPath));
 
     resolvePathComponents(this, aType, components, index, aCallback);
 }
@@ -221,7 +233,8 @@ function resolvePathComponents(/*StaticResourceNode*/ startNode, /*Type*/aType, 
     {
         var name = components[index],
             childNode = parentNode._childNodes[name];
-//console.log(name + " of " + parentNode.name() + " " + (childNode && childNode.name()));
+//CPLog(index + " " + components + ":" + (childNode && childNode.isResolved()) + ":");
+//CPLog(name + " of " + parentNode.name() + " " + (childNode && childNode.name()));
 //console.log(parentNode._childNodes);
 // + "(" + components  + ")" + " " + index + "/" + count + ":" + (childNode && childNode.name()) +">" + (childNode ? 1:0) + " " + (childNode && childNode.isResolved()));
         if (!childNode)
@@ -247,7 +260,10 @@ function resolvePathComponents(/*StaticResourceNode*/ startNode, /*Type*/aType, 
             {
                 childNode = new StaticResourceNode(name, parentNode, StaticResourceNode.FileType, NO);
 
-                childNode.addEventListener("resolve", continueResolution);
+                if (childNode.isResolved())
+                    continueResolution();
+                else
+                    childNode.addEventListener("resolve", continueResolution);
             }
 
             return;            
@@ -258,7 +274,7 @@ function resolvePathComponents(/*StaticResourceNode*/ startNode, /*Type*/aType, 
             // If we've already determined that this file doesn't exist...
             if (childNode.isNotFound())
                 return aCallback(null, new Error("File not found: " + components.join("/")));
-    
+
             // If we have no more path components...
             if (index + 1 >= count)
                 return aCallback(childNode);

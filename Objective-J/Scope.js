@@ -73,9 +73,6 @@ function fileExecuterForPath(/*String*/ referencePath)
     
             if (0 && !fileExecutable.hasLoadedFileDependencies())
                 throw "No executable loaded for file at path " + aPath;
-        //console.log("executing " + aPath);
-        //console.log(aPath + " " + (isLocal ? 1 : 0) + " " + executable.isLoaded() + " " + executable.hasLoadedDependencies());
-    
     
             fileExecutable.execute(shouldForce);
         }
@@ -103,33 +100,31 @@ function fileImporterForPath(/*String*/ referencePath)
             var fileExecutableSearch = new FileExecutableSearch(aPath, isLocal);
     
             function searchComplete(/*FileExecutableSearch*/ aFileExecutableSearch)
-            {console.log("search complete: " + aFileExecutableSearch);
+            {
                 var fileExecutable = aFileExecutableSearch.result(),
-                    fileExecuter = fileExecuterForPath(referencePath);
-        
-                if (!fileExecutable.hasLoadedFileDependencies())
-                {
-                    fileExecutable.loadFileDependencies();
-        
-                    fileExecutable.addEventListener("dependenciesload", function()
+                    fileExecuter = fileExecuterForPath(referencePath),
+                    executeAndCallback = function ()
                     {
                         fileExecuter(aPath, isLocal);
-                        aCallback();
-                    });
+
+                        if (aCallback)
+                            aCallback();
+                    }
+
+                if (!fileExecutable.hasLoadedFileDependencies())
+                {
+                    fileExecutable.addEventListener("dependenciesload", executeAndCallback);
+                    fileExecutable.loadFileDependencies();
                 }
                 else
-                {
-                    fileExecuter(aPath, isLocal);
-                    aCallback();
-                }
+                    executeAndCallback();
             }
     
             if (fileExecutableSearch.isComplete())
-                searchComplete(search);
+                searchComplete(fileExecutableSearch);
             else
                 fileExecutableSearch.addEventListener("complete", function(/*Event*/ anEvent)
                 {
-                    console.log("completed...");
                     searchComplete(anEvent.fileExecutableSearch);
                 });
         }
@@ -139,3 +134,5 @@ function fileImporterForPath(/*String*/ referencePath)
 
     return cachedImporter;
 }
+
+exports.fileImporterForPath = fileImporterForPath;

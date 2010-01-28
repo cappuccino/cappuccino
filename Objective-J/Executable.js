@@ -73,20 +73,43 @@ Executable.prototype.path = function()
 
 Executable.prototype.functionParameters = function()
 {
-    return exportedNames().concat("objj_executeFile", "objj_importFile", "__OBJJ_BUNDLE__");
+    var functionParameters = exportedNames().concat("objj_executeFile", "objj_importFile");
+
+#ifdef COMMONJS
+    functionParameters = functionParameters.concat("require", "exports", "module", "system", "print");
+#endif
+
+    return functionParameters;
 }
 
 Executable.prototype.functionArguments = function()
 {
-    var path = this.path();
+    var path = this.path()
+        functionArguments = exportedValues().concat(fileExecuterForPath(path), fileImporterForPath(path));
 
-    return exportedValues().concat(fileExecuterForPath(path), fileImporterForPath(path));
+#ifdef COMMONJS
+    functionArguments = functionArguments.concat(Executable.commonJSArguments());
+#endif
+
+    return functionArguments;
 }
+
+#ifdef COMMONJS
+Executable.setCommonJSArguments = function()
+{
+    this._commonJSArguments = Array.prototype.slice.call(arguments);
+}
+
+Executable.commonJSArguments = function()
+{
+    return this._commonJSArguments || [];
+}
+#endif
 
 Executable.prototype.execute = function()
 {
 #if EXECUTION_LOGGING
-    console.log("EXECUTION: " + this.path());
+    CPLog("EXECUTION: " + this.path());
 #endif
     var oldContextBundle = CONTEXT_BUNDLE;
 
@@ -121,7 +144,7 @@ var globalIteration = 0;
 Executable.prototype.loadFileDependencies = function()
 {
 #if DEPENDENCY_LOGGING
-    console.log("DEPENDENCY: initiated by " + this.scope());
+    CPLog("DEPENDENCY: initiated by " + this.scope());
 #endif
     if (this._fileDependencyLoadStatus !== ExecutableUnloadedFileDependencies)
         return;
@@ -203,12 +226,12 @@ Executable.prototype.loadFileDependencies = function()
             return;
 #else
         {
-            console.log("DEPENDENCY: more dependencies: ");
-            console.log(incompleteFileExecutableSearches.toString());
+            CPLog("DEPENDENCY: more dependencies: ");
+            CPLog(incompleteFileExecutableSearches.toString());
             return;
         }
 
-        console.log("DEPENDENCY: Ended");
+        CPLog("DEPENDENCY: Ended");
 #end
         var fileExecutablesNeedingEventDispatch = [];
 
@@ -251,3 +274,5 @@ Executable.prototype.removeEventListener = function(/*String*/ anEventName, /*Fu
 {
     this._eventDispatcher.removeEventListener(anEventName, aListener);
 }
+
+exports.Executable = Executable;

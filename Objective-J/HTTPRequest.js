@@ -170,7 +170,7 @@ function determineAndDispatchHTTPRequestEvents(/*HTTPRequest*/ aRequest)
 
 function FileRequest(/*String*/ aFilePath, onsuccess, onfailure)
 {
-#if BROWSER
+#ifdef BROWSER
     var request = new HTTPRequest();
 
     request.onsuccess = onsuccess;
@@ -179,14 +179,16 @@ function FileRequest(/*String*/ aFilePath, onsuccess, onfailure)
     request.open("GET", aFilePath, YES);
     request.send("");
 #else
-    if (!require("file").exists(aFilePath))
+    if (!FILE.exists(aFilePath))
         return onfailure();
+
+    this._responseText = FILE.read(aFilePath, { charset: "UTF-8" });
 
     onsuccess({ type:"success", request:this });
 #endif
 }
 
-#if COMMONJS
+#ifdef COMMONJS
 FileRequest.prototype.responseText = function()
 {
     return this._responseText;
@@ -199,6 +201,6 @@ FileRequest.prototype.responseXML = function()
 
 FileRequest.prototype.responsePropertyList = function()
 {
-    return PropertyList.createFromString(responseText);
+    return PropertyList.createFromString(this.responseText());
 }
 #endif
