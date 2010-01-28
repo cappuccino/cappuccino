@@ -549,7 +549,10 @@ var supportsNativeDragAndDrop = [CPPlatform supportsDragAndDrop];
             dragOperation = CPDragOperationLink;
         else
             dragOperation = CPDragOperationNone;
-
+		
+		// Temporary hack to work around the 'drop' event type never being fired
+		[dragServer performDragOperationInPlatformWindow:self];
+		
         [dragServer draggingEndedInPlatformWindow:self globalLocation:[CPPlatform isBrowser] ? location : _CGPointMake(aDOMEvent.screenX, aDOMEvent.screenY) operation:dragOperation];
     }
 

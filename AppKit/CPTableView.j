@@ -182,6 +182,8 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     SEL         _doubleAction;
     unsigned    _columnAutoResizingStyle;
 
+	CPView		_dropOperationFeedbackView;
+
 //    BOOL        _verticalMotionCanDrag;
 //    unsigned    _destinationDragStyle;
 //    BOOL        _isSelectingSession;
@@ -249,10 +251,10 @@ window.setTimeout(function(){
         self._retargetedDropOperation = nil;
         self._dragOperationDefaultMask = nil;
         self._destinationDragStyle = CPTableViewDraggingDestinationFeedbackStyleRegular;
-        self._dropOperationFeedbackView = [[_dropOperationDrawingView alloc] initWithFrame:_CGRectMakeZero()];
-        [self addSubview:_dropOperationFeedbackView];
-        [_dropOperationFeedbackView setHidden:YES];
-        [_dropOperationFeedbackView setTableView:self];
+        // self._dropOperationFeedbackView = [[_dropOperationDrawingView alloc] initWithFrame:_CGRectMakeZero()];
+        // [self addSubview:_dropOperationFeedbackView];
+        // [_dropOperationFeedbackView setHidden:YES];
+        // [_dropOperationFeedbackView setTableView:self];
 },0);
 
         _tableDrawView = [[_CPTableDrawView alloc] initWithTableView:self];
@@ -1535,8 +1537,6 @@ window.setTimeout(function(){
     return _verticalMotionCanDrag;
 }
 
-
-
 //Sorting
 /*
     * - setSortDescriptors:
@@ -2297,18 +2297,29 @@ window.setTimeout(function(){
         [self sendAction:_doubleAction to:_target];
 }
 
+- (CPView)_dropOperationFeedbackView
+{
+	return _dropOperationFeedbackView;
+}
+
+- (void)_setDropOperationFeedbackView:(CPView)theFeedbackView
+{
+	if (_dropOperationFeedbackView === theFeedbackView)
+		return;
+		
+	[_dropOperationFeedbackView removeFromSuperview];
+	_dropOperationFeedbackView = theFeedbackView;
+	[self addSubview:_dropOperationFeedbackView positioned:CPWindowBelow relativeTo:nil];
+}
+
 /*
     @ignore
 */
 - (CPDragOperation)draggingEntered:(id)sender
 {
-    var dropOperation = [self _proposedDropOperation],
-        draggingLocation = [sender draggingLocation],
-        row;
-
-    var location = [self convertPoint:draggingLocation fromView:nil];
-
-    row = [self _proposedRowAtPoint:location];
+    var location = [self convertPoint:[sender draggingLocation] fromView:nil],
+		dropOperation = [self _proposedDropOperationAtPoint:location],
+    	row = [self _proposedRowAtPoint:location];
     
     if(_retargetedDropRow !== nil)
         row = _retargetedDropRow;
@@ -2331,7 +2342,7 @@ window.setTimeout(function(){
 */
 - (void)draggingExited:(id)sender
 {
-    [_dropOperationFeedbackView setHidden:YES];
+	[[self _dropOperationFeedbackView] setHidden:NO];
 }
 
 /*
@@ -2347,7 +2358,7 @@ window.setTimeout(function(){
     _retargetedDropOperation = nil;
     _retargetedDropRow = nil;
     _draggedRowIndexes = [CPIndexSet indexSet];
-    [_dropOperationFeedbackView setHidden:YES];
+	[[self _dropOperationFeedbackView] setHidden:YES];
 }
 /*
     @ignore
@@ -2360,14 +2371,19 @@ window.setTimeout(function(){
 /*
     @ignore
 */
-- (CPTableViewDropOperation)_proposedDropOperation
+- (CPTableViewDropOperation)_proposedDropOperationAtPoint:(CGPoint)theDragPoint
 {
-    //check is something is forced...
-    // otherwise we use the above action by default
-    if(_retargetedDropOperation !== nil)
-        return _retargetedDropOperation;
-    else
-        return CPTableViewDropAbove;
+	if(_retargetedDropOperation !== nil) 
+		return _retargetedDropOperation;
+        
+
+	var row = [self rowAtPoint:theDragPoint],
+		rowRect = [self rectOfRow:row];
+		
+	if (CGRectContainsPoint(rowRect, theDragPoint)) 
+		return CPTableViewDropOn;
+		
+	return CPTableViewDropAbove;
 }
 
 /*
@@ -2382,7 +2398,7 @@ window.setTimeout(function(){
     
     if (dragPoint.y > numberOfRows * (_rowHeight + _intercellSpacing.height))
     {
-        if ([self _proposedDropOperation] === CPTableViewDropAbove) 
+        if ([self _proposedDropOperationAtPoint:dragPoint] === CPTableViewDropAbove) 
             row = numberOfRows;
         else
             row = numberOfRows - 1;
@@ -2401,39 +2417,86 @@ window.setTimeout(function(){
     return CPDragOperationNone;
 }
 
+/*!
+    Returns the subview that will draw the drop highlight on the row.
+	Sublcasses can override this to return a custom view to draw their drop highlight
+    @param theRowIndex the row index that should be highlighted
+*/
+- (CPView)viewForDropHighlightOnRow:(int)theRowIndex
+{
+	var view = [[CPView alloc] initWithFrame:[self rectOfRow:theRowIndex]];
+	[view setBackgroundColor:[CPColor colorWithRed:175.0 / 255.0 green:193.0 / 255.0 blue:220.0 / 255.0 alpha:1.0]];
+	return view;
+}
+
+- (CPRect)rectForDropHighlightViewBetweenUpperRow:(int)theUpperRowIndex andLowerRow:(int)theLowerRowIndex
+{
+	// The default table view implemenation does not use the offset so we just place the view at x 0.0
+	var upperRowRect = [self rectOfRow:theUpperRowIndex],
+		lowerRowRect = [self rectOfRow:theLowerRowIndex];
+	
+		// Place the highlight view in the middle of the rows or in the middle of the intercell spacing
+		// TODO: this currently looks off because the row highlights and labels are not drawn in the middle of the row
+		var yLocation = CPRectGetMaxY(upperRowRect) + [self intercellSpacing].height / 2.0 - 1.0,
+			rect = CPRectMake(0.0, 
+							   yLocation, 
+							   CPRectGetWidth([self frame]), 
+							   2.0);
+						
+	return rect;
+}
+
+/*!
+    Returns the subview that will draw the drop highlight between the rows.
+	Sublcasses can override this to return a custom view to draw their drop highlight
+    @param theUpperRowIndex the index of the upper row
+	@param theLowerRowIndex the index of the lower row
+*/
+- (CPView)viewForDropHighlightBetweenUpperRow:(int)theUpperRowIndex andLowerRow:(int)theLowerRowIndex
+{
+	var view = [[CPView alloc] initWithFrame:[self rectForDropHighlightViewBetweenUpperRow:theUpperRowIndex andLowerRow:theLowerRowIndex]];
+	[view setBackgroundColor:[CPColor greenColor]];
+	return view;
+}
+
 - (CPDragOperation)draggingUpdated:(id)sender
 {
-    var dropOperation = [self _proposedDropOperation],
-        numberOfRows = [self numberOfRows],
-        draggingLocation = [sender draggingLocation],
-        dragOperation,
-        row;
+    var location = [self convertPoint:[sender draggingLocation] fromView:nil],
+		dropOperation = [self _proposedDropOperationAtPoint:location],
+        numberOfRows = [self numberOfRows];
 
-    var location = [self convertPoint:draggingLocation fromView:nil];
-
-    row = [self _proposedRowAtPoint:location];
-    dragOperation = [self _validateDrop:sender proposedRow:row proposedDropOperation:dropOperation];
+    var row = [self _proposedRowAtPoint:location],
+    	dragOperation = [self _validateDrop:sender proposedRow:row proposedDropOperation:dropOperation];
     
     if(_retargetedDropRow !== nil)
         row = _retargetedDropRow;
 
-    //if the user forces -1 then we should highlight the whole tabelview
-    var rowRect;
+    //if the user forces -1 then we should highlight the whole tableview
+    var rowRect = CPRectMakeZero();
     if(_retargetedDropRow === -1)
         rowRect = [self exposedClipRect];
     else
         rowRect = [self rectOfRow:row];
     
-    var exposedClipRect = [self exposedClipRect];
-    var visibleWidth = _CGRectGetWidth(exposedClipRect);
+    var exposedClipRect = [self exposedClipRect],
+    	visibleWidth = _CGRectGetWidth(exposedClipRect);
 
     rowRect = _CGRectMake(_CGRectGetMinX(exposedClipRect), rowRect.origin.y, visibleWidth, rowRect.size.height);
-
-    [_dropOperationFeedbackView setDropOperation:dropOperation];
-    [_dropOperationFeedbackView setHidden:(dragOperation == CPDragOperationNone)];
-    [_dropOperationFeedbackView setFrame:rowRect];
-    [_dropOperationFeedbackView setCurrentRow:row];
-    [self addSubview:_dropOperationFeedbackView];
+		
+	// Ask for the feedback view and cache it so we can remove it from the view hierarchy later
+	var dropOperationFeedbackView = nil;
+	
+	if (dropOperation === CPTableViewDropAbove)
+		dropOperationFeedbackView = [self viewForDropHighlightBetweenUpperRow:row - 1 andLowerRow:row];
+	else if (dropOperation === CPTableViewDropOn)
+		dropOperationFeedbackView = [self viewForDropHighlightOnRow:row];
+		
+	[self _setDropOperationFeedbackView:dropOperationFeedbackView];
+	
+	if (CGRectIsNull([[self _dropOperationFeedbackView] frame]))
+		[[self _dropOperationFeedbackView] setFrame:rowRect];
+		
+	[[self _dropOperationFeedbackView] setHidden:NO];
     
     // FIXME : Maybe we should do this in a timer outside this method. Problem: we don't know when the scroll ends and neighter when the next -draggingUpdated is called. Which one will come first ?
     if (row > 0 && location.y - CGRectGetMinY(exposedClipRect) < _rowHeight)
@@ -2451,8 +2514,6 @@ window.setTimeout(function(){
 {
     // FIX ME: is there anything else that needs to happen here?
     // actual validation is called in dragginUpdated:
-    [_dropOperationFeedbackView setHidden:YES];
-
     return (_implementedDataSourceMethods & CPTableViewDataSource_tableView_validateDrop_proposedRow_proposedDropOperation_);
 }
 
@@ -2461,10 +2522,8 @@ window.setTimeout(function(){
 */
 - (BOOL)performDragOperation:(id)sender
 {
-    var operation = [self _proposedDropOperation],
-        draggingLocation = [sender draggingLocation];
-
-    var location = [self convertPoint:draggingLocation fromView:nil];
+    var location = [self convertPoint:[sender draggingLocation] fromView:nil];
+		operation = [self _proposedDropOperationAtPoint:location],
 
     if(_retargetedDropRow !== nil)
         var row = _retargetedDropRow;

@@ -490,47 +490,15 @@ var CPOutlineViewDataSource_outlineView_setObjectValue_forTableColumn_byItem_   
     return [super frameOfDataViewAtColumn:aColumn row:aRow];
 }
 
-// -  (BOOL)continueTracking:(CGPoint)lastPoint at:(CGPoint)aPoint
-// {
-// 	if (!_isSelectingSession && _implementedOutlineViewDataSourceMethods & CPOutlineViewDataSource_outlineView_writeItems_toPasteboard_)
-// 	{		// Start dragging of the current rows is selected or the mouse was moved enough to initiate a drag
-// 		// This isn't the best way to do this because this requires the user to move the mouse at a certain speed
-// 		// TODO: mouseDown currently always selects a row
-// 		var offset = CPMakePoint(lastPoint.x - aPoint.x, ABS(lastPoint.y - aPoint.y));
-// 		if (offset.x > 3.0 || ([self verticalMotionCanBeginDrag] && ABS(offset.y) > 3) || ([_selectedRowIndexes containsIndex:row]))
-// 		{
-// 			var row = [self rowAtPoint:aPoint];
-// 			
-// 			CPLog.debug(@"start drag")
-// 			
-// 			var draggedItems = [];
-// 			// Check if we are dragging a selection or a single row
-// 			if ([_selectedRowIndexes containsIndex:row]) 
-// 			{
-// 				// Get all the items from the current selection
-// 				var draggedIndexes = [];
-// 				[_selectedRowIndexes getIndexes:draggedIndexes maxCount:[_selectedRowIndexes count] inIndexRange:nil]
-// 				
-// 				var index = [draggedIndexes count];
-// 				while (index--)
-// 					[draggedItems addObject:[self itemAtRow:draggedIndexes[index]]];
-// 				
-// 				var pasteboard = [CPPasteboard pasteboardWithName:CPDragPboard];
-// 			}
-// 			else 
-// 				[draggedItems addObject:[self itemAtRow:row]];
-// 				
-// 			// Tell the datasource to write the items to the paste board
-// 			// We stop the drag if it's not allowed
-// 			if (![_outlineViewDataSource writeItems:draggedIndexes toPasteboard:pasteboard])
-// 				return [super continueTracking:lastPoint at:aPoint];
-// 				
-// 			CPLog.debug(@"dragged items: %@", draggedItems);
-// 		}
-// 	}
-// 	
-// 	return [super continueTracking:lastPoint at:aPoint];
-// }
+- (CPRect)rectForDropHighlightViewBetweenUpperRow:(int)theUpperRowIndex andLowerRow:(int)theLowerRowIndex
+{
+	// Just call super and update the x to reflect the current indentation level
+	var level = [self levelForRow:theLowerRowIndex],
+		rect = [super rectForDropHighlightViewBetweenUpperRow:theUpperRowIndex andLowerRow:theLowerRowIndex];
+	
+	rect.origin.x = level * [self indentationPerLevel];
+	return rect;
+}
 
 - (void)_loadDataViewsInRows:(CPIndexSet)rows columns:(CPIndexSet)columns
 {
@@ -847,18 +815,30 @@ var _loadItemInfoForItem = function(/*CPOutlineView*/ anOutlineView, /*id*/ anIt
 {
 	if (!_outlineView._implementedOutlineViewDataSourceMethods & CPOutlineViewDataSource_outlineView_validateDrop_proposedItem_proposedChildIndex_)
 		return CPDragOperationNone;
-	
-	return [_outlineView._outlineViewDataSource outlineView:_outlineView validateDrop:theInfo proposedItem:[_outlineView itemAtRow:theRow] proposedChildIndex:theRow];
+		
+	var droppedItem = [_outlineView itemAtRow:theRow],
+		parentItem = [_outlineView parentForItem:droppedItem],
+		
+	var itemInfo = (parentItem != nil) ? _outlineView._itemInfosForItems[[parentItem UID]] : _outlineView._rootItemInfo,
+		children = itemInfo.children,
+		childIndex = [children indexOfObject:droppedItem];
+			
+	return [_outlineView._outlineViewDataSource outlineView:_outlineView validateDrop:theInfo proposedItem:parentItem proposedChildIndex:childIndex];
 }
 
 - (BOOL)tableView:(CPTableView)aTableView acceptDrop:(id <CPDraggingInfo>)theInfo row:(int)theRow dropOperation:(CPTableViewDropOperation)theOperation
 {
-	
-	CPLog.debug(@"tableview accept dorp");
 	if (!_outlineView._implementedOutlineViewDataSourceMethods & CPOutlineViewDataSource_outlineView_acceptDrop_item_childIndex_)
 		return NO;
-		
-	return [_outlineView._outlineViewDataSource outlineView:_outlineView acceptDrop:theInfo item:[_outlineView itemAtRow:theRow] childIndex:0];
+	
+	var droppedItem = [_outlineView itemAtRow:theRow],
+		parentItem = [_outlineView parentForItem:droppedItem],
+
+	var itemInfo = (parentItem != nil) ? _outlineView._itemInfosForItems[[parentItem UID]] : _outlineView._rootItemInfo,
+		children = itemInfo.children,
+		childIndex = [children indexOfObject:droppedItem];
+	
+	return [_outlineView._outlineViewDataSource outlineView:_outlineView acceptDrop:theInfo item:parentItem childIndex:childIndex];
 }
 
 @end
