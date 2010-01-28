@@ -1,13 +1,16 @@
 require("narwhal").ensureEngine("rhino");
 
 @import <Foundation/Foundation.j>
+@import <AppKit/AppKit.j>
 
 @import "objj-analysis-tools.j"
+@import "cib-analysis-tools.j"
 
 var ARGS = require("args");
 var FILE = require("file");
 var OS = require("os");
 var DOM = require("browser/dom");
+var UTIL = require("util");
 var INTERPRETER = require("interpreter");
 
 var serializer = new DOM.XMLSerializer();
@@ -150,6 +153,10 @@ function pressEnvironment(rootPath, outputFiles, environment, options) {
     scope.OBJJ_INCLUDE_PATHS = frameworks;
     scope.OBJJ_ENVIRONMENTS = [environment, "ObjJ"];
     
+    // build list of cibs to inspect for dependent classes
+    // FIXME: what's the best way to determine which cibs to look in?
+    var cibs = FILE.glob(rootPath.join("**", "*.cib")).filter(function(path) { return !(/Frameworks/).test(path); });
+    
     // flattening bookkeeping. keep track of the bundles and evaled code (in the correct order!)
     var bundleArchiveResponses = [];
     var exectuableResponses = [];
@@ -186,7 +193,7 @@ function pressEnvironment(rootPath, outputFiles, environment, options) {
     // coalesce the results
     var dependencies = coalesceGlobalDefines(globals);
     
-    // Log 
+    // log identifer => files defining
     CPLog.trace("Global defines:");
     Object.keys(dependencies).sort().forEach(function(identifier) {
         CPLog.trace("    " + identifier + " => " + rootPath.relative(dependencies[identifier]));
@@ -219,7 +226,20 @@ function pressEnvironment(rootPath, outputFiles, environment, options) {
         
         requiredFiles[mainPath] = true;
         
+        // check the code
         traverseDependencies(context, scope.objj_files[mainPath]);
+        
+        // check the cibs
+        cibs.forEach(function(cibPath) {
+            var cibClasses = findCibClassDependencies(cibPath);
+            CPLog.debug(cibPath + " => " + cibClasses);
+            
+            var referencedFiles = {};
+            markFilesReferencedByTokens(cibClasses, context.dependencies, referencedFiles);
+            checkReferenced(context, null, referencedFiles);
+            
+            print(UTIL.repr(referencedFiles));
+        });
         
         var count = 0,
             total = 0;
