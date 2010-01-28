@@ -48,28 +48,6 @@ function traverseDependencies(context, file)
         file.fragments = objj_preprocess(file.contents, file.bundle, file);
     }
 
-    // sprite: look for pngs in the Resources directory
-    if (!context.bundleImages)
-        context.bundleImages = {};
-
-    if (!context.bundleImages[file.bundle.path])
-    {
-        var resourcesPath = FILE.path(file.bundle.path).dirname().join("/Resources");
-        if (resourcesPath.exists())
-        {
-            context.bundleImages[file.bundle.path] = {};
-
-            resourcesPath.glob("**/*.png").forEach(function(png) {
-                var pngPath = resourcesPath.join(png);
-                var relativePath = pathRelativeTo(pngPath.absolute(), resourcesPath.absolute());
-
-                // this is used as a bit mask, not a boolean
-                context.bundleImages[file.bundle.path][relativePath] = 1;
-            });
-        }
-    }
-    var images = context.bundleImages[file.bundle.path];
-
     var referencedFiles = {},
         importedFiles = {};
 
@@ -100,10 +78,6 @@ function traverseDependencies(context, file)
                         }
                     }
                 }
-
-                var matches = token.match(new RegExp("^['\"](.*)['\"]$"));
-                if (matches && images && images[matches[1]])
-                    images[matches[1]] = (images[matches[1]] | 2);
             }
         }
         else if (fragment.type & FRAGMENT_FILE)

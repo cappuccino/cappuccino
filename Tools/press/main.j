@@ -241,16 +241,6 @@ function pressEnvironment(rootPath, outputFiles, environment, options) {
             total++;
         }
         CPLog.warn("Total required files: " + count + " out of " + total);
-        
-        // FIXME: sprite images
-        //for (var i in context.bundleImages)
-        //{
-        //    var images = context.bundleImages[i];
-        //    
-        //    CPLog.debug("Bundle images for " + i);
-        //    for (var j in images)
-        //        CPLog.trace(j + " = " + images[j]);
-        //}
     }
     
     if (options.flatten)
