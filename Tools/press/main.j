@@ -1,9 +1,4 @@
-var OS = require("os");
-if (system.engine !== "rhino") {
-    system.args.splice(1,2); // remove library path and main.j
-    var cmd = "NARWHAL_ENGINE_HOME='' NARWHAL_ENGINE='rhino' " + system.args.map(OS.enquote).join(" ");
-    OS.exit(OS.system(cmd));
-}
+require("narwhal").ensureEngine("rhino");
 
 @import <Foundation/Foundation.j>
 

@@ -272,9 +272,9 @@ function findGlobalDefines(context, mainPath, evaledFragments, bundleCallback)
                 bundlePaths = bundlePaths || [];
 
                 // load default theme bundle
-                var themePath = [[CPBundle bundleForClass:[CPApplication class]] pathForResource:[CPApplication defaultThemeName]];
-                var themeBundle = [[CPBundle alloc] initWithPath:themePath + "/Info.plist"];
-                [themeBundle loadWithDelegate:bundleDelegate];
+                // var themePath = [[CPBundle bundleForClass:[CPApplication class]] pathForResource:[CPApplication defaultThemeName]];
+                // var themeBundle = [[CPBundle alloc] initWithPath:themePath + "/Info.plist"];
+                // [themeBundle loadWithDelegate:bundleDelegate];
 
                 // load additional bundles
                 bundlePaths.forEach(function(bundlePath) {
