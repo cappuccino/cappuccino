@@ -58,27 +58,9 @@ function traverseDependencies(context, file)
 
         if (fragment.type & FRAGMENT_CODE)
         {
-            var lexer = new objj_lexer(fragment.info, NULL);
-
-            var token;
-            while (token = lexer.skip_whitespace())
-            {
-                if (context.dependencies.hasOwnProperty(token))
-                {
-                    var files = context.dependencies[token];
-                    for (var j = 0; j < files.length; j++)
-                    {
-                        // don't record references to self
-                        if (files[j] != file.path)
-                        {
-                            if (!referencedFiles[files[j]])
-                                referencedFiles[files[j]] = {};
-
-                            referencedFiles[files[j]][token] = true;
-                        }
-                    }
-                }
-            }
+            var referencedTokens = uniqueTokens(fragment.info);
+            
+            markFilesReferencedByTokens(referencedTokens, context.dependencies, referencedFiles);
         }
         else if (fragment.type & FRAGMENT_FILE)
         {
@@ -104,12 +86,25 @@ function traverseDependencies(context, file)
     }
 
     // check each imported file
+    checkImported(context, file.path, importedFiles);
+
+    if (context.importedFiles)
+        context.importedFiles[file.path] = importedFiles;
+
+    // check each referenced file
+    checkReferenced(context, file.path, referencedFiles);
+
+    if (context.referencedFiles)
+        context.referencedFiles[file.path] = referencedFiles;
+}
+
+function checkImported(context, path, importedFiles) {
     for (var importedFile in importedFiles)
     {
-        if (importedFile != file.path)
+        if (importedFile != path)
         {
             if (context.importCallback)
-                context.importCallback(file.path, importedFile);
+                context.importCallback(path, importedFile);
 
             if (context.scope.objj_files[importedFile])
                 traverseDependencies(context, context.scope.objj_files[importedFile]);
@@ -117,17 +112,15 @@ function traverseDependencies(context, file)
                 CPLog.error("Missing imported file: " + importedFile);
         }
     }
+}
 
-    if (context.importedFiles)
-        context.importedFiles[file.path] = importedFiles;
-
-    // check each referenced file
+function checkReferenced(context, path, referencedFiles) {
     for (var referencedFile in referencedFiles)
     {
-        if (referencedFile != file.path)
+        if (referencedFile != path)
         {
             if (context.referenceCallback)
-                context.referenceCallback(file.path, referencedFile, referencedFiles[referencedFile]);
+                context.referenceCallback(path, referencedFile, referencedFiles[referencedFile]);
 
             if (context.scope.objj_files.hasOwnProperty(referencedFile))
                 traverseDependencies(context, context.scope.objj_files[referencedFile]);
@@ -135,9 +128,46 @@ function traverseDependencies(context, file)
                 CPLog.error("Missing referenced file: " + referencedFile);
         }
     }
+}
 
-    if (context.referencedFiles)
-        context.referencedFiles[file.path] = referencedFiles;
+// returns a unique list of tokens for a piece of code.
+// ideally this should return identifiers only
+function uniqueTokens(code) {
+    // FIXME: this breaks for indentifiers containing "$" since it's considered a distinct token by the parser
+    var lexer = new objj_lexer(code, null);
+
+    var token, tokens = {};
+    while (token = lexer.skip_whitespace()) {
+        tokens[token] = true;
+    }
+
+    return Object.keys(tokens);
+}
+
+/*
+    params:
+        tokens (in):                list of tokens to mark as required
+        tokenDependenciesMap (in):  map from tokens to files which define those tokens
+        referencedFiles (out):      map of required files (to map of tokens defined in that file)
+*/
+function markFilesReferencedByTokens(tokens, tokenDependenciesMap, referencedFiles) {
+    tokens.forEach(function(token) {
+        if (tokenDependenciesMap.hasOwnProperty(token))
+        {
+            var files = tokenDependenciesMap[token];
+            for (var j = 0; j < files.length; j++)
+            {
+                // don't record references to self
+                if (files[j] != file.path)
+                {
+                    if (!referencedFiles[files[j]])
+                        referencedFiles[files[j]] = {};
+
+                    referencedFiles[files[j]][token] = true;
+                }
+            }
+        }
+    });
 }
 
 function findImportInObjjFiles(scope, fragment)
