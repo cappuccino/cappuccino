@@ -24,7 +24,8 @@ function ask_remove_dir () {
     if [ -d "$dir" ]; then
         echo "================================================================================"
         echo "Found an existing Narwhal/Cappuccino installation, $dir. Remove it automatically now?"
-        echo "WARNING: custom modifications and installed packages in this installation WILL BE DELETED."
+        echo "WARNING: the ENTIRE directory, $dir, will be removed (i.e. 'rm -rf $dir')."
+        echo "Be sure this is correct. Custom modifications and installed packages WILL BE DELETED."
         if prompt; then
             rm -rf "$dir"
         fi
