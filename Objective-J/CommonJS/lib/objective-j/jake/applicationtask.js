@@ -42,7 +42,7 @@ ApplicationTask.prototype.indexFilePath = function()
 ApplicationTask.prototype.defineFrameworksTask = function()
 {
     // FIXME: platform requires...
-    if (this.flattenedEnvironments().indexOf(require("objective-j/jake/environment").Browsers) === -1)
+    if (this.environments().indexOf(require("objective-j/jake/environment").Browser) === -1)
         return;
 
     var frameworks = FILE.join(this.buildProductPath(), "Frameworks"),

@@ -60,7 +60,7 @@ BlendTask.prototype.defineSourceTasks = function()
 
 BlendTask.prototype.defineThemeDescriptorTasks = function()
 {
-    this.flattenedEnvironments().forEach(function(anEnvironment)
+    this.environments().forEach(function(anEnvironment)
     {
         var folder = anEnvironment.name() + ".environment",
             themeDescriptors = this.themeDescriptors(),
