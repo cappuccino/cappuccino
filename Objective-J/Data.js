@@ -10,10 +10,10 @@ function Data()
 
 Data.prototype.serializedPropertyList = function()
 {
-    if (!this._plistObject)
-        this._plistObject = PropertyList.createFromString(this.encodedString());
+    if (!this._serializedPropertyList)
+        this._serializedPropertyList = PropertyList.propertyListFromString(this.encodedString());
 
-    return this._plistObject;
+    return this._serializedPropertyList;
 }
 
 Data.prototype.encodedString = function()
@@ -23,7 +23,7 @@ Data.prototype.encodedString = function()
         var serializedPropertyList = this._serializedPropertyList;
 
         if (this._serializedPropertyList)
-            this._encodedString = PropertyList.createStringFromPropertyList(serializedPropertyList);
+            this._encodedString = PropertyList.stringFromPropertyList(serializedPropertyList);
 
 //        Ideally we would convert these bytes or base64 into a string.
 //        else if (this._bytes)

@@ -484,7 +484,7 @@ var CPDocumentUntitledCount = 0;
     else
         [_writeRequest setHTTPMethod:@"PUT"];
 
-    [_writeRequest setHTTPBody:[data string]];
+    [_writeRequest setHTTPBody:[data encodedString]];
 
     [_writeRequest setValue:@"close" forHTTPHeaderField:@"Connection"];
 

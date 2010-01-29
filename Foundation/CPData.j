@@ -23,7 +23,7 @@
 @import "CPObject.j"
 @import "CPString.j"
 
-/*! 
+/*!
     @class CPData
     @ingroup foundation
     @brief A Cappuccino wrapper for any data type.
@@ -50,6 +50,11 @@
     return [[self alloc] initWithEncodedString:aString];
 }
 
++ (CPData)dataWithSerializedPlistObject:(id)aPlistObject
+{
+    return [[self alloc] initWithSerializedPlistObject:aPlistObject];
+}
+
 + (CPData)dataWithSerializedPlistObject:(id)aPlistObject format:(CPPropertyListFormat)aFormat
 {
     return [[self alloc] initWithSerializedPlistObject:aPlistObject format:aFormat];
@@ -65,13 +70,23 @@
     return self;
 }
 
+- (id)initWithSerializedPlistObject:(id)aPlistObject
+{
+    self = [super init];
+
+    if (self)
+        [self setSerializedPlistObject:aPlistObject];
+
+    return self;
+}
+
 - (id)initWithSerializedPlistObject:(id)aPlistObject format:aFormat
 {
     self = [super init];
 
     if (self)
         [self setSerializedPlistObject:aPlistObject format:aFormat];
-        
+
     return self;
 }
 
@@ -97,7 +112,12 @@
 
 - (id)serializedPlistObject
 {
-    self.serializedPropertyList();
+    return self.serializedPropertyList();
+}
+
+- (void)setSerializedPlistObject:(id)aPlistObject
+{
+    self.setSerializedPropertyList(aPlistObject);
 }
 
 - (void)setSerializedPlistObject:(id)aPlistObject format:(CPPropertyListFormat)aFormat

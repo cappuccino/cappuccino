@@ -415,7 +415,7 @@ var DOMDataTransferPasteboard = nil;
         if (type === CPStringPboardType)
             _dataTransfer.setData(type, [aPasteboard stringForType:type]);
         else
-            _dataTransfer.setData(type, [[aPasteboard dataForType:type] string]);
+            _dataTransfer.setData(type, [[aPasteboard dataForType:type] encodedString]);
     }
 }
 

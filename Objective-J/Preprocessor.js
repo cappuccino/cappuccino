@@ -205,19 +205,19 @@ Preprocessor.prototype.accessors = function(tokens)
             value = true;
 
         if (!IS_WORD(name))
-            objj_exception_throw(new objj_exception(OBJJParseException, this.error_message("*** @property attribute name not valid.")));
+            throw new SyntaxError(this.error_message("*** @property attribute name not valid."));
 
         if ((token = tokens.skip_whitespace()) == TOKEN_EQUAL)
         {
             value = tokens.skip_whitespace();
             
             if (!IS_WORD(value))
-                objj_exception_throw(new objj_exception(OBJJParseException, this.error_message("*** @property attribute value not valid.")));
+                throw new SyntaxError(this.error_message("*** @property attribute value not valid."));
 
             if (name == "setter")
             {
                 if ((token = tokens.next()) != TOKEN_COLON)
-                    objj_exception_throw(new objj_exception(OBJJParseException, this.error_message("*** @property setter attribute requires argument with \":\" at end of selector name.")));
+                    throw new SyntaxError(this.error_message("*** @property setter attribute requires argument with \":\" at end of selector name."));
                 
                 value += ":";
             }
@@ -231,7 +231,7 @@ Preprocessor.prototype.accessors = function(tokens)
             break;
         
         if (token != TOKEN_COMMA)
-            objj_exception_throw(new objj_exception(OBJJParseException, this.error_message("*** Expected ',' or ')' in @property attribute list.")));
+            throw new SyntaxError(this.error_message("*** Expected ',' or ')' in @property attribute list."));
     }
     
     return attributes;
@@ -342,7 +342,7 @@ Preprocessor.prototype.implementation = function(tokens, /*StringBuffer*/ aStrin
         class_methods = new StringBuffer();
     
     if (!(/^\w/).test(class_name))
-        objj_exception_throw(new objj_exception(OBJJParseException, this.error_message("*** Expected class name, found \"" + class_name + "\".")));
+        throw new Error(this.error_message("*** Expected class name, found \"" + class_name + "\"."));
 
     this._currentSuperClass = "objj_getClass(\"" + class_name + "\").super_class";
     this._currentSuperMetaClass = "objj_getMetaClass(\"" + class_name + "\").super_class";
@@ -356,13 +356,13 @@ Preprocessor.prototype.implementation = function(tokens, /*StringBuffer*/ aStrin
         token = tokens.skip_whitespace();
         
         if (token == TOKEN_CLOSE_PARENTHESIS)
-            objj_exception_throw(new objj_exception(OBJJParseException, this.error_message("*** Can't Have Empty Category Name for class \"" + class_name + "\".")));
+            throw new SyntaxError(this.error_message("*** Can't Have Empty Category Name for class \"" + class_name + "\"."));
         
         if (tokens.skip_whitespace() != TOKEN_CLOSE_PARENTHESIS)
-            objj_exception_throw(new objj_exception(OBJJParseException, this.error_message("*** Improper Category Definition for class \"" + class_name + "\".")));
+            throw new SyntaxError(this.error_message("*** Improper Category Definition for class \"" + class_name + "\"."));
         
         CONCAT(buffer, "{\nvar the_class = objj_getClass(\"" + class_name + "\")\n");
-        CONCAT(buffer, "if(!the_class) objj_exception_throw(new objj_exception(OBJJClassNotFoundException, \"*** Could not find definition for class \\\"" + class_name + "\\\"\"));\n");
+        CONCAT(buffer, "if(!the_class) throw new SyntaxError(\"*** Could not find definition for class \\\"" + class_name + "\\\"\");\n");
         CONCAT(buffer, "var meta_class = the_class.isa;");
     }
     else
@@ -373,7 +373,7 @@ Preprocessor.prototype.implementation = function(tokens, /*StringBuffer*/ aStrin
             token = tokens.skip_whitespace();
             
             if (!TOKEN_IDENTIFIER.test(token))
-                objj_exception_throw(new objj_exception(OBJJParseException, this.error_message("*** Expected class name, found \"" + token + "\".")));
+                throw new SyntaxError(this.error_message("*** Expected class name, found \"" + token + "\"."));
             
             superclass_name = token;
 
@@ -421,14 +421,14 @@ Preprocessor.prototype.implementation = function(tokens, /*StringBuffer*/ aStrin
             
             // If we have objects in our declaration, the user forgot a ';'.
             if (declaration.length)
-                objj_exception_throw(new objj_exception(OBJJParseException, this.error_message("*** Expected ';' in ivar declaration, found '}'.")));
+                throw new SytnaxError(this.error_message("*** Expected ';' in ivar declaration, found '}'."));
 
             if (ivar_count)
                 CONCAT(buffer, "]);\n");
             
             if (!token)
-                objj_exception_throw(new objj_exception(OBJJParseException, this.error_message("*** Expected '}'")));
-            
+                throw new SyntaxError(this.error_message("*** Expected '}'"));
+
             for (ivar_name in accessors)
             {
                 var accessor = accessors[ivar_name],
@@ -505,7 +505,7 @@ Preprocessor.prototype.implementation = function(tokens, /*StringBuffer*/ aStrin
                 break;
             
             else
-                objj_exception_throw(new objj_exception(OBJJParseException, this.error_message("*** Expected \"@end\", found \"@" + token + "\".")));
+                throw new SyntaxError(this.error_message("*** Expected \"@end\", found \"@" + token + "\"."));
         }
     }
     
@@ -540,14 +540,14 @@ Preprocessor.prototype._import = function(tokens)
             path += token;
         
         if(!token)
-            objj_exception_throw(new objj_exception(OBJJParseException, this.error_message("*** Unterminated import statement.")));
+            throw new SyntaxError(this.error_message("*** Unterminated import statement."));
     }
     
     else if (token.charAt(0) == TOKEN_DOUBLE_QUOTE)
         path = token.substr(1, token.length - 2);
     
     else
-        objj_exception_throw(new objj_exception(OBJJParseException, this.error_message("*** Expecting '<' or '\"', found \"" + token + "\".")));
+        throw new SyntaxError(this.error_message("*** Expecting '<' or '\"', found \"" + token + "\"."));
 
     CONCAT(this._buffer, "objj_executeFile(\"");
     CONCAT(this._buffer, path);
@@ -608,8 +608,8 @@ Preprocessor.prototype.method = function(/*Lexer*/ tokens)
         {
             // At this point, "..." MUST follow.
             if ((token = tokens.skip_whitespace()) != TOKEN_PERIOD || tokens.next() != TOKEN_PERIOD || tokens.next() != TOKEN_PERIOD)
-                objj_exception_throw(new objj_exception(OBJJParseException, this.error_message("*** Argument list expected after ','.")));
-            
+                throw new SyntaxError(this.error_message("*** Argument list expected after ','."));
+
             // FIXME: Shouldn't allow any more after this.
         }
         
@@ -848,7 +848,7 @@ Preprocessor.prototype.preprocess = function(tokens, /*StringBuffer*/ aStringBuf
     
     // If we get this far and we're parsing an objj_msgSend (or array), then we have a problem.
     if (tuple)
-        objj_exception_throw(new objj_exception(OBJJParseException, this.error_message("*** Expected ']' - Unterminated message send or array.")));
+        new SyntaxError(this.error_message("*** Expected ']' - Unterminated message send or array."));
 
     if (!aStringBuffer)
         return buffer;
@@ -862,14 +862,14 @@ Preprocessor.prototype.selector = function(tokens, aStringBuffer)
     
     // Swallow open parenthesis.
     if (tokens.skip_whitespace() != TOKEN_OPEN_PARENTHESIS)
-        objj_exception_throw(new objj_exception(OBJJParseException, this.error_message("*** Expected '('")));
-    
+        throw new SyntaxError(this.error_message("*** Expected '('"));
+
     // Eat leading whitespace
     var selector = tokens.skip_whitespace();
     
     if (selector == TOKEN_CLOSE_PARENTHESIS)
-        objj_exception_throw(new objj_exception(OBJJParseException, this.error_message("*** Unexpected ')', can't have empty @selector()")));
-    
+        throw new SyntaxError(this.error_message("*** Unexpected ')', can't have empty @selector()"));
+
     CONCAT(aStringBuffer, selector);
     
     var token,
@@ -884,9 +884,9 @@ Preprocessor.prototype.selector = function(tokens, aStringBuffer)
                 if (tokens.skip_whitespace() == TOKEN_CLOSE_PARENTHESIS)
                     break;
                 else
-                    objj_exception_throw(new objj_exception(OBJJParseException, this.error_message("*** Unexpected whitespace in @selector().")));
+                    throw new SyntaxError(this.error_message("*** Unexpected whitespace in @selector()."));
             else
-                objj_exception_throw(new objj_exception(OBJJParseException, this.error_message("*** Illegal character '" + token + "' in @selector().")));
+                throw new SyntaxError(this.error_message("*** Illegal character '" + token + "' in @selector()."));
         }
         
         CONCAT(buffer, token);

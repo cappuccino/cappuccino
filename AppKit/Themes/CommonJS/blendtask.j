@@ -32,7 +32,7 @@ BlendTask.prototype.infoPlist = function()
 {
     var infoPlist = BundleTask.prototype.infoPlist.apply(this, arguments);
 
-    infoPlist.setValue("CPKeyedThemes", require("util").unique(this._keyedThemes));
+    infoPlist.setValueForKey("CPKeyedThemes", require("util").unique(this._keyedThemes));
 
     return infoPlist;
 }
@@ -72,20 +72,20 @@ BlendTask.prototype.defineThemeDescriptorTasks = function()
 
         this.enhance(themesTaskName);
 
-        objj_import(themeDescriptors.toArray(), YES, function()
+        themeDescriptors.forEach(function(/*CPString*/ themeDescriptorPath)
         {
-            [BKThemeDescriptor allThemeDescriptorClasses].forEach(function(aClass)
-            {
-                var keyedThemePath = FILE.join(intermediatesPath, [aClass themeName] + ".keyedtheme");
-
-                filedir (keyedThemePath, themesTaskName);
-                filedir (staticPath, [keyedThemePath]);
-
-                keyedThemes.push([aClass themeName] + ".keyedtheme");
-            });
+            objj_importFile(FILE.absolute(themeDescriptorPath), YES);
         });
 
-        require("browser/timeout").serviceTimeouts();
+        [BKThemeDescriptor allThemeDescriptorClasses].forEach(function(aClass)
+        {
+            var keyedThemePath = FILE.join(intermediatesPath, [aClass themeName] + ".keyedtheme");
+
+            filedir (keyedThemePath, themesTaskName);
+            filedir (staticPath, [keyedThemePath]);
+
+            keyedThemes.push([aClass themeName] + ".keyedtheme");
+        });
 
         task (themesTaskName, function()
         {
@@ -158,7 +158,7 @@ function themeFromCibData(data)
 
     [templates makeObjectsPerformSelector:@selector(blendAddThemedObjectAttributesToTheme:) withObject:theme];
 
-    return [[CPKeyedArchiver archivedDataWithRootObject:theme] string];
+    return [[CPKeyedArchiver archivedDataWithRootObject:theme] encodedString];
 }
 
 @implementation CPCib (BlendAdditions)

@@ -115,9 +115,11 @@ Executable.prototype.execute = function()
 
     CONTEXT_BUNDLE = Bundle.bundleContainingPath(this.path());
 
-    this._function.apply(global, this.functionArguments());
+    var result = this._function.apply(global, this.functionArguments());
 
     CONTEXT_BUNDLE = oldContextBundle;
+
+    return result;
 }
 
 Executable.prototype.code = function()

@@ -42,6 +42,23 @@ PropertyList.sniffedFormatOfString = function(/*String*/ aString)
 
 // Serialization
 
+PropertyList.dataFromPropertyList = function(/*PropertyList*/ aPropertyList, /*Format*/ aFormat)
+{
+    return new Data(PropertyList.stringWithPropertyList(aPropertyList, aFormat));
+}
+
+PropertyList.stringFromPropertyList = function(/*PropertyList*/ aPropertyList, /*Format*/ aFormat)
+{
+    if (!aFormat)
+        aFormat = PropertyList.Format280North_v1_0;
+
+    var serializers = PropertyListSerializers[aFormat];
+
+    return  serializers["start"]() +
+            serializePropertyList(aPropertyList, serializers) +
+            serializers["finish"]();
+}
+
 PropertyList.createDataWithFormat = function(/*Format*/ aFormat)
 {
     return new Data(PropertyList.createStringWithFormat(aFormat));

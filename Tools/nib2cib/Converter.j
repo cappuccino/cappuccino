@@ -87,7 +87,7 @@ ConverterConversionException    = @"ConverterConversionException";
         if (![outputPath length])
             outputPath = inputPath.substr(0, inputPath.length - FILE.extension(inputPath).length) + ".cib";
 
-        FILE.write(outputPath, [convertedData string], { charset:"UTF-8" });
+        FILE.write(outputPath, [convertedData encodedString], { charset:"UTF-8" });
     }
     catch(anException)
     {
