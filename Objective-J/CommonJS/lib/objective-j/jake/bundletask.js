@@ -341,7 +341,7 @@ BundleTask.prototype.infoPlist = function()
     var infoPlistPath = this.infoPlistPath();
 
     if (infoPlistPath && FILE.exists(infoPlistPath))
-        var infoPlist = PropertyList.createFromString(FILE.read(infoPlistPath, { charset:"UTF-8" }));
+        var infoPlist = PropertyList.propertyListFromString(FILE.read(infoPlistPath, { charset:"UTF-8" }));
     else
         var infoPlist = new require("objective-j/core").Dictionary();
 
@@ -372,7 +372,7 @@ BundleTask.prototype.defineInfoPlistTask = function()
 
     filedir (infoPlistProductPath, function()
     {
-        FILE.write(infoPlistProductPath, PropertyList.createStringWithFormat(bundleTask.infoPlist(), PropertyList.Format280North_v1_0), { charset:"UTF-8" });
+        FILE.write(infoPlistProductPath, PropertyList.stringFromPropertyList(bundleTask.infoPlist(), PropertyList.Format280North_v1_0), { charset:"UTF-8" });
     });
 
     var infoPlistPath = this.infoPlistPath();

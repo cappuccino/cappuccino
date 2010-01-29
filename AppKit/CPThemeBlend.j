@@ -43,7 +43,7 @@
     
     if (self)
     {
-        _bundle = [[CPBundle alloc] initWithPath:aURL + "/Info.plist"];
+        _bundle = [[CPBundle alloc] initWithPath:aURL];
     }
     
     return self;
@@ -65,7 +65,7 @@
     {
         var path = [aBundle pathForResource:themes[count]],
             unarchiver = [[_CPThemeKeyedUnarchiver alloc]
-                            initForReadingWithData:[CPData dataWithString:objj_files[path].contents]
+                            initForReadingWithData:[[CPURL URLWithString:path] staticResourceData]
                             bundle:_bundle];
 
         [unarchiver decodeObjectForKey:@"root"];

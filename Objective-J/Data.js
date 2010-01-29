@@ -48,6 +48,7 @@ Data.prototype.base64 = function()
 
 function MutableData()
 {
+    Data.call(this);
 }
 
 MutableData.prototype = new Data();
@@ -82,7 +83,7 @@ MutableData.prototype.setBytes = function(/*Array*/ bytes)
     this._bytes = bytes;
 }
 
-MutableData.prototype.setEncodedString = function(/*String*/ aBase64String)
+MutableData.prototype.setBase64String = function(/*String*/ aBase64String)
 {
     clearMutableData(this);
 

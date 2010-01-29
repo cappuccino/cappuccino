@@ -44,7 +44,7 @@ PropertyList.sniffedFormatOfString = function(/*String*/ aString)
 
 PropertyList.dataFromPropertyList = function(/*PropertyList*/ aPropertyList, /*Format*/ aFormat)
 {
-    return new Data(PropertyList.stringWithPropertyList(aPropertyList, aFormat));
+    return new Data(PropertyList.stringFromPropertyList(aPropertyList, aFormat));
 }
 
 PropertyList.stringFromPropertyList = function(/*PropertyList*/ aPropertyList, /*Format*/ aFormat)
@@ -52,20 +52,6 @@ PropertyList.stringFromPropertyList = function(/*PropertyList*/ aPropertyList, /
     if (!aFormat)
         aFormat = PropertyList.Format280North_v1_0;
 
-    var serializers = PropertyListSerializers[aFormat];
-
-    return  serializers["start"]() +
-            serializePropertyList(aPropertyList, serializers) +
-            serializers["finish"]();
-}
-
-PropertyList.createDataWithFormat = function(/*Format*/ aFormat)
-{
-    return new Data(PropertyList.createStringWithFormat(aFormat));
-}
-
-PropertyList.createStringWithFormat = function(/*PropertyList*/ aPropertyList, /*Format*/ aFormat)
-{
     var serializers = PropertyListSerializers[aFormat];
 
     return  serializers["start"]() +
@@ -345,24 +331,18 @@ var _plist_traverseNextNode = function(anXMLNode, stayWithin, stack)
     return null;
 }
 
-console.log("problem...");
-PropertyList.createFromData = function(/*Data*/ aData)
+PropertyList.propertyListFromData = function(/*Data*/ aData)
 {
-    return PropertyList.createFromStringWithFormat(aData.createStringWithFormat(aFormat), aFormat);
+    return PropertyList.propertyListFromString(aData.encodedString(), aFormat);
 }
 
-PropertyList.createFromString = function(/*String*/ aString)
-{
-    return PropertyList.createFromStringWithFormat(aString);
-}
-
-PropertyList.createFromStringWithFormat = function(/*String*/ aString, /*Format*/ aFormat)
+PropertyList.propertyListFromString = function(/*String*/ aString, /*Format*/ aFormat)
 {
     if (!aFormat)
         aFormat = PropertyList.sniffedFormatOfString(aString);
 
     if (aFormat === PropertyList.FormatXML_v1_0)
-        return PropertyList.createFromXML(aString);
+        return PropertyList.propertyListFromXML(aString);
 
     if (aFormat === PropertyList.Format280North_v1_0)
         return propertyListFrom280NorthString(aString);
@@ -463,7 +443,7 @@ function decodeHTMLComponent(/*String*/ aString)
     return aString.replace(/&quot;/g, '"').replace(/&apos;/g, '\'').replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&amp;/g,'&');
 }
 
-PropertyList.createFromXML = function(/*String | XMLNode*/ aStringOrXMLNode)
+PropertyList.propertyListFromXML = function(/*String | XMLNode*/ aStringOrXMLNode)
 {
     var XMLNode = aStringOrXMLNode;
 

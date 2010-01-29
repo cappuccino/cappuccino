@@ -46,6 +46,12 @@ function HTTPRequest()
     }
 }
 
+HTTPRequest.UninitializedState  = 0;
+HTTPRequest.LoadingState        = 1;
+HTTPRequest.LoadedState         = 2;
+HTTPRequest.InteractiveState    = 3;
+HTTPRequest.CompleteState       = 4;
+
 HTTPRequest.prototype.status = function()
 {
     try
@@ -109,9 +115,9 @@ HTTPRequest.prototype.responsePropertyList = function()
     var responseText = this.responseText();
 
     if (PropertyList.sniffedFormatOfString(responseText) === PropertyList.FormatXML_v1_0)
-        return PropertyList.createFromXML(this.responseXML());
+        return PropertyList.propertyListFromXML(this.responseXML());
 
-    return PropertyList.createFromString(responseText);
+    return PropertyList.propertyListFromString(responseText);
 }
 
 HTTPRequest.prototype.responseText = function()
@@ -201,6 +207,8 @@ FileRequest.prototype.responseXML = function()
 
 FileRequest.prototype.responsePropertyList = function()
 {
-    return PropertyList.createFromString(this.responseText());
+    return PropertyList.propertyListFromString(this.responseText());
 }
 #endif
+
+exports.HTTPRequest = HTTPRequest;
