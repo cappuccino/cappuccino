@@ -449,8 +449,8 @@ PropertyList.propertyListFromXML = function(/*String | XMLNode*/ aStringOrXMLNod
 
     if (typeof aStringOrXMLNode.valueOf() === "string")
     {
-        if (DOMParser)
-            XMLNode = DOCUMENT_ELEMENT(new DOMParser().parseFromString(aStringOrXMLNode, "text/xml"));
+        if (window.DOMParser)
+            XMLNode = DOCUMENT_ELEMENT(new window.DOMParser().parseFromString(aStringOrXMLNode, "text/xml"));
 
         else
         {
@@ -519,11 +519,11 @@ PropertyList.propertyListFromXML = function(/*String | XMLNode*/ aStringOrXMLNod
             case PLIST_BOOLEAN_FALSE:   object = false;
                                         break;
                                         
-            case PLIST_DATA:            object = new objj_data();
+            case PLIST_DATA:            object = new MutableData();
                                         object.bytes = FIRST_CHILD(XMLNode) ? base64_decode_to_array(CHILD_VALUE(XMLNode), true) : [];
                                         break;
                                         
-            default:                    objj_exception_throw(new objj_exception(OBJJPlistParseException, "*** " + NODE_NAME(XMLNode) + " tag not recognized in Plist."));
+            default:                    throw new Error("*** " + NODE_NAME(XMLNode) + " tag not recognized in Plist.");
         }
 
         if (!plistObject)

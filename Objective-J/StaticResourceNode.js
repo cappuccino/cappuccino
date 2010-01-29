@@ -235,7 +235,7 @@ function resolvePathComponents(/*StaticResourceNode*/ startNode, /*Type*/aType, 
             childNode = parentNode._childNodes[name];
 //CPLog(index + " " + components + ":" + (childNode && childNode.isResolved()) + ":");
 //CPLog(name + " of " + parentNode.name() + " " + (childNode && childNode.name()));
-//console.log(parentNode._childNodes);
+//CPLog(parentNode._childNodes);
 // + "(" + components  + ")" + " " + index + "/" + count + ":" + (childNode && childNode.name()) +">" + (childNode ? 1:0) + " " + (childNode && childNode.isResolved()));
         if (!childNode)
         {
@@ -369,9 +369,9 @@ StaticResourceNode.resolveStandardNodeAtPath = function(/*String*/ aPath, /*Func
         resolveStandardNodeAtPath = function(/*String*/ aPath, /*int*/ anIndex)
         {
             var searchPath = FILE.absolute(FILE.join(includePaths[anIndex], FILE.normal(aPath)));
-    if (searchPath.indexOf("CPObject.j") !== -1) console.log("WILL SEARCH IN: " + searchPath);
+    if (searchPath.indexOf("CPObject.j") !== -1) CPLog("WILL SEARCH IN: " + searchPath);
             rootNode.resolveSubPath(searchPath, StaticResourceNode.FileType, function(/*StaticResourceNode*/ aStaticResourceNode)
-            {if (searchPath.indexOf("CPObject.j") !== -1) console.log("FOUND...: " + aStaticResourceNode);
+            {if (searchPath.indexOf("CPObject.j") !== -1) CPLog("FOUND...: " + aStaticResourceNode);
                 if (!aStaticResourceNode)
                 {
                     if (anIndex + 1< includePaths.length)

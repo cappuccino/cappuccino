@@ -8,7 +8,7 @@ function ObjectiveJLoader() {
         if (!objj) objj = require("objective-j");
         
         //print("loading objective-j: " + topId + " (" + path + ")");
-        factories[topId] = objj.make_narwhal_factory(system.fs.read(path), path);
+        factories[topId] = objj.make_narwhal_factory(path);
     }
     
     loader.load = function(topId, path) {

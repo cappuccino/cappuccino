@@ -10,28 +10,28 @@
 
 -(void)setUp
 {
-    string_data = [[CPData alloc] initWithString:@"CPData Test"];
+    string_data = [[CPData alloc] initWithEncodedString:@"CPData Test"];
 
     // Plist helpers
     keys = [@"key1", @"key2", @"key3", @"key4"];
     objects = [@"Some random characters", NO, 9.9, 8.8];
     dict = [CPDictionary dictionaryWithObjects:objects forKeys:keys];
 
-    plist_data = [[CPData alloc] initWithPlistObject:dict];
+    plist_data = [[CPData alloc] initWithSerializedPlistObject:dict];
 }
 
 -(void)testStringLength
 {
-    var data = [[CPData alloc] initWithString:@"CPData Test"];
+    var data = [[CPData alloc] initWithEncodedString:@"CPData Test"];
     [self assert:[data length] equals:11];
 
-    var data_cm = [CPData dataWithString:@"CPData Test"];
+    var data_cm = [CPData dataWithEncodedString:@"CPData Test"];
     [self assert:[data_cm length] equals:11];
 }
 
 -(void)testPlistLength
 {
-    var data = [[CPData alloc] initWithPlistObject:dict];
+    var data = [[CPData alloc] initWithSerializedPlistObject:dict];
     [self assert:[data length] equals:93];
 
     var data_cm = [CPData serializedDataWithPlistObject:dict];

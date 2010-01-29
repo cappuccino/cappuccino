@@ -122,7 +122,7 @@ ConverterConversionException    = @"ConverterConversionException";
     else
         plistContents = plistContents.replace(/\<key\>\s*CF\$UID\s*\<\/key\>/g, "<key>CP$UID</key>");
 
-    return [CPData dataWithString:plistContents];
+    return [CPData dataWithEncodedString:plistContents];
 }
 
 @end

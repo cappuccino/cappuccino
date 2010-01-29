@@ -76,7 +76,7 @@ Executable.prototype.functionParameters = function()
     var functionParameters = exportedNames().concat("objj_executeFile", "objj_importFile");
 
 #ifdef COMMONJS
-    functionParameters = functionParameters.concat("require", "exports", "module", "system", "print");
+    functionParameters = functionParameters.concat("require", "exports", "module", "system", "print", "window");
 #endif
 
     return functionParameters;
@@ -95,6 +95,16 @@ Executable.prototype.functionArguments = function()
 }
 
 #ifdef COMMONJS
+Executable.setCommonJSParameters = function()
+{
+    this._commonJSParameters = Array.prototype.slice.call(arguments);
+}
+
+Executable.commonJSParameters = function()
+{
+    return this._commonJSParameters || [];
+}
+
 Executable.setCommonJSArguments = function()
 {
     this._commonJSArguments = Array.prototype.slice.call(arguments);
@@ -241,7 +251,7 @@ Executable.prototype.loadFileDependencies = function()
             if (hasOwnProperty.apply(foundExecutablePaths, [executablePath]))
             {
                 var fileExecutable = new FileExecutable(executablePath);
-                //console.log("no go for... " + fileExecutable.path());
+                //CPLog("no go for... " + fileExecutable.path());
                 if (fileExecutable.hasLoadedFileDependencies())
                     continue;
 

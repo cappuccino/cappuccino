@@ -431,7 +431,7 @@ var DOMDataTransferPasteboard = nil;
     if (aType === CPStringPboardType)
         return [CPData dataFromPropertyList:dataString format:kCFPropertyList280NorthFormat_v1_0 errorDescription:0];
 
-    return [CPData dataWithString:dataString];
+    return [CPData dataWithEncodedString:dataString];
 }
 
 - (id)propertyListForType:(CPString)aType
