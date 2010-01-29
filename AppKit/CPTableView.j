@@ -656,10 +656,7 @@ window.setTimeout(function(){
 
 - (void)selectRowIndexes:(CPIndexSet)rows byExtendingSelection:(BOOL)shouldExtendSelection
 {
-    if (([rows firstIndex] != CPNotFound && [rows firstIndex] < 0) || [rows lastIndex] >= [self numberOfRows])
-        return;
-    
-    if ([rows isEqualToIndexSet:_selectedRowIndexes])
+    if ([rows isEqualToIndexSet:_selectedRowIndexes] || (([rows firstIndex] != CPNotFound && [rows firstIndex] < 0) || [rows lastIndex] >= [self numberOfRows]))
         return;
 
     // We deselect all columns when selecting rows.
@@ -2577,8 +2574,6 @@ window.setTimeout(function(){
 
 
     [self selectRowIndexes:newSelection byExtendingSelection:NO];
-
-    [self _noteSelectionIsChanging];
 
 }
 
