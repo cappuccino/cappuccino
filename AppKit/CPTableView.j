@@ -2375,10 +2375,14 @@ window.setTimeout(function(){
 {
 	if(_retargetedDropOperation !== nil) 
 		return _retargetedDropOperation;
-        
 
 	var row = [self rowAtPoint:theDragPoint],
 		rowRect = [self rectOfRow:row];
+		
+	// If there is no (the default) or to little inter cell spacing we create some room for the CPTableViewDropAbove indicator
+	// This probably doesn't work if the row height is smaller than or around 5.0
+	if ([self intercellSpacing].height < 5.0)
+		rowRect = CPRectInset(rowRect, 0.0, 5.0 - [self intercellSpacing].height);
 		
 	if (CGRectContainsPoint(rowRect, theDragPoint)) 
 		return CPTableViewDropOn;
@@ -2435,14 +2439,15 @@ window.setTimeout(function(){
 	var upperRowRect = [self rectOfRow:theUpperRowIndex],
 		lowerRowRect = [self rectOfRow:theLowerRowIndex];
 	
-		// Place the highlight view in the middle of the rows or in the middle of the intercell spacing
-		// TODO: this currently looks off because the row highlights and labels are not drawn in the middle of the row
-		var yLocation = CPRectGetMaxY(upperRowRect) + [self intercellSpacing].height / 2.0 - 1.0,
-			rect = CPRectMake(0.0, 
-							   yLocation, 
-							   CPRectGetWidth([self frame]), 
-							   2.0);
-						
+	// Place the highlight view in the middle of the rows or in the middle of the intercell spacing
+	// TODO: this currently looks off because the row highlights and labels are not drawn in the middle of the row
+	var rect = CPRectMake(0.0, 0.0, CPRectGetWidth([self frame]), 2.0);
+	
+	rect.origin.y = CPRectGetMaxY(upperRowRect) - ( rect.size.height / 2.0 );
+	
+	if (!CPSizeEqualToSize(CPSizeMakeZero(), [self intercellSpacing]))
+		rect.origin.y += [self intercellSpacing].height / 2.0;
+	
 	return rect;
 }
 
@@ -2454,7 +2459,9 @@ window.setTimeout(function(){
 */
 - (CPView)viewForDropHighlightBetweenUpperRow:(int)theUpperRowIndex andLowerRow:(int)theLowerRowIndex
 {
-	var view = [[CPView alloc] initWithFrame:[self rectForDropHighlightViewBetweenUpperRow:theUpperRowIndex andLowerRow:theLowerRowIndex]];
+	var view = [[CPImageView alloc] initWithFrame:
+					[self rectForDropHighlightViewBetweenUpperRow:theUpperRowIndex andLowerRow:theLowerRowIndex]];	
+	
 	[view setBackgroundColor:[CPColor greenColor]];
 	return view;
 }
@@ -2908,78 +2915,27 @@ var CPTableViewDataSourceKey        = @"CPTableViewDataSourceKey",
 
 @end
 
-@implementation _dropOperationDrawingView : CPView
-{
-    unsigned    dropOperation @accessors;
-    CPTableView tableView @accessors;
-    int         currentRow @accessors;
-}
-
-- (void)drawRect:(CGRect)aRect
-{
-    if(tableView._destinationDragStyle === CPTableViewDraggingDestinationFeedbackStyleNone)
-        return;
-
-    var context = [[CPGraphicsContext currentContext] graphicsPort];
-
-    CGContextSetStrokeColor(context, [CPColor colorWithHexString:@"4886ca"]);
-    CGContextSetLineWidth(context, 3);
-
-    if(dropOperation === CPTableViewDropOn)
-    {
-        //if row is selected don't fill and stroke white
-        var selectedRows = [tableView selectedRowIndexes];
-        var newRect = _CGRectMake(aRect.origin.x + 2, aRect.origin.y + 2, aRect.size.width - 4, aRect.size.height - 5);
-        if([selectedRows containsIndex:currentRow])
-        {
-            CGContextSetLineWidth(context, 2);
-            CGContextSetStrokeColor(context, [CPColor whiteColor]);
-        }
-        else
-        {
-            CGContextSetFillColor(context, [CPColor colorWithRed:72/255 green:134/255 blue:202/255 alpha:0.25]);
-            CGContextFillRoundedRectangleInRect(context, newRect, 8, YES, YES, YES, YES);
-        }
-        CGContextStrokeRoundedRectangleInRect(context, newRect, 8, YES, YES, YES, YES);
-
-    }
-
-
-    if(dropOperation === CPTableViewDropAbove)
-    {
-
-
-        //reposition the view up a tad
-        [self setFrameOrigin:CGPointMake(_frame.origin.x, _frame.origin.y - 8)];
-
-        var selectedRows = [tableView selectedRowIndexes];
-
-        if([selectedRows containsIndex:currentRow - 1] || [selectedRows containsIndex:currentRow])
-        {
-            CGContextSetStrokeColor(context, [CPColor whiteColor]);
-            CGContextSetLineWidth(context, 4);
-            //draw the circle thing
-            CGContextStrokeEllipseInRect(context, _CGRectMake(aRect.origin.x + 4, aRect.origin.y + 4, 8, 8));
-            //then draw the line
-            CGContextBeginPath(context);
-            CGContextMoveToPoint(context, 10, aRect.origin.y + 8);
-            CGContextAddLineToPoint(context, aRect.size.width - aRect.origin.y - 8, aRect.origin.y + 8);
-            CGContextClosePath(context);
-            CGContextStrokePath(context);
-
-            CGContextSetStrokeColor(context, [CPColor colorWithHexString:@"4886ca"]);
-            CGContextSetLineWidth(context, 3);
-        }
-
-        //draw the circle thing
-        CGContextStrokeEllipseInRect(context, _CGRectMake(aRect.origin.x + 4, aRect.origin.y + 4, 8, 8));
-        //then draw the line
-        CGContextBeginPath(context);
-        CGContextMoveToPoint(context, 10, aRect.origin.y + 8);
-        CGContextAddLineToPoint(context, aRect.size.width - aRect.origin.y - 8, aRect.origin.y + 8);
-        CGContextClosePath(context);
-        CGContextStrokePath(context);
-        //CGContextStrokeLineSegments(context, [aRect.origin.x + 8,  aRect.origin.y + 8, 300 , aRect.origin.y + 8]);
-    }
-}
-@end
+// @implementation _CPDropOperationDrawView : CPView
+// {
+// }
+// 
+// - (void)drawRect:(CGRect)aRect
+// {
+//     var context = [[CPGraphicsContext currentContext] graphicsPort];
+// 
+//     CGContextSetStrokeColor(context, [CPColor colorWithHexString:@"4886ca"]);
+//     CGContextSetLineWidth(context, 3);
+// 
+// 	//draw the circle thing
+// 	CGContextStrokeEllipseInRect(context, _CGRectMake(aRect.origin.x + 4, aRect.origin.y + 4, 8, 8));
+// 	
+// 	//then draw the line
+// 	CGContextBeginPath(context);
+// 	CGContextMoveToPoint(context, 10, aRect.origin.y + 8);
+// 	CGContextAddLineToPoint(context, aRect.size.width - aRect.origin.y - 8, aRect.origin.y + 8);
+// 	CGContextClosePath(context);
+// 	CGContextStrokePath(context);
+// 
+//     }
+// }
+// @end
