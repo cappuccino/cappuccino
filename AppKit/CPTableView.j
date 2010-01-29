@@ -2507,9 +2507,11 @@ window.setTimeout(function(){
 	else if (dropOperation === CPTableViewDropOn)
 	{
 		dropOperationFeedbackView = [self viewForDropHighlightOnRow:row];
+		
+		// FIXME: this doesn't work for tableviews that have alternating row background colors
 		[self addSubview:dropOperationFeedbackView positioned:CPWindowBelow relativeTo:nil];
 	}
-		
+	
 	[self _setDropOperationFeedbackView:dropOperationFeedbackView];
 	
 	if (CGRectIsNull([[self _dropOperationFeedbackView] frame]))
@@ -2542,12 +2544,12 @@ window.setTimeout(function(){
 - (BOOL)performDragOperation:(id)sender
 {
     var location = [self convertPoint:[sender draggingLocation] fromView:nil];
-		operation = [self _proposedDropOperationAtPoint:location],
+		operation = [self _proposedDropOperationAtPoint:location];
 
     if(_retargetedDropRow !== nil)
         var row = _retargetedDropRow;
     else
-        var row = [self rowAtPoint:location] - 1;
+        var row = [self rowAtPoint:location];
 
     return [_dataSource tableView:self acceptDrop:sender row:row dropOperation:operation];
 }

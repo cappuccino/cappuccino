@@ -854,28 +854,48 @@ var _loadItemInfoForItem = function(/*CPOutlineView*/ anOutlineView, /*id*/ anIt
 {
 	if (!_outlineView._implementedOutlineViewDataSourceMethods & CPOutlineViewDataSource_outlineView_validateDrop_proposedItem_proposedChildIndex_)
 		return CPDragOperationNone;
-		
+	
 	var droppedItem = [_outlineView itemAtRow:theRow],
-		parentItem = [_outlineView parentForItem:droppedItem],
-		
-	var itemInfo = (parentItem != nil) ? _outlineView._itemInfosForItems[[parentItem UID]] : _outlineView._rootItemInfo,
-		children = itemInfo.children,
+		parentItem = [_outlineView parentForItem:droppedItem];
+		childIndex = CPNotFound;
+	
+	if (theOperation === CPTableViewDropAbove)
+	{		
+		var itemInfo = (parentItem != nil) ? _outlineView._itemInfosForItems[[parentItem UID]] : _outlineView._rootItemInfo,
+			children = itemInfo.children,
+			
 		childIndex = [children indexOfObject:droppedItem];
+	}
+	else if (theOperation === CPTableViewDropOn)
+	{
+		parentItem = droppedItem;
+		childIndex = -1;
+	}
 			
 	return [_outlineView._outlineViewDataSource outlineView:_outlineView validateDrop:theInfo proposedItem:parentItem proposedChildIndex:childIndex];
 }
 
 - (BOOL)tableView:(CPTableView)aTableView acceptDrop:(id <CPDraggingInfo>)theInfo row:(int)theRow dropOperation:(CPTableViewDropOperation)theOperation
-{
+{	
 	if (!_outlineView._implementedOutlineViewDataSourceMethods & CPOutlineViewDataSource_outlineView_acceptDrop_item_childIndex_)
 		return NO;
 	
 	var droppedItem = [_outlineView itemAtRow:theRow],
-		parentItem = [_outlineView parentForItem:droppedItem],
+		parentItem = [_outlineView parentForItem:droppedItem];
+		childIndex = CPNotFound;
 
-	var itemInfo = (parentItem != nil) ? _outlineView._itemInfosForItems[[parentItem UID]] : _outlineView._rootItemInfo,
-		children = itemInfo.children,
+	if (theOperation === CPTableViewDropAbove)
+	{		
+		var itemInfo = (parentItem != nil) ? _outlineView._itemInfosForItems[[parentItem UID]] : _outlineView._rootItemInfo,
+			children = itemInfo.children,
+
 		childIndex = [children indexOfObject:droppedItem];
+	}
+	else if (theOperation === CPTableViewDropOn)
+	{
+		parentItem = droppedItem;
+		childIndex = -1;
+	}
 	
 	return [_outlineView._outlineViewDataSource outlineView:_outlineView acceptDrop:theInfo item:parentItem childIndex:childIndex];
 }

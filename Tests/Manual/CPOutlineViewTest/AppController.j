@@ -207,7 +207,7 @@ CPLogRegister(CPLogConsole);
 
 - (CPDragOperation)outlineView:(CPOutlineView)anOutlineView validateDrop:(id < CPDraggingInfo >)theInfo proposedItem:(id)theItem proposedChildIndex:(int)theIndex
 {
-	// CPLog.debug(@"parent: %@ index: %i", theItem, theIndex);
+	CPLog.debug(@"validate drop at index: %i item: %@", theIndex, theItem);
 	return CPDragOperationEvery;
 }
 
