@@ -24,7 +24,8 @@ function ask_remove_dir () {
     if [ -d "$dir" ]; then
         echo "================================================================================"
         echo "Found an existing Narwhal/Cappuccino installation, $dir. Remove it automatically now?"
-        echo "WARNING: custom modifications and installed packages in this installation WILL BE DELETED."
+        echo "WARNING: the ENTIRE directory, $dir, will be removed (i.e. 'rm -rf $dir')."
+        echo "Be sure this is correct. Custom modifications and installed packages WILL BE DELETED."
         if prompt; then
             rm -rf "$dir"
         fi
@@ -33,7 +34,7 @@ function ask_remove_dir () {
 
 function ask_append_shell_config () {
     config_string="$1"
-    
+
     shell_config_file=""
     # use order outlined by http://hayne.net/MacDev/Notes/unixFAQ.html#shellStartup
     if [ -f "$HOME/.bash_profile" ]; then
@@ -60,6 +61,13 @@ function ask_append_shell_config () {
     return 1
 }
 
+function check_and_exit () {
+    if [ ! "$?" = "0" ]; then
+        echo "Error: problem running boostrap.sh. Exiting."
+        exit 1
+    fi
+}
+
 if [ "--clone" = "$1" ]; then
     tusk_install_command="clone"
     git_clone=1
@@ -71,6 +79,8 @@ github_project="280north-narwhal"
 github_path=$(echo "$github_project" | tr '-' '/')
 install_directory="/usr/local/narwhal"
 tmp_zip="/tmp/narwhal.zip"
+
+unset NARWHAL_ENGINE
 
 PATH_SAVED="$PATH"
 
@@ -109,22 +119,37 @@ if [ "$install_narwhal" ]; then
         install_directory="`cd \`dirname $input\`; pwd`/`basename $input`"
     fi
 
+    if [ -d "$install_directory" ]; then
+        echo "================================================================================"
+        echo "Directory exists at $install_directory. Delete it?"
+        if prompt; then
+            rm -rf "$install_directory"
+        fi
+    fi
+
     if [ "$git_clone" ]; then
         git_repo="git://github.com/$github_path.git"
         echo "Cloning Narwhal from \"$git_repo\"..."
         git clone "$git_repo" "$install_directory"
     else
         zip_ball="http://github.com/$github_path/zipball/master"
+
         echo "Downloading Narwhal from \"$zip_ball\"..."
         curl -L -o "$tmp_zip" "$zip_ball"
+        check_and_exit
+
         echo "Installing Narwhal..."
         unzip "$tmp_zip" -d "$install_directory"
+        check_and_exit
         rm "$tmp_zip"
+        check_and_exit
 
-        mv $install_directory/$github_project-*/* $install_directory/.
-        rm -rf $install_directory/$github_project-*
+        mv "$install_directory/$github_project-"*/* "$install_directory/."
+        check_and_exit
+        rm -rf "$install_directory/$github_project-"*
+        check_and_exit
     fi
-    
+
     export PATH="$install_directory/bin:$PATH"
 fi
 
@@ -141,6 +166,14 @@ if ! prompt; then
     exit 1
 fi
 
+echo "================================================================================"
+echo "Would you like to install the pre-built Objective-J and Cappuccino packages?"
+echo "If you intend to build Cappuccino yourself this is not neccessary."
+extra_packages=""
+if prompt; then
+    extra_packages="objective-j cappuccino"
+fi
+
 echo "Installing necessary packages..."
 
 if ! tusk update; then
@@ -148,7 +181,7 @@ if ! tusk update; then
     exit 1
 fi
 
-tusk $tusk_install_command browserjs jake
+tusk $tusk_install_command browserjs jake $extra_packages
 
 if [ `uname` = "Darwin" ]; then
     echo "================================================================================"
@@ -156,7 +189,7 @@ if [ `uname` = "Darwin" ]; then
     echo "This is optional but will make building and running Objective-J much faster."
     if prompt; then
         tusk $tusk_install_command narwhal-jsc
-        
+
         if ! (cd "$install_directory/packages/narwhal-jsc" && make webkit); then
             echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
             echo "WARNING: building narwhal-jsc failed. Hit enter to continue."
@@ -175,9 +208,9 @@ export PATH="$PATH_SAVED"
 if ! which "narwhal" > /dev/null; then
     echo "================================================================================"
     echo "You must add Narwhal's \"bin\" directory to your PATH environment variable. Do this automatically now?"
-    
+
     export_path_string="export PATH=\"$install_directory/bin:\$PATH\""
-    
+
     if ! ask_append_shell_config "$export_path_string"; then
         echo "Add \"$install_directory/bin\" to your PATH environment variable in your shell configuration file (e.x. .profile, .bashrc, .bash_profile)."
         echo "For example:"
@@ -193,11 +226,12 @@ if [ "$CAPP_BUILD" ]; then
             rm -rf "$CAPP_BUILD"
         fi
     fi
-else    
+else
     echo "================================================================================"
     echo "Before building Cappuccino we recommend you set the \$CAPP_BUILD environment variable to a path where you wish to build Cappuccino."
-    echo "If you have previously set \$CAPP_BUILD and built Cappuccino you may want to delete the directory before rebuilding."
+    echo "NOTE: If you have previously set \$CAPP_BUILD and built Cappuccino you may want to delete the directory before rebuilding."
 fi
 
 echo "================================================================================"
-echo "Bootstrapping of Narwhal and other required tools is complete. You can now build Cappuccino."
+echo "Bootstrapping of Narwhal and other required tools is complete."
+echo "NOTE: any changes made to the shell configuration files won't take place until you restart the shell."

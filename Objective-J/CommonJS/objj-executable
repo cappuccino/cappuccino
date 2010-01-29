@@ -1,15 +1,7 @@
 #!/usr/bin/env narwhal
 
-var FILE = require("file");
+var execPath = require("file").path(module.path);
+var mainPath = execPath.dirname().dirname().join("lib", execPath.basename(), "main.j");
 
-var cappuccinoPackage = FILE.path(module.path).dirname().dirname();
-var mainPath = cappuccinoPackage.join("lib", FILE.basename(module.path), "main.j");
-var frameworksPath = cappuccinoPackage.join("Frameworks");
-
-// TODO: is specifying the Frameworks necessary?
-system.args.splice(1, 0, "-I"+frameworksPath, String(mainPath));
-
-// HACK: remove use of SELF_HOME from capp gen
-system.env["SELF_HOME"] = cappuccinoPackage;
-
-require("objective-j").run(system.args);
+var args = ["objj", String(mainPath)].concat(system.args.slice(1));
+require("objective-j").run(args);

@@ -176,41 +176,55 @@ task("test-only", function()
 {
     var tests = new FileList('Tests/**/*Test.j');
     var cmd = ["ojtest"].concat(tests.items());
-    
+
     var code = OS.system(cmd);
     if (code !== 0)
         OS.exit(code);
 });
 
-task("push-packages", ["CommonJS"], function()
-{
+task("push-packages", ["CommonJS", "push-cappuccino", "push-objective-j"]);
+
+task("push-cappuccino", function() {
     pushPackage(
-        BUILD_CJS_CAPPUCCINO,
+        $BUILD_CJS_CAPPUCCINO,
         "git@github.com:280north/cappuccino-package.git"
     );
+});
+
+task("push-objective-j", function() {
     pushPackage(
-        BUILD_CJS_OBJECTIVE_J,
+        $BUILD_CJS_OBJECTIVE_J,
         "git@github.com:280north/objective-j-package.git"
     );
 });
 
 function pushPackage(path, remote)
 {
-    // FIXME: this will probably fail next time...
-    var cmds =
-    [
-        ["cd", path],
-        //["rm", "-rf", ".git*"],
-        ["git", "init"],
+    stream.print("Pushing \0blue(" + path + "\0) to \0blue(" + remote + "\0)");
+
+    FILE.mkdirs("push-package");
+
+    var pushPackageDir = FILE.join("push-package", remote.replace(/[^\w]/g, "_"));
+
+    if (FILE.exists(pushPackageDir))
+        OS.system(buildCommandString([["cd", pushPackageDir], ["git", "pull"]]));
+    else
+        OS.system(["git", "clone", remote, pushPackageDir]);
+
+    OS.system("cd "+OS.enquote(pushPackageDir)+" && git rm --ignore-unmatch -r * && rm -rf *");
+    OS.system("cp -R "+OS.enquote(path)+"/* "+OS.enquote(pushPackageDir)+"/.");
+
+    OS.system(buildCommandString([
+        ["cd", pushPackageDir],
         ["git", "add", "."],
         ["git", "commit", "-m", "Pushed on " + new Date()],
-        ["git", "remote", "add", "origin", remote],
         ["git", "push", "origin", "master"]
-    ];
-    
-    var cmdString = cmds.map(function(cmd) {
+    ]));
+}
+
+function buildCommandString(arrayOfCommands)
+{
+    return arrayOfCommands.map(function(cmd) {
         return cmd.map(OS.enquote).join(" ");
     }).join(" && ");
-    
-    OS.system(cmdString);
 }
