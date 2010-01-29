@@ -2318,7 +2318,6 @@ window.setTimeout(function(){
 		
 	[_dropOperationFeedbackView removeFromSuperview];
 	_dropOperationFeedbackView = theFeedbackView;
-	[self addSubview:_dropOperationFeedbackView positioned:CPWindowBelow relativeTo:nil];
 }
 
 /*
@@ -2450,7 +2449,7 @@ window.setTimeout(function(){
 	
 	// Place the highlight view in the middle of the rows or in the middle of the intercell spacing
 	// TODO: this currently looks off because the row highlights and labels are not drawn in the middle of the row
-	var rect = CPRectMake(0.0, 0.0, CPRectGetWidth([self frame]), 2.0);
+	var rect = CPRectMake(0.0, 0.0, CPRectGetWidth([self frame]), 10.0);
 	
 	rect.origin.y = CPRectGetMaxY(upperRowRect) - ( rect.size.height / 2.0 );
 	
@@ -2468,11 +2467,8 @@ window.setTimeout(function(){
 */
 - (CPView)viewForDropHighlightBetweenUpperRow:(int)theUpperRowIndex andLowerRow:(int)theLowerRowIndex
 {
-	var view = [[CPImageView alloc] initWithFrame:
+	return [[_CPDropOperationDrawView alloc] initWithFrame:
 					[self rectForDropHighlightViewBetweenUpperRow:theUpperRowIndex andLowerRow:theLowerRowIndex]];	
-	
-	[view setBackgroundColor:[CPColor greenColor]];
-	return view;
 }
 
 - (CPDragOperation)draggingUpdated:(id)sender
@@ -2502,10 +2498,17 @@ window.setTimeout(function(){
 	// Ask for the feedback view and cache it so we can remove it from the view hierarchy later
 	var dropOperationFeedbackView = nil;
 	
+	// Get the correct drop feedback view and add it to the view hierarchy
 	if (dropOperation === CPTableViewDropAbove)
+	{
 		dropOperationFeedbackView = [self viewForDropHighlightBetweenUpperRow:row - 1 andLowerRow:row];
+		[self addSubview:dropOperationFeedbackView positioned:CPWindowAbove relativeTo:nil];
+	}
 	else if (dropOperation === CPTableViewDropOn)
+	{
 		dropOperationFeedbackView = [self viewForDropHighlightOnRow:row];
+		[self addSubview:dropOperationFeedbackView positioned:CPWindowBelow relativeTo:nil];
+	}
 		
 	[self _setDropOperationFeedbackView:dropOperationFeedbackView];
 	
@@ -2920,27 +2923,26 @@ var CPTableViewDataSourceKey        = @"CPTableViewDataSourceKey",
 
 @end
 
-// @implementation _CPDropOperationDrawView : CPView
-// {
-// }
-// 
-// - (void)drawRect:(CGRect)aRect
-// {
-//     var context = [[CPGraphicsContext currentContext] graphicsPort];
-// 
-//     CGContextSetStrokeColor(context, [CPColor colorWithHexString:@"4886ca"]);
-//     CGContextSetLineWidth(context, 3);
-// 
-// 	//draw the circle thing
-// 	CGContextStrokeEllipseInRect(context, _CGRectMake(aRect.origin.x + 4, aRect.origin.y + 4, 8, 8));
-// 	
-// 	//then draw the line
-// 	CGContextBeginPath(context);
-// 	CGContextMoveToPoint(context, 10, aRect.origin.y + 8);
-// 	CGContextAddLineToPoint(context, aRect.size.width - aRect.origin.y - 8, aRect.origin.y + 8);
-// 	CGContextClosePath(context);
-// 	CGContextStrokePath(context);
-// 
-//     }
-// }
-// @end
+@implementation _CPDropOperationDrawView : CPView
+{
+}
+
+- (void)drawRect:(CGRect)aRect
+{
+    var context = [[CPGraphicsContext currentContext] graphicsPort],
+		rect = [self bounds];
+
+    CGContextSetStrokeColor(context, [CPColor selectionColor]);
+    CGContextSetLineWidth(context, 3.0);
+
+	// We want the ellipse to fit in a square so we make sure the width and the height of the ellipse are equal
+	var ellipesRect = CPRectMake(rect.origin.x + 2.5, rect.origin.y + 2.5, rect.size.height - 4.0, rect.size.height - 4.0);
+	CGContextStrokeEllipseInRect(context, ellipesRect);
+	
+	CGContextBeginPath(context);
+	CGContextMoveToPoint(context, CPRectGetMaxX(ellipesRect), CPRectGetMidY(ellipesRect));
+	CGContextAddLineToPoint(context, CPRectGetMaxX(rect) - CPRectGetMaxX(ellipesRect), CPRectGetMidY(ellipesRect));
+	CGContextClosePath(context);
+	CGContextStrokePath(context);
+}
+@end
