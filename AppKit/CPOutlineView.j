@@ -353,7 +353,7 @@ var CPOutlineViewDataSource_outlineView_setObjectValue_forTableColumn_byItem_   
 			item = [self itemAtRow:rowIndex];
 		
 		if (![self isExpandable:item])
-			return;
+			continue;
 		
 		var control = _disclosureControlsForRows[rowIndex];
 		[control setHighlighted:NO];
@@ -363,16 +363,16 @@ var CPOutlineViewDataSource_outlineView_setObjectValue_forTableColumn_byItem_   
 	
 	// Now highlight the new disclosure controls
 	var selectedRows = [];
-    [rows getIndexes:selectedRows maxCount:-1 inIndexRange:nil];
+	    [rows getIndexes:selectedRows maxCount:-1 inIndexRange:nil];
 	
-    var index = [selectedRows count];
+	    var index = [selectedRows count];
 	while (index--)
 	{
 		var rowIndex = selectedRows[index],
 			item = [self itemAtRow:rowIndex];
 		
 		if (![self isExpandable:item])
-			return;
+			continue;
 		
 		var control = _disclosureControlsForRows[rowIndex];
 		[control setHighlighted:YES];
