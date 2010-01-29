@@ -8,8 +8,8 @@ var FILE = require("file"),
     CLOBBER = require("jake/clean").CLOBBER,
     base64 = require("base64"),
     environment = require("objective-j/jake/environment"),
-    PropertyList = require("objective-j/core").PropertyList,
-    MutableDictionary = require("objective-j/core").MutableDictionary;
+    CFPropertyList = require("objective-j/core").CFPropertyList,
+    CFMutableDictionary = require("objective-j/core").CFMutableDictionary;
 
 var Task = Jake.Task,
     filedir = Jake.filedir;
@@ -345,9 +345,9 @@ BundleTask.prototype.infoPlist = function()
     var infoPlistPath = this.infoPlistPath();
 
     if (infoPlistPath && FILE.exists(infoPlistPath))
-        var infoPlist = PropertyList.propertyListFromString(FILE.read(infoPlistPath, { charset:"UTF-8" }));
+        var infoPlist = CFPropertyList.propertyListFromString(FILE.read(infoPlistPath, { charset:"UTF-8" }));
     else
-        var infoPlist = new MutableDictionary();
+        var infoPlist = new CFMutableDictionary();
 
     // FIXME: Should all of these unconditionally overwrite?
     infoPlist.setValueForKey("CPBundleInfoDictionaryVersion", 6.0);
@@ -376,7 +376,7 @@ BundleTask.prototype.defineInfoPlistTask = function()
 
     filedir (infoPlistProductPath, function()
     {
-        FILE.write(infoPlistProductPath, PropertyList.stringFromPropertyList(bundleTask.infoPlist(), PropertyList.Format280North_v1_0), { charset:"UTF-8" });
+        FILE.write(infoPlistProductPath, CFPropertyList.stringFromPropertyList(bundleTask.infoPlist(), CFPropertyList.Format280North_v1_0), { charset:"UTF-8" });
     });
 
     var infoPlistPath = this.infoPlistPath();

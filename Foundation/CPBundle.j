@@ -36,6 +36,7 @@ var CPBundlesForPaths = { };
 @implementation CPBundle : CPObject
 {
     CFBundle    _bundle;
+    id          _delegate;
 }
 
 + (CPBundle)bundleWithPath:(CPString)aPath
@@ -125,11 +126,10 @@ var CPBundlesForPaths = { };
 
 - (void)loadWithDelegate:(id)aDelegate
 {
-    _bundle.load();
+    _delegate = aDelegate;
 
     _bundle.addEventListener("load", function()
     {
-//    if (!fileExecutable.hasLoadedFileDependencies())
         [_delegate bundleDidFinishLoading:self];
     });
 
@@ -137,6 +137,21 @@ var CPBundlesForPaths = { };
     {
         CPLog.error("Could not find bundle: " + self);
     });
+
+    _bundle.load(NO);
+}
+
+- (CPArray)staticResourceURLs
+{
+    var staticResourceURLs = [],
+        staticResources = _bundle.staticResources(),
+        index = 0,
+        count = [staticResources count];
+
+    for (; index < count; ++index)
+        [staticResourceURLs addObject:[CPURL URLWithString:staticResources[index].path()]];
+
+    return staticResourceURLs;
 }
 
 - (CPArray)environments
@@ -151,7 +166,7 @@ var CPBundlesForPaths = { };
 
 - (CPString)description
 {
-    return [super description] + "(" + path + ")";
+    return [super description] + "(" + [self bundlePath] + ")";
 }
 
 @end

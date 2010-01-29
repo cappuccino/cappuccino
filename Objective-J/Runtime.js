@@ -236,7 +236,8 @@ function class_replaceMethod(/*Class*/ aClass, /*SEL*/ aSelector, /*IMP*/ aMetho
     return method_imp;
 }
 
-var _class_initialize = function(/*Class*/ aClass)
+// Private: Don't exports.
+function _class_initialize(/*Class*/ aClass)
 {
     var meta = GETMETA(aClass);
     
@@ -533,7 +534,7 @@ function sel_registerName(aName)
     return aName;
 }
 
-// Exports
+// Exports and Globals
 
 exports.objj_ivar = objj_ivar;
 exports.objj_method = objj_method;
@@ -585,4 +586,5 @@ exports.sel_getUid = sel_getUid;
 exports.sel_isEqual = sel_isEqual;
 exports.sel_registerName = sel_registerName;
 
-global._objj_generateObjectHash = generateObjectUID;
+exports.objj_generateObjectUID = generateObjectUID;
+exports._objj_generateObjectHash = generateObjectUID;

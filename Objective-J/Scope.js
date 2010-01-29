@@ -1,44 +1,10 @@
 
+// For now just make these global.
 function makeExportsGlobal()
 {
     for (var exportName in exports)
         if (hasOwnProperty.apply(exports, [exportName]))
             global[exportName] = exports[exportName];
-}
-
-var cachedExportedNames     = [],
-    cachedExportedValues    = [];
-
-function cacheExportedNamesAndValues()
-{
-    for (var exportName in exports)
-        if (hasOwnProperty.apply(exports, [exportName]))
-        {
-            cachedExportedNames.push(exportName);
-            cachedExportedValues.push(exports[exportName]);
-        }
-
-    exportedNames = function()
-    {
-        return cachedExportedNames;
-    }
-
-    exportedValues = function()
-    {
-        return cachedExportedValues;
-    }
-}
-
-function exportedNames()
-{
-    cacheExportedNamesAndValues();
-    return exportedNames();
-}
-
-function exportedValues()
-{
-    cacheExportedNamesAndValues();
-    return exportedValues();
 }
 
 function importablePath(/*String*/ aPath, /*BOOL*/ isLocal, /*String*/ aCWD)

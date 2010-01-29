@@ -1,5 +1,5 @@
 
-function Data()
+function CFData()
 {
     this._encodedString = NULL;
     this._serializedPropertyList = NULL;
@@ -8,22 +8,22 @@ function Data()
     this._base64 = NULL;
 }
 
-Data.prototype.serializedPropertyList = function()
+CFData.prototype.serializedPropertyList = function()
 {
     if (!this._serializedPropertyList)
-        this._serializedPropertyList = PropertyList.propertyListFromString(this.encodedString());
+        this._serializedPropertyList = CFPropertyList.propertyListFromString(this.encodedString());
 
     return this._serializedPropertyList;
 }
 
-Data.prototype.encodedString = function()
+CFData.prototype.encodedString = function()
 {
     if (this._encodedString === NULL)
     {
         var serializedPropertyList = this._serializedPropertyList;
 
         if (this._serializedPropertyList)
-            this._encodedString = PropertyList.stringFromPropertyList(serializedPropertyList);
+            this._encodedString = CFPropertyList.stringFromPropertyList(serializedPropertyList);
 
 //        Ideally we would convert these bytes or base64 into a string.
 //        else if (this._bytes)
@@ -36,24 +36,24 @@ Data.prototype.encodedString = function()
     return this._encodedString;
 }
 
-Data.prototype.bytes = function()
+CFData.prototype.bytes = function()
 {
     return this._bytes;
 }
 
-Data.prototype.base64 = function()
+CFData.prototype.base64 = function()
 {
     return this._base64;
 }
 
-function MutableData()
+function CFMutableData()
 {
-    Data.call(this);
+    CFData.call(this);
 }
 
-MutableData.prototype = new Data();
+CFMutableData.prototype = new CFData();
 
-function clearMutableData(/*MutableData*/ aData)
+function clearMutableData(/*CFMutableData*/ aData)
 {
     this._encodedString = NULL;
     this._serializedPropertyList = NULL;
@@ -62,28 +62,28 @@ function clearMutableData(/*MutableData*/ aData)
     this._base64 = NULL;
 }
 
-MutableData.prototype.setSerializedPropertyList = function(/*PropertyList*/ aPropertyList)
+CFMutableData.prototype.setSerializedPropertyList = function(/*PropertyList*/ aPropertyList)
 {
     clearMutableData(this);
 
     this._serializedPropertyList = aPropertyList;
 }
 
-MutableData.prototype.setEncodedString = function(/*String*/ aString)
+CFMutableData.prototype.setEncodedString = function(/*String*/ aString)
 {
     clearMutableData(this);
 
     this._encodedString = aString;
 }
 
-MutableData.prototype.setBytes = function(/*Array*/ bytes)
+CFMutableData.prototype.setBytes = function(/*Array*/ bytes)
 {
     clearMutableData(this);
 
     this._bytes = bytes;
 }
 
-MutableData.prototype.setBase64String = function(/*String*/ aBase64String)
+CFMutableData.prototype.setBase64String = function(/*String*/ aBase64String)
 {
     clearMutableData(this);
 
@@ -190,8 +190,5 @@ function base64_encode_string(input)
     return base64_encode_array(temp);
 }
 
-exports.Data = Data;
-exports.CFData = Data;
-
-exports.MutableData = MutableData;
-exports.CFMutableData = MutableData;
+exports.CFData = CFData;
+exports.CFMutableData = CFMutableData;

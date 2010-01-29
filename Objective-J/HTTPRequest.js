@@ -114,10 +114,10 @@ HTTPRequest.prototype.responsePropertyList = function()
 {
     var responseText = this.responseText();
 
-    if (PropertyList.sniffedFormatOfString(responseText) === PropertyList.FormatXML_v1_0)
-        return PropertyList.propertyListFromXML(this.responseXML());
+    if (CFPropertyList.sniffedFormatOfString(responseText) === CFPropertyList.FormatXML_v1_0)
+        return CFPropertyList.propertyListFromXML(this.responseXML());
 
-    return PropertyList.propertyListFromString(responseText);
+    return CFPropertyList.propertyListFromString(responseText);
 }
 
 HTTPRequest.prototype.responseText = function()
@@ -207,7 +207,7 @@ FileRequest.prototype.responseXML = function()
 
 FileRequest.prototype.responsePropertyList = function()
 {
-    return PropertyList.propertyListFromString(this.responseText());
+    return CFPropertyList.propertyListFromString(this.responseText());
 }
 #endif
 

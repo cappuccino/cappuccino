@@ -1,41 +1,41 @@
 
+var CFBundleUnloaded            = 0,
+    CFBundleLoading             = 1 << 0,
+    CFBundleLoadingInfoPlist    = 1 << 1,
+    CFBundleLoadingExecutable   = 1 << 2,
+    CFBundleLoadingResources    = 1 << 3,
+    CFBundleLoaded              = 1 << 4;
 
-Bundle.Unloaded             = 0;
-Bundle.Loading              = 1 << 0;
-Bundle.LoadingInfoPlist     = 1 << 1;
-Bundle.LoadingExecutable    = 1 << 2;
-Bundle.LoadingResources     = 1 << 3;
-Bundle.Loaded               = 1 << 4;
+var CFBundlesForPaths   = { },
+    CFBundlesForClasses = { };
 
-var BundlesForPaths = { };
-
-function Bundle(/*String*/ aPath)
+function CFBundle(/*String*/ aPath)
 {
     aPath = FILE.absolute(aPath);
 
-    var existingBundle = BundlesForPaths[aPath];
+    var existingBundle = CFBundlesForPaths[aPath];
 
     if (existingBundle)
         return existingBundle;
-console.log("created bundle for " + aPath);
-    BundlesForPaths[aPath] = this;
+CPLog("created bundle for " + aPath);
+    CFBundlesForPaths[aPath] = this;
 
     this._path = aPath;
     this._name = FILE.basename(aPath);
-    this._loadStatus = Bundle.Unloaded;
+    this._loadStatus = CFBundleUnloaded;
     this._staticResourceNode = NULL;
 
     this._infoDictionary = NULL;
     this._eventDispatcher = new EventDispatcher(this);
 }
 
-Bundle.bundleContainingPath = function(/*String*/ aPath)
+CFBundle.bundleContainingPath = function(/*String*/ aPath)
 {
     aPath = FILE.absolute(aPath);
 
     while (aPath !== "/")
     {
-        var bundle = BundlesForPaths[aPath];
+        var bundle = CFBundlesForPaths[aPath];
         
         if (bundle)
             return bundle;
@@ -46,40 +46,38 @@ Bundle.bundleContainingPath = function(/*String*/ aPath)
     return NULL;
 }
 
-Bundle.mainBundle = function()
+CFBundle.mainBundle = function()
 {
-    return new Bundle(FILE.cwd());
+    return new CFBundle(FILE.cwd());
 }
-
-var bundlesForClasses = { };
 
 function addClassToBundle(aClass, aBundle)
 {
     if (aBundle)
-        bundlesForClasses[aClass.name] = aBundle;
+        CFBundlesForClasses[aClass.name] = aBundle;
 }
 
-Bundle.bundleForClass = function(/*Class*/ aClass)
+CFBundle.bundleForClass = function(/*Class*/ aClass)
 {
-    return bundlesForClasses[aClass.name] || Bundle.mainBundle();
+    return CFBundlesForClasses[aClass.name] || CFBundle.mainBundle();
 }
 
-Bundle.prototype.path = function()
+CFBundle.prototype.path = function()
 {
     return this._path;
 }
 
-Bundle.prototype.infoDictionary = function()
+CFBundle.prototype.infoDictionary = function()
 {
     return this._infoDictionary;
 }
 
-Bundle.prototype.valueForInfoDictionary = function(/*String*/ aKey)
+CFBundle.prototype.valueForInfoDictionary = function(/*String*/ aKey)
 {
     return this._infoDictionary.valueForKey(aKey);
 }
 
-Bundle.prototype.executablePath = function()
+CFBundle.prototype.executablePath = function()
 {
     var executableSubPath = this._infoDictionary.valueForKey("CPBundleExecutable");
 
@@ -89,12 +87,12 @@ Bundle.prototype.executablePath = function()
     return NULL;
 }
 
-Bundle.prototype.environments = function()
+CFBundle.prototype.environments = function()
 {
     return this._infoDictionary.valueForKey("CPBundleEnvironments") || ["ObjJ"];
 }
 
-Bundle.prototype.mostEligibleEnvironment = function(/*Array*/ environments)
+CFBundle.prototype.mostEligibleEnvironment = function(/*Array*/ environments)
 {
     environments = environments || this.environments();
 
@@ -117,30 +115,27 @@ Bundle.prototype.mostEligibleEnvironment = function(/*Array*/ environments)
     return NULL;
 }
 
-Bundle.prototype.isLoading = function()
+CFBundle.prototype.isLoading = function()
 {
-    return this._loadStatus & Bundle.Loading;
+    return this._loadStatus & CFBundleLoading;
 }
 
-Bundle.prototype.load = function(/*BOOL*/ shouldEvaluate)
+CFBundle.prototype.load = function(/*BOOL*/ shouldExecute)
 {
-    if (this._loadStatus !== Bundle.Unloaded)
+    if (this._loadStatus !== CFBundleUnloaded)
         return;
 
     var self = this;
 
-    self._loadStatus = Bundle.Loading | Bundle.LoadingInfoPlist;
-/*    print(FILE.cwd());
-    print(self.path());
-    print(rootNode);
-print("will resolve: " + FILE.dirname(self.path()));*/
+    self._loadStatus = CFBundleLoading | CFBundleLoadingInfoPlist;
+
     rootNode.resolveSubPath(FILE.dirname(self.path()), StaticResourceNode.DirectoryType, function(aStaticResourceNode)
-    {//print("found: " + FILE.dirname(self.path()));
+    {
         self._staticResourceNode = new StaticResourceNode(FILE.basename(self.path()), aStaticResourceNode, StaticResourceNode.DirectoryType, NO);
 
         function onsuccess(/*Event*/ anEvent)
         {
-            self._loadStatus &= ~Bundle.LoadingInfoPlist;
+            self._loadStatus &= ~CFBundleLoadingInfoPlist;
             self._infoDictionary = anEvent.request.responsePropertyList();
 
             if (!self._infoDictionary)
@@ -154,12 +149,13 @@ print("will resolve: " + FILE.dirname(self.path()));*/
                 return;
             }
 
-            loadExecutableAndResources(self);
+            loadExecutableAndResources(self, shouldExecute);
         }
 
         function onfailure()
         {
-            self._loadStatus = Bundle.Unloaded;
+            self._staticResourceNode._isResolved = YES;
+            self._loadStatus = CFBundleUnloaded;
             self._eventDispatcher.dispatchEvent(
             {
                 type:"error", 
@@ -171,9 +167,9 @@ print("will resolve: " + FILE.dirname(self.path()));*/
     });
 }
 
-function loadExecutableAndResources(/*Bundle*/ aBundle)
+function loadExecutableAndResources(/*Bundle*/ aBundle, /*BOOL*/ shouldExecute)
 {
-    aBundle._loadStatus |= (aBundle.executablePath() && Bundle.LoadingExecutable);
+    aBundle._loadStatus |= (aBundle.executablePath() && CFBundleLoadingExecutable);
     //aBundle._loadStatus |= (aBundle.mappedResourcesPath() && Bundle.LoadingResources);
 
     function failure()
@@ -190,7 +186,7 @@ function loadExecutableAndResources(/*Bundle*/ aBundle)
             aBundle._loadResourcesRequest = NULL;
         }
 
-        aBundle._loadStatus = Bundle.Unloaded;
+        aBundle._loadStatus = CFBundleUnloaded;
 
         resolveStaticResourceNode(aBundle._staticResourceNode, NO);
 
@@ -206,46 +202,94 @@ function loadExecutableAndResources(/*Bundle*/ aBundle)
 
     function success()
     {
-        if (aBundle._loadStatus === Bundle.Loading)
-            aBundle._loadStatus = Bundle.Loaded;
+        if (aBundle._loadStatus === CFBundleLoading)
+            aBundle._loadStatus = CFBundleLoaded;
 
+        // Set resolved to true here in case during evaluation this bundle 
+        // needs to resolve another bundle which in turn needs it to be resolved (cycle).
         resolveStaticResourceNode(aBundle._staticResourceNode, NO);
 
-        aBundle._eventDispatcher.dispatchEvent(
-        {
-            type:"load", 
-            bundle:aBundle
-        });
+        function complete()
+        {CPLog("COMPLETED");
+            aBundle._eventDispatcher.dispatchEvent(
+            {
+                type:"load", 
+                bundle:aBundle
+            });
+    
+            resolveStaticResourceNode(aBundle._staticResourceNode, YES);
+        }
 
-        resolveStaticResourceNode(aBundle._staticResourceNode, YES);
+CPLog("IN HErE FOR " + aBundle.path());
+        if (shouldExecute)
+            executeBundle(aBundle, complete);
+        else
+            complete();
     }
 
-    if (aBundle._loadStatus === Bundle.Loading)
+    if (aBundle._loadStatus === CFBundleLoading)
         return success();
 
     if (!aBundle.mostEligibleEnvironment())
         failure();
 
-    if (aBundle._loadStatus & Bundle.LoadingExecutable)
+    if (aBundle._loadStatus & CFBundleLoadingExecutable)
     {
-        aBundle._loadExecutableRequest = new HTTPRequest();
-
-        var loadExecutableRequest = aBundle._loadExecutableRequest;
-
-        loadExecutableRequest.onsuccess = function()
+        function executableSuccess(/*Event*/ anEvent)
         {
-            decompileExecutable(aBundle, loadExecutableRequest.responseText());
+            decompileExecutable(aBundle, anEvent.request.responseText());
     
-            aBundle._loadStatus &= ~Bundle.LoadingExecutable;
+            aBundle._loadStatus &= ~CFBundleLoadingExecutable;
     
             success();
         }
-    
-        loadExecutableRequest.onfailure = failure;
 
-        loadExecutableRequest.open("GET", aBundle.executablePath(), YES);
-        loadExecutableRequest.send("");
+        new FileRequest(aBundle.executablePath(), executableSuccess, failure);
     }
+}
+
+CFBundle.dataContentsAtPath = function(/*String*/ aPath)
+{
+    var data = new CFMutableData();
+CPLog("uh oh");
+    data.setEncodedString(rootNode.nodeAtSubPath(aPath).contents());
+    CPLog("it is: " + data._encodedString);
+CPLog(data.encodedString());
+    return data;
+}
+
+function executeBundle(/*Bundle*/ aBundle)
+{
+    var staticResources = [aBundle._staticResourceNode];
+
+    function executeStaticResources(staticResources, index)
+    {
+        for (; index < staticResources.length; ++index)
+        {
+            var staticResource = staticResources[index];
+
+            if (staticResource.type() === StaticResourceNode.FileType)
+            {
+                var executable = new FileExecutable(staticResource.path());
+
+                if (staticResource.hasLoadedFileDependencies())
+                    executable.execute();
+
+                else
+                {
+                    executable.addEventListeners("dependenciesload", function()
+                    {
+                        executeStaticResources(index);
+                    });
+                    return;
+                }
+            }
+            else
+                staticResources = staticResources.concat(staticResource.children());
+        }
+    }
+
+    executeStaticResources(0);
 }
 
 var STATIC_MAGIC_NUMBER     = "@STATIC",
@@ -306,21 +350,19 @@ function decompileExecutable(/*Bundle*/ aBundle, /*String*/ aString)
 
 // Event Managament
 
-Bundle.prototype.addEventListener = function(/*String*/ anEventName, /*Function*/ anEventListener)
+CFBundle.prototype.addEventListener = function(/*String*/ anEventName, /*Function*/ anEventListener)
 {
     this._eventDispatcher.addEventListener(anEventName, anEventListener);
 }
 
-Bundle.prototype.removeEventListener = function(/*String*/ anEventName, /*Function*/ anEventListener)
+CFBundle.prototype.removeEventListener = function(/*String*/ anEventName, /*Function*/ anEventListener)
 {
     this._eventDispatcher.removeEventListener(anEventName, anEventListener);
 }
 
-Bundle.prototype.onerror = function(/*Event*/ anEvent)
+CFBundle.prototype.onerror = function(/*Event*/ anEvent)
 {
     throw anEvent.error;
 }
 
-exports.Bundle = Bundle;
-
-exports.CFBundle = Bundle;
+exports.CFBundle = CFBundle;

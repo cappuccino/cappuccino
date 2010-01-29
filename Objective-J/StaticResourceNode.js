@@ -246,7 +246,7 @@ function resolvePathComponents(/*StaticResourceNode*/ startNode, /*Type*/aType, 
 
             if (index + 1 < count || aType === StaticResourceNode.DirectoryType)
             {
-                var bundle = new Bundle(components.slice(0, index + 1).join("/"));
+                var bundle = new CFBundle(components.slice(0, index + 1).join("/"));
 
                 // Eat any errors.
                 bundle.onerror = function() { };

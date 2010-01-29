@@ -3,10 +3,11 @@ makeExportsGlobal();
 
 var rootNode = new StaticResourceNode("", null, StaticResourceNode.DirectoryType, YES),
     cwd = FILE.cwd();
-
+#ifndef COMMONJS
 rootNode.nodeAtSubPath(FILE.dirname(cwd), YES);
 rootNode.resolveSubPath(cwd, StaticResourceNode.DirectoryType, function(cwdNode)
 {
+
     var includePaths = exports.includePaths(),
         index = 0,
         count = includePaths.length;
@@ -22,6 +23,7 @@ rootNode.resolveSubPath(cwd, StaticResourceNode.DirectoryType, function(cwdNode)
     });
 #endif
 });
+#endif
 
 #ifdef BROWSER
 function afterDocumentLoad(/*Function*/ aFunction)

@@ -73,7 +73,9 @@ Executable.prototype.path = function()
 
 Executable.prototype.functionParameters = function()
 {
-    var functionParameters = exportedNames().concat("objj_executeFile", "objj_importFile");
+    var functionParameters = ["objj_executeFile", "objj_importFile"];
+
+//exportedNames().concat("objj_executeFile", "objj_importFile");
 
 #ifdef COMMONJS
     functionParameters = functionParameters.concat("require", "exports", "module", "system", "print", "window");
@@ -84,8 +86,10 @@ Executable.prototype.functionParameters = function()
 
 Executable.prototype.functionArguments = function()
 {
-    var path = this.path()
-        functionArguments = exportedValues().concat(fileExecuterForPath(path), fileImporterForPath(path));
+    var path = this.path(),
+        functionArguments = [fileExecuterForPath(path), fileImporterForPath(path)];
+
+//functionArguments = exportedValues().concat(fileExecuterForPath(path), fileImporterForPath(path));
 
 #ifdef COMMONJS
     functionArguments = functionArguments.concat(Executable.commonJSArguments());
@@ -123,7 +127,7 @@ Executable.prototype.execute = function()
 #endif
     var oldContextBundle = CONTEXT_BUNDLE;
 
-    CONTEXT_BUNDLE = Bundle.bundleContainingPath(this.path());
+    CONTEXT_BUNDLE = CFBundle.bundleContainingPath(this.path());
 
     var result = this._function.apply(global, this.functionArguments());
 
@@ -165,8 +169,8 @@ Executable.prototype.loadFileDependencies = function()
 
     var searchedPaths = [{ }, { }],
         foundExecutablePaths = { },
-        fileExecutableSearches = new MutableDictionary(),
-        incompleteFileExecutableSearches = new MutableDictionary();
+        fileExecutableSearches = new CFMutableDictionary(),
+        incompleteFileExecutableSearches = new CFMutableDictionary();
 
     foundExecutablePaths[this.path()] = this;
 

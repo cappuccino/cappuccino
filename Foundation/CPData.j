@@ -37,7 +37,7 @@
 
 + (id)alloc
 {
-    return new MutableData();
+    return new CFMutableData();
 }
 
 + (CPData)data
@@ -127,5 +127,5 @@
 
 @end
 
-Data.prototype.isa = CPData;
-MutableData.prototype.isa = CPData;
+CFData.prototype.isa = CPData;
+CFMutableData.prototype.isa = CPData;

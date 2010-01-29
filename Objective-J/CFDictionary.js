@@ -1,5 +1,5 @@
 
-function Dictionary(/*Dictionary*/ aDictionary)
+function CFDictionary(/*CFDictionary*/ aDictionary)
 {
     this._keys = [];
     this._count = 0;
@@ -10,13 +10,13 @@ function Dictionary(/*Dictionary*/ aDictionary)
 var indexOf = Array.prototype.indexOf,
     hasOwnProperty = Object.prototype.hasOwnProperty;
 
-Dictionary.prototype.copy = function()
+CFDictionary.prototype.copy = function()
 {
     // Immutable, so no need to actually copy.
     return this;
 }
 
-Dictionary.prototype.mutableCopy = function()
+CFDictionary.prototype.mutableCopy = function()
 {
     var newDictionary = new MutableDictionary(),
         keys = this._keys,
@@ -39,12 +39,12 @@ Dictionary.prototype.mutableCopy = function()
     return newDictionary;
 }
 
-Dictionary.prototype.containsKey = function(/*String*/ aKey)
+CFDictionary.prototype.containsKey = function(/*String*/ aKey)
 {
     return hasOwnProperty.apply(this._buckets, [aKey]);
 }
 
-Dictionary.prototype.containsValue = function(/*id*/ anObject)
+CFDictionary.prototype.containsValue = function(/*id*/ anObject)
 {
     var keys = this._keys,
         buckets = this._buckets,
@@ -58,17 +58,17 @@ Dictionary.prototype.containsValue = function(/*id*/ anObject)
     return NO;
 }
 
-Dictionary.prototype.count = function()
+CFDictionary.prototype.count = function()
 {
     return this._count;
 }
 
-Dictionary.prototype.countOfKey = function(/*String*/ aKey)
+CFDictionary.prototype.countOfKey = function(/*String*/ aKey)
 {
     return this.containsKey(aKey) ? 1 : 0;
 }
 
-Dictionary.prototype.countOfValue = function(/*id*/ anObject)
+CFDictionary.prototype.countOfValue = function(/*id*/ anObject)
 {
     var keys = this._keys,
         buckets = this._buckets,
@@ -83,12 +83,12 @@ Dictionary.prototype.countOfValue = function(/*id*/ anObject)
     return countOfValue;
 }
 
-Dictionary.prototype.keys = function()
+CFDictionary.prototype.keys = function()
 {
     return this._keys.slice();
 }
 
-Dictionary.prototype.valueForKey = function(/*String*/ aKey)
+CFDictionary.prototype.valueForKey = function(/*String*/ aKey)
 {
     var buckets = this._buckets;
 
@@ -98,7 +98,7 @@ Dictionary.prototype.valueForKey = function(/*String*/ aKey)
     return buckets[aKey];
 }
 
-Dictionary.prototype.toString = function()
+CFDictionary.prototype.toString = function()
 {
     var string = "{\n",
         keys = this._keys,
@@ -115,19 +115,19 @@ Dictionary.prototype.toString = function()
     return string + "}";
 }
 
-MutableDictionary = function(/*Dictionary*/ aDictionary)
+CFMutableDictionary = function(/*CFDictionary*/ aDictionary)
 {
-    Dictionary.apply(this, []);
+    CFDictionary.apply(this, []);
 }
 
-MutableDictionary.prototype = new Dictionary();
+CFMutableDictionary.prototype = new CFDictionary();
 
-MutableDictionary.prototype.copy = function()
+CFMutableDictionary.prototype.copy = function()
 {
     return this.mutableCopy();
 }
 
-MutableDictionary.prototype.addValueForKey = function(/*String*/ aKey, /*Object*/ aValue)
+CFMutableDictionary.prototype.addValueForKey = function(/*String*/ aKey, /*Object*/ aValue)
 {
     if (this.containsKey(aKey))
         return;
@@ -138,7 +138,7 @@ MutableDictionary.prototype.addValueForKey = function(/*String*/ aKey, /*Object*
     this._buckets[aKey] = aValue;
 }
 
-MutableDictionary.prototype.removeValueForKey = function(/*String*/ aKey)
+CFMutableDictionary.prototype.removeValueForKey = function(/*String*/ aKey)
 {
     var indexOfKey = -1;
 
@@ -167,14 +167,14 @@ MutableDictionary.prototype.removeValueForKey = function(/*String*/ aKey)
     delete this._buckets[aKey];
 }
 
-MutableDictionary.prototype.removeAllValues = function()
+CFMutableDictionary.prototype.removeAllValues = function()
 {
     this._count = 0;
     this._keys = [];
     this._buckets = { };
 }
 
-MutableDictionary.prototype.replaceValueForKey = function(/*String*/ aKey, /*Object*/ aValue)
+CFMutableDictionary.prototype.replaceValueForKey = function(/*String*/ aKey, /*Object*/ aValue)
 {
     if (!this.containsKey(aKey))
         return;
@@ -182,7 +182,7 @@ MutableDictionary.prototype.replaceValueForKey = function(/*String*/ aKey, /*Obj
     this._buckets[aKey] = aValue;
 }
 
-MutableDictionary.prototype.setValueForKey = function(/*String*/ aKey, /*Object*/ aValue)
+CFMutableDictionary.prototype.setValueForKey = function(/*String*/ aKey, /*Object*/ aValue)
 {
     if (this.containsKey(aKey))
         this.replaceValueForKey(aKey, aValue);
@@ -193,8 +193,5 @@ MutableDictionary.prototype.setValueForKey = function(/*String*/ aKey, /*Object*
 
 // Exports
 
-exports.Dictionary = Dictionary;
-exports.CFDictionary = Dictionary;
-
-exports.MutableDictionary = MutableDictionary;
-exports.CFMutableDictionary = MutableDictionary;
+exports.CFDictionary = CFDictionary;
+exports.CFMutableDictionary = CFMutableDictionary;
