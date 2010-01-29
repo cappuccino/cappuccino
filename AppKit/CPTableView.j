@@ -2160,6 +2160,15 @@ window.setTimeout(function(){
     return YES;
 }
 
+- (void)trackMouse:(CPEvent)anEvent
+{
+	// Prevent CPControl from eating the mouse events when we are in a drag session
+	if (![_draggedRowIndexes count])
+		[super trackMouse:anEvent];
+	else
+		[CPApp sendEvent:anEvent];
+}
+
 /* ignore */
 - (BOOL)continueTracking:(CGPoint)lastPoint at:(CGPoint)aPoint
 {
