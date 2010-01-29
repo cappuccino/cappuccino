@@ -44,7 +44,7 @@ var screenNeedsInitialization   = NO,
 
 + (BOOL)supportsDragAndDrop
 {
-    return CPFeatureIsCompatible(CPHTMLDragAndDropFeature);
+    return CPFeatureIsCompatible(CPHTMLDragAndDropFeature) && ![self isBrowser];
 }
 
 + (BOOL)supportsNativeMainMenu
