@@ -11,8 +11,12 @@
 
 CPLogRegister(CPLogConsole);
 
+CustomOutlineViewDragType = @"CustomOutlineViewDragType";
+
 @implementation Menu : CPObject
 {
+	Menu			_menu @accessors(property=menu);
+	
 	CPString		_title @accessors(property=title);
 	CPArray			_children @accessors(property=children);
 }
@@ -37,7 +41,7 @@ CPLogRegister(CPLogConsole);
 	if ((self = [super init]))
 	{
 		_title = theTitle;
-		_children = theChildren;
+		[self setChildren:theChildren];
 	}
 	
 	return self;
@@ -45,25 +49,74 @@ CPLogRegister(CPLogConsole);
 
 - (CPString)description
 {
+	return [self descriptionWithChildren:YES];
+}
+
+- (CPString)descriptionWithChildren:(BOOL)showChildren
+{
 	var description = [super description] + @" " + [self title];
 	
-	// if ([[self children] count] > 0)
-	// 	description = @"\n" + [description stringByAppendingFormat:@": %@", [self children]];
+	if (showChildren && [[self children] count] > 0)
+		description = @"\n" + [description stringByAppendingFormat:@" children: %@", [self children]];
 
 	return description;
+}
+
+- (void)insertSubmenu:(Menu)theItem atIndex:(int)theIndex
+{
+	CPLog.debug(@"insert menu: %@ in menu: %@ at index: %i", [theItem descriptionWithChildren:NO], [self descriptionWithChildren:NO], theIndex);
+	
+	if ([[self children] containsObject:theItem])
+		return;
+		
+	if ([theItem menu])
+		[theItem removeFromMenu];
+		
+	[theItem setMenu:self];
+	[[self children] insertObject:theItem atIndex:theIndex];
+}
+
+- (void)removeFromMenu
+{
+	CPLog.debug(@"remove menu: %@ from menu: %@", [self descriptionWithChildren:NO], [[self menu] descriptionWithChildren:NO]);
+	
+	[[[self menu] children] removeObject:self];
+	
+	CPLog.debug([[self menu] children]);
+	
+	[self setMenu:nil];
+}
+
+- (void)setChildren:(CPArray)theChildren
+{
+	if (_children === theChildren)
+		return;
+		
+	var childIndex = [theChildren count];
+	while (childIndex--)
+	{
+		var child = theChildren[childIndex];
+		[child setMenu:self];
+	}
+		
+	_children = theChildren;
 }
 
 - (id)initWithCoder:(CPCoder)theCoder
 {
 	if (self = [super init])
 	{
+		_menu = [theCoder decodeObjectForKey:@"MenuSuperMenuKey"];
 		_title = [theCoder decodeObjectForKey:@"MenuTitleKey"];
-		_children = [theCoder decodeObjectForKey:@"MenuChildrenKey"];
+		[self setChildren:[theCoder decodeObjectForKey:@"MenuChildrenKey"]];
 	}
+	
+	return self;
 }
 
 - (void)encodeWithCoder:(CPCoder)aCoder
 {
+	[aCoder encodeObject:_menu forKey:@"MenuSuperMenuKey"];
 	[aCoder encodeObject:_title forKey:@"MenuTitleKey"];
 	[aCoder encodeObject:_children forKey:@"MenuChildrenKey"];
 }
@@ -74,6 +127,8 @@ CPLogRegister(CPLogConsole);
 {
 	Menu			_menu @accessors(property=menu);
 	CPOutlineView	_outlineView;
+	
+	CPArray			_draggedItems;
 }
 
 - (void)applicationDidFinishLaunching:(CPNotification)aNotification
@@ -93,37 +148,37 @@ CPLogRegister(CPLogConsole);
 				[Menu menuWithTitle:@"1.2.3"]
 			]]
 		]],
-		[Menu menuWithTitle:@"2" children:[
-			[Menu menuWithTitle:@"2.1" children:[
-				[Menu menuWithTitle:@"2.1.1"],
-				[Menu menuWithTitle:@"2.1.2"],
-				[Menu menuWithTitle:@"2.1.3"],
-			]],
-			[Menu menuWithTitle:@"2.2" children:[
-				[Menu menuWithTitle:@"2.2.1"],
-				[Menu menuWithTitle:@"2.2.2"],
-			]]
-		]],
-		[Menu menuWithTitle:@"3" children:[
-			[Menu menuWithTitle:@"3.1" children:[
-				[Menu menuWithTitle:@"3.1.1"],
-				[Menu menuWithTitle:@"3.1.2"],
-				[Menu menuWithTitle:@"3.1.3"],
-			]],
-			[Menu menuWithTitle:@"3.2" children:[
-				[Menu menuWithTitle:@"3.2.1"],
-				[Menu menuWithTitle:@"3.2.2"],
-				[Menu menuWithTitle:@"3.2.3"],
-				[Menu menuWithTitle:@"3.2.4"],
-			]],
-			[Menu menuWithTitle:@"3.3" children:[
-				[Menu menuWithTitle:@"3.3.1"],
-				[Menu menuWithTitle:@"3.3.2"],
-				[Menu menuWithTitle:@"3.3.3"],
-				[Menu menuWithTitle:@"3.3.4"],
-				[Menu menuWithTitle:@"3.3.5"],
-			]]
-		]]
+		// [Menu menuWithTitle:@"2" children:[
+		// 	[Menu menuWithTitle:@"2.1" children:[
+		// 		[Menu menuWithTitle:@"2.1.1"],
+		// 		[Menu menuWithTitle:@"2.1.2"],
+		// 		[Menu menuWithTitle:@"2.1.3"],
+		// 	]],
+		// 	[Menu menuWithTitle:@"2.2" children:[
+		// 		[Menu menuWithTitle:@"2.2.1"],
+		// 		[Menu menuWithTitle:@"2.2.2"],
+		// 	]]
+		// ]],
+		// [Menu menuWithTitle:@"3" children:[
+		// 	[Menu menuWithTitle:@"3.1" children:[
+		// 		[Menu menuWithTitle:@"3.1.1"],
+		// 		[Menu menuWithTitle:@"3.1.2"],
+		// 		[Menu menuWithTitle:@"3.1.3"],
+		// 	]],
+		// 	[Menu menuWithTitle:@"3.2" children:[
+		// 		[Menu menuWithTitle:@"3.2.1"],
+		// 		[Menu menuWithTitle:@"3.2.2"],
+		// 		[Menu menuWithTitle:@"3.2.3"],
+		// 		[Menu menuWithTitle:@"3.2.4"],
+		// 	]],
+		// 	[Menu menuWithTitle:@"3.3" children:[
+		// 		[Menu menuWithTitle:@"3.3.1"],
+		// 		[Menu menuWithTitle:@"3.3.2"],
+		// 		[Menu menuWithTitle:@"3.3.3"],
+		// 		[Menu menuWithTitle:@"3.3.4"],
+		// 		[Menu menuWithTitle:@"3.3.5"],
+		// 	]]
+		// ]]
 	]];
 	
 	var scrollView = [[CPScrollView alloc] initWithFrame:[contentView bounds]];
@@ -134,7 +189,7 @@ CPLogRegister(CPLogConsole);
 	var column = [[CPTableColumn alloc] initWithIdentifier:@""];
 	[_outlineView addTableColumn:column];
 	[_outlineView setOutlineTableColumn:column];
-	[_outlineView registerForDraggedTypes:[@"CustomType"]];
+	[_outlineView registerForDraggedTypes:[CustomOutlineViewDragType]];
 	
 	[_outlineView setDataSource:self];
 	[_outlineView setAllowsMultipleSelection:YES];
@@ -200,20 +255,37 @@ CPLogRegister(CPLogConsole);
 
 - (BOOL)outlineView:(CPOutlineView)anOutlineView writeItems:(CPArray)theItems toPasteboard:(CPPasteBoard)thePasteBoard
 {
-	[thePasteBoard declareTypes:[@"CustomType"] owner:self];
-	[thePasteBoard setData:[CPKeyedArchiver archivedDataWithRootObject:theItems] forType:@"CustomType"];
+	_draggedItems = theItems;
+	[thePasteBoard declareTypes:[CustomOutlineViewDragType] owner:self];	
+	[thePasteBoard setData:[CPKeyedArchiver archivedDataWithRootObject:theItems] forType:CustomOutlineViewDragType];
+	
 	return YES;
 }
 
 - (CPDragOperation)outlineView:(CPOutlineView)anOutlineView validateDrop:(id < CPDraggingInfo >)theInfo proposedItem:(id)theItem proposedChildIndex:(int)theIndex
 {
-	CPLog.debug(@"validate drop at index: %i item: %@", theIndex, theItem);
 	return CPDragOperationEvery;
 }
 
 - (BOOL)outlineView:(CPOutlineView)outlineView acceptDrop:(id < CPDraggingInfo >)theInfo item:(id)theItem childIndex:(int)theIndex
 {
-	CPLog.debug(@"accept drop at index: %i item: %@", theIndex, theItem);
+	if (theItem === nil)
+		theItem = [self menu];
+	
+	var menuIndex = [_draggedItems count];
+	while (menuIndex--)
+	{
+		var menu = [_draggedItems objectAtIndex:menuIndex];
+		
+		// CPLog.debug(@"move item: %@ to: %@ index: %@", menu, theItem, theIndex);
+		
+		[menu removeFromMenu];
+		[theItem insertSubmenu:menu atIndex:theIndex];
+		theIndex += 1;
+	}
+	
+	CPLog.debug([[self menu] descriptionWithChildren:YES]);
+	
 	return YES;
 }
 
