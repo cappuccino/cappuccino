@@ -148,7 +148,8 @@ var CPAlertWarningImage,
         var button = _buttons[i];
         
         [button setFrameSize:CGSizeMake([button frame].size.width, (styleMask == CPHUDBackgroundWindowMask) ? 20.0 : 24.0)];
-        [button setTheme:[CPTheme themeNamed: _windowStyle === CPHUDBackgroundWindowMask ? "Aristo-HUD" : "Aristo"]];
+        
+        [button setTheme:(_windowStyle === CPHUDBackgroundWindowMask) ? [CPTheme themeNamed:"Aristo-HUD"] : [CPTheme defaultTheme]];
 
         [[_alertPanel contentView] addSubview:button];
     }
@@ -263,8 +264,8 @@ var CPAlertWarningImage,
     [button setTag:_buttonCount];
     [button setAction:@selector(_notifyDelegate:)];
     
-    [button setTheme:[CPTheme themeNamed: _windowStyle === CPHUDBackgroundWindowMask ? "Aristo-HUD" : "Aristo"]];
-    [button setAutoresizingMask:CPViewMinXMargin|CPViewMinYMargin];
+    [button setTheme:(_windowStyle === CPHUDBackgroundWindowMask) ? [CPTheme themeNamed:"Aristo-HUD"] : [CPTheme defaultTheme]];
+    [button setAutoresizingMask:CPViewMinXMargin | CPViewMinYMargin];
 
     [[_alertPanel contentView] addSubview:button];
     

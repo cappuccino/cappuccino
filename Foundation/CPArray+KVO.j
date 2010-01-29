@@ -403,6 +403,9 @@
 
 var kvoOperators = [];
 
+// HACK: prevent these from becoming globals. workaround for obj-j "function foo(){}" behavior
+var avgOperator, maxOperator, minOperator, countOperator, sumOperator;
+
 kvoOperators["avg"] = function avgOperator(self, _cmd, param)
 {
     var objects = [self valueForKeyPath:param],

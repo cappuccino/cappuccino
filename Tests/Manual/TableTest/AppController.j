@@ -87,7 +87,7 @@ CPLogRegister(CPLogConsole);
 
     [tableView setColumnAutoresizingStyle:CPTableViewUniformColumnAutoresizingStyle];
 
-    var scrollView = [[CPScrollView alloc] initWithFrame:CGRectMake(100, 100, CGRectGetWidth([view bounds]), CGRectGetHeight([view bounds]))];
+    var scrollView = [[CPScrollView alloc] initWithFrame:CGRectMake(0, 0, CGRectGetWidth([view bounds]), CGRectGetHeight([view bounds]))];
     [tableView setRowHeight:22.0];
     [scrollView setDocumentView:tableView];
     [scrollView setAutoresizingMask:CPViewWidthSizable | CPViewHeightSizable];

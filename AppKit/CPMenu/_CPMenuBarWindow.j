@@ -1,5 +1,6 @@
 
 #include "../CoreGraphics/CGGeometry.h"
+#include "../Platform/Platform.h"
 
 @import "_CPMenuWindow.j"
 

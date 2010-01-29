@@ -52,8 +52,8 @@ for (var name in catalog)
 }
 
 // push to the front of the array lowest priority first.
-OBJJ_INCLUDE_PATHS.unshift.apply(OBJJ_INCLUDE_PATHS, exports.objj_debug_frameworks);
 OBJJ_INCLUDE_PATHS.unshift.apply(OBJJ_INCLUDE_PATHS, exports.objj_frameworks);
+OBJJ_INCLUDE_PATHS.unshift.apply(OBJJ_INCLUDE_PATHS, exports.objj_debug_frameworks);
 
 if (system.env["OBJJ_INCLUDE_PATHS"])
     OBJJ_INCLUDE_PATHS.unshift.apply(OBJJ_INCLUDE_PATHS, system.env["OBJJ_INCLUDE_PATHS"].split(":"));
@@ -112,6 +112,13 @@ exports.run = function(args)
 {
     if (args && args.length > 1)
     {
+        // we expect args to be in the format:
+        //  1) "objj" path
+        //  2) optional "-I" args
+        //  3) real or "virtual" main.j
+        //  4) optional program arguments
+
+        // copy the args since we're going to modify them
         var argv = args.slice(1);
 
         while (argv.length && argv[0].indexOf('-I') === 0)
