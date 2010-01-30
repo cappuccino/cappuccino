@@ -35,8 +35,9 @@ CPTableViewSelectionIsChangingNotification  = @"CPTableViewSelectionIsChangingNo
 
 #include "CoreGraphics/CGGeometry.h"
 
-var CPTableViewDataSource_tableView_setObjectValue_forTableColumn_row_                                  = 1 << 2,
-
+var CPTableViewDataSource_numberOfRowsInTableView_                                                      = 1 << 0,
+    CPTableViewDataSource_tableView_objectValueForTableColumn_row_                                      = 1 << 1,
+    CPTableViewDataSource_tableView_setObjectValue_forTableColumn_row_                                  = 1 << 2,
     CPTableViewDataSource_tableView_acceptDrop_row_dropOperation_                                       = 1 << 3,
     CPTableViewDataSource_tableView_namesOfPromisedFilesDroppedAtDestination_forDraggedRowsWithIndexes_ = 1 << 4,
     CPTableViewDataSource_tableView_validateDrop_proposedRow_proposedDropOperation_                     = 1 << 5,
@@ -355,11 +356,17 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     if (!_dataSource)
         return;
 
-    if (![_dataSource respondsToSelector:@selector(numberOfRowsInTableView:)])
+    var hasContentBinding = !![self infoForBinding:@"content"];
+
+    if ([_dataSource respondsToSelector:@selector(numberOfRowsInTableView:)])
+        _implementedDataSourceMethods |= CPTableViewDataSource_numberOfRowsInTableView_;
+    else if (!hasContentBinding)
         [CPException raise:CPInternalInconsistencyException
                 reason:[aDataSource description] + " does not implement numberOfRowsInTableView:."];
 
-    if (![_dataSource respondsToSelector:@selector(tableView:objectValueForTableColumn:row:)])
+    if ([_dataSource respondsToSelector:@selector(tableView:objectValueForTableColumn:row:)])
+        _implementedDataSourceMethods |= CPTableViewDataSource_tableView_objectValueForTableColumn_row_;
+    else if (!hasContentBinding)
         [CPException raise:CPInternalInconsistencyException
                 reason:[aDataSource description] + " does not implement tableView:objectValueForTableColumn:row:"];
 
@@ -2131,7 +2138,8 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 
     var objectValue = tableColumnObjectValues[aRowIndex];
 
-    if (objectValue === undefined)
+    // tableView:objectValueForTableColumn:row: is optional if content bindings are in place.
+    if (objectValue === undefined && (_implementedDataSourceMethods & CPTableViewDataSource_tableView_objectValueForTableColumn_row_))
     {
         objectValue = [_dataSource tableView:self objectValueForTableColumn:aTableColumn row:aRowIndex];
         tableColumnObjectValues[aRowIndex] = objectValue;
