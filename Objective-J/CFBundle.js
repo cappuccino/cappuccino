@@ -7,7 +7,8 @@ var CFBundleUnloaded                = 0,
     CFBundleLoaded                  = 1 << 4;
 
 var CFBundlesForPaths   = { },
-    CFBundlesForClasses = { };
+    CFBundlesForClasses = { },
+    CFCacheBuster = new Date().getTime();
 
 function CFBundle(/*String*/ aPath)
 {
@@ -17,7 +18,7 @@ function CFBundle(/*String*/ aPath)
 
     if (existingBundle)
         return existingBundle;
-CPLog("created bundle for " + aPath);
+
     CFBundlesForPaths[aPath] = this;
 
     this._path = aPath;
@@ -247,7 +248,7 @@ function loadExecutableAndResources(/*Bundle*/ aBundle, /*BOOL*/ shouldExecute)
         resolveStaticResourceNode(aBundle._staticResourceNode, NO);
 
         function complete()
-        {CPLog("COMPLETED");
+        {
             aBundle._eventDispatcher.dispatchEvent(
             {
                 type:"load", 
@@ -257,7 +258,6 @@ function loadExecutableAndResources(/*Bundle*/ aBundle, /*BOOL*/ shouldExecute)
             resolveStaticResourceNode(aBundle._staticResourceNode, YES);
         }
 
-CPLog("IN HErE FOR " + aBundle.path());
         if (shouldExecute)
             executeBundle(aBundle, complete);
         else
@@ -295,7 +295,7 @@ function loadSpritedImagesForBundle(/*Bundle*/ aBundle, success, failure)
     aBundle._loadStatus |= CFBundleLoadingSpritedImages;
 
     if (!CFBundleHasTestedSpriteSupport())
-        return CFBundleTestSpriteSupport(function()
+        return CFBundleTestSpriteSupport(spritedImagesTestPathForBundle(aBundle), function()
         {
             loadSpritedImagesForBundle(aBundle, success, failure);
         });
@@ -319,14 +319,15 @@ var CFBundleSpriteSupportListeners  = [],
     CFBundleSupportedSpriteType     = -1,
     CFBundleNoSpriteType            = 0,
     CFBundleDataURLSpriteType       = 1,
-    CFBundleMHTMLSpriteType         = 2;
+    CFBundleMHTMLSpriteType         = 2,
+    CFBundleMHTMLUncachedSpriteType = 3;
 
 function CFBundleHasTestedSpriteSupport()
 {
     return CFBundleSupportedSpriteType !== -1;
 }
 
-function CFBundleTestSpriteSupport(/*Function*/ aCallback, /*String*/ MHTMLPath)
+function CFBundleTestSpriteSupport(/*String*/ MHTMLPath, /*Function*/ aCallback)
 {
     if (CFBundleHasTestedSpriteSupport())
         return;
@@ -338,7 +339,11 @@ function CFBundleTestSpriteSupport(/*Function*/ aCallback, /*String*/ MHTMLPath)
 
     CFBundleTestSpriteTypes([
         CFBundleDataURLSpriteType, 
-        "data:image/gif;base64,R0lGODlhAQABAIAAAMc9BQAAACH5BAAAAAAALAAAAAABAAEAAAICRAEAOw=="]);
+        "data:image/gif;base64,R0lGODlhAQABAIAAAMc9BQAAACH5BAAAAAAALAAAAAABAAEAAAICRAEAOw==",
+        CFBundleMHTMLSpriteType,
+        MHTMLPath,
+        CFBundleMHTMLUncachedSpriteType,
+        MHTMLPath+"?"+CFCacheBuster]);
 }
 
 function CFBundleNotifySpriteSupportListeners()
@@ -378,11 +383,22 @@ function CFBundleTestSpriteTypes(/*Array*/ spriteTypes)
     image.src = spriteTypes[1];
 }
 
+function spritedImagesTestPathForBundle(/*Bundle*/ aBundle)
+{
+    return FILE.join(aBundle.path(), aBundle.mostEligibleEnvironment() + ".environment", "MHTMLTest.txt");
+}
+
 function spritedImagesPathForBundle(/*Bundle*/ aBundle)
 {
     if (CFBundleSupportedSpriteType === CFBundleDataURLSpriteType)
         return FILE.join(aBundle.path(), aBundle.mostEligibleEnvironment() + ".environment", "dataURLs.txt");
 
+    if (CFBundleSupportedSpriteType === CFBundleMHTMLSpriteType)
+        return FILE.join(aBundle.path(), aBundle.mostEligibleEnvironment() + ".environment", "MHTML.txt");
+
+    if (CFBundleSupportedSpriteType === CFBundleMHTMLUncachedSpriteType)
+        return FILE.join(aBundle.path(), aBundle.mostEligibleEnvironment() + ".environment", "MHTML.txt?" + CFCacheBuster);
+    
     return NULL;
 }
 
