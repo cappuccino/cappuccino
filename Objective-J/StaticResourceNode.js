@@ -237,6 +237,11 @@ function resolvePathComponents(/*StaticResourceNode*/ startNode, /*Type*/aType, 
     var count = components.length,
         parentNode = startNode;
 
+    function continueResolution()
+    {
+        resolvePathComponents(parentNode, aType, components, index, aCallback);
+    }
+
     for (; index < count; ++index)
     {
         var name = components[index],
@@ -245,12 +250,9 @@ function resolvePathComponents(/*StaticResourceNode*/ startNode, /*Type*/aType, 
 //CPLog(name + " of " + parentNode.name() + " " + (childNode && childNode.name()));
 //CPLog(parentNode._childNodes);
 // + "(" + components  + ")" + " " + index + "/" + count + ":" + (childNode && childNode.name()) +">" + (childNode ? 1:0) + " " + (childNode && childNode.isResolved()));
+
         if (!childNode)
         {
-            function continueResolution()
-            {
-                resolvePathComponents(parentNode, aType, components, index, aCallback);
-            }
 
             if (index + 1 < count || aType === StaticResourceNode.DirectoryType)
             {

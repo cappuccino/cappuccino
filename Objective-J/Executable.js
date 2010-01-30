@@ -73,7 +73,7 @@ Executable.prototype.path = function()
 
 Executable.prototype.functionParameters = function()
 {
-    var functionParameters = ["objj_executeFile", "objj_importFile"];
+    var functionParameters = ["global", "objj_executeFile", "objj_importFile"];
 
 //exportedNames().concat("objj_executeFile", "objj_importFile");
 
@@ -87,7 +87,7 @@ Executable.prototype.functionParameters = function()
 Executable.prototype.functionArguments = function()
 {
     var path = this.path(),
-        functionArguments = [fileExecuterForPath(path), fileImporterForPath(path)];
+        functionArguments = [global, fileExecuterForPath(path), fileImporterForPath(path)];
 
 //functionArguments = exportedValues().concat(fileExecuterForPath(path), fileImporterForPath(path));
 

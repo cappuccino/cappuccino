@@ -33,10 +33,19 @@ $BUILD_BROWSER_FILE = FILE.join($BUILD_OBJECTIVE_J, "Objective-J.js");
 $INCLUDE_FLAGS = " -I" + FILE.cwd();
 
 filedir($BUILD_BROWSER_FILE, $BROWSER_FILE, function(aTask)
-{
+{/*
+    var methods = ["join", "isAbsolute", "absolute", "basename"],
+        implementations = { };
+
+    methods.forEach(function(aMethod)
+    {
+        implementations[aMethod] = FILE[aMethod].toString().replace(/exports/, "FILE");
+        print(implementations[aMethod])
+    });
+*/
     gcc($BROWSER_FILE, 
         $BUILD_BROWSER_FILE, 
-        environmentFlags("Browser", "ObjJ") + $INCLUDE_FLAGS, true);
+        environmentFlags("Browser", "ObjJ") + $INCLUDE_FLAGS, $CONFIGURATION !== "Debug");
 });
 
 $LICENSE        = FILE.join("CommonJS", "lib", "objective-j", "jake", "LICENSES", "LGPL-v2.1");
