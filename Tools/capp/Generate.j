@@ -6,6 +6,8 @@ var OS = require("os"),
     FILE = require("file"),
     OBJJ = require("objective-j");
 
+// FIXME: better way to do this:
+var CAPP_HOME = require("packages").catalog["cappuccino"].directory;
 
 function gen(/*va_args*/)
 {
@@ -56,7 +58,7 @@ function gen(/*va_args*/)
     if (FILE.isAbsolute(template))
         sourceTemplate = FILE.join(template);
     else
-        sourceTemplate = FILE.join(SYSTEM.env["SELF_HOME"], "lib", "capp", "Resources", "Templates", template);
+        sourceTemplate = FILE.join(CAPP_HOME, "lib", "capp", "Resources", "Templates", template);
 
     var configFile = FILE.join(sourceTemplate, "template.config"),
         config = {};

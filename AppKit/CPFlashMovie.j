@@ -30,7 +30,7 @@
 */
 @implementation CPFlashMovie : CPObject
 {
-    CPString _fileName;
+    CPString        _filename;
 }
 
 /*!
@@ -38,9 +38,9 @@
     @param aFilename the swf to load
     @return the initialized CPFlashMovie
 */
-+ (id)flashMovieWithFile:(CPString)aFileName
++ (id)flashMovieWithFile:(CPString)aFilename
 {
-    return [[self alloc] initWithFile:aFileName];
+    return [[self alloc] initWithFile:aFilename];
 }
 
 /*!
@@ -48,37 +48,37 @@
     @param aFilename the swf to load
     @return the initialized CPFlashMovie
 */
-- (id)initWithFile:(CPString)aFileName
+- (id)initWithFile:(CPString)aFilename
 {
     self = [super init];
     
     if (self)
-        _fileName = aFileName;
+        _filename = aFilename;
     
     return self;
 }
 
-- (CPString)fileName
+- (CPString)filename
 {
-    return _fileName;
+    return _filename;
 }
 
 @end
 
-var CPFlashMovieFileNameKey = "CPFlashMovieFileNameKey";
+var CPFlashMovieFilenameKey = "CPFlashMovieFilenameKey";
 
 @implementation CPFlashMovie (CPCoding)
 
 - (id)initWithCoder:(CPCoder)aCoder
 {
-    _fileName = [aCoder decodeObjectForKey:CPFlashMovieFileNameKey];
+    _filename = [aCoder decodeObjectForKey:CPFlashMovieFilenameKey];
 
     return self;
 }
 
 - (void)encodeWithCoder:(CPCoder)aCoder
 {
-    [aCoder encodeObject:_fileName forKey:CPFlashMovieFileNameKey];
+    [aCoder encodeObject:_filename forKey:CPFlashMovieFilenameKey];
 }
 
 @end

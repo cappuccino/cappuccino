@@ -1,18 +1,16 @@
-var OS = require("os");
-if (system.engine !== "rhino") {
-    system.args.splice(1,2); // remove library path and main.j
-    var cmd = "NARWHAL_ENGINE_HOME='' NARWHAL_ENGINE='rhino' " + system.args.map(OS.enquote).join(" ");
-    OS.exit(OS.system(cmd));
-}
+require("narwhal").ensureEngine("rhino");
 
 @import <Foundation/Foundation.j>
+@import <AppKit/AppKit.j>
 
 @import "objj-analysis-tools.j"
+@import "cib-analysis-tools.j"
 
 var ARGS = require("args");
 var FILE = require("file");
 var OS = require("os");
 var DOM = require("browser/dom");
+var UTIL = require("util");
 var INTERPRETER = require("interpreter");
 
 var serializer = new DOM.XMLSerializer();
@@ -52,7 +50,7 @@ parser.option("-n", "--nostrip", "strip")
     .set(false)
     .help("Do not strip any files");
 
-parser.option("-p", "--pngcrush", "png")    
+parser.option("-p", "--pngcrush", "png")
     .def(false)
     .set(true)
     .help("Run pngcrush on all PNGs (pngcrush must be installed!)");
@@ -67,12 +65,12 @@ parser.helpful();
 function main(args)
 {
     var options = parser.parse(args);
-    
+
     if (options.args.length < 2) {
         parser.printUsage(options);
         return;
     }
-    
+
     //if (options.verbose)
         CPLogRegister(CPLogPrint);
     //else
@@ -98,63 +96,67 @@ function press(rootPath, outputPath, options) {
     CPLog.info("===========================================");
     CPLog.info("Application root:    " + rootPath);
     CPLog.info("Output directory:    " + outputPath);
-    
+
     var outputFiles = {};
-    
+
     // analyze and gather files for each environment:
     options.environments.forEach(function(environment) {
         pressEnvironment(rootPath, outputFiles, environment, options);
     });
-    
+
     // phase 4: copy everything and write out the new files
     CPLog.error("PHASE 4: copy to output ("+rootPath+" to "+outputPath+")");
-    
+
     FILE.copyTree(rootPath, outputPath);
-    
+
     for (var path in outputFiles) {
         var file = outputPath.join(rootPath.relative(path));
-        
+
         var parent = file.dirname();
         if (!parent.exists()) {
             CPLog.warn(parent + " doesn't exist, creating directories.");
             parent.mkdirs();
         }
-        
+
         if (typeof outputFiles[path] !== "string")
             outputFiles[path] = outputFiles[path].join("");
-        
+
         CPLog.info((file.exists() ? "Overwriting: " : "Writing:     ") + file);
         FILE.write(file, outputFiles[path], { charset : "UTF-8" });
     }
-    
+
     // strip known unnecessary files
     // outputPath.glob("**/Frameworks/Debug").forEach(function(debugFramework) {
     //     outputPath.join(debugFramework).rmtree();
     // });
     // outputPath.join("index-debug.html").remove();
-    
+
     if (options.png) {
         pngcrushDirectory(outputPath);
     }
 }
 
 function pressEnvironment(rootPath, outputFiles, environment, options) {
-    
+
     var mainPath = String(rootPath.join(options.main));
     var frameworks = options.frameworks.map(function(framework) { return rootPath.join(framework); });
-    
+
     CPLog.info("===========================================");
     CPLog.info("Main file:           " + mainPath)
     CPLog.info("Frameworks:          " + frameworks);
     CPLog.info("Environment:         " + environment);
-    
+
     // get a Rhino context
     var context = new INTERPRETER.Context();
     var scope = setupObjectiveJ(context);
-    
+
     scope.OBJJ_INCLUDE_PATHS = frameworks;
     scope.OBJJ_ENVIRONMENTS = [environment, "ObjJ"];
-    
+
+    // build list of cibs to inspect for dependent classes
+    // FIXME: what's the best way to determine which cibs to look in?
+    var cibs = FILE.glob(rootPath.join("**", "*.cib")).filter(function(path) { return !(/Frameworks/).test(path); });
+
     // flattening bookkeeping. keep track of the bundles and evaled code (in the correct order!)
     var bundleArchiveResponses = [];
     var exectuableResponses = [];
@@ -166,42 +168,42 @@ function pressEnvironment(rootPath, outputFiles, environment, options) {
             success : aResponse.success,
             filePath : rootPath.relative(aResponse.filePath).toString()
         };
-    
+
         if (aResponse.success) {
             var xmlString = serializer.serializeToString(aResponse.xml);
             response.text = CPPropertyListCreate280NorthData(CPPropertyListCreateFromXMLData({ string: xmlString })).string;
         }
-        
+
         bundleArchiveResponses.push(response);
     });
-    
+
     functionHookBefore(scope.objj_search.prototype, "didReceiveExecutableResponse", function(aResponse) {
         exectuableResponses.push(aResponse);
     });
-    
+
     // lets just use the Context object as our con
     context.rootPath = rootPath;
     context.scope = scope;
-    
+
     // phase 1: get global defines
     CPLog.error("PHASE 1: Loading application...");
-    
+
     var globals = findGlobalDefines(context, mainPath, evaledFragments);
-    
+
     // coalesce the results
     var dependencies = coalesceGlobalDefines(globals);
-    
-    // Log 
+
+    // log identifer => files defining
     CPLog.trace("Global defines:");
     Object.keys(dependencies).sort().forEach(function(identifier) {
         CPLog.trace("    " + identifier + " => " + rootPath.relative(dependencies[identifier]));
     });
-    
+
     // phase 2: walk the dependency tree (both imports and references) to determine exactly which files need to be included
     CPLog.error("PHASE 2: Walk dependency tree...");
-    
+
     var requiredFiles = {};
-    
+
     if (options.nostrip)
     {
         // all files are required. no need for analysis
@@ -214,18 +216,31 @@ function pressEnvironment(rootPath, outputFiles, environment, options) {
             CPLog.error("Root file not loaded!");
             return;
         }
-        
+
         CPLog.warn("Analyzing dependencies...");
-        
+
         context.dependencies = dependencies;
         context.ignoreFrameworkImports = true; // ignores "XXX/XXX.j" imports
         context.importCallback = function(importing, imported) { requiredFiles[imported] = true; };
         context.referenceCallback = function(referencing, referenced) { requiredFiles[referenced] = true; }
-        
+
         requiredFiles[mainPath] = true;
-        
+
+        // check the code
         traverseDependencies(context, scope.objj_files[mainPath]);
-        
+
+        // check the cibs
+        cibs.forEach(function(cibPath) {
+            var cibClasses = findCibClassDependencies(cibPath);
+            CPLog.debug(cibPath + " => " + cibClasses);
+
+            var referencedFiles = {};
+            markFilesReferencedByTokens(cibClasses, context.dependencies, referencedFiles);
+            checkReferenced(context, null, referencedFiles);
+
+            print(UTIL.repr(referencedFiles));
+        });
+
         var count = 0,
             total = 0;
         for (var path in scope.objj_files)
@@ -233,7 +248,7 @@ function pressEnvironment(rootPath, outputFiles, environment, options) {
             // mark all ".keytheme"s as required
             if (/\.keyedtheme$/.test(path))
                 requiredFiles[path] = true;
-            
+
             if (requiredFiles[path])
             {
                 CPLog.debug("Included: " + rootPath.relative(path));
@@ -242,30 +257,20 @@ function pressEnvironment(rootPath, outputFiles, environment, options) {
             else
             {
                 CPLog.info("Excluded: " + rootPath.relative(path));
-            }    
+            }
             total++;
         }
         CPLog.warn("Total required files: " + count + " out of " + total);
-        
-        // FIXME: sprite images
-        //for (var i in context.bundleImages)
-        //{
-        //    var images = context.bundleImages[i];
-        //    
-        //    CPLog.debug("Bundle images for " + i);
-        //    for (var j in images)
-        //        CPLog.trace(j + " = " + images[j]);
-        //}
     }
-    
+
     if (options.flatten)
     {
         // phase 3a: build single Application.js file (and modified index.html)
         CPLog.error("PHASE 3a: Flattening...");
-        
+
         var applicationScriptName = "Application-"+environment+".js";
         var indexHTMLName = "index-"+environment+".html";
-        
+
         // Shim for faking bundle responses.
         // We're just defining it here so we can serialize the function. It's not used within press.
         // **************************************************
@@ -303,9 +308,9 @@ function pressEnvironment(rootPath, outputFiles, environment, options) {
             }
         }
         // **************************************************
-        
+
         var applicationScript = [];
-        
+
         var URIMaps = {};
         Object.keys(scope.objj_bundles).forEach(function(bundleName) {
             var bundle = scope.objj_bundles[bundleName];
@@ -332,7 +337,7 @@ function pressEnvironment(rootPath, outputFiles, environment, options) {
         applicationScript.push("    var URIMaps = " + JSON.stringify(URIMaps) + ";");
         applicationScript.push("    setupURIMaps(URIMaps);");
         applicationScript.push("})();");
-        
+
         // add each fragment, wrapped in a function, along with OBJJ_CURRENT_BUNDLE bookkeeping
         evaledFragments.forEach(function(fragment) {
             if (requiredFiles[fragment.file.path])
@@ -346,13 +351,13 @@ function pressEnvironment(rootPath, outputFiles, environment, options) {
                 CPLog.info("Stripping " + rootPath.relative(fragment.file.path));
             }
         });
-        
+
         // call main once the page has loaded. FIXME: assumes synchronous script loading?
         applicationScript.push("if (window.addEventListener)");
         applicationScript.push("    window.addEventListener('load', main, false);")
         applicationScript.push("else if (window.attachEvent)")
         applicationScript.push("    window.attachEvent('onload', main);");
-        
+
         // MHTML
         // TODO: combine multiple MHTMLs
         exectuableResponses.forEach(function(aResponse) {
@@ -362,15 +367,15 @@ function pressEnvironment(rootPath, outputFiles, environment, options) {
                 applicationScript.push(aResponse.text.slice(mhtmlStart, mhtmlEnd+2));
             }
         });
-        
+
         var indexHTML = FILE.read(FILE.join(rootPath, "index.html"), { charset : "UTF-8" });
-        
+
         // comment out any OBJJ_MAIN_FILE defintions or objj_import() calls
         indexHTML = indexHTML.replace(/(\bOBJJ_MAIN_FILE\s*=|\bobjj_import\s*\()/g, '//$&');
-        
+
         // add a script tag for Application.js at the very end of the <head> block
         indexHTML = indexHTML.replace(/([ \t]*)(<\/head>)/, '$1    <script src = "'+applicationScriptName+'" type = "text/javascript"></script>\n$1$2');
-        
+
         // output Application.js and index.html
         outputFiles[rootPath.join(applicationScriptName)] = applicationScript.join("\n");
         outputFiles[rootPath.join(indexHTMLName)] = indexHTML;
@@ -423,7 +428,7 @@ function pressEnvironment(rootPath, outputFiles, environment, options) {
                     outputFiles[staticPath].push("p;");
                     outputFiles[staticPath].push(filename.length+";");
                     outputFiles[staticPath].push(filename);
-            
+
                     for (var i = 0; i < file.fragments.length; i++)
                     {
                         if (file.fragments[i].type & FRAGMENT_CODE)
@@ -443,13 +448,13 @@ function pressEnvironment(rootPath, outputFiles, environment, options) {
                                     ignoreFragment = true;
                                 }
                             }
-                    
+
                             if (!ignoreFragment)
                             {
                                 if (file.fragments[i].type & FRAGMENT_LOCAL)
                                 {
                                     var relativePath = pathRelativeTo(file.fragments[i].info, directory)
-                    
+
                                     outputFiles[staticPath].push("i;");
                                     outputFiles[staticPath].push(relativePath.length+";");
                                     outputFiles[staticPath].push(relativePath);
@@ -480,20 +485,20 @@ function pressEnvironment(rootPath, outputFiles, environment, options) {
 
         // phase 3.5: fix bundle plists
         CPLog.error("PHASE 3.5: fix bundle plists");
-        
+
         for (var path in bundles)
         {
             var directory = FILE.dirname(path),
                 dict = bundles[path].info,
                 replacedFiles = [dict objectForKey:"CPBundleReplacedFiles"];
-            
+
             CPLog.info("Modifying .sj: " + rootPath.relative(path));
-            
+
             if (replacedFiles)
             {
                 var newReplacedFiles = [];
                 [dict setObject:newReplacedFiles forKey:"CPBundleReplacedFiles"];
-                
+
                 for (var i = 0; i < replacedFiles.length; i++)
                 {
                     var replacedFilePath = directory + "/" + replacedFiles[i]
@@ -516,12 +521,12 @@ function pressEnvironment(rootPath, outputFiles, environment, options) {
 function pngcrushDirectory(directory) {
     var directoryPath = FILE.path(directory);
     var pngs = directoryPath.glob("**/*.png");
-    
+
     system.stderr.print("Running pngcrush on " + pngs.length + " pngs:");
     pngs.forEach(function(dst) {
         var dstPath = directoryPath.join(dst);
         var tmpPath = FILE.path(dstPath+".tmp");
-        
+
         var p = OS.popen(["pngcrush", "-rem", "alla", "-reduce", /*"-brute",*/ dstPath, tmpPath]);
         if (p.wait()) {
             CPLog.warn("pngcrush failed. Ensure it's installed and on your PATH.");

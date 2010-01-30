@@ -799,41 +799,50 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 
 - (void)copy:(id)sender
 {
-    var selectedRange = [self selectedRange];
+    if (![CPPlatform isBrowser])
+    {
+        var selectedRange = [self selectedRange];
 
-    if (selectedRange.length < 1)
-        return;
+        if (selectedRange.length < 1)
+            return;
 
-    var pasteboard = [CPPasteboard generalPasteboard],
-        stringValue = [self stringValue],
-        stringForPasting = [stringValue substringWithRange:selectedRange];
+        var pasteboard = [CPPasteboard generalPasteboard],
+            stringValue = [self stringValue],
+            stringForPasting = [stringValue substringWithRange:selectedRange];
 
-    [pasteboard declareTypes:[CPStringPboardType] owner:nil];
-    [pasteboard setString:stringForPasting forType:CPStringPboardType];    
+        [pasteboard declareTypes:[CPStringPboardType] owner:nil];
+        [pasteboard setString:stringForPasting forType:CPStringPboardType];
+    }
 }
 
 - (void)cut:(id)sender
 {
-    [self copy:sender];
-    [self deleteBackwards:sender];
+    if (![CPPlatform isBrowser])
+    {
+        [self copy:sender];
+        [self deleteBackwards:sender];
+    }
 }
 
 - (void)paste:(id)sender
 {
-    var pasteboard = [CPPasteboard generalPasteboard];
-    
-    if (![[pasteboard types] containsObject:CPStringPboardType])
-        return;
+    if (![CPPlatform isBrowser])
+    {
+        var pasteboard = [CPPasteboard generalPasteboard];
 
-    [self deleteBackwards:sender];
+        if (![[pasteboard types] containsObject:CPStringPboardType])
+            return;
 
-    var selectedRange = [self selectedRange],
-        stringValue = [self stringValue],
-        pasteString = [pasteboard stringForType:CPStringPboardType],
-        newValue = [stringValue stringByReplacingCharactersInRange:selectedRange withString:pasteString];
+        [self deleteBackwards:sender];
 
-    [self setStringValue:newValue];
-    [self setSelectedRange:CPMakeRange(selectedRange.location+pasteString.length, 0)];
+        var selectedRange = [self selectedRange],
+            stringValue = [self stringValue],
+            pasteString = [pasteboard stringForType:CPStringPboardType],
+            newValue = [stringValue stringByReplacingCharactersInRange:selectedRange withString:pasteString];
+
+        [self setStringValue:newValue];
+        [self setSelectedRange:CPMakeRange(selectedRange.location+pasteString.length, 0)];
+    }
 }
 
 - (CPRange)selectedRange
