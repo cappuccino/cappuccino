@@ -18,7 +18,7 @@ CFDictionary.prototype.copy = function()
 
 CFDictionary.prototype.mutableCopy = function()
 {
-    var newDictionary = new MutableDictionary(),
+    var newDictionary = new CFMutableDictionary(),
         keys = this._keys,
         count = this._count;
 

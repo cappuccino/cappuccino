@@ -278,7 +278,6 @@ function resolvePathComponents(/*StaticResourceNode*/ startNode, /*Type*/aType, 
 
             return;            
         }
-
         else if (childNode.isResolved())
         {
             // If we've already determined that this file doesn't exist...
@@ -295,7 +294,6 @@ function resolvePathComponents(/*StaticResourceNode*/ startNode, /*Type*/aType, 
 
             // Do nothing: simply allow the loop to progress to the next child.
         }
-
         // If this node is still being resolved, just wait and rerun this same method when it's ready.
         else
         {

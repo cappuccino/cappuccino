@@ -223,7 +223,7 @@ CFPropertyListSerializers[CFPropertyList.Format280North_v1_0] =
                         return string + END_MARKER + ';';
                     },
 
-    "dictionary":   function(/*Dictionary*/ aDictionary, /*Object*/ serializers)
+    "dictionary":   function(/*CFDictionary*/ aDictionary, /*Object*/ serializers)
                     {
                         var keys = aDictionary._keys,
                             index = 0,
@@ -420,7 +420,7 @@ function propertyListFrom280NorthString(/*String*/ aString)
             case FALSE_MARKER:      object = false;
                                     break;
                                         
-            default:                objj_exception_throw(new objj_exception(OBJJPlistParseException, "*** " + marker + " marker not recognized in Plist."));
+            default:                throw new Error("*** " + marker + " marker not recognized in Plist.");
         }
 
         if (!plistObject)
