@@ -8,8 +8,10 @@ var FILE = require("file"),
     CLOBBER = require("jake/clean").CLOBBER,
     base64 = require("base64"),
     environment = require("objective-j/jake/environment"),
-    CFPropertyList = require("objective-j/core").CFPropertyList,
-    CFMutableDictionary = require("objective-j/core").CFMutableDictionary;
+    ObjectiveJ = require("objective-j");
+
+var CFPropertyList = require("objective-j").CFPropertyList,
+    CFMutableDictionary = require("objective-j").CFMutableDictionary;
 
 var Task = Jake.Task,
     filedir = Jake.filedir;

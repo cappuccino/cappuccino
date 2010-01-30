@@ -1,8 +1,7 @@
 
 var FILE = require("file"),
     OS = require("os"),
-    objj = require("objective-j"),
-    ObjectiveJ = require("objective-j/core");
+    ObjectiveJ = require("objective-j");
 
 require("objective-j/rhino/regexp-rhino-patch");
 
@@ -12,8 +11,8 @@ var OBJJ_PREPROCESSOR_PREPROCESS      = exports.OBJJ_PREPROCESSOR_PREPROCESS    
 var OBJJ_PREPROCESSOR_COMPRESS        = exports.OBJJ_PREPROCESSOR_COMPRESS        = 1 << 11;
 var OBJJ_PREPROCESSOR_SYNTAX          = exports.OBJJ_PREPROCESSOR_SYNTAX          = 1 << 12;
 
-var SHRINKSAFE_PATH = FILE.join(objj.OBJJ_HOME, "shrinksafe", "shrinksafe.jar"),
-    RHINO_PATH = FILE.join(objj.OBJJ_HOME, "shrinksafe", "js.jar")
+var SHRINKSAFE_PATH = FILE.join(ObjectiveJ.OBJJ_HOME, "shrinksafe", "shrinksafe.jar"),
+    RHINO_PATH = FILE.join(ObjectiveJ.OBJJ_HOME, "shrinksafe", "js.jar");
 
 var compressor = null;
 

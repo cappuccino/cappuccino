@@ -5,8 +5,7 @@
 
 var FILE = require("file"),
     SYSTEM = require("system"),
-    CFPropertyList = require("objective-j/core").CFPropertyList;
-
+    CFPropertyList = require("objective-j").CFPropertyList;
 
 var DefaultDictionary       = nil,
     DefaultConfiguration    = nil,
