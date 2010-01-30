@@ -21,6 +21,14 @@ require("file");
         return components[components.length - 1];
     },
 
+    extension: function(/*String*/ aPath)
+    {
+        aPath = FILE.basename(aPath);
+        aPath = aPath.replace(/^\.*/, '');
+        var index = aPath.lastIndexOf(".");
+        return index <= 0 ? "" : aPath.substring(index);
+    },
+
     cwd: function()
     {
         return FILE.dirname(window.location.pathname);

@@ -97,17 +97,24 @@ HTTPRequest.prototype.responseXML = function()
 {
     var responseXML = this._nativeRequest.responseXML;
 
-    if (!responseXML && window.ActiveXObject)
+    if (responseXML)
+        return responseXML;
+
+    var responseText = this.responseText();
+
+    if (window.ActiveXObject)
     {
-        var responseText = this.responseText(),
-            XMLData = new ActiveXObject("Microsoft.XMLDOM");
+        var XMLData = new ActiveXObject("Microsoft.XMLDOM");
 
         XMLData.loadXML(responseText.substr(responseText.indexOf(".dtd\">") + 6));
 
         return XMLData;
     }
 
-    return responseXML;
+    if (window.DOMParser)
+        return new DOMParser().parseFromString(responseText, "text/xml");
+
+    return NULL;
 }
 
 HTTPRequest.prototype.responsePropertyList = function()
@@ -125,7 +132,7 @@ HTTPRequest.prototype.responseText = function()
     return this._nativeRequest.responseText;
 }
 
-var methods = ["open", "send", "abort", "setRequestHeader", "getResponseHeader", "getAllResponseHeaders"],
+var methods = ["open", "send", "abort", "setRequestHeader", "getResponseHeader", "getAllResponseHeaders", "overrideMimeType"],
     count = methods.length;
 
 while (count--)
@@ -181,6 +188,9 @@ function FileRequest(/*String*/ aFilePath, onsuccess, onfailure)
 
     request.onsuccess = onsuccess;
     request.onfailure = onfailure;
+
+    if (request.overrideMimeType && FILE.extension(aFilePath) === ".plist")
+        request.overrideMimeType("text/xml");
 
     request.open("GET", aFilePath, YES);
     request.send("");
