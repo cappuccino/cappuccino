@@ -10,8 +10,8 @@ var FILE = require("file"),
     environment = require("objective-j/jake/environment"),
     ObjectiveJ = require("objective-j");
 
-var CFPropertyList = require("objective-j").CFPropertyList,
-    CFMutableDictionary = require("objective-j").CFMutableDictionary;
+var CFPropertyList = ObjectiveJ.CFPropertyList,
+    CFMutableDictionary = ObjectiveJ.CFMutableDictionary;
 
 var Task = Jake.Task,
     filedir = Jake.filedir;
@@ -321,7 +321,7 @@ BundleTask.prototype.buildProductMHTMLPathForEnvironment = function(anEnvironmen
 
 BundleTask.prototype.buildProductDataURLPathForEnvironment = function(anEnvironment)
 {
-    return FILE.join(this.buildProductPath(), anEnvironment.name() + ".environment", "dataURL.txt");
+    return FILE.join(this.buildProductPath(), anEnvironment.name() + ".environment", "dataURLs.txt");
 }
 
 BundleTask.prototype.defineTasks = function()
@@ -362,6 +362,14 @@ BundleTask.prototype.infoPlist = function()
         return anEnvironment.name();
     }));
     infoPlist.setValueForKey("CPBundleExecutable", this.productName() + ".sj");
+    infoPlist.setValueForKey("CPBundleEnvironmentsWithImageSprites", this.environments().filter(
+    function(anEnvironment)
+    {
+        return anEnvironment.spritesImages();
+    }).map(function(anEnvironment)
+    {
+        return anEnvironment.name();
+    }));
 
     var principalClass = this.principalClass();
 
@@ -592,8 +600,8 @@ BundleTask.prototype.defineSpritedImagesTask = function()
 
                 var resourcePath = "Resources/" + FILE.relative(resourcesPath, aFilename);
 
-                dataURLStream.write("u;" + resourcePath.length + ";");
-                MHTMLStream.write("u;" + resourcePath.length + ";");
+                dataURLStream.write("u;" + resourcePath.length + ";" + resourcePath);
+                MHTMLStream.write("u;" + resourcePath.length + ";" + resourcePath);
 
                 // As data URL...
                 var contents =  "data:" + mimeType(aFilename) +

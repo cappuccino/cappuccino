@@ -1,10 +1,10 @@
 
-var CFBundleUnloaded            = 0,
-    CFBundleLoading             = 1 << 0,
-    CFBundleLoadingInfoPlist    = 1 << 1,
-    CFBundleLoadingExecutable   = 1 << 2,
-    CFBundleLoadingResources    = 1 << 3,
-    CFBundleLoaded              = 1 << 4;
+var CFBundleUnloaded                = 0,
+    CFBundleLoading                 = 1 << 0,
+    CFBundleLoadingInfoPlist        = 1 << 1,
+    CFBundleLoadingExecutable       = 1 << 2,
+    CFBundleLoadingSpritedImages    = 1 << 3,
+    CFBundleLoaded                  = 1 << 4;
 
 var CFBundlesForPaths   = { },
     CFBundlesForClasses = { };
@@ -22,10 +22,14 @@ CPLog("created bundle for " + aPath);
 
     this._path = aPath;
     this._name = FILE.basename(aPath);
-    this._loadStatus = CFBundleUnloaded;
     this._staticResourceNode = NULL;
 
+    this._loadStatus = CFBundleUnloaded;
+    this._loadRequests = [];
+
     this._infoDictionary = NULL;
+    this._URIMap = { };
+
     this._eventDispatcher = new EventDispatcher(this);
 }
 
@@ -77,6 +81,22 @@ CFBundle.prototype.valueForInfoDictionary = function(/*String*/ aKey)
     return this._infoDictionary.valueForKey(aKey);
 }
 
+CFBundle.prototype.resourcesPath = function()
+{
+    return FILE.join(this.path(), "Resources");
+}
+
+CFBundle.prototype.pathForResource = function(/*String*/ aPath)
+{
+    var mappedPath = this._URIMap[FILE.join("Resources", aPath)];
+
+    if (mappedPath)
+        return mappedPath;
+
+    // If not, return the trivial path.
+    return FILE.join(this.resourcesPath(), aPath);
+}
+
 CFBundle.prototype.executablePath = function()
 {
     var executableSubPath = this._infoDictionary.valueForKey("CPBundleExecutable");
@@ -85,6 +105,19 @@ CFBundle.prototype.executablePath = function()
         return FILE.join(this.path(), this.mostEligibleEnvironment() + ".environment", executableSubPath);
 
     return NULL;
+}
+
+CFBundle.prototype.hasSpritedImages = function()
+{
+    var environments = this._infoDictionary.valueForKey("CPBundleEnvironmentsWithImageSprites") || [],
+        index = environments.length,
+        mostEligibleEnvironment = this.mostEligibleEnvironment();
+
+    while (index--)
+        if (environments[index] === mostEligibleEnvironment)
+            return YES;
+
+    return NO;
 }
 
 CFBundle.prototype.environments = function()
@@ -169,22 +202,24 @@ CFBundle.prototype.load = function(/*BOOL*/ shouldExecute)
 
 function loadExecutableAndResources(/*Bundle*/ aBundle, /*BOOL*/ shouldExecute)
 {
-    aBundle._loadStatus |= (aBundle.executablePath() && CFBundleLoadingExecutable);
-    //aBundle._loadStatus |= (aBundle.mappedResourcesPath() && Bundle.LoadingResources);
+    if (!aBundle.mostEligibleEnvironment())
+        return failure();
+
+    loadExecutableForBundle(aBundle, success, failure);
+    loadSpritedImagesForBundle(aBundle, success, failure);
+
+    if (aBundle._loadStatus === CFBundleLoading)
+        return success();
 
     function failure()
     {
-        if (aBundle._loadExecutableRequest)
-        {
-            aBundle._loadExecutableRequest.abort();
-            aBundle._loadExecutableRequest = NULL;
-        }
+        var loadRequests = aBundle._loadRequests,
+            count = loadRequests.length;
 
-        if (aBundle._loadResourcesRequest)
-        {
-            aBundle._loadResourcesRequest.abort();
-            aBundle._loadResourcesRequest = NULL;
-        }
+        while (count--)
+            loadRequests[count].abort();
+
+        this._loadRequests = [];
 
         aBundle._loadStatus = CFBundleUnloaded;
 
@@ -194,7 +229,7 @@ function loadExecutableAndResources(/*Bundle*/ aBundle, /*BOOL*/ shouldExecute)
         {
             type:"error", 
             error:new Error("Could not recognize executable code format in Bundle " + aBundle),
-            bundle:self
+            bundle:aBundle
         });
 
         resolveStaticResourceNode(aBundle._staticResourceNode, YES);
@@ -204,6 +239,8 @@ function loadExecutableAndResources(/*Bundle*/ aBundle, /*BOOL*/ shouldExecute)
     {
         if (aBundle._loadStatus === CFBundleLoading)
             aBundle._loadStatus = CFBundleLoaded;
+        else
+            return;
 
         // Set resolved to true here in case during evaluation this bundle 
         // needs to resolve another bundle which in turn needs it to be resolved (cycle).
@@ -226,35 +263,135 @@ CPLog("IN HErE FOR " + aBundle.path());
         else
             complete();
     }
+}
 
-    if (aBundle._loadStatus === CFBundleLoading)
-        return success();
+function loadExecutableForBundle(/*Bundle*/ aBundle, success, failure)
+{
+    if (!aBundle.executablePath())
+        return;
 
-    if (!aBundle.mostEligibleEnvironment())
-        failure();
+    aBundle._loadStatus |= CFBundleLoadingExecutable;
 
-    if (aBundle._loadStatus & CFBundleLoadingExecutable)
+    new FileRequest(aBundle.executablePath(), function(/*Event*/ anEvent)
     {
-        function executableSuccess(/*Event*/ anEvent)
+        try
         {
-            decompileExecutable(aBundle, anEvent.request.responseText());
-    
+            decompileStaticFile(aBundle, anEvent.request.responseText())
             aBundle._loadStatus &= ~CFBundleLoadingExecutable;
-    
             success();
         }
+        catch(anException)
+        {
+            failure(anException);
+        }
+    }, failure);
+}
 
-        new FileRequest(aBundle.executablePath(), executableSuccess, failure);
+function loadSpritedImagesForBundle(/*Bundle*/ aBundle, success, failure)
+{
+    if (!aBundle.hasSpritedImages())
+        return;
+
+    aBundle._loadStatus |= CFBundleLoadingSpritedImages;
+
+    if (!CFBundleHasTestedSpriteSupport())
+        return CFBundleTestSpriteSupport(function()
+        {
+            loadSpritedImagesForBundle(aBundle, success, failure);
+        });
+
+    new FileRequest(spritedImagesPathForBundle(aBundle), function(/*Event*/ anEvent)
+    {
+        try
+        {
+            decompileStaticFile(aBundle, anEvent.request.responseText());
+            aBundle._loadStatus &= ~CFBundleLoadingSpritedImages;
+            success();
+        }
+        catch(anException)
+        {
+            failure(anException);
+        }
+    }, failure);
+}
+
+var CFBundleSpriteSupportListeners  = [],
+    CFBundleSupportedSpriteType     = -1,
+    CFBundleNoSpriteType            = 0,
+    CFBundleDataURLSpriteType       = 1,
+    CFBundleMHTMLSpriteType         = 2;
+
+function CFBundleHasTestedSpriteSupport()
+{
+    return CFBundleSupportedSpriteType !== -1;
+}
+
+function CFBundleTestSpriteSupport(/*Function*/ aCallback, /*String*/ MHTMLPath)
+{
+    if (CFBundleHasTestedSpriteSupport())
+        return;
+
+    CFBundleSpriteSupportListeners.push(aCallback);
+
+    if (CFBundleSpriteSupportListeners.length > 1)
+        return;
+
+    CFBundleTestSpriteTypes([
+        CFBundleDataURLSpriteType, 
+        "data:image/gif;base64,R0lGODlhAQABAIAAAMc9BQAAACH5BAAAAAAALAAAAAABAAEAAAICRAEAOw=="]);
+}
+
+function CFBundleNotifySpriteSupportListeners()
+{
+    var count = CFBundleSpriteSupportListeners.length;
+
+    while (count--)
+        CFBundleSpriteSupportListeners[count]();
+}
+
+function CFBundleTestSpriteTypes(/*Array*/ spriteTypes)
+{
+    var image = new Image();
+
+    image.onload = function()
+    {
+        if (image.width === 1 && image.height === 1)
+        {
+            CFBundleSupportedSpriteType = spriteTypes[0];
+            CFBundleNotifySpriteSupportListeners();
+        }
+        else
+            image.onerror();
     }
+
+    image.onerror = function()
+    {
+        if (spriteTypes.length === 2)
+        {
+            CFBundleSupportedSpriteType = CFBundleNoSpriteType;
+            CFBundleNotifySpriteSupportListeners();
+        }
+        else
+            CFBundleTestSpriteType(spriteTypes.slice(2));
+    }
+
+    image.src = spriteTypes[1];
+}
+
+function spritedImagesPathForBundle(/*Bundle*/ aBundle)
+{
+    if (CFBundleSupportedSpriteType === CFBundleDataURLSpriteType)
+        return FILE.join(aBundle.path(), aBundle.mostEligibleEnvironment() + ".environment", "dataURLs.txt");
+
+    return NULL;
 }
 
 CFBundle.dataContentsAtPath = function(/*String*/ aPath)
 {
     var data = new CFMutableData();
-CPLog("uh oh");
+
     data.setEncodedString(rootNode.nodeAtSubPath(aPath).contents());
-    CPLog("it is: " + data._encodedString);
-CPLog(data.encodedString());
+
     return data;
 }
 
@@ -300,23 +437,15 @@ var STATIC_MAGIC_NUMBER     = "@STATIC",
     MARKER_IMPORT_STD       = 'I',
     MARKER_IMPORT_LOCAL     = 'i';
 
-function decompileExecutable(/*Bundle*/ aBundle, /*String*/ aString)
+function decompileStaticFile(/*Bundle*/ aBundle, /*String*/ aString)
 {
     var stream = new MarkedStream(aString);
 
     if (stream.magicNumber() !== STATIC_MAGIC_NUMBER)
-        aBundle._eventDispatcher.dispatchEvent(
-        {
-            type:"error",
-            error: new Error("Could not recognize executable code format in Bundle " + aBundle)
-        });
+        throw new Error("Could not read static file.");
 
     if (stream.version() !== "1.0")
-        aBundle._eventDispatcher.dispatchEvent(
-        {
-            type:"error", 
-            error: new Error("Could not recognize executable code format in Bundle " + aBundle)
-        });
+        throw new Error("Could not read static file.");
 
     var marker,
         bundlePath = aBundle.path();
@@ -340,7 +469,7 @@ function decompileExecutable(/*Bundle*/ aBundle, /*String*/ aString)
             if (URI.toLowerCase().indexOf("mhtml:") === 0)
                 URI = "mhtml:" + FILE.join(bundlePath, URI.substr("mhtml:".length));
 
-//            aBundle._URIMap[text] = URI;
+            aBundle._URIMap[text] = URI;
         }
 
         else if (marker === MARKER_TEXT)

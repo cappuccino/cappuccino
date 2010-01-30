@@ -102,14 +102,8 @@ var CPBundlesForPaths = { };
 }
 
 - (CPString)pathForResource:(CPString)aFilename
-{return [self resourcePath] + '/' + aFilename;
-    var actualPath = [self resourcePath] + '/' + aFilename,
-        mappedPath = _URIMap["Resources/" + aFilename];
-
-    if (mappedPath)
-        return mappedPath;
-
-    return actualPath;
+{
+    return _bundle.pathForResource(aFilename);
 }
 
 - (CPDictionary)infoDictionary
