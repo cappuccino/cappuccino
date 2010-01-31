@@ -146,6 +146,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     //Configuring Behavior
     BOOL        _allowsColumnReordering;
     BOOL        _allowsColumnResizing;
+    BOOL        _allowsColumnSelection;
     BOOL        _allowsMultipleSelection;
     BOOL        _allowsEmptySelection;
 
@@ -766,13 +767,17 @@ window.setTimeout(function(){
 
 - (void)deselectColumn:(CPInteger)aColumn
 {
-    [_selectedColumnIndexes removeIndex:aColumn];
+    var selectedColumnIndexes = [_selectedColumnIndexes copy];
+    [selectedColumnIndexes removeIndex:aColumn];
+    [self selectColumnIndexes:selectedColumnIndexes byExtendingSelection:NO];
     [self _noteSelectionDidChange];
 }
 
 - (void)deselectRow:(CPInteger)aRow
 {
-    [_selectedRowIndexes removeIndex:aRow];
+    var selectedRowIndexes = [_selectedRowIndexes copy];
+    [selectedRowIndexes removeIndex:aRow];
+    [self selectColumnIndexes:selectedRowIndexes byExtendingSelection:NO];
     [self _noteSelectionDidChange];
 }
 

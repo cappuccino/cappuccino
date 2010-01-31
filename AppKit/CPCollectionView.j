@@ -333,6 +333,8 @@
     while (count--)
     {
         [[_items[count] view] removeFromSuperview];
+        [_items[count] setSelected:NO];
+
         _cachedItems.push(_items[count]);
     }
     
@@ -351,7 +353,11 @@
     
         [self addSubview:[_items[index] view]];
     }
-    
+
+    index = CPNotFound;
+    while ((index = [_selectionIndexes indexGreaterThanIndex:index]) != CPNotFound)
+        [_items[index] setSelected:YES];
+
     [self tile];
 }
 
