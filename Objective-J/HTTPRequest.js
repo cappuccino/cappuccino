@@ -9,7 +9,7 @@ function Asynchronous(/*Function*/ aFunction)
 
     if (asynchronousTimeoutId === null)
     {
-        window.setTimeout(function()
+        window.setNativeTimeout(function()
         {
             var queue = asynchronousFunctionQueue,
                 index = 0,
