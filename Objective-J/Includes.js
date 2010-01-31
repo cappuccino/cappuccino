@@ -17,4 +17,5 @@
 #include "FileExecutableSearch.js"
 #include "Scope.js"
 #include "Runtime.js"
+#include "Debug.js"
 #include "Bootstrap.js"
