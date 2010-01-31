@@ -94,8 +94,8 @@ var DOMSpanElement      = nil,
     var iframe = DOMIFrameElement,
         bodyElement = [CPPlatform mainBodyElement];
 
-    DOMSpanElement = nil;
     DOMIFrameElement = nil;
+    DOMSpanElement = nil;
 
     bodyElement.removeChild(iframe);
 }
