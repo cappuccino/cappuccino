@@ -300,7 +300,15 @@ function loadSpritedImagesForBundle(/*Bundle*/ aBundle, success, failure)
             loadSpritedImagesForBundle(aBundle, success, failure);
         });
 
-    new FileRequest(spritedImagesPathForBundle(aBundle), function(/*Event*/ anEvent)
+    var spritedImagesPath = spritedImagesPathForBundle(aBundle);
+
+    if (!spritedImagesPath)
+    {
+        aBundle._loadStatus &= ~CFBundleLoadingSpritedImages;
+        return success();
+    }
+
+    new FileRequest(spritedImagesPath, function(/*Event*/ anEvent)
     {
         try
         {
@@ -486,6 +494,9 @@ function decompileStaticFile(/*Bundle*/ aBundle, /*String*/ aString)
                 URI = "mhtml:" + FILE.join(bundlePath, URI.substr("mhtml:".length));
 
             aBundle._URIMap[text] = URI;
+
+            // The unresolved directories must not be bundles.
+            rootNode.nodeAtSubPath(FILE.join(bundlePath, FILE.dirname(text)), YES);
         }
 
         else if (marker === MARKER_TEXT)

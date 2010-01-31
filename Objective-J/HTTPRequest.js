@@ -1,4 +1,40 @@
 
+var asynchronousTimeoutCount = 0,
+    asynchronousTimeoutId = null,
+    asynchronousFunctionQueue = [];
+
+function Asynchronous(/*Function*/ aFunction)
+{
+    currentAsynchronousTimeoutCount = asynchronousTimeoutCount;
+
+    if (asynchronousTimeoutId === null)
+    {
+        window.setNativeTimeout(function()
+        {
+            var queue = asynchronousFunctionQueue,
+                index = 0,
+                count = asynchronousFunctionQueue.length;
+
+            ++asynchronousTimeoutCount;
+            asynchronousTimeoutId = null;
+            asynchronousFunctionQueue = [];
+
+            for (; index < count; ++index)
+                queue[index]();
+        }, 0);
+    }
+
+    return function()
+    {
+        var args = arguments;
+
+        if (asynchronousTimeoutCount > currentAsynchronousTimeoutCount)
+            aFunction.apply(this, args);
+        else
+            asynchronousFunctionQueue.push(function() { aFunction.apply(this, args) });
+    };
+}
+
 var NativeRequest = null;
 
 // We check ActiveXObject first, because we require local file access and 
@@ -97,24 +133,10 @@ HTTPRequest.prototype.responseXML = function()
 {
     var responseXML = this._nativeRequest.responseXML;
 
-    if (responseXML)
+    if (responseXML && (NativeRequest === XMLHttpRequest))
         return responseXML;
 
-    var responseText = this.responseText();
-
-    if (window.ActiveXObject)
-    {
-        var XMLData = new ActiveXObject("Microsoft.XMLDOM");
-
-        XMLData.loadXML(responseText.substr(responseText.indexOf(".dtd\">") + 6));
-
-        return XMLData;
-    }
-
-    if (window.DOMParser)
-        return new DOMParser().parseFromString(responseText, "text/xml");
-
-    return NULL;
+    return parseXML(this.responseText());
 }
 
 HTTPRequest.prototype.responsePropertyList = function()
@@ -132,21 +154,41 @@ HTTPRequest.prototype.responseText = function()
     return this._nativeRequest.responseText;
 }
 
-var methods = ["open", "send", "abort", "setRequestHeader", "getResponseHeader", "getAllResponseHeaders", "overrideMimeType"],
-    count = methods.length;
+HTTPRequest.prototype.setRequestHeader = function(/*String*/ aHeader, /*Object*/ aValue)
+{
+    return this._nativeRequest.setRequestHeader(aHeader, aValue);
+}
 
-while (count--)
-    (function()
-    {
-        var method = methods[count];
+HTTPRequest.prototype.getResponseHeader = function(/*String*/ aHeader)
+{
+    return this._nativeRequest.getResponseHeader(aHeader);
+}
 
-        HTTPRequest.prototype[methods[count]] = function()
-        {
-            var nativeRequest = this._nativeRequest;
+HTTPRequest.prototype.getAllResponseHeaders = function()
+{
+    return this._nativeRequest.getAllResponseHeaders();
+}
 
-            return nativeRequest[method].apply(nativeRequest, arguments);
-        }
-    })();
+HTTPRequest.prototype.overrideMimeType = function(/*String*/ aMimeType)
+{
+    if ("overrideMimeType" in this._nativeRequest)
+        return this._nativeRequest.overrideMimeType(aMimeType);
+}
+
+HTTPRequest.prototype.open = function(/*...*/)
+{
+    return this._nativeRequest.open(arguments[0], arguments[1], arguments[2], arguments[3], arguments[4]);
+}
+
+HTTPRequest.prototype.send = function(/*Object*/ aBody)
+{
+    return this._nativeRequest.send(aBody);
+}
+
+HTTPRequest.prototype.abort = function()
+{
+    return this._nativeRequest.abort();
+}
 
 HTTPRequest.prototype.addEventListener = function(/*String*/ anEventName, /*Function*/ anEventListener)
 {
@@ -186,10 +228,10 @@ function FileRequest(/*String*/ aFilePath, onsuccess, onfailure)
 #ifdef BROWSER
     var request = new HTTPRequest();
 
-    request.onsuccess = onsuccess;
-    request.onfailure = onfailure;
+    request.onsuccess = Asynchronous(onsuccess);
+    request.onfailure = Asynchronous(onfailure);
 
-    if (request.overrideMimeType && FILE.extension(aFilePath) === ".plist")
+    if (FILE.extension(aFilePath) === ".plist")
         request.overrideMimeType("text/xml");
 
     request.open("GET", aFilePath, YES);

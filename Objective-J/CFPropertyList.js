@@ -447,25 +447,34 @@ function decodeHTMLComponent(/*String*/ aString)
     return aString.replace(/&quot;/g, '"').replace(/&apos;/g, '\'').replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&amp;/g,'&');
 }
 
+function parseXML(/*String*/ aString)
+{
+    if (window.DOMParser)
+        return DOCUMENT_ELEMENT(new window.DOMParser().parseFromString(aString, "text/xml"));
+
+    else if (window.ActiveXObject)
+    {
+        XMLNode = new ActiveXObject("Microsoft.XMLDOM");
+
+        var matches = aString.match(CFPropertyList.DTDRE);
+
+        if (matches)
+            aString = aString.substr(matches[0].length);
+
+        XMLNode.loadXML(aString);
+
+        return XMLNode
+    }
+
+    return NULL;
+}
+
 CFPropertyList.propertyListFromXML = function(/*String | XMLNode*/ aStringOrXMLNode)
 {
     var XMLNode = aStringOrXMLNode;
 
-    if (typeof aStringOrXMLNode.valueOf() === "string")
-    {
-        if (window.DOMParser)
-            XMLNode = DOCUMENT_ELEMENT(new window.DOMParser().parseFromString(aStringOrXMLNode, "text/xml"));
-
-        else
-        {
-            XMLNode = new ActiveXObject("Microsoft.XMLDOM");
-
-            if (aStringOrXMLNode.substr(0, CFPropertyList.DTD.length) === CFPropertyList.DTD)
-                aStringOrXMLNode = aStringOrXMLNode.substr(CFPropertyList.DTD.length);
-
-            XMLNode.loadXML(aStringOrXMLNode);
-        }
-    }
+    if (aStringOrXMLNode.valueOf && typeof aStringOrXMLNode.valueOf() === "string")
+        XMLNode = parseXML(aStringOrXMLNode);
 
     // Skip over DOCTYPE and so forth.
     while (IS_OF_TYPE(XMLNode, XML_DOCUMENT) || IS_OF_TYPE(XMLNode, XML_XML))
@@ -474,7 +483,7 @@ CFPropertyList.propertyListFromXML = function(/*String | XMLNode*/ aStringOrXMLN
     // Skip over the DOCTYPE... see a pattern?
     if (IS_DOCUMENTTYPE(XMLNode))
         PLIST_NEXT_SIBLING(XMLNode);
-    
+
     // If this is not a PLIST, bail.
     if (!IS_PLIST(XMLNode))
         return null;
