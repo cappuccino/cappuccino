@@ -4,13 +4,6 @@ function Event(/*String*/ aType)
     this.type = aType;
 }
 
-function ErrorEvent(/*String*/ aType, /*String*/ anErrorMessage)
-{
-    Event.apply(this, aType);
-
-    this.error = new Error(anErrorMessage);
-}
-
 function EventDispatcher(/*Object*/ anOwner)
 {
     this._eventListenersForEventNames = { };

@@ -176,7 +176,7 @@ function base64_decode_to_string(input, strip)
 function bytes_to_string(bytes)
 {
     // This is relatively efficient, I think:
-    return String.fromCharCode.apply(null, bytes);
+    return String.fromCharCode.apply(NULL, bytes);
 }
 
 exports.bytes_to_string = bytes_to_string;

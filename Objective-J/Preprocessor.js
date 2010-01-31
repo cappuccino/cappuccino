@@ -23,23 +23,6 @@
 var OBJJ_PREPROCESSOR_DEBUG_SYMBOLS = 1 << 0,
     OBJJ_PREPROCESSOR_TYPE_SIGNATURES = 1 << 1;
 
-function objj_preprocess(/*String*/ aString, /*objj_bundle*/ aBundle, /*objj_file*/ aSourceFile, /*unsigned*/ flags) 
-{    
-    try
-    {
-        return new objj_preprocessor(aString.replace(/^#[^\n]+\n/, "\n"), aSourceFile, aBundle, flags);
-    }
-    catch (anException)
-    {
-        objj_exception_report(anException, aSourceFile);
-    }
-    
-    return [];
-}
-
-var OBJJParseException          = "OBJJParseException",
-    OBJJClassNotFoundException  = "OBJJClassNotFoundException";
-
 var TOKEN_ACCESSORS         = "accessors",
     TOKEN_CLASS             = "class",
     TOKEN_END               = "end",

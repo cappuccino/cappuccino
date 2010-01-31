@@ -47,14 +47,14 @@ function Executable(/*String*/ aCode, /*Array*/ fileDependencies, /*String*/ aSc
     code = "function(" + this.functionParameters().join(" , ") + "){" + code + "/**/\n}";
 
     if (typeof system !== "undefined" && system.engine === "rhino")
-        this._function = Packages.org.mozilla.javascript.Context.getCurrentContext().compileFunction(window, code, this._scope, 0, null);
+        this._function = Packages.org.mozilla.javascript.Context.getCurrentContext().compileFunction(window, code, this._scope, 0, NULL);
     else
         this._function = eval("(" + code + ")");
 #else
     // "//@ sourceURL=" at the end lets us name our eval'd files for debuggers, etc.
     // * WebKit:  http://pmuellr.blogspot.com/2009/06/debugger-friendly.html
     // * Firebug: http://blog.getfirebug.com/2009/08/11/give-your-eval-a-name-with-sourceurl/
-    //if (true) {
+    //if (YES) {
         code += "/**/\n//@ sourceURL=" + this._scope;
         this._function = new Function(this.functionParameters(), code);
     //} else {

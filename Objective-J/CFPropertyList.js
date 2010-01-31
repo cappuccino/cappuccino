@@ -37,7 +37,7 @@ CFPropertyList.sniffedFormatOfString = function(/*String*/ aString)
     if (aString.substr(0, CFPropertyList.Format280NorthMagicNumber.length) === CFPropertyList.Format280NorthMagicNumber)
        return CFPropertyList.Format280North_v1_0;
 
-    return null;
+    return NULL;
 }
 
 // Serialization
@@ -75,7 +75,7 @@ function serializePropertyList(/*CFPropertyList*/ aPropertyList, /*Object*/ seri
         aPropertyList = valueOf;
     }
 
-    if (aPropertyList === true || aPropertyList === false)
+    if (aPropertyList === YES || aPropertyList === NO)
         type = "boolean";
     
     else if (type === "number")
@@ -273,7 +273,7 @@ var XML_XML                 = "xml",
 #define IS_DOCUMENTTYPE(anXMLNode) (NODE_TYPE(anXMLNode) === 10)
 
 #define PLIST_NEXT_SIBLING(anXMLNode) while ((anXMLNode = NEXT_SIBLING(anXMLNode)) && IS_WHITESPACE(anXMLNode)) ;
-#define PLIST_FIRST_CHILD(anXMLNode) anXMLNode = FIRST_CHILD(anXMLNode); if (anXMLNode !== null && IS_WHITESPACE(anXMLNode)) PLIST_NEXT_SIBLING(anXMLNode)
+#define PLIST_FIRST_CHILD(anXMLNode) anXMLNode = FIRST_CHILD(anXMLNode); if (anXMLNode !== NULL && IS_WHITESPACE(anXMLNode)) PLIST_NEXT_SIBLING(anXMLNode)
 
 // FIXME: no first child?
 #define CHILD_VALUE(anXMLNode) (NODE_VALUE(FIRST_CHILD(anXMLNode)))
@@ -297,7 +297,7 @@ var _plist_traverseNextNode = function(anXMLNode, stayWithin, stack)
     else
     {
         if (node === stayWithin)
-            return null;
+            return NULL;
         
         node = anXMLNode;
         
@@ -326,13 +326,13 @@ var _plist_traverseNextNode = function(anXMLNode, stayWithin, stack)
             
         // If we are being asked to move up, and our parent is the stay within, then just 
         if (stayWithin && node === stayWithin)
-            return null;
+            return NULL;
         
         // Pop the stack if we have officially "moved up"
         stack.pop();
     }
         
-    return null;
+    return NULL;
 }
 
 CFPropertyList.propertyListFromData = function(/*Data*/ aData)
@@ -351,7 +351,7 @@ CFPropertyList.propertyListFromString = function(/*String*/ aString, /*Format*/ 
     if (aFormat === CFPropertyList.Format280North_v1_0)
         return propertyListFrom280NorthString(aString);
 
-    return null;
+    return NULL;
 }
 
 // 280 North Plist Format
@@ -415,9 +415,9 @@ function propertyListFrom280NorthString(/*String*/ aString)
             case STRING_MARKER:     object = stream.getString();
                                     break;
                                         
-            case TRUE_MARKER:       object = true;
+            case TRUE_MARKER:       object = YES;
                                     break;
-            case FALSE_MARKER:      object = false;
+            case FALSE_MARKER:      object = NO;
                                     break;
                                         
             default:                throw new Error("*** " + marker + " marker not recognized in Plist.");
@@ -486,16 +486,16 @@ CFPropertyList.propertyListFromXML = function(/*String | XMLNode*/ aStringOrXMLN
 
     // If this is not a PLIST, bail.
     if (!IS_PLIST(XMLNode))
-        return null;
+        return NULL;
 
     var key = "",
-        object = null,
-        plistObject = null,
+        object = NULL,
+        plistObject = NULL,
         
         plistNode = XMLNode,
         
         containers = [],
-        currentContainer = null;
+        currentContainer = NULL;
     
     while (XMLNode = _plist_traverseNextNode(XMLNode, plistNode, containers))
     {
@@ -527,13 +527,13 @@ CFPropertyList.propertyListFromXML = function(/*String | XMLNode*/ aStringOrXMLN
             case PLIST_STRING:          object = decodeHTMLComponent(FIRST_CHILD(XMLNode) ? CHILD_VALUE(XMLNode) : "");
                                         break;
                                         
-            case PLIST_BOOLEAN_TRUE:    object = true;
+            case PLIST_BOOLEAN_TRUE:    object = YES;
                                         break;
-            case PLIST_BOOLEAN_FALSE:   object = false;
+            case PLIST_BOOLEAN_FALSE:   object = NO;
                                         break;
                                         
             case PLIST_DATA:            object = new CFMutableData();
-                                        object.bytes = FIRST_CHILD(XMLNode) ? base64_decode_to_array(CHILD_VALUE(XMLNode), true) : [];
+                                        object.bytes = FIRST_CHILD(XMLNode) ? base64_decode_to_array(CHILD_VALUE(XMLNode), YES) : [];
                                         break;
                                         
             default:                    throw new Error("*** " + NODE_NAME(XMLNode) + " tag not recognized in Plist.");
