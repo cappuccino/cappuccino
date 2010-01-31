@@ -21,6 +21,7 @@
  */
 
 CPPlatformDidClearBodyElementNotification   = @"CPPlatformDidClearBodyElementNotification";
+CPPlatformWillClearBodyElementNotification  = @"CPPlatformWillClearBodyElementNotification";
 
 var screenNeedsInitialization   = NO,
     mainBodyElement = nil;
@@ -90,6 +91,10 @@ var screenNeedsInitialization   = NO,
         return;
 
     screenNeedsInitialization = NO;
+
+    [[CPNotificationCenter defaultCenter]
+        postNotificationName:CPPlatformWillClearBodyElementNotification
+                      object:self];
 
     var bodyElement = [self mainBodyElement];
 
