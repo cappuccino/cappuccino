@@ -1,5 +1,6 @@
 
 #include "DebugOptions.js"
+#include "json2.js"
 #include "Constants.js"
 #include "EventDispatcher.js"
 #include "HTTPRequest.js"
