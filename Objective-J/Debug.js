@@ -39,7 +39,7 @@ function objj_msgSend_decorate()
 function objj_msgSend_set_decorators()
 {
     objj_msgSend_reset();
-    objj_msgSend_decorate.apply(null, arguments);
+    objj_msgSend_decorate.apply(NULL, arguments);
 }
 
 
@@ -62,7 +62,7 @@ function objj_backtrace_decorator(msgSend)
         objj_backtrace.push({ receiver: aReceiver, selector : aSelector });
         try
         {
-            return msgSend.apply(null, arguments);
+            return msgSend.apply(NULL, arguments);
         }
         catch (anException)
         {
@@ -81,7 +81,7 @@ function objj_backtrace_decorator(msgSend)
 // type checking decorator
 
 var objj_typechecks_reported = {},
-    objj_typecheck_prints_backtrace = false;
+    objj_typecheck_prints_backtrace = NO;
 
 function objj_typecheck_decorator(msgSend)
 {
@@ -90,7 +90,7 @@ function objj_typecheck_decorator(msgSend)
         var aReceiver = aReceiverOrSuper && (aReceiverOrSuper.receiver || aReceiverOrSuper);
         
         if (!aReceiver)
-            return msgSend.apply(null, arguments);
+            return msgSend.apply(NULL, arguments);
 
         var types = aReceiver.isa.method_dtable[aSelector].types;
         for (var i = 2; i < arguments.length; i++)
@@ -103,7 +103,7 @@ function objj_typecheck_decorator(msgSend)
             {
                 var key = [GETMETA(aReceiver).name, aSelector, i, e].join(";");
                 if (!objj_typechecks_reported[key]) {
-                    objj_typechecks_reported[key] = true;
+                    objj_typechecks_reported[key] = YES;
                     objj_fprintf(warning_stream, "Type check failed on argument " + (i-2) + " of " + objj_debug_message_format(aReceiver, aSelector) + ": " + e);
                     if (objj_typecheck_prints_backtrace)
                         objj_backtrace_print(warning_stream);
@@ -111,7 +111,7 @@ function objj_typecheck_decorator(msgSend)
             }
         }
         
-        var result = msgSend.apply(null, arguments);
+        var result = msgSend.apply(NULL, arguments);
 
         try
         {
@@ -121,7 +121,7 @@ function objj_typecheck_decorator(msgSend)
         {
             var key = [GETMETA(aReceiver).name, aSelector, "ret", e].join(";");
             if (!objj_typechecks_reported[key]) {
-                objj_typechecks_reported[key] = true;
+                objj_typechecks_reported[key] = YES;
                 objj_fprintf(warning_stream, "Type check failed on return val of " + objj_debug_message_format(aReceiver, aSelector) + ": " + e);
                 if (objj_typecheck_prints_backtrace)
                     objj_backtrace_print(warning_stream);
@@ -171,7 +171,7 @@ function objj_debug_typecheck(expectedType, object)
     }
     
     var actualType;
-    if (object === null)
+    if (object === NULL)
         actualType = "null";
     else if (object === undefined)
         actualType = "void";

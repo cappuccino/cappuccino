@@ -1,7 +1,7 @@
 
 makeExportsGlobal();
 
-var rootNode = new StaticResourceNode("", null, StaticResourceNode.DirectoryType, YES),
+var rootNode = new StaticResourceNode("", NULL, StaticResourceNode.DirectoryType, YES),
     cwd = FILE.cwd();
 #ifndef COMMONJS
 rootNode.nodeAtSubPath(FILE.dirname(cwd), YES);
@@ -32,7 +32,7 @@ function afterDocumentLoad(/*Function*/ aFunction)
         return aFunction();
 
     if (window.addEventListener)
-        window.addEventListener("load", aFunction, false);
+        window.addEventListener("load", aFunction, NO);
 
     else if (window.attachEvent)
         window.attachEvent("onload", aFunction);
