@@ -32,6 +32,8 @@ var _headerGradient = nil,
     
     supportsCanvasGradient = NO;
 
+// FIX ME: _CPTableColumnHeaderView has code for drawn gradients. 
+// We need to decide if we're going to draw it or just use images throughout.
 @implementation _CPTableColumnHeaderView : CPView
 {
     BOOL        _isPressed;
@@ -40,7 +42,7 @@ var _headerGradient = nil,
 
 + (void)initialize
 {
-    supportsCanvasGradient = CPFeatureIsCompatible(CPHTMLCanvasFeature);
+    supportsCanvasGradient = NO;//CPFeatureIsCompatible(CPHTMLCanvasFeature);
 }
 
 + (CGGradient)headerGradient
@@ -98,6 +100,18 @@ var _headerGradient = nil,
 - (void)setPressed:(BOOL)flag
 {
     _isPressed = flag;
+    var isSelected = ([self themeState] & CPThemeStateSelected);    
+    
+    if(_isPressed && isSelected)
+        [self setBackgroundColor:[CPColor colorWithPatternImage:CPAppKitImage("tableview-headerview-highlighted-pressed.png", CGSizeMake(1.0, 22.0))]];
+    else if (isSelected)
+        [self setBackgroundColor:[CPColor colorWithPatternImage:CPAppKitImage("tableview-headerview-highlighted.png", CGSizeMake(1.0, 22.0))]];
+    else if (_isPressed)
+        [self setBackgroundColor:[CPColor colorWithPatternImage:CPAppKitImage("tableview-headerview-pressed.png", CGSizeMake(1.0, 22.0))]];
+    else 
+        [self setBackgroundColor:[CPColor colorWithPatternImage:CPAppKitImage("tableview-headerview.png", CGSizeMake(1.0, 22.0))]];
+
+    
     [self setNeedsDisplay:YES];
 }
 
@@ -183,6 +197,7 @@ var _headerGradient = nil,
         _draggedColumn = CPNotFound;
         _pressedColumn = CPNotFound;
         _draggedDistance = 0.0;
+        [self setBackgroundColor:[CPColor colorWithPatternImage:CPAppKitImage("tableview-headerview.png", CGSizeMake(1.0, 22.0))]];
     }
 
     return self;
@@ -365,6 +380,9 @@ var _headerGradient = nil,
     CGContextClosePath(context);
     CGContextStrokePath(context);
     
+    return;
+    
+    /*
     var maxY = CGRectGetMaxY([self bounds]);
     // draw normal gradient for remaining space
     if (supportsCanvasGradient)
@@ -382,7 +400,7 @@ var _headerGradient = nil,
     CGContextMoveToPoint(context, 0, maxY - 0.5);
     CGContextAddLineToPoint(context, CGRectGetMaxX([self bounds]), maxY - 0.5);
     CGContextClosePath(context);
-    CGContextStrokePath(context);   
+    CGContextStrokePath(context);*/   
 }
 
 @end
