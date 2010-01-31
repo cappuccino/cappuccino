@@ -427,7 +427,13 @@ var CPProgressIndicatorSpinningStyleColors  = nil,
         CPProgressIndicatorStyleIdentifiers[_style],
         _CPControlIdentifierForControlSize(_controlSize))];
 
-    [_barView setFrameSize:CGSizeMake(CGRectGetWidth([self bounds]) * (_doubleValue - _minValue) / (_maxValue - _minValue) - 4.0, 16.0)];
+    var width = CGRectGetWidth([self bounds]),
+        barWidth = width * ((_doubleValue - _minValue) / (_maxValue - _minValue));
+
+    if (barWidth > 0.0 && barWidth < 4.0)
+        barWidth = 4.0;
+
+    [_barView setFrameSize:CGSizeMake(barWidth, 16.0)];
 }
 
 /* @ignore */
