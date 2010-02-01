@@ -73,7 +73,7 @@ function CP_NSMapClassName(aClassName)
     {
         var mappedClassName = @"CP" + aClassName.substr(2);
         
-        if (window[mappedClassName])
+        if (CPClassFromString(mappedClassName))
         {
             CPLog.warn("Mapping " + aClassName + " to " + mappedClassName);
 

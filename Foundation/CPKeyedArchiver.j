@@ -556,7 +556,7 @@ var _CPKeyedArchiverEncodeObject = function(self, anObject, isConditional)
                 if (!className)
                     className = theClass.name;
                 else
-                    theClass = window[className];
+                    theClass = CPClassFromString(className);
 
                 var classUID = [self._UIDs objectForKey:className];
                 
@@ -566,14 +566,14 @@ var _CPKeyedArchiverEncodeObject = function(self, anObject, isConditional)
                         hierarchy = [];
                     
                     [plistClass setObject:className forKey:_CPKeyedArchiverClassNameKey];
-                    
+
                     do
                     {
                         [hierarchy addObject:CPStringFromClass(theClass)];
                     } while (theClass = [theClass superclass]);
-                    
+
                     [plistClass setObject:hierarchy forKey:_CPKeyedArchiverClassesKey];
-                    
+
                     classUID = [self._plistObjects count];
                     [self._plistObjects addObject:plistClass];
                     [self._UIDs setObject:classUID forKey:className];
