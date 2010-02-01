@@ -145,7 +145,7 @@ var CPOutlineViewDataSource_outlineView_setObjectValue_forTableColumn_byItem_   
     if ([_outlineViewDataSource respondsToSelector:@selector(outlineView:sortDescriptorsDidChange:)])
         _implementedOutlineViewDataSourceMethods |= CPOutlineViewDataSource_outlineView_sortDescriptorsDidChange_;
 
-	[[super dataSource] setImplementedDataSourceMethods:_implementedOutlineViewDataSourceMethods];
+    [[super dataSource] setImplementedDataSourceMethods:_implementedOutlineViewDataSourceMethods];
 
     [self reloadData];
 }
@@ -342,41 +342,41 @@ var CPOutlineViewDataSource_outlineView_setObjectValue_forTableColumn_byItem_   
 
 - (void)selectRowIndexes:(CPIndexSet)rows byExtendingSelection:(BOOL)shouldExtendSelection
 {
-	// First un highlight the old disclosure controls	
-	var previousSelectedRows = [];
-	[[self selectedRowIndexes] getIndexes:previousSelectedRows maxCount:-1 inIndexRange:nil];
-	
-	var index = [previousSelectedRows count];
-	while (index--)
-	{
-		var rowIndex = previousSelectedRows[index],
-			item = [self itemAtRow:rowIndex];
-		
-		if (![self isExpandable:item])
-			continue;
-		
-		var control = _disclosureControlsForRows[rowIndex];
-		[control setHighlighted:NO];
-	}
-	
-	[super selectRowIndexes:rows byExtendingSelection:shouldExtendSelection];
-	
-	// Now highlight the new disclosure controls
-	var selectedRows = [];
-	    [rows getIndexes:selectedRows maxCount:-1 inIndexRange:nil];
-	
-	    var index = [selectedRows count];
-	while (index--)
-	{
-		var rowIndex = selectedRows[index],
-			item = [self itemAtRow:rowIndex];
-		
-		if (![self isExpandable:item])
-			continue;
-		
-		var control = _disclosureControlsForRows[rowIndex];
-		[control setHighlighted:YES];
-	}
+    // First un highlight the old disclosure controls   
+    var previousSelectedRows = [];
+    [[self selectedRowIndexes] getIndexes:previousSelectedRows maxCount:-1 inIndexRange:nil];
+    
+    var index = [previousSelectedRows count];
+    while (index--)
+    {
+        var rowIndex = previousSelectedRows[index],
+            item = [self itemAtRow:rowIndex];
+        
+        if (![self isExpandable:item])
+            continue;
+        
+        var control = _disclosureControlsForRows[rowIndex];
+        [control setHighlighted:NO];
+    }
+    
+    [super selectRowIndexes:rows byExtendingSelection:shouldExtendSelection];
+    
+    // Now highlight the new disclosure controls
+    var selectedRows = [];
+        [rows getIndexes:selectedRows maxCount:-1 inIndexRange:nil];
+    
+        var index = [selectedRows count];
+    while (index--)
+    {
+        var rowIndex = selectedRows[index],
+            item = [self itemAtRow:rowIndex];
+        
+        if (![self isExpandable:item])
+            continue;
+        
+        var control = _disclosureControlsForRows[rowIndex];
+        [control setHighlighted:YES];
+    }
 }
 
 - (void)setDelegate:(id)aDelegate
@@ -531,12 +531,12 @@ var CPOutlineViewDataSource_outlineView_setObjectValue_forTableColumn_byItem_   
 
 - (CPRect)rectForDropHighlightViewBetweenUpperRow:(int)theUpperRowIndex andLowerRow:(int)theLowerRowIndex
 {
-	// Just call super and update the x to reflect the current indentation level
-	var level = [self levelForRow:theLowerRowIndex],
-		rect = [super rectForDropHighlightViewBetweenUpperRow:theUpperRowIndex andLowerRow:theLowerRowIndex];
-	
-	rect.origin.x = level * [self indentationPerLevel];
-	return rect;
+    // Just call super and update the x to reflect the current indentation level
+    var level = [self levelForRow:theLowerRowIndex],
+        rect = [super rectForDropHighlightViewBetweenUpperRow:theUpperRowIndex andLowerRow:theLowerRowIndex];
+    
+    rect.origin.x = level * [self indentationPerLevel];
+    return rect;
 }
 
 - (void)_loadDataViewsInRows:(CPIndexSet)rows columns:(CPIndexSet)columns
@@ -808,7 +808,7 @@ var _loadItemInfoForItem = function(/*CPOutlineView*/ anOutlineView, /*id*/ anIt
 
 @implementation _CPOutlineViewTableViewDataSource : CPObject
 {
-	int _implementedDataSourceMethods @accessors(property=implementedDataSourceMethods);
+    int _implementedDataSourceMethods @accessors(property=implementedDataSourceMethods);
     CPObject _outlineView;
 }
 
@@ -834,70 +834,70 @@ var _loadItemInfoForItem = function(/*CPOutlineView*/ anOutlineView, /*id*/ anIt
 
 - (BOOL)tableView:(CPTableView)aTableColumn writeRowsWithIndexes:(CPIndexSet)theIndexes toPasteboard:(CPPasteboard)thePasteboard
 {
-	if (!_outlineView._implementedOutlineViewDataSourceMethods & CPOutlineViewDataSource_outlineView_writeItems_toPasteboard_)
-		return NO;
-	
-	var rowIndexes = [];
-	[theIndexes getIndexes:rowIndexes maxCount:[theIndexes count] inIndexRange:nil];
-	
-	var rowIndex = [rowIndexes count],
-		items = [];
-		
-	while (rowIndex--)
-		[items addObject:[_outlineView itemAtRow:[rowIndexes objectAtIndex:rowIndex]]];
-		
-	return [_outlineView._outlineViewDataSource outlineView:_outlineView writeItems:items toPasteboard:thePasteboard];
+    if (!_outlineView._implementedOutlineViewDataSourceMethods & CPOutlineViewDataSource_outlineView_writeItems_toPasteboard_)
+        return NO;
+    
+    var rowIndexes = [];
+    [theIndexes getIndexes:rowIndexes maxCount:[theIndexes count] inIndexRange:nil];
+    
+    var rowIndex = [rowIndexes count],
+        items = [];
+        
+    while (rowIndex--)
+        [items addObject:[_outlineView itemAtRow:[rowIndexes objectAtIndex:rowIndex]]];
+        
+    return [_outlineView._outlineViewDataSource outlineView:_outlineView writeItems:items toPasteboard:thePasteboard];
 }
 
 - (CPDragOperation)tableView:(CPTableView)aTableView validateDrop:(id < CPDraggingInfo >)theInfo 
-	proposedRow:(int)theRow proposedDropOperation:(CPTableViewDropOperation)theOperation
+    proposedRow:(int)theRow proposedDropOperation:(CPTableViewDropOperation)theOperation
 {
-	if (!_outlineView._implementedOutlineViewDataSourceMethods & CPOutlineViewDataSource_outlineView_validateDrop_proposedItem_proposedChildIndex_)
-		return CPDragOperationNone;
-	
-	var droppedItem = [_outlineView itemAtRow:theRow],
-		parentItem = [_outlineView parentForItem:droppedItem];
-		childIndex = CPNotFound;
-	
-	if (theOperation === CPTableViewDropAbove)
-	{		
-		var itemInfo = (parentItem != nil) ? _outlineView._itemInfosForItems[[parentItem UID]] : _outlineView._rootItemInfo,
-			children = itemInfo.children,
-			
-		childIndex = [children indexOfObject:droppedItem];
-	}
-	else if (theOperation === CPTableViewDropOn)
-	{
-		parentItem = droppedItem;
-		childIndex = -1;
-	}
-			
-	return [_outlineView._outlineViewDataSource outlineView:_outlineView validateDrop:theInfo proposedItem:parentItem proposedChildIndex:childIndex];
+    if (!_outlineView._implementedOutlineViewDataSourceMethods & CPOutlineViewDataSource_outlineView_validateDrop_proposedItem_proposedChildIndex_)
+        return CPDragOperationNone;
+    
+    var droppedItem = [_outlineView itemAtRow:theRow],
+        parentItem = [_outlineView parentForItem:droppedItem];
+        childIndex = CPNotFound;
+    
+    if (theOperation === CPTableViewDropAbove)
+    {       
+        var itemInfo = (parentItem != nil) ? _outlineView._itemInfosForItems[[parentItem UID]] : _outlineView._rootItemInfo,
+            children = itemInfo.children,
+            
+        childIndex = [children indexOfObject:droppedItem];
+    }
+    else if (theOperation === CPTableViewDropOn)
+    {
+        parentItem = droppedItem;
+        childIndex = -1;
+    }
+            
+    return [_outlineView._outlineViewDataSource outlineView:_outlineView validateDrop:theInfo proposedItem:parentItem proposedChildIndex:childIndex];
 }
 
 - (BOOL)tableView:(CPTableView)aTableView acceptDrop:(id <CPDraggingInfo>)theInfo row:(int)theRow dropOperation:(CPTableViewDropOperation)theOperation
-{	
-	if (!_outlineView._implementedOutlineViewDataSourceMethods & CPOutlineViewDataSource_outlineView_acceptDrop_item_childIndex_)
-		return NO;
-	
-	var droppedItem = [_outlineView itemAtRow:theRow],
-		parentItem = [_outlineView parentForItem:droppedItem];
-		childIndex = CPNotFound;
+{   
+    if (!_outlineView._implementedOutlineViewDataSourceMethods & CPOutlineViewDataSource_outlineView_acceptDrop_item_childIndex_)
+        return NO;
+    
+    var droppedItem = [_outlineView itemAtRow:theRow],
+        parentItem = [_outlineView parentForItem:droppedItem];
+        childIndex = CPNotFound;
 
-	if (theOperation === CPTableViewDropAbove)
-	{		
-		var itemInfo = (parentItem != nil) ? _outlineView._itemInfosForItems[[parentItem UID]] : _outlineView._rootItemInfo,
-			children = itemInfo.children,
+    if (theOperation === CPTableViewDropAbove)
+    {       
+        var itemInfo = (parentItem != nil) ? _outlineView._itemInfosForItems[[parentItem UID]] : _outlineView._rootItemInfo,
+            children = itemInfo.children,
 
-		childIndex = [children indexOfObject:droppedItem];
-	}
-	else if (theOperation === CPTableViewDropOn)
-	{
-		parentItem = droppedItem;
-		childIndex = -1;
-	}
-	
-	return [_outlineView._outlineViewDataSource outlineView:_outlineView acceptDrop:theInfo item:parentItem childIndex:childIndex];
+        childIndex = [children indexOfObject:droppedItem];
+    }
+    else if (theOperation === CPTableViewDropOn)
+    {
+        parentItem = droppedItem;
+        childIndex = -1;
+    }
+    
+    return [_outlineView._outlineViewDataSource outlineView:_outlineView acceptDrop:theInfo item:parentItem childIndex:childIndex];
 }
 
 @end

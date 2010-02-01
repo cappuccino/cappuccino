@@ -190,7 +190,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     SEL         _doubleAction;
     unsigned    _columnAutoResizingStyle;
 
-	CPView		_dropOperationFeedbackView;
+    CPView      _dropOperationFeedbackView;
 
 //    BOOL        _verticalMotionCanDrag;
 //    unsigned    _destinationDragStyle;
@@ -527,10 +527,10 @@ window.setTimeout(function(){
         [self setSelectionHightlightColor:[CPColor selectionColorSourceView]];
         _destinationDragStyle = CPTableViewDraggingDestinationFeedbackStyleSourceList;
     }
-	else
-	{
-	    [self setSelectionHightlightColor:[CPColor selectionColor]];
-	    _destinationDragStyle = CPTableViewDraggingDestinationFeedbackStyleRegular;
+    else
+    {
+        [self setSelectionHightlightColor:[CPColor selectionColor]];
+        _destinationDragStyle = CPTableViewDraggingDestinationFeedbackStyleRegular;
     }
 }
 
@@ -1556,63 +1556,63 @@ window.setTimeout(function(){
 }
 
 - (CPImage)dragImageForRowsWithIndexes:(CPIndexSet)dragRows 
-						  tableColumns:(CPArray)theTableColumns 
-								 event:(CPEvent)dragEvent 
-								offset:(CPPointPointer)dragImageOffset
+                          tableColumns:(CPArray)theTableColumns 
+                                 event:(CPEvent)dragEvent 
+                                offset:(CPPointPointer)dragImageOffset
 {
     return [[CPImage alloc] initWithContentsOfFile:@"Frameworks/AppKit/Resources/GenericFile.png" size:CGSizeMake(32,32)];
 }
 
 - (CPView)dragViewForRowsWithIndexes:(CPIndexSet)theDraggedRows 
-						tableColumns:(CPArray)theTableColumns 
-							   event:(CPEvent)theDragEvent 
-							  offset:(CPPoint)dragViewOffset
+                        tableColumns:(CPArray)theTableColumns 
+                               event:(CPEvent)theDragEvent 
+                              offset:(CPPoint)dragViewOffset
 {
-	var bounds = [self bounds],
-		view = [[CPView alloc] initWithFrame:bounds];
-		
-	[view setBackgroundColor:[CPColor clearColor]];
-	[view setAlphaValue:0.7];
-	
-	// We have to fetch all the data views for the selected rows and columns
-	// After that we can copy these add them to a transparent drag view and use that drag view 
-	// to make it appear we are dragging images of those rows (as you would do in regular Cocoa)
-	var firstExposedColumn = [_exposedColumns firstIndex],
-	    firstExposedRow = [_exposedRows firstIndex],
-		exposedColumnsLength = [_exposedColumns lastIndex] - firstExposedColumn + 1,
-		exposedRowsLength = [_exposedRows lastIndex] - firstExposedRow + 1,
-		columns = [],
-		rows = [];
-		
-	[_exposedColumns getIndexes:columns maxCount:-1 inIndexRange:CPMakeRange(firstExposedColumn, exposedColumnsLength)];
+    var bounds = [self bounds],
+        view = [[CPView alloc] initWithFrame:bounds];
+        
+    [view setBackgroundColor:[CPColor clearColor]];
+    [view setAlphaValue:0.7];
+    
+    // We have to fetch all the data views for the selected rows and columns
+    // After that we can copy these add them to a transparent drag view and use that drag view 
+    // to make it appear we are dragging images of those rows (as you would do in regular Cocoa)
+    var firstExposedColumn = [_exposedColumns firstIndex],
+        firstExposedRow = [_exposedRows firstIndex],
+        exposedColumnsLength = [_exposedColumns lastIndex] - firstExposedColumn + 1,
+        exposedRowsLength = [_exposedRows lastIndex] - firstExposedRow + 1,
+        columns = [],
+        rows = [];
+        
+    [_exposedColumns getIndexes:columns maxCount:-1 inIndexRange:CPMakeRange(firstExposedColumn, exposedColumnsLength)];
     [theDraggedRows getIndexes:rows maxCount:-1 inIndexRange:CPMakeRange(firstExposedRow, exposedRowsLength)];
 
-	var columnIndex = [columns count];
-		
-	while (columnIndex--) 
-	{
-		var column = columns[columnIndex],
-		    tableColumn = [_tableColumns objectAtIndex:column],
-			rowIndex = [rows count];
-		
-		while (rowIndex--)
-		{ 
-		    var row = rows[rowIndex];
-			var dataView = [self _newDataViewForRow:row tableColumn:tableColumn];
-			
-			[dataView setBackgroundColor:[CPColor clearColor]];
-			[dataView setFrame:[self frameOfDataViewAtColumn:column row:row]];
-			[dataView setObjectValue:[self _objectValueForTableColumn:tableColumn row:row]];
-			
-			[view addSubview:dataView];
-		}
-	}
-	
-	var dragPoint = [self convertPoint:[theDragEvent locationInWindow] fromView:nil];
-	dragViewOffset.x = CGRectGetWidth(bounds)/2 - dragPoint.x;
-	dragViewOffset.y = CGRectGetHeight(bounds)/2 - dragPoint.y;
-	
-	return view;
+    var columnIndex = [columns count];
+        
+    while (columnIndex--) 
+    {
+        var column = columns[columnIndex],
+            tableColumn = [_tableColumns objectAtIndex:column],
+            rowIndex = [rows count];
+        
+        while (rowIndex--)
+        { 
+            var row = rows[rowIndex];
+            var dataView = [self _newDataViewForRow:row tableColumn:tableColumn];
+            
+            [dataView setBackgroundColor:[CPColor clearColor]];
+            [dataView setFrame:[self frameOfDataViewAtColumn:column row:row]];
+            [dataView setObjectValue:[self _objectValueForTableColumn:tableColumn row:row]];
+            
+            [view addSubview:dataView];
+        }
+    }
+    
+    var dragPoint = [self convertPoint:[theDragEvent locationInWindow] fromView:nil];
+    dragViewOffset.x = CGRectGetWidth(bounds)/2 - dragPoint.x;
+    dragViewOffset.y = CGRectGetHeight(bounds)/2 - dragPoint.y;
+    
+    return view;
 }
 
 - (void)setDraggingSourceOperationMask:(CPDragOperation)mask forLocal:(BOOL)isLocal
@@ -2110,7 +2110,7 @@ window.setTimeout(function(){
         indexes = [],
         rectSelector = @selector(rectOfRow:);
 
-	   [_selectionHightlightColor setFill];
+       [_selectionHightlightColor setFill];
 
 
     if ([_selectedRowIndexes count] >= 1)
@@ -2299,11 +2299,11 @@ window.setTimeout(function(){
 */
 - (void)trackMouse:(CPEvent)anEvent
 {
-	// Prevent CPControl from eating the mouse events when we are in a drag session
-	if (![_draggedRowIndexes count])
-		[super trackMouse:anEvent];
-	else
-		[CPApp sendEvent:anEvent];
+    // Prevent CPControl from eating the mouse events when we are in a drag session
+    if (![_draggedRowIndexes count])
+        [super trackMouse:anEvent];
+    else
+        [CPApp sendEvent:anEvent];
 }
 
 /*
@@ -2335,32 +2335,32 @@ window.setTimeout(function(){
 
         if ([self canDragRowsWithIndexes:_draggedRowIndexes atPoint:aPoint] && [_dataSource tableView:self writeRowsWithIndexes:_draggedRowIndexes toPasteboard:pboard])
         {
-			var currentEvent = [CPApp currentEvent],
-				offset = CPPointMakeZero(),
-				tableColumns = [_tableColumns objectsAtIndexes:_exposedColumns];
-				
-			// We deviate from the default Cocoa implementation here by asking for a view in stead of an image
-			// We support both, but the view prefered over the image because we can mimic the rows we are dragging
-			// by re-creating the data views for the dragged rows
-			var view = [self dragViewForRowsWithIndexes:_draggedRowIndexes 
-										   tableColumns:tableColumns 
-												  event:currentEvent 
-												 offset:offset];
-			
-			if (!view)
-			{
-				var image = [self dragImageForRowsWithIndexes:_draggedRowIndexes 
-												 tableColumns:tableColumns 
-														event:currentEvent 
-													   offset:offset];
-				view = [[CPImageView alloc] initWithFrame:CPMakeRect(0, 0, [image size].width, [image size].height)];
-				[view setImage:image];
-			}
-			
-			var bounds = [view bounds];
-			var viewLocation = CPPointMake(aPoint.x - CGRectGetWidth(bounds)/2 + offset.x, aPoint.y - CGRectGetHeight(bounds)/2 + offset.y);
-			[self dragView:view at:viewLocation offset:CPPointMakeZero() event:[CPApp currentEvent] pasteboard:pboard source:self slideBack:YES];
-			
+            var currentEvent = [CPApp currentEvent],
+                offset = CPPointMakeZero(),
+                tableColumns = [_tableColumns objectsAtIndexes:_exposedColumns];
+                
+            // We deviate from the default Cocoa implementation here by asking for a view in stead of an image
+            // We support both, but the view prefered over the image because we can mimic the rows we are dragging
+            // by re-creating the data views for the dragged rows
+            var view = [self dragViewForRowsWithIndexes:_draggedRowIndexes 
+                                           tableColumns:tableColumns 
+                                                  event:currentEvent 
+                                                 offset:offset];
+            
+            if (!view)
+            {
+                var image = [self dragImageForRowsWithIndexes:_draggedRowIndexes 
+                                                 tableColumns:tableColumns 
+                                                        event:currentEvent 
+                                                       offset:offset];
+                view = [[CPImageView alloc] initWithFrame:CPMakeRect(0, 0, [image size].width, [image size].height)];
+                [view setImage:image];
+            }
+            
+            var bounds = [view bounds];
+            var viewLocation = CPPointMake(aPoint.x - CGRectGetWidth(bounds)/2 + offset.x, aPoint.y - CGRectGetHeight(bounds)/2 + offset.y);
+            [self dragView:view at:viewLocation offset:CPPointMakeZero() event:[CPApp currentEvent] pasteboard:pboard source:self slideBack:YES];
+            
             return NO;
         }
     }
@@ -2450,16 +2450,16 @@ window.setTimeout(function(){
 
 - (CPView)_dropOperationFeedbackView
 {
-	return _dropOperationFeedbackView;
+    return _dropOperationFeedbackView;
 }
 
 - (void)_setDropOperationFeedbackView:(CPView)theFeedbackView
 {
-	if (_dropOperationFeedbackView === theFeedbackView)
-		return;
-		
-	[_dropOperationFeedbackView removeFromSuperview];
-	_dropOperationFeedbackView = theFeedbackView;
+    if (_dropOperationFeedbackView === theFeedbackView)
+        return;
+        
+    [_dropOperationFeedbackView removeFromSuperview];
+    _dropOperationFeedbackView = theFeedbackView;
 }
 
 /*
@@ -2468,8 +2468,8 @@ window.setTimeout(function(){
 - (CPDragOperation)draggingEntered:(id)sender
 {
     var location = [self convertPoint:[sender draggingLocation] fromView:nil],
-		dropOperation = [self _proposedDropOperationAtPoint:location],
-    	row = [self _proposedRowAtPoint:location];
+        dropOperation = [self _proposedDropOperationAtPoint:location],
+        row = [self _proposedRowAtPoint:location];
     
     if(_retargetedDropRow !== nil)
         row = _retargetedDropRow;
@@ -2492,7 +2492,7 @@ window.setTimeout(function(){
 */
 - (void)draggingExited:(id)sender
 {
-	[[self _dropOperationFeedbackView] setHidden:NO];
+    [[self _dropOperationFeedbackView] setHidden:NO];
 }
 
 /*
@@ -2508,7 +2508,7 @@ window.setTimeout(function(){
     _retargetedDropOperation = nil;
     _retargetedDropRow = nil;
     _draggedRowIndexes = [CPIndexSet indexSet];
-	[[self _dropOperationFeedbackView] setHidden:YES];
+    [[self _dropOperationFeedbackView] setHidden:YES];
 }
 /*
     @ignore
@@ -2523,21 +2523,21 @@ window.setTimeout(function(){
 */
 - (CPTableViewDropOperation)_proposedDropOperationAtPoint:(CGPoint)theDragPoint
 {
-	if(_retargetedDropOperation !== nil) 
-		return _retargetedDropOperation;
+    if(_retargetedDropOperation !== nil) 
+        return _retargetedDropOperation;
 
-	var row = [self rowAtPoint:theDragPoint],
-		rowRect = [self rectOfRow:row];
-		
-	// If there is no (the default) or to little inter cell spacing we create some room for the CPTableViewDropAbove indicator
-	// This probably doesn't work if the row height is smaller than or around 5.0
-	if ([self intercellSpacing].height < 5.0)
-		rowRect = CPRectInset(rowRect, 0.0, 5.0 - [self intercellSpacing].height);
-		
-	if (CGRectContainsPoint(rowRect, theDragPoint)) 
-		return CPTableViewDropOn;
-		
-	return CPTableViewDropAbove;
+    var row = [self rowAtPoint:theDragPoint],
+        rowRect = [self rectOfRow:row];
+        
+    // If there is no (the default) or to little inter cell spacing we create some room for the CPTableViewDropAbove indicator
+    // This probably doesn't work if the row height is smaller than or around 5.0
+    if ([self intercellSpacing].height < 5.0)
+        rowRect = CPRectInset(rowRect, 0.0, 5.0 - [self intercellSpacing].height);
+        
+    if (CGRectContainsPoint(rowRect, theDragPoint)) 
+        return CPTableViewDropOn;
+        
+    return CPTableViewDropAbove;
 }
 
 /*
@@ -2573,54 +2573,54 @@ window.setTimeout(function(){
 
 /*!
     Returns the subview that will draw the drop highlight on the row.
-	Sublcasses can override this to return a custom view to draw their drop highlight
+    Sublcasses can override this to return a custom view to draw their drop highlight
     @param theRowIndex the row index that should be highlighted
 */
 - (CPView)viewForDropHighlightOnRow:(int)theRowIndex
 {
-	var view = [[CPView alloc] initWithFrame:[self rectOfRow:theRowIndex]];
-	[view setBackgroundColor:[CPColor colorWithRed:175.0 / 255.0 green:193.0 / 255.0 blue:220.0 / 255.0 alpha:1.0]];
-	return view;
+    var view = [[CPView alloc] initWithFrame:[self rectOfRow:theRowIndex]];
+    [view setBackgroundColor:[CPColor colorWithRed:175.0 / 255.0 green:193.0 / 255.0 blue:220.0 / 255.0 alpha:1.0]];
+    return view;
 }
 
 - (CPRect)rectForDropHighlightViewBetweenUpperRow:(int)theUpperRowIndex andLowerRow:(int)theLowerRowIndex
 {
-	// The default table view implemenation does not use the offset so we just place the view at x 0.0
-	var upperRowRect = [self rectOfRow:theUpperRowIndex],
-		lowerRowRect = [self rectOfRow:theLowerRowIndex];
-	
-	// Place the highlight view in the middle of the rows or in the middle of the intercell spacing
-	// TODO: this currently looks off because the row highlights and labels are not drawn in the middle of the row
-	var rect = CPRectMake(0.0, 0.0, CPRectGetWidth([self frame]), 10.0);
-	
-	rect.origin.y = CPRectGetMaxY(upperRowRect) - ( rect.size.height / 2.0 );
-	
-	if (!CPSizeEqualToSize(CPSizeMakeZero(), [self intercellSpacing]))
-		rect.origin.y += [self intercellSpacing].height / 2.0;
-	
-	return rect;
+    // The default table view implemenation does not use the offset so we just place the view at x 0.0
+    var upperRowRect = [self rectOfRow:theUpperRowIndex],
+        lowerRowRect = [self rectOfRow:theLowerRowIndex];
+    
+    // Place the highlight view in the middle of the rows or in the middle of the intercell spacing
+    // TODO: this currently looks off because the row highlights and labels are not drawn in the middle of the row
+    var rect = CPRectMake(0.0, 0.0, CPRectGetWidth([self frame]), 10.0);
+    
+    rect.origin.y = CPRectGetMaxY(upperRowRect) - ( rect.size.height / 2.0 );
+    
+    if (!CPSizeEqualToSize(CPSizeMakeZero(), [self intercellSpacing]))
+        rect.origin.y += [self intercellSpacing].height / 2.0;
+    
+    return rect;
 }
 
 /*!
     Returns the subview that will draw the drop highlight between the rows.
-	Sublcasses can override this to return a custom view to draw their drop highlight
+    Sublcasses can override this to return a custom view to draw their drop highlight
     @param theUpperRowIndex the index of the upper row
-	@param theLowerRowIndex the index of the lower row
+    @param theLowerRowIndex the index of the lower row
 */
 - (CPView)viewForDropHighlightBetweenUpperRow:(int)theUpperRowIndex andLowerRow:(int)theLowerRowIndex
 {
-	return [[_CPDropOperationDrawView alloc] initWithFrame:
-					[self rectForDropHighlightViewBetweenUpperRow:theUpperRowIndex andLowerRow:theLowerRowIndex]];	
+    return [[_CPDropOperationDrawView alloc] initWithFrame:
+                    [self rectForDropHighlightViewBetweenUpperRow:theUpperRowIndex andLowerRow:theLowerRowIndex]];  
 }
 
 - (CPDragOperation)draggingUpdated:(id)sender
 {
     var location = [self convertPoint:[sender draggingLocation] fromView:nil],
-		dropOperation = [self _proposedDropOperationAtPoint:location],
+        dropOperation = [self _proposedDropOperationAtPoint:location],
         numberOfRows = [self numberOfRows];
 
     var row = [self _proposedRowAtPoint:location],
-    	dragOperation = [self _validateDrop:sender proposedRow:row proposedDropOperation:dropOperation];
+        dragOperation = [self _validateDrop:sender proposedRow:row proposedDropOperation:dropOperation];
     
     if(_retargetedDropRow !== nil)
         row = _retargetedDropRow;
@@ -2633,33 +2633,33 @@ window.setTimeout(function(){
         rowRect = [self rectOfRow:row];
     
     var exposedClipRect = [self exposedClipRect],
-    	visibleWidth = _CGRectGetWidth(exposedClipRect);
+        visibleWidth = _CGRectGetWidth(exposedClipRect);
 
     rowRect = _CGRectMake(_CGRectGetMinX(exposedClipRect), rowRect.origin.y, visibleWidth, rowRect.size.height);
-		
-	// Ask for the feedback view and cache it so we can remove it from the view hierarchy later
-	var dropOperationFeedbackView = nil;
-	
-	// Get the correct drop feedback view and add it to the view hierarchy
-	if (dropOperation === CPTableViewDropAbove)
-	{
-		dropOperationFeedbackView = [self viewForDropHighlightBetweenUpperRow:row - 1 andLowerRow:row];
-		[self addSubview:dropOperationFeedbackView positioned:CPWindowAbove relativeTo:nil];
-	}
-	else if (dropOperation === CPTableViewDropOn)
-	{
-		dropOperationFeedbackView = [self viewForDropHighlightOnRow:row];
-		
-		// FIXME: this doesn't work for tableviews that have alternating row background colors
-		[self addSubview:dropOperationFeedbackView positioned:CPWindowBelow relativeTo:nil];
-	}
-	
-	[self _setDropOperationFeedbackView:dropOperationFeedbackView];
-	
-	if (CGRectIsNull([[self _dropOperationFeedbackView] frame]))
-		[[self _dropOperationFeedbackView] setFrame:rowRect];
-		
-	[[self _dropOperationFeedbackView] setHidden:NO];
+        
+    // Ask for the feedback view and cache it so we can remove it from the view hierarchy later
+    var dropOperationFeedbackView = nil;
+    
+    // Get the correct drop feedback view and add it to the view hierarchy
+    if (dropOperation === CPTableViewDropAbove)
+    {
+        dropOperationFeedbackView = [self viewForDropHighlightBetweenUpperRow:row - 1 andLowerRow:row];
+        [self addSubview:dropOperationFeedbackView positioned:CPWindowAbove relativeTo:nil];
+    }
+    else if (dropOperation === CPTableViewDropOn)
+    {
+        dropOperationFeedbackView = [self viewForDropHighlightOnRow:row];
+        
+        // FIXME: this doesn't work for tableviews that have alternating row background colors
+        [self addSubview:dropOperationFeedbackView positioned:CPWindowBelow relativeTo:nil];
+    }
+    
+    [self _setDropOperationFeedbackView:dropOperationFeedbackView];
+    
+    if (CGRectIsNull([[self _dropOperationFeedbackView] frame]))
+        [[self _dropOperationFeedbackView] setFrame:rowRect];
+        
+    [[self _dropOperationFeedbackView] setHidden:NO];
     
     // FIXME : Maybe we should do this in a timer outside this method. Problem: we don't know when the scroll ends and neighter when the next -draggingUpdated is called. Which one will come first ?
     if (row > 0 && location.y - CGRectGetMinY(exposedClipRect) < _rowHeight)
@@ -2686,7 +2686,7 @@ window.setTimeout(function(){
 - (BOOL)performDragOperation:(id)sender
 {
     var location = [self convertPoint:[sender draggingLocation] fromView:nil];
-		operation = [self _proposedDropOperationAtPoint:location];
+        operation = [self _proposedDropOperationAtPoint:location];
 
     if(_retargetedDropRow !== nil)
         var row = _retargetedDropRow;
@@ -2887,7 +2887,7 @@ window.setTimeout(function(){
 
     var anEvent = [CPApp currentEvent];
     if([[self selectedRowIndexes] count] > 0)
-	{
+    {
          var extend = NO;
     
          if(([anEvent modifierFlags] & CPShiftKeyMask) && _allowsMultipleSelection)
@@ -3074,19 +3074,19 @@ var CPTableViewDataSourceKey        = @"CPTableViewDataSourceKey",
 - (void)drawRect:(CGRect)aRect
 {
     var context = [[CPGraphicsContext currentContext] graphicsPort],
-		rect = [self bounds];
+        rect = [self bounds];
 
     CGContextSetStrokeColor(context, [CPColor selectionColor]);
     CGContextSetLineWidth(context, 3.0);
 
-	// We want the ellipse to fit in a square so we make sure the width and the height of the ellipse are equal
-	var ellipesRect = CPRectMake(rect.origin.x + 2.5, rect.origin.y + 2.5, rect.size.height - 4.0, rect.size.height - 4.0);
-	CGContextStrokeEllipseInRect(context, ellipesRect);
-	
-	CGContextBeginPath(context);
-	CGContextMoveToPoint(context, CPRectGetMaxX(ellipesRect), CPRectGetMidY(ellipesRect));
-	CGContextAddLineToPoint(context, CPRectGetMaxX(rect) - CPRectGetMaxX(ellipesRect), CPRectGetMidY(ellipesRect));
-	CGContextClosePath(context);
-	CGContextStrokePath(context);
+    // We want the ellipse to fit in a square so we make sure the width and the height of the ellipse are equal
+    var ellipesRect = CPRectMake(rect.origin.x + 2.5, rect.origin.y + 2.5, rect.size.height - 4.0, rect.size.height - 4.0);
+    CGContextStrokeEllipseInRect(context, ellipesRect);
+    
+    CGContextBeginPath(context);
+    CGContextMoveToPoint(context, CPRectGetMaxX(ellipesRect), CPRectGetMidY(ellipesRect));
+    CGContextAddLineToPoint(context, CPRectGetMaxX(rect) - CPRectGetMaxX(ellipesRect), CPRectGetMidY(ellipesRect));
+    CGContextClosePath(context);
+    CGContextStrokePath(context);
 }
 @end
