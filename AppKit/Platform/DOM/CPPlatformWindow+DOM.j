@@ -239,6 +239,7 @@ var supportsNativeDragAndDrop = [CPPlatform supportsDragAndDrop];
     _DOMFocusElement.style.zIndex = "-1000";
     _DOMFocusElement.style.opacity = "0";
     _DOMFocusElement.style.filter = "alpha(opacity=0)";
+    _DOMFocusElement.className = "cpdontremove";
 
     _DOMBodyElement.appendChild(_DOMFocusElement);
 
@@ -248,16 +249,12 @@ var supportsNativeDragAndDrop = [CPPlatform supportsDragAndDrop];
     _DOMPasteboardElement.style.position = "absolute";
     _DOMPasteboardElement.style.top = "-10000px";
     _DOMPasteboardElement.style.zIndex = "999";
+    _DOMPasteboardElement.className = "cpdontremove";
 
     _DOMBodyElement.appendChild(_DOMPasteboardElement);
 
     // Make sure the pastboard element is blurred.
     _DOMPasteboardElement.blur();
-}
-
-- (void)platformDidClearBodyElement:(CPNotification)aNotification
-{
-    [self createDOMElements];
 }
 
 - (void)registerDOMWindow
@@ -273,14 +270,6 @@ var supportsNativeDragAndDrop = [CPPlatform supportsDragAndDrop];
     _DOMBodyElement.webkitTouchCallout = "none";
 
     [self createDOMElements];
-
-    if (window === _DOMWindow)
-        [[CPNotificationCenter defaultCenter]
-            addObserver:self
-               selector:@selector(platformDidClearBodyElement:)
-                   name:CPPlatformDidClearBodyElementNotification
-                 object:CPPlatform];
-
     [self _addLayers];
 
     var theClass = [self class],

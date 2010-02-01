@@ -22,8 +22,8 @@
 
 #include "../CoreGraphics/CGGeometry.h"
 
-
 var DOMSpanElement      = nil,
+    DOMIFrameElement    = nil,
     DefaultFont         = nil;
 
 @implementation CPPlatformString : CPBasePlatformString
@@ -33,17 +33,11 @@ var DOMSpanElement      = nil,
 + (void)bootstrap
 {
     [self createDOMElements];
-
-    [[CPNotificationCenter defaultCenter]
-        addObserver:self
-           selector:@selector(platformDidClearBodyElement:)
-               name:CPPlatformDidClearBodyElementNotification
-             object:CPPlatform];
 }
 
 + (void)createDOMElements
 {
-    var DOMIFrameElement = document.createElement("iframe");
+    DOMIFrameElement = document.createElement("iframe");
     // necessary for Safari caching bug:
     DOMIFrameElement.name = "iframe_" + FLOOR(RAND() * 10000);
     DOMIFrameElement.style.position = "absolute";
@@ -54,6 +48,7 @@ var DOMSpanElement      = nil,
     DOMIFrameElement.style.borderWidth = "0px";
     DOMIFrameElement.style.overflow = "hidden";
     DOMIFrameElement.style.zIndex = 100000000000;
+    DOMIFrameElement.className = "cpdontremove";
 
     var bodyElement = [CPPlatform mainBodyElement];
 
@@ -80,11 +75,6 @@ var DOMSpanElement      = nil,
     DOMDivElement.appendChild(DOMSpanElement);
 }
 
-+ (void)platformDidClearBodyElement:(CPNotification)aNotification
-{
-    [self createDOMElements];
-}
-
 + (CGSize)sizeOfString:(CPString)aString withFont:(CPFont)aFont forWidth:(float)aWidth
 {
     if (!aFont)
@@ -97,33 +87,25 @@ var DOMSpanElement      = nil,
 
     var style = DOMSpanElement.style;
 
-    if (aWidth === NULL)
+    if (!aWidth)
     {
         style.width = "";
         style.whiteSpace = "pre";
     }
-    
     else
     {
         style.width = ROUND(aWidth) + "px";
-        
-        if (document.attachEvent)
-            style.wordWrap = "break-word";
-        
-        else
-        {
-            style.whiteSpace = "-o-pre-wrap";
-            style.whiteSpace = "-pre-wrap";
-            style.whiteSpace = "-moz-pre-wrap";
-            style.whiteSpace = "pre-wrap";
-        }
+        style.wordWrap = "break-word";
+        style.whiteSpace = "-o-pre-wrap";
+        style.whiteSpace = "-pre-wrap";
+        style.whiteSpace = "-moz-pre-wrap";
+        style.whiteSpace = "pre-wrap";
     }
 
     style.font = [aFont cssString];
 
     if (CPFeatureIsCompatible(CPJavascriptInnerTextFeature))
         DOMSpanElement.innerText = aString;
-
     else if (CPFeatureIsCompatible(CPJavascriptTextContentFeature))
         DOMSpanElement.textContent = aString;
 
