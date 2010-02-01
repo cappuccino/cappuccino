@@ -181,8 +181,8 @@ CustomOutlineViewDragType = @"CustomOutlineViewDragType";
         // ]]
     ]];
     
-    var scrollView = [[CPScrollView alloc] initWithFrame:[contentView bounds]];
-    [theWindow setContentView:scrollView];
+    // var scrollView = [[CPScrollView alloc] initWithFrame:[contentView bounds]];
+    
     
     _outlineView = [[CPOutlineView alloc] initWithFrame:[contentView bounds]];
     
@@ -195,7 +195,8 @@ CustomOutlineViewDragType = @"CustomOutlineViewDragType";
     [_outlineView setAllowsMultipleSelection:YES];
     // [_outlineView setIntercellSpacing:CPSizeMake(0.0, 0.0)]
     
-    [scrollView setDocumentView:_outlineView];
+    // [scrollView setDocumentView:_outlineView];
+	[theWindow setContentView:_outlineView];
 
     [self expandItem:[self menu]];
 
