@@ -104,17 +104,14 @@ var CPProgressIndicatorSpinningStyleColors  = nil,
     for (; start <= end; ++start)
     {
         CPProgressIndicatorBezelBorderViewPool[start] = [];
-    
         CPProgressIndicatorBezelBorderViewPool[start][CPMiniControlSize]    = [];
         CPProgressIndicatorBezelBorderViewPool[start][CPSmallControlSize]   = [];
         CPProgressIndicatorBezelBorderViewPool[start][CPRegularControlSize]  = [];
     }
     
     CPProgressIndicatorClassName = [self className];
-    
-    
     CPProgressIndicatorStyleIdentifiers = [];
-    
+
     CPProgressIndicatorStyleIdentifiers[CPProgressIndicatorBarStyle]        = @"Bar";
     CPProgressIndicatorStyleIdentifiers[CPProgressIndicatorSpinningStyle]   = @"Spinny";
     CPProgressIndicatorStyleIdentifiers[CPProgressIndicatorHUDBarStyle]     = @"HUDBar";
@@ -126,30 +123,20 @@ var CPProgressIndicatorSpinningStyleColors  = nil,
     CPProgressIndicatorStyleSizes = [];
 
     // Bar Sttyle
-    var prefix = CPProgressIndicatorClassName + @"BezelBorder" + CPProgressIndicatorStyleIdentifiers[CPProgressIndicatorBarStyle];
+    var prefixes = [
+        CPProgressIndicatorClassName + @"BezelBorder" + CPProgressIndicatorStyleIdentifiers[CPProgressIndicatorBarStyle],
+        CPProgressIndicatorClassName + @"Bar" + CPProgressIndicatorStyleIdentifiers[CPProgressIndicatorBarStyle],
+        CPProgressIndicatorClassName + @"BezelBorder" + CPProgressIndicatorStyleIdentifiers[CPProgressIndicatorHUDBarStyle],
+        CPProgressIndicatorClassName + @"Bar" + CPProgressIndicatorStyleIdentifiers[CPProgressIndicatorHUDBarStyle]
+    ];
 
-    CPProgressIndicatorStyleSizes[prefix + regularIdentifier] = [_CGSizeMake(3.0, 15.0), _CGSizeMake(1.0, 15.0), _CGSizeMake(3.0, 15.0)];
-    CPProgressIndicatorStyleSizes[prefix + smallIdentifier] = [_CGSizeMake(3.0, 15.0), _CGSizeMake(1.0, 15.0), _CGSizeMake(3.0, 15.0)];
-    CPProgressIndicatorStyleSizes[prefix + miniIdentifier] = [_CGSizeMake(3.0, 15.0), _CGSizeMake(1.0, 15.0), _CGSizeMake(3.0, 15.0)];
-
-    prefix = CPProgressIndicatorClassName + @"Bar" + CPProgressIndicatorStyleIdentifiers[CPProgressIndicatorBarStyle];
-
-    CPProgressIndicatorStyleSizes[prefix + regularIdentifier] = _CGSizeMake(1.0, 9.0);
-    CPProgressIndicatorStyleSizes[prefix + smallIdentifier] = _CGSizeMake(1.0, 9.0);
-    CPProgressIndicatorStyleSizes[prefix + miniIdentifier] = _CGSizeMake(1.0, 9.0);
-
-    // HUD Bar Style
-    prefix = CPProgressIndicatorClassName + @"BezelBorder" + CPProgressIndicatorStyleIdentifiers[CPProgressIndicatorHUDBarStyle];
-
-    CPProgressIndicatorStyleSizes[prefix + regularIdentifier] = [_CGSizeMake(3.0, 15.0), _CGSizeMake(1.0, 15.0), _CGSizeMake(3.0, 15.0)];
-    CPProgressIndicatorStyleSizes[prefix + smallIdentifier] = [_CGSizeMake(3.0, 15.0), _CGSizeMake(1.0, 15.0), _CGSizeMake(3.0, 15.0)];
-    CPProgressIndicatorStyleSizes[prefix + miniIdentifier] = [_CGSizeMake(3.0, 15.0), _CGSizeMake(1.0, 15.0), _CGSizeMake(3.0, 15.0)];
-
-    prefix = CPProgressIndicatorClassName + @"Bar" + CPProgressIndicatorStyleIdentifiers[CPProgressIndicatorHUDBarStyle];
-
-    CPProgressIndicatorStyleSizes[prefix + regularIdentifier] = _CGSizeMake(1.0, 9.0);
-    CPProgressIndicatorStyleSizes[prefix + smallIdentifier] = _CGSizeMake(1.0, 9.0);
-    CPProgressIndicatorStyleSizes[prefix + miniIdentifier] = _CGSizeMake(1.0, 9.0);
+    for (var i = 0, count = prefixes.length; i<count; i++)
+    {
+        var prefix = prefixes[i];
+        CPProgressIndicatorStyleSizes[prefix + regularIdentifier] = [_CGSizeMake(3.0, 16.0), _CGSizeMake(1.0, 16.0), _CGSizeMake(3.0, 16.0)];
+        CPProgressIndicatorStyleSizes[prefix + smallIdentifier] = [_CGSizeMake(3.0, 16.0), _CGSizeMake(1.0, 16.0), _CGSizeMake(3.0, 16.0)];
+        CPProgressIndicatorStyleSizes[prefix + miniIdentifier] = [_CGSizeMake(3.0, 16.0), _CGSizeMake(1.0, 16.0), _CGSizeMake(3.0, 16.0)];
+    }
 }
 
 - (id)initWithFrame:(CGRect)aFrame
@@ -428,21 +415,25 @@ var CPProgressIndicatorSpinningStyleColors  = nil,
     
     if (!_barView)
     {
-        _barView = [[CPView alloc] initWithFrame:CGRectMake(2.0, 2.0, 0.0, 9.0)];
-        
-        [_barView setBackgroundColor:[CPColor redColor]];
-        
+        _barView = [[CPView alloc] initWithFrame:CGRectMake(0.0, 0.0, 0.0, 16.0)];        
         [self addSubview:_barView];
     }
     
-    [_barView setBackgroundColor:_CPControlColorWithPatternImage(
+    [_barView setBackgroundColor:_CPControlThreePartImagePattern(
+        NO,
         CPProgressIndicatorStyleSizes,
         CPProgressIndicatorClassName,
         @"Bar",
         CPProgressIndicatorStyleIdentifiers[_style],
         _CPControlIdentifierForControlSize(_controlSize))];
-                    
-    [_barView setFrameSize:CGSizeMake(CGRectGetWidth([self bounds]) * (_doubleValue - _minValue) / (_maxValue - _minValue) - 4.0, 9.0)];
+
+    var width = CGRectGetWidth([self bounds]),
+        barWidth = width * ((_doubleValue - _minValue) / (_maxValue - _minValue));
+
+    if (barWidth > 0.0 && barWidth < 4.0)
+        barWidth = 4.0;
+
+    [_barView setFrameSize:CGSizeMake(barWidth, 16.0)];
 }
 
 /* @ignore */

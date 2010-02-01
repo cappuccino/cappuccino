@@ -8,6 +8,16 @@
 {
 }
 
+- (id)initWithFrame:(CGRect)aFrame
+{
+    self = [super initWithFrame:aFrame];
+
+    if (self)
+        [self setNeedsLayout];
+
+    return self;
+}
+
 + (CPString)themeClass
 {
     return @"button-bar";

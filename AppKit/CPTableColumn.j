@@ -71,8 +71,7 @@ CPTableColumnUserResizingMask   = 2;
 
         [self setIdentifier:anIdentifier];
 
-        var header = [CPTextField new];
-        [header setBackgroundColor:[CPColor colorWithPatternImage:CPAppKitImage("tableview-headerview.png", CGSizeMake(1.0, 23.0))]];
+        var header = [[_CPTableColumnHeaderView alloc] initWithFrame:CGRectMakeZero()];
         [self setHeaderView:header];
         
         var textDataView = [CPTextField new];
