@@ -265,6 +265,11 @@ window.setTimeout(function(){
     return self;
 }
 
+
+/*!
+    Sets the receiver’s data source to a given object.
+    @param anObject The data source for the receiver. The object must implement the appropriate methods.
+*/
 - (void)setDataSource:(id)aDataSource
 {
     if (_dataSource === aDataSource)
@@ -302,6 +307,9 @@ window.setTimeout(function(){
     [self reloadData];
 }
 
+/*!
+    Returns the object that provides the data displayed by the receiver.
+*/
 - (id)dataSource
 {
     return _dataSource;
@@ -309,6 +317,11 @@ window.setTimeout(function(){
 
 //Loading Data
 
+/*!
+    Reloads the data for only the specified rows and columns.
+    @param rowIndexes The indexes of the rows to update.
+    @param columnIndexes The indexes of the columns to update.
+*/
 - (void)reloadDataForRowIndexes:(CPIndexSet)rowIndexes columnIndexes:(CPIndexSet)columnIndexes
 {
     [self reloadData];
@@ -316,7 +329,10 @@ window.setTimeout(function(){
 //    [_previouslyExposedColumns removeIndexes:columnIndexes];
 }
 
-
+/*!
+    Reloads the data for all rows and columns.
+    
+*/
 - (void)reloadData
 {
     if (!_dataSource)
@@ -333,7 +349,10 @@ window.setTimeout(function(){
 }
 
 //Target-action Behavior
-
+/*!
+    Sets the message sent to the target when the user double-clicks an uneditable cell or a column header to a given selector.
+    @param aSelector The message the receiver sends to its target when the user double-clicks an uneditable cell or a column header.
+*/
 - (void)setDoubleAction:(SEL)anAction
 {
     _doubleAction = anAction;
@@ -370,6 +389,10 @@ window.setTimeout(function(){
     return _allowsColumnResizing;
 }
 
+/*!
+    Controls whether the user can select more than one row or column at a time.
+    @param aFlag YES to allow the user to select multiple rows or columns, otherwise NO.
+*/
 - (void)setAllowsMultipleSelection:(BOOL)shouldAllowMultipleSelection
 {
     _allowsMultipleSelection = !!shouldAllowMultipleSelection;
@@ -380,6 +403,10 @@ window.setTimeout(function(){
     return _allowsMultipleSelection;
 }
 
+/*!
+    Controls whether the receiver allows zero rows or columns to be selected.
+    @param aFlag YES if an empty selection is allowed, otherwise NO.
+*/
 - (void)setAllowsEmptySelection:(BOOL)shouldAllowEmptySelection
 {
     _allowsEmptySelection = !!shouldAllowEmptySelection;
@@ -389,6 +416,11 @@ window.setTimeout(function(){
 {
     return _allowsEmptySelection;
 }
+
+/*!
+    Controls whether the user can select an entire column by clicking its header.
+    @param aFlag YES to allow the user to select columns, otherwise NO.
+*/
 
 - (void)setAllowsColumnSelection:(BOOL)shouldAllowColumnSelection
 {
@@ -438,13 +470,12 @@ window.setTimeout(function(){
     return _rowHeight;
 }
 
+/*!
+    Sets whether the receiver uses the standard alternating row colors for its background.
+    @param aFlag YES to specify standard alternating row colors for the background, NO to specify a solid color.
+*/
 - (void)setUsesAlternatingRowBackgroundColors:(BOOL)shouldUseAlternatingRowBackgroundColors
 {
-    // TODO:need to look at how one actually sets the alternating row, a tip at:
-    // http://forums.macnn.com/79/developer-center/228347/nstableview-alternating-row-colors/
-    // otherwise this may not be feasible or may introduce an additional change req'd in CP
-    // we'd probably need to iterate through rowId % 2 == 0 and setBackgroundColor with
-    // whatever the alternating row color is.
     _usesAlternatingRowBackgroundColors = shouldUseAlternatingRowBackgroundColors;
 }
 
@@ -452,6 +483,11 @@ window.setTimeout(function(){
 {
     return _usesAlternatingRowBackgroundColors;
 }
+
+/*!
+    Sets the colors for the rows as they alternate. The number of colors can be arbitrary. By deafult these colors are white and light blue.
+    @param anArray an array of CPColors 
+*/
 
 - (void)setAlternatingRowBackgroundColors:(CPArray)alternatingRowBackgroundColors
 {
@@ -489,6 +525,11 @@ window.setTimeout(function(){
     }
 }
 
+/*!
+    Sets the highlight color for rows. By default this color is blue.
+    @param aColor a CPColor
+*/
+
 - (void)setSelectionHightlightColor:(CPColor)aColor
 {
     _selectionHightlightColor = aColor;
@@ -504,6 +545,10 @@ window.setTimeout(function(){
     * - setIndicatorImage:inTableColumn:
 */
 
+/*!
+    Sets the grid color in the non highlighted state.
+    @param aColor a CPColor
+*/
 - (void)setGridColor:(CPColor)aColor
 {
     if (_gridColor === aColor)
@@ -518,6 +563,11 @@ window.setTimeout(function(){
 {
     return _gridColor;
 }
+
+/*!
+    Sets the grid style mask to specify if no grid lines, vertical grid lines, or horizontal grid lines should be displayed.
+    @param gridType The grid style mask. CPTableViewGridNone, CPTableViewSolidVerticalGridLineMask, CPTableViewSolidHorizontalGridLineMask
+*/
 
 - (void)setGridStyleMask:(unsigned)aGrideStyleMask
 {
@@ -536,6 +586,10 @@ window.setTimeout(function(){
 
 //Column Management
 
+/*!
+    Adds a given column as the last column of the receiver.
+    @param aColumn The column to add to the receiver.
+*/
 - (void)addTableColumn:(CPTableColumn)aTableColumn
 {
     [_tableColumns addObject:aTableColumn];
@@ -549,6 +603,10 @@ window.setTimeout(function(){
     [self setNeedsLayout];
 }
 
+/*!
+    Removes a given column from the receiver.
+    @param aTableColumn The column to remove from the receiver. 
+*/
 - (void)removeTableColumn:(CPTableColumn)aTableColumn
 {
     if ([aTableColumn tableView] !== self)
@@ -575,6 +633,12 @@ window.setTimeout(function(){
     [self setNeedsLayout];
 }
 
+
+/*!
+    Moves the column and heading at a given index to a new given index.
+    @param columnIndex The current index of the column to move.
+    @param newIndex The new index for the moved column.
+*/
 - (void)moveColumn:(unsigned)fromIndex toColumn:(unsigned)toIndex
 {
     fromIndex = +fromIndex;
@@ -627,6 +691,12 @@ window.setTimeout(function(){
 }
 
 //Selecting Columns and Rows
+
+/*!
+    Sets the column selection using indexes.
+    @param columns a CPIndexSet of columns to select
+    @param aFlag should extend the selection thereby retaining the previous selection
+*/
 - (void)selectColumnIndexes:(CPIndexSet)columns byExtendingSelection:(BOOL)shouldExtendSelection
 {
     // If we're out of range, just return
@@ -655,6 +725,11 @@ window.setTimeout(function(){
     [self _noteSelectionDidChange];
 }
 
+/*!
+    Sets the row selection using indexes.
+    @param rows a CPIndexSet of rows to select
+    @param aFlag should extend the selection thereby retaining the previous selection
+*/
 - (void)selectRowIndexes:(CPIndexSet)rows byExtendingSelection:(BOOL)shouldExtendSelection
 {
     if ([rows isEqualToIndexSet:_selectedRowIndexes] || (([rows firstIndex] != CPNotFound && [rows firstIndex] < 0) || [rows lastIndex] >= [self numberOfRows]))
@@ -811,6 +886,10 @@ window.setTimeout(function(){
     * - allowsTypeSelect
     * - setAllowsTypeSelect:
 */
+
+/*!
+    Deselects all rows
+*/
 - (void)deselectAll
 {
     [self selectRowIndexes:[CPIndexSet indexSet] byExtendingSelection:NO];
@@ -958,6 +1037,11 @@ window.setTimeout(function(){
 
 // Complexity:
 // O(1)
+/*!
+    Returns a range of indices for the rows that lie wholly or partially within the vertical boundaries of a given rectangle.
+    @param aRect A rectangle in the coordinate system of the receiver.
+*/
+
 - (CPRange)rowsInRect:(CGRect)aRect
 {
     // If we have no rows, then we won't intersect anything.
@@ -988,6 +1072,11 @@ window.setTimeout(function(){
 // Complexity:
 // O(lg Columns) if table view contains no hidden columns
 // O(Columns) if table view contains hidden columns
+
+/*!
+    Returns the indexes of the receiver’s columns that intersect the specified rectangle.
+    @param aRect A rectangle in the coordinate system of the receiver.
+*/
 - (CPIndexSet)columnIndexesInRect:(CGRect)aRect
 {
     var column = MAX(0, [self columnAtPoint:_CGPointMake(aRect.origin.x, 0.0)]),
@@ -1183,6 +1272,10 @@ window.setTimeout(function(){
 
 }
 
+/*!
+    Sets the column autoresizing style of the receiver to a given style.
+    @param aStyle The column autoresizing style for the receiver. CPTableViewNoColumnAutoresizing, CPTableViewUniformColumnAutoresizingStyle, CPTableViewLastColumnOnlyAutoresizingStyle, CPTableViewFirstColumnOnlyAutoresizingStyle
+*/
 - (void)setColumnAutoresizingStyle:(unsigned)style
 {
     //FIX ME: CPTableViewSequentialColumnAutoresizingStyle and CPTableViewReverseSequentialColumnAutoresizingStyle are not yet implemented
@@ -1194,6 +1287,9 @@ window.setTimeout(function(){
     return _columnAutoResizingStyle;
 }
 
+/*!
+   Resizes the last column if there’s room so the receiver fits exactly within its enclosing clip view.
+*/
 - (void)sizeLastColumnToFit
 {
     var superview = [self superview];
@@ -1268,11 +1364,19 @@ window.setTimeout(function(){
     * - scrollColumnToVisible:
 */
 
+/*!
+    Scrolls the receiver vertically in an enclosing NSClipView so the row specified by rowIndex is visible.
+    @param aRowIndex the index of the row to scroll to.
+*/
 - (void)scrollRowToVisible:(int)rowIndex
 {
     [self scrollRectToVisible:[self rectOfRow:rowIndex]];
 }
 
+/*!
+    Scrolls the receiver and header view horizontally in an enclosing NSClipView so the column specified by columnIndex is visible.
+    @param aColumnIndex the index of the column to scroll to.
+*/
 - (void)scrollColumnToVisible:(int)columnIndex
 {
     [self scrollRectToVisible:[self rectOfColumn:columnIndex]];
@@ -1432,6 +1536,11 @@ window.setTimeout(function(){
     * - setVerticalMotionCanBeginDrag:
     * - verticalMotionCanBeginDrag
 */
+/*!
+    Returns whether the receiver allows dragging the rows at rowIndexes with a drag initiated at mousedDownPoint.
+    @param rowIndexes an index set of rows to be dragged
+    @param aPoint the point at which the mouse was clicked.
+*/
 - (BOOL)canDragRowsWithIndexes:(CPIndexSet)rowIndexes atPoint:(CGPoint)mouseDownPoint
 {
     return YES;
@@ -1503,8 +1612,8 @@ window.setTimeout(function(){
     _dragOperationDefaultMask = mask;
 }
 
-/*
-    this should be called inside tableView:validateDrop:... method
+/*!
+    This should be called inside tableView:validateDrop:... method
     either drop on or above,
     specify the row as -1 to select the whole table for drop on
 */
@@ -1520,16 +1629,16 @@ window.setTimeout(function(){
     _retargetedDropOperation = operation;
 }
 
-/*
-    can be:
+/*!
+    sets the feedback style for when the table is the destination of a drag operation
+    Can be:
     None
     Regular
     Source List
-
-    FIX ME: this should vary up the highlight color, currently nothing is being done with it
 */
 - (void)setDraggingDestinationFeedbackStyle:(CPTableViewDraggingDestinationFeedbackStyle)aStyle
 {
+    //FIX ME: this should vary up the highlight color, currently nothing is being done with it
     _destinationDragStyle = aStyle;
 }
 
@@ -1538,6 +1647,10 @@ window.setTimeout(function(){
     return _destinationDragStyle;
 }
 
+/*!
+    Sets whether vertical motion is treated as a drag or selection change to flag.
+    @param aFlag If flag is NO then vertical motion will not start a drag. The default is YES.
+*/
 - (void)setVerticalMotionCanBeginDrag:(BOOL)aFlag
 {
     _verticalMotionCanDrag = aFlag;
@@ -2130,12 +2243,17 @@ window.setTimeout(function(){
 
 */
 
+/*
+    @ignore
+*/
 - (BOOL)tracksMouseOutsideOfFrame
 {
     return YES;
 }
 
-/* ignore */
+/*
+    @ignore
+*/
 - (BOOL)startTrackingAt:(CGPoint)aPoint
 {
     var row = [self rowAtPoint:aPoint];
@@ -2169,6 +2287,9 @@ window.setTimeout(function(){
     return YES;
 }
 
+/*
+    @ignore
+*/
 - (void)trackMouse:(CPEvent)anEvent
 {
 	// Prevent CPControl from eating the mouse events when we are in a drag session
@@ -2178,7 +2299,9 @@ window.setTimeout(function(){
 		[CPApp sendEvent:anEvent];
 }
 
-/* ignore */
+/*
+    @ignore
+*/
 - (BOOL)continueTracking:(CGPoint)lastPoint at:(CGPoint)aPoint
 {
     var row = [self rowAtPoint:aPoint];
@@ -2253,6 +2376,9 @@ window.setTimeout(function(){
     return YES;
 }
 
+/*!
+    @ignore
+*/
 - (void)stopTracking:(CGPoint)lastPoint at:(CGPoint)aPoint mouseIsUp:(BOOL)mouseIsUp
 {
     _isSelectingSession = NO;
@@ -2315,7 +2441,7 @@ window.setTimeout(function(){
         [self sendAction:_doubleAction to:_target];
 }
 
-/*
+/*!
     @ignore
 */
 - (CPDragOperation)draggingEntered:(id)sender
