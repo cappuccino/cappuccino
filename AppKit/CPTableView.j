@@ -122,6 +122,13 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 
 @end
 
+/*! 
+    @ingroup appkit
+    @class CPTableView
+
+    CPTableView object displays record-oriented data in a table and allows the user to edit values and resize and rearrange columns.
+    A CPTableView requires you to set a dataSource which implements numberOfRowsInTableView: and tableView:objectValueForTableColumn:row:
+*/
 @implementation CPTableView : CPControl
 {
     id          _dataSource;
