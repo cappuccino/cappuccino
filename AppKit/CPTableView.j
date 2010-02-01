@@ -1954,11 +1954,6 @@ window.setTimeout(function(){
     [self highlightSelectionInClipRect:exposedRect];
 }
 
-- (void)drawRect:(CGRect)aRect
-{
-    [_tableDrawView display];
-}
-
 - (void)drawBackgroundInClipRect:(CGRect)aRect
 {
     if (![self usesAlternatingRowBackgroundColors])
@@ -1982,20 +1977,21 @@ window.setTimeout(function(){
     // CGContextFillRect(context, CGRectIntersection(aRect, fillRect));
     // console.profile("row-paint");
     var exposedRows = [self rowsInRect:aRect],
-        firstRow = exposedRows.location -1,
+        firstRow = exposedRows.location,
         lastRow = CPMaxRange(exposedRows) - 1,
         colorIndex = MIN(exposedRows.length, colorCount),
         heightFilled = 0.0;
 
     while (colorIndex--)
     {
-        var row = firstRow % colorCount + firstRow + colorIndex,
+        var row = firstRow - firstRow % colorCount + colorIndex,
             fillRect = nil;
 
         CGContextBeginPath(context);
 
         for (; row <= lastRow; row += colorCount)
-            CGContextAddRect(context, CGRectIntersection(aRect, fillRect = [self rectOfRow:row]));
+            if (row >= firstRow)
+                CGContextAddRect(context, CGRectIntersection(aRect, fillRect = [self rectOfRow:row]));
 
         if (row - colorCount === lastRow)
             heightFilled = _CGRectGetMaxY(fillRect);

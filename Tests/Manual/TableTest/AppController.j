@@ -39,6 +39,7 @@ CPLogRegister(CPLogConsole);
     [tableView setAllowsMultipleSelection:YES];
     [tableView setAllowsColumnSelection:YES];
     [tableView setUsesAlternatingRowBackgroundColors:YES];
+    [tableView setAlternatingRowBackgroundColors:[[CPColor whiteColor], [CPColor colorWithHexString:@"e4e7ff"], [CPColor colorWithHexString:@"f4e7ff"]]];
     [tableView setGridStyleMask:CPTableViewSolidHorizontalGridLineMask | CPTableViewSolidVerticalGridLineMask];
 
 //    [tableView setBackgroundColor:[CPColor blueColor]];
