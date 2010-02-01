@@ -245,11 +245,11 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
         [_headerView setTableView:self];
 
         _cornerView = [[_CPCornerView alloc] initWithFrame:CGRectMake(0, 0, [CPScroller scrollerWidth], CGRectGetHeight([_headerView frame]))];
-
-
+//FIX ME: This is disgusting! but used to fix a Safari bug where the outlineview breaks for whatever reason...
+window.setTimeout(function(){
         _selectedColumnIndexes = [CPIndexSet indexSet];
         _selectedRowIndexes = [CPIndexSet indexSet];
-window.setTimeout(function(){
+
         self._draggedRowIndexes = [CPIndexSet indexSet];
         self._verticalMotionCanDrag = YES;
         self._isSelectingSession = NO;
