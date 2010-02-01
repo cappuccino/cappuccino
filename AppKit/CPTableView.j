@@ -190,14 +190,14 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     SEL         _doubleAction;
     unsigned    _columnAutoResizingStyle;
 
-//    BOOL        _verticalMotionCanDrag;
-//    unsigned    _destinationDragStyle;
-//    BOOL        _isSelectingSession;
-//    CPIndexSet  _draggedRowIndexes;
-//    _dropOperationDrawingView _dropOperationFeedbackView;
-//    CPDragOperation _dragOperationDefaultMask;
-//    int         _retargetedDropRow;
-//    CPDragOperation _retargetedDropOperation;
+    BOOL        _verticalMotionCanDrag;
+    unsigned    _destinationDragStyle;
+    BOOL        _isSelectingSession;
+    CPIndexSet  _draggedRowIndexes;
+    _dropOperationDrawingView _dropOperationFeedbackView;
+    CPDragOperation _dragOperationDefaultMask;
+    int         _retargetedDropRow;
+    CPDragOperation _retargetedDropOperation;
 }
 
 - (id)initWithFrame:(CGRect)aFrame
@@ -245,23 +245,21 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
         [_headerView setTableView:self];
 
         _cornerView = [[_CPCornerView alloc] initWithFrame:CGRectMake(0, 0, [CPScroller scrollerWidth], CGRectGetHeight([_headerView frame]))];
-//FIX ME: This is disgusting! but used to fix a Safari bug where the outlineview breaks for whatever reason...
-window.setTimeout(function(){
+
         _selectedColumnIndexes = [CPIndexSet indexSet];
         _selectedRowIndexes = [CPIndexSet indexSet];
 
-        self._draggedRowIndexes = [CPIndexSet indexSet];
-        self._verticalMotionCanDrag = YES;
-        self._isSelectingSession = NO;
-        self._retargetedDropRow = nil;
-        self._retargetedDropOperation = nil;
-        self._dragOperationDefaultMask = nil;
-        self._destinationDragStyle = CPTableViewDraggingDestinationFeedbackStyleRegular;
-        self._dropOperationFeedbackView = [[_dropOperationDrawingView alloc] initWithFrame:_CGRectMakeZero()];
+        _draggedRowIndexes = [CPIndexSet indexSet];
+        _verticalMotionCanDrag = YES;
+        _isSelectingSession = NO;
+        _retargetedDropRow = nil;
+        _retargetedDropOperation = nil;
+        _dragOperationDefaultMask = nil;
+        _destinationDragStyle = CPTableViewDraggingDestinationFeedbackStyleRegular;
+        _dropOperationFeedbackView = [[_dropOperationDrawingView alloc] initWithFrame:_CGRectMakeZero()];
         [self addSubview:_dropOperationFeedbackView];
         [_dropOperationFeedbackView setHidden:YES];
         [_dropOperationFeedbackView setTableView:self];
-},0);
 
         _tableDrawView = [[_CPTableDrawView alloc] initWithTableView:self];
         [_tableDrawView setBackgroundColor:[CPColor clearColor]];
