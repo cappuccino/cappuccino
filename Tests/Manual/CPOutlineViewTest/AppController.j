@@ -181,7 +181,7 @@ CustomOutlineViewDragType = @"CustomOutlineViewDragType";
         // ]]
     ]];
     
-    // var scrollView = [[CPScrollView alloc] initWithFrame:[contentView bounds]];
+    var scrollView = [[CPScrollView alloc] initWithFrame:[contentView bounds]];
     
     
     _outlineView = [[CPOutlineView alloc] initWithFrame:[contentView bounds]];

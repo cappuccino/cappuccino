@@ -50,6 +50,11 @@ var CPOutlineViewDataSource_outlineView_setObjectValue_forTableColumn_byItem_   
 
     CPOutlineViewDataSource_outlineView_sortDescriptorsDidChange_                                   = 1 << 10;
 
+
+var CPOutlineViewDelegate_outlineView_dataViewForTableColumn_item_									= 1 << 1;
+
+
+
 @implementation CPOutlineView : CPTableView
 {
     id              _outlineViewDataSource;
@@ -60,6 +65,7 @@ var CPOutlineViewDataSource_outlineView_setObjectValue_forTableColumn_byItem_   
     BOOL            _indentationMarkerFollowsDataView;
 
     CPInteger       _implementedOutlineViewDataSourceMethods;
+	CPInteger		_implementedOutlineViewDelegateMethods;
 
     Object          _rootItemInfo;
     CPMutableArray  _itemsForRows;
@@ -88,6 +94,7 @@ var CPOutlineViewDataSource_outlineView_setObjectValue_forTableColumn_byItem_   
         [self setIndentationMarkerFollowsDataView:YES];
 
         [super setDataSource:[[_CPOutlineViewTableViewDataSource alloc] initWithOutlineView:self]];
+		[super setDelegate:[[_CPOutlineViewTableViewDelegate alloc] initWithOutlineView:self]];
 
         [self setDisclosureControlPrototype:[[CPDisclosureButton alloc] initWithFrame:CGRectMake(0.0, 0.0, 10.0, 10.0)]];
     }
@@ -144,8 +151,6 @@ var CPOutlineViewDataSource_outlineView_setObjectValue_forTableColumn_byItem_   
 
     if ([_outlineViewDataSource respondsToSelector:@selector(outlineView:sortDescriptorsDidChange:)])
         _implementedOutlineViewDataSourceMethods |= CPOutlineViewDataSource_outlineView_sortDescriptorsDidChange_;
-
-    [[super dataSource] setImplementedDataSourceMethods:_implementedOutlineViewDataSourceMethods];
 
     [self reloadData];
 }
@@ -413,63 +418,12 @@ var CPOutlineViewDataSource_outlineView_setObjectValue_forTableColumn_byItem_   
                         object:self];
     }
 
-    _outlineViewDelegate = aDelegate;/*
-    _implementedDelegateMethods = 0;
+    _outlineViewDelegate = aDelegate;
+	_implementedOutlineViewDelegateMethods = 0;
 
-    if ([_outlineViewDelegate respondsToSelector:@selector(selectionShouldChangeInTableView:)])
-        _implementedDelegateMethods |= CPTableViewDelegate_selectionShouldChangeInTableView_;
+	if ([_outlineViewDelegate respondsToSelector:@selector(outlineView:dataViewForTableColumn:item:)])
+		_implementedOutlineViewDelegateMethods |= CPOutlineViewDelegate_outlineView_dataViewForTableColumn_item_;
 
-    if ([_outlineViewDelegate respondsToSelector:@selector(tableView:dataViewForTableColumn:row:)])
-        _implementedDelegateMethods |= CPTableViewDelegate_tableView_dataViewForTableColumn_row_;
-
-    if ([_outlineViewDelegate respondsToSelector:@selector(tableView:didClickTableColumn:)])
-        _implementedDelegateMethods |= CPTableViewDelegate_tableView_didClickTableColumn_;
-
-    if ([_outlineViewDelegate respondsToSelector:@selector(tableView:didDragTableColumn:)])
-        _implementedDelegateMethods |= CPTableViewDelegate_tableView_didDragTableColumn_;
-
-    if ([_outlineViewDelegate respondsToSelector:@selector(tableView:heightOfRow:)])
-        _implementedDelegateMethods |= CPTableViewDelegate_tableView_heightOfRow_;
-
-    if ([_outlineViewDelegate respondsToSelector:@selector(tableView:isGroupRow:)])
-        _implementedDelegateMethods |= CPTableViewDelegate_tableView_isGroupRow_;
-
-    if ([_outlineViewDelegate respondsToSelector:@selector(tableView:mouseDownInHeaderOfTableColumn:)])
-        _implementedDelegateMethods |= CPTableViewDelegate_tableView_mouseDownInHeaderOfTableColumn_;
-
-    if ([_outlineViewDelegate respondsToSelector:@selector(tableView:nextTypeSelectMatchFromRow:toRow:forString:)])
-        _implementedDelegateMethods |= CPTableViewDelegate_tableView_nextTypeSelectMatchFromRow_toRow_forString_;
-
-    if ([_outlineViewDelegate respondsToSelector:@selector(tableView:selectionIndexesForProposedSelection:)])
-        _implementedDelegateMethods |= CPTableViewDelegate_tableView_selectionIndexesForProposedSelection_;
-
-    if ([_outlineViewDelegate respondsToSelector:@selector(tableView:shouldEditTableColumn:row:)])
-        _implementedDelegateMethods |= CPTableViewDelegate_tableView_shouldEditTableColumn_row_;
-
-    if ([_outlineViewDelegate respondsToSelector:@selector(tableView:shouldSelectRow:)])
-        _implementedDelegateMethods |= CPTableViewDelegate_tableView_shouldSelectRow_;
-
-    if ([_outlineViewDelegate respondsToSelector:@selector(tableView:shouldSelectTableColumn:)])
-        _implementedDelegateMethods |= CPTableViewDelegate_tableView_shouldSelectTableColumn_;
-
-    if ([_outlineViewDelegate respondsToSelector:@selector(tableView:shouldShowViewExpansionForTableColumn:row:)])
-        _implementedDelegateMethods |= CPTableViewDelegate_tableView_shouldShowViewExpansionForTableColumn_row_;
-
-    if ([_outlineViewDelegate respondsToSelector:@selector(tableView:shouldTrackView:forTableColumn:row:)])
-        _implementedDelegateMethods |= CPTableViewDelegate_tableView_shouldTrackView_forTableColumn_row_;
-
-    if ([_outlineViewDelegate respondsToSelector:@selector(tableView:shouldTypeSelectForEvent:withCurrentSearchString:)])
-        _implementedDelegateMethods |= CPTableViewDelegate_tableView_shouldTypeSelectForEvent_withCurrentSearchString_;
-
-    if ([_outlineViewDelegate respondsToSelector:@selector(tableView:toolTipForView:rect:tableColumn:row:mouseLocation:)])
-        _implementedDelegateMethods |= CPTableViewDelegate_tableView_toolTipForView_rect_tableColumn_row_mouseLocation_;
-
-    if ([_outlineViewDelegate respondsToSelector:@selector(tableView:typeSelectStringForTableColumn:row:)])
-        _implementedDelegateMethods |= CPTableViewDelegate_tableView_typeSelectStringForTableColumn_row_;
-
-    if ([_outlineViewDelegate respondsToSelector:@selector(tableView:willDisplayView:forTableColumn:row:)])
-        _implementedDelegateMethods |= CPTableViewDelegate_tableView_willDisplayView_forTableColumn_row_;
-*/
     if ([_outlineViewDelegate respondsToSelector:@selector(outlineViewColumnDidMove:)])
         [defaultCenter
             addObserver:_outlineViewDelegate
@@ -707,7 +661,7 @@ var _reloadItem = function(/*CPOutlineView*/ anOutlineView, /*id*/ anItem)
 var _loadItemInfoForItem = function(/*CPOutlineView*/ anOutlineView, /*id*/ anItem,  /*BOOL*/ isIntermediate)
 {
     var itemInfosForItems = anOutlineView._itemInfosForItems,
-        dataSource = anOutlineView._outlineViewDataSource;
+        dataSource = [anOutlineView dataSource]; // Somehow accessing the property directly doesn't work when a delegate was set
 
     if (!anItem)
         var itemInfo = anOutlineView._rootItemInfo;
@@ -808,7 +762,6 @@ var _loadItemInfoForItem = function(/*CPOutlineView*/ anOutlineView, /*id*/ anIt
 
 @implementation _CPOutlineViewTableViewDataSource : CPObject
 {
-    int _implementedDataSourceMethods @accessors(property=implementedDataSourceMethods);
     CPObject _outlineView;
 }
 
@@ -915,6 +868,14 @@ var _loadItemInfoForItem = function(/*CPOutlineView*/ anOutlineView, /*id*/ anIt
         _outlineView = anOutlineView;
 
     return self;
+}
+
+- (CPView)tableView:(CPTableView)theTableView dataViewForTableColumn:(CPTableColumn)theTableColumn row:(int)theRow
+{
+	if (!(_outlineView._implementedOutlineViewDelegateMethods & CPOutlineViewDelegate_outlineView_dataViewForTableColumn_item_))
+		return [theTableColumn dataViewForRow:theRow];
+		
+	return [_outlineView._outlineViewDelegate outlineView:_outlineView dataViewForTableColumn:theTableColumn item:[_outlineView itemAtRow:theRow]];
 }
 
 @end

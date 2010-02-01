@@ -1872,7 +1872,7 @@ window.setTimeout(function(){
                 [dataView unsetThemeState:CPThemeStateHighlighted];
 
             if (_implementedDelegateMethods & CPTableViewDelegate_tableView_willDisplayView_forTableColumn_row_)
-                [[self delegate] tableView:self willDisplayView:dataView forTableColumn:tableColumn row:row];
+                [_delegate tableView:self willDisplayView:dataView forTableColumn:tableColumn row:row];
 
             if ([dataView superview] !== self)
                 [self addSubview:dataView];
@@ -1910,6 +1910,13 @@ window.setTimeout(function(){
 
 - (CPView)_newDataViewForRow:(CPInteger)aRow tableColumn:(CPTableColumn)aTableColumn
 {
+	if ((_implementedDelegateMethods & CPTableViewDelegate_tableView_dataViewForTableColumn_row_))
+	{
+		var dataView = [_delegate tableView:self dataViewForTableColumn:aTableColumn row:aRow];
+		[aTableColumn setDataView:dataView];
+	}
+		
+	
     return [aTableColumn _newDataViewForRow:aRow];
 }
 
@@ -2999,8 +3006,8 @@ var CPTableViewDataSourceKey        = @"CPTableViewDataSourceKey",
         _selectedColumnIndexes = [CPIndexSet indexSet];
         _selectedRowIndexes = [CPIndexSet indexSet];
 
-        [self setDataSource:[aCoder decodeObjectForKey:CPTableViewDataSourceKey]];
-        [self setDelegate:[aCoder decodeObjectForKey:CPTableViewDelegateKey]];
+        _dataSource = [aCoder decodeObjectForKey:CPTableViewDataSourceKey];
+        _delegate = [aCoder decodeObjectForKey:CPTableViewDelegateKey];
 
         _tableDrawView = [[_CPTableDrawView alloc] initWithTableView:self];
         [_tableDrawView setBackgroundColor:[CPColor clearColor]];
