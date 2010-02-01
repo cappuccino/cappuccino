@@ -51,7 +51,8 @@ var CPOutlineViewDataSource_outlineView_setObjectValue_forTableColumn_byItem_   
     CPOutlineViewDataSource_outlineView_sortDescriptorsDidChange_                                   = 1 << 10;
 
 
-var CPOutlineViewDelegate_outlineView_dataViewForTableColumn_item_									= 1 << 1;
+var CPOutlineViewDelegate_outlineView_dataViewForTableColumn_item_									= 1 << 1,
+	CPOutlineViewDelegate_outlineView_shouldSelectItem_												= 1 << 2;
 
 
 
@@ -423,6 +424,9 @@ var CPOutlineViewDelegate_outlineView_dataViewForTableColumn_item_									= 1 <
 
 	if ([_outlineViewDelegate respondsToSelector:@selector(outlineView:dataViewForTableColumn:item:)])
 		_implementedOutlineViewDelegateMethods |= CPOutlineViewDelegate_outlineView_dataViewForTableColumn_item_;
+		
+	if ([_outlineViewDelegate respondsToSelector:@selector(outlineView:shouldSelectItem:)])
+		_implementedOutlineViewDelegateMethods |= CPOutlineViewDelegate_outlineView_shouldSelectItem_;
 
     if ([_outlineViewDelegate respondsToSelector:@selector(outlineViewColumnDidMove:)])
         [defaultCenter
@@ -872,10 +876,20 @@ var _loadItemInfoForItem = function(/*CPOutlineView*/ anOutlineView, /*id*/ anIt
 
 - (CPView)tableView:(CPTableView)theTableView dataViewForTableColumn:(CPTableColumn)theTableColumn row:(int)theRow
 {
-	if (!(_outlineView._implementedOutlineViewDelegateMethods & CPOutlineViewDelegate_outlineView_dataViewForTableColumn_item_))
-		return [theTableColumn dataViewForRow:theRow];
+	if ((_outlineView._implementedOutlineViewDelegateMethods & CPOutlineViewDelegate_outlineView_dataViewForTableColumn_item_))
+			return [_outlineView._outlineViewDelegate outlineView:_outlineView 
+										   dataViewForTableColumn:theTableColumn 
+															 item:[_outlineView itemAtRow:theRow]];
+			
+	return [theTableColumn dataViewForRow:theRow]; 
+}
+
+- (BOOL)tableView:(CPTableView)theTableView shouldSelectRow:(int)theRow
+{
+	if ((_outlineView._implementedOutlineViewDelegateMethods & CPOutlineViewDelegate_outlineView_shouldSelectItem_))
+		return [_outlineView._outlineViewDelegate outlineView:_outlineView shouldSelectItem:[_outlineView itemAtRow:theRow]];
 		
-	return [_outlineView._outlineViewDelegate outlineView:_outlineView dataViewForTableColumn:theTableColumn item:[_outlineView itemAtRow:theRow]];
+	return YES;
 }
 
 @end
