@@ -22,8 +22,8 @@
 
 #include "../CoreGraphics/CGGeometry.h"
 
-
 var DOMSpanElement      = nil,
+    DOMIFrameElement    = nil,
     DefaultFont         = nil;
 
 @implementation CPPlatformString : CPBasePlatformString
@@ -39,11 +39,20 @@ var DOMSpanElement      = nil,
            selector:@selector(platformDidClearBodyElement:)
                name:CPPlatformDidClearBodyElementNotification
              object:CPPlatform];
+
+    [[CPNotificationCenter defaultCenter]
+        addObserver:self
+           selector:@selector(platformWillClearBodyElement:)
+               name:CPPlatformWillClearBodyElementNotification
+             object:CPPlatform];
 }
 
 + (void)createDOMElements
 {
-    var DOMIFrameElement = document.createElement("iframe");
+    if (DOMIFrameElement)
+        return;
+
+    DOMIFrameElement = document.createElement("iframe");
     // necessary for Safari caching bug:
     DOMIFrameElement.name = "iframe_" + FLOOR(RAND() * 10000);
     DOMIFrameElement.style.position = "absolute";
@@ -80,9 +89,25 @@ var DOMSpanElement      = nil,
     DOMDivElement.appendChild(DOMSpanElement);
 }
 
++ (void)removeDOMElements
+{
+    var iframe = DOMIFrameElement,
+        bodyElement = [CPPlatform mainBodyElement];
+
+    DOMIFrameElement = nil;
+    DOMSpanElement = nil;
+
+    bodyElement.removeChild(iframe);
+}
+
 + (void)platformDidClearBodyElement:(CPNotification)aNotification
 {
     [self createDOMElements];
+}
+
++ (void)platformWillClearBodyElement:(CPNotification)aNotification
+{
+    [self removeDOMElements];
 }
 
 + (CGSize)sizeOfString:(CPString)aString withFont:(CPFont)aFont forWidth:(float)aWidth
@@ -95,35 +120,30 @@ var DOMSpanElement      = nil,
         aFont = DefaultFont;
     }
 
+    if (!DOMIFrameElement)
+        [self createDOMElements];
+
     var style = DOMSpanElement.style;
 
-    if (aWidth === NULL)
+    if (!aWidth)
     {
         style.width = "";
         style.whiteSpace = "pre";
     }
-    
     else
     {
         style.width = ROUND(aWidth) + "px";
-        
-        if (document.attachEvent)
-            style.wordWrap = "break-word";
-        
-        else
-        {
-            style.whiteSpace = "-o-pre-wrap";
-            style.whiteSpace = "-pre-wrap";
-            style.whiteSpace = "-moz-pre-wrap";
-            style.whiteSpace = "pre-wrap";
-        }
+        style.wordWrap = "break-word";
+        style.whiteSpace = "-o-pre-wrap";
+        style.whiteSpace = "-pre-wrap";
+        style.whiteSpace = "-moz-pre-wrap";
+        style.whiteSpace = "pre-wrap";
     }
 
     style.font = [aFont cssString];
 
     if (CPFeatureIsCompatible(CPJavascriptInnerTextFeature))
         DOMSpanElement.innerText = aString;
-
     else if (CPFeatureIsCompatible(CPJavascriptTextContentFeature))
         DOMSpanElement.textContent = aString;
 
