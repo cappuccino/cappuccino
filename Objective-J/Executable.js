@@ -86,8 +86,8 @@ Executable.prototype.functionParameters = function()
 
 Executable.prototype.functionArguments = function()
 {
-    var path = this.path(),
-        functionArguments = [global, fileExecuterForPath(path), fileImporterForPath(path)];
+    var dirname = FILE.dirname(this.path()),
+        functionArguments = [global, fileExecuterForPath(dirname), fileImporterForPath(dirname)];
 
 //functionArguments = exportedValues().concat(fileExecuterForPath(path), fileImporterForPath(path));
 
@@ -170,9 +170,8 @@ Executable.prototype.loadFileDependencies = function()
     var searchedPaths = [{ }, { }],
         foundExecutablePaths = { },
         fileExecutableSearches = new CFMutableDictionary(),
-        incompleteFileExecutableSearches = new CFMutableDictionary();
-
-    foundExecutablePaths[this.path()] = this;
+        incompleteFileExecutableSearches = new CFMutableDictionary(),
+        executablesNeedingEventDispatch = [this];
 
     function searchForFileDependencies(/*Executable*/ anExecutable)
     {
@@ -249,7 +248,6 @@ Executable.prototype.loadFileDependencies = function()
 
         CPLog("DEPENDENCY: Ended");
 #end
-        var fileExecutablesNeedingEventDispatch = [];
 
         for (var executablePath in foundExecutablePaths)
             if (hasOwnProperty.apply(foundExecutablePaths, [executablePath]))
@@ -259,16 +257,16 @@ Executable.prototype.loadFileDependencies = function()
                 if (fileExecutable.hasLoadedFileDependencies())
                     continue;
 
-                fileExecutablesNeedingEventDispatch.push(fileExecutable);
+                executablesNeedingEventDispatch.push(fileExecutable);
                 fileExecutable._fileDependencyLoadStatus = FileExecutableLoadedDependencies;
             }
 
         var index = 0,
-            count = fileExecutablesNeedingEventDispatch.length;
+            count = executablesNeedingEventDispatch.length;
 
         for (; index < count; ++index)
         {
-            var fileExecutable = fileExecutablesNeedingEventDispatch[index];
+            var fileExecutable = executablesNeedingEventDispatch[index];
 
             fileExecutable._eventDispatcher.dispatchEvent(
             {

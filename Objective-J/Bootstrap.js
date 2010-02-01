@@ -17,7 +17,7 @@ rootNode.resolveSubPath(cwd, StaticResourceNode.DirectoryType, function(cwdNode)
 #ifdef BROWSER
     OBJJ_MAIN_FILE = "main.j";
 
-    fileImporterForPath(FILE.join(cwd, "main.j"))("main.j", YES, function()
+    fileImporterForPath(cwd)("main.j", YES, function()
     {
         afterDocumentLoad(main);
     });

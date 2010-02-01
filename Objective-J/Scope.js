@@ -24,15 +24,15 @@ var cachedFileExecutersForPaths = { };
 
 function fileExecuterForPath(/*String*/ referencePath)
 {
+    referencePath = FILE.normal(referencePath);
+
     var fileExecuter = cachedFileExecutersForPaths[referencePath];
     
     if (!fileExecuter)
     {
-        var dirname = FILE.dirname(referencePath);
-
         fileExecuter = function(/*String*/ aPath, /*BOOL*/ isLocal, /*BOOL*/ shouldForce)
         {
-            aPath = importablePath(aPath, isLocal, dirname);
+            aPath = importablePath(aPath, isLocal, referencePath);
     
             var fileExecutableSearch = new FileExecutableSearch(aPath, isLocal),
                 fileExecutable = fileExecutableSearch.result();
@@ -53,15 +53,15 @@ var cachedImportersForPaths = { };
 
 function fileImporterForPath(/*String*/ referencePath)
 {
+    referencePath = FILE.normal(referencePath);
+
     var cachedImporter = cachedImportersForPaths[referencePath];
 
     if (!cachedImporter)
     {
-        var dirname = FILE.dirname(referencePath);
-
         cachedImporter = function(/*String*/ aPath, /*BOOL*/ isLocal, /*Function*/ aCallback)
         {
-            aPath = importablePath(aPath, isLocal, dirname);
+            aPath = importablePath(aPath, isLocal, referencePath);
     
             var fileExecutableSearch = new FileExecutableSearch(aPath, isLocal);
     

@@ -111,6 +111,30 @@ exports.run = function(args)
     }
 }
 
+function objj_eval(/*String*/ aString)
+{
+    // We need this while code still refers to window.
+    Executable.setCommonJSArguments(require, exports, module, system, print, window);
+
+    var executable = preprocess(aString, "", 0);
+
+    if (!executable.hasLoadedFileDependencies())
+        executable.loadFileDependencies();
+
+    // A bit of a hack. Executable compiles the code itself into a function, but we want
+    // the raw code to eval here.
+    var code = executable._code;
+
+    // Not clear why these should be global, varing them doesn't seem to take effect with evaluateString.
+    global.objj_executeFile = fileExecuterForPath(FILE.cwd());
+    global.objj_importFile = fileImporterForPath(FILE.cwd());
+
+    if (typeof system !== "undefined" && system.engine === "rhino")
+        return Packages.org.mozilla.javascript.Context.getCurrentContext().evaluateString(global, code, "objj_eval", 0, NULL);
+
+    return eval(code);
+}
+
 Executable.setCommonJSParameters("require", "exports", "module", "system", "print", "window");
 
 // creates a narwhal factory function in the objj module scope
@@ -120,7 +144,7 @@ exports.make_narwhal_factory = function(path)
     {
         Executable.setCommonJSArguments(require, exports, module, system, print, window);
 
-        fileImporterForPath(path)(FILE.basename(path), function()
+        fileImporterForPath(FILE.dirname(path))(path, function()
         {
             print("all done");
         });
