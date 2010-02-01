@@ -33,25 +33,10 @@ var DOMSpanElement      = nil,
 + (void)bootstrap
 {
     [self createDOMElements];
-
-    [[CPNotificationCenter defaultCenter]
-        addObserver:self
-           selector:@selector(platformDidClearBodyElement:)
-               name:CPPlatformDidClearBodyElementNotification
-             object:CPPlatform];
-
-    [[CPNotificationCenter defaultCenter]
-        addObserver:self
-           selector:@selector(platformWillClearBodyElement:)
-               name:CPPlatformWillClearBodyElementNotification
-             object:CPPlatform];
 }
 
 + (void)createDOMElements
 {
-    if (DOMIFrameElement)
-        return;
-
     DOMIFrameElement = document.createElement("iframe");
     // necessary for Safari caching bug:
     DOMIFrameElement.name = "iframe_" + FLOOR(RAND() * 10000);
@@ -63,6 +48,7 @@ var DOMSpanElement      = nil,
     DOMIFrameElement.style.borderWidth = "0px";
     DOMIFrameElement.style.overflow = "hidden";
     DOMIFrameElement.style.zIndex = 100000000000;
+    DOMIFrameElement.className = "cpdontremove";
 
     var bodyElement = [CPPlatform mainBodyElement];
 
@@ -89,27 +75,6 @@ var DOMSpanElement      = nil,
     DOMDivElement.appendChild(DOMSpanElement);
 }
 
-+ (void)removeDOMElements
-{
-    var iframe = DOMIFrameElement,
-        bodyElement = [CPPlatform mainBodyElement];
-
-    DOMIFrameElement = nil;
-    DOMSpanElement = nil;
-
-    bodyElement.removeChild(iframe);
-}
-
-+ (void)platformDidClearBodyElement:(CPNotification)aNotification
-{
-    [self createDOMElements];
-}
-
-+ (void)platformWillClearBodyElement:(CPNotification)aNotification
-{
-    [self removeDOMElements];
-}
-
 + (CGSize)sizeOfString:(CPString)aString withFont:(CPFont)aFont forWidth:(float)aWidth
 {
     if (!aFont)
@@ -119,9 +84,6 @@ var DOMSpanElement      = nil,
 
         aFont = DefaultFont;
     }
-
-    if (!DOMIFrameElement)
-        [self createDOMElements];
 
     var style = DOMSpanElement.style;
 
