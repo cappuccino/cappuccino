@@ -377,9 +377,9 @@ StaticResourceNode.resolveStandardNodeAtPath = function(/*String*/ aPath, /*Func
         resolveStandardNodeAtPath = function(/*String*/ aPath, /*int*/ anIndex)
         {
             var searchPath = FILE.absolute(FILE.join(includePaths[anIndex], FILE.normal(aPath)));
-    if (searchPath.indexOf("CPObject.j") !== -1) CPLog("WILL SEARCH IN: " + searchPath);
+
             rootNode.resolveSubPath(searchPath, StaticResourceNode.FileType, function(/*StaticResourceNode*/ aStaticResourceNode)
-            {if (searchPath.indexOf("CPObject.j") !== -1) CPLog("FOUND...: " + aStaticResourceNode);
+            {
                 if (!aStaticResourceNode)
                 {
                     if (anIndex + 1< includePaths.length)

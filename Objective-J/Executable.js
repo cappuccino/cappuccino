@@ -247,7 +247,7 @@ Executable.prototype.loadFileDependencies = function()
         }
 
         CPLog("DEPENDENCY: Ended");
-#end
+#endif
 
         for (var executablePath in foundExecutablePaths)
             if (hasOwnProperty.apply(foundExecutablePaths, [executablePath]))

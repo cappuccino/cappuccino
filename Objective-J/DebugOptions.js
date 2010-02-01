@@ -1,7 +1,6 @@
 
-#define DEPENDENCY_LOGGING      1
-#define STATIC_RESOURCE_LOGGING 1
-#define EXECUTION_LOGGING       1
+#define DEPENDENCY_LOGGING      0
+#define EXECUTION_LOGGING       0
 
 #if BROWSER
 #define CPLog console.log
