@@ -232,13 +232,11 @@ function pressEnvironment(rootPath, outputFiles, environment, options) {
         // check the cibs
         cibs.forEach(function(cibPath) {
             var cibClasses = findCibClassDependencies(cibPath);
-            CPLog.debug(cibPath + " => " + cibClasses);
+            CPLog.debug("CIB: " + rootPath.relative(cibPath) + " => " + cibClasses);
 
             var referencedFiles = {};
             markFilesReferencedByTokens(cibClasses, context.dependencies, referencedFiles);
             checkReferenced(context, null, referencedFiles);
-
-            print(UTIL.repr(referencedFiles));
         });
 
         var count = 0,

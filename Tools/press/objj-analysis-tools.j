@@ -52,10 +52,8 @@ function traverseDependencies(context, file)
         importedFiles = {};
 
     CPLog.debug("Processing " + file.fragments.length + " fragments in " + context.rootPath.relative(file.path));
-    for (var i = 0; i < file.fragments.length; i++)
-    {
-        var fragment = file.fragments[i];
 
+    file.fragments.forEach(function(fragment) {
         if (fragment.type & FRAGMENT_CODE)
         {
             var referencedTokens = uniqueTokens(fragment.info);
@@ -83,7 +81,7 @@ function traverseDependencies(context, file)
                     CPLog.error("Couldn't find file for import " + fragment.info + " ("+fragment.type+")");
             }
         }
-    }
+    });
 
     // check each imported file
     checkImported(context, file.path, importedFiles);
