@@ -78,7 +78,7 @@ exports.run = function(args)
         var argv = args.slice(1);
 
         while (argv.length && argv[0].indexOf('-I') === 0)
-            OBJJ_INCLUDE_PATHS = argv.shift().substr(2).split(':').concat(OBJJ_INCLUDE_PATHS);
+            OBJJ_INCLUDE_PATHS.unshift.apply(OBJJ_INCLUDE_PATHS, argv.shift().substr(2).split(':'));
 
         var arg0 = argv.shift();
         var mainFilePath = FILE.canonical(arg0);
@@ -92,26 +92,52 @@ exports.run = function(args)
     }
     else
     {
-        while (true)
-        {
-            try {
-                system.stdout.write("objj> ").flush();
-
-                var result = objj_eval(require("readline").readline());
-
-                if (result !== undefined)
-                    print(result);
-                    
-            } catch (e) {
-                print(e);
-            }
-            
-            require("browser/timeout").serviceTimeouts();
-        }
+        exports.repl();
     }
 }
 
-function objj_eval(/*String*/ aString)
+exports.repl = function()
+{
+    var READLINE = require("readline");
+
+    var historyPath = FILE.path(system.env["HOME"], ".objj_history");
+    var historyFile = null;
+
+    if (historyPath.exists() && READLINE.addHistory) {
+        historyPath.read({ charset : "UTF-8" }).split("\n").forEach(function(line) {
+            if (line.trim())
+                READLINE.addHistory(line);
+        });
+    }
+
+    try {
+        historyFile = historyPath.open("a", { charset : "UTF-8" });
+    } catch (e) {
+        system.stderr.print("Warning: Can't open history file '"+historyFile+"' for writing.");
+    }
+
+    while (true)
+    {
+        try {
+            system.stdout.write("objj> ").flush();
+
+            var line = READLINE.readline();
+            if (line && historyFile)
+                historyFile.write(line).write("\n").flush();
+
+            var result = exports.objj_eval(line);
+            if (result !== undefined)
+                print(result);
+
+        } catch (e) {
+            print(e);
+        }
+
+        require("browser/timeout").serviceTimeouts();
+    }
+}
+
+exports.objj_eval = function(/*String*/ aString)
 {
     // We need this while code still refers to window.
     Executable.setCommonJSArguments(require, exports, module, system, print, window);
