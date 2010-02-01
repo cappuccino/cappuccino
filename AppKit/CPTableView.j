@@ -1823,7 +1823,10 @@ window.setTimeout(function(){
 }
 
 - (void)_drawRect:(CGRect)aRect
-{
+{   
+    // FIX ME: All three of these methods will likely need to be rewritten for 1.0
+    // We've got grid drawing in highlightSelection and crap everywhere.
+    
     var exposedRect = [self _exposedRect];
 
     [self drawBackgroundInClipRect:exposedRect];
@@ -1859,7 +1862,7 @@ window.setTimeout(function(){
     // CGContextFillRect(context, CGRectIntersection(aRect, fillRect));
     // console.profile("row-paint");
     var exposedRows = [self rowsInRect:aRect],
-        firstRow = exposedRows.location,
+        firstRow = exposedRows.location -1,
         lastRow = CPMaxRange(exposedRows) - 1,
         colorIndex = MIN(exposedRows.length, colorCount),
         heightFilled = 0.0;
@@ -2027,33 +2030,34 @@ window.setTimeout(function(){
 
     CGContextBeginPath(context);
     gridStyleMask = [self gridStyleMask];
-    for(var i=0; i < count2-1; i++)
+    for(var i=0; i < count2; i++)
     {
-         var rect = [self rectOfRow:indexes[i]],
-             minX = _CGRectGetMinX(rect) - 0.5,
-             maxX = _CGRectGetMaxX(rect) - 0.5,
-             minY = _CGRectGetMinY(rect) - 0.5,
-             maxY = _CGRectGetMaxY(rect) - 0.5;
+         var rect = objj_msgSend(self, rectSelector, indexes[i]),
+             minX = CGRectGetMinX(rect) - 0.5,
+             maxX = CGRectGetMaxX(rect) - 0.5,
+             minY = CGRectGetMinY(rect) - 0.5,
+             maxY = CGRectGetMaxY(rect) - 0.5;
 
-        //FIX ME: if there are vertical lines we need to make them white too...
-        /*if (gridStyleMask & CPTableViewSolidVerticalGridLineMask)
+        if ([_selectedRowIndexes count] >= 1 && gridStyleMask & CPTableViewSolidVerticalGridLineMask)
         {
             var exposedColumns = [self columnIndexesInRect:aRect],
-                columnIndexes = [],
-                exposedColumns2 = CPMakeRange([exposedColumns firstIndex], [exposedColumns lastIndex] - firstColumn + 1);
-                [exposedColumns getIndexes:columnIndexes maxCount:-1 inIndexRange:exposedColumns2],
-                columnCount = [exposedColumns count];
-
-            for(var c = 0; c < columnCount - 1; c++)
+            exposedColumnIndexes = [],
+            firstExposedColumn = [exposedColumns firstIndex],
+            exposedRange = CPMakeRange(firstExposedColumn, [exposedColumns lastIndex] - firstExposedColumn + 1);
+            [exposedColumns getIndexes:exposedColumnIndexes maxCount:-1 inIndexRange:exposedRange];
+            var exposedColumnCount = [exposedColumnIndexes count];
+            
+            for(var c = firstExposedColumn; c < exposedColumnCount; c++)
             {
-                var colRect = [self rectOfColumn:columnIndexes[c]],
-                    colX = _CGRectGetMaxX(rect) - 0.5;
-                console.log("colX");
+                //console.log(columnIndexes);
+                var colRect = [self rectOfColumn:exposedColumnIndexes[c]],
+                    colX = CGRectGetMaxX(colRect) + 0.5;
+                //console.log(colX);
                 CGContextMoveToPoint(context, colX, minY);
                 CGContextAddLineToPoint(context, colX, maxY);
             }
 
-        }*/
+        }
 
          CGContextMoveToPoint(context, minX, maxY);
          CGContextAddLineToPoint(context, maxX, maxY);
