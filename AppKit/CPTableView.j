@@ -244,7 +244,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
         [self setGridColor:[CPColor grayColor]];
         [self setGridStyleMask:CPTableViewGridNone];
 
-        _headerView = [[CPTableHeaderView alloc] initWithFrame:CGRectMake(0, 0, [self bounds].size.width, 23.0)];
+        _headerView = [[CPTableHeaderView alloc] initWithFrame:CGRectMake(0, 0, [self bounds].size.width, _rowHeight)];
 
         [_headerView setTableView:self];
 
@@ -842,6 +842,11 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 - (CPIndexSet)selectedColumnIndexes
 {
     return _selectedColumnIndexes;
+}
+
+- (int)selectedRow
+{
+	return [_selectedRowIndexes lastIndex];
 }
 
 - (CPIndexSet)selectedRowIndexes
@@ -3027,7 +3032,7 @@ var CPTableViewDataSourceKey        = @"CPTableViewDataSourceKey",
         [self setGridColor:[CPColor grayColor]];
         [self setGridStyleMask:CPTableViewGridNone];
 
-        _headerView = [[CPTableHeaderView alloc] initWithFrame:CGRectMake(0, 0, [self bounds].size.width, 23.0)];
+        _headerView = [[CPTableHeaderView alloc] initWithFrame:CGRectMake(0, 0, [self bounds].size.width, _rowHeight)];
 
         [_headerView setTableView:self];
 
