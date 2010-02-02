@@ -161,6 +161,8 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     CGSize      _intercellSpacing;
     float       _rowHeight;
 
+    BOOL        _hasVariableRowHeight;
+
     BOOL        _usesAlternatingRowBackgroundColors;
     CPArray     _alternatingRowBackgroundColors;
 
@@ -1035,11 +1037,23 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 
 - (CGRect)rectOfRow:(CPInteger)aRowIndex
 {
-    if (NO)
-        return NULL;
-
+    if (aRowIndex === -1)
+        return CPRectMakeZero();
+    
+    var rowHeight = _rowHeight;
+    
+    if ((_implementedDelegateMethods & CPTableViewDelegate_tableView_heightOfRow_))
+    {
+        rowHeight = [_delegate tableView:self heightOfRow:aRowIndex];
+        if (rowHeight !== _rowHeight)
+            _hasVariableRowHeight = YES;
+    }
+    else
+        _hasVariableRowHeight = NO;
+    
     // FIXME: WRONG: ASK TABLE COLUMN RANGE
-    return _CGRectMake(0.0, (aRowIndex * (_rowHeight + _intercellSpacing.height)), _CGRectGetWidth([self bounds]), _rowHeight);
+    var previousRowRect = [self rectOfRow:aRowIndex - 1];
+    return CPRectMake(0.0, CPRectGetMaxY(previousRowRect) + _intercellSpacing.height, CPRectGetWidth([self bounds]), rowHeight);
 }
 
 // Complexity:
@@ -1156,9 +1170,31 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 
 - (CPInteger)rowAtPoint:(CGPoint)aPoint
 {
-    var y = aPoint.y;
-
-    var row = FLOOR(y / (_rowHeight + _intercellSpacing.height));
+    var row = -1;
+    
+    // Check if we are using variable sized rows 
+    // to determine if we can use the quicker way to determine the row at point
+    if (!_hasVariableRowHeight)
+        row = FLOOR(aPoint.y / (_rowHeight + _intercellSpacing.height));
+    else
+    {
+        // We are using variable sized rows so we'll have to loop over all the rows and determine if it's at the current point
+        var rowArray = [];
+        [_exposedRows getIndexes:rowArray maxCount:-1 inIndexRange:nil];
+    
+        var rowIndex = [rowArray count];
+        
+        while (rowIndex--)
+        {
+            row = [rowArray objectAtIndex:rowIndex];
+            
+            if (CPRectContainsPoint([self rectOfRow:[rowArray objectAtIndex:rowIndex]], aPoint))
+                break;
+                
+            // Make sure that the row is not found if we exit the loop without breaking
+            row = -1;
+        }
+    }
 
     if (row >= _numberOfRows)
         return -1;
@@ -1908,13 +1944,13 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 
 - (CPView)_newDataViewForRow:(CPInteger)aRow tableColumn:(CPTableColumn)aTableColumn
 {
-	if ((_implementedDelegateMethods & CPTableViewDelegate_tableView_dataViewForTableColumn_row_))
-	{
-		var dataView = [_delegate tableView:self dataViewForTableColumn:aTableColumn row:aRow];
-		[aTableColumn setDataView:dataView];
-	}
-		
-	
+    if ((_implementedDelegateMethods & CPTableViewDelegate_tableView_dataViewForTableColumn_row_))
+    {
+        var dataView = [_delegate tableView:self dataViewForTableColumn:aTableColumn row:aRow];
+        [aTableColumn setDataView:dataView];
+    }
+        
+    
     return [aTableColumn _newDataViewForRow:aRow];
 }
 

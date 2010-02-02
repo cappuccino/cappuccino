@@ -51,8 +51,9 @@ var CPOutlineViewDataSource_outlineView_setObjectValue_forTableColumn_byItem_   
     CPOutlineViewDataSource_outlineView_sortDescriptorsDidChange_                                   = 1 << 10;
 
 
-var CPOutlineViewDelegate_outlineView_dataViewForTableColumn_item_									= 1 << 1,
-	CPOutlineViewDelegate_outlineView_shouldSelectItem_												= 1 << 2;
+var CPOutlineViewDelegate_outlineView_dataViewForTableColumn_item_                                  = 1 << 1,
+    CPOutlineViewDelegate_outlineView_shouldSelectItem_                                             = 1 << 2;
+    CPOutlineViewDelegate_outlineView_heightOfRowByItem_                                            = 1 << 3;
 
 
 
@@ -66,7 +67,7 @@ var CPOutlineViewDelegate_outlineView_dataViewForTableColumn_item_									= 1 <
     BOOL            _indentationMarkerFollowsDataView;
 
     CPInteger       _implementedOutlineViewDataSourceMethods;
-	CPInteger		_implementedOutlineViewDelegateMethods;
+    CPInteger       _implementedOutlineViewDelegateMethods;
 
     Object          _rootItemInfo;
     CPMutableArray  _itemsForRows;
@@ -95,7 +96,7 @@ var CPOutlineViewDelegate_outlineView_dataViewForTableColumn_item_									= 1 <
         [self setIndentationMarkerFollowsDataView:YES];
 
         [super setDataSource:[[_CPOutlineViewTableViewDataSource alloc] initWithOutlineView:self]];
-		[super setDelegate:[[_CPOutlineViewTableViewDelegate alloc] initWithOutlineView:self]];
+        [super setDelegate:[[_CPOutlineViewTableViewDelegate alloc] initWithOutlineView:self]];
 
         [self setDisclosureControlPrototype:[[CPDisclosureButton alloc] initWithFrame:CGRectMake(0.0, 0.0, 10.0, 10.0)]];
     }
@@ -189,29 +190,29 @@ var CPOutlineViewDelegate_outlineView_dataViewForTableColumn_item_									= 1 <
 
 - (void)expandItem:(id)anItem
 {
-	[self expandItem:anItem expandChildren:NO];
+    [self expandItem:anItem expandChildren:NO];
 }
 
 - (void)expandItem:(id)anItem expandChildren:(BOOL)shouldExpandChildren
 {
-	var itemInfo = null;
-	
-	if (!anItem)
-		itemInfo = _rootItemInfo;
-	else
-		itemInfo = _itemInfosForItems[[anItem UID]];
-	
-	itemInfo.isExpanded = YES;
+    var itemInfo = null;
+    
+    if (!anItem)
+        itemInfo = _rootItemInfo;
+    else
+        itemInfo = _itemInfosForItems[[anItem UID]];
+    
+    itemInfo.isExpanded = YES;
     [self reloadItem:anItem reloadChildren:YES];
-	
-	if (shouldExpandChildren)
-	{
-		var children = itemInfo.children,
-			childIndex = children.length;
-		
-		while (childIndex--)
-			[self expandItem:children[childIndex] expandChildren:YES];
-	}
+    
+    if (shouldExpandChildren)
+    {
+        var children = itemInfo.children,
+            childIndex = children.length;
+        
+        while (childIndex--)
+            [self expandItem:children[childIndex] expandChildren:YES];
+    }
 }
 
 - (void)collapseItem:(id)anItem
@@ -429,13 +430,16 @@ var CPOutlineViewDelegate_outlineView_dataViewForTableColumn_item_									= 1 <
     }
 
     _outlineViewDelegate = aDelegate;
-	_implementedOutlineViewDelegateMethods = 0;
+    _implementedOutlineViewDelegateMethods = 0;
 
-	if ([_outlineViewDelegate respondsToSelector:@selector(outlineView:dataViewForTableColumn:item:)])
-		_implementedOutlineViewDelegateMethods |= CPOutlineViewDelegate_outlineView_dataViewForTableColumn_item_;
-		
-	if ([_outlineViewDelegate respondsToSelector:@selector(outlineView:shouldSelectItem:)])
-		_implementedOutlineViewDelegateMethods |= CPOutlineViewDelegate_outlineView_shouldSelectItem_;
+    if ([_outlineViewDelegate respondsToSelector:@selector(outlineView:dataViewForTableColumn:item:)])
+        _implementedOutlineViewDelegateMethods |= CPOutlineViewDelegate_outlineView_dataViewForTableColumn_item_;
+        
+    if ([_outlineViewDelegate respondsToSelector:@selector(outlineView:shouldSelectItem:)])
+        _implementedOutlineViewDelegateMethods |= CPOutlineViewDelegate_outlineView_shouldSelectItem_;
+        
+    if ([_outlineViewDelegate respondsToSelector:@selector(outlineView:heightOfRowByItem:)])
+        _implementedOutlineViewDelegateMethods |= CPOutlineViewDelegate_outlineView_heightOfRowByItem_;
 
     if ([_outlineViewDelegate respondsToSelector:@selector(outlineViewColumnDidMove:)])
         [defaultCenter
@@ -892,25 +896,33 @@ var _loadItemInfoForItem = function(/*CPOutlineView*/ anOutlineView, /*id*/ anIt
 
 - (CPView)tableView:(CPTableView)theTableView dataViewForTableColumn:(CPTableColumn)theTableColumn row:(int)theRow
 {
-	var dataView = nil;
-	
-	if ((_outlineView._implementedOutlineViewDelegateMethods & CPOutlineViewDelegate_outlineView_dataViewForTableColumn_item_))
-			dataView = [_outlineView._outlineViewDelegate outlineView:_outlineView 
-										   dataViewForTableColumn:theTableColumn 
-															 item:[_outlineView itemAtRow:theRow]];
+    var dataView = nil;
+    
+    if ((_outlineView._implementedOutlineViewDelegateMethods & CPOutlineViewDelegate_outlineView_dataViewForTableColumn_item_))
+            dataView = [_outlineView._outlineViewDelegate outlineView:_outlineView 
+                                           dataViewForTableColumn:theTableColumn 
+                                                             item:[_outlineView itemAtRow:theRow]];
 
-	if (!dataView)
-		dataView = [theTableColumn dataViewForRow:theRow]; 
-		
-	return dataView;
+    if (!dataView)
+        dataView = [theTableColumn dataViewForRow:theRow]; 
+        
+    return dataView;
 }
 
 - (BOOL)tableView:(CPTableView)theTableView shouldSelectRow:(int)theRow
 {
-	if ((_outlineView._implementedOutlineViewDelegateMethods & CPOutlineViewDelegate_outlineView_shouldSelectItem_))
-		return [_outlineView._outlineViewDelegate outlineView:_outlineView shouldSelectItem:[_outlineView itemAtRow:theRow]];
-		
-	return YES;
+    if ((_outlineView._implementedOutlineViewDelegateMethods & CPOutlineViewDelegate_outlineView_shouldSelectItem_))
+        return [_outlineView._outlineViewDelegate outlineView:_outlineView shouldSelectItem:[_outlineView itemAtRow:theRow]];
+        
+    return YES;
+}
+
+- (float)tableView:(CPTableView)theTableView heightOfRow:(int)theRow
+{
+    if ((_outlineView._implementedOutlineViewDelegateMethods & CPOutlineViewDelegate_outlineView_heightOfRowByItem_))
+        return [_outlineView._outlineViewDelegate outlineView:_outlineView heightOfRowByItem:[_outlineView itemAtRow:theRow]];
+    
+    return [theTableView rowHeight];
 }
 
 @end
