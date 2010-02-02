@@ -892,12 +892,17 @@ var _loadItemInfoForItem = function(/*CPOutlineView*/ anOutlineView, /*id*/ anIt
 
 - (CPView)tableView:(CPTableView)theTableView dataViewForTableColumn:(CPTableColumn)theTableColumn row:(int)theRow
 {
+	var dataView = nil;
+	
 	if ((_outlineView._implementedOutlineViewDelegateMethods & CPOutlineViewDelegate_outlineView_dataViewForTableColumn_item_))
-			return [_outlineView._outlineViewDelegate outlineView:_outlineView 
+			dataView = [_outlineView._outlineViewDelegate outlineView:_outlineView 
 										   dataViewForTableColumn:theTableColumn 
 															 item:[_outlineView itemAtRow:theRow]];
-			
-	return [theTableColumn dataViewForRow:theRow]; 
+
+	if (!dataView)
+		dataView = [theTableColumn dataViewForRow:theRow]; 
+		
+	return dataView;
 }
 
 - (BOOL)tableView:(CPTableView)theTableView shouldSelectRow:(int)theRow
