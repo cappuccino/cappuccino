@@ -189,20 +189,29 @@ var CPOutlineViewDelegate_outlineView_dataViewForTableColumn_item_									= 1 <
 
 - (void)expandItem:(id)anItem
 {
-    if (!anItem)
-        return;
+	[self expandItem:anItem expandChildren:NO];
+}
 
-    var itemInfo = _itemInfosForItems[[anItem UID]];
-
-    if (!itemInfo)
-        return;
-
-    if (itemInfo.isExpanded)
-        return;
-
-    itemInfo.isExpanded = YES;
-
+- (void)expandItem:(id)anItem expandChildren:(BOOL)shouldExpandChildren
+{
+	var itemInfo = null;
+	
+	if (!anItem)
+		itemInfo = _rootItemInfo;
+	else
+		itemInfo = _itemInfosForItems[[anItem UID]];
+	
+	itemInfo.isExpanded = YES;
     [self reloadItem:anItem reloadChildren:YES];
+	
+	if (shouldExpandChildren)
+	{
+		var children = itemInfo.children,
+			childIndex = children.length;
+		
+		while (childIndex--)
+			[self expandItem:children[childIndex] expandChildren:YES];
+	}
 }
 
 - (void)collapseItem:(id)anItem
