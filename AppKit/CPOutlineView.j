@@ -618,140 +618,146 @@ var CPOutlineViewDataSource_outlineView_setObjectValue_forTableColumn_byItem_   
 
 @end
 
+// FIX ME: We're using with() here because Safari fails if we use anOutlineView._itemInfosForItems or whatever... 
 var _reloadItem = function(/*CPOutlineView*/ anOutlineView, /*id*/ anItem)
 {
     if (!anItem)
         return;
-
-    // Get the existing info if it exists.
-    var itemInfosForItems = anOutlineView._itemInfosForItems,
-        dataSource = anOutlineView._outlineViewDataSource,
-        itemUID = [anItem UID],
-        itemInfo = itemInfosForItems[itemUID];
-
-    // If we're not in the tree, then just bail.
-    if (!itemInfo)
-        return [];
-
-    // See if the item itself can be swapped out.
-    var parent = itemInfo.parent,
-        parentItemInfo = parent ? itemInfosForItems[[parent UID]] : anOutlineView._rootItemInfo,
-        parentChildren = parentItemInfo.children,
-        index = [parentChildren indexOfObjectIdenticalTo:anItem],
-        newItem = [dataSource outlineView:anOutlineView child:index ofItem:parent];
-
-    if (anItem !== newItem)
-    {
-        itemInfosForItems[[anItem UID]] = nil;
-        itemInfosForItems[[newItem UID]] = itemInfo;
-
-        parentChildren[index] = newItem;
-        anOutlineView._itemsForRows[itemInfo.row] = newItem;
-    }
-
-    itemInfo.isExpandable = [dataSource outlineView:anOutlineView isItemExpandable:newItem];
-    itemInfo.isExpanded = itemInfo.isExpandable && itemInfo.isExpanded;
-}
-
-var _loadItemInfoForItem = function(/*CPOutlineView*/ anOutlineView, /*id*/ anItem,  /*BOOL*/ isIntermediate)
-{
-    var itemInfosForItems = anOutlineView._itemInfosForItems,
-        dataSource = anOutlineView._outlineViewDataSource;
-
-    if (!anItem)
-        var itemInfo = anOutlineView._rootItemInfo;
-
-    else
+    with(anOutlineView)
     {
         // Get the existing info if it exists.
-        var itemUID = [anItem UID],
+        var itemInfosForItems = _itemInfosForItems,
+            dataSource = _outlineViewDataSource,
+            itemUID = [anItem UID],
             itemInfo = itemInfosForItems[itemUID];
-
+        
         // If we're not in the tree, then just bail.
         if (!itemInfo)
             return [];
-
-        itemInfo.isExpandable = [dataSource outlineView:anOutlineView isItemExpandable:anItem];
-
-        // If we were previously expanded, but now no longer expandable, "de-expand".
-        // NOTE: we are *not* collapsing, thus no notification is posted.
-        if (!itemInfo.isExpandable && itemInfo.isExpanded)
+        
+        // See if the item itself can be swapped out.
+        var parent = itemInfo.parent,
+            parentItemInfo = parent ? itemInfosForItems[[parent UID]] : _rootItemInfo,
+            parentChildren = parentItemInfo.children,
+            index = [parentChildren indexOfObjectIdenticalTo:anItem],
+            newItem = [dataSource outlineView:anOutlineView child:index ofItem:parent];
+        
+        if (anItem !== newItem)
         {
-            itemInfo.isExpanded = NO;
+            itemInfosForItems[[anItem UID]] = nil;
+            itemInfosForItems[[newItem UID]] = itemInfo;
+        
+            parentChildren[index] = newItem;
+            _itemsForRows[itemInfo.row] = newItem;
+        }
+        
+        itemInfo.isExpandable = [dataSource outlineView:anOutlineView isItemExpandable:newItem];
+        itemInfo.isExpanded = itemInfo.isExpandable && itemInfo.isExpanded;
+    }
+}
+
+// FIX ME: We're using with() here because Safari fails if we use anOutlineView._itemInfosForItems or whatever... 
+var _loadItemInfoForItem = function(/*CPOutlineView*/ anOutlineView, /*id*/ anItem,  /*BOOL*/ isIntermediate)
+{
+    with(anOutlineView)
+    {
+        var itemInfosForItems = _itemInfosForItems,
+            dataSource = _outlineViewDataSource;
+        
+        if (!anItem)
+            var itemInfo = _rootItemInfo;
+        
+        else
+        {
+            // Get the existing info if it exists.
+            var itemUID = [anItem UID],
+                itemInfo = itemInfosForItems[itemUID];
+        
+            // If we're not in the tree, then just bail.
+            if (!itemInfo)
+                return [];
+        
+            itemInfo.isExpandable = [dataSource outlineView:anOutlineView isItemExpandable:anItem];
+        
+            // If we were previously expanded, but now no longer expandable, "de-expand".
+            // NOTE: we are *not* collapsing, thus no notification is posted.
+            if (!itemInfo.isExpandable && itemInfo.isExpanded)
+            {
+                itemInfo.isExpanded = NO;
+                itemInfo.children = [];
+            }
+        }
+        
+        // The root item does not count as a descendant.
+        var weight = itemInfo.weight,
+            descendants = anItem ? [anItem] : [];
+        
+        if (itemInfo.isExpanded && (!(_implementedOutlineViewDataSourceMethods & CPOutlineViewDataSource_outlineView_shouldDeferDisplayingChildrenOfItem_) ||
+            ![dataSource outlineView:anOutlineView shouldDeferDisplayingChildrenOfItem:anItem]))
+        {
+            var index = 0,
+                count = [dataSource outlineView:anOutlineView numberOfChildrenOfItem:anItem],
+                level = itemInfo.level + 1;
+        
             itemInfo.children = [];
-        }
-    }
-
-    // The root item does not count as a descendant.
-    var weight = itemInfo.weight,
-        descendants = anItem ? [anItem] : [];
-
-    if (itemInfo.isExpanded && (!(anOutlineView._implementedOutlineViewDataSourceMethods & CPOutlineViewDataSource_outlineView_shouldDeferDisplayingChildrenOfItem_) ||
-        ![dataSource outlineView:anOutlineView shouldDeferDisplayingChildrenOfItem:anItem]))
-    {
-        var index = 0,
-            count = [dataSource outlineView:anOutlineView numberOfChildrenOfItem:anItem],
-            level = itemInfo.level + 1;
-
-        itemInfo.children = [];
-
-        for (; index < count; ++index)
-        {
-            var childItem = [dataSource outlineView:anOutlineView child:index ofItem:anItem],
-                childItemInfo = itemInfosForItems[[childItem UID]];
-
-            if (!childItemInfo)
+        
+            for (; index < count; ++index)
             {
-                childItemInfo = { isExpanded:NO, isExpandable:NO, children:[], weight:1 };
-                itemInfosForItems[[childItem UID]] = childItemInfo;
+                var childItem = [dataSource outlineView:anOutlineView child:index ofItem:anItem],
+                    childItemInfo = itemInfosForItems[[childItem UID]];
+        
+                if (!childItemInfo)
+                {
+                    childItemInfo = { isExpanded:NO, isExpandable:NO, children:[], weight:1 };
+                    itemInfosForItems[[childItem UID]] = childItemInfo;
+                }
+        
+                itemInfo.children[index] = childItem;
+        
+                var childDescendants = _loadItemInfoForItem(anOutlineView, childItem, YES);
+        
+                childItemInfo.parent = anItem;
+                childItemInfo.level = level;
+                descendants = descendants.concat(childDescendants);
             }
-
-            itemInfo.children[index] = childItem;
-
-            var childDescendants = _loadItemInfoForItem(anOutlineView, childItem, YES);
-
-            childItemInfo.parent = anItem;
-            childItemInfo.level = level;
-            descendants = descendants.concat(childDescendants);
         }
-    }
-
-    itemInfo.weight = descendants.length;
-
-    if (!isIntermediate)
-    {
-        // row = -1 is the root item, so just go to row 0 since it is ignored.
-        var index = MAX(itemInfo.row, 0),
-            itemsForRows = anOutlineView._itemsForRows;
-
-        descendants.unshift(index, weight);
-
-        itemsForRows.splice.apply(itemsForRows, descendants);
-
-        var count = itemsForRows.length;
-
-        for (; index < count; ++index)
-            itemInfosForItems[[itemsForRows[index] UID]].row = index;
-
-        var deltaWeight = itemInfo.weight - weight;
-
-        if (deltaWeight !== 0)
+        
+        itemInfo.weight = descendants.length;
+        
+        if (!isIntermediate)
         {
-            var parent = itemInfo.parent;
-
-            while (parent)
+            // row = -1 is the root item, so just go to row 0 since it is ignored.
+            var index = MAX(itemInfo.row, 0),
+                itemsForRows = _itemsForRows;
+        
+            descendants.unshift(index, weight);
+        
+            itemsForRows.splice.apply(itemsForRows, descendants);
+        
+            var count = itemsForRows.length;
+        
+            for (; index < count; ++index)
+                itemInfosForItems[[itemsForRows[index] UID]].row = index;
+        
+            var deltaWeight = itemInfo.weight - weight;
+        
+            if (deltaWeight !== 0)
             {
-                var parentItemInfo = itemInfosForItems[[parent UID]];
-
-                parentItemInfo.weight += deltaWeight;
-                parent = parentItemInfo.parent;
+                var parent = itemInfo.parent;
+        
+                while (parent)
+                {
+                    var parentItemInfo = itemInfosForItems[[parent UID]];
+        
+                    parentItemInfo.weight += deltaWeight;
+                    parent = parentItemInfo.parent;
+                }
+        
+                if (anItem)
+                    _rootItemInfo.weight += deltaWeight;
             }
-
-            if (anItem)
-                anOutlineView._rootItemInfo.weight += deltaWeight;
         }
-    }
-
+    }//end of with
     return descendants;
 }
 
