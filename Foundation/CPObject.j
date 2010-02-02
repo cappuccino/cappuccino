@@ -273,6 +273,11 @@ CPLog(@"Got some class: %@", inst);
     return "<" + class_getName(isa) + " 0x" + [CPString stringWithHash:[self UID]] + ">";
 }
 
++ (CPString)description
+{
+    return class_getName(isa);
+}
+
 // Sending Messages
 /*!
     Sends the specified message to the receiver.
@@ -523,7 +528,7 @@ CPLog(@"Got some class: %@", inst);
 
 // override toString on Objective-J objects so we get the actual description of the object
 // when coerced to a string, instead of "[Object object]"
-objj_object.prototype.toString = function()
+objj_class.prototype.toString = objj_object.prototype.toString = function()
 {
     if (this.isa && class_getInstanceMethod(this.isa, "description") != NULL)
         return [this description]
