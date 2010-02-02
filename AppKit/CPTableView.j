@@ -244,7 +244,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
         [self setGridColor:[CPColor grayColor]];
         [self setGridStyleMask:CPTableViewGridNone];
 
-        _headerView = [[CPTableHeaderView alloc] initWithFrame:CGRectMake(0, 0, [self bounds].size.width, _rowHeight)];
+        _headerView = [[CPTableHeaderView alloc] initWithFrame:CGRectMake(0, 0, [self bounds].size.width, 23.0)];
 
         [_headerView setTableView:self];
 
@@ -3027,7 +3027,7 @@ var CPTableViewDataSourceKey        = @"CPTableViewDataSourceKey",
         [self setGridColor:[CPColor grayColor]];
         [self setGridStyleMask:CPTableViewGridNone];
 
-        _headerView = [[CPTableHeaderView alloc] initWithFrame:CGRectMake(0, 0, [self bounds].size.width, _rowHeight)];
+        _headerView = [[CPTableHeaderView alloc] initWithFrame:CGRectMake(0, 0, [self bounds].size.width, 23.0)];
 
         [_headerView setTableView:self];
 
