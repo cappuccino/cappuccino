@@ -391,7 +391,7 @@ objj_preprocessor.prototype.implementation = function(tokens, /*objj_stringBuffe
         else
         {
             this._currentSuperClass = "objj_getClass(\"" + superclass_name + "\")";
-            this._currentSuperMetaClass = "objj_getMeraClass(\"" + superclass_name + "\")";
+            this._currentSuperMetaClass = "objj_getMetaClass(\"" + superclass_name + "\")";
         }
     }
     else
