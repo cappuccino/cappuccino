@@ -2395,9 +2395,9 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
         rowIndex = [self rowAtPoint:aPoint];
         if (rowIndex !== -1)
         {
-            if(_draggedRowIndexes !== nil)
+            if ([_draggedRowIndexes count] > 0)
             {
-                _draggedRowIndexes = nil;
+                _draggedRowIndexes = [CPIndexSet indexSet];
                 return;
             }
             // if the table has drag support then we use mouseUp to select a single row.
