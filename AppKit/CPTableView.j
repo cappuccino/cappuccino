@@ -197,6 +197,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     _CPTableDrawView _tableDrawView;
 
     SEL         _doubleAction;
+    CPInteger   _clickedRow;
     unsigned    _columnAutoResizingStyle;
 
     int         _lastTrackedRowIndex;
@@ -451,8 +452,16 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 
 /*
     * - clickedColumn
-    * - clickedRow
 */
+
+/*!
+    Returns the index of the the row the user clicked to trigger an action, or -1 if no row was clicked.
+*/
+- (CPInteger)clickedRow
+{
+    return _clickedRow;
+}
+
 //Configuring Behavior
 
 - (void)setAllowsColumnReordering:(BOOL)shouldAllowColumnReordering
@@ -2961,7 +2970,10 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 
     //double click actions
     if([[CPApp currentEvent] clickCount] === 2 && _doubleAction && _target)
+    {
+        _clickedRow = [self rowAtPoint:aPoint];
         [self sendAction:_doubleAction to:_target];
+    }
 }
 
 /*
