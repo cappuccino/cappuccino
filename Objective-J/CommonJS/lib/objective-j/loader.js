@@ -9,6 +9,7 @@ function ObjectiveJLoader() {
         
         //print("loading objective-j: " + topId + " (" + path + ")");
         factories[topId] = objj.make_narwhal_factory(path);
+        factories[topId].path = path;
     }
     
     loader.load = function(topId, path) {
