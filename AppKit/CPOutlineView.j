@@ -842,6 +842,11 @@ var _loadItemInfoForItem = function(/*CPOutlineView*/ anOutlineView, /*id*/ anIt
             children = itemInfo.children,
             
         childIndex = [children indexOfObject:droppedItem];
+
+        // When no child is found the index we want to add the item below all it's children
+        // Think about dragging an item below the collectionview
+        if (childIndex === -1)
+            childIndex = [children count];
     }
     else if (theOperation === CPTableViewDropOn)
     {

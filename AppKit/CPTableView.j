@@ -846,7 +846,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 
 - (int)selectedRow
 {
-	return [_selectedRowIndexes lastIndex];
+    return [_selectedRowIndexes lastIndex];
 }
 
 - (CPIndexSet)selectedRowIndexes
@@ -1050,8 +1050,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     if ((_implementedDelegateMethods & CPTableViewDelegate_tableView_heightOfRow_))
     {
         rowHeight = [_delegate tableView:self heightOfRow:aRowIndex];
-        if (rowHeight !== _rowHeight)
-            _hasVariableRowHeight = YES;
+        _hasVariableRowHeight = YES;
     }
     else
         _hasVariableRowHeight = NO;
@@ -1193,7 +1192,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
         {
             row = [rowArray objectAtIndex:rowIndex];
             
-            if (CPRectContainsPoint([self rectOfRow:[rowArray objectAtIndex:rowIndex]], aPoint))
+            if (CPRectContainsPoint([self rectOfRow:row], aPoint))
                 break;
                 
             // Make sure that the row is not found if we exit the loop without breaking
@@ -1202,7 +1201,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     }
 
     if (row >= _numberOfRows)
-        return -1;
+        row = -1;
 
     return row;
 }
@@ -2587,20 +2586,18 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 */
 - (CPInteger)_proposedRowAtPoint:(CGPoint)dragPoint
 {
-    var numberOfRows = [self numberOfRows],
-        row;
-    // cocoa seems to jump to the next row when we approach the below row
-    dragPoint.y += FLOOR(_rowHeight/4);
+    dragPoint.y += 5.0;
     
-    if (dragPoint.y > numberOfRows * (_rowHeight + _intercellSpacing.height))
-    {
-        if ([self _proposedDropOperationAtPoint:dragPoint] === CPTableViewDropAbove) 
-            row = numberOfRows;
-        else
-            row = numberOfRows - 1;
-    }
-    else
+    var numberOfRows = [self numberOfRows],
         row = [self rowAtPoint:dragPoint];
+
+    // cocoa seems to jump to the next row when we approach the below row
+    // dragPoint.y += FLOOR(CPRectGetHeight([self rectOfRow:row]) / 4);
+    
+    // Check if we are dragging outside the tableview 
+    // if we are we want the drag highlight to be below the last row
+    if (row === -1)
+        row = numberOfRows + 1;
     
     return row;
 }
