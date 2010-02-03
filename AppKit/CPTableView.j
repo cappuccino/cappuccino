@@ -1042,7 +1042,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 
 - (CGRect)rectOfRow:(CPInteger)aRowIndex
 {
-    if (aRowIndex === -1)
+    if (aRowIndex < 0)
         return CPRectMakeZero();
     
     var rowHeight = _rowHeight;
@@ -1057,6 +1057,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     
     // FIXME: WRONG: ASK TABLE COLUMN RANGE
     var previousRowRect = [self rectOfRow:aRowIndex - 1];
+
     return CPRectMake(0.0, CPRectGetMaxY(previousRowRect) + _intercellSpacing.height, CPRectGetWidth([self bounds]), rowHeight);
 }
 
@@ -2586,16 +2587,15 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 */
 - (CPInteger)_proposedRowAtPoint:(CGPoint)dragPoint
 {
-    dragPoint.y += 5.0;
-    
     var numberOfRows = [self numberOfRows],
         row = [self rowAtPoint:dragPoint];
 
-    // cocoa seems to jump to the next row when we approach the below row
-    // dragPoint.y += FLOOR(CPRectGetHeight([self rectOfRow:row]) / 4);
-    
+	// cocoa seems to jump to the next row when we approach the below row
+    dragPoint.y += FLOOR(CPRectGetHeight([self rectOfRow:row]) / 4.0);
+    row = [self rowAtPoint:dragPoint];
+
     // Check if we are dragging outside the tableview 
-    // if we are we want the drag highlight to be below the last row
+    // because we want the drag highlight to be below the last row
     if (row === -1)
         row = numberOfRows + 1;
     
