@@ -68,6 +68,7 @@ var CPTokenFieldTableColumnIdentifier = @"CPTokenFieldTableColumnIdentifier";
 		_tokenIndex = 0;
 		_selectedTokenIndexes = [CPIndexSet indexSet];
 		
+		_cachedCompletions = [];
 		_completionDelay = [CPTokenField defaultCompletionDelay];
 		
 		_autocompleteContainer = [[CPView alloc] initWithFrame:CPRectMake(0.0, 0.0, frame.size.width, 100.0)];
@@ -105,13 +106,15 @@ var CPTokenFieldTableColumnIdentifier = @"CPTokenFieldTableColumnIdentifier";
 		[_autocompleteView setDataSource:self];
 		[_autocompleteView setDelegate:self];
 		[_autocompleteView setAllowsMultipleSelection:NO];
-		[_autocompleteView setHeaderView:nil];
+		// [_autocompleteView setHeaderView:nil];
 		[_autocompleteView setCornerView:nil];
 		[_autocompleteView setRowHeight:30.0];
 		[_autocompleteView setGridStyleMask:CPTableViewSolidHorizontalGridLineMask];
 		[_autocompleteView setGridColor:[CPColor colorWithRed:242.0 / 255.0 green:243.0 / 255.0 blue:245.0 / 255.0 alpha:1.0]];
 		
 		[_autocompleteScrollView setDocumentView:_autocompleteView];
+		
+		[self setObjectValue:[]];
 	}
 	
 	return self;
@@ -346,6 +349,8 @@ var CPTokenFieldTableColumnIdentifier = @"CPTokenFieldTableColumnIdentifier";
 // ===========
 - (CPArray)_tokens
 {
+	// We return super here because objectValue uses this method
+	// If we called self we would loop infinitly
 	return [super objectValue];
 }
 
@@ -729,6 +734,10 @@ var CPTokenFieldTableColumnIdentifier = @"CPTokenFieldTableColumnIdentifier";
 		offset = CPPointMake(contentOrigin.x, contentOrigin.y),
 		spaceBetweenTokens = CPSizeMake(2.0, 2.0);
 	
+	// Hack to make sure we are handling with an array
+	if (![[self _tokens] isKindOfClass:[CPArray class]])
+		return;
+		
 	for (var i = 0; i < [[self _tokens] count]; i++)
 	{
 		var tokenView = [[self _tokens] objectAtIndex:i];
