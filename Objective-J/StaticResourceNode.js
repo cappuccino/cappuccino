@@ -31,7 +31,7 @@ require("file");
 
     cwd: function()
     {
-        return FILE.dirname(window.location.pathname);
+        return FILE._cwd;
     },
 
     normal: function(/*String*/ aPath)
@@ -101,6 +101,14 @@ require("file");
         return FILE.normal(aPath).split("/");
     }
 }
+
+var DOMBaseElement = document.getElementsByTagName("base")[0];
+
+if (DOMBaseElement)
+    FILE._cwd = FILE.dirname(DOMBaseElement.getAttribute("href"));
+else
+    FILE._cwd = FILE.dirname(window.location.pathname);
+
 #endif
 
 StaticResourceNode.FileType             = 0;
