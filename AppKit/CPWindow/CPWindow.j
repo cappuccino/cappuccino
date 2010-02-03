@@ -692,7 +692,7 @@ CPTexturedBackgroundWindowMask
 
 - (void)setFrame:(CGRect)aFrame display:(BOOL)shouldDisplay
 {
-    [super setFrame:aFrame display:shouldDisplay animate:NO];
+    [self setFrame:aFrame display:shouldDisplay animate:NO];
 }
 
 /*!
