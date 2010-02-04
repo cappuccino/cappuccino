@@ -2173,8 +2173,8 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 
         }
         
-        //If we're at the last for of the selection don't draw the bottom line...
-        if(i !== count2 -1)
+        //if the row after the current row is not selected then there is no need to draw the bottom grid line white.
+        if([indexes containsObject:indexes[i]+1])
         {
             CGContextMoveToPoint(context, minX, maxY);
             CGContextAddLineToPoint(context, maxX, maxY);
