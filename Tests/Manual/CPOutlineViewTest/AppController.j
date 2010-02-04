@@ -49,22 +49,12 @@ CustomOutlineViewDragType = @"CustomOutlineViewDragType";
 
 - (CPString)description
 {
-    return [self descriptionWithChildren:YES];
-}
-
-- (CPString)descriptionWithChildren:(BOOL)showChildren
-{
-    var description = [super description] + @" " + [self title];
-    
-    if (showChildren && [[self children] count] > 0)
-        description = @"\n" + [description stringByAppendingFormat:@" children: %@", [self children]];
-
-    return description;
+	return [self title];
 }
 
 - (void)insertSubmenu:(Menu)theItem atIndex:(int)theIndex
 {
-    CPLog.debug(@"insert menu: %@ in menu: %@ at index: %i", [theItem descriptionWithChildren:NO], [self descriptionWithChildren:NO], theIndex);
+    CPLog.debug(@"insert menu: %@ in menu: %@ at index: %i", theItem, self, theIndex);
     
     if ([[self children] containsObject:theItem])
         return;
@@ -78,7 +68,7 @@ CustomOutlineViewDragType = @"CustomOutlineViewDragType";
 
 - (void)removeFromMenu
 {
-    CPLog.debug(@"remove menu: %@ from menu: %@", [self descriptionWithChildren:NO], [[self menu] descriptionWithChildren:NO]);
+    CPLog.debug(@"remove menu: %@ from menu: %@", self, [self menu]);
     
     [[[self menu] children] removeObject:self];
     
@@ -193,25 +183,13 @@ CustomOutlineViewDragType = @"CustomOutlineViewDragType";
     
     [_outlineView setDataSource:self];
     [_outlineView setAllowsMultipleSelection:YES];
+	[_outlineView expandItem:nil expandChildren:YES];
     // [_outlineView setIntercellSpacing:CPSizeMake(0.0, 0.0)]
     
     // [scrollView setDocumentView:_outlineView];
 	[theWindow setContentView:_outlineView];
 
-    [self expandItem:[self menu]];
-
     [theWindow orderFront:self];
-}
-
-- (void)expandItem:(Menu)item
-{
-    var children = [item children],
-        childIndex = [children count];
-    
-    while (childIndex--)    
-        [self expandItem:[children objectAtIndex:childIndex]];
-        
-    [_outlineView expandItem:item];
 }
 
 - (id)outlineView:(CPOutlineView)theOutlineView child:(int)theIndex ofItem:(id)theItem
@@ -265,6 +243,11 @@ CustomOutlineViewDragType = @"CustomOutlineViewDragType";
 
 - (CPDragOperation)outlineView:(CPOutlineView)anOutlineView validateDrop:(id < CPDraggingInfo >)theInfo proposedItem:(id)theItem proposedChildIndex:(int)theIndex
 {
+	if (theItem === nil)
+		theItem = [self menu];
+		
+	CPLog.debug(@"validate item: %@ at index: %i", theItem, theIndex);
+	
     return CPDragOperationEvery;
 }
 
@@ -272,6 +255,8 @@ CustomOutlineViewDragType = @"CustomOutlineViewDragType";
 {
     if (theItem === nil)
         theItem = [self menu];
+
+	CPLog.debug(@"drop item: %@ at index: %i", theItem, theIndex);
     
     var menuIndex = [_draggedItems count];
     while (menuIndex--)
@@ -285,7 +270,7 @@ CustomOutlineViewDragType = @"CustomOutlineViewDragType";
         theIndex += 1;
     }
     
-    CPLog.debug([[self menu] descriptionWithChildren:YES]);
+    CPLog.debug([self menu]);
     
     return YES;
 }

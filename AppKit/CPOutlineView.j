@@ -500,11 +500,11 @@ var CPOutlineViewDelegate_outlineView_dataViewForTableColumn_item_              
     return [super frameOfDataViewAtColumn:aColumn row:aRow];
 }
 
-- (CPRect)rectForDropHighlightViewBetweenUpperRow:(int)theUpperRowIndex andLowerRow:(int)theLowerRowIndex
+- (CPRect)_rectForDropHighlightViewBetweenUpperRow:(int)theUpperRowIndex andLowerRow:(int)theLowerRowIndex offset:(float)theXOffset
 {
     // Just call super and update the x to reflect the current indentation level
-    var level = [self levelForRow:theLowerRowIndex],
-        rect = [super rectForDropHighlightViewBetweenUpperRow:theUpperRowIndex andLowerRow:theLowerRowIndex];
+    var level = [self levelForRow:theUpperRowIndex],
+        rect = [super _rectForDropHighlightViewBetweenUpperRow:theUpperRowIndex andLowerRow:theLowerRowIndex offset:theXOffset];
     
     rect.origin.x = level * [self indentationPerLevel];
     return rect;
@@ -826,33 +826,68 @@ var _loadItemInfoForItem = function(/*CPOutlineView*/ anOutlineView, /*id*/ anIt
     return [_outlineView._outlineViewDataSource outlineView:_outlineView writeItems:items toPasteboard:thePasteboard];
 }
 
+- (int)_childIndexForDropOperation:(CPTableViewDropOperation)theDropOperation item:(id)theItem
+{
+	var parentItem = [_outlineView parentForItem:theItem],
+		childIndex = CPNotFound;
+	
+	if (theDropOperation === CPTableViewDropAbove)
+	{
+		var itemInfo = (parentItem !== nil) ? _outlineView._itemInfosForItems[[parentItem UID]] : _outlineView._rootItemInfo,
+			children = itemInfo.children;
+			
+		childIndex = [children indexOfObject:theItem];
+		
+		// When no child is found the index we want to add the item below all it's children
+        // Think about dragging an item below the collectionview
+        if (childIndex === -1)
+            childIndex = [children count];
+	}
+	else if (theOperation === CPTableViewDropOn)
+		childIndex = -1;
+	
+	return childIndex;
+}
+
+- (void)_parentItemForDropOperation:(CPTableViewDropOperation)theDropOperation item:(id)theItem
+{
+	if (theDropOperation === CPTableViewDropAbove)
+		return [_outlineView parentForItem:theItem];
+		
+	else
+		return theItem;
+}
+
 - (CPDragOperation)tableView:(CPTableView)aTableView validateDrop:(id < CPDraggingInfo >)theInfo 
     proposedRow:(int)theRow proposedDropOperation:(CPTableViewDropOperation)theOperation
 {
     if (!(_outlineView._implementedOutlineViewDataSourceMethods & CPOutlineViewDataSource_outlineView_validateDrop_proposedItem_proposedChildIndex_))
         return CPDragOperationNone;
     
-    var droppedItem = [_outlineView itemAtRow:theRow],
-        parentItem = [_outlineView parentForItem:droppedItem];
-        childIndex = CPNotFound;
-    
-    if (theOperation === CPTableViewDropAbove)
-    {       
-        var itemInfo = (parentItem != nil) ? _outlineView._itemInfosForItems[[parentItem UID]] : _outlineView._rootItemInfo,
-            children = itemInfo.children,
-            
-        childIndex = [children indexOfObject:droppedItem];
-
-        // When no child is found the index we want to add the item below all it's children
-        // Think about dragging an item below the collectionview
-        if (childIndex === -1)
-            childIndex = [children count];
-    }
-    else if (theOperation === CPTableViewDropOn)
-    {
-        parentItem = droppedItem;
-        childIndex = -1;
-    }
+	var childIndex = [self _childIndexForDropOperation:theOperation item:[_outlineView itemAtRow:theRow]],
+		parentItem = [self _parentItemForDropOperation:theOperation item:[_outlineView itemAtRow:theRow]];
+		
+    // var droppedItem = [_outlineView itemAtRow:theRow],
+    //      parentItem = [_outlineView parentForItem:droppedItem];
+    //      childIndex = CPNotFound;
+    //  
+    //  if (theOperation === CPTableViewDropAbove)
+    //  {       
+    //      var itemInfo = (parentItem != nil) ? _outlineView._itemInfosForItems[[parentItem UID]] : _outlineView._rootItemInfo,
+    //          children = itemInfo.children,
+    //          
+    //      childIndex = [children indexOfObject:droppedItem];
+    // 
+    //      // When no child is found the index we want to add the item below all it's children
+    //      // Think about dragging an item below the collectionview
+    //      if (childIndex === -1)
+    //          childIndex = [children count];
+    //  }
+    //  else if (theOperation === CPTableViewDropOn)
+    //  {
+    //      parentItem = droppedItem;
+    //      childIndex = -1;
+    //  }
             
     return [_outlineView._outlineViewDataSource outlineView:_outlineView validateDrop:theInfo proposedItem:parentItem proposedChildIndex:childIndex];
 }
@@ -862,22 +897,29 @@ var _loadItemInfoForItem = function(/*CPOutlineView*/ anOutlineView, /*id*/ anIt
     if (!(_outlineView._implementedOutlineViewDataSourceMethods & CPOutlineViewDataSource_outlineView_acceptDrop_item_childIndex_))
         return NO;
     
-    var droppedItem = [_outlineView itemAtRow:theRow],
-        parentItem = [_outlineView parentForItem:droppedItem];
-        childIndex = CPNotFound;
-
-    if (theOperation === CPTableViewDropAbove)
-    {       
-        var itemInfo = (parentItem != nil) ? _outlineView._itemInfosForItems[[parentItem UID]] : _outlineView._rootItemInfo,
-            children = itemInfo.children,
-
-        childIndex = [children indexOfObject:droppedItem];
-    }
-    else if (theOperation === CPTableViewDropOn)
-    {
-        parentItem = droppedItem;
-        childIndex = -1;
-    }
+    // var droppedItem = [_outlineView itemAtRow:theRow],
+    //     parentItem = [_outlineView parentForItem:droppedItem];
+    //     childIndex = CPNotFound;
+    // 
+    // if (theOperation === CPTableViewDropAbove)
+    // {       
+    //     var itemInfo = (parentItem != nil) ? _outlineView._itemInfosForItems[[parentItem UID]] : _outlineView._rootItemInfo,
+    //         children = itemInfo.children,
+    // 
+    //     childIndex = [children indexOfObject:droppedItem];
+    // 
+    //     // When no child is found the index we want to add the item below all it's children
+    //     // Think about dragging an item below the collectionview
+    //     if (childIndex === -1)
+    //         childIndex = [children count];
+    // }
+    // else if (theOperation === CPTableViewDropOn)
+    // {
+    //     parentItem = droppedItem;
+    //     childIndex = -1;
+    // }
+	var childIndex = [self _childIndexForDropOperation:theOperation item:[_outlineView itemAtRow:theRow]],
+		parentItem = [self _parentItemForDropOperation:theOperation item:[_outlineView itemAtRow:theRow]];
     
     return [_outlineView._outlineViewDataSource outlineView:_outlineView acceptDrop:theInfo item:parentItem childIndex:childIndex];
 }

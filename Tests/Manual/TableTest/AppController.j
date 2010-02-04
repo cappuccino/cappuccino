@@ -22,7 +22,7 @@ CPLogRegister(CPLogConsole);
     dataSet1 = [],
     dataSet2 = [];
     
-    for(var i = 1; i < 500000; i++)
+    for(var i = 1; i < 100; i++)
     {
         dataSet1[i - 1] = i;
         dataSet2[i - 1] = i + 10;

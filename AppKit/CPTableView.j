@@ -2589,6 +2589,11 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     return CPDragOperationNone;
 }
 
+- (CPRect)_rectForDropHighlightViewBetweenUpperRow:(int)theUpperRowIndex andLowerRow:(int)theLowerRowIndex offset:(float)theXOffset
+{
+	return [self rectOfRow:theUpperRowIndex];
+}
+
 - (CPDragOperation)draggingUpdated:(id)sender
 {
     var location = [self convertPoint:[sender draggingLocation] fromView:nil],
@@ -2615,7 +2620,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
         
     [_dropOperationFeedbackView setDropOperation:dropOperation];
     [_dropOperationFeedbackView setHidden:(dragOperation == CPDragOperationNone)];
-    [_dropOperationFeedbackView setFrame:rowRect];
+    [_dropOperationFeedbackView setFrame:[self _rectForDropHighlightViewBetweenUpperRow:row andLowerRow:row + 1 offset:location.x]];
     [_dropOperationFeedbackView setCurrentRow:row];
     [self addSubview:_dropOperationFeedbackView];
     
