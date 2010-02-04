@@ -70,6 +70,9 @@ task ("documentation", function()
 {
     if (executableExists("doxygen"))
     {
+        if (OS.system(["ruby", FILE.join("Tools", "Documentation", "make_headers")]))
+            OS.exit(1); //rake abort if ($? != 0)
+
         if (OS.system(["doxygen", FILE.join("Tools", "Documentation", "Cappuccino.doxygen")]))
             OS.exit(1); //rake abort if ($? != 0)
 
