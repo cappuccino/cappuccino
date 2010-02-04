@@ -76,12 +76,11 @@ require("file");
 
     dirname: function(/*String*/ aPath)
     {
-        var aPath = FILE.normal(aPath);
+        var aPath = FILE.normal(aPath),
+            components = FILE.split(aPath);
 
-        if (aPath === "/")
-            return aPath;
-
-        var components = FILE.split(aPath);
+        if (components.length === 2)
+            components.unshift("");
 
         return FILE.join.apply(FILE, components.slice(0, components.length - 1));
     },
