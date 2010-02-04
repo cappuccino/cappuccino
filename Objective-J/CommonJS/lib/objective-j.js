@@ -152,7 +152,7 @@ exports.objj_eval = function(/*String*/ aString)
     var code = executable._code;
 
     // Not clear why these should be global, varing them doesn't seem to take effect with evaluateString.
-    global.objj_executeFile = fileExecuterForPath(FILE.cwd());
+    global.objj_executeFile = exports.fileExecuterForPath(FILE.cwd());
     global.objj_importFile = fileImporterForPath(FILE.cwd());
 
     if (typeof system !== "undefined" && system.engine === "rhino")

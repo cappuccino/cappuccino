@@ -87,9 +87,9 @@ Executable.prototype.functionParameters = function()
 Executable.prototype.functionArguments = function()
 {
     var dirname = FILE.dirname(this.path()),
-        functionArguments = [global, fileExecuterForPath(dirname), fileImporterForPath(dirname)];
+        functionArguments = [global, exports.fileExecuterForPath(dirname), fileImporterForPath(dirname)];
 
-//functionArguments = exportedValues().concat(fileExecuterForPath(path), fileImporterForPath(path));
+//functionArguments = exportedValues().concat(exports.fileExecuterForPath(path), fileImporterForPath(path));
 
 #ifdef COMMONJS
     functionArguments = functionArguments.concat(Executable.commonJSArguments());

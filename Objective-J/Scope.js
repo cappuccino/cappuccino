@@ -22,7 +22,7 @@ function importablePath(/*String*/ aPath, /*BOOL*/ isLocal, /*String*/ aCWD)
 
 var cachedFileExecutersForPaths = { };
 
-function fileExecuterForPath(/*String*/ referencePath)
+exports.fileExecuterForPath = function(/*String*/ referencePath)
 {
     referencePath = FILE.normal(referencePath);
 
@@ -68,7 +68,7 @@ function fileImporterForPath(/*String*/ referencePath)
             function searchComplete(/*FileExecutableSearch*/ aFileExecutableSearch)
             {
                 var fileExecutable = aFileExecutableSearch.result(),
-                    fileExecuter = fileExecuterForPath(referencePath),
+                    fileExecuter = exports.fileExecuterForPath(referencePath),
                     executeAndCallback = function ()
                     {
                         fileExecuter(aPath, isLocal);
