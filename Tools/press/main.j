@@ -31,9 +31,9 @@ parser.option("-F", "--framework", "frameworks")
     .help("Add a frameworks directory, relative to INPUT_PROJECT (default: ['Frameworks'])");
 
 parser.option("-E", "--environment", "environments")
-    .def(['W3C'])//, 'IE7', 'IE8'])
+    .def(['Browser'])
     .push()
-    .help("Add a platform name (default: ['W3C', 'IE7', 'IE8'])");
+    .help("Add a platform name (default: ['Browser'])");
 
 parser.option("-l", "--flatten", "flatten")
     .def(false)
@@ -150,8 +150,12 @@ function pressEnvironment(rootPath, outputFiles, environment, options) {
     var context = new INTERPRETER.Context();
     var scope = setupObjectiveJ(context);
 
-    scope.OBJJ_INCLUDE_PATHS = frameworks;
-    scope.OBJJ_ENVIRONMENTS = [environment, "ObjJ"];
+    var _OBJJ = context.global.require("objective-j");
+
+    // include paths:
+    context.global.OBJJ_INCLUDE_PATHS = frameworks;
+    // environments:
+    _OBJJ.environments = function() { return [environment, "ObjJ"] };
 
     // build list of cibs to inspect for dependent classes
     // FIXME: what's the best way to determine which cibs to look in?
@@ -163,6 +167,7 @@ function pressEnvironment(rootPath, outputFiles, environment, options) {
     var evaledFragments = [];
 
     // here we hook into didReceiveBundleResponse to record the responses for --flattening
+    /*
     functionHookBefore(scope.objj_search.prototype, "didReceiveBundleResponse", function(aResponse) {
         var response = {
             success : aResponse.success,
@@ -180,6 +185,7 @@ function pressEnvironment(rootPath, outputFiles, environment, options) {
     functionHookBefore(scope.objj_search.prototype, "didReceiveExecutableResponse", function(aResponse) {
         exectuableResponses.push(aResponse);
     });
+    */
 
     // lets just use the Context object as our con
     context.rootPath = rootPath;

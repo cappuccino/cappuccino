@@ -224,54 +224,61 @@ function findGlobalDefines(context, mainPath, evaledFragments, bundleCallback)
 {
     var ignore = cloneProperties(context.scope, true);
     ignore['bundle'] = true;
-
+    
     var dependencies = {};
-
-    //scope.fragment_evaluate_file_original = scope.fragment_evaluate_file;
-    //scope.fragment_evaluate_file = function(aFragment)
-    //{
-    //    //CPLog.trace("Loading "+aFragment.info);
-    //
-    //    var result = scope.fragment_evaluate_file_original(aFragment);
-    //
-    //    return result;
-    //}
-
-    // OVERRIDE fragment_evaluate_file
-    var fragment_evaluate_file_original = context.scope.fragment_evaluate_file;
-    context.scope.fragment_evaluate_file = function(aFragment) {
-        return fragment_evaluate_file_original(aFragment);
-    }
-
-    // OVERRIDE fragment_evaluate_code
-    var fragment_evaluate_code_original = context.scope.fragment_evaluate_code;
-    context.scope.fragment_evaluate_code = function(aFragment) {
-
-        CPLog.debug("Evaluating " + context.rootPath.relative(aFragment.file.path) + " (" + context.rootPath.relative(aFragment.bundle.path) + ")");
-
-        var before = cloneProperties(context.scope);
-
-        if (evaledFragments)
-        {
-            evaledFragments.push(aFragment);
+    var evaluatingPaths = [];
+    
+    var before = null;
+    var currentFile = null;
+    
+    // a function to record changes to the global, then reset the scope
+    function recordAndReset() {
+        // system.stderr.write(".").flush();
+        
+        var after = cloneProperties(context.scope);
+        
+        if (before) {
+            dependencies[currentFile] = dependencies[currentFile] || {};
+            diff({
+                before : before,
+                after : after,
+                ignore : ignore,
+                added : dependencies[currentFile],
+                changed : dependencies[currentFile]
+            });
         }
-
-        var result = fragment_evaluate_code_original(aFragment);
-
-        var definedGlobals = {};
-        diff(before, context.scope, ignore, definedGlobals, definedGlobals, null);
-        dependencies[aFragment.file.path] = definedGlobals;
-
-        return result;
+        
+        before = after;
+    }
+    
+    var _OBJJ = context.scope.require("objective-j");
+    var _fileExecuterForPath = _OBJJ.fileExecuterForPath;
+    _OBJJ.fileExecuterForPath = function(/*String*/ referencePath) {
+        var fileExecutor = _fileExecuterForPath.apply(this, arguments);
+        return function(/*String*/ aPath, /*BOOL*/ isLocal, /*BOOL*/ shouldForce) {
+            recordAndReset();
+            
+            evaluatingPaths.push(currentFile);
+            currentFile = referencePath + "/" + aPath;
+            
+            system.stderr.write(">").flush();
+            fileExecutor.apply(this, arguments);
+            system.stderr.write("<").flush();
+            
+            recordAndReset();
+            
+            currentFile = evaluatingPaths.pop();
+        };
     }
 
     var bundleDelegate = [[PressBundleDelgate alloc] initWithCallback:bundleCallback];
     var bundlePaths = [];
 
-    (context.eval("("+(function(mainPath, bundleDelegate, bundlePaths) {
-        with (require("objective-j").window) {
-            objj_import(mainPath, true, function() {
-                bundlePaths = bundlePaths || [];
+    (context.global.require("objective-j").objj_eval(
+        "("+(function(mainPath, bundleDelegate, bundlePaths) {
+            fileImporterForPath("/")(mainPath, true, function() {
+                print("Done importing and evaluating: " + mainPath);
+                // bundlePaths = bundlePaths || [];
 
                 // load default theme bundle
                 // var themePath = [[CPBundle bundleForClass:[CPApplication class]] pathForResource:[CPApplication defaultThemeName]];
@@ -279,16 +286,18 @@ function findGlobalDefines(context, mainPath, evaledFragments, bundleCallback)
                 // [themeBundle loadWithDelegate:bundleDelegate];
 
                 // load additional bundles
-                bundlePaths.forEach(function(bundlePath) {
-                    var bundle = [[CPBundle alloc] initWithPath:bundlePath];
-                    [bundle loadWithDelegate:bundleDelegate];
-                });
+                // bundlePaths.forEach(function(bundlePath) {
+                //     var bundle = [[CPBundle alloc] initWithPath:bundlePath];
+                //     [bundle loadWithDelegate:bundleDelegate];
+                // });
             });
-        }
-    })+")"))(mainPath, bundleDelegate, bundlePaths);
+        })+")"
+    ))(mainPath, bundleDelegate, bundlePaths);
 
     // run the "event loop"
     context.scope.require('browser/timeout').serviceTimeouts();
+
+    print(JSON.stringify(dependencies, null, 4));
 
     return dependencies;
 }
@@ -324,6 +333,8 @@ function setupObjectiveJ(context, debug)
     // load the bootstrap.js for narwhal-rhino
     var bootstrapPath = FILE.join(context.global.NARWHAL_ENGINE_HOME, "bootstrap.js");
     context.evalFile(bootstrapPath);
+    
+    context.global.require("browser");
 
     // get the Objective-J module from this scope, return the window object.
     var OBJJ = context.global.require("objective-j");
@@ -369,23 +380,15 @@ function cloneProperties(object, onlyList)
     return results;
 }
 
-function diff(objectA, objectB, ignore, added, changed, deleted)
+function diff(o)
 {
-    for (var i in objectB)
-        if (added && !ignore[i] && typeof objectA[i] == "undefined")
-            added[i] = true;
-    for (var i in objectB)
-        if (changed && !ignore[i] && typeof objectA[i] != "undefined" && typeof objectB[i] != "undefined" && objectA[i] !== objectB[i])
-            changed[i] = true;
-    for (var i in objectA)
-        if (deleted && !ignore[i] && typeof objectB[i] == "undefined")
-            deleted[i] = true;
-}
-
-function allKeys(object)
-{
-    var result = [];
-    for (var i in object)
-        result.push(i)
-    return result.sort();
+    for (var i in o.after)
+        if (o.added && !o.ignore[i] && typeof o.before[i] == "undefined")
+            o.added[i] = true;
+    for (var i in o.after)
+        if (o.changed && !o.ignore[i] && typeof o.before[i] != "undefined" && typeof o.after[i] != "undefined" && o.before[i] !== o.after[i])
+            o.changed[i] = true;
+    for (var i in o.before)
+        if (o.deleted && !o.ignore[i] && typeof o.after[i] == "undefined")
+            o.deleted[i] = true;
 }
