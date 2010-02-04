@@ -45,10 +45,22 @@
         [_tableColumns makeObjectsPerformSelector:@selector(setTableView:) withObject:self];
 
         _rowHeight = [aCoder decodeFloatForKey:@"NSRowHeight"];
+        
+        // Convert xib default to cib default
+        if (_rowHeight == 17)
+            _rowHeight = 23;
+        
         _intercellSpacing = CGSizeMake([aCoder decodeFloatForKey:"NSIntercellSpacingWidth"], [aCoder decodeFloatForKey:"NSIntercellSpacingHeight"]);
+        
+        _gridColor = [aCoder decodeObjectForKey:@"NSGridColor"];
+        _gridStyleMask = [aCoder decodeIntForKey:@"NSGridStyleMask"];
         
         _allowsMultipleSelection = (flags & 0x08000000) ? YES : NO;
         _allowsEmptySelection = (flags & 0x10000000) ? YES : NO;
+        _allowsColumnSelection = (flags & 0x04000000) ? YES : NO;
+        
+        _allowsColumnResizing = (flags & 0x40000000) ? YES : NO;
+        _allowsColumnReordering = (flags & 0x80000000) ? YES : NO;
     }
     
     return self;

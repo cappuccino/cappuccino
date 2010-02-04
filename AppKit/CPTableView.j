@@ -2866,7 +2866,9 @@ var CPTableViewDataSourceKey        = @"CPTableViewDataSourceKey",
     CPTableViewRowHeightKey         = @"CPTableViewRowHeightKey",
     CPTableViewIntercellSpacingKey  = @"CPTableViewIntercellSpacingKey",
     CPTableViewMultipleSelectionKey = @"CPTableViewMultipleSelectionKey",
-    CPTableViewEmptySelectionKey    = @"CPTableViewEmptySelectionKey";
+    CPTableViewEmptySelectionKey    = @"CPTableViewEmptySelectionKey",
+    CPTableViewGridColorKey         = @"CPTableViewGridColorKey",
+    CPTableViewGridStyleMaskKey     = @"CPTableViewGridStyleMaskKey";
 
 @implementation CPTableView (CPCoding)
 
@@ -2909,10 +2911,10 @@ var CPTableViewDataSourceKey        = @"CPTableViewDataSourceKey",
         _intercellSpacing = [aCoder decodeSizeForKey:CPTableViewIntercellSpacingKey];
 
         _selectionHightlightColor = [CPColor selectionColor];
-
-        [self setGridColor:[CPColor grayColor]];
-        [self setGridStyleMask:CPTableViewGridNone];
-
+        
+        _gridColor = [aCoder decodeObjectForKey:CPTableViewGridColorKey] || [CPColor grayColor];
+        _gridStyleMask = [aCoder decodeIntForKey:CPTableViewGridStyleMaskKey] || CPTableViewGridNone;
+        
         _headerView = [[CPTableHeaderView alloc] initWithFrame:CGRectMake(0, 0, [self bounds].size.width, _rowHeight)];
 
         [_headerView setTableView:self];
@@ -2949,6 +2951,9 @@ var CPTableViewDataSourceKey        = @"CPTableViewDataSourceKey",
     [aCoder encodeBool:_allowsEmptySelection forKey:CPTableViewEmptySelectionKey];
 
     [aCoder encodeObject:_tableColumns forKey:CPTableViewTableColumnsKey];
+    
+    [aCoder encodeObject:_gridColor forKey:CPTableViewGridColorKey];
+    [aCoder encodeInt:_gridStyleMask forKey:CPTableViewGridStyleMaskKey];
 }
 
 @end
