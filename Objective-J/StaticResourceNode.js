@@ -31,7 +31,7 @@ require("file");
 
     cwd: function()
     {
-        return FILE.dirname(window.location.pathname);
+        return FILE._cwd;
     },
 
     normal: function(/*String*/ aPath)
@@ -76,12 +76,11 @@ require("file");
 
     dirname: function(/*String*/ aPath)
     {
-        var aPath = FILE.normal(aPath);
+        var aPath = FILE.normal(aPath),
+            components = FILE.split(aPath);
 
-        if (aPath === "/")
-            return aPath;
-
-        var components = FILE.split(aPath);
+        if (components.length === 2)
+            components.unshift("");
 
         return FILE.join.apply(FILE, components.slice(0, components.length - 1));
     },
@@ -101,6 +100,14 @@ require("file");
         return FILE.normal(aPath).split("/");
     }
 }
+
+var DOMBaseElement = document.getElementsByTagName("base")[0];
+
+if (DOMBaseElement)
+    FILE._cwd = FILE.dirname(DOMBaseElement.getAttribute("href"));
+else
+    FILE._cwd = FILE.dirname(window.location.pathname);
+
 #endif
 
 StaticResourceNode.FileType             = 0;

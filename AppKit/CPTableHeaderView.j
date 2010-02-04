@@ -23,58 +23,12 @@
 @import "CPTableColumn.j"
 @import "CPTableView.j"
 @import "CPView.j"
-@import <AppKit/CGGradient.j>
+ 
+var CPThemeStatePressed = CPThemeState("pressed");
 
-var _headerGradient = nil,
-    _selectedHeaderGradient = nil,
-    _pressedHeaderGradient = nil,
-    _selectedPressedHeaderGradient = nil,
-    
-    supportsCanvasGradient = NO;
-
-// FIX ME: _CPTableColumnHeaderView has code for drawn gradients. 
-// We need to decide if we're going to draw it or just use images throughout.
 @implementation _CPTableColumnHeaderView : CPView
 {
-    BOOL        _isPressed;
     CPTextField _textField;
-}
-
-+ (void)initialize
-{
-    supportsCanvasGradient = NO;//CPFeatureIsCompatible(CPHTMLCanvasFeature);
-}
-
-+ (CGGradient)headerGradient
-{
-    if (!_headerGradient)
-        _headerGradient = CGGradientCreateWithColorComponents(CGColorSpaceCreateDeviceRGB(),[1.0,1.0,1.0,1.0,0.929,0.929,0.929,1.0], [0.3,1], 2);
-        
-    return _headerGradient;
-}
-
-+ (CGGradient)selectedHeaderGradient
-{
-    if (!_selectedHeaderGradient)
-        _selectedHeaderGradient = CGGradientCreateWithColorComponents(CGColorSpaceCreateDeviceRGB(), [0.804,0.851,0.918,1.0,0.655,0.718,0.8,1.0], [0.3,1], 2);
-        
-    return _selectedHeaderGradient;
-}
-
-+ (CGGradient)pressedHeaderGradient
-{
-    if (!_pressedHeaderGradient)
-        _pressedHeaderGradient = CGGradientCreateWithColorComponents(CGColorSpaceCreateDeviceRGB(),[0.929,0.929,0.929,1.0,1.0,1.0,1.0,1.0], [0.3,1], 2);
-        
-    return _pressedHeaderGradient;
-}
-
-+ (CGGradient)selectedPressedHeaderGradient
-{
-    if (!_selectedPressedHeaderGradient)
-        _selectedPressedHeaderGradient = CGGradientCreateWithColorComponents(CGColorSpaceCreateDeviceRGB(), [0.655,0.718,0.8,1.0,0.804,0.851,0.918,1.0], [0.3,1], 2);
-        
-    return _selectedPressedHeaderGradient;
 }
 
 - (void)initWithFrame:(CGRect)frame
@@ -82,52 +36,25 @@ var _headerGradient = nil,
     self = [super initWithFrame:frame];
     if (self)
     {   
-        _isPressed = NO;        
         _textField = [[CPTextField alloc] initWithFrame:[self bounds]];
         [_textField setAutoresizingMask:CPViewWidthSizable|CPViewHeightSizable];
         [self addSubview:_textField];
-        
-        if (!supportsCanvasGradient)
-             [self setBackgroundColor:[CPColor colorWithPatternImage:CPAppKitImage("tableview-headerview.png", CGSizeMake(1.0, 22.0))]];
-            
-        //[self setValue:headerColor forThemeAttribute:@"background-color" inState:CPThemeStateNormal];
-        //[self setValue:headerHighlightedColor forThemeAttribute:@"background-color" inState:CPThemeStateHighlighted];
     }
     
     return self;
 }
 
-- (void)setPressed:(BOOL)flag
+- (void)layoutSubviews
 {
-    _isPressed = flag;
-    var isSelected = ([self themeState] & CPThemeStateSelected);    
-    
-    if(_isPressed && isSelected)
+    var themeState = [self themeState];
+
+    if((themeState & CPThemeStateSelected) && (themeState & CPThemeStatePressed))
         [self setBackgroundColor:[CPColor colorWithPatternImage:CPAppKitImage("tableview-headerview-highlighted-pressed.png", CGSizeMake(1.0, 22.0))]];
-    else if (isSelected)
+    else if (themeState == CPThemeStateSelected)
         [self setBackgroundColor:[CPColor colorWithPatternImage:CPAppKitImage("tableview-headerview-highlighted.png", CGSizeMake(1.0, 22.0))]];
-    else if (_isPressed)
+    else if (themeState == CPThemeStatePressed)
         [self setBackgroundColor:[CPColor colorWithPatternImage:CPAppKitImage("tableview-headerview-pressed.png", CGSizeMake(1.0, 22.0))]];
     else 
-        [self setBackgroundColor:[CPColor colorWithPatternImage:CPAppKitImage("tableview-headerview.png", CGSizeMake(1.0, 22.0))]];
-
-    
-    [self setNeedsDisplay:YES];
-}
-
-- (BOOL)setThemeState:(CPThemeState)aState
-{
-    if (supportsCanvasGradient)
-        [super setThemeState:aState];
-    else if (aState & CPThemeStateHighlighted)
-        [self setBackgroundColor:[CPColor colorWithPatternImage:CPAppKitImage("tableview-headerview-highlighted.png", CGSizeMake(1.0, 22.0))]];
-}
-
-- (BOOL)unsetThemeState:(CPThemeState)aState
-{
-    if (supportsCanvasGradient)
-        [super unsetThemeState:aState];
-    else if (aState & CPThemeStateHighlighted)
         [self setBackgroundColor:[CPColor colorWithPatternImage:CPAppKitImage("tableview-headerview.png", CGSizeMake(1.0, 22.0))]];
 }
 
@@ -148,32 +75,8 @@ var _headerGradient = nil,
 
 - (void)sizeToFit
 {
+    [_textField sizeToFit];
 }
-
-- (void)drawRect:(CGRect)rect
-{
-    if (!supportsCanvasGradient)
-        return;
-
-    var context = [[CPGraphicsContext currentContext] graphicsPort],
-        bounds = [self bounds],
-        isSelected = ([self themeState] & CPThemeStateSelected);
-
-    if (_isPressed && isSelected)
-        gradient = [_CPTableColumnHeaderView selectedPressedHeaderGradient];
-    else if (isSelected)
-        gradient = [_CPTableColumnHeaderView selectedHeaderGradient];
-    else if (_isPressed)
-        gradient = [_CPTableColumnHeaderView pressedHeaderGradient];
-    else 
-        gradient = [_CPTableColumnHeaderView headerGradient];
-    
-    CGContextBeginPath(context);
-    CGContextAddRect(context, bounds);
-    CGContextDrawLinearGradient(context, gradient, CGPointMakeZero(), CGPointMake(0, CGRectGetHeight(bounds)), 0);
-    CGContextClosePath(context);
-}
-
 @end
 
 @implementation CPTableHeaderView : CPView
@@ -258,11 +161,21 @@ var _headerGradient = nil,
     return rect;
 }
 
-- (void)_updatePressed:(BOOL)flag
+- (void)_setPressedColumn:(CPInteger)column
 {
-    var headerView = [_tableView._tableColumns[_pressedColumn] headerView];
-    if ([headerView respondsToSelector:@selector(setPressed:)])
-        [headerView setPressed:flag];
+    if (_pressedColumn != CPNotFound)
+    {
+        var headerView = [_tableView._tableColumns[_pressedColumn] headerView];
+        [headerView unsetThemeState:CPThemeStatePressed];
+    }    
+    
+    if (column != CPNotFound)
+    {
+        var headerView = [_tableView._tableColumns[column] headerView];
+        [headerView setThemeState:CPThemeStatePressed];
+    }
+    
+    _pressedColumn = column;
 }
 
 - (void)mouseDown:(CPEvent)theEvent
@@ -279,8 +192,7 @@ var _headerGradient = nil,
         [[_tableView delegate] tableView:_tableView
           mouseDownInHeaderOfTableColumn:[[_tableView tableColumns] objectAtIndex:clickedColumn]];
     
-    _pressedColumn = clickedColumn;
-    [self _updatePressed:YES];
+    [self _setPressedColumn:clickedColumn];
 }
 
 - (void)mouseUp:(CPEvent)theEvent
@@ -288,14 +200,10 @@ var _headerGradient = nil,
     var location = [self convertPoint:[theEvent locationInWindow] fromView:nil],
         clickedColumn = [self columnAtPoint:location];
 
-    if (clickedColumn == -1)
-        return;
+    [self _setPressedColumn:CPNotFound];
 
-    if (_pressedColumn != CPNotFound)
-    {
-        [self _updatePressed:NO];
-        _pressedColumn = CPNotFound;
-    }
+    if (clickedColumn == -1)
+        return;    
 
     if ([_tableView allowsColumnSelection])
     {        
@@ -374,15 +282,13 @@ var _headerGradient = nil,
         columnMaxX = CGRectGetMaxX(columnToStroke);
         
         CGContextMoveToPoint(context, ROUND(columnMaxX) + 0.5, ROUND(CGRectGetMinY(columnToStroke)));
-        CGContextAddLineToPoint(context, ROUND(columnMaxX) + 0.5, ROUND(CGRectGetMaxY(columnToStroke)) - 1);
+        CGContextAddLineToPoint(context, ROUND(columnMaxX) + 0.5, ROUND(CGRectGetMaxY(columnToStroke)));
     }
     
     CGContextClosePath(context);
     CGContextStrokePath(context);
-    
-    return;
-    
-    /*
+        
+/*
     var maxY = CGRectGetMaxY([self bounds]);
     // draw normal gradient for remaining space
     if (supportsCanvasGradient)
@@ -400,7 +306,8 @@ var _headerGradient = nil,
     CGContextMoveToPoint(context, 0, maxY - 0.5);
     CGContextAddLineToPoint(context, CGRectGetMaxX([self bounds]), maxY - 0.5);
     CGContextClosePath(context);
-    CGContextStrokePath(context);*/   
+    CGContextStrokePath(context);
+*/   
 }
 
 @end

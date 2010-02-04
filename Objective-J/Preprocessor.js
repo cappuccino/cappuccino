@@ -143,6 +143,9 @@ function preprocess(/*String*/ aString, /*String*/ aPath, /*unsigned*/ flags)
 
 function Preprocessor(/*String*/ aString, /*String*/ aPath, /*unsigned*/ flags)
 {
+    // Remove the shebang.
+    aString = aString.replace(/^#[^\n]+\n/, "\n");
+
     this._currentSelector = "";
     this._currentClass = "";
     this._currentSuperClass = "";

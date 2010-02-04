@@ -11,8 +11,9 @@ function CFPropertyList()
     this._UID = generateObjectUID();
 }
 
-CFPropertyList.PLISTRE = /^\s*<\s*plist\s*>/i;
-CFPropertyList.DTDRE = /^\s*<\?\s*xml\s+version\s*=\s*\"1.0\"[^>]*\?>\s*<\!DOCTYPE\s+plist\s+PUBLIC\s+\"-\/\/Apple(?:\sComputer)?\/\/DTD\s+PLIST\s+1.0\/\/EN\"\s+\"http:\/\/www\.apple\.com\/DTDs\/PropertyList-1\.0\.dtd\"\s*>/i;
+// We are really liberal when accepting DOCTYPEs.
+CFPropertyList.DTDRE = /^\s*(?:<\?\s*xml\s+version\s*=\s*\"1.0\"[^>]*\?>\s*)?(?:<\!DOCTYPE[^>]*>\s*)?/i
+CFPropertyList.XMLRE = /^\s*(?:<\?\s*xml\s+version\s*=\s*\"1.0\"[^>]*\?>\s*)?(?:<\!DOCTYPE[^>]*>\s*)?<\s*plist[^>]*\>/i;
 
 CFPropertyList.FormatXMLDTD = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<!DOCTYPE plist PUBLIC \"-//Apple//DTD PLIST 1.0//EN\" \"http://www.apple.com/DTDs/PropertyList-1.0.dtd\">";
 CFPropertyList.Format280NorthMagicNumber = "280NPLIST";
@@ -26,12 +27,8 @@ CFPropertyList.Format280North_v1_0    = -1000;
 
 CFPropertyList.sniffedFormatOfString = function(/*String*/ aString)
 {
-    // If the string starts with the plist DTD
-    if (aString.match(CFPropertyList.DTDRE))
-        return CFPropertyList.FormatXML_v1_0;
-
-    // If the string starts with <plist>...
-    if (aString.match(CFPropertyList.PLISTRE))
+    // Check if this is an XML Plist.
+    if (aString.match(CFPropertyList.XMLRE))
         return CFPropertyList.FormatXML_v1_0;
 
     if (aString.substr(0, CFPropertyList.Format280NorthMagicNumber.length) === CFPropertyList.Format280NorthMagicNumber)
@@ -456,6 +453,7 @@ function parseXML(/*String*/ aString)
     {
         XMLNode = new ActiveXObject("Microsoft.XMLDOM");
 
+        // Extract the DTD, which confuses IE.
         var matches = aString.match(CFPropertyList.DTDRE);
 
         if (matches)

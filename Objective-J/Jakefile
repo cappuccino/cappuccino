@@ -21,7 +21,8 @@
  */
 
 var FILE = require("file"),
-    OS = require("os");
+    OS = require("os"),
+    stream = require("term").stream;
 
 require("../common.jake");
 //$BUILD_CONFIGURATION_DIR = "../Build"
@@ -30,19 +31,13 @@ $BROWSER_FILE       = FILE.join("Browser", "Objective-J.js");
 $BUILD_OBJECTIVE_J  = FILE.join($BUILD_CONFIGURATION_DIR, "Objective-J");
 $BUILD_BROWSER_FILE = FILE.join($BUILD_OBJECTIVE_J, "Objective-J.js");
 
-$INCLUDE_FLAGS = " -I" + FILE.cwd();
+$INCLUDE_FLAGS      = " -I" + FILE.cwd();
+$OBJECTIVEJ_FILES   = new FileList("*.js");
 
-filedir($BUILD_BROWSER_FILE, $BROWSER_FILE, function(aTask)
-{/*
-    var methods = ["join", "isAbsolute", "absolute", "basename"],
-        implementations = { };
+$BROWSER_FILES      = new FileList($BROWSER_FILE).include($OBJECTIVEJ_FILES);
 
-    methods.forEach(function(aMethod)
-    {
-        implementations[aMethod] = FILE[aMethod].toString().replace(/exports/, "FILE");
-        print(implementations[aMethod])
-    });
-*/
+filedir($BUILD_BROWSER_FILE, $BROWSER_FILES, function(aTask)
+{
     gcc($BROWSER_FILE, 
         $BUILD_BROWSER_FILE, 
         environmentFlags("Browser", "ObjJ") + $INCLUDE_FLAGS, $CONFIGURATION !== "Debug");
@@ -64,10 +59,13 @@ new FileList("CommonJS/**/*").forEach(function(aFilename)
 
     var buildFilename = FILE.join($BUILD_CJS_OBJECTIVE_J, FILE.relative("CommonJS/", aFilename));
 
-    filedir (buildFilename, [aFilename], function ()
+    filedir (buildFilename, new FileList(aFilename).include($OBJECTIVEJ_FILES), function ()
     {
         if (FILE.extension(aFilename) !== ".js")
-            cp(aFilename, buildFilename)
+        {
+            stream.print("Copying... \0green(" + aFilename +"\0)");
+            cp(aFilename, buildFilename);
+        }
         else
             gcc(aFilename,
                 buildFilename,
@@ -108,6 +106,8 @@ function environmentFlags()
 
 function gcc(inputFilePath, outputFilePath, flags, compress)
 {
+    stream.print("Building... \0green(" + outputFilePath +"\0)");
+
     // GCC preprocess the file.
     var gcc = OS.popen("gcc -E -x c -P " + flags + " " + inputFilePath, { charset:"UTF-8" }),
         gccFilePath = FILE.join("", "tmp", "objj-gcc.js"),

@@ -41,7 +41,7 @@ CFBundle.bundleContainingPath = function(/*String*/ aPath)
     while (aPath !== "/")
     {
         var bundle = CFBundlesForPaths[aPath];
-        
+
         if (bundle)
             return bundle;
 

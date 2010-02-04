@@ -24,7 +24,8 @@ CPPlatformDidClearBodyElementNotification   = @"CPPlatformDidClearBodyElementNot
 CPPlatformWillClearBodyElementNotification  = @"CPPlatformWillClearBodyElementNotification";
 
 var screenNeedsInitialization   = NO,
-    mainBodyElement = nil;
+    mainBodyElement = nil,
+    elementRemovalTest = new RegExp("\\bcpdontremove\\b", "g");
 
 @implementation CPPlatform : CPBasePlatform
 {
@@ -99,7 +100,16 @@ var screenNeedsInitialization   = NO,
     var bodyElement = [self mainBodyElement];
 
     // Get rid of any of the original contents of the page.
-    bodyElement.innerHTML = "";
+    var children = bodyElement.childNodes,
+        length = children.length;
+
+    while (length--)
+    {
+        var element = children[length];
+        if (!element.className || element.className.match(elementRemovalTest) === null)
+            bodyElement.removeChild(element);
+    }
+
     bodyElement.style.overflow = "hidden";
 
     if (document.documentElement)
