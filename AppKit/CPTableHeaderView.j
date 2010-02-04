@@ -38,6 +38,14 @@ var CPThemeStatePressed = CPThemeState("pressed");
     {   
         _textField = [[CPTextField alloc] initWithFrame:[self bounds]];
         [_textField setAutoresizingMask:CPViewWidthSizable|CPViewHeightSizable];
+        [_textField setTextColor: [CPColor colorWithHexString: @"333333"]];
+        [_textField setValue:[CPFont boldSystemFontOfSize:12.0] forThemeAttribute:@"font"];
+        [_textField setValue:CPLeftTextAlignment forThemeAttribute:@"alignment"];
+        [_textField setVerticalAlignment:CPCenterVerticalTextAlignment];
+        [_textField setValue:CGSizeMake(0,1) forThemeAttribute:@"text-shadow-offset"];
+	    [_textField setValue:[CPColor whiteColor] forThemeAttribute:@"text-shadow-color"];
+
+
         [self addSubview:_textField];
     }
     
@@ -76,6 +84,11 @@ var CPThemeStatePressed = CPThemeState("pressed");
 - (void)sizeToFit
 {
     [_textField sizeToFit];
+}
+
+- (void)setValue:(id)aValue forThemeAttribute:(id)aKey
+{
+    [_textField setValue:aValue forThemeAttribute:aKey];
 }
 @end
 
