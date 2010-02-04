@@ -66,7 +66,7 @@ CPLogRegister(CPLogConsole);
   //  [textDataView setValue:CGInsetMake(0, 0, 0, 0) forThemeAttribute:@"focus-inset" inState:CPThemeStateBezeled|CPThemeStateEditing];
 
     //[textDataView setValue:CGSizeMake(1,1) forThemeAttribute:@"text-shadow-offset"];
-	//[textDataView setValue:[CPColor blackColor] forThemeAttribute:@"text-shadow-color" inState:CPThemeStateHighlighted];
+    //[textDataView setValue:[CPColor blackColor] forThemeAttribute:@"text-shadow-color" inState:CPThemeStateHighlighted];
 
 //    [textDataView setBackgroundColor:[[CPColor redColor] colorWithAlphaComponent:0.5]];
 
@@ -149,7 +149,7 @@ CPLogRegister(CPLogConsole);
     [textDataView setValue:[CPFont systemFontOfSize:12] forThemeAttribute:@"font" inState:CPThemeStateHighlighted];
 
     //[textDataView setValue:CGSizeMake(1,1) forThemeAttribute:@"text-shadow-offset"];
-	//[textDataView setValue:[CPColor blackColor] forThemeAttribute:@"text-shadow-color" inState:CPThemeStateHighlighted];
+    //[textDataView setValue:[CPColor blackColor] forThemeAttribute:@"text-shadow-color" inState:CPThemeStateHighlighted];
 
 //    [textDataView setBackgroundColor:[[CPColor redColor] colorWithAlphaComponent:0.5]];
 
@@ -224,30 +224,30 @@ CPLogRegister(CPLogConsole);
 
 //- (void)tableViewSelectionIsChanging:(CPNotification)aNotification
 //{
-//	CPLog.debug(@"changing! %@", [aNotification description]);
+//  CPLog.debug(@"changing! %@", [aNotification description]);
 //}
 //
 //- (void)tableViewSelectionDidChange:(CPNotification)aNotification
 //{
-//	CPLog.debug(@"did change! %@", [aNotification description]);
+//  CPLog.debug(@"did change! %@", [aNotification description]);
 //}
 
 - (BOOL)tableView:(CPTableView)aTableView shouldSelectRow:(int)rowIndex
 {
-	//CPLog.debug(@"shouldSelectRow %d", rowIndex);
-	//for (var i = 2, sqrt = SQRT(rowIndex+1); i <= sqrt; i++)
-	  //  if ((rowIndex+1) % i === 0)
-	        //return false; 
+    //CPLog.debug(@"shouldSelectRow %d", rowIndex);
+    //for (var i = 2, sqrt = SQRT(rowIndex+1); i <= sqrt; i++)
+      //  if ((rowIndex+1) % i === 0)
+            //return false; 
    // if(rowIndex % 2 == 1)
-   // 	return true;
+   //   return true;
    // else
         return true;
 }
 
 - (BOOL)selectionShouldChangeInTableView:(CPTableView)aTableView
 {
-	//CPLog.debug(@"selectionShouldChangeInTableView");
-	return YES;
+    //CPLog.debug(@"selectionShouldChangeInTableView");
+    return YES;
 }
 
 - (void)tableViewSelectionDidChange:(id)notification
@@ -267,8 +267,8 @@ CPLogRegister(CPLogConsole);
 
 //- (CPIndexSet)tableView:(CPTableView)tableView selectionIndexesForProposedSelection:(CPIndexSet)proposedSelectionIndexes
 //{
-//	CPLog.debug(@"selectionIndexesForProposedSelection %@", [proposedSelectionIndexes description]);
-//	return proposedSelectionIndexes;
+//  CPLog.debug(@"selectionIndexesForProposedSelection %@", [proposedSelectionIndexes description]);
+//  return proposedSelectionIndexes;
 //}
 
 
@@ -371,28 +371,28 @@ CPLogRegister(CPLogConsole);
     var aboveCount = 0,
         object,
         removeIndex;
-	
-	var index = [indexes lastIndex];
-	
+    
+    var index = [indexes lastIndex];
+    
     while (index != CPNotFound)
-	{
-		if (index >= insertIndex)
-		{
-			removeIndex = index + aboveCount;
-			aboveCount ++;
-		}
-		else
-		{
-			removeIndex = index;
-			insertIndex --;
-		}
-		
-		object = [self objectAtIndex:removeIndex];
-		[self removeObjectAtIndex:removeIndex];
-		[self insertObject:object atIndex:insertIndex];
-		
-		index = [indexes indexLessThanIndex:index];
-	}
+    {
+        if (index >= insertIndex)
+        {
+            removeIndex = index + aboveCount;
+            aboveCount ++;
+        }
+        else
+        {
+            removeIndex = index;
+            insertIndex --;
+        }
+        
+        object = [self objectAtIndex:removeIndex];
+        [self removeObjectAtIndex:removeIndex];
+        [self insertObject:object atIndex:insertIndex];
+        
+        index = [indexes indexLessThanIndex:index];
+    }
 }
 
 @end

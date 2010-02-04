@@ -2498,7 +2498,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 - (CPDragOperation)draggingEntered:(id)sender
 {
     var location = [self convertPoint:[sender draggingLocation] fromView:nil],
-        dropOperation = [self _proposedDropOperation],
+        dropOperation = [self _proposedDropOperationAtPoint:location],
         row = [self _proposedRowAtPoint:location];
     
     if(_retargetedDropRow !== nil)
@@ -2538,7 +2538,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     _retargetedDropOperation = nil;
     _retargetedDropRow = nil;
     _draggedRowIndexes = [CPIndexSet indexSet];
-	[_dropOperationFeedbackView setHidden:YES];
+    [_dropOperationFeedbackView setHidden:YES];
 }
 /*
     @ignore
@@ -2551,14 +2551,23 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 /*
     @ignore
 */
-- (CPTableViewDropOperation)_proposedDropOperation
+- (CPTableViewDropOperation)_proposedDropOperationAtPoint:(CGPoint)theDragPoint
 {
-    //check is something is forced...
-    // otherwise we use the above action by default
-    if(_retargetedDropOperation !== nil)
+    if(_retargetedDropOperation !== nil) 
         return _retargetedDropOperation;
-    else
-        return CPTableViewDropAbove;
+
+    var row = [self rowAtPoint:theDragPoint],
+        rowRect = [self rectOfRow:row];
+        
+    // If there is no (the default) or to little inter cell spacing we create some room for the CPTableViewDropAbove indicator
+    // This probably doesn't work if the row height is smaller than or around 5.0
+    if ([self intercellSpacing].height < 5.0)
+        rowRect = CPRectInset(rowRect, 0.0, 5.0 - [self intercellSpacing].height);
+        
+    if (CGRectContainsPoint(rowRect, theDragPoint)) 
+        return CPTableViewDropOn;
+        
+    return CPTableViewDropAbove;
 }
 
 /*
@@ -2569,14 +2578,9 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     var numberOfRows = [self numberOfRows],
         row = [self rowAtPoint:dragPoint];
 
-	// cocoa seems to jump to the next row when we approach the below row
+    // cocoa seems to jump to the next row when we approach the below row
     dragPoint.y += FLOOR(CPRectGetHeight([self rectOfRow:row]) / 4.0);
     row = [self rowAtPoint:dragPoint];
-
-    // Check if we are dragging outside the tableview 
-    // because we want the drag highlight to be below the last row
-    if (row === -1)
-        row = numberOfRows + 1;
     
     return row;
 }
@@ -2591,13 +2595,13 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 
 - (CPRect)_rectForDropHighlightViewBetweenUpperRow:(int)theUpperRowIndex andLowerRow:(int)theLowerRowIndex offset:(float)theXOffset
 {
-	return [self rectOfRow:theUpperRowIndex];
+    return [self rectOfRow:theLowerRowIndex];
 }
 
 - (CPDragOperation)draggingUpdated:(id)sender
 {
     var location = [self convertPoint:[sender draggingLocation] fromView:nil],
-        dropOperation = [self _proposedDropOperation],
+        dropOperation = [self _proposedDropOperationAtPoint:location],
         numberOfRows = [self numberOfRows];
 
     var row = [self _proposedRowAtPoint:location],
@@ -2620,7 +2624,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
         
     [_dropOperationFeedbackView setDropOperation:dropOperation];
     [_dropOperationFeedbackView setHidden:(dragOperation == CPDragOperationNone)];
-    [_dropOperationFeedbackView setFrame:[self _rectForDropHighlightViewBetweenUpperRow:row andLowerRow:row + 1 offset:location.x]];
+    [_dropOperationFeedbackView setFrame:[self _rectForDropHighlightViewBetweenUpperRow:row - 1 andLowerRow:row offset:location.x]];
     [_dropOperationFeedbackView setCurrentRow:row];
     [self addSubview:_dropOperationFeedbackView];
     
@@ -2651,12 +2655,11 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 - (BOOL)performDragOperation:(id)sender
 {
     var location = [self convertPoint:[sender draggingLocation] fromView:nil];
-        operation = [self _proposedDropOperation];
+        operation = [self _proposedDropOperationAtPoint:location],
+        row = _retargetedDropRow;
 
-    if(_retargetedDropRow !== nil)
-        var row = _retargetedDropRow;
-    else
-        var row = [self rowAtPoint:location];
+    if(row === nil)
+        var row = [self _proposedRowAtPoint:location];
 
     return [_dataSource tableView:self acceptDrop:sender row:row dropOperation:operation];
 }
