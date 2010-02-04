@@ -2863,16 +2863,20 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 
 @end
 
-var CPTableViewDataSourceKey        = @"CPTableViewDataSourceKey",
-    CPTableViewDelegateKey          = @"CPTableViewDelegateKey",
-    CPTableViewHeaderViewKey        = @"CPTableViewHeaderViewKey",
-    CPTableViewTableColumnsKey      = @"CPTableViewTableColumnsKey",
-    CPTableViewRowHeightKey         = @"CPTableViewRowHeightKey",
-    CPTableViewIntercellSpacingKey  = @"CPTableViewIntercellSpacingKey",
-    CPTableViewMultipleSelectionKey = @"CPTableViewMultipleSelectionKey",
-    CPTableViewEmptySelectionKey    = @"CPTableViewEmptySelectionKey",
-    CPTableViewGridColorKey         = @"CPTableViewGridColorKey",
-    CPTableViewGridStyleMaskKey     = @"CPTableViewGridStyleMaskKey";
+var CPTableViewDataSourceKey                = @"CPTableViewDataSourceKey",
+    CPTableViewDelegateKey                  = @"CPTableViewDelegateKey",
+    CPTableViewHeaderViewKey                = @"CPTableViewHeaderViewKey",
+    CPTableViewTableColumnsKey              = @"CPTableViewTableColumnsKey",
+    CPTableViewRowHeightKey                 = @"CPTableViewRowHeightKey",
+    CPTableViewIntercellSpacingKey          = @"CPTableViewIntercellSpacingKey",
+    CPTableViewMultipleSelectionKey         = @"CPTableViewMultipleSelectionKey",
+    CPTableViewEmptySelectionKey            = @"CPTableViewEmptySelectionKey",
+    CPTableViewColumnReorderingKey          = @"CPTableViewColumnReorderingKey",
+    CPTableViewColumnResizingKey            = @"CPTableViewColumnResizingKey",
+    CPTableViewColumnSelectionKey           = @"CPTableViewColumnSelectionKey",
+    CPTableViewGridColorKey                 = @"CPTableViewGridColorKey",
+    CPTableViewGridStyleMaskKey             = @"CPTableViewGridStyleMaskKey",
+    CPTableViewUsesAlternatingBackgroundKey = @"CPTableViewUsesAlternatingBackgroundKey";
 
 @implementation CPTableView (CPCoding)
 
@@ -2883,18 +2887,18 @@ var CPTableViewDataSourceKey        = @"CPTableViewDataSourceKey",
     if (self)
     {
         //Configuring Behavior
-        _allowsColumnReordering = YES;
-        _allowsColumnResizing = YES;
+        _allowsColumnReordering = [aCoder decodeBoolForKey:CPTableViewColumnReorderingKey];
+        _allowsColumnResizing = [aCoder decodeBoolForKey:CPTableViewColumnResizingKey];
         _allowsMultipleSelection = [aCoder decodeBoolForKey:CPTableViewMultipleSelectionKey];
         _allowsEmptySelection = [aCoder decodeBoolForKey:CPTableViewEmptySelectionKey];
-        _allowsColumnSelection = NO;
+        _allowsColumnSelection = [aCoder decodeBoolForKey:CPTableViewColumnSelectionKey];
 
         _tableViewFlags = 0;
 
         //Setting Display Attributes
         _selectionHighlightMask = CPTableViewSelectionHighlightStyleRegular;
 
-        [self setUsesAlternatingRowBackgroundColors:NO];
+        _usesAlternatingRowBackgroundColors = [aCoder decodeBoolForKey:CPTableViewUsesAlternatingBackgroundKey];
         [self setAlternatingRowBackgroundColors:[[CPColor whiteColor], [CPColor colorWithHexString:@"e4e7ff"]]];
 
         _tableColumns = [aCoder decodeObjectForKey:CPTableViewTableColumnsKey];
@@ -2912,7 +2916,11 @@ var CPTableViewDataSourceKey        = @"CPTableViewDataSourceKey",
         _exposedColumns = [CPIndexSet indexSet];
         _cachedDataViews = { };
         _rowHeight = [aCoder decodeFloatForKey:CPTableViewRowHeightKey];
-        _intercellSpacing = [aCoder decodeSizeForKey:CPTableViewIntercellSpacingKey];
+        
+        if ([aCoder containsValueForKey:CPTableViewIntercellSpacingKey])
+            _intercellSpacing = [aCoder decodeSizeForKey:CPTableViewIntercellSpacingKey];
+        else
+            _intercellSpacing = _CGSizeMake(0.0, 0.0);
 
         _selectionHightlightColor = [CPColor selectionColor];
         
@@ -2953,11 +2961,16 @@ var CPTableViewDataSourceKey        = @"CPTableViewDataSourceKey",
 
     [aCoder encodeBool:_allowsMultipleSelection forKey:CPTableViewMultipleSelectionKey];
     [aCoder encodeBool:_allowsEmptySelection forKey:CPTableViewEmptySelectionKey];
+    [aCoder encodeBool:_allowsColumnReordering forKey:CPTableViewColumnReorderingKey];
+    [aCoder encodeBool:_allowsColumnResizing forKey:CPTableViewColumnResizingKey];
+    [aCoder encodeBool:_allowsColumnSelection forKey:CPTableViewColumnSelectionKey];
 
     [aCoder encodeObject:_tableColumns forKey:CPTableViewTableColumnsKey];
     
     [aCoder encodeObject:_gridColor forKey:CPTableViewGridColorKey];
     [aCoder encodeInt:_gridStyleMask forKey:CPTableViewGridStyleMaskKey];
+    
+    [aCoder encodeBool:_usesAlternatingRowBackgroundColors forKey:CPTableViewUsesAlternatingBackgroundKey];
 }
 
 @end
