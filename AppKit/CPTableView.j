@@ -2172,9 +2172,13 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
             }
 
         }
-
-         CGContextMoveToPoint(context, minX, maxY);
-         CGContextAddLineToPoint(context, maxX, maxY);
+        
+        //If we're at the last for of the selection don't draw the bottom line...
+        if(i !== count2 -1)
+        {
+            CGContextMoveToPoint(context, minX, maxY);
+            CGContextAddLineToPoint(context, maxX, maxY);
+        }
     }
 
     CGContextClosePath(context);
