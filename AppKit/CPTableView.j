@@ -2172,9 +2172,13 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
             }
 
         }
-
-         CGContextMoveToPoint(context, minX, maxY);
-         CGContextAddLineToPoint(context, maxX, maxY);
+        
+        //if the row after the current row is not selected then there is no need to draw the bottom grid line white.
+        if([indexes containsObject:indexes[i]+1])
+        {
+            CGContextMoveToPoint(context, minX, maxY);
+            CGContextAddLineToPoint(context, maxX, maxY);
+        }
     }
 
     CGContextClosePath(context);
@@ -2395,9 +2399,9 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
         rowIndex = [self rowAtPoint:aPoint];
         if (rowIndex !== -1)
         {
-            if(_draggedRowIndexes !== nil)
+            if ([_draggedRowIndexes count] > 0)
             {
-                _draggedRowIndexes = nil;
+                _draggedRowIndexes = [CPIndexSet indexSet];
                 return;
             }
             // if the table has drag support then we use mouseUp to select a single row.
