@@ -74,7 +74,8 @@ CPTableColumnUserResizingMask   = 2;
         var header = [[_CPTableColumnHeaderView alloc] initWithFrame:CGRectMakeZero()];
         [self setHeaderView:header];
         
-        var textDataView = [[CPTextField alloc] init];
+        var textDataView = [CPTextField new];
+        [textDataView setValue:[CPColor colorWithHexString:@"333333"] forThemeAttribute:@"text-color"];
         [textDataView setValue:[CPColor whiteColor] forThemeAttribute:@"text-color" inState:CPThemeStateHighlighted];
         [textDataView setValue:[CPFont boldSystemFontOfSize:12] forThemeAttribute:@"font" inState:CPThemeStateHighlighted];
 		[textDataView setValue:CPCenterVerticalTextAlignment forThemeAttribute:@"vertical-alignment"];
