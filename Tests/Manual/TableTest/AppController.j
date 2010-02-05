@@ -22,7 +22,7 @@ CPLogRegister(CPLogConsole);
     dataSet1 = [],
     dataSet2 = [];
     
-    for(var i = 1; i < 100; i++)
+    for(var i = 1; i < 5; i++)
     {
         dataSet1[i - 1] = i;
         dataSet2[i - 1] = i + 10;
@@ -217,10 +217,10 @@ CPLogRegister(CPLogConsole);
     }
 }
 
-- (id)tableView:(CPTableView)tableView heightOfRow:(int)row
-{
-    return 50;
-}
+// - (id)tableView:(CPTableView)tableView heightOfRow:(int)row
+// {
+//     return 50;
+// }
 
 //- (void)tableViewSelectionIsChanging:(CPNotification)aNotification
 //{
@@ -301,10 +301,19 @@ CPLogRegister(CPLogConsole);
  //   console.log([aTableView rectOfRow:0]);
     //console.log(row)
 
+    CPLog.debug(@"proposed row: %i", row);
+
     [[aTableView window] orderFront:nil];
 
-    if(aTableView === tableView)
+    if(aTableView === tableView) 
+    {
+        // This is actually the behavior in Cocoa
+        if (row >= [aTableView numberOfRows])
+            row = [aTableView numberOfRows] - 1;
+        
         [aTableView setDropRow:row dropOperation:CPTableViewDropOn];
+    }
+        
     else 
         [aTableView setDropRow:row dropOperation:CPTableViewDropAbove];
         

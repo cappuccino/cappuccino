@@ -1048,14 +1048,15 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     if ((_implementedDelegateMethods & CPTableViewDelegate_tableView_heightOfRow_))
     {
         rowHeight = [_delegate tableView:self heightOfRow:aRowIndex];
-        _hasVariableRowHeight = YES;
+
+        if (rowHeight !== _rowHeight)
+            _hasVariableRowHeight = YES;
     }
     else
         _hasVariableRowHeight = NO;
     
     // FIXME: WRONG: ASK TABLE COLUMN RANGE
     var previousRowRect = [self rectOfRow:aRowIndex - 1];
-
     return CPRectMake(0.0, CPRectGetMaxY(previousRowRect) + _intercellSpacing.height, CPRectGetWidth([self bounds]), _rowHeight);
 }
 
@@ -1174,14 +1175,13 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 - (CPInteger)rowAtPoint:(CGPoint)aPoint
 {
     var row = -1;
-    
-    // Check if we are using variable sized rows 
-    // to determine if we can use the quicker way to determine the row at point
+
+    // Check if we are using variable sized rows so we can use the quicker way to determine the row at point
     if (!_hasVariableRowHeight)
         row = FLOOR(aPoint.y / (_rowHeight + _intercellSpacing.height));
     else
     {
-        // We are using variable sized rows so we'll have to loop over all the rows and determine if it's at the current point
+        // We are using variable sized rows so we'll have to loop over all the rows and determine if it's at the point
         var rowArray = [];
         [_exposedRows getIndexes:rowArray maxCount:-1 inIndexRange:nil];
     
@@ -1193,15 +1193,15 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
             
             if (CPRectContainsPoint([self rectOfRow:row], aPoint))
                 break;
-                
-            // Make sure that the row is not found if we exit the loop without breaking
-            row = -1;
         }
-    }
 
-    if (row >= _numberOfRows)
+        // Make sure we return -1 if we could not find a row
         row = -1;
-
+    }
+    
+    if (row > [self numberOfRows])
+        return -1;
+    
     return row;
 }
 
@@ -1665,11 +1665,15 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 */
 - (void)setDropRow:(CPInteger)row dropOperation:(CPTableViewDropOperation)operation
 {
-    if(row < 0 && operation === CPTableViewDropAbove)
-        row = 0;
-
-    if(row >= [self numberOfRows] && operation === CPTableViewDropOn)
-        [[CPException exceptionWithName:@"Error" reason:@"Attempt to set dropRow="+ row +", dropOperation=CPTableViewDropOn when [0 - "+ [self numberOfRows] +"] is valid range of rows." userInfo:nil] raise];
+    if(row > [self numberOfRows] && operation === CPTableViewDropOn)
+    {
+        var numberOfRows = [self numberOfRows] + 1;
+        var reason = @"Attempt to set dropRow=" + row + 
+                     " dropOperation=CPTableViewDropOn when [0 - " + numberOfRows + "] is valid range of rows."
+        
+        [[CPException exceptionWithName:@"Error" reason:reason userInfo:nil] raise];
+    }
+        
 
     _retargetedDropRow = row;
     _retargetedDropOperation = operation;
@@ -2575,13 +2579,12 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 */
 - (CPInteger)_proposedRowAtPoint:(CGPoint)dragPoint
 {
-    var numberOfRows = [self numberOfRows],
-        row = [self rowAtPoint:dragPoint];
-
+    var row = [self rowAtPoint:dragPoint];
+    
     // cocoa seems to jump to the next row when we approach the below row
     dragPoint.y += FLOOR(CPRectGetHeight([self rectOfRow:row]) / 4.0);
     row = [self rowAtPoint:dragPoint];
-    
+
     return row;
 }
 
@@ -2593,8 +2596,19 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     return CPDragOperationNone;
 }
 
+- (CPRect)_rectForDropHighlightViewOnRow:(int)theRowIndex
+{
+    if (theRowIndex >= [self numberOfRows])
+        theRowIndex = [self numberOfRows] - 1;
+        
+    return [self rectOfRow:theRowIndex];
+}
+
 - (CPRect)_rectForDropHighlightViewBetweenUpperRow:(int)theUpperRowIndex andLowerRow:(int)theLowerRowIndex offset:(float)theXOffset
 {
+    if (theLowerRowIndex > [self numberOfRows])
+        theLowerRowIndex = [self numberOfRows];
+    
     return [self rectOfRow:theLowerRowIndex];
 }
 
@@ -2606,28 +2620,39 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 
     var row = [self _proposedRowAtPoint:location],
         dragOperation = [self _validateDrop:sender proposedRow:row proposedDropOperation:dropOperation];
+        exposedClipRect = [self exposedClipRect];
     
     if(_retargetedDropRow !== nil)
         row = _retargetedDropRow;
-
-    //if the user forces -1 then we should highlight the whole tableview
-    var rowRect = CPRectMakeZero();
-    if(_retargetedDropRow === -1)
-        rowRect = [self exposedClipRect];
-    else
-        rowRect = [self rectOfRow:row];
     
-    var exposedClipRect = [self exposedClipRect],
-        visibleWidth = _CGRectGetWidth(exposedClipRect);
+    //if the user forces -1 then we should highlight the whole tableview
+    // var rowRect = CPRectMakeZero();
+    // if(_retargetedDropRow === -1 || row === -1)
+    //     rowRect = [self exposedClipRect];
+    // else
+    //     rowRect = [self rectOfRow:row];
+    // 
+    //     visibleWidth = _CGRectGetWidth(exposedClipRect);
+    // 
+    // rowRect = _CGRectMake(_CGRectGetMinX(exposedClipRect), rowRect.origin.y, visibleWidth, rowRect.size.height);
 
-    rowRect = _CGRectMake(_CGRectGetMinX(exposedClipRect), rowRect.origin.y, visibleWidth, rowRect.size.height);
+    var rect = CPRectMakeZero();
+    
+    if (row === -1)
+        rect = exposedClipRect;
         
-    [_dropOperationFeedbackView setDropOperation:dropOperation];
+    else if (dropOperation === CPTableViewDropAbove)
+        rect = [self _rectForDropHighlightViewBetweenUpperRow:row - 1 andLowerRow:row offset:location.x];
+        
+    else 
+        rect = [self _rectForDropHighlightViewOnRow:row];
+    
+    [_dropOperationFeedbackView setDropOperation:row !== -1 ? dropOperation : CPDragOperationNone];
     [_dropOperationFeedbackView setHidden:(dragOperation == CPDragOperationNone)];
-    [_dropOperationFeedbackView setFrame:[self _rectForDropHighlightViewBetweenUpperRow:row - 1 andLowerRow:row offset:location.x]];
+    [_dropOperationFeedbackView setFrame:rect];
     [_dropOperationFeedbackView setCurrentRow:row];
     [self addSubview:_dropOperationFeedbackView];
-    
+
     // FIXME : Maybe we should do this in a timer outside this method. Problem: we don't know when the scroll ends and neighter when the next -draggingUpdated is called. Which one will come first ?
     if (row > 0 && location.y - CGRectGetMinY(exposedClipRect) < _rowHeight)
         [self scrollRowToVisible:row - 1];
@@ -3046,13 +3071,16 @@ var CPTableViewDataSourceKey        = @"CPTableViewDataSourceKey",
 {
     if(tableView._destinationDragStyle === CPTableViewDraggingDestinationFeedbackStyleNone)
         return;
-
+    
     var context = [[CPGraphicsContext currentContext] graphicsPort];
 
     CGContextSetStrokeColor(context, [CPColor colorWithHexString:@"4886ca"]);
     CGContextSetLineWidth(context, 3);
-
-    if(dropOperation === CPTableViewDropOn)
+    
+    if (currentRow === -1)
+        CGContextStrokeRect(context, [self bounds]);
+    
+    else if(dropOperation === CPTableViewDropOn)
     {
         //if row is selected don't fill and stroke white
         var selectedRows = [tableView selectedRowIndexes];
@@ -3069,13 +3097,9 @@ var CPTableViewDataSourceKey        = @"CPTableViewDataSourceKey",
         }
         CGContextStrokeRoundedRectangleInRect(context, newRect, 8, YES, YES, YES, YES);
 
-    }
-
-
-    if(dropOperation === CPTableViewDropAbove)
+    } 
+    else if (dropOperation === CPTableViewDropAbove)
     {
-
-
         //reposition the view up a tad
         [self setFrameOrigin:CGPointMake(_frame.origin.x, _frame.origin.y - 8)];
 
@@ -3108,5 +3132,6 @@ var CPTableViewDataSourceKey        = @"CPTableViewDataSourceKey",
         CGContextStrokePath(context);
         //CGContextStrokeLineSegments(context, [aRect.origin.x + 8,  aRect.origin.y + 8, 300 , aRect.origin.y + 8]);
     }
+
 }
 @end

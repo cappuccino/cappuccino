@@ -504,11 +504,25 @@ var CPOutlineViewDelegate_outlineView_dataViewForTableColumn_item_              
 {
     var level = [self levelForRow:theLowerRow],
         upperLevel = [self levelForRow:theUpperRow];
-        
+    
+    // If the row above us has a higher level the item can be added to multiple parent items
+    // Determine which one by looping through all possible parents and return the first one
+    // which indentation level is larger than the current x offset
     if (upperLevel > level)
-        if (theXOffset > (level + 1) * [self indentationPerLevel])
-            return [self parentForItem:[self itemAtRow:theUpperRow]];
+    {
+        while (level !== 0)
+        {
+            level = [self levelForRow:theUpperRow];
             
+            // See if this item's indentation level matches the mouse offset
+            if (theXOffset > (level + 1) * [self indentationPerLevel])
+                return [self parentForItem:[self itemAtRow:theUpperRow]];
+            
+            // Check the next parent
+            theUpperRow = [self rowForItem:[self parentForItem:[self itemAtRow:theUpperRow]]];
+        }
+    }
+    
     return [self parentForItem:[self itemAtRow:theLowerRow]];
 }
 
@@ -518,7 +532,7 @@ var CPOutlineViewDelegate_outlineView_dataViewForTableColumn_item_              
     var rect = [super _rectForDropHighlightViewBetweenUpperRow:theUpperRowIndex andLowerRow:theLowerRowIndex offset:theXOffset],
         parentItem = [self _parentItemForRow:theLowerRowIndex andUpperRow:theUpperRowIndex atMouseOffset:theXOffset],
         level = [self levelForItem:parentItem];
-        
+    
     rect.origin.x = (level + 1) * [self indentationPerLevel];
    
     return rect;
@@ -851,6 +865,9 @@ var _loadItemInfoForItem = function(/*CPOutlineView*/ anOutlineView, /*id*/ anIt
             children = itemInfo.children;
             
         childIndex = [children indexOfObject:[_outlineView itemAtRow:theRow]];
+
+        if (childIndex === CPNotFound)
+            childIndex = children.length;
     }
     else if (theDropOperation === CPTableViewDropOn)
         childIndex = -1;
@@ -936,7 +953,7 @@ var _loadItemInfoForItem = function(/*CPOutlineView*/ anOutlineView, /*id*/ anIt
 {
     if ((_outlineView._implementedOutlineViewDelegateMethods & CPOutlineViewDelegate_outlineView_heightOfRowByItem_))
         return [_outlineView._outlineViewDelegate outlineView:_outlineView heightOfRowByItem:[_outlineView itemAtRow:theRow]];
-    
+
     return [theTableView rowHeight];
 }
 

@@ -146,7 +146,11 @@ CustomOutlineViewDragType = @"CustomOutlineViewDragType";
                 [Menu menuWithTitle:@"1.1.2"],
             ]],
             [Menu menuWithTitle:@"1.2" children:[
-                [Menu menuWithTitle:@"1.2.1"],
+                [Menu menuWithTitle:@"1.2.1" children:[
+                    [Menu menuWithTitle:@"1.2.1.1"],
+                    [Menu menuWithTitle:@"1.2.1.2"],
+                    [Menu menuWithTitle:@"1.2.1.3"],
+                ]],
                 [Menu menuWithTitle:@"1.2.2"],
                 [Menu menuWithTitle:@"1.2.3"]
             ]]
@@ -188,6 +192,8 @@ CustomOutlineViewDragType = @"CustomOutlineViewDragType";
     
     
     _outlineView = [[CPOutlineView alloc] initWithFrame:[contentView bounds]];
+
+    [_outlineView setBackgroundColor:[CPColor greenColor]];
     
     var column = [[CPTableColumn alloc] initWithIdentifier:@""];
     [_outlineView addTableColumn:column];
@@ -199,10 +205,14 @@ CustomOutlineViewDragType = @"CustomOutlineViewDragType";
     [_outlineView expandItem:nil expandChildren:YES];
     // [_outlineView setIntercellSpacing:CPSizeMake(0.0, 0.0)]
     
-    // [scrollView setDocumentView:_outlineView];
-    [theWindow setContentView:_outlineView];
+    [scrollView setDocumentView:_outlineView];
+    [theWindow setContentView:scrollView];
+
+    // [theWindow setContentView:_outlineView];
 
     [theWindow orderFront:self];
+
+    [column setWidth:CPRectGetWidth([_outlineView bounds])];
 }
 
 - (id)outlineView:(CPOutlineView)theOutlineView child:(int)theIndex ofItem:(id)theItem
