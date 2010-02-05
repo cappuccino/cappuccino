@@ -241,7 +241,7 @@ CPLogRegister(CPLogConsole);
    // if(rowIndex % 2 == 1)
    //   return true;
    // else
-        return true;
+        return NO;
 }
 
 - (BOOL)selectionShouldChangeInTableView:(CPTableView)aTableView
