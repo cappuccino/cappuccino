@@ -161,8 +161,6 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     CGSize      _intercellSpacing;
     float       _rowHeight;
 
-    BOOL        _hasVariableRowHeight;
-
     BOOL        _usesAlternatingRowBackgroundColors;
     CPArray     _alternatingRowBackgroundColors;
 
@@ -1040,23 +1038,11 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 
 - (CGRect)rectOfRow:(CPInteger)aRowIndex
 {
-    if (aRowIndex < 0)
-        return CPRectMakeZero();
-    
-    var rowHeight = _rowHeight;
-    
-    if ((_implementedDelegateMethods & CPTableViewDelegate_tableView_heightOfRow_))
-    {
-        rowHeight = [_delegate tableView:self heightOfRow:aRowIndex];
-        _hasVariableRowHeight = YES;
-    }
-    else
-        _hasVariableRowHeight = NO;
-    
-    // FIXME: WRONG: ASK TABLE COLUMN RANGE
-    var previousRowRect = [self rectOfRow:aRowIndex - 1];
+    if (NO)
+        return NULL;
 
-    return CPRectMake(0.0, CPRectGetMaxY(previousRowRect) + _intercellSpacing.height, CPRectGetWidth([self bounds]), _rowHeight);
+    // FIXME: WRONG: ASK TABLE COLUMN RANGE
+    return _CGRectMake(0.0, (aRowIndex * (_rowHeight + _intercellSpacing.height)), _CGRectGetWidth([self bounds]), _rowHeight);
 }
 
 // Complexity:
@@ -1173,34 +1159,12 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 
 - (CPInteger)rowAtPoint:(CGPoint)aPoint
 {
-    var row = -1;
-    
-    // Check if we are using variable sized rows 
-    // to determine if we can use the quicker way to determine the row at point
-    if (!_hasVariableRowHeight)
-        row = FLOOR(aPoint.y / (_rowHeight + _intercellSpacing.height));
-    else
-    {
-        // We are using variable sized rows so we'll have to loop over all the rows and determine if it's at the current point
-        var rowArray = [];
-        [_exposedRows getIndexes:rowArray maxCount:-1 inIndexRange:nil];
-    
-        var rowIndex = [rowArray count];
-        
-        while (rowIndex--)
-        {
-            row = [rowArray objectAtIndex:rowIndex];
-            
-            if (CPRectContainsPoint([self rectOfRow:row], aPoint))
-                break;
-                
-            // Make sure that the row is not found if we exit the loop without breaking
-            row = -1;
-        }
-    }
+    var y = aPoint.y;
+
+    var row = FLOOR(y / (_rowHeight + _intercellSpacing.height));
 
     if (row >= _numberOfRows)
-        row = -1;
+        return -1;
 
     return row;
 }
@@ -2355,17 +2319,21 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 */
 - (BOOL)continueTracking:(CGPoint)lastPoint at:(CGPoint)aPoint
 {
-    var row = [self rowAtPoint:aPoint];
+    var row = [self rowAtPoint:aPoint],
+        canSelect = YES;
+        
+    if ((_implementedDelegateMethods & CPTableViewDelegate_tableView_shouldSelectRow_))
+        canSelect = [_delegate tableView:self shouldSelectRow:row];
 
     // begin the drag is the datasource lets us, we've move at least +-3px vertical or horizontal, or we're dragging from selected rows and we haven't begun a drag session
     if
     (
-        !_isSelectingSession &&
+        !canSelect || (!_isSelectingSession &&
         (_implementedDataSourceMethods & CPTableViewDataSource_tableView_writeRowsWithIndexes_toPasteboard_) &&
         (
             (lastPoint.x - aPoint.x > 3 || (_verticalMotionCanDrag && ABS(lastPoint.y - aPoint.y) > 3))
             || ([_selectedRowIndexes containsIndex:row])
-        )
+        ))
     )
     {
         if ([_selectedRowIndexes containsIndex:row])
@@ -2538,7 +2506,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     _retargetedDropOperation = nil;
     _retargetedDropRow = nil;
     _draggedRowIndexes = [CPIndexSet indexSet];
-	[_dropOperationFeedbackView setHidden:YES];
+    [_dropOperationFeedbackView setHidden:YES];
 }
 /*
     @ignore
@@ -2569,7 +2537,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     var numberOfRows = [self numberOfRows],
         row = [self rowAtPoint:dragPoint];
 
-	// cocoa seems to jump to the next row when we approach the below row
+    // cocoa seems to jump to the next row when we approach the below row
     dragPoint.y += FLOOR(CPRectGetHeight([self rectOfRow:row]) / 4.0);
     row = [self rowAtPoint:dragPoint];
 
