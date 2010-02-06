@@ -2355,16 +2355,13 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
         			var bounds = [view bounds];
         			var viewLocation = CPPointMake(aPoint.x - CGRectGetWidth(bounds)/2 + offset.x, aPoint.y - CGRectGetHeight(bounds)/2 + offset.y);
         			[self dragView:view at:viewLocation offset:CPPointMakeZero() event:[CPApp currentEvent] pasteboard:pboard source:self slideBack:YES];
-        			_originalMouseDownPoint = nil;
+        			_startTrackingPoint = nil;
                     
                     return NO;
                 }
         }
-        if (ABS(_startTrackingPoint.x - aPoint.x) < 5 && ABS(_startTrackingPoint.y - aPoint.y) < 5)
-        {
-            console.log("here");
+        else if (ABS(_startTrackingPoint.x - aPoint.x) < 5 && ABS(_startTrackingPoint.y - aPoint.y) < 5)
             return YES;
-        }
     }
 
     _isSelectingSession = YES;
