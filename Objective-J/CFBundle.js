@@ -212,7 +212,7 @@ function loadExecutableAndResources(/*Bundle*/ aBundle, /*BOOL*/ shouldExecute)
     if (aBundle._loadStatus === CFBundleLoading)
         return success();
 
-    function failure()
+    function failure(/*Error*/ anError)
     {
         var loadRequests = aBundle._loadRequests,
             count = loadRequests.length;
@@ -229,7 +229,7 @@ function loadExecutableAndResources(/*Bundle*/ aBundle, /*BOOL*/ shouldExecute)
         aBundle._eventDispatcher.dispatchEvent(
         {
             type:"error", 
-            error:new Error("Could not recognize executable code format in Bundle " + aBundle),
+            error:anError || new Error("Could not recognize executable code format in Bundle " + aBundle),
             bundle:aBundle
         });
 
