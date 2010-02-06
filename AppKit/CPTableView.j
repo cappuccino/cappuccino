@@ -2287,9 +2287,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     // if the table has drag support then we use mouseUp to select a single row.
     // otherwise it uses mouse down.
     if (!(_implementedDataSourceMethods & CPTableViewDataSource_tableView_writeRowsWithIndexes_toPasteboard_))
-    {
         [self _updateSelectionWithMouseAtRow:row];
-    }
 
     [[self window] makeFirstResponder:self];
     return YES;
@@ -2313,7 +2311,6 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 - (BOOL)continueTracking:(CGPoint)lastPoint at:(CGPoint)aPoint
 {
     var row = [self rowAtPoint:aPoint];
-    console.log(_startTrackingPoint);
     // begin the drag is the datasource lets us, we've move at least +-3px vertical or horizontal, or we're dragging from selected rows and we haven't begun a drag session
     if(!_isSelectingSession && _implementedDataSourceMethods & CPTableViewDataSource_tableView_writeRowsWithIndexes_toPasteboard_)
     {
@@ -2363,7 +2360,6 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
                     return NO;
                 }
         }
-        console.log("First drag conditions failed!");
         if (ABS(_startTrackingPoint.x - aPoint.x) < 5 && ABS(_startTrackingPoint.y - aPoint.y) < 5)
         {
             console.log("here");
