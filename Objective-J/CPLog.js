@@ -46,16 +46,30 @@ exports.CPLogRegisterRange = function(aProvider, aMinLevel, aMaxLevel)
     var min = _CPLogLevelsInverted[aMinLevel];
     var max = _CPLogLevelsInverted[aMaxLevel];
     
-    if (min != undefined && max != undefined)
-
+    if (min !== undefined && max !== undefined)
+        for (var i = 0; i <= max; i++)
+            CPLogRegisterSingle(aProvider, CPLogLevels[i]);
 }
-// Regsiter a logger for 
+
+// Register a logger for a single level
 exports.CPLogRegisterSingle = function(aProvider, aLevel)
 {
-    if (_CPLogRegistrations[aLevel] == undefined)
-        _CPLogRegistrations[aLevel] = [aProvider];
-    else
-        _CPLogRegistrations[aLevel].push(aProvider);
+    if (!_CPLogRegistrations[aLevel])
+        _CPLogRegistrations[aLevel] = [];
+
+    // prevent duplicate registrations
+    for (var i = 0; i < _CPLogRegistrations[aLevel].length; i++)
+        if (_CPLogRegistrations[aLevel][i] === aProvider)
+            return;
+
+    _CPLogRegistrations[aLevel].push(aProvider);
+}
+
+exports.CPLogUnregister = function(aProvider) {
+    for (var aLevel in _CPLogRegistrations)
+        for (var i = 0; i < _CPLogRegistrations[aLevel].length; i++)
+            if (_CPLogRegistrations[aLevel][i] === aProvider)
+                _CPLogRegistrations[aLevel].splice(i--, 1); // decrement since we're removing an element
 }
 
 // Main CPLog, which dispatches to individual loggers
