@@ -45,8 +45,8 @@ exports.CPLogRegisterRange = function(aProvider, aMinLevel, aMaxLevel)
 {
     var min = _CPLogLevelsInverted[aMinLevel];
     var max = _CPLogLevelsInverted[aMaxLevel];
-    
-    if (min != undefined && max != undefined)
+//FIXME: ???    
+//    if (min != undefined && max != undefined)
 
 }
 // Regsiter a logger for 
