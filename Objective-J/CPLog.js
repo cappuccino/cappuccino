@@ -45,7 +45,7 @@ exports.CPLogRegisterRange = function(aProvider, aMinLevel, aMaxLevel)
 {
     var min = _CPLogLevelsInverted[aMinLevel];
     var max = _CPLogLevelsInverted[aMaxLevel];
-    
+
     if (min !== undefined && max !== undefined)
         for (var i = 0; i <= max; i++)
             CPLogRegisterSingle(aProvider, CPLogLevels[i]);
