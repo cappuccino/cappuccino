@@ -190,6 +190,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     SEL         _doubleAction;
     unsigned    _columnAutoResizingStyle;
 
+    CGPoint     _originalMouseDownPoint;
     BOOL        _verticalMotionCanDrag;
     unsigned    _destinationDragStyle;
     BOOL        _isSelectingSession;
@@ -2275,18 +2276,20 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     else
         _selectionAnchorRow = row;
 
+        
+    //set ivars for startTrackingPoint and time...    
+    _startTrackingPoint = aPoint; 
+    _startTrackingTimestamp = new Date();
 
-
-    if (_implementedDataSourceMethods & CPTableViewDataSource_tableView_setObjectValue_forTableColumn_row_) {
-        _startTrackingPoint = aPoint;
-        _startTrackingTimestamp = new Date();
+    if (_implementedDataSourceMethods & CPTableViewDataSource_tableView_setObjectValue_forTableColumn_row_)
         _trackingPointMovedOutOfClickSlop = NO;
-    }
 
     // if the table has drag support then we use mouseUp to select a single row.
     // otherwise it uses mouse down.
-    if(!(_implementedDataSourceMethods & CPTableViewDataSource_tableView_writeRowsWithIndexes_toPasteboard_))
+    if (!(_implementedDataSourceMethods & CPTableViewDataSource_tableView_writeRowsWithIndexes_toPasteboard_))
+    {
         [self _updateSelectionWithMouseAtRow:row];
+    }
 
     [[self window] makeFirstResponder:self];
     return YES;
@@ -2310,56 +2313,61 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 - (BOOL)continueTracking:(CGPoint)lastPoint at:(CGPoint)aPoint
 {
     var row = [self rowAtPoint:aPoint];
-
+    console.log(_startTrackingPoint);
     // begin the drag is the datasource lets us, we've move at least +-3px vertical or horizontal, or we're dragging from selected rows and we haven't begun a drag session
-    if
-    (
-        !_isSelectingSession &&
-        (_implementedDataSourceMethods & CPTableViewDataSource_tableView_writeRowsWithIndexes_toPasteboard_) &&
-        (
-            (lastPoint.x - aPoint.x > 3 || (_verticalMotionCanDrag && ABS(lastPoint.y - aPoint.y) > 3))
-            || ([_selectedRowIndexes containsIndex:row])
-        )
-    )
+    if(!_isSelectingSession && _implementedDataSourceMethods & CPTableViewDataSource_tableView_writeRowsWithIndexes_toPasteboard_)
     {
-        if ([_selectedRowIndexes containsIndex:row])
-            _draggedRowIndexes = [[CPIndexSet alloc] initWithIndexSet:_selectedRowIndexes];
-        else
-            _draggedRowIndexes = [CPIndexSet indexSetWithIndex:row];
-
-
-        //ask the datasource for the data
-        var pboard = [CPPasteboard pasteboardWithName:CPDragPboard];
-
-        if ([self canDragRowsWithIndexes:_draggedRowIndexes atPoint:aPoint] && [_dataSource tableView:self writeRowsWithIndexes:_draggedRowIndexes toPasteboard:pboard])
+        if (
+                (ABS(_startTrackingPoint.x - aPoint.x) > 4 || (_verticalMotionCanDrag && ABS(_startTrackingPoint.y - aPoint.y) > 4)) || 
+                ([_selectedRowIndexes containsIndex:row])
+           )
         {
-			var currentEvent = [CPApp currentEvent],
-				offset = CPPointMakeZero(),
-				tableColumns = [_tableColumns objectsAtIndexes:_exposedColumns];
-				
-			// We deviate from the default Cocoa implementation here by asking for a view in stead of an image
-			// We support both, but the view prefered over the image because we can mimic the rows we are dragging
-			// by re-creating the data views for the dragged rows
-			var view = [self dragViewForRowsWithIndexes:_draggedRowIndexes 
-										   tableColumns:tableColumns 
-												  event:currentEvent 
-												 offset:offset];
-			
-			if (!view)
-			{
-				var image = [self dragImageForRowsWithIndexes:_draggedRowIndexes 
-												 tableColumns:tableColumns 
-														event:currentEvent 
-													   offset:offset];
-				view = [[CPImageView alloc] initWithFrame:CPMakeRect(0, 0, [image size].width, [image size].height)];
-				[view setImage:image];
-			}
-			
-			var bounds = [view bounds];
-			var viewLocation = CPPointMake(aPoint.x - CGRectGetWidth(bounds)/2 + offset.x, aPoint.y - CGRectGetHeight(bounds)/2 + offset.y);
-			[self dragView:view at:viewLocation offset:CPPointMakeZero() event:[CPApp currentEvent] pasteboard:pboard source:self slideBack:YES];
-			
-            return NO;
+                if ([_selectedRowIndexes containsIndex:row])
+                    _draggedRowIndexes = [[CPIndexSet alloc] initWithIndexSet:_selectedRowIndexes];
+                else
+                    _draggedRowIndexes = [CPIndexSet indexSetWithIndex:row];
+        
+        
+                //ask the datasource for the data
+                var pboard = [CPPasteboard pasteboardWithName:CPDragPboard];
+        
+                if ([self canDragRowsWithIndexes:_draggedRowIndexes atPoint:aPoint] && [_dataSource tableView:self writeRowsWithIndexes:_draggedRowIndexes toPasteboard:pboard])
+                {
+        			var currentEvent = [CPApp currentEvent],
+        				offset = CPPointMakeZero(),
+        				tableColumns = [_tableColumns objectsAtIndexes:_exposedColumns];
+        				
+        			// We deviate from the default Cocoa implementation here by asking for a view in stead of an image
+        			// We support both, but the view prefered over the image because we can mimic the rows we are dragging
+        			// by re-creating the data views for the dragged rows
+        			var view = [self dragViewForRowsWithIndexes:_draggedRowIndexes 
+        										   tableColumns:tableColumns 
+        												  event:currentEvent 
+        												 offset:offset];
+        			
+        			if (!view)
+        			{
+        				var image = [self dragImageForRowsWithIndexes:_draggedRowIndexes 
+        												 tableColumns:tableColumns 
+        														event:currentEvent 
+        													   offset:offset];
+        				view = [[CPImageView alloc] initWithFrame:CPMakeRect(0, 0, [image size].width, [image size].height)];
+        				[view setImage:image];
+        			}
+        			
+        			var bounds = [view bounds];
+        			var viewLocation = CPPointMake(aPoint.x - CGRectGetWidth(bounds)/2 + offset.x, aPoint.y - CGRectGetHeight(bounds)/2 + offset.y);
+        			[self dragView:view at:viewLocation offset:CPPointMakeZero() event:[CPApp currentEvent] pasteboard:pboard source:self slideBack:YES];
+        			_originalMouseDownPoint = nil;
+                    
+                    return NO;
+                }
+        }
+        console.log("First drag conditions failed!");
+        if (ABS(_startTrackingPoint.x - aPoint.x) < 5 && ABS(_startTrackingPoint.y - aPoint.y) < 5)
+        {
+            console.log("here");
+            return YES;
         }
     }
 
