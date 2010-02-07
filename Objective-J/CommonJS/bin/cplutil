@@ -68,7 +68,7 @@ exports.main = function(args)
             }
             else
             {
-                var encodedString = CFPropertyList.stringFromPropertyList(plistObject);
+                var encodedString = CFPropertyList.stringFromPropertyList(plistObject, options.format);
 
                 // outextension?
                 if (options.outPath === "-")
