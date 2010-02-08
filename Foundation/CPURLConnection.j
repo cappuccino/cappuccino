@@ -282,7 +282,7 @@ var CPURLConnectionDelegate = nil;
 {
     CPLog.warn("[CPURLConnecton sendSynchronousRequest:returningResponse:error:] is deprecated, using [CPURLConnecton sendSynchronousRequest:returningResponse:] instead.");
 
-    return [self sendSynchronousRequest:aRequest returningResponse:aURLResponse error:NULL];
+    return [self sendSynchronousRequest:aRequest returningResponse:aURLResponse];
 }
 
 - (HTTPRequest)_XMLHTTPRequest

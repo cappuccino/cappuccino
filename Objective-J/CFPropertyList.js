@@ -126,7 +126,7 @@ CFPropertyListSerializers[CFPropertyList.FormatXML_v1_0] =
 
     "real":         function(/*Float*/ aFloat)
                     {
-                        return "<real>" + anInteger + "</real>";
+                        return "<real>" + aFloat + "</real>";
                     },
 
     "array":        function(/*Array*/ anArray, /*Object*/ serializers)
@@ -138,7 +138,7 @@ CFPropertyListSerializers[CFPropertyList.FormatXML_v1_0] =
                         for (; index < count; ++index)
                             string += serializePropertyList(anArray[index], serializers);
     
-                        return "</array>";
+                        return string+"</array>";
                     },
 
     "dictionary":   function(/*CFDictionary*/ aDictionary, /*Object*/ serializers)
@@ -156,7 +156,7 @@ CFPropertyListSerializers[CFPropertyList.FormatXML_v1_0] =
                             string += serializePropertyList(aDictionary.valueForKey(key), serializers);
                         }
 
-                        return "</dict>";
+                        return string+"</dict>";
                     }
 }
 

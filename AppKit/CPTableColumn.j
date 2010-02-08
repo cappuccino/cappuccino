@@ -75,6 +75,7 @@ CPTableColumnUserResizingMask   = 2;
         [self setHeaderView:header];
         
         var textDataView = [CPTextField new];
+        [textDataView setValue:[CPColor colorWithHexString:@"333333"] forThemeAttribute:@"text-color"];
         [textDataView setValue:[CPColor whiteColor] forThemeAttribute:@"text-color" inState:CPThemeStateHighlighted];
         [textDataView setValue:[CPFont boldSystemFontOfSize:12] forThemeAttribute:@"font" inState:CPThemeStateHighlighted];
         [self setDataView:textDataView];
