@@ -81,7 +81,7 @@ ObjectiveJRuntimeAnalyzer.prototype.load = function(path)
 }
 
 ObjectiveJRuntimeAnalyzer.prototype.finishLoading = function(path)
-
+{
     // run the "event loop"
     this.require('browser/timeout').serviceTimeouts();
 }
