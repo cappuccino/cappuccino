@@ -30,8 +30,8 @@
 #include "CoreGraphics/CGGeometry.h"
 
 CPTableColumnNoResizing         = 0;
-CPTableColumnAutoresizingMask   = 1;
-CPTableColumnUserResizingMask   = 2;
+CPTableColumnAutoresizingMask   = 1 << 0;
+CPTableColumnUserResizingMask   = 1 << 1;
 
 @implementation CPTableColumn : CPObject
 {
@@ -192,7 +192,7 @@ CPTableColumnUserResizingMask   = 2;
     _resizingMask = aResizingMask;
 }
 
-- (float)resizingMask
+- (unsigned)resizingMask
 {
     return _resizingMask;
 }
