@@ -1141,7 +1141,7 @@ CPTexturedBackgroundWindowMask
     \c aResponder accept first responder, then finally tell it to become first responder.
     @return \c YES if the attempt was successful. \c NO otherwise.
 */
-- (void)makeFirstResponder:(CPResponder)aResponder
+- (BOOL)makeFirstResponder:(CPResponder)aResponder
 {
     if (_firstResponder == aResponder)
         return YES;
