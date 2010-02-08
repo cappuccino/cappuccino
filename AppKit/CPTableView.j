@@ -220,7 +220,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
         _selectionHighlightMask = CPTableViewSelectionHighlightStyleRegular;
 
         [self setUsesAlternatingRowBackgroundColors:NO];
-        [self setAlternatingRowBackgroundColors:[[CPColor whiteColor], [CPColor colorWithHexString:@"e4e7ff"]]];
+        [self setAlternatingRowBackgroundColors:[[CPColor whiteColor], /*[CPColor colorWithHexString:@"e4e7ff"]*/ [CPColor colorWithHexString:@"f5f9fc"]]];
 
         _tableColumns = [];
         _tableColumnRanges = [];
@@ -238,7 +238,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
         _rowHeight = 23.0;
 
         [self setSelectionHightlightColor:[CPColor selectionColor]];
-        [self setGridColor:[CPColor grayColor]];
+        [self setGridColor:[CPColor colorWithHexString:@"dce0e2"]];
         [self setGridStyleMask:CPTableViewGridNone];
 
         _headerView = [[CPTableHeaderView alloc] initWithFrame:CGRectMake(0, 0, [self bounds].size.width, _rowHeight)];
@@ -2183,7 +2183,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     }
 
     CGContextClosePath(context);
-    CGContextSetStrokeColor(context, [CPColor whiteColor]);
+    CGContextSetStrokeColor(context, [CPColor colorWithHexString:@"e5e5e5"]);
     CGContextStrokePath(context);
 }
 
@@ -2801,10 +2801,8 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 
     [self selectRowIndexes:[CPIndexSet indexSetWithIndex:i] byExtendingSelection:extend];
 
-    if(i)
-    {
+    if(i >= 0)
         [self scrollRowToVisible:i];
-    }
 }
 
 - (void)moveUp:(id)sender

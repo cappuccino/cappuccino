@@ -36,7 +36,7 @@ var CPThemeStatePressed = CPThemeState("pressed");
     self = [super initWithFrame:frame];
     if (self)
     {   
-        _textField = [[CPTextField alloc] initWithFrame:[self bounds]];
+        _textField = [[CPTextField alloc] initWithFrame:CGRectMake(5, 1, CGRectGetWidth([self bounds]) - 5, CGRectGetHeight([self bounds]) - 1)];
         [_textField setAutoresizingMask:CPViewWidthSizable|CPViewHeightSizable];
         [_textField setTextColor: [CPColor colorWithHexString: @"333333"]];
         [_textField setValue:[CPFont boldSystemFontOfSize:12.0] forThemeAttribute:@"font"];
