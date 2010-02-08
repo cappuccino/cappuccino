@@ -242,7 +242,7 @@ CPLogRegister(CPLogConsole);
    // if(rowIndex % 2 == 1)
    //   return true;
    // else
-        return NO;
+        return YES;
 }
 
 - (BOOL)selectionShouldChangeInTableView:(CPTableView)aTableView
@@ -276,6 +276,11 @@ CPLogRegister(CPLogConsole);
 - (BOOL)tableView:(CPTableView)aTableView shouldEditTableColumn:(CPTableColumn)tableColumn row:(int)row
 {
     return NO;
+}
+
+- (void)tableView:(CPTableView)aTableView willDisplayView:(CPView)aView forTableColumn:(CPTableColumn)tableColumn row:(int)row
+{
+    CPLogConsole(_cmd + " column: " + [tableColumn identifier] + " row:" + row)    
 }
 
 - (void)tableView:(CPTableView)aTableView setObjectValue:(id)aValue forTableColumn:(CPTableColumn)tableColumn row:(int)row
