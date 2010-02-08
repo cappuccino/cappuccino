@@ -277,6 +277,11 @@ CPLogRegister(CPLogConsole);
     return NO;
 }
 
+- (void)tableView:(CPTableView)aTableView willDisplayView:(CPView)aView forTableColumn:(CPTableColumn)tableColumn row:(int)row
+{
+    CPLogConsole(_cmd + " column: " + [tableColumn identifier] + " row:" + row)    
+}
+
 - (void)tableView:(CPTableView)aTableView setObjectValue:(id)aValue forTableColumn:(CPTableColumn)tableColumn row:(int)row
 {
     

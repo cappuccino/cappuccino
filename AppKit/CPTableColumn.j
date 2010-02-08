@@ -30,8 +30,8 @@
 #include "CoreGraphics/CGGeometry.h"
 
 CPTableColumnNoResizing         = 0;
-CPTableColumnAutoresizingMask   = 1;
-CPTableColumnUserResizingMask   = 2;
+CPTableColumnAutoresizingMask   = 1 << 0;
+CPTableColumnUserResizingMask   = 1 << 1;
 
 @implementation CPTableColumn : CPObject
 {
@@ -50,6 +50,8 @@ CPTableColumnUserResizingMask   = 2;
     CPSortDescriptor    _sortDescriptorPrototype;
     BOOL                _isHidden;
     CPString            _headerToolTip;
+    
+    BOOL _disableResizingPosting @accessors(property=disableResizingPosting);
 }
 
 - (id)init
@@ -68,7 +70,9 @@ CPTableColumnUserResizingMask   = 2;
         _width = 100.0;
         _minWidth = 10.0;
         _maxWidth = 1000000.0;
-
+        _resizingMask = CPTableColumnAutoresizingMask | CPTableColumnUserResizingMask;
+        _disableResizingPosting = NO;
+        
         [self setIdentifier:anIdentifier];
 
         var header = [[_CPTableColumnHeaderView alloc] initWithFrame:CGRectMakeZero()];
@@ -78,6 +82,7 @@ CPTableColumnUserResizingMask   = 2;
         [textDataView setValue:[CPColor colorWithHexString:@"333333"] forThemeAttribute:@"text-color"];
         [textDataView setValue:[CPColor whiteColor] forThemeAttribute:@"text-color" inState:CPThemeStateHighlighted];
         [textDataView setValue:[CPFont boldSystemFontOfSize:12] forThemeAttribute:@"font" inState:CPThemeStateHighlighted];
+        [textDataView setValue:CGInsetMake(4.0, 8.0, 0.0, 8.0) forThemeAttribute:@"content-inset"];
         [self setDataView:textDataView];
     }
 
@@ -115,18 +120,23 @@ CPTableColumnUserResizingMask   = 2;
 
     if (tableView)
     {
-        var index = [[tableView tableColumns] indexOfObjectIdenticalTo:self];
-
-        // FIXME: THIS IS HORRIBLE. Don't just reload everything when a table column changes, just relayout the changed widths.
-        tableView._reloadAllRows = YES;
-        tableView._dirtyTableColumnRangeIndex = tableView._dirtyTableColumnRangeIndex < 0 ? index : MIN(index,  tableView._dirtyTableColumnRangeIndex);
-
+        var index = [[tableView tableColumns] indexOfObjectIdenticalTo:self],
+            dirtyTableColumnRangeIndex = tableView._dirtyTableColumnRangeIndex;
+            
+        if (dirtyTableColumnRangeIndex < 0)
+            tableView._dirtyTableColumnRangeIndex = index;
+        else
+            tableView._dirtyTableColumnRangeIndex = MIN(index,  tableView._dirtyTableColumnRangeIndex);
+        
+        var rows = tableView._exposedRows,
+            columns = [CPIndexSet indexSetWithIndexesInRange:CPMakeRange(index, [tableView._exposedColumns lastIndex] - index + 1)];        
+        
+        // FIXME: Would be faster with some sort of -setNeedsDisplayInColumns: that updates a dirtyTableColumnForDisplay cache; then marked columns would relayout their data views at display time.
+        [tableView _layoutDataViewsInRows:rows columns:columns];
         [tableView tile];
-
-        [[CPNotificationCenter defaultCenter]
-            postNotificationName:CPTableViewColumnDidResizeNotification
-                          object:tableView
-                        userInfo:[CPDictionary dictionaryWithObjects:[self, oldWidth] forKeys:[@"CPTableColumn", "CPOldWidth"]]];
+        
+        if (!_disableResizingPosting)
+            [self _postDidResizeNotificationWithOldWidth:oldWidth];
     }
 }
 
@@ -182,7 +192,7 @@ CPTableColumnUserResizingMask   = 2;
     _resizingMask = aResizingMask;
 }
 
-- (float)resizingMask
+- (unsigned)resizingMask
 {
     return _resizingMask;
 }
@@ -254,9 +264,9 @@ CPTableColumnUserResizingMask   = 2;
     var dataView = [self dataViewForRow:aRowIndex],
         dataViewUID = [dataView UID];
 
-var x = [self tableView]._cachedDataViews[dataViewUID];
-if (x && x.length)
-return x.pop();
+    var x = [self tableView]._cachedDataViews[dataViewUID];
+    if (x && x.length)
+    return x.pop();
 
     // if we haven't cached an archive of the data view, do it now
     if (!_dataViewData[dataViewUID])
@@ -264,7 +274,8 @@ return x.pop();
 
     // unarchive the data view cache
     var newDataView = [CPKeyedUnarchiver unarchiveObjectWithData:_dataViewData[dataViewUID]];
-newDataView.identifier = dataViewUID;
+    newDataView.identifier = dataViewUID;
+    
     return newDataView;
 }
 
@@ -342,6 +353,14 @@ newDataView.identifier = dataViewUID;
 - (CPString)headerToolTip
 {
     return _headerToolTip;
+}
+
+- (void)_postDidResizeNotificationWithOldWidth:(float)oldWidth
+{
+    [[CPNotificationCenter defaultCenter]
+    postNotificationName:CPTableViewColumnDidResizeNotification
+                  object:[self tableView]
+                userInfo:[CPDictionary dictionaryWithObjects:[self, oldWidth] forKeys:[@"CPTableColumn", "CPOldWidth"]]];
 }
 
 @end
