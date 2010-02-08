@@ -11,7 +11,8 @@ var FILE = require("file");
 var OS = require("os");
 var DOM = require("browser/dom");
 var UTIL = require("util");
-var INTERPRETER = require("interpreter");
+
+var stream = require("term").stream;
 
 var serializer = new DOM.XMLSerializer();
 
@@ -146,14 +147,12 @@ function pressEnvironment(rootPath, outputFiles, environment, options) {
     CPLog.info("Frameworks:          " + frameworks);
     CPLog.info("Environment:         " + environment);
 
-    // get a Rhino context
-    var context = new INTERPRETER.Context();
-    var scope = setupObjectiveJ(context);
+    var analyzer = new ObjectiveJRuntimeAnalyzer(rootPath);
 
-    var _OBJJ = context.global.require("objective-j");
+    var _OBJJ = analyzer.require("objective-j");
 
     // include paths:
-    context.global.OBJJ_INCLUDE_PATHS = frameworks;
+    analyzer.context.global.OBJJ_INCLUDE_PATHS = frameworks;
     // environments:
     _OBJJ.environments = function() { return [environment, "ObjJ"] };
 
@@ -161,49 +160,26 @@ function pressEnvironment(rootPath, outputFiles, environment, options) {
     // FIXME: what's the best way to determine which cibs to look in?
     var cibs = FILE.glob(rootPath.join("**", "*.cib")).filter(function(path) { return !(/Frameworks/).test(path); });
 
-    // flattening bookkeeping. keep track of the bundles and evaled code (in the correct order!)
-    var bundleArchiveResponses = [];
-    var exectuableResponses = [];
-    var evaledFragments = [];
-
-    // here we hook into didReceiveBundleResponse to record the responses for --flattening
-    /*
-    functionHookBefore(scope.objj_search.prototype, "didReceiveBundleResponse", function(aResponse) {
-        var response = {
-            success : aResponse.success,
-            filePath : rootPath.relative(aResponse.filePath).toString()
-        };
-
-        if (aResponse.success) {
-            var xmlString = serializer.serializeToString(aResponse.xml);
-            response.text = CPPropertyListCreate280NorthData(CPPropertyListCreateFromXMLData({ string: xmlString })).string;
-        }
-
-        bundleArchiveResponses.push(response);
-    });
-
-    functionHookBefore(scope.objj_search.prototype, "didReceiveExecutableResponse", function(aResponse) {
-        exectuableResponses.push(aResponse);
-    });
-    */
-
-    // lets just use the Context object as our con
-    context.rootPath = rootPath;
-    context.scope = scope;
-
     // phase 1: get global defines
     CPLog.error("PHASE 1: Loading application...");
 
-    var globals = findGlobalDefines(context, mainPath, evaledFragments);
+    analyzer.initializeGlobalRecorder();
+
+    analyzer.load(mainPath);
+
+    analyzer.finishLoading();
 
     // coalesce the results
-    var dependencies = coalesceGlobalDefines(globals);
+    var dependencies = analyzer.globalsToFilesMapping();
 
     // log identifer => files defining
     CPLog.trace("Global defines:");
     Object.keys(dependencies).sort().forEach(function(identifier) {
         CPLog.trace("    " + identifier + " => " + rootPath.relative(dependencies[identifier]));
     });
+
+    CPLog.error("NOT YET IMPLEMENTED");
+    OS.exit(1);
 
     // phase 2: walk the dependency tree (both imports and references) to determine exactly which files need to be included
     CPLog.error("PHASE 2: Walk dependency tree...");

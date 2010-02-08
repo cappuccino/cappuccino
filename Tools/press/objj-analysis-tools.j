@@ -1,4 +1,115 @@
 var FILE = require("file");
+var Context = require("interpreter").Context;
+
+function ObjectiveJRuntimeAnalyzer(rootPath)
+{
+    this.rootPath = rootPath;
+    this.context = new Context();
+
+    this.scope = setupObjectiveJ(this.context);
+
+    this.require = this.context.global.require;
+}
+
+ObjectiveJRuntimeAnalyzer.prototype.initializeGlobalRecorder = function()
+{
+    this.initializeGlobalRecorder = function(){}; // run once
+
+    this.ignore = cloneProperties(this.scope, true);
+    this.ignore['bundle'] = true;
+
+    this.files = {};
+    var evaluatingPaths = [];
+
+    var before = null;
+    var currentFile = null;
+
+    var self = this;
+
+    // a function to record changes to the global, then reset the scope
+    function recordAndReset() {
+        // system.stderr.write(".").flush();
+
+        var after = cloneProperties(self.scope);
+
+        if (before) {
+            self.files[currentFile] = self.files[currentFile] || {};
+            self.files[currentFile].globals = self.files[currentFile].global || {};
+
+            diff({
+                before : before,
+                after : after,
+                ignore : self.ignore,
+                added : self.files[currentFile].globals,
+                changed : self.files[currentFile].globals
+            });
+        }
+
+        before = after;
+    }
+
+    var _OBJJ = this.require("objective-j");
+    var _fileExecuterForPath = _OBJJ.fileExecuterForPath;
+    _OBJJ.fileExecuterForPath = function(/*String*/ referencePath) {
+        var fileExecutor = _fileExecuterForPath.apply(this, arguments);
+        return function(/*String*/ aPath, /*BOOL*/ isLocal, /*BOOL*/ shouldForce) {
+            recordAndReset();
+
+            evaluatingPaths.push(currentFile);
+            currentFile = FILE.normal(FILE.join(referencePath, aPath));
+
+            system.stderr.write(">").flush();
+            fileExecutor.apply(this, arguments);
+            system.stderr.write("<").flush();
+
+            recordAndReset();
+
+            currentFile = evaluatingPaths.pop();
+        };
+    }
+}
+
+ObjectiveJRuntimeAnalyzer.prototype.load = function(path)
+{
+    this.require("objective-j").objj_eval(
+        "("+(function(path) {
+            fileImporterForPath("/")(path, true, function() {
+                print("Done importing and evaluating: " + path);
+            });
+        })+")"
+    )(path);
+}
+
+ObjectiveJRuntimeAnalyzer.prototype.finishLoading = function(path)
+
+    // run the "event loop"
+    this.require('browser/timeout').serviceTimeouts();
+}
+
+ObjectiveJRuntimeAnalyzer.prototype.globalsToFilesMapping = function()
+{
+    // takes a hash mapping from file names to hashes of global names defined in each file
+    //    globals = { fileName { globalName : true }}
+    // returns a hash mapping from global names to arrays of file names in which those globals are defined
+    //    dependencies = { globalName : [fileName] }
+    var globals = {};
+    for (var fileName in this.files) {
+        for (var globalName in this.files[fileName].globals)
+            (globals[globalName] = globals[globalName] || []).push(fileName);
+    }
+    return globals;
+}
+
+ObjectiveJRuntimeAnalyzer.prototype.filesToGlobalsMapping = function()
+{
+    var files = {};
+    for (var fileName in this.files) {
+        files[fileName] = {};
+        for (var globalName in this.files[fileName].globals)
+            files[fileName][globalName] = true;
+    }
+    return files;
+}
 
 /*
     param context includes
@@ -57,7 +168,7 @@ function traverseDependencies(context, file)
         if (fragment.type & FRAGMENT_CODE)
         {
             var referencedTokens = uniqueTokens(fragment.info);
-            
+
             markFilesReferencedByTokens(referencedTokens, context.dependencies, referencedFiles);
         }
         else if (fragment.type & FRAGMENT_FILE)
@@ -219,110 +330,6 @@ function findImportInObjjFiles(scope, fragment)
 }
 @end
 
-// given a fresh scope and the path to a root source file, determine which files define each global variable
-function findGlobalDefines(context, mainPath, evaledFragments, bundleCallback)
-{
-    var ignore = cloneProperties(context.scope, true);
-    ignore['bundle'] = true;
-    
-    var dependencies = {};
-    var evaluatingPaths = [];
-    
-    var before = null;
-    var currentFile = null;
-    
-    // a function to record changes to the global, then reset the scope
-    function recordAndReset() {
-        // system.stderr.write(".").flush();
-        
-        var after = cloneProperties(context.scope);
-        
-        if (before) {
-            dependencies[currentFile] = dependencies[currentFile] || {};
-            diff({
-                before : before,
-                after : after,
-                ignore : ignore,
-                added : dependencies[currentFile],
-                changed : dependencies[currentFile]
-            });
-        }
-        
-        before = after;
-    }
-    
-    var _OBJJ = context.scope.require("objective-j");
-    var _fileExecuterForPath = _OBJJ.fileExecuterForPath;
-    _OBJJ.fileExecuterForPath = function(/*String*/ referencePath) {
-        var fileExecutor = _fileExecuterForPath.apply(this, arguments);
-        return function(/*String*/ aPath, /*BOOL*/ isLocal, /*BOOL*/ shouldForce) {
-            recordAndReset();
-            
-            evaluatingPaths.push(currentFile);
-            currentFile = referencePath + "/" + aPath;
-            
-            system.stderr.write(">").flush();
-            fileExecutor.apply(this, arguments);
-            system.stderr.write("<").flush();
-            
-            recordAndReset();
-            
-            currentFile = evaluatingPaths.pop();
-        };
-    }
-
-    var bundleDelegate = [[PressBundleDelgate alloc] initWithCallback:bundleCallback];
-    var bundlePaths = [];
-
-    (context.global.require("objective-j").objj_eval(
-        "("+(function(mainPath, bundleDelegate, bundlePaths) {
-            fileImporterForPath("/")(mainPath, true, function() {
-                print("Done importing and evaluating: " + mainPath);
-                // bundlePaths = bundlePaths || [];
-
-                // load default theme bundle
-                // var themePath = [[CPBundle bundleForClass:[CPApplication class]] pathForResource:[CPApplication defaultThemeName]];
-                // var themeBundle = [[CPBundle alloc] initWithPath:themePath + "/Info.plist"];
-                // [themeBundle loadWithDelegate:bundleDelegate];
-
-                // load additional bundles
-                // bundlePaths.forEach(function(bundlePath) {
-                //     var bundle = [[CPBundle alloc] initWithPath:bundlePath];
-                //     [bundle loadWithDelegate:bundleDelegate];
-                // });
-            });
-        })+")"
-    ))(mainPath, bundleDelegate, bundlePaths);
-
-    // run the "event loop"
-    context.scope.require('browser/timeout').serviceTimeouts();
-
-    print(JSON.stringify(dependencies, null, 4));
-
-    return dependencies;
-}
-
-// takes a hash mapping from file names to hashes of global names defined in each file
-//    globals = { fileName { globalName : true }}
-// returns a hash mapping from global names to arrays of file names in which those globals are defined
-//    dependencies = { globalName : [fileName] }
-function coalesceGlobalDefines(globals)
-{
-    var dependencies = {};
-    for (var fileName in globals)
-    {
-        var fileGlobals = globals[fileName];
-
-        for (var globalName in fileGlobals)
-        {
-            if (!dependencies[globalName])
-                dependencies[globalName] = [];
-            dependencies[globalName].push(fileName);
-        }
-    }
-    return dependencies;
-}
-
 // create a new scope loaded with Narwhal and Objective-J
 function setupObjectiveJ(context, debug)
 {
@@ -333,7 +340,7 @@ function setupObjectiveJ(context, debug)
     // load the bootstrap.js for narwhal-rhino
     var bootstrapPath = FILE.join(context.global.NARWHAL_ENGINE_HOME, "bootstrap.js");
     context.evalFile(bootstrapPath);
-    
+
     context.global.require("browser");
 
     // get the Objective-J module from this scope, return the window object.
