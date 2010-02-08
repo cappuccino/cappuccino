@@ -1175,6 +1175,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     return _CGRectMake(tableColumnRange.location, _CGRectGetMinY(rectOfRow), tableColumnRange.length, _CGRectGetHeight(rectOfRow));
 }
 
+//FIX ME: We should refactor this!
 - (void)resizeWithOldSuperviewSize:(CGSize)aSize
 {
     [super resizeWithOldSuperviewSize:aSize];

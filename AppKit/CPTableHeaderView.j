@@ -309,6 +309,10 @@ var CPThemeStatePressed = CPThemeState("pressed");
         if (newWidth >= [tableColumn minWidth])
         {
             [tableColumn setWidth:newWidth];
+            // FIXME: there has to be a better way to do this...
+            // We should refactor the auto resizing crap.
+            // We need to figure out the exact cocoa behavior here though. 
+            [_tableView resizeWithOldSuperviewSize:[_tableView bounds]];
             _lastLocation = location;
                         
             [[CPCursor resizeLeftRightCursor] set];
