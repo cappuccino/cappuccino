@@ -270,6 +270,7 @@ CustomOutlineViewDragType = @"CustomOutlineViewDragType";
         theItem = [self menu];
         
     CPLog.debug(@"validate item: %@ at index: %i", theItem, theIndex);
+	[anOutlineView setDropItem:theItem dropChildIndex:theIndex];
     
     return CPDragOperationEvery;
 }

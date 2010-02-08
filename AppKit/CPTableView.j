@@ -1163,7 +1163,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 
     var row = FLOOR(y / (_rowHeight + _intercellSpacing.height));
 
-    if (row >= _numberOfRows)
+    if (row > _numberOfRows)
         return -1;
 
     return row;
@@ -2332,7 +2332,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     // begin the drag is the datasource lets us, we've move at least +-3px vertical or horizontal, or we're dragging from selected rows and we haven't begun a drag session
     if
     (
-        !canSelect || (!_isSelectingSession &&
+        (!_isSelectingSession &&
         (_implementedDataSourceMethods & CPTableViewDataSource_tableView_writeRowsWithIndexes_toPasteboard_) &&
         (
             (lastPoint.x - aPoint.x > 3 || (_verticalMotionCanDrag && ABS(lastPoint.y - aPoint.y) > 3))
@@ -2530,12 +2530,12 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 
     var row = [self rowAtPoint:theDragPoint],
         rowRect = [self rectOfRow:row];
-        
+    
     // If there is no (the default) or to little inter cell spacing we create some room for the CPTableViewDropAbove indicator
     // This probably doesn't work if the row height is smaller than or around 5.0
     if ([self intercellSpacing].height < 5.0)
         rowRect = CPRectInset(rowRect, 0.0, 5.0 - [self intercellSpacing].height);
-        
+    
     if (CGRectContainsPoint(rowRect, theDragPoint)) 
         return CPTableViewDropOn;
         
@@ -2576,7 +2576,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 {
     if (theLowerRowIndex > [self numberOfRows])
         theLowerRowIndex = [self numberOfRows];
-    
+
     return [self rectOfRow:theLowerRowIndex];
 }
 
@@ -2589,20 +2589,9 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     var row = [self _proposedRowAtPoint:location],
         dragOperation = [self _validateDrop:sender proposedRow:row proposedDropOperation:dropOperation];
         exposedClipRect = [self exposedClipRect];
-    
+
     if(_retargetedDropRow !== nil)
         row = _retargetedDropRow;
-    
-    //if the user forces -1 then we should highlight the whole tableview
-    // var rowRect = CPRectMakeZero();
-    // if(_retargetedDropRow === -1 || row === -1)
-    //     rowRect = [self exposedClipRect];
-    // else
-    //     rowRect = [self rectOfRow:row];
-    // 
-    //     visibleWidth = _CGRectGetWidth(exposedClipRect);
-    // 
-    // rowRect = _CGRectMake(_CGRectGetMinX(exposedClipRect), rowRect.origin.y, visibleWidth, rowRect.size.height);
 
     var rect = CPRectMakeZero();
     
@@ -2615,6 +2604,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     else 
         rect = [self _rectForDropHighlightViewOnRow:row];
     
+	CPLog.debug(@"dropped row: %i", row);
     [_dropOperationFeedbackView setDropOperation:row !== -1 ? dropOperation : CPDragOperationNone];
     [_dropOperationFeedbackView setHidden:(dragOperation == CPDragOperationNone)];
     [_dropOperationFeedbackView setFrame:rect];
@@ -3044,11 +3034,13 @@ var CPTableViewDataSourceKey        = @"CPTableViewDataSourceKey",
 
     CGContextSetStrokeColor(context, [CPColor colorWithHexString:@"4886ca"]);
     CGContextSetLineWidth(context, 3);
-    
-    if (currentRow === -1)
-        CGContextStrokeRect(context, [self bounds]);
-    
-    else if(dropOperation === CPTableViewDropOn)
+	
+	if (currentRow === -1)
+	{
+		CGContextStrokeRect(context, [self bounds]);
+	}
+	
+	else if (dropOperation === CPTableViewDropOn)
     {
         //if row is selected don't fill and stroke white
         var selectedRows = [tableView selectedRowIndexes];
@@ -3100,6 +3092,7 @@ var CPTableViewDataSourceKey        = @"CPTableViewDataSourceKey",
         CGContextStrokePath(context);
         //CGContextStrokeLineSegments(context, [aRect.origin.x + 8,  aRect.origin.y + 8, 300 , aRect.origin.y + 8]);
     }
+        
 
 }
 @end

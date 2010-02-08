@@ -55,6 +55,7 @@ CPLogRegister(CPLogConsole);
     [iconColumn setDataView:iconView];
 
     [tableView addTableColumn:iconColumn];
+	[tableView setVerticalMotionCanBeginDrag:YES];
 
     iconImage = [[CPImage alloc] initWithContentsOfFile:"http://cappuccino.org/images/favicon.png" size:CGSizeMake(16,16)];
 
