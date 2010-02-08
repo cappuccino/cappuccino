@@ -22,10 +22,10 @@ CPLogRegister(CPLogConsole);
     dataSet1 = [],
     dataSet2 = [];
     
-    for(var i = 1; i < 500000; i++)
+    for(var i = 1; i < 100; i++)
     {
-        dataSet1[i - 1] = i;
-        dataSet2[i - 1] = i + 10;
+        dataSet1[i - 1] = [CPNumber numberWithInt:i];
+        dataSet2[i - 1] = [CPNumber numberWithInt:i+10];
     }
     
     var window1 = [[CPWindow alloc] initWithContentRect:CGRectMake(50, 50, 500, 400) styleMask:CPTitledWindowMask],
@@ -69,20 +69,24 @@ CPLogRegister(CPLogConsole);
 	//[textDataView setValue:[CPColor blackColor] forThemeAttribute:@"text-shadow-color" inState:CPThemeStateHighlighted];
 
 //    [textDataView setBackgroundColor:[[CPColor redColor] colorWithAlphaComponent:0.5]];
-
+    
+    var desc = [CPSortDescriptor sortDescriptorWithKey:@"self" ascending:YES];
     for (var i = 1; i <= 2; i++)
     {
         var column = [[CPTableColumn alloc] initWithIdentifier:String(i)];
-
+        [column setSortDescriptorPrototype:desc];
         [[column headerView] setStringValue:"Number "+i];
 
+        [column setMinWidth:50.0];
+        [column setMaxWidth:250.0];
         [column setWidth:200.0];
-        [column setMinWidth:150.0];
-
+        
         [column setEditable:YES];
         [tableView addTableColumn:column];
     }
-
+    
+    //[tableView._tableColumns[1] setSortDescriptorPrototype:desc];
+    
     //[tableView selectColumnIndexes:[CPIndexSet indexSetWithIndexesInRange:CPMakeRange(0,2)] byExtendingSelection:YES];
 
     // [tableView setColumnAutoresizingStyle:CPTableViewUniformColumnAutoresizingStyle];
@@ -132,6 +136,7 @@ CPLogRegister(CPLogConsole);
     [iconColumn setWidth:32.0];
     [iconColumn setMinWidth:32.0];
     [iconColumn setDataView:iconView];
+    [iconColumn setResizingMask:CPTableColumnNoResizing];
 
     [tableView2 addTableColumn:iconColumn];
 
@@ -152,21 +157,23 @@ CPLogRegister(CPLogConsole);
 	//[textDataView setValue:[CPColor blackColor] forThemeAttribute:@"text-shadow-color" inState:CPThemeStateHighlighted];
 
 //    [textDataView setBackgroundColor:[[CPColor redColor] colorWithAlphaComponent:0.5]];
+    var desc = [CPSortDescriptor sortDescriptorWithKey:@"self" ascending:YES];
 
     for (var i = 1; i <= 3; i++)
     {
         var column = [[CPTableColumn alloc] initWithIdentifier:String(i)];
-
+        [column setSortDescriptorPrototype:desc];
         [[column headerView] setStringValue:"Number "+i];
 
         [column setWidth:200.0];
-        [column setMinWidth:150.0];
+        [column setMinWidth:50.0];
 
         [column setDataView:textDataView];
         [column setEditable:YES];
+        
         [tableView2 addTableColumn:column];
     }
-
+    
     //[tableView selectColumnIndexes:[CPIndexSet indexSetWithIndexesInRange:CPMakeRange(0,2)] byExtendingSelection:YES];
 
     [tableView2 setColumnAutoresizingStyle:CPTableViewUniformColumnAutoresizingStyle];
@@ -260,7 +267,7 @@ CPLogRegister(CPLogConsole);
     CPLogConsole(_cmd + [notification description]);
 }
 
-- (void)tableViewColumnDidResize:(id)notification
+- (void)_tableViewColumnDidResize:(id)notification
 {
     CPLogConsole(_cmd + [notification description]);
 }
@@ -285,6 +292,16 @@ CPLogRegister(CPLogConsole);
 - (void)tableView:(CPTableView)aTableView setObjectValue:(id)aValue forTableColumn:(CPTableColumn)tableColumn row:(int)row
 {
     
+}
+
+- (void)tableView:(CPTableView)aTableView sortDescriptorsDidChange:(CPArray)oldDescriptors
+{
+    CPLogConsole(_cmd + [oldDescriptors description]);
+    
+    var newDescriptors = [aTableView sortDescriptors];
+    
+    [(aTableView === tableView) ? dataSet1:dataSet2 sortUsingDescriptors:newDescriptors];
+	[aTableView reloadData];
 }
 
 - (BOOL)tableView:(CPTableView)aTableView writeRowsWithIndexes:(CPIndexSet)rowIndexes toPasteboard:(CPPasteboard)pboard
