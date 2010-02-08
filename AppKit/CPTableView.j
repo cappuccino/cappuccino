@@ -2604,7 +2604,6 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     else 
         rect = [self _rectForDropHighlightViewOnRow:row];
     
-	CPLog.debug(@"dropped row: %i", row);
     [_dropOperationFeedbackView setDropOperation:row !== -1 ? dropOperation : CPDragOperationNone];
     [_dropOperationFeedbackView setHidden:(dragOperation == CPDragOperationNone)];
     [_dropOperationFeedbackView setFrame:rect];
@@ -3034,13 +3033,13 @@ var CPTableViewDataSourceKey        = @"CPTableViewDataSourceKey",
 
     CGContextSetStrokeColor(context, [CPColor colorWithHexString:@"4886ca"]);
     CGContextSetLineWidth(context, 3);
-	
-	if (currentRow === -1)
-	{
-		CGContextStrokeRect(context, [self bounds]);
-	}
-	
-	else if (dropOperation === CPTableViewDropOn)
+    
+    if (currentRow === -1)
+    {
+        CGContextStrokeRect(context, [self bounds]);
+    }
+    
+    else if (dropOperation === CPTableViewDropOn)
     {
         //if row is selected don't fill and stroke white
         var selectedRows = [tableView selectedRowIndexes];
