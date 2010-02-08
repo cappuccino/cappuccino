@@ -2627,7 +2627,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     return [self rectOfRow:theRowIndex];
 }
 
-- (CPRect)_rectForDropHighlightViewBetweenUpperRow:(int)theUpperRowIndex andLowerRow:(int)theLowerRowIndex offset:(float)theXOffset
+- (CPRect)_rectForDropHighlightViewBetweenUpperRow:(int)theUpperRowIndex andLowerRow:(int)theLowerRowIndex offset:(CPPoint)theOffset
 {
     if (theLowerRowIndex > [self numberOfRows])
         theLowerRowIndex = [self numberOfRows];
@@ -2640,6 +2640,8 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     var location = [self convertPoint:[sender draggingLocation] fromView:nil],
         dropOperation = [self _proposedDropOperationAtPoint:location],
         numberOfRows = [self numberOfRows];
+
+	// CPLog.debug(@"offset: %@", CPStringFromPoint(location));
 
     var row = [self _proposedRowAtPoint:location],
         dragOperation = [self _validateDrop:sender proposedRow:row proposedDropOperation:dropOperation];
@@ -2654,7 +2656,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
         rect = exposedClipRect;
         
     else if (dropOperation === CPTableViewDropAbove)
-        rect = [self _rectForDropHighlightViewBetweenUpperRow:row - 1 andLowerRow:row offset:location.x];
+        rect = [self _rectForDropHighlightViewBetweenUpperRow:row - 1 andLowerRow:row offset:location];
         
     else 
         rect = [self _rectForDropHighlightViewOnRow:row];
