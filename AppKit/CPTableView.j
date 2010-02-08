@@ -2848,10 +2848,8 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     
      [self selectRowIndexes:[CPIndexSet indexSetWithIndex:i] byExtendingSelection:extend];
     
-     if(i)
-     {
+     if(i >= 0)
         [self scrollRowToVisible:i];
-     }
 }
 
 - (void)deleteBackward:(id)sender
