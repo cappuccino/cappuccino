@@ -201,6 +201,9 @@ CPOutlineViewDropOnItemIndex = -1;
         itemInfo = _rootItemInfo;
     else
         itemInfo = _itemInfosForItems[[anItem UID]];
+
+    if (!itemInfo)
+        return;
     
     itemInfo.isExpanded = YES;
     [self reloadItem:anItem reloadChildren:YES];
@@ -508,63 +511,58 @@ CPOutlineViewDropOnItemIndex = -1;
 
 - (void)setDropItem:(id)theItem dropChildIndex:(int)theIndex
 {
-	[self doesNotRecognizeSelector:_cmd];
-    // var dropRow = [self rowForItem:theItem],
-    //  dropOperation = CPTableViewDropOn;
-    // 
-    // if (theIndex !== CPOutlineViewDropOnItemIndex)
-    // {
-    //  dropOperation = CPTableViewDropAbove;
-    //  
-    //  var itemInfo = _itemInfosForItems[[theItem UID]];
-    //      
-    //  if (!itemInfo)
-    //       itemInfo = _rootItemInfo;
-    //  
-    //  var children = itemInfo.children;
-    //  
-    //  if (theIndex < [children count])
-    //  {
-    //      childItem = [children objectAtIndex:theIndex];
-    //      itemInfo = _itemInfosForItems[[childItem UID]];
-    //      dropRow = itemInfo.row;
-    //  }
-    //  else
-    //  {
-    //      // We dropped outside of the range of children for this item
-    //      // Determine the tableviews dropped row indexes by asking for the row index of the last item + 1
-    //      dropRow = [self rowForItem:[children lastObject]] + 1;
-    //  }
-    //  
-    //  // CPLog.debug(@"changed drop operation: %i", dropOperation);
-    // }
-    //  
-    // CPLog.debug(@"set drop row: %i operation: %i", dropRow, dropOperation);
-    // 
-    // [self setDropRow:dropRow dropOperation:dropOperation];
+    var dropRow = [self rowForItem:theItem],
+        dropOperation = CPTableViewDropOn;
+      
+    if (theIndex !== CPOutlineViewDropOnItemIndex)
+    {
+        dropOperation = CPTableViewDropAbove;
+        
+        var itemInfo = nil;
+        if (!theItem)
+            itemInfo = _rootItemInfo;
+        else
+            itemInfo = _itemInfosForItems[[theItem UID]];
     
+        var children = itemInfo.children;
+
+        if (theIndex < [children count])
+        {
+            childItem = [children objectAtIndex:theIndex];
+            itemInfo = _itemInfosForItems[[childItem UID]];
+            dropRow = itemInfo.row;
+        }
+        else
+        {
+            // We dropped outside of the range of children for this item
+            // Determine the tableviews dropped row indexes by asking for the row index of the last item + 1
+            dropRow = [self rowForItem:[children lastObject]] + 1;
+        }
+    }
+
+    [self setDropRow:dropRow dropOperation:dropOperation];
 }
 
 - (id)_parentItemForUpperRow:(int)theUpperRowIndex andLowerRow:(int)theLowerRowIndex atMouseOffset:(CPPoint)theOffset
 {
     var lowerLevel = [self levelForRow:theLowerRowIndex]
-		upperItem = [self itemAtRow:theUpperRowIndex];
+        upperItem = [self itemAtRow:theUpperRowIndex];
         upperLevel = [self levelForItem:upperItem];
 
     // If the row above us has a higher level the item can be added to multiple parent items
     // Determine which one by looping through all possible parents and return the first
     // of which the indentation level is larger than the current x offset
-	while (upperLevel > lowerLevel)
-	{
-		upperLevel = [self levelForItem:upperItem];
+    while (upperLevel > lowerLevel)
+    {
+        upperLevel = [self levelForItem:upperItem];
 
-		// See if this item's indentation level matches the mouse offset
-		if (theOffset.x > (upperLevel + 1) * [self indentationPerLevel])
-			return [self parentForItem:upperItem];
+        // See if this item's indentation level matches the mouse offset
+        if (theOffset.x > (upperLevel + 1) * [self indentationPerLevel])
+            return [self parentForItem:upperItem];
 
-		// Check the next parent
-		upperItem = [self parentForItem:upperItem];
-	}
+        // Check the next parent
+        upperItem = [self parentForItem:upperItem];
+    }
     
     return [self parentForItem:[self itemAtRow:theLowerRowIndex]];
 }
@@ -575,10 +573,10 @@ CPOutlineViewDropOnItemIndex = -1;
     var rect = [super _rectForDropHighlightViewBetweenUpperRow:theUpperRowIndex andLowerRow:theLowerRowIndex offset:theOffset],
         parentItem = [self _parentItemForUpperRow:theUpperRowIndex andLowerRow:theLowerRowIndex atMouseOffset:theOffset],
         level = [self levelForItem:parentItem];
-	
+    
     rect.origin.x = (level + 1) * [self indentationPerLevel];   
-	rect.size.width -= rect.origin.x; // This assumes that the x returned by super is zero
-	
+    rect.size.width -= rect.origin.x; // This assumes that the x returned by super is zero
+    
     return rect;
 }
 

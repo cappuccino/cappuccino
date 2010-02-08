@@ -2641,8 +2641,6 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
         dropOperation = [self _proposedDropOperationAtPoint:location],
         numberOfRows = [self numberOfRows];
 
-	// CPLog.debug(@"offset: %@", CPStringFromPoint(location));
-
     var row = [self _proposedRowAtPoint:location],
         dragOperation = [self _validateDrop:sender proposedRow:row proposedDropOperation:dropOperation];
         exposedClipRect = [self exposedClipRect];
