@@ -26,7 +26,7 @@
 
 var CPDateReferenceDate = new Date(Date.UTC(2001,1,1,0,0,0,0));
 
-/*! 
+/*!
     @class CPDate
     @ingroup foundation
     @brief A representation of a single point in time.
@@ -34,7 +34,7 @@ var CPDateReferenceDate = new Date(Date.UTC(2001,1,1,0,0,0,0));
 
 */
 @implementation CPDate : CPObject
-{ 
+{
 }
 
 + (id)alloc
@@ -52,7 +52,7 @@ var CPDateReferenceDate = new Date(Date.UTC(2001,1,1,0,0,0,0));
     return [[CPDate alloc] initWithTimeIntervalSinceNow:seconds];
 }
 
-+ (id)dateWithTimeIntervalSince1970:(CPTimeInterval)seconds 
++ (id)dateWithTimeIntervalSince1970:(CPTimeInterval)seconds
 {
     return [[CPDate alloc] initWithTimeIntervalSince1970:seconds];
 }
@@ -116,7 +116,7 @@ var CPDateReferenceDate = new Date(Date.UTC(2001,1,1,0,0,0,0));
     date.setHours(d[4]);
     date.setMinutes(d[5]);
     date.setSeconds(d[6]);
-    
+
     self = new Date(date.getTime() +  (timeZoneOffset - date.getTimezoneOffset()) * 60 * 1000);
     return self;
 }
@@ -172,7 +172,7 @@ var CPDateReferenceDate = new Date(Date.UTC(2001,1,1,0,0,0,0));
 }
 
 /*!
-    Returns the date as a string in the international format 
+    Returns the date as a string in the international format
     YYYY-MM-DD HH:MM:SS ±HHMM.
 */
 - (CPString)description
@@ -181,6 +181,11 @@ var CPDateReferenceDate = new Date(Date.UTC(2001,1,1,0,0,0,0));
         minutes = self.getTimezoneOffset() - hours * 60;
 
     return [CPString stringWithFormat:@"%04d-%02d-%02d %02d:%02d:%02d +%02d%02d", self.getFullYear(), self.getMonth()+1, self.getDate(), self.getHours(), self.getMinutes(), self.getSeconds(), hours, minutes];
+}
+
+- (id)copy
+{
+    return new Date(self.getTime());
 }
 
 @end
