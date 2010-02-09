@@ -892,5 +892,6 @@ Preprocessor.prototype.error_message = function(errorMessage)
                                 (this._currentSelector ? " Method: "+this._currentSelector : "") +">";
 }
 
+exports.Lexer = Lexer;
 exports.Preprocessor = Preprocessor;
 exports.preprocess = preprocess;

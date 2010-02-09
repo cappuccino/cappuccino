@@ -105,3 +105,5 @@ FileExecutableSearch.prototype.toString = function()
     return "<FileExecutableSearch: " + this.path() + ">";
 }
 #endif
+
+exports.FileExecutableSearch = FileExecutableSearch;

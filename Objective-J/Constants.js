@@ -6,7 +6,7 @@ exports.environments = function()
     return ENVIRONMENTS;
 }
 
-if (window)
+if (typeof window !== "undefined")
 {
     window.setNativeTimeout = window.setTimeout;
     window.clearNativeTimeout = window.clearTimeout;

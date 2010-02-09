@@ -408,3 +408,5 @@ exports.includePaths = function()
 {
     return global.OBJJ_INCLUDE_PATHS || ["Frameworks", "Frameworks/Debug"];
 }
+
+exports.StaticResourceNode = StaticResourceNode;
