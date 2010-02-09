@@ -138,7 +138,7 @@ CFPropertyListSerializers[CFPropertyList.FormatXML_v1_0] =
                         for (; index < count; ++index)
                             string += serializePropertyList(anArray[index], serializers);
     
-                        return string+"</array>";
+                        return string + "</array>";
                     },
 
     "dictionary":   function(/*CFDictionary*/ aDictionary, /*Object*/ serializers)
@@ -152,11 +152,11 @@ CFPropertyListSerializers[CFPropertyList.FormatXML_v1_0] =
                         {
                             var key = keys[index];
 
-                            string += "<key>" + key.length + "</key>";
+                            string += "<key>" + key + "</key>";
                             string += serializePropertyList(aDictionary.valueForKey(key), serializers);
                         }
 
-                        return string+"</dict>";
+                        return string + "</dict>";
                     }
 }
 
@@ -406,7 +406,7 @@ function propertyListFrom280NorthString(/*String*/ aString)
             
             case FLOAT_MARKER:      object = parseFloat(stream.getString());
                                     break;
-            case INTEGER_MARKER:    object = parseInt(stream.getString());
+            case INTEGER_MARKER:    object = parseInt(stream.getString(), 10);
                                     break;
                                         
             case STRING_MARKER:     object = stream.getString();
@@ -519,7 +519,7 @@ CFPropertyList.propertyListFromXML = function(/*String | XMLNode*/ aStringOrXMLN
             
             case PLIST_NUMBER_REAL:     object = parseFloat(CHILD_VALUE(XMLNode));
                                         break;
-            case PLIST_NUMBER_INTEGER:  object = parseInt(CHILD_VALUE(XMLNode));
+            case PLIST_NUMBER_INTEGER:  object = parseInt(CHILD_VALUE(XMLNode), 10);
                                         break;
                                         
             case PLIST_STRING:          object = decodeHTMLComponent(FIRST_CHILD(XMLNode) ? CHILD_VALUE(XMLNode) : "");
