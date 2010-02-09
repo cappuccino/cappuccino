@@ -121,10 +121,10 @@ Executable.commonJSArguments = function()
 
 Executable.prototype.toMarkedString = function()
 {
-    var dependencies = this.dependencies(),
+    var markedString = "@STATIC;1.0;",
+        dependencies = this.fileDependencies(),
         index = 0,
-        count = dependencies.length,
-        markedString = "";
+        count = dependencies.length;
 
     for (; index < count; ++index)
         markedString += dependencies[index].toMarkedString();
