@@ -527,13 +527,13 @@ var CPStringRegexSpecialCharacters = [
 - (unsigned)UID
 {
     var hash = CPStringHashes.valueForKey(self);
-    
+
     if (!hash) 
     {
         hash = _objj_generateObjectHash();
-        CPStringHashes.setValueForKey(hash, self);
+        CPStringHashes.setValueForKey(self, hash);
     }
-    
+
     return hash;
 }
 
