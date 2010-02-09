@@ -87,26 +87,16 @@ function compileWithResolvedFlags(aFilePath, objjcFlags, gccFlags)
         throw errorInfo;
     }
 
-    var preprocessed = "@STATIC;1.0;",
-        fileDependencies = executable.fileDependencies(),
-        index = 0,
-        count = fileDependencies.length;
-
-    for (; index < count; ++index)
-        preprocessed += fileDependencies[index].toMarkedString();
-
-    var code = executable.code();
-
     if (shouldCompress)
     {
-        var code = compress("function(){" + code + "}", FILE.basename(aFilePath));
-
-        code = code.substr("function(){".length, code.length - "function(){};\n\n".length);
+        var code = executable.code();
+        code = compress("function(){" + code + "}", FILE.basename(aFilePath));
+        // more robust function wrapper stripping
+        code = code.replace(/^\s*function\s*\(\s*\)\s*{|}\s*;?\s*$/g, "");
+        executable.setCode(code);
     }
 
-    preprocessed += "t;" + code.length + ";" + code;
-
-    return preprocessed;
+    return executable.toMarkedString();
 }
 
 function resolveFlags(args)

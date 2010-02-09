@@ -41,29 +41,7 @@ function Executable(/*String*/ aCode, /*Array*/ fileDependencies, /*String*/ aSc
     if (this._function)
         return;
 
-    var code = this._code;
-
-#if COMMONJS
-    code = "function(" + this.functionParameters().join(" , ") + "){" + code + "/**/\n}";
-
-    if (typeof system !== "undefined" && system.engine === "rhino")
-        this._function = Packages.org.mozilla.javascript.Context.getCurrentContext().compileFunction(window, code, this._scope, 0, NULL);
-    else
-        this._function = eval("(" + code + ")");
-#else
-    // "//@ sourceURL=" at the end lets us name our eval'd files for debuggers, etc.
-    // * WebKit:  http://pmuellr.blogspot.com/2009/06/debugger-friendly.html
-    // * Firebug: http://blog.getfirebug.com/2009/08/11/give-your-eval-a-name-with-sourceurl/
-    //if (YES) {
-        code += "/**/\n//@ sourceURL=" + this._scope;
-        this._function = new Function(this.functionParameters(), code);
-    //} else {
-    //    // Firebug only does it for "eval()", not "new Function()". Ugh. Slower.
-    //    var functionText = "(function(){"+GET_CODE(aFragment)+"/**/\n})\n//@ sourceURL="+GET_FILE(aFragment).path;
-    //    compiled = eval(functionText);
-    //}
-    this._function.displayName = this._scope;
-#endif
+    this.setCode(aCode);
 }
 
 Executable.prototype.path = function()
@@ -154,6 +132,33 @@ Executable.prototype.execute = function()
 Executable.prototype.code = function()
 {
     return this._code;
+}
+
+Executable.prototype.setCode = function(code)
+{
+    this._code = code;
+
+#if COMMONJS
+    code = "function(" + this.functionParameters().join(" , ") + "){" + code + "/**/\n}";
+
+    if (typeof system !== "undefined" && system.engine === "rhino")
+        this._function = Packages.org.mozilla.javascript.Context.getCurrentContext().compileFunction(window, code, this._scope, 0, NULL);
+    else
+        this._function = eval("(" + code + ")");
+#else
+    // "//@ sourceURL=" at the end lets us name our eval'd files for debuggers, etc.
+    // * WebKit:  http://pmuellr.blogspot.com/2009/06/debugger-friendly.html
+    // * Firebug: http://blog.getfirebug.com/2009/08/11/give-your-eval-a-name-with-sourceurl/
+    //if (YES) {
+        code += "/**/\n//@ sourceURL=" + this._scope;
+        this._function = new Function(this.functionParameters(), code);
+    //} else {
+    //    // Firebug only does it for "eval()", not "new Function()". Ugh. Slower.
+    //    var functionText = "(function(){"+GET_CODE(aFragment)+"/**/\n})\n//@ sourceURL="+GET_FILE(aFragment).path;
+    //    compiled = eval(functionText);
+    //}
+    this._function.displayName = this._scope;
+#endif
 }
 
 Executable.prototype.fileDependencies = function()
