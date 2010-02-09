@@ -118,6 +118,21 @@ Executable.commonJSArguments = function()
 {
     return this._commonJSArguments || [];
 }
+
+Executable.prototype.toMarkedString = function()
+{
+    var dependencies = this.dependencies(),
+        index = 0,
+        count = dependencies.length,
+        markedString = "";
+
+    for (; index < count; ++index)
+        markedString += dependencies[index].toMarkedString();
+
+    var code = this.code();
+
+    return markedString + MARKER_TEXT + ";" + code.length + ";" + code;
+}
 #endif
 
 Executable.prototype.execute = function()
