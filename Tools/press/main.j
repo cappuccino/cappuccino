@@ -170,7 +170,7 @@ function pressEnvironment(rootPath, outputFiles, environment, options) {
     analyzer.finishLoading();
 
     // coalesce the results
-    var dependencies = analyzer.globalsToFilesMapping();
+    var dependencies = analyzer.mapGlobalsToFiles();
 
     // log identifer => files defining
     CPLog.trace("Global defines:");
@@ -178,52 +178,54 @@ function pressEnvironment(rootPath, outputFiles, environment, options) {
         CPLog.trace("    " + identifier + " => " + rootPath.relative(dependencies[identifier]));
     });
 
-    CPLog.error("NOT YET IMPLEMENTED");
-    OS.exit(1);
-
     // phase 2: walk the dependency tree (both imports and references) to determine exactly which files need to be included
     CPLog.error("PHASE 2: Walk dependency tree...");
 
-    var requiredFiles = {};
+    var requiredFiles = null;
 
     if (options.nostrip)
     {
         // all files are required. no need for analysis
-        requiredFiles = scope.objj_files;
+        throw "FIXME"
+        // requiredFiles = scope.objj_files;
     }
     else
     {
-        if (!scope.objj_files[mainPath])
-        {
-            CPLog.error("Root file not loaded!");
-            return;
-        }
-
         CPLog.warn("Analyzing dependencies...");
 
-        context.dependencies = dependencies;
-        context.ignoreFrameworkImports = true; // ignores "XXX/XXX.j" imports
-        context.importCallback = function(importing, imported) { requiredFiles[imported] = true; };
-        context.referenceCallback = function(referencing, referenced) { requiredFiles[referenced] = true; }
+        requiredFiles = {};
+
+        var context = {
+            ignoreFrameworkImports : true, // ignores "XXX/XXX.j" imports
+            importCallback: function(importing, imported) { requiredFiles[imported] = true; },
+            referenceCallback: function(referencing, referenced) { requiredFiles[referenced] = true; },
+            importedFiles: {},
+            referencedFiles: {}
+        }
 
         requiredFiles[mainPath] = true;
 
+        mainExecutable = analyzer.executableForImport(mainPath);
+
         // check the code
-        traverseDependencies(context, scope.objj_files[mainPath]);
+        analyzer.traverseDependencies(context, mainExecutable);
 
         // check the cibs
+        var globalsToFiles = analyzer.mapGlobalsToFiles();
         cibs.forEach(function(cibPath) {
             var cibClasses = findCibClassDependencies(cibPath);
             CPLog.debug("CIB: " + rootPath.relative(cibPath) + " => " + cibClasses);
 
             var referencedFiles = {};
-            markFilesReferencedByTokens(cibClasses, context.dependencies, referencedFiles);
-            checkReferenced(context, null, referencedFiles);
+            markFilesReferencedByTokens(cibClasses, globalsToFiles, referencedFiles);
+            analyzer.checkReferenced(context, null, referencedFiles);
         });
+
+        var allFiles = analyzer.gatherDependencies(mainExecutable);
 
         var count = 0,
             total = 0;
-        for (var path in scope.objj_files)
+        for (var path in allFiles)
         {
             // mark all ".keytheme"s as required
             if (/\.keyedtheme$/.test(path))

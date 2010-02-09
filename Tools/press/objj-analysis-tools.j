@@ -1,4 +1,5 @@
 var FILE = require("file");
+var OBJJ = require("objective-j");
 var Context = require("interpreter").Context;
 
 function ObjectiveJRuntimeAnalyzer(rootPath)
@@ -16,7 +17,6 @@ ObjectiveJRuntimeAnalyzer.prototype.initializeGlobalRecorder = function()
     this.initializeGlobalRecorder = function(){}; // run once
 
     this.ignore = cloneProperties(this.scope, true);
-    this.ignore['bundle'] = true;
 
     this.files = {};
     var evaluatingPaths = [];
@@ -56,7 +56,14 @@ ObjectiveJRuntimeAnalyzer.prototype.initializeGlobalRecorder = function()
             recordAndReset();
 
             evaluatingPaths.push(currentFile);
-            currentFile = FILE.normal(FILE.join(referencePath, aPath));
+
+            // NOTE: we distinguish local and library imports using absolute and relative paths.
+            // we resolve the library paths later (in "mergeLibraryImports()") since doing it here seems
+            // to change the resulting recorded globals.
+            if (isLocal)
+                currentFile = FILE.normal(FILE.join(referencePath, aPath));
+            else
+                currentFile = aPath;
 
             system.stderr.write(">").flush();
             fileExecutor.apply(this, arguments);
@@ -86,8 +93,10 @@ ObjectiveJRuntimeAnalyzer.prototype.finishLoading = function(path)
     this.require('browser/timeout').serviceTimeouts();
 }
 
-ObjectiveJRuntimeAnalyzer.prototype.globalsToFilesMapping = function()
+ObjectiveJRuntimeAnalyzer.prototype.mapGlobalsToFiles = function()
 {
+    this.mergeLibraryImports();
+
     // takes a hash mapping from file names to hashes of global names defined in each file
     //    globals = { fileName { globalName : true }}
     // returns a hash mapping from global names to arrays of file names in which those globals are defined
@@ -100,8 +109,10 @@ ObjectiveJRuntimeAnalyzer.prototype.globalsToFilesMapping = function()
     return globals;
 }
 
-ObjectiveJRuntimeAnalyzer.prototype.filesToGlobalsMapping = function()
+ObjectiveJRuntimeAnalyzer.prototype.mapFilesToGlobals = function()
 {
+    this.mergeLibraryImports();
+
     var files = {};
     for (var fileName in this.files) {
         files[fileName] = {};
@@ -109,6 +120,34 @@ ObjectiveJRuntimeAnalyzer.prototype.filesToGlobalsMapping = function()
             files[fileName][globalName] = true;
     }
     return files;
+}
+
+// this method resolves library imports and merges their recorded globals with the canonical
+// file object for each file
+ObjectiveJRuntimeAnalyzer.prototype.mergeLibraryImports = function()
+{
+    for (var relativePath in this.files) {
+        if (FILE.isRelative(relativePath)) {
+            var absolutePath = this.executableForImport(relativePath, false).path();
+            CPLog.debug("Merging " + relativePath + " => " + absolutePath);
+
+            this.files[absolutePath] = this.files[absolutePath] || {};
+            this.files[absolutePath].globals = this.files[absolutePath].globals || {};
+
+            for (var global in this.files[relativePath].globals) {
+                this.files[absolutePath].globals[global] = true;
+            }
+            delete this.files[relativePath];
+        }
+    }
+}
+
+// returns an executable for the import path, or null if none exists
+ObjectiveJRuntimeAnalyzer.prototype.executableForImport = function(path, isLocal)
+{
+    if (isLocal === undefined) isLocal = true;
+    var _OBJJ = this.require("objective-j");
+    return new _OBJJ.FileExecutableSearch(path, isLocal).result();
 }
 
 /*
@@ -123,127 +162,140 @@ ObjectiveJRuntimeAnalyzer.prototype.filesToGlobalsMapping = function()
 
     param file is an objj_file object containing path, fragments, content, bundle, etc
 */
-function traverseDependencies(context, file)
+ObjectiveJRuntimeAnalyzer.prototype.traverseDependencies = function(context, executable)
 {
     if (!context.processedFiles)
         context.processedFiles = {};
 
-    if (context.processedFiles[file.path])
+    var path = executable.path();
+
+    if (context.processedFiles[path])
         return;
-    context.processedFiles[file.path] = true;
+
+    context.processedFiles[path] = true;
 
     var ignoreImports = false;
     if (context.ignoreAllImports)
     {
-        CPLog.warn("Ignoring all import fragments. ("+context.rootPath.relative(file.path)+")");
+        CPLog.warn("Ignoring all import fragments. ("+this.rootPath.relative(path)+")");
         ignoreImports = true;
     }
     else if (context.ignoreFrameworkImports)
     {
-        var matches = file.path.match(new RegExp("([^\\/]+)\\/([^\\/]+)\\.j$")); // Matches "ZZZ/ZZZ.j" (e.x. AppKit/AppKit.j and Foundation/Foundation.j)
+        var matches = path.match(new RegExp("([^\\/]+)\\/([^\\/]+)\\.j$")); // Matches "ZZZ/ZZZ.j" (e.x. AppKit/AppKit.j and Foundation/Foundation.j)
         if (matches && matches[1] === matches[2])
         {
-            CPLog.warn("Framework import file! Ignoring all import fragments. ("+context.rootPath.relative(file.path)+")");
+            CPLog.warn("Framework import file! Ignoring all import fragments. ("+this.rootPath.relative(path)+")");
             ignoreImports = true;
         }
-    }
-
-    // if fragments are missing, preprocess the contents
-    if (!file.fragments)
-    {
-        if (file.included)
-            CPLog.warn(context.rootPath.relative(file.path) + " is included but missing fragments");
-        else
-            CPLog.warn("Preprocessing " + context.rootPath.relative(file.path));
-
-        file.fragments = objj_preprocess(file.contents, file.bundle, file);
     }
 
     var referencedFiles = {},
         importedFiles = {};
 
-    CPLog.debug("Processing " + file.fragments.length + " fragments in " + context.rootPath.relative(file.path));
+    CPLog.debug("Processing " + this.rootPath.relative(path));
 
-    file.fragments.forEach(function(fragment) {
-        if (fragment.type & FRAGMENT_CODE)
-        {
-            var referencedTokens = uniqueTokens(fragment.info);
+    // code
+    var code = executable.code();
+    var referencedTokens = uniqueTokens(code);
 
-            markFilesReferencedByTokens(referencedTokens, context.dependencies, referencedFiles);
+    markFilesReferencedByTokens(referencedTokens, this.mapGlobalsToFiles(), referencedFiles);
+    delete referencedFiles[path];
+
+    // imports
+    executable.fileDependencies().forEach(function(fileDependency) {
+        if (ignoreImports) {
+            // FIXME
+            // fragment.conditionallyIgnore = true;
         }
-        else if (fragment.type & FRAGMENT_FILE)
+        else
         {
-            if (ignoreImports)
+            var dependencyExecutable = null;
+            if (fileDependency.isLocal())
+                dependencyExecutable = this.executableForImport(FILE.normal(FILE.join(FILE.dirname(path), fileDependency.path())), true);
+            else
+                dependencyExecutable = this.executableForImport(fileDependency.path(), false);
+
+            if (dependencyExecutable)
             {
-                fragment.conditionallyIgnore = true;
+                var importedFile = dependencyExecutable.path();
+                // should never import self, but just in case?
+                if (importedFile !== path)
+                    importedFiles[importedFile] = true;
+                else
+                    CPLog.error("Ignoring self import (why are you importing yourself?!): " + this.rootPath.relative(importedFile));
             }
             else
-            {
-                var importedFile = findImportInObjjFiles(context.scope, fragment);
-                if (importedFile)
-                {
-                    // should never import self, but just in case?
-                    if (importedFile != file.path)
-                        importedFiles[importedFile] = true;
-                    else
-                        CPLog.error("Ignoring self import (why are you importing yourself?!): " + context.rootPath.relative(file.path));
-                }
-                else
-                    CPLog.error("Couldn't find file for import " + fragment.info + " ("+fragment.type+")");
-            }
+                CPLog.error("Couldn't find file for import " + fileDependency.path() + " ("+fileDependency.isLocal()+")");
         }
-    });
+    }, this);
 
     // check each imported file
-    checkImported(context, file.path, importedFiles);
+    this.checkImported(context, path, importedFiles);
 
     if (context.importedFiles)
-        context.importedFiles[file.path] = importedFiles;
+        context.importedFiles[path] = importedFiles;
 
     // check each referenced file
-    checkReferenced(context, file.path, referencedFiles);
+    this.checkReferenced(context, path, referencedFiles);
 
     if (context.referencedFiles)
-        context.referencedFiles[file.path] = referencedFiles;
+        context.referencedFiles[path] = referencedFiles;
 }
 
-function checkImported(context, path, importedFiles) {
+ObjectiveJRuntimeAnalyzer.prototype.checkImported = function(context, path, importedFiles) {
     for (var importedFile in importedFiles)
     {
-        if (importedFile != path)
+        if (importedFile !== path)
         {
             if (context.importCallback)
                 context.importCallback(path, importedFile);
 
-            if (context.scope.objj_files[importedFile])
-                traverseDependencies(context, context.scope.objj_files[importedFile]);
+            var executable = this.executableForImport(importedFile, true);
+            if (executable)
+                this.traverseDependencies(context, executable);
             else
                 CPLog.error("Missing imported file: " + importedFile);
         }
     }
 }
 
-function checkReferenced(context, path, referencedFiles) {
+ObjectiveJRuntimeAnalyzer.prototype.checkReferenced = function(context, path, referencedFiles) {
     for (var referencedFile in referencedFiles)
     {
-        if (referencedFile != path)
+        if (referencedFile !== path)
         {
             if (context.referenceCallback)
                 context.referenceCallback(path, referencedFile, referencedFiles[referencedFile]);
 
-            if (context.scope.objj_files.hasOwnProperty(referencedFile))
-                traverseDependencies(context, context.scope.objj_files[referencedFile]);
+            var executable = this.executableForImport(referencedFile, true);
+            if (executable)
+                this.traverseDependencies(context, executable);
             else
                 CPLog.error("Missing referenced file: " + referencedFile);
         }
     }
 }
 
+ObjectiveJRuntimeAnalyzer.prototype.gatherDependencies = function(executable) {
+    var _OBJJ = this.require("objective-j");
+    var files = {};
+    var stack = [executable];
+    while (stack.length) {
+        var executable = stack.pop();
+        if (files[executable.path()])
+            continue;
+        files[executable.path()] = executable;
+        stack.push.apply(stack, executable.fileDependencies().map(function(dep) { return new _OBJJ.FileExecutableSearch(dep.path(), dep.isLocal()).result(); }));
+    }
+    return files;
+}
+
 // returns a unique list of tokens for a piece of code.
 // ideally this should return identifiers only
 function uniqueTokens(code) {
-    // FIXME: this breaks for indentifiers containing "$" since it's considered a distinct token by the parser
-    var lexer = new objj_lexer(code, null);
+    // FIXME: this breaks for indentifiers containing "$" since it's considered a distinct token by the lexer
+    var lexer = new OBJJ.Lexer(code, null);
 
     var token, tokens = {};
     while (token = lexer.skip_whitespace()) {
@@ -256,59 +308,21 @@ function uniqueTokens(code) {
 /*
     params:
         tokens (in):                list of tokens to mark as required
-        tokenDependenciesMap (in):  map from tokens to files which define those tokens
+        globalsToFiles (in):        map from tokens to files which define those tokens
         referencedFiles (out):      map of required files (to map of tokens defined in that file)
 */
-function markFilesReferencedByTokens(tokens, tokenDependenciesMap, referencedFiles) {
+function markFilesReferencedByTokens(tokens, globalsToFiles, referencedFiles) {
     tokens.forEach(function(token) {
-        if (tokenDependenciesMap.hasOwnProperty(token))
+        if (globalsToFiles.hasOwnProperty(token))
         {
-            var files = tokenDependenciesMap[token];
-            for (var j = 0; j < files.length; j++)
+            var files = globalsToFiles[token];
+            for (var i = 0; i < files.length; i++)
             {
-                // don't record references to self
-                if (files[j] != file.path)
-                {
-                    if (!referencedFiles[files[j]])
-                        referencedFiles[files[j]] = {};
-
-                    referencedFiles[files[j]][token] = true;
-                }
+                referencedFiles[files[i]] = referencedFiles[files[i]] || {};
+                referencedFiles[files[i]][token] = true;
             }
         }
     });
-}
-
-function findImportInObjjFiles(scope, fragment)
-{
-    var importPath = null;
-
-    if (fragment.type & FRAGMENT_LOCAL)
-    {
-        var searchPath = fragment.info;
-        //CPLog.trace("Looking for " + searchPath);
-        //for (var i in scope.objj_files) CPLog.debug("    " + i);
-
-        if (scope.objj_files[searchPath])
-        {
-            importPath = searchPath;
-        }
-    }
-    else
-    {
-        var count = scope.OBJJ_INCLUDE_PATHS.length;
-        while (count--)
-        {
-            var searchPath = scope.OBJJ_INCLUDE_PATHS[count].replace(new RegExp("\\/$"), "") + "/" + fragment.info;
-            if (scope.objj_files[searchPath])
-            {
-                importPath = searchPath;
-                break;
-            }
-        }
-    }
-
-    return importPath;
 }
 
 @implementation PressBundleDelgate : CPObject
@@ -331,7 +345,7 @@ function findImportInObjjFiles(scope, fragment)
 @end
 
 // create a new scope loaded with Narwhal and Objective-J
-function setupObjectiveJ(context, debug)
+function setupObjectiveJ(context)
 {
     // set these properties required for Narwhal bootstrapping
     context.global.NARWHAL_HOME = system.prefix;
@@ -345,7 +359,8 @@ function setupObjectiveJ(context, debug)
 
     // get the Objective-J module from this scope, return the window object.
     var OBJJ = context.global.require("objective-j");
-
+    
+    // TODO: move this to browserjs and/or remove browser dependency in Objective-J/AppKit
     addMockBrowserEnvironment(OBJJ.window);
 
     return OBJJ.window;
