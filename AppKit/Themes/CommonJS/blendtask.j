@@ -101,7 +101,8 @@ BlendTask.prototype.defineThemeDescriptorTasks = function()
 
                 // No filedir in this case, so we have to make it ourselves.
                 FILE.mkdirs(intermediatesPath);
-                FILE.write(FILE.join(intermediatesPath, [aClass themeName] + ".keyedtheme"), MARKER_TEXT + ";" + fileContents.length + ";" + fileContents, { charset:"UTF-8" });
+                // FIXME: MARKER_TEXT isn't global, so we use "t;".
+                FILE.write(FILE.join(intermediatesPath, [aClass themeName] + ".keyedtheme"), "t;" + fileContents.length + ";" + fileContents, { charset:"UTF-8" });
             });
         });
     }, this);
