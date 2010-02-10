@@ -155,17 +155,29 @@ var CPViewControllerCachedCibs;
 
         if (!_view) 
         {
-            var reason = [CPString stringWithFormat:@"View for %@ could not be loaded from Cib or no view specified. \
-                                                        Override loadView to load the view manually.", self];
+            var reason = [CPString stringWithFormat:@"View for %@ could not be loaded from Cib or no view specified. Override loadView to load the view manually.", self];
 
             [CPException raise:CPInternalInconsistencyException reason:reason];
         }
 
         if ([cibOwner respondsToSelector:@selector(viewControllerDidLoadCib:)])
             [cibOwner viewControllerDidLoadCib:self];
+
+        [self viewDidLoad];
     }
 
     return _view;
+}
+
+
+/*!
+    This method is called after the view controller has loaded its associated views into memory. 
+    This method is called regardless of whether the views were stored in a nib file or created programmatically in the loadView method. 
+    This method is most commonly used to perform additional initialization steps on views that are loaded from nib files.
+*/
+- (void)viewDidLoad
+{
+    
 }
 
 
