@@ -36,20 +36,10 @@ parser.option("-E", "--environment", "environments")
     .push()
     .help("Add a platform name (default: ['Browser'])");
 
-parser.option("-l", "--flatten", "flatten")
-    .def(false)
-    .set(true)
-    .help("Flatten all code into a single Application.js file and attempt add script tag to index.html (useful for Adobe AIR and CDN deployment)");
-
 parser.option("-f", "--force", "force")
    .def(false)
    .set(true)
    .help("Force overwriting OUTPUT_PROJECT if it exists");
-
-parser.option("-n", "--nostrip", "strip")
-    .def(true)
-    .set(false)
-    .help("Do not strip any files");
 
 parser.option("-p", "--pngcrush", "png")
     .def(false)
