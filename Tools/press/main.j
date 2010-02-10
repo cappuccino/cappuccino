@@ -96,9 +96,9 @@ function main(args)
 }
 
 function press(rootPath, outputPath, options) {
-    CPLog.info("===========================================");
-    CPLog.info("Application root:    " + rootPath);
-    CPLog.info("Output directory:    " + outputPath);
+    stream.print("\0yellow("+Array(81).join("=")+"\0)");
+    stream.print("Application root:    \0green(" + rootPath + "\0)");
+    stream.print("Output directory:    \0green(" + outputPath + "\0)");
 
     var outputFiles = {};
 
@@ -108,7 +108,7 @@ function press(rootPath, outputPath, options) {
     });
 
     // phase 4: copy everything and write out the new files
-    CPLog.error("PHASE 4: copy to output ("+rootPath+" to "+outputPath+")");
+    stream.print("\0red(PHASE 4:\0) copy to output \0green(" + rootPath + "\0) => \0green(" + outputPath + "\0)");
 
     FILE.copyTree(rootPath, outputPath);
 
@@ -124,7 +124,8 @@ function press(rootPath, outputPath, options) {
         if (typeof outputFiles[path] !== "string")
             outputFiles[path] = outputFiles[path].join("");
 
-        CPLog.info((file.exists() ? "Overwriting: " : "Writing:     ") + file);
+        stream.print((file.exists() ? "\0red(Overwriting:\0) " : "\0green(Writing:\0)     ") + file);
+
         FILE.write(file, outputFiles[path], { charset : "UTF-8" });
     }
 
@@ -144,10 +145,10 @@ function pressEnvironment(rootPath, outputFiles, environment, options) {
     var mainPath = String(rootPath.join(options.main));
     var frameworks = options.frameworks.map(function(framework) { return rootPath.join(framework); });
 
-    CPLog.info("===========================================");
-    CPLog.info("Main file:           " + mainPath)
-    CPLog.info("Frameworks:          " + frameworks);
-    CPLog.info("Environment:         " + environment);
+    stream.print("\0yellow("+Array(81).join("=")+"\0)");
+    stream.print("Main file:           \0green(" + mainPath + "\0)");
+    stream.print("Frameworks:          \0green(" + frameworks + "\0)");
+    stream.print("Environment:         \0green(" + environment + "\0)");
 
     var analyzer = new ObjectiveJRuntimeAnalyzer(rootPath);
 
@@ -163,7 +164,7 @@ function pressEnvironment(rootPath, outputFiles, environment, options) {
     var cibs = FILE.glob(rootPath.join("**", "*.cib")).filter(function(path) { return !(/Frameworks/).test(path); });
 
     // phase 1: get global defines
-    CPLog.error("PHASE 1: Loading application...");
+    stream.print("\0red(PHASE 1:\0) Loading application...");
 
     analyzer.initializeGlobalRecorder();
 
@@ -175,93 +176,83 @@ function pressEnvironment(rootPath, outputFiles, environment, options) {
     var dependencies = analyzer.mapGlobalsToFiles();
 
     // log identifer => files defining
-    CPLog.trace("Global defines:");
+    stream.print("Global defines:");
     Object.keys(dependencies).sort().forEach(function(identifier) {
-        CPLog.trace("    " + identifier + " => " + rootPath.relative(dependencies[identifier]));
+        stream.print("\0blue(" + identifier + "\0) => \0cyan(" + dependencies[identifier].map(rootPath.relative.bind(rootPath)) + "\0)");
     });
 
     // phase 2: walk the dependency tree (both imports and references) to determine exactly which files need to be included
-    CPLog.error("PHASE 2: Walk dependency tree...");
+    stream.print("\0red(PHASE 2:\0) Traverse dependency graph...");
 
-    var requiredFiles = null;
+    var requiredFiles = {};
+    requiredFiles[mainPath] = true;
 
-    if (options.nostrip)
-    {
-        // all files are required. no need for analysis
-        throw "nostrip not implemented"
-        // requiredFiles = scope.objj_files;
+    var context = {
+        ignoreFrameworkImports : true, // ignores "XXX/XXX.j" imports
+        importCallback: function(importing, imported) { requiredFiles[imported] = true; },
+        referenceCallback: function(referencing, referenced) { requiredFiles[referenced] = true; },
+        progressCallback: function(relPath) { stream.print("Processing \0cyan("+relPath+"\0)"); },
+        ignoreFrameworkImportsCallback : function(relPath) { stream.print("\0yellow(Ignoring imports in "+relPath+"\0)"); }
     }
-    else
-    {
-        CPLog.warn("Analyzing dependencies...");
 
-        requiredFiles = {};
+    mainExecutable = analyzer.executableForImport(mainPath);
 
-        var context = {
-            ignoreFrameworkImports : true, // ignores "XXX/XXX.j" imports
-            importCallback: function(importing, imported) { requiredFiles[imported] = true; },
-            referenceCallback: function(referencing, referenced) { requiredFiles[referenced] = true; },
-            importedFiles: {},
-            referencedFiles: {}
+    // check the code
+    analyzer.traverseDependencies(mainExecutable, context);
+
+    // check the cibs
+    var globalsToFiles = analyzer.mapGlobalsToFiles();
+    cibs.forEach(function(cibPath) {
+        var cibClasses = findCibClassDependencies(cibPath);
+        stream.print("Cib: \0green("+rootPath.relative(cibPath)+"\0) => \0cyan("+cibClasses+"\0)");
+
+        var referencedFiles = {};
+        markFilesReferencedByTokens(cibClasses, globalsToFiles, referencedFiles);
+        analyzer.checkReferenced(context, null, referencedFiles);
+    });
+
+    var included = 0, total = 0;
+    var includedBytes = 0, totalBytes = 0;
+    var allFiles = analyzer.fileExecutables();
+    for (var path in allFiles) {
+        // mark all ".keytheme"s as required
+        if (/\.keyedtheme$/.test(path))
+            requiredFiles[path] = true;
+
+        if (requiredFiles[path]) {
+            stream.print("Included: \0green(" + rootPath.relative(path) + "\0)");
+            included++;
+            includedBytes += allFiles[path].code().length
         }
-
-        requiredFiles[mainPath] = true;
-
-        mainExecutable = analyzer.executableForImport(mainPath);
-
-        // check the code
-        analyzer.traverseDependencies(context, mainExecutable);
-
-        // check the cibs
-        var globalsToFiles = analyzer.mapGlobalsToFiles();
-        cibs.forEach(function(cibPath) {
-            var cibClasses = findCibClassDependencies(cibPath);
-            CPLog.debug("CIB: " + rootPath.relative(cibPath) + " => " + cibClasses);
-
-            var referencedFiles = {};
-            markFilesReferencedByTokens(cibClasses, globalsToFiles, referencedFiles);
-            analyzer.checkReferenced(context, null, referencedFiles);
-        });
-
-        var count = 0,
-            total = 0;
-        // var allFiles = analyzer.gatherDependencies(mainExecutable);
-        // for (var path in allFiles) {
-        for (var path in requiredFiles) {
-            // mark all ".keytheme"s as required
-            if (/\.keyedtheme$/.test(path))
-                requiredFiles[path] = true;
-
-            if (requiredFiles[path])
-            {
-                CPLog.debug("Included: " + rootPath.relative(path));
-                count++;
-            }
-            else
-            {
-                CPLog.info("Excluded: " + rootPath.relative(path));
-            }
-            total++;
+        else {
+            stream.print("Excluded: \0red(" + rootPath.relative(path) + "\0)");
         }
-        CPLog.warn("Total required files: " + count + " out of " + total);
+        total++;
+        totalBytes += allFiles[path].code().length
     }
+    stream.print(sprintf(
+        "Saved \0green(%f%%\0) (\0blue(%s\0)); Total required files: \0magenta(%d\0) (\0blue(%s\0)) of \0magenta(%d\0) (\0blue(%s\0));",
+        Math.round(((includedBytes - totalBytes) / totalBytes) * -100),
+        bytesToString(totalBytes - includedBytes),
+        included, bytesToString(includedBytes),
+        total, bytesToString(totalBytes)
+    ));
 
     // phase 3b: rebuild .sj files with correct imports, copy .j files
-    CPLog.error("PHASE 3b: Rebuild .sj");
+    stream.print("\0red(PHASE 3b:\0) Rebuild .sj files");
 
     for (var path in requiredFiles)
     {
         var executable = analyzer.executableForImport(path),
             bundle = _OBJJ.CFBundle.bundleContainingPath(executable.path()),
-            fileContents = executable.code(),
             relativePath = FILE.relative(FILE.join(bundle.path(), ""), executable.path());
-            
-        print("=======================================");
-        print("    executable="+executable.path())
-        print("    bundle="+bundle.path())
-        print("    relativePath="+relativePath);
-        print("    infoDictionary="+bundle.infoDictionary());
-        print("    fileContents.length="+fileContents.length);
+
+        // stream.print(Array(81).join("="));
+        // stream.print("    executable="+executable.path())
+        // stream.print("    bundle="+bundle.path())
+        // stream.print("    relativePath="+relativePath);
+        // stream.print("    infoDictionary="+bundle.infoDictionary());
+        // stream.print("    fileContents.length="+fileContents.length);
 
         if (executable.path() !== path)
             CPLog.warn("Sanity check failed (file path): " + executable.path() + " vs. " + path);
@@ -269,8 +260,8 @@ function pressEnvironment(rootPath, outputFiles, environment, options) {
         if (bundle && bundle.infoDictionary())
         {
             var executablePath = bundle.executablePath();
-            print("    executablePath="+executablePath);
-            
+            // print("    executablePath="+executablePath);
+
             if (executablePath)
             {
                 if (!outputFiles[executablePath])
@@ -279,12 +270,50 @@ function pressEnvironment(rootPath, outputFiles, environment, options) {
                     outputFiles[executablePath].push("@STATIC;1.0;");
                 }
 
+                if (context.ignoredImports[path])
+                {
+                    stream.print("Stripping extra imports from \0blue(" + path + "\0)");
+
+                    var code = executable.code();
+                    var dependencies = executable.fileDependencies();
+                    for (var i = 0; i < dependencies.length; i++) {
+                        var dependency = dependencies[i];
+                        var dependencyExecutable = new _OBJJ.FileExecutableSearch(
+                            dependency.isLocal() ? FILE.join(FILE.dirname(path), dependency.path()) : dependency.path(),
+                            dependency.isLocal()
+                        ).result();
+                        var dependencyPath = dependencyExecutable.path();
+                        if (!requiredFiles[dependencyPath]) {
+                            stream.print(" -> \0red(" + dependencyPath + "\0)");
+                            // build up a regex to match objj_executeFile file with optional whitespace
+                            var regex = new RegExp([
+                                RegExp.escape("objj_executeFile"),
+                                RegExp.escape("("),
+                                "[\"']"+RegExp.escape(dependency.path())+"[\"']",
+                                RegExp.escape(","),
+                                RegExp.escape(dependency.isLocal() ? "true" : "false"),
+                                RegExp.escape(")")
+                            ].join("\\s*"), "g");
+                            // replace instances of "objj_executeFile()" with "(undefined)"
+                            code = code.replace(regex, "/* $& */ (undefined)");
+                            // remove from dependencies list (decrement i since we're removing an item)
+                            dependencies.splice(i--, 1);
+                        }
+                    }
+                    if (code !== executable.code())
+                        executable.setCode(code);
+                }
+
+                var fileContents = executable.toMarkedString();
+
                 outputFiles[executablePath].push("p;" + relativePath.length + ";" + relativePath);
                 outputFiles[executablePath].push("t;" +  fileContents.length + ";" +  fileContents);
+
+                stream.print("Adding \0green(" + rootPath.relative(path) + "\0) to \0cyan(" + rootPath.relative(executablePath) + "\0)");
             }
             else
             {
-                CPLog.info("Passing .j through: " + rootPath.relative(path));
+                stream.print("Passing .j through: \0green(" + rootPath.relative(path) + "\0)");
             }
         }
         else
@@ -317,4 +346,13 @@ function pathRelativeTo(target, relativeTo)
 {
     // TODO: fix FILE.relative to always treat the source as a directory
     return FILE.relative(FILE.join(relativeTo, ""), target);
+}
+
+function bytesToString(bytes) {
+    var n = 0;
+    while (bytes > 1024) {
+        bytes /= 1024;
+        n++;
+    }
+    return Math.round(bytes*100)/100 + " " + ["", "K", "M"][n] + "B";
 }

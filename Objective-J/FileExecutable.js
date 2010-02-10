@@ -104,3 +104,4 @@ global.objj_importFile = importFile;
 global.objj_import = importFile;
 */
 exports.FileExecutable = FileExecutable;
+exports.FileExecutablesForPaths = FileExecutablesForPaths;

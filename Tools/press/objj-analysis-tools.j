@@ -129,7 +129,7 @@ ObjectiveJRuntimeAnalyzer.prototype.mergeLibraryImports = function()
     for (var relativePath in this.files) {
         if (FILE.isRelative(relativePath)) {
             var absolutePath = this.executableForImport(relativePath, false).path();
-            CPLog.debug("Merging " + relativePath + " => " + absolutePath);
+            // CPLog.debug("Merging " + relativePath + " => " + absolutePath);
 
             this.files[absolutePath] = this.files[absolutePath] || {};
             this.files[absolutePath].globals = this.files[absolutePath].globals || {};
@@ -162,10 +162,14 @@ ObjectiveJRuntimeAnalyzer.prototype.executableForImport = function(path, isLocal
 
     param file is an objj_file object containing path, fragments, content, bundle, etc
 */
-ObjectiveJRuntimeAnalyzer.prototype.traverseDependencies = function(context, executable)
+ObjectiveJRuntimeAnalyzer.prototype.traverseDependencies = function(executable, context)
 {
-    if (!context.processedFiles)
-        context.processedFiles = {};
+    context = context || {};
+
+    context.processedFiles  = context.processedFiles  || {};
+    context.importedFiles   = context.importedFiles   || {};
+    context.referencedFiles = context.referencedFiles || {};
+    context.ignoredImports  = context.ignoredImports   || {};
 
     var path = executable.path();
 
@@ -177,7 +181,7 @@ ObjectiveJRuntimeAnalyzer.prototype.traverseDependencies = function(context, exe
     var ignoreImports = false;
     if (context.ignoreAllImports)
     {
-        CPLog.warn("Ignoring all import fragments. ("+this.rootPath.relative(path)+")");
+        // CPLog.warn("Ignoring all import fragments. ("+this.rootPath.relative(path)+")");
         ignoreImports = true;
     }
     else if (context.ignoreFrameworkImports)
@@ -185,7 +189,7 @@ ObjectiveJRuntimeAnalyzer.prototype.traverseDependencies = function(context, exe
         var matches = path.match(new RegExp("([^\\/]+)\\/([^\\/]+)\\.j$")); // Matches "ZZZ/ZZZ.j" (e.x. AppKit/AppKit.j and Foundation/Foundation.j)
         if (matches && matches[1] === matches[2])
         {
-            CPLog.warn("Framework import file! Ignoring all import fragments. ("+this.rootPath.relative(path)+")");
+            // CPLog.warn("Framework import file! Ignoring all import fragments. ("+this.rootPath.relative(path)+")");
             ignoreImports = true;
         }
     }
@@ -193,7 +197,8 @@ ObjectiveJRuntimeAnalyzer.prototype.traverseDependencies = function(context, exe
     var referencedFiles = {},
         importedFiles = {};
 
-    CPLog.debug("Processing " + this.rootPath.relative(path));
+    if (context.progressCallback)
+        context.progressCallback(this.rootPath.relative(path), path);
 
     // code
     var code = executable.code();
@@ -203,13 +208,15 @@ ObjectiveJRuntimeAnalyzer.prototype.traverseDependencies = function(context, exe
     delete referencedFiles[path];
 
     // imports
-    executable.fileDependencies().forEach(function(fileDependency) {
-        if (ignoreImports) {
-            // FIXME
-            // fragment.conditionallyIgnore = true;
-        }
-        else
-        {
+    if (ignoreImports)
+    {
+        if (context.ignoreImportsCallback)
+            context.ignoreImportsCallback(this.rootPath.relative(path), path);
+        context.ignoredImports[path] = true;
+    }
+    else
+    {
+        executable.fileDependencies().forEach(function(fileDependency) {
             var dependencyExecutable = null;
             if (fileDependency.isLocal())
                 dependencyExecutable = this.executableForImport(FILE.normal(FILE.join(FILE.dirname(path), fileDependency.path())), true);
@@ -227,20 +234,20 @@ ObjectiveJRuntimeAnalyzer.prototype.traverseDependencies = function(context, exe
             }
             else
                 CPLog.error("Couldn't find file for import " + fileDependency.path() + " ("+fileDependency.isLocal()+")");
-        }
-    }, this);
+        }, this);
+    }
 
     // check each imported file
     this.checkImported(context, path, importedFiles);
 
-    if (context.importedFiles)
-        context.importedFiles[path] = importedFiles;
+    context.importedFiles[path] = importedFiles;
 
     // check each referenced file
     this.checkReferenced(context, path, referencedFiles);
 
-    if (context.referencedFiles)
-        context.referencedFiles[path] = referencedFiles;
+    context.referencedFiles[path] = referencedFiles;
+
+    return context;
 }
 
 ObjectiveJRuntimeAnalyzer.prototype.checkImported = function(context, path, importedFiles) {
@@ -253,7 +260,7 @@ ObjectiveJRuntimeAnalyzer.prototype.checkImported = function(context, path, impo
 
             var executable = this.executableForImport(importedFile, true);
             if (executable)
-                this.traverseDependencies(context, executable);
+                this.traverseDependencies(executable, context);
             else
                 CPLog.error("Missing imported file: " + importedFile);
         }
@@ -270,25 +277,16 @@ ObjectiveJRuntimeAnalyzer.prototype.checkReferenced = function(context, path, re
 
             var executable = this.executableForImport(referencedFile, true);
             if (executable)
-                this.traverseDependencies(context, executable);
+                this.traverseDependencies(executable, context);
             else
                 CPLog.error("Missing referenced file: " + referencedFile);
         }
     }
 }
 
-ObjectiveJRuntimeAnalyzer.prototype.gatherDependencies = function(executable) {
+ObjectiveJRuntimeAnalyzer.prototype.fileExecutables = function() {
     var _OBJJ = this.require("objective-j");
-    var files = {};
-    var stack = [executable];
-    while (stack.length) {
-        var executable = stack.pop();
-        if (files[executable.path()])
-            continue;
-        files[executable.path()] = executable;
-        stack.push.apply(stack, executable.fileDependencies().map(function(dep) { return new _OBJJ.FileExecutableSearch(dep.path(), dep.isLocal()).result(); }));
-    }
-    return files;
+    return _OBJJ.FileExecutablesForPaths;
 }
 
 // returns a unique list of tokens for a piece of code.
@@ -359,7 +357,7 @@ function setupObjectiveJ(context)
 
     // get the Objective-J module from this scope, return the window object.
     var OBJJ = context.global.require("objective-j");
-    
+
     // TODO: move this to browserjs and/or remove browser dependency in Objective-J/AppKit
     addMockBrowserEnvironment(OBJJ.window);
 
