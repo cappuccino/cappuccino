@@ -15,7 +15,7 @@ function importablePath(/*String*/ aPath, /*BOOL*/ isLocal, /*String*/ aCWD)
         return aPath;
 
     if (isLocal)
-        aPath = FILE.join(aCWD, aPath);
+        aPath = FILE.normal(FILE.join(aCWD, aPath));
 
     return aPath;
 }

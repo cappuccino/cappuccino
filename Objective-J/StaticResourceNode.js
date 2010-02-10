@@ -65,9 +65,9 @@ require("file");
             if (resultsCount > 0 && results[resultsCount - 1] !== "..")
                 results.pop();
 
-            // If we are at the beginning and this isn't a root listing, 
-            // add it since it makes sense for relative paths.
-            else if (!isRoot && resultsCount < 0)
+            // If this isn't a root listing, and we are preceded by only ..'s, or
+            // nothing at all, then add it since it makes sense for relative paths.
+            else if (!isRoot && resultsCount === 0 || results[resultsCount - 1] === "..")
                 results.push(component);
         }
 
