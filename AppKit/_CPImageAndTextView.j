@@ -68,6 +68,7 @@ var HORIZONTAL_MARGIN   = 3.0,
     
     CPCellImagePosition     _imagePosition;
     CPImageScaling          _imageScaling;
+    BOOL                    _shouldDimImage;
     
     CPImage                 _image;
     CPString                _text;
@@ -214,6 +215,16 @@ var HORIZONTAL_MARGIN   = 3.0,
 - (void)imageScaling
 {
     return _imageScaling;
+}
+
+- (void)setDimsImage:(BOOL)shouldDimImage
+{
+    var shouldDimImage = !!shouldDimImage;
+    if (_shouldDimImage !== shouldDimImage)
+    {
+        _shouldDimImage = shouldDimImage;
+        [self setNeedsLayout];
+    }
 }
 
 - (void)setTextColor:(CPColor)aTextColor
@@ -576,6 +587,13 @@ var HORIZONTAL_MARGIN   = 3.0,
             imageWidth *= scale;
             imageHeight *= scale;
         }
+
+#if PLATFORM(DOM)
+        if (CPFeatureIsCompatible(CPOpacityRequiresFilterFeature))
+            _DOMElement.style.filter = @"alpha(opacity=" + _shouldDimImage ? 50 : 100 + ")";
+        else
+            _DOMElement.style.opacity = _shouldDimImage ? 0.5 : 1.0;
+#endif
 
 #if PLATFORM(DOM)
         _DOMImageElement.width = imageWidth;
