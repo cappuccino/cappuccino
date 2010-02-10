@@ -83,7 +83,9 @@ function main(args)
 
     if (outputPath.exists()) {
         if (options.force) {
-            outputPath.rmtree();
+            // FIXME: why doesn't this work?!
+            //outputPath.rmtree();
+            OS.system(["rm", "-rf", outputPath]);
         } else {
             CPLog.error("OUTPUT_PROJECT " + outputPath + " exists. Use -f to overwrite.");
             OS.exit(1);
@@ -186,7 +188,7 @@ function pressEnvironment(rootPath, outputFiles, environment, options) {
     if (options.nostrip)
     {
         // all files are required. no need for analysis
-        throw "FIXME"
+        throw "nostrip not implemented"
         // requiredFiles = scope.objj_files;
     }
     else
@@ -221,12 +223,11 @@ function pressEnvironment(rootPath, outputFiles, environment, options) {
             analyzer.checkReferenced(context, null, referencedFiles);
         });
 
-        var allFiles = analyzer.gatherDependencies(mainExecutable);
-
         var count = 0,
             total = 0;
-        for (var path in allFiles)
-        {
+        // var allFiles = analyzer.gatherDependencies(mainExecutable);
+        // for (var path in allFiles) {
+        for (var path in requiredFiles) {
             // mark all ".keytheme"s as required
             if (/\.keyedtheme$/.test(path))
                 requiredFiles[path] = true;
@@ -245,258 +246,49 @@ function pressEnvironment(rootPath, outputFiles, environment, options) {
         CPLog.warn("Total required files: " + count + " out of " + total);
     }
 
-    if (options.flatten)
+    // phase 3b: rebuild .sj files with correct imports, copy .j files
+    CPLog.error("PHASE 3b: Rebuild .sj");
+
+    for (var path in requiredFiles)
     {
-        // phase 3a: build single Application.js file (and modified index.html)
-        CPLog.error("PHASE 3a: Flattening...");
+        var executable = analyzer.executableForImport(path),
+            bundle = _OBJJ.CFBundle.bundleContainingPath(executable.path()),
+            fileContents = executable.code(),
+            relativePath = FILE.relative(FILE.join(bundle.path(), ""), executable.path());
+            
+        print("=======================================");
+        print("    executable="+executable.path())
+        print("    bundle="+bundle.path())
+        print("    relativePath="+relativePath);
+        print("    infoDictionary="+bundle.infoDictionary());
+        print("    fileContents.length="+fileContents.length);
 
-        var applicationScriptName = "Application-"+environment+".js";
-        var indexHTMLName = "index-"+environment+".html";
+        if (executable.path() !== path)
+            CPLog.warn("Sanity check failed (file path): " + executable.path() + " vs. " + path);
 
-        // Shim for faking bundle responses.
-        // We're just defining it here so we can serialize the function. It's not used within press.
-        // **************************************************
-        var fakeDidReceiveBundleResponse = function(aResponse)
+        if (bundle && bundle.infoDictionary())
         {
-            var bundle = new objj_bundle();
-
-            bundle.path = aResponse.filePath;
-
-            if (aResponse.success)
+            var executablePath = bundle.executablePath();
+            print("    executablePath="+executablePath);
+            
+            if (executablePath)
             {
-                var data = new objj_data();
-                data.string = aResponse.text;
-                bundle.info = CPPropertyListCreateFrom280NorthData(data);
-                //bundle.info = CPPropertyListCreateFromXMLData({ string : aResponse.xml });
-            }
-            else
-                bundle.info = new objj_dictionary();
+                if (!outputFiles[executablePath])
+                {
+                    outputFiles[executablePath] = [];
+                    outputFiles[executablePath].push("@STATIC;1.0;");
+                }
 
-            objj_bundles[aResponse.filePath] = bundle;
-        }
-        var setupURIMaps = function(URIMaps) {
-            var DIRECTORY = function(aPath) { return (aPath).substr(0, (aPath).lastIndexOf('/') + 1); };
-            for (var bundleName in URIMaps) {
-                if (objj_bundles[bundleName]) {
-                    var URIMap = URIMaps[bundleName];
-                    objj_bundles[bundleName]._URIMap = {};
-                    for (var source in URIMap) {
-                        var URI = URIMap[source];
-                        if (URI.toLowerCase().indexOf("mhtml:") === 0)
-                            objj_bundles[bundleName]._URIMap[source] = "mhtml:" + DIRECTORY(window.location.href) + '/' + URI.substr("mhtml:".length);
-                    }
-                } else
-                    console.log("no bundle for " + bundleName);
-            }
-        }
-        // **************************************************
-
-        var applicationScript = [];
-
-        var URIMaps = {};
-        Object.keys(scope.objj_bundles).forEach(function(bundleName) {
-            var bundle = scope.objj_bundles[bundleName];
-            var path = rootPath.relative(bundle.path);
-            if (bundle._URIMap) {
-                URIMaps[path] = {};
-                Object.keys(bundle._URIMap).forEach(function(source) {
-                    var destination = bundle._URIMap[source];
-                    var match;
-                    if (match = destination.match(/^mhtml:[^!]*!(.*)$/))
-                        destination = "mhtml:" + applicationScriptName + "!" + match[1];
-                    URIMaps[path][source] = destination;
-                });
-            }
-        });
-
-        // add fake bundle response bookkeeping
-        applicationScript.push("(function() {")
-        applicationScript.push("    var didReceiveBundleResponse = " + String(fakeDidReceiveBundleResponse));
-        applicationScript.push("    var setupURIMaps = " + String(setupURIMaps));
-        applicationScript.push("    var bundleArchiveResponses = " + JSON.stringify(bundleArchiveResponses) + ";");
-        applicationScript.push("    for (var i = 0; i < bundleArchiveResponses.length; i++)");
-        applicationScript.push("        didReceiveBundleResponse(bundleArchiveResponses[i]);");
-        applicationScript.push("    var URIMaps = " + JSON.stringify(URIMaps) + ";");
-        applicationScript.push("    setupURIMaps(URIMaps);");
-        applicationScript.push("})();");
-
-        // add each fragment, wrapped in a function, along with OBJJ_CURRENT_BUNDLE bookkeeping
-        evaledFragments.forEach(function(fragment) {
-            if (requiredFiles[fragment.file.path])
-            {
-                applicationScript.push("(function(OBJJ_CURRENT_BUNDLE) {");
-                applicationScript.push(fragment.info);
-                applicationScript.push("})(objj_bundles['"+rootPath.relative(fragment.bundle.path)+"']);");
+                outputFiles[executablePath].push("p;" + relativePath.length + ";" + relativePath);
+                outputFiles[executablePath].push("t;" +  fileContents.length + ";" +  fileContents);
             }
             else
             {
-                CPLog.info("Stripping " + rootPath.relative(fragment.file.path));
+                CPLog.info("Passing .j through: " + rootPath.relative(path));
             }
-        });
-
-        // call main once the page has loaded. FIXME: assumes synchronous script loading?
-        applicationScript.push("if (window.addEventListener)");
-        applicationScript.push("    window.addEventListener('load', main, false);")
-        applicationScript.push("else if (window.attachEvent)")
-        applicationScript.push("    window.attachEvent('onload', main);");
-
-        // MHTML
-        // TODO: combine multiple MHTMLs
-        exectuableResponses.forEach(function(aResponse) {
-            var mhtmlStart = aResponse.text.lastIndexOf("/*");
-            var mhtmlEnd = aResponse.text.lastIndexOf("*/");
-            if (mhtmlStart >= 0 && mhtmlEnd > mhtmlStart) {
-                applicationScript.push(aResponse.text.slice(mhtmlStart, mhtmlEnd+2));
-            }
-        });
-
-        var indexHTML = FILE.read(FILE.join(rootPath, "index.html"), { charset : "UTF-8" });
-
-        // comment out any OBJJ_MAIN_FILE defintions or objj_import() calls
-        indexHTML = indexHTML.replace(/(\bOBJJ_MAIN_FILE\s*=|\bobjj_import\s*\()/g, '//$&');
-
-        // add a script tag for Application.js at the very end of the <head> block
-        indexHTML = indexHTML.replace(/([ \t]*)(<\/head>)/, '$1    <script src = "'+applicationScriptName+'" type = "text/javascript"></script>\n$1$2');
-
-        // output Application.js and index.html
-        outputFiles[rootPath.join(applicationScriptName)] = applicationScript.join("\n");
-        outputFiles[rootPath.join(indexHTMLName)] = indexHTML;
-    }
-    else
-    {
-        // phase 3b: rebuild .sj files with correct imports, copy .j files
-        CPLog.error("PHASE 3b: Rebuild .sj");
-
-        var bundles = {};
-
-        for (var path in requiredFiles)
-        {
-            var file = scope.objj_files[path],
-                filename = FILE.basename(path),
-                directory = FILE.dirname(path);
-
-            if (file.path != path)
-                CPLog.warn("Sanity check failed (file path): " + file.path + " vs. " + path);
-
-            if (file.bundle)
-            {
-                var bundleDirectory = FILE.path(file.bundle.path).dirname();
-
-                if (!bundles[file.bundle.path])
-                    bundles[file.bundle.path] = file.bundle;
-
-                if (bundleDirectory != directory)
-                    CPLog.warn("Sanity check failed (directory path): " + directory + " vs. " + bundleDirectory);
-
-                // if it's in a .sj
-                var dict = file.bundle.info,
-                    bundlePlatforms = [dict objectForKey:"CPBundlePlatforms"],
-                    replacedFilePlatforms = [dict objectForKey:"CPBundleReplacedFiles"];
-
-                // compute the platform used for this bundle
-                var platform = "";
-                if (bundlePlatforms)
-                    platform = [bundlePlatforms firstObjectCommonWithArray:scope.OBJJ_PLATFORMS];
-
-                var replacedFiles = [replacedFilePlatforms objectForKey:platform];
-                if (replacedFiles && [replacedFiles containsObject:filename])
-                {
-                    var staticPath = bundleDirectory.join(platform + ".platform", [dict objectForKey:"CPBundleExecutable"]);
-                    if (!outputFiles[staticPath])
-                    {
-                        outputFiles[staticPath] = [];
-                        outputFiles[staticPath].push("@STATIC;1.0;");
-                    }
-                    outputFiles[staticPath].push("p;");
-                    outputFiles[staticPath].push(filename.length+";");
-                    outputFiles[staticPath].push(filename);
-
-                    for (var i = 0; i < file.fragments.length; i++)
-                    {
-                        if (file.fragments[i].type & FRAGMENT_CODE)
-                        {
-                            outputFiles[staticPath].push("c;");
-                            outputFiles[staticPath].push(file.fragments[i].info.length+";");
-                            outputFiles[staticPath].push(file.fragments[i].info);
-                        }
-                        else if (file.fragments[i].type & FRAGMENT_FILE)
-                        {
-                            var ignoreFragment = false;
-                            if (file.fragments[i].conditionallyIgnore)
-                            {
-                                var importPath = findImportInObjjFiles(scope, file.fragments[i]);
-                                if (!importPath || !requiredFiles[importPath])
-                                {
-                                    ignoreFragment = true;
-                                }
-                            }
-
-                            if (!ignoreFragment)
-                            {
-                                if (file.fragments[i].type & FRAGMENT_LOCAL)
-                                {
-                                    var relativePath = pathRelativeTo(file.fragments[i].info, directory)
-
-                                    outputFiles[staticPath].push("i;");
-                                    outputFiles[staticPath].push(relativePath.length+";");
-                                    outputFiles[staticPath].push(relativePath);
-                                }
-                                else
-                                {
-                                    outputFiles[staticPath].push("I;");
-                                    outputFiles[staticPath].push(file.fragments[i].info.length+";");
-                                    outputFiles[staticPath].push(file.fragments[i].info);
-                                }
-                            }
-                            else
-                                CPLog.info("Ignoring import fragment " + file.fragments[i].info + " in " + rootPath.relative(path));
-                        }
-                        else
-                            CPLog.error("Unknown fragment type");
-                    }
-                }
-                // always output individual .j files
-                else
-                {
-                    outputFiles[path] = file.contents;
-                }
-            }
-            else
-                CPLog.warn("No bundle for " + rootPath.relative(path))
         }
-
-        // phase 3.5: fix bundle plists
-        CPLog.error("PHASE 3.5: fix bundle plists");
-
-        for (var path in bundles)
-        {
-            var directory = FILE.dirname(path),
-                dict = bundles[path].info,
-                replacedFiles = [dict objectForKey:"CPBundleReplacedFiles"];
-
-            CPLog.info("Modifying .sj: " + rootPath.relative(path));
-
-            if (replacedFiles)
-            {
-                var newReplacedFiles = [];
-                [dict setObject:newReplacedFiles forKey:"CPBundleReplacedFiles"];
-
-                for (var i = 0; i < replacedFiles.length; i++)
-                {
-                    var replacedFilePath = directory + "/" + replacedFiles[i]
-                    if (!requiredFiles[replacedFilePath])
-                    {
-                        CPLog.info("Removing: " + replacedFiles[i]);
-                    }
-                    else
-                    {
-                        //CPLog.info("Keeping: " + replacedFiles[i]);
-                        newReplacedFiles.push(replacedFiles[i]);
-                    }
-                }
-            }
-            outputFiles[path] = CPPropertyListCreateXMLData(dict).string;
-        }
+        else
+            CPLog.warn("No bundle (or info dictionary for) " + rootPath.relative(path));
     }
 }
 
@@ -519,16 +311,6 @@ function pngcrushDirectory(directory) {
         }
     });
     system.stderr.print("");
-}
-
-function functionHookBefore(object, property, func)
-{
-    var original = object[property];
-    object[property] = function() {
-        func.apply(this, arguments);
-        var result = original.apply(this, arguments);
-        return result;
-    }
 }
 
 function pathRelativeTo(target, relativeTo)
