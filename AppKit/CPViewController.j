@@ -138,8 +138,6 @@ var CPViewControllerCachedCibs;
     Returns the view that the controller manages.
     If this property is nil, the controller sends loadView to itself to create the view that it manages.
     Subclasses should override the loadView method to create any custom views. The default value is nil.
-
-    Note: An error will not be thrown if after -loadView, the view property is still nil. -view will simply return nil, but will continue to call -loadView on subsequent calls.
 */
 - (CPView)view
 {
@@ -154,6 +152,14 @@ var CPViewControllerCachedCibs;
 
         if (_view === nil && [cibOwner isKindOfClass:[CPDocument class]])
             [self setView:[cibOwner valueForKey:@"view"]];
+
+        if (!_view) 
+        {
+            var reason = [CPString stringWithFormat:@"View for %@ could not be loaded from Cib or no view specified. \
+                                                        Override loadView to load the view manually.", self];
+
+            [CPException raise:CPInternalInconsistencyException reason:reason];
+        }
 
         if ([cibOwner respondsToSelector:@selector(viewControllerDidLoadCib:)])
             [cibOwner viewControllerDidLoadCib:self];
