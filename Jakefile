@@ -205,9 +205,9 @@ function pushPackage(path, remote)
 {
     stream.print("Pushing \0blue(" + path + "\0) to \0blue(" + remote + "\0)");
 
-    FILE.mkdirs("push-package");
+    FILE.mkdirs(".push-package");
 
-    var pushPackageDir = FILE.join("push-package", remote.replace(/[^\w]/g, "_"));
+    var pushPackageDir = FILE.join(".push-package", remote.replace(/[^\w]/g, "_"));
 
     if (FILE.exists(pushPackageDir))
         OS.system(buildCommandString([["cd", pushPackageDir], ["git", "pull"]]));

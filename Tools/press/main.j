@@ -9,12 +9,8 @@ require("narwhal").ensureEngine("rhino");
 var ARGS = require("args");
 var FILE = require("file");
 var OS = require("os");
-var DOM = require("browser/dom");
-var UTIL = require("util");
 
 var stream = require("term").stream;
-
-var serializer = new DOM.XMLSerializer();
 
 var parser = new ARGS.Parser();
 
@@ -62,10 +58,7 @@ function main(args)
         return;
     }
 
-    //if (options.verbose)
-        CPLogRegister(CPLogPrint);
-    //else
-    //    CPLogRegisterRange(CPLogPrint, "fatal", "info");
+    CPLogRegister(CPLogPrint);
 
     // HACK: ensure trailing slashes for "relative" to work correctly
     var rootPath = FILE.path(options.args[0]).join("").absolute();
@@ -237,29 +230,14 @@ function pressEnvironment(rootPath, outputFiles, environment, options) {
             bundle = _OBJJ.CFBundle.bundleContainingPath(executable.path()),
             relativePath = FILE.relative(FILE.join(bundle.path(), ""), executable.path());
 
-        // stream.print(Array(81).join("="));
-        // stream.print("    executable="+executable.path())
-        // stream.print("    bundle="+bundle.path())
-        // stream.print("    relativePath="+relativePath);
-        // stream.print("    infoDictionary="+bundle.infoDictionary());
-        // stream.print("    fileContents.length="+fileContents.length);
-
         if (executable.path() !== path)
             CPLog.warn("Sanity check failed (file path): " + executable.path() + " vs. " + path);
 
         if (bundle && bundle.infoDictionary())
         {
             var executablePath = bundle.executablePath();
-            // print("    executablePath="+executablePath);
-
             if (executablePath)
             {
-                if (!outputFiles[executablePath])
-                {
-                    outputFiles[executablePath] = [];
-                    outputFiles[executablePath].push("@STATIC;1.0;");
-                }
-
                 if (context.ignoredImports[path])
                 {
                     stream.print("Stripping extra imports from \0blue(" + path + "\0)");
@@ -275,7 +253,7 @@ function pressEnvironment(rootPath, outputFiles, environment, options) {
                         var dependencyPath = dependencyExecutable.path();
                         if (!requiredFiles[dependencyPath]) {
                             stream.print(" -> \0red(" + dependencyPath + "\0)");
-                            // build up a regex to match objj_executeFile file with optional whitespace
+                            // build up a regex to match objj_executeFile with optional whitespace
                             var regex = new RegExp([
                                 RegExp.escape("objj_executeFile"),
                                 RegExp.escape("("),
@@ -292,6 +270,12 @@ function pressEnvironment(rootPath, outputFiles, environment, options) {
                     }
                     if (code !== executable.code())
                         executable.setCode(code);
+                }
+
+                if (!outputFiles[executablePath])
+                {
+                    outputFiles[executablePath] = [];
+                    outputFiles[executablePath].push("@STATIC;1.0;");
                 }
 
                 var fileContents = executable.toMarkedString();
@@ -330,12 +314,6 @@ function pngcrushDirectory(directory) {
         }
     });
     system.stderr.print("");
-}
-
-function pathRelativeTo(target, relativeTo)
-{
-    // TODO: fix FILE.relative to always treat the source as a directory
-    return FILE.relative(FILE.join(relativeTo, ""), target);
 }
 
 function bytesToString(bytes) {
