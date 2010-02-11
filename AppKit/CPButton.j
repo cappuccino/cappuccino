@@ -554,7 +554,6 @@ CPButtonStateMixed  = CPThemeState("mixed");
         [contentView setTextShadowOffset:[self currentValueForThemeAttribute:@"text-shadow-offset"]];
         [contentView setImagePosition:[self currentValueForThemeAttribute:@"image-position"]];
         [contentView setImageScaling:[self currentValueForThemeAttribute:@"image-scaling"]];
-        [contentView setDimsImage:[self hasThemeState:CPThemeStateDisabled] && _imageDimsWhenDisabled];
     }
 }
 
