@@ -2711,11 +2711,11 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 
 - (void)_updateSelectionWithMouseAtRow:(CPInteger)aRow
 {
-
     //check to make sure the row exists
     if(aRow < 0)
         return;
 
+    var newSelection;
     // If cmd/ctrl was held down XOR the old selection with the proposed selection
     if ([self mouseDownFlags] & (CPCommandKeyMask | CPControlKeyMask | CPAlternateKeyMask))
     {
@@ -2780,9 +2780,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     if ([newSelection isEqualToIndexSet:_selectedRowIndexes])
         return;
 
-
     [self selectRowIndexes:newSelection byExtendingSelection:NO];
-
 }
 
 - (void)_noteSelectionIsChanging
