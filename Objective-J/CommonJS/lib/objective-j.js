@@ -66,7 +66,7 @@ with (window)
 // runs the objj repl or file provided in args
 exports.run = function(args)
 {
-    if (args && args.length > 1)
+    if (args)
     {
         // we expect args to be in the format:
         //  1) "objj" path
@@ -79,7 +79,10 @@ exports.run = function(args)
 
         while (argv.length && argv[0].indexOf('-I') === 0)
             OBJJ_INCLUDE_PATHS.unshift.apply(OBJJ_INCLUDE_PATHS, argv.shift().substr(2).split(':'));
+    }
 
+    if (argv && argv.length > 1)
+    {
         var arg0 = argv.shift();
         var mainFilePath = FILE.canonical(arg0);
 
