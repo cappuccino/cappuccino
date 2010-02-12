@@ -20,10 +20,11 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-//@import "CPRange.j"
+@import "CPArray.j"
 @import "CPObject.j"
 @import "CPEnumerator.j"
 @import "CPException.j"
+
 
 /* @ignore */
 @implementation _CPDictionaryValueEnumerator : CPEnumerator
@@ -347,10 +348,13 @@
 */
 - (BOOL)isEqualToDictionary:(CPDictionary)aDictionary
 {
+    var count = [self count];
+
     if (count !== [aDictionary count])
         return NO;
 
     var index = count;
+
     while (index--)
     {
         var currentKey = _keys[index],
@@ -446,12 +450,12 @@
     Removes each entry in allKeys from the receiver.
     @param allKeys an array of keys that will be removed from the dictionary
 */
-- (void)removeObjectsForKeys:(CPArray)keys
+- (void)removeObjectsForKeys:(CPArray)keysForRemoval
 {
-    var index = keys.length;
+    var index = keysForRemoval.length;
 
     while (index--)
-        self.removeValueForKey(keys[index]);
+        self.removeValueForKey(keysForRemoval[index]);
 }
 
 /*
