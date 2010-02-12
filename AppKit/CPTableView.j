@@ -1164,7 +1164,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 
     var row = FLOOR(y / (_rowHeight + _intercellSpacing.height));
 
-    if (row > _numberOfRows)
+    if (row >= _numberOfRows)
         return -1;
 
     return row;
@@ -2583,15 +2583,18 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     if(_retargetedDropOperation !== nil) 
         return _retargetedDropOperation;
 
-    var row = [self rowAtPoint:theDragPoint],
+    var row = [self _proposedRowAtPoint:theDragPoint],
         rowRect = [self rectOfRow:row];
-    
+
     // If there is no (the default) or to little inter cell spacing we create some room for the CPTableViewDropAbove indicator
     // This probably doesn't work if the row height is smaller than or around 5.0
     if ([self intercellSpacing].height < 5.0)
-        rowRect = CPRectInset(rowRect, 0.0, 5.0 - [self intercellSpacing].height);
+		rowRect = CPRectInset(rowRect, 0.0, 5.0 - [self intercellSpacing].height);
     
-    if (CGRectContainsPoint(rowRect, theDragPoint)) 
+	// If the altered row rect contains the drag point we show the drop on
+	// We don't show the drop on indicator if we are dragging below the last row 
+	// in that case we always want to show the drop above indicator
+    if (CGRectContainsPoint(rowRect, theDragPoint) && row < _numberOfRows) 
         return CPTableViewDropOn;
         
     return CPTableViewDropAbove;
@@ -2602,13 +2605,18 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 */
 - (CPInteger)_proposedRowAtPoint:(CGPoint)dragPoint
 {
-    var row = [self rowAtPoint:dragPoint];
-    
-    // cocoa seems to jump to the next row when we approach the below row
-    dragPoint.y += FLOOR(CPRectGetHeight([self rectOfRow:row]) / 4.0);
-    row = [self rowAtPoint:dragPoint];
-
-    return row;
+	// We don't use rowAtPoint here because the drag indicator can appear below the last row
+	// and rowAtPoint doesn't return rows that are larger than numberOfRows
+	var row = FLOOR(dragPoint.y / _rowHeight + _intercellSpacing.height);
+	dragPoint.y += FLOOR(CPRectGetHeight([self rectOfRow:row]) / 4.0);
+	
+	// cocoa seems to jump to the next row when we approach the below row
+	row = FLOOR(dragPoint.y / _rowHeight + _intercellSpacing.height);
+	
+	if (row > _numberOfRows)
+		return -1;
+		
+	return row;
 }
 
 - (void)_validateDrop:(id)info proposedRow:(CPInteger)row proposedDropOperation:(CPTableViewDropOperation)dropOperation
@@ -2629,10 +2637,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 
 - (CPRect)_rectForDropHighlightViewBetweenUpperRow:(int)theUpperRowIndex andLowerRow:(int)theLowerRowIndex offset:(CPPoint)theOffset
 {
-    if (theLowerRowIndex > [self numberOfRows])
-        theLowerRowIndex = [self numberOfRows];
-
-    return [self rectOfRow:theLowerRowIndex];
+	return [self rectOfRow:theLowerRowIndex];
 }
 
 - (CPDragOperation)draggingUpdated:(id)sender
@@ -2645,8 +2650,8 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
         dragOperation = [self _validateDrop:sender proposedRow:row proposedDropOperation:dropOperation];
         exposedClipRect = [self exposedClipRect];
 
-    if(_retargetedDropRow !== nil)
-        row = _retargetedDropRow;
+    // if(_retargetedDropRow !== nil)
+    //     row = _retargetedDropRow;
 
     var rect = CPRectMakeZero();
     
