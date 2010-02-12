@@ -570,7 +570,7 @@ exports.objj_lookUpClass = objj_lookUpClass;
 exports.objj_getClass = objj_getClass;
 exports.objj_getMetaClass = objj_getMetaClass;
 
-exports.ivar_getName = ivar_getTypeEncoding;
+exports.ivar_getName = ivar_getName;
 exports.ivar_getTypeEncoding = ivar_getTypeEncoding;
 
 exports.objj_msgSend = objj_msgSend;

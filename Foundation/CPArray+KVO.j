@@ -83,16 +83,17 @@
 
 + (id)alloc
 {
-    var a = [];
-    a.isa = self;
-    
+    var array = [];
+
+    array.isa = self;
+
     var ivars = class_copyIvarList(self),
         count = ivars.length;
 
     while (count--)
-        a[ivar_getName(ivars[count])] = nil;
+        array[ivar_getName(ivars[count])] = nil;
 
-    return a;
+    return array;
 }
 
 -(id)initWithKey:(id)aKey forProxyObject:(id)anObject
@@ -291,20 +292,6 @@
     
     [target replaceObjectAtIndex:anIndex withObject:anObject];
     [self _setRepresentedObject:target];
-}
-
-- (CPArray)objectsAtIndexes:(CPIndexSet)indexes
-{
-    var index = [indexes firstIndex],
-        objects = [];
-
-    while(index != CPNotFound)
-    { 
-        [objects addObject:[self objectAtIndex:index]];
-        index = [indexes indexGreaterThanIndex:index];
-    }
-    
-    return objects;
 }
 
 @end

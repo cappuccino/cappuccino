@@ -236,7 +236,6 @@ var kvoNewAndOld = CPKeyValueObservingOptionNew|CPKeyValueObservingOptionOld,
     var kvoClass = objj_allocateClassPair(currentClass, kvoClassName);
         
     objj_registerClassPair(kvoClass);
-    _class_initialize(kvoClass);
         
     //copy in the methods from our model subclass
     var methodList = _CPKVOModelSubclass.method_list,
@@ -422,8 +421,8 @@ var kvoNewAndOld = CPKeyValueObservingOptionNew|CPKeyValueObservingOptionOld,
             if (type == CPKeyValueChangeReplacement || type == CPKeyValueChangeInsertion)
             {
                 //FIXME: do we need to go through and replace "" with CPNull? 
-                var oldValues = [[_targetObject mutableArrayValueForKeyPath:aKey] objectsAtIndexes:indexes];
-                [changes setValue:oldValues forKey:CPKeyValueChangeNewKey];
+                var newValues = [[_targetObject mutableArrayValueForKeyPath:aKey] objectsAtIndexes:indexes];
+                [changes setValue:newValues forKey:CPKeyValueChangeNewKey];
             }
         }
         else
@@ -436,7 +435,7 @@ var kvoNewAndOld = CPKeyValueObservingOptionNew|CPKeyValueObservingOptionOld,
             [changes setObject:newValue forKey:CPKeyValueChangeNewKey];
         }
     }
-    
+
     var observers = [_observersForKey[aKey] allValues],
         count = observers ? observers.length : 0;
 

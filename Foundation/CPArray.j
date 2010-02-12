@@ -657,7 +657,7 @@
             rhs = anArray[index];
         
         // If they're not equal, and either doesn't have an isa, or they're !isEqual (not isEqual)
-        if (lhs !== rhs && (!lhs.isa || !rhs.isa || ![lhs isEqual:rhs]))
+        if (lhs !== rhs && (lhs && !lhs.isa || rhs && !rhs.isa || ![lhs isEqual:rhs]))
             return NO;
     }
         
@@ -816,7 +816,7 @@
         if (index === 0)
             description += '\n';
 
-        var object = self[index],
+        var object = [self objectAtIndex:index],
             objectDescription = object && object.isa ? [object description] : object + "";
 
         description += "\t" + objectDescription.split('\n').join("\n\t");

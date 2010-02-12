@@ -585,6 +585,7 @@
             [self assertTrue: type == CPKeyValueChangeInsertion message: "Should have been an insertion, was: "+type];
 
             var values = [changes objectForKey:CPKeyValueChangeNewKey];
+
             [self assertTrue: [values isEqual:[5]] message: "array should have contained 5, was: "+values+" type: "+[values.isa description]+" length: "+values.length];
 
             [self assert:aKeyPath equals:"tester.subviews"];
