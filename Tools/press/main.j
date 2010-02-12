@@ -6,16 +6,14 @@ require("narwhal").ensureEngine("rhino");
 @import "objj-analysis-tools.j"
 @import "cib-analysis-tools.j"
 
-var ARGS = require("args");
 var FILE = require("file");
 var OS = require("os");
 
 var stream = require("term").stream;
-
-var parser = new ARGS.Parser();
+var parser = new (require("args").Parser)();
 
 parser.usage("INPUT_PROJECT OUTPUT_PROJECT");
-parser.help("Optimizes Cappuccino applications for deployment to the web.");
+parser.help("Analyze and strip unused files from a Cappuccino project's .sj bundles.");
 
 parser.option("-m", "--main", "main")
     .def("main.j")
@@ -138,9 +136,9 @@ function pressEnvironment(rootPath, outputFiles, environment, options) {
     var _OBJJ = analyzer.require("objective-j");
 
     // include paths:
-    analyzer.context.global.OBJJ_INCLUDE_PATHS = frameworks;
+    analyzer.setIncludePaths(frameworks);
     // environments:
-    _OBJJ.environments = function() { return [environment, "ObjJ"] };
+    analyzer.setEnvironments([environment, "ObjJ"]);
 
     // build list of cibs to inspect for dependent classes
     // FIXME: what's the best way to determine which cibs to look in?
