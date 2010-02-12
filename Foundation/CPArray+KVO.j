@@ -352,9 +352,17 @@
     if (aKeyPath.indexOf("@") === 0)
     {            
         var dotIndex = aKeyPath.indexOf("."),
-            operator = aKeyPath.substring(1, dotIndex),
-            parameter = aKeyPath.substring(dotIndex+1);
+            operator,
+            parameter;
         
+        if (dotIndex !== -1)
+        {
+            operator = aKeyPath.substring(1, dotIndex);
+            parameter = aKeyPath.substring(dotIndex+1);
+        }
+        else
+            operator = aKeyPath.substring(1);
+
         if (kvoOperators[operator])
             return kvoOperators[operator](self, _cmd, parameter);
             
