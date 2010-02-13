@@ -460,7 +460,7 @@ CPButtonStateMixed  = CPThemeState("mixed");
     return bounds;
 }
 
-- (CGRect)bezelRectForBounds:(CFRect)bounds
+- (CGRect)bezelRectForBounds:(CGRect)bounds
 {
     if (![self isBordered])
         return _CGRectMakeZero();
