@@ -45,6 +45,7 @@ _CPButtonBezelStyleHeights[CPHUDBezelStyle] = 20;
     if (self)
     {
         var cell = [aCoder decodeObjectForKey:@"NSCell"];
+        NIB_CONNECTION_EQUIVALENCY_TABLE[[cell UID]] = self;
 
         if (![self NS_isCheckBox] && ![self NS_isRadio])
         {

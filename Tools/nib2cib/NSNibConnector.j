@@ -24,6 +24,7 @@
 @import <AppKit/CPCibControlConnector.j>
 @import <AppKit/CPCibOutletConnector.j>
 
+NIB_CONNECTION_EQUIVALENCY_TABLE = {};
 
 @implementation CPCibConnector (NSCoding)
 
@@ -37,6 +38,21 @@
         _destination = [aCoder decodeObjectForKey:@"NSDestination"];
         _label = [aCoder decodeObjectForKey:@"NSLabel"];
         
+        var sourceUID = [_source UID],
+            destinationUID = [_destination UID];
+
+        if (sourceUID in NIB_CONNECTION_EQUIVALENCY_TABLE)
+        {
+            CPLog.trace("Swapped object: "+_source+" for object: "+NIB_CONNECTION_EQUIVALENCY_TABLE[sourceUID]);
+            _source = NIB_CONNECTION_EQUIVALENCY_TABLE[sourceUID];
+        }
+
+        if (destinationUID in NIB_CONNECTION_EQUIVALENCY_TABLE)
+        {
+            CPLog.trace("Swapped object: "+_destination+" for object: "+NIB_CONNECTION_EQUIVALENCY_TABLE[destinationUID]);
+            _destination = NIB_CONNECTION_EQUIVALENCY_TABLE[destinationUID];
+        }
+
         CPLog.debug(@"Connection: " + [_source description] + " " + [_destination description] + " " + _label);
     }
     
