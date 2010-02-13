@@ -244,7 +244,7 @@ var CPPasteboards = nil,
 */
 - (void)setString:(CPString)aString forType:(CPString)aType
 {
-    [self setPropertyList:aString forType:aType];
+    [self setData:[CPKeyedArchiver archivedDataWithRootObject:aString] forType:aType];
 }
 
 // Determining Types
@@ -355,7 +355,7 @@ var CPPasteboards = nil,
 */
 - (CPString)stringForType:(CPString)aType
 {
-    return [self propertyListForType:aType];
+    return [CPKeyedUnarchiver unarchiveObjectWithData:[self dataForType:aType]];
 }
 
 /* @ignore */
