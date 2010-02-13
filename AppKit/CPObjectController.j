@@ -4,7 +4,7 @@
 @import "CPController.j"
 
 
-@implementation CPObjectController : CPController 
+@implementation CPObjectController : CPController
 {
     id              _contentObject;
     id              _selection;
@@ -255,7 +255,7 @@ var CPObjectControllerObjectClassNameKey                = @"CPObjectControllerOb
     id      _keyPath;
     id      _observer;
     id      _object;
-    
+
     BOOL    _notifyObject;
 
     id      _context;
@@ -306,7 +306,7 @@ var CPObjectControllerObjectClassNameKey                = @"CPObjectControllerOb
         if (anObject._observer === _observer && [anObject._keyPath isEqual:_keyPath] && [anObject._object isEqual:_object])
             return YES;
     }
-    
+
     return NO;
 }
 
@@ -314,7 +314,7 @@ var CPObjectControllerObjectClassNameKey                = @"CPObjectControllerOb
 {
     if (_notifyObject)
         [_object observeValueForKeyPath:_keyPath ofObject:_object change:change context:context];
-    
+
     [_observer observeValueForKeyPath:_keyPath ofObject:_object change:change context:context];
 }
 
@@ -334,7 +334,7 @@ var CPObjectControllerObjectClassNameKey                = @"CPObjectControllerOb
 {
     var a = [];
     a.isa = self;
-    
+
     var ivars = class_copyIvarList(self),
         count = ivars.length;
 
@@ -347,6 +347,16 @@ var CPObjectControllerObjectClassNameKey                = @"CPObjectControllerOb
 - (CPString)description
 {
     return "<_CPObservableArray: "+[super description]+" >";
+}
+
+- (id)initWithArray:(CPArray)anArray
+{
+    if (self = [super initWithArray:anArray])
+    {
+        _observationProxies = [];
+    }
+
+    return self;
 }
 
 - (id)initWithObjects:(CPArray)objects count:(unsigned)count
@@ -364,16 +374,16 @@ var CPObjectControllerObjectClassNameKey                = @"CPObjectControllerOb
     if (aKeyPath.indexOf("@") === 0)
     {
         var proxy = [[_CPObservationProxy alloc] initWithKeyPath:aKeyPath observer:anObserver object:self];
-        
+
         proxy._options = options;
         proxy._context = context;
-        
+
         [_observationProxies addObject:proxy];
-        
+
         var dotIndex = aKeyPath.indexOf("."),
             remaining = aKeyPath.substring(dotIndex+1),
             indexes = [CPIndexSet indexSetWithIndexesInRange:CPMakeRange(0, [self count])];
-            
+
         [self addObserver:proxy toObjectsAtIndexes:indexes forKeyPath:remaining options:options context:context];
     }
     else
@@ -422,7 +432,7 @@ var CPObjectControllerObjectClassNameKey                = @"CPObjectControllerOb
             [self didChangeValueForKey:keyPath];
     }
 
-    [self insertObject:anObject atIndex:anIndex];
+    [super insertObject:anObject atIndex:anIndex];
 }
 
 - (void)removeObjectAtIndex:(unsigned)anIndex
@@ -458,7 +468,7 @@ var CPObjectControllerObjectClassNameKey                = @"CPObjectControllerOb
 - (void)replaceObjectAtIndex:(unsigned)anIndex withObject:(id)anObject
 {
     var currentObject = [self objectAtIndex:anIndex];
-    
+
     for (var i=0, count=[_observationProxies count]; i<count; i++)
     {
         var proxy = [_observationProxies objectAtIndex:i],
@@ -484,7 +494,7 @@ var CPObjectControllerObjectClassNameKey                = @"CPObjectControllerOb
 {
     id              _controller;
     id              _keys;
-    
+
     CPDictionary    _cachedValues;
     CPArray         _observationProxies;
 }
@@ -522,7 +532,7 @@ var CPObjectControllerObjectClassNameKey                = @"CPObjectControllerOb
         else
         {
             value = [allValues objectAtIndex:0];
-            
+
             for (var i=0, count=[allValues count]; i<count && value!=CPMultipleValuesMarker; i++)
             {
                 if (![values isEqual:[allValues objectAtIndex:i]])
@@ -530,9 +540,9 @@ var CPObjectControllerObjectClassNameKey                = @"CPObjectControllerOb
             }
         }
     }
-    
+
     [_cachedValues setValue:value forKey:aKey];
-    
+
     return value;
 }
 
@@ -554,10 +564,10 @@ var CPObjectControllerObjectClassNameKey                = @"CPObjectControllerOb
 -(void)controllerWillChange
 {
     _keys = [_cachedValues allKeys];
-    
+
     if (!_keys)
         return;
-        
+
     for (var i=0, count=_keys.length; i<count; i++)
         [self willChangeValueForKey:_keys[i]];
 
@@ -565,7 +575,7 @@ var CPObjectControllerObjectClassNameKey                = @"CPObjectControllerOb
 }
 
 -(void)controllerDidChange
-{   
+{
     [_cachedValues removeAllObjects];
 
     if (!_keys)
@@ -573,7 +583,7 @@ var CPObjectControllerObjectClassNameKey                = @"CPObjectControllerOb
 
     for (var i=0, count=_keys.length; i<count; i++)
         [self didChangeValueForKey:_keys[i]];
-    
+
    _keys = nil;
 }
 
@@ -585,10 +595,10 @@ var CPObjectControllerObjectClassNameKey                = @"CPObjectControllerOb
 - (void)addObserver:(id)anObject forKeyPath:(CPString)aKeyPath options:(CPKeyValueObservingOptions)options context:(id)context
 {
     var proxy = [[_CPObservationProxy alloc] initWithKeyPath:aKeyPath observer:anObject object:self];
-    
+
     [proxy setNotifyObject:YES];
     [_observationProxies addObject:proxy];
-    
+
     [[_controller selectedObjects] addObserver:proxy forKeyPath:aKeyPath options:options context:context];
 }
 
@@ -596,7 +606,7 @@ var CPObjectControllerObjectClassNameKey                = @"CPObjectControllerOb
 {
     var proxy = [[_CPObservationProxy alloc] initWithKeyPath:aKeyPath observer:anObject object:self],
         index = [_observationProxies indexOfObject:proxy];
-    
+
     [[_controller selectedObjects] removeObserver:[_observationProxies objectAtIndex:index] forKeyPath:aKeyPath];
     [_observationProxies removeObjectAtIndex:index];
 }
