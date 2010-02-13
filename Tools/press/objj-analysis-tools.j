@@ -12,6 +12,14 @@ function ObjectiveJRuntimeAnalyzer(rootPath)
     this.require = this.context.global.require;
 }
 
+ObjectiveJRuntimeAnalyzer.prototype.setIncludePaths = function(includePaths) {
+    this.context.global.OBJJ_INCLUDE_PATHS = includePaths;
+}
+
+ObjectiveJRuntimeAnalyzer.prototype.setEnvironments = function(environments) {
+    this.require("objective-j").environments = function() { return environments; };
+}
+
 ObjectiveJRuntimeAnalyzer.prototype.initializeGlobalRecorder = function()
 {
     this.initializeGlobalRecorder = function(){}; // run once

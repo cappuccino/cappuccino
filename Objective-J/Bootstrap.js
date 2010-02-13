@@ -1,6 +1,3 @@
-
-makeExportsGlobal();
-
 var rootNode = new StaticResourceNode("", NULL, StaticResourceNode.DirectoryType, YES),
     cwd = FILE.cwd();
 #ifndef COMMONJS
@@ -46,3 +43,7 @@ afterDocumentLoad(function()
     documentLoaded = YES;
 });
 #endif
+
+exports.rootNode = rootNode;
+
+makeExportsGlobal();

@@ -1,0 +1,86 @@
+#!/usr/bin/env objj
+
+require("narwhal").ensureEngine("rhino");
+
+@import <Foundation/Foundation.j>
+@import <AppKit/AppKit.j>
+
+@import "../press/objj-analysis-tools.j"
+
+var FILE = require("file");
+
+var parser = new (require("args").Parser)();
+
+parser.usage("INPUT_PROJECT OUTPUT_PROJECT");
+parser.help("Combine a Cappuccino application into a single JavaScript file.");
+
+parser.helpful();
+
+function main(args)
+{
+    var options = parser.parse(args);
+
+    if (options.args.length < 2) {
+        parser.printUsage(options);
+        return;
+    }
+    
+    var rootPath = FILE.path(options.args[0]).join("").absolute();
+    var outputPath = FILE.path(options.args[1]).join("").absolute();
+    
+    var analyzer = new ObjectiveJRuntimeAnalyzer(rootPath);
+
+    analyzer.setIncludePaths([rootPath.join("Frameworks")]);
+    analyzer.setEnvironments(["Browser", "ObjJ"]);
+
+    analyzer.load(rootPath.join("main.j"));
+    analyzer.finishLoading();
+    
+    var rootNode = analyzer.require("objective-j").rootNode;
+    print("rootNode="+rootNode);
+
+    var buffer = [];
+    buffer.push("(function(){");
+    buffer.push("var nodeStack = [];");
+    buffer.push("var currentNode = null;");
+    buffer.push("var newNode;")
+    serializeStaticResourceNodes(buffer, rootNode);
+    buffer.push("})();");
+    
+    var code = buffer.join("\n");
+    
+    print(code);
+    rootPath.join("Application.js").write(code);
+}
+
+function serializeStaticResourceNodes(buffer, node, depth) {
+    depth = depth || 0;
+    
+    //print(Array(depth+1).join(" ") + node);
+    
+    // not the root node:
+    if (node.parentNode()) {
+        buffer.push("newNode = new StaticResourceNode(" +
+            JSON.stringify(node.name()) +
+            ", currentNode, " +
+            JSON.stringify(node.type()) + ", " +
+            JSON.stringify(node.isResolved()) + ");");
+    } else {
+        buffer.push("newNode = rootNode;");
+    }
+    
+    if (node.contents())
+        buffer.push("newNode._contents = " + JSON.stringify(node.contents()) + ";");
+    
+    if (!node._childNodes)
+        return;
+    
+    buffer.push("nodeStack.push(currentNode);");
+    buffer.push("currentNode = newNode;");
+    
+    for (var name in node._childNodes) {
+        serializeStaticResourceNodes(buffer, node._childNodes[name], depth+1);
+    }
+    
+    buffer.push("currentNode = nodeStack.pop();");
+}
