@@ -93,11 +93,11 @@ _CPButtonBezelStyleHeights[CPHUDBezelStyle] = 20;
                     _bezelStyle = CPHUDBezelStyle;
             }
 
-            //if (_CPButtonBezelStyleHeights[_bezelStyle] != undefined)
+            if ([cell isBordered])
             {
-                //CPLog.warn("Adjusting CPButton height from " +_frame.size.height+ " / " + _bounds.size.height+" to " + _CPButtonBezelStyleHeights[_bezelStyle]);
-                _frame.size.height = 24.0;//_CPButtonBezelStyleHeights[_bezelStyle];
-                _bounds.size.height = 24.0;//_CPButtonBezelStyleHeights[_bezelStyle];
+                CPLog.warn("Adjusting CPButton height from " +_frame.size.height+ " / " + _bounds.size.height+" to " + 24);
+                _frame.size.height = 24.0;
+                _bounds.size.height = 24.0;
             }
         }
         else
