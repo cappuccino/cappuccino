@@ -2079,8 +2079,6 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     [rows getIndexes:rowArray maxCount:-1 inIndexRange:nil];
     [columns getIndexes:columnArray maxCount:-1 inIndexRange:nil];
 
-    UPDATE_COLUMN_RANGES_IF_NECESSARY();
-
     var columnIndex = 0,
         columnsCount = columnArray.length;
 
@@ -2098,13 +2096,9 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
         for (; rowIndex < rowsCount; ++rowIndex)
         {
             var row = rowArray[rowIndex],
-                dataView = dataViewsForTableColumn[row],                
-                frame = [dataView frame];
+                dataView = dataViewsForTableColumn[row];                
             
-            frame.origin.x = columnRange.location;
-            frame.size.width = columnRange.length;
-        
-            [dataView setFrame:frame];
+            [dataView setFrame:[self frameOfDataViewAtColumn:column row:row]];
         }
     }
 }
