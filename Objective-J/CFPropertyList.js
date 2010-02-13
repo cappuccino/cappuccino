@@ -332,7 +332,7 @@ var _plist_traverseNextNode = function(anXMLNode, stayWithin, stack)
     return NULL;
 }
 
-CFPropertyList.propertyListFromData = function(/*Data*/ aData)
+CFPropertyList.propertyListFromData = function(/*Data*/ aData, /*Format*/ aFormat)
 {
     return CFPropertyList.propertyListFromString(aData.encodedString(), aFormat);
 }
@@ -566,30 +566,30 @@ exports.kCFPropertyList280NorthFormat_v1_0   = CFPropertyList.Format280North_v1_
 
 exports.CFPropertyListCreateFromXMLData = function(/*Data*/ data)
 {
-    return CFPropertyList.createFromDataWithFormat(data, CFPropertyList.FormatXML_v1_0);
+    return CFPropertyList.propertyListFromData(data, CFPropertyList.FormatXML_v1_0);
 }
 
 exports.CFPropertyListCreateXMLData = function(/*PropertyList*/ aPropertyList)
 {
-    return aPropertyList.createDataWithFormat(CFPropertyList.FormatXML_v1_0);
+    return CFPropertyList.dataFromPropertyList(aPropertyList, CFPropertyList.FormatXML_v1_0);
 }
 
 exports.CFPropertyListCreateFrom280NorthData = function(/*Data*/ data)
 {
-    return CFPropertyList.createFromDataWithFormat(data, CFPropertyList.Format280North_v1_0);
+    return CFPropertyList.propertyListFromData(data, CFPropertyList.Format280North_v1_0);
 }
 
 exports.CFPropertyListCreate280NorthData = function(/*PropertyList*/ aPropertyList)
 {
-    return aPropertyList.createDataWithFormat(CFPropertyList.Format280North_v1_0);
+    return CFPropertyList.dataFromPropertyList(aPropertyList, CFPropertyList.Format280North_v1_0);
 }
 
-exports.CPPropertyListCreateFromData = function(/*PropertyList*/ aPropertyList)
+exports.CPPropertyListCreateFromData = function(/*CFData*/ data, /*Format*/ aFormat)
 {
-    return CFPropertyList.createFromDataWithFormat(aPropertyList);
+    return CFPropertyList.propertyListFromData(data, aFormat);
 }
 
-exports.CPPropertyListCreateData = function(/*PropertyList*/ aPropertyList)
+exports.CPPropertyListCreateData = function(/*PropertyList*/ aPropertyList, /*Format*/ aFormat)
 {
-    return aPropertyList.createDataWithFormat(aPropertyList)
+    return CFPropertyList.dataFromPropertyList(aPropertyList, aFormat);
 }

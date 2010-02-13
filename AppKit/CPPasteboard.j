@@ -233,7 +233,7 @@ var CPPasteboards = nil,
 */
 - (BOOL)setPropertyList:(id)aPropertyList forType:(CPString)aType
 {
-    return [self setData:[CPPropertyListSerialization dataFromPropertyList:aPropertyList format:CPPropertyListXMLFormat_v1_0 errorDescription:nil] forType:aType];
+    return [self setData:[CPPropertyListSerialization dataFromPropertyList:aPropertyList format:CPPropertyList280NorthFormat_v1_0] forType:aType];
 }
 
 /*!
@@ -244,7 +244,7 @@ var CPPasteboards = nil,
 */
 - (void)setString:(CPString)aString forType:(CPString)aType
 {
-    [self setData:[CPKeyedArchiver archivedDataWithRootObject:aString] forType:aType];
+    [self setPropertyList:aString forType:aType];
 }
 
 // Determining Types
@@ -343,7 +343,7 @@ var CPPasteboards = nil,
     var data = [self dataForType:aType];
     
     if (data)
-        return [CPPropertyListSerialization propertyListFromData:data format:CPPropertyListXMLFormat_v1_0 errorDescription:nil];
+        return [CPPropertyListSerialization propertyListFromData:data format:CPPropertyList280NorthFormat_v1_0];
         
     return nil;
 }
@@ -355,7 +355,7 @@ var CPPasteboards = nil,
 */
 - (CPString)stringForType:(CPString)aType
 {
-    return [CPKeyedUnarchiver unarchiveObjectWithData:[self dataForType:aType]];
+    return [self propertyListForType:aType];
 }
 
 /* @ignore */
@@ -429,7 +429,7 @@ var DOMDataTransferPasteboard = nil;
     var dataString = _dataTransfer.getData(aType);
 
     if (aType === CPStringPboardType)
-        return [CPData dataFromPropertyList:dataString format:kCFPropertyList280NorthFormat_v1_0 errorDescription:0];
+        return [CPData dataFromPropertyList:dataString format:kCFPropertyList280NorthFormat_v1_0];
 
     return [CPData dataWithEncodedString:dataString];
 }
@@ -439,7 +439,7 @@ var DOMDataTransferPasteboard = nil;
     if (aType === CPStringPboardType)
         return _dataTransfer.getData(aType);
 
-    return [CPPropertyListSerialization propertyListFromData:[self dataForType:aType] format:CPPropertyListUnknownFormat errorDescription:nil];
+    return [CPPropertyListSerialization propertyListFromData:[self dataForType:aType] format:CPPropertyListUnknownFormat];
 }
 
 @end

@@ -278,16 +278,16 @@ var CPURLConnectionDelegate = nil;
 
 @implementation CPURLConnection (Deprecated)
 
-+ (CPData)sendSynchronousRequest:(CPURLRequest)aRequest returningResponse:({CPURLResponse})aURLResponse error:({CPError})anError
++ (CPData)sendSynchronousRequest:(CPURLRequest)aRequest returningResponse:({CPURLResponse})aURLResponse error:(id)anError
 {
-    CPLog.warn("[CPURLConnecton sendSynchronousRequest:returningResponse:error:] is deprecated, using [CPURLConnecton sendSynchronousRequest:returningResponse:] instead.");
+    _CPReportLenientDeprecation(self, _cmd, @selector(sendSynchronousRequest:returningResponse:));
 
     return [self sendSynchronousRequest:aRequest returningResponse:aURLResponse];
 }
 
 - (HTTPRequest)_XMLHTTPRequest
 {
-    CPLog.warn("[CPURLConnecton _XMLHTTPRequest] is deprecated, using _HTTPRequest instead.");
+    _CPReportLenientDeprecation(self, _cmd, @selector(_HTTPRequest));
 
     return [self _HTTPRequest];
 }
