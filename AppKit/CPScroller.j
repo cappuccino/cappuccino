@@ -562,6 +562,7 @@ NAMES_FOR_PARTS[CPScrollerKnob]             = @"knob";
 {
     [super setFrameSize:aSize];
 
+    [self _calculateIsVertical];
     [self checkSpaceForParts];
     [self setNeedsLayout];
 }
