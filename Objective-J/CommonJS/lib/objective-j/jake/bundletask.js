@@ -457,7 +457,7 @@ BundleTask.prototype.defineResourceTask = function(aResourcePath, aDestinationPa
 
             filedir (spritedDestinationPath, function()
             {
-                FILE.write(spritedDestinationPath, base64.encode(FILE.read(aResourcePath, { mode : 'b'})), { charset:"UTF-8" });
+                FILE.write(spritedDestinationPath, base64.encode(FILE.read(aResourcePath, "b")), { charset:"UTF-8" });
             });
 
             task (anEnvironment.name() + "-sprites", [spritedDestinationPath]);
@@ -606,7 +606,7 @@ BundleTask.prototype.defineSpritedImagesTask = function()
 
                 // As data URL...
                 var contents =  "data:" + mimeType(aFilename) +
-                                ";base64," + FILE.read(aFilename, { charset:"UTF-8" });
+                                ";base64," + FILE.read(aFilename, "b").decodeToString("UTF-8");
 
                 dataURLStream.write(contents.length + ";" + contents);
 
@@ -615,7 +615,7 @@ BundleTask.prototype.defineSpritedImagesTask = function()
 
                 MHTMLContents += "--_ANY_STRING_WILL_DO_AS_A_SEPARATOR\r\n";
                 MHTMLContents += "Content-Location:" + resourcePath + "\r\nContent-Transfer-Encoding:base64\r\n\r\n";
-                MHTMLContents += FILE.read(aFilename, { charset:"UTF-8" });
+                MHTMLContents += FILE.read(aFilename, "b").decodeToString("UTF-8");
                 MHTMLContents += "\r\n";
 
                 MHTMLStream.write(contents.length + ";" + contents);
@@ -666,11 +666,11 @@ BundleTask.prototype.defineStaticTask = function()
                 {
                     var relativePath = flattensSources ? FILE.basename(aFilename) : FILE.relative(sourcesPath, aFilename);
 
-                    // FIXME: We need to do this for now due to file.read adding newlines. Revert when fixed.
-                    //fileStream.write(FILE.read(aFilename, { charset:"UTF-8" }));
+                    // FIXME: We need to do this for now due to file.read adding newlines in Rhino. Revert when fixed.
+                    //fileStream.write(FILE.read(aFilename, "b").decodeToString("UTF-8"));
                     fileStream.write("p;" + relativePath.length + ";" + relativePath);
 
-                    var fileContents = FILE.read(aFilename, { mode:"b" }).decodeToString("UTF-8");
+                    var fileContents = FILE.read(aFilename, "b").decodeToString("UTF-8");
 
                     fileStream.write("t;" + fileContents.length + ";" + fileContents);
                 }
@@ -681,7 +681,7 @@ BundleTask.prototype.defineStaticTask = function()
 
                     fileStream.write("p;");
 
-                    contents = FILE.read(aFilename, { charset:"UTF-8" });
+                    contents = FILE.read(aFilename, "b").decodeToString("UTF-8");
 
                     fileStream.write(resourcePath.length + ";" + resourcePath + contents);
                 }
