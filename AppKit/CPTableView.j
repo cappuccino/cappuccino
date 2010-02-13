@@ -167,7 +167,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 
     unsigned    _selectionHighlightMask;
     CPColor     _selectionHightlightColor;
-    unsigned    _currentHighlightedTableColumn;
+    CPTableColumn _currentHighlightedTableColumn;
     unsigned    _gridStyleMask;
     CPColor     _gridColor;
 
@@ -252,7 +252,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 
         _selectedColumnIndexes = [CPIndexSet indexSet];
         _selectedRowIndexes = [CPIndexSet indexSet];
-        _currentHighlightedTableColumn = CPNotFound;
+        _currentHighlightedTableColumn = nil;
         
         _sortDescriptors = [CPArray array];
         
@@ -1644,10 +1644,9 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     // Update indicator image & highlighted column before
    	var image = [newMainSortDescriptor ascending] ? [CPTableView _defaultTableHeaderSortImage] : [CPTableView _defaultTableHeaderReverseSortImage];	
 
-  	if (_currentHighlightedTableColumn != CPNotFound)
-        [self setIndicatorImage:nil inTableColumn:_tableColumns[_currentHighlightedTableColumn]];
+    [self setIndicatorImage:nil inTableColumn:_currentHighlightedTableColumn];
 	[self setIndicatorImage:image inTableColumn:tableColumn];	
-	[self setHighlightedTableColumn:column];
+	[self setHighlightedTableColumn:tableColumn];
 	
     [self setSortDescriptors:newSortDescriptors];
 }
@@ -1675,18 +1674,18 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     return _currentHighlightedTableColumn;
 }
 
-- (void)setHighlightedTableColumn:(int)column
+- (void)setHighlightedTableColumn:(CPTableColumn)aTableColumn
 {   
-    if (_currentHighlightedTableColumn == column)
+    if (_currentHighlightedTableColumn == aTableColumn)
         return;
         
-    if (_currentHighlightedTableColumn != CPNotFound)
-        [[_tableColumns[_currentHighlightedTableColumn] headerView] unsetThemeState:CPThemeStateHighlighted];
+    if (_currentHighlightedTableColumn != nil)
+        [[_currentHighlightedTableColumn headerView] unsetThemeState:CPThemeStateHighlighted];
    
-    if (column != CPNotFound)
-        [[_tableColumns[column] headerView] setThemeState:CPThemeStateHighlighted];
+    if (aTableColumn != nil)
+        [[aTableColumn headerView] setThemeState:CPThemeStateHighlighted];
     
-    _currentHighlightedTableColumn = column;
+    _currentHighlightedTableColumn = aTableColumn;
 }
 
 //Dragging
