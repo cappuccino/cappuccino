@@ -26,20 +26,8 @@
 
 #include "CoreGraphics/CGGeometry.h"
 
-/*
-    @global
-    @group CPSegmentSwitchTracking
-*/
 CPSegmentSwitchTrackingSelectOne = 0;
-/*
-    @global
-    @group CPSegmentSwitchTracking
-*/
 CPSegmentSwitchTrackingSelectAny = 1;
-/*
-    @global
-    @group CPSegmentSwitchTracking
-*/
 CPSegmentSwitchTrackingMomentary = 2;
 
 /*! 
