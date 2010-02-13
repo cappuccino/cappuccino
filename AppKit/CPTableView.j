@@ -858,7 +858,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 {
     var selectedRowIndexes = [_selectedRowIndexes copy];
     [selectedRowIndexes removeIndex:aRow];
-    [self selectColumnIndexes:selectedRowIndexes byExtendingSelection:NO];
+    [self selectRowIndexes:selectedRowIndexes byExtendingSelection:NO];
     [self _noteSelectionDidChange];
 }
 
