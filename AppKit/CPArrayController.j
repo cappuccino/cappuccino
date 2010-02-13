@@ -352,11 +352,11 @@
     if (_clearsFilterPredicateOnInsertion)
         [self setFilterPredicate:nil];
 
-    if ([_filterPredicate evaluateWithObject:object])
+    if (_filterPredicate === nil || [_filterPredicate evaluateWithObject:object])
     {
-        [self willChangeValueForKey:@"selectionIndexes"];
         var pos = [_arrangedObjects insertObject:object inArraySortedByDescriptors:_sortDescriptors];
 
+        [self willChangeValueForKey:@"selectionIndexes"];
         [_selectionIndexes shiftIndexesStartingAtIndex:pos by:1];
         [self didChangeValueForKey:@"selectionIndexes"];
     }
