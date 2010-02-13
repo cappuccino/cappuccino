@@ -46,12 +46,11 @@ _CPButtonBezelStyleHeights[CPHUDBezelStyle] = 20;
     {
         var cell = [aCoder decodeObjectForKey:@"NSCell"];
 
-        _controlSize = CPRegularControlSize;
-
-        _title = [cell title];
-
         if (![self NS_isCheckBox] && ![self NS_isRadio])
         {
+            _controlSize = CPRegularControlSize;
+            _title = [cell title];
+
             [self setBordered:[cell isBordered]];
 
             _bezelStyle = [cell bezelStyle];
@@ -101,7 +100,18 @@ _CPButtonBezelStyleHeights[CPHUDBezelStyle] = 20;
             }
         }
         else
+        {
+            if (![self isKindOfClass:CPCheckBox] && ![self isKindOfClass:CPRadio])
+            {
+                if ([self NS_isCheckBox])
+                    return [[CPCheckBox alloc] NS_initWithCoder:aCoder];
+                else
+                    return [[CPRadio alloc] NS_initWithCoder:aCoder];
+            }
+
             [self setBordered:YES];
+            self._title = [cell title];
+        }
     }
 
     return self;
@@ -115,6 +125,32 @@ _CPButtonBezelStyleHeights[CPHUDBezelStyle] = 20;
 - (BOOL)NS_isRadio
 {
     return NO;
+}
+
+@end
+
+@implementation CPRadio (NS)
+
+- (BOOL)NS_isRadio
+{
+    return YES;
+}
+
+- (id)NS_initWithCoder:(CPCoder)aCoder
+{
+    if (self = [super NS_initWithCoder:aCoder])
+        _radioGroup = [CPRadioGroup new];
+
+    return self;
+}
+
+@end
+
+@implementation CPCheckBox (NS)
+
+- (BOOL)NS_isCheckBox
+{
+    return YES;
 }
 
 @end
