@@ -315,7 +315,10 @@
     _hasHorizontalScroller = shouldHaveHorizontalScroller;
 
     if (_hasHorizontalScroller && !_horizontalScroller)
-        [self setHorizontalScroller:[[CPScroller alloc] initWithFrame:CGRectMake(0.0, 0.0, _CGRectGetWidth([self bounds]), [CPScroller scrollerWidth])]];
+    {
+        [self setHorizontalScroller:[[CPScroller alloc] initWithFrame:CGRectMake(0.0, 0.0, MAX(_CGRectGetWidth([self bounds]), [CPScroller scrollerWidth]+1), [CPScroller scrollerWidth])]];
+        [[self horizontalScroller] setFrameSize:CGSizeMake(_CGRectGetWidth([self bounds]), [CPScroller scrollerWidth])];
+    }
 
     [self reflectScrolledClipView:_contentView];
 }
@@ -373,7 +376,10 @@
     _hasVerticalScroller = shouldHaveVerticalScroller;
 
     if (_hasVerticalScroller && !_verticalScroller)
-        [self setVerticalScroller:[[CPScroller alloc] initWithFrame:_CGRectMake(0.0, 0.0, [CPScroller scrollerWidth], _CGRectGetHeight([self bounds]))]];
+    {
+        [self setVerticalScroller:[[CPScroller alloc] initWithFrame:_CGRectMake(0.0, 0.0, [CPScroller scrollerWidth], MAX(_CGRectGetHeight([self bounds]), [CPScroller scrollerWidth]+1))]];
+        [[self verticalScroller] setFrameSize:CGSizeMake([CPScroller scrollerWidth], _CGRectGetHeight([self bounds]))];
+    }
 
     [self reflectScrolledClipView:_contentView];
 }
