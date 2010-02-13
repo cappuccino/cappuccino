@@ -524,6 +524,7 @@
         index = -result-1;
 
     [self insertObject:anObject atIndex:index];
+    return index;
 }
 
 /*!
