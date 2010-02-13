@@ -29,14 +29,6 @@
 #include "Platform/Platform.h"
 #include "Platform/DOM/CPDOMDisplayServer.h"
 
-
-CPLineBreakByWordWrapping       = 0;
-CPLineBreakByCharWrapping       = 1;
-CPLineBreakByClipping           = 2;
-CPLineBreakByTruncatingHead     = 3;
-CPLineBreakByTruncatingTail     = 4;
-CPLineBreakByTruncatingMiddle   = 5;
-
 CPTextFieldSquareBezel          = 0;    /*! A textfield bezel with a squared corners. */
 CPTextFieldRoundedBezel         = 1;    /*! A textfield bezel with rounded corners. */
 
