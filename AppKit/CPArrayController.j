@@ -35,7 +35,7 @@
     BOOL    _preservesSelection;
     BOOL    _selectsInsertedObjects;
     BOOL    _alwaysUsesMultipleValuesMarker;
-    
+
     id      _selectionIndexes;
     id      _sortDescriptors;
     id      _filterPredicate;
@@ -51,42 +51,42 @@
     [self exposeBinding:@"contentSet"];
 }
 
-+ (CPSet)keyPathsForValuesAffectingValueForContentArray
++ (CPSet)keyPathsForValuesAffectingContentArray
 {
     return [CPSet setWithObjects:"content"];
 }
 
-+ (CPSet)keyPathsForValuesAffectingValueForArrangedObjects
++ (CPSet)keyPathsForValuesAffectingArrangedObjects
 {
     return [CPSet setWithObjects:"content", "contentArray", "contentSet", "filterPredicate", "sortDescriptors"];
 }
 
-+ (CPSet)keyPathsForValuesAffectingValueForSelection
++ (CPSet)keyPathsForValuesAffectingSelection
 {
     return [CPSet setWithObjects:"content", "contentArray", "contentSet", "selectionIndexes"];
 }
 
-+ (CPSet)keyPathsForValuesAffectingValueForSelectionIndex
++ (CPSet)keyPathsForValuesAffectingSelectionIndex
 {
     return [CPSet setWithObjects:"content", "contentArray", "contentSet", "selectionIndexes", "selection"];
 }
 
-+ (CPSet)keyPathsForValuesAffectingValueForSelectedObjects
++ (CPSet)keyPathsForValuesAffectingSelectedObjects
 {
     return [CPSet setWithObjects:"content", "contentArray", "contentSet", "selectionIndexes", "selection"];
 }
 
-+ (CPSet)keyPathsForValuesAffectingValueForCanRemove
++ (CPSet)keyPathsForValuesAffectingCanRemove
 {
     return [CPSet setWithObjects:"selectionIndexes"];
 }
 
-+ (CPSet)keyPathsForValuesAffectingValueForCanSelectNext
++ (CPSet)keyPathsForValuesAffectingCanSelectNext
 {
     return [CPSet setWithObjects:"selectionIndexes"];
 }
 
-+ (CPSet)keyPathsForValuesAffectingValueForCanSelectPrevious
++ (CPSet)keyPathsForValuesAffectingCanSelectPrevious
 {
     return [CPSet setWithObjects:"selectionIndexes"];
 }
@@ -94,12 +94,12 @@
 - (id)init
 {
     self = [super init];
-    
+
     if (self)
     {
         _selectionIndexes = [CPIndexSet indexSet];
     }
-    
+
     return self;
 }
 
@@ -173,7 +173,7 @@
     [self setContent:aSet];
 }
 
-- (id)contentArray 
+- (id)contentArray
 {
     return [self content];
 }
@@ -200,7 +200,7 @@
     [self _setArrangedObjects:[self arrangeObjects:[self contentArray]]];
 }
 
-- (void)_setArrangedObjects:(id)value 
+- (void)_setArrangedObjects:(id)value
 {
     if (_arrangedObjects === value)
         return;
@@ -214,12 +214,12 @@
 }
 
 
-- (CPArray)sortDescriptors 
+- (CPArray)sortDescriptors
 {
     return _sortDescriptors;
 }
 
-- (void)setSortDescriptors:(CPArray)value 
+- (void)setSortDescriptors:(CPArray)value
 {
     if (_sortDescriptors === value)
         return;
@@ -228,12 +228,12 @@
     [self rearrangeObjects];
 }
 
-- (CPPredicate)filterPredicate 
+- (CPPredicate)filterPredicate
 {
     return _filterPredicate;
 }
 
-- (void)setFilterPredicate:(CPPredicate)value 
+- (void)setFilterPredicate:(CPPredicate)value
 {
     if (_filterPredicate === value)
         return;
@@ -254,17 +254,17 @@
     return [_selectionIndexes firstIndex];
 }
 
-- (BOOL)setSelectionIndex:(unsigned)index 
+- (BOOL)setSelectionIndex:(unsigned)index
 {
     return [self setSelectionIndexes:[CPIndexSet indexSetWithIndex:index]];
 }
 
-- (CPIndexSet)selectionIndexes 
+- (CPIndexSet)selectionIndexes
 {
     return _selectionIndexes;
 }
 
-- (BOOL)setSelectionIndexes:(CPIndexSet)indexes 
+- (BOOL)setSelectionIndexes:(CPIndexSet)indexes
 {
     if ([_selectionIndexes isEqual:indexes])
         return NO;
@@ -301,7 +301,7 @@
     for (var i=0; i<count; i++)
     {
         var index = [arrangedObjects indexOfObject:[objects objectAtIndex:i]];
-        
+
         if (index !== CPNotFound)
             [set addIndex:index];
     }
@@ -356,7 +356,7 @@
     {
         [self willChangeValueForKey:@"selectionIndexes"];
         var pos = [_arrangedObjects insertObject:object inArraySortedByDescriptors:_sortDescriptors];
-        
+
         [_selectionIndexes shiftIndexesStartingAtIndex:pos by:1];
         [self didChangeValueForKey:@"selectionIndexes"];
     }
@@ -367,7 +367,7 @@
 - (void)removeObject:(id)object
 {
     if (![self canRemove])
-        return;    
+        return;
 
    [self willChangeValueForKey:@"content"];
    [_contentObject removeObject:object];
@@ -377,7 +377,7 @@
    {
         [self willChangeValueForKey:@"selectionIndexes"];
         var pos = [_arrangedObjects indexOfObject:object];
-        
+
         [_selectionIndexes shiftIndexesStartingAtIndex:pos by:-1];
         [self didChangeValueForKey:@"selectionIndexes"];
    }
