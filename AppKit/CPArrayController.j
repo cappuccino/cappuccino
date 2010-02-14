@@ -91,6 +91,16 @@
     return [CPSet setWithObjects:"selectionIndexes"];
 }
 
++ (BOOL)automaticallyNotifiesObserversForKey:(CPString)aKey
+{
+    if (![super automaticallyNotifiesObserversForKey:aKey])
+        return NO;
+    if (aKey === @"selectionIndexes")
+        return NO;
+
+    return YES;
+}
+
 - (id)init
 {
     self = [super init];
