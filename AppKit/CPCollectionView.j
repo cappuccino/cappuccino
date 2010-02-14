@@ -365,29 +365,21 @@
 - (void)tile
 {
     var width = CGRectGetWidth([self bounds]);
-
+        
     if (![_content count] || width == _tileWidth)
         return;
-
+        
     // We try to fit as many views per row as possible.  Any remaining space is then 
     // either proportioned out to the views (if their minSize != maxSize) or used as
     // margin
     var itemSize = CGSizeMakeCopy(_minItemSize);
-
+    
     _numberOfColumns = MAX(1.0, FLOOR(width / itemSize.width));
-
+    
     if (_maxNumberOfColumns > 0)
         _numberOfColumns = MIN(_maxNumberOfColumns, _numberOfColumns);
-
-    var nbItems = [_items count];
-    if (_numberOfColumns > nbItems)
-        _numberOfColumns = nbItems;
-
-    var maxItemSize = CGSizeMakeCopy(_maxItemSize);
-    if (maxItemSize.width==0)
-        maxItemSize.width = FLOOR(width / _numberOfColumns);
-
-   var remaining = width - _numberOfColumns * itemSize.width,
+            
+    var remaining = width - _numberOfColumns * itemSize.width,
         itemsNeedSizeUpdate = NO;
         
     if (remaining > 0 && itemSize.width < _maxItemSize.width)
@@ -420,7 +412,7 @@
     {
         if (index % _numberOfColumns == 0)
         {
-            x = 0;
+            x = _horizontalMargin;
             y += _verticalMargin + itemSize.height;
         }
         
@@ -431,7 +423,7 @@
         if (itemsNeedSizeUpdate)
             [view setFrameSize:_itemSize];
             
-        x += itemSize.width;
+        x += itemSize.width + _horizontalMargin;
     }
     
     _tileWidth = width;
