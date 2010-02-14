@@ -28,6 +28,9 @@
 
 @import "CPGeometry.j"
 
+#include "Platform/DOM.h"
+
+
 CPImageLoadStatusInitialized    = 0;
 CPImageLoadStatusLoading        = 1;
 CPImageLoadStatusCompleted      = 2;
@@ -258,6 +261,7 @@ function CPAppKitImage(aFilename, aSize)
 
     _loadStatus = CPImageLoadStatusLoading;
 
+#if PLATFORM(DOM)
     _image = new Image();
 
     var isSynchronous = YES;
@@ -304,6 +308,7 @@ function CPAppKitImage(aFilename, aSize)
     // onload and friends may fire after this point but BEFORE the end of the run loop,
     // crazy, I know. So don't set isSynchronous here, rather wait a bit longer.
     window.setTimeout(function() { isSynchronous = NO; }, 0);
+#endif
 }
 
 - (BOOL)isThreePartImage
