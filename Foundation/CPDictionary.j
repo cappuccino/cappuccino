@@ -364,7 +364,7 @@
         if (lhsObject === rhsObject)
             continue;
             
-        if (lhsObject.isa && rhsObject.isa && [lhsObject respondsToSelector:@selector(isEqual:)] && [lhsObject isEqual:rhsObject])
+        if (lhsObject && lhsObject.isa && rhsObject && rhsObject.isa && [lhsObject respondsToSelector:@selector(isEqual:)] && [lhsObject isEqual:rhsObject])
             continue;
         
         return NO;

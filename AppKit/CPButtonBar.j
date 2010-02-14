@@ -25,7 +25,7 @@
 
 + (id)themeAttributes
 {
-    return [CPDictionary dictionaryWithObjects:[nil]
+    return [CPDictionary dictionaryWithObjects:[[CPNull null]]
                                        forKeys:[@"bezel-color"]];
 }
 

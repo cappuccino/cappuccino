@@ -100,7 +100,7 @@
 + (CPButton)themedStandardButton
 {
     var button = [self button];
-    
+
     [button setTitle:@"Cancel"];
 
     return button;

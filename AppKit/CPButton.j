@@ -145,7 +145,7 @@ CPButtonStateMixed  = CPThemeState("mixed");
 
 + (id)themeAttributes
 {
-    return [CPDictionary dictionaryWithObjects:[_CGInsetMakeZero(), _CGInsetMakeZero(), nil]
+    return [CPDictionary dictionaryWithObjects:[_CGInsetMakeZero(), _CGInsetMakeZero(), [CPNull null]]
                                        forKeys:[@"bezel-inset", @"content-inset", @"bezel-color"]];
 }
 

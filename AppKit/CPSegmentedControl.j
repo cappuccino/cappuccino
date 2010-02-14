@@ -56,7 +56,7 @@ CPSegmentSwitchTrackingMomentary = 2;
 
 + (id)themeAttributes
 {
-    return [CPDictionary dictionaryWithObjects:[CPCenterTextAlignment, CPCenterVerticalTextAlignment, CPImageLeft, CPScaleNone, _CGInsetMakeZero(), _CGInsetMakeZero(), nil, nil, nil, nil, 1.0, 24.0]
+    return [CPDictionary dictionaryWithObjects:[CPCenterTextAlignment, CPCenterVerticalTextAlignment, CPImageLeft, CPScaleNone, _CGInsetMakeZero(), _CGInsetMakeZero(), [CPNull null], [CPNull null], [CPNull null], [CPNull null], 1.0, 24.0]
                                        forKeys:[@"alignment", @"vertical-alignment", @"image-position", @"image-scaling", @"bezel-inset", @"content-inset", @"left-segment-bezel-color", @"right-segment-bezel-color", @"center-segment-bezel-color", @"divider-bezel-color", @"divider-thickness", @"default-height"]];
 }
 

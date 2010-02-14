@@ -93,7 +93,7 @@ CFDictionary.prototype.valueForKey = function(/*String*/ aKey)
     var buckets = this._buckets;
 
     if (!hasOwnProperty.apply(buckets, [aKey]))
-        return undefined;
+        return nil;
 
     return buckets[aKey];
 }
@@ -109,7 +109,7 @@ CFDictionary.prototype.toString = function()
     {
         var key = keys[index];
 
-        string += "\t" + key + " = \"" + this.valueForKey(key).toString().split('\n').join("\n\t") + "\"\n";
+        string += "\t" + key + " = \"" + String(this.valueForKey(key)).split('\n').join("\n\t") + "\"\n";
     }
 
     return string + "}";
@@ -143,7 +143,7 @@ CFMutableDictionary.prototype.removeValueForKey = function(/*String*/ aKey)
     var indexOfKey = -1;
 
     if (indexOf)
-        indexOfKey = this._keys.indexOf(aKey);
+        indexOfKey = indexOf.call(this._keys, aKey);
     else
     {
         var keys = this._keys,
@@ -184,7 +184,10 @@ CFMutableDictionary.prototype.replaceValueForKey = function(/*String*/ aKey, /*O
 
 CFMutableDictionary.prototype.setValueForKey = function(/*String*/ aKey, /*Object*/ aValue)
 {
-    if (this.containsKey(aKey))
+    if (aValue === nil || aValue === undefined)
+        this.removeValueForKey(aKey);
+
+    else if (this.containsKey(aKey))
         this.replaceValueForKey(aKey, aValue);
 
     else

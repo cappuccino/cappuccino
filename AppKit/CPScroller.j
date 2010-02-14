@@ -79,7 +79,7 @@ NAMES_FOR_PARTS[CPScrollerKnob]             = @"knob";
 
 + (id)themeAttributes
 {
-    return [CPDictionary dictionaryWithObjects:[    nil, nil, nil, nil,
+    return [CPDictionary dictionaryWithObjects:[    [CPNull null], [CPNull null], [CPNull null], [CPNull null],
                                                     _CGSizeMakeZero(), _CGSizeMakeZero(), _CGInsetMakeZero(), _CGInsetMakeZero(), _CGSizeMakeZero()]
                                        forKeys:[    @"knob-slot-color",
                                                     @"decrement-line-color",

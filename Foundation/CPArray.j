@@ -817,7 +817,7 @@
             description += '\n';
 
         var object = [self objectAtIndex:index],
-            objectDescription = object && object.isa ? [object description] : object + "";
+            objectDescription = object && object.isa ? [object description] : String(object);
 
         description += "\t" + objectDescription.split('\n').join("\n\t");
 

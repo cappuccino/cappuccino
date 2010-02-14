@@ -87,7 +87,7 @@ var CPControlBlackColor     = [CPColor blackColor];
                                                 CPLineBreakByClipping,
                                                 [CPColor blackColor],
                                                 [CPFont systemFontOfSize:12.0],
-                                                nil,
+                                                [CPNull null],
                                                 _CGSizeMakeZero(),
                                                 CPImageLeft,
                                                 CPScaleToFit,
