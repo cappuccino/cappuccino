@@ -266,7 +266,7 @@
 
 - (BOOL)setSelectionIndexes:(CPIndexSet)indexes
 {
-    if ([_selectionIndexes isEqual:indexes])
+    if ([_selectionIndexes isEqualToIndexSet:indexes])
         return NO;
 
     if(![indexes count] && _avoidsEmptySelection && [[self arrangedObjects] count])
@@ -281,6 +281,10 @@
 
     [self _selectionDidChange];
     [self didChangeValueForKey:@"selectionIndexes"];
+
+    // Push back the new selection to the model for selectionIndexes if we have one.
+    // There won't be an infinite loop because of the equality check above.
+    [[CPKeyValueBinding getBinding:@"selectionIndexes" forObject:self] reverseSetValueFor:@"selectionIndexes"];
 
     return YES;
 }
@@ -356,9 +360,16 @@
     {
         var pos = [_arrangedObjects insertObject:object inArraySortedByDescriptors:_sortDescriptors];
 
-        [self willChangeValueForKey:@"selectionIndexes"];
-        [_selectionIndexes shiftIndexesStartingAtIndex:pos by:1];
-        [self didChangeValueForKey:@"selectionIndexes"];
+        if (_selectsInsertedObjects)
+        {
+            [self setSelectionIndex:pos];
+        }
+        else
+        {
+            [self willChangeValueForKey:@"selectionIndexes"];
+            [_selectionIndexes shiftIndexesStartingAtIndex:pos by:1];
+            [self didChangeValueForKey:@"selectionIndexes"];
+        }
     }
     else
         [self rearrangeObjects];
