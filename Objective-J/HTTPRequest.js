@@ -182,7 +182,15 @@ HTTPRequest.prototype.open = function(/*...*/)
 
 HTTPRequest.prototype.send = function(/*Object*/ aBody)
 {
-    return this._nativeRequest.send(aBody);
+    try
+    {
+        return this._nativeRequest.send(aBody);
+    }
+    catch (anException)
+    {
+        // FIXME: Do something more complex, with 404's?
+        this._eventDispatcher.dispatchEvent({ type:"failure", request:this });
+    }
 }
 
 HTTPRequest.prototype.abort = function()
@@ -204,22 +212,22 @@ function determineAndDispatchHTTPRequestEvents(/*HTTPRequest*/ aRequest)
 {
     var eventDispatcher = aRequest._eventDispatcher;
 
-    eventDispatcher.dispatchEvent({ type: "readystatechange", request: aRequest});
+    eventDispatcher.dispatchEvent({ type:"readystatechange", request:aRequest});
 
     var nativeRequest = aRequest._nativeRequest,
         readyState = ["uninitialized", "loading", "loaded", "interactive", "complete"][aRequest.readyState()];
 
-    eventDispatcher.dispatchEvent({ type: readyState, request: aRequest});
+    eventDispatcher.dispatchEvent({ type:readyState, request:aRequest});
 
     if (readyState === "complete")
     {
         var status = "HTTP" + aRequest.status();
 
-        eventDispatcher.dispatchEvent({ type: status, request: aRequest});
+        eventDispatcher.dispatchEvent({ type:status, request:aRequest });
 
         var result = aRequest.success() ? "success" : "failure";
 
-        eventDispatcher.dispatchEvent({ type: result, request: aRequest});
+        eventDispatcher.dispatchEvent({ type:result, request:aRequest });
     }
 }
 
@@ -240,7 +248,7 @@ function FileRequest(/*String*/ aFilePath, onsuccess, onfailure)
     if (!FILE.exists(aFilePath))
         return onfailure();
 
-    this._responseText = FILE.read(aFilePath, { charset: "UTF-8" });
+    this._responseText = FILE.read(aFilePath, { charset:"UTF-8" });
 
     onsuccess({ type:"success", request:this });
 #endif
