@@ -813,21 +813,29 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
         deselectColumns  = [],
         selectColumns  = [],
         deselectColumnIndexes = [oldColumns copy],
-        selectColumnIndexes = [newColumns copy];
-
+        selectColumnIndexes = [newColumns copy],
+        selectRows = [];
 
     [deselectColumnIndexes removeMatches:selectColumnIndexes];
     [deselectColumnIndexes getIndexes:deselectColumns maxCount:-1 inIndexRange:CPMakeRange(firstExposedColumn, exposedLength)];
     [selectColumnIndexes getIndexes:selectColumns maxCount:-1 inIndexRange:CPMakeRange(firstExposedColumn, exposedLength)];
-
-    var count = deselectColumns.length;
+    [_exposedRows getIndexes:selectRows maxCount:-1 inIndexRange:nil];
+    
+    var rowsCount = selectRows.length,
+        count = deselectColumns.length;
     while (count--)
     {
         var columnIndex = deselectColumns[count],
             identifier = [_tableColumns[columnIndex] UID],
             dataViewsInTableColumn = _dataViewsForTableColumns[identifier];
+        
+        for (var i = 0; i < rowsCount; i++)
+        {
+            var rowIndex = selectRows[i],
+                dataView = dataViewsInTableColumn[rowIndex];
+            [dataView unsetThemeState:CPThemeStateHighlighted];
+        }
 
-        [dataViewsInTableColumn makeObjectsPerformSelector:@selector(unsetThemeState:) withObject:CPThemeStateHighlighted];
         var headerView = [_tableColumns[columnIndex] headerView];
         [headerView unsetThemeState:CPThemeStateHighlighted];
     }
@@ -838,8 +846,14 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
         var columnIndex = selectColumns[count],
             identifier = [_tableColumns[columnIndex] UID],
             dataViewsInTableColumn = _dataViewsForTableColumns[identifier];
-
-        [dataViewsInTableColumn makeObjectsPerformSelector:@selector(setThemeState:) withObject:CPThemeStateHighlighted];
+        
+        for (var i = 0; i < rowsCount; i++)
+        {
+            var rowIndex = selectRows[i],
+                dataView = dataViewsInTableColumn[rowIndex];
+            [dataView setThemeState:CPThemeStateHighlighted];
+        }
+        
         var headerView = [_tableColumns[columnIndex] headerView];
         [headerView setThemeState:CPThemeStateHighlighted];
     }
