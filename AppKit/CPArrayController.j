@@ -159,6 +159,8 @@
     if ([self preservesSelection])
         oldSelection = [self selectedObjects];
 
+    // Avoid out of bounds selections.
+    _selectionIndexes = [CPIndexSet indexSet];
     //FIXME: copy?
     [super setContent:value];
 
@@ -279,10 +281,20 @@
     if ([_selectionIndexes isEqualToIndexSet:indexes])
         return NO;
 
-    if(![indexes count] && _avoidsEmptySelection && [[self arrangedObjects] count])
-        indexes = [CPIndexSet indexSetWithIndex:0];
-
-    [indexes removeIndexesInRange:CPMakeRange([[self arrangedObjects] count]+1, CPNotFound)];
+    if (![indexes count])
+    {
+        if(_avoidsEmptySelection && [[self arrangedObjects] count])
+            indexes = [CPIndexSet indexSetWithIndex:0];
+    }
+    else
+    {
+        var objectsCount = [[self arrangedObjects] count];
+        // Remove out of bounds indexes.
+        [indexes removeIndexesInRange:CPMakeRange(objectsCount, [indexes lastIndex])];
+        // When avoiding empty selection and the deleted selection was at the bottom, select the last item.
+        if(![indexes count] && _avoidsEmptySelection && objectsCount)
+            indexes = [CPIndexSet indexSetWithIndex:objectsCount-1];
+    }
 
     [self willChangeValueForKey:@"selectionIndexes"];
     [self _selectionWillChange];
