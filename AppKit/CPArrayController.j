@@ -209,7 +209,27 @@
 
 - (void)rearrangeObjects
 {
+    // Rearranging reapplies the selection criteria and may cause objects to disappear,
+    // so take care of the selection.
+    //
+    // Sometimes rearrangeObjects is called by setContent which may cause two rounds of
+    // selection preservation. This is okay because setContent temporarily clears the
+    // selection and so this code below ends up preserving nothing in that case.
+    var oldSelection = nil,
+        oldSelectionIndexes = [[self selectionIndexes] copy];
+
+    if ([self preservesSelection])
+        oldSelection = [self selectedObjects];
+
+    // Avoid out of bounds selections.
+    _selectionIndexes = [CPIndexSet indexSet];
+
     [self _setArrangedObjects:[self arrangeObjects:[self contentArray]]];
+
+    if (oldSelection)
+        [self setSelectedObjects:oldSelection];
+    else
+        [self setSelectionIndexes:oldSelectionIndexes];
 }
 
 - (void)_setArrangedObjects:(id)value
