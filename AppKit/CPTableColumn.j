@@ -229,6 +229,22 @@ CPTableColumnUserResizingMask   = 1 << 1;
     return _headerView;
 }
 
+/*!
+    This method set's the "prototype" view which will be used to create all table cells in this column.
+    
+    It creates a snapshot of aView, using keyed archiving, which is then copied over and over for each 
+    individual cell that is shown. As a result, changes made after calling this method won't be reflected.
+
+    Example:
+    
+        [tableColumn setDataView:someView]; // snapshot taken
+        [[tableColumn dataView] setSomething:x]; //won't work
+
+    This doesn't work because the snapshot is taken before the new property is applied. Instead, do:
+
+        [someView setSomething:x];
+        [tableColumn setDataView:someView];
+*/
 - (void)setDataView:(CPView)aView
 {
     if (_dataView === aView)
