@@ -92,7 +92,10 @@ require("file");
 
     join: function()
     {
-        return Array.prototype.join.apply(arguments, ["/"]);
+        if (arguments.length === 1 && arguments[0] === "")
+            return "/";
+
+        return FILE.normal(Array.prototype.join.call(arguments, "/"));
     },
     
     split: function(/*String*/ aPath)
@@ -121,7 +124,7 @@ function StaticResourceNode(/*String*/ aName, /*StaticResourceNode*/ aParentNode
     this._eventDispatcher = new EventDispatcher(this);
 
     this._name = aName;
-    this._isResolved = isResolved;
+    this._isResolved = !!isResolved;
 
     if (!aParentNode)
         this._path = "/";
@@ -141,11 +144,48 @@ function StaticResourceNode(/*String*/ aName, /*StaticResourceNode*/ aParentNode
         this._childNodes = { };
 
     else if (aType === StaticResourceNode.FileType)
-    {
         this._contents = "";
+}
 
-        if (!isResolved)
-            this.resolveAsFile();
+function resolveStaticResource(/*StaticResource*/ aResource)
+{
+    aResource._isResolved = YES;
+    aResource._eventDispatcher.dispatchEvent(
+    {
+        type:"resolve",
+        staticResourceNode:aResource
+    });
+}
+
+StaticResourceNode.prototype.resolve = function()
+{
+    if (this.type() === StaticResourceNode.DirectoryType)
+    {
+        var bundle = new CFBundle(this.path());
+
+        // Eat any errors.
+        bundle.onerror = function() { };
+
+        // The bundle will actually resolve this node.
+        bundle.load(NO);
+    }
+    else
+    {
+        var self = this;
+
+        function onsuccess(/*anEvent*/ anEvent)
+        {
+            self._contents = anEvent.request.responseText();
+            resolveStaticResource(self);
+        }
+
+        function onfailure()
+        {
+            self._type = StaticResourceNode.NotFoundType;
+            resolveStaticResource(self);
+        }
+
+        new FileRequest(this.path(), onsuccess, onfailure);
     }
 }
 
@@ -184,43 +224,9 @@ StaticResourceNode.prototype.isResolved = function()
     return this._isResolved;
 }
 
-function resolveStaticResourceNode(/*StaticResourceNode*/ aStaticResourceNode, /*BOOL*/ shouldDispatchEvent)
-{
-    aStaticResourceNode._isResolved = YES;
-    
-    if (shouldDispatchEvent)
-        aStaticResourceNode._eventDispatcher.dispatchEvent(
-        {
-            type:"resolve",
-            staticResourceNode:aStaticResourceNode
-        });
-}
-
 StaticResourceNode.prototype.write = function(/*String*/ aString)
 {
     this._contents += aString;
-}
-
-StaticResourceNode.prototype.resolveAsFile = function()
-{
-    var self = this;
-
-    function onsuccess(/*anEvent*/ anEvent)
-    {
-        self._type = StaticResourceNode.FileType;
-        self._contents = anEvent.request.responseText();
-
-        resolveStaticResourceNode(self, YES);
-    }
-
-    function onfailure()
-    {
-        self._type = StaticResourceNode.NotFoundType;
-
-        resolveStaticResourceNode(self, YES);
-    }
-
-    new FileRequest(this.path(), onsuccess, onfailure);
 }
 
 StaticResourceNode.prototype.resolveSubPath = function(/*String*/ aPath, /*Type*/ aType, /*Function*/ aCallback)
@@ -260,56 +266,28 @@ function resolvePathComponents(/*StaticResourceNode*/ startNode, /*Type*/aType, 
 
         if (!childNode)
         {
+            var type = index + 1 < count || aType === StaticResourceNode.DirectoryType ? StaticResourceNode.DirectoryType : StaticResourceNode.FileType;
 
-            if (index + 1 < count || aType === StaticResourceNode.DirectoryType)
-            {
-                var bundle = new CFBundle(components.slice(0, index + 1).join("/"));
-
-                // Eat any errors.
-                bundle.onerror = function() { };
-
-                bundle.addEventListener("load", continueResolution);
-                bundle.addEventListener("error", continueResolution);
-
-                bundle.load(NO);
-            }
-            else
-            {
-                childNode = new StaticResourceNode(name, parentNode, StaticResourceNode.FileType, NO);
-
-                if (childNode.isResolved())
-                    continueResolution();
-                else
-                    childNode.addEventListener("resolve", continueResolution);
-            }
-
-            return;            
+            childNode = new StaticResourceNode(name, parentNode, type, NO);
+            childNode.resolve();
         }
-        else if (childNode.isResolved())
-        {
-            // If we've already determined that this file doesn't exist...
-            if (childNode.isNotFound())
-                return aCallback(null, new Error("File not found: " + components.join("/")));
 
-            // If we have no more path components...
-            if (index + 1 >= count)
-                return aCallback(childNode);
-
-            // Make sure this is a directory
-            if (childNode.type() !== StaticResourceNode.DirectoryType)
-                return aCallback(null, new Error("File is not a directory: " + components.join("/"))); 
-
-            // Do nothing: simply allow the loop to progress to the next child.
-        }
         // If this node is still being resolved, just wait and rerun this same method when it's ready.
-        else
-        {
-            childNode.addEventListener("resolve", continueResolution);
-            return;
-        }
+        if (!childNode.isResolved())
+            return childNode.addEventListener("resolve", continueResolution);
+
+        // If we've already determined that this file doesn't exist...
+        if (childNode.isNotFound())
+            return aCallback(null, new Error("File not found: " + components.join("/")));
+
+        // If we have more path components and this is not a directory...
+        if ((index + 1 < count) && childNode.type() !== StaticResourceNode.DirectoryType)
+            return aCallback(null, new Error("File is not a directory: " + components.join("/")));
 
         parentNode = childNode;
     }
+
+    return aCallback(parentNode);
 }
 
 StaticResourceNode.prototype.addEventListener = function(/*String*/ anEventName, /*Function*/ anEventListener)
@@ -365,7 +343,7 @@ StaticResourceNode.prototype.nodeAtSubPath = function(/*String*/ aPath, /*BOOL*/
     {
         var name = components[index];
 
-        if (hasOwnProperty.apply(parentNode._childNodes, [name]))
+        if (hasOwnProperty.call(parentNode._childNodes, name))
             parentNode = parentNode._childNodes[name];
 
         else if (shouldResolveAsDirectories)

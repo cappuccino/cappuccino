@@ -159,13 +159,27 @@ CFBundle.prototype.load = function(/*BOOL*/ shouldExecute)
     if (this._loadStatus !== CFBundleUnloaded)
         return;
 
-    var self = this;
+    this._loadStatus = CFBundleLoading | CFBundleLoadingInfoPlist;
 
-    self._loadStatus = CFBundleLoading | CFBundleLoadingInfoPlist;
+    var self = this;
 
     rootNode.resolveSubPath(FILE.dirname(self.path()), StaticResourceNode.DirectoryType, function(aStaticResourceNode)
     {
-        self._staticResourceNode = new StaticResourceNode(FILE.basename(self.path()), aStaticResourceNode, StaticResourceNode.DirectoryType, NO);
+        var path = self.path();
+
+        // If this bundle exists at the root path, no need to create a node.
+        if (path === "/")
+            self._staticResourceNode = rootNode;
+
+        else
+        {
+            var name = FILE.basename(path);
+
+            self._staticResourceNode = aStaticResourceNode._childNodes[name];
+
+            if (!self._staticResourceNode)
+                self._staticResourceNode = new StaticResourceNode(name, aStaticResourceNode, StaticResourceNode.DirectoryType, NO);
+        }
 
         function onsuccess(/*Event*/ anEvent)
         {
@@ -174,11 +188,7 @@ CFBundle.prototype.load = function(/*BOOL*/ shouldExecute)
 
             if (!self._infoDictionary)
             {
-                self._eventDispatcher.dispatchEvent(
-                {
-                    type:"error", 
-                    error: new Error("Could not load bundle at \"" + self.path() + "\"")
-                });
+                finishBundleLoadingWithError(self, new Error("Could not load bundle at \"" + path + "\""));
 
                 return;
             }
@@ -188,16 +198,24 @@ CFBundle.prototype.load = function(/*BOOL*/ shouldExecute)
 
         function onfailure()
         {
-            self._staticResourceNode._isResolved = YES;
             self._loadStatus = CFBundleUnloaded;
-            self._eventDispatcher.dispatchEvent(
-            {
-                type:"error", 
-                error: new Error("Could not load bundle at \"" + self.path() + "\"")
-            });
+
+            finishBundleLoadingWithError(self, new Error("Could not load bundle at \"" + path + "\""));
         }
 
-        new FileRequest(FILE.join(self.path(), "Info.plist"), onsuccess, onfailure);
+        new FileRequest(FILE.join(path, "Info.plist"), onsuccess, onfailure);
+    });
+}
+
+function finishBundleLoadingWithError(/*CFBundle*/ aBundle, /*Event*/ anError)
+{
+    resolveStaticResource(aBundle._staticResourceNode);
+
+    aBundle._eventDispatcher.dispatchEvent(
+    {
+        type:"error",
+        error:anError,
+        bundle:aBundle
     });
 }
 
@@ -224,16 +242,7 @@ function loadExecutableAndResources(/*Bundle*/ aBundle, /*BOOL*/ shouldExecute)
 
         aBundle._loadStatus = CFBundleUnloaded;
 
-        resolveStaticResourceNode(aBundle._staticResourceNode, NO);
-
-        aBundle._eventDispatcher.dispatchEvent(
-        {
-            type:"error", 
-            error:anError || new Error("Could not recognize executable code format in Bundle " + aBundle),
-            bundle:aBundle
-        });
-
-        resolveStaticResourceNode(aBundle._staticResourceNode, YES);
+        finishBundleLoadingWithError(aBundle, anError || new Error("Could not recognize executable code format in Bundle " + aBundle));
     }
 
     function success()
@@ -245,17 +254,15 @@ function loadExecutableAndResources(/*Bundle*/ aBundle, /*BOOL*/ shouldExecute)
 
         // Set resolved to true here in case during evaluation this bundle 
         // needs to resolve another bundle which in turn needs it to be resolved (cycle).
-        resolveStaticResourceNode(aBundle._staticResourceNode, NO);
+        resolveStaticResource(aBundle._staticResourceNode);
 
         function complete()
         {
             aBundle._eventDispatcher.dispatchEvent(
             {
-                type:"load", 
+                type:"load",
                 bundle:aBundle
             });
-    
-            resolveStaticResourceNode(aBundle._staticResourceNode, YES);
         }
 
         if (shouldExecute)
@@ -276,7 +283,7 @@ function loadExecutableForBundle(/*Bundle*/ aBundle, success, failure)
     {
         try
         {
-            decompileStaticFile(aBundle, anEvent.request.responseText())
+            decompileStaticFile(aBundle, anEvent.request.responseText());
             aBundle._loadStatus &= ~CFBundleLoadingExecutable;
             success();
         }
@@ -346,7 +353,7 @@ function CFBundleTestSpriteSupport(/*String*/ MHTMLPath, /*Function*/ aCallback)
         return;
 
     CFBundleTestSpriteTypes([
-        CFBundleDataURLSpriteType, 
+        CFBundleDataURLSpriteType,
         "data:image/gif;base64,R0lGODlhAQABAIAAAMc9BQAAACH5BAAAAAAALAAAAAABAAEAAAICRAEAOw==",
         CFBundleMHTMLSpriteType,
         MHTMLPath,
@@ -385,7 +392,7 @@ function CFBundleTestSpriteTypes(/*Array*/ spriteTypes)
             CFBundleNotifySpriteSupportListeners();
         }
         else
-            CFBundleTestSpriteType(spriteTypes.slice(2));
+            CFBundleTestSpriteTypes(spriteTypes.slice(2));
     }
 
     image.src = spriteTypes[1];
@@ -496,7 +503,9 @@ function decompileStaticFile(/*Bundle*/ aBundle, /*String*/ aString)
             aBundle._URIMap[text] = URI;
 
             // The unresolved directories must not be bundles.
-            rootNode.nodeAtSubPath(FILE.join(bundlePath, FILE.dirname(text)), YES);
+            var parentNode = rootNode.nodeAtSubPath(FILE.join(bundlePath, FILE.dirname(text)), YES);
+
+            new StaticResourceNode(FILE.basename(text), parentNode, StaticResourceNode.FileType, YES);
         }
 
         else if (marker === MARKER_TEXT)

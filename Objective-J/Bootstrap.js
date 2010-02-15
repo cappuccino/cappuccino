@@ -1,29 +1,41 @@
-var rootNode = new StaticResourceNode("", NULL, StaticResourceNode.DirectoryType, YES),
-    cwd = FILE.cwd();
-#ifndef COMMONJS
-rootNode.nodeAtSubPath(FILE.dirname(cwd), YES);
-rootNode.resolveSubPath(cwd, StaticResourceNode.DirectoryType, function(cwdNode)
+
+var cwd = FILE.cwd(),
+    root = new StaticResourceNode("", NULL, StaticResourceNode.DirectoryType, cwd !== "/"),
+    rootNode = root;
+
+#ifdef BROWSER
+if (root.isResolved())
 {
+    root.nodeAtSubPath(FILE.dirname(cwd), YES);
+    resolveCWD();
+}
+else
+{
+    root.resolve();
+    root.addEventListener("resolve", resolveCWD);
+}
 
-    var includePaths = exports.includePaths(),
-        index = 0,
-        count = includePaths.length;
-
-    for (; index < count; ++index)
-        cwdNode.nodeAtSubPath(FILE.normal(includePaths[index]), YES);
-#ifdef BROWSER
-    if (typeof OBJJ_MAIN_FILE === "undefined")
-        OBJJ_MAIN_FILE = "main.j";
-
-    fileImporterForPath(cwd)(OBJJ_MAIN_FILE, YES, function()
+function resolveCWD()
+{
+    root.resolveSubPath(cwd, StaticResourceNode.DirectoryType, function(/*StaticResource*/ aResource)
     {
-        afterDocumentLoad(main);
-    });
-#endif
-});
-#endif
+        var includePaths = exports.includePaths(),
+            index = 0,
+            count = includePaths.length;
 
-#ifdef BROWSER
+        for (; index < count; ++index)
+            aResource.nodeAtSubPath(FILE.normal(includePaths[index]), YES);
+
+        if (typeof OBJJ_MAIN_FILE === "undefined")
+            OBJJ_MAIN_FILE = "main.j";
+
+        fileImporterForPath(cwd)(OBJJ_MAIN_FILE || "main.j", YES, function()
+        {
+            afterDocumentLoad(main);
+        });
+    });
+}
+
 function afterDocumentLoad(/*Function*/ aFunction)
 {
     if (documentLoaded)
