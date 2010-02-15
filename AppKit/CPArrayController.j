@@ -310,7 +310,7 @@
     {
         var objectsCount = [[self arrangedObjects] count];
         // Remove out of bounds indexes.
-        [indexes removeIndexesInRange:CPMakeRange(objectsCount, [indexes lastIndex])];
+        [indexes removeIndexesInRange:CPMakeRange(objectsCount, [indexes lastIndex]+1)];
         // When avoiding empty selection and the deleted selection was at the bottom, select the last item.
         if(![indexes count] && _avoidsEmptySelection && objectsCount)
             indexes = [CPIndexSet indexSetWithIndex:objectsCount-1];
