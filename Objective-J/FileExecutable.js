@@ -34,7 +34,7 @@ function FileExecutable(/*String*/ aPath)
 
     FileExecutablesForPaths[aPath] = this;
 
-    var fileContents = rootNode.nodeAtSubPath(aPath).contents(),
+    var fileContents = rootResource.nodeAtSubPath(aPath).contents(),
         executable = NULL;
 
     if (!fileContents.match(/^@STATIC;/))

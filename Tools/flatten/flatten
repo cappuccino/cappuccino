@@ -36,7 +36,7 @@ function main(args)
     analyzer.load(rootPath.join("main.j"));
     analyzer.finishLoading();
     
-    var rootNode = analyzer.require("objective-j").rootNode;
+    var rootNode = analyzer.require("objective-j").StaticResource.root;
     print("rootNode="+rootNode);
 
     var buffer = [];
@@ -44,7 +44,7 @@ function main(args)
     buffer.push("var nodeStack = [];");
     buffer.push("var currentNode = null;");
     buffer.push("var newNode;")
-    serializeStaticResourceNodes(buffer, rootNode);
+    serializeStaticResources(buffer, rootNode);
     buffer.push("})();");
     
     var code = buffer.join("\n");
@@ -53,14 +53,14 @@ function main(args)
     rootPath.join("Application.js").write(code);
 }
 
-function serializeStaticResourceNodes(buffer, node, depth) {
+function serializeStaticResource(buffer, node, depth) {
     depth = depth || 0;
     
     //print(Array(depth+1).join(" ") + node);
     
     // not the root node:
-    if (node.parentNode()) {
-        buffer.push("newNode = new StaticResourceNode(" +
+    if (node.parent()) {
+        buffer.push("newNode = new StaticResource(" +
             JSON.stringify(node.name()) +
             ", currentNode, " +
             JSON.stringify(node.type()) + ", " +
@@ -72,14 +72,14 @@ function serializeStaticResourceNodes(buffer, node, depth) {
     if (node.contents())
         buffer.push("newNode._contents = " + JSON.stringify(node.contents()) + ";");
     
-    if (!node._childNodes)
+    if (!node.children())
         return;
     
     buffer.push("nodeStack.push(currentNode);");
     buffer.push("currentNode = newNode;");
     
-    for (var name in node._childNodes) {
-        serializeStaticResourceNodes(buffer, node._childNodes[name], depth+1);
+    for (var name in node.children()) {
+        serializeStaticResources(buffer, node.children()[name], depth+1);
     }
     
     buffer.push("currentNode = nodeStack.pop();");

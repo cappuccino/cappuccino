@@ -113,37 +113,28 @@ else
 
 #endif
 
-StaticResourceNode.FileType             = 0;
-StaticResourceNode.DirectoryType        = 1;
-StaticResourceNode.NotFoundType         = 2;
+StaticResource.FileType             = 0;
+StaticResource.DirectoryType        = 1;
+StaticResource.NotFoundType         = 2;
 
-function StaticResourceNode(/*String*/ aName, /*StaticResourceNode*/ aParentNode, /*Type*/ aType, /*BOOL*/ isResolved)
+function StaticResource(/*String*/ aName, /*StaticResource*/ aParent, /*Type*/ aType, /*BOOL*/ isResolved)
 {
-    this._parentNode = aParentNode;
-    this._rootNode = aParentNode ? aParentNode._rootNode : this;
+    this._parent = aParent;
     this._eventDispatcher = new EventDispatcher(this);
 
     this._name = aName;
     this._isResolved = !!isResolved;
-
-    if (!aParentNode)
-        this._path = "/";
-
-    else if (aParentNode === this._rootNode)
-        this._path = "/" + aName;
-
-    else
-        this._path = aParentNode.path() + "/" + aName;
+    this._path = FILE.join(aParent ? aParent.path() : "", aName);
 
     this._type = aType;
 
-    if (aParentNode)
-        aParentNode._childNodes[aName] = this;
+    if (aParent)
+        aParent._children[aName] = this;
 
-    if (aType === StaticResourceNode.DirectoryType)
-        this._childNodes = { };
+    if (aType === StaticResource.DirectoryType)
+        this._children = { };
 
-    else if (aType === StaticResourceNode.FileType)
+    else if (aType === StaticResource.FileType)
         this._contents = "";
 }
 
@@ -153,13 +144,13 @@ function resolveStaticResource(/*StaticResource*/ aResource)
     aResource._eventDispatcher.dispatchEvent(
     {
         type:"resolve",
-        staticResourceNode:aResource
+        staticResource:aResource
     });
 }
 
-StaticResourceNode.prototype.resolve = function()
+StaticResource.prototype.resolve = function()
 {
-    if (this.type() === StaticResourceNode.DirectoryType)
+    if (this.type() === StaticResource.DirectoryType)
     {
         var bundle = new CFBundle(this.path());
 
@@ -181,7 +172,7 @@ StaticResourceNode.prototype.resolve = function()
 
         function onfailure()
         {
-            self._type = StaticResourceNode.NotFoundType;
+            self._type = StaticResource.NotFoundType;
             resolveStaticResource(self);
         }
 
@@ -189,183 +180,183 @@ StaticResourceNode.prototype.resolve = function()
     }
 }
 
-StaticResourceNode.prototype.name = function()
+StaticResource.prototype.name = function()
 {
     return this._name;
 }
 
-StaticResourceNode.prototype.path = function()
+StaticResource.prototype.path = function()
 {
     return this._path;
 }
 
-StaticResourceNode.prototype.contents = function()
+StaticResource.prototype.contents = function()
 {
     return this._contents;
 }
 
-StaticResourceNode.prototype.type = function()
+StaticResource.prototype.children = function()
+{
+    return this._children;
+}
+
+StaticResource.prototype.type = function()
 {
     return this._type;
 }
 
-StaticResourceNode.prototype.parentNode = function()
+StaticResource.prototype.parent = function()
 {
-    return this._parentNode;
+    return this._parent;
 }
 
-StaticResourceNode.prototype.rootNode = function()
-{
-    return this._rootNode;
-}
-
-StaticResourceNode.prototype.isResolved = function()
+StaticResource.prototype.isResolved = function()
 {
     return this._isResolved;
 }
 
-StaticResourceNode.prototype.write = function(/*String*/ aString)
+StaticResource.prototype.write = function(/*String*/ aString)
 {
     this._contents += aString;
 }
 
-StaticResourceNode.prototype.resolveSubPath = function(/*String*/ aPath, /*Type*/ aType, /*Function*/ aCallback)
+StaticResource.prototype.resolveSubPath = function(/*String*/ aPath, /*Type*/ aType, /*Function*/ aCallback)
 {
     aPath = FILE.normal(aPath);
 
     if (aPath === "/")
-        return aCallback(rootNode);
+        return aCallback(rootResource);
 
     if (!FILE.isAbsolute(aPath))
         aPath = FILE.join(this.path(), aPath);
 
     var components = FILE.split(aPath),
-        index = this === this.rootNode() ? 1 : FILE.split(this.path()).length;
+        index = this === rootResource ? 1 : FILE.split(this.path()).length;
 
     resolvePathComponents(this, aType, components, index, aCallback);
 }
 
-function resolvePathComponents(/*StaticResourceNode*/ startNode, /*Type*/aType, /*Array*/ components, /*Integer*/ index, /*Function*/ aCallback)
+function resolvePathComponents(/*StaticResource*/ startResource, /*Type*/aType, /*Array*/ components, /*Integer*/ index, /*Function*/ aCallback)
 {
     var count = components.length,
-        parentNode = startNode;
+        parent = startResource;
 
     function continueResolution()
     {
-        resolvePathComponents(parentNode, aType, components, index, aCallback);
+        resolvePathComponents(parent, aType, components, index, aCallback);
     }
 
     for (; index < count; ++index)
     {
         var name = components[index],
-            childNode = parentNode._childNodes[name];
+            child = parent._children[name];
 //CPLog(index + " " + components + ":" + (childNode && childNode.isResolved()) + ":");
 //CPLog(name + " of " + parentNode.name() + " " + (childNode && childNode.name()));
 //CPLog(parentNode._childNodes);
 // + "(" + components  + ")" + " " + index + "/" + count + ":" + (childNode && childNode.name()) +">" + (childNode ? 1:0) + " " + (childNode && childNode.isResolved()));
 
-        if (!childNode)
+        if (!child)
         {
-            var type = index + 1 < count || aType === StaticResourceNode.DirectoryType ? StaticResourceNode.DirectoryType : StaticResourceNode.FileType;
+            var type = index + 1 < count || aType === StaticResource.DirectoryType ? StaticResource.DirectoryType : StaticResource.FileType;
 
-            childNode = new StaticResourceNode(name, parentNode, type, NO);
-            childNode.resolve();
+            child = new StaticResource(name, parent, type, NO);
+            child.resolve();
         }
 
-        // If this node is still being resolved, just wait and rerun this same method when it's ready.
-        if (!childNode.isResolved())
-            return childNode.addEventListener("resolve", continueResolution);
+        // If this resource is still being resolved, just wait and rerun this same method when it's ready.
+        if (!child.isResolved())
+            return child.addEventListener("resolve", continueResolution);
 
         // If we've already determined that this file doesn't exist...
-        if (childNode.isNotFound())
+        if (child.isNotFound())
             return aCallback(null, new Error("File not found: " + components.join("/")));
 
         // If we have more path components and this is not a directory...
-        if ((index + 1 < count) && childNode.type() !== StaticResourceNode.DirectoryType)
+        if ((index + 1 < count) && child.type() !== StaticResource.DirectoryType)
             return aCallback(null, new Error("File is not a directory: " + components.join("/")));
 
-        parentNode = childNode;
+        parent = child;
     }
 
-    return aCallback(parentNode);
+    return aCallback(parent);
 }
 
-StaticResourceNode.prototype.addEventListener = function(/*String*/ anEventName, /*Function*/ anEventListener)
+StaticResource.prototype.addEventListener = function(/*String*/ anEventName, /*Function*/ anEventListener)
 {
     this._eventDispatcher.addEventListener(anEventName, anEventListener);
 }
 
-StaticResourceNode.prototype.removeEventListener = function(/*String*/ anEventName, /*Function*/ anEventListener)
+StaticResource.prototype.removeEventListener = function(/*String*/ anEventName, /*Function*/ anEventListener)
 {
     this._eventDispatcher.removeEventListener(anEventName, anEventListener);
 }
 
-StaticResourceNode.prototype.isNotFound = function()
+StaticResource.prototype.isNotFound = function()
 {
-    return this.type() === StaticResourceNode.NotFoundType;
+    return this.type() === StaticResource.NotFoundType;
 }
 
-StaticResourceNode.prototype.toString = function(/*BOOL*/ includeNotFounds)
+StaticResource.prototype.toString = function(/*BOOL*/ includeNotFounds)
 {
     if (this.isNotFound())
         return "<file not found: " + this.name() + ">";
 
-    var string = this.parentNode() ? this.name() : "/",
+    var string = this.parent() ? this.name() : "/",
         type = this.type();
 
-    if (type === StaticResourceNode.DirectoryType)
+    if (type === StaticResource.DirectoryType)
     {
-        var childNodes = this._childNodes;
+        var children = this._children;
 
-        for (var name in childNodes)
-            if (childNodes.hasOwnProperty(name))
+        for (var name in children)
+            if (children.hasOwnProperty(name))
             {
-                var childNode = childNodes[name];
+                var child = children[name];
 
-                if (includeNotFounds || !childNode.isNotFound())
-                    string += "\n\t" + childNodes[name].toString(includeNotFounds).split('\n').join("\n\t");
+                if (includeNotFounds || !child.isNotFound())
+                    string += "\n\t" + children[name].toString(includeNotFounds).split('\n').join("\n\t");
             }
     }
 
     return string;
 }
 
-StaticResourceNode.prototype.nodeAtSubPath = function(/*String*/ aPath, /*BOOL*/ shouldResolveAsDirectories)
+StaticResource.prototype.nodeAtSubPath = function(/*String*/ aPath, /*BOOL*/ shouldResolveAsDirectories)
 {
     aPath = FILE.normal(aPath);
 
     var components = FILE.split(FILE.isAbsolute(aPath) ? aPath : FILE.join(this.path(), aPath)),
         index = 1,
         count = components.length,
-        parentNode = this.rootNode();
+        parent = rootResource;
 
     for (; index < count; ++index)
     {
         var name = components[index];
 
-        if (hasOwnProperty.call(parentNode._childNodes, name))
-            parentNode = parentNode._childNodes[name];
+        if (hasOwnProperty.call(parent._children, name))
+            parent = parent._children[name];
 
         else if (shouldResolveAsDirectories)
-            parentNode = new StaticResourceNode(name, parentNode, StaticResourceNode.DirectoryType, YES);
+            parent = new StaticResource(name, parent, StaticResource.DirectoryType, YES);
 
         else
             throw NULL;
     }
 
-    return parentNode;
+    return parent;
 }
 
-StaticResourceNode.resolveStandardNodeAtPath = function(/*String*/ aPath, /*Function*/ aCallback)
+StaticResource.resolveStandardNodeAtPath = function(/*String*/ aPath, /*Function*/ aCallback)
 {
     var includePaths = exports.includePaths(),
         resolveStandardNodeAtPath = function(/*String*/ aPath, /*int*/ anIndex)
         {
             var searchPath = FILE.absolute(FILE.join(includePaths[anIndex], FILE.normal(aPath)));
 
-            rootNode.resolveSubPath(searchPath, StaticResourceNode.FileType, function(/*StaticResourceNode*/ aStaticResourceNode)
+            rootResource.resolveSubPath(searchPath, StaticResource.FileType, function(/*StaticResource*/ aStaticResource)
             {
-                if (!aStaticResourceNode)
+                if (!aStaticResource)
                 {
                     if (anIndex + 1< includePaths.length)
                         resolveStandardNodeAtPath(aPath, anIndex + 1);
@@ -375,7 +366,7 @@ StaticResourceNode.resolveStandardNodeAtPath = function(/*String*/ aPath, /*Func
                     return;
                 }
     
-                aCallback(aStaticResourceNode);
+                aCallback(aStaticResource);
             });
         };
 
@@ -387,4 +378,4 @@ exports.includePaths = function()
     return global.OBJJ_INCLUDE_PATHS || ["Frameworks", "Frameworks/Debug"];
 }
 
-exports.StaticResourceNode = StaticResourceNode;
+exports.StaticResource = StaticResource;

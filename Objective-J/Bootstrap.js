@@ -1,23 +1,24 @@
 
 var cwd = FILE.cwd(),
-    root = new StaticResourceNode("", NULL, StaticResourceNode.DirectoryType, cwd !== "/"),
-    rootNode = root;
+    rootResource = new StaticResource("", NULL, StaticResource.DirectoryType, cwd !== "/");
+
+StaticResource.root = rootResource;
 
 #ifdef BROWSER
-if (root.isResolved())
+if (rootResource.isResolved())
 {
-    root.nodeAtSubPath(FILE.dirname(cwd), YES);
+    rootResource.nodeAtSubPath(FILE.dirname(cwd), YES);
     resolveCWD();
 }
 else
 {
-    root.resolve();
-    root.addEventListener("resolve", resolveCWD);
+    rootResource.resolve();
+    rootResource.addEventListener("resolve", resolveCWD);
 }
 
 function resolveCWD()
 {
-    root.resolveSubPath(cwd, StaticResourceNode.DirectoryType, function(/*StaticResource*/ aResource)
+    rootResource.resolveSubPath(cwd, StaticResource.DirectoryType, function(/*StaticResource*/ aResource)
     {
         var includePaths = exports.includePaths(),
             index = 0,
@@ -55,7 +56,5 @@ afterDocumentLoad(function()
     documentLoaded = YES;
 });
 #endif
-
-exports.rootNode = rootNode;
 
 makeExportsGlobal();

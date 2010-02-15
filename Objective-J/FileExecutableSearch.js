@@ -43,12 +43,12 @@ function FileExecutableSearch(/*String*/ aPath, /*BOOL*/ isLocal)
 
     var self = this;
 
-    function completed(/*String*/ aStaticResourceNode)
+    function completed(/*String*/ aStaticResource)
     {
-        if (!aStaticResourceNode)
+        if (!aStaticResource)
             throw new Error("Could not load file at " + aPath);
 
-        self._result = new FileExecutable(aStaticResourceNode.path());
+        self._result = new FileExecutable(aStaticResource.path());
         self._isComplete = YES;
 
         self._eventDispatcher.dispatchEvent(
@@ -59,9 +59,9 @@ function FileExecutableSearch(/*String*/ aPath, /*BOOL*/ isLocal)
     }
 
     if (isLocal)
-        rootNode.resolveSubPath(aPath, StaticResourceNode.FileType, completed);
+        rootResource.resolveSubPath(aPath, StaticResource.FileType, completed);
     else
-        StaticResourceNode.resolveStandardNodeAtPath(aPath, completed);
+        StaticResource.resolveStandardNodeAtPath(aPath, completed);
 }
 
 FileExecutableSearch.prototype.path = function()

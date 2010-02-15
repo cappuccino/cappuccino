@@ -23,7 +23,7 @@ function CFBundle(/*String*/ aPath)
 
     this._path = aPath;
     this._name = FILE.basename(aPath);
-    this._staticResourceNode = NULL;
+    this._staticResource = NULL;
 
     this._loadStatus = CFBundleUnloaded;
     this._loadRequests = [];
@@ -163,22 +163,22 @@ CFBundle.prototype.load = function(/*BOOL*/ shouldExecute)
 
     var self = this;
 
-    rootNode.resolveSubPath(FILE.dirname(self.path()), StaticResourceNode.DirectoryType, function(aStaticResourceNode)
+    rootResource.resolveSubPath(FILE.dirname(self.path()), StaticResource.DirectoryType, function(aStaticResource)
     {
         var path = self.path();
 
         // If this bundle exists at the root path, no need to create a node.
         if (path === "/")
-            self._staticResourceNode = rootNode;
+            self._staticResource = rootResource;
 
         else
         {
             var name = FILE.basename(path);
 
-            self._staticResourceNode = aStaticResourceNode._childNodes[name];
+            self._staticResource = aStaticResource._children[name];
 
-            if (!self._staticResourceNode)
-                self._staticResourceNode = new StaticResourceNode(name, aStaticResourceNode, StaticResourceNode.DirectoryType, NO);
+            if (!self._staticResource)
+                self._staticResource = new StaticResource(name, aStaticResource, StaticResource.DirectoryType, NO);
         }
 
         function onsuccess(/*Event*/ anEvent)
@@ -209,7 +209,7 @@ CFBundle.prototype.load = function(/*BOOL*/ shouldExecute)
 
 function finishBundleLoadingWithError(/*CFBundle*/ aBundle, /*Event*/ anError)
 {
-    resolveStaticResource(aBundle._staticResourceNode);
+    resolveStaticResource(aBundle._staticResource);
 
     aBundle._eventDispatcher.dispatchEvent(
     {
@@ -254,7 +254,7 @@ function loadExecutableAndResources(/*Bundle*/ aBundle, /*BOOL*/ shouldExecute)
 
         // Set resolved to true here in case during evaluation this bundle 
         // needs to resolve another bundle which in turn needs it to be resolved (cycle).
-        resolveStaticResource(aBundle._staticResourceNode);
+        resolveStaticResource(aBundle._staticResource);
 
         function complete()
         {
@@ -421,14 +421,14 @@ CFBundle.dataContentsAtPath = function(/*String*/ aPath)
 {
     var data = new CFMutableData();
 
-    data.setEncodedString(rootNode.nodeAtSubPath(aPath).contents());
+    data.setEncodedString(rootResource.nodeAtSubPath(aPath).contents());
 
     return data;
 }
 
 function executeBundle(/*Bundle*/ aBundle)
 {
-    var staticResources = [aBundle._staticResourceNode];
+    var staticResources = [aBundle._staticResource];
 
     function executeStaticResources(staticResources, index)
     {
@@ -436,7 +436,7 @@ function executeBundle(/*Bundle*/ aBundle)
         {
             var staticResource = staticResources[index];
 
-            if (staticResource.type() === StaticResourceNode.FileType)
+            if (staticResource.type() === StaticResource.FileType)
             {
                 var executable = new FileExecutable(staticResource.path());
 
@@ -479,7 +479,8 @@ function decompileStaticFile(/*Bundle*/ aBundle, /*String*/ aString)
         throw new Error("Could not read static file.");
 
     var marker,
-        bundlePath = aBundle.path();
+        bundlePath = aBundle.path(),
+        file = NULL;
 
     while (marker = stream.getMarker())   
     {
@@ -488,9 +489,9 @@ function decompileStaticFile(/*Bundle*/ aBundle, /*String*/ aString)
         if (marker === MARKER_PATH)
         {
             var absolutePath = FILE.join(bundlePath, text),
-                parentNode = rootNode.nodeAtSubPath(FILE.dirname(absolutePath), YES);
+                parent = rootResource.nodeAtSubPath(FILE.dirname(absolutePath), YES);
 
-            fileNode = new StaticResourceNode(FILE.basename(absolutePath), parentNode, StaticResourceNode.FileType, YES);
+            file = new StaticResource(FILE.basename(absolutePath), parent, StaticResource.FileType, YES);
         }
 
         else if (marker === MARKER_URI)
@@ -503,13 +504,13 @@ function decompileStaticFile(/*Bundle*/ aBundle, /*String*/ aString)
             aBundle._URIMap[text] = URI;
 
             // The unresolved directories must not be bundles.
-            var parentNode = rootNode.nodeAtSubPath(FILE.join(bundlePath, FILE.dirname(text)), YES);
+            var parent = rootResource.nodeAtSubPath(FILE.join(bundlePath, FILE.dirname(text)), YES);
 
-            new StaticResourceNode(FILE.basename(text), parentNode, StaticResourceNode.FileType, YES);
+            new StaticResource(FILE.basename(text), parent, StaticResource.FileType, YES);
         }
 
         else if (marker === MARKER_TEXT)
-            fileNode.write(text);
+            file.write(text);
     }
 }
 
