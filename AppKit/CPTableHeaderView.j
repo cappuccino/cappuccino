@@ -56,9 +56,9 @@ var CPThemeStatePressed = CPThemeState("pressed");
 {
     var themeState = [self themeState];
 
-    if((themeState & CPThemeStateSelected || themeState & CPThemeStateHighlighted) && (themeState & CPThemeStatePressed))
+    if(themeState & CPThemeStateHighlighted && themeState & CPThemeStatePressed)
         [self setBackgroundColor:[CPColor colorWithPatternImage:CPAppKitImage("tableview-headerview-highlighted-pressed.png", CGSizeMake(1.0, 22.0))]];
-    else if (themeState & CPThemeStateSelected || themeState & CPThemeStateHighlighted)
+    else if (themeState & CPThemeStateHighlighted)
         [self setBackgroundColor:[CPColor colorWithPatternImage:CPAppKitImage("tableview-headerview-highlighted.png", CGSizeMake(1.0, 22.0))]];
     else if (themeState & CPThemeStatePressed)
         [self setBackgroundColor:[CPColor colorWithPatternImage:CPAppKitImage("tableview-headerview-pressed.png", CGSizeMake(1.0, 22.0))]];
@@ -230,18 +230,11 @@ var CPThemeStatePressed = CPThemeState("pressed");
         var location = [self convertPoint:[theEvent locationInWindow] fromView:nil],
             clickedColumn = [self columnAtPoint:location];
 
-        [self _setPressedColumn:CPNotFound];
+        [self _setPressedColumn:-1];
         
-        if (clickedColumn == -1)
-            return;    
+        if (clickedColumn != -1)
+            [_tableView _didClickTableColumn:clickedColumn modifierFlags:[theEvent modifierFlags]];
         
-        [_tableView _sendDelegateDidClickColumn:clickedColumn];
-        
-        if ([_tableView allowsColumnSelection])
-            [_tableView _selectTableColumn:clickedColumn modifierFlags:[theEvent modifierFlags]];        
-        
-        [_tableView _changeSortDescriptorsForClickOnColumn:clickedColumn];
-
         return;
     }
 /*

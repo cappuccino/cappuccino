@@ -829,7 +829,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 
         [dataViewsInTableColumn makeObjectsPerformSelector:@selector(unsetThemeState:) withObject:CPThemeStateHighlighted];
         var headerView = [_tableColumns[columnIndex] headerView];
-        [headerView unsetThemeState:CPThemeStateSelected];
+        [headerView unsetThemeState:CPThemeStateHighlighted];
     }
 
     count = selectColumns.length;
@@ -841,30 +841,8 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 
         [dataViewsInTableColumn makeObjectsPerformSelector:@selector(setThemeState:) withObject:CPThemeStateHighlighted];
         var headerView = [_tableColumns[columnIndex] headerView];
-        [headerView setThemeState:CPThemeStateSelected];
+        [headerView setThemeState:CPThemeStateHighlighted];
     }
-}
-
-- (void)_selectTableColumn:(int)clickedColumn modifierFlags:(unsigned)modifierFlags
-{
-    if (modifierFlags & CPCommandKeyMask)
-     {
-         if ([self isColumnSelected:clickedColumn])
-             [self deselectColumn:clickedColumn];
-         else if ([self allowsMultipleSelection] == YES)
-             [self selectColumnIndexes:[CPIndexSet indexSetWithIndex:clickedColumn]  byExtendingSelection:YES];
-     }
-     else if (modifierFlags & CPShiftKeyMask)
-     {
-     // should be from clickedColumn to lastClickedColum with extending:(direction == previous selection)
-         var selectedIndexes = [self selectedColumnIndexes],
-             startColumn = MIN(clickedColumn, [selectedIndexes lastIndex]),
-             endColumn = MAX(clickedColumn, [selectedIndexes firstIndex]);
-     
-         [self selectColumnIndexes:[CPIndexSet indexSetWithIndexesInRange:CPMakeRange(startColumn, endColumn - startColumn + 1)] byExtendingSelection:YES];
-     }
-     else
-         [self selectColumnIndexes:[CPIndexSet indexSetWithIndex:clickedColumn] byExtendingSelection:NO];
 }
 
 - (CPIndexSet)selectedColumnIndexes
@@ -1593,6 +1571,38 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
             [_dataSource tableView:self sortDescriptorsDidChange:oldDescriptors];
 }
 
+- (void)_didClickTableColumn:(int)clickedColumn modifierFlags:(unsigned)modifierFlags
+{
+    [self _sendDelegateDidClickColumn:clickedColumn];
+        
+    if (_allowsColumnSelection)
+    {
+        if (modifierFlags & CPCommandKeyMask)
+        {
+            if ([self isColumnSelected:clickedColumn])
+                [self deselectColumn:clickedColumn];
+            else if ([self allowsMultipleSelection] == YES)
+                [self selectColumnIndexes:[CPIndexSet indexSetWithIndex:clickedColumn] byExtendingSelection:YES];
+                
+            return;
+        }
+        else if (modifierFlags & CPShiftKeyMask)
+        {
+        // should be from clickedColumn to lastClickedColum with extending:(direction == previous selection)
+            var startColumn = MIN(clickedColumn, [_selectedColumnIndexes lastIndex]),
+                endColumn = MAX(clickedColumn, [_selectedColumnIndexes firstIndex]);
+         
+            [self selectColumnIndexes:[CPIndexSet indexSetWithIndexesInRange:CPMakeRange(startColumn, endColumn - startColumn + 1)] byExtendingSelection:YES];
+            
+            return;
+        }
+        else
+            [self selectColumnIndexes:[CPIndexSet indexSetWithIndex:clickedColumn] byExtendingSelection:NO];
+    }
+    
+    [self _changeSortDescriptorsForClickOnColumn:clickedColumn];
+}
+
 // From GNUSTEP
 - (void)_changeSortDescriptorsForClickOnColumn:(int)column
 {
@@ -2299,7 +2309,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     if ([self selectionHighlightStyle] === CPTableViewSelectionHighlightStyleSourceList)
         [[CPColor selectionColorSourceView] setFill];
     else
-       [[CPColor selectionColor] setFill];
+       [[CPColor alternateSelectedControlColor] setFill];
 
     var context = [[CPGraphicsContext currentContext] graphicsPort],
         indexes = [],
@@ -3153,7 +3163,8 @@ var CPTableViewDataSourceKey                = @"CPTableViewDataSourceKey",
 
     [aCoder encodeFloat:_rowHeight forKey:CPTableViewRowHeightKey];
     [aCoder encodeSize:_intercellSpacing forKey:CPTableViewIntercellSpacingKey];
-
+    [aCoder encodeInt:_gridStyleMask forKey:CPGridStyleMask];
+    
     [aCoder encodeBool:_allowsMultipleSelection forKey:CPTableViewMultipleSelectionKey];
     [aCoder encodeBool:_allowsEmptySelection forKey:CPTableViewEmptySelectionKey];
     [aCoder encodeBool:_allowsColumnReordering forKey:CPTableViewColumnReorderingKey];
