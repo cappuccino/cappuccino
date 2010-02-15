@@ -1659,12 +1659,12 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 
 + (CPImage)_defaultTableHeaderSortImage
 {
-    return CPAppKitImage("tableview-headerview-ascending.png");
+    return CPAppKitImage("tableview-headerview-ascending.png", CGSizeMake(9.0, 8.0));
 }
 
 + (CPImage)_defaultTableHeaderReverseSortImage
 {
-    return CPAppKitImage("tableview-headerview-descending.png");
+    return CPAppKitImage("tableview-headerview-descending.png", CGSizeMake(9.0, 8.0));
 }
 
 //Highlightable Column Headers
