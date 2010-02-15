@@ -11,7 +11,7 @@
 #include "CFData.js"
 #include "MarkedStream.js"
 #include "CFBundle.js"
-#include "StaticResourceNode.js"
+#include "StaticResource.js"
 #include "Preprocessor.js"
 #include "FileDependency.js"
 #include "Executable.js"
