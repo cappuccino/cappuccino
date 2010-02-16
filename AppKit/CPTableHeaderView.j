@@ -294,9 +294,12 @@ var _CPTableColumnHeaderViewStringValueKey = @"_CPTableColumnHeaderViewStringVal
         tableColumn = [[_tableView tableColumns] objectAtIndex:_resizedColumn],
         type = [anEvent type];
 
-    if (_lastLocation == nil) _lastLocation = location;
-    if (_columnOldWidth == nil) _columnOldWidth = [tableColumn width];
-        
+    if (_lastLocation == nil)
+        _lastLocation = location;
+
+    if (_columnOldWidth == nil)
+        _columnOldWidth = [tableColumn width];
+
     if (type === CPLeftMouseUp)
     {   
         [self _updateResizeCursor:anEvent];
@@ -304,7 +307,7 @@ var _CPTableColumnHeaderViewStringValueKey = @"_CPTableColumnHeaderViewStringVal
         [tableColumn _postDidResizeNotificationWithOldWidth:_columnOldWidth];
         [tableColumn setDisableResizingPosting:NO];        
         [_tableView setDisableAutomaticResizing:NO];
-        
+
         _resizedColumn = -1;
         _lastLocation = nil;
         _columnOldWidth = nil;
@@ -327,13 +330,13 @@ var _CPTableColumnHeaderViewStringValueKey = @"_CPTableColumnHeaderViewStringVal
             // We need to figure out the exact cocoa behavior here though. 
             //[_tableView resizeWithOldSuperviewSize:[_tableView bounds]];
             _lastLocation = location;
-                        
+
             [[CPCursor resizeLeftRightCursor] set];
             [self setNeedsLayout];
             [self setNeedsDisplay:YES];
         }
     }
-    
+
     [CPApp setTarget:self selector:@selector(trackResizeWithEvent:) forNextEventMatchingMask:CPLeftMouseDraggedMask | CPLeftMouseUpMask untilDate:nil inMode:nil dequeue:YES];
 }
 

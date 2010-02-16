@@ -162,7 +162,7 @@ CPLogRegister(CPLogConsole);
     for (var i = 1; i <= 3; i++)
     {
         var column = [[CPTableColumn alloc] initWithIdentifier:String(i)];
-        [column setSortDescriptorPrototype:desc];
+        //[column setSortDescriptorPrototype:desc];
         [[column headerView] setStringValue:"Number "+i];
 
         [column setWidth:200.0];
@@ -382,6 +382,11 @@ CPLogRegister(CPLogConsole);
 - (void)tableView:(CPTableView)aTableView didEndDraggedImage:(CPImage)anImage atPosition:(CGPoint)aPoint operation:(CPDragOperation)anOperation
 {
     //for convenience     
+}
+
+- (void)tableView:(CPTableView)aTableView didClickTableColumn:(CPTableColumn)aColumn
+{
+    console.log("table: "+aTableView+" clicked column: "+aColumn);
 }
 
 @end
