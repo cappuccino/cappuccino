@@ -2607,15 +2607,16 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 {
 	// We don't use rowAtPoint here because the drag indicator can appear below the last row
 	// and rowAtPoint doesn't return rows that are larger than numberOfRows
-	var row = FLOOR(dragPoint.y / _rowHeight + _intercellSpacing.height);
-	dragPoint.y += FLOOR(CPRectGetHeight([self rectOfRow:row]) / 4.0);
+	var row = FLOOR(dragPoint.y / ( _rowHeight + _intercellSpacing.height ));
 	
-	// cocoa seems to jump to the next row when we approach the below row
-	row = FLOOR(dragPoint.y / _rowHeight + _intercellSpacing.height);
-	
-	if (row > _numberOfRows)
-		return -1;
+	// Determine if the mouse is currently closer to this row or the row below it
+	var lowerRow = row + 1,
+		rect = [self rectOfRow:row],
+		lowerRect = [self rectOfRow:lowerRow];
 		
+	if (ABS(CPRectGetMinY(lowerRect) - dragPoint.y) < ABS(dragPoint.y - CPRectGetMinY(rect)))
+		row = lowerRow;
+	
 	return row;
 }
 
@@ -2649,9 +2650,9 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     var row = [self _proposedRowAtPoint:location],
         dragOperation = [self _validateDrop:sender proposedRow:row proposedDropOperation:dropOperation];
         exposedClipRect = [self exposedClipRect];
-
-    // if(_retargetedDropRow !== nil)
-    //     row = _retargetedDropRow;
+	
+    if(_retargetedDropRow !== nil)
+        row = _retargetedDropRow;
 
     var rect = CPRectMakeZero();
     
