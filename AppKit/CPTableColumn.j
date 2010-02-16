@@ -177,7 +177,7 @@ CPTableColumnUserResizingMask   = 1 << 1;
     _maxWidth = aMaxWidth;
 
     var width = [self width],
-        newWidth = MAX(width, [self maxWidth]);
+        newWidth = MIN(width, [self maxWidth]);
 
     if (width !== newWidth)
         [self setWidth:newWidth];

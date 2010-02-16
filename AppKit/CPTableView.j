@@ -1365,8 +1365,8 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 
         if (newSize > 0)
         {
-            newSize = (newSize < [columnToResize minWidth]) ? [columnToResize minWidth] : newSize;
-            newSize = (newSize > [columnToResize maxWidth]) ? [columnToResize maxWidth] : newSize;
+            newSize = MAX([columnToResize minWidth], newSize);
+            newSize = MIN([columnToResize maxWidth], newSize);
             [columnToResize setWidth:newSize];
         }
     }
