@@ -40,6 +40,8 @@ CPLogRegister(CPLogConsole);
     [tableView setUsesAlternatingRowBackgroundColors:YES];
     [tableView setAlternatingRowBackgroundColors:[[CPColor whiteColor], [CPColor colorWithHexString:@"e4e7ff"], [CPColor colorWithHexString:@"f4e7ff"]]];
     [tableView setGridStyleMask:CPTableViewSolidHorizontalGridLineMask | CPTableViewSolidVerticalGridLineMask];
+    [tableView setSelectionHighlightStyle:CPTableViewSelectionHighlightStyleSourceList];
+//    [tableView setBackgroundColor:[CPColor blueColor]];
 
     var iconView = [[CPImageView alloc] initWithFrame:CGRectMake(16,16,0,0)];
 
