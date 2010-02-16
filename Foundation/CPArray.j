@@ -55,6 +55,11 @@
     return [_array objectAtIndex:_index];
 }
 
+- (int)countByEnumeratingWithState:(id)aState objects:(id)objects count:(id)aCount
+{
+    return [_array countByEnumeratingWithState:aState objects:objects count:aCount];
+}
+
 @end
 
 /* @ignore */
