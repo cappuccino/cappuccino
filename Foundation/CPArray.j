@@ -55,6 +55,11 @@
     return [_array objectAtIndex:_index];
 }
 
+- (int)countByEnumeratingWithState:(id)aState objects:(id)objects count:(id)aCount
+{
+    return [_array countByEnumeratingWithState:aState objects:objects count:aCount];
+}
+
 @end
 
 /* @ignore */
@@ -1202,6 +1207,23 @@
 - (void)sortUsingSelector:(SEL)aSelector
 {
     sort(function(lhs, rhs) { return objj_msgSend(lhs, aSelector, rhs); });
+}
+
+@end
+
+@implementation CPArray (CPFastEnumeration)
+
+- (int)countByEnumeratingWithState:(id)aState objects:(id)objects count:(id)aCount
+{
+    var count = [self count];
+
+    if (aState.state >= count)
+        return 0;
+
+    aState.items = self;
+    aState.state = count;
+
+    return count;
 }
 
 @end
