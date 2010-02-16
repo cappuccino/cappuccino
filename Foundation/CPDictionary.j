@@ -532,7 +532,7 @@
 
 @end
 
-@implementation CPDictionary (FastEnumeration)
+@implementation CPDictionary (CPFastEnumeration)
 
 - (int)countByEnumeratingWithState:(id)aState objects:(id)objects count:(id)aCount
 {

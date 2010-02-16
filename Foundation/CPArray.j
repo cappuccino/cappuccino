@@ -1206,7 +1206,7 @@
 
 @end
 
-@implementation CPArray (FastEnumeration)
+@implementation CPArray (CPFastEnumeration)
 
 - (int)countByEnumeratingWithState:(id)aState objects:(id)objects count:(id)aCount
 {
