@@ -81,7 +81,7 @@ exports.run = function(args)
             OBJJ_INCLUDE_PATHS.unshift.apply(OBJJ_INCLUDE_PATHS, argv.shift().substr(2).split(':'));
     }
 
-    if (argv && argv.length > 1)
+    if (argv && argv.length > 0)
     {
         var arg0 = argv.shift();
         var mainFilePath = FILE.canonical(arg0);
