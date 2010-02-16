@@ -209,7 +209,7 @@ var _CPTableColumnHeaderViewStringValueKey = @"_CPTableColumnHeaderViewStringVal
 
     var rect = [self headerRectOfColumn:column];
 
-    rect.origin.x = CGRectGetMaxX(rect) - 10;
+    rect.origin.x = CGRectGetMaxX(rect) - 5;
     rect.size.width = 20;
 
     return rect;    
@@ -240,7 +240,7 @@ var _CPTableColumnHeaderViewStringValueKey = @"_CPTableColumnHeaderViewStringVal
     // should we send column -1 ?
     [_tableView _sendDelegateDidMouseDownInHeader:clickedColumn];
     
-    var resizeLocation = CGPointMake(mouseLocation.x - 10, mouseLocation.y),
+    var resizeLocation = CGPointMake(mouseLocation.x - 5, mouseLocation.y),
         resizedColumn = [self columnAtPoint:resizeLocation];
     
     if (resizedColumn == -1)
@@ -329,7 +329,7 @@ var _CPTableColumnHeaderViewStringValueKey = @"_CPTableColumnHeaderViewStringVal
             // FIXME: there has to be a better way to do this...
             // We should refactor the auto resizing crap.
             // We need to figure out the exact cocoa behavior here though. 
-            //[_tableView resizeWithOldSuperviewSize:[_tableView bounds]];
+            [_tableView resizeWithOldSuperviewSize:[_tableView bounds]];
             _lastLocation = location;
 
             [[CPCursor resizeLeftRightCursor] set];
@@ -344,7 +344,7 @@ var _CPTableColumnHeaderViewStringValueKey = @"_CPTableColumnHeaderViewStringVal
 - (void)_updateResizeCursor:(CPEvent)theEvent
 {
     var mouseLocation = [self convertPoint:[theEvent locationInWindow] fromView:nil],    
-        mouseOverLocation = CGPointMake(mouseLocation.x - 10, mouseLocation.y),
+        mouseOverLocation = CGPointMake(mouseLocation.x - 5, mouseLocation.y),
         overColumn = [self columnAtPoint:mouseOverLocation];
     
     if (overColumn >= 0 && CGRectContainsPoint([self _cursorRectForColumn:overColumn], mouseLocation))
