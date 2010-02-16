@@ -543,9 +543,9 @@
 
     var keys = [self allKeys],
         index = count,
-        objects = [];
+        objects = new Array(count);
 
-    while (count--)
+    while (index--)
         objects[index] = [self objectForKey:keys[index]];
 
     aState.items0 = objects;
