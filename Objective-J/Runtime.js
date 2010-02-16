@@ -534,6 +534,65 @@ function sel_registerName(aName)
     return aName;
 }
 
+var fastEnumerationSelector = sel_getUid("countByEnumeratingWithState:objects:count:");
+
+function objj_fastEnumerator(/*Object*/ anObject, /*Integer*/ anAssigneeCount)
+{
+    // If this object doesn't respond to countByEnumeratingWithState:objects:count:
+    // (which is obviously the case for non-Objective-J objects), then just iterate
+    // this one object.
+    if (anObject && (!anObject.isa || !class_getInstanceMethod(anObject.isa, fastEnumerationSelector)))
+        this._target = [anObject];
+
+    // Else, use it's implementation.
+    else
+        this._target = anObject;
+
+    this._state = { state:0, assigneeCount:anAssigneeCount };
+
+    // Nothing to iterate in this case.
+    if (!anObject)
+    {
+        this.i = 0;
+        this.l = 0;
+    }
+    else
+        this.e();
+}
+
+objj_fastEnumerator.prototype.e = function()
+{
+    // Nothing to iterate, don't iterate
+    if (!this._target)
+        return NO;
+
+    var state = this._state,
+        index = state.assigneeCount;
+
+    this.items = nil;
+    this.itemsPtr = nil;
+
+    while (index--)
+        state["items" + index] = nil;
+
+    // This is safer, but possibly slower.
+    this.o0 = [];
+    this.i = 0;
+    this.l = objj_msgSend(this._target, fastEnumerationSelector, state, this.o0, 10);
+
+    this.o0 = state.items || state.itemsPtr || state.items0 || this.o0;
+
+    index = state.assigneeCount;
+
+    while (index--)
+        this["o" + index] = state["items" + index] || [];
+
+    if (this.l === undefined)
+        this.l = this.o0.length;
+
+    return this.l > 0;
+}
+
 // Exports and Globals
 
 exports.objj_ivar = objj_ivar;
@@ -585,6 +644,8 @@ exports.sel_getName = sel_getName;
 exports.sel_getUid = sel_getUid;
 exports.sel_isEqual = sel_isEqual;
 exports.sel_registerName = sel_registerName;
+
+exports.objj_fastEnumerator = objj_fastEnumerator;
 
 exports.objj_generateObjectUID = generateObjectUID;
 exports._objj_generateObjectHash = generateObjectUID;

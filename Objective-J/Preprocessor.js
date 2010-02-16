@@ -29,10 +29,13 @@ var TOKEN_ACCESSORS         = "accessors",
     TOKEN_FUNCTION          = "function",
     TOKEN_IMPLEMENTATION    = "implementation",
     TOKEN_IMPORT            = "import",
+    TOKEN_EACH              = "each",
     TOKEN_NEW               = "new",
     TOKEN_SELECTOR          = "selector",
     TOKEN_SUPER             = "super",
-                            
+    TOKEN_VAR               = "var",
+    TOKEN_IN                = "in",
+
     TOKEN_EQUAL             = '=',
     TOKEN_PLUS              = '+',
     TOKEN_MINUS             = '-',
@@ -52,7 +55,7 @@ var TOKEN_ACCESSORS         = "accessors",
     TOKEN_QUESTION_MARK     = '?',
     TOKEN_OPEN_PARENTHESIS  = '(',
     TOKEN_CLOSE_PARENTHESIS = ')',
-    
+
     TOKEN_WHITESPACE        = /^(?:(?:\s+$)|(?:\/(?:\/|\*)))/,
     TOKEN_NUMBER            = /^[+-]?\d+(([.]\d+)*([eE][+-]?\d+))?$/,
     TOKEN_IDENTIFIER        = /^[a-zA-Z_$](\w|$)*$/;
@@ -290,7 +293,7 @@ Preprocessor.prototype.directive = function(tokens, aStringBuffer, allowedDirect
     
     // Currently we simply swallow forward declarations and only provide them to allow 
     // compatibility with Objective-C files.
-    else if (token == TOKEN_CLASS)
+    else if (token === TOKEN_CLASS)
     {
         tokens.skip_whitespace();
         
@@ -298,22 +301,117 @@ Preprocessor.prototype.directive = function(tokens, aStringBuffer, allowedDirect
     }
     
     // @implementation Class implementations
-    else if (token == TOKEN_IMPLEMENTATION)
+    else if (token === TOKEN_IMPLEMENTATION)
         this.implementation(tokens, buffer);
 
     // @import
-    else if (token == TOKEN_IMPORT)
+    else if (token === TOKEN_IMPORT)
         this._import(tokens);
 
+    else if (token === TOKEN_EACH)
+        this.each(tokens, buffer);
+
     // @selector
-    else if (token == TOKEN_SELECTOR)
+    else if (token === TOKEN_SELECTOR)
         this.selector(tokens, buffer);
     
-    else if (token == TOKEN_ACCESSORS)
+    else if (token === TOKEN_ACCESSORS)
         return this.accessors(tokens);
     
     if (!aStringBuffer)
         return buffer;
+}
+
+var fastEnumeratorCount = 0;
+
+Preprocessor.prototype.each = function(tokens, /*StringBuffer*/ aStringBuffer)
+{
+    var token = tokens.skip_whitespace();
+
+    // If we reach an open parenthesis, we are declaring a category.
+    if (token !== TOKEN_OPEN_PARENTHESIS)
+       throw new SyntaxError(this.error_message("*** Expecting (, found: \"" + token + "\"."));
+
+    var identifiers = [],
+        isVared = NO;
+
+    do
+    {
+        token = tokens.skip_whitespace();
+
+        if (identifiers.length === 0 && token === TOKEN_VAR)
+        {
+            isVared = YES;
+
+            token = tokens.skip_whitespace();
+        }
+
+        if (!TOKEN_IDENTIFIER.test(token))
+            throw new SyntaxError(this.error_message("*** Expecting identifier, found: \"" + token + "\"."));
+
+        identifiers.push(token);
+
+        token = tokens.skip_whitespace();
+
+        if (token !== TOKEN_COMMA && token !== TOKEN_IN)
+            throw new SyntaxError(this.error_message("*** Expecting \",\", found: \"" + token + "\"."));
+
+    } while (token && token === TOKEN_COMMA);
+
+    if (token !== TOKEN_IN)
+        throw new SyntaxError(this.error_message("*** Expecting \"in\", found: \"" + token + "\"."));
+
+    var generatedFastEnumeratorName = "$OBJJ_GENERATED_FAST_ENUMERATOR_" + fastEnumeratorCount++;
+
+    CONCAT(aStringBuffer, "var ");
+    CONCAT(aStringBuffer, generatedFastEnumeratorName);
+    CONCAT(aStringBuffer, " = new objj_fastEnumerator(");
+
+    this.preprocess(tokens, aStringBuffer, TOKEN_CLOSE_PARENTHESIS, TOKEN_OPEN_PARENTHESIS);
+
+    CONCAT(aStringBuffer, ", ");
+    CONCAT(aStringBuffer, identifiers.length);
+    CONCAT(aStringBuffer, ");\n");
+
+    // for ([var] arg1[, arg2[, ... argN]], $E = new objj_fastEnumerator(expression);
+    // $E.i < $E.l || $E.e() && ((arg1 = $E.o0[$E.i][, $E.o1[$E.i][, ... $E.oN[$E.i]]]) || YES);
+    // ++$E.i)
+
+    CONCAT(aStringBuffer, "for (");
+
+    if (isVared)
+    {
+        CONCAT(aStringBuffer, "var ");
+        CONCAT(aStringBuffer, identifiers.join(", "));
+    }
+
+    CONCAT(aStringBuffer, ";(");
+    CONCAT(aStringBuffer, generatedFastEnumeratorName);
+    CONCAT(aStringBuffer, ".i < ");
+    CONCAT(aStringBuffer, generatedFastEnumeratorName);
+    CONCAT(aStringBuffer, ".l || ");
+    CONCAT(aStringBuffer, generatedFastEnumeratorName);
+    CONCAT(aStringBuffer, ".e()) && ((");
+
+    // Man don't you wish we had fast enumeration here!!
+    for (var index = 0, count = identifiers.length; index < count; ++index)
+    {
+        CONCAT(aStringBuffer, identifiers[index]);
+        CONCAT(aStringBuffer, " = ");
+        CONCAT(aStringBuffer, generatedFastEnumeratorName);
+        CONCAT(aStringBuffer, ".o");
+        CONCAT(aStringBuffer, index);
+        CONCAT(aStringBuffer, "[");
+        CONCAT(aStringBuffer, generatedFastEnumeratorName);
+        CONCAT(aStringBuffer, ".i]");
+
+        if (index + 1 < count)
+            CONCAT(aStringBuffer, ", ");
+    }
+
+    CONCAT(aStringBuffer, ") || YES); ++");
+    CONCAT(aStringBuffer, generatedFastEnumeratorName);
+    CONCAT(aStringBuffer, ".i)");
 }
 
 Preprocessor.prototype.implementation = function(tokens, /*StringBuffer*/ aStringBuffer)
@@ -651,7 +749,7 @@ Preprocessor.prototype.preprocess = function(tokens, /*StringBuffer*/ aStringBuf
             closures = [0, 0, 0];
     }
     
-    while ((token = tokens.next()) && ((token != terminator) || count))
+    while ((token = tokens.next()) && ((token !== terminator) || count))
     {
         if (tuple)
         {
@@ -762,12 +860,12 @@ Preprocessor.prototype.preprocess = function(tokens, /*StringBuffer*/ aStringBuf
         }
             
         if (instigator)
-        { 
-            if (token == instigator)
+        {
+            if (token === instigator)
                 ++count;
-            
-            else if (token == terminator) 
-                --count;    
+
+            else if (token === terminator)
+                --count;
         }
 
         // Safari can't handle function declarations of the form function [name]([arguments]) { } 
@@ -778,13 +876,16 @@ Preprocessor.prototype.preprocess = function(tokens, /*StringBuffer*/ aStringBuf
             var accumulator = "";
         
             // Following the function identifier we can either have an open parenthesis or an identifier:
-            while((token = tokens.next()) && token != TOKEN_OPEN_PARENTHESIS && !(/^\w/).test(token))
+            while((token = tokens.next()) && token !== TOKEN_OPEN_PARENTHESIS && !(/^\w/).test(token))
                 accumulator += token;
-            
+
             // If the next token is an open parenthesis, we have a standard function and we don't have to 
             // change it:
             if (token === TOKEN_OPEN_PARENTHESIS)
             {
+                if (instigator === TOKEN_OPEN_PARENTHESIS)
+                    ++count;
+
                 CONCAT(buffer, "function" + accumulator + '(');
                 
                 if (tuple)

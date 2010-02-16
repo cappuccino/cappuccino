@@ -1206,6 +1206,34 @@
 
 @end
 
+@implementation CPArray (FastEnumeration)
+
+- (int)countByEnumeratingWithState:(id)aState objects:(id)objects count:(id)aCount
+{
+    var count = [self count];
+
+    if (aState.state >= count)
+        return 0;
+
+    aState.items0 = self;
+    aState.state = count;
+
+    if (aState.assigneeCount > 1)
+    {
+        var index = 0,
+            indexes = [];
+
+        for (; index < count; ++index)
+            indexes[index] = index;
+
+        aState.items1 = indexes;
+    }
+
+    return count;
+}
+
+@end
+
 @implementation CPArray (CPCoding)
 
 - (id)initWithCoder:(CPCoder)aCoder
