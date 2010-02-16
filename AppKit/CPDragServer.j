@@ -189,6 +189,11 @@ var CPDraggingSource_draggedImage_movedTo_          = 1 << 0,
     return self;
 }
 
+- (id)draggingDestination
+{
+    return _draggingDestination;
+}
+
 - (CGPoint)draggingLocation
 {
     return _draggingLocation
