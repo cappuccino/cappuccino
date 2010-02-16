@@ -404,14 +404,11 @@ var CPTableColumnIdentifierKey   = @"CPTableColumnIdentifierKey",
         _maxWidth = [aCoder decodeFloatForKey:CPTableColumnMaxWidthKey];
 
         [self setIdentifier:[aCoder decodeObjectForKey:CPTableColumnIdentifierKey]];
-    //    [self setHeaderView:[aCoder decodeObjectForKey:CPTableColumnHeaderViewKey]];
-    //    [self setDataView:[aCoder decodeObjectForKey:CPTableColumnDataViewKey]];
+        [self setHeaderView:[aCoder decodeObjectForKey:CPTableColumnHeaderViewKey]];
+        [self setDataView:[aCoder decodeObjectForKey:CPTableColumnDataViewKey]];
+        [self setHeaderView:[aCoder decodeObjectForKey:CPTableColumnHeaderViewKey]];
 
-        [self setHeaderView:[CPTextField new]];
-        [self setDataView:[CPTextField new]];
-
-
-    //    _resizingMask  = [aCoder decodeBoolForKey:CPTableColumnResizingMaskKey];
+        _resizingMask  = [aCoder decodeBoolForKey:CPTableColumnResizingMaskKey];
     }
 
     return self;
@@ -425,10 +422,10 @@ var CPTableColumnIdentifierKey   = @"CPTableColumnIdentifierKey",
     [aCoder encodeObject:_minWidth forKey:CPTableColumnMinWidthKey];
     [aCoder encodeObject:_maxWidth forKey:CPTableColumnMaxWidthKey];
 
-//    [aCoder encodeObject:_headerView forKey:CPTableColumnHeaderViewKey];
-//    [aCoder encodeObject:_dataView forKey:CPTableColumnDataViewKey];
+    [aCoder encodeObject:_headerView forKey:CPTableColumnHeaderViewKey];
+    [aCoder encodeObject:_dataView forKey:CPTableColumnDataViewKey];
 
-//    [aCoder encodeObject:_resizingMask forKey:CPTableColumnResizingMaskKey];
+    [aCoder encodeObject:_resizingMask forKey:CPTableColumnResizingMaskKey];
 }
 
 @end

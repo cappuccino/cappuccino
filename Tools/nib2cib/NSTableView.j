@@ -36,10 +36,8 @@
         //_dataSource = [aCoder decodeObjectForKey:CPTableViewDataSourceKey];
         //_delegate = [aCoder decodeObjectForKey:CPTableViewDelegateKey];
         
-        //_headerView = [aCoder decodeObjectForKey:@"NSHeaderView"];
-        //[_headerView setTableView:self];
-        
-        //_cornerView = [aCoder decodeObjectForKey:@"NSCornerView"];
+        _headerView = [aCoder decodeObjectForKey:@"NSHeaderView"];        
+        _cornerView = [aCoder decodeObjectForKey:@"NSCornerView"];
     
         _tableColumns = [aCoder decodeObjectForKey:@"NSTableColumns"];
         [_tableColumns makeObjectsPerformSelector:@selector(setTableView:) withObject:self];

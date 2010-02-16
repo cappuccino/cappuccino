@@ -36,20 +36,25 @@ var CPThemeStatePressed = CPThemeState("pressed");
     self = [super initWithFrame:frame];
     if (self)
     {   
-        _textField = [[_CPImageAndTextView alloc] initWithFrame:CGRectMake(5, 1, CGRectGetWidth([self bounds]) - 10, CGRectGetHeight([self bounds]) - 1)];
-        [_textField setAutoresizingMask:CPViewWidthSizable|CPViewHeightSizable];
-        
-        [_textField setTextColor: [CPColor colorWithHexString: @"333333"]];
-        [_textField setFont:[CPFont boldSystemFontOfSize:12.0]];
-        [_textField setAlignment:CPLeftTextAlignment];
-        [_textField setVerticalAlignment:CPCenterVerticalTextAlignment];
-        [_textField setTextShadowColor:[CPColor whiteColor]];
-        [_textField setTextShadowOffset:CGSizeMake(0,1)];
-
-        [self addSubview:_textField];
+        [self _init];
     }
     
     return self;
+}
+
+- (void)_init
+{
+    _textField = [[_CPImageAndTextView alloc] initWithFrame:CGRectMake(5, 1, CGRectGetWidth([self bounds]) - 10, CGRectGetHeight([self bounds]) - 1)];
+    [_textField setAutoresizingMask:CPViewWidthSizable|CPViewHeightSizable];
+    
+    [_textField setTextColor: [CPColor colorWithHexString: @"333333"]];
+    [_textField setFont:[CPFont boldSystemFontOfSize:12.0]];
+    [_textField setAlignment:CPLeftTextAlignment];
+    [_textField setVerticalAlignment:CPCenterVerticalTextAlignment];
+    [_textField setTextShadowColor:[CPColor whiteColor]];
+    [_textField setTextShadowOffset:CGSizeMake(0,1)];
+
+    [self addSubview:_textField];
 }
 
 - (void)layoutSubviews
@@ -86,6 +91,11 @@ var CPThemeStatePressed = CPThemeState("pressed");
     [_textField sizeToFit];
 }
 
+- (void)setFont:(CPFont)aFont
+{
+    [_textField setFont:aFont];
+}
+
 - (void)setValue:(id)aValue forThemeAttribute:(id)aKey
 {
     [_textField setValue:aValue forThemeAttribute:aKey];
@@ -102,6 +112,36 @@ var CPThemeStatePressed = CPThemeState("pressed");
 	{
 		[_textField setImagePosition:CPNoImage];
 	}
+}
+
+@end
+
+var _CPTableColumnHeaderViewStringValueKey = @"_CPTableColumnHeaderViewStringValueKey",
+    _CPTableColumnHeaderViewFontKey = @"_CPTableColumnHeaderViewFontKey",
+    _CPTableColumnHeaderViewImageKey = @"_CPTableColumnHeaderViewImageKey";
+
+@implementation _CPTableColumnHeaderView (CPCoding)
+
+- (id)initWithCoder:(CPCoder)aCoder
+{
+    if (self = [super initWithCoder:aCoder])
+    {
+        [self _init];
+        [self _setIndicatorImage:[aCoder decodeObjectForKey:_CPTableColumnHeaderViewImageKey]];
+        [self setStringValue:[aCoder decodeObjectForKey:_CPTableColumnHeaderViewStringValueKey]];
+        [self setFont:[aCoder decodeObjectForKey:_CPTableColumnHeaderViewFontKey]];
+    }
+
+    return self;
+}
+
+- (void)encodeWithCoder:(CPCoder)aCoder
+{
+    [super encodeWithCoder:aCoder];
+    
+    [aCoder encodeObject:[_textField text] forKey:_CPTableColumnHeaderViewStringValueKey];
+    [aCoder encodeObject:[_textField image] forKey:_CPTableColumnHeaderViewImageKey];
+    [aCoder encodeObject:[_textField font] forKey:_CPTableColumnHeaderViewFontKey];
 }
 
 @end
@@ -424,3 +464,32 @@ var CPThemeStatePressed = CPThemeState("pressed");
 }
 
 @end
+
+var CPTableHeaderViewTableViewKey = @"CPTableHeaderViewTableViewKey";
+
+@implementation CPTableHeaderView (CPCoding)
+
+- (id)initWithCoder:(CPCoder)aCoder
+{
+    if (self = [super initWithCoder:aCoder])
+    {
+        _resizedColumn = -1;
+        _draggedColumn = -1;
+        _pressedColumn = -1;
+        _draggedDistance = 0.0;
+        _lastLocation = nil;
+        _columnOldWidth = nil;
+        _tableView = [aCoder decodeObjectForKey:CPTableHeaderViewTableViewKey];
+    }
+
+    return self;
+}
+
+- (void)encodeWithCoder:(CPCoder)aCoder
+{
+    [super encodeWithCoder:aCoder];
+    [aCoder encodeObject:_tableView forKey:CPTableHeaderViewTableViewKey];
+}
+
+@end
+

@@ -20,6 +20,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+@import "_NSCornerView.j"
 @import "NSButton.j"
 @import "NSCell.j"
 @import "NSClassSwapper.j"
@@ -51,6 +52,7 @@
 @import "NSSlider.j"
 @import "NSSplitView.j"
 @import "NSTableColumn.j"
+@import "NSTableHeaderView.j"
 @import "NSTableView.j"
 @import "NSTabView.j"
 @import "NSTabViewItem.j"

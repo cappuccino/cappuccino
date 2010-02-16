@@ -732,7 +732,8 @@ var CPScrollViewContentViewKey       = "CPScrollViewContentView",
     CPScrollViewHasHScrollerKey      = "CPScrollViewHasHScroller",
     CPScrollViewVScrollerKey         = "CPScrollViewVScroller",
     CPScrollViewHScrollerKey         = "CPScrollViewHScroller",
-    CPScrollViewAutohidesScrollerKey = "CPScrollViewAutohidesScroller";
+    CPScrollViewAutohidesScrollerKey = "CPScrollViewAutohidesScroller",
+    CPScrollViewCornerViewKey        = "CPScrollViewCornerViewKey";
 
 @implementation CPScrollView (CPCoding)
 
@@ -755,7 +756,9 @@ var CPScrollViewContentViewKey       = "CPScrollViewContentView",
         _hasVerticalScroller    = [aCoder decodeBoolForKey:CPScrollViewHasVScrollerKey];
         _hasHorizontalScroller  = [aCoder decodeBoolForKey:CPScrollViewHasHScrollerKey];
         _autohidesScrollers     = [aCoder decodeBoolForKey:CPScrollViewAutohidesScrollerKey];
-        
+
+        _cornerView             = [aCoder decodeObjectForKey:CPScrollViewCornerViewKey];
+
         // Do to the anything goes nature of decoding, our subviews may not exist yet, so layout at the end of the run loop when we're sure everything is in a correct state.
         [[CPRunLoop currentRunLoop] performSelector:@selector(reflectScrolledClipView:) target:self argument:_contentView order:0 modes:[CPDefaultRunLoopMode]];
     }
@@ -781,6 +784,8 @@ var CPScrollViewContentViewKey       = "CPScrollViewContentView",
     [aCoder encodeBool:_hasVerticalScroller     forKey:CPScrollViewHasVScrollerKey];
     [aCoder encodeBool:_hasHorizontalScroller   forKey:CPScrollViewHasHScrollerKey];
     [aCoder encodeBool:_autohidesScrollers      forKey:CPScrollViewAutohidesScrollerKey];
+
+    [aCoder encodeObject:_cornerView            forKey:CPScrollViewCornerViewKey];
 }
 
 @end

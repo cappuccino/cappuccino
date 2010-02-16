@@ -3088,7 +3088,9 @@ var CPTableViewDataSourceKey                = @"CPTableViewDataSourceKey",
     CPTableViewColumnSelectionKey           = @"CPTableViewColumnSelectionKey",
     CPTableViewGridColorKey                 = @"CPTableViewGridColorKey",
     CPTableViewGridStyleMaskKey             = @"CPTableViewGridStyleMaskKey",
-    CPTableViewUsesAlternatingBackgroundKey = @"CPTableViewUsesAlternatingBackgroundKey";
+    CPTableViewUsesAlternatingBackgroundKey = @"CPTableViewUsesAlternatingBackgroundKey",
+    CPTableViewHeaderViewKey                = @"CPTableViewHeaderViewKey",
+    CPTableViewCornerViewKey                = @"CPTableViewCornerViewKey";
 
 @implementation CPTableView (CPCoding)
 
@@ -3139,11 +3141,8 @@ var CPTableViewDataSourceKey                = @"CPTableViewDataSourceKey",
         _gridColor = [aCoder decodeObjectForKey:CPTableViewGridColorKey] || [CPColor grayColor];
         _gridStyleMask = [aCoder decodeIntForKey:CPTableViewGridStyleMaskKey] || CPTableViewGridNone;
         
-        _headerView = [[CPTableHeaderView alloc] initWithFrame:CGRectMake(0, 0, [self bounds].size.width, _rowHeight)];
-
-        [_headerView setTableView:self];
-
-        _cornerView = [[_CPCornerView alloc] initWithFrame:CGRectMake(0, 0, [CPScroller scrollerWidth], CGRectGetHeight([_headerView frame]))];
+        _headerView = [aCoder decodeObjectForKey:CPTableViewHeaderViewKey];
+        _cornerView = [aCoder decodeObjectForKey:CPTableViewCornerViewKey];
 
         _selectedColumnIndexes = [CPIndexSet indexSet];
         _selectedRowIndexes = [CPIndexSet indexSet];
@@ -3170,7 +3169,6 @@ var CPTableViewDataSourceKey                = @"CPTableViewDataSourceKey",
 
     [aCoder encodeFloat:_rowHeight forKey:CPTableViewRowHeightKey];
     [aCoder encodeSize:_intercellSpacing forKey:CPTableViewIntercellSpacingKey];
-    [aCoder encodeInt:_gridStyleMask forKey:CPGridStyleMask];
     
     [aCoder encodeBool:_allowsMultipleSelection forKey:CPTableViewMultipleSelectionKey];
     [aCoder encodeBool:_allowsEmptySelection forKey:CPTableViewEmptySelectionKey];
@@ -3184,6 +3182,9 @@ var CPTableViewDataSourceKey                = @"CPTableViewDataSourceKey",
     [aCoder encodeInt:_gridStyleMask forKey:CPTableViewGridStyleMaskKey];
     
     [aCoder encodeBool:_usesAlternatingRowBackgroundColors forKey:CPTableViewUsesAlternatingBackgroundKey];
+
+    [aCoder encodeObject:_cornerView forKey:CPTableViewCornerViewKey];
+    [aCoder encodeObject:_headerView forKey:CPTableViewHeaderViewKey];
 }
 
 @end
