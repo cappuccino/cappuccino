@@ -104,35 +104,25 @@ function environmentFlags()
     }]).join(", ") + "]\"";
 }
 
+var SHRINKSAFE = require("minify/shrinksafe");
+function compressor(code) {
+    return SHRINKSAFE.compress(code, { charset : "UTF-16", useServer : true });
+}
+
 function gcc(inputFilePath, outputFilePath, flags, compress)
 {
     stream.print("Building... \0green(" + outputFilePath +"\0)");
 
     // GCC preprocess the file.
-    var gcc = OS.popen("gcc -E -x c -P " + flags + " " + inputFilePath, { charset:"UTF-8" }),
-        gccFilePath = FILE.join("", "tmp", "objj-gcc.js"),
-        chunk = null,
-        fileContents = FILE.read("header.txt", { charset : "UTF-8" });
+    var gcc = OS.popen("gcc -E -x c -P " + flags + " " + inputFilePath, { charset:"UTF-8" });
 
-    while (chunk = gcc.stdout.read())
-        fileContents += chunk;
-
-    FILE.write(gccFilePath, fileContents, { charset:"UTF-8" });
+    var contents = FILE.read("header.txt", { charset : "UTF-8" });
+    contents += gcc.stdout.read();
 
     if (FILE.extension(inputFilePath) === ".js" && compress)
-    {
-        var compressor = OS.popen("java -server -Dfile.encoding=UTF-8 -classpath CommonJS/shrinksafe/js.jar:CommonJS/shrinksafe/shrinksafe.jar org.dojotoolkit.shrinksafe.Main", { charset:"UTF-8" });
-    
-        compressor.stdin.write(FILE.absolute(gccFilePath) + "\n");
-        compressor.stdin.flush();
-    
-        fileContents = "";
-    
-        while ((chunk = compressor.stdout.readLine()) !== "/*----*/\n")
-            fileContents += chunk;
-    }
-    
-    FILE.write(outputFilePath, fileContents, { charset : "UTF-8" });
+        contents = compressor(contents);
+
+    FILE.write(outputFilePath, contents, { charset : "UTF-8" });
 }
 
 task("build", [$BUILD_BROWSER_FILE, $BUILD_LICENSE, $BUILD_CJS_OBJECTIVE_J_FRAMEWORK]);

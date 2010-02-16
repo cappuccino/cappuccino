@@ -181,7 +181,7 @@ if ! tusk update; then
     exit 1
 fi
 
-tusk $tusk_install_command browserjs jake $extra_packages
+tusk $tusk_install_command browserjs jake shrinksafe $extra_packages
 
 if [ `uname` = "Darwin" ]; then
     echo "================================================================================"
