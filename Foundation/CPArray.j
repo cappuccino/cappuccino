@@ -1215,19 +1215,8 @@
     if (aState.state >= count)
         return 0;
 
-    aState.items0 = self;
+    aState.items = self;
     aState.state = count;
-
-    if (aState.assigneeCount > 1)
-    {
-        var index = 0,
-            indexes = [];
-
-        for (; index < count; ++index)
-            indexes[index] = index;
-
-        aState.items1 = indexes;
-    }
 
     return count;
 }

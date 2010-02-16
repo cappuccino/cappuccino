@@ -549,6 +549,7 @@ function objj_fastEnumerator(/*Object*/ anObject, /*Integer*/ anAssigneeCount)
         this._target = anObject;
 
     this._state = { state:0, assigneeCount:anAssigneeCount };
+    this._index = 0;
 
     // Nothing to iterate in this case.
     if (!anObject)
@@ -569,26 +570,51 @@ objj_fastEnumerator.prototype.e = function()
     var state = this._state,
         index = state.assigneeCount;
 
-    this.items = nil;
-    this.itemsPtr = nil;
+    // Clear out all the old state.
+    state.items = nil;
+    state.itemsPtr = nil;
 
     while (index--)
         state["items" + index] = nil;
 
-    // This is safer, but possibly slower.
     this.o0 = [];
     this.i = 0;
     this.l = objj_msgSend(this._target, fastEnumerationSelector, state, this.o0, 10);
 
+    // We're flexible on this.
     this.o0 = state.items || state.itemsPtr || state.items0 || this.o0;
 
-    index = state.assigneeCount;
-
-    while (index--)
-        this["o" + index] = state["items" + index] || [];
-
+    // We allow the user to not explictly return anything in countByEnumeratingWithState:objects:count:
     if (this.l === undefined)
         this.l = this.o0.length;
+
+    var assigneeCount = state.assigneeCount;
+
+    index = assigneeCount - 1;
+
+    // Handle all items from [1 .. assigneeCount - 1]
+    while (index-- > 1)
+        this["o" + index] = state["items" + index] || [];
+
+    var lastAssigneeIndex = assigneeCount - 1;
+
+    // Autogenerate the indexes if this was left blank.
+    if (lastAssigneeIndex > 0)
+
+        if (state["items" + lastAssigneeIndex])
+            this["o" + lastAssigneeIndex] = state["items" + lastAssigneeIndex];
+
+        else
+        {
+            var count = this.l,
+                indexIndex = 0,
+                indexes = new Array(count)
+
+            for (; indexIndex < count; ++indexIndex, ++this._index)
+                indexes[indexIndex] = this._index;
+
+            this["o" + lastAssigneeIndex] = indexes;
+        }
 
     return this.l > 0;
 }

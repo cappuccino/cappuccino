@@ -834,6 +834,30 @@ var CPIndexSetCountKey              = @"CPIndexSetCountKey",
 
 @end
 
+@implementation CPIndexSet (CPFastEnumeration)
+
+- (int)countByEnumeratingWithState:(id)aState objects:(id)objects count:(id)aCount
+{
+    var rangeIndex = aState.state;
+
+    if (aState.state >= _ranges.length)
+        return 0;
+
+    var range = _ranges[rangeIndex],
+        index = 0,
+        start = range.location,
+        end = CPMaxRange(range);
+
+    for (; start < end; ++start, ++index)
+        objects[index] = start;
+
+    ++aState.state;
+
+    return range.length;
+}
+
+@end
+
 /*!
     @class CPMutableIndexSet
     @ingroup compatability
