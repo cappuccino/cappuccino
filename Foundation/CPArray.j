@@ -1221,12 +1221,13 @@
     if (index >= count)
         return 0;
 
-    var last = MAX(index + aCount, count);
+    var indexIndex = 0,
+        last = MIN(index + aCount, count);
 
     aCount = last - index;
 
-    for (; index < last; ++index)
-        objects[index] = [self objectAtIndex:index];
+    for (; index < last; ++index, ++indexIndex)
+        objects[indexIndex] = [self objectAtIndex:index];
 
     aState.state = last;
 

@@ -846,11 +846,13 @@ var CPIndexSetCountKey              = @"CPIndexSetCountKey",
     var range = _ranges[rangeIndex],
         index = 0,
         start = range.location,
-        end = CPMaxRange(range);
+        end = start + range.length,
+        indexes = new Array(range.length);
 
-    for (; start < end; ++start, ++index)
-        objects[index] = start;
+    while (start < end)
+        indexes[index++] = start++;
 
+    aState.items = indexes;
     ++aState.state;
 
     return range.length;
