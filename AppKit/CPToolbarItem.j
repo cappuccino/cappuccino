@@ -26,26 +26,9 @@
 @import <AppKit/CPImage.j>
 @import <AppKit/CPView.j>
 
-
-/*
-    @global
-    @class CPToolbarItem
-*/
 CPToolbarItemVisibilityPriorityStandard = 0;
-/*
-    @global
-    @class CPToolbarItem
-*/
 CPToolbarItemVisibilityPriorityLow      = -1000;
-/*
-    @global
-    @class CPToolbarItem
-*/
 CPToolbarItemVisibilityPriorityHigh     = 1000;
-/*
-    @global
-    @class CPToolbarItem
-*/
 CPToolbarItemVisibilityPriorityUser     = 2000;
 
 CPToolbarSeparatorItemIdentifier        = @"CPToolbarSeparatorItem";
@@ -197,7 +180,7 @@ CPToolbarPrintItemIdentifier            = @"CPToolbarPrintItem";
 - (void)setToolTip:(CPString)aToolTip
 {
     if ([_view respondsToSelector:@selector(setToolTip:)])
-        [view setToolTip:aToolTip];
+        [_view setToolTip:aToolTip];
     
     _toolTip = aToolTip;
 }
