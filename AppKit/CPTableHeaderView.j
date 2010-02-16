@@ -247,7 +247,7 @@ var _CPTableColumnHeaderViewStringValueKey = @"_CPTableColumnHeaderViewStringVal
         return;
 
     // 2 different tracking methods: one for resizing/stop-resizing, another one for selection/reordering
-    if ([_tableView allowsColumnResizing] 
+    if ([_tableView allowsColumnResizing] && [_tableView columnAutoresizingStyle] & CPTableViewUniformColumnAutoresizingStyle
         && CGRectContainsPoint([self _cursorRectForColumn:resizedColumn], mouseLocation))
     {
         _resizedColumn = resizedColumn;

@@ -1643,10 +1643,8 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
         descriptor = nil,
         outdatedDescriptors = [CPArray array];
 
-    if ([[self sortDescriptors] count] > 0)
-    {
+    if ([_sortDescriptors count] > 0)
         oldMainSortDescriptor = [[self sortDescriptors] objectAtIndex: 0];
-    }
     
     // Remove every main descriptor equivalents (normally only one)
     while ((descriptor = [e nextObject]) != nil)
@@ -1657,9 +1655,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     
     // Invert the sort direction when the same column header is clicked twice
     if ([[newMainSortDescriptor key] isEqual:[oldMainSortDescriptor key]])
-    {
         newMainSortDescriptor = [oldMainSortDescriptor reversedSortDescriptor];
-    }
     
     [newSortDescriptors removeObjectsInArray:outdatedDescriptors];
     [newSortDescriptors insertObject:newMainSortDescriptor atIndex:0];
