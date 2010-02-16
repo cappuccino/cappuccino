@@ -11,37 +11,26 @@ var OBJJ_PREPROCESSOR_PREPROCESS      = exports.OBJJ_PREPROCESSOR_PREPROCESS    
 var OBJJ_PREPROCESSOR_COMPRESS        = exports.OBJJ_PREPROCESSOR_COMPRESS        = 1 << 11;
 var OBJJ_PREPROCESSOR_SYNTAX          = exports.OBJJ_PREPROCESSOR_SYNTAX          = 1 << 12;
 
-var SHRINKSAFE_PATH = FILE.join(ObjectiveJ.OBJJ_HOME, "shrinksafe", "shrinksafe.jar"),
-    RHINO_PATH = FILE.join(ObjectiveJ.OBJJ_HOME, "shrinksafe", "js.jar");
-
-var compressor = null;
-
-function sharedCompressor()
-{
-    if (!compressor)
-        compressor = OS.popen("java -server -Dfile.encoding=UTF-8 -classpath " + RHINO_PATH + ":" +  SHRINKSAFE_PATH + " org.dojotoolkit.shrinksafe.Main", { charset:"UTF-8" });
-
-    return compressor;
-}
-
-function compress(/*String*/ aCode, /*String*/ FIXME)
-{
-    var tmpFile = FILE.join("/tmp", FIXME + Math.random() + ".tmp");
-
-    FILE.write(tmpFile, aCode, { charset:"UTF-8" });
-
-    var compressor = sharedCompressor();
-        output = "",
-        chunk = "";
-
-    compressor.stdin.write(tmpFile + "\n");
-    compressor.stdin.flush();
-
-    while ((chunk = compressor.stdout.readLine()) !== "/*----*/\n")
-        output += chunk;
-
-    return output;
-//    return OS.command(["java", "-Dfile.encoding=UTF-8", "-classpath", [RHINO_PATH, SHRINKSAFE_PATH].join(":"), "org.dojotoolkit.shrinksafe.Main", tmpFile]);
+var compressors = {
+    ss  : { id : "minify/shrinksafe" }
+    //,yui : { id : "minify/yuicompressor" }
+    // ,cc  : { id : "minify/closure-compiler" }
+};
+var compressorStats = {};
+function compressor(code) {
+    var winner, winnerName;
+    compressorStats['original'] = (compressorStats['original'] || 0) + code.length;
+    for (var name in compressors) {
+        var compressor = require(compressors[name].id);
+        var result = compressor.compress(code, { charset : "UTF-8", useServer : true });
+        compressorStats[name] = (compressorStats[name] || 0) + result.length;
+        if (!winner || result < winner.length) {
+            winner = result;
+            winnerName = name;
+        }
+    }
+    // print("winner="+winnerName+" compressorStats="+JSON.stringify(compressorStats));
+    return winner;
 }
 
 function compileWithResolvedFlags(aFilePath, objjcFlags, gccFlags)
@@ -90,7 +79,7 @@ function compileWithResolvedFlags(aFilePath, objjcFlags, gccFlags)
     if (shouldCompress)
     {
         var code = executable.code();
-        code = compress("function(){" + code + "}", FILE.basename(aFilePath));
+        code = compressor("function(){" + code + "}");
         // more robust function wrapper stripping
         code = code.replace(/^\s*function\s*\(\s*\)\s*{|}\s*;?\s*$/g, "");
         executable.setCode(code);
