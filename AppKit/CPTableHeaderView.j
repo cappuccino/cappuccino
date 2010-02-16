@@ -47,6 +47,7 @@ var CPThemeStatePressed = CPThemeState("pressed");
     _textField = [[_CPImageAndTextView alloc] initWithFrame:CGRectMake(5, 1, CGRectGetWidth([self bounds]) - 10, CGRectGetHeight([self bounds]) - 1)];
     [_textField setAutoresizingMask:CPViewWidthSizable|CPViewHeightSizable];
     
+    [_textField setLineBreakMode:CPLineBreakByTruncatingTail];
     [_textField setTextColor: [CPColor colorWithHexString: @"333333"]];
     [_textField setFont:[CPFont boldSystemFontOfSize:12.0]];
     [_textField setAlignment:CPLeftTextAlignment];
