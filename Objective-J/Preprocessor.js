@@ -315,9 +315,6 @@ Preprocessor.prototype.directive = function(tokens, aStringBuffer, allowedDirect
     else if (token === TOKEN_SELECTOR)
         this.selector(tokens, buffer);
     
-    else if (token === TOKEN_ACCESSORS)
-        return this.accessors(tokens);
-    
     if (!aStringBuffer)
         return buffer;
 }
@@ -478,8 +475,8 @@ Preprocessor.prototype.implementation = function(tokens, /*StringBuffer*/ aStrin
             
             while((token = tokens.skip_whitespace()) && token != TOKEN_CLOSE_BRACE)
             {
-                if (token == TOKEN_PREPROCESSOR)
-                    attributes = this.directive(tokens);
+                if (token === TOKEN_PREPROCESSOR && tokens.next() === TOKEN_ACCESSORS)
+                    attributes = this.accessors(tokens);
                 
                 else if (token == TOKEN_SEMICOLON)
                 {
