@@ -166,13 +166,13 @@ if ! prompt; then
     exit 1
 fi
 
-echo "================================================================================"
-echo "Would you like to install the pre-built Objective-J and Cappuccino packages?"
-echo "If you intend to build Cappuccino yourself this is not neccessary."
-extra_packages=""
-if prompt; then
-    extra_packages="objective-j cappuccino"
-fi
+# echo "================================================================================"
+# echo "Would you like to install the pre-built Objective-J and Cappuccino packages?"
+# echo "If you intend to build Cappuccino yourself this is not neccessary."
+# extra_packages=""
+# if prompt; then
+#     extra_packages="objective-j cappuccino"
+# fi
 
 echo "Installing necessary packages..."
 
