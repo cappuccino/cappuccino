@@ -373,7 +373,8 @@ Preprocessor.prototype.each = function(tokens, /*StringBuffer*/ aStringBuffer)
     CONCAT(aStringBuffer, identifiers.length);
     CONCAT(aStringBuffer, ");\n");
 
-    // for ([var] arg1[, arg2[, ... argN]], $E = new objj_fastEnumerator(expression);
+    // var $E = new objj_fastEnumerator(expression);
+    // for ([[var] arg1[, arg2[, ... argN]]];
     // $E.i < $E.l || $E.e() && ((arg1 = $E.o0[$E.i][, $E.o1[$E.i][, ... $E.oN[$E.i]]]) || YES);
     // ++$E.i)
 

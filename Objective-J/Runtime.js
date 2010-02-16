@@ -563,30 +563,46 @@ function objj_fastEnumerator(/*Object*/ anObject, /*Integer*/ anAssigneeCount)
 
 objj_fastEnumerator.prototype.e = function()
 {
+    var object = this._target;
+
     // Nothing to iterate, don't iterate
-    if (!this._target)
+    if (!object)
         return NO;
 
     var state = this._state,
         index = state.assigneeCount;
 
-    // Clear out all the old state.
-    state.items = nil;
-    state.itemsPtr = nil;
-
     while (index--)
         state["items" + index] = nil;
 
-    this.o0 = [];
     this.i = 0;
-    this.l = objj_msgSend(this._target, fastEnumerationSelector, state, this.o0, 10);
 
-    // We're flexible on this.
-    this.o0 = state.items || state.itemsPtr || state.items0 || this.o0;
+    // We optimize the array case.
+    if (CPArray && object.isa === CPArray)
+    {
+        if (this.l)
+            return NO;
 
-    // We allow the user to not explictly return anything in countByEnumeratingWithState:objects:count:
-    if (this.l === undefined)
-        this.l = this.o0.length;
+        this.o0 = object;
+        this.l = object.length;
+    }
+
+    else
+    {
+        // Clear out all the old state.
+        state.items = nil;
+        state.itemsPtr = nil;
+
+        this.o0 = [];
+        this.l = objj_msgSend(object, fastEnumerationSelector, state, this.o0, 16);
+
+        // We're flexible on this.
+        this.o0 = state.items || state.itemsPtr || state.items0 || this.o0;
+
+        // We allow the user to not explictly return anything in countByEnumeratingWithState:objects:count:
+        if (this.l === undefined)
+            this.l = this.o0.length;
+    }
 
     var assigneeCount = state.assigneeCount;
 
@@ -616,6 +632,8 @@ objj_fastEnumerator.prototype.e = function()
             this["o" + lastAssigneeIndex] = indexes;
         }
 
+    // If this is the last iteration, set target to nil so that we don't call the
+    // fast enumeration method again.
     return this.l > 0;
 }
 

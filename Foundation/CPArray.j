@@ -1215,15 +1215,22 @@
 
 - (int)countByEnumeratingWithState:(id)aState objects:(id)objects count:(id)aCount
 {
-    var count = [self count];
+    var count = [self count],
+        index = aState.state;
 
-    if (aState.state >= count)
+    if (index >= count)
         return 0;
 
-    aState.items = self;
-    aState.state = count;
+    var last = MAX(index + aCount, count);
 
-    return count;
+    aCount = last - index;
+
+    for (; index < last; ++index)
+        objects[index] = [self objectAtIndex:index];
+
+    aState.state = last;
+
+    return aCount;
 }
 
 @end
