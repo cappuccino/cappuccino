@@ -282,8 +282,7 @@ function class_getMethodImplementation(/*Class*/ aClass, /*SEL*/ aSelector)
 }
 
 // Adding Classes
-
-var GLOBAL_NAMESPACE    = global,
+var GLOBAL_NAMESPACE    = GLOBAL_NAMESPACE || global,
     REGISTERED_CLASSES  = { };
 
 function objj_allocateClassPair(/*Class*/ superclass, /*String*/ aName)
