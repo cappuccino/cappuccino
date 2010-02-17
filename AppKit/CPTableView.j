@@ -182,6 +182,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     CPIndexSet  _selectedColumnIndexes;
     CPIndexSet  _selectedRowIndexes;
     CPInteger   _selectionAnchorRow;
+    CPInteger   _lastSelectedRow;
     CPIndexSet  _previouslySelectedRowIndexes;
     CGPoint     _startTrackingPoint;
     CPDate      _startTrackingTimestamp;
@@ -259,7 +260,8 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
         [_headerView setTableView:self];
 
         _cornerView = [[_CPCornerView alloc] initWithFrame:CGRectMake(0, 0, [CPScroller scrollerWidth], CGRectGetHeight([_headerView frame]))];
-
+        
+        _lastSelectedRow = -1;
         _selectedColumnIndexes = [CPIndexSet indexSet];
         _selectedRowIndexes = [CPIndexSet indexSet];
         _currentHighlightedTableColumn = nil;
@@ -2912,7 +2914,8 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     if(aRow < 0)
         return;
 
-    var newSelection;
+    var newSelection,
+        shouldExtendSelection = NO;
     // If cmd/ctrl was held down XOR the old selection with the proposed selection
     if ([self mouseDownFlags] & (CPCommandKeyMask | CPControlKeyMask | CPAlternateKeyMask))
     {
@@ -2935,7 +2938,12 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     }
 
     else if (_allowsMultipleSelection)
+    {
         newSelection = [CPIndexSet indexSetWithIndexesInRange:CPMakeRange(MIN(aRow, _selectionAnchorRow), ABS(aRow - _selectionAnchorRow) + 1)];
+        shouldExtendSelection = [self mouseDownFlags] & CPShiftKeyMask && 
+                                ((_lastSelectedRow == [_selectedRowIndexes lastIndex] && aRow > _lastSelectedRow) ||
+                                (_lastSelectedRow == [_selectedRowIndexes firstIndex] && aRow < _lastSelectedRow));
+    }
 
     else if (aRow >= 0 && aRow < _numberOfRows)
         newSelection = [CPIndexSet indexSetWithIndex:aRow];
@@ -2969,7 +2977,9 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
                 [newSelection removeIndex:index];
         }
     }
-
+    
+    _lastSelectedRow = ([newSelection count] > 0) ? aRow : -1;
+    
     // if empty selection is not allowed and the new selection has nothing selected, abort
     if (!_allowsEmptySelection && [newSelection count] === 0)
         return;
@@ -2977,7 +2987,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     if ([newSelection isEqualToIndexSet:_selectedRowIndexes])
         return;
 
-    [self selectRowIndexes:newSelection byExtendingSelection:NO];
+    [self selectRowIndexes:newSelection byExtendingSelection:shouldExtendSelection];
 }
 
 - (void)_noteSelectionIsChanging
