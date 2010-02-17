@@ -678,6 +678,103 @@
 
 @end
 
+@implementation CPCollectionView (KeyboardInteraction)
+
+- (CGRect)rectForItemAtIndex:(int)index
+{
+    // Don't re-compute anything just grab the current frame
+    // This allows subclasses to override tile without messing this up.
+    return [[_items[index] view] frame];
+}
+
+- (CGRect)rectForItemsAtIndexes:(CPIndexSet)indexSet
+{
+    var indexArray = [],
+        rect = nil;
+
+    [indexSet getIndexes:indexArray maxCount:-1 inIndexRange:nil];
+
+    for (var i = 0, count = indexArray.length; i < count; ++i)
+    {
+        var index = indexArray[i];
+        if (rect == nil)
+            rect = [self rectForItemAtIndex:index];
+        else
+            rect = CGRectUnion(rect, [self rectForItemAtIndex:index]);
+    }
+
+    return rect;
+}
+
+- (void)_scrollToSelection
+{
+    var rect = [self rectForItemsAtIndexes:[self selectionIndexes]];
+    if (rect) 
+        [self scrollRectToVisible:rect];
+}
+
+- (void)moveLeft:(id)sender
+{
+    var index = [[self selectionIndexes] firstIndex];
+    if (index === CPNotFound) 
+        index = [[self items] count];
+
+    index = MAX(index - 1, 0);
+
+    [self setSelectionIndexes:[CPIndexSet indexSetWithIndex:index]];
+    [self _scrollToSelection];
+}
+
+- (void)moveRight:(id)sender
+{
+    var index = MIN([[self selectionIndexes] firstIndex] + 1, [[self items] count]-1);
+
+    [self setSelectionIndexes:[CPIndexSet indexSetWithIndex:index]];
+    [self _scrollToSelection];
+}
+
+- (void)moveDown:(id)sender
+{
+    var index = MIN([[self selectionIndexes] firstIndex] + [self numberOfColumns], [[self items] count]-1);
+
+    [self setSelectionIndexes:[CPIndexSet indexSetWithIndex:index]];
+    [self _scrollToSelection];
+}
+
+- (void)moveUp:(id)sender
+{
+    var index = [[self selectionIndexes] firstIndex];
+    if (index == CPNotFound) 
+        index = [[self items] count];
+
+    index = MAX(0, index - [self numberOfColumns]);
+
+    [self setSelectionIndexes:[CPIndexSet indexSetWithIndex:index]];
+    [self _scrollToSelection];
+}
+
+- (void)deleteBackwards:(id)sender
+{
+    if ([[self delegate] respondsToSelector:@selector(collectionView:shouldDeleteItemsAtIndexes:)])
+    {
+        [[self delegate] collectionView:self shouldDeleteItemsAtIndexes:[self selectionIndexes]];
+
+        var index = [[self selectionIndexes] firstIndex];
+        if (index > [[self content] count]-1)
+            [self setSelectionIndexes:[CPIndexSet indexSetWithIndex:[[self content] count]-1]];
+
+        [self _scrollToSelection];
+        [self setNeedsDisplay:YES];
+    }
+}
+
+- (void)keyDown:(CPEvent)anEvent
+{
+    [self interpretKeyEvents:[anEvent]];
+}
+
+@end
+
 var CPCollectionViewMinItemSizeKey      = @"CPCollectionViewMinItemSizeKey",
     CPCollectionViewMaxItemSizeKey      = @"CPCollectionViewMaxItemSizeKey",
     CPCollectionViewVerticalMarginKey   = @"CPCollectionViewVerticalMarginKey",
