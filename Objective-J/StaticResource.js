@@ -378,4 +378,6 @@ exports.includePaths = function()
     return global.OBJJ_INCLUDE_PATHS || ["Frameworks", "Frameworks/Debug"];
 }
 
+StaticResource.cwd = FILE.cwd();
+
 exports.StaticResource = StaticResource;
