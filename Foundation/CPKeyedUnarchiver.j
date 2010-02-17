@@ -20,8 +20,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-@import "CPNull.j"
 @import "CPCoder.j"
+@import "CPNull.j"
 
 
 CPInvalidUnarchiveOperationException    = @"CPInvalidUnarchiveOperationException";
@@ -142,7 +142,7 @@ var _CPKeyedUnarchiverArrayClass                                            = Ni
 
     if (self)
     {
-        _archive = [data plistObject];
+        _archive = [data serializedPlistObject];
         _objects = [CPArray arrayWithObject:[CPNull null]];
         
         _plistObject = [_archive objectForKey:_CPKeyedArchiverTopKey];

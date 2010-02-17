@@ -151,6 +151,32 @@
         [self assert:[testStrings[i][0] boolValue] equals:testStrings[i][1]];
 }
 
+- (void)testCommonPrefixWithString
+{
+    var testStringsCase = [
+        ["Hello", "Helicopter", "Hel"],
+        ["Tester", "Taser", "T"],
+        ["Abcd", "Abcd", "Abcd"],
+        ["A long string", "A longer string", "A long"]
+    ];
+    
+    var testStringsCaseless = [
+        ["hElLo", "HeLiCoPtEr", "hEl"],
+        ["tEsTeR", "TaSeR", "t"],
+        ["aBcD", "AbCd", "aBcD"],
+        ["a LoNg StRiNg", "A lOnGeR sTrInG", "a LoNg"]
+    ];
+    
+    for (var i = 0; i < testStringsCase.length; i++)
+        [self assert: [testStringsCase[i][0] commonPrefixWithString:testStringsCase[i][1]]
+              equals: testStringsCase[i][2]];
+
+    for (var i = 0; i < testStringsCaseless.length; i++)
+        [self assert: [testStringsCaseless[i][0] commonPrefixWithString: testStringsCaseless[i][1]
+                                                 options: CPCaseInsensitiveSearch]
+              equals: testStringsCaseless[i][2]];
+}
+
 - (void)testCapitalizedString
 {
     var testStrings = [
@@ -231,6 +257,30 @@
         
     for (var i = 0; i < testStrings.length; i++)
         [self assert:testStrings[i][1] equals:[testStrings[i][0] lastPathComponent]];
+}
+
+- (void)testHasPrefix
+{
+    [self assertTrue: ["abc" hasPrefix:"a"]];
+    [self assertTrue: ["abc" hasPrefix:"ab"]];
+    [self assertTrue: ["abc" hasPrefix:"abc"]];
+    [self assertFalse:["abc" hasPrefix:"abcd"]];
+    [self assertFalse:["abc" hasPrefix:"dbc"]];
+    [self assertFalse:["abc" hasPrefix:"bc"]];
+    [self assertFalse:["abc" hasPrefix:"c"]];
+    [self assertFalse:["abc" hasPrefix:""]];
+}
+
+- (void)testHasSuffix
+{
+    [self assertTrue: ["abc" hasSuffix:"c"]];
+    [self assertTrue: ["abc" hasSuffix:"bc"]];
+    [self assertTrue: ["abc" hasSuffix:"abc"]];
+    [self assertFalse:["abc" hasSuffix:"abcd"]];
+    [self assertFalse:["abc" hasSuffix:"ab"]];
+    [self assertFalse:["abc" hasSuffix:"b"]];
+    [self assertFalse:["abc" hasSuffix:"cat"]];
+    [self assertFalse:["abc" hasSuffix:""]];
 }
 
 @end

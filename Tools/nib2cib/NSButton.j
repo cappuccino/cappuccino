@@ -45,13 +45,13 @@ _CPButtonBezelStyleHeights[CPHUDBezelStyle] = 20;
     if (self)
     {
         var cell = [aCoder decodeObjectForKey:@"NSCell"];
-
-        _controlSize = CPRegularControlSize;
-
-        _title = [cell title];
+        NIB_CONNECTION_EQUIVALENCY_TABLE[[cell UID]] = self;
 
         if (![self NS_isCheckBox] && ![self NS_isRadio])
         {
+            _controlSize = CPRegularControlSize;
+            _title = [cell title];
+
             [self setBordered:[cell isBordered]];
 
             _bezelStyle = [cell bezelStyle];
@@ -93,15 +93,26 @@ _CPButtonBezelStyleHeights[CPHUDBezelStyle] = 20;
                     _bezelStyle = CPHUDBezelStyle;
             }
 
-            //if (_CPButtonBezelStyleHeights[_bezelStyle] != undefined)
+            if ([cell isBordered])
             {
-                //CPLog.warn("Adjusting CPButton height from " +_frame.size.height+ " / " + _bounds.size.height+" to " + _CPButtonBezelStyleHeights[_bezelStyle]);
-                _frame.size.height = 24.0;//_CPButtonBezelStyleHeights[_bezelStyle];
-                _bounds.size.height = 24.0;//_CPButtonBezelStyleHeights[_bezelStyle];
+                CPLog.warn("Adjusting CPButton height from " +_frame.size.height+ " / " + _bounds.size.height+" to " + 24);
+                _frame.size.height = 24.0;
+                _bounds.size.height = 24.0;
             }
         }
         else
+        {
+            if (![self isKindOfClass:CPCheckBox] && ![self isKindOfClass:CPRadio])
+            {
+                if ([self NS_isCheckBox])
+                    return [[CPCheckBox alloc] NS_initWithCoder:aCoder];
+                else
+                    return [[CPRadio alloc] NS_initWithCoder:aCoder];
+            }
+
             [self setBordered:YES];
+            self._title = [cell title];
+        }
     }
 
     return self;
@@ -115,6 +126,32 @@ _CPButtonBezelStyleHeights[CPHUDBezelStyle] = 20;
 - (BOOL)NS_isRadio
 {
     return NO;
+}
+
+@end
+
+@implementation CPRadio (NS)
+
+- (BOOL)NS_isRadio
+{
+    return YES;
+}
+
+- (id)NS_initWithCoder:(CPCoder)aCoder
+{
+    if (self = [super NS_initWithCoder:aCoder])
+        _radioGroup = [CPRadioGroup new];
+
+    return self;
+}
+
+@end
+
+@implementation CPCheckBox (NS)
+
+- (BOOL)NS_isCheckBox
+{
+    return YES;
 }
 
 @end

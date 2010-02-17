@@ -144,20 +144,21 @@ var CPSplitViewHorizontalImage = nil,
 {
     if (_isPaneSplitter == shouldBePaneSplitter)
         return;
-    
+
     _isPaneSplitter = shouldBePaneSplitter;
 
-#if PLATFORM(DOM)
-    _DOMDividerElements = [];
-#endif
+    if(_DOMDividerElements[_drawingDivider])
+        [self _setupDOMDivider]
 
+    // The divider changes size when pane splitter mode is toggled, so the 
+    // subviews need to change size too.
+    _needsResizeSubviews = YES;
     [self setNeedsDisplay:YES];
 }
 
 - (void)didAddSubview:(CPView)aSubview
 {
     _needsResizeSubviews = YES;
-//    [self adjustSubviews];
 }
 
 - (BOOL)isSubviewCollapsed:(CPView)subview
@@ -213,21 +214,26 @@ var CPSplitViewHorizontalImage = nil,
 
         CPDOMDisplayServerAppendChild(_DOMElement, _DOMDividerElements[_drawingDivider]);
 
-        if (_isPaneSplitter)
-        {
-            _DOMDividerElements[_drawingDivider].style.backgroundColor = "#A5A5A5";
-            _DOMDividerElements[_drawingDivider].style.backgroundImage = "";
-        }
-        else
-        {
-            _DOMDividerElements[_drawingDivider].style.backgroundColor = "";
-            _DOMDividerElements[_drawingDivider].style.backgroundImage = "url('"+_dividerImagePath+"')";
-        }
+        [self _setupDOMDivider];
     }    
 
     CPDOMDisplayServerSetStyleLeftTop(_DOMDividerElements[_drawingDivider], NULL, _CGRectGetMinX(aRect), _CGRectGetMinY(aRect));
     CPDOMDisplayServerSetStyleSize(_DOMDividerElements[_drawingDivider], _CGRectGetWidth(aRect), _CGRectGetHeight(aRect));
 #endif
+}
+
+- (void)_setupDOMDivider
+{
+    if (_isPaneSplitter)
+    {
+        _DOMDividerElements[_drawingDivider].style.backgroundColor = "#A5A5A5";
+        _DOMDividerElements[_drawingDivider].style.backgroundImage = "";
+    }
+    else
+    {
+        _DOMDividerElements[_drawingDivider].style.backgroundColor = "";
+        _DOMDividerElements[_drawingDivider].style.backgroundImage = "url('"+_dividerImagePath+"')";
+    }
 }
 
 - (void)viewWillDraw
@@ -512,8 +518,6 @@ var CPSplitViewHorizontalImage = nil,
             }
             else if (totalSizableSpace && !isSizable)
                 viewFrame.size[_sizeComponent] = [view frame].size[_sizeComponent];
-            else
-                alert("SHOULD NEVER GET HERE");
 
         bounds.origin[_originComponent] += viewFrame.size[_sizeComponent] + dividerThickness;        
 

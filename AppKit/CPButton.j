@@ -145,7 +145,7 @@ CPButtonStateMixed  = CPThemeState("mixed");
 
 + (id)themeAttributes
 {
-    return [CPDictionary dictionaryWithObjects:[_CGInsetMakeZero(), _CGInsetMakeZero(), nil]
+    return [CPDictionary dictionaryWithObjects:[_CGInsetMakeZero(), _CGInsetMakeZero(), [CPNull null]]
                                        forKeys:[@"bezel-inset", @"content-inset", @"bezel-color"]];
 }
 
@@ -192,8 +192,8 @@ CPButtonStateMixed  = CPThemeState("mixed");
 
     _allowsMixedState = aFlag;
 
-    if (!_allowsMixedState)
-        [self unsetThemeState:CPButtonStateMixed];
+    if (!_allowsMixedState && [self state] === CPMixedState)
+        [self setState:CPOnState];
 }
 
 - (void)setObjectValue:(id)anObjectValue
@@ -460,7 +460,7 @@ CPButtonStateMixed  = CPThemeState("mixed");
     return bounds;
 }
 
-- (CGRect)bezelRectForBounds:(CFRect)bounds
+- (CGRect)bezelRectForBounds:(CGRect)bounds
 {
     if (![self isBordered])
         return _CGRectMakeZero();

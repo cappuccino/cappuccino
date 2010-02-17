@@ -1,0 +1,15 @@
+
+require("../../../common.jake");
+
+
+blend ("Aristo.blend", function(aristoTask)
+{
+    aristoTask.setBuildIntermediatesPath(FILE.join($BUILD_DIR, "Aristo.build", $CONFIGURATION))
+    aristoTask.setBuildPath(FILE.join($BUILD_DIR, $CONFIGURATION));
+
+    aristoTask.setThemeDescriptors(new FileList("ThemeDescriptors.j"));
+    aristoTask.setIdentifier("com.280n.blend.Aristo");
+    aristoTask.setResources(new FileList("Resources/*"));
+});
+
+task ("build", ["Aristo.blend"]);

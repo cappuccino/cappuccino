@@ -25,28 +25,22 @@
 
 @import <AppKit/_CPCibCustomResource.j>
 
-importClass(javax.imageio.ImageIO);
-
 
 @implementation _CPCibCustomResource (NSCoding)
 
 - (id)NS_initWithCoder:(CPCoder)aCoder
 {
     self = [super init];
-    
+
     if (self)
     {
         _className = CP_NSMapClassName([aCoder decodeObjectForKey:@"NSClassName"]);
         _resourceName = [aCoder decodeObjectForKey:@"NSResourceName"];
-        
+
         var size = CGSizeMakeZero();
-        
+
         if (![[aCoder resourcesPath] length])
-        {
             CPLog.warn("***WARNING: Resources found in nib, but no resources path specified with -R option.");
-            
-            _properties = [CPDictionary dictionaryWithObject:CGSizeMakeZero() forKey:@"size"];
-        }
         else
         {
             var resourcePath = [aCoder resourcePathForName:_resourceName];
@@ -55,38 +49,67 @@ importClass(javax.imageio.ImageIO);
                 CPLog.warn("***WARNING: Resource named " + _resourceName + " not found in supplied resources path.");
 
             else
-            {
-                var imageStream = ImageIO.createImageInputStream(new Packages.java.io.File(resourcePath).getCanonicalFile()),
-                    readers = ImageIO.getImageReaders(imageStream),
-                    reader = null;
-
-                if(readers.hasNext())
-                    reader = readers.next();
-
-                else
-                {
-                    imageStream.close();
-                    //can't read image format... what do you want to do about it,
-                    //throw an exception, return ?
-                }
-                
-                reader.setInput(imageStream, true, true);
-                
-                // Now we know the size (yay!) 
-                size = CGSizeMake(reader.getWidth(0), reader.getHeight(0));
-                print(size.width + " " + size.height);
-                reader.dispose();
-                imageStream.close();
-            }
+                size = imageSize(resourcePath);
         }
-        
+
         _properties = [CPDictionary dictionaryWithObject:size forKey:@"size"];
     }
-    
+
     return self;
 }
 
 @end
+
+function imageSize(aFilePath)
+{
+    return (system.engine === "rhino") ? javaImageSize(aFilePath) : jscImageSize(aFilePath);
+}
+
+function javaImageSize(aFilePath)
+{
+    var imageStream = javax.imageio.ImageIO.createImageInputStream(new Packages.java.io.File(aFilePath).getCanonicalFile()),
+        readers = javax.imageio.ImageIO.getImageReaders(imageStream),
+        reader = null;
+
+    if(readers.hasNext())
+        reader = readers.next();
+
+    else
+    {
+        imageStream.close();
+        //can't read image format... what do you want to do about it,
+        //throw an exception, return ?
+    }
+
+    reader.setInput(imageStream, true, true);
+
+    // Now we know the size (yay!)
+    var size = CGSizeMake(reader.getWidth(0), reader.getHeight(0));
+
+    reader.dispose();
+    imageStream.close();
+
+    return size;
+}
+
+function jscImageSize(aFilePath)
+{
+    var MIME_TYPES =    {
+                            ".png"  : "image/png",
+                            ".jpg"  : "image/jpeg",
+                            ".jpeg" : "image/jpeg",
+                            ".gif"  : "image/gif",
+                            ".tif"  : "image/tiff",
+                            ".tiff" : "image/tiff"
+                        },
+        FILE = require("file");
+
+    var image = new Image();
+
+    image.src = "data:" + MIME_TYPES[FILE.extension(aFilePath)] + ";base64," + require("base64").encode(FILE.read(aFilePath, { mode : 'b'}));
+
+    return CGSizeMake(image.width, image.height);
+}
 
 @implementation NSCustomResource : _CPCibCustomResource
 {

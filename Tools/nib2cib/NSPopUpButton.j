@@ -24,6 +24,7 @@
 
 @import "NSMenu.j"
 
+
 @implementation CPPopUpButton (CPCoding)
 
 - (id)NS_initWithCoder:(CPCoder)aCoder
@@ -32,13 +33,13 @@
     {
         var cell = [aCoder decodeObjectForKey:@"NSCell"];
         
-        _menu           = [cell menu];
-        
+        _menu = [cell menu];
+
          // make sure it's not null/undefined
         //FIXME push this check to CPPopUpButton?
         _selectedIndex  = [cell selectedIndex] || 0;
         
-        _pullsDown      = [cell pullsDown];
+        [self setPullsDown:[cell pullsDown]];
         _preferredEdge  = [cell preferredEdge];
     }
     

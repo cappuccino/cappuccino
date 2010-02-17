@@ -23,7 +23,7 @@
 @import "CPObject.j"
 @import "CPString.j"
 
-/*! 
+/*!
     @class CPData
     @ingroup foundation
     @brief A Cappuccino wrapper for any data type.
@@ -33,88 +33,99 @@
 
 @implementation CPData : CPObject
 {
-    id  _plistObject;
 }
 
 + (id)alloc
 {
-    return new objj_data();
+    return new CFMutableData();
 }
 
 + (CPData)data
 {
-    return [[self alloc] initWithPlistObject:nil];
+    return [[self alloc] init];
 }
 
-+ (CPData)dataWithString:(CPString)aString
++ (CPData)dataWithEncodedString:(CPString)aString
 {
-    return [[self alloc] initWithString:aString];
+    return [[self alloc] initWithEncodedString:aString];
 }
 
-+ (CPData)dataWithPlistObject:(id)aPlistObject
++ (CPData)dataWithSerializedPlistObject:(id)aPlistObject
 {
-    return [[self alloc] initWithPlistObject:aPlistObject];
+    return [[self alloc] initWithSerializedPlistObject:aPlistObject];
 }
 
-- (id)initWithString:(CPString)aString
++ (CPData)dataWithSerializedPlistObject:(id)aPlistObject format:(CPPropertyListFormat)aFormat
+{
+    return [[self alloc] initWithSerializedPlistObject:aPlistObject format:aFormat];
+}
+
+- (id)initWithEncodedString:(CPString)aString
 {
     self = [super init];
 
     if (self)
-        string = aString;
-  
+        [self setEncodedString:aString];
+
     return self;
 }
 
-- (id)initWithPlistObject:(id)aPlistObject
+- (id)initWithSerializedPlistObject:(id)aPlistObject
 {
     self = [super init];
-    
+
     if (self)
-        _plistObject = aPlistObject;
-        
+        [self setSerializedPlistObject:aPlistObject];
+
+    return self;
+}
+
+- (id)initWithSerializedPlistObject:(id)aPlistObject format:aFormat
+{
+    self = [super init];
+
+    if (self)
+        [self setSerializedPlistObject:aPlistObject format:aFormat];
+
     return self;
 }
 
 - (int)length
 {
-    return [[self string] length];
+    return [[self encodedString] length];
 }
 
 - (CPString)description
 {
-    return string;
+    return self.toString();
 }
 
-- (CPString)string
+- (CPString)encodedString
 {
-    if (!string && _plistObject)
-        string = [[CPPropertyListSerialization dataFromPropertyList:_plistObject format:CPPropertyList280NorthFormat_v1_0 errorDescription:NULL] string];
-
-    return string;
+    return self.encodedString();
 }
 
-- (void)setString:(CPString)aString
+- (void)setEncodedString:(CPString)aString
 {
-    string = aString;
-    _plistObject = nil;
+    self.setEncodedString(aString);
 }
 
-- (id)plistObject
+- (id)serializedPlistObject
 {
-    if (string && !_plistObject)
-        // Attempt to autodetect the format.
-        _plistObject = [CPPropertyListSerialization propertyListFromData:self format:0 errorDescription:NULL];
-    
-    return _plistObject;
+    return self.serializedPropertyList();
 }
 
-- (void)setPlistObject:(id)aPlistObject
+- (void)setSerializedPlistObject:(id)aPlistObject
 {
-    string = nil;
-    _plistObject = aPlistObject;
+    self.setSerializedPropertyList(aPlistObject);
+}
+
+- (void)setSerializedPlistObject:(id)aPlistObject format:(CPPropertyListFormat)aFormat
+{
+    self.setSerializedPropertyList(aPlistObject, aFormat);
 }
 
 @end
 
-objj_data.prototype.isa = CPData;
+CFData.prototype.isa = CPData;
+CFMutableData.prototype.isa = CPData;

@@ -144,7 +144,7 @@
 {
     var theWindow = [self window];
 
-	if ([theWindow respondsToSelector:@selector(becomesKeyOnlyIfNeeded)] && [theWindow becomesKeyOnlyIfNeeded])
+    if ([theWindow respondsToSelector:@selector(becomesKeyOnlyIfNeeded)] && [theWindow becomesKeyOnlyIfNeeded])
         [theWindow orderFront:aSender];
     else
         [theWindow makeKeyAndOrderFront:aSender];
@@ -173,6 +173,14 @@
 
         if (_window === nil && [_cibOwner isKindOfClass:[CPDocument class]])
             [self setWindow:[_cibOwner valueForKey:@"window"]];
+        
+        if (!_window) 
+        {
+            var reason = [CPString stringWithFormat:@"Window for %@ could not be loaded from Cib or no window specified. \
+                                                        Override loadWindow to load the window manually.", self];
+
+            [CPException raise:CPInternalInconsistencyException reason:reason];
+        }
 
         [self windowDidLoad];
         [_document windowControllerDidLoadCib:self];
@@ -399,27 +407,6 @@
 */
 - (void)setDocumentEdited:(BOOL)isEdited
 {
-    // we ignore this. in a multi-doc world, we base this flag on the logical OR
-    // of all the open documents edited state. so this is just a hint to re-check that state.
-    //[[self window] setDocumentEdited:isEdited];
-    [self _synchronizeDocumentEditedState];
-}
-
-- (void)_synchronizeDocumentEditedState
-{
-    var docs = [self documents],
-        count = [docs count],
-        isEdited = NO;
-
-    while (count--)
-    {
-        if ([docs[count] isDocumentEdited])
-        {
-            isEdited = YES;
-            break;
-        }
-    }
-
     [[self window] setDocumentEdited:isEdited];
 }
 

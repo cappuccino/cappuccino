@@ -38,10 +38,20 @@ instead download a pre-compiled copy of Cappuccino from:
 
     http://cappuccino.org/download/
 
-To build Cappuccino from source, simply type "rake"  from within the root of the Cappuccino directory. 
-This will build a "release" copy of the frameworks. Typing "rake debug" will build a debug version.
-"rake install" will build Cappuccino and associated tools and install them for general use (similar to 
+To build Cappuccino from source, simply type "jake"  from within the root of the Cappuccino directory. 
+This will build a "release" copy of the frameworks. Typing "jake debug" will build a debug version.
+"jake install" will build Cappuccino and associated tools and install them for general use (similar to 
 downloading the tools from the website).
+
+If this is your first build and your system does not have jake installed, run the bootstrap script to 
+install it and all of its dependencies:
+
+$ sudo ./bootstrap.sh
+
+Editors
+------------
+The Cappuccino TextMate Bundle: http://github.com/malkomalko/Cappuccino.tmbundle
+The Cappuccino Xcode Plugin: http://github.com/rbartolome/xcode-cappuccino
 
 Getting Help
 ------------

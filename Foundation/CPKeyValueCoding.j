@@ -21,8 +21,9 @@
  */
 
 @import "CPArray.j"
-@import "CPObject.j"
 @import "CPDictionary.j"
+@import "CPNull.j"
+@import "CPObject.j"
 
 
 var CPObjectAccessorsForClass   = nil,
@@ -173,17 +174,16 @@ CPUnknownUserInfoKey        = @"CPUnknownUserInfoKey";
     
 - (id)valueForKeyPath:(CPString)aKeyPath
 {
-    var keys = aKeyPath.split("."),
-    
-        index = 0,
-        count = keys.length,
-        
-        value = self;
+    var firstDotIndex = aKeyPath.indexOf(".");
 
-    for(; index < count; ++index)
-        value = [value valueForKey:keys[index]];
+    if (firstDotIndex === -1)
+        return [self valueForKey:aKeyPath];
 
-    return value;
+    var firstKeyComponent = aKeyPath.substring(0, firstDotIndex),
+        remainingKeyPath = aKeyPath.substring(firstDotIndex+1),
+        value = [self valueForKey:firstKeyComponent];
+
+    return [value valueForKeyPath:remainingKeyPath];
 }
 
 - (CPDictionary)dictionaryWithValuesForKeys:(CPArray)keys

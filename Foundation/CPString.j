@@ -56,7 +56,7 @@ CPAnchoredSearch        = 8;
 */
 CPNumericSearch         = 64;
 
-var CPStringHashes      = new objj_dictionary();
+var CPStringHashes      = new CFMutableDictionary();
 
 var CPStringRegexSpecialCharacters = [
       '/', '.', '*', '+', '?', '|', '$', '^',
@@ -510,7 +510,7 @@ var CPStringRegexSpecialCharacters = [
 */
 - (BOOL)hasSuffix:(CPString)aString
 {
-    return aString && aString != "" && lastIndexOf(aString) == (length - aString.length);
+    return aString && aString != "" && length >= aString.length && lastIndexOf(aString) == (length - aString.length);
 }
 
 /*!
@@ -526,15 +526,53 @@ var CPStringRegexSpecialCharacters = [
 */
 - (unsigned)UID
 {
-    var hash = dictionary_getValue(CPStringHashes, self);
-    
+    var hash = CPStringHashes.valueForKey(self);
+
     if (!hash) 
     {
         hash = _objj_generateObjectHash();
-        dictionary_setValue(CPStringHashes, self, hash);
+        CPStringHashes.setValueForKey(self, hash);
     }
-    
+
     return hash;
+}
+
+/*!
+    Returns a string containing characters the receiver and a given string have in common, starting from
+    the beginning of each up to the first characters that aren't equivalent.
+    @param aString the string with which to compare the receiver
+*/
+- (CPString)commonPrefixWithString:(CPString)aString
+{
+    return [self commonPrefixWithString: aString options: 0];
+}
+
+/*!
+    Returns a string containing characters the receiver and a given string have in common, starting from
+    the beginning of each up to the first characters that aren't equivalent.
+    @param aString the string with which to compare the receiver
+    @param aMask options for comparision
+*/
+- (CPString)commonPrefixWithString:(CPString)aString options:(int)aMask
+{
+    var len = 0, // length of common prefix
+        lhs = self,
+        rhs = aString,
+        min = MIN([lhs length], [rhs length]);
+    
+    if (aMask & CPCaseInsensitiveSearch)
+    {
+        lhs = [lhs lowercaseString];
+        rhs = [rhs lowercaseString];
+    }
+
+    for (; len < min; len++ )
+    {
+        if ( [lhs characterAtIndex:len] !== [rhs characterAtIndex:len] )
+            break;
+    }
+
+    return [self substringToIndex:len];
 }
 
 /*!

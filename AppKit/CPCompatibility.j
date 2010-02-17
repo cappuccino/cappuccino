@@ -21,6 +21,7 @@
  */
 
 @import "CPEvent.j"
+@import "CPPlatform.j"
 
 // Browser Engines
 CPUnknownBrowserEngine                  = 0;
@@ -29,6 +30,11 @@ CPInternetExplorerBrowserEngine         = 2;
 CPKHTMLBrowserEngine                    = 3;
 CPOperaBrowserEngine                    = 4;
 CPWebKitBrowserEngine                   = 5;
+
+// Operating Systems
+CPMacOperatingSystem                    = 0;
+CPWindowsOperatingSystem                = 1;
+CPOtherOperatingSystem                  = 2;
 
 // Features
 CPCSSRGBAFeature                        = 1 << 5;
@@ -56,6 +62,7 @@ CPOpacityRequiresFilterFeature          = 1 << 24;
 
 //Internet explorer does not allow dynamically changing the type of an input element
 CPInputTypeCanBeChangedFeature          = 1 << 25;
+CPHTML5DragAndDropSourceYOffBy1         = 1 << 26;
 
 
 
@@ -102,7 +109,10 @@ else if (USER_AGENT.indexOf("AppleWebKit/") != -1)
     // Features we can only be sure of with WebKit (no known independent tests)
     PLATFORM_FEATURES |= CPCSSRGBAFeature;
     PLATFORM_FEATURES |= CPHTMLContentEditableFeature;
-    PLATFORM_FEATURES |= CPHTMLDragAndDropFeature;
+
+    if (USER_AGENT.indexOf("Chrome") === -1)
+        PLATFORM_FEATURES |= CPHTMLDragAndDropFeature;
+
     PLATFORM_FEATURES |= CPJavascriptClipboardEventsFeature;
     PLATFORM_FEATURES |= CPJavascriptClipboardAccessFeature;
     PLATFORM_FEATURES |= CPJavaScriptShadowFeature;
@@ -116,6 +126,14 @@ else if (USER_AGENT.indexOf("AppleWebKit/") != -1)
 
     if((USER_AGENT.indexOf("Safari") !== CPNotFound && (majorVersion > 525 || (majorVersion === 525 && minorVersion > 14))) || USER_AGENT.indexOf("Chrome") !== CPNotFound)
         PLATFORM_FEATURES |= CPJavascriptRemedialKeySupport;
+
+    // FIXME this is a terrible hack to get around this bug:
+    // https://bugs.webkit.org/show_bug.cgi?id=21548
+    if (![CPPlatform isBrowser])
+        PLATFORM_FEATURES |= CPJavascriptRemedialKeySupport;
+
+    if (majorVersion < 532 || (majorVersion === 532 && minorVersion < 6))
+        PLATFORM_FEATURES |= CPHTML5DragAndDropSourceYOffBy1;
 }
 
 // KHTML
@@ -173,11 +191,20 @@ function CPFeatureIsCompatible(aFeature)
 
 function CPBrowserIsEngine(anEngine)
 {
-    return PLATFORM_ENGINE == anEngine;
+    return PLATFORM_ENGINE === anEngine;
 }
 
-if (USER_AGENT.indexOf("Mac") != -1)
+function CPBrowserIsOperatingSystem(anOperatingSystem)
 {
+    return OPERATING_SYSTEM === anOperatingSystem;
+}
+
+OPERATING_SYSTEM = CPOtherOperatingSystem;
+
+if (USER_AGENT.indexOf("Mac") !== -1)
+{
+    OPERATING_SYSTEM = CPMacOperatingSystem;
+
     CPPlatformActionKeyMask = CPCommandKeyMask;
 
     CPUndoKeyEquivalent = @"Z";
@@ -188,6 +215,9 @@ if (USER_AGENT.indexOf("Mac") != -1)
 }
 else
 {
+    if (USER_AGENT.indexOf("Windows") !== -1)
+        OPERATING_SYSTEM = CPWindowsOperatingSystem;
+
     CPPlatformActionKeyMask = CPControlKeyMask;
 
     CPUndoKeyEquivalent = @"Z";

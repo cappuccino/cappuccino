@@ -3,6 +3,9 @@
 @import <Foundation/CPString.j>
 @import <Foundation/CPObject.j>
 
+var FILE = require("file"),
+    SYSTEM = require("system"),
+    CFPropertyList = require("objective-j").CFPropertyList;
 
 var DefaultDictionary       = nil,
     DefaultConfiguration    = nil,
@@ -12,6 +15,7 @@ var DefaultDictionary       = nil,
 {
     CPString        path;
     CPDictionary    dictionary;
+    CPDictionary    temporaryDictionary;
 }
 
 + (void)initialize
@@ -29,7 +33,7 @@ var DefaultDictionary       = nil,
     [DefaultDictionary setObject:@"com.yourcompany" forKey:@"organization.identifier"];
     
     var date = new Date(),
-        months = ["Janurary", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+        months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 
     [DefaultDictionary setObject:date.getFullYear() forKey:@"project.year"];
     [DefaultDictionary setObject:months[date.getMonth()] + ' ' + date.getDate() + ", " + date.getFullYear() forKey:@"project.date"];
@@ -46,7 +50,7 @@ var DefaultDictionary       = nil,
 + (id)userConfiguration
 {
     if (!UserConfiguration)
-        UserConfiguration = [[self alloc] initWithPath:String(new java.io.File(java.lang.System.getProperty("user.home") + "/.cappconfig").getCanonicalPath())];
+        UserConfiguration = [[self alloc] initWithPath:FILE.join(SYSTEM.env["HOME"], ".cappconfig")];
 
     return UserConfiguration;
 }
@@ -58,26 +62,14 @@ var DefaultDictionary       = nil,
     if (self)
     {
         path = aPath;
-        dictionary = [CPDictionary dictionary],
         temporaryDictionary = [CPDictionary dictionary];
 
-        if (aPath)
-        {
-            var file = new java.io.File([self path]);
-    
-            if (file.canRead())
-            {
-                try
-                {
-                    var data = [CPData dataWithString:readFile(file.getCanonicalPath())],
-                        string = [data string];
-        
-                    if (string && string.length)
-                        dictionary = CPPropertyListCreateFromData(data);
-                }
-                catch (e) { }
-            }
-        }
+        if (path && FILE.isReadable(path))
+            dictionary = CFPropertyList.propertyListFromString(FILE.read(path, { charset:"UTF-8" }));
+
+        // readPlist will return nil if the file is empty
+        if (!dictionary)
+            dictionary = [CPDictionary dictionary];
     }
 
     return self;
@@ -131,11 +123,7 @@ var DefaultDictionary       = nil,
     if (![self path])
         return;
 
-    var writer = new BufferedWriter(new FileWriter(new java.io.File([self path])));
-
-    writer.write([CPPropertyListCreate280NorthData(dictionary, kCFPropertyListXMLFormat_v1_0) string]);
-
-    writer.close();
+    plist.writePlist([self path], dictionary);
 }
 
 @end

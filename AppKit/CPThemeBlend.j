@@ -43,7 +43,7 @@
     
     if (self)
     {
-        _bundle = [[CPBundle alloc] initWithPath:aURL + "/Info.plist"];
+        _bundle = [[CPBundle alloc] initWithPath:aURL];
     }
     
     return self;
@@ -58,27 +58,21 @@
 
 - (void)bundleDidFinishLoading:(CPBundle)aBundle
 {
-    var paths = [_bundle objectForInfoDictionaryKey:@"CPBundleReplacedFiles"],
-        index = 0,
-        count = paths.length,
-        bundlePath = [_bundle bundlePath];
-    
+    var themes = [_bundle objectForInfoDictionaryKey:@"CPKeyedThemes"],
+        count = themes.length;
+
     while (count--)
     {
-        var path = paths[count];
-        
-        if ([path pathExtension] === "keyedtheme")
-        {
-            var unarchiver = [[_CPThemeKeyedUnarchiver alloc]
-                initForReadingWithData:[CPData dataWithString:objj_files[bundlePath + '/' + path].contents]
-                                bundle:_bundle];
+        var path = [aBundle pathForResource:themes[count]],
+            unarchiver = [[_CPThemeKeyedUnarchiver alloc]
+                            initForReadingWithData:[[CPURL URLWithString:path] staticResourceData]
+                            bundle:_bundle];
 
-            [unarchiver decodeObjectForKey:@"root"];
+        [unarchiver decodeObjectForKey:@"root"];
 
-            [unarchiver finishDecoding];
-        }
+        [unarchiver finishDecoding];
     }
-    
+
     [_loadDelegate blendDidFinishLoading:self];
 }
 

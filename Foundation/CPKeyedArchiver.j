@@ -147,7 +147,7 @@ var _CPKeyedArchiverStringClass                         = Nil,
 */
 + (CPData)archivedDataWithRootObject:(id)anObject
 {
-    var data = [CPData dataWithPlistObject:nil],
+    var data = [CPData dataWithSerializedPlistObject:nil],
         archiver = [[self alloc] initForWritingWithMutableData:data];
     
     [archiver encodeObject:anObject forKey:@"root"];
@@ -222,7 +222,7 @@ var _CPKeyedArchiverStringClass                         = Nil,
     [_plistObject setObject:[self className] forKey:_CPKeyedArchiverArchiverKey];
     [_plistObject setObject:@"100000" forKey:_CPKeyedArchiverVersionKey];
     
-    [_data setPlistObject:_plistObject];
+    [_data setSerializedPlistObject:_plistObject];
 
     if (_delegate && _delegateSelectors & _CPKeyedArchiverDidFinishSelector)
         [_delegate archiverDidFinish:self];
@@ -556,7 +556,7 @@ var _CPKeyedArchiverEncodeObject = function(self, anObject, isConditional)
                 if (!className)
                     className = theClass.name;
                 else
-                    theClass = window[className];
+                    theClass = CPClassFromString(className);
 
                 var classUID = [self._UIDs objectForKey:className];
                 
@@ -566,14 +566,14 @@ var _CPKeyedArchiverEncodeObject = function(self, anObject, isConditional)
                         hierarchy = [];
                     
                     [plistClass setObject:className forKey:_CPKeyedArchiverClassNameKey];
-                    
+
                     do
                     {
                         [hierarchy addObject:CPStringFromClass(theClass)];
                     } while (theClass = [theClass superclass]);
-                    
+
                     [plistClass setObject:hierarchy forKey:_CPKeyedArchiverClassesKey];
-                    
+
                     classUID = [self._plistObjects count];
                     [self._plistObjects addObject:plistClass];
                     [self._UIDs setObject:classUID forKey:className];

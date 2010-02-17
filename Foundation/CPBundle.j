@@ -25,47 +25,50 @@
 
 @import "CPURLRequest.j"
 
-/*! 
+/*!
     @class CPBundle
     @ingroup foundation
     @brief Groups information about an application's code & resources.
 */
 
+var CPBundlesForPaths = { };
+
 @implementation CPBundle : CPObject
 {
-}
-
-+ (id)alloc
-{
-    return new objj_bundle;
+    CFBundle    _bundle;
+    id          _delegate;
 }
 
 + (CPBundle)bundleWithPath:(CPString)aPath
 {
-    return objj_getBundleWithPath(aPath);
+    return [[self alloc] initWithPath:aPath];
 }
 
 + (CPBundle)bundleForClass:(Class)aClass
 {
-    return objj_bundleForClass(aClass);
+    return [self bundleWithPath:CFBundle.bundleForClass(aClass).path()];
 }
 
 + (CPBundle)mainBundle
 {
-    return [CPBundle bundleWithPath:"Info.plist"];
+    return [CPBundle bundleWithPath:CFBundle.mainBundle().path()];
 }
 
 - (id)initWithPath:(CPString)aPath
 {
+    var existingBundle = CPBundlesForPaths[aPath];
+
+    if (existingBundle)
+        return existingBundle;
+
     self = [super init];
-    
+
     if (self)
     {
-        path = aPath;
-        
-        objj_setBundleForPath(path, self);
+        _bundle = new CFBundle(aPath);
+        CPBundlesForPaths[aPath] = self;
     }
-    
+
     return self;
 }
 
@@ -76,105 +79,88 @@
 
 - (CPString)bundlePath
 {
-    return [path stringByDeletingLastPathComponent];
+    return _bundle.path();
 }
 
 - (CPString)resourcePath
 {
     var resourcePath = [self bundlePath];
-    
+
     if (resourcePath.length)
         resourcePath += '/';
-        
+
     return resourcePath + "Resources";
 }
 
 - (Class)principalClass
 {
     var className = [self objectForInfoDictionaryKey:@"CPPrincipalClass"];
-    
+
     //[self load];
-    
+
     return className ? CPClassFromString(className) : Nil;
 }
 
 - (CPString)pathForResource:(CPString)aFilename
 {
-    return [self resourcePath] + '/' + aFilename;
+    return _bundle.pathForResource(aFilename);
 }
 
 - (CPDictionary)infoDictionary
 {
-    return info;
+    return _bundle.infoDictionary();
 }
 
 - (id)objectForInfoDictionaryKey:(CPString)aKey
 {
-    return [info objectForKey:aKey];
+    return _bundle.valueForInfoDictionary(aKey);
 }
 
 //
 
 - (void)loadWithDelegate:(id)aDelegate
 {
-    self._delegate = aDelegate;
-    self._infoConnection = [CPURLConnection connectionWithRequest:[CPURLRequest requestWithURL:[self bundlePath] + "/Info.plist"] delegate:self];
-}
+    _delegate = aDelegate;
 
-- (void)connection:(CPURLConnection)aConnection didReceiveData:(CPString)data
-{
-    if (aConnection === self._infoConnection)
+    _bundle.addEventListener("load", function()
     {
-        info = CPPropertyListCreateFromData([CPData dataWithString:data]);
+        [_delegate bundleDidFinishLoading:self];
+    });
 
-        var platform = '/',
-            platforms = [self objectForInfoDictionaryKey:"CPBundlePlatforms"];
-
-        if (platforms)
-        {
-            platform = [platforms firstObjectCommonWithArray:OBJJ_PLATFORMS];
-            platform = platform ? '/' + platform + ".platform/" : '/';
-        }
-
-        [CPURLConnection connectionWithRequest:[CPURLRequest requestWithURL:[self bundlePath] + platform + [self objectForInfoDictionaryKey:"CPBundleExecutable"]] delegate:self];
-    }
-    else
+    _bundle.addEventListener("error", function()
     {
-        objj_decompile([data string], self);
-        
-        var context = new objj_context();
-    
-        if ([_delegate respondsToSelector:@selector(bundleDidFinishLoading:)])
-            context.didCompleteCallback = function() { [_delegate bundleDidFinishLoading:self]; };
-    
-        var files = [self objectForInfoDictionaryKey:@"CPBundleReplacedFiles"],
-            count = files.length,
-            bundlePath = [self bundlePath];
-            
-        while (count--)
-        {
-            var fileName = files[count];
-            
-            if (fileName.indexOf(".j") === fileName.length - 2)
-                context.pushFragment(fragment_create_file(bundlePath + '/' + fileName, new objj_bundle(""), YES, NULL));
-        }
-        
-        if (context.fragments.length)
-            context.evaluate();
-        else
-            [_delegate bundleDidFinishLoading:self];
-    }
+        CPLog.error("Could not find bundle: " + self);
+    });
+
+    _bundle.load(NO);
 }
 
-- (void)connection:(CPURLConnection)aConnection didFailWithError:(CPError)anError
+- (CPArray)staticResourceURLs
 {
-    alert("Couldnot find bundle:" + anError)
+    var staticResourceURLs = [],
+        staticResources = _bundle.staticResources(),
+        index = 0,
+        count = [staticResources count];
+
+    for (; index < count; ++index)
+        [staticResourceURLs addObject:[CPURL URLWithString:staticResources[index].path()]];
+
+    return staticResourceURLs;
 }
 
-- (void)connectionDidFinishLoading:(CPURLConnection)aConnection
+- (CPArray)environments
 {
+    return _bundle.environments();
+}
+
+- (CPString)mostEligibleEnvironment
+{
+    return _bundle.mostEligibleEnvironment();
+}
+
+- (CPString)description
+{
+    return [super description] + "(" + [self bundlePath] + ")";
 }
 
 @end
-
-objj_bundle.prototype.isa = CPBundle;

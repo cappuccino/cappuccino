@@ -132,6 +132,16 @@
                 _objectsValues.push(parent);
             });
         }
+
+    var count = _objectsKeys.length;
+
+    while (count--)
+    {
+        var object = _objectsKeys[count];
+
+        if ([object respondsToSelector:@selector(swapCellsForParents:)])
+            [object swapCellsForParents:parentForCellUIDs];
+    }
 }
 
 @end

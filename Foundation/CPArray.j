@@ -55,6 +55,11 @@
     return [_array objectAtIndex:_index];
 }
 
+- (int)countByEnumeratingWithState:(id)aState objects:(id)objects count:(id)aCount
+{
+    return [_array countByEnumeratingWithState:aState objects:objects count:aCount];
+}
+
 @end
 
 /* @ignore */
@@ -365,7 +370,7 @@
             count = length;
         
         for(; index < count; ++index)
-            if(self[index] == anObject)
+            if(self[index] === anObject)
                 return index;
     }
     
@@ -521,7 +526,7 @@
 */
 - (id)objectAtIndex:(int)anIndex
 {
-    if (anIndex >= length)
+    if (anIndex >= length || anIndex < 0)
         [CPException raise:CPRangeException reason:@"index (" + anIndex + @") beyond bounds (" + length + @")"];
 
     return self[anIndex];
@@ -534,14 +539,11 @@
 */
 - (CPArray)objectsAtIndexes:(CPIndexSet)indexes
 {
-    var index = [indexes firstIndex],
+    var index = CPNotFound,
         objects = [];
 
-    while(index != CPNotFound)
-    { 
-        [objects addObject:self[index]];
-        index = [indexes indexGreaterThanIndex:index];
-    }
+    while((index = [indexes indexGreaterThanIndex:index]) !== CPNotFound)
+        [objects addObject:[self objectAtIndex:index]];
 
     return objects;
 }
@@ -660,7 +662,7 @@
             rhs = anArray[index];
         
         // If they're not equal, and either doesn't have an isa, or they're !isEqual (not isEqual)
-        if (lhs !== rhs && (!lhs.isa || !rhs.isa || ![lhs isEqual:rhs]))
+        if (lhs !== rhs && (lhs && !lhs.isa || rhs && !rhs.isa || ![lhs isEqual:rhs]))
             return NO;
     }
         
@@ -816,15 +818,18 @@
 
     for(; index < count; ++index)
     {
-        var object = self[index];
+        if (index === 0)
+            description += '\n';
 
-        if (object && object.isa)
-            description += [object description];
-        else
-            description += object;
+        var object = [self objectAtIndex:index],
+            objectDescription = object && object.isa ? [object description] : String(object);
+
+        description += "\t" + objectDescription.split('\n').join("\n\t");
 
         if (index !== count - 1)
             description += ", ";
+
+        description += '\n';
     }
 
     return description + ')';
@@ -1112,7 +1117,7 @@
 */
 - (void)removeObjectIdenticalTo:(id)anObject
 {
-    [self removeObjectIdenticalTo:anObject inRange:CPMakeRange(0, length)];
+    [self removeObjectIdenticalTo:anObject inRange:CPMakeRange(0, [self count])];
 }
 
 /*!
@@ -1124,12 +1129,13 @@
 */
 - (void)removeObjectIdenticalTo:(id)anObject inRange:(CPRange)aRange
 {
-    var index;
+    var index,
+        count = [self count];
     
-    while ((index = [self indexOfObjectIdenticalTo:anObject inRange:aRange]) != CPNotFound)
+    while ((index = [self indexOfObjectIdenticalTo:anObject inRange:aRange]) !== CPNotFound)
     {
         [self removeObjectAtIndex:index];
-        aRange = CPIntersectionRange(CPMakeRange(index, length - index), aRange);
+        aRange = CPIntersectionRange(CPMakeRange(index, (--count) - index), aRange);
     }
 }
 
@@ -1201,6 +1207,31 @@
 - (void)sortUsingSelector:(SEL)aSelector
 {
     sort(function(lhs, rhs) { return objj_msgSend(lhs, aSelector, rhs); });
+}
+
+@end
+
+@implementation CPArray (CPFastEnumeration)
+
+- (int)countByEnumeratingWithState:(id)aState objects:(id)objects count:(id)aCount
+{
+    var count = [self count],
+        index = aState.state;
+
+    if (index >= count)
+        return 0;
+
+    var indexIndex = 0,
+        last = MIN(index + aCount, count);
+
+    aCount = last - index;
+
+    for (; index < last; ++index, ++indexIndex)
+        objects[indexIndex] = [self objectAtIndex:index];
+
+    aState.state = last;
+
+    return aCount;
 }
 
 @end

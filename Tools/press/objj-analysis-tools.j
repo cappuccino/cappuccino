@@ -1,337 +1,402 @@
-var objjPath    = OBJJ_HOME+'/lib/Frameworks/Objective-J/rhino.platform/Objective-J.js',
-    bridgePath  = OBJJ_HOME+'/lib/press/bridge.js',
-    envPath     = "/Users/tlrobinson/280North/git/cappuccino/Tools/press/env.js";
-    
+var FILE = require("file");
+var OBJJ = require("objective-j");
+var Context = require("interpreter").Context;
+
+function ObjectiveJRuntimeAnalyzer(rootPath)
+{
+    this.rootPath = rootPath;
+    this.context = new Context();
+
+    this.scope = setupObjectiveJ(this.context);
+
+    this.require = this.context.global.require;
+}
+
+ObjectiveJRuntimeAnalyzer.prototype.setIncludePaths = function(includePaths) {
+    this.context.global.OBJJ_INCLUDE_PATHS = includePaths;
+}
+
+ObjectiveJRuntimeAnalyzer.prototype.setEnvironments = function(environments) {
+    this.require("objective-j").environments = function() { return environments; };
+}
+
+ObjectiveJRuntimeAnalyzer.prototype.initializeGlobalRecorder = function()
+{
+    this.initializeGlobalRecorder = function(){}; // run once
+
+    this.ignore = cloneProperties(this.scope, true);
+
+    this.files = {};
+    var evaluatingPaths = [];
+
+    var before = null;
+    var currentFile = null;
+
+    var self = this;
+
+    // a function to record changes to the global, then reset the scope
+    function recordAndReset() {
+        // system.stderr.write(".").flush();
+
+        var after = cloneProperties(self.scope);
+
+        if (before) {
+            self.files[currentFile] = self.files[currentFile] || {};
+            self.files[currentFile].globals = self.files[currentFile].global || {};
+
+            diff({
+                before : before,
+                after : after,
+                ignore : self.ignore,
+                added : self.files[currentFile].globals,
+                changed : self.files[currentFile].globals
+            });
+        }
+
+        before = after;
+    }
+
+    var _OBJJ = this.require("objective-j");
+    var _fileExecuterForPath = _OBJJ.fileExecuterForPath;
+    _OBJJ.fileExecuterForPath = function(/*String*/ referencePath) {
+        var fileExecutor = _fileExecuterForPath.apply(this, arguments);
+        return function(/*String*/ aPath, /*BOOL*/ isLocal, /*BOOL*/ shouldForce) {
+            recordAndReset();
+
+            evaluatingPaths.push(currentFile);
+
+            // NOTE: we distinguish local and library imports using absolute and relative paths.
+            // we resolve the library paths later (in "mergeLibraryImports()") since doing it here seems
+            // to change the resulting recorded globals.
+            if (isLocal)
+                currentFile = FILE.normal(FILE.join(referencePath, aPath));
+            else
+                currentFile = aPath;
+
+            system.stderr.write(">").flush();
+            fileExecutor.apply(this, arguments);
+            system.stderr.write("<").flush();
+
+            recordAndReset();
+
+            currentFile = evaluatingPaths.pop();
+        };
+    }
+}
+
+ObjectiveJRuntimeAnalyzer.prototype.load = function(path)
+{
+    this.require("objective-j").objj_eval(
+        "("+(function(path) {
+            fileImporterForPath("/")(path, true, function() {
+                print("Done importing and evaluating: " + path);
+            });
+        })+")"
+    )(path);
+}
+
+ObjectiveJRuntimeAnalyzer.prototype.finishLoading = function(path)
+{
+    // run the "event loop"
+    this.require('browser/timeout').serviceTimeouts();
+}
+
+ObjectiveJRuntimeAnalyzer.prototype.mapGlobalsToFiles = function()
+{
+    this.mergeLibraryImports();
+
+    // takes a hash mapping from file names to hashes of global names defined in each file
+    //    globals = { fileName { globalName : true }}
+    // returns a hash mapping from global names to arrays of file names in which those globals are defined
+    //    dependencies = { globalName : [fileName] }
+    var globals = {};
+    for (var fileName in this.files) {
+        for (var globalName in this.files[fileName].globals)
+            (globals[globalName] = globals[globalName] || []).push(fileName);
+    }
+    return globals;
+}
+
+ObjectiveJRuntimeAnalyzer.prototype.mapFilesToGlobals = function()
+{
+    this.mergeLibraryImports();
+
+    var files = {};
+    for (var fileName in this.files) {
+        files[fileName] = {};
+        for (var globalName in this.files[fileName].globals)
+            files[fileName][globalName] = true;
+    }
+    return files;
+}
+
+// this method resolves library imports and merges their recorded globals with the canonical
+// file object for each file
+ObjectiveJRuntimeAnalyzer.prototype.mergeLibraryImports = function()
+{
+    for (var relativePath in this.files) {
+        if (FILE.isRelative(relativePath)) {
+            var absolutePath = this.executableForImport(relativePath, false).path();
+            // CPLog.debug("Merging " + relativePath + " => " + absolutePath);
+
+            this.files[absolutePath] = this.files[absolutePath] || {};
+            this.files[absolutePath].globals = this.files[absolutePath].globals || {};
+
+            for (var global in this.files[relativePath].globals) {
+                this.files[absolutePath].globals[global] = true;
+            }
+            delete this.files[relativePath];
+        }
+    }
+}
+
+// returns an executable for the import path, or null if none exists
+ObjectiveJRuntimeAnalyzer.prototype.executableForImport = function(path, isLocal)
+{
+    if (isLocal === undefined) isLocal = true;
+    var _OBJJ = this.require("objective-j");
+    return new _OBJJ.FileExecutableSearch(path, isLocal).result();
+}
+
 /*
     param context includes
-        scope:                  a global variable containing objj_files hash
-        processedFiles:         hash containing file paths which have already been analyzed
+        scope:                  the objective-j scope
         dependencies:           hash mapping from paths to an array of global variables defined by that file
         [importCallback]:       callback function that is called for each imported file (takes importing file path, and imported file path parameters)
         [referencedCallback]:   callback function that is called for each referenced file (takes referencing file path, referenced file path parameters, and list of tokens)
         [importedFiles]:        hash that will contain a mapping of file names to a hash of imported files
         [referencedFiles]:      hash that will contain a mapping of file names to a hash of referenced files (which contains a hash of tokens referenced)
-        
+        [processedFiles]:       hash containing file paths which have already been analyzed
+
     param file is an objj_file object containing path, fragments, content, bundle, etc
 */
-function traverseDependencies(context, file)
+ObjectiveJRuntimeAnalyzer.prototype.traverseDependencies = function(executable, context)
 {
-    if (context.processedFiles[file.path])
+    context = context || {};
+
+    context.processedFiles  = context.processedFiles  || {};
+    context.importedFiles   = context.importedFiles   || {};
+    context.referencedFiles = context.referencedFiles || {};
+    context.ignoredImports  = context.ignoredImports   || {};
+
+    var path = executable.path();
+
+    if (context.processedFiles[path])
         return;
-    context.processedFiles[file.path] = true;
-    
+
+    context.processedFiles[path] = true;
+
     var ignoreImports = false;
     if (context.ignoreAllImports)
     {
-        CPLog.warn("Ignoring all import fragments. ("+file.path+")");
+        // CPLog.warn("Ignoring all import fragments. ("+this.rootPath.relative(path)+")");
         ignoreImports = true;
     }
     else if (context.ignoreFrameworkImports)
     {
-        var matches = file.path.match(new RegExp("([^\\/]+)\\/([^\\/]+)\\.j$")); // Matches "ZZZ/ZZZ.j" (e.x. AppKit/AppKit.j and Foundation/Foundation.j)
+        var matches = path.match(new RegExp("([^\\/]+)\\/([^\\/]+)\\.j$")); // Matches "ZZZ/ZZZ.j" (e.x. AppKit/AppKit.j and Foundation/Foundation.j)
         if (matches && matches[1] === matches[2])
         {
-            CPLog.warn("Framework import file! Ignoring all import fragments. ("+file.path+")");
+            // CPLog.warn("Framework import file! Ignoring all import fragments. ("+this.rootPath.relative(path)+")");
             ignoreImports = true;
         }
     }
-    
-    // if fragments are missing, preprocess the contents
-    if (!file.fragments)
-    {
-        if (file.included)
-            CPLog.warn(file.path + " is included but missing fragments");
-        else
-            CPLog.warn("Preprocessing " + file.path);
-        
-        file.fragments = objj_preprocess(file.contents, file.bundle, file);
-    }
-        
-    // sprite: look for pngs in the Resources directory
-    if (!context.bundleImages)
-        context.bundleImages = {};
-    
-    if (!context.bundleImages[file.bundle.path])
-    {
-        var resourcesFile = new java.io.File(dirname(file.bundle.path) + "/Resources");
-        if (resourcesFile.exists())
-        {
-            context.bundleImages[file.bundle.path] = {};
-            
-            var pngFiles = find(resourcesFile, (new RegExp("\\.png$")));
-            for (var i = 0; i < pngFiles.length; i++)
-            {
-                var path = pathRelativeTo(pngFiles[i].getCanonicalPath(), resourcesFile.getCanonicalPath());
-                context.bundleImages[file.bundle.path][path] = 1;
-            }
-        }
-    }
-    var images = context.bundleImages[file.bundle.path];
-    
+
     var referencedFiles = {},
         importedFiles = {};
-    
-    CPLog.debug("Processing " + file.path + " fragments ("+file.fragments.length+")");
-    for (var i = 0; i < file.fragments.length; i++)
-    {
-        var fragment = file.fragments[i];
-        
-        if (fragment.type & FRAGMENT_CODE)
-        {
-            var lexer = new objj_lexer(fragment.info, NULL);
-            
-            var token;
-            while (token = lexer.skip_whitespace())
-            {
-                if (context.dependencies.hasOwnProperty(token))
-                {
-                    var files = context.dependencies[token];
-                    for (var j = 0; j < files.length; j++)
-                    {
-                        // don't record references to self
-                        if (files[j] != file.path)
-                        {
-                            if (!referencedFiles[files[j]])
-                                referencedFiles[files[j]] = {};
 
-                            referencedFiles[files[j]][token] = true;
-                        }
-                    }
-                }
-                
-                var matches = token.match(new RegExp("^['\"](.*)['\"]$"));
-                if (matches && images && images[matches[1]])
-                    images[matches[1]] = (images[matches[1]] | 2);
-            }
-        }
-        else if (fragment.type & FRAGMENT_FILE)
-        {
-            if (ignoreImports)
+    if (context.progressCallback)
+        context.progressCallback(this.rootPath.relative(path), path);
+
+    // code
+    var code = executable.code();
+    var referencedTokens = uniqueTokens(code);
+
+    markFilesReferencedByTokens(referencedTokens, this.mapGlobalsToFiles(), referencedFiles);
+    delete referencedFiles[path];
+
+    // imports
+    if (ignoreImports)
+    {
+        if (context.ignoreImportsCallback)
+            context.ignoreImportsCallback(this.rootPath.relative(path), path);
+        context.ignoredImports[path] = true;
+    }
+    else
+    {
+        executable.fileDependencies().forEach(function(fileDependency) {
+            var dependencyExecutable = null;
+            if (fileDependency.isLocal())
+                dependencyExecutable = this.executableForImport(FILE.normal(FILE.join(FILE.dirname(path), fileDependency.path())), true);
+            else
+                dependencyExecutable = this.executableForImport(fileDependency.path(), false);
+
+            if (dependencyExecutable)
             {
-                fragment.conditionallyIgnore = true;
+                var importedFile = dependencyExecutable.path();
+                // should never import self, but just in case?
+                if (importedFile !== path)
+                    importedFiles[importedFile] = true;
+                else
+                    CPLog.error("Ignoring self import (why are you importing yourself?!): " + this.rootPath.relative(importedFile));
             }
             else
-            {
-                var importedFile = findImportInObjjFiles(context.scope, fragment);
-                if (importedFile)
-                {
-                    // should never import self, but just in case?
-                    if (importedFile != file.path)
-                        importedFiles[importedFile] = true;
-                    else
-                        CPLog.error("Ignoring self import (why are you importing yourself!?): " + file.path);
-                }
-                else
-                    CPLog.error("Couldn't find file for import " + fragment.info + "("+fragment.type+")");
-            }
-        }
+                CPLog.error("Couldn't find file for import " + fileDependency.path() + " ("+fileDependency.isLocal()+")");
+        }, this);
     }
-    
+
     // check each imported file
+    this.checkImported(context, path, importedFiles);
+
+    context.importedFiles[path] = importedFiles;
+
+    // check each referenced file
+    this.checkReferenced(context, path, referencedFiles);
+
+    context.referencedFiles[path] = referencedFiles;
+
+    return context;
+}
+
+ObjectiveJRuntimeAnalyzer.prototype.checkImported = function(context, path, importedFiles) {
     for (var importedFile in importedFiles)
     {
-        if (importedFile != file.path)
+        if (importedFile !== path)
         {
             if (context.importCallback)
-                context.importCallback(file.path, importedFile);
+                context.importCallback(path, importedFile);
 
-            if (context.scope.objj_files[importedFile])
-                traverseDependencies(context, context.scope.objj_files[importedFile]);
+            var executable = this.executableForImport(importedFile, true);
+            if (executable)
+                this.traverseDependencies(executable, context);
             else
                 CPLog.error("Missing imported file: " + importedFile);
         }
     }
-    
-    if (context.importedFiles)
-        context.importedFiles[file.path] = importedFiles;
-    
-    // check each referenced file
+}
+
+ObjectiveJRuntimeAnalyzer.prototype.checkReferenced = function(context, path, referencedFiles) {
     for (var referencedFile in referencedFiles)
     {
-        if (referencedFile != file.path)
+        if (referencedFile !== path)
         {
             if (context.referenceCallback)
-                context.referenceCallback(file.path, referencedFile, referencedFiles[referencedFile]);
-                
-            if (context.scope.objj_files.hasOwnProperty(referencedFile))
-                traverseDependencies(context, context.scope.objj_files[referencedFile]);
+                context.referenceCallback(path, referencedFile, referencedFiles[referencedFile]);
+
+            var executable = this.executableForImport(referencedFile, true);
+            if (executable)
+                this.traverseDependencies(executable, context);
             else
                 CPLog.error("Missing referenced file: " + referencedFile);
         }
     }
-    
-    if (context.referencedFiles)
-        context.referencedFiles[file.path] = referencedFiles;
 }
 
-function findImportInObjjFiles(scope, fragment)
-{
-    var importPath = null;
+ObjectiveJRuntimeAnalyzer.prototype.fileExecutables = function() {
+    var _OBJJ = this.require("objective-j");
+    return _OBJJ.FileExecutablesForPaths;
+}
 
-    if (fragment.type & FRAGMENT_LOCAL)
-    {
-        var searchPath = fragment.info;
-        //CPLog.trace("Looking for " + searchPath);
-        //for (var i in scope.objj_files) CPLog.debug("    " + i);
-        
-        if (scope.objj_files[searchPath])
-        {
-            importPath = searchPath;
-        }
+// returns a unique list of tokens for a piece of code.
+// ideally this should return identifiers only
+function uniqueTokens(code) {
+    // FIXME: this breaks for indentifiers containing "$" since it's considered a distinct token by the lexer
+    var lexer = new OBJJ.Lexer(code, null);
+
+    var token, tokens = {};
+    while (token = lexer.skip_whitespace()) {
+        tokens[token] = true;
     }
-    else
-    {
-        var count = scope.OBJJ_INCLUDE_PATHS.length;
-        while (count--)
+
+    return Object.keys(tokens);
+}
+
+/*
+    params:
+        tokens (in):                list of tokens to mark as required
+        globalsToFiles (in):        map from tokens to files which define those tokens
+        referencedFiles (out):      map of required files (to map of tokens defined in that file)
+*/
+function markFilesReferencedByTokens(tokens, globalsToFiles, referencedFiles) {
+    tokens.forEach(function(token) {
+        if (globalsToFiles.hasOwnProperty(token))
         {
-            var searchPath = scope.OBJJ_INCLUDE_PATHS[count].replace(new RegExp("\\/$"), "") + "/" + fragment.info;
-            if (scope.objj_files[searchPath])
+            var files = globalsToFiles[token];
+            for (var i = 0; i < files.length; i++)
             {
-                importPath = searchPath;
-                break;
+                referencedFiles[files[i]] = referencedFiles[files[i]] || {};
+                referencedFiles[files[i]][token] = true;
             }
         }
-    }
-    
-    return importPath;
+    });
 }
 
-// given a fresh scope and the path to a root source file, determine which files define each global variable
-function findGlobalDefines(context, scope, rootPath, evaledFragments)
+@implementation PressBundleDelgate : CPObject
 {
-    addMockBrowserEnvironment(scope);
-    
-    var ignore = cloneProperties(scope, true);
-    ignore['bundle'] = true;
-    
-    var dependencies = {};
-    
-    //scope.fragment_evaluate_file_original = scope.fragment_evaluate_file;
-    //scope.fragment_evaluate_file = function(aFragment)
-    //{
-    //    //CPLog.trace("Loading "+aFragment.info);
-    //    
-    //    var result = scope.fragment_evaluate_file_original(aFragment);
-    //    
-    //    return result;
-    //}
-    
-    // OVERRIDE fragment_evaluate_file
-    var fragment_evaluate_file_original = scope.fragment_evaluate_file;
-    scope.fragment_evaluate_file = function(aFragment) {
-        return fragment_evaluate_file_original(aFragment);
-    }
-
-    // OVERRIDE fragment_evaluate_code
-    var fragment_evaluate_code_original = scope.fragment_evaluate_code;
-    scope.fragment_evaluate_code = function(aFragment) {
-        
-        CPLog.debug("Evaling "+aFragment.file.path + " / " + aFragment.bundle.path);
-    
-        var before = cloneProperties(scope);
-        
-        if (evaledFragments)
-        {
-            evaledFragments.push(aFragment);
-        }
-        
-        var result = fragment_evaluate_code_original(aFragment);
-    
-        var definedGlobals = {};
-        diff(before, scope, ignore, definedGlobals, definedGlobals, null);
-        dependencies[aFragment.file.path] = definedGlobals;
-    
-        return result;
-    }
-
-
-    runWithScope(context, scope, function(importName) {    
-        objj_import(importName, true, NULL);
-    }, [rootPath]);
-    
-    return dependencies;
+    Function didFinishLoadingCallback;
 }
-
-function coalesceGlobalDefines(globals)
+- (id)initWithCallback:(Function)aCallback
 {
-    var dependencies = {};
-    for (var fileName in globals)
-    {
-        var fileGlobals = globals[fileName];
-        
-        for (var globalName in fileGlobals)
-        {
-            if (!dependencies[globalName])
-                dependencies[globalName] = [];
-            dependencies[globalName].push(fileName);
-        }
+    if (self = [super init]) {
+        didFinishLoadingCallback = aCallback;
     }
-    return dependencies;
+    return self;
 }
-
-// create a new scope loaded with Objective-J
-function makeObjjScope(context, debug)
+- (void)bundleDidFinishLoading:(CPBundle)aBundle
 {
-    // init standard js scope objects
-    var scope = context.initStandardObjects();
-
-    if (debug)
-    {
-        scope.objj_alert = print;
-        scope.debug = true;
-    }
-    
-    // give the scope "print"
-    scope.print = function(value) { Packages.java.lang.System.out.println(String(value)); };
-    
-    // load and eval fake browser environment
-    //var envSource = readFile(envPath);
-    //if (envSource)
-    //    context.evaluateString(scope, envSource, "env.js", 1, null);
-    //else
-    //     CPLog.warn("Missing env.js");
-        
-    // load and eval the bridge
-    var bridgeSource = readFile(bridgePath);
-    if (bridgeSource)
-        context.evaluateString(scope, bridgeSource, "bridge.js", 1, null);
-    else
-        CPLog.warn("Missing bridge.js");
-
-    // load and eval obj-j
-    var objjSource = readFile(objjPath);
-    if (objjSource)
-        context.evaluateString(scope, objjSource, "Objective-J.js", 1, null);
-    else
-        CPLog.warn("Missing Objective-J.js");
-    
-    return scope;
+    print("didFinishLoading: "+aBundle);
+    if (didFinishLoadingCallback)
+        didFinishLoadingCallback(aBundle);
 }
+@end
 
-// run a function within the given scope (func can be a function object if the source of the function is returned by toString() as it is by default)
-function runWithScope(context, scope, func, arguments)
+// create a new scope loaded with Narwhal and Objective-J
+function setupObjectiveJ(context)
 {
-    scope.__runWithScopeArgs = arguments || [];
+    // set these properties required for Narwhal bootstrapping
+    context.global.NARWHAL_HOME = system.prefix;
+    context.global.NARWHAL_ENGINE_HOME = FILE.join(system.prefix, "engines", "rhino");
 
-    var code = "("+func+").apply(this, this.__runWithScopeArgs); serviceTimeouts();";
+    // load the bootstrap.js for narwhal-rhino
+    var bootstrapPath = FILE.join(context.global.NARWHAL_ENGINE_HOME, "bootstrap.js");
+    context.evalFile(bootstrapPath);
 
-    return context.evaluateString(scope, code, "<cmd>", 1, null);
+    context.global.require("browser");
+
+    // get the Objective-J module from this scope, return the window object.
+    var OBJJ = context.global.require("objective-j");
+
+    // TODO: move this to browserjs and/or remove browser dependency in Objective-J/AppKit
+    addMockBrowserEnvironment(OBJJ.window);
+
+    return OBJJ.window;
 }
 
 // add a mock browser environment to the provided scope
 function addMockBrowserEnvironment(scope)
 {
     // TODO: complete this. or use env.js?
-    
-    scope.Element = function() {
-        this.style = {}
-    }
-    
-    scope.document = {
-        createElement : function() {
-            return new scope.Element();
+
+    if (!scope.window)
+        scope.window = scope;
+
+    if (!scope.location)
+        scope.location = {};
+
+    if (!scope.location.href)
+        scope.location.href = "";
+
+    if (!scope.Element)
+        scope.Element = function() {
+            this.style = {}
         }
-    }
+
+    if (!scope.document)
+        scope.document = {
+            createElement : function() {
+                return new scope.Element();
+            }
+        }
 }
 
 // does a shallow copy of an object. if onlyList is true, it sets each property to "true" instead of the actual value
@@ -343,37 +408,15 @@ function cloneProperties(object, onlyList)
     return results;
 }
 
-function diff(objectA, objectB, ignore, added, changed, deleted)
+function diff(o)
 {
-    for (var i in objectB)
-        if (added && !ignore[i] && typeof objectA[i] == "undefined")
-            added[i] = true;
-    for (var i in objectB)
-        if (changed && !ignore[i] && typeof objectA[i] != "undefined" && typeof objectB[i] != "undefined" && objectA[i] !== objectB[i])
-            changed[i] = true;
-    for (var i in objectA)
-        if (deleted && !ignore[i] && typeof objectB[i] == "undefined")
-            deleted[i] = true;
-}
-
-function allKeys(object)
-{
-    var result = [];
-    for (var i in object)
-        result.push(i)
-    return result.sort();
-}
-
-function find(src, regex)
-{
-    var results = [];
-    var files = src.listFiles();
-    for (var i = 0; i < files.length; i++)
-    {
-        if (files[i].isFile() && regex.test(files[i].getAbsolutePath()))
-            results.push(files[i]);
-        else if (files[i].isDirectory())
-            results = Array.prototype.concat.apply(results, find(files[i], regex));
-    }
-    return results;
+    for (var i in o.after)
+        if (o.added && !o.ignore[i] && typeof o.before[i] == "undefined")
+            o.added[i] = true;
+    for (var i in o.after)
+        if (o.changed && !o.ignore[i] && typeof o.before[i] != "undefined" && typeof o.after[i] != "undefined" && o.before[i] !== o.after[i])
+            o.changed[i] = true;
+    for (var i in o.before)
+        if (o.deleted && !o.ignore[i] && typeof o.after[i] == "undefined")
+            o.deleted[i] = true;
 }

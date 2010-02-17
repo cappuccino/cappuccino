@@ -1,0 +1,35 @@
+
+require("../../../common.jake");
+
+
+blendKitTask = framework ("BlendKit", function(blendKitTask)
+{
+    blendKitTask.setBuildIntermediatesPath(FILE.join($BUILD_DIR, "BlendKit.build", $CONFIGURATION))
+    blendKitTask.setBuildPath(FILE.join($BUILD_DIR, $CONFIGURATION));
+
+    blendKitTask.setIdentifier("com.280n.BlendKit");
+    blendKitTask.setVersion("0.7.9");
+    blendKitTask.setAuthor("280 North, Inc.");
+    blendKitTask.setEmail("feedback @nospam@ 280north.com");
+    blendKitTask.setSummary("BlendKit classes for Cappuccino");
+    blendKitTask.setSources(FILE.glob("*.j"));
+    blendKitTask.setResources(FILE.glob("Resources/*"));
+    blendKitTask.setLicense(BundleTask.License.LGPL_v2_1);
+    blendKitTask.setFlattensSources(true); // FIXME: how do we non flatten?
+
+    if ($CONFIGURATION === "Release")
+        blendKitTask.setCompilerFlags("-O");
+    else
+        blendKitTask.setCompilerFlags("-DDEBUG -g");
+});
+
+$BUILD_CJS_PRODUCT_BLENDKIT = FILE.join($BUILD_CJS_CAPPUCCINO_FRAMEWORKS, "BlendKit");
+
+filedir ($BUILD_CJS_PRODUCT_BLENDKIT, ["BlendKit"], function()
+{
+    cp_r(blendKitTask.buildProductPath(), $BUILD_CJS_PRODUCT_BLENDKIT);
+});
+
+task ("build", ["BlendKit", $BUILD_CJS_PRODUCT_BLENDKIT]);
+
+CLOBBER.include( $BUILD_CJS_PRODUCT_BLENDKIT);

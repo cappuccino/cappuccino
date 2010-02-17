@@ -735,6 +735,9 @@ var CPColorComponentsKey    = @"CPColorComponentsKey",
 
 var hexCharacters = "0123456789ABCDEF";
 
+// HACK: prevent these from becoming globals. workaround for obj-j "function foo(){}" behavior
+var hexToRGB, integerToBytes, rgbToHex, byteToHex;
+
 /*!
     Used for the CPColor \c +colorWithHexString: implementation
     @ignore

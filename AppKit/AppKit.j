@@ -43,6 +43,7 @@
 @import "CPCompatibility.j"
 @import "CPControl.j"
 @import "CPCookie.j"
+@import "CPCursor.j"
 @import "CPDocument.j"
 @import "CPDocumentController.j"
 @import "CPEvent.j"

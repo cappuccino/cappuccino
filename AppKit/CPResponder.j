@@ -27,6 +27,7 @@ CPDeleteKeyCode     = 8;
 CPTabKeyCode        = 9;
 CPReturnKeyCode     = 13;
 CPEscapeKeyCode     = 27;
+CPSpaceKeyCode      = 32;
 CPLeftArrowKeyCode  = 37;
 CPUpArrowKeyCode    = 38;
 CPRightArrowKeyCode = 39;
@@ -241,7 +242,7 @@ CPDownArrowKeyCode  = 40;
 */
 - (void)insertNewline:(id)aSender
 {
-    [self insertNewline:aSender];
+    [[self nextResponder] insertNewline:aSender];
 }
 
 - (void)cancel:(id)sender

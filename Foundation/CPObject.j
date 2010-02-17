@@ -227,6 +227,7 @@ CPLog(@"Got some class: %@", inst);
 */
 - (BOOL)respondsToSelector:(SEL)aSelector
 {
+    // isa is isa.isa in class case.
     return !!class_getInstanceMethod(isa, aSelector);
 }
 
@@ -269,7 +270,12 @@ CPLog(@"Got some class: %@", inst);
 */
 - (CPString)description
 {
-    return "<" + isa.name + " 0x" + [CPString stringWithHash:[self UID]] + ">";
+    return "<" + class_getName(isa) + " 0x" + [CPString stringWithHash:[self UID]] + ">";
+}
+
++ (CPString)description
+{
+    return class_getName(isa);
 }
 
 // Sending Messages
@@ -322,6 +328,7 @@ CPLog(@"Got some class: %@", inst);
     Used for forwarding of messages to other objects.
     @ignore
 */
+// FIXME: This should be moved to the runtime?
 - (void)forward:(SEL)aSelector :(marg_list)args
 {
     var signature = [self methodSignatureForSelector:aSelector];
@@ -468,12 +475,12 @@ CPLog(@"Got some class: %@", inst);
     return [self UID];
 }
 
-- (unsigned)UID
+- (CPString)UID
 {
     if (typeof self.__address === "undefined")
         self.__address = _objj_generateObjectHash();
 
-    return __address;
+    return __address + "";
 }
 
 /*!
@@ -521,7 +528,7 @@ CPLog(@"Got some class: %@", inst);
 
 // override toString on Objective-J objects so we get the actual description of the object
 // when coerced to a string, instead of "[Object object]"
-objj_object.prototype.toString = function()
+objj_class.prototype.toString = objj_object.prototype.toString = function()
 {
     if (this.isa && class_getInstanceMethod(this.isa, "description") != NULL)
         return [this description]

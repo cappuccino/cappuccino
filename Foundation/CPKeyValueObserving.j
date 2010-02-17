@@ -23,6 +23,7 @@
 @import "CPArray.j"
 @import "CPDictionary.j"
 @import "CPException.j"
+@import "CPNull.j"
 @import "CPObject.j"
 @import "CPSet.j"
 
@@ -75,6 +76,81 @@
         return objj_msgSend([self class], selector);
 
     return [CPSet set];
+}
+
+- (void)applyChange:(CPDictionary)aChange toKeyPath:(CPString)aKeyPath
+{
+    var changeKind = [aChange objectForKey:CPKeyValueChangeKindKey];
+
+    if (changeKind === CPKeyValueChangeSetting)
+    {
+        var value = [aChange objectForKey:CPKeyValueChangeNewKey];
+
+        [self setValue:value === [CPNull null] ? nil : value forKeyPath:aKeyPath];
+    }
+
+    else if (changeKind === CPKeyValueChangeInsertion)
+        [[self mutableArrayValueForKeyPath:aKeyPath]
+            insertObjects:[aChange objectForKey:CPKeyValueChangeNewKey]
+                atIndexes:[aChange objectForKey:CPKeyValueChangeIndexesKey]];
+
+    else if (changeKind === CPKeyValueChangeRemoval)
+        [[self mutableArrayValueForKeyPath:aKeyPath]
+            removeObjectsAtIndexes:[aChange objectForKey:CPKeyValueChangeIndexesKey]];
+
+    else if (changeKind === CPKeyValueChangeReplacement)
+        [[self mutableArrayValueForKeyPath:aKeyPath]
+            replaceObjectAtIndexes:[aChange objectForKey:CPKeyValueChangeIndexesKey]
+                       withObjects:[aChange objectForKey:CPKeyValueChangeNewKey]];
+}
+
+@end
+
+@implementation CPDictionary (KeyValueObserving)
+
+- (CPDictionary)inverseChangeDictionary
+{
+    var inverseChangeDictionary = [self mutableCopy],
+        changeKind = [self objectForKey:CPKeyValueChangeKindKey];
+
+    if (changeKind === CPKeyValueChangeSetting || changeKind === CPKeyValueChangeReplacement)
+    {
+        [inverseChangeDictionary
+            setObject:[self objectForKey:CPKeyValueChangeOldKey]
+               forKey:CPKeyValueChangeNewKey];
+
+        [inverseChangeDictionary
+            setObject:[self objectForKey:CPKeyValueChangeNewKey]
+               forKey:CPKeyValueChangeOldKey];
+    }
+
+    else if (changeKind === CPKeyValueChangeInsertion)
+    {
+        [inverseChangeDictionary
+            setObject:CPKeyValueChangeRemoval
+               forKey:CPKeyValueChangeKindKey];
+
+        [inverseChangeDictionary
+            setObject:[self objectForKey:CPKeyValueChangeNewKey]
+               forKey:CPKeyValueChangeOldKey];
+
+        [inverseChangeDictionary removeObjectForKey:CPKeyValueChangeNewKey];
+    }
+
+    else if (changeKind === CPKeyValueChangeRemoval)
+    {
+        [inverseChangeDictionary
+            setObject:CPKeyValueChangeInsertion
+               forKey:CPKeyValueChangeKindKey];
+
+        [inverseChangeDictionary
+            setObject:[self objectForKey:CPKeyValueChangeOldKey]
+               forKey:CPKeyValueChangeNewKey];
+
+        [inverseChangeDictionary removeObjectForKey:CPKeyValueChangeOldKey];
+    }
+
+    return inverseChangeDictionary;
 }
 
 @end
@@ -160,7 +236,6 @@ var kvoNewAndOld = CPKeyValueObservingOptionNew|CPKeyValueObservingOptionOld,
     var kvoClass = objj_allocateClassPair(currentClass, kvoClassName);
         
     objj_registerClassPair(kvoClass);
-    _class_initialize(kvoClass);
         
     //copy in the methods from our model subclass
     var methodList = _CPKVOModelSubclass.method_list,
@@ -311,11 +386,11 @@ var kvoNewAndOld = CPKeyValueObservingOptionNew|CPKeyValueObservingOptionOld,
             var type = [changes objectForKey:CPKeyValueChangeKindKey];
             
             // for to-many relationships, oldvalue is only sensible for replace and remove
-            if (type == CPKeyValueChangeReplacement || type == CPKeyValueChangeRemoval)
+            if (type === CPKeyValueChangeReplacement || type === CPKeyValueChangeRemoval)
             {
                 //FIXME: do we need to go through and replace "" with CPNull? 
-                var oldValues = [[_targetObject mutableArrayValueForKeyPath:aKey] objectsAtIndexes:indexes];
-                [changes setValue:oldValues forKey:CPKeyValueChangeOldKey];
+                var newValues = [[_targetObject mutableArrayValueForKeyPath:aKey] objectsAtIndexes:indexes];
+                [changes setValue:newValues forKey:CPKeyValueChangeOldKey];
             }
         }
         else
@@ -346,8 +421,8 @@ var kvoNewAndOld = CPKeyValueObservingOptionNew|CPKeyValueObservingOptionOld,
             if (type == CPKeyValueChangeReplacement || type == CPKeyValueChangeInsertion)
             {
                 //FIXME: do we need to go through and replace "" with CPNull? 
-                var oldValues = [[_targetObject mutableArrayValueForKeyPath:aKey] objectsAtIndexes:indexes];
-                [changes setValue:oldValues forKey:CPKeyValueChangeNewKey];
+                var newValues = [[_targetObject mutableArrayValueForKeyPath:aKey] objectsAtIndexes:indexes];
+                [changes setValue:newValues forKey:CPKeyValueChangeNewKey];
             }
         }
         else
@@ -360,7 +435,7 @@ var kvoNewAndOld = CPKeyValueObservingOptionNew|CPKeyValueObservingOptionOld,
             [changes setObject:newValue forKey:CPKeyValueChangeNewKey];
         }
     }
-    
+
     var observers = [_observersForKey[aKey] allValues],
         count = observers ? observers.length : 0;
 
@@ -373,19 +448,28 @@ var kvoNewAndOld = CPKeyValueObservingOptionNew|CPKeyValueObservingOptionOld,
         else if (!isBefore)
             [observerInfo.observer observeValueForKeyPath:aKey ofObject:_targetObject change:changes context:observerInfo.context];
     }
-    
+
     var dependentKeysMap = _nativeClass[DependentKeysKey];
 
     if (!dependentKeysMap)
         return;
 
-    var keysComposedOfKey = [dependentKeysMap[aKey] allObjects];
-    
-    if (!keysComposedOfKey)
+    var dependentKeyPaths = [dependentKeysMap[aKey] allObjects];
+
+    if (!dependentKeyPaths)
         return;
 
-    for (var i=0, count=keysComposedOfKey.length; i<count; i++)
-        [self _sendNotificationsForKey:keysComposedOfKey[i] changeOptions:changeOptions isBefore:isBefore];
+    var index = 0,
+        count = [dependentKeyPaths count];
+
+    for (; index < count; ++index)
+    {
+        var keyPath = dependentKeyPaths[index];
+
+        [self _sendNotificationsForKey:keyPath
+                         changeOptions:isBefore ? [changeOptions copy] : _changesForKey[keyPath]
+                              isBefore:isBefore];
+    }
 }
 
 @end
@@ -501,7 +585,7 @@ var kvoNewAndOld = CPKeyValueObservingOptionNew|CPKeyValueObservingOptionOld,
 
 - (void)observeValueForKeyPath:(CPString)aKeyPath ofObject:(id)anObject change:(CPDictionary)changes context:(id)aContext
 {
-    if (anObject == _object)
+    if (aKeyPath === _firstPart)
     {
         [_observer observeValueForKeyPath:_firstPart ofObject:_object change:changes context:_context];
         
@@ -514,7 +598,7 @@ var kvoNewAndOld = CPKeyValueObservingOptionNew|CPKeyValueObservingOptionOld,
         if (_value)
             [_value addObserver:self forKeyPath:_secondPart options:kvoNewAndOld context:nil];
     }
-    else /* if (anObject == _value || !_value) */
+    else
     {
         //a is the same, but a.b has changed -- nothing to do but forward this message along
         [_observer observeValueForKeyPath:_firstPart+"."+aKeyPath ofObject:_object change:changes context:_context];

@@ -96,6 +96,10 @@ CPRunContinuesResponse  = -1002;
     CPDictionary            _namedArgs;
     CPArray                 _args;
     CPString                _fullArgsString;
+
+    CPImage                 _applicationIconImage;
+
+    CPPanel                 _aboutPanel;
 }
 
 /*!
@@ -250,6 +254,14 @@ CPRunContinuesResponse  = -1002;
 */
 - (void)finishLaunching
 {
+    // At this point we clear the window.status to eliminate Safari's "Cancelled" error message
+    // The message shouldn't be displayed, because only an XHR is cancelled, but it is a usability issue.
+    // We do it here so that applications can change it in willFinish or didFinishLaunching
+    window.status = " ";
+
+    // We also want to set the default cursor on the body, so that buttons and things don't have an iBeam
+    [[CPCursor arrowCursor] set];
+    
     var bundle = [CPBundle mainBundle],
         types = [bundle objectForInfoDictionaryKey:@"CPBundleDocumentTypes"];
         
@@ -275,15 +287,15 @@ CPRunContinuesResponse  = -1002;
         postNotificationName:CPApplicationWillFinishLaunchingNotification
         object:self];
 
-    var filename = window.cpOpeningFilename && window.cpOpeningFilename(),
-        needsUntitled = !!_documentController;
+    var needsUntitled = !!_documentController,
+        URLStrings = window.cpOpeningURLStrings && window.cpOpeningURLStrings(),
+        index = 0,
+        count = [URLStrings count];
 
-    if ([filename length])
-    {
-        needsUntitled = ![self _openFile:filename];
-    }
+    for (; index < count; ++index)
+        needsUntitled = ![self _openURL:[CPURL URLWithString:URLStrings[index]]] || needsUntitled;
 
-    if (needsUntitled && [_delegate respondsToSelector: @selector(applicationShouldOpenUntitledFile:)])
+    if (needsUntitled && [_delegate respondsToSelector:@selector(applicationShouldOpenUntitledFile:)])
         needsUntitled = [_delegate applicationShouldOpenUntitledFile:self];
 
     if (needsUntitled)
@@ -302,10 +314,87 @@ CPRunContinuesResponse  = -1002;
 
 - (void)terminate:(id)aSender
 {
-    [[CPDocumentController sharedDocumentController] closeAllDocumentsWithDelegate:self
-                                                              didCloseAllSelector:@selector(_documentController:didCloseAll:context:)
-                                                                      contextInfo:nil];
+    if (![CPPlatform isBrowser])
+    {
+        [[CPDocumentController sharedDocumentController] closeAllDocumentsWithDelegate:self
+                                                                  didCloseAllSelector:@selector(_documentController:didCloseAll:context:)
+                                                                          contextInfo:nil];
+    }
+    else
+    {
+        [[[self keyWindow] platformWindow] _propagateCurrentDOMEvent:YES];
+    }
 }
+
+- (void)setApplicationIconImage:(CPImage)anImage
+{
+    _applicationIconImage = anImage;
+}
+
+- (CPImage)applicationIconImage
+{
+    if (_applicationIconImage)
+        return _applicationIconImage;
+
+    var imagePath = [[CPBundle mainBundle] objectForInfoDictionaryKey:@"CPApplicationIcon"];
+    if (imagePath)
+        _applicationIconImage = [[CPImage alloc] initWithContentsOfFile:imagePath];
+
+    return _applicationIconImage;
+}
+
+- (void)orderFrontStandardAboutPanel:(id)sender
+{
+    [self orderFrontStandardAboutPanelWithOptions:nil];
+}
+
+- (void)orderFrontStandardAboutPanelWithOptions:(CPDictionary)options
+{
+    if (!_aboutPanel)
+    {
+        var mainInfo = [[CPBundle mainBundle] infoDictionary],
+            applicationTitle = [options objectForKey:"ApplicationName"] || [mainInfo objectForKey:@"CPBundleName"],
+            applicationIcon = [options objectForKey:@"ApplicationIcon"] || [self applicationIconImage],
+            version = [options objectForKey:@"Version"] || [mainInfo objectForKey:@"CPBundleVersion"],
+            applicationVersion = [options objectForKey:@"ApplicationVersion"] || [mainInfo objectForKey:@"CPBundleShortVersionString"],
+            copyright = [options objectForKey:@"Copyright"] || [mainInfo objectForKey:@"CPHumanReadableCopyright"];
+
+        var aboutPanelController = [[CPWindowController alloc] initWithWindowCibName:@"AboutPanel"],
+            aboutPanel = [aboutPanelController window],
+            contentView = [aboutPanel contentView],
+            imageView = [contentView viewWithTag:1],
+            applicationLabel = [contentView viewWithTag:2],
+            versionLabel = [contentView viewWithTag:3],
+            copyrightLabel = [contentView viewWithTag:4],
+            standardPath = [[CPBundle bundleForClass:[self class]] pathForResource:@"standardApplicationIcon.png"];
+    
+        // FIXME move this into the CIB eventually
+        [applicationLabel setFont:[CPFont boldSystemFontOfSize:14.0]];
+        [applicationLabel setAlignment:CPCenterTextAlignment];
+        [versionLabel setAlignment:CPCenterTextAlignment];
+        [copyrightLabel setAlignment:CPCenterTextAlignment];
+
+        [imageView setImage:applicationIcon || [[CPImage alloc] initWithContentsOfFile:standardPath 
+                                                                                  size:CGSizeMake(256, 256)]];
+
+        [applicationLabel setStringValue:applicationTitle || ""];
+
+        if (version && applicationVersion)
+            [versionLabel setStringValue:sprintf(@"Version %@ (%@)", applicationVersion, version)];
+        else if (applicationVersion || version)
+            [versionLabel setStringValue:sprintf(@"Version %@", applicationVersion || version)];
+        else
+            [versionLabel setStringValue:@""];
+
+        [copyrightLabel setStringValue:copyright || ""];
+        [aboutPanel center];
+
+        _aboutPanel = aboutPanel;
+    }
+
+    [_aboutPanel orderFront:self];
+}
+
 
 - (void)_documentController:(NSDocumentController *)docController didCloseAll:(BOOL)didCloseAll context:(Object)info
 {
@@ -331,6 +420,11 @@ CPRunContinuesResponse  = -1002;
 - (void)activateIgnoringOtherApps:(BOOL)shouldIgnoreOtherApps
 {
     [CPPlatform activateIgnoringOtherApps:shouldIgnoreOtherApps];
+}
+
+- (void)hideOtherApplications:(id)aSender
+{
+    [CPPlatform hideOtherApplications:self];
 }
 
 /*!
@@ -457,12 +551,27 @@ CPRunContinuesResponse  = -1002;
 {
     _currentEvent = anEvent;
 
+    var willPropagate = [[[anEvent window] platformWindow] _willPropagateCurrentDOMEvent];
+
+    // temporarily pretend we won't propagate the event. we'll restore the saved value later
+    // we do this outside the if so that changes user code might make in _handleKeyEquiv. are preserved
+    [[[anEvent window] platformWindow] _propagateCurrentDOMEvent:NO];
+
     // Check if this is a candidate for key equivalent...
     if ([anEvent _couldBeKeyEquivalent] && [self _handleKeyEquivalent:anEvent])
     {
-        [[[anEvent window] platformWindow] _propagateCurrentDOMEvent:NO];
+        var characters = [anEvent characters],
+            modifierFlags = [anEvent modifierFlags];
+
+        // Unconditionally propagate on these keys to solve browser copy paste bugs
+        if ((characters == "c" || characters == "x" || characters == "v") && (modifierFlags & CPPlatformActionKeyMask))
+            [[[anEvent window] platformWindow] _propagateCurrentDOMEvent:YES];
+
         return;
     }
+
+    // if we make it this far, then restore the original willPropagate value
+    [[[anEvent window] platformWindow] _propagateCurrentDOMEvent:willPropagate];
 
     if (_eventListeners.length)
     {
@@ -515,6 +624,11 @@ CPRunContinuesResponse  = -1002;
     return _windows;
 }
 
+- (void)hide:(id)aSender
+{
+    [CPPlatform hide:self];
+}
+
 // Accessing the Main Menu
 /*!
     Returns the application's main menu
@@ -547,16 +661,6 @@ CPRunContinuesResponse  = -1002;
 - (void)orderFrontColorPanel:(id)aSender
 {
     [[CPColorPanel sharedColorPanel] orderFront:self];
-}
-
-- (void)orderFrontStandardAboutPanel:(id)aSender
-{
-    [self orderFrontStandardAboutPanelWithOptions:nil];
-}
-
-- (void)orderFrontStandardAboutPanelWithOptions:(CPDictionary)aDictionary
-{
-    // FIXME: Implement.
 }
 
 // Posting Actions
@@ -597,7 +701,7 @@ CPRunContinuesResponse  = -1002;
 - (BOOL)sendAction:(SEL)anAction to:(id)aTarget from:(id)aSender
 {
     var target = [self targetForAction:anAction to:aTarget from:aSender];
-    
+
     if (!target)
         return NO;
     
@@ -759,6 +863,7 @@ CPRunContinuesResponse  = -1002;
         return;
     }
     
+    [aWindow orderFront:self];
     [aWindow _attachSheet:aSheet modalDelegate:aModalDelegate didEndSelector:aDidEndSelector contextInfo:aContextInfo];
 }
 
@@ -834,18 +939,30 @@ CPRunContinuesResponse  = -1002;
     return _namedArgs;
 }
 
-- (BOOL)_openFile:(CPString)aFilename
+- (BOOL)_openURL:(CPURL)aURL
 {
     if (_delegate && [_delegate respondsToSelector:@selector(application:openFile:)])
-        return [_delegate application:self openFile:aFilename];
-    else
-        return [_documentController openDocumentWithContentsOfURL:aFilename display:YES error:NULL];
+    {
+        CPLog.warn("application:openFile: is deprecated, use application:openURL: instead.");
+        return [_delegate application:self openFile:[aURL absoluteString]];
+    }
+
+    if (_delegate && [_delegate respondsToSelector:@selector(application:openURL:)])
+        return [_delegate application:self openURL:aURL];
+
+    return !![_documentController openDocumentWithContentsOfURL:aURL display:YES error:NULL];
 }
 
 - (void)_didResignActive
 {
     if (self._activeMenu)
         [self._activeMenu cancelTracking];
+}
+
++ (CPString)defaultThemeName
+{
+    // FIXME: don't hardcode
+    return ([[CPBundle mainBundle] objectForInfoDictionaryKey:"CPDefaultTheme"] || @"Aristo");
 }
 
 @end
@@ -952,7 +1069,7 @@ var _CPAppBootstrapperActions = nil;
 
 + (BOOL)loadDefaultTheme
 {
-    var blend = [[CPThemeBlend alloc] initWithContentsOfURL:[[CPBundle bundleForClass:[CPApplication class]] pathForResource:@"Aristo.blend"]];
+    var blend = [[CPThemeBlend alloc] initWithContentsOfURL:[[CPBundle bundleForClass:[CPApplication class]] pathForResource:[CPApplication defaultThemeName] + ".blend"]];
 
     [blend loadWithDelegate:self];
 
@@ -961,7 +1078,7 @@ var _CPAppBootstrapperActions = nil;
 
 + (void)blendDidFinishLoading:(CPBundle)aBundle
 {
-    [CPTheme setDefaultTheme:[CPTheme themeNamed:@"Aristo"]];
+    [CPTheme setDefaultTheme:[CPTheme themeNamed:[CPApplication defaultThemeName]]];
 
     [self performActions];
 }
@@ -986,6 +1103,11 @@ var _CPAppBootstrapperActions = nil;
 + (void)cibDidFinishLoading:(CPCib)aCib
 {
     [self performActions];
+}
+
++ (void)reset
+{
+	_CPAppBootstrapperActions = nil;
 }
 
 @end

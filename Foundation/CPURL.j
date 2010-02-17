@@ -200,6 +200,12 @@ CPURLCustomIconKey                  = @"CPURLCustomIconKey";
     [_resourceValues setObject:anObject forKey:aKey];
 }
 
+- (CPString)staticResourceData
+{
+    // FIXME: This probably shouldn't go through CFBundle for no reason.
+    return CFBundle.dataContentsAtPath([self path]);
+}
+
 @end
 
 @implementation CPURL (CPCoding)

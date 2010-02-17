@@ -29,14 +29,6 @@
 #include "Platform/Platform.h"
 #include "Platform/DOM/CPDOMDisplayServer.h"
 
-
-CPLineBreakByWordWrapping       = 0;
-CPLineBreakByCharWrapping       = 1;
-CPLineBreakByClipping           = 2;
-CPLineBreakByTruncatingHead     = 3;
-CPLineBreakByTruncatingTail     = 4;
-CPLineBreakByTruncatingMiddle   = 5;
-
 CPTextFieldSquareBezel          = 0;    /*! A textfield bezel with a squared corners. */
 CPTextFieldRoundedBezel         = 1;    /*! A textfield bezel with rounded corners. */
 
@@ -55,11 +47,7 @@ var CPTextFieldDOMInputElement = nil,
     CPTextFieldInputIsActive = NO,
     CPTextFieldCachedSelectStartFunction = nil,
     CPTextFieldCachedDragFunction = nil,
-    
-    CPTextFieldBlurFunction = nil,
-    CPTextFieldKeyUpFunction = nil,
-    CPTextFieldKeyPressFunction = nil,
-    CPTextFieldKeyDownFunction = nil;
+    CPTextFieldBlurFunction = nil;
     
 #endif
 
@@ -173,7 +161,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 
 + (id)themeAttributes
 {
-    return [CPDictionary dictionaryWithObjects:[_CGInsetMakeZero(), _CGInsetMake(2.0, 2.0, 2.0, 2.0), nil]
+    return [CPDictionary dictionaryWithObjects:[_CGInsetMakeZero(), _CGInsetMake(2.0, 2.0, 2.0, 2.0), [CPNull null]]
                                        forKeys:[@"bezel-inset", @"content-inset", @"bezel-color"]];
 }
 
@@ -209,95 +197,11 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
             return true;
         }
 
-        CPTextFieldKeyDownFunction = function(aDOMEvent)
-        {
-            CPTextFieldTextDidChangeValue = [CPTextFieldInputOwner stringValue];
-
-            aDOMEvent = aDOMEvent || window.event;
-
-            if (aDOMEvent.keyCode == CPReturnKeyCode || aDOMEvent.keyCode == CPTabKeyCode) 
-                CPTextFieldKeyPressFunction(aDOMEvent);
-
-            return true;
-        }
-
-        CPTextFieldKeyPressFunction = function(aDOMEvent)
-        {
-            aDOMEvent = aDOMEvent || window.event;
-
-            CPTextFieldKeyUpFunction();
-
-            if (aDOMEvent.keyCode == CPReturnKeyCode || aDOMEvent.keyCode == CPTabKeyCode) 
-            {
-                if (aDOMEvent.preventDefault)
-                    aDOMEvent.preventDefault(); 
-                if (aDOMEvent.stopPropagation)
-                    aDOMEvent.stopPropagation();
-                aDOMEvent.cancelBubble = true;
-
-                var owner = CPTextFieldInputOwner;
-
-                if (aDOMEvent && aDOMEvent.keyCode == CPReturnKeyCode)
-                {
-                    if (owner._isEditing)
-                    {
-                        owner._isEditing = NO;
-                        [owner textDidEndEditing:[CPNotification notificationWithName:CPControlTextDidEndEditingNotification object:owner userInfo:nil]];
-                    }
-
-                    [owner sendAction:[owner action] to:[owner target]];
-                    [owner selectText:nil];
-                }
-                else if (aDOMEvent && aDOMEvent.keyCode == CPTabKeyCode)
-                {
-                    if (!aDOMEvent.shiftKey)
-                        [[owner window] selectNextKeyView:owner];
-                    else
-                        [[owner window] selectPreviousKeyView:owner];
-                }
-            }
-
-            [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
-        }
-
-        CPTextFieldKeyUpFunction = function()
-        {
-            [CPTextFieldInputOwner _setStringValue:CPTextFieldDOMInputElement.value];
-
-            if ([CPTextFieldInputOwner stringValue] !== CPTextFieldTextDidChangeValue)
-            {
-                if (!CPTextFieldInputOwner._isEditing)
-                {
-                    CPTextFieldInputOwner._isEditing = YES;
-                    [CPTextFieldInputOwner textDidBeginEditing:[CPNotification notificationWithName:CPControlTextDidBeginEditingNotification object:CPTextFieldInputOwner userInfo:nil]];
-                }
-
-                [CPTextFieldInputOwner textDidChange:[CPNotification notificationWithName:CPControlTextDidChangeNotification object:CPTextFieldInputOwner userInfo:nil]];
-                CPTextFieldTextDidChangeValue = [CPTextFieldInputOwner stringValue];
-            }
-
-            [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
-        }
-
         CPTextFieldHandleBlur = function(anEvent)
         {            
-            var owner = CPTextFieldInputOwner;
             CPTextFieldInputOwner = nil;
 
             [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
-        }
-
-        if (document.attachEvent)
-        {
-            CPTextFieldDOMInputElement.attachEvent("on" + CPDOMEventKeyUp, CPTextFieldKeyUpFunction);
-            CPTextFieldDOMInputElement.attachEvent("on" + CPDOMEventKeyDown, CPTextFieldKeyDownFunction);
-            CPTextFieldDOMInputElement.attachEvent("on" + CPDOMEventKeyPress, CPTextFieldKeyPressFunction);
-        }
-        else
-        {
-            CPTextFieldDOMInputElement.addEventListener(CPDOMEventKeyUp, CPTextFieldKeyUpFunction, NO);
-            CPTextFieldDOMInputElement.addEventListener(CPDOMEventKeyDown, CPTextFieldKeyDownFunction, NO);
-            CPTextFieldDOMInputElement.addEventListener(CPDOMEventKeyPress, CPTextFieldKeyPressFunction, NO);
         }
 
         //FIXME make this not onblur
@@ -329,10 +233,6 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
             CPTextFieldDOMPasswordInputElement.style.background = "transparent";
             CPTextFieldDOMPasswordInputElement.style.outline = "none";
             CPTextFieldDOMPasswordInputElement.type = "password";
-
-            CPTextFieldDOMPasswordInputElement.attachEvent("on" + CPDOMEventKeyUp, CPTextFieldKeyUpFunction);
-            CPTextFieldDOMPasswordInputElement.attachEvent("on" + CPDOMEventKeyDown, CPTextFieldKeyDownFunction);
-            CPTextFieldDOMPasswordInputElement.attachEvent("on" + CPDOMEventKeyPress, CPTextFieldKeyPressFunction);
 
             CPTextFieldDOMPasswordInputElement.onblur = CPTextFieldBlurFunction;
         }
@@ -593,11 +493,11 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 
     if (document.attachEvent)
     {
-        CPTextFieldCachedSelectStartFunction = document.body.onselectstart;
-        CPTextFieldCachedDragFunction = document.body.ondrag;
+        CPTextFieldCachedSelectStartFunction = [[self window] platformWindow]._DOMBodyElement.onselectstart;
+        CPTextFieldCachedDragFunction = [[self window] platformWindow]._DOMBodyElement.ondrag;
         
-        document.body.ondrag = function () {};
-        document.body.onselectstart = function () {};
+        [[self window] platformWindow]._DOMBodyElement.ondrag = function () {};
+        [[self window] platformWindow]._DOMBodyElement.onselectstart = function () {};
     }
     
     [self textDidFocus:[CPNotification notificationWithName:CPTextFieldDidFocusNotification object:self userInfo:nil]];
@@ -640,8 +540,8 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
         CPTextFieldCachedSelectStartFunction = nil;
         CPTextFieldCachedDragFunction = nil;
         
-        document.body.ondrag = CPTextFieldCachedDragFunction
-        document.body.onselectstart = CPTextFieldCachedSelectStartFunction
+        [[self window] platformWindow]._DOMBodyElement.ondrag = CPTextFieldCachedDragFunction;
+        [[self window] platformWindow]._DOMBodyElement.onselectstart = CPTextFieldCachedSelectStartFunction;
     }
     
 #endif
@@ -661,6 +561,88 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
     return YES;
 }
 
+/*!
+    Text fields require panels to become key window, so this returns \c YES.
+*/
+- (BOOL)needsPanelToBecomeKey
+{
+    return YES;
+}
+
+- (void)mouseDown:(CPEvent)anEvent
+{
+    // Don't track! (ever?)
+    if ([self isEditable] && [self isEnabled])
+        return [[self window] makeFirstResponder:self];
+    else
+        return [[self nextResponder] mouseDown:anEvent];
+}
+
+- (void)mouseUp:(CPEvent)anEvent
+{
+    if (![self isEditable] || ![self isEnabled])
+        [[self nextResponder] mouseUp:anEvent];
+}
+
+- (void)mouseDragged:(CPEvent)anEvent
+{
+    if (![self isEditable] || ![self isEnabled])
+        [[self nextResponder] mouseDragged:anEvent];
+}
+
+- (void)keyUp:(CPEvent)anEvent
+{
+    var oldValue = [self stringValue];
+    [self _setStringValue:[self _inputElement].value];
+
+    if (oldValue !== [self stringValue])
+    {
+        if (!_isEditing)
+        {
+            _isEditing = YES;
+            [self textDidBeginEditing:[CPNotification notificationWithName:CPControlTextDidBeginEditingNotification object:self userInfo:nil]];
+        }
+
+        [self textDidChange:[CPNotification notificationWithName:CPControlTextDidChangeNotification object:self userInfo:nil]];
+    }
+
+    [[[self window] platformWindow] _propagateCurrentDOMEvent:YES];
+}
+
+- (void)keyDown:(CPEvent)anEvent
+{
+    if ([anEvent keyCode] === CPReturnKeyCode)
+    {
+        if (_isEditing)
+        {
+            _isEditing = NO;
+            [self textDidEndEditing:[CPNotification notificationWithName:CPControlTextDidEndEditingNotification object:self userInfo:nil]];
+        }
+
+        [self sendAction:[self action] to:[self target]];
+        [self selectText:nil];
+
+        [[[self window] platformWindow] _propagateCurrentDOMEvent:NO];
+    }
+    else if ([anEvent keyCode] === CPTabKeyCode)
+    {
+        if ([anEvent modifierFlags] & CPShiftKeyMask)
+            [[self window] selectPreviousKeyView:self];
+        else
+            [[self window] selectNextKeyView:self];
+
+        if ([[[self window] firstResponder] respondsToSelector:@selector(selectText:)])
+            [[[self window] firstResponder] selectText:self];
+
+        [[[self window] platformWindow] _propagateCurrentDOMEvent:NO];
+    }
+    else
+        [[[self window] platformWindow] _propagateCurrentDOMEvent:YES];
+
+    [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
+}
+
+
 - (void)textDidBlur:(CPNotification)note
 {
     //this looks to prevent false propagation of notifications for other objects
@@ -677,15 +659,6 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
         return;
 
     [[CPNotificationCenter defaultCenter] postNotification:note];
-}
-
-- (void)mouseDown:(CPEvent)anEvent
-{
-    // Don't track! (ever?)
-    if ([self isEditable] && [self isEnabled])
-        return [[self window] makeFirstResponder:self];
-    else
-        return [[self nextResponder] mouseDown:anEvent];
 }
 
 /*!
@@ -803,9 +776,149 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 #if PLATFORM(DOM)
     var element = [self _inputElement];
     
-    if (element.parentNode === _DOMElement && ([self isEditable] || [self isSelectable]))
-        window.setTimeout(function() { element.select(); }, 0);
+    if (([self isEditable] || [self isSelectable]))
+    {
+        if ([[self window] firstResponder] === self)
+            window.setTimeout(function() { element.select(); }, 0);
+        else
+        {
+            [[self window] makeFirstResponder:self];
+            window.setTimeout(function() {[self selectText:sender];}, 0);
+        }
+    }
 #endif
+}
+
+- (void)copy:(id)sender
+{
+    if (![CPPlatform isBrowser])
+    {
+        var selectedRange = [self selectedRange];
+
+        if (selectedRange.length < 1)
+            return;
+
+        var pasteboard = [CPPasteboard generalPasteboard],
+            stringValue = [self stringValue],
+            stringForPasting = [stringValue substringWithRange:selectedRange];
+
+        [pasteboard declareTypes:[CPStringPboardType] owner:nil];
+        [pasteboard setString:stringForPasting forType:CPStringPboardType];
+    }
+}
+
+- (void)cut:(id)sender
+{
+    if (![CPPlatform isBrowser])
+    {
+        [self copy:sender];
+        [self deleteBackwards:sender];
+    }
+}
+
+- (void)paste:(id)sender
+{
+    if (![CPPlatform isBrowser])
+    {
+        var pasteboard = [CPPasteboard generalPasteboard];
+
+        if (![[pasteboard types] containsObject:CPStringPboardType])
+            return;
+
+        [self deleteBackwards:sender];
+
+        var selectedRange = [self selectedRange],
+            stringValue = [self stringValue],
+            pasteString = [pasteboard stringForType:CPStringPboardType],
+            newValue = [stringValue stringByReplacingCharactersInRange:selectedRange withString:pasteString];
+
+        [self setStringValue:newValue];
+        [self setSelectedRange:CPMakeRange(selectedRange.location+pasteString.length, 0)];
+    }
+}
+
+- (CPRange)selectedRange
+{
+    if ([[self window] firstResponder] !== self)
+        return CPMakeRange(0, 0);
+
+    // we wrap this in try catch because firefox will throw an exception in certain instances
+    try 
+    {
+        var inputElement = [self _inputElement],
+            selectionStart = inputElement.selectionStart,
+            selectionEnd = inputElement.selectionEnd;
+
+        if ([selectionStart isKindOfClass:CPNumber])
+            return CPMakeRange(selectionStart, selectionEnd - selectionStart);    
+
+        // browsers which don't support selectionStart/selectionEnd (aka IE).
+        var theDocument = inputElement.ownerDocument || inputElement.document,
+            selectionRange = theDocument.selection.createRange(),
+            range = inputElement.createTextRange();
+
+        if (range.inRange(selectionRange))
+        {
+            range.setEndPoint('EndToStart', selectionRange);
+            return CPMakeRange(range.text.length, selectionRange.text.length);
+        }
+    } 
+    catch (e) 
+    {
+        // fall through to the return
+    }
+
+    return CGMakeRange(0, 0);
+}
+
+- (void)setSelectedRange:(CPRange)aRange
+{
+    if (![[self window] firstResponder] === self)
+        return;
+
+    var inputElement = [self _inputElement];
+
+    try 
+    {
+        if ([inputElement.selectionStart isKindOfClass:CPNumber])
+        {
+            inputElement.selectionStart = aRange.location;
+            inputElement.selectionEnd = CPMaxRange(aRange);
+        }
+        else
+        {
+            // browsers which don't support selectionStart/selectionEnd (aka IE).
+            var theDocument = inputElement.ownerDocument || inputElement.document,
+                existingRange = theDocument.selection.createRange(),
+                range = inputElement.createTextRange();
+    
+            if (range.inRange(existingRange))
+            {
+                range.collapse(true);
+                range.move('character', aRange.location);
+                range.moveEnd('character', aRange.length);
+                range.select();
+            }
+        }
+    }
+    catch (e)
+    {
+    }
+}
+
+- (void)selectAll:(id)sender
+{
+    [self selectText:sender];
+}
+
+- (void)deleteBackwards:(id)sender
+{
+    var selectedRange = [self selectedRange],
+        stringValue = [self stringValue],
+        newValue = [stringValue stringByReplacingCharactersInRange:selectedRange withString:""];
+
+    [self setStringValue:newValue];
+    [self setSelectedRange:CPMakeRange(selectedRange.location, 0)];
 }
 
 #pragma mark Setting the Delegate
@@ -923,6 +1036,8 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
     {
         var view = [[_CPImageAndTextView alloc] initWithFrame:_CGRectMakeZero()];
         //[view setImagePosition:CPNoImage];
+        
+        [view setHitTests:NO];
         
         return view;
     }

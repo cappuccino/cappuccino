@@ -58,6 +58,8 @@ CPPressedTab    = 2;
     
     CPView      _view;
     CPView      _auxiliaryView;
+    
+    CPTabView   _tabView;
 }
 
 - (id)init
@@ -166,6 +168,14 @@ CPPressedTab    = 2;
 - (CPTabView)tabView
 {
     return _tabView;
+}
+
+/*!
+    @ignore
+*/
+- (void)_setTabView:(CPTabView)aView
+{
+    _tabView = aView;
 }
 
 @end

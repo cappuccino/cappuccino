@@ -28,10 +28,10 @@ PREPARE_DOM_OPTIMIZATION();
 
 var displayObjects      = [],
     displayObjectsByUID = { },
-    
+
     layoutObjects       = [],
     layoutObjectsByUID  = { },
-    
+
     runLoop             = [CPRunLoop mainRunLoop];
 
 function _CPDisplayServerAddDisplayObject(anObject)
@@ -44,7 +44,7 @@ function _CPDisplayServerAddDisplayObject(anObject)
     var index = displayObjects.length;
 
     displayObjectsByUID[UID] = index;
-    displayObjects[index] = anObject;  
+    displayObjects[index] = anObject;
 }
 
 function _CPDisplayServerAddLayoutObject(anObject)
@@ -100,7 +100,7 @@ function _CPDisplayServerAddLayoutObject(anObject)
             displayObjectsByUID = { };
         }
         else
-            displayObjects = displayObjects.splice(0, index);
+            displayObjects.splice(0, index);
     }
 
     [runLoop performSelector:@selector(run) target:self argument:nil order:0 modes:[CPDefaultRunLoopMode]];

@@ -100,7 +100,7 @@
 + (CPButton)themedStandardButton
 {
     var button = [self button];
-    
+
     [button setTitle:@"Cancel"];
 
     return button;
@@ -552,7 +552,7 @@
     [segmentedControl setWidth:40.0 forSegment:0];
     [segmentedControl setLabel:@"foo" forSegment:0];
     [segmentedControl setTag:1 forSegment:0];
-    
+
     [segmentedControl setWidth:60.0 forSegment:1];
     [segmentedControl setLabel:@"bar" forSegment:1];
     [segmentedControl setTag:2 forSegment:1];
@@ -785,6 +785,118 @@
     [button setValue:CGSizeMake(-1.0, 20.0) forThemeAttribute:@"max-size"];
 
     return button;
+}
+
++ (CPScroller)themedVerticalScroller
+{
+    var scroller = [[CPScroller alloc] initWithFrame:CGRectMake(0.0, 0.0, 15.0, 170.0)],
+        trackColor = PatternColor([_CPCibCustomResource imageResourceWithName:"HUD/scroller-vertical-track.png" size:CGSizeMake(15.0, 1.0)]),
+        disabledTrackColor = PatternColor([_CPCibCustomResource imageResourceWithName:"HUD/scroller-vertical-track-disabled.png" size:CGSizeMake(15.0, 1.0)]);
+        
+    [scroller setValue:21.0 forThemeAttribute:@"minimum-knob-length" inState:CPThemeStateVertical];
+    [scroller setValue:CGInsetMake(0.0, 0.0, 0.0, 0.0) forThemeAttribute:@"knob-inset" inState:CPThemeStateVertical];
+    [scroller setValue:CGInsetMake(-9.0, 0.0, -9.0, 0.0) forThemeAttribute:@"track-inset" inState:CPThemeStateVertical];
+
+    [scroller setValue:trackColor forThemeAttribute:@"knob-slot-color" inState:CPThemeStateVertical];
+    [scroller setValue:disabledTrackColor forThemeAttribute:@"knob-slot-color" inState:CPThemeStateVertical | CPThemeStateDisabled];
+
+    var arrowColor = PatternColor([_CPCibCustomResource imageResourceWithName:"HUD/scroller-up-arrow.png" size:CGSizeMake(15.0, 24.0)]),
+        highlightedArrowColor = PatternColor([_CPCibCustomResource imageResourceWithName:"HUD/scroller-up-arrow-highlighted.png" size:CGSizeMake(15.0, 24.0)]),
+        disabledArrowColor = PatternColor([_CPCibCustomResource imageResourceWithName:"HUD/scroller-up-arrow-disabled.png" size:CGSizeMake(15.0, 24.0)]);
+
+    [scroller setValue:CGSizeMake(15.0, 24.0) forThemeAttribute:@"decrement-line-size" inState:CPThemeStateVertical];
+    [scroller setValue:arrowColor forThemeAttribute:@"decrement-line-color" inState:CPThemeStateVertical];
+    [scroller setValue:highlightedArrowColor forThemeAttribute:@"decrement-line-color" inState:CPThemeStateVertical | CPThemeStateHighlighted],
+    [scroller setValue:disabledArrowColor forThemeAttribute:@"decrement-line-color" inState:CPThemeStateVertical | CPThemeStateDisabled];
+
+    var arrowColor = PatternColor([_CPCibCustomResource imageResourceWithName:"HUD/scroller-down-arrow.png" size:CGSizeMake(15.0, 24.0)]),
+        highlightedArrowColor = PatternColor([_CPCibCustomResource imageResourceWithName:"HUD/scroller-down-arrow-highlighted.png" size:CGSizeMake(15.0, 24.0)]),
+        disabledArrowColor = PatternColor([_CPCibCustomResource imageResourceWithName:"HUD/scroller-down-arrow-disabled.png" size:CGSizeMake(15.0, 24.0)]);
+
+    [scroller setValue:CGSizeMake(15.0, 24.0) forThemeAttribute:@"increment-line-size" inState:CPThemeStateVertical];
+    [scroller setValue:arrowColor forThemeAttribute:@"increment-line-color" inState:CPThemeStateVertical];
+    [scroller setValue:highlightedArrowColor forThemeAttribute:@"increment-line-color" inState:CPThemeStateVertical | CPThemeStateHighlighted];
+    [scroller setValue:disabledArrowColor forThemeAttribute:@"increment-line-color" inState:CPThemeStateVertical | CPThemeStateDisabled];
+    
+    var knobColor = PatternColor([[CPThreePartImage alloc] initWithImageSlices:
+            [
+                [_CPCibCustomResource imageResourceWithName:"HUD/scroller-vertical-knob-top.png" size:CGSizeMake(15.0, 10.0)],
+                [_CPCibCustomResource imageResourceWithName:"HUD/scroller-vertical-knob-center.png" size:CGSizeMake(15.0, 1.0)],
+                [_CPCibCustomResource imageResourceWithName:"HUD/scroller-vertical-knob-bottom.png" size:CGSizeMake(15.0, 10.0)]
+            ]
+        isVertical:YES]);
+
+    /*var knobDisabledColor = PatternColor([[CPThreePartImage alloc] initWithImageSlices:
+            [
+                [_CPCibCustomResource imageResourceWithName:"HUD/scroller-vertical-knob-disabled-top.png" size:CGSizeMake(15.0, 10.0)],
+                [_CPCibCustomResource imageResourceWithName:"HUD/scroller-vertical-knob-disabled-center.png" size:CGSizeMake(15.0, 1.0)],
+                [_CPCibCustomResource imageResourceWithName:"HUD/scroller-vertical-knob-disabled-bottom.png" size:CGSizeMake(15.0, 10.0)]
+            ]
+        isVertical:YES]);*/
+    
+    [scroller setValue:knobColor forThemeAttribute:@"knob-color" inState:CPThemeStateVertical];
+    //[scroller setValue:knobDisabledColor forThemeAttribute:@"knob-color" inState:CPThemeStateVertical|CPThemeStateDisabled];
+    
+    [scroller setFloatValue:0.1];
+    [scroller setKnobProportion:0.5];
+
+    return scroller;
+}
+
++ (CPScroller)themedHorizontalScroller
+{
+    var scroller = [[CPScroller alloc] initWithFrame:CGRectMake(0.0, 0.0, 170.0, 15.0)],
+        trackColor = PatternColor([_CPCibCustomResource imageResourceWithName:"HUD/scroller-horizontal-track.png" size:CGSizeMake(1.0, 15.0)]),
+        disabledTrackColor = PatternColor([_CPCibCustomResource imageResourceWithName:"HUD/scroller-horizontal-track-disabled.png" size:CGSizeMake(1.0, 15.0)]);
+
+    [scroller setValue:21.0 forThemeAttribute:@"minimum-knob-length"];
+    [scroller setValue:CGInsetMake(0.0, 0.0, 0.0, 0.0) forThemeAttribute:@"knob-inset"];
+    [scroller setValue:CGInsetMake(0.0, -7.0, 0.0, -9.0) forThemeAttribute:@"track-inset"];
+
+    [scroller setValue:trackColor forThemeAttribute:@"knob-slot-color"];
+    [scroller setValue:disabledTrackColor forThemeAttribute:@"knob-slot-color" inState:CPThemeStateDisabled];
+
+    var arrowColor = PatternColor([_CPCibCustomResource imageResourceWithName:"HUD/scroller-left-arrow.png" size:CGSizeMake(24.0, 15.0)]),
+        highlightedArrowColor = PatternColor([_CPCibCustomResource imageResourceWithName:"HUD/scroller-left-arrow-highlighted.png" size:CGSizeMake(24.0, 15.0)]),
+        disabledArrowColor = PatternColor([_CPCibCustomResource imageResourceWithName:"HUD/scroller-left-arrow-disabled.png" size:CGSizeMake(24.0, 15.0)]);
+
+    [scroller setValue:CGSizeMake(24.0, 15.0) forThemeAttribute:@"decrement-line-size"];
+    [scroller setValue:arrowColor forThemeAttribute:@"decrement-line-color"];
+    [scroller setValue:highlightedArrowColor forThemeAttribute:@"decrement-line-color" inState:CPThemeStateHighlighted],
+    [scroller setValue:disabledArrowColor forThemeAttribute:@"decrement-line-color" inState:CPThemeStateDisabled];
+
+    var arrowColor = PatternColor([_CPCibCustomResource imageResourceWithName:"HUD/scroller-right-arrow.png" size:CGSizeMake(24.0, 15.0)]),
+        highlightedArrowColor = PatternColor([_CPCibCustomResource imageResourceWithName:"HUD/scroller-right-arrow-highlighted.png" size:CGSizeMake(24.0, 15.0)]),
+        disabledArrowColor = PatternColor([_CPCibCustomResource imageResourceWithName:"HUD/scroller-right-arrow-disabled.png" size:CGSizeMake(24.0, 15.0)]);
+
+    [scroller setValue:CGSizeMake(24.0, 15.0) forThemeAttribute:@"increment-line-size"];
+    [scroller setValue:arrowColor forThemeAttribute:@"increment-line-color"];
+    [scroller setValue:highlightedArrowColor forThemeAttribute:@"increment-line-color" inState:CPThemeStateHighlighted];
+    [scroller setValue:disabledArrowColor forThemeAttribute:@"increment-line-color" inState:CPThemeStateDisabled];
+    
+    var knobColor = PatternColor([[CPThreePartImage alloc] initWithImageSlices:
+            [
+                [_CPCibCustomResource imageResourceWithName:"HUD/scroller-horizontal-knob-left.png" size:CGSizeMake(10.0, 15.0)],
+                [_CPCibCustomResource imageResourceWithName:"HUD/scroller-horizontal-knob-center.png" size:CGSizeMake(1.0, 15.0)],
+                [_CPCibCustomResource imageResourceWithName:"HUD/scroller-horizontal-knob-right.png" size:CGSizeMake(10.0, 15.0)]
+            ]
+        isVertical:NO]);
+
+    /*var knobDisabledColor = PatternColor([[CPThreePartImage alloc] initWithImageSlices:
+            [
+                [_CPCibCustomResource imageResourceWithName:"HUD/scroller-horizontal-knob-disabled-left.png" size:CGSizeMake(10.0, 15.0)],
+                [_CPCibCustomResource imageResourceWithName:"HUD/scroller-horizontal-knob-disabled-center.png" size:CGSizeMake(1.0, 15.0)],
+                [_CPCibCustomResource imageResourceWithName:"HUD/scroller-horizontal-knob-disabled-right.png" size:CGSizeMake(10.0, 15.0)]
+            ]
+        isVertical:NO]);*/
+
+    [scroller setValue:knobColor forThemeAttribute:@"knob-color"];
+    //[scroller setValue:knobDisabledColor forThemeAttribute:@"knob-color" inState:CPThemeStateDisabled];
+
+    [scroller setFloatValue:0.1];
+    [scroller setKnobProportion:0.5];
+
+    return scroller;
 }
 
 @end

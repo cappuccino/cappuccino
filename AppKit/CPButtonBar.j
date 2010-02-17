@@ -8,6 +8,16 @@
 {
 }
 
+- (id)initWithFrame:(CGRect)aFrame
+{
+    self = [super initWithFrame:aFrame];
+
+    if (self)
+        [self setNeedsLayout];
+
+    return self;
+}
+
 + (CPString)themeClass
 {
     return @"button-bar";
@@ -15,7 +25,7 @@
 
 + (id)themeAttributes
 {
-    return [CPDictionary dictionaryWithObjects:[nil]
+    return [CPDictionary dictionaryWithObjects:[[CPNull null]]
                                        forKeys:[@"bezel-color"]];
 }
 

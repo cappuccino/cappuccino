@@ -1,0 +1,39 @@
+/*
+ * Jakefile
+ * __project.name__
+ *
+ * Created by __user.name__ on __project.date__.
+ * Copyright __project.year__, __organization.name__ All rights reserved.
+ */
+
+var ENV = require("system").env,
+    FILE = require("file"),
+    task = require("jake").task,
+    FileList = require("jake").FileList,
+    app = require("cappuccino/jake").app,
+    configuration = ENV["CONFIG"] || ENV["CONFIGURATION"] || ENV["c"] || "Debug";
+
+app ("__project.nameasidentifier__", function(task)
+{
+    task.setBuildIntermediatesPath(FILE.join("Build", "__project.nameasidentifier__.build", configuration));
+    task.setBuildPath(FILE.join("Build", configuration));
+
+    task.setProductName("__project.name__");
+    task.setIdentifier("__project.identifier__");
+    task.setVersion("1.0");
+    task.setAuthor("__organization.name__");
+    task.setEmail("__organization.email__");
+    task.setSummary("__project.name__");
+    task.setSources(new FileList("**/*.j"));
+    task.setResources(new FileList("Resources/*"));
+    task.setIndexFilePath("index.html");
+    task.setInfoPlistPath("Info.plist");
+    task.setNib2CibFlags("-R Resources/");
+
+    if (configuration === "Debug")
+        task.setCompilerFlags("-DDEBUG -g");
+    else
+        task.setCompilerFlags("-O");
+});
+
+task ("default", ["__project.nameasidentifier__"]);
