@@ -91,7 +91,7 @@ ConverterConversionException    = @"ConverterConversionException";
     }
     catch(anException)
     {
-        print(anException);
+        CPLog.fatal(anException);
     }
 }
 

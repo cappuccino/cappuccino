@@ -1,9 +1,9 @@
 /*
- * CPLog.j
- * Foundation
+ * CPLog.js
+ * Objective-J
  *
  * Created by Thomas Robinson.
- * Copyright 2008, 280 North, Inc.
+ * Copyright 2008-2010, 280 North, Inc.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -40,6 +40,7 @@ exports.CPLogRegister = function(aProvider, aMaxLevel)
 {
     exports.CPLogRegisterRange(aProvider, CPLogLevels[0], aMaxLevel || CPLogLevels[CPLogLevels.length-1]);
 }
+
 // Register a logger for a range of levels
 exports.CPLogRegisterRange = function(aProvider, aMinLevel, aMaxLevel)
 {

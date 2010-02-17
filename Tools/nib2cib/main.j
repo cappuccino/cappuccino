@@ -30,11 +30,10 @@
 @import "Nib2CibKeyedUnarchiver.j"
 @import "Converter.j"
 
+CPLogRegister(CPLogPrint, "fatal");
+
 var FILE = require("file"),
     OS = require("os");
-
-
-CPLogRegister(CPLogPrint);
 
 function printUsage()
 {
@@ -99,6 +98,13 @@ function main(args)
                                 break;
 
             case "-R":          [converter setResourcesPath:args[++index]];
+                                break;
+
+            case "-v":          CPLogRegister(CPLogPrint, "warn");
+                                break;
+
+            case "-vv":
+            case "--verbose":   CPLogRegister(CPLogPrint, "trace");
                                 break;
 
             default:            if ([converter inputPath])
