@@ -35,12 +35,13 @@ function FileExecutable(/*String*/ aPath)
     FileExecutablesForPaths[aPath] = this;
 
     var fileContents = rootResource.nodeAtSubPath(aPath).contents(),
-        executable = NULL;
+        executable = NULL,
+        extension = FILE.extension(aPath);
 
     if (fileContents.match(/^@STATIC;/))
         executable = decompile(fileContents, aPath);
 
-    else if (FILE.extension(aPath) === ".j")
+    else if (extension === ".j" || extension === "")
         executable = preprocess(fileContents, aPath, OBJJ_PREPROCESSOR_DEBUG_SYMBOLS);
 
     else
