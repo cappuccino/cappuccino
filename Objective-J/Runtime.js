@@ -73,17 +73,6 @@ function objj_object()
     this.__address  = -1;
 }
 
-// Addressing Objects
-
-var OBJECT_COUNT   = 0;
-
-function _objj_generateObjectHash()
-{
-    return OBJECT_COUNT++;
-}
-
-#define _objj_generateObjectHash() (OBJECT_COUNT++)
-
 // Working with Classes
 
 function class_getName(/*Class*/ aClass)
@@ -112,12 +101,9 @@ function class_getSuperclass(/*Class*/ aClass)
 
 function class_setSuperclass(/*Class*/ aClass, /*Class*/ aSuperClass)
 {
-    // FIXME: implement.
-}
-
-function class_isMetaClass(/*Class*/ aClass)
-{
-    return ISMETA(aClass);
+    // Set up the actual class hierarchy.
+    aClass.super_class = aSuperClass;
+    aClass.isa.super_class = aSuperClass.isa;
 }
 
 function class_addIvar(/*Class*/ aClass, /*String*/ aName, /*String*/ aType)
@@ -250,7 +236,8 @@ function class_replaceMethod(/*Class*/ aClass, /*SEL*/ aSelector, /*IMP*/ aMetho
     return method_imp;
 }
 
-var _class_initialize = function(/*Class*/ aClass)
+// Private: Don't exports.
+function _class_initialize(/*Class*/ aClass)
 {
     var meta = GETMETA(aClass);
     
@@ -295,9 +282,8 @@ function class_getMethodImplementation(/*Class*/ aClass, /*SEL*/ aSelector)
 }
 
 // Adding Classes
-
-var GLOBAL_NAMESPACE    = window,
-    REGISTERED_CLASSES  = {};
+var GLOBAL_NAMESPACE    = GLOBAL_NAMESPACE || global,
+    REGISTERED_CLASSES  = { };
 
 function objj_allocateClassPair(/*Class*/ superclass, /*String*/ aName)
 {
@@ -333,20 +319,24 @@ function objj_allocateClassPair(/*Class*/ superclass, /*String*/ aName)
     classObject.isa = metaClassObject;
     classObject.name = aName;
     classObject.info = CLS_CLASS;
-    classObject.__address = _objj_generateObjectHash();
+    classObject.__address = generateObjectUID();
     
     metaClassObject.isa = rootClassObject.isa;
     metaClassObject.name = aName;
     metaClassObject.info = CLS_META;
-    metaClassObject.__address = _objj_generateObjectHash();
+    metaClassObject.__address = generateObjectUID();
     
     return classObject;
 }
+
+var CONTEXT_BUNDLE = nil;
 
 function objj_registerClassPair(/*Class*/ aClass)
 {
     GLOBAL_NAMESPACE[aClass.name] = aClass;
     REGISTERED_CLASSES[aClass.name] = aClass;
+
+    addClassToBundle(aClass, CONTEXT_BUNDLE);
 }
 
 // Instantiating Classes
@@ -358,7 +348,7 @@ function class_createInstance(/*Class*/ aClass)
 
     var object = new aClass.allocator;
 
-    object.__address = _objj_generateObjectHash();
+    object.__address = generateObjectUID();
     object.isa = aClass;
 
     return object;
@@ -542,3 +532,163 @@ function sel_registerName(aName)
 {
     return aName;
 }
+
+var fastEnumerationSelector = sel_getUid("countByEnumeratingWithState:objects:count:");
+
+function objj_fastEnumerator(/*Object*/ anObject, /*Integer*/ anAssigneeCount)
+{
+    // If this object doesn't respond to countByEnumeratingWithState:objects:count:
+    // (which is obviously the case for non-Objective-J objects), then just iterate
+    // this one object.
+    if (anObject && (!anObject.isa || !class_getInstanceMethod(anObject.isa, fastEnumerationSelector)))
+        this._target = [anObject];
+
+    // Else, use it's implementation.
+    else
+        this._target = anObject;
+
+    this._state = { state:0, assigneeCount:anAssigneeCount };
+    this._index = 0;
+
+    // Nothing to iterate in this case.
+    if (!anObject)
+    {
+        this.i = 0;
+        this.l = 0;
+    }
+    else
+        this.e();
+}
+
+objj_fastEnumerator.prototype.e = function()
+{
+    var object = this._target;
+
+    // Nothing to iterate, don't iterate
+    if (!object)
+        return NO;
+
+    var state = this._state,
+        index = state.assigneeCount;
+
+    while (index--)
+        state["items" + index] = nil;
+
+    this.i = 0;
+
+    // We optimize the array case.
+    if (CPArray && object.isa === CPArray)
+    {
+        if (this.l)
+            return NO;
+
+        this.o0 = object;
+        this.l = object.length;
+    }
+
+    else
+    {
+        // Clear out all the old state.
+        state.items = nil;
+        state.itemsPtr = nil;
+
+        this.o0 = [];
+        this.l = objj_msgSend(object, fastEnumerationSelector, state, this.o0, 16);
+
+        // We're flexible on this.
+        this.o0 = state.items || state.itemsPtr || state.items0 || this.o0;
+
+        // We allow the user to not explictly return anything in countByEnumeratingWithState:objects:count:
+        if (this.l === undefined)
+            this.l = this.o0.length;
+    }
+
+    var assigneeCount = state.assigneeCount;
+
+    index = assigneeCount - 1;
+
+    // Handle all items from [1 .. assigneeCount - 1]
+    while (index-- > 1)
+        this["o" + index] = state["items" + index] || [];
+
+    var lastAssigneeIndex = assigneeCount - 1;
+
+    // Autogenerate the indexes if this was left blank.
+    if (lastAssigneeIndex > 0)
+
+        if (state["items" + lastAssigneeIndex])
+            this["o" + lastAssigneeIndex] = state["items" + lastAssigneeIndex];
+
+        else
+        {
+            var count = this.l,
+                indexIndex = 0,
+                indexes = new Array(count)
+
+            for (; indexIndex < count; ++indexIndex, ++this._index)
+                indexes[indexIndex] = this._index;
+
+            this["o" + lastAssigneeIndex] = indexes;
+        }
+
+    // If this is the last iteration, set target to nil so that we don't call the
+    // fast enumeration method again.
+    return this.l > 0;
+}
+
+// Exports and Globals
+
+exports.objj_ivar = objj_ivar;
+exports.objj_method = objj_method;
+
+exports.objj_class = objj_class;
+exports.objj_object = objj_object;
+
+exports.class_getName = class_getName;
+exports.class_getSuperclass = class_getSuperclass;
+exports.class_setSuperclass = class_setSuperclass;
+exports.class_isMetaClass = class_isMetaClass;
+
+exports.class_addIvar = class_addIvar;
+exports.class_addIvars = class_addIvars;
+exports.class_copyIvarList = class_copyIvarList;
+
+exports.class_addMethod = class_addMethod;
+exports.class_addMethods = class_addMethods;
+exports.class_getInstanceMethod = class_getInstanceMethod;
+
+exports.class_getClassMethod = class_getClassMethod;
+exports.class_copyMethodList = class_copyMethodList;
+
+exports.class_replaceMethod = class_replaceMethod;
+exports.class_getMethodImplementation = class_getMethodImplementation;
+
+exports.objj_allocateClassPair = objj_allocateClassPair;
+exports.objj_registerClassPair = objj_registerClassPair;
+exports.class_createInstance = class_createInstance;
+
+exports.object_getClassName = object_getClassName;
+exports.objj_lookUpClass = objj_lookUpClass;
+exports.objj_getClass = objj_getClass;
+exports.objj_getMetaClass = objj_getMetaClass;
+
+exports.ivar_getName = ivar_getName;
+exports.ivar_getTypeEncoding = ivar_getTypeEncoding;
+
+exports.objj_msgSend = objj_msgSend;
+exports.objj_msgSendSuper = objj_msgSendSuper;
+
+exports.method_getName = method_getName;
+exports.method_getImplementation = method_getImplementation;
+exports.method_setImplementation = method_setImplementation;
+exports.method_exchangeImplementations = method_exchangeImplementations;
+
+exports.sel_getName = sel_getName;
+exports.sel_getUid = sel_getUid;
+exports.sel_isEqual = sel_isEqual;
+exports.sel_registerName = sel_registerName;
+
+exports.objj_fastEnumerator = objj_fastEnumerator;
+
+exports.objj_generateObjectUID = generateObjectUID;
+exports._objj_generateObjectHash = generateObjectUID;

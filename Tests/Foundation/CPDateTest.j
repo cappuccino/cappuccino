@@ -25,6 +25,14 @@
     [self assert:middle equals:[middle laterDate:past] message:"laterDate incorrect"];
 }
 
+- (void)testEquals
+{
+    var now = [CPDate date];
+    [self assert:now equals:now];
+    [self assertFalse:[now isEqual:[CPNull null]]];
+    [self assertFalse:[now isEqual:nil]];
+}
+
 - (void)testInitWithString
 {
     var tests = [

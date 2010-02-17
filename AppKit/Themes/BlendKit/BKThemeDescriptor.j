@@ -40,7 +40,7 @@ var ItemSizes               = { },
     // Grab Theme Descriptor Classes.
     var themeDescriptorClasses = [];
 
-    for (candidate in window)
+    for (candidate in global)
     {
         var theClass = objj_getClass(candidate),
             theClassName = class_getName(theClass);

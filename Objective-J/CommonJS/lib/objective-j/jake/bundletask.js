@@ -7,7 +7,12 @@ var FILE = require("file"),
     CLEAN = require("jake/clean").CLEAN,
     CLOBBER = require("jake/clean").CLOBBER,
     base64 = require("base64"),
-    environment = require("objective-j/jake/environment");
+    environment = require("objective-j/jake/environment"),
+    ObjectiveJ = require("objective-j"),
+    task = Jake.task;
+
+var CFPropertyList = ObjectiveJ.CFPropertyList,
+    CFMutableDictionary = ObjectiveJ.CFMutableDictionary;
 
 var Task = Jake.Task,
     filedir = Jake.filedir;
@@ -34,7 +39,7 @@ function BundleTask(aName, anApplication)
 {
     Task.apply(this, arguments);
 
-    this.setEnvironments([environment.Browsers, environment.CommonJS]);
+    this.setEnvironments([environment.Browser, environment.CommonJS]);
 
     this._author = null;
     this._email = null;
@@ -91,18 +96,11 @@ BundleTask.prototype.setEnvironments = function(environments)
 
     else
         this._environments = [environments];
-
-    this._flattenedEnvironments = environment.Environment.flattenedEnvironments(this._environments);
 }
 
 BundleTask.prototype.environments = function()
 {
     return this._environments;
-}
-
-BundleTask.prototype.flattenedEnvironments = function()
-{
-    return this._flattenedEnvironments;
 }
 
 BundleTask.prototype.setAuthor = function(anAuthor)
@@ -161,13 +159,12 @@ BundleTask.prototype.setSources = function(sources, environments)
         this._sources = sources;
     else
     {
-        if (Array.isArray(environments))
-            environments = environment.Environment.flattenedEnvironments(environments);
-        else
-            environments = environments.flattenedEnvironments();
-
         if (!this._sources)
             this._sources = { };
+
+        // If a single envirnment was passed in...
+        if (!Array.isArray(environments))
+            environments = [environments];
 
         environments.forEach(function(anEnvironment)
         {
@@ -318,6 +315,16 @@ BundleTask.prototype.buildProductStaticPathForEnvironment = function(anEnvironme
     return FILE.join(this.buildProductPath(), anEnvironment.name() + ".environment", this.productName() + ".sj");
 }
 
+BundleTask.prototype.buildProductMHTMLPathForEnvironment = function(anEnvironment)
+{
+    return FILE.join(this.buildProductPath(), anEnvironment.name() + ".environment", "MHTML.txt");
+}
+
+BundleTask.prototype.buildProductDataURLPathForEnvironment = function(anEnvironment)
+{
+    return FILE.join(this.buildProductPath(), anEnvironment.name() + ".environment", "dataURLs.txt");
+}
+
 BundleTask.prototype.defineTasks = function()
 {
     this.defineResourceTasks();
@@ -325,6 +332,7 @@ BundleTask.prototype.defineTasks = function()
     this.defineInfoPlistTask();
     this.defineLicenseTask();
     this.defineStaticTask();
+    this.defineSpritedImagesTask();
 
     CLEAN.include(this.buildIntermediatesProductPath());
     CLOBBER.include(this.buildProductPath());
@@ -337,39 +345,37 @@ BundleTask.prototype.packageType = function()
 
 BundleTask.prototype.infoPlist = function()
 {
-    var infoPlistPath = this.infoPlistPath(),
-        objj_dictionary = require("objective-j").objj_dictionary;
+    var infoPlistPath = this.infoPlistPath();
 
     if (infoPlistPath && FILE.exists(infoPlistPath))
-        var infoPlist = require("objective-j/plist").readPlist(infoPlistPath);
+        var infoPlist = CFPropertyList.propertyListFromString(FILE.read(infoPlistPath, { charset:"UTF-8" }));
     else
-        var infoPlist = new objj_dictionary();
+        var infoPlist = new CFMutableDictionary();
 
     // FIXME: Should all of these unconditionally overwrite?
-    infoPlist.setValue("CPBundleInfoDictionaryVersion", 6.0);
-    infoPlist.setValue("CPBundleName", this.productName());
-    infoPlist.setValue("CPBundleIdentifier", this.identifier());
-    infoPlist.setValue("CPBundleVersion", this.version());
-    infoPlist.setValue("CPBundlePackageType", this.packageType());
-    infoPlist.setValue("CPBundleEnvironments", this.flattenedEnvironments().map(function(anEnvironment)
+    infoPlist.setValueForKey("CPBundleInfoDictionaryVersion", 6.0);
+    infoPlist.setValueForKey("CPBundleName", this.productName());
+    infoPlist.setValueForKey("CPBundleIdentifier", this.identifier());
+    infoPlist.setValueForKey("CPBundleVersion", this.version());
+    infoPlist.setValueForKey("CPBundlePackageType", this.packageType());
+    infoPlist.setValueForKey("CPBundleEnvironments", this.environments().map(function(anEnvironment)
     {
         return anEnvironment.name();
     }));
-    infoPlist.setValue("CPBundleExecutable", this.productName() + ".sj");
+    infoPlist.setValueForKey("CPBundleExecutable", this.productName() + ".sj");
+    infoPlist.setValueForKey("CPBundleEnvironmentsWithImageSprites", this.environments().filter(
+    function(anEnvironment)
+    {
+        return anEnvironment.spritesImages();
+    }).map(function(anEnvironment)
+    {
+        return anEnvironment.name();
+    }));
 
     var principalClass = this.principalClass();
 
     if (principalClass)
-        infoPlist.setValue("CPPrincipalClass", principalClass);
-
-    var replacedFiles = this._replacedFiles,
-        replacedFilesDictionary = new objj_dictionary();
-
-    for (var engine in replacedFiles)
-        if (replacedFiles.hasOwnProperty(engine))
-            replacedFilesDictionary.setValue(engine, replacedFiles[engine]);
-
-    infoPlist.setValue("CPBundleReplacedFiles", replacedFilesDictionary);
+        infoPlist.setValueForKey("CPPrincipalClass", principalClass);
 
     return infoPlist;
 }
@@ -381,7 +387,7 @@ BundleTask.prototype.defineInfoPlistTask = function()
 
     filedir (infoPlistProductPath, function()
     {
-        require("objective-j/plist").writePlist(infoPlistProductPath, bundleTask.infoPlist());
+        FILE.write(infoPlistProductPath, CFPropertyList.stringFromPropertyList(bundleTask.infoPlist(), CFPropertyList.Format280North_v1_0), { charset:"UTF-8" });
     });
 
     var infoPlistPath = this.infoPlistPath();
@@ -391,7 +397,7 @@ BundleTask.prototype.defineInfoPlistTask = function()
 
     // FIXME: ? We do this because adding a .j file should cause Info.plist to be updated.
     // Any better way to handle this? Perhaps this should happen unconditionally.
-    this.flattenedEnvironments().forEach(function(/*Environment*/ anEnvironment)
+    this.environments().forEach(function(/*Environment*/ anEnvironment)
     {
         if (!anEnvironment.spritesImages())
             return;
@@ -441,7 +447,7 @@ BundleTask.prototype.defineResourceTask = function(aResourcePath, aDestinationPa
     // Don't sprite images larger than 32KB, IE 8 doesn't like it.
     if (this.spritesResources() && isImage(aResourcePath) && FILE.size(aResourcePath) < 32768)
     {
-        this.flattenedEnvironments().forEach(function(/*Environment*/ anEnvironment)
+        this.environments().forEach(function(/*Environment*/ anEnvironment)
         {
             if (!anEnvironment.spritesImages())
                 return;
@@ -451,11 +457,10 @@ BundleTask.prototype.defineResourceTask = function(aResourcePath, aDestinationPa
 
             filedir (spritedDestinationPath, function()
             {
-                FILE.write(spritedDestinationPath, base64.encode(FILE.read(aResourcePath, { mode : 'b'})), { charset:"UTF-8" });
+                FILE.write(spritedDestinationPath, base64.encode(FILE.read(aResourcePath, "b")), { charset:"UTF-8" });
             });
 
-            // Add this as a dependency unconditionally because we need to set up the URL map either way.
-            filedir (this.buildProductStaticPathForEnvironment(anEnvironment), [spritedDestinationPath]);
+            task (anEnvironment.name() + "-sprites", [spritedDestinationPath]);
         }, this);
     }
 
@@ -565,9 +570,73 @@ BundleTask.prototype.defineResourceTasks = function()
     }, this);
 }
 
+BundleTask.prototype.defineSpritedImagesTask = function()
+{
+    this.environments().forEach(function(/*Environment*/ anEnvironment)
+    {
+        if (!anEnvironment.spritesImages())
+            return;
+
+        var folder = anEnvironment.name() + ".environment",
+            resourcesPath = FILE.join(this.buildIntermediatesProductPath(), folder, "Resources", ""),
+            dataURLPath = this.buildProductDataURLPathForEnvironment(anEnvironment),
+            MHTMLPath = this.buildProductMHTMLPathForEnvironment(anEnvironment),
+            productName = this.productName();
+
+        task(anEnvironment.name() + "-sprites", function(aTask)
+        {
+            TERM.stream.print("Creating sprited images file... \0green(" + dataURLPath +"\0)");
+
+            var dataURLStream = FILE.open(dataURLPath, "w+", { charset:"UTF-8" }),
+                MHTMLStream = FILE.open(MHTMLPath, "w+", { charset:"UTF-8" }),
+                MHTMLContents = "/*\r\nContent-Type: multipart/related; boundary=\"_ANY_STRING_WILL_DO_AS_A_SEPARATOR\"\r\n\r\n";
+
+            dataURLStream.write("@STATIC;1.0;");
+            MHTMLStream.write("@STATIC;1.0;");
+
+            aTask.prerequisites().forEach(function(aFilename)
+            {
+                if (!FILE.isFile(aFilename) || aFilename.indexOf(resourcesPath) !== 0 || !isImage(aFilename))
+                    return;
+
+                var resourcePath = "Resources/" + FILE.relative(resourcesPath, aFilename);
+
+                dataURLStream.write("u;" + resourcePath.length + ";" + resourcePath);
+                MHTMLStream.write("u;" + resourcePath.length + ";" + resourcePath);
+
+                // As data URL...
+                var contents =  "data:" + mimeType(aFilename) +
+                                ";base64," + FILE.read(aFilename, "b").decodeToString("UTF-8");
+
+                dataURLStream.write(contents.length + ";" + contents);
+
+                // As MHTML...
+                contents = "mhtml:" + FILE.join(folder, productName + ".sj!") + resourcePath;
+
+                MHTMLContents += "--_ANY_STRING_WILL_DO_AS_A_SEPARATOR\r\n";
+                MHTMLContents += "Content-Location:" + resourcePath + "\r\nContent-Transfer-Encoding:base64\r\n\r\n";
+                MHTMLContents += FILE.read(aFilename, "b").decodeToString("UTF-8");
+                MHTMLContents += "\r\n";
+
+                MHTMLStream.write(contents.length + ";" + contents);
+            });
+
+            dataURLStream.write("e;");
+            dataURLStream.close();
+
+            MHTMLStream.write("e;");
+            MHTMLStream.write(MHTMLContents + "*/");
+            MHTMLStream.close();
+        });
+
+        this.enhance([anEnvironment.name() + "-sprites"]);
+
+    }, this);
+}
+
 BundleTask.prototype.defineStaticTask = function()
 {
-    this.flattenedEnvironments().forEach(function(/*Environment*/ anEnvironment)
+    this.environments().forEach(function(/*Environment*/ anEnvironment)
     {
         var folder = anEnvironment.name() + ".environment",
             sourcesPath = FILE.join(this.buildIntermediatesProductPath(), folder, "Sources", ""),
@@ -597,56 +666,28 @@ BundleTask.prototype.defineStaticTask = function()
                 {
                     var relativePath = flattensSources ? FILE.basename(aFilename) : FILE.relative(sourcesPath, aFilename);
 
+                    // FIXME: We need to do this for now due to file.read adding newlines in Rhino. Revert when fixed.
+                    //fileStream.write(FILE.read(aFilename, "b").decodeToString("UTF-8"));
                     fileStream.write("p;" + relativePath.length + ";" + relativePath);
 
-                    // FIXME: We need to do this for now due to file.read adding newlines. Revert when fixed.
-                    //fileStream.write(FILE.read(aFilename, { charset:"UTF-8" }));
-                    fileStream.write(FILE.read(aFilename, { mode:"b" }).decodeToString("UTF-8"));
+                    var fileContents = FILE.read(aFilename, "b").decodeToString("UTF-8");
+
+                    fileStream.write("t;" + fileContents.length + ";" + fileContents);
                 }
 
-                else if (aFilename.indexOf(resourcesPath) === 0)
+                else if (aFilename.indexOf(resourcesPath) === 0 && !isImage(aFilename))
                 {
-                    var contents = "",
-                        resourcePath = "Resources/" + FILE.relative(resourcesPath, aFilename);
+                    var resourcePath = "Resources/" + FILE.relative(resourcesPath, aFilename);
 
-                    if (isImage(aFilename))
-                    {
-                        fileStream.write("u;");
+                    fileStream.write("p;");
 
-                        if (anEnvironment.spritesImagesAsDataURLs())
-                            contents = "data:" + mimeType(aFilename) + ";base64," + FILE.read(aFilename, { charset:"UTF-8" });
-
-                        else if (anEnvironment.spritesImagesAsMHTML())
-                        {
-                            contents = "mhtml:" + FILE.join(folder, productName + ".sj!") + resourcePath;
-
-                            if (!MHTMLContents.length)
-                                MHTMLContents = "/*\r\nContent-Type: multipart/related; boundary=\"_ANY_STRING_WILL_DO_AS_A_SEPARATOR\"\r\n\r\n";
-
-                            MHTMLContents += "--_ANY_STRING_WILL_DO_AS_A_SEPARATOR\r\n";
-                            MHTMLContents += "Content-Location:" + resourcePath + "\r\nContent-Transfer-Encoding:base64\r\n\r\n";
-                            MHTMLContents += FILE.read(aFilename, { charset:"UTF-8" });
-                            MHTMLContents += "\r\n";
-                        }
-
-                        contents = contents.length + ";" + contents;
-                    }
-                    else
-                    {
-                        fileStream.write("p;");
-
-                        contents = FILE.read(aFilename, { charset:"UTF-8" });
-                    }
+                    contents = FILE.read(aFilename, "b").decodeToString("UTF-8");
 
                     fileStream.write(resourcePath.length + ";" + resourcePath + contents);
                 }
             }, this);
 
             fileStream.write("e;");
-
-            if (MHTMLContents.length > 0)
-                fileStream.write(MHTMLContents + "*/");
-
             fileStream.close();
         });
 
@@ -670,10 +711,9 @@ BundleTask.prototype.defineSourceTasks = function()
     else if (compilerFlags.join)
         compilerFlags = compilerFlags.join(" ");
 
-    var environments = this.flattenedEnvironments(),
-        flattensSources = this.flattensSources();
+    var flattensSources = this.flattensSources();
 
-    environments.forEach(function(/*Environment*/ anEnvironment)
+    this.environments().forEach(function(/*Environment*/ anEnvironment)
     {
         var environmentSources = sources,
             folder = anEnvironment.name() + ".environment",

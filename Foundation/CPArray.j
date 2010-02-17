@@ -55,6 +55,11 @@
     return [_array objectAtIndex:_index];
 }
 
+- (int)countByEnumeratingWithState:(id)aState objects:(id)objects count:(id)aCount
+{
+    return [_array countByEnumeratingWithState:aState objects:objects count:aCount];
+}
+
 @end
 
 /* @ignore */
@@ -657,7 +662,7 @@
             rhs = anArray[index];
         
         // If they're not equal, and either doesn't have an isa, or they're !isEqual (not isEqual)
-        if (lhs !== rhs && (!lhs.isa || !rhs.isa || ![lhs isEqual:rhs]))
+        if (lhs !== rhs && (lhs && !lhs.isa || rhs && !rhs.isa || ![lhs isEqual:rhs]))
             return NO;
     }
         
@@ -816,8 +821,8 @@
         if (index === 0)
             description += '\n';
 
-        var object = self[index],
-            objectDescription = object && object.isa ? [object description] : object + "";
+        var object = [self objectAtIndex:index],
+            objectDescription = object && object.isa ? [object description] : String(object);
 
         description += "\t" + objectDescription.split('\n').join("\n\t");
 
@@ -1202,6 +1207,31 @@
 - (void)sortUsingSelector:(SEL)aSelector
 {
     sort(function(lhs, rhs) { return objj_msgSend(lhs, aSelector, rhs); });
+}
+
+@end
+
+@implementation CPArray (CPFastEnumeration)
+
+- (int)countByEnumeratingWithState:(id)aState objects:(id)objects count:(id)aCount
+{
+    var count = [self count],
+        index = aState.state;
+
+    if (index >= count)
+        return 0;
+
+    var indexIndex = 0,
+        last = MIN(index + aCount, count);
+
+    aCount = last - index;
+
+    for (; index < last; ++index, ++indexIndex)
+        objects[indexIndex] = [self objectAtIndex:index];
+
+    aState.state = last;
+
+    return aCount;
 }
 
 @end

@@ -484,7 +484,7 @@ var CPDocumentUntitledCount = 0;
     else
         [_writeRequest setHTTPMethod:@"PUT"];
 
-    [_writeRequest setHTTPBody:[data string]];
+    [_writeRequest setHTTPBody:[data encodedString]];
 
     [_writeRequest setValue:@"close" forHTTPHeaderField:@"Connection"];
 
@@ -567,7 +567,7 @@ var CPDocumentUntitledCount = 0;
     // READ
     if (aConnection == _readConnection)
     {
-        [self readFromData:[CPData dataWithString:aData] ofType:session.fileType error:nil];
+        [self readFromData:[CPData dataWithEncodedString:aData] ofType:session.fileType error:nil];
 
         objj_msgSend(session.delegate, session.didReadSelector, self, YES, session.contextInfo);
     }

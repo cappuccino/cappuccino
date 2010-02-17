@@ -4,7 +4,6 @@
 
 @import "NSView.j"
 
-
 @implementation NSMatrix : CPObject
 {
 }
@@ -49,11 +48,15 @@
                 
                 [view addSubview:cellView];
 
+                NIB_CONNECTION_EQUIVALENCY_TABLE[[cell UID]] = cellView;
+
                 frame.origin.x = CGRectGetMaxX(frame) + intercellSpacing.width;
             }
 
             frame.origin.y = CGRectGetMaxY(frame) + intercellSpacing.height;
         }
+
+        NIB_CONNECTION_EQUIVALENCY_TABLE[self] = view;
     }
 
     return view;

@@ -1,9 +1,9 @@
 /*
- * bootstrap.js
- * Objective-J
+ * NSTableHeaderView.j
+ * nib2cib
  *
- * Created by Francisco Tolmasky.
- * Copyright 2008, 280 North, Inc.
+ * Created by Ross Boucher.
+ * Copyright 2010, 280 North, Inc.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -20,29 +20,35 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-if (window.OBJJ_MAIN_FILE)
+@import <AppKit/CPTableHeaderView.j>
+
+@implementation CPTableHeaderView (NSCoding)
+
+- (id)NS_initWithCoder:(CPCoder)aCoder
 {
-    var addOnload = function(handler)
+    if (self = [super NS_initWithCoder:aCoder])
     {
-        if (window.addEventListener)
-            window.addEventListener("load", handler, false);
-        else if (window.attachEvent)
-            window.attachEvent("onload", handler);
+        _tableView = [aCoder decodeObjectForKey:"NSTableView"];
+        [self setBackgroundColor:[CPColor colorWithPatternImage:CPAppKitImage("tableview-headerview.png", CGSizeMake(1.0, 22.0))]];
     }
-
-    var documentLoaded = NO;
-    var defaultHandler = function()
-    {
-        documentLoaded = YES;
-    }
-
-    addOnload(defaultHandler);
-
-    objj_import(OBJJ_MAIN_FILE, YES, function()
-    {
-        if (documentLoaded)
-            main();
-        else
-            addOnload(main);
-    });
+    
+    return self;
 }
+
+@end
+
+@implementation NSTableHeaderView : CPTableHeaderView
+{
+}
+
+- (id)initWithCoder:(CPCoder)aCoder
+{
+    return [self NS_initWithCoder:aCoder];
+}
+
+- (Class)classForKeyedArchiver
+{
+    return [CPTableHeaderView class];
+}
+
+@end

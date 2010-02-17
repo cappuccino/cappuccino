@@ -85,6 +85,9 @@ var DOMSpanElement      = nil,
         aFont = DefaultFont;
     }
 
+    if (!DOMIFrameElement)
+        [self createDOMElements];
+
     var style = DOMSpanElement.style;
 
     if (!aWidth)

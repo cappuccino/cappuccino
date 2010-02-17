@@ -32,7 +32,7 @@ BlendTask.prototype.infoPlist = function()
 {
     var infoPlist = BundleTask.prototype.infoPlist.apply(this, arguments);
 
-    infoPlist.setValue("CPKeyedThemes", require("util").unique(this._keyedThemes));
+    infoPlist.setValueForKey("CPKeyedThemes", require("util").unique(this._keyedThemes));
 
     return infoPlist;
 }
@@ -60,7 +60,7 @@ BlendTask.prototype.defineSourceTasks = function()
 
 BlendTask.prototype.defineThemeDescriptorTasks = function()
 {
-    this.flattenedEnvironments().forEach(function(anEnvironment)
+    this.environments().forEach(function(anEnvironment)
     {
         var folder = anEnvironment.name() + ".environment",
             themeDescriptors = this.themeDescriptors(),
@@ -72,20 +72,20 @@ BlendTask.prototype.defineThemeDescriptorTasks = function()
 
         this.enhance(themesTaskName);
 
-        objj_import(themeDescriptors.toArray(), YES, function()
+        themeDescriptors.forEach(function(/*CPString*/ themeDescriptorPath)
         {
-            [BKThemeDescriptor allThemeDescriptorClasses].forEach(function(aClass)
-            {
-                var keyedThemePath = FILE.join(intermediatesPath, [aClass themeName] + ".keyedtheme");
-
-                filedir (keyedThemePath, themesTaskName);
-                filedir (staticPath, [keyedThemePath]);
-
-                keyedThemes.push([aClass themeName] + ".keyedtheme");
-            });
+            objj_importFile(FILE.absolute(themeDescriptorPath), YES);
         });
 
-        require("browser/timeout").serviceTimeouts();
+        [BKThemeDescriptor allThemeDescriptorClasses].forEach(function(aClass)
+        {
+            var keyedThemePath = FILE.join(intermediatesPath, [aClass themeName] + ".keyedtheme");
+
+            filedir (keyedThemePath, themesTaskName);
+            filedir (staticPath, [keyedThemePath]);
+
+            keyedThemes.push([aClass themeName] + ".keyedtheme");
+        });
 
         task (themesTaskName, function()
         {
@@ -101,7 +101,8 @@ BlendTask.prototype.defineThemeDescriptorTasks = function()
 
                 // No filedir in this case, so we have to make it ourselves.
                 FILE.mkdirs(intermediatesPath);
-                FILE.write(FILE.join(intermediatesPath, [aClass themeName] + ".keyedtheme"), MARKER_TEXT + ";" + fileContents.length + ";" + fileContents, { charset:"UTF-8" });
+                // FIXME: MARKER_TEXT isn't global, so we use "t;".
+                FILE.write(FILE.join(intermediatesPath, [aClass themeName] + ".keyedtheme"), "t;" + fileContents.length + ";" + fileContents, { charset:"UTF-8" });
             });
         });
     }, this);
@@ -158,7 +159,7 @@ function themeFromCibData(data)
 
     [templates makeObjectsPerformSelector:@selector(blendAddThemedObjectAttributesToTheme:) withObject:theme];
 
-    return [[CPKeyedArchiver archivedDataWithRootObject:theme] string];
+    return [[CPKeyedArchiver archivedDataWithRootObject:theme] encodedString];
 }
 
 @implementation CPCib (BlendAdditions)

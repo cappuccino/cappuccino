@@ -100,7 +100,7 @@
 + (CPButton)themedStandardButton
 {
     var button = [self button];
-    
+
     [button setTitle:@"Cancel"];
 
     return button;
@@ -552,7 +552,7 @@
     [segmentedControl setWidth:40.0 forSegment:0];
     [segmentedControl setLabel:@"foo" forSegment:0];
     [segmentedControl setTag:1 forSegment:0];
-    
+
     [segmentedControl setWidth:60.0 forSegment:1];
     [segmentedControl setLabel:@"bar" forSegment:1];
     [segmentedControl setTag:2 forSegment:1];

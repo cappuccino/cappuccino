@@ -58,7 +58,7 @@ var CPToolbarConfigurationsByIdentifier = nil;
 /*!
     @ingroup appkit
     @class CPToolbar
-    
+
     A CPToolbar is displayed at the top of a window with multiple
     buttons (tools) that offer the user quick access to features.
 
@@ -73,7 +73,7 @@ var CPToolbarConfigurationsByIdentifier = nil;
     Called to obtain the toolbar's default item identifiers. Required.
     @param toolbar the toolbar to obtain identifiers for
     @return an array of default item identifiers in the order on the toolbar
-    
+
     @delegate - (CPToolbarItem)toolbar:(CPToolbar)toolbar itemForItemIdentifier:(CPString)itemIdentifier willBeInsertedIntoToolbar:(BOOL)flag;
     Called to obtain a toolbar item. Required.
     @param toolbar the toolbar the item belongs to
@@ -89,19 +89,19 @@ var CPToolbarConfigurationsByIdentifier = nil;
     BOOL                    _showsBaselineSeparator;
     BOOL                    _allowsUserCustomization;
     BOOL                    _isVisible;
-    
+
     id                      _delegate;
-    
+
     CPArray                 _itemIdentifiers;
-    
+
     CPDictionary            _identifiedItems;
     CPArray                 _defaultItems;
     CPArray                 _allowedItems;
     CPArray                 _selectableItems;
-    
+
     CPArray                 _items;
     CPArray                 _itemsSortedByVisibilityPriority;
-    
+
     CPView                  _toolbarView;
     CPWindow                _window;
 }
@@ -111,7 +111,7 @@ var CPToolbarConfigurationsByIdentifier = nil;
 {
     if (self != [CPToolbar class])
         return;
-        
+
     CPToolbarsByIdentifier = [CPDictionary dictionary];
     CPToolbarConfigurationsByIdentifier = [CPDictionary dictionary];
 }
@@ -120,13 +120,13 @@ var CPToolbarConfigurationsByIdentifier = nil;
 + (void)_addToolbar:(CPToolbar)toolbar forIdentifier:(CPString)identifier
 {
     var toolbarsSharingIdentifier = [CPToolbarsByIdentifier objectForKey:identifier];
-    
+
     if (!toolbarsSharingIdentifier)
     {
         toolbarsSharingIdentifier = []
         [CPToolbarsByIdentifier setObject:toolbarsSharingIdentifier forKey:identifier];
     }
-        
+
     [toolbarsSharingIdentifier addObject:toolbar];
 }
 
@@ -143,17 +143,17 @@ var CPToolbarConfigurationsByIdentifier = nil;
 - (id)initWithIdentifier:(CPString)anIdentifier
 {
     self = [super init];
-    
+
     if (self)
     {
         _items = [];
-        
+
         _identifier = anIdentifier;
         _isVisible = YES;
-    
+
         [CPToolbar _addToolbar:self forIdentifier:_identifier];
     }
-    
+
     return self;
 }
 
@@ -163,7 +163,7 @@ var CPToolbarConfigurationsByIdentifier = nil;
 */
 - (void)setDisplayMode:(CPToolbarDisplayMode)aDisplayMode
 {
-    
+
 }
 
 /*!
@@ -198,7 +198,7 @@ var CPToolbarConfigurationsByIdentifier = nil;
 {
     if (_isVisible === aFlag)
         return;
-    
+
     _isVisible = aFlag;
 
     [_window _noteToolbarChanged];
@@ -222,9 +222,9 @@ var CPToolbarConfigurationsByIdentifier = nil;
 {
     if (_delegate === aDelegate)
         return;
-        
+
     _delegate = aDelegate;
-    
+
     [self _reloadToolbarItems];
 }
 
@@ -240,12 +240,12 @@ var CPToolbarConfigurationsByIdentifier = nil;
     if (!_toolbarView)
     {
         _toolbarView = [[_CPToolbarView alloc] initWithFrame:CPRectMake(0.0, 0.0, 1200.0, 59.0)];
-        
+
         [_toolbarView setToolbar:self];
         [_toolbarView setAutoresizingMask:CPViewWidthSizable];
         [_toolbarView reloadToolbarItems];
     }
-    
+
     return _toolbarView;
 }
 
@@ -289,14 +289,14 @@ var CPToolbarConfigurationsByIdentifier = nil;
         if (item === nil)
             [CPException raise:CPInvalidArgumentException
                          reason:@"Toolbar delegate " + _delegate + " returned nil toolbar item for identifier \"" + identifier + "\""];
-        
+
         item._toolbar = self;
-            
+
         [_items addObject:item];
     }
-  
+
 //    _items = [[self _defaultToolbarItems] mutableCopy];
-    
+
     // Store items sorted by priority.  We want items to be removed first at the end of the array,
     // items to be removed last at the front.
 
@@ -352,7 +352,7 @@ var CPToolbarConfigurationsByIdentifier = nil;
                 [CPException raise:CPInvalidArgumentException
                             reason:sprintf(@"_delegate %s returned nil toolbar item returned for identifier %s", _delegate, identifier)];
         }
-        
+
         [_identifiedItems setObject:item forKey:identifier];
     }
 
@@ -361,7 +361,7 @@ var CPToolbarConfigurationsByIdentifier = nil;
 
 /* @ignore */
 - (id)_itemsWithIdentifiers:(CPArray)identifiers
-{   
+{
     var items = [];
     for (var i = 0; i < identifiers.length; i++)
         [items addObject:[self _itemForItemIdentifier:identifiers[i] willBeInsertedIntoToolbar:NO]];
@@ -436,7 +436,7 @@ var CPToolbarIdentifierKey              = @"CPToolbarIdentifierKey",
 - (id)initWithCoder:(CPCoder)aCoder
 {
     self = [super init];
-    
+
     if (self)
     {
         _identifier = [aCoder decodeObjectForKey:CPToolbarIdentifierKey];
@@ -512,10 +512,10 @@ var _CPToolbarItemInfoMake = function(anIndex, aView, aLabel, aMinWidth)
 @implementation _CPToolbarView : CPView
 {
     CPToolbar           _toolbar;
-    
+
     CPIndexSet          _flexibleWidthIndexes;
     CPIndexSet          _visibleFlexibleWidthIndexes;
-    
+
     CPDictionary        _itemInfos;
     JSObject            _viewsForToolbarItems;
 
@@ -525,7 +525,7 @@ var _CPToolbarItemInfoMake = function(anIndex, aView, aLabel, aMinWidth)
     CPPopUpButton       _additionalItemsButton;
     CPColor             _labelColor;
     CPColor             _labelShadowColor;
-    
+
     float               _minWidth;
 
     BOOL                _FIXME_isHUD;
@@ -535,9 +535,9 @@ var _CPToolbarItemInfoMake = function(anIndex, aView, aLabel, aMinWidth)
 {
     if (self !== [_CPToolbarView class])
         return;
-    
+
     var bundle = [CPBundle bundleForClass:self];
-    
+
     _CPToolbarViewExtraItemsImage = [[CPImage alloc] initWithContentsOfFile: [bundle pathForResource:"_CPToolbarView/_CPToolbarViewExtraItemsImage.png"] size: CPSizeMake(10.0, 15.0)];
 
     _CPToolbarViewExtraItemsAlternateImage = [[CPImage alloc] initWithContentsOfFile: [bundle pathForResource:"_CPToolbarView/_CPToolbarViewExtraItemsAlternateImage.png"] size:CGSizeMake(10.0, 15.0)];
@@ -546,23 +546,23 @@ var _CPToolbarItemInfoMake = function(anIndex, aView, aLabel, aMinWidth)
 - (id)initWithFrame:(CGRect)aFrame
 {
     self = [super initWithFrame:aFrame];
-    
+
     if (self)
     {
         _minWidth = 0;
-        
+
         _labelColor = [CPColor blackColor];
         _labelShadowColor = [CPColor colorWithWhite:1.0 alpha:0.75];
-        
+
         _additionalItemsButton = [[CPPopUpButton alloc] initWithFrame:CGRectMake(0.0, 0.0, 10.0, 15.0) pullsDown:YES];
         [_additionalItemsButton setBordered:NO];
 
         [_additionalItemsButton setImagePosition:CPImageOnly];
         [[_additionalItemsButton menu] setShowsStateColumn:NO];
-        
+
         [_additionalItemsButton setAlternateImage:_CPToolbarViewExtraItemsAlternateImage];
     }
-    
+
     return self;
 }
 
@@ -612,14 +612,14 @@ var _CPToolbarItemInfoMake = function(anIndex, aView, aLabel, aMinWidth)
 
     _visibleItems = items;
 
-    // We only have hidden items if our actual width is smaller than our 
+    // We only have hidden items if our actual width is smaller than our
     // minimum width for hiding items.
     if (itemsWidth < minWidth)
     {
         itemsWidth -= TOOLBAR_EXTRA_ITEMS_WIDTH;
-                
+
         _visibleItems = [_visibleItems copy];
-        
+
         var itemsSortedByVisibilityPriority = [_toolbar itemsSortedByVisibilityPriority],
             count = itemsSortedByVisibilityPriority.length;
 
@@ -678,18 +678,18 @@ var _CPToolbarItemInfoMake = function(anIndex, aView, aLabel, aMinWidth)
 
         [view setHidden:NO];
     }
-    
+
     var remainingSpace = itemsWidth - minWidth,
         proportionate = 0.0;
 
-    // Continue to distribute space proportionately while we have it, 
-    // and there are flexible items left that want it. (Those with max 
+    // Continue to distribute space proportionately while we have it,
+    // and there are flexible items left that want it. (Those with max
     // widths may eventually not want it anymore).
     while (remainingSpace && [flexibleItemIndexes count])
     {
         // Divy out the space.
         proportionate += remainingSpace / [flexibleItemIndexes count];
-        
+
         // Reset the remaining space to 0
         remainingSpace = 0.0;
 
@@ -712,7 +712,7 @@ var _CPToolbarItemInfoMake = function(anIndex, aView, aLabel, aMinWidth)
             [view setFrameSize:CGSizeMake(constrainedWidth, height)];
         }
     }
-    
+
     // Now that all the visible items are the correct width, give them their final frames.
     var index = 0,
         count = _visibleItems.length,
@@ -734,9 +734,9 @@ var _CPToolbarItemInfoMake = function(anIndex, aView, aLabel, aMinWidth)
     {
         var index = 0,
             count = [items count];
-            
+
         _invisibleItems = [];
-        
+
         for (; index < count; ++index)
         {
             var item = items[index];
@@ -790,11 +790,11 @@ var _CPToolbarItemInfoMake = function(anIndex, aView, aLabel, aMinWidth)
             hasNonSeparatorItem = YES;
 
             [_additionalItemsButton addItemWithTitle:[item label]];
-            
+
             var menuItem = [_additionalItemsButton itemArray][index + 1];
-            
+
             [menuItem setImage:[item image]];
-            
+
             [menuItem setTarget:[item target]];
             [menuItem setAction:[item action]];
         }
@@ -808,14 +808,14 @@ var _CPToolbarItemInfoMake = function(anIndex, aView, aLabel, aMinWidth)
     // Get rid of all our current subviews.
     var subviews = [self subviews],
         count = subviews.length;
-    
+
     while (count--)
         [subviews[count] removeFromSuperview];
-    
+
     // Populate with new subviews.
     var items = [_toolbar items],
         index = 0;
-    
+
     count = items.length;
 
     _minWidth = TOOLBAR_ITEM_MARGIN;
@@ -842,13 +842,13 @@ var _CPToolbarItemVisibilityPriorityCompare = function(lhs, rhs)
 {
     var lhsVisibilityPriority = [lhs visibilityPriority],
         rhsVisibilityPriority = [rhs visibilityPriority];
-        
+
     if (lhsVisibilityPriority == rhsVisibilityPriority)
         return CPOrderedSame;
-    
+
     if (lhsVisibilityPriority > rhsVisibilityPriority)
         return CPOrderedAscending;
-    
+
     return CPOrderedDescending;
 }
 
@@ -983,6 +983,8 @@ var TOP_MARGIN      = 5.0,
 
     [_labelField setStringValue:[_toolbarItem label]];
     [_labelField sizeToFit]; // FIXME
+
+    [self setEnabled:[_toolbarItem isEnabled]];
 
     _labelSize = [_labelField frame].size;
 

@@ -22,6 +22,7 @@
 
 
 @import <AppKit/CPTableColumn.j>
+@import <AppKit/CPTableHeaderView.j>
 
 @implementation CPTableColumn (NSCoding)
 
@@ -38,8 +39,13 @@
         _dataView = [[CPTextField alloc] initWithFrame:CPRectMakeZero()];
         [_dataView setValue:[CPColor whiteColor] forThemeAttribute:"text-color" inState:CPThemeStateHighlighted];
 
-        //_headerView = [aCoder decodeObjectForKey:@"NSHeaderCell"];
-        _headerView = [[CPTextField alloc] initWithFrame:CPRectMakeZero()];
+        var headerCell = [aCoder decodeObjectForKey:@"NSHeaderCell"],
+            headerView = [[_CPTableColumnHeaderView alloc] initWithFrame:CPRectMakeZero()];
+
+        [_headerView setStringValue:[headerCell objectValue]];
+        [_headerView setFont:[headerCell font]];
+
+        [self setHeaderView:_headerView];
 
         _width = [aCoder decodeFloatForKey:@"NSWidth"];
         _minWidth = [aCoder decodeFloatForKey:@"NSMinWidth"];
@@ -67,3 +73,11 @@
     return [CPTableColumn class];
 }
 
+@end
+
+
+@implementation NSTableHeaderCell : NSActionCell
+{
+}
+
+@end

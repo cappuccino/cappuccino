@@ -79,6 +79,7 @@ CPTableColumnUserResizingMask   = 1 << 1;
         [self setHeaderView:header];
         
         var textDataView = [CPTextField new];
+        [textDataView setLineBreakMode:CPLineBreakByTruncatingTail];
         [textDataView setValue:[CPColor colorWithHexString:@"333333"] forThemeAttribute:@"text-color"];
         [textDataView setValue:[CPColor whiteColor] forThemeAttribute:@"text-color" inState:CPThemeStateHighlighted];
         [textDataView setValue:[CPFont boldSystemFontOfSize:12] forThemeAttribute:@"font" inState:CPThemeStateHighlighted];
@@ -176,7 +177,7 @@ CPTableColumnUserResizingMask   = 1 << 1;
     _maxWidth = aMaxWidth;
 
     var width = [self width],
-        newWidth = MAX(width, [self maxWidth]);
+        newWidth = MIN(width, [self maxWidth]);
 
     if (width !== newWidth)
         [self setWidth:newWidth];
@@ -229,6 +230,22 @@ CPTableColumnUserResizingMask   = 1 << 1;
     return _headerView;
 }
 
+/*!
+    This method set's the "prototype" view which will be used to create all table cells in this column.
+    
+    It creates a snapshot of aView, using keyed archiving, which is then copied over and over for each 
+    individual cell that is shown. As a result, changes made after calling this method won't be reflected.
+
+    Example:
+    
+        [tableColumn setDataView:someView]; // snapshot taken
+        [[tableColumn dataView] setSomething:x]; //won't work
+
+    This doesn't work because the snapshot is taken before the new property is applied. Instead, do:
+
+        [someView setSomething:x];
+        [tableColumn setDataView:someView];
+*/
 - (void)setDataView:(CPView)aView
 {
     if (_dataView === aView)
@@ -388,14 +405,11 @@ var CPTableColumnIdentifierKey   = @"CPTableColumnIdentifierKey",
         _maxWidth = [aCoder decodeFloatForKey:CPTableColumnMaxWidthKey];
 
         [self setIdentifier:[aCoder decodeObjectForKey:CPTableColumnIdentifierKey]];
-    //    [self setHeaderView:[aCoder decodeObjectForKey:CPTableColumnHeaderViewKey]];
-    //    [self setDataView:[aCoder decodeObjectForKey:CPTableColumnDataViewKey]];
+        [self setHeaderView:[aCoder decodeObjectForKey:CPTableColumnHeaderViewKey]];
+        [self setDataView:[aCoder decodeObjectForKey:CPTableColumnDataViewKey]];
+        [self setHeaderView:[aCoder decodeObjectForKey:CPTableColumnHeaderViewKey]];
 
-        [self setHeaderView:[CPTextField new]];
-        [self setDataView:[CPTextField new]];
-
-
-    //    _resizingMask  = [aCoder decodeBoolForKey:CPTableColumnResizingMaskKey];
+        _resizingMask  = [aCoder decodeBoolForKey:CPTableColumnResizingMaskKey];
     }
 
     return self;
@@ -409,10 +423,10 @@ var CPTableColumnIdentifierKey   = @"CPTableColumnIdentifierKey",
     [aCoder encodeObject:_minWidth forKey:CPTableColumnMinWidthKey];
     [aCoder encodeObject:_maxWidth forKey:CPTableColumnMaxWidthKey];
 
-//    [aCoder encodeObject:_headerView forKey:CPTableColumnHeaderViewKey];
-//    [aCoder encodeObject:_dataView forKey:CPTableColumnDataViewKey];
+    [aCoder encodeObject:_headerView forKey:CPTableColumnHeaderViewKey];
+    [aCoder encodeObject:_dataView forKey:CPTableColumnDataViewKey];
 
-//    [aCoder encodeObject:_resizingMask forKey:CPTableColumnResizingMaskKey];
+    [aCoder encodeObject:_resizingMask forKey:CPTableColumnResizingMaskKey];
 }
 
 @end

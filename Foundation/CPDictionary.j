@@ -20,10 +20,11 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-//@import "CPRange.j"
+@import "CPArray.j"
 @import "CPObject.j"
 @import "CPEnumerator.j"
 @import "CPException.j"
+
 
 /* @ignore */
 @implementation _CPDictionaryValueEnumerator : CPEnumerator
@@ -83,7 +84,7 @@
 */
 + (id)alloc
 {
-    return new objj_dictionary();
+    return new CFMutableDictionary();
 }
 
 /*!
@@ -301,7 +302,7 @@
 */
 - (int)count
 {
-    return count;
+    return _count;
 }
 
 /*!
@@ -321,7 +322,7 @@
         values = [];
         
     while (index--)
-        values.push(dictionary_getValue(self, [_keys[index]]));
+        values.push(self.valueForKey(_keys[index]));
 
     return values;
 }
@@ -347,10 +348,13 @@
 */
 - (BOOL)isEqualToDictionary:(CPDictionary)aDictionary
 {
+    var count = [self count];
+
     if (count !== [aDictionary count])
         return NO;
 
     var index = count;
+
     while (index--)
     {
         var currentKey = _keys[index],
@@ -360,7 +364,7 @@
         if (lhsObject === rhsObject)
             continue;
             
-        if (lhsObject.isa && rhsObject.isa && [lhsObject respondsToSelector:@selector(isEqual:)] && [lhsObject isEqual:rhsObject])
+        if (lhsObject && lhsObject.isa && rhsObject && rhsObject.isa && [lhsObject respondsToSelector:@selector(isEqual:)] && [lhsObject isEqual:rhsObject])
             continue;
         
         return NO;
@@ -370,21 +374,6 @@
 }
 
 /*
-    Instance.isEqualToDictionary(aDictionary)
-    {
-        if(this.count()!=aDictionary.count()) return NO;
-        
-        var i= this._keys.count();
-        while(i--) if(this.objectForKey(this._keys[i])!=aDictionary.objectForKey(this._keys[i])) return NO;
-        
-        return YES;
-    }
-    
-    Instance.allKeys()
-    {
-        return this._keys;
-    }
-    
     Instance.allKeysForObject(anObject)
     {
         var i= 0,
@@ -395,17 +384,7 @@
         
         return keys;
     }
-    
-    Instance.allValues()
-    {
-        return this._objects;
-    }
-    
-    Instance.keyEnumerator()
-    {
-        return this._keys.objectEnumerator();
-    }
-    
+
     Instance.keysSortedByValueUsingSelector(aSelector)
     {
         var dictionary= this,
@@ -415,11 +394,6 @@
             };
         
         return this._keys.sortedArrayUsingSelector(objectSelector);
-    }
-    
-    Instance.objectEnumerator()
-    {
-        return this._objects.objectEnumerator();
     }
 */
 /*!
@@ -454,25 +428,13 @@
         
         return base.valueForKey(aKey);
     }
-    
-    //
-    
-    Instance.addEntriesFromDictionary(aDictionary)
-    {
-        var key,
-            keyEnumerator= aDictionary.keyEnumerator();
-
-        while(key= keyEnumerator.nextObject()) this.setObjectForKey(aDictionary.objectForKey(key), key);
-    }
 */
 /*!
     Removes all the entries from the dictionary.
 */
 - (void)removeAllObjects
 {
-    _keys = [];
-    count = 0;
-    _buckets = {};
+    self.removeAllValues();
 }
 
 /*!
@@ -481,37 +443,22 @@
 */
 - (void)removeObjectForKey:(id)aKey
 {
-    dictionary_removeValue(self, aKey);
+    self.removeValueForKey(aKey);
 }
 
 /*!
     Removes each entry in allKeys from the receiver.
     @param allKeys an array of keys that will be removed from the dictionary
 */
-- (void)removeObjectsForKeys:(CPArray)allKeys
+- (void)removeObjectsForKeys:(CPArray)keysForRemoval
 {
-    var index = allKeys.length;
+    var index = keysForRemoval.length;
 
     while (index--)
-        dictionary_removeValue(self, allKeys[index]);
+        self.removeValueForKey(keysForRemoval[index]);
 }
 
 /*
-    Instance.removeObjectForKey(aKey)
-    {
-        var entry= this._dictionary[aKey];
-        
-        if(entry)
-        {
-            var range= CPMakeRange(entry.index, 1);
-            
-            this._keys.removeObjectsInRange(range);
-            this._objects.removeObjectsInRange(range);
-        
-            delete this._dictionary[aKey];
-        }
-    }
-    
     Instance.setDictionary(aDictionary)
     {
         this._keys= CPArray.arrayWithArray(aDictionary.allKeys());
@@ -530,20 +477,8 @@
 */
 - (void)setObject:(id)anObject forKey:(id)aKey
 {
-    dictionary_setValue(self, aKey, anObject);
+    self.setValueForKey(aKey, anObject);
 }
-/*
-    Instance.setValueForKey(aValue, aKey)
-    {
-        if(!aValue) this.removeObjectForKey(aKey);
-        else this.setObjectForKey(aValue, aKey);
-    }
-    
-    Instance.copy()
-    {
-        return CPDictionary.alloc().dictionaryWithDictionary(this);
-    }
-*/
 
 /*!
     Take all the key/value pairs in aDictionary and apply them to this dictionary.
@@ -569,27 +504,7 @@
 */
 - (CPString)description
 {
-    var description = @"CPDictionary {\n";
-    
-    var i = _keys.length;
-    
-    while (i--)
-    {
-        description += _keys[i] + ":";
-
-        var object = _buckets[_keys[i]];
-
-        if (object && object.isa)
-            description += [object description];
-        else
-            description += object;
-
-        description += "\n";
-    }
-
-    description += "}";
-
-    return description;
+    return self.toString();
 }
 
 @end
@@ -617,6 +532,31 @@
 
 @end
 
+@implementation CPDictionary (CPFastEnumeration)
+
+- (int)countByEnumeratingWithState:(id)aState objects:(id)objects count:(id)aCount
+{
+    var count = [self count];
+
+    if (aState.state >= count)
+        return 0;
+
+    var keys = [self allKeys],
+        index = count,
+        objects = new Array(count);
+
+    while (index--)
+        objects[index] = [self objectForKey:keys[index]];
+
+    aState.items0 = objects;
+    aState.items1 = keys;
+    aState.state = count;
+
+    return count;
+}
+
+@end
+
 /*!
     @class CPMutableDictionary
     @ingroup compatability
@@ -629,8 +569,5 @@
 
 @end
 
-objj_dictionary.prototype.isa = CPDictionary;
-objj_dictionary.prototype.toString = function()
-{
-    return [this description];
-}
+CFDictionary.prototype.isa = CPDictionary;
+CFMutableDictionary.prototype.isa = CPMutableDictionary;

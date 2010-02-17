@@ -15,6 +15,7 @@ function gen(/*va_args*/)
         count = arguments.length,
 
         shouldSymbolicallyLink = false,
+        shouldUseCappBuild = false,
         justFrameworks = false,
         noConfig = false,
         force = false,
@@ -30,6 +31,15 @@ function gen(/*va_args*/)
         {
 
             case "-l":              shouldSymbolicallyLink = true;
+                                    shouldUseCappBuild = true;
+                                    break;
+                                    
+            case "--symlink":
+                                    shouldSymbolicallyLink = true;
+                                    break;
+                                    
+            case "--build":
+                                    shouldUseCappBuild = true;
                                     break;
 
             case "-t":
@@ -70,7 +80,7 @@ function gen(/*va_args*/)
         configuration = noConfig ? [Configuration defaultConfiguration] : [Configuration userConfiguration];
 
     if (justFrameworks)
-        createFrameworksInFile(destinationProject, shouldSymbolicallyLink, force);
+        createFrameworksInFile(destinationProject, shouldSymbolicallyLink, shouldUseCappBuild, force);
 
     else if (!FILE.exists(destinationProject))
     {
@@ -123,13 +133,13 @@ function gen(/*va_args*/)
         if (config.FrameworksPath)
             frameworkDestination = FILE.join(frameworkDestination, config.FrameworksPath);
 
-        createFrameworksInFile(frameworkDestination, shouldSymbolicallyLink);
+        createFrameworksInFile(frameworkDestination, shouldSymbolicallyLink, shouldUseCappBuild);
     }
     else
         print("Directory already exists");
 }
 
-function createFrameworksInFile(/*String*/ aFile, /*Boolean*/ symlink, /*Boolean*/ force)
+function createFrameworksInFile(/*String*/ aFile, /*Boolean*/ symlink, /*Boolean*/ build, /*Boolean*/ force)
 {
     var destination = FILE.path(FILE.absolute(aFile));
     var frameworks = ["Foundation", "AppKit"];
@@ -145,7 +155,7 @@ function createFrameworksInFile(/*String*/ aFile, /*Boolean*/ symlink, /*Boolean
     //destinationFrameworks.mkdirs(); // redundant
     destinationDebugFrameworks.mkdirs();
 
-    if (symlink) {
+    if (build) {
         if (!(SYSTEM.env["CAPP_BUILD"] || SYSTEM.env["STEAM_BUILD"]))
             throw "CAPP_BUILD or STEAM_BUILD must be defined";
 
@@ -155,8 +165,8 @@ function createFrameworksInFile(/*String*/ aFile, /*Boolean*/ symlink, /*Boolean
             sourceDebugFrameworks = builtFrameworks.join("Debug");
 
         frameworks.concat("Objective-J").forEach(function(framework) {
-            installFramework(sourceFrameworks.join(framework), destinationFrameworks.join(framework), force, true);
-            installFramework(sourceDebugFrameworks.join(framework), destinationDebugFrameworks.join(framework), force, true);
+            installFramework(sourceFrameworks.join(framework), destinationFrameworks.join(framework), force, symlink);
+            installFramework(sourceDebugFrameworks.join(framework), destinationDebugFrameworks.join(framework), force, symlink);
         });
     }
     else {
@@ -165,8 +175,8 @@ function createFrameworksInFile(/*String*/ aFile, /*Boolean*/ symlink, /*Boolean
         var objjPath = objjHome.join("Frameworks", "Objective-J");
         var objjDebugPath = objjHome.join("Frameworks", "Debug", "Objective-J");
         
-        installFramework(objjPath, destinationFrameworks.join("Objective-J"), force, false);
-        installFramework(objjDebugPath, destinationDebugFrameworks.join("Objective-J"), force, false);
+        installFramework(objjPath, destinationFrameworks.join("Objective-J"), force, symlink);
+        installFramework(objjDebugPath, destinationDebugFrameworks.join("Objective-J"), force, symlink);
         
         // Frameworks. Search frameworks paths
         frameworks.forEach(function(framework) {
@@ -175,7 +185,7 @@ function createFrameworksInFile(/*String*/ aFile, /*Boolean*/ symlink, /*Boolean
             for (var i = 0, found = false; !found && i < OBJJ.objj_frameworks.length; i++) {
                 var sourceFramework = FILE.path(OBJJ.objj_frameworks[i]).join(framework);
                 if (FILE.isDirectory(sourceFramework)) {
-                    installFramework(sourceFramework, destinationFrameworks.join(framework), force, false);
+                    installFramework(sourceFramework, destinationFrameworks.join(framework), force, symlink);
                     found = true;
                 }
             }
@@ -185,7 +195,7 @@ function createFrameworksInFile(/*String*/ aFile, /*Boolean*/ symlink, /*Boolean
             for (var i = 0, found = false; !found && i < OBJJ.objj_debug_frameworks.length; i++) {
                 var sourceDebugFramework = FILE.path(OBJJ.objj_debug_frameworks[i]).join(framework);
                 if (FILE.isDirectory(sourceDebugFramework)) {
-                    installFramework(sourceDebugFramework, destinationDebugFrameworks.join(framework), force, false);
+                    installFramework(sourceDebugFramework, destinationDebugFrameworks.join(framework), force, symlink);
                     found = true;
                 }
             }

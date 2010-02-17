@@ -50,6 +50,7 @@ function ensurePackageUpToDate(packageName, requiredVersion, options)
 // UPDATE THESE TO PICK UP CORRESPONDING CHANGES IN DEPENDENCIES
 ensurePackageUpToDate("jake",           "0.1.2");
 ensurePackageUpToDate("browserjs",      "0.1.1");
+ensurePackageUpToDate("shrinksafe",     "0.2");
 ensurePackageUpToDate("narwhal",        "0.2.1", {
     noupdate : true,
     message : "Update Narwhal to 0.2.1 by running bootstrap.sh, or pulling the latest from git (see: http://github.com/280north/narwhal)."
@@ -118,20 +119,15 @@ global.FIXME_fileDependency = function(destinationPath, sourcePath)
 // used in serializedENV()
 function additionalPackages()
 {
-    var unbuiltObjectiveJPackage = FILE.path($HOME_DIR).join("Objective-J", "CommonJS", "");
     var builtObjectiveJPackage = FILE.path($BUILD_CONFIGURATION_DIR).join("CommonJS", "objective-j", "");
     var builtCappuccinoPackage = FILE.path($BUILD_CONFIGURATION_DIR).join("CommonJS", "cappuccino", "");
     
     var packages = [];
     
     // load built objective-j if exists, otherwise unbuilt
-    // FIXME: this isn't quite correct. sometimes we want the unbuilt one to have priority.
     if (builtObjectiveJPackage.join("package.json").exists()) {
         if (!packageInCatalog(builtObjectiveJPackage))
             packages.push(builtObjectiveJPackage);
-    } else {
-        if (!packageInCatalog(unbuiltObjectiveJPackage))
-            packages.push(unbuiltObjectiveJPackage);
     }
     
     // load built cappuccino if it exists
@@ -184,6 +180,13 @@ function reforkWithPackages()
 
 reforkWithPackages();
 
+function throwIfNotRequireError(e) {
+    if (String(e).indexOf("require error")==-1) {
+        print("setupEnvironment: " + e);
+        throw e;
+    }
+}
+
 function setupEnvironment()
 {
     // TODO: deprecate these globals
@@ -196,13 +199,13 @@ function setupEnvironment()
 
         global.BundleTask = OBJECTIVE_J_JAKE.BundleTask;
     } catch (e) {
-        //print("setupEnvironment (app, bundle, framework, BundleTask): " + e);
+        throwIfNotRequireError(e);
     }
     
     try {
         require("objective-j").OBJJ_INCLUDE_PATHS.push(FILE.join($BUILD_CONFIGURATION_DIR, "CommonJS", "cappuccino", "Frameworks"));
     } catch (e) {
-        //print("setupEnvironment (OBJJ_INCLUDE_PATHS): " + e);
+        throwIfNotRequireError(e);
     }
     
     try {
@@ -213,7 +216,7 @@ function setupEnvironment()
         //    print("no blend!")
     }
     catch (e) {
-        //print("setupEnvironment (blend): " + e);
+        throwIfNotRequireError(e);
     }
 }
 

@@ -614,6 +614,13 @@ CPTexturedBackgroundWindowMask
     @param shouldDisplay whether the window should redraw its views
     @param shouldAnimate whether the window resize should be animated
 */
+- (void)_setClippedFrame:(CGRect)aFrame display:(BOOL)shouldDisplay animate:(BOOL)shouldAnimate
+{
+    aFrame.size.width = MIN(MAX(aFrame.size.width, _minSize.width), _maxSize.width)
+    aFrame.size.height = MIN(MAX(aFrame.size.height, _minSize.height), _maxSize.height);
+    [self setFrame:aFrame display:shouldDisplay animate:shouldAnimate];
+}
+
 - (void)setFrame:(CGRect)aFrame display:(BOOL)shouldDisplay animate:(BOOL)shouldAnimate
 {
     aFrame = _CGRectMakeCopy(aFrame);
@@ -673,8 +680,8 @@ CPTexturedBackgroundWindowMask
 
         if (!_CGSizeEqualToSize(size, newSize))
         {
-            size.width = MIN(MAX(newSize.width, _minSize.width), _maxSize.width);
-            size.height = MIN(MAX(newSize.height, _minSize.height), _maxSize.height);
+            size.width = newSize.width;
+            size.height = newSize.height;
 
             [_windowView setFrameSize:size];
 
@@ -692,7 +699,7 @@ CPTexturedBackgroundWindowMask
 
 - (void)setFrame:(CGRect)aFrame display:(BOOL)shouldDisplay
 {
-    [super setFrame:aFrame display:shouldDisplay animate:NO];
+    [self _setClippedFrame:aFrame display:shouldDisplay animate:NO];
 }
 
 /*!
@@ -700,7 +707,7 @@ CPTexturedBackgroundWindowMask
 */
 - (void)setFrame:(CGRect)aFrame
 {
-    [self setFrame:aFrame display:YES animate:NO];
+    [self _setClippedFrame:aFrame display:YES animate:NO];
 }
 
 /*!
@@ -709,7 +716,7 @@ CPTexturedBackgroundWindowMask
 */
 - (void)setFrameOrigin:(CGPoint)anOrigin
 {
-    [self setFrame:_CGRectMake(anOrigin.x, anOrigin.y, _CGRectGetWidth(_frame), _CGRectGetHeight(_frame)) display:YES animate:NO];
+    [self _setClippedFrame:_CGRectMake(anOrigin.x, anOrigin.y, _CGRectGetWidth(_frame), _CGRectGetHeight(_frame)) display:YES animate:NO];
 }
 
 /*!
@@ -718,7 +725,7 @@ CPTexturedBackgroundWindowMask
 */
 - (void)setFrameSize:(CGSize)aSize
 {
-    [self setFrame:_CGRectMake(_CGRectGetMinX(_frame), _CGRectGetMinY(_frame), aSize.width, aSize.height) display:YES animate:NO];
+    [self _setClippedFrame:_CGRectMake(_CGRectGetMinX(_frame), _CGRectGetMinY(_frame), aSize.width, aSize.height) display:YES animate:NO];
 }
 
 /*!
@@ -1141,7 +1148,7 @@ CPTexturedBackgroundWindowMask
     \c aResponder accept first responder, then finally tell it to become first responder.
     @return \c YES if the attempt was successful. \c NO otherwise.
 */
-- (void)makeFirstResponder:(CPResponder)aResponder
+- (BOOL)makeFirstResponder:(CPResponder)aResponder
 {
     if (_firstResponder == aResponder)
         return YES;
@@ -1908,8 +1915,8 @@ CPTexturedBackgroundWindowMask
         
     sheetFrame.origin.y = CGRectGetMinY(_frame) + CGRectGetMinY(contentRect);
     sheetFrame.origin.x = CGRectGetMinX(_frame) + FLOOR((CGRectGetWidth(_frame) - CGRectGetWidth(sheetFrame)) / 2.0);
-   
-    [attachedSheet setFrameOrigin:sheetFrame.origin];
+
+    [attachedSheet setFrame:sheetFrame display:YES animate:NO];
 }
 
 /* @ignore */
@@ -1943,7 +1950,7 @@ CPTexturedBackgroundWindowMask
     [CPApp runModalForWindow:aSheet];
     
     [aSheet orderFront:self];
-    [aSheet setFrame:startFrame];
+    [aSheet setFrame:startFrame display:YES animate:NO];
     _sheetContext["opened"] = YES;
 
     [aSheet _setFrame:endFrame delegate:self duration:0.2 curve:CPAnimationEaseOut];
@@ -2499,9 +2506,13 @@ var interpolate = function(fromValue, toValue, progress)
     
     if (value == 1.0)
         _window._isAnimating = NO;
-    
-    [_window setFrameOrigin:CGPointMake(interpolate(CGRectGetMinX(_startFrame), CGRectGetMinX(_targetFrame), value), interpolate(CGRectGetMinY(_startFrame), CGRectGetMinY(_targetFrame), value))];
-    [_window setFrameSize:CGSizeMake(interpolate(CGRectGetWidth(_startFrame), CGRectGetWidth(_targetFrame), value), interpolate(CGRectGetHeight(_startFrame), CGRectGetHeight(_targetFrame), value))];
+
+    var newFrame = CGRectMake(interpolate(CGRectGetMinX(_startFrame), CGRectGetMinX(_targetFrame), value),
+                              interpolate(CGRectGetMinY(_startFrame), CGRectGetMinY(_targetFrame), value),
+                              interpolate(CGRectGetWidth(_startFrame), CGRectGetWidth(_targetFrame), value),
+                              interpolate(CGRectGetHeight(_startFrame), CGRectGetHeight(_targetFrame), value));
+
+    [_window setFrame:newFrame display:YES animate:NO];
 }
 
 @end

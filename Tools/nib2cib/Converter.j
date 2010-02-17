@@ -87,11 +87,11 @@ ConverterConversionException    = @"ConverterConversionException";
         if (![outputPath length])
             outputPath = inputPath.substr(0, inputPath.length - FILE.extension(inputPath).length) + ".cib";
 
-        FILE.write(outputPath, [convertedData string], { charset:"UTF-8" });
+        FILE.write(outputPath, [convertedData encodedString], { charset:"UTF-8" });
     }
     catch(anException)
     {
-        print(anException);
+        CPLog.fatal(anException);
     }
 }
 
@@ -122,7 +122,7 @@ ConverterConversionException    = @"ConverterConversionException";
     else
         plistContents = plistContents.replace(/\<key\>\s*CF\$UID\s*\<\/key\>/g, "<key>CP$UID</key>");
 
-    return [CPData dataWithString:plistContents];
+    return [CPData dataWithEncodedString:plistContents];
 }
 
 @end

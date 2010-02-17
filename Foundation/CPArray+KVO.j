@@ -83,16 +83,17 @@
 
 + (id)alloc
 {
-    var a = [];
-    a.isa = self;
-    
+    var array = [];
+
+    array.isa = self;
+
     var ivars = class_copyIvarList(self),
         count = ivars.length;
 
     while (count--)
-        a[ivar_getName(ivars[count])] = nil;
+        array[ivar_getName(ivars[count])] = nil;
 
-    return a;
+    return array;
 }
 
 -(id)initWithKey:(id)aKey forProxyObject:(id)anObject
@@ -293,20 +294,6 @@
     [self _setRepresentedObject:target];
 }
 
-- (CPArray)objectsAtIndexes:(CPIndexSet)indexes
-{
-    var index = [indexes firstIndex],
-        objects = [];
-
-    while(index != CPNotFound)
-    { 
-        [objects addObject:[self objectAtIndex:index]];
-        index = [indexes indexGreaterThanIndex:index];
-    }
-    
-    return objects;
-}
-
 @end
 
 
@@ -352,9 +339,17 @@
     if (aKeyPath.indexOf("@") === 0)
     {            
         var dotIndex = aKeyPath.indexOf("."),
-            operator = aKeyPath.substring(1, dotIndex),
-            parameter = aKeyPath.substring(dotIndex+1);
+            operator,
+            parameter;
         
+        if (dotIndex !== -1)
+        {
+            operator = aKeyPath.substring(1, dotIndex);
+            parameter = aKeyPath.substring(dotIndex+1);
+        }
+        else
+            operator = aKeyPath.substring(1);
+
         if (kvoOperators[operator])
             return kvoOperators[operator](self, _cmd, parameter);
             

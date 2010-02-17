@@ -371,11 +371,16 @@
     var one = [1, 1, 1, 1, 1, 1, 1, 1],
         two = [1, 2, 3, 4, 8, 0];
     
-    [self assertTrue:[one valueForKey:"@count"]===8 message:@"expected count of 8, got: "+[one valueForKey:@"@count"]]
-    [self assertTrue:[one valueForKeyPath:@"@sum.intValue"]===8 message:@"expected sum of 8, got: "+[one valueForKeyPath:@"@sum.intValue"]];
-    [self assertTrue:[two valueForKeyPath:@"@avg.intValue"]===3 message:@"expected avg of 3, got: "+[two valueForKeyPath:@"@avg.intValue"]];
-    [self assertTrue:[two valueForKeyPath:@"@max.intValue"]===8 message:@"expected max of 8, got: "+[two valueForKeyPath:@"@max.intValue"]];
-    [self assertTrue:[two valueForKeyPath:@"@min.intValue"]===0 message:@"expected min of 0, got: "+[two valueForKeyPath:@"@min.intValue"]];
+    [self assert:[one valueForKey:"@count"] equals:8];
+    [self assert:[one valueForKeyPath:"@sum.intValue"] equals:8]; 
+    [self assert:[two valueForKeyPath:"@avg.intValue"] equals:3];
+    [self assert:[two valueForKeyPath:"@max.intValue"] equals:8];
+    [self assert:[two valueForKeyPath:"@min.intValue"] equals:0];
+
+    var a = [A new];
+    [a setValue:one forKey:"b"];
+    [self assert:[a valueForKeyPath:"b.@count"] equals:8];
+    [self assert:[a valueForKeyPath:"b.@sum.intValue"] equals:8];
 }
 
 - (void)testPerformance
@@ -580,6 +585,7 @@
             [self assertTrue: type == CPKeyValueChangeInsertion message: "Should have been an insertion, was: "+type];
 
             var values = [changes objectForKey:CPKeyValueChangeNewKey];
+
             [self assertTrue: [values isEqual:[5]] message: "array should have contained 5, was: "+values+" type: "+[values.isa description]+" length: "+values.length];
 
             [self assert:aKeyPath equals:"tester.subviews"];

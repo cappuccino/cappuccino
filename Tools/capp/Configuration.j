@@ -5,8 +5,7 @@
 
 var FILE = require("file"),
     SYSTEM = require("system"),
-    plist = require("objective-j/plist");
-
+    CFPropertyList = require("objective-j").CFPropertyList;
 
 var DefaultDictionary       = nil,
     DefaultConfiguration    = nil,
@@ -66,7 +65,7 @@ var DefaultDictionary       = nil,
         temporaryDictionary = [CPDictionary dictionary];
 
         if (path && FILE.isReadable(path))
-            dictionary = plist.readPlist(path);
+            dictionary = CFPropertyList.propertyListFromString(FILE.read(path, { charset:"UTF-8" }));
 
         // readPlist will return nil if the file is empty
         if (!dictionary)

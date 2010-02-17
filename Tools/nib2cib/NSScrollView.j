@@ -31,19 +31,22 @@
     {
         var flags = [aCoder decodeIntForKey:"NSsFlags"];
         
-        _verticalScroller   = [aCoder decodeObjectForKey:"NSVScroller"];
-        _horizontalScroller = [aCoder decodeObjectForKey:"NSHScroller"];
-        _contentView        = [aCoder decodeObjectForKey:"NSContentView"];
-
+        _verticalScroller       = [aCoder decodeObjectForKey:"NSVScroller"];
+        _horizontalScroller     = [aCoder decodeObjectForKey:"NSHScroller"];
+        _contentView            = [aCoder decodeObjectForKey:"NSContentView"];
+        
+        _headerClipView         = [aCoder decodeObjectForKey:"NSHeaderClipView"];
+        _cornerView             = [aCoder decodeObjectForKey:"NSCornerView"];
+        
         _hasVerticalScroller    = !!(flags & (1 << 4));
         _hasHorizontalScroller  = !!(flags & (1 << 5));
         _autohidesScrollers     = !!(flags & (1 << 9));
 
         //[aCoder decodeBytesForKey:"NSScrollAmts"];
-        _verticalLineScroll = 10.0;
-        _verticalPageScroll = 10.0;
-        _horizontalLineScroll = 10.0;
-        _horizontalPageScroll = 10.0;
+        _verticalLineScroll     = 10.0;
+        _verticalPageScroll     = 10.0;
+        _horizontalLineScroll   = 10.0;
+        _horizontalPageScroll   = 10.0;
     }
     
     return self;

@@ -8,6 +8,7 @@
 
 @import <Foundation/CPObject.j>
 
+CPLogRegister(CPLogConsole);
 
 @implementation AppController : CPObject
 {

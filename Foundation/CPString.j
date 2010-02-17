@@ -56,7 +56,7 @@ CPAnchoredSearch        = 8;
 */
 CPNumericSearch         = 64;
 
-var CPStringHashes      = new objj_dictionary();
+var CPStringHashes      = new CFMutableDictionary();
 
 var CPStringRegexSpecialCharacters = [
       '/', '.', '*', '+', '?', '|', '$', '^',
@@ -526,14 +526,14 @@ var CPStringRegexSpecialCharacters = [
 */
 - (unsigned)UID
 {
-    var hash = dictionary_getValue(CPStringHashes, self);
-    
+    var hash = CPStringHashes.valueForKey(self);
+
     if (!hash) 
     {
         hash = _objj_generateObjectHash();
-        dictionary_setValue(CPStringHashes, self, hash);
+        CPStringHashes.setValueForKey(self, hash);
     }
-    
+
     return hash;
 }
 
