@@ -53,7 +53,7 @@ function main(args)
     rootPath.join("Application.js").write(code);
 }
 
-function serializeStaticResource(buffer, node, depth) {
+function serializeStaticResources(buffer, node, depth) {
     depth = depth || 0;
     
     //print(Array(depth+1).join(" ") + node);
@@ -66,7 +66,7 @@ function serializeStaticResource(buffer, node, depth) {
             JSON.stringify(node.type()) + ", " +
             JSON.stringify(node.isResolved()) + ");");
     } else {
-        buffer.push("newNode = rootNode;");
+        buffer.push("newNode = StaticResource.root;");
     }
     
     if (node.contents())
