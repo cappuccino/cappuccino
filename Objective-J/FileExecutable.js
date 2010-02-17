@@ -37,11 +37,14 @@ function FileExecutable(/*String*/ aPath)
     var fileContents = rootResource.nodeAtSubPath(aPath).contents(),
         executable = NULL;
 
-    if (!fileContents.match(/^@STATIC;/))
+    if (fileContents.match(/^@STATIC;/))
+        executable = decompile(fileContents, aPath);
+
+    else if (FILE.extension(aPath) === ".j")
         executable = preprocess(fileContents, aPath, OBJJ_PREPROCESSOR_DEBUG_SYMBOLS);
 
     else
-        executable = decompile(fileContents, aPath);
+        executable = new Executable(fileContents, [], aPath);
 
     Executable.apply(this, [executable.code(), executable.fileDependencies(), aPath, executable._function]);
 
