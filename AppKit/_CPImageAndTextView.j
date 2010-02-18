@@ -25,18 +25,13 @@
 @import "CPColor.j"
 @import "CPFont.j"
 @import "CPImage.j"
-@import "CPTextField.j"
 @import "CPView.j"
+@import "CPControl.j"
 
 #include "CoreGraphics/CGGeometry.h"
 
 #include "Platform/Platform.h"
 #include "Platform/DOM/CPDOMDisplayServer.h"
-
-
-CPTopVerticalTextAlignment      = 1,
-CPCenterVerticalTextAlignment   = 2,
-CPBottomVerticalTextAlignment   = 3;
 
 var _CPimageAndTextViewFrameSizeChangedFlag         = 1 << 0,
     _CPImageAndTextViewImageChangedFlag             = 1 << 1,

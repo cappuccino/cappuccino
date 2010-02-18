@@ -23,7 +23,6 @@
 @import "CPFont.j"
 @import "CPShadow.j"
 @import "CPView.j"
-@import "_CPImageAndTextView.j"
 
 #include "CoreGraphics/CGGeometry.h"
 #include "Platform/Platform.h"
@@ -44,6 +43,10 @@ CPLineBreakByClipping           = 2;
 CPLineBreakByTruncatingHead     = 3;
 CPLineBreakByTruncatingTail     = 4;
 CPLineBreakByTruncatingMiddle   = 5;
+
+CPTopVerticalTextAlignment      = 1,
+CPCenterVerticalTextAlignment   = 2,
+CPBottomVerticalTextAlignment   = 3;
 
 CPControlNormalBackgroundColor      = "CPControlNormalBackgroundColor";
 CPControlSelectedBackgroundColor    = "CPControlSelectedBackgroundColor";
