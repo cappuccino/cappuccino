@@ -88,7 +88,17 @@ ask_remove_dir "/usr/local/share/objj"
 ask_remove_dir "/usr/local/share/narwhal"
 ask_remove_dir "/usr/local/narwhal"
 if which "narwhal" > /dev/null; then
-    dir=$(dirname -- $(dirname -- $(which "narwhal")))
+    narwhal_path=$(which "narwhal")
+    # resolve symlinks
+    while [ -h "$narwhal_path" ]; do
+        dir=$(dirname -- "$narwhal_path")
+        sym=$(readlink -- "$narwhal_path")
+        narwhal_path=$(cd -- "$dir" && cd -- $(dirname -- "$sym") && pwd)/$(basename -- "$sym")
+    done
+
+    # NARWHAL_HOME is the 2nd ancestor directory of this shell script
+    dir=$(dirname -- "$(dirname -- "$narwhal_path")")
+
     ask_remove_dir "$dir"
 fi
 
@@ -187,10 +197,12 @@ if [ `uname` = "Darwin" ]; then
     echo "================================================================================"
     echo "Would you like to install the JavaScriptCore engine for Narwhal?"
     echo "This is optional but will make building and running Objective-J much faster."
+    echo "NOTE: this is currently broken on versions of OS X before 10.6."
     if prompt; then
         tusk $tusk_install_command narwhal-jsc
 
         if ! (cd "$install_directory/packages/narwhal-jsc" && make webkit); then
+            rm -rf "$install_directory/packages/narwhal-jsc"
             echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
             echo "WARNING: building narwhal-jsc failed. Hit enter to continue."
             echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
