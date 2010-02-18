@@ -373,9 +373,13 @@ StaticResource.resolveStandardNodeAtPath = function(/*String*/ aPath, /*Function
     resolveStandardNodeAtPath(aPath, 0);
 }
 
+var GLOBAL_NAMESPACE = GLOBAL_NAMESPACE || global;
+
 exports.includePaths = function()
 {
-    return global.OBJJ_INCLUDE_PATHS || ["Frameworks", "Frameworks/Debug"];
+    return GLOBAL_NAMESPACE.OBJJ_INCLUDE_PATHS || ["Frameworks", "Frameworks/Debug"];
 }
+
+StaticResource.cwd = FILE.cwd();
 
 exports.StaticResource = StaticResource;

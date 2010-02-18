@@ -133,7 +133,7 @@ HTTPRequest.prototype.responseXML = function()
 {
     var responseXML = this._nativeRequest.responseXML;
 
-    if (responseXML && (NativeRequest === XMLHttpRequest))
+    if (responseXML && (NativeRequest === window.XMLHttpRequest))
         return responseXML;
 
     return parseXML(this.responseText());

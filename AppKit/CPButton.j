@@ -28,28 +28,6 @@
 #include "CoreGraphics/CGGeometry.h"
 
 
-CPScaleProportionally   = 0;
-CPScaleToFit            = 1;
-CPScaleNone             = 2;
-
-
-/* @group CPCellImagePosition */
-
-CPNoImage       = 0;
-CPImageOnly     = 1;
-CPImageLeft     = 2;
-CPImageRight    = 3;
-CPImageBelow    = 4;
-CPImageAbove    = 5;
-CPImageOverlaps = 6;
-
-
-/*  @group CPButtonState */
-
-CPOnState                       = 1;
-CPOffState                      = 0;
-CPMixedState                    = -1;
-
 /* @group CPBezelStyle */
 
 CPRoundedBezelStyle             = 1;

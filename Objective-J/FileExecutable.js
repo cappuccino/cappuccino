@@ -102,10 +102,6 @@ function decompile(/*String*/ aString, /*String*/ aPath)
 
     return new Executable(code, dependencies, aPath);
 }
-/*
-global.objj_executeFile = executeFile;
-global.objj_importFile = importFile;
-global.objj_import = importFile;
-*/
+
 exports.FileExecutable = FileExecutable;
 exports.FileExecutablesForPaths = FileExecutablesForPaths;
