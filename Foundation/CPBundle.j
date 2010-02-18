@@ -132,7 +132,7 @@ var CPBundlesForPaths = { };
         CPLog.error("Could not find bundle: " + self);
     });
 
-    _bundle.load(NO);
+    _bundle.load(YES);
 }
 
 - (CPArray)staticResourceURLs

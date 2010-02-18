@@ -426,35 +426,49 @@ CFBundle.dataContentsAtPath = function(/*String*/ aPath)
     return data;
 }
 
-function executeBundle(/*Bundle*/ aBundle)
+function executeBundle(/*Bundle*/ aBundle, /*Function*/ aCallback)
 {
-    var staticResources = [aBundle._staticResource];
+    var staticResources = [aBundle._staticResource],
+        resourcesPath = aBundle.resourcesPath();
 
-    function executeStaticResources(staticResources, index)
+    function executeStaticResources(index)
     {
         for (; index < staticResources.length; ++index)
         {
-            var staticResource = staticResources[index];
+            var staticResource = staticResources[index],
+                type = staticResource.type();
 
-            if (staticResource.type() === StaticResource.FileType)
+            if (type === StaticResource.FileType)
             {
                 var executable = new FileExecutable(staticResource.path());
 
-                if (staticResource.hasLoadedFileDependencies())
+                if (executable.hasLoadedFileDependencies())
                     executable.execute();
 
                 else
                 {
-                    executable.addEventListeners("dependenciesload", function()
+                    executable.addEventListener("dependenciesload", function()
                     {
                         executeStaticResources(index);
                     });
+                    executable.loadFileDependencies();
                     return;
                 }
             }
-            else
-                staticResources = staticResources.concat(staticResource.children());
+            else if (type === StaticResource.DirectoryType)
+            {
+                // We don't want to execute resources.
+                if (staticResource.path() === aBundle.resourcesPath())
+                    continue;
+
+                var children = staticResource.children();
+
+                for (var name in children)
+                    staticResources.push(children[name]);
+            }
         }
+
+        aCallback();
     }
 
     executeStaticResources(0);

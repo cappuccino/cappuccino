@@ -48,17 +48,9 @@ function loadFrameworks(frameworkPaths, aCallback)
 
     frameworkPaths.forEach(function(aFrameworkPath)
     {
-        var infoPlistPath = FILE.join(aFrameworkPath, "Info.plist");
-
-        if (!FILE.isReadable(infoPlistPath))
-        {
-            print("'" + aFrameworkPath + "' is not a framework or could not be found.");
-            OS.exit(1);
-        }
-
         print("Loading " + aFrameworkPath);
 
-        var frameworkBundle = [[CPBundle alloc] initWithPath:infoPlistPath];
+        var frameworkBundle = [[CPBundle alloc] initWithPath:aFrameworkPath];
 
         [frameworkBundle loadWithDelegate:nil];
 

@@ -193,24 +193,28 @@ Executable.prototype.loadFileDependencies = function()
     this._fileDependencyLoadStatus = ExecutableLoadingFileDependencies;
 
     var searchedPaths = [{ }, { }],
-        foundExecutablePaths = { },
         fileExecutableSearches = new CFMutableDictionary(),
         incompleteFileExecutableSearches = new CFMutableDictionary(),
-        executablesNeedingEventDispatch = [this];
+        loadingExecutables = { };
 
     function searchForFileDependencies(/*Executable*/ anExecutable)
     {
-        if (anExecutable.hasLoadedFileDependencies())
-            return;
-
         var executables = [anExecutable],
             executableIndex = 0,
             executableCount = executables.length;
 
         for (; executableIndex < executableCount; ++executableIndex)
         {
-            var executable = executables[executableIndex],
-                cwd = FILE.dirname(executable.path()),
+            var executable = executables[executableIndex];
+
+            if (executable.hasLoadedFileDependencies())
+                continue;
+
+            var executablePath = executable.path();
+
+            loadingExecutables[executablePath] = executable;
+
+            var cwd = FILE.dirname(executablePath),
                 fileDependencies = executable.fileDependencies(),
                 fileDependencyIndex = 0,
                 fileDependencyCount = fileDependencies.length;
@@ -236,10 +240,7 @@ Executable.prototype.loadFileDependencies = function()
 
                 if (fileExecutableSearch.isComplete())
                 {
-                    var newFileExecutable = fileExecutableSearch.result();
-
-                    foundExecutablePaths[newFileExecutable.path()] = executable;
-                    executables.push(newFileExecutable);
+                    executables.push(fileExecutableSearch.result());
                     ++executableCount;
                 }
 
@@ -249,13 +250,11 @@ Executable.prototype.loadFileDependencies = function()
 
                     fileExecutableSearch.addEventListener("complete", function( anEvent)
                     {
-                        var fileExecutableSearch = anEvent.fileExecutableSearch,
-                            fileExecutable = fileExecutableSearch.result();
+                        var fileExecutableSearch = anEvent.fileExecutableSearch;
 
-                        foundExecutablePaths[fileExecutable.path()] = fileExecutable;
                         incompleteFileExecutableSearches.removeValueForKey(fileExecutableSearch.UID());
 
-                        searchForFileDependencies(fileExecutable);
+                        searchForFileDependencies(fileExecutableSearch.result());
                     });
                 }
             }
@@ -274,31 +273,21 @@ Executable.prototype.loadFileDependencies = function()
         CPLog("DEPENDENCY: Ended");
 #endif
 
-        for (var executablePath in foundExecutablePaths)
-            if (hasOwnProperty.apply(foundExecutablePaths, [executablePath]))
-            {
-                var fileExecutable = new FileExecutable(executablePath);
-                //CPLog("no go for... " + fileExecutable.path());
-                if (fileExecutable.hasLoadedFileDependencies())
-                    continue;
+        for (var path in loadingExecutables)
+            if (hasOwnProperty.call(loadingExecutables, path))
+                loadingExecutables[path]._fileDependencyLoadStatus = ExecutableLoadedFileDependencies;
 
-                executablesNeedingEventDispatch.push(fileExecutable);
-                fileExecutable._fileDependencyLoadStatus = FileExecutableLoadedDependencies;
+        for (var path in loadingExecutables)
+            if (hasOwnProperty.call(loadingExecutables, path))
+            {
+                var executable = loadingExecutables[path];
+
+                executable._eventDispatcher.dispatchEvent(
+                {
+                    type:"dependenciesload",
+                    fileExecutable:executable
+                });
             }
-
-        var index = 0,
-            count = executablesNeedingEventDispatch.length;
-
-        for (; index < count; ++index)
-        {
-            var fileExecutable = executablesNeedingEventDispatch[index];
-
-            fileExecutable._eventDispatcher.dispatchEvent(
-            {
-                type:"dependenciesload",
-                fileExecutable:fileExecutable
-            });
-        }
     }
 
     searchForFileDependencies(this);
