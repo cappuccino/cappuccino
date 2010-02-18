@@ -28,7 +28,7 @@
 
 @import "CPGeometry.j"
 
-#include "Platform/DOM.h"
+#include "Platform/Platform.h"
 
 
 CPImageLoadStatusInitialized    = 0;
