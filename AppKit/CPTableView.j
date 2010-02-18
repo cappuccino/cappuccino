@@ -283,12 +283,27 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
         _tableDrawView = [[_CPTableDrawView alloc] initWithTableView:self];
         [_tableDrawView setBackgroundColor:[CPColor clearColor]];
         [self addSubview:_tableDrawView];
+        [self _init];
 
     }
 
     return self;
 }
 
+// FIX ME: we have a lot of redundent init stuff in initWithFrame: and initWithCoder: we should move it all into here.
+- (void)_init
+{
+        // Gradients for the source list
+        _sourceListActiveGradient = CGGradientCreateWithColorComponents(CGColorSpaceCreateDeviceRGB(), [89.0/255.0, 153.0/255.0, 209.0/255.0,1.0, 33.0/255.0, 94.0/255.0, 208.0/255.0,1.0], [0,1], 2);
+        _sourceListActiveTopLineColor = [CPColor colorWithCalibratedRed:(61.0/255.0) green:(123.0/255.0) blue:(218.0/255.0) alpha:1.0];
+        _sourceListActiveBottomLineColor = [CPColor colorWithCalibratedRed:(31.0/255.0) green:(92.0/255.0) blue:(207.0/255.0) alpha:1.0];
+
+/*      //gradients for the source list when CPTableView is NOT first responder or the window is NOT key
+        // FIX ME: we need to actually implement this.
+        _sourceListInactiveGradient = CGGradientCreateWithColorComponents(CGColorSpaceCreateDeviceRGB(), [168.0/255.0,183.0/255.0,205.0/255.0,1.0,157.0/255.0,174.0/255.0,199.0/255.0,1.0], [0,1], 2);
+        _sourceListInactiveTopLineColor = [CPColor colorWithCalibratedRed:(173.0/255.0) green:(187.0/255.0) blue:(209.0/255.0) alpha:1.0];
+        _sourceListInactiveBottomLineColor = [CPColor colorWithCalibratedRed:(150.0/255.0) green:(161.0/255.0) blue:(183.0/255.0) alpha:1.0];*/
+}
 
 /*!
     Sets the receiver’s data source to a given object.
@@ -547,17 +562,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     _selectionHighlightStyle = aSelectionHighlightStyle;
     
     if (aSelectionHighlightStyle === CPTableViewSelectionHighlightStyleSourceList)
-    {
-        _sourceListActiveGradient = CGGradientCreateWithColorComponents(CGColorSpaceCreateDeviceRGB(), [89.0/255.0, 153.0/255.0, 209.0/255.0,1.0, 33.0/255.0, 94.0/255.0, 208.0/255.0,1.0], [0,1], 2);
-        _sourceListActiveTopLineColor = [CPColor colorWithCalibratedRed:(61.0/255.0) green:(123.0/255.0) blue:(218.0/255.0) alpha:1.0];
-        _sourceListActiveBottomLineColor = [CPColor colorWithCalibratedRed:(31.0/255.0) green:(92.0/255.0) blue:(207.0/255.0) alpha:1.0];
         _destinationDragStyle = CPTableViewDraggingDestinationFeedbackStyleSourceList;
-/*
-        _sourceListInactiveGradient = CGGradientCreateWithColorComponents(CGColorSpaceCreateDeviceRGB(), [168.0/255.0,183.0/255.0,205.0/255.0,1.0,157.0/255.0,174.0/255.0,199.0/255.0,1.0], [0,1], 2);
-        _sourceListInactiveTopLineColor = [CPColor colorWithCalibratedRed:(173.0/255.0) green:(187.0/255.0) blue:(209.0/255.0) alpha:1.0];
-        _sourceListInactiveBottomLineColor = [CPColor colorWithCalibratedRed:(150.0/255.0) green:(161.0/255.0) blue:(183.0/255.0) alpha:1.0];
-*/
-    }
     else
         _destinationDragStyle = CPTableViewDraggingDestinationFeedbackStyleRegular;
 }
@@ -1213,7 +1218,61 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 
     if(mask === CPTableViewUniformColumnAutoresizingStyle)
     {
-        // FIX ME: needs to respect proportion of the the columns set width...
+       [self _resizeAllColumnUniformlyWithOldSize:aSize];
+    }
+
+    if(mask === CPTableViewLastColumnOnlyAutoresizingStyle)
+    {
+        [self sizeLastColumnToFit];
+    }
+
+    if(mask === CPTableViewFirstColumnOnlyAutoresizingStyle)
+    {
+        var superview = [self superview];
+
+        if (!superview)
+            return;
+
+        var superviewSize = [superview bounds].size;
+
+        UPDATE_COLUMN_RANGES_IF_NECESSARY();
+
+        var count = NUMBER_OF_COLUMNS();
+
+        var visColumns = [[CPArray alloc] init];
+        var totalWidth = 0;
+
+        for(var i=0; i < count; i++)
+        {
+            if(![_tableColumns[i] isHidden])
+            {
+                [visColumns addObject:i];
+                totalWidth += [_tableColumns[i] width];
+            }
+        }
+
+        count = [visColumns count];
+
+        //if there are rows
+        if (count > 0)
+        {
+            var columnToResize = _tableColumns[visColumns[0]];
+            var newWidth = superviewSize.width - totalWidth;// - [columnToResize width];
+            newWidth += [columnToResize width];
+            newWidth = (newWidth < [columnToResize minWidth]) ? [columnToResize minWidth] : newWidth;
+            newWidth = (newWidth > [columnToResize maxWidth]) ? [columnToResize maxWidth] : newWidth;
+
+            [columnToResize setWidth:FLOOR(newWidth)];
+        }
+
+        [self setNeedsLayout];
+    }
+
+}
+
+- (void)_resizeAllColumnUniformlyWithOldSize:(CGSize)aSize
+{
+     // FIX ME: needs to respect proportion of the the columns set width...
         // this can also get slow when there are many rows do this by getting
         // the width of the new size and subtracting it from the width of the old size dividing the 
         // difference by the number of visible rows. loop trough the rows one by one adding the quotient
@@ -1268,55 +1327,6 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
         }
 
         [self setNeedsLayout];
-    }
-
-    if(mask === CPTableViewLastColumnOnlyAutoresizingStyle)
-    {
-        [self sizeLastColumnToFit];
-    }
-
-    if(mask === CPTableViewFirstColumnOnlyAutoresizingStyle)
-    {
-        var superview = [self superview];
-
-        if (!superview)
-            return;
-
-        var superviewSize = [superview bounds].size;
-
-        UPDATE_COLUMN_RANGES_IF_NECESSARY();
-
-        var count = NUMBER_OF_COLUMNS();
-
-        var visColumns = [[CPArray alloc] init];
-        var totalWidth = 0;
-
-        for(var i=0; i < count; i++)
-        {
-            if(![_tableColumns[i] isHidden])
-            {
-                [visColumns addObject:i];
-                totalWidth += [_tableColumns[i] width];
-            }
-        }
-
-        count = [visColumns count];
-
-        //if there are rows
-        if (count > 0)
-        {
-            var columnToResize = _tableColumns[visColumns[0]];
-            var newWidth = superviewSize.width - totalWidth;// - [columnToResize width];
-            newWidth += [columnToResize width];
-            newWidth = (newWidth < [columnToResize minWidth]) ? [columnToResize minWidth] : newWidth;
-            newWidth = (newWidth > [columnToResize maxWidth]) ? [columnToResize maxWidth] : newWidth;
-
-            [columnToResize setWidth:FLOOR(newWidth)];
-        }
-
-        [self setNeedsLayout];
-    }
-
 }
 
 /*!
@@ -1705,15 +1715,6 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     _currentHighlightedTableColumn = aTableColumn;
 }
 
-//Dragging
-/*
-    * - dragImageForRowsWithIndexes:tableColumns:event:offset:
-    * - canDragRowsWithIndexes:atPoint:
-    * - setDraggingSourceOperationMask:forLocal:
-    * - setDropRow:dropOperation:
-    * - setVerticalMotionCanBeginDrag:
-    * - verticalMotionCanBeginDrag
-*/
 /*!
     Returns whether the receiver allows dragging the rows at rowIndexes with a drag initiated at mousedDownPoint.
     @param rowIndexes an index set of rows to be dragged
@@ -1908,12 +1909,6 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 
 - (void)load
 {
-//    if (!window.blah)
-//        return window.setTimeout(function() { window.blah = true; [self load]; window.blah = false}, 0.0);
-
- //   if (window.console && window.console.profile)
- //       console.profile("cell-load");
-
     if (_reloadAllRows)
     {
         [self _unloadDataViewsInRows:_exposedRows columns:_exposedColumns];
@@ -1945,10 +1940,6 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     [previouslyExposedRows removeIndexes:newlyExposedRows];
     [previouslyExposedColumns removeIndexes:newlyExposedColumns];
 
-//    console.log("will remove:" + '\n\n' +
-//        previouslyExposedRows + "\n" + obscuredColumns + "\n\n" +
-//        obscuredRows + "\n" + previouslyExposedColumns + "\n\n" +
-//        obscuredRows + "\n" + obscuredColumns);
     [self _unloadDataViewsInRows:previouslyExposedRows columns:obscuredColumns];
     [self _unloadDataViewsInRows:obscuredRows columns:previouslyExposedColumns];
     [self _unloadDataViewsInRows:obscuredRows columns:obscuredColumns];
@@ -1957,13 +1948,11 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     [self _loadDataViewsInRows:newlyExposedRows columns:previouslyExposedColumns];
     [self _loadDataViewsInRows:newlyExposedRows columns:newlyExposedColumns];
 
-//    console.log("newly exposed rows: " + newlyExposedRows + "\nnewly exposed columns: " + newlyExposedColumns);
     _exposedRows = exposedRows;
     _exposedColumns = exposedColumns;
 
     [_tableDrawView setFrame:exposedRect];
 
-//    [_tableDrawView setBounds:exposedRect];
     [_tableDrawView display];
 
     // Now clear all the leftovers
@@ -1977,8 +1966,6 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
             [dataViews[count] removeFromSuperview];
     }
 
-  //  if (window.console && window.console.profile)
-//        console.profileEnd("cell-load");
 }
 
 - (void)_unloadDataViewsInRows:(CPIndexSet)rows columns:(CPIndexSet)columns
@@ -2486,15 +2473,6 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 {
     [self tile];
 }
-
-//
-
-/*
-    var type = [anEvent type],
-        point = [self convertPoint:[anEvent locationInWindow] fromView:nil],
-        currentRow = MAX(0, MIN(_numberOfRows-1, [self _rowAtY:point.y]));
-
-*/
 
 /*
     @ignore
@@ -3199,6 +3177,7 @@ var CPTableViewDataSourceKey                = @"CPTableViewDataSourceKey",
         _tableDrawView = [[_CPTableDrawView alloc] initWithTableView:self];
         [_tableDrawView setBackgroundColor:[CPColor clearColor]];
         [self addSubview:_tableDrawView];
+        [self _init];
 
         [self viewWillMoveToSuperview:[self superview]];
     }
