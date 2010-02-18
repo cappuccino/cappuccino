@@ -23,6 +23,7 @@
 @import "CPFont.j"
 @import "CPShadow.j"
 @import "CPView.j"
+@import "_CPImageAndTextView.j"
 
 #include "CoreGraphics/CGGeometry.h"
 #include "Platform/Platform.h"
