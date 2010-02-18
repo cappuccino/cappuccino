@@ -285,7 +285,7 @@ Executable.prototype.loadFileDependencies = function()
                 executable._eventDispatcher.dispatchEvent(
                 {
                     type:"dependenciesload",
-                    fileExecutable:executable
+                    executable:executable
                 });
             }
     }
