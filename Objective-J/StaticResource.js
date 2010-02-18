@@ -104,12 +104,19 @@ require("file");
     }
 }
 
-var DOMBaseElement = document.getElementsByTagName("base")[0];
+var path = window.location.pathname,
+    DOMBaseElement = document.getElementsByTagName("base")[0];
 
 if (DOMBaseElement)
-    FILE._cwd = FILE.dirname(DOMBaseElement.getAttribute("href"));
+    path = DOMBaseElement.getAttribute("href");
+
+// If this is a directory, then use it as our relative path.
+if (path.charAt(path.length - 1) === "/")
+    FILE._cwd = path;
+
+// If not, use it's parent.
 else
-    FILE._cwd = FILE.dirname(window.location.pathname);
+    FILE._cwd = FILE.dirname(path);
 
 #endif
 
