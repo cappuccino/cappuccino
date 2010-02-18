@@ -30,6 +30,8 @@ var TOKEN_ACCESSORS         = "accessors",
     TOKEN_IMPLEMENTATION    = "implementation",
     TOKEN_IMPORT            = "import",
     TOKEN_EACH              = "each",
+    TOKEN_OUTLET            = "outlet",
+    TOKEN_ACTION            = "action",
     TOKEN_NEW               = "new",
     TOKEN_SELECTOR          = "selector",
     TOKEN_SUPER             = "super",
@@ -475,9 +477,14 @@ Preprocessor.prototype.implementation = function(tokens, /*StringBuffer*/ aStrin
             
             while((token = tokens.skip_whitespace()) && token != TOKEN_CLOSE_BRACE)
             {
-                if (token === TOKEN_PREPROCESSOR && tokens.next() === TOKEN_ACCESSORS)
-                    attributes = this.accessors(tokens);
-                
+                if (token === TOKEN_PREPROCESSOR)
+                {
+                    token = tokens.next();
+                    if (token === TOKEN_ACCESSORS)
+                        attributes = this.accessors(tokens);
+                    else if (token !== TOKEN_OUTLET)
+                        throw new SyntaxError(this.error_message("*** Unexpected '@' token in ivar declaration ('@"+token+"')."));
+                }
                 else if (token == TOKEN_SEMICOLON)
                 {
                     if (ivar_count++ == 0)
@@ -503,7 +510,7 @@ Preprocessor.prototype.implementation = function(tokens, /*StringBuffer*/ aStrin
             
             // If we have objects in our declaration, the user forgot a ';'.
             if (declaration.length)
-                throw new SytnaxError(this.error_message("*** Expected ';' in ivar declaration, found '}'."));
+                throw new SyntaxError(this.error_message("*** Expected ';' in ivar declaration, found '}'."));
 
             if (ivar_count)
                 CONCAT(buffer, "]);\n");
