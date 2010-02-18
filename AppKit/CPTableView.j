@@ -538,11 +538,9 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 
 - (void)setSelectionHighlightStyle:(unsigned)aSelectionHighlightStyle
 {
+    //early return for IE.
     if (aSelectionHighlightStyle == CPTableViewSelectionHighlightStyleSourceList && !CPFeatureIsCompatible(CPHTMLCanvasFeature))
-    {
-        CPLogConsole("CPTableViewSelectionHighlightStyleSourceList is not supported in this browser.");
         return;
-    }
     
     _selectionHighlightStyle = aSelectionHighlightStyle;
     
