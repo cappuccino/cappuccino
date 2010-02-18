@@ -48,6 +48,22 @@ CPTopVerticalTextAlignment      = 1,
 CPCenterVerticalTextAlignment   = 2,
 CPBottomVerticalTextAlignment   = 3;
 
+CPScaleProportionally   = 0;
+CPScaleToFit            = 1;
+CPScaleNone             = 2;
+
+CPNoImage       = 0;
+CPImageOnly     = 1;
+CPImageLeft     = 2;
+CPImageRight    = 3;
+CPImageBelow    = 4;
+CPImageAbove    = 5;
+CPImageOverlaps = 6;
+
+CPOnState                       = 1;
+CPOffState                      = 0;
+CPMixedState                    = -1;
+
 CPControlNormalBackgroundColor      = "CPControlNormalBackgroundColor";
 CPControlSelectedBackgroundColor    = "CPControlSelectedBackgroundColor";
 CPControlHighlightedBackgroundColor = "CPControlHighlightedBackgroundColor";
