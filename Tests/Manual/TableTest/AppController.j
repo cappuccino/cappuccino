@@ -12,6 +12,7 @@ CPLogRegister(CPLogConsole);
 {
     CPTableView tableView;
     CPTableView tableView2;
+    CPTableView tableView3;
     CPImage     iconImage;
     CPArray     dataSet1;
     CPArray     dataSet2;
@@ -20,13 +21,16 @@ CPLogRegister(CPLogConsole);
 - (void)applicationDidFinishLaunching:(CPNotification)aNotification
 {
     dataSet1 = [],
-    dataSet2 = [];
+    dataSet2 = [],
+    dataSet3 = [];
     
     for(var i = 1; i < 100; i++)
     {
         dataSet1[i - 1] = [CPNumber numberWithInt:i];
         dataSet2[i - 1] = [CPNumber numberWithInt:i+10];
+        dataSet3[i - 1] = [CPNumber numberWithInt:i+20];
     }
+
     
     var window1 = [[CPWindow alloc] initWithContentRect:CGRectMake(50, 50, 500, 400) styleMask:CPTitledWindowMask | CPResizableWindowMask],
         view = [window1 contentView];
@@ -89,6 +93,7 @@ CPLogRegister(CPLogConsole);
     
     [window1 orderFront:self];
     [self newWindow];
+    [self sourceList];
 }
 
 - (void)newWindow
@@ -160,12 +165,57 @@ CPLogRegister(CPLogConsole);
     [window2 orderFront:self];
 }
 
+- (void)sourceList
+{
+
+    var window3 = [[CPWindow alloc] initWithContentRect:CGRectMake(450, 250, 200, 400) styleMask:CPTitledWindowMask | CPResizableWindowMask];
+    
+    tableView3 = [[CPTableView alloc] initWithFrame:CGRectMake(0.0, 0.0, 200.0, 500.0)];
+
+    [tableView3 setAllowsMultipleSelection:NO];
+    [tableView3 setUsesAlternatingRowBackgroundColors:NO];
+    [tableView3 setGridStyleMask:CPTableViewGridNone];
+    [tableView3 setSelectionHighlightStyle:CPTableViewSelectionHighlightStyleSourceList];
+
+    var column = [[CPTableColumn alloc] initWithIdentifier:"sourcelist"];
+    [[column headerView] setStringValue:"Source List"];
+
+    [column setWidth:200.0];
+    [column setMinWidth:50.0];
+
+    [column setEditable:YES];
+    
+    [tableView3 addTableColumn:column];
+
+    [tableView3 setColumnAutoresizingStyle:CPTableViewUniformColumnAutoresizingStyle];
+
+    var scrollView3 = [[CPScrollView alloc] initWithFrame:[[window3 contentView] bounds]];
+    [tableView3 setRowHeight:32.0];
+    [scrollView3 setDocumentView:tableView3];
+    [scrollView3 setAutoresizingMask:CPViewWidthSizable | CPViewHeightSizable];
+    
+    [[window3 contentView] addSubview:scrollView3];
+
+    [scrollView3 setAutohidesScrollers:YES];
+
+    [tableView3 setDelegate:self];
+    [tableView3 setDataSource:self];
+    
+    [tableView3 setVerticalMotionCanBeginDrag:NO];
+    //[tableView3 registerForDraggedTypes:[CPArray arrayWithObject:tableTestDragType]];
+    //[tableView3 setDraggingDestinationFeedbackStyle:CPTableViewDropAbove];*/
+    
+    [window3 orderFront:self];
+}
+
 - (int)numberOfRowsInTableView:(CPTableView)atableView
 {
     if(atableView === tableView)
         return dataSet1.length;
     else if(atableView === tableView2)
         return dataSet2.length;
+    else if(atableView === tableView3)
+        return dataSet3.length;
 }
 
 - (id)tableView:(CPTableView)atableView objectValueForTableColumn:(CPTableColumn)tableColumn row:(int)row
@@ -184,6 +234,13 @@ CPLogRegister(CPLogConsole);
              return iconImage;
          else
              return String(dataSet2[row]);
+    }
+    else if(atableView === tableView3)
+    {
+        if ([tableColumn identifier] === "icons")
+             return iconImage;
+         else
+             return String(dataSet3[row]);
     }
 }
 
@@ -238,7 +295,10 @@ CPLogRegister(CPLogConsole);
 
 - (BOOL)tableView:(CPTableView)aTableView shouldEditTableColumn:(CPTableColumn)tableColumn row:(int)row
 {
-    return NO;
+    if(aTableView === tableView3)
+        return YES;
+    else
+        return NO;
 }
 
 - (void)tableView:(CPTableView)aTableView willDisplayView:(CPView)aView forTableColumn:(CPTableColumn)tableColumn row:(int)row
@@ -248,7 +308,8 @@ CPLogRegister(CPLogConsole);
 
 - (void)tableView:(CPTableView)aTableView setObjectValue:(id)aValue forTableColumn:(CPTableColumn)tableColumn row:(int)row
 {
-    
+    if(aTableView === tableView3)
+        dataSet3[row] = aValue;
 }
 
 - (void)tableView:(CPTableView)aTableView sortDescriptorsDidChange:(CPArray)oldDescriptors
@@ -263,6 +324,9 @@ CPLogRegister(CPLogConsole);
 
 - (BOOL)tableView:(CPTableView)aTableView writeRowsWithIndexes:(CPIndexSet)rowIndexes toPasteboard:(CPPasteboard)pboard
 {
+    if (aTableView === tableView3)
+        return NO;
+
     var data = [rowIndexes, [aTableView UID]];
     
     var encodedData = [CPKeyedArchiver archivedDataWithRootObject:data];

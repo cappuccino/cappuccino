@@ -77,6 +77,9 @@ var CPOutlineViewDataSource_outlineView_setObjectValue_forTableColumn_byItem_   
 
     if (self)
     {
+
+        _selectionHighlightStyle = CPTableViewSelectionHighlightStyleSourceList;
+
         // The root item has weight "0", thus represents the weight solely of its descendants.
         _rootItemInfo = { isExpanded:YES, isExpandable:NO, level:-1, row:-1, children:[], weight:0 };
 
