@@ -1,6 +1,6 @@
 
 var FILE = require("file"),
-    OS = require("OS"),
+    OS = require("os"),
     Jake = require("jake"),
     BundleTask = require("objective-j/jake/bundletask").BundleTask;
 
