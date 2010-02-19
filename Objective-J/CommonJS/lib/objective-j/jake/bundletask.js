@@ -460,7 +460,8 @@ BundleTask.prototype.defineResourceTask = function(aResourcePath, aDestinationPa
                 FILE.write(spritedDestinationPath, base64.encode(FILE.read(aResourcePath, "b")), { charset:"UTF-8" });
             });
 
-            task (anEnvironment.name() + "-sprites", [spritedDestinationPath]);
+            filedir (this.buildProductDataURLPathForEnvironment(anEnvironment), [spritedDestinationPath]);
+            filedir (this.buildProductMHTMLPathForEnvironment(anEnvironment), [spritedDestinationPath]);
         }, this);
     }
 
@@ -579,20 +580,16 @@ BundleTask.prototype.defineSpritedImagesTask = function()
 
         var folder = anEnvironment.name() + ".environment",
             resourcesPath = FILE.join(this.buildIntermediatesProductPath(), folder, "Resources", ""),
-            dataURLPath = this.buildProductDataURLPathForEnvironment(anEnvironment),
-            MHTMLPath = this.buildProductMHTMLPathForEnvironment(anEnvironment),
-            productName = this.productName();
+            productName = this.productName(),
+            dataURLPath = this.buildProductDataURLPathForEnvironment(anEnvironment);
 
-        task(anEnvironment.name() + "-sprites", function(aTask)
+        filedir (dataURLPath, function(aTask)
         {
-            TERM.stream.print("Creating sprited images file... \0green(" + dataURLPath +"\0)");
+            TERM.stream.print("Creating data URLs file... \0green(" + dataURLPath + "\0)");
 
-            var dataURLStream = FILE.open(dataURLPath, "w+", { charset:"UTF-8" }),
-                MHTMLStream = FILE.open(MHTMLPath, "w+", { charset:"UTF-8" }),
-                MHTMLContents = "/*\r\nContent-Type: multipart/related; boundary=\"_ANY_STRING_WILL_DO_AS_A_SEPARATOR\"\r\n\r\n";
+            var dataURLStream = FILE.open(dataURLPath, "w+", { charset:"UTF-8" });
 
             dataURLStream.write("@STATIC;1.0;");
-            MHTMLStream.write("@STATIC;1.0;");
 
             aTask.prerequisites().forEach(function(aFilename)
             {
@@ -602,13 +599,38 @@ BundleTask.prototype.defineSpritedImagesTask = function()
                 var resourcePath = "Resources/" + FILE.relative(resourcesPath, aFilename);
 
                 dataURLStream.write("u;" + resourcePath.length + ";" + resourcePath);
-                MHTMLStream.write("u;" + resourcePath.length + ";" + resourcePath);
 
-                // As data URL...
                 var contents =  "data:" + mimeType(aFilename) +
                                 ";base64," + FILE.read(aFilename, "b").decodeToString("UTF-8");
 
                 dataURLStream.write(contents.length + ";" + contents);
+            });
+
+            dataURLStream.write("e;");
+            dataURLStream.close();
+        });
+
+        this.enhance([dataURLPath]);
+
+        var MHTMLPath = this.buildProductMHTMLPathForEnvironment(anEnvironment);
+
+        filedir (MHTMLPath, function(aTask)
+        {
+            TERM.stream.print("Creating MHTML images file... \0green(" + MHTMLPath +"\0)");
+
+            var MHTMLStream = FILE.open(MHTMLPath, "w+", { charset:"UTF-8" }),
+                MHTMLContents = "/*\r\nContent-Type: multipart/related; boundary=\"_ANY_STRING_WILL_DO_AS_A_SEPARATOR\"\r\n\r\n";
+
+            MHTMLStream.write("@STATIC;1.0;");
+
+            aTask.prerequisites().forEach(function(aFilename)
+            {
+                if (!FILE.isFile(aFilename) || aFilename.indexOf(resourcesPath) !== 0 || !isImage(aFilename))
+                    return;
+
+                var resourcePath = "Resources/" + FILE.relative(resourcesPath, aFilename);
+
+                MHTMLStream.write("u;" + resourcePath.length + ";" + resourcePath);
 
                 // As MHTML...
                 contents = "mhtml:" + FILE.join(folder, productName + ".sj!") + resourcePath;
@@ -621,15 +643,12 @@ BundleTask.prototype.defineSpritedImagesTask = function()
                 MHTMLStream.write(contents.length + ";" + contents);
             });
 
-            dataURLStream.write("e;");
-            dataURLStream.close();
-
             MHTMLStream.write("e;");
             MHTMLStream.write(MHTMLContents + "*/");
             MHTMLStream.close();
         });
 
-        this.enhance([anEnvironment.name() + "-sprites"]);
+        this.enhance([MHTMLPath]);
 
     }, this);
 }
