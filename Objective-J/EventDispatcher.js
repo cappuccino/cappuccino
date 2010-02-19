@@ -12,13 +12,15 @@ function EventDispatcher(/*Object*/ anOwner)
 
 EventDispatcher.prototype.addEventListener = function(/*String*/ anEventName, /*Function*/ anEventListener)
 {
-    var eventListenersForEventName = this._eventListenersForEventNames[anEventName];
+    var eventListenersForEventNames = this._eventListenersForEventNames;
 
-    if (!eventListenersForEventName)
+    if (!hasOwnProperty.call(this._eventListenersForEventNames, anEventName))
     {
-        eventListenersForEventName = [];
-        this._eventListenersForEventNames[anEventName] = eventListenersForEventName;
+        var eventListenersForEventName = [];
+        eventListenersForEventNames[anEventName] = eventListenersForEventName;
     }
+    else
+        var eventListenersForEventName = eventListenersForEventNames[anEventName];
 
     var index = eventListenersForEventName.length;
 
@@ -31,12 +33,13 @@ EventDispatcher.prototype.addEventListener = function(/*String*/ anEventName, /*
 
 EventDispatcher.prototype.removeEventListener = function(/*String*/ anEventName, /*Function*/ anEventListener)
 {
-    var eventListenersForEventName = this._eventListenersForEventNames[anEventName];
+    var eventListenersForEventNames = this._eventListenersForEventNames;
 
-    if (!eventListenersForEventName)
+    if (!hasOwnProperty.call(eventListenersForEventNames, anEventName))
         return;
 
-    var index = eventListenersForEventName.length;
+    var eventListenersForEventName = eventListenersForEventNames[anEventName].
+        index = eventListenersForEventName.length;
 
     while (index--)
         if (eventListenersForEventName[index] === anEventListener)
@@ -46,13 +49,14 @@ EventDispatcher.prototype.removeEventListener = function(/*String*/ anEventName,
 EventDispatcher.prototype.dispatchEvent = function(/*Event*/ anEvent)
 {
     var type = anEvent.type,
-        eventListenersForEventName = this._eventListenersForEventNames[type];
+        eventListenersForEventNames = this._eventListenersForEventNames;
 
-    if (eventListenersForEventName)
+    if (hasOwnProperty.call(eventListenersForEventNames, type))
     {
-        var index = 0,
+        var eventListenersForEventName = this._eventListenersForEventNames[type],
+            index = 0,
             count = eventListenersForEventName.length;
-    
+
         for (; index < count; ++index)
             eventListenersForEventName[index](anEvent);
     }

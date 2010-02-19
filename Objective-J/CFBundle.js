@@ -464,7 +464,8 @@ function executeBundle(/*Bundle*/ aBundle, /*Function*/ aCallback)
                 var children = staticResource.children();
 
                 for (var name in children)
-                    staticResources.push(children[name]);
+                    if (hasOwnProperty.call(children, name))
+                        staticResources.push(children[name]);
             }
         }
 
