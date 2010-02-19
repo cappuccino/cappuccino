@@ -180,10 +180,10 @@ function reforkWithPackages()
 
 reforkWithPackages();
 
-function throwIfNotRequireError(e) {
+function handleSetupEnvironmentError(e) {
     if (String(e).indexOf("require error")==-1) {
         print("setupEnvironment: " + e);
-        throw e;
+        //throw e;
     }
 }
 
@@ -199,13 +199,13 @@ function setupEnvironment()
 
         global.BundleTask = OBJECTIVE_J_JAKE.BundleTask;
     } catch (e) {
-        throwIfNotRequireError(e);
+        handleSetupEnvironmentError(e);
     }
     
     try {
         require("objective-j").OBJJ_INCLUDE_PATHS.push(FILE.join($BUILD_CONFIGURATION_DIR, "CommonJS", "cappuccino", "Frameworks"));
     } catch (e) {
-        throwIfNotRequireError(e);
+        handleSetupEnvironmentError(e);
     }
     
     try {
@@ -216,7 +216,7 @@ function setupEnvironment()
         //    print("no blend!")
     }
     catch (e) {
-        throwIfNotRequireError(e);
+        handleSetupEnvironmentError(e);
     }
 }
 
