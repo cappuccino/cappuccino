@@ -70,6 +70,11 @@
     return self;
 }
 
+- (id)initWithString:(CPString)aString
+{
+    return [self initWithSerializedPlistObject:aPlistObject];
+}
+
 - (id)initWithSerializedPlistObject:(id)aPlistObject
 {
     self = [super init];
@@ -88,6 +93,16 @@
         [self setSerializedPlistObject:aPlistObject format:aFormat];
 
     return self;
+}
+
+- (void)setString:(CPString)aString
+{
+    return [self setSerializedPlistObject:aString];
+}
+
+- (CPString)string
+{
+    return [self serializedPlistObject];
 }
 
 - (int)length
