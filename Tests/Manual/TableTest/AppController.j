@@ -119,7 +119,7 @@ CPLogRegister(CPLogConsole);
     [iconColumn setDataView:iconView];
     [iconColumn setResizingMask:CPTableColumnNoResizing];
 
-    [tableView2 addTableColumn:iconColumn];
+    //[tableView2 addTableColumn:iconColumn];
 
     iconImage = [[CPImage alloc] initWithContentsOfFile:"http://cappuccino.org/images/favicon.png" size:CGSizeMake(16,16)];
 
@@ -135,7 +135,7 @@ CPLogRegister(CPLogConsole);
         var column = [[CPTableColumn alloc] initWithIdentifier:String(i)];
         [[column headerView] setStringValue:"Number "+i];
 
-        [column setWidth:200.0];
+        [column setWidth:i*75];
         [column setMinWidth:50.0];
 
         [column setDataView:textDataView];
@@ -341,6 +341,7 @@ CPLogRegister(CPLogConsole);
                    proposedRow:(CPInteger)row 
                    proposedDropOperation:(CPTableViewDropOperation)operation
 {
+
     [[aTableView window] orderFront:nil];
 
     if(aTableView === tableView)

@@ -247,7 +247,7 @@ var _CPTableColumnHeaderViewStringValueKey = @"_CPTableColumnHeaderViewStringVal
         return;
 
     // 2 different tracking methods: one for resizing/stop-resizing, another one for selection/reordering
-    if ([_tableView allowsColumnResizing] && [_tableView columnAutoresizingStyle] & CPTableViewUniformColumnAutoresizingStyle
+    if ([_tableView allowsColumnResizing]
         && CGRectContainsPoint([self _cursorRectForColumn:resizedColumn], mouseLocation))
     {
         _resizedColumn = resizedColumn;
@@ -325,11 +325,11 @@ var _CPTableColumnHeaderViewStringValueKey = @"_CPTableColumnHeaderViewStringVal
             [[CPCursor resizeLeftCursor] set];
         else
         {
+            _tableView._lastColumnShouldSnap = NO;
             [tableColumn setWidth:newWidth];
             // FIXME: there has to be a better way to do this...
             // We should refactor the auto resizing crap.
             // We need to figure out the exact cocoa behavior here though. 
-            [_tableView resizeWithOldSuperviewSize:[_tableView bounds]];
             _lastLocation = location;
 
             [[CPCursor resizeLeftRightCursor] set];
