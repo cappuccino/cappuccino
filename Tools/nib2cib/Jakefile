@@ -1,9 +1,10 @@
 
+require("../../common.jake");
 
 var FILE = require("file");
 
-require("../../common.jake");
-
+var app = require("objective-j/jake").app;
+var BundleTask = require("objective-j/jake").BundleTask;
 
 app ("nib2cib", function(nib2cibTask)
 {

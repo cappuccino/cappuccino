@@ -1,7 +1,8 @@
-#!/usr/bin/env narwhal
 
 require ("../../common.jake");
 
+var app = require("objective-j/jake").app;
+var BundleTask = require("objective-j/jake").BundleTask;
 
 app ("press", function(pressTask)
 {

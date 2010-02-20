@@ -1,6 +1,7 @@
 
 require("../../../common.jake");
 
+var blend = require("cappuccino/jake").blend;
 
 blend ("Aristo.blend", function(aristoTask)
 {

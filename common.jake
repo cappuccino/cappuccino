@@ -189,33 +189,9 @@ function handleSetupEnvironmentError(e) {
 
 function setupEnvironment()
 {
-    // TODO: deprecate these globals
-    try {
-        var OBJECTIVE_J_JAKE = require("objective-j/jake");
-        
-        global.app = OBJECTIVE_J_JAKE.app;
-        global.bundle = OBJECTIVE_J_JAKE.bundle;
-        global.framework = OBJECTIVE_J_JAKE.framework;
-
-        global.BundleTask = OBJECTIVE_J_JAKE.BundleTask;
-    } catch (e) {
-        handleSetupEnvironmentError(e);
-    }
-    
     try {
         require("objective-j").OBJJ_INCLUDE_PATHS.push(FILE.join($BUILD_CONFIGURATION_DIR, "CommonJS", "cappuccino", "Frameworks"));
     } catch (e) {
-        handleSetupEnvironmentError(e);
-    }
-    
-    try {
-        var CAPPUCCINO_JAKE = require("cappuccino/jake");
-        if (CAPPUCCINO_JAKE.blend)
-            global.blend = CAPPUCCINO_JAKE.blend;
-        //else
-        //    print("no blend!")
-    }
-    catch (e) {
         handleSetupEnvironmentError(e);
     }
 }

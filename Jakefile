@@ -1,12 +1,11 @@
-#!/usr/bin/env narwhal
+
+require("./common.jake");
 
 var FILE = require("file"),
     SYSTEM = require("system"),
     OS = require("os"),
     jake = require("jake"),
     stream = require("term").stream;
-
-require(FILE.absolute("common.jake"));
 
 var subprojects = ["Objective-J", "CommonJS", "Foundation", "AppKit", "Tools"];
 

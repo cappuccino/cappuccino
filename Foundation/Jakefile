@@ -22,6 +22,8 @@
 
 require("../common.jake");
 
+var framework = require("objective-j/jake").framework;
+var BundleTask = require("objective-j/jake").BundleTask;
 
 foundationTask = framework ("Foundation", function(foundationTask)
 {
