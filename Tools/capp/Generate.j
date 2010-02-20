@@ -6,69 +6,98 @@ var OS = require("os"),
     FILE = require("file"),
     OBJJ = require("objective-j");
 
+var stream = require("term").stream;
+
+var parser = new (require("args").Parser)();
+
+parser.usage("DESTINATION_DIRECTORY");
+
+parser.help("Generate a Cappuccino project or Frameworks directory");
+
+parser.option("-t", "--template", "template")
+    .set()
+    .def("Application")
+    .help("Selects a project template to use (default: Application).");
+
+parser.option("-f", "--frameworks", "justFrameworks")
+    .set(true)
+    .help("Only generate or update Frameworks directory.");
+
+parser.option("-F", "--framework", "framework", "frameworks")
+    .def([])
+    .push()
+    .help("Additional framework to copy/symlink (default: Objective-J, Foundation, AppKit)");
+
+parser.option("--no-frameworks", "noFrameworks")
+    .set(true)
+    .help("Don't copy any default frameworks (can be overridden with -F)");
+
+parser.option("--symlink", "symlink")
+    .set(true)
+    .help("Creates a symlink to each framework instead of copying.");
+
+parser.option("--build", "useCappBuild")
+    .set(true)
+    .help("Uses frameworks in the $CAPP_BUILD.");
+
+parser.option("-l")
+    .action(function(o) { o.symlink = o.shouldUseCappBuild = true; })
+    .help("Enables both the --symlink and --build options.");
+
+parser.option("--force", "force")
+    .set(true)
+    .help("Overwrite update existing frameworks.");
+
+parser.option("--noconfig", "noconfig")
+    .set()
+    .help("Selects a project template to use.");
+
+parser.option("--list-templates", "listTemplates")
+    .set(true)
+    .help("Lists available templates.");
+
+parser.option("--list-frameworks", "listFrameworks")
+    .set(true)
+    .help("Lists available frameworks.");
+
+parser.helpful();
+
 // FIXME: better way to do this:
 var CAPP_HOME = require("packages").catalog["cappuccino"].directory;
+var templatesDirectory = FILE.join(CAPP_HOME, "lib", "capp", "Resources", "Templates");
 
 function gen(/*va_args*/)
 {
-    var index = 0,
-        count = arguments.length,
+    var args = ["capp gen"].concat(Array.prototype.slice.call(arguments));
+    var options = parser.parse(args);
 
-        shouldSymbolicallyLink = false,
-        shouldUseCappBuild = false,
-        justFrameworks = false,
-        noConfig = false,
-        force = false,
-        
-        template = "Application",
-        destination = "";
+    if (options.listTemplates) {
+        listTemplates();
+        return;
+    }
 
-    for (; index < count; ++index)
-    {
-        var argument = arguments[index];
+    if (options.listFrameworks) {
+        listFrameworks();
+        return;
+    }
 
-        switch (argument)
-        {
+    var destination = options.args[0];
 
-            case "-l":              shouldSymbolicallyLink = true;
-                                    shouldUseCappBuild = true;
-                                    break;
-                                    
-            case "--symlink":
-                                    shouldSymbolicallyLink = true;
-                                    break;
-                                    
-            case "--build":
-                                    shouldUseCappBuild = true;
-                                    break;
-
-            case "-t":
-            case "--template":      template = arguments[++index];
-                                    break;
-                                
-            case "-f":
-            case "--frameworks":    justFrameworks = true;
-                                    break;
-
-            case "--noconfig":      noConfig = true;
-                                    break;
-
-            case "--force":         force = true;
-                                    break;
-
-            default:                destination = argument;
+    if (!destination) {
+        if (options.justFrameworks)
+            destination = ".";
+        else {
+            parser.printUsage(options);
+            OS.exit(1);
         }
     }
 
-    if (destination.length === 0)
-        destination = justFrameworks ? "." : "Untitled";
-
     var sourceTemplate = null;
 
-    if (FILE.isAbsolute(template))
-        sourceTemplate = FILE.join(template);
+    if (FILE.isAbsolute(options.template))
+        sourceTemplate = FILE.join(options.template);
     else
-        sourceTemplate = FILE.join(CAPP_HOME, "lib", "capp", "Resources", "Templates", template);
+        sourceTemplate = FILE.join(templatesDirectory, options.template);
 
     var configFile = FILE.join(sourceTemplate, "template.config"),
         config = {};
@@ -77,10 +106,15 @@ function gen(/*va_args*/)
         config = JSON.parse(FILE.read(configFile, { charset:"UTF-8" }));
 
     var destinationProject = destination,
-        configuration = noConfig ? [Configuration defaultConfiguration] : [Configuration userConfiguration];
+        configuration = options.noconfig ? [Configuration defaultConfiguration] : [Configuration userConfiguration];
 
-    if (justFrameworks)
-        createFrameworksInFile(destinationProject, shouldSymbolicallyLink, shouldUseCappBuild, force);
+    var frameworks = options.frameworks;
+    if (!options.noFrameworks) {
+        frameworks.push("Objective-J", "Foundation", "AppKit");
+    }
+
+    if (options.justFrameworks)
+        createFrameworksInFile(frameworks, destinationProject, options.symlink, options.useCappBuild, options.force);
 
     else if (!FILE.exists(destinationProject))
     {
@@ -124,7 +158,7 @@ function gen(/*va_args*/)
             }
             catch (anException)
             {
-                print("Copying and modifying " + path + " failed.");
+                stream.print("Copying and modifying " + path + " failed.");
             }
         }
 
@@ -133,24 +167,23 @@ function gen(/*va_args*/)
         if (config.FrameworksPath)
             frameworkDestination = FILE.join(frameworkDestination, config.FrameworksPath);
 
-        createFrameworksInFile(frameworkDestination, shouldSymbolicallyLink, shouldUseCappBuild);
+        createFrameworksInFile(frameworks, frameworkDestination, options.symlink, options.useCappBuild);
     }
     else
-        print("Directory already exists");
+        stream.print("Directory already exists");
 }
 
-function createFrameworksInFile(/*String*/ aFile, /*Boolean*/ symlink, /*Boolean*/ build, /*Boolean*/ force)
+function createFrameworksInFile(/*Array*/ frameworks, /*String*/ aFile, /*Boolean*/ symlink, /*Boolean*/ build, /*Boolean*/ force)
 {
     var destination = FILE.path(FILE.absolute(aFile));
-    var frameworks = ["Foundation", "AppKit"];
-    
+
     if (!destination.isDirectory())
         throw new Error("Can't create Frameworks. Directory does not exist: " + destination);
 
     var destinationFrameworks = destination.join("Frameworks"),
         destinationDebugFrameworks = destination.join("Frameworks", "Debug");
 
-    print("Creating Frameworks directory in " + destinationFrameworks + ".");
+    stream.print("Creating Frameworks directory in " + destinationFrameworks + ".");
 
     //destinationFrameworks.mkdirs(); // redundant
     destinationDebugFrameworks.mkdirs();
@@ -164,24 +197,29 @@ function createFrameworksInFile(/*String*/ aFile, /*Boolean*/ symlink, /*Boolean
         var sourceFrameworks = builtFrameworks.join("Release"),
             sourceDebugFrameworks = builtFrameworks.join("Debug");
 
-        frameworks.concat("Objective-J").forEach(function(framework) {
+        frameworks.forEach(function(framework) {
             installFramework(sourceFrameworks.join(framework), destinationFrameworks.join(framework), force, symlink);
             installFramework(sourceDebugFrameworks.join(framework), destinationDebugFrameworks.join(framework), force, symlink);
         });
     }
     else {
-        // Objective-J. Take from OBJJ_HOME.
-        var objjHome = FILE.path(OBJJ.OBJJ_HOME);
-        var objjPath = objjHome.join("Frameworks", "Objective-J");
-        var objjDebugPath = objjHome.join("Frameworks", "Debug", "Objective-J");
-        
-        installFramework(objjPath, destinationFrameworks.join("Objective-J"), force, symlink);
-        installFramework(objjDebugPath, destinationDebugFrameworks.join("Objective-J"), force, symlink);
-        
         // Frameworks. Search frameworks paths
         frameworks.forEach(function(framework) {
+            // Need a special case for Objective-J
+            if (framework === "Objective-J") {
+                // Objective-J. Take from OBJJ_HOME.
+                var objjHome = FILE.path(OBJJ.OBJJ_HOME);
+                var objjPath = objjHome.join("Frameworks", "Objective-J");
+                var objjDebugPath = objjHome.join("Frameworks", "Debug", "Objective-J");
+
+                installFramework(objjPath, destinationFrameworks.join("Objective-J"), force, symlink);
+                installFramework(objjDebugPath, destinationDebugFrameworks.join("Objective-J"), force, symlink);
+
+                return;
+            }
+
             var found;
-            
+
             for (var i = 0, found = false; !found && i < OBJJ.objj_frameworks.length; i++) {
                 var sourceFramework = FILE.path(OBJJ.objj_frameworks[i]).join(framework);
                 if (FILE.isDirectory(sourceFramework)) {
@@ -190,8 +228,8 @@ function createFrameworksInFile(/*String*/ aFile, /*Boolean*/ symlink, /*Boolean
                 }
             }
             if (!found)
-                print("Warning: Couldn't find framework \"" + framework +"\"");
-            
+                stream.print("\0yellow(Warning:\0) Couldn't find framework \0cyan(" + framework +"\0)");
+
             for (var i = 0, found = false; !found && i < OBJJ.objj_debug_frameworks.length; i++) {
                 var sourceDebugFramework = FILE.path(OBJJ.objj_debug_frameworks[i]).join(framework);
                 if (FILE.isDirectory(sourceDebugFramework)) {
@@ -200,7 +238,7 @@ function createFrameworksInFile(/*String*/ aFile, /*Boolean*/ symlink, /*Boolean
                 }
             }
             if (!found)
-                print("Warning: Couldn't find debug framework \"" + framework +"\"");
+                stream.print("\0yellow(Warning:\0) Couldn't find debug framework \0cyan(" + framework +"\0)");
         });
     }
 }
@@ -210,19 +248,19 @@ function installFramework(source, dest, force, symlink) {
         if (force) {
             dest.rmtree();
         } else {
-            print("Warning: " + dest + " already exists. Use --force to overwrite.");
+            stream.print("\0yellow(Warning:\0) " + dest + " already exists. Use --force to overwrite.");
             return;
         }
     }
     if (source.exists()) {
-        print((symlink ? "Symlinking " : "Copying ") + source + " to " + dest);
+        stream.print((symlink ? "Symlinking " : "Copying ") + source + " to " + dest);
         if (symlink)
             FILE.symlink(source, dest);
         else
             FILE.copyTree(source, dest);
     }
     else
-        print("Warning: "+source+" doesn't exist.");
+        stream.print("\0yellow(Warning:\0) "+source+" doesn't exist.");
 }
 
 function toIdentifier(/*String*/ aString)
@@ -252,4 +290,27 @@ function toIdentifier(/*String*/ aString)
     }
 
     return identifier;
+}
+
+function listTemplates() {
+    FILE.list(templatesDirectory).forEach(function(templateName) {
+        stream.print(templateName);
+    });
+}
+
+function listFrameworks() {
+    stream.print("Frameworks:");
+    OBJJ.objj_frameworks.forEach(function(frameworksDirectory) {
+        stream.print("  " + frameworksDirectory);
+        FILE.list(frameworksDirectory).forEach(function(templateName) {
+            stream.print("    + " + templateName);
+        });
+    });
+    stream.print("Frameworks (Debug):");
+    OBJJ.objj_debug_frameworks.forEach(function(frameworksDirectory) {
+        stream.print("  " + frameworksDirectory);
+        FILE.list(frameworksDirectory).forEach(function(frameworkName) {
+            stream.print("    + " + frameworkName);
+        });
+    });
 }
