@@ -24,7 +24,7 @@ var FileExecutablesForPaths = { };
 
 function FileExecutable(/*String*/ aPath)
 {
-    var existingFileExecutable = FileExecutable.fileExecutablesForPaths[aPath];
+    var existingFileExecutable = FileExecutablesForPaths[aPath];
 
     if (existingFileExecutable)
         return existingFileExecutable;

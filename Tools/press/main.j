@@ -212,7 +212,7 @@ function pressEnvironment(rootPath, outputFiles, environment, options) {
         }
         total++;
         totalBytes += aFileExecutable.code().length
-    }
+    }, this);
     stream.print(sprintf(
         "Saved \0green(%f%%\0) (\0blue(%s\0)); Total required files: \0magenta(%d\0) (\0blue(%s\0)) of \0magenta(%d\0) (\0blue(%s\0));",
         Math.round(((includedBytes - totalBytes) / totalBytes) * -100),
