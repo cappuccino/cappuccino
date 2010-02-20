@@ -7,7 +7,7 @@
 #include "CPLog.js"
 #include "Constants.js"
 #include "EventDispatcher.js"
-#include "HTTPRequest.js"
+#include "CFHTTPRequest.js"
 #include "CFPropertyList.js"
 #include "CFDictionary.js"
 #include "CFData.js"
