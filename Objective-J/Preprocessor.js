@@ -146,6 +146,13 @@ function preprocess(/*String*/ aString, /*String*/ aPath, /*unsigned*/ flags)
     return new Preprocessor(aString, aPath, flags).executable();
 }
 
+objj_preprocess = preprocess;
+
+objj_eval = function(/*String*/ aString)
+{
+    return eval(objj_preprocess(aString).code());
+}
+
 function Preprocessor(/*String*/ aString, /*String*/ aPath, /*unsigned*/ flags)
 {
     // Remove the shebang.

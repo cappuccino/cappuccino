@@ -1,12 +1,11 @@
-#!/usr/bin/env narwhal
+
+require("./common.jake");
 
 var FILE = require("file"),
     SYSTEM = require("system"),
     OS = require("os"),
     jake = require("jake"),
     stream = require("term").stream;
-
-require(FILE.absolute("common.jake"));
 
 var subprojects = ["Objective-J", "CommonJS", "Foundation", "AppKit", "Tools"];
 
@@ -57,7 +56,11 @@ task ("sudo-install", ["CommonJS"], function()
     // FIXME: require("narwhal/tusk/install").install({}, $COMMONJS);
     // Doesn't work due to some weird this.print business.
     if (OS.system(["sudo", "tusk", "install", "--force", $BUILD_CJS_OBJECTIVE_J, $BUILD_CJS_CAPPUCCINO]))
-        OS.exit(1); //rake abort if ($? != 0)
+    {
+        // Attempt a hackish work-around for sudo compiled with the --with-secure-path option
+        if (OS.system("sudo bash -c 'source `sh shell_config_file.sh`; tusk install --force " + $BUILD_CJS_OBJECTIVE_J + " " + $BUILD_CJS_CAPPUCCINO + "'"))
+            OS.exit(1); //rake abort if ($? != 0)
+    }
 });
 
 // Documentation

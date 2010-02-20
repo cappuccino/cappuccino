@@ -283,7 +283,7 @@ function loadExecutableForBundle(/*Bundle*/ aBundle, success, failure)
     {
         try
         {
-            decompileStaticFile(aBundle, anEvent.request.responseText());
+            decompileStaticFile(aBundle, anEvent.request.responseText(), aBundle.executablePath());
             aBundle._loadStatus &= ~CFBundleLoadingExecutable;
             success();
         }
@@ -319,7 +319,7 @@ function loadSpritedImagesForBundle(/*Bundle*/ aBundle, success, failure)
     {
         try
         {
-            decompileStaticFile(aBundle, anEvent.request.responseText());
+            decompileStaticFile(aBundle, anEvent.request.responseText(), spritedImagesPath);
             aBundle._loadStatus &= ~CFBundleLoadingSpritedImages;
             success();
         }
@@ -356,9 +356,10 @@ function CFBundleTestSpriteSupport(/*String*/ MHTMLPath, /*Function*/ aCallback)
         CFBundleDataURLSpriteType,
         "data:image/gif;base64,R0lGODlhAQABAIAAAMc9BQAAACH5BAAAAAAALAAAAAABAAEAAAICRAEAOw==",
         CFBundleMHTMLSpriteType,
-        MHTMLPath,
+        MHTMLPath+"!test",
         CFBundleMHTMLUncachedSpriteType,
-        MHTMLPath+"?"+CFCacheBuster]);
+        MHTMLPath+"?"+CFCacheBuster+"!test"
+    ]);
 }
 
 function CFBundleNotifySpriteSupportListeners()
@@ -371,6 +372,13 @@ function CFBundleNotifySpriteSupportListeners()
 
 function CFBundleTestSpriteTypes(/*Array*/ spriteTypes)
 {
+    if (spriteTypes.length < 2)
+    {
+        CFBundleSupportedSpriteType = CFBundleNoSpriteType;
+        CFBundleNotifySpriteSupportListeners();
+        return;
+    }
+
     var image = new Image();
 
     image.onload = function()
@@ -386,21 +394,25 @@ function CFBundleTestSpriteTypes(/*Array*/ spriteTypes)
 
     image.onerror = function()
     {
-        if (spriteTypes.length === 2)
-        {
-            CFBundleSupportedSpriteType = CFBundleNoSpriteType;
-            CFBundleNotifySpriteSupportListeners();
-        }
-        else
-            CFBundleTestSpriteTypes(spriteTypes.slice(2));
+        CFBundleTestSpriteTypes(spriteTypes.slice(2));
     }
 
     image.src = spriteTypes[1];
 }
 
+function mhtmlBasePath()
+{
+#ifdef BROWSER
+    //FIXME: URL stuff is kind of broken
+    return window.location.protocol + "//" + window.location.hostname + (window.location.port ? (":" + window.location.port) : "");
+#else
+    return "";
+#endif
+}
+
 function spritedImagesTestPathForBundle(/*Bundle*/ aBundle)
 {
-    return FILE.join(aBundle.path(), aBundle.mostEligibleEnvironment() + ".environment", "MHTMLTest.txt");
+    return "mhtml:" + mhtmlBasePath() + FILE.join(aBundle.path(), aBundle.mostEligibleEnvironment() + ".environment", "MHTMLTest.txt");
 }
 
 function spritedImagesPathForBundle(/*Bundle*/ aBundle)
@@ -408,12 +420,9 @@ function spritedImagesPathForBundle(/*Bundle*/ aBundle)
     if (CFBundleSupportedSpriteType === CFBundleDataURLSpriteType)
         return FILE.join(aBundle.path(), aBundle.mostEligibleEnvironment() + ".environment", "dataURLs.txt");
 
-    if (CFBundleSupportedSpriteType === CFBundleMHTMLSpriteType)
-        return FILE.join(aBundle.path(), aBundle.mostEligibleEnvironment() + ".environment", "MHTML.txt");
+    if (CFBundleSupportedSpriteType === CFBundleMHTMLSpriteType || CFBundleSupportedSpriteType === CFBundleMHTMLUncachedSpriteType)
+        return mhtmlBasePath() + FILE.join(aBundle.path(), aBundle.mostEligibleEnvironment() + ".environment", "MHTMLPaths.txt");
 
-    if (CFBundleSupportedSpriteType === CFBundleMHTMLUncachedSpriteType)
-        return FILE.join(aBundle.path(), aBundle.mostEligibleEnvironment() + ".environment", "MHTML.txt?" + CFCacheBuster);
-    
     return NULL;
 }
 
@@ -482,15 +491,15 @@ var STATIC_MAGIC_NUMBER     = "@STATIC",
     MARKER_IMPORT_STD       = 'I',
     MARKER_IMPORT_LOCAL     = 'i';
 
-function decompileStaticFile(/*Bundle*/ aBundle, /*String*/ aString)
+function decompileStaticFile(/*Bundle*/ aBundle, /*String*/ aString, /*String*/ aPath)
 {
     var stream = new MarkedStream(aString);
 
     if (stream.magicNumber() !== STATIC_MAGIC_NUMBER)
-        throw new Error("Could not read static file.");
+        throw new Error("Could not read static file: "+aPath);
 
     if (stream.version() !== "1.0")
-        throw new Error("Could not read static file.");
+        throw new Error("Could not read static file: "+aPath);
 
     var marker,
         bundlePath = aBundle.path(),
@@ -513,8 +522,18 @@ function decompileStaticFile(/*Bundle*/ aBundle, /*String*/ aString)
             var URI = stream.getString();
 
             if (URI.toLowerCase().indexOf("mhtml:") === 0)
-                URI = "mhtml:" + FILE.join(bundlePath, URI.substr("mhtml:".length));
+            {
+                URI = "mhtml:" + mhtmlBasePath() + FILE.join(bundlePath, URI.substr("mhtml:".length));
 
+                if (CFBundleSupportedSpriteType === CFBundleMHTMLUncachedSpriteType)
+                {
+                    var exclamationIndex = URI.indexOf("!"),
+                        firstPart = URI.substring(0, exclamationIndex),
+                        lastPart = URI.substring(exclamationIndex);
+
+                    URI = firstPart + "?" + CFCacheBuster + lastPart;
+                }
+            }
             aBundle._URIMap[text] = URI;
 
             // The unresolved directories must not be bundles.

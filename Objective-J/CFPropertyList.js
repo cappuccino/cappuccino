@@ -66,9 +66,9 @@ CFPropertyList.readPropertyListFromFile = function(/*String*/ aFilePath)
     return CFPropertyList.propertyListFromString(FILE.read(aFilePath, { charset:"UTF-8" }));
 }
 
-CFPropertyList.writePropertyListToFile = function(/*CFPropertyList*/ aPropertyList, /*String*/ aFilePath)
+CFPropertyList.writePropertyListToFile = function(/*CFPropertyList*/ aPropertyList, /*String*/ aFilePath, /*Format*/ aFormat)
 {
-    return FILE.write(aFilePath, CFPropertyList.stringFromPropertyList(aPropertyList), { charset:"UTF-8" });
+    return FILE.write(aFilePath, CFPropertyList.stringFromPropertyList(aPropertyList, aFormat), { charset:"UTF-8" });
 }
 #endif
 

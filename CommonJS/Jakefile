@@ -1,7 +1,6 @@
 
 require("../common.jake");
 
-
 var FILE = require("file");
 
 new FileList("**/*").exclude("Jakefile").forEach(function(aFilename)

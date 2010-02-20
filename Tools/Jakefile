@@ -1,7 +1,5 @@
-#!/usr/bin/env narwhal
 
 require("../common.jake");
-
 
 // nib2cib has to come before capp since capp uses nib2cib
 subtasks(["nib2cib", "capp"/*, "bake"*/, "press"], ["build"/*, "clean", "clobber"*/]);

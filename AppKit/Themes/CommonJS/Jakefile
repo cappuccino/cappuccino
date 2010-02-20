@@ -3,7 +3,6 @@ require("../../../common.jake");
 
 var FILE = require("file");
 
-
 $BLENDTASK              = "blendtask.j";
 $BUILD_CJS_BLENDTASK    = FILE.join($BUILD_CJS_CAPPUCCINO, "lib", "cappuccino", "jake", "blendtask.j");
 
