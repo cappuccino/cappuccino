@@ -2,7 +2,7 @@
 
 function objj_debug_object_format(aReceiver)
 {
-    return (aReceiver && aReceiver.isa) ? sprintf("<%s %#08x>", GETMETA(aReceiver).name, aReceiver.__address) : String(aReceiver);
+    return (aReceiver && aReceiver.isa) ? sprintf("<%s %#08x>", GETMETA(aReceiver).name, aReceiver._UID) : String(aReceiver);
 }
 
 function objj_debug_message_format(aReceiver, aSelector)

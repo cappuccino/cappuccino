@@ -477,10 +477,10 @@ CPLog(@"Got some class: %@", inst);
 
 - (CPString)UID
 {
-    if (typeof self.__address === "undefined")
-        self.__address = _objj_generateObjectHash();
+    if (typeof self._UID === "undefined")
+        self._UID = objj_generateObjectUID();
 
-    return __address + "";
+    return _UID + "";
 }
 
 /*!

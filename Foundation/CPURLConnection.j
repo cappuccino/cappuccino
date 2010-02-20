@@ -98,7 +98,7 @@ var CPURLConnectionDelegate = nil;
 {
     try
     {
-        var request = new HTTPRequest();
+        var request = new CFHTTPRequest();
 
         request.open([aRequest HTTPMethod], [[aRequest URL] absoluteString], NO);
 
@@ -157,7 +157,7 @@ var CPURLConnectionDelegate = nil;
                                     window.location &&
                                     (window.location.protocol === "file:" || window.location.protocol === "app:"));
 
-        _HTTPRequest = new HTTPRequest();
+        _HTTPRequest = new CFHTTPRequest();
 
         if (shouldStartImmediately)
             [self start];
@@ -233,7 +233,7 @@ var CPURLConnectionDelegate = nil;
 /* @ignore */
 - (void)_readyStateDidChange
 {
-    if (_HTTPRequest.readyState() === HTTPRequest.CompleteState)
+    if (_HTTPRequest.readyState() === CFHTTPRequest.CompleteState)
     {
         var statusCode = _HTTPRequest.status(),
             URL = [_request URL];

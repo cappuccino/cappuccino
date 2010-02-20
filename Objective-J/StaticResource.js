@@ -120,11 +120,7 @@ else
 
 #endif
 
-StaticResource.FileType             = 0;
-StaticResource.DirectoryType        = 1;
-StaticResource.NotFoundType         = 2;
-
-function StaticResource(/*String*/ aName, /*StaticResource*/ aParent, /*Type*/ aType, /*BOOL*/ isResolved)
+function StaticResource(/*String*/ aName, /*StaticResource*/ aParent, /*BOOL*/ isDirectory, /*BOOL*/ isResolved)
 {
     this._parent = aParent;
     this._eventDispatcher = new EventDispatcher(this);
@@ -133,17 +129,20 @@ function StaticResource(/*String*/ aName, /*StaticResource*/ aParent, /*Type*/ a
     this._isResolved = !!isResolved;
     this._path = FILE.join(aParent ? aParent.path() : "", aName);
 
-    this._type = aType;
+    this._isDirectory = !!isDirectory;
+    this._isNotFound = NO;
 
     if (aParent)
         aParent._children[aName] = this;
 
-    if (aType === StaticResource.DirectoryType)
+    if (isDirectory)
         this._children = { };
 
-    else if (aType === StaticResource.FileType)
+    else
         this._contents = "";
 }
+
+exports.StaticResource = StaticResource;
 
 function resolveStaticResource(/*StaticResource*/ aResource)
 {
@@ -157,7 +156,7 @@ function resolveStaticResource(/*StaticResource*/ aResource)
 
 StaticResource.prototype.resolve = function()
 {
-    if (this.type() === StaticResource.DirectoryType)
+    if (this.isDirectory())
     {
         var bundle = new CFBundle(this.path());
 
@@ -179,7 +178,7 @@ StaticResource.prototype.resolve = function()
 
         function onfailure()
         {
-            self._type = StaticResource.NotFoundType;
+            self._isNotFound = YES;
             resolveStaticResource(self);
         }
 
@@ -227,7 +226,7 @@ StaticResource.prototype.write = function(/*String*/ aString)
     this._contents += aString;
 }
 
-StaticResource.prototype.resolveSubPath = function(/*String*/ aPath, /*Type*/ aType, /*Function*/ aCallback)
+StaticResource.prototype.resolveSubPath = function(/*String*/ aPath, /*BOOL*/ isDirectory, /*Function*/ aCallback)
 {
     aPath = FILE.normal(aPath);
 
@@ -240,17 +239,17 @@ StaticResource.prototype.resolveSubPath = function(/*String*/ aPath, /*Type*/ aT
     var components = FILE.split(aPath),
         index = this === rootResource ? 1 : FILE.split(this.path()).length;
 
-    resolvePathComponents(this, aType, components, index, aCallback);
+    resolvePathComponents(this, isDirectory, components, index, aCallback);
 }
 
-function resolvePathComponents(/*StaticResource*/ startResource, /*Type*/aType, /*Array*/ components, /*Integer*/ index, /*Function*/ aCallback)
+function resolvePathComponents(/*StaticResource*/ startResource, /*BOOL*/ isDirectory, /*Array*/ components, /*Integer*/ index, /*Function*/ aCallback)
 {
     var count = components.length,
         parent = startResource;
 
     function continueResolution()
     {
-        resolvePathComponents(parent, aType, components, index, aCallback);
+        resolvePathComponents(parent, isDirectory, components, index, aCallback);
     }
 
     for (; index < count; ++index)
@@ -264,9 +263,7 @@ function resolvePathComponents(/*StaticResource*/ startResource, /*Type*/aType, 
 
         if (!child)
         {
-            var type = index + 1 < count || aType === StaticResource.DirectoryType ? StaticResource.DirectoryType : StaticResource.FileType;
-
-            child = new StaticResource(name, parent, type, NO);
+            child = new StaticResource(name, parent, index + 1 < count || isDirectory , NO);
             child.resolve();
         }
 
@@ -279,7 +276,7 @@ function resolvePathComponents(/*StaticResource*/ startResource, /*Type*/aType, 
             return aCallback(null, new Error("File not found: " + components.join("/")));
 
         // If we have more path components and this is not a directory...
-        if ((index + 1 < count) && child.type() !== StaticResource.DirectoryType)
+        if ((index + 1 < count) && child.isFile())
             return aCallback(null, new Error("File is not a directory: " + components.join("/")));
 
         parent = child;
@@ -300,7 +297,17 @@ StaticResource.prototype.removeEventListener = function(/*String*/ anEventName, 
 
 StaticResource.prototype.isNotFound = function()
 {
-    return this.type() === StaticResource.NotFoundType;
+    return this._isNotFound;
+}
+
+StaticResource.prototype.isFile = function()
+{
+    return !this._isDirectory;
+}
+
+StaticResource.prototype.isDirectory = function()
+{
+    return this._isDirectory;
 }
 
 StaticResource.prototype.toString = function(/*BOOL*/ includeNotFounds)
@@ -311,7 +318,7 @@ StaticResource.prototype.toString = function(/*BOOL*/ includeNotFounds)
     var string = this.parent() ? this.name() : "/",
         type = this.type();
 
-    if (type === StaticResource.DirectoryType)
+    if (this.isDirectory())
     {
         var children = this._children;
 
@@ -345,7 +352,7 @@ StaticResource.prototype.nodeAtSubPath = function(/*String*/ aPath, /*BOOL*/ sho
             parent = parent._children[name];
 
         else if (shouldResolveAsDirectories)
-            parent = new StaticResource(name, parent, StaticResource.DirectoryType, YES);
+            parent = new StaticResource(name, parent, YES, YES);
 
         else
             throw NULL;
@@ -356,12 +363,12 @@ StaticResource.prototype.nodeAtSubPath = function(/*String*/ aPath, /*BOOL*/ sho
 
 StaticResource.resolveStandardNodeAtPath = function(/*String*/ aPath, /*Function*/ aCallback)
 {
-    var includePaths = exports.includePaths(),
+    var includePaths = StaticResource.includePaths(),
         resolveStandardNodeAtPath = function(/*String*/ aPath, /*int*/ anIndex)
         {
             var searchPath = FILE.absolute(FILE.join(includePaths[anIndex], FILE.normal(aPath)));
 
-            rootResource.resolveSubPath(searchPath, StaticResource.FileType, function(/*StaticResource*/ aStaticResource)
+            rootResource.resolveSubPath(searchPath, NO, function(/*StaticResource*/ aStaticResource)
             {
                 if (!aStaticResource)
                 {
@@ -380,13 +387,9 @@ StaticResource.resolveStandardNodeAtPath = function(/*String*/ aPath, /*Function
     resolveStandardNodeAtPath(aPath, 0);
 }
 
-var GLOBAL_NAMESPACE = GLOBAL_NAMESPACE || global;
-
-exports.includePaths = function()
+StaticResource.includePaths = function()
 {
-    return GLOBAL_NAMESPACE.OBJJ_INCLUDE_PATHS || ["Frameworks", "Frameworks/Debug"];
+    return global.OBJJ_INCLUDE_PATHS || ["Frameworks", "Frameworks/Debug"];
 }
 
 StaticResource.cwd = FILE.cwd();
-
-exports.StaticResource = StaticResource;

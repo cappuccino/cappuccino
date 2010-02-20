@@ -26,6 +26,8 @@ function FileDependency(/*String*/ aPath, /*BOOL*/ isLocal)
     this._isLocal = isLocal;
 }
 
+exports.FileDependency = FileDependency;
+
 FileDependency.prototype.path = function()
 {
     return this._path;
@@ -46,5 +48,3 @@ FileDependency.prototype.toString = function()
 {
     return (this.isLocal() ? "LOCAL: " : "STD: ") + this.path(); 
 }
-
-exports.FileDependency = FileDependency;

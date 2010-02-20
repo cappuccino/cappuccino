@@ -1,6 +1,6 @@
 
 var cwd = FILE.cwd(),
-    rootResource = new StaticResource("", NULL, StaticResource.DirectoryType, cwd !== "/");
+    rootResource = new StaticResource("", NULL, YES, cwd !== "/");
 
 StaticResource.root = rootResource;
 
@@ -18,9 +18,9 @@ else
 
 function resolveCWD()
 {
-    rootResource.resolveSubPath(cwd, StaticResource.DirectoryType, function(/*StaticResource*/ aResource)
+    rootResource.resolveSubPath(cwd, YES, function(/*StaticResource*/ aResource)
     {
-        var includePaths = exports.includePaths(),
+        var includePaths = StaticResource.includePaths(),
             index = 0,
             count = includePaths.length;
 
@@ -30,7 +30,7 @@ function resolveCWD()
         if (typeof OBJJ_MAIN_FILE === "undefined")
             OBJJ_MAIN_FILE = "main.j";
 
-        fileImporterForPath(cwd)(OBJJ_MAIN_FILE || "main.j", YES, function()
+        Executable.fileImporterForPath(cwd)(OBJJ_MAIN_FILE || "main.j", YES, function()
         {
             afterDocumentLoad(main);
         });
@@ -56,5 +56,3 @@ afterDocumentLoad(function()
     documentLoaded = YES;
 });
 #endif
-
-makeExportsGlobal();

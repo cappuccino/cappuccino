@@ -26,9 +26,9 @@ EventDispatcher.prototype.addEventListener = function(/*String*/ anEventName, /*
 
     while (index--)
         if (eventListenersForEventName[index] === anEventListener)
-            return;  
+            return;
 
-    eventListenersForEventName.push(anEventListener);        
+    eventListenersForEventName.push(anEventListener);
 }
 
 EventDispatcher.prototype.removeEventListener = function(/*String*/ anEventName, /*Function*/ anEventListener)
@@ -43,7 +43,7 @@ EventDispatcher.prototype.removeEventListener = function(/*String*/ anEventName,
 
     while (index--)
         if (eventListenersForEventName[index] === anEventListener)
-            return eventListenersForEventName.splice(index, 1);       
+            return eventListenersForEventName.splice(index, 1);
 }
 
 EventDispatcher.prototype.dispatchEvent = function(/*Event*/ anEvent)

@@ -67,5 +67,3 @@ MarkedStream.prototype.getString = function()
 
     return text;
 }
-
-exports.MarkedStream = MarkedStream;

@@ -1,10 +1,10 @@
 
-function CFDictionary(/*CFDictionary*/ aDictionary)
+GLOBAL(CFDictionary) = function(/*CFDictionary*/ aDictionary)
 {
     this._keys = [];
     this._count = 0;
     this._buckets = { };
-    this._UID = generateObjectUID();
+    this._UID = objj_generateObjectUID();
 }
 
 var indexOf = Array.prototype.indexOf,
@@ -115,7 +115,7 @@ CFDictionary.prototype.toString = function()
     return string + "}";
 }
 
-CFMutableDictionary = function(/*CFDictionary*/ aDictionary)
+GLOBAL(CFMutableDictionary) = function(/*CFDictionary*/ aDictionary)
 {
     CFDictionary.apply(this, []);
 }
@@ -193,8 +193,3 @@ CFMutableDictionary.prototype.setValueForKey = function(/*String*/ aKey, /*Objec
     else
         this.addValueForKey(aKey, aValue);
 }
-
-// Exports
-
-exports.CFDictionary = CFDictionary;
-exports.CFMutableDictionary = CFMutableDictionary;

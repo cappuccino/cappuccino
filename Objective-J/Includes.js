@@ -1,4 +1,6 @@
 
+#define GLOBAL(object) object
+
 #include "DebugOptions.js"
 #include "json2.js"
 #include "sprintf.js"
@@ -17,7 +19,8 @@
 #include "Executable.js"
 #include "FileExecutable.js"
 #include "FileExecutableSearch.js"
-#include "Scope.js"
 #include "Runtime.js"
+#if DEBUG
 #include "Debug.js"
+#endif
 #include "Bootstrap.js"

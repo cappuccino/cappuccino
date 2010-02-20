@@ -155,8 +155,8 @@ exports.objj_eval = function(/*String*/ aString)
     var code = executable._code;
 
     // Not clear why these should be global, varing them doesn't seem to take effect with evaluateString.
-    global.objj_executeFile = exports.fileExecuterForPath(FILE.cwd());
-    global.objj_importFile = fileImporterForPath(FILE.cwd());
+    global.objj_executeFile = Executable.fileExecuterForPath(FILE.cwd());
+    global.objj_importFile = Executable.fileImporterForPath(FILE.cwd());
 
     if (typeof system !== "undefined" && system.engine === "rhino")
         return Packages.org.mozilla.javascript.Context.getCurrentContext().evaluateString(global, code, "objj_eval", 0, NULL);
@@ -173,7 +173,7 @@ exports.make_narwhal_factory = function(path)
     {
         Executable.setCommonJSArguments(require, exports, module, system, print, window);
 
-        fileImporterForPath(FILE.dirname(path))(path, function()
+        Executable.fileImporterForPath(FILE.dirname(path))(path, function()
         {
             print("all done");
         });

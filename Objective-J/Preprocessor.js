@@ -20,9 +20,6 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-var OBJJ_PREPROCESSOR_DEBUG_SYMBOLS = 1 << 0,
-    OBJJ_PREPROCESSOR_TYPE_SIGNATURES = 1 << 1;
-
 var TOKEN_ACCESSORS         = "accessors",
     TOKEN_CLASS             = "class",
     TOKEN_END               = "end",
@@ -64,10 +61,10 @@ var TOKEN_ACCESSORS         = "accessors",
     
 #define IS_WORD(token) /^\w+$/.test(token)
 
-// FIXME: Used fixed regex
 function Lexer(/*String*/ aString)
 {
     this._index = -1;
+    // FIXME: Used fixed regex
     this._tokens = (aString + '\n').match(/\/\/.*(\r|\n)?|\/\*(?:.|\n|\r)*?\*\/|\w+\b|[+-]?\d+(([.]\d+)*([eE][+-]?\d+))?|"[^"\\]*(\\[\s\S][^"\\]*)*"|'[^'\\]*(\\[\s\S][^'\\]*)*'|\s+|./g);
     this._context = [];
     
@@ -128,6 +125,8 @@ Lexer.prototype.skip_whitespace= function(shouldMoveBackwards)
     return token;
 }
 
+exports.Lexer = Lexer;
+
 #define IS_NOT_EMPTY(buffer) buffer.atoms.length !== 0
 #define CONCAT(buffer, atom) buffer.atoms[buffer.atoms.length] = atom
 
@@ -141,19 +140,17 @@ StringBuffer.prototype.toString = function()
     return this.atoms.join("");
 }
 
-function preprocess(/*String*/ aString, /*String*/ aPath, /*unsigned*/ flags)
+exports.preprocess = function(/*String*/ aString, /*String*/ aPath, /*unsigned*/ flags)
 {
     return new Preprocessor(aString, aPath, flags).executable();
 }
 
-objj_preprocess = preprocess;
-
-objj_eval = function(/*String*/ aString)
+exports.eval = function(/*String*/ aString)
 {
-    return eval(objj_preprocess(aString).code());
+    return eval(exports.preprocess(aString).code());
 }
 
-function Preprocessor(/*String*/ aString, /*String*/ aPath, /*unsigned*/ flags)
+var Preprocessor = function(/*String*/ aString, /*String*/ aPath, /*unsigned*/ flags)
 {
     // Remove the shebang.
     aString = aString.replace(/^#[^\n]+\n/, "\n");
@@ -176,6 +173,13 @@ function Preprocessor(/*String*/ aString, /*String*/ aPath, /*unsigned*/ flags)
 
     this.preprocess(this._tokens, this._buffer);
 }
+
+exports.Preprocessor = Preprocessor;
+
+Preprocessor.Flags = { };
+
+Preprocessor.Flags.IncludeDebugSymbols      = 1 << 0;
+Preprocessor.Flags.IncludeTypeSignatures    = 1 << 1;
 
 Preprocessor.prototype.executable = function()
 {
@@ -723,7 +727,7 @@ Preprocessor.prototype.method = function(/*Lexer*/ tokens)
 
     this._currentSelector = selector;
 
-    if (this._flags & OBJJ_PREPROCESSOR_DEBUG_SYMBOLS)
+    if (this._flags & Preprocessor.Flags.IncludeDebugSymbols)
         CONCAT(buffer, " $" + this._currentClass + "__" + selector.replace(/:/g, "_"));
     
     CONCAT(buffer, "(self, _cmd");
@@ -737,8 +741,8 @@ Preprocessor.prototype.method = function(/*Lexer*/ tokens)
     CONCAT(buffer, ")\n{ with(self)\n{");
     CONCAT(buffer, this.preprocess(tokens, NULL, TOKEN_CLOSE_BRACE, TOKEN_OPEN_BRACE));
     CONCAT(buffer, "}\n}");
-    // TODO: actually use OBJJ_PREPROCESSOR_TYPE_SIGNATURES flag instead of tying to OBJJ_PREPROCESSOR_DEBUG_SYMBOLS
-    if (this._flags & OBJJ_PREPROCESSOR_DEBUG_SYMBOLS) //OBJJ_PREPROCESSOR_TYPE_SIGNATURES)
+    // TODO: actually use Flags.IncludeTypeSignatures flag instead of tying to Flags.IncludeDebugSymbols
+    if (this._flags & Preprocessor.Flags.IncludeDebugSymbols) //flags.IncludeTypeSignatures)
         CONCAT(buffer, ","+JSON.stringify(types));
     CONCAT(buffer, ")");
 
@@ -1004,7 +1008,3 @@ Preprocessor.prototype.error_message = function(errorMessage)
                                 (this._currentClass ? " Class: "+this._currentClass : "") +
                                 (this._currentSelector ? " Method: "+this._currentSelector : "") +">";
 }
-
-exports.Lexer = Lexer;
-exports.Preprocessor = Preprocessor;
-exports.preprocess = preprocess;

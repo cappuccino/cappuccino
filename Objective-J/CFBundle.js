@@ -10,7 +10,7 @@ var CFBundlesForPaths   = { },
     CFBundlesForClasses = { },
     CFCacheBuster = new Date().getTime();
 
-function CFBundle(/*String*/ aPath)
+GLOBAL(CFBundle) = function(/*String*/ aPath)
 {
     aPath = FILE.absolute(aPath);
 
@@ -32,6 +32,12 @@ function CFBundle(/*String*/ aPath)
     this._URIMap = { };
 
     this._eventDispatcher = new EventDispatcher(this);
+}
+
+CFBundle.environments = function()
+{
+    // Passed in by GCC.
+    return ENVIRONMENTS;
 }
 
 CFBundle.bundleContainingPath = function(/*String*/ aPath)
@@ -130,7 +136,7 @@ CFBundle.prototype.mostEligibleEnvironment = function(/*Array*/ environments)
 {
     environments = environments || this.environments();
 
-    var objj_environments = exports.environments(),
+    var objj_environments = CFBundle.environments(),
         index = 0,
         count = objj_environments.length,
         innerCount = environments.length;
@@ -163,7 +169,7 @@ CFBundle.prototype.load = function(/*BOOL*/ shouldExecute)
 
     var self = this;
 
-    rootResource.resolveSubPath(FILE.dirname(self.path()), StaticResource.DirectoryType, function(aStaticResource)
+    rootResource.resolveSubPath(FILE.dirname(self.path()), YES, function(aStaticResource)
     {
         var path = self.path();
 
@@ -178,7 +184,7 @@ CFBundle.prototype.load = function(/*BOOL*/ shouldExecute)
             self._staticResource = aStaticResource._children[name];
 
             if (!self._staticResource)
-                self._staticResource = new StaticResource(name, aStaticResource, StaticResource.DirectoryType, NO);
+                self._staticResource = new StaticResource(name, aStaticResource, YES, NO);
         }
 
         function onsuccess(/*Event*/ anEvent)
@@ -444,10 +450,12 @@ function executeBundle(/*Bundle*/ aBundle, /*Function*/ aCallback)
     {
         for (; index < staticResources.length; ++index)
         {
-            var staticResource = staticResources[index],
-                type = staticResource.type();
+            var staticResource = staticResources[index];
 
-            if (type === StaticResource.FileType)
+            if (staticResource.isNotFound())
+                continue;
+
+            if (staticResource.isFile())
             {
                 var executable = new FileExecutable(staticResource.path());
 
@@ -464,7 +472,7 @@ function executeBundle(/*Bundle*/ aBundle, /*Function*/ aCallback)
                     return;
                 }
             }
-            else if (type === StaticResource.DirectoryType)
+            else //if (staticResource.isDirectory())
             {
                 // We don't want to execute resources.
                 if (staticResource.path() === aBundle.resourcesPath())
@@ -514,7 +522,7 @@ function decompileStaticFile(/*Bundle*/ aBundle, /*String*/ aString, /*String*/ 
             var absolutePath = FILE.join(bundlePath, text),
                 parent = rootResource.nodeAtSubPath(FILE.dirname(absolutePath), YES);
 
-            file = new StaticResource(FILE.basename(absolutePath), parent, StaticResource.FileType, YES);
+            file = new StaticResource(FILE.basename(absolutePath), parent, NO, YES);
         }
 
         else if (marker === MARKER_URI)
@@ -539,7 +547,7 @@ function decompileStaticFile(/*Bundle*/ aBundle, /*String*/ aString, /*String*/ 
             // The unresolved directories must not be bundles.
             var parent = rootResource.nodeAtSubPath(FILE.join(bundlePath, FILE.dirname(text)), YES);
 
-            new StaticResource(FILE.basename(text), parent, StaticResource.FileType, YES);
+            new StaticResource(FILE.basename(text), parent, NO, YES);
         }
 
         else if (marker === MARKER_TEXT)
@@ -563,5 +571,3 @@ CFBundle.prototype.onerror = function(/*Event*/ anEvent)
 {
     throw anEvent.error;
 }
-
-exports.CFBundle = CFBundle;

@@ -5,7 +5,7 @@ var asynchronousTimeoutCount = 0,
 
 function Asynchronous(/*Function*/ aFunction)
 {
-    currentAsynchronousTimeoutCount = asynchronousTimeoutCount;
+    var currentAsynchronousTimeoutCount = asynchronousTimeoutCount;
 
     if (asynchronousTimeoutId === null)
     {
@@ -37,7 +37,7 @@ function Asynchronous(/*Function*/ aFunction)
 
 var NativeRequest = null;
 
-// We check ActiveXObject first, because we require local file access and 
+// We check ActiveXObject first, because we require local file access and
 // overrideMimeType feature (which the native XMLHttpRequest does not have in IE).
 if (window.ActiveXObject !== undefined)
 {
@@ -69,7 +69,7 @@ if (window.ActiveXObject !== undefined)
 if (!NativeRequest)
     NativeRequest = window.XMLHttpRequest;
 
-function HTTPRequest()
+GLOBAL(CFHTTPRequest) = function()
 {
     this._eventDispatcher = new EventDispatcher(this);
     this._nativeRequest = new NativeRequest();
@@ -82,13 +82,13 @@ function HTTPRequest()
     }
 }
 
-HTTPRequest.UninitializedState  = 0;
-HTTPRequest.LoadingState        = 1;
-HTTPRequest.LoadedState         = 2;
-HTTPRequest.InteractiveState    = 3;
-HTTPRequest.CompleteState       = 4;
+CFHTTPRequest.UninitializedState    = 0;
+CFHTTPRequest.LoadingState          = 1;
+CFHTTPRequest.LoadedState           = 2;
+CFHTTPRequest.InteractiveState      = 3;
+CFHTTPRequest.CompleteState         = 4;
 
-HTTPRequest.prototype.status = function()
+CFHTTPRequest.prototype.status = function()
 {
     try
     {
@@ -100,7 +100,7 @@ HTTPRequest.prototype.status = function()
     }
 }
 
-HTTPRequest.prototype.statusText = function()
+CFHTTPRequest.prototype.statusText = function()
 {
     try
     {
@@ -112,24 +112,24 @@ HTTPRequest.prototype.statusText = function()
     }
 }
 
-HTTPRequest.prototype.readyState = function()
+CFHTTPRequest.prototype.readyState = function()
 {
     return this._nativeRequest.readyState;
 }
 
-HTTPRequest.prototype.success = function()
+CFHTTPRequest.prototype.success = function()
 {
     var status = this.status();
 
     if (status >= 200 && status < 300)
         return YES;
 
-    // file:// requests return with status 0, to know if they succeeded, we 
+    // file:// requests return with status 0, to know if they succeeded, we
     // need to know if there was any content.
     return status === 0 && this.responseText() && this.responseText().length;
 }
 
-HTTPRequest.prototype.responseXML = function()
+CFHTTPRequest.prototype.responseXML = function()
 {
     var responseXML = this._nativeRequest.responseXML;
 
@@ -139,7 +139,7 @@ HTTPRequest.prototype.responseXML = function()
     return parseXML(this.responseText());
 }
 
-HTTPRequest.prototype.responsePropertyList = function()
+CFHTTPRequest.prototype.responsePropertyList = function()
 {
     var responseText = this.responseText();
 
@@ -149,38 +149,38 @@ HTTPRequest.prototype.responsePropertyList = function()
     return CFPropertyList.propertyListFromString(responseText);
 }
 
-HTTPRequest.prototype.responseText = function()
+CFHTTPRequest.prototype.responseText = function()
 {
     return this._nativeRequest.responseText;
 }
 
-HTTPRequest.prototype.setRequestHeader = function(/*String*/ aHeader, /*Object*/ aValue)
+CFHTTPRequest.prototype.setRequestHeader = function(/*String*/ aHeader, /*Object*/ aValue)
 {
     return this._nativeRequest.setRequestHeader(aHeader, aValue);
 }
 
-HTTPRequest.prototype.getResponseHeader = function(/*String*/ aHeader)
+CFHTTPRequest.prototype.getResponseHeader = function(/*String*/ aHeader)
 {
     return this._nativeRequest.getResponseHeader(aHeader);
 }
 
-HTTPRequest.prototype.getAllResponseHeaders = function()
+CFHTTPRequest.prototype.getAllResponseHeaders = function()
 {
     return this._nativeRequest.getAllResponseHeaders();
 }
 
-HTTPRequest.prototype.overrideMimeType = function(/*String*/ aMimeType)
+CFHTTPRequest.prototype.overrideMimeType = function(/*String*/ aMimeType)
 {
     if ("overrideMimeType" in this._nativeRequest)
         return this._nativeRequest.overrideMimeType(aMimeType);
 }
 
-HTTPRequest.prototype.open = function(/*...*/)
+CFHTTPRequest.prototype.open = function(/*...*/)
 {
     return this._nativeRequest.open(arguments[0], arguments[1], arguments[2], arguments[3], arguments[4]);
 }
 
-HTTPRequest.prototype.send = function(/*Object*/ aBody)
+CFHTTPRequest.prototype.send = function(/*Object*/ aBody)
 {
     try
     {
@@ -193,22 +193,22 @@ HTTPRequest.prototype.send = function(/*Object*/ aBody)
     }
 }
 
-HTTPRequest.prototype.abort = function()
+CFHTTPRequest.prototype.abort = function()
 {
     return this._nativeRequest.abort();
 }
 
-HTTPRequest.prototype.addEventListener = function(/*String*/ anEventName, /*Function*/ anEventListener)
+CFHTTPRequest.prototype.addEventListener = function(/*String*/ anEventName, /*Function*/ anEventListener)
 {
     this._eventDispatcher.addEventListener(anEventName, anEventListener);
 }
 
-HTTPRequest.prototype.removeEventListener = function(/*String*/ anEventName, /*Function*/ anEventListener)
+CFHTTPRequest.prototype.removeEventListener = function(/*String*/ anEventName, /*Function*/ anEventListener)
 {
     this._eventDispatcher.removeEventListener(anEventName, anEventListener);
 }
 
-function determineAndDispatchHTTPRequestEvents(/*HTTPRequest*/ aRequest)
+function determineAndDispatchHTTPRequestEvents(/*CFHTTPRequest*/ aRequest)
 {
     var eventDispatcher = aRequest._eventDispatcher;
 
@@ -234,7 +234,7 @@ function determineAndDispatchHTTPRequestEvents(/*HTTPRequest*/ aRequest)
 function FileRequest(/*String*/ aFilePath, onsuccess, onfailure)
 {
 #ifdef BROWSER
-    var request = new HTTPRequest();
+    var request = new CFHTTPRequest();
 
     request.onsuccess = Asynchronous(onsuccess);
     request.onfailure = Asynchronous(onfailure);
@@ -270,5 +270,3 @@ FileRequest.prototype.responsePropertyList = function()
     return CFPropertyList.propertyListFromString(this.responseText());
 }
 #endif
-
-exports.HTTPRequest = HTTPRequest;

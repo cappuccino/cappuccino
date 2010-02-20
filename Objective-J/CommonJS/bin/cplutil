@@ -1,9 +1,9 @@
 #!/usr/bin/env narwhal
 
-var FILE = require("file");
-var SYSTEM = require("system");
-var OS = require("os");
-var CFPropertyList = require("objective-j").CFPropertyList;
+var FILE = require("file"),
+    SYSTEM = require("system"),
+    OS = require("os"),
+    ObjectiveJ = require("objective-j");
 
 var parser = new (require("args").Parser)();
 
