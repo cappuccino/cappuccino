@@ -418,6 +418,9 @@ var _CPTableColumnHeaderViewStringValueKey = @"_CPTableColumnHeaderViewStringVal
 
 - (void)drawRect:(CGRect)aRect
 {
+    if (!_tableView)
+        return;
+
     var context = [[CPGraphicsContext currentContext] graphicsPort],
         exposedColumnIndexes = [_tableView columnIndexesInRect:aRect],
         columnsArray = [],
