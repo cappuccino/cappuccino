@@ -1,14 +1,14 @@
 
 var OBJECT_COUNT   = 0;
 
-function generateObjectUID()
+GLOBAL(objj_generateObjectUID) = function()
 {
     return OBJECT_COUNT++;
 }
 
-function CFPropertyList()
+GLOBAL(CFPropertyList) = function()
 {
-    this._UID = generateObjectUID();
+    this._UID = objj_generateObjectUID();
 }
 
 // We are really liberal when accepting DOCTYPEs.
@@ -86,7 +86,7 @@ function serializePropertyList(/*CFPropertyList*/ aPropertyList, /*Object*/ seri
 
     if (aPropertyList === YES || aPropertyList === NO)
         type = "boolean";
-    
+
     else if (type === "number")
     {
         if (FLOOR(aPropertyList) === aPropertyList)
@@ -94,12 +94,12 @@ function serializePropertyList(/*CFPropertyList*/ aPropertyList, /*Object*/ seri
         else
             type = "real";
     }
-    
+
     else if (type !== "string")
     {
         if (aPropertyList.slice)
             type = "array";
-    
+
         else
             type = "dictionary";
     }
@@ -149,7 +149,7 @@ CFPropertyListSerializers[CFPropertyList.FormatXML_v1_0] =
 
                         for (; index < count; ++index)
                             string += serializePropertyList(anArray[index], serializers);
-    
+
                         return string + "</array>";
                     },
 
@@ -200,7 +200,7 @@ CFPropertyListSerializers[CFPropertyList.Format280North_v1_0] =
                     {
                         return STRING_MARKER + ';' + aString.length + ';' + aString;
                     },
-    
+
     "boolean" :     function(/*Boolean*/ aBoolean)
                     {
                         return (aBoolean ? TRUE_MARKER : FALSE_MARKER) + ';';
@@ -563,45 +563,42 @@ CFPropertyList.propertyListFromXML = function(/*String | XMLNode*/ aStringOrXMLN
     return plistObject;
 }
 
-exports.generateObjectUID = generateObjectUID;
-exports.CFPropertyList = CFPropertyList;
+GLOBAL(kCFPropertyListOpenStepFormat)      = CFPropertyList.FormatOpenStep;
+GLOBAL(kCFPropertyListXMLFormat_v1_0)      = CFPropertyList.FormatXML_v1_0;
+GLOBAL(kCFPropertyListBinaryFormat_v1_0)   = CFPropertyList.FormatBinary_v1_0;
+GLOBAL(kCFPropertyList280NorthFormat_v1_0) = CFPropertyList.Format280North_v1_0;
 
-exports.CFPropertyListCreate = function()
+GLOBAL(CFPropertyListCreate) = function()
 {
     return new CFPropertyList();
 }
 
-exports.kCFPropertyListOpenStepFormat        = CFPropertyList.FormatOpenStep;
-exports.kCFPropertyListXMLFormat_v1_0        = CFPropertyList.FormatXML_v1_0;
-exports.kCFPropertyListBinaryFormat_v1_0     = CFPropertyList.FormatBinary_v1_0;
-exports.kCFPropertyList280NorthFormat_v1_0   = CFPropertyList.Format280North_v1_0;
-
-exports.CFPropertyListCreateFromXMLData = function(/*Data*/ data)
+GLOBAL(CFPropertyListCreateFromXMLData) = function(/*Data*/ data)
 {
     return CFPropertyList.propertyListFromData(data, CFPropertyList.FormatXML_v1_0);
 }
 
-exports.CFPropertyListCreateXMLData = function(/*PropertyList*/ aPropertyList)
+GLOBAL(CFPropertyListCreateXMLData) = function(/*PropertyList*/ aPropertyList)
 {
     return CFPropertyList.dataFromPropertyList(aPropertyList, CFPropertyList.FormatXML_v1_0);
 }
 
-exports.CFPropertyListCreateFrom280NorthData = function(/*Data*/ data)
+GLOBAL(CFPropertyListCreateFrom280NorthData) = function(/*Data*/ data)
 {
     return CFPropertyList.propertyListFromData(data, CFPropertyList.Format280North_v1_0);
 }
 
-exports.CFPropertyListCreate280NorthData = function(/*PropertyList*/ aPropertyList)
+GLOBAL(CFPropertyListCreate280NorthData) = function(/*PropertyList*/ aPropertyList)
 {
     return CFPropertyList.dataFromPropertyList(aPropertyList, CFPropertyList.Format280North_v1_0);
 }
 
-exports.CPPropertyListCreateFromData = function(/*CFData*/ data, /*Format*/ aFormat)
+GLOBAL(CPPropertyListCreateFromData) = function(/*CFData*/ data, /*Format*/ aFormat)
 {
     return CFPropertyList.propertyListFromData(data, aFormat);
 }
 
-exports.CPPropertyListCreateData = function(/*PropertyList*/ aPropertyList, /*Format*/ aFormat)
+GLOBAL(CPPropertyListCreateData) = function(/*PropertyList*/ aPropertyList, /*Format*/ aFormat)
 {
     return CFPropertyList.dataFromPropertyList(aPropertyList, aFormat);
 }

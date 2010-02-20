@@ -34,7 +34,7 @@ function FileExecutableSearch(/*String*/ aPath, /*BOOL*/ isLocal)
 
     FileExecutableSearchesForPaths[isLocal ? 1 : 0][aPath] = this;
     
-    this._UID = generateObjectUID();
+    this._UID = objj_generateObjectUID();
     this._isComplete = NO;
     this._eventDispatcher = new EventDispatcher(this);
     this._path = aPath;
@@ -59,10 +59,12 @@ function FileExecutableSearch(/*String*/ aPath, /*BOOL*/ isLocal)
     }
 
     if (isLocal)
-        rootResource.resolveSubPath(aPath, StaticResource.FileType, completed);
+        rootResource.resolveSubPath(aPath, NO, completed);
     else
         StaticResource.resolveStandardNodeAtPath(aPath, completed);
 }
+
+exports.FileExecutableSearch = FileExecutableSearch;
 
 FileExecutableSearch.prototype.path = function()
 {
@@ -105,5 +107,3 @@ FileExecutableSearch.prototype.toString = function()
     return "<FileExecutableSearch: " + this.path() + ">";
 }
 #endif
-
-exports.FileExecutableSearch = FileExecutableSearch;

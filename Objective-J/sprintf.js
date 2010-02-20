@@ -3,7 +3,7 @@
 var formatRegex = new RegExp("([^%]+|%[\\+\\-\\ \\#0]*[0-9\\*]*(.[0-9\\*]+)?[hlL]?[cbBdieEfgGosuxXpn%@])", "g");
 var tagRegex = new RegExp("(%)([\\+\\-\\ \\#0]*)([0-9\\*]*)((.[0-9\\*]+)?)([hlL]?)([cbBdieEfgGosuxXpn%@])");
 
-exports.sprintf = function(format)
+GLOBAL(sprintf) = function(format)
 {
     var format = arguments[0],
         tokens = format.match(formatRegex),

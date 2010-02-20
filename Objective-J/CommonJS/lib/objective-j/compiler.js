@@ -5,11 +5,9 @@ var FILE = require("file"),
 
 require("objective-j/rhino/regexp-rhino-patch");
 
-var OBJJ_PREPROCESSOR_DEBUG_SYMBOLS   = exports.OBJJ_PREPROCESSOR_DEBUG_SYMBOLS   = ObjectiveJ.OBJJ_PREPROCESSOR_DEBUG_SYMBOLS;
-var OBJJ_PREPROCESSOR_TYPE_SIGNATURES = exports.OBJJ_PREPROCESSOR_TYPE_SIGNATURES = ObjectiveJ.OBJJ_PREPROCESSOR_TYPE_SIGNATURES;
-var OBJJ_PREPROCESSOR_PREPROCESS      = exports.OBJJ_PREPROCESSOR_PREPROCESS      = 1 << 10;
-var OBJJ_PREPROCESSOR_COMPRESS        = exports.OBJJ_PREPROCESSOR_COMPRESS        = 1 << 11;
-var OBJJ_PREPROCESSOR_SYNTAX          = exports.OBJJ_PREPROCESSOR_SYNTAX          = 1 << 12;
+ObjectiveJ.Preprocessor.Flags.Preprocess   = 1 << 10;
+ObjectiveJ.Preprocessor.Flags.Compress     = 1 << 11;
+ObjectiveJ.Preprocessor.Flags.CheckSyntax  = 1 << 12;
 
 var compressors = {
     ss  : { id : "minify/shrinksafe" }
@@ -35,9 +33,9 @@ function compressor(code) {
 
 function compileWithResolvedFlags(aFilePath, objjcFlags, gccFlags)
 {
-    var shouldObjjPreprocess = objjcFlags & OBJJ_PREPROCESSOR_PREPROCESS,
-        shouldCheckSyntax = objjcFlags & OBJJ_PREPROCESSOR_SYNTAX,
-        shouldCompress = objjcFlags & OBJJ_PREPROCESSOR_COMPRESS,
+    var shouldObjjPreprocess = objjcFlags & ObjectiveJ.Preprocessor.Flags.Preprocess,
+        shouldCheckSyntax = objjcFlags & ObjectiveJ.Preprocessor.Flags.CheckSyntax,
+        shouldCompress = objjcFlags & ObjectiveJ.Preprocessor.Flags.Compress,
         fileContents = "";
 
     if (OS.popen("which gcc").stdout.read().length === 0)
@@ -97,7 +95,7 @@ function resolveFlags(args)
         count = args.length,
 
         gccFlags = [],
-        objjcFlags = OBJJ_PREPROCESSOR_PREPROCESS | OBJJ_PREPROCESSOR_SYNTAX;    
+        objjcFlags = ObjectiveJ.Preprocessor.Flags.Preprocess | ObjectiveJ.Preprocessor.Flags.CheckSyntax;
 
     for (; index < count; ++index)
     {
@@ -116,16 +114,16 @@ function resolveFlags(args)
             gccFlags.push(argument);
             
         else if (argument.indexOf("-E") === 0)
-            objjcFlags &= ~OBJJ_PREPROCESSOR_PREPROCESS;
+            objjcFlags &= ~ObjectiveJ.Preprocessor.Flags.Preprocess;
             
         else if (argument.indexOf("-S") === 0)
-            objjcFlags &= ~OBJJ_PREPROCESSOR_SYNTAX;
+            objjcFlags &= ~ObjectiveJ.Preprocessor.Flags.CheckSyntax;
             
         else if (argument.indexOf("-g") === 0)
-            objjcFlags |= OBJJ_PREPROCESSOR_DEBUG_SYMBOLS;
+            objjcFlags |= ObjectiveJ.Preprocessor.Flags.IncludeDebugSymbols;
             
         else if (argument.indexOf("-O") === 0)
-            objjcFlags |= OBJJ_PREPROCESSOR_COMPRESS;
+            objjcFlags |= ObjectiveJ.Preprocessor.Flags.Compress;
 
         else
             filePaths.push(argument);

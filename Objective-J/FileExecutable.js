@@ -20,10 +20,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-var FileExecutableUnloadedDependencies  = 0,
-    FileExecutableLoadingDependencies   = 1,
-    FileExecutableLoadedDependencies    = 2,
-    FileExecutablesForPaths             = { };
+var FileExecutablesForPaths = { };
 
 function FileExecutable(/*String*/ aPath)
 {
@@ -42,7 +39,7 @@ function FileExecutable(/*String*/ aPath)
         executable = decompile(fileContents, aPath);
 
     else if (extension === ".j" || extension === "")
-        executable = preprocess(fileContents, aPath, OBJJ_PREPROCESSOR_DEBUG_SYMBOLS);
+        executable = exports.preprocess(fileContents, aPath, Preprocessor.OBJJ_PREPROCESSOR_DEBUG_SYMBOLS);
 
     else
         executable = new Executable(fileContents, [], aPath);
@@ -53,7 +50,22 @@ function FileExecutable(/*String*/ aPath)
     this._hasExecuted = NO;
 }
 
+exports.FileExecutable = FileExecutable;
+
 FileExecutable.prototype = new Executable();
+
+#ifdef COMMONJS
+FileExecutable.allFileExecutables = function()
+{
+    var fileExecutables = [];
+
+    for (path in FileExecutablesForPaths)
+        if (hasOwnProperty.call(FileExecutablesForPaths, path))
+            fileExecutables.push(FileExecutablesForPaths[path]);
+
+    return fileExecutables;
+}
+#endif
 
 FileExecutable.prototype.execute = function(/*BOOL*/ shouldForce)
 {
@@ -62,7 +74,7 @@ FileExecutable.prototype.execute = function(/*BOOL*/ shouldForce)
 
     this._hasExecuted = YES;
 
-    Executable.prototype.execute.apply(this, []);
+    Executable.prototype.execute.call(this);
 }
 
 FileExecutable.prototype.path = function()
@@ -102,6 +114,3 @@ function decompile(/*String*/ aString, /*String*/ aPath)
 
     return new Executable(code, dependencies, aPath);
 }
-
-exports.FileExecutable = FileExecutable;
-exports.FileExecutablesForPaths = FileExecutablesForPaths;

@@ -194,8 +194,10 @@ function pressEnvironment(rootPath, outputFiles, environment, options) {
 
     var included = 0, total = 0;
     var includedBytes = 0, totalBytes = 0;
-    var allFiles = analyzer.fileExecutables();
-    for (var path in allFiles) {
+
+    _OBJJ.FileExecutable.allFileExecutables().forEach(function(aFileExecutable) {
+        var path = aFileExecutable.path();
+
         // mark all ".keytheme"s as required
         if (/\.keyedtheme$/.test(path))
             requiredFiles[path] = true;
@@ -203,14 +205,14 @@ function pressEnvironment(rootPath, outputFiles, environment, options) {
         if (requiredFiles[path]) {
             stream.print("Included: \0green(" + rootPath.relative(path) + "\0)");
             included++;
-            includedBytes += allFiles[path].code().length
+            includedBytes += aFileExecutable.code().length
         }
         else {
             stream.print("Excluded: \0red(" + rootPath.relative(path) + "\0)");
         }
         total++;
-        totalBytes += allFiles[path].code().length
-    }
+        totalBytes += aFileExecutable.code().length
+    }, this);
     stream.print(sprintf(
         "Saved \0green(%f%%\0) (\0blue(%s\0)); Total required files: \0magenta(%d\0) (\0blue(%s\0)) of \0magenta(%d\0) (\0blue(%s\0));",
         Math.round(((includedBytes - totalBytes) / totalBytes) * -100),
