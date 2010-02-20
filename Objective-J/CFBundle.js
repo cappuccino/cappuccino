@@ -258,7 +258,7 @@ function loadExecutableAndResources(/*Bundle*/ aBundle, /*BOOL*/ shouldExecute)
         else
             return;
 
-        // Set resolved to true here in case during evaluation this bundle 
+        // Set resolved to true here in case during evaluation this bundle
         // needs to resolve another bundle which in turn needs it to be resolved (cycle).
         resolveStaticResource(aBundle._staticResource);
 
@@ -481,7 +481,8 @@ function executeBundle(/*Bundle*/ aBundle, /*Function*/ aCallback)
                 var children = staticResource.children();
 
                 for (var name in children)
-                    staticResources.push(children[name]);
+                    if (hasOwnProperty.call(children, name))
+                        staticResources.push(children[name]);
             }
         }
 
@@ -513,7 +514,7 @@ function decompileStaticFile(/*Bundle*/ aBundle, /*String*/ aString, /*String*/ 
         bundlePath = aBundle.path(),
         file = NULL;
 
-    while (marker = stream.getMarker())   
+    while (marker = stream.getMarker())
     {
         var text = stream.getString();
 

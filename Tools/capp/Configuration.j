@@ -64,7 +64,7 @@ var DefaultDictionary       = nil,
         temporaryDictionary = [CPDictionary dictionary];
 
         if (path && FILE.isReadable(path))
-            dictionary = CFPropertyList.propertyListFromFile(path);
+            dictionary = CFPropertyList.readPropertyListFromFile(path);
 
         // readPlist will return nil if the file is empty
         if (!dictionary)

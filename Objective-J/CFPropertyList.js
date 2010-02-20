@@ -86,7 +86,7 @@ function serializePropertyList(/*CFPropertyList*/ aPropertyList, /*Object*/ seri
 
     if (aPropertyList === YES || aPropertyList === NO)
         type = "boolean";
-    
+
     else if (type === "number")
     {
         if (FLOOR(aPropertyList) === aPropertyList)
@@ -94,12 +94,12 @@ function serializePropertyList(/*CFPropertyList*/ aPropertyList, /*Object*/ seri
         else
             type = "real";
     }
-    
+
     else if (type !== "string")
     {
         if (aPropertyList.slice)
             type = "array";
-    
+
         else
             type = "dictionary";
     }
@@ -149,7 +149,7 @@ CFPropertyListSerializers[CFPropertyList.FormatXML_v1_0] =
 
                         for (; index < count; ++index)
                             string += serializePropertyList(anArray[index], serializers);
-    
+
                         return string + "</array>";
                     },
 
@@ -200,7 +200,7 @@ CFPropertyListSerializers[CFPropertyList.Format280North_v1_0] =
                     {
                         return STRING_MARKER + ';' + aString.length + ';' + aString;
                     },
-    
+
     "boolean" :     function(/*Boolean*/ aBoolean)
                     {
                         return (aBoolean ? TRUE_MARKER : FALSE_MARKER) + ';';

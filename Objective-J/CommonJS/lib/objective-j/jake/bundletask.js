@@ -467,7 +467,11 @@ BundleTask.prototype.defineResourceTask = function(aResourcePath, aDestinationPa
                 FILE.write(spritedDestinationPath, base64.encode(FILE.read(aResourcePath, "b")), { charset:"UTF-8" });
             });
 
-            task (anEnvironment.name() + "-sprites", [spritedDestinationPath]);
+            filedir (this.buildProductDataURLPathForEnvironment(anEnvironment), [spritedDestinationPath]);
+            filedir (this.buildProductMHTMLPathForEnvironment(anEnvironment), [spritedDestinationPath]);
+            filedir (this.buildProductMHTMLDataPathForEnvironment(anEnvironment), [spritedDestinationPath]);
+            filedir (this.buildProductMHTMLTestPathForEnvironment(anEnvironment), [spritedDestinationPath]);
+
         }, this);
     }
 
@@ -589,67 +593,109 @@ BundleTask.prototype.defineSpritedImagesTask = function()
             return;
 
         var folder = anEnvironment.name() + ".environment",
-            resourcesPath = FILE.join(this.buildIntermediatesProductPath(), folder, "Resources", ""),
-            dataURLPath = this.buildProductDataURLPathForEnvironment(anEnvironment),
-            MHTMLPath = this.buildProductMHTMLPathForEnvironment(anEnvironment),
-            MHTMLDataPath = this.buildProductMHTMLDataPathForEnvironment(anEnvironment),
-            MHTMLTestDestinationPath = this.buildProductMHTMLTestPathForEnvironment(anEnvironment),
-            productName = this.productName();
+            resourcesPath = FILE.join(this.buildIntermediatesProductPath(), folder, "Resources", "");
 
-        task(anEnvironment.name() + "-sprites", function(aTask)
+        function isDataResource(/*String*/ aFilename)
         {
-            TERM.stream.print("Creating sprited images file... \0green(" + dataURLPath +"\0)");
+            return FILE.isFile(aFilename) && aFilename.indexOf(resourcesPath) === 0 && isImage(aFilename);
+        }
 
-            var dataURLStream = FILE.open(dataURLPath, "w+", { charset:"UTF-8" }),
-                MHTMLStream = FILE.open(MHTMLPath, "w+", { charset:"UTF-8" }),
-                MHTMLDataStream = FILE.open(MHTMLDataPath, "w+", { charset:"UTF-8" });
+        var productName = this.productName(),
+            dataURLPath = this.buildProductDataURLPathForEnvironment(anEnvironment);
+
+        filedir (dataURLPath, function(aTask)
+        {
+            TERM.stream.print("Creating data URLs file... \0green(" + dataURLPath +"\0)");
+
+            var dataURLStream = FILE.open(dataURLPath, "w+", { charset:"UTF-8" });
 
             dataURLStream.write("@STATIC;1.0;");
-            MHTMLStream.write("@STATIC;1.0;");
-            MHTMLDataStream.write("/*\r\nContent-Type: multipart/related; boundary=\"_ANY_STRING_WILL_DO_AS_A_SEPARATOR\"\r\n\r\n");
 
             aTask.prerequisites().forEach(function(aFilename)
             {
-                if (!FILE.isFile(aFilename) || aFilename.indexOf(resourcesPath) !== 0 || !isImage(aFilename))
+                if (!isDataResource(aFilename))
                     return;
 
                 var resourcePath = "Resources/" + FILE.relative(resourcesPath, aFilename);
 
                 dataURLStream.write("u;" + resourcePath.length + ";" + resourcePath);
-                MHTMLStream.write("u;" + resourcePath.length + ";" + resourcePath);
 
-                // As data URL...
                 var contents =  "data:" + mimeType(aFilename) +
                                 ";base64," + FILE.read(aFilename, "b").decodeToString("UTF-8");
 
                 dataURLStream.write(contents.length + ";" + contents);
+            });
 
-                // As MHTML...
-                contents = "mhtml:" + FILE.join(folder, "MHTMLData.txt!") + resourcePath;
+            dataURLStream.write("e;");
+            dataURLStream.close();
+        });
+
+        this.enhance([dataURLPath]);
+
+        var MHTMLPath = this.buildProductMHTMLPathForEnvironment(anEnvironment);
+
+        filedir (MHTMLPath, function(aTask)
+        {
+            TERM.stream.print("Creating MHTML paths file... \0green(" + MHTMLPath +"\0)");
+
+            var MHTMLStream = FILE.open(MHTMLPath, "w+", { charset:"UTF-8" });
+
+            MHTMLStream.write("@STATIC;1.0;");
+
+            aTask.prerequisites().forEach(function(aFilename)
+            {
+                if (!isDataResource(aFilename))
+                    return;
+
+                var resourcePath = "Resources/" + FILE.relative(resourcesPath, aFilename);
+
+                MHTMLStream.write("u;" + resourcePath.length + ";" + resourcePath);
+            });
+
+            MHTMLStream.close();
+        });
+
+        this.enhance([MHTMLPath]);
+
+        var MHTMLDataPath = this.buildProductMHTMLDataPathForEnvironment(anEnvironment);
+
+        filedir (MHTMLDataPath, function(aTask)
+        {
+            TERM.stream.print("Creating MHTML images file... \0green(" + MHTMLDataPath +"\0)");
+
+            var MHTMLDataStream = FILE.open(MHTMLDataPath, "w+", { charset:"UTF-8" });
+
+            MHTMLDataStream.write("/*\r\nContent-Type: multipart/related; boundary=\"_ANY_STRING_WILL_DO_AS_A_SEPARATOR\"\r\n\r\n");
+
+            aTask.prerequisites().forEach(function(aFilename)
+            {
+                if (!isDataResource(aFilename))
+                    return;
+
+                var resourcePath = "Resources/" + FILE.relative(resourcesPath, aFilename);
 
                 MHTMLDataStream.write("--_ANY_STRING_WILL_DO_AS_A_SEPARATOR\r\n");
                 MHTMLDataStream.write("Content-Location:" + resourcePath + "\r\nContent-Transfer-Encoding:base64\r\n\r\n");
                 MHTMLDataStream.write(FILE.read(aFilename, "b").decodeToString("UTF-8"));
                 MHTMLDataStream.write("\r\n");
-
-                MHTMLStream.write(contents.length + ";" + contents);
             });
-
-            dataURLStream.write("e;");
-            dataURLStream.close();
-
-            MHTMLStream.write("e;");
-            MHTMLStream.close();
 
             MHTMLDataStream.write("*/");
             MHTMLDataStream.close();
+        });
 
-            // copy the MHTML test file into this environment
+        this.enhance([MHTMLDataPath]);
+
+        var MHTMLTestDestinationPath = this.buildProductMHTMLTestPathForEnvironment(anEnvironment);
+
+        filedir (MHTMLTestDestinationPath, function(aTask)
+        {
+            TERM.stream.print("Copying MHTML test file... \0green(" + MHTMLTestDestinationPath +"\0)");
+
             FILE.copy(MHTMLTestPath, MHTMLTestDestinationPath);
         });
 
-        this.enhance([anEnvironment.name() + "-sprites"]);
-
+        this.enhance([MHTMLTestDestinationPath]);
     }, this);
 }
 
