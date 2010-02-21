@@ -1,3 +1,5 @@
+@import <Foundation/CPData.j>
+
 var base64TestStrings = [
     ["leasure.", "bGVhc3VyZS4="],
     ["easure.", "ZWFzdXJlLg=="],

@@ -101,7 +101,7 @@ var base64_map_to = [
 for (var i = 0; i < base64_map_to.length; i++)
     base64_map_from[base64_map_to[i].charCodeAt(0)] = i;
 
-function base64_decode_to_array(input, strip)
+GLOBAL(base64_decode_to_array) = function(input, strip)
 {
     if (strip)
         input = input.replace(/[^A-Za-z0-9\+\/\=]/g, "");
@@ -130,7 +130,7 @@ function base64_decode_to_array(input, strip)
     return output;
 }
 
-function base64_encode_array(input)
+GLOBAL(base64_encode_array) = function(input)
 {
     var pad = (3 - (input.length % 3)) % 3,
         length = input.length + pad,
@@ -168,7 +168,7 @@ function base64_encode_array(input)
     return output.join("");
 }
 
-function base64_decode_to_string(input, strip)
+GLOBAL(base64_decode_to_string) = function(input, strip)
 {
     return bytes_to_string(base64_decode_to_array(input, strip));
 }
