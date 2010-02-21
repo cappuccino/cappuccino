@@ -2291,7 +2291,7 @@ setBoundsOrigin:
     return [_themeAttributes[aName] value];
 }
 
-- (void)currentValueForThemeAttribute:(CPString)aName
+- (id)currentValueForThemeAttribute:(CPString)aName
 {
     if (!_themeAttributes || !_themeAttributes[aName])
         [CPException raise:CPInvalidArgumentException reason:[self className] + " does not contain theme attribute '" + aName + "'"];

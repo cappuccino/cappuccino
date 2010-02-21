@@ -137,7 +137,7 @@ var PrimaryPlatformWindow   = NULL;
     return frame;
 }
 
-- (void)usableContentFrame
+- (CGRect)usableContentFrame
 {
     return [self visibleFrame];
 }

@@ -167,12 +167,13 @@ GLOBAL(objj_debug_typecheck) = function(expectedType, object)
         {
             return;
         }
-        else if (object && object.isa)
+        else if (object !== undefined && object.isa)
         {
             var theClass = object.isa;
+
             for (; theClass; theClass = theClass.super_class)
-            if (theClass === objjClass)
-                return;
+                if (theClass === objjClass)
+                    return;
         }
     }
     else
@@ -189,6 +190,6 @@ GLOBAL(objj_debug_typecheck) = function(expectedType, object)
         actualType = GETMETA(object).name;
     else
         actualType = typeof object;
-        
+
     throw ("expected=" + expectedType + ", actual=" + actualType);
 }

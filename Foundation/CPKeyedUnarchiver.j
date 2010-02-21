@@ -193,7 +193,7 @@ var _CPKeyedUnarchiverArrayClass                                            = Ni
 }
 
 /* @ignore */
-- (void)_decodeDictionaryOfObjectsForKey:(CPString)aKey
+- (CPDictionary)_decodeDictionaryOfObjectsForKey:(CPString)aKey
 {
     var object = [_plistObject objectForKey:aKey];
     

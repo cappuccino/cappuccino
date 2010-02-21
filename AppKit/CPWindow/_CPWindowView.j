@@ -228,7 +228,7 @@ var _CPWindowViewResizeIndicatorImage = nil;
     }
 }
 
-- (CPImage)showsResizeIndicator
+- (BOOL)showsResizeIndicator
 {
     return _resizeIndicator !== nil;
 }
