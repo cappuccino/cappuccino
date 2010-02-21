@@ -59,8 +59,8 @@ function main(args)
     CPLogRegister(CPLogPrint);
 
     // HACK: ensure trailing slashes for "relative" to work correctly
-    var rootPath = FILE.path(options.args[0]).join("").absolute();
-    var outputPath = FILE.path(options.args[1]).join("").absolute();
+    var rootPath = FILE.path(options.args[0]).absolute().join("");
+    var outputPath = FILE.path(options.args[1]).absolute().join("");
 
     if (outputPath.exists()) {
         if (options.force) {
