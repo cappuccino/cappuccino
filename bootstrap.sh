@@ -94,7 +94,7 @@ fi
 
 install_narwhal=""
 if which "narwhal" > /dev/null; then
-    dir=$(dirname -- $(dirname -- $(which "narwhal")))
+    dir=$(dirname -- "$(dirname -- $(which "narwhal"))")
     echo "Using Narwhal installation at \"$dir\". Is this correct?"
     if ! prompt; then
         echo "================================================================================"
@@ -116,7 +116,7 @@ if [ "$install_narwhal" ]; then
     echo "To use the default location, \"$install_directory\", just hit enter/return, or enter another path:"
     read input
     if [ "$input" ]; then
-        install_directory="`cd \`dirname $input\`; pwd`/`basename $input`"
+        install_directory="`cd \`dirname "$input"\`; pwd`/`basename "$input"`"
     fi
 
     if [ -d "$install_directory" ]; then
@@ -158,7 +158,7 @@ if ! which "narwhal" > /dev/null; then
     exit 1
 fi
 
-install_directory=$(dirname $(dirname $(which narwhal)))
+install_directory=$(dirname -- "$(dirname -- "$(which narwhal)")")
 
 echo "================================================================================"
 echo "Using Narwhal installation at \"$install_directory\". Is this correct?"

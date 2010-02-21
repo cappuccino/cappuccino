@@ -100,7 +100,7 @@ global.$BUILD_CONFIGURATION_DIR         = FILE.join($BUILD_DIR, $CONFIGURATION);
 
 global.$BUILD_CJS_OBJECTIVE_J           = FILE.join($BUILD_CONFIGURATION_DIR, "CommonJS", "objective-j");
 
-global.$BUILD_CJS_CAPPUCCINO            = FILE.join($BUILD_DIR, $CONFIGURATION, "CommonJS", "cappuccino");
+global.$BUILD_CJS_CAPPUCCINO            = FILE.join($BUILD_CONFIGURATION_DIR, "CommonJS", "cappuccino");
 global.$BUILD_CJS_CAPPUCCINO_BIN        = FILE.join($BUILD_CJS_CAPPUCCINO, "bin");
 global.$BUILD_CJS_CAPPUCCINO_LIB        = FILE.join($BUILD_CJS_CAPPUCCINO, "lib");
 global.$BUILD_CJS_CAPPUCCINO_FRAMEWORKS = FILE.join($BUILD_CJS_CAPPUCCINO, "Frameworks");
@@ -149,7 +149,7 @@ function packageInCatalog(path)
     return false;
 }
 
-function serializedENV()
+serializedENV = function()
 {
     var envNew = {};
     
@@ -161,8 +161,10 @@ function serializedENV()
 
     // pseudo-HACK: add NARWHALOPT with packages we should ensure are loaded
     var packages = additionalPackages();
-    if (packages.length)
+    if (packages.length) {
         envNew["NARWHALOPT"] = packages.map(function(p) { return "-p " + p; }).join(" ");
+        envNew["PATH"] = packages.map(function(p) { return FILE.join(p, "bin"); }).concat(SYSTEM.env["PATH"]).join(":");
+    }
 
     return Object.keys(envNew).map(function(key) {
         return key + "=" + OS.enquote(envNew[key]);
@@ -182,7 +184,7 @@ reforkWithPackages();
 
 function handleSetupEnvironmentError(e) {
     if (String(e).indexOf("require error")==-1) {
-        print("setupEnvironment: " + e);
+        print("setupEnvironment warning: " + e);
         //throw e;
     }
 }
@@ -235,7 +237,8 @@ global.subjake = function(/*Array<String>*/ directories, /*String*/ aTaskName)
     {
         if (FILE.isDirectory(aDirectory) && FILE.isFile(FILE.join(aDirectory, "Jakefile")))
         {
-            var returnCode = OS.system("cd " + aDirectory + " && " + serializedENV() + " " + SYSTEM.args[0] + " " + aTaskName);
+            var cmd = "cd " + OS.enquote(aDirectory) + " && " + serializedENV() + " " + OS.enquote(SYSTEM.args[0]) + " " + OS.enquote(aTaskName);
+            var returnCode = OS.system(cmd);
             if (returnCode)
                 OS.exit(returnCode);
         }
