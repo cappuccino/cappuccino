@@ -56,11 +56,4 @@
     return [];
 }
 
-
-- (int)countByEnumeratingWithState:(id)aState objects:(id)objects count:(id)aCount
-{
-    // This is pretty terrible, but what do you expect.
-    return [[self allObjects] countByEnumeratingWithState:aState objects:objects count:aCount];
-}
-
 @end

@@ -499,22 +499,6 @@ var CPSetObjectsKey = @"CPSetObjectsKey";
 
 @end
 
-@implementation CPSet (CPFastEnumeration)
-
-- (int)countByEnumeratingWithState:(id)aState objects:(id)objects count:(id)aCount
-{
-    var count = [self count];
-
-    if (aState.state >= count)
-        return 0;
-
-    count = [[self allObjects] countByEnumeratingWithState:aState objects:objects count:aCount];
-
-    return count;
-}
-
-@end
-
 /*!
     @class CPMutableSet
     @ingroup compatability
