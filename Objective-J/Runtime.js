@@ -530,3 +530,106 @@ GLOBAL(sel_registerName) = function(/*String*/ aName)
 {
     return aName;
 }
+
+var fastEnumerationSelector = sel_getUid("countByEnumeratingWithState:objects:count:");
+
+GLOBAL(objj_fastEnumerator) = function(/*Object*/ anObject, /*Integer*/ anAssigneeCount)
+{
+    // If this object doesn't respond to countByEnumeratingWithState:objects:count:
+    // (which is obviously the case for non-Objective-J objects), then just iterate
+    // this one object.
+    if (anObject && (!anObject.isa || !class_getInstanceMethod(anObject.isa, fastEnumerationSelector)))
+        this._target = [anObject];
+
+    // Else, use it's implementation.
+    else
+        this._target = anObject;
+
+    this._state = { state:0, assigneeCount:anAssigneeCount };
+    this._index = 0;
+
+    // Nothing to iterate in this case.
+    if (!anObject)
+    {
+        this.i = 0;
+        this.l = 0;
+    }
+    else
+        this.e();
+}
+
+objj_fastEnumerator.prototype.e = function()
+{
+    var object = this._target;
+
+    // Nothing to iterate, don't iterate
+    if (!object)
+        return NO;
+
+    var state = this._state,
+        index = state.assigneeCount;
+
+    while (index--)
+        state["items" + index] = nil;
+
+    this.i = 0;
+
+    // We optimize the array case.
+    if (CPArray && object.isa === CPArray)
+    {
+        if (this.l)
+            return NO;
+
+        this.o0 = object;
+        this.l = object.length;
+    }
+
+    else
+    {
+        // Clear out all the old state.
+        state.items = nil;
+        state.itemsPtr = nil;
+
+        this.o0 = [];
+        this.l = objj_msgSend(object, fastEnumerationSelector, state, this.o0, 16);
+
+        // We're flexible on this.
+        this.o0 = state.items || state.itemsPtr || state.items0 || this.o0;
+
+        // We allow the user to not explictly return anything in countByEnumeratingWithState:objects:count:
+        if (this.l === undefined)
+            this.l = this.o0.length;
+    }
+
+    var assigneeCount = state.assigneeCount;
+
+    index = assigneeCount - 1;
+
+    // Handle all items from [1 .. assigneeCount - 1]
+    while (index-- > 1)
+        this["o" + index] = state["items" + index] || [];
+
+    var lastAssigneeIndex = assigneeCount - 1;
+
+    // Autogenerate the indexes if this was left blank.
+    if (lastAssigneeIndex > 0)
+
+        if (state["items" + lastAssigneeIndex])
+            this["o" + lastAssigneeIndex] = state["items" + lastAssigneeIndex];
+
+        else
+        {
+            var count = this.l,
+                indexIndex = 0,
+                indexes = new Array(count)
+
+            for (; indexIndex < count; ++indexIndex, ++this._index)
+                indexes[indexIndex] = this._index;
+
+            this["o" + lastAssigneeIndex] = indexes;
+        }
+
+    // If this is the last iteration, set target to nil so that we don't call the
+    // fast enumeration method again.
+    return this.l > 0;
+}

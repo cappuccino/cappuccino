@@ -321,12 +321,108 @@ Preprocessor.prototype.directive = function(tokens, aStringBuffer, allowedDirect
     else if (token === TOKEN_IMPORT)
         this._import(tokens);
 
+    else if (token === TOKEN_EACH)
+        this.each(tokens, buffer);
+
     // @selector
     else if (token === TOKEN_SELECTOR)
         this.selector(tokens, buffer);
     
     if (!aStringBuffer)
         return buffer;
+}
+
+var fastEnumeratorCount = 0;
+
+Preprocessor.prototype.each = function(tokens, /*StringBuffer*/ aStringBuffer)
+{
+    var token = tokens.skip_whitespace();
+
+    // If we reach an open parenthesis, we are declaring a category.
+    if (token !== TOKEN_OPEN_PARENTHESIS)
+       throw new SyntaxError(this.error_message("*** Expecting (, found: \"" + token + "\"."));
+
+    var identifiers = [],
+        isVared = NO;
+
+    do
+    {
+        token = tokens.skip_whitespace();
+
+        if (identifiers.length === 0 && token === TOKEN_VAR)
+        {
+            isVared = YES;
+
+            token = tokens.skip_whitespace();
+        }
+
+        if (!TOKEN_IDENTIFIER.test(token))
+            throw new SyntaxError(this.error_message("*** Expecting identifier, found: \"" + token + "\"."));
+
+        identifiers.push(token);
+
+        token = tokens.skip_whitespace();
+
+        if (token !== TOKEN_COMMA && token !== TOKEN_IN)
+            throw new SyntaxError(this.error_message("*** Expecting \",\", found: \"" + token + "\"."));
+
+    } while (token && token === TOKEN_COMMA);
+
+    if (token !== TOKEN_IN)
+        throw new SyntaxError(this.error_message("*** Expecting \"in\", found: \"" + token + "\"."));
+
+    var generatedFastEnumeratorName = "$OBJJ_GENERATED_FAST_ENUMERATOR_" + fastEnumeratorCount++;
+
+    CONCAT(aStringBuffer, "var ");
+    CONCAT(aStringBuffer, generatedFastEnumeratorName);
+    CONCAT(aStringBuffer, " = new objj_fastEnumerator(");
+
+    this.preprocess(tokens, aStringBuffer, TOKEN_CLOSE_PARENTHESIS, TOKEN_OPEN_PARENTHESIS);
+
+    CONCAT(aStringBuffer, ", ");
+    CONCAT(aStringBuffer, identifiers.length);
+    CONCAT(aStringBuffer, ");\n");
+
+    // var $E = new objj_fastEnumerator(expression);
+    // for ([[var] arg1[, arg2[, ... argN]]];
+    // $E.i < $E.l || $E.e() && ((arg1 = $E.o0[$E.i][, $E.o1[$E.i][, ... $E.oN[$E.i]]]) || YES);
+    // ++$E.i)
+
+    CONCAT(aStringBuffer, "for (");
+
+    if (isVared)
+    {
+        CONCAT(aStringBuffer, "var ");
+        CONCAT(aStringBuffer, identifiers.join(", "));
+    }
+
+    CONCAT(aStringBuffer, ";(");
+    CONCAT(aStringBuffer, generatedFastEnumeratorName);
+    CONCAT(aStringBuffer, ".i < ");
+    CONCAT(aStringBuffer, generatedFastEnumeratorName);
+    CONCAT(aStringBuffer, ".l || ");
+    CONCAT(aStringBuffer, generatedFastEnumeratorName);
+    CONCAT(aStringBuffer, ".e()) && ((");
+
+    // Man don't you wish we had fast enumeration here!!
+    for (var index = 0, count = identifiers.length; index < count; ++index)
+    {
+        CONCAT(aStringBuffer, identifiers[index]);
+        CONCAT(aStringBuffer, " = ");
+        CONCAT(aStringBuffer, generatedFastEnumeratorName);
+        CONCAT(aStringBuffer, ".o");
+        CONCAT(aStringBuffer, index);
+        CONCAT(aStringBuffer, "[");
+        CONCAT(aStringBuffer, generatedFastEnumeratorName);
+        CONCAT(aStringBuffer, ".i]");
+
+        if (index + 1 < count)
+            CONCAT(aStringBuffer, ", ");
+    }
+
+    CONCAT(aStringBuffer, ") || YES); ++");
+    CONCAT(aStringBuffer, generatedFastEnumeratorName);
+    CONCAT(aStringBuffer, ".i)");
 }
 
 Preprocessor.prototype.implementation = function(tokens, /*StringBuffer*/ aStringBuffer)
