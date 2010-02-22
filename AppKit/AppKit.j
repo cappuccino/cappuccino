@@ -57,6 +57,7 @@
 @import "CPMenu.j"
 @import "CPMenuItem.j"
 @import "CPOpenPanel.j"
+@import "CPOutlineView.j"
 @import "CPPanel.j"
 @import "CPPasteboard.j"
 @import "CPPopUpButton.j"
