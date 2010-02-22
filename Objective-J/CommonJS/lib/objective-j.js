@@ -145,7 +145,7 @@ exports.objj_eval = function(/*String*/ aString)
     // We need this while code still refers to window.
     Executable.setCommonJSArguments(require, exports, module, system, print, window);
 
-    var executable = preprocess(aString, "", 0);
+    var executable = exports.preprocess(aString, "", 0);
 
     if (!executable.hasLoadedFileDependencies())
         executable.loadFileDependencies();

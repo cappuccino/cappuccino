@@ -227,7 +227,7 @@ function pressEnvironment(rootPath, outputFiles, environment, options) {
     for (var path in requiredFiles)
     {
         var executable = analyzer.executableForImport(path),
-            bundle = _OBJJ.CFBundle.bundleContainingPath(executable.path()),
+            bundle = analyzer.context.global.CFBundle.bundleContainingPath(executable.path()),
             relativePath = FILE.relative(FILE.join(bundle.path(), ""), executable.path());
 
         if (executable.path() !== path)
