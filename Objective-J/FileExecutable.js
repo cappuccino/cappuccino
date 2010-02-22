@@ -39,7 +39,7 @@ function FileExecutable(/*String*/ aPath)
         executable = decompile(fileContents, aPath);
 
     else if (extension === ".j" || extension === "")
-        executable = exports.preprocess(fileContents, aPath, Preprocessor.OBJJ_PREPROCESSOR_DEBUG_SYMBOLS);
+        executable = exports.preprocess(fileContents, aPath, Preprocessor.Flags.IncludeDebugSymbols);
 
     else
         executable = new Executable(fileContents, [], aPath);

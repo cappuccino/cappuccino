@@ -184,7 +184,7 @@ Preprocessor.Flags.IncludeTypeSignatures    = 1 << 1;
 Preprocessor.prototype.executable = function()
 {
     if (!this._executable)
-        this._executable = new Executable(this._buffer.toString(), this._dependencies);
+        this._executable = new Executable(this._buffer.toString(), this._dependencies, this._filePath);
 
     return this._executable;
 }
