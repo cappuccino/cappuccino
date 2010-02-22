@@ -171,7 +171,7 @@ var CPCibObjectDataKey  = @"CPCibObjectDataKey";
 
 - (void)connection:(CPURLConnection)aConnection didReceiveData:(CPString)data
 {
-    _data = [CPData dataWithEncodedString:data];
+    _data = [CPData dataWithRawString:data];
 }
 
 - (void)connection:(CPURLConnection)aConnection didFailWithError:(CPError)anError

@@ -64,7 +64,7 @@ CFPropertyList.dataFromPropertyList = function(/*CFPropertyList*/ aPropertyList,
 {
     var data = new CFMutableData();
 
-    data.setEncodedString(CFPropertyList.stringFromPropertyList(aPropertyList, aFormat));
+    data.setRawString(CFPropertyList.stringFromPropertyList(aPropertyList, aFormat));
 
     return data;
 }
@@ -367,7 +367,7 @@ var _plist_traverseNextNode = function(anXMLNode, stayWithin, stack)
 
 CFPropertyList.propertyListFromData = function(/*Data*/ aData, /*Format*/ aFormat)
 {
-    return CFPropertyList.propertyListFromString(aData.encodedString(), aFormat);
+    return CFPropertyList.propertyListFromString(aData.rawString(), aFormat);
 }
 
 CFPropertyList.propertyListFromString = function(/*String*/ aString, /*Format*/ aFormat)

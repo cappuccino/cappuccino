@@ -142,7 +142,7 @@ var _CPKeyedUnarchiverArrayClass                                            = Ni
 
     if (self)
     {
-        _archive = [data serializedPlistObject];
+        _archive = [data plistObject];
         _objects = [CPArray arrayWithObject:[CPNull null]];
         
         _plistObject = [_archive objectForKey:_CPKeyedArchiverTopKey];

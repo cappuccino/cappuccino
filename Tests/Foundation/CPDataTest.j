@@ -4,39 +4,66 @@
 @import <Foundation/CPKeyedArchiver.j>
 @import <Foundation/CPNumber.j>
 
-var expectedString = "280NPLIST;1.0;D;K;4;key4f;3;8.8K;4;key3f;3;9.9K;4;key2F;K;4;key1S;22;Some random charactersE;"
-
 @implementation CPDataTest : OJTestCase
 {
-    CPData plist_data;
 }
 
--(void)setUp
+- (void)testPlistObjects
 {
-    // Plist helpers
-    var keys = [@"key1", @"key2", @"key3", @"key4"];
-    var objects = [@"Some random characters", NO, 9.9, 8.8];
-    var dict = [CPDictionary dictionaryWithObjects:objects forKeys:keys];
+    var string = @"Hello World",
+        data = [CPData dataWithPlistObject:string];
 
-    plist_data = [[CPData alloc] initWithSerializedPlistObject:dict];
+    [self assert:[data rawString] equals:@"280NPLIST;1.0;S;11;Hello World"];
+    [self assert:[data plistObject] equals:@"Hello World"];
+
+    data = [CPData dataWithRawString:@"280NPLIST;1.0;S;11;Hello World"];
+
+    [self assert:[data rawString] equals:@"280NPLIST;1.0;S;11;Hello World"];
+    [self assert:[data plistObject] equals:@"Hello World"];
+
+    var array = [0, 1.0, "Two"];
+
+    data = [CPData dataWithPlistObject:array];
+
+    [self assert:[data rawString] equals:@"280NPLIST;1.0;A;d;1;0d;1;1S;3;TwoE;"];
+    [self assert:[data plistObject] equals:array];
+
+    data = [CPData dataWithRawString:@"280NPLIST;1.0;A;d;1;0d;1;1S;3;TwoE;"];
+
+    [self assert:[data rawString] equals:@"280NPLIST;1.0;A;d;1;0d;1;1S;3;TwoE;"];
+    [self assert:[[data plistObject] isEqual:array] equals:true];
+
+    var dictionary = [CPDictionary dictionaryWithObject:array forKey:@"array"];
+
+    data = [CPData dataWithPlistObject:dictionary];
+
+    [self assert:[data rawString] equals:@"280NPLIST;1.0;D;K;5;arrayA;d;1;0d;1;1S;3;TwoE;E;"];
+    [self assert:[data plistObject] equals:dictionary];
+
+    data = [CPData dataWithRawString:@"280NPLIST;1.0;D;K;5;arrayA;d;1;0d;1;1S;3;TwoE;E;"];
+
+    [self assert:[data rawString] equals:@"280NPLIST;1.0;D;K;5;arrayA;d;1;0d;1;1S;3;TwoE;E;"];
+    [self assert:[[data plistObject] isEqual:dictionary] equals:true];
+
+    [self assertNull:[data JSONObject]];
 }
 
--(void)testLength
+- (void)testJSONObjects
 {
-    [plist_data length] === expectedString.length
-}
+    var object = { first: { one:1 }, second: { two:2 } },
+        data = [CPData dataWithJSONObject:object];
 
--(void)testStringFromPlist
-{
-    [self assert:[plist_data encodedString] equals:expectedString];
-}
+    [self assert:[data rawString] equals:JSON.stringify(object)];
+    [self assert:[data JSONObject] equals:object];
 
--(void)testPlistObject
-{
-    [self assert:[[plist_data serializedPlistObject] objectForKey:@"key1"] equals:@"Some random characters"];
-    [self assert:[[plist_data serializedPlistObject] objectForKey:@"key2"] equals:[CPNumber numberWithBool:NO]];
-    [self assert:[[plist_data serializedPlistObject] objectForKey:@"key3"] equals:[CPNumber numberWithDouble:9.9]];
-    [self assert:[[plist_data serializedPlistObject] objectForKey:@"key4"] equals:[CPNumber numberWithDouble:8.8]];
+    [self assertNull:[data plistObject]];
+
+    data = [CPData dataWithRawString:"{\"first\":{\"one\":1},\"second\":{\"two\":2}}"];
+
+    [self assert:[data rawString] equals:JSON.stringify(object)];
+    [self assertNoThrow:function () { require("assert").deepEqual([data JSONObject], object); }];
+
+    [self assertNull:[data plistObject]];
 }
 
 @end

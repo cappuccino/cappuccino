@@ -415,7 +415,7 @@ var DOMDataTransferPasteboard = nil;
         if (type === CPStringPboardType)
             _dataTransfer.setData(type, [aPasteboard stringForType:type]);
         else
-            _dataTransfer.setData(type, [[aPasteboard dataForType:type] encodedString]);
+            _dataTransfer.setData(type, [[aPasteboard dataForType:type] rawString]);
     }
 }
 
@@ -431,7 +431,7 @@ var DOMDataTransferPasteboard = nil;
     if (aType === CPStringPboardType)
         return [CPData dataFromPropertyList:dataString format:kCFPropertyList280NorthFormat_v1_0];
 
-    return [CPData dataWithEncodedString:dataString];
+    return [CPData dataWithRawString:dataString];
 }
 
 - (id)propertyListForType:(CPString)aType

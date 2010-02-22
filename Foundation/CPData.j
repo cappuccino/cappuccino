@@ -27,8 +27,6 @@
     @class CPData
     @ingroup foundation
     @brief A Cappuccino wrapper for any data type.
-
-
 */
 
 @implementation CPData : CPObject
@@ -45,69 +43,84 @@
     return [[self alloc] init];
 }
 
-+ (CPData)dataWithEncodedString:(CPString)aString
++ (CPData)dataWithRawString:(CPString)aString
 {
-    return [[self alloc] initWithEncodedString:aString];
+    return [[self alloc] initWithRawString:aString];
 }
 
-+ (CPData)dataWithSerializedPlistObject:(id)aPlistObject
++ (CPData)dataWithPlistObject:(id)aPlistObject
 {
-    return [[self alloc] initWithSerializedPlistObject:aPlistObject];
+    return [[self alloc] initWithPlistObject:aPlistObject];
 }
 
-+ (CPData)dataWithSerializedPlistObject:(id)aPlistObject format:(CPPropertyListFormat)aFormat
++ (CPData)dataWithPlistObject:(id)aPlistObject format:(CPPropertyListFormat)aFormat
 {
-    return [[self alloc] initWithSerializedPlistObject:aPlistObject format:aFormat];
+    return [[self alloc] initWithPlistObject:aPlistObject format:aFormat];
 }
 
-- (id)initWithEncodedString:(CPString)aString
++ (CPData)dataWithJSONObject:(Object)anObject
+{
+    return [[self alloc] initWithJSONObject:anObject];
+}
+
+- (id)initWithRawString:(CPString)aString
 {
     self = [super init];
 
     if (self)
-        [self setEncodedString:aString];
+        [self setRawString:aString];
 
     return self;
 }
 
-- (id)initWithString:(CPString)aString
-{
-    return [self initWithSerializedPlistObject:aPlistObject];
-}
-
-- (id)initWithSerializedPlistObject:(id)aPlistObject
+- (id)initWithPlistObject:(id)aPlistObject
 {
     self = [super init];
 
     if (self)
-        [self setSerializedPlistObject:aPlistObject];
+        [self setPlistObject:aPlistObject];
 
     return self;
 }
 
-- (id)initWithSerializedPlistObject:(id)aPlistObject format:aFormat
+- (id)initWithPlistObject:(id)aPlistObject format:aFormat
 {
     self = [super init];
 
     if (self)
-        [self setSerializedPlistObject:aPlistObject format:aFormat];
+        [self setPlistObject:aPlistObject format:aFormat];
 
     return self;
 }
 
-- (void)setString:(CPString)aString
+- (id)initWithJSONObject:(Object)anObject
 {
-    return [self setSerializedPlistObject:aString];
+    self = [super init];
+
+    if (self)
+        [self setJSONObject:anObject];
+
+    return self;
 }
 
-- (CPString)string
+- (CPString)rawString
 {
-    return [self serializedPlistObject];
+    return self.rawString();
+}
+
+- (id)plistObject
+{
+    return self.propertyList();
+}
+
+- (Object)JSONObject
+{
+    return self.JSONObject();
 }
 
 - (int)length
 {
-    return [[self encodedString] length];
+    return [[self rawString] length];
 }
 
 - (CPString)description
@@ -115,29 +128,60 @@
     return self.toString();
 }
 
-- (CPString)encodedString
+@end
+
+@implementation CPData (CPMutableData)
+
+- (void)setRawString:(CPString)aString
 {
-    return self.encodedString();
+    self.setRawString(aString);
 }
 
-- (void)setEncodedString:(CPString)aString
+- (void)setPlistObject:(id)aPlistObject
 {
-    self.setEncodedString(aString);
+    self.setPropertyList(aPlistObject);
 }
 
-- (id)serializedPlistObject
+- (void)setPlistObject:(id)aPlistObject format:(CPPropertyListFormat)aFormat
 {
-    return self.serializedPropertyList();
+    self.setPropertyList(aPlistObject, aFormat);
 }
 
-- (void)setSerializedPlistObject:(id)aPlistObject
+- (void)setJSONObject:(Object)anObject
 {
-    self.setSerializedPropertyList(aPlistObject);
+    self.setJSONObject(anObject);
 }
 
-- (void)setSerializedPlistObject:(id)aPlistObject format:(CPPropertyListFormat)aFormat
+@end
+
+@implementation CPData (Deprecated)
+
++ (id)dataWithString:(CPString)aString
 {
-    self.setSerializedPropertyList(aPlistObject, aFormat);
+    _CPReportLenientDeprecation(self, _cmd, @selector(dataWithRawString:));
+
+    return [self dataWithRawString:aString];
+}
+
+- (id)initWithString:(CPString)aString
+{
+    _CPReportLenientDeprecation(self, _cmd, @selector(initWithRawString:));
+
+    return [self initWithRawString:aString];
+}
+
+- (void)setString:(CPString)aString
+{
+    _CPReportLenientDeprecation(self, _cmd, @selector(setRawString:));
+
+    [self setRawString:aString];
+}
+
+- (CPString)string
+{
+    _CPReportLenientDeprecation(self, _cmd, @selector(rawString));
+
+    return [self rawString];
 }
 
 @end

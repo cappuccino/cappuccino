@@ -348,6 +348,9 @@
 */
 - (BOOL)isEqualToDictionary:(CPDictionary)aDictionary
 {
+    if (self === aDictionary)
+        return YES;
+
     var count = [self count];
 
     if (count !== [aDictionary count])
@@ -371,6 +374,17 @@
     }
 
     return YES;
+}
+
+- (BOOL)isEqual:(id)anObject
+{
+    if (self === anObject)
+        return YES;
+
+    if (![anObject isKindOfClass:[CPDictionary class]])
+        return NO;
+
+    return [self isEqualToDictionary:anObject];
 }
 
 /*

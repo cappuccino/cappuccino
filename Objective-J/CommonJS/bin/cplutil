@@ -68,13 +68,13 @@ exports.main = function(args)
             }
             else
             {
-                var encodedString = CFPropertyList.stringFromPropertyList(plistObject, options.format);
+                var string = CFPropertyList.stringFromPropertyList(plistObject, options.format);
 
                 // outextension?
                 if (options.outPath === "-")
-                    SYSTEM.stdout.write(encodedString);
+                    SYSTEM.stdout.write(string);
                 else
-                    FILE.write(options.outPath || filePath, encodedString, { charset:"UTF-8" });
+                    FILE.write(options.outPath || filePath, string, { charset:"UTF-8" });
             }
         });
     }
