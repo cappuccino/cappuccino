@@ -229,6 +229,19 @@
     if (shouldShowHorizontalScroller)
         contentFrame.size.height -= horizontalScrollerHeight;
 
+    var _window = [self window],
+        forceCornerSpace = NO;
+
+    if (_window && [_window contentView])
+    {
+        var windowIsResizable = !!(([_window styleMask] & CPResizableWindowMask) || ([_window styleMask] & CPBorderlessBridgeWindowMask)),
+            relativeFrame = [self convertRect:[[_window contentView] frame] fromView:nil],
+            maxPoint = CGPointMake(CGRectGetMaxX([self bounds]), CGRectGetMaxY([self bounds])),
+            isInWindowCorner = CGRectGetMaxX(relativeFrame) >= maxPoint.x && CGRectGetMaxY(relativeFrame) >= maxPoint.y;
+
+        forceCornerSpace = windowIsResizable && isInWindowCorner;
+    }
+
     var scrollPoint = [_contentView bounds].origin,
         wasShowingVerticalScroller = ![_verticalScroller isHidden],
         wasShowingHorizontalScroller = ![_horizontalScroller isHidden];
@@ -238,7 +251,7 @@
         var verticalScrollerY = MAX(_CGRectGetHeight([self _cornerViewFrame]), headerClipViewHeight),
             verticalScrollerHeight = _CGRectGetHeight([self bounds]) - verticalScrollerY;
 
-        if (shouldShowHorizontalScroller)
+        if (forceCornerSpace || shouldShowHorizontalScroller)
             verticalScrollerHeight -= horizontalScrollerHeight;
 
         [_verticalScroller setFloatValue:(difference.height <= 0.0) ? 0.0 : scrollPoint.y / difference.height];
@@ -255,7 +268,7 @@
     {
         [_horizontalScroller setFloatValue:(difference.width <= 0.0) ? 0.0 : scrollPoint.x / difference.width];
         [_horizontalScroller setKnobProportion:_CGRectGetWidth(contentFrame) / _CGRectGetWidth(documentFrame)];
-        [_horizontalScroller setFrame:_CGRectMake(0.0, _CGRectGetMaxY(contentFrame), _CGRectGetWidth(contentFrame), horizontalScrollerHeight)];
+        [_horizontalScroller setFrame:_CGRectMake(0.0, _CGRectGetMaxY(contentFrame), _CGRectGetWidth(contentFrame) - ((!shouldShowVerticalScroller && forceCornerSpace) ? verticalScrollerWidth : 0), horizontalScrollerHeight)];
     }
     else if (wasShowingHorizontalScroller)
     {
