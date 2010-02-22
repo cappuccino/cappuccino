@@ -295,6 +295,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 - (void)_init
 {
         _lastColumnShouldSnap = NO;
+        _backgroundColor = [CPColor whiteColor];
 
         // Gradients for the source list
         _sourceListActiveGradient = CGGradientCreateWithColorComponents(CGColorSpaceCreateDeviceRGB(), [89.0/255.0, 153.0/255.0, 209.0/255.0,1.0, 33.0/255.0, 94.0/255.0, 208.0/255.0,1.0], [0,1], 2);
@@ -2180,8 +2181,16 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 
 - (void)drawBackgroundInClipRect:(CGRect)aRect
 {
-    if (![self usesAlternatingRowBackgroundColors])
+    if (!_usesAlternatingRowBackgroundColors)
+    {
+        var context = [[CPGraphicsContext currentContext] graphicsPort];
+
+        CGContextSetFillColor(context, _backgroundColor);
+        CGContextFillRect(context, aRect);
+
         return;
+    }
+
 
     var rowColors = [self alternatingRowBackgroundColors],
         colorCount = [rowColors count];
