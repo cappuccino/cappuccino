@@ -799,6 +799,11 @@ CPControlKeyMask
     return ![self submenu] || [self action] !== @selector(submenuAction:) || [self target] !== [self menu];
 }
 
+- (BOOL)_isMenuBarButton
+{
+    return ![self submenu] && [self menu] === [CPApp mainMenu];
+}
+
 @end
 
 var CPMenuItemIsSeparatorKey                = @"CPMenuItemIsSeparatorKey",

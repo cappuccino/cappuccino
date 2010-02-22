@@ -236,6 +236,7 @@ var SUBMENU_INDICATOR_COLOR                     = nil,
     {
         [self setBackgroundColor:_CPMenuItemSelectionColor];
 
+        [_imageAndTextView setImage:[_menuItem alternateImage] || [_menuItem image]];
         [_imageAndTextView setTextColor:[CPColor whiteColor]];
         [_keyEquivalentView setTextColor:[CPColor whiteColor]];
         [_submenuIndicatorView setColor:[CPColor whiteColor]];
@@ -246,7 +247,8 @@ var SUBMENU_INDICATOR_COLOR                     = nil,
     else
     {
         [self setBackgroundColor:nil];
-        
+
+        [_imageAndTextView setImage:[_menuItem image]];
         [_imageAndTextView setTextColor:[self textColor]];
         [_keyEquivalentView setTextColor:[self textColor]];
         [_submenuIndicatorView setColor:SUBMENU_INDICATOR_COLOR];
