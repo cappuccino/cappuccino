@@ -32,6 +32,7 @@
 #include "CFPropertyList.js"
 #include "CFDictionary.js"
 #include "CFData.js"
+#include "CFURL.js"
 #include "MarkedStream.js"
 #include "CFBundle.js"
 #include "StaticResource.js"

@@ -140,9 +140,9 @@ StringBuffer.prototype.toString = function()
     return this.atoms.join("");
 }
 
-exports.preprocess = function(/*String*/ aString, /*String*/ aPath, /*unsigned*/ flags)
+exports.preprocess = function(/*String*/ aString, /*CFURL*/ aURL, /*unsigned*/ flags)
 {
-    return new Preprocessor(aString, aPath, flags).executable();
+    return new Preprocessor(aString, aURL, flags).executable();
 }
 
 exports.eval = function(/*String*/ aString)
@@ -150,8 +150,10 @@ exports.eval = function(/*String*/ aString)
     return eval(exports.preprocess(aString).code());
 }
 
-var Preprocessor = function(/*String*/ aString, /*String*/ aPath, /*unsigned*/ flags)
+var Preprocessor = function(/*String*/ aString, /*CFURL|String*/ aURL, /*unsigned*/ flags)
 {
+    this._URL = new CFURL(aURL);
+
     // Remove the shebang.
     aString = aString.replace(/^#[^\n]+\n/, "\n");
 
@@ -159,8 +161,6 @@ var Preprocessor = function(/*String*/ aString, /*String*/ aPath, /*unsigned*/ f
     this._currentClass = "";
     this._currentSuperClass = "";
     this._currentSuperMetaClass = "";
-
-    this._filePath = aPath;
 
     this._buffer = new StringBuffer();
     this._preprocessed = NULL;
@@ -184,7 +184,7 @@ Preprocessor.Flags.IncludeTypeSignatures    = 1 << 1;
 Preprocessor.prototype.executable = function()
 {
     if (!this._executable)
-        this._executable = new Executable(this._buffer.toString(), this._dependencies, this._filePath);
+        this._executable = new Executable(this._buffer.toString(), this._dependencies, this._URL);
 
     return this._executable;
 }
@@ -908,7 +908,7 @@ Preprocessor.prototype.selector = function(tokens, aStringBuffer)
 
 Preprocessor.prototype.error_message = function(errorMessage)
 {
-    return errorMessage + " <Context File: "+ this._filePath +
+    return errorMessage + " <Context File: "+ this._URL +
                                 (this._currentClass ? " Class: "+this._currentClass : "") +
                                 (this._currentSelector ? " Method: "+this._currentSelector : "") +">";
 }

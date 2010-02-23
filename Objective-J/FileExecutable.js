@@ -20,33 +20,34 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-var FileExecutablesForPaths = { };
+var FileExecutablesForURLStrings = { };
 
-function FileExecutable(/*String*/ aPath)
+function FileExecutable(/*CFURL*/ aURL)
 {
-    var existingFileExecutable = FileExecutablesForPaths[aPath];
+if (!aURL._path) aURL = new CFURL(aURL);
+    var URLString = aURL.absoluteString(),
+        existingFileExecutable = FileExecutablesForURLStrings[URLString];
 
     if (existingFileExecutable)
         return existingFileExecutable;
 
-    FileExecutablesForPaths[aPath] = this;
+    FileExecutablesForURLStrings[URLString] = this;
 
-    var fileContents = rootResource.nodeAtSubPath(aPath).contents(),
+    var fileContents = rootResource.nodeAtSubPath(aURL.path()).contents(),
         executable = NULL,
-        extension = FILE.extension(aPath);
+        extension = aURL.pathExtension();
 
     if (fileContents.match(/^@STATIC;/))
-        executable = decompile(fileContents, aPath);
+        executable = decompile(fileContents, aURL);
 
-    else if (extension === ".j" || extension === "")
-        executable = exports.preprocess(fileContents, aPath, Preprocessor.Flags.IncludeDebugSymbols);
+    else if (extension === "j" || !extension)
+        executable = exports.preprocess(fileContents, aURL, Preprocessor.Flags.IncludeDebugSymbols);
 
     else
-        executable = new Executable(fileContents, [], aPath);
+        executable = new Executable(fileContents, [], aURL);
 
-    Executable.apply(this, [executable.code(), executable.fileDependencies(), aPath, executable._function]);
+    Executable.apply(this, [executable.code(), executable.fileDependencies(), aURL, executable._function]);
 
-    this._path = aPath;
     this._hasExecuted = NO;
 }
 
@@ -57,11 +58,12 @@ FileExecutable.prototype = new Executable();
 #ifdef COMMONJS
 FileExecutable.allFileExecutables = function()
 {
-    var fileExecutables = [];
+    var URLString,
+        fileExecutables = [];
 
-    for (path in FileExecutablesForPaths)
-        if (hasOwnProperty.call(FileExecutablesForPaths, path))
-            fileExecutables.push(FileExecutablesForPaths[path]);
+    for (URLString in FileExecutablesForURLStrings)
+        if (hasOwnProperty.call(FileExecutablesForURLStrings, URLString))
+            fileExecutables.push(FileExecutablesForURLStrings[URLString]);
 
     return fileExecutables;
 }
@@ -77,9 +79,9 @@ FileExecutable.prototype.execute = function(/*BOOL*/ shouldForce)
     Executable.prototype.execute.call(this);
 }
 
-FileExecutable.prototype.path = function()
+FileExecutable.prototype.URL = function()
 {
-    return this._path;
+    return this._URL;
 }
 
 FileExecutable.prototype.hasExecuted = function()
@@ -87,7 +89,7 @@ FileExecutable.prototype.hasExecuted = function()
     return this._hasExecuted;
 }
 
-function decompile(/*String*/ aString, /*String*/ aPath)
+function decompile(/*String*/ aString, /*CFURL*/ aURL)
 {
     var stream = new MarkedStream(aString);
 /*
@@ -106,11 +108,11 @@ function decompile(/*String*/ aString, /*String*/ aPath)
             code += text;
 
         else if (marker === MARKER_IMPORT_STD)
-            dependencies.push(new FileDependency(FILE.normal(text), NO));
+            dependencies.push(new FileDependency(text, NO));
 
         else if (marker === MARKER_IMPORT_LOCAL)
-            dependencies.push(new FileDependency(FILE.normal(text), YES));
+            dependencies.push(new FileDependency(text, YES));
     }
 
-    return new Executable(code, dependencies, aPath);
+    return new Executable(code, dependencies, aURL);
 }

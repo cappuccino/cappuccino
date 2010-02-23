@@ -24,14 +24,14 @@ var ExecutableUnloadedFileDependencies  = 0,
     ExecutableLoadingFileDependencies   = 1,
     ExecutableLoadedFileDependencies    = 2;
 
-function Executable(/*String*/ aCode, /*Array*/ fileDependencies, /*String*/ aScope, /*Function*/ aFunction)
+function Executable(/*String*/ aCode, /*Array*/ fileDependencies, /*CFURL*/ aURL, /*Function*/ aFunction)
 {
     if (arguments.length === 0)
         return this;
 
     this._code = aCode;
     this._function = aFunction || NULL;
-    this._scope = aScope || "(Anonymous)";
+    this._URL = aURL || new CFURL("(Anonymous)", mainBundleURL);
 
     this._fileDependencies = fileDependencies;
     this._fileDependencyLoadStatus = ExecutableUnloadedFileDependencies;
@@ -48,7 +48,12 @@ exports.Executable = Executable;
 
 Executable.prototype.path = function()
 {
-    return FILE.join(FILE.cwd(), "(Anonymous)");
+    return this.URL().path();
+}
+
+Executable.prototype.URL = function()
+{
+    return this._URL;
 }
 
 Executable.prototype.functionParameters = function()
@@ -115,7 +120,7 @@ Executable.prototype.toMarkedString = function()
 Executable.prototype.execute = function()
 {
 #if EXECUTION_LOGGING
-    CPLog("EXECUTION: " + this.path());
+    CPLog("EXECUTION: " + this.URL());
 #endif
     var oldContextBundle = CONTEXT_BUNDLE;
 
@@ -137,13 +142,14 @@ Executable.prototype.setCode = function(code)
 {
     this._code = code;
 
-    var parameters = this.functionParameters().join(",");
+    var parameters = this.functionParameters().join(","),
+        absoluteString = this.URL().absoluteString();
 
 #if COMMONJS
     if (typeof system !== "undefined" && system.engine === "rhino")
     {
         code = "function(" + parameters + "){" + code + "/**/\n}";
-        this._function = Packages.org.mozilla.javascript.Context.getCurrentContext().compileFunction(window, code, this._scope, 0, NULL);
+        this._function = Packages.org.mozilla.javascript.Context.getCurrentContext().compileFunction(window, code, absoluteString, 0, NULL);
     }
     else
     {
@@ -152,14 +158,14 @@ Executable.prototype.setCode = function(code)
     // * WebKit:  http://pmuellr.blogspot.com/2009/06/debugger-friendly.html
     // * Firebug: http://blog.getfirebug.com/2009/08/11/give-your-eval-a-name-with-sourceurl/
     //if (YES) {
-        code += "/**/\n//@ sourceURL=" + this._scope;
+        code += "/**/\n//@ sourceURL=" + "hello" + absoluteString;
         this._function = new Function(parameters, code);
     //} else {
     //    // Firebug only does it for "eval()", not "new Function()". Ugh. Slower.
     //    var functionText = "(function(){"+GET_CODE(aFragment)+"/**/\n})\n//@ sourceURL="+GET_FILE(aFragment).path;
     //    compiled = eval(functionText);
     //}
-    this._function.displayName = this._scope;
+    this._function.displayName = absoluteString;
 #if COMMONJS
     }
 #endif
