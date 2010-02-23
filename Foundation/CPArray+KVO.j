@@ -202,7 +202,7 @@
 
 - (int)indexOfObject:(CPObject)anObject
 {
-    return [self indexOfObject:anObject range:CPMakeRange(0, [self count])];
+    return [self indexOfObject:anObject inRange:CPMakeRange(0, [self count])];
 }
 
 - (int)indexOfObjectIdenticalTo:(CPObject)anObject inRange:(CPRange)aRange
