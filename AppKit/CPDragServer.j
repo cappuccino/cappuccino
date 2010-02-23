@@ -263,13 +263,12 @@ var CPDraggingSource_draggedImage_movedTo_          = 1 << 0,
 - (void)draggingEndedInPlatformWindow:(CPPlatformWindow)aPlatformWindow globalLocation:(CGPoint)aLocation operation:(CPDragOperation)anOperation
 {
     [_draggedView removeFromSuperview];
-    
+
     if (![CPPlatform supportsDragAndDrop])
         [_draggedWindow orderOut:self];
-    
+
     if (_implementedDraggingSourceMethods & CPDraggingSource_draggedImage_endAt_operation_)
         [_draggingSource draggedImage:[_draggedView image] endedAt:aLocation operation:anOperation];
-
     else if (_implementedDraggingSourceMethods & CPDraggingSource_draggedView_endedAt_operation_)
         [_draggingSource draggedView:_draggedView endedAt:aLocation operation:anOperation];
 
@@ -333,7 +332,7 @@ var CPDraggingSource_draggedImage_movedTo_          = 1 << 0,
     _startDragLocation = _CGPointMake(mouseLocation.x - _draggingOffset.width, mouseLocation.y - _draggingOffset.height);
     [_draggedWindow setFrameOrigin:_startDragLocation];
     [_draggedWindow setFrameSize:[aView frame].size];
-    
+
     [[_draggedWindow contentView] addSubview:aView];
 
     _implementedDraggingSourceMethods = 0;
@@ -399,9 +398,9 @@ var CPDraggingSource_draggedImage_movedTo_          = 1 << 0,
         // Make sure we do not finalize (cancel) the drag if the last drag update was disallowed
         if (_dragOperation !== CPDragOperationNone)
             [self performDragOperationInPlatformWindow:platformWindow];
-    
+
         [self draggingEndedInPlatformWindow:platformWindow globalLocation:platformWindowLocation operation:_dragOperation];
-    
+
         // Stop tracking events.
         return;
     }
