@@ -39,19 +39,15 @@ function main(args)
 
     var root = flattener.require("objective-j").StaticResource.root;
 
+    // FIXME: shouldn't have to do this manually
     var components = rootPath.split("/").slice(1, -1);
-    print(components)
     var node = root;
     while (components.length) {
-        print(node._path);
         node = node._children[components.shift()];
     }
     applicationRoot = node;
-    print("applicationRoot._children="+Object.keys(applicationRoot._children));
 
-    print("rootPath="+rootPath);
-    print("applicationRoot="+applicationRoot.toString());
-    print("root="+root);
+    print(applicationRoot.toString());
 
     var applicationJS = flattener.buildApplicationJS(applicationRoot);
 
@@ -59,8 +55,8 @@ function main(args)
 
     outputPath.join("Application.js").write(applicationJS);
 
-    addApplicationScriptTag(outputPath.join("index.html"));
-    addApplicationScriptTag(outputPath.join("index-debug.html"));
+    rewriteMainHTML(outputPath.join("index.html"));
+    rewriteMainHTML(outputPath.join("index-debug.html"));
 }
 
 // ObjectiveJFlattener inherits from ObjectiveJRuntimeAnalyzer
@@ -95,6 +91,7 @@ ObjectiveJFlattener.prototype.buildApplicationJS = function(applicationRoot) {
 
     buffer.push("console.log(ObjectiveJ.StaticResource.root);");
     buffer.push("console.log(applicationRoot);");
+    buffer.push("ObjectiveJ.bootstrap();");
     buffer.push("})();");
 
     return buffer.join("\n");
@@ -150,16 +147,24 @@ ObjectiveJFlattener.prototype.serializeStaticResources = function(node, depth) {
     this.resourceBuffer.push("currentNode = nodeStack.pop();");
 }
 
-function addApplicationScriptTag(indexHTMLPath) {
+function rewriteMainHTML(indexHTMLPath) {
     var indexHTML = indexHTMLPath.read();
 
-    // attempt to append the Application.js script tag after
-    var newIndexHTML = indexHTML.replace(/([ \t]+)<script[^>]+Objective-J.js[^>]+>(?:\s*<\/script>)?/,
-        '$&\n$1<script src = "Application.js" type = "text/javascript"></script>');
+    // "$1" is the matching indentation
+    var scriptTagsBefore = '$1<script type = "text/javascript">\n$1    OBJJ_AUTO_BOOTSTRAP = false;\n$1</script>';
+    var scriptTagsAfter  = '$1<script type = "text/javascript" src = "Application.js"></script>';
+
+    // attempt to find Objective-J script tag and add ours
+    var newIndexHTML = indexHTML.replace(/([ \t]+)<script[^>]+Objective-J\.js[^>]+>(?:\s*<\/script>)?/,
+        scriptTagsBefore+'\n$&\n'+scriptTagsAfter);
 
     if (newIndexHTML === indexHTML) {
-        print("Unable to automatically add Application.js script tag.");
+        stream.print("\0yellow(Warning: Unable to automatically modify "+indexHTMLPath + "\0)");
+        stream.print("\nAdd the following before the Objective-J script tag:");
+        stream.print(scriptTagsBefore.replace(/\$1/g, "    "));
+        stream.print("\nAdd the following after the Objective-J script tag:");
+        stream.print(scriptTagsAfter.replace(/\$1/g, "    "));
+    } else {
+        indexHTMLPath.write(newIndexHTML);
     }
-
-    indexHTMLPath.write(newIndexHTML);
 }
