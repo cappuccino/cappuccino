@@ -9,6 +9,7 @@ require("narwhal").ensureEngine("rhino");
 
 var FILE = require("file");
 
+var stream = require("term").stream;
 var parser = new (require("args").Parser)();
 
 parser.usage("INPUT_PROJECT OUTPUT_PROJECT");
@@ -28,15 +29,15 @@ function main(args)
     var rootPath = FILE.path(options.args[0]).join("").absolute();
     var outputPath = FILE.path(options.args[1]).join("").absolute();
 
-    var analyzer = new ObjectiveJRuntimeAnalyzer(rootPath);
+    var flattener = new ObjectiveJFlattener(rootPath);
 
-    analyzer.setIncludePaths([rootPath.join("Frameworks")]);
-    analyzer.setEnvironments(["Browser", "ObjJ"]);
+    flattener.setIncludePaths([rootPath.join("Frameworks/Debug")]);
+    flattener.setEnvironments(["Browser", "ObjJ"]);
 
-    analyzer.load(rootPath.join("main.j"));
-    analyzer.finishLoading();
+    flattener.load(rootPath.join("main.j"));
+    flattener.finishLoading();
 
-    var root = analyzer.require("objective-j").StaticResource.root;
+    var root = flattener.require("objective-j").StaticResource.root;
 
     var components = rootPath.split("/").slice(1, -1);
     print(components)
@@ -52,7 +53,7 @@ function main(args)
     print("applicationRoot="+applicationRoot.toString());
     print("root="+root);
 
-    var applicationJS = buildApplicationJS(applicationRoot);
+    var applicationJS = flattener.buildApplicationJS(applicationRoot);
 
     FILE.copyTree(rootPath, outputPath);
 
@@ -62,57 +63,91 @@ function main(args)
     addApplicationScriptTag(outputPath.join("index-debug.html"));
 }
 
-function buildApplicationJS(applicationRoot) {
+// ObjectiveJFlattener inherits from ObjectiveJRuntimeAnalyzer
+function ObjectiveJFlattener(rootPath) {
+    ObjectiveJRuntimeAnalyzer.apply(this, arguments);
+
+    this.resourceBuffer = [];
+    this.bundleBuffer = [];
+
+    this._outputBundles = {};
+}
+
+ObjectiveJFlattener.prototype = Object.create(ObjectiveJRuntimeAnalyzer.prototype);
+
+ObjectiveJFlattener.prototype.buildApplicationJS = function(applicationRoot) {
     print(applicationRoot);
 
-    var buffer = [];
+    this.serializeStaticResources(applicationRoot);
+
+    var buffer = []
+
     buffer.push("(function(){");
+
+    buffer.push(this.bundleBuffer.join("\n"));
+
     buffer.push("var nodeStack = [];");
-    buffer.push("var applicationRoot = StaticResource.root.nodeAtSubPath(StaticResource.cwd, YES);");
+    buffer.push("var applicationRoot = ObjectiveJ.StaticResource.root.nodeAtSubPath(ObjectiveJ.StaticResource.cwd, YES);");
     buffer.push("var currentNode = null;");
     buffer.push("var newNode;");
-    serializeStaticResources(buffer, applicationRoot);
-    buffer.push("console.log(StaticResource.root);");
+
+    buffer.push(this.resourceBuffer.join("\n"));
+
+    buffer.push("console.log(ObjectiveJ.StaticResource.root);");
     buffer.push("console.log(applicationRoot);");
     buffer.push("})();");
 
-    var code = buffer.join("\n");
-
-    print(code);
-
-    return code;
+    return buffer.join("\n");
 }
 
-function serializeStaticResources(buffer, node, depth) {
+ObjectiveJFlattener.prototype.serializeStaticResources = function(node, depth) {
     depth = depth || 0;
 
     //print(Array(depth+1).join(" ") + node);
 
+    var bundle = this.context.global.CFBundle.bundleContainingPath(node.path());
+    if (!bundle) {
+        stream.print("\0yellow(Warning:\0) No bundle for path: \0cyan("+node.path()+"\0)");
+    }
+    else if (!this._outputBundles[bundle.path()]) {
+        this._outputBundles[bundle.path()] = bundle;
+        stream.print("Writing bundle: \0cyan("+bundle.path()+"\0)");
+        print(bundle.infoDictionary())
+
+        this.bundleBuffer.push("var bundle = new CFBundle("+JSON.stringify(this.rootPath.relative(bundle.path()).toString())+");");
+        this.bundleBuffer.push("bundle._loadStatus = " + (1<<4) + ";");
+        if (bundle.infoDictionary()) {
+            this.bundleBuffer.push("bundle._infoDictionary = CFPropertyList.propertyListFromString(" +
+                JSON.stringify(CPPropertyListCreateData(bundle.infoDictionary()).rawString()) + ");");
+        }
+    }
+
     // not the root node:
     if (depth > 0) {
-        buffer.push("newNode = new StaticResource(" +
+        this.resourceBuffer.push("newNode = new ObjectiveJ.StaticResource(" +
             JSON.stringify(node.name()) +
             ", currentNode, " +
-            JSON.stringify(node.type()) + ", " +
+            JSON.stringify(node.isDirectory()) + ", " +
             JSON.stringify(node.isResolved()) + ");");
     } else {
-        buffer.push("newNode = applicationRoot;");
+        this.resourceBuffer.push("newNode = applicationRoot;");
     }
 
     if (node.contents())
-        buffer.push("newNode._contents = " + JSON.stringify(node.contents()) + ";");
+        this.resourceBuffer.push("newNode._contents = " + JSON.stringify(node.contents()) + ";");
 
     if (!node.children())
         return;
 
-    buffer.push("nodeStack.push(currentNode);");
-    buffer.push("currentNode = newNode;");
+    this.resourceBuffer.push("nodeStack.push(currentNode);");
+    this.resourceBuffer.push("currentNode = newNode;");
 
-    for (var name in node.children()) {
-        serializeStaticResources(buffer, node.children()[name], depth+1);
+    var children = node.children();
+    for (var name in children) {
+        this.serializeStaticResources(children[name], depth+1);
     }
 
-    buffer.push("currentNode = nodeStack.pop();");
+    this.resourceBuffer.push("currentNode = nodeStack.pop();");
 }
 
 function addApplicationScriptTag(indexHTMLPath) {

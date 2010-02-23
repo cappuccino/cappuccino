@@ -17,7 +17,7 @@ ObjectiveJRuntimeAnalyzer.prototype.setIncludePaths = function(includePaths) {
 }
 
 ObjectiveJRuntimeAnalyzer.prototype.setEnvironments = function(environments) {
-    this.require("objective-j").environments = function() { return environments; };
+    this.context.global.CFBundle.environments = function() { return environments; };
 }
 
 ObjectiveJRuntimeAnalyzer.prototype.initializeGlobalRecorder = function()
