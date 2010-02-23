@@ -80,7 +80,7 @@ GLOBAL(objj_backtrace_print) = function(/*Callable*/ aStream)
     {
         var frame = objj_backtrace[index];
 
-        stream(objj_debug_message_format(frame.receiver, frame.selector));
+        aStream(objj_debug_message_format(frame.receiver, frame.selector));
     }
 }
 
