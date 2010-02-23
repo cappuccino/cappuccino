@@ -238,7 +238,6 @@ if [ `uname` = "Darwin" ]; then
     echo "================================================================================"
     echo "Would you like to install the JavaScriptCore engine for Narwhal?"
     echo "This is optional but will make building and running Objective-J much faster."
-    echo "NOTE: this is currently broken on versions of OS X before 10.6."
     if prompt "yes"; then
         tusk $tusk_install_command narwhal-jsc
 
