@@ -206,11 +206,6 @@ StaticResource.prototype.children = function()
     return this._children;
 }
 
-StaticResource.prototype.type = function()
-{
-    return this._type;
-}
-
 StaticResource.prototype.parent = function()
 {
     return this._parent;
@@ -315,8 +310,7 @@ StaticResource.prototype.toString = function(/*BOOL*/ includeNotFounds)
     if (this.isNotFound())
         return "<file not found: " + this.name() + ">";
 
-    var string = this.parent() ? this.name() : "/",
-        type = this.type();
+    var string = this.parent() ? this.name() : "/";
 
     if (this.isDirectory())
     {
