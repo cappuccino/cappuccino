@@ -45,7 +45,17 @@ function ask_remove_dir () {
 function ask_append_shell_config () {
     config_string="$1"
 
-    shell_config_file=`sh shell_config_file.sh`
+    shell_config_file=""
+    # use order outlined by http://hayne.net/MacDev/Notes/unixFAQ.html#shellStartup
+    if [ -f "$HOME/.bash_profile" ]; then
+        shell_config_file="$HOME/.bash_profile"
+    elif [ -f "$HOME/.bash_login" ]; then
+        shell_config_file="$HOME/.bash_login"
+    elif [ -f "$HOME/.profile" ]; then
+        shell_config_file="$HOME/.profile"
+    elif [ -f "$HOME/.bashrc" ]; then
+        shell_config_file="$HOME/.bashrc"
+    fi
 
     echo "    \"$config_string\" will be appended to \"$shell_config_file\"."
     if prompt "no"; then

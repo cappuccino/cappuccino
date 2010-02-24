@@ -58,7 +58,7 @@ task ("sudo-install", ["CommonJS"], function()
     if (OS.system(["sudo", "tusk", "install", "--force", $BUILD_CJS_OBJECTIVE_J, $BUILD_CJS_CAPPUCCINO]))
     {
         // Attempt a hackish work-around for sudo compiled with the --with-secure-path option
-        if (OS.system("sudo bash -c 'source `sh shell_config_file.sh`; tusk install --force " + $BUILD_CJS_OBJECTIVE_J + " " + $BUILD_CJS_CAPPUCCINO + "'"))
+        if (OS.system("sudo bash -c 'source " + getShellConfigFile() + "; tusk install --force " + $BUILD_CJS_OBJECTIVE_J + " " + $BUILD_CJS_CAPPUCCINO + "'"))
             OS.exit(1); //rake abort if ($? != 0)
     }
 });
@@ -254,4 +254,20 @@ function buildCmd(arrayOfCommands)
     return arrayOfCommands.map(function(cmd) {
         return cmd.map(OS.enquote).join(" ");
     }).join(" && ");
+}
+
+function getShellConfigFile()
+{
+    var homeDir = SYSTEM.env["HOME"] + "/";
+    // use order outlined by http://hayne.net/MacDev/Notes/unixFAQ.html#shellStartup
+    var possibilities = [homeDir + ".bash_profile",
+                         homeDir + ".bash_login",
+                         homeDir + ".profile",
+                         homeDir + ".bashrc"];
+
+    for (var i = 0; i < possibilities.length; i++)
+    {
+        if (FILE.exists(possibilities[i]))
+            return possibilities[i];
+    }
 }
