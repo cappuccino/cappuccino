@@ -154,7 +154,7 @@
 
         var value = object[key];
     
-        if (recursively)
+        if (recursively && value != null)
         {
             if (value.constructor === Object)
                 value = [CPDictionary dictionaryWithJSObject:value recursively:YES];
