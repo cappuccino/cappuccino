@@ -886,6 +886,13 @@ var _CPMenuBarVisible               = NO,
                    subtype:0
                      data1:0
                      data2:0]];
+
+    // FIXME: We need to do this because this happens in a limitDateForMode:, thus
+    // the second limitDateForMode: won't take effect and the perform selector that
+    // actually draws also won't go into effect. In Safari this works because it sends
+    // an additional mouse move after all this, but not in other browsers.
+    // This will be fixed correctly with the coming run loop changes.
+    [_CPDisplayServer run];
 }
 
 /* @ignore */
@@ -980,13 +987,14 @@ var _CPMenuBarVisible               = NO,
 */
 - (void)_highlightItemAtIndex:(int)anIndex
 {
-    var previousHighlightedIndex = _highlightedIndex;
-    
+    if (_highlightedIndex === anIndex)
+        return;
+
+    if (_highlightedIndex !== CPNotFound)
+        [[_items[_highlightedIndex] _menuItemView] highlight:NO];
+
     _highlightedIndex = anIndex;
-    
-    if (previousHighlightedIndex !== CPNotFound)
-        [[_items[previousHighlightedIndex] _menuItemView] highlight:NO];
-    
+
     if (_highlightedIndex !== CPNotFound)
         [[_items[_highlightedIndex] _menuItemView] highlight:YES];
 }
