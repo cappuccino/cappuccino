@@ -188,47 +188,68 @@ task("test-only", function()
         OS.exit(code);
 });
 
-task("push-packages", ["CommonJS", "push-cappuccino", "push-objective-j"]);
+task("push-packages", ["push-cappuccino", "push-objective-j"]);
 
 task("push-cappuccino", function() {
     pushPackage(
         $BUILD_CJS_CAPPUCCINO,
-        "git@github.com:280north/cappuccino-package.git"
+        "git@github.com:280north/cappuccino-package.git",
+        SYSTEM.env["PACKAGE_BRANCH"]
     );
 });
 
 task("push-objective-j", function() {
     pushPackage(
         $BUILD_CJS_OBJECTIVE_J,
-        "git@github.com:280north/objective-j-package.git"
+        "git@github.com:280north/objective-j-package.git",
+        SYSTEM.env["PACKAGE_BRANCH"]
     );
 });
 
-function pushPackage(path, remote)
+function pushPackage(path, remote, branch)
 {
-    stream.print("Pushing \0blue(" + path + "\0) to \0blue(" + remote + "\0)");
+    branch = branch || "master";
+    
+    stream.print("Pushing \0blue(" + path + "\0) to "+branch+" of \0blue(" + remote + "\0)");
 
     FILE.mkdirs(".push-package");
 
     var pushPackageDir = FILE.join(".push-package", remote.replace(/[^\w]/g, "_"));
 
     if (FILE.exists(pushPackageDir))
-        OS.system(buildCommandString([["cd", pushPackageDir], ["git", "pull"]]));
+        OS.system(buildCmd([["cd", pushPackageDir], ["git", "fetch"]]));
     else
         OS.system(["git", "clone", remote, pushPackageDir]);
 
-    OS.system("cd "+OS.enquote(pushPackageDir)+" && git rm --ignore-unmatch -r * && rm -rf *");
-    OS.system("cp -R "+OS.enquote(path)+"/* "+OS.enquote(pushPackageDir)+"/.");
+    if (OS.system(buildCmd([["cd", pushPackageDir], ["git", "checkout", "origin/"+branch]]))) {
+        if (OS.system(buildCmd([
+            ["cd", pushPackageDir],
+            ["git", "symbolic-ref", "HEAD", "refs/heads/"+branch],
+            ["rm", ".git/index"],
+            ["git", "clean", "-fdx"]
+        ])))
+            throw "pushPackage failed";
+    }
 
-    OS.system(buildCommandString([
+    if (OS.system("cd "+OS.enquote(pushPackageDir)+" && git rm --ignore-unmatch -r * && rm -rf *"))
+        throw "pushPackage failed";
+    if (OS.system("cp -R "+OS.enquote(path)+"/* "+OS.enquote(pushPackageDir)+"/."))
+        throw "pushPackage failed";
+
+    OS.system(buildCmd([
         ["cd", pushPackageDir],
         ["git", "add", "."],
-        ["git", "commit", "-m", "Pushed on " + new Date()],
-        ["git", "push", "origin", "master"]
+        ["git", "commit", "-m", "Pushed on " + new Date()]
     ]));
+    
+    if (OS.system(buildCmd([
+        ["cd", pushPackageDir],
+        ["git", "push", "origin", "HEAD:"+branch]
+    ])))
+        throw "pushPackage failed";
 }
 
-function buildCommandString(arrayOfCommands)
+function buildCmd(arrayOfCommands)
 {
     return arrayOfCommands.map(function(cmd) {
         return cmd.map(OS.enquote).join(" ");

@@ -26,15 +26,19 @@ var cwd = FILE.cwd(),
 StaticResource.root = rootResource;
 
 #ifdef BROWSER
-if (rootResource.isResolved())
+
+exports.bootstrap = function()
 {
-    rootResource.nodeAtSubPath(FILE.dirname(cwd), YES);
-    resolveCWD();
-}
-else
-{
-    rootResource.resolve();
-    rootResource.addEventListener("resolve", resolveCWD);
+    if (rootResource.isResolved())
+    {
+        rootResource.nodeAtSubPath(FILE.dirname(cwd), YES);
+        resolveCWD();
+    }
+    else
+    {
+        rootResource.resolve();
+        rootResource.addEventListener("resolve", resolveCWD);
+    }
 }
 
 function resolveCWD()
@@ -76,4 +80,9 @@ afterDocumentLoad(function()
 {
     documentLoaded = YES;
 });
+
+
+if (typeof OBJJ_AUTO_BOOTSTRAP === "undefined" || OBJJ_AUTO_BOOTSTRAP)
+    exports.bootstrap();
+
 #endif

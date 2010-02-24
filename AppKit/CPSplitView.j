@@ -75,9 +75,9 @@ var CPSplitViewHorizontalImage = nil,
     if (self = [super initWithFrame:aFrame])
     {
         _currentDivider = CPNotFound;
-        
+
         _DOMDividerElements = [];
-        
+
         [self _setVertical:YES];
     }
     
@@ -102,9 +102,9 @@ var CPSplitViewHorizontalImage = nil,
     // Just re-adjust evenly.
     var frame = [self frame],
         dividerThickness = [self dividerThickness];
-    
+
     [self _postNotificationWillResize];
-    
+
     var eachSize = ROUND((frame.size[_sizeComponent] - dividerThickness * (_subviews.length - 1)) / _subviews.length),
         index = 0,
         count = _subviews.length;
@@ -115,9 +115,9 @@ var CPSplitViewHorizontalImage = nil,
     else
         for (; index < count; ++index)
             [_subviews[index] setFrame:CGRectMake(0, ROUND((eachSize + dividerThickness) * index), frame.size.width, eachSize)];
-    
+
     [self setNeedsDisplay:YES];
-    
+
     [self _postNotificationDidResize];
 
 }
@@ -170,9 +170,9 @@ var CPSplitViewHorizontalImage = nil,
 {
     var frame = [_subviews[aDivider] frame],
         rect = CGRectMakeZero();
-    
+
     rect.size = [self frame].size;
-    
+
     rect.size[_sizeComponent] = [self dividerThickness];
     rect.origin[_originComponent] = frame.origin[_originComponent] + frame.size[_sizeComponent];
 
@@ -182,19 +182,19 @@ var CPSplitViewHorizontalImage = nil,
 - (CGRect)effectiveRectOfDividerAtIndex:(int)aDivider
 {
     var realRect = [self rectOfDividerAtIndex:aDivider];
-    
+
     var padding = 2;
-    
+
     realRect.size[_sizeComponent] += padding * 2;
     realRect.origin[_originComponent] -= padding;
-    
+
     return realRect;
 }
 
 - (void)drawRect:(CGRect)rect
 {
     var count = [_subviews count] - 1;
-    
+
     while ((count--) > 0)
     {
         _drawingDivider = count;
@@ -208,7 +208,12 @@ var CPSplitViewHorizontalImage = nil,
     if (!_DOMDividerElements[_drawingDivider])
     {
         _DOMDividerElements[_drawingDivider] = document.createElement("div");
-        _DOMDividerElements[_drawingDivider].style.cursor = "move";
+
+        if(_isVertical)
+            _DOMDividerElements[_drawingDivider].style.cursor = [[CPCursor resizeLeftRightCursor] _cssString];
+        else
+            _DOMDividerElements[_drawingDivider].style.cursor = [[CPCursor resizeUpDownCursor] _cssString];
+        
         _DOMDividerElements[_drawingDivider].style.position = "absolute";
         _DOMDividerElements[_drawingDivider].style.backgroundRepeat = "repeat";
 
@@ -245,9 +250,9 @@ var CPSplitViewHorizontalImage = nil,
 {
     if (!_needsResizeSubviews)
         return;
-    
+
     _needsResizeSubviews = NO;
-        
+
     var subviews = [self subviews],
         count = subviews.length,
         oldSize = CGSizeMakeZero();
@@ -262,10 +267,10 @@ var CPSplitViewHorizontalImage = nil,
         oldSize.width = CGRectGetWidth([self frame]);
         oldSize.height += [self dividerThickness] * (count - 1);
     }
-        
+
     while (count--)
         oldSize[_sizeComponent] += [subviews[count] frame].size[_sizeComponent];
-    
+
     [self resizeSubviewsWithOldSize:oldSize];
 }
 
@@ -278,7 +283,7 @@ var CPSplitViewHorizontalImage = nil,
     
     if ([_delegate respondsToSelector:@selector(splitView:effectiveRect:forDrawnRect:ofDividerAtIndex:)])
         effectiveRect = [_delegate splitView:self effectiveRect:effectiveRect forDrawnRect:effectiveRect ofDividerAtIndex:anIndex];
-    
+
     if ([_delegate respondsToSelector:@selector(splitView:additionalEffectiveRectOfDividerAtIndex:)])
         additionalRect = [_delegate splitView:self additionalEffectiveRectOfDividerAtIndex:anIndex];
 
@@ -289,9 +294,9 @@ var CPSplitViewHorizontalImage = nil,
 {
     if ([self isHidden] || ![self hitTests] || !CGRectContainsPoint([self frame], aPoint))
         return nil;
-    
+
     var point = [self convertPoint:aPoint fromView:[self superview]];
-    
+
     var count = [_subviews count] - 1;
     for (var i = 0; i < count; i++)
     {
