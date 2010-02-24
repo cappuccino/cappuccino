@@ -69,7 +69,7 @@ var templatesDirectory = FILE.join(CAPP_HOME, "lib", "capp", "Resources", "Templ
 function gen(/*va_args*/)
 {
     var args = ["capp gen"].concat(Array.prototype.slice.call(arguments));
-    var options = parser.parse(args);
+    var options = parser.parse(args, null, null, true);
 
     if (options.args.length > 1) {
         parser.printUsage(options);
