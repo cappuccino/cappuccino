@@ -2,7 +2,7 @@ var FILE = require("file");
 var OBJJ = require("objective-j");
 var Context = require("interpreter").Context;
 
-function ObjectiveJRuntimeAnalyzer(rootPath)
+ObjectiveJRuntimeAnalyzer = function(rootPath)
 {
     this.rootPath = rootPath;
     this.context = new Context();
@@ -17,7 +17,7 @@ ObjectiveJRuntimeAnalyzer.prototype.setIncludePaths = function(includePaths) {
 }
 
 ObjectiveJRuntimeAnalyzer.prototype.setEnvironments = function(environments) {
-    this.require("objective-j").environments = function() { return environments; };
+    this.context.global.CFBundle.environments = function() { return environments; };
 }
 
 ObjectiveJRuntimeAnalyzer.prototype.initializeGlobalRecorder = function()
@@ -57,8 +57,8 @@ ObjectiveJRuntimeAnalyzer.prototype.initializeGlobalRecorder = function()
     }
 
     var _OBJJ = this.require("objective-j");
-    var _fileExecuterForPath = _OBJJ.fileExecuterForPath;
-    _OBJJ.fileExecuterForPath = function(/*String*/ referencePath) {
+    var _fileExecuterForPath = _OBJJ.Executable.fileExecuterForPath;
+    _OBJJ.Executable.fileExecuterForPath = function(/*String*/ referencePath) {
         var fileExecutor = _fileExecuterForPath.apply(this, arguments);
         return function(/*String*/ aPath, /*BOOL*/ isLocal, /*BOOL*/ shouldForce) {
             recordAndReset();
@@ -68,7 +68,7 @@ ObjectiveJRuntimeAnalyzer.prototype.initializeGlobalRecorder = function()
             // NOTE: we distinguish local and library imports using absolute and relative paths.
             // we resolve the library paths later (in "mergeLibraryImports()") since doing it here seems
             // to change the resulting recorded globals.
-            if (isLocal)
+            if (isLocal && !FILE.isAbsolute(aPath))
                 currentFile = FILE.normal(FILE.join(referencePath, aPath));
             else
                 currentFile = aPath;
@@ -88,7 +88,7 @@ ObjectiveJRuntimeAnalyzer.prototype.load = function(path)
 {
     this.require("objective-j").objj_eval(
         "("+(function(path) {
-            fileImporterForPath("/")(path, true, function() {
+            objj_importFile(path, true, function() {
                 print("Done importing and evaluating: " + path);
             });
         })+")"
@@ -330,25 +330,6 @@ function markFilesReferencedByTokens(tokens, globalsToFiles, referencedFiles) {
         }
     });
 }
-
-@implementation PressBundleDelgate : CPObject
-{
-    Function didFinishLoadingCallback;
-}
-- (id)initWithCallback:(Function)aCallback
-{
-    if (self = [super init]) {
-        didFinishLoadingCallback = aCallback;
-    }
-    return self;
-}
-- (void)bundleDidFinishLoading:(CPBundle)aBundle
-{
-    print("didFinishLoading: "+aBundle);
-    if (didFinishLoadingCallback)
-        didFinishLoadingCallback(aBundle);
-}
-@end
 
 // create a new scope loaded with Narwhal and Objective-J
 function setupObjectiveJ(context)

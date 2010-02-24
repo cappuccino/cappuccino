@@ -111,7 +111,7 @@ var CPURLConnectionDelegate = nil;
 
         request.send([aRequest HTTPBody]);
 
-        return [CPData dataWithEncodedString:request.responseText()];
+        return [CPData dataWithRawString:request.responseText()];
     }
     catch (anException)
     {

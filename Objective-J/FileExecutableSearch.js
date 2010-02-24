@@ -58,7 +58,7 @@ function FileExecutableSearch(/*String*/ aPath, /*BOOL*/ isLocal)
         });
     }
 
-    if (isLocal)
+    if (isLocal || FILE.isAbsolute(aPath))
         rootResource.resolveSubPath(aPath, NO, completed);
     else
         StaticResource.resolveStandardNodeAtPath(aPath, completed);

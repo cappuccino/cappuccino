@@ -457,7 +457,7 @@ CFBundle.dataContentsAtPath = function(/*String*/ aPath)
 {
     var data = new CFMutableData();
 
-    data.setEncodedString(rootResource.nodeAtSubPath(aPath).contents());
+    data.setRawString(rootResource.nodeAtSubPath(aPath).contents());
 
     return data;
 }

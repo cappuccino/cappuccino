@@ -159,7 +159,7 @@ function themeFromCibData(data)
 
     [templates makeObjectsPerformSelector:@selector(blendAddThemedObjectAttributesToTheme:) withObject:theme];
 
-    return [[CPKeyedArchiver archivedDataWithRootObject:theme] encodedString];
+    return [[CPKeyedArchiver archivedDataWithRootObject:theme] rawString];
 }
 
 @implementation CPCib (BlendAdditions)

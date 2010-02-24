@@ -57,14 +57,34 @@ var SharedMenuManager = nil;
        constraintRect:(CGRect)aRect
              callback:(Function)aCallback
 {
-    CPApp._activeMenu = [aMenuContainer menu];
+    var menu = [aMenuContainer menu];
+
+    CPApp._activeMenu = menu;
 
     _startTime = [anEvent timestamp];//new Date();
     _scrollingState = _CPMenuManagerScrollingStateNone;
 
     _constraintRect = aRect;
-    _trackingCallback = aCallback;
     _menuContainerStack = [aMenuContainer];
+    _trackingCallback = aCallback;
+
+    if (menu === [CPApp mainMenu])
+    {
+        var globalLocation = [anEvent globalLocation];
+
+        // Find which menu window the mouse is currently on top of
+        var menuLocation = [aMenuContainer convertGlobalToBase:globalLocation];
+
+        // Find out the item the mouse is currently on top of
+        var activeItemIndex = [aMenuContainer itemIndexAtPoint:menuLocation],
+            activeItem = activeItemIndex !== CPNotFound ? [menu itemAtIndex:activeItemIndex] : nil;
+
+        _menuBarButtonItemIndex = activeItemIndex;
+        _menuBarButtonMenuContainer = aMenuContainer;
+
+        if ([activeItem _isMenuBarButton])
+            return [self trackMenuBarButtonEvent:anEvent];
+    }
 
     [self trackEvent:anEvent];
 }
@@ -76,32 +96,7 @@ var SharedMenuManager = nil;
 
     // Close Menu Event.
     if (type === CPAppKitDefined)
-    {
-        // Stop all periodic events at this point.
-        [CPEvent stopPeriodicEvents];
-
-        // Get the highlighted item from the original menu.
-        var highlightedItem = [trackingMenu highlightedItem];
-
-        // Hide all submenus.
-        [self showMenu:nil fromMenu:trackingMenu atPoint:nil];
-
-        var delegate = [trackingMenu delegate];
-
-        if ([delegate respondsToSelector:@selector(menuDidClose:)])
-            [delegate menuDidClose:trackingMenu];
-
-        if (_trackingCallback)
-            _trackingCallback([self trackingMenuContainer], trackingMenu);
-
-        [[CPNotificationCenter defaultCenter]
-            postNotificationName:CPMenuDidEndTrackingNotification
-                          object:trackingMenu];
-
-        CPApp._activeMenu = nil;
-
-        return;
-    }
+        return [self completeTracking]
 
     [CPApp setTarget:self selector:@selector(trackEvent:) forNextEventMatchingMask:CPPeriodicMask | CPMouseMovedMask | CPLeftMouseDraggedMask | CPLeftMouseUpMask | CPAppKitDefinedMask untilDate:nil inMode:nil dequeue:YES];
 
@@ -121,7 +116,7 @@ var SharedMenuManager = nil;
         activeItem = activeItemIndex !== CPNotFound ? [activeMenu itemAtIndex:activeItemIndex] : nil;
 
     // If the item isn't enabled its as if we clicked on nothing.
-    if (![activeItem isEnabled])
+    if (![activeItem isEnabled] || [activeItem _isMenuBarButton])
     {
         activeItemIndex = CPNotFound;
         activeItem = nil;
@@ -217,6 +212,59 @@ var SharedMenuManager = nil;
         [self showMenu:nil fromMenu:activeMenu atPoint:CGPointMakeZero()];
 }
 
+- (void)trackMenuBarButtonEvent:(CPEvent)anEvent
+{
+    var type = [anEvent type];
+
+    if (type === CPAppKitDefined)
+        return [self completeTracking];
+
+    var globalLocation = [anEvent globalLocation];
+
+    // Find which menu window the mouse is currently on top of
+    var menu = [self trackingMenu],
+        trackingMenuContainer = [self trackingMenuContainer],
+        menuLocation = [trackingMenuContainer convertGlobalToBase:globalLocation];
+
+    if ([trackingMenuContainer itemIndexAtPoint:menuLocation] === _menuBarButtonItemIndex)
+        [menu _highlightItemAtIndex:_menuBarButtonItemIndex];
+
+    else
+        [menu _highlightItemAtIndex:CPNotFound];
+
+    [CPApp setTarget:self selector:@selector(trackMenuBarButtonEvent:) forNextEventMatchingMask:CPPeriodicMask | CPMouseMovedMask | CPLeftMouseDraggedMask | CPLeftMouseUpMask | CPAppKitDefinedMask untilDate:nil inMode:nil dequeue:YES];
+
+    if (type === CPLeftMouseUp)
+        [menu cancelTracking];
+}
+
+- (void)completeTracking
+{
+    var trackingMenu = [self trackingMenu];
+
+    // Stop all periodic events at this point.
+    [CPEvent stopPeriodicEvents];
+
+    // Get the highlighted item from the original menu.
+    var highlightedItem = [trackingMenu highlightedItem];
+
+    // Hide all submenus.
+    [self showMenu:nil fromMenu:trackingMenu atPoint:nil];
+
+    var delegate = [trackingMenu delegate];
+
+    if ([delegate respondsToSelector:@selector(menuDidClose:)])
+        [delegate menuDidClose:trackingMenu];
+
+    if (_trackingCallback)
+        _trackingCallback([self trackingMenuContainer], trackingMenu);
+
+    [[CPNotificationCenter defaultCenter]
+        postNotificationName:CPMenuDidEndTrackingNotification
+                      object:trackingMenu];
+
+    CPApp._activeMenu = nil;
+}
 
 - (id)menuContainerForPoint:(float)aGlobalLocation
 {

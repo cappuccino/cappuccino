@@ -147,7 +147,7 @@ var _CPKeyedArchiverStringClass                         = Nil,
 */
 + (CPData)archivedDataWithRootObject:(id)anObject
 {
-    var data = [CPData dataWithSerializedPlistObject:nil],
+    var data = [CPData dataWithPlistObject:nil],
         archiver = [[self alloc] initForWritingWithMutableData:data];
     
     [archiver encodeObject:anObject forKey:@"root"];
@@ -222,7 +222,7 @@ var _CPKeyedArchiverStringClass                         = Nil,
     [_plistObject setObject:[self className] forKey:_CPKeyedArchiverArchiverKey];
     [_plistObject setObject:@"100000" forKey:_CPKeyedArchiverVersionKey];
     
-    [_data setSerializedPlistObject:_plistObject];
+    [_data setPlistObject:_plistObject];
 
     if (_delegate && _delegateSelectors & _CPKeyedArchiverDidFinishSelector)
         [_delegate archiverDidFinish:self];

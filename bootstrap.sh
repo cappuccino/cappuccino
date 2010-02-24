@@ -1,6 +1,16 @@
 #!/usr/bin/env bash
 
 function prompt () {
+    if [ "$noprompt" ] && [ "$#" = "1" ]; then
+        if [ "$1" = "yes" ]; then
+            echo "DEFAULT: yes"
+            return 0
+        else
+            echo "DEFAULT: no"
+            return 1
+        fi
+    fi
+
     while true; do
         echo "Enter \"yes\" or \"no\": "
         read response
@@ -26,7 +36,7 @@ function ask_remove_dir () {
         echo "Found an existing Narwhal/Cappuccino installation, $dir. Remove it automatically now?"
         echo "WARNING: the ENTIRE directory, $dir, will be removed (i.e. 'rm -rf $dir')."
         echo "Be sure this is correct. Custom modifications and installed packages WILL BE DELETED."
-        if prompt; then
+        if prompt "no"; then
             rm -rf "$dir"
         fi
     fi
@@ -38,7 +48,7 @@ function ask_append_shell_config () {
     shell_config_file=`sh shell_config_file.sh`
 
     echo "    \"$config_string\" will be appended to \"$shell_config_file\"."
-    if prompt; then
+    if prompt "no"; then
         if [ "$shell_config_file" ]; then
             echo >> "$shell_config_file"
             echo "$config_string" >> "$shell_config_file"
@@ -58,17 +68,39 @@ function check_and_exit () {
     fi
 }
 
-if [ "--clone" = "$1" ]; then
-    tusk_install_command="clone"
-    git_clone=1
-else
-    tusk_install_command="install"
-fi
-
-github_project="280north-narwhal"
-github_path=$(echo "$github_project" | tr '-' '/')
-install_directory="/usr/local/narwhal"
+default_directory="/usr/local/narwhal"
+install_directory=""
 tmp_zip="/tmp/narwhal.zip"
+
+github_user="280north"
+github_ref="master"
+tusk_install_command="install"
+
+noprompt=""
+
+while [ $# -gt 0 ]; do
+    case "$1" in
+        --noprompt)     noprompt="yes";;
+        --directory)    install_directory="$2"; shift;;
+        --clone)        tusk_install_command="clone";;
+        --github-user)  github_user="$2"; shift;;
+        --github-ref)   github_ref="$2"; shift;;
+        *)              cat >&2 <<-EOT
+usage: ./bootstrap.sh [OPTIONS]
+
+    --noprompt:             Don't prompt, use relatively safe defaults.
+    --directory [DIR]:      Use a directory other than /usr/local/narwhal.
+    --clone:                Do "git clone" instead of downloading zips.
+    --github-user [USER]:   Use another github user (default: 280north).
+    --github-ref [REF]:     Use another git ref (default: master).
+EOT
+                        exit 1;;
+    esac
+    shift
+done
+
+github_project="$github_user-narwhal"
+github_path=$(echo "$github_project" | tr '-' '/')
 
 unset NARWHAL_ENGINE
 
@@ -96,43 +128,62 @@ install_narwhal=""
 if which "narwhal" > /dev/null; then
     dir=$(dirname -- "$(dirname -- $(which "narwhal"))")
     echo "Using Narwhal installation at \"$dir\". Is this correct?"
-    if ! prompt; then
+    if ! prompt "no"; then
         echo "================================================================================"
         echo "Narwhal JavaScript platform is required. Install it automatically now?"
-        if prompt; then
+        if prompt "yes"; then
             install_narwhal="yes"
         fi
     fi
 else
     echo "================================================================================"
     echo "Narwhal JavaScript platform is required. Install it automatically now?"
-    if prompt; then
+    if prompt "yes"; then
         install_narwhal="yes"
     fi
 fi
 
 if [ "$install_narwhal" ]; then
-    echo "================================================================================"
-    echo "To use the default location, \"$install_directory\", just hit enter/return, or enter another path:"
-    read input
-    if [ "$input" ]; then
-        install_directory="`cd \`dirname "$input"\`; pwd`/`basename "$input"`"
+    if [ ! "$install_directory" ]; then
+        echo "================================================================================"
+        echo "To use the default location, \"$default_directory\", just hit enter/return, or enter another path:"
+        if [ "$noprompt" ]; then
+            input=""
+        else
+            read input
+        fi
+        if [ "$input" ]; then
+            install_directory="`cd \`dirname "$input"\`; pwd`/`basename "$input"`"
+        else
+            install_directory="$default_directory"
+        fi
+    fi
+
+    # absolutify
+    install_directory="$(cd "$(dirname "$install_directory")" && echo "$(pwd)/$(basename "$install_directory")")"
+
+    if [ ! -d "$(dirname "$install_directory")" ]; then
+        echo "Error: parent directory of $install_directory does not exist"
+        exit 1
     fi
 
     if [ -d "$install_directory" ]; then
         echo "================================================================================"
         echo "Directory exists at $install_directory. Delete it?"
-        if prompt; then
+        if prompt "no"; then
             rm -rf "$install_directory"
+        else
+            exit 1
         fi
     fi
 
-    if [ "$git_clone" ]; then
+    if [ "$tusk_install_command" = "clone" ]; then
         git_repo="git://github.com/$github_path.git"
         echo "Cloning Narwhal from \"$git_repo\"..."
         git clone "$git_repo" "$install_directory"
+        (cd "$install_directory" && git checkout "origin/$github_ref")
     else
-        zip_ball="http://github.com/$github_path/zipball/master"
+        zip_ball="http://github.com/$github_path/zipball/$github_ref"
 
         echo "Downloading Narwhal from \"$zip_ball\"..."
         curl -L -o "$tmp_zip" "$zip_ball"
@@ -162,7 +213,7 @@ install_directory=$(dirname -- "$(dirname -- "$(which narwhal)")")
 
 echo "================================================================================"
 echo "Using Narwhal installation at \"$install_directory\". Is this correct?"
-if ! prompt; then
+if ! prompt "yes"; then
     exit 1
 fi
 
@@ -187,8 +238,7 @@ if [ `uname` = "Darwin" ]; then
     echo "================================================================================"
     echo "Would you like to install the JavaScriptCore engine for Narwhal?"
     echo "This is optional but will make building and running Objective-J much faster."
-    echo "NOTE: this is currently broken on versions of OS X before 10.6."
-    if prompt; then
+    if prompt "yes"; then
         tusk $tusk_install_command narwhal-jsc
 
         if ! (cd "$install_directory/packages/narwhal-jsc" && make webkit); then
@@ -196,7 +246,7 @@ if [ `uname` = "Darwin" ]; then
             echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
             echo "WARNING: building narwhal-jsc failed. Hit enter to continue."
             echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
-            read
+            # read
         elif ! [ "$NARWHAL_ENGINE" = "jsc" ]; then
             echo "================================================================================"
             echo "Rhino is the default Narwhal engine, should we change the default to JavaScriptCore for you?"
@@ -224,7 +274,7 @@ if [ "$CAPP_BUILD" ]; then
     if [ -d "$CAPP_BUILD" ]; then
         echo "================================================================================"
         echo "An existing \$CAPP_BUILD directory at \"$CAPP_BUILD\" exists. The previous build may be incompatible. Remove it automatically now?"
-        if prompt; then
+        if prompt "no"; then
             rm -rf "$CAPP_BUILD"
         fi
     fi

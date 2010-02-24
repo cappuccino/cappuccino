@@ -1095,6 +1095,11 @@ var TOP_MARGIN      = 5.0,
     [_labelField setTextShadowColor:[self FIXME_labelShadowColor]];
 }
 
+- (void)sendAction:(SEL)anAction to:(id)aSender
+{
+    [CPApp sendAction:anAction to:aSender from:_toolbarItem];
+}
+
 - (void)observeValueForKeyPath:(CPString)aKeyPath
                       ofObject:(id)anObject
                         change:(CPDictionary)aChange

@@ -24,6 +24,7 @@
 @import "CGGeometry.j"
 
 @import "CPControl.j"
+@import "CPStringDrawing.j"
 
 #include "CoreGraphics/CGGeometry.h"
 

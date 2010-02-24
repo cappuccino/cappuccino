@@ -155,24 +155,6 @@ var _CPMenuItemSelectionColor                   = nil,
         [_view highlight:shouldHighlight];
 }
 
-- (void)activate:(BOOL)shouldActivate
-{
-    [_imageAndTextView setImage:[_menuItem image]];
-    
-    if (shouldActivate)
-    {
-        [_imageAndTextView setTextColor:[self activateColor] || [CPColor whiteColor]];
-        [_imageAndTextView setTextShadowColor:[self activateShadowColor] || [CPColor blackColor]];
-        [_submenuView setColor:[self activateColor] || [CPColor whiteColor]];
-    }
-    else
-    {
-        [_imageAndTextView setTextColor:[self textColor]];
-        [_imageAndTextView setTextShadowColor:[self textShadowColor]];
-        [_submenuView setColor:[self textColor]];
-    }
-}
-
 - (BOOL)eventOnSubmenu:(CPEvent)anEvent
 {
     if (![_menuItem hasSubmenu])
