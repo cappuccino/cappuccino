@@ -71,6 +71,11 @@ function gen(/*va_args*/)
     var args = ["capp gen"].concat(Array.prototype.slice.call(arguments));
     var options = parser.parse(args);
 
+    if (options.args.length > 1) {
+        parser.printUsage(options);
+        OS.exit(1);
+    }
+
     if (options.listTemplates) {
         listTemplates();
         return;
