@@ -405,7 +405,8 @@ var CPSplitViewHorizontalImage = nil,
 
 - (void)viewDidMoveToWindow
 {
-    [[self window] setAcceptsMouseMovedEvents:YES];
+    // Enable split view resize cursors. Commented out pending CPTrackingArea implementation.
+    //[[self window] setAcceptsMouseMovedEvents:YES];
 }
 
 - (void)mouseEntered:(CPEvent)anEvent
