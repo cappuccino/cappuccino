@@ -132,7 +132,7 @@ CPURLCustomIconKey                  = @"CPURLCustomIconKey";
     return URI_RE.test(str) ? (parse(str).domain || nil) : nil;
 }
 
-- (CPString)port
+- (Number)port
 {
     var str = [self absoluteString];
     if (URI_RE.test(str)) {

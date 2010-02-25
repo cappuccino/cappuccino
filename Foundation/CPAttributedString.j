@@ -750,8 +750,8 @@
 }
 
 //Private methods
-- (void)_indexOfRangeEntryForIndex:(unsigned)characterIndex splitOnMaxIndex:(BOOL)split
-{    
+- (Number)_indexOfRangeEntryForIndex:(unsigned)characterIndex splitOnMaxIndex:(BOOL)split
+{
     var index = [self _indexOfEntryWithIndex:characterIndex];
     
     if (index < 0)

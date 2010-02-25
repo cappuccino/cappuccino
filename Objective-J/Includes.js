@@ -41,7 +41,7 @@
 #include "FileExecutable.js"
 #include "FileExecutableSearch.js"
 #include "Runtime.js"
-#if DEBUG
+#if defined(DEBUG) || defined(COMMONJS)
 #include "Debug.js"
 #endif
 #include "Bootstrap.js"
