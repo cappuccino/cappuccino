@@ -25,7 +25,6 @@
 @import "CPNull.j"
 @import "CPObject.j"
 
-
 var CPObjectAccessorsForClass   = nil,
     CPObjectModifiersForClass   = nil;
 
@@ -278,4 +277,5 @@ CPUnknownUserInfoKey        = @"CPUnknownUserInfoKey";
 
 @end
 
+@import "CPKeyValueObserving.j"
 @import "CPArray+KVO.j"
