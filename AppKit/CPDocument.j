@@ -888,8 +888,7 @@ var CPDocumentUntitledCount = 0;
     [_canCloseAlert setDelegate:self];
     [_canCloseAlert setAlertStyle:CPWarningAlertStyle];
     [_canCloseAlert setTitle:@"Unsaved Document"];
-    [_canCloseAlert setMessageText:sprintf(@"Do you want to save the changes you've made to the document \"%@\"?", 
-                                        [self displayName] || [self fileName])];
+    [_canCloseAlert setMessageText:@"Do you want to save the changes you've made to the document \"" + ([self displayName] || [self fileName]) + "\"?"];
 
     [_canCloseAlert addButtonWithTitle:@"Save"];
     [_canCloseAlert addButtonWithTitle:@"Cancel"];
