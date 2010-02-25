@@ -3,9 +3,8 @@
 require("narwhal").ensureEngine("rhino");
 
 @import <Foundation/Foundation.j>
-@import <AppKit/AppKit.j>
 
-@import "../press/objj-analysis-tools.j"
+@import "../lib/cappuccino/objj-analysis-tools.j"
 
 var FILE = require("file");
 

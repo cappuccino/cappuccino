@@ -73,7 +73,8 @@ new FileList("CommonJS/**/*").forEach(function(aFilename)
                 buildFilename,
                 environmentFlags("CommonJS", "ObjJ").concat($INCLUDE_FLAGS, $DEBUG_FLAGS), false);
     });
-        
+
+    // HACK: narwhal should copy permissions
     if (FILE.dirname(aFilename) === FILE.join("CommonJS", "bin"))
     {
         filedir (buildFilename, function ()

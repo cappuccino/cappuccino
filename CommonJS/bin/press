@@ -1,10 +1,11 @@
+#!/usr/bin/env objj
+
 require("narwhal").ensureEngine("rhino");
 
 @import <Foundation/Foundation.j>
-@import <AppKit/AppKit.j>
 
-@import "objj-analysis-tools.j"
-@import "cib-analysis-tools.j"
+@import "../lib/cappuccino/objj-analysis-tools.j"
+@import "../lib/cappuccino/cib-analysis-tools.j"
 
 var FILE = require("file");
 var OS = require("os");
