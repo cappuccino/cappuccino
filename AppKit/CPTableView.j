@@ -2077,7 +2077,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
             {
                 if (!isButton)
                     _editingCellIndex = undefined;
-                
+
                 if (isTextField)
                 {
                     [dataView setEditable:YES];
@@ -2085,7 +2085,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
                     [dataView setSelectable:YES];
                     [dataView selectText:nil]; // Doesn't seem to actually work (yet?).
                 }
-                
+
                 [dataView setTarget:self];
                 [dataView setAction:@selector(_commitDataViewObjectValue:)];
                 dataView.tableViewEditedColumnObj = tableColumn;
