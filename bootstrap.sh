@@ -78,7 +78,12 @@ function check_and_exit () {
     fi
 }
 
-default_directory="/usr/local/narwhal"
+if [ -w "/usr/local" ]; then
+    default_directory="/usr/local/narwhal"
+else
+    default_directory="$HOME/narwhal"
+fi
+
 install_directory=""
 tmp_zip="/tmp/narwhal.zip"
 
@@ -113,6 +118,8 @@ github_project="$github_user-narwhal"
 github_path=$(echo "$github_project" | tr '-' '/')
 
 unset NARWHAL_ENGINE
+unset SEA
+unset SEALVL
 
 PATH_SAVED="$PATH"
 
