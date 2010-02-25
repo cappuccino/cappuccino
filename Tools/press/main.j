@@ -81,11 +81,15 @@ function press(rootPath, outputPath, options) {
     stream.print("Application root:    \0green(" + rootPath + "\0)");
     stream.print("Output directory:    \0green(" + outputPath + "\0)");
 
-    var outputFiles = {};
+    var outputFiles = {},
+        totalBytes = {executable:0, data:0, mhtml:0};
 
     // analyze and gather files for each environment:
     options.environments.forEach(function(environment) {
-        pressEnvironment(rootPath, outputFiles, environment, options);
+        var returnedBytes = pressEnvironment(rootPath, outputFiles, environment, options);
+
+        for (var i in returnedBytes)
+            totalBytes[i] += returnedBytes[i];
     });
 
     // phase 4: copy everything and write out the new files
@@ -109,6 +113,34 @@ function press(rootPath, outputPath, options) {
 
         FILE.write(file, outputFiles[path], { charset : "UTF-8" });
     }
+
+    // phase 4a: update the info.plist to contain meta information about the app
+    stream.print("\0red(PHASE 4a:\0) Add application size data to Info.plist");
+
+    var outputInfoPlistPath = FILE.join(outputPath, "Info.plist"),
+        outputInfoPlistContents = FILE.read(outputInfoPlistPath, { charset:"UTF-8" }),
+        format = CFPropertyList.sniffedFormatOfString(outputInfoPlistContents),
+        outputInfoPlist = CFPropertyList.propertyListFromString(outputInfoPlistContents);
+
+    // read in the default theme name, and attempt to get its size
+    var themeName = outputInfoPlist.valueForKey("CPDefaultTheme") || "Aristo",
+        themePath = FILE.join(outputPath, options.frameworks, "AppKit", "Resources", themeName+".blend");
+
+    if (FILE.exists(themePath))
+    {
+        var themeEnvPath = FILE.join(themePath, options.environments[0] + ".environment"),
+            themeExecutablePath = FILE.join(themeEnvPath, themeName+".blend.sj"),
+            themeDataPath = FILE.join(themeEnvPath, "dataURLs.txt"),
+            themeMHTMLPath = FILE.join(themeEnvPath, "MHTMLPaths.txt");
+
+        totalBytes.executable += FILE.read(themeExecutablePath, {charset : "UTF-8"}).length;
+        totalBytes.data += FILE.read(themeDataPath, {charset : "UTF-8"}).length;
+        totalBytes.mhtml += FILE.read(themeMHTMLPath, {charset : "UTF-8"}).length;
+    }
+
+    outputInfoPlist.setValueForKey("CPApplicationSize", [CPDictionary dictionaryWithJSObject:totalBytes]);
+
+    FILE.write(outputInfoPlistPath, CFPropertyList.stringFromPropertyList(outputInfoPlist, format), { charset:"UTF-8" });
 
     // strip known unnecessary files
     // outputPath.glob("**/Frameworks/Debug").forEach(function(debugFramework) {
@@ -193,7 +225,7 @@ function pressEnvironment(rootPath, outputFiles, environment, options) {
     });
 
     var included = 0, total = 0;
-    var includedBytes = 0, totalBytes = 0;
+    var includedBytes = 0, totalBytes = 0, dataBytes = 0, mhtmlBytes = 0;
 
     _OBJJ.FileExecutable.allFileExecutables().forEach(function(aFileExecutable) {
         var path = aFileExecutable.path();
@@ -223,6 +255,8 @@ function pressEnvironment(rootPath, outputFiles, environment, options) {
 
     // phase 3b: rebuild .sj files with correct imports, copy .j files
     stream.print("\0red(PHASE 3b:\0) Rebuild .sj files");
+
+    var processedBundles = {};
 
     for (var path in requiredFiles)
     {
@@ -289,10 +323,25 @@ function pressEnvironment(rootPath, outputFiles, environment, options) {
             {
                 stream.print("Passing .j through: \0green(" + rootPath.relative(path) + "\0)");
             }
+
+            if (!processedBundles[bundle.path()] && bundle.hasSpritedImages())
+            {
+                processedBundles[bundle.path()] = bundle;
+                stream.print("Sizing bundle's sprited resources \0green(" + bundle.path() + "\0)");
+
+                var bundlePath = FILE.join(bundle.path(), environment+".environment"),
+                    bundleDataPath = FILE.join(bundlePath, "dataURLs.txt"),
+                    bundleMHTMLPath = FILE.join(bundlePath, "MHTMLPaths.txt");
+
+                dataBytes += FILE.read(bundleDataPath, {charset : "UTF-8"}).length;
+                mhtmlBytes += FILE.read(bundleMHTMLPath, {charset : "UTF-8"}).length;
+            }
         }
         else
             CPLog.warn("No bundle (or info dictionary for) " + rootPath.relative(path));
     }
+
+    return {executable:includedBytes, data:dataBytes, mhtml:mhtmlBytes};
 }
 
 function pngcrushDirectory(directory) {

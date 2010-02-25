@@ -29,7 +29,9 @@ var CFBundleUnloaded                = 0,
 
 var CFBundlesForPaths   = { },
     CFBundlesForClasses = { },
-    CFCacheBuster = new Date().getTime();
+    CFCacheBuster       = new Date().getTime(),
+    CFTotalBytesLoaded  = 0,
+    CPApplicationSizeInBytes = 0;
 
 GLOBAL(CFBundle) = function(/*String*/ aPath)
 {
@@ -220,6 +222,9 @@ CFBundle.prototype.load = function(/*BOOL*/ shouldExecute)
                 return;
             }
 
+            if (self === CFBundle.mainBundle() && self.valueForInfoDictionary("CPApplicationSize"))
+                CPApplicationSizeInBytes = self.valueForInfoDictionary("CPApplicationSize").valueForKey("executable") || 0;
+
             loadExecutableAndResources(self, shouldExecute);
         }
 
@@ -274,6 +279,12 @@ function loadExecutableAndResources(/*Bundle*/ aBundle, /*BOOL*/ shouldExecute)
 
     function success()
     {
+        if ((typeof CPApp === "undefined" || !CPApp || !CPApp._finishedLaunching) && 
+             typeof OBJJ_PROGRESS_CALLBACK === "function" && CPApplicationSizeInBytes)
+        {
+            OBJJ_PROGRESS_CALLBACK(MAX(MIN(1.0, CFTotalBytesLoaded / CPApplicationSizeInBytes), 0.0), CPApplicationSizeInBytes, aBundle.path())
+        }
+
         if (aBundle._loadStatus === CFBundleLoading)
             aBundle._loadStatus = CFBundleLoaded;
         else
@@ -285,13 +296,13 @@ function loadExecutableAndResources(/*Bundle*/ aBundle, /*BOOL*/ shouldExecute)
 
         function complete()
         {
+
             aBundle._eventDispatcher.dispatchEvent(
             {
                 type:"load",
                 bundle:aBundle
             });
         }
-
         if (shouldExecute)
             executeBundle(aBundle, complete);
         else
@@ -310,6 +321,7 @@ function loadExecutableForBundle(/*Bundle*/ aBundle, success, failure)
     {
         try
         {
+            CFTotalBytesLoaded += anEvent.request.responseText().length;
             decompileStaticFile(aBundle, anEvent.request.responseText(), aBundle.executablePath());
             aBundle._loadStatus &= ~CFBundleLoadingExecutable;
             success();
@@ -346,6 +358,7 @@ function loadSpritedImagesForBundle(/*Bundle*/ aBundle, success, failure)
     {
         try
         {
+            CFTotalBytesLoaded += anEvent.request.responseText().length;
             decompileStaticFile(aBundle, anEvent.request.responseText(), spritedImagesPath);
             aBundle._loadStatus &= ~CFBundleLoadingSpritedImages;
             success();
@@ -378,6 +391,29 @@ function CFBundleTestSpriteSupport(/*String*/ MHTMLPath, /*Function*/ aCallback)
 
     if (CFBundleSpriteSupportListeners.length > 1)
         return;
+
+    CFBundleSpriteSupportListeners.push(function()
+    {
+        var size = 0,
+            sizeDictionary = CFBundle.mainBundle().valueForInfoDictionary("CPApplicationSize");
+
+        if (!sizeDictionary)
+            return;
+
+        switch (CFBundleSupportedSpriteType)
+        {
+            case CFBundleDataURLSpriteType:
+                size = sizeDictionary.valueForKey("data");
+                break;
+
+            case CFBundleMHTMLSpriteType:
+            case CFBundleMHTMLUncachedSpriteType:
+                size = sizeDictionary.valueForKey("mhtml");
+                break;
+        }
+
+        CPApplicationSizeInBytes += size;
+    })
 
     CFBundleTestSpriteTypes([
         CFBundleDataURLSpriteType,
