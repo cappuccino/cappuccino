@@ -22,7 +22,7 @@
 
 var FileExecutablesForPaths = { };
 
-function FileExecutable(/*String*/ aPath)
+function FileExecutable(/*String*/ aPath, /*Executable*/ anExecutable)
 {
     var existingFileExecutable = FileExecutablesForPaths[aPath];
 
@@ -35,7 +35,10 @@ function FileExecutable(/*String*/ aPath)
         executable = NULL,
         extension = FILE.extension(aPath);
 
-    if (fileContents.match(/^@STATIC;/))
+    if (anExecutable)
+        executable = anExecutable;
+
+    else if (fileContents.match(/^@STATIC;/))
         executable = decompile(fileContents, aPath);
 
     else if (extension === ".j" || extension === "")
