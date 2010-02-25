@@ -371,8 +371,8 @@ var _CPTableColumnHeaderViewStringValueKey = @"_CPTableColumnHeaderViewStringVal
 
 - (void)viewDidMoveToWindow
 {
-    if ([_tableView allowsColumnResizing])
-        [[self window] setAcceptsMouseMovedEvents:YES];
+    //if ([_tableView allowsColumnResizing])
+    //    [[self window] setAcceptsMouseMovedEvents:YES];
 }
 
 - (void)mouseEntered:(CPEvent)theEvent

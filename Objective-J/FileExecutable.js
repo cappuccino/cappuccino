@@ -22,7 +22,7 @@
 
 var FileExecutablesForURLStrings = { };
 
-function FileExecutable(/*CFURL*/ aURL)
+function FileExecutable(/*CFURL*/ aURL, /*Executable*/ anExecutable)
 {
 if (!aURL._path) aURL = new CFURL(aURL);
     var URLString = aURL.absoluteString(),
@@ -37,7 +37,10 @@ if (!aURL._path) aURL = new CFURL(aURL);
         executable = NULL,
         extension = aURL.pathExtension();
 
-    if (fileContents.match(/^@STATIC;/))
+    if (anExecutable)
+        executable = anExecutable;
+
+    else if (fileContents.match(/^@STATIC;/))
         executable = decompile(fileContents, aURL);
 
     else if (extension === "j" || !extension)

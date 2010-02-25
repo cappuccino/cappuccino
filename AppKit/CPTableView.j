@@ -2054,6 +2054,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
         {
             var row = rowArray[rowIndex],
                 dataView = [self _newDataViewForRow:row tableColumn:tableColumn],
+                isButton = [dataView isKindOfClass:[CPButton class]],
                 isTextField = [dataView isKindOfClass:[CPTextField class]];
 
             [dataView setFrame:[self frameOfDataViewAtColumn:column row:row]];
@@ -2072,20 +2073,26 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 
             _dataViewsForTableColumns[tableColumnUID][row] = dataView;
 
-            if (_editingCellIndex && _editingCellIndex.x === column && _editingCellIndex.y === row) {
-                _editingCellIndex = undefined;
+            if (isButton || (_editingCellIndex && _editingCellIndex.x === column && _editingCellIndex.y === row))
+            {
+                if (!isButton)
+                    _editingCellIndex = undefined;
 
-                if (isTextField) {
+                if (isTextField)
+                {
                     [dataView setEditable:YES];
                     [dataView setSendsActionOnEndEditing:YES];
                     [dataView setSelectable:YES];
                     [dataView selectText:nil]; // Doesn't seem to actually work (yet?).
                 }
+
                 [dataView setTarget:self];
                 [dataView setAction:@selector(_commitDataViewObjectValue:)];
                 dataView.tableViewEditedColumnObj = tableColumn;
                 dataView.tableViewEditedRowIndex = row;
-            } else if (isTextField) {
+            }
+            else if (isTextField)
+            {
                 [dataView setEditable:NO];
                 [dataView setSelectable:NO];
             }
@@ -2684,7 +2691,6 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
                 rowIndex = [self rowAtPoint:aPoint];
                 if (rowIndex !== -1)
                 {
-
                     if (_implementedDelegateMethods & CPTableViewDelegate_tableView_shouldEditTableColumn_row_)
                         shouldEdit = [_delegate tableView:self shouldEditTableColumn:column row:rowIndex];
                     if (shouldEdit)

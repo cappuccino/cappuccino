@@ -62,6 +62,8 @@ function resolveCWD()
     });
 }
 
+var documentLoaded = NO;
+
 function afterDocumentLoad(/*Function*/ aFunction)
 {
     if (documentLoaded)
@@ -73,8 +75,6 @@ function afterDocumentLoad(/*Function*/ aFunction)
     else if (window.attachEvent)
         window.attachEvent("onload", aFunction);
 }
-
-var documentLoaded = NO;
 
 afterDocumentLoad(function()
 {
