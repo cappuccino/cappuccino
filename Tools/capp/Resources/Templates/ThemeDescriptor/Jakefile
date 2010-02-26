@@ -24,5 +24,21 @@ blend ("__project.nameasidentifier__.blend", function(__project.nameasidentifier
     __project.nameasidentifier__Task.setResources(new FileList("Resources/*"));
 });
 
-task ("build", ["__project.nameasidentifier__.blend"]);
-task ("default", ["build"]);
+task ("default", ["__project.nameasidentifier__.blend"], function()
+{
+    printResults(configuration);
+});
+
+task ("build", ["default"]);
+
+task ("debug", function()
+{
+    ENV["CONFIGURATION"] = "Debug";
+    JAKE.subjake(["."], "build", ENV);
+});
+
+task ("release", function()
+{
+    ENV["CONFIGURATION"] = "Release";
+    JAKE.subjake(["."], "build", ENV);
+});
