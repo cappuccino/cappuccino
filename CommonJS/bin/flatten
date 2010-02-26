@@ -14,6 +14,26 @@ var parser = new (require("args").Parser)();
 parser.usage("INPUT_PROJECT OUTPUT_PROJECT");
 parser.help("Combine a Cappuccino application into a single JavaScript file.");
 
+parser.option("-m", "--main", "main")
+    .def("main.j")
+    .set()
+    .help("The relative path (from INPUT_PROJECT) to the main file (default: 'main.j')");
+
+parser.option("-F", "--framework", "frameworks")
+    .def(["Frameworks"])
+    .push()
+    .help("Add a frameworks directory, relative to INPUT_PROJECT (default: ['Frameworks'])");
+
+parser.option("-f", "--force", "force")
+   .def(false)
+   .set(true)
+   .help("Force overwriting OUTPUT_PROJECT if it exists");
+
+parser.option("-v", "--verbose", "verbose")
+   .def(false)
+   .set(true)
+   .help("Verbose logging");
+
 parser.helpful();
 
 function main(args)
@@ -28,12 +48,36 @@ function main(args)
     var rootPath = FILE.path(options.args[0]).join("").absolute();
     var outputPath = FILE.path(options.args[1]).join("").absolute();
 
+    if (outputPath.exists()) {
+        if (options.force) {
+            // FIXME: why doesn't this work?!
+            //outputPath.rmtree();
+            OS.system(["rm", "-rf", outputPath]);
+        } else {
+            CPLog.error("OUTPUT_PROJECT " + outputPath + " exists. Use -f to overwrite.");
+            OS.exit(1);
+        }
+    }
+
+    var mainPath = String(rootPath.join(options.main));
+    var frameworks = options.frameworks.map(function(framework) { return rootPath.join(framework); });
+    var environment = "Browser";
+
+    stream.print("\0yellow("+Array(81).join("=")+"\0)");
+    stream.print("Application root:    \0green(" + rootPath + "\0)");
+    stream.print("Output directory:    \0green(" + outputPath + "\0)");
+
+    stream.print("\0yellow("+Array(81).join("=")+"\0)");
+    stream.print("Main file:           \0green(" + mainPath + "\0)");
+    stream.print("Frameworks:          \0green(" + frameworks + "\0)");
+    stream.print("Environment:         \0green(" + environment + "\0)");
+
     var flattener = new ObjectiveJFlattener(rootPath);
 
-    flattener.setIncludePaths([rootPath.join("Frameworks")]);
-    flattener.setEnvironments(["Browser", "ObjJ"]);
+    flattener.setIncludePaths(frameworks);
+    flattener.setEnvironments([environment, "ObjJ"]);
 
-    flattener.load(rootPath.join("main.j"));
+    flattener.load(mainPath);
     flattener.finishLoading();
 
     var root = flattener.require("objective-j").StaticResource.root;

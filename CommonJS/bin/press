@@ -26,11 +26,6 @@ parser.option("-F", "--framework", "frameworks")
     .push()
     .help("Add a frameworks directory, relative to INPUT_PROJECT (default: ['Frameworks'])");
 
-parser.option("-E", "--environment", "environments")
-    .def(['Browser'])
-    .push()
-    .help("Add a platform name (default: ['Browser'])");
-
 parser.option("-f", "--force", "force")
    .def(false)
    .set(true)
@@ -85,13 +80,12 @@ function press(rootPath, outputPath, options) {
     var outputFiles = {},
         totalBytes = {executable:0, data:0, mhtml:0};
 
+    var environment = "Browser";
     // analyze and gather files for each environment:
-    options.environments.forEach(function(environment) {
-        var returnedBytes = pressEnvironment(rootPath, outputFiles, environment, options);
+    var returnedBytes = pressEnvironment(rootPath, outputFiles, environment, options);
 
-        for (var i in returnedBytes)
-            totalBytes[i] += returnedBytes[i];
-    });
+    for (var i in returnedBytes)
+        totalBytes[i] += returnedBytes[i];
 
     // phase 4: copy everything and write out the new files
     stream.print("\0red(PHASE 4:\0) copy to output \0green(" + rootPath + "\0) => \0green(" + outputPath + "\0)");
@@ -129,7 +123,7 @@ function press(rootPath, outputPath, options) {
 
     if (FILE.exists(themePath))
     {
-        var themeEnvPath = FILE.join(themePath, options.environments[0] + ".environment"),
+        var themeEnvPath = FILE.join(themePath, environment + ".environment"),
             themeExecutablePath = FILE.join(themeEnvPath, themeName+".blend.sj"),
             themeDataPath = FILE.join(themeEnvPath, "dataURLs.txt"),
             themeMHTMLPath = FILE.join(themeEnvPath, "MHTMLPaths.txt");
@@ -168,9 +162,7 @@ function pressEnvironment(rootPath, outputFiles, environment, options) {
 
     var _OBJJ = analyzer.require("objective-j");
 
-    // include paths:
     analyzer.setIncludePaths(frameworks);
-    // environments:
     analyzer.setEnvironments([environment, "ObjJ"]);
 
     // build list of cibs to inspect for dependent classes
