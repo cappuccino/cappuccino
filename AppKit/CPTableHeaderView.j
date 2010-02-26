@@ -196,8 +196,9 @@ var _CPTableColumnHeaderViewStringValueKey = @"_CPTableColumnHeaderViewStringVal
     var tableRange = _tableView._tableColumnRanges[aColumnIndex],
         bounds = [self bounds];
 
-    bounds.origin.x = tableRange.location;
-    bounds.size.width = tableRange.length;
+    var rMinX = ROUND(tableRange.location);
+    bounds.origin.x = rMinX;
+    bounds.size.width = FLOOR(tableRange.length + tableRange.location - rMinX);
     
     return bounds;
 }
@@ -343,7 +344,7 @@ var _CPTableColumnHeaderViewStringValueKey = @"_CPTableColumnHeaderViewStringVal
 
 - (void)_updateResizeCursor:(CPEvent)theEvent
 {
-    if (![_tableView allowsColumnResizing] || ![_tableView columnAutoresizingStyle])
+    if (![_tableView allowsColumnResizing])
     {
         [[CPCursor arrowCursor] set];
         return;
