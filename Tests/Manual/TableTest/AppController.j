@@ -90,7 +90,7 @@ CPLogRegister(CPLogConsole);
     [tableView setVerticalMotionCanBeginDrag:NO];
     [tableView setDraggingDestinationFeedbackStyle:CPTableViewDropOn];
     [tableView registerForDraggedTypes:[CPArray arrayWithObject:tableTestDragType]];
-    
+    [window1 setAcceptsMouseMovedEvents:YES];
     [window1 orderFront:self];
     [self newWindow];
     [self sourceList];

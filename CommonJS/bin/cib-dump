@@ -1,7 +1,8 @@
 #!/usr/bin/env objj
 
 @import <Foundation/Foundation.j>
-@import "cib-analysis-tools.j"
+
+@import "../lib/cappuccino/cib-analysis-tools.j"
 
 var FILE = require("file");
 

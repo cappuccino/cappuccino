@@ -15,6 +15,15 @@ new FileList("**/*").exclude("Jakefile").forEach(function(aFilename)
         cp(aFilename, buildFilename);
     });
 
+    // HACK: narwhal should copy permissions
+    if (FILE.dirname(aFilename) === FILE.join("bin"))
+    {
+        filedir (buildFilename, function ()
+        {
+            FILE.chmod(buildFilename, 0755);
+        });
+    }
+
     task ("build", buildFilename);
     CLOBBER.include(buildFilename);
 });

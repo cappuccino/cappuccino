@@ -196,8 +196,9 @@ var _CPTableColumnHeaderViewStringValueKey = @"_CPTableColumnHeaderViewStringVal
     var tableRange = _tableView._tableColumnRanges[aColumnIndex],
         bounds = [self bounds];
 
-    bounds.origin.x = tableRange.location;
-    bounds.size.width = tableRange.length;
+    var rMinX = ROUND(tableRange.location);
+    bounds.origin.x = rMinX;
+    bounds.size.width = FLOOR(tableRange.length + tableRange.location - rMinX);
     
     return bounds;
 }
@@ -278,14 +279,7 @@ var _CPTableColumnHeaderViewStringValueKey = @"_CPTableColumnHeaderViewStringVal
         
         return;
     }
-/*
-    else if (type & CPLeftMouseDragged && [_tableView allowsColumnREordering])
-    {
-        // Start dragging here   
-        [[CPCursor closedHandCursor] set];
-        return;
-    }
-*/        
+
     [CPApp setTarget:self selector:@selector(trackMouseWithEvent:) forNextEventMatchingMask:CPLeftMouseDraggedMask | CPLeftMouseUpMask | CPLeftMouseDownMask untilDate:nil inMode:nil dequeue:YES];
 }
 
@@ -343,7 +337,8 @@ var _CPTableColumnHeaderViewStringValueKey = @"_CPTableColumnHeaderViewStringVal
 
 - (void)_updateResizeCursor:(CPEvent)theEvent
 {
-    if (![_tableView allowsColumnResizing] || ![_tableView columnAutoresizingStyle])
+    // never get stuck in resize cursor mode (FIXME take out when we turn on tracking rects)
+    if (![_tableView allowsColumnResizing] || ([theEvent type] === CPLeftMouseUp && ![[self window] acceptsMouseMovedEvents]))
     {
         [[CPCursor arrowCursor] set];
         return;
