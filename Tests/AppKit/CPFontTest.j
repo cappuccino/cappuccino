@@ -38,4 +38,13 @@
     [self assert:[_boldCustomFont cssString] equals:@"bold 30px \"Helvetica\", Arial, sans-serif"];
 }
 
+- (void)testIsEqual
+{
+    [self assert:_customFont equals:_customFont];
+    [self assert:_systemFont equals:_systemFont];
+    [self assert:_systemFont notEqual:_customFont];
+    [self assert:_customFont notEqual:"a string"];
+    [self assert:_customFont notEqual:nil];
+}
+
 @end
