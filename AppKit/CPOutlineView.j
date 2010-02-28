@@ -435,6 +435,35 @@ CPOutlineViewDropOnItemIndex = -1;
                 removeObserver:_outlineViewDelegate
                           name:CPOutlineViewSelectionIsChangingNotification
                         object:self];
+
+
+
+        if ([_outlineViewDelegate respondsToSelector:@selector(outlineViewItemWillExpand:)])
+            [defaultCenter
+                removeObserver:_outlineViewDelegate
+                          name:CPOutlineViewItemWillExpandNotification
+                        object:self];
+
+
+        if ([_outlineViewDelegate respondsToSelector:@selector(outlineViewItemDidExpand:)])
+            [defaultCenter
+                removeObserver:_outlineViewDelegate
+                          name:CPOutlineViewItemDidExpandNotification
+                        object:self];
+
+
+        if ([_outlineViewDelegate respondsToSelector:@selector(outlineViewItemWillCollapse:)])
+            [defaultCenter
+                removeObserver:_outlineViewDelegate
+                          name:CPOutlineViewItemWillCollapseNotification
+                        object:self];
+
+
+        if ([_outlineViewDelegate respondsToSelector:@selector(outlineViewItemDidCollapse:)])
+            [defaultCenter
+                removeObserver:_outlineViewDelegate
+                          name:CPOutlineViewItemDidCollapseNotification
+                        object:self];
     }
 
     _outlineViewDelegate = aDelegate;
