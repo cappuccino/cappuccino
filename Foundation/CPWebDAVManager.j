@@ -100,7 +100,7 @@ CPWebDAVManagerNonCollectionResourceType    = 0;
     [request setHTTPBody:HTTPBody.join("")];
 
     if (!aBlock)
-        return parsePROPFINDResponse([[CPURLConnection sendSynchronousRequest:request returningResponse:nil error:nil] rawString]);
+        return parsePROPFINDResponse([[CPURLConnection sendSynchronousRequest:request returningResponse:nil] rawString]);
 
     else
     {
