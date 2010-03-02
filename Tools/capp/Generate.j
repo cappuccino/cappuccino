@@ -41,7 +41,7 @@ parser.option("--build", "useCappBuild")
     .help("Uses frameworks in the $CAPP_BUILD.");
 
 parser.option("-l")
-    .action(function(o) { o.symlink = o.shouldUseCappBuild = true; })
+    .action(function(o) { o.symlink = o.useCappBuild = true; })
     .help("Enables both the --symlink and --build options.");
 
 parser.option("--force", "force")
