@@ -1685,7 +1685,7 @@ CPTexturedBackgroundWindowMask
 
     [[self platformWindow] miniaturize:sender];
 
-    [self _lossOfKeyOrMainWindow];
+    [self _updateMainAndKeyWindows];
 
     [[CPNotificationCenter defaultCenter] postNotificationName:CPWindowDidMiniaturizeNotification object:self];
 
