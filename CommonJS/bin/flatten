@@ -7,6 +7,7 @@ require("narwhal").ensureEngine("rhino");
 @import "../lib/cappuccino/objj-analysis-tools.j"
 
 var FILE = require("file");
+var OS = require("os");
 
 var stream = require("term").stream;
 var parser = new (require("args").Parser)();
@@ -25,9 +26,14 @@ parser.option("-F", "--framework", "frameworks")
     .help("Add a frameworks directory, relative to INPUT_PROJECT (default: ['Frameworks'])");
 
 parser.option("-f", "--force", "force")
-   .def(false)
-   .set(true)
-   .help("Force overwriting OUTPUT_PROJECT if it exists");
+    .def(false)
+    .set(true)
+    .help("Force overwriting OUTPUT_PROJECT if it exists");
+
+parser.option("--index", "index")
+    .def("index.html")
+    .set()
+    .help("The root HTML file to modify (default: index.html)");
 
 parser.option("-v", "--verbose", "verbose")
    .def(false)
@@ -54,7 +60,7 @@ function main(args)
             //outputPath.rmtree();
             OS.system(["rm", "-rf", outputPath]);
         } else {
-            CPLog.error("OUTPUT_PROJECT " + outputPath + " exists. Use -f to overwrite.");
+            stream.print("\0red(OUTPUT_PROJECT " + outputPath + " exists. Use -f to overwrite.\0)");
             OS.exit(1);
         }
     }
@@ -98,8 +104,7 @@ function main(args)
 
     outputPath.join("Application.js").write(applicationJS);
 
-    rewriteMainHTML(outputPath.join("index.html"));
-    rewriteMainHTML(outputPath.join("index-debug.html"));
+    rewriteMainHTML(outputPath.join(options.index));
 }
 
 // ObjectiveJFlattener inherits from ObjectiveJRuntimeAnalyzer
@@ -211,24 +216,30 @@ ObjectiveJFlattener.prototype.serializeStaticResources = function(node, depth) {
     this.resourceBuffer.push("currentNode = nodeStack.pop();");
 }
 
+// "$1" is the matching indentation
+var scriptTagsBefore = '$1<script type = "text/javascript">\n$1    OBJJ_AUTO_BOOTSTRAP = false;\n$1</script>';
+var scriptTagsAfter  = '$1<script type = "text/javascript" src = "Application.js"></script>';
+
 function rewriteMainHTML(indexHTMLPath) {
-    var indexHTML = indexHTMLPath.read();
+    if (indexHTMLPath.isFile()) {
+        var indexHTML = indexHTMLPath.read();
 
-    // "$1" is the matching indentation
-    var scriptTagsBefore = '$1<script type = "text/javascript">\n$1    OBJJ_AUTO_BOOTSTRAP = false;\n$1</script>';
-    var scriptTagsAfter  = '$1<script type = "text/javascript" src = "Application.js"></script>';
+        // attempt to find Objective-J script tag and add ours
+        var newIndexHTML = indexHTML.replace(/([ \t]+)<script[^>]+Objective-J\.js[^>]+>(?:\s*<\/script>)?/,
+            scriptTagsBefore+'\n$&\n'+scriptTagsAfter);
 
-    // attempt to find Objective-J script tag and add ours
-    var newIndexHTML = indexHTML.replace(/([ \t]+)<script[^>]+Objective-J\.js[^>]+>(?:\s*<\/script>)?/,
-        scriptTagsBefore+'\n$&\n'+scriptTagsAfter);
-
-    if (newIndexHTML === indexHTML) {
-        stream.print("\0yellow(Warning: Unable to automatically modify "+indexHTMLPath + "\0)");
-        stream.print("\nAdd the following before the Objective-J script tag:");
-        stream.print(scriptTagsBefore.replace(/\$1/g, "    "));
-        stream.print("\nAdd the following after the Objective-J script tag:");
-        stream.print(scriptTagsAfter.replace(/\$1/g, "    "));
+        if (newIndexHTML !== indexHTML) {
+            stream.print("\0green(Modified: "+indexHTMLPath+".\0)");
+            indexHTMLPath.write(newIndexHTML);
+            return;
+        }
     } else {
-        indexHTMLPath.write(newIndexHTML);
+        stream.print("\0yellow(Warning: "+indexHTMLPath+" does not exist. Specify an alternate index HTML file with the --index option.\0)");
     }
+
+    stream.print("\0yellow(Warning: Unable to automatically modify "+indexHTMLPath + ".\0)");
+    stream.print("\nAdd the following before the Objective-J script tag:");
+    stream.print(scriptTagsBefore.replace(/\$1/g, "    "));
+    stream.print("\nAdd the following after the Objective-J script tag:");
+    stream.print(scriptTagsAfter.replace(/\$1/g, "    "));
 }

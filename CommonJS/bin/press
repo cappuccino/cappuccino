@@ -64,7 +64,7 @@ function main(args)
             //outputPath.rmtree();
             OS.system(["rm", "-rf", outputPath]);
         } else {
-            CPLog.error("OUTPUT_PROJECT " + outputPath + " exists. Use -f to overwrite.");
+            stream.print("\0red(OUTPUT_PROJECT " + outputPath + " exists. Use -f to overwrite.\0)");
             OS.exit(1);
         }
     }
