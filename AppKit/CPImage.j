@@ -193,6 +193,9 @@ function CPAppKitImage(aFilename, aSize)
 
     var imageOrSize = AppKitImageForNames[aName];
 
+    if (!imageOrSize)
+        return nil;
+
     if (!imageOrSize.isa)
     {
         imageOrSize = CPAppKitImage("CPImage/" + aName + ".png", imageOrSize);
@@ -205,17 +208,19 @@ function CPAppKitImage(aFilename, aSize)
     return imageOrSize;
 }
 
-- (void)setName:(CPString)aName
+- (BOOL)setName:(CPString)aName
 {
     if (_name === aName)
-        return;
+        return YES;
 
-    if (imagesForNames[aName] === self)
-        imagesForNames[aName] = nil;
+    if (imagesForNames[aName])
+        return NO;
 
     _name = aName;
 
     imagesForNames[aName] = self;
+
+    return YES;
 }
 
 - (CPString)name
