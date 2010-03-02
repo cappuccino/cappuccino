@@ -69,6 +69,12 @@ var screenNeedsInitialization   = NO,
         window.cpActivateIgnoringOtherApps(!!shouldIgnoreOtherApps);
 }
 
++ (void)deactivate
+{
+    if (typeof window["cpDeactivate"] === "function")
+        window.cpDeactivate();
+}
+
 + (void)hideOtherApplications:(id)aSender
 {
     if (typeof window["cpHideOtherApplications"] === "function")

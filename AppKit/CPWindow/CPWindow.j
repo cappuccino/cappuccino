@@ -175,6 +175,8 @@ CPWindowBelow                   = 2;
 CPWindowWillCloseNotification       = @"CPWindowWillCloseNotification";
 CPWindowDidBecomeMainNotification   = @"CPWindowDidBecomeMainNotification";
 CPWindowDidResignMainNotification   = @"CPWindowDidResignMainNotification";
+CPWindowDidBecomeKeyNotification    = @"CPWindowDidBecomeKeyNotification";
+CPWindowDidResignKeyNotification    = @"CPWindowDidResignKeyNotification";
 CPWindowDidResizeNotification       = @"CPWindowDidResizeNotification";
 CPWindowDidMoveNotification         = @"CPWindowDidMoveNotification";
 CPWindowWillBeginSheetNotification  = @"CPWindowWillBeginSheetNotification";
@@ -762,12 +764,7 @@ CPTexturedBackgroundWindowMask
 
     [_platformWindow order:CPWindowOut window:self relativeTo:nil];
 
-    if ([CPApp keyWindow] == self)
-    {
-        [self resignKeyWindow];
-
-        CPApp._keyWindow = nil;
-    }
+    [self _updateMainAndKeyWindows];
 }
 
 /*!
@@ -1066,13 +1063,31 @@ CPTexturedBackgroundWindowMask
 */
 - (void)setDelegate:(id)aDelegate
 {
-    // FIXME: Unregister for notifications!
+    var defaultCenter = [CPNotificationCenter defaultCenter];
+
+    [defaultCenter removeObserver:_delegate name:CPWindowDidResignKeyNotification object:self];
+    [defaultCenter removeObserver:_delegate name:CPWindowDidBecomeKeyNotification object:self];
+    [defaultCenter removeObserver:_delegate name:CPWindowDidBecomeMainNotification object:self];
+    [defaultCenter removeObserver:_delegate name:CPWindowDidResignMainNotification object:self];
+    [defaultCenter removeObserver:_delegate name:CPWindowDidMoveNotification object:self];
+    [defaultCenter removeObserver:_delegate name:CPWindowDidResizeNotification object:self];
 
     _delegate = aDelegate;
-    
     _delegateRespondsToWindowWillReturnUndoManagerSelector = [_delegate respondsToSelector:@selector(windowWillReturnUndoManager:)];
 
-    var defaultCenter = [CPNotificationCenter defaultCenter];
+    if ([_delegate respondsToSelector:@selector(windowDidResignKey:)])
+        [defaultCenter
+            addObserver:_delegate
+               selector:@selector(windowDidResignKey:)
+                   name:CPWindowDidResignKeyNotification
+                 object:self];
+
+    if ([_delegate respondsToSelector:@selector(windowDidBecomeKey:)])
+        [defaultCenter
+            addObserver:_delegate
+               selector:@selector(windowDidBecomeKey:)
+                   name:CPWindowDidBecomeKeyNotification
+                 object:self];
     
     if ([_delegate respondsToSelector:@selector(windowDidBecomeMain:)])
         [defaultCenter
@@ -1418,8 +1433,14 @@ CPTexturedBackgroundWindowMask
 */
 - (void)becomeKeyWindow
 {
-    if (_firstResponder != self && [_firstResponder respondsToSelector:@selector(becomeKeyWindow)])
+    CPApp._keyWindow = self;
+
+    if (_firstResponder !== self && [_firstResponder respondsToSelector:@selector(becomeKeyWindow)])
         [_firstResponder becomeKeyWindow];
+
+    [[CPNotificationCenter defaultCenter]
+        postNotificationName:CPWindowDidBecomeKeyNotification
+                      object:self];
 }
 
 /*!
@@ -1456,13 +1477,10 @@ CPTexturedBackgroundWindowMask
 */
 - (void)makeKeyWindow
 {
-    if (![self canBecomeKeyWindow])
+    if ([CPApp keyWindow] === self || ![self canBecomeKeyWindow])
         return;
 
-    [CPApp._keyWindow resignKeyWindow];
-    
-    CPApp._keyWindow = self;
-    
+    [[CPApp keyWindow] resignKeyWindow];
     [self becomeKeyWindow];
 }
 
@@ -1473,9 +1491,12 @@ CPTexturedBackgroundWindowMask
 {
     if (_firstResponder != self && [_firstResponder respondsToSelector:@selector(resignKeyWindow)])
         [_firstResponder resignKeyWindow];
-    
-    if ([_delegate respondsToSelector:@selector(windowDidResignKey:)])
-        [_delegate windowDidResignKey:self];
+
+    CPApp._keyWindow = nil;
+
+    [[CPNotificationCenter defaultCenter]
+        postNotificationName:CPWindowDidResignKeyNotification
+                      object:self];
 }
 
 /*!
@@ -1664,6 +1685,8 @@ CPTexturedBackgroundWindowMask
 
     [[self platformWindow] miniaturize:sender];
 
+    [self _lossOfKeyOrMainWindow];
+
     [[CPNotificationCenter defaultCenter] postNotificationName:CPWindowDidMiniaturizeNotification object:self];
 
     _isMiniaturized = YES;
@@ -1799,13 +1822,10 @@ CPTexturedBackgroundWindowMask
 */
 - (void)makeMainWindow
 {
-    if (CPApp._mainWindow === self || ![self canBecomeMainWindow])
+    if ([CPApp mainWindow] === self || ![self canBecomeMainWindow])
         return;
 
-    [CPApp._mainWindow resignMainWindow];
-
-    CPApp._mainWindow = self;
-
+    [[CPApp mainWindow] resignMainWindow];
     [self becomeMainWindow];
 }
 
@@ -1816,7 +1836,9 @@ CPTexturedBackgroundWindowMask
 {
     [self _synchronizeMenuBarTitleWithWindowTitle];
     [self _synchronizeSaveMenuWithDocumentSaving];
-    
+
+    CPApp._mainWindow = self;
+
     [[CPNotificationCenter defaultCenter]
         postNotificationName:CPWindowDidBecomeMainNotification
                       object:self];
@@ -1830,6 +1852,71 @@ CPTexturedBackgroundWindowMask
     [[CPNotificationCenter defaultCenter]
         postNotificationName:CPWindowDidResignMainNotification
                       object:self];
+
+    CPApp._mainWindow = nil;
+}
+
+- (void)_updateMainAndKeyWindows
+{
+    var allWindows = [CPApp orderedWindows],
+        windowCount = [allWindows count];
+
+    if (!windowCount)
+        return;
+
+    if ([self isKeyWindow])
+    {
+        var keyWindow = [CPApp keyWindow];
+        [self resignKeyWindow];
+
+        if (keyWindow && keyWindow !== self && [keyWindow canBecomeKeyWindow])
+            [keyWindow makeKeyWindow];
+        else
+        {
+            var menuWindow = [CPApp mainMenu]._menuWindow;
+            for (var i = 0; i < windowCount; i++)
+            {
+                var currentWindow = allWindows[i];
+                if (currentWindow === self || currentWindow === menuWindow)
+                    continue;
+
+                if ([currentWindow isVisible] && [currentWindow canBecomeKeyWindow])
+                {
+                    [currentWindow makeKeyWindow];
+                    break;
+                }
+            }
+
+            if (![CPApp keyWindow])
+                [keyWindow makeKeyWindow];
+        }
+    }
+
+
+    if ([self isMainWindow])
+    {
+        var mainWindow = [CPApp mainWindow];
+        [self resignMainWindow];
+
+        if (mainWindow && mainWindow !== self && [mainWindow canBecomeMainWindow])
+            [mainWindow makeMainWindow];
+        else
+        {
+            var menuWindow = [CPApp mainMenu]._menuWindow;
+            for (var i = 0; i < windowCount; i++)
+            {
+                var currentWindow = allWindows[i];
+                if (currentWindow === self || currentWindow === menuWindow)
+                    continue;
+
+                if ([currentWindow isVisible] && [currentWindow canBecomeMainWindow])
+                {
+                    [currentWindow makeMainWindow];
+                    break;
+                }
+            }
+        }
+    }
 }
 
 // Managing Toolbars
