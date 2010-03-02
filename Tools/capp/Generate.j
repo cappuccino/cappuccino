@@ -174,8 +174,10 @@ function gen(/*va_args*/)
 
         createFrameworksInFile(frameworks, frameworkDestination, options.symlink, options.useCappBuild);
     }
-    else
+    else {
         stream.print("Directory already exists");
+        OS.exit(1);
+    }
 }
 
 function createFrameworksInFile(/*Array*/ frameworks, /*String*/ aFile, /*Boolean*/ symlink, /*Boolean*/ build, /*Boolean*/ force)
