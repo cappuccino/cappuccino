@@ -89,24 +89,16 @@ var CPTokenFieldTableColumnIdentifier = @"CPTokenFieldTableColumnIdentifier";
 		[_autocompleteScrollView setHasHorizontalScroller:NO];
 		[_autocompleteContainer addSubview:_autocompleteScrollView];
 		
-		_autocompleteView = [[CPTableView alloc] initWithFrame:CPRectMakeZero()];	
+		_autocompleteView = [[CPTableView alloc] initWithFrame:CPRectMakeZero()];
 		
 		var tableColumn = [[CPTableColumn alloc] initWithIdentifier:CPTokenFieldTableColumnIdentifier];
-		[tableColumn setResizingMask:CPTableColumnAutoresizingMask];
-		
-		var dataView = [[CPTextField alloc] init];
-		[dataView setValue:[CPFont systemFontOfSize:13.0] forThemeAttribute:@"font"];
-		[dataView setValue:[CPColor colorWithHexString:@"3a3b3f"] forThemeAttribute:@"text-color"];
-		[dataView setValue:CGInsetMake(0.0, 0.0, 3.0, 10.0) forThemeAttribute:@"content-inset"];
-		[dataView setValue:CPCenterVerticalTextAlignment forThemeAttribute:@"vertical-alignment"];
-		[tableColumn setDataView:dataView];
-		
+		[tableColumn setResizingMask:CPTableColumnAutoresizingMask];		
 		[_autocompleteView addTableColumn:tableColumn];
 		
 		[_autocompleteView setDataSource:self];
 		[_autocompleteView setDelegate:self];
 		[_autocompleteView setAllowsMultipleSelection:NO];
-		// [_autocompleteView setHeaderView:nil];
+		[_autocompleteView setHeaderView:nil];
 		[_autocompleteView setCornerView:nil];
 		[_autocompleteView setRowHeight:30.0];
 		[_autocompleteView setGridStyleMask:CPTableViewSolidHorizontalGridLineMask];
@@ -140,7 +132,9 @@ var CPTokenFieldTableColumnIdentifier = @"CPTokenFieldTableColumnIdentifier";
 	
 	[self _hideCompletions];
 	
-	var token = _cachedCompletions[[_autocompleteView selectedRow]];
+	var token = _cachedCompletions[[_autocompleteView selectedRow]],
+		shouldRemoveLastObject = token !== @"" && [self _inputElement].value !== @"";
+		
 	if (!token)
 		token = [self _inputElement].value;
 	
@@ -165,11 +159,15 @@ var CPTokenFieldTableColumnIdentifier = @"CPTokenFieldTableColumnIdentifier";
 	
 	// Remove the uncompleted token and add the token string. 
 	// Explicitely remove the last object because the array contains strings and removeObject uses isEqual to compare objects
-	var indexOfLastObject = [objectValue count] - 1;
-	if (!indexOfLastObject)
-		indexOfLastObject = 0;
-		
-	[objectValue removeObjectAtIndex:indexOfLastObject];
+	if (shouldRemoveLastObject)
+	{
+		var indexOfLastObject = [objectValue count] - 1;
+		if (!indexOfLastObject)
+			indexOfLastObject = 0;
+	
+		[objectValue removeObjectAtIndex:indexOfLastObject];
+	}
+	
 	[objectValue addObject:token];
 	[self setObjectValue:objectValue];
 		
@@ -209,6 +207,8 @@ var CPTokenFieldTableColumnIdentifier = @"CPTokenFieldTableColumnIdentifier";
 	
 	[objectValue removeObjectAtIndex:indexOfToken];
 	[self setObjectValue:objectValue];
+	
+	[self textDidChange:[CPNotification notificationWithName:CPControlTextDidChangeNotification object:self userInfo:nil]];
 }
 
 - (CPIndexSet)_selectedTokenIndexes
@@ -354,6 +354,11 @@ var CPTokenFieldTableColumnIdentifier = @"CPTokenFieldTableColumnIdentifier";
 	return [super objectValue];
 }
 
+- (CPString)stringValue
+{
+	return [[self objectValue] componentsJoinedByString:@","];
+}
+
 - (id)objectValue
 {
 	var objectValue = [];
@@ -368,9 +373,7 @@ var CPTokenFieldTableColumnIdentifier = @"CPTokenFieldTableColumnIdentifier";
 	}
 	
 	if ([self _inputElement].value != @"")
-	{
 		[objectValue addObject:[self _inputElement].value];
-	}
 	
 	return objectValue;
 }
@@ -406,6 +409,13 @@ var CPTokenFieldTableColumnIdentifier = @"CPTokenFieldTableColumnIdentifier";
 	
 	[super setObjectValue:objectValue];
 }
+
+// Incredible hack to disable supers implementation 
+// so it cannot change our object value and break the tokenfield
+- (void)_setStringValue:(id)aValue
+{
+}
+
 
 // ========
 // = VIEW =
@@ -723,6 +733,8 @@ var CPTokenFieldTableColumnIdentifier = @"CPTokenFieldTableColumnIdentifier";
 		[_autocompleteContainer setHidden:NO];
 		var frameOrigin = [self convertPoint:[self bounds].origin toView:nil];
 		[_autocompleteContainer setFrameOrigin:CPPointMake(frameOrigin.x, frameOrigin.y + frame.size.height)];
+		[_autocompleteContainer setFrameSize:CPSizeMake(CPRectGetWidth([self bounds]), 100.0)];
+		[_autocompleteScrollView setFrameSize:CPSizeMake([_autocompleteContainer frame].size.width - 19.0, 90.0)];
 	}
 	else
 		[_autocompleteContainer setHidden:YES];
