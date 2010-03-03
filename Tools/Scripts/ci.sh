@@ -3,6 +3,7 @@
 project_home="$(dirname "$PWD")"
 
 export PATH="$HOME/narwhal/bin:$PATH"
+export CAPP_AUTO_UPGRADE="yes"
 
 export CAPP_BUILD=$project_home/build_incremental
 time jake test
