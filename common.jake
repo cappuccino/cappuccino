@@ -32,7 +32,7 @@ function ensurePackageUpToDate(packageName, requiredVersion, options)
     if (!options.noupdate)
     {
         print("Update? yes or no:");
-        if (system.stdin.readLine() !== "yes\n")
+        if (!SYSTEM.env["CAPP_AUTO_UPGRADE"] && system.stdin.readLine() !== "yes\n")
         {
             print("Jake aborted.");
             OS.exit(1);
