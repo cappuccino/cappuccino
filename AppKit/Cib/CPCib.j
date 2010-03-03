@@ -60,7 +60,7 @@ var CPCibObjectDataKey  = @"CPCibObjectDataKey";
 
     if (self)
     {
-        _data = [CPURLConnection sendSynchronousRequest:[CPURLRequest requestWithURL:aURL] returningResponse:nil error:nil];
+        _data = [CPURLConnection sendSynchronousRequest:[CPURLRequest requestWithURL:aURL] returningResponse:nil];
         _awakenCustomResources = YES;
     }
 

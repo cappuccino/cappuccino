@@ -41,7 +41,7 @@ parser.option("--build", "useCappBuild")
     .help("Uses frameworks in the $CAPP_BUILD.");
 
 parser.option("-l")
-    .action(function(o) { o.symlink = o.shouldUseCappBuild = true; })
+    .action(function(o) { o.symlink = o.useCappBuild = true; })
     .help("Enables both the --symlink and --build options.");
 
 parser.option("--force", "force")
@@ -174,8 +174,10 @@ function gen(/*va_args*/)
 
         createFrameworksInFile(frameworks, frameworkDestination, options.symlink, options.useCappBuild);
     }
-    else
+    else {
         stream.print("Directory already exists");
+        OS.exit(1);
+    }
 }
 
 function createFrameworksInFile(/*Array*/ frameworks, /*String*/ aFile, /*Boolean*/ symlink, /*Boolean*/ build, /*Boolean*/ force)
