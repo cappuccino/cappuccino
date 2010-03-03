@@ -32,7 +32,7 @@ function ensurePackageUpToDate(packageName, requiredVersion, options)
     if (!options.noupdate)
     {
         print("Update? yes or no:");
-        if (system.stdin.readLine() !== "yes\n")
+        if (!SYSTEM.env["CAPP_AUTO_UPGRADE"] && system.stdin.readLine() !== "yes\n")
         {
             print("Jake aborted.");
             OS.exit(1);
@@ -48,10 +48,10 @@ function ensurePackageUpToDate(packageName, requiredVersion, options)
 }
 
 // UPDATE THESE TO PICK UP CORRESPONDING CHANGES IN DEPENDENCIES
-ensurePackageUpToDate("jake",           "0.1.3");
+ensurePackageUpToDate("jake",           "0.1.4");
 ensurePackageUpToDate("browserjs",      "0.1.1");
 ensurePackageUpToDate("shrinksafe",     "0.2");
-ensurePackageUpToDate("narwhal",        "0.2.1", {
+ensurePackageUpToDate("narwhal",        "0.2.2", {
     noupdate : true,
     message : "Update Narwhal to 0.2.1 by running bootstrap.sh, or pulling the latest from git (see: http://github.com/280north/narwhal)."
 });
