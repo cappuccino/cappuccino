@@ -162,7 +162,7 @@ serializedENV = function()
     // pseudo-HACK: add NARWHALOPT with packages we should ensure are loaded
     var packages = additionalPackages();
     if (packages.length) {
-        envNew["NARWHALOPT"] = packages.map(function(p) { return "-p " + p; }).join(" ");
+        envNew["NARWHALOPT"] = packages.map(function(p) { return "-p " + OS.enquote(p); }).join(" ");
         envNew["PATH"] = packages.map(function(p) { return FILE.join(p, "bin"); }).concat(SYSTEM.env["PATH"]).join(":");
     }
 
