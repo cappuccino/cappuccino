@@ -48,7 +48,7 @@ function ensurePackageUpToDate(packageName, requiredVersion, options)
 }
 
 // UPDATE THESE TO PICK UP CORRESPONDING CHANGES IN DEPENDENCIES
-ensurePackageUpToDate("jake",           "0.1.4");
+ensurePackageUpToDate("jake",           "0.1.5");
 ensurePackageUpToDate("browserjs",      "0.1.1");
 ensurePackageUpToDate("shrinksafe",     "0.2");
 ensurePackageUpToDate("narwhal",        "0.2.2", {
@@ -162,7 +162,7 @@ serializedENV = function()
     // pseudo-HACK: add NARWHALOPT with packages we should ensure are loaded
     var packages = additionalPackages();
     if (packages.length) {
-        envNew["NARWHALOPT"] = packages.map(function(p) { return "-p " + p; }).join(" ");
+        envNew["NARWHALOPT"] = packages.map(function(p) { return "-p " + OS.enquote(p); }).join(" ");
         envNew["PATH"] = packages.map(function(p) { return FILE.join(p, "bin"); }).concat(SYSTEM.env["PATH"]).join(":");
     }
 
