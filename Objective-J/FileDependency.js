@@ -20,17 +20,17 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-function FileDependency(/*String*/ aPath, /*BOOL*/ isLocal)
+function FileDependency(/*CFURL*/ aURL, /*BOOL*/ isLocal)
 {
-    this._path = FILE.normal(aPath);
+    this._URL = aURL;
     this._isLocal = isLocal;
 }
 
 exports.FileDependency = FileDependency;
 
-FileDependency.prototype.path = function()
+FileDependency.prototype.URL = function()
 {
-    return this._path;
+    return this._URL;
 }
 
 FileDependency.prototype.isLocal = function()
@@ -40,11 +40,13 @@ FileDependency.prototype.isLocal = function()
 
 FileDependency.prototype.toMarkedString = function()
 {
+    var URLString = this.URL().absoluteString();
+
     return  (this.isLocal() ? MARKER_IMPORT_LOCAL : MARKER_IMPORT_STD) + ";" +
-            this.path().length + ";" + this.path();
+            URLString.length + ";" + URLString;
 }
 
 FileDependency.prototype.toString = function()
 {
-    return (this.isLocal() ? "LOCAL: " : "STD: ") + this.path(); 
+    return (this.isLocal() ? "LOCAL: " : "STD: ") + this.URL();
 }

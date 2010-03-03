@@ -534,30 +534,30 @@ Preprocessor.prototype.implementation = function(tokens, /*StringBuffer*/ aStrin
 
 Preprocessor.prototype._import = function(tokens)
 {
-    var path = "",
+    var URLString = "",
         token = tokens.skip_whitespace(),
-        isLocal = (token != TOKEN_LESS_THAN);
+        isQuoted = (token !== TOKEN_LESS_THAN);
 
     if (token === TOKEN_LESS_THAN)
     {
-        while((token = tokens.next()) && token != TOKEN_GREATER_THAN)
-            path += token;
+        while((token = tokens.next()) && token !== TOKEN_GREATER_THAN)
+            URLString += token;
         
         if(!token)
             throw new SyntaxError(this.error_message("*** Unterminated import statement."));
     }
     
-    else if (token.charAt(0) == TOKEN_DOUBLE_QUOTE)
-        path = token.substr(1, token.length - 2);
+    else if (token.charAt(0) === TOKEN_DOUBLE_QUOTE)
+        URLString = token.substr(1, token.length - 2);
     
     else
         throw new SyntaxError(this.error_message("*** Expecting '<' or '\"', found \"" + token + "\"."));
 
     CONCAT(this._buffer, "objj_executeFile(\"");
-    CONCAT(this._buffer, path);
-    CONCAT(this._buffer, isLocal ? "\", true);" : "\", false);");
+    CONCAT(this._buffer, URLString);
+    CONCAT(this._buffer, isQuoted ? "\", YES);" : "\", NO);");
 
-    this._dependencies.push(new FileDependency(path, isLocal));
+    this._dependencies.push(new FileDependency(new CFURL(URLString), isQuoted));
 }
 
 Preprocessor.prototype.method = function(/*Lexer*/ tokens)

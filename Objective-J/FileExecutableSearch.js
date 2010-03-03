@@ -22,22 +22,23 @@
 
 var FileExecutableSearchesForPaths = [{ }, { }];
 
-function FileExecutableSearch(/*String*/ aPath, /*BOOL*/ isLocal)
+function FileExecutableSearch(/*CFURL*/ aURL, /*BOOL*/ isQuoted)
 {
-    if (!FILE.isAbsolute(aPath) && isLocal)
-        throw "Local searches cannot be relative: " + aPath;
-
-    var existingSearch = FileExecutableSearchesForPaths[isLocal ? 1 : 0][aPath];
+//    if (isQuoted && !aURL.protocol())
+//        throw "Local searches cannot be relative: " + aPath;
+    var URLString = aURL.absoluteString(),
+        existingSearch = FileExecutableSearchesForPaths[isQuoted ? 1 : 0][URLString];
 
     if (existingSearch)
         return existingSearch;
 
-    FileExecutableSearchesForPaths[isLocal ? 1 : 0][aPath] = this;
-    
+    FileExecutableSearchesForPaths[isQuoted ? 1 : 0][URLString] = this;
+
     this._UID = objj_generateObjectUID();
+
+    this._URL = aURL;
     this._isComplete = NO;
     this._eventDispatcher = new EventDispatcher(this);
-    this._path = aPath;
 
     this._result = NULL;
 
@@ -46,9 +47,9 @@ function FileExecutableSearch(/*String*/ aPath, /*BOOL*/ isLocal)
     function completed(/*String*/ aStaticResource)
     {
         if (!aStaticResource)
-            throw new Error("Could not load file at " + aPath);
+            throw new Error("Could not load file at " + aURL);
 
-        self._result = new FileExecutable(aStaticResource.path());
+        self._result = new FileExecutable(aStaticResource.URL());
         self._isComplete = YES;
 
         self._eventDispatcher.dispatchEvent(
@@ -58,17 +59,17 @@ function FileExecutableSearch(/*String*/ aPath, /*BOOL*/ isLocal)
         });
     }
 
-    if (isLocal || FILE.isAbsolute(aPath))
-        rootResource.resolveSubPath(aPath, NO, completed);
+    if (isQuoted)
+        StaticResource.resolveResourceAtURL(aURL, NO, completed);
     else
-        StaticResource.resolveStandardNodeAtPath(aPath, completed);
+        StaticResource.resolveResourceAtURLSearchingIncludeURLs(aURL, completed);
 }
 
 exports.FileExecutableSearch = FileExecutableSearch;
 
-FileExecutableSearch.prototype.path = function()
+FileExecutableSearch.prototype.URL = function()
 {
-    return this._path;
+    return this._URL;
 }
 
 FileExecutableSearch.prototype.result = function()

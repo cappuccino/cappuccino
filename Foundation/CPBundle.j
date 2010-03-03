@@ -113,7 +113,7 @@ var CPBundlesForPaths = { };
 
 - (id)objectForInfoDictionaryKey:(CPString)aKey
 {
-    return _bundle.valueForInfoDictionary(aKey);
+    return _bundle.valueForInfoDictionaryKey(aKey);
 }
 
 //

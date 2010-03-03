@@ -1,22 +1,62 @@
 // Based on the regex in RFC2396 Appendix B.
 var URI_RE = /^(([^:\/?#]+):)?(\/\/([^\/?#]*))?([^?#]*)(\?([^#]*))?(#(.*))?/;
 
-GLOBAL(CFURL) = function(/*CFURL|String*/ aURLOrString, /*CFURL*/ aBaseURL)
+GLOBAL(CFURL) = function(/*CFURL|String*/ aURL, /*CFURL*/ aBaseURL)
 {
-    if (aURLOrString instanceof CFURL)
-        return new CFURL(aURLOrString.string(), aBaseURL);
+    if (aURL instanceof CFURL)
+        if (!aBaseURL)
+            return aURL
+        else
+        {
+            var existingBaseURL = aURL.baseURL();
 
-    this._string = aURLOrString;
+            if (existingBaseURL)
+                aBaseURL = new CFURL(existingBaseURL, aBaseURL);
 
-    var result = (aURLOrString || "").match(URI_RE);
+            return new CFURL(aURL.string(), aBaseURL);
+        }
+
+    this._UID = objj_generateObjectUID();
+    this._string = aURL;
+
+    var result = (aURL || "").match(URI_RE);
 
     this._baseURL = aBaseURL;
+    this._resourcePropertiesForKeys = new CFMutableDictionary();
 
-    this._scheme = result[2] || NULL;
-    this._authority = result[4] || NULL;
-    this._path = result[5] || NULL;
+    this._scheme = result[2];
+    this._authority = result[4];
+    this._path = result[5] || "";
     this._queryString = result[7] || NULL;
     this._fragment = result[9] || NULL;
+}
+
+var URLMap = { };
+
+CFURL.prototype.mappedURL = function()
+{
+    return URLMap[this.absoluteString()] || this;
+}
+
+CFURL.setMappedURLForURL = function(/*CFURL*/ fromURL, /*CFURL*/ toURL)
+{
+    URLMap[fromURL.absoluteString()] = toURL;
+}
+
+CFURL.prototype.schemeAndAuthority = function()
+{
+    var string = "",
+        scheme = this.scheme();
+
+    if (scheme)
+        string += scheme + ":";
+
+    var authority = this.authority();
+
+    if (authority)
+        string += "//" + authority;
+
+    return string;
 }
 
 CFURL.prototype.absoluteString = function()
@@ -35,7 +75,7 @@ CFURL.prototype.absoluteURL = function()
     {
         var baseURL = this._baseURL;
 
-        this._absoluteURL = baseURL ? resolve(baseURL.string(), this.string()) : this;
+        this._absoluteURL = baseURL ? new CFURL(resolve(baseURL.absoluteString(), this.string())) : this;
     }
 
     return this._absoluteURL;
@@ -48,12 +88,22 @@ CFURL.prototype.string = function()
 
 CFURL.prototype.authority = function()
 {
-    return this._authority;
+    var authority = this._authority;
+
+    if (authority === undefined)
+    {
+        var baseURL = this.baseURL();
+
+        authority = baseURL && baseURL.authority() || NULL;
+        this._authority = authority;
+    }
+
+    return authority;
 }
 
 CFURL.prototype.hasDirectoryPath = function()
 {
-    var path = this._path;
+    var path = this.path();
 
     if (!path)
         return NO;
@@ -93,6 +143,39 @@ CFURL.prototype.path = function()
     return this._path;
 }
 
+CFURL.prototype.pathComponents = function()
+{
+    if (!this._pathComponents)
+    {
+        var path = this.path();
+
+        if (!path)
+            this._pathComponents = [];
+        else
+        {
+            var components = path.split("/"),
+                result = [],
+                index = 0,
+                count = components.length;
+
+            for (; index < count; ++index)
+            {
+                var component = components[index];
+
+                if (component)
+                    result.push(component);
+
+                else if (index === 0)
+                    result.push("/");
+            }
+
+            this._pathComponents = result;
+        }
+    }
+
+    return this._pathComponents;
+}
+
 CFURL.prototype.pathExtension = function()
 {
     var lastPathComponent = this.lastPathComponent();
@@ -114,7 +197,17 @@ CFURL.prototype.queryString = function()
 
 CFURL.prototype.scheme = function()
 {
-    return this._scheme;
+    var scheme = this._scheme;
+
+    if (scheme === undefined)
+    {
+        var baseURL = this.baseURL();
+
+        scheme = baseURL && baseURL.scheme() || NULL;
+        this._scheme = scheme;
+    }
+
+    return scheme;
 }
 
 CFURL.prototype.baseURL = function()
@@ -122,7 +215,32 @@ CFURL.prototype.baseURL = function()
     return this._baseURL;
 }
 
+CFURL.prototype.asDirectoryPathURL = function()
+{
+    if (this.hasDirectoryPath())
+        return this;
 
+    return new CFURL(this.lastPathComponent() + "/", this);
+}
+
+CFURL.prototype.resourcePropertyForKey = function(/*String*/ aKey)
+{
+    return this._resourcePropertiesForKeys.objectForKey(aKey);
+}
+
+CFURL.prototype.setResourcePropertyForKey = function(/*String*/ aKey, /*id*/ aValue)
+{
+    this._resourcePropertiesForKeys.setObjectForKey(aKey, aValue);
+}
+
+CFURL.prototype.staticResourceData = function()
+{
+    var data = new CFMutableData();
+
+    data.setRawString(StaticResource.resourceAtURL(this).contents());
+
+    return data;
+}
 
 // from Chiron's HTTP module:
 
@@ -335,7 +453,7 @@ var resolveObject = function (source, relative) {
     ) {
         source = relative;
     } else {
-        if (relative.root) {
+        if (relative.root || relative.protocol) {
             source.directories = relative.directories;
         } else {
 
@@ -363,9 +481,9 @@ var resolveObject = function (source, relative) {
         }
     }
 
-    if (relative.root)
+    if (relative.root || relative.protocol)
         source.root = relative.root;
-    if (relative.protcol)
+    if (relative.protocol)
         source.protocol = relative.protocol;
     if (!(!relative.path && relative.anchor))
         source.file = relative.file;

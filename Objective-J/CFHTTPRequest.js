@@ -252,7 +252,7 @@ function determineAndDispatchHTTPRequestEvents(/*CFHTTPRequest*/ aRequest)
     }
 }
 
-function FileRequest(/*String*/ aFilePath, onsuccess, onfailure)
+function FileRequest(/*CFURL*/ aURL, onsuccess, onfailure)
 {
 #ifdef BROWSER
     var request = new CFHTTPRequest();
@@ -260,16 +260,19 @@ function FileRequest(/*String*/ aFilePath, onsuccess, onfailure)
     request.onsuccess = Asynchronous(onsuccess);
     request.onfailure = Asynchronous(onfailure);
 
-    if (FILE.extension(aFilePath) === ".plist")
+    if (aURL.pathExtension() === "plist")
         request.overrideMimeType("text/xml");
 
-    request.open("GET", aFilePath, YES);
+    request.open("GET", aURL.absoluteString(), YES);
     request.send("");
 #else
-    if (!FILE.exists(aFilePath))
+    var FILE = require("file"),
+        filePath = aURL.absoluteURL().path();
+
+    if (!FILE.exists(filePath))
         return onfailure();
 
-    this._responseText = FILE.read(aFilePath, { charset:"UTF-8" });
+    this._responseText = FILE.read(filePath, { charset:"UTF-8" });
 
     onsuccess({ type:"success", request:this });
 #endif

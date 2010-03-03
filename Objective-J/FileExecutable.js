@@ -24,7 +24,8 @@ var FileExecutablesForURLStrings = { };
 
 function FileExecutable(/*CFURL*/ aURL, /*Executable*/ anExecutable)
 {
-if (!aURL._path) aURL = new CFURL(aURL);
+    aURL = resolveURL(aURL);
+
     var URLString = aURL.absoluteString(),
         existingFileExecutable = FileExecutablesForURLStrings[URLString];
 
@@ -33,7 +34,7 @@ if (!aURL._path) aURL = new CFURL(aURL);
 
     FileExecutablesForURLStrings[URLString] = this;
 
-    var fileContents = rootResource.nodeAtSubPath(aURL.path()).contents(),
+    var fileContents = StaticResource.resourceAtURL(aURL).contents(),
         executable = NULL,
         extension = aURL.pathExtension();
 
@@ -111,10 +112,10 @@ function decompile(/*String*/ aString, /*CFURL*/ aURL)
             code += text;
 
         else if (marker === MARKER_IMPORT_STD)
-            dependencies.push(new FileDependency(text, NO));
+            dependencies.push(new FileDependency(new CFURL(text), NO));
 
         else if (marker === MARKER_IMPORT_LOCAL)
-            dependencies.push(new FileDependency(text, YES));
+            dependencies.push(new FileDependency(new CFURL(text), YES));
     }
 
     return new Executable(code, dependencies, aURL);
