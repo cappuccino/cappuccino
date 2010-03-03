@@ -720,11 +720,6 @@
     [_headerClipView scrollToPoint:CGPointMake(contentBounds.origin, 0)];
 }
 
-- (void)viewDidMoveToWindow
-{
-    [self reflectScrolledClipView:_contentView];
-}
-
 @end
 
 var CPScrollViewContentViewKey       = "CPScrollViewContentView",
