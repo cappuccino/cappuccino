@@ -1,7 +1,24 @@
 // Based on the regex in RFC2396 Appendix B.
 var URI_RE = /^(([^:\/?#]+):)?(\/\/([^\/?#]*))?([^?#]*)(\?([^#]*))?(#(.*))?/;
 
-GLOBAL(CFURL) = function(/*CFURL|String*/ aURL, /*CFURL*/ aBaseURL)
+var CFURLsForCachedUIDs,
+    CFURLCachingEnableCount = 0;
+
+function enableCFURLCaching()
+{
+    ++CFURLCachingEnableCount;
+    CFURLsForCachedUIDs = { };
+}
+
+function disableCFURLCaching()
+{
+    CFURLCachingEnableCount = MAX(CFURLCachingEnableCount - 1, 0);
+
+    if (!CFURLCachingEnableCount === 0)
+        delete CFURLsForCachedUIDs;
+}
+
+GLOBAL(CFURL) = function CFURL(/*CFURL|String*/ aURL, /*CFURL*/ aBaseURL)
 {
     if (aURL instanceof CFURL)
         if (!aBaseURL)
@@ -15,6 +32,17 @@ GLOBAL(CFURL) = function(/*CFURL|String*/ aURL, /*CFURL*/ aBaseURL)
 
             return new CFURL(aURL.string(), aBaseURL);
         }
+
+    // Use the cache if it's enabled.
+    if (CFURLsForCachedUIDs)
+    {
+        var cacheUID = aURL + " " + (aBaseURL && aBaseURL.UID() || "");
+
+        if (hasOwnProperty.call(CFURLsForCachedUIDs, cacheUID))
+            return CFURLsForCachedUIDs[cacheUID];
+
+        CFURLsForCachedUIDs[cacheUID] = this;
+    }
 
     this._UID = objj_generateObjectUID();
     this._string = aURL;
@@ -32,6 +60,11 @@ GLOBAL(CFURL) = function(/*CFURL|String*/ aURL, /*CFURL*/ aBaseURL)
 }
 
 var URLMap = { };
+
+CFURL.prototype.UID = function()
+{
+    return this._UID;
+}
 
 CFURL.prototype.mappedURL = function()
 {
@@ -241,7 +274,57 @@ CFURL.prototype.staticResourceData = function()
 
     return data;
 }
+/*
+function parseURL(aURL)
+{
+    var parts = expression.exec(aURL.string()),
+        index = 0,
+        count = parts.length;
 
+    for (; index < count; ++index)
+        aURL[expressionKeys[index]] = parts[index] || "";
+
+    aURL._root = (aURL._root || aURL._authorityRoot) ? "/" : "";
+
+        var components = aPath.split("/"),
+            results = [],
+            index = 0,
+            count = components.length,
+            isRoot = aPath.charAt(0) === "/";
+ 
+        for (; index < count; ++index)
+        {
+            var component = components[index];
+ 
+            // These simply remain in the current directory.
+            if (component === "" || component === ".")
+                continue;
+ 
+            if (component !== "..")
+            {
+                results.push(component);
+                continue;
+            }
+ 
+            var resultsCount = results.length;
+ 
+            // If we have a valid previous component, "climb" it.
+            if (resultsCount > 0 && results[resultsCount - 1] !== "..")
+                results.pop();
+ 
+            // If this isn't a root listing, and we are preceded by only ..'s, or
+            // nothing at all, then add it since it makes sense for relative paths.
+            else if (!isRoot && resultsCount === 0 || results[resultsCount - 1] === "..")
+                results.push(component);
+        }
+ 
+        return (isRoot ? "/" : "") + results.join("/");
+        
+        items.direcotries = that;
+        items.domains = items.domain.split(".");
+    };
+}
+*/
 // from Chiron's HTTP module:
 
 /**** keys
@@ -327,7 +410,7 @@ var strictExpression = new RegExp( /* url */
     mapping all `keys` to values.
 */
 var Parser = function (expression) {
-    return function (url) {
+    return function p_p(url) {
         if (typeof url == "undefined")
             throw new Error("HttpError: URL is undefined");
         if (typeof url != "string") return new Object(url);

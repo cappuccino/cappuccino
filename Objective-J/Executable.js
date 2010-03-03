@@ -20,11 +20,11 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+
 var ExecutableUnloadedFileDependencies  = 0,
     ExecutableLoadingFileDependencies   = 1,
     ExecutableLoadedFileDependencies    = 2,
     AnonymousExecutableCount            = 0;
-
 
 function Executable(/*String*/ aCode, /*Array*/ fileDependencies, /*CFURL*/ aURL, /*Function*/ aFunction)
 {
@@ -366,6 +366,9 @@ Executable.fileImporterForURL = function(/*CFURL*/ aURL)
     {
         cachedImporter = function(/*CFURL*/ aURL, /*BOOL*/ isQuoted, /*Function*/ aCallback)
         {
+            // We make heavy use of URLs throughout this process, so cache them!
+            enableCFURLCaching();
+
             aURL = new CFURL(aURL, isQuoted ? referenceURL : NULL);
 
             var fileExecutableSearch = new FileExecutableSearch(aURL, isQuoted);
@@ -376,6 +379,9 @@ Executable.fileImporterForURL = function(/*CFURL*/ aURL)
                     executeAndCallback = function ()
                     {
                         fileExecutable.execute();
+
+                        // No more need to cache these.
+                        disableCFURLCaching();
 
                         if (aCallback)
                             aCallback();
