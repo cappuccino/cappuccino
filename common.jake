@@ -51,7 +51,7 @@ function ensurePackageUpToDate(packageName, requiredVersion, options)
 ensurePackageUpToDate("jake",           "0.1.4");
 ensurePackageUpToDate("browserjs",      "0.1.1");
 ensurePackageUpToDate("shrinksafe",     "0.2");
-ensurePackageUpToDate("narwhal",        "0.2.1", {
+ensurePackageUpToDate("narwhal",        "0.2.2", {
     noupdate : true,
     message : "Update Narwhal to 0.2.1 by running bootstrap.sh, or pulling the latest from git (see: http://github.com/280north/narwhal)."
 });
