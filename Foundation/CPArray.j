@@ -209,13 +209,13 @@
         var index = 0,
             count = [anArray count];
             
-        for(; index < count; ++i)
+        for(; index < count; ++index)
         {
-            if (anArray[i].isa)
-                self[i] = [anArray copy];
+            if (anArray[index].isa)
+                self[index] = [anArray[index] copy];
             // Do a deep/shallow copy?
             else
-                self[i] = anArray;
+                self[index] = anArray;
         }
     }
     
