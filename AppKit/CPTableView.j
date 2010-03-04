@@ -2553,7 +2553,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 
     // if the table has drag support then we use mouseUp to select a single row.
     // otherwise it uses mouse down.
-    if (!(_implementedDataSourceMethods & CPTableViewDataSource_tableView_writeRowsWithIndexes_toPasteboard_))
+    if (row >=0 && !(_implementedDataSourceMethods & CPTableViewDataSource_tableView_writeRowsWithIndexes_toPasteboard_))
         [self _updateSelectionWithMouseAtRow:row];
 
     [[self window] makeFirstResponder:self];
@@ -2583,7 +2583,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     // or we're dragging from selected rows and we haven't begun a drag session
     if(!_isSelectingSession && _implementedDataSourceMethods & CPTableViewDataSource_tableView_writeRowsWithIndexes_toPasteboard_)
     {
-        if ((ABS(_startTrackingPoint.x - aPoint.x) > 3 || (_verticalMotionCanDrag && ABS(_startTrackingPoint.y - aPoint.y) > 3)) || 
+        if (row >= 0 && (ABS(_startTrackingPoint.x - aPoint.x) > 3 || (_verticalMotionCanDrag && ABS(_startTrackingPoint.y - aPoint.y) > 3)) || 
             ([_selectedRowIndexes containsIndex:row]))
         {
             if ([_selectedRowIndexes containsIndex:row])
@@ -2641,8 +2641,8 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     }
 
     _isSelectingSession = YES;
-    [self _updateSelectionWithMouseAtRow:row];
-    [self _updateSelectionWithMouseAtRow:[self rowAtPoint:aPoint]];
+    if(row >= 0)
+        [self _updateSelectionWithMouseAtRow:row];
 
     if ((_implementedDataSourceMethods & CPTableViewDataSource_tableView_setObjectValue_forTableColumn_row_)
         && !_trackingPointMovedOutOfClickSlop)
