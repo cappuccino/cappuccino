@@ -45,14 +45,16 @@
     CPTextField _saturationLabel;
     CPTextField _brightnessLabel;
     CPTextField _hexLabel;
-    
+
+#if PLATFORM(DOM)
     DOMElement  _redValue;
     DOMElement  _greenValue;
     DOMElement  _blueValue;
     DOMElement  _hueValue;
     DOMElement  _saturationValue;
     DOMElement  _brightnessValue;
-    DOMElement  _hexValue;    
+    DOMElement  _hexValue;
+#endif
 }
 
 - (id)initWithPickerMask:(int)mask colorPanel:(CPColorPanel)owningColorPanel 
@@ -81,7 +83,8 @@
     [_redSlider setTarget: self];
     [_redSlider setAction: @selector(sliderChanged:)];
     [_redSlider setAutoresizingMask: CPViewWidthSizable];
-    
+
+#if PLATFORM(DOM)
     var updateFunction = function(aDOMEvent) 
     { 
         if(isNaN(this.value))
@@ -147,6 +150,7 @@
     
     redValue._DOMElement.appendChild(_redValue);
     [_contentView addSubview: redValue];
+#endif
 
     _greenLabel = [[CPTextField alloc] initWithFrame: CPRectMake(0, 58, 15, 20)];
     [_greenLabel setStringValue: "G"];
@@ -159,6 +163,7 @@
     [_greenSlider setAction: @selector(sliderChanged:)];
     [_greenSlider setAutoresizingMask: CPViewWidthSizable];
 
+#if PLATFORM(DOM)
     //green value input box
     var greenValue = [[CPView alloc] initWithFrame: CPRectMake(aFrame.size.width - 45, 58, 45, 20)];
     [greenValue setAutoresizingMask: CPViewMinXMargin];
@@ -168,6 +173,7 @@
     
     greenValue._DOMElement.appendChild(_greenValue);
     [_contentView addSubview: greenValue];
+#endif
 
     _blueLabel = [[CPTextField alloc] initWithFrame: CPRectMake(0, 81, 15, 20)];
     [_blueLabel setStringValue: "B"];
@@ -180,6 +186,7 @@
     [_blueSlider setAction: @selector(sliderChanged:)];
     [_blueSlider setAutoresizingMask: CPViewWidthSizable];
 
+#if PLATFORM(DOM)
     //blue value input box
     var blueValue = [[CPView alloc] initWithFrame: CPRectMake(aFrame.size.width - 45, 81, 45, 20)];
     [blueValue setAutoresizingMask: CPViewMinXMargin];
@@ -189,7 +196,7 @@
 
     blueValue._DOMElement.appendChild(_blueValue);
     [_contentView addSubview: blueValue];
-
+#endif
     _hsbLabel = [[CPTextField alloc] initWithFrame: CPRectMake(0, 120, 190, 20)];
     [_hsbLabel setStringValue: "Hue, Saturation, Brightness"];
     [_hsbLabel setTextColor:[CPColor blackColor]];
@@ -205,6 +212,7 @@
     [_hueSlider setAction: @selector(sliderChanged:)];
     [_hueSlider setAutoresizingMask: CPViewWidthSizable];
 
+#if PLATFORM(DOM)
     //red value input box
     var hueValue = [[CPView alloc] initWithFrame: CPRectMake(aFrame.size.width - 45, 145, 45, 20)];
     [hueValue setAutoresizingMask: CPViewMinXMargin];
@@ -214,7 +222,7 @@
 
     hueValue._DOMElement.appendChild(_hueValue);
     [_contentView addSubview: hueValue];
-    
+#endif
     _saturationLabel = [[CPTextField alloc] initWithFrame: CPRectMake(0, 168, 15, 20)];
     [_saturationLabel setStringValue: "S"];
     [_saturationLabel setTextColor:[CPColor blackColor]];
@@ -226,6 +234,7 @@
     [_saturationSlider setAction: @selector(sliderChanged:)];
     [_saturationSlider setAutoresizingMask: CPViewWidthSizable];
 
+#if PLATFORM(DOM)
     //green value input box
     var saturationValue = [[CPView alloc] initWithFrame: CPRectMake(aFrame.size.width - 45, 168, 45, 20)];
     [saturationValue setAutoresizingMask: CPViewMinXMargin];
@@ -235,7 +244,7 @@
 
     saturationValue._DOMElement.appendChild(_saturationValue);
     [_contentView addSubview: saturationValue];
-
+#endif
     _brightnessLabel = [[CPTextField alloc] initWithFrame: CPRectMake(0, 191, 15, 20)];
     [_brightnessLabel setStringValue: "B"];
     [_brightnessLabel setTextColor:[CPColor blackColor]];
@@ -247,6 +256,7 @@
     [_brightnessSlider setAction: @selector(sliderChanged:)];
     [_brightnessSlider setAutoresizingMask: CPViewWidthSizable];
 
+#if PLATFORM(DOM)
     //blue value input box
     var brightnessValue = [[CPView alloc] initWithFrame: CPRectMake(aFrame.size.width - 45, 191, 45, 20)];
     [brightnessValue setAutoresizingMask: CPViewMinXMargin];
@@ -256,11 +266,12 @@
 
     brightnessValue._DOMElement.appendChild(_brightnessValue);
     [_contentView addSubview: brightnessValue];
-
+#endif
     _hexLabel = [[CPTextField alloc] initWithFrame: CPRectMake(0, 230, 30, 20)];
     [_hexLabel setStringValue: "Hex"];
     [_hexLabel setTextColor:[CPColor blackColor]];
-    
+
+#if PLATFORM(DOM)
     //hex input box
     _hexValue = _redValue.cloneNode(false);
     _hexValue.style.top = "228px";
@@ -289,7 +300,8 @@
     };
 
     _contentView._DOMElement.appendChild(_hexValue);
-    
+#endif
+
     [_contentView addSubview: _rgbLabel];
     [_contentView addSubview: _redLabel];
     [_contentView addSubview: _greenLabel];
@@ -380,7 +392,9 @@
 
 - (void)updateHex:(CPColor)aColor
 {
+#if PLATFORM(DOM)
     _hexValue.value = [aColor hexString];
+#endif
 }
 
 - (void)updateRGBSliders:(CPColor)aColor
@@ -394,6 +408,7 @@
 
 - (void)updateLabels
 {
+#if PLATFORM(DOM)
     _hueValue.value        = ROUND([_hueSlider floatValue]);      
     _saturationValue.value = ROUND([_saturationSlider floatValue]);
     _brightnessValue.value = ROUND([_brightnessSlider floatValue]);
@@ -401,6 +416,7 @@
     _redValue.value        = ROUND([_redSlider floatValue] * 255);
     _greenValue.value      = ROUND([_greenSlider floatValue] * 255);
     _blueValue.value       = ROUND([_blueSlider floatValue] * 255);
+#endif
 }
 
 - (CPImage)provideNewButtonImage

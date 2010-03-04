@@ -155,6 +155,14 @@
     }
 }
 
+- (void)testInitWithArrayCopyItems
+{
+    var a = [[CopyableObject new], 2, 3];
+    var b = [[CPArray alloc] initWithArray:a copyItems:YES];
+
+    [self assert:a notEqual:b];
+}
+
 @end
 
 @implementation CPArray (reverse)
@@ -166,6 +174,17 @@
         a.push(self[i]);
 
     return a;
+}
+
+@end
+
+@implementation CopyableObject : CPObject
+{
+}
+
+- (id)copy
+{
+    return [[[self class] alloc] init];
 }
 
 @end

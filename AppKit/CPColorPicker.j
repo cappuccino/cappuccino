@@ -23,6 +23,8 @@
 @import <Foundation/CPObject.j>
 @import "CPColorPanel.j"
 
+#include "Platform/Platform.h"
+
 /*! 
     @ingroup appkit
     @class CPColorPicker
@@ -239,8 +241,10 @@
     _blackWheelImage.style.filter = "alpha(opacity=0)"
     _blackWheelImage.style.position = "absolute";
 
+#if PLATFORM(DOM)
     _DOMElement.appendChild(_wheelImage);
     _DOMElement.appendChild(_blackWheelImage);
+#endif
 
     [self setWheelSize:aFrame.size];
 

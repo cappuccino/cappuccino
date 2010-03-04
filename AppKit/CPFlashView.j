@@ -23,6 +23,7 @@
 @import "CPFlashMovie.j"
 @import "CPView.j"
 
+#include "Platform/Platform.h"
 
 var IEFlashCLSID = "clsid:D27CDB6E-AE6D-11cf-96B8-444553540000";
 
@@ -35,10 +36,11 @@ var IEFlashCLSID = "clsid:D27CDB6E-AE6D-11cf-96B8-444553540000";
     
     CPDictionary    _params;
     CPDictionary    _paramElements;
-    
+#if PLATFORM(DOM)    
     DOMElement      _DOMParamElement;
     DOMElement      _DOMObjectElement;
     DOMElement      _DOMInnerObjectElement;
+#endif
 }
 
 - (id)initWithFrame:(CGRect)aFrame
@@ -47,6 +49,7 @@ var IEFlashCLSID = "clsid:D27CDB6E-AE6D-11cf-96B8-444553540000";
     
     if (self)
     {
+#if PLATFORM(DOM)
         if (!CPBrowserIsEngine(CPInternetExplorerBrowserEngine))
         {
             _DOMObjectElement = document.createElement(@"object");
@@ -71,6 +74,7 @@ var IEFlashCLSID = "clsid:D27CDB6E-AE6D-11cf-96B8-444553540000";
         }
         else
             [self _rebuildIEObjects];
+#endif
     }
     
     return self;
@@ -82,7 +86,7 @@ var IEFlashCLSID = "clsid:D27CDB6E-AE6D-11cf-96B8-444553540000";
         return;
         
     _flashMovie = aFlashMovie;
-    
+#if PLATFORM(DOM)
     if (!CPBrowserIsEngine(CPInternetExplorerBrowserEngine))
     {
         _DOMParamElement.value = [aFlashMovie filename];
@@ -90,6 +94,7 @@ var IEFlashCLSID = "clsid:D27CDB6E-AE6D-11cf-96B8-444553540000";
     }
     else
         [self _rebuildIEObjects];
+#endif
 }
 
 - (CPFlashMovie)flashMovie
@@ -120,6 +125,7 @@ var IEFlashCLSID = "clsid:D27CDB6E-AE6D-11cf-96B8-444553540000";
 
 - (void)setParameters:(CPDictionary)aDictionary
 {
+#if PLATFORM(DOM)
     if (_paramElements && !CPBrowserIsEngine(CPInternetExplorerBrowserEngine))
     {
         var elements = [_paramElements allValues],
@@ -128,9 +134,9 @@ var IEFlashCLSID = "clsid:D27CDB6E-AE6D-11cf-96B8-444553540000";
         for (var i = 0; i < count; i++)
             _DOMObjectElement.removeChild([elements objectAtIndex:i]);
     }
-    
+#endif
     _params = aDictionary;
-    
+#if PLATFORM(DOM)
     if (!CPBrowserIsEngine(CPInternetExplorerBrowserEngine))
     {
         _paramElements = [CPDictionary dictionary];
@@ -151,6 +157,7 @@ var IEFlashCLSID = "clsid:D27CDB6E-AE6D-11cf-96B8-444553540000";
     }
     else
         [self _rebuildIEObjects];
+#endif
 }
 
 - (CPDictionary)parameters
@@ -158,6 +165,7 @@ var IEFlashCLSID = "clsid:D27CDB6E-AE6D-11cf-96B8-444553540000";
     return _params;
 }
 
+#if PLATFORM(DOM)
 - (void)_rebuildIEObjects
 {
     _DOMElement.innerHTML = @"";
@@ -176,6 +184,7 @@ var IEFlashCLSID = "clsid:D27CDB6E-AE6D-11cf-96B8-444553540000";
     
     _DOMObjectElement.outerHTML = [CPString stringWithFormat:@"<object classid=%@ width=%@ height=%@>%@</object>", IEFlashCLSID, CGRectGetWidth([self bounds]), CGRectGetHeight([self bounds]), paramString];
 }
+#endif
 
 - (void)mouseDragged:(CPEvent)anEvent
 {

@@ -528,6 +528,7 @@ var CPViewFlags                     = { },
 
     _subviews = [newSubviews copy];
 
+#if PLATFORM(DOM)
     var index = 0,
         count = [_subviews count];
 
@@ -538,6 +539,7 @@ var CPViewFlags                     = { },
         CPDOMDisplayServerRemoveChild(_DOMElement, subview._DOMElement);
         CPDOMDisplayServerAppendChild(_DOMElement, subview._DOMElement);
     }
+#endif
 }
 
 /* @ignore */
@@ -1756,8 +1758,9 @@ setBoundsOrigin:
         _DOMContentsElement.style.width = ROUND(_CGRectGetWidth(_frame)) + "px";
         _DOMContentsElement.style.height = ROUND(_CGRectGetHeight(_frame)) + "px";
 
+#if PLATFORM(DOM)
         CPDOMDisplayServerAppendChild(_DOMElement, _DOMContentsElement);
-        
+#endif
         _graphicsContext = [CPGraphicsContext graphicsContextWithGraphicsPort:graphicsPort flipped:YES];
     }
     
