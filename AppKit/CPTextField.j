@@ -684,9 +684,10 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 - (void)setObjectValue:(id)aValue
 {
     [super setObjectValue:aValue];
-
+	
 #if PLATFORM(DOM)
-    if (CPTextFieldInputOwner === self)
+
+    if (CPTextFieldInputOwner === self || [[self window] firstResponder] === self)
         [self _inputElement].value = aValue;
 #endif
 

@@ -83,7 +83,7 @@ CPTableColumnUserResizingMask   = 1 << 1;
         [textDataView setValue:[CPColor colorWithHexString:@"333333"] forThemeAttribute:@"text-color"];
         [textDataView setValue:[CPColor whiteColor] forThemeAttribute:@"text-color" inState:CPThemeStateHighlighted];
         [textDataView setValue:[CPFont boldSystemFontOfSize:12] forThemeAttribute:@"font" inState:CPThemeStateHighlighted];
-        [textDataView setValue:CGInsetMake(4.0, 8.0, 0.0, 8.0) forThemeAttribute:@"content-inset"];
+        [textDataView setValue:CPCenterVerticalTextAlignment forThemeAttribute:@"vertical-alignment"];
         [self setDataView:textDataView];
     }
 
