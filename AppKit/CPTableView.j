@@ -2741,9 +2741,9 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     
     var draggedTypes = [self registeredDraggedTypes], 
         count = [draggedTypes count],
-        i;
+        i = 0;
         
-    for (i = 0; i < count; i++) 
+    for (; i < count; i++) 
     { 
         if ([[[sender draggingPasteboard] types] containsObject:[draggedTypes objectAtIndex: i]]) 
             return [self _validateDrop:sender proposedRow:row proposedDropOperation:dropOperation]; 
@@ -2824,6 +2824,9 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 		
 	if (ABS(CPRectGetMinY(lowerRect) - dragPoint.y) < ABS(dragPoint.y - CPRectGetMinY(rect)))
 		row = lowerRow;
+
+    if (row >= [self numberOfRows])
+        row = [self numberOfRows];
 	
 	return row;
 }
@@ -2846,6 +2849,9 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 
 - (CPRect)_rectForDropHighlightViewBetweenUpperRow:(int)theUpperRowIndex andLowerRow:(int)theLowerRowIndex offset:(CPPoint)theOffset
 {
+    if (theLowerRowIndex > [self numberOfRows])
+        theLowerRowIndex = [self numberOfRows];
+
 	return [self rectOfRow:theLowerRowIndex];
 }
 
