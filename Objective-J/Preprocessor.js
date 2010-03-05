@@ -855,7 +855,7 @@ Preprocessor.prototype.preprocess = function(tokens, /*StringBuffer*/ aStringBuf
     
     // If we get this far and we're parsing an objj_msgSend (or array), then we have a problem.
     if (tuple)
-        new SyntaxError(this.error_message("*** Expected ']' - Unterminated message send or array."));
+        throw new SyntaxError(this.error_message("*** Expected ']' - Unterminated message send or array."));
 
     if (!aStringBuffer)
         return buffer;

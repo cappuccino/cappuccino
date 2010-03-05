@@ -31,23 +31,9 @@
 
 #include "CoreGraphics/CGGeometry.h"
 
-
-/*
-    @global
-    @group CPImageScaling
-*/
 CPScaleProportionally   = 0;
-/*
-    @global
-    @group CPImageScaling
-*/
 CPScaleToFit            = 1;
-/*
-    @global
-    @group CPImageScaling
-*/
 CPScaleNone             = 2;
-
 
 var CPImageViewShadowBackgroundColor = nil;
     
@@ -223,6 +209,11 @@ var LEFT_SHADOW_INSET       = 3.0,
     
     [self setNeedsLayout];
     [self setNeedsDisplay:YES];
+}
+
+- (unsigned)imageScaling
+{
+    return [self currentValueForThemeAttribute:@"image-scaling"];
 }
 
 /*!
