@@ -7,7 +7,7 @@
  */
 
 @import <Foundation/CPObject.j>
-@import "AppKit/CPOutlineView.j"
+@import <AppKit/CPOutlineView.j>
 
 CPLogRegister(CPLogConsole);
 
