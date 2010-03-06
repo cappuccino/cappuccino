@@ -69,7 +69,11 @@ function CFURLGetParts(/*CFURL*/ aURL)
     if (aURL._parts)
         return aURL._parts;
 
-    var URLString = aURL.string();
+    var URLString = aURL.string(),
+        isMHTMLURL = URLString.match(/^mhtml:/);
+
+    if (isMHTMLURL)
+        URLString = URLString.substr("mhtml:".length);
 
     if (CFURLCachingEnableCount > 0 && hasOwnProperty.call(CFURLPartsForURLStrings, URLString))
     {
@@ -109,7 +113,11 @@ function CFURLGetParts(/*CFURL*/ aURL)
         parts.pathComponents = pathComponents;
     }
 
-    parts.domains = parts.domain.split(".");
+    if (isMHTMLURL)
+    {
+        parts.url = "mhtml:" + parts.url;
+        parts.scheme = "mhtml:" + parts.scheme;
+    }
 
     if (CFURLCachingEnableCount > 0)
         CFURLPartsForURLStrings[URLString] = parts;
@@ -117,8 +125,10 @@ function CFURLGetParts(/*CFURL*/ aURL)
     return parts;
 }
 
-GLOBAL(CFURL) = function CFURL(/*CFURL|String*/ aURL, /*CFURL*/ aBaseURL)
+GLOBAL(CFURL) = function(/*CFURL|String*/ aURL, /*CFURL*/ aBaseURL)
 {
+    aURL = aURL || "";
+
     if (aURL instanceof CFURL)
     {
         if (!aBaseURL)
@@ -143,7 +153,7 @@ GLOBAL(CFURL) = function CFURL(/*CFURL|String*/ aURL, /*CFURL*/ aBaseURL)
         CFURLsForCachedUIDs[cacheUID] = this;
     }
 
-    if (aURL && aURL.match(/^data:/))
+    if (aURL.match(/^data:/))
     {
         var parts = { },
             index = URI_KEYS.length;
@@ -165,6 +175,8 @@ GLOBAL(CFURL) = function CFURL(/*CFURL|String*/ aURL, /*CFURL*/ aBaseURL)
     this._string = aURL;
     this._baseURL = aBaseURL;
 }
+
+CFURL.displayName = "CFURL";
 
 var URLMap = { };
 
