@@ -90,10 +90,8 @@
 */
 - (void)setURL:(CPURL)aURL
 {
-    if ([aURL isKindOfClass:[CPURL class]])
-        _URL = aURL;
-    else
-        _URL = [CPURL URLWithString:String(aURL)];
+    // Lenient and accept strings.
+    _URL = new CFURL(aURL);
 }
 
 /*!

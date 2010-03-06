@@ -159,7 +159,7 @@ var CPBundlesForURLStrings = { };
         count = [staticResources count];
 
     for (; index < count; ++index)
-        [staticResourceURLs addObject:[CPURL URLWithString:staticResources[index].path()]];
+        [staticResourceURLs addObject:staticResources[index].URL()];
 
     return staticResourceURLs;
 }
