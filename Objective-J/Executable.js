@@ -26,14 +26,14 @@ var ExecutableUnloadedFileDependencies  = 0,
     ExecutableLoadedFileDependencies    = 2,
     AnonymousExecutableCount            = 0;
 
-function Executable(/*String*/ aCode, /*Array*/ fileDependencies, /*CFURL*/ aURL, /*Function*/ aFunction)
+function Executable(/*String*/ aCode, /*Array*/ fileDependencies, /*CFURL|String*/ aURL, /*Function*/ aFunction)
 {
     if (arguments.length === 0)
         return this;
 
     this._code = aCode;
     this._function = aFunction || NULL;
-    this._URL = resolveURL(aURL || new CFURL("(Anonymous" + (AnonymousExecutableCount++) + ")", mainBundleURL));
+    this._URL = makeAbsoluteURL(aURL || new CFURL("(Anonymous" + (AnonymousExecutableCount++) + ")", mainBundleURL));
 
     this._fileDependencies = fileDependencies;
     this._fileDependencyLoadStatus = ExecutableUnloadedFileDependencies;
@@ -329,7 +329,7 @@ var cachedFileExecutersForURLStrings = { };
 
 Executable.fileExecuterForURL = function(/*CFURL|String*/ aURL)
 {
-    var referenceURL = resolveURL(aURL),
+    var referenceURL = makeAbsoluteURL(aURL),
         referenceURLString = referenceURL.absoluteString(),
         cachedFileExecuter = cachedFileExecutersForURLStrings[referenceURLString];
 
@@ -356,9 +356,9 @@ Executable.fileExecuterForURL = function(/*CFURL|String*/ aURL)
 
 var cachedImportersForURLStrings = { };
 
-Executable.fileImporterForURL = function(/*CFURL*/ aURL)
+Executable.fileImporterForURL = function(/*CFURL|String*/ aURL)
 {
-    var referenceURL = resolveURL(aURL),
+    var referenceURL = makeAbsoluteURL(aURL),
         referenceURLString = referenceURL.absoluteString(),
         cachedImporter = cachedImportersForURLStrings[referenceURLString];
 

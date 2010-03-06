@@ -35,7 +35,7 @@ var CFBundlesForURLStrings  = { },
 
 GLOBAL(CFBundle) = function(/*CFURL|String*/ aURL)
 {
-    aURL = resolveURL(aURL).asDirectoryPathURL();
+    aURL = makeAbsoluteURL(aURL).asDirectoryPathURL();
 
     var URLString = aURL.absoluteString(),
         existingBundle = CFBundlesForURLStrings[URLString];
@@ -64,9 +64,9 @@ CFBundle.environments = function()
     return ENVIRONMENTS;
 }
 
-CFBundle.bundleContainingURL = function(/*CFURL*/ aURL)
+CFBundle.bundleContainingURL = function(/*CFURL|String*/ aURL)
 {
-    aURL = new CFURL(".", resolveURL(aURL));
+    aURL = new CFURL(".", makeAbsoluteURL(aURL));
 
     while (aURL.path() !== "/")
     {

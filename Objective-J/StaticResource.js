@@ -124,14 +124,9 @@ function rootResourceForAbsoluteURL(/*CFURL*/ anAbsoluteURL)
     return resource;
 }
 
-function resolveURL(/*CFURL|String*/ aURL)
+StaticResource.resourceAtURL = function(/*CFURL|String*/ aURL, /*BOOL*/ resolveAsDirectoriesIfNecessary)
 {
-    return new CFURL(aURL, mainBundleURL);
-}
-
-StaticResource.resourceAtURL = function(/*CFURL*/ aURL, /*BOOL*/ resolveAsDirectoriesIfNecessary)
-{
-    aURL = resolveURL(aURL).absoluteURL();
+    aURL = makeAbsoluteURL(aURL).absoluteURL();
 
     var resource = rootResourceForAbsoluteURL(aURL),
         components = aURL.pathComponents(),
@@ -160,9 +155,9 @@ StaticResource.prototype.resourceAtURL = function(/*CFURL|String*/ aURL, /*BOOL*
     return StaticResource.resourceAtURL(new CFURL(aURL, this.URL()), resolveAsDirectoriesIfNecessary);
 }
 
-StaticResource.resolveResourceAtURL = function(/*CFURL*/ aURL, /*BOOL*/ isDirectory, /*Function*/ aCallback)
+StaticResource.resolveResourceAtURL = function(/*CFURL|String*/ aURL, /*BOOL*/ isDirectory, /*Function*/ aCallback)
 {
-    aURL = resolveURL(aURL).absoluteURL();
+    aURL = makeAbsoluteURL(aURL).absoluteURL();
 
     resolveResourceComponents(rootResourceForAbsoluteURL(aURL), isDirectory, aURL.pathComponents(), 0, aCallback);
 }

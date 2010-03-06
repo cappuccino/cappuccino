@@ -21,6 +21,11 @@
  */
 
 
+function makeAbsoluteURL(/*CFURL|String*/ aURL)
+{
+    return new CFURL(aURL, mainBundleURL);
+}
+
 #ifdef COMMONJS
 var mainBundleURL = new CFURL("file:" + require("file").cwd());
 #elif defined(BROWSER)

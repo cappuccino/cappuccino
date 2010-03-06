@@ -22,9 +22,9 @@
 
 var FileExecutablesForURLStrings = { };
 
-function FileExecutable(/*CFURL*/ aURL, /*Executable*/ anExecutable)
+function FileExecutable(/*CFURL|String*/ aURL, /*Executable*/ anExecutable)
 {
-    aURL = resolveURL(aURL);
+    aURL = makeAbsoluteURL(aURL);
 
     var URLString = aURL.absoluteString(),
         existingFileExecutable = FileExecutablesForURLStrings[URLString];

@@ -221,7 +221,7 @@ CFURL.prototype.toString = function()
     return this.absoluteString();
 }
 
-function _resolveURL(aURL)
+function resolveURL(aURL)
 {
     aURL = aURL.standardizedURL();
 
@@ -356,7 +356,7 @@ function URLStringFromParts(/*Object*/ parts)
 CFURL.prototype.absoluteURL = function()
 {
     if (this._absoluteURL === undefined)
-        this._absoluteURL = _resolveURL(this);
+        this._absoluteURL = resolveURL(this);
 
     return this._absoluteURL;
 }
@@ -502,6 +502,26 @@ CFURL.prototype.scheme = function()
     var baseURL = this.baseURL();
 
     return baseURL && baseURL.scheme() || "";
+}
+
+CFURL.prototype.user = function()
+{
+    return CFURLGetParts(this).user;
+}
+
+CFURL.prototype.password = function()
+{
+    return CFURLGetParts(this).password;
+}
+
+CFURL.prototype.port = function()
+{
+    return CFURLGetParts(this).port;
+}
+
+CFURL.prototype.domain = function()
+{
+    return CFURLGetParts(this).domain;
 }
 
 CFURL.prototype.baseURL = function()

@@ -86,13 +86,13 @@ CPURLCustomIconKey                  = @"CPURLCustomIconKey";
 
 - (CPString)path
 {
-    return [self absoluteString].path();
+    return [self absoluteURL].path();
 }
 
 // if absolute, returns the same as path
 - (CPString)relativePath
 {
-    return URI_RE.test(_relative) ? (parse(_relative).path || nil) : nil;
+    return self.path();
 }
 
 - (CPString)scheme
@@ -102,43 +102,32 @@ CPURLCustomIconKey                  = @"CPURLCustomIconKey";
 
 - (CPString)user
 {
-    var str = [self absoluteString];
-    return URI_RE.test(str) ? (parse(str).user || nil) : nil;
+    return [self absoluteURL].user();
 }
 
 - (CPString)password
 {
-    var str = [self absoluteString];
-    return URI_RE.test(str) ? (parse(str).password || nil) : nil;
+    return [self absoluteURL].password();
 }
 
 - (CPString)host
 {
-    var str = [self absoluteString];
-    return URI_RE.test(str) ? (parse(str).domain || nil) : nil;
+    return [self absoluteURL].domain();
 }
 
 - (Number)port
 {
-    var str = [self absoluteString];
-    if (URI_RE.test(str)) {
-        var port = parse(str).port;
-        if (port)
-            return parseInt(port, 10);
-    }
-    return nil;
+    return parseInt([self absoluteURL].port(), 10);
 }
 
 - (CPString)parameterString
 {
-    var str = [self absoluteString];
-    return URI_RE.test(str) ? (parse(str).query || nil) : nil;
+    return self.queryString();
 }
 
 - (CPString)fragment
 {
-    var str = [self absoluteString];
-    return URI_RE.test(str) ? (parse(str).anchor || nil) : nil;
+    return self.fragment();
 }
 
 - (BOOL)isEqual:(id)anObject
@@ -160,7 +149,7 @@ CPURLCustomIconKey                  = @"CPURLCustomIconKey";
 
 - (CPURL)standardizedURL
 {
-    return [CPURL URLWithString:format(parse(_relative)) relativeToURL:_base];
+    return self.standardizedURL();
 }
 
 - (BOOL)isFileURL
