@@ -647,9 +647,11 @@ BundleTask.prototype.defineSpritedImagesTask = function()
                 if (!isDataResource(aFilename))
                     return;
 
-                var resourcePath = "Resources/" + FILE.relative(resourcesPath, aFilename);
+                var resourcePath = "Resources/" + FILE.relative(resourcesPath, aFilename),
+                    MHTMLResourcePath = "mhtml:" + FILE.join(folder, "MHTMLData.txt!") + resourcePath;
 
                 MHTMLStream.write("u;" + resourcePath.length + ";" + resourcePath);
+                MHTMLStream.write(MHTMLResourcePath.length + ";" + MHTMLResourcePath);
             });
 
             MHTMLStream.close();

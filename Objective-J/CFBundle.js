@@ -584,11 +584,9 @@ function decompileStaticFile(/*Bundle*/ aBundle, /*String*/ aString, /*String*/ 
                 mappedURL,
                 mappedURLString = stream.getString();
 
-            if (mappedURLString.toLowerCase().indexOf("mhtml:") === 0)
+            if (mappedURLString.indexOf("mhtml:") === 0)
             {
-                mappedURLString = "mhtml:" + new CFURL(URLString.substr("mhtml:".length), bundleURL);
-/*
-                URLString = "mhtml:" + URL;
+                mappedURLString = "mhtml:" + new CFURL(mappedURLString.substr("mhtml:".length), bundleURL);
 
                 if (CFBundleSupportedSpriteType === CFBundleMHTMLUncachedSpriteType)
                 {
@@ -596,15 +594,13 @@ function decompileStaticFile(/*Bundle*/ aBundle, /*String*/ aString, /*String*/ 
                         firstPart = URLString.substring(0, exclamationIndex),
                         lastPart = URLString.substring(exclamationIndex);
 
-                    URLString = firstPart + "?" + CFCacheBuster + lastPart;
+                    mappedURLString = firstPart + "?" + CFCacheBuster + lastPart;
                 }
 
-                mappedURL = new CFURL(URLString);*/
-            }
-            else
                 mappedURL = new CFURL(mappedURLString);
+            }
 
-            CFURL.setMappedURLForURL(URL, mappedURL);
+            CFURL.setMappedURLForURL(URL, new CFURL(mappedURLString));
 
             // The unresolved directories must not be bundles.
             var parent = StaticResource.resourceAtURL(new CFURL(".", URL), YES);
