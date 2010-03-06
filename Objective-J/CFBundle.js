@@ -54,7 +54,6 @@ GLOBAL(CFBundle) = function(/*CFURL|String*/ aURL)
     this._loadRequests = [];
 
     this._infoDictionary = NULL;
-    this._URIMap = { };
 
     this._eventDispatcher = new EventDispatcher(this);
 }
