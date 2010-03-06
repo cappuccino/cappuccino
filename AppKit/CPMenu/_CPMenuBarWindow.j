@@ -61,8 +61,7 @@ var _CPMenuBarWindowBackgroundColor = nil,
 
     if (self)
     {
-        // FIXME: http://280north.lighthouseapp.com/projects/13294-cappuccino/tickets/39-dont-allow-windows-to-go-above-menubar
-        [self setLevel:-1];//CPTornOffMenuWindowLevel];
+        [self setLevel:CPMainMenuWindowLevel];
         [self setAutoresizingMask:CPWindowWidthSizable];
      
         var contentView = [self contentView];
