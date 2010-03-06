@@ -53,7 +53,7 @@ GLOBAL(CFBundle) = function(/*CFURL|String*/ aURL)
     this._loadStatus = CFBundleUnloaded;
     this._loadRequests = [];
 
-    this._infoDictionary = NULL;
+    this._infoDictionary = new CFDictionary();
 
     this._eventDispatcher = new EventDispatcher(this);
 }

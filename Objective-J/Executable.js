@@ -33,7 +33,7 @@ function Executable(/*String*/ aCode, /*Array*/ fileDependencies, /*CFURL|String
 
     this._code = aCode;
     this._function = aFunction || NULL;
-    this._URL = makeAbsoluteURL(aURL || new CFURL("(Anonymous" + (AnonymousExecutableCount++) + ")", mainBundleURL));
+    this._URL = makeAbsoluteURL(aURL || new CFURL("(Anonymous" + (AnonymousExecutableCount++) + ")"));
 
     this._fileDependencies = fileDependencies;
     this._fileDependencyLoadStatus = ExecutableUnloadedFileDependencies;

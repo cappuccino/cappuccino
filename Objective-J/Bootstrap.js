@@ -70,7 +70,7 @@ function resolveMainBundleURL()
         for (; index < count; ++index)
             aResource.resourceAtURL(includeURLs[index], YES);
 
-        Executable.fileImporterForURL(mainBundleURL)(mainFileURL, YES, function()
+        Executable.fileImporterForURL(mainBundleURL)(mainFileURL.lastPathComponent(), YES, function()
         {
             afterDocumentLoad(main);
         });
