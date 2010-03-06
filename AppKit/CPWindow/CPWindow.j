@@ -1834,10 +1834,10 @@ CPTexturedBackgroundWindowMask
 */
 - (void)becomeMainWindow
 {
+    CPApp._mainWindow = self;
+
     [self _synchronizeMenuBarTitleWithWindowTitle];
     [self _synchronizeSaveMenuWithDocumentSaving];
-
-    CPApp._mainWindow = self;
 
     [[CPNotificationCenter defaultCenter]
         postNotificationName:CPWindowDidBecomeMainNotification
