@@ -28,6 +28,8 @@ CPTabKeyCode        = 9;
 CPReturnKeyCode     = 13;
 CPEscapeKeyCode     = 27;
 CPSpaceKeyCode      = 32;
+CPPageUpKeyCode     = 33;
+CPPageDownKeyCode   = 34;
 CPLeftArrowKeyCode  = 37;
 CPUpArrowKeyCode    = 38;
 CPRightArrowKeyCode = 39;
@@ -106,6 +108,10 @@ CPDownArrowKeyCode  = 40;
 
         switch([event keyCode])
         {
+            case CPPageUpKeyCode:       [self doCommandBySelector:@selector(pageUp:)];
+                                        break;
+            case CPPageDownKeyCode:     [self doCommandBySelector:@selector(pageDown:)];
+                                        break;
             case CPLeftArrowKeyCode:    [self doCommandBySelector:@selector(moveLeft:)];
                                         break;
             case CPRightArrowKeyCode:   [self doCommandBySelector:@selector(moveRight:)];

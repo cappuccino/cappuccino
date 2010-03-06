@@ -783,6 +783,11 @@ CPTexturedBackgroundWindowMask
 */
 - (void)setLevel:(int)aLevel
 {
+    if (aLevel === _level)
+        return;
+
+    [_platformWindow moveWindow:self fromLevel:_level toLevel:aLevel];
+
     _level = aLevel;
 
     if ([self _sharesChromeWithPlatformWindow])
