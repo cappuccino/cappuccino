@@ -122,7 +122,12 @@ CPURLCustomIconKey                  = @"CPURLCustomIconKey";
 
 - (Number)port
 {
-    return parseInt([self absoluteURL].port(), 10);
+    var portNumber = [self absoluteURL].portNumber();
+
+    if (portNumber === -1)
+        return nil;
+
+    return portNumber;
 }
 
 - (CPString)parameterString

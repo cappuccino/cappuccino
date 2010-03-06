@@ -1,3 +1,24 @@
+/*
+ * CFURL.js
+ * Objective-J
+ *
+ * Created by Francisco Tolmasky.
+ * Copyright 2010, 280 North, Inc.
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
+ */
 
 var CFURLsForCachedUIDs,
     CFURLPartsForURLStrings,
@@ -58,7 +79,7 @@ var URI_KEYS =
             "user",
             "password",
         "domain",
-        "port",
+        "portNumber",
     "path",
     "queryString",
     "fragment"
@@ -88,7 +109,12 @@ function CFURLGetParts(/*CFURL*/ aURL)
         index = results.length;
 
     while (index--)
-        parts[URI_KEYS[index]] = results[index] || "";
+        parts[URI_KEYS[index]] = results[index] || NULL;
+
+    parts.portNumber = parseInt(parts.portNumber, 10);
+
+    if (isNaN(parts.portNumber))
+        parts.portNumber = -1;
 
     parts.pathComponents = [];
 
@@ -243,6 +269,12 @@ function resolveURL(aURL)
 
         resolvedParts.scheme = baseParts.scheme;
         resolvedParts.authority = baseParts.authority;
+        resolvedParts.userInfo = baseParts.userInfo;
+        resolvedParts.user = baseParts.user;
+        resolvedParts.password = baseParts.password;
+        resolvedParts.domain = baseParts.domain;
+        resolvedParts.portNumber = baseParts.portNumber;
+
         resolvedParts.queryString = parts.queryString;
         resolvedParts.fragment = parts.fragment;
 
@@ -501,7 +533,7 @@ CFURL.prototype.scheme = function()
 
     var baseURL = this.baseURL();
 
-    return baseURL && baseURL.scheme() || "";
+    return baseURL && baseURL.scheme();
 }
 
 CFURL.prototype.user = function()
@@ -514,9 +546,9 @@ CFURL.prototype.password = function()
     return CFURLGetParts(this).password;
 }
 
-CFURL.prototype.port = function()
+CFURL.prototype.portNumber = function()
 {
-    return CFURLGetParts(this).port;
+    return CFURLGetParts(this).portNumber;
 }
 
 CFURL.prototype.domain = function()

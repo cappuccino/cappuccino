@@ -55,7 +55,7 @@
     for (URLString in URLStrings)
         if (URLStrings.hasOwnProperty(URLString))
         {
-            print(URLStrings[URLString] + " " + new CFURL(URLString, baseURL).absoluteString());
+//            print(URLStrings[URLString] + " " + new CFURL(URLString, baseURL).absoluteString());
             [self assert:URLStrings[URLString] equals:new CFURL(URLString, baseURL).absoluteString()];
         }
 }
