@@ -73,6 +73,11 @@ CPURLCustomIconKey                  = @"CPURLCustomIconKey";
     return self.absoluteURL();
 }
 
+- (CPURL)baseURL
+{
+    return self.baseURL();
+}
+
 - (CPString)absoluteString
 {
     return self.absoluteString();
