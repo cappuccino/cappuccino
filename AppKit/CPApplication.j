@@ -40,6 +40,10 @@ CPApp = nil;
 CPApplicationWillFinishLaunchingNotification    = @"CPApplicationWillFinishLaunchingNotification";
 CPApplicationDidFinishLaunchingNotification     = @"CPApplicationDidFinishLaunchingNotification";
 CPApplicationWillTerminateNotification          = @"CPApplicationWillTerminateNotification";
+CPApplicationWillBecomeActiveNotification       = @"CPApplicationWillBecomeActiveNotification";
+CPApplicationDidBecomeActiveNotification        = @"CPApplicationDidBecomeActiveNotification";
+CPApplicationWillResignActiveNotification       = @"CPApplicationWillResignActiveNotification";
+CPApplicationDidResignActiveNotification        = @"CPApplicationDidResignActiveNotification";
 
 CPTerminateNow      = YES;
 CPTerminateCancel   = NO;
@@ -83,6 +87,8 @@ CPRunContinuesResponse  = -1002;
     CPArray                 _windows;
     CPWindow                _keyWindow;
     CPWindow                _mainWindow;
+    CPWindow                _previousKeyWindow;
+    CPWindow                _previousMainWindow;
     
     CPMenu                  _mainMenu;
     CPDocumentController    _documentController;
@@ -92,6 +98,7 @@ CPRunContinuesResponse  = -1002;
     //
     id                      _delegate;
     BOOL                    _finishedLaunching;
+    BOOL                    _isActive;
     
     CPDictionary            _namedArgs;
     CPArray                 _args;
@@ -219,6 +226,26 @@ CPRunContinuesResponse  = -1002;
             removeObserver:_delegate
                       name:CPApplicationDidFinishLaunchingNotification
                     object:self];
+
+        [defaultCenter
+            removeObserver:_delegate
+                      name:CPApplicationWillBecomeActiveNotification
+                    object:self];
+
+        [defaultCenter
+            removeObserver:_delegate
+                      name:CPApplicationDidBecomeActiveNotification
+                    object:self];
+
+        [defaultCenter
+            removeObserver:_delegate
+                      name:CPApplicationWillResignActiveNotification
+                    object:self];
+
+        [defaultCenter
+            removeObserver:_delegate
+                      name:CPApplicationDidResignActiveNotification
+                    object:self];
     }
     
     _delegate = aDelegate;
@@ -235,6 +262,34 @@ CPRunContinuesResponse  = -1002;
             addObserver:_delegate
                selector:@selector(applicationDidFinishLaunching:)
                    name:CPApplicationDidFinishLaunchingNotification
+                 object:self];
+
+    if ([_delegate respondsToSelector:@selector(applicationWillBecomeActive:)])
+        [defaultCenter
+            addObserver:_delegate
+               selector:@selector(applicationWillBecomeActive:)
+                   name:CPApplicationWillBecomeActiveNotification
+                 object:self];
+
+    if ([_delegate respondsToSelector:@selector(applicationDidBecomeActive:)])
+        [defaultCenter
+            addObserver:_delegate
+               selector:@selector(applicationDidBecomeActive:)
+                   name:CPApplicationDidBecomeActiveNotification
+                 object:self];
+
+    if ([_delegate respondsToSelector:@selector(applicationWillResignActive:)])
+        [defaultCenter
+            addObserver:_delegate
+               selector:@selector(applicationWillResignActive:)
+                   name:CPApplicationWillResignActiveNotification
+                 object:self];
+
+    if ([_delegate respondsToSelector:@selector(applicationDidResignActive:)])
+        [defaultCenter
+            addObserver:_delegate
+               selector:@selector(applicationDidResignActive:)
+                   name:CPApplicationDidResignActiveNotification
                  object:self];
 }
 
@@ -419,7 +474,27 @@ CPRunContinuesResponse  = -1002;
 
 - (void)activateIgnoringOtherApps:(BOOL)shouldIgnoreOtherApps
 {
+    [self _willBecomeActive];
+
     [CPPlatform activateIgnoringOtherApps:shouldIgnoreOtherApps];
+    _isActive = YES;
+
+    [self _willResignActive];
+}
+
+- (void)deactivate
+{
+    [self _willResignActive];
+
+    [CPPlatform deactivate];
+    _isActive = NO;
+
+    [self _didResignActive];
+}
+
+- (void)isActive
+{
+    return _isActive;
 }
 
 - (void)hideOtherApplications:(id)aSender
@@ -622,6 +697,14 @@ CPRunContinuesResponse  = -1002;
 - (CPArray)windows
 {
     return _windows;
+}
+
+/*!
+    Returns an array of visible CPWindow objects, ordered by their front to back order on the screen.
+*/
+- (CPArray)orderedWindows
+{
+    return CPWindowObjectList();
 }
 
 - (void)hide:(id)aSender
@@ -953,10 +1036,65 @@ CPRunContinuesResponse  = -1002;
     return !![_documentController openDocumentWithContentsOfURL:aURL display:YES error:NULL];
 }
 
+- (void)_willBecomeActive
+{
+    [[CPNotificationCenter defaultCenter] postNotificationName:CPApplicationWillBecomeActiveNotification 
+                                                        object:self 
+                                                      userInfo:nil];
+}
+
+- (void)_didBecomeActive
+{
+    if (![self keyWindow] && _previousKeyWindow && 
+        [[self windows] indexOfObjectIdenticalTo:_previousKeyWindow] !== CPNotFound)
+        [_previousKeyWindow makeKeyWindow];
+
+    if (![self mainWindow] && _previousMainWindow && 
+        [[self windows] indexOfObjectIdenticalTo:_previousMainWindow] !== CPNotFound)
+        [_previousMainWindow makeMainWindow];
+
+    if ([self keyWindow])
+        [[self keyWindow] orderFront:self];
+    else if ([self mainWindow])
+        [[self mainWindow] makeKeyAndOrderFront:self];
+    else
+        [[[self mainMenu] window] makeKeyWindow]; //FIXME this may not actually work
+
+    _previousKeyWindow = nil;
+    _previousMainWindow = nil;
+
+    [[CPNotificationCenter defaultCenter] postNotificationName:CPApplicationDidBecomeActiveNotification 
+                                                        object:self 
+                                                      userInfo:nil];
+}
+
+- (void)_willResignActive
+{
+    [[CPNotificationCenter defaultCenter] postNotificationName:CPApplicationWillResignActiveNotification 
+                                                        object:self 
+                                                      userInfo:nil];
+}
+
 - (void)_didResignActive
 {
     if (self._activeMenu)
         [self._activeMenu cancelTracking];
+
+    if ([self keyWindow])
+    {
+        _previousKeyWindow = [self keyWindow];
+        [_previousKeyWindow resignKeyWindow];
+    }
+
+    if ([self mainWindow])
+    {
+        _previousMainWindow = [self mainWindow];
+        [_previousMainWindow resignMainWindow];
+    }
+
+    [[CPNotificationCenter defaultCenter] postNotificationName:CPApplicationDidResignActiveNotification 
+                                                        object:self 
+                                                      userInfo:nil];
 }
 
 + (CPString)defaultThemeName

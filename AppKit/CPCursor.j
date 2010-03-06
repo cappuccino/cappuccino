@@ -230,8 +230,6 @@ var currentCursor = nil,
 + (void)_setCursorCSS:(CPString)aString
 {
 #if PLATFORM(DOM)
-    [CPPlatformWindow primaryPlatformWindow]._DOMBodyElement.style.cursor = aString;
-
     var platformWindows = [[CPPlatformWindow visiblePlatformWindows] allObjects];
     for (var i = 0, count = [platformWindows count]; i < count; i++)
         platformWindows[i]._DOMBodyElement.style.cursor = aString;
