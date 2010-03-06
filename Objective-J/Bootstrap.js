@@ -21,11 +21,6 @@
  */
 
 
-function makeAbsoluteURL(/*CFURL|String*/ aURL)
-{
-    return new CFURL(aURL, mainBundleURL);
-}
-
 #ifdef COMMONJS
 var mainBundleURL = new CFURL("file:" + require("file").cwd());
 #elif defined(BROWSER)
@@ -112,3 +107,17 @@ if (typeof OBJJ_AUTO_BOOTSTRAP === "undefined" || OBJJ_AUTO_BOOTSTRAP)
     exports.bootstrap();
 
 #endif
+
+function makeAbsoluteURL(/*CFURL|String*/ aURL)
+{
+    return new CFURL(aURL, mainBundleURL);
+}
+
+GLOBAL(objj_importFile) = Executable.fileImporterForURL(mainBundleURL);
+GLOBAL(objj_executeFile) = Executable.fileExecuterForURL(mainBundleURL);
+
+GLOBAL(objj_import) = function()
+{
+    CPLog.warn("objj_import is deprecated, use objj_importFile instead");
+    objj_importFile.apply(this, arguments);
+}
