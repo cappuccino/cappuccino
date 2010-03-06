@@ -497,6 +497,14 @@ var CPTabViewDidSelectTabViewItemSelector           = 1,
 }
 
 /*!
+    Returns the receiver's delegate.
+*/
+- (id)delegate
+{
+    return _delegate;
+}
+
+/*!
     Sets the delegate for this tab view.
     @param aDelegate the tab view's delegate
 */
