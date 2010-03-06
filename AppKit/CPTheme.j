@@ -22,7 +22,7 @@
 
 @import <Foundation/CPObject.j>
 @import <Foundation/CPString.j>
-
+@import <Foundation/CPKeyedUnarchiver.j>
 
 var CPThemesByName      = { },
     CPThemeDefaultTheme = nil;

@@ -426,7 +426,14 @@ var supportsNativeDragAndDrop = [CPPlatform supportsDragAndDrop];
 
 + (CPSet)visiblePlatformWindows
 {
-    return PlatformWindows;
+    if ([[CPPlatformWindow primaryPlatformWindow] isVisible])
+    {
+        var set = [CPSet setWithSet:PlatformWindows];
+        [set addObject:[CPPlatformWindow primaryPlatformWindow]];
+        return set;
+    }
+    else
+        return PlatformWindows;
 }
 
 - (void)orderFront:(id)aSender
@@ -1374,19 +1381,25 @@ var CPDOMEventStop = function(aDOMEvent, aPlatformWindow)
 
 function CPWindowObjectList()
 {
-    var platformWindow = [CPPlatformWindow primaryPlatformWindow],
-        levels = platformWindow._windowLevels,
-        layers = platformWindow._windowLayers,
-        levelCount = levels.length,
+    var platformWindows = [CPPlatformWindow visiblePlatformWindows],
+        platformWindowEnumerator = [platformWindows objectEnumerator],
+        platformWindow = nil,
         windowObjects = [];
 
-    while (levelCount--)
+    while (platformWindow = [platformWindowEnumerator nextObject])
     {
-        var windows = [layers objectForKey:levels[levelCount]]._windows,
-            windowCount = windows.length;
+        var levels = platformWindow._windowLevels,
+            layers = platformWindow._windowLayers,
+            levelCount = levels.length;
 
-        while (windowCount--)
-            windowObjects.push(windows[windowCount]);
+        while (levelCount--)
+        {
+            var windows = [layers objectForKey:levels[levelCount]]._windows,
+                windowCount = windows.length;
+
+            while (windowCount--)
+                windowObjects.push(windows[windowCount]);
+        }
     }
 
     return windowObjects;
@@ -1394,20 +1407,11 @@ function CPWindowObjectList()
 
 function CPWindowList()
 {
-    var platformWindow = [CPPlatformWindow primaryPlatformWindow],
-        levels = platformWindow._windowLevels,
-        layers = platformWindow._windowLayers,
-        levelCount = levels.length,
-        windowNumbers = [];
+    var windowObjectList = CPWindowObjectList(),
+        windowList = [];
 
-    while (levelCount--)
-    {
-        var windows = [layers objectForKey:levels[levelCount]]._windows,
-            windowCount = windows.length;
+    for (var i = 0, count = [windowObjectList count]; i < count; i++)
+        windowList.push([windowObjectList[i] windowNumber]);
 
-        while (windowCount--)
-            windowNumbers.push([windows[windowCount] windowNumber]);
-    }
-
-    return windowNumbers;
+    return windowList;
 }
