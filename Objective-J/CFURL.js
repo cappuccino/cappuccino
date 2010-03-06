@@ -547,12 +547,12 @@ function CFURLGetResourcePropertiesForKeys(/*CFURL*/ aURL)
 
 CFURL.prototype.resourcePropertyForKey = function(/*String*/ aKey)
 {
-    return CFURLGetResourcePropertiesForKeys(this).objectForKey(aKey);
+    return CFURLGetResourcePropertiesForKeys(this).valueForKey(aKey);
 }
 
 CFURL.prototype.setResourcePropertyForKey = function(/*String*/ aKey, /*id*/ aValue)
 {
-    CFURLGetResourcePropertiesForKeys(this).setObjectForKey(aKey, aValue);
+    CFURLGetResourcePropertiesForKeys(this).setValueForKey(aKey, aValue);
 }
 
 CFURL.prototype.staticResourceData = function()
