@@ -77,9 +77,14 @@ var CPBundlesForPaths = { };
     // ???
 }
 
+- (CPURL)bundleURL
+{
+    return _bundle.bundleURL();
+}
+
 - (CPString)bundlePath
 {
-    return _bundle.path();
+    return [[self bundleURL] path];
 }
 
 - (CPString)resourcePath

@@ -29,6 +29,10 @@ function makeAbsoluteURL(/*CFURL|String*/ aURL)
 #ifdef COMMONJS
 var mainBundleURL = new CFURL("file:" + require("file").cwd());
 #elif defined(BROWSER)
+// This is automatic when importing, but we'd like these important URLs to
+// be taken into consideration in the cache as well.
+enableCFURLCaching();
+
 // To determine where our application lives, start with the current URL of the page.
 var pageURL = new CFURL(window.location.href),
 
@@ -50,9 +54,16 @@ if (DOMBaseElementsCount > 0)
 var mainFileURL = new CFURL(window.OBJJ_MAIN_FILE || "main.j"),
 
 // The main bundle is the containing folder of the main file.
-    mainBundleURL = new CFURL(".", new CFURL(mainFileURL, pageURL)).absoluteURL();
+    mainBundleURL = new CFURL(".", new CFURL(mainFileURL, pageURL)).absoluteURL(),
 
-StaticResource.resourceAtURL(new CFURL("..", mainBundleURL).absoluteURL(), YES);
+// We assume the "first part" of the path is completely resolved.
+    assumedResolvedURL = new CFURL("..", mainBundleURL).absoluteURL();
+
+// .. doesn't work if we're already at root, so "go back" one more level to the scheme and authority.
+if (mainBundleURL === assumedResolvedURL)
+    assumedResolvedURL = new CFURL(assumedResolvedURL.schemeAndAuthority());
+
+StaticResource.resourceAtURL(assumedResolvedURL, YES);
 
 exports.bootstrap = function()
 {
@@ -72,6 +83,7 @@ function resolveMainBundleURL()
 
         Executable.fileImporterForURL(mainBundleURL)(mainFileURL.lastPathComponent(), YES, function()
         {
+            disableCFURLCaching();
             afterDocumentLoad(main);
         });
     });
