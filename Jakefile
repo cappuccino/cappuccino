@@ -63,6 +63,24 @@ task ("sudo-install", ["CommonJS"], function()
     }
 });
 
+task ("install-symlinks",  function()
+{
+    installSymlink($BUILD_CJS_OBJECTIVE_J);
+    installSymlink($BUILD_CJS_CAPPUCCINO);
+});
+
+function installSymlink(sourcePath) {
+    var TUSK = require("narwhal/tusk");
+    var INSTALL = require("narwhal/tusk/commands/install");
+
+    var packageName = FILE.basename(sourcePath);
+    var packageDir = TUSK.getPackagesDirectory().join(packageName);
+    stream.print("Symlinking \0cyan(" + packageDir + "\0) to \0cyan(" + sourcePath + "\0)");
+
+    FILE.symlink(sourcePath, packageDir);
+    INSTALL.finishInstall(packageDir);
+}
+
 // Documentation
 
 $DOCUMENTATION_BUILD = FILE.join($BUILD_DIR, "Documentation");
