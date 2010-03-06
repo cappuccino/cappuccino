@@ -52,9 +52,10 @@ var CPOutlineViewDataSource_outlineView_setObjectValue_forTableColumn_byItem_   
 
 
 var CPOutlineViewDelegate_outlineView_dataViewForTableColumn_item_                                  = 1 << 1,
-    CPOutlineViewDelegate_outlineView_shouldSelectItem_                                             = 1 << 2;
+    CPOutlineViewDelegate_outlineView_shouldSelectItem_                                             = 1 << 2,
     CPOutlineViewDelegate_outlineView_heightOfRowByItem_                                            = 1 << 3,
-    CPOutlineViewDelegate_outlineView_willDisplayView_forTableColumn_item_                          = 1 << 4;
+    CPOutlineViewDelegate_outlineView_willDisplayView_forTableColumn_item_                          = 1 << 4,
+    CPOutlineViewDelegate_outlineView_isGroupItem_                                                  = 1 << 5;
 
 CPOutlineViewDropOnItemIndex = -1;
 
@@ -468,7 +469,10 @@ CPOutlineViewDropOnItemIndex = -1;
 
     if ([_outlineViewDelegate respondsToSelector:@selector(outlineView:willDisplayView:forTableColumn:item:)])
         _implementedOutlineViewDelegateMethods |= CPOutlineViewDelegate_outlineView_willDisplayView_forTableColumn_item_;
-        
+
+    if ([_outlineViewDelegate respondsToSelector:@selector(outlineView:isGroupItem:)])
+         _implementedOutlineViewDelegateMethods |= CPOutlineViewDelegate_outlineView_isGroupItem_;
+
     if ([_outlineViewDelegate respondsToSelector:@selector(outlineViewColumnDidMove:)])
         [defaultCenter
             addObserver:_outlineViewDelegate
@@ -1020,7 +1024,13 @@ var _loadItemInfoForItem = function(/*CPOutlineView*/ anOutlineView, /*id*/ anIt
     }
 }
 
+- (BOOL)tableView:(CPTableView)aTableView isGroupRow:(int)row
+{
+    if ((_outlineView._implementedOutlineViewDelegateMethods & CPOutlineViewDelegate_outlineView_isGroupItem_))
+        return [_outlineView._outlineViewDelegate outlineView:_outlineView isGroupItem:[_outlineView itemAtRow:theRow]];
 
+    return NO;
+}
 
 @end
 
