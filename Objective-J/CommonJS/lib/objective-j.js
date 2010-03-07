@@ -172,11 +172,7 @@ exports.make_narwhal_factory = function(path)
     return function(require, exports, module, system, print)
     {
         Executable.setCommonJSArguments(require, exports, module, system, print, window);
-
-        Executable.fileImporterForURL(FILE.dirname(path))(path, YES, function()
-        {
-            print("all done");
-        });
+        Executable.fileImporterForURL(FILE.dirname(path))(path, YES);
     }
 }
 
