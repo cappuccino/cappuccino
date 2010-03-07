@@ -65,6 +65,10 @@ CFDictionary.prototype.containsKey = function(/*String*/ aKey)
     return hasOwnProperty.apply(this._buckets, [aKey]);
 }
 
+#if DEBUG
+CFDictionary.prototype.containsKey.displayName = "CFDictionary.containsKey";
+#endif
+
 CFDictionary.prototype.containsValue = function(/*id*/ anObject)
 {
     var keys = this._keys,
@@ -79,15 +83,30 @@ CFDictionary.prototype.containsValue = function(/*id*/ anObject)
     return NO;
 }
 
+#if DEBUG
+CFDictionary.prototype.containsValue.displayName = "CFDictionary.containsValue";
+#endif
+
+
 CFDictionary.prototype.count = function()
 {
     return this._count;
 }
 
+#if DEBUG
+CFDictionary.prototype.count.displayName = "CFDictionary.count";
+#endif
+
+
 CFDictionary.prototype.countOfKey = function(/*String*/ aKey)
 {
     return this.containsKey(aKey) ? 1 : 0;
 }
+
+#if DEBUG
+CFDictionary.prototype.countOfKey.displayName = "CFDictionary.countOfKey";
+#endif
+
 
 CFDictionary.prototype.countOfValue = function(/*id*/ anObject)
 {
@@ -104,10 +123,19 @@ CFDictionary.prototype.countOfValue = function(/*id*/ anObject)
     return countOfValue;
 }
 
+#if DEBUG
+CFDictionary.prototype.countOfValue.displayName = "CFDictionary.countOfValue";
+#endif
+
+
 CFDictionary.prototype.keys = function()
 {
     return this._keys.slice();
 }
+
+#if DEBUG
+CFDictionary.prototype.keys.displayName = "CFDictionary.keys";
+#endif
 
 CFDictionary.prototype.valueForKey = function(/*String*/ aKey)
 {
@@ -118,6 +146,10 @@ CFDictionary.prototype.valueForKey = function(/*String*/ aKey)
 
     return buckets[aKey];
 }
+
+#if DEBUG
+CFDictionary.prototype.valueForKey.displayName = "CFDictionary.valueForKey";
+#endif
 
 CFDictionary.prototype.toString = function()
 {
@@ -135,6 +167,10 @@ CFDictionary.prototype.toString = function()
 
     return string + "}";
 }
+
+#if DEBUG
+CFDictionary.prototype.toString.displayName = "CFDictionary.toString";
+#endif
 
 GLOBAL(CFMutableDictionary) = function(/*CFDictionary*/ aDictionary)
 {
@@ -158,6 +194,10 @@ CFMutableDictionary.prototype.addValueForKey = function(/*String*/ aKey, /*Objec
     this._keys.push(aKey);
     this._buckets[aKey] = aValue;
 }
+
+#if DEBUG
+CFMutableDictionary.prototype.addValueForKey.displayName = "CFMutableDictionary.addValueForKey";
+#endif
 
 CFMutableDictionary.prototype.removeValueForKey = function(/*String*/ aKey)
 {
@@ -188,12 +228,20 @@ CFMutableDictionary.prototype.removeValueForKey = function(/*String*/ aKey)
     delete this._buckets[aKey];
 }
 
+#if DEBUG
+CFMutableDictionary.prototype.removeValueForKey.displayName = "CFMutableDictionary.removeValueForKey";
+#endif
+
 CFMutableDictionary.prototype.removeAllValues = function()
 {
     this._count = 0;
     this._keys = [];
     this._buckets = { };
 }
+
+#if DEBUG
+CFMutableDictionary.prototype.removeAllValues.displayName = "CFMutableDictionary.removeAllValues";
+#endif
 
 CFMutableDictionary.prototype.replaceValueForKey = function(/*String*/ aKey, /*Object*/ aValue)
 {
@@ -202,6 +250,10 @@ CFMutableDictionary.prototype.replaceValueForKey = function(/*String*/ aKey, /*O
 
     this._buckets[aKey] = aValue;
 }
+
+#if DEBUG
+CFMutableDictionary.prototype.replaceValueForKey.displayName = "CFMutableDictionary.replaceValueForKey";
+#endif
 
 CFMutableDictionary.prototype.setValueForKey = function(/*String*/ aKey, /*Object*/ aValue)
 {
@@ -214,3 +266,7 @@ CFMutableDictionary.prototype.setValueForKey = function(/*String*/ aKey, /*Objec
     else
         this.addValueForKey(aKey, aValue);
 }
+
+#if DEBUG
+CFMutableDictionary.prototype.setValueForKey.displayName = "CFMutableDictionary.setValueForKey";
+#endif

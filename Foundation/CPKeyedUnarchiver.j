@@ -426,7 +426,7 @@ var _CPKeyedUnarchiverDecodeObjectAtIndex = function(self, anIndex)
     var object = self._objects[anIndex];
 
     if (object)
-        if (object == self._objects[0])
+        if (object === self._objects[0])
             return nil;
         else
             return object;
@@ -504,9 +504,9 @@ var _CPKeyedUnarchiverDecodeObjectAtIndex = function(self, anIndex)
     {
         self._objects[anIndex] = object = plistObject;
 
-        if ([object class] == CPStringClass)
+        if ([object class] === CPStringClass)
         {
-            if (object == _CPKeyedArchiverNullString)
+            if (object === _CPKeyedArchiverNullString)
             {
                 self._objects[anIndex] = self._objects[0];
 
