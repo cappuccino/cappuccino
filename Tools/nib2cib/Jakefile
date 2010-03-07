@@ -13,7 +13,7 @@ app ("nib2cib", function(nib2cibTask)
 
     nib2cibTask.setIdentifier("com.280n.nib2cib");
     nib2cibTask.setLicense(BundleTask.License.LGPL_v2_1);
-    nib2cibTask.setVersion("0.7.9");
+    nib2cibTask.setVersion("0.8.0");
     nib2cibTask.setAuthor("280 North, Inc.");
     nib2cibTask.setEmail("feedback @nospam@ 280north.com");
     nib2cibTask.setSummary("nib2cib converts Cocoa nib and xibs to Cappuccino cibs");

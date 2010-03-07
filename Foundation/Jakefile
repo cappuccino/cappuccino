@@ -34,7 +34,7 @@ foundationTask = framework ("Foundation", function(foundationTask)
     foundationTask.setEmail("feedback @nospam@ 280north.com");
     foundationTask.setSummary("Foundation classes for Cappuccino");
     foundationTask.setIdentifier("com.280n.Foundation");
-    foundationTask.setVersion("0.7.9");
+    foundationTask.setVersion("0.8.0");
     foundationTask.setLicense(BundleTask.License.LGPL_v2_1);
     foundationTask.setSources(new FileList("**/*.j"));
     foundationTask.setResources(new FileList("Resources/**/*"));
