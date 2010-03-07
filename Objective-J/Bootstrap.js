@@ -60,6 +60,8 @@ if (mainBundleURL === assumedResolvedURL)
 
 StaticResource.resourceAtURL(assumedResolvedURL, YES);
 
+exports.pageURL = pageURL;
+
 exports.bootstrap = function()
 {
     resolveMainBundleURL();
@@ -110,6 +112,9 @@ if (typeof OBJJ_AUTO_BOOTSTRAP === "undefined" || OBJJ_AUTO_BOOTSTRAP)
 
 function makeAbsoluteURL(/*CFURL|String*/ aURL)
 {
+    if (aURL instanceof CFURL && aURL.scheme())
+        return aURL;
+
     return new CFURL(aURL, mainBundleURL);
 }
 

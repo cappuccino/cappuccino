@@ -151,6 +151,8 @@ function CFURLGetParts(/*CFURL*/ aURL)
     return parts;
 }
 
+#define PARTS(aURL) ((aURL)._parts || CFURLGetParts(aURL))
+
 GLOBAL(CFURL) = function(/*CFURL|String*/ aURL, /*CFURL*/ aBaseURL)
 {
     aURL = aURL || "";
@@ -165,7 +167,7 @@ GLOBAL(CFURL) = function(/*CFURL|String*/ aURL, /*CFURL*/ aBaseURL)
         if (existingBaseURL)
             aBaseURL = new CFURL(existingBaseURL.absoluteURL(), aBaseURL);
 
-        return new CFURL(aURL.string(), aBaseURL);
+        aURL = aURL.string();
     }
 
     // Use the cache if it's enabled.
@@ -256,9 +258,10 @@ function resolveURL(aURL)
     if (!baseURL)
         return aURL;
 
-    var parts = CFURLGetParts(aURL),
+    var parts = PARTS(aURL),
         resolvedParts,
-        baseParts = CFURLGetParts(baseURL.absoluteURL());
+        absoluteBaseURL = baseURL.absoluteURL(),
+        baseParts = PARTS(absoluteBaseURL);
 
     if (parts.scheme || parts.authority)
         resolvedParts = parts;
@@ -397,7 +400,7 @@ CFURL.prototype.standardizedURL = function()
 {
     if (this._standardizedURL === undefined)
     {
-        var parts = CFURLGetParts(this),
+        var parts = PARTS(this),
             pathComponents = parts.pathComponents,
             standardizedPathComponents = pathComponents.slice();
 
@@ -449,7 +452,7 @@ CFURL.prototype.string = function()
 
 CFURL.prototype.authority = function()
 {
-    var authority = CFURLGetParts(this).authority;
+    var authority = PARTS(this).authority;
 
     if (authority)
         return authority;
@@ -461,17 +464,25 @@ CFURL.prototype.authority = function()
 
 CFURL.prototype.hasDirectoryPath = function()
 {
-    var path = this.path();
+    var hasDirectoryPath = this._hasDirectoryPath;
 
-    if (!path)
-        return NO;
+    if (hasDirectoryPath === undefined)
+    {
+        var path = this.path();
 
-    if (path.charAt(path.length - 1) === "/")
-        return YES;
+        if (!path)
+            return NO;
 
-    var lastPathComponent = this.lastPathComponent();
+        if (path.charAt(path.length - 1) === "/")
+            return YES;
 
-    return lastPathComponent === "." || lastPathComponent === "..";
+        var lastPathComponent = this.lastPathComponent();
+
+        hasDirectoryPath = lastPathComponent === "." || lastPathComponent === "..";
+        this._hasDirectoryPath = hasDirectoryPath;
+    }
+
+    return this._hasDirectoryPath;
 }
 
 CFURL.prototype.hostName = function()
@@ -481,7 +492,7 @@ CFURL.prototype.hostName = function()
 
 CFURL.prototype.fragment = function()
 {
-    return CFURLGetParts(this).fragment;
+    return PARTS(this).fragment;
 }
 
 CFURL.prototype.lastPathComponent = function()
@@ -497,12 +508,12 @@ CFURL.prototype.lastPathComponent = function()
 
 CFURL.prototype.path = function()
 {
-    return CFURLGetParts(this).path;
+    return PARTS(this).path;
 }
 
 CFURL.prototype.pathComponents = function()
 {
-    return CFURLGetParts(this).pathComponents;
+    return PARTS(this).pathComponents;
 }
 
 CFURL.prototype.pathExtension = function()
@@ -521,39 +532,48 @@ CFURL.prototype.pathExtension = function()
 
 CFURL.prototype.queryString = function()
 {
-    return CFURLGetParts(this).queryString;
+    return PARTS(this).queryString;
 }
 
 CFURL.prototype.scheme = function()
 {
-    var scheme = CFURLGetParts(this).scheme;
+    var scheme = this._scheme;
 
-    if (scheme)
-        return scheme;
+    if (scheme === undefined)
+    {
+        scheme = PARTS(this).scheme;
 
-    var baseURL = this.baseURL();
+        if (!scheme)
+        {
+            var baseURL = this.baseURL();
 
-    return baseURL && baseURL.scheme();
+            scheme = baseURL && baseURL.scheme();
+        }
+
+        this._scheme = scheme;
+    }
+
+    return scheme;
 }
 
 CFURL.prototype.user = function()
 {
-    return CFURLGetParts(this).user;
+    return PARTS(this).user;
 }
 
 CFURL.prototype.password = function()
 {
-    return CFURLGetParts(this).password;
+    return PARTS(this).password;
 }
 
 CFURL.prototype.portNumber = function()
 {
-    return CFURLGetParts(this).portNumber;
+    return PARTS(this).portNumber;
 }
 
 CFURL.prototype.domain = function()
 {
-    return CFURLGetParts(this).domain;
+    return PARTS(this).domain;
 }
 
 CFURL.prototype.baseURL = function()

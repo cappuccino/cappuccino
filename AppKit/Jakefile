@@ -20,7 +20,7 @@ appKitTask = framework ("AppKit", function(appKitTask)
     appKitTask.setEmail("feedback @nospam@ 280north.com");
     appKitTask.setSummary("AppKit classes for Cappuccino");
     appKitTask.setIdentifier("com.280n.AppKit");
-    appKitTask.setVersion("0.7.9");
+    appKitTask.setVersion("0.8.0");
     appKitTask.setLicense(BundleTask.License.LGPL_v2_1);
     appKitTask.setSources(AppKitFiles);
     appKitTask.setResources(new FileList("Resources/**/*"));

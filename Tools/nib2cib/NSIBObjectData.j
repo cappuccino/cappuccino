@@ -127,7 +127,7 @@
 
             children.forEach(function(aChild)
             {
-                CPLog.warn("Promoted " + aChild + " to child of " + parent);
+                CPLog.info("Promoted " + aChild + " to child of " + parent);
                 _objectsKeys.push(aChild);
                 _objectsValues.push(parent);
             });

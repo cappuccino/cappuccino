@@ -24,7 +24,7 @@
 @import <Foundation/CPData.j>
 
 var FILE = require("file"),
-    popen = require("os").popen;
+    OS = require("os");
 
 
 NibFormatUndetermined           = 0,
@@ -58,8 +58,7 @@ ConverterConversionException    = @"ConverterConversionException";
         if ([resourcesPath length] && !FILE.isReadable(resourcesPath))
             [CPException raise:ConverterConversionException reason:@"Could not read Resources at path \"" + resourcesPath + "\""];
 
-        var stringContents = FILE.read(inputPath, { charset:"UTF-8" }),
-            inferredFormat = format;
+        var inferredFormat = format;
 
         if (inferredFormat === NibFormatUndetermined)
         {
@@ -67,14 +66,14 @@ ConverterConversionException    = @"ConverterConversionException";
             inferredFormat = NibFormatMac;
 
             // Some .xibs are iPhone nibs, check the actual contents in this case.
-            if (FILE.extension(inputPath) !== ".nib" && 
-                stringContents.indexOf("<archive type=\"com.apple.InterfaceBuilder3.CocoaTouch.XIB\"") !== -1)
+            if (FILE.extension(inputPath) !== ".nib" && FILE.isFile(inputPath) &&
+                FILE.read(inputPath, { charset:"UTF-8" }).indexOf("<archive type=\"com.apple.InterfaceBuilder3.CocoaTouch.XIB\"") !== -1)
                 inferredFormat = NibFormatIPhone;
 
             if (inferredFormat === NibFormatMac)
-                CPLog("Auto-detected Cocoa Nib or Xib File");
+                CPLog.info("Auto-detected Cocoa Nib or Xib File");
             else
-                CPLog("Auto-detected CocoaTouch Xib File");
+                CPLog.info("Auto-detected CocoaTouch Xib File");
         }
 
         var nibData = [self CPCompliantNibDataAtFilePath:inputPath];
@@ -100,13 +99,13 @@ ConverterConversionException    = @"ConverterConversionException";
     // Compile xib or nib to make sure we have a non-new format nib.
     var temporaryNibFilePath = FILE.join("/tmp", FILE.basename(aFilePath) + ".tmp.nib");
 
-    if (popen("/usr/bin/ibtool " + aFilePath + " --compile " + temporaryNibFilePath).wait() === 1)
+    if (OS.popen(["/usr/bin/ibtool", aFilePath, "--compile", temporaryNibFilePath]).wait() === 1)
         throw "Could not compile file at " + aFilePath;
 
     // Convert from binary plist to XML plist
     var temporaryPlistFilePath = FILE.join("/tmp", FILE.basename(aFilePath) + ".tmp.plist");
 
-    if (popen("/usr/bin/plutil " + " -convert xml1 " + temporaryNibFilePath + " -o " + temporaryPlistFilePath).wait() === 1)
+    if (OS.popen(["/usr/bin/plutil", "-convert", "xml1", temporaryNibFilePath, "-o", temporaryPlistFilePath]).wait() === 1)
         throw "Could not convert to xml plist for file at " + aFilePath;
 
     if (!FILE.isReadable(temporaryPlistFilePath))
@@ -121,6 +120,11 @@ ConverterConversionException    = @"ConverterConversionException";
         plistContents = String(java.lang.String(plistContents).replaceAll("\\<key\\>\\s*CF\\$UID\\s*\\<\/key\\>", "<key>CP\\$UID</key>"));
     else
         plistContents = plistContents.replace(/\<key\>\s*CF\$UID\s*\<\/key\>/g, "<key>CP$UID</key>");
+
+    plistContents = plistContents.replace(/\u001b/g, function(c) {
+        CPLog.warn("Warning: Stripping character 0x"+c.charCodeAt(0).toString(16));
+        return "";
+    });
 
     return [CPData dataWithRawString:plistContents];
 }

@@ -14,7 +14,7 @@ app ("capp", function(cappTask)
     cappTask.setSummary("Setup up Cappuccino projects");
     cappTask.setIdentifier("com.280n.capp");
     cappTask.setLicense(BundleTask.License.LGPL_v2_1);
-    cappTask.setVersion("0.7.1");
+    cappTask.setVersion("0.8.0");
     cappTask.setSources(new FileList("*.j"));
     cappTask.setResources(new FileList("Resources/*"));
     cappTask.setIncludesNibsAndXibs(true);

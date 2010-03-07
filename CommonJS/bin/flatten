@@ -21,7 +21,6 @@ parser.option("-m", "--main", "main")
     .help("The relative path (from INPUT_PROJECT) to the main file (default: 'main.j')");
 
 parser.option("-F", "--framework", "frameworks")
-    .def(["Frameworks"])
     .push()
     .help("Add a frameworks directory, relative to INPUT_PROJECT (default: ['Frameworks'])");
 
@@ -65,6 +64,8 @@ function main(args)
         }
     }
 
+    options.frameworks.push("Frameworks");
+
     var mainPath = String(rootPath.join(options.main));
     var frameworks = options.frameworks.map(function(framework) { return rootPath.join(framework); });
     var environment = "Browser";
@@ -86,13 +87,16 @@ function main(args)
     flattener.load(mainPath);
     flattener.finishLoading();
 
-    var root = flattener.require("objective-j").StaticResource.root;
+    var rootResources = flattener.require("objective-j").StaticResource.rootResources();
+
+    var root = rootResources["file:"];
 
     // FIXME: shouldn't have to do this manually
-    var components = rootPath.split("/").slice(1, -1);
+    var components = rootPath.split("/").slice(0, -1);
+    components[0] = "/";
     var node = root;
     while (components.length) {
-        node = node._children[components.shift()];
+        node = node.children()[components.shift()];
     }
     applicationRoot = node;
 
@@ -121,8 +125,6 @@ function ObjectiveJFlattener(rootPath) {
 ObjectiveJFlattener.prototype = Object.create(ObjectiveJRuntimeAnalyzer.prototype);
 
 ObjectiveJFlattener.prototype.buildApplicationJS = function(applicationRoot) {
-    print(applicationRoot);
-
     this.serializeStaticResources(applicationRoot);
     this.serializeStaticFileExecutables();
 
@@ -133,7 +135,8 @@ ObjectiveJFlattener.prototype.buildApplicationJS = function(applicationRoot) {
     buffer.push(this.bundleBuffer.join("\n"));
 
     buffer.push("var nodeStack = [];");
-    buffer.push("var applicationRoot = ObjectiveJ.StaticResource.root.nodeAtSubPath(ObjectiveJ.StaticResource.cwd, YES);");
+    buffer.push("var appURL = new CFURL('.', ObjectiveJ.pageURL);")
+    buffer.push("var applicationRoot = ObjectiveJ.StaticResource.resourceAtURL(appURL, true);");
     buffer.push("var currentNode = null;");
     buffer.push("var newNode;");
 
@@ -151,14 +154,14 @@ ObjectiveJFlattener.prototype.buildApplicationJS = function(applicationRoot) {
 ObjectiveJFlattener.prototype.serializeStaticFileExecutables = function() {
     this.require("objective-j").FileExecutable.allFileExecutables().forEach(function(aFileExecutable) {
         var deps = aFileExecutable.fileDependencies().map(function(dependency) {
-            return "new ObjectiveJ.FileDependency("+JSON.stringify(dependency.path())+","+JSON.stringify(dependency.isLocal())+")"
+            return "new ObjectiveJ.FileDependency(new CFURL("+JSON.stringify(dependency.path())+"),"+JSON.stringify(dependency.isLocal())+")"
         }).join(",");
 
         var func = aFileExecutable._function.toString();
         // HACK
         func = func.replace(", require, exports, module, system, print, window", "");
 
-        this.functionsBuffer.push("var path = ObjectiveJ.StaticResource.cwd + "+JSON.stringify("/"+this.rootPath.relative(aFileExecutable.path()))+";");
+        this.functionsBuffer.push("var path = "+JSON.stringify(this.rootPath.relative(aFileExecutable.path()).toString())+";");
         this.functionsBuffer.push("new ObjectiveJ.FileExecutable(path,"+
             "new ObjectiveJ.Executable(null, ["+deps+"], path, "+func+"));");
     }, this);
@@ -167,11 +170,9 @@ ObjectiveJFlattener.prototype.serializeStaticFileExecutables = function() {
 ObjectiveJFlattener.prototype.serializeStaticResources = function(node, depth) {
     depth = depth || 0;
 
-    //print(Array(depth+1).join(" ") + node);
-
-    var bundle = this.context.global.CFBundle.bundleContainingPath(node.path());
+    var bundle = this.context.global.CFBundle.bundleContainingURL(node.URL());
     if (!bundle) {
-        stream.print("\0yellow(Warning:\0) No bundle for path: \0cyan("+node.path()+"\0)");
+        stream.print("\0yellow(Warning:\0) No bundle for path: \0cyan("+node.URL()+"\0)");
     }
     else if (!this._outputBundles[bundle.path()]) {
         this._outputBundles[bundle.path()] = bundle;
