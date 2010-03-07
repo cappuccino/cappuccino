@@ -20,7 +20,13 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#define GLOBAL(object) object
+#if DEBUG
+#define DISPLAY_NAME(name) name.displayName = #name
+#else
+#define DISPLAY_NAME(name)
+#endif
+
+#define GLOBAL(name) name
 
 #include "DebugOptions.js"
 #include "json2.js"
