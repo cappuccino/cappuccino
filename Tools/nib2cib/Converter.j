@@ -121,6 +121,11 @@ ConverterConversionException    = @"ConverterConversionException";
     else
         plistContents = plistContents.replace(/\<key\>\s*CF\$UID\s*\<\/key\>/g, "<key>CP$UID</key>");
 
+    plistContents = plistContents.replace(/\u001b/g, function(c) {
+        CPLog.warn("Warning: Stripping character 0x"+c.charCodeAt(0).toString(16));
+        return "";
+    });
+
     return [CPData dataWithRawString:plistContents];
 }
 
