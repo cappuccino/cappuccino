@@ -63,6 +63,8 @@ Executable.prototype.URL = function()
     return this._URL;
 }
 
+DISPLAY_NAME(Executable.prototype.URL);
+
 Executable.prototype.functionParameters = function()
 {
     var functionParameters = ["global", "objj_executeFile", "objj_importFile"];
@@ -76,6 +78,8 @@ Executable.prototype.functionParameters = function()
     return functionParameters;
 }
 
+DISPLAY_NAME(Executable.prototype.functionParameters);
+
 Executable.prototype.functionArguments = function()
 {
     var functionArguments = [global, this.fileExecuter(), this.fileImporter()];
@@ -86,6 +90,8 @@ Executable.prototype.functionArguments = function()
 
     return functionArguments;
 }
+
+DISPLAY_NAME(Executable.prototype.functionArguments);
 
 #ifdef COMMONJS
 Executable.setCommonJSParameters = function()
@@ -140,10 +146,14 @@ Executable.prototype.execute = function()
     return result;
 }
 
+DISPLAY_NAME(Executable.prototype.execute);
+
 Executable.prototype.code = function()
 {
     return this._code;
 }
+
+DISPLAY_NAME(Executable.prototype.code);
 
 Executable.prototype.setCode = function(code)
 {
@@ -183,20 +193,21 @@ Executable.prototype.setCode = function(code)
 #endif
 }
 
+DISPLAY_NAME(Executable.prototype.setCode);
+
 Executable.prototype.fileDependencies = function()
 {
     return this._fileDependencies;
 }
 
-Executable.prototype.scope = function()
-{
-    return this._scope;
-}
+DISPLAY_NAME(Executable.prototype.fileDependencies);
 
 Executable.prototype.hasLoadedFileDependencies = function()
 {
     return this._fileDependencyStatus === ExecutableLoadedFileDependencies;
 }
+
+DISPLAY_NAME(Executable.prototype.hasLoadedFileDependencies);
 
 var fileDependencyLoadCount = 0,
     fileDependencyExecutables = [],
@@ -219,6 +230,8 @@ Executable.prototype.loadFileDependencies = function(aCallback)
         loadFileDependenciesForExecutable(this);
     }
 }
+
+DISPLAY_NAME(Executable.prototype.loadFileDependencies);
 
 function loadFileDependenciesForExecutable(/*Executable*/ anExecutable)
 {
@@ -295,20 +308,28 @@ Executable.prototype.referenceURL = function()
     return this._referenceURL;
 }
 
+DISPLAY_NAME(Executable.prototype.referenceURL);
+
 Executable.prototype.fileImporter = function()
 {
     return Executable.fileImporterForURL(this.referenceURL());
 }
+
+DISPLAY_NAME(Executable.prototype.fileImporter);
 
 Executable.prototype.fileExecuter = function()
 {
     return Executable.fileExecuterForURL(this.referenceURL());
 }
 
+DISPLAY_NAME(Executable.prototype.fileExecuter);
+
 Executable.prototype.fileExecutableSearcher = function()
 {
     return Executable.fileExecutableSearcherForURL(this.referenceURL());
 }
+
+DISPLAY_NAME(Executable.prototype.fileExecutableSearcher);
 
 var cachedFileExecuters = { };
 
@@ -337,6 +358,8 @@ Executable.fileExecuterForURL = function(/*CFURL|String*/ aURL)
 
     return cachedFileExecuter;
 }
+
+DISPLAY_NAME(Executable.fileExecuterForURL);
 
 var cachedFileImporters = { };
 
@@ -374,6 +397,8 @@ Executable.fileImporterForURL = function(/*CFURL|String*/ aURL)
 
     return cachedFileImporter;
 }
+
+DISPLAY_NAME(Executable.fileImporterForURL);
 
 var cachedFileExecutableSearchers = { },
     cachedFileExecutableSearchResults = { };
@@ -422,3 +447,5 @@ Executable.fileExecutableSearcherForURL = function(/*CFURL*/ referenceURL)
 
     return cachedFileExecutableSearcher;
 }
+
+DISPLAY_NAME(Executable.fileExecutableSearcherForURL);
