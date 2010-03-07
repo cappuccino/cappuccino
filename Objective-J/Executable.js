@@ -144,30 +144,35 @@ Executable.prototype.setCode = function(code)
 {
     this._code = code;
 
-    var parameters = this.functionParameters().join(","),
-        absoluteString = this.URL().absoluteString();
+    var parameters = this.functionParameters().join(",");
 
 #if COMMONJS
     if (typeof system !== "undefined" && system.engine === "rhino")
     {
         code = "function(" + parameters + "){" + code + "/**/\n}";
-        this._function = Packages.org.mozilla.javascript.Context.getCurrentContext().compileFunction(window, code, absoluteString, 0, NULL);
+        this._function = Packages.org.mozilla.javascript.Context.getCurrentContext().compileFunction(window, code, this.URL().absoluteString(), 0, NULL);
     }
     else
     {
 #endif
+#if DEBUG
     // "//@ sourceURL=" at the end lets us name our eval'd files for debuggers, etc.
     // * WebKit:  http://pmuellr.blogspot.com/2009/06/debugger-friendly.html
     // * Firebug: http://blog.getfirebug.com/2009/08/11/give-your-eval-a-name-with-sourceurl/
     //if (YES) {
-        code += "/**/\n//@ sourceURL=" + "hello" + absoluteString;
-        this._function = new Function(parameters, code);
+        var absoluteString = this.URL().absoluteString();
+
+        code += "/**/\n//@ sourceURL=" + absoluteString;
     //} else {
     //    // Firebug only does it for "eval()", not "new Function()". Ugh. Slower.
     //    var functionText = "(function(){"+GET_CODE(aFragment)+"/**/\n})\n//@ sourceURL="+GET_FILE(aFragment).path;
     //    compiled = eval(functionText);
     //}
+#endif
+        this._function = new Function(parameters, code);
+#if DEBUG
     this._function.displayName = absoluteString;
+#endif
 #if COMMONJS
     }
 #endif
