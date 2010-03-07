@@ -3,6 +3,13 @@ var FILE = require("file");
 var OS = require("os");
 var UTIL = require("util");
 
+var requiresSudo = false;
+
+SYSTEM.args.slice(1).forEach(function(arg){
+    if (arg === "sudo-install")
+        requiresSudo = true;
+});
+
 function ensurePackageUpToDate(packageName, requiredVersion, options)
 {
     options = options || {};
@@ -37,7 +44,18 @@ function ensurePackageUpToDate(packageName, requiredVersion, options)
             print("Jake aborted.");
             OS.exit(1);
         }
-        OS.system(["tusk", "install", "--force", packageName]);
+
+        if (requiresSudo)
+        {
+            if (OS.system(["sudo", "tusk", "install", "--force", packageName]))
+            {
+                // Attempt a hackish work-around for sudo compiled with the --with-secure-path option
+                if (OS.system("sudo bash -c 'source " + getShellConfigFile() + "; tusk install --force "+packageName))
+                    OS.exit(1); //rake abort if ($? != 0)
+            }
+        }
+        else
+            OS.system(["tusk", "install", "--force", packageName]);
     }
     
     if (options.message)
