@@ -167,7 +167,7 @@ GLOBAL(CFURL) = function(/*CFURL|String*/ aURL, /*CFURL*/ aBaseURL)
         if (existingBaseURL)
             aBaseURL = new CFURL(existingBaseURL.absoluteURL(), aBaseURL);
 
-        return new CFURL(aURL.string(), aBaseURL);
+        aURL = aURL.string();
     }
 
     // Use the cache if it's enabled.
