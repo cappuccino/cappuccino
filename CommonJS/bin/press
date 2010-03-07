@@ -254,7 +254,7 @@ function pressEnvironment(rootPath, outputFiles, environment, options) {
     for (var path in requiredFiles)
     {
         var executable = analyzer.executableForImport(path),
-            bundle = analyzer.context.global.CFBundle.bundleContainingPath(executable.path()),
+            bundle = analyzer.context.global.CFBundle.bundleContainingURL(executable.path()),
             relativePath = FILE.relative(FILE.join(bundle.path(), ""), executable.path());
 
         if (executable.path() !== path)
@@ -274,7 +274,7 @@ function pressEnvironment(rootPath, outputFiles, environment, options) {
                     for (var i = 0; i < dependencies.length; i++) {
                         var dependency = dependencies[i];
                         var dependencyExecutable = new _OBJJ.FileExecutableSearch(
-                            dependency.isLocal() ? FILE.join(FILE.dirname(path), dependency.path()) : dependency.path(),
+                            new analyzer.context.global.CFURL(dependency.isLocal() ? FILE.join(FILE.dirname(path), dependency.path()) : dependency.path()),
                             dependency.isLocal()
                         ).result();
                         var dependencyPath = dependencyExecutable.path();
@@ -286,11 +286,14 @@ function pressEnvironment(rootPath, outputFiles, environment, options) {
                                 RegExp.escape("("),
                                 "[\"']"+RegExp.escape(dependency.path())+"[\"']",
                                 RegExp.escape(","),
-                                RegExp.escape(dependency.isLocal() ? "true" : "false"),
+                                dependency.isLocal() ? "(true|YES)" : "(false|NO)",
                                 RegExp.escape(")")
                             ].join("\\s*"), "g");
                             // replace instances of "objj_executeFile()" with "(undefined)"
-                            code = code.replace(regex, "/* $& */ (undefined)");
+                            newCode = code.replace(regex, "/* $& */ (undefined)");
+                            if (newCode === code)
+                                stream.print("\0yellow(Warning:\0) Unable to strip import for \0cyan(" + dependency.path() + "\0) (" + dependency.isLocal() + ")");
+                            code = newCode;
                             // remove from dependencies list (decrement i since we're removing an item)
                             dependencies.splice(i--, 1);
                         }
