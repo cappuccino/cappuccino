@@ -71,9 +71,9 @@ ConverterConversionException    = @"ConverterConversionException";
                 inferredFormat = NibFormatIPhone;
 
             if (inferredFormat === NibFormatMac)
-                CPLog("Auto-detected Cocoa Nib or Xib File");
+                CPLog.info("Auto-detected Cocoa Nib or Xib File");
             else
-                CPLog("Auto-detected CocoaTouch Xib File");
+                CPLog.info("Auto-detected CocoaTouch Xib File");
         }
 
         var nibData = [self CPCompliantNibDataAtFilePath:inputPath];

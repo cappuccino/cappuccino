@@ -55,8 +55,6 @@ var NSUnknownColorSpaceModel    = -1,
 
             for (var i = 0; i < components.length && i < 4; i++)
                 values[i] = [components[i] floatValue];
-            
-            CPLog.warn("rgb="+rgb+" string=" + string + " values=" + values);
 
             result = [CPColor colorWithCalibratedRed:values[0] green:values[1] blue:values[2] alpha:values[3]];
             break;
