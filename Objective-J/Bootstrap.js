@@ -110,6 +110,9 @@ if (typeof OBJJ_AUTO_BOOTSTRAP === "undefined" || OBJJ_AUTO_BOOTSTRAP)
 
 function makeAbsoluteURL(/*CFURL|String*/ aURL)
 {
+    if (aURL instanceof CFURL && aURL.scheme())
+        return aURL;
+
     return new CFURL(aURL, mainBundleURL);
 }
 

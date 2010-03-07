@@ -46,7 +46,7 @@ GLOBAL(CFBundle) = function(/*CFURL|String*/ aURL)
     CFBundlesForURLStrings[URLString] = this;
 
     this._bundleURL = aURL;
-    this._resourcesDirectoryURL = CFURL("Resources/", aURL);
+    this._resourcesDirectoryURL = new CFURL("Resources/", aURL);
 
     this._staticResource = NULL;
 
@@ -66,7 +66,7 @@ CFBundle.environments = function()
 
 CFBundle.bundleContainingURL = function(/*CFURL|String*/ aURL)
 {
-    aURL = CFURL(".", makeAbsoluteURL(aURL));
+    aURL = new CFURL(".", makeAbsoluteURL(aURL));
 
     while (aURL.path() !== "/")
     {
@@ -75,7 +75,7 @@ CFBundle.bundleContainingURL = function(/*CFURL|String*/ aURL)
         if (bundle)
             return bundle;
 
-        aURL = CFURL("..", aURL);
+        aURL = new CFURL("..", aURL);
     }
 
     return NULL;
@@ -115,7 +115,7 @@ CFBundle.prototype.resourceURL = function(/*String*/ aResourceName, /*String*/ a
     if (aSubDirectory)
         aResourceName = aSubDirectory + "/" + aResourceName;
 
-    var resourceURL = CFURL(aResourceName, this.resourcesDirectoryURL()).mappedURL();
+    var resourceURL = (new CFURL(aResourceName, this.resourcesDirectoryURL())).mappedURL();
 
     return resourceURL.absoluteURL();
 }
@@ -123,7 +123,7 @@ CFBundle.prototype.resourceURL = function(/*String*/ aResourceName, /*String*/ a
 CFBundle.prototype.mostEligibleEnvironmentURL = function()
 {
     if (this._mostEligibleEnvironmentURL === undefined)
-        this._mostEligibleEnvironmentURL = CFURL(this.mostEligibleEnvironment() + ".environment/", this.bundleURL());
+        this._mostEligibleEnvironmentURL = new CFURL(this.mostEligibleEnvironment() + ".environment/", this.bundleURL());
 
     return this._mostEligibleEnvironmentURL;
 }
@@ -137,7 +137,7 @@ CFBundle.prototype.executableURL = function()
         if (!executableSubPath)
             this._executableURL = NULL;
         else
-            this._executableURL = CFURL(executableSubPath, this.mostEligibleEnvironmentURL());
+            this._executableURL = new CFURL(executableSubPath, this.mostEligibleEnvironmentURL());
     }
 
     return this._executableURL;

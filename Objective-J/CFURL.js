@@ -537,14 +537,23 @@ CFURL.prototype.queryString = function()
 
 CFURL.prototype.scheme = function()
 {
-    var scheme = PARTS(this).scheme;
+    var scheme = this._scheme;
 
-    if (scheme)
-        return scheme;
+    if (scheme === undefined)
+    {
+        scheme = PARTS(this).scheme;
 
-    var baseURL = this.baseURL();
+        if (!scheme)
+        {
+            var baseURL = this.baseURL();
 
-    return baseURL && baseURL.scheme();
+            scheme = baseURL && baseURL.scheme();
+        }
+
+        this._scheme = scheme;
+    }
+
+    return scheme;
 }
 
 CFURL.prototype.user = function()
