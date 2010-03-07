@@ -241,7 +241,10 @@ CFURL.prototype.schemeAndAuthority = function()
 
 CFURL.prototype.absoluteString = function()
 {
-    return this.absoluteURL().string();
+    if (this._absoluteString === undefined)
+        this._absoluteString = this.absoluteURL().string();
+
+    return this._absoluteString;
 }
 
 CFURL.prototype.toString = function()
@@ -300,7 +303,7 @@ function resolveURL(aURL)
 
             // If this doesn't start with a "..", then we're simply appending to already standardized paths.
             if (pathComponents.length && pathComponents[0] === "..")
-                standardizePathComponents(resolvedPathComponents);
+                standardizePathComponents(resolvedPathComponents, YES);
 
             resolvedParts.pathComponents = resolvedPathComponents;
             resolvedParts.path = pathFromPathComponents(resolvedPathComponents, pathComponents.length <= 0 || aURL.hasDirectoryPath());
@@ -312,7 +315,9 @@ function resolveURL(aURL)
 
     resolvedURL._parts = resolvedParts;
     resolvedURL._standardizedURL = resolvedURL;
+    resolvedURL._standardizedString = resolvedString;
     resolvedURL._absoluteURL = resolvedURL;
+    resolvedURL._absoluteString = resolvedString;
 
     return resolvedURL;
 }
@@ -330,11 +335,12 @@ function pathFromPathComponents(/*Array*/ pathComponents, /*BOOL*/ isDirectoryPa
     return path;
 }
 
-function standardizePathComponents(/*Array*/ pathComponents)
+function standardizePathComponents(/*Array*/ pathComponents, /*BOOL*/ inPlace)
 {
     var index = 0,
         resultIndex = 0,
-        count = pathComponents.length;
+        count = pathComponents.length,
+        result = inPlace ? pathComponents : [];
 
     for (; index < count; ++index)
     {
@@ -343,21 +349,23 @@ function standardizePathComponents(/*Array*/ pathComponents)
         if (component === "" || component === ".")
              continue;
 
-        if (component !== ".." || resultIndex === 0 || pathComponents[resultIndex - 1] === "..")
+        if (component !== ".." || resultIndex === 0 || result[resultIndex - 1] === "..")
         {
             //if (resultIndex !== index)
-                pathComponents[resultIndex] = component;
+                result[resultIndex] = component;
 
             resultIndex++;
 
             continue;
         }
 
-        if (resultIndex > 0 && pathComponents[resultIndex - 1] !== "/")
+        if (resultIndex > 0 && result[resultIndex - 1] !== "/")
             --resultIndex;
     }
 
-    pathComponents.length = resultIndex;
+    result.length = resultIndex;
+
+    return result;
 }
 
 function URLStringFromParts(/*Object*/ parts)
@@ -402,9 +410,7 @@ CFURL.prototype.standardizedURL = function()
     {
         var parts = PARTS(this),
             pathComponents = parts.pathComponents,
-            standardizedPathComponents = pathComponents.slice();
-
-        standardizePathComponents(standardizedPathComponents);
+            standardizedPathComponents = standardizePathComponents(pathComponents, NO);
 
         var standardizedPath = pathFromPathComponents(standardizedPathComponents, this.hasDirectoryPath());
 
@@ -421,7 +427,7 @@ CFURL.prototype.standardizedURL = function()
             var standardizedURL = new CFURL(URLStringFromParts(standardizedParts), this.baseURL());
 
             standardizedURL._parts = standardizedParts;
-            standardizedURL._standardizedParts = standardizedURL;
+            standardizedURL._standardizedURL = standardizedURL;
 
             this._standardizedURL = standardizedURL;
         }
@@ -497,13 +503,19 @@ CFURL.prototype.fragment = function()
 
 CFURL.prototype.lastPathComponent = function()
 {
-    var pathComponents = this.pathComponents(),
-        pathComponentCount = pathComponents.length;
+    if (this._lastPathComponent === undefined)
+    {
+        var pathComponents = this.pathComponents(),
+            pathComponentCount = pathComponents.length;
 
-    if (!pathComponentCount)
-        return "";
+        if (!pathComponentCount)
+            this._lastPathComponent = "";
 
-    return pathComponents[pathComponentCount - 1];
+        else
+            this._lastPathComponent = pathComponents[pathComponentCount - 1];
+    }
+
+    return this._lastPathComponent;
 }
 
 CFURL.prototype.path = function()

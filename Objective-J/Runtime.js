@@ -157,8 +157,10 @@ GLOBAL(class_addMethod) = function(/*Class*/ aClass, /*SEL*/ aName, /*IMP*/ anIm
     aClass.method_list.push(method); 
     aClass.method_dtable[aName] = method;
 
+#if DEBUG
     // Give this function a "pretty" name for the console.
     method.method_imp.displayName = METHOD_DISPLAY_NAME(aClass, method);
+#endif
 
     // FIXME: Should this be done here?
     // If this is a root class...
@@ -186,8 +188,10 @@ GLOBAL(class_addMethods) = function(/*Class*/ aClass, /*Array*/ methods)
         method_list.push(method); 
         method_dtable[method.name] = method;
 
+#if DEBUG
         // Give this function a "pretty" name for the console.
         method.method_imp.displayName = METHOD_DISPLAY_NAME(aClass, method);
+#endif
     }
 
     // If this is a root class...
@@ -455,8 +459,10 @@ GLOBAL(objj_msgSend) = function(/*id*/ aReceiver, /*SEL*/ aSelector)
 {
     if (aReceiver == nil)
         return nil;
-        
-    CLASS_GET_METHOD_IMPLEMENTATION(var implementation, aReceiver.isa, aSelector);
+
+    var isa = aReceiver.isa;
+
+    CLASS_GET_METHOD_IMPLEMENTATION(var implementation, isa, aSelector);
 
     switch(arguments.length)
     {

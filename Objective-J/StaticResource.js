@@ -1,26 +1,28 @@
 
 var rootResources = { };
 
-function StaticResource(/*String*/ aName, /*StaticResource*/ aParent, /*BOOL*/ isDirectory, /*BOOL*/ isResolved)
+function StaticResource(/*CFURL*/ aURL, /*StaticResource*/ aParent, /*BOOL*/ isDirectory, /*BOOL*/ isResolved)
 {
     this._parent = aParent;
     this._eventDispatcher = new EventDispatcher(this);
 
-    this._name = aName;
+    var name = aURL.absoluteURL().lastPathComponent() || aURL.schemeAndAuthority();
+
+    this._name = name;
+    this._URL = aURL; //new CFURL(aName, aParent && aParent.URL().asDirectoryPathURL());
     this._isResolved = !!isResolved;
-    this._URL = new CFURL(aName, aParent && aParent.URL().asDirectoryPathURL());
 
     if (isDirectory)
         this._URL = this._URL.asDirectoryPathURL();
 
     if (!aParent)
-        rootResources[aName] = this;
+        rootResources[name] = this;
 
     this._isDirectory = !!isDirectory;
     this._isNotFound = NO;
 
     if (aParent)
-        aParent._children[aName] = this;
+        aParent._children[name] = this;
 
     if (isDirectory)
         this._children = { };
@@ -119,7 +121,7 @@ function rootResourceForAbsoluteURL(/*CFURL*/ anAbsoluteURL)
         resource = rootResources[schemeAndAuthority];
 
     if (!resource)
-        resource = new StaticResource(schemeAndAuthority, NULL, YES, YES);
+        resource = new StaticResource(new CFURL(schemeAndAuthority), NULL, YES, YES);
 
     return resource;
 }
@@ -141,7 +143,7 @@ StaticResource.resourceAtURL = function(/*CFURL|String*/ aURL, /*BOOL*/ resolveA
             resource = resource._children[name];
         
         else if (resolveAsDirectoriesIfNecessary)
-            resource = new StaticResource(name, resource, YES, YES);
+            resource = new StaticResource(new CFURL(name, resource.URL()), resource, YES, YES);
 
         else
             throw new Error("Static Resource at " + aURL + " is not resolved (\"" + name + "\")");
@@ -179,7 +181,7 @@ function resolveResourceComponents(/*StaticResource*/ aResource, /*BOOL*/ isDire
         // If the child doesn't exist, create and resolve it.
         if (!child)
         {
-            child = new StaticResource(name, aResource, index + 1 < count || isDirectory , NO);
+            child = new StaticResource(new CFURL(name, aResource.URL()), aResource, index + 1 < count || isDirectory , NO);
             child.resolve();
         }
 

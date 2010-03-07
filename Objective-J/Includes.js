@@ -40,7 +40,6 @@
 #include "FileDependency.js"
 #include "Executable.js"
 #include "FileExecutable.js"
-#include "FileExecutableSearch.js"
 #include "Runtime.js"
 #if defined(DEBUG) || defined(COMMONJS)
 #include "Debug.js"
