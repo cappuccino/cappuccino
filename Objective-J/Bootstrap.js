@@ -60,6 +60,8 @@ if (mainBundleURL === assumedResolvedURL)
 
 StaticResource.resourceAtURL(assumedResolvedURL, YES);
 
+exports.pageURL = pageURL;
+
 exports.bootstrap = function()
 {
     resolveMainBundleURL();

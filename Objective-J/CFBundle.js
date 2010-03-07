@@ -625,11 +625,15 @@ CFBundle.prototype.onerror = function(/*Event*/ anEvent)
     throw anEvent.error;
 }
 
-//
+CFBundle.prototype.bundlePath = function()
+{
+    return this._bundleURL.absoluteURL().path();
+}
 
 CFBundle.prototype.path = function()
 {
-    return this._bundleURL.absoluteString();
+    CPLog.warn("CFBundle.prototype.path is deprecated, use CFBundle.prototype.bundlePath instead.");
+    return this.bundlePath.apply(this, arguments);
 }
 
 CFBundle.prototype.pathForResource = function(aResource)
