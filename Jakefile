@@ -175,7 +175,7 @@ filedir ($TOOLS_DOWNLOAD_COMMONJS, ["CommonJS"], function()
 
 // Deployment
 
-task ("deploy", ["downloads"], function()
+task ("deploy", ["downloads", "demos"], function()
 {
     var cappuccino_output_path = FILE.join($BUILD_DIR, 'Cappuccino');
 
@@ -184,12 +184,65 @@ task ("deploy", ["downloads"], function()
     rm_rf(starter_zip_output);
 
     OS.system("cd " + OS.enquote(cappuccino_output_path) + " && zip -ry -8 Starter.zip Starter");
+});
 
-    // zip the tools pack
-    var tools_zip_output = FILE.join($BUILD_DIR, 'Cappuccino', 'Tools.zip')
-    rm_rf(tools_zip_output);
+task ("demos", function()
+{
+    var demosDir = FILE.join($BUILD_DIR, "CappuccinoDemos"),
+        zipDir = FILE.join(demosDir, "demos.zip"),
+        demosQuoted = OS.enquote(demosDir),
+        zipQuoted = OS.enquote(zipDir);
 
-    OS.system("cd " + OS.enquote(cappuccino_output_path) + " && zip -ry -8 Tools.zip Tools");
+    rm_rf(demosDir);
+    FILE.mkdirs(demosDir);
+
+    OS.system("curl -L http://github.com/280north/cappuccino-demos/zipball/master > "+zipQuoted);
+    OS.system("(cd "+demosQuoted+" && unzip "+zipQuoted+" -d demos)");
+
+    require("objective-j");
+
+    function Demo(aPath)
+    {
+        this._path = aPath;
+        this._plist = CFPropertyList.readPropertyListFromFile(FILE.join(aPath, 'Info.plist'));
+    }
+
+    Demo.prototype.plist = function(key)
+    {
+        if (key)
+            return this._plist.valueForKey(key);
+        return this._plist;
+    }
+    
+    Demo.prototype.name = function()
+    {
+        return this.plist("CPBundleName");
+    }
+    
+    Demo.prototype.path = function()
+    {
+        return this._path;
+    }
+    
+    Demo.prototype.excluded = function()
+    {
+        return !!this.plist("CPDemoExcluded");
+    }
+
+    Demo.prototype.toString = function()
+    {
+        return this.name();
+    }
+
+    FILE.glob(FILE.join(demosDir, "demos", "**/Info.plist")).map(function(demoPath){
+        return new Demo(FILE.dirname(demoPath))
+    }).filter(function(demo){
+        return !demo.excluded();
+    }).forEach(function(demo)
+    {
+        var outputPath = FILE.join(demosDir, demo.name().replace(/\s/g, "-")+".zip");
+        OS.system("cd "+OS.enquote(FILE.dirname(demo.path()))+"; zip -ry -8 "+OS.enquote(outputPath)+" "+OS.enquote(demo.path()));
+    });
 });
 
 // Testing
