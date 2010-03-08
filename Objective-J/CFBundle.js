@@ -514,11 +514,11 @@ function executeBundle(/*Bundle*/ aBundle, /*Function*/ aCallback)
 
                 else
                 {
-                    executable.addEventListener("dependenciesload", function()
+                    executable.loadFileDependencies(function()
                     {
                         executeStaticResources(index);
                     });
-                    executable.loadFileDependencies();
+
                     return;
                 }
             }
