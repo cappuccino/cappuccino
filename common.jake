@@ -289,7 +289,7 @@ global.symlink_executable = function(source)
     FILE.symlink(relative, destination);
 }
 
-function getCappuccinoVersion() {
+global.getCappuccinoVersion = function() {
     var versionFile = FILE.path(module.path).dirname().join("version.json");
     return JSON.parse(versionFile.read({ charset : "UTF-8" })).version;
 }
