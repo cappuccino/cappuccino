@@ -79,7 +79,8 @@ ObjectiveJRuntimeAnalyzer.prototype.initializeGlobalRecorder = function()
             });
         }
         else if (!currentFile) {
-            CPLog.warn("currentFile is null. WTF.")
+            // I don't know why this happens. It shouldn't.
+            // CPLog.debug("currentFile is null.");
         }
 
         before = after;
