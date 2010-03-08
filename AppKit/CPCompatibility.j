@@ -207,11 +207,11 @@ if (USER_AGENT.indexOf("Mac") !== -1)
 
     CPPlatformActionKeyMask = CPCommandKeyMask;
 
-    CPUndoKeyEquivalent = @"Z";
+    CPUndoKeyEquivalent = @"z";
     CPRedoKeyEquivalent = @"Z";
 
     CPUndoKeyEquivalentModifierMask = CPCommandKeyMask;
-    CPRedoKeyEquivalentModifierMask = CPCommandKeyMask | CPShiftKeyMask;
+    CPRedoKeyEquivalentModifierMask = CPCommandKeyMask;
 }
 else
 {
@@ -220,8 +220,8 @@ else
 
     CPPlatformActionKeyMask = CPControlKeyMask;
 
-    CPUndoKeyEquivalent = @"Z";
-    CPRedoKeyEquivalent = @"Y";
+    CPUndoKeyEquivalent = @"z";
+    CPRedoKeyEquivalent = @"y";
 
     CPUndoKeyEquivalentModifierMask = CPControlKeyMask;
     CPRedoKeyEquivalentModifierMask = CPControlKeyMask;

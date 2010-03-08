@@ -187,8 +187,16 @@ ObjectiveJRuntimeAnalyzer.prototype.mergeLibraryImports = function()
 ObjectiveJRuntimeAnalyzer.prototype.executableForImport = function(path, isLocal)
 {
     if (isLocal === undefined) isLocal = true;
-    var _OBJJ = this.require("objective-j");
-    return new _OBJJ.FileExecutableSearch(new this.context.global.CFURL(path), isLocal).result();
+    var _OBJJ = this.require("objective-j"),
+        fileExecutable = nil,
+        URL = new this.context.global.CFURL(path);
+
+    _OBJJ.Executable.fileExecutableSearcherForURL(URL)(URL, isLocal, function(/*FileExecutable*/ aFileExecutable)
+    {
+        fileExecutable = aFileExecutable;
+    });
+
+    return fileExecutable;
 }
 
 /*

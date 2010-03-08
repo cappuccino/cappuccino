@@ -206,21 +206,19 @@ CFBundle.prototype.load = function(/*BOOL*/ shouldExecute)
 
     this._loadStatus = CFBundleLoading | CFBundleLoadingInfoPlist;
 
-    var self = this;
+    var self = this,
+        bundleURL = this.bundleURL(),
+        parentURL = new CFURL("..", bundleURL);
 
-
-    var parentURL = new CFURL("..", this.bundleURL());
-
-//???
-    if (parentURL.absoluteString() === this.bundleURL().absoluteString())
+    if (parentURL.absoluteString() === bundleURL.absoluteString())
         parentURL = parentURL.schemeAndAuthority();
 
     StaticResource.resolveResourceAtURL(parentURL, YES, function(aStaticResource)
     {
-        var resourceName = self.bundleURL().absoluteURL().lastPathComponent();
+        var resourceName = bundleURL.absoluteURL().lastPathComponent();
 
         self._staticResource =  aStaticResource._children[resourceName] ||
-                                new StaticResource(resourceName, aStaticResource, YES, NO);
+                                new StaticResource(bundleURL, aStaticResource, YES, NO);
 
         function onsuccess(/*Event*/ anEvent)
         {
@@ -575,13 +573,12 @@ function decompileStaticFile(/*Bundle*/ aBundle, /*String*/ aString, /*String*/ 
             var fileURL = new CFURL(text, bundleURL),
                 parent = StaticResource.resourceAtURL(new CFURL(".", fileURL), YES);
 
-            file = new StaticResource(fileURL.lastPathComponent(), parent, NO, YES);
+            file = new StaticResource(fileURL, parent, NO, YES);
         }
 
         else if (marker === MARKER_URI)
         {
             var URL = new CFURL(text, bundleURL),
-                mappedURL,
                 mappedURLString = stream.getString();
 
             if (mappedURLString.indexOf("mhtml:") === 0)
@@ -596,8 +593,6 @@ function decompileStaticFile(/*Bundle*/ aBundle, /*String*/ aString, /*String*/ 
 
                     mappedURLString = firstPart + "?" + CFCacheBuster + lastPart;
                 }
-
-                mappedURL = new CFURL(mappedURLString);
             }
 
             CFURL.setMappedURLForURL(URL, new CFURL(mappedURLString));
@@ -605,7 +600,7 @@ function decompileStaticFile(/*Bundle*/ aBundle, /*String*/ aString, /*String*/ 
             // The unresolved directories must not be bundles.
             var parent = StaticResource.resourceAtURL(new CFURL(".", URL), YES);
 
-            new StaticResource(URL.lastPathComponent(), parent, NO, YES);
+            new StaticResource(URL, parent, NO, YES);
         }
 
         else if (marker === MARKER_TEXT)

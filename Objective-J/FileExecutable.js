@@ -83,15 +83,14 @@ FileExecutable.prototype.execute = function(/*BOOL*/ shouldForce)
     Executable.prototype.execute.call(this);
 }
 
-FileExecutable.prototype.URL = function()
-{
-    return this._URL;
-}
+DISPLAY_NAME(FileExecutable.prototype.execute);
 
 FileExecutable.prototype.hasExecuted = function()
 {
     return this._hasExecuted;
 }
+
+DISPLAY_NAME(FileExecutable.prototype.hasExecuted);
 
 function decompile(/*String*/ aString, /*CFURL*/ aURL)
 {

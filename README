@@ -38,15 +38,22 @@ instead download a pre-compiled copy of Cappuccino from:
 
     http://cappuccino.org/download/
 
-To build Cappuccino from source, simply type "jake"  from within the root of the Cappuccino directory. 
+To build Cappuccino from source, check out the most recent stable version from github:
+
+    $ git clone git://github.com/280north/cappuccino.git (git)
+
+or download the zipball of the most recent source code:
+
+    http://github.com/280north/cappuccino/zipball/master (zip)
+
+If this is your first build and your system does not have narwhal and jake installed, 
+run the bootstrap script to install it and all of its dependencies:
+
+    $ ./bootstrap.sh
+
+Then, simply type "jake"  from within the root of the Cappuccino directory. 
 This will build a "release" copy of the frameworks. Typing "jake debug" will build a debug version.
-"jake install" will build Cappuccino and associated tools and install them for general use (similar to 
-downloading the tools from the website).
-
-If this is your first build and your system does not have jake installed, run the bootstrap script to 
-install it and all of its dependencies:
-
-$ sudo ./bootstrap.sh
+"jake install" will build Cappuccino and associated tools and install them for general use.
 
 Editors
 ------------

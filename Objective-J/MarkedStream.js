@@ -40,10 +40,14 @@ MarkedStream.prototype.magicNumber = function()
     return this._magicNumber;
 }
 
+DISPLAY_NAME(MarkedStream.prototype.magicNumber);
+
 MarkedStream.prototype.version = function()
 {
     return this._version;
 }
+
+DISPLAY_NAME(MarkedStream.prototype.version);
 
 MarkedStream.prototype.getMarker = function()
 {
@@ -68,6 +72,8 @@ MarkedStream.prototype.getMarker = function()
     return marker;
 }
 
+DISPLAY_NAME(MarkedStream.prototype.getMarker);
+
 MarkedStream.prototype.getString = function()
 {
     var string = this._string,
@@ -81,10 +87,12 @@ MarkedStream.prototype.getString = function()
     if (next < 0)
         return null;
 
-    var size = parseInt(string.substring(location, next)),
+    var size = parseInt(string.substring(location, next), 10),
         text = string.substr(next + 1, size);
 
     this._location = next + 1 + size;
 
     return text;
 }
+
+DISPLAY_NAME(MarkedStream.prototype.getString);

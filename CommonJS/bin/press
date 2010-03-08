@@ -238,7 +238,7 @@ function pressEnvironment(rootPath, outputFiles, environment, options) {
         total++;
         totalBytes += aFileExecutable.code().length
     }, this);
-    stream.print(sprintf(
+    stream.print(ObjectiveJ.sprintf(
         "Saved \0green(%f%%\0) (\0blue(%s\0)); Total required files: \0magenta(%d\0) (\0blue(%s\0)) of \0magenta(%d\0) (\0blue(%s\0));",
         Math.round(((includedBytes - totalBytes) / totalBytes) * -100),
         bytesToString(totalBytes - includedBytes),
@@ -270,13 +270,17 @@ function pressEnvironment(rootPath, outputFiles, environment, options) {
                     stream.print("Stripping extra imports from \0blue(" + path + "\0)");
 
                     var code = executable.code();
-                    var dependencies = executable.fileDependencies();
+                    var dependencies = executable.fileDependencies(),
+                        fileExecutableSearcher = executable.fileExecutableSearcher();
                     for (var i = 0; i < dependencies.length; i++) {
                         var dependency = dependencies[i];
-                        var dependencyExecutable = new _OBJJ.FileExecutableSearch(
-                            new analyzer.context.global.CFURL(dependency.isLocal() ? FILE.join(FILE.dirname(path), dependency.path()) : dependency.path()),
-                            dependency.isLocal()
-                        ).result();
+                        var dependencyExecutable = nil;
+
+                        fileExecutableSearcher(dependency.URL(), dependency.isLocal(), function(aFileExecutable)
+                        {
+                            dependencyExecutable = aFileExecutable;
+                        });
+
                         var dependencyPath = dependencyExecutable.path();
                         if (!requiredFiles[dependencyPath]) {
                             stream.print(" -> \0red(" + dependencyPath + "\0)");
