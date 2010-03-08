@@ -93,7 +93,7 @@ var _CPMenuBarVisible               = NO,
 
 + (void)setMenuBarVisible:(BOOL)menuBarShouldBeVisible
 {
-    if (_CPMenuBarVisible == menuBarShouldBeVisible)
+    if (_CPMenuBarVisible === menuBarShouldBeVisible)
         return;
     
     _CPMenuBarVisible = menuBarShouldBeVisible;

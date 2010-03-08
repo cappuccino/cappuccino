@@ -147,12 +147,12 @@ var CPArrayClass                                                            = Ni
     if (self)
     {
         _archive = [data plistObject];
-        _objects = [CPArray arrayWithObject:[CPNull null]];
+        _objects = [[CPNull null]];
 
         _plistObject = [_archive objectForKey:_CPKeyedArchiverTopKey];
         _plistObjects = [_archive objectForKey:_CPKeyedArchiverObjectsKey];
 
-        _replacementClasses = [CPDictionary dictionary];
+        _replacementClasses = new CFMutableDictionary();
     }
 
     return self;
@@ -406,12 +406,12 @@ var CPArrayClass                                                            = Ni
 
 - (void)setClass:(Class)aClass forClassName:(CPString)aClassName
 {
-    [_replacementClasses setObject:aClass forKey:aClassName];
+    _replacementClasses.setValueForKey(aClassName, aClass);
 }
 
 - (Class)classForClassName:(CPString)aClassName
 {
-    return [_replacementClasses objectForKey:aClassName];
+    return _replacementClasses.valueForKey(aClassName);
 }
 
 - (BOOL)allowsKeyedCoding
@@ -476,7 +476,7 @@ var _CPKeyedUnarchiverDecodeObjectAtIndex = function(self, anIndex)
 
         processedObject = [object awakeAfterUsingCoder:self];
 
-        if (processedObject != object)
+        if (processedObject !== object)
         {
             if (self._delegateSelectors & _CPKeyedUnarchiverWillReplaceObjectWithObjectSelector)
                 [self._delegate unarchiver:self willReplaceObject:object withObject:processedObject];
