@@ -24,12 +24,12 @@
 
 function objj_debug_object_format(aReceiver)
 {
-    return (aReceiver && aReceiver.isa) ? sprintf("<%s %#08x>", GETMETA(aReceiver).name, aReceiver._UID) : String(aReceiver);
+    return (aReceiver && aReceiver.isa) ? exports.sprintf("<%s %#08x>", GETMETA(aReceiver).name, aReceiver._UID) : String(aReceiver);
 }
 
 function objj_debug_message_format(aReceiver, aSelector)
 {
-    return sprintf("[%s %s]", objj_debug_object_format(aReceiver), aSelector);
+    return exports.sprintf("[%s %s]", objj_debug_object_format(aReceiver), aSelector);
 }
 
 

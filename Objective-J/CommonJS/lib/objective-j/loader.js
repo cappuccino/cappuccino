@@ -1,14 +1,14 @@
-var objj = null;
 
 function ObjectiveJLoader() {
     var loader = {};
     var factories = {};
     
     loader.reload = function(topId, path) {
-        if (!objj) objj = require("objective-j");
+        if (!global.ObjectiveJ) 
+            global.ObjectiveJ = require("objective-j");
         
         //print("loading objective-j: " + topId + " (" + path + ")");
-        factories[topId] = objj.make_narwhal_factory(path);
+        factories[topId] = ObjectiveJ.make_narwhal_factory(path);
         factories[topId].path = path;
     }
     

@@ -82,7 +82,7 @@ function _CPLogDispatch(parameters, aLevel, aTitle)
         aLevel = CPLogDefaultLevel;
     
     // use sprintf if param 0 is a string and there is more than one param. otherwise just convert param 0 to a string
-    var message = (typeof parameters[0] == "string" && parameters.length > 1) ? sprintf.apply(null, parameters) : String(parameters[0]);
+    var message = (typeof parameters[0] == "string" && parameters.length > 1) ? exports.sprintf.apply(null, parameters) : String(parameters[0]);
         
     if (_CPLogRegistrations[aLevel])
         for (var i = 0; i < _CPLogRegistrations[aLevel].length; i++)
@@ -103,8 +103,8 @@ var _CPFormatLogMessage = function(aString, aLevel, aTitle)
     var now = new Date();
     aLevel = ( aLevel == null ? '' : ' [' + aLevel + ']' );
 
-    if (typeof sprintf == "function")
-        return sprintf("%4d-%02d-%02d %02d:%02d:%02d.%03d %s%s: %s",
+    if (typeof exports.sprintf == "function")
+        return exports.sprintf("%4d-%02d-%02d %02d:%02d:%02d.%03d %s%s: %s",
             now.getFullYear(), now.getMonth(), now.getDate(),
             now.getHours(), now.getMinutes(), now.getSeconds(), now.getMilliseconds(),
             aTitle, aLevel, aString);
