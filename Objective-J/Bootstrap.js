@@ -81,7 +81,36 @@ function resolveMainBundleURL()
         Executable.fileImporterForURL(mainBundleURL)(mainFileURL.lastPathComponent(), YES, function()
         {
             disableCFURLCaching();
-            afterDocumentLoad(main);
+            afterDocumentLoad(function()
+            {
+                var hashString = window.location.hash.substring(1),
+                    args = [];
+
+                if (hashString.length)
+                {
+                    args = hashString.split("/");
+                    for (var i = 0, count = args.length; i < count; i++)
+                        args[i] = decodeURIComponent(args[i]);
+                }
+
+                var namedArgsArray = window.location.search.substring(1).split("&"),
+                    namedArgs = new CFMutableDictionary();
+
+                for (var i = 0, count = namedArgsArray.length; i < count; i++)
+                {
+                    var thisArg = namedArgsArray[i].split("=");
+
+                    if (!thisArg[0])
+                        continue;
+
+                    if (thisArg[1] == null)
+                        thisArg[1] = true;
+
+                    namedArgs.setValueForKey(decodeURIComponent(thisArg[0]), decodeURIComponent(thisArg[1]));
+                }
+
+                main(args, namedArgs);
+            });
         });
     });
 }
