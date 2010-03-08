@@ -878,6 +878,11 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     }
 }
 
+- (int)selectedColumn
+{
+    [_selectedColumnIndexes lastIndex];
+}
+
 - (CPIndexSet)selectedColumnIndexes
 {
     return _selectedColumnIndexes;
