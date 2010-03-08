@@ -280,21 +280,23 @@ task("push-objective-j", function() {
 function pushPackage(path, remote, branch)
 {
     branch = branch || "master";
-    
+
+    var pushPackagesPath = FILE.path(".push-package")
+
+    pushPackagesPath.mkdirs();
+
+    var packagePath = pushPackagesPath.join(remote.replace(/[^\w]/g, "_"));
+
     stream.print("Pushing \0blue(" + path + "\0) to "+branch+" of \0blue(" + remote + "\0)");
 
-    FILE.mkdirs(".push-package");
-
-    var pushPackageDir = FILE.join(".push-package", remote.replace(/[^\w]/g, "_"));
-
-    if (FILE.exists(pushPackageDir))
-        OS.system(buildCmd([["cd", pushPackageDir], ["git", "fetch"]]));
+    if (packagePath.isDirectory())
+        OS.system(buildCmd([["cd", packagePath], ["git", "fetch"]]));
     else
-        OS.system(["git", "clone", remote, pushPackageDir]);
+        OS.system(["git", "clone", remote, packagePath]);
 
-    if (OS.system(buildCmd([["cd", pushPackageDir], ["git", "checkout", "origin/"+branch]]))) {
+    if (OS.system(buildCmd([["cd", packagePath], ["git", "checkout", "origin/"+branch]]))) {
         if (OS.system(buildCmd([
-            ["cd", pushPackageDir],
+            ["cd", packagePath],
             ["git", "symbolic-ref", "HEAD", "refs/heads/"+branch],
             ["rm", ".git/index"],
             ["git", "clean", "-fdx"]
@@ -302,20 +304,30 @@ function pushPackage(path, remote, branch)
             throw "pushPackage failed";
     }
 
-    if (OS.system("cd "+OS.enquote(pushPackageDir)+" && git rm --ignore-unmatch -r * && rm -rf *"))
+    if (OS.system("cd "+OS.enquote(packagePath)+" && git rm --ignore-unmatch -r * && rm -rf *"))
         throw "pushPackage failed";
-    if (OS.system("cp -R "+OS.enquote(path)+"/* "+OS.enquote(pushPackageDir)+"/."))
+    if (OS.system("cp -R "+OS.enquote(path)+"/* "+OS.enquote(packagePath)+"/."))
         throw "pushPackage failed";
 
-    OS.system(buildCmd([
-        ["cd", pushPackageDir],
+    var pkg = JSON.parse(packagePath.join("package.json").read({ charset : "UTF-8" }));
+
+    stream.print("    Version:   \0purple(" + pkg["version"] + "\0)");
+    stream.print("    Revision:  \0purple(" + pkg["cappuccino-revision"] + "\0)");
+    stream.print("    Timestamp: \0purple(" + pkg["cappuccino-timestamp"] + "\0)");
+
+    var cmd = [
+        ["cd", packagePath],
         ["git", "add", "."],
-        ["git", "commit", "-m", "Pushed on " + new Date()]
-    ]));
+        ["git", "commit", "-m", "version="+pkg.version+"; revision="+pkg["cappuccino-revision"]+"; timestamp="+pkg["cappuccino-timestamp"]+";"]
+    ];
+    if (pkg["cappuccino-revision"])
+        cmd.push(["git", "tag", "rev-"+pkg["cappuccino-revision"].slice(0,6)]);
+
+    OS.system(buildCmd(cmd));
     
     if (OS.system(buildCmd([
-        ["cd", pushPackageDir],
-        ["git", "push", "origin", "HEAD:"+branch]
+        ["cd", packagePath],
+        ["git", "push", "--tags", "origin", "HEAD:"+branch]
     ])))
         throw "pushPackage failed";
 }

@@ -8,7 +8,7 @@ new FileList("**/*").exclude("Jakefile").forEach(function(aFilename)
     if (!FILE.isFile(aFilename))
         return;
 
-    var buildFilename = FILE.join($BUILD_CONFIGURATION_DIR, "CommonJS", "cappuccino", aFilename);
+    var buildFilename = FILE.join($BUILD_CJS_CAPPUCCINO, aFilename);
 
     filedir (buildFilename, [aFilename], function ()
     {
@@ -26,4 +26,8 @@ new FileList("**/*").exclude("Jakefile").forEach(function(aFilename)
 
     task ("build", buildFilename);
     CLOBBER.include(buildFilename);
+});
+
+task ("build", function() {
+    setPackageMetadata(FILE.join($BUILD_CJS_CAPPUCCINO, "package.json"));
 });
