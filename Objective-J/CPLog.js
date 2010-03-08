@@ -20,107 +20,175 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-GLOBAL(CPLogDisable) = false;
-
-var CPLogDefaultTitle = "Cappuccino";
-
 var CPLogLevels = ["fatal", "error", "warn", "info", "debug", "trace"];
-var CPLogDefaultLevel = CPLogLevels[3];
-
 var _CPLogLevelsInverted = {};
 for (var i = 0; i < CPLogLevels.length; i++)
     _CPLogLevelsInverted[CPLogLevels[i]] = i;
 
-var _CPLogRegistrations = {};
+// defaults:
 
-// Register Functions:
-
-// Register a logger for all levels, or up to an optional max level
-GLOBAL(CPLogRegister) = function(aProvider, aMaxLevel)
+var CPLogDefaultTitle = "Cappuccino";
+var CPLogDefaultLevel = CPLogLevels[3];
+var CPLogDefaultFormatter = function(aParameters, aLevel, aTitle, useColor)
 {
-    CPLogRegisterRange(aProvider, CPLogLevels[0], aMaxLevel || CPLogLevels[CPLogLevels.length-1]);
-}
+    var color = useColor && defaultFormatterColorMap[aLevel];
+    var important = {"fatal":true,"error":true,"warn":true}[aLevel];
 
-// Register a logger for a range of levels
-GLOBAL(CPLogRegisterRange) = function(aProvider, aMinLevel, aMaxLevel)
-{
-    var min = _CPLogLevelsInverted[aMinLevel];
-    var max = _CPLogLevelsInverted[aMaxLevel];
+    // for unimportant messages colorize just the level
+    if (!important && color)
+        aLevel = "\0"+color+"(" + aLevel + "\0)";
 
-    if (min !== undefined && max !== undefined)
-        for (var i = 0; i <= max; i++)
-            CPLogRegisterSingle(aProvider, CPLogLevels[i]);
-}
+    aLevel = aLevel ? ' [' + aLevel + ']' : '';
 
-// Register a logger for a single level
-GLOBAL(CPLogRegisterSingle) = function(aProvider, aLevel)
-{
-    if (!_CPLogRegistrations[aLevel])
-        _CPLogRegistrations[aLevel] = [];
-
-    // prevent duplicate registrations
-    for (var i = 0; i < _CPLogRegistrations[aLevel].length; i++)
-        if (_CPLogRegistrations[aLevel][i] === aProvider)
-            return;
-
-    _CPLogRegistrations[aLevel].push(aProvider);
-}
-
-GLOBAL(CPLogUnregister) = function(aProvider) {
-    for (var aLevel in _CPLogRegistrations)
-        for (var i = 0; i < _CPLogRegistrations[aLevel].length; i++)
-            if (_CPLogRegistrations[aLevel][i] === aProvider)
-                _CPLogRegistrations[aLevel].splice(i--, 1); // decrement since we're removing an element
-}
-
-// Main CPLog, which dispatches to individual loggers
-function _CPLogDispatch(parameters, aLevel, aTitle)
-{
-    if (aTitle == undefined)
-        aTitle = CPLogDefaultTitle;
-    if (aLevel == undefined)
-        aLevel = CPLogDefaultLevel;
-    
     // use sprintf if param 0 is a string and there is more than one param. otherwise just convert param 0 to a string
-    var message = (typeof parameters[0] == "string" && parameters.length > 1) ? exports.sprintf.apply(null, parameters) : String(parameters[0]);
-        
-    if (_CPLogRegistrations[aLevel])
-        for (var i = 0; i < _CPLogRegistrations[aLevel].length; i++)
-             _CPLogRegistrations[aLevel][i](message, aLevel, aTitle);
-}
+    var aString = (typeof aParameters[0] === "string" && aParameters.length > 1) ? exports.sprintf.apply(null, aParameters) : String(aParameters[0]);
 
-// Setup CPLog() and CPLog.xxx() aliases
-
-GLOBAL(CPLog) = function() { _CPLogDispatch(arguments); }
-
-for (var i = 0; i < CPLogLevels.length; i++)
-    CPLog[CPLogLevels[i]] = (function(level) { return function() { _CPLogDispatch(arguments, level); }; })(CPLogLevels[i]);
-
-// Helpers functions:
-
-var _CPFormatLogMessage = function(aString, aLevel, aTitle)
-{
     var now = new Date();
-    aLevel = ( aLevel == null ? '' : ' [' + aLevel + ']' );
+    var message = exports.sprintf("%4d-%02d-%02d %02d:%02d:%02d.%03d %s%s: %s",
+        now.getFullYear(), now.getMonth(), now.getDate(),
+        now.getHours(), now.getMinutes(), now.getSeconds(), now.getMilliseconds(),
+        aTitle, aLevel, aString);
 
-    if (typeof exports.sprintf == "function")
-        return exports.sprintf("%4d-%02d-%02d %02d:%02d:%02d.%03d %s%s: %s",
-            now.getFullYear(), now.getMonth(), now.getDate(),
-            now.getHours(), now.getMinutes(), now.getSeconds(), now.getMilliseconds(),
-            aTitle, aLevel, aString);
-    else
-        return now + " " + aTitle + aLevel + ": " + aString;
+    // for important messages colorize entire message
+    if (important && color)
+        message = "\0"+color+"(" + message + "\0)";
+
+    return message;
 }
 
-// Loggers:
+var defaultFormatterColorMap = {
+    "fatal": "red",
+    "error": "red",
+    "warn" : "yellow",
+    "info" : "green",
+    "debug": "cyan",
+    "trace": "blue"
+};
+
+#if COMMONJS
+// attempt to get a better default title based on the command line name
+try {
+    if (require("system").args[0])
+        CPLogDefaultTitle = require("file").basename(require("system").args[0]);
+} catch (e) {
+}
+#endif
+
+// main Logger constructor / API:
+function CreateLogger(aTitle)
+{
+    // public
+
+    var self = function() { self._dispatch(arguments, null, _title); };
+
+    // logger.error, logger.info, logger.warn
+    for (var i = 0; i < CPLogLevels.length; i++)
+        self[CPLogLevels[i]] = (function(level) { return function() { self._dispatch(arguments, level, _title); }; })(CPLogLevels[i]);
+
+    self.createLogger = function()
+    {
+        return CreateLogger.apply(this, arguments);;
+    }
+
+    // Register a logger for all levels, or up to an optional max level
+    self.register = function(aProvider, aMaxLevel)
+    {
+        if (aMaxLevel === undefined) aMaxLevel = CPLogLevels.length;
+
+        self.registerRange(aProvider, 0, aMaxLevel);
+    }
+
+    // Register a logger for a range of levels
+    self.registerRange = function(aProvider, aMinLevel, aMaxLevel)
+    {
+        if (typeof aMinLevel !== "number") aMinLevel = _CPLogLevelsInverted[aMinLevel];
+        if (typeof aMaxLevel !== "number") aMaxLevel = _CPLogLevelsInverted[aMaxLevel];
+
+        if (aMinLevel !== undefined && aMaxLevel !== undefined)
+            for (var level = aMinLevel; level <= aMaxLevel; level++)
+                self.registerSingle(aProvider, level);
+    }
+
+    // Register a logger for a single level
+    self.registerSingle = function(aProvider, aLevel)
+    {
+        if (typeof aLevel === "number") aLevel = CPLogLevels[aLevel];
+
+        if (!_registrations[aLevel])
+            _registrations[aLevel] = [];
+
+        // prevent duplicate _registrations
+        for (var i = 0; i < _registrations[aLevel].length; i++)
+            if (_registrations[aLevel][i] === aProvider)
+                return;
+
+        _registrations[aLevel].push(aProvider);
+    }
+
+    // Unregister a logger for all levels
+    self.unregister = function(aProvider)
+    {
+        for (var aLevel in _registrations)
+            for (var i = 0; i < _registrations[aLevel].length; i++)
+                if (_registrations[aLevel][i] === aProvider)
+                    _registrations[aLevel].splice(i--, 1); // decrement since we're removing an element
+    }
+
+    self.setDefaultTitle = function(aTitle)
+    {
+        CPLogDefaultTitle = aTitle;
+    }
+
+    self.setDefaultLevel = function(aLevel)
+    {
+        CPLogDefaultLevel = aLevel;
+    }
+
+    self.setDefaultFormatter = function(aFormatter)
+    {
+        CPLogDefaultFormatter = aFormatter;
+    }
+
+    // private
+
+    var _registrations = {};
+    var _title = aTitle;
+
+    self._dispatch = function(aParameters, aLevel, aTitle)
+    {
+        aParameters = Array.prototype.slice.call(aParameters);
+
+        if (aTitle == undefined) aTitle = CPLogDefaultTitle;
+        if (aLevel == undefined) aLevel = CPLogDefaultLevel;
+
+        if (_registrations[aLevel])
+            for (var i = 0; i < _registrations[aLevel].length; i++)
+                 _registrations[aLevel][i](aParameters, aLevel, aTitle);
+    }
+
+    return self;
+}
+
+// Default CPLog:
+GLOBAL(CPLog) = CreateLogger();
+
+// Deprecated global registration functions
+GLOBAL(CPLogRegister)       = function() { CPLog.register.apply(CPLog, arguments); CPLog("CPLogRegister() is deprecated, use CPLog.register()"); };
+GLOBAL(CPLogRegisterRange)  = function() { CPLog.registerRange.apply(CPLog, arguments); CPLog("CPLogRegisterRange() is deprecated, use CPLog.registerRange()"); };
+GLOBAL(CPLogRegisterSingle) = function() { CPLog.registerSingle.apply(CPLog, arguments); CPLog("CPLogRegisterSingle() is deprecated, use CPLog.registerSingle()"); };
+
+// Included loggers:
 
 // CPLogConsole uses the built in "console" object
-GLOBAL(CPLogConsole) = function(aString, aLevel, aTitle)
+// (possibly available in CommonJS environments?)
+function CPLogConsoleCreate(formatter)
 {
-    if (typeof console != "undefined")
-    {
-        var message = _CPFormatLogMessage(aString, aLevel, aTitle);
-        
+    return function(aString, aLevel, aTitle) {
+        if (typeof console === "undefined")
+            return;
+
+        var message = (formatter || CPLogDefaultFormatter)(aString, aLevel, aTitle, false);
+
         var logger = {
             "fatal": "error",
             "error": "error",
@@ -128,106 +196,108 @@ GLOBAL(CPLogConsole) = function(aString, aLevel, aTitle)
             "info": "info",
             "debug": "debug",
             "trace": "debug"
-        }[aLevel];
-        
-        if (logger && console[logger])
+        }[aLevel] || "log";
+
+        if (console[logger])
             console[logger](message);
-        else if (console.log)
-            console.log(message);
     }
 }
 
+GLOBAL(CPLogConsole) = CPLogConsoleCreate();
+CPLogConsole.create = CPLogConsoleCreate;
+
+// CommonJS specific loggers
 #if COMMONJS
 
-var levelColorMap = {
-    "fatal": "red",
-    "error": "red",
-    "warn" : "yellow",
-    "info" : "green",
-    "debug": "cyan",
-    "trace": "blue"
-}
-
-try {
-    var SYSTEM = require("system");
-    var FILE = require("file");
-    if (SYSTEM.args[0])
-        CPLogDefaultTitle = FILE.basename(SYSTEM.args[0]);
-} catch (e) {
-}
-
-var stream;
-
-GLOBAL(CPLogPrint) = function(aString, aLevel, aTitle)
+// CPLogPrint uses STDOUT to print to console
+function CPLogPrintCreate(formatter, stream, useColor)
 {
-    if (stream === undefined) {
+    if (!stream) {
         try {
             stream = require("term").stream;
+            useColor = true;
         } catch (e) {
-            stream = null;
+            useColor = false;
+            if (typeof print != "undefined")
+                stream = { print : print };
         }
     }
 
-    if (stream) {
-        if (aLevel == "fatal" || aLevel == "error" || aLevel == "warn")
-            stream.print("\0"+levelColorMap[aLevel]+"(" + _CPFormatLogMessage(aString, aLevel, aTitle) + "\0)");
-        else
-            stream.print(_CPFormatLogMessage(aString, "\0"+levelColorMap[aLevel]+"(" + aLevel + "\0)", aTitle));
-    } else if (typeof print != "undefined") {
-        print(_CPFormatLogMessage(aString, aLevel, aTitle))
+    return function(aParameters, aLevel, aTitle) {
+        var message = (formatter || CPLogDefaultFormatter)(aParameters, aLevel, aTitle, useColor);
+        stream.print(message);
     }
 }
 
+GLOBAL(CPLogPrint) = CPLogPrintCreate();
+CPLogPrint.create = CPLogPrintCreate;
+
+// Browser specific loggers
 #else
 
-// CPLogAlert uses basic browser alert() functions
-GLOBAL(CPLogAlert) = function(aString, aLevel, aTitle)
-{
-    if (typeof alert != "undefined" && !CPLogDisable)
-    {
-        var message = _CPFormatLogMessage(aString, aLevel, aTitle);
-        CPLogDisable = !confirm(message + "\n\n(Click cancel to stop log alerts)");
-    }
-}
+// TODO: should this not be global?
+GLOBAL(CPLogDisable) = false;
 
-// CPLogPopup uses a slick popup window in the browser:
-var CPLogWindow = null;
-GLOBAL(CPLogPopup) = function(aString, aLevel, aTitle)
+// CPLogAlert uses basic browser confirm()
+function CPLogAlertCreate(formatter)
 {
-    try {
-        if (CPLogDisable || window.open == undefined)
-            return;
-    
-        if (!CPLogWindow || !CPLogWindow.document)
-        {
-            CPLogWindow = window.open("", "_blank", "width=600,height=400,status=no,resizable=yes,scrollbars=yes");
-        
-            if (!CPLogWindow) {
-                CPLogDisable = !confirm(aString + "\n\n(Disable pop-up blocking for CPLog window; Click cancel to stop log alerts)");
-                return;
-            }
-        
-            _CPLogInitPopup(CPLogWindow);
+    return function(aParameters, aLevel, aTitle) {
+        if (typeof confirm != "undefined" && !CPLogDisable) {
+            var message = (formatter || CPLogDefaultFormatter)(aParameters, aLevel, aTitle);
+            CPLogDisable = !confirm(message + "\n\n(Click cancel to stop log alerts)");
         }
-        
-        var logDiv = CPLogWindow.document.createElement("div");
-        logDiv.setAttribute("class", aLevel || "fatal");
-
-        var message = _CPFormatLogMessage(aString, null, aTitle);
-        
-        logDiv.appendChild(CPLogWindow.document.createTextNode(message));
-        CPLogWindow.log.appendChild(logDiv);
-    
-        if (CPLogWindow.focusEnabled.checked)
-            CPLogWindow.focus();
-        if (CPLogWindow.blockEnabled.checked)
-            CPLogWindow.blockEnabled.checked = CPLogWindow.confirm(message+"\nContinue blocking?");
-        if (CPLogWindow.scrollEnabled.checked)
-            CPLogWindow.scrollToBottom();
-    } catch(e) {
-        // TODO: some error handling/reporting
     }
 }
+
+GLOBAL(CPLogAlert) = CPLogAlertCreate();
+CPLogAlert.create = CPLogAlertCreate;
+
+// CPLogPopup uses a slick popup window in the browser
+// TODO: move this into DebugKit
+function CPLogPopupCreate(formatter)
+{
+    var logWindow = null;
+    return function(aParameters, aLevel, aTitle) {
+        var message = (formatter || CPLogDefaultFormatter)(aString, null, aTitle);
+
+        try {
+            if (CPLogDisable || window.open == undefined)
+                return;
+
+            if (!logWindow || !logWindow.document)
+            {
+                logWindow = window.open("", "_blank", "width=600,height=400,status=no,resizable=yes,scrollbars=yes");
+
+                if (!logWindow) {
+                    CPLogDisable = !confirm(message + "\n\n(Disable pop-up blocking for CPLog window; Click cancel to stop log alerts)");
+                    return;
+                }
+
+                _CPLogPopupInit(logWindow);
+            }
+
+            var logDiv = logWindow.document.createElement("div");
+            logDiv.setAttribute("class", aLevel || "fatal");
+
+            logDiv.appendChild(logWindow.document.createTextNode(message));
+            logWindow.log.appendChild(logDiv);
+
+            if (logWindow.focusEnabled.checked)
+                logWindow.focus();
+            if (logWindow.blockEnabled.checked)
+                logWindow.blockEnabled.checked = logWindow.confirm(message+"\nContinue blocking?");
+            if (logWindow.scrollEnabled.checked)
+                logWindow.scrollToBottom();
+        } catch(e) {
+            // TODO: some error handling/reporting
+        }
+    }
+}
+
+GLOBAL(CPLogPopup) = CPLogPopupCreate();
+CPLogPopup.create = CPLogPopupCreate;
+
+// private CPLogPopup
 
 var CPLogPopupStyle ='<style type="text/css" media="screen"> \
 body{font:10px Monaco,Courier,"Courier New",monospace,mono;padding-top:15px;} \
@@ -248,30 +318,24 @@ ul#options{display:inline-block;margin:0 15px 0px 15px;padding:0 0px;} \
 ul#options li{margin:0 0 0 0;padding:0 0 0 0;display:inline;} \
 </style>';
 
-function _CPLogInitPopup(logWindow)
+function _CPLogPopupInit(logWindow)
 {
     var doc = logWindow.document;
-    
-    // HACK so that head is available below:
     doc.writeln("<html><head><title></title>"+CPLogPopupStyle+"</head><body></body></html>");
-    
+
     doc.title = CPLogDefaultTitle + " Run Log";
-    
-    var head = doc.getElementsByTagName("head")[0];
+
     var body = doc.getElementsByTagName("body")[0];
-    
-    var base = window.location.protocol + "//" + window.location.host + window.location.pathname;
-    base = base.substring(0,base.lastIndexOf("/")+1);
-    
+
     var div = doc.createElement("div");
     div.setAttribute("id", "header");
     body.appendChild(div);
-    
+
     // Enablers
     var ul = doc.createElement("ul");
     ul.setAttribute("id", "enablers");
     div.appendChild(ul);
-    
+
     for (var i = 0; i < CPLogLevels.length; i++) {
         var li = doc.createElement("li");
         li.setAttribute("id", "en"+CPLogLevels[i]);
@@ -281,35 +345,35 @@ function _CPLogInitPopup(logWindow)
         li.appendChild(doc.createTextNode(CPLogLevels[i]));
         ul.appendChild(li);
     }
-    
+
     // Options
     var ul = doc.createElement("ul");
     ul.setAttribute("id", "options");
     div.appendChild(ul);
-    
+
     var options = {"focus":["Focus",false], "block":["Block",false], "wrap":["Wrap",false], "scroll":["Scroll",true], "close":["Close",true]};
     for (o in options) {
         var li = doc.createElement("li");
         ul.appendChild(li);
-        
+
         logWindow[o+"Enabled"] = doc.createElement("input");
         logWindow[o+"Enabled"].setAttribute("id", o);
         logWindow[o+"Enabled"].setAttribute("type", "checkbox");
-        if (options[o][1]) 
+        if (options[o][1])
             logWindow[o+"Enabled"].setAttribute("checked", "checked");
         li.appendChild(logWindow[o+"Enabled"]);
-        
+
         var label = doc.createElement("label");
         label.setAttribute("for", o);
         label.appendChild(doc.createTextNode(options[o][0]));
         li.appendChild(label);
     }
-    
+
     // Log
     logWindow.log = doc.createElement("div");
     logWindow.log.setAttribute("class", "enerror endebug enwarn eninfo enfatal entrace");
     body.appendChild(logWindow.log);
-    
+
     logWindow.toggle = function(elem) {
         var enabled = (elem.getAttribute("enabled") == "yes") ? "no" : "yes";
         elem.setAttribute("enabled", enabled);
@@ -319,17 +383,17 @@ function _CPLogInitPopup(logWindow)
         else
             logWindow.log.className = logWindow.log.className.replace(new RegExp("[\\s]*"+elem.id, "g"), "");
     }
-    
+
     // Scroll
     logWindow.scrollToBottom = function() {
         logWindow.scrollTo(0, body.offsetHeight);
     }
-    
+
     // Wrap
     logWindow.wrapEnabled.addEventListener("click", function() {
         logWindow.log.setAttribute("wrap", logWindow.wrapEnabled.checked ? "yes" : "no");
     }, false);
-    
+
     // Clear
     logWindow.addEventListener("keydown", function(e) {
         var e = e || logWindow.event;
@@ -340,7 +404,7 @@ function _CPLogInitPopup(logWindow)
             e.preventDefault();
         }
     }, "false");
-    
+
     // Parent closing
     window.addEventListener("unload", function() {
         if (logWindow && logWindow.closeEnabled && logWindow.closeEnabled.checked) {
@@ -348,7 +412,7 @@ function _CPLogInitPopup(logWindow)
             logWindow.close();
         }
     }, false);
-    
+
     // Log popup closing
     logWindow.addEventListener("unload", function() {
         if (!CPLogDisable) {
@@ -356,4 +420,11 @@ function _CPLogInitPopup(logWindow)
         }
     }, false);
 }
+#endif
+
+// guess a good default logger:
+#if COMMONJS
+GLOBAL(CPLogDefault) = CPLogPrint;
+#else
+GLOBAL(CPLogDefault) = (typeof console !== "undefined") ? CPLogConsole : CPLogPopup;
 #endif
