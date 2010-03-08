@@ -121,7 +121,7 @@ function CFURLGetParts(/*CFURL*/ aURL)
     if (parts.path)
     {
         var split = parts.path.split("/"),
-            pathComponents = parts.pathComponents;
+            pathComponents = parts.pathComponents,
             index = 0,
             count = split.length;
     

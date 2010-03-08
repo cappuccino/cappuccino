@@ -65,9 +65,7 @@ CFDictionary.prototype.containsKey = function(/*String*/ aKey)
     return hasOwnProperty.apply(this._buckets, [aKey]);
 }
 
-#if DEBUG
-CFDictionary.prototype.containsKey.displayName = "CFDictionary.containsKey";
-#endif
+DISPLAY_NAME(CFDictionary.prototype.containsKey);
 
 CFDictionary.prototype.containsValue = function(/*id*/ anObject)
 {
@@ -83,30 +81,21 @@ CFDictionary.prototype.containsValue = function(/*id*/ anObject)
     return NO;
 }
 
-#if DEBUG
-CFDictionary.prototype.containsValue.displayName = "CFDictionary.containsValue";
-#endif
-
+DISPLAY_NAME(CFDictionary.prototype.containsValue);
 
 CFDictionary.prototype.count = function()
 {
     return this._count;
 }
 
-#if DEBUG
-CFDictionary.prototype.count.displayName = "CFDictionary.count";
-#endif
-
+DISPLAY_NAME(CFDictionary.prototype.count);
 
 CFDictionary.prototype.countOfKey = function(/*String*/ aKey)
 {
     return this.containsKey(aKey) ? 1 : 0;
 }
 
-#if DEBUG
-CFDictionary.prototype.countOfKey.displayName = "CFDictionary.countOfKey";
-#endif
-
+DISPLAY_NAME(CFDictionary.prototype.countOfKey);
 
 CFDictionary.prototype.countOfValue = function(/*id*/ anObject)
 {
@@ -123,19 +112,14 @@ CFDictionary.prototype.countOfValue = function(/*id*/ anObject)
     return countOfValue;
 }
 
-#if DEBUG
-CFDictionary.prototype.countOfValue.displayName = "CFDictionary.countOfValue";
-#endif
-
+DISPLAY_NAME(CFDictionary.prototype.countOfValue);
 
 CFDictionary.prototype.keys = function()
 {
     return this._keys.slice();
 }
 
-#if DEBUG
-CFDictionary.prototype.keys.displayName = "CFDictionary.keys";
-#endif
+DISPLAY_NAME(CFDictionary.prototype.keys);
 
 CFDictionary.prototype.valueForKey = function(/*String*/ aKey)
 {
@@ -147,9 +131,7 @@ CFDictionary.prototype.valueForKey = function(/*String*/ aKey)
     return buckets[aKey];
 }
 
-#if DEBUG
-CFDictionary.prototype.valueForKey.displayName = "CFDictionary.valueForKey";
-#endif
+DISPLAY_NAME(CFDictionary.prototype.valueForKey);
 
 CFDictionary.prototype.toString = function()
 {
@@ -168,9 +150,7 @@ CFDictionary.prototype.toString = function()
     return string + "}";
 }
 
-#if DEBUG
-CFDictionary.prototype.toString.displayName = "CFDictionary.toString";
-#endif
+DISPLAY_NAME(CFDictionary.prototype.toString);
 
 GLOBAL(CFMutableDictionary) = function(/*CFDictionary*/ aDictionary)
 {
@@ -195,9 +175,7 @@ CFMutableDictionary.prototype.addValueForKey = function(/*String*/ aKey, /*Objec
     this._buckets[aKey] = aValue;
 }
 
-#if DEBUG
-CFMutableDictionary.prototype.addValueForKey.displayName = "CFMutableDictionary.addValueForKey";
-#endif
+DISPLAY_NAME(CFMutableDictionary.prototype.addValueForKey);
 
 CFMutableDictionary.prototype.removeValueForKey = function(/*String*/ aKey)
 {
@@ -228,9 +206,7 @@ CFMutableDictionary.prototype.removeValueForKey = function(/*String*/ aKey)
     delete this._buckets[aKey];
 }
 
-#if DEBUG
-CFMutableDictionary.prototype.removeValueForKey.displayName = "CFMutableDictionary.removeValueForKey";
-#endif
+DISPLAY_NAME(CFMutableDictionary.prototype.removeValueForKey);
 
 CFMutableDictionary.prototype.removeAllValues = function()
 {
@@ -239,9 +215,7 @@ CFMutableDictionary.prototype.removeAllValues = function()
     this._buckets = { };
 }
 
-#if DEBUG
-CFMutableDictionary.prototype.removeAllValues.displayName = "CFMutableDictionary.removeAllValues";
-#endif
+DISPLAY_NAME(CFMutableDictionary.prototype.removeAllValues);
 
 CFMutableDictionary.prototype.replaceValueForKey = function(/*String*/ aKey, /*Object*/ aValue)
 {
@@ -251,9 +225,7 @@ CFMutableDictionary.prototype.replaceValueForKey = function(/*String*/ aKey, /*O
     this._buckets[aKey] = aValue;
 }
 
-#if DEBUG
-CFMutableDictionary.prototype.replaceValueForKey.displayName = "CFMutableDictionary.replaceValueForKey";
-#endif
+DISPLAY_NAME(CFMutableDictionary.prototype.replaceValueForKey);
 
 CFMutableDictionary.prototype.setValueForKey = function(/*String*/ aKey, /*Object*/ aValue)
 {
@@ -267,6 +239,4 @@ CFMutableDictionary.prototype.setValueForKey = function(/*String*/ aKey, /*Objec
         this.addValueForKey(aKey, aValue);
 }
 
-#if DEBUG
-CFMutableDictionary.prototype.setValueForKey.displayName = "CFMutableDictionary.setValueForKey";
-#endif
+DISPLAY_NAME(CFMutableDictionary.prototype.setValueForKey);
