@@ -23,8 +23,9 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+@import <Foundation/CPData.j>
 @import <AppKit/CPColor.j>
-@import <AppKit/CPData.j>
+
 
 var NSUnknownColorSpaceModel    = -1,
     NSGrayColorSpaceModel       = 0,
