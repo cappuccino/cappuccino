@@ -465,7 +465,7 @@ var _CPKeyedUnarchiverDecodeObjectAtIndex = function(self, anIndex)
 
         self._plistObject = savedPlistObject;
 
-        if (processedObject != object)
+        if (processedObject !== object)
         {
             if (self._delegateSelectors & _CPKeyedUnarchiverWillReplaceObjectWithObjectSelector)
                 [self._delegate unarchiver:self willReplaceObject:object withObject:processedObject];
@@ -519,7 +519,7 @@ var _CPKeyedUnarchiverDecodeObjectAtIndex = function(self, anIndex)
 
     // If this object is a member of _CPKeyedArchiverValue, then we know
     // that it is a wrapper for a primitive JavaScript object.
-    if (object.isa === _CPKeyedArchiverValueClass)
+    if (object && (object.isa === _CPKeyedArchiverValueClass))
         object = [object JSObject];
 
     return object;
