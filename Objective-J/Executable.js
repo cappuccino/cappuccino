@@ -280,15 +280,18 @@ function fileExecutableSearchFinished(/*FileExecutable*/ aFileExecutable)
 
 function fileExecutableDependencyLoadFinished()
 {
-    var index = 0,
-        count = fileDependencyExecutables.length;
+    var executables = fileDependencyExecutables,
+        index = 0,
+        count = executables.length;
+
+    fileDependencyExecutables = [];
 
     for (; index < count; ++index)
-        fileDependencyExecutables[index]._fileDependencyStatus = ExecutableLoadedFileDependencies;
+        executables[index]._fileDependencyStatus = ExecutableLoadedFileDependencies;
 
     for (index = 0; index < count; ++index)
     {
-        var executable = fileDependencyExecutables[index],
+        var executable = executables[index],
             callbacks = executable._fileDependencyCallbacks,
             callbackIndex = 0,
             callbackCount = callbacks.length;
