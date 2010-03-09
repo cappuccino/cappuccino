@@ -125,8 +125,8 @@ CPLogRegister(CPLogConsole);
 
     var textDataView = [CPTextField new];
     
-    [textDataView setValue:[CPColor whiteColor] forThemeAttribute:@"text-color" inState:CPThemeStateHighlighted];
-    [textDataView setValue:[CPFont systemFontOfSize:12] forThemeAttribute:@"font" inState:CPThemeStateHighlighted];
+    [textDataView setValue:[CPColor whiteColor] forThemeAttribute:@"text-color" inState:CPThemeStateSelected];
+    [textDataView setValue:[CPFont systemFontOfSize:12] forThemeAttribute:@"font" inState:CPThemeStateSelected];
 
     var desc = [CPSortDescriptor sortDescriptorWithKey:@"self" ascending:YES];
 
