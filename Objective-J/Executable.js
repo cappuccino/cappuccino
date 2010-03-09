@@ -137,6 +137,7 @@ Executable.prototype.execute = function()
 #endif
     var oldContextBundle = CONTEXT_BUNDLE;
 
+    // FIXME: Should we have stored this?
     CONTEXT_BUNDLE = CFBundle.bundleContainingURL(this.URL());
 
     var result = this._function.apply(global, this.functionArguments());
