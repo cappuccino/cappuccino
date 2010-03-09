@@ -22,7 +22,7 @@ function main(args)
         switch (argument)
         {
             case "version":
-            case "--version":   return print("capp version 0.8.0");
+            case "--version":   return print(require("cappuccino").fullVersionString());
 
             case "-h":
             case "--help":      return printUsage();

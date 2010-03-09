@@ -4,7 +4,6 @@
     "description": "Cappuccino module",
     "keywords": ["objective-j", "objj", "objective j", "capp", "cappuccino"],
     "author": "280 North, Inc. (http://280north.com/)",
-    "version": "0.8.0",
     "objj-frameworks": ["Frameworks"],
     "objj-debug-frameworks": ["Frameworks/Debug"],
     "contributors": [

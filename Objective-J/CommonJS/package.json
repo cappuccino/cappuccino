@@ -5,7 +5,6 @@
     "description": "Objective-J and Cappuccino module",
     "keywords": ["objective-j", "objj", "objective j", "cappuccino"],
     "author": "280 North, Inc. (http://280north.com/)",
-    "version": "0.8.0",
     "contributors": [
         "Francisco Tolmasky (http://tolmasky.com/)",
         "Ross Boucher (http://rossboucher.com/)",

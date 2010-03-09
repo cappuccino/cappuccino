@@ -87,6 +87,10 @@ new FileList("CommonJS/**/*").forEach(function(aFilename)
     CLOBBER.include(buildFilename);
 });
 
+task ("build", function() {
+    setPackageMetadata(FILE.join($BUILD_CJS_OBJECTIVE_J, "package.json"));
+});
+
 $BUILD_CJS_OBJECTIVE_J_FRAMEWORK = FILE.join($BUILD_CJS_OBJECTIVE_J, "Frameworks", "Objective-J");
 
 filedir($BUILD_CJS_OBJECTIVE_J_FRAMEWORK, function()

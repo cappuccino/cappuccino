@@ -10,7 +10,7 @@ blendKitTask = framework ("BlendKit", function(blendKitTask)
     blendKitTask.setBuildPath(FILE.join($BUILD_DIR, $CONFIGURATION));
 
     blendKitTask.setIdentifier("com.280n.BlendKit");
-    blendKitTask.setVersion("0.8.0");
+    blendKitTask.setVersion(getCappuccinoVersion());
     blendKitTask.setAuthor("280 North, Inc.");
     blendKitTask.setEmail("feedback @nospam@ 280north.com");
     blendKitTask.setSummary("BlendKit classes for Cappuccino");
