@@ -2156,10 +2156,8 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 
 - (void)_commitDataViewObjectValue:(CPTextView)sender
 {
-    [_dataSource tableView:self
-        setObjectValue:[sender objectValue]
-        forTableColumn:sender.tableViewEditedColumnObj
-        row:sender.tableViewEditedRowIndex];
+    [_dataSource tableView:self setObjectValue:[sender objectValue] forTableColumn:sender.tableViewEditedColumnObj row:sender.tableViewEditedRowIndex];
+    [sender setEditable:NO];
 }
 
 - (CPView)_newDataViewForRow:(CPInteger)aRow tableColumn:(CPTableColumn)aTableColumn
