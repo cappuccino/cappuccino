@@ -456,12 +456,12 @@
 
 - (void)remove:(id)sender
 {
-   [self removeObjects:[[self contentArray] objectsAtIndexes:[self selectionIndexes]]];
+   [self removeObjects:[[self arrangedObjects] objectsAtIndexes:[self selectionIndexes]]];
 }
 
 - (void)removeObjectsAtArrangedObjectIndexes:(CPIndexSet)indexes
 {
-    [self _removeObjects:[[self contentArray] objectsAtIndexes:indexes]];
+    [self _removeObjects:[[self arrangedObjects] objectsAtIndexes:indexes]];
 }
 
 
