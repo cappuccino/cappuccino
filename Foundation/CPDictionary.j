@@ -153,8 +153,14 @@
             continue;
 
         var value = object[key];
+        
+        if (value == null)
+        {
+            [dictionary setObject:[CPNull null] forKey:key];
+            continue;
+        }
     
-        if (recursively && value != null)
+        if (recursively)
         {
             if (value.constructor === Object)
                 value = [CPDictionary dictionaryWithJSObject:value recursively:YES];

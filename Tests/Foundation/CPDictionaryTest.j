@@ -67,9 +67,9 @@
 - (void)testDictionaryWithJSObjectRecursiveWithNull
 {
     var dict = [CPDictionary dictionaryWithJSObject:json_with_nulls recursively:YES];
-    [self assert:2 equals:[dict count]];
-    [self assert:[@"key1", @"key2"] equals:[dict allKeys]];
-    [self assert:[dict objectForKey:@"key3"] equals:nil];
+    [self assert:3 equals:[dict count]];
+    [self assert:[@"key1", @"key2", @"key3"] equals:[dict allKeys]];
+    [self assert:[CPNull null] equals:[dict objectForKey:@"key3"]];
 }
 
 - (void)testDictionaryWithJSObjectNonRecursive
