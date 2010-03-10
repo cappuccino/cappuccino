@@ -1,7 +1,7 @@
 #!/bin/bash
 
 project_home="$(dirname "$PWD")"
-extras = "$project_home/ci-extra.sh"
+extras="$project_home/ci-extra.sh"
 
 export PATH="$HOME/narwhal/bin:$PATH"
 export CAPP_AUTO_UPGRADE="yes"
