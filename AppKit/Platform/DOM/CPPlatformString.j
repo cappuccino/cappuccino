@@ -67,10 +67,14 @@ var DOMSpanElement      = nil,
 
     DOMSpanElement = DOMIFrameDocument.createElement("span");
     DOMSpanElement.style.position = "absolute";
-    DOMSpanElement.style.whiteSpace = "pre";
     DOMSpanElement.style.visibility = "visible";
     DOMSpanElement.style.padding = "0px";
     DOMSpanElement.style.margin = "0px";
+
+    try {
+        DOMSpanElement.style.whiteSpace = "pre";
+    }
+    catch (e) {}
 
     DOMDivElement.appendChild(DOMSpanElement);
 }
@@ -93,16 +97,29 @@ var DOMSpanElement      = nil,
     if (!aWidth)
     {
         style.width = "";
-        style.whiteSpace = "pre";
+
+        try {
+            style.whiteSpace = "pre";
+        }
+        catch (e) {}
+
+        style.wordWrap = "normal";
     }
     else
     {
         style.width = ROUND(aWidth) + "px";
+        try
+        {
+            style.whiteSpace = "-o-pre-wrap";
+            style.whiteSpace = "-pre-wrap";
+            style.whiteSpace = "-moz-pre-wrap";
+            style.whiteSpace = "pre-wrap";
+        } catch(e)
+        {
+            //some versions of IE throw exceptions for unsupported properties.
+        }
+
         style.wordWrap = "break-word";
-        style.whiteSpace = "-o-pre-wrap";
-        style.whiteSpace = "-pre-wrap";
-        style.whiteSpace = "-moz-pre-wrap";
-        style.whiteSpace = "pre-wrap";
     }
 
     style.font = [aFont cssString];
