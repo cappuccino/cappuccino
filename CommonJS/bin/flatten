@@ -172,16 +172,19 @@ ObjectiveJFlattener.prototype.serializeStaticResources = function(node, depth) {
     depth = depth || 0;
 
     var bundle = this.context.global.CFBundle.bundleContainingURL(node.URL());
+    var bundlePath;
     if (!bundle) {
         stream.print("\0yellow(Warning:\0) No bundle for path: \0cyan("+node.URL()+"\0)");
     }
-    else if (!this._outputBundles[bundle.path()]) {
-        this._outputBundles[bundle.path()] = bundle;
-        stream.print("Writing bundle: \0cyan("+bundle.path()+"\0)");
+    else if ((bundlePath = bundle.bundlePath()) && !this._outputBundles[bundlePath]) {
+        this._outputBundles[bundlePath] = bundle;
+        stream.print("Writing bundle: \0cyan("+bundlePath+"\0)");
         print(bundle.infoDictionary())
 
-        var relative = this.rootPath.relative(bundle.path()).toString();
-        this.bundleBuffer.push("var bundle = new CFBundle("+(relative ? JSON.stringify(relative) : "appURL")+");");
+        var relative = this.rootPath.relative(bundlePath).toString();
+        this.bundleBuffer.push("var bundle = new CFBundle("+
+            "new CFURL("+(relative ? JSON.stringify(relative) : "appURL")+", ObjectiveJ.pageURL)"+
+        ");");
         this.bundleBuffer.push("bundle._loadStatus = " + (1<<4) + ";");
         if (bundle.infoDictionary()) {
             this.bundleBuffer.push("bundle._infoDictionary = CFPropertyList.propertyListFromString(" +
@@ -191,9 +194,10 @@ ObjectiveJFlattener.prototype.serializeStaticResources = function(node, depth) {
 
     // not the root node:
     if (depth > 0) {
-        this.resourceBuffer.push("newNode = new ObjectiveJ.StaticResource(" +
-            JSON.stringify(node.name()) +
-            ", currentNode, " +
+        this.resourceBuffer.push("newNode = new ObjectiveJ.StaticResource(new CFURL(" +
+                JSON.stringify(node.name()) + "," +
+                "currentNode.URL().asDirectoryPathURL()" +
+            "), currentNode, " +
             JSON.stringify(node.isDirectory()) + ", " +
             JSON.stringify(node.isResolved()) + ");");
     } else {
