@@ -186,6 +186,7 @@ ObjectiveJFlattener.prototype.serializeStaticResources = function(node, depth) {
             "new CFURL("+(relative ? JSON.stringify(relative) : "appURL")+", ObjectiveJ.pageURL)"+
         ");");
         this.bundleBuffer.push("bundle._loadStatus = " + (1<<4) + ";");
+        this.bundleBuffer.push("bundle._isValid = true;");
         if (bundle.infoDictionary()) {
             this.bundleBuffer.push("bundle._infoDictionary = CFPropertyList.propertyListFromString(" +
                 JSON.stringify(CPPropertyListCreateData(bundle.infoDictionary()).rawString()) + ");");
