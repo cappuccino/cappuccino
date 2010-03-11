@@ -27,12 +27,22 @@
 @import <Foundation/CPDictionary.j>
 
 
-var transformerMap = [CPDictionary dictionary];
+var transformerMap;
 
 
 @implementation CPValueTransformer : CPObject
 {
 
+}
+
++ (void)initialize
+{
+    transformerMap = [CPDictionary dictionaryWithJSObject:{
+        CPNegateBooleanTransformerName: [CPNegateBooleanTransformer new],
+        CPIsNilTransformerName: [CPIsNilTransformer new],
+        CPIsNotNilTransformerName: [CPIsNotNilTransformer new],
+        CPUnarchiveFromDataTransformerName: [CPUnarchiveFromDataTransformer new],
+    }];
 }
 
 + (void)setValueTransformer:(CPValueTransformer)aTransformer forName:(CPString)aName
@@ -79,7 +89,7 @@ var transformerMap = [CPDictionary dictionary];
 
 // builtin transformers
 
-@implementation CPNegateBooleanTransformer
+@implementation CPNegateBooleanTransformer : CPObject
 
 + (BOOL)allowsReverseTransformation
 {
@@ -103,7 +113,7 @@ var transformerMap = [CPDictionary dictionary];
 
 @end
 
-@implementation CPIsNilTransformer
+@implementation CPIsNilTransformer : CPObject
 
 + (BOOL)allowsReverseTransformation
 {
@@ -122,7 +132,7 @@ var transformerMap = [CPDictionary dictionary];
 
 @end
 
-@implementation CPIsNotNilTransformer
+@implementation CPIsNotNilTransformer : CPObject
 
 + (BOOL)allowsReverseTransformation
 {
@@ -141,7 +151,7 @@ var transformerMap = [CPDictionary dictionary];
 
 @end
 
-@implementation CPUnarchiveFromDataTransformer
+@implementation CPUnarchiveFromDataTransformer : CPObject
 
 + (BOOL)allowsReverseTransformation
 {
@@ -169,8 +179,3 @@ CPNegateBooleanTransformerName  = @"CPNegateBooleanTransformerName";
 CPIsNilTransformerName          = @"CPIsNilTransformerName";
 CPIsNotNilTransformerName       = @"CPIsNotNilTransformerName";
 CPUnarchiveFromDataTransformerName = @"CPUnarchiveFromDataTransformerName";
-
-[CPValueTransformer setValueTransformer:[CPNegateBooleanTransformer new] forName:CPNegateBooleanTransformerName];
-[CPValueTransformer setValueTransformer:[CPIsNilTransformer new] forName:CPIsNilTransformerName];
-[CPValueTransformer setValueTransformer:[CPIsNotNilTransformer new] forName:CPIsNotNilTransformerName];
-[CPValueTransformer setValueTransformer:[CPUnarchiveFromDataTransformer new] forName:CPUnarchiveFromDataTransformerName];

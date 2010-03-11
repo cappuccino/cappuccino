@@ -26,13 +26,14 @@
 @import <Foundation/CPObject.j>
 @import <Foundation/CPArray.j>
 @import <Foundation/CPDictionary.j>
+@import <Foundation/CPValueTransformer.j>
 
 var exposedBindingsMap = [CPDictionary new],
     bindingsMap = [CPDictionary new];
-    
+
 var CPBindingOperationAnd = 0,
     CPBindingOperationOr  = 1;
-    
+
 @implementation CPKeyValueBinding : CPObject
 {
     CPDictionary    _info;
@@ -40,20 +41,20 @@ var CPBindingOperationAnd = 0,
 }
 
 + (void)exposeBinding:(CPString)aBinding forClass:(Class)aClass
-{  
+{
     var bindings = [exposedBindingsMap objectForKey:[aClass hash]];
-    
+
     if (!bindings)
     {
         bindings = [];
         [exposedBindingsMap setObject:bindings forKey:[aClass hash]];
     }
-    
+
     bindings.push(aBinding);
 }
 
 + (CPArray)exposedBindingsForClass:(Class)aClass
-{  
+{
     return [[exposedBindingsMap objectForKey:[aClass hash]] copy];
 }
 
@@ -80,12 +81,12 @@ var CPBindingOperationAnd = 0,
 + (void)unbind:(CPString)aBinding forObject:(id)anObject
 {
     var bindings = [bindingsMap objectForKey:[anObject hash]];
-    
+
     if (!bindings)
         return;
 
     var theBinding = [bindings objectForKey:aBinding];
-    
+
     if (!theBinding)
         return;
 
@@ -115,24 +116,24 @@ var CPBindingOperationAnd = 0,
 - (id)initWithBinding:(CPString)aBinding name:(CPString)aName to:(id)aDestination keyPath:(CPString)aKeyPath options:(CPDictionary)options from:(id)aSource
 {
     self = [super init];
-    
+
     if (self)
     {
         _source = aSource;
         _info   = [CPDictionary dictionaryWithObjects:[aDestination, aKeyPath] forKeys:[CPObservedObjectKey, CPObservedKeyPathKey]];
-        
+
         if (options)
             [_info setObject:options forKey:CPOptionsKey];
-        
+
         [aDestination addObserver:self forKeyPath:aKeyPath options:CPKeyValueObservingOptionNew context:aBinding];
-        
+
         var bindings = [bindingsMap objectForKey:[_source hash]];
         if (!bindings)
         {
             bindings = [CPDictionary new];
             [bindingsMap setObject:bindings forKey:[_source hash]];
         }
-    
+
         [bindings setObject:self forKey:aName];
         [self setValueFor:aBinding];
     }
@@ -140,7 +141,7 @@ var CPBindingOperationAnd = 0,
     return self;
 }
 
-- (void)setValueFor:(CPString)aBinding 
+- (void)setValueFor:(CPString)aBinding
 {
     var destination = [_info objectForKey:CPObservedObjectKey],
         keyPath = [_info objectForKey:CPObservedKeyPathKey],
@@ -179,9 +180,9 @@ var CPBindingOperationAnd = 0,
     switch (aValue)
     {
         case CPMultipleValuesMarker:    return [options objectForKey:CPMultipleValuesPlaceholderBindingOption] || @"Multiple Values";
-        
+
         case CPNoSelectionMarker:       return [options objectForKey:CPNoSelectionPlaceholderBindingOption] || @"No Selection";
-        
+
         case CPNotApplicableMarker:     if ([options objectForKey:CPRaisesForNotApplicableKeysBindingOption])
                                             [CPException raise:CPGenericException reason:@"can't transform non applicable key on: "+_source+" value: "+aValue];
 
@@ -238,7 +239,7 @@ var CPBindingOperationAnd = 0,
     while (theClass && theClass !== [CPObject class])
     {
         var temp = [CPKeyValueBinding exposedBindingsForClass:theClass];
-        
+
         if (temp)
             [exposedBindings addObjectsFromArray:temp];
 
@@ -286,7 +287,7 @@ var CPBindingOperationAnd = 0,
 {
 }
 
-- (void)setValueFor:(CPString)aBinding 
+- (void)setValueFor:(CPString)aBinding
 {
     var bindings = [bindingsMap valueForKey:[_source hash]];
 
@@ -307,7 +308,7 @@ var CPBindingOperationAnd = 0,
 {
 }
 
-- (void)setValueFor:(CPString)aBinding 
+- (void)setValueFor:(CPString)aBinding
 {
     var bindings = [bindingsMap objectForKey:[_source hash]];
 
@@ -329,7 +330,7 @@ var resolveMultipleValues = function resolveMultipleValues(/*CPString*/key, /*CP
     var bindingName = key,
         theBinding,
         count = 1;
-        
+
     while (theBinding = [bindings objectForKey:bindingName])
     {
         var infoDictionary = theBinding._info,
@@ -338,13 +339,13 @@ var resolveMultipleValues = function resolveMultipleValues(/*CPString*/key, /*CP
             options = [infoDictionary objectForKey:CPOptionsKey];
 
         var value = [theBinding transformValue:[object valueForKeyPath:keyPath] withOptions:options];
-        
+
         if (value == operation)
             return operation;
 
         bindingName = [CPString stringWithFormat:@"%@%i", key, ++count];
     }
-    
+
     return !operation;
 }
 
@@ -352,11 +353,11 @@ var invokeAction = function invokeAction(/*CPString*/targetKey, /*CPString*/argu
 {
     var theBinding = [bindings objectForKey:targetKey],
         infoDictionary = theBinding._info,
-        
+
         object   = [infoDictionary objectForKey:CPObservedObjectKey],
         keyPath  = [infoDictionary objectForKey:CPObservedKeyPathKey],
         options  = [infoDictionary objectForKey:CPOptionsKey],
-        
+
         target   = [object valueForKeyPath:keyPath],
         selector = [options objectForKey:CPSelectorNameBindingOption];
 
@@ -365,14 +366,14 @@ var invokeAction = function invokeAction(/*CPString*/targetKey, /*CPString*/argu
 
     var invocation = [CPInvocation invocationWithMethodSignature:[target methodSignatureForSelector:selector]];
     [invocation setSelector:selector];
-    
+
     var bindingName = argumentKey
         count = 1;
 
     while (theBinding = [bindings objectForKey:bindingName])
     {
         infoDictionary = theBinding._info;
-        
+
         keyPath = [infoDictionary objectForKey:CPObserverKeyPathKey];
         object  = [[infoDictionary objectForKey:CPObservedObjectKey] valueForKeyPath:keyPath];
 
@@ -381,7 +382,7 @@ var invokeAction = function invokeAction(/*CPString*/targetKey, /*CPString*/argu
 
         bindingName = [CPString stringWithFormat:@"%@%i", argumentKey, count];
     }
-    
+
     [invocation invoke];
 }
 
