@@ -177,6 +177,17 @@ var CPBindingOperationAnd = 0,
         valueTransformer,
         placeholder;
 
+    var valueTransformerName = [options objectForKey:CPValueTransformerNameBindingOption],
+        valueTransformer;
+
+    if (valueTransformerName)
+        valueTransformer = [CPValueTransformer valueTransformerForName:valueTransformerName];
+    else
+        valueTransformer = [options objectForKey:CPValueTransformerBindingOption];
+
+    if (valueTransformer)
+        aValue = [valueTransformer transformedValue:aValue];
+
     switch (aValue)
     {
         case CPMultipleValuesMarker:    return [options objectForKey:CPMultipleValuesPlaceholderBindingOption] || @"Multiple Values";
@@ -189,19 +200,8 @@ var CPBindingOperationAnd = 0,
                                         return [options objectForKey:CPNotApplicablePlaceholderBindingOption] || @"Not Applicable";
 
         case nil:
-        case undefined:                 return [options objectForKey:CPNullPlaceholderBindingOption] || @"";
+        case undefined:                 return [options objectForKey:CPNullPlaceholderBindingOption] || nil;
     }
-
-    var valueTransformerName = [options objectForKey:CPValueTransformerNameBindingOption],
-        valueTransformer;
-
-    if (valueTransformerName)
-        valueTransformer = [CPValueTransformer valueTransformerForName:valueTransformerName];
-    else
-        valueTransformer = [options objectForKey:CPValueTransformerBindingOption];
-
-    if (valueTransformer)
-        aValue = [valueTransformer transformedValue:aValue];
 
     return aValue;
 }

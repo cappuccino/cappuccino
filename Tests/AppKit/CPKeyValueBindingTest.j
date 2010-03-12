@@ -41,7 +41,79 @@
 
     [self assertTrue:[self valueForKey:@"FOO"]==="banana" message:"Bound value should have been updated to banana, was "+FOO];
 }
-/*
+
+- (void)testBindOptions
+{
+
+    var bindTesterA = [BindingTestWithBool new],
+        bindTesterB = [BindingTestWithBool new];
+
+    [bindTesterB bind:@"stringValue" toObject:bindTesterA withKeyPath:@"stringValue" options:[CPDictionary dictionary]];
+    [self assert:nil equals:[bindTesterA stringValue] message:"initial A value unchanged"];
+    [self assert:nil equals:[bindTesterB stringValue] message:"initial B value unchanged"];
+
+    [bindTesterA setStringValue:@"My string"];
+    [self assert:@"My string" equals:[bindTesterA stringValue] message:"A value set"];
+    [self assert:@"My string" equals:[bindTesterB stringValue] message:"B value updated"];
+
+    [bindTesterA setStringValue:nil];
+    [self assert:nil equals:[bindTesterA stringValue] message:"A value reset"];
+    [self assert:nil equals:[bindTesterB stringValue] message:"B value updated with nil"];
+
+    [bindTesterA unbind:@"stringValue"];
+
+    [bindTesterB bind:@"boolValue" toObject:bindTesterA withKeyPath:@"stringValue" options:[CPDictionary dictionaryWithObject:CPIsNotNilTransformerName forKey:CPValueTransformerNameBindingOption]];
+    [bindTesterB setBoolValue:YES];
+    [bindTesterA setStringValue:nil];
+    [self assert:nil equals:[bindTesterA stringValue] message:"A value reset"];
+    [self assert:NO equals:[bindTesterB boolValue] message:"B value updated"];
+
+    [bindTesterB setBoolValue:NO];
+    [bindTesterA setStringValue:@"My string"];
+    [self assert:@"My string" equals:[bindTesterA stringValue] message:"A value updated"];
+    [self assert:YES equals:[bindTesterB boolValue] message:"B value updated"];
+
+    [bindTesterB setBoolValue:NO];
+    [bindTesterA setStringValue:@""];
+    [self assert:@"" equals:[bindTesterA stringValue] message:"A value updated"];
+    [self assert:YES equals:[bindTesterB boolValue] message:"B value updated"];
+
+    [bindTesterA unbind:@"boolValue"];
+
+    [bindTesterB bind:@"boolValue" toObject:bindTesterA withKeyPath:@"stringValue" options:[CPDictionary dictionaryWithObject:CPIsNilTransformerName forKey:CPValueTransformerNameBindingOption]];
+    [bindTesterB setBoolValue:NO];
+    [bindTesterA setStringValue:nil];
+    [self assert:nil equals:[bindTesterA stringValue] message:"A value reset"];
+    [self assert:YES equals:[bindTesterB boolValue] message:"B value updated"];
+
+    [bindTesterB setBoolValue:YES];
+    [bindTesterA setStringValue:@"My string"];
+    [self assert:@"My string" equals:[bindTesterA stringValue] message:"A value updated"];
+    [self assert:NO equals:[bindTesterB boolValue] message:"B value updated"];
+
+    [bindTesterB setBoolValue:YES];
+    [bindTesterA setStringValue:@""];
+    [self assert:@"" equals:[bindTesterA stringValue] message:"A value updated"];
+    [self assert:NO equals:[bindTesterB boolValue] message:"B value updated"];
+
+    [bindTesterA unbind:@"boolValue"];
+
+
+    [bindTesterB bind:@"stringValue" toObject:bindTesterA withKeyPath:@"stringValue" options:[CPDictionary dictionaryWithObject:@"placeholder" forKey:CPNullPlaceholderBindingOption]];
+
+    [bindTesterA setStringValue:@""];
+    [self assert:@"" equals:[bindTesterA stringValue] message:"A value set (placeholder)"];
+    [self assert:@"" equals:[bindTesterB stringValue] message:"B value updated (placeholder)"];
+
+    [bindTesterA setStringValue:@"My string"];
+    [self assert:@"My string" equals:[bindTesterA stringValue] message:"A value set (placeholder)"];
+    [self assert:@"My string" equals:[bindTesterB stringValue] message:"B value updated (placeholder)"];
+
+    [bindTesterA setStringValue:nil];
+    [self assert:nil equals:[bindTesterA stringValue] message:"A value reset (placeholder)"];
+    [self assert:@"placeholder" equals:[bindTesterB stringValue] message:"B value updated (placeholder)"];
+}
+
 - (void)testControl
 {
     FOO = "bingo";
@@ -58,7 +130,9 @@
     //[control addObserver:self forKeyPath:CPValueBinding options:nil context:"testControl"];
 
     [control bind:CPValueBinding toObject:self withKeyPath:@"FOO" options:nil];
-    [self bind:@"FOO" toObject:control withKeyPath:CPValueBinding options:nil];
+    // Should this even work? It's a two way binding. Anyhow, it currently crashes
+    // objj disrupting the other unit tests, so commenting it out for now.
+    //[self bind:@"FOO" toObject:control withKeyPath:CPValueBinding options:nil];
 
     [control setStringValue:@"banana"];
     [control setStringValue:@"grapefruit"];
@@ -70,7 +144,7 @@
     [control setStringValue:@"pina colada"];
 
     [self assertTrue: FOO == [control stringValue] message: "should be equal, were: "+FOO+"and: "+[control stringValue]];
-}*/
+}
 
 - (void)testTableColumn
 {
@@ -136,6 +210,14 @@
 - (id)cheese
 {
     return cheese;
+}
+
+@end
+
+@implementation BindingTestWithBool : CPObject
+{
+    CPString    stringValue @accessors;
+    BOOL        boolValue @accessors;
 }
 
 @end
