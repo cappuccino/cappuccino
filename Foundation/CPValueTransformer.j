@@ -27,7 +27,7 @@
 @import <Foundation/CPDictionary.j>
 
 
-var transformerMap;
+var transformerMap = [CPDictionary dictionary];
 
 
 @implementation CPValueTransformer : CPObject
@@ -35,19 +35,9 @@ var transformerMap;
 
 }
 
-+ (void)initialize
++ (void)setValueTransformer:(CPValueTransformer)transformer forName:(CPString)aName
 {
-    transformerMap = [CPDictionary dictionaryWithJSObject:{
-        CPNegateBooleanTransformerName: [CPNegateBooleanTransformer new],
-        CPIsNilTransformerName: [CPIsNilTransformer new],
-        CPIsNotNilTransformerName: [CPIsNotNilTransformer new],
-        CPUnarchiveFromDataTransformerName: [CPUnarchiveFromDataTransformer new],
-    }];
-}
-
-+ (void)setValueTransformer:(CPValueTransformer)aTransformer forName:(CPString)aName
-{
-    [transformerMap setObject:aTransformer forKey:aName];
+    [transformerMap setObject:transformer forKey:aName];
 }
 
 + (CPValueTransformer)valueTransformerForName:(CPString)aName
@@ -179,3 +169,8 @@ CPNegateBooleanTransformerName  = @"CPNegateBooleanTransformerName";
 CPIsNilTransformerName          = @"CPIsNilTransformerName";
 CPIsNotNilTransformerName       = @"CPIsNotNilTransformerName";
 CPUnarchiveFromDataTransformerName = @"CPUnarchiveFromDataTransformerName";
+
+[CPValueTransformer setValueTransformer:[CPNegateBooleanTransformer new] forName:CPNegateBooleanTransformerName];
+[CPValueTransformer setValueTransformer:[CPIsNilTransformer new] forName:CPIsNilTransformerName];
+[CPValueTransformer setValueTransformer:[CPIsNotNilTransformer new] forName:CPIsNotNilTransformerName];
+[CPValueTransformer setValueTransformer:[CPUnarchiveFromDataTransformer new] forName:CPUnarchiveFromDataTransformerName];
