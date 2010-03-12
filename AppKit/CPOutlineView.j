@@ -382,43 +382,14 @@ CPOutlineViewDropOnItemIndex = -1;
     return frame;
 }
 
-- (void)selectRowIndexes:(CPIndexSet)rows byExtendingSelection:(BOOL)shouldExtendSelection
+- (void)_performSelection:(BOOL)select forRow:(CPInteger)rowIndex context:(id)context
 {
-    // First un highlight the old disclosure controls   
-    var previousSelectedRows = [];
-    [[self selectedRowIndexes] getIndexes:previousSelectedRows maxCount:-1 inIndexRange:nil];
+    [super _performSelection:select forRow:rowIndex context:context];
     
-    var index = [previousSelectedRows count];
-    while (index--)
-    {
-        var rowIndex = previousSelectedRows[index],
-            item = [self itemAtRow:rowIndex];
+    var control = _disclosureControlsForRows[rowIndex],
+        selector = select ? @"setThemeState:" : @"unsetThemeState:";
         
-        if (![self isExpandable:item])
-            continue;
-        
-        var control = _disclosureControlsForRows[rowIndex];
-        [control setHighlighted:NO];
-    }
-    
-    [super selectRowIndexes:rows byExtendingSelection:shouldExtendSelection];
-    
-    // Now highlight the new disclosure controls
-    var selectedRows = [];
-        [rows getIndexes:selectedRows maxCount:-1 inIndexRange:nil];
-    
-        var index = [selectedRows count];
-    while (index--)
-    {
-        var rowIndex = selectedRows[index],
-            item = [self itemAtRow:rowIndex];
-        
-        if (![self isExpandable:item])
-            continue;
-        
-        var control = _disclosureControlsForRows[rowIndex];
-        [control setHighlighted:YES];
-    }
+    [control performSelector:CPSelectorFromString(selector) withObject:CPThemeStateSelected];
 }
 
 - (void)setDelegate:(id)aDelegate
@@ -619,6 +590,8 @@ CPOutlineViewDropOnItemIndex = -1;
         _disclosureControlsForRows[row] = control;
 
         [control setState:[self isItemExpanded:item] ? CPOnState : CPOffState];
+        var selector = [self isRowSelected:row] ? @"setThemeState:" : @"unsetThemeState:";
+        [control performSelector:CPSelectorFromString(selector) withObject:CPThemeStateSelected];
         [control setFrame:frame];
 
         [self addSubview:control];
@@ -1080,8 +1053,10 @@ var _loadItemInfoForItem = function(/*CPOutlineView*/ anOutlineView, /*id*/ anIt
     CGContextAddLineToPoint(context, 0.0, 0.0);
 
     CGContextClosePath(context);
-
-    CGContextSetFillColor(context, [self isHighlighted] ? [CPColor whiteColor] : [CPColor grayColor]);
+    var isHighlighted = [self hasThemeState:CPThemeStateHighlighted];
+    var color = [self hasThemeState:CPThemeStateSelected] ? (isHighlighted ? [CPColor lightGrayColor] : [CPColor whiteColor]) : (isHighlighted ? [CPColor blackColor] : [CPColor grayColor]);
+    
+    CGContextSetFillColor(context, color);
     CGContextFillPath(context);
 }
 

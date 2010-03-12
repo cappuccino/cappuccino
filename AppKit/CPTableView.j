@@ -817,20 +817,20 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 
         var count = deselectRows.length;
         while (count--)
-        {
-            var rowIndex = deselectRows[count];
-            var view = dataViewsInTableColumn[rowIndex];
-            [view unsetThemeState:CPThemeStateSelected];
-        }
-
+            [self _performSelection:NO forRow:deselectRows[count] context:dataViewsInTableColumn];
+        
         count = selectRows.length;
         while (count--)
-        {
-            var rowIndex = selectRows[count];
-            var view = dataViewsInTableColumn[rowIndex];
-            [view setThemeState:CPThemeStateSelected];
-        }
+            [self _performSelection:YES forRow:selectRows[count] context:dataViewsInTableColumn];
     }
+}
+
+- (void)_performSelection:(BOOL)select forRow:(CPInteger)rowIndex context:(id)context
+{
+    var view = context[rowIndex],
+        selector = select ? @"setThemeState:" : @"unsetThemeState:";
+
+    [view performSelector:CPSelectorFromString(selector) withObject:CPThemeStateSelected];
 }
 
 - (void)_updateHighlightWithOldColumns:(CPIndexSet)oldColumns newColumns:(CPIndexSet)newColumns
