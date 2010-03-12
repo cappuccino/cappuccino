@@ -739,12 +739,15 @@
             shifts = [];
 
         for (; j < count; ++j)
+        {
             [shifts addObject:_ranges[j]];
+            _count -= _ranges[j].length
+        }
 
         if ((j = i + 1) < count)
         {
             [_ranges removeObjectsInRange:CPMakeRange(j, count - j)];
-
+            
             for (j = 0, count = shifts.length; j < count; ++j)
                 [self addIndexesInRange:shifts[j]];
         }
