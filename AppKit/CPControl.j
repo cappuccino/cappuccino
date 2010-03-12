@@ -76,7 +76,7 @@ CPControlTextDidEndEditingNotification      = "CPControlTextDidEndEditingNotific
 
 var CPControlBlackColor     = [CPColor blackColor];
 
-/*! 
+/*!
     @ingroup appkit
     @class CPControl
 
@@ -85,7 +85,7 @@ var CPControlBlackColor     = [CPColor blackColor];
 @implementation CPControl : CPView
 {
     id                  _value;
-    
+
     // Target-Action Support
     id                  _target;
     SEL                 _action;
@@ -135,13 +135,13 @@ var CPControlBlackColor     = [CPColor blackColor];
 - (id)initWithFrame:(CGRect)aFrame
 {
     self = [super initWithFrame:aFrame];
-    
+
     if (self)
     {
         _sendActionOn = CPLeftMouseUpMask;
         _trackingMouseDownFlags = 0;
     }
-    
+
     return self;
 }
 
@@ -197,9 +197,9 @@ var CPControlBlackColor     = [CPColor blackColor];
 - (int)sendActionOn:(int)mask
 {
     var previousMask = _sendActionOn;
-    
+
     _sendActionOn = mask;
-    
+
     return previousMask;
 }
 
@@ -212,7 +212,7 @@ var CPControlBlackColor     = [CPColor blackColor];
 {
     if (_toolTip == aToolTip)
         return;
-    
+
     _toolTip = aToolTip;
 
 #if PLATFORM(DOM)
@@ -247,7 +247,7 @@ var CPControlBlackColor     = [CPColor blackColor];
     // Some subclasses should redefine this with CPLeftMouseDraggedMask
     if (flag)
         _sendActionOn |= CPPeriodicMask;
-    else 
+    else
         _sendActionOn &= ~CPPeriodicMask;
 }
 
@@ -265,10 +265,10 @@ var CPControlBlackColor     = [CPColor blackColor];
     if (type === CPLeftMouseUp)
     {
         [self stopTracking:_previousTrackingLocation at:currentLocation mouseIsUp:YES];
-        
+
         _trackingMouseDownFlags = 0;
     }
-    
+
     else
     {
         if (type === CPLeftMouseDown)
@@ -282,20 +282,20 @@ var CPControlBlackColor     = [CPColor blackColor];
             {
                 if (!_trackingWasWithinFrame)
                     _continuousTracking = [self startTrackingAt:currentLocation];
-                
+
                 else if (_continuousTracking)
                     _continuousTracking = [self continueTracking:_previousTrackingLocation at:currentLocation];
             }
             else
                 [self stopTracking:_previousTrackingLocation at:currentLocation mouseIsUp:NO];
         }
-        
+
         [CPApp setTarget:self selector:@selector(trackMouse:) forNextEventMatchingMask:CPLeftMouseDraggedMask | CPLeftMouseUpMask untilDate:nil inMode:nil dequeue:YES];
     }
-    
+
     if ((_sendActionOn & (1 << type)) && isWithinFrame)
         [self sendAction:_action to:_target];
-    
+
     _trackingWasWithinFrame = isWithinFrame;
     _previousTrackingLocation = currentLocation;
 }
@@ -309,12 +309,12 @@ var CPControlBlackColor     = [CPColor blackColor];
     return 0;
 }
 
-- (void)performClick:(id)sender 
+- (void)performClick:(id)sender
 {
     [self highlight:YES];
     [self setState:[self nextState]];
     [self sendAction:[self action] to:[self target]];
-    
+
     [CPTimer scheduledTimerWithTimeInterval:0.1 target:self selector:@selector(unhighlightButtonTimerDidFinish:) userInfo:nil repeats:NO];
 }
 
@@ -331,7 +331,7 @@ var CPControlBlackColor     = [CPColor blackColor];
 - (BOOL)startTrackingAt:(CGPoint)aPoint
 {
     [self highlight:YES];
-    
+
     return (_sendActionOn & CPPeriodicMask) || (_sendActionOn & CPLeftMouseDraggedMask);
 }
 
@@ -349,7 +349,7 @@ var CPControlBlackColor     = [CPColor blackColor];
 {
     if (![self isEnabled])
         return;
-    
+
     [self trackMouse:anEvent];
 }
 
@@ -367,7 +367,7 @@ var CPControlBlackColor     = [CPColor blackColor];
 - (void)setObjectValue:(id)anObject
 {
     _value = anObject;
-    
+
     [self setNeedsLayout];
     [self setNeedsDisplay:YES];
 }
@@ -441,7 +441,7 @@ var CPControlBlackColor     = [CPColor blackColor];
 }
 
 /*!
-    Returns the receiver's int value
+    Returns the receiver's string value
 */
 - (CPString)stringValue
 {
@@ -449,7 +449,7 @@ var CPControlBlackColor     = [CPColor blackColor];
 }
 
 /*!
-    Set's the receiver's int value
+    Set's the receiver's string value
 */
 - (void)setStringValue:(CPString)anObject
 {
@@ -496,7 +496,7 @@ var CPControlBlackColor     = [CPColor blackColor];
         [self setStringValue:[sender stringValue]];
 }
 
-- (void)textDidBeginEditing:(CPNotification)note 
+- (void)textDidBeginEditing:(CPNotification)note
 {
     //this looks to prevent false propagation of notifications for other objects
     if([note object] != self)
@@ -505,7 +505,7 @@ var CPControlBlackColor     = [CPColor blackColor];
     [[CPNotificationCenter defaultCenter] postNotificationName:CPControlTextDidBeginEditingNotification object:self userInfo:[CPDictionary dictionaryWithObject:[note object] forKey:"CPFieldEditor"]];
 }
 
-- (void)textDidChange:(CPNotification)note 
+- (void)textDidChange:(CPNotification)note
 {
     //this looks to prevent false propagation of notifications for other objects
     if([note object] != self)
@@ -514,7 +514,7 @@ var CPControlBlackColor     = [CPColor blackColor];
     [[CPNotificationCenter defaultCenter] postNotificationName:CPControlTextDidChangeNotification object:self userInfo:[CPDictionary dictionaryWithObject:[note object] forKey:"CPFieldEditor"]];
 }
 
-- (void)textDidEndEditing:(CPNotification)note 
+- (void)textDidEndEditing:(CPNotification)note
 {
     //this looks to prevent false propagation of notifications for other objects
     if([note object] != self)
@@ -576,6 +576,14 @@ BRIDGE(ImageScaling, imageScaling, "image-scaling")
     return [self hasThemeState:CPThemeStateHighlighted];
 }
 
+/*
+    Support the CPValueBinding binding.
+*/
+- (void)setValue:(id)aValue
+{
+    [self setObjectValue:aValue];
+}
+
 - (id)_replacementKeyPathForBinding:(CPString)binding
 {
     if ([binding isEqual:@"value"])
@@ -589,7 +597,7 @@ BRIDGE(ImageScaling, imageScaling, "image-scaling")
 var CPControlValueKey           = "CPControlValueKey",
     CPControlControlStateKey    = @"CPControlControlStateKey",
     CPControlIsEnabledKey       = "CPControlIsEnabledKey",
-    
+
     CPControlTargetKey          = "CPControlTargetKey",
     CPControlActionKey          = "CPControlActionKey",
     CPControlSendActionOnKey    = "CPControlSendActionOnKey",
@@ -619,7 +627,7 @@ var __Deprecated__CPImageViewImageKey   = @"CPImageViewImageKey";
         [self sendActionOn:[aCoder decodeIntForKey:CPControlSendActionOnKey]];
         [self setSendsActionOnEndEditing:[aCoder decodeBoolForKey:CPControlSendsActionOnEndEditingKey]];
     }
-    
+
     return self;
 }
 
@@ -655,7 +663,7 @@ var _CPControlSizeIdentifiers               = [],
 _CPControlSizeIdentifiers[CPRegularControlSize] = "Regular";
 _CPControlSizeIdentifiers[CPSmallControlSize]   = "Small";
 _CPControlSizeIdentifiers[CPMiniControlSize]    = "Mini";
-    
+
 function _CPControlIdentifierForControlSize(aControlSize)
 {
     return _CPControlSizeIdentifiers[aControlSize];
@@ -666,21 +674,21 @@ function _CPControlColorWithPatternImage(sizes, aClassName)
     var index = 1,
         count = arguments.length,
         identifier = "";
-    
+
     for (; index < count; ++index)
         identifier += arguments[index];
-    
+
     var color = _CPControlCachedColorWithPatternImages[identifier];
-    
+
     if (!color)
     {
         var bundle = [CPBundle bundleForClass:[CPControl class]];
-    
+
         color = [CPColor colorWithPatternImage:[[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:aClassName + "/" + identifier + ".png"] size:sizes[identifier]]];
 
         _CPControlCachedColorWithPatternImages[identifier] = color;
     }
-    
+
     return color;
 }
 
@@ -689,17 +697,17 @@ function _CPControlThreePartImagePattern(isVertical, sizes, aClassName)
     var index = 2,
         count = arguments.length,
         identifier = "";
-    
+
     for (; index < count; ++index)
         identifier += arguments[index];
 
     var color = _CPControlCachedThreePartImagePattern[identifier];
-    
+
     if (!color)
     {
         var bundle = [CPBundle bundleForClass:[CPControl class]],
             path = aClassName + "/" + identifier;
-        
+
         sizes = sizes[identifier];
 
         color = [CPColor colorWithPatternImage:[[CPThreePartImage alloc] initWithImageSlices:[
@@ -707,9 +715,9 @@ function _CPControlThreePartImagePattern(isVertical, sizes, aClassName)
                     [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:path + "1.png"] size:sizes[1]],
                     [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:path + "2.png"] size:sizes[2]]
                 ] isVertical:isVertical]];
-                
+
         _CPControlCachedThreePartImagePattern[identifier] = color;
     }
-    
+
     return color;
 }
