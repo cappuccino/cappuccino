@@ -87,19 +87,7 @@ function main(args)
     flattener.load(mainPath);
     flattener.finishLoading();
 
-    var rootResources = flattener.require("objective-j").StaticResource.rootResources();
-
-    var root = rootResources["file:"];
-
-    // FIXME: shouldn't have to do this manually
-    var components = rootPath.split("/").slice(0, -1);
-    components[0] = "/";
-    var node = root;
-    while (components.length) {
-        node = node.children()[components.shift()];
-    }
-    applicationRoot = node;
-
+    var applicationRoot = flattener.require("objective-j").StaticResource.resourceAtURL(rootPath)
     print(applicationRoot.toString());
 
     var applicationJS = flattener.buildApplicationJS(applicationRoot);
