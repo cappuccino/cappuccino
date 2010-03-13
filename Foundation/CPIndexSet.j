@@ -747,7 +747,7 @@
         if ((j = i + 1) < count)
         {
             [_ranges removeObjectsInRange:CPMakeRange(j, count - j)];
-            
+
             for (j = 0, count = shifts.length; j < count; ++j)
                 [self addIndexesInRange:shifts[j]];
         }
