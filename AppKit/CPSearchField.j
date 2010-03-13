@@ -63,10 +63,10 @@ var CPSearchFieldSearchImage = nil,
         return;
 
     var bundle = [CPBundle bundleForClass:self];
-    CPSearchFieldSearchImage = [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"CPSearchField/CPSearchFieldSearch.png"]];
-    CPSearchFieldFindImage = [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"CPSearchField/CPSearchFieldFind.png"]];
-    CPSearchFieldCancelImage = [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"CPSearchField/CPSearchFieldCancel.png"]];
-    CPSearchFieldCancelPressedImage = [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"CPSearchField/CPSearchFieldCancelPressed.png"]];
+    CPSearchFieldSearchImage = [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"CPSearchField/CPSearchFieldSearch.png"] size:CGSizeMake(25, 22)];
+    CPSearchFieldFindImage = [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"CPSearchField/CPSearchFieldFind.png"] size:CGSizeMake(25, 22)];
+    CPSearchFieldCancelImage = [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"CPSearchField/CPSearchFieldCancel.png"] size:CGSizeMake(22, 22)];
+    CPSearchFieldCancelPressedImage = [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"CPSearchField/CPSearchFieldCancelPressed.png"] size:CGSizeMake(22, 22)];
 }
 
 - (id)initWithFrame:(CGRect)frame
@@ -97,13 +97,13 @@ var CPSearchFieldSearchImage = nil,
     [self setEditable:YES];
     [self setDelegate:self];
     
-    _cancelButton = [[CPButton alloc] initWithFrame:CPMakeRect(frame.size.width - 27,(frame.size.height-22)/2,22,22)];
+    _cancelButton = [[CPButton alloc] initWithFrame:CGRectMake(frame.size.width - 27,(frame.size.height-22)/2,22,22)];
     [self resetCancelButton];
     [_cancelButton setHidden:YES];
     [_cancelButton setAutoresizingMask:CPViewMinXMargin];
     [self addSubview:_cancelButton];
     
-    _searchButton = [[CPButton alloc] initWithFrame:CPMakeRect(5,(frame.size.height-25)/2,25,25)];
+    _searchButton = [[CPButton alloc] initWithFrame:CGRectMake(5,(frame.size.height-25)/2,25,25)];
     [self resetSearchButton];
     [self addSubview:_searchButton];
 }
@@ -664,9 +664,7 @@ var CPSearchFieldSearchImage = nil,
 
 @end
 
-var CPSearchButtonKey                   = @"CPSearchButtonKey",
-    CPCancelButtonKey                   = @"CPCancelButtonKey",
-    CPRecentsAutosaveNameKey            = @"CPRecentsAutosaveNameKey",
+var CPRecentsAutosaveNameKey            = @"CPRecentsAutosaveNameKey",
     CPSendsWholeSearchStringKey         = @"CPSendsWholeSearchStringKey",
     CPSendsSearchStringImmediatelyKey   = @"CPSendsSearchStringImmediatelyKey",
     CPMaximumRecentsKey                 = @"CPMaximumRecentsKey",
@@ -676,10 +674,16 @@ var CPSearchButtonKey                   = @"CPSearchButtonKey",
 
 - (void)encodeWithCoder:(CPCoder)coder
 {
-    [super encodeWithCoder:coder];
-    
-    [coder encodeObject:_searchButton forKey:CPSearchButtonKey];
-    [coder encodeObject:_cancelButton forKey:CPCancelButtonKey];
+    [_searchButton removeFromSuperview];
+    [_cancelButton removeFromSuperview];
+
+    [super encodeWithCoder:coder];    
+
+    if (_searchButton)
+        [self addSubview:_searchButton];
+    if (_cancelButton)
+        [self addSubview:_cancelButton];
+
     [coder encodeBool:_sendsWholeSearchString forKey:CPSendsWholeSearchStringKey];
     [coder encodeBool:_sendsSearchStringImmediately forKey:CPSendsSearchStringImmediatelyKey];
     [coder encodeInt:_maximumRecents forKey:CPMaximumRecentsKey];
@@ -694,8 +698,8 @@ var CPSearchButtonKey                   = @"CPSearchButtonKey",
 {
     if (self = [super initWithCoder:coder])
     {
-        _searchButton             = [coder decodeObjectForKey:CPSearchButtonKey];
-        _cancelButton             = [coder decodeObjectForKey:CPCancelButtonKey];
+        [self _initWithFrame:[self frame]];
+
         _recentsAutosaveName      = [coder decodeObjectForKey:CPRecentsAutosaveNameKey];
         _sendsWholeSearchString   = [coder decodeBoolForKey:CPSendsWholeSearchStringKey];
         _sendsSearchStringImmediately = [coder decodeBoolForKey:CPSendsSearchStringImmediatelyKey];

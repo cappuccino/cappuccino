@@ -47,8 +47,6 @@
 {
     self = [self NS_initWithCoder:aCoder];
 
-    [self _initWithFrame:[self frame]];
-
     return self;
 }
 
