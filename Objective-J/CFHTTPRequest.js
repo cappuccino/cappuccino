@@ -254,43 +254,28 @@ function determineAndDispatchHTTPRequestEvents(/*CFHTTPRequest*/ aRequest)
 
 function FileRequest(/*CFURL*/ aURL, onsuccess, onfailure)
 {
-#ifdef BROWSER
     var request = new CFHTTPRequest();
-
-    request.onsuccess = Asynchronous(onsuccess);
-    request.onfailure = Asynchronous(onfailure);
 
     if (aURL.pathExtension() === "plist")
         request.overrideMimeType("text/xml");
 
-    request.open("GET", aURL.absoluteString(), YES);
+    if (FileRequest.async)
+    {
+        request.onsuccess = Asynchronous(onsuccess);
+        request.onfailure = Asynchronous(onfailure);
+    }
+    else
+    {
+        request.onsuccess = onsuccess;
+        request.onfailure = onfailure;
+    }
+
+    request.open("GET", aURL.absoluteString(), FileRequest.async);
     request.send("");
+}
+
+#ifdef BROWSER
+FileRequest.async = YES;
 #else
-    var FILE = require("file"),
-        filePath = aURL.absoluteURL().path();
-
-    if (!FILE.exists(filePath))
-        return onfailure();
-
-    this._responseText = FILE.read(filePath, { charset:"UTF-8" });
-
-    onsuccess({ type:"success", request:this });
-#endif
-}
-
-#ifdef COMMONJS
-FileRequest.prototype.responseText = function()
-{
-    return this._responseText;
-}
-
-FileRequest.prototype.responseXML = function()
-{
-    return new DOMParser().parseFromString(anXMLString, "text/xml");
-}
-
-FileRequest.prototype.responsePropertyList = function()
-{
-    return CFPropertyList.propertyListFromString(this.responseText());
-}
+FileRequest.async = NO;
 #endif
