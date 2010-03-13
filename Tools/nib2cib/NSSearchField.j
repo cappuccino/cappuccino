@@ -45,7 +45,11 @@
 
 - (id)initWithCoder:(CPCoder)aCoder
 {
-    return [self NS_initWithCoder:aCoder];
+    self = [self NS_initWithCoder:aCoder];
+
+    [self _initWithFrame:[self frame]];
+
+    return self;
 }
 
 - (Class)classForKeyedArchiver
