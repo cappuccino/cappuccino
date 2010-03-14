@@ -33,6 +33,17 @@
     return button;
 }
 
++ (CPString)themeClass
+{
+    return @"button-bar";
+}
+
++ (id)themeAttributes
+{
+    return [CPDictionary dictionaryWithObjects:[CGInsetMake(0.0, 0.0, 0.0, 0.0), CGSizeMakeZero(), [CPNull null], [CPNull null], [CPNull null]]
+                                       forKeys:[@"resize-control-inset", @"resize-control-size", @"resize-control-color", @"bezel-color", @"button-bezel-color"]];
+}
+
 - (id)initWithFrame:(CGRect)aFrame
 {
     self = [super initWithFrame:aFrame];
@@ -46,15 +57,24 @@
     return self;
 }
 
-+ (CPString)themeClass
+- (void)awakeFromCib
 {
-    return @"button-bar";
-}
+    var view = [self superview],
+        subview = self;
 
-+ (id)themeAttributes
-{
-    return [CPDictionary dictionaryWithObjects:[CGInsetMake(0.0, 0.0, 0.0, 0.0), CGSizeMakeZero(), [CPNull null], [CPNull null], [CPNull null]]
-                                       forKeys:[@"resize-control-inset", @"resize-control-size", @"resize-control-color", @"bezel-color", @"button-bezel-color"]];
+    while (view)
+    {
+        if ([view isKindOfClass:[CPSplitView class]])
+        {
+            var viewIndex = [[view subviews] indexOfObject:subview];
+            [view setButtonBar:self forDividerAtIndex:viewIndex];
+
+            break;
+        }
+
+        subview = view;
+        view = [view superview];
+    }
 }
 
 - (void)setButtons:(CPArray)buttons
@@ -115,6 +135,16 @@
 - (BOOL)resizeControlIsLeftAligned
 {
     return _resizeControlIsLeftAligned;
+}
+
+- (CGRect)resizeControlFrame
+{
+    var inset = [self currentValueForThemeAttribute:@"resize-control-inset"],
+        size = [self currentValueForThemeAttribute:@"resize-control-size"],
+        currentSize = [self bounds],
+        leftOrigin = _resizeControlIsLeftAligned ? 0 : currentSize.size.width - size.width - inset.right - inset.left;
+
+    return CGRectMake(leftOrigin, 0, size.width + inset.left + inset.right, size.height + inset.top + inset.bottom);
 }
 
 - (CGRect)rectForEphemeralSubviewNamed:(CPString)aName
