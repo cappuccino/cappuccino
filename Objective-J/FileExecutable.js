@@ -22,7 +22,7 @@
 
 var FileExecutablesForURLStrings = { };
 
-function FileExecutable(/*CFURL|String*/ aURL, /*Executable*/ anExecutable)
+function FileExecutable(/*CFURL|String*/ aURL)
 {
     aURL = makeAbsoluteURL(aURL);
 
@@ -38,10 +38,7 @@ function FileExecutable(/*CFURL|String*/ aURL, /*Executable*/ anExecutable)
         executable = NULL,
         extension = aURL.pathExtension();
 
-    if (anExecutable)
-        executable = anExecutable;
-
-    else if (fileContents.match(/^@STATIC;/))
+    if (fileContents.match(/^@STATIC;/))
         executable = decompile(fileContents, aURL);
 
     else if (extension === "j" || !extension)
@@ -117,5 +114,23 @@ function decompile(/*String*/ aString, /*CFURL*/ aURL)
             dependencies.push(new FileDependency(new CFURL(text), YES));
     }
 
+    var fn = FileExecutable._lookupCachedFunction(aURL)
+    if (fn)
+        return new Executable(code, dependencies, aURL, fn);
+
     return new Executable(code, dependencies, aURL);
+}
+
+var FunctionCache = { };
+
+FileExecutable._cacheFunction = function(/*CFURL|String*/ aURL, /*Function*/ fn)
+{
+    aURL = typeof aURL === "string" ? aURL : aURL.absoluteString();
+    FunctionCache[aURL] = fn;
+}
+
+FileExecutable._lookupCachedFunction = function(/*CFURL|String*/ aURL)
+{
+    aURL = typeof aURL === "string" ? aURL : aURL.absoluteString();
+    return FunctionCache[aURL];
 }
