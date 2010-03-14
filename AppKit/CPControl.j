@@ -520,6 +520,11 @@ var CPControlBlackColor     = [CPColor blackColor];
     if([note object] != self)
         return;
 
+    var theBinding = [CPKeyValueBinding getBinding:CPValueBinding forObject:self];
+
+    if (theBinding)
+        [theBinding reverseSetValueFor:@"objectValue"];
+
     [[CPNotificationCenter defaultCenter] postNotificationName:CPControlTextDidEndEditingNotification object:self userInfo:[CPDictionary dictionaryWithObject:[note object] forKey:"CPFieldEditor"]];
 }
 
