@@ -1497,7 +1497,8 @@ CPTexturedBackgroundWindowMask
     if (_firstResponder != self && [_firstResponder respondsToSelector:@selector(resignKeyWindow)])
         [_firstResponder resignKeyWindow];
 
-    CPApp._keyWindow = nil;
+    if (CPApp._keyWindow === self)
+        CPApp._keyWindow = nil;
 
     [[CPNotificationCenter defaultCenter]
         postNotificationName:CPWindowDidResignKeyNotification
@@ -1858,16 +1859,14 @@ CPTexturedBackgroundWindowMask
         postNotificationName:CPWindowDidResignMainNotification
                       object:self];
 
-    CPApp._mainWindow = nil;
+    if (CPApp._mainWindow === self)
+        CPApp._mainWindow = nil;
 }
 
 - (void)_updateMainAndKeyWindows
 {
     var allWindows = [CPApp orderedWindows],
         windowCount = [allWindows count];
-
-    if (!windowCount)
-        return;
 
     if ([self isKeyWindow])
     {
@@ -1893,10 +1892,9 @@ CPTexturedBackgroundWindowMask
             }
 
             if (![CPApp keyWindow])
-                [keyWindow makeKeyWindow];
+                [menuWindow makeKeyWindow];
         }
     }
-
 
     if ([self isMainWindow])
     {
