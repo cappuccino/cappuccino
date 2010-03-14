@@ -188,3 +188,32 @@
 
 @end
 
+var CPButtonBarHasResizeControlKey = @"CPButtonBarHasResizeControlKey",
+    CPButtonBarResizeControlIsLeftAlignedKey = @"CPButtonBarResizeControlIsLeftAlignedKey",
+    CPButtonBarButtonsKey = @"CPButtonBarButtonsKey";
+
+@implementation CPButtonBar (CPCoding)
+
+- (void)encodeWithCoder:(CPCoder)aCoder
+{
+    [super encodeWithCoder:aCoder];
+
+    [aCoder encodeBool:_hasResizeControl forKey:CPButtonBarHasResizeControlKey];
+    [aCoder encodeBool:_resizeControlIsLeftAligned forKey:CPButtonBarResizeControlIsLeftAlignedKey];
+    [aCoder encodeObject:_buttons forKey:CPButtonBarButtonsKey];
+}
+
+- (id)initWithCoder:(CPCoder)aCoder
+{
+    if (self = [super initWithCoder:aCoder])
+    {
+        _buttons = [aCoder decodeObjectForKey:CPButtonBarButtonsKey] || [];
+        _hasResizeControl = [aCoder decodeBoolForKey:CPButtonBarHasResizeControlKey];
+        _resizeControlIsLeftAligned = [aCoder decodeBoolForKey:CPButtonBarResizeControlIsLeftAlignedKey];
+    }
+
+    return self;
+}
+
+@end
+
