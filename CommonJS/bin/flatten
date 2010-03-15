@@ -87,22 +87,7 @@ function main(args)
     flattener.load(mainPath);
     flattener.finishLoading();
 
-    var rootResources = flattener.require("objective-j").StaticResource.rootResources();
-
-    var root = rootResources["file:"];
-
-    // FIXME: shouldn't have to do this manually
-    var components = rootPath.split("/").slice(0, -1);
-    components[0] = "/";
-    var node = root;
-    while (components.length) {
-        node = node.children()[components.shift()];
-    }
-    applicationRoot = node;
-
-    print(applicationRoot.toString());
-
-    var applicationJS = flattener.buildApplicationJS(applicationRoot);
+    var applicationJS = flattener.buildApplicationJS();
 
     FILE.copyTree(rootPath, outputPath);
 
@@ -115,7 +100,9 @@ function main(args)
 function ObjectiveJFlattener(rootPath) {
     ObjectiveJRuntimeAnalyzer.apply(this, arguments);
 
-    this.resourceBuffer = [];
+    this.fileCacheBuffer = [];
+
+    this.staticResourceBuffer = [];
     this.bundleBuffer = [];
     this.functionsBuffer = [];
 
@@ -124,109 +111,117 @@ function ObjectiveJFlattener(rootPath) {
 
 ObjectiveJFlattener.prototype = Object.create(ObjectiveJRuntimeAnalyzer.prototype);
 
-ObjectiveJFlattener.prototype.buildApplicationJS = function(applicationRoot) {
-    this.serializeStaticResources(applicationRoot);
-    this.serializeStaticFileExecutables();
+ObjectiveJFlattener.prototype.buildApplicationJS = function() {
 
-    var buffer = []
+    this.serializeFunctions();
+    this.serializeFileCache();
 
-    buffer.push("(function(){");
+    var buffer = [];
 
-    buffer.push("var appURL = new CFURL('.', ObjectiveJ.pageURL);")
-
-    buffer.push(this.bundleBuffer.join("\n"));
-
-    buffer.push("var nodeStack = [];");
-    buffer.push("var applicationRoot = ObjectiveJ.StaticResource.resourceAtURL(appURL, true);");
-    buffer.push("var currentNode = null;");
-    buffer.push("var newNode;");
-
-    buffer.push(this.resourceBuffer.join("\n"));
-
-    buffer.push("})();");
-
+    buffer.push("var baseURL = new CFURL(\".\", ObjectiveJ.pageURL);");
+    buffer.push(this.fileCacheBuffer.join("\n"))
     buffer.push(this.functionsBuffer.join("\n"));
-
     buffer.push("ObjectiveJ.bootstrap();");
 
     return buffer.join("\n");
 }
 
-ObjectiveJFlattener.prototype.serializeStaticFileExecutables = function() {
-    this.require("objective-j").FileExecutable.allFileExecutables().forEach(function(aFileExecutable) {
-        var deps = aFileExecutable.fileDependencies().map(function(dependency) {
-            return "new ObjectiveJ.FileDependency(new CFURL("+JSON.stringify(dependency.path())+"),"+JSON.stringify(dependency.isLocal())+")"
-        }).join(",");
+ObjectiveJFlattener.prototype.serializeFunctions = function() {
+    var inlineFunctions = true;//this.options.inlineFunctions;
 
-        var func = aFileExecutable._function.toString();
-        // HACK
-        func = func.replace(", require, exports, module, system, print, window", "");
+    var outputFiles = {};
 
-        this.functionsBuffer.push("var path = "+JSON.stringify(this.rootPath.relative(aFileExecutable.path()).toString())+";");
-        this.functionsBuffer.push("new ObjectiveJ.FileExecutable(path,"+
-            "new ObjectiveJ.Executable(null, ["+deps+"], path, "+func+"));");
+    var _cachedExecutableFunctions = {};
+
+    this.require("objective-j").FileExecutable.allFileExecutables().forEach(function(executable) {
+        var path = executable.path();
+
+        if (inlineFunctions)
+        {
+            // stringify the function, replacing arguments
+            var functionString = executable._function.toString().replace(", require, exports, module, system, print, window", ""); // HACK
+
+            var relative = this.rootPath.relative(path).toString();
+            this.functionsBuffer.push("ObjectiveJ.FileExecutable._cacheFunction(new CFURL("+JSON.stringify(relative)+", baseURL), "+functionString+");");
+        }
+
+        var bundle = this.context.global.CFBundle.bundleContainingURL(path);
+        if (bundle && bundle.infoDictionary())
+        {
+            var executablePath = bundle.executablePath(),
+                relativeToBundle = FILE.relative(FILE.join(bundle.path(), ""), path);
+
+            if (executablePath)
+            {
+                if (inlineFunctions)
+                {
+                    // remove the code since we're inlining the functions
+                    executable._code = "alert("+JSON.stringify(relativeToBundle)+");";
+                }
+
+                if (!outputFiles[executablePath])
+                {
+                    outputFiles[executablePath] = [];
+                    outputFiles[executablePath].push("@STATIC;1.0;");
+                }
+
+                var fileContents = executable.toMarkedString();
+
+                outputFiles[executablePath].push("p;" + relativeToBundle.length + ";" + relativeToBundle);
+                outputFiles[executablePath].push("t;" +  fileContents.length + ";" +  fileContents);
+
+                // stream.print("Adding \0green(" + this.rootPath.relative(path) + "\0) to \0cyan(" + this.rootPath.relative(executablePath) + "\0)");
+            }
+        }
+        else
+            CPLog.warn("No bundle (or info dictionary for) " + rootPath.relative(path));
     }, this);
+
+    for (var executablePath in outputFiles)
+    {
+        var relative = this.rootPath.relative(executablePath).toString();
+        var contents = outputFiles[executablePath].join("");
+        this.fileCacheBuffer.push("CFHTTPRequest._cacheRequest(new CFURL("+JSON.stringify(relative)+", baseURL), 200, {}, "+JSON.stringify(contents)+");");
+    }
 }
 
-ObjectiveJFlattener.prototype.serializeStaticResources = function(node, depth) {
-    depth = depth || 0;
-
-    var bundle = this.context.global.CFBundle.bundleContainingURL(node.URL());
-    var bundlePath;
-    if (!bundle) {
-        stream.print("\0yellow(Warning:\0) No bundle for path: \0cyan("+node.URL()+"\0)");
-    }
-    else if ((bundlePath = bundle.bundlePath()) && !this._outputBundles[bundlePath]) {
-        this._outputBundles[bundlePath] = bundle;
-        stream.print("Writing bundle: \0cyan("+bundlePath+"\0)");
-        print(bundle.infoDictionary())
-
-        var relative = this.rootPath.relative(bundlePath).toString();
-        this.bundleBuffer.push("var bundle = new CFBundle("+
-            "new CFURL("+(relative ? JSON.stringify(relative) : "appURL")+", ObjectiveJ.pageURL)"+
-        ");");
-        this.bundleBuffer.push("bundle._loadStatus = " + (1<<4) + ";");
-        this.bundleBuffer.push("bundle._isValid = true;");
-        if (bundle.infoDictionary()) {
-            this.bundleBuffer.push("bundle._infoDictionary = CFPropertyList.propertyListFromString(" +
-                JSON.stringify(CPPropertyListCreateData(bundle.infoDictionary()).rawString()) + ");");
+ObjectiveJFlattener.prototype.serializeFileCache = function() {
+    Object.keys(this.requestedURLs).forEach(function(absolute) {
+        var relative = this.rootPath.relative(absolute).toString();
+        if (relative.indexOf("..") === 0)
+        {
+            print("skipping (parent of app root): " + absolute);
+            return;
         }
-    }
 
-    // not the root node:
-    if (depth > 0) {
-        this.resourceBuffer.push("newNode = new ObjectiveJ.StaticResource(new CFURL(" +
-                JSON.stringify(node.name()) + "," +
-                "currentNode.URL().asDirectoryPathURL()" +
-            "), currentNode, " +
-            JSON.stringify(node.isDirectory()) + ", " +
-            JSON.stringify(node.isResolved()) + ");");
-    } else {
-        this.resourceBuffer.push("newNode = applicationRoot;");
-    }
+        if (FILE.isFile(absolute))
+        {
+            if (FILE.extension(absolute) === ".sj")
+            {
+                print("skipping (bundle executable): " + absolute);
+                return;
+            }
+            // if (this.options.maxCachedSize && FILE.size(absolute) > this.options.maxCachedSize)
+            // {
+            //     print("skipping (larger than "+this.options.maxCachedSize+" bytes): " + absolute);
+            //     return;
+            // }
 
-    // var contents = node.contents();
-    // if (contents) {
-    //     this.resourceBuffer.push("newNode._contents = " + JSON.stringify(contents) + ";");
-    // }
-
-    if (!node.children())
-        return;
-
-    this.resourceBuffer.push("nodeStack.push(currentNode);");
-    this.resourceBuffer.push("currentNode = newNode;");
-
-    var children = node.children();
-    for (var name in children) {
-        this.serializeStaticResources(children[name], depth+1);
-    }
-
-    this.resourceBuffer.push("currentNode = nodeStack.pop();");
+            print("caching: " + absolute);
+            var contents = FILE.read(absolute, { charset : "UTF-8" });
+            this.fileCacheBuffer.push("CFHTTPRequest._cacheRequest(new CFURL("+JSON.stringify(relative)+", baseURL), 200, {}, "+JSON.stringify(contents)+");");
+        } else {
+            this.fileCacheBuffer.push("CFHTTPRequest._cacheRequest(new CFURL("+JSON.stringify(relative)+", baseURL), 404);");
+        }
+    }, this);
 }
 
 // "$1" is the matching indentation
 var scriptTagsBefore = '$1<script type = "text/javascript">\n$1    OBJJ_AUTO_BOOTSTRAP = false;\n$1</script>';
 var scriptTagsAfter  = '$1<script type = "text/javascript" src = "Application.js"></script>';
+
+// enable CPLog:
+// scriptTagsAfter = '$1<script type = "text/javascript">\n$1    CPLogRegister(CPLogConsole);\n$1</script>\n' + scriptTagsAfter;
 
 function rewriteMainHTML(indexHTMLPath) {
     if (indexHTMLPath.isFile()) {

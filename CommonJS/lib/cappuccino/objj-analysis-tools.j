@@ -5,6 +5,8 @@ var Context = require("interpreter").Context;
 ObjectiveJRuntimeAnalyzer = function(rootPath)
 {
     this.rootPath = rootPath;
+    this.rootURL = new CFURL(String(rootPath));
+
     this.context = new Context();
 
     this.scope = setupObjectiveJ(this.context);
@@ -27,6 +29,14 @@ ObjectiveJRuntimeAnalyzer = function(rootPath)
     this.context.global.CFBundle.prototype.executablePath = function() {
         var url = this.executableURL();
         return url ? url.absoluteURL().path() : null;
+    }
+
+    var requestedURLs = this.requestedURLs = {};
+    var _lookupCachedRequest = this.context.global.CFHTTPRequest._lookupCachedRequest;
+    this.context.global.CFHTTPRequest._lookupCachedRequest = function(aURL) {
+        var path = new CFURL(aURL, this.rootURL).absoluteURL().path();
+        requestedURLs[path] = true;
+        return _lookupCachedRequest.apply(null, arguments);
     }
 }
 

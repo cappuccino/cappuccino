@@ -20,6 +20,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+@import "CPButtonBar.j"
 @import "CPImage.j"
 @import "CPView.j"
 
@@ -55,6 +56,8 @@ var CPSplitViewHorizontalImage = nil,
     int         _drawingDivider;
     
     BOOL        _needsResizeSubviews;
+
+    CPArray     _buttonBars;
 }
 
 /*
@@ -77,6 +80,7 @@ var CPSplitViewHorizontalImage = nil,
         _currentDivider = CPNotFound;
 
         _DOMDividerElements = [];
+        _buttonBars = [];
 
         [self _setVertical:YES];
     }
@@ -279,15 +283,25 @@ var CPSplitViewHorizontalImage = nil,
     var frame = [_subviews[anIndex] frame],
         startPosition = frame.origin[_originComponent] + frame.size[_sizeComponent],
         effectiveRect = [self effectiveRectOfDividerAtIndex:anIndex],
+        buttonBar = _buttonBars[anIndex],
+        buttonBarRect = null,
         additionalRect = null;
-    
+
+    if (buttonBar != null)
+    {
+        buttonBarRect = [buttonBar resizeControlFrame];
+        buttonBarRect.origin = [self convertPoint:buttonBarRect.origin fromView:buttonBar];
+    }
+
     if ([_delegate respondsToSelector:@selector(splitView:effectiveRect:forDrawnRect:ofDividerAtIndex:)])
         effectiveRect = [_delegate splitView:self effectiveRect:effectiveRect forDrawnRect:effectiveRect ofDividerAtIndex:anIndex];
 
     if ([_delegate respondsToSelector:@selector(splitView:additionalEffectiveRectOfDividerAtIndex:)])
         additionalRect = [_delegate splitView:self additionalEffectiveRectOfDividerAtIndex:anIndex];
 
-    return CGRectContainsPoint(effectiveRect, aPoint) || (additionalRect && CGRectContainsPoint(additionalRect, aPoint));
+    return CGRectContainsPoint(effectiveRect, aPoint) || 
+           (additionalRect && CGRectContainsPoint(additionalRect, aPoint)) ||
+           (buttonBarRect && CGRectContainsPoint(buttonBarRect, aPoint));
 }
 
 - (CPView)hitTest:(CGPoint)aPoint
@@ -553,6 +567,47 @@ var CPSplitViewHorizontalImage = nil,
                                                   object:self];
 }
 
+/*!
+    Set the button bar who's resize control should act as a control for this splitview.
+    Each divider can have at most one button bar assigned to it, and that button bar must be 
+    a subview of one of the split view's subviews.
+
+    Calling this method with nil as the button bar will remove any currently assigned button bar
+    for the divider at that index. Indexes will not be adjusted as new subviews are added, so you
+    should usually call this method after adding all the desired subviews to the split view.
+
+    This method will automatically configure the hasResizeControl and resizeControlIsLeftAligned 
+    parameters of the button bar, and will override any currently set values.
+*/
+- (void)setButtonBar:(CPButtonBar)aButtonBar forDividerAtIndex:(unsigned)dividerIndex
+{
+    if (!aButtonBar)
+    {
+        _buttonBars[dividerIndex] = nil;
+        return;
+    }
+
+    var view = [aButtonBar superview],
+        subview = aButtonBar;
+
+    while (view && view !== self)
+    {
+        subview = view;
+        view = [view superview];
+    }
+
+    if (view !== self)
+        [CPException raise:CPInvalidArgumentException 
+                    reason:@"CPSplitView button bar must be a subview of the split view."];
+
+    var viewIndex = [[self subviews] indexOfObject:subview];
+
+    [aButtonBar setHasResizeControl:YES];
+    [aButtonBar setResizeControlIsLeftAligned:dividerIndex < viewIndex];
+
+    _buttonBars[dividerIndex] = aButtonBar; 
+}
+
 - (void)_postNotificationWillResize
 {
     [[CPNotificationCenter defaultCenter] postNotificationName:CPSplitViewWillResizeSubviewsNotification object:self];
@@ -567,7 +622,8 @@ var CPSplitViewHorizontalImage = nil,
 
 var CPSplitViewDelegateKey          = "CPSplitViewDelegateKey",
     CPSplitViewIsVerticalKey        = "CPSplitViewIsVerticalKey",
-    CPSplitViewIsPaneSplitterKey    = "CPSplitViewIsPaneSplitterKey";
+    CPSplitViewIsPaneSplitterKey    = "CPSplitViewIsPaneSplitterKey",
+    CPSplitViewButtonBarsKey        = "CPSplitViewButtonBarsKey";
 
 @implementation CPSplitView (CPCoding)
 
@@ -584,8 +640,10 @@ var CPSplitViewDelegateKey          = "CPSplitViewDelegateKey",
         _currentDivider = CPNotFound;
         
         _DOMDividerElements = [];
+
+        _buttonBars = [aCoder decodeObjectForKey:CPSplitViewButtonBarsKey] || [];
         
-        _delegate = [aCoder decodeObjectForKey:CPSplitViewDelegateKey];;
+        _delegate = [aCoder decodeObjectForKey:CPSplitViewDelegateKey];
         
         _isPaneSplitter = [aCoder decodeBoolForKey:CPSplitViewIsPaneSplitterKey];
         [self _setVertical:[aCoder decodeBoolForKey:CPSplitViewIsVerticalKey]];
@@ -601,9 +659,12 @@ var CPSplitViewDelegateKey          = "CPSplitViewDelegateKey",
 - (void)encodeWithCoder:(CPCoder)aCoder
 {
     [super encodeWithCoder:aCoder];
-    
+
+    //FIXME how should we handle this?
+    //[aCoder encodeObject:_buttonBars forKey:CPSplitViewButtonBarsKey];
+
     [aCoder encodeConditionalObject:_delegate forKey:CPSplitViewDelegateKey];
-    
+
     [aCoder encodeBool:_isVertical forKey:CPSplitViewIsVerticalKey];
     [aCoder encodeBool:_isPaneSplitter forKey:CPSplitViewIsPaneSplitterKey];
 }

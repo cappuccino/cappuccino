@@ -45,7 +45,9 @@
 
 - (id)initWithCoder:(CPCoder)aCoder
 {
-    return [self NS_initWithCoder:aCoder];
+    self = [self NS_initWithCoder:aCoder];
+
+    return self;
 }
 
 - (Class)classForKeyedArchiver

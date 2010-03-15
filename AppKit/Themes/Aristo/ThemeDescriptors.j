@@ -721,17 +721,49 @@
 
 + (CPButtonBar)themedButtonBar
 {
-    var buttonBar = [[CPButtonBar alloc] initWithFrame:CGRectMake(0.0, 0.0, 100.0, 26.0)],
-        color = [CPColor colorWithPatternImage:[[CPThreePartImage alloc] initWithImageSlices:
-        [
-            [_CPCibCustomResource imageResourceWithName:"buttonbar-bezel.png" size:CGSizeMake(1.0, 26.0)],
-            [_CPCibCustomResource imageResourceWithName:"buttonbar-bezel.png" size:CGSizeMake(1.0, 26.0)],
-            [_CPCibCustomResource imageResourceWithName:"buttonbar-bezel-right.png" size:CGSizeMake(13.0, 26.0)]
-        ]
-        isVertical:NO]];
+    var buttonBar = [[CPButtonBar alloc] initWithFrame:CGRectMake(0.0, 0.0, 140.0, 26.0)],
+        color = [CPColor colorWithPatternImage:[_CPCibCustomResource imageResourceWithName:"buttonbar-bezel.png" size:CGSizeMake(1.0, 26.0)]];
+
+    [buttonBar setHasResizeControl:YES];
 
     [buttonBar setValue:color forThemeAttribute:@"bezel-color"];
-    
+
+    var resizeColor = [CPColor colorWithPatternImage:[_CPCibCustomResource imageResourceWithName:"buttonbar-resize-control.png" size:CGSizeMake(5.0, 10.0)]];
+
+    [buttonBar setValue:CGSizeMake(5.0, 10.0) forThemeAttribute:@"resize-control-size"];
+    [buttonBar setValue:CGInsetMake(9.0, 4.0, 7.0, 4.0) forThemeAttribute:@"resize-control-inset"];
+    [buttonBar setValue:resizeColor forThemeAttribute:@"resize-control-color"];
+
+    var buttonBezelColor = [CPColor colorWithPatternImage:[[CPThreePartImage alloc] initWithImageSlices:
+            [
+                [_CPCibCustomResource imageResourceWithName:"buttonbar-button-bezel-left.png" size:CGSizeMake(2.0, 25.0)],
+                [_CPCibCustomResource imageResourceWithName:"buttonbar-button-bezel-center.png" size:CGSizeMake(1.0, 25.0)],
+                [_CPCibCustomResource imageResourceWithName:"buttonbar-button-bezel-right.png" size:CGSizeMake(2.0, 25.0)]
+            ]
+        isVertical:NO]],
+
+        buttonBezelHighlightedColor = [CPColor colorWithPatternImage:[[CPThreePartImage alloc] initWithImageSlices:
+            [
+                [_CPCibCustomResource imageResourceWithName:"buttonbar-button-bezel-highlighted-left.png" size:CGSizeMake(2.0, 25.0)],
+                [_CPCibCustomResource imageResourceWithName:"buttonbar-button-bezel-highlighted-center.png" size:CGSizeMake(1.0, 25.0)],
+                [_CPCibCustomResource imageResourceWithName:"buttonbar-button-bezel-highlighted-right.png" size:CGSizeMake(2.0, 25.0)]
+            ]
+        isVertical:NO]],
+
+        buttonBezelDisabledColor = [CPColor colorWithPatternImage:[[CPThreePartImage alloc] initWithImageSlices:
+            [
+                [_CPCibCustomResource imageResourceWithName:"buttonbar-button-bezel-disabled-left.png" size:CGSizeMake(2.0, 25.0)],
+                [_CPCibCustomResource imageResourceWithName:"buttonbar-button-bezel-disabled-center.png" size:CGSizeMake(1.0, 25.0)],
+                [_CPCibCustomResource imageResourceWithName:"buttonbar-button-bezel-disabled-right.png" size:CGSizeMake(2.0, 25.0)]
+            ]
+        isVertical:NO]];
+
+    [buttonBar setValue:buttonBezelColor forThemeAttribute:@"button-bezel-color"];
+    [buttonBar setValue:buttonBezelHighlightedColor forThemeAttribute:@"button-bezel-color" inState:CPThemeStateHighlighted];
+    [buttonBar setValue:buttonBezelDisabledColor forThemeAttribute:@"button-bezel-color" inState:CPThemeStateDisabled];
+
+    [buttonBar setButtons:[[CPButtonBar plusButton], [CPButtonBar minusButton], [self themedPullDownMenu]]];
+
     return buttonBar;
 }
 

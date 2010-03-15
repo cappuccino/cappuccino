@@ -12,6 +12,11 @@ function descriptionWithoutEntity(aString)
     CPIndexSet _set;
 }
 
+- (void)setUp
+{
+    _set = [CPIndexSet indexSetWithIndexesInRange:CPMakeRange(10, 10)];
+}
+
 - (void)testAddIndexes
 {
     var indexSet = [CPIndexSet indexSet];
@@ -175,16 +180,6 @@ function descriptionWithoutEntity(aString)
     [indexSet getIndexes:array maxCount:1000 inIndexRange:nil];
 
     [self assert:[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 15, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59] equals:array];
-}
-
-- (void)setUp
-{
-    _set = [CPIndexSet indexSetWithIndexesInRange:CPMakeRange(10, 10)];
-}
-
-- (void)tearDown
-{
-    _set = nil;
 }
 
 - (void)testIndexSet:(CPIndexSet)set containsRange:(CPRange)range
@@ -358,5 +353,24 @@ function descriptionWithoutEntity(aString)
     [self assertFalse:[_set containsIndexes:[CPIndexSet indexSetWithIndexesInRange:CPMakeRange(9, 2)]]];
 }
 
-@end
+- (void)testShiftIndexesStartingAtIndex
+{
+    var startRange = CPMakeRange(1, 5),
+        shiftRange = CPMakeRange(2, 5);
+    _set = [CPIndexSet indexSetWithIndexesInRange:startRange];
+    
+    // positive delta for downward shift
+    [_set shiftIndexesStartingAtIndex:1 by:1];
+    [self assertTrue:[_set containsIndexes:[CPIndexSet indexSetWithIndexesInRange:shiftRange]]];
+    
+    // negative delta for downward shift
+    [_set shiftIndexesStartingAtIndex:1 by:-1];
+    [self assertTrue:[_set containsIndexes:[CPIndexSet indexSetWithIndexesInRange:startRange]]];
+}
 
+- (void)tearDown
+{
+    _set = nil;
+}
+
+@end
