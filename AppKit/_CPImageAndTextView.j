@@ -386,6 +386,7 @@ var HORIZONTAL_MARGIN   = 3.0,
             shadowStyle.font = [_font ? _font : [CPFont systemFontOfSize:12.0] cssString];
             shadowStyle.position = "absolute";
             shadowStyle.whiteSpace = textStyle.whiteSpace;
+            shadowStyle.wordWrap = textStyle.wordWrap;
             shadowStyle.color = [_textShadowColor cssString];
 
             shadowStyle.zIndex = 150;
@@ -394,7 +395,6 @@ var HORIZONTAL_MARGIN   = 3.0,
             if (document.attachEvent)
             {
                 shadowStyle.overflow = textStyle.overflow;
-                shadowStyle.wordWrap = textStyle.wordWrap;
             }
             else
             {
@@ -447,9 +447,7 @@ var HORIZONTAL_MARGIN   = 3.0,
                 case CPLineBreakByClipping:         textStyle.overflow = "hidden";
                                                     textStyle.textOverflow = "clip";
                                                     textStyle.whiteSpace = "pre";
-                                                    
-                                                    if (document.attachEvent)
-                                                        textStyle.wordWrap = "normal"; 
+                                                    textStyle.wordWrap = "normal"; 
                                                     
                                                     break;
                 
@@ -459,25 +457,22 @@ var HORIZONTAL_MARGIN   = 3.0,
                 case CPLineBreakByTruncatingTail:   textStyle.textOverflow = "ellipsis";
                                                     textStyle.whiteSpace = "nowrap";
                                                     textStyle.overflow = "hidden";
-                                                    
-                                                    if (document.attachEvent)
-                                                        textStyle.wordWrap = "normal"; 
+                                                    textStyle.wordWrap = "normal"; 
                                                                      
                                                     break;
                      
                 case CPLineBreakByCharWrapping:                               
-                case CPLineBreakByWordWrapping:     if (document.attachEvent)
-                                                    {                                            
+                case CPLineBreakByWordWrapping:     textStyle.wordWrap = "break-word";
+                                                    try {
                                                         textStyle.whiteSpace = "pre";
-                                                        textStyle.wordWrap = "break-word";
-                                                    }
-                                                    
-                                                    else
-                                                    {
                                                         textStyle.whiteSpace = "-o-pre-wrap";
                                                         textStyle.whiteSpace = "-pre-wrap";
                                                         textStyle.whiteSpace = "-moz-pre-wrap";
                                                         textStyle.whiteSpace = "pre-wrap";
+                                                    }
+                                                    catch (e) {
+                                                        //internet explorer doesn't like these properties
+                                                        textStyle.whiteSpace = "pre";
                                                     }
                                                     
                                                     textStyle.overflow = "hidden";
@@ -490,7 +485,6 @@ var HORIZONTAL_MARGIN   = 3.0,
             {
                 if (document.attachEvent)
                 {
-                    shadowStyle.wordWrap = textStyle.wordWrap;            
                     shadowStyle.overflow = textStyle.overflow;
                 }
                 else
@@ -499,6 +493,7 @@ var HORIZONTAL_MARGIN   = 3.0,
                     shadowStyle.overflowY = textStyle.overflowY;
                 }
 
+                shadowStyle.wordWrap = textStyle.wordWrap;
                 shadowStyle.whiteSpace = textStyle.whiteSpace;
                 shadowStyle.textOverflow = textStyle.textOverflow;
             }
