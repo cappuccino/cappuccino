@@ -777,8 +777,7 @@ if (_DOMContentsElement && aLayer._zPosition > _DOMContentsElement.style.zIndex)
     @ignore
 */
 + (void)runLoopUpdateLayers
-{if (window.oops) {alert(window.latest); objj_debug_print_backtrace();}
-    window.loop = true;
+{
     for (UID in CALayerRegisteredRunLoopUpdates)
     {
         var layer = CALayerRegisteredRunLoopUpdates[UID],
