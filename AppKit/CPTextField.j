@@ -813,7 +813,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
     if (![CPPlatform isBrowser])
     {
         [self copy:sender];
-        [self deleteBackwards:sender];
+        [self deleteBackward:sender];
     }
 }
 
@@ -826,7 +826,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
         if (![[pasteboard types] containsObject:CPStringPboardType])
             return;
 
-        [self deleteBackwards:sender];
+        [self deleteBackward:sender];
 
         var selectedRange = [self selectedRange],
             stringValue = [self stringValue],
@@ -912,7 +912,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
     [self selectText:sender];
 }
 
-- (void)deleteBackwards:(id)sender
+- (void)deleteBackward:(id)sender
 {
     var selectedRange = [self selectedRange],
         stringValue = [self stringValue],
