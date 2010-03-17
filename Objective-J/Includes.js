@@ -47,6 +47,7 @@
 #include "Executable.js"
 #include "FileExecutable.js"
 #include "Runtime.js"
+#include "Eval.js"
 #if defined(DEBUG) || defined(COMMONJS)
 #include "Debug.js"
 #endif
