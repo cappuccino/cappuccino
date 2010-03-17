@@ -912,8 +912,6 @@ CPRunContinuesResponse  = -1002;
 - (void)setCallback:(Function)aCallback forNextEventMatchingMask:(unsigned int)aMask untilDate:(CPDate)anExpiration inMode:(CPString)aMode dequeue:(BOOL)shouldDequeue
 {
     _eventListeners.push(_CPEventListenerMake(aMask, aCallback));
-    
-    if (_eventListeners.length == 3) objj_debug_print_backtrace();
 }
 
 - (CPEvent)setTarget:(id)aTarget selector:(SEL)aSelector forNextEventMatchingMask:(unsigned int)aMask untilDate:(CPDate)anExpiration inMode:(CPString)aMode dequeue:(BOOL)shouldDequeue

@@ -12,7 +12,7 @@
 		</object>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
-			<integer value="372"/>
+			<integer value="371"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -84,6 +84,7 @@
 											<object class="NSMutableArray" key="NSTableColumns">
 												<bool key="EncodedWithXMLCoder">YES</bool>
 												<object class="NSTableColumn" id="534516850">
+													<string key="NSIdentifier">1</string>
 													<double key="NSWidth">101</double>
 													<double key="NSMinWidth">40</double>
 													<double key="NSMaxWidth">1000</double>
@@ -142,6 +143,7 @@
 													<reference key="NSTableView" ref="86489736"/>
 												</object>
 												<object class="NSTableColumn" id="870554271">
+													<string key="NSIdentifier">2</string>
 													<double key="NSWidth">154</double>
 													<double key="NSMinWidth">40</double>
 													<double key="NSMaxWidth">1000</double>
@@ -168,6 +170,7 @@
 													<reference key="NSTableView" ref="86489736"/>
 												</object>
 												<object class="NSTableColumn" id="192893327">
+													<string key="NSIdentifier">3</string>
 													<double key="NSWidth">188</double>
 													<double key="NSMinWidth">10</double>
 													<double key="NSMaxWidth">3.4028234663852886e+38</double>
@@ -214,8 +217,8 @@
 													<bytes key="NSWhite">MC41AA</bytes>
 												</object>
 											</object>
-											<double key="NSRowHeight">17</double>
-											<int key="NSTvFlags">-702545920</int>
+											<double key="NSRowHeight">23</double>
+											<int key="NSTvFlags">-694157312</int>
 											<reference key="NSDelegate"/>
 											<reference key="NSDataSource"/>
 											<int key="NSColumnAutoresizingStyle">4</int>
@@ -277,7 +280,7 @@
 							<reference key="NSContentView" ref="331394667"/>
 							<reference key="NSHeaderClipView" ref="471528550"/>
 							<reference key="NSCornerView" ref="167646100"/>
-							<bytes key="NSScrollAmts">QSAAAEEgAABBmAAAQZgAAA</bytes>
+							<bytes key="NSScrollAmts">QSAAAEEgAABByAAAQcgAAA</bytes>
 						</object>
 					</object>
 					<string key="NSFrameSize">{558, 348}</string>
@@ -475,9 +478,9 @@
 				<object class="NSMutableArray" key="dict.values">
 					<bool key="EncodedWithXMLCoder">YES</bool>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{47, 268}, {558, 348}}</string>
+					<string>{{370, 244}, {558, 348}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{47, 268}, {558, 348}}</string>
+					<string>{{370, 244}, {558, 348}}</string>
 					<integer value="1"/>
 					<string>{{33, 99}, {480, 360}}</string>
 					<string>{3.40282e+38, 3.40282e+38}</string>

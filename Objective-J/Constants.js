@@ -27,7 +27,7 @@ if (typeof window !== "undefined")
     window.setNativeTimeout = window.setTimeout;
     window.clearNativeTimeout = window.clearTimeout;
     window.setNativeInterval = window.setInterval;
-    window.clearNativeInterval = window.clearNativeInterval;
+    window.clearNativeInterval = window.clearInterval;
 }
 
 // Objective-J Constants

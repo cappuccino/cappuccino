@@ -37,7 +37,7 @@
         //var dataViewCell = [aCoder decodeObjectForKey:@"NSDataCell"];
 
         _dataView = [[CPTextField alloc] initWithFrame:CPRectMakeZero()];
-        [_dataView setValue:[CPColor whiteColor] forThemeAttribute:"text-color" inState:CPThemeStateHighlighted];
+        [_dataView setValue:[CPColor whiteColor] forThemeAttribute:@"text-color" inState:CPThemeStateSelected];
 
         var headerCell = [aCoder decodeObjectForKey:@"NSHeaderCell"],
             headerView = [[_CPTableColumnHeaderView alloc] initWithFrame:CPRectMakeZero()];

@@ -32,7 +32,7 @@ CPLogRegister(CPLogConsole);
 
 - (int)numberOfRowsInTableView:(CPTableView)tableView
 {
-    return 700000;
+    return 100000;
 }
 
 - (id)tableView:(CPTableView)tableView objectValueForTableColumn:(CPTableColumn)tableColumn row:(int)row
