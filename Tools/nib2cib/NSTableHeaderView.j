@@ -27,7 +27,13 @@
 - (id)NS_initWithCoder:(CPCoder)aCoder
 {
     if (self = [super NS_initWithCoder:aCoder])
+    {
         _tableView = [aCoder decodeObjectForKey:"NSTableView"];
+
+        // change the default height
+        if (_bounds.size.height === 17)
+            _bounds.size.height = 23;
+    }
     
     return self;
 }
