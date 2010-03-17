@@ -218,10 +218,13 @@ Executable.prototype.loadFileDependencies = function(aCallback)
 {
     var status = this._fileDependencyStatus;
 
-    if (status === ExecutableLoadedFileDependencies)
-        return aCallback();
+    if (aCallback)
+    {
+        if (status === ExecutableLoadedFileDependencies)
+            return aCallback();
 
-    this._fileDependencyCallbacks.push(aCallback)
+        this._fileDependencyCallbacks.push(aCallback);
+    }
 
     if (status === ExecutableUnloadedFileDependencies)
     {
