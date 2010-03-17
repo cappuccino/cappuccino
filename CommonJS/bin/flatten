@@ -8,6 +8,7 @@ require("narwhal").ensureEngine("rhino");
 
 var FILE = require("file");
 var OS = require("os");
+var UTIL = require("util");
 
 var stream = require("term").stream;
 var parser = new (require("args").Parser)();
@@ -23,6 +24,10 @@ parser.option("-m", "--main", "main")
 parser.option("-F", "--framework", "frameworks")
     .push()
     .help("Add a frameworks directory, relative to INPUT_PROJECT (default: ['Frameworks'])");
+
+parser.option("-P", "--path", "paths")
+    .push()
+    .help("Add a path (relative to the application root) to inline.");
 
 parser.option("-f", "--force", "force")
     .def(false)
@@ -81,11 +86,19 @@ function main(args)
 
     var flattener = new ObjectiveJFlattener(rootPath);
 
+    flattener.options = options;
+
     flattener.setIncludePaths(frameworks);
     flattener.setEnvironments([environment, "ObjJ"]);
 
+    print("Loading application.");
     flattener.load(mainPath);
-    flattener.finishLoading();
+
+    print("Loading default theme.");
+    flattener.require("objective-j").objj_eval("("+(function() {
+        var blend = [[CPThemeBlend alloc] initWithContentsOfURL:[[CPBundle bundleForClass:[CPApplication class]] pathForResource:[CPApplication defaultThemeName] + ".blend"]];
+        [blend loadWithDelegate:nil];
+    })+")")();
 
     var applicationJS = flattener.buildApplicationJS();
 
@@ -100,19 +113,16 @@ function main(args)
 function ObjectiveJFlattener(rootPath) {
     ObjectiveJRuntimeAnalyzer.apply(this, arguments);
 
+    this.filesToCache = {};
     this.fileCacheBuffer = [];
-
-    this.staticResourceBuffer = [];
-    this.bundleBuffer = [];
     this.functionsBuffer = [];
-
-    this._outputBundles = {};
 }
 
 ObjectiveJFlattener.prototype = Object.create(ObjectiveJRuntimeAnalyzer.prototype);
 
 ObjectiveJFlattener.prototype.buildApplicationJS = function() {
 
+    this.setupFileCache();
     this.serializeFunctions();
     this.serializeFileCache();
 
@@ -142,7 +152,7 @@ ObjectiveJFlattener.prototype.serializeFunctions = function() {
             var functionString = executable._function.toString().replace(", require, exports, module, system, print, window", ""); // HACK
 
             var relative = this.rootPath.relative(path).toString();
-            this.functionsBuffer.push("ObjectiveJ.FileExecutable._cacheFunction(new CFURL("+JSON.stringify(relative)+", baseURL), "+functionString+");");
+            this.functionsBuffer.push("ObjectiveJ.FileExecutable._cacheFunction(new CFURL("+JSON.stringify(relative)+", baseURL),\n"+functionString+");");
         }
 
         var bundle = this.context.global.CFBundle.bundleContainingURL(path);
@@ -181,12 +191,31 @@ ObjectiveJFlattener.prototype.serializeFunctions = function() {
     {
         var relative = this.rootPath.relative(executablePath).toString();
         var contents = outputFiles[executablePath].join("");
-        this.fileCacheBuffer.push("CFHTTPRequest._cacheRequest(new CFURL("+JSON.stringify(relative)+", baseURL), 200, {}, "+JSON.stringify(contents)+");");
+        this.filesToCache[relative] = contents;
     }
 }
 
 ObjectiveJFlattener.prototype.serializeFileCache = function() {
-    Object.keys(this.requestedURLs).forEach(function(absolute) {
+    for (var relative in this.filesToCache) {
+        var contents = this.filesToCache[relative];
+        print("caching: " + relative + " => " + (contents == null ? 404 : 200));
+        if (contents == null)
+            this.fileCacheBuffer.push("CFHTTPRequest._cacheRequest(new CFURL("+JSON.stringify(relative)+", baseURL), 404);");
+        else
+            this.fileCacheBuffer.push("CFHTTPRequest._cacheRequest(new CFURL("+JSON.stringify(relative)+", baseURL), 200, {}, "+JSON.stringify(contents)+");");
+    }
+}
+
+ObjectiveJFlattener.prototype.setupFileCache = function() {
+    var paths = {};
+
+    UTIL.update(paths, this.requestedURLs);
+
+    this.options.paths.forEach(function(relativePath) {
+       paths[this.rootPath.join(relativePath)] = true;
+    }, this);
+
+    Object.keys(paths).forEach(function(absolute) {
         var relative = this.rootPath.relative(absolute).toString();
         if (relative.indexOf("..") === 0)
         {
@@ -196,22 +225,16 @@ ObjectiveJFlattener.prototype.serializeFileCache = function() {
 
         if (FILE.isFile(absolute))
         {
-            if (FILE.extension(absolute) === ".sj")
-            {
-                print("skipping (bundle executable): " + absolute);
-                return;
-            }
             // if (this.options.maxCachedSize && FILE.size(absolute) > this.options.maxCachedSize)
             // {
             //     print("skipping (larger than "+this.options.maxCachedSize+" bytes): " + absolute);
             //     return;
             // }
 
-            print("caching: " + absolute);
             var contents = FILE.read(absolute, { charset : "UTF-8" });
-            this.fileCacheBuffer.push("CFHTTPRequest._cacheRequest(new CFURL("+JSON.stringify(relative)+", baseURL), 200, {}, "+JSON.stringify(contents)+");");
+            this.filesToCache[relative] = contents;
         } else {
-            this.fileCacheBuffer.push("CFHTTPRequest._cacheRequest(new CFURL("+JSON.stringify(relative)+", baseURL), 404);");
+            this.filesToCache[relative] = null;
         }
     }, this);
 }
