@@ -264,7 +264,7 @@ function FileRequest(/*CFURL*/ aURL, onsuccess, onfailure)
     if (aURL.pathExtension() === "plist")
         request.overrideMimeType("text/xml");
 
-    if (FileRequest.async)
+    if (exports.asyncLoader)
     {
         request.onsuccess = Asynchronous(onsuccess);
         request.onfailure = Asynchronous(onfailure);
@@ -275,16 +275,15 @@ function FileRequest(/*CFURL*/ aURL, onsuccess, onfailure)
         request.onfailure = onfailure;
     }
 
-    request.open("GET", aURL.absoluteString(), FileRequest.async);
+    request.open("GET", aURL.absoluteString(), exports.asyncLoader);
     request.send("");
 }
 
 #ifdef BROWSER
-FileRequest.async = YES;
+exports.asyncLoader = YES;
 #else
-FileRequest.async = NO;
+exports.asyncLoader = NO;
 #endif
-
 
 var URLCache = { };
 
