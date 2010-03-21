@@ -61,7 +61,7 @@
 - (void)forwardInvocation:(CPInvocation)anInvocation
 {
     [CPException raise:CPInvalidArgumentException
-                reason:@"-methodSignatureForSelector: called on abstract CPProxy class."];
+                reason:@"-forwardInvocation: called on abstract CPProxy class."];
 }
 
 // FIXME: This should be moved to the runtime?
