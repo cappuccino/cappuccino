@@ -39,6 +39,11 @@ parser.option("--index", "index")
     .set()
     .help("The root HTML file to modify (default: index.html)");
 
+parser.option("-s", "--split", "number", "split")
+    .natural()
+    .def(0)
+    .help("Split into multiple files");
+
 parser.option("-v", "--verbose", "verbose")
    .def(false)
    .set(true)
@@ -100,11 +105,13 @@ function main(args)
         [blend loadWithDelegate:nil];
     })+")")();
 
-    var applicationJS = flattener.buildApplicationJS();
+    var applicationJSs = flattener.buildApplicationJS();
 
     FILE.copyTree(rootPath, outputPath);
 
-    outputPath.join("Application.js").write(applicationJS);
+    applicationJSs.forEach(function(applicationJS, n) {
+        outputPath.join("Application"+(n||"")+".js").write(applicationJS);
+    });
 
     rewriteMainHTML(outputPath.join(options.index));
 }
@@ -126,14 +133,48 @@ ObjectiveJFlattener.prototype.buildApplicationJS = function() {
     this.serializeFunctions();
     this.serializeFileCache();
 
-    var buffer = [];
+    var applicationJSs = [];
 
-    buffer.push("var baseURL = new CFURL(\".\", ObjectiveJ.pageURL);");
-    buffer.push(this.fileCacheBuffer.join("\n"))
-    buffer.push(this.functionsBuffer.join("\n"));
-    buffer.push("ObjectiveJ.bootstrap();");
+    if (this.options.split === 0) {
+        var buffer = [];
+        buffer.push("var baseURL = new CFURL(\".\", ObjectiveJ.pageURL);");
+        buffer.push(this.fileCacheBuffer.join("\n"));
+        buffer.push(this.functionsBuffer.join("\n"));
+        buffer.push("ObjectiveJ.bootstrap();");
+        applicationJSs.push(buffer.join("\n"));
+    } else {
+        var appFilesCount = this.options.split;
 
-    return buffer.join("\n");
+        var buffers = [];
+        for (var i = 0; i <= appFilesCount; i++)
+            buffers.push([]);
+
+        var chunks = this.fileCacheBuffer.concat(this.functionsBuffer).sort(function(chunkA, chunkB) {
+            return chunkA.length - chunkB.length;
+        });
+
+        // try to equally distribute the chunks. could be better but good enough for now.
+        var n = 0;
+        while (chunks.length) {
+            buffers[(n++ % appFilesCount) + 1].push(chunks.pop());
+        }
+
+        buffers[0].push("var baseURL = new CFURL(\".\", ObjectiveJ.pageURL);");
+
+        buffers[0].push("var appFilesCount = " + appFilesCount +";");
+        buffers[0].push("for (var i = 1; i <= appFilesCount; i++) {");
+        buffers[0].push("    var script = document.createElement(\"script\");");
+        buffers[0].push("    script.src = \"Application\"+i+\".js\";");
+        buffers[0].push("    script.onload = function() { if (--appFilesCount === 0) ObjectiveJ.bootstrap(); };");
+        buffers[0].push("    document.getElementsByTagName(\"head\")[0].appendChild(script);");
+        buffers[0].push("}");
+
+        buffers.forEach(function(buffer) {
+            applicationJSs.push(buffer.join("\n"));
+        });
+    }
+
+    return applicationJSs;
 }
 
 ObjectiveJFlattener.prototype.serializeFunctions = function() {
@@ -249,6 +290,13 @@ var scriptTagsAfter  = '$1<script type = "text/javascript" src = "Application.js
 function rewriteMainHTML(indexHTMLPath) {
     if (indexHTMLPath.isFile()) {
         var indexHTML = indexHTMLPath.read();
+
+        // inline the Application.js if it's smallish
+        var applicationJSPath = indexHTMLPath.dirname().join("Application.js");
+        if (applicationJSPath.size() < 10*1024) {
+            var applicationJS = applicationJSPath.read().split("\n").join("\n$1    ");
+            scriptTagsAfter = '$1<script type = "text/javascript">\n$1    '+applicationJS+'\n$1</script>'
+        }
 
         // attempt to find Objective-J script tag and add ours
         var newIndexHTML = indexHTML.replace(/([ \t]+)<script[^>]+Objective-J\.js[^>]+>(?:\s*<\/script>)?/,
