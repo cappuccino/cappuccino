@@ -598,7 +598,7 @@
         return;
 
     if ([_delegate respondsToSelector:@selector(collectionView:canDragItemsAtIndexes:withEvent:)] &&
-        ![_delegate collectionView:self canDragItemsAtIndexes:_selectionIndexes withEvent:anEvent])
+        ![_delegate collectionView:self canDragItemsAtIndexes:_selectionIndexes withEvent:_mouseDownEvent])
         return;
 
     // Set up the pasteboard
