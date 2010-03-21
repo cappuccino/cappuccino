@@ -32,7 +32,10 @@
 
         // change the default height
         if (_bounds.size.height === 17)
+        {
             _bounds.size.height = 23;
+            _frame.size.height = 23;
+        }
     }
     
     return self;
