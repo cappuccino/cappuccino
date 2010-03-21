@@ -199,9 +199,14 @@ CFHTTPRequest.prototype.overrideMimeType = function(/*String*/ aMimeType)
 CFHTTPRequest.prototype.open = function(/*String*/ method, /*String*/ url, /*Boolean*/ async, /*String*/ user, /*String*/ password)
 {
     var cachedRequest = CFHTTPRequest._lookupCachedRequest(url);
-    if (cachedRequest) {
-        cachedRequest.onreadystatechange = this._nativeRequest.onreadystatechange;
+    if (cachedRequest)
+    {
+        var self = this;
         this._nativeRequest = cachedRequest;
+        this._nativeRequest.onreadystatechange = function()
+        {
+            determineAndDispatchHTTPRequestEvents(self);
+        };
     }
     return this._nativeRequest.open(method, url, async, user, password);
 }
