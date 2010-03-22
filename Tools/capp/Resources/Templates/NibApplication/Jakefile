@@ -40,9 +40,9 @@ app ("__project.nameasidentifier__", function(task)
 
 function printResults(configuration)
 {
-    print("----------------------------")
+    print("----------------------------");
     print(configuration+" app built at path: "+FILE.join("Build", configuration, "__project.nameasidentifier__"));
-    print("----------------------------")
+    print("----------------------------");
 }
 
 task ("default", ["__project.nameasidentifier__"], function()
