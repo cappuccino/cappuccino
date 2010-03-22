@@ -1763,25 +1763,18 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     return YES;
 }
 
-- (CPImage)dragImageForRowsWithIndexes:(CPIndexSet)dragRows 
-                          tableColumns:(CPArray)theTableColumns 
-                                 event:(CPEvent)dragEvent 
-                                offset:(CPPointPointer)dragImageOffset
+- (CPImage)dragImageForRowsWithIndexes:(CPIndexSet)dragRows tableColumns:(CPArray)theTableColumns event:(CPEvent)dragEvent offset:(CPPointPointer)dragImageOffset
 {
     return [[CPImage alloc] initWithContentsOfFile:@"Frameworks/AppKit/Resources/GenericFile.png" size:CGSizeMake(32,32)];
 }
 
-- (CPView)dragViewForRowsWithIndexes:(CPIndexSet)theDraggedRows 
-                        tableColumns:(CPArray)theTableColumns 
-                               event:(CPEvent)theDragEvent 
-                              offset:(CPPoint)dragViewOffset
+- (CPView)dragViewForRowsWithIndexes:(CPIndexSet)theDraggedRows tableColumns:(CPArray)theTableColumns event:(CPEvent)theDragEvent offset:(CPPoint)dragViewOffset
 {
     var bounds = [self bounds],
         view = [[CPView alloc] initWithFrame:bounds];
-        
-    [view setBackgroundColor:[CPColor clearColor]];
+
     [view setAlphaValue:0.7];
-    
+
     // We have to fetch all the data views for the selected rows and columns
     // After that we can copy these add them to a transparent drag view and use that drag view 
     // to make it appear we are dragging images of those rows (as you would do in regular Cocoa)
@@ -1791,35 +1784,34 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
         exposedRowsLength = [_exposedRows lastIndex] - firstExposedRow + 1,
         columns = [],
         rows = [];
-        
+
     [_exposedColumns getIndexes:columns maxCount:-1 inIndexRange:CPMakeRange(firstExposedColumn, exposedColumnsLength)];
     [theDraggedRows getIndexes:rows maxCount:-1 inIndexRange:CPMakeRange(firstExposedRow, exposedRowsLength)];
 
     var columnIndex = [columns count];
-        
+
     while (columnIndex--) 
     {
         var column = columns[columnIndex],
             tableColumn = [_tableColumns objectAtIndex:column],
             rowIndex = [rows count];
-        
+
         while (rowIndex--)
         { 
             var row = rows[rowIndex];
             var dataView = [self _newDataViewForRow:row tableColumn:tableColumn];
-            
-            [dataView setBackgroundColor:[CPColor clearColor]];
+
             [dataView setFrame:[self frameOfDataViewAtColumn:column row:row]];
             [dataView setObjectValue:[self _objectValueForTableColumn:tableColumn row:row]];
-            
+
             [view addSubview:dataView];
         }
     }
-    
+
     var dragPoint = [self convertPoint:[theDragEvent locationInWindow] fromView:nil];
     dragViewOffset.x = CGRectGetWidth(bounds)/2 - dragPoint.x;
     dragViewOffset.y = CGRectGetHeight(bounds)/2 - dragPoint.y;
-    
+
     return view;
 }
 
@@ -1841,7 +1833,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
         var numberOfRows = [self numberOfRows] + 1;
         var reason = @"Attempt to set dropRow=" + row + 
                      " dropOperation=CPTableViewDropOn when [0 - " + numberOfRows + "] is valid range of rows."
-        
+
         [[CPException exceptionWithName:@"Error" reason:reason userInfo:nil] raise];
     }
         
@@ -1897,7 +1889,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
         return;
 
     _sortDescriptors = newSortDescriptors;
-  
+
   	[self _sendDataSourceSortDescriptorsDidChange:oldSortDescriptors];
 }
 
