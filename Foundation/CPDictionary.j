@@ -153,6 +153,12 @@
             continue;
 
         var value = object[key];
+        
+        if (value === null)
+        {
+            [dictionary setObject:[CPNull null] forKey:key];
+            continue;
+        }
     
         if (recursively)
         {

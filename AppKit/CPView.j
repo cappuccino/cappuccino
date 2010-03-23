@@ -1199,7 +1199,7 @@ var CPViewFlags                     = { },
     
     if (CPFeatureIsCompatible(CPOpacityRequiresFilterFeature))
     {
-        if (anAlphaValue == 1.0)
+        if (anAlphaValue === 1.0)
             try { _DOMElement.style.removeAttribute("filter") } catch (anException) { }
         else
             _DOMElement.style.filter = "alpha(opacity=" + anAlphaValue * 100 + ")";
@@ -1317,56 +1317,72 @@ var CPViewFlags                     = { },
 {
     if (_backgroundColor == aColor)
         return;
-    
+
     _backgroundColor = aColor;
-    
+
 #if PLATFORM(DOM)
     var patternImage = [_backgroundColor patternImage],
+        colorExists = _backgroundColor && [_backgroundColor alphaComponent] > 0.0,
+        colorHasAlpha = colorExists && [_backgroundColor alphaComponent] < 1.0,
+        supportsRGBA = CPFeatureIsCompatible(CPCSSRGBAFeature),
+        colorNeedsDOMElement = colorHasAlpha && !supportsRGBA,
         amount = 0;
-    
+
     if ([patternImage isThreePartImage])
     {
         _backgroundType = [patternImage isVertical] ? BackgroundVerticalThreePartImage : BackgroundHorizontalThreePartImage;
-        
         amount = 3 - _DOMImageParts.length;
     }
     else if ([patternImage isNinePartImage])
     {
         _backgroundType = BackgroundNinePartImage;
-        
-        amount = 9 - _DOMImageParts.length;   
+        amount = 9 - _DOMImageParts.length;
     }
     else
     {
         _backgroundType = BackgroundTrivialColor;
-
-        amount = 0 - _DOMImageParts.length;
+        amount = (colorNeedsDOMElement ? 1 : 0) - _DOMImageParts.length;
     }
 
     if (amount > 0)
+    {
         while (amount--)
         {
             var DOMElement = DOMElementPrototype.cloneNode(false);
-            
+
             DOMElement.style.zIndex = -1000;
-            
+
             _DOMImageParts.push(DOMElement);
             _DOMElement.appendChild(DOMElement);
         }
+    }
     else
     {
         amount = -amount;
-        
         while (amount--)
             _DOMElement.removeChild(_DOMImageParts.pop());
     }
-    
-    if (_backgroundType == BackgroundTrivialColor)
-    
-        // Opera doesn't like DOM properties set to nil.
-        // https://trac.280north.com/ticket/7
-        _DOMElement.style.background = _backgroundColor ? [_backgroundColor cssString] : "";
-    
+
+    if (_backgroundType === BackgroundTrivialColor)
+    {
+        var colorCSS = colorExists ? [_backgroundColor cssString] : "";
+
+        if (colorNeedsDOMElement)
+        {
+            _DOMElement.style.background = "";
+            _DOMImageParts[0].style.background = [_backgroundColor cssString];
+
+            if (CPFeatureIsCompatible(CPOpacityRequiresFilterFeature))
+                _DOMImageParts[0].style.filter = "alpha(opacity=" + [_backgroundColor alphaComponent] * 100 + ")";
+            else
+                _DOMImageParts[0].style.opacity = [_backgroundColor alphaComponent];
+
+            var size = [self bounds].size;
+            CPDOMDisplayServerSetStyleSize(_DOMImageParts[0], size.width, size.height);
+        }
+        else
+            _DOMElement.style.background = colorCSS;
+    }
     else
     {
         var slices = [patternImage imageSlices],
@@ -1377,23 +1393,31 @@ var CPViewFlags                     = { },
         {
             var image = slices[count],
                 size = _DOMImageSizes[count] = image ? [image size] : _CGSizeMakeZero();
-            
+
             CPDOMDisplayServerSetStyleSize(_DOMImageParts[count], size.width, size.height);
 
             _DOMImageParts[count].style.background = image ? "url(\"" + [image filename] + "\")" : "";
+
+            if (!supportsRGBA)
+            {
+                if (CPFeatureIsCompatible(CPOpacityRequiresFilterFeature))
+                    try { _DOMImageParts[count].style.removeAttribute("filter") } catch (anException) { }
+                else
+                    _DOMImageParts[count].style.opacity = 1.0;
+            }
         }
-        
+
         if (_backgroundType == BackgroundNinePartImage)
         {
             var width = frameSize.width - _DOMImageSizes[0].width - _DOMImageSizes[2].width,
                 height = frameSize.height - _DOMImageSizes[0].height - _DOMImageSizes[6].height;
-            
+
             CPDOMDisplayServerSetStyleSize(_DOMImageParts[1], width, _DOMImageSizes[0].height);
             CPDOMDisplayServerSetStyleSize(_DOMImageParts[3], _DOMImageSizes[3].width, height);
             CPDOMDisplayServerSetStyleSize(_DOMImageParts[4], width, height);
             CPDOMDisplayServerSetStyleSize(_DOMImageParts[5], _DOMImageSizes[5].width, height);
             CPDOMDisplayServerSetStyleSize(_DOMImageParts[7], width, _DOMImageSizes[7].height);
-                
+
             CPDOMDisplayServerSetStyleLeftTop(_DOMImageParts[0], NULL, 0.0, 0.0);            
             CPDOMDisplayServerSetStyleLeftTop(_DOMImageParts[1], NULL, _DOMImageSizes[0].width, 0.0);
             CPDOMDisplayServerSetStyleRightTop(_DOMImageParts[2], NULL, 0.0, 0.0);
@@ -1407,7 +1431,7 @@ var CPViewFlags                     = { },
         else if (_backgroundType == BackgroundVerticalThreePartImage)
         {    
             CPDOMDisplayServerSetStyleSize(_DOMImageParts[1], frameSize.width, frameSize.height - _DOMImageSizes[0].height - _DOMImageSizes[2].height);
-            
+
             CPDOMDisplayServerSetStyleLeftTop(_DOMImageParts[0], NULL, 0.0, 0.0);
             CPDOMDisplayServerSetStyleLeftTop(_DOMImageParts[1], NULL, 0.0, _DOMImageSizes[0].height);        
             CPDOMDisplayServerSetStyleLeftBottom(_DOMImageParts[2], NULL, 0.0, 0.0);
@@ -1415,7 +1439,7 @@ var CPViewFlags                     = { },
         else if (_backgroundType == BackgroundHorizontalThreePartImage)
         {
             CPDOMDisplayServerSetStyleSize(_DOMImageParts[1], frameSize.width - _DOMImageSizes[0].width - _DOMImageSizes[2].width, frameSize.height);
-        
+
             CPDOMDisplayServerSetStyleLeftTop(_DOMImageParts[0], NULL, 0.0, 0.0);
             CPDOMDisplayServerSetStyleLeftTop(_DOMImageParts[1], NULL, _DOMImageSizes[0].width, 0.0);        
             CPDOMDisplayServerSetStyleRightTop(_DOMImageParts[2], NULL, 0.0, 0.0);

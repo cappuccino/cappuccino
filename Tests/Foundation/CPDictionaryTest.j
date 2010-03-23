@@ -16,6 +16,12 @@
 
     string_dict = [[CPDictionary alloc] initWithObjects:[@"1", @"2"] forKeys:[@"key1", @"key2"]];
     json_dict = [CPDictionary dictionaryWithJSObject:json recursively:YES];
+    
+    json_with_nulls = {
+        "key1": ['1', '2', '3'],
+        "key2": "This is a string",
+        "key3": null
+    }
 }
 
 - (void)testInitWithDictionary
@@ -56,6 +62,14 @@
     var dict = [CPDictionary dictionaryWithJSObject:json recursively:YES];
     [self assert:[dict count] equals:3];
     [self assert:[[dict objectForKey:@"key3"] count] equals:1];
+}
+
+- (void)testDictionaryWithJSObjectRecursiveWithNull
+{
+    var dict = [CPDictionary dictionaryWithJSObject:json_with_nulls recursively:YES];
+    [self assert:3 equals:[dict count]];
+    [self assert:[@"key1", @"key2", @"key3"] equals:[dict allKeys]];
+    [self assert:[CPNull null] equals:[dict objectForKey:@"key3"]];
 }
 
 - (void)testDictionaryWithJSObjectNonRecursive

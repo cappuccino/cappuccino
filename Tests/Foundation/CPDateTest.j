@@ -63,12 +63,14 @@
 - (void)testDescription
 {
     // Unfortunately the result will be different depending on the testing machine's timezone.
-    var expectedHour = 23
-    var expectedMinute = 31;
-    var offsetHours = Math.floor(new Date().getTimezoneOffset() / 60);
-    var offsetMinutes = new Date().getTimezoneOffset() - offsetHours * 60;
-    var expectedString = [CPString stringWithFormat:"2009-02-13 %02d:%02d:30 +%02d%02d", expectedHour-offsetHours, expectedMinute-offsetMinutes, offsetHours, offsetMinutes];
-    [self assert:expectedString equals: [[CPDate dateWithTimeIntervalSince1970: 1234567890] description]];
+    var date = [CPDate dateWithTimeIntervalSince1970: 1234567890],
+        expectedHour = 23,
+        expectedMinute = 31,
+        offsetHours = Math.floor(date.getTimezoneOffset() / 60),
+        offsetMinutes = date.getTimezoneOffset() - offsetHours * 60,
+        expectedString = [CPString stringWithFormat:"2009-02-13 %02d:%02d:30 +%02d%02d", expectedHour-offsetHours, expectedMinute-offsetMinutes, offsetHours, offsetMinutes];
+
+    [self assert:expectedString equals:[date description]];
 }
 
 - (void)testCopy

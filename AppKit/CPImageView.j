@@ -370,7 +370,10 @@ var LEFT_SHADOW_INSET       = 3.0,
     var images = [CPKeyedUnarchiver unarchiveObjectWithData:[[aSender draggingPasteboard] dataForType:CPImagesPboardType]];
 
     if ([images count])
+    {
         [self setImage:images[0]];
+        [self sendAction:[self action] to:[self target]];
+    }
 }
 
 @end
