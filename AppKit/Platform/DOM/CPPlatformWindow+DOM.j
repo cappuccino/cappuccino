@@ -804,7 +804,6 @@ var supportsNativeDragAndDrop = [CPPlatform supportsDragAndDrop];
     }
 }
 
-
 - (void)_checkPasteboardElement
 {
     var value = _DOMPasteboardElement.value;
@@ -1123,7 +1122,7 @@ var supportsNativeDragAndDrop = [CPPlatform supportsDragAndDrop];
     [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
 }
 
- (CPArray)orderedWindowsAtLevel:(int)aLevel
+- (CPArray)orderedWindowsAtLevel:(int)aLevel
 {
     var layer = [self layerAtLevel:aLevel create:NO];
 
