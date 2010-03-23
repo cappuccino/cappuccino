@@ -173,6 +173,12 @@ var Preprocessor = function(/*String*/ aString, /*CFURL|String*/ aURL, /*unsigne
 
     this._classLookupTable = {};
 
+    this._classVars = {};
+
+    var classObject = new objj_class();
+    for (var i in classObject)
+        this._classVars[i] = 1;
+
     this.preprocess(this._tokens, this._buffer);
 }
 
@@ -524,8 +530,8 @@ Preprocessor.prototype.implementation = function(tokens, /*StringBuffer*/ aStrin
 
             if (IS_NOT_EMPTY(class_methods))
                 CONCAT(class_methods, ", ");
-            
-            CONCAT(class_methods, this.method(tokens));
+
+            CONCAT(class_methods, this.method(tokens, this._classVars));
         }
         else if (token == TOKEN_MINUS)
         {
@@ -680,23 +686,12 @@ Preprocessor.prototype.method = function(/*Lexer*/ tokens, ivar_names)
         CONCAT(buffer, parameters[index]);
     }
 
-    if (this._classMethod)
-    {
-        CONCAT(buffer, ")\n{");
-        CONCAT(buffer, this.preprocess(tokens, NULL, TOKEN_CLOSE_BRACE, TOKEN_OPEN_BRACE));
-        CONCAT(buffer, "}");
-    }
-    else
-    {
-        CONCAT(buffer, ")\n{ with(self)\n{");
-        CONCAT(buffer, this.preprocess(tokens, NULL, TOKEN_CLOSE_BRACE, TOKEN_OPEN_BRACE));
-        CONCAT(buffer, "}\n}");
-    }
-
+    CONCAT(buffer, ")\n{ with(self)\n{");
+    CONCAT(buffer, this.preprocess(tokens, NULL, TOKEN_CLOSE_BRACE, TOKEN_OPEN_BRACE));
+    CONCAT(buffer, "}\n}");
     // TODO: actually use Flags.IncludeTypeSignatures flag instead of tying to Flags.IncludeDebugSymbols
     if (this._flags & Preprocessor.Flags.IncludeDebugSymbols) //flags.IncludeTypeSignatures)
         CONCAT(buffer, ","+JSON.stringify(types));
-
     CONCAT(buffer, ")");
 
     this._currentSelector = "";
