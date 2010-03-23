@@ -78,6 +78,32 @@ function check_and_exit () {
     fi
 }
 
+function check_build_environment () {
+    # make sure user is running HotSpot JVM
+    java -version 2>&1 | grep HotSpot &> /dev/null
+    if [ ! "$?" = "0" ]; then
+        java_ver=`java -version 2>&1 | egrep "(Client|Server)"`
+        if [ "$java_ver" = "" ]; then
+            java_ver="your JVM"
+        fi
+        echo "Error: Narwhal is not compatible with $java_ver. Please switch to the Sun (HotSpot) JVM and re-run bootstrap.sh."
+        exit 1
+    fi
+
+    # make sure other dependencies are installed and on the $PATH
+    OTHER_DEPS=(gcc unzip curl)
+
+    for dep in ${OTHER_DEPS[@]}; do
+        which "$dep" &> /dev/null
+        if [ ! "$?" = "0" ]; then
+            echo "Error: $dep is required to build Cappuccino. Please install $dep and re-run bootstrap.sh."
+            exit 1
+        fi
+    done
+}
+
+check_build_environment
+
 if [ -w "/usr/local" ]; then
     default_directory="/usr/local/narwhal"
 else
