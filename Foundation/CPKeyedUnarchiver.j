@@ -200,7 +200,7 @@ var CPArrayClass                                                            = Ni
 - (CPDictionary)_decodeDictionaryOfObjectsForKey:(CPString)aKey
 {
     var object = _plistObject.valueForKey(aKey),
-        objectClass = object && object.isa;
+        objectClass = (object != nil) && object.isa;
 
     if (objectClass === CPDictionaryClass || objectClass === CPMutableDictionaryClass)
     {
@@ -315,7 +315,7 @@ var CPArrayClass                                                            = Ni
 - (id)decodeObjectForKey:(CPString)aKey
 {
     var object = _plistObject.valueForKey(aKey),
-        objectClass = object && object.isa;
+        objectClass = (object != nil) && object.isa;
 
     if (objectClass === CPDictionaryClass || objectClass === CPMutableDictionaryClass)
         return _CPKeyedUnarchiverDecodeObjectAtIndex(self, object.valueForKey(_CPKeyedArchiverUIDKey));
@@ -519,7 +519,7 @@ var _CPKeyedUnarchiverDecodeObjectAtIndex = function(self, anIndex)
 
     // If this object is a member of _CPKeyedArchiverValue, then we know
     // that it is a wrapper for a primitive JavaScript object.
-    if (object && (object.isa === _CPKeyedArchiverValueClass))
+    if ((object != nil) && (object.isa === _CPKeyedArchiverValueClass))
         object = [object JSObject];
 
     return object;
