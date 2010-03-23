@@ -459,7 +459,7 @@ var cachedBlackColor,
     {
         _patternImage = anImage;
         _cssString = "url(\"" + [_patternImage filename] + "\")";
-        _components = [];
+        _components = [0.0, 0.0, 0.0, 1.0];
     }
        
     return self;
@@ -478,7 +478,7 @@ var cachedBlackColor,
 */
 - (float)alphaComponent
 {
-    return _components[3] || 0.0;
+    return _components[3];
 }
 
 /*!
@@ -486,7 +486,7 @@ var cachedBlackColor,
 */
 - (float)blueComponent
 {
-    return _components[2] || 0.0;
+    return _components[2];
 }
 
 /*!
@@ -494,7 +494,7 @@ var cachedBlackColor,
 */
 - (float)greenComponent
 {
-    return _components[1] || 0.0;
+    return _components[1];
 }
 
 /*!
@@ -502,7 +502,7 @@ var cachedBlackColor,
 */
 - (float)redComponent
 {
-    return _components[0] || 0.0;
+    return _components[0];
 }
 
 /*!

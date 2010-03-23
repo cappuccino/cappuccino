@@ -1322,7 +1322,7 @@ var CPViewFlags                     = { },
 
 #if PLATFORM(DOM)
     var patternImage = [_backgroundColor patternImage],
-        colorExists = _backgroundColor && [_backgroundColor alphaComponent] > 0.0,
+        colorExists = _backgroundColor && ([_backgroundColor patternImage] || [_backgroundColor alphaComponent] > 0.0),
         colorHasAlpha = colorExists && [_backgroundColor alphaComponent] < 1.0,
         supportsRGBA = CPFeatureIsCompatible(CPCSSRGBAFeature),
         colorNeedsDOMElement = colorHasAlpha && !supportsRGBA,
