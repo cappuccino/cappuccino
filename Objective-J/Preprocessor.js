@@ -551,8 +551,8 @@ Preprocessor.prototype.implementation = function(tokens, /*StringBuffer*/ aStrin
             else
                 throw new SyntaxError(this.error_message("*** Expected \"@end\", found \"@" + token + "\"."));
         }
-        else
-            throw new SyntaxError(this.error_message("*** Expected a method declaration, or \"@end\", found \"" + token + "\"."));
+        //else
+        //    throw new SyntaxError(this.error_message("*** Expected a method declaration, or \"@end\", found \"" + token + "\"."));
     }
     
     if (IS_NOT_EMPTY(instance_methods))
