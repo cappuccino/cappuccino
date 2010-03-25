@@ -668,7 +668,7 @@ var CPViewFlags                     = { },
     return _tag;
 }
 
-- (void)viewWithTag:(CPInteger)aTag
+- (CPView)viewWithTag:(CPInteger)aTag
 {
     if ([self tag] == aTag)
         return self;
