@@ -699,6 +699,15 @@ var CPStringRegexSpecialCharacters = [
     return path;
 }
 
+/*!
+    Deletes the extension of a string.
+    This method assumes that the string's contents is the path to a file or just a filename.
+*/
+- (CPString)stringByDeletingPathExtension
+{
+    return substr(0, [self length] - ([self pathExtension].length + 1));
+}
+
 - (CPString)stringByStandardizingPath
 {
     return objj_standardize_path(self);
