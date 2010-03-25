@@ -664,6 +664,8 @@ var CPStringRegexSpecialCharacters = [
 */
 - (CPString)pathExtension
 {
+    if (lastIndexOf('.') == CPNotFound)
+        return "";
     return substr(lastIndexOf('.') + 1);
 }
 
@@ -701,11 +703,15 @@ var CPStringRegexSpecialCharacters = [
 
 /*!
     Deletes the extension of a string.
-    This method assumes that the string's contents is the path to a file or just a filename.
 */
 - (CPString)stringByDeletingPathExtension
 {
-    return substr(0, [self length] - ([self pathExtension].length + 1));
+    var extension = [self pathExtension];
+    if (extension === "")
+        return [self copy];
+    if (lastIndexOf('.') < 1)
+        return [self copy];
+    return substr(0, [self length] - (extension.length + 1));
 }
 
 - (CPString)stringByStandardizingPath
