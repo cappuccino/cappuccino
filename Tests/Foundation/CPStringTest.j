@@ -259,6 +259,35 @@
         [self assert:testStrings[i][1] equals:[testStrings[i][0] lastPathComponent]];
 }
 
+- (void)testPathExtension
+{
+    var testStrings = [
+        ["/tmp/scratch.tiff", "tiff"],
+        ["scratch.png", "png"],
+        ["/tmp/scratch..tiff", "tiff"],
+        ["/tmp", ""],
+        ["scratch", ""],
+    ];
+        
+    for (var i = 0; i < testStrings.length; i++)
+        [self assert:testStrings[i][1] equals:[testStrings[i][0] pathExtension]];
+}
+
+- (void)testStringByDeletingPathExtension
+{
+    var testStrings = [
+        ["/tmp/scratch.tiff", "/tmp/scratch"],
+        ["scratch.png", "scratch"],
+        ["/tmp/scratch..tiff", "/tmp/scratch."],
+        ["/tmp", "/tmp"],
+        [".tiff", ".tiff"],
+        ["/", "/"],
+    ];
+
+    for (var i = 0; i < testStrings.length; i++)
+        [self assert:testStrings[i][1] equals:[testStrings[i][0] stringByDeletingPathExtension]];
+}
+
 - (void)testHasPrefix
 {
     [self assertTrue: ["abc" hasPrefix:"a"]];
