@@ -97,6 +97,7 @@
         _prototypeView = [[CPTextField alloc] initWithFrame:CGRectMakeZero()];
         [_prototypeView setVerticalAlignment:CPCenterVerticalTextAlignment];
         [_prototypeView setValue:[CPColor whiteColor] forThemeAttribute:"text-color" inState:CPThemeStateSelected];
+        [_prototypeView setLineBreakMode:CPLineBreakByTruncatingTail];
 
         _horizontalScrollView = [[CPScrollView alloc] initWithFrame:[self bounds]];
 
