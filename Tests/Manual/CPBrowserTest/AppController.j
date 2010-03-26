@@ -7,7 +7,7 @@
  */
 
 @import <Foundation/CPObject.j>
-@import "CPBrowser.j"
+@import <AppKit/CPBrowser.j>
 
 @implementation Node : CPObject
 {

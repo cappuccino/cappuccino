@@ -20,13 +20,10 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-//@import "CPControl.j"
-//@import "CPTableView.j"
-//@import "CPScrollView.j"
-@import <AppKit/CPControl.j>
-@import <AppKit/CPImage.j>
-@import <AppKit/CPTableView.j>
-@import <AppKit/CPScrollView.j>
+@import "CPControl.j"
+@import "CPImage.j"
+@import "CPTableView.j"
+@import "CPScrollView.j"
 
 /*! 
     @ingroup appkit
