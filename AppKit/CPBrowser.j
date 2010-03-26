@@ -328,6 +328,30 @@
     return [_tableDelegates[column] _item];
 }
 
+- (CPSet)selectedItems
+{
+    var selectedColumn = [self selectedColumn],
+        selectedIndexes = [self selectedRowIndexesInColumn:selectedColumn],
+        set = [CPSet set],
+        index = [selectedIndexes firstIndex];
+
+    while (index !== CPNotFound)
+    {
+        [set addObject:[self itemAtRow:index inColumn:selectedColumn]];
+        index = [selectedIndexes indexGreaterThanIndex:index];
+    }
+
+    return set;
+}
+
+- (id)selectedItem
+{
+    var selectedColumn = [self selectedColumn],
+        selectedRow = [self selectedRowInColumn:selectedColumn];
+
+    return [self itemAtRow:selectedRow inColumn:selectedColumn];
+}
+
 // CLICK EVENTS
 
 - (void)_column:(unsigned)columnIndex clickedRow:(unsigned)rowIndex
