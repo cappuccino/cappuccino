@@ -332,7 +332,8 @@ var HORIZONTAL_MARGIN   = 3.0,
         hasDOMTextElement = !!_DOMTextElement;
     
     // Create or destroy the DOM Text Element as necessary
-    if (needsDOMTextElement !== hasDOMTextElement)    
+    if (needsDOMTextElement !== hasDOMTextElement)
+    {
         if (hasDOMTextElement)
         {
             _DOMElement.removeChild(_DOMTextElement);
@@ -361,6 +362,7 @@ var HORIZONTAL_MARGIN   = 3.0,
             // We have to set all these values now.
             _flags |= _CPImageAndTextViewTextChangedFlag | _CPImageAndTextViewFontChangedFlag | _CPImageAndTextViewLineBreakModeChangedFlag;
         }
+    }
     
     var textStyle = hasDOMTextElement ? _DOMTextElement.style : nil;
     
@@ -369,6 +371,7 @@ var HORIZONTAL_MARGIN   = 3.0,
         hasDOMTextShadowElement = !!_DOMTextShadowElement;
     
     if (needsDOMTextShadowElement !== hasDOMTextShadowElement)
+    {
         if (hasDOMTextShadowElement)
         {
             _DOMElement.removeChild(_DOMTextShadowElement);
@@ -408,6 +411,7 @@ var HORIZONTAL_MARGIN   = 3.0,
             
             _flags |= _CPImageAndTextViewTextChangedFlag; //sigh...
         }
+    }
         
     var shadowStyle = hasDOMTextShadowElement ? _DOMTextShadowElement.style : nil;
         
@@ -505,6 +509,7 @@ var HORIZONTAL_MARGIN   = 3.0,
 
     // Create or destroy DOM Image element    
     if (needsDOMImageElement !== hasDOMImageElement)
+    {
         if (hasDOMImageElement)
         {
             _DOMElement.removeChild(_DOMImageElement);
@@ -534,7 +539,8 @@ var HORIZONTAL_MARGIN   = 3.0,
             _DOMElement.appendChild(_DOMImageElement);
             
             hasDOMImageElement = YES;
-        }    
+        }
+    }
 #endif
 
     var size = [self bounds].size,
