@@ -26,6 +26,7 @@
 @import "CPApplication.j"
 @import "CPBezierPath.j"
 @import "CPBox.j"
+@import "CPBrowser.j"
 @import "CPButton.j"
 @import "CPButtonBar.j"
 @import "CPCheckBox.j"
