@@ -196,8 +196,8 @@ var CPURLURLStringKey   = @"CPURLURLStringKey",
 
 - (id)initWithCoder:(CPCoder)aCoder
 {
-    return [self initWithURLString:[aCoder decodeObjectForKey:CPURLURLStringKey]
-                           baseURL:[aCoder decodeObjectForKey:CPURLBaseURLKey]];
+    return [self initWithString:[aCoder decodeObjectForKey:CPURLURLStringKey]
+                  relativeToURL:[aCoder decodeObjectForKey:CPURLBaseURLKey]];
 }
 
 - (void)encodeWithCoder:(CPCoder)aCoder
