@@ -235,7 +235,7 @@ NAMES_FOR_PARTS[CPScrollerKnob]             = @"knob";
 */
 - (void)checkSpaceForParts
 {
- var bounds = [self bounds];
+    var bounds = [self bounds];
 
     // Assume we won't be needing the arrows.
     if (_knobProportion === 1.0)
@@ -290,8 +290,7 @@ NAMES_FOR_PARTS[CPScrollerKnob]             = @"knob";
             _partRects[CPScrollerDecrementLine] = _CGRectMakeZero();
             _partRects[CPScrollerKnobSlot]      = _CGRectMake(trackInset.left, 0,  width - trackInset.left - trackInset.right, height);
         }
-}
-
+    }
     else
     {
         var decrementLineSize = [self currentValueForThemeAttribute:"decrement-line-size"],
