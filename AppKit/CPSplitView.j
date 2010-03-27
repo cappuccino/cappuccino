@@ -433,6 +433,12 @@ var CPSplitViewHorizontalImage = nil,
 {
     var point = [self convertPoint:[anEvent locationInWindow] fromView:nil];
 
+    if ([anEvent type] === CPLeftMouseUp && ![[self window] acceptsMouseMovedEvents])
+    {
+        [[CPCursor arrowCursor] set];
+        return;
+    }
+
     for (var i = 0, count = [_subviews count] - 1; i < count; i++)
     {
         // If we are currently tracking, keep the resize cursor active even outside of hit areas.
