@@ -213,6 +213,8 @@
     [table setAllowsEmptySelection:_allowsEmptySelection];
     [table registerForDraggedTypes:[self registeredDraggedTypes]];
 
+    [self setNextResponder:table];
+
     [self _addTableColumnsToTableView:table forColumnIndex:index];
 
     var delegate = [[_CPBrowserTableDelegate alloc] init];
@@ -548,7 +550,8 @@
     [self setLastColumn:column];
 
     [[self tableViewInColumn:column] selectRowIndexes:indexSet byExtendingSelection:NO];
-    [[self window] makeFirstResponder:[self tableViewInColumn:[self lastColumn]]];
+
+    [self setNextResponder:[self tableViewInColumn:[self lastColumn]]];
 
     [self scrollColumnToVisible:column];
 
@@ -560,6 +563,11 @@
 {
     [super setBackgroundColor:aColor];
     [_contentView setBackgroundColor:aColor];
+}
+
+- (BOOL)acceptsFirstResponder
+{
+    return YES;
 }
 
 // DRAG AND DROP
@@ -677,6 +685,17 @@ var _CPBrowserResizeControlBackgroundImage = nil;
         _browser = aBrowser;
 
     return self;
+}
+
+- (BOOL)acceptsFirstResponder
+{
+    return NO;
+}
+
+- (void)mouseDown:(CPEvent)anEvent
+{
+    [super mouseDown:anEvent];
+    [[self window] makeFirstResponder:_browser];
 }
 
 - (CPView)browserView
