@@ -527,6 +527,11 @@
     return self.toString();
 }
 
+- (BOOL)containsKey:(id)aKey
+{
+    var value = [self objectForKey:aKey];
+    return ((value !== nil) && (value !== undefined));
+}
 @end
 
 @implementation CPDictionary (CPCoding)

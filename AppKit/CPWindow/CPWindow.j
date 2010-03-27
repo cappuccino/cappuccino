@@ -472,9 +472,6 @@ CPTexturedBackgroundWindowMask
 
 - (void)awakeFromCib
 {
-    if (_initialFirstResponder)
-        [self makeFirstResponder:_initialFirstResponder];
-
     _keyViewLoopIsDirty = ![self _hasKeyViewLoop];
 }
 
@@ -738,6 +735,9 @@ CPTexturedBackgroundWindowMask
 {
     [_platformWindow orderFront:self];
     [_platformWindow order:CPWindowAbove window:self relativeTo:nil];
+
+    if (_firstResponder === self || !_firstResponder)
+        [self makeFirstResponder:[self initialFirstResponder]];
 }
 
 /*
@@ -1161,6 +1161,16 @@ CPTexturedBackgroundWindowMask
     return YES;
 }
 
+- (id)initialFirstResponder
+{
+    return _initialFirstResponder;
+}
+
+- (void)setInitialFirstResponder:(id)aResponder
+{
+    _initialFirstResponder = aResponder;
+}
+
 /*!
     Attempts to make the \c aResponder the first responder. Before trying
     to make it the first responder, the receiver will ask the current first responder
@@ -1170,7 +1180,7 @@ CPTexturedBackgroundWindowMask
 */
 - (BOOL)makeFirstResponder:(CPResponder)aResponder
 {
-    if (_firstResponder == aResponder)
+    if (_firstResponder === aResponder)
         return YES;
 
     if(![_firstResponder resignFirstResponder])
@@ -1494,7 +1504,7 @@ CPTexturedBackgroundWindowMask
 */
 - (void)resignKeyWindow
 {
-    if (_firstResponder != self && [_firstResponder respondsToSelector:@selector(resignKeyWindow)])
+    if (_firstResponder !== self && [_firstResponder respondsToSelector:@selector(resignKeyWindow)])
         [_firstResponder resignKeyWindow];
 
     if (CPApp._keyWindow === self)
