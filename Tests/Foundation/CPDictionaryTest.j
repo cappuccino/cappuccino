@@ -2,6 +2,9 @@
 
 @implementation CPDictionaryTest : OJTestCase
 {
+    CPDictionary    string_dict;
+    CPDictionary    json_dict;
+    JSObject        json;
 }
 
 - (void)setUp
@@ -16,12 +19,6 @@
 
     string_dict = [[CPDictionary alloc] initWithObjects:[@"1", @"2"] forKeys:[@"key1", @"key2"]];
     json_dict = [CPDictionary dictionaryWithJSObject:json recursively:YES];
-    
-    json_with_nulls = {
-        "key1": ['1', '2', '3'],
-        "key2": "This is a string",
-        "key3": null
-    }
 }
 
 - (void)testInitWithDictionary
@@ -60,13 +57,20 @@
 - (void)testDictionaryWithJSObjectRecursive
 {
     var dict = [CPDictionary dictionaryWithJSObject:json recursively:YES];
-    [self assert:[dict count] equals:3];
+    [self assert:[json_dict count] equals:3];
     [self assert:[[dict objectForKey:@"key3"] count] equals:1];
 }
 
 - (void)testDictionaryWithJSObjectRecursiveWithNull
 {
+    var json_with_nulls = {
+        "key1": ['1', '2', '3'],
+        "key2": "This is a string",
+        "key3": null
+    }
+ 
     var dict = [CPDictionary dictionaryWithJSObject:json_with_nulls recursively:YES];
+ 
     [self assert:3 equals:[dict count]];
     [self assert:[@"key1", @"key2", @"key3"] equals:[dict allKeys]];
     [self assert:[CPNull null] equals:[dict objectForKey:@"key3"]];
@@ -75,7 +79,6 @@
 - (void)testDictionaryWithJSObjectNonRecursive
 {
     var non_recursive_dict = [CPDictionary dictionaryWithJSObject:json recursively:NO];
-    [self assertThrows:[non_recursive_dict objectForKey:@"key3"]];
 }
 
 - (void)testCopy
@@ -155,8 +158,6 @@
     [json_dict removeObjectForKey:@"key1"];
     [self assert:[string_dict count] equals:1];
     [self assert:[json_dict count] equals:2];
-    [self assertThrows:[string_dict objectForKey:@"key1"]];
-    [self assertThrows:[json_dict objectForKey:@"key1"]];
 }
 
 - (void)testRemoveObjectsForKeys
@@ -165,9 +166,6 @@
     [json_dict removeObjectsForKeys:[@"key1", @"key2"]];
     [self assert:[string_dict count] equals:1];
     [self assert:[json_dict count] equals:1];
-    [self assertThrows:[string_dict objectForKey:@"key1"]];
-    [self assertThrows:[json_dict objectForKey:@"key1"]];
-    [self assertThrows:[json_dict objectForKey:@"key2"]];
 }
 
 - (void)testSetObjectForKey
@@ -185,6 +183,23 @@
     [json_dict addEntriesFromDictionary:dict]
     [self assert:[string_dict count] equals:4];
     [self assert:[json_dict count] equals:5];
+}
+
+- (void)testDictionaryWithFalsyValues
+{
+    var dict = [[CPDictionary alloc] initWithObjects:["", 0, [CPNull null]] forKeys:["1", "2", "3"]];
+    [self assertTrue:[dict containsKey:"1"]];
+    [self assertTrue:[dict containsKey:"2"]];
+    [self assertTrue:[dict containsKey:"3"]];
+    [self assertFalse:[dict containsKey:"4"]];
+}
+
+- (void)testThrowsOnNilValue
+{
+    [self assertThrows:function(){
+        var dict = [[CPDictionary alloc] initWithObjects:[1, nil] forKeys:["1", "2"]];
+        [self assertFalse:dict];
+    }];
 }
 
 @end
