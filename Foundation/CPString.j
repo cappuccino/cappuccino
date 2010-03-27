@@ -664,8 +664,9 @@ var CPStringRegexSpecialCharacters = [
 */
 - (CPString)pathExtension
 {
-    if (lastIndexOf('.') == CPNotFound)
+    if (lastIndexOf('.') === CPNotFound)
         return "";
+
     return substr(lastIndexOf('.') + 1);
 }
 
@@ -708,9 +709,11 @@ var CPStringRegexSpecialCharacters = [
 {
     var extension = [self pathExtension];
     if (extension === "")
-        return [self copy];
+        return self;
+
     if (lastIndexOf('.') < 1)
-        return [self copy];
+        return self;
+
     return substr(0, [self length] - (extension.length + 1));
 }
 
