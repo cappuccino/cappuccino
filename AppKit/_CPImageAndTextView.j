@@ -541,7 +541,6 @@ var HORIZONTAL_MARGIN   = 3.0,
             hasDOMImageElement = YES;
         }
     }
-#endif
 
     var size = [self bounds].size,
         textRect = _CGRectMake(0.0, 0.0, size.width, size.height);
@@ -573,60 +572,47 @@ var HORIZONTAL_MARGIN   = 3.0,
             imageHeight *= scale;
         }
 
-#if PLATFORM(DOM)
         _DOMImageElement.width = imageWidth;
         _DOMImageElement.height = imageHeight;        
         imageStyle.width = imageWidth + "px";
         imageStyle.height = imageHeight + "px";
-#endif
 
         if (_imagePosition === CPImageBelow)
         {
-#if PLATFORM(DOM)
             imageStyle.left = FLOOR(centerX - imageWidth / 2.0) + "px";
             imageStyle.top = FLOOR(size.height - imageHeight) + "px";
-#endif
 
             textRect.size.height = size.height - imageHeight - VERTICAL_MARGIN;
         }
         else if (_imagePosition === CPImageAbove)
         {
-#if PLATFORM(DOM)
             CPDOMDisplayServerSetStyleLeftTop(_DOMImageElement, NULL, FLOOR(centerX - imageWidth / 2.0), 0);
-#endif
             
             textRect.origin.y += imageHeight + VERTICAL_MARGIN;
             textRect.size.height = size.height - imageHeight - VERTICAL_MARGIN;
         }
         else if (_imagePosition === CPImageLeft)
         {
-#if PLATFORM(DOM)
             imageStyle.top = FLOOR(centerY - imageHeight / 2.0) + "px";
             imageStyle.left = "0px";
-#endif
 
             textRect.origin.x = imageWidth + HORIZONTAL_MARGIN;
             textRect.size.width -= imageWidth + HORIZONTAL_MARGIN;
         }
         else if (_imagePosition === CPImageRight)
         {
-#if PLATFORM(DOM)
             imageStyle.top = FLOOR(centerY - imageHeight / 2.0) + "px";
             imageStyle.left = FLOOR(size.width - imageWidth) + "px";
-#endif
 
             textRect.size.width -= imageWidth + HORIZONTAL_MARGIN;
         }
         else if (_imagePosition === CPImageOnly)
         {
-#if PLATFORM(DOM)
             imageStyle.top = FLOOR(centerY - imageHeight / 2.0) + "px";
             imageStyle.left = FLOOR(centerX - imageWidth / 2.0) + "px";
-#endif
         }
     }
 
-#if PLATFORM(DOM)
     if (hasDOMTextElement)
     {
         var textRectX = _CGRectGetMinX(textRect),
