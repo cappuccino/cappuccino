@@ -120,9 +120,13 @@
         
     [super setBoundsOrigin:aPoint];
 
-    var superview = [self superview];
-    
-    if([superview isKindOfClass:[CPScrollView class]])
+    var superview = [self superview],
+
+        // This is hack to avoid having to import CPScrollView.
+        // FIXME: Should CPScrollView be finding out about this on its own somehow?
+        scrollViewClass = objj_getClass("CPScrollView");
+
+    if([superview isKindOfClass:scrollViewClass])
         [superview reflectScrolledClipView:self];
 }
 
@@ -173,9 +177,13 @@
         return;
 
     // ... and we're in a scroll view of course.
-    var superview = [self superview];
-        
-    if ([superview isKindOfClass:[CPScrollView class]])
+    var superview = [self superview],
+
+        // This is hack to avoid having to import CPScrollView.
+        // FIXME: Should CPScrollView be finding out about this on its own somehow?
+        scrollViewClass = objj_getClass("CPScrollView");
+
+    if ([superview isKindOfClass:scrollViewClass])
         [superview reflectScrolledClipView:self];
 }
 
