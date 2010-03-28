@@ -237,6 +237,7 @@ ObjectiveJFlattener.prototype.serializeFunctions = function() {
 }
 
 ObjectiveJFlattener.prototype.serializeFileCache = function() {
+    this.fileCacheBuffer.push(FILE.read(FILE.join(FILE.dirname(module.path), "..", "..", "cappuccino", "lib", "cappuccino", "objj-flatten-additions.js"), { charset:"UTF-8" }));
     for (var relative in this.filesToCache) {
         var contents = this.filesToCache[relative];
         print("caching: " + relative + " => " + (contents == null ? 404 : 200));
