@@ -437,12 +437,13 @@ function loadSpritedImagesForBundle(/*Bundle*/ aBundle, success, failure)
             CFTotalBytesLoaded += anEvent.request.responseText().length;
             decompileStaticFile(aBundle, anEvent.request.responseText(), spritedImagesURL);
             aBundle._loadStatus &= ~CFBundleLoadingSpritedImages;
-            success();
         }
         catch(anException)
         {
             failure(anException);
         }
+
+        success();
     }, failure);
 }
 
