@@ -738,6 +738,12 @@ CPTexturedBackgroundWindowMask
 
     if (_firstResponder === self || !_firstResponder)
         [self makeFirstResponder:[self initialFirstResponder]];
+
+    if (!CPApp._keyWindow)
+        [self makeKeyWindow];
+
+    if (!CPApp._mainWindow)
+        [self makeMainWindow];
 }
 
 /*

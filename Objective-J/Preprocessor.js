@@ -612,7 +612,7 @@ Preprocessor.prototype.method = function(/*Lexer*/ tokens, ivar_names)
 
     ivar_names = ivar_names || {};
 
-    while((token = tokens.skip_whitespace()) && token != TOKEN_OPEN_BRACE)
+    while((token = tokens.skip_whitespace()) && token !== TOKEN_OPEN_BRACE && token !== TOKEN_SEMICOLON)
     {
         if (token == TOKEN_COLON)
         {
@@ -664,6 +664,16 @@ Preprocessor.prototype.method = function(/*Lexer*/ tokens, ivar_names)
         // Build selector name.
         else
             selector += token;
+    }
+
+    if (token === TOKEN_SEMICOLON)
+    {
+        token = tokens.skip_whitespace();
+        if (token !== TOKEN_OPEN_BRACE)
+        {
+            throw new SyntaxError(this.error_message("Invalid semi-colon in method declaration. "+
+            "Semi-colons are allowed only to terminate the method signature, before the open brace."));
+        }
     }
 
     var index = 0,
