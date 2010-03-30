@@ -60,4 +60,33 @@
         }
 }
 
+- (void)testPeriods
+{
+    var URLStrings =
+    {
+        "."             : "./",
+        "./"            : "./",
+        ".//"           : "./",
+        "/."            : "/",
+        "/./"           : "/",
+        "/.//"          : "/",
+        "./a/"          : "a/",
+        "./a"           : "a",
+        ".."            : "../",
+        "../"           : "../",
+        "..//"          : "../",
+        "/.."           : "/",
+        "/../"          : "/",
+        "/..//"         : "/",
+        "../a/"         : "../a/",
+        "../a"          : "../a"
+    };
+
+    var URLString;
+
+    for (URLString in URLStrings)
+        if (URLStrings.hasOwnProperty(URLString))
+            [self assert:new CFURL(URLString).absoluteString() equals:URLStrings[URLString]];
+}
+
 @end

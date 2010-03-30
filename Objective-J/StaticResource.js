@@ -143,8 +143,14 @@ StaticResource.resourceAtURL = function(/*CFURL|String*/ aURL, /*BOOL*/ resolveA
             resource = resource._children[name];
         
         else if (resolveAsDirectoriesIfNecessary)
-            resource = new StaticResource(new CFURL(name, resource.URL()), resource, YES, YES);
+        {
+            // We do this because on Windows the path may start with C: and be
+            // misinterpreted as a scheme.
+            if (name !== "/")
+                name = "./" + name;
 
+            resource = new StaticResource(new CFURL(name, resource.URL()), resource, YES, YES);
+        }
         else
             throw new Error("Static Resource at " + aURL + " is not resolved (\"" + name + "\")");
     }
