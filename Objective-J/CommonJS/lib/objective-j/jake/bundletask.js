@@ -16,8 +16,7 @@ var Task = Jake.Task,
 
 function isImage(/*String*/ aFilename)
 {
-    return  FILE.isFile(aFilename) &&
-            UTIL.has([".png", ".jpg", ".jpeg", ".gif", ".tif", ".tiff"], FILE.extension(aFilename).toLowerCase());
+    return UTIL.has([".png", ".jpg", ".jpeg", ".gif", ".tif", ".tiff"], FILE.extension(aFilename).toLowerCase());
 }
 
 function mimeType(/*String*/ aFilename)
@@ -350,11 +349,6 @@ BundleTask.prototype.packageType = function()
     return 1;
 }
 
-function isDataResource(aFilename)
-{
-    return FILE.isFile(aFilename) && isImage(aFilename);
-}
-
 BundleTask.prototype.infoPlist = function()
 {
     var infoPlistPath = this.infoPlistPath();
@@ -379,7 +373,7 @@ BundleTask.prototype.infoPlist = function()
     var environmentsWithImageSprites = this.environments().filter(
     function(anEnvironment)
     {
-        return anEnvironment.spritesImages() && task(this.buildProductDataURLPathForEnvironment(anEnvironment)).prerequisites().filter(isDataResource).length > 0;
+        return anEnvironment.spritesImages() && task(this.buildProductDataURLPathForEnvironment(anEnvironment)).prerequisites().filter(isImage).length > 0;
     }, this).map(function(anEnvironment)
     {
         return anEnvironment.name();
@@ -607,7 +601,7 @@ BundleTask.prototype.defineSpritedImagesTask = function()
 
         filedir (dataURLPath, function(aTask)
         {
-            var prerequisites = aTask.prerequisites().filter(isDataResource);
+            var prerequisites = aTask.prerequisites().filter(isImage);
 
             if (!prerequisites.length)
             {
@@ -645,7 +639,7 @@ BundleTask.prototype.defineSpritedImagesTask = function()
 
         filedir (MHTMLPath, function(aTask)
         {
-            var prerequisites = aTask.prerequisites().filter(isDataResource);
+            var prerequisites = aTask.prerequisites().filter(isImage);
 
             if (!prerequisites.length)
             {
@@ -679,7 +673,7 @@ BundleTask.prototype.defineSpritedImagesTask = function()
 
         filedir (MHTMLDataPath, function(aTask)
         {
-            var prerequisites = aTask.prerequisites().filter(isDataResource);
+            var prerequisites = aTask.prerequisites().filter(isImage);
 
             if (!prerequisites.length)
             {
