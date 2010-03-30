@@ -27,7 +27,7 @@ app ("__project.nameasidentifier__", function(task)
     task.setEmail("__organization.email__");
     task.setSummary("__project.name__");
     task.setSources((new FileList("**/*.j")).exclude(FILE.join("Build", "**")));
-    task.setResources(new FileList("Resources/*"));
+    task.setResources(new FileList("Resources/**"));
     task.setIndexFilePath("index.html");
     task.setInfoPlistPath("Info.plist");
     task.setNib2CibFlags("-R Resources/");
