@@ -163,9 +163,15 @@ var CPArrayClass                                                            = Ni
     @param data the data from which to read the graph
     @return the unarchived object
 */
-+ (id)unarchiveObjectWithData:(CPData)data
++ (id)unarchiveObjectWithData:(CPData)aData
 {
-    var unarchiver = [[self alloc] initForReadingWithData:data],
+    if (!aData)
+    {
+        CPLog.error("Null data passed to -[CPKeyedUnarchiver unarchiveObjectWithData:].");
+        return nil;
+    }
+
+    var unarchiver = [[self alloc] initForReadingWithData:aData],
         object = [unarchiver decodeObjectForKey:@"root"];
 
     [unarchiver finishDecoding];

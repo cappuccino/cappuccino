@@ -118,4 +118,9 @@ var CPCibOwner = @"CPCibOwner";
     [_loadDelegate cibDidFinishLoading:aCib];
 }
 
+- (void)cibDidFailToLoad:(CPCib)aCib
+{
+    [_loadDelegate cibDidFailToLoad:aCib];
+}
+
 @end
