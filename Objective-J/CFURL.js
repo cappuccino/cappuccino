@@ -314,7 +314,7 @@ function resolveURL(aURL)
                 resolvedPathComponents.splice(basePathComponents.length - 1, 1);
 
             // If this doesn't start with a "..", then we're simply appending to already standardized paths.
-            if (pathComponents.length && pathComponents[0] === "..")
+            if (pathComponents.length && (pathComponents[0] === ".." || pathComponents[0] === "."))
                 standardizePathComponents(resolvedPathComponents, YES);
 
             resolvedParts.pathComponents = resolvedPathComponents;
@@ -352,19 +352,26 @@ function standardizePathComponents(/*Array*/ pathComponents, /*BOOL*/ inPlace)
     var index = 0,
         resultIndex = 0,
         count = pathComponents.length,
-        result = inPlace ? pathComponents : [];
+        result = inPlace ? pathComponents : [],
+        startsWithPeriod = NO;
 
     for (; index < count; ++index)
     {
         var component = pathComponents[index];
 
-        if (component === "" || component === ".")
+        if (component === "")
              continue;
+
+        if (component === ".")
+        {
+            startsWithPeriod = resultIndex === 0;
+
+            continue;
+        }
 
         if (component !== ".." || resultIndex === 0 || result[resultIndex - 1] === "..")
         {
-            //if (resultIndex !== index)
-                result[resultIndex] = component;
+            result[resultIndex] = component;
 
             resultIndex++;
 
@@ -374,6 +381,9 @@ function standardizePathComponents(/*Array*/ pathComponents, /*BOOL*/ inPlace)
         if (resultIndex > 0 && result[resultIndex - 1] !== "/")
             --resultIndex;
     }
+
+    if (startsWithPeriod && resultIndex === 0)
+        result[resultIndex++] = ".";
 
     result.length = resultIndex;
 
@@ -505,10 +515,11 @@ CFURL.prototype.hasDirectoryPath = function()
         var lastPathComponent = this.lastPathComponent();
 
         hasDirectoryPath = lastPathComponent === "." || lastPathComponent === "..";
+
         this._hasDirectoryPath = hasDirectoryPath;
     }
 
-    return this._hasDirectoryPath;
+    return hasDirectoryPath;
 }
 
 DISPLAY_NAME(CFURL.prototype.hasDirectoryPath);
@@ -646,7 +657,14 @@ CFURL.prototype.asDirectoryPathURL = function()
     if (this.hasDirectoryPath())
         return this;
 
-    return new CFURL(this.lastPathComponent() + "/", this);
+    var lastPathComponent = this.lastPathComponent();
+
+    // We do this because on Windows the path may start with C: and be
+    // misinterpreted as a scheme.
+    if (lastPathComponent !== "/")
+        lastPathComponent = "./" + lastPathComponent;
+
+    return new CFURL(lastPathComponent + "/", this);
 }
 
 DISPLAY_NAME(CFURL.prototype.asDirectoryPathURL);
