@@ -1224,6 +1224,11 @@ var _CPAppBootstrapperActions = nil;
     [self performActions];
 }
 
++ (void)cibDidFailToLoad:(CPCib)aCib
+{
+    throw new Error("Could not load main cib file (Did you forget to nib2cib it?).");
+}
+
 + (void)reset
 {
 	_CPAppBootstrapperActions = nil;
