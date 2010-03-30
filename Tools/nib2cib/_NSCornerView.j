@@ -40,8 +40,6 @@
     self =  [super NS_initWithCoder:aCoder];
     if (self)
     {
-        [self setBackgroundColor:[CPColor colorWithPatternImage:CPAppKitImage("tableview-headerview.png", CGSizeMake(1.0, 23.0))]];
-
         _frame.size.height = 23.0;
         _bounds.size.height = 23.0;
     }
