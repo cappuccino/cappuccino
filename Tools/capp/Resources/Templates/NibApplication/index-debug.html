@@ -20,7 +20,7 @@
             OBJJ_INCLUDE_PATHS = ["Frameworks/Debug", "Frameworks", "SomethingElse"];
         </script>
         
-        <script src="Frameworks/Debug/Objective-J/Objective-J.js" type = "text/javascript"></script>
+        <script src="Frameworks/Debug/Objective-J/Objective-J.js" type="text/javascript"></script>
 
         <script type="text/javascript">
             objj_msgSend_reset();
@@ -35,6 +35,13 @@
 
             // Uncomment (along with both above) to print backtraces on type check errors:
             //objj_typecheck_prints_backtrace = true;
+
+            // Uncomment to disable the default logger (CPLogConsole if window.console exists, CPLogPopup otherwise):
+            //CPLogUnregister(CPLogDefault);
+
+            // Uncomment to enable a specific logger:
+            //CPLogRegister(CPLogConsole);
+            //CPLogRegister(CPLogPopup);
         </script>
 
         <style type="text/css">

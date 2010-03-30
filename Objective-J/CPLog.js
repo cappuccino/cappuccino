@@ -357,3 +357,10 @@ function _CPLogInitPopup(logWindow)
     }, false);
 }
 #endif
+
+
+#if COMMONJS
+CPLogDefault = CPLogPrint;
+#else
+CPLogDefault = (typeof window === "object" && window.console) ? CPLogConsole : CPLogPopup;
+#endif
