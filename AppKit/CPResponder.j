@@ -153,6 +153,15 @@ CPDownArrowKeyCode  = 40;
 }
 
 /*!
+    Notifies the receiver that the user has clicked the right mouse down in its area.
+    @param anEvent contains information about the right click
+*/
+- (void)rightMouseDown:(CPEvent)anEvent
+{
+    [_nextResponder performSelector:_cmd withObject:anEvent];
+}
+
+/*!
     Notifies the receiver that the user has initiated a drag
     over it. A drag is a mouse movement while the left button is down.
     @param anEvent contains information about the drag
@@ -167,6 +176,15 @@ CPDownArrowKeyCode  = 40;
     @param anEvent contains information about the release
 */
 - (void)mouseUp:(CPEvent)anEvent
+{
+    [_nextResponder performSelector:_cmd withObject:anEvent];
+}
+
+/*!
+    Notifies the receiver that the user has released the right mouse button.
+    @param anEvent contains information about the release
+*/
+- (void)rightMouseUp:(CPEvent)anEvent
 {
     [_nextResponder performSelector:_cmd withObject:anEvent];
 }

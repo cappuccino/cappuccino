@@ -127,7 +127,8 @@ var PlatformWindows = [CPSet set];
 // Define up here so compressor knows about em.
 var CPDOMEventGetClickCount,
     CPDOMEventStop,
-    StopDOMEventPropagation;
+    StopDOMEventPropagation,
+    StopContextMenuDOMEventPropagation;
 
 var _DOMEventGuard;
 
@@ -312,6 +313,10 @@ var supportsNativeDragAndDrop = [CPPlatform supportsDragAndDrop];
         mouseEventImplementation = class_getMethodImplementation(theClass, mouseEventSelector),
         mouseEventCallback = function (anEvent) { mouseEventImplementation(self, nil, anEvent); },
         
+        contextMenuEventSelector = @selector(contextMenuEvent:),
+        contextMenuEventImplementation = class_getMethodImplementation(theClass, contextMenuEventSelector),
+        contextMenuEventCallback = function (anEvent) { return contextMenuEventImplementation(self, nil, anEvent); },
+
         scrollEventSelector = @selector(scrollEvent:),
         scrollEventImplementation = class_getMethodImplementation(theClass, scrollEventSelector),
         scrollEventCallback = function (anEvent) { scrollEventImplementation(self, nil, anEvent); },
@@ -335,6 +340,7 @@ var supportsNativeDragAndDrop = [CPPlatform supportsDragAndDrop];
         theDocument.addEventListener("mouseup", mouseEventCallback, NO);
         theDocument.addEventListener("mousedown", mouseEventCallback, NO);
         theDocument.addEventListener("mousemove", mouseEventCallback, NO);
+        theDocument.addEventListener("contextmenu", contextMenuEventCallback, NO);
 
         theDocument.addEventListener("beforecopy", copyEventCallback, NO);
         theDocument.addEventListener("beforecut", copyEventCallback, NO);
@@ -362,6 +368,7 @@ var supportsNativeDragAndDrop = [CPPlatform supportsDragAndDrop];
             theDocument.removeEventListener("mouseup", mouseEventCallback, NO);
             theDocument.removeEventListener("mousedown", mouseEventCallback, NO);
             theDocument.removeEventListener("mousemove", mouseEventCallback, NO);
+            theDocument.removeEventListener("contextmenu", contextMenuEventCallback, NO);
 
             theDocument.removeEventListener("keyup", keyEventCallback, NO);
             theDocument.removeEventListener("keydown", keyEventCallback, NO);
@@ -394,6 +401,7 @@ var supportsNativeDragAndDrop = [CPPlatform supportsDragAndDrop];
         theDocument.attachEvent("onmousedown", mouseEventCallback);
         theDocument.attachEvent("onmousemove", mouseEventCallback);
         theDocument.attachEvent("ondblclick", mouseEventCallback);
+        theDocument.attachEvent("oncontextmenu", contextMenuEventCallback);
         
         theDocument.attachEvent("onkeyup", keyEventCallback);
         theDocument.attachEvent("onkeydown", keyEventCallback);
@@ -416,6 +424,7 @@ var supportsNativeDragAndDrop = [CPPlatform supportsDragAndDrop];
             theDocument.detachEvent("onmousedown", mouseEventCallback);
             theDocument.detachEvent("onmousemove", mouseEventCallback);
             theDocument.detachEvent("ondblclick", mouseEventCallback);
+            theDocument.detachEvent("oncontextmenu", contextMenuEventCallback);
 
             theDocument.detachEvent("onkeyup", keyEventCallback);
             theDocument.detachEvent("onkeydown", keyEventCallback);
@@ -1046,11 +1055,12 @@ var supportsNativeDragAndDrop = [CPPlatform supportsDragAndDrop];
     {
         if(_mouseIsDown)
         {
-            event = _CPEventFromNativeMouseEvent(aDOMEvent, CPLeftMouseUp, location, modifierFlags, timestamp, windowNumber, nil, -1, CPDOMEventGetClickCount(_lastMouseUp, timestamp, location), 0);
+            event = _CPEventFromNativeMouseEvent(aDOMEvent, _mouseDownIsRightClick ? CPRightMouseUp : CPLeftMouseUp, location, modifierFlags, timestamp, windowNumber, nil, -1, CPDOMEventGetClickCount(_lastMouseUp, timestamp, location), 0);
         
             _mouseIsDown = NO;
             _lastMouseUp = event;
             _mouseDownWindow = nil;
+            _mouseDownIsRightClick = NO;
         }
 
         if(_DOMEventMode)
@@ -1090,8 +1100,13 @@ var supportsNativeDragAndDrop = [CPPlatform supportsDragAndDrop];
             _DOMBodyElement.style["-khtml-user-drag"] = "element";
         }
 
-        event = _CPEventFromNativeMouseEvent(aDOMEvent, CPLeftMouseDown, location, modifierFlags, timestamp, windowNumber, nil, -1, CPDOMEventGetClickCount(_lastMouseDown, timestamp, location), 0);
-                    
+        var button = aDOMEvent.button;
+        _mouseDownIsRightClick = button == 2 || (button == 0 && modifierFlags & CPControlKeyMask);
+
+        StopContextMenuDOMEventPropagation = YES;
+
+        event = _CPEventFromNativeMouseEvent(aDOMEvent, _mouseDownIsRightClick ? CPRightMouseDown : CPLeftMouseDown, location, modifierFlags, timestamp, windowNumber, nil, -1, CPDOMEventGetClickCount(_lastMouseDown, timestamp, location), 0);
+
         _mouseIsDown = YES;
         _lastMouseDown = event;
     }
@@ -1101,7 +1116,7 @@ var supportsNativeDragAndDrop = [CPPlatform supportsDragAndDrop];
         if (_DOMEventMode)
             return;
 
-        event = _CPEventFromNativeMouseEvent(aDOMEvent, _mouseIsDown ? CPLeftMouseDragged : CPMouseMoved, location, modifierFlags, timestamp, windowNumber, nil, -1, 1, 0);
+        event = _CPEventFromNativeMouseEvent(aDOMEvent, _mouseIsDown ? (_mouseDownIsRightClick ? CPRightMouseDragged : CPLeftMouseDragged) : CPMouseMoved, location, modifierFlags, timestamp, windowNumber, nil, -1, 1, 0);
     }
 
     var isDragging = [[CPDragServer sharedDragServer] isDragging];
@@ -1120,6 +1135,14 @@ var supportsNativeDragAndDrop = [CPPlatform supportsDragAndDrop];
     _DOMEventGuard.style.display = (CPApp._eventListeners.length === 0) ? "none" : "";
 
     [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
+}
+
+- (void)contextMenuEvent:(DOMEvent)aDOMEvent
+{
+    if (StopContextMenuDOMEventPropagation)
+        CPDOMEventStop(aDOMEvent, self);
+
+    return !StopContextMenuDOMEventPropagation;
 }
 
 - (CPArray)orderedWindowsAtLevel:(int)aLevel
@@ -1261,6 +1284,19 @@ var supportsNativeDragAndDrop = [CPPlatform supportsDragAndDrop];
 - (BOOL)_willPropagateCurrentDOMEvent
 {
     return !StopDOMEventPropagation;
+}
+
+- (void)_propagateContextMenuDOMEvent:(BOOL)aFlag
+{
+    if (aFlag && CPBrowserIsEngine(CPGeckoBrowserEngine))
+        StopDOMEventPropagation = !aFlag;
+
+    StopContextMenuDOMEventPropagation = !aFlag;
+}
+
+- (BOOL)_willPropagateContextMenuDOMEvent
+{
+    return StopContextMenuDOMEventPropagation;
 }
 
 - (CPWindow)hitTest:(CPPoint)location
