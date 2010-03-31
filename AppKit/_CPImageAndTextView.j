@@ -574,8 +574,8 @@ var HORIZONTAL_MARGIN   = 3.0,
 
         _DOMImageElement.width = imageWidth;
         _DOMImageElement.height = imageHeight;        
-        imageStyle.width = imageWidth + "px";
-        imageStyle.height = imageHeight + "px";
+        imageStyle.width = MAX(imageWidth, 0) + "px";
+        imageStyle.height = MAX(imageHeight, 0) + "px";
 
         if (_imagePosition === CPImageBelow)
         {
@@ -619,7 +619,7 @@ var HORIZONTAL_MARGIN   = 3.0,
             textRectY = _CGRectGetMinY(textRect),
             textRectWidth = _CGRectGetWidth(textRect),
             textRectHeight = _CGRectGetHeight(textRect);
-    
+
         if (_verticalAlignment !== CPTopVerticalTextAlignment)
         {
             if (!_textSize)
@@ -646,8 +646,8 @@ var HORIZONTAL_MARGIN   = 3.0,
         
         textStyle.top = ROUND(textRectY) + "px";
         textStyle.left = ROUND(textRectX) + "px";
-        textStyle.width = ROUND(textRectWidth) + "px";
-        textStyle.height = ROUND(textRectHeight) + "px";
+        textStyle.width = MAX(ROUND(textRectWidth), 0) + "px";
+        textStyle.height = MAX(ROUND(textRectHeight), 0) + "px";
         
         if (shadowStyle)
         {
@@ -656,8 +656,8 @@ var HORIZONTAL_MARGIN   = 3.0,
             
             shadowStyle.top = ROUND(textRectY + _textShadowOffset.height) + "px";
             shadowStyle.left = ROUND(textRectX + _textShadowOffset.width) + "px";
-            shadowStyle.width = ROUND(textRectWidth) + "px";
-            shadowStyle.height = ROUND(textRectHeight) + "px";
+            shadowStyle.width = MAX(ROUND(textRectWidth), 0) + "px";
+            shadowStyle.height = MAX(ROUND(textRectHeight), 0) + "px";
         }
     }
 #endif
