@@ -40,6 +40,10 @@ var screenNeedsInitialization   = NO,
         return;
 
     screenNeedsInitialization = [CPPlatform isBrowser];
+
+    // We do this here because doing it later breaks IE.
+    if (document.documentElement)
+        document.documentElement.style.overflow = "hidden";
 }
 
 + (BOOL)isBrowser
@@ -120,9 +124,6 @@ var screenNeedsInitialization   = NO,
     }
 
     bodyElement.style.overflow = "hidden";
-
-    if (document.documentElement)
-        document.documentElement.style.overflow = "hidden";
 
     [[CPNotificationCenter defaultCenter]
         postNotificationName:CPPlatformDidClearBodyElementNotification
