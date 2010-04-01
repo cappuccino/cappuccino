@@ -28,16 +28,20 @@
 - (id)NS_initWithCoder:(CPCoder)aCoder
 {
     var isBold = NO,
-        fontName = [aCoder decodeObjectForKey:@"NSName"];
- 
+        fontName = [aCoder decodeObjectForKey:@"NSName"],
+        size = [aCoder decodeDoubleForKey:@"NSSize"];
+
+    if ((fontName === "LucidaGrande" || fontName === "LucidaGrande-Bold") && size === 13)
+        return [self _initWithName:"Arial" size:12.0 bold:YES];
+
     // FIXME: Is this alwasy true?
     if (fontName.indexOf("-Bold") === fontName.length - "-Bold".length)
         isBold = YES;
-    
+
     if (fontName === "LucidaGrande" || fontName === "LucidaGrande-Bold")
         fontName = "Arial";
-    
-    return [self _initWithName:fontName size:[aCoder decodeDoubleForKey:@"NSSize"] bold:isBold];
+
+    return [self _initWithName:fontName size:size bold:isBold];
 }
 
 @end
