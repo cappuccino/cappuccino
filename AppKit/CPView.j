@@ -243,6 +243,11 @@ var CPViewFlags                     = { },
     return [CPSet setWithObjects:@"boundsOrigin", @"boundsSize"];
 }
 
++ (CPMenu)defaultMenu
+{
+    return nil;
+}
+
 - (id)init
 {
     return [self initWithFrame:CGRectMakeZero()];
@@ -1307,6 +1312,22 @@ var CPViewFlags                     = { },
 {
     if ([self mouseDownCanMoveWindow])
         [super mouseDown:anEvent];
+}
+
+- (void)rightMouseDown:(CPEvent)anEvent
+{
+    var menu = [self menuForEvent:anEvent];
+    if (menu)
+        [CPMenu popUpContextMenu:menu withEvent:anEvent forView:self];
+    else if ([[self nextResponder] isKindOfClass:CPView])
+        [super rightMouseDown:anEvent];
+    else
+        [[[anEvent window] platformWindow] _propagateContextMenuDOMEvent:YES];
+}
+
+- (CPMenu)menuForEvent:(CPEvent)anEvent
+{
+    return [self menu] || [[self class] defaultMenu];
 }
 
 /*!

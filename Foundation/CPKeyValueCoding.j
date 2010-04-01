@@ -277,5 +277,14 @@ CPUnknownUserInfoKey        = @"CPUnknownUserInfoKey";
 
 @end
 
+@implementation CPNull (KeyValueCoding)
+
+- (id)valueForKey:(CPString)aKey
+{
+    return self;
+}
+
+@end
+
 @import "CPKeyValueObserving.j"
 @import "CPArray+KVO.j"

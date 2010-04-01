@@ -1347,44 +1347,58 @@ CPTexturedBackgroundWindowMask
 
         case CPScrollWheel:         return [[_windowView hitTest:point] scrollWheel:anEvent];
 
-        case CPLeftMouseUp:         if (!_leftMouseDownView)
-                                        return [[_windowView hitTest:point] mouseUp:anEvent];
+        case CPLeftMouseUp:
+        case CPRightMouseUp:        var hitTestedView = _leftMouseDownView,
+                                        selector = type == CPRightMouseUp ? @selector(rightMouseUp:) : @selector(mouseUp:);
 
-                                    [_leftMouseDownView mouseUp:anEvent]
+                                    if (!hitTestedView)
+                                        hitTestedView = [_windowView hitTest:point];
+
+                                    [hitTestedView performSelector:selector withObject:anEvent];
 
                                     _leftMouseDownView = nil;
 
                                     return;
-        case CPLeftMouseDown:       _leftMouseDownView = [_windowView hitTest:point];
+        case CPLeftMouseDown:
+        case CPRightMouseDown:      _leftMouseDownView = [_windowView hitTest:point];
 
                                     if (_leftMouseDownView != _firstResponder && [_leftMouseDownView acceptsFirstResponder])
                                         [self makeFirstResponder:_leftMouseDownView];
 
                                     [CPApp activateIgnoringOtherApps:YES];
 
-                                    var theWindow = [anEvent window];
+                                    var theWindow = [anEvent window],
+                                        selector = type == CPRightMouseDown ? @selector(rightMouseDown:) : @selector(mouseDown:);
 
                                     if ([theWindow isKeyWindow] || [theWindow becomesKeyOnlyIfNeeded] && ![_leftMouseDownView needsPanelToBecomeKey])
-                                        return [_leftMouseDownView mouseDown:anEvent];
+                                        return [_leftMouseDownView performSelector:selector withObject:anEvent];
                                     else
                                     {
                                         // FIXME: delayed ordering?
                                         [self makeKeyAndOrderFront:self];
 
                                         if ([_leftMouseDownView acceptsFirstMouse:anEvent])
-                                            return [_leftMouseDownView mouseDown:anEvent]
+                                            return [_leftMouseDownView performSelector:selector withObject:anEvent];
                                     }
                                     break;
-        case CPLeftMouseDragged:    if (!_leftMouseDownView)
+
+        case CPLeftMouseDragged:
+        case CPRightMouseDragged:   if (!_leftMouseDownView)
                                         return [[_windowView hitTest:point] mouseDragged:anEvent];
 
-                                    return [_leftMouseDownView mouseDragged:anEvent];
-        
-        case CPRightMouseUp:        return [_rightMouseDownView mouseUp:anEvent];
-        case CPRightMouseDown:      _rightMouseDownView = [_windowView hitTest:point];
-                                    return [_rightMouseDownView mouseDown:anEvent];
-        case CPRightMouseDragged:   return [_rightMouseDownView mouseDragged:anEvent];
-        
+                                    var selector;
+                                    if (type == CPRightMouseDragged)
+                                    {
+                                        selector = @selector(rightMouseDragged:)
+                                        if (![_leftMouseDownView respondsToSelector:selector])
+                                            selector = nil;
+                                    }
+
+                                    if (!selector)
+                                        selector = @selector(mouseDragged:)
+
+                                    return [_leftMouseDownView performSelector:selector withObject:anEvent];
+
         case CPMouseMoved:          if (!_acceptsMouseMovedEvents)
                                         return;
 

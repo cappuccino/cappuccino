@@ -46,6 +46,7 @@ var PrimaryPlatformWindow   = NULL;
     CPDictionary    _windowLayers;
 
     BOOL            _mouseIsDown;
+    BOOL            _mouseDownIsRightClick;
     CPWindow        _mouseDownWindow;
     CPTimeInterval  _lastMouseUp;
     CPTimeInterval  _lastMouseDown;

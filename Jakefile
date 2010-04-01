@@ -247,7 +247,7 @@ task ("demos", function()
 
 // Testing
 
-task("test", ["build", "test-only"]);
+task("test", ["CommonJS", "test-only"]);
 
 task("test-only", function()
 {
