@@ -23,7 +23,7 @@
 @import "CPView.j"
 
 #include "CoreGraphics/CGGeometry.h"
-
+@import "SCTransparentView.j"
 
 /*! 
     @ingroup appkit
@@ -32,7 +32,7 @@
     CPClipView allows you to define a clip rect and display only that portion of its containing view.  
     It is used to hold the document view in a CPScrollView.
 */
-@implementation CPClipView : CPView
+@implementation CPClipView : SCTransparentView
 {
     CPView  _documentView;
 }

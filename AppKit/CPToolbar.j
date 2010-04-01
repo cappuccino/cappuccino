@@ -239,7 +239,7 @@ var CPToolbarConfigurationsByIdentifier = nil;
 {
     if (!_toolbarView)
     {
-        _toolbarView = [[_CPToolbarView alloc] initWithFrame:CPRectMake(0.0, 0.0, 1200.0, 59.0)];
+        _toolbarView = [[_CPToolbarView alloc] initWithFrame:CPRectMake(0.0, 0.0, 1200.0, 50.0)];
 
         [_toolbarView setToolbar:self];
         [_toolbarView setAutoresizingMask:CPViewWidthSizable];
@@ -853,7 +853,7 @@ var _CPToolbarItemVisibilityPriorityCompare = function(lhs, rhs)
 }
 
 var TOP_MARGIN      = 5.0,
-    LABEL_MARGIN    = 2.0;
+    LABEL_MARGIN    = 0.0;
 
 @implementation _CPToolbarItemView : CPControl
 {

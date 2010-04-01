@@ -95,7 +95,7 @@ var _CPMenuBarWindowBackgroundColor = nil,
     if (![bundleName length])
         document.title = aTitle;
     else if ([aTitle length])
-        document.title = aTitle + @" - " + bundleName;
+        document.title = bundleName + @" - " + aTitle;
     else
         document.title = bundleName;
 #endif

@@ -82,7 +82,7 @@ var SelectionColor                              = nil,
 - (CPColor)textColor
 {
     if (![_menuItem isEnabled])
-        return [CPColor lightGrayColor];
+        return [CPColor colorWithHexString:"993333"];
 
     return _textColor || [CPColor colorWithCalibratedRed:70.0 / 255.0 green:69.0 / 255.0 blue:69.0 / 255.0 alpha:1.0];
 }
