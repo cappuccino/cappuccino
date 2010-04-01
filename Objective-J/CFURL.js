@@ -199,6 +199,8 @@ GLOBAL(CFURL) = function(/*CFURL|String*/ aURL, /*CFURL*/ aBaseURL)
     }
 
     this._UID = objj_generateObjectUID();
+    this._retainCount = 1;
+    OBJJ_MEMORY_TABLE[this._UID] = this;
 
     this._string = aURL;
     this._baseURL = aBaseURL;

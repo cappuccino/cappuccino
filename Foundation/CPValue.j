@@ -43,7 +43,7 @@
 */
 + (id)valueWithJSObject:(JSObject)aJSObject
 {
-    return [[self alloc] initWithJSObject:aJSObject];
+    return [[[self alloc] initWithJSObject:aJSObject] autorelease];
 }
 
 /*!

@@ -57,6 +57,10 @@ GLOBAL(CFBundle) = function(/*CFURL|String*/ aURL)
     this._infoDictionary = new CFDictionary();
 
     this._eventDispatcher = new EventDispatcher(this);
+
+    this._UID = objj_generateObjectUID();
+    this._retainCount = 1;
+    OBJJ_MEMORY_TABLE[this._UID] = this;
 }
 
 DISPLAY_NAME(CFBundle);

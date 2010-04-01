@@ -31,6 +31,10 @@ GLOBAL(CFData) = function()
 
     this._bytes = NULL;
     this._base64 = NULL;
+
+    this._UID = objj_generateObjectUID();
+    this._retainCount = 1;
+    OBJJ_MEMORY_TABLE[this._UID] = this;
 }
 
 CFData.prototype.propertyList = function()

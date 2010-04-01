@@ -73,3 +73,8 @@ GLOBAL(PI_2)    = Math.PI / 2.0;
 
 GLOBAL(SQRT1_2) = Math.SQRT1_2;
 GLOBAL(SQRT2)   = Math.SQRT2;
+
+GLOBAL(OBJJ_MEMORY_TABLE) = [];
+
+GLOBAL($) = function(pointer) { return OBJJ_MEMORY_TABLE[pointer]; }
+GLOBAL($$) = function(object) { return object._UID; }

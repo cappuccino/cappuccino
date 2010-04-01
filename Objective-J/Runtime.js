@@ -392,6 +392,8 @@ GLOBAL(class_createInstance) = function(/*Class*/ aClass)
 
     object.isa = aClass;
     object._UID = objj_generateObjectUID();
+    object._retainCount = 1;
+    OBJJ_MEMORY_TABLE[object._UID] = object;
 
     return object;
 }
@@ -513,6 +515,9 @@ GLOBAL(objj_msgSend) = function(/*id*/ aReceiver, /*SEL*/ aSelector)
 {
     if (aReceiver == nil)
         return nil;
+
+    if (OBJJ_ZOMBIE_DETECTION && typeof aReceiver._retainCount !== "undefined" && aReceiver._retainCount < 1 && $($$(aReceiver)) !== aReceiver)
+        throw ("Sending a message to a zombie object: "+$$(aReceiver));
 
     var isa = aReceiver.isa;
 

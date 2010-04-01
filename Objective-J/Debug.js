@@ -217,3 +217,6 @@ GLOBAL(objj_debug_typecheck) = function(expectedType, object)
 
     throw ("expected=" + expectedType + ", actual=" + actualType);
 }
+
+if (typeof window.OBJJ_ZOMBIE_DETECTION === "undefined")
+    OBJJ_ZOMBIE_DETECTION = false;

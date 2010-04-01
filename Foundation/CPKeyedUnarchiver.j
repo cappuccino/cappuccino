@@ -171,7 +171,7 @@ var CPArrayClass                                                            = Ni
         return nil;
     }
 
-    var unarchiver = [[self alloc] initForReadingWithData:aData],
+    var unarchiver = [[[self alloc] initForReadingWithData:aData] autorelease],
         object = [unarchiver decodeObjectForKey:@"root"];
 
     [unarchiver finishDecoding];

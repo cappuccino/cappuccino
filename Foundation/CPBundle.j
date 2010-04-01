@@ -72,7 +72,7 @@ var CPBundlesForURLStrings = { };
     if (self)
     {
         _bundle = new CFBundle(aURL);
-        CPBundlesForURLStrings[URLString] = self;
+        CPBundlesForURLStrings[URLString] = [self retain];
     }
 
     return self;

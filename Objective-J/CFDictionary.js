@@ -26,6 +26,8 @@ GLOBAL(CFDictionary) = function(/*CFDictionary*/ aDictionary)
     this._count = 0;
     this._buckets = { };
     this._UID = objj_generateObjectUID();
+    this._retainCount = 1;
+    OBJJ_MEMORY_TABLE[this._UID] = this;
 }
 
 var indexOf = Array.prototype.indexOf,

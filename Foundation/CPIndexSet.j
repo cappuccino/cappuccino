@@ -47,7 +47,7 @@
 */
 + (id)indexSet
 {
-    return [[self alloc] init];
+    return [[[self alloc] init] autorelease];
 }
 
 /*!
@@ -55,7 +55,7 @@
 */
 + (id)indexSetWithIndex:(int)anIndex
 {
-    return [[self alloc] initWithIndex:anIndex];
+    return [[[self alloc] initWithIndex:anIndex] autorelease];
 }
 
 /*!
@@ -64,7 +64,7 @@
 */
 + (id)indexSetWithIndexesInRange:(CPRange)aRange
 {
-    return [[self alloc] initWithIndexesInRange:aRange];
+    return [[[self alloc] initWithIndexesInRange:aRange] autorelease];
 }
 
 // Initializing and Index Set

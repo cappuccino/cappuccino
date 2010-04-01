@@ -92,7 +92,7 @@
 */
 + (id)dictionary
 {
-    return [[self alloc] init];
+    return [[[self alloc] init] autorelease];;
 }
 
 /*!
@@ -102,7 +102,7 @@
 */
 + (id)dictionaryWithDictionary:(CPDictionary)aDictionary
 {
-    return [[self alloc] initWithDictionary:aDictionary];
+    return [[[self alloc] initWithDictionary:aDictionary] autorelease];
 }
 
 /*!
@@ -113,7 +113,7 @@
 */
 + (id)dictionaryWithObject:(id)anObject forKey:(id)aKey
 {
-    return [[self alloc] initWithObjects:[anObject] forKeys:[aKey]];
+    return [[[self alloc] initWithObjects:[anObject] forKeys:[aKey]] autorelease];
 }
 
 /*!
@@ -125,7 +125,7 @@
 */
 + (id)dictionaryWithObjects:(CPArray)objects forKeys:(CPArray)keys
 {
-    return [[self alloc] initWithObjects:objects forKeys:keys];
+    return [[[self alloc] initWithObjects:objects forKeys:keys] autorelease];
 }
 
 /*!
@@ -135,7 +135,7 @@
 */
 + (id)dictionaryWithJSObject:(JSObject)object
 {
-    return [self dictionaryWithJSObject:object recursively:NO];
+    return [[self dictionaryWithJSObject:object recursively:NO] autorelease];
 }
 
 /*!
@@ -145,7 +145,7 @@
 */
 + (id)dictionaryWithJSObject:(JSObject)object recursively:(BOOL)recursively
 {
-    var dictionary = [[self alloc] init];
+    var dictionary = [[[self alloc] init] autorelease];
         
     for (var key in object)
     {
@@ -209,7 +209,7 @@
     arguments[0] = [self alloc];
     arguments[1] = @selector(initWithObjectsAndKeys:);
     
-    return objj_msgSend.apply(this, arguments);
+    return [objj_msgSend.apply(this, arguments) autorelease];
 }
 
 /*!

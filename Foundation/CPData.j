@@ -40,27 +40,27 @@
 
 + (CPData)data
 {
-    return [[self alloc] init];
+    return [[[self alloc] init] autorelease];
 }
 
 + (CPData)dataWithRawString:(CPString)aString
 {
-    return [[self alloc] initWithRawString:aString];
+    return [[[self alloc] initWithRawString:aString] autorelease];
 }
 
 + (CPData)dataWithPlistObject:(id)aPlistObject
 {
-    return [[self alloc] initWithPlistObject:aPlistObject];
+    return [[[self alloc] initWithPlistObject:aPlistObject] autorelease];
 }
 
 + (CPData)dataWithPlistObject:(id)aPlistObject format:(CPPropertyListFormat)aFormat
 {
-    return [[self alloc] initWithPlistObject:aPlistObject format:aFormat];
+    return [[[self alloc] initWithPlistObject:aPlistObject format:aFormat] autorelease];
 }
 
 + (CPData)dataWithJSONObject:(Object)anObject
 {
-    return [[self alloc] initWithJSONObject:anObject];
+    return [[[self alloc] initWithJSONObject:anObject] autorelease];
 }
 
 - (id)initWithRawString:(CPString)aString

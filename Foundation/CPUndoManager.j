@@ -71,7 +71,7 @@ var _CPUndoGroupingPool         = [],
         return grouping;
     }
     
-    return [[self alloc] initWithParent:anUndoGrouping];
+    return [[[self alloc] initWithParent:anUndoGrouping] autorelease];
 }
 
 - (id)initWithParent:(_CPUndoGrouping)anUndoGrouping

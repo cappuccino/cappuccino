@@ -73,7 +73,7 @@ var _CPRunLoopPerformPool           = [],
         return perform;
     }
     
-    return [[self alloc] initWithSelector:aSelector target:aTarget argument:anArgument order:anOrder modes:modes];
+    return [[[self alloc] initWithSelector:aSelector target:aTarget argument:anArgument order:anOrder modes:modes] autorelease];
 }
 
 - (id)initWithSelector:(SEL)aSelector target:(SEL)aTarget argument:(id)anArgument order:(unsigned)anOrder modes:(CPArray)modes

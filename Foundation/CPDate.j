@@ -24,7 +24,13 @@
 @import "CPString.j"
 
 
-var CPDateReferenceDate = new Date(Date.UTC(2001,1,1,0,0,0,0));
+var CPDateReferenceDate = new Date(Date.UTC(2001,1,1,0,0,0,0)),
+    _CPDateAllocator = function(a) {
+        a._retainCount = 1;
+        a._UID = objj_generateObjectUID();
+        OBJJ_MEMORY_TABLE[a._UID] = a;
+        return a;
+    };
 
 /*!
     @class CPDate
@@ -39,48 +45,48 @@ var CPDateReferenceDate = new Date(Date.UTC(2001,1,1,0,0,0,0));
 
 + (id)alloc
 {
-    return new Date;
+    return _CPDateAllocator(new Date);
 }
 
 + (id)date
 {
-    return [[self alloc] init];
+    return [[[self alloc] init] autorelease];
 }
 
 + (id)dateWithTimeIntervalSinceNow:(CPTimeInterval)seconds
 {
-    return [[CPDate alloc] initWithTimeIntervalSinceNow:seconds];
+    return [[[CPDate alloc] initWithTimeIntervalSinceNow:seconds] autorelease];
 }
 
 + (id)dateWithTimeIntervalSince1970:(CPTimeInterval)seconds
 {
-    return [[CPDate alloc] initWithTimeIntervalSince1970:seconds];
+    return [[[CPDate alloc] initWithTimeIntervalSince1970:seconds] autorelease];
 }
 
 + (id)dateWithTimeIntervalSinceReferenceDate:(CPTimeInterval)seconds
 {
-    return [[CPDate alloc] initWithTimeIntervalSinceReferenceDate:seconds];
+    return [[[CPDate alloc] initWithTimeIntervalSinceReferenceDate:seconds] autorelease];
 }
 
 + (id)distantPast
 {
-    return new Date(-10000,1,1,0,0,0,0);
+    return [_CPDateAllocator(new Date(-10000,1,1,0,0,0,0)) autorelease];
 }
 
 + (id)distantFuture
 {
-    return new Date(10000,1,1,0,0,0,0);
+    return [_CPDateAllocator(new Date(10000,1,1,0,0,0,0)) autorelease];
 }
 
 - (id)initWithTimeIntervalSinceNow:(CPTimeInterval)seconds
 {
-    self = new Date((new Date()).getTime() + seconds * 1000);
+    self = _CPDateAllocator(new Date((new Date()).getTime() + seconds * 1000));
     return self;
 }
 
 - (id)initWithTimeIntervalSince1970:(CPTimeInterval)seconds
 {
-    self = new Date(seconds * 1000);
+    self = _CPDateAllocator(new Date(seconds * 1000));
     return self;
 }
 
@@ -92,7 +98,7 @@ var CPDateReferenceDate = new Date(Date.UTC(2001,1,1,0,0,0,0));
 
 - (id)initWithTimeInterval:(CPTimeInterval)seconds sinceDate:(CPDate)refDate
 {
-    self = new Date(refDate.getTime() + seconds * 1000);
+    self = _CPDateAllocator(new Date(refDate.getTime() + seconds * 1000));
     return self;
 }
 
@@ -117,7 +123,7 @@ var CPDateReferenceDate = new Date(Date.UTC(2001,1,1,0,0,0,0));
     date.setMinutes(d[5]);
     date.setSeconds(d[6]);
 
-    self = new Date(date.getTime() +  (timeZoneOffset - date.getTimezoneOffset()) * 60 * 1000);
+    self = _CPDateAllocator(new Date(date.getTime() +  (timeZoneOffset - date.getTimezoneOffset()) * 60 * 1000));
     return self;
 }
 
@@ -185,7 +191,7 @@ var CPDateReferenceDate = new Date(Date.UTC(2001,1,1,0,0,0,0));
 
 - (id)copy
 {
-    return new Date(self.getTime());
+    return _CPDateAllocator(new Date(self.getTime()));
 }
 
 @end

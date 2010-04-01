@@ -148,7 +148,7 @@ var _CPKeyedArchiverStringClass                         = Nil,
 + (CPData)archivedDataWithRootObject:(id)anObject
 {
     var data = [CPData dataWithPlistObject:nil],
-        archiver = [[self alloc] initForWritingWithMutableData:data];
+        archiver = [[[self alloc] initForWritingWithMutableData:data] autorelease];
     
     [archiver encodeObject:anObject forKey:@"root"];
     [archiver finishEncoding];

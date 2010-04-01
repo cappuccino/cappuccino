@@ -45,7 +45,7 @@
 */
 + (id)set
 {
-    return [[self alloc] init];
+    return [[[self alloc] init] autorelease];
 }
 
 /*
@@ -54,7 +54,7 @@
 */
 + (id)setWithArray:(CPArray)array
 {
-    return [[self alloc] initWithArray:array];
+    return [[[self alloc] initWithArray:array] autorelease];
 }
 
 /*
@@ -63,7 +63,7 @@
 */
 + (id)setWithObject:(id)anObject
 {
-    return [[self alloc] initWithArray:[anObject]];
+    return [[[self alloc] initWithArray:[anObject]] autorelease];
 }
 
 /*
@@ -73,7 +73,7 @@
 */
 + (id)setWithObjects:(id)objects count:(unsigned)count
 {
-    return [[self alloc] initWithObjects:objects count:count];
+    return [[[self alloc] initWithObjects:objects count:count] autorelease];
 }
 
 /*
@@ -90,7 +90,7 @@
     for(; i < argLength && ((argument = arguments[i]) !== nil); ++i)
         [set addObject:argument];
     
-    return set;
+    return [set autorelease];
 }
 
 /*
@@ -99,7 +99,7 @@
 */
 + (id)setWithSet:(CPSet)set
 {
-    return [[self alloc] initWithSet:set];
+    return [[[self alloc] initWithSet:set] autorelease];
 }
 
 /*

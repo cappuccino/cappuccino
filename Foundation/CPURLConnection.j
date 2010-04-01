@@ -128,7 +128,7 @@ var CPURLConnectionDelegate = nil;
 */
 + (CPURLConnection)connectionWithRequest:(CPURLRequest)aRequest delegate:(id)aDelegate
 {
-    return [[self alloc] initWithRequest:aRequest delegate:aDelegate];
+    return [[[self alloc] initWithRequest:aRequest delegate:aDelegate] autorelease];
 }
 
 /*

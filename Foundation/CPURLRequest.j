@@ -48,7 +48,7 @@
 */
 + (id)requestWithURL:(CPURL)aURL
 {
-    return [[CPURLRequest alloc] initWithURL:aURL];
+    return [[[CPURLRequest alloc] initWithURL:aURL] autorelease];
 }
 
 /*!

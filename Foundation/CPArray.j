@@ -105,7 +105,11 @@
 */
 + (id)alloc
 {
-    return [];
+    var a = [];
+    a._retainCount = 1;
+    a._UID = objj_generateObjectUID();
+    OBJJ_MEMORY_TABLE[a._UID] = a;
+    return a;
 }
 
 /*!
@@ -113,7 +117,7 @@
 */
 + (id)array
 {
-    return [[self alloc] init];
+    return [[[self alloc] init] autorelease];
 }
 
 /*!
@@ -123,7 +127,7 @@
 */
 + (id)arrayWithArray:(CPArray)anArray
 {
-    return [[self alloc] initWithArray:anArray];
+    return [[[self alloc] initWithArray:anArray] autorelease];
 }
 
 /*!
@@ -133,7 +137,7 @@
 */
 + (id)arrayWithObject:(id)anObject
 {
-    return [[self alloc] initWithObjects:anObject];
+    return [[[self alloc] initWithObjects:anObject] autorelease];
 }
 
 /*!
@@ -150,7 +154,7 @@
     for(; i < arguments.length && (argument = arguments[i]) != nil; ++i)
         array.push(argument);
 
-    return array;
+    return [array autorelease];
 }
 
 /*!
@@ -161,7 +165,7 @@
 */
 + (id)arrayWithObjects:(id)objects count:(unsigned)aCount
 {
-    return [[self alloc] initWithObjects:objects count:aCount];
+    return [[[self alloc] initWithObjects:objects count:aCount] autorelease];
 }
 
 /*!

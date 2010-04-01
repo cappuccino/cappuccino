@@ -769,3 +769,4 @@ var CPStringRegexSpecialCharacters = [
 @end
 
 String.prototype.isa = CPString;
+String.prototype._retainCount = Infinity;

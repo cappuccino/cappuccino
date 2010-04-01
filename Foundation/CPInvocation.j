@@ -46,7 +46,7 @@
 */
 + (id)invocationWithMethodSignature:(CPMethodSignature)aMethodSignature
 {
-    return [[self alloc] initWithMethodSignature:aMethodSignature];
+    return [[[self alloc] initWithMethodSignature:aMethodSignature] autorelease];
 }
 
 /*!

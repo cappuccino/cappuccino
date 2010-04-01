@@ -89,7 +89,6 @@ CPLog(@"Got some class: %@", inst);
 */
 + (id)alloc
 {
-//    CPLog("calling alloc on " + self.name + ".");
     return class_createInstance(self);
 }
 
@@ -130,6 +129,7 @@ CPLog(@"Got some class: %@", inst);
 */
 - (void)dealloc
 {
+    delete OBJJ_MEMORY_TABLE[[self UID]];
 }
 
 // Identifying classes
@@ -464,6 +464,7 @@ CPLog(@"Got some class: %@", inst);
 */
 - (id)autorelease
 {
+    [CPAutoreleasePool addObject:self];
     return self;
 }
 
@@ -498,6 +499,7 @@ CPLog(@"Got some class: %@", inst);
 */
 - (id)retain
 {
+    _retainCount++;
     return self;
 }
 
@@ -506,6 +508,11 @@ CPLog(@"Got some class: %@", inst);
 */
 - (void)release
 {
+    _retainCount--;
+    if (_retainCount === 0)
+        [self dealloc];
+    else if (OBJJ_ZOMBIE_DETECTION && _retainCount < 0)
+        throw ("Released a zombie object: "+self);
 }
 
 /*!
@@ -535,3 +542,5 @@ objj_class.prototype.toString = objj_object.prototype.toString = function()
     else
         return String(this) + " (-description not implemented)";
 }
+
+@import "CPAutoreleasePool.j"

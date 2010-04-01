@@ -53,7 +53,7 @@
 */
 + (CPNotification)notificationWithName:(CPString)aNotificationName object:(id)anObject userInfo:(CPDictionary)aUserInfo
 {
-    return [[self alloc] initWithName:aNotificationName object:anObject userInfo:aUserInfo];
+    return [[[self alloc] initWithName:aNotificationName object:anObject userInfo:aUserInfo] autorelease];
 }
 
 /*!
@@ -64,7 +64,7 @@
 */
 + (CPNotification)notificationWithName:(CPString)aNotificationName object:(id)anObject
 {
-    return [[self alloc] initWithName:aNotificationName object:anObject userInfo:nil];
+    return [[[self alloc] initWithName:aNotificationName object:anObject userInfo:nil] autorelease];
 }
 
 /*!

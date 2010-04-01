@@ -333,4 +333,7 @@ FIXME: Do we need this?
 
 Number.prototype.isa = CPNumber;
 Boolean.prototype.isa = CPNumber;
+Number.prototype._retainCount = Infinity;
+Boolean.prototype._retainCount = Infinity;
+
 [CPNumber initialize];

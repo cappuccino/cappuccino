@@ -55,7 +55,7 @@ CPURLCustomIconKey                  = @"CPURLCustomIconKey";
 
 + (id)URLWithString:(CPString)URLString
 {
-    return [[self alloc] initWithString:URLString];
+    return [[[self alloc] initWithString:URLString] autorelease];
 }
 
 - (id)initWithString:(CPString)URLString relativeToURL:(CPURL)aBaseURL

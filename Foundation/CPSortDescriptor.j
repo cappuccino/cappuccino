@@ -78,7 +78,7 @@ CPOrderedDescending     =  1;
 
 + (id)sortDescriptorWithKey:(CPString)aKey ascending:(BOOL)isAscending selector:(SEL)aSelector
 {
-    return [[self alloc] initWithKey:aKey ascending:isAscending selector:aSelector];
+    return [[[self alloc] initWithKey:aKey ascending:isAscending selector:aSelector] autorelease];
 }
 
 /*!
