@@ -44,6 +44,11 @@ parser.option("-s", "--split", "number", "split")
     .def(0)
     .help("Split into multiple files");
 
+parser.option("-c", "--compressor", "compressor")
+    .def("shrinksafe")
+    .set()
+    .help("Select a compress or use, or \"none\" (default: shrinksafe)");
+
 parser.option("-v", "--verbose", "verbose")
    .def(false)
    .set(true)
@@ -110,7 +115,14 @@ function main(args)
     FILE.copyTree(rootPath, outputPath);
 
     applicationJSs.forEach(function(applicationJS, n) {
-        outputPath.join("Application"+(n||"")+".js").write(applicationJS);
+        var name = "Application"+(n||"")+".js";
+        if (options.compressor === "none") {
+            print("skipping compression: " + name);
+        } else {
+            print("compressing: " + name);
+            applicationJS = require("minify/"+options.compressor).compress(applicationJS, { useServer : true });
+        }
+        outputPath.join(name).write(applicationJS);
     });
 
     rewriteMainHTML(outputPath.join(options.index));
