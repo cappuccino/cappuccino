@@ -181,6 +181,7 @@ ObjectiveJFlattener.prototype.buildApplicationJS = function() {
         buffers[0].push("for (var i = 1; i <= appFilesCount; i++) {");
         buffers[0].push("    var script = document.createElement(\"script\");");
         buffers[0].push("    script.src = \"Application\"+i+\".js\";");
+        buffers[0].push("    script.charset = \"UTF-8\";");
         buffers[0].push("    script.onload = function() { if (--appFilesCount === 0) ObjectiveJ.bootstrap(); };");
         buffers[0].push("    document.getElementsByTagName(\"head\")[0].appendChild(script);");
         buffers[0].push("}");
@@ -303,10 +304,10 @@ var scriptTagsBefore =
     '$1</script>';
 
 var scriptTagsAfter =
-    '$1<script type = "text/javascript" src = "Application.js"></script>';
+    '$1<script type="text/javascript" src="Application.js" charset="UTF-8"></script>';
 
 // enable CPLog:
-// scriptTagsAfter = '$1<script type = "text/javascript">\n$1    CPLogRegister(CPLogConsole);\n$1</script>\n' + scriptTagsAfter;
+// scriptTagsAfter = '$1<script type="text/javascript">\n$1    CPLogRegister(CPLogConsole);\n$1</script>\n' + scriptTagsAfter;
 
 function rewriteMainHTML(indexHTMLPath) {
     if (indexHTMLPath.isFile()) {
@@ -318,7 +319,7 @@ function rewriteMainHTML(indexHTMLPath) {
             // escape any dollar signs by replacing them with two
             // then indent by splitting/joining on newlines
             scriptTagsAfter =
-                '$1<script type = "text/javascript">\n'+
+                '$1<script type="text/javascript">\n'+
                 '$1    ' + applicationJSPath.read({ charset : "UTF-8" }).replace(/\$/g, "$$$$").split("\n").join("\n$1    ")+'\n'+
                 '$1</script>';
         }
