@@ -45,9 +45,9 @@ parser.option("-s", "--split", "number", "split")
     .help("Split into multiple files");
 
 parser.option("-c", "--compressor", "compressor")
-    .def("none")
+    .def("shrinksafe")
     .set()
-    .help("Select a compressor to use (closure-compiler, yuicompressor, shrinksafe), or \"none\" (default: none)");
+    .help("Select a compressor to use (closure-compiler, yuicompressor, shrinksafe), or \"none\" (default: shrinksafe)");
 
 parser.option("-v", "--verbose", "verbose")
    .def(false)
