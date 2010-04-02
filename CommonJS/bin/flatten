@@ -47,7 +47,7 @@ parser.option("-s", "--split", "number", "split")
 parser.option("-c", "--compressor", "compressor")
     .def("shrinksafe")
     .set()
-    .help("Select a compress or use, or \"none\" (default: shrinksafe)");
+    .help("Select a compressor to use (closure-compiler, yuicompressor, shrinksafe), or \"none\" (default: shrinksafe)");
 
 parser.option("-v", "--verbose", "verbose")
    .def(false)
@@ -120,9 +120,9 @@ function main(args)
             print("skipping compression: " + name);
         } else {
             print("compressing: " + name);
-            applicationJS = require("minify/"+options.compressor).compress(applicationJS, { useServer : true });
+            applicationJS = require("minify/"+options.compressor).compress(applicationJS, { charset : "UTF-8", useServer : true });
         }
-        outputPath.join(name).write(applicationJS);
+        outputPath.join(name).write(applicationJS, { charset : "UTF-8" });
     });
 
     rewriteMainHTML(outputPath.join(options.index));
@@ -181,6 +181,7 @@ ObjectiveJFlattener.prototype.buildApplicationJS = function() {
         buffers[0].push("for (var i = 1; i <= appFilesCount; i++) {");
         buffers[0].push("    var script = document.createElement(\"script\");");
         buffers[0].push("    script.src = \"Application\"+i+\".js\";");
+        buffers[0].push("    script.charset = \"UTF-8\";");
         buffers[0].push("    script.onload = function() { if (--appFilesCount === 0) ObjectiveJ.bootstrap(); };");
         buffers[0].push("    document.getElementsByTagName(\"head\")[0].appendChild(script);");
         buffers[0].push("}");
@@ -303,14 +304,14 @@ var scriptTagsBefore =
     '$1</script>';
 
 var scriptTagsAfter =
-    '$1<script type = "text/javascript" src = "Application.js"></script>';
+    '$1<script type="text/javascript" src="Application.js" charset="UTF-8"></script>';
 
 // enable CPLog:
-// scriptTagsAfter = '$1<script type = "text/javascript">\n$1    CPLogRegister(CPLogConsole);\n$1</script>\n' + scriptTagsAfter;
+// scriptTagsAfter = '$1<script type="text/javascript">\n$1    CPLogRegister(CPLogConsole);\n$1</script>\n' + scriptTagsAfter;
 
 function rewriteMainHTML(indexHTMLPath) {
     if (indexHTMLPath.isFile()) {
-        var indexHTML = indexHTMLPath.read();
+        var indexHTML = indexHTMLPath.read({ charset : "UTF-8" });
 
         // inline the Application.js if it's smallish
         var applicationJSPath = indexHTMLPath.dirname().join("Application.js");
@@ -318,8 +319,8 @@ function rewriteMainHTML(indexHTMLPath) {
             // escape any dollar signs by replacing them with two
             // then indent by splitting/joining on newlines
             scriptTagsAfter =
-                '$1<script type = "text/javascript">\n'+
-                '$1    ' + applicationJSPath.read().replace(/\$/g, "$$$$").split("\n").join("\n$1    ")+'\n'+
+                '$1<script type="text/javascript">\n'+
+                '$1    ' + applicationJSPath.read({ charset : "UTF-8" }).replace(/\$/g, "$$$$").split("\n").join("\n$1    ")+'\n'+
                 '$1</script>';
         }
 
@@ -329,7 +330,7 @@ function rewriteMainHTML(indexHTMLPath) {
 
         if (newIndexHTML !== indexHTML) {
             stream.print("\0green(Modified: "+indexHTMLPath+".\0)");
-            indexHTMLPath.write(newIndexHTML);
+            indexHTMLPath.write(newIndexHTML, { charset : "UTF-8" });
             return;
         }
     } else {
