@@ -45,9 +45,9 @@ parser.option("-s", "--split", "number", "split")
     .help("Split into multiple files");
 
 parser.option("-c", "--compressor", "compressor")
-    .def("shrinksafe")
+    .def("none")
     .set()
-    .help("Select a compress or use, or \"none\" (default: shrinksafe)");
+    .help("Select a compressor to use (closure-compiler, yuicompressor, shrinksafe), or \"none\" (default: none)");
 
 parser.option("-v", "--verbose", "verbose")
    .def(false)
@@ -120,9 +120,9 @@ function main(args)
             print("skipping compression: " + name);
         } else {
             print("compressing: " + name);
-            applicationJS = require("minify/"+options.compressor).compress(applicationJS, { useServer : true });
+            applicationJS = require("minify/"+options.compressor).compress(applicationJS, { charset : "UTF-8", useServer : true });
         }
-        outputPath.join(name).write(applicationJS);
+        outputPath.join(name).write(applicationJS, { charset : "UTF-8" });
     });
 
     rewriteMainHTML(outputPath.join(options.index));
@@ -310,7 +310,7 @@ var scriptTagsAfter =
 
 function rewriteMainHTML(indexHTMLPath) {
     if (indexHTMLPath.isFile()) {
-        var indexHTML = indexHTMLPath.read();
+        var indexHTML = indexHTMLPath.read({ charset : "UTF-8" });
 
         // inline the Application.js if it's smallish
         var applicationJSPath = indexHTMLPath.dirname().join("Application.js");
@@ -319,7 +319,7 @@ function rewriteMainHTML(indexHTMLPath) {
             // then indent by splitting/joining on newlines
             scriptTagsAfter =
                 '$1<script type = "text/javascript">\n'+
-                '$1    ' + applicationJSPath.read().replace(/\$/g, "$$$$").split("\n").join("\n$1    ")+'\n'+
+                '$1    ' + applicationJSPath.read({ charset : "UTF-8" }).replace(/\$/g, "$$$$").split("\n").join("\n$1    ")+'\n'+
                 '$1</script>';
         }
 
@@ -329,7 +329,7 @@ function rewriteMainHTML(indexHTMLPath) {
 
         if (newIndexHTML !== indexHTML) {
             stream.print("\0green(Modified: "+indexHTMLPath+".\0)");
-            indexHTMLPath.write(newIndexHTML);
+            indexHTMLPath.write(newIndexHTML, { charset : "UTF-8" });
             return;
         }
     } else {
