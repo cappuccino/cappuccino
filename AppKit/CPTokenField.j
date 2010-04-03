@@ -386,7 +386,7 @@ var CPTokenFieldTableColumnIdentifier = @"CPTokenFieldTableColumnIdentifier";
 		return;
 	}
 
-	if ([aValue equals:[super objectValue]])
+	if ([aValue isEqualToArray:[super objectValue]])
 	{
 	    return;
 	}
@@ -420,7 +420,7 @@ var CPTokenFieldTableColumnIdentifier = @"CPTokenFieldTableColumnIdentifier";
 
     Instead do what CPControl setObjectValue would.
     */
-    _value = anObject;
+    _value = objectValue;
 
     [self setNeedsLayout];
     [self setNeedsDisplay:YES];
