@@ -71,20 +71,10 @@ var CPTokenFieldTableColumnIdentifier = @"CPTokenFieldTableColumnIdentifier";
 		_cachedCompletions = [];
 		_completionDelay = [CPTokenField defaultCompletionDelay];
 
-		_autocompleteContainer = [[CPView alloc] initWithFrame:CPRectMake(0.0, 0.0, frame.size.width, 100.0)];
-		[_autocompleteContainer setBackgroundColor:[CPColor colorWithPatternImage:[[CPNinePartImage alloc] initWithImageSlices:[
-			[[CPImage alloc] initByReferencingFile:"Resources/Menu/CPTokenField/tokenfield-autocompleteshadow-0.png" size:CGSizeMake(17.0, 19.0)],
-			[[CPImage alloc] initByReferencingFile:"Resources/Menu/CPTokenField/tokenfield-autocompleteshadow-1.png" size:CGSizeMake(1.0, 19.0)],
-			[[CPImage alloc] initByReferencingFile:"Resources/Menu/CPTokenField/tokenfield-autocompleteshadow-2.png" size:CGSizeMake(17.0, 19.0)],
-			[[CPImage alloc] initByReferencingFile:"Resources/Menu/CPTokenField/tokenfield-autocompleteshadow-3.png" size:CGSizeMake(17.0, 1.0)],
-			[[CPImage alloc] initByReferencingFile:"Resources/Menu/CPTokenField/tokenfield-autocompleteshadow-4.png" size:CGSizeMake(1.0, 1.0)],
-			[[CPImage alloc] initByReferencingFile:"Resources/Menu/CPTokenField/tokenfield-autocompleteshadow-5.png" size:CGSizeMake(17.0, 1.0)],
-			[[CPImage alloc] initByReferencingFile:"Resources/Menu/CPTokenField/tokenfield-autocompleteshadow-6.png" size:CGSizeMake(17.0, 19.0)],
-			[[CPImage alloc] initByReferencingFile:"Resources/Menu/CPTokenField/tokenfield-autocompleteshadow-7.png" size:CGSizeMake(1.0, 19.0)],
-			[[CPImage alloc] initByReferencingFile:"Resources/Menu/CPTokenField/tokenfield-autocompleteshadow-8.png" size:CGSizeMake(17.0, 19.0)]
-		]]]];
+		_autocompleteContainer = [[CPView alloc] initWithFrame:CPRectMake(0.0, 0.0, frame.size.width, 92.0)];
+		[_autocompleteContainer setBackgroundColor:[_CPMenuWindow backgroundColorForBackgroundStyle:_CPMenuWindowPopUpBackgroundStyle]];
 
-		_autocompleteScrollView = [[CPScrollView alloc] initWithFrame:CPRectMake(9.0, 7.0, frame.size.width - 19.0, 86.0)];
+		_autocompleteScrollView = [[CPScrollView alloc] initWithFrame:CPRectMake(1.0, 1.0, frame.size.width - 2.0, 90.0)];
 		[_autocompleteScrollView setAutohidesScrollers:YES];
 		[_autocompleteScrollView setHasHorizontalScroller:NO];
 		[_autocompleteContainer addSubview:_autocompleteScrollView];
@@ -102,6 +92,7 @@ var CPTokenFieldTableColumnIdentifier = @"CPTokenFieldTableColumnIdentifier";
 		[_autocompleteView setCornerView:nil];
 		[_autocompleteView setRowHeight:30.0];
 		[_autocompleteView setGridStyleMask:CPTableViewSolidHorizontalGridLineMask];
+		[_autocompleteView setBackgroundColor:[CPColor clearColor]];
 		[_autocompleteView setGridColor:[CPColor colorWithRed:242.0 / 255.0 green:243.0 / 255.0 blue:245.0 / 255.0 alpha:1.0]];
 
 		[_autocompleteScrollView setDocumentView:_autocompleteView];
@@ -752,10 +743,10 @@ var CPTokenFieldTableColumnIdentifier = @"CPTokenFieldTableColumnIdentifier";
 	{
 		// Manually sizeToFit because CPTableView's sizeToFit doesn't work properly
 		[_autocompleteContainer setHidden:NO];
-		var frameOrigin = [self convertPoint:[self bounds].origin toView:nil];
+		var frameOrigin = [self convertPoint:[self bounds].origin toView:[_autocompleteContainer superview]];
 		[_autocompleteContainer setFrameOrigin:CPPointMake(frameOrigin.x, frameOrigin.y + frame.size.height)];
-		[_autocompleteContainer setFrameSize:CPSizeMake(CPRectGetWidth([self bounds]), 100.0)];
-		[_autocompleteScrollView setFrameSize:CPSizeMake([_autocompleteContainer frame].size.width - 19.0, 90.0)];
+		[_autocompleteContainer setFrameSize:CPSizeMake(CPRectGetWidth([self bounds]), 92.0)];
+		[_autocompleteScrollView setFrameSize:CPSizeMake([_autocompleteContainer frame].size.width - 2.0, 90.0)];
 	}
 	else
 		[_autocompleteContainer setHidden:YES];
