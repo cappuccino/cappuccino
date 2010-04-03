@@ -798,6 +798,59 @@ var themedButtonValues = nil,
     return textfield;
 }
 
++ (_CPTokenFieldToken)themedTokenFieldToken
+{
+    var tokenfield = [[_CPTokenFieldToken alloc] initWithFrame:CGRectMake(0.0, 0.0, 60.0, 24.0)];
+
+    var bezelColor = [CPColor colorWithPatternImage:[[CPThreePartImage alloc] initWithImageSlices:
+    	[
+    		[_CPCibCustomResource imageResourceWithName:@"tokenfield-left.png" size:CPSizeMake(4.0, 21.0)],
+    		[_CPCibCustomResource imageResourceWithName:@"tokenfield-middle.png" size:CPSizeMake(4.0, 21.0)],
+    		[_CPCibCustomResource imageResourceWithName:@"tokenfield-right.png" size:CPSizeMake(4.0, 21.0)]
+    	] isVertical:NO]];
+
+	bezelFocusedColor = [CPColor colorWithPatternImage:[[CPThreePartImage alloc] initWithImageSlices:
+    	[
+    		[_CPCibCustomResource imageResourceWithName:@"tokenfield-focused-left.png" size:CPSizeMake(4.0, 21.0)],
+    		[_CPCibCustomResource imageResourceWithName:@"tokenfield-focused-middle.png" size:CPSizeMake(4.0, 21.0)],
+    		[_CPCibCustomResource imageResourceWithName:@"tokenfield-focused-right.png" size:CPSizeMake(4.0, 21.0)]
+    	] isVertical:NO]];
+
+	[tokenfield setValue:[CPColor colorWithRed:41.0 / 255.0 green:51.0 / 255.0 blue:64.0 / 255.0 alpha:1.0] forThemeAttribute:@"text-color"];
+	[tokenfield setValue:bezelColor forThemeAttribute:@"bezel-color" inState:CPThemeStateBezeled];
+	[tokenfield setValue:bezelFocusedColor forThemeAttribute:@"bezel-color" inState:CPThemeStateBezeled|CPThemeStateHighlighted];
+	[tokenfield setValue:CGInsetMake(2, 0.0, 2, 0.0) forThemeAttribute:@"bezel-inset" inState:CPThemeStateBezeled];
+	[tokenfield setValue:CGInsetMake(2.0, 20.0, 1.0, 10.0) forThemeAttribute:@"content-inset" inState:CPThemeStateBezeled];
+
+	[tokenfield setValue:CPCenterTextAlignment forThemeAttribute:@"vertical-alignment"]
+
+    return tokenfield;
+}
+
++ (_CPTokenFieldTokenCloseButton)themedTokenFieldTokenCloseButton
+{
+    var button = [[_CPTokenFieldTokenCloseButton alloc] initWithFrame:CGRectMake(0, 0, 9, 9)];
+
+    var bezelColor = PatternColor([[CPThreePartImage alloc] initWithImageSlices:
+               [
+                   [_CPCibCustomResource imageResourceWithName:"tokenfield-close.png" size:CGSizeMake(9.0, 9.0)], nil, nil
+               ]
+           isVertical:NO]),
+       bezelColorPushed = PatternColor([[CPThreePartImage alloc] initWithImageSlices:
+                  [
+                      [_CPCibCustomResource imageResourceWithName:"tokenfield-close-pushed.png" size:CGSizeMake(9.0, 9.0)], nil, nil
+                  ]
+          isVertical:NO]);
+
+   	[button setValue:bezelColor forThemeAttribute:@"bezel-color" inState:CPThemeStateBordered];
+   	[button setValue:bezelColorPushed forThemeAttribute:@"bezel-color" inState:CPThemeStateBordered|CPThemeStateHighlighted];
+
+    [button setValue:CGSizeMake(9.0, 9.0) forThemeAttribute:@"min-size"];
+    [button setValue:CGSizeMake(9.0, 9.0) forThemeAttribute:@"max-size"];
+
+    return button;
+}
+
 + (CPRadioButton)themedRadioButton
 {
     var button = [CPRadio radioWithTitle:@"Hello Friend!"],

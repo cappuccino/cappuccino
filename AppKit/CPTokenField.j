@@ -883,72 +883,25 @@ var CPTokenFieldTableColumnIdentifier = @"CPTokenFieldTableColumnIdentifier";
 
 @end
 
-_CPTokenFieldTokenDeleteImage = [[CPImage alloc] initByReferencingFile:@"Resources/Menu/CPTokenField/token_close.png" size:CPSizeMake(9.0, 9.0)];
-_CPTokenFieldTokenDeleteImageHighlighted = [[CPImage alloc] initByReferencingFile:@"Resources/Menu/CPTokenField/token_close_active.png"
-																			 size:CPSizeMake(9.0, 9.0)];
-
-_CPTokenFieldActiveTokenDeleteImage = [[CPImage alloc] initByReferencingFile:@"Resources/Menu/CPTokenField/token_active_close.png"
-																		size:CPSizeMake(9.0, 9.0)];
-_CPTokenFieldActiveTokenDeleteImageHighlighted = [[CPImage alloc] initByReferencingFile:@"Resources/Menu/CPTokenField/token_active_close_active.png"
-																		    	   size:CPSizeMake(9.0, 9.0)];
-
 @implementation _CPTokenFieldToken : CPTextField
 {
-	CPButton _deleteButton;
-	CPTokenField _tokenField;
+	_CPTokenFieldTokenCloseButton   _deleteButton;
+	CPTokenField                    _tokenField;
 }
 
 - (id)initWithFrame:(CPRect)frame
 {
 	if (self = [super initWithFrame:frame])
 	{
-		_deleteButton = [[CPButton alloc] initWithFrame:CPRectMakeZero()];
-		[_deleteButton setBordered:NO];
+		_deleteButton = [[_CPTokenFieldTokenCloseButton alloc] initWithFrame:CPRectMakeZero()];
 		[self addSubview:_deleteButton];
 
 		[self setEditable:NO];
 		[self setHighlighted:NO];
 		[self setBezeled:YES];
-
-		var bezelColor = [CPColor colorWithPatternImage:[[CPThreePartImage alloc] initWithImageSlices:
-		[
-			[[CPImage alloc] initByReferencingFile:@"Resources/Menu/CPTokenField/token_left.png" size:CPSizeMake(4.0, 21.0)],
-			[[CPImage alloc] initByReferencingFile:@"Resources/Menu/CPTokenField/token_middle.png" size:CPSizeMake(4.0, 21.0)],
-			[[CPImage alloc] initByReferencingFile:@"Resources/Menu/CPTokenField/token_right.png" size:CPSizeMake(4.0, 21.0)]
-		] isVertical:NO]];
-
-		bezelFocusedColor = [CPColor colorWithPatternImage:[[CPThreePartImage alloc] initWithImageSlices:
-		[
-			[[CPImage alloc] initByReferencingFile:@"Resources/Menu/CPTokenField/token_active_left.png" size:CPSizeMake(4.0, 21.0)],
-			[[CPImage alloc] initByReferencingFile:@"Resources/Menu/CPTokenField/token_active_middle.png" size:CPSizeMake(4.0, 21.0)],
-			[[CPImage alloc] initByReferencingFile:@"Resources/Menu/CPTokenField/token_active_right.png" size:CPSizeMake(4.0, 21.0)]
-		] isVertical:NO]];
-
-		[self setValue:[CPColor colorWithRed:41.0 / 255.0 green:51.0 / 255.0 blue:64.0 / 255.0 alpha:1.0] forThemeAttribute:@"text-color"];
-		[self setValue:bezelColor forThemeAttribute:@"bezel-color" inState:CPThemeStateBezeled];
-		[self setValue:bezelFocusedColor forThemeAttribute:@"bezel-color" inState:CPThemeStateBezeled|CPThemeStateHighlighted];
-		[self setValue:CGInsetMake(1.5, 0.0, 1.5, 0.0) forThemeAttribute:@"bezel-inset"];
-		[self setValue:CGInsetMake(2.0, 20.0, 1.0, 10.0) forThemeAttribute:@"content-inset"];
-		[self setValue:CPCenterTextAlignment forThemeAttribute:@"vertical-alignment"]
 	}
 
 	return self;
-}
-
-- (void)setHighlighted:(BOOL)isLit
-{
-	[super setHighlighted:isLit];
-
-	if (!isLit)
-	{
-		[_deleteButton setImage:_CPTokenFieldTokenDeleteImage];
-		[_deleteButton setAlternateImage:_CPTokenFieldTokenDeleteImageHighlighted];
-	}
-	else
-	{
-		[_deleteButton setImage:_CPTokenFieldActiveTokenDeleteImage];
-		[_deleteButton setAlternateImage:_CPTokenFieldActiveTokenDeleteImageHighlighted];
-	}
 }
 
 - (CPTokenField)tokenField
@@ -997,6 +950,15 @@ _CPTokenFieldActiveTokenDeleteImageHighlighted = [[CPImage alloc] initByReferenc
 - (void)_delete:(id)sender
 {
 	[_tokenField _deleteToken:self];
+}
+
+@end
+
+/*
+    This class left empty on purpose as a theming hook.
+*/
+@implementation _CPTokenFieldTokenCloseButton : CPButton
+{
 }
 
 @end
