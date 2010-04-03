@@ -208,6 +208,11 @@ var CPTokenFieldTableColumnIdentifier = @"CPTokenFieldTableColumnIdentifier";
 	[objectValue removeObjectAtIndex:indexOfToken];
 	[self setObjectValue:objectValue];
 
+    var theBinding = [CPKeyValueBinding getBinding:CPValueBinding forObject:self];
+
+    if (theBinding)
+        [theBinding reverseSetValueFor:@"objectValue"];
+
 	[self textDidChange:[CPNotification notificationWithName:CPControlTextDidChangeNotification object:self userInfo:nil]];
 }
 
