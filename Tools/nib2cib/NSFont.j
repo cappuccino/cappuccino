@@ -32,7 +32,10 @@
         size = [aCoder decodeDoubleForKey:@"NSSize"];
 
     if ((fontName === "LucidaGrande" || fontName === "LucidaGrande-Bold") && size === 13)
-        return [self _initWithName:"Arial" size:12.0 bold:YES];
+    {
+        CPLog.debug("Converting default IB font: <"+fontName+", "+size+"> to default Aristo font: <Arial, 12>");
+        return [CPFont boldSystemFontOfSize:12.0];
+    }
 
     // FIXME: Is this alwasy true?
     if (fontName.indexOf("-Bold") === fontName.length - "-Bold".length)

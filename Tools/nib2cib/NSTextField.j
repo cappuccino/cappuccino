@@ -24,7 +24,7 @@
 
 @import "NSControl.j"
 @import "NSCell.j"
-
+@import <AppKit/CPFont.j>
 
 @implementation CPTextField (NSCoding)
 
@@ -36,6 +36,9 @@
     {
         var cell = [aCoder decodeObjectForKey:@"NSCell"];
         
+        if ([[cell font] isEqual:[CPFont boldSystemFontOfSize:12.0]])
+            [self setFont:[CPFont systemFontOfSize:12.0]];
+
         [self sendActionOn:CPKeyUpMask|CPKeyDownMask];
         
         [self setEditable:[cell isEditable]];
