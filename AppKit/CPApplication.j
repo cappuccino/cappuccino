@@ -31,6 +31,7 @@
 @import "CPCibLoading.j"
 @import "CPPlatform.j"
 
+#include "Platform/Platform.h"
 
 var CPMainCibFile               = @"CPMainCibFile",
     CPMainCibFileHumanFriendly  = @"Main cib file base name";
@@ -1137,6 +1138,13 @@ var _CPRunModalLoop = function(anEvent)
 
 function CPApplicationMain(args, namedArgs)
 {
+
+#if PLATFORM(DOM)
+    // hook to allow recorder, etc to manipulate things before starting AppKit
+    if (window.parent !== window && typeof window.parent._childAppIsStarting === "function")
+        window.parent._childAppIsStarting(window);
+#endif
+
     var mainBundle = [CPBundle mainBundle],
         principalClass = [mainBundle principalClass];
 
