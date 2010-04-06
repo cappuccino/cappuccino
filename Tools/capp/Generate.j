@@ -49,7 +49,7 @@ parser.option("--force", "force")
     .help("Overwrite update existing frameworks.");
 
 parser.option("--noconfig", "noconfig")
-    .set()
+    .set(true)
     .help("Selects a project template to use.");
 
 parser.option("--list-templates", "listTemplates")

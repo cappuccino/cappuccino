@@ -107,14 +107,16 @@ task ("documentation", function()
 
 // Downloads
 
-task ("downloads", ["starter_download", "tools_download"]);
+task ("downloads", ["starter_download"]);
 
 $STARTER_README                 = FILE.join('Tools', 'READMEs', 'STARTER-README');
+$STARTER_BOOTSTRAP              = 'bootstrap.sh';
 $STARTER_DOWNLOAD               = FILE.join($BUILD_DIR, 'Cappuccino', 'Starter');
 $STARTER_DOWNLOAD_APPLICATION   = FILE.join($STARTER_DOWNLOAD, 'NewApplication');
 $STARTER_DOWNLOAD_README        = FILE.join($STARTER_DOWNLOAD, 'README');
+$STARTER_DOWNLOAD_BOOTSTRAP     = FILE.join($STARTER_DOWNLOAD, 'bootstrap.sh');
 
-task ("starter_download", [$STARTER_DOWNLOAD_APPLICATION, $STARTER_DOWNLOAD_README, "documentation"], function()
+task ("starter_download", [$STARTER_DOWNLOAD_APPLICATION, $STARTER_DOWNLOAD_README, $STARTER_DOWNLOAD_BOOTSTRAP, "documentation"], function()
 {
     if (FILE.exists($DOCUMENTATION_BUILD))
     {
@@ -130,8 +132,8 @@ filedir ($STARTER_DOWNLOAD_APPLICATION, ["CommonJS"], function()
 
     if (OS.system(["capp", "gen", $STARTER_DOWNLOAD_APPLICATION, "-t", "Application", "--noconfig"]))
         // FIXME: uncomment this: we get conversion errors
-        //OS.exit(1); // rake abort if ($? != 0)
-        {}
+        OS.exit(1); // rake abort if ($? != 0)
+        //{}
     // No tools means no objective-j gem
     // FILE.rm(FILE.join($STARTER_DOWNLOAD_APPLICATION, 'Rakefile'))
 });
@@ -141,36 +143,9 @@ filedir ($STARTER_DOWNLOAD_README, [$STARTER_README], function()
     cp($STARTER_README, $STARTER_DOWNLOAD_README);
 });
 
-$TOOLS_README                   = FILE.join('Tools', 'READMEs', 'TOOLS-README');
-$TOOLS_EDITORS                  = FILE.join('Tools', 'Editors');
-$TOOLS_INSTALLER                = FILE.join('Tools', 'Install', 'install-tools');
-$TOOLS_DOWNLOAD                 = FILE.join($BUILD_DIR, 'Cappuccino', 'Tools');
-$TOOLS_DOWNLOAD_EDITORS         = FILE.join($TOOLS_DOWNLOAD, 'Editors');
-$TOOLS_DOWNLOAD_README          = FILE.join($TOOLS_DOWNLOAD, 'README');
-$TOOLS_DOWNLOAD_INSTALLER       = FILE.join($TOOLS_DOWNLOAD, 'install-tools');
-$TOOLS_DOWNLOAD_COMMONJS        = FILE.join($BUILD_DIR, "Cappuccino", "Tools", "CommonJS", "objective-j");
-
-task ("tools_download", [$TOOLS_DOWNLOAD_EDITORS, $TOOLS_DOWNLOAD_README, $TOOLS_DOWNLOAD_INSTALLER, $TOOLS_DOWNLOAD_COMMONJS]);
-
-filedir ($TOOLS_DOWNLOAD_EDITORS, [$TOOLS_EDITORS], function()
+filedir ($STARTER_DOWNLOAD_BOOTSTRAP, [$STARTER_BOOTSTRAP], function()
 {
-    cp_r(FILE.join($TOOLS_EDITORS, '.'), $TOOLS_DOWNLOAD_EDITORS);
-});
-
-filedir ($TOOLS_DOWNLOAD_README, [$TOOLS_README], function()
-{
-    cp($TOOLS_README, $TOOLS_DOWNLOAD_README);
-});
-
-filedir ($TOOLS_DOWNLOAD_INSTALLER, [$TOOLS_INSTALLER], function()
-{
-    cp($TOOLS_INSTALLER, $TOOLS_DOWNLOAD_INSTALLER);
-});
-
-filedir ($TOOLS_DOWNLOAD_COMMONJS, ["CommonJS"], function()
-{
-    rm_rf($TOOLS_DOWNLOAD_COMMONJS);
-    cp_r($COMMONJS_PRODUCT, $TOOLS_DOWNLOAD_COMMONJS);
+    cp($STARTER_BOOTSTRAP, $STARTER_DOWNLOAD_BOOTSTRAP);
 });
 
 // Deployment
@@ -233,15 +208,22 @@ task ("demos", function()
     {
         return this.name();
     }
-
+    
     FILE.glob(FILE.join(demosDir, "demos", "**/Info.plist")).map(function(demoPath){
         return new Demo(FILE.dirname(demoPath))
     }).filter(function(demo){
         return !demo.excluded();
     }).forEach(function(demo)
     {
-        var outputPath = FILE.join(demosDir, demo.name().replace(/\s/g, "-")+".zip");
-        OS.system("cd "+OS.enquote(FILE.dirname(demo.path()))+"; zip -ry -8 "+OS.enquote(outputPath)+" "+OS.enquote(demo.path()));
+        // copy frameworks into the demos
+        cp_r(FILE.join($STARTER_DOWNLOAD_APPLICATION, "Frameworks"), FILE.join(demo.path(), "Frameworks"));
+        rm_rf(FILE.join(demo.path(), "Frameworks", "Debug"));
+
+        var outputPath = demo.name().replace(/\s/g, "-")+".zip";
+        OS.system("cd "+OS.enquote(FILE.dirname(demo.path()))+" && zip -ry -8 "+OS.enquote(outputPath)+" "+OS.enquote(FILE.basename(demo.path())));
+
+        // remove the frameworks 
+        rm_rf(FILE.join(demo.path(), "Frameworks"));
     });
 });
 
