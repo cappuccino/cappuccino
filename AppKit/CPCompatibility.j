@@ -75,7 +75,7 @@ var USER_AGENT                          = "",
 
 PLATFORM_FEATURES |= CPInputTypeCanBeChangedFeature;
 
-if (typeof window != "undfined" && typeof window.navigator != "undefined")
+if (typeof window != "undefined" && typeof window.navigator != "undefined")
     USER_AGENT = window.navigator.userAgent;
 
 // Opera
