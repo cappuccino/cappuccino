@@ -118,6 +118,7 @@ github_ref="master"
 tusk_install_command="install"
 
 noprompt=""
+install_capp=""
 
 while [ $# -gt 0 ]; do
     case "$1" in
@@ -126,6 +127,7 @@ while [ $# -gt 0 ]; do
         --clone)        tusk_install_command="clone";;
         --github-user)  github_user="$2"; shift;;
         --github-ref)   github_ref="$2"; shift;;
+        --install-capp) install_capp="yes";;
         *)              cat >&2 <<-EOT
 usage: ./bootstrap.sh [OPTIONS]
 
@@ -134,6 +136,7 @@ usage: ./bootstrap.sh [OPTIONS]
     --clone:                Do "git clone" instead of downloading zips.
     --github-user [USER]:   Use another github user (default: 280north).
     --github-ref [REF]:     Use another git ref (default: master).
+    --install-capp:         Install "objective-j" and "cappuccino" packages.
 EOT
                         exit 1;;
     esac
@@ -263,10 +266,13 @@ fi
 # echo "================================================================================"
 # echo "Would you like to install the pre-built Objective-J and Cappuccino packages?"
 # echo "If you intend to build Cappuccino yourself this is not neccessary."
-# extra_packages=""
-# if prompt; then
-#     extra_packages="objective-j cappuccino"
+# if [ ! "$install_capp" ] && prompt; then
+#     install_capp="yes"
 # fi
+extra_packages=""
+if [ "$install_capp" ]; then
+    extra_packages="objective-j cappuccino"
+fi
 
 echo "Installing necessary packages..."
 

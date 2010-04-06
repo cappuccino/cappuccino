@@ -145,7 +145,9 @@ filedir ($STARTER_DOWNLOAD_README, [$STARTER_README], function()
 
 filedir ($STARTER_DOWNLOAD_BOOTSTRAP, [$STARTER_BOOTSTRAP], function()
 {
-    cp($STARTER_BOOTSTRAP, $STARTER_DOWNLOAD_BOOTSTRAP);
+    var bootstrap = FILE.read($STARTER_BOOTSTRAP, { charset : "UTF-8" }).replace('install_capp=""', 'install_capp="yes"');
+    FILE.write($STARTER_DOWNLOAD_BOOTSTRAP, bootstrap, { charset : "UTF-8" });
+    OS.system(["chmod", "+x", $STARTER_DOWNLOAD_BOOTSTRAP]);
 });
 
 // Deployment
