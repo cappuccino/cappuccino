@@ -49,11 +49,9 @@
 
         var headerCell = [aCoder decodeObjectForKey:@"NSHeaderCell"],
             headerView = [[_CPTableColumnHeaderView alloc] initWithFrame:CPRectMakeZero()];
-
-        [_headerView setStringValue:[headerCell objectValue]];
-        [_headerView setFont:[headerCell font]];
-
-        [self setHeaderView:_headerView];
+        
+        [headerView setStringValue:[headerCell objectValue]];        
+        [self setHeaderView:headerView];
 
         _width = [aCoder decodeFloatForKey:@"NSWidth"];
         _minWidth = [aCoder decodeFloatForKey:@"NSMinWidth"];
