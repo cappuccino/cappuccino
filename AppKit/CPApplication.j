@@ -122,11 +122,6 @@ CPRunContinuesResponse  = -1002;
     return CPApp;
 }
 
-+ (CPApplication)destroySharedApplication
-{
-    CPApp = nil;
-}
-
 /*!
     Initializes the Document based application with basic menu functions.
     Functions are \c New, \c Open, \c Undo, \c Redo, \c Save, \c Cut, \c Copy, \c Paste.
