@@ -96,12 +96,12 @@
     return _items;
 }
 
-- (void)addItem:(CPAccordionItem)anItem
+- (void)addItem:(CPAccordionViewItem)anItem
 {
     [self insertItem:anItem atIndex:_items.length];
 }
 
-- (void)insertItem:(CPAccordionItem)anItem atIndex:(CPInteger)anIndex
+- (void)insertItem:(CPAccordionViewItem)anItem atIndex:(CPInteger)anIndex
 {
     // FIXME: SHIFT ITEMS RIGHT
     [_expandedItemIndexes addIndex:anIndex];
@@ -122,7 +122,7 @@
     [self setNeedsLayout];
 }
 
-- (void)removeItem:(CPAccordionItem)anItem
+- (void)removeItem:(CPAccordionViewItem)anItem
 {
     [self removeItemAtIndex:[_items indexOfObjectIdenticalTo:anItem]];
 }
