@@ -451,10 +451,14 @@ BundleTask.prototype.resourcesPath = function()
     return FILE.join(this.buildProductPath(), "Resources", "");
 }
 
+// Don't sprite images larger than 32KB, IE 8 doesn't like it.
+BundleTask.isSpritable = function(aResourcePath) {
+    return isImage(aResourcePath) && FILE.size(aResourcePath) < 32768;
+}
+
 BundleTask.prototype.defineResourceTask = function(aResourcePath, aDestinationPath)
 {
-    // Don't sprite images larger than 32KB, IE 8 doesn't like it.
-    if (this.spritesResources() && isImage(aResourcePath) && FILE.size(aResourcePath) < 32768)
+    if (this.spritesResources() && BundleTask.isSpritable(aResourcePath))
     {
         this.environments().forEach(function(/*Environment*/ anEnvironment)
         {
