@@ -73,7 +73,7 @@ var _CPToolbarViewBackgroundColor = nil;
             
     var frame = CGRectMakeZero();
     
-    frame.origin = CGPointMakeCopy([self toolbarOffset]);
+    frame.origin = CGSizeMakeCopy([self toolbarOffset]);
     frame.size = [_toolbarView frame].size;
     
     [_toolbarBackgroundView setFrame:frame];
