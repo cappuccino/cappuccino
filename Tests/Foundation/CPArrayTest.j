@@ -155,12 +155,77 @@
     }
 }
 
+- (void)testInsertObjectInArraySortedByDescriptors
+{
+    var descriptors = [[[CPSortDescriptor alloc] initWithKey:@"intValue" ascending:YES]];
+    var array = [1, 3, 5];
+
+    [array insertObject: 0 inArraySortedByDescriptors:descriptors];
+    [self assert:[0, 1, 3, 5] equals:array];
+
+    array = [1, 3, 5];
+    [array insertObject: 2 inArraySortedByDescriptors:descriptors];
+    [self assert:[1, 2, 3, 5] equals:array];
+
+    array = [1, 3, 5];
+    [array insertObject: 1 inArraySortedByDescriptors:descriptors];
+    [self assert:[1, 1, 3, 5] equals:array];
+
+    array = [1, 3, 5];
+    [array insertObject: 6 inArraySortedByDescriptors:descriptors];
+    [self assert:[1, 3, 5, 6] equals:array];
+
+    array = [1, 3, 5];
+    [array insertObject: 3 inArraySortedByDescriptors:descriptors];
+    [self assert:[1, 3, 3, 5] equals:array];
+
+    array = [];
+    [array insertObject: 3 inArraySortedByDescriptors:descriptors];
+    [self assert:[3] equals:array];
+
+    descriptors = [[[CPSortDescriptor alloc] initWithKey:@"intValue" ascending:NO]];
+
+    array = [5, 3, 1];
+    [array insertObject: 0 inArraySortedByDescriptors:descriptors];
+    [self assert:[5, 3, 1, 0] equals:array];
+
+    array = [5, 3, 1];
+    [array insertObject: 2 inArraySortedByDescriptors:descriptors];
+    [self assert:[5, 3, 2, 1] equals:array];
+
+    array = [5, 3, 1];
+    [array insertObject: 1 inArraySortedByDescriptors:descriptors];
+    [self assert:[5, 3, 1, 1] equals:array];
+
+    array = [5, 3, 1];
+    [array insertObject: 6 inArraySortedByDescriptors:descriptors];
+    [self assert:[6, 5, 3, 1] equals:array];
+
+    array = [5, 3, 1];
+    [array insertObject: 3 inArraySortedByDescriptors:descriptors];
+    [self assert:[5, 3, 3, 1] equals:array];
+
+    array = [];
+    [array insertObject: 3 inArraySortedByDescriptors:descriptors];
+    [self assert:[3] equals:array];
+}
+
 - (void)testInitWithArrayCopyItems
 {
     var a = [[CopyableObject new], 2, 3];
     var b = [[CPArray alloc] initWithArray:a copyItems:YES];
 
     [self assert:a notEqual:b];
+}
+
+- (void)testIsEqualToArray
+{
+    var a = [1, 2, 3],
+        b = [5];
+
+    [self assertTrue:[a isEqualToArray:a]];
+    [self assertFalse:[a isEqualToArray:b]];
+    [self assertFalse:[a isEqualToArray:nil]];
 }
 
 @end
