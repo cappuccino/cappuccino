@@ -1,4 +1,4 @@
-o/*
+/*
  * CPDragServer.j
  * AppKit
  *
