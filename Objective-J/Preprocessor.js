@@ -386,11 +386,7 @@ Preprocessor.prototype.hash = function(tokens, aStringBuffer)
     }
     // if not a #pragma directive, it should not be processed here
     else
-    {
-        tokens.previous();
-        CONCAT(aStringBuffer, TOKEN_HASH);
-        return;
-    }
+        throw new SyntaxError(this.error_message("*** Expected \"pragma\" to follow # but instead saw \"" + token + "\"."));
 }
 
 Preprocessor.prototype.implementation = function(tokens, /*StringBuffer*/ aStringBuffer)
