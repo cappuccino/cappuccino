@@ -127,7 +127,7 @@ var CPDragServerDraggingInfo       = nil;
 @end
 
 var CPDraggingSource_draggedImage_movedTo_          = 1 << 0,
-    CPDraggingSource_draggedImage_endAt_operation_  = 1 << 1,
+    CPDraggingSource_draggedImage_endedAt_operation_  = 1 << 1,
     CPDraggingSource_draggedView_movedTo_           = 1 << 2,
     CPDraggingSource_draggedView_endedAt_operation_ = 1 << 3;
 
@@ -267,7 +267,7 @@ var CPDraggingSource_draggedImage_movedTo_          = 1 << 0,
     if (![CPPlatform supportsDragAndDrop])
         [_draggedWindow orderOut:self];
 
-    if (_implementedDraggingSourceMethods & CPDraggingSource_draggedImage_endAt_operation_)
+    if (_implementedDraggingSourceMethods & CPDraggingSource_draggedImage_endedAt_operation_)
         [_draggingSource draggedImage:[_draggedView image] endedAt:aLocation operation:anOperation];
     else if (_implementedDraggingSourceMethods & CPDraggingSource_draggedView_endedAt_operation_)
         [_draggingSource draggedView:_draggedView endedAt:aLocation operation:anOperation];
@@ -342,8 +342,8 @@ var CPDraggingSource_draggedImage_movedTo_          = 1 << 0,
         if ([_draggingSource respondsToSelector:@selector(draggedImage:movedTo:)])
             _implementedDraggingSourceMethods |= CPDraggingSource_draggedImage_movedTo_;
 
-        if ([_draggingSource respondsToSelector:@selector(draggedImage:endAt:operation:)])
-            _implementedDraggingSourceMethods |= CPDraggingSource_draggedImage_endAt_operation_;
+        if ([_draggingSource respondsToSelector:@selector(draggedImage:endedAt:operation:)])
+            _implementedDraggingSourceMethods |= CPDraggingSource_draggedImage_endedAt_operation_;
     }
     else
     {

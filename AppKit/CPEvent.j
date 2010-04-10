@@ -128,7 +128,7 @@ var _CPEventPeriodicEventPeriod         = 0,
     BOOL                _isARepeat;
     unsigned            _keyCode;
     DOMEvent            _DOMEvent;
-    
+
     float               _deltaX;
     float               _deltaY;
     float               _deltaZ;
@@ -345,7 +345,10 @@ var _CPEventPeriodicEventPeriod         = 0,
 */
 - (int)buttonNumber
 {
-    return _buttonNumber;
+    if (_type === CPRightMouseDown || _type === CPRightMouseUp || _type === CPRightMouseDragged)
+        return 1;
+
+    return 0;
 }
 
 /*!
