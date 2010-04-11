@@ -59,6 +59,13 @@ var CPTokenFieldTableColumnIdentifier = @"CPTokenFieldTableColumnIdentifier";
 	CPArray				_cachedCompletions;
 
 	CPIndexSet			_selectedTokenIndexes;
+
+	CPCharacterSet      _tokenizingCharacterSet @accessors(property=tokenizingCharacterSet);
+}
+
++ (CPCharacterSet)defaultTokenizingCharacterSet
+{
+    return [CPCharacterSet characterSetWithCharactersInString:@","];
 }
 
 - (id)initWithFrame:(CPRect)frame
@@ -70,6 +77,8 @@ var CPTokenFieldTableColumnIdentifier = @"CPTokenFieldTableColumnIdentifier";
 
 		_cachedCompletions = [];
 		_completionDelay = [CPTokenField defaultCompletionDelay];
+
+        _tokenizingCharacterSet = [[self class] defaultTokenizingCharacterSet];
 
 		_autocompleteContainer = [[CPView alloc] initWithFrame:CPRectMake(0.0, 0.0, frame.size.width, 92.0)];
 		[_autocompleteContainer setBackgroundColor:[_CPMenuWindow backgroundColorForBackgroundStyle:_CPMenuWindowPopUpBackgroundStyle]];
@@ -510,7 +519,7 @@ var CPTokenFieldTableColumnIdentifier = @"CPTokenFieldTableColumnIdentifier";
 			if (rowRect && !CPRectContainsRect([clipView bounds], rowRect))
 				[clipView scrollToPoint:[autocompleteView rectOfRow:index].origin];
 
-			if (aDOMEvent.keyCode === CPReturnKeyCode || aDOMEvent.keyCode === CPTabKeyCode || aDOMEvent.keyCode === CPSpaceKeyCode)
+			if (aDOMEvent.keyCode === CPReturnKeyCode || aDOMEvent.keyCode === CPTabKeyCode)
 			{
 				if (aDOMEvent.preventDefault)
 					aDOMEvent.preventDefault();
@@ -597,12 +606,30 @@ var CPTokenFieldTableColumnIdentifier = @"CPTokenFieldTableColumnIdentifier";
 
 		CPTokenFieldKeyPressFunction = function(aDOMEvent)
 		{
-			[CPTokenFieldInputOwner _delayedShowCompletions];
-			_selectedTokenIndexes = [CPIndexSet indexSet];
+            aDOMEvent = aDOMEvent || window.event;
 
-			aDOMEvent = aDOMEvent || window.event;
+            var character = String.fromCharCode(aDOMEvent.keyCode || aDOMEvent.which);
 
-			[[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
+            if ([_tokenizingCharacterSet characterIsMember:character])
+            {
+                if (aDOMEvent.preventDefault)
+                    aDOMEvent.preventDefault();
+                if (aDOMEvent.stopPropagation)
+                    aDOMEvent.stopPropagation();
+                aDOMEvent.cancelBubble = true;
+
+                var owner = CPTokenFieldInputOwner;
+
+                [owner _autocompleteWithDOMEvent:aDOMEvent];
+                [owner setNeedsLayout];
+
+                return true;
+            }
+
+            [CPTokenFieldInputOwner _delayedShowCompletions];
+            _selectedTokenIndexes = [CPIndexSet indexSet];
+
+            [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
 		}
 
 		CPTokenFieldKeyUpFunction = function()
