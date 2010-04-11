@@ -173,6 +173,11 @@ var CPTokenFieldTableColumnIdentifier = @"CPTokenFieldTableColumnIdentifier";
 
 	[self _inputElement].value = @"";
 	[self setNeedsLayout];
+
+    var theBinding = [CPKeyValueBinding getBinding:CPValueBinding forObject:self];
+
+    if (theBinding)
+        [theBinding reverseSetValueFor:@"objectValue"];
 }
 
 - (void)_autocomplete
@@ -212,6 +217,8 @@ var CPTokenFieldTableColumnIdentifier = @"CPTokenFieldTableColumnIdentifier";
 
     if (theBinding)
         [theBinding reverseSetValueFor:@"objectValue"];
+
+	[self _updatePlaceholderState];
 
 	[self textDidChange:[CPNotification notificationWithName:CPControlTextDidChangeNotification object:self userInfo:nil]];
 }
@@ -300,6 +307,7 @@ var CPTokenFieldTableColumnIdentifier = @"CPTokenFieldTableColumnIdentifier";
 - (BOOL)resignFirstResponder
 {
 	[self unsetThemeState:CPThemeStateEditing];
+
 	[self _updatePlaceholderState];
 
 	[self setNeedsLayout];
