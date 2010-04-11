@@ -177,7 +177,8 @@ CFHTTPRequest.prototype.responseText = function()
 
 CFHTTPRequest.prototype.setRequestHeader = function(/*String*/ aHeader, /*Object*/ aValue)
 {
-    return this._nativeRequest.setRequestHeader(aHeader, aValue);
+    if (!this._URL)
+        return this._nativeRequest.setRequestHeader(aHeader, aValue);
 }
 
 CFHTTPRequest.prototype.getResponseHeader = function(/*String*/ aHeader)
@@ -198,11 +199,65 @@ CFHTTPRequest.prototype.overrideMimeType = function(/*String*/ aMimeType)
 
 CFHTTPRequest.prototype.open = function(/*String*/ aMethod, /*String*/ aURL, /*Boolean*/ isAsynchronous, /*String*/ aUser, /*String*/ aPassword)
 {
-    return this._nativeRequest.open(aMethod, aURL, isAsynchronous, aUser, aPassword);
+    aURL = makeAbsoluteURL(aURL);
+
+    if (aURL.isStorageURL())
+    {
+        this._URL = aURL;
+        this._method = aMethod;
+        this._isAsynchronous = isAsynchronous;
+
+        return;
+    }
+
+    else if (this._URL)
+    {
+        delete this._URL;
+        delete this._method;
+        delete this._isAsynchronous;
+    }
+
+    return this._nativeRequest.open(aMethod, aURL + "", isAsynchronous, aUser, aPassword);
+}
+
+function sendStorage(/*CFHTTPRequest*/ aRequest, /*String*/ aBody)
+{
+    var method = aRequest._method.toUpperCase(),
+        eventDispatcher = aRequest._eventDispatcher;
+
+    if (method === "GET")
+    {
+        var item = localStorage.getItem(aRequest._URL);
+
+        if (item === undefined)
+            eventDispatcher.dispatchEvent({ type:"failure", request:aRequest });
+
+        else
+            eventDispatcher.dispatchEvent({ type:"success", request:aRequest });
+    }
+
+    else if (method === "POST" || method === "PUT")
+    {
+        try
+        {
+            localStorage.setItem(aRequest._URL, aBody);
+            eventDispatcher.dispatchEvent({ type:"success", request:aRequest });
+        }
+        catch (anException)
+        {
+            eventDispatcher.dispatchEvent({ type:"failure", request:aRequest });
+        }
+    }
+
+    else
+        eventDispatcher.dispatchEvent({ type:"failure", request:aRequest });
 }
 
 CFHTTPRequest.prototype.send = function(/*Object*/ aBody)
 {
+    if (this._URL)
+        return sendStorage(this, aBody);
+
     try
     {
         return this._nativeRequest.send(aBody);

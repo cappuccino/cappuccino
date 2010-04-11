@@ -498,6 +498,27 @@ CFURL.prototype.authority = function()
 
 DISPLAY_NAME(CFURL.prototype.authority);
 
+CFURL.prototype.isStorageURL = function()
+{
+    return this.isLocalStorageURL() || this.isSessionStorageURL();
+}
+
+DISPLAY_NAME(CFURL.prototype.isStorageURL);
+
+CFURL.prototype.isLocalStorageURL = function()
+{
+    return this.scheme() === "storage.local";
+}
+
+DISPLAY_NAME(CFURL.prototype.isLocalStorageURL);
+
+CFURL.prototype.isSessionStorageURL = function()
+{
+    return this.scheme() === "storage.session";
+}
+
+DISPLAY_NAME(CFURL.prototype.isSessionStorageURL);
+
 CFURL.prototype.hasDirectoryPath = function()
 {
     var hasDirectoryPath = this._hasDirectoryPath;

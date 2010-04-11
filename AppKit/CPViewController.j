@@ -50,7 +50,7 @@ var CPViewControllerCachedCibs;
     CPView          _view;
 
     id              _representedObject @accessors(property=representedObject);
-    CPString        _title @accessors(property=title);
+    CPString        _title;
 
     CPString        _cibName @accessors(property=cibName, readonly);
     CPBundle        _cibBundle @accessors(property=cibBundle, readonly);
@@ -78,7 +78,9 @@ var CPViewControllerCachedCibs;
 
 - (id)initWithCibName:(CPString)aCibNameOrNil bundle:(CPBundle)aCibBundleOrNil owner:(id)anOwner
 {
-    return [self initWithCibName:aCibNameOrNil bundle:aCibBundleOrNil externalNameTable:[CPDictionary dictionaryWithObject:anOwner forKey:CPCibOwner]];
+    return [self initWithCibName:aCibNameOrNil
+                          bundle:aCibBundleOrNil
+               externalNameTable:[CPDictionary dictionaryWithObject:anOwner forKey:CPCibOwner]];
 }
 
 /*!
@@ -97,11 +99,32 @@ var CPViewControllerCachedCibs;
     {
         // Don't load the cib until someone actually requests the view. The user may just be intending to use setView:.
         _cibName = aCibNameOrNil;
-        _cibBundle = aCibBundleOrNil || [CPBundle mainBundle];
+        _cibBundle = aCibBundleOrNil;
+
+        if (!_cibBundle)
+        {
+            var owner = [anExternalNameTable objectForKey:CPCibOwner];
+
+            _cibBundle = owner ? [CPBundle bundleForClass:[owner class]] : [CPBundle mainBundle];
+        }
+
         _cibExternalNameTable = anExternalNameTable || [CPDictionary dictionaryWithObject:self forKey:CPCibOwner];
     }
 
     return self;
+}
+
+- (void)setTitle:(CPString)aTitle
+{
+    _title = aTitle;
+
+    if (self._navigationItem)
+        [_navigationItem setTitle:aTitle];
+}
+
+- (CPString)title
+{
+    return _title;
 }
 
 /*!
@@ -124,9 +147,9 @@ var CPViewControllerCachedCibs;
     // check if a cib is already cached for the current _cibName
     var cib = [CPViewControllerCachedCibs objectForKey:_cibName];
 
+    // If the cib isn't cached yet : fetch it and cache it
     if (!cib)
     {
-        // if the cib isn't cached yet : fetch it and cache it
         cib = [[CPCib alloc] initWithContentsOfURL:[_cibBundle pathForResource:_cibName + @".cib"]];
         [CPViewControllerCachedCibs setObject:cib forKey:_cibName];
     }
@@ -190,6 +213,34 @@ var CPViewControllerCachedCibs;
 - (void)setView:(CPView)aView
 {
     _view = aView;
+}
+
+- (CPNavigationItem)navigationItem
+{
+    var navigationItem = self._navigationItem;
+
+    if (!navigationItem)
+        navigationItem = [[CPNavigationItem alloc] initWithTitle:[self title]];
+
+    self._navigationItem = navigationItem;
+
+    return navigationItem;
+}
+
+- (void)viewWillAppear:(BOOL)isAnimated
+{
+}
+
+- (void)viewDidAppear:(BOOL)isAnimated
+{
+}
+
+- (void)viewWillDisappear:(BOOL)isAnimated
+{
+}
+
+- (void)viewDidDisappear:(BOOL)isAnimated
+{
 }
 
 @end

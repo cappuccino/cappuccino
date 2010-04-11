@@ -210,10 +210,10 @@ var CPDocumentUntitledCount = 0;
     @throws CPUnsupportedMethodException if this method hasn't been overriden by the subclass
     @return the document data
 */
-- (CPData)dataOfType:(CPString)aType error:({CPError})anError
+- (CPData)dataOfType:(CPString)aType
 {
     [CPException raise:CPUnsupportedMethodException
-                reason:"dataOfType:error: must be overridden by the document subclass."];
+                reason:"dataOfType: must be overridden by the document subclass."];
 }
 
 /*!
@@ -473,8 +473,21 @@ var CPDocumentUntitledCount = 0;
 */
 - (void)saveToURL:(CPURL)anAbsoluteURL ofType:(CPString)aTypeName forSaveOperation:(CPSaveOperationType)aSaveOperation delegate:(id)aDelegate didSaveSelector:(SEL)aDidSaveSelector contextInfo:(id)aContextInfo
 {
-    var data = [self dataOfType:[self fileType] error:nil],
-        oldChangeCount = _changeCount;
+    if (anAbsoluteURL.isLocalStorageURL())
+        [[CPDocumentController sharedDocumentController] _addLocalDocumentURL:anAbsoluteURL];
+
+    var data = nil;
+
+    if ([self respondsToSelector:@selector(dataOfType:error:)])
+    {
+        CPLog.warn("[" + CPStringFromClass([self class]) + " " + CPStringFromSelector(@selector(dataOfType:error:)) + "] is deprecated, please implement " + CPStringFromSelector(@selector(dataOfType:)) + " instead and simply throw exceptions when necessary.");
+
+        data = [self dataOfType:[self fileType] error:nil];
+    }
+    else
+        data = [self dataOfType:[self fileType]];
+
+    var oldChangeCount = _changeCount;
 
     _writeRequest = [CPURLRequest requestWithURL:anAbsoluteURL];
 

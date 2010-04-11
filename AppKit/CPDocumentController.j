@@ -38,6 +38,7 @@ var CPSharedDocumentController = nil;
 {
     CPArray _documents;
     CPArray _documentTypes;
+    CPArray _localDocumentURLs;
 }
 
 /*!
@@ -59,14 +60,30 @@ var CPSharedDocumentController = nil;
 - (id)init
 {
     self = [super init];
-    
+
     if (self)
     {
-        _documents = [[CPArray alloc] init];
-        
         if (!CPSharedDocumentController)
             CPSharedDocumentController = self;
 
+        _localDocumentURLs = [CPSet set];
+
+        if (window.localStorage)
+        {
+            var localDocumentURLs = localStorage.getItem(CPDocumentControllerLocalDocumentURLsKey);
+
+            if (localDocumentURLs)
+            {
+                localDocumentURLs = JSON.parse(localDocumentURLs);
+
+                var count = [localDocumentURLs count];
+
+                while (count--)
+                    [_localDocumentURLs addObject:new CFURL(localDocumentURLs[count])];
+            }
+        }
+
+        _documents = [];
         _documentTypes = [[[CPBundle mainBundle] infoDictionary] objectForKey:@"CPBundleDocumentTypes"];
     }
     return self;
@@ -219,7 +236,7 @@ var CPSharedDocumentController = nil;
     Opens a new document in the application.
     @param aSender the requesting object
 */
-- (CFAction)newDocument:(id)aSender
+- (@action)newDocument:(id)aSender
 {
     [self openUntitledDocumentOfType:[[_documentTypes objectAtIndex:0] objectForKey:@"CPBundleTypeName"] display:YES];
 }
@@ -452,6 +469,44 @@ var CPSharedDocumentController = nil;
 - (void)_openRecentDocument:(id)sender
 {
     [self openDocumentWithContentsOfURL:[sender tag] display:YES error:nil];
+}
+
+@end
+
+var CPDocumentControllerLocalDocumentURLsKey = @"Cappuccino.CPDocumentController.documentURLs";
+
+@implementation CPDocumentController (LocalStorage)
+
+- (void)_addLocalDocumentURL:(CPURL)aURL
+{
+    if (!window.localStorage)
+        return;
+
+    [_localDocumentURLs addObject:aURL];
+
+    var stringURLs = [],
+        URL = nil,
+        URLEnumerator = [_localDocumentURLs objectEnumerator];
+
+    while (URL = [URLEnumerator nextObject])
+        stringURLs.push(URL + "");
+
+    localStorage.setItem(CPDocumentControllerLocalDocumentURLsKey, JSON.stringify(stringURLs));
+}
+
+- (void)_removeLocalDocumentURL:(CPURL)aURL
+{
+    if (!window.localStorage)
+        return;
+
+    [_localDocumentURLs removeObject:aURL];
+
+    localStorage.setItem(CPDocumentControllerLocalDocumentURLsKey, JSON.stringify([self allObjects]));
+}
+
+- (CPSet)localDocumentURLs
+{
+    return [_localDocumentURLs copy];
 }
 
 @end
