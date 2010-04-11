@@ -218,8 +218,6 @@ var CPTokenFieldTableColumnIdentifier = @"CPTokenFieldTableColumnIdentifier";
     if (theBinding)
         [theBinding reverseSetValueFor:@"objectValue"];
 
-	[self _updatePlaceholderState];
-
 	[self textDidChange:[CPNotification notificationWithName:CPControlTextDidChangeNotification object:self userInfo:nil]];
 }
 
@@ -434,6 +432,8 @@ var CPTokenFieldTableColumnIdentifier = @"CPTokenFieldTableColumnIdentifier";
     Instead do what CPControl setObjectValue would.
     */
     _value = objectValue;
+
+	[self _updatePlaceholderState];
 
     [self setNeedsLayout];
     [self setNeedsDisplay:YES];
