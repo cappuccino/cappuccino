@@ -10,6 +10,8 @@ var FILE = require("file");
 var OS = require("os");
 var UTIL = require("util");
 
+var CACHEMANIFEST = require("objective-j/cache-manifest");
+
 var stream = require("term").stream;
 var parser = new (require("args").Parser)();
 
@@ -48,6 +50,10 @@ parser.option("-c", "--compressor", "compressor")
     .def("shrinksafe")
     .set()
     .help("Select a compressor to use (closure-compiler, yuicompressor, shrinksafe), or \"none\" (default: shrinksafe)");
+
+parser.option("--manifest", "manifest")
+    .set(true)
+    .help("Generate HTML5 cache manifest.");
 
 parser.option("-v", "--verbose", "verbose")
    .def(false)
@@ -126,6 +132,13 @@ function main(args)
     });
 
     rewriteMainHTML(outputPath.join(options.index));
+
+    if (options.manifest) {
+        CACHEMANIFEST.generateManifest(outputPath, {
+            index : outputPath.join(options.index),
+            exclude : Object.keys(flattener.filesToCache).map(function(path) { return outputPath.join(path).toString(); })
+        });
+    }
 }
 
 // ObjectiveJFlattener inherits from ObjectiveJRuntimeAnalyzer

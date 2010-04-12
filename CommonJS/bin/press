@@ -10,6 +10,8 @@ require("narwhal").ensureEngine("rhino");
 var FILE = require("file");
 var OS = require("os");
 
+var CACHEMANIFEST = require("objective-j/cache-manifest");
+
 var stream = require("term").stream;
 var parser = new (require("args").Parser)();
 
@@ -31,10 +33,19 @@ parser.option("-f", "--force", "force")
    .set(true)
    .help("Force overwriting OUTPUT_PROJECT if it exists");
 
+parser.option("--index", "index")
+   .def("index.html")
+   .set()
+   .help("The root HTML file to modify (default: index.html) (NOTE: currently only used by '--manifest' option)");
+
 parser.option("-p", "--pngcrush", "png")
     .def(false)
     .set(true)
     .help("Run pngcrush on all PNGs (pngcrush must be installed!)");
+
+parser.option("--manifest", "manifest")
+    .set(true)
+    .help("Generate HTML5 cache manifest.");
 
 parser.option("-v", "--verbose", "verbose")
     .def(false)
@@ -145,6 +156,12 @@ function press(rootPath, outputPath, options) {
 
     if (options.png) {
         pngcrushDirectory(outputPath);
+    }
+
+    if (options.manifest) {
+        CACHEMANIFEST.generateManifest(outputPath, {
+            index : outputPath.join(options.index)
+        });
     }
 }
 

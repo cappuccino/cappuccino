@@ -2,12 +2,14 @@
 var FILE = require("file");
 var MD5 = require("md5");
 
-var FileList = require("jake").FileList,
+var FileList = require("jake").FileList;
 var BundleTask = require("objective-j/jake/bundletask").BundleTask;
 
-exports.generateManifest = function(productPath, indexFilePath)
+exports.generateManifest = function(productPath, options)
 {
-    indexFilePath = indexFilePath || FILE.join(productPath, "index.html");
+    options = options || {};
+
+    indexFilePath = options.index || FILE.join(productPath, "index.html");
 
     if (!FILE.isFile(indexFilePath)) {
         print("Warning: Skipping cache manifest generation, no index file at "+indexFilePath);
@@ -33,21 +35,28 @@ exports.generateManifest = function(productPath, indexFilePath)
     list.exclude("**/LICENSE");
     list.exclude("**/MHTML*");
     list.exclude("**/CommonJS.environment/*");
+    list.exclude("**/*.cur"); // FIXME: sprite these?
 
     // FIXME: bleh. heuristic for whether index file includes debug frameworks
     if (index.indexOf('"Frameworks/Debug"') < 0)
         list.exclude("**/Frameworks/Debug/*");
 
+    if (options.exclude)
+        options.exclude.forEach(list.exclude.bind(list));
+
     list.forEach(function(path) {
         if (FILE.isFile(path)) {
+            var relative = FILE.relative(productPath, path);
+
             // FIXME: check the actual sprited images file
-            if (BundleTask.isSpritable(path))
+            // check index for references to file (for spinner.gif, etc)
+            if (BundleTask.isSpritable(path) && index.indexOf(relative) < 0)
                 return;
 
             // include hash of each file in comments to expire when any file changes
             var hash = MD5.hash(FILE.read(path, "b")).decodeToString("base16");
             manifestOut.print("# " + hash);
-            manifestOut.print(FILE.relative(productPath, path));
+            manifestOut.print(relative);
         }
     });
 

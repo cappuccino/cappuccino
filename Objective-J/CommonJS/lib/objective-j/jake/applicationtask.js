@@ -130,7 +130,7 @@ ApplicationTask.prototype.defineCacheManifestTask = function()
     // TODO: can we conditionally generate based on outdated files?
     var manifestPath = FILE.join(productPath, "app.manifest");
     Jake.task(manifestPath, function() {
-        require("../cache-manifest").generateManifest(productPath, indexFilePath);
+        require("../cache-manifest").generateManifest(productPath, { index : indexFilePath });
     });
 
     this.enhance([manifestPath]);
