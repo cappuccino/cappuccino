@@ -480,9 +480,12 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 
     _DOMElement.appendChild(element);
 
-    element.focus();
-    [self textDidFocus:[CPNotification notificationWithName:CPTextFieldDidFocusNotification object:self userInfo:nil]];
-    CPTextFieldInputOwner = self;
+    window.setTimeout(function() 
+    {
+        element.focus();
+        [self textDidFocus:[CPNotification notificationWithName:CPTextFieldDidFocusNotification object:self userInfo:nil]];
+        CPTextFieldInputOwner = self;
+    }, 0.0);
  
     element.value = [self stringValue];
 
