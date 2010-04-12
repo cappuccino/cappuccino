@@ -282,8 +282,9 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
         _tableDrawView = [[_CPTableDrawView alloc] initWithTableView:self];
         [_tableDrawView setBackgroundColor:[CPColor clearColor]];
         [self addSubview:_tableDrawView];
-        [self _init];
 
+        [self setBackgroundColor:[CPColor whiteColor]];
+        [self _init];
     }
 
     return self;
@@ -296,7 +297,6 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
         [_dropOperationFeedbackView setTableView:self];
 
         _lastColumnShouldSnap = NO;
-        _backgroundColor = [CPColor whiteColor];
 
         // Gradients for the source list
         _sourceListActiveGradient = CGGradientCreateWithColorComponents(CGColorSpaceCreateDeviceRGB(), [89.0/255.0, 153.0/255.0, 209.0/255.0,1.0, 33.0/255.0, 94.0/255.0, 208.0/255.0,1.0], [0,1], 2);
@@ -2200,14 +2200,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 - (void)drawBackgroundInClipRect:(CGRect)aRect
 {
     if (!_usesAlternatingRowBackgroundColors)
-    {
-        var context = [[CPGraphicsContext currentContext] graphicsPort];
-
-        CGContextSetFillColor(context, _backgroundColor);
-        CGContextFillRect(context, aRect);
-
         return;
-    }
 
 
     var rowColors = [self alternatingRowBackgroundColors],
