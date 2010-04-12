@@ -488,10 +488,10 @@ var CPDocumentUntitledCount = 0;
 
     [_writeRequest setValue:@"close" forHTTPHeaderField:@"Connection"];
 
-    if (aSaveOperation == CPSaveOperation)
+    if (aSaveOperation === CPSaveOperation)
         [_writeRequest setValue:@"true" forHTTPHeaderField:@"x-cappuccino-overwrite"];
 
-    if (aSaveOperation != CPSaveToOperation)
+    if (aSaveOperation !== CPSaveToOperation)
         [self updateChangeCount:CPChangeCleared];
 
     // FIXME: Oh man is this every looking for trouble, we need to handle login at the Cappuccino level, with HTTP Errors.

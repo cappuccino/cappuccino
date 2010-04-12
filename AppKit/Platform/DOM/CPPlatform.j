@@ -44,6 +44,12 @@ var screenNeedsInitialization   = NO,
     // We do this here because doing it later breaks IE.
     if (document.documentElement)
         document.documentElement.style.overflow = "hidden";
+
+    if ([CPPlatform isBrowser])
+        window.onunload = function()
+        {
+            [CPApp terminate:nil];
+        }
 }
 
 + (BOOL)isBrowser
