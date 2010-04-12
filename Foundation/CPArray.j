@@ -215,7 +215,7 @@
                 self[index] = [anArray[index] copy];
             // Do a deep/shallow copy?
             else
-                self[index] = anArray;
+                self[index] = anArray[index];
         }
     }
     
