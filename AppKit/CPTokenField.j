@@ -391,16 +391,15 @@ var CPTokenFieldTableColumnIdentifier = @"CPTokenFieldTableColumnIdentifier";
 
 - (void)setObjectValue:(id)aValue
 {
-	if (![aValue isKindOfClass:[CPArray class]])
+	if (aValue !== nil && ![aValue isKindOfClass:[CPArray class]])
 	{
 		[super setObjectValue:nil];
 		return;
 	}
 
-	if ([aValue isEqualToArray:[super objectValue]])
-	{
+    var superValue = [super objectValue];
+	if (aValue === superValue || [aValue isEqualToArray:superValue])
 	    return;
-	}
 
 	var objectValue = [aValue copy];
 
@@ -410,18 +409,21 @@ var CPTokenFieldTableColumnIdentifier = @"CPTokenFieldTableColumnIdentifier";
 
 	objectValue = [];
 
-	// Re-add all tokens
-	for (var i = 0; i < [aValue count]; i++)
-	{
-		var token = [aValue objectAtIndex:i];
+    if (aValue !== nil)
+    {
+    	// Re-add all tokens
+    	for (var i = 0; i < [aValue count]; i++)
+    	{
+    		var token = [aValue objectAtIndex:i];
 
-		var tokenView = [[_CPTokenFieldToken alloc] init]
-		[tokenView setTokenField:self];
-		[tokenView setStringValue:token];
-		[objectValue addObject:tokenView];
+    		var tokenView = [[_CPTokenFieldToken alloc] init]
+    		[tokenView setTokenField:self];
+    		[tokenView setStringValue:token];
+    		[objectValue addObject:tokenView];
 
-		[self addSubview:tokenView];
-	}
+    		[self addSubview:tokenView];
+    	}
+    }
 
     /*
     [CPTextField setObjectValue] will try to set the _inputElement.value to
