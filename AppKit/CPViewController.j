@@ -22,6 +22,7 @@
 
 @import <AppKit/CPResponder.j>
 
+var CPViewControllerCachedCibs;
 
 /*! @class CPViewController
     The CPViewController class provides the fundamental view-management controller for Cappuccino applications.
@@ -31,7 +32,7 @@
 
     You use each instance of CPViewController to manage a single view (and hierarchy). For a simple view controller,
     this entails managing the view hierarchy responsible for presenting your application content.
-    A typical view hierarchy consists of a root view—a reference to which is available in the view property of this class—
+    A typical view hierarchy consists of a root view≈Éa reference to which is available in the view property of this class≈É
     and one or more subviews presenting the actual content. In the case of navigation and tab bar controllers, the view
     controller manages not only the high-level view hierarchy (which provides the navigation controls) but also one
     or more additional view controllers that handle the presentation of the application content.
@@ -54,6 +55,12 @@
     CPString        _cibName @accessors(property=cibName, readonly);
     CPBundle        _cibBundle @accessors(property=cibBundle, readonly);
     CPDictionary    _cibExternalNameTable @accessors(property=cibExternalNameTable, readonly);
+}
+
++ (void)initialize
+{
+    if (self === CPViewController)
+        CPViewControllerCachedCibs = [CPDictionary dictionary];
 }
 
 /*!
@@ -104,8 +111,8 @@
     If you create your views manually, you must override this method and use it to create your view and assign it to the view property.
     The default implementation for programmatic views is to create a plain view. You can invoke super to utilize this view.
 
-    If you use Interface Builder to create your views and initialize the view controller—that is, you initialize the view using the
-    initWithCibName:bundle: method—then you must not override this method. The consequences risk shattering the space-time continuum.
+    If you use Interface Builder to create your views and initialize the view controller≈Éthat is, you initialize the view using the
+    initWithCibName:bundle: method≈Éthen you must not override this method. The consequences risk shattering the space-time continuum.
 
     Note: The cib loading system is currently asynchronous.
 */
@@ -113,11 +120,16 @@
 {
     if (_view)
         return;
+    
+    // check if a cib is already cached for the current _cibName
+    var cib = [CPViewControllerCachedCibs objectForKey:_cibName];
 
-//    if (_cibName)
-//        [CPException raise: reason:];
-
-    var cib = [[CPCib alloc] initWithContentsOfURL:[_cibBundle pathForResource:_cibName + @".cib"]];
+    if (!cib)
+    {
+        // if the cib isn't cached yet : fetch it and cache it
+        cib = [[CPCib alloc] initWithContentsOfURL:[_cibBundle pathForResource:_cibName + @".cib"]];
+        [CPViewControllerCachedCibs setObject:cib forKey:_cibName];
+    }
 
     [cib instantiateCibWithExternalNameTable:_cibExternalNameTable];
 }
@@ -126,8 +138,6 @@
     Returns the view that the controller manages.
     If this property is nil, the controller sends loadView to itself to create the view that it manages.
     Subclasses should override the loadView method to create any custom views. The default value is nil.
-
-    Note: An error will not be thrown if after -loadView, the view property is still nil. -view will simply return nil, but will continue to call -loadView on subsequent calls.
 */
 - (CPView)view
 {
@@ -143,11 +153,31 @@
         if (_view === nil && [cibOwner isKindOfClass:[CPDocument class]])
             [self setView:[cibOwner valueForKey:@"view"]];
 
+        if (!_view) 
+        {
+            var reason = [CPString stringWithFormat:@"View for %@ could not be loaded from Cib or no view specified. Override loadView to load the view manually.", self];
+
+            [CPException raise:CPInternalInconsistencyException reason:reason];
+        }
+
         if ([cibOwner respondsToSelector:@selector(viewControllerDidLoadCib:)])
             [cibOwner viewControllerDidLoadCib:self];
+
+        [self viewDidLoad];
     }
 
     return _view;
+}
+
+
+/*!
+    This method is called after the view controller has loaded its associated views into memory. 
+    This method is called regardless of whether the views were stored in a nib file or created programmatically in the loadView method. 
+    This method is most commonly used to perform additional initialization steps on views that are loaded from nib files.
+*/
+- (void)viewDidLoad
+{
+    
 }
 
 
@@ -166,14 +196,16 @@
 
 
 var CPViewControllerViewKey     = @"CPViewControllerViewKey",
-    CPViewControllerTitleKey    = @"CPViewControllerTitleKey";
+    CPViewControllerTitleKey    = @"CPViewControllerTitleKey",
+    CPViewControllerCibNameKey  = @"CPViewControllerCibNameKey",
+    CPViewControllerBundleKey   = @"CPViewControllerBundleKey";
 
 @implementation CPViewController (CPCoding)
 
 /*!
-    Initializes the view item by unarchiving data from a coder.
+    Initializes the view controller by unarchiving data from a coder.
     @param aCoder the coder from which the data will be unarchived
-    @return the initialized collection view item
+    @return the initialized view controller
 */
 - (id)initWithCoder:(CPCoder)aCoder
 {
@@ -183,14 +215,20 @@ var CPViewControllerViewKey     = @"CPViewControllerViewKey",
     {
         _view = [aCoder decodeObjectForKey:CPViewControllerViewKey];
         _title = [aCoder decodeObjectForKey:CPViewControllerTitleKey];
+        _cibName = [aCoder decodeObjectForKey:CPViewControllerCibNameKey];
+
+        var bundlePath = [aCoder decodeObjectForKey:CPViewControllerBundleKey];
+        _cibBundle = bundlePath ? [CPBundle bundleWithPath:bundlePath] : [CPBundle mainBundle];
+
+        _cibExternalNameTable = [CPDictionary dictionaryWithObject:self forKey:CPCibOwner];
     }
 
     return self;
 }
 
 /*!
-    Archives the colletion view item to the provided coder.
-    @param aCoder the coder to which the view item should be archived
+    Archives the view controller to the provided coder.
+    @param aCoder the coder to which the view controller should be archived
 */
 - (void)encodeWithCoder:(CPCoder)aCoder
 {
@@ -198,6 +236,8 @@ var CPViewControllerViewKey     = @"CPViewControllerViewKey",
 
     [aCoder encodeObject:_view forKey:CPViewControllerViewKey];
     [aCoder encodeObject:_title forKey:CPViewControllerTitleKey];
+    [aCoder encodeObject:_cibName forKey:CPViewControllerCibNameKey];
+    [aCoder encodeObject:[_cibBundle bundlePath] forKey:CPViewControllerBundleKey];
 }
 
 @end

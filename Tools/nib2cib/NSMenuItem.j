@@ -22,6 +22,7 @@
 
 @import <AppKit/CPMenuItem.j>
 
+@import "NSEvent.j"
 @import "NSMenu.j"
 
 
@@ -57,13 +58,13 @@
         _submenu = [aCoder decodeObjectForKey:"NSSubmenu"];
         _menu = [aCoder decodeObjectForKey:"NSMenu"];
 
-//      _keyEquivalent = [aCoder decodeObjectForKey:"NSKeyEquiv"];
-//      _keyEquivalentModifierMask = [aCoder decodeObjectForKey:"NSKeyEquivModMask"];
-        
+        _keyEquivalent = [aCoder decodeObjectForKey:"NSKeyEquiv"];
+        _keyEquivalentModifierMask = CP_NSMapKeyMask([aCoder decodeObjectForKey:"NSKeyEquivModMask"]);
+
 //      _mnemonicLocation = [aCoder decodeObjectForKey:"NSMnemonicLoc"];
         
 //      _isAlternate = [aCoder decodeBoolForKey:"NSIsAlternate"];
-//      _indentationLevel = [aCoder decodeBoolForKey:"NSIndent"];
+        _indentationLevel = [aCoder decodeIntForKey:"NSIndent"];
         
 //      _toolTip;
 
@@ -71,6 +72,19 @@
     }
     
     return self;
+}
+
+- (void)swapCellsForParents:(JSObject)parentsForCellUIDs
+{
+    var target = [self target];
+
+    if (!target)
+        return;
+
+    var parent = parentsForCellUIDs[[[self target] UID]];
+
+    if (parent)
+        [self setTarget:parent];
 }
 
 @end

@@ -21,9 +21,9 @@
  */
 
 @import "CPArray.j"
-@import "CPObject.j"
 @import "CPDictionary.j"
-
+@import "CPNull.j"
+@import "CPObject.j"
 
 var CPObjectAccessorsForClass   = nil,
     CPObjectModifiersForClass   = nil;
@@ -173,15 +173,16 @@ CPUnknownUserInfoKey        = @"CPUnknownUserInfoKey";
     
 - (id)valueForKeyPath:(CPString)aKeyPath
 {
-    var dotIndex = aKeyPath.indexOf(".");
+    var firstDotIndex = aKeyPath.indexOf(".");
 
-    if (dotIndex === CPNotFound)
+    if (firstDotIndex === -1)
         return [self valueForKey:aKeyPath];
 
-    var firstPart = aKeyPath.substring(0, dotIndex),
-        secondPart = aKeyPath.substring(dotIndex+1);
+    var firstKeyComponent = aKeyPath.substring(0, firstDotIndex),
+        remainingKeyPath = aKeyPath.substring(firstDotIndex+1),
+        value = [self valueForKey:firstKeyComponent];
 
-    return [[self valueForKey:firstPart] valueForKeyPath:secondPart];
+    return [value valueForKeyPath:remainingKeyPath];
 }
 
 - (CPDictionary)dictionaryWithValuesForKeys:(CPArray)keys
@@ -276,4 +277,14 @@ CPUnknownUserInfoKey        = @"CPUnknownUserInfoKey";
 
 @end
 
+@implementation CPNull (KeyValueCoding)
+
+- (id)valueForKey:(CPString)aKey
+{
+    return self;
+}
+
+@end
+
+@import "CPKeyValueObserving.j"
 @import "CPArray+KVO.j"

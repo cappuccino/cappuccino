@@ -70,6 +70,8 @@ _function(CGInsetMakeZero())
 _function(CGInsetMakeCopy(anInset))
 _function(CGInsetIsEmpty(anInset))
 
+CGRectNull = _CGRectMake(Infinity, Infinity, 0.0, 0.0);
+
 /*!
     @addtogroup appkit
     @{
@@ -174,6 +176,15 @@ function CGRectStandardize(aRect)
 
 function CGRectUnion(lhsRect, rhsRect)
 {
+    var lhsRectIsNull = !lhsRect || lhsRect === CGRectNull,
+        rhsRectIsNull = !rhsRect || rhsRect === CGRectNull;
+
+    if (lhsRectIsNull)
+        return rhsRectIsNull ? CGRectNull : rhsRect;
+
+    if (rhsRectIsNull)
+        return lhsRectIsNull ? CGRectNull : lhsRect;
+
     var minX = MIN(_CGRectGetMinX(lhsRect), _CGRectGetMinX(rhsRect)),
         minY = MIN(_CGRectGetMinY(lhsRect), _CGRectGetMinY(rhsRect)),
         maxX = MAX(_CGRectGetMaxX(lhsRect), _CGRectGetMaxX(rhsRect)),

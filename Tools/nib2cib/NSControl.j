@@ -48,6 +48,8 @@
 
         [self setTarget:[aCoder decodeObjectForKey:@"NSTarget"]];
         [self setAction:[aCoder decodeObjectForKey:@"NSAction"]];
+
+        [self setLineBreakMode:[cell lineBreakMode]];
     }
     
     return self;

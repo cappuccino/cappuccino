@@ -24,7 +24,7 @@
 
 @import "NSControl.j"
 @import "NSCell.j"
-
+@import <AppKit/CPFont.j>
 
 @implementation CPTextField (NSCoding)
 
@@ -36,32 +36,35 @@
     {
         var cell = [aCoder decodeObjectForKey:@"NSCell"];
         
+        if ([[cell font] isEqual:[CPFont boldSystemFontOfSize:12.0]])
+            [self setFont:[CPFont systemFontOfSize:12.0]];
+
         [self sendActionOn:CPKeyUpMask|CPKeyDownMask];
         
-		[self setEditable:[cell isEditable]];
-		[self setSelectable:[cell isSelectable]];
-		
-		[self setBordered:[cell isBordered]];
-		[self setBezeled:[cell isBezeled]];
+        [self setEditable:[cell isEditable]];
+        [self setSelectable:[cell isSelectable]];
+        
+        [self setBordered:[cell isBordered]];
+        [self setBezeled:[cell isBezeled]];
         [self setBezelStyle:[cell bezelStyle]];
         [self setDrawsBackground:[cell drawsBackground]];
         
         //[self setLineBreakMode:???];
         [self setTextFieldBackgroundColor:[cell backgroundColor]];
         
-		[self setPlaceholderString:[cell placeholderString]];
+        [self setPlaceholderString:[cell placeholderString]];
         
         [self setTextColor:[cell textColor]];
-		
+        
         var frame = [self frame];
 
         [self setFrameOrigin:CGPointMake(frame.origin.x - 4.0, frame.origin.y - 4.0)];
         [self setFrameSize:CGSizeMake(frame.size.width + 8.0, frame.size.height + 8.0)];
 
         CPLog.debug([self stringValue] + " => isBordered=" + [self isBordered] + ", isBezeled="  + [self isBezeled] + ", bezelStyle=" + [self bezelStyle] + "("+[cell stringValue]+", " + [cell placeholderString] + ")");
-	}
-	
-	return self;
+    }
+    
+    return self;
 }
 
 @end
@@ -97,7 +100,7 @@
     
     if (self)
     {
-    	_bezelStyle         = [aCoder decodeObjectForKey:@"NSTextBezelStyle"] || CPTextFieldSquareBezel;
+        _bezelStyle         = [aCoder decodeObjectForKey:@"NSTextBezelStyle"] || CPTextFieldSquareBezel;
         _drawsBackground    = [aCoder decodeBoolForKey:@"NSDrawsBackground"];
         _backgroundColor    = [aCoder decodeObjectForKey:@"NSBackgroundColor"];
         _textColor          = [aCoder decodeObjectForKey:@"NSTextColor"];

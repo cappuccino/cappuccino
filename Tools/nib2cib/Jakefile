@@ -1,0 +1,41 @@
+
+require("../../common.jake");
+
+var FILE = require("file");
+
+var app = require("objective-j/jake").app;
+var BundleTask = require("objective-j/jake").BundleTask;
+
+app ("nib2cib", function(nib2cibTask)
+{
+    nib2cibTask.setBuildIntermediatesPath(FILE.join($BUILD_DIR, "nib2cib.build", $CONFIGURATION))
+    nib2cibTask.setBuildPath($BUILD_CJS_CAPPUCCINO_LIB);
+
+    nib2cibTask.setIdentifier("com.280n.nib2cib");
+    nib2cibTask.setLicense(BundleTask.License.LGPL_v2_1);
+    nib2cibTask.setVersion(getCappuccinoVersion());
+    nib2cibTask.setAuthor("280 North, Inc.");
+    nib2cibTask.setEmail("feedback @nospam@ 280north.com");
+    nib2cibTask.setSummary("nib2cib converts Cocoa nib and xibs to Cappuccino cibs");
+    nib2cibTask.setSources(FILE.glob("**/*.j"));
+    nib2cibTask.setResources(FILE.glob("Resources/*"));
+    nib2cibTask.setEnvironments(require("objective-j/jake/environment").CommonJS);
+    nib2cibTask.setFlattensSources(true);
+
+    if ($CONFIGURATION === "Release")
+        nib2cibTask.setCompilerFlags("-O");
+    else
+        nib2cibTask.setCompilerFlags("-DDEBUG -g");
+});
+
+$BUILD_CJS_NIB2CIB = FILE.join($BUILD_CJS_CAPPUCCINO_BIN, 'nib2cib');
+
+// executable in environment directory
+filedir($BUILD_CJS_NIB2CIB, ["nib2cib"], function()
+{
+    make_objj_executable($BUILD_CJS_NIB2CIB);
+});
+
+task ("build", ["nib2cib", $BUILD_CJS_NIB2CIB]);
+
+CLOBBER.include($BUILD_CJS_NIB2CIB);

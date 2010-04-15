@@ -175,8 +175,19 @@ CPWindowBelow                   = 2;
 CPWindowWillCloseNotification       = @"CPWindowWillCloseNotification";
 CPWindowDidBecomeMainNotification   = @"CPWindowDidBecomeMainNotification";
 CPWindowDidResignMainNotification   = @"CPWindowDidResignMainNotification";
+CPWindowDidBecomeKeyNotification    = @"CPWindowDidBecomeKeyNotification";
+CPWindowDidResignKeyNotification    = @"CPWindowDidResignKeyNotification";
+CPWindowDidResizeNotification       = @"CPWindowDidResizeNotification";
 CPWindowDidMoveNotification         = @"CPWindowDidMoveNotification";
+CPWindowWillBeginSheetNotification  = @"CPWindowWillBeginSheetNotification";
+CPWindowDidEndSheetNotification     = @"CPWindowDidEndSheetNotification";
+CPWindowDidMiniaturizeNotification  = @"CPWindowDidMiniaturizeNotification";
+CPWindowWillMiniaturizeNotification = @"CPWindowWillMiniaturizeNotification";
+CPWindowDidDeminiaturizeNotification = @"CPWindowDidDeminiaturizeNotification";
 
+CPWindowShadowStyleStandard = 0;
+CPWindowShadowStyleMenu     = 1;
+CPWindowShadowStylePanel    = 2;
 
 var SHADOW_MARGIN_LEFT      = 20.0,
     SHADOW_MARGIN_RIGHT     = 19.0,
@@ -244,11 +255,13 @@ var CPWindowSaveImage       = nil,
     CGRect                              _frame;
     int                                 _level;
     BOOL                                _isVisible;
+    BOOL                                _isMiniaturized;
     BOOL                                _isAnimating;
     BOOL                                _hasShadow;
     BOOL                                _isMovableByWindowBackground;
+    unsigned                            _shadowStyle;
+    BOOL                                _showsResizeIndicator;
 
-    BOOL                                _supportsMultipleDocuments;
     BOOL                                _isDocumentEdited;
     BOOL                                _isDocumentSaving;
 
@@ -303,6 +316,10 @@ var CPWindowSaveImage       = nil,
 
     BOOL                                _isFullPlatformWindow;
     _CPWindowFullPlatformWindowSession  _fullPlatformWindowSession;
+    
+    CPDictionary                        _sheetContext;
+    CPWindow                            _parentView;
+    BOOL                                _isSheet;
 }
 
 /*
@@ -317,6 +334,11 @@ var CPWindowSaveImage       = nil,
     var bundle = [CPBundle bundleForClass:[CPWindow class]];
     
     CPWindowSavingImage = [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"CPProgressIndicator/CPProgressIndicatorSpinningStyleRegular.gif"] size:CGSizeMake(16.0, 16.0)]
+}
+
+- (id)init
+{
+    return [self initWithContentRect:_CGRectMakeZero() styleMask:CPTitledWindowMask];
 }
 
 /*!
@@ -357,6 +379,7 @@ CPTexturedBackgroundWindowMask
         _isFullPlatformWindow = NO;
         _registeredDraggedTypes = [CPSet set];
         _registeredDraggedTypesArray = [];
+        _isSheet = NO;
 
         // Set up our window number.
         _windowNumber = [CPApp._windows count];
@@ -407,6 +430,8 @@ CPTexturedBackgroundWindowMask
 
         _defaultButtonEnabled = YES;
         _keyViewLoopIsDirty = YES;
+
+        [self setShowsResizeIndicator:_styleMask & CPResizableWindowMask];
     }
     
     return self;
@@ -430,10 +455,13 @@ CPTexturedBackgroundWindowMask
 {
     if (aStyleMask & CPHUDBackgroundWindowMask)
         return _CPHUDWindowView;
-    
+
     else if (aStyleMask === CPBorderlessWindowMask)
         return _CPBorderlessWindowView;
-    
+
+    else if (aStyleMask & CPDocModalWindowMask)
+        return _CPDocModalWindowView;
+
     return _CPStandardWindowView;
 }
 
@@ -442,24 +470,8 @@ CPTexturedBackgroundWindowMask
     return _CPBorderlessBridgeWindowView;
 }
 
-- (void)setSupportsMultipleDocuments:(BOOL)shouldSupportMultipleDocuments
-{
-    shouldSupportMultipleDocuments = !!shouldSupportMultipleDocuments;
-
-    // FIXME: throw exception if window controller already has multiple documents and shouldSupportMultipleDocuments === NO
-    _supportsMultipleDocuments = shouldSupportMultipleDocuments;
-}
-
-- (BOOL)supportsMultipleDocuments
-{
-    return _supportsMultipleDocuments;
-}
-
 - (void)awakeFromCib
 {
-    if (_initialFirstResponder)
-        [self makeFirstResponder:_initialFirstResponder];
-
     _keyViewLoopIsDirty = ![self _hasKeyViewLoop];
 }
 
@@ -497,6 +509,7 @@ CPTexturedBackgroundWindowMask
         [_windowView addSubview:_contentView];
         [_windowView setTitle:_title];
         [_windowView noteToolbarChanged];
+        [_windowView setShowsResizeIndicator:[self showsResizeIndicator]];
 
         [self setFrame:[self frameRectForContentRect:contentRect]];
     }
@@ -563,7 +576,7 @@ CPTexturedBackgroundWindowMask
 */
 + (CGRect)frameRectForContentRect:(CGRect)aContentRect styleMask:(unsigned)aStyleMask
 {
-    return [[[self class] _windowViewClassForStyleMask:_styleMask] frameRectForContentRect:aContentRect];
+    return [[[self class] _windowViewClassForStyleMask:aStyleMask] frameRectForContentRect:aContentRect];
 }
 
 /*!
@@ -600,8 +613,41 @@ CPTexturedBackgroundWindowMask
     @param shouldDisplay whether the window should redraw its views
     @param shouldAnimate whether the window resize should be animated
 */
+- (void)_setClippedFrame:(CGRect)aFrame display:(BOOL)shouldDisplay animate:(BOOL)shouldAnimate
+{
+    aFrame.size.width = MIN(MAX(aFrame.size.width, _minSize.width), _maxSize.width)
+    aFrame.size.height = MIN(MAX(aFrame.size.height, _minSize.height), _maxSize.height);
+    [self setFrame:aFrame display:shouldDisplay animate:shouldAnimate];
+}
+
 - (void)setFrame:(CGRect)aFrame display:(BOOL)shouldDisplay animate:(BOOL)shouldAnimate
 {
+    aFrame = _CGRectMakeCopy(aFrame);
+
+    var value = aFrame.origin.x,
+        delta = value - FLOOR(value);
+
+    if (delta)
+        aFrame.origin.x = value > 0.879 ? CEIL(value) : FLOOR(value);
+
+    value = aFrame.origin.y;
+    delta = value - FLOOR(value);
+
+    if (delta)
+        aFrame.origin.y = value > 0.879 ? CEIL(value) : FLOOR(value);
+
+    value = aFrame.size.width;
+    delta = value - FLOOR(value);
+
+    if (delta)
+        aFrame.size.width = value > 0.15 ? CEIL(value) : FLOOR(value);
+
+    value = aFrame.size.height;
+    delta = value - FLOOR(value);
+
+    if (delta)
+        aFrame.size.height = value > 0.15 ? CEIL(value) : FLOOR(value);
+
     if (shouldAnimate)
     {
         var animation = [[_CPWindowFrameAnimation alloc] initWithWindow:self targetFrame:aFrame];
@@ -633,16 +679,16 @@ CPTexturedBackgroundWindowMask
 
         if (!_CGSizeEqualToSize(size, newSize))
         {
-            size.width = MIN(MAX(newSize.width, _minSize.width), _maxSize.width);
-            size.height = MIN(MAX(newSize.height, _minSize.height), _maxSize.height);
+            size.width = newSize.width;
+            size.height = newSize.height;
 
             [_windowView setFrameSize:size];
 
             if (_hasShadow)
                 [_shadowView setFrameSize:_CGSizeMake(SHADOW_MARGIN_LEFT + size.width + SHADOW_MARGIN_RIGHT, SHADOW_MARGIN_BOTTOM + size.height + SHADOW_MARGIN_TOP + SHADOW_DISTANCE)];
 
-            if (!_isAnimating && [_delegate respondsToSelector:@selector(windowDidResize:)])
-                [_delegate windowDidResize:self];
+            if (!_isAnimating)
+                [[CPNotificationCenter defaultCenter] postNotificationName:CPWindowDidResizeNotification object:self];
         }
 
         if ([self _sharesChromeWithPlatformWindow])
@@ -652,7 +698,7 @@ CPTexturedBackgroundWindowMask
 
 - (void)setFrame:(CGRect)aFrame display:(BOOL)shouldDisplay
 {
-    [super setFrame:aFrame display:shouldDisplay animate:NO];
+    [self _setClippedFrame:aFrame display:shouldDisplay animate:NO];
 }
 
 /*!
@@ -660,7 +706,7 @@ CPTexturedBackgroundWindowMask
 */
 - (void)setFrame:(CGRect)aFrame
 {
-    [self setFrame:aFrame display:YES animate:NO];
+    [self _setClippedFrame:aFrame display:YES animate:NO];
 }
 
 /*!
@@ -669,7 +715,7 @@ CPTexturedBackgroundWindowMask
 */
 - (void)setFrameOrigin:(CGPoint)anOrigin
 {
-    [self setFrame:_CGRectMake(anOrigin.x, anOrigin.y, _CGRectGetWidth(_frame), _CGRectGetHeight(_frame)) display:YES animate:NO];
+    [self _setClippedFrame:_CGRectMake(anOrigin.x, anOrigin.y, _CGRectGetWidth(_frame), _CGRectGetHeight(_frame)) display:YES animate:NO];
 }
 
 /*!
@@ -678,7 +724,7 @@ CPTexturedBackgroundWindowMask
 */
 - (void)setFrameSize:(CGSize)aSize
 {
-    [self setFrame:_CGRectMake(_CGRectGetMinX(_frame), _CGRectGetMinY(_frame), aSize.width, aSize.height) display:YES animate:NO];
+    [self _setClippedFrame:_CGRectMake(_CGRectGetMinX(_frame), _CGRectGetMinY(_frame), aSize.width, aSize.height) display:YES animate:NO];
 }
 
 /*!
@@ -689,6 +735,15 @@ CPTexturedBackgroundWindowMask
 {
     [_platformWindow orderFront:self];
     [_platformWindow order:CPWindowAbove window:self relativeTo:nil];
+
+    if (_firstResponder === self || !_firstResponder)
+        [self makeFirstResponder:[self initialFirstResponder]];
+
+    if (!CPApp._keyWindow)
+        [self makeKeyWindow];
+
+    if (!CPApp._mainWindow)
+        [self makeMainWindow];
 }
 
 /*
@@ -707,20 +762,15 @@ CPTexturedBackgroundWindowMask
 */
 - (void)orderOut:(id)aSender
 {
+    if ([self _sharesChromeWithPlatformWindow])
+        [_platformWindow orderOut:self];
+
     if ([_delegate respondsToSelector:@selector(windowWillClose:)])
         [_delegate windowWillClose:self];
 
     [_platformWindow order:CPWindowOut window:self relativeTo:nil];
 
-    if ([CPApp keyWindow] == self)
-    {
-        [self resignKeyWindow];
-
-        CPApp._keyWindow = nil;
-    }
-
-    if ([self _sharesChromeWithPlatformWindow])
-        [_platformWindow orderOut:self];
+    [self _updateMainAndKeyWindows];
 }
 
 /*!
@@ -739,6 +789,11 @@ CPTexturedBackgroundWindowMask
 */
 - (void)setLevel:(int)aLevel
 {
+    if (aLevel === _level)
+        return;
+
+    [_platformWindow moveWindow:self fromLevel:_level toLevel:aLevel];
+
     _level = aLevel;
 
     if ([self _sharesChromeWithPlatformWindow])
@@ -766,7 +821,7 @@ CPTexturedBackgroundWindowMask
 */
 - (BOOL)showsResizeIndicator
 {
-    return [_windowView showsResizeIndicator];
+    return _showsResizeIndicator;
 }
 
 /*!
@@ -774,8 +829,14 @@ CPTexturedBackgroundWindowMask
     @param shouldShowResizeIndicator \c YES sets the window to show its resize indicator.
 */
 - (void)setShowsResizeIndicator:(BOOL)shouldShowResizeIndicator
-{       
-    [_windowView setShowsResizeIndicator:shouldShowResizeIndicator];
+{
+    shouldShowResizeIndicator = !!shouldShowResizeIndicator;
+
+    if (_showsResizeIndicator === shouldShowResizeIndicator)
+        return;
+
+    _showsResizeIndicator = shouldShowResizeIndicator;
+    [_windowView setShowsResizeIndicator:[self showsResizeIndicator]];
 }
 
 /*!
@@ -926,21 +987,24 @@ CPTexturedBackgroundWindowMask
     return _hasShadow;
 }
 
-/*!
-    Sets whether the window should have a drop shadow.
-    @param shouldHaveShadow \c YES to have a drop shadow.
-*/
-- (void)setHasShadow:(BOOL)shouldHaveShadow
+- (void)_updateShadow
 {
-    if (_hasShadow === shouldHaveShadow)
-        return;
-
-    _hasShadow = shouldHaveShadow;
-
     if ([self _sharesChromeWithPlatformWindow])
-        return [_platformWindow setHasShadow:shouldHaveShadow];
+    {
+        if (_shadowView)
+        {
+#if PLATFORM(DOM)
+            CPDOMDisplayServerRemoveChild(_DOMElement, _shadowView._DOMElement);
+#endif
+            _shadowView = nil;
+        }
 
-    if (_hasShadow)
+        [_platformWindow setHasShadow:_hasShadow];
+
+        return;
+    }
+
+    if (_hasShadow && !_shadowView)
     {
         var bounds = [_windowView bounds];
         
@@ -950,17 +1014,17 @@ CPTexturedBackgroundWindowMask
         if (!_CPWindowShadowColor)
         {
             var bundle = [CPBundle bundleForClass:[CPWindow class]];
-            
+
             _CPWindowShadowColor = [CPColor colorWithPatternImage:[[CPNinePartImage alloc] initWithImageSlices:
                 [
                     [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"CPWindow/CPWindowShadow0.png"] size:CGSizeMake(20.0, 19.0)],
                     [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"CPWindow/CPWindowShadow1.png"] size:CGSizeMake(1.0, 19.0)],
                     [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"CPWindow/CPWindowShadow2.png"] size:CGSizeMake(19.0, 19.0)],
-                    
+
                     [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"CPWindow/CPWindowShadow3.png"] size:CGSizeMake(20.0, 1.0)],
                     [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"CPWindow/CPWindowShadow4.png"] size:CGSizeMake(1.0, 1.0)],
                     [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"CPWindow/CPWindowShadow5.png"] size:CGSizeMake(19.0, 1.0)],
-                    
+
                     [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"CPWindow/CPWindowShadow6.png"] size:CGSizeMake(20.0, 18.0)],
                     [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"CPWindow/CPWindowShadow7.png"] size:CGSizeMake(1.0, 18.0)],
                     [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"CPWindow/CPWindowShadow8.png"] size:CGSizeMake(19.0, 18.0)]
@@ -974,7 +1038,7 @@ CPTexturedBackgroundWindowMask
         CPDOMDisplayServerInsertBefore(_DOMElement, _shadowView._DOMElement, _windowView._DOMElement);
 #endif
     }
-    else if (_shadowView)
+    else if (!_hasShadow && _shadowView)
     {
 #if PLATFORM(DOM)
         CPDOMDisplayServerRemoveChild(_DOMElement, _shadowView._DOMElement);
@@ -984,18 +1048,57 @@ CPTexturedBackgroundWindowMask
 }
 
 /*!
+    Sets whether the window should have a drop shadow.
+    @param shouldHaveShadow \c YES to have a drop shadow.
+*/
+- (void)setHasShadow:(BOOL)shouldHaveShadow
+{
+    if (_hasShadow === shouldHaveShadow)
+        return;
+
+    _hasShadow = shouldHaveShadow;
+
+    [self _updateShadow];
+}
+
+- (void)setShadowStyle:(unsigned)aStyle
+{
+    _shadowStyle = aStyle;
+
+    [[self platformWindow] setShadowStyle:_shadowStyle];
+}
+
+/*!
     Sets the delegate for the window. Passing \c nil will just remove the window's current delegate.
     @param aDelegate an object to respond to the various delegate methods of CPWindow
 */
 - (void)setDelegate:(id)aDelegate
 {
-    // FIXME: Unregister for notifications!
+    var defaultCenter = [CPNotificationCenter defaultCenter];
+
+    [defaultCenter removeObserver:_delegate name:CPWindowDidResignKeyNotification object:self];
+    [defaultCenter removeObserver:_delegate name:CPWindowDidBecomeKeyNotification object:self];
+    [defaultCenter removeObserver:_delegate name:CPWindowDidBecomeMainNotification object:self];
+    [defaultCenter removeObserver:_delegate name:CPWindowDidResignMainNotification object:self];
+    [defaultCenter removeObserver:_delegate name:CPWindowDidMoveNotification object:self];
+    [defaultCenter removeObserver:_delegate name:CPWindowDidResizeNotification object:self];
 
     _delegate = aDelegate;
-    
     _delegateRespondsToWindowWillReturnUndoManagerSelector = [_delegate respondsToSelector:@selector(windowWillReturnUndoManager:)];
 
-    var defaultCenter = [CPNotificationCenter defaultCenter];
+    if ([_delegate respondsToSelector:@selector(windowDidResignKey:)])
+        [defaultCenter
+            addObserver:_delegate
+               selector:@selector(windowDidResignKey:)
+                   name:CPWindowDidResignKeyNotification
+                 object:self];
+
+    if ([_delegate respondsToSelector:@selector(windowDidBecomeKey:)])
+        [defaultCenter
+            addObserver:_delegate
+               selector:@selector(windowDidBecomeKey:)
+                   name:CPWindowDidBecomeKeyNotification
+                 object:self];
     
     if ([_delegate respondsToSelector:@selector(windowDidBecomeMain:)])
         [defaultCenter
@@ -1016,6 +1119,13 @@ CPTexturedBackgroundWindowMask
             addObserver:_delegate
                selector:@selector(windowDidMove:)
                    name:CPWindowDidMoveNotification
+                 object:self];
+
+    if ([_delegate respondsToSelector:@selector(windowDidResize:)])
+        [defaultCenter
+            addObserver:_delegate
+               selector:@selector(windowDidResize:)
+                   name:CPWindowDidResizeNotification
                  object:self];
 }
 
@@ -1057,6 +1167,16 @@ CPTexturedBackgroundWindowMask
     return YES;
 }
 
+- (id)initialFirstResponder
+{
+    return _initialFirstResponder;
+}
+
+- (void)setInitialFirstResponder:(id)aResponder
+{
+    _initialFirstResponder = aResponder;
+}
+
 /*!
     Attempts to make the \c aResponder the first responder. Before trying
     to make it the first responder, the receiver will ask the current first responder
@@ -1064,9 +1184,9 @@ CPTexturedBackgroundWindowMask
     \c aResponder accept first responder, then finally tell it to become first responder.
     @return \c YES if the attempt was successful. \c NO otherwise.
 */
-- (void)makeFirstResponder:(CPResponder)aResponder
+- (BOOL)makeFirstResponder:(CPResponder)aResponder
 {
-    if (_firstResponder == aResponder)
+    if (_firstResponder === aResponder)
         return YES;
 
     if(![_firstResponder resignFirstResponder])
@@ -1227,42 +1347,58 @@ CPTexturedBackgroundWindowMask
 
         case CPScrollWheel:         return [[_windowView hitTest:point] scrollWheel:anEvent];
 
-        case CPLeftMouseUp:         if (!_leftMouseDownView)
-                                        return [[_windowView hitTest:point] mouseUp:anEvent];
-                                    
-                                    [_leftMouseDownView mouseUp:anEvent]
-                                    
+        case CPLeftMouseUp:
+        case CPRightMouseUp:        var hitTestedView = _leftMouseDownView,
+                                        selector = type == CPRightMouseUp ? @selector(rightMouseUp:) : @selector(mouseUp:);
+
+                                    if (!hitTestedView)
+                                        hitTestedView = [_windowView hitTest:point];
+
+                                    [hitTestedView performSelector:selector withObject:anEvent];
+
                                     _leftMouseDownView = nil;
-                                    
+
                                     return;
-        case CPLeftMouseDown:       _leftMouseDownView = [_windowView hitTest:point];
+        case CPLeftMouseDown:
+        case CPRightMouseDown:      _leftMouseDownView = [_windowView hitTest:point];
 
                                     if (_leftMouseDownView != _firstResponder && [_leftMouseDownView acceptsFirstResponder])
                                         [self makeFirstResponder:_leftMouseDownView];
-                
-                                    var theWindow = [anEvent window];
-                                    
-                                    if ([theWindow isKeyWindow] || [theWindow becomesKeyOnlyIfNeeded])
-                                        return [_leftMouseDownView mouseDown:anEvent];
+
+                                    [CPApp activateIgnoringOtherApps:YES];
+
+                                    var theWindow = [anEvent window],
+                                        selector = type == CPRightMouseDown ? @selector(rightMouseDown:) : @selector(mouseDown:);
+
+                                    if ([theWindow isKeyWindow] || [theWindow becomesKeyOnlyIfNeeded] && ![_leftMouseDownView needsPanelToBecomeKey])
+                                        return [_leftMouseDownView performSelector:selector withObject:anEvent];
                                     else
                                     {
                                         // FIXME: delayed ordering?
                                         [self makeKeyAndOrderFront:self];
-                                        
+
                                         if ([_leftMouseDownView acceptsFirstMouse:anEvent])
-                                            return [_leftMouseDownView mouseDown:anEvent]
+                                            return [_leftMouseDownView performSelector:selector withObject:anEvent];
                                     }
                                     break;
-        case CPLeftMouseDragged:    if (!_leftMouseDownView)
+
+        case CPLeftMouseDragged:
+        case CPRightMouseDragged:   if (!_leftMouseDownView)
                                         return [[_windowView hitTest:point] mouseDragged:anEvent];
-                                    
-                                    return [_leftMouseDownView mouseDragged:anEvent];
-        
-        case CPRightMouseUp:        return [_rightMouseDownView mouseUp:anEvent];
-        case CPRightMouseDown:      _rightMouseDownView = [_windowView hitTest:point];
-                                    return [_rightMouseDownView mouseDown:anEvent];
-        case CPRightMouseDragged:   return [_rightMouseDownView mouseDragged:anEvent];
-        
+
+                                    var selector;
+                                    if (type == CPRightMouseDragged)
+                                    {
+                                        selector = @selector(rightMouseDragged:)
+                                        if (![_leftMouseDownView respondsToSelector:selector])
+                                            selector = nil;
+                                    }
+
+                                    if (!selector)
+                                        selector = @selector(mouseDragged:)
+
+                                    return [_leftMouseDownView performSelector:selector withObject:anEvent];
+
         case CPMouseMoved:          if (!_acceptsMouseMovedEvents)
                                         return;
 
@@ -1332,8 +1468,14 @@ CPTexturedBackgroundWindowMask
 */
 - (void)becomeKeyWindow
 {
-    if (_firstResponder != self && [_firstResponder respondsToSelector:@selector(becomeKeyWindow)])
+    CPApp._keyWindow = self;
+
+    if (_firstResponder !== self && [_firstResponder respondsToSelector:@selector(becomeKeyWindow)])
         [_firstResponder becomeKeyWindow];
+
+    [[CPNotificationCenter defaultCenter]
+        postNotificationName:CPWindowDidBecomeKeyNotification
+                      object:self];
 }
 
 /*!
@@ -1370,13 +1512,10 @@ CPTexturedBackgroundWindowMask
 */
 - (void)makeKeyWindow
 {
-    if (![self canBecomeKeyWindow])
+    if ([CPApp keyWindow] === self || ![self canBecomeKeyWindow])
         return;
 
-    [CPApp._keyWindow resignKeyWindow];
-    
-    CPApp._keyWindow = self;
-    
+    [[CPApp keyWindow] resignKeyWindow];
     [self becomeKeyWindow];
 }
 
@@ -1385,11 +1524,15 @@ CPTexturedBackgroundWindowMask
 */
 - (void)resignKeyWindow
 {
-    if (_firstResponder != self && [_firstResponder respondsToSelector:@selector(resignKeyWindow)])
+    if (_firstResponder !== self && [_firstResponder respondsToSelector:@selector(resignKeyWindow)])
         [_firstResponder resignKeyWindow];
-    
-    if ([_delegate respondsToSelector:@selector(windowDidResignKey:)])
-        [_delegate windowDidResignKey:self];
+
+    if (CPApp._keyWindow === self)
+        CPApp._keyWindow = nil;
+
+    [[CPNotificationCenter defaultCenter]
+        postNotificationName:CPWindowDidResignKeyNotification
+                      object:self];
 }
 
 /*!
@@ -1418,7 +1561,7 @@ CPTexturedBackgroundWindowMask
     [_inclusiveRegisteredDraggedTypes unionSet:pasteboardTypes];
 }
 
-- (void)_noteUnregisteredDraggedTypes:(CPArray)pasteboardTypes
+- (void)_noteUnregisteredDraggedTypes:(CPSet)pasteboardTypes
 {
     if (!pasteboardTypes)
         return;
@@ -1497,6 +1640,8 @@ CPTexturedBackgroundWindowMask
     _isDocumentEdited = isDocumentEdited;
     
     [CPMenu _setMenuBarIconImageAlphaValue:_isDocumentEdited ? 0.5 : 1.0];
+
+    [_windowView setDocumentEdited:isDocumentEdited];
 }
 
 /*!
@@ -1554,6 +1699,55 @@ CPTexturedBackgroundWindowMask
     }
 }
 
+// Minimizing Windows
+
+/*!
+    Simulates the user minimizing the window, then minimizes the window.
+    @param aSender the object making this request
+*/
+- (void)performMiniaturize:(id)aSender
+{
+    //FIXME show stuff
+    [self miniaturize:aSender];
+}
+
+/*!
+    Minimizes the window. Posts a \c CPWindowWillMiniaturizeNotification to the
+    notification center before minimizing the window.
+*/
+- (void)miniaturize:(id)sender
+{
+    [[CPNotificationCenter defaultCenter] postNotificationName:CPWindowWillMiniaturizeNotification object:self];
+
+    [[self platformWindow] miniaturize:sender];
+
+    [self _updateMainAndKeyWindows];
+
+    [[CPNotificationCenter defaultCenter] postNotificationName:CPWindowDidMiniaturizeNotification object:self];
+
+    _isMiniaturized = YES;
+}
+
+/*!
+    Restores a mimized window to it's original size.
+*/
+- (void)deminiaturize:(id)sender
+{
+    [[self platformWindow] deminiaturize:sender];
+
+    [[CPNotificationCenter defaultCenter] postNotificationName:CPWindowDidDeminiaturizeNotification object:self];
+
+    _isMiniaturized = NO;
+}
+
+/*!
+    Returns YES if the window is minimized.
+*/
+- (void)isMiniaturized
+{
+    return _isMiniaturized;
+}
+
 // Closing Windows
 
 /*!
@@ -1562,6 +1756,20 @@ CPTexturedBackgroundWindowMask
 */
 - (void)performClose:(id)aSender
 {
+    if (!(_styleMask & CPClosableWindowMask))
+        return;
+
+    if ([self isFullBridge])
+    {
+        var event = [CPApp currentEvent];
+
+        if ([event type] === CPKeyDown && [event characters] === "w" && ([event modifierFlags] & CPPlatformActionKeyMask))
+        {
+            [[self platformWindow] _propagateCurrentDOMEvent:YES];
+            return;
+        }
+    }
+
     // Only send ONE windowShouldClose: message.
     if ([_delegate respondsToSelector:@selector(windowShouldClose:)])
     {
@@ -1572,8 +1780,45 @@ CPTexturedBackgroundWindowMask
     // Only check self is delegate does NOT implement this.  This also ensures this when delegate == self (returns true).
     else if ([self respondsToSelector:@selector(windowShouldClose:)] && ![self windowShouldClose:self])
         return;
-    
-    [self close];
+
+    var documents = [_windowController documents];
+    if ([documents count])
+    {
+        var index = [documents indexOfObject:[_windowController document]];
+
+        [documents[index] shouldCloseWindowController:_windowController 
+                                             delegate:self 
+                                  shouldCloseSelector:@selector(_windowControllerContainingDocument:shouldClose:contextInfo:)
+                                          contextInfo:{documents:[documents copy], visited:0, index:index}];
+    }
+    else
+        [self close];
+}
+
+- (void)_windowControllerContainingDocument:(CPDocument)document shouldClose:(BOOL)shouldClose contextInfo:(Object)context
+{
+    if (shouldClose)
+    {
+        var windowController = [self windowController],
+            documents = context.documents,
+            count = [documents count],
+            visited = ++context.visited,
+            index = ++context.index % count;
+
+        [document removeWindowController:windowController];
+
+        if (visited < count)
+        {
+            [windowController setDocument:documents[index]];
+
+            [documents[index] shouldCloseWindowController:_windowController 
+                                                 delegate:self 
+                                      shouldCloseSelector:@selector(_windowControllerContainingDocument:shouldClose:contextInfo:)
+                                              contextInfo:context];
+        }
+        else
+            [self close];
+    }
 }
 
 /*!
@@ -1582,9 +1827,9 @@ CPTexturedBackgroundWindowMask
 */
 - (void)close
 {
-   [[CPNotificationCenter defaultCenter] postNotificationName:CPWindowWillCloseNotification object:self];
+    [[CPNotificationCenter defaultCenter] postNotificationName:CPWindowWillCloseNotification object:self];
 
-   [self orderOut:nil];
+    [self orderOut:nil];
 }
 
 // Managing Main Status
@@ -1613,13 +1858,10 @@ CPTexturedBackgroundWindowMask
 */
 - (void)makeMainWindow
 {
-    if (![self canBecomeMainWindow])
+    if ([CPApp mainWindow] === self || ![self canBecomeMainWindow])
         return;
 
-    [CPApp._mainWindow resignMainWindow];
-    
-    CPApp._mainWindow = self;
-    
+    [[CPApp mainWindow] resignMainWindow];
     [self becomeMainWindow];
 }
 
@@ -1628,9 +1870,11 @@ CPTexturedBackgroundWindowMask
 */
 - (void)becomeMainWindow
 {
+    CPApp._mainWindow = self;
+
     [self _synchronizeMenuBarTitleWithWindowTitle];
     [self _synchronizeSaveMenuWithDocumentSaving];
-    
+
     [[CPNotificationCenter defaultCenter]
         postNotificationName:CPWindowDidBecomeMainNotification
                       object:self];
@@ -1644,6 +1888,68 @@ CPTexturedBackgroundWindowMask
     [[CPNotificationCenter defaultCenter]
         postNotificationName:CPWindowDidResignMainNotification
                       object:self];
+
+    if (CPApp._mainWindow === self)
+        CPApp._mainWindow = nil;
+}
+
+- (void)_updateMainAndKeyWindows
+{
+    var allWindows = [CPApp orderedWindows],
+        windowCount = [allWindows count];
+
+    if ([self isKeyWindow])
+    {
+        var keyWindow = [CPApp keyWindow];
+        [self resignKeyWindow];
+
+        if (keyWindow && keyWindow !== self && [keyWindow canBecomeKeyWindow])
+            [keyWindow makeKeyWindow];
+        else
+        {
+            var menuWindow = [CPApp mainMenu]._menuWindow;
+            for (var i = 0; i < windowCount; i++)
+            {
+                var currentWindow = allWindows[i];
+                if (currentWindow === self || currentWindow === menuWindow)
+                    continue;
+
+                if ([currentWindow isVisible] && [currentWindow canBecomeKeyWindow])
+                {
+                    [currentWindow makeKeyWindow];
+                    break;
+                }
+            }
+
+            if (![CPApp keyWindow])
+                [menuWindow makeKeyWindow];
+        }
+    }
+
+    if ([self isMainWindow])
+    {
+        var mainWindow = [CPApp mainWindow];
+        [self resignMainWindow];
+
+        if (mainWindow && mainWindow !== self && [mainWindow canBecomeMainWindow])
+            [mainWindow makeMainWindow];
+        else
+        {
+            var menuWindow = [CPApp mainMenu]._menuWindow;
+            for (var i = 0; i < windowCount; i++)
+            {
+                var currentWindow = allWindows[i];
+                if (currentWindow === self || currentWindow === menuWindow)
+                    continue;
+
+                if ([currentWindow isVisible] && [currentWindow canBecomeMainWindow])
+                {
+                    [currentWindow makeMainWindow];
+                    break;
+                }
+            }
+        }
+    }
 }
 
 // Managing Toolbars
@@ -1710,57 +2016,152 @@ CPTexturedBackgroundWindowMask
     */
 }
 
+- (void)_setFrame:(CGRect)aFrame delegate:(id)delegate duration:(int)duration curve:(CPAnimationCurve)curve
+{
+    var animation = [[_CPWindowFrameAnimation alloc] initWithWindow:self targetFrame:aFrame];
+    [animation setDelegate:delegate];
+    [animation setAnimationCurve:curve];
+    [animation setDuration:duration];
+    [animation startAnimation];
+}
+
 /* @ignore */
 - (void)_setAttachedSheetFrameOrigin
 {
     // Position the sheet above the contentRect.
+    var attachedSheet = [self attachedSheet];
     var contentRect = [[self contentView] frame],
-        sheetFrame = CGRectMakeCopy([_attachedSheet frame]);
+        sheetFrame = CGRectMakeCopy([attachedSheet frame]);
         
-   sheetFrame.origin.y = CGRectGetMinY(_frame) + CGRectGetMinY(contentRect);
-   sheetFrame.origin.x = CGRectGetMinX(_frame) + FLOOR((CGRectGetWidth(_frame) - CGRectGetWidth(sheetFrame)) / 2.0);
-   
-   [_attachedSheet setFrameOrigin:sheetFrame.origin];
-}
+    sheetFrame.origin.y = CGRectGetMinY(_frame) + CGRectGetMinY(contentRect);
+    sheetFrame.origin.x = CGRectGetMinX(_frame) + FLOOR((CGRectGetWidth(_frame) - CGRectGetWidth(sheetFrame)) / 2.0);
 
-/* @ignore */
-- (void)_animateAttachedSheet
-{
-/*    NSWindow *sheet = [sheetContext sheet];
-    NSRect sheetFrame;
-
-    [_sheetContext autorelease];
-   _sheetContext=[sheetContext retain];
-
-   [self _setSheetOrigin];
-   sheetFrame = [sheet frame];
-   
-   [(NSWindowBackgroundView *)[sheet _backgroundView] setBorderType:NSButtonBorder];
-   [[sheet contentView] setAutoresizesSubviews:NO];
-   [[sheet contentView] setAutoresizingMask:NSViewNotSizable];
-   
-//   [(NSWindowBackgroundView *)[sheet _backgroundView] cacheImageForAnimation];
-   
-   [_attachedSheet setFrame:CPRectMake(CGRectGetMinX(sheetFrame), CGRectGetMinY(sheetFrame), CGRectGetWidth(sheetFrame), 0.0) display:YES];
-   [sheet setFrame:NSMakeRect(sheetFrame.origin.x, NSMaxY([self frame]), sheetFrame.size.width, 0) display:YES];
-   [self _setSheetOriginAndFront];
-   
-   [sheet setFrame:sheetFrame display:YES animate:YES];*/
+    [attachedSheet setFrame:sheetFrame display:YES animate:NO];
 }
 
 /* @ignore */
 - (void)_attachSheet:(CPWindow)aSheet modalDelegate:(id)aModalDelegate didEndSelector:(SEL)aDidEndSelector contextInfo:(id)aContextInfo
 {
-    // Set this as our attached sheet.
-    _attachedSheet = aSheet;
+    var sheetFrame = [aSheet frame];
+
+    _sheetContext = {"sheet":aSheet, "modalDelegate":aModalDelegate, "endSelector":aDidEndSelector, "contextInfo":aContextInfo, "frame":CGRectMakeCopy(sheetFrame), "returnCode":-1, "opened": NO}; 
     
-    // If a window is ever run as a sheet, then it's sheet bit is set to YES.
+    [self _attachSheetWindow:aSheet];
+}
+
+/* @ignore */
+- (void)_attachSheetWindow:(CPWindow)aSheet
+{
+    var sheetFrame = [aSheet frame],
+        frame = [self frame],
+        sheetContent = [aSheet contentView];
+    
+    [self _setUpMasksForView:sheetContent];
+         
     aSheet._isSheet = YES;
+    aSheet._parentView = self;
     
-    [self _setAttachedSheetFrameOrigin];
+    var originx = frame.origin.x + FLOOR((frame.size.width - sheetFrame.size.width)/2),
+        originy = frame.origin.y + [[self contentView] frame].origin.y,
+        startFrame = CGRectMake(originx, originy, sheetFrame.size.width, 0),
+        endFrame = CGRectMake(originx, originy, sheetFrame.size.width, sheetFrame.size.height);
+
+    [[CPNotificationCenter defaultCenter] postNotificationName:CPWindowWillBeginSheetNotification object:self];
+    [CPApp runModalForWindow:aSheet];
     
-    // Place this window above ourselves.
-    [_platformWindow order:CPWindowAbove window:aSheet relativeTo:self];
+    [aSheet orderFront:self];
+    [aSheet setFrame:startFrame display:YES animate:NO];
+    _sheetContext["opened"] = YES;
+
+    [aSheet _setFrame:endFrame delegate:self duration:0.2 curve:CPAnimationEaseOut];
+
+    // Should run the main loop here until _isAnimating = FALSE
+    [aSheet becomeKeyWindow];    
+}
+
+/* @ignore */
+- (void)_detachSheetWindow
+{
+    var sheet = [self attachedSheet],
+        startFrame = [sheet frame],
+        endFrame = CGRectMakeCopy(startFrame);
+
+    endFrame.size.height = 0;
+    
+    _sheetContext["frame"] = startFrame;
+     
+    var sheetContent = [sheet contentView];
+    [self _setUpMasksForView:sheetContent];
+
+    _sheetContext["opened"] = NO;
+    [sheet _setFrame:endFrame delegate:self duration:0.2 curve:CPAnimationEaseIn];
+}
+
+/* @ignore */
+- (void)animationDidEnd:(id)anim
+{
+    var sheet = _sheetContext["sheet"];
+    if (anim._window != sheet)
+        return;
+
+    var sheetContent = [sheet contentView];
+    
+    if (_sheetContext["opened"] === YES)
+    {
+        [self _restoreMasksForView:sheetContent];
+        return;
+    }
+    
+    [CPApp stopModal];    
+    [[CPNotificationCenter defaultCenter] postNotificationName:CPWindowDidEndSheetNotification object:self];
+
+    [sheet orderOut:self];
+
+    var lastFrame = _sheetContext["frame"];
+    [sheet setFrame:lastFrame];
+    
+    [self _restoreMasksForView:sheetContent];
+
+    var delegate = _sheetContext["modalDelegate"],
+        endSelector = _sheetContext["endSelector"];
+
+    if (delegate != nil && endSelector != nil)   
+        objj_msgSend(delegate, endSelector, sheet, _sheetContext["returnCode"], _sheetContext["contextInfo"]);
+
+    _sheetContext = nil;
+    sheet._parentView = nil;
+}
+
+- (void)_setUpMasksForView:(CPView)aView
+{
+    var views = [aView subviews];
+
+    [views addObject:aView];
+    
+    for (var i = 0, count = [views count]; i < count; i++)
+    {
+        var view = [views objectAtIndex:i],
+            mask = [view autoresizingMask],
+            maskToAdd = (mask & CPViewMinYMargin) ? 128 : CPViewMinYMargin;
+
+        [view setAutoresizingMask:(mask | maskToAdd)];
+    }
+}
+
+- (void)_restoreMasksForView:(CPView)aView
+{
+    var views = [aView subviews];
+
+    [views addObject:aView];
+    
+    for (var i = 0, count = [views count]; i < count; i++)
+    {
+        var view = [views objectAtIndex:i],
+            mask = [view autoresizingMask],
+            maskToRemove = (mask & 128) ? 128 : CPViewMinYMargin;
+
+        [view setAutoresizingMask:(mask & (~ maskToRemove))];
+    }
 }
 
 /*!
@@ -1768,7 +2169,10 @@ CPTexturedBackgroundWindowMask
 */
 - (CPWindow)attachedSheet
 {
-    return _attachedSheet;
+    if (_sheetContext === nil)
+        return nil;
+        
+   return _sheetContext["sheet"];
 }
 
 /*!
@@ -1798,10 +2202,19 @@ CPTexturedBackgroundWindowMask
     return NO;
 }
 
-- (void)keyDown:(CPEvent)event
+- (void)performKeyEquivalent:(CPEvent)anEvent
 {
-    if (![self performKeyEquivalent:event])
-        [self interpretKeyEvents:[event]];
+    // FIXME: should we be starting at the root, in other words _windowView?
+    // The evidence seems to point to no...
+    return [[self contentView] performKeyEquivalent:anEvent];
+}
+
+- (void)keyDown:(CPEvent)anEvent
+{
+    // It's not clear why we do performKeyEquivalent again here...
+    // Perhaps to allow something to happen between sendEvent: and keyDown:?
+    if (![anEvent _couldBeKeyEquivalent] || ![self performKeyEquivalent:anEvent])
+        [self interpretKeyEvents:[anEvent]];
 }
 
 - (void)insertNewline:(id)sender
@@ -2078,6 +2491,8 @@ var keyViewComparator = function(a, b, context)
         return;
 
     _sharesChromeWithPlatformWindow = shouldShareFrameWithPlatformWindow;
+
+    [self _updateShadow];
 }
 
 - (BOOL)_sharesChromeWithPlatformWindow
@@ -2091,9 +2506,21 @@ var keyViewComparator = function(a, b, context)
 */
 - (CPUndoManager)undoManager
 {
+    // If we've ever created an undo manager, return it.
+    if (_undoManager)
+        return _undoManager;
+
+    // If not, check to see if the document has one.
+    var documentUndoManager = [[_windowController document] undoManager];
+
+    if (documentUndoManager)
+        return documentUndoManager;
+
+    // If not, check to see if the delegate has one.
     if (_delegateRespondsToWindowWillReturnUndoManagerSelector)
         return [_delegate windowWillReturnUndoManager:self];
-    
+
+    // If not, create one.
     if (!_undoManager)
         _undoManager = [[CPUndoManager alloc] init];
 
@@ -2199,9 +2626,13 @@ var interpolate = function(fromValue, toValue, progress)
     
     if (value == 1.0)
         _window._isAnimating = NO;
-    
-    [_window setFrameOrigin:CGPointMake(interpolate(CGRectGetMinX(_startFrame), CGRectGetMinX(_targetFrame), value), interpolate(CGRectGetMinY(_startFrame), CGRectGetMinY(_targetFrame), value))];
-    [_window setFrameSize:CGSizeMake(interpolate(CGRectGetWidth(_startFrame), CGRectGetWidth(_targetFrame), value), interpolate(CGRectGetHeight(_startFrame), CGRectGetHeight(_targetFrame), value))];
+
+    var newFrame = CGRectMake(interpolate(CGRectGetMinX(_startFrame), CGRectGetMinX(_targetFrame), value),
+                              interpolate(CGRectGetMinY(_startFrame), CGRectGetMinY(_targetFrame), value),
+                              interpolate(CGRectGetWidth(_startFrame), CGRectGetWidth(_targetFrame), value),
+                              interpolate(CGRectGetHeight(_startFrame), CGRectGetHeight(_targetFrame), value));
+
+    [_window setFrame:newFrame display:YES animate:NO];
 }
 
 @end
@@ -2211,8 +2642,15 @@ function _CPWindowFullPlatformWindowSessionMake(aWindowView, aContentRect, hasSh
     return { windowView:aWindowView, contentRect:aContentRect, hasShadow:hasShadow, level:aLevel };
 }
 
+CPStandardWindowShadowStyle = 0;
+CPMenuWindowShadowStyle     = 1;
+CPPanelWindowShadowStyle    = 2;
+CPCustomWindowShadowStyle   = 3;
+
+
 @import "_CPWindowView.j"
 @import "_CPStandardWindowView.j"
+@import "_CPDocModalWindowView.j"
 @import "_CPHUDWindowView.j"
 @import "_CPBorderlessWindowView.j"
 @import "_CPBorderlessBridgeWindowView.j"

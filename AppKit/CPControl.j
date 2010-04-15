@@ -28,47 +28,42 @@
 #include "CoreGraphics/CGGeometry.h"
 #include "Platform/Platform.h"
 
-/*
-    @global
-    @group CPTextAlignment
-*/
-CPLeftTextAlignment         = 0;
-/*
-    @global
-    @group CPTextAlignment
-*/
-CPRightTextAlignment        = 1;
-/*
-    @global
-    @group CPTextAlignment
-*/
-CPCenterTextAlignment       = 2;
-/*
-    @global
-    @group CPTextAlignment
-*/
-CPJustifiedTextAlignment    = 3;
-/*
-    @global
-    @group CPTextAlignment
-*/
-CPNaturalTextAlignment      = 4;
+CPLeftTextAlignment             = 0;
+CPRightTextAlignment            = 1;
+CPCenterTextAlignment           = 2;
+CPJustifiedTextAlignment        = 3;
+CPNaturalTextAlignment          = 4;
 
-/*
-    @global
-    @group CPControlSize
-*/
-CPRegularControlSize        = 0;
-/*
-    @global
-    @group CPControlSize
-*/
-CPSmallControlSize          = 1;
-/*
-    @global
-    @group CPControlSize
-*/
-CPMiniControlSize           = 2;
+CPRegularControlSize            = 0;
+CPSmallControlSize              = 1;
+CPMiniControlSize               = 2;
+
+CPLineBreakByWordWrapping       = 0;
+CPLineBreakByCharWrapping       = 1;
+CPLineBreakByClipping           = 2;
+CPLineBreakByTruncatingHead     = 3;
+CPLineBreakByTruncatingTail     = 4;
+CPLineBreakByTruncatingMiddle   = 5;
+
+CPTopVerticalTextAlignment      = 1,
+CPCenterVerticalTextAlignment   = 2,
+CPBottomVerticalTextAlignment   = 3;
+
+CPScaleProportionally   = 0;
+CPScaleToFit            = 1;
+CPScaleNone             = 2;
+
+CPNoImage       = 0;
+CPImageOnly     = 1;
+CPImageLeft     = 2;
+CPImageRight    = 3;
+CPImageBelow    = 4;
+CPImageAbove    = 5;
+CPImageOverlaps = 6;
+
+CPOnState                       = 1;
+CPOffState                      = 0;
+CPMixedState                    = -1;
 
 CPControlNormalBackgroundColor      = "CPControlNormalBackgroundColor";
 CPControlSelectedBackgroundColor    = "CPControlSelectedBackgroundColor";
@@ -95,7 +90,8 @@ var CPControlBlackColor     = [CPColor blackColor];
     id                  _target;
     SEL                 _action;
     int                 _sendActionOn;
-    
+    BOOL                _sendsActionOnEndEditing @accessors(property=sendsActionOnEndEditing);
+
     // Mouse Tracking Support
     BOOL                _continuousTracking;
     BOOL                _trackingWasWithinFrame;
@@ -112,7 +108,7 @@ var CPControlBlackColor     = [CPColor blackColor];
                                                 CPLineBreakByClipping,
                                                 [CPColor blackColor],
                                                 [CPFont systemFontOfSize:12.0],
-                                                nil,
+                                                [CPNull null],
                                                 _CGSizeMakeZero(),
                                                 CPImageLeft,
                                                 CPScaleToFit,
@@ -304,14 +300,6 @@ var CPControlBlackColor     = [CPColor blackColor];
     _previousTrackingLocation = currentLocation;
 }
 
-- (void)performClick:(id)sender 
-{
-    [self highlight:YES];
-    [self setState:[self nextState]];
-    [self sendAction:[self action] to:[self target]];
-    [self highlight:NO];
-}
-
 - (void)setState:(int)state
 {
 }
@@ -319,6 +307,20 @@ var CPControlBlackColor     = [CPColor blackColor];
 - (int)nextState
 {
     return 0;
+}
+
+- (void)performClick:(id)sender 
+{
+    [self highlight:YES];
+    [self setState:[self nextState]];
+    [self sendAction:[self action] to:[self target]];
+    
+    [CPTimer scheduledTimerWithTimeInterval:0.1 target:self selector:@selector(unhighlightButtonTimerDidFinish:) userInfo:nil repeats:NO];
+}
+
+- (void)unhighlightButtonTimerDidFinish:(id)sender
+{
+    [self highlight:NO];
 }
 
 - (unsigned)mouseDownFlags
@@ -590,7 +592,9 @@ var CPControlValueKey           = "CPControlValueKey",
     
     CPControlTargetKey          = "CPControlTargetKey",
     CPControlActionKey          = "CPControlActionKey",
-    CPControlSendActionOnKey    = "CPControlSendActionOnKey";
+    CPControlSendActionOnKey    = "CPControlSendActionOnKey",
+
+    CPControlSendsActionOnEndEditingKey = "CPControlSendsActionOnEndEditingKey";
 
 var __Deprecated__CPImageViewImageKey   = @"CPImageViewImageKey";
 
@@ -613,6 +617,7 @@ var __Deprecated__CPImageViewImageKey   = @"CPImageViewImageKey";
         [self setAction:[aCoder decodeObjectForKey:CPControlActionKey]];
 
         [self sendActionOn:[aCoder decodeIntForKey:CPControlSendActionOnKey]];
+        [self setSendsActionOnEndEditing:[aCoder decodeBoolForKey:CPControlSendsActionOnEndEditingKey]];
     }
     
     return self;
@@ -625,6 +630,9 @@ var __Deprecated__CPImageViewImageKey   = @"CPImageViewImageKey";
 - (void)encodeWithCoder:(CPCoder)aCoder
 {
     [super encodeWithCoder:aCoder];
+
+    if (_sendsActionOnEndEditing)
+        [aCoder encodeBool:_sendsActionOnEndEditing forKey:CPControlSendsActionOnEndEditingKey];
 
     if (_value !== nil)
         [aCoder encodeObject:_value forKey:CPControlValueKey];

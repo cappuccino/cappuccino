@@ -30,101 +30,95 @@
 @import "Nib2CibKeyedUnarchiver.j"
 @import "Converter.j"
 
-var File = require("file");
+var FILE = require("file");
+var OS = require("os");
 
-importPackage(java.io);
+var parser = new (require("args").Parser)();
 
-CPLogRegister(CPLogPrint);
+parser.usage("INPUT_FILE [OUTPUT_FILE]");
 
-function printUsage()
-{
-    print("usage: nib2cib INPUT_FILE [OUTPUT_FILE] [-F /path/to/required/framework] [-R path/to/resources]");
-    java.lang.System.exit(1);
-}
+parser.option("-F", "framework", "frameworks")
+    .push()
+    .help("Add a framework to load");
+
+parser.option("-R", "resources")
+    .set()
+    .help("Set the Resources directory");
+
+parser.option("--mac", "format")
+    .set(NibFormatMac)
+    .def(NibFormatUndetermined)
+    .help("Set format to Mac");
+
+// parser.option("--iphone", "format")
+//     .set(NibFormatIPhone)
+//     .help("Set format to iPhone");
+
+parser.option("-v", "--verbose", "verbose")
+    .inc()
+    .help("Increase verbosity level");
+
+parser.option("-q", "--quiet", "quiet")
+    .set(true)
+    .help("No output");
+
+parser.helpful();
 
 function loadFrameworks(frameworkPaths, aCallback)
 {
     if (!frameworkPaths || frameworkPaths.length === 0)
         return aCallback();
 
-    var frameworkPath = frameworkPaths.shift(),
-        infoPlistPath = frameworkPath + "/Info.plist";
-
-    if (!File.isReadable(infoPlistPath))
+    frameworkPaths.forEach(function(aFrameworkPath)
     {
-        print("'" + frameworkPath + "' is not a framework or could not be found.");
-        java.lang.System.exit(1);
-    }
+        print("Loading " + aFrameworkPath);
 
-    var infoDictionary = CPPropertyListCreateFromData([CPData dataWithString:File.read(infoPlistPath, { charset:"UTF-8" })]);
-    
-    if ([infoDictionary objectForKey:@"CPBundlePackageType"] !== "FMWK")
-    {
-        print("'" + frameworkPath + "' is not a framework.");
-        java.lang.System.exit(1);
-    }
-    
-    print("Loading " + [infoDictionary objectForKey:@"CPBundleName"]);
+        var frameworkBundle = [[CPBundle alloc] initWithPath:aFrameworkPath];
 
-    var files = [infoDictionary objectForKey:@"CPBundleReplacedFiles"],
-        count = files.length;
+        [frameworkBundle loadWithDelegate:nil];
 
-    if (count)
-    {
-        var context = new objj_context();
+        require("browser/timeout").serviceTimeouts();
+    });
 
-        context.didCompleteCallback = function() { loadFrameworks(frameworkPaths, aCallback) };
-print("2he");
-        while (count--)
-        {
-            print(frameworkPath + '/' + files[count]);
-            context.pushFragment(fragment_create_file(frameworkPath + '/' + files[count], new objj_bundle(""), YES, NULL));
-        }
-print("hmmm");
-        context.evaluate();print("wha???");
-    }
-    else
-        loadFrameworks(frameworkPaths, aCallback);
-print("so far so good...");
+    aCallback();
 }
 
-function main()
+function main(args)
 {
-    var count = arguments.length;
-    
-    if (count < 1)
-        return printUsage();
-    
-    var index = 0,
+    var options = parser.parse(args, null, null, true);
 
-        frameworkPaths = [],
-        converter = [[Converter alloc] init];
-    
-    for (; index < count; ++index)
-    {
-        switch(arguments[index])
-        {
-            case "-help":
-            case "--help":      printUsage();
-                                break;
-
-            case "--mac":       [converter setFormat:NibFormatMac];
-                                break;
-
-            case "-F":          frameworkPaths.push(arguments[++index]);
-                                break;
-
-            case "-R":          [converter setResourcesPath:arguments[++index]];
-                                break;
-
-            default:            if ([converter inputPath])
-                                    [converter setOutputPath:arguments[index]];
-                                else
-                                    [converter setInputPath:arguments[index]];
-        }
+    if (options.args.length < 1 || options.args.length > 2) {
+        parser.printUsage(options);
+        OS.exit(1);
     }
 
-    loadFrameworks(frameworkPaths, function()
+    if (options.quiet) {}
+    else if (options.verbose === 0)
+        CPLogRegister(CPLogPrint, "warn");
+    else if (options.verbose === 1)
+        CPLogRegister(CPLogPrint, "info");
+    else
+        CPLogRegister(CPLogPrint);
+
+    CPLog.debug("Input:      " + options.args[0]);
+    CPLog.debug("Output:     " + (options.args[1]||""));
+    CPLog.debug("Format:     " + ["Auto","Mac","iPhone"][options.format]);
+    CPLog.debug("Resources:  " + (options.resources||""));
+    CPLog.debug("Frameworks: " + options.frameworks);
+
+    var converter = [[Converter alloc] init];
+
+    if (options.resources)
+        [converter setResourcesPath:options.resources];
+
+    [converter setFormat:options.format];
+
+    [converter setInputPath:options.args[0]];
+
+    if (options.args.length > 1)
+        [converter setOutputPath:options.args[1]];
+
+    loadFrameworks(options.frameworks, function()
     {
         [converter convert];
     });

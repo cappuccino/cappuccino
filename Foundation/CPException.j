@@ -46,6 +46,7 @@ if (input == nil)
 */
 @implementation CPException : CPObject
 {
+    id          _userInfo;
 }
 
 /*
@@ -53,7 +54,7 @@ if (input == nil)
 */
 + (id)alloc
 {
-    return new objj_exception();
+    return new Error();
 }
 
 /*!
@@ -92,8 +93,8 @@ if (input == nil)
     if (self)
     {
         name = aName;
-        reason = aReason;
-        userInfo = aUserInfo;
+        message = aReason;
+        _userInfo = aUserInfo;
     }
     
     return self;
@@ -112,7 +113,7 @@ if (input == nil)
 */
 - (CPString)reason
 {
-    return reason;
+    return message;
 }
 
 /*!
@@ -120,7 +121,7 @@ if (input == nil)
 */
 - (CPDictionary)userInfo
 {
-    return userInfo;
+    return _userInfo;
 }
 
 /*!
@@ -128,7 +129,7 @@ if (input == nil)
 */
 - (CPString)description
 {
-    return reason;
+    return message;
 }
 
 /*!
@@ -136,7 +137,7 @@ if (input == nil)
 */
 - (void)raise
 {
-    objj_exception_throw(self);
+    throw self;
 }
 
 @end
@@ -145,7 +146,7 @@ if (input == nil)
 
 - (id)copy
 {
-    return [[self class] exceptionWithName:name reason:reason userInfo:userInfo];
+    return [[self class] exceptionWithName:name reason:message userInfo:_userInfo];
 }
 
 @end
@@ -168,8 +169,8 @@ var CPExceptionNameKey = "CPExceptionNameKey",
     if (self)
     {
         name = [aCoder decodeObjectForKey:CPExceptionNameKey];
-        reason = [aCoder decodeObjectForKey:CPExceptionReasonKey];
-        userInfo = [aCoder decodeObjectForKey:CPExceptionUserInfoKey];
+        message = [aCoder decodeObjectForKey:CPExceptionReasonKey];
+        _userInfo = [aCoder decodeObjectForKey:CPExceptionUserInfoKey];
     }
     
     return self;
@@ -182,16 +183,25 @@ var CPExceptionNameKey = "CPExceptionNameKey",
 - (void)encodeWithCoder:(CPCoder)aCoder
 {
     [aCoder encodeObject:name forKey:CPExceptionNameKey];
-    [aCoder encodeObject:reason forKey:CPExceptionReasonKey];
-    [aCoder encodeObject:userInfo forKey:CPExceptionUserInfoKey];
+    [aCoder encodeObject:message forKey:CPExceptionReasonKey];
+    [aCoder encodeObject:_userInfo forKey:CPExceptionUserInfoKey];
 }
 
 @end
 
-objj_exception.prototype.isa = CPException;
+// toll-free bridge Error to CPException
+// [CPException alloc] uses an objj_exception, which is a subclass of Error
+Error.prototype.isa = CPException;
+Error.prototype._userInfo = NULL;
+
 [CPException initialize];
 
 function _CPRaiseInvalidAbstractInvocation(anObject, aSelector)
 {
     [CPException raise:CPInvalidArgumentException reason:@"*** -" + sel_getName(aSelector) + @" cannot be sent to an abstract object of class " + [anObject className] + @": Create a concrete instance!"];
+}
+
+function _CPReportLenientDeprecation(/*Class*/ aClass, /*SEL*/ oldSelector, /*SEL*/ newSelector)
+{
+    CPLog.warn("[" + CPStringFromClass(aClass) + " " + CPStringFromSelector(oldSelector) + "] is deprecated, using " + CPStringFromSelector(newSelector) + " instead.");
 }

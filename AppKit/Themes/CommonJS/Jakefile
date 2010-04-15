@@ -1,0 +1,16 @@
+
+require("../../../common.jake");
+
+var FILE = require("file");
+
+$BLENDTASK              = "blendtask.j";
+$BUILD_CJS_BLENDTASK    = FILE.join($BUILD_CJS_CAPPUCCINO, "lib", "cappuccino", "jake", "blendtask.j");
+
+filedir($BUILD_CJS_BLENDTASK, [$BLENDTASK], function()
+{
+    cp_r($BLENDTASK, $BUILD_CJS_BLENDTASK);
+});
+
+task("build", [$BUILD_CJS_BLENDTASK]);
+
+CLOBBER.include($BUILD_CJS_BLENDTASK);

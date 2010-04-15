@@ -232,7 +232,9 @@
 */
 - (BOOL)containsObject:(id)anObject
 {
-    if (_contents[[anObject UID]] && [_contents[[anObject UID]] isEqual:anObject])
+    var obj = _contents[[anObject UID]];
+
+    if (obj !== undefined && [obj isEqual:anObject])
         return YES;
     
     return NO;
@@ -254,16 +256,19 @@
     Returns a Boolean value that indicates whether at least one object in the receiver is also present in another given set.
     @param set The set with which to compare the receiver.
 */
-- (BOOL)intersectsSet:(CPSet)set
+- (BOOL)intersectsSet:(CPSet)aSet
 {
-    var items = [set allObjects];
-    for (var i = items.length; i > 0; i--)
-    {
-        // If the sets share at least one item, they intersect
-        if ([self containsObject:items[i]])
+    if (self === aSet)
+        return YES;
+
+    var objects = [aSet allObjects],
+        count = [objects count];
+
+    // If the sets share at least one item, they intersect
+    while (count--)
+        if ([self containsObject:objects[count]])
             return YES;
-    }
-    
+
     return NO;
 }
 

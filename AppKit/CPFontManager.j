@@ -51,7 +51,7 @@ var CPSharedFontManager     = nil,
 
 // Changing the Default Font Conversion Classes
 /*!
-    Sets the class that will be used to create the applcation's
+    Sets the class that will be used to create the application's
     font manager.
 */
 + (void)setFontManagerFactory:(Class)aClass

@@ -43,8 +43,10 @@
 {
     CPWindow            _window;
 
+    CPArray             _documents;
     CPDocument          _document;
     BOOL                _shouldCloseDocument;
+    BOOL                _supportsMultipleDocuments;
 
     id                  _cibOwner;
     CPString            _windowCibName;
@@ -74,6 +76,8 @@
         [self setShouldCloseDocument:NO];
 
         [self setNextResponder:CPApp];
+
+        _documents = [];
     }
 
     return self;
@@ -140,7 +144,7 @@
 {
     var theWindow = [self window];
 
-	if ([theWindow respondsToSelector:@selector(becomesKeyOnlyIfNeeded)] && [theWindow becomesKeyOnlyIfNeeded])
+    if ([theWindow respondsToSelector:@selector(becomesKeyOnlyIfNeeded)] && [theWindow becomesKeyOnlyIfNeeded])
         [theWindow orderFront:aSender];
     else
         [theWindow makeKeyAndOrderFront:aSender];
@@ -169,6 +173,14 @@
 
         if (_window === nil && [_cibOwner isKindOfClass:[CPDocument class]])
             [self setWindow:[_cibOwner valueForKey:@"window"]];
+        
+        if (!_window) 
+        {
+            var reason = [CPString stringWithFormat:@"Window for %@ could not be loaded from Cib or no window specified. \
+                                                        Override loadWindow to load the window manually.", self];
+
+            [CPException raise:CPInternalInconsistencyException reason:reason];
+        }
 
         [self windowDidLoad];
         [_document windowControllerDidLoadCib:self];
@@ -220,6 +232,9 @@
 
     if (_document)
     {
+        if (![self supportsMultipleDocuments])
+            [self removeDocument:_document];
+        
         [defaultCenter removeObserver:self
                                  name:CPDocumentWillSaveNotification
                                object:_document];
@@ -237,6 +252,8 @@
 
     if (_document)
     {
+        [self addDocument:_document];
+
         [defaultCenter addObserver:self
                           selector:@selector(_documentWillSave:)
                               name:CPDocumentWillSaveNotification
@@ -263,23 +280,46 @@
     [self synchronizeWindowTitleWithDocumentName];
 }
 
-- (void)setViewController:(CPViewController)aViewController
+- (void)setSupportsMultipleDocuments:(BOOL)shouldSupportMultipleDocuments
 {
-    var containerView = [self viewControllerContainerView] || [[self window] contentView],
-        view = [_viewController view],
-        frame = view ? [view frame] : [containerView bounds];
+    _supportsMultipleDocuments = shouldSupportMultipleDocuments;
+}
 
-    [view removeFromSuperview];
+- (BOOL)supportsMultipleDocuments
+{
+    return _supportsMultipleDocuments;
+}
 
-    _viewController = aViewController;
+- (void)addDocument:(CPDocument)aDocument
+{
+    if (aDocument && ![_documents containsObject:aDocument])
+        [_documents addObject:aDocument];
+}
 
-    view = [_viewController view];
+- (void)removeDocument:(CPDocument)aDocument
+{
+    var index = [_documents indexOfObjectIdenticalTo:aDocument];
 
-    if (view)
-    {
-        [view setFrame:frame];
-        [containerView addSubview:view];
-    }
+    if (index === CPNotFound)
+        return;
+
+    [_documents removeObjectAtIndex:index];
+
+    if (_document === aDocument && [_documents count])
+        [self setDocument:[_documents objectAtIndex:MIN(index, [_documents count] - 1)]];
+}
+
+- (void)removeDocumentAndCloseIfNecessary:(CPDocument)aDocument
+{
+    [self removeDocument:aDocument];
+
+    if (![_documents count])
+        [self close];
+}
+
+- (CPArray)documents
+{
+    return _documents;
 }
 
 - (void)setViewControllerContainerView:(CPView)aView

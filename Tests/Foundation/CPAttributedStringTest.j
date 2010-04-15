@@ -31,14 +31,14 @@ var sharedObject = [CPObject new];
     return string;
 }
 
-- (id)testInitWithString
+- (void)testInitWithString
 {
     var string = [[CPAttributedString alloc] initWithString:@"hi there"];
 
     [self assertTrue:([string string] === @"hi there") 
              message:"testInitWithString: expected:" + @"hi there" + " actual:" + [string string]];
 }
-- (id)testInitWithAttributedString
+- (void)testInitWithAttributedString
 {
     var string = [[CPAttributedString alloc] initWithString:@"hi there"],
         attributedString = [[CPAttributedString alloc] initWithAttributedString:string];
@@ -53,7 +53,7 @@ var sharedObject = [CPObject new];
              message:"testInitWithAttributedString: expected:" + [self stringForTesting] + " actual:" + string];
 }
 
-- (id)testIinitWithString_attributes
+- (void)testIinitWithString_attributes
 {
     var string = [[CPAttributedString alloc] initWithString:@"hi there" attributes:[CPDictionary dictionary]];
 
@@ -70,7 +70,7 @@ var sharedObject = [CPObject new];
 }
 
 //Retrieving Character Information
-- (CPString)testString
+- (void)testString
 {
     var string = [[CPAttributedString alloc] initWithString:@"hi there"];
 
@@ -78,7 +78,7 @@ var sharedObject = [CPObject new];
              message:"testString: expected:" + @"hi there" + " actual:" + [string string]];
 }
 
-- (unsigned)testLength
+- (void)testLength
 {
     var string = [[CPAttributedString alloc] initWithString:@"hi there"];
 
@@ -89,7 +89,7 @@ var sharedObject = [CPObject new];
              message:"testLength: expected:" + 45 + " actual:" + [[self stringForTesting] length]];
 }
 
-- (unsigned)test_indexOfEntryWithIndex
+- (void)test_indexOfEntryWithIndex
 {
     var string = [self stringForTesting];
     
@@ -104,7 +104,7 @@ var sharedObject = [CPObject new];
 }
 
 //Retrieving Attribute Information
-- (CPDictionary)testAttributesAtIndexEffectiveRange
+- (void)testAttributesAtIndexEffectiveRange
 {
     var string = [self stringForTesting],
         expectedValues = {a:1, b:"bar", c:sharedObject, d:20};
@@ -117,7 +117,7 @@ var sharedObject = [CPObject new];
 }
 
 //- (CPDictionary)attributesAtIndex:(unsigned)anIndex longestEffectiveRange:(CPRangePointer)aRange inRange:(CPRange)rangeLimit
-- (CPDictionary)testAttributesAtIndexLongestEffectiveRangeInRange
+- (void)testAttributesAtIndexLongestEffectiveRangeInRange
 {    
     var string = [self stringForTesting];
 
@@ -136,7 +136,7 @@ var sharedObject = [CPObject new];
 }
 
 //- (id)attribute:(CPString)attribute atIndex:(unsigned)index effectiveRange:(CPRangePointer)aRange
-- (id)testAttributeAtIndexEffectiveRange
+- (void)testAttributeAtIndexEffectiveRange
 {
     var string = [self stringForTesting];
     
@@ -145,7 +145,7 @@ var sharedObject = [CPObject new];
 }
 
 //- (id)attribute:(CPString)attribute atIndex:(unsigned)index longestEffectiveRange:(CPRangePointer)aRange inRange:(CPRange)rangeLimit
-- (id)testAttributeAtIndexLongestEffectiveRangeInRange
+- (void)testAttributeAtIndexLongestEffectiveRangeInRange
 {
     var string = [self stringForTesting];
     
@@ -159,14 +159,14 @@ var sharedObject = [CPObject new];
 }
 
 //Comparing Attributed Strings
-- (BOOL)testIsEqualToAttributedString
+- (void)testIsEqualToAttributedString
 {
     [self assertTrue:[[self stringForTesting] isEqualToAttributedString:[self stringForTesting]] message:"expected stringForTesting to equal itself, but it didn't"];
     
     [self assertFalse:[[self stringForTesting] isEqualToAttributedString:[[CPAttributedString alloc] initWithString:@"HELLO!"]] message:"Expected stringForTesting to not equal 'HELLO!', but it did"];
 }
 
-- (BOOL)testIsEqual
+- (void)testIsEqual
 {
     [self assertTrue:[[self stringForTesting] isEqual:[self stringForTesting]] message:"expected stringForTesting to equal itself, but it didn't"];
     
@@ -181,7 +181,7 @@ var sharedObject = [CPObject new];
 
 //Extracting a Substring
 //- (CPAttributedString)attributedSubstringFromRange:(CPRange)aRange
-- (CPAttributedString)testAttributedSubstringFromRange
+- (void)testAttributedSubstringFromRange
 {
     var a = [[self stringForTesting] attributedSubstringFromRange:CPMakeRange(0, 9)],
         expectedValues = {a:1, b:"bar", c:sharedObject, d:20};

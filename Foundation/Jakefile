@@ -1,0 +1,60 @@
+/*
+ * Jakefile
+ * Foundation
+ *
+ * Created by Francisco Tolmasky.
+ * Copyright 2009, 280 North, Inc.
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
+ */
+
+require("../common.jake");
+
+var framework = require("objective-j/jake").framework;
+var BundleTask = require("objective-j/jake").BundleTask;
+
+foundationTask = framework ("Foundation", function(foundationTask)
+{
+    foundationTask.setBuildIntermediatesPath(FILE.join($BUILD_DIR, "Foundation.build", $CONFIGURATION))
+    foundationTask.setBuildPath($BUILD_CONFIGURATION_DIR);
+
+    foundationTask.setAuthor("280 North, Inc.");
+    foundationTask.setEmail("feedback @nospam@ 280north.com");
+    foundationTask.setSummary("Foundation classes for Cappuccino");
+    foundationTask.setIdentifier("com.280n.Foundation");
+    foundationTask.setVersion(getCappuccinoVersion());
+    foundationTask.setLicense(BundleTask.License.LGPL_v2_1);
+    foundationTask.setSources(new FileList("**/*.j"));
+    foundationTask.setResources(new FileList("Resources/**/*"));
+    foundationTask.setFlattensSources(true);
+    foundationTask.setInfoPlistPath("Info.plist");
+    foundationTask.setEnvironments(require("objective-j/jake/environment").ObjJ);
+
+    if ($CONFIGURATION === "Release")
+        foundationTask.setCompilerFlags("-O");
+    else
+        foundationTask.setCompilerFlags("-DDEBUG -g");
+});
+
+$BUILD_CJS_FOUNDATION = FILE.join($BUILD_CJS_CAPPUCCINO_FRAMEWORKS, "Foundation");
+
+filedir ($BUILD_CJS_FOUNDATION, ["Foundation"], function()
+{
+    cp_r(foundationTask.buildProductPath(), $BUILD_CJS_FOUNDATION);
+});
+
+task ("build", ["Foundation", $BUILD_CJS_FOUNDATION]);
+
+CLOBBER.include($BUILD_CJS_FOUNDATION);

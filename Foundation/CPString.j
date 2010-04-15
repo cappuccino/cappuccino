@@ -56,7 +56,7 @@ CPAnchoredSearch        = 8;
 */
 CPNumericSearch         = 64;
 
-var CPStringHashes      = new objj_dictionary();
+var CPStringUIDs        = new CFMutableDictionary();
 
 var CPStringRegexSpecialCharacters = [
       '/', '.', '*', '+', '?', '|', '$', '^',
@@ -142,7 +142,7 @@ var CPStringRegexSpecialCharacters = [
         [CPException raise:CPInvalidArgumentException
                     reason:"initWithFormat: the format can't be 'nil'"];
 
-    self = sprintf.apply(this, Array.prototype.slice.call(arguments, 2));
+    self = ObjectiveJ.sprintf.apply(this, Array.prototype.slice.call(arguments, 2));
     return self;
 }
 
@@ -158,7 +158,7 @@ var CPStringRegexSpecialCharacters = [
         [CPException raise:CPInvalidArgumentException
                     reason:"initWithFormat: the format can't be 'nil'"];
 
-    return sprintf.apply(this, Array.prototype.slice.call(arguments, 2));
+    return ObjectiveJ.sprintf.apply(this, Array.prototype.slice.call(arguments, 2));
 }
 
 /*!
@@ -199,7 +199,7 @@ var CPStringRegexSpecialCharacters = [
     if (!format)
         [CPException raise:CPInvalidArgumentException reason:"initWithFormat: the format can't be 'nil'"];
 
-    return self + sprintf.apply(this, Array.prototype.slice.call(arguments, 2));
+    return self + ObjectiveJ.sprintf.apply(this, Array.prototype.slice.call(arguments, 2));
 }
 
 /*!
@@ -510,7 +510,7 @@ var CPStringRegexSpecialCharacters = [
 */
 - (BOOL)hasSuffix:(CPString)aString
 {
-    return aString && aString != "" && lastIndexOf(aString) == (length - aString.length);
+    return aString && aString != "" && length >= aString.length && lastIndexOf(aString) == (length - aString.length);
 }
 
 /*!
@@ -526,15 +526,53 @@ var CPStringRegexSpecialCharacters = [
 */
 - (unsigned)UID
 {
-    var hash = dictionary_getValue(CPStringHashes, self);
-    
-    if (!hash) 
+    var UID = CPStringUIDs.valueForKey(self);
+
+    if (!UID)
     {
-        hash = _objj_generateObjectHash();
-        dictionary_setValue(CPStringHashes, self, hash);
+        UID = objj_generateObjectUID();
+        CPStringUIDs.setValueForKey(self, UID);
     }
+
+    return UID + "";
+}
+
+/*!
+    Returns a string containing characters the receiver and a given string have in common, starting from
+    the beginning of each up to the first characters that aren't equivalent.
+    @param aString the string with which to compare the receiver
+*/
+- (CPString)commonPrefixWithString:(CPString)aString
+{
+    return [self commonPrefixWithString: aString options: 0];
+}
+
+/*!
+    Returns a string containing characters the receiver and a given string have in common, starting from
+    the beginning of each up to the first characters that aren't equivalent.
+    @param aString the string with which to compare the receiver
+    @param aMask options for comparision
+*/
+- (CPString)commonPrefixWithString:(CPString)aString options:(int)aMask
+{
+    var len = 0, // length of common prefix
+        lhs = self,
+        rhs = aString,
+        min = MIN([lhs length], [rhs length]);
     
-    return hash;
+    if (aMask & CPCaseInsensitiveSearch)
+    {
+        lhs = [lhs lowercaseString];
+        rhs = [rhs lowercaseString];
+    }
+
+    for (; len < min; len++ )
+    {
+        if ( [lhs characterAtIndex:len] !== [rhs characterAtIndex:len] )
+            break;
+    }
+
+    return [self substringToIndex:len];
 }
 
 /*!
@@ -626,6 +664,9 @@ var CPStringRegexSpecialCharacters = [
 */
 - (CPString)pathExtension
 {
+    if (lastIndexOf('.') === CPNotFound)
+        return "";
+
     return substr(lastIndexOf('.') + 1);
 }
 
@@ -659,6 +700,21 @@ var CPStringRegexSpecialCharacters = [
         return '/';
 
     return path;
+}
+
+/*!
+    Deletes the extension of a string.
+*/
+- (CPString)stringByDeletingPathExtension
+{
+    var extension = [self pathExtension];
+    if (extension === "")
+        return self;
+
+    if (lastIndexOf('.') < 1)
+        return self;
+
+    return substr(0, [self length] - (extension.length + 1));
 }
 
 - (CPString)stringByStandardizingPath

@@ -42,6 +42,8 @@
 @import "CPNumber.j"
 @import "CPObject.j"
 @import "CPObjJRuntime.j"
+@import "CPOperation.j"
+@import "CPOperationQueue.j"
 @import "CPPropertyListSerialization.j"
 @import "CPRange.j"
 @import "CPRunLoop.j"

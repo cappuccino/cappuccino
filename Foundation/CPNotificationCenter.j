@@ -22,8 +22,9 @@
 
 @import "CPArray.j"
 @import "CPDictionary.j"
-@import "CPNotification.j"
 @import "CPException.j"
+@import "CPNotification.j"
+@import "CPNull.j"
 
 
 var CPNotificationDefaultCenter = nil;

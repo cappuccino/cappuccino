@@ -1,0 +1,9 @@
+/*
+Content-Type: multipart/related; boundary="_SEPARATOR_"
+
+--_SEPARATOR_
+Content-Location:test
+Content-Transfer-Encoding:base64
+
+R0lGODlhAQABAIAAAMc9BQAAACH5BAAAAAAALAAAAAABAAEAAAICRAEAOw==
+*/

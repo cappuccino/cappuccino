@@ -33,14 +33,32 @@ CPPropertyList280NorthFormat_v1_0   = kCFPropertyList280NorthFormat_v1_0;
 {
 }
 
-+ (CPData)dataFromPropertyList:(id)aPlist format:(CPPropertyListFormat)aFormat errorDescription:({CPString})anErrorString
++ (CPData)dataFromPropertyList:(id)aPlist format:(CPPropertyListFormat)aFormat
 {
     return CPPropertyListCreateData(aPlist, aFormat);
 }
 
-+ (id)propertyListFromData:(CPData)data format:(CSPropertyListFormat)aFormat errorDescription:({CPString})errorString
++ (id)propertyListFromData:(CPData)data format:(CPPropertyListFormat)aFormat
 {
     return CPPropertyListCreateFromData(data, aFormat);
+}
+
+@end
+
+@implementation CPPropertyListSerialization (Deprecated)
+
++ (CPData)dataFromPropertyList:(id)aPlist format:(CPPropertyListFormat)aFormat errorDescription:(id)anErrorString
+{
+    _CPReportLenientDeprecation(self, _cmd, @selector(dataFromPropertyList:format:));
+
+    return [self dataFromPropertyList:aPlist format:aFormat];
+}
+
++ (id)propertyListFromData:(CPData)data format:(CPPropertyListFormat)aFormat errorDescription:(id)errorString
+{
+    _CPReportLenientDeprecation(self, _cmd, @selector(propertyListFromData:format:));
+
+    return [self propertyListFromData:data format:aFormat];
 }
 
 @end
