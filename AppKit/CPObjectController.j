@@ -53,7 +53,7 @@
 
 - (id)initWithContent:(id)aContent
 {
-    self = [super init];
+    self = [self init];
 
     if (self)
     {
