@@ -35,14 +35,14 @@ var transformerMap = [CPDictionary dictionary];
 
 }
 
-+ (void)setValueTransformer:(CPValueTransformer)transformer forName:(CPString)name
++ (void)setValueTransformer:(CPValueTransformer)aTransformer forName:(CPString)aName
 {
-    [transformerMap setObject:transformer forKey:name];
+    [transformerMap setObject:aTransformer forKey:aName];
 }
 
-+ (CPValueTransformer)valueTransformerForName:(CPString)name
++ (CPValueTransformer)valueTransformerForName:(CPString)aName
 {
-    return [transformerMap objectForKey:name];
+    return [transformerMap objectForKey:aName];
 }
 
 + (CPArray)valueTransformerNames
@@ -60,17 +60,17 @@ var transformerMap = [CPDictionary dictionary];
     return [CPObject class];
 }
 
-- (id)reverseTransformedValue:(id)value
+- (id)reverseTransformedValue:(id)aValue
 {
     if ([[self class] allowsReverseTransformation])
     {
         [CPException raise:CPInvalidArgumentException reason:(self+" is not reversible.")];
     }
 
-    return [self transformedValue:value];
+    return [self transformedValue:aValue];
 }
 
-- (id)transformedValue:(id)value
+- (id)transformedValue:(id)aValue
 {
     return nil;
 }
@@ -91,14 +91,14 @@ var transformerMap = [CPDictionary dictionary];
     return [CPNumber class];
 }
 
-- (id)reverseTransformedValue:(id)value
+- (id)reverseTransformedValue:(id)aValue
 {
-    return ![value boolValue];
+    return ![aValue boolValue];
 }
 
-- (id)transformedValue:(id)value
+- (id)transformedValue:(id)aValue
 {
-    return ![value boolValue];
+    return ![aValue boolValue];
 }
 
 @end
@@ -115,9 +115,9 @@ var transformerMap = [CPDictionary dictionary];
     return [CPNumber class];
 }
 
-- (id)transformedValue:(id)value
+- (id)transformedValue:(id)aValue
 {
-    return value === nil || value === undefined;
+    return aValue === nil || aValue === undefined;
 }
 
 @end
@@ -134,9 +134,9 @@ var transformerMap = [CPDictionary dictionary];
     return [CPNumber class];
 }
 
-- (id)transformedValue:(id)value
+- (id)transformedValue:(id)aValue
 {
-    return value !== nil && value !== undefined;
+    return aValue !== nil && aValue !== undefined;
 }
 
 @end
@@ -153,14 +153,14 @@ var transformerMap = [CPDictionary dictionary];
     return [CPData class];
 }
 
-- (id)reverseTransformedValue:(id)value
+- (id)reverseTransformedValue:(id)aValue
 {
-    return [CPKeyedArchiver archivedDataWithRootObject:value];
+    return [CPKeyedArchiver archivedDataWithRootObject:aValue];
 }
 
-- (id)transformedValue:(id)value
+- (id)transformedValue:(id)aValue
 {
-    return [CPKeyedUnarchiver unarchiveObjectWithData:value];
+    return [CPKeyedUnarchiver unarchiveObjectWithData:aValue];
 }
 
 @end
