@@ -59,6 +59,14 @@ CPDocModalWindowMask			= 1 << 6;
     BOOL    _worksWhenModal;
 }
 
+- (void)sendEvent:(CPEvent)anEvent
+{
+    if ([anEvent type] === CPKeyDown && [[self styleMask] & CPClosableWindowMask] && [anEvent keyCode] === CPEscapeKeyCode)
+        [self doCommandBySelector:@selector(cancel:)];
+    else
+        [super sendEvent:anEvent];
+}
+
 /*!
     Returns \c YES if the receiver is a floating panel (like a palette).
 */
