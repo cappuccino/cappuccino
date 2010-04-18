@@ -922,6 +922,11 @@ var CPTokenFieldTableColumnIdentifier = @"CPTokenFieldTableColumnIdentifier";
 	CPTokenField                    _tokenField;
 }
 
++ (CPString)themeClass
+{
+    return "tokenfield-token";
+}
+
 - (id)initWithFrame:(CPRect)frame
 {
 	if (self = [super initWithFrame:frame])
@@ -992,6 +997,11 @@ var CPTokenFieldTableColumnIdentifier = @"CPTokenFieldTableColumnIdentifier";
 */
 @implementation _CPTokenFieldTokenCloseButton : CPButton
 {
+}
+
++ (CPString)themeClass
+{
+    return "tokenfield-token-close-button";
 }
 
 @end
