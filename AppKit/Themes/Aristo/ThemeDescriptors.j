@@ -761,6 +761,7 @@
     [buttonBar setValue:buttonBezelColor forThemeAttribute:@"button-bezel-color"];
     [buttonBar setValue:buttonBezelHighlightedColor forThemeAttribute:@"button-bezel-color" inState:CPThemeStateHighlighted];
     [buttonBar setValue:buttonBezelDisabledColor forThemeAttribute:@"button-bezel-color" inState:CPThemeStateDisabled];
+    [buttonBar setValue:[CPColor blackColor] forThemeAttribute:@"button-text-color"];
 
     [buttonBar setButtons:[[CPButtonBar plusButton], [CPButtonBar minusButton], [self themedPullDownMenu]]];
 
