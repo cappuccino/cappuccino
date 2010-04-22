@@ -64,14 +64,14 @@
 
 + (CPImage)branchImage
 {
-    return [[CPImage alloc] initWithContentsOfFile:[[CPBundle bundleForClass:[self class]] 
+    return [[CPImage alloc] initWithContentsOfFile:[[CPBundle bundleForClass:[CPBrowser class]] 
                                                     pathForResource:"browser-leaf.png"]
                                               size:CGSizeMake(9,9)];
 }
 
 + (CPImage)highlightedBranchImage
 {
-    return [[CPImage alloc] initWithContentsOfFile:[[CPBundle bundleForClass:[self class]] 
+    return [[CPImage alloc] initWithContentsOfFile:[[CPBundle bundleForClass:[CPBrowser class]] 
                                                     pathForResource:"browser-leaf-highlighted.png"]
                                               size:CGSizeMake(9,9)];
 }
@@ -213,8 +213,6 @@
     [table setAllowsEmptySelection:_allowsEmptySelection];
     [table registerForDraggedTypes:[self registeredDraggedTypes]];
 
-    [self setNextResponder:table];
-
     [self _addTableColumnsToTableView:table forColumnIndex:index];
 
     var delegate = [[_CPBrowserTableDelegate alloc] init];
@@ -314,6 +312,37 @@
     [_contentView setFrameSize:CGSizeMake(xOrigin, height)];
 }
 
+- (unsigned)rowAtPoint:(CGPoint)aPoint
+{
+    var column = [self columnAtPoint:aPoint];
+    if (column === -1)
+        return -1;
+
+    var tableView = _tableViews[column];
+    return [tableView rowAtPoint:[tableView convertPoint:aPoint fromView:self]];
+}
+
+- (unsigned)columnAtPoint:(CGPoint)aPoint
+{
+    for (var i = 0, count = _tableViews.length; i < count; i++)
+    {
+        var frame = [[_tableViews[i] enclosingScrollView] frame];
+        if (CGRectContainsPoint(frame, aPoint))
+            return i;
+    }
+
+    return -1;
+}
+
+- (CGRect)rectOfRow:(unsigned)aRow inColumn:(unsigned)aColumn
+{
+    var tableView = _tableViews[aColumn],
+        rect = [tableView rectOfRow:aRow];
+
+    rect.origin = [self convertPoint:rect.origin fromView:tableView];
+    return rect;
+}
+
 // ITEMS
 
 - (id)itemAtRow:(int)row inColumn:(int)column
@@ -357,6 +386,10 @@
 
 // CLICK EVENTS
 
+- (void)trackMouse:(CPEvent)anEvent
+{
+}
+
 - (void)_column:(unsigned)columnIndex clickedRow:(unsigned)rowIndex
 {
     [self setLastColumn:columnIndex];
@@ -380,6 +413,15 @@
 - (void)doDoubleClick:(id)sender
 {
     [self sendAction:_doubleAction to:_target];
+}
+
+- (void)keyDown:(CPEvent)anEvent
+{
+    var column = [self selectedColumn];
+    if (column === -1)
+        return;
+
+    [_tableViews[column] keyDown:anEvent];
 }
 
 // SIZING
@@ -551,8 +593,6 @@
 
     [[self tableViewInColumn:column] selectRowIndexes:indexSet byExtendingSelection:NO];
 
-    [self setNextResponder:[self tableViewInColumn:[self lastColumn]]];
-
     [self scrollColumnToVisible:column];
 
     if ([_delegate respondsToSelector:@selector(browserSelectionDidChange:)])
@@ -604,12 +644,34 @@
 
 @end
 
+var _CPBrowserResizeControlBackgroundImage = nil;
+
 @implementation _CPBrowserResizeControl : CPView
 {
     CGPoint     _mouseDownX;
     CPBrowser   _browser;
     unsigned    _index;
     unsigned    _width;
+}
+
++ (CPImage)backgroundImage
+{
+    if (!_CPBrowserResizeControlBackgroundImage)
+    {
+        var path = [[CPBundle bundleForClass:[self class]] pathForResource:"browser-resize-control.png"];
+        _CPBrowserResizeControlBackgroundImage = [[CPImage alloc] initWithContentsOfFile:path
+                                                                                    size:CGSizeMake(15, 14)];
+    }
+
+    return _CPBrowserResizeControlBackgroundImage;
+}
+
+- (id)initWithFrame:(CGRect)aFrame
+{
+    if (self = [super initWithFrame:aFrame])
+        [self setBackgroundColor:[CPColor colorWithPatternImage:[[self class] backgroundImage]]];
+
+    return self;
 }
 
 - (void)mouseDown:(CPEvent)anEvent
@@ -626,9 +688,11 @@
     [_browser setWidth:_width + deltaX ofColumn:_index];
 }
 
-@end
+- (void)mouseUp:(CPEvent)anEvent
+{
+}
 
-var _CPBrowserResizeControlBackgroundImage = nil;
+@end
 
 @implementation _CPBrowserScrollView : CPScrollView
 {
@@ -636,24 +700,11 @@ var _CPBrowserResizeControlBackgroundImage = nil;
     CPBrowser                _browser @accessors;
 }
 
-+ (CPImage)backgroundImage
-{
-    if (!_CPBrowserResizeControlBackgroundImage)
-    {
-        var path = [[CPBundle bundleForClass:[self class]] pathForResource:"browser-resize-control.png"];
-        _CPBrowserResizeControlBackgroundImage = [[CPImage alloc] initWithContentsOfFile:path
-                                                                                    size:CGSizeMake(15, 14)];
-    }
-
-    return _CPBrowserResizeControlBackgroundImage;
-}
-
 - (void)initWithFrame:(CGRect)aFrame
 {
     if (self = [super initWithFrame:aFrame])
     {
         _resizeControl = [[_CPBrowserResizeControl alloc] initWithFrame:CGRectMakeZero()];
-        [_resizeControl setBackgroundColor:[CPColor colorWithPatternImage:[[self class] backgroundImage]]];
         [self addSubview:_resizeControl];
     }
 
