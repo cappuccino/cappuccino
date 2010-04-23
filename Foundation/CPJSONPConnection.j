@@ -88,7 +88,12 @@ CPJSONPCallbackReplacementString = @"${JSONP_CALLBACK}";
     {
         CPJSONPConnectionCallbacks["callback"+[self UID]] = function(data)
         {
-            [_delegate connection:self didReceiveData:data];
+            if ([_delegate respondsToSelector:@selector(connection:didReceiveData:)])
+                [_delegate connection:self didReceiveData:data];
+
+            if ([_delegate respondsToSelector:@selector(connectionDidFinishLoading:)])
+                    [_delegate connectionDidFinishLoading:self];
+    
             [self removeScriptTag];
     
             [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
@@ -118,7 +123,9 @@ CPJSONPCallbackReplacementString = @"${JSONP_CALLBACK}";
     }
     catch (exception)
     {
-        [_delegate connection: self didFailWithError: exception];
+        if ([_delegate respondsToSelector:@selector(connection:didFailWithError:)])
+            [_delegate connection: self didFailWithError: exception];
+
         [self removeScriptTag];
     }
 }

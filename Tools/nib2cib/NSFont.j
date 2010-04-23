@@ -33,8 +33,8 @@
 
     if ((fontName === "LucidaGrande" || fontName === "LucidaGrande-Bold") && size === 13)
     {
-        CPLog.debug("Converting default IB font: <"+fontName+", "+size+"> to default Aristo font: <Arial, 12>");
-        return [CPFont boldSystemFontOfSize:12.0];
+        CPLog.debug("Removing default IB font: <"+fontName+", "+size+"> for theme default font.");
+        return nil;
     }
 
     // FIXME: Is this alwasy true?

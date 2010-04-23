@@ -139,6 +139,7 @@ var CPViewFlags                     = { },
     
     BOOL                _isHidden;
     BOOL                _hitTests;
+    BOOL                _clipsToBounds;
     
     BOOL                _postsFrameChangedNotifications;
     BOOL                _postsBoundsChangedNotifications;
@@ -277,6 +278,7 @@ var CPViewFlags                     = { },
 
         _autoresizingMask = CPViewNotSizable;
         _autoresizesSubviews = YES;
+        _clipsToBounds = YES;
     
         _opacity = 1.0;
         _isHidden = NO;
@@ -1186,6 +1188,23 @@ var CPViewFlags                     = { },
 - (BOOL)isHidden
 {
     return _isHidden;
+}
+
+- (void)setClipsToBounds:(BOOL)shouldClip
+{
+    if (_clipsToBounds === shouldClip)
+        return;
+
+    _clipsToBounds = shouldClip;
+
+#if PLATFORM(DOM)
+    _DOMElement.style.overflow = _clipsToBounds ? "hidden" :  "visible";
+#endif
+}
+
+- (BOOL)clipsToBounds
+{
+    return _clipsToBounds;
 }
 
 /*!

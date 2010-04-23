@@ -884,6 +884,23 @@ CPTexturedBackgroundWindowMask
 }
 
 /*!
+    Applies an alpha value to the window.
+    @param aValue the alpha value to apply
+*/
+- (void)setAlphaValue:(float)aValue
+{
+    [_windowView setAlphaValue:aValue];
+}
+
+/*!
+    Returns the alpha value of the window.
+*/
+- (float)alphaValue
+{
+    return [_windowView alphaValue];
+}
+
+/*!
     Sets the window's background color.
     @param aColor the new color for the background
 */

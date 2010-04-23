@@ -182,5 +182,11 @@ exports.fullVersionString = function() {
     );
 }
 
+global.ObjectiveJ = {};
+
+for (key in exports)
+    if (Object.prototype.hasOwnProperty.call(exports, key))
+        global.ObjectiveJ[key] = exports[key];
+
 if (require.main == module.id)
     exports.run(system.args);
