@@ -190,20 +190,20 @@
 - (BOOL)autoscroll:(CPEvent)anEvent 
 {
     var bounds = [self bounds],
-        location = [self convertPoint:[event locationInWindow] fromView:nil],
+        eventLocation = [self convertPoint:[event locationInWindow] fromView:nil],
         superview = [self superview],
         deltaX = 0,
         deltaY = 0;
 
-    if (CGRectContainsPoint(bounds, location))
+    if (CGRectContainsPoint(bounds, eventLocation))
         return NO;
 
     if (![superview isKindOfClass:[CPScrollView class]] || [superview hasVerticalScroller])
     {
-        if (location.y < CGRectGetMinY(bounds))
-            deltaY = CGRectGetMinY(bounds) - location.y;
-        else if (location.y > CGRectGetMaxY(bounds))
-            deltaY = CGRectGetMaxY(bounds) - location.y;
+        if (eventLocation.y < CGRectGetMinY(bounds))
+            deltaY = CGRectGetMinY(bounds) - eventLocation.y;
+        else if (eventLocation.y > CGRectGetMaxY(bounds))
+            deltaY = CGRectGetMaxY(bounds) - eventLocation.y;
         if (deltaY < -bounds.size.height)
             deltaY = -bounds.size.height;
         if (deltaY > bounds.size.height)
@@ -212,10 +212,10 @@
 
     if (![superview isKindOfClass:[CPScrollView class]] || [superview hasHorizontalScroller])
     {
-        if (location.x < CGRectGetMinX(bounds))
-            deltaX = CGRectGetMinX(bounds) - location.x;
-        else if (location.x > CGRectGetMaxX(bounds))
-            deltaX = CGRectGetMaxX(bounds) - location.x;
+        if (eventLocation.x < CGRectGetMinX(bounds))
+            deltaX = CGRectGetMinX(bounds) - eventLocation.x;
+        else if (eventLocation.x > CGRectGetMaxX(bounds))
+            deltaX = CGRectGetMaxX(bounds) - eventLocation.x;
         if (deltaX < -bounds.size.width)
             deltaX = -bounds.size.width;
         if (deltaX > bounds.size.width)
