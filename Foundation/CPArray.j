@@ -1235,6 +1235,18 @@
     sort(function(lhs, rhs) { return objj_msgSend(lhs, aSelector, rhs); });
 }
 
+- (void)enumerateObjectsUsingBlock:(Function)aBlock
+{
+    for (var i = 0; i < self.length; i++)
+    {
+        var shouldStop = NO;
+        aBlock(self[i], i, shouldStop);
+        
+        if (shouldStop)
+            break;
+    }
+}
+
 @end
 
 @implementation CPArray (CPCoding)
