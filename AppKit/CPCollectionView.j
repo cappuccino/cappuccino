@@ -426,8 +426,17 @@
         x += itemSize.width + _horizontalMargin;
     }
 
+    var superview = [self superview],
+        proposedHeight =  y + itemSize.height + _verticalMargin;
+
+    if ([superview isKindOfClass:[CPClipView class]])
+    {
+        var superviewSize = [superview bounds].size;
+        proposedHeight = MAX(superviewSize.height, proposedHeight);
+    }
+
     _tileWidth = width;
-    [self setFrameSize:CGSizeMake(width, y + itemSize.height + _verticalMargin)];
+    [self setFrameSize:CGSizeMake(width, proposedHeight)];
     _tileWidth = -1.0;
 }
 
