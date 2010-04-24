@@ -257,7 +257,7 @@ var CPDraggingSource_draggedImage_movedTo_          = 1 << 0,
                                                                   userInfo:[CPDictionary dictionaryWithJSObject:{platformWindow:aPlatformWindow, location:aLocation}]
                                                                    repeats:NO];
 
-        var scrollView = [_draggingDestination enclosingScrollView];
+        var scrollView = [_draggingDestination isKindOfClass:[CPView class]] ? [_draggingDestination enclosingScrollView] : nil;
         if (scrollView)
         {
             var contentView = [scrollView contentView],
