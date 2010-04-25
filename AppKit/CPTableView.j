@@ -2561,7 +2561,10 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 {
     // Prevent CPControl from eating the mouse events when we are in a drag session
     if (![_draggedRowIndexes count])
+    {
+        [self autoscroll:anEvent];
         [super trackMouse:anEvent];
+    }
     else
         [CPApp sendEvent:anEvent];
 }
