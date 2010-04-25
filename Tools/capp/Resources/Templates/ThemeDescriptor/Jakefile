@@ -42,3 +42,10 @@ task ("release", function()
     ENV["CONFIGURATION"] = "Release";
     JAKE.subjake(["."], "build", ENV);
 });
+
+function printResults(configuration)
+{
+    print("----------------------------");
+    print(configuration+" app built at path: "+FILE.join("Build", configuration, "__project.nameasidentifier__"));
+    print("----------------------------");
+}
