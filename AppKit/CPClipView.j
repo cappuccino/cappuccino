@@ -190,7 +190,7 @@
 - (BOOL)autoscroll:(CPEvent)anEvent 
 {
     var bounds = [self bounds],
-        eventLocation = [self convertPoint:[event locationInWindow] fromView:nil],
+        eventLocation = [self convertPoint:[anEvent locationInWindow] fromView:nil],
         superview = [self superview],
         deltaX = 0,
         deltaY = 0;
