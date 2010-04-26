@@ -21,8 +21,20 @@ exports.buildNativeHost = function(rootPath, buildNative, options) {
     OS.system(["cp", "-r", rootPath, buildClientDirectory]);
     // FILE.copyTree(rootPath, buildClientDirectory);
 
+    var defaultBundleName = FILE.basename(buildNative).match(/^(.*)(\.app)?$/)[1];
+
     CFPropertyList.modifyPlist(FILE.join(buildNative, "Contents", "Info.plist"), function(plist) {
-        plist.setValueForKey("CFBundleName", "Project");
+        plist.setValueForKey("CFBundleName", defaultBundleName);
         plist.setValueForKey("NHInitialResource", "Application/index.html");
+
+        // merge Cappuccino plist
+        var cappPlist = CFPropertyList.readPropertyListFromFile(FILE.join(rootPath, "Info.plist"));
+        cappPlist.keys().forEach(function(key) {
+            var value = cappPlist.valueForKey(key);
+            plist.setValueForKey(key, value);
+
+            if (key === "CPBundleName")
+                plist.setValueForKey("CFBundleName", value);
+        });
     });
 }
