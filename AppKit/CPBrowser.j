@@ -570,6 +570,9 @@
 
 - (CPIndexSet)selectedRowIndexesInColumn:(unsigned)column
 {
+    if (column < 0 || column > [self lastColumn] +1)
+        return [CPIndexSet indexSet];
+
     return [[self tableViewInColumn:column] selectedRowIndexes];
 }
 
