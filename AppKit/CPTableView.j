@@ -2561,7 +2561,10 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 {
     // Prevent CPControl from eating the mouse events when we are in a drag session
     if (![_draggedRowIndexes count])
+    {
+        [self autoscroll:anEvent];
         [super trackMouse:anEvent];
+    }
     else
         [CPApp sendEvent:anEvent];
 }
@@ -2874,14 +2877,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     [_dropOperationFeedbackView setFrame:rect];
     [_dropOperationFeedbackView setCurrentRow:row];
     [self addSubview:_dropOperationFeedbackView];
-    
-    // FIXME : Maybe we should do this in a timer outside this method. 
-    // Problem: we don't know when the scroll ends or when the next -draggingUpdated is called. 
-    if (row > 0 && location.y - CGRectGetMinY(exposedClipRect) < _rowHeight)
-        [self scrollRowToVisible:row - 1];
-    else if (row < numberOfRows && CGRectGetMaxY(exposedClipRect) - location.y < _rowHeight)
-        [self scrollRowToVisible:row + 1];
-        
+
     return dragOperation;
 }
 

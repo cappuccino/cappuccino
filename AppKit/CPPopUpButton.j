@@ -703,6 +703,23 @@ CPPopUpButtonStatePullsDown = CPThemeState("pulls-down");
     [self sendAction:[self action] to:[self target]];
 }
 
+- (void)takeValueFromKeyPath:(CPString)aKeyPath ofObjects:(CPArray)objects
+{
+    var count = objects.length,
+        value = [objects[0] valueForKeyPath:aKeyPath];
+
+    [self selectItemWithTag:value];
+    [self setEnabled:YES];
+
+    while (count-- > 1)
+    {
+        if (value !== [objects[count] valueForKeyPath:aKeyPath])
+        {
+            [[self selectedItem] setState:CPOffState];
+        }
+    }
+}
+
 @end
 
 var CPPopUpButtonMenuKey            = @"CPPopUpButtonMenuKey",

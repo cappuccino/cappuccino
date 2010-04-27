@@ -1087,6 +1087,22 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
     }
 }
 
+- (void)takeValueFromKeyPath:(CPString)aKeyPath ofObjects:(CPArray)objects
+{
+    var count = objects.length,
+        value = [objects[0] valueForKeyPath:aKeyPath];
+
+    [self setStringValue:value];
+    [self setPlaceholderString:@""];
+
+    while (count-- > 1)
+        if (value !== [objects[count] valueForKeyPath:aKeyPath])
+        {
+            [self setPlaceholderString:@"Multiple Values"];
+            [self setStringValue:@""];
+        }
+}
+
 @end
 
 var secureStringForString = function(aString)

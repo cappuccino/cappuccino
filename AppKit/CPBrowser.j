@@ -324,10 +324,12 @@
 
 - (unsigned)columnAtPoint:(CGPoint)aPoint
 {
+    var adjustedPoint = [_contentView convertPoint:aPoint fromView:self];
+
     for (var i = 0, count = _tableViews.length; i < count; i++)
     {
         var frame = [[_tableViews[i] enclosingScrollView] frame];
-        if (CGRectContainsPoint(frame, aPoint))
+        if (CGRectContainsPoint(frame, adjustedPoint))
             return i;
     }
 
@@ -568,6 +570,9 @@
 
 - (CPIndexSet)selectedRowIndexesInColumn:(unsigned)column
 {
+    if (column < 0 || column > [self lastColumn] +1)
+        return [CPIndexSet indexSet];
+
     return [[self tableViewInColumn:column] selectedRowIndexes];
 }
 

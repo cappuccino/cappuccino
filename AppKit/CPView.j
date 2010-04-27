@@ -94,7 +94,8 @@ var DOMElementPrototype         = nil,
     BackgroundTrivialColor              = 0,
     BackgroundVerticalThreePartImage    = 1,
     BackgroundHorizontalThreePartImage  = 2,
-    BackgroundNinePartImage             = 3;
+    BackgroundNinePartImage             = 3,
+    BackgroundTransparentColor          = 4;
 #endif
 
 var CPViewFlags                     = { },
@@ -837,28 +838,33 @@ var CPViewFlags                     = { },
 
     if (_backgroundType !== BackgroundTrivialColor)
     {
-        var images = [[_backgroundColor patternImage] imageSlices];
-
-        if (_backgroundType === BackgroundVerticalThreePartImage)
+        if (_backgroundType === BackgroundTransparentColor)
         {
-            CPDOMDisplayServerSetStyleSize(_DOMImageParts[1], size.width, size.height - _DOMImageSizes[0].height - _DOMImageSizes[2].height);
+            CPDOMDisplayServerSetStyleSize(_DOMImageParts[0], size.width, size.height);
         }
-
-        else if (_backgroundType === BackgroundHorizontalThreePartImage)
+        else
         {
-            CPDOMDisplayServerSetStyleSize(_DOMImageParts[1], size.width - _DOMImageSizes[0].width - _DOMImageSizes[2].width, size.height);
-        }
+            var images = [[_backgroundColor patternImage] imageSlices];
 
-        else if (_backgroundType === BackgroundNinePartImage)
-        {
-            var width = size.width - _DOMImageSizes[0].width - _DOMImageSizes[2].width,
-                height = size.height - _DOMImageSizes[0].height - _DOMImageSizes[6].height;
+            if (_backgroundType === BackgroundVerticalThreePartImage)
+            {
+                CPDOMDisplayServerSetStyleSize(_DOMImageParts[1], size.width, size.height - _DOMImageSizes[0].height - _DOMImageSizes[2].height);
+            }
+            else if (_backgroundType === BackgroundHorizontalThreePartImage)
+            {
+                CPDOMDisplayServerSetStyleSize(_DOMImageParts[1], size.width - _DOMImageSizes[0].width - _DOMImageSizes[2].width, size.height);
+            }
+            else if (_backgroundType === BackgroundNinePartImage)
+            {
+                var width = size.width - _DOMImageSizes[0].width - _DOMImageSizes[2].width,
+                    height = size.height - _DOMImageSizes[0].height - _DOMImageSizes[6].height;
 
-            CPDOMDisplayServerSetStyleSize(_DOMImageParts[1], width, _DOMImageSizes[0].height);
-            CPDOMDisplayServerSetStyleSize(_DOMImageParts[3], _DOMImageSizes[3].width, height);
-            CPDOMDisplayServerSetStyleSize(_DOMImageParts[4], width, height);
-            CPDOMDisplayServerSetStyleSize(_DOMImageParts[5], _DOMImageSizes[5].width, height);
-            CPDOMDisplayServerSetStyleSize(_DOMImageParts[7], width, _DOMImageSizes[7].height);
+                CPDOMDisplayServerSetStyleSize(_DOMImageParts[1], width, _DOMImageSizes[0].height);
+                CPDOMDisplayServerSetStyleSize(_DOMImageParts[3], _DOMImageSizes[3].width, height);
+                CPDOMDisplayServerSetStyleSize(_DOMImageParts[4], width, height);
+                CPDOMDisplayServerSetStyleSize(_DOMImageParts[5], _DOMImageSizes[5].width, height);
+                CPDOMDisplayServerSetStyleSize(_DOMImageParts[7], width, _DOMImageSizes[7].height);
+            }
         }
     }
 #endif
@@ -1380,7 +1386,7 @@ var CPViewFlags                     = { },
     }
     else
     {
-        _backgroundType = BackgroundTrivialColor;
+        _backgroundType = colorNeedsDOMElement ? BackgroundTransparentColor : BackgroundTrivialColor;
         amount = (colorNeedsDOMElement ? 1 : 0) - _DOMImageParts.length;
     }
 
@@ -1403,7 +1409,7 @@ var CPViewFlags                     = { },
             _DOMElement.removeChild(_DOMImageParts.pop());
     }
 
-    if (_backgroundType === BackgroundTrivialColor)
+    if (_backgroundType === BackgroundTrivialColor || _backgroundType === BackgroundTransparentColor)
     {
         var colorCSS = colorExists ? [_backgroundColor cssString] : "";
 

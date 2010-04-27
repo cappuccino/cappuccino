@@ -38,13 +38,6 @@ app ("__project.nameasidentifier__", function(task)
         task.setCompilerFlags("-O");
 });
 
-function printResults(configuration)
-{
-    print("----------------------------");
-    print(configuration+" app built at path: "+FILE.join("Build", configuration, "__project.nameasidentifier__"));
-    print("----------------------------");
-}
-
 task ("default", ["__project.nameasidentifier__"], function()
 {
     printResults(configuration);
@@ -80,3 +73,22 @@ task ("deploy", ["release"], function()
     OS.system(["press", "-f", FILE.join("Build", "Release", "__project.nameasidentifier__"), FILE.join("Build", "Deployment", "__project.nameasidentifier__")]);
     printResults("Deployment")
 });
+
+task ("desktop", ["release"], function()
+{
+    FILE.mkdirs(FILE.join("Build", "Desktop", "__project.nameasidentifier__"));
+    require("cappuccino/nativehost").buildNativeHost(FILE.join("Build", "Release", "__project.nameasidentifier__"), FILE.join("Build", "Desktop", "__project.nameasidentifier__", "__project.nameasidentifier__.app"));
+    printResults("Desktop")
+});
+
+task ("run-desktop", ["desktop"], function()
+{
+    OS.system([FILE.join("Build", "Desktop", "__project.nameasidentifier__", "__project.nameasidentifier__.app", "Contents", "MacOS", "NativeHost"), "-i"]);
+});
+
+function printResults(configuration)
+{
+    print("----------------------------");
+    print(configuration+" app built at path: "+FILE.join("Build", configuration, "__project.nameasidentifier__"));
+    print("----------------------------");
+}

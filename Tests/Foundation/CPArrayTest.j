@@ -212,10 +212,15 @@
 
 - (void)testInitWithArrayCopyItems
 {
-    var a = [[CopyableObject new], 2, 3];
+    var a = [[CopyableObject new], 2, 3, {empty:true}];
     var b = [[CPArray alloc] initWithArray:a copyItems:YES];
 
     [self assert:a notEqual:b];
+
+    [self assert:a[0] notEqual:b[0]];
+    [self assert:a[1] equals:b[1]];
+    [self assert:a[2] equals:b[2]];
+    [self assertTrue:a[3] === b[3]];
 }
 
 - (void)testIsEqualToArray

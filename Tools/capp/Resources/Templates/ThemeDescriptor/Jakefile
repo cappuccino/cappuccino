@@ -42,3 +42,15 @@ task ("release", function()
     ENV["CONFIGURATION"] = "Release";
     JAKE.subjake(["."], "build", ENV);
 });
+
+task ("desktop", ["release"], function()
+{
+    FILE.mkdirs(FILE.join("Build", "Desktop", "__project.nameasidentifier__"));
+    require("cappuccino/nativehost").buildNativeHost(FILE.join("Build", "Release", "__project.nameasidentifier__"), FILE.join("Build", "Desktop", "__project.nameasidentifier__", "__project.nameasidentifier__.app"));
+    printResults("Desktop")
+});
+
+task ("run-desktop", ["desktop"], function()
+{
+    OS.system([FILE.join("Build", "Desktop", "__project.nameasidentifier__", "__project.nameasidentifier__.app", "Contents", "MacOS", "NativeHost"), "-i"]);
+});

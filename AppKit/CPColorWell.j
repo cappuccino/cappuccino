@@ -231,11 +231,17 @@ var _CPColorWellDidBecomeExclusiveNotification = @"_CPColorWellDidBecomeExclusiv
 
 - (void)mouseDown:(CPEvent)anEvent
 {
+    if (![self isEnabled])
+        return;
+
     [self drawBezelWithHighlight:YES];
 }
 
 - (void)mouseDragged:(CPEvent)anEvent
 {
+    if (![self isEnabled])
+        return;
+
     [self drawBezelWithHighlight:CGRectContainsPoint([self bounds], [self convertPoint:[anEvent locationInWindow] fromView:nil])];
 }
 
@@ -243,7 +249,7 @@ var _CPColorWellDidBecomeExclusiveNotification = @"_CPColorWellDidBecomeExclusiv
 {
     [self drawBezelWithHighlight:NO];
 
-    if (!CGRectContainsPoint([self bounds], [self convertPoint:[anEvent locationInWindow] fromView:nil]))
+    if (!CGRectContainsPoint([self bounds], [self convertPoint:[anEvent locationInWindow] fromView:nil]) || ![self isEnabled])
         return;
         
     [self activate:YES];

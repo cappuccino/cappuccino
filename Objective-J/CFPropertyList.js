@@ -91,6 +91,16 @@ CFPropertyList.writePropertyListToFile = function(/*CFPropertyList*/ aPropertyLi
 {
     return FILE.write(aFilePath, CFPropertyList.stringFromPropertyList(aPropertyList, aFormat), { charset:"UTF-8" });
 }
+CFPropertyList.modifyPlist = function(/*String*/ aFilePath, /*Function*/ aCallback, /*String*/ aFormat)
+{
+    var string = FILE.read(aFilePath, { charset:"UTF-8" });
+    var format = CFPropertyList.sniffedFormatOfString(string);
+    var plist = CFPropertyList.propertyListFromString(string, format);
+
+    aCallback(plist);
+
+    CFPropertyList.writePropertyListToFile(plist, aFilePath, aFormat || format);
+}
 #endif
 
 function serializePropertyList(/*CFPropertyList*/ aPropertyList, /*Object*/ serializers)

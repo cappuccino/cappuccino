@@ -190,17 +190,39 @@
 - (BOOL)autoscroll:(CPEvent)anEvent 
 {
     var bounds = [self bounds],
-        eventLocation = [self convertPoint:[anEvent locationInWindow] fromView:nil];
+        eventLocation = [self convertPoint:[anEvent locationInWindow] fromView:nil],
+        superview = [self superview],
+        deltaX = 0,
+        deltaY = 0;
 
-    if (CPRectContainsPoint(bounds, eventLocation))
+    if (CGRectContainsPoint(bounds, eventLocation))
         return NO;
 
-    var newRect = CGRectMakeZero();
+    if (![superview isKindOfClass:[CPScrollView class]] || [superview hasVerticalScroller])
+    {
+        if (eventLocation.y < CGRectGetMinY(bounds))
+            deltaY = CGRectGetMinY(bounds) - eventLocation.y;
+        else if (eventLocation.y > CGRectGetMaxY(bounds))
+            deltaY = CGRectGetMaxY(bounds) - eventLocation.y;
+        if (deltaY < -bounds.size.height)
+            deltaY = -bounds.size.height;
+        if (deltaY > bounds.size.height)
+            deltaY = bounds.size.height;
+    }
 
-    newRect.origin = eventLocation;
-    newRect.size = CPSizeMake(10, 10);
+    if (![superview isKindOfClass:[CPScrollView class]] || [superview hasHorizontalScroller])
+    {
+        if (eventLocation.x < CGRectGetMinX(bounds))
+            deltaX = CGRectGetMinX(bounds) - eventLocation.x;
+        else if (eventLocation.x > CGRectGetMaxX(bounds))
+            deltaX = CGRectGetMaxX(bounds) - eventLocation.x;
+        if (deltaX < -bounds.size.width)
+            deltaX = -bounds.size.width;
+        if (deltaX > bounds.size.width)
+            deltaX = bounds.size.width;
+    }
 
-	return [_documentView scrollRectToVisible:newRect];
+	return [self scrollToPoint:CGPointMake(bounds.origin.x - deltaX, bounds.origin.y - deltaY)];
 }
 
 @end
