@@ -445,9 +445,7 @@
 
 - (CPView)_headerView
 {
-    var headerClipViewSubviews = [_headerClipView subviews];
-
-    return [headerClipViewSubviews count] ? headerClipViewSubviews[0] : nil;
+    return [_headerClipView documentView];
 }
 
 - (CGRect)_cornerViewFrame
@@ -776,7 +774,13 @@ var CPScrollViewContentViewKey       = "CPScrollViewContentView",
         
         _contentView            = [aCoder decodeObjectForKey:CPScrollViewContentViewKey];
         _headerClipView         = [aCoder decodeObjectForKey:CPScrollViewHeaderClipViewKey];
-        
+
+        if (!_headerClipView)
+        {
+            _headerClipView = [[CPClipView alloc] init];
+            [self addSubview:_headerClipView];
+        }
+
         _verticalScroller       = [aCoder decodeObjectForKey:CPScrollViewVScrollerKey];
         _horizontalScroller     = [aCoder decodeObjectForKey:CPScrollViewHScrollerKey];
 
