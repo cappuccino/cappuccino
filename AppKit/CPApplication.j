@@ -131,7 +131,9 @@ CPRunContinuesResponse  = -1002;
 - (id)init
 {
     self = [super init];
-    
+
+    CPApp = self;
+
     if (self)
     {
         _eventListeners = [];
@@ -141,10 +143,10 @@ CPRunContinuesResponse  = -1002;
         [_windows addObject:nil];
     
         // FIXME: This should be read from the cib.
-        _mainMenu = [[CPMenu alloc] initWithTitle:@"MainMenu"];
+        var mainMenu = [[CPMenu alloc] initWithTitle:@"MainMenu"];
         
         // FIXME: We should implement autoenabling.
-        [_mainMenu setAutoenablesItems:NO];
+        [mainMenu setAutoenablesItems:NO];
 
         var bundle = [CPBundle bundleForClass:[CPApplication class]],
             newMenuItem = [[CPMenuItem alloc] initWithTitle:@"New" action:@selector(newDocument:) keyEquivalent:@"n"];
@@ -152,14 +154,14 @@ CPRunContinuesResponse  = -1002;
         [newMenuItem setImage:[[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"CPApplication/New.png"] size:CGSizeMake(16.0, 16.0)]];
         [newMenuItem setAlternateImage:[[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"CPApplication/NewHighlighted.png"] size:CGSizeMake(16.0, 16.0)]];
 
-        [_mainMenu addItem:newMenuItem];
+        [mainMenu addItem:newMenuItem];
         
         var openMenuItem = [[CPMenuItem alloc] initWithTitle:@"Open" action:@selector(openDocument:) keyEquivalent:@"o"];
         
         [openMenuItem setImage:[[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"CPApplication/Open.png"] size:CGSizeMake(16.0, 16.0)]];
         [openMenuItem setAlternateImage:[[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"CPApplication/OpenHighlighted.png"] size:CGSizeMake(16.0, 16.0)]];
         
-        [_mainMenu addItem:openMenuItem];
+        [mainMenu addItem:openMenuItem];
         
         var saveMenu = [[CPMenu alloc] initWithTitle:@"Save"],
             saveMenuItem = [[CPMenuItem alloc] initWithTitle:@"Save" action:@selector(saveDocument:) keyEquivalent:nil];
@@ -172,7 +174,7 @@ CPRunContinuesResponse  = -1002;
         
         [saveMenuItem setSubmenu:saveMenu];
         
-        [_mainMenu addItem:saveMenuItem];
+        [mainMenu addItem:saveMenuItem];
         
         var editMenuItem = [[CPMenuItem alloc] initWithTitle:@"Edit" action:nil keyEquivalent:nil],
             editMenu = [[CPMenu alloc] initWithTitle:@"Edit"],
@@ -193,9 +195,11 @@ CPRunContinuesResponse  = -1002;
         [editMenuItem setSubmenu:editMenu];
         [editMenuItem setHidden:YES];
         
-        [_mainMenu addItem:editMenuItem];
+        [mainMenu addItem:editMenuItem];
         
-        [_mainMenu addItem:[CPMenuItem separatorItem]];
+        [mainMenu addItem:[CPMenuItem separatorItem]];
+
+        [self setMainMenu:mainMenu];
     }
     
     return self;
