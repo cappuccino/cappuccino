@@ -155,7 +155,7 @@ NSString *SERVER_USER = nil;
     }
     else if (prependServer)
     {
-        initialURL = [NSString stringWithFormat:@"http://localhost:%d/%@", SERVER_PORT, initialURL];
+        initialURL = [NSString stringWithFormat:@"http://127.0.0.1:%d/%@", SERVER_PORT, initialURL];
     }
 
 	NHLog(@"STARTUP", [initialURL description]);
