@@ -14,7 +14,7 @@
 + (id)plusButton
 {
     var button = [[CPButton alloc] initWithFrame:CGRectMake(0, 0, 35, 25)],
-        image = [[CPImage alloc] initWithContentsOfFile:[[CPBundle bundleForClass:self] pathForResource:@"plus_button.png"] size:CGSizeMake(11, 12)];
+        image = [[CPImage alloc] initWithContentsOfFile:[[CPBundle bundleForClass:[CPButtonBar class]] pathForResource:@"plus_button.png"] size:CGSizeMake(11, 12)];
 
     [button setBordered:NO];
     [button setImage:image];
@@ -26,11 +26,26 @@
 + (id)minusButton
 {
     var button = [[CPButton alloc] initWithFrame:CGRectMake(0, 0, 35, 25)],
-        image = [[CPImage alloc] initWithContentsOfFile:[[CPBundle bundleForClass:self] pathForResource:@"minus_button.png"] size:CGSizeMake(11, 4)];
+        image = [[CPImage alloc] initWithContentsOfFile:[[CPBundle bundleForClass:[CPButtonBar class]] pathForResource:@"minus_button.png"] size:CGSizeMake(11, 4)];
 
     [button setBordered:NO];
     [button setImage:image];
     [button setImagePosition:CPImageOnly];
+
+    return button;
+}
+
++ (id)actionPopupButton
+{
+    var button = [[CPPopUpButton alloc] initWithFrame:CGRectMake(0, 0, 35, 25)],
+        image = [[CPImage alloc] initWithContentsOfFile:[[CPBundle bundleForClass:[CPButtonBar class]] pathForResource:@"action_button.png"] size:CGSizeMake(22, 14)];
+
+    [button addItemWithTitle:nil];
+    [[button lastItem] setImage:image];
+    [button setImagePosition:CPImageOnly];
+    [button setValue:CGInsetMake(0, 0, 0, 0) forThemeAttribute:"content-inset"];
+
+    [button setPullsDown:YES];
 
     return button;
 }
@@ -174,12 +189,22 @@
             [buttonsNotHidden removeObject:buttonsNotHidden[count]];
 
     var currentButtonOffset = _resizeControlIsLeftAligned ? CGRectGetMaxX([self bounds]) + 1 : -1,
-        height = CGRectGetHeight([self bounds]) - 1;
+        bounds = [self bounds],
+        height = CGRectGetHeight(bounds) - 1,
+        frameWidth = CGRectGetWidth(bounds),
+        resizeRect = _hasResizeControl ? [self rectForEphemeralSubviewNamed:"resize-control-view"] : CGRectMakeZero(),
+        resizeWidth = CGRectGetWidth(resizeRect),
+        availableWidth = frameWidth - resizeWidth - 1;
 
     for (var i = 0, count = [buttonsNotHidden count]; i < count; i++)
     {   
         var button = buttonsNotHidden[i],
             width = CGRectGetWidth([button frame]);
+
+        if (availableWidth > width)
+            availableWidth -=width;
+        else
+            break;
 
         if (_resizeControlIsLeftAligned)
         {
@@ -214,6 +239,12 @@
         [resizeControlView setAutoresizingMask: _resizeControlIsLeftAligned ? CPViewMaxXMargin : CPViewMinXMargin];
         [resizeControlView setBackgroundColor:[self currentValueForThemeAttribute:@"resize-control-color"]];
     }
+}
+
+- (void)setFrameSize:(CGSize)aSize
+{
+    [super setFrameSize:aSize];
+    [self setNeedsLayout];
 }
 
 @end

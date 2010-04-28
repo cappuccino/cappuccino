@@ -721,7 +721,7 @@
 
 + (CPButtonBar)themedButtonBar
 {
-    var buttonBar = [[CPButtonBar alloc] initWithFrame:CGRectMake(0.0, 0.0, 140.0, 26.0)],
+    var buttonBar = [[CPButtonBar alloc] initWithFrame:CGRectMake(0.0, 0.0, 147.0, 26.0)],
         color = [CPColor colorWithPatternImage:[_CPCibCustomResource imageResourceWithName:"buttonbar-bezel.png" size:CGSizeMake(1.0, 26.0)]];
 
     [buttonBar setHasResizeControl:YES];
@@ -763,7 +763,11 @@
     [buttonBar setValue:buttonBezelDisabledColor forThemeAttribute:@"button-bezel-color" inState:CPThemeStateDisabled];
     [buttonBar setValue:[CPColor blackColor] forThemeAttribute:@"button-text-color"];
 
-    [buttonBar setButtons:[[CPButtonBar plusButton], [CPButtonBar minusButton], [self themedPullDownMenu]]];
+    var popup = [CPButtonBar actionPopupButton];
+    [popup addItemWithTitle:"Item 1"];
+    [popup addItemWithTitle:"Item 2"];
+
+    [buttonBar setButtons:[[CPButtonBar plusButton], [CPButtonBar minusButton], popup]];
 
     return buttonBar;
 }
