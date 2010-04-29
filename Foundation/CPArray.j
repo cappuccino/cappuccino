@@ -145,10 +145,10 @@
 {
     var i = 2,
         array = [[self alloc] init],
-        argument;
+        count = arguments.length;
 
-    for (; i < arguments.length && (argument = arguments[i]) != nil; ++i)
-        array.push(argument);
+    for (; i < count; ++i)
+        array.push(arguments[i]);
 
     return array;
 }
@@ -229,10 +229,10 @@
 {
     // The arguments array contains self and _cmd, so the first object is at position 2.
     var i = 2,
-        argument;
+        count = arguments.length;
 
-    for (; i < arguments.length && (argument = arguments[i]) != nil; ++i)
-        push(argument);
+    for (; i < count; ++i)
+        push(arguments[i]);
 
     return self;
 }
@@ -278,21 +278,18 @@
 
 /*!
     Returns the index of \c anObject in this array.
-    If the object is \c nil or not in the array,
+    If the object is not in the array,
     returns \c CPNotFound. It first attempts to find
-    a match using \c -isEqual:, then \c ==.
+    a match using \c -isEqual:, then \c ===.
     @param anObject the object to search for
 */
 - (int)indexOfObject:(id)anObject
 {
-    if (anObject === nil)
-        return CPNotFound;
-
     var i = 0,
         count = length;
 
     // Only use -isEqual: if our object is a CPObject.
-    if (anObject.isa)
+    if (anObject && anObject.isa)
     {
         for (; i < count; ++i)
             if ([self[i] isEqual:anObject])
@@ -305,7 +302,7 @@
     // Last resort, do a straight forward linear O(N) search.
     else
         for (; i < count; ++i)
-            if (self[i] == anObject)
+            if (self[i] === anObject)
                 return i;
 
     return CPNotFound;
@@ -314,21 +311,18 @@
 /*!
     Returns the index of \c anObject in the array
     within \c aRange. It first attempts to find
-    a match using \c -isEqual:, then \c ==.
+    a match using \c -isEqual:, then \c ===.
     @param anObject the object to search for
     @param aRange the range to search within
     @return the index of the object, or \c CPNotFound if it was not found.
 */
 - (int)indexOfObject:(id)anObject inRange:(CPRange)aRange
 {
-    if (anObject === nil)
-        return CPNotFound;
-
     var i = aRange.location,
         count = MIN(CPMaxRange(aRange), length);
 
     // Only use isEqual: if our object is a CPObject.
-    if (anObject.isa)
+    if (anObject && anObject.isa)
     {
         for (; i < count; ++i)
             if ([self[i] isEqual:anObject])
@@ -337,22 +331,19 @@
     // Last resort, do a straight forward linear O(N) search.
     else
         for (; i < count; ++i)
-            if (self[i] == anObject)
+            if (self[i] === anObject)
                 return i;
 
     return CPNotFound;
 }
 
 /*!
-    Returns the index of \c anObject in the array. The test for equality is done using only \c ==.
+    Returns the index of \c anObject in the array. The test for equality is done using only \c ===.
     @param anObject the object to search for
     @return the index of the object in the array. \c CPNotFound if the object is not in the array.
 */
 - (int)indexOfObjectIdenticalTo:(id)anObject
 {
-    if (anObject === nil)
-        return CPNotFound;
-
     // If indexOf exists, use it since it's probably
     // faster than anything we can implement.
     if (self.indexOf)
@@ -382,9 +373,6 @@
 */
 - (int)indexOfObjectIdenticalTo:(id)anObject inRange:(CPRange)aRange
 {
-    if (anObject === nil)
-        return CPNotFound;
-
     // If indexOf exists, use it since it's probably
     // faster than anything we can implement.
     if (self.indexOf)
@@ -460,7 +448,7 @@
 
 - (unsigned)_indexOfObject:(id)anObject sortedByFunction:(Function)aFunction context:(id)aContext
 {
-    if (!aFunction || anObject === undefined)
+    if (!aFunction)
         return CPNotFound;
 
     if (length === 0)
@@ -523,7 +511,8 @@
 {
     var count = [self count];
 
-    if (!count) return nil;
+    if (!count)
+        return nil;
 
     return self[count - 1];
 }
@@ -697,12 +686,7 @@
 */
 - (CPArray)arrayByAddingObject:(id)anObject
 {
-    if (anObject === nil || anObject === undefined)
-        [CPException raise:CPInvalidArgumentException
-                    reason:"arrayByAddingObject: object can't be nil"];
-
     var array = [self copy];
-
     array.push(anObject);
 
     return array;
