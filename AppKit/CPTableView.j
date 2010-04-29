@@ -690,6 +690,24 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     [self setNeedsLayout];
 }
 
+/*!
+    @ignore
+*/
+- (void)_tableColumnVisibilityDidChange:(CPTableColumn)aColumn
+{
+    var columnIndex = [[self tableColumns] indexOfObjectIdenticalTo:aColumn];
+    
+    if (_dirtyTableColumnRangeIndex < 0)
+        _dirtyTableColumnRangeIndex = columnIndex;
+    else
+        _dirtyTableColumnRangeIndex = MIN(columnIndex, _dirtyTableColumnRangeIndex);
+    
+    [[self headerView] setNeedsLayout];
+    [[self headerView] setNeedsDisplay:YES];
+    
+    [self reloadData];
+}
+
 - (CPArray)tableColumns
 {
     return _tableColumns;
@@ -1044,6 +1062,8 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     if (_dirtyTableColumnRangeIndex < 0)
         return;
 
+    _numberOfHiddenColumns = 0;
+
     var index = _dirtyTableColumnRangeIndex,
         count = NUMBER_OF_COLUMNS(),
         x = index === 0 ? 0.0 : CPMaxRange(_tableColumnRanges[index - 1]);
@@ -1053,7 +1073,10 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
         var tableColumn = _tableColumns[index];
 
         if ([tableColumn isHidden])
+        {
+            _numberOfHiddenColumns += 1;
             _tableColumnRanges[index] = CPMakeRange(x, 0.0);
+        }
 
         else
         {
@@ -1074,8 +1097,10 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 - (CGRect)rectOfColumn:(CPInteger)aColumnIndex
 {
     aColumnIndex = +aColumnIndex;
+    
+    var column = [[self tableColumns] objectAtIndex:aColumnIndex];
 
-    if (aColumnIndex < 0 || aColumnIndex >= NUMBER_OF_COLUMNS())
+    if ([column isHidden] || aColumnIndex < 0 || aColumnIndex >= NUMBER_OF_COLUMNS())
         return _CGRectMakeZero();
 
     UPDATE_COLUMN_RANGES_IF_NECESSARY();
@@ -2042,10 +2067,14 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
         columnsCount = columnArray.length;
 
     for (; columnIndex < columnsCount; ++columnIndex)
-    {
+    {        
         var column = columnArray[columnIndex],
-            tableColumn = _tableColumns[column],
-            tableColumnUID = [tableColumn UID];
+            tableColumn = _tableColumns[column];
+            
+        if ([tableColumn isHidden])
+            continue;
+            
+        var tableColumnUID = [tableColumn UID];
 
         if (!_dataViewsForTableColumns[tableColumnUID])
             _dataViewsForTableColumns[tableColumnUID] = [];
@@ -2158,6 +2187,9 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 
 - (void)_enqueueReusableDataView:(CPView)aDataView
 {
+    if (!aDataView)
+        return;
+    
     // FIXME: yuck!
     var identifier = aDataView.identifier;
 

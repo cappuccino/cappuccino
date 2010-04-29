@@ -348,7 +348,14 @@ CPTableColumnUserResizingMask   = 1 << 1;
 
 - (void)setHidden:(BOOL)shouldBeHidden
 {
+    shouldBeHidden = !!shouldBeHidden
+    if (_isHidden === shouldBeHidden)
+        return;
+    
     _isHidden = shouldBeHidden;
+    
+    [[self headerView] setHidden:shouldBeHidden];
+    [[self tableView] _tableColumnVisibilityDidChange:self];
 }
 
 - (BOOL)isHidden
