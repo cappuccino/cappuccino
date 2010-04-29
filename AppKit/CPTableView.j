@@ -691,15 +691,19 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     else
         _dirtyTableColumnRangeIndex = MIN(fromIndex, toIndex, _dirtyTableColumnRangeIndex);
 
-    if (toIndex > fromIndex)
-        --toIndex;
-
     var tableColumn = _tableColumns[fromIndex];
 
     [_tableColumns removeObjectAtIndex:fromIndex];
     [_tableColumns insertObject:tableColumn atIndex:toIndex];
+    
+    [[self headerView] setNeedsLayout];
+    [[self headerView] setNeedsDisplay:YES];
 
-    [self setNeedsLayout];
+    var rowIndexes = [CPIndexSet indexSetWithIndexesInRange:CPMakeRange(0, [self numberOfRows])],
+        columnIndexes = [CPIndexSet indexSetWithIndexesInRange:CPMakeRange(fromIndex, toIndex)];
+        
+    [self reloadDataForRowIndexes:rowIndexes columnIndexes:columnIndexes];
+    // [self setNeedsLayout];
 }
 
 /*!
@@ -717,7 +721,8 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     [[self headerView] setNeedsLayout];
     [[self headerView] setNeedsDisplay:YES];
     
-    [self reloadData];
+    var rowIndexes = [CPIndexSet indexSetWithIndexesInRange:CPMakeRange(0, [self numberOfRows])];
+    [self reloadDataForRowIndexes:rowIndexes columnIndexes:[CPIndexSet indexSetWithIndex:columnIndex]];
 }
 
 - (CPArray)tableColumns
