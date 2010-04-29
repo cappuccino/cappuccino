@@ -4,35 +4,35 @@ var OS = require("os");
 var NATIVEHOST_SOURCE = FILE.path(module.path).dirname().dirname().dirname().join("support", "NativeHost.app");
 
 exports.buildNativeHost = function(rootPath, buildNative, options) {
+    options = options || {};
+    options.index = options.index || "index.html";
+
     rootPath = FILE.path(rootPath);
     buildNative = FILE.path(buildNative);
 
     if (buildNative.exists())
         buildNative.rmtree();
 
-    // If not we lose all of our permissions.
     buildNative.dirname().mkdirs();
+    // FIXME: Narwhal doesn't preserve permissions
+    // FILE.copyTree(NATIVEHOST_SOURCE, buildNative);
     OS.system(["cp", "-r", NATIVEHOST_SOURCE, buildNative]);
-
-    // Do this again anyways?
     FILE.chmod(buildNative.join("Contents", "MacOS", "NativeHost"), 0755);
 
-    var buildClientDirectory = buildNative.join("Contents", "Resources", "Application");
+    var rootBaseName = rootPath.basename();
+    var buildClientDirectory = buildNative.join("Contents", "Resources", rootBaseName);
 
     FILE.mkdirs(FILE.dirname(buildClientDirectory));
-    OS.system(["cp", "-r", rootPath, buildClientDirectory]);
     // FILE.copyTree(rootPath, buildClientDirectory);
+    OS.system(["cp", "-r", rootPath, buildClientDirectory]);
 
     var defaultBundleName = buildNative.basename().match(/^(.*)(\.app)?$/)[1];
 
-    CFPropertyList.modifyPlist(buildNative.join("Contents", "Info.plist"), function(plist) {
-        plist.setValueForKey("CFBundleName", defaultBundleName);
-        plist.setValueForKey("NHInitialResource", "Application/index.html");
+    function mergePlist(plist, path) {
+        var otherPlist = CFPropertyList.readPropertyListFromFile(String(path));
 
-        // merge Cappuccino plist
-        var cappPlist = CFPropertyList.readPropertyListFromFile(FILE.join(rootPath, "Info.plist"));
-        cappPlist.keys().forEach(function(key) {
-            var value = cappPlist.valueForKey(key);
+        otherPlist.keys().forEach(function(key) {
+            var value = otherPlist.valueForKey(key);
             plist.setValueForKey(key, value);
 
             if (key === "CPBundleName")
@@ -45,6 +45,26 @@ exports.buildNativeHost = function(rootPath, buildNative, options) {
                 else
                     print("Warning: CFBundleIconFile references " + value + " but does not exist in the resources directory.");
             }
+
+            if (key === "CFBundleExecutable") {
+                buildNative.join("Contents", "MacOS", "NativeHost").rename(value);
+                // FIXME:
+                FILE.chmod(buildNative.join("Contents", "MacOS", value), 0755);
+            }
         });
+    }
+
+    CFPropertyList.modifyPlist(buildNative.join("Contents", "Info.plist"), function(plist) {
+
+        plist.setValueForKey("CFBundleName", defaultBundleName);
+        plist.setValueForKey("NHInitialResource", FILE.join(rootBaseName, options.index));
+
+        // merge Cappuccino plist
+        var cappPlistPath = rootPath.join("Info.plist");
+        if (cappPlistPath.isFile())
+            mergePlist(plist, cappPlistPath);
+
+        if (options.extraPlistPath)
+            mergePlist(plist, options.extraPlistPath);
     });
 }

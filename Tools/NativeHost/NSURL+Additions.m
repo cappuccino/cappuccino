@@ -15,7 +15,7 @@
 {
     if ([[self scheme] caseInsensitiveCompare:@"file"] == NSOrderedSame)
         return [[[NSURL alloc] initWithScheme:@"http"
-										 host:[NSString stringWithFormat:@"localhost:%d", SERVER_PORT] 
+										 host:[NSString stringWithFormat:@"127.0.0.1:%d", SERVER_PORT] 
 										 path:[@"/filesystem/" stringByAppendingString:[self path]]] autorelease];
 
     return [[self copy] autorelease];
