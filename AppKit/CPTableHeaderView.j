@@ -147,13 +147,24 @@ var _CPTableColumnHeaderViewStringValueKey = @"_CPTableColumnHeaderViewStringVal
 
 @implementation CPTableHeaderView : CPView
 {
-    int _resizedColumn @accessors(readonly, property=resizedColumn);
-    int _draggedColumn @accessors(readonly, property=draggedColumn);
-    int _pressedColumn @accessors(readonly, property=pressedColumn);
+    CPPoint                 _previousTrackingLocation;
+    int                     _activeColumn;
+    int                     _pressedColumn;
     
-    float _draggedDistance @accessors(readonly, property=draggedDistance);
-    float _lastLocation;
-    float _columnOldWidth;
+    BOOL                    _isResizing;
+    BOOL                    _isTrackingColumn;
+    
+    // CPPoint             _previousTrackingLocation;
+    // 
+    // int                 _resizedColumn @accessors(readonly, property=resizedColumn);
+    // int                 _draggedColumn @accessors(readonly, property=draggedColumn);
+    // int                 _pressedColumn @accessors(readonly, property=pressedColumn);
+    // int                 _clickedColumn @accessors(readonly, property=clickedColumn);
+    // BOOL                _isTrackingColumn;
+    // 
+    // float               _draggedDistance @accessors(readonly, property=draggedDistance);
+    // float               _lastLocation;
+    // float               _columnOldWidth;
     
     CPTableView _tableView @accessors(property=tableView);
 }
@@ -162,7 +173,7 @@ var _CPTableColumnHeaderViewStringValueKey = @"_CPTableColumnHeaderViewStringVal
 {
     _resizedColumn = -1;
     _draggedColumn = -1;
-    _pressedColumn = -1;
+    _pressedColumn = CPNotFound;
     _draggedDistance = 0.0;
     _lastLocation = nil;
     _columnOldWidth = nil;
@@ -182,7 +193,7 @@ var _CPTableColumnHeaderViewStringValueKey = @"_CPTableColumnHeaderViewStringVal
 
 - (int)columnAtPoint:(CGPoint)aPoint
 {
-    return [_tableView columnAtPoint:CGPointMake(aPoint.x, 0)];
+    return [_tableView columnAtPoint:CGPointMake(aPoint.x, aPoint.y)];
 }
 
 - (CGRect)headerRectOfColumn:(int)aColumnIndex
@@ -228,104 +239,365 @@ var _CPTableColumnHeaderViewStringValueKey = @"_CPTableColumnHeaderViewStringVal
 
 - (void)mouseDown:(CPEvent)theEvent
 {
-    var mouseLocation = [self convertPoint:[theEvent locationInWindow] fromView:nil],
-        clickedColumn = [self columnAtPoint:mouseLocation];    
-    
-    // should we send column -1 ?
-    [_tableView _sendDelegateDidMouseDownInHeader:clickedColumn];
-    
-    var resizeLocation = CGPointMake(mouseLocation.x - 5, mouseLocation.y),
-        resizedColumn = [self columnAtPoint:resizeLocation];
-    
-    if (resizedColumn == -1)
-        return;
-
-    // 2 different tracking methods: one for resizing/stop-resizing, another one for selection/reordering
-    if ([_tableView allowsColumnResizing]
-        && CGRectContainsPoint([self _cursorRectForColumn:resizedColumn], mouseLocation))
-    {
-        _resizedColumn = resizedColumn;
-        [_tableView._tableColumns[_resizedColumn] setDisableResizingPosting:YES];
-        [_tableView setDisableAutomaticResizing:YES];
-        [self trackResizeWithEvent:theEvent];
-    }
-    else
-    {
-        [self _setPressedColumn:clickedColumn];
-        [self trackMouseWithEvent:theEvent];
-    }    
+    [self trackMouse:theEvent];
 }
 
-- (void)trackMouseWithEvent:(CPEvent)theEvent
+- (void)trackMouse:(CPEvent)theEvent
 {
-    var type = [theEvent type];
+    var type = [theEvent type],
+        currentLocation = [self convertPoint:[theEvent locationInWindow] fromView:nil];
     
-    if (type == CPLeftMouseUp)
-    {
-        var location = [self convertPoint:[theEvent locationInWindow] fromView:nil],
-            clickedColumn = [self columnAtPoint:location];
+    // Take the right columns resize tracking area into account
+    currentLocation.x -= 5.0;
 
-        [self _setPressedColumn:-1];
+    var columnIndex = [self columnAtPoint:currentLocation],
+        shouldResize = [self shouldResizeTableColumn:columnIndex at:CPPointMake(currentLocation.x + 5.0, currentLocation.y)];
         
-        if (clickedColumn != -1)
-            [_tableView _didClickTableColumn:clickedColumn modifierFlags:[theEvent modifierFlags]];
-        
-        return;
-    }
-
-    [CPApp setTarget:self selector:@selector(trackMouseWithEvent:) forNextEventMatchingMask:CPLeftMouseDraggedMask | CPLeftMouseUpMask | CPLeftMouseDownMask untilDate:nil inMode:nil dequeue:YES];
-}
-
-- (void)trackResizeWithEvent:(CPEvent)anEvent
-{
-    var location = [self convertPoint:[anEvent locationInWindow] fromView:nil],
-        tableColumn = [[_tableView tableColumns] objectAtIndex:_resizedColumn],
-        type = [anEvent type];
-
-    if (_lastLocation == nil)
-        _lastLocation = location;
-
-    if (_columnOldWidth == nil)
-        _columnOldWidth = [tableColumn width];
-
     if (type === CPLeftMouseUp)
-    {   
-        [self _updateResizeCursor:anEvent];
-                
-        [tableColumn _postDidResizeNotificationWithOldWidth:_columnOldWidth];
-        [tableColumn setDisableResizingPosting:NO];        
-        [_tableView setDisableAutomaticResizing:NO];
-
-        _resizedColumn = -1;
-        _lastLocation = nil;
-        _columnOldWidth = nil;
-
-        return;
-    }            
-    else if (type === CPLeftMouseDragged)
     {
-        var newWidth = [tableColumn width] + location.x - _lastLocation.x;
-        
-        if (newWidth < [tableColumn minWidth])
-            [[CPCursor resizeRightCursor] set];
-        else if (newWidth > [tableColumn maxWidth])
-            [[CPCursor resizeLeftCursor] set];
+        if (shouldResize)
+            [self stopResizingTableColumn:_activeColumn at:currentLocation];
+        else if ([self _shouldStopTrackingTableColumn:columnIndex at:currentLocation])
+        {
+            [[self tableView] _didClickTableColumn:columnIndex modifierFlags:[theEvent modifierFlags]];
+            [self stopTrackingTableColumn:columnIndex at:currentLocation];
+            
+            _isTrackingColumn = NO;
+        }
+
+        _activeColumn = CPNotFound;
+        return;
+    }
+
+    if (type === CPLeftMouseDown)
+    {
+        _activeColumn = columnIndex;
+
+        [[self tableView] _sendDelegateDidMouseDownInHeader:columnIndex];
+
+        if (shouldResize)
+            [self startResizingTableColumn:columnIndex at:currentLocation];
         else
         {
-            _tableView._lastColumnShouldSnap = NO;
-            [tableColumn setWidth:newWidth];
-            // FIXME: there has to be a better way to do this...
-            // We should refactor the auto resizing crap.
-            // We need to figure out the exact cocoa behavior here though. 
-            _lastLocation = location;
-
-            [[CPCursor resizeLeftRightCursor] set];
-            [self setNeedsLayout];
-            [self setNeedsDisplay:YES];
+            [self startTrackingTableColumn:columnIndex at:currentLocation];
+            _isTrackingColumn = YES;
         }
     }
+    else if (type === CPLeftMouseDragged)
+    {        
+        if (shouldResize)
+            [self continueResizingTableColumn:_activeColumn at:currentLocation];
+        else
+        {
+            if (_activeColumn === columnIndex && CPRectContainsPoint([self headerRectOfColumn:columnIndex], currentLocation))
+            {
+                if (_isTrackingColumn && _pressedColumn !== CPNotFound)
+                    [self continueTrackingTableColumn:columnIndex at:currentLocation];
+                else
+                    [self startTrackingTableColumn:columnIndex at:currentLocation];
+            } else if (_isTrackingColumn && _pressedColumn !== CPNotFound)
+                [self stopTrackingTableColumn:_activeColumn at:currentLocation];
+        }
+    }
+    
+    _previousTrackingLocation = currentLocation;
+    [CPApp setTarget:self selector:@selector(trackMouse:) forNextEventMatchingMask:CPLeftMouseDraggedMask | CPLeftMouseUpMask untilDate:nil inMode:nil dequeue:YES];
+}
 
-    [CPApp setTarget:self selector:@selector(trackResizeWithEvent:) forNextEventMatchingMask:CPLeftMouseDraggedMask | CPLeftMouseUpMask untilDate:nil inMode:nil dequeue:YES];
+/*!
+    @ignore
+    Determines if the header view should finish the column tracking
+    Returns YES if the receiver is in a tracking session, the active column is equal to the hovered column
+    and the header rect of the column contains the current mouse location
+*/
+- (BOOL)_shouldStopTrackingTableColumn:(int)aColumnIndex at:(CPPoint)aPoint
+{
+    return _isTrackingColumn && _activeColumn === aColumnIndex && 
+        CPRectContainsPoint([self headerRectOfColumn:aColumnIndex], aPoint);
+}
+
+- (void)startTrackingTableColumn:(int)aColumnIndex at:(CPPoint)aPoint
+{
+    CPLog.debug(@"startTrackingTableColumn: %@ at: %@", aColumnIndex, CPStringFromPoint(aPoint));
+    [self _setPressedColumn:aColumnIndex];
+}
+
+- (void)continueTrackingTableColumn:(int)aColumnIndex at:(CPPoint)aPoint
+{    
+    CPLog.debug(@"continueTrackingTableColumn: %@ at: %@", aColumnIndex, CPStringFromPoint(aPoint));
+}
+
+- (void)stopTrackingTableColumn:(int)aColumnIndex at:(CPPoint)aPoint
+{
+    CPLog.debug(@"stopTrackingTableColumn: %@ at: %@", aColumnIndex, CPStringFromPoint(aPoint));
+    [self _setPressedColumn:CPNotFound];
+}
+
+/*!
+    @ignore
+    Determines if the table column should be resized
+    Returns YES if the receiver is already resizing a column or when the tableview allows 
+    resizing and the point is in the resize rect of the column
+*/
+- (BOOL)shouldResizeTableColumn:(int)aColumnIndex at:(CPPoint)aPoint
+{
+    if (_isResizing)
+        return YES;
+        
+    if (_isTrackingColumn)
+        return NO;
+
+    return [[self tableView] allowsColumnResizing] && CPRectContainsPoint([self _cursorRectForColumn:aColumnIndex], aPoint);
+}
+
+- (void)startResizingTableColumn:(int)aColumnIndex at:(CPPoint)aPoint
+{
+    _isResizing = YES;
+    
+    CPLog.debug(@"startResizingTableColumn: %@ at: %@", aColumnIndex, CPStringFromPoint(aPoint));
+    
+    var tableColumn = [[[self tableView] tableColumns] objectAtIndex:aColumnIndex];
+    
+    [tableColumn setDisableResizingPosting:YES];
+    [[self tableView] setDisableAutomaticResizing:YES];
+    
+    _resizedColumn = aColumnIndex;
+}
+
+- (void)continueResizingTableColumn:(int)aColumnIndex at:(CPPoint)aPoint
+{
+    CPLog.debug(@"continueResizingTableColumn: %@ at: %@", aColumnIndex, CPStringFromPoint(aPoint));
+    
+    var tableColumn = [[[self tableView] tableColumns] objectAtIndex:aColumnIndex];
+    
+    var newWidth = [tableColumn width] + aPoint.x - _previousTrackingLocation.x;
+    
+    if (newWidth < [tableColumn minWidth])
+        [[CPCursor resizeRightCursor] set];
+    else if (newWidth > [tableColumn maxWidth])
+        [[CPCursor resizeLeftCursor] set];
+    else
+    {
+        [self tableView]._lastColumnShouldSnap = NO;
+        [tableColumn setWidth:newWidth];
+        
+        [[CPCursor resizeLeftRightCursor] set];
+        [self setNeedsLayout];
+        [self setNeedsDisplay:YES];
+    }
+}
+
+- (void)stopResizingTableColumn:(int)aColumnIndex at:(CPPoint)aPoint
+{
+    CPLog.debug(@"stopResizingTableColumn: %@ at: %@", aColumnIndex, CPStringFromPoint(aPoint));
+    
+    // [self _updateResizeCursorForTableColumn:aColumnIndex at:aPoint];
+    
+    var tableColumn = [[[self tableView] tableColumns] objectAtIndex:aColumnIndex];
+    [tableColumn _postDidResizeNotificationWithOldWidth:_columnOldWidth];
+    [tableColumn setDisableResizingPosting:NO];
+    [[self tableView] setDisableAutomaticResizing:NO];
+    
+    _isResizing = NO;
+}
+
+// - (void)resizeTableColumn:(int)aColumnIndex at:(CPPoint)aPoint mouseIsUp:(BOOL)isMouseUp
+// {
+//     var tableColumn = [[[self tableColumn] tableColumns] objectAtIndex:aColumnIndex];
+//     
+//     if (isMouseUp)
+//     {
+//         [self _updateResizeCursorForTableColumn:aColumnIndex at:aPoint];
+//         
+//         [tableColumn _postDidResizeNotificationWithOldWidth:_columnOldWidth];
+//         [tableColumn setDisableResizingPosting:NO];
+//         [[self tableView] setDisableAutomaticResizing:NO];
+//     }
+//     else
+//     {
+//         var newWidth = [tableColumn width] + location - _lastLocation.x;
+//         
+//         if (newWidth < [tableColumn minWidth])
+//             [[CPCursor resizeRightCursor] set];
+//         else if (newWidth > [tableColumn maxWidth])
+//             [[CPCursor resizeLeftCursor] set];
+//         else
+//         {
+//             [self tableView]._lastColumnShouldSnap = NO;
+//             [tableColumn setWidth:newWidth];
+//             
+//             [[CPCursor resizeLeftRightCursor] set];
+//             [self setNeedsLayout];
+//             [self setNeedsDisplay:YES];
+//         }
+//     }
+// }
+
+
+// - (BOOL)startTrackingColumn:(int)aColumnIndex at:(CPPoint)aPoint
+// {
+//     [self _setPressedColumn:aColumnIndex];
+//     
+//     return YES;
+    
+    // var resizeLocation = CPPointMake(aPoint.x - 5.0, aPoint.y);
+    // 
+    // if ([self shouldResizeTableColumn:aColumnIndex at:aPoint])
+    // {
+    //     _resizedColumn = aColumnIndex;
+    //     [[[[self tableView] tableColumns] objectAtIndex:_resizedColumn] setDisableResizingPosting:YES];
+    //     [[self tableView] setDisableAutomaticResizing:YES];
+    //     
+    //     // // Use point :)
+    //     // [self trackResizeWithEvent:[CPApp currentEvent]];
+    //     // return NO;
+    // }
+    // 
+    // 
+    // return YES;
+    
+    // _clickedColumn = [self columnAtPoint:mouseLocation];    
+    //     
+    //     // should we send column -1 ?
+    //     [_tableView _sendDelegateDidMouseDownInHeader:_clickedColumn];
+    //     
+    //     var resizeLocation = CGPointMake(mouseLocation.x - 5, mouseLocation.y),
+    //         resizedColumn = [self columnAtPoint:resizeLocation];
+    //     
+    //     if (resizedColumn == -1)
+    //         return;
+    // 
+    //     // 2 different tracking methods: one for resizing/stop-resizing, another one for selection/reordering
+    //     if ([_tableView allowsColumnResizing]
+    //         && CGRectContainsPoint([self _cursorRectForColumn:resizedColumn], mouseLocation))
+    //     {
+    //         _resizedColumn = resizedColumn;
+    //         [_tableView._tableColumns[_resizedColumn] setDisableResizingPosting:YES];
+    //         [_tableView setDisableAutomaticResizing:YES];
+    //         [self trackResizeWithEvent:theEvent];
+    //     }
+    //     else
+    //     {
+    //         [self _setPressedColumn:_clickedColumn];
+    //         [self trackMouseWithEvent:theEvent];
+    //     }
+}
+// 
+// - (BOOL)continueTrackingColumn:(int)aColumnIndex at:(CPPoint)aPoint
+// {
+// }
+// 
+// - (void)stopTrackingColumn:(int)aColumnIndex at:(CPPoint)aPoint;
+// {
+//     [self _setPressedColumn:-1];
+// }
+
+
+
+// - (void)trackMouseWithEvent:(CPEvent)theEvent
+// {
+//     var type = [theEvent type],
+//         location = [self convertPoint:[theEvent locationInWindow] fromView:nil];
+//     
+//     if (type === CPLeftMouseUp)
+//     {
+//         var clickedColumn = [self columnAtPoint:location],
+//             pressedColumn = _pressedColumn;
+//         
+//         [self _setPressedColumn:-1];
+//         
+//         if (pressedColumn === clickedColumn)        
+//             if (clickedColumn !== -1)
+//                 [_tableView _didClickTableColumn:clickedColumn modifierFlags:[theEvent modifierFlags]];
+//         
+//         return;
+//     }
+//     else if (type === CPLeftMouseDragged)
+//     {
+//         var hoveredColumn = [self columnAtPoint:location];
+//         
+//         CPLog.debug(@"hovered: %i pressed: %i", hoveredColumn, _pressedColumn);
+//         if (hoveredColumn === _clickedColumn)
+//             [self _setPressedColumn:_clickedColumn];
+//         else
+//             [self _setPressedColumn:-1]
+//     }
+//     //     CPLog.debug(@"...");
+//     //     
+//     //     var point = [self convertPoint:[theEvent locationInWindow] fromView:nil];
+//     //     
+//     //     var view = [[CPView alloc] initWithFrame:CPRectMake(0.0, 0.0, CPRectGetWidth([self bounds], CPRectGetHeight([[self tableView] bounds])))];
+//     //     [view setBackgroundColor:[CPColor greenColor]];
+//     //     var viewLocation = CPPointMake(point.x - CGRectGetWidth(bounds)/2, point.y - CGRectGetHeight(bounds)/2);
+//     //     
+//     //     [self dragView:view at:viewLocation offset:CPPointMakeZero() event:theEvent pasteboard:[CPPasteboard pasteboardWithName:CPDragPboard] source:self slideBack:YES];
+//     //     return;
+//     // }
+// 
+//     [CPApp setTarget:self selector:@selector(trackMouseWithEvent:) forNextEventMatchingMask:CPLeftMouseDraggedMask | CPLeftMouseUpMask | CPLeftMouseDownMask untilDate:nil inMode:nil dequeue:YES];
+// }
+
+// - (void)trackResizeWithEvent:(CPEvent)anEvent
+// {
+//     var location = [self convertPoint:[anEvent locationInWindow] fromView:nil],
+//         tableColumn = [[_tableView tableColumns] objectAtIndex:_resizedColumn],
+//         type = [anEvent type];
+// 
+//     if (_lastLocation == nil)
+//         _lastLocation = location;
+// 
+//     if (_columnOldWidth == nil)
+//         _columnOldWidth = [tableColumn width];
+// 
+//     if (type === CPLeftMouseUp)
+//     {   
+//         [self _updateResizeCursor:anEvent];
+//                 
+//         [tableColumn _postDidResizeNotificationWithOldWidth:_columnOldWidth];
+//         [tableColumn setDisableResizingPosting:NO];        
+//         [_tableView setDisableAutomaticResizing:NO];
+// 
+//         _resizedColumn = -1;
+//         _lastLocation = nil;
+//         _columnOldWidth = nil;
+// 
+//         return;
+//     }            
+//     else if (type === CPLeftMouseDragged)
+//     {
+//         var newWidth = [tableColumn width] + location.x - _lastLocation.x;
+//         
+//         if (newWidth < [tableColumn minWidth])
+//             [[CPCursor resizeRightCursor] set];
+//         else if (newWidth > [tableColumn maxWidth])
+//             [[CPCursor resizeLeftCursor] set];
+//         else
+//         {
+//             _tableView._lastColumnShouldSnap = NO;
+//             [tableColumn setWidth:newWidth];
+//             // FIXME: there has to be a better way to do this...
+//             // We should refactor the auto resizing crap.
+//             // We need to figure out the exact cocoa behavior here though. 
+//             _lastLocation = location;
+// 
+//             [[CPCursor resizeLeftRightCursor] set];
+//             [self setNeedsLayout];
+//             [self setNeedsDisplay:YES];
+//         }
+//     }
+// 
+//     [CPApp setTarget:self selector:@selector(trackResizeWithEvent:) forNextEventMatchingMask:CPLeftMouseDraggedMask | CPLeftMouseUpMask untilDate:nil inMode:nil dequeue:YES];
+// }
+
+- (void)_updateResizeCursorForTableColumn:(int)aColumnIndex at:(CPPoint)aPoint mouseIsUp:(BOOL)isMouseUp
+{
+    if (![[self tableView] allowsColumnResizing] || (isMouseUp && ![[self window] acceptsMouseMovedEvents]))
+    {
+        [[CPCursor arrowCursor] set];
+        return;
+    }
+    
+    
 }
 
 - (void)_updateResizeCursor:(CPEvent)theEvent
