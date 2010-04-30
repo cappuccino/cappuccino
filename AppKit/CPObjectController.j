@@ -23,7 +23,7 @@
     [self exposeBinding:@"contentObject"];
 }
 
-+ (CPSet)keyPathsForValuesAffectingValueForContentObject
++ (CPSet)keyPathsForValuesAffectingContentObject
 {
     return [CPSet setWithObjects:"content"];
 }
@@ -36,17 +36,17 @@
     return YES;
 }
 
-+ (CPSet)keyPathsForValuesAffectingValueForCanAdd
++ (CPSet)keyPathsForValuesAffectingCanAdd
 {
     return [CPSet setWithObject:"editable"];
 }
 
-+ (CPSet)keyPathsForValuesAffectingValueForCanInsert
++ (CPSet)keyPathsForValuesAffectingCanInsert
 {
     return [CPSet setWithObject:"editable"];
 }
 
-+ (CPSet)keyPathsForValuesAffectingValueForCanRemove
++ (CPSet)keyPathsForValuesAffectingCanRemove
 {
     return [CPSet setWithObjects:"editable", "selection"];
 }
