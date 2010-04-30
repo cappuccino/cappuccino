@@ -490,10 +490,11 @@
 */
 - (unsigned)indexOfObject:(id)anObject sortedByDescriptors:(CPArray)descriptors
 {
+    var count = [descriptors count];
+
     return [self indexOfObject:anObject sortedByFunction:function(lhs, rhs)
     {
         var i = 0,
-            count = [descriptors count],
             result = CPOrderedSame;
 
         while (i < count)
@@ -971,21 +972,22 @@
 
 - (unsigned)insertObject:(id)anObject inArraySortedByDescriptors:(CPArray)descriptors
 {
+    var count = [descriptors count];
+
     var index = [self _indexOfObject:anObject sortedByFunction:function(lhs, rhs)
     {
         var i = 0,
-            count = [descriptors count],
             result = CPOrderedSame;
 
         while (i < count)
-            if ((result = [descriptors[i++] compareObject:lhs withObject:rhs]) != CPOrderedSame)
+            if((result = [descriptors[i++] compareObject:lhs withObject:rhs]) != CPOrderedSame)
                 return result;
 
         return result;
     } context:nil];
 
     if (index < 0)
-        index = -index - 1;
+        index = -index-1;
 
     [self insertObject:anObject atIndex:index];
     return index;
@@ -1191,10 +1193,11 @@
 
 - (CPArray)sortUsingDescriptors:(CPArray)descriptors
 {
+    var count = [descriptors count];
+
     sort(function(lhs, rhs)
     {
         var i = 0,
-            count = [descriptors count],
             result = CPOrderedSame;
 
         while (i < count)
