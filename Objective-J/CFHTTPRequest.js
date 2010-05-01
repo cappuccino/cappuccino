@@ -101,6 +101,9 @@ GLOBAL(CFHTTPRequest) = function()
     {
         determineAndDispatchHTTPRequestEvents(self);
     }
+
+    if (CFHTTPRequest.AuthenticationDelegate !== nil)
+        this._eventDispatcher.addEventListener("HTTP403", function(){CFHTTPRequest.AuthenticationDelegate(self)});
 }
 
 CFHTTPRequest.UninitializedState    = 0;
@@ -108,6 +111,9 @@ CFHTTPRequest.LoadingState          = 1;
 CFHTTPRequest.LoadedState           = 2;
 CFHTTPRequest.InteractiveState      = 3;
 CFHTTPRequest.CompleteState         = 4;
+
+//override to forward all CFHTTPRequest authorization failures to a single function
+CFHTTPRequest.AuthenticationDelegate = nil;
 
 CFHTTPRequest.prototype.status = function()
 {
