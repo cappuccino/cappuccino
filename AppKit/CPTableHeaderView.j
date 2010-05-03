@@ -349,15 +349,18 @@ var _CPTableColumnHeaderViewStringValueKey = @"_CPTableColumnHeaderViewStringVal
         CPLog.debug(@"start drag");
         
         var tableColumn = [[[self tableView] tableColumns] objectAtIndex:aColumnIndex],
-            columnRect = [self headerRectOfColumn:aColumnIndex],
-            // offset = CPSizeMake(_mouseDownLocation.x - aPoint.x, _mouseDownLocation.y);
+            columnRect = [self headerRectOfColumn:aColumnIndex];
         
-        var frame = CPRectMake(0.0, 0.0, [tableColumn width], CPRectGetHeight([[self tableView] bounds])),
-            view = [[CPView alloc] initWithFrame:frame];
-            
-        [view setBackgroundColor:[CPColor greenColor]];
+        var offset = CPPointMakeZero(),
+            view = [[self tableView] dragViewForTableColumns:[tableColumn] event:[CPApp currentEvent] offset:offset],
+            viewLocation = CPPointMakeZero();
         
-        [self dragView:view at:aPoint offset:CPSizeMake(0.0, 0.0) event:[CPApp currentEvent] 
+        viewLocation.x = ( CPRectGetMinX(columnRect) + offset.x ) + ( aPoint.x - _mouseDownLocation.x );
+        viewLocation.y = CPRectGetMinY(columnRect) + offset.y;
+        
+        [view setAlphaValue:0.7];
+        
+        [self dragView:view at:viewLocation offset:CPSizeMakeZero() event:[CPApp currentEvent] 
             pasteboard:[CPPasteboard pasteboardWithName:CPDragPboard] source:self slideBack:YES];
             
         return NO;
@@ -366,10 +369,33 @@ var _CPTableColumnHeaderViewStringValueKey = @"_CPTableColumnHeaderViewStringVal
     return YES;
 }
 
+- (void)_constrainDragView:(CPView)theDragView at:(CPPoint)aPoint
+{
+    var tableColumns = [[self tableView] tableColumns],
+        lastColumnRect = [self headerRectOfColumn:[tableColumns indexOfObjectIdenticalTo:[tableColumns lastObject]]],
+        dragWindow = [theDragView window],
+        frame = [dragWindow frame];
+    
+    // Because the drag window is as wide as the entire tableview, it's start origin is always 0.0
+    // The minimal x coordinate is the minimal dragged table columns negated x value 
+    var minimumX = -(CPRectGetMinX([self headerRectOfColumn:_activeColumn]))
+        maximumX = CPRectGetMinX(lastColumnRect);
+        
+    // This effectively clamps the value between the minimal and maximum
+    // frame.origin.x = MAX(minimumX, MIN(CPRectGetMinX(frame), maximumX));
+    
+    // Make sure the column cannot move vertically
+    frame.origin.y = CPRectGetMinY([self convertRect:lastColumnRect toView:nil]);
+    
+    [dragWindow setFrame:frame];
+}
+
 - (void)draggedView:(CPView)aView movedTo:(CPPoint)aPoint
 {
+    [self _constrainDragView:aView at:aPoint];
+    
     var hoveredColumn = [self columnAtPoint:aPoint],
-    if (_activeColumn === hoveredColumn)
+    if (hoveredColumn === -1 || _activeColumn === hoveredColumn)
         return;
         
     var columnRect = [self headerRectOfColumn:hoveredColumn],
