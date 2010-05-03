@@ -28,7 +28,7 @@
     if (data.length < 10)
     {
         // reload with data in the query string
-        window.location.href = [window.location.protocol, "//", window.location.host, window.location.port, window.location.pathname, "?", encodeURIComponent(JSON.stringify(data))].join("");
+        window.location.href = [window.location.protocol, "//", window.location.host, window.location.pathname, "?", encodeURIComponent(JSON.stringify(data))].join("");
     }
     else
     {
