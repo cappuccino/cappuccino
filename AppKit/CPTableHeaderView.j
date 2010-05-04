@@ -338,19 +338,13 @@ var _CPTableColumnHeaderViewStringValueKey = @"_CPTableColumnHeaderViewStringVal
     
     if ([self _shouldDragTableColumn:aColumnIndex at:aPoint])
     {
-        CPLog.debug(@"start drag");
-        
-        var tableColumn = [[[self tableView] tableColumns] objectAtIndex:aColumnIndex],
-            columnRect = [self headerRectOfColumn:aColumnIndex];
-        
-        var offset = CPPointMakeZero(),
-            view = [[self tableView] dragViewForTableColumns:[tableColumn] event:[CPApp currentEvent] offset:offset],
+        var columnRect = [self headerRectOfColumn:aColumnIndex],
+            offset = CPPointMakeZero(),
+            view = [[self tableView] _dragViewForColumn:aColumnIndex event:[CPApp currentEvent] offset:offset],
             viewLocation = CPPointMakeZero();
         
         viewLocation.x = ( CPRectGetMinX(columnRect) + offset.x ) + ( aPoint.x - _mouseDownLocation.x );
         viewLocation.y = CPRectGetMinY(columnRect) + offset.y;
-        
-        [view setAlphaValue:0.7];
         
         [self dragView:view at:viewLocation offset:CPSizeMakeZero() event:[CPApp currentEvent] 
             pasteboard:[CPPasteboard pasteboardWithName:CPDragPboard] source:self slideBack:YES];

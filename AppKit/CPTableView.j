@@ -1846,52 +1846,51 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     return view;
 }
 
-- (CPView)dragViewForTableColumns:(CPArray)theTableColumns event:(CPEvent)theDragEvent offset:(CPPointPointer)theDragViewOffset
-{
-    var bounds = CPRectMake(0.0, 0.0, 0.0, CPRectGetHeight([self bounds]) + 23.0);
-        index = [theTableColumns count],
-        dragView = [[CPView alloc] initWithFrame:CPRectMakeZero()];
-    
-    // Fetch all the data views for the columns and visible rows
-    // After that copy these add them to a transparent drag view and use that drag view 
+/*!
+    @ignore
+    // Fetches all the data views (from the datasource) for the column and it's visible rows
+    // Copy the dataviews add them to a transparent drag view and use that drag view 
     // to make it appear we are dragging images of those rows (as you would do in regular Cocoa)
-    while (index--)
+*/
+- (CPView)_dragViewForColumn:(int)theColumnIndex event:(CPEvent)theDragEvent offset:(CPPointPointer)theDragViewOffset
+{
+    var dragView = [[CPView alloc] initWithFrame:CPRectMakeZero()];
+        tableColumn = [[self tableColumns] objectAtIndex:theColumnIndex],
+        bounds = CPRectMake(0.0, 0.0, [tableColumn width], CPRectGetHeight([self bounds]) + 23.0),
+        columnRect = [self rectOfColumn:theColumnIndex],
+        headerView = [tableColumn headerView];
+    
+    // Add the column header view
+    var headerFrame = [headerView frame];
+    headerFrame.origin = CPPointMakeZero();
+    
+    columnHeaderView = [[_CPTableColumnHeaderView alloc] initWithFrame:headerFrame];
+    [columnHeaderView setStringValue:[headerView stringValue]];
+    [columnHeaderView setThemeState:[headerView themeState]];
+    [dragView addSubview:columnHeaderView];
+    
+    row = [_exposedRows firstIndex];
+    while (row !== CPNotFound)
     {
-        // Get the tablecolumn and create a rect with it's width so we can use CPRectUnion 
-        // to determine the end result
-        var tableColumn = [theTableColumns objectAtIndex:index],
-            columnIndex = [[self tableColumns] indexOfObjectIdenticalTo:tableColumn];
-            columnRect = [self rectOfColumn:columnIndex],
-            headerView = [tableColumn headerView];
+        var dataView = [self _newDataViewForRow:row tableColumn:tableColumn],
+            dataViewFrame = [self frameOfDataViewAtColumn:theColumnIndex row:row];
+            
+        // Offset by table header height to make room for the table header
+        dataViewFrame.origin.x = 0.0;
+        dataViewFrame.origin.y += 23.0;
+        [dataView setFrame:dataViewFrame];
         
-        // Add the column header view
-        columnHeaderView = [[_CPTableColumnHeaderView alloc] initWithFrame:[headerView frame]];
-        [columnHeaderView setStringValue:[headerView stringValue]];
-        [columnHeaderView setThemeState:[headerView themeState]];
-        [dragView addSubview:columnHeaderView];
-            
-        bounds = CPRectUnion(bounds, columnRect);
+        [dataView setObjectValue:[self _objectValueForTableColumn:tableColumn row:row]];
+        [dragView addSubview:dataView];
         
-        row = [_exposedRows firstIndex];
-        while (row !== CPNotFound)
-        {
-            var dataView = [self _newDataViewForRow:row tableColumn:tableColumn],
-                dataViewFrame = [self frameOfDataViewAtColumn:columnIndex row:row];
-                
-            // Offset by table header height to make room for the table header
-            dataViewFrame.origin.y += 23.0;
-            [dataView setFrame:dataViewFrame];
-            
-            [dataView setObjectValue:[self _objectValueForTableColumn:tableColumn row:row]];
-            [dragView addSubview:dataView];
-            
-            row = [_exposedRows indexGreaterThanIndex:row];
-        }
+        row = [_exposedRows indexGreaterThanIndex:row];
     }
     
     // The columns are placed in the drag window at their original locations resulting in the dragged column
-    // being of when started the drag, we compensate for this by offseting the drag window by the x coordinate of the column
-    theDragViewOffset.x -= columnRect.origin.x;
+    // being of when starting the drag, we compensate for this by offseting the drag window by the x coordinate of the column
+    // theDragViewOffset.x -= columnRect.origin.x;
+    
+    [dragView setAlphaValue:0.7];
     [dragView setFrame:bounds];
     
     return dragView;
