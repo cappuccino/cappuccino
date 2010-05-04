@@ -37,12 +37,12 @@ var CPCibOwner = @"CPCibOwner";
 
 @implementation CPBundle (CPCibLoading)
 
-+ (void)loadCibFile:(CPString)anAbsolutePath externalNameTable:(CPDictionary)aNameTable
++ (CPCib)loadCibFile:(CPString)anAbsolutePath externalNameTable:(CPDictionary)aNameTable
 {
-    [[[CPCib alloc] initWithContentsOfURL:anAbsolutePath] instantiateCibWithExternalNameTable:aNameTable];
+    return [[[CPCib alloc] initWithContentsOfURL:anAbsolutePath] instantiateCibWithExternalNameTable:aNameTable];
 }
 
-+ (void)loadCibNamed:(CPString)aName owner:(id)anOwner
++ (CPCib)loadCibNamed:(CPString)aName owner:(id)anOwner
 {
     if (![aName hasSuffix:@".cib"])
         aName = [aName stringByAppendingString:@".cib"];
@@ -51,24 +51,24 @@ var CPCibOwner = @"CPCibOwner";
     var bundle = anOwner ? [CPBundle bundleForClass:[anOwner class]] : [CPBundle mainBundle],
         path = [bundle pathForResource:aName];
 
-    [self loadCibFile:path externalNameTable:[CPDictionary dictionaryWithObject:anOwner forKey:CPCibOwner]];
+    return [self loadCibFile:path externalNameTable:[CPDictionary dictionaryWithObject:anOwner forKey:CPCibOwner]];
 }
 
-- (void)loadCibFile:(CPString)aFileName externalNameTable:(CPDictionary)aNameTable
+- (CPCib)loadCibFile:(CPString)aFileName externalNameTable:(CPDictionary)aNameTable
 {
-    [[[CPCib alloc] initWithContentsOfURL:aFileName] instantiateCibWithExternalNameTable:aNameTable];
+    return [[[CPCib alloc] initWithContentsOfURL:aFileName] instantiateCibWithExternalNameTable:aNameTable];
 }
 
-+ (void)loadCibFile:(CPString)anAbsolutePath externalNameTable:(CPDictionary)aNameTable loadDelegate:aDelegate
++ (CPCib)loadCibFile:(CPString)anAbsolutePath externalNameTable:(CPDictionary)aNameTable loadDelegate:aDelegate
 {
-    [[CPCib alloc]
+    return ([[CPCib alloc]
     initWithContentsOfURL:anAbsolutePath
              loadDelegate:[[_CPCibLoadDelegate alloc]
                 initWithLoadDelegate:aDelegate
-                   externalNameTable:aNameTable]];
+                   externalNameTable:aNameTable]]);
 }
 
-+ (void)loadCibNamed:(CPString)aName owner:(id)anOwner loadDelegate:(id)aDelegate
++ (CPCib)loadCibNamed:(CPString)aName owner:(id)anOwner loadDelegate:(id)aDelegate
 {
     if (![aName hasSuffix:@".cib"])
         aName = [aName stringByAppendingString:@".cib"];
@@ -77,17 +77,17 @@ var CPCibOwner = @"CPCibOwner";
     var bundle = anOwner ? [CPBundle bundleForClass:[anOwner class]] : [CPBundle mainBundle],
         path = [bundle pathForResource:aName];
     
-    [self loadCibFile:path externalNameTable:[CPDictionary dictionaryWithObject:anOwner forKey:CPCibOwner] loadDelegate:aDelegate];
+    return [self loadCibFile:path externalNameTable:[CPDictionary dictionaryWithObject:anOwner forKey:CPCibOwner] loadDelegate:aDelegate];
 }
 
-- (void)loadCibFile:(CPString)aFileName externalNameTable:(CPDictionary)aNameTable loadDelegate:(id)aDelegate
+- (CPCib)loadCibFile:(CPString)aFileName externalNameTable:(CPDictionary)aNameTable loadDelegate:(id)aDelegate
 {
-    [[CPCib alloc]
+    return ([[CPCib alloc]
         initWithCibNamed:aFileName
                   bundle:self
             loadDelegate:[[_CPCibLoadDelegate alloc]
                 initWithLoadDelegate:aDelegate
-                   externalNameTable:aNameTable]];
+                   externalNameTable:aNameTable]]);
 }
 
 @end

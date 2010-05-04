@@ -217,10 +217,9 @@ var CPSplitViewHorizontalImage = nil,
         _DOMDividerElements[_drawingDivider].style.backgroundRepeat = "repeat";
 
         CPDOMDisplayServerAppendChild(_DOMElement, _DOMDividerElements[_drawingDivider]);
-
-        [self _setupDOMDivider];
     }
 
+    [self _setupDOMDivider];
     CPDOMDisplayServerSetStyleLeftTop(_DOMDividerElements[_drawingDivider], NULL, _CGRectGetMinX(aRect), _CGRectGetMinY(aRect));
     CPDOMDisplayServerSetStyleSize(_DOMDividerElements[_drawingDivider], _CGRectGetWidth(aRect), _CGRectGetHeight(aRect));
 #endif

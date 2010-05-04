@@ -1933,7 +1933,8 @@ CPTexturedBackgroundWindowMask
             [keyWindow makeKeyWindow];
         else
         {
-            var menuWindow = [CPApp mainMenu]._menuWindow;
+            var mainMenu = [CPApp mainMenu],
+                menuWindow = mainMenu ? mainMenu._menuWindow : nil;
             for (var i = 0; i < windowCount; i++)
             {
                 var currentWindow = allWindows[i];
@@ -1961,7 +1962,8 @@ CPTexturedBackgroundWindowMask
             [mainWindow makeMainWindow];
         else
         {
-            var menuWindow = [CPApp mainMenu]._menuWindow;
+            var mainMenu = [CPApp mainMenu],
+                menuWindow = mainMenu ? mainMenu._menuWindow : nil;
             for (var i = 0; i < windowCount; i++)
             {
                 var currentWindow = allWindows[i];
