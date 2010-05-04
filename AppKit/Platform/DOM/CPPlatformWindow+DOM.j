@@ -280,7 +280,7 @@ var supportsNativeDragAndDrop = [CPPlatform supportsDragAndDrop];
     _DOMBodyElement = theDocument.getElementById("cappuccino-body") || theDocument.body;
 
     // FIXME: Always do this?
-    if ([CPPlatform supportsDragAndDrop])
+    if (supportsNativeDragAndDrop)
         _DOMBodyElement.style["-khtml-user-select"] = "none";
 
     _DOMBodyElement.webkitTouchCallout = "none";
