@@ -516,6 +516,11 @@ var supportsNativeDragAndDrop = [CPPlatform supportsDragAndDrop];
         DOMDragElement.style.left = -_CGRectGetWidth(draggedWindowFrame) + "px";
         DOMDragElement.style.top = -_CGRectGetHeight(draggedWindowFrame) + "px";
 
+        var parentNode = DOMDragElement.parentNode;
+
+        if (parentNode)
+            parentNode.removeChild(DOMDragElement);
+
         _DOMBodyElement.appendChild(DOMDragElement);
 
         var draggingOffset = [dragServer draggingOffset];
