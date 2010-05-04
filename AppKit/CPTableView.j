@@ -212,6 +212,9 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     CPGradient  _sourceListActiveGradient;
     CPColor     _sourceListActiveTopLineColor;
     CPColor     _sourceListActiveBottomLineColor;    
+    
+    int         _draggedColumnIndex;
+    
 /*
     CPGradient  _sourceListInactiveGradient;
     CPColor     _sourceListInactiveTopLineColor;
@@ -309,7 +312,9 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 
         if (!_cornerView)
             _cornerView = [[_CPCornerView alloc] initWithFrame:CGRectMake(0, 0, [CPScroller scrollerWidth], CGRectGetHeight([_headerView frame]))];
-
+        
+        _draggedColumnIndex = -1;
+        
         // Gradients for the source list
         _sourceListActiveGradient = CGGradientCreateWithColorComponents(CGColorSpaceCreateDeviceRGB(), [89.0/255.0, 153.0/255.0, 209.0/255.0,1.0, 33.0/255.0, 94.0/255.0, 208.0/255.0,1.0], [0,1], 2);
         _sourceListActiveTopLineColor = [CPColor colorWithCalibratedRed:(61.0/255.0) green:(123.0/255.0) blue:(218.0/255.0) alpha:1.0];
@@ -672,6 +677,15 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     [self setNeedsLayout];
 }
 
+- (void)_setDraggedColumn:(int)aColumnIndex
+{
+    if (_draggedColumnIndex === aColumnIndex)
+        return;
+        
+    _draggedColumnIndex = aColumnIndex;
+    
+    [self reloadDataForRowIndexes:_exposedRows columnIndexes:[CPIndexSet indexSetWithIndex:aColumnIndex]];
+}
 
 /*!
     Moves the column and heading at a given index to a new given index.
@@ -703,7 +717,6 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
         columnIndexes = [CPIndexSet indexSetWithIndexesInRange:CPMakeRange(fromIndex, toIndex)];
         
     [self reloadDataForRowIndexes:rowIndexes columnIndexes:columnIndexes];
-    // [self setNeedsLayout];
 }
 
 /*!
@@ -1856,7 +1869,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 {
     var dragView = [[CPView alloc] initWithFrame:CPRectMakeZero()];
         tableColumn = [[self tableColumns] objectAtIndex:theColumnIndex],
-        bounds = CPRectMake(0.0, 0.0, [tableColumn width], CPRectGetHeight([self bounds]) + 23.0),
+        bounds = CPRectMake(0.0, 0.0, [tableColumn width], CPRectGetHeight([self _exposedRect]) + 23.0),
         columnRect = [self rectOfColumn:theColumnIndex],
         headerView = [tableColumn headerView];
     
@@ -1890,6 +1903,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     // being of when starting the drag, we compensate for this by offseting the drag window by the x coordinate of the column
     // theDragViewOffset.x -= columnRect.origin.x;
     
+    [dragView setBackgroundColor:[CPColor whiteColor]];
     [dragView setAlphaValue:0.7];
     [dragView setFrame:bounds];
     
@@ -2138,7 +2152,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
         var column = columnArray[columnIndex],
             tableColumn = _tableColumns[column];
             
-        if ([tableColumn isHidden])
+        if ([tableColumn isHidden] || columnIndex === _draggedColumnIndex)
             continue;
             
         var tableColumnUID = [tableColumn UID];
@@ -2294,13 +2308,21 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     [self drawBackgroundInClipRect:exposedRect];
     [self drawGridInClipRect:exposedRect];
     [self highlightSelectionInClipRect:exposedRect];
+    
+    if (_draggedColumnIndex === -1)
+        return;
+        
+    var context = [[CPGraphicsContext currentContext] graphicsPort],
+        columnRect = [self rectOfColumn:_draggedColumnIndex];
+
+    CGContextSetFillColor(context, [CPColor grayColor]);
+    CGContextFillRect(context, columnRect);
 }
 
 - (void)drawBackgroundInClipRect:(CGRect)aRect
 {
     if (!_usesAlternatingRowBackgroundColors)
         return;
-
 
     var rowColors = [self alternatingRowBackgroundColors],
         colorCount = [rowColors count];
