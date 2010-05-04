@@ -317,33 +317,13 @@ var _CPTableColumnHeaderViewStringValueKey = @"_CPTableColumnHeaderViewStringVal
     [CPApp setTarget:self selector:@selector(trackMouse:) forNextEventMatchingMask:CPLeftMouseDraggedMask | CPLeftMouseUpMask untilDate:nil inMode:nil dequeue:YES];
 }
 
-/*!
-    @ignore
-    Determines if the header view should finish the column tracking
-    Returns YES if the receiver is in a tracking session, the active column is equal to the hovered column
-    and the header rect of the column contains the current mouse location
-*/
-- (BOOL)_shouldStopTrackingTableColumn:(int)aColumnIndex at:(CPPoint)aPoint
-{
-    return _isTrackingColumn && _activeColumn === aColumnIndex && 
-        CPRectContainsPoint([self headerRectOfColumn:aColumnIndex], aPoint);
-}
-
 - (void)startTrackingTableColumn:(int)aColumnIndex at:(CPPoint)aPoint
 {
-    CPLog.debug(@"startTrackingTableColumn: %@ at: %@", aColumnIndex, CPStringFromPoint(aPoint));
     [self _setPressedColumn:aColumnIndex];
 }
 
-- (BOOL)_shouldDragTableColumn:(int)aColumnIndex at:(CPPoint)aPoint
-{
-    return [[self tableView] allowsColumnReordering] && ABS(aPoint.x - _mouseDownLocation.x) >= 10.0;
-}
-
 - (BOOL)continueTrackingTableColumn:(int)aColumnIndex at:(CPPoint)aPoint
-{    
-    CPLog.debug(@"continueTrackingTableColumn: %@ at: %@", aColumnIndex, CPStringFromPoint(aPoint));
-    
+{
     if ([self _shouldDragTableColumn:aColumnIndex at:aPoint])
     {
         var columnRect = [self headerRectOfColumn:aColumnIndex],
@@ -363,20 +343,32 @@ var _CPTableColumnHeaderViewStringValueKey = @"_CPTableColumnHeaderViewStringVal
     return YES;
 }
 
+- (BOOL)_shouldStopTrackingTableColumn:(int)aColumnIndex at:(CPPoint)aPoint
+{
+    return _isTrackingColumn && _activeColumn === aColumnIndex && 
+        CPRectContainsPoint([self headerRectOfColumn:aColumnIndex], aPoint);
+}
+
+- (void)stopTrackingTableColumn:(int)aColumnIndex at:(CPPoint)aPoint
+{
+    [self _setPressedColumn:CPNotFound];
+}
+
+- (BOOL)_shouldDragTableColumn:(int)aColumnIndex at:(CPPoint)aPoint
+{
+    return [[self tableView] allowsColumnReordering] && ABS(aPoint.x - _mouseDownLocation.x) >= 10.0;
+}
+
 - (void)_constrainDragView:(CPView)theDragView at:(CPPoint)aPoint
 {
     var tableColumns = [[self tableView] tableColumns],
         lastColumnRect = [self headerRectOfColumn:[tableColumns indexOfObjectIdenticalTo:[tableColumns lastObject]]],
+        activeColumnRect = [self headerRectOfColumn:_activeColumn];
         dragWindow = [theDragView window],
         frame = [dragWindow frame];
     
-    // Because the drag window is as wide as the entire tableview, it's start origin is always 0.0
-    // The minimal x coordinate is the minimal dragged table columns negated x value 
-    var minimumX = -(CPRectGetMinX([self headerRectOfColumn:_activeColumn]))
-        maximumX = CPRectGetMinX(lastColumnRect);
-        
-    // This effectively clamps the value between the minimal and maximum
-    // frame.origin.x = MAX(minimumX, MIN(CPRectGetMinX(frame), maximumX));
+    // This effectively clamps the value between the minimum and maximum
+    frame.origin.x = MAX(0.0, MIN(CPRectGetMinX(frame), CPRectGetMaxX(lastColumnRect) - CPRectGetWidth(activeColumnRect)));
     
     // Make sure the column cannot move vertically
     frame.origin.y = CPRectGetMinY([self convertRect:lastColumnRect toView:nil]);
@@ -384,48 +376,46 @@ var _CPTableColumnHeaderViewStringValueKey = @"_CPTableColumnHeaderViewStringVal
     [dragWindow setFrame:frame];
 }
 
+- (void)_moveColumn:(int)aFromIndex toColumn:(int)aToIndex
+{
+    [[self tableView] moveColumn:aFromIndex toColumn:aToIndex];
+    _activeColumn = aToIndex;
+    _pressedColumn = _activeColumn;
+}
+
 - (void)draggedView:(CPView)aView movedTo:(CPPoint)aPoint
 {
     [self _constrainDragView:aView at:aPoint];
     
-    var hoveredColumn = [self columnAtPoint:aPoint],
-    if (hoveredColumn === -1 || _activeColumn === hoveredColumn)
-        return;
-        
-    var columnRect = [self headerRectOfColumn:hoveredColumn],
-        columnCenterPoint = CPPointMake(CPRectGetMidX(columnRect), CPRectGetMidY(columnRect));
+    var dragWindowFrame = [[aView window] frame];
     
-    if (_activeColumn < hoveredColumn && aPoint.x > columnCenterPoint.x)
+    var hoverPoint = CPPointCreateCopy(aPoint);
+    if (aPoint.x < _previousTrackingLocation.x)
+        hoverPoint = CPPointMake(CPRectGetMinX(dragWindowFrame), CPRectGetMinY(dragWindowFrame));
+    else if (aPoint.x > _previousTrackingLocation.x)
+        hoverPoint = CPPointMake(CPRectGetMaxX(dragWindowFrame), CPRectGetMinY(dragWindowFrame));
+    
+    var hoveredColumn = [self columnAtPoint:hoverPoint],
+    
+    if (hoveredColumn !== -1)
     {
-        [[self tableView] moveColumn:_activeColumn toColumn:hoveredColumn];
-        _activeColumn = hoveredColumn;
+        var columnRect = [self headerRectOfColumn:hoveredColumn],
+            columnCenterPoint = CPPointMake(CPRectGetMidX(columnRect), CPRectGetMidY(columnRect));
+    
+        if (hoveredColumn < _activeColumn && hoverPoint.x < columnCenterPoint.x)
+            [self _moveColumn:_activeColumn toColumn:hoveredColumn];
+        else if (hoveredColumn > _activeColumn && hoverPoint.x > columnCenterPoint.x)
+            [self _moveColumn:_activeColumn toColumn:hoveredColumn];
     }
-    else if (_activeColumn > hoveredColumn && aPoint.x < columnCenterPoint.x)
-    {
-        [[self tableView] moveColumn:_activeColumn toColumn:hoveredColumn];
-        _activeColumn = hoveredColumn;
-    }
+    
+    _previousTrackingLocation = aPoint;
 }
 
 - (void)draggedView:(CPImage)aView endedAt:(CGPoint)aLocation operation:(CPDragOperation)anOperation
 {
-    CPLog.debug(@"draggedView view ended at: %@", CPStringFromPoint(aLocation));
-    
-    [self stopTrackingTableColumn:[self columnAtPoint:aLocation] at:aLocation];
+    [self stopTrackingTableColumn:_activeColumn at:aLocation];
 }
 
-- (void)stopTrackingTableColumn:(int)aColumnIndex at:(CPPoint)aPoint
-{
-    CPLog.debug(@"stopTrackingTableColumn: %@ at: %@", aColumnIndex, CPStringFromPoint(aPoint));
-    [self _setPressedColumn:CPNotFound];
-}
-
-/*!
-    @ignore
-    Determines if the table column should be resized
-    Returns YES if the receiver is already resizing a column or when the tableview allows 
-    resizing and the point is in the resize rect of the column
-*/
 - (BOOL)shouldResizeTableColumn:(int)aColumnIndex at:(CPPoint)aPoint
 {
     if (_isResizing)
