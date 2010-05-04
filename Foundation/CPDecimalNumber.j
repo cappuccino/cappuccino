@@ -449,15 +449,20 @@ _cappdefaultDcmHandler = [CPDecimalNumberHandler decimalNumberHandlerWithRoundin
     return @"d";
 }
 
-// FIXME:  I expect here locale should be some default locale
-- (CPString)stringValue
+- (CPString)description
 {
-    return [self descriptionWithLocale:nil];
+    // FIXME:  I expect here locale should be some default locale
+    return [self descriptionWithLocale:nil]
 }
 
 - (CPString)descriptionWithLocale:(CPDictionary)locale
 {
     return CPDecimalString(_data, locale);
+}
+
+- (CPString)stringValue
+{
+    return [self description];
 }
 
 /*!
