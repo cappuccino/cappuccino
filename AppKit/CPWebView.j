@@ -187,7 +187,7 @@ CPWebViewScrollNative                           = 2;
             var win = null;
             try { win = [self DOMWindow]; } catch (e) {}
 
-            if (win && win.document)
+            if (win && win.document && win.document.body)
             {
                 var width = win.document.body.scrollWidth,
                     height = win.document.body.scrollHeight;
