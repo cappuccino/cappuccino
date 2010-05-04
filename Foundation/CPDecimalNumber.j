@@ -158,9 +158,16 @@ _cappdefaultDcmHandler = [CPDecimalNumberHandler decimalNumberHandlerWithRoundin
     mathematical operations to go with it.
     This class is mutable.
 */
-@implementation CPDecimalNumber : CPObject
+
+
+@implementation CPDecimalNumber : CPNumber
 {
     CPDecimal _data;
+}
+
++ (id)alloc
+{
+    return class_createInstance(self);
 }
 
 // initializers
