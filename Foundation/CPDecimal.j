@@ -246,15 +246,13 @@ function CPDecimalIsZero(dcm)
     // exponent doesnt matter as long as mantissa = 0
     if (!dcm._isNaN)
     {
-        for(i=0; i<[dcm._mantissa count]; i++)
-        {
-            if (dcm._mantissa[i] != 0)
-            {
-                return NO;
-            }
-        }
+        for (var i = 0; i < dcm._mantissa.length; i++)
+            if (dcm._mantissa[i] !== 0)
+                return NO; 
+
         return YES;
     }
+
     return NO;
 }
 
@@ -1181,7 +1179,7 @@ function CPDecimalNormalize(dcm1, dcm2, roundingMode, longMode)
     else
         l = MIN((CPDecimalMaxDigits*factor) - l1, e); //(e1 - e2));
 
-    for (i = 0; i < l; i++)
+    for (var i = 0; i < l; i++)
     {
         if (e2 > e1)
             [dcm2._mantissa addObject:0]; //dcm2._mantissa[i + l2] = 0;
@@ -1223,7 +1221,7 @@ function CPDecimalNormalize(dcm1, dcm2, roundingMode, longMode)
             {
                 l1 = [dcm1._mantissa count];
                 l = MIN((CPDecimalMaxDigits*factor) - l1, ABS(dcm1._exponent - dcm2._exponent));
-                for (i = 0; i < l; i++)
+                for (var i = 0; i < l; i++)
                 {
                     dcm1._mantissa[i + l1] = 0; // or addObject: ? one faster than other?
                 }
@@ -1232,7 +1230,7 @@ function CPDecimalNormalize(dcm1, dcm2, roundingMode, longMode)
             } else {
                 l2 = [dcm2._mantissa count];
                 l = MIN((CPDecimalMaxDigits*factor) - l2, ABS(dcm2._exponent - dcm1._exponent));
-                for (i = 0; i < l; i++)
+                for (var i = 0; i < l; i++)
                 {
                     dcm2._mantissa[i + l2] = 0; // or addObject: ? one faster than other?
                 }
@@ -1327,7 +1325,7 @@ function CPDecimalRound(result, dcm, scale ,roundingMode)
 
         if (up)
         {
-	        for (i = l-1; i >= 0; i--)
+	        for (var i = l-1; i >= 0; i--)
 	        {
 	            if (result._mantissa[i] != 9)
 	            {
