@@ -374,11 +374,17 @@ var _CPTableColumnHeaderViewStringValueKey = @"_CPTableColumnHeaderViewStringVal
         dragWindow = [theDragView window],
         frame = [dragWindow frame];
     
+    // Convert the frame origin from the global coordinate system to the windows' coordinate system
+    frame.origin = [[self window] convertGlobalToBase:frame.origin];
+    
     // This effectively clamps the value between the minimum and maximum
     frame.origin.x = MAX(0.0, MIN(CPRectGetMinX(frame), CPRectGetMaxX(lastColumnRect) - CPRectGetWidth(activeColumnRect)));
     
     // Make sure the column cannot move vertically
     frame.origin.y = CPRectGetMinY([self convertRect:lastColumnRect toView:nil]);
+    
+    // Convert the calculated origin back to the global coordinate system
+    frame.origin = [[self window] convertBaseToGlobal:frame.origin];
     
     [dragWindow setFrame:frame];
 }
@@ -406,7 +412,8 @@ var _CPTableColumnHeaderViewStringValueKey = @"_CPTableColumnHeaderViewStringVal
 {
     [self _constrainDragView:aView at:aPoint];
     
-    var dragWindowFrame = [[aView window] frame];
+    var dragWindow = [aView window],
+        dragWindowFrame = [dragWindow frame];
     
     var hoverPoint = CPPointCreateCopy(aPoint);
     if (aPoint.x < _previousTrackingLocation.x)
@@ -414,13 +421,16 @@ var _CPTableColumnHeaderViewStringValueKey = @"_CPTableColumnHeaderViewStringVal
     else if (aPoint.x > _previousTrackingLocation.x)
         hoverPoint = CPPointMake(CPRectGetMaxX(dragWindowFrame), CPRectGetMinY(dragWindowFrame));
     
-    var hoveredColumn = [self columnAtPoint:hoverPoint],
+    // Convert the hover point from the global coordinate system to windows' coordinate system
+    hoverPoint = [[self window] convertGlobalToBase:hoverPoint];
+    
+    var hoveredColumn = [self columnAtPoint:hoverPoint];
     
     if (hoveredColumn !== -1)
     {
         var columnRect = [self headerRectOfColumn:hoveredColumn],
             columnCenterPoint = CPPointMake(CPRectGetMidX(columnRect), CPRectGetMidY(columnRect));
-    
+        
         if (hoveredColumn < _activeColumn && hoverPoint.x < columnCenterPoint.x)
             [self _moveColumn:_activeColumn toColumn:hoveredColumn];
         else if (hoveredColumn > _activeColumn && hoverPoint.x > columnCenterPoint.x)
