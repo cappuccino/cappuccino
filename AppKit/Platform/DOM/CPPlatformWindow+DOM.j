@@ -467,7 +467,7 @@ var supportsNativeDragAndDrop = [CPPlatform supportsDragAndDrop];
     [PlatformWindows addObject:self];
 
     // FIXME: cpSetFrame?
-    _DOMWindow.document.write("<html><head></head><body style = 'background-color:transparent;'></body></html>");
+    _DOMWindow.document.write("<!DOCTYPE html><html lang='en'><head></head><body style='background-color:transparent;'></body></html>");
     _DOMWindow.document.close();
 
     if (![CPPlatform isBrowser])
@@ -1192,6 +1192,7 @@ var supportsNativeDragAndDrop = [CPPlatform supportsDragAndDrop];
 
         [_windowLevels insertObject:aLevel atIndex:insertionIndex];
         layer._DOMElement.style.zIndex = aLevel;
+
         _DOMBodyElement.appendChild(layer._DOMElement);
     }
     
