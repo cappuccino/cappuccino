@@ -358,10 +358,26 @@ var _CPTableColumnHeaderViewStringValueKey = @"_CPTableColumnHeaderViewStringVal
     return [[self tableView] allowsColumnReordering] && ABS(aPoint.x - _mouseDownLocation.x) >= 10.0;
 }
 
+- (CPRect)_headerRectOfLastVisibleColumn
+{
+    var tableColumns = [[self tableView] tableColumns],
+        columnIndex = [tableColumns count];
+        
+    while (columnIndex--)
+    {
+        var tableColumn = [tableColumns objectAtIndex:columnIndex];
+        
+        if (![tableColumn isHidden])
+            return [self headerRectOfColumn:columnIndex];
+    }
+    
+    return nil;
+}
+
 - (void)_constrainDragView:(CPView)theDragView at:(CPPoint)aPoint
 {
     var tableColumns = [[self tableView] tableColumns],
-        lastColumnRect = [self headerRectOfColumn:[tableColumns indexOfObjectIdenticalTo:[tableColumns lastObject]]],
+        lastColumnRect = [self _headerRectOfLastVisibleColumn];
         activeColumnRect = [self headerRectOfColumn:_activeColumn];
         dragWindow = [theDragView window],
         frame = [dragWindow frame];
