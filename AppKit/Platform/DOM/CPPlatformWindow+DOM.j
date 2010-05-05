@@ -130,8 +130,6 @@ var CPDOMEventGetClickCount,
     StopDOMEventPropagation,
     StopContextMenuDOMEventPropagation;
 
-var _DOMEventGuard;
-
 //right now we hard code q, w, r and t as keys to propogate
 //these aren't normal keycodes, they are with modifier key codes
 //might be mac only, we should investigate futher later.
@@ -280,7 +278,7 @@ var supportsNativeDragAndDrop = [CPPlatform supportsDragAndDrop];
     _DOMBodyElement = theDocument.getElementById("cappuccino-body") || theDocument.body;
 
     // FIXME: Always do this?
-    if ([CPPlatform supportsDragAndDrop])
+    if (supportsNativeDragAndDrop)
         _DOMBodyElement.style["-khtml-user-select"] = "none";
 
     _DOMBodyElement.webkitTouchCallout = "none";
@@ -469,7 +467,7 @@ var supportsNativeDragAndDrop = [CPPlatform supportsDragAndDrop];
     [PlatformWindows addObject:self];
 
     // FIXME: cpSetFrame?
-    _DOMWindow.document.write("<html><head></head><body style = 'background-color:transparent;'></body></html>");
+    _DOMWindow.document.write("<!DOCTYPE html><html lang='en'><head></head><body style='background-color:transparent;'></body></html>");
     _DOMWindow.document.close();
 
     if (![CPPlatform isBrowser])
@@ -515,6 +513,11 @@ var supportsNativeDragAndDrop = [CPPlatform supportsDragAndDrop];
 
         DOMDragElement.style.left = -_CGRectGetWidth(draggedWindowFrame) + "px";
         DOMDragElement.style.top = -_CGRectGetHeight(draggedWindowFrame) + "px";
+
+        var parentNode = DOMDragElement.parentNode;
+
+        if (parentNode)
+            parentNode.removeChild(DOMDragElement);
 
         _DOMBodyElement.appendChild(DOMDragElement);
 
@@ -1189,6 +1192,7 @@ var supportsNativeDragAndDrop = [CPPlatform supportsDragAndDrop];
 
         [_windowLevels insertObject:aLevel atIndex:insertionIndex];
         layer._DOMElement.style.zIndex = aLevel;
+
         _DOMBodyElement.appendChild(layer._DOMElement);
     }
     

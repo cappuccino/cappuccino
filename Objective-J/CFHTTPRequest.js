@@ -92,6 +92,7 @@ if (!NativeRequest)
 
 GLOBAL(CFHTTPRequest) = function()
 {
+    this._isOpen = false;
     this._requestHeaders = {};
     this._mimeType = null;
 
@@ -207,6 +208,7 @@ CFHTTPRequest.prototype.overrideMimeType = function(/*String*/ aMimeType)
 
 CFHTTPRequest.prototype.open = function(/*String*/ aMethod, /*String*/ aURL, /*Boolean*/ isAsynchronous, /*String*/ aUser, /*String*/ aPassword)
 {
+    this._isOpen = true;
     this._URL = aURL;
     this._async = isAsynchronous;
     this._method = aMethod;
@@ -217,19 +219,23 @@ CFHTTPRequest.prototype.open = function(/*String*/ aMethod, /*String*/ aURL, /*B
 
 CFHTTPRequest.prototype.send = function(/*Object*/ aBody)
 {
-    delete this._nativeRequest.onreadystatechange;
-
     for (var i in this._requestHeaders)
     {
         if (this._requestHeaders.hasOwnProperty(i))
             this._nativeRequest.setRequestHeader(i, this._requestHeaders[i]);
     }
 
+    if (!this._isOpen)
+    {
+        delete this._nativeRequest.onreadystatechange;
+        this._nativeRequest.open(this._method, this._URL, this._async, this._user, this._password);
+        this._nativeRequest.onreadystatechange = this._stateChangeHandler;
+    }
+
     if (this._mimeType && "overrideMimeType" in this._nativeRequest)
         this._nativeRequest.overrideMimeType(this._mimeType);
 
-    this._nativeRequest.open(this._method, this._URL, this._async, this._user, this._password);
-    this._nativeRequest.onreadystatechange = this._stateChangeHandler;
+    this._isOpen = false;
 
     try
     {
@@ -244,6 +250,7 @@ CFHTTPRequest.prototype.send = function(/*Object*/ aBody)
 
 CFHTTPRequest.prototype.abort = function()
 {
+    this._isOpen = false;
     return this._nativeRequest.abort();
 }
 

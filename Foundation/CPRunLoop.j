@@ -269,11 +269,13 @@ var CPRunLoopLastNativeRunLoop = 0;
         
     aTimer._lastNativeRunLoopsForModes[aMode] = CPRunLoopLastNativeRunLoop;
 
+#if PLATFORM(DOM)
     if (!_runLoopInsuranceTimer)
         _runLoopInsuranceTimer = window.setNativeTimeout(function()
         {
             [self limitDateForMode:CPDefaultRunLoopMode];
         }, 0);
+#endif
 }
 
 /*!
@@ -287,11 +289,13 @@ var CPRunLoopLastNativeRunLoop = 0;
 
     _runLoopLock = YES;
 
+#if PLATFORM(DOM)
     if (_runLoopInsuranceTimer)
     {
         window.clearNativeTimeout(_runLoopInsuranceTimer);
         _runLoopInsuranceTimer = nil;
     }
+#endif
 
     var now = _effectiveDate ? [_effectiveDate laterDate:[CPDate date]] : [CPDate date],
         nextFireDate = nil,

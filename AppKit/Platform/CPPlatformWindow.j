@@ -41,6 +41,7 @@ var PrimaryPlatformWindow   = NULL;
 
     DOMElement      _DOMBodyElement;
     DOMElement      _DOMFocusElement;
+    DOMElement      _DOMEventGuard;
 
     CPArray         _windowLevels;
     CPDictionary    _windowLayers;
