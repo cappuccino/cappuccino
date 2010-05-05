@@ -1866,24 +1866,17 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
         columnRect = [self rectOfColumn:theColumnIndex],
         headerView = [tableColumn headerView];
     
-    // Add the column header view
-    var headerFrame = [headerView frame];
-    headerFrame.origin = CPPointMakeZero();
-    
-    columnHeaderView = [[_CPTableColumnHeaderView alloc] initWithFrame:headerFrame];
-    [columnHeaderView setStringValue:[headerView stringValue]];
-    [columnHeaderView setThemeState:[headerView themeState]];
-    [dragView addSubview:columnHeaderView];
-    
     row = [_exposedRows firstIndex];
     while (row !== CPNotFound)
     {
         var dataView = [self _newDataViewForRow:row tableColumn:tableColumn],
             dataViewFrame = [self frameOfDataViewAtColumn:theColumnIndex row:row];
             
-        // Offset by table header height to make room for the table header
+        // Only one column is ever dragged so we just place the view at 
         dataViewFrame.origin.x = 0.0;
-        dataViewFrame.origin.y += 23.0;
+            
+        // Offset by table header height - scroll position
+        dataViewFrame.origin.y = ( CPRectGetMinY(dataViewFrame) - CPRectGetMinY([self _exposedRect]) ) + 23.0;
         [dataView setFrame:dataViewFrame];
         
         [dataView setObjectValue:[self _objectValueForTableColumn:tableColumn row:row]];
@@ -1892,9 +1885,14 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
         row = [_exposedRows indexGreaterThanIndex:row];
     }
     
-    // The columns are placed in the drag window at their original locations resulting in the dragged column
-    // being of when starting the drag, we compensate for this by offseting the drag window by the x coordinate of the column
-    // theDragViewOffset.x -= columnRect.origin.x;
+    // Add the column header view
+    var headerFrame = [headerView frame];
+    headerFrame.origin = CPPointMakeZero();
+    
+    columnHeaderView = [[_CPTableColumnHeaderView alloc] initWithFrame:headerFrame];
+    [columnHeaderView setStringValue:[headerView stringValue]];
+    [columnHeaderView setThemeState:[headerView themeState]];
+    [dragView addSubview:columnHeaderView];
     
     [dragView setBackgroundColor:[CPColor whiteColor]];
     [dragView setAlphaValue:0.7];
