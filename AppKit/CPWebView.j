@@ -181,7 +181,8 @@ CPWebViewScrollNative                           = 2;
         }
         else
         {
-            [_frameView setFrameSize:[_scrollView contentSize]];
+            var visibleRect = [_frameView visibleRect];
+            [_frameView setFrameSize:CGSizeMake(CGRectGetMaxX(visibleRect), CGRectGetMaxY(visibleRect))];
             
             // try to get the document size so we can correctly set the frame
             var win = null;
@@ -203,6 +204,8 @@ CPWebViewScrollNative                           = 2;
             
                 [_frameView setFrameSize:CGSizeMake(800, 1600)];
             }
+
+            [_frameView scrollRectToVisible:visibleRect];
         }
     }
 }
@@ -255,6 +258,8 @@ CPWebViewScrollNative                           = 2;
     // FIXME: do something with baseURL?
 
     [self _setScrollMode:CPWebViewScrollAppKit];
+
+    [_frameView setFrameSize:[_scrollView contentSize]];
 
     [self _startedLoading];
     
