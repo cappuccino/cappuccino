@@ -1,6 +1,7 @@
 
 var URLCache = { };
 
+var CFHTTPRequest_open = CFHTTPRequest.prototype.open;
 CFHTTPRequest.prototype.open = function(/*String*/ method, /*String*/ url, /*Boolean*/ async, /*String*/ user, /*String*/ password)
 {
     var cachedRequest = CFHTTPRequest._lookupCachedRequest(url);
@@ -13,7 +14,7 @@ CFHTTPRequest.prototype.open = function(/*String*/ method, /*String*/ url, /*Boo
             ObjectiveJ.determineAndDispatchHTTPRequestEvents(self);
         };
     }
-    return this._nativeRequest.open(method, url, async, user, password);
+    return CFHTTPRequest_open.apply(this, arguments);
 }
 
 CFHTTPRequest._cacheRequest = function(/*CFURL|String*/ aURL, /*Number*/ status, /*Object*/ headers, /*String*/ body)

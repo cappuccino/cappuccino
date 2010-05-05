@@ -130,8 +130,6 @@ var CPDOMEventGetClickCount,
     StopDOMEventPropagation,
     StopContextMenuDOMEventPropagation;
 
-var _DOMEventGuard;
-
 //right now we hard code q, w, r and t as keys to propogate
 //these aren't normal keycodes, they are with modifier key codes
 //might be mac only, we should investigate futher later.
