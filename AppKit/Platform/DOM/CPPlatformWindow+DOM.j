@@ -851,12 +851,13 @@ var supportsNativeDragAndDrop = [CPPlatform supportsDragAndDrop];
     if(!aDOMEvent)
         aDOMEvent = window.event;
 
+    var location = nil;
     if (CPFeatureIsCompatible(CPJavaScriptMouseWheelValues_8_15))
     {
-        var x = 0.0,
-            y = 0.0,
+        var x = aDOMEvent._offsetX || 0.0,
+            y = aDOMEvent._offsetY || 0.0,
             element = aDOMEvent.target;
-        
+
         while (element.nodeType !== 1)
             element = element.parentNode;
 
@@ -870,11 +871,13 @@ var supportsNativeDragAndDrop = [CPPlatform supportsDragAndDrop];
             } while (element = element.offsetParent);
         }
     
-        var location = _CGPointMake((x + ((aDOMEvent.clientX - 8) / 15)), (y + ((aDOMEvent.clientY - 8) / 15)));
+        location = _CGPointMake((x + ((aDOMEvent.clientX - 8) / 15)), (y + ((aDOMEvent.clientY - 8) / 15)));
     }
+    else if (aDOMEvent._overrideLocation)
+        location = aDOMEvent._overrideLocation;
     else
-        var location = _CGPointMake(aDOMEvent.clientX, aDOMEvent.clientY);
-        
+        location = _CGPointMake(aDOMEvent.clientX, aDOMEvent.clientY);
+
     var deltaX = 0.0,
         deltaY = 0.0,
         windowNumber = 0,
@@ -883,7 +886,7 @@ var supportsNativeDragAndDrop = [CPPlatform supportsDragAndDrop];
                         (aDOMEvent.ctrlKey ? CPControlKeyMask : 0) | 
                         (aDOMEvent.altKey ? CPAlternateKeyMask : 0) | 
                         (aDOMEvent.metaKey ? CPCommandKeyMask : 0);
-          
+
     StopDOMEventPropagation = YES;
 
     var theWindow = [self hitTest:location];

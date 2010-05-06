@@ -171,7 +171,32 @@ CPWebViewScrollNative                           = 2;
     [self _resizeWebFrame];
 }
 
-- (BOOL)_resizeWebFrame
+- (void)_attachScrollEventIfNecessary
+{
+    if (_scrollMode !== CPWebViewScrollAppKit)
+        return;
+
+    var win = null;
+    try { win = [self DOMWindow]; } catch (e) {}
+
+    if (win && win.addEventListener)
+    {
+        var scrollEventHandler = function(anEvent)
+        {
+            var frameBounds = [self bounds],
+                frameCenter = CGPointMake(CGRectGetMidX(frameBounds), CGRectGetMidY(frameBounds)),
+                windowOrigin = [self convertPoint:frameCenter toView:nil],
+                globalOrigin = [[self window] convertBaseToBridge:windowOrigin];
+
+            anEvent._overrideLocation = globalOrigin;
+            [[[self window] platformWindow] scrollEvent:anEvent];
+        };
+
+        win.addEventListener("DOMMouseScroll", scrollEventHandler, false);
+    }
+}
+
+- (void)_resizeWebFrame
 {
     if (_scrollMode === CPWebViewScrollAppKit)
     {
@@ -320,7 +345,8 @@ CPWebViewScrollNative                           = 2;
 - (void)_finishedLoading
 {
     [self _resizeWebFrame];
-    
+    [self _attachScrollEventIfNecessary];
+
     [[CPNotificationCenter defaultCenter] postNotificationName:CPWebViewProgressFinishedNotification object:self];
 
     if ([_frameLoadDelegate respondsToSelector:@selector(webView:didFinishLoadForFrame:)])
