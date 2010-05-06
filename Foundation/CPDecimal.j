@@ -101,6 +101,9 @@ CPDecimal format:
 // FIXME: locale support and Cocoaify, needs to accept .1 and leading 0s
 function CPDecimalMakeWithString(string, locale)
 {
+    if (!string)
+        return CPDecimalMakeZero();
+    
     // Regexp solution as found in JSON spec, with working regexp (I added groupings)
     // Test here: http://www.regexplanet.com/simple/index.html
     // Info from: http://stackoverflow.com/questions/638565/parsing-scientific-notation-sensibly
