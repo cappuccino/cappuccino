@@ -49,7 +49,7 @@ CPCircularSlider    = 1;
 
 + (id)themeAttributes
 {
-    return [CPDictionary dictionaryWithObjects:[nil, _CGSizeMakeZero(), 0.0, nil]
+    return [CPDictionary dictionaryWithObjects:[[CPNull null], _CGSizeMakeZero(), 0.0, [CPNull null]]
                                        forKeys:[@"knob-color", @"knob-size", @"track-width", @"track-color"]];
 }
 

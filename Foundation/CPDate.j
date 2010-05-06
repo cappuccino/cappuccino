@@ -26,7 +26,7 @@
 
 var CPDateReferenceDate = new Date(Date.UTC(2001,1,1,0,0,0,0));
 
-/*! 
+/*!
     @class CPDate
     @ingroup foundation
     @brief A representation of a single point in time.
@@ -34,7 +34,7 @@ var CPDateReferenceDate = new Date(Date.UTC(2001,1,1,0,0,0,0));
 
 */
 @implementation CPDate : CPObject
-{ 
+{
 }
 
 + (id)alloc
@@ -52,7 +52,7 @@ var CPDateReferenceDate = new Date(Date.UTC(2001,1,1,0,0,0,0));
     return [[CPDate alloc] initWithTimeIntervalSinceNow:seconds];
 }
 
-+ (id)dateWithTimeIntervalSince1970:(CPTimeInterval)seconds 
++ (id)dateWithTimeIntervalSince1970:(CPTimeInterval)seconds
 {
     return [[CPDate alloc] initWithTimeIntervalSince1970:seconds];
 }
@@ -96,9 +96,28 @@ var CPDateReferenceDate = new Date(Date.UTC(2001,1,1,0,0,0,0));
     return self;
 }
 
+/*!
+    Returns a CPDate initialized with a date and time specified by the given
+    string in international date format YYYY-MM-DD HH:MM:SS ±HHMM (e.g.
+    2009-11-17 17:52:04 +0000).
+*/
 - (id)initWithString:(CPString)description
 {
-    self = new Date(description); // FIXME: not same format as NSString
+    var format = /(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2}):(\d{2}) ([-+])(\d{2})(\d{2})/,
+        d = description.match(new RegExp(format));
+
+    if (!d || d.length != 10)
+        [CPException raise:CPInvalidArgumentException
+                    reason:"initWithString: the string must be of YYYY-MM-DD HH:MM:SS ±HHMM format"];
+
+    var date = new Date(d[1], d[2]-1, d[3]),
+        timeZoneOffset =  (Number(d[8]) * 60 + Number(d[9])) * (d[7] === '-' ? -1 : 1);
+
+    date.setHours(d[4]);
+    date.setMinutes(d[5]);
+    date.setSeconds(d[6]);
+
+    self = new Date(date.getTime() +  (timeZoneOffset - date.getTimezoneOffset()) * 60 * 1000);
     return self;
 }
 
@@ -127,9 +146,14 @@ var CPDateReferenceDate = new Date(Date.UTC(2001,1,1,0,0,0,0));
     return [[CPDate date] timeIntervalSinceReferenceDate];
 }
 
+- (BOOL)isEqual:(CPDate)aDate
+{
+    return [self isEqualToDate:aDate];
+}
+
 - (BOOL)isEqualToDate:(CPDate)anotherDate
 {
-    return !(self < anotherDate || self > anotherDate);
+    return self === anotherDate || (anotherDate !== nil && anotherDate.isa && [anotherDate isKindOfClass:CPDate] && !(self < anotherDate || self > anotherDate));
 }
 
 - (CPComparisonResult)compare:(CPDate)anotherDate
@@ -147,9 +171,42 @@ var CPDateReferenceDate = new Date(Date.UTC(2001,1,1,0,0,0,0));
     return (self > anotherDate) ? self : anotherDate;
 }
 
+/*!
+    Returns the date as a string in the international format
+    YYYY-MM-DD HH:MM:SS ±HHMM.
+*/
 - (CPString)description
 {
-    return self.toString(); // FIXME: not same format as NSDate
+    var hours = Math.floor(self.getTimezoneOffset() / 60),
+        minutes = self.getTimezoneOffset() - hours * 60;
+
+    return [CPString stringWithFormat:@"%04d-%02d-%02d %02d:%02d:%02d +%02d%02d", self.getFullYear(), self.getMonth()+1, self.getDate(), self.getHours(), self.getMinutes(), self.getSeconds(), hours, minutes];
+}
+
+- (id)copy
+{
+    return new Date(self.getTime());
+}
+
+@end
+
+var CPDateTimeKey = @"CPDateTimeKey";
+
+@implementation CPDate (CPCoding)
+
+- (id)initWithCoder:(CPCoder)aCoder
+{
+    if (self)
+    {
+        self.setTime([aCoder decodeIntForKey:CPDateTimeKey]);
+    }
+
+    return self;
+}
+
+- (void)encodeWithCoder:(CPCoder)aCoder
+{
+    [aCoder encodeInt:self.getTime() forKey:CPDateTimeKey];
 }
 
 @end

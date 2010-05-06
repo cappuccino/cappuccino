@@ -27,14 +27,21 @@
 
 - (id)NS_initWithCoder:(CPCoder)aCoder
 {
-    return [super NS_initWithCoder:aCoder];
+    self = [super NS_initWithCoder:aCoder];
+
+    if (self)
+    {
+        _title = [aCoder decodeObjectForKey:@"NSTitle"];
+        _cibName = [aCoder decodeObjectForKey:@"NSNibName"];
+        _cibBundle = [CPBundle bundleWithPath:[aCoder decodeObjectForKey:@"NSNibBundleIdentifier"]];
+    }
+
+    return self;
 }
 
 @end
 
 @implementation NSViewController : CPViewController
-{
-}
 
 - (id)initWithCoder:(CPCoder)aCoder
 {
@@ -43,7 +50,7 @@
 
 - (Class)classForKeyedArchiver
 {
-    return [CPCollectionView class];
+    return [CPViewController class];
 }
 
 @end

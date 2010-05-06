@@ -210,7 +210,7 @@ function CGPathAddQuadCurveToPoint(aPath, aTransform, cpx, cpy, x, y)
         
     if (aTransform)
     {
-        cp = _CGPointApplyAffineTransform(control, aTransform);
+        cp = _CGPointApplyAffineTransform(cp, aTransform);
         end = _CGPointApplyAffineTransform(end, aTransform);
     }
     

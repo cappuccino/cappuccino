@@ -160,10 +160,11 @@
     bob.name = "paul";    
 
     [bob addObserver:self forKeyPath:@"bobName" options:0 context:"testDependentKeyObservation"];
+    [bob addObserver:self forKeyPath:@"twiceRemoved" options:0 context:"testDependentKeyObservation2"];
 
     [bob setValue:@"bob" forKey:@"name"];
 
-    [self assertTrue: _sawDependentObservation message: "asked for bobName but did not recieve corresponding notification"];
+    [self assertTrue:_sawDependentObservation message:"asked for bobName but did not recieve corresponding notification"];
     [self assertTrue: [bob valueForKey:@"bobName"] === @"BOB! set_bob" message: "should have been BOB! set_bob, was "+[bob valueForKey:@"bobName"]];    
 }
 
@@ -171,7 +172,7 @@
 {
     cs101 = [ClassTester new];
     bob = [PersonTester new];
-    
+
     [cs101 setTeacher:bob];
     
     [cs101 addObserver:self forKeyPath:@"teacher.name" options:0 context:"testMultipartKey"];
@@ -182,12 +183,26 @@
     [self assertTrue: _sawObservation message:"Never recieved an observation"];
 }
 
+- (void)testMultiPartKeysWhereValuesEvaluateToSelf
+{
+    focus = [CarTester new];
+    bob = [PersonTester new];
+
+    [bob setValue:focus forKey:"car"];
+
+    [bob addObserver:self forKeyPath:@"self.car.thisCar.model" options:0 context:"testMultiPartKeysWhereValuesEvaluateToSelf"];
+
+    [focus setValue:"ford focus" forKey:"model"];
+
+    [self assertTrue: _sawObservation message:"Never recieved an observation"];
+}
+
 - (void)testThreePartKey
 {
     focus = [CarTester new];
     cs101 = [ClassTester new];
     bob = [PersonTester new];
-        
+
     [cs101 setTeacher:bob];
     [bob setValue:focus forKey:"car"];
 
@@ -202,7 +217,7 @@
     focus = [CarTester new];
     cs101 = [ClassTester new];
     bob = [PersonTester new];
-        
+
     [cs101 setTeacher:bob];
     [focus setValue:"2000" forKey:"year"];
 
@@ -217,7 +232,7 @@
 {
     cs101 = [ClassTester new];
     bob = [PersonTester new];
-    
+
     [cs101 setTeacher:bob];
     
     [cs101 addObserver:self forKeyPath:@"teacher.name" options:0 context:"testRemoveMultipartKey"];
@@ -234,7 +249,7 @@
     focus = [CarTester new];
     cs101 = [ClassTester new];
     bob = [PersonTester new];
-        
+
     [cs101 setTeacher:bob];
     [bob setValue:focus forKey:"car"];
 
@@ -301,27 +316,53 @@
 - (void)testInsertIntoToManyProperty
 {
     var tester = [ToManyTester new];
-    
+
     [tester setValue:[1, 2, 3, 4] forKey:@"managedObjects"];
-    
-    
+
     [tester addObserver:self forKeyPath:@"managedObjects" options:0 context:"testInsertIntoToManyProperty"];
-    
+
     [tester insertObject:5 inManagedObjectsAtIndex:4];
-    
+
     [self assertTrue: _sawObservation message:"Never recieved an observation"];
 }
 
 - (void)testRemoveFromToManyProperty
 {
     var tester = [ToManyTester new];
-    
+
     [tester setValue:[1, 2, 3, 4] forKey:@"managedObjects"];
-    
+
     [tester addObserver:self forKeyPath:@"managedObjects" options:0 context:"testRemoveFromToManyProperty"];
-    
+
     [tester removeObjectFromManagedObjectsAtIndex:0];
-    
+
+    [self assertTrue: _sawObservation message:"Never recieved an observation"];
+}
+
+- (void)testInsertIntoToManyPropertyIndirectly
+{
+    var tester = [IndirectToManyTester new];
+
+    tester.tester = [ToManyTester new];
+    [tester.tester setValue:[1, 2, 3, 4] forKey:@"managedObjects"];
+    [tester addObserver:self forKeyPath:@"tester.managedObjects" options:0 context:"testInsertIntoToManyPropertyIndirectly"];
+
+    [tester.tester insertObject:5 inManagedObjectsAtIndex:4];
+
+    [self assertTrue: _sawObservation message:"Never recieved an observation"];
+}
+
+- (void)testInsertIntoArrayPropertyIndirectly
+{
+    var tester = [IndirectToManyTester new];
+
+    tester.tester = [ToManyTester new];
+
+    [tester.tester setValue:[1, 2, 3, 4] forKey:@"subviews"];
+    [tester addObserver:self forKeyPath:@"tester.subviews" options:0 context:"testInsertIntoArrayPropertyIndirectly"];
+
+    [tester.tester insertSubview:5 atIndex:4];
+
     [self assertTrue: _sawObservation message:"Never recieved an observation"];
 }
 
@@ -330,17 +371,22 @@
     var one = [1, 1, 1, 1, 1, 1, 1, 1],
         two = [1, 2, 3, 4, 8, 0];
     
-    [self assertTrue:[one valueForKey:"@count"]===8 message:@"expected count of 8, got: "+[one valueForKey:@"@count"]]
-    [self assertTrue:[one valueForKeyPath:@"@sum.intValue"]===8 message:@"expected sum of 8, got: "+[one valueForKeyPath:@"@sum.intValue"]];
-    [self assertTrue:[two valueForKeyPath:@"@avg.intValue"]===3 message:@"expected avg of 3, got: "+[two valueForKeyPath:@"@avg.intValue"]];
-    [self assertTrue:[two valueForKeyPath:@"@max.intValue"]===8 message:@"expected max of 8, got: "+[two valueForKeyPath:@"@max.intValue"]];
-    [self assertTrue:[two valueForKeyPath:@"@min.intValue"]===0 message:@"expected min of 0, got: "+[two valueForKeyPath:@"@min.intValue"]];
+    [self assert:[one valueForKey:"@count"] equals:8];
+    [self assert:[one valueForKeyPath:"@sum.intValue"] equals:8]; 
+    [self assert:[two valueForKeyPath:"@avg.intValue"] equals:3];
+    [self assert:[two valueForKeyPath:"@max.intValue"] equals:8];
+    [self assert:[two valueForKeyPath:"@min.intValue"] equals:0];
+
+    var a = [A new];
+    [a setValue:one forKey:"b"];
+    [self assert:[a valueForKeyPath:"b.@count"] equals:8];
+    [self assert:[a valueForKeyPath:"b.@sum.intValue"] equals:8];
 }
 
 - (void)testPerformance
 {
     bob = [PersonTester new];
-    
+
     [bob setValue:"initial bob" forKey:"name"];
 
     var startTime = new Date();
@@ -492,29 +538,79 @@
             break;
             
         case "testDependentKeyObservation":
-            [self assertTrue: aKeyPath == "bobName" message: @"expected key value change for bobName, got: "+aKeyPath];
+
+            [self assertTrue:aKeyPath === "bobName"
+                     message:@"expected key value change for bobName, got: " + aKeyPath];
+
+            [self assertTrue:oldValue === "BOB! paul"
+                     message:@"expected old value of " + aKeyPath + " to be \"BOB! paul\", got: " + oldValue];
+
+            _sawDependentObservation = YES;
+            break;
+
+        case "testDependentKeyObservation2":
+
+            [self assertTrue:aKeyPath === "twiceRemoved"
+                     message:@"expected key value change for twiceRemoved, got: " + aKeyPath];
+
+            [self assertTrue:oldValue === "BOB! paul twice"
+                     message:@"expected old value to be \"BOB! paul twice\", got: " + oldValue];
+
             _sawDependentObservation = YES;
             break;
 
         case "testInsertIntoToManyProperty":
             var type = [changes objectForKey:CPKeyValueChangeKindKey];
             [self assertTrue: type == CPKeyValueChangeInsertion message: "Should have been an insertion, was: "+type];
-            
+
             var values = [changes objectForKey:CPKeyValueChangeNewKey];
             [self assertTrue: [values isEqual:[5]] message: "array should have contained 5, was: "+values+" type: "+[values.isa description]+" length: "+values.length];
-            
+
+            break;
+
+        case "testInsertIntoToManyPropertyIndirectly":
+            var type = [changes objectForKey:CPKeyValueChangeKindKey];
+            [self assertTrue: type == CPKeyValueChangeInsertion message: "Should have been an insertion, was: "+type];
+
+            var values = [changes objectForKey:CPKeyValueChangeNewKey];
+            [self assertTrue: [values isEqual:[5]] message: "array should have contained 5, was: "+values+" type: "+[values.isa description]+" length: "+values.length];
+
+            [self assert:aKeyPath equals:"tester.managedObjects"];
+            [self assert:[anObject valueForKeyPath:@"tester.managedObjects"] equals:[1, 2, 3, 4, 5]];
+
+            break;
+
+        case "testInsertIntoArrayPropertyIndirectly":
+            var type = [changes objectForKey:CPKeyValueChangeKindKey];
+            [self assertTrue: type == CPKeyValueChangeInsertion message: "Should have been an insertion, was: "+type];
+
+            var values = [changes objectForKey:CPKeyValueChangeNewKey];
+
+            [self assertTrue: [values isEqual:[5]] message: "array should have contained 5, was: "+values+" type: "+[values.isa description]+" length: "+values.length];
+
+            [self assert:aKeyPath equals:"tester.subviews"];
+            [self assert:[anObject valueForKeyPath:aKeyPath] equals:[1, 2, 3, 4, 5]];
+
             break;
 
         case "testRemoveFromToManyProperty":
             var type = [changes objectForKey:CPKeyValueChangeKindKey];
             [self assertTrue: type == CPKeyValueChangeRemoval message: "Should have been a removal, was: "+type];
-            
+
             var values = [changes objectForKey:CPKeyValueChangeOldKey];
             [self assertTrue: [values isEqual:[1]] message: "array should have contained 1, was: "+values+" type: "+[values.isa description]+" length: "+values.length];
-            [[anObject valueForKey:@"managedObjects"] isEqual:[2, 3, 4]];
-            
+            [self assert:[anObject valueForKey:@"managedObjects"] equals:[2, 3, 4]];
+            [self assert:aKeyPath equals:"managedObjects"];
+
             break;
-            
+
+        case "testMultiPartKeysWhereValuesEvaluateToSelf":
+
+            [self assert:aKeyPath equals:"self.car.thisCar.model"];
+            [self assert:newValue equals:"ford focus"];
+            [self assert:anObject equals:bob];
+            break;
+
         default:
             [self assertFalse:YES message:"unhandled observation, must be an error"];
             return;
@@ -541,6 +637,11 @@
     CarTester   car;
 }
 
++ (CPSet)keyPathsForValuesAffectingTwiceRemoved
+{
+    return [CPSet setWithObject:"bobName"];
+}
+
 + (CPSet)keyPathsForValuesAffectingBobName
 {
     return [CPSet setWithObject:"name"];
@@ -553,7 +654,12 @@
 
 - (CPString)bobName
 {
-    return "BOB! "+name;
+    return "BOB! " + name;
+}
+
+- (CPString)twiceRemoved
+{
+    return [self bobName] + " twice";
 }
 
 @end
@@ -582,11 +688,39 @@
     model = aModel;
 }
 
+- (void)thisCar
+{
+    return self;
+}
+
+@end
+
+@implementation IndirectToManyTester : CPObject
+{
+    ToManyTester tester @accessors;
+}
+
 @end
 
 @implementation ToManyTester : CPObject
 {
     CPArray managedObjects;
+    CPArray subviews;
+}
+
+- (void)insertSubview:(CPView)aSubview atIndex:(int)anIndex
+{
+    var mutatedIndexes = [CPIndexSet indexSetWithIndex:anIndex];
+
+    [self willChange:CPKeyValueChangeInsertion
+     valuesAtIndexes:mutatedIndexes
+              forKey:@"subviews"];
+
+    [subviews insertObject:aSubview atIndex:anIndex];
+
+    [self didChange:CPKeyValueChangeInsertion
+    valuesAtIndexes:mutatedIndexes
+             forKey:@"subviews"];
 }
 
 - (unsigned int)countOfManagedObjects

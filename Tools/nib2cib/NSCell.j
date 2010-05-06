@@ -27,6 +27,7 @@
 
 @import "NSFont.j"
 
+
 @implementation NSCell : CPObject
 {
     int             _state          @accessors(readonly, getter=state);
@@ -43,6 +44,7 @@
     CPControlSize   _controlSize    @accessors(readonly, getter=controlSize);
     id              _objectValue    @accessors(readonly, getter=objectValue);
     CPFont          _font           @accessors(readonly, getter=font);
+    int             _lineBreakMode  @accessors(readonly, getter=lineBreakMode);
 }
 
 - (id)initWithCoder:(CPCoder)aCoder
@@ -66,6 +68,17 @@
         _wraps          = (flags & 0x00100000) ? NO : YES;
         _alignment      = (flags2 & 0x1c000000) >> 26;
         _controlSize    = (flags2 & 0xE0000) >> 17;
+
+        switch ((flags2 & 0x00000F00) >> 8)
+        {
+            case 0:  _lineBreakMode = CPLineBreakByWordWrapping; break;
+            case 2:  _lineBreakMode = CPLineBreakByCharWrapping; break;
+            case 6:  _lineBreakMode = CPLineBreakByTruncatingHead; break;
+            case 8:  _lineBreakMode = CPLineBreakByTruncatingTail; break;
+            case 10: _lineBreakMode = CPLineBreakByTruncatingMiddle; break;
+            case 4:
+            default: _lineBreakMode = CPLineBreakByClipping; break;
+        }
 
         _objectValue    = [aCoder decodeObjectForKey:@"NSContents"];
         _font           = [aCoder decodeObjectForKey:@"NSSupport"];

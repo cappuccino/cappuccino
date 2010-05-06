@@ -638,7 +638,22 @@
 */
 - (void)removeAttribute:(CPString)anAttribute range:(CPRange)aRange
 {
-    [self addAttribute:anAttribute value:nil range:aRange];
+    [self beginEditing];
+
+    var startingEntryIndex = [self _indexOfRangeEntryForIndex:aRange.location splitOnMaxIndex:YES],
+        endingEntryIndex = [self _indexOfRangeEntryForIndex:CPMaxRange(aRange) splitOnMaxIndex:YES],
+        current = startingEntryIndex;
+
+    if (endingEntryIndex == CPNotFound)
+        endingEntryIndex = _rangeEntries.length;
+
+    while (current < endingEntryIndex)
+        [_rangeEntries[current++].attributes removeObjectForKey:anAttribute];
+
+    //necessary?
+    [self _coalesceRangeEntriesFromIndex:startingEntryIndex toIndex:endingEntryIndex];
+
+    [self endEditing];
 }
 
 //Changing Characters and Attributes
@@ -735,8 +750,8 @@
 }
 
 //Private methods
-- (void)_indexOfRangeEntryForIndex:(unsigned)characterIndex splitOnMaxIndex:(BOOL)split
-{    
+- (Number)_indexOfRangeEntryForIndex:(unsigned)characterIndex splitOnMaxIndex:(BOOL)split
+{
     var index = [self _indexOfEntryWithIndex:characterIndex];
     
     if (index < 0)

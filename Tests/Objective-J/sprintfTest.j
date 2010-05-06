@@ -1,3 +1,4 @@
+
 // TODO: add many many more of these...
 var sprintfTestCases = [
     [["[%@]", "hello world"], "[hello world]"],
@@ -12,7 +13,7 @@ var sprintfTestCases = [
 {
     for (var i = 0; i < sprintfTestCases.length; i++)
     {
-        [self assert:sprintf.apply(null, sprintfTestCases[i][0]) equals:sprintfTestCases[i][1]];
+        [self assert:ObjectiveJ.sprintf.apply(null, sprintfTestCases[i][0]) equals:sprintfTestCases[i][1]];
     }
 }
 

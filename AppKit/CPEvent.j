@@ -25,110 +25,26 @@
 #include "CoreGraphics/CGGeometry.h"
 
 
-/*
-    @global
-    @group CPEventType
-*/
 CPLeftMouseDown                         = 1;
-/*
-    @global
-    @group CPEventType
-*/
 CPLeftMouseUp                           = 2;
-/*
-    @global
-    @group CPEventType
-*/
 CPRightMouseDown                        = 3;
-/*
-    @global
-    @group CPEventType
-*/
 CPRightMouseUp                          = 4;
-/*
-    @global
-    @group CPEventType
-*/
 CPMouseMoved                            = 5;
-/*
-    @global
-    @group CPEventType
-*/
 CPLeftMouseDragged                      = 6;
-/*
-    @global
-    @group CPEventType
-*/
 CPRightMouseDragged                     = 7;
-/*
-    @global
-    @group CPEventType
-*/
 CPMouseEntered                          = 8;
-/*
-    @global
-    @group CPEventType
-*/
 CPMouseExited                           = 9;
-/*
-    @global
-    @group CPEventType
-*/
 CPKeyDown                               = 10;
-/*
-    @global
-    @group CPEventType
-*/
 CPKeyUp                                 = 11;
-/*
-    @global
-    @group CPEventType
-*/
 CPFlagsChanged                          = 12;
-/*
-    @global
-    @group CPEventType
-*/
 CPAppKitDefined                         = 13;
-/*
-    @global
-    @group CPEventType
-*/
 CPSystemDefined                         = 14;
-/*
-    @global
-    @group CPEventType
-*/
 CPApplicationDefined                    = 15;
-/*
-    @global
-    @group CPEventType
-*/
 CPPeriodic                              = 16;
-/*
-    @global
-    @group CPEventType
-*/
 CPCursorUpdate                          = 17; 
-/*
-    @global
-    @group CPEventType
-*/
 CPScrollWheel                           = 22;
-/*
-    @global
-    @group CPEventType
-*/
 CPOtherMouseDown                        = 25;
-/*
-    @global
-    @group CPEventType
-*/
 CPOtherMouseUp                          = 26;
-/*
-    @global
-    @group CPEventType
-*/
 CPOtherMouseDragged                     = 27;
 
 // iPhone Event Types
@@ -212,7 +128,7 @@ var _CPEventPeriodicEventPeriod         = 0,
     BOOL                _isARepeat;
     unsigned            _keyCode;
     DOMEvent            _DOMEvent;
-    
+
     float               _deltaX;
     float               _deltaY;
     float               _deltaZ;
@@ -369,6 +285,17 @@ var _CPEventPeriodicEventPeriod         = 0,
     return _CGPointMakeCopy(_location);
 }
 
+- (CGPoint)globalLocation
+{
+    var theWindow = [self window],
+        location = [self locationInWindow];
+
+    if (theWindow)
+        return [theWindow convertBaseToGlobal:location];
+
+    return location;
+}
+
 /*!
     Returns event information as a bit mask
 */
@@ -418,7 +345,10 @@ var _CPEventPeriodicEventPeriod         = 0,
 */
 - (int)buttonNumber
 {
-    return _buttonNumber;
+    if (_type === CPRightMouseDown || _type === CPRightMouseUp || _type === CPRightMouseDragged)
+        return 1;
+
+    return 0;
 }
 
 /*!
@@ -513,6 +443,14 @@ var _CPEventPeriodicEventPeriod         = 0,
 - (float)deltaZ
 {
     return _deltaZ;
+}
+
+- (BOOL)_couldBeKeyEquivalent
+{
+    // FIXME: More cases? Space?
+    return  _type === CPKeyDown &&
+            _modifierFlags & (CPCommandKeyMask | CPControlKeyMask) &&
+            [_characters length] > 0;
 }
 
 /*!

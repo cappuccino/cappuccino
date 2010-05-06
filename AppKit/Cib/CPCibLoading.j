@@ -27,8 +27,6 @@
 
 var CPCibOwner = @"CPCibOwner";
 
-var LoadInfoForCib = {};
-
 @implementation CPObject (CPCibLoading)
 
 - (void)awakeFromCib
@@ -63,9 +61,11 @@ var LoadInfoForCib = {};
 
 + (void)loadCibFile:(CPString)anAbsolutePath externalNameTable:(CPDictionary)aNameTable loadDelegate:aDelegate
 {
-    var cib = [[CPCib alloc] initWithContentsOfURL:anAbsolutePath loadDelegate:self];
-
-    LoadInfoForCib[[cib UID]] = { loadDelegate:aDelegate, externalNameTable:aNameTable };
+    [[CPCib alloc]
+    initWithContentsOfURL:anAbsolutePath
+             loadDelegate:[[_CPCibLoadDelegate alloc]
+                initWithLoadDelegate:aDelegate
+                   externalNameTable:aNameTable]];
 }
 
 + (void)loadCibNamed:(CPString)aName owner:(id)anOwner loadDelegate:(id)aDelegate
@@ -82,20 +82,45 @@ var LoadInfoForCib = {};
 
 - (void)loadCibFile:(CPString)aFileName externalNameTable:(CPDictionary)aNameTable loadDelegate:(id)aDelegate
 {
-    var cib = [[CPCib alloc] initWithCibNamed:aFileName bundle:self loadDelegate:[self class]];
-
-    LoadInfoForCib[[cib UID]] = { loadDelegate:aDelegate, externalNameTable:aNameTable };
+    [[CPCib alloc]
+        initWithCibNamed:aFileName
+                  bundle:self
+            loadDelegate:[[_CPCibLoadDelegate alloc]
+                initWithLoadDelegate:aDelegate
+                   externalNameTable:aNameTable]];
 }
 
-+ (void)cibDidFinishLoading:(CPCib)aCib
+@end
+
+@implementation _CPCibLoadDelegate : CPObject
 {
-    var loadInfo = LoadInfoForCib[[aCib UID]];
-    
-    delete LoadInfoForCib[[aCib UID]];
-    
-    [aCib instantiateCibWithExternalNameTable:loadInfo.externalNameTable];
-    
-    [loadInfo.loadDelegate cibDidFinishLoading:aCib];
+    id              _loadDelegate;
+    CPDictionary    _externalNameTable;
+}
+
+- (id)initWithLoadDelegate:(id)aLoadDelegate externalNameTable:(id)anExternalNameTable
+{
+    self = [self init];
+
+    if (self)
+    {
+        _loadDelegate = aLoadDelegate;
+        _externalNameTable = anExternalNameTable;
+    }
+
+    return self;
+}
+
+- (void)cibDidFinishLoading:(CPCib)aCib
+{
+    [aCib instantiateCibWithExternalNameTable:_externalNameTable];
+
+    [_loadDelegate cibDidFinishLoading:aCib];
+}
+
+- (void)cibDidFailToLoad:(CPCib)aCib
+{
+    [_loadDelegate cibDidFailToLoad:aCib];
 }
 
 @end

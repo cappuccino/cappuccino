@@ -140,7 +140,7 @@ CPColorPickerViewHeight = 370;
     Sets the color of the panel, and updates the picker. Also posts a \c CPColorPanelDidChangeNotification.
 */
 - (void)setColor:(CPColor)aColor
-{    
+{
     _color = aColor;
     [_previewView setBackgroundColor: _color];
     
@@ -518,9 +518,10 @@ var CPColorPanelSwatchesCookie = "CPColorPanelSwatchesCookie";
 
 - (void)mouseUp:(CPEvent)anEvent
 {
-    var point = [self convertPoint:[anEvent locationInWindow] fromView:nil];
+    var point = [self convertPoint:[anEvent locationInWindow] fromView:nil],
+        bounds = [self bounds];
     
-    if(point.x > [self bounds].size.width - 1 || point.x < 1)
+    if(!CGRectContainsPoint(bounds, point) || point.x > [self bounds].size.width - 1 || point.x < 1)
         return NO;
 
     [_colorPanel setColor: [self colorAtIndex:FLOOR(point.x / 13)] updatePicker: YES];
@@ -563,7 +564,7 @@ var CPColorPanelSwatchesCookie = "CPColorPanelSwatchesCookie";
 - (void)pasteboard:(CPPasteboard)aPasteboard provideDataForType:(CPString)aType
 {
     if(aType == CPColorDragType)
-        [aPasteboard setData:_dragColor forType:aType];
+        [aPasteboard setData:[CPKeyedArchiver archivedDataWithRootObject:_dragColor] forType:aType];
 }
 
 - (void)performDragOperation:(id <CPDraggingInfo>)aSender
@@ -575,7 +576,7 @@ var CPColorPanelSwatchesCookie = "CPColorPanelSwatchesCookie";
     if(![pasteboard availableTypeFromArray:[CPColorDragType]] || location.x > [self bounds].size.width - 1 || location.x < 1)
         return NO;
         
-    [self setColor:[pasteboard dataForType:CPColorDragType] atIndex: FLOOR(location.x / 13)];
+    [self setColor:[CPKeyedUnarchiver unarchiveObjectWithData:[pasteboard dataForType:CPColorDragType]] atIndex: FLOOR(location.x / 13)];
 }
 
 @end
@@ -612,8 +613,8 @@ var CPColorPanelSwatchesCookie = "CPColorPanelSwatchesCookie";
     if(![pasteboard availableTypeFromArray:[CPColorDragType]])
         return NO;
         
-    var color = [pasteboard dataForType:CPColorDragType];
-    [_colorPanel setColor: color updatePicker: YES];
+    var color = [CPKeyedUnarchiver unarchiveObjectWithData:[pasteboard dataForType:CPColorDragType]];
+    [_colorPanel setColor:color updatePicker:YES];
 }
 
 - (BOOL)isOpaque
@@ -625,7 +626,7 @@ var CPColorPanelSwatchesCookie = "CPColorPanelSwatchesCookie";
 {
     var point = [self convertPoint:[anEvent locationInWindow] fromView:nil];
 
-    [[CPPasteboard pasteboardWithName:CPDragPboard] declareTypes:[CPArray arrayWithObject:CPColorDragType] owner:self];    
+    [[CPPasteboard pasteboardWithName:CPDragPboard] declareTypes:[CPColorDragType] owner:self];    
     
     var bounds = CPRectMake(0, 0, 15, 15);
     
@@ -650,7 +651,7 @@ var CPColorPanelSwatchesCookie = "CPColorPanelSwatchesCookie";
 - (void)pasteboard:(CPPasteboard)aPasteboard provideDataForType:(CPString)aType
 {
     if(aType == CPColorDragType)
-        [aPasteboard setData:[self backgroundColor] forType:aType];
+        [aPasteboard setData:[CPKeyedArchiver archivedDataWithRootObject:[self backgroundColor]] forType:aType];
 }
 
 @end

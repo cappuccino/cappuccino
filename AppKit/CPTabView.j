@@ -247,6 +247,8 @@ var CPTabViewDidSelectTabViewItemSelector           = 1,
     
     [_labelsView tabView:self didAddTabViewItem:aTabViewItem];
     
+    [aTabViewItem _setTabView:self];
+    
     if ([_tabViewItems count] == 1)
         [self selectFirstTabViewItem:self];
 
@@ -260,9 +262,13 @@ var CPTabViewDidSelectTabViewItemSelector           = 1,
 */
 - (void)removeTabViewItem:(CPTabViewItem)aTabViewItem
 {
-    [_tabViewItems removeObjectIdenticalTo:aTabViewItem];
+    var index = [self indexOfTabViewItem:aTabViewItem];
 
-    [_labelsView tabView:self didRemoveTabViewItem:aTabViewItem];
+    [_tabViewItems removeObjectIdenticalTo:aTabViewItem];
+    
+    [_labelsView tabView:self didRemoveTabViewItemAtIndex:index];
+    
+    [aTabViewItem _setTabView:nil];
     
     if (_delegateSelectors & CPTabViewDidChangeNumberOfTabViewItemsSelector)
         [_delegate tabViewDidChangeNumberOfTabViewItems:self];
@@ -491,6 +497,14 @@ var CPTabViewDidSelectTabViewItemSelector           = 1,
 }
 
 /*!
+    Returns the receiver's delegate.
+*/
+- (id)delegate
+{
+    return _delegate;
+}
+
+/*!
     Sets the delegate for this tab view.
     @param aDelegate the tab view's delegate
 */
@@ -648,10 +662,9 @@ var _CPTabLabelsViewBackgroundColor = nil,
     [self layoutSubviews];
 }
 
-- (void)tabView:(CPTabView)aTabView didRemoveTabViewItem:(CPTabViewItem)aTabViewItem
+- (void)tabView:(CPTabView)aTabView didRemoveTabViewItemAtIndex:(unsigned)index
 {
-    var index = [aTabView indexOfTabViewItem:aTabViewItem],
-        label = _tabLabels[index];
+    var label = _tabLabels[index];
     
     [_tabLabels removeObjectAtIndex:index];
 

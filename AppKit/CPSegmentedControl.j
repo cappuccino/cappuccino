@@ -26,20 +26,8 @@
 
 #include "CoreGraphics/CGGeometry.h"
 
-/*
-    @global
-    @group CPSegmentSwitchTracking
-*/
 CPSegmentSwitchTrackingSelectOne = 0;
-/*
-    @global
-    @group CPSegmentSwitchTracking
-*/
 CPSegmentSwitchTrackingSelectAny = 1;
-/*
-    @global
-    @group CPSegmentSwitchTracking
-*/
 CPSegmentSwitchTrackingMomentary = 2;
 
 /*! 
@@ -68,7 +56,7 @@ CPSegmentSwitchTrackingMomentary = 2;
 
 + (id)themeAttributes
 {
-    return [CPDictionary dictionaryWithObjects:[CPCenterTextAlignment, CPCenterVerticalTextAlignment, CPImageLeft, CPScaleNone, _CGInsetMakeZero(), _CGInsetMakeZero(), nil, nil, nil, nil, 1.0, 24.0]
+    return [CPDictionary dictionaryWithObjects:[CPCenterTextAlignment, CPCenterVerticalTextAlignment, CPImageLeft, CPScaleNone, _CGInsetMakeZero(), _CGInsetMakeZero(), [CPNull null], [CPNull null], [CPNull null], [CPNull null], 1.0, 24.0]
                                        forKeys:[@"alignment", @"vertical-alignment", @"image-position", @"image-scaling", @"bezel-inset", @"content-inset", @"left-segment-bezel-color", @"right-segment-bezel-color", @"center-segment-bezel-color", @"divider-bezel-color", @"divider-thickness", @"default-height"]];
 }
 
@@ -375,7 +363,10 @@ CPSegmentSwitchTrackingMomentary = 2;
 */
 - (void)setEnabled:(BOOL)isEnabled forSegment:(unsigned)aSegment
 {
-    _segments[aSegment].enabled = isEnabled;
+    if (isEnabled)
+        _themeStates[aSegment] &= ~CPThemeStateDisabled;
+    else
+        _themeStates[aSegment] |= CPThemeStateDisabled;
 
     [self setNeedsLayout];
     [self setNeedsDisplay:YES];
@@ -388,7 +379,7 @@ CPSegmentSwitchTrackingMomentary = 2;
 */
 - (BOOL)isEnabledForSegment:(unsigned)aSegment
 {
-    return _segments[aSegment].enabled;
+    return !(_themeStates[aSegment] & CPThemeStateDisabled)
 }
 
 /*!
@@ -462,30 +453,28 @@ CPSegmentSwitchTrackingMomentary = 2;
     }
     else if (aName === "right-segment-bezel")
     {
-        var lastSegmentLeftOffset = [self _leftOffsetForSegment:[self _indexOfLastSegment]];
-
-        return CPRectMake(lastSegmentLeftOffset + [self widthForSegment:[self _indexOfLastSegment]] - contentInset.right,
+        return CPRectMake(CGRectGetWidth([self bounds]) - contentInset.right,
                             bezelInset.top,
                             contentInset.right,
                             height);
     }
-    else if (aName.substring(0, "segment-bezel".length) == "segment-bezel")
+    else if (aName.indexOf("segment-bezel") === 0)
     {
         var segment = parseInt(aName.substring("segment-bezel-".length), 10),
             frame = CGRectCreateCopy(_segments[segment].frame);
 
-        if (segment == 0)
+        if (segment === 0)
         {
             frame.origin.x += contentInset.left;
             frame.size.width -= contentInset.left;
         }
 
-        if (segment == _segments.length - 1)
-            frame.size.width -= contentInset.right;
+        if (segment === _segments.length - 1)
+            frame.size.width = CGRectGetWidth([self bounds]) - contentInset.right - frame.origin.x;
 
         return frame;
     }
-    else if (aName.substring(0, "divider-bezel".length) == "divider-bezel")
+    else if (aName.indexOf("divider-bezel") === 0)
     {
         var segment = parseInt(aName.substring("divider-bezel-".length), 10),
             width = [self widthForSegment:segment],
@@ -494,7 +483,7 @@ CPSegmentSwitchTrackingMomentary = 2;
 
         return CGRectMake(left + width, bezelInset.top, thickness, height);
     }
-    else if (aName.substring(0, "segment-content".length) == "segment-content")
+    else if (aName.indexOf("segment-content") === 0)
     {
         var segment = parseInt(aName.substring("segment-content-".length), 10);
 
@@ -517,8 +506,12 @@ CPSegmentSwitchTrackingMomentary = 2;
     if (_segments.length <= 0)
         return;
 
+    var themeState = _themeStates[0];
+
+    themeState |= _themeState & CPThemeStateDisabled;
+
     var leftCapColor = [self valueForThemeAttribute:@"left-segment-bezel-color" 
-                                            inState:_themeStates[0]];
+                                            inState:themeState];
 
     var leftBezelView = [self layoutEphemeralSubviewNamed:@"left-segment-bezel"
                                                positioned:CPWindowBelow
@@ -526,8 +519,12 @@ CPSegmentSwitchTrackingMomentary = 2;
 
     [leftBezelView setBackgroundColor:leftCapColor];
 
+    var themeState = _themeStates[_themeStates.length - 1];
+
+    themeState |= _themeState & CPThemeStateDisabled;
+
     var rightCapColor = [self valueForThemeAttribute:@"right-segment-bezel-color" 
-                                             inState:_themeStates[_themeStates.length - 1]];
+                                             inState:themeState];
 
     var rightBezelView = [self layoutEphemeralSubviewNamed:@"right-segment-bezel"
                                                positioned:CPWindowBelow
@@ -703,7 +700,16 @@ CPSegmentSwitchTrackingMomentary = 2;
     while (count--)
         if (CGRectContainsPoint(_segments[count].frame, aPoint))
             return count;
-    
+
+    if (_segments.length)
+    {
+        var adjustedLastFrame = CGRectCreateCopy(_segments[_segments.length - 1].frame);
+        adjustedLastFrame.size.width = CGRectGetWidth([self bounds]) - adjustedLastFrame.origin.x;
+
+        if (CGRectContainsPoint(adjustedLastFrame, aPoint))
+            return _segments.length - 1;
+    }
+
     return -1;
 }
 
@@ -734,7 +740,7 @@ CPSegmentSwitchTrackingMomentary = 2;
         if (_trackingSegment == -1)
             return;
 
-        if (CGRectContainsPoint(_segments[_trackingSegment].frame, location))
+        if (_trackingSegment === [self testSegment:location])
         {
             if (_trackingMode == CPSegmentSwitchTrackingSelectAny)
             {
@@ -765,10 +771,13 @@ CPSegmentSwitchTrackingMomentary = 2;
     
     if (type == CPLeftMouseDown)
     {
-        _trackingHighlighted = YES;
-        _trackingSegment = [self testSegment:location];
-        
-        [self drawSegmentBezel:_trackingSegment highlight:YES];
+        var trackingSegment = [self testSegment:location];
+        if (trackingSegment > -1 && [self isEnabledForSegment:trackingSegment])
+        {
+            _trackingHighlighted = YES;
+            _trackingSegment = trackingSegment;
+            [self drawSegmentBezel:_trackingSegment highlight:YES];
+        }
     }
     
     else if (type == CPLeftMouseDragged)
@@ -776,12 +785,11 @@ CPSegmentSwitchTrackingMomentary = 2;
         if (_trackingSegment == -1)
             return;
 
-        var highlighted = CGRectContainsPoint(_segments[_trackingSegment].frame, location);
-        
+        var highlighted = [self testSegment:location] === _trackingSegment;
         if (highlighted != _trackingHighlighted)
         {
             _trackingHighlighted = highlighted;
-            
+
             [self drawSegmentBezel:_trackingSegment highlight:_trackingHighlighted];
         }
     }

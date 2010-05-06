@@ -127,7 +127,7 @@ var CPDragServerDraggingInfo       = nil;
 @end
 
 var CPDraggingSource_draggedImage_movedTo_          = 1 << 0,
-    CPDraggingSource_draggedImage_endAt_operation_  = 1 << 1,
+    CPDraggingSource_draggedImage_endedAt_operation_  = 1 << 1,
     CPDraggingSource_draggedView_movedTo_           = 1 << 2,
     CPDraggingSource_draggedView_endedAt_operation_ = 1 << 3;
 
@@ -150,6 +150,10 @@ var CPDraggingSource_draggedImage_movedTo_          = 1 << 0,
 
     CGPoint         _draggingLocation;
     id              _draggingDestination;
+
+    CGPoint         _startDragLocation;
+    BOOL            _shouldSlideBack;
+    unsigned        _dragOperation;
 }
 
 /*
@@ -187,6 +191,11 @@ var CPDraggingSource_draggedImage_movedTo_          = 1 << 0,
     }
 
     return self;
+}
+
+- (id)draggingDestination
+{
+    return _draggingDestination;
 }
 
 - (CGPoint)draggingLocation
@@ -251,18 +260,17 @@ var CPDraggingSource_draggedImage_movedTo_          = 1 << 0,
     return dragOperation;
 }
 
-- (void)draggingEndedInPlatformWindow:(CPPlatformWindow)aPlatformWindow globalLocation:(CGPoint)aLocation
+- (void)draggingEndedInPlatformWindow:(CPPlatformWindow)aPlatformWindow globalLocation:(CGPoint)aLocation operation:(CPDragOperation)anOperation
 {
     [_draggedView removeFromSuperview];
 
     if (![CPPlatform supportsDragAndDrop])
         [_draggedWindow orderOut:self];
 
-    if (_implementedDraggingSourceMethods & CPDraggingSource_draggedImage_endAt_operation_)
-        [_draggingSource draggedImage:[_draggedView image] endedAt:aLocation operation:NO];
-
+    if (_implementedDraggingSourceMethods & CPDraggingSource_draggedImage_endedAt_operation_)
+        [_draggingSource draggedImage:[_draggedView image] endedAt:aLocation operation:anOperation];
     else if (_implementedDraggingSourceMethods & CPDraggingSource_draggedView_endedAt_operation_)
-        [_draggingSource draggedView:_draggedView endedAt:aLocation operation:NO];
+        [_draggingSource draggedView:_draggedView endedAt:aLocation operation:anOperation];
 
     _isDragging = NO;
 }
@@ -296,6 +304,7 @@ var CPDraggingSource_draggedImage_movedTo_          = 1 << 0,
     _draggingPasteboard = aPasteboard || [CPPasteboard pasteboardWithName:CPDragPboard];
     _draggingSource = aSourceObject;
     _draggingDestination = nil;
+    _shouldSlideBack = slideBack;
 
     // The offset is based on the distance from where we want the view to be initially from where the mouse is initially
     // Hence the use of mouseDownEvent's location and view's location in global coordinates.
@@ -310,7 +319,7 @@ var CPDraggingSource_draggedImage_movedTo_          = 1 << 0,
         _draggingOffset = _CGSizeMake(mouseDownEventLocation.x - viewLocation.x, mouseDownEventLocation.y - viewLocation.y);
     }
     else
-        _draggingOffset = _CGSizeMakerZero();
+        _draggingOffset = _CGSizeMakeZero();
 
     if ([CPPlatform isBrowser])
         [_draggedWindow setPlatformWindow:[aWindow platformWindow]];
@@ -320,7 +329,8 @@ var CPDraggingSource_draggedImage_movedTo_          = 1 << 0,
     var mouseLocation = [CPEvent mouseLocation];
 
     // Place it where the mouse pointer is.
-    [_draggedWindow setFrameOrigin:_CGPointMake(mouseLocation.x - _draggingOffset.width, mouseLocation.y - _draggingOffset.height)];
+    _startDragLocation = _CGPointMake(mouseLocation.x - _draggingOffset.width, mouseLocation.y - _draggingOffset.height);
+    [_draggedWindow setFrameOrigin:_startDragLocation];
     [_draggedWindow setFrameSize:[aView frame].size];
 
     [[_draggedWindow contentView] addSubview:aView];
@@ -332,8 +342,8 @@ var CPDraggingSource_draggedImage_movedTo_          = 1 << 0,
         if ([_draggingSource respondsToSelector:@selector(draggedImage:movedTo:)])
             _implementedDraggingSourceMethods |= CPDraggingSource_draggedImage_movedTo_;
 
-        if ([_draggingSource respondsToSelector:@selector(draggedImage:endAt:operation:)])
-            _implementedDraggingSourceMethods |= CPDraggingSource_draggedImage_endAt_operation_;
+        if ([_draggingSource respondsToSelector:@selector(draggedImage:endedAt:operation:)])
+            _implementedDraggingSourceMethods |= CPDraggingSource_draggedImage_endedAt_operation_;
     }
     else
     {
@@ -385,15 +395,18 @@ var CPDraggingSource_draggedImage_movedTo_          = 1 << 0,
 
     if (type === CPLeftMouseUp)
     {
-        [self performDragOperationInPlatformWindow:platformWindow];
-        [self draggingEndedInPlatformWindow:platformWindow globalLocation:platformWindowLocation];
+        // Make sure we do not finalize (cancel) the drag if the last drag update was disallowed
+        if (_dragOperation !== CPDragOperationNone)
+            [self performDragOperationInPlatformWindow:platformWindow];
+
+        [self draggingEndedInPlatformWindow:platformWindow globalLocation:platformWindowLocation operation:_dragOperation];
 
         // Stop tracking events.
         return;
     }
 
     [self draggingSourceUpdatedWithGlobalLocation:platformWindowLocation];
-    [self draggingUpdatedInPlatformWindow:platformWindow location:platformWindowLocation];
+    _dragOperation = [self draggingUpdatedInPlatformWindow:platformWindow location:platformWindowLocation];
 
     // If we're not a mouse up, then we're going to want to grab the next event.
     [CPApp setTarget:self selector:@selector(trackDragging:)

@@ -1,61 +1,46 @@
 
 @import <AppKit/CPPanel.j>
-#include "Platform/Platform.h"
 
-var SharedOpenPanel = nil;
 
 @implementation CPOpenPanel : CPPanel
 {
-    CPArray _files;
-    BOOL    _canChooseFiles @accessors(property=canChooseFiles);
-    BOOL    _canChooseDirectories @accessors(property=canChooseDirectories);
-    BOOL    _allowsMultipleSelection @accessors(property=allowsMultipleSelection);
+    BOOL    _canChooseFiles             @accessors(property=canChooseFiles);
+    BOOL    _canChooseDirectories       @accessors(property=canChooseDirectories);
+    BOOL    _allowsMultipleSelection    @accessors(property=allowsMultipleSelection);
+    CPURL   _directoryURL               @accessors(property=directoryURL);
+    CPArray _URLs;
 }
 
 + (id)openPanel
 {
-    if (!SharedOpenPanel)
-        SharedOpenPanel = [[CPOpenPanel alloc] init];
-
-    return SharedOpenPanel;
+    return [[CPOpenPanel alloc] init];
 }
 
-- (id)init
+- (CPInteger)runModal
 {
-    if (self = [super init])
+    if (typeof window["cpOpenPanel"] === "function")
     {
-        _files = [];
-        _canChooseFiles = YES;
+        // FIXME: Is this correct???
+        [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
+
+        var options = { directoryURL: [self directoryURL],
+                        canChooseFiles: [self canChooseFiles],
+                        canChooseDirectories: [self canChooseDirectories],
+                        allowsMultipleSelection: [self allowsMultipleSelection] };
+
+        var result = window.cpOpenPanel(options);
+
+        _URLs = result.URLs;
+
+        return result.button;
     }
 
-    return self;
+    throw "-runModal is unimplemented.";
 }
 
-- (void)filenames
+- (CPArray)URLs
 {
-    return _files;
-}
-
-- (unsigned)runModalForDirectory:(CPString)absoluteDirectoryPath file:(CPString)filename types:(CPArray)fileTypes
-{
-#if PLATFORM(DOM)
-    if (window.Titanium)
-    {
-        _files = Titanium.Desktop.openFiles({
-            path:absoluteDirectoryPath,
-            types:fileTypes,
-            multiple:_allowsMultipleSelection,
-            filename:filename,
-            directories:_canChooseDirectories,
-            files:_canChooseFiles
-        });
-    }
-#endif
-}
-
-- (unsigned)runModalForTypes:(CPArray)fileTypes 
-{alert("HERE");
-    [self runModalForDirectory:"/" file:nil types:fileTypes];
+    return _URLs;
 }
 
 @end

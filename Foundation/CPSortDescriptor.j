@@ -136,7 +136,7 @@ CPOrderedDescending     =  1;
 */
 - (CPComparisonResult)compareObject:(id)lhsObject withObject:(id)rhsObject
 {
-    return (_ascending ? 1 : -1) * [[lhsObject valueForKey:_key] performSelector:_selector withObject:[rhsObject valueForKey:_key]];
+    return (_ascending ? 1 : -1) * [[lhsObject valueForKeyPath:_key] performSelector:_selector withObject:[rhsObject valueForKeyPath:_key]];
 }
 
 /*!

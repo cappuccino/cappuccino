@@ -1,0 +1,55 @@
+
+require("../common.jake");
+
+var framework = require("objective-j/jake").framework;
+var BundleTask = require("objective-j/jake").BundleTask;
+
+$BUILD_PATH = FILE.join($BUILD_DIR, $CONFIGURATION, 'AppKit');
+
+AppKitFiles = new FileList("**/*.j").exclude('CoreGraphics/CGContextCanvas.j', 'CoreGraphics/CGContextVML.j', 'Themes/**/*', 'Tools/**/*', "Platform/DOM/CPPlatform.j", "Platform/DOM/CPPlatformString.j");
+
+FIXME_fileDependency (FILE.join("Platform", "CPPlatform.j"), FILE.join("Platform", "DOM", "CPPlatform.j"));
+FIXME_fileDependency (FILE.join("Platform", "CPPlatformString.j"), FILE.join("Platform", "DOM", "CPPlatformString.j"));
+
+appKitTask = framework ("AppKit", function(appKitTask)
+{
+    appKitTask.setBuildIntermediatesPath(FILE.join($BUILD_DIR, "AppKit.build", $CONFIGURATION))
+    appKitTask.setBuildPath($BUILD_CONFIGURATION_DIR);
+
+    appKitTask.setAuthor("280 North, Inc.");
+    appKitTask.setEmail("feedback @nospam@ 280north.com");
+    appKitTask.setSummary("AppKit classes for Cappuccino");
+    appKitTask.setIdentifier("com.280n.AppKit");
+    appKitTask.setVersion(getCappuccinoVersion());
+    appKitTask.setLicense(BundleTask.License.LGPL_v2_1);
+    appKitTask.setSources(AppKitFiles);
+    appKitTask.setResources(new FileList("Resources/**/*"));
+    appKitTask.setFlattensSources(true);
+    appKitTask.setInfoPlistPath("Info.plist");
+
+    if ($CONFIGURATION === "Release")
+        appKitTask.setCompilerFlags("-O");
+    else
+        appKitTask.setCompilerFlags("-DDEBUG -g");
+});
+
+$BUILD_CJS_CAPPUCCINO_APPKIT = FILE.join($BUILD_CJS_CAPPUCCINO_FRAMEWORKS, "AppKit");
+
+filedir ($BUILD_CJS_CAPPUCCINO_APPKIT, ["AppKit"], function()
+{
+    cp_r(appKitTask.buildProductPath(), $BUILD_CJS_CAPPUCCINO_APPKIT);
+});
+
+subtasks (["Themes"], ["clean", "clobber"]);
+
+task ("Theme", [$BUILD_CJS_CAPPUCCINO_APPKIT], function()
+{
+    subjake(["Themes"], "build");
+
+    cp_r(FILE.join($BUILD_DIR, $CONFIGURATION, 'Aristo.blend'), FILE.join($BUILD_PATH, 'Resources', 'Aristo.blend'));
+    cp_r(FILE.join($BUILD_DIR, $CONFIGURATION, 'Aristo.blend'), FILE.join($BUILD_CJS_CAPPUCCINO_APPKIT, "Resources", "Aristo.blend"));
+});
+
+task ("build", ["AppKit", $BUILD_CJS_CAPPUCCINO_APPKIT, "Theme"]);
+
+CLOBBER.include($BUILD_CJS_CAPPUCCINO_APPKIT);
