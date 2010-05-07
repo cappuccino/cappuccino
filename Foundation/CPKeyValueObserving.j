@@ -481,10 +481,11 @@ var kvoNewAndOld = CPKeyValueObservingOptionNew|CPKeyValueObservingOptionOld,
 - (void)willChangeValueForKey:(CPString)aKey
 {
     var superClass = [self class],
-    methodSelector = @selector(willChangeValueForKey:),
-    methodImp = class_getMethodImplementation(superClass, methodSelector);
+        methodSelector = @selector(willChangeValueForKey:),
+        methodImp = class_getMethodImplementation(superClass, methodSelector);
+
     methodImp(self, methodSelector, aKey);
-    
+
     if (!aKey)
         return;
 
@@ -496,10 +497,11 @@ var kvoNewAndOld = CPKeyValueObservingOptionNew|CPKeyValueObservingOptionOld,
 - (void)didChangeValueForKey:(CPString)aKey
 {
     var superClass = [self class],
-    methodSelector = @selector(didChangeValueForKey:),
-    methodImp = class_getMethodImplementation(superClass, methodSelector);
+        methodSelector = @selector(didChangeValueForKey:),
+        methodImp = class_getMethodImplementation(superClass, methodSelector);
+
     methodImp(self, methodSelector, aKey);
-    
+
     if (!aKey)
         return;
 
@@ -509,10 +511,11 @@ var kvoNewAndOld = CPKeyValueObservingOptionNew|CPKeyValueObservingOptionOld,
 - (void)willChange:(CPKeyValueChange)change valuesAtIndexes:(CPIndexSet)indexes forKey:(CPString)aKey
 {
     var superClass = [self class],
-    methodSelector = @selector(willChange:valuesAtIndexes:forKey:),
-    methodImp = class_getMethodImplementation(superClass, methodSelector);
+        methodSelector = @selector(willChange:valuesAtIndexes:forKey:),
+        methodImp = class_getMethodImplementation(superClass, methodSelector);
+
     methodImp(self, methodSelector, change, indexes, aKey);
-    
+
     if (!aKey)
         return;
 
@@ -524,10 +527,11 @@ var kvoNewAndOld = CPKeyValueObservingOptionNew|CPKeyValueObservingOptionOld,
 - (void)didChange:(CPKeyValueChange)change valuesAtIndexes:(CPIndexSet)indexes forKey:(CPString)aKey
 {
     var superClass = [self class],
-    methodSelector = @selector(didChange:valuesAtIndexes:forKey:),
-    methodImp = class_getMethodImplementation(superClass, methodSelector);
+        methodSelector = @selector(didChange:valuesAtIndexes:forKey:),
+        methodImp = class_getMethodImplementation(superClass, methodSelector);
+
     methodImp(self, methodSelector, change, indexes, aKey);
-    
+
     if (!aKey)
         return;
 
