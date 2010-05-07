@@ -68,6 +68,11 @@ var CPTokenFieldTableColumnIdentifier = @"CPTokenFieldTableColumnIdentifier";
     return [CPCharacterSet characterSetWithCharactersInString:@","];
 }
 
++ (CPString)themeClass
+{
+    return "tokenfield";
+}
+
 - (id)initWithFrame:(CPRect)frame
 {
 	if (self = [super initWithFrame:frame])
@@ -383,8 +388,12 @@ var CPTokenFieldTableColumnIdentifier = @"CPTokenFieldTableColumnIdentifier";
 		[objectValue addObject:[token stringValue]];
 	}
 
+#if PLATFORM(DOM)
+
 	if ([self _inputElement].value != @"")
 		[objectValue addObject:[self _inputElement].value];
+
+#endif
 
 	return objectValue;
 }
