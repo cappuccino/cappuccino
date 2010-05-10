@@ -244,19 +244,19 @@ Preprocessor.prototype.accessors = function(tokens)
             value = true;
 
         if (!IS_WORD(name))
-            throw new SyntaxError(this.error_message("*** @property attribute name not valid."));
+            throw new SyntaxError(this.error_message("*** @accessors attribute name not valid."));
 
         if ((token = tokens.skip_whitespace()) == TOKEN_EQUAL)
         {
             value = tokens.skip_whitespace();
             
             if (!IS_WORD(value))
-                throw new SyntaxError(this.error_message("*** @property attribute value not valid."));
+                throw new SyntaxError(this.error_message("*** @accessors attribute value not valid."));
 
             if (name == "setter")
             {
                 if ((token = tokens.next()) != TOKEN_COLON)
-                    throw new SyntaxError(this.error_message("*** @property setter attribute requires argument with \":\" at end of selector name."));
+                    throw new SyntaxError(this.error_message("*** @accessors setter attribute requires argument with \":\" at end of selector name."));
                 
                 value += ":";
             }
@@ -270,7 +270,7 @@ Preprocessor.prototype.accessors = function(tokens)
             break;
         
         if (token != TOKEN_COMMA)
-            throw new SyntaxError(this.error_message("*** Expected ',' or ')' in @property attribute list."));
+            throw new SyntaxError(this.error_message("*** Expected ',' or ')' in @accessors attribute list."));
     }
     
     return attributes;
