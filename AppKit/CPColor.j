@@ -782,7 +782,7 @@ function rgbToHex(r,g,b) {
 
 function byteToHex(n) {
     if (!n || isNaN(n)) return "00";
-    n = ROUND(MIN(255,MAX(0,256*n)));
+    n = MIN(255,MAX(0,ROUND(255*n)));
     return  hexCharacters.charAt((n - n % 16) / 16) +
             hexCharacters.charAt(n % 16);
 }
