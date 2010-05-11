@@ -1025,12 +1025,44 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 /*
     * - preparedCellAtColumn:row:
 */
+
 //Editing Cells
-/*
-    * - editColumn:row:withEvent:select:
-    * - editedColumn
-    * - editedRow
+
+/*!
+    Edits the indicated row.
 */
+- (void)editColumn:(CPInteger)columnIndex row:(CPInteger)rowIndex withEvent:(CPEvent)theEvent select:(BOOL)flag
+{
+    if (![self isRowSelected:rowIndex])
+        [[CPException exceptionWithName:@"Error" reason:@"Attempt to edit row="+rowIndex+" when not selected." userInfo:nil] raise];
+
+    // TODO Do something with flag.
+
+    _editingCellIndex = CGPointMake(columnIndex, rowIndex);
+    [self reloadDataForRowIndexes:[CPIndexSet indexSetWithIndex:rowIndex]
+        columnIndexes:[CPIndexSet indexSetWithIndex:columnIndex]];
+}
+
+/*!
+    Returns the column of the currently edited cell, or -1 if none.
+*/
+- (CPInteger)editedColumn
+{
+    if (!_editingCellIndex)
+        return -1;
+    return _editingCellIndex.x;
+}
+
+/*!
+    Returns the row of the currently edited cell, or -1 if none.
+*/
+- (CPInteger)editedRow
+{
+    if (!_editingCellIndex)
+        return -1;
+    return _editingCellIndex.x;
+}
+
 //Setting Auxiliary Views
 /*
     * - setHeaderView:
@@ -2814,10 +2846,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
                         shouldEdit = [_delegate tableView:self shouldEditTableColumn:column row:rowIndex];
                     if (shouldEdit)
                     {
-                        _editingCellIndex = CGPointMake(columnIndex, rowIndex);
-                        [self reloadDataForRowIndexes:[CPIndexSet indexSetWithIndex:rowIndex]
-                            columnIndexes:[CPIndexSet indexSetWithIndex:columnIndex]];
-
+                        [self editColumn:columnIndex row:rowIndex withEvent:nil select:YES];
                         return;
                     }
                 }
