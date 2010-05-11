@@ -194,21 +194,13 @@ var _CPTableColumnHeaderViewStringValueKey = @"_CPTableColumnHeaderViewStringVal
 
 - (CGRect)headerRectOfColumn:(int)aColumnIndex
 {
-    var tableColumns = [_tableView tableColumns];
-
-    if (aColumnIndex < 0 || aColumnIndex > [tableColumns count])
-        [CPException raise:"invalid" reason:"tried to get headerRectOfColumn: on invalid column"];
-
-    // UPDATE COLUMN RANGES ?
+    var headerRect = [self bounds],
+        columnRect = [[self tableView] rectOfColumn:aColumnIndex];
         
-    var tableRange = _tableView._tableColumnRanges[aColumnIndex],
-        bounds = [self bounds];
-
-    var rMinX = ROUND(tableRange.location);
-    bounds.origin.x = rMinX;
-    bounds.size.width = FLOOR(tableRange.length + tableRange.location - rMinX);
+    headerRect.origin.x = CPRectGetMinX(columnRect);
+    headerRect.size.width = CPRectGetWidth(columnRect);
     
-    return bounds;
+    return headerRect;
 }
 
 - (CGRect)_cursorRectForColumn:(int)column

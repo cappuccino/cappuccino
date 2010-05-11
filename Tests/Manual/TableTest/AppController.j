@@ -129,8 +129,7 @@ tableTestDragType = @"CPTableViewTestDragType";
 
 - (void)sourceList
 {
-
-    var window3 = [[CPWindow alloc] initWithContentRect:CGRectMake(450, 250, 200, 400) styleMask:CPTitledWindowMask | CPResizableWindowMask];
+    var window3 = [[CPWindow alloc] initWithContentRect:CGRectMake(450, 250, 500, 400) styleMask:CPTitledWindowMask | CPResizableWindowMask];
     
     tableView3 = [[CPTableView alloc] initWithFrame:CGRectMake(0.0, 0.0, 200.0, 500.0)];
 
@@ -149,6 +148,10 @@ tableTestDragType = @"CPTableViewTestDragType";
     [column setWidth:200.0];
     [column setMinWidth:50.0];
     [column setEditable:YES];
+    [tableView3 addTableColumn:column];
+    
+    var column = [[CPTableColumn alloc] initWithIdentifier:"sourcelist2"];
+    [[column headerView] setStringValue:"Source List 2"];
     [tableView3 addTableColumn:column];
 
     var scrollView3 = [[CPScrollView alloc] initWithFrame:[[window3 contentView] bounds]];
@@ -183,7 +186,7 @@ tableTestDragType = @"CPTableViewTestDragType";
     else if (aTableView === tableView2)
         return String(dataSet2[aRow]);
     else if(aTableView === tableView3)
-        return String(dataSet3[row]);
+        return String(dataSet3[aRow]);
 }
 
 - (void)tableView:(CPTableView)aTableView sortDescriptorsDidChange:(CPArray)oldDescriptors
