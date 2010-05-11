@@ -3299,11 +3299,12 @@ var CPTableViewDataSourceKey                = @"CPTableViewDataSourceKey",
     unsigned    dropOperation @accessors;
     CPTableView tableView @accessors;
     int         currentRow @accessors;
+    BOOL        isBlinking @accessors;
 }
 
 - (void)drawRect:(CGRect)aRect
 {
-    if(tableView._destinationDragStyle === CPTableViewDraggingDestinationFeedbackStyleNone)
+    if(tableView._destinationDragStyle === CPTableViewDraggingDestinationFeedbackStyleNone || isBlinking)
         return;
     
     var context = [[CPGraphicsContext currentContext] graphicsPort];
@@ -3369,7 +3370,28 @@ var CPTableViewDataSourceKey                = @"CPTableViewDataSourceKey",
         CGContextStrokePath(context);
         //CGContextStrokeLineSegments(context, [aRect.origin.x + 8,  aRect.origin.y + 8, 300 , aRect.origin.y + 8]);
     }
-        
+}
 
+- (void)blink
+{
+    if (dropOperation !== CPTableViewDropOn)
+        return;
+
+    isBlinking = YES;
+
+    var showCallback = function() {
+        objj_msgSend(self, "setHidden:", NO)
+        isBlinking = NO;
+    }
+
+    var hideCallback = function() {
+        objj_msgSend(self, "setHidden:", YES)
+        isBlinking = YES;
+    }
+
+    objj_msgSend(self, "setHidden:", YES);
+    [CPTimer scheduledTimerWithTimeInterval:0.1 callback:showCallback repeats:NO];
+    [CPTimer scheduledTimerWithTimeInterval:0.19 callback:hideCallback repeats:NO];
+    [CPTimer scheduledTimerWithTimeInterval:0.27 callback:showCallback repeats:NO];
 }
 @end

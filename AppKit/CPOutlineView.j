@@ -85,6 +85,8 @@ CPOutlineViewDropOnItemIndex = -1;
     
     BOOL            _shouldRetargetChildIndex;
     CPInteger       _retargedChildIndex;
+    CPTimer         _dragHoverTimer;
+    id              _dropItem;
 }
 
 - (id)initWithFrame:(CGRect)aFrame
@@ -108,6 +110,7 @@ CPOutlineViewDropOnItemIndex = -1;
         
         _retargedChildIndex = nil;
         _shouldRetargetChildIndex = NO;
+        _startHoverTime = nil;
 
         [self setIndentationPerLevel:16.0];
         [self setIndentationMarkerFollowsDataView:YES];
@@ -505,11 +508,42 @@ CPOutlineViewDropOnItemIndex = -1;
 
 - (void)setDropItem:(id)theItem dropChildIndex:(int)theIndex
 {
+    if (_dropItem !== theItem && theIndex < 0 && [self isExpandable:theItem] && ![self isItemExpanded:theItem])
+    {
+        if (_dragHoverTimer)
+            [_dragHoverTimer invalidate];
+
+        var autoExpandCallBack = function(){
+            if (_dropItem)
+            {
+                [_dropOperationFeedbackView blink];
+                [CPTimer scheduledTimerWithTimeInterval:.3 callback:objj_msgSend(self, "expandItem:", _dropItem) repeats:NO]; //[self expandItem:_dropItem];
+            }
+        }
+
+        _dragHoverTimer = [CPTimer scheduledTimerWithTimeInterval:.8 callback:autoExpandCallBack repeats:NO];
+    }
+
+    if (theIndex >= 0)
+    {
+        [_dragHoverTimer invalidate];
+        _dragHoverTimer = nil;
+    }
+
+    _dropItem = theItem;
     _retargetedItem = theItem;
     _shouldRetargetItem = YES;
     
     _retargedChildIndex = theIndex;
     _shouldRetargetChildIndex = YES;
+}
+
+- (void)_draggingEnded
+{
+    [super _draggingEnded];
+    _dropItem = nil;
+    [_dragHoverTimer invalidate];
+    _dragHoverTimer = nil;
 }
 
 - (id)_parentItemForUpperRow:(int)theUpperRowIndex andLowerRow:(int)theLowerRowIndex atMouseOffset:(CPPoint)theOffset
