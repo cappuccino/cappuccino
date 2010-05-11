@@ -217,14 +217,14 @@ FIXME: Do we need this?
 */
 - (CPDecimal)decimalValue
 {
-    objj_throw_exception("decimalValue: NOT YET IMPLEMENTED");
+    throw new Error("decimalValue: NOT YET IMPLEMENTED");
 }
 
 - (CPString)descriptionWithLocale:(CPDictionary)aDictionary
 {
     if (!aDictionary) return toString();
     
-    objj_throw_exception("descriptionWithLocale: NOT YET IMPLEMENTED");
+    throw new Error("descriptionWithLocale: NOT YET IMPLEMENTED");
 }
 
 - (CPString)description
