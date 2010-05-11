@@ -26,7 +26,7 @@
  
 @implementation _CPTableColumnHeaderView : CPView
 {
-    _CPImageAndTextView _textField;
+    _CPImageAndTextView     _textField;
 }
 
 - (void)initWithFrame:(CGRect)frame
@@ -153,6 +153,7 @@ var _CPTableColumnHeaderViewStringValueKey = @"_CPTableColumnHeaderViewStringVal
     int                     _pressedColumn;
     
     BOOL                    _isResizing;
+    BOOL                    _isDragging;
     BOOL                    _isTrackingColumn;
     
     // CPPoint             _previousTrackingLocation;
@@ -280,6 +281,9 @@ var _CPTableColumnHeaderViewStringValueKey = @"_CPTableColumnHeaderViewStringVal
 
     if (type === CPLeftMouseDown)
     {
+        if (columnIndex === -1)
+            return;
+        
         _mouseDownLocation = currentLocation;
         _activeColumn = columnIndex;
 
@@ -381,6 +385,18 @@ var _CPTableColumnHeaderViewStringValueKey = @"_CPTableColumnHeaderViewStringVal
     [[self tableView] moveColumn:aFromIndex toColumn:aToIndex];
     _activeColumn = aToIndex;
     _pressedColumn = _activeColumn;
+    
+    [[self tableView] _setDraggedColumn:_activeColumn];
+}
+
+- (void)draggedView:(CPView)aView beganAt:(CPPoint)aPoint
+{
+    _isDragging = YES;
+    
+    [[[[[self tableView] tableColumns] objectAtIndex:_activeColumn] headerView] setHidden:YES];
+    [[self tableView] _setDraggedColumn:_activeColumn];
+    
+    [self setNeedsDisplay:YES];
 }
 
 - (void)draggedView:(CPView)aView movedTo:(CPPoint)aPoint
@@ -413,7 +429,13 @@ var _CPTableColumnHeaderViewStringValueKey = @"_CPTableColumnHeaderViewStringVal
 
 - (void)draggedView:(CPImage)aView endedAt:(CGPoint)aLocation operation:(CPDragOperation)anOperation
 {
+    _isDragging = NO;
+    
+    [[self tableView] _setDraggedColumn:-1];
+    [[[[[self tableView] tableColumns] objectAtIndex:_activeColumn] headerView] setHidden:NO];
     [self stopTrackingTableColumn:_activeColumn at:aLocation];
+    
+    [self setNeedsDisplay:YES];
 }
 
 - (BOOL)shouldResizeTableColumn:(int)aColumnIndex at:(CPPoint)aPoint
@@ -602,27 +624,12 @@ var _CPTableColumnHeaderViewStringValueKey = @"_CPTableColumnHeaderViewStringVal
     
     CGContextClosePath(context);
     CGContextStrokePath(context);
-        
-/*
-    var maxY = CGRectGetMaxY([self bounds]);
-    // draw normal gradient for remaining space
-    if (supportsCanvasGradient)
+    
+    if (_isDragging)
     {
-        aRect.origin.x = columnMaxX - 0.5;
-        aRect.size.width -= columnMaxX;
-        CGContextBeginPath(context);
-        CGContextAddRect(context, CGRectMake(columnMaxX + 1, 0, CGRectGetMaxX([self bounds]) - columnMaxX, CGRectGetHeight([self bounds])));
-        CGContextClosePath(context);    
-        CGContextDrawLinearGradient(context, [_CPTableColumnHeaderView headerGradient], CGPointMake(0,0), CGPointMake(0, maxY - 1),0);
-    }   
-   
-    // Draw bottom line
-    CGContextBeginPath(context);    
-    CGContextMoveToPoint(context, 0, maxY - 0.5);
-    CGContextAddLineToPoint(context, CGRectGetMaxX([self bounds]), maxY - 0.5);
-    CGContextClosePath(context);
-    CGContextStrokePath(context);
-*/   
+        CGContextSetFillColor(context, [CPColor grayColor]);
+        CGContextFillRect(context, [self headerRectOfColumn:_activeColumn])
+    }
 }
 
 @end
@@ -649,4 +656,3 @@ var CPTableHeaderViewTableViewKey = @"CPTableHeaderViewTableViewKey";
 }
 
 @end
-
