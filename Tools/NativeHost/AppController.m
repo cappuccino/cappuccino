@@ -175,6 +175,7 @@ NSString *SERVER_USER = nil;
     [webView setUIDelegate:self];
     [webView setFrameLoadDelegate:self];
     [webView setResourceLoadDelegate:self];
+    [webView setPolicyDelegate:self];
 
     webViewWindow = [[NSWindow alloc] init];
 
