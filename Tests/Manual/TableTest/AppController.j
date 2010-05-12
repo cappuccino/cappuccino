@@ -26,10 +26,10 @@ tableTestDragType = @"CPTableViewTestDragType";
         dataSet3[i - 1] = [CPNumber numberWithInt:i+20];
     }
 
-    var theWindow = [[CPWindow alloc] initWithContentRect:CGRectMake(50,50,400,400) styleMask:CPClosableWindowMask],
+    var theWindow = [[CPWindow alloc] initWithContentRect:CGRectMake(50,50,700,500) styleMask:CPClosableWindowMask],
         contentView = [theWindow contentView];
 
-    tableView = [[CPTableView alloc] initWithFrame:CGRectMake(0.0, 0.0, 500.0, 500.0)];
+    tableView = [[CPTableView alloc] initWithFrame:CGRectMake(0.0, 0.0, 400.0, 400.0)];
 
     [tableView setAllowsMultipleSelection:YES];
     [tableView setAllowsColumnSelection:YES];
@@ -55,7 +55,7 @@ tableTestDragType = @"CPTableViewTestDragType";
 
 
     var desc = [CPSortDescriptor sortDescriptorWithKey:@"self" ascending:YES];
-    for (var i = 1; i <= 2; i++)
+    for (var i = 1; i <= 5; i++)
     {
         var column = [[CPTableColumn alloc] initWithIdentifier:String(i)];
         [column setSortDescriptorPrototype:desc];
@@ -63,13 +63,15 @@ tableTestDragType = @"CPTableViewTestDragType";
 
         [column setMinWidth:50.0];
         [column setMaxWidth:500.0];
-        [column setWidth:200.0];
+        [column setWidth:75.0];
         
         [column setEditable:YES];
         [tableView addTableColumn:column];
     }
 
-    var scrollView = [[CPScrollView alloc] initWithFrame:CGRectMake(0, 0, CGRectGetWidth([contentView bounds]), CGRectGetHeight([contentView bounds]))];
+    // we offset this scrollview to make sure all the coordinates are calculated correctly
+    // bad things can happen when the tableview doesn't sit at (0,0)
+    var scrollView = [[CPScrollView alloc] initWithFrame:CGRectMake(200, 50, CGRectGetWidth([contentView bounds]) - 200, CGRectGetHeight([contentView bounds]) -200)];
    
     [scrollView setDocumentView:tableView];
     [scrollView setAutoresizingMask:CPViewWidthSizable | CPViewHeightSizable];
