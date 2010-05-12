@@ -747,6 +747,9 @@ var _CPMenuBarVisible               = NO,
     }
 
     // Show it.
+    if ([CPPlatform isBrowser])
+        [menuWindow setPlatformWindow:[[aView window] platformWindow]];
+
     [menuWindow orderFront:self];
 
     // Track it.
@@ -815,6 +818,9 @@ var _CPMenuBarVisible               = NO,
 
         [menuWindow setFrameOrigin:CGRectIntersection(unconstrainedFrame, constraintRect).origin];
     }
+
+    if ([CPPlatform isBrowser])
+        [menuWindow setPlatformWindow:[[aView window] platformWindow]];
 
     [menuWindow orderFront:self];
 
