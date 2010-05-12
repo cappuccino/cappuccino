@@ -35,7 +35,11 @@ function Executable(/*String*/ aCode, /*Array*/ fileDependencies, /*CFURL|String
     this._function = aFunction || NULL;
     this._URL = makeAbsoluteURL(aURL || new CFURL("(Anonymous" + (AnonymousExecutableCount++) + ")"));
 
-    this._fileDependencies = fileDependencies;
+    this._fileDependencies = fileDependencies || [];
+
+#ifndef COMMONJS
+    this._fileDependencies.push.apply(this._fileDependencies, parseRequireFileDependencies(aCode));
+#endif
 
     if (fileDependencies.length)
     {
@@ -52,6 +56,23 @@ function Executable(/*String*/ aCode, /*Array*/ fileDependencies, /*CFURL|String
 }
 
 exports.Executable = Executable;
+
+function parseRequireFileDependencies(aCode)
+{
+    var dependencies = [];
+    if (aCode)
+    {
+        var pattern = /(?:^|[^\w.])require\s*\(\s*["']([^"']+)["']\s*\)/g;
+        while (match = pattern.exec(aCode))
+        {
+            var id = match[1];
+            if (!(/\.[^\/]+$/).test(id))
+                id += ".js";
+            dependencies.push(new FileDependency(new CFURL(id), (/^[.\/]/).test(id)));
+        }
+    }
+    return dependencies;
+}
 
 Executable.prototype.path = function()
 {
@@ -73,6 +94,8 @@ Executable.prototype.functionParameters = function()
 
 #ifdef COMMONJS
     functionParameters = functionParameters.concat("require", "exports", "module", "system", "print", "window");
+#else
+    functionParameters = functionParameters.concat("require", "exports", "module");
 #endif
 
     return functionParameters;
@@ -86,9 +109,63 @@ Executable.prototype.functionArguments = function()
 
 #ifdef COMMONJS
     functionArguments = functionArguments.concat(Executable.commonJSArguments());
+#else
+    functionArguments = functionArguments.concat(this.getCommonJSRequire(), this.getCommonJSExports(), this.getCommonJSModule());
 #endif
 
     return functionArguments;
+}
+
+Executable.prototype.getCommonJSRequire = function()
+{
+    if (!this._commonJSRequire)
+    {
+        var executor = this.fileExecuter();
+        var importer = this.fileImporter();
+
+        var req = function(id)
+        {
+            if (!(/\.[^\/]+$/).test(id))
+                id += ".js";
+
+            return executor(id, (id.charAt(0) === "." || id.charAt(0) === "/"), NO);
+        }
+        req.async = function(id, callback) {
+            if (!(/\.[^\/]+$/).test(id))
+                id += ".js";
+
+            importer(id, (id.charAt(0) === "." || id.charAt(0) === "/"), function() {
+                callback(req(id));
+            });
+        };
+        req.paths = OBJJ_INCLUDE_PATHS;
+        this._commonJSRequire = req;
+    }
+    return this._commonJSRequire;
+}
+
+Executable.prototype.getCommonJSExports = function()
+{
+    if (!this._commonJSExports)
+        this._commonJSExports = {};
+    return this._commonJSExports;
+}
+
+Executable.prototype.setCommonJSExports = function(commonJSExports)
+{
+    if (this._commonJSExports)
+        throw "CommonJS exports for " + this.URL() + " already set.";
+    this._commonJSExports = commonJSExports;
+}
+
+Executable.prototype.getCommonJSModule = function()
+{
+    if (!this._commonJSModule)
+        this._commonJSModule = {
+            path : this.path(),
+            url : this.URL().toString()
+        };
+    return this._commonJSModule;
 }
 
 DISPLAY_NAME(Executable.prototype.functionArguments);
@@ -350,14 +427,36 @@ Executable.fileExecuterForURL = function(/*CFURL|String*/ aURL)
     {
         cachedFileExecuter = function(/*CFURL*/ aURL, /*BOOL*/ isQuoted, /*BOOL*/ shouldForce)
         {
+            // CommonJS "exports" support:
+            // this is a little hacky. we use the internaly created "exports" if it executes synchronously,
+            // otherwise we have to create our own exports object that we can return immediately
+            // then set it on the executable right before it is eventually executed.
+            var commonJSExports = {},
+                hasSetExports = false,
+                hasReturnedExports = false;
+
             Executable.fileExecutableSearcherForURL(referenceURL)(aURL, isQuoted,
             function(/*FileExecutable*/ aFileExecutable)
             {
                 if (!aFileExecutable.hasLoadedFileDependencies())
                     throw "No executable loaded for file at URL " + aURL;
 
+                if (hasReturnedExports && !hasSetExports)
+                {
+                    aFileExecutable.setCommonJSExports(commonJSExports);
+                    hasSetExports = true;
+                }
+
                 aFileExecutable.execute(shouldForce);
+
+                if (!hasReturnedExports)
+                {
+                    commonJSExports = aFileExecutable.getCommonJSExports();
+                }
             });
+
+            hasReturnedExports = true;
+            return commonJSExports;
         }
 
         cachedFileExecuters[referenceURLString] = cachedFileExecuter;
