@@ -86,7 +86,7 @@ CPTableViewSolidVerticalGridLineMask   = 1 << 0;
 CPTableViewSolidHorizontalGridLineMask = 1 << 1;
 
 CPTableViewNoColumnAutoresizing = 0;
-CPTableViewUniformColumnAutoresizingStyle = 1;
+CPTableViewUniformColumnAutoresizingStyle = 1; // FIX ME: This is FUBAR
 CPTableViewSequentialColumnAutoresizingStyle = 2;
 CPTableViewReverseSequentialColumnAutoresizingStyle = 3;
 CPTableViewLastColumnOnlyAutoresizingStyle = 4;
@@ -2459,6 +2459,9 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 
 - (void)highlightSelectionInClipRect:(CGRect)aRect
 {
+    if (_selectionHighlightStyle === CPTableViewDraggingDestinationFeedbackStyleNone)
+        return;
+
     var context = [[CPGraphicsContext currentContext] graphicsPort],
         indexes = [],
         rectSelector = @selector(rectOfRow:);
@@ -2488,9 +2491,8 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     if (!count)
         return;
   
-    var drawGradient = (_selectionHighlightStyle === CPTableViewSelectionHighlightStyleSourceList && [_selectedRowIndexes count] >= 1);
-    
-    var deltaHeight = 0.5 * (_gridStyleMask & CPTableViewSolidHorizontalGridLineMask);
+    var drawGradient = (_selectionHighlightStyle === CPTableViewSelectionHighlightStyleSourceList && [_selectedRowIndexes count] >= 1),
+        deltaHeight = 0.5 * (_gridStyleMask & CPTableViewSolidHorizontalGridLineMask);
 
     CGContextBeginPath(context);
     while (count--)
