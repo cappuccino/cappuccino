@@ -271,7 +271,7 @@ var CPRunLoopLastNativeRunLoop = 0;
 
 
     // FIXME: Hack for not doing this in CommonJS
-    if (CFBundle.environments().indexOf("Browser") !== -1)
+    if ([CFBundle.environments() indexOfObject:("Browser")] !== CPNotFound)
     {
         if (!_runLoopInsuranceTimer)
             _runLoopInsuranceTimer = window.setNativeTimeout(function()
@@ -293,7 +293,7 @@ var CPRunLoopLastNativeRunLoop = 0;
     _runLoopLock = YES;
 
     // FIXME: Hack for not doing this in CommonJS
-    if (CFBundle.environments().indexOf("Browser") !== -1)
+    if ([CFBundle.environments() indexOfObject:("Browser")] !== CPNotFound)
     {
         if (_runLoopInsuranceTimer)
         {
