@@ -373,19 +373,23 @@ var _CPTableColumnHeaderViewStringValueKey = @"_CPTableColumnHeaderViewStringVal
         activeColumnRect = [self headerRectOfColumn:_activeColumn];
         dragWindow = [theDragView window],
         frame = [dragWindow frame];
-    
+
     // Convert the frame origin from the global coordinate system to the windows' coordinate system
     frame.origin = [[self window] convertGlobalToBase:frame.origin];
-    
+    // the from the window to the view
+    frame.origin = [self convertPoint:frame.origin fromView:nil];
+
     // This effectively clamps the value between the minimum and maximum
-    frame.origin.x = MAX(0.0, MIN(CPRectGetMinX(frame), CPRectGetMaxX(lastColumnRect) - CPRectGetWidth(activeColumnRect)));
-    
+    frame.origin.x = MAX(0.0, MIN(CGRectGetMinX(frame), CGRectGetMaxX(lastColumnRect) - CGRectGetWidth(activeColumnRect)));
+
     // Make sure the column cannot move vertically
-    frame.origin.y = CPRectGetMinY([self convertRect:lastColumnRect toView:nil]);
-    
-    // Convert the calculated origin back to the global coordinate system
+    frame.origin.y = CPRectGetMinY(lastColumnRect);
+
+    // Convert the calculated origin back to the window coordinate system
+    frame.origin = [self convertPoint:frame.origin toView:nil];
+    // Then back to the global coordinate system
     frame.origin = [[self window] convertBaseToGlobal:frame.origin];
-    
+
     [dragWindow setFrame:frame];
 }
 
@@ -411,32 +415,34 @@ var _CPTableColumnHeaderViewStringValueKey = @"_CPTableColumnHeaderViewStringVal
 - (void)draggedView:(CPView)aView movedTo:(CPPoint)aPoint
 {
     [self _constrainDragView:aView at:aPoint];
-    
+
     var dragWindow = [aView window],
         dragWindowFrame = [dragWindow frame];
-    
-    var hoverPoint = CPPointCreateCopy(aPoint);
+
+    var hoverPoint = CGPointCreateCopy(aPoint);
+
     if (aPoint.x < _previousTrackingLocation.x)
-        hoverPoint = CPPointMake(CPRectGetMinX(dragWindowFrame), CPRectGetMinY(dragWindowFrame));
+        hoverPoint = CGPointMake(CGRectGetMinX(dragWindowFrame), CGRectGetMinY(dragWindowFrame));
     else if (aPoint.x > _previousTrackingLocation.x)
-        hoverPoint = CPPointMake(CPRectGetMaxX(dragWindowFrame), CPRectGetMinY(dragWindowFrame));
-    
+        hoverPoint = CGPointMake(CGRectGetMaxX(dragWindowFrame), CGRectGetMinY(dragWindowFrame));
+
     // Convert the hover point from the global coordinate system to windows' coordinate system
     hoverPoint = [[self window] convertGlobalToBase:hoverPoint];
-    
+    // then to the view
+    hoverPoint = [self convertPoint:hoverPoint fromView:nil];
+
     var hoveredColumn = [self columnAtPoint:hoverPoint];
-    
+
     if (hoveredColumn !== -1)
     {
         var columnRect = [self headerRectOfColumn:hoveredColumn],
-            columnCenterPoint = CPPointMake(CPRectGetMidX(columnRect), CPRectGetMidY(columnRect));
-        
+            columnCenterPoint = [self convertPoint:CGPointMake(CGRectGetMidX(columnRect), CGRectGetMidY(columnRect)) fromView:self];
         if (hoveredColumn < _activeColumn && hoverPoint.x < columnCenterPoint.x)
             [self _moveColumn:_activeColumn toColumn:hoveredColumn];
         else if (hoveredColumn > _activeColumn && hoverPoint.x > columnCenterPoint.x)
             [self _moveColumn:_activeColumn toColumn:hoveredColumn];
     }
-    
+
     _previousTrackingLocation = aPoint;
 }
 
