@@ -110,6 +110,7 @@ CPWebViewScrollNative                           = 2;
     _iframe.style.width = "100%";
     _iframe.style.height = "100%";
     _iframe.style.borderWidth = "0px";
+    _iframe.frameBorder = "0";
     
     [self setDrawsBackground:YES];
     
@@ -245,7 +246,10 @@ CPWebViewScrollNative                           = 2;
 
 - (void)_setScrollMode:(int)aScrollMode
 {
-    _scrollMode = aScrollMode;
+    if (CPBrowserIsEngine(CPInternetExplorerBrowserEngine))
+        _scrollMode = CPWebViewScrollNative;
+    else
+        _scrollMode = aScrollMode;
         
     _ignoreLoadStart = YES;
     _ignoreLoadEnd  = YES;
