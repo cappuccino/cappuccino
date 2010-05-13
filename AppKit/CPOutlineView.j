@@ -536,6 +536,12 @@ CPOutlineViewDropOnItemIndex = -1;
     
     _retargedChildIndex = theIndex;
     _shouldRetargetChildIndex = YES;
+    
+    // set CPTableView's _retargetedDropRow based on retargetedItem and retargetedChildIndex
+    var retargetedItemInfo = (_retargetedItem !== nil) ? _itemInfosForItems[[_retargetedItem UID]] : _rootItemInfo,
+        retargetedChildItem = (_retargedChildIndex !== CPOutlineViewDropOnItemIndex) ? retargetedItemInfo.children[_retargedChildIndex] : _retargetedItem;
+
+    _retargetedDropRow = [self rowForItem:retargetedChildItem];
 }
 
 - (void)_draggingEnded
