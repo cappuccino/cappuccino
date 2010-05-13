@@ -74,6 +74,15 @@ var PrimaryPlatformWindow   = NULL;
     return [CPSet set];
 }
 
++ (BOOL)supportsMultipleInstances
+{
+#if PLATFORM(DOM)
+    return !CPBrowserIsEngine(CPInternetExplorerBrowserEngine);
+#else
+    return NO;
+#endif
+}
+
 + (CPPlatformWindow)primaryPlatformWindow
 {
     return PrimaryPlatformWindow;
