@@ -69,11 +69,13 @@ CPWebViewScrollNative                           = 2;
     
     CPString    _url;
     CPString    _html;
-    
+
     Function    _loadCallback;
-    
+
     int         _scrollMode;
     CGSize      _scrollSize;
+
+    int         _loadHTMLStringTimer;
 }
 
 - (id)initWithFrame:(CPRect)frameRect frameName:(CPString)frameName groupName:(CPString)groupName
@@ -327,8 +329,15 @@ CPWebViewScrollNative                           = 2;
         // clear the iframe
         _iframe.src = "";
 
+        if (_loadHTMLStringTimer !== nil)
+        {
+            window.clearTimeout(_loadHTMLStringTimer);
+            _loadHTMLStringTimer = nil;
+        }
+
         // need to give the browser a chance to reset iframe, otherwise we'll be document.write()-ing the previous document 
-        window.setTimeout(function() {
+        _loadHTMLStringTimer = window.setTimeout(function()
+        {
             var win = [self DOMWindow];
             
             win.document.write(_html);
