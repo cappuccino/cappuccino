@@ -1283,68 +1283,63 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     return _CGRectMake(tableColumnRange.location, _CGRectGetMinY(rectOfRow), tableColumnRange.length, _CGRectGetHeight(rectOfRow));
 }
 
-//FIX ME: We should refactor this!
 - (void)resizeWithOldSuperviewSize:(CGSize)aSize
 {
     [super resizeWithOldSuperviewSize:aSize];
-    
+
     if (_disableAutomaticResizing)
         return;
 
     var mask = _columnAutoResizingStyle;
 
     if(mask === CPTableViewUniformColumnAutoresizingStyle)
-    {
        [self _resizeAllColumnUniformlyWithOldSize:aSize];
-    }
-
-    if(mask === CPTableViewLastColumnOnlyAutoresizingStyle)
-    {
+    else if(mask === CPTableViewLastColumnOnlyAutoresizingStyle)
         [self sizeLastColumnToFit];
-    }
+    else if(mask === CPTableViewFirstColumnOnlyAutoresizingStyle)
+        [self _autoResizeFirstColumn];
+}
 
-    if(mask === CPTableViewFirstColumnOnlyAutoresizingStyle)
-    {
-        var superview = [self superview];
+- (void)_autoResizeFirstColumn
+{
+    var superview = [self superview];
 
-        if (!superview)
-            return;
+     if (!superview)
+         return;
 
-        var superviewSize = [superview bounds].size;
+     var superviewSize = [superview bounds].size;
 
-        UPDATE_COLUMN_RANGES_IF_NECESSARY();
+     UPDATE_COLUMN_RANGES_IF_NECESSARY();
 
-        var count = NUMBER_OF_COLUMNS();
+     var count = NUMBER_OF_COLUMNS(),
+         visColumns = [[CPArray alloc] init],
+         totalWidth = 0,
+         i = 0;
 
-        var visColumns = [[CPArray alloc] init];
-        var totalWidth = 0;
+     for(; i < count; i++)
+     {
+         if(![_tableColumns[i] isHidden])
+         {
+             [visColumns addObject:i];
+             totalWidth += [_tableColumns[i] width];
+         }
+     }
 
-        for(var i=0; i < count; i++)
-        {
-            if(![_tableColumns[i] isHidden])
-            {
-                [visColumns addObject:i];
-                totalWidth += [_tableColumns[i] width];
-            }
-        }
+     count = [visColumns count];
 
-        count = [visColumns count];
+     //if there are rows
+     if (count > 0)
+     {
+         var columnToResize = _tableColumns[visColumns[0]];
+         var newWidth = superviewSize.width - totalWidth;// - [columnToResize width];
+         newWidth += [columnToResize width];
+         newWidth = (newWidth < [columnToResize minWidth]) ? [columnToResize minWidth] : newWidth;
+         newWidth = (newWidth > [columnToResize maxWidth]) ? [columnToResize maxWidth] : newWidth;
 
-        //if there are rows
-        if (count > 0)
-        {
-            var columnToResize = _tableColumns[visColumns[0]];
-            var newWidth = superviewSize.width - totalWidth;// - [columnToResize width];
-            newWidth += [columnToResize width];
-            newWidth = (newWidth < [columnToResize minWidth]) ? [columnToResize minWidth] : newWidth;
-            newWidth = (newWidth > [columnToResize maxWidth]) ? [columnToResize maxWidth] : newWidth;
+         [columnToResize setWidth:FLOOR(newWidth)];
+     }
 
-            [columnToResize setWidth:FLOOR(newWidth)];
-        }
-
-        [self setNeedsLayout];
-    }
-
+     [self setNeedsLayout];
 }
 
 - (void)_resizeAllColumnUniformlyWithOldSize:(CGSize)oldSize
