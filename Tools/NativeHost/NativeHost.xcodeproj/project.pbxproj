@@ -16,6 +16,7 @@
 		9E43AC84104DB51400263989 /* WebScripObject+Objective-J.m in Sources */ = {isa = PBXBuildFile; fileRef = 9E43AC83104DB51400263989 /* WebScripObject+Objective-J.m */; };
 		9E44CA9D0FD798FE00860A54 /* NSURL+Additions.m in Sources */ = {isa = PBXBuildFile; fileRef = 9E44CA9C0FD798FE00860A54 /* NSURL+Additions.m */; };
 		9E4EBB4210892BDE0091C8E9 /* BridgedMethods.m in Sources */ = {isa = PBXBuildFile; fileRef = 9E4EBB4110892BDE0091C8E9 /* BridgedMethods.m */; };
+		9E52D2F9119B05EF00B831FC /* AppController+WebPolicyDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 9E52D2F8119B05EF00B831FC /* AppController+WebPolicyDelegate.m */; };
 		9E535D05104F6F4900C119FA /* AppController+MainMenu.m in Sources */ = {isa = PBXBuildFile; fileRef = 9E535D04104F6F4900C119FA /* AppController+MainMenu.m */; };
 		9E535D32104F73FB00C119FA /* MenuBridge.m in Sources */ = {isa = PBXBuildFile; fileRef = 9E535D31104F73FB00C119FA /* MenuBridge.m */; };
 		9E535D37104F761F00C119FA /* MenuItemBridge.m in Sources */ = {isa = PBXBuildFile; fileRef = 9E535D36104F761F00C119FA /* MenuItemBridge.m */; };
@@ -55,6 +56,7 @@
 		9E44CA9C0FD798FE00860A54 /* NSURL+Additions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSURL+Additions.m"; sourceTree = "<group>"; };
 		9E4EBB4010892BDE0091C8E9 /* BridgedMethods.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BridgedMethods.h; sourceTree = "<group>"; };
 		9E4EBB4110892BDE0091C8E9 /* BridgedMethods.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BridgedMethods.m; sourceTree = "<group>"; };
+		9E52D2F8119B05EF00B831FC /* AppController+WebPolicyDelegate.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "AppController+WebPolicyDelegate.m"; sourceTree = "<group>"; };
 		9E535D04104F6F4900C119FA /* AppController+MainMenu.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "AppController+MainMenu.m"; sourceTree = "<group>"; };
 		9E535D30104F73FB00C119FA /* MenuBridge.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MenuBridge.h; sourceTree = "<group>"; };
 		9E535D31104F73FB00C119FA /* MenuBridge.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MenuBridge.m; sourceTree = "<group>"; };
@@ -106,6 +108,7 @@
 				9ED96C881020072300D24B9C /* AppController+WebFrameLoadDelegate.m */,
 				9ED96C891020072300D24B9C /* AppController+WebResourceLoadDelegate.m */,
 				9ED96C871020072300D24B9C /* AppController+WebUIDelegate.m */,
+				9E52D2F8119B05EF00B831FC /* AppController+WebPolicyDelegate.m */,
 				9EB99C940FD8968100AA94A2 /* AppController.h */,
 				9EB99C950FD8968100AA94A2 /* AppController.m */,
 				9EA1BEF5107E7EE500CDE684 /* Application.h */,
@@ -297,6 +300,7 @@
 				ADCCEF6810D43C970055BDFD /* WebPasteboardProxy.m in Sources */,
 				9E43AC84104DB51400263989 /* WebScripObject+Objective-J.m in Sources */,
 				9E5D4F0D1090FB6E00E76B38 /* WebWindow.m in Sources */,
+				9E52D2F9119B05EF00B831FC /* AppController+WebPolicyDelegate.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

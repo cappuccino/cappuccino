@@ -20,6 +20,7 @@ int SERVER_PORT = 9191;
 NSString *SERVER_PASSWORD = nil;
 NSString *SERVER_USER = nil;
 
+
 @implementation AppController
 
 - (id)init
@@ -139,6 +140,11 @@ NSString *SERVER_USER = nil;
     [stdinFileHandle readInBackgroundAndNotify];
 }
 
+- (NSURL *)baseURL
+{
+    return baseURL;
+}
+
 - (void)startCappuccinoApplication
 {
     NSString *initialURL = [[NSBundle mainBundle] objectForInfoDictionaryKey:@"NHInitialURL"];
@@ -152,10 +158,12 @@ NSString *SERVER_USER = nil;
             initialResource = @"Application/index.html";
 
         initialURL = [[NSString stringWithFormat:@"file://%@/%@", [[NSBundle mainBundle] resourcePath], initialResource] stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
+        baseURL = [[NSURL alloc] initWithString:@"file:///"];
     }
     else if (prependServer)
     {
         initialURL = [NSString stringWithFormat:@"http://127.0.0.1:%d/%@", SERVER_PORT, initialURL];
+        baseURL = [[NSURL alloc] initWithString:[NSString stringWithFormat:@"http://127.0.0.1:%d/", SERVER_PORT]];
     }
 
 	NHLog(@"STARTUP", [initialURL description]);
@@ -175,6 +183,7 @@ NSString *SERVER_USER = nil;
     [webView setUIDelegate:self];
     [webView setFrameLoadDelegate:self];
     [webView setResourceLoadDelegate:self];
+    [webView setPolicyDelegate:self];
 
     webViewWindow = [[NSWindow alloc] init];
 

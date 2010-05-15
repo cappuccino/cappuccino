@@ -110,6 +110,7 @@ CGEventRef headTapCallback(CGEventTapProxy proxy, CGEventType type, CGEventRef e
         [webView setUIDelegate:delegate];
         [webView setFrameLoadDelegate:delegate];
         [webView setResourceLoadDelegate:delegate];
+        [webView setPolicyDelegate:delegate];
         [webView setShouldCloseWithWindow:YES];
 
         [shadowView addSubview:webView];

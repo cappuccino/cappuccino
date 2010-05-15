@@ -99,6 +99,13 @@ tableTestDragType = @"CPTableViewTestDragType";
     [tableView2 setDelegate:self];
     [tableView2 setDataSource:self];
 
+
+    var checkBox = [[CPCheckBox alloc] initWithFrame:CGRectMake(5,3,24,24)],
+        checkBoxColumn = [[CPTableColumn alloc] initWithIdentifier:@"checkBox"];
+    [checkBoxColumn setDataView:checkBox];
+
+    [tableView2 addTableColumn:checkBoxColumn];
+
     var desc = [CPSortDescriptor sortDescriptorWithKey:@"self" ascending:YES];
     for (var i = 1; i <= 3; i++)
     {

@@ -269,13 +269,16 @@ var CPRunLoopLastNativeRunLoop = 0;
         
     aTimer._lastNativeRunLoopsForModes[aMode] = CPRunLoopLastNativeRunLoop;
 
-#if PLATFORM(DOM)
-    if (!_runLoopInsuranceTimer)
-        _runLoopInsuranceTimer = window.setNativeTimeout(function()
-        {
-            [self limitDateForMode:CPDefaultRunLoopMode];
-        }, 0);
-#endif
+
+    // FIXME: Hack for not doing this in CommonJS
+    if ([CFBundle.environments() indexOfObject:("Browser")] !== CPNotFound)
+    {
+        if (!_runLoopInsuranceTimer)
+            _runLoopInsuranceTimer = window.setNativeTimeout(function()
+            {
+                [self limitDateForMode:CPDefaultRunLoopMode];
+            }, 0);
+    }
 }
 
 /*!
@@ -289,13 +292,15 @@ var CPRunLoopLastNativeRunLoop = 0;
 
     _runLoopLock = YES;
 
-#if PLATFORM(DOM)
-    if (_runLoopInsuranceTimer)
+    // FIXME: Hack for not doing this in CommonJS
+    if ([CFBundle.environments() indexOfObject:("Browser")] !== CPNotFound)
     {
-        window.clearNativeTimeout(_runLoopInsuranceTimer);
-        _runLoopInsuranceTimer = nil;
+        if (_runLoopInsuranceTimer)
+        {
+            window.clearNativeTimeout(_runLoopInsuranceTimer);
+            _runLoopInsuranceTimer = nil;
+        }
     }
-#endif
 
     var now = _effectiveDate ? [_effectiveDate laterDate:[CPDate date]] : [CPDate date],
         nextFireDate = nil,
