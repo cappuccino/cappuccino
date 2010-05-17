@@ -2486,7 +2486,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 
 - (void)highlightSelectionInClipRect:(CGRect)aRect
 {
-    if (_selectionHighlightStyle === CPTableViewDraggingDestinationFeedbackStyleNone)
+    if (_selectionHighlightStyle === CPTableViewSelectionHighlightStyleNone)
         return;
 
     var context = [[CPGraphicsContext currentContext] graphicsPort],
