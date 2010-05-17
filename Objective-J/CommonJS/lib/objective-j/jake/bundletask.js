@@ -453,7 +453,9 @@ BundleTask.prototype.resourcesPath = function()
 
 // Don't sprite images larger than 32KB, IE 8 doesn't like it.
 BundleTask.isSpritable = function(aResourcePath) {
-    return isImage(aResourcePath) && FILE.size(aResourcePath) < 32768;
+    return isImage(aResourcePath) && FILE.size(aResourcePath) < 32768 &&
+           ("data:" + mimeType(aResourcePath) + ";base64," +
+            base64.encode(FILE.read(aResourcePath, "b"))).length < 32768;
 }
 
 BundleTask.prototype.defineResourceTask = function(aResourcePath, aDestinationPath)

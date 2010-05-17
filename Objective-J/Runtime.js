@@ -386,7 +386,7 @@ DISPLAY_NAME(objj_registerClassPair);
 GLOBAL(class_createInstance) = function(/*Class*/ aClass)
 {
     if (!aClass)
-        objj_exception_throw(new objj_exception(OBJJNilClassException, "*** Attempting to create object with Nil class."));
+        throw new Error("*** Attempting to create object with Nil class.");
 
     var object = new aClass.allocator();
 

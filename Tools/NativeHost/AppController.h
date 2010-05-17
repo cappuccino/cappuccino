@@ -27,7 +27,11 @@ extern NSString *SERVER_USER;
     NSFileHandle                    * stdinFileHandle;
 
     NSMutableAttributedString       * loggedOutput;
+
+    NSURL                           * baseURL;
 }
+
+- (NSURL *)baseURL;
 
 - (void)startServer;
 - (void)startCappuccinoApplication;
