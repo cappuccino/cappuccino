@@ -1021,6 +1021,28 @@
     return scroller;
 }
 
++ (CPSlider)themedCircularSlider
+{
+    var slider = [[CPSlider alloc] initWithFrame:CGRectMake(0.0, 0.0, 34.0, 34.0)],
+        trackColor = PatternColor([_CPCibCustomResource imageResourceWithName:"HUD/slider-circular-bezel.png" size:CGSizeMake(34.0, 34.0)]),
+        trackDisabledColor = PatternColor([_CPCibCustomResource imageResourceWithName:"HUD/slider-circular-disabled-bezel.png" size:CGSizeMake(34.0, 34.0)]);
+
+    [slider setSliderType:CPCircularSlider];
+    [slider setValue:trackColor forThemeAttribute:@"track-color" inState:CPThemeStateCircular];
+    [slider setValue:trackDisabledColor forThemeAttribute:@"track-color" inState:CPThemeStateDisabled|CPThemeStateCircular];
+
+    var knobColor = [CPColor colorWithPatternImage:[_CPCibCustomResource imageResourceWithName:"HUD/slider-circular-knob.png" size:CGSizeMake(5.0, 5.0)]],
+        knobDisabledColor = [CPColor colorWithPatternImage:[_CPCibCustomResource imageResourceWithName:"HUD/slider-circular-disabled-knob.png" size:CGSizeMake(5.0, 5.0)]],
+        knobHighlightedColor = knobColor;
+
+    [slider setValue:CGSizeMake(5.0, 5.0) forThemeAttribute:@"knob-size" inState:CPThemeStateCircular];
+    [slider setValue:knobColor forThemeAttribute:@"knob-color" inState:CPThemeStateCircular];
+    [slider setValue:knobDisabledColor forThemeAttribute:@"knob-color" inState:CPThemeStateDisabled|CPThemeStateCircular];
+    [slider setValue:knobHighlightedColor forThemeAttribute:@"knob-color" inState:CPThemeStateCircular|CPThemeStateHighlighted];
+
+    return slider;
+}
+
 @end
 
 function PatternColor(anImage)
