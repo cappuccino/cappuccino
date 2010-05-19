@@ -52,6 +52,7 @@
         _maxWidth = [aCoder decodeFloatForKey:@"NSMaxWidth"];
 
         _resizingMask = [aCoder decodeBoolForKey:@"NSIsResizeable"] ? CPTableColumnUserResizingMask : CPTableColumnAutoresizingMask;
+        _isHidden = [aCoder decodeBoolForKey:@"NSHidden"];
     }
 
     return self;
