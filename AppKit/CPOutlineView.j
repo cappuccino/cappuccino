@@ -224,8 +224,14 @@ CPOutlineViewDropOnItemIndex = -1;
 
     if (!itemInfo)
         return;
-    
+
+    if (itemInfo.isExpanded)
+        return;
+
+    [self _noteItemWillExpand];
     itemInfo.isExpanded = YES;
+    [self _noteItemDidExpand];
+
     [self reloadItem:anItem reloadChildren:YES];
     
     if (shouldExpandChildren)
@@ -251,7 +257,9 @@ CPOutlineViewDropOnItemIndex = -1;
     if (!itemInfo.isExpanded)
         return;
 
+    [self _noteItemWillCollapse];
     itemInfo.isExpanded = NO;
+    [self _noteItemDidCollapse];
 
     [self reloadItem:anItem reloadChildren:YES];
 }
@@ -474,6 +482,36 @@ CPOutlineViewDropOnItemIndex = -1;
             selector:@selector(outlineViewSelectionIsChanging:)
             name:CPOutlineViewSelectionIsChangingNotification
             object:self];
+
+
+    if ([_outlineViewDelegate respondsToSelector:@selector(outlineViewItemWillExpand:)])
+        [defaultCenter
+            addObserver:_outlineViewDelegate
+            selector:@selector(outlineViewItemWillExpand:)
+            name:CPOutlineViewItemWillExpandNotification
+            object:self];
+
+    if ([_outlineViewDelegate respondsToSelector:@selector(outlineViewItemDidExpand:)])
+        [defaultCenter
+            addObserver:_outlineViewDelegate
+            selector:@selector(outlineViewItemDidExpand:)
+            name:CPOutlineViewItemDidExpandNotification
+            object:self];
+
+    if ([_outlineViewDelegate respondsToSelector:@selector(outlineViewItemWillCollapse:)])
+        [defaultCenter
+            addObserver:_outlineViewDelegate
+            selector:@selector(outlineViewItemWillCollapse:)
+            name:CPOutlineViewItemWillCollapseNotification
+            object:self];
+
+    if ([_outlineViewDelegate respondsToSelector:@selector(outlineViewItemDidCollapse:)])
+        [defaultCenter
+            addObserver:_outlineViewDelegate
+            selector:@selector(outlineViewItemDidCollapse:)
+            name:CPOutlineViewItemDidCollapseNotification
+            object:self];
+
 }
 
 - (id)delegate
@@ -718,6 +756,38 @@ CPOutlineViewDropOnItemIndex = -1;
 {
     [[CPNotificationCenter defaultCenter]
         postNotificationName:CPOutlineViewSelectionDidChangeNotification
+                      object:self
+                    userInfo:nil];
+}
+
+- (void)_noteItemWillExpand
+{
+    [[CPNotificationCenter defaultCenter]
+        postNotificationName:CPOutlineViewItemWillExpandNotification
+                      object:self
+                    userInfo:nil];
+}
+
+- (void)_noteItemDidExpand
+{
+    [[CPNotificationCenter defaultCenter]
+        postNotificationName:CPOutlineViewItemDidExpandNotification
+                      object:self
+                    userInfo:nil];
+}
+
+- (void)_noteItemWillCollapse
+{
+    [[CPNotificationCenter defaultCenter]
+        postNotificationName:CPOutlineViewItemWillCollapseNotification
+                      object:self
+                    userInfo:nil];
+}
+
+- (void)_noteItemDidCollapse
+{
+    [[CPNotificationCenter defaultCenter]
+        postNotificationName:CPOutlineViewItemDidCollapseNotification
                       object:self
                     userInfo:nil];
 }
