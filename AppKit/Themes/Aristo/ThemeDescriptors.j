@@ -1021,6 +1021,74 @@
     return scroller;
 }
 
++ (CPSlider)themedHorizontalSlider
+{
+    var slider = [[CPSlider alloc] initWithFrame:CGRectMake(0.0, 0.0, 50.0, 24.0)],
+        trackColor = [CPColor colorWithPatternImage:[[CPThreePartImage alloc] initWithImageSlices:
+        [
+            [_CPCibCustomResource imageResourceWithName:"HUD/horizontal-track-left.png" size:CGSizeMake(4.0, 5.0)],
+            [_CPCibCustomResource imageResourceWithName:"HUD/horizontal-track-center.png" size:CGSizeMake(1.0, 5.0)],
+            [_CPCibCustomResource imageResourceWithName:"HUD/horizontal-track-right.png" size:CGSizeMake(4.0, 5.0)]
+        ]
+        isVertical:NO]],
+        
+        trackDisabledColor = [CPColor colorWithPatternImage:[[CPThreePartImage alloc] initWithImageSlices:
+        [
+            [_CPCibCustomResource imageResourceWithName:"HUD/horizontal-track-disabled-left.png" size:CGSizeMake(4.0, 5.0)],
+            [_CPCibCustomResource imageResourceWithName:"HUD/horizontal-track-disabled-center.png" size:CGSizeMake(1.0, 5.0)],
+            [_CPCibCustomResource imageResourceWithName:"HUD/horizontal-track-disabled-right.png" size:CGSizeMake(4.0, 5.0)]
+        ]
+        isVertical:NO]];
+
+    [slider setValue:5.0 forThemeAttribute:@"track-width"];
+    [slider setValue:trackColor forThemeAttribute:@"track-color"];
+    [slider setValue:trackDisabledColor forThemeAttribute:@"track-color" inState:CPThemeStateDisabled];
+    
+        var knobColor = [CPColor colorWithPatternImage:[_CPCibCustomResource imageResourceWithName:"HUD/knob.png" size:CGSizeMake(23.0, 24.0)]],
+            knobHighlightedColor = [CPColor colorWithPatternImage:[_CPCibCustomResource imageResourceWithName:"HUD/knob-highlighted.png" size:CGSizeMake(23.0, 24.0)]],
+            knobDisabledColor = [CPColor colorWithPatternImage:[_CPCibCustomResource imageResourceWithName:"HUD/knob-disabled.png" size:CGSizeMake(23.0, 24.0)]];
+
+    [slider setValue:CGSizeMake(23.0, 24.0) forThemeAttribute:@"knob-size"];
+    [slider setValue:knobColor forThemeAttribute:@"knob-color"];
+    [slider setValue:knobHighlightedColor forThemeAttribute:@"knob-color" inState:CPThemeStateHighlighted];
+    [slider setValue:knobDisabledColor forThemeAttribute:@"knob-color" inState:CPThemeStateDisabled];
+    
+    return slider;
+}
+
++ (CPSlider)themedVerticalSlider
+{
+    var slider = [[CPSlider alloc] initWithFrame:CGRectMake(0.0, 0.0, 24.0, 50.0)],
+        trackColor =  [CPColor colorWithPatternImage:[[CPThreePartImage alloc] initWithImageSlices:
+        [
+            [_CPCibCustomResource imageResourceWithName:"HUD/vertical-track-top.png" size:CGSizeMake(5.0, 6.0)],
+            [_CPCibCustomResource imageResourceWithName:"HUD/vertical-track-center.png" size:CGSizeMake(5.0, 1.0)],
+            [_CPCibCustomResource imageResourceWithName:"HUD/vertical-track-bottom.png" size:CGSizeMake(5.0, 4.0)]
+        ]
+        isVertical:YES]],
+        trackDisabledColor =  [CPColor colorWithPatternImage:[[CPThreePartImage alloc] initWithImageSlices:
+        [
+            [_CPCibCustomResource imageResourceWithName:"HUD/vertical-track-disabled-top.png" size:CGSizeMake(5.0, 6.0)],
+            [_CPCibCustomResource imageResourceWithName:"HUD/vertical-track-disabled-center.png" size:CGSizeMake(5.0, 1.0)],
+            [_CPCibCustomResource imageResourceWithName:"HUD/vertical-track-disabled-bottom.png" size:CGSizeMake(5.0, 4.0)]
+        ]
+        isVertical:YES]];
+        
+    [slider setValue:5.0 forThemeAttribute:@"track-width"];
+    [slider setValue:trackColor forThemeAttribute:@"track-color" inState:CPThemeStateVertical];
+    [slider setValue:trackDisabledColor forThemeAttribute:@"track-color" inState:CPThemeStateDisabled];
+    
+        var knobColor = [CPColor colorWithPatternImage:[_CPCibCustomResource imageResourceWithName:"HUD/knob.png" size:CGSizeMake(23.0, 24.0)]],
+            knobHighlightedColor = [CPColor colorWithPatternImage:[_CPCibCustomResource imageResourceWithName:"HUD/knob-highlighted.png" size:CGSizeMake(23.0, 24.0)]],
+            knobDisabledColor = [CPColor colorWithPatternImage:[_CPCibCustomResource imageResourceWithName:"HUD/knob-disabled.png" size:CGSizeMake(23.0, 24.0)]];
+
+    [slider setValue:CGSizeMake(23.0, 24.0) forThemeAttribute:@"knob-size"];
+    [slider setValue:knobColor forThemeAttribute:@"knob-color"];
+    [slider setValue:knobHighlightedColor forThemeAttribute:@"knob-color" inState:CPThemeStateHighlighted];
+    [slider setValue:knobDisabledColor forThemeAttribute:@"knob-color" inState:CPThemeStateDisabled];
+    
+    return slider;
+}
 + (CPSlider)themedCircularSlider
 {
     var slider = [[CPSlider alloc] initWithFrame:CGRectMake(0.0, 0.0, 34.0, 34.0)],
