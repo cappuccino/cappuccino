@@ -403,6 +403,7 @@ var CPTableColumnIdentifierKey   = @"CPTableColumnIdentifierKey",
     CPTableColumnResizingMaskKey = @"CPTableColumnResizingMaskKey",
     CPTableColumnIsHiddenkey     = @"CPTableColumnIsHiddenKey",
     CPSortDescriptorPrototypeKey = @"CPSortDescriptorPrototypeKey";
+    CPTableColumnIsHiddenkey     = @"CPTableColumnIsHiddenKey";
 
 @implementation CPTableColumn (CPCoding)
 
