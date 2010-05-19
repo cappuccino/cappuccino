@@ -1724,6 +1724,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
         
     if (_allowsColumnSelection)
     {
+        [self _noteSelectionIsChanging];
         if (modifierFlags & CPCommandKeyMask)
         {
             if ([self isColumnSelected:clickedColumn])
