@@ -216,7 +216,7 @@ CPOutlineViewDropOnItemIndex = -1;
 - (void)expandItem:(id)anItem expandChildren:(BOOL)shouldExpandChildren
 {
     var itemInfo = null;
-    
+
     if (!anItem)
         itemInfo = _rootItemInfo;
     else
@@ -225,15 +225,15 @@ CPOutlineViewDropOnItemIndex = -1;
     if (!itemInfo)
         return;
 
-    if (itemInfo.isExpanded)
-        return;
+    // to prevent items which are already expanded from firing notifications
+    if (!itemInfo.isExpanded)
+    {
+        [self _noteItemWillExpand];
+        itemInfo.isExpanded = YES;
+        [self _noteItemDidExpand];
+        [self reloadItem:anItem reloadChildren:YES];
+    }
 
-    [self _noteItemWillExpand];
-    itemInfo.isExpanded = YES;
-    [self _noteItemDidExpand];
-
-    [self reloadItem:anItem reloadChildren:YES];
-    
     if (shouldExpandChildren)
     {
         var children = itemInfo.children,
