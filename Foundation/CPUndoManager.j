@@ -317,8 +317,8 @@ if (_currentGroup == nil)
 {
     if (_undoStack.length > 0)
         return YES;
-    
-    return [_currentGrouping actions].length > 0;
+
+    return [[_currentGrouping invocations] count] > 0;
 }
 
 // Preform Undo and Redo

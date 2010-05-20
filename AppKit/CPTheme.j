@@ -242,6 +242,7 @@ CPThemeStateNormal          = CPThemeStates["normal"] = 0;
 CPThemeStateDisabled        = CPThemeState("disabled");
 CPThemeStateHighlighted     = CPThemeState("highlighted");
 CPThemeStateSelected        = CPThemeState("selected");
+CPThemeStateSelectedDataView = CPThemeState("selectedDataView"); 
 CPThemeStateBezeled         = CPThemeState("bezeled");
 CPThemeStateBordered        = CPThemeState("bordered");
 CPThemeStateEditable        = CPThemeState("editable");

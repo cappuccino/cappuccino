@@ -216,7 +216,7 @@ CPOutlineViewDropOnItemIndex = -1;
 - (void)expandItem:(id)anItem expandChildren:(BOOL)shouldExpandChildren
 {
     var itemInfo = null;
-    
+
     if (!anItem)
         itemInfo = _rootItemInfo;
     else
@@ -224,10 +224,16 @@ CPOutlineViewDropOnItemIndex = -1;
 
     if (!itemInfo)
         return;
-    
-    itemInfo.isExpanded = YES;
-    [self reloadItem:anItem reloadChildren:YES];
-    
+
+    // to prevent items which are already expanded from firing notifications
+    if (!itemInfo.isExpanded)
+    {
+        [self _noteItemWillExpand:anItem];
+        itemInfo.isExpanded = YES;
+        [self _noteItemDidExpand:anItem];
+        [self reloadItem:anItem reloadChildren:YES];
+    }
+
     if (shouldExpandChildren)
     {
         var children = itemInfo.children,
@@ -251,7 +257,9 @@ CPOutlineViewDropOnItemIndex = -1;
     if (!itemInfo.isExpanded)
         return;
 
+    [self _noteItemWillCollapse:anItem];
     itemInfo.isExpanded = NO;
+    [self _noteItemDidCollapse:anItem];
 
     [self reloadItem:anItem reloadChildren:YES];
 }
@@ -427,6 +435,35 @@ CPOutlineViewDropOnItemIndex = -1;
                 removeObserver:_outlineViewDelegate
                           name:CPOutlineViewSelectionIsChangingNotification
                         object:self];
+
+
+
+        if ([_outlineViewDelegate respondsToSelector:@selector(outlineViewItemWillExpand:)])
+            [defaultCenter
+                removeObserver:_outlineViewDelegate
+                          name:CPOutlineViewItemWillExpandNotification
+                        object:self];
+
+
+        if ([_outlineViewDelegate respondsToSelector:@selector(outlineViewItemDidExpand:)])
+            [defaultCenter
+                removeObserver:_outlineViewDelegate
+                          name:CPOutlineViewItemDidExpandNotification
+                        object:self];
+
+
+        if ([_outlineViewDelegate respondsToSelector:@selector(outlineViewItemWillCollapse:)])
+            [defaultCenter
+                removeObserver:_outlineViewDelegate
+                          name:CPOutlineViewItemWillCollapseNotification
+                        object:self];
+
+
+        if ([_outlineViewDelegate respondsToSelector:@selector(outlineViewItemDidCollapse:)])
+            [defaultCenter
+                removeObserver:_outlineViewDelegate
+                          name:CPOutlineViewItemDidCollapseNotification
+                        object:self];
     }
 
     _outlineViewDelegate = aDelegate;
@@ -474,6 +511,36 @@ CPOutlineViewDropOnItemIndex = -1;
             selector:@selector(outlineViewSelectionIsChanging:)
             name:CPOutlineViewSelectionIsChangingNotification
             object:self];
+
+
+    if ([_outlineViewDelegate respondsToSelector:@selector(outlineViewItemWillExpand:)])
+        [defaultCenter
+            addObserver:_outlineViewDelegate
+            selector:@selector(outlineViewItemWillExpand:)
+            name:CPOutlineViewItemWillExpandNotification
+            object:self];
+
+    if ([_outlineViewDelegate respondsToSelector:@selector(outlineViewItemDidExpand:)])
+        [defaultCenter
+            addObserver:_outlineViewDelegate
+            selector:@selector(outlineViewItemDidExpand:)
+            name:CPOutlineViewItemDidExpandNotification
+            object:self];
+
+    if ([_outlineViewDelegate respondsToSelector:@selector(outlineViewItemWillCollapse:)])
+        [defaultCenter
+            addObserver:_outlineViewDelegate
+            selector:@selector(outlineViewItemWillCollapse:)
+            name:CPOutlineViewItemWillCollapseNotification
+            object:self];
+
+    if ([_outlineViewDelegate respondsToSelector:@selector(outlineViewItemDidCollapse:)])
+        [defaultCenter
+            addObserver:_outlineViewDelegate
+            selector:@selector(outlineViewItemDidCollapse:)
+            name:CPOutlineViewItemDidCollapseNotification
+            object:self];
+
 }
 
 - (id)delegate
@@ -536,6 +603,12 @@ CPOutlineViewDropOnItemIndex = -1;
     
     _retargedChildIndex = theIndex;
     _shouldRetargetChildIndex = YES;
+    
+    // set CPTableView's _retargetedDropRow based on retargetedItem and retargetedChildIndex
+    var retargetedItemInfo = (_retargetedItem !== nil) ? _itemInfosForItems[[_retargetedItem UID]] : _rootItemInfo,
+        retargetedChildItem = (_retargedChildIndex !== CPOutlineViewDropOnItemIndex) ? retargetedItemInfo.children[_retargedChildIndex] : _retargetedItem;
+
+    _retargetedDropRow = [self rowForItem:retargetedChildItem];
 }
 
 - (void)_draggingEnded
@@ -716,6 +789,38 @@ CPOutlineViewDropOnItemIndex = -1;
                     userInfo:nil];
 }
 
+- (void)_noteItemWillExpand:(id)item
+{
+    [[CPNotificationCenter defaultCenter]
+        postNotificationName:CPOutlineViewItemWillExpandNotification
+                      object:self
+                    userInfo:[CPDictionary dictionaryWithObject:item forKey:"CPObject"]];
+}
+
+- (void)_noteItemDidExpand:(id)item
+{
+    [[CPNotificationCenter defaultCenter]
+        postNotificationName:CPOutlineViewItemDidExpandNotification
+                      object:self
+                    userInfo:[CPDictionary dictionaryWithObject:item forKey:"CPObject"]];
+}
+
+- (void)_noteItemWillCollapse:(id)item
+{
+    [[CPNotificationCenter defaultCenter]
+        postNotificationName:CPOutlineViewItemWillCollapseNotification
+                      object:self
+                    userInfo:[CPDictionary dictionaryWithObject:item forKey:"CPObject"]];
+}
+
+- (void)_noteItemDidCollapse:(id)item
+{
+    [[CPNotificationCenter defaultCenter]
+        postNotificationName:CPOutlineViewItemDidCollapseNotification
+                      object:self
+                    userInfo:[CPDictionary dictionaryWithObject:item forKey:"CPObject"]];
+}
+
 @end
 
 // FIX ME: We're using with() here because Safari fails if we use anOutlineView._itemInfosForItems or whatever... 
@@ -887,6 +992,13 @@ var _loadItemInfoForItem = function(/*CPOutlineView*/ anOutlineView, /*id*/ anIt
     return [_outlineView._outlineViewDataSource outlineView:_outlineView objectValueForTableColumn:aTableColumn byItem:_outlineView._itemsForRows[aRow]];
 }
 
+- (void)tableView:(CPTableView)aTableView setObjectValue:(id)aValue forTableColumn:(CPTableColumn)aColumn row:(CPInteger)aRow
+{
+    if (!(_outlineView._implementedOutlineViewDataSourceMethods & CPOutlineViewDataSource_outlineView_setObjectValue_forTableColumn_byItem_))
+        return;
+    [_outlineView._outlineViewDataSource outlineView:_outlineView setObjectValue:aValue forTableColumn:aColumn byItem:_outlineView._itemsForRows[aRow]];
+}
+
 - (BOOL)tableView:(CPTableView)aTableColumn writeRowsWithIndexes:(CPIndexSet)theIndexes toPasteboard:(CPPasteboard)thePasteboard
 {
     if (!(_outlineView._implementedOutlineViewDataSourceMethods & CPOutlineViewDataSource_outlineView_writeItems_toPasteboard_))
@@ -1012,6 +1124,14 @@ var _loadItemInfoForItem = function(/*CPOutlineView*/ anOutlineView, /*id*/ anIt
         return [_outlineView._outlineViewDelegate outlineView:_outlineView shouldSelectItem:[_outlineView itemAtRow:theRow]];
         
     return YES;
+}
+
+- (BOOL)tableView:(CPTableView)aTableView shouldEditTableColumn:(CPTableColumn)aColumn row:(int)aRow
+{
+    if ((_outlineView._implementedOutlineViewDelegateMethods & CPOutlineViewDelegate_outlineView_shouldEditTableColumn_item_))
+        return [_outlineView._outlineViewDelegate outlineView:_outlineView shouldEditTableColumn:aColumn item:[_outlineView itemAtRow:aRow]];
+
+    return NO;
 }
 
 - (float)tableView:(CPTableView)theTableView heightOfRow:(int)theRow
