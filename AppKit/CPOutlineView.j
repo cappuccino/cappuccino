@@ -228,9 +228,9 @@ CPOutlineViewDropOnItemIndex = -1;
     // to prevent items which are already expanded from firing notifications
     if (!itemInfo.isExpanded)
     {
-        [self _noteItemWillExpand];
+        [self _noteItemWillExpand:anItem];
         itemInfo.isExpanded = YES;
-        [self _noteItemDidExpand];
+        [self _noteItemDidExpand:anItem];
         [self reloadItem:anItem reloadChildren:YES];
     }
 
@@ -257,9 +257,9 @@ CPOutlineViewDropOnItemIndex = -1;
     if (!itemInfo.isExpanded)
         return;
 
-    [self _noteItemWillCollapse];
+    [self _noteItemWillCollapse:anItem];
     itemInfo.isExpanded = NO;
-    [self _noteItemDidCollapse];
+    [self _noteItemDidCollapse:anItem];
 
     [self reloadItem:anItem reloadChildren:YES];
 }
@@ -789,36 +789,36 @@ CPOutlineViewDropOnItemIndex = -1;
                     userInfo:nil];
 }
 
-- (void)_noteItemWillExpand
+- (void)_noteItemWillExpand:(id)item
 {
     [[CPNotificationCenter defaultCenter]
         postNotificationName:CPOutlineViewItemWillExpandNotification
                       object:self
-                    userInfo:nil];
+                    userInfo:[CPDictionary dictionaryWithObject:item forKey:"CPObject"]];
 }
 
-- (void)_noteItemDidExpand
+- (void)_noteItemDidExpand:(id)item
 {
     [[CPNotificationCenter defaultCenter]
         postNotificationName:CPOutlineViewItemDidExpandNotification
                       object:self
-                    userInfo:nil];
+                    userInfo:[CPDictionary dictionaryWithObject:item forKey:"CPObject"]];
 }
 
-- (void)_noteItemWillCollapse
+- (void)_noteItemWillCollapse:(id)item
 {
     [[CPNotificationCenter defaultCenter]
         postNotificationName:CPOutlineViewItemWillCollapseNotification
                       object:self
-                    userInfo:nil];
+                    userInfo:[CPDictionary dictionaryWithObject:item forKey:"CPObject"]];
 }
 
-- (void)_noteItemDidCollapse
+- (void)_noteItemDidCollapse:(id)item
 {
     [[CPNotificationCenter defaultCenter]
         postNotificationName:CPOutlineViewItemDidCollapseNotification
                       object:self
-                    userInfo:nil];
+                    userInfo:[CPDictionary dictionaryWithObject:item forKey:"CPObject"]];
 }
 
 @end
