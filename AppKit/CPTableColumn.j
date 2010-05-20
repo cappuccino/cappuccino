@@ -396,7 +396,8 @@ var CPTableColumnIdentifierKey   = @"CPTableColumnIdentifierKey",
     CPTableColumnMinWidthKey     = @"CPTableColumnMinWidthKey",
     CPTableColumnMaxWidthKey     = @"CPTableColumnMaxWidthKey",
     CPTableColumnResizingMaskKey = @"CPTableColumnResizingMaskKey",
-    CPTableColumnIsHiddenkey     = @"CPTableColumnIsHiddenKey";
+    CPTableColumnIsHiddenkey     = @"CPTableColumnIsHiddenKey",
+    CPSortDescriptorPrototypeKey = @"CPSortDescriptorPrototypeKey";
 
 @implementation CPTableColumn (CPCoding)
 
@@ -419,6 +420,8 @@ var CPTableColumnIdentifierKey   = @"CPTableColumnIdentifierKey",
 
         _resizingMask  = [aCoder decodeBoolForKey:CPTableColumnResizingMaskKey];
         _isHidden = [aCoder decodeBoolForKey:CPTableColumnIsHiddenkey];
+        
+        _sortDescriptorPrototype = [aCoder decodeObjectForKey:CPSortDescriptorPrototypeKey];
     }
 
     return self;
@@ -437,6 +440,8 @@ var CPTableColumnIdentifierKey   = @"CPTableColumnIdentifierKey",
 
     [aCoder encodeObject:_resizingMask forKey:CPTableColumnResizingMaskKey];
     [aCoder encodeBool:_isHidden forKey:CPTableColumnIsHiddenkey];
+    
+    [aCoder encodeObject:_sortDescriptorPrototype forKey:CPSortDescriptorPrototypeKey];
 }
 
 @end
