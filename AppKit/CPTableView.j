@@ -1837,7 +1837,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     if (_headerView)
     {
         if (_currentHighlightedTableColumn != nil)
-            [[_currentHighlightedTableColumn headerView] unsetThemeState:CPThemeStateSelectedDataView];
+            [[_currentHighlightedTableColumn headerView] unsetThemeState:CPThemeStateSelected];
    
         if (aTableColumn != nil)
             [[aTableColumn headerView] setThemeState:CPThemeStateSelected];
