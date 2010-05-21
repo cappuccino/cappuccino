@@ -32,7 +32,7 @@ var VISIBLE_MARGIN  = 7.0;
 
 CPPopUpButtonStatePullsDown = CPThemeState("pulls-down");
 
-/*! 
+/*!
     @ingroup appkit
     @class CPPopUpButton
 
@@ -42,7 +42,7 @@ CPPopUpButtonStatePullsDown = CPThemeState("pulls-down");
 {
     int         _selectedIndex;
     CPRectEdge  _preferredEdge;
-    
+
     CPMenu      _menu;
 }
 
@@ -60,21 +60,21 @@ CPPopUpButtonStatePullsDown = CPThemeState("pulls-down");
 - (id)initWithFrame:(CGRect)aFrame pullsDown:(BOOL)shouldPullDown
 {
     self = [super initWithFrame:aFrame];
-    
+
     if (self)
     {
         _selectedIndex = CPNotFound;
         _preferredEdge = CPMaxYEdge;
-        
+
         [self setValue:CPImageLeft forThemeAttribute:@"image-position"];
         [self setValue:CPLeftTextAlignment forThemeAttribute:@"alignment"];
         [self setValue:CPLineBreakByTruncatingTail forThemeAttribute:@"line-break-mode"];
-        
+
         [self setMenu:[[CPMenu alloc] initWithTitle:@""]];
 
         [self setPullsDown:shouldPullDown];
     }
-    
+
     return self;
 }
 
@@ -145,7 +145,7 @@ CPPopUpButtonStatePullsDown = CPThemeState("pulls-down");
 {
     var index = 0,
         count = [titles count];
-    
+
     for (; index < count; ++index)
         [self addItemWithTitle:titles[index]];
 }
@@ -159,11 +159,11 @@ CPPopUpButtonStatePullsDown = CPThemeState("pulls-down");
 {
     var items = [self itemArray],
         count = [items count];
-    
+
     while (count--)
         if ([items[count] title] == aTitle)
             [self removeItemAtIndex:count];
-        
+
     [_menu insertItemWithTitle:aTitle action:NULL keyEquivalent:nil atIndex:anIndex];
 }
 
@@ -173,7 +173,7 @@ CPPopUpButtonStatePullsDown = CPThemeState("pulls-down");
 - (void)removeAllItems
 {
     var count = [_menu numberOfItems];
-    
+
     while (count--)
         [_menu removeItemAtIndex:0];
 }
@@ -206,7 +206,7 @@ CPPopUpButtonStatePullsDown = CPThemeState("pulls-down");
 {
     if (_selectedIndex < 0 || _selectedIndex > [self numberOfItems] - 1)
         return nil;
-    
+
     return [_menu itemAtIndex:_selectedIndex];
 }
 
@@ -253,15 +253,15 @@ CPPopUpButtonStatePullsDown = CPThemeState("pulls-down");
 {
     if (_selectedIndex == anIndex)
         return;
-    
+
     if (_selectedIndex >= 0 && ![self pullsDown])
         [[self selectedItem] setState:CPOffState];
-    
+
     _selectedIndex = anIndex;
 
     if (_selectedIndex >= 0 && ![self pullsDown])
         [[self selectedItem] setState:CPOnState];
-    
+
     [self synchronizeTitleAndSelectedItem];
 }
 
@@ -310,7 +310,7 @@ CPPopUpButtonStatePullsDown = CPThemeState("pulls-down");
         return;
 
     var defaultCenter = [CPNotificationCenter defaultCenter];
-    
+
     if (_menu)
     {
         [defaultCenter
@@ -330,7 +330,7 @@ CPPopUpButtonStatePullsDown = CPThemeState("pulls-down");
     }
 
     _menu = aMenu;
-    
+
     if (_menu)
     {
         [defaultCenter
@@ -338,20 +338,20 @@ CPPopUpButtonStatePullsDown = CPThemeState("pulls-down");
               selector:@selector(menuDidAddItem:)
                   name:CPMenuDidAddItemNotification
                 object:_menu];
-    
+
         [defaultCenter
             addObserver:self
               selector:@selector(menuDidChangeItem:)
                   name:CPMenuDidChangeItemNotification
                 object:_menu];
-                
+
         [defaultCenter
             addObserver:self
               selector:@selector(menuDidRemoveItem:)
                   name:CPMenuDidRemoveItemNotification
                 object:_menu];
     }
-    
+
     [self synchronizeTitleAndSelectedItem];
 }
 
@@ -396,12 +396,13 @@ CPPopUpButtonStatePullsDown = CPThemeState("pulls-down");
 {
     var titles = [],
         items = [self itemArray],
-        
         index = 0,
         count = [items count];
-    
+
     for (; index < count; ++index)
-        items.push([items[index] title]);
+        titles.push([items[index] title]);
+
+    return titles;
 }
 
 /*!
@@ -519,14 +520,14 @@ CPPopUpButtonStatePullsDown = CPThemeState("pulls-down");
     else
     {
         var index = [self indexOfItemWithTitle:aTitle];
-        
+
         if (index < 0)
         {
             [self addItemWithTitle:aTitle];
-            
+
             index = [self numberOfItems] - 1;
         }
-        
+
         [self selectItemAtIndex:index];
     }
 }
@@ -554,7 +555,7 @@ CPPopUpButtonStatePullsDown = CPThemeState("pulls-down");
     if ([self pullsDown])
     {
         var items = [_menu itemArray];
-        
+
         if ([items count] > 0)
             item = items[0];
     }
@@ -573,22 +574,22 @@ CPPopUpButtonStatePullsDown = CPThemeState("pulls-down");
 - (void)menuDidAddItem:(CPNotification)aNotification
 {
     var index = [[aNotification userInfo] objectForKey:@"CPMenuItemIndex"];
-    
+
     if (_selectedIndex < 0)
         [self selectItemAtIndex:0];
-    
+
     else if (index == _selectedIndex)
         [self synchronizeTitleAndSelectedItem];
-        
+
     else if (index < _selectedIndex)
         ++_selectedIndex;
-        
+
     if (index == 0 && [self pullsDown])
     {
         var items = [_menu itemArray];
-        
+
         [items[0] setHidden:YES];
-        
+
         if (items.length > 0)
             [items[1] setHidden:NO];
     }
@@ -613,10 +614,10 @@ CPPopUpButtonStatePullsDown = CPThemeState("pulls-down");
 
     if ([self pullsDown] && index != 0)
         return;
-    
+
     if (![self pullsDown] && index != _selectedIndex)
         return;
-    
+
     [self synchronizeTitleAndSelectedItem];
 }
 
@@ -627,7 +628,7 @@ CPPopUpButtonStatePullsDown = CPThemeState("pulls-down");
 - (void)menuDidRemoveItem:(CPNotification)aNotification
 {
     var numberOfItems = [self numberOfItems];
-    
+
     if (numberOfItems <= _selectedIndex && numberOfItems > 0)
         [self selectItemAtIndex:numberOfItems - 1];
     else
@@ -737,7 +738,7 @@ var CPPopUpButtonMenuKey            = @"CPPopUpButtonMenuKey",
 - (id)initWithCoder:(CPCoder)aCoder
 {
     self = [super initWithCoder:aCoder];
-    
+
     if (self)
     {
         // Nothing is currently selected
@@ -746,7 +747,7 @@ var CPPopUpButtonMenuKey            = @"CPPopUpButtonMenuKey",
         [self setMenu:[aCoder decodeObjectForKey:CPPopUpButtonMenuKey]];
         [self selectItemAtIndex:[aCoder decodeObjectForKey:CPPopUpButtonSelectedIndexKey]];
     }
-    
+
     return self;
 }
 
@@ -758,7 +759,7 @@ var CPPopUpButtonMenuKey            = @"CPPopUpButtonMenuKey",
 - (void)encodeWithCoder:(CPCoder)aCoder
 {
     [super encodeWithCoder:aCoder];
-    
+
     [aCoder encodeObject:_menu forKey:CPPopUpButtonMenuKey];
     [aCoder encodeInt:_selectedIndex forKey:CPPopUpButtonSelectedIndexKey];
 }
