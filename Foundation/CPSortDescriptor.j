@@ -149,3 +149,31 @@ CPOrderedDescending     =  1;
 }
 
 @end
+
+var CPSortDescriptorKeyKey = @"CPSortDescriptorKeyKey", // Don't you just love naming schemes ;)
+    CPSortDescriptorAscendingKey = @"CPSortDescriptorAscendingKey",
+    CPSortDescriptorSelectorKey = @"CPSortDescriptorSelectorKey";
+
+@implementation CPSortDescriptor (CPCoding)
+
+- (id)initWithCoder:(CPCoder)aCoder
+{
+    if (self = [super init])
+    {
+        _key = [aCoder decodeObjectForKey:CPSortDescriptorKeyKey];
+        _ascending = [aCoder decodeBoolForKey:CPSortDescriptorAscendingKey];
+        _selector = CPSelectorFromString([aCoder decodeObjectForKey:CPSortDescriptorSelectorKey]);
+    }
+    
+    return self;
+}
+
+- (void)encodeWithCoder:(CPCoder)aCoder
+{
+    [aCoder encodeObject:_key forKey:CPSortDescriptorKeyKey];
+    [aCoder encodeBool:_ascending forKey:CPSortDescriptorAscendingKey];
+    [aCoder encodeObject:CPStringFromSelector(_selector) forKey:CPSortDescriptorSelectorKey];
+}
+
+@end
+
