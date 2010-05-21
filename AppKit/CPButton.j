@@ -74,7 +74,7 @@ CPChangeBackgroundCellMask  = CPBackgroundButtonMask;
 
 CPButtonStateMixed  = CPThemeState("mixed");
 
-/*! 
+/*!
     @ingroup appkit
     @class CPButton
 
@@ -85,10 +85,10 @@ CPButtonStateMixed  = CPThemeState("mixed");
 @implementation CPButton : CPControl
 {
     BOOL                _allowsMixedState;
-    
+
     CPString            _title;
     CPString            _alternateTitle;
-    
+
     CPImage             _image;
     CPImage             _alternateImage;
 
@@ -131,7 +131,7 @@ CPButtonStateMixed  = CPThemeState("mixed");
 - (id)initWithFrame:(CGRect)aFrame
 {
     self = [super initWithFrame:aFrame];
-    
+
     if (self)
     {
         // Should we instead override the defaults?
@@ -139,13 +139,13 @@ CPButtonStateMixed  = CPThemeState("mixed");
         [self setValue:CPCenterVerticalTextAlignment forThemeAttribute:@"vertical-alignment"];
         [self setValue:CPImageLeft forThemeAttribute:@"image-position"];
         [self setValue:CPScaleNone forThemeAttribute:@"image-scaling"];
-        
+
         _controlSize = CPRegularControlSize;
-        
+
 //        [self setBezelStyle:CPRoundRectBezelStyle];
         [self setBordered:YES];
     }
-    
+
     return self;
 }
 
@@ -248,9 +248,9 @@ CPButtonStateMixed  = CPThemeState("mixed");
 {
     if (_title === aTitle)
         return;
-    
+
     _title = aTitle;
-    
+
     [self setNeedsLayout];
     [self setNeedsDisplay:YES];
 }
@@ -264,7 +264,7 @@ CPButtonStateMixed  = CPThemeState("mixed");
 {
     if (_alternateTitle === aTitle)
         return;
-    
+
     _alternateTitle = aTitle;
 
     [self setNeedsLayout];
@@ -280,9 +280,9 @@ CPButtonStateMixed  = CPThemeState("mixed");
 {
     if (_image === anImage)
         return;
-    
+
     _image = anImage;
-    
+
     [self setNeedsLayout];
     [self setNeedsDisplay:YES];
 }
@@ -300,9 +300,9 @@ CPButtonStateMixed  = CPThemeState("mixed");
 {
     if (_alternateImage === anImage)
         return;
-    
+
     _alternateImage = anImage;
-    
+
     [self setNeedsLayout];
     [self setNeedsDisplay:YES];
 }
@@ -373,13 +373,13 @@ CPButtonStateMixed  = CPThemeState("mixed");
                                         [self setShowsStateBy:CPContentsCellMask];
                                         break;
 
-        case CPSwitchButton:            [CPException raise:CPInvalidArgumentException 
+        case CPSwitchButton:            [CPException raise:CPInvalidArgumentException
                                                     reason:"The CPSwitchButton type is not supported in Cappuccino, use the CPCheckBox class instead."];
 
-        case CPRadioButton:             [CPException raise:CPInvalidArgumentException 
+        case CPRadioButton:             [CPException raise:CPInvalidArgumentException
                                                     reason:"The CPRadioButton type is not supported in Cappuccino, use the CPRadio class instead."];
 
-        default:                        [CPException raise:CPInvalidArgumentException 
+        default:                        [CPException raise:CPInvalidArgumentException
                                                     reason:"Unknown button type."];
     }
 
@@ -395,7 +395,7 @@ CPButtonStateMixed  = CPThemeState("mixed");
 
     _imageDimsWhenDisabled = imageShouldDimWhenDisabled;
 
-    if (_imageDimsWhenDisabled)
+    if ([self hasThemeState:CPThemeStateDisabled])
     {
         [self setNeedsDisplay:YES];
         [self setNeedsLayout];
@@ -410,7 +410,7 @@ CPButtonStateMixed  = CPThemeState("mixed");
 - (BOOL)startTrackingAt:(CGPoint)aPoint
 {
     [self highlight:YES];
-    
+
     return [super startTrackingAt:aPoint];
 }
 
@@ -435,7 +435,7 @@ CPButtonStateMixed  = CPThemeState("mixed");
     bounds.origin.y += contentInset.top;
     bounds.size.width -= contentInset.left + contentInset.right;
     bounds.size.height -= contentInset.top + contentInset.bottom;
-    
+
     return bounds;
 }
 
@@ -483,10 +483,10 @@ CPButtonStateMixed  = CPThemeState("mixed");
 {
     if (aName === "bezel-view")
         return [self bezelRectForBounds:[self bounds]];
-    
+
     else if (aName === "content-view")
         return [self contentRectForBounds:[self bounds]];
-    
+
     return [super rectForEphemeralSubviewNamed:aName];
 }
 
@@ -497,7 +497,7 @@ CPButtonStateMixed  = CPThemeState("mixed");
         var view = [[CPView alloc] initWithFrame:_CGRectMakeZero()];
 
         [view setHitTests:NO];
-        
+
         return view;
     }
     else
@@ -570,11 +570,12 @@ CPButtonStateMixed  = CPThemeState("mixed");
 @end
 
 
-var CPButtonImageKey                = @"CPButtonImageKey",
-    CPButtonAlternateImageKey       = @"CPButtonAlternateImageKey",
-    CPButtonTitleKey                = @"CPButtonTitleKey",
-    CPButtonAlternateTitleKey       = @"CPButtonAlternateTitleKey",
-    CPButtonIsBorderedKey           = @"CPButtonIsBorderedKey";
+var CPButtonImageKey                    = @"CPButtonImageKey",
+    CPButtonAlternateImageKey           = @"CPButtonAlternateImageKey",
+    CPButtonTitleKey                    = @"CPButtonTitleKey",
+    CPButtonAlternateTitleKey           = @"CPButtonAlternateTitleKey",
+    CPButtonIsBorderedKey               = @"CPButtonIsBorderedKey",
+    CPButtonImageDimsWhenDisabledKey    = @"CPButtonImageDimsWhenDisabledKey";
 
 @implementation CPButton (CPCoding)
 
@@ -585,21 +586,23 @@ var CPButtonImageKey                = @"CPButtonImageKey",
 - (id)initWithCoder:(CPCoder)aCoder
 {
     self = [super initWithCoder:aCoder];
-    
+
     if (self)
     {
         _controlSize = CPRegularControlSize;
 
         [self setImage:[aCoder decodeObjectForKey:CPButtonImageKey]];
         [self setAlternateImage:[aCoder decodeObjectForKey:CPButtonAlternateImageKey]];
-        
+
         [self setTitle:[aCoder decodeObjectForKey:CPButtonTitleKey]];
         [self setAlternateTitle:[aCoder decodeObjectForKey:CPButtonAlternateTitleKey]];
-        
+
+        [self setImageDimsWhenDisabled:[aCoder decodeObjectForKey:CPButtonImageDimsWhenDisabledKey]];
+
         [self setNeedsLayout];
         [self setNeedsDisplay:YES];
     }
-    
+
     return self;
 }
 
@@ -616,6 +619,8 @@ var CPButtonImageKey                = @"CPButtonImageKey",
 
     [aCoder encodeObject:_title forKey:CPButtonTitleKey];
     [aCoder encodeObject:_alternateTitle forKey:CPButtonAlternateTitleKey];
+
+    [aCoder encodeObject:[self imageDimsWhenDisabled] forKey:CPButtonImageDimsWhenDisabledKey];
 }
 
 @end
