@@ -19,7 +19,7 @@ tableTestDragType = @"CPTableViewTestDragType";
     dataSet2 = [],
     dataSet3 = [];
     
-    for(var i = 1; i < 100; i++)
+    for(var i = 1; i < 10; i++)
     {
         dataSet1[i - 1] = [CPNumber numberWithInt:i];
         dataSet2[i - 1] = [CPNumber numberWithInt:i+10];
@@ -41,6 +41,7 @@ tableTestDragType = @"CPTableViewTestDragType";
     [tableView registerForDraggedTypes:[CPArray arrayWithObject:tableTestDragType]];
     [tableView setColumnAutoresizingStyle:CPTableViewLastColumnOnlyAutoresizingStyle];
     [tableView setDelegate:self];
+    [tableView setSelectionHighlightColor:[CPColor redColor]];
     [tableView setDataSource:self];
 
     
@@ -81,6 +82,46 @@ tableTestDragType = @"CPTableViewTestDragType";
     [theWindow orderFront:self];
     [self newWindow];
     [self sourceList];
+
+    var button = [[CPButton alloc] initWithFrame:CGRectMake(10,10,100, 24)];
+    [button setTitle:@"Remove Row"];
+    [button setTarget:self];
+    [button setAction:@selector(removeRow:)];
+    [contentView addSubview:button];
+
+    var button = [[CPButton alloc] initWithFrame:CGRectMake(10,40,100, 24)];
+    [button setTitle:@"Add Row"];
+    [button setTarget:self];
+    [button setAction:@selector(addRow:)];
+    [contentView addSubview:button];
+
+    var sourceListActiveGradient = CGGradientCreateWithColorComponents(CGColorSpaceCreateDeviceRGB(), [255.0/255.0, 153.0/255.0, 209.0/255.0,1.0, 33.0/255.0, 94.0/255.0, 208.0/255.0,1.0], [0,1], 2),
+        sourceListActiveTopLineColor = [CPColor colorWithCalibratedRed:(255.0/255.0) green:(123.0/255.0) blue:(218.0/255.0) alpha:1.0],
+        sourceListActiveBottomLineColor = [CPColor colorWithCalibratedRed:(255.0/255.0) green:(92.0/255.0) blue:(207.0/255.0) alpha:1.0];
+    [tableView setSelectionGradientColors:[CPDictionary dictionaryWithObjects:[sourceListActiveGradient, sourceListActiveTopLineColor, sourceListActiveBottomLineColor] forKeys:[CPSourceListGradient, CPSourceListTopLineColor, CPSourceListBottomLineColor]]];
+
+    var button = [[CPButton alloc] initWithFrame:CGRectMake(10,70,100, 24)];
+    [button setTitle:@"Switch Highlight"];
+    [button setTarget:self];
+    [button setAction:@selector(switchSelectionHighlightType:)];
+    [contentView addSubview:button];
+}
+
+- (void)switchSelectionHighlightType:(id)sender
+{
+    [tableView setSelectionHighlightStyle: ABS([tableView selectionHighlightStyle] - 1)];
+}
+
+- (void)removeRow:(id)sender
+{
+    [dataSet1 removeObjectAtIndex:0];
+    [tableView reloadData];
+}
+
+- (void)addRow:(id)sender
+{
+    [dataSet1 addObject:[dataSet1 count] || 0];
+    [tableView reloadData];
 }
 
 - (void)newWindow
@@ -167,6 +208,11 @@ tableTestDragType = @"CPTableViewTestDragType";
     [tableView3 setRowHeight:32.0];
     [scrollView3 setDocumentView:tableView3];
     [scrollView3 setAutoresizingMask:CPViewWidthSizable | CPViewHeightSizable];
+
+    var sourceListActiveGradient = CGGradientCreateWithColorComponents(CGColorSpaceCreateDeviceRGB(), [255.0/255.0, 153.0/255.0, 209.0/255.0,1.0, 33.0/255.0, 94.0/255.0, 208.0/255.0,1.0], [0,1], 2),
+        sourceListActiveTopLineColor = [CPColor colorWithCalibratedRed:(255.0/255.0) green:(123.0/255.0) blue:(218.0/255.0) alpha:1.0],
+        sourceListActiveBottomLineColor = [CPColor colorWithCalibratedRed:(255.0/255.0) green:(92.0/255.0) blue:(207.0/255.0) alpha:1.0];
+    [tableView3 setSelectionGradientColors:[CPDictionary dictionaryWithObjects:[sourceListActiveGradient, sourceListActiveTopLineColor, sourceListActiveBottomLineColor] forKeys:[CPSourceListGradient, CPSourceListTopLineColor, CPSourceListBottomLineColor]]];
     
     [[window3 contentView] addSubview:scrollView3];
 
