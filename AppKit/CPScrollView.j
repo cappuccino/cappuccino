@@ -27,7 +27,7 @@
 #include "CoreGraphics/CGGeometry.h"
 
 
-/*! 
+/*!
     @ingroup appkit
     @class CPScrollView
 
@@ -44,12 +44,12 @@
     BOOL        _hasVerticalScroller;
     BOOL        _hasHorizontalScroller;
     BOOL        _autohidesScrollers;
-    
+
     CPScroller  _verticalScroller;
     CPScroller  _horizontalScroller;
-    
+
     int         _recursionCount;
-    
+
     float       _verticalLineScroll;
     float       _verticalPageScroll;
     float       _horizontalLineScroll;
@@ -158,11 +158,11 @@
 
     if (_recursionCount > 5)
         return;
-    
+
     ++_recursionCount;
 
     var documentView = [self documentView];
-    
+
     if (!documentView)
     {
         if (_autohidesScrollers)
@@ -250,7 +250,7 @@
         [_verticalScroller setFloatValue:0.0];
         [_verticalScroller setKnobProportion:1.0];
     }
-    
+
     if (shouldShowHorizontalScroller)
     {
         [_horizontalScroller setFloatValue:(difference.width <= 0.0) ? 0.0 : scrollPoint.x / difference.width];
@@ -279,13 +279,13 @@
 {
     if (_horizontalScroller === aScroller)
         return;
-    
+
     [_horizontalScroller removeFromSuperview];
     [_horizontalScroller setTarget:nil];
     [_horizontalScroller setAction:nil];
-    
+
     _horizontalScroller = aScroller;
-    
+
     [_horizontalScroller setTarget:self];
     [_horizontalScroller setAction:@selector(_horizontalScrollerDidScroll:)];
 
@@ -339,13 +339,13 @@
 {
     if (_verticalScroller === aScroller)
         return;
-    
+
     [_verticalScroller removeFromSuperview];
     [_verticalScroller setTarget:nil];
     [_verticalScroller setAction:nil];
-    
+
     _verticalScroller = aScroller;
-    
+
     [_verticalScroller setTarget:self];
     [_verticalScroller setAction:@selector(_verticalScrollerDidScroll:)];
 
@@ -403,7 +403,7 @@
         return;
 
     _autohidesScrollers = autohidesScrollers;
-    
+
     [self reflectScrolledClipView:_contentView];
 }
 
@@ -480,30 +480,30 @@
 /* @ignore */
 - (void)_verticalScrollerDidScroll:(CPScroller)aScroller
 {
-   var  value = [aScroller floatValue],
-        documentFrame = [[_contentView documentView] frame];
+    var value = [aScroller floatValue],
+        documentFrame = [[_contentView documentView] frame],
         contentBounds = [_contentView bounds];
 
     switch ([_verticalScroller hitPart])
     {
         case CPScrollerDecrementLine:   contentBounds.origin.y -= _verticalLineScroll;
                                         break;
-        
+
         case CPScrollerIncrementLine:   contentBounds.origin.y += _verticalLineScroll;
                                         break;
-           
+
         case CPScrollerDecrementPage:   contentBounds.origin.y -= _CGRectGetHeight(contentBounds) - _verticalPageScroll;
                                         break;
-        
+
         case CPScrollerIncrementPage:   contentBounds.origin.y += _CGRectGetHeight(contentBounds) - _verticalPageScroll;
                                         break;
-        
+
         case CPScrollerKnobSlot:
         case CPScrollerKnob:
                                         // We want integral bounds!
         default:                        contentBounds.origin.y = ROUND(value * (_CGRectGetHeight(documentFrame) - _CGRectGetHeight(contentBounds)));
     }
-    
+
     [_contentView scrollToPoint:contentBounds.origin];
 }
 
@@ -513,21 +513,21 @@
    var value = [aScroller floatValue],
        documentFrame = [[self documentView] frame],
        contentBounds = [_contentView bounds];
-        
+
     switch ([_horizontalScroller hitPart])
     {
         case CPScrollerDecrementLine:   contentBounds.origin.x -= _horizontalLineScroll;
                                         break;
-        
+
         case CPScrollerIncrementLine:   contentBounds.origin.x += _horizontalLineScroll;
                                         break;
-           
+
         case CPScrollerDecrementPage:   contentBounds.origin.x -= _CGRectGetWidth(contentBounds) - _horizontalPageScroll;
                                         break;
-        
+
         case CPScrollerIncrementPage:   contentBounds.origin.x += _CGRectGetWidth(contentBounds) - _horizontalPageScroll;
                                         break;
-        
+
         case CPScrollerKnobSlot:
         case CPScrollerKnob:
                                         // We want integral bounds!
@@ -668,7 +668,7 @@
 */
 - (void)scrollWheel:(CPEvent)anEvent
 {
-    [self _respondToScrollWheelEventWithDeltaX:[anEvent deltaX] * _horizontalLineScroll 
+    [self _respondToScrollWheelEventWithDeltaX:[anEvent deltaX] * _horizontalLineScroll
                                         deltaY:[anEvent deltaY] * _verticalLineScroll];
 }
 
@@ -771,7 +771,7 @@ var CPScrollViewContentViewKey       = "CPScrollViewContentView",
 
         _horizontalLineScroll   = [aCoder decodeFloatForKey:CPScrollViewHLineScrollKey];
         _horizontalPageScroll   = [aCoder decodeFloatForKey:CPScrollViewHPageScrollKey];
-        
+
         _contentView            = [aCoder decodeObjectForKey:CPScrollViewContentViewKey];
         _headerClipView         = [aCoder decodeObjectForKey:CPScrollViewHeaderClipViewKey];
 
@@ -793,25 +793,25 @@ var CPScrollViewContentViewKey       = "CPScrollViewContentView",
         // Do to the anything goes nature of decoding, our subviews may not exist yet, so layout at the end of the run loop when we're sure everything is in a correct state.
         [[CPRunLoop currentRunLoop] performSelector:@selector(reflectScrolledClipView:) target:self argument:_contentView order:0 modes:[CPDefaultRunLoopMode]];
     }
-    
+
     return self;
 }
 
 - (void)encodeWithCoder:(CPCoder)aCoder
 {
     [super encodeWithCoder:aCoder];
-    
+
     [aCoder encodeObject:_contentView           forKey:CPScrollViewContentViewKey];
     [aCoder encodeObject:_headerClipView        forKey:CPScrollViewHeaderClipViewKey];
 
     [aCoder encodeObject:_verticalScroller      forKey:CPScrollViewVScrollerKey];
     [aCoder encodeObject:_horizontalScroller    forKey:CPScrollViewHScrollerKey];
-    
+
     [aCoder encodeFloat:_verticalLineScroll     forKey:CPScrollViewVLineScrollKey];
     [aCoder encodeFloat:_verticalPageScroll     forKey:CPScrollViewVPageScrollKey];
     [aCoder encodeFloat:_horizontalLineScroll   forKey:CPScrollViewHLineScrollKey];
     [aCoder encodeFloat:_horizontalPageScroll   forKey:CPScrollViewHPageScrollKey];
-    
+
     [aCoder encodeBool:_hasVerticalScroller     forKey:CPScrollViewHasVScrollerKey];
     [aCoder encodeBool:_hasHorizontalScroller   forKey:CPScrollViewHasHScrollerKey];
     [aCoder encodeBool:_autohidesScrollers      forKey:CPScrollViewAutohidesScrollerKey];
