@@ -158,9 +158,16 @@ _cappdefaultDcmHandler = [CPDecimalNumberHandler decimalNumberHandlerWithRoundin
     mathematical operations to go with it.
     This class is mutable.
 */
-@implementation CPDecimalNumber : CPObject
+
+
+@implementation CPDecimalNumber : CPNumber
 {
     CPDecimal _data;
+}
+
++ (id)alloc
+{
+    return class_createInstance(self);
 }
 
 // initializers
@@ -449,15 +456,20 @@ _cappdefaultDcmHandler = [CPDecimalNumberHandler decimalNumberHandlerWithRoundin
     return @"d";
 }
 
-// FIXME:  I expect here locale should be some default locale
-- (CPString)stringValue
+- (CPString)description
 {
-    return [self descriptionWithLocale:nil];
+    // FIXME:  I expect here locale should be some default locale
+    return [self descriptionWithLocale:nil]
 }
 
 - (CPString)descriptionWithLocale:(CPDictionary)locale
 {
     return CPDecimalString(_data, locale);
+}
+
+- (CPString)stringValue
+{
+    return [self description];
 }
 
 /*!
