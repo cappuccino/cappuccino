@@ -36,7 +36,9 @@ var _CPWindowViewResizeIndicatorImage = nil;
     CGSize      _resizeIndicatorOffset;
     
     CPView      _toolbarView;
+    CGSize      _toolbarOffset;
 //    BOOL        _isAnimatingToolbar;
+
     
     CGRect      _resizeFrame;
     CGPoint     _mouseDraggedPoint;
@@ -79,10 +81,8 @@ var _CPWindowViewResizeIndicatorImage = nil;
     if (self)
     {
         _styleMask = aStyleMask;
-        _resizeIndicatorOffset = CGSizeMake(0.0, 0.0);
-        _toolbarOffset = CGSizeMake(0.0, 0.0);
-        
-        [self setShowsResizeIndicator:!(_styleMask & CPBorderlessBridgeWindowMask) && (_styleMask & CPResizableWindowMask)];
+        _resizeIndicatorOffset = CGSizeMakeZero();
+        _toolbarOffset = CGSizeMakeZero();
     }
     
     return self;
@@ -162,10 +162,15 @@ var _CPWindowViewResizeIndicatorImage = nil;
     if (!visibleFrame)
         visibleFrame = [[CPPlatformWindow primaryPlatformWindow] visibleFrame];
 
+    var minPointY = 0;
+    
+    if([CPMenu menuBarVisible])
+        minPointY = [[CPApp mainMenu] menuBarHeight];
+    
     var restrictedPoint = CGPointMake(0, 0);
 
     restrictedPoint.x = MIN(MAX(aPoint.x, -_frame.size.width + 4.0), CGRectGetMaxX(visibleFrame) - 4.0);
-    restrictedPoint.y = MIN(MAX(aPoint.y, 0.0), CGRectGetMaxY(visibleFrame) - 8.0);
+    restrictedPoint.y = MIN(MAX(aPoint.y, minPointY), CGRectGetMaxY(visibleFrame) - 8.0);
 
     return restrictedPoint;
 }
@@ -213,18 +218,18 @@ var _CPWindowViewResizeIndicatorImage = nil;
         
         [_resizeIndicator setImage:_CPWindowViewResizeIndicatorImage];
         [_resizeIndicator setAutoresizingMask:CPViewMinXMargin | CPViewMinYMargin];
-        
+
         [self addSubview:_resizeIndicator];
     }
     else
     {
         [_resizeIndicator removeFromSuperview];
-        
+
         _resizeIndicator = nil;
     }
 }
 
-- (CPImage)showsResizeIndicator
+- (BOOL)showsResizeIndicator
 {
     return _resizeIndicator !== nil;
 }
@@ -265,7 +270,7 @@ var _CPWindowViewResizeIndicatorImage = nil;
 
 - (CGSize)toolbarOffset
 {
-    return CGSizeMakeZero();
+    return _toolbarOffset;
 }
 
 - (CPColor)toolbarLabelColor
@@ -322,11 +327,8 @@ var _CPWindowViewResizeIndicatorImage = nil;
         if (toolbarView)
         {
             [toolbarView removeFromSuperview];
-            [toolbarView setLabelColor:[self toolbarLabelColor]];
-            
-            if ([self respondsToSelector:@selector(toolbarLabelShadowColor)])
-                [toolbarView setLabelShadowColor:[self toolbarLabelShadowColor]];
-               
+            [toolbarView FIXME_setIsHUD:_styleMask & CPHUDBackgroundWindowMask];
+
             [self addSubview:toolbarView];
         }
         

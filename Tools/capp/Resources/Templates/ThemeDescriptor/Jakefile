@@ -1,0 +1,63 @@
+/*
+ * Jakefile
+ * __project.name__
+ *
+ * Created by __user.name__ on __project.date__.
+ * Copyright __project.year__, __organization.name__ All rights reserved.
+ */
+
+var ENV = require("system").env,
+    FILE = require("file"),
+    task = require("jake").task,
+    FileList = require("jake").FileList,
+    blend = require("cappuccino/jake").blend,
+    configuration = ENV["CONFIG"] || ENV["CONFIGURATION"] || ENV["c"] || "Debug";
+
+
+blend ("__project.nameasidentifier__.blend", function(__project.nameasidentifier__Task)
+{
+    __project.nameasidentifier__Task.setBuildIntermediatesPath(FILE.join("Build", "__project.nameasidentifier__.build", configuration))
+    __project.nameasidentifier__Task.setBuildPath(FILE.join("Build", configuration));
+
+    __project.nameasidentifier__Task.setThemeDescriptors(new FileList("ThemeDescriptors.j"));
+    __project.nameasidentifier__Task.setIdentifier("com.280n.__project.identifier__");
+    __project.nameasidentifier__Task.setResources(new FileList("Resources/*"));
+});
+
+task ("default", ["__project.nameasidentifier__.blend"], function()
+{
+    printResults(configuration);
+});
+
+task ("build", ["default"]);
+
+task ("debug", function()
+{
+    ENV["CONFIGURATION"] = "Debug";
+    JAKE.subjake(["."], "build", ENV);
+});
+
+task ("release", function()
+{
+    ENV["CONFIGURATION"] = "Release";
+    JAKE.subjake(["."], "build", ENV);
+});
+
+task ("desktop", ["release"], function()
+{
+    FILE.mkdirs(FILE.join("Build", "Desktop", "__project.nameasidentifier__"));
+    require("cappuccino/nativehost").buildNativeHost(FILE.join("Build", "Release", "__project.nameasidentifier__"), FILE.join("Build", "Desktop", "__project.nameasidentifier__", "__project.nameasidentifier__.app"));
+    printResults("Desktop")
+});
+
+task ("run-desktop", ["desktop"], function()
+{
+    OS.system([FILE.join("Build", "Desktop", "__project.nameasidentifier__", "__project.nameasidentifier__.app", "Contents", "MacOS", "NativeHost"), "-i"]);
+});
+
+function printResults(configuration)
+{
+    print("----------------------------");
+    print(configuration+" app built at path: "+FILE.join("Build", configuration, "__project.nameasidentifier__"));
+    print("----------------------------");
+}

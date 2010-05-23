@@ -22,6 +22,7 @@
 
 @import <AppKit/CPResponder.j>
 
+var CPViewControllerCachedCibs;
 
 /*! @class CPViewController
     The CPViewController class provides the fundamental view-management controller for Cappuccino applications.
@@ -54,6 +55,12 @@
     CPString        _cibName @accessors(property=cibName, readonly);
     CPBundle        _cibBundle @accessors(property=cibBundle, readonly);
     CPDictionary    _cibExternalNameTable @accessors(property=cibExternalNameTable, readonly);
+}
+
++ (void)initialize
+{
+    if (self === CPViewController)
+        CPViewControllerCachedCibs = [CPDictionary dictionary];
 }
 
 /*!
@@ -113,11 +120,16 @@
 {
     if (_view)
         return;
+    
+    // check if a cib is already cached for the current _cibName
+    var cib = [CPViewControllerCachedCibs objectForKey:_cibName];
 
-//    if (_cibName)
-//        [CPException raise: reason:];
-
-    var cib = [[CPCib alloc] initWithContentsOfURL:[_cibBundle pathForResource:_cibName + @".cib"]];
+    if (!cib)
+    {
+        // if the cib isn't cached yet : fetch it and cache it
+        cib = [[CPCib alloc] initWithContentsOfURL:[_cibBundle pathForResource:_cibName + @".cib"]];
+        [CPViewControllerCachedCibs setObject:cib forKey:_cibName];
+    }
 
     [cib instantiateCibWithExternalNameTable:_cibExternalNameTable];
 }
@@ -126,8 +138,6 @@
     Returns the view that the controller manages.
     If this property is nil, the controller sends loadView to itself to create the view that it manages.
     Subclasses should override the loadView method to create any custom views. The default value is nil.
-
-    Note: An error will not be thrown if after -loadView, the view property is still nil. -view will simply return nil, but will continue to call -loadView on subsequent calls.
 */
 - (CPView)view
 {
@@ -143,11 +153,31 @@
         if (_view === nil && [cibOwner isKindOfClass:[CPDocument class]])
             [self setView:[cibOwner valueForKey:@"view"]];
 
+        if (!_view) 
+        {
+            var reason = [CPString stringWithFormat:@"View for %@ could not be loaded from Cib or no view specified. Override loadView to load the view manually.", self];
+
+            [CPException raise:CPInternalInconsistencyException reason:reason];
+        }
+
         if ([cibOwner respondsToSelector:@selector(viewControllerDidLoadCib:)])
             [cibOwner viewControllerDidLoadCib:self];
+
+        [self viewDidLoad];
     }
 
     return _view;
+}
+
+
+/*!
+    This method is called after the view controller has loaded its associated views into memory. 
+    This method is called regardless of whether the views were stored in a nib file or created programmatically in the loadView method. 
+    This method is most commonly used to perform additional initialization steps on views that are loaded from nib files.
+*/
+- (void)viewDidLoad
+{
+    
 }
 
 

@@ -8,75 +8,62 @@
 {
 }
 
--(void)setUp
+- (void)testPlistObjects
 {
-    string_data = [[CPData alloc] initWithString:@"CPData Test"];
+    var string = @"Hello World",
+        data = [CPData dataWithPlistObject:string];
 
-    // Plist helpers
-    keys = [@"key1", @"key2", @"key3", @"key4"];
-    objects = [@"Some random characters", NO, 9.9, 8.8];
-    dict = [CPDictionary dictionaryWithObjects:objects forKeys:keys];
+    [self assert:[data rawString] equals:@"280NPLIST;1.0;S;11;Hello World"];
+    [self assert:[data plistObject] equals:@"Hello World"];
 
-    plist_data = [[CPData alloc] initWithPlistObject:dict];
+    data = [CPData dataWithRawString:@"280NPLIST;1.0;S;11;Hello World"];
+
+    [self assert:[data rawString] equals:@"280NPLIST;1.0;S;11;Hello World"];
+    [self assert:[data plistObject] equals:@"Hello World"];
+
+    var array = [0, 1.0, "Two"];
+
+    data = [CPData dataWithPlistObject:array];
+
+    [self assert:[data rawString] equals:@"280NPLIST;1.0;A;d;1;0d;1;1S;3;TwoE;"];
+    [self assert:[data plistObject] equals:array];
+
+    data = [CPData dataWithRawString:@"280NPLIST;1.0;A;d;1;0d;1;1S;3;TwoE;"];
+
+    [self assert:[data rawString] equals:@"280NPLIST;1.0;A;d;1;0d;1;1S;3;TwoE;"];
+    [self assert:[[data plistObject] isEqual:array] equals:true];
+
+    var dictionary = [CPDictionary dictionaryWithObject:array forKey:@"array"];
+
+    data = [CPData dataWithPlistObject:dictionary];
+
+    [self assert:[data rawString] equals:@"280NPLIST;1.0;D;K;5;arrayA;d;1;0d;1;1S;3;TwoE;E;"];
+    [self assert:[data plistObject] equals:dictionary];
+
+    data = [CPData dataWithRawString:@"280NPLIST;1.0;D;K;5;arrayA;d;1;0d;1;1S;3;TwoE;E;"];
+
+    [self assert:[data rawString] equals:@"280NPLIST;1.0;D;K;5;arrayA;d;1;0d;1;1S;3;TwoE;E;"];
+    [self assert:[[data plistObject] isEqual:dictionary] equals:true];
+
+    [self assertNull:[data JSONObject]];
 }
 
--(void)testStringLength
+- (void)testJSONObjects
 {
-    var data = [[CPData alloc] initWithString:@"CPData Test"];
-    [self assert:[data length] equals:11];
+    var object = { first: { one:1 }, second: { two:2 } },
+        data = [CPData dataWithJSONObject:object];
 
-    var data_cm = [CPData dataWithString:@"CPData Test"];
-    [self assert:[data_cm length] equals:11];
-}
+    [self assert:[data rawString] equals:JSON.stringify(object)];
+    [self assert:[data JSONObject] equals:object];
 
--(void)testPlistLength
-{
-    var data = [[CPData alloc] initWithPlistObject:dict];
-    [self assert:[data length] equals:93];
+    [self assertNull:[data plistObject]];
 
-    var data_cm = [CPData dataWithPlistObject:dict];
-    [self assert:[data length] equals:93];
-}
+    data = [CPData dataWithRawString:"{\"first\":{\"one\":1},\"second\":{\"two\":2}}"];
 
--(void)testDescription
-{
-    [self assert:[string_data description] equals:[string_data string]];
-}
+    [self assert:[data rawString] equals:JSON.stringify(object)];
+    [self assertNoThrow:function () { require("assert").deepEqual([data JSONObject], object); }];
 
--(void)testString
-{
-    [self assert:[string_data string] equals:@"CPData Test"];
-}
-
--(void)testStringFromPlist
-{
-    [self assert:[plist_data string] equals:"280NPLIST;1.0;D;K;4;key4f;3;8.8K;4;key3f;3;9.9K;4;key2F;K;4;key1S;22;Some random charactersE;"];
-}
-
--(void)testPlistObject
-{
-    [self assert:[[plist_data plistObject] objectForKey:@"key1"] equals:@"Some random characters"];
-    [self assert:[[plist_data plistObject] objectForKey:@"key2"] equals:[CPNumber numberWithBool:NO]];
-    [self assert:[[plist_data plistObject] objectForKey:@"key3"] equals:[CPNumber numberWithDouble:9.9]];
-    [self assert:[[plist_data plistObject] objectForKey:@"key4"] equals:[CPNumber numberWithDouble:8.8]];
-    
-    [self assert:[plist_data plistObject] equals:dict];
-}
-
--(void)testSetPlistObject
-{
-    var data = [[CPData alloc] init];
-    [data setPlistObject:dict];
-
-    [self assert:[data plistObject] equals:dict];
-}
-
--(void)testSetString
-{
-    var data = [[CPData alloc] init];
-    [data setString:@"CPData Test"];
-
-    [self assert:[data string] equals:@"CPData Test"];
+    [self assertNull:[data plistObject]];
 }
 
 @end

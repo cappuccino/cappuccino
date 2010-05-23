@@ -24,31 +24,10 @@
 @import "CGGeometry.j"
 
 @import "CPControl.j"
+@import "CPStringDrawing.j"
 
 #include "CoreGraphics/CGGeometry.h"
 
-
-CPScaleProportionally   = 0;
-CPScaleToFit            = 1;
-CPScaleNone             = 2;
-
-
-/* @group CPCellImagePosition */
-
-CPNoImage       = 0;
-CPImageOnly     = 1;
-CPImageLeft     = 2;
-CPImageRight    = 3;
-CPImageBelow    = 4;
-CPImageAbove    = 5;
-CPImageOverlaps = 6;
-
-
-/*  @group CPButtonState */
-
-CPOnState                       = 1;
-CPOffState                      = 0;
-CPMixedState                    = -1;
 
 /* @group CPBezelStyle */
 
@@ -145,7 +124,7 @@ CPButtonStateMixed  = CPThemeState("mixed");
 
 + (id)themeAttributes
 {
-    return [CPDictionary dictionaryWithObjects:[_CGInsetMakeZero(), _CGInsetMakeZero(), nil]
+    return [CPDictionary dictionaryWithObjects:[_CGInsetMakeZero(), _CGInsetMakeZero(), [CPNull null]]
                                        forKeys:[@"bezel-inset", @"content-inset", @"bezel-color"]];
 }
 
@@ -192,8 +171,8 @@ CPButtonStateMixed  = CPThemeState("mixed");
 
     _allowsMixedState = aFlag;
 
-    if (!_allowsMixedState)
-        [self unsetThemeState:CPButtonStateMixed];
+    if (!_allowsMixedState && [self state] === CPMixedState)
+        [self setState:CPOnState];
 }
 
 - (void)setObjectValue:(id)anObjectValue
@@ -460,7 +439,7 @@ CPButtonStateMixed  = CPThemeState("mixed");
     return bounds;
 }
 
-- (CGRect)bezelRectForBounds:(CFRect)bounds
+- (CGRect)bezelRectForBounds:(CGRect)bounds
 {
     if (![self isBordered])
         return _CGRectMakeZero();
@@ -523,8 +502,6 @@ CPButtonStateMixed  = CPThemeState("mixed");
     }
     else
         return [[_CPImageAndTextView alloc] initWithFrame:_CGRectMakeZero()];
-
-    return [super createEphemeralSubviewNamed:aName];
 }
 
 - (void)layoutSubviews
@@ -532,9 +509,8 @@ CPButtonStateMixed  = CPThemeState("mixed");
     var bezelView = [self layoutEphemeralSubviewNamed:@"bezel-view"
                                            positioned:CPWindowBelow
                       relativeToEphemeralSubviewNamed:@"content-view"];
-      
-    if (bezelView)
-        [bezelView setBackgroundColor:[self currentValueForThemeAttribute:@"bezel-color"]];
+
+    [bezelView setBackgroundColor:[self currentValueForThemeAttribute:@"bezel-color"]];
 
     var contentView = [self layoutEphemeralSubviewNamed:@"content-view"
                                              positioned:CPWindowAbove
@@ -554,6 +530,7 @@ CPButtonStateMixed  = CPThemeState("mixed");
         [contentView setTextShadowOffset:[self currentValueForThemeAttribute:@"text-shadow-offset"]];
         [contentView setImagePosition:[self currentValueForThemeAttribute:@"image-position"]];
         [contentView setImageScaling:[self currentValueForThemeAttribute:@"image-scaling"]];
+        [contentView setDimsImage:[self hasThemeState:CPThemeStateDisabled] && _imageDimsWhenDisabled];
     }
 }
 

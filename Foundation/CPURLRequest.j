@@ -62,16 +62,13 @@
     
     if (self)
     {
-        if ([aURL isKindOfClass:[CPString class]])
-            _URL = [CPURL URLWithString:aURL];
-        else
-            _URL = aURL;
+        [self setURL:aURL];
 
         _HTTPBody = @"";
         _HTTPMethod = @"GET";
         _HTTPHeaderFields = [CPDictionary dictionary];
         
-        [self setValue:"Thu, 1 Jan 1970 00:00:00 GMT" forHTTPHeaderField:"If-Modified-Since"];
+        [self setValue:"Thu, 01 Jan 1970 00:00:00 GMT" forHTTPHeaderField:"If-Modified-Since"];
         [self setValue:"no-cache" forHTTPHeaderField:"Cache-Control"];
         [self setValue:"XMLHttpRequest" forHTTPHeaderField:"X-Requested-With"];
     }
@@ -93,7 +90,8 @@
 */
 - (void)setURL:(CPURL)aURL
 {
-    _URL = aURL;
+    // Lenient and accept strings.
+    _URL = new CFURL(aURL);
 }
 
 /*!

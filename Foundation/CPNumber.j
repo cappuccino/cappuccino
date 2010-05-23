@@ -24,8 +24,8 @@
 @import "CPObjJRuntime.j"
 
 
-var __placeholder = new Number(),
-    _CPNumberHashes = { };
+var __placeholder   = new Number(),
+    CPNumberUIDs    = new CFMutableDictionary();
 
 /*! 
     @class CPNumber
@@ -55,7 +55,7 @@ var __placeholder = new Number(),
 {
     if (aChar.charCodeAt)
         return aChar.charCodeAt(0);
-    
+
     return aChar;
 }
 
@@ -190,10 +190,15 @@ var __placeholder = new Number(),
 
 - (CPString)UID
 {
-    if (!_CPNumberHashes[self])
-        _CPNumberHashes[self] = _objj_generateObjectHash();
-        
-    return _CPNumberHashes[self];
+    var UID = CPNumberUIDs.valueForKey(self);
+
+    if (!UID)
+    {
+        UID = objj_generateObjectUID();
+        CPNumberUIDs.setValueForKey(self, UID);
+    }
+
+    return UID + "";
 }
 
 - (BOOL)boolValue
@@ -212,14 +217,14 @@ FIXME: Do we need this?
 */
 - (CPDecimal)decimalValue
 {
-    objj_throw_exception("decimalValue: NOT YET IMPLEMENTED");
+    throw new Error("decimalValue: NOT YET IMPLEMENTED");
 }
 
 - (CPString)descriptionWithLocale:(CPDictionary)aDictionary
 {
     if (!aDictionary) return toString();
     
-    objj_throw_exception("descriptionWithLocale: NOT YET IMPLEMENTED");
+    throw new Error("descriptionWithLocale: NOT YET IMPLEMENTED");
 }
 
 - (CPString)description

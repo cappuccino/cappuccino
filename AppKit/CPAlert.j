@@ -148,8 +148,9 @@ var CPAlertWarningImage,
         var button = _buttons[i];
         
         [button setFrameSize:CGSizeMake([button frame].size.width, (styleMask == CPHUDBackgroundWindowMask) ? 20.0 : 24.0)];
-        [button setBezelStyle:(styleMask & CPHUDBackgroundWindowMask) ? CPHUDBezelStyle : CPRoundedBezelStyle];
         
+        [button setTheme:(_windowStyle === CPHUDBackgroundWindowMask) ? [CPTheme themeNamed:"Aristo-HUD"] : [CPTheme defaultTheme]];
+
         [[_alertPanel contentView] addSubview:button];
     }
     
@@ -161,6 +162,7 @@ var CPAlertWarningImage,
         [_messageLabel setFont:[CPFont boldSystemFontOfSize:13.0]];
         [_messageLabel setLineBreakMode:CPLineBreakByWordWrapping];
         [_messageLabel setAlignment:CPJustifiedTextAlignment];
+        [_messageLabel setAutoresizingMask:CPViewWidthSizable|CPViewHeightSizable];
 
         _alertImageView = [[CPImageView alloc] initWithFrame:CGRectMake(15.0, 12.0, 32.0, 32.0)];
     }
@@ -262,7 +264,9 @@ var CPAlertWarningImage,
     [button setTag:_buttonCount];
     [button setAction:@selector(_notifyDelegate:)];
     
-    [button setBezelStyle:(_windowStyle == CPHUDBackgroundWindowMask) ? CPHUDBezelStyle : CPRoundRectBezelStyle];
+    [button setTheme:(_windowStyle === CPHUDBackgroundWindowMask) ? [CPTheme themeNamed:"Aristo-HUD"] : [CPTheme defaultTheme]];
+    [button setAutoresizingMask:CPViewMinXMargin | CPViewMinYMargin];
+
     [[_alertPanel contentView] addSubview:button];
     
     if (_buttonCount == 0)

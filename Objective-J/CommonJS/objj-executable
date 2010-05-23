@@ -1,0 +1,7 @@
+#!/usr/bin/env narwhal
+
+var execPath = require("file").path(module.path);
+var mainPath = execPath.dirname().dirname().join("lib", execPath.basename(), "main.j");
+
+var args = ["objj", String(mainPath)].concat(system.args.slice(1));
+require("objective-j").run(args);

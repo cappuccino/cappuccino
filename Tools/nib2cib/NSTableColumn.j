@@ -22,6 +22,7 @@
 
 
 @import <AppKit/CPTableColumn.j>
+@import <AppKit/CPTableHeaderView.j>
 
 @implementation CPTableColumn (NSCoding)
 
@@ -36,18 +37,26 @@
         //var dataViewCell = [aCoder decodeObjectForKey:@"NSDataCell"];
 
         _dataView = [[CPTextField alloc] initWithFrame:CPRectMakeZero()];
-        [_dataView setValue:[CPColor whiteColor] forThemeAttribute:"text-color" inState:CPThemeStateHighlighted];
+        [_dataView setValue:[CPColor whiteColor] forThemeAttribute:@"text-color" inState:CPThemeStateSelected];
 
-        //_headerView = [aCoder decodeObjectForKey:@"NSHeaderCell"];
-        _headerView = [[CPTextField alloc] initWithFrame:CPRectMakeZero()];
+        var headerCell = [aCoder decodeObjectForKey:@"NSHeaderCell"],
+            headerView = [[_CPTableColumnHeaderView alloc] initWithFrame:CPRectMakeZero()];
+
+        [_headerView setStringValue:[headerCell objectValue]];
+        [_headerView setFont:[headerCell font]];
+
+        [self setHeaderView:_headerView];
 
         _width = [aCoder decodeFloatForKey:@"NSWidth"];
         _minWidth = [aCoder decodeFloatForKey:@"NSMinWidth"];
         _maxWidth = [aCoder decodeFloatForKey:@"NSMaxWidth"];
 
-        _resizingMask  = [aCoder decodeBoolForKey:@"NSIsResizable"];
+        _resizingMask = [aCoder decodeBoolForKey:@"NSIsResizeable"] ? CPTableColumnUserResizingMask : CPTableColumnAutoresizingMask;
+        _isHidden = [aCoder decodeBoolForKey:@"NSHidden"];
+
+        _sortDescriptorPrototype = [aCoder decodeObjectForKey:@"NSSortDescriptorPrototype"];
     }
-    
+
     return self;
 }
 
@@ -67,3 +76,11 @@
     return [CPTableColumn class];
 }
 
+@end
+
+
+@implementation NSTableHeaderCell : NSActionCell
+{
+}
+
+@end

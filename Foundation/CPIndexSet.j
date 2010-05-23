@@ -739,7 +739,10 @@
             shifts = [];
 
         for (; j < count; ++j)
+        {
             [shifts addObject:_ranges[j]];
+            _count -= _ranges[j].length;
+        }
 
         if ((j = i + 1) < count)
         {

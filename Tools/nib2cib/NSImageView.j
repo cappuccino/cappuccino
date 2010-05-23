@@ -33,7 +33,7 @@
     {
         var cell = [aCoder decodeObjectForKey:@"NSCell"];
         
-        _imageScaling = [cell imageScaling];
+        [self setImageScaling:[cell imageScaling]];
         _isEditable = [cell isEditable];
     }
     

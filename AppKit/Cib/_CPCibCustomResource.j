@@ -83,7 +83,7 @@ var _CPCibCustomResourceClassNameKey    = @"_CPCibCustomResourceClassNameKey",
     if ([aCoder respondsToSelector:@selector(bundle)] && 
         (![aCoder respondsToSelector:@selector(awakenCustomResources)] || [aCoder awakenCustomResources]))
         if (_className === @"CPImage")
-            return [[CPImage alloc] initWithContentsOfFile:[[aCoder bundle] pathForResource:_resourceName] size:[_properties objectForKey:@"size"]];
+            return [[CPImage alloc] initWithContentsOfFile:[[aCoder bundle] pathForResource:_resourceName] size:_properties.valueForKey(@"size")];
 
     return self;
 }

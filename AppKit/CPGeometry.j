@@ -234,9 +234,9 @@ function CPRectContainsPoint(aRect, aPoint)
     @param possibleInner the CGRect to test if it fits inside \c possibleOuter.
     @return BOOL \c YES if \c possibleInner fits inside \c possibleOuter.
 */
-function CPRectContainsRect(lhsRect, rhsRect)
+function CPRectContainsRect(possibleOuter, possibleInner)
 {
-    return CPRectEqualToRect(CPUnionRect(lhsRect, rhsRect), rhsRect);
+    return CGRectContainsRect(possibleOuter, possibleInner);
 }
 
 /*!

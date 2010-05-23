@@ -49,7 +49,7 @@ CPCircularSlider    = 1;
 
 + (id)themeAttributes
 {
-    return [CPDictionary dictionaryWithObjects:[nil, _CGSizeMakeZero(), 0.0, nil]
+    return [CPDictionary dictionaryWithObjects:[[CPNull null], _CGSizeMakeZero(), 0.0, [CPNull null]]
                                        forKeys:[@"knob-color", @"knob-size", @"track-width", @"track-color"]];
 }
 
@@ -394,6 +394,18 @@ CPCircularSlider    = 1;
         _sendActionOn |= CPLeftMouseDraggedMask;
     else 
         _sendActionOn &= ~CPLeftMouseDraggedMask;
+}
+
+- (void)takeValueFromKeyPath:(CPString)aKeyPath ofObjects:(CPArray)objects
+{
+    var count = objects.length,
+        value = [objects[0] valueForKeyPath:aKeyPath];
+
+    [self setObjectValue:value];
+
+    while (count-- > 1)
+        if (value !== ([objects[count] valueForKeyPath:aKeyPath]))
+            return [self setFloatValue:1.0];
 }
 
 @end

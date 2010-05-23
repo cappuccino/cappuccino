@@ -1,0 +1,94 @@
+/*
+ * Jakefile
+ * __project.name__
+ *
+ * Created by __user.name__ on __project.date__.
+ * Copyright __project.year__, __organization.name__ All rights reserved.
+ */
+
+var ENV = require("system").env,
+    FILE = require("file"),
+    JAKE = require("jake"),
+    task = JAKE.task,
+    FileList = JAKE.FileList,
+    app = require("cappuccino/jake").app,
+    configuration = ENV["CONFIG"] || ENV["CONFIGURATION"] || ENV["c"] || "Debug",
+    OS = require("os");
+
+app ("__project.nameasidentifier__", function(task)
+{
+    task.setBuildIntermediatesPath(FILE.join("Build", "__project.nameasidentifier__.build", configuration));
+    task.setBuildPath(FILE.join("Build", configuration));
+
+    task.setProductName("__project.name__");
+    task.setIdentifier("__project.identifier__");
+    task.setVersion("1.0");
+    task.setAuthor("__organization.name__");
+    task.setEmail("__organization.email__");
+    task.setSummary("__project.name__");
+    task.setSources((new FileList("**/*.j")).exclude(FILE.join("Build", "**")));
+    task.setResources(new FileList("Resources/**"));
+    task.setIndexFilePath("index.html");
+    task.setInfoPlistPath("Info.plist");
+    task.setNib2CibFlags("-R Resources/");
+
+    if (configuration === "Debug")
+        task.setCompilerFlags("-DDEBUG -g");
+    else
+        task.setCompilerFlags("-O");
+});
+
+task ("default", ["__project.nameasidentifier__"], function()
+{
+    printResults(configuration);
+});
+
+task ("build", ["default"]);
+
+task ("debug", function()
+{
+    ENV["CONFIGURATION"] = "Debug";
+    JAKE.subjake(["."], "build", ENV);
+});
+
+task ("release", function()
+{
+    ENV["CONFIGURATION"] = "Release";
+    JAKE.subjake(["."], "build", ENV);
+});
+
+task ("run", ["debug"], function()
+{
+    OS.system(["open", FILE.join("Build", "Debug", "__project.nameasidentifier__", "index.html")]);
+});
+
+task ("run-release", ["release"], function()
+{
+    OS.system(["open", FILE.join("Build", "Release", "__project.nameasidentifier__", "index.html")]);
+});
+
+task ("deploy", ["release"], function()
+{
+    FILE.mkdirs(FILE.join("Build", "Deployment", "__project.nameasidentifier__"));
+    OS.system(["press", "-f", FILE.join("Build", "Release", "__project.nameasidentifier__"), FILE.join("Build", "Deployment", "__project.nameasidentifier__")]);
+    printResults("Deployment")
+});
+
+task ("desktop", ["release"], function()
+{
+    FILE.mkdirs(FILE.join("Build", "Desktop", "__project.nameasidentifier__"));
+    require("cappuccino/nativehost").buildNativeHost(FILE.join("Build", "Release", "__project.nameasidentifier__"), FILE.join("Build", "Desktop", "__project.nameasidentifier__", "__project.nameasidentifier__.app"));
+    printResults("Desktop")
+});
+
+task ("run-desktop", ["desktop"], function()
+{
+    OS.system([FILE.join("Build", "Desktop", "__project.nameasidentifier__", "__project.nameasidentifier__.app", "Contents", "MacOS", "NativeHost"), "-i"]);
+});
+
+function printResults(configuration)
+{
+    print("----------------------------");
+    print(configuration+" app built at path: "+FILE.join("Build", configuration, "__project.nameasidentifier__"));
+    print("----------------------------");
+}

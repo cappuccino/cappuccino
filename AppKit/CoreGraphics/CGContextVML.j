@@ -312,7 +312,6 @@ function CGContextDrawLinearGradient(aContext, aGradient, aStartPoint, anEndPoin
     }
     
     aContext.gState.gradient = vml.join("");
-    console.log(vml.join(""));
     
     // if (aContext.buffer != nil)
     //     aContext.buffer += vml.join("");

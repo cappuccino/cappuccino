@@ -25,18 +25,13 @@
 @import "CPColor.j"
 @import "CPFont.j"
 @import "CPImage.j"
-@import "CPTextField.j"
 @import "CPView.j"
+@import "CPControl.j"
 
 #include "CoreGraphics/CGGeometry.h"
 
 #include "Platform/Platform.h"
 #include "Platform/DOM/CPDOMDisplayServer.h"
-
-
-CPTopVerticalTextAlignment      = 1,
-CPCenterVerticalTextAlignment   = 2,
-CPBottomVerticalTextAlignment   = 3;
 
 var _CPimageAndTextViewFrameSizeChangedFlag         = 1 << 0,
     _CPImageAndTextViewImageChangedFlag             = 1 << 1,
@@ -68,6 +63,7 @@ var HORIZONTAL_MARGIN   = 3.0,
     
     CPCellImagePosition     _imagePosition;
     CPImageScaling          _imageScaling;
+    BOOL                    _shouldDimImage;
     
     CPImage                 _image;
     CPString                _text;
@@ -216,6 +212,17 @@ var HORIZONTAL_MARGIN   = 3.0,
     return _imageScaling;
 }
 
+- (void)setDimsImage:(BOOL)shouldDim
+{
+    var shouldDimImage = !!shouldDimImage;
+
+    if (_shouldDimImage !== shouldDimImage)
+    {
+        _shouldDimImage = shouldDim;
+        [self setNeedsLayout];
+    }
+}
+
 - (void)setTextColor:(CPColor)aTextColor
 {
     if (_textColor === aTextColor)
@@ -285,11 +292,26 @@ var HORIZONTAL_MARGIN   = 3.0,
 {
     if (_image == anImage)
         return;
-    
+
+    if ([_image delegate] === self)
+        [_image setDelegate:nil];
+
     _image = anImage;
     _flags |= _CPImageAndTextViewImageChangedFlag;
-    
+
+    if ([_image loadStatus] !== CPImageLoadStatusCompleted)
+        [_image setDelegate:self];
+
     [self setNeedsLayout];
+}
+
+- (void)imageDidLoad:(id)anImage
+{
+    if (anImage === _image)
+    {
+        _flags |= _CPImageAndTextViewImageChangedFlag;
+        [self setNeedsLayout];
+    }
 }
 
 - (CPImage)image
@@ -322,7 +344,8 @@ var HORIZONTAL_MARGIN   = 3.0,
         hasDOMTextElement = !!_DOMTextElement;
     
     // Create or destroy the DOM Text Element as necessary
-    if (needsDOMTextElement !== hasDOMTextElement)    
+    if (needsDOMTextElement !== hasDOMTextElement)
+    {
         if (hasDOMTextElement)
         {
             _DOMElement.removeChild(_DOMTextElement);
@@ -340,7 +363,7 @@ var HORIZONTAL_MARGIN   = 3.0,
             
             textStyle.position = "absolute";
             textStyle.whiteSpace = "pre";
-            textStyle.cursor = "default";
+
             textStyle.zIndex = 200;
             textStyle.overflow = "hidden";
     
@@ -351,6 +374,7 @@ var HORIZONTAL_MARGIN   = 3.0,
             // We have to set all these values now.
             _flags |= _CPImageAndTextViewTextChangedFlag | _CPImageAndTextViewFontChangedFlag | _CPImageAndTextViewLineBreakModeChangedFlag;
         }
+    }
     
     var textStyle = hasDOMTextElement ? _DOMTextElement.style : nil;
     
@@ -359,6 +383,7 @@ var HORIZONTAL_MARGIN   = 3.0,
         hasDOMTextShadowElement = !!_DOMTextShadowElement;
     
     if (needsDOMTextShadowElement !== hasDOMTextShadowElement)
+    {
         if (hasDOMTextShadowElement)
         {
             _DOMElement.removeChild(_DOMTextShadowElement);
@@ -376,14 +401,15 @@ var HORIZONTAL_MARGIN   = 3.0,
             shadowStyle.font = [_font ? _font : [CPFont systemFontOfSize:12.0] cssString];
             shadowStyle.position = "absolute";
             shadowStyle.whiteSpace = textStyle.whiteSpace;
-            shadowStyle.cursor = "default";
+            shadowStyle.wordWrap = textStyle.wordWrap;
+            shadowStyle.color = [_textShadowColor cssString];
+
             shadowStyle.zIndex = 150;
             shadowStyle.textOverflow = textStyle.textOverflow;
             
             if (document.attachEvent)
             {
                 shadowStyle.overflow = textStyle.overflow;
-                shadowStyle.wordWrap = textStyle.wordWrap;
             }
             else
             {
@@ -397,6 +423,7 @@ var HORIZONTAL_MARGIN   = 3.0,
             
             _flags |= _CPImageAndTextViewTextChangedFlag; //sigh...
         }
+    }
         
     var shadowStyle = hasDOMTextShadowElement ? _DOMTextShadowElement.style : nil;
         
@@ -436,9 +463,7 @@ var HORIZONTAL_MARGIN   = 3.0,
                 case CPLineBreakByClipping:         textStyle.overflow = "hidden";
                                                     textStyle.textOverflow = "clip";
                                                     textStyle.whiteSpace = "pre";
-                                                    
-                                                    if (document.attachEvent)
-                                                        textStyle.wordWrap = "normal"; 
+                                                    textStyle.wordWrap = "normal"; 
                                                     
                                                     break;
                 
@@ -448,25 +473,22 @@ var HORIZONTAL_MARGIN   = 3.0,
                 case CPLineBreakByTruncatingTail:   textStyle.textOverflow = "ellipsis";
                                                     textStyle.whiteSpace = "nowrap";
                                                     textStyle.overflow = "hidden";
-                                                    
-                                                    if (document.attachEvent)
-                                                        textStyle.wordWrap = "normal"; 
+                                                    textStyle.wordWrap = "normal"; 
                                                                      
                                                     break;
                      
                 case CPLineBreakByCharWrapping:                               
-                case CPLineBreakByWordWrapping:     if (document.attachEvent)
-                                                    {                                            
+                case CPLineBreakByWordWrapping:     textStyle.wordWrap = "break-word";
+                                                    try {
                                                         textStyle.whiteSpace = "pre";
-                                                        textStyle.wordWrap = "break-word";
-                                                    }
-                                                    
-                                                    else
-                                                    {
                                                         textStyle.whiteSpace = "-o-pre-wrap";
                                                         textStyle.whiteSpace = "-pre-wrap";
                                                         textStyle.whiteSpace = "-moz-pre-wrap";
                                                         textStyle.whiteSpace = "pre-wrap";
+                                                    }
+                                                    catch (e) {
+                                                        //internet explorer doesn't like these properties
+                                                        textStyle.whiteSpace = "pre";
                                                     }
                                                     
                                                     textStyle.overflow = "hidden";
@@ -479,7 +501,6 @@ var HORIZONTAL_MARGIN   = 3.0,
             {
                 if (document.attachEvent)
                 {
-                    shadowStyle.wordWrap = textStyle.wordWrap;            
                     shadowStyle.overflow = textStyle.overflow;
                 }
                 else
@@ -488,6 +509,7 @@ var HORIZONTAL_MARGIN   = 3.0,
                     shadowStyle.overflowY = textStyle.overflowY;
                 }
 
+                shadowStyle.wordWrap = textStyle.wordWrap;
                 shadowStyle.whiteSpace = textStyle.whiteSpace;
                 shadowStyle.textOverflow = textStyle.textOverflow;
             }
@@ -499,6 +521,7 @@ var HORIZONTAL_MARGIN   = 3.0,
 
     // Create or destroy DOM Image element    
     if (needsDOMImageElement !== hasDOMImageElement)
+    {
         if (hasDOMImageElement)
         {
             _DOMElement.removeChild(_DOMImageElement);
@@ -528,8 +551,8 @@ var HORIZONTAL_MARGIN   = 3.0,
             _DOMElement.appendChild(_DOMImageElement);
             
             hasDOMImageElement = YES;
-        }    
-#endif
+        }
+    }
 
     var size = [self bounds].size,
         textRect = _CGRectMake(0.0, 0.0, size.width, size.height);
@@ -561,67 +584,59 @@ var HORIZONTAL_MARGIN   = 3.0,
             imageHeight *= scale;
         }
 
-#if PLATFORM(DOM)
+        if (CPFeatureIsCompatible(CPOpacityRequiresFilterFeature))
+            imageStyle.filter = @"alpha(opacity=" + _shouldDimImage ? 35 : 100 + ")";
+        else
+            imageStyle.opacity = _shouldDimImage ? 0.35 : 1.0;
+
         _DOMImageElement.width = imageWidth;
         _DOMImageElement.height = imageHeight;        
-        imageStyle.width = imageWidth + "px";
-        imageStyle.height = imageHeight + "px";
-#endif
+        imageStyle.width = MAX(imageWidth, 0) + "px";
+        imageStyle.height = MAX(imageHeight, 0) + "px";
 
         if (_imagePosition === CPImageBelow)
         {
-#if PLATFORM(DOM)
             imageStyle.left = FLOOR(centerX - imageWidth / 2.0) + "px";
             imageStyle.top = FLOOR(size.height - imageHeight) + "px";
-#endif
 
             textRect.size.height = size.height - imageHeight - VERTICAL_MARGIN;
         }
         else if (_imagePosition === CPImageAbove)
         {
-#if PLATFORM(DOM)
             CPDOMDisplayServerSetStyleLeftTop(_DOMImageElement, NULL, FLOOR(centerX - imageWidth / 2.0), 0);
-#endif
             
             textRect.origin.y += imageHeight + VERTICAL_MARGIN;
             textRect.size.height = size.height - imageHeight - VERTICAL_MARGIN;
         }
         else if (_imagePosition === CPImageLeft)
         {
-#if PLATFORM(DOM)
             imageStyle.top = FLOOR(centerY - imageHeight / 2.0) + "px";
             imageStyle.left = "0px";
-#endif
 
             textRect.origin.x = imageWidth + HORIZONTAL_MARGIN;
             textRect.size.width -= imageWidth + HORIZONTAL_MARGIN;
         }
         else if (_imagePosition === CPImageRight)
         {
-#if PLATFORM(DOM)
             imageStyle.top = FLOOR(centerY - imageHeight / 2.0) + "px";
             imageStyle.left = FLOOR(size.width - imageWidth) + "px";
-#endif
 
             textRect.size.width -= imageWidth + HORIZONTAL_MARGIN;
         }
         else if (_imagePosition === CPImageOnly)
         {
-#if PLATFORM(DOM)
             imageStyle.top = FLOOR(centerY - imageHeight / 2.0) + "px";
             imageStyle.left = FLOOR(centerX - imageWidth / 2.0) + "px";
-#endif
         }
     }
 
-#if PLATFORM(DOM)
     if (hasDOMTextElement)
     {
         var textRectX = _CGRectGetMinX(textRect),
             textRectY = _CGRectGetMinY(textRect),
             textRectWidth = _CGRectGetWidth(textRect),
             textRectHeight = _CGRectGetHeight(textRect);
-    
+
         if (_verticalAlignment !== CPTopVerticalTextAlignment)
         {
             if (!_textSize)
@@ -648,8 +663,8 @@ var HORIZONTAL_MARGIN   = 3.0,
         
         textStyle.top = ROUND(textRectY) + "px";
         textStyle.left = ROUND(textRectX) + "px";
-        textStyle.width = ROUND(textRectWidth) + "px";
-        textStyle.height = ROUND(textRectHeight) + "px";
+        textStyle.width = MAX(ROUND(textRectWidth), 0) + "px";
+        textStyle.height = MAX(ROUND(textRectHeight), 0) + "px";
         
         if (shadowStyle)
         {
@@ -658,8 +673,8 @@ var HORIZONTAL_MARGIN   = 3.0,
             
             shadowStyle.top = ROUND(textRectY + _textShadowOffset.height) + "px";
             shadowStyle.left = ROUND(textRectX + _textShadowOffset.width) + "px";
-            shadowStyle.width = ROUND(textRectWidth) + "px";
-            shadowStyle.height = ROUND(textRectHeight) + "px";
+            shadowStyle.width = MAX(ROUND(textRectWidth), 0) + "px";
+            shadowStyle.height = MAX(ROUND(textRectHeight), 0) + "px";
         }
     }
 #endif

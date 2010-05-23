@@ -23,32 +23,29 @@
 @import "CPObject.j"
 @import "CPString.j"
 
-/*! 
+/*!
     @class CPData
     @ingroup foundation
     @brief A Cappuccino wrapper for any data type.
-
-
 */
 
 @implementation CPData : CPObject
 {
-    id  _plistObject;
 }
 
 + (id)alloc
 {
-    return new objj_data();
+    return new CFMutableData();
 }
 
 + (CPData)data
 {
-    return [[self alloc] initWithPlistObject:nil];
+    return [[self alloc] init];
 }
 
-+ (CPData)dataWithString:(CPString)aString
++ (CPData)dataWithRawString:(CPString)aString
 {
-    return [[self alloc] initWithString:aString];
+    return [[self alloc] initWithRawString:aString];
 }
 
 + (CPData)dataWithPlistObject:(id)aPlistObject
@@ -56,65 +53,138 @@
     return [[self alloc] initWithPlistObject:aPlistObject];
 }
 
-- (id)initWithString:(CPString)aString
++ (CPData)dataWithPlistObject:(id)aPlistObject format:(CPPropertyListFormat)aFormat
+{
+    return [[self alloc] initWithPlistObject:aPlistObject format:aFormat];
+}
+
++ (CPData)dataWithJSONObject:(Object)anObject
+{
+    return [[self alloc] initWithJSONObject:anObject];
+}
+
+- (id)initWithRawString:(CPString)aString
 {
     self = [super init];
 
     if (self)
-        string = aString;
-  
+        [self setRawString:aString];
+
     return self;
 }
 
 - (id)initWithPlistObject:(id)aPlistObject
 {
     self = [super init];
-    
+
     if (self)
-        _plistObject = aPlistObject;
-        
+        [self setPlistObject:aPlistObject];
+
     return self;
 }
 
-- (int)length
+- (id)initWithPlistObject:(id)aPlistObject format:aFormat
 {
-    return [[self string] length];
+    self = [super init];
+
+    if (self)
+        [self setPlistObject:aPlistObject format:aFormat];
+
+    return self;
 }
 
-- (CPString)description
+- (id)initWithJSONObject:(Object)anObject
 {
-    return string;
+    self = [super init];
+
+    if (self)
+        [self setJSONObject:anObject];
+
+    return self;
 }
 
-- (CPString)string
+- (CPString)rawString
 {
-    if (!string && _plistObject)
-        string = [[CPPropertyListSerialization dataFromPropertyList:_plistObject format:CPPropertyList280NorthFormat_v1_0 errorDescription:NULL] string];
-
-    return string;
-}
-
-- (void)setString:(CPString)aString
-{
-    string = aString;
-    _plistObject = nil;
+    return self.rawString();
 }
 
 - (id)plistObject
 {
-    if (string && !_plistObject)
-        // Attempt to autodetect the format.
-        _plistObject = [CPPropertyListSerialization propertyListFromData:self format:0 errorDescription:NULL];
-    
-    return _plistObject;
+    return self.propertyList();
 }
 
-- (void)setPlistObject:(id)aPlistObject
+- (Object)JSONObject
 {
-    string = nil;
-    _plistObject = aPlistObject;
+    return self.JSONObject();
+}
+
+- (int)length
+{
+    return [[self rawString] length];
+}
+
+- (CPString)description
+{
+    return self.toString();
 }
 
 @end
 
-objj_data.prototype.isa = CPData;
+@implementation CPData (CPMutableData)
+
+- (void)setRawString:(CPString)aString
+{
+    self.setRawString(aString);
+}
+
+- (void)setPlistObject:(id)aPlistObject
+{
+    self.setPropertyList(aPlistObject);
+}
+
+- (void)setPlistObject:(id)aPlistObject format:(CPPropertyListFormat)aFormat
+{
+    self.setPropertyList(aPlistObject, aFormat);
+}
+
+- (void)setJSONObject:(Object)anObject
+{
+    self.setJSONObject(anObject);
+}
+
+@end
+
+@implementation CPData (Deprecated)
+
++ (id)dataWithString:(CPString)aString
+{
+    _CPReportLenientDeprecation(self, _cmd, @selector(dataWithRawString:));
+
+    return [self dataWithRawString:aString];
+}
+
+- (id)initWithString:(CPString)aString
+{
+    _CPReportLenientDeprecation(self, _cmd, @selector(initWithRawString:));
+
+    return [self initWithRawString:aString];
+}
+
+- (void)setString:(CPString)aString
+{
+    _CPReportLenientDeprecation(self, _cmd, @selector(setRawString:));
+
+    [self setRawString:aString];
+}
+
+- (CPString)string
+{
+    _CPReportLenientDeprecation(self, _cmd, @selector(rawString));
+
+    return [self rawString];
+}
+
+@end
+
+CFData.prototype.isa = CPData;
+CFMutableData.prototype.isa = CPData;

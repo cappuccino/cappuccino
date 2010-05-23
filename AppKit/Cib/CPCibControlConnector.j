@@ -32,7 +32,7 @@
     var selectorName = _label,
         selectorNameLength = [selectorName length];
 
-    if (selectorNameLength && selectorName[selectorNameLength - 1] !== ':')
+    if (selectorNameLength && selectorName.charAt(selectorNameLength - 1) !== ':')
         selectorName += ':';
 
     var selector = CPSelectorFromString(selectorName);

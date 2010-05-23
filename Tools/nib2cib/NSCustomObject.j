@@ -31,7 +31,6 @@
     
     if (self){
         _className = CP_NSMapClassName([aCoder decodeObjectForKey:@"NSClassName"]);
-    print(":::"+_className);
     }
     return self;
 }
@@ -43,7 +42,7 @@
 }
 
 - (id)initWithCoder:(CPCoder)aCoder
-{print("i-nit form coder");
+{
     return [self NS_initWithCoder:aCoder];
 }
 

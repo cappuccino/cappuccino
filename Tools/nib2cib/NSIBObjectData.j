@@ -127,11 +127,21 @@
 
             children.forEach(function(aChild)
             {
-                CPLog.warn("Promoted " + aChild + " to child of " + parent);
+                CPLog.info("Promoted " + aChild + " to child of " + parent);
                 _objectsKeys.push(aChild);
                 _objectsValues.push(parent);
             });
         }
+
+    var count = _objectsKeys.length;
+
+    while (count--)
+    {
+        var object = _objectsKeys[count];
+
+        if ([object respondsToSelector:@selector(swapCellsForParents:)])
+            [object swapCellsForParents:parentForCellUIDs];
+    }
 }
 
 @end

@@ -280,7 +280,11 @@ var CPDocumentUntitledCount = 0;
         else if (viewController)
         {
             var view = [viewController view],
-                theWindow = [[CPWindow alloc] initWithContentRect:[view frame] styleMask:CPTitledWindowMask | CPClosableWindowMask | CPMiniaturizableWindowMask | CPResizableWindowMask];
+                viewFrame = [view frame];
+            
+            viewFrame.origin = CGPointMake(50, 50);
+
+            var theWindow = [[CPWindow alloc] initWithContentRect:viewFrame styleMask:CPTitledWindowMask | CPClosableWindowMask | CPMiniaturizableWindowMask | CPResizableWindowMask];
 
             windowController = [[CPWindowController alloc] initWithWindow:theWindow];
         }
@@ -480,14 +484,14 @@ var CPDocumentUntitledCount = 0;
     else
         [_writeRequest setHTTPMethod:@"PUT"];
 
-    [_writeRequest setHTTPBody:[data string]];
+    [_writeRequest setHTTPBody:[data rawString]];
 
     [_writeRequest setValue:@"close" forHTTPHeaderField:@"Connection"];
 
-    if (aSaveOperation == CPSaveOperation)
+    if (aSaveOperation === CPSaveOperation)
         [_writeRequest setValue:@"true" forHTTPHeaderField:@"x-cappuccino-overwrite"];
 
-    if (aSaveOperation != CPSaveToOperation)
+    if (aSaveOperation !== CPSaveToOperation)
         [self updateChangeCount:CPChangeCleared];
 
     // FIXME: Oh man is this every looking for trouble, we need to handle login at the Cappuccino level, with HTTP Errors.
@@ -563,7 +567,7 @@ var CPDocumentUntitledCount = 0;
     // READ
     if (aConnection == _readConnection)
     {
-        [self readFromData:[CPData dataWithString:aData] ofType:session.fileType error:nil];
+        [self readFromData:[CPData dataWithRawString:aData] ofType:session.fileType error:nil];
 
         objj_msgSend(session.delegate, session.didReadSelector, self, YES, session.contextInfo);
     }
@@ -884,8 +888,7 @@ var CPDocumentUntitledCount = 0;
     [_canCloseAlert setDelegate:self];
     [_canCloseAlert setAlertStyle:CPWarningAlertStyle];
     [_canCloseAlert setTitle:@"Unsaved Document"];
-    [_canCloseAlert setMessageText:sprintf(@"Do you want to save the changes you've made to the document \"%@\"?", 
-                                        [self displayName] || [self fileName])];
+    [_canCloseAlert setMessageText:@"Do you want to save the changes you've made to the document \"" + ([self displayName] || [self fileName]) + "\"?"];
 
     [_canCloseAlert addButtonWithTitle:@"Save"];
     [_canCloseAlert addButtonWithTitle:@"Cancel"];

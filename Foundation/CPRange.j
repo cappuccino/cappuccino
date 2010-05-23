@@ -60,10 +60,10 @@ function CPMakeRangeCopy(aRange)
 }
 
 /*!
-    Sets a range's \c length to 0.
-    @param aRange the range to empty
+    Determines if a range is empty \c length is 0.
+    @param aRange the range to test
     @group CPRange
-    @return CPRange the empty range (same as the argument)
+    @return YES if the range is empty
 */
 function CPEmptyRange(aRange)
 {

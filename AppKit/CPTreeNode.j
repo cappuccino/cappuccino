@@ -7,7 +7,7 @@
     id              _representedObject @accessors(readonly, property=representedObject);
     
     CPTreeNode      _parentNode @accessors(readonly, property=parentNode);
-    CPMutableArray  _childNodes @accessors(readonly, property=childNodes);
+    CPMutableArray  _childNodes;
 }
 
 + (id)treeNodeWithRepresentedObject:(id)anObject
@@ -33,32 +33,40 @@
     return [_childNodes count] <= 0;
 }
 
+- (CPArray)childNodes
+{
+    return [_childNodes copy];
+}
+
 - (CPMutableArray)mutableChildNodes
 {
     return [self mutableArrayValueForKey:@"childNodes"];
 }
 
-- (void)insertObject:(id)anObject inChildNodesAtIndex:(CPInteger)anIndex
+- (void)insertObject:(id)aTreeNode inChildNodesAtIndex:(CPInteger)anIndex
 {
-    anObject._parentNode = self;
+    [[aTreeNode._parentNode mutableChildNodes] removeObjectIdenticalTo:aTreeNode];
 
-    [_childNodes addObject:anObject];
+    aTreeNode._parentNode = self;
+
+    [_childNodes insertObject:aTreeNode atIndex:anIndex];
 }
 
 - (void)removeObjectFromChildNodesAtIndex:(CPInteger)anIndex
 {
-    anObject._parentNode = nil;
+    [_childNodes objectAtIndex:anIndex]._parentNode = nil;
 
     [_childNodes removeObjectAtIndex:anIndex];
 }
 
-- (void)replaceObjectFromChildNodesAtIndex:(CPInteger)anIndex withObject:(id)anObject
+- (void)replaceObjectFromChildNodesAtIndex:(CPInteger)anIndex withObject:(id)aTreeNode
 {
-    var oldObject = [_childNodes objectAtIndex:anIndex];
+    var oldTreeNode = [_childNodes objectAtIndex:anIndex];
 
-    oldObject._parentNode = nil;
+    oldTreeNode._parentNode = nil;
+    aTreeNode._parentNode = self;
 
-    [_childNodes replaceObjectAtIndex:anIndex withObject:anObject];
+    [_childNodes replaceObjectAtIndex:anIndex withObject:aTreeNode];
 }
 
 - (id)objectInChildNodesAtIndex:(CPInteger)anIndex
@@ -77,6 +85,35 @@
 
     while (count--)
         [_childNodes[count] sortWithSortDescriptors:sortDescriptors recursively:YES];
+}
+
+@end
+
+var CPTreeNodeRepresentedObjectKey  = @"CPTreeNodeRepresentedObjectKey",
+    CPTreeNodeParentNodeKey         = @"CPTreeNodeParentNodeKey",
+    CPTreeNodeChildNodesKey         = @"CPTreeNodeChildNodesKey";
+
+@implementation CPTreeNode (CPCoding)
+
+- (id)initWithCoder:(CPCoder)aCoder
+{
+    self = [super init];
+
+    if (self)
+    {
+        _representedObject = [aCoder decodeObjectForKey:CPTreeNodeRepresentedObjectKey];
+        _parentNode = [aCoder decodeObjectForKey:CPTreeNodeParentNodeKey];
+        _childNodes = [aCoder decodeObjectForKey:CPTreeNodeChildNodesKey];
+    }
+
+    return self;
+}
+
+- (void)encodeWithCoder:(CPCoder)aCoder
+{
+    [aCoder encodeObject:_representedObject forKey:CPTreeNodeRepresentedObjectKey];
+    [aCoder encodeConditionalObject:_parentNode forKey:CPTreeNodeParentNodeKey];
+    [aCoder encodeObject:_childNodes forKey:CPTreeNodeChildNodesKey];
 }
 
 @end

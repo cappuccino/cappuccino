@@ -27,22 +27,11 @@
 
 @import "CPTableHeaderView.j"
 
+#include "CoreGraphics/CGGeometry.h"
 
-/*
-    @global
-    @class CPTableColumn
-*/
 CPTableColumnNoResizing         = 0;
-/*
-    @global
-    @class CPTableColumn
-*/
-CPTableColumnAutoresizingMask   = 1;
-/*
-    @global
-    @class CPTableColumn
-*/
-CPTableColumnUserResizingMask   = 2;
+CPTableColumnAutoresizingMask   = 1 << 0;
+CPTableColumnUserResizingMask   = 1 << 1;
 
 @implementation CPTableColumn : CPObject
 {
@@ -54,12 +43,15 @@ CPTableColumnUserResizingMask   = 2;
     float               _width;
     float               _minWidth;
     float               _maxWidth;
+    unsigned            _resizingMask;
 
     id                  _identifier;
     BOOL                _isEditable;
     CPSortDescriptor    _sortDescriptorPrototype;
     BOOL                _isHidden;
     CPString            _headerToolTip;
+    
+    BOOL _disableResizingPosting @accessors(property=disableResizingPosting);
 }
 
 - (id)init
@@ -78,14 +70,26 @@ CPTableColumnUserResizingMask   = 2;
         _width = 100.0;
         _minWidth = 10.0;
         _maxWidth = 1000000.0;
-
+        _resizingMask = CPTableColumnAutoresizingMask | CPTableColumnUserResizingMask;
+        _disableResizingPosting = NO;
+        
         [self setIdentifier:anIdentifier];
-        [self setHeaderView:[CPTextField new]];
-        [self setDataView:[CPTextField new]];
+
+        var header = [[_CPTableColumnHeaderView alloc] initWithFrame:CGRectMakeZero()];
+        [self setHeaderView:header];
+        
+        var textDataView = [CPTextField new];
+        [textDataView setLineBreakMode:CPLineBreakByTruncatingTail];
+        [textDataView setValue:[CPColor colorWithHexString:@"333333"] forThemeAttribute:@"text-color"];
+        [textDataView setValue:[CPColor whiteColor] forThemeAttribute:@"text-color" inState:CPThemeStateSelectedDataView];
+        [textDataView setValue:[CPFont boldSystemFontOfSize:12] forThemeAttribute:@"font" inState:CPThemeStateSelectedDataView];
+        [textDataView setValue:CPCenterVerticalTextAlignment forThemeAttribute:@"vertical-alignment"];
+        [self setDataView:textDataView];
     }
 
     return self;
 }
+
 
 - (void)setTableView:(CPTableView)aTableView
 {
@@ -117,18 +121,23 @@ CPTableColumnUserResizingMask   = 2;
 
     if (tableView)
     {
-        var index = [[tableView tableColumns] indexOfObjectIdenticalTo:self];
-
-        // FIXME: THIS IS HORRIBLE. Don't just reload everything when a table column changes, just relayout the changed widths.
-        tableView._reloadAllRows = YES;
-        tableView._dirtyTableColumnRangeIndex = tableView._dirtyTableColumnRangeIndex < 0 ? index : MIN(index,  tableView._dirtyTableColumnRangeIndex);
-
+        var index = [[tableView tableColumns] indexOfObjectIdenticalTo:self],
+            dirtyTableColumnRangeIndex = tableView._dirtyTableColumnRangeIndex;
+            
+        if (dirtyTableColumnRangeIndex < 0)
+            tableView._dirtyTableColumnRangeIndex = index;
+        else
+            tableView._dirtyTableColumnRangeIndex = MIN(index,  tableView._dirtyTableColumnRangeIndex);
+        
+        var rows = tableView._exposedRows,
+            columns = [CPIndexSet indexSetWithIndexesInRange:CPMakeRange(index, [tableView._exposedColumns lastIndex] - index + 1)];        
+        
+        // FIXME: Would be faster with some sort of -setNeedsDisplayInColumns: that updates a dirtyTableColumnForDisplay cache; then marked columns would relayout their data views at display time.
+        [tableView _layoutDataViewsInRows:rows columns:columns];
         [tableView tile];
-
-        [[CPNotificationCenter defaultCenter]
-            postNotificationName:CPTableViewColumnDidResizeNotification
-                          object:tableView
-                        userInfo:[CPDictionary dictionaryWithObjects:[self, oldWidth] forKeys:[@"CPTableColumn", "CPOldWidth"]]];
+        
+        if (!_disableResizingPosting)
+            [self _postDidResizeNotificationWithOldWidth:oldWidth];
     }
 }
 
@@ -168,7 +177,7 @@ CPTableColumnUserResizingMask   = 2;
     _maxWidth = aMaxWidth;
 
     var width = [self width],
-        newWidth = MAX(width, [self maxWidth]);
+        newWidth = MIN(width, [self maxWidth]);
 
     if (width !== newWidth)
         [self setWidth:newWidth];
@@ -184,7 +193,7 @@ CPTableColumnUserResizingMask   = 2;
     _resizingMask = aResizingMask;
 }
 
-- (float)resizingMask
+- (unsigned)resizingMask
 {
     return _resizingMask;
 }
@@ -221,6 +230,22 @@ CPTableColumnUserResizingMask   = 2;
     return _headerView;
 }
 
+/*!
+    This method set's the "prototype" view which will be used to create all table cells in this column.
+    
+    It creates a snapshot of aView, using keyed archiving, which is then copied over and over for each 
+    individual cell that is shown. As a result, changes made after calling this method won't be reflected.
+
+    Example:
+    
+        [tableColumn setDataView:someView]; // snapshot taken
+        [[tableColumn dataView] setSomething:x]; //won't work
+
+    This doesn't work because the snapshot is taken before the new property is applied. Instead, do:
+
+        [someView setSomething:x];
+        [tableColumn setDataView:someView];
+*/
 - (void)setDataView:(CPView)aView
 {
     if (_dataView === aView)
@@ -256,9 +281,9 @@ CPTableColumnUserResizingMask   = 2;
     var dataView = [self dataViewForRow:aRowIndex],
         dataViewUID = [dataView UID];
 
-var x = [self tableView]._cachedDataViews[dataViewUID];
-if (x && x.length)
-return x.pop();
+    var x = [self tableView]._cachedDataViews[dataViewUID];
+    if (x && x.length)
+    return x.pop();
 
     // if we haven't cached an archive of the data view, do it now
     if (!_dataViewData[dataViewUID])
@@ -266,7 +291,8 @@ return x.pop();
 
     // unarchive the data view cache
     var newDataView = [CPKeyedUnarchiver unarchiveObjectWithData:_dataViewData[dataViewUID]];
-newDataView.identifier = dataViewUID;
+    newDataView.identifier = dataViewUID;
+    
     return newDataView;
 }
 
@@ -322,7 +348,14 @@ newDataView.identifier = dataViewUID;
 
 - (void)setHidden:(BOOL)shouldBeHidden
 {
+    shouldBeHidden = !!shouldBeHidden
+    if (_isHidden === shouldBeHidden)
+        return;
+    
     _isHidden = shouldBeHidden;
+    
+    [[self headerView] setHidden:shouldBeHidden];
+    [[self tableView] _tableColumnVisibilityDidChange:self];
 }
 
 - (BOOL)isHidden
@@ -346,6 +379,14 @@ newDataView.identifier = dataViewUID;
     return _headerToolTip;
 }
 
+- (void)_postDidResizeNotificationWithOldWidth:(float)oldWidth
+{
+    [[CPNotificationCenter defaultCenter]
+    postNotificationName:CPTableViewColumnDidResizeNotification
+                  object:[self tableView]
+                userInfo:[CPDictionary dictionaryWithObjects:[self, oldWidth] forKeys:[@"CPTableColumn", "CPOldWidth"]]];
+}
+
 @end
 
 var CPTableColumnIdentifierKey   = @"CPTableColumnIdentifierKey",
@@ -354,7 +395,9 @@ var CPTableColumnIdentifierKey   = @"CPTableColumnIdentifierKey",
     CPTableColumnWidthKey        = @"CPTableColumnWidthKey",
     CPTableColumnMinWidthKey     = @"CPTableColumnMinWidthKey",
     CPTableColumnMaxWidthKey     = @"CPTableColumnMaxWidthKey",
-    CPTableColumnResizingMaskKey = @"CPTableColumnResizingMaskKey";
+    CPTableColumnResizingMaskKey = @"CPTableColumnResizingMaskKey",
+    CPTableColumnIsHiddenkey     = @"CPTableColumnIsHiddenKey",
+    CPSortDescriptorPrototypeKey = @"CPSortDescriptorPrototypeKey";
 
 @implementation CPTableColumn (CPCoding)
 
@@ -371,14 +414,14 @@ var CPTableColumnIdentifierKey   = @"CPTableColumnIdentifierKey",
         _maxWidth = [aCoder decodeFloatForKey:CPTableColumnMaxWidthKey];
 
         [self setIdentifier:[aCoder decodeObjectForKey:CPTableColumnIdentifierKey]];
-    //    [self setHeaderView:[aCoder decodeObjectForKey:CPTableColumnHeaderViewKey]];
-    //    [self setDataView:[aCoder decodeObjectForKey:CPTableColumnDataViewKey]];
+        [self setHeaderView:[aCoder decodeObjectForKey:CPTableColumnHeaderViewKey]];
+        [self setDataView:[aCoder decodeObjectForKey:CPTableColumnDataViewKey]];
+        [self setHeaderView:[aCoder decodeObjectForKey:CPTableColumnHeaderViewKey]];
 
-        [self setHeaderView:[CPTextField new]];
-        [self setDataView:[CPTextField new]];
-
-
-    //    _resizingMask  = [aCoder decodeBoolForKey:CPTableColumnResizingMaskKey];
+        _resizingMask  = [aCoder decodeBoolForKey:CPTableColumnResizingMaskKey];
+        _isHidden = [aCoder decodeBoolForKey:CPTableColumnIsHiddenkey];
+        
+        _sortDescriptorPrototype = [aCoder decodeObjectForKey:CPSortDescriptorPrototypeKey];
     }
 
     return self;
@@ -392,10 +435,13 @@ var CPTableColumnIdentifierKey   = @"CPTableColumnIdentifierKey",
     [aCoder encodeObject:_minWidth forKey:CPTableColumnMinWidthKey];
     [aCoder encodeObject:_maxWidth forKey:CPTableColumnMaxWidthKey];
 
-//    [aCoder encodeObject:_headerView forKey:CPTableColumnHeaderViewKey];
-//    [aCoder encodeObject:_dataView forKey:CPTableColumnDataViewKey];
+    [aCoder encodeObject:_headerView forKey:CPTableColumnHeaderViewKey];
+    [aCoder encodeObject:_dataView forKey:CPTableColumnDataViewKey];
 
-//    [aCoder encodeObject:_resizingMask forKey:CPTableColumnResizingMaskKey];
+    [aCoder encodeObject:_resizingMask forKey:CPTableColumnResizingMaskKey];
+    [aCoder encodeBool:_isHidden forKey:CPTableColumnIsHiddenkey];
+    
+    [aCoder encodeObject:_sortDescriptorPrototype forKey:CPSortDescriptorPrototypeKey];
 }
 
 @end

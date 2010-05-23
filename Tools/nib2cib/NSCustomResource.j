@@ -25,68 +25,43 @@
 
 @import <AppKit/_CPCibCustomResource.j>
 
-importClass(javax.imageio.ImageIO);
-
+var FILE = require("file");
 
 @implementation _CPCibCustomResource (NSCoding)
 
 - (id)NS_initWithCoder:(CPCoder)aCoder
 {
     self = [super init];
-    
+
     if (self)
     {
         _className = CP_NSMapClassName([aCoder decodeObjectForKey:@"NSClassName"]);
         _resourceName = [aCoder decodeObjectForKey:@"NSResourceName"];
-        
+
         var size = CGSizeMakeZero();
-        
+
         if (![[aCoder resourcesPath] length])
-        {
-            CPLog.warn("***WARNING: Resources found in nib, but no resources path specified with -R option.");
-            
-            _properties = [CPDictionary dictionaryWithObject:CGSizeMakeZero() forKey:@"size"];
-        }
+            CPLog.warn("*** WARNING: Resources found in nib, but no resources path specified with -R option.");
         else
         {
             var resourcePath = [aCoder resourcePathForName:_resourceName];
 
             if (!resourcePath)
-                CPLog.warn("***WARNING: Resource named " + _resourceName + " not found in supplied resources path.");
-
+                CPLog.warn("*** WARNING: Resource named " + _resourceName + " not found in supplied resources path.");
             else
-            {
-                var imageStream = ImageIO.createImageInputStream(new Packages.java.io.File(resourcePath).getCanonicalFile()),
-                    readers = ImageIO.getImageReaders(imageStream),
-                    reader = null;
-
-                if(readers.hasNext())
-                    reader = readers.next();
-
-                else
-                {
-                    imageStream.close();
-                    //can't read image format... what do you want to do about it,
-                    //throw an exception, return ?
-                }
-                
-                reader.setInput(imageStream, true, true);
-                
-                // Now we know the size (yay!) 
-                size = CGSizeMake(reader.getWidth(0), reader.getHeight(0));
-                print(size.width + " " + size.height);
-                reader.dispose();
-                imageStream.close();
-            }
+                size = imageSize(FILE.join(FILE.cwd(), resourcePath));
         }
-        
+
         _properties = [CPDictionary dictionaryWithObject:size forKey:@"size"];
     }
-    
+
     return self;
 }
 
 @end
+
+var ImageUtility = require("cappuccino/image-utility"),
+    imageSize = ImageUtility.sizeOfImageAtPath;
 
 @implementation NSCustomResource : _CPCibCustomResource
 {

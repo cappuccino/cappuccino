@@ -1,4 +1,4 @@
-/*
+ /*
  * NSAppKit.j
  * nib2cib
  *
@@ -20,6 +20,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+@import "_NSCornerView.j"
 @import "NSButton.j"
 @import "NSCell.j"
 @import "NSClassSwapper.j"
@@ -44,21 +45,29 @@
 @import "NSResponder.j"
 @import "NSScrollView.j"
 @import "NSScroller.j"
+@import "NSSearchField.j"
 @import "NSSet.j"
 @import "NSSecureTextField.j"
 @import "NSSegmentedControl.j"
 @import "NSSlider.j"
 @import "NSSplitView.j"
 @import "NSTableColumn.j"
+@import "NSTableHeaderView.j"
 @import "NSTableView.j"
 @import "NSTabView.j"
 @import "NSTabViewItem.j"
 @import "NSTextField.j"
 @import "NSToolbar.j"
+@import "NSToolbarFlexibleSpaceItem.j"
+@import "NSToolbarItem.j"
+@import "NSToolbarShowColorsItem.j"
+@import "NSToolbarSeparatorItem.j"
+@import "NSToolbarSpaceItem.j"
 @import "NSView.j"
 @import "NSViewController.j"
 @import "NSWindowTemplate.j"
 @import "WebView.j"
+@import "NSSortDescriptor.j"
 
 
 function CP_NSMapClassName(aClassName)
@@ -67,9 +76,9 @@ function CP_NSMapClassName(aClassName)
     {
         var mappedClassName = @"CP" + aClassName.substr(2);
         
-        if (window[mappedClassName])
+        if (CPClassFromString(mappedClassName))
         {
-            CPLog.warn("Mapping " + aClassName + " to " + mappedClassName);
+            CPLog.info("Mapping " + aClassName + " to " + mappedClassName);
 
             return mappedClassName;
         }

@@ -31,23 +31,9 @@
 
 #include "CoreGraphics/CGGeometry.h"
 
-
-/*
-    @global
-    @group CPImageScaling
-*/
 CPScaleProportionally   = 0;
-/*
-    @global
-    @group CPImageScaling
-*/
 CPScaleToFit            = 1;
-/*
-    @global
-    @group CPImageScaling
-*/
 CPScaleNone             = 2;
-
 
 var CPImageViewShadowBackgroundColor = nil;
     
@@ -225,6 +211,11 @@ var LEFT_SHADOW_INSET       = 3.0,
     [self setNeedsDisplay:YES];
 }
 
+- (unsigned)imageScaling
+{
+    return [self currentValueForThemeAttribute:@"image-scaling"];
+}
+
 /*!
     Toggles the display of the image view.
 */
@@ -374,12 +365,17 @@ var LEFT_SHADOW_INSET       = 3.0,
     return _isEditable;
 }
 
-- (void)performDragOperation:(CPDraggingInfo)aSender
+- (BOOL)performDragOperation:(CPDraggingInfo)aSender
 {
     var images = [CPKeyedUnarchiver unarchiveObjectWithData:[[aSender draggingPasteboard] dataForType:CPImagesPboardType]];
 
     if ([images count])
+    {
         [self setImage:images[0]];
+        [self sendAction:[self action] to:[self target]];
+    }
+    
+    return YES;
 }
 
 @end
