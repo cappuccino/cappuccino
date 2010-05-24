@@ -316,7 +316,7 @@
 */
 - (CPArray)allKeys
 {
-    return _keys;
+    return [_keys copy];
 }
 
 /*!
@@ -475,7 +475,7 @@
     var index = keysForRemoval.length;
 
     while (index--)
-        self.removeValueForKey(keysForRemoval[index]);
+        [self removeObjectForKey:keysForRemoval[index]];
 }
 
 /*
