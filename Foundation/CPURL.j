@@ -94,6 +94,11 @@ CPURLCustomIconKey                  = @"CPURLCustomIconKey";
     return [self absoluteURL].path();
 }
 
+- (CPArray)pathComponents
+{
+    return self.pathComponents();
+}
+
 // if absolute, returns the same as path
 - (CPString)relativePath
 {
