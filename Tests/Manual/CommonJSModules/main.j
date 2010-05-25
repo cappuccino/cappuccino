@@ -28,41 +28,60 @@ var testNames = [
 // ObjectiveJ.asyncLoader = false;
 
 print = function() {
+    test.logs.push(Array.prototype.join.apply(arguments, [","]));
     console.warn.apply(console, arguments);
 }
 
+var tests = [];
+var test = { pass : true, logs : [] };
+var pause = false;
+
 function main(args, namedArgs)
 {
-    var index = parseInt(window.location.hash.substring(1));
-    if (isNaN(index))
-        index = 0;
-    
-    var testName = testNames[index];
-    
+    var hash = window.location.hash.substring(1);
+    if (hash) {
+        tests = JSON.parse(decodeURIComponent(hash))
+    }
+
+    var index = tests.length;
+
+    test.name = testNames[index];
+
     function next() {
         window.clearNativeTimeout(timeout);
+
+        tests.push(test);
         if (index < testNames.length - 1) {
-            window.location.hash = "#" + (index+1);
+            window.location.hash = "#" + encodeURIComponent(JSON.stringify(tests));
             window.location.reload();
+        } else {
+            alert(tests.map(function(test) {
+                return test.logs.map(function(log) {
+                    return test.name + ": " + log;
+                }).join("\n") + "\n" +
+                "== " + (test.pass ? "PASS" : "FAIL") + " ==\n";
+            }).join("\n"));
         }
     }
-    
+
     var timeout = window.setNativeTimeout(function() {
-        alert(testName + ": timed out")
+        test.pass = false;
+        if (pause) alert(test.name + ": timed out")
         next();
-    }, 2000);
-    
+    }, 1000);
+
     try {
-        console.log("running: " + testName);
-        
-        var testDir = dir + "/tests/" + testName;
+        console.log("running: " + test.name);
+
+        var testDir = dir + "/tests/" + test.name;
         require.paths.unshift(dir + "/lib", testDir);
         require.async(testDir + "/program", function() {
-            alert(testName + ": completed");
+            if (pause) alert(test.name + ": completed");
             next();
         });
 
     } catch (e) {
-        console.error(testName+ ": exception=" + e);
+        test.pass = false;
+        print(test.name+ ": exception=" + e);
     }
 }
