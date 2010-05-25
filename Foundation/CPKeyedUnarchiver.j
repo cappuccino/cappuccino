@@ -354,9 +354,12 @@ var CPArrayClass                                                            = Ni
 - (id)decodeBytesForKey:(CPString)aKey
 {
     // We get the CPData wrapper, then extract the bytes array
-    var data = [self decodeObjectForKey:aKey],
-        objectClass = data.isa;
+    var data = [self decodeObjectForKey:aKey];
 
+    if (!data)
+        return nil;
+
+    var objectClass = data.isa;
     if (objectClass === CPDataClass)
         return data.bytes;
 

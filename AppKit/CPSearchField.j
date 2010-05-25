@@ -581,7 +581,7 @@ var CPSearchFieldSearchImage = nil,
 
 - (void)_sendPartialString
 {
-    [[self target] performSelector:[self action] withObject:self];
+    [self _sendAction:self];
 }
 
 - (void)_searchFieldCancel:(id)sender
