@@ -267,7 +267,10 @@ CPUnknownUserInfoKey        = @"CPUnknownUserInfoKey";
 
 - (id)valueForKey:(CPString)aKey
 {
-	return [self objectForKey:aKey];
+    if ([aKey hasPrefix:@"@"])
+        return [super valueForKey:aKey.substr(1)];
+
+    return [self objectForKey:aKey];
 }
 
 - (void)setValue:(id)aValue forKey:(CPString)aKey
