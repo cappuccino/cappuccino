@@ -226,7 +226,7 @@ var kvoNewAndOld = CPKeyValueObservingOptionNew|CPKeyValueObservingOptionOld,
     var currentClass = _nativeClass,
         kvoClassName = "$KVO_"+class_getName(_nativeClass),
         existingKVOClass = objj_lookUpClass(kvoClassName);
-    
+
     if (existingKVOClass)
     {
         _targetObject.isa = existingKVOClass;
@@ -245,6 +245,18 @@ var kvoNewAndOld = CPKeyValueObservingOptionNew|CPKeyValueObservingOptionOld,
     {
         var method = methodList[i];
         class_addMethod(kvoClass, method_getName(method), method_getImplementation(method), "");
+    }
+
+    if ([_targetObject isKindOfClass:[CPDictionary class]])
+    {
+        var methodList = _CPKVOModelDictionarySubclass.method_list,
+            count = methodList.length;
+
+        for (var i=0; i<count; i++)
+        {
+            var method = methodList[i];
+            class_addMethod(kvoClass, method_getName(method), method_getImplementation(method), "");
+        }
     }
 
     _targetObject.isa = kvoClass;
@@ -561,6 +573,56 @@ var kvoNewAndOld = CPKeyValueObservingOptionNew|CPKeyValueObservingOptionOld,
 - (CPString)className
 {
     return [self class].name;
+}
+
+@end
+
+@implementation _CPKVOModelDictionarySubclass
+{
+}
+
+- (void)removeAllObjects
+{
+    var keys = [self allKeys],
+        count = [keys count];
+
+    for (var i = 0; i < count; i++)
+        [self willChangeValueForKey:keys[i]];
+
+    var superClass = [self class],
+        methodSelector = @selector(removeAllObjects),
+        methodImp = class_getMethodImplementation(superClass, methodSelector);
+
+    methodImp(self, methodSelector);
+
+    for (var i = 0; i < count; i++)
+        [self didChangeValueForKey:keys[i]];
+}
+
+- (void)removeObjectForKey:(id)aKey
+{
+    [self willChangeValueForKey:aKey];
+
+    var superClass = [self class],
+        methodSelector = @selector(removeObjectForKey:),
+        methodImp = class_getMethodImplementation(superClass, methodSelector);
+
+    methodImp(self, methodSelector, aKey);
+
+    [self didChangeValueForKey:aKey];
+}
+
+- (void)setObject:(id)anObject forKey:(id)aKey
+{
+    [self willChangeValueForKey:aKey];
+
+    var superClass = [self class],
+        methodSelector = @selector(setObject:forKey:),
+        methodImp = class_getMethodImplementation(superClass, methodSelector);
+
+    methodImp(self, methodSelector, anObject, aKey);
+
+    [self didChangeValueForKey:aKey];
 }
 
 @end
