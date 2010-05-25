@@ -96,7 +96,8 @@ CPURLCustomIconKey                  = @"CPURLCustomIconKey";
 
 - (CPArray)pathComponents
 {
-    return self.pathComponents();
+    var path = self.pathComponents();
+    return [path copy];
 }
 
 // if absolute, returns the same as path
