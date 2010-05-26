@@ -130,7 +130,7 @@
 */
 -(void)encodeBycopyObject:(id)anObject
 {
-   [self encodeObject:object];
+   [self encodeObject:anObject];
 }
 
 /*!
@@ -139,7 +139,7 @@
 */
 -(void)encodeConditionalObject:(id)anObject
 {
-   [self encodeObject:object];
+   [self encodeObject:anObject];
 }
 
 @end
