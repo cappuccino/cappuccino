@@ -56,6 +56,7 @@
 @import "CPURLResponse.j"
 @import "CPUserSessionManager.j"
 @import "CPValue.j"
+@import "CPValueTransformer.j"
 
 /*! @mainpage
     Cappuccino is distributed under the @ref license "GNU LGPL".
