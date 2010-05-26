@@ -133,7 +133,11 @@ var CPControlBlackColor     = [CPColor blackColor];
 
 + (void)initialize
 {
-    [self exposeBinding:"value"];
+    if (self === [CPControl class])
+    {
+        [self exposeBinding:@"value"];
+        [self exposeBinding:@"enabled"];
+    }
 }
 
 - (id)initWithFrame:(CGRect)aFrame
