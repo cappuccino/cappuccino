@@ -37,15 +37,21 @@
         //var dataViewCell = [aCoder decodeObjectForKey:@"NSDataCell"];
 
         _dataView = [[CPTextField alloc] initWithFrame:CPRectMakeZero()];
-        [_dataView setValue:[CPColor whiteColor] forThemeAttribute:@"text-color" inState:CPThemeStateSelected];
+
+        [_dataView setValue:[CPColor colorWithRed:51.0 / 255.0 green:51.0 / 255.0 blue:51.0 / 255.0 alpha:1.0] 
+          forThemeAttribute:"text-color"];
+
+        [_dataView setValue:[CPColor whiteColor] forThemeAttribute:@"text-color" inState:CPThemeStateSelectedDataView];
+        [_dataView setLineBreakMode:CPLineBreakByTruncatingTail];  
+        [_dataView setValue:[CPFont boldSystemFontOfSize:12.0] forThemeAttribute:@"font" inState:CPThemeStateSelectedDataView];
+        [_dataView setValue:CPCenterVerticalTextAlignment forThemeAttribute:@"vertical-alignment"];
+        [_dataView setValue:CGInsetMake(0.0, 0.0, 0.0, 5.0) forThemeAttribute:@"content-inset"];
 
         var headerCell = [aCoder decodeObjectForKey:@"NSHeaderCell"],
             headerView = [[_CPTableColumnHeaderView alloc] initWithFrame:CPRectMakeZero()];
-
-        [_headerView setStringValue:[headerCell objectValue]];
-        [_headerView setFont:[headerCell font]];
-
-        [self setHeaderView:_headerView];
+        
+        [headerView setStringValue:[headerCell objectValue]];        
+        [self setHeaderView:headerView];
 
         _width = [aCoder decodeFloatForKey:@"NSWidth"];
         _minWidth = [aCoder decodeFloatForKey:@"NSMinWidth"];

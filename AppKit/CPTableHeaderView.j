@@ -42,11 +42,13 @@
 
 - (void)_init
 {
-    _textField = [[_CPImageAndTextView alloc] initWithFrame:CGRectMake(5, 1, CGRectGetWidth([self bounds]) - 10, CGRectGetHeight([self bounds]) - 1)];
+    _textField = [[_CPImageAndTextView alloc] initWithFrame:
+        CGRectMake(5.0, 0.0, CGRectGetWidth([self bounds]) - 10.0, CGRectGetHeight([self bounds]))];
+        
     [_textField setAutoresizingMask:CPViewWidthSizable|CPViewHeightSizable];
 
     [_textField setLineBreakMode:CPLineBreakByTruncatingTail];
-    [_textField setTextColor: [CPColor colorWithHexString: @"333333"]];
+    [_textField setTextColor:[CPColor colorWithRed:51.0 / 255.0 green:51.0 / 255.0 blue:51.0 / 255.0 alpha:1.0]];
     [_textField setFont:[CPFont boldSystemFontOfSize:12.0]];
     [_textField setAlignment:CPLeftTextAlignment];
     [_textField setVerticalAlignment:CPCenterVerticalTextAlignment];
@@ -61,13 +63,13 @@
     var themeState = [self themeState];
 
     if(themeState & CPThemeStateSelected && themeState & CPThemeStateHighlighted)
-        [self setBackgroundColor:[CPColor colorWithPatternImage:CPAppKitImage("tableview-headerview-highlighted-pressed.png", CGSizeMake(1.0, 22.0))]];
+        [self setBackgroundColor:[CPColor colorWithPatternImage:CPAppKitImage("tableview-headerview-highlighted-pressed.png", CGSizeMake(1.0, 23.0))]];
     else if (themeState & CPThemeStateSelected)
-        [self setBackgroundColor:[CPColor colorWithPatternImage:CPAppKitImage("tableview-headerview-highlighted.png", CGSizeMake(1.0, 22.0))]];
+        [self setBackgroundColor:[CPColor colorWithPatternImage:CPAppKitImage("tableview-headerview-highlighted.png", CGSizeMake(1.0, 23.0))]];
     else if (themeState & CPThemeStateHighlighted)
-        [self setBackgroundColor:[CPColor colorWithPatternImage:CPAppKitImage("tableview-headerview-pressed.png", CGSizeMake(1.0, 22.0))]];
+        [self setBackgroundColor:[CPColor colorWithPatternImage:CPAppKitImage("tableview-headerview-pressed.png", CGSizeMake(1.0, 23.0))]];
     else 
-        [self setBackgroundColor:[CPColor colorWithPatternImage:CPAppKitImage("tableview-headerview.png", CGSizeMake(1.0, 22.0))]];
+        [self setBackgroundColor:[CPColor colorWithPatternImage:CPAppKitImage("tableview-headerview.png", CGSizeMake(1.0, 23.0))]];
 }
 
 - (void)setStringValue:(CPString)string
@@ -174,7 +176,7 @@ var _CPTableColumnHeaderViewStringValueKey = @"_CPTableColumnHeaderViewStringVal
 
     _columnOldWidth = 0.0;
 
-    [self setBackgroundColor:[CPColor colorWithPatternImage:CPAppKitImage("tableview-headerview.png", CGSizeMake(1.0, 22.0))]];
+    [self setBackgroundColor:[CPColor colorWithPatternImage:CPAppKitImage("tableview-headerview.png", CGSizeMake(1.0, 23.0))]];
 }
 
 - (id)initWithFrame:(CGRect)aFrame

@@ -79,11 +79,16 @@ CPTableColumnUserResizingMask   = 1 << 1;
         [self setHeaderView:header];
         
         var textDataView = [CPTextField new];
-        [textDataView setLineBreakMode:CPLineBreakByTruncatingTail];
-        [textDataView setValue:[CPColor colorWithHexString:@"333333"] forThemeAttribute:@"text-color"];
+
+        [textDataView setValue:[CPColor colorWithRed:51.0 / 255.0 green:51.0 / 255.0 blue:51.0 / 255.0 alpha:1.0] 
+          forThemeAttribute:"text-color"];
+
         [textDataView setValue:[CPColor whiteColor] forThemeAttribute:@"text-color" inState:CPThemeStateSelectedDataView];
-        [textDataView setValue:[CPFont boldSystemFontOfSize:12] forThemeAttribute:@"font" inState:CPThemeStateSelectedDataView];
+        [textDataView setLineBreakMode:CPLineBreakByTruncatingTail];  
+        [textDataView setValue:[CPFont boldSystemFontOfSize:12.0] forThemeAttribute:@"font" inState:CPThemeStateSelectedDataView];
         [textDataView setValue:CPCenterVerticalTextAlignment forThemeAttribute:@"vertical-alignment"];
+        [textDataView setValue:CGInsetMake(0.0, 0.0, 0.0, 5.0) forThemeAttribute:@"content-inset"];
+
         [self setDataView:textDataView];
     }
 
@@ -398,6 +403,7 @@ var CPTableColumnIdentifierKey   = @"CPTableColumnIdentifierKey",
     CPTableColumnResizingMaskKey = @"CPTableColumnResizingMaskKey",
     CPTableColumnIsHiddenkey     = @"CPTableColumnIsHiddenKey",
     CPSortDescriptorPrototypeKey = @"CPSortDescriptorPrototypeKey";
+    CPTableColumnIsHiddenkey     = @"CPTableColumnIsHiddenKey";
 
 @implementation CPTableColumn (CPCoding)
 
