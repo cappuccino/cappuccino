@@ -167,9 +167,7 @@ var currentCursor = nil,
 {
     if (CPBrowserIsEngine(CPWebKitBrowserEngine))
         return [CPCursor cursorWithCSSString:@"-webkit-grab"];
-    else if (CPBrowserIsEngine(CPGeckoBrowserEngine))
-        return [CPCursor cursorWithCSSString:@"-moz-grab"];
-    else if (CPBrowserIsEngine(CPOperaBrowserEngine))
+    else if (CPBrowserIsEngine(CPGeckoBrowserEngine) || CPBrowserIsEngine(CPOperaBrowserEngine))
         return [CPCursor cursorWithCSSString:@"move"];
 
     return [CPCursor cursorWithImageNamed:CPStringFromSelector(_cmd)]; // WebKit only. move in FFMac|Opera 
@@ -179,10 +177,8 @@ var currentCursor = nil,
 {
     if (CPBrowserIsEngine(CPWebKitBrowserEngine))
         return [CPCursor cursorWithCSSString:@"-webkit-grabbing"];
-    else if (CPBrowserIsEngine(CPGeckoBrowserEngine))
-        return [CPCursor cursorWithCSSString:@"-moz-grabbing"];
 
-    return [CPCursor cursorWithImageNamed:CPStringFromSelector(_cmd)]; // WebKit || FF 
+    return [CPCursor cursorWithImageNamed:CPStringFromSelector(_cmd)]; // WebKit only 
 }
 
 + (CPCursor)disappearingItemCursor
