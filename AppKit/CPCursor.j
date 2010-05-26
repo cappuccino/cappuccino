@@ -58,7 +58,7 @@ var currentCursor = nil,
     {
         cursorURLFormat = @"url(" + [[CPBundle bundleForClass:self] resourcePath] + @"/CPCursor/%@.cur)";
 
-        if (CPBrowserIsEngine(CPGeckoBrowserEngine))
+        if (CPBrowserIsEngine(CPGeckoBrowserEngine) || CPBrowserIsEngine(CPWebKitBrowserEngine))
             cursorURLFormat += ", default";
     }
     
