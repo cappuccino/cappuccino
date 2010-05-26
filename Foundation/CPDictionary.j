@@ -21,9 +21,9 @@
  */
 
 @import "CPArray.j"
-@import "CPObject.j"
 @import "CPEnumerator.j"
 @import "CPException.j"
+@import "CPObject.j"
 
 
 /* @ignore */
@@ -36,20 +36,20 @@
 - (id)initWithDictionary:(CPDictionary)aDictionary
 {
     self = [super init];
-    
+
     if (self)
     {
         _keyEnumerator = [aDictionary keyEnumerator];
         _dictionary = aDictionary;
     }
-    
+
     return self;
 }
 
 - (id)nextObject
 {
     var key = [_keyEnumerator nextObject];
-    
+
     if (!key)
         return nil;
 
@@ -58,7 +58,7 @@
 
 @end
 
-/*! 
+/*!
     @class CPDictionary
     @ingroup foundation
     @brief A mutable key-value pair collection.
@@ -145,29 +145,33 @@
 */
 + (id)dictionaryWithJSObject:(JSObject)object recursively:(BOOL)recursively
 {
-    var dictionary = [[self alloc] init];
-        
-    for (var key in object)
+    var key = "",
+        dictionary = [[self alloc] init];
+
+    for (key in object)
     {
         if (!object.hasOwnProperty(key))
             continue;
 
         var value = object[key];
-        
+
         if (value === null)
         {
             [dictionary setObject:[CPNull null] forKey:key];
             continue;
         }
-    
+
         if (recursively)
         {
             if (value.constructor === Object)
                 value = [CPDictionary dictionaryWithJSObject:value recursively:YES];
             else if ([value isKindOfClass:CPArray])
             {
-                var newValue = [];
-                for (var i = 0, count = value.length; i < count; i++)
+                var newValue = [],
+                    i = 0,
+                    count = value.length;
+
+                for (; i < count; i++)
                 {
                     var thisValue = value[i];
 
@@ -183,7 +187,7 @@
 
         [dictionary setObject:value forKey:key];
     }
-    
+
     return dictionary;
 }
 
@@ -193,22 +197,22 @@
     @param ... key for the first object and ongoing value-key pairs for more objects.
     @throws CPInvalidArgumentException if the number of objects and keys is different
     @return the new CPDictionary
-    
+
     Assuming that there's no object retaining in Cappuccino, you can create
     dictionaries same way as with alloc and initWithObjectsAndKeys:
     var dict = [CPDictionary dictionaryWithObjectsAndKeys:
     @"value1", @"key1",
     @"value2", @"key2"];
-    
+
     Note, that there's no final nil like in Objective-C/Cocoa.
-    
+
     @see [CPDictionary initWithObjectsAndKeys:]
 */
 + (id)dictionaryWithObjectsAndKeys:(id)firstObject, ...
 {
     arguments[0] = [self alloc];
     arguments[1] = @selector(initWithObjectsAndKeys:);
-    
+
     return objj_msgSend.apply(this, arguments);
 }
 
@@ -221,10 +225,10 @@
 {
     var key = "",
         dictionary = [[CPDictionary alloc] init];
-    
+
     for (key in aDictionary._buckets)
         [dictionary setObject:[aDictionary objectForKey:key] forKey:key];
-        
+
     return dictionary;
 }
 
@@ -240,16 +244,16 @@
     self = [super init];
 
     if ([objects count] != [keyArray count])
-        [CPException raise:CPInvalidArgumentException reason:"Counts are different.("+[objects count]+"!="+[keyArray count]+")"];
+        [CPException raise:CPInvalidArgumentException reason:"Counts are different.(" + [objects count] + "!=" + [keyArray count] + ")"];
 
     if (self)
     {
         var i = [keyArray count];
-        
+
         while (i--)
             [self setObject:objects[i] forKey:keyArray[i]];
     }
-    
+
     return self;
 }
 
@@ -259,29 +263,29 @@
     @param ... key for the first object and ongoing value-key pairs for more objects.
     @throws CPInvalidArgumentException if the number of objects and keys is different
     @return the new CPDictionary
-    
+
     You can create dictionaries this way:
     var dict = [[CPDictionary alloc] initWithObjectsAndKeys:
     @"value1", @"key1",
     @"value2", @"key2"];
-    
+
     Note, that there's no final nil like in Objective-C/Cocoa.
 */
 - (id)initWithObjectsAndKeys:(id)firstObject, ...
 {
     var argCount = arguments.length;
-    
+
     if (argCount % 2 !== 0)
         [CPException raise:CPInvalidArgumentException reason:"Key-value count is mismatched. (" + argCount + " arguments passed)"];
 
     self = [super init];
-    
+
     if (self)
     {
         // The arguments array contains self and _cmd, so the first object is at position 2.
         var index = 2;
-        
-        for(; index < argCount; index += 2)
+
+        for (; index < argCount; index += 2)
         {
             var value = arguments[index];
 
@@ -326,7 +330,7 @@
 {
     var index = _keys.length,
         values = [];
-        
+
     while (index--)
         values.push(self.valueForKey(_keys[index]));
 
@@ -350,7 +354,7 @@
 }
 
 /*!
-    Compare the receiver to this dictionary, and return whether or not they are equal. 
+    Compare the receiver to this dictionary, and return whether or not they are equal.
 */
 - (BOOL)isEqualToDictionary:(CPDictionary)aDictionary
 {
@@ -372,10 +376,10 @@
 
         if (lhsObject === rhsObject)
             continue;
-            
+
         if (lhsObject && lhsObject.isa && rhsObject && rhsObject.isa && [lhsObject respondsToSelector:@selector(isEqual:)] && [lhsObject isEqual:rhsObject])
             continue;
-        
+
         return NO;
     }
 
@@ -399,9 +403,9 @@
         var i= 0,
             keys= CPArray.array(),
             count= this.count();
-        
-        while((i= this._objects.indexOfObjectInRage(0, count-i))!=CPNotFound) keys.addObject(this._keys[i]);
-        
+
+        while ((i= this._objects.indexOfObjectInRage(0, count-i))!=CPNotFound) keys.addObject(this._keys[i]);
+
         return keys;
     }
 
@@ -412,7 +416,7 @@
             {
                 return aSelector.apply(dictionary.objectForKey(this), [dictionary.objectForKey(rhs)]);
             };
-        
+
         return this._keys.sortedArrayUsingSelector(objectSelector);
     }
 */
@@ -424,7 +428,7 @@
 - (id)objectForKey:(CPString)aKey
 {
     var object = _buckets[aKey];
-    
+
     return (object === undefined) ? nil : object;
 }
 /*
@@ -432,20 +436,20 @@
     {
         var i= keys.length,
             objects= CPArray.array();
-        
-        while(i--)
+
+        while (i--)
         {
             var object= this.objectForKey(keys[i]);
             objects.addObject(object==nil?aNotFoundMarker:object);
         }
-        
+
         return objects;
     }
-    
+
     Instance.valueForKey(aKey)
     {
-        if(aKey.length && aKey[0]=="@") return this.objectForKey(aKey.substr(1));
-        
+        if (aKey.length && aKey[0]=="@") return this.objectForKey(aKey.substr(1));
+
         return base.valueForKey(aKey);
     }
 */
@@ -483,11 +487,11 @@
     {
         this._keys= CPArray.arrayWithArray(aDictionary.allKeys());
         this._objects= CPArray.arrayWithArray(aDictionary.allValues());
-        
+
         this._dictionary= { };
-        
+
         var i= this._keys.count();
-        while(i--) this._dictionary[this._keys[i]]= { object: this._objects[i], index: i };
+        while (i--) this._dictionary[this._keys[i]]= { object: this._objects[i], index: i };
     }
 */
 /*!
@@ -507,10 +511,10 @@
 {
     if (!aDictionary)
         return;
-        
+
     var keys = [aDictionary allKeys],
         index = [keys count];
-    
+
     while (index--)
     {
         var key = keys[index];

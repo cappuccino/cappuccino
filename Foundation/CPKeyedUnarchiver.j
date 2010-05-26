@@ -277,7 +277,7 @@ var CPArrayClass                                                            = Ni
 {
     var object = [self decodeObjectForKey:aKey];
 
-    if(object)
+    if (object)
         return CPPointFromString(object);
     else
         return CPPointMake(0.0, 0.0);
@@ -292,7 +292,7 @@ var CPArrayClass                                                            = Ni
 {
     var object = [self decodeObjectForKey:aKey];
 
-    if(object)
+    if (object)
         return CPRectFromString(object);
     else
         return CPRectMakeZero();
@@ -307,7 +307,7 @@ var CPArrayClass                                                            = Ni
 {
     var object = [self decodeObjectForKey:aKey];
 
-    if(object)
+    if (object)
         return CPSizeFromString(object);
     else
         return CPSizeMake(0.0, 0.0);

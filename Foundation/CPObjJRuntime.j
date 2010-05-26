@@ -42,7 +42,7 @@ function CPStringFromClass(aClass)
 }
 
 CPOrderedAscending  = -1;
-CPOrderedSame       = 0; 
+CPOrderedSame       = 0;
 CPOrderedDescending = 1;
 
 CPNotFound          = -1;

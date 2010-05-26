@@ -20,14 +20,15 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-@import "CPRange.j"
 @import "CPObject.j"
+@import "CPRange.j"
+
 
 #define _CPMaxRange(aRange) ((aRange).location + (aRange).length)
 #define _CPMakeRange(aLocation, aLength) { location:(aLocation), length:aLength }
 #define _CPMakeRangeCopy(aRange) { location:(aRange).location, length:(aRange).length }
 
-/*! 
+/*!
     @class CPIndexSet
     @ingroup foundation
     @brief A collection of unique integers.
@@ -179,7 +180,7 @@
         return NO;
 
     // If we have less total indexes than aRange, we can't possibly contain aRange.
-    if(_count < aRange.length)
+    if (_count < aRange.length)
         return NO;
 
     // Search for first location
@@ -203,7 +204,7 @@
 {
     var otherCount = anIndexSet._count;
 
-    if(otherCount <= 0)
+    if (otherCount <= 0)
         return YES;
 
     // If we have less total indexes than anIndexSet, we can't possibly contain aRange.
@@ -692,7 +693,7 @@
     var i = _ranges.length - 1,
         shifted = CPMakeRange(CPNotFound, 0);
 
-    for(; i >= 0; --i)
+    for (; i >= 0; --i)
     {
         var range = _ranges[i],
             maximum = CPMaxRange(range);
@@ -700,7 +701,7 @@
         if (anIndex > maximum)
             break;
 
-        // If our index is within our range, but not the first index, 
+        // If our index is within our range, but not the first index,
         // then this range will be split.
         if (anIndex > range.location && anIndex < maximum)
         {

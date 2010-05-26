@@ -43,7 +43,7 @@ CPOrderedSame           =  0;
 */
 CPOrderedDescending     =  1;
 
-/*! 
+/*!
     @class CPSortDescriptor
     @ingroup foundation
     @brief Holds attributes necessary to describe how to sort a set of objects.
@@ -85,20 +85,20 @@ CPOrderedDescending     =  1;
     Initializes the sort descriptor
     @param aKey the property key path to sort
     @param isAscending the sort order
-    @param aSelector this method gets called to compare objects. The method will take one argument 
+    @param aSelector this method gets called to compare objects. The method will take one argument
     (the object to compare against itself, and must return a CPComparisonResult.
 */
 - (id)initWithKey:(CPString)aKey ascending:(BOOL)isAscending selector:(SEL)aSelector
 {
     self = [super init];
-    
+
     if (self)
     {
         _key = aKey;
         _ascending = isAscending;
         _selector = aSelector;
     }
-    
+
     return self;
 }
 
@@ -150,9 +150,9 @@ CPOrderedDescending     =  1;
 
 @end
 
-var CPSortDescriptorKeyKey = @"CPSortDescriptorKeyKey", // Don't you just love naming schemes ;)
-    CPSortDescriptorAscendingKey = @"CPSortDescriptorAscendingKey",
-    CPSortDescriptorSelectorKey = @"CPSortDescriptorSelectorKey";
+var CPSortDescriptorKeyKey          = @"CPSortDescriptorKeyKey", // Don't you just love naming schemes ;)
+    CPSortDescriptorAscendingKey    = @"CPSortDescriptorAscendingKey",
+    CPSortDescriptorSelectorKey     = @"CPSortDescriptorSelectorKey";
 
 @implementation CPSortDescriptor (CPCoding)
 
@@ -164,7 +164,7 @@ var CPSortDescriptorKeyKey = @"CPSortDescriptorKeyKey", // Don't you just love n
         _ascending = [aCoder decodeBoolForKey:CPSortDescriptorAscendingKey];
         _selector = CPSelectorFromString([aCoder decodeObjectForKey:CPSortDescriptorSelectorKey]);
     }
-    
+
     return self;
 }
 
@@ -176,4 +176,3 @@ var CPSortDescriptorKeyKey = @"CPSortDescriptorKeyKey", // Don't you just love n
 }
 
 @end
-

@@ -224,7 +224,7 @@ var kvoNewAndOld = CPKeyValueObservingOptionNew|CPKeyValueObservingOptionOld,
 - (void)_replaceClass
 {
     var currentClass = _nativeClass,
-        kvoClassName = "$KVO_"+class_getName(_nativeClass),
+        kvoClassName = "$KVO_" + class_getName(_nativeClass),
         existingKVOClass = objj_lookUpClass(kvoClassName);
 
     if (existingKVOClass)
@@ -232,16 +232,17 @@ var kvoNewAndOld = CPKeyValueObservingOptionNew|CPKeyValueObservingOptionOld,
         _targetObject.isa = existingKVOClass;
         return;
     }
-    
+
     var kvoClass = objj_allocateClassPair(currentClass, kvoClassName);
-        
+
     objj_registerClassPair(kvoClass);
-        
+
     //copy in the methods from our model subclass
     var methodList = _CPKVOModelSubclass.method_list,
-        count = methodList.length;
+        count = methodList.length,
+        i = 0;
 
-    for (var i=0; i<count; i++)
+    for (; i < count; i++)
     {
         var method = methodList[i];
         class_addMethod(kvoClass, method_getName(method), method_getImplementation(method), "");
@@ -250,9 +251,10 @@ var kvoNewAndOld = CPKeyValueObservingOptionNew|CPKeyValueObservingOptionOld,
     if ([_targetObject isKindOfClass:[CPDictionary class]])
     {
         var methodList = _CPKVOModelDictionarySubclass.method_list,
-            count = methodList.length;
+            count = methodList.length,
+            i = 0;
 
-        for (var i=0; i<count; i++)
+        for (; i < count; i++)
         {
             var method = methodList[i];
             class_addMethod(kvoClass, method_getName(method), method_getImplementation(method), "");
@@ -263,25 +265,28 @@ var kvoNewAndOld = CPKeyValueObservingOptionNew|CPKeyValueObservingOptionOld,
 }
 
 - (void)_replaceSetterForKey:(CPString)aKey
-{    
+{
     if ([_replacedKeys containsObject:aKey] || ![_nativeClass automaticallyNotifiesObserversForKey:aKey])
         return;
-        
+
     var currentClass = _nativeClass,
         capitalizedKey = aKey.charAt(0).toUpperCase() + aKey.substring(1),
         found = false,
         replacementMethods = [
-            "set"+capitalizedKey+":", _kvoMethodForMethod,
-            "_set"+capitalizedKey+":", _kvoMethodForMethod,
-            "insertObject:in"+capitalizedKey+"AtIndex:", _kvoInsertMethodForMethod,
-            "replaceObjectIn"+capitalizedKey+"AtIndex:withObject:", _kvoReplaceMethodForMethod,
-            "removeObjectFrom"+capitalizedKey+"AtIndex:", _kvoRemoveMethodForMethod
+            "set" + capitalizedKey + ":", _kvoMethodForMethod,
+            "_set" + capitalizedKey + ":", _kvoMethodForMethod,
+            "insertObject:in" + capitalizedKey + "AtIndex:", _kvoInsertMethodForMethod,
+            "replaceObjectIn" + capitalizedKey + "AtIndex:withObject:", _kvoReplaceMethodForMethod,
+            "removeObjectFrom" + capitalizedKey + "AtIndex:", _kvoRemoveMethodForMethod
         ];
-    
-    for (var i=0, count=replacementMethods.length; i<count; i+=2)
+
+    var i = 0,
+        count = replacementMethods.length;
+
+    for (; i < count; i += 2)
     {
         var theSelector = sel_getName(replacementMethods[i]),
-            theReplacementMethod = replacementMethods[i+1];
+            theReplacementMethod = replacementMethods[i + 1];
 
         if ([_nativeClass instancesRespondToSelector:theSelector])
         {
@@ -327,7 +332,7 @@ var kvoNewAndOld = CPKeyValueObservingOptionNew|CPKeyValueObservingOptionOld,
         return;
 
     var forwarder = nil;
-    
+
     if (aPath.indexOf('.') != CPNotFound)
         forwarder = [[_CPKVOForwardingObserver alloc] initWithKeyPath:aPath object:_targetObject observer:anObserver options:options context:aContext];
     else
@@ -343,7 +348,7 @@ var kvoNewAndOld = CPKeyValueObservingOptionNew|CPKeyValueObservingOptionOld,
     }
 
     [observers setObject:_CPKVOInfoMake(anObserver, options, aContext, forwarder) forKey:[anObserver UID]];
-    
+
     if (options & CPKeyValueObservingOptionInitial)
     {
         var newValue = [_targetObject valueForKeyPath:aPath];
@@ -392,15 +397,15 @@ var kvoNewAndOld = CPKeyValueObservingOptionNew|CPKeyValueObservingOptionOld,
         changes = changeOptions;
 
         var indexes = [changes objectForKey:CPKeyValueChangeIndexesKey];
-        
+
         if (indexes)
         {
             var type = [changes objectForKey:CPKeyValueChangeKindKey];
-            
+
             // for to-many relationships, oldvalue is only sensible for replace and remove
             if (type === CPKeyValueChangeReplacement || type === CPKeyValueChangeRemoval)
             {
-                //FIXME: do we need to go through and replace "" with CPNull? 
+                //FIXME: do we need to go through and replace "" with CPNull?
                 var newValues = [[_targetObject mutableArrayValueForKeyPath:aKey] objectsAtIndexes:indexes];
                 [changes setValue:newValues forKey:CPKeyValueChangeOldKey];
             }
@@ -408,13 +413,13 @@ var kvoNewAndOld = CPKeyValueObservingOptionNew|CPKeyValueObservingOptionOld,
         else
         {
             var oldValue = [_targetObject valueForKey:aKey];
-    
+
             if (oldValue === nil || oldValue === undefined)
                 oldValue = [CPNull null];
 
             [changes setObject:oldValue forKey:CPKeyValueChangeOldKey];
         }
-        
+
         [changes setObject:1 forKey:CPKeyValueChangeNotificationIsPriorKey];
 
         _changesForKey[aKey] = changes;
@@ -424,15 +429,15 @@ var kvoNewAndOld = CPKeyValueObservingOptionNew|CPKeyValueObservingOptionOld,
         [changes removeObjectForKey:CPKeyValueChangeNotificationIsPriorKey];
 
         var indexes = [changes objectForKey:CPKeyValueChangeIndexesKey];
-        
+
         if (indexes)
         {
             var type = [changes objectForKey:CPKeyValueChangeKindKey];
-            
+
             // for to-many relationships, oldvalue is only sensible for replace and remove
             if (type == CPKeyValueChangeReplacement || type == CPKeyValueChangeInsertion)
             {
-                //FIXME: do we need to go through and replace "" with CPNull? 
+                //FIXME: do we need to go through and replace "" with CPNull?
                 var newValues = [[_targetObject mutableArrayValueForKeyPath:aKey] objectsAtIndexes:indexes];
                 [changes setValue:newValues forKey:CPKeyValueChangeNewKey];
             }
@@ -440,10 +445,10 @@ var kvoNewAndOld = CPKeyValueObservingOptionNew|CPKeyValueObservingOptionOld,
         else
         {
             var newValue = [_targetObject valueForKey:aKey];
-    
+
             if (newValue === nil || newValue === undefined)
                 newValue = [CPNull null];
-    
+
             [changes setObject:newValue forKey:CPKeyValueChangeNewKey];
         }
     }
@@ -532,7 +537,7 @@ var kvoNewAndOld = CPKeyValueObservingOptionNew|CPKeyValueObservingOptionOld,
         return;
 
     var changeOptions = [CPDictionary dictionaryWithObjects:[change, indexes] forKeys:[CPKeyValueChangeKindKey, CPKeyValueChangeIndexesKey]];
-    
+
     [[_CPKVOProxy proxyForObject:self] _sendNotificationsForKey:aKey changeOptions:changeOptions isBefore:YES];
 }
 
@@ -584,9 +589,10 @@ var kvoNewAndOld = CPKeyValueObservingOptionNew|CPKeyValueObservingOptionOld,
 - (void)removeAllObjects
 {
     var keys = [self allKeys],
-        count = [keys count];
+        count = [keys count],
+        i = 0;
 
-    for (var i = 0; i < count; i++)
+    for (; i < count; i++)
         [self willChangeValueForKey:keys[i]];
 
     var superClass = [self class],
@@ -595,7 +601,7 @@ var kvoNewAndOld = CPKeyValueObservingOptionNew|CPKeyValueObservingOptionOld,
 
     methodImp(self, methodSelector);
 
-    for (var i = 0; i < count; i++)
+    for (i = 0; i < count; i++)
         [self didChangeValueForKey:keys[i]];
 }
 
@@ -642,30 +648,30 @@ var kvoNewAndOld = CPKeyValueObservingOptionNew|CPKeyValueObservingOptionOld,
 - (id)initWithKeyPath:(CPString)aKeyPath object:(id)anObject observer:(id)anObserver options:(unsigned)options context:(id)aContext
 {
     self = [super init];
-        
+
     _context = aContext;
     _observer = anObserver;
     _object = anObject;
-    
+
     //current ignoring options (FIXME?)
-    
+
     var dotIndex = aKeyPath.indexOf('.');
-    
+
     if (dotIndex == CPNotFound)
         [CPException raise:CPInvalidArgumentException reason:"Created _CPKVOForwardingObserver without compound key path: "+aKeyPath];
-    
+
     _firstPart = aKeyPath.substring(0, dotIndex);
-    _secondPart = aKeyPath.substring(dotIndex+1);
-    
+    _secondPart = aKeyPath.substring(dotIndex + 1);
+
     //become an observer of the first part of our key (a)
     [_object addObserver:self forKeyPath:_firstPart options:kvoNewAndOld context:nil];
-    
+
     //the current value of a (not the value of a.b)
     _value = [_object valueForKey:_firstPart];
-    
+
     if (_value)
         [_value addObserver:self forKeyPath:_secondPart options:kvoNewAndOld context:nil]; //we're observing b on current a
-    
+
     return self;
 }
 
@@ -674,13 +680,13 @@ var kvoNewAndOld = CPKeyValueObservingOptionNew|CPKeyValueObservingOptionOld,
     if (aKeyPath === _firstPart)
     {
         [_observer observeValueForKeyPath:_firstPart ofObject:_object change:changes context:_context];
-        
+
         //since a has changed, we should remove ourselves as an observer of the old a, and observe the new one
         if (_value)
             [_value removeObserver:self forKeyPath:_secondPart];
-            
+
         _value = [_object valueForKey:_firstPart];
-        
+
         if (_value)
             [_value addObserver:self forKeyPath:_secondPart options:kvoNewAndOld context:nil];
     }
@@ -695,9 +701,9 @@ var kvoNewAndOld = CPKeyValueObservingOptionNew|CPKeyValueObservingOptionOld,
 {
     if (_value)
         [_value removeObserver:self forKeyPath:_secondPart];
-    
+
     [_object removeObserver:self forKeyPath:_firstPart];
-    
+
     _object = nil;
     _observer = nil;
     _context = nil;
@@ -709,7 +715,7 @@ var kvoNewAndOld = CPKeyValueObservingOptionNew|CPKeyValueObservingOptionOld,
 var _CPKVOInfoMake = function _CPKVOInfoMake(anObserver, theOptions, aContext, aForwarder)
 {
     return {
-        observer: anObserver, 
+        observer: anObserver,
         options: theOptions,
         context: aContext,
         forwarder: aForwarder
@@ -718,7 +724,7 @@ var _CPKVOInfoMake = function _CPKVOInfoMake(anObserver, theOptions, aContext, a
 
 var _kvoMethodForMethod = function _kvoMethodForMethod(theKey, theMethod)
 {
-    return function(self, _cmd, object) 
+    return function(self, _cmd, object)
     {
         [self willChangeValueForKey:theKey];
         theMethod.method_imp(self, _cmd, object);
