@@ -84,11 +84,14 @@
 {
     self = [super init];
     
-    if (!attributes)
-        attributes = [CPDictionary dictionary];
+    if (self)
+    {
+        if (!attributes)
+            attributes = [CPDictionary dictionary];
 
-    _string = ""+aString;
-    _rangeEntries = [makeRangeEntry(CPMakeRange(0, _string.length), attributes)];
+        _string = ""+aString;
+        _rangeEntries = [makeRangeEntry(CPMakeRange(0, _string.length), attributes)];    
+    }
 
     return self;
 }
