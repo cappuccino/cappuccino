@@ -231,6 +231,23 @@ CPLog(@"Got some class: %@", inst);
     return !!class_getInstanceMethod(isa, aSelector);
 }
 
+/*!
+    Tests whether the receiver implements to the provided selector regardless of inheritance.
+    @param aSelector the selector for which to test the receiver
+    @return \c YES if the receiver implements the selector
+*/
+- (BOOL)implementsSelector:(SEL)aSelector
+{
+    var methods = class_copyMethodList(isa),
+        count = methods.length;
+
+    while (count--)
+        if (method_getName(methods[count]) === aSelector)
+            return YES;
+
+    return NO;
+}
+
 // Obtaining method information
 
 /*!
