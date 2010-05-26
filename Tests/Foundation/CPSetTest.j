@@ -56,4 +56,17 @@
     [self assertFalse:[set containsObject:nil]];
 }
 
+- (void)testDescription
+{
+    [self assert:@"{()}" equals:[set description]];
+    [set addObject:"horizon"];
+    [set addObject:"surfer"];
+    [set addObject:"7"];
+    var desc = [set description];
+    // Ordering may not be guaranteed.
+    [self assertTrue:desc.match(new RegExp("{\(.*horizon.*\)}"))];
+    [self assertTrue:desc.match(new RegExp("{\(.*surfer.*\)}"))];
+    [self assertTrue:desc.match(new RegExp("{\(.*7.*\)}"))];
+}
+
 @end

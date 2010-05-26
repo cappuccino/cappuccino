@@ -69,11 +69,13 @@ CPWebViewScrollNative                           = 2;
     
     CPString    _url;
     CPString    _html;
-    
+
     Function    _loadCallback;
-    
+
     int         _scrollMode;
     CGSize      _scrollSize;
+
+    int         _loadHTMLStringTimer;
 }
 
 - (id)initWithFrame:(CPRect)frameRect frameName:(CPString)frameName groupName:(CPString)groupName
@@ -110,6 +112,7 @@ CPWebViewScrollNative                           = 2;
     _iframe.style.width = "100%";
     _iframe.style.height = "100%";
     _iframe.style.borderWidth = "0px";
+    _iframe.frameBorder = "0";
     
     [self setDrawsBackground:YES];
     
@@ -171,7 +174,32 @@ CPWebViewScrollNative                           = 2;
     [self _resizeWebFrame];
 }
 
-- (BOOL)_resizeWebFrame
+- (void)_attachScrollEventIfNecessary
+{
+    if (_scrollMode !== CPWebViewScrollAppKit)
+        return;
+
+    var win = null;
+    try { win = [self DOMWindow]; } catch (e) {}
+
+    if (win && win.addEventListener)
+    {
+        var scrollEventHandler = function(anEvent)
+        {
+            var frameBounds = [self bounds],
+                frameCenter = CGPointMake(CGRectGetMidX(frameBounds), CGRectGetMidY(frameBounds)),
+                windowOrigin = [self convertPoint:frameCenter toView:nil],
+                globalOrigin = [[self window] convertBaseToBridge:windowOrigin];
+
+            anEvent._overrideLocation = globalOrigin;
+            [[[self window] platformWindow] scrollEvent:anEvent];
+        };
+
+        win.addEventListener("DOMMouseScroll", scrollEventHandler, false);
+    }
+}
+
+- (void)_resizeWebFrame
 {
     if (_scrollMode === CPWebViewScrollAppKit)
     {
@@ -181,13 +209,14 @@ CPWebViewScrollNative                           = 2;
         }
         else
         {
-            [_frameView setFrameSize:[_scrollView contentSize]];
+            var visibleRect = [_frameView visibleRect];
+            [_frameView setFrameSize:CGSizeMake(CGRectGetMaxX(visibleRect), CGRectGetMaxY(visibleRect))];
             
             // try to get the document size so we can correctly set the frame
             var win = null;
             try { win = [self DOMWindow]; } catch (e) {}
 
-            if (win && win.document)
+            if (win && win.document && win.document.body)
             {
                 var width = win.document.body.scrollWidth,
                     height = win.document.body.scrollHeight;
@@ -203,6 +232,8 @@ CPWebViewScrollNative                           = 2;
             
                 [_frameView setFrameSize:CGSizeMake(800, 1600)];
             }
+
+            [_frameView scrollRectToVisible:visibleRect];
         }
     }
 }
@@ -217,7 +248,10 @@ CPWebViewScrollNative                           = 2;
 
 - (void)_setScrollMode:(int)aScrollMode
 {
-    _scrollMode = aScrollMode;
+    if (CPBrowserIsEngine(CPInternetExplorerBrowserEngine))
+        _scrollMode = CPWebViewScrollNative;
+    else
+        _scrollMode = aScrollMode;
         
     _ignoreLoadStart = YES;
     _ignoreLoadEnd  = YES;
@@ -256,6 +290,8 @@ CPWebViewScrollNative                           = 2;
 
     [self _setScrollMode:CPWebViewScrollAppKit];
 
+    [_frameView setFrameSize:[_scrollView contentSize]];
+
     [self _startedLoading];
     
     _ignoreLoadStart = YES;
@@ -293,8 +329,15 @@ CPWebViewScrollNative                           = 2;
         // clear the iframe
         _iframe.src = "";
 
+        if (_loadHTMLStringTimer !== nil)
+        {
+            window.clearTimeout(_loadHTMLStringTimer);
+            _loadHTMLStringTimer = nil;
+        }
+
         // need to give the browser a chance to reset iframe, otherwise we'll be document.write()-ing the previous document 
-        window.setTimeout(function() {
+        _loadHTMLStringTimer = window.setTimeout(function()
+        {
             var win = [self DOMWindow];
             
             win.document.write(_html);
@@ -315,7 +358,8 @@ CPWebViewScrollNative                           = 2;
 - (void)_finishedLoading
 {
     [self _resizeWebFrame];
-    
+    [self _attachScrollEventIfNecessary];
+
     [[CPNotificationCenter defaultCenter] postNotificationName:CPWebViewProgressFinishedNotification object:self];
 
     if ([_frameLoadDelegate respondsToSelector:@selector(webView:didFinishLoadForFrame:)])

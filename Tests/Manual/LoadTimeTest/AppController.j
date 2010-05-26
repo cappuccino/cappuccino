@@ -28,7 +28,7 @@
     if (data.length < 10)
     {
         // reload with data in the query string
-        window.location.href = [window.location.protocol, "//", window.location.host, window.location.port, window.location.pathname, "?", encodeURIComponent(JSON.stringify(data))].join("");
+        window.location.href = [window.location.protocol, "//", window.location.host, window.location.pathname, "?", encodeURIComponent(JSON.stringify(data))].join("");
     }
     else
     {
@@ -48,7 +48,16 @@
         
         loadStdev = Math.sqrt(loadStdev / data.length);
         launchStdev = Math.sqrt(launchStdev / data.length);
-    
+
+        if (window.parent.BCOMM) {
+            window.parent.BCOMM.finishTest({
+                loadAvg : loadAvg,
+                launchAvg : launchAvg,
+                loadStdev : loadStdev,
+                launchStdev : launchStdev
+            });
+        }
+
         var theWindow = [[CPWindow alloc] initWithContentRect:CGRectMakeZero() styleMask:CPBorderlessBridgeWindowMask],
             contentView = [theWindow contentView];
 

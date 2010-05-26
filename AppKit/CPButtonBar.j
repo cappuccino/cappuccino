@@ -14,8 +14,9 @@
 + (id)plusButton
 {
     var button = [[CPButton alloc] initWithFrame:CGRectMake(0, 0, 35, 25)],
-        image = [[CPImage alloc] initWithContentsOfFile:[[CPBundle bundleForClass:self] pathForResource:@"plus_button.png"] size:CGSizeMake(11, 12)];
+        image = [[CPImage alloc] initWithContentsOfFile:[[CPBundle bundleForClass:[CPButtonBar class]] pathForResource:@"plus_button.png"] size:CGSizeMake(11, 12)];
 
+    [button setBordered:NO];
     [button setImage:image];
     [button setImagePosition:CPImageOnly];
 
@@ -25,10 +26,26 @@
 + (id)minusButton
 {
     var button = [[CPButton alloc] initWithFrame:CGRectMake(0, 0, 35, 25)],
-        image = [[CPImage alloc] initWithContentsOfFile:[[CPBundle bundleForClass:self] pathForResource:@"minus_button.png"] size:CGSizeMake(11, 4)];
+        image = [[CPImage alloc] initWithContentsOfFile:[[CPBundle bundleForClass:[CPButtonBar class]] pathForResource:@"minus_button.png"] size:CGSizeMake(11, 4)];
 
+    [button setBordered:NO];
     [button setImage:image];
     [button setImagePosition:CPImageOnly];
+
+    return button;
+}
+
++ (id)actionPopupButton
+{
+    var button = [[CPPopUpButton alloc] initWithFrame:CGRectMake(0, 0, 35, 25)],
+        image = [[CPImage alloc] initWithContentsOfFile:[[CPBundle bundleForClass:[CPButtonBar class]] pathForResource:@"action_button.png"] size:CGSizeMake(22, 14)];
+
+    [button addItemWithTitle:nil];
+    [[button lastItem] setImage:image];
+    [button setImagePosition:CPImageOnly];
+    [button setValue:CGInsetMake(0, 0, 0, 0) forThemeAttribute:"content-inset"];
+
+    [button setPullsDown:YES];
 
     return button;
 }
@@ -40,8 +57,8 @@
 
 + (id)themeAttributes
 {
-    return [CPDictionary dictionaryWithObjects:[CGInsetMake(0.0, 0.0, 0.0, 0.0), CGSizeMakeZero(), [CPNull null], [CPNull null], [CPNull null]]
-                                       forKeys:[@"resize-control-inset", @"resize-control-size", @"resize-control-color", @"bezel-color", @"button-bezel-color"]];
+    return [CPDictionary dictionaryWithObjects:[CGInsetMake(0.0, 0.0, 0.0, 0.0), CGSizeMakeZero(), [CPNull null], [CPNull null], [CPNull null], [CPNull null]]
+                                       forKeys:[@"resize-control-inset", @"resize-control-size", @"resize-control-color", @"bezel-color", @"button-bezel-color", @"button-text-color"]];
 }
 
 - (id)initWithFrame:(CGRect)aFrame
@@ -82,25 +99,8 @@
     _buttons = [CPArray arrayWithArray:buttons];
 
     for (var i = 0, count = [_buttons count]; i < count; i++)
-    {
-        var button = _buttons[i];
+        [_buttons[i] setBordered:YES];
 
-        var normalColor = [self valueForThemeAttribute:@"button-bezel-color" inState:CPThemeStateNormal],
-            highlightedColor = [self valueForThemeAttribute:@"button-bezel-color" inState:CPThemeStateHighlighted],
-            disabledColor = [self valueForThemeAttribute:@"button-bezel-color" inState:CPThemeStateDisabled];
-
-        [button setValue:normalColor forThemeAttribute:@"bezel-color" inState:CPThemeStateNormal|CPThemeStateBordered];    
-        [button setValue:highlightedColor forThemeAttribute:@"bezel-color" inState:CPThemeStateHighlighted|CPThemeStateBordered];    
-        [button setValue:disabledColor forThemeAttribute:@"bezel-color" inState:CPThemeStateDisabled|CPThemeStateBordered];    
-
-        // FIXME shouldn't need this
-        [button setValue:normalColor forThemeAttribute:@"bezel-color" inState:CPThemeStateNormal|CPThemeStateBordered|CPPopUpButtonStatePullsDown];    
-        [button setValue:highlightedColor forThemeAttribute:@"bezel-color" inState:CPThemeStateHighlighted|CPThemeStateBordered|CPPopUpButtonStatePullsDown];    
-        [button setValue:disabledColor forThemeAttribute:@"bezel-color" inState:CPThemeStateDisabled|CPThemeStateBordered|CPPopUpButtonStatePullsDown];    
-
-        [button setBordered:YES];
-    }
-    
     [self setNeedsLayout];
 }
 
@@ -176,6 +176,11 @@
 {
     [self setBackgroundColor:[self currentValueForThemeAttribute:@"bezel-color"]];
 
+    var normalColor = [self valueForThemeAttribute:@"button-bezel-color" inState:CPThemeStateNormal],
+        highlightedColor = [self valueForThemeAttribute:@"button-bezel-color" inState:CPThemeStateHighlighted],
+        disabledColor = [self valueForThemeAttribute:@"button-bezel-color" inState:CPThemeStateDisabled],
+        textColor = [self valueForThemeAttribute:@"button-text-color" inState:CPThemeStateNormal];
+
     var buttonsNotHidden = [CPArray arrayWithArray:_buttons],
         count = [buttonsNotHidden count];
 
@@ -184,12 +189,22 @@
             [buttonsNotHidden removeObject:buttonsNotHidden[count]];
 
     var currentButtonOffset = _resizeControlIsLeftAligned ? CGRectGetMaxX([self bounds]) + 1 : -1,
-        height = CGRectGetHeight([self bounds]) - 1;
+        bounds = [self bounds],
+        height = CGRectGetHeight(bounds) - 1,
+        frameWidth = CGRectGetWidth(bounds),
+        resizeRect = _hasResizeControl ? [self rectForEphemeralSubviewNamed:"resize-control-view"] : CGRectMakeZero(),
+        resizeWidth = CGRectGetWidth(resizeRect),
+        availableWidth = frameWidth - resizeWidth - 1;
 
     for (var i = 0, count = [buttonsNotHidden count]; i < count; i++)
     {   
         var button = buttonsNotHidden[i],
             width = CGRectGetWidth([button frame]);
+
+        if (availableWidth > width)
+            availableWidth -=width;
+        else
+            break;
 
         if (_resizeControlIsLeftAligned)
         {
@@ -201,6 +216,16 @@
             [button setFrame:CGRectMake(currentButtonOffset, 1, width, height)];
             currentButtonOffset += width - 1;
         }
+
+        [button setValue:normalColor forThemeAttribute:@"bezel-color" inState:CPThemeStateNormal|CPThemeStateBordered];    
+        [button setValue:highlightedColor forThemeAttribute:@"bezel-color" inState:CPThemeStateHighlighted|CPThemeStateBordered];    
+        [button setValue:disabledColor forThemeAttribute:@"bezel-color" inState:CPThemeStateDisabled|CPThemeStateBordered];    
+        [button setValue:textColor forThemeAttribute:@"text-color" inState:CPThemeStateBordered];    
+
+        // FIXME shouldn't need this
+        [button setValue:normalColor forThemeAttribute:@"bezel-color" inState:CPThemeStateNormal|CPThemeStateBordered|CPPopUpButtonStatePullsDown];    
+        [button setValue:highlightedColor forThemeAttribute:@"bezel-color" inState:CPThemeStateHighlighted|CPThemeStateBordered|CPPopUpButtonStatePullsDown];    
+        [button setValue:disabledColor forThemeAttribute:@"bezel-color" inState:CPThemeStateDisabled|CPThemeStateBordered|CPPopUpButtonStatePullsDown];    
 
         [self addSubview:button];
     }
@@ -214,6 +239,12 @@
         [resizeControlView setAutoresizingMask: _resizeControlIsLeftAligned ? CPViewMaxXMargin : CPViewMinXMargin];
         [resizeControlView setBackgroundColor:[self currentValueForThemeAttribute:@"resize-control-color"]];
     }
+}
+
+- (void)setFrameSize:(CGSize)aSize
+{
+    [super setFrameSize:aSize];
+    [self setNeedsLayout];
 }
 
 @end
@@ -246,4 +277,3 @@ var CPButtonBarHasResizeControlKey = @"CPButtonBarHasResizeControlKey",
 }
 
 @end
-

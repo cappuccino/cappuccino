@@ -30,7 +30,7 @@ CPUnsupportedMethodException        = "CPUnsupportedMethodException";
 CPRangeException                    = "CPRangeException";
 CPInternalInconsistencyException    = "CPInternalInconsistencyException";
 
-/*! 
+/*!
     @class CPException
     @ingroup foundation
     @brief Used to implement exception handling (creating & raising).
@@ -40,7 +40,7 @@ CPInternalInconsistencyException    = "CPInternalInconsistencyException";
 // some code here...
 if (input == nil)
     [CPException raise:"MyException" reason:"You didn't do something right."];
-    
+
 // code that gets executed if no exception was raised
 </pre>
 */
@@ -96,7 +96,7 @@ if (input == nil)
         message = aReason;
         _userInfo = aUserInfo;
     }
-    
+
     return self;
 }
 
@@ -165,14 +165,14 @@ var CPExceptionNameKey = "CPExceptionNameKey",
 - (id)initWithCoder:(CPCoder)aCoder
 {
     self = [super init];
-    
+
     if (self)
     {
         name = [aCoder decodeObjectForKey:CPExceptionNameKey];
         message = [aCoder decodeObjectForKey:CPExceptionReasonKey];
         _userInfo = [aCoder decodeObjectForKey:CPExceptionUserInfoKey];
     }
-    
+
     return self;
 }
 

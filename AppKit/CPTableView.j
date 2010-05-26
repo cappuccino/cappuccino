@@ -28,7 +28,6 @@
 @import "_CPCornerView.j"
 @import "CPScroller.j"
 
-
 CPTableViewColumnDidMoveNotification        = @"CPTableViewColumnDidMoveNotification";
 CPTableViewColumnDidResizeNotification      = @"CPTableViewColumnDidResizeNotification";
 CPTableViewSelectionDidChangeNotification   = @"CPTableViewSelectionDidChangeNotification";
@@ -75,6 +74,10 @@ CPTableViewDraggingDestinationFeedbackStyleSourceList = 1;
 CPTableViewDropOn = 0;
 CPTableViewDropAbove = 1;
 
+CPSourceListGradient = "CPSourceListGradient";
+CPSourceListTopLineColor = "CPSourceListTopLineColor";
+CPSourceListBottomLineColor = "CPSourceListBottomLineColor";
+
 // TODO: add docs
 
 CPTableViewSelectionHighlightStyleNone = -1;
@@ -86,7 +89,7 @@ CPTableViewSolidVerticalGridLineMask   = 1 << 0;
 CPTableViewSolidHorizontalGridLineMask = 1 << 1;
 
 CPTableViewNoColumnAutoresizing = 0;
-CPTableViewUniformColumnAutoresizingStyle = 1;
+CPTableViewUniformColumnAutoresizingStyle = 1; // FIX ME: This is FUBAR
 CPTableViewSequentialColumnAutoresizingStyle = 2;
 CPTableViewReverseSequentialColumnAutoresizingStyle = 3;
 CPTableViewLastColumnOnlyAutoresizingStyle = 4;
@@ -123,13 +126,13 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 
 @end
 
-/*! 
+/*!
     @ingroup appkit
     @class CPTableView
 
-    CPTableView object displays record-oriented data in a table and 
+    CPTableView object displays record-oriented data in a table and
     allows the user to edit values and resize and rearrange columns.
-    A CPTableView requires you to set a dataSource which implements numberOfRowsInTableView: 
+    A CPTableView requires you to set a dataSource which implements numberOfRowsInTableView:
     and tableView:objectValueForTableColumn:row:
 */
 @implementation CPTableView : CPControl
@@ -159,7 +162,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     BOOL        _allowsColumnSelection;
     BOOL        _allowsMultipleSelection;
     BOOL        _allowsEmptySelection;
-    
+
     CPArray     _sortDescriptors;
     //Setting Display Attributes
     CGSize      _intercellSpacing;
@@ -170,6 +173,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 
     unsigned    _selectionHighlightStyle;
     CPTableColumn _currentHighlightedTableColumn;
+    CPColor     _selectionHighlightColor;
     unsigned    _gridStyleMask;
     CPColor     _gridColor;
 
@@ -205,13 +209,16 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     CPDragOperation             _dragOperationDefaultMask;
     int                         _retargetedDropRow;
     CPDragOperation             _retargetedDropOperation;
-    
+
     BOOL        _disableAutomaticResizing @accessors(property=disableAutomaticResizing);
     BOOL        _lastColumnShouldSnap;
 
     CPGradient  _sourceListActiveGradient;
     CPColor     _sourceListActiveTopLineColor;
-    CPColor     _sourceListActiveBottomLineColor;    
+    CPColor     _sourceListActiveBottomLineColor;
+
+    int         _draggedColumnIndex;
+
 /*
     CPGradient  _sourceListInactiveGradient;
     CPColor     _sourceListInactiveTopLineColor;
@@ -232,26 +239,19 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
         _allowsEmptySelection = YES;
         _allowsColumnSelection = NO;
         _disableAutomaticResizing = NO;
-        _tableViewFlags = 0;
 
         //Setting Display Attributes
         _selectionHighlightStyle = CPTableViewSelectionHighlightStyleRegular;
 
         [self setUsesAlternatingRowBackgroundColors:NO];
-        [self setAlternatingRowBackgroundColors:[[CPColor whiteColor], [CPColor colorWithHexString:@"f5f9fc"]]];
+        [self setAlternatingRowBackgroundColors:
+            [[CPColor whiteColor], [CPColor colorWithRed:245.0 / 255.0 green:249.0 / 255.0 blue:252.0 / 255.0 alpha:1.0]]];
 
         _tableColumns = [];
         _tableColumnRanges = [];
         _dirtyTableColumnRangeIndex = CPNotFound;
         _numberOfHiddenColumns = 0;
 
-        _objectValues = { };
-        _dataViewsForTableColumns = { };
-        _dataViews=  [];
-        _numberOfRows = 0;
-        _exposedRows = [CPIndexSet indexSet];
-        _exposedColumns = [CPIndexSet indexSet];
-        _cachedDataViews = { };
         _intercellSpacing = _CGSizeMake(0.0, 0.0);
         _rowHeight = 23.0;
 
@@ -265,8 +265,6 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
         _cornerView = nil; //[[_CPCornerView alloc] initWithFrame:CGRectMake(0, 0, [CPScroller scrollerWidth], CGRectGetHeight([_headerView frame]))];
 
         _lastSelectedRow = -1;
-        _selectedColumnIndexes = [CPIndexSet indexSet];
-        _selectedRowIndexes = [CPIndexSet indexSet];
         _currentHighlightedTableColumn = nil;
 
         _sortDescriptors = [CPArray array];
@@ -279,10 +277,6 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
         _dragOperationDefaultMask = nil;
         _destinationDragStyle = CPTableViewDraggingDestinationFeedbackStyleRegular;
 
-        _tableDrawView = [[_CPTableDrawView alloc] initWithTableView:self];
-        [_tableDrawView setBackgroundColor:[CPColor clearColor]];
-        [self addSubview:_tableDrawView];
-
         [self setBackgroundColor:[CPColor whiteColor]];
         [self _init];
     }
@@ -293,10 +287,46 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 // FIX ME: we have a lot of redundent init stuff in initWithFrame: and initWithCoder: we should move it all into here.
 - (void)_init
 {
+        _tableViewFlags = 0;
+
+        _selectedColumnIndexes = [CPIndexSet indexSet];
+        _selectedRowIndexes = [CPIndexSet indexSet];
+
         _dropOperationFeedbackView = [[_CPDropOperationDrawingView alloc] initWithFrame:_CGRectMakeZero()];
         [_dropOperationFeedbackView setTableView:self];
 
         _lastColumnShouldSnap = NO;
+
+        if (!_alternatingRowBackgroundColors)
+            _alternatingRowBackgroundColors = [[CPColor whiteColor], [CPColor colorWithHexString:@"e4e7ff"]];
+
+        _selectionHighlightColor = [CPColor colorWithHexString:@"5f83b9"];
+
+        _tableColumnRanges = [];
+        _dirtyTableColumnRangeIndex = 0;
+        _numberOfHiddenColumns = 0;
+
+        _objectValues = { };
+        _dataViewsForTableColumns = { };
+        _dataViews=  [];
+        _numberOfRows = 0;
+        _exposedRows = [CPIndexSet indexSet];
+        _exposedColumns = [CPIndexSet indexSet];
+        _cachedDataViews = { };
+
+        _tableDrawView = [[_CPTableDrawView alloc] initWithTableView:self];
+        [_tableDrawView setBackgroundColor:[CPColor clearColor]];
+        [self addSubview:_tableDrawView];
+
+        if (!_headerView)
+            _headerView = [[CPTableHeaderView alloc] initWithFrame:CGRectMake(0, 0, [self bounds].size.width, _rowHeight)];
+
+        [_headerView setTableView:self];
+
+        if (!_cornerView)
+            _cornerView = [[_CPCornerView alloc] initWithFrame:CGRectMake(0, 0, [CPScroller scrollerWidth], CGRectGetHeight([_headerView frame]))];
+
+        _draggedColumnIndex = -1;
 
         // Gradients for the source list
         _sourceListActiveGradient = CGGradientCreateWithColorComponents(CGColorSpaceCreateDeviceRGB(), [89.0/255.0, 153.0/255.0, 209.0/255.0,1.0, 33.0/255.0, 94.0/255.0, 208.0/255.0,1.0], [0,1], 2);
@@ -378,7 +408,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 
 /*!
     Reloads the data for all rows and columns.
-    
+
 */
 - (void)reloadData
 {
@@ -397,9 +427,9 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 
 //Target-action Behavior
 /*!
-    Sets the message sent to the target when the user double-clicks an 
+    Sets the message sent to the target when the user double-clicks an
     uneditable cell or a column header to a given selector.
-    @param aSelector The message the receiver sends to its target when the user 
+    @param aSelector The message the receiver sends to its target when the user
     double-clicks an uneditable cell or a column header.
 */
 - (void)setDoubleAction:(SEL)anAction
@@ -535,7 +565,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 
 /*!
     Sets the colors for the rows as they alternate. The number of colors can be arbitrary. By deafult these colors are white and light blue.
-    @param anArray an array of CPColors 
+    @param anArray an array of CPColors
 */
 
 - (void)setAlternatingRowBackgroundColors:(CPArray)alternatingRowBackgroundColors
@@ -563,13 +593,65 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     //early return for IE.
     if (aSelectionHighlightStyle == CPTableViewSelectionHighlightStyleSourceList && !CPFeatureIsCompatible(CPHTMLCanvasFeature))
         return;
-    
+
     _selectionHighlightStyle = aSelectionHighlightStyle;
-    
+    [self setNeedsDisplay:YES];
+
     if (aSelectionHighlightStyle === CPTableViewSelectionHighlightStyleSourceList)
         _destinationDragStyle = CPTableViewDraggingDestinationFeedbackStyleSourceList;
     else
         _destinationDragStyle = CPTableViewDraggingDestinationFeedbackStyleRegular;
+}
+
+/*!
+    Sets the highlight color for a row or column selection
+    @param aColor a CPColor
+*/
+- (void)setSelectionHighlightColor:(CPColor)aColor
+{
+    if (aColor === _selectionHighlightColor)
+        return;
+
+    _selectionHighlightColor = aColor;
+    [self setNeedsDisplay:YES];
+}
+
+/*!
+    Returns the highlight color for a row or column selection.
+*/
+- (CPColor)selectionHighlightColor
+{
+    return _selectionHighlightColor;
+}
+
+/*!
+    Sets the highlight gradient for a row or column selection
+    This is specific to the
+    @param aDictionary a CPDictionary expects three keys to be set:
+        CPSourceListGradient which is a CGGradient
+        CPSourceListTopLineColor which is a CPColor
+        CPSourceListBottomLineColor which is a CPColor
+*/
+- (void)setSelectionGradientColors:(CPDictionary)aDictionary
+{
+    if ([aDictionary valueForKey:"CPSourceListGradient"] === _sourceListActiveGradient && [aDictionary valueForKey:"CPSourceListTopLineColor"] === _sourceListActiveTopLineColor && [aDictionary valueForKey:"CPSourceListBottomLineColor"] === _sourceListActiveBottomLineColor)
+        return;
+
+    _sourceListActiveGradient        = [aDictionary valueForKey:CPSourceListGradient];
+    _sourceListActiveTopLineColor    = [aDictionary valueForKey:CPSourceListTopLineColor]
+    _sourceListActiveBottomLineColor = [aDictionary valueForKey:CPSourceListBottomLineColor];
+    [self setNeedsDisplay:YES]
+}
+
+/*!
+    Returns a dictionary of containing the keys:
+    CPSourceListGradient
+    CPSourceListTopLineColor
+    CPSourceListBottomLineColor
+*/
+- (CPDictionary)selectionGradientColors
+{
+    return [CPDictionary dictionaryWithObjects:[_sourceListActiveGradient, _sourceListActiveTopLineColor, _sourceListActiveBottomLineColor] forKeys:[CPSourceListGradient, CPSourceListTopLineColor, CPSourceListBottomLineColor]];
 }
 
 /*!
@@ -632,7 +714,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 
 /*!
     Removes a given column from the receiver.
-    @param aTableColumn The column to remove from the receiver. 
+    @param aTableColumn The column to remove from the receiver.
 */
 - (void)removeTableColumn:(CPTableColumn)aTableColumn
 {
@@ -660,6 +742,15 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     [self setNeedsLayout];
 }
 
+- (void)_setDraggedColumn:(int)aColumnIndex
+{
+    if (_draggedColumnIndex === aColumnIndex)
+        return;
+
+    _draggedColumnIndex = aColumnIndex;
+
+    [self reloadDataForRowIndexes:_exposedRows columnIndexes:[CPIndexSet indexSetWithIndex:aColumnIndex]];
+}
 
 /*!
     Moves the column and heading at a given index to a new given index.
@@ -679,15 +770,37 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     else
         _dirtyTableColumnRangeIndex = MIN(fromIndex, toIndex, _dirtyTableColumnRangeIndex);
 
-    if (toIndex > fromIndex)
-        --toIndex;
-
     var tableColumn = _tableColumns[fromIndex];
 
     [_tableColumns removeObjectAtIndex:fromIndex];
     [_tableColumns insertObject:tableColumn atIndex:toIndex];
 
-    [self setNeedsLayout];
+    [[self headerView] setNeedsLayout];
+    [[self headerView] setNeedsDisplay:YES];
+
+    var rowIndexes = [CPIndexSet indexSetWithIndexesInRange:CPMakeRange(0, [self numberOfRows])],
+        columnIndexes = [CPIndexSet indexSetWithIndexesInRange:CPMakeRange(fromIndex, toIndex)];
+
+    [self reloadDataForRowIndexes:rowIndexes columnIndexes:columnIndexes];
+}
+
+/*!
+    @ignore
+*/
+- (void)_tableColumnVisibilityDidChange:(CPTableColumn)aColumn
+{
+    var columnIndex = [[self tableColumns] indexOfObjectIdenticalTo:aColumn];
+
+    if (_dirtyTableColumnRangeIndex < 0)
+        _dirtyTableColumnRangeIndex = columnIndex;
+    else
+        _dirtyTableColumnRangeIndex = MIN(columnIndex, _dirtyTableColumnRangeIndex);
+
+    [[self headerView] setNeedsLayout];
+    [[self headerView] setNeedsDisplay:YES];
+
+    var rowIndexes = [CPIndexSet indexSetWithIndexesInRange:CPMakeRange(0, [self numberOfRows])];
+    [self reloadDataForRowIndexes:rowIndexes columnIndexes:[CPIndexSet indexSetWithIndex:columnIndex]];
 }
 
 - (CPArray)tableColumns
@@ -760,7 +873,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 */
 - (void)selectRowIndexes:(CPIndexSet)rows byExtendingSelection:(BOOL)shouldExtendSelection
 {
-    if ([rows isEqualToIndexSet:_selectedRowIndexes] || 
+    if ([rows isEqualToIndexSet:_selectedRowIndexes] ||
         (([rows firstIndex] != CPNotFound && [rows firstIndex] < 0) || [rows lastIndex] >= [self numberOfRows]))
         return;
 
@@ -805,20 +918,20 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 
         var count = deselectRows.length;
         while (count--)
-        {
-            var rowIndex = deselectRows[count];
-            var view = dataViewsInTableColumn[rowIndex];
-            [view unsetThemeState:CPThemeStateSelected];
-        }
+            [self _performSelection:NO forRow:deselectRows[count] context:dataViewsInTableColumn];
 
         count = selectRows.length;
         while (count--)
-        {
-            var rowIndex = selectRows[count];
-            var view = dataViewsInTableColumn[rowIndex];
-            [view setThemeState:CPThemeStateSelected];
-        }
+            [self _performSelection:YES forRow:selectRows[count] context:dataViewsInTableColumn];
     }
+}
+
+- (void)_performSelection:(BOOL)select forRow:(CPInteger)rowIndex context:(id)context
+{
+    var view = context[rowIndex],
+        selector = select ? @"setThemeState:" : @"unsetThemeState:";
+
+    [view performSelector:CPSelectorFromString(selector) withObject:CPThemeStateSelectedDataView];
 }
 
 - (void)_updateHighlightWithOldColumns:(CPIndexSet)oldColumns newColumns:(CPIndexSet)newColumns
@@ -835,7 +948,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     [deselectColumnIndexes getIndexes:deselectColumns maxCount:-1 inIndexRange:CPMakeRange(firstExposedColumn, exposedLength)];
     [selectColumnIndexes getIndexes:selectColumns maxCount:-1 inIndexRange:CPMakeRange(firstExposedColumn, exposedLength)];
     [_exposedRows getIndexes:selectRows maxCount:-1 inIndexRange:nil];
-    
+
     var rowsCount = selectRows.length,
         count = deselectColumns.length;
     while (count--)
@@ -843,14 +956,14 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
         var columnIndex = deselectColumns[count],
             identifier = [_tableColumns[columnIndex] UID],
             dataViewsInTableColumn = _dataViewsForTableColumns[identifier];
-        
+
         for (var i = 0; i < rowsCount; i++)
         {
             var rowIndex = selectRows[i],
                 dataView = dataViewsInTableColumn[rowIndex];
-            [dataView unsetThemeState:CPThemeStateSelected];
+            [dataView unsetThemeState:CPThemeStateSelectedDataView];
         }
-        
+
         if (_headerView)
         {
             var headerView = [_tableColumns[columnIndex] headerView];
@@ -864,12 +977,12 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
         var columnIndex = selectColumns[count],
             identifier = [_tableColumns[columnIndex] UID],
             dataViewsInTableColumn = _dataViewsForTableColumns[identifier];
-        
+
         for (var i = 0; i < rowsCount; i++)
         {
             var rowIndex = selectRows[i],
                 dataView = dataViewsInTableColumn[rowIndex];
-            [dataView setThemeState:CPThemeStateSelected];
+            [dataView setThemeState:CPThemeStateSelectedDataView];
         }
         if (_headerView)
         {
@@ -976,13 +1089,13 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     {
         var destination = [contentBindingInfo objectForKey:CPObservedObjectKey],
             keyPath = [contentBindingInfo objectForKey:CPObservedKeyPathKey];
-            
+
         return [[destination valueForKeyPath:keyPath] count];
     }
 
     else if (_dataSource)
         return [_dataSource numberOfRowsInTableView:self];
-    
+
     return 0;
 }
 
@@ -990,12 +1103,44 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 /*
     * - preparedCellAtColumn:row:
 */
+
 //Editing Cells
-/*
-    * - editColumn:row:withEvent:select:
-    * - editedColumn
-    * - editedRow
+
+/*!
+    Edits the indicated row.
 */
+- (void)editColumn:(CPInteger)columnIndex row:(CPInteger)rowIndex withEvent:(CPEvent)theEvent select:(BOOL)flag
+{
+    if (![self isRowSelected:rowIndex])
+        [[CPException exceptionWithName:@"Error" reason:@"Attempt to edit row="+rowIndex+" when not selected." userInfo:nil] raise];
+
+    // TODO Do something with flag.
+
+    _editingCellIndex = CGPointMake(columnIndex, rowIndex);
+    [self reloadDataForRowIndexes:[CPIndexSet indexSetWithIndex:rowIndex]
+        columnIndexes:[CPIndexSet indexSetWithIndex:columnIndex]];
+}
+
+/*!
+    Returns the column of the currently edited cell, or -1 if none.
+*/
+- (CPInteger)editedColumn
+{
+    if (!_editingCellIndex)
+        return -1;
+    return _editingCellIndex.x;
+}
+
+/*!
+    Returns the row of the currently edited cell, or -1 if none.
+*/
+- (CPInteger)editedRow
+{
+    if (!_editingCellIndex)
+        return -1;
+    return _editingCellIndex.x;
+}
+
 //Setting Auxiliary Views
 /*
     * - setHeaderView:
@@ -1057,6 +1202,8 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     if (_dirtyTableColumnRangeIndex < 0)
         return;
 
+    _numberOfHiddenColumns = 0;
+
     var index = _dirtyTableColumnRangeIndex,
         count = NUMBER_OF_COLUMNS(),
         x = index === 0 ? 0.0 : CPMaxRange(_tableColumnRanges[index - 1]);
@@ -1066,7 +1213,10 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
         var tableColumn = _tableColumns[index];
 
         if ([tableColumn isHidden])
+        {
+            _numberOfHiddenColumns += 1;
             _tableColumnRanges[index] = CPMakeRange(x, 0.0);
+        }
 
         else
         {
@@ -1088,7 +1238,9 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 {
     aColumnIndex = +aColumnIndex;
 
-    if (aColumnIndex < 0 || aColumnIndex >= NUMBER_OF_COLUMNS())
+    var column = [[self tableColumns] objectAtIndex:aColumnIndex];
+
+    if ([column isHidden] || aColumnIndex < 0 || aColumnIndex >= NUMBER_OF_COLUMNS())
         return _CGRectMakeZero();
 
     UPDATE_COLUMN_RANGES_IF_NECESSARY();
@@ -1241,85 +1393,80 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     return _CGRectMake(tableColumnRange.location, _CGRectGetMinY(rectOfRow), tableColumnRange.length, _CGRectGetHeight(rectOfRow));
 }
 
-//FIX ME: We should refactor this!
 - (void)resizeWithOldSuperviewSize:(CGSize)aSize
 {
     [super resizeWithOldSuperviewSize:aSize];
-    
+
     if (_disableAutomaticResizing)
         return;
 
     var mask = _columnAutoResizingStyle;
 
     if(mask === CPTableViewUniformColumnAutoresizingStyle)
-    {
        [self _resizeAllColumnUniformlyWithOldSize:aSize];
-    }
-
-    if(mask === CPTableViewLastColumnOnlyAutoresizingStyle)
-    {
+    else if(mask === CPTableViewLastColumnOnlyAutoresizingStyle)
         [self sizeLastColumnToFit];
-    }
+    else if(mask === CPTableViewFirstColumnOnlyAutoresizingStyle)
+        [self _autoResizeFirstColumn];
+}
 
-    if(mask === CPTableViewFirstColumnOnlyAutoresizingStyle)
-    {
-        var superview = [self superview];
+- (void)_autoResizeFirstColumn
+{
+    var superview = [self superview];
 
-        if (!superview)
-            return;
+     if (!superview)
+         return;
 
-        var superviewSize = [superview bounds].size;
+     var superviewSize = [superview bounds].size;
 
-        UPDATE_COLUMN_RANGES_IF_NECESSARY();
+     UPDATE_COLUMN_RANGES_IF_NECESSARY();
 
-        var count = NUMBER_OF_COLUMNS();
+     var count = NUMBER_OF_COLUMNS(),
+         visColumns = [[CPArray alloc] init],
+         totalWidth = 0,
+         i = 0;
 
-        var visColumns = [[CPArray alloc] init];
-        var totalWidth = 0;
+     for(; i < count; i++)
+     {
+         if(![_tableColumns[i] isHidden])
+         {
+             [visColumns addObject:i];
+             totalWidth += [_tableColumns[i] width];
+         }
+     }
 
-        for(var i=0; i < count; i++)
-        {
-            if(![_tableColumns[i] isHidden])
-            {
-                [visColumns addObject:i];
-                totalWidth += [_tableColumns[i] width];
-            }
-        }
+     count = [visColumns count];
 
-        count = [visColumns count];
+     //if there are rows
+     if (count > 0)
+     {
+         var columnToResize = _tableColumns[visColumns[0]];
+         var newWidth = superviewSize.width - totalWidth;// - [columnToResize width];
+         newWidth += [columnToResize width];
+         newWidth = (newWidth < [columnToResize minWidth]) ? [columnToResize minWidth] : newWidth;
+         newWidth = (newWidth > [columnToResize maxWidth]) ? [columnToResize maxWidth] : newWidth;
 
-        //if there are rows
-        if (count > 0)
-        {
-            var columnToResize = _tableColumns[visColumns[0]];
-            var newWidth = superviewSize.width - totalWidth;// - [columnToResize width];
-            newWidth += [columnToResize width];
-            newWidth = (newWidth < [columnToResize minWidth]) ? [columnToResize minWidth] : newWidth;
-            newWidth = (newWidth > [columnToResize maxWidth]) ? [columnToResize maxWidth] : newWidth;
+         [columnToResize setWidth:FLOOR(newWidth)];
+     }
 
-            [columnToResize setWidth:FLOOR(newWidth)];
-        }
-
-        [self setNeedsLayout];
-    }
-
+     [self setNeedsLayout];
 }
 
 - (void)_resizeAllColumnUniformlyWithOldSize:(CGSize)oldSize
 {
         var superview = [self superview];
-        
+
         if (!superview)
             return;
 
         var superviewSize = [superview bounds].size;
-        
+
         if (_dirtyTableColumnRangeIndex !== CPNotFound) [self _recalculateTableColumnRanges];//UPDATE_COLUMN_RANGES_IF_NECESSARY();
 
         var count = _tableColumns.length,//NUMBER_OF_COLUMNS(),
             visColumns = [[CPArray alloc] init],
             buffer = 0.0;
-        
+
         // Fixme: cache resizable columns because they won't changes betwwen two calls to this method.
         for(var i=0; i < count; i++)
         {
@@ -1336,15 +1483,15 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
         {
             var maxXofColumns = CGRectGetMaxX([self rectOfColumn:visColumns[count - 1]]);
 
-            // If the x value of the end of the last column is between the current bounds and the previous bounds we should snap. 
+            // If the x value of the end of the last column is between the current bounds and the previous bounds we should snap.
             if (!_lastColumnShouldSnap && (maxXofColumns >= superviewSize.width && maxXofColumns <= oldSize.width || maxXofColumns <= superviewSize.width && maxXofColumns >= oldSize.width))
             {
                 //set the snap mask
                 _lastColumnShouldSnap = YES;
                 //then we need to make sure everything is set correctly.
                 [self _resizeAllColumnUniformlyWithOldSize:CGSizeMake(maxXofColumns, 0)];
-            }   
-            
+            }
+
             if(!_lastColumnShouldSnap)
                 return;
 
@@ -1379,8 +1526,8 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 
 /*!
     Sets the column autoresizing style of the receiver to a given style.
-    @param aStyle The column autoresizing style for the receiver. 
-    CPTableViewNoColumnAutoresizing, CPTableViewUniformColumnAutoresizingStyle, 
+    @param aStyle The column autoresizing style for the receiver.
+    CPTableViewNoColumnAutoresizing, CPTableViewUniformColumnAutoresizingStyle,
     CPTableViewLastColumnOnlyAutoresizingStyle, CPTableViewFirstColumnOnlyAutoresizingStyle
 */
 - (void)setColumnAutoresizingStyle:(unsigned)style
@@ -1434,6 +1581,17 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 {
     _numberOfRows = nil;
     _numberOfRows = [self numberOfRows];
+
+    var oldNumberOfRows = _numberOfRows;
+
+    // remove row indexes from the selection if they no longer exist
+    var hangingSelections = oldNumberOfRows - _numberOfRows;
+
+    if (hangingSelections > 0)
+    {
+        [_selectedRowIndexes removeIndexesInRange:CPMakeRange(_numberOfRows, hangingSelections)];
+        [self _noteSelectionDidChange];
+    }
 
     [self tile];
 }
@@ -1653,16 +1811,17 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 - (void)_didClickTableColumn:(int)clickedColumn modifierFlags:(unsigned)modifierFlags
 {
     [self _sendDelegateDidClickColumn:clickedColumn];
-        
+
     if (_allowsColumnSelection)
     {
+        [self _noteSelectionIsChanging];
         if (modifierFlags & CPCommandKeyMask)
         {
             if ([self isColumnSelected:clickedColumn])
                 [self deselectColumn:clickedColumn];
             else if ([self allowsMultipleSelection] == YES)
                 [self selectColumnIndexes:[CPIndexSet indexSetWithIndex:clickedColumn] byExtendingSelection:YES];
-                
+
             return;
         }
         else if (modifierFlags & CPShiftKeyMask)
@@ -1670,60 +1829,60 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
         // should be from clickedColumn to lastClickedColum with extending:(direction == previous selection)
             var startColumn = MIN(clickedColumn, [_selectedColumnIndexes lastIndex]),
                 endColumn = MAX(clickedColumn, [_selectedColumnIndexes firstIndex]);
-         
-            [self selectColumnIndexes:[CPIndexSet indexSetWithIndexesInRange:CPMakeRange(startColumn, endColumn - startColumn + 1)] 
+
+            [self selectColumnIndexes:[CPIndexSet indexSetWithIndexesInRange:CPMakeRange(startColumn, endColumn - startColumn + 1)]
                  byExtendingSelection:YES];
-            
+
             return;
         }
         else
             [self selectColumnIndexes:[CPIndexSet indexSetWithIndex:clickedColumn] byExtendingSelection:NO];
     }
-    
+
     [self _changeSortDescriptorsForClickOnColumn:clickedColumn];
 }
 
 // From GNUSTEP
 - (void)_changeSortDescriptorsForClickOnColumn:(int)column
 {
-    var tableColumn = [_tableColumns objectAtIndex:column],        
+    var tableColumn = [_tableColumns objectAtIndex:column],
         newMainSortDescriptor = [tableColumn sortDescriptorPrototype];
-        
+
     if (!newMainSortDescriptor)
        return;
-            
-    var oldMainSortDescriptor = nil,    
+
+    var oldMainSortDescriptor = nil,
         oldSortDescriptors = [self sortDescriptors],
         newSortDescriptors = [CPArray arrayWithArray:oldSortDescriptors],
-    
+
         e = [newSortDescriptors objectEnumerator],
         descriptor = nil,
         outdatedDescriptors = [CPArray array];
 
     if ([_sortDescriptors count] > 0)
         oldMainSortDescriptor = [[self sortDescriptors] objectAtIndex: 0];
-    
+
     // Remove every main descriptor equivalents (normally only one)
     while ((descriptor = [e nextObject]) != nil)
     {
         if ([[descriptor key] isEqual: [newMainSortDescriptor key]])
             [outdatedDescriptors addObject:descriptor];
     }
-    
+
     // Invert the sort direction when the same column header is clicked twice
     if ([[newMainSortDescriptor key] isEqual:[oldMainSortDescriptor key]])
         newMainSortDescriptor = [oldMainSortDescriptor reversedSortDescriptor];
-    
+
     [newSortDescriptors removeObjectsInArray:outdatedDescriptors];
     [newSortDescriptors insertObject:newMainSortDescriptor atIndex:0];
-        
+
     // Update indicator image & highlighted column before
-   	var image = [newMainSortDescriptor ascending] ? [CPTableView _defaultTableHeaderSortImage] : [CPTableView _defaultTableHeaderReverseSortImage];	
+   	var image = [newMainSortDescriptor ascending] ? [CPTableView _defaultTableHeaderSortImage] : [CPTableView _defaultTableHeaderReverseSortImage];
 
     [self setIndicatorImage:nil inTableColumn:_currentHighlightedTableColumn];
-	[self setIndicatorImage:image inTableColumn:tableColumn];	
+	[self setIndicatorImage:image inTableColumn:tableColumn];
 	[self setHighlightedTableColumn:tableColumn];
-	
+
     [self setSortDescriptors:newSortDescriptors];
 }
 
@@ -1751,19 +1910,19 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 }
 
 - (void)setHighlightedTableColumn:(CPTableColumn)aTableColumn
-{   
+{
     if (_currentHighlightedTableColumn == aTableColumn)
         return;
-    
+
     if (_headerView)
     {
         if (_currentHighlightedTableColumn != nil)
             [[_currentHighlightedTableColumn headerView] unsetThemeState:CPThemeStateSelected];
-   
+
         if (aTableColumn != nil)
             [[aTableColumn headerView] setThemeState:CPThemeStateSelected];
     }
-    
+
     _currentHighlightedTableColumn = aTableColumn;
 }
 
@@ -1782,7 +1941,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     return [[CPImage alloc] initWithContentsOfFile:@"Frameworks/AppKit/Resources/GenericFile.png" size:CGSizeMake(32,32)];
 }
 
-- (CPView)dragViewForRowsWithIndexes:(CPIndexSet)theDraggedRows tableColumns:(CPArray)theTableColumns event:(CPEvent)theDragEvent offset:(CPPoint)dragViewOffset
+- (CPView)dragViewForRowsWithIndexes:(CPIndexSet)theDraggedRows tableColumns:(CPArray)theTableColumns event:(CPEvent)theDragEvent offset:(CPPointPointer)dragViewOffset
 {
     var bounds = [self bounds],
         view = [[CPView alloc] initWithFrame:bounds];
@@ -1790,16 +1949,16 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     [view setAlphaValue:0.7];
 
     // We have to fetch all the data views for the selected rows and columns
-    // After that we can copy these add them to a transparent drag view and use that drag view 
+    // After that we can copy these add them to a transparent drag view and use that drag view
     // to make it appear we are dragging images of those rows (as you would do in regular Cocoa)
     var columnIndex = [theTableColumns count];
-    while (columnIndex--) 
+    while (columnIndex--)
     {
         var tableColumn = [theTableColumns objectAtIndex:columnIndex],
             row = [theDraggedRows firstIndex];
 
         while (row !== CPNotFound)
-        { 
+        {
             var dataView = [self _newDataViewForRow:row tableColumn:tableColumn];
 
             [dataView setFrame:[self frameOfDataViewAtColumn:columnIndex row:row]];
@@ -1818,6 +1977,55 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     return view;
 }
 
+/*!
+    @ignore
+    // Fetches all the data views (from the datasource) for the column and it's visible rows
+    // Copy the dataviews add them to a transparent drag view and use that drag view
+    // to make it appear we are dragging images of those rows (as you would do in regular Cocoa)
+*/
+- (CPView)_dragViewForColumn:(int)theColumnIndex event:(CPEvent)theDragEvent offset:(CPPointPointer)theDragViewOffset
+{
+    var dragView = [[CPView alloc] initWithFrame:CPRectMakeZero()];
+        tableColumn = [[self tableColumns] objectAtIndex:theColumnIndex],
+        bounds = CPRectMake(0.0, 0.0, [tableColumn width], CPRectGetHeight([self _exposedRect]) + 23.0),
+        columnRect = [self rectOfColumn:theColumnIndex],
+        headerView = [tableColumn headerView];
+
+    row = [_exposedRows firstIndex];
+    while (row !== CPNotFound)
+    {
+        var dataView = [self _newDataViewForRow:row tableColumn:tableColumn],
+            dataViewFrame = [self frameOfDataViewAtColumn:theColumnIndex row:row];
+
+        // Only one column is ever dragged so we just place the view at
+        dataViewFrame.origin.x = 0.0;
+
+        // Offset by table header height - scroll position
+        dataViewFrame.origin.y = ( CPRectGetMinY(dataViewFrame) - CPRectGetMinY([self _exposedRect]) ) + 23.0;
+        [dataView setFrame:dataViewFrame];
+
+        [dataView setObjectValue:[self _objectValueForTableColumn:tableColumn row:row]];
+        [dragView addSubview:dataView];
+
+        row = [_exposedRows indexGreaterThanIndex:row];
+    }
+
+    // Add the column header view
+    var headerFrame = [headerView frame];
+    headerFrame.origin = CPPointMakeZero();
+
+    columnHeaderView = [[_CPTableColumnHeaderView alloc] initWithFrame:headerFrame];
+    [columnHeaderView setStringValue:[headerView stringValue]];
+    [columnHeaderView setThemeState:[headerView themeState]];
+    [dragView addSubview:columnHeaderView];
+
+    [dragView setBackgroundColor:[CPColor whiteColor]];
+    [dragView setAlphaValue:0.7];
+    [dragView setFrame:bounds];
+
+    return dragView;
+}
+
 - (void)setDraggingSourceOperationMask:(CPDragOperation)mask forLocal:(BOOL)isLocal
 {
     //ignoral local for the time being since only one capp app can run at a time...
@@ -1834,12 +2042,12 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     if(row > [self numberOfRows] && operation === CPTableViewDropOn)
     {
         var numberOfRows = [self numberOfRows] + 1;
-        var reason = @"Attempt to set dropRow=" + row + 
+        var reason = @"Attempt to set dropRow=" + row +
                      " dropOperation=CPTableViewDropOn when [0 - " + numberOfRows + "] is valid range of rows."
 
         [[CPException exceptionWithName:@"Error" reason:reason userInfo:nil] raise];
     }
-        
+
 
     _retargetedDropRow = row;
     _retargetedDropOperation = operation;
@@ -2058,8 +2266,12 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     for (; columnIndex < columnsCount; ++columnIndex)
     {
         var column = columnArray[columnIndex],
-            tableColumn = _tableColumns[column],
-            tableColumnUID = [tableColumn UID];
+            tableColumn = _tableColumns[column];
+
+        if ([tableColumn isHidden] || columnIndex === _draggedColumnIndex)
+            continue;
+
+        var tableColumnUID = [tableColumn UID];
 
         if (!_dataViewsForTableColumns[tableColumnUID])
             _dataViewsForTableColumns[tableColumnUID] = [];
@@ -2078,15 +2290,15 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
             [dataView setFrame:[self frameOfDataViewAtColumn:column row:row]];
             [dataView setObjectValue:[self _objectValueForTableColumn:tableColumn row:row]];
 
-            //This gives the table column an opportunity to apply the bindings. 
+            //This gives the table column an opportunity to apply the bindings.
             //It will override the value set in the data source, if there is a data source.
             //It will do nothing if there is no value binding set.
             [tableColumn prepareDataView:dataView forRow:row];
-            
+
             if (isColumnSelected || [self isRowSelected:row])
-                [dataView setThemeState:CPThemeStateSelected];
+                [dataView setThemeState:CPThemeStateSelectedDataView];
             else
-                [dataView unsetThemeState:CPThemeStateSelected];
+                [dataView unsetThemeState:CPThemeStateSelectedDataView];
 
             if (_implementedDelegateMethods & CPTableViewDelegate_tableView_willDisplayView_forTableColumn_row_)
                 [_delegate tableView:self willDisplayView:dataView forTableColumn:tableColumn row:row];
@@ -2135,21 +2347,21 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
         columnsCount = columnArray.length;
 
     for (; columnIndex < columnsCount; ++columnIndex)
-    {        
+    {
         var column = columnArray[columnIndex],
             tableColumn = _tableColumns[column],
             tableColumnUID = [tableColumn UID],
             dataViewsForTableColumn = _dataViewsForTableColumns[tableColumnUID],
             columnRange = _tableColumnRanges[column];
-            
+
         var rowIndex = 0,
-            rowsCount = rowArray.length;            
+            rowsCount = rowArray.length;
 
         for (; rowIndex < rowsCount; ++rowIndex)
         {
             var row = rowArray[rowIndex],
-                dataView = dataViewsForTableColumn[row];                
-            
+                dataView = dataViewsForTableColumn[row];
+
             [dataView setFrame:[self frameOfDataViewAtColumn:column row:row]];
         }
     }
@@ -2170,13 +2382,16 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
         var dataView = [_delegate tableView:self dataViewForTableColumn:aTableColumn row:aRow];
         [aTableColumn setDataView:dataView];
     }
-        
-    
+
+
     return [aTableColumn _newDataViewForRow:aRow];
 }
 
 - (void)_enqueueReusableDataView:(CPView)aDataView
 {
+    if (!aDataView)
+        return;
+
     // FIXME: yuck!
     var identifier = aDataView.identifier;
 
@@ -2205,22 +2420,30 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 }
 
 - (void)_drawRect:(CGRect)aRect
-{   
+{
     // FIX ME: All three of these methods will likely need to be rewritten for 1.0
     // We've got grid drawing in highlightSelection and crap everywhere.
-    
+
     var exposedRect = [self _exposedRect];
 
     [self drawBackgroundInClipRect:exposedRect];
     [self drawGridInClipRect:exposedRect];
     [self highlightSelectionInClipRect:exposedRect];
+
+    if (_draggedColumnIndex === -1)
+        return;
+
+    var context = [[CPGraphicsContext currentContext] graphicsPort],
+        columnRect = [self rectOfColumn:_draggedColumnIndex];
+
+    CGContextSetFillColor(context, [CPColor grayColor]);
+    CGContextFillRect(context, columnRect);
 }
 
 - (void)drawBackgroundInClipRect:(CGRect)aRect
 {
     if (!_usesAlternatingRowBackgroundColors)
         return;
-
 
     var rowColors = [self alternatingRowBackgroundColors],
         colorCount = [rowColors count];
@@ -2359,6 +2582,9 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 
 - (void)highlightSelectionInClipRect:(CGRect)aRect
 {
+    if (_selectionHighlightStyle === CPTableViewSelectionHighlightStyleNone)
+        return;
+
     var context = [[CPGraphicsContext currentContext] graphicsPort],
         indexes = [],
         rectSelector = @selector(rectOfRow:);
@@ -2387,34 +2613,33 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 
     if (!count)
         return;
-  
-    var drawGradient = (_selectionHighlightStyle === CPTableViewSelectionHighlightStyleSourceList && [_selectedRowIndexes count] >= 1);
-    
-    var deltaHeight = 0.5 * (_gridStyleMask & CPTableViewSolidHorizontalGridLineMask);
+
+    var drawGradient = (_selectionHighlightStyle === CPTableViewSelectionHighlightStyleSourceList && [_selectedRowIndexes count] >= 1),
+        deltaHeight = 0.5 * (_gridStyleMask & CPTableViewSolidHorizontalGridLineMask);
 
     CGContextBeginPath(context);
     while (count--)
     {
         var rowRect = CGRectIntersection(objj_msgSend(self, rectSelector, indexes[count]), aRect);
         CGContextAddRect(context, rowRect);
-        
+
         if (drawGradient)
         {
             var minX = _CGRectGetMinX(rowRect),
                 minY = _CGRectGetMinY(rowRect),
                 maxX = _CGRectGetMaxX(rowRect),
                 maxY = _CGRectGetMaxY(rowRect) - deltaHeight;
-            
+
             CGContextDrawLinearGradient(context, _sourceListActiveGradient, rowRect.origin, CGPointMake(minX, maxY), 0);
             CGContextClosePath(context);
-            
+
             CGContextBeginPath(context);
             CGContextMoveToPoint(context, minX, minY);
             CGContextAddLineToPoint(context, maxX, minY);
             CGContextClosePath(context);
             CGContextSetStrokeColor(context, _sourceListActiveTopLineColor);
             CGContextStrokePath(context);
-            
+
             CGContextBeginPath(context);
             CGContextMoveToPoint(context, minX, maxY);
             CGContextAddLineToPoint(context, maxX, maxY - 1);
@@ -2423,15 +2648,15 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
             CGContextStrokePath(context);
         }
     }
-        
+
     CGContextClosePath(context);
-    
+
     if (!drawGradient)
     {
-        [[CPColor selectionColor] setFill];
+        [_selectionHighlightColor setFill];
         CGContextFillPath(context);
     }
-    
+
     CGContextBeginPath(context);
     gridStyleMask = [self gridStyleMask];
     for(var i=0; i < count2; i++)
@@ -2450,19 +2675,18 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
             exposedRange = CPMakeRange(firstExposedColumn, [exposedColumns lastIndex] - firstExposedColumn + 1);
             [exposedColumns getIndexes:exposedColumnIndexes maxCount:-1 inIndexRange:exposedRange];
             var exposedColumnCount = [exposedColumnIndexes count];
-            
+
             for(var c = firstExposedColumn; c < exposedColumnCount; c++)
             {
-                //console.log(columnIndexes);
                 var colRect = [self rectOfColumn:exposedColumnIndexes[c]],
                     colX = CGRectGetMaxX(colRect) + 0.5;
-                //console.log(colX);
+
                 CGContextMoveToPoint(context, colX, minY);
                 CGContextAddLineToPoint(context, colX, maxY);
             }
 
         }
-        
+
         //if the row after the current row is not selected then there is no need to draw the bottom grid line white.
         if([indexes containsObject:indexes[i]+1])
         {
@@ -2556,9 +2780,9 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     else
         _selectionAnchorRow = row;
 
-        
-    //set ivars for startTrackingPoint and time...    
-    _startTrackingPoint = aPoint; 
+
+    //set ivars for startTrackingPoint and time...
+    _startTrackingPoint = aPoint;
     _startTrackingTimestamp = new Date();
 
     if (_implementedDataSourceMethods & CPTableViewDataSource_tableView_setObjectValue_forTableColumn_row_)
@@ -2580,7 +2804,10 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 {
     // Prevent CPControl from eating the mouse events when we are in a drag session
     if (![_draggedRowIndexes count])
+    {
+        [self autoscroll:anEvent];
         [super trackMouse:anEvent];
+    }
     else
         [CPApp sendEvent:anEvent];
 }
@@ -2592,11 +2819,11 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 {
     var row = [self rowAtPoint:aPoint];
 
-    // begin the drag is the datasource lets us, we've move at least +-3px vertical or horizontal, 
+    // begin the drag is the datasource lets us, we've move at least +-3px vertical or horizontal,
     // or we're dragging from selected rows and we haven't begun a drag session
     if(!_isSelectingSession && _implementedDataSourceMethods & CPTableViewDataSource_tableView_writeRowsWithIndexes_toPasteboard_)
     {
-        if (row >= 0 && (ABS(_startTrackingPoint.x - aPoint.x) > 3 || (_verticalMotionCanDrag && ABS(_startTrackingPoint.y - aPoint.y) > 3)) || 
+        if (row >= 0 && (ABS(_startTrackingPoint.x - aPoint.x) > 3 || (_verticalMotionCanDrag && ABS(_startTrackingPoint.y - aPoint.y) > 3)) ||
             ([_selectedRowIndexes containsIndex:row]))
         {
             if ([_selectedRowIndexes containsIndex:row])
@@ -2613,33 +2840,33 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
                 var currentEvent = [CPApp currentEvent],
                     offset = CPPointMakeZero(),
                     tableColumns = [_tableColumns objectsAtIndexes:_exposedColumns];
-        
+
                 // We deviate from the default Cocoa implementation here by asking for a view in stead of an image
                 // We support both, but the view prefered over the image because we can mimic the rows we are dragging
                 // by re-creating the data views for the dragged rows
-                var view = [self dragViewForRowsWithIndexes:_draggedRowIndexes 
-                                               tableColumns:tableColumns 
-                                                      event:currentEvent 
+                var view = [self dragViewForRowsWithIndexes:_draggedRowIndexes
+                                               tableColumns:tableColumns
+                                                      event:currentEvent
                                                      offset:offset];
-    
+
                 if (!view)
                 {
-                    var image = [self dragImageForRowsWithIndexes:_draggedRowIndexes 
-                                                     tableColumns:tableColumns 
-                                                            event:currentEvent 
+                    var image = [self dragImageForRowsWithIndexes:_draggedRowIndexes
+                                                     tableColumns:tableColumns
+                                                            event:currentEvent
                                                            offset:offset];
                     view = [[CPImageView alloc] initWithFrame:CPMakeRect(0, 0, [image size].width, [image size].height)];
                     [view setImage:image];
                 }
-    
+
                 var bounds = [view bounds];
                 var viewLocation = CPPointMake(aPoint.x - CGRectGetWidth(bounds)/2 + offset.x, aPoint.y - CGRectGetHeight(bounds)/2 + offset.y);
                 [self dragView:view at:viewLocation offset:CPPointMakeZero() event:[CPApp currentEvent] pasteboard:pboard source:self slideBack:YES];
                 _startTrackingPoint = nil;
-    
+
                 return NO;
             }
-            
+
             // The delegate disallowed the drag so clear the dragged row indexes
             _draggedRowIndexes = [CPIndexSet indexSet];
         }
@@ -2715,10 +2942,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
                         shouldEdit = [_delegate tableView:self shouldEditTableColumn:column row:rowIndex];
                     if (shouldEdit)
                     {
-                        _editingCellIndex = CGPointMake(columnIndex, rowIndex);
-                        [self reloadDataForRowIndexes:[CPIndexSet indexSetWithIndex:rowIndex]
-                            columnIndexes:[CPIndexSet indexSetWithIndex:columnIndex]];
-
+                        [self editColumn:columnIndex row:rowIndex withEvent:nil select:YES];
                         return;
                     }
                 }
@@ -2743,17 +2967,17 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 
     if(_retargetedDropRow !== nil)
         row = _retargetedDropRow;
-    
-    var draggedTypes = [self registeredDraggedTypes], 
+
+    var draggedTypes = [self registeredDraggedTypes],
         count = [draggedTypes count],
         i = 0;
-        
-    for (; i < count; i++) 
-    { 
-        if ([[[sender draggingPasteboard] types] containsObject:[draggedTypes objectAtIndex: i]]) 
-            return [self _validateDrop:sender proposedRow:row proposedDropOperation:dropOperation]; 
+
+    for (; i < count; i++)
+    {
+        if ([[[sender draggingPasteboard] types] containsObject:[draggedTypes objectAtIndex: i]])
+            return [self _validateDrop:sender proposedRow:row proposedDropOperation:dropOperation];
     }
-    
+
     return CPDragOperationNone;
 }
 
@@ -2793,7 +3017,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 */
 - (CPTableViewDropOperation)_proposedDropOperationAtPoint:(CGPoint)theDragPoint
 {
-    if(_retargetedDropOperation !== nil) 
+    if(_retargetedDropOperation !== nil)
         return _retargetedDropOperation;
 
     var row = [self _proposedRowAtPoint:theDragPoint],
@@ -2803,13 +3027,13 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     // This probably doesn't work if the row height is smaller than or around 5.0
     if ([self intercellSpacing].height < 5.0)
 		rowRect = CPRectInset(rowRect, 0.0, 5.0 - [self intercellSpacing].height);
-    
+
 	// If the altered row rect contains the drag point we show the drop on
-	// We don't show the drop on indicator if we are dragging below the last row 
+	// We don't show the drop on indicator if we are dragging below the last row
 	// in that case we always want to show the drop above indicator
-    if (CGRectContainsPoint(rowRect, theDragPoint) && row < _numberOfRows) 
+    if (CGRectContainsPoint(rowRect, theDragPoint) && row < _numberOfRows)
         return CPTableViewDropOn;
-        
+
     return CPTableViewDropAbove;
 }
 
@@ -2821,18 +3045,18 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 	// We don't use rowAtPoint here because the drag indicator can appear below the last row
 	// and rowAtPoint doesn't return rows that are larger than numberOfRows
 	var row = FLOOR(dragPoint.y / ( _rowHeight + _intercellSpacing.height ));
-	
+
 	// Determine if the mouse is currently closer to this row or the row below it
 	var lowerRow = row + 1,
 		rect = [self rectOfRow:row],
 		lowerRect = [self rectOfRow:lowerRow];
-		
+
 	if (ABS(CPRectGetMinY(lowerRect) - dragPoint.y) < ABS(dragPoint.y - CPRectGetMinY(rect)))
 		row = lowerRow;
 
     if (row >= [self numberOfRows])
         row = [self numberOfRows];
-	
+
 	return row;
 }
 
@@ -2848,7 +3072,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 {
     if (theRowIndex >= [self numberOfRows])
         theRowIndex = [self numberOfRows] - 1;
-        
+
     return [self rectOfRow:theRowIndex];
 }
 
@@ -2869,38 +3093,31 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     var row = [self _proposedRowAtPoint:location],
         dragOperation = [self _validateDrop:sender proposedRow:row proposedDropOperation:dropOperation];
         exposedClipRect = [self exposedClipRect];
-	
+
     if(_retargetedDropRow !== nil)
         row = _retargetedDropRow;
 
-    
+
     if (dropOperation === CPTableViewDropOn && row >= [self numberOfRows])
         row = [self numberOfRows] - 1;
 
     var rect = CPRectMakeZero();
-    
+
     if (row === -1)
         rect = exposedClipRect;
-        
+
     else if (dropOperation === CPTableViewDropAbove)
         rect = [self _rectForDropHighlightViewBetweenUpperRow:row - 1 andLowerRow:row offset:location];
-        
-    else 
+
+    else
         rect = [self _rectForDropHighlightViewOnRow:row];
-    
+
     [_dropOperationFeedbackView setDropOperation:row !== -1 ? dropOperation : CPDragOperationNone];
     [_dropOperationFeedbackView setHidden:(dragOperation == CPDragOperationNone)];
     [_dropOperationFeedbackView setFrame:rect];
     [_dropOperationFeedbackView setCurrentRow:row];
     [self addSubview:_dropOperationFeedbackView];
-    
-    // FIXME : Maybe we should do this in a timer outside this method. 
-    // Problem: we don't know when the scroll ends or when the next -draggingUpdated is called. 
-    if (row > 0 && location.y - CGRectGetMinY(exposedClipRect) < _rowHeight)
-        [self scrollRowToVisible:row - 1];
-    else if (row < numberOfRows && CGRectGetMaxY(exposedClipRect) - location.y < _rowHeight)
-        [self scrollRowToVisible:row + 1];
-        
+
     return dragOperation;
 }
 
@@ -2953,7 +3170,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     we're using this because we drag views instead of images so we can get the rows themselves to actually drag
 */
 - (void)draggedView:(CPImage)aView endedAt:(CGPoint)aLocation operation:(CPDragOperation)anOperation
-{   
+{
     [self _draggingEnded];
     [self draggedImage:aView endedAt:aLocation operation:anOperation];
 }
@@ -2990,7 +3207,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     else if (_allowsMultipleSelection)
     {
         newSelection = [CPIndexSet indexSetWithIndexesInRange:CPMakeRange(MIN(aRow, _selectionAnchorRow), ABS(aRow - _selectionAnchorRow) + 1)];
-        shouldExtendSelection = [self mouseDownFlags] & CPShiftKeyMask && 
+        shouldExtendSelection = [self mouseDownFlags] & CPShiftKeyMask &&
                                 ((_lastSelectedRow == [_selectedRowIndexes lastIndex] && aRow > _lastSelectedRow) ||
                                 (_lastSelectedRow == [_selectedRowIndexes firstIndex] && aRow < _lastSelectedRow));
     }
@@ -3027,9 +3244,9 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
                 [newSelection removeIndex:index];
         }
     }
-    
+
     _lastSelectedRow = ([newSelection count] > 0) ? aRow : -1;
-    
+
     // if empty selection is not allowed and the new selection has nothing selected, abort
     if (!_allowsEmptySelection && [newSelection count] === 0)
         return;
@@ -3068,7 +3285,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 
 - (void)keyDown:(CPEvent)anEvent
 {
-    [self interpretKeyEvents:[CPArray arrayWithObject:anEvent]];
+    [self interpretKeyEvents:[anEvent]];
 }
 
 - (void)moveDown:(id)sender
@@ -3128,10 +3345,10 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     if([[self selectedRowIndexes] count] > 0)
     {
          var extend = NO;
-    
+
          if(([anEvent modifierFlags] & CPShiftKeyMask) && _allowsMultipleSelection)
            extend = YES;
-    
+
           var i = [[self selectedRowIndexes] firstIndex];
           if(i > 0)
               i--; //set index to the prev row before the first row selected
@@ -3143,24 +3360,24 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
         if([self numberOfRows] > 0)
             var i = [self numberOfRows] - 1; //select the first row
      }
-    
-    
+
+
      if(_implementedDelegateMethods & CPTableViewDelegate_tableView_shouldSelectRow_)
      {
-    
+
           while((![_delegate tableView:self shouldSelectRow:i]) && i > 0)
           {
               //check to see if the row can be selected if it can't be then see if the prev row can be selected
               i--;
           }
-    
+
           //if the index still can be selected after the loop then just return
            if(![_delegate tableView:self shouldSelectRow:i])
                return;
      }
-    
+
      [self selectRowIndexes:[CPIndexSet indexSetWithIndex:i] byExtendingSelection:extend];
-    
+
      if(i >= 0)
         [self scrollRowToVisible:i];
 }
@@ -3225,53 +3442,32 @@ var CPTableViewDataSourceKey                = @"CPTableViewDataSourceKey",
         _allowsEmptySelection = [aCoder decodeBoolForKey:CPTableViewEmptySelectionKey];
         _allowsColumnSelection = [aCoder decodeBoolForKey:CPTableViewColumnSelectionKey];
 
-        _tableViewFlags = 0;
-
         //Setting Display Attributes
         _selectionHighlightStyle = CPTableViewSelectionHighlightStyleRegular;
 
-        _usesAlternatingRowBackgroundColors = [aCoder decodeBoolForKey:CPTableViewUsesAlternatingBackgroundKey];
-        [self setAlternatingRowBackgroundColors:[[CPColor whiteColor], [CPColor colorWithHexString:@"e4e7ff"]]];
-
-        _tableColumns = [aCoder decodeObjectForKey:CPTableViewTableColumnsKey];
+        _tableColumns = [aCoder decodeObjectForKey:CPTableViewTableColumnsKey] || [];
         [_tableColumns makeObjectsPerformSelector:@selector(setTableView:) withObject:self];
 
-        _tableColumnRanges = [];
-        _dirtyTableColumnRangeIndex = 0;
-        _numberOfHiddenColumns = 0;
-
-        _objectValues = { };
-        _dataViewsForTableColumns = { };
-        _dataViews=  [];
-        _numberOfRows = 0;
-        _exposedRows = [CPIndexSet indexSet];
-        _exposedColumns = [CPIndexSet indexSet];
-        _cachedDataViews = { };
-        _rowHeight = [aCoder decodeFloatForKey:CPTableViewRowHeightKey];
-        
-        if ([aCoder containsValueForKey:CPTableViewIntercellSpacingKey])
-            _intercellSpacing = [aCoder decodeSizeForKey:CPTableViewIntercellSpacingKey];
+        if ([aCoder containsValueForKey:CPTableViewRowHeightKey])
+            _rowHeight = [aCoder decodeFloatForKey:CPTableViewRowHeightKey];
         else
-            _intercellSpacing = _CGSizeMake(0.0, 0.0);
-        
+            _rowHeight = 23.0;
+
+        _intercellSpacing = [aCoder decodeSizeForKey:CPTableViewIntercellSpacingKey] || _CGSizeMake(0.0, 0.0);
+
         _gridColor = [aCoder decodeObjectForKey:CPTableViewGridColorKey] || [CPColor grayColor];
         _gridStyleMask = [aCoder decodeIntForKey:CPTableViewGridStyleMaskKey] || CPTableViewGridNone;
 
-        _alternatingRowBackgroundColors = [aCoder decodeObjectForKey:CPTableViewAlternatingRowColorsKey];
         _usesAlternatingRowBackgroundColors = [aCoder decodeObjectForKey:CPTableViewUsesAlternatingBackgroundKey]
-        
+        _alternatingRowBackgroundColors =
+            [[CPColor whiteColor], [CPColor colorWithRed:245.0 / 255.0 green:249.0 / 255.0 blue:252.0 / 255.0 alpha:1.0]];
+
         _headerView = [aCoder decodeObjectForKey:CPTableViewHeaderViewKey];
         _cornerView = [aCoder decodeObjectForKey:CPTableViewCornerViewKey];
-
-        _selectedColumnIndexes = [CPIndexSet indexSet];
-        _selectedRowIndexes = [CPIndexSet indexSet];
 
         _dataSource = [aCoder decodeObjectForKey:CPTableViewDataSourceKey];
         _delegate = [aCoder decodeObjectForKey:CPTableViewDelegateKey];
 
-        _tableDrawView = [[_CPTableDrawView alloc] initWithTableView:self];
-        [_tableDrawView setBackgroundColor:[CPColor clearColor]];
-        [self addSubview:_tableDrawView];
         [self _init];
 
         [self viewWillMoveToSuperview:[self superview]];
@@ -3289,7 +3485,7 @@ var CPTableViewDataSourceKey                = @"CPTableViewDataSourceKey",
 
     [aCoder encodeFloat:_rowHeight forKey:CPTableViewRowHeightKey];
     [aCoder encodeSize:_intercellSpacing forKey:CPTableViewIntercellSpacingKey];
-    
+
     [aCoder encodeBool:_allowsMultipleSelection forKey:CPTableViewMultipleSelectionKey];
     [aCoder encodeBool:_allowsEmptySelection forKey:CPTableViewEmptySelectionKey];
     [aCoder encodeBool:_allowsColumnReordering forKey:CPTableViewColumnReorderingKey];
@@ -3297,29 +3493,15 @@ var CPTableViewDataSourceKey                = @"CPTableViewDataSourceKey",
     [aCoder encodeBool:_allowsColumnSelection forKey:CPTableViewColumnSelectionKey];
 
     [aCoder encodeObject:_tableColumns forKey:CPTableViewTableColumnsKey];
-    
+
     [aCoder encodeObject:_gridColor forKey:CPTableViewGridColorKey];
     [aCoder encodeInt:_gridStyleMask forKey:CPTableViewGridStyleMaskKey];
-    
+
     [aCoder encodeBool:_usesAlternatingRowBackgroundColors forKey:CPTableViewUsesAlternatingBackgroundKey];
     [aCoder encodeObject:_alternatingRowBackgroundColors forKey:CPTableViewAlternatingRowColorsKey]
 
     [aCoder encodeObject:_cornerView forKey:CPTableViewCornerViewKey];
     [aCoder encodeObject:_headerView forKey:CPTableViewHeaderViewKey];
-}
-
-@end
-
-@implementation CPColor (tableview)
-
-+ (CPColor)selectionColor
-{
-    return [CPColor colorWithHexString:@"5f83b9"];
-}
-
-+ (CPColor)selectionColorSourceView
-{
-    return [CPColor colorWithPatternImage:[[CPImage alloc] initByReferencingFile:@"Resources/tableviewselection.png" size:CGSizeMake(6,22)]];
 }
 
 @end
@@ -3352,23 +3534,24 @@ var CPTableViewDataSourceKey                = @"CPTableViewDataSourceKey",
     unsigned    dropOperation @accessors;
     CPTableView tableView @accessors;
     int         currentRow @accessors;
+    BOOL        isBlinking @accessors;
 }
 
 - (void)drawRect:(CGRect)aRect
 {
-    if(tableView._destinationDragStyle === CPTableViewDraggingDestinationFeedbackStyleNone)
+    if(tableView._destinationDragStyle === CPTableViewDraggingDestinationFeedbackStyleNone || isBlinking)
         return;
-    
+
     var context = [[CPGraphicsContext currentContext] graphicsPort];
 
     CGContextSetStrokeColor(context, [CPColor colorWithHexString:@"4886ca"]);
     CGContextSetLineWidth(context, 3);
-    
+
     if (currentRow === -1)
     {
         CGContextStrokeRect(context, [self bounds]);
     }
-    
+
     else if (dropOperation === CPTableViewDropOn)
     {
         //if row is selected don't fill and stroke white
@@ -3387,7 +3570,7 @@ var CPTableViewDataSourceKey                = @"CPTableViewDataSourceKey",
         }
         CGContextStrokeRoundedRectangleInRect(context, newRect, 8, YES, YES, YES, YES);
 
-    } 
+    }
     else if (dropOperation === CPTableViewDropAbove)
     {
         //reposition the view up a tad
@@ -3422,7 +3605,28 @@ var CPTableViewDataSourceKey                = @"CPTableViewDataSourceKey",
         CGContextStrokePath(context);
         //CGContextStrokeLineSegments(context, [aRect.origin.x + 8,  aRect.origin.y + 8, 300 , aRect.origin.y + 8]);
     }
-        
+}
 
+- (void)blink
+{
+    if (dropOperation !== CPTableViewDropOn)
+        return;
+
+    isBlinking = YES;
+
+    var showCallback = function() {
+        objj_msgSend(self, "setHidden:", NO)
+        isBlinking = NO;
+    }
+
+    var hideCallback = function() {
+        objj_msgSend(self, "setHidden:", YES)
+        isBlinking = YES;
+    }
+
+    objj_msgSend(self, "setHidden:", YES);
+    [CPTimer scheduledTimerWithTimeInterval:0.1 callback:showCallback repeats:NO];
+    [CPTimer scheduledTimerWithTimeInterval:0.19 callback:hideCallback repeats:NO];
+    [CPTimer scheduledTimerWithTimeInterval:0.27 callback:showCallback repeats:NO];
 }
 @end

@@ -365,7 +365,7 @@ var LEFT_SHADOW_INSET       = 3.0,
     return _isEditable;
 }
 
-- (void)performDragOperation:(CPDraggingInfo)aSender
+- (BOOL)performDragOperation:(CPDraggingInfo)aSender
 {
     var images = [CPKeyedUnarchiver unarchiveObjectWithData:[[aSender draggingPasteboard] dataForType:CPImagesPboardType]];
 
@@ -374,6 +374,8 @@ var LEFT_SHADOW_INSET       = 3.0,
         [self setImage:images[0]];
         [self sendAction:[self action] to:[self target]];
     }
+    
+    return YES;
 }
 
 @end

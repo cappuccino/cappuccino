@@ -20,20 +20,6 @@
     return self;
 }
 
-- (void)drawRect:(CGRect)aRect
-{
-    var context = [[CPGraphicsContext currentContext] graphicsPort];
-
-    CGContextSetStrokeColor(context, [CPColor colorWithHexString:@"dce0e2"]);
-
-    var points = [
-                    CGPointMake(aRect.origin.x, aRect.origin.y + 0.5), 
-                    CGPointMake(aRect.origin.x, aRect.origin.y + aRect.size.height)
-                 ];
-
-    CGContextStrokeLineSegments(context, points, 2);
-}
-
 - (id)initWithCoder:(CPCoder)aCoder
 {
     self = [super initWithCoder:aCoder];

@@ -61,4 +61,27 @@
     return self;
 }
 
+- (void)takeStateFromKeyPath:(CPString)aKeyPath ofObjects:(CPArray)objects
+{
+    var count = objects.length,
+        value = [objects[0] valueForKeyPath:aKeyPath] ? CPOnState : CPOffState;
+
+    [self setAllowsMixedState:NO];
+    [self setState:value];
+
+    while (count-- > 1)
+    {
+        if (value !== ([objects[count] valueForKeyPath:aKeyPath] ? CPOnState : CPOffState))
+        {
+            [self setAllowsMixedState:YES];
+            [self setState:CPMixedState];
+        }
+    }
+}
+
+- (void)takeValueFromKeyPath:(CPString)aKeyPath ofObjects:(CPArray)objects
+{
+    [self takeStateFromKeyPath:aKeyPath ofObjects:objects];
+}
+
 @end

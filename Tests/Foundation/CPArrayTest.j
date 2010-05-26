@@ -21,8 +21,8 @@
 
 - (void)testsInsertObjectsAtIndexes
 {
-    var array = [CPMutableArray arrayWithObjects:@"one", @"two", @"three", @"four", nil],
-        newAdditions = [CPArray arrayWithObjects:@"a", @"b", nil],
+    var array = [CPMutableArray arrayWithObjects:@"one", @"two", @"three", @"four"],
+        newAdditions = [CPArray arrayWithObjects:@"a", @"b"],
         indexes = [CPMutableIndexSet indexSetWithIndex:1];
 
     [indexes addIndex:3];
@@ -31,8 +31,8 @@
 
     [self assert:array equals:[@"one", @"a", @"two", @"b", @"three", @"four"]];
 
-    var array = [CPMutableArray arrayWithObjects:@"one", @"two", @"three", @"four", nil],
-        newAdditions = [CPArray arrayWithObjects:@"a", @"b", nil],
+    var array = [CPMutableArray arrayWithObjects:@"one", @"two", @"three", @"four"],
+        newAdditions = [CPArray arrayWithObjects:@"a", @"b"],
         indexes = [CPMutableIndexSet indexSetWithIndex:5];
     
     [indexes addIndex:4];
@@ -41,8 +41,8 @@
 
     [self assert:array equals:[@"one", @"two", @"three", @"four", @"a", @"b"]];
     
-    var array = [CPMutableArray arrayWithObjects: @"one", @"two", @"three", @"four", nil],
-        newAdditions = [CPArray arrayWithObjects: @"a", @"b", @"c", nil],
+    var array = [CPMutableArray arrayWithObjects: @"one", @"two", @"three", @"four"],
+        newAdditions = [CPArray arrayWithObjects: @"a", @"b", @"c"],
         indexes = [CPMutableIndexSet indexSetWithIndex:1];
 
     [indexes addIndex:2];
@@ -53,8 +53,8 @@
     [self assert:array equals:[@"one", @"a", @"b", @"two", @"c", @"three", @"four"]];
 
 
-    var array = [CPMutableArray arrayWithObjects: @"one", @"two", @"three", @"four", nil],
-        newAdditions = [CPArray arrayWithObjects: @"a", @"b", @"c", nil],
+    var array = [CPMutableArray arrayWithObjects: @"one", @"two", @"three", @"four"],
+        newAdditions = [CPArray arrayWithObjects: @"a", @"b", @"c"],
         indexes = [CPMutableIndexSet indexSetWithIndex:1];
 
     [indexes addIndex:2];
@@ -64,10 +64,9 @@
     
     [self assert:array equals:[@"one", @"a", @"b", @"two", @"three", @"four", @"c"]];
 
-    //
-    
-    var array = [CPMutableArray arrayWithObjects:@"one", @"two", @"three", @"four", nil],
-        newAdditions = [CPArray arrayWithObjects:@"a", @"b", nil],
+
+    var array = [CPMutableArray arrayWithObjects:@"one", @"two", @"three", @"four"],
+        newAdditions = [CPArray arrayWithObjects:@"a", @"b"],
         indexes = [CPMutableIndexSet indexSetWithIndex:5];
     
     [indexes addIndex:6];
@@ -88,10 +87,10 @@
 {
 	var array = [CPMutableArray arrayWithObjects:@"one", @"two", @"three", @"four", nil],
 			indexes = [CPMutableIndexSet indexSetWithIndex: 2];
-			
+
 	[array removeObjectsAtIndexes: indexes];
-	
-	[self assert:array equals:[@"one", @"two", @"four"]];
+
+	[self assert:array equals:[@"one", @"two", @"four", nil]];
 }
 
 - (void)testIndexOfObjectSortedByFunction
@@ -212,10 +211,15 @@
 
 - (void)testInitWithArrayCopyItems
 {
-    var a = [[CopyableObject new], 2, 3];
+    var a = [[CopyableObject new], 2, 3, {empty:true}];
     var b = [[CPArray alloc] initWithArray:a copyItems:YES];
 
     [self assert:a notEqual:b];
+
+    [self assert:a[0] notEqual:b[0]];
+    [self assert:a[1] equals:b[1]];
+    [self assert:a[2] equals:b[2]];
+    [self assertTrue:a[3] === b[3]];
 }
 
 - (void)testIsEqualToArray

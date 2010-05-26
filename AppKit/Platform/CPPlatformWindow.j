@@ -41,6 +41,7 @@ var PrimaryPlatformWindow   = NULL;
 
     DOMElement      _DOMBodyElement;
     DOMElement      _DOMFocusElement;
+    DOMElement      _DOMEventGuard;
 
     CPArray         _windowLevels;
     CPDictionary    _windowLayers;
@@ -71,6 +72,15 @@ var PrimaryPlatformWindow   = NULL;
 + (CPSet)visiblePlatformWindows
 {
     return [CPSet set];
+}
+
++ (BOOL)supportsMultipleInstances
+{
+#if PLATFORM(DOM)
+    return !CPBrowserIsEngine(CPInternetExplorerBrowserEngine);
+#else
+    return NO;
+#endif
 }
 
 + (CPPlatformWindow)primaryPlatformWindow

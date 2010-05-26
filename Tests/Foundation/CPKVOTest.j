@@ -122,6 +122,22 @@
 
 }
 
+- (void)testDictionary
+{
+    var dict = [[CPDictionary alloc] init];
+    
+    [dict setObject:@"Bob Jones" forKey:@"dictionaryKey"];
+
+    [dict addObserver:self
+           forKeyPath:@"dictionaryKey"
+             options:nil
+             context:"testDictionary"];
+
+    [dict setObject:@"Jo Bob Ray" forKey:@"dictionaryKey"];
+
+    [self assertTrue: _sawObservation message:"Never recieved an observation"];
+}
+
 - (void)testPriorObservationOption
 {
     _sawPriorObservation = NO;
@@ -609,6 +625,12 @@
             [self assert:aKeyPath equals:"self.car.thisCar.model"];
             [self assert:newValue equals:"ford focus"];
             [self assert:anObject equals:bob];
+            break;
+
+        case "testDictionary":
+            [self assert:aKeyPath equals:"dictionaryKey"];
+            [self assert:oldValue equals:"Bob Jones"];
+            [self assert:newValue equals:"Jo Bob Ray"];
             break;
 
         default:

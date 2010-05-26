@@ -31,6 +31,16 @@
     return [[Node withValue:1],
             [Node withValue:2],
             [Node withValue:3],
+            [Node withValue:2],
+            [Node withValue:3],
+            [Node withValue:2],
+            [Node withValue:3],
+            [Node withValue:2],
+            [Node withValue:3],
+            [Node withValue:2],
+            [Node withValue:3],
+            [Node withValue:2],
+            [Node withValue:3],
             [Node withValue:4]];
 }
 

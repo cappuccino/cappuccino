@@ -396,6 +396,18 @@ CPCircularSlider    = 1;
         _sendActionOn &= ~CPLeftMouseDraggedMask;
 }
 
+- (void)takeValueFromKeyPath:(CPString)aKeyPath ofObjects:(CPArray)objects
+{
+    var count = objects.length,
+        value = [objects[0] valueForKeyPath:aKeyPath];
+
+    [self setObjectValue:value];
+
+    while (count-- > 1)
+        if (value !== ([objects[count] valueForKeyPath:aKeyPath]))
+            return [self setFloatValue:1.0];
+}
+
 @end
 
 var CPSliderMinValueKey             = "CPSliderMinValueKey",

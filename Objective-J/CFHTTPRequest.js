@@ -92,15 +92,23 @@ if (!NativeRequest)
 
 GLOBAL(CFHTTPRequest) = function()
 {
+    this._isOpen = false;
+    this._requestHeaders = {};
+    this._mimeType = null;
+
     this._eventDispatcher = new EventDispatcher(this);
     this._nativeRequest = new NativeRequest();
 
     var self = this;
-
-    this._nativeRequest.onreadystatechange = function()
+    this._stateChangeHandler = function()
     {
         determineAndDispatchHTTPRequestEvents(self);
     }
+
+    this._nativeRequest.onreadystatechange = this._stateChangeHandler;
+
+    if (CFHTTPRequest.AuthenticationDelegate !== nil)
+        this._eventDispatcher.addEventListener("HTTP403", function(){CFHTTPRequest.AuthenticationDelegate(self)});
 }
 
 CFHTTPRequest.UninitializedState    = 0;
@@ -108,6 +116,9 @@ CFHTTPRequest.LoadingState          = 1;
 CFHTTPRequest.LoadedState           = 2;
 CFHTTPRequest.InteractiveState      = 3;
 CFHTTPRequest.CompleteState         = 4;
+
+//override to forward all CFHTTPRequest authorization failures to a single function
+CFHTTPRequest.AuthenticationDelegate = nil;
 
 CFHTTPRequest.prototype.status = function()
 {
@@ -177,7 +188,7 @@ CFHTTPRequest.prototype.responseText = function()
 
 CFHTTPRequest.prototype.setRequestHeader = function(/*String*/ aHeader, /*Object*/ aValue)
 {
-    return this._nativeRequest.setRequestHeader(aHeader, aValue);
+    this._requestHeaders[aHeader] = aValue;
 }
 
 CFHTTPRequest.prototype.getResponseHeader = function(/*String*/ aHeader)
@@ -192,17 +203,40 @@ CFHTTPRequest.prototype.getAllResponseHeaders = function()
 
 CFHTTPRequest.prototype.overrideMimeType = function(/*String*/ aMimeType)
 {
-    if ("overrideMimeType" in this._nativeRequest)
-        return this._nativeRequest.overrideMimeType(aMimeType);
+    this._mimeType = aMimeType;
 }
 
 CFHTTPRequest.prototype.open = function(/*String*/ aMethod, /*String*/ aURL, /*Boolean*/ isAsynchronous, /*String*/ aUser, /*String*/ aPassword)
 {
+    this._isOpen = true;
+    this._URL = aURL;
+    this._async = isAsynchronous;
+    this._method = aMethod;
+    this._user = aUser;
+    this._password = aPassword;
     return this._nativeRequest.open(aMethod, aURL, isAsynchronous, aUser, aPassword);
 }
 
 CFHTTPRequest.prototype.send = function(/*Object*/ aBody)
 {
+    for (var i in this._requestHeaders)
+    {
+        if (this._requestHeaders.hasOwnProperty(i))
+            this._nativeRequest.setRequestHeader(i, this._requestHeaders[i]);
+    }
+
+    if (!this._isOpen)
+    {
+        delete this._nativeRequest.onreadystatechange;
+        this._nativeRequest.open(this._method, this._URL, this._async, this._user, this._password);
+        this._nativeRequest.onreadystatechange = this._stateChangeHandler;
+    }
+
+    if (this._mimeType && "overrideMimeType" in this._nativeRequest)
+        this._nativeRequest.overrideMimeType(this._mimeType);
+
+    this._isOpen = false;
+
     try
     {
         return this._nativeRequest.send(aBody);
@@ -216,6 +250,7 @@ CFHTTPRequest.prototype.send = function(/*Object*/ aBody)
 
 CFHTTPRequest.prototype.abort = function()
 {
+    this._isOpen = false;
     return this._nativeRequest.abort();
 }
 
@@ -236,20 +271,20 @@ function determineAndDispatchHTTPRequestEvents(/*CFHTTPRequest*/ aRequest)
     eventDispatcher.dispatchEvent({ type:"readystatechange", request:aRequest});
 
     var nativeRequest = aRequest._nativeRequest,
-        readyState = ["uninitialized", "loading", "loaded", "interactive", "complete"][aRequest.readyState()];
+        readyStates = ["uninitialized", "loading", "loaded", "interactive", "complete"];
 
-    eventDispatcher.dispatchEvent({ type:readyState, request:aRequest});
-
-    if (readyState === "complete")
+    if (readyStates[aRequest.readyState()] === "complete")
     {
         var status = "HTTP" + aRequest.status();
-
         eventDispatcher.dispatchEvent({ type:status, request:aRequest });
 
         var result = aRequest.success() ? "success" : "failure";
-
         eventDispatcher.dispatchEvent({ type:result, request:aRequest });
+
+        eventDispatcher.dispatchEvent({ type:readyStates[aRequest.readyState()], request:aRequest});
     }
+    else
+        eventDispatcher.dispatchEvent({ type:readyStates[aRequest.readyState()], request:aRequest});
 }
 
 function FileRequest(/*CFURL*/ aURL, onsuccess, onfailure)

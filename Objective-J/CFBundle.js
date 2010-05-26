@@ -635,9 +635,9 @@ function decompileStaticFile(/*Bundle*/ aBundle, /*String*/ aString, /*String*/ 
 
                 if (CFBundleSupportedSpriteType === CFBundleMHTMLUncachedSpriteType)
                 {
-                    var exclamationIndex = URLString.indexOf("!"),
-                        firstPart = URLString.substring(0, exclamationIndex),
-                        lastPart = URLString.substring(exclamationIndex);
+                    var exclamationIndex = mappedURLString.indexOf("!"),
+                        firstPart = mappedURLString.substring(0, exclamationIndex),
+                        lastPart = mappedURLString.substring(exclamationIndex);
 
                     mappedURLString = firstPart + "?" + CFCacheBuster + lastPart;
                 }

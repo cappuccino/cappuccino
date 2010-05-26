@@ -23,11 +23,11 @@
  *
  * TODO: Needs to implement CPCoding, CPCopying.
  */
- 
-@import "CPObject.j"
+
 @import "CPArray.j"
-@import "CPNumber.j"
 @import "CPEnumerator.j"
+@import "CPNumber.j"
+@import "CPObject.j"
 
 /*!
     @class CPSet
@@ -79,7 +79,7 @@
 /*
     Creates and returns a set containing the objects in a given argument list.
     @param anObject The first object to add to the new set.
-    @param ... A comma-separated list of objects, ending with nil, to add to the new set. If the same object appears more than once objects, it is added only once to the returned set. 
+    @param ... A comma-separated list of objects, ending with nil, to add to the new set. If the same object appears more than once objects, it is added only once to the returned set.
 */
 + (id)setWithObjects:(id)anObject, ...
 {
@@ -87,9 +87,9 @@
         argLength = arguments.length,
         i = 2;
 
-    for(; i < argLength && ((argument = arguments[i]) !== nil); ++i)
+    for (; i < argLength && ((argument = arguments[i]) !== nil); ++i)
         [set addObject:argument];
-    
+
     return set;
 }
 
@@ -112,7 +112,7 @@
         _count = 0;
         _contents = {};
     }
-    
+
     return self;
 }
 
@@ -121,21 +121,21 @@
     @param array An array of objects to add to the new set. If the same object appears more than once in array, it is represented only once in the returned set.
 */
 - (id)initWithArray:(CPArray)anArray
-{    
+{
     if (self = [self init])
     {
         var count = anArray.length;
-        
+
         while (count--)
             [self addObject:anArray[count]];
     }
-    
+
     return self;
 }
 
 /*
     Initializes a newly allocated set with members taken from the specified list of objects.
-    @param objects A array of objects to add to the new set. If the same object appears more than once objects, it is added only once to the returned set. 
+    @param objects A array of objects to add to the new set. If the same object appears more than once objects, it is added only once to the returned set.
     @param count The number of objects from objects to add to the new set.
 */
 - (id)initWithObjects:(id)objects count:(unsigned)count
@@ -155,10 +155,10 @@
 		var argLength = arguments.length,
 			i = 2;
 
-        for(; i < argLength && (argument = arguments[i]) != nil; ++i)
+        for (; i < argLength && (argument = arguments[i]) != nil; ++i)
             [self addObject:argument];
     }
-    
+
     return self;
 }
 
@@ -179,10 +179,11 @@
 
     if (!aSet)
         return self;
-            
-    var contents = aSet._contents;
-    
-    for (var property in contents)
+
+    var contents = aSet._contents,
+        property;
+
+    for (property in contents)
     {
         if (contents.hasOwnProperty(property))
         {
@@ -192,7 +193,7 @@
                 [self addObject:contents[property]];
         }
     }
-    
+
     return self;
 }
 
@@ -201,14 +202,15 @@
 */
 - (CPArray)allObjects
 {
-    var array = [];
-    
-    for (var property in _contents)
+    var array = [],
+        property;
+
+    for (property in _contents)
     {
         if (_contents.hasOwnProperty(property))
             array.push(_contents[property]);
     }
-    
+
     return array;
 }
 
@@ -217,12 +219,14 @@
 */
 - (id)anyObject
 {
-    for (var property in _contents)
+    var property;
+
+    for (property in _contents)
     {
         if (_contents.hasOwnProperty(property))
             return _contents[property];
     }
-    
+
     return nil;
 }
 
@@ -236,7 +240,7 @@
 
     if (obj !== undefined && [obj isEqual:anObject])
         return YES;
-    
+
     return NO;
 }
 
@@ -277,7 +281,7 @@
     @param set The set with which to compare the receiver.
 */
 - (BOOL)isEqualToSet:(CPSet)set
-{    
+{
     // If both are subsets of each other, they are equal
     return self === set || ([self count] === [set count] && [set isSubsetOfSet:self]);
 }
@@ -288,14 +292,17 @@
 */
 - (BOOL)isSubsetOfSet:(CPSet)set
 {
-    var items = [self allObjects];
-    for (var i = 0; i < items.length; i++)
+    var items = [self allObjects],
+        i = 0,
+        count = items.length;
+
+    for (; i < count; i++)
     {
         // If at least one item is not in both sets, self isn't a subset
         if (![set containsObject:items[i]])
             return NO;
     }
-    
+
     return YES;
 }
 
@@ -315,8 +322,11 @@
 */
 - (void)makeObjectsPerformSelector:(SEL)aSelector withObject:(id)argument
 {
-    var items = [self allObjects];
-    for (var i = 0; i < items.length; i++)
+    var items = [self allObjects],
+        i = 0,
+        count = items.length;
+
+    for (; i < count; i++)
     {
         [items[i] performSelector:aSelector withObject:argument];
     }
@@ -330,7 +340,7 @@
 {
     if ([self containsObject:object])
         return object;
-    
+
     return nil;
 }
 
@@ -432,8 +442,11 @@
 */
 - (void)intersectSet:(CPSet)set
 {
-    var items = [self allObjects];
-    for (var i = 0, count = items.length; i < count; i++)
+    var items = [self allObjects],
+        i = 0,
+        count = items.length;
+
+    for (; i < count; i++)
     {
         if (![set containsObject:items[i]])
             [self removeObject:items[i]];
@@ -446,8 +459,11 @@
 */
 - (void)minusSet:(CPSet)set
 {
-    var items = [set allObjects];
-    for (var i = 0; i < items.length; i++)
+    var items = [set allObjects],
+        i = 0,
+        count = items.length;
+
+    for (; i < count; i++)
     {
         if ([self containsObject:items[i]])
             [self removeObject:items[i]];
@@ -460,11 +476,19 @@
 */
 - (void)unionSet:(CPSet)set
 {
-    var items = [set allObjects];
-    for (var i = 0, count = items.length; i < count; i++)
+    var items = [set allObjects],
+        i = 0,
+        count = items.length;
+
+    for (; i < count; i++)
     {
         [self addObject:items[i]];
     }
+}
+
+- (CPString)description
+{
+    return @"{(" + [self allObjects].join(", ") + ")}";
 }
 
 @end
@@ -509,5 +533,5 @@ var CPSetObjectsKey = @"CPSetObjectsKey";
 */
 
 @implementation CPMutableSet : CPSet
-@end
 
+@end

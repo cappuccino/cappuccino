@@ -75,7 +75,7 @@ CFDictionary.prototype.containsValue = function(/*id*/ anObject)
         count = keys.length;
 
     for (; index < count; ++index)
-        if (buckets[keys] === anObject)
+        if (buckets[keys[index]] === anObject)
             return YES;
 
     return NO;
@@ -106,8 +106,8 @@ CFDictionary.prototype.countOfValue = function(/*id*/ anObject)
         countOfValue = 0;
 
     for (; index < count; ++index)
-        if (buckets[keys] === anObject)
-            return ++countOfValue;
+        if (buckets[keys[index]] === anObject)
+            ++countOfValue;
 
     return countOfValue;
 }
