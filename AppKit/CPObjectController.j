@@ -525,7 +525,7 @@ var CPObjectControllerObjectClassNameKey                = @"CPObjectControllerOb
             
             for (var i=0, count=[allValues count]; i<count && value!=CPMultipleValuesMarker; i++)
             {
-                if (![values isEqual:[allValues objectAtIndex:i]])
+                if (![value isEqual:[allValues objectAtIndex:i]])
                     value = CPMultipleValuesMarker;
             }
         }
