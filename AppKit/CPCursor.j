@@ -1,15 +1,19 @@
 /*
 Testing browsers:
-    WebKit r50235 (Safari 4.0.3+)
-    FireFox 3.5
-    Opera 10.0.0
+    Safari 4.0.5, Windows and Mac
+    Chrome 5.0375.55 Windows and Mac
+    FireFox 3, 3.6 Windows and Mac
+    Opera 9.64 Mac
+    Opera 10.53 Windows and Mac
+    Internet Explorer 7, 8 Windows
 
 Implemented class methods:
-    Webkit : All
-    IE     : All
-    FireFox Win : All
-    FireFox Mac : All except closedHandCursor disappearingItemCursor // Firefox mac does not support url cursors
-    Opera       : All except resizeLeftRightCursor resizeUpDownCursor operationNotAllowedCursor dragCopyCursor dragLinkCursor contextualMenuCursor openHandCursor closedHandCursor disappearingItemCursor // Opera does not support url cursors so these won't work with images
+    Webkit       : All
+    IE 7, 8      : All
+    Opera 10.53  : All except operationNotAllowedCursor dragCopyCursor dragLinkCursor contextualMenuCursor closedHandCursor disappearingItemCursor, additionally, in Windows: resizeLeftRightCursor resizeUpDownCursor openHandCursor // Opera does not support url cursors so these won't work with images
+    Opera 9.64   : All except operationNotAllowedCursor dragCopyCursor dragLinkCursor contextualMenuCursor closedHandCursor disappearingItemCursor // Opera does not support url cursors so these won't work with images
+    Firefox 3    : All on Windows, All except disappearingItemCursor on Mac
+    Firefox 3.6  : All on Windows, All except operationNotAllowedCursor dragCopyCursor dragLinkCursor contextualMenuCursor on Mac
 */
 
 #include "Platform/Platform.h"
@@ -54,27 +58,17 @@ var currentCursor = nil,
 
 + (CPCursor)cursorWithImageNamed:(CPString)imageName
 {
-    return [[CPCursor alloc] initWithCSSString:[CPCursor _cssStringForCursorWithImageNamed:imageName]];
+    if (!cursorURLFormat)
+        cursorURLFormat = @"url(" + [[CPBundle bundleForClass:self] resourcePath] + @"/CPCursor/%@.cur), default";
+    
+    var url = [CPString stringWithFormat:cursorURLFormat, imageName];
+    
+    return [[CPCursor alloc] initWithCSSString:url];
 }
 
 - (CPString)_cssString
 {
     return _cssString;
-}
-
-+ (CPString)_cssStringForCursorWithImageNamed:(CPString)imageName
-{
-    if (!cursorURLFormat)
-        cursorURLFormat = @"url(" + [[CPBundle bundleForClass:self] resourcePath] + @"CPCursor/%@.cur), auto";
-    
-    return [CPString stringWithFormat:cursorURLFormat, imageName];
-}
-
-+ (CPCursor)_cursorWithCSSString:(CPString)aString fallbackImageName:(CPString)imageName
-{
-    if (!imageName)
-        return [CPCursor cursorWithCSSString:aString];
-    return [CPCursor cursorWithCSSString:aString + ", " + [CPCursor _cssStringForCursorWithImageNamed:imageName]];
 }
 
 + (CPCursor)arrowCursor
@@ -99,23 +93,22 @@ var currentCursor = nil,
 
 + (CPCursor)resizeDownCursor
 {
-//    console.log([CPCursor _cursorWithCSSString:"s-resize" fallbackImageName:CPStringFromSelector(_cmd)]);
-    return [CPCursor cursorWithCSSString:"s-resize, url()"]// fallbackImageName:CPStringFromSelector(_cmd)]; // WebKit | FF | opera | IE
+    return [CPCursor cursorWithCSSString:"s-resize"]; // WebKit | FF | opera 
 }
 
 + (CPCursor)resizeUpCursor
 {
-    return [CPCursor _cursorWithCSSString:@"n-resize" fallbackImageName:CPStringFromSelector(_cmd)]; // WebKit | FF | opera | IE
+    return [CPCursor cursorWithCSSString:@"n-resize"]; // WebKit | FF | opera
 }
 
 + (CPCursor)resizeLeftCursor
 {
-    return [CPCursor _cursorWithCSSString:@"w-resize" fallbackImageName:CPStringFromSelector(_cmd)]; // WebKit | FF | opera | IE
+    return [CPCursor cursorWithCSSString:@"w-resize"]; // WebKit | FF | opera
 }
 
 + (CPCursor)resizeRightCursor
 {
-    return [CPCursor _cursorWithCSSString:@"e-resize" fallbackImageName:CPStringFromSelector(_cmd)]; // WebKit | FF | opera | IE
+    return [CPCursor cursorWithCSSString:@"e-resize"]; // WebKit | FF | opera
 }
 
 + (CPCursor)resizeLeftRightCursor
@@ -135,27 +128,50 @@ var currentCursor = nil,
 
 + (CPCursor)dragCopyCursor
 {
-    return [CPCursor _cursorWithCSSString:@"copy" fallbackImageName:CPStringFromSelector(_cmd)]; // WebKit | FF
+    if (CPBrowserIsEngine(CPInternetExplorerBrowserEngine) ||
+        CPBrowserIsUserAgent("Safari") && CPBrowserIsOperatingSystem(CPWindowsOperatingSystem))        
+        return [CPCursor cursorWithImageNamed:CPStringFromSelector(_cmd)];
+
+    return [CPCursor cursorWithCSSString:@"copy"]; // WebKit | FF
 }
 
 + (CPCursor)dragLinkCursor
 {
-    return [CPCursor _cursorWithCSSString:@"alias" fallbackImageName:CPStringFromSelector(_cmd)]; // WebKit | FF
+    if (CPBrowserIsEngine(CPInternetExplorerBrowserEngine) ||
+        CPBrowserIsUserAgent("Safari") && CPBrowserIsOperatingSystem(CPWindowsOperatingSystem))
+        return [CPCursor cursorWithImageNamed:CPStringFromSelector(_cmd)];
+
+    return [CPCursor cursorWithCSSString:@"alias"]; // WebKit | FF
 }
 
 + (CPCursor)contextualMenuCursor
 {
-    return [CPCursor _cursorWithCSSString:@"context-menu" fallbackImageName:CPStringFromSelector(_cmd)]; // WebKit | FF Mac . Not impl FF Win.
+    if (CPBrowserIsOperatingSystem(CPWindowsOperatingSystem))
+        return [CPCursor cursorWithImageNamed:CPStringFromSelector(_cmd)];
+
+    return [CPCursor cursorWithCSSString:@"context-menu"]; // WebKit | FF Mac . Not impl FF Win.
 }
 
 + (CPCursor)openHandCursor
 {
-    return [CPCursor _cursorWithCSSString:@"-webkit-grab, -moz-grab" fallbackImageName:CPStringFromSelector(_cmd)];
+    if (CPBrowserIsEngine(CPWebKitBrowserEngine) && !CPBrowserIsUserAgent("Chrome") && !CPBrowserIsOperatingSystem(CPWindowsOperatingSystem))
+        return [CPCursor cursorWithCSSString:@"-webkit-grab"];
+    else if (CPBrowserIsEngine(CPGeckoBrowserEngine)) 
+        return [CPCursor cursorWithCSSString:@"-moz-grab"];
+    else if (CPBrowserIsEngine(CPOperaBrowserEngine))
+        return [CPCursor cursorWithCSSString:@"move"];
+
+    return [CPCursor cursorWithImageNamed:CPStringFromSelector(_cmd)]; // WebKit | FFMac.  Move in Opera 
 }
 
 + (CPCursor)closedHandCursor
 {
-    return [CPCursor _cursorWithCSSString:@"-webkit-grabbing, -moz-grabbing" fallbackImageName:CPStringFromSelector(_cmd)];
+    if (CPBrowserIsEngine(CPWebKitBrowserEngine) && !CPBrowserIsUserAgent("Chrome") && !CPBrowserIsOperatingSystem(CPWindowsOperatingSystem))
+        return [CPCursor cursorWithCSSString:@"-webkit-grabbing"];
+    else if (CPBrowserIsEngine(CPGeckoBrowserEngine))
+        return [CPCursor cursorWithCSSString:@"-moz-grabbing"];        
+
+    return [CPCursor cursorWithImageNamed:CPStringFromSelector(_cmd)]; // WebKit | FFMac
 }
 
 + (CPCursor)disappearingItemCursor
@@ -183,7 +199,7 @@ var currentCursor = nil,
 
 - (id)initWithImage:(CPImage)image hotSpot:(CPPoint)hotSpot
 {
-    return [self initWithCSSString:"url(" + [image filename] + "), default"];
+    return [self initWithCSSString:"url(" + [image filename] + ")"];
 }
 
 - (void)mouseEntered:(CPEvent)event
