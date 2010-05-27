@@ -136,8 +136,23 @@ var CPControlBlackColor     = [CPColor blackColor];
     if (self === [CPControl class])
     {
         [self exposeBinding:@"value"];
+        [self exposeBinding:@"objectValue"];
+        [self exposeBinding:@"stringValue"];
+        [self exposeBinding:@"integerValue"];
+        [self exposeBinding:@"intValue"];
+        [self exposeBinding:@"doubleValue"];
+        [self exposeBinding:@"floatValue"];
+
         [self exposeBinding:@"enabled"];
     }
+}
+
+- (void)_replacementKeyPathForBinding:(CPString)aBinding
+{
+    if (aBinding === @"value")
+        return @"objectValue";
+
+    return [super _replacementKeyPathForBinding:aBinding];
 }
 
 - (id)initWithFrame:(CGRect)aFrame
@@ -576,14 +591,6 @@ BRIDGE(ImageScaling, imageScaling, "image-scaling")
 - (BOOL)isHighlighted
 {
     return [self hasThemeState:CPThemeStateHighlighted];
-}
-
-- (id)_replacementKeyPathForBinding:(CPString)binding
-{
-    if ([binding isEqual:@"value"])
-        return @"objectValue";
-
-    return binding;
 }
 
 @end
