@@ -54,22 +54,27 @@ var currentCursor = nil,
 
 + (CPCursor)cursorWithImageNamed:(CPString)imageName
 {
-    if (!cursorURLFormat)
-    {
-        cursorURLFormat = @"url(" + [[CPBundle bundleForClass:self] resourcePath] + @"/CPCursor/%@.cur)";
-
-        if (CPBrowserIsEngine(CPGeckoBrowserEngine))
-            cursorURLFormat += ", default";
-    }
-    
-    var url = [CPString stringWithFormat:cursorURLFormat, imageName];
-    
-    return [[CPCursor alloc] initWithCSSString:url];
+    return [[CPCursor alloc] initWithCSSString:[CPCursor _cssStringForCursorWithImageNamed:imageName]];
 }
 
 - (CPString)_cssString
 {
     return _cssString;
+}
+
++ (CPString)_cssStringForCursorWithImageNamed:(CPString)imageName
+{
+    if (!cursorURLFormat)
+        cursorURLFormat = @"url(" + [[CPBundle bundleForClass:self] resourcePath] + @"CPCursor/%@.cur), auto";
+    
+    return [CPString stringWithFormat:cursorURLFormat, imageName];
+}
+
++ (CPCursor)_cursorWithCSSString:(CPString)aString fallbackImageName:(CPString)imageName
+{
+    if (!imageName)
+        return [CPCursor cursorWithCSSString:aString];
+    return [CPCursor cursorWithCSSString:aString + ", " + [CPCursor _cssStringForCursorWithImageNamed:imageName]];
 }
 
 + (CPCursor)arrowCursor
@@ -94,34 +99,23 @@ var currentCursor = nil,
 
 + (CPCursor)resizeDownCursor
 {
-    if (CPBrowserIsEngine(CPInternetExplorerBrowserEngine))
-        return [CPCursor cursorWithImageNamed:CPStringFromSelector(_cmd)];
-        
-    return [CPCursor cursorWithCSSString:"s-resize"]; // WebKit | FF | opera
+//    console.log([CPCursor _cursorWithCSSString:"s-resize" fallbackImageName:CPStringFromSelector(_cmd)]);
+    return [CPCursor cursorWithCSSString:"s-resize, url()"]// fallbackImageName:CPStringFromSelector(_cmd)]; // WebKit | FF | opera | IE
 }
 
 + (CPCursor)resizeUpCursor
 {
-    if (CPBrowserIsEngine(CPInternetExplorerBrowserEngine))
-        return [CPCursor cursorWithImageNamed:CPStringFromSelector(_cmd)];
-
-    return [CPCursor cursorWithCSSString:@"n-resize"]; // WebKit | FF | opera
+    return [CPCursor _cursorWithCSSString:@"n-resize" fallbackImageName:CPStringFromSelector(_cmd)]; // WebKit | FF | opera | IE
 }
 
 + (CPCursor)resizeLeftCursor
 {
-    if (CPBrowserIsEngine(CPInternetExplorerBrowserEngine))
-        return [CPCursor cursorWithImageNamed:CPStringFromSelector(_cmd)];
-
-    return [CPCursor cursorWithCSSString:@"w-resize"]; // WebKit | FF | opera
+    return [CPCursor _cursorWithCSSString:@"w-resize" fallbackImageName:CPStringFromSelector(_cmd)]; // WebKit | FF | opera | IE
 }
 
 + (CPCursor)resizeRightCursor
 {
-    if (CPBrowserIsEngine(CPInternetExplorerBrowserEngine))
-        return [CPCursor cursorWithImageNamed:CPStringFromSelector(_cmd)];
-
-    return [CPCursor cursorWithCSSString:@"e-resize"]; // WebKit | FF | opera
+    return [CPCursor _cursorWithCSSString:@"e-resize" fallbackImageName:CPStringFromSelector(_cmd)]; // WebKit | FF | opera | IE
 }
 
 + (CPCursor)resizeLeftRightCursor
@@ -141,44 +135,27 @@ var currentCursor = nil,
 
 + (CPCursor)dragCopyCursor
 {
-    if (CPBrowserIsEngine(CPInternetExplorerBrowserEngine))
-        return [CPCursor cursorWithImageNamed:CPStringFromSelector(_cmd)];
-
-    return [CPCursor cursorWithCSSString:@"copy"]; // WebKit | FF
+    return [CPCursor _cursorWithCSSString:@"copy" fallbackImageName:CPStringFromSelector(_cmd)]; // WebKit | FF
 }
 
 + (CPCursor)dragLinkCursor
 {
-    if (CPBrowserIsEngine(CPInternetExplorerBrowserEngine))
-        return [CPCursor cursorWithImageNamed:CPStringFromSelector(_cmd)];
-
-    return [CPCursor cursorWithCSSString:@"alias"]; // WebKit | FF
+    return [CPCursor _cursorWithCSSString:@"alias" fallbackImageName:CPStringFromSelector(_cmd)]; // WebKit | FF
 }
 
 + (CPCursor)contextualMenuCursor
 {
-    if (CPBrowserIsEngine(CPInternetExplorerBrowserEngine))
-        return [CPCursor cursorWithImageNamed:CPStringFromSelector(_cmd)];
-
-    return [CPCursor cursorWithCSSString:@"context-menu"]; // WebKit | FF Mac . Not impl FF Win.
+    return [CPCursor _cursorWithCSSString:@"context-menu" fallbackImageName:CPStringFromSelector(_cmd)]; // WebKit | FF Mac . Not impl FF Win.
 }
 
 + (CPCursor)openHandCursor
 {
-    if (CPBrowserIsEngine(CPWebKitBrowserEngine))
-        return [CPCursor cursorWithCSSString:@"-webkit-grab"];
-    else if (CPBrowserIsEngine(CPGeckoBrowserEngine) || CPBrowserIsEngine(CPOperaBrowserEngine))
-        return [CPCursor cursorWithCSSString:@"move"];
-
-    return [CPCursor cursorWithImageNamed:CPStringFromSelector(_cmd)]; // WebKit only. move in FFMac|Opera 
+    return [CPCursor _cursorWithCSSString:@"-webkit-grab, -moz-grab" fallbackImageName:CPStringFromSelector(_cmd)];
 }
 
 + (CPCursor)closedHandCursor
 {
-    if (CPBrowserIsEngine(CPWebKitBrowserEngine))
-        return [CPCursor cursorWithCSSString:@"-webkit-grabbing"];
-
-    return [CPCursor cursorWithImageNamed:CPStringFromSelector(_cmd)]; // WebKit only 
+    return [CPCursor _cursorWithCSSString:@"-webkit-grabbing, -moz-grabbing" fallbackImageName:CPStringFromSelector(_cmd)];
 }
 
 + (CPCursor)disappearingItemCursor
@@ -206,7 +183,7 @@ var currentCursor = nil,
 
 - (id)initWithImage:(CPImage)image hotSpot:(CPPoint)hotSpot
 {
-    return [self initWithCSSString:"url(" + [image filename] + ")"];
+    return [self initWithCSSString:"url(" + [image filename] + "), default"];
 }
 
 - (void)mouseEntered:(CPEvent)event
