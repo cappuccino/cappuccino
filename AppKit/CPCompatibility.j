@@ -199,11 +199,6 @@ function CPBrowserIsOperatingSystem(anOperatingSystem)
     return OPERATING_SYSTEM === anOperatingSystem;
 }
 
-function CPBrowserIsUserAgent(aUserAgent)
-{
-    return USER_AGENT.indexOf(aUserAgent) !== CPNotFound;
-}
-
 OPERATING_SYSTEM = CPOtherOperatingSystem;
 
 if (USER_AGENT.indexOf("Mac") !== -1)
