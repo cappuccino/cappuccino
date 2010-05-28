@@ -143,6 +143,12 @@ var CPControlBlackColor     = [CPColor blackColor];
     }
 }
 
+- (void)_reverseSetBinding
+{
+    var theBinding = [CPKeyValueBinding getBinding:CPValueBinding forObject:self];
+    [theBinding reverseSetValueFor:@"objectValue"];
+}
+
 - (void)_replacementKeyPathForBinding:(CPString)aBinding
 {
     if (aBinding === @"value")
@@ -205,11 +211,7 @@ var CPControlBlackColor     = [CPColor blackColor];
 */
 - (void)sendAction:(SEL)anAction to:(id)anObject
 {
-    var theBinding = [CPKeyValueBinding getBinding:CPValueBinding forObject:self];
-
-    if (theBinding)
-        [theBinding reverseSetValueFor:@"objectValue"];
-
+    [self _reverseSetBinding];
     [CPApp sendAction:anAction to:anObject from:self];
 }
 
@@ -539,11 +541,7 @@ var CPControlBlackColor     = [CPColor blackColor];
     if([note object] != self)
         return;
 
-    var theBinding = [CPKeyValueBinding getBinding:CPValueBinding forObject:self];
-
-    if (theBinding)
-        [theBinding reverseSetValueFor:@"objectValue"];
-
+    [self _reverseSetBinding];
     [[CPNotificationCenter defaultCenter] postNotificationName:CPControlTextDidEndEditingNotification object:self userInfo:[CPDictionary dictionaryWithObject:[note object] forKey:"CPFieldEditor"]];
 }
 

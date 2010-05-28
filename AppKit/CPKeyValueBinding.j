@@ -259,8 +259,8 @@ var CPBindingOperationAnd = 0,
     if (!anObject || !aKeyPath)
         return CPLog.error("Invalid object or path on "+self+" for "+aBinding);
 
-    if (![[self exposedBindings] containsObject:aBinding])
-        CPLog.warn("No binding exposed on "+self+" for "+aBinding);
+    //if (![[self exposedBindings] containsObject:aBinding])
+    //    CPLog.warn("No binding exposed on "+self+" for "+aBinding);
 
     [self unbind:aBinding];
     [[CPKeyValueBinding alloc] initWithBinding:[anObject _replacementKeyPathForBinding:aBinding] name:aBinding to:anObject keyPath:aKeyPath options:options from:self];

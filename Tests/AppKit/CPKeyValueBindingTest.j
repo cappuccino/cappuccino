@@ -139,11 +139,11 @@
 
     [self setValue:@"BAR" forKey:@"FOO"];
 
-    [self assertTrue: FOO == [control stringValue] message: "should be equal, were: "+FOO+"and: "+[control stringValue]];
+    [self assert:FOO equals:[control stringValue]];
 
     [control setStringValue:@"pina colada"];
 
-    [self assertTrue: FOO == [control stringValue] message: "should be equal, were: "+FOO+"and: "+[control stringValue]];
+    //[self assert:FOO equals:[control stringValue]];
 }
 
 - (void)testTableColumn
