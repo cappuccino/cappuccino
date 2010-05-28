@@ -23,8 +23,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-@import <Foundation/CPObject.j>
-@import <Foundation/CPDictionary.j>
+@import "CPObject.j"
+@import "CPDictionary.j"
 
 
 var transformerMap = [CPDictionary dictionary];
@@ -33,6 +33,17 @@ var transformerMap = [CPDictionary dictionary];
 @implementation CPValueTransformer : CPObject
 {
 
+}
+
++ (void)initialize
+{
+    if (self !== [CPValueTransformer class])
+        return;
+
+    [CPValueTransformer setValueTransformer:[[CPNegateBooleanTransformer alloc] init] forName:CPNegateBooleanTransformerName];
+    [CPValueTransformer setValueTransformer:[[CPIsNilTransformer alloc] init] forName:CPIsNilTransformerName];
+    [CPValueTransformer setValueTransformer:[[CPIsNotNilTransformer alloc] init] forName:CPIsNotNilTransformerName];
+    [CPValueTransformer setValueTransformer:[[CPUnarchiveFromDataTransformer alloc] init] forName:CPUnarchiveFromDataTransformerName];
 }
 
 + (void)setValueTransformer:(CPValueTransformer)transformer forName:(CPString)aName
@@ -79,7 +90,9 @@ var transformerMap = [CPDictionary dictionary];
 
 // builtin transformers
 
-@implementation CPNegateBooleanTransformer : CPObject
+@implementation CPNegateBooleanTransformer : CPValueTransformer
+{
+}
 
 + (BOOL)allowsReverseTransformation
 {
@@ -103,7 +116,9 @@ var transformerMap = [CPDictionary dictionary];
 
 @end
 
-@implementation CPIsNilTransformer : CPObject
+@implementation CPIsNilTransformer : CPValueTransformer
+{
+}
 
 + (BOOL)allowsReverseTransformation
 {
@@ -122,7 +137,9 @@ var transformerMap = [CPDictionary dictionary];
 
 @end
 
-@implementation CPIsNotNilTransformer : CPObject
+@implementation CPIsNotNilTransformer : CPValueTransformer
+{
+}
 
 + (BOOL)allowsReverseTransformation
 {
@@ -141,7 +158,9 @@ var transformerMap = [CPDictionary dictionary];
 
 @end
 
-@implementation CPUnarchiveFromDataTransformer : CPObject
+@implementation CPUnarchiveFromDataTransformer : CPValueTransformer
+{
+}
 
 + (BOOL)allowsReverseTransformation
 {
@@ -169,8 +188,3 @@ CPNegateBooleanTransformerName  = @"CPNegateBooleanTransformerName";
 CPIsNilTransformerName          = @"CPIsNilTransformerName";
 CPIsNotNilTransformerName       = @"CPIsNotNilTransformerName";
 CPUnarchiveFromDataTransformerName = @"CPUnarchiveFromDataTransformerName";
-
-[CPValueTransformer setValueTransformer:[CPNegateBooleanTransformer new] forName:CPNegateBooleanTransformerName];
-[CPValueTransformer setValueTransformer:[CPIsNilTransformer new] forName:CPIsNilTransformerName];
-[CPValueTransformer setValueTransformer:[CPIsNotNilTransformer new] forName:CPIsNotNilTransformerName];
-[CPValueTransformer setValueTransformer:[CPUnarchiveFromDataTransformer new] forName:CPUnarchiveFromDataTransformerName];
