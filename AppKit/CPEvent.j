@@ -41,7 +41,7 @@ CPAppKitDefined                         = 13;
 CPSystemDefined                         = 14;
 CPApplicationDefined                    = 15;
 CPPeriodic                              = 16;
-CPCursorUpdate                          = 17; 
+CPCursorUpdate                          = 17;
 CPScrollWheel                           = 22;
 CPOtherMouseDown                        = 25;
 CPOtherMouseUp                          = 26;
@@ -52,8 +52,8 @@ CPTouchStart                            = 28;
 CPTouchMove                             = 29;
 CPTouchEnd                              = 30;
 CPTouchCancel                           = 31;
-                                        
-                                        
+
+
 CPAlphaShiftKeyMask                     = 1 << 16;
 CPShiftKeyMask                          = 1 << 17;
 CPControlKeyMask                        = 1 << 18;
@@ -106,7 +106,7 @@ CPDOMEventTouchCancel                   = "touchcancel";
 var _CPEventPeriodicEventPeriod         = 0,
     _CPEventPeriodicEventTimer          = nil;
 
-/*! 
+/*!
     @ingroup appkit
     @class CPEvent
     CPEvent encapsulates the details of a Cappuccino keyboard or mouse event.
@@ -155,7 +155,7 @@ var _CPEventPeriodicEventPeriod         = 0,
     characters:(CPString)characters charactersIgnoringModifiers:(CPString)unmodCharacters isARepeat:(BOOL)repeatKey keyCode:(unsigned short)code
 {
     return [[self alloc] _initKeyEventWithType:anEventType location:aPoint modifierFlags:modifierFlags
-        timestamp:aTimestamp windowNumber:aWindowNumber context:aGraphicsContext 
+        timestamp:aTimestamp windowNumber:aWindowNumber context:aGraphicsContext
         characters:characters charactersIgnoringModifiers:unmodCharacters isARepeat:repeatKey keyCode:code];
 }
 
@@ -173,7 +173,7 @@ var _CPEventPeriodicEventPeriod         = 0,
     @throws CPInternalInconsistencyException if an invalid event type is provided
     @return the new mouse event
 */
-+ (id)mouseEventWithType:(CPEventType)anEventType location:(CGPoint)aPoint modifierFlags:(unsigned)modifierFlags 
++ (id)mouseEventWithType:(CPEventType)anEventType location:(CGPoint)aPoint modifierFlags:(unsigned)modifierFlags
     timestamp:(CPTimeInterval)aTimestamp windowNumber:(int)aWindowNumber context:(CPGraphicsContext)aGraphicsContext
     eventNumber:(int)anEventNumber clickCount:(int)aClickCount pressure:(float)aPressure
 {
@@ -204,12 +204,12 @@ var _CPEventPeriodicEventPeriod         = 0,
 }
 
 /* @ignore */
-- (id)_initMouseEventWithType:(CPEventType)anEventType location:(CPPoint)aPoint modifierFlags:(unsigned)modifierFlags 
+- (id)_initMouseEventWithType:(CPEventType)anEventType location:(CPPoint)aPoint modifierFlags:(unsigned)modifierFlags
     timestamp:(CPTimeInterval)aTimestamp windowNumber:(int)aWindowNumber context:(CPGraphicsContext)aGraphicsContext
     eventNumber:(int)anEventNumber clickCount:(int)aClickCount pressure:(float)aPressure
 {
     self = [super init];
-    
+
     if (self)
     {
         _type = anEventType;
@@ -222,7 +222,7 @@ var _CPEventPeriodicEventPeriod         = 0,
         _pressure = aPressure;
         _window = [CPApp windowWithWindowNumber:aWindowNumber];
     }
-    
+
     return self;
 }
 
@@ -232,7 +232,7 @@ var _CPEventPeriodicEventPeriod         = 0,
     characters:(CPString)characters charactersIgnoringModifiers:(CPString)unmodCharacters isARepeat:(BOOL)isARepeat keyCode:(unsigned short)code
 {
     self = [super init];
-    
+
     if (self)
     {
         _type = anEventType;
@@ -246,7 +246,7 @@ var _CPEventPeriodicEventPeriod         = 0,
         _keyCode = code;
         _windowNumber = aWindowNumber;
     }
-    
+
     return self;
 }
 
@@ -256,7 +256,7 @@ var _CPEventPeriodicEventPeriod         = 0,
     subtype:(short)aSubtype data1:(int)aData1 data2:(int)aData2
 {
     self = [super init];
-    
+
     if (self)
     {
         _type = anEventType;
@@ -267,7 +267,7 @@ var _CPEventPeriodicEventPeriod         = 0,
         _subtype = aSubtype;
         _data1 = aData1;
         _data2 = aData2;
-    }   
+    }
 
     return self;
 }
@@ -448,20 +448,36 @@ var _CPEventPeriodicEventPeriod         = 0,
 - (BOOL)_couldBeKeyEquivalent
 {
     // FIXME: More cases? Space?
+    // FIXME _hasActionKeyCode is basically here to allow setKeyEquivalent 'escape' on a CPButton.
     return  _type === CPKeyDown &&
-            _modifierFlags & (CPCommandKeyMask | CPControlKeyMask) &&
-            [_characters length] > 0;
+            ((_modifierFlags & (CPCommandKeyMask | CPControlKeyMask) &&
+            [_characters length] > 0) ||
+            [self _hasActionKeyCode]);
+}
+
+- (BOOL)_hasActionKeyCode
+{
+    switch(_keyCode)
+    {
+        case CPDeleteKeyCode:
+        case CPReturnKeyCode:
+        case CPEscapeKeyCode:
+        case CPTabKeyCode:
+            return YES;
+        default:
+            return NO;
+    }
 }
 
 /*!
-    Generates periodic events every \c aPeriod seconds.
+    Gene                            rates periodic events every \c aPeriod seconds.
     @param aDelay the number of seconds before the first event
     @param aPeriod the length of time in seconds between successive events
 */
 + (void)startPeriodicEventsAfterDelay:(CPTimeInterval)aDelay withPeriod:(CPTimeInterval)aPeriod
 {
     _CPEventPeriodicEventPeriod = aPeriod;
-    
+
     // FIXME: OH TIMERS!!!
     _CPEventPeriodicEventTimer = window.setTimeout(function() { _CPEventPeriodicEventTimer = window.setInterval(_CPEventFirePeriodEvent, aPeriod * 1000.0); }, aDelay * 1000.0);
 }
@@ -473,9 +489,9 @@ var _CPEventPeriodicEventPeriod         = 0,
 {
     if (_CPEventPeriodicEventTimer === nil)
         return;
-    
+
     window.clearTimeout(_CPEventPeriodicEventTimer);
-    
+
     _CPEventPeriodicEventTimer = nil;
 }
 
