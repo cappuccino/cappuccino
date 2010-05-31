@@ -72,10 +72,16 @@
 
     if (self)
     {
+        if (aWindow)
+            [self windowWillLoad];
+
         [self setWindow:aWindow];
         [self setShouldCloseDocument:NO];
 
         [self setNextResponder:CPApp];
+
+        if (aWindow)
+            [self windowDidLoad];
 
         _documents = [];
     }
