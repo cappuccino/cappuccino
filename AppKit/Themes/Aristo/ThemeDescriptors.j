@@ -873,38 +873,101 @@
 
     return segmentedControl;
 }
-+ (CPButton)themedButton
+
++ (CPButton)button
 {
-    var button = [[CPButton alloc] initWithFrame:CGRectMake(0.0, 0.0, 60.0, 20.0)],
+    var button = [[CPButton alloc] initWithFrame:CGRectMake(0.0, 0.0, 60.0, 24.0)],
 
         bezelColor = [CPColor colorWithPatternImage:[[CPThreePartImage alloc] initWithImageSlices:
             [
-                [_CPCibCustomResource imageResourceWithName:"HUD/button-bezel-left.png" size:CGSizeMake(13.0, 20.0)],
-                [_CPCibCustomResource imageResourceWithName:"HUD/button-bezel-center.png" size:CGSizeMake(1.0, 20.0)],
-                [_CPCibCustomResource imageResourceWithName:"HUD/button-bezel-right.png" size:CGSizeMake(13.0, 20.0)]
+                [_CPCibCustomResource imageResourceWithName:"HUD/button-bezel-left.png" size:CGSizeMake(4.0, 24.0)],
+                [_CPCibCustomResource imageResourceWithName:"HUD/button-bezel-center.png" size:CGSizeMake(1.0, 24.0)],
+                [_CPCibCustomResource imageResourceWithName:"HUD/button-bezel-right.png" size:CGSizeMake(4.0, 24.0)]
             ]
         isVertical:NO]],
 
         highlightedBezelColor = [CPColor colorWithPatternImage:[[CPThreePartImage alloc] initWithImageSlices:
             [
-                [_CPCibCustomResource imageResourceWithName:"HUD/button-bezel-highlighted-left.png" size:CGSizeMake(13.0, 20.0)],
-                [_CPCibCustomResource imageResourceWithName:"HUD/button-bezel-highlighted-center.png" size:CGSizeMake(1.0, 20.0)],
-                [_CPCibCustomResource imageResourceWithName:"HUD/button-bezel-highlighted-right.png" size:CGSizeMake(13.0, 20.0)]
+                [_CPCibCustomResource imageResourceWithName:"HUD/button-bezel-highlighted-left.png" size:CGSizeMake(4.0, 24.0)],
+                [_CPCibCustomResource imageResourceWithName:"HUD/button-bezel-highlighted-center.png" size:CGSizeMake(1.0, 24.0)],
+                [_CPCibCustomResource imageResourceWithName:"HUD/button-bezel-highlighted-right.png" size:CGSizeMake(4.0, 24.0)]
+            ]
+        isVertical:NO]],
+
+        defaultBezelColor = [CPColor colorWithPatternImage:[[CPThreePartImage alloc] initWithImageSlices:
+            [
+                [_CPCibCustomResource imageResourceWithName:"HUD/default-button-bezel-left.png" size:CGSizeMake(4.0, 24.0)],
+                [_CPCibCustomResource imageResourceWithName:"HUD/default-button-bezel-center.png" size:CGSizeMake(1.0, 24.0)],
+                [_CPCibCustomResource imageResourceWithName:"HUD/default-button-bezel-right.png" size:CGSizeMake(4.0, 24.0)]
+            ]
+        isVertical:NO]],
+
+        defaultHighlightedBezelColor = [CPColor colorWithPatternImage:[[CPThreePartImage alloc] initWithImageSlices:
+            [
+                [_CPCibCustomResource imageResourceWithName:"HUD/default-button-bezel-highlighted-left.png" size:CGSizeMake(4.0, 24.0)],
+                [_CPCibCustomResource imageResourceWithName:"HUD/default-button-bezel-highlighted-center.png" size:CGSizeMake(1.0, 24.0)],
+                [_CPCibCustomResource imageResourceWithName:"HUD/default-button-bezel-highlighted-right.png" size:CGSizeMake(4.0, 24.0)]
+            ]
+        isVertical:NO]],
+
+        defaultDisabledBezelColor = [CPColor colorWithPatternImage:[[CPThreePartImage alloc] initWithImageSlices:
+            [
+                [_CPCibCustomResource imageResourceWithName:"HUD/default-button-bezel-disabled-left.png" size:CGSizeMake(4.0, 24.0)],
+                [_CPCibCustomResource imageResourceWithName:"HUD/default-button-bezel-disabled-center.png" size:CGSizeMake(1.0, 24.0)],
+                [_CPCibCustomResource imageResourceWithName:"HUD/default-button-bezel-disabled-right.png" size:CGSizeMake(4.0, 24.0)]
+            ]
+        isVertical:NO]],
+        
+        disabledBezelColor = [CPColor colorWithPatternImage:[[CPThreePartImage alloc] initWithImageSlices:
+            [
+                [_CPCibCustomResource imageResourceWithName:"HUD/button-bezel-disabled-left.png" size:CGSizeMake(4.0, 24.0)],
+                [_CPCibCustomResource imageResourceWithName:"HUD/button-bezel-disabled-center.png" size:CGSizeMake(1.0, 24.0)],
+                [_CPCibCustomResource imageResourceWithName:"HUD/button-bezel-disabled-right.png" size:CGSizeMake(4.0, 24.0)]
             ]
         isVertical:NO]];
 
-    [button setTitle:@"Cancel"];
+    [button setValue:[CPFont boldSystemFontOfSize:12.0] forThemeAttribute:@"font" inState:CPThemeStateBordered];
 
-    [button setValue:[CPFont systemFontOfSize:11.0] forThemeAttribute:@"font" inState:CPThemeStateBordered];
-    [button setValue:[CPColor whiteColor] forThemeAttribute:@"text-color"];
+    [button setValue:[CPColor colorWithCalibratedWhite:255.0 / 255.0 alpha:1.0] forThemeAttribute:@"text-color"];
+    [button setValue:[CPColor colorWithCalibratedWhite:0.0 / 255.0 alpha:1.0] forThemeAttribute:@"text-shadow-color" inState:CPThemeStateBordered];
+    [button setValue:[CPColor colorWithCalibratedWhite:0.0 / 255.0 alpha:0.6] forThemeAttribute:@"text-shadow-color" inState:CPThemeStateBordered|CPThemeStateDisabled];
+    [button setValue:CGSizeMake(-1.0,-1.0) forThemeAttribute:@"text-shadow-offset" inState:CPThemeStateBordered];
     [button setValue:CPLineBreakByTruncatingTail forThemeAttribute:@"line-break-mode"];
-
+    
     [button setValue:bezelColor forThemeAttribute:@"bezel-color" inState:CPThemeStateBordered];
     [button setValue:highlightedBezelColor forThemeAttribute:@"bezel-color" inState:CPThemeStateBordered|CPThemeStateHighlighted];
-    [button setValue:CGInsetMake(2.0, 5.0, 4.0, 5.0) forThemeAttribute:@"content-inset" inState:CPThemeStateBordered];
+    [button setValue:CGInsetMake(0.0, 5.0, 0.0, 5.0) forThemeAttribute:@"content-inset" inState:CPThemeStateBordered];
 
-    [button setValue:CGSizeMake(0.0, 20.0) forThemeAttribute:@"min-size"];
-    [button setValue:CGSizeMake(-1.0, 20.0) forThemeAttribute:@"max-size"];
+    [button setValue:[CPColor colorWithCalibratedWhite:0.97 alpha:1.0] forThemeAttribute:@"text-color" inState:CPThemeStateDisabled];
+    [button setValue:disabledBezelColor forThemeAttribute:@"bezel-color" inState:CPThemeStateBordered|CPThemeStateDisabled];
+    [button setValue:defaultDisabledBezelColor forThemeAttribute:@"bezel-color" inState:CPThemeStateBordered|CPThemeStateDefault|CPThemeStateDisabled];
+    
+    [button setValue:defaultBezelColor forThemeAttribute:@"bezel-color" inState:CPThemeStateBordered|CPThemeStateDefault];
+    [button setValue:defaultHighlightedBezelColor forThemeAttribute:@"bezel-color" inState:CPThemeStateBordered|CPThemeStateHighlighted|CPThemeStateDefault];
+    [button setValue:[CPColor colorWithCalibratedRed:250.0/255.0 green:250.0/255.0 blue:250.0/255.0 alpha:1.0] forThemeAttribute:@"text-color" inState:CPThemeStateDefault];
+    [button setValue:[CPColor colorWithCalibratedRed:250.0/255.0 green:250.0/255.0 blue:250.0/255.0 alpha:0.6] forThemeAttribute:@"text-color" inState:CPThemeStateDisabled|CPThemeStateDefault];
+
+    [button setValue:CGSizeMake(0.0, 24.0) forThemeAttribute:@"min-size"];
+    [button setValue:CGSizeMake(-1.0, 24.0) forThemeAttribute:@"max-size"];
+
+    return button;
+}
+
++ (CPButton)themedStandardButton
+{
+    var button = [self button];
+
+    [button setTitle:@"Cancel"];
+
+    return button;
+}
+
++ (CPButton)themedDefaultButton
+{
+    var button = [self button];
+
+    [button setTitle:@"OK"];
+    [button setDefaultButton:YES];
 
     return button;
 }

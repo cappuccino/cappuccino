@@ -31,45 +31,45 @@ var CPURLConnectionDelegate = nil;
 /*!
     @class CPURLConnection
     @ingroup foundation
-    @brief Provides loading of a URL request. 
+    @brief Provides loading of a URL request.
 
     An interface to downloading content at a specified URL. Using one of the
     class methods, you can obtain the data.
-    
+
     @delegate -(void)connection:(CPURLConnection)connection didFailWithError:(id)error;
     Called when the connection encounters an error.
     @param connection the connection that had an error
     @param error the error, which is either a javascript DOMException or an http
     status code (javascript number/CPNumber)
-    
+
     @delegate -(void)connection:(CPURLConnection)connection didReceiveResponse:(CPHTTPURLResponse)response;
     Called when the connection receives a response.
     @param connection the connection that received a response
     @param response the received response
-    
+
     @delegate -(void)connection:(CPURLConnection)connection didReceiveData:(CPString)data;
     Called when the connection has received data.
     @param connection the connection that received data
     @param data the received data
-    
+
     @delegate -(void)connectionDidFinishLoading:(CPURLConnection)connection;
     Called when the URL has finished loading.
     @param connection the connection that finished loading
-    
+
     Class Delegate Method:
-    
+
     @delegate -(void)connectionDidReceiveAuthenticationChallenge:(id)connection
     The class delegate allows you to set global behavior for when authentication challenges (401 status codes) are returned.
-    
+
     The recommended way to handle this method is to store a reference to the connection, and then use whatever
-    method you have to authenticate yourself.  Once you've authenticated yourself, you should cancel 
+    method you have to authenticate yourself.  Once you've authenticated yourself, you should cancel
     and then start the connection:
-    
+
 <pre>
 [connection cancel];
 [connection start];
 </pre>
-    
+
     @param connection the connection that received the authentication challenge.
 */
 @implementation CPURLConnection : CPObject
@@ -116,7 +116,7 @@ var CPURLConnectionDelegate = nil;
     catch (anException)
     {
     }
-    
+
     return nil;
 }
 
@@ -141,13 +141,13 @@ var CPURLConnectionDelegate = nil;
 - (id)initWithRequest:(CPURLRequest)aRequest delegate:(id)aDelegate startImmediately:(BOOL)shouldStartImmediately
 {
     self = [super init];
-    
+
     if (self)
     {
         _request = aRequest;
         _delegate = aDelegate;
         _isCanceled = NO;
-        
+
         var URL = [_request URL],
             scheme = [URL scheme];
 
@@ -187,7 +187,7 @@ var CPURLConnectionDelegate = nil;
     _isCanceled = NO;
 
     try
-    {   
+    {
         _HTTPRequest.open([_request HTTPMethod], [[_request URL] absoluteString], YES);
 
         _HTTPRequest.onreadystatechange = function() { [self _readyStateDidChange]; }
@@ -214,7 +214,7 @@ var CPURLConnectionDelegate = nil;
 - (void)cancel
 {
     _isCanceled = YES;
-    
+
     try
     {
         _HTTPRequest.abort();
@@ -240,10 +240,10 @@ var CPURLConnectionDelegate = nil;
 
         if (statusCode === 401 && [CPURLConnectionDelegate respondsToSelector:@selector(connectionDidReceiveAuthenticationChallenge:)])
             [CPURLConnectionDelegate connectionDidReceiveAuthenticationChallenge:self];
-        else 
+        else
         {
             if ([_delegate respondsToSelector:@selector(connection:didReceiveResponse:)])
-            {   
+            {
                 if (_isLocalFileConnection)
                     [_delegate connection:self didReceiveResponse:[[CPURLResponse alloc] initWithURL:URL]];
                 else

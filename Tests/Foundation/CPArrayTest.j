@@ -14,7 +14,7 @@
         [[1,2,3], "-", "1-2-3"],
         [["123", 456], "-", "123-456"]
     ];
-    
+
     for (var i = 0; i < testStrings.length; i++)
         [self assert:[testStrings[i][0] componentsJoinedByString:testStrings[i][1]] equals:testStrings[i][2]];
 }
@@ -34,20 +34,20 @@
     var array = [CPMutableArray arrayWithObjects:@"one", @"two", @"three", @"four"],
         newAdditions = [CPArray arrayWithObjects:@"a", @"b"],
         indexes = [CPMutableIndexSet indexSetWithIndex:5];
-    
+
     [indexes addIndex:4];
-    
+
     [array insertObjects:newAdditions atIndexes:indexes];
 
     [self assert:array equals:[@"one", @"two", @"three", @"four", @"a", @"b"]];
-    
+
     var array = [CPMutableArray arrayWithObjects: @"one", @"two", @"three", @"four"],
         newAdditions = [CPArray arrayWithObjects: @"a", @"b", @"c"],
         indexes = [CPMutableIndexSet indexSetWithIndex:1];
 
     [indexes addIndex:2];
     [indexes addIndex:4];
-    
+
     [array insertObjects:newAdditions atIndexes:indexes];
 
     [self assert:array equals:[@"one", @"a", @"b", @"two", @"c", @"three", @"four"]];
@@ -61,16 +61,16 @@
     [indexes addIndex:6];
 
     [array insertObjects:newAdditions atIndexes:indexes];
-    
+
     [self assert:array equals:[@"one", @"a", @"b", @"two", @"three", @"four", @"c"]];
 
 
     var array = [CPMutableArray arrayWithObjects:@"one", @"two", @"three", @"four"],
         newAdditions = [CPArray arrayWithObjects:@"a", @"b"],
         indexes = [CPMutableIndexSet indexSetWithIndex:5];
-    
+
     [indexes addIndex:6];
-    
+
     try
     {
         [array insertObjects:newAdditions atIndexes:indexes];
@@ -207,6 +207,33 @@
     array = [];
     [array insertObject: 3 inArraySortedByDescriptors:descriptors];
     [self assert:[3] equals:array];
+
+    descriptors = [[[CPSortDescriptor alloc] initWithKey:@"intValue" ascending:NO]];
+
+    array = [5, 3, 1];
+    [array insertObject: 0 inArraySortedByDescriptors:descriptors];
+    [self assert:[5, 3, 1, 0] equals:array];
+
+    array = [5, 3, 1];
+    [array insertObject: 2 inArraySortedByDescriptors:descriptors];
+    [self assert:[5, 3, 2, 1] equals:array];
+
+    array = [5, 3, 1];
+    [array insertObject: 1 inArraySortedByDescriptors:descriptors];
+    [self assert:[5, 3, 1, 1] equals:array];
+
+    array = [5, 3, 1];
+    [array insertObject: 6 inArraySortedByDescriptors:descriptors];
+    [self assert:[6, 5, 3, 1] equals:array];
+
+    array = [5, 3, 1];
+    [array insertObject: 3 inArraySortedByDescriptors:descriptors];
+    [self assert:[5, 3, 3, 1] equals:array];
+
+    array = [];
+    [array insertObject: 3 inArraySortedByDescriptors:descriptors];
+    [self assert:[3] equals:array];
+
 }
 
 - (void)testInitWithArrayCopyItems
@@ -220,6 +247,16 @@
     [self assert:a[1] equals:b[1]];
     [self assert:a[2] equals:b[2]];
     [self assertTrue:a[3] === b[3]];
+}
+
+- (void)testIsEqualToArray
+{
+    var a = [1, 2, 3],
+        b = [5];
+
+    [self assertTrue:[a isEqualToArray:a]];
+    [self assertFalse:[a isEqualToArray:b]];
+    [self assertFalse:[a isEqualToArray:nil]];
 }
 
 - (void)testIsEqualToArray

@@ -105,7 +105,7 @@ function CPLocationInRange(aLocation, aRange)
 }
 
 /*!
-    Creates a new range with the minimum \c location and a \c length 
+    Creates a new range with the minimum \c location and a \c length
     that extends to the maximum \c length.
     @param lhsRange the first CPRange
     @param rhsRange the second CPRange
@@ -129,7 +129,7 @@ function CPIntersectionRange(lhsRange, rhsRange)
 {
     if(CPMaxRange(lhsRange) < rhsRange.location || CPMaxRange(rhsRange) < lhsRange.location)
         return CPMakeRange(0, 0);
-	
+
     var location = MAX(lhsRange.location, rhsRange.location);
     return CPMakeRange(location, MIN(CPMaxRange(lhsRange), CPMaxRange(rhsRange)) - location);
 }
@@ -166,10 +166,11 @@ function CPStringFromRange(aRange)
 function CPRangeFromString(aString)
 {
     var comma = aString.indexOf(',');
-    
+
     return { location:parseInt(aString.substr(1, comma - 1)), length:parseInt(aString.substring(comma + 1, aString.length)) };
 }
 
 /*!
     @}
 */
+

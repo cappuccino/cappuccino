@@ -20,11 +20,11 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+@import "CPEnumerator.j"
+@import "CPException.j"
 @import "CPObject.j"
 @import "CPRange.j"
-@import "CPEnumerator.j"
 @import "CPSortDescriptor.j"
-@import "CPException.j"
 
 
 /* @ignore */
@@ -470,7 +470,7 @@
             last = mid - 1;
         else
         {
-            while (mid < length - 1 && aFunction(anObject, self[mid+1], aContext) == CPOrderedSame)
+            while (mid < length - 1 && aFunction(anObject, self[mid + 1], aContext) == CPOrderedSame)
                 mid++;
 
             return mid;
@@ -503,6 +503,28 @@
 
         return result;
     }];
+}
+
+- (unsigned)insertObject:(id)anObject inArraySortedByDescriptors:(CPArray)descriptors
+{
+    var index = [self _insertObject:anObject sortedByFunction:function(lhs, rhs)
+    {
+        var i = 0,
+            count = [descriptors count],
+            result = CPOrderedSame;
+
+        while (i < count)
+            if((result = [descriptors[i++] compareObject:lhs withObject:rhs]) != CPOrderedSame)
+                return result;
+
+        return result;
+    } context:nil];
+
+    if (index < 0)
+        index = -result-1;
+
+    [self insertObject:anObject atIndex:index];
+    return index;
 }
 
 /*!
@@ -894,7 +916,7 @@
 
 @end
 
-@implementation CPArray(CPMutableArray)
+@implementation CPArray (CPMutableArray)
 
 // Creating arrays
 /*!
@@ -987,7 +1009,7 @@
     } context:nil];
 
     if (index < 0)
-        index = -index-1;
+        index = -index - 1;
 
     [self insertObject:anObject atIndex:index];
     return index;

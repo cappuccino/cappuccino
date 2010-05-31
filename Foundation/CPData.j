@@ -23,6 +23,7 @@
 @import "CPObject.j"
 @import "CPString.j"
 
+
 /*!
     @class CPData
     @ingroup foundation

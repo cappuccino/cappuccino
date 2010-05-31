@@ -362,14 +362,14 @@ CPCircularSlider    = 1;
     
     [self setNeedsLayout];
     [self setNeedsDisplay:YES];
-    
+
     return YES;   
 }
 
 - (BOOL)continueTracking:(CGPoint)lastPoint at:(CGPoint)aPoint
 {
     [self setObjectValue:[self _valueAtPoint:_CGPointMake(aPoint.x + _dragOffset.width, aPoint.y + _dragOffset.height)]];
-    
+
     return YES;
 }
 

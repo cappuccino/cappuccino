@@ -20,8 +20,6 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-@import "CPLog.j"
-
 
 function CPStringFromSelector(aSelector)
 {
@@ -44,7 +42,7 @@ function CPStringFromClass(aClass)
 }
 
 CPOrderedAscending  = -1;
-CPOrderedSame       = 0; 
+CPOrderedSame       = 0;
 CPOrderedDescending = 1;
 
 CPNotFound          = -1;

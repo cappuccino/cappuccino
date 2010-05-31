@@ -20,15 +20,15 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-@import "CPObject.j"
 @import "CPInvocation.j"
+@import "CPObject.j"
 @import "CPProxy.j"
 
 
 var CPUndoManagerNormal     = 0,
     CPUndoManagerUndoing    = 1,
     CPUndoManagerRedoing    = 2;
-    
+
 CPUndoManagerCheckpointNotification         = @"CPUndoManagerCheckpointNotification";
 CPUndoManagerDidOpenUndoGroupNotification   = @"CPUndoManagerDidOpenUndoGroupNotification";
 CPUndoManagerDidRedoChangeNotification      = @"CPUndoManagerDidRedoChangeNotification";
@@ -53,7 +53,7 @@ var _CPUndoGroupingPool         = [],
 {
     if (!anUndoGrouping || _CPUndoGroupingPool.length >= _CPUndoGroupingPoolCapacity)
         return;
-        
+
     _CPUndoGroupingPool.push(anUndoGrouping);
 }
 
@@ -62,28 +62,28 @@ var _CPUndoGroupingPool         = [],
     if (_CPUndoGroupingPool.length)
     {
         var grouping = _CPUndoGroupingPool.pop();
-        
+
         grouping._parent = anUndoGrouping;
-        
+
         if (grouping._invocations.length)
             grouping._invocations = [];
-        
+
         return grouping;
     }
-    
+
     return [[self alloc] initWithParent:anUndoGrouping];
 }
 
 - (id)initWithParent:(_CPUndoGrouping)anUndoGrouping
 {
     self = [super init];
-    
+
     if (self)
     {
         _parent = anUndoGrouping;
         _invocations = [];
     }
-    
+
     return self;
 }
 
@@ -134,13 +134,13 @@ var _CPUndoGroupingParentKey        = @"_CPUndoGroupingParentKey",
 - (id)initWithCoder:(CPCoder)aCoder
 {
     self = [super init];
-    
+
     if (self)
     {
         _parent = [aCoder decodeObjectForKey:_CPUndoGroupingParentKey];
         _invocations = [aCoder decodeObjectForKey:_CPUndoGroupingInvocationsKey];
     }
-    
+
     return self;
 }
 
@@ -152,7 +152,7 @@ var _CPUndoGroupingParentKey        = @"_CPUndoGroupingParentKey",
 
 @end
 
-/*! 
+/*!
     @class CPUndoManager
     @ingroup foundation
     @brief A general mechanism for user action "undo".
@@ -193,21 +193,21 @@ var _CPUndoGroupingParentKey        = @"_CPUndoGroupingParentKey",
 - (id)init
 {
     self = [super init];
-    
+
     if (self)
     {
         _redoStack = [];
         _undoStack = [];
-        
+
         _state = CPUndoManagerNormal;
-        
+
         [self setRunLoopModes:[CPDefaultRunLoopMode]];
         [self setGroupsByEvent:YES];
 
         _undoManagerProxy = [_CPUndoManagerProxy alloc];
         _undoManagerProxy._undoManager = self;
     }
-    
+
     return self;
 }
 
@@ -258,7 +258,7 @@ var _CPUndoGroupingParentKey        = @"_CPUndoGroupingParentKey",
 - (id)prepareWithInvocationTarget:(id)aTarget
 {
     _preparedTarget = aTarget;
-    
+
     return _undoManagerProxy;
 }
 
@@ -270,7 +270,7 @@ var _CPUndoGroupingParentKey        = @"_CPUndoGroupingParentKey",
 {
     if ([_preparedTarget respondsToSelector:aSelector])
         return 1;
-    
+
     return nil;//[_preparedTarget methodSignatureForSelector:selector];
 }
 
@@ -337,7 +337,7 @@ if (_currentGroup == nil)
     Performs an undo on the last undo group.
 */
 - (void)undoNestedGroup
-{ 
+{
     if ([_undoStack count] <= 0)
         return;
 
@@ -373,7 +373,7 @@ if (_currentGroup == nil)
     // Don't do anything if we have no redos.
     if ([_redoStack count] <= 0)
         return;
-    
+
 /*    if (_state == NSUndoManagerUndoing)
         [NSException raise:NSInternalInconsistencyException
                     format:@"redo called while undoing"];
@@ -386,19 +386,19 @@ if (_currentGroup == nil)
 
     [defaultCenter postNotificationName:CPUndoManagerWillRedoChangeNotification
                                  object:self];
-    
+
     var oldUndoGrouping = _currentGrouping,
         undoGrouping = _redoStack.pop();
-    
+
     _currentGrouping = nil;
     _state = CPUndoManagerRedoing;
 
     [self _beginUndoGrouping];
     [undoGrouping invoke];
     [self endUndoGrouping];
-    
+
     [_CPUndoGrouping _poolUndoGrouping:undoGrouping];
-    
+
     _currentGrouping = oldUndoGrouping;
     _state = CPUndoManagerNormal;
 
@@ -452,31 +452,31 @@ if (_currentGroup == nil)
                                  object:self];
 
     var parent = [_currentGrouping parent];
-    
+
     if (!parent && [_currentGrouping invocations].length > 0)
     {
         [defaultCenter
             postNotificationName:CPUndoManagerWillCloseUndoGroupNotification
                           object:self];
-                              
+
         // Put this group on the redo stack if we are currently undoing, otherwise
         // put it on the undo stack.  That way, "undos" become "redos".
         var stack = _state === CPUndoManagerUndoing ? _redoStack : _undoStack;
-        
+
         stack.push(_currentGrouping);
-    
+
         if (_levelsOfUndo > 0 && stack.length > _levelsOfUndo)
-            stack.splice(0, 1);        
+            stack.splice(0, 1);
     }
-    
+
     // Nested Undo Grouping
     else
     {
         [parent addInvocationsFromArray:[_currentGrouping invocations]];
-        
+
         [_CPUndoGrouping _poolUndoGrouping:_currentGrouping];
     }
-    
+
     _currentGrouping = parent;
 }
 
@@ -491,7 +491,7 @@ if (_currentGroup == nil)
     if (_disableCount <= 0)
         [CPException raise:CPInternalInconsistencyException
                     reason:"enableUndoRegistration. There are no disable messages in effect right now."];
-        
+
     _disableCount--;
 }
 
@@ -527,10 +527,10 @@ if (_currentGroup == nil)
 {
     var grouping = _currentGrouping,
         level = _currentGrouping != nil;
-    
+
     while (grouping = [grouping parent])
         ++level;
-    
+
     return level;
 }
 
@@ -586,27 +586,27 @@ if (_currentGroup == nil)
 - (void)removeAllActionsWithTarget:(id)aTarget
 {
     [_currentGrouping removeInvocationsWithTarget:aTarget];
-    
+
     var index = _redoStack.length;
-    
+
     while (index--)
     {
         var grouping = _redoStack[index];
-        
+
         [grouping removeInvocationsWithTarget:aTarget];
-        
+
         if (![grouping invocations].length)
             _redoStack.splice(index, 1);
     }
 
     index = _undoStack.length;
-    
+
     while (index--)
     {
         var grouping = _undoStack[index];
-        
+
         [grouping removeInvocationsWithTarget:aTarget];
-        
+
         if (![grouping invocations].length)
             _undoStack.splice(index, 1);
     }
@@ -739,7 +739,7 @@ var CPUndoManagerRedoStackKey       = @"CPUndoManagerRedoStackKey",
     CPUndoManagerLevelsOfUndoKey    = @"CPUndoManagerLevelsOfUndoKey";
     CPUndoManagerActionNameKey      = @"CPUndoManagerActionNameKey";
     CPUndoManagerCurrentGroupingKey = @"CPUndoManagerCurrentGroupingKey";
-    
+
     CPUndoManagerRunLoopModesKey    = @"CPUndoManagerRunLoopModesKey";
     CPUndoManagerGroupsByEventKey   = @"CPUndoManagerGroupsByEventKey";
 
@@ -748,22 +748,22 @@ var CPUndoManagerRedoStackKey       = @"CPUndoManagerRedoStackKey",
 - (id)initWithCoder:(CPCoder)aCoder
 {
     self = [super init];
-    
+
     if (self)
     {
         _redoStack = [aCoder decodeObjectForKey:CPUndoManagerRedoStackKey];
         _undoStack = [aCoder decodeObjectForKey:CPUndoManagerUndoStackKey];
-        
+
         _levelsOfUndo = [aCoder decodeObjectForKey:CPUndoManagerLevelsOfUndoKey];
         _actionName = [aCoder decodeObjectForKey:CPUndoManagerActionNameKey];
         _currentGrouping = [aCoder decodeObjectForKey:CPUndoManagerCurrentGroupingKey];
-        
+
         _state = CPUndoManagerNormal;
-        
+
         [self setRunLoopModes:[aCoder decodeObjectForKey:CPUndoManagerRunLoopModesKey]];
         [self setGroupsByEvent:[aCoder decodeBoolForKey:CPUndoManagerGroupsByEventKey]];
     }
-    
+
     return self;
 }
 
@@ -771,10 +771,10 @@ var CPUndoManagerRedoStackKey       = @"CPUndoManagerRedoStackKey",
 {
     [aCoder encodeObject:_redoStack forKey:CPUndoManagerRedoStackKey];
     [aCoder encodeObject:_undoStack forKey:CPUndoManagerUndoStackKey];
-    
+
     [aCoder encodeInt:_levelsOfUndo forKey:CPUndoManagerLevelsOfUndoKey];
     [aCoder encodeObject:_actionName forKey:CPUndoManagerActionNameKey];
-    
+
     [aCoder encodeObject:_currentGrouping forKey:CPUndoManagerCurrentGroupingKey];
 
     [aCoder encodeObject:_runLoopModes forKey:CPUndoManagerRunLoopModesKey];

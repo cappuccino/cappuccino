@@ -133,7 +133,7 @@
    return [invocation returnValue];
 }
 
--(BOOL)isMemberOfClass:(Class)aClass
+- (BOOL)isMemberOfClass:(Class)aClass
 {
     var signature = [self methodSignatureForSelector:_cmd],
         invocation = [CPInvocation invocationWithMethodSignature:signature];

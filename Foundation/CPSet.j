@@ -24,10 +24,10 @@
  * TODO: Needs to implement CPCoding, CPCopying.
  */
 
-@import "CPObject.j"
 @import "CPArray.j"
-@import "CPNumber.j"
 @import "CPEnumerator.j"
+@import "CPNumber.j"
+@import "CPObject.j"
 
 /*!
     @class CPSet
@@ -87,7 +87,7 @@
         argLength = arguments.length,
         i = 2;
 
-    for(; i < argLength && ((argument = arguments[i]) !== nil); ++i)
+    for (; i < argLength && ((argument = arguments[i]) !== nil); ++i)
         [set addObject:argument];
 
     return set;
@@ -155,7 +155,7 @@
 		var argLength = arguments.length,
 			i = 2;
 
-        for(; i < argLength && (argument = arguments[i]) != nil; ++i)
+        for (; i < argLength && (argument = arguments[i]) != nil; ++i)
             [self addObject:argument];
     }
 
@@ -180,9 +180,10 @@
     if (!aSet)
         return self;
 
-    var contents = aSet._contents;
+    var contents = aSet._contents,
+        property;
 
-    for (var property in contents)
+    for (property in contents)
     {
         if (contents.hasOwnProperty(property))
         {
@@ -201,9 +202,10 @@
 */
 - (CPArray)allObjects
 {
-    var array = [];
+    var array = [],
+        property;
 
-    for (var property in _contents)
+    for (property in _contents)
     {
         if (_contents.hasOwnProperty(property))
             array.push(_contents[property]);
@@ -217,7 +219,9 @@
 */
 - (id)anyObject
 {
-    for (var property in _contents)
+    var property;
+
+    for (property in _contents)
     {
         if (_contents.hasOwnProperty(property))
             return _contents[property];
@@ -288,8 +292,11 @@
 */
 - (BOOL)isSubsetOfSet:(CPSet)set
 {
-    var items = [self allObjects];
-    for (var i = 0; i < items.length; i++)
+    var items = [self allObjects],
+        i = 0,
+        count = items.length;
+
+    for (; i < count; i++)
     {
         // If at least one item is not in both sets, self isn't a subset
         if (![set containsObject:items[i]])
@@ -315,8 +322,11 @@
 */
 - (void)makeObjectsPerformSelector:(SEL)aSelector withObject:(id)argument
 {
-    var items = [self allObjects];
-    for (var i = 0; i < items.length; i++)
+    var items = [self allObjects],
+        i = 0,
+        count = items.length;
+
+    for (; i < count; i++)
     {
         [items[i] performSelector:aSelector withObject:argument];
     }
@@ -432,8 +442,11 @@
 */
 - (void)intersectSet:(CPSet)set
 {
-    var items = [self allObjects];
-    for (var i = 0, count = items.length; i < count; i++)
+    var items = [self allObjects],
+        i = 0,
+        count = items.length;
+
+    for (; i < count; i++)
     {
         if (![set containsObject:items[i]])
             [self removeObject:items[i]];
@@ -446,8 +459,11 @@
 */
 - (void)minusSet:(CPSet)set
 {
-    var items = [set allObjects];
-    for (var i = 0; i < items.length; i++)
+    var items = [set allObjects],
+        i = 0,
+        count = items.length;
+
+    for (; i < count; i++)
     {
         if ([self containsObject:items[i]])
             [self removeObject:items[i]];
@@ -460,8 +476,11 @@
 */
 - (void)unionSet:(CPSet)set
 {
-    var items = [set allObjects];
-    for (var i = 0, count = items.length; i < count; i++)
+    var items = [set allObjects],
+        i = 0,
+        count = items.length;
+
+    for (; i < count; i++)
     {
         [self addObject:items[i]];
     }
@@ -514,5 +533,5 @@ var CPSetObjectsKey = @"CPSetObjectsKey";
 */
 
 @implementation CPMutableSet : CPSet
-@end
 
+@end
