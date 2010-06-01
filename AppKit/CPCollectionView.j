@@ -591,8 +591,21 @@
         index = row * _numberOfColumns + column;
 
     if (index >= 0 && index < _items.length)
-        [self setSelectionIndexes:[CPIndexSet indexSetWithIndex:index]];
+    {
+        if (_allowsMultipleSelection && ([anEvent modifierFlags] & CPCommandKeyMask || [anEvent modifierFlags] & CPShiftKeyMask))
+        {
+            var indexes = [_selectionIndexes copy];
 
+            if ([indexes containsIndex:index])
+                [indexes removeIndex:index];
+            else
+                [indexes addIndex:index];
+        }
+        else
+            indexes = [CPIndexSet indexSetWithIndex:index];
+
+        [self setSelectionIndexes:indexes];
+    }
     else if (_allowsEmptySelection)
         [self setSelectionIndexes:[CPIndexSet indexSet]];
 }
@@ -726,6 +739,25 @@
 @end
 
 @implementation CPCollectionView (KeyboardInteraction)
+- (CPIndexSet)_selectionForEvent:(CPEvent)anEvent withNewIndex:(int)anIndex direction:(int)aDirection
+{
+    if (_allowsMultipleSelection && [anEvent modifierFlags] & CPShiftKeyMask)
+    {
+        var indexes = [_selectionIndexes copy],
+            bottomAnchor = [indexes firstIndex],
+            topAnchor = [indexes lastIndex];
+
+        // if the direction is backward (-1) check with the bottom anchor
+        if (aDirection === -1)
+            [indexes addIndexesInRange:CPMakeRange(anIndex, bottomAnchor - anIndex + 1)];
+        else
+            [indexes addIndexesInRange:CPMakeRange(topAnchor, anIndex -  topAnchor + 1)];
+    }
+    else
+        indexes = [CPIndexSet indexSetWithIndex:anIndex];
+
+    return indexes;
+}
 
 - (void)_scrollToSelection
 {
@@ -743,23 +775,23 @@
 
     index = MAX(index - 1, 0);
 
-    [self setSelectionIndexes:[CPIndexSet indexSetWithIndex:index]];
+    [self setSelectionIndexes:[self _selectionForEvent:[CPApp currentEvent] withNewIndex:index direction:-1]];
     [self _scrollToSelection];
 }
 
 - (void)moveRight:(id)sender
 {
-    var index = MIN([[self selectionIndexes] firstIndex] + 1, [[self items] count]-1);
+    var index = MIN([[self selectionIndexes] lastIndex] + 1, [[self items] count]-1);
 
-    [self setSelectionIndexes:[CPIndexSet indexSetWithIndex:index]];
+    [self setSelectionIndexes:[self _selectionForEvent:[CPApp currentEvent] withNewIndex:index direction:1]];
     [self _scrollToSelection];
 }
 
 - (void)moveDown:(id)sender
 {
-    var index = MIN([[self selectionIndexes] firstIndex] + [self numberOfColumns], [[self items] count]-1);
+    var index = MIN([[self selectionIndexes] lastIndex] + [self numberOfColumns], [[self items] count]-1);
 
-    [self setSelectionIndexes:[CPIndexSet indexSetWithIndex:index]];
+    [self setSelectionIndexes:[self _selectionForEvent:[CPApp currentEvent] withNewIndex:index direction:1]];
     [self _scrollToSelection];
 }
 
@@ -771,7 +803,7 @@
 
     index = MAX(0, index - [self numberOfColumns]);
 
-    [self setSelectionIndexes:[CPIndexSet indexSetWithIndex:index]];
+    [self setSelectionIndexes:[self _selectionForEvent:[CPApp currentEvent] withNewIndex:index direction:-1]];
     [self _scrollToSelection];
 }
 
