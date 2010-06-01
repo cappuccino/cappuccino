@@ -2972,7 +2972,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     } //end of editing conditional
 
     //double click actions
-    if([[CPApp currentEvent] clickCount] === 2 && _doubleAction && _target)
+    if([[CPApp currentEvent] clickCount] === 2 && _doubleAction)
     {
         _clickedRow = [self rowAtPoint:aPoint];
         [self sendAction:_doubleAction to:_target];
