@@ -736,8 +736,10 @@ CPTexturedBackgroundWindowMask
 */
 - (void)orderFront:(id)aSender
 {
+#if PLATFORM(DOM)
     [_platformWindow orderFront:self];
     [_platformWindow order:CPWindowAbove window:self relativeTo:nil];
+#endif
 }
 
 /*
@@ -756,13 +758,17 @@ CPTexturedBackgroundWindowMask
 */
 - (void)orderOut:(id)aSender
 {
+#if PLATFORM(DOM)
     if ([self _sharesChromeWithPlatformWindow])
         [_platformWindow orderOut:self];
+#endif
 
     if ([_delegate respondsToSelector:@selector(windowWillClose:)])
         [_delegate windowWillClose:self];
 
+#if PLATFORM(DOM)
     [_platformWindow order:CPWindowOut window:self relativeTo:nil];
+#endif
 
     [self _updateMainAndKeyWindows];
 }
@@ -774,7 +780,9 @@ CPTexturedBackgroundWindowMask
 */
 - (void)orderWindow:(CPWindowOrderingMode)aPlace relativeTo:(int)otherWindowNumber
 {
+#if PLATFORM(DOM)
     [_platformWindow order:aPlace window:self relativeTo:CPApp._windows[otherWindowNumber]];
+#endif
 }
 
 /*!

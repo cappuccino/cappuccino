@@ -149,7 +149,9 @@ var PrimaryPlatformWindow   = NULL;
 
     _contentRect = _CGRectMakeCopy(aRect);
 
-    [self updateNativeContentRect];
+#if PLATFORM(DOM)
+     [self updateNativeContentRect];
+#endif
 }
 
 - (void)updateFromNativeContentRect
