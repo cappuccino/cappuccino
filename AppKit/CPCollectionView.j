@@ -636,8 +636,6 @@
 
     [[CPPasteboard pasteboardWithName:CPDragPboard] declareTypes:dragTypes owner:self];
 
-    var point = [self convertPoint:[anEvent locationInWindow] fromView:nil];
-
     if (!_itemForDragging)
         _itemForDragging = [self newItemForRepresentedObject:_content[[_selectionIndexes firstIndex]]];
     else
