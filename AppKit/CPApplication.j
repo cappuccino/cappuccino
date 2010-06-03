@@ -615,7 +615,11 @@ CPRunContinuesResponse  = -1002;
 */
 - (CPArray)orderedWindows
 {
+#if PLATFORM(DOM)
     return CPWindowObjectList();
+#else
+    return [];
+#endif
 }
 
 - (void)hide:(id)aSender
