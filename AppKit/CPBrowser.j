@@ -860,7 +860,7 @@ var _CPBrowserResizeControlBackgroundImage = nil;
 - (CPDragOperation)tableView:(CPTableView)aTableView validateDrop:(id)info proposedRow:(int)row proposedDropOperation:(CPTableViewDropOperation)operation
 {
     if ([_delegate respondsToSelector:@selector(browser:validateDrop:proposedRow:column:dropOperation:)])
-        [_delegate browser:_browser validateDrop:info proposedRow:row column:_index dropOperation:operation];
+        return [_delegate browser:_browser validateDrop:info proposedRow:row column:_index dropOperation:operation];
     else
         return CPDragOperationNone;
 }
