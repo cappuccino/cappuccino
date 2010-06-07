@@ -102,8 +102,6 @@ function check_build_environment () {
     done
 }
 
-check_build_environment
-
 if [ -w "/usr/local" ]; then
     default_directory="/usr/local/narwhal"
 else
@@ -128,6 +126,7 @@ while [ $# -gt 0 ]; do
         --github-user)  github_user="$2"; shift;;
         --github-ref)   github_ref="$2"; shift;;
         --install-capp) install_capp="yes";;
+        --java-home)    JAVA_HOME="$2"; shift;;
         *)              cat >&2 <<-EOT
 usage: ./bootstrap.sh [OPTIONS]
 
@@ -137,6 +136,7 @@ usage: ./bootstrap.sh [OPTIONS]
     --github-user [USER]:   Use another github user (default: 280north).
     --github-ref [REF]:     Use another git ref (default: master).
     --install-capp:         Install "objective-j" and "cappuccino" packages.
+    --java-home [DIR]:      Use another Java Virtual Machine (default: /usr).
 EOT
                         exit 1;;
     esac
@@ -151,6 +151,18 @@ unset SEA
 unset SEALVL
 
 PATH_SAVED="$PATH"
+
+# set JAVA_HOME to system default if it is not set
+# JAVA_HOME can be set either in the user's environment or with --java-home
+if [ -z "$JAVA_HOME" ]; then
+    export JAVA_HOME=`dirname $(dirname $(which java))`
+else
+    # if JAVA_HOME is not system default, prepend path to java for the specified
+    # Java VM to ensure it is used instead of the system default
+    export PATH=$JAVA_HOME/bin:$PATH
+fi
+
+check_build_environment
 
 ask_remove_dir "/usr/local/share/objj"
 ask_remove_dir "/usr/local/share/narwhal"
@@ -306,6 +318,14 @@ if [ `uname` = "Darwin" ]; then
 fi
 
 export PATH="$PATH_SAVED"
+
+if [ $(which java) != "$JAVA_HOME/bin/java" ]; then
+    conf_file=$install_directory/narwhal.conf
+    echo "" >> $conf_file
+    echo "# Use specified Java VM instead of system default" >> $conf_file
+    echo "JAVA_HOME=$JAVA_HOME" >> $conf_file
+fi
+
 if ! which "narwhal" > /dev/null; then
     echo "================================================================================"
     echo "You must add Narwhal's \"bin\" directory to your PATH environment variable. Do this automatically now?"
