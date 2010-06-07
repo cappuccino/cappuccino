@@ -522,24 +522,37 @@ var _CPEventPeriodicEventPeriod         = 0,
 - (BOOL)_couldBeKeyEquivalent
 {
     // FIXME: More cases? Space?
-    // FIXME _hasActionKeyCode is basically here to allow setKeyEquivalent 'escape' on a CPButton.
     return  _type === CPKeyDown &&
             ((_modifierFlags & (CPCommandKeyMask | CPControlKeyMask) &&
             [_characters length] > 0) ||
-            [self _hasActionKeyCode]);
+            [self _hasActionCharacter]);
 }
 
-- (BOOL)_hasActionKeyCode
+- (BOOL)_hasActionCharacter
 {
-    switch(_keyCode)
+    var characters = [self characters],
+        characterCount = [characters length];
+
+    for(var i=0; i<characterCount; i++)
     {
-        case CPDeleteKeyCode:
-        case CPReturnKeyCode:
-        case CPEscapeKeyCode:
-        case CPTabKeyCode:
-            return YES;
-        default:
-            return NO;
+        var c = [characters characterAtIndex:i];
+        switch(c)
+        {
+            case CPBackspaceCharacter:
+            case CPDeleteCharacter:
+            case CPTabCharacter:
+            case CPCarriageReturnCharacter:
+            case CPEscapeFunctionKey:
+            case CPPageUpFunctionKey:
+            case CPPageDownFunctionKey:
+            case CPLeftArrowFunctionKey:
+            case CPUpArrowFunctionKey:
+            case CPRightArrowFunctionKey:
+            case CPDownArrowFunctionKey:
+                return YES;
+            default:
+                return NO;
+        }
     }
 }
 

@@ -562,8 +562,10 @@ CPButtonStateMixed  = CPThemeState("mixed");
 }
 
 /*!
-    Sets the keyboard shortcut for this button
-    @param aString the keyboard shortcut as a string or a key code
+    Sets the keyboard shortcut for this button. For special keys see
+    CPEvent.j CP...FunctionKey and CPText.j CP...Character.
+
+    @param aString the keyboard shortcut as a string
 */
 - (void)setKeyEquivalent:(CPString)aString
 {
@@ -571,7 +573,7 @@ CPButtonStateMixed  = CPThemeState("mixed");
 }
 
 /*!
-    Returns the keyboard shortcut for this button
+    Returns the keyboard shortcut for this button.
 */
 - (CPString)keyEquivalent
 {
@@ -601,13 +603,11 @@ CPButtonStateMixed  = CPThemeState("mixed");
 - (BOOL)performKeyEquivalent:(CPEvent)anEvent
 {
     var characters = [anEvent charactersIgnoringModifiers],
-        modifierFlags = [anEvent modifierFlags];
+        modifierFlags = [anEvent modifierFlags],
+        modifierMask = [self keyEquivalentModifierMask],
+        keyEquivalent = [self keyEquivalent];
 
-    var modifierMask = [self keyEquivalentModifierMask],
-        keyEquivalent = [self keyEquivalent],
-        isKeyCodeEquivalent = typeof keyEquivalent === "number";
-
-    if (!isKeyCodeEquivalent && keyEquivalent === [keyEquivalent uppercaseString])
+    if (new RegExp("[A-Z]").test(keyEquivalent))
         modifierMask |= CPShiftKeyMask;
 
     if (CPBrowserIsOperatingSystem(CPWindowsOperatingSystem) && (modifierMask & CPCommandKeyMask))
@@ -619,10 +619,7 @@ CPButtonStateMixed  = CPThemeState("mixed");
     if ((modifierFlags & (CPShiftKeyMask | CPAlternateKeyMask | CPCommandKeyMask | CPControlKeyMask)) !== modifierMask)
         return NO;
 
-    if (!isKeyCodeEquivalent && [characters caseInsensitiveCompare:keyEquivalent] !== CPOrderedSame)
-        return NO;
-
-    if (isKeyCodeEquivalent && [anEvent keyCode] !== keyEquivalent)
+    if ([characters caseInsensitiveCompare:keyEquivalent] !== CPOrderedSame)
         return NO;
 
     [self performClick:nil];

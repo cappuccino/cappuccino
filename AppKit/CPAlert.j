@@ -275,7 +275,7 @@ var CPAlertWarningImage,
     if (_buttonCount == 0)
         [_alertPanel setDefaultButton:button];
     else if ([title lowercaseString] === "cancel")
-        [button setKeyEquivalent:CPEscapeKeyCode];
+        [button setKeyEquivalent:CPEscapeFunctionKey];
 
     _buttonCount++;
     [_buttons addObject:button];

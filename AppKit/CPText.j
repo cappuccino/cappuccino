@@ -22,8 +22,6 @@
 
 @import "CPView.j"
 
-CPParagraphSeparatorCharacter   = "\u2029";
-CPLineSeparatorCharacter        = "\u2028";
 CPTabCharacter                  = "\u0009";
 CPFormFeedCharacter             = "\u000c";
 CPNewlineCharacter              = "\u000a";

@@ -1,6 +1,7 @@
 
 @import <AppKit/CPButton.j>
 @import <AppKit/CPApplication.j>
+@import <AppKit/CPText.j>
 
 [CPApplication sharedApplication]
 
@@ -82,14 +83,14 @@
     [self assertTrue:wasClicked];
 }
 
-- (void)testKeyCodeKeyEquivalent
+- (void)testSpecialKeyEquivalent
 {
     [button setTarget:self];
     [button setAction:@selector(clickMe:)];
-    [button setKeyEquivalent:CPEscapeKeyCode];
+    [button setKeyEquivalent:CPEscapeFunctionKey];
     [button performKeyEquivalent:[CPEvent keyEventWithType:CPKeyUp location:CGPointMakeZero() modifierFlags:0
         timestamp:nil windowNumber:nil context:nil
-        characters:"" charactersIgnoringModifiers:"" isARepeat:NO keyCode:CPSpaceKeyCode]];
+        characters:CPDeleteCharacter charactersIgnoringModifiers:CPDeleteCharacter isARepeat:NO keyCode:0]];
     [self assertFalse:wasClicked];
     [button performKeyEquivalent:[CPEvent keyEventWithType:CPKeyUp location:CGPointMakeZero() modifierFlags:0
         timestamp:nil windowNumber:nil context:nil
@@ -97,7 +98,7 @@
     [self assertFalse:wasClicked];
     [button performKeyEquivalent:[CPEvent keyEventWithType:CPKeyUp location:CGPointMakeZero() modifierFlags:0
         timestamp:nil windowNumber:nil context:nil
-        characters:"a" charactersIgnoringModifiers:"a" isARepeat:NO keyCode:CPEscapeKeyCode]];
+        characters:CPEscapeFunctionKey charactersIgnoringModifiers:CPEscapeFunctionKey isARepeat:NO keyCode:0]];
     [self assertTrue:wasClicked];
 }
 
