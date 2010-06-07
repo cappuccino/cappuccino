@@ -332,6 +332,9 @@ var CPControlBlackColor     = [CPColor blackColor];
 
 - (void)performClick:(id)sender
 {
+    if (![self isEnabled])
+        return;
+
     [self highlight:YES];
     [self setState:[self nextState]];
     [self sendAction:[self action] to:[self target]];
