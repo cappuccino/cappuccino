@@ -602,24 +602,7 @@ CPButtonStateMixed  = CPThemeState("mixed");
 */
 - (BOOL)performKeyEquivalent:(CPEvent)anEvent
 {
-    var characters = [anEvent charactersIgnoringModifiers],
-        modifierFlags = [anEvent modifierFlags],
-        modifierMask = [self keyEquivalentModifierMask],
-        keyEquivalent = [self keyEquivalent];
-
-    if (new RegExp("[A-Z]").test(keyEquivalent))
-        modifierMask |= CPShiftKeyMask;
-
-    if (CPBrowserIsOperatingSystem(CPWindowsOperatingSystem) && (modifierMask & CPCommandKeyMask))
-    {
-        modifierMask |= CPControlKeyMask;
-        modifierMask &= ~CPCommandKeyMask;
-    }
-
-    if ((modifierFlags & (CPShiftKeyMask | CPAlternateKeyMask | CPCommandKeyMask | CPControlKeyMask)) !== modifierMask)
-        return NO;
-
-    if ([characters caseInsensitiveCompare:keyEquivalent] !== CPOrderedSame)
+    if (![anEvent _triggersKeyEquivalent:[self keyEquivalent] withModifierMask:[self keyEquivalentModifierMask]])
         return NO;
 
     [self performClick:nil];
