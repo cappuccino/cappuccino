@@ -178,7 +178,8 @@ CPDOMEventTouchEnd                                   = "touchend";
 CPDOMEventTouchCancel                                = "touchcancel";
 
 var _CPEventPeriodicEventPeriod         = 0,
-    _CPEventPeriodicEventTimer          = nil;
+    _CPEventPeriodicEventTimer          = nil,
+    _CPEventUpperCaseRegex              = new RegExp("[A-Z]");
 
 /*!
     @ingroup appkit
@@ -521,10 +522,7 @@ var _CPEventPeriodicEventPeriod         = 0,
 
 - (BOOL)_triggersKeyEquivalent:(CPString)aKeyEquivalent withModifierMask:aKeyEquivalentModifierMask
 {
-    var characters = [self charactersIgnoringModifiers],
-        modifierFlags = [self modifierFlags];
-
-    if (new RegExp("[A-Z]").test(aKeyEquivalent))
+    if (_CPEventUpperCaseRegex.test(aKeyEquivalent))
         aKeyEquivalentModifierMask |= CPShiftKeyMask;
 
     if (CPBrowserIsOperatingSystem(CPWindowsOperatingSystem) && (aKeyEquivalentModifierMask & CPCommandKeyMask))
@@ -533,10 +531,10 @@ var _CPEventPeriodicEventPeriod         = 0,
         aKeyEquivalentModifierMask &= ~CPCommandKeyMask;
     }
 
-    if ((modifierFlags & (CPShiftKeyMask | CPAlternateKeyMask | CPCommandKeyMask | CPControlKeyMask)) !== aKeyEquivalentModifierMask)
+    if ((_modifierFlags & (CPShiftKeyMask | CPAlternateKeyMask | CPCommandKeyMask | CPControlKeyMask)) !== aKeyEquivalentModifierMask)
         return NO;
 
-    return [characters caseInsensitiveCompare:aKeyEquivalent] === CPOrderedSame;
+    return [_characters caseInsensitiveCompare:aKeyEquivalent] === CPOrderedSame;
 }
 
 - (BOOL)_couldBeKeyEquivalent
