@@ -155,7 +155,7 @@ var SelectionColor                              = nil,
 {
     // FIXME: This should probably be even throw.
     if (![_menuItem isEnabled])
-        return; 
+        shouldHighlight = NO;
 
     if (shouldHighlight)
     {
@@ -227,8 +227,8 @@ var SelectionColor                              = nil,
     
     CGContextClosePath(context);
     
-    CGContextSetShadowWithColor(context, CGSizeMake(0.0, 1.0), 1.1, _shadowColor);
-    CGContextSetFillColor(context, _color);
+    CGContextSetShadowWithColor(context, CGSizeMake(0.0, 1.0), 1.1, _shadowColor || [CPColor whiteColor]);
+    CGContextSetFillColor(context, _color || [CPColor blackColor]);
     CGContextFillPath(context);
 }
 

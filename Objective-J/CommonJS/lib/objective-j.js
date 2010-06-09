@@ -1,5 +1,7 @@
 
 var FILE = require("file");
+var sprintf = require("printf").sprintf;
+
 var window = exports.window = require("browser/window");
 
 if (system.engine === "rhino")
@@ -7,7 +9,7 @@ if (system.engine === "rhino")
     window.__parent__ = null;
     window.__proto__ = global;
 }
-
+ 
 // setup OBJJ_HOME, OBJJ_INCLUDE_PATHS, etc
 window.OBJJ_HOME = exports.OBJJ_HOME = FILE.resolve(module.path, "..");
 
@@ -77,6 +79,12 @@ exports.run = function(args)
         // copy the args since we're going to modify them
         var argv = args.slice(1);
 
+        if (argv[0] === "--version")
+        {
+            print(exports.fullVersionString());
+            return;
+        }
+
         while (argv.length && argv[0].indexOf('-I') === 0)
             OBJJ_INCLUDE_PATHS.unshift.apply(OBJJ_INCLUDE_PATHS, argv.shift().substr(2).split(':'));
     }
@@ -140,47 +148,45 @@ exports.repl = function()
     }
 }
 
-exports.objj_eval = function(/*String*/ aString)
-{
-    // We need this while code still refers to window.
-    Executable.setCommonJSArguments(require, exports, module, system, print, window);
-
-    var executable = preprocess(aString, "", 0);
-
-    if (!executable.hasLoadedFileDependencies())
-        executable.loadFileDependencies();
-
-    // A bit of a hack. Executable compiles the code itself into a function, but we want
-    // the raw code to eval here.
-    var code = executable._code;
-
-    // Not clear why these should be global, varing them doesn't seem to take effect with evaluateString.
-    global.objj_executeFile = Executable.fileExecuterForPath(FILE.cwd());
-    global.objj_importFile = Executable.fileImporterForPath(FILE.cwd());
-
-    if (typeof system !== "undefined" && system.engine === "rhino")
-        return Packages.org.mozilla.javascript.Context.getCurrentContext().evaluateString(global, code, "objj_eval", 0, NULL);
-
-    return eval(code);
-}
-
-Executable.setCommonJSParameters("require", "exports", "module", "system", "print", "window");
-
 // creates a narwhal factory function in the objj module scope
 exports.make_narwhal_factory = function(path)
 {
     return function(require, exports, module, system, print)
     {
+        Executable.setCommonJSParameters("require", "exports", "module", "system", "print", "window");
         Executable.setCommonJSArguments(require, exports, module, system, print, window);
-
-        Executable.fileImporterForPath(FILE.dirname(path))(path, function()
-        {
-            print("all done");
-        });
+        Executable.fileImporterForURL(FILE.dirname(path))(path, YES);
     }
 }
 
 } // end "with"
+
+var pkg = null;
+function getPackage() {
+    if (!pkg)
+        pkg = JSON.parse(FILE.path(module.path).dirname().dirname().join("package.json").read({ charset : "UTF-8" }));
+    return pkg;
+}
+
+exports.version = function() { return getPackage()["version"]; }
+exports.revision = function() { return getPackage()["cappuccino-revision"]; }
+exports.timestamp = function() { return new Date(getPackage()["cappuccino-timestamp"]); }
+
+exports.fullVersionString = function() {
+    return sprintf("objective-j %s (%04d-%02d-%02d %s)",
+        exports.version(),
+        exports.timestamp().getUTCFullYear(),
+        exports.timestamp().getUTCMonth()+1,
+        exports.timestamp().getUTCDate(),
+        exports.revision().slice(0,6)
+    );
+}
+
+global.ObjectiveJ = {};
+
+for (key in exports)
+    if (Object.prototype.hasOwnProperty.call(exports, key))
+        global.ObjectiveJ[key] = exports[key];
 
 if (require.main == module.id)
     exports.run(system.args);

@@ -41,7 +41,7 @@ parser.option("--build", "useCappBuild")
     .help("Uses frameworks in the $CAPP_BUILD.");
 
 parser.option("-l")
-    .action(function(o) { o.symlink = o.shouldUseCappBuild = true; })
+    .action(function(o) { o.symlink = o.useCappBuild = true; })
     .help("Enables both the --symlink and --build options.");
 
 parser.option("--force", "force")
@@ -49,7 +49,7 @@ parser.option("--force", "force")
     .help("Overwrite update existing frameworks.");
 
 parser.option("--noconfig", "noconfig")
-    .set()
+    .set(true)
     .help("Selects a project template to use.");
 
 parser.option("--list-templates", "listTemplates")
@@ -69,7 +69,12 @@ var templatesDirectory = FILE.join(CAPP_HOME, "lib", "capp", "Resources", "Templ
 function gen(/*va_args*/)
 {
     var args = ["capp gen"].concat(Array.prototype.slice.call(arguments));
-    var options = parser.parse(args);
+    var options = parser.parse(args, null, null, true);
+
+    if (options.args.length > 1) {
+        parser.printUsage(options);
+        OS.exit(1);
+    }
 
     if (options.listTemplates) {
         listTemplates();
@@ -169,8 +174,10 @@ function gen(/*va_args*/)
 
         createFrameworksInFile(frameworks, frameworkDestination, options.symlink, options.useCappBuild);
     }
-    else
+    else {
         stream.print("Directory already exists");
+        OS.exit(1);
+    }
 }
 
 function createFrameworksInFile(/*Array*/ frameworks, /*String*/ aFile, /*Boolean*/ symlink, /*Boolean*/ build, /*Boolean*/ force)

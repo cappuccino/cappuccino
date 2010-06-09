@@ -17,6 +17,8 @@ function ApplicationTask(aName)
         this._frameworksPath = "Frameworks";
     else
         this._frameworksPath = null;
+
+    this._shouldGenerateCacheManifest = false;
 }
 
 ApplicationTask.__proto__ = BundleTask;
@@ -33,6 +35,7 @@ ApplicationTask.prototype.defineTasks = function()
 
     this.defineFrameworksTask();
     this.defineIndexFileTask();
+    this.defineCacheManifestTask();
 }
 
 ApplicationTask.prototype.setIndexFilePath = function(aFilePath)
@@ -59,6 +62,16 @@ ApplicationTask.prototype.frameworksPath = function()
     return this._frameworksPath;
 }
 
+ApplicationTask.prototype.setShouldGenerateCacheManifest = function(shouldGenerateCacheManifest)
+{
+    this._shouldGenerateCacheManifest = shouldGenerateCacheManifest;
+}
+
+ApplicationTask.prototype.shouldGenerateCacheManifest = function()
+{
+    return this._shouldGenerateCacheManifest;
+}
+
 ApplicationTask.prototype.defineFrameworksTask = function()
 {
     // FIXME: platform requires...
@@ -72,7 +85,7 @@ ApplicationTask.prototype.defineFrameworksTask = function()
     Jake.fileCreate(newFrameworks, function()
     {
         if (thisTask._frameworksPath === "capp")
-            OS.system("capp gen -f --force " + buildPath);
+            OS.system(["capp", "gen", "-f", "--force", buildPath]);
         else if (thisTask._frameworksPath)
         {
             if (FILE.exists(newFrameworks))
@@ -104,6 +117,23 @@ ApplicationTask.prototype.defineIndexFileTask = function()
     });
 
     this.enhance([buildIndexFilePath]);
+}
+
+ApplicationTask.prototype.defineCacheManifestTask = function()
+{
+    if (!this.shouldGenerateCacheManifest())
+        return;
+
+    var productPath = FILE.join(this.buildProductPath(), "");
+    var indexFilePath = this.buildIndexFilePath();
+
+    // TODO: can we conditionally generate based on outdated files?
+    var manifestPath = FILE.join(productPath, "app.manifest");
+    Jake.task(manifestPath, function() {
+        require("../cache-manifest").generateManifest(productPath, { index : indexFilePath });
+    });
+
+    this.enhance([manifestPath]);
 }
 
 exports.ApplicationTask = ApplicationTask;

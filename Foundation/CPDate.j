@@ -24,7 +24,7 @@
 @import "CPString.j"
 
 
-var CPDateReferenceDate = new Date(Date.UTC(2001,1,1,0,0,0,0));
+var CPDateReferenceDate = new Date(Date.UTC(2001, 1, 1, 0, 0, 0, 0));
 
 /*!
     @class CPDate
@@ -64,12 +64,12 @@ var CPDateReferenceDate = new Date(Date.UTC(2001,1,1,0,0,0,0));
 
 + (id)distantPast
 {
-    return new Date(-10000,1,1,0,0,0,0);
+    return new Date(-10000, 1, 1, 0, 0, 0, 0);
 }
 
 + (id)distantFuture
 {
-    return new Date(10000,1,1,0,0,0,0);
+    return new Date(10000, 1, 1, 0, 0, 0, 0);
 }
 
 - (id)initWithTimeIntervalSinceNow:(CPTimeInterval)seconds
@@ -110,7 +110,7 @@ var CPDateReferenceDate = new Date(Date.UTC(2001,1,1,0,0,0,0));
         [CPException raise:CPInvalidArgumentException
                     reason:"initWithString: the string must be of YYYY-MM-DD HH:MM:SS ±HHMM format"];
 
-    var date = new Date(d[1], d[2]-1, d[3]),
+    var date = new Date(d[1], d[2] - 1, d[3]),
         timeZoneOffset =  (Number(d[8]) * 60 + Number(d[9])) * (d[7] === '-' ? -1 : 1);
 
     date.setHours(d[4]);
@@ -180,7 +180,7 @@ var CPDateReferenceDate = new Date(Date.UTC(2001,1,1,0,0,0,0));
     var hours = Math.floor(self.getTimezoneOffset() / 60),
         minutes = self.getTimezoneOffset() - hours * 60;
 
-    return [CPString stringWithFormat:@"%04d-%02d-%02d %02d:%02d:%02d +%02d%02d", self.getFullYear(), self.getMonth()+1, self.getDate(), self.getHours(), self.getMinutes(), self.getSeconds(), hours, minutes];
+    return [CPString stringWithFormat:@"%04d-%02d-%02d %02d:%02d:%02d +%02d%02d", self.getFullYear(), self.getMonth() + 1, self.getDate(), self.getHours(), self.getMinutes(), self.getSeconds(), hours, minutes];
 }
 
 - (id)copy

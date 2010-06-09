@@ -155,7 +155,7 @@ var base64_map_to = [
 for (var i = 0; i < base64_map_to.length; i++)
     base64_map_from[base64_map_to[i].charCodeAt(0)] = i;
 
-GLOBAL(base64_decode_to_array) = function(input, strip)
+CFData.decodeBase64ToArray = function(input, strip)
 {
     if (strip)
         input = input.replace(/[^A-Za-z0-9\+\/\=]/g, "");
@@ -184,7 +184,7 @@ GLOBAL(base64_decode_to_array) = function(input, strip)
     return output;
 }
 
-GLOBAL(base64_encode_array) = function(input)
+CFData.encodeBase64Array = function(input)
 {
     var pad = (3 - (input.length % 3)) % 3,
         length = input.length + pad,
@@ -222,23 +222,23 @@ GLOBAL(base64_encode_array) = function(input)
     return output.join("");
 }
 
-GLOBAL(base64_decode_to_string) = function(input, strip)
+CFData.decodeBase64ToString = function(input, strip)
 {
-    return bytes_to_string(base64_decode_to_array(input, strip));
+    return CFData.bytesToString(CFData.decodeBase64ToArray(input, strip));
 }
 
-GLOBAL(bytes_to_string) = function(bytes)
+CFData.bytesToString = function(bytes)
 {
     // This is relatively efficient, I think:
     return String.fromCharCode.apply(NULL, bytes);
 }
 
 
-GLOBAL(base64_encode_string) = function(input)
+CFData.encodeBase64String = function(input)
 {
     var temp = [];
     for (var i = 0; i < input.length; i++)
         temp.push(input.charCodeAt(i));
 
-    return base64_encode_array(temp);
+    return CFData.encodeBase64Array(temp);
 }

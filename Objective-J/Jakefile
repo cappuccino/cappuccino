@@ -73,7 +73,8 @@ new FileList("CommonJS/**/*").forEach(function(aFilename)
                 buildFilename,
                 environmentFlags("CommonJS", "ObjJ").concat($INCLUDE_FLAGS, $DEBUG_FLAGS), false);
     });
-        
+
+    // HACK: narwhal should copy permissions
     if (FILE.dirname(aFilename) === FILE.join("CommonJS", "bin"))
     {
         filedir (buildFilename, function ()
@@ -84,6 +85,10 @@ new FileList("CommonJS/**/*").forEach(function(aFilename)
 
     task ("build", buildFilename);
     CLOBBER.include(buildFilename);
+});
+
+task ("build", function() {
+    setPackageMetadata(FILE.join($BUILD_CJS_OBJECTIVE_J, "package.json"));
 });
 
 $BUILD_CJS_OBJECTIVE_J_FRAMEWORK = FILE.join($BUILD_CJS_OBJECTIVE_J, "Frameworks", "Objective-J");

@@ -130,6 +130,16 @@ var _CPFonts                = {},
     return _name;
 }
 
+- (BOOL)isEqual:(id)anObject
+{
+    return [anObject isKindOfClass:[CPFont class]] && [anObject cssString] === [self cssString];
+}
+
+- (CPString)description
+{
+    return [CPString stringWithFormat:@"%@ %@ %f pt.", [super description], [self familyName], [self size]];
+}
+
 @end
 
 var CPFontNameKey   = @"CPFontNameKey",

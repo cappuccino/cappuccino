@@ -67,6 +67,7 @@
 @import "NSViewController.j"
 @import "NSWindowTemplate.j"
 @import "WebView.j"
+@import "NSSortDescriptor.j"
 
 
 function CP_NSMapClassName(aClassName)
@@ -77,7 +78,7 @@ function CP_NSMapClassName(aClassName)
         
         if (CPClassFromString(mappedClassName))
         {
-            CPLog.warn("Mapping " + aClassName + " to " + mappedClassName);
+            CPLog.info("Mapping " + aClassName + " to " + mappedClassName);
 
             return mappedClassName;
         }

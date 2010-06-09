@@ -329,7 +329,11 @@ var CPToolbarConfigurationsByIdentifier = nil;
     return _itemsSortedByVisibilityPriority;
 }
 
-- (void)validateVisibleToolbarItems
+/*!
+    Validates the visible toolbar items by sending a validate message to
+    each visible toolbar item.
+*/
+- (void)validateVisibleItems
 {
     var toolbarItems = [self visibleItems],
         count = [toolbarItems count];
@@ -350,7 +354,7 @@ var CPToolbarConfigurationsByIdentifier = nil;
             item = [[_delegate toolbar:self itemForItemIdentifier:identifier willBeInsertedIntoToolbar:toolbar] copy];
             if (!item)
                 [CPException raise:CPInvalidArgumentException
-                            reason:sprintf(@"_delegate %s returned nil toolbar item returned for identifier %s", _delegate, identifier)];
+                            reason:@"Toolbar delegate " + _delegate + " returned nil toolbar item for identifier " + identifier];
         }
 
         [_identifiedItems setObject:item forKey:identifier];

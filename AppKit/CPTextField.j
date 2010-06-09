@@ -483,6 +483,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
     window.setTimeout(function() 
     { 
         element.focus();
+        [self textDidFocus:[CPNotification notificationWithName:CPTextFieldDidFocusNotification object:self userInfo:nil]];
         CPTextFieldInputOwner = self;
     }, 0.0);
  
@@ -500,8 +501,6 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
         [[self window] platformWindow]._DOMBodyElement.ondrag = function () {};
         [[self window] platformWindow]._DOMBodyElement.onselectstart = function () {};
     }
-    
-    [self textDidFocus:[CPNotification notificationWithName:CPTextFieldDidFocusNotification object:self userInfo:nil]];
 #endif
 
     return YES;
@@ -537,12 +536,12 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
     CPTextFieldInputIsActive = NO;
 
     if (document.attachEvent)
-    {
-        CPTextFieldCachedSelectStartFunction = nil;
-        CPTextFieldCachedDragFunction = nil;
-        
+    {   
         [[self window] platformWindow]._DOMBodyElement.ondrag = CPTextFieldCachedDragFunction;
         [[self window] platformWindow]._DOMBodyElement.onselectstart = CPTextFieldCachedSelectStartFunction;
+
+        CPTextFieldCachedSelectStartFunction = nil;
+        CPTextFieldCachedDragFunction = nil;
     }
     
 #endif
@@ -575,20 +574,46 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
     // Don't track! (ever?)
     if ([self isEditable] && [self isEnabled])
         return [[self window] makeFirstResponder:self];
+    else if ([self isSelectable])
+    {
+        if (document.attachEvent)
+        {
+            CPTextFieldCachedSelectStartFunction = [[self window] platformWindow]._DOMBodyElement.onselectstart;
+            CPTextFieldCachedDragFunction = [[self window] platformWindow]._DOMBodyElement.ondrag;
+            
+            [[self window] platformWindow]._DOMBodyElement.ondrag = function () {};
+            [[self window] platformWindow]._DOMBodyElement.onselectstart = function () {};
+        }
+        return [[[anEvent window] platformWindow] _propagateCurrentDOMEvent:YES];
+    }
     else
         return [[self nextResponder] mouseDown:anEvent];
 }
 
 - (void)mouseUp:(CPEvent)anEvent
 {
-    if (![self isEditable] || ![self isEnabled])
+    if (![self isSelectable] && (![self isEditable] || ![self isEnabled]))
         [[self nextResponder] mouseUp:anEvent];
+    else if ([self isSelectable])
+    {
+        if (document.attachEvent)
+        {
+            [[self window] platformWindow]._DOMBodyElement.ondrag = CPTextFieldCachedDragFunction;
+            [[self window] platformWindow]._DOMBodyElement.onselectstart = CPTextFieldCachedSelectStartFunction; 
+
+            CPTextFieldCachedSelectStartFunction = nil
+            CPTextFieldCachedDragFunction = nil;
+        }
+        return [[[anEvent window] platformWindow] _propagateCurrentDOMEvent:YES];
+    }
 }
 
 - (void)mouseDragged:(CPEvent)anEvent
 {
-    if (![self isEditable] || ![self isEnabled])
+    if (![self isSelectable] && (![self isEditable] || ![self isEnabled]))
         [[self nextResponder] mouseDragged:anEvent];
+    else if ([self isSelectable])
+        return [[[anEvent window] platformWindow] _propagateCurrentDOMEvent:YES];
 }
 
 - (void)keyUp:(CPEvent)anEvent
@@ -684,9 +709,10 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 - (void)setObjectValue:(id)aValue
 {
     [super setObjectValue:aValue];
-
+	
 #if PLATFORM(DOM)
-    if (CPTextFieldInputOwner === self)
+
+    if (CPTextFieldInputOwner === self || [[self window] firstResponder] === self)
         [self _inputElement].value = aValue;
 #endif
 
@@ -813,7 +839,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
     if (![CPPlatform isBrowser])
     {
         [self copy:sender];
-        [self deleteBackwards:sender];
+        [self deleteBackward:sender];
     }
 }
 
@@ -826,7 +852,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
         if (![[pasteboard types] containsObject:CPStringPboardType])
             return;
 
-        [self deleteBackwards:sender];
+        [self deleteBackward:sender];
 
         var selectedRange = [self selectedRange],
             stringValue = [self stringValue],
@@ -912,7 +938,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
     [self selectText:sender];
 }
 
-- (void)deleteBackwards:(id)sender
+- (void)deleteBackward:(id)sender
 {
     var selectedRange = [self selectedRange],
         stringValue = [self stringValue],
@@ -997,7 +1023,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
     return bounds;
 }
 
-- (CGRect)bezelRectForBounds:(CFRect)bounds
+- (CGRect)bezelRectForBounds:(CGRect)bounds
 {
     var bezelInset = [self currentValueForThemeAttribute:@"bezel-inset"];
 
@@ -1085,6 +1111,22 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
         [contentView setTextShadowColor:[self currentValueForThemeAttribute:@"text-shadow-color"]];
         [contentView setTextShadowOffset:[self currentValueForThemeAttribute:@"text-shadow-offset"]];
     }
+}
+
+- (void)takeValueFromKeyPath:(CPString)aKeyPath ofObjects:(CPArray)objects
+{
+    var count = objects.length,
+        value = [objects[0] valueForKeyPath:aKeyPath];
+
+    [self setStringValue:value];
+    [self setPlaceholderString:@""];
+
+    while (count-- > 1)
+        if (value !== [objects[count] valueForKeyPath:aKeyPath])
+        {
+            [self setPlaceholderString:@"Multiple Values"];
+            [self setStringValue:@""];
+        }
 }
 
 @end

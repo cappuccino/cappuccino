@@ -45,7 +45,17 @@ function ask_remove_dir () {
 function ask_append_shell_config () {
     config_string="$1"
 
-    shell_config_file=`sh shell_config_file.sh`
+    shell_config_file=""
+    # use order outlined by http://hayne.net/MacDev/Notes/unixFAQ.html#shellStartup
+    if [ -f "$HOME/.bash_profile" ]; then
+        shell_config_file="$HOME/.bash_profile"
+    elif [ -f "$HOME/.bash_login" ]; then
+        shell_config_file="$HOME/.bash_login"
+    elif [ -f "$HOME/.profile" ]; then
+        shell_config_file="$HOME/.profile"
+    elif [ -f "$HOME/.bashrc" ]; then
+        shell_config_file="$HOME/.bashrc"
+    fi
 
     echo "    \"$config_string\" will be appended to \"$shell_config_file\"."
     if prompt "no"; then
@@ -68,7 +78,38 @@ function check_and_exit () {
     fi
 }
 
-default_directory="/usr/local/narwhal"
+function check_build_environment () {
+    # make sure user is running HotSpot JVM
+    java -version 2>&1 | grep HotSpot &> /dev/null
+    if [ ! "$?" = "0" ]; then
+        java_ver=`java -version 2>&1 | egrep "(Client|Server)"`
+        if [ "$java_ver" = "" ]; then
+            java_ver="your JVM"
+        fi
+        echo "Error: Narwhal is not compatible with $java_ver. Please switch to the Sun (HotSpot) JVM and re-run bootstrap.sh."
+        exit 1
+    fi
+
+    # make sure other dependencies are installed and on the $PATH
+    OTHER_DEPS=(gcc unzip curl)
+
+    for dep in ${OTHER_DEPS[@]}; do
+        which "$dep" &> /dev/null
+        if [ ! "$?" = "0" ]; then
+            echo "Error: $dep is required to build Cappuccino. Please install $dep and re-run bootstrap.sh."
+            exit 1
+        fi
+    done
+}
+
+check_build_environment
+
+if [ -w "/usr/local" ]; then
+    default_directory="/usr/local/narwhal"
+else
+    default_directory="$HOME/narwhal"
+fi
+
 install_directory=""
 tmp_zip="/tmp/narwhal.zip"
 
@@ -77,6 +118,7 @@ github_ref="master"
 tusk_install_command="install"
 
 noprompt=""
+install_capp=""
 
 while [ $# -gt 0 ]; do
     case "$1" in
@@ -85,6 +127,7 @@ while [ $# -gt 0 ]; do
         --clone)        tusk_install_command="clone";;
         --github-user)  github_user="$2"; shift;;
         --github-ref)   github_ref="$2"; shift;;
+        --install-capp) install_capp="yes";;
         *)              cat >&2 <<-EOT
 usage: ./bootstrap.sh [OPTIONS]
 
@@ -93,6 +136,7 @@ usage: ./bootstrap.sh [OPTIONS]
     --clone:                Do "git clone" instead of downloading zips.
     --github-user [USER]:   Use another github user (default: 280north).
     --github-ref [REF]:     Use another git ref (default: master).
+    --install-capp:         Install "objective-j" and "cappuccino" packages.
 EOT
                         exit 1;;
     esac
@@ -103,6 +147,8 @@ github_project="$github_user-narwhal"
 github_path=$(echo "$github_project" | tr '-' '/')
 
 unset NARWHAL_ENGINE
+unset SEA
+unset SEALVL
 
 PATH_SAVED="$PATH"
 
@@ -220,10 +266,13 @@ fi
 # echo "================================================================================"
 # echo "Would you like to install the pre-built Objective-J and Cappuccino packages?"
 # echo "If you intend to build Cappuccino yourself this is not neccessary."
-# extra_packages=""
-# if prompt; then
-#     extra_packages="objective-j cappuccino"
+# if [ ! "$install_capp" ] && prompt; then
+#     install_capp="yes"
 # fi
+extra_packages=""
+if [ "$install_capp" ]; then
+    extra_packages="objective-j cappuccino"
+fi
 
 echo "Installing necessary packages..."
 
@@ -238,7 +287,6 @@ if [ `uname` = "Darwin" ]; then
     echo "================================================================================"
     echo "Would you like to install the JavaScriptCore engine for Narwhal?"
     echo "This is optional but will make building and running Objective-J much faster."
-    echo "NOTE: this is currently broken on versions of OS X before 10.6."
     if prompt "yes"; then
         tusk $tusk_install_command narwhal-jsc
 

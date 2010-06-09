@@ -1,12 +1,6 @@
-
 @import <Foundation/CPObject.j>
 
-@import <Foundation/CPIndexSet.j>
-@import <AppKit/CPTableColumn.j>
-@import <AppKit/CPTableView.j>
-
 tableTestDragType = @"CPTableViewTestDragType";
-CPLogRegister(CPLogConsole);
 
 @implementation AppController : CPObject
 {
@@ -20,80 +14,114 @@ CPLogRegister(CPLogConsole);
 
 - (void)applicationDidFinishLaunching:(CPNotification)aNotification
 {
+    
     dataSet1 = [],
     dataSet2 = [],
     dataSet3 = [];
     
-    for(var i = 1; i < 100; i++)
+    for(var i = 1; i < 10; i++)
     {
         dataSet1[i - 1] = [CPNumber numberWithInt:i];
         dataSet2[i - 1] = [CPNumber numberWithInt:i+10];
         dataSet3[i - 1] = [CPNumber numberWithInt:i+20];
     }
 
-    
-    var window1 = [[CPWindow alloc] initWithContentRect:CGRectMake(50, 50, 500, 400) styleMask:CPTitledWindowMask | CPResizableWindowMask],
-        view = [window1 contentView];
-    
-    [view setBackgroundColor:[CPColor whiteColor]];
-    
-    tableView = [[CPTableView alloc] initWithFrame:CGRectMake(0.0, 0.0, 500.0, 500.0)];
+    var theWindow = [[CPWindow alloc] initWithContentRect:CGRectMake(50,50,700,500) styleMask:CPClosableWindowMask],
+        contentView = [theWindow contentView];
+
+    tableView = [[CPTableView alloc] initWithFrame:CGRectMake(0.0, 0.0, 400.0, 400.0)];
 
     [tableView setAllowsMultipleSelection:YES];
     [tableView setAllowsColumnSelection:YES];
     [tableView setUsesAlternatingRowBackgroundColors:YES];
     [tableView setAlternatingRowBackgroundColors:[[CPColor whiteColor], [CPColor colorWithHexString:@"e4e7ff"], [CPColor colorWithHexString:@"f4e7ff"]]];
-    [tableView setGridStyleMask:CPTableViewSolidHorizontalGridLineMask | CPTableViewSolidVerticalGridLineMask];
+    [tableView setGridStyleMask:CPTableViewSolidHorizontalGridLineMask | CPTableViewSolidVerticalGridLineMask];    
+    [tableView setVerticalMotionCanBeginDrag:NO];
+    [tableView setDraggingDestinationFeedbackStyle:CPTableViewDropOn];
+    [tableView registerForDraggedTypes:[CPArray arrayWithObject:tableTestDragType]];
+    [tableView setColumnAutoresizingStyle:CPTableViewLastColumnOnlyAutoresizingStyle];
+    [tableView setDelegate:self];
+    [tableView setSelectionHighlightColor:[CPColor redColor]];
+    [tableView setDataSource:self];
 
+    
     var iconView = [[CPImageView alloc] initWithFrame:CGRectMake(16,16,0,0)];
-
     [iconView setImageScaling:CPScaleNone];
-
     var iconColumn = [[CPTableColumn alloc] initWithIdentifier:"icons"];
-
     [iconColumn setWidth:32.0];
     [iconColumn setMinWidth:32.0];
     [iconColumn setDataView:iconView];
-
     [tableView addTableColumn:iconColumn];
-
     iconImage = [[CPImage alloc] initWithContentsOfFile:"http://cappuccino.org/images/favicon.png" size:CGSizeMake(16,16)];
 
+
     var desc = [CPSortDescriptor sortDescriptorWithKey:@"self" ascending:YES];
-    for (var i = 1; i <= 2; i++)
+    for (var i = 1; i <= 5; i++)
     {
         var column = [[CPTableColumn alloc] initWithIdentifier:String(i)];
         [column setSortDescriptorPrototype:desc];
-        [[column headerView] setStringValue:"Number "+i];
+        [[column headerView] setStringValue:"Number " + i];
 
         [column setMinWidth:50.0];
         [column setMaxWidth:500.0];
-        [column setWidth:200.0];
+        [column setWidth:75.0];
         
         [column setEditable:YES];
         [tableView addTableColumn:column];
     }
 
-    [tableView setColumnAutoresizingStyle:CPTableViewLastColumnOnlyAutoresizingStyle];
-
-    var scrollView = [[CPScrollView alloc] initWithFrame:CGRectMake(0, 0, CGRectGetWidth([view bounds]), CGRectGetHeight([view bounds]))];
-    [tableView setRowHeight:22.0];
+    // we offset this scrollview to make sure all the coordinates are calculated correctly
+    // bad things can happen when the tableview doesn't sit at (0,0)
+    var scrollView = [[CPScrollView alloc] initWithFrame:CGRectMake(200, 50, CGRectGetWidth([contentView bounds]) - 200, CGRectGetHeight([contentView bounds]) -200)];
+   
     [scrollView setDocumentView:tableView];
     [scrollView setAutoresizingMask:CPViewWidthSizable | CPViewHeightSizable];
     
-    [view addSubview:scrollView];
+    [contentView addSubview:scrollView];
 
-    [scrollView setAutohidesScrollers:YES];
-
-    [tableView setDelegate:self];
-    [tableView setDataSource:self];
-    [tableView setVerticalMotionCanBeginDrag:NO];
-    [tableView setDraggingDestinationFeedbackStyle:CPTableViewDropOn];
-    [tableView registerForDraggedTypes:[CPArray arrayWithObject:tableTestDragType]];
-    
-    [window1 orderFront:self];
+    [theWindow orderFront:self];
     [self newWindow];
     [self sourceList];
+
+    var button = [[CPButton alloc] initWithFrame:CGRectMake(10,10,100, 24)];
+    [button setTitle:@"Remove Row"];
+    [button setTarget:self];
+    [button setAction:@selector(removeRow:)];
+    [contentView addSubview:button];
+
+    var button = [[CPButton alloc] initWithFrame:CGRectMake(10,40,100, 24)];
+    [button setTitle:@"Add Row"];
+    [button setTarget:self];
+    [button setAction:@selector(addRow:)];
+    [contentView addSubview:button];
+
+    var sourceListActiveGradient = CGGradientCreateWithColorComponents(CGColorSpaceCreateDeviceRGB(), [255.0/255.0, 153.0/255.0, 209.0/255.0,1.0, 33.0/255.0, 94.0/255.0, 208.0/255.0,1.0], [0,1], 2),
+        sourceListActiveTopLineColor = [CPColor colorWithCalibratedRed:(255.0/255.0) green:(123.0/255.0) blue:(218.0/255.0) alpha:1.0],
+        sourceListActiveBottomLineColor = [CPColor colorWithCalibratedRed:(255.0/255.0) green:(92.0/255.0) blue:(207.0/255.0) alpha:1.0];
+    [tableView setSelectionGradientColors:[CPDictionary dictionaryWithObjects:[sourceListActiveGradient, sourceListActiveTopLineColor, sourceListActiveBottomLineColor] forKeys:[CPSourceListGradient, CPSourceListTopLineColor, CPSourceListBottomLineColor]]];
+
+    var button = [[CPButton alloc] initWithFrame:CGRectMake(10,70,100, 24)];
+    [button setTitle:@"Switch Highlight"];
+    [button setTarget:self];
+    [button setAction:@selector(switchSelectionHighlightType:)];
+    [contentView addSubview:button];
+}
+
+- (void)switchSelectionHighlightType:(id)sender
+{
+    [tableView setSelectionHighlightStyle: ABS([tableView selectionHighlightStyle] - 1)];
+}
+
+- (void)removeRow:(id)sender
+{
+    [dataSet1 removeObjectAtIndex:0];
+    [tableView reloadData];
+}
+
+- (void)addRow:(id)sender
+{
+    [dataSet1 addObject:[dataSet1 count] || 0];
+    [tableView reloadData];
 }
 
 - (void)newWindow
@@ -106,39 +134,29 @@ CPLogRegister(CPLogConsole);
     [tableView2 setAllowsMultipleSelection:YES];
     [tableView2 setUsesAlternatingRowBackgroundColors:YES];
     [tableView2 setGridStyleMask:CPTableViewSolidHorizontalGridLineMask | CPTableViewSolidVerticalGridLineMask];
+    [tableView2 setVerticalMotionCanBeginDrag:NO];
+    [tableView2 registerForDraggedTypes:[CPArray arrayWithObject:tableTestDragType]];
+    [tableView2 setDraggingDestinationFeedbackStyle:CPTableViewDropAbove];
+    [tableView2 setDelegate:self];
+    [tableView2 setDataSource:self];
 
 
-    var iconView = [[CPImageView alloc] initWithFrame:CGRectMake(16,16,0,0)];
+    var checkBox = [[CPCheckBox alloc] initWithFrame:CGRectMake(5,3,24,24)],
+        checkBoxColumn = [[CPTableColumn alloc] initWithIdentifier:@"checkBox"];
+    [checkBoxColumn setDataView:checkBox];
 
-    [iconView setImageScaling:CPScaleNone];
-
-    var iconColumn = [[CPTableColumn alloc] initWithIdentifier:"icons"];
-
-    [iconColumn setWidth:32.0];
-    [iconColumn setMinWidth:32.0];
-    [iconColumn setDataView:iconView];
-    [iconColumn setResizingMask:CPTableColumnNoResizing];
-
-    //[tableView2 addTableColumn:iconColumn];
-
-    iconImage = [[CPImage alloc] initWithContentsOfFile:"http://cappuccino.org/images/favicon.png" size:CGSizeMake(16,16)];
-
-    var textDataView = [CPTextField new];
-    
-    [textDataView setValue:[CPColor whiteColor] forThemeAttribute:@"text-color" inState:CPThemeStateHighlighted];
-    [textDataView setValue:[CPFont systemFontOfSize:12] forThemeAttribute:@"font" inState:CPThemeStateHighlighted];
+    [tableView2 addTableColumn:checkBoxColumn];
 
     var desc = [CPSortDescriptor sortDescriptorWithKey:@"self" ascending:YES];
-
     for (var i = 1; i <= 3; i++)
     {
         var column = [[CPTableColumn alloc] initWithIdentifier:String(i)];
+        [column setSortDescriptorPrototype:desc];
         [[column headerView] setStringValue:"Number "+i];
 
         [column setWidth:i*75];
         [column setMinWidth:50.0];
 
-        [column setDataView:textDataView];
         [column setEditable:YES];
         
         [tableView2 addTableColumn:column];
@@ -153,22 +171,15 @@ CPLogRegister(CPLogConsole);
     
     [[window2 contentView] addSubview:scrollView];
 
-    [scrollView setAutohidesScrollers:YES];
+    //[scrollView setAutohidesScrollers:YES];
 
-    [tableView2 setDelegate:self];
-    [tableView2 setDataSource:self];
-    
-    [tableView2 setVerticalMotionCanBeginDrag:NO];
-    [tableView2 registerForDraggedTypes:[CPArray arrayWithObject:tableTestDragType]];
-    [tableView2 setDraggingDestinationFeedbackStyle:CPTableViewDropAbove];
     
     [window2 orderFront:self];
 }
 
 - (void)sourceList
 {
-
-    var window3 = [[CPWindow alloc] initWithContentRect:CGRectMake(450, 250, 200, 400) styleMask:CPTitledWindowMask | CPResizableWindowMask];
+    var window3 = [[CPWindow alloc] initWithContentRect:CGRectMake(450, 250, 500, 400) styleMask:CPTitledWindowMask | CPResizableWindowMask];
     
     tableView3 = [[CPTableView alloc] initWithFrame:CGRectMake(0.0, 0.0, 200.0, 500.0)];
 
@@ -176,36 +187,38 @@ CPLogRegister(CPLogConsole);
     [tableView3 setUsesAlternatingRowBackgroundColors:NO];
     [tableView3 setGridStyleMask:CPTableViewGridNone];
     [tableView3 setSelectionHighlightStyle:CPTableViewSelectionHighlightStyleSourceList];
+    [tableView3 setColumnAutoresizingStyle:CPTableViewUniformColumnAutoresizingStyle];
+    [tableView3 setVerticalMotionCanBeginDrag:NO];
+    [tableView3 setDelegate:self];
+    [tableView3 setDataSource:self];
 
     var column = [[CPTableColumn alloc] initWithIdentifier:"sourcelist"];
     [[column headerView] setStringValue:"Source List"];
 
     [column setWidth:200.0];
     [column setMinWidth:50.0];
-
     [column setEditable:YES];
-    
     [tableView3 addTableColumn:column];
-
-    [tableView3 setColumnAutoresizingStyle:CPTableViewUniformColumnAutoresizingStyle];
+    
+    var column = [[CPTableColumn alloc] initWithIdentifier:"sourcelist2"];
+    [[column headerView] setStringValue:"Source List 2"];
+    [tableView3 addTableColumn:column];
 
     var scrollView3 = [[CPScrollView alloc] initWithFrame:[[window3 contentView] bounds]];
     [tableView3 setRowHeight:32.0];
     [scrollView3 setDocumentView:tableView3];
     [scrollView3 setAutoresizingMask:CPViewWidthSizable | CPViewHeightSizable];
+
+    var sourceListActiveGradient = CGGradientCreateWithColorComponents(CGColorSpaceCreateDeviceRGB(), [255.0/255.0, 153.0/255.0, 209.0/255.0,1.0, 33.0/255.0, 94.0/255.0, 208.0/255.0,1.0], [0,1], 2),
+        sourceListActiveTopLineColor = [CPColor colorWithCalibratedRed:(255.0/255.0) green:(123.0/255.0) blue:(218.0/255.0) alpha:1.0],
+        sourceListActiveBottomLineColor = [CPColor colorWithCalibratedRed:(255.0/255.0) green:(92.0/255.0) blue:(207.0/255.0) alpha:1.0];
+    [tableView3 setSelectionGradientColors:[CPDictionary dictionaryWithObjects:[sourceListActiveGradient, sourceListActiveTopLineColor, sourceListActiveBottomLineColor] forKeys:[CPSourceListGradient, CPSourceListTopLineColor, CPSourceListBottomLineColor]]];
     
     [[window3 contentView] addSubview:scrollView3];
 
     [scrollView3 setAutohidesScrollers:YES];
-
-    [tableView3 setDelegate:self];
-    [tableView3 setDataSource:self];
-    
-    [tableView3 setVerticalMotionCanBeginDrag:NO];
-    //[tableView3 registerForDraggedTypes:[CPArray arrayWithObject:tableTestDragType]];
-    //[tableView3 setDraggingDestinationFeedbackStyle:CPTableViewDropAbove];*/
-    
-    [window3 orderFront:self];
+  
+  [window3 orderFront:self];
 }
 
 - (int)numberOfRowsInTableView:(CPTableView)atableView
@@ -218,36 +231,29 @@ CPLogRegister(CPLogConsole);
         return dataSet3.length;
 }
 
-- (id)tableView:(CPTableView)atableView objectValueForTableColumn:(CPTableColumn)tableColumn row:(int)row
+- (id)tableView:(CPTableView)aTableView objectValueForTableColumn:(CPTableColumn)aColumn row:(int)aRow
 {
-
-    if(atableView === tableView)
-    {
-         if ([tableColumn identifier] === "icons")
-             return iconImage;
-         else
-             return String(dataSet1[row]);
-    }
-    else if(atableView === tableView2)
-    {
-        if ([tableColumn identifier] === "icons")
-             return iconImage;
-         else
-             return String(dataSet2[row]);
-    }
-    else if(atableView === tableView3)
-    {
-        if ([tableColumn identifier] === "icons")
-             return iconImage;
-         else
-             return String(dataSet3[row]);
-    }
+    if ([aColumn identifier] === "icons")
+        return iconImage;
+    
+    if (aTableView === tableView)
+        return String(dataSet1[aRow]);
+    else if (aTableView === tableView2)
+        return String(dataSet2[aRow]);
+    else if(aTableView === tableView3)
+        return String(dataSet3[aRow]);
 }
 
-- (id)tableView:(CPTableView)tableView heightOfRow:(int)row
+- (void)tableView:(CPTableView)aTableView sortDescriptorsDidChange:(CPArray)oldDescriptors
 {
-    return 50;
+    CPLogConsole(_cmd + [oldDescriptors description]);
+    
+    var newDescriptors = [aTableView sortDescriptors];
+    
+    [(aTableView === tableView) ? dataSet1:dataSet2 sortUsingDescriptors:newDescriptors];
+	[aTableView reloadData];
 }
+
 
 - (void)tableViewSelectionIsChanging:(CPNotification)aNotification
 {
@@ -261,13 +267,13 @@ CPLogRegister(CPLogConsole);
 
 - (BOOL)tableView:(CPTableView)aTableView shouldSelectRow:(int)rowIndex
 {
-    //CPLog.debug(@"tableView:shouldSelectRow");
+    CPLog.debug(@"tableView:shouldSelectRow");
     return true;
 }
 
 - (BOOL)selectionShouldChangeInTableView:(CPTableView)aTableView
 {
-	//CPLog.debug(@"selectionShouldChangeInTableView");
+	CPLog.debug(@"selectionShouldChangeInTableView");
 	return YES;
 }
 
@@ -285,14 +291,6 @@ CPLogRegister(CPLogConsole);
 {
     CPLogConsole(_cmd + [notification description]);
 }
-
-//- (CPIndexSet)tableView:(CPTableView)tableView selectionIndexesForProposedSelection:(CPIndexSet)proposedSelectionIndexes
-//{
-//	CPLog.debug(@"selectionIndexesForProposedSelection %@", [proposedSelectionIndexes description]);
-//	return proposedSelectionIndexes;
-//}
-
-
 - (BOOL)tableView:(CPTableView)aTableView shouldEditTableColumn:(CPTableColumn)tableColumn row:(int)row
 {
     if(aTableView === tableView3)
@@ -405,7 +403,7 @@ CPLogRegister(CPLogConsole);
 
 - (void)tableView:(CPTableView)aTableView didClickTableColumn:(CPTableColumn)aColumn
 {
-    console.log("table: "+aTableView+" clicked column: "+aColumn);
+    CPLog.debug("table: "+aTableView+" clicked column: "+aColumn);
 }
 
 @end

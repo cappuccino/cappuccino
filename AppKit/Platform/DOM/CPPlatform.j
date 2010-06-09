@@ -40,6 +40,16 @@ var screenNeedsInitialization   = NO,
         return;
 
     screenNeedsInitialization = [CPPlatform isBrowser];
+
+    // We do this here because doing it later breaks IE.
+    if (document.documentElement)
+        document.documentElement.style.overflow = "hidden";
+
+    if ([CPPlatform isBrowser])
+        window.onunload = function()
+        {
+            [CPApp terminate:nil];
+        }
 }
 
 + (BOOL)isBrowser
@@ -67,6 +77,12 @@ var screenNeedsInitialization   = NO,
 {
     if (typeof window["cpActivateIgnoringOtherApps"] === "function")
         window.cpActivateIgnoringOtherApps(!!shouldIgnoreOtherApps);
+}
+
++ (void)deactivate
+{
+    if (typeof window["cpDeactivate"] === "function")
+        window.cpDeactivate();
 }
 
 + (void)hideOtherApplications:(id)aSender
@@ -114,9 +130,6 @@ var screenNeedsInitialization   = NO,
     }
 
     bodyElement.style.overflow = "hidden";
-
-    if (document.documentElement)
-        document.documentElement.style.overflow = "hidden";
 
     [[CPNotificationCenter defaultCenter]
         postNotificationName:CPPlatformDidClearBodyElementNotification

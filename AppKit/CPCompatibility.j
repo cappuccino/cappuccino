@@ -65,8 +65,6 @@ CPInputTypeCanBeChangedFeature          = 1 << 25;
 CPHTML5DragAndDropSourceYOffBy1         = 1 << 26;
 
 
-
-
 var USER_AGENT                          = "",
     PLATFORM_ENGINE                     = CPUnknownBrowserEngine,
     PLATFORM_FEATURES                   = 0;
@@ -75,7 +73,7 @@ var USER_AGENT                          = "",
 
 PLATFORM_FEATURES |= CPInputTypeCanBeChangedFeature;
 
-if (typeof window != "undfined" && typeof window.navigator != "undefined")
+if (typeof window !== "undefined" && typeof window.navigator !== "undefined")
     USER_AGENT = window.navigator.userAgent;
 
 // Opera
@@ -207,11 +205,11 @@ if (USER_AGENT.indexOf("Mac") !== -1)
 
     CPPlatformActionKeyMask = CPCommandKeyMask;
 
-    CPUndoKeyEquivalent = @"Z";
+    CPUndoKeyEquivalent = @"z";
     CPRedoKeyEquivalent = @"Z";
 
     CPUndoKeyEquivalentModifierMask = CPCommandKeyMask;
-    CPRedoKeyEquivalentModifierMask = CPCommandKeyMask | CPShiftKeyMask;
+    CPRedoKeyEquivalentModifierMask = CPCommandKeyMask;
 }
 else
 {
@@ -220,8 +218,8 @@ else
 
     CPPlatformActionKeyMask = CPControlKeyMask;
 
-    CPUndoKeyEquivalent = @"Z";
-    CPRedoKeyEquivalent = @"Y";
+    CPUndoKeyEquivalent = @"z";
+    CPRedoKeyEquivalent = @"y";
 
     CPUndoKeyEquivalentModifierMask = CPControlKeyMask;
     CPRedoKeyEquivalentModifierMask = CPControlKeyMask;

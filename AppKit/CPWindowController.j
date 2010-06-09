@@ -322,25 +322,6 @@
     return _documents;
 }
 
-- (void)setViewController:(CPViewController)aViewController
-{
-    var containerView = [self viewControllerContainerView] || [[self window] contentView],
-        view = [_viewController view],
-        frame = view ? [view frame] : [containerView bounds];
-
-    [view removeFromSuperview];
-
-    _viewController = aViewController;
-
-    view = [_viewController view];
-
-    if (view)
-    {
-        [view setFrame:frame];
-        [containerView addSubview:view];
-    }
-}
-
 - (void)setViewControllerContainerView:(CPView)aView
 {
     _viewControllerContainerView = aView;

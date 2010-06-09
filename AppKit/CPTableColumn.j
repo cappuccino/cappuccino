@@ -50,7 +50,7 @@ CPTableColumnUserResizingMask   = 1 << 1;
     CPSortDescriptor    _sortDescriptorPrototype;
     BOOL                _isHidden;
     CPString            _headerToolTip;
-    
+
     BOOL _disableResizingPosting @accessors(property=disableResizingPosting);
 }
 
@@ -72,18 +72,23 @@ CPTableColumnUserResizingMask   = 1 << 1;
         _maxWidth = 1000000.0;
         _resizingMask = CPTableColumnAutoresizingMask | CPTableColumnUserResizingMask;
         _disableResizingPosting = NO;
-        
+
         [self setIdentifier:anIdentifier];
 
         var header = [[_CPTableColumnHeaderView alloc] initWithFrame:CGRectMakeZero()];
         [self setHeaderView:header];
-        
+
         var textDataView = [CPTextField new];
-        [textDataView setLineBreakMode:CPLineBreakByTruncatingTail];
-        [textDataView setValue:[CPColor colorWithHexString:@"333333"] forThemeAttribute:@"text-color"];
-        [textDataView setValue:[CPColor whiteColor] forThemeAttribute:@"text-color" inState:CPThemeStateHighlighted];
-        [textDataView setValue:[CPFont boldSystemFontOfSize:12] forThemeAttribute:@"font" inState:CPThemeStateHighlighted];
-        [textDataView setValue:CGInsetMake(4.0, 8.0, 0.0, 8.0) forThemeAttribute:@"content-inset"];
+
+        [textDataView setValue:[CPColor colorWithRed:51.0 / 255.0 green:51.0 / 255.0 blue:51.0 / 255.0 alpha:1.0] 
+          forThemeAttribute:"text-color"];
+
+        [textDataView setValue:[CPColor whiteColor] forThemeAttribute:@"text-color" inState:CPThemeStateSelectedDataView];
+        [textDataView setLineBreakMode:CPLineBreakByTruncatingTail];  
+        [textDataView setValue:[CPFont boldSystemFontOfSize:12.0] forThemeAttribute:@"font" inState:CPThemeStateSelectedDataView];
+        [textDataView setValue:CPCenterVerticalTextAlignment forThemeAttribute:@"vertical-alignment"];
+        [textDataView setValue:CGInsetMake(0.0, 0.0, 0.0, 5.0) forThemeAttribute:@"content-inset"];
+
         [self setDataView:textDataView];
     }
 
@@ -123,19 +128,19 @@ CPTableColumnUserResizingMask   = 1 << 1;
     {
         var index = [[tableView tableColumns] indexOfObjectIdenticalTo:self],
             dirtyTableColumnRangeIndex = tableView._dirtyTableColumnRangeIndex;
-            
+
         if (dirtyTableColumnRangeIndex < 0)
             tableView._dirtyTableColumnRangeIndex = index;
         else
             tableView._dirtyTableColumnRangeIndex = MIN(index,  tableView._dirtyTableColumnRangeIndex);
-        
+
         var rows = tableView._exposedRows,
-            columns = [CPIndexSet indexSetWithIndexesInRange:CPMakeRange(index, [tableView._exposedColumns lastIndex] - index + 1)];        
-        
+            columns = [CPIndexSet indexSetWithIndexesInRange:CPMakeRange(index, [tableView._exposedColumns lastIndex] - index + 1)];
+
         // FIXME: Would be faster with some sort of -setNeedsDisplayInColumns: that updates a dirtyTableColumnForDisplay cache; then marked columns would relayout their data views at display time.
         [tableView _layoutDataViewsInRows:rows columns:columns];
         [tableView tile];
-        
+
         if (!_disableResizingPosting)
             [self _postDidResizeNotificationWithOldWidth:oldWidth];
     }
@@ -292,7 +297,7 @@ CPTableColumnUserResizingMask   = 1 << 1;
     // unarchive the data view cache
     var newDataView = [CPKeyedUnarchiver unarchiveObjectWithData:_dataViewData[dataViewUID]];
     newDataView.identifier = dataViewUID;
-    
+
     return newDataView;
 }
 
@@ -325,7 +330,7 @@ CPTableColumnUserResizingMask   = 1 << 1;
 }
 
 /*
-    Returns YES if the user can edit cells associated with the receiver by double-clicking the 
+    Returns YES if the user can edit cells associated with the receiver by double-clicking the
     column in the NSTableView, NO otherwise.
 */
 - (BOOL)isEditable
@@ -348,7 +353,14 @@ CPTableColumnUserResizingMask   = 1 << 1;
 
 - (void)setHidden:(BOOL)shouldBeHidden
 {
+    shouldBeHidden = !!shouldBeHidden
+    if (_isHidden === shouldBeHidden)
+        return;
+    
     _isHidden = shouldBeHidden;
+    
+    [[self headerView] setHidden:shouldBeHidden];
+    [[self tableView] _tableColumnVisibilityDidChange:self];
 }
 
 - (BOOL)isHidden
@@ -359,7 +371,7 @@ CPTableColumnUserResizingMask   = 1 << 1;
 //Setting Tool Tips
 
 /*
-    Sets the tooltip string that is displayed when the cursor pauses over the 
+    Sets the tooltip string that is displayed when the cursor pauses over the
     header cell of the receiver.
 */
 - (void)setHeaderToolTip:(CPString)aToolTip
@@ -382,13 +394,83 @@ CPTableColumnUserResizingMask   = 1 << 1;
 
 @end
 
+@implementation CPTableColumn (Bindings)
+
+- (void)bind:(CPString)aBinding toObject:(id)anObject withKeyPath:(CPString)aKeyPath options:(CPDictionary)options
+{
+    [super bind:aBinding toObject:anObject withKeyPath:aKeyPath options:options];
+
+    if (![aBinding isEqual:@"someListOfExceptedBindings(notAcceptedBindings)"])
+        [[self tableView] _establishBindingsIfUnbound:anObject];
+}
+
+- (void)prepareDataView:(CPView)aDataView forRow:(unsigned)aRow
+{
+    var bindingsDictionary = [CPKeyValueBinding allBindingsForObject:self],
+        keys = [bindingsDictionary allKeys];
+
+    for (var i=0, count = [keys count]; i<count; i++)
+    {
+        var bindingName = keys[i],
+            bindingPath = [aDataView _replacementKeyPathForBinding:bindingName],
+            bindingInfo = [bindingsDictionary objectForKey:bindingName]._info,
+            destination = [bindingInfo objectForKey:CPObservedObjectKey],
+            keyPath = [bindingInfo objectForKey:CPObservedKeyPathKey],
+            dotIndex = keyPath.lastIndexOf("."),
+            value;
+
+        if (dotIndex === CPNotFound)
+            value = [[destination valueForKeyPath:keyPath] objectAtIndex:aRow];
+        else
+        {
+            /*
+                Optimize the prototypical use case where the key path describes a value
+                in an array. Without this optimization, we call CPArray's valueForKey
+                which generates as many values as objects in the array, of which we then
+                pick one and throw away the rest.
+
+                The optimization is to get the array and access the value directly. This
+                turns the operation into a single access regardless of how long the model
+                array is.
+            */
+
+            var firstPart = keyPath.substring(0, dotIndex),
+                secondPart = keyPath.substring(dotIndex+1),
+                firstValue = [destination valueForKeyPath:firstPart];
+
+            if ([firstValue isKindOfClass:CPArray])
+                value = [[firstValue objectAtIndex:aRow] valueForKeyPath:secondPart];
+            else
+                value = [[firstValue valueForKeyPath:secondPart] objectAtIndex:aRow];
+        }
+
+        // console.log(bindingName+" : "+keyPath+" : "+aRow+" : "+[[destination valueForKeyPath:keyPath] objectAtIndex:aRow]);
+        [aDataView setValue:value forKey:bindingPath];
+    }
+}
+
+//- (void)objectValue
+//{
+//    return nil;
+//}
+
+- (void)setValue:(CPArray)content
+{
+    [[self tableView] reloadData];
+}
+
+@end
+
 var CPTableColumnIdentifierKey   = @"CPTableColumnIdentifierKey",
     CPTableColumnHeaderViewKey   = @"CPTableColumnHeaderViewKey",
     CPTableColumnDataViewKey     = @"CPTableColumnDataViewKey",
     CPTableColumnWidthKey        = @"CPTableColumnWidthKey",
     CPTableColumnMinWidthKey     = @"CPTableColumnMinWidthKey",
     CPTableColumnMaxWidthKey     = @"CPTableColumnMaxWidthKey",
-    CPTableColumnResizingMaskKey = @"CPTableColumnResizingMaskKey";
+    CPTableColumnResizingMaskKey = @"CPTableColumnResizingMaskKey",
+    CPTableColumnIsHiddenkey     = @"CPTableColumnIsHiddenKey",
+    CPSortDescriptorPrototypeKey = @"CPSortDescriptorPrototypeKey";
+    CPTableColumnIsHiddenkey     = @"CPTableColumnIsHiddenKey";
 
 @implementation CPTableColumn (CPCoding)
 
@@ -410,6 +492,9 @@ var CPTableColumnIdentifierKey   = @"CPTableColumnIdentifierKey",
         [self setHeaderView:[aCoder decodeObjectForKey:CPTableColumnHeaderViewKey]];
 
         _resizingMask  = [aCoder decodeBoolForKey:CPTableColumnResizingMaskKey];
+        _isHidden = [aCoder decodeBoolForKey:CPTableColumnIsHiddenkey];
+        
+        _sortDescriptorPrototype = [aCoder decodeObjectForKey:CPSortDescriptorPrototypeKey];
     }
 
     return self;
@@ -427,6 +512,9 @@ var CPTableColumnIdentifierKey   = @"CPTableColumnIdentifierKey",
     [aCoder encodeObject:_dataView forKey:CPTableColumnDataViewKey];
 
     [aCoder encodeObject:_resizingMask forKey:CPTableColumnResizingMaskKey];
+    [aCoder encodeBool:_isHidden forKey:CPTableColumnIsHiddenkey];
+    
+    [aCoder encodeObject:_sortDescriptorPrototype forKey:CPSortDescriptorPrototypeKey];
 }
 
 @end

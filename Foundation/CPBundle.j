@@ -20,10 +20,9 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-@import "CPObject.j"
 @import "CPDictionary.j"
+@import "CPObject.j"
 
-@import "CPURLRequest.j"
 
 /*!
     @class CPBundle
@@ -31,7 +30,7 @@
     @brief Groups information about an application's code & resources.
 */
 
-var CPBundlesForPaths = { };
+var CPBundlesForURLStrings = { };
 
 @implementation CPBundle : CPObject
 {
@@ -39,24 +38,32 @@ var CPBundlesForPaths = { };
     id          _delegate;
 }
 
++ (CPBundle)bundleWithURL:(CPURL)aURL
+{
+    return [[self alloc] initWithURL:aURL];
+}
+
 + (CPBundle)bundleWithPath:(CPString)aPath
 {
-    return [[self alloc] initWithPath:aPath];
+    return [self bundleWithURL:aPath];
 }
 
 + (CPBundle)bundleForClass:(Class)aClass
 {
-    return [self bundleWithPath:CFBundle.bundleForClass(aClass).path()];
+    return [self bundleWithURL:CFBundle.bundleForClass(aClass).bundleURL()];
 }
 
 + (CPBundle)mainBundle
 {
-    return [CPBundle bundleWithPath:CFBundle.mainBundle().path()];
+    return [CPBundle bundleWithPath:CFBundle.mainBundle().bundleURL()];
 }
 
-- (id)initWithPath:(CPString)aPath
+- (id)initWithURL:(CPURL)aURL
 {
-    var existingBundle = CPBundlesForPaths[aPath];
+    aURL = new CFURL(aURL);
+
+    var URLString = aURL.absoluteString(),
+        existingBundle = CPBundlesForURLStrings[URLString];
 
     if (existingBundle)
         return existingBundle;
@@ -65,11 +72,16 @@ var CPBundlesForPaths = { };
 
     if (self)
     {
-        _bundle = new CFBundle(aPath);
-        CPBundlesForPaths[aPath] = self;
+        _bundle = new CFBundle(aURL);
+        CPBundlesForURLStrings[URLString] = self;
     }
 
     return self;
+}
+
+- (id)initWithPath:(CPString)aPath
+{
+    return [self initWithURL:aPath];
 }
 
 - (Class)classNamed:(CPString)aString
@@ -77,19 +89,24 @@ var CPBundlesForPaths = { };
     // ???
 }
 
+- (CPURL)bundleURL
+{
+    return _bundle.bundleURL();
+}
+
 - (CPString)bundlePath
 {
-    return _bundle.path();
+    return [[self bundleURL] path];
 }
 
 - (CPString)resourcePath
 {
-    var resourcePath = [self bundlePath];
+    return [[self resourceURL] path];
+}
 
-    if (resourcePath.length)
-        resourcePath += '/';
-
-    return resourcePath + "Resources";
+- (CPURL)resourceURL
+{
+    return _bundle.resourcesDirectoryURL();
 }
 
 - (Class)principalClass
@@ -113,7 +130,7 @@ var CPBundlesForPaths = { };
 
 - (id)objectForInfoDictionaryKey:(CPString)aKey
 {
-    return _bundle.valueForInfoDictionary(aKey);
+    return _bundle.valueForInfoDictionaryKey(aKey);
 }
 
 //
@@ -143,7 +160,7 @@ var CPBundlesForPaths = { };
         count = [staticResources count];
 
     for (; index < count; ++index)
-        [staticResourceURLs addObject:[CPURL URLWithString:staticResources[index].path()]];
+        [staticResourceURLs addObject:staticResources[index].URL()];
 
     return staticResourceURLs;
 }

@@ -30,7 +30,7 @@ EventDispatcher.prototype.addEventListener = function(/*String*/ anEventName, /*
 {
     var eventListenersForEventNames = this._eventListenersForEventNames;
 
-    if (!hasOwnProperty.call(this._eventListenersForEventNames, anEventName))
+    if (!hasOwnProperty.call(eventListenersForEventNames, anEventName))
     {
         var eventListenersForEventName = [];
         eventListenersForEventNames[anEventName] = eventListenersForEventName;
@@ -54,7 +54,7 @@ EventDispatcher.prototype.removeEventListener = function(/*String*/ anEventName,
     if (!hasOwnProperty.call(eventListenersForEventNames, anEventName))
         return;
 
-    var eventListenersForEventName = eventListenersForEventNames[anEventName].
+    var eventListenersForEventName = eventListenersForEventNames[anEventName],
         index = eventListenersForEventName.length;
 
     while (index--)

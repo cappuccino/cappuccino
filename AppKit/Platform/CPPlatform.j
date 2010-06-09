@@ -58,6 +58,10 @@
 {
 }
 
++ (void)deactivate
+{
+}
+
 + (void)hideOtherApplications:(id)aSender
 {
 }

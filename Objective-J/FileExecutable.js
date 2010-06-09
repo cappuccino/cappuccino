@@ -20,33 +20,35 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-var FileExecutablesForPaths = { };
+var FileExecutablesForURLStrings = { };
 
-function FileExecutable(/*String*/ aPath)
+function FileExecutable(/*CFURL|String*/ aURL)
 {
-    var existingFileExecutable = FileExecutablesForPaths[aPath];
+    aURL = makeAbsoluteURL(aURL);
+
+    var URLString = aURL.absoluteString(),
+        existingFileExecutable = FileExecutablesForURLStrings[URLString];
 
     if (existingFileExecutable)
         return existingFileExecutable;
 
-    FileExecutablesForPaths[aPath] = this;
+    FileExecutablesForURLStrings[URLString] = this;
 
-    var fileContents = rootResource.nodeAtSubPath(aPath).contents(),
+    var fileContents = StaticResource.resourceAtURL(aURL).contents(),
         executable = NULL,
-        extension = FILE.extension(aPath);
+        extension = aURL.pathExtension();
 
     if (fileContents.match(/^@STATIC;/))
-        executable = decompile(fileContents, aPath);
+        executable = decompile(fileContents, aURL);
 
-    else if (extension === ".j" || extension === "")
-        executable = exports.preprocess(fileContents, aPath, Preprocessor.OBJJ_PREPROCESSOR_DEBUG_SYMBOLS);
+    else if (extension === "j" || !extension)
+        executable = exports.preprocess(fileContents, aURL, Preprocessor.Flags.IncludeDebugSymbols);
 
     else
-        executable = new Executable(fileContents, [], aPath);
+        executable = new Executable(fileContents, [], aURL);
 
-    Executable.apply(this, [executable.code(), executable.fileDependencies(), aPath, executable._function]);
+    Executable.apply(this, [executable.code(), executable.fileDependencies(), aURL, executable._function]);
 
-    this._path = aPath;
     this._hasExecuted = NO;
 }
 
@@ -57,11 +59,12 @@ FileExecutable.prototype = new Executable();
 #ifdef COMMONJS
 FileExecutable.allFileExecutables = function()
 {
-    var fileExecutables = [];
+    var URLString,
+        fileExecutables = [];
 
-    for (path in FileExecutablesForPaths)
-        if (hasOwnProperty.call(FileExecutablesForPaths, path))
-            fileExecutables.push(FileExecutablesForPaths[path]);
+    for (URLString in FileExecutablesForURLStrings)
+        if (hasOwnProperty.call(FileExecutablesForURLStrings, URLString))
+            fileExecutables.push(FileExecutablesForURLStrings[URLString]);
 
     return fileExecutables;
 }
@@ -77,17 +80,16 @@ FileExecutable.prototype.execute = function(/*BOOL*/ shouldForce)
     Executable.prototype.execute.call(this);
 }
 
-FileExecutable.prototype.path = function()
-{
-    return this._path;
-}
+DISPLAY_NAME(FileExecutable.prototype.execute);
 
 FileExecutable.prototype.hasExecuted = function()
 {
     return this._hasExecuted;
 }
 
-function decompile(/*String*/ aString, /*String*/ aPath)
+DISPLAY_NAME(FileExecutable.prototype.hasExecuted);
+
+function decompile(/*String*/ aString, /*CFURL*/ aURL)
 {
     var stream = new MarkedStream(aString);
 /*
@@ -106,11 +108,29 @@ function decompile(/*String*/ aString, /*String*/ aPath)
             code += text;
 
         else if (marker === MARKER_IMPORT_STD)
-            dependencies.push(new FileDependency(FILE.normal(text), NO));
+            dependencies.push(new FileDependency(new CFURL(text), NO));
 
         else if (marker === MARKER_IMPORT_LOCAL)
-            dependencies.push(new FileDependency(FILE.normal(text), YES));
+            dependencies.push(new FileDependency(new CFURL(text), YES));
     }
 
-    return new Executable(code, dependencies, aPath);
+    var fn = FileExecutable._lookupCachedFunction(aURL)
+    if (fn)
+        return new Executable(code, dependencies, aURL, fn);
+
+    return new Executable(code, dependencies, aURL);
+}
+
+var FunctionCache = { };
+
+FileExecutable._cacheFunction = function(/*CFURL|String*/ aURL, /*Function*/ fn)
+{
+    aURL = typeof aURL === "string" ? aURL : aURL.absoluteString();
+    FunctionCache[aURL] = fn;
+}
+
+FileExecutable._lookupCachedFunction = function(/*CFURL|String*/ aURL)
+{
+    aURL = typeof aURL === "string" ? aURL : aURL.absoluteString();
+    return FunctionCache[aURL];
 }

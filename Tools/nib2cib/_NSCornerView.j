@@ -37,7 +37,14 @@
 
 - (id)initWithCoder:(CPCoder)aCoder
 {
-    return [self NS_initWithCoder:aCoder];
+    self =  [super NS_initWithCoder:aCoder];
+    if (self)
+    {
+        _frame.size.height = 23.0;
+        _bounds.size.height = 23.0;
+    }
+
+    return self;
 }
 
 - (Class)classForKeyedArchiver

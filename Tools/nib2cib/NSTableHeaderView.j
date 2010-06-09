@@ -29,7 +29,13 @@
     if (self = [super NS_initWithCoder:aCoder])
     {
         _tableView = [aCoder decodeObjectForKey:"NSTableView"];
-        [self setBackgroundColor:[CPColor colorWithPatternImage:CPAppKitImage("tableview-headerview.png", CGSizeMake(1.0, 22.0))]];
+
+        // change the default height
+        if (_bounds.size.height === 17)
+        {
+            _bounds.size.height = 23;
+            _frame.size.height = 23;
+        }
     }
     
     return self;

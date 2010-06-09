@@ -36,6 +36,7 @@ var _CPWindowViewResizeIndicatorImage = nil;
     CGSize      _resizeIndicatorOffset;
     
     CPView      _toolbarView;
+    CGSize      _toolbarOffset;
 //    BOOL        _isAnimatingToolbar;
 
     
@@ -80,8 +81,8 @@ var _CPWindowViewResizeIndicatorImage = nil;
     if (self)
     {
         _styleMask = aStyleMask;
-        _resizeIndicatorOffset = CGSizeMake(0.0, 0.0);
-        _toolbarOffset = CGSizeMake(0.0, 0.0);
+        _resizeIndicatorOffset = CGSizeMakeZero();
+        _toolbarOffset = CGSizeMakeZero();
     }
     
     return self;
@@ -269,7 +270,7 @@ var _CPWindowViewResizeIndicatorImage = nil;
 
 - (CGSize)toolbarOffset
 {
-    return CGSizeMakeZero();
+    return _toolbarOffset;
 }
 
 - (CPColor)toolbarLabelColor

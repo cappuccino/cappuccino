@@ -22,7 +22,8 @@
 
 @import "CPSet.j"
 
-/*! 
+
+/*!
     @class CPCountedSet
     @ingroup foundation
     @brief An mutable collection which may contain a specific object
@@ -37,11 +38,11 @@
 {
     if (!_counts)
         _counts = {};
-    
+
     [super addObject:anObject];
-    
+
     var UID = [anObject UID];
-    
+
     if (_counts[UID] === undefined)
         _counts[UID] = 1;
     else
@@ -52,16 +53,16 @@
 {
     if (!_counts)
         return;
-        
+
     var UID = [anObject UID];
-    
+
     if (_counts[UID] === undefined)
         return;
-    
+
     else
     {
         --_counts[UID];
-        
+
         if (_counts[UID] === 0)
         {
             delete _counts[UID];
@@ -84,17 +85,17 @@
 {
     if (!_counts)
         _counts = {};
-    
+
     var UID = [anObject UID];
-    
+
     if (_counts[UID] === undefined)
         return 0;
-    
+
     return _counts[UID];
 }
 
 
-/* 
+/*
 
 Eventually we should see what these are supposed to do, and then do that.
 

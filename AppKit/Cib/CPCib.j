@@ -60,7 +60,7 @@ var CPCibObjectDataKey  = @"CPCibObjectDataKey";
 
     if (self)
     {
-        _data = [CPURLConnection sendSynchronousRequest:[CPURLRequest requestWithURL:aURL] returningResponse:nil error:nil];
+        _data = [CPURLConnection sendSynchronousRequest:[CPURLRequest requestWithURL:aURL] returningResponse:nil];
         _awakenCustomResources = YES;
     }
 
@@ -171,12 +171,17 @@ var CPCibObjectDataKey  = @"CPCibObjectDataKey";
 
 - (void)connection:(CPURLConnection)aConnection didReceiveData:(CPString)data
 {
+    // FIXME: Why aren't we getting connection:didFailWithError:
+    if (!data)
+        return [self connection:aConnection didFailWithError:nil];
+
     _data = [CPData dataWithRawString:data];
 }
 
 - (void)connection:(CPURLConnection)aConnection didFailWithError:(CPError)anError
 {
-    alert("cib: connection failed.");
+    if ([_loadDelegate respondsToSelector:@selector(cibDidFailToLoad:)])
+        [_loadDelegate cibDidFailToLoad:self];
 
     _loadDelegate = nil;
 }

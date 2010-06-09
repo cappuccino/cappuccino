@@ -61,7 +61,7 @@
 - (void)forwardInvocation:(CPInvocation)anInvocation
 {
     [CPException raise:CPInvalidArgumentException
-                reason:@"-methodSignatureForSelector: called on abstract CPProxy class."];
+                reason:@"-forwardInvocation: called on abstract CPProxy class."];
 }
 
 // FIXME: This should be moved to the runtime?
@@ -133,7 +133,7 @@
    return [invocation returnValue];
 }
 
--(BOOL)isMemberOfClass:(Class)aClass
+- (BOOL)isMemberOfClass:(Class)aClass
 {
     var signature = [self methodSignatureForSelector:_cmd],
         invocation = [CPInvocation invocationWithMethodSignature:signature];

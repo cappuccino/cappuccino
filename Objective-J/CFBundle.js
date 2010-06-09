@@ -27,33 +27,39 @@ var CFBundleUnloaded                = 0,
     CFBundleLoadingSpritedImages    = 1 << 3,
     CFBundleLoaded                  = 1 << 4;
 
-var CFBundlesForPaths   = { },
-    CFBundlesForClasses = { },
-    CFCacheBuster = new Date().getTime();
+var CFBundlesForURLStrings  = { },
+    CFBundlesForClasses     = { },
+    CFCacheBuster       = new Date().getTime(),
+    CFTotalBytesLoaded  = 0,
+    CPApplicationSizeInBytes = 0;
 
-GLOBAL(CFBundle) = function(/*String*/ aPath)
+GLOBAL(CFBundle) = function(/*CFURL|String*/ aURL)
 {
-    aPath = FILE.absolute(aPath);
+    aURL = makeAbsoluteURL(aURL).asDirectoryPathURL();
 
-    var existingBundle = CFBundlesForPaths[aPath];
+    var URLString = aURL.absoluteString(),
+        existingBundle = CFBundlesForURLStrings[URLString];
 
     if (existingBundle)
         return existingBundle;
 
-    CFBundlesForPaths[aPath] = this;
+    CFBundlesForURLStrings[URLString] = this;
 
-    this._path = aPath;
-    this._name = FILE.basename(aPath);
+    this._bundleURL = aURL;
+    this._resourcesDirectoryURL = new CFURL("Resources/", aURL);
+
     this._staticResource = NULL;
+    this._isValid = NO;
 
     this._loadStatus = CFBundleUnloaded;
     this._loadRequests = [];
 
-    this._infoDictionary = NULL;
-    this._URIMap = { };
+    this._infoDictionary = new CFDictionary();
 
     this._eventDispatcher = new EventDispatcher(this);
 }
+
+DISPLAY_NAME(CFBundle);
 
 CFBundle.environments = function()
 {
@@ -61,27 +67,38 @@ CFBundle.environments = function()
     return ENVIRONMENTS;
 }
 
-CFBundle.bundleContainingPath = function(/*String*/ aPath)
+DISPLAY_NAME(CFBundle.environments);
+
+CFBundle.bundleContainingURL = function(/*CFURL|String*/ aURL)
 {
-    aPath = FILE.absolute(aPath);
+    aURL = new CFURL(".", makeAbsoluteURL(aURL));
 
-    while (aPath !== "/")
+    var previousURLString,
+        URLString = aURL.absoluteString();
+
+    while (!previousURLString || previousURLString !== URLString)
     {
-        var bundle = CFBundlesForPaths[aPath];
+        var bundle = CFBundlesForURLStrings[URLString];
 
-        if (bundle)
+        if (bundle && bundle._isValid)
             return bundle;
 
-        aPath = FILE.dirname(aPath);
+        aURL = new CFURL("..", aURL);
+        previousURLString = URLString;
+        URLString = aURL.absoluteString();
     }
 
     return NULL;
 }
 
+DISPLAY_NAME(CFBundle.bundleContainingURL);
+
 CFBundle.mainBundle = function()
 {
-    return new CFBundle(FILE.cwd());
+    return new CFBundle(mainBundleURL);
 }
+
+DISPLAY_NAME(CFBundle.mainBundle);
 
 function addClassToBundle(aClass, aBundle)
 {
@@ -94,46 +111,77 @@ CFBundle.bundleForClass = function(/*Class*/ aClass)
     return CFBundlesForClasses[aClass.name] || CFBundle.mainBundle();
 }
 
-CFBundle.prototype.path = function()
+DISPLAY_NAME(CFBundle.bundleForClass);
+
+CFBundle.prototype.bundleURL = function()
 {
-    return this._path;
+    return this._bundleURL;
 }
+
+DISPLAY_NAME(CFBundle.prototype.bundleURL);
+
+CFBundle.prototype.resourcesDirectoryURL = function()
+{
+    return this._resourcesDirectoryURL;
+}
+
+DISPLAY_NAME(CFBundle.prototype.resourcesDirectoryURL);
+
+CFBundle.prototype.resourceURL = function(/*String*/ aResourceName, /*String*/ aType, /*String*/ aSubDirectory)
+ {
+    if (aType)
+        aResourceName = aResourceName + "." + aType;
+
+    if (aSubDirectory)
+        aResourceName = aSubDirectory + "/" + aResourceName;
+
+    var resourceURL = (new CFURL(aResourceName, this.resourcesDirectoryURL())).mappedURL();
+
+    return resourceURL.absoluteURL();
+}
+
+DISPLAY_NAME(CFBundle.prototype.resourceURL);
+
+CFBundle.prototype.mostEligibleEnvironmentURL = function()
+{
+    if (this._mostEligibleEnvironmentURL === undefined)
+        this._mostEligibleEnvironmentURL = new CFURL(this.mostEligibleEnvironment() + ".environment/", this.bundleURL());
+
+    return this._mostEligibleEnvironmentURL;
+}
+
+DISPLAY_NAME(CFBundle.prototype.mostEligibleEnvironmentURL);
+
+CFBundle.prototype.executableURL = function()
+{
+    if (this._executableURL === undefined)
+    {
+        var executableSubPath = this.valueForInfoDictionaryKey("CPBundleExecutable");
+
+        if (!executableSubPath)
+            this._executableURL = NULL;
+        else
+            this._executableURL = new CFURL(executableSubPath, this.mostEligibleEnvironmentURL());
+    }
+
+    return this._executableURL;
+}
+
+DISPLAY_NAME(CFBundle.prototype.executableURL);
 
 CFBundle.prototype.infoDictionary = function()
 {
     return this._infoDictionary;
 }
 
-CFBundle.prototype.valueForInfoDictionary = function(/*String*/ aKey)
+DISPLAY_NAME(CFBundle.prototype.infoDictionary);
+
+CFBundle.prototype.valueForInfoDictionaryKey = function(/*String*/ aKey)
 {
     return this._infoDictionary.valueForKey(aKey);
 }
 
-CFBundle.prototype.resourcesPath = function()
-{
-    return FILE.join(this.path(), "Resources");
-}
-
-CFBundle.prototype.pathForResource = function(/*String*/ aPath)
-{
-    var mappedPath = this._URIMap[FILE.join("Resources", aPath)];
-
-    if (mappedPath)
-        return mappedPath;
-
-    // If not, return the trivial path.
-    return FILE.join(this.resourcesPath(), aPath);
-}
-
-CFBundle.prototype.executablePath = function()
-{
-    var executableSubPath = this._infoDictionary.valueForKey("CPBundleExecutable");
-
-    if (executableSubPath)
-        return FILE.join(this.path(), this.mostEligibleEnvironment() + ".environment", executableSubPath);
-
-    return NULL;
-}
+DISPLAY_NAME(CFBundle.prototype.valueForInfoDictionaryKey);
 
 CFBundle.prototype.hasSpritedImages = function()
 {
@@ -148,10 +196,14 @@ CFBundle.prototype.hasSpritedImages = function()
     return NO;
 }
 
+DISPLAY_NAME(CFBundle.prototype.hasSpritedImages);
+
 CFBundle.prototype.environments = function()
 {
     return this._infoDictionary.valueForKey("CPBundleEnvironments") || ["ObjJ"];
 }
+
+DISPLAY_NAME(CFBundle.prototype.environments);
 
 CFBundle.prototype.mostEligibleEnvironment = function(/*Array*/ environments)
 {
@@ -176,10 +228,14 @@ CFBundle.prototype.mostEligibleEnvironment = function(/*Array*/ environments)
     return NULL;
 }
 
+DISPLAY_NAME(CFBundle.prototype.mostEligibleEnvironment);
+
 CFBundle.prototype.isLoading = function()
 {
     return this._loadStatus & CFBundleLoading;
 }
+
+DISPLAY_NAME(CFBundle.prototype.isLoading);
 
 CFBundle.prototype.load = function(/*BOOL*/ shouldExecute)
 {
@@ -188,30 +244,30 @@ CFBundle.prototype.load = function(/*BOOL*/ shouldExecute)
 
     this._loadStatus = CFBundleLoading | CFBundleLoadingInfoPlist;
 
-    var self = this;
+    var self = this,
+        bundleURL = this.bundleURL(),
+        parentURL = new CFURL("..", bundleURL);
 
-    rootResource.resolveSubPath(FILE.dirname(self.path()), YES, function(aStaticResource)
+    if (parentURL.absoluteString() === bundleURL.absoluteString())
+        parentURL = parentURL.schemeAndAuthority();
+
+    StaticResource.resolveResourceAtURL(parentURL, YES, function(aStaticResource)
     {
-        var path = self.path();
+        var resourceName = bundleURL.absoluteURL().lastPathComponent();
 
-        // If this bundle exists at the root path, no need to create a node.
-        if (path === "/")
-            self._staticResource = rootResource;
-
-        else
-        {
-            var name = FILE.basename(path);
-
-            self._staticResource = aStaticResource._children[name];
-
-            if (!self._staticResource)
-                self._staticResource = new StaticResource(name, aStaticResource, YES, NO);
-        }
+        self._staticResource =  aStaticResource._children[resourceName] ||
+                                new StaticResource(bundleURL, aStaticResource, YES, NO);
 
         function onsuccess(/*Event*/ anEvent)
         {
             self._loadStatus &= ~CFBundleLoadingInfoPlist;
-            self._infoDictionary = anEvent.request.responsePropertyList();
+
+            var infoDictionary = anEvent.request.responsePropertyList();
+
+            self._isValid = !!infoDictionary || CFBundle.mainBundle() === self;
+
+            if (infoDictionary)
+                self._infoDictionary = infoDictionary;
 
             if (!self._infoDictionary)
             {
@@ -220,19 +276,25 @@ CFBundle.prototype.load = function(/*BOOL*/ shouldExecute)
                 return;
             }
 
+            if (self === CFBundle.mainBundle() && self.valueForInfoDictionaryKey("CPApplicationSize"))
+                CPApplicationSizeInBytes = self.valueForInfoDictionaryKey("CPApplicationSize").valueForKey("executable") || 0;
+
             loadExecutableAndResources(self, shouldExecute);
         }
 
         function onfailure()
         {
+            self._isValid = CFBundle.mainBundle() === self;
             self._loadStatus = CFBundleUnloaded;
 
-            finishBundleLoadingWithError(self, new Error("Could not load bundle at \"" + path + "\""));
+            finishBundleLoadingWithError(self, new Error("Could not load bundle at \"" + self.bundleURL() + "\""));
         }
 
-        new FileRequest(FILE.join(path, "Info.plist"), onsuccess, onfailure);
+        new FileRequest(new CFURL("Info.plist", self.bundleURL()), onsuccess, onfailure);
     });
 }
+
+DISPLAY_NAME(CFBundle.prototype.load);
 
 function finishBundleLoadingWithError(/*CFBundle*/ aBundle, /*Event*/ anError)
 {
@@ -274,6 +336,12 @@ function loadExecutableAndResources(/*Bundle*/ aBundle, /*BOOL*/ shouldExecute)
 
     function success()
     {
+        if ((typeof CPApp === "undefined" || !CPApp || !CPApp._finishedLaunching) &&
+             typeof OBJJ_PROGRESS_CALLBACK === "function" && CPApplicationSizeInBytes)
+        {
+            OBJJ_PROGRESS_CALLBACK(MAX(MIN(1.0, CFTotalBytesLoaded / CPApplicationSizeInBytes), 0.0), CPApplicationSizeInBytes, aBundle.path())
+        }
+
         if (aBundle._loadStatus === CFBundleLoading)
             aBundle._loadStatus = CFBundleLoaded;
         else
@@ -285,13 +353,13 @@ function loadExecutableAndResources(/*Bundle*/ aBundle, /*BOOL*/ shouldExecute)
 
         function complete()
         {
+
             aBundle._eventDispatcher.dispatchEvent(
             {
                 type:"load",
                 bundle:aBundle
             });
         }
-
         if (shouldExecute)
             executeBundle(aBundle, complete);
         else
@@ -301,16 +369,19 @@ function loadExecutableAndResources(/*Bundle*/ aBundle, /*BOOL*/ shouldExecute)
 
 function loadExecutableForBundle(/*Bundle*/ aBundle, success, failure)
 {
-    if (!aBundle.executablePath())
+    var executableURL = aBundle.executableURL();
+
+    if (!executableURL)
         return;
 
     aBundle._loadStatus |= CFBundleLoadingExecutable;
 
-    new FileRequest(aBundle.executablePath(), function(/*Event*/ anEvent)
+    new FileRequest(executableURL, function(/*Event*/ anEvent)
     {
         try
         {
-            decompileStaticFile(aBundle, anEvent.request.responseText(), aBundle.executablePath());
+            CFTotalBytesLoaded += anEvent.request.responseText().length;
+            decompileStaticFile(aBundle, anEvent.request.responseText(), executableURL);
             aBundle._loadStatus &= ~CFBundleLoadingExecutable;
             success();
         }
@@ -321,6 +392,23 @@ function loadExecutableForBundle(/*Bundle*/ aBundle, success, failure)
     }, failure);
 }
 
+function spritedImagesTestURLStringForBundle(/*Bundle*/ aBundle)
+{
+    return "mhtml:" + new CFURL("MHTMLTest.txt", aBundle.mostEligibleEnvironmentURL());
+}
+
+function spritedImagesURLForBundle(/*Bundle*/ aBundle)
+{
+    if (CFBundleSupportedSpriteType === CFBundleDataURLSpriteType)
+        return new CFURL("dataURLs.txt", aBundle.mostEligibleEnvironmentURL());
+
+    if (CFBundleSupportedSpriteType === CFBundleMHTMLSpriteType ||
+        CFBundleSupportedSpriteType === CFBundleMHTMLUncachedSpriteType)
+        return new CFURL("MHTMLPaths.txt", aBundle.mostEligibleEnvironmentURL());
+
+    return NULL;
+}
+
 function loadSpritedImagesForBundle(/*Bundle*/ aBundle, success, failure)
 {
     if (!aBundle.hasSpritedImages())
@@ -329,31 +417,33 @@ function loadSpritedImagesForBundle(/*Bundle*/ aBundle, success, failure)
     aBundle._loadStatus |= CFBundleLoadingSpritedImages;
 
     if (!CFBundleHasTestedSpriteSupport())
-        return CFBundleTestSpriteSupport(spritedImagesTestPathForBundle(aBundle), function()
+        return CFBundleTestSpriteSupport(spritedImagesTestURLStringForBundle(aBundle), function()
         {
             loadSpritedImagesForBundle(aBundle, success, failure);
         });
 
-    var spritedImagesPath = spritedImagesPathForBundle(aBundle);
+    var spritedImagesURL = spritedImagesURLForBundle(aBundle);
 
-    if (!spritedImagesPath)
+    if (!spritedImagesURL)
     {
         aBundle._loadStatus &= ~CFBundleLoadingSpritedImages;
         return success();
     }
 
-    new FileRequest(spritedImagesPath, function(/*Event*/ anEvent)
+    new FileRequest(spritedImagesURL, function(/*Event*/ anEvent)
     {
         try
         {
-            decompileStaticFile(aBundle, anEvent.request.responseText(), spritedImagesPath);
+            CFTotalBytesLoaded += anEvent.request.responseText().length;
+            decompileStaticFile(aBundle, anEvent.request.responseText(), spritedImagesURL);
             aBundle._loadStatus &= ~CFBundleLoadingSpritedImages;
-            success();
         }
         catch(anException)
         {
             failure(anException);
         }
+
+        success();
     }, failure);
 }
 
@@ -378,6 +468,29 @@ function CFBundleTestSpriteSupport(/*String*/ MHTMLPath, /*Function*/ aCallback)
 
     if (CFBundleSpriteSupportListeners.length > 1)
         return;
+
+    CFBundleSpriteSupportListeners.push(function()
+    {
+        var size = 0,
+            sizeDictionary = CFBundle.mainBundle().valueForInfoDictionaryKey("CPApplicationSize");
+
+        if (!sizeDictionary)
+            return;
+
+        switch (CFBundleSupportedSpriteType)
+        {
+            case CFBundleDataURLSpriteType:
+                size = sizeDictionary.valueForKey("data");
+                break;
+
+            case CFBundleMHTMLSpriteType:
+            case CFBundleMHTMLUncachedSpriteType:
+                size = sizeDictionary.valueForKey("mhtml");
+                break;
+        }
+
+        CPApplicationSizeInBytes += size;
+    })
 
     CFBundleTestSpriteTypes([
         CFBundleDataURLSpriteType,
@@ -427,45 +540,9 @@ function CFBundleTestSpriteTypes(/*Array*/ spriteTypes)
     image.src = spriteTypes[1];
 }
 
-function mhtmlBasePath()
-{
-#ifdef BROWSER
-    //FIXME: URL stuff is kind of broken
-    return window.location.protocol + "//" + window.location.hostname + (window.location.port ? (":" + window.location.port) : "");
-#else
-    return "";
-#endif
-}
-
-function spritedImagesTestPathForBundle(/*Bundle*/ aBundle)
-{
-    return "mhtml:" + mhtmlBasePath() + FILE.join(aBundle.path(), aBundle.mostEligibleEnvironment() + ".environment", "MHTMLTest.txt");
-}
-
-function spritedImagesPathForBundle(/*Bundle*/ aBundle)
-{
-    if (CFBundleSupportedSpriteType === CFBundleDataURLSpriteType)
-        return FILE.join(aBundle.path(), aBundle.mostEligibleEnvironment() + ".environment", "dataURLs.txt");
-
-    if (CFBundleSupportedSpriteType === CFBundleMHTMLSpriteType || CFBundleSupportedSpriteType === CFBundleMHTMLUncachedSpriteType)
-        return mhtmlBasePath() + FILE.join(aBundle.path(), aBundle.mostEligibleEnvironment() + ".environment", "MHTMLPaths.txt");
-
-    return NULL;
-}
-
-CFBundle.dataContentsAtPath = function(/*String*/ aPath)
-{
-    var data = new CFMutableData();
-
-    data.setRawString(rootResource.nodeAtSubPath(aPath).contents());
-
-    return data;
-}
-
 function executeBundle(/*Bundle*/ aBundle, /*Function*/ aCallback)
 {
-    var staticResources = [aBundle._staticResource],
-        resourcesPath = aBundle.resourcesPath();
+    var staticResources = [aBundle._staticResource];
 
     function executeStaticResources(index)
     {
@@ -478,25 +555,25 @@ function executeBundle(/*Bundle*/ aBundle, /*Function*/ aCallback)
 
             if (staticResource.isFile())
             {
-                var executable = new FileExecutable(staticResource.path());
+                var executable = new FileExecutable(staticResource.URL());
 
                 if (executable.hasLoadedFileDependencies())
                     executable.execute();
 
                 else
                 {
-                    executable.addEventListener("dependenciesload", function()
+                    executable.loadFileDependencies(function()
                     {
                         executeStaticResources(index);
                     });
-                    executable.loadFileDependencies();
+
                     return;
                 }
             }
             else //if (staticResource.isDirectory())
             {
                 // We don't want to execute resources.
-                if (staticResource.path() === aBundle.resourcesPath())
+                if (staticResource.URL().absoluteString() === aBundle.resourcesDirectoryURL().absoluteString())
                     continue;
 
                 var children = staticResource.children();
@@ -526,13 +603,13 @@ function decompileStaticFile(/*Bundle*/ aBundle, /*String*/ aString, /*String*/ 
     var stream = new MarkedStream(aString);
 
     if (stream.magicNumber() !== STATIC_MAGIC_NUMBER)
-        throw new Error("Could not read static file: "+aPath);
+        throw new Error("Could not read static file: " + aPath);
 
     if (stream.version() !== "1.0")
-        throw new Error("Could not read static file: "+aPath);
+        throw new Error("Could not read static file: " + aPath);
 
     var marker,
-        bundlePath = aBundle.path(),
+        bundleURL = aBundle.bundleURL(),
         file = NULL;
 
     while (marker = stream.getMarker())
@@ -541,35 +618,37 @@ function decompileStaticFile(/*Bundle*/ aBundle, /*String*/ aString, /*String*/ 
 
         if (marker === MARKER_PATH)
         {
-            var absolutePath = FILE.join(bundlePath, text),
-                parent = rootResource.nodeAtSubPath(FILE.dirname(absolutePath), YES);
+            var fileURL = new CFURL(text, bundleURL),
+                parent = StaticResource.resourceAtURL(new CFURL(".", fileURL), YES);
 
-            file = new StaticResource(FILE.basename(absolutePath), parent, NO, YES);
+            file = new StaticResource(fileURL, parent, NO, YES);
         }
 
         else if (marker === MARKER_URI)
         {
-            var URI = stream.getString();
+            var URL = new CFURL(text, bundleURL),
+                mappedURLString = stream.getString();
 
-            if (URI.toLowerCase().indexOf("mhtml:") === 0)
+            if (mappedURLString.indexOf("mhtml:") === 0)
             {
-                URI = "mhtml:" + mhtmlBasePath() + FILE.join(bundlePath, URI.substr("mhtml:".length));
+                mappedURLString = "mhtml:" + new CFURL(mappedURLString.substr("mhtml:".length), bundleURL);
 
                 if (CFBundleSupportedSpriteType === CFBundleMHTMLUncachedSpriteType)
                 {
-                    var exclamationIndex = URI.indexOf("!"),
-                        firstPart = URI.substring(0, exclamationIndex),
-                        lastPart = URI.substring(exclamationIndex);
+                    var exclamationIndex = mappedURLString.indexOf("!"),
+                        firstPart = mappedURLString.substring(0, exclamationIndex),
+                        lastPart = mappedURLString.substring(exclamationIndex);
 
-                    URI = firstPart + "?" + CFCacheBuster + lastPart;
+                    mappedURLString = firstPart + "?" + CFCacheBuster + lastPart;
                 }
             }
-            aBundle._URIMap[text] = URI;
+
+            CFURL.setMappedURLForURL(URL, new CFURL(mappedURLString));
 
             // The unresolved directories must not be bundles.
-            var parent = rootResource.nodeAtSubPath(FILE.join(bundlePath, FILE.dirname(text)), YES);
+            var parent = StaticResource.resourceAtURL(new CFURL(".", URL), YES);
 
-            new StaticResource(FILE.basename(text), parent, NO, YES);
+            new StaticResource(URL, parent, NO, YES);
         }
 
         else if (marker === MARKER_TEXT)
@@ -584,12 +663,34 @@ CFBundle.prototype.addEventListener = function(/*String*/ anEventName, /*Functio
     this._eventDispatcher.addEventListener(anEventName, anEventListener);
 }
 
+DISPLAY_NAME(CFBundle.prototype.addEventListener);
+
 CFBundle.prototype.removeEventListener = function(/*String*/ anEventName, /*Function*/ anEventListener)
 {
     this._eventDispatcher.removeEventListener(anEventName, anEventListener);
 }
 
+DISPLAY_NAME(CFBundle.prototype.removeEventListener);
+
 CFBundle.prototype.onerror = function(/*Event*/ anEvent)
 {
     throw anEvent.error;
+}
+
+DISPLAY_NAME(CFBundle.prototype.onerror);
+
+CFBundle.prototype.bundlePath = function()
+{
+    return this._bundleURL.absoluteURL().path();
+}
+
+CFBundle.prototype.path = function()
+{
+    CPLog.warn("CFBundle.prototype.path is deprecated, use CFBundle.prototype.bundlePath instead.");
+    return this.bundlePath.apply(this, arguments);
+}
+
+CFBundle.prototype.pathForResource = function(aResource)
+{
+    return this.resourceURL(aResource).absoluteString();
 }

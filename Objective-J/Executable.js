@@ -20,23 +20,30 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+
 var ExecutableUnloadedFileDependencies  = 0,
     ExecutableLoadingFileDependencies   = 1,
-    ExecutableLoadedFileDependencies    = 2;
+    ExecutableLoadedFileDependencies    = 2,
+    AnonymousExecutableCount            = 0;
 
-function Executable(/*String*/ aCode, /*Array*/ fileDependencies, /*String*/ aScope, /*Function*/ aFunction)
+function Executable(/*String*/ aCode, /*Array*/ fileDependencies, /*CFURL|String*/ aURL, /*Function*/ aFunction)
 {
     if (arguments.length === 0)
         return this;
 
     this._code = aCode;
     this._function = aFunction || NULL;
-    this._scope = aScope || "(Anonymous)";
+    this._URL = makeAbsoluteURL(aURL || new CFURL("(Anonymous" + (AnonymousExecutableCount++) + ")"));
 
     this._fileDependencies = fileDependencies;
-    this._fileDependencyLoadStatus = ExecutableUnloadedFileDependencies;
 
-    this._eventDispatcher = new EventDispatcher(this);
+    if (fileDependencies.length)
+    {
+        this._fileDependencyStatus = ExecutableUnloadedFileDependencies;
+        this._fileDependencyCallbacks = [];
+    }
+    else
+        this._fileDependencyStatus = ExecutableLoadedFileDependencies;
 
     if (this._function)
         return;
@@ -48,8 +55,15 @@ exports.Executable = Executable;
 
 Executable.prototype.path = function()
 {
-    return FILE.join(FILE.cwd(), "(Anonymous)");
+    return this.URL().path();
 }
+
+Executable.prototype.URL = function()
+{
+    return this._URL;
+}
+
+DISPLAY_NAME(Executable.prototype.URL);
 
 Executable.prototype.functionParameters = function()
 {
@@ -64,6 +78,8 @@ Executable.prototype.functionParameters = function()
     return functionParameters;
 }
 
+DISPLAY_NAME(Executable.prototype.functionParameters);
+
 Executable.prototype.functionArguments = function()
 {
     var functionArguments = [global, this.fileExecuter(), this.fileImporter()];
@@ -74,6 +90,8 @@ Executable.prototype.functionArguments = function()
 
     return functionArguments;
 }
+
+DISPLAY_NAME(Executable.prototype.functionArguments);
 
 #ifdef COMMONJS
 Executable.setCommonJSParameters = function()
@@ -115,11 +133,12 @@ Executable.prototype.toMarkedString = function()
 Executable.prototype.execute = function()
 {
 #if EXECUTION_LOGGING
-    CPLog("EXECUTION: " + this.path());
+    CPLog("EXECUTION: " + this.URL());
 #endif
     var oldContextBundle = CONTEXT_BUNDLE;
 
-    CONTEXT_BUNDLE = CFBundle.bundleContainingPath(this.path());
+    // FIXME: Should we have stored this?
+    CONTEXT_BUNDLE = CFBundle.bundleContainingURL(this.URL());
 
     var result = this._function.apply(global, this.functionArguments());
 
@@ -128,10 +147,14 @@ Executable.prototype.execute = function()
     return result;
 }
 
+DISPLAY_NAME(Executable.prototype.execute);
+
 Executable.prototype.code = function()
 {
     return this._code;
 }
+
+DISPLAY_NAME(Executable.prototype.code);
 
 Executable.prototype.setCode = function(code)
 {
@@ -143,266 +166,293 @@ Executable.prototype.setCode = function(code)
     if (typeof system !== "undefined" && system.engine === "rhino")
     {
         code = "function(" + parameters + "){" + code + "/**/\n}";
-        this._function = Packages.org.mozilla.javascript.Context.getCurrentContext().compileFunction(window, code, this._scope, 0, NULL);
+        this._function = Packages.org.mozilla.javascript.Context.getCurrentContext().compileFunction(window, code, this.URL().absoluteString(), 0, NULL);
     }
     else
     {
 #endif
+#if DEBUG
     // "//@ sourceURL=" at the end lets us name our eval'd files for debuggers, etc.
     // * WebKit:  http://pmuellr.blogspot.com/2009/06/debugger-friendly.html
     // * Firebug: http://blog.getfirebug.com/2009/08/11/give-your-eval-a-name-with-sourceurl/
     //if (YES) {
-        code += "/**/\n//@ sourceURL=" + this._scope;
-        this._function = new Function(parameters, code);
+        var absoluteString = this.URL().absoluteString();
+
+        code += "/**/\n//@ sourceURL=" + absoluteString;
     //} else {
     //    // Firebug only does it for "eval()", not "new Function()". Ugh. Slower.
     //    var functionText = "(function(){"+GET_CODE(aFragment)+"/**/\n})\n//@ sourceURL="+GET_FILE(aFragment).path;
     //    compiled = eval(functionText);
     //}
-    this._function.displayName = this._scope;
+#endif
+        this._function = new Function(parameters, code);
+#if DEBUG
+    this._function.displayName = absoluteString;
+#endif
 #if COMMONJS
     }
 #endif
 }
+
+DISPLAY_NAME(Executable.prototype.setCode);
 
 Executable.prototype.fileDependencies = function()
 {
     return this._fileDependencies;
 }
 
-Executable.prototype.scope = function()
-{
-    return this._scope;
-}
+DISPLAY_NAME(Executable.prototype.fileDependencies);
 
 Executable.prototype.hasLoadedFileDependencies = function()
 {
-    return this._fileDependencyLoadStatus === ExecutableLoadedFileDependencies;
+    return this._fileDependencyStatus === ExecutableLoadedFileDependencies;
 }
-var globalIteration = 0;
 
-Executable.prototype.loadFileDependencies = function()
+DISPLAY_NAME(Executable.prototype.hasLoadedFileDependencies);
+
+var fileDependencyLoadCount = 0,
+    fileDependencyExecutables = [],
+    fileDependencyMarkers = { };
+
+Executable.prototype.loadFileDependencies = function(aCallback)
 {
-#if DEPENDENCY_LOGGING
-    CPLog("DEPENDENCY: initiated by " + this.scope());
-#endif
-    if (this._fileDependencyLoadStatus !== ExecutableUnloadedFileDependencies)
-        return;
+    var status = this._fileDependencyStatus;
 
-    this._fileDependencyLoadStatus = ExecutableLoadingFileDependencies;
-
-    var searchedPaths = [{ }, { }],
-        fileExecutableSearches = new CFMutableDictionary(),
-        incompleteFileExecutableSearches = new CFMutableDictionary(),
-        loadingExecutables = { };
-
-    function searchForFileDependencies(/*Executable*/ anExecutable)
+    if (aCallback)
     {
-        var executables = [anExecutable],
-            executableIndex = 0,
-            executableCount = executables.length;
+        if (status === ExecutableLoadedFileDependencies)
+            return aCallback();
 
-        for (; executableIndex < executableCount; ++executableIndex)
-        {
-            var executable = executables[executableIndex];
-
-            if (executable.hasLoadedFileDependencies())
-                continue;
-
-            var executablePath = executable.path();
-
-            loadingExecutables[executablePath] = executable;
-
-            var cwd = FILE.dirname(executablePath),
-                fileDependencies = executable.fileDependencies(),
-                fileDependencyIndex = 0,
-                fileDependencyCount = fileDependencies.length;
-
-            for (; fileDependencyIndex < fileDependencyCount; ++fileDependencyIndex)
-            {
-                var fileDependency = fileDependencies[fileDependencyIndex],
-                    isLocal = fileDependency.isLocal(),
-                    path = importablePath(fileDependency.path(), isLocal, cwd);
-
-                if (searchedPaths[isLocal ? 1 : 0][path])
-                    continue;
-
-                searchedPaths[isLocal ? 1 : 0][path] = YES;
-
-                var fileExecutableSearch = new FileExecutableSearch(path, isLocal),
-                    fileExecutableSearchUID = fileExecutableSearch.UID();
-
-                if (fileExecutableSearches.containsKey(fileExecutableSearchUID))
-                    continue;
-
-                fileExecutableSearches.setValueForKey(fileExecutableSearchUID, fileExecutableSearch);
-
-                if (fileExecutableSearch.isComplete())
-                {
-                    executables.push(fileExecutableSearch.result());
-                    ++executableCount;
-                }
-
-                else
-                {
-                    incompleteFileExecutableSearches.setValueForKey(fileExecutableSearchUID, fileExecutableSearch);
-
-                    fileExecutableSearch.addEventListener("complete", function( anEvent)
-                    {
-                        var fileExecutableSearch = anEvent.fileExecutableSearch;
-
-                        incompleteFileExecutableSearches.removeValueForKey(fileExecutableSearch.UID());
-
-                        searchForFileDependencies(fileExecutableSearch.result());
-                    });
-                }
-            }
-        }
-
-        if (incompleteFileExecutableSearches.count() > 0)
-#if !DEPENDENCY_LOGGING
-            return;
-#else
-        {
-            CPLog("DEPENDENCY: more dependencies: ");
-            CPLog(incompleteFileExecutableSearches.toString());
-            return;
-        }
-
-        CPLog("DEPENDENCY: Ended");
-#endif
-
-        for (var path in loadingExecutables)
-            if (hasOwnProperty.call(loadingExecutables, path))
-                loadingExecutables[path]._fileDependencyLoadStatus = ExecutableLoadedFileDependencies;
-
-        for (var path in loadingExecutables)
-            if (hasOwnProperty.call(loadingExecutables, path))
-            {
-                var executable = loadingExecutables[path];
-
-                executable._eventDispatcher.dispatchEvent(
-                {
-                    type:"dependenciesload",
-                    executable:executable
-                });
-            }
+        this._fileDependencyCallbacks.push(aCallback);
     }
 
-    searchForFileDependencies(this);
+    if (status === ExecutableUnloadedFileDependencies)
+    {
+        if (fileDependencyLoadCount)
+            throw "Can't load";
+
+        loadFileDependenciesForExecutable(this);
+    }
 }
 
-Executable.prototype.addEventListener = function(/*String*/ anEventName, /*Function*/ aListener)
+DISPLAY_NAME(Executable.prototype.loadFileDependencies);
+
+function loadFileDependenciesForExecutable(/*Executable*/ anExecutable)
 {
-    this._eventDispatcher.addEventListener(anEventName, aListener);
+    fileDependencyExecutables.push(anExecutable);
+    anExecutable._fileDependencyStatus = ExecutableLoadingFileDependencies;
+
+    var fileDependencies = anExecutable.fileDependencies(),
+        index = 0,
+        count = fileDependencies.length,
+        referenceURL = anExecutable.referenceURL(),
+        referenceURLString = referenceURL.absoluteString(),
+        fileExecutableSearcher = anExecutable.fileExecutableSearcher();
+
+    fileDependencyLoadCount += count;
+
+    for (; index < count; ++index)
+    {
+        var fileDependency = fileDependencies[index],
+            isQuoted = fileDependency.isLocal(),
+            URL = fileDependency.URL(),
+            marker = (isQuoted && (referenceURLString + " ") || "") + URL;
+
+        if (fileDependencyMarkers[marker])
+        {
+            if (--fileDependencyLoadCount === 0)
+                fileExecutableDependencyLoadFinished();
+
+            continue;
+        }
+
+        fileDependencyMarkers[marker] = YES;
+        fileExecutableSearcher(URL, isQuoted, fileExecutableSearchFinished);
+    }
 }
 
-Executable.prototype.removeEventListener = function(/*String*/ anEventName, /*Function*/ aListener)
+function fileExecutableSearchFinished(/*FileExecutable*/ aFileExecutable)
 {
-    this._eventDispatcher.removeEventListener(anEventName, aListener);
+    --fileDependencyLoadCount;
+
+    if (aFileExecutable._fileDependencyStatus === ExecutableUnloadedFileDependencies)
+        loadFileDependenciesForExecutable(aFileExecutable);
+
+    else if (fileDependencyLoadCount === 0)
+        fileExecutableDependencyLoadFinished();
 }
 
-function importablePath(/*String*/ aPath, /*BOOL*/ isLocal, /*String*/ aCWD)
+function fileExecutableDependencyLoadFinished()
 {
-    aPath = FILE.normal(aPath);
+    var executables = fileDependencyExecutables,
+        index = 0,
+        count = executables.length;
 
-    if (FILE.isAbsolute(aPath))
-        return aPath;
+    fileDependencyExecutables = [];
 
-    if (isLocal)
-        aPath = FILE.normal(FILE.join(aCWD, aPath));
+    for (; index < count; ++index)
+        executables[index]._fileDependencyStatus = ExecutableLoadedFileDependencies;
 
-    return aPath;
+    for (index = 0; index < count; ++index)
+    {
+        var executable = executables[index],
+            callbacks = executable._fileDependencyCallbacks,
+            callbackIndex = 0,
+            callbackCount = callbacks.length;
+
+        for (; callbackIndex < callbackCount; ++callbackIndex)
+            callbacks[callbackIndex]();
+
+        executable._fileDependencyCallbacks = [];
+    }
 }
+
+Executable.prototype.referenceURL = function()
+{
+    if (this._referenceURL === undefined)
+        this._referenceURL = new CFURL(".", this.URL());
+
+    return this._referenceURL;
+}
+
+DISPLAY_NAME(Executable.prototype.referenceURL);
 
 Executable.prototype.fileImporter = function()
 {
-    return Executable.fileImporterForPath(FILE.dirname(this.path()));
+    return Executable.fileImporterForURL(this.referenceURL());
 }
+
+DISPLAY_NAME(Executable.prototype.fileImporter);
 
 Executable.prototype.fileExecuter = function()
 {
-    return Executable.fileExecuterForPath(FILE.dirname(this.path()));
+    return Executable.fileExecuterForURL(this.referenceURL());
 }
 
-var cachedFileExecutersForPaths = { };
+DISPLAY_NAME(Executable.prototype.fileExecuter);
 
-Executable.fileExecuterForPath = function(/*String*/ referencePath)
+Executable.prototype.fileExecutableSearcher = function()
 {
-    referencePath = FILE.normal(referencePath);
-
-    var fileExecuter = cachedFileExecutersForPaths[referencePath];
-
-    if (!fileExecuter)
-    {
-        fileExecuter = function(/*String*/ aPath, /*BOOL*/ isLocal, /*BOOL*/ shouldForce)
-        {
-            aPath = importablePath(aPath, isLocal, referencePath);
-
-            var fileExecutableSearch = new FileExecutableSearch(aPath, isLocal),
-                fileExecutable = fileExecutableSearch.result();
-
-            if (0 && !fileExecutable.hasLoadedFileDependencies())
-                throw "No executable loaded for file at path " + aPath;
-
-            fileExecutable.execute(shouldForce);
-        }
-
-        cachedFileExecutersForPaths[referencePath] = fileExecuter;
-    }
-
-    return fileExecuter;
+    return Executable.fileExecutableSearcherForURL(this.referenceURL());
 }
 
-var cachedImportersForPaths = { };
+DISPLAY_NAME(Executable.prototype.fileExecutableSearcher);
 
-Executable.fileImporterForPath = function(/*String*/ referencePath)
+var cachedFileExecuters = { };
+
+Executable.fileExecuterForURL = function(/*CFURL|String*/ aURL)
 {
-    referencePath = FILE.normal(referencePath);
+    var referenceURL = makeAbsoluteURL(aURL),
+        referenceURLString = referenceURL.absoluteString(),
+        cachedFileExecuter = cachedFileExecuters[referenceURLString];
 
-    var cachedImporter = cachedImportersForPaths[referencePath];
-
-    if (!cachedImporter)
+    if (!cachedFileExecuter)
     {
-        cachedImporter = function(/*String*/ aPath, /*BOOL*/ isLocal, /*Function*/ aCallback)
+        cachedFileExecuter = function(/*CFURL*/ aURL, /*BOOL*/ isQuoted, /*BOOL*/ shouldForce)
         {
-            aPath = importablePath(aPath, isLocal, referencePath);
-
-            var fileExecutableSearch = new FileExecutableSearch(aPath, isLocal);
-
-            function searchComplete(/*FileExecutableSearch*/ aFileExecutableSearch)
+            Executable.fileExecutableSearcherForURL(referenceURL)(aURL, isQuoted,
+            function(/*FileExecutable*/ aFileExecutable)
             {
-                var fileExecutable = aFileExecutableSearch.result(),
-                    fileExecuter = Executable.fileExecuterForPath(referencePath),
-                    executeAndCallback = function ()
-                    {
-                        fileExecuter(aPath, isLocal);
+                if (!aFileExecutable.hasLoadedFileDependencies())
+                    throw "No executable loaded for file at URL " + aURL;
 
-                        if (aCallback)
-                            aCallback();
-                    }
-
-                if (!fileExecutable.hasLoadedFileDependencies())
-                {
-                    fileExecutable.addEventListener("dependenciesload", executeAndCallback);
-                    fileExecutable.loadFileDependencies();
-                }
-                else
-                    executeAndCallback();
-            }
-
-            if (fileExecutableSearch.isComplete())
-                searchComplete(fileExecutableSearch);
-            else
-                fileExecutableSearch.addEventListener("complete", function(/*Event*/ anEvent)
-                {
-                    searchComplete(anEvent.fileExecutableSearch);
-                });
+                aFileExecutable.execute(shouldForce);
+            });
         }
 
-        cachedImportersForPaths[referencePath] = cachedImporter;
+        cachedFileExecuters[referenceURLString] = cachedFileExecuter;
     }
 
-    return cachedImporter;
+    return cachedFileExecuter;
 }
 
+DISPLAY_NAME(Executable.fileExecuterForURL);
+
+var cachedFileImporters = { };
+
+Executable.fileImporterForURL = function(/*CFURL|String*/ aURL)
+{
+    var referenceURL = makeAbsoluteURL(aURL),
+        referenceURLString = referenceURL.absoluteString(),
+        cachedFileImporter = cachedFileImporters[referenceURLString];
+
+    if (!cachedFileImporter)
+    {
+        cachedFileImporter = function(/*CFURL*/ aURL, /*BOOL*/ isQuoted, /*Function*/ aCallback)
+        {
+            // We make heavy use of URLs throughout this process, so cache them!
+            enableCFURLCaching();
+
+            Executable.fileExecutableSearcherForURL(referenceURL)(aURL, isQuoted,
+            function(/*FileExecutable*/ aFileExecutable)
+            {
+                aFileExecutable.loadFileDependencies(function()
+                {
+                    aFileExecutable.execute();
+
+                    // No more need to cache these.
+                    disableCFURLCaching();
+
+                    if (aCallback)
+                        aCallback();
+                });
+            });
+        }
+
+        cachedFileImporters[referenceURLString] = cachedFileImporter;
+    }
+
+    return cachedFileImporter;
+}
+
+DISPLAY_NAME(Executable.fileImporterForURL);
+
+var cachedFileExecutableSearchers = { },
+    cachedFileExecutableSearchResults = { };
+
+Executable.fileExecutableSearcherForURL = function(/*CFURL*/ referenceURL)
+{
+    var referenceURLString = referenceURL.absoluteString(),
+        cachedFileExecutableSearcher = cachedFileExecutableSearchers[referenceURLString],
+        cachedSearchResults = { };
+
+    if (!cachedFileExecutableSearcher)
+    {
+        cachedFileExecutableSearcher = function(/*CFURL*/ aURL, /*BOOL*/ isQuoted, /*Function*/ success)
+        {
+            var cacheUID = (isQuoted && referenceURL || "") + aURL,
+                cachedResult = cachedFileExecutableSearchResults[cacheUID];
+
+            if (cachedResult)
+                return completed(cachedResult);
+
+            var isAbsoluteURL = (aURL instanceof CFURL) && aURL.scheme();
+
+            if (isQuoted || isAbsoluteURL)
+            {
+                if (!isAbsoluteURL)
+                    aURL = new CFURL(aURL, referenceURL);
+
+                StaticResource.resolveResourceAtURL(aURL, NO, completed);
+            }
+            else
+                StaticResource.resolveResourceAtURLSearchingIncludeURLs(aURL, completed);
+
+            function completed(/*StaticResource*/ aStaticResource)
+            {
+                if (!aStaticResource)
+                    throw new Error("Could not load file at " + aURL);
+
+                cachedFileExecutableSearchResults[cacheUID] = aStaticResource;
+
+                success(new FileExecutable(aStaticResource.URL()));
+            }
+        };
+
+        cachedFileExecutableSearchers[referenceURLString] = cachedFileExecutableSearcher;
+    }
+
+    return cachedFileExecutableSearcher;
+}
+
+DISPLAY_NAME(Executable.fileExecutableSearcherForURL);

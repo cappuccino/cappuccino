@@ -20,7 +20,13 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#define GLOBAL(object) object
+#if DEBUG
+#define DISPLAY_NAME(name) name.displayName = #name
+#else
+#define DISPLAY_NAME(name)
+#endif
+
+#define GLOBAL(name) name
 
 #include "DebugOptions.js"
 #include "json2.js"
@@ -32,6 +38,7 @@
 #include "CFPropertyList.js"
 #include "CFDictionary.js"
 #include "CFData.js"
+#include "CFURL.js"
 #include "MarkedStream.js"
 #include "CFBundle.js"
 #include "StaticResource.js"
@@ -39,9 +46,9 @@
 #include "FileDependency.js"
 #include "Executable.js"
 #include "FileExecutable.js"
-#include "FileExecutableSearch.js"
 #include "Runtime.js"
-#if DEBUG
+#include "Eval.js"
+#if defined(DEBUG) || defined(COMMONJS)
 #include "Debug.js"
 #endif
 #include "Bootstrap.js"

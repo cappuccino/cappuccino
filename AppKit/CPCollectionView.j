@@ -30,16 +30,16 @@
 @import "CPCollectionViewItem.j"
 
 
-/*! 
+/*!
     @ingroup appkit
     @class CPCollectionView
 
-    This class displays an array as a grid of objects, where each object is represented by a view. 
-    The view is controlled by creating a CPCollectionViewItem and specifying its view, then 
+    This class displays an array as a grid of objects, where each object is represented by a view.
+    The view is controlled by creating a CPCollectionViewItem and specifying its view, then
     setting that item as the collection view prototype.
-    
+
     @par Delegate Methods
-    
+
     @delegate -(void)collectionViewDidChangeSelection:(CPCollectionView)collectionView;
     Called when the selection in the collection view has changed.
     @param collectionView the collection view who's selection changed
@@ -67,35 +67,35 @@
 {
     CPArray                 _content;
     CPArray                 _items;
-    
+
     CPData                  _itemData;
     CPCollectionViewItem    _itemPrototype;
     CPCollectionViewItem    _itemForDragging;
     CPMutableArray          _cachedItems;
-    
+
     unsigned                _maxNumberOfRows;
     unsigned                _maxNumberOfColumns;
-    
+
     CGSize                  _minItemSize;
     CGSize                  _maxItemSize;
 
     CPArray                 _backgroundColors;
 
     float                   _tileWidth;
-    
+
     BOOL                    _isSelectable;
     BOOL                    _allowsMultipleSelection;
     BOOL                    _allowsEmptySelection;
     CPIndexSet              _selectionIndexes;
-    
+
     CGSize                  _itemSize;
-    
+
     float                   _horizontalMargin;
     float                   _verticalMargin;
-    
+
     unsigned                _numberOfRows;
     unsigned                _numberOfColumns;
-    
+
     id                      _delegate;
 
     CPEvent                 _mouseDownEvent;
@@ -104,14 +104,14 @@
 - (id)initWithFrame:(CGRect)aFrame
 {
     self = [super initWithFrame:aFrame];
-    
+
     if (self)
     {
         _items = [];
         _content = [];
-        
+
         _cachedItems = [];
-        
+
         _itemSize = CGSizeMakeZero();
         _minItemSize = CGSizeMakeZero();
         _maxItemSize = CGSizeMakeZero();
@@ -120,12 +120,12 @@
 
         _verticalMargin = 5.0;
         _tileWidth = -1.0;
-        
+
         _selectionIndexes = [CPIndexSet indexSet];
         _allowsEmptySelection = YES;
         _isSelectable = YES;
     }
-    
+
     return self;
 }
 
@@ -196,8 +196,8 @@
 
 // Setting the Content
 /*!
-    Sets the content of the collection view to the content in \c anArray. 
-    This array can be of any type, and each element will be passed to the \c -setRepresentedObject: method.  
+    Sets the content of the collection view to the content in \c anArray.
+    This array can be of any type, and each element will be passed to the \c -setRepresentedObject: method.
     It's the responsibility of your custom collection view item to interpret the object.
     @param anArray the content array
 */
@@ -205,9 +205,9 @@
 {
     if (_content == anArray)
         return;
-    
+
     _content = anArray;
-    
+
     [self reloadContent];
 }
 
@@ -236,13 +236,13 @@
 {
     if (_isSelectable == isSelectable)
         return;
-    
+
     _isSelectable = isSelectable;
-    
+
     if (!_isSelectable)
     {
         var index = CPNotFound;
-        
+
         while ((index = [_selectionIndexes indexGreaterThanIndex:index]) != CPNotFound)
             [_items[index] setSelected:NO];
     }
@@ -299,19 +299,19 @@
 {
     if (_selectionIndexes == anIndexSet || !_isSelectable)
         return;
-    
+
     var index = CPNotFound;
-    
+
     while ((index = [_selectionIndexes indexGreaterThanIndex:index]) != CPNotFound)
         [_items[index] setSelected:NO];
-    
+
     _selectionIndexes = anIndexSet;
-    
+
     var index = CPNotFound;
-    
+
     while ((index = [_selectionIndexes indexGreaterThanIndex:index]) != CPNotFound)
         [_items[index] setSelected:YES];
-    
+
     if ([_delegate respondsToSelector:@selector(collectionViewDidChangeSelection:)])
         [_delegate collectionViewDidChangeSelection:self]
 }
@@ -326,10 +326,10 @@
 
 /* @ignore */
 - (void)reloadContent
-{   
+{
     // Remove current views
     var count = _items.length;
-    
+
     while (count--)
     {
         [[_items[count] view] removeFromSuperview];
@@ -337,7 +337,7 @@
 
         _cachedItems.push(_items[count]);
     }
-    
+
     _items = [];
 
     if (!_itemPrototype || !_content)
@@ -350,7 +350,7 @@
     for (; index < count; ++index)
     {
         _items.push([self newItemForRepresentedObject:_content[index]]);
-    
+
         [self addSubview:[_items[index] view]];
     }
 
@@ -365,49 +365,49 @@
 - (void)tile
 {
     var width = CGRectGetWidth([self bounds]);
-        
+
     if (![_content count] || width == _tileWidth)
         return;
-        
-    // We try to fit as many views per row as possible.  Any remaining space is then 
+
+    // We try to fit as many views per row as possible.  Any remaining space is then
     // either proportioned out to the views (if their minSize != maxSize) or used as
     // margin
     var itemSize = CGSizeMakeCopy(_minItemSize);
-    
+
     _numberOfColumns = MAX(1.0, FLOOR(width / itemSize.width));
-    
+
     if (_maxNumberOfColumns > 0)
         _numberOfColumns = MIN(_maxNumberOfColumns, _numberOfColumns);
-            
+
     var remaining = width - _numberOfColumns * itemSize.width,
         itemsNeedSizeUpdate = NO;
-        
+
     if (remaining > 0 && itemSize.width < _maxItemSize.width)
         itemSize.width = MIN(_maxItemSize.width, itemSize.width + FLOOR(remaining / _numberOfColumns));
-    
+
     // When we ONE column and a non-integral width, the FLOORing above can cause the item width to be smaller than the total width.
     if (_maxNumberOfColumns == 1 && itemSize.width < _maxItemSize.width && itemSize.width < width)
         itemSize.width = MIN(_maxItemSize.width, width);
-    
+
     if (!CGSizeEqualToSize(_itemSize, itemSize))
     {
         _itemSize = itemSize;
         itemsNeedSizeUpdate = YES;
     }
-    
+
     var index = 0,
         count = _items.length;
-    
+
     if (_maxNumberOfColumns > 0 && _maxNumberOfRows > 0)
         count = MIN(count, _maxNumberOfColumns * _maxNumberOfRows);
-    
+
     _numberOfRows = CEIL(count / _numberOfColumns);
 
     _horizontalMargin = FLOOR((width - _numberOfColumns * itemSize.width) / (_numberOfColumns + 1));
-        
+
     var x = _horizontalMargin,
         y = -itemSize.height;
-    
+
     for (; index < count; ++index)
     {
         if (index % _numberOfColumns == 0)
@@ -415,19 +415,28 @@
             x = _horizontalMargin;
             y += _verticalMargin + itemSize.height;
         }
-        
+
         var view = [_items[index] view];
-        
+
         [view setFrameOrigin:CGPointMake(x, y)];
-        
+
         if (itemsNeedSizeUpdate)
             [view setFrameSize:_itemSize];
-            
+
         x += itemSize.width + _horizontalMargin;
     }
-    
+
+    var superview = [self superview],
+        proposedHeight =  y + itemSize.height + _verticalMargin;
+
+    if ([superview isKindOfClass:[CPClipView class]])
+    {
+        var superviewSize = [superview bounds].size;
+        proposedHeight = MAX(superviewSize.height, proposedHeight);
+    }
+
     _tileWidth = width;
-    [self setFrameSize:CGSizeMake(width, y + itemSize.height + _verticalMargin)];
+    [self setFrameSize:CGSizeMake(width, proposedHeight)];
     _tileWidth = -1.0;
 }
 
@@ -445,9 +454,9 @@
 {
     if (_maxNumberOfRows == aMaxNumberOfRows)
         return;
-    
+
     _maxNumberOfRows = aMaxNumberOfRows;
-    
+
     [self tile];
 }
 
@@ -467,9 +476,9 @@
 {
     if (_maxNumberOfColumns == aMaxNumberOfColumns)
         return;
-    
+
     _maxNumberOfColumns = aMaxNumberOfColumns;
-    
+
     [self tile];
 }
 
@@ -506,9 +515,9 @@
 {
     if (CGSizeEqualToSize(_minItemSize, aSize))
         return;
-    
+
     _minItemSize = CGSizeMakeCopy(aSize);
-    
+
     [self tile];
 }
 
@@ -528,9 +537,9 @@
 {
     if (CGSizeEqualToSize(_maxItemSize, aSize))
         return;
-    
+
     _maxItemSize = CGSizeMakeCopy(aSize);
-    
+
     [self tile];
 }
 
@@ -582,14 +591,35 @@
         index = row * _numberOfColumns + column;
 
     if (index >= 0 && index < _items.length)
-        [self setSelectionIndexes:[CPIndexSet indexSetWithIndex:index]];
+    {
+        if (_allowsMultipleSelection && ([anEvent modifierFlags] & CPCommandKeyMask || [anEvent modifierFlags] & CPShiftKeyMask))
+        {
+            var indexes = [_selectionIndexes copy];
 
+            if ([indexes containsIndex:index])
+                [indexes removeIndex:index];
+            else
+                [indexes addIndex:index];
+        }
+        else
+            indexes = [CPIndexSet indexSetWithIndex:index];
+
+        [self setSelectionIndexes:indexes];
+    }
     else if (_allowsEmptySelection)
         [self setSelectionIndexes:[CPIndexSet indexSet]];
 }
 
 - (void)mouseDragged:(CPEvent)anEvent
 {
+    var locationInWindow = [anEvent locationInWindow],
+        mouseDownLocationInWindow = [_mouseDownEvent locationInWindow];
+
+    // FIXME: This is because Safari's drag hysteresis is 3px x 3px
+    if ((ABS(locationInWindow.x - mouseDownLocationInWindow.x) < 3) &&
+        (ABS(locationInWindow.y - mouseDownLocationInWindow.y) < 3))
+        return;
+
     if (![_delegate respondsToSelector:@selector(collectionView:dragTypesForItemsAtIndexes:)])
         return;
 
@@ -597,12 +627,14 @@
     if (![_selectionIndexes count])
         return;
 
+    if ([_delegate respondsToSelector:@selector(collectionView:canDragItemsAtIndexes:withEvent:)] &&
+        ![_delegate collectionView:self canDragItemsAtIndexes:_selectionIndexes withEvent:_mouseDownEvent])
+        return;
+
     // Set up the pasteboard
     var dragTypes = [_delegate collectionView:self dragTypesForItemsAtIndexes:_selectionIndexes];
 
     [[CPPasteboard pasteboardWithName:CPDragPboard] declareTypes:dragTypes owner:self];
-
-    var point = [self convertPoint:[anEvent locationInWindow] fromView:nil];
 
     if (!_itemForDragging)
         _itemForDragging = [self newItemForRepresentedObject:_content[[_selectionIndexes firstIndex]]];
@@ -644,9 +676,9 @@
 {
     if (_verticalMargin == aVerticalMargin)
         return;
-    
+
     _verticalMargin = aVerticalMargin;
-    
+
     [self tile];
 }
 
@@ -676,84 +708,104 @@
     return _delegate;
 }
 
+- (CPCollectionViewItem)itemAtIndex:(unsigned)anIndex
+{
+    return [_items objectAtIndex:anIndex];
+}
+
+- (CGRect)frameForItemAtIndex:(unsigned)anIndex
+{
+    return [[[self itemAtIndex:anIndex] view] frame];
+}
+
+- (CGRect)frameForItemsAtIndexes:(CPIndexSet)anIndexSet
+{
+    var indexArray = [],
+        frame = CGRectNull;
+
+    [anIndexSet getIndexes:indexArray maxCount:-1 inIndexRange:nil];
+
+    var index = 0,
+        count = [indexArray count];
+
+    for (; index < count; ++index)
+        frame = CGRectUnion(frame, [self frameForItemAtIndex:indexArray[index]]);
+
+    return frame;
+}
+
 @end
 
 @implementation CPCollectionView (KeyboardInteraction)
-
-- (CGRect)rectForItemAtIndex:(int)index
+- (CPIndexSet)_selectionForEvent:(CPEvent)anEvent withNewIndex:(int)anIndex direction:(int)aDirection
 {
-    // Don't re-compute anything just grab the current frame
-    // This allows subclasses to override tile without messing this up.
-    return [[_items[index] view] frame];
-}
-
-- (CGRect)rectForItemsAtIndexes:(CPIndexSet)indexSet
-{
-    var indexArray = [],
-        rect = nil;
-
-    [indexSet getIndexes:indexArray maxCount:-1 inIndexRange:nil];
-
-    for (var i = 0, count = indexArray.length; i < count; ++i)
+    if (_allowsMultipleSelection && [anEvent modifierFlags] & CPShiftKeyMask)
     {
-        var index = indexArray[i];
-        if (rect == nil)
-            rect = [self rectForItemAtIndex:index];
-        else
-            rect = CGRectUnion(rect, [self rectForItemAtIndex:index]);
-    }
+        var indexes = [_selectionIndexes copy],
+            bottomAnchor = [indexes firstIndex],
+            topAnchor = [indexes lastIndex];
 
-    return rect;
+        // if the direction is backward (-1) check with the bottom anchor
+        if (aDirection === -1)
+            [indexes addIndexesInRange:CPMakeRange(anIndex, bottomAnchor - anIndex + 1)];
+        else
+            [indexes addIndexesInRange:CPMakeRange(topAnchor, anIndex -  topAnchor + 1)];
+    }
+    else
+        indexes = [CPIndexSet indexSetWithIndex:anIndex];
+
+    return indexes;
 }
 
 - (void)_scrollToSelection
 {
-    var rect = [self rectForItemsAtIndexes:[self selectionIndexes]];
-    if (rect) 
-        [self scrollRectToVisible:rect];
+    var frame = [self frameForItemsAtIndexes:[self selectionIndexes]];
+
+    if (!CGRectIsNull(frame))
+        [self scrollRectToVisible:frame];
 }
 
 - (void)moveLeft:(id)sender
 {
     var index = [[self selectionIndexes] firstIndex];
-    if (index === CPNotFound) 
+    if (index === CPNotFound)
         index = [[self items] count];
 
     index = MAX(index - 1, 0);
 
-    [self setSelectionIndexes:[CPIndexSet indexSetWithIndex:index]];
+    [self setSelectionIndexes:[self _selectionForEvent:[CPApp currentEvent] withNewIndex:index direction:-1]];
     [self _scrollToSelection];
 }
 
 - (void)moveRight:(id)sender
 {
-    var index = MIN([[self selectionIndexes] firstIndex] + 1, [[self items] count]-1);
+    var index = MIN([[self selectionIndexes] lastIndex] + 1, [[self items] count]-1);
 
-    [self setSelectionIndexes:[CPIndexSet indexSetWithIndex:index]];
+    [self setSelectionIndexes:[self _selectionForEvent:[CPApp currentEvent] withNewIndex:index direction:1]];
     [self _scrollToSelection];
 }
 
 - (void)moveDown:(id)sender
 {
-    var index = MIN([[self selectionIndexes] firstIndex] + [self numberOfColumns], [[self items] count]-1);
+    var index = MIN([[self selectionIndexes] lastIndex] + [self numberOfColumns], [[self items] count]-1);
 
-    [self setSelectionIndexes:[CPIndexSet indexSetWithIndex:index]];
+    [self setSelectionIndexes:[self _selectionForEvent:[CPApp currentEvent] withNewIndex:index direction:1]];
     [self _scrollToSelection];
 }
 
 - (void)moveUp:(id)sender
 {
     var index = [[self selectionIndexes] firstIndex];
-    if (index == CPNotFound) 
+    if (index == CPNotFound)
         index = [[self items] count];
 
     index = MAX(0, index - [self numberOfColumns]);
 
-    [self setSelectionIndexes:[CPIndexSet indexSetWithIndex:index]];
+    [self setSelectionIndexes:[self _selectionForEvent:[CPApp currentEvent] withNewIndex:index direction:-1]];
     [self _scrollToSelection];
 }
 
-- (void)deleteBackwards:(id)sender
+- (void)deleteBackward:(id)sender
 {
     if ([[self delegate] respondsToSelector:@selector(collectionView:shouldDeleteItemsAtIndexes:)])
     {
@@ -771,6 +823,26 @@
 - (void)keyDown:(CPEvent)anEvent
 {
     [self interpretKeyEvents:[anEvent]];
+}
+
+@end
+
+@implementation CPCollectionView (Deprecated)
+
+- (CGRect)rectForItemAtIndex:(int)anIndex
+{
+    _CPReportLenientDeprecation([self class], _cmd, @selector(frameForItemAtIndex:));
+
+    // Don't re-compute anything just grab the current frame
+    // This allows subclasses to override tile without messing this up.
+    return [self frameForItemAtIndex:anIndex];
+}
+
+- (CGRect)rectForItemsAtIndexes:(CPIndexSet)anIndexSet
+{
+    _CPReportLenientDeprecation([self class], _cmd, @selector(frameForItemsAtIndexes:));
+
+    return [self frameForItemsAtIndexes:anIndexSet];
 }
 
 @end
@@ -796,20 +868,20 @@ var CPCollectionViewMinItemSizeKey      = @"CPCollectionViewMinItemSizeKey",
         _cachedItems = [];
 
         _itemSize = CGSizeMakeZero();
-        
+
         _minItemSize = [aCoder decodeSizeForKey:CPCollectionViewMinItemSizeKey] || CGSizeMakeZero();
         _maxItemSize = [aCoder decodeSizeForKey:CPCollectionViewMaxItemSizeKey] || CGSizeMakeZero();
-        
+
         _verticalMargin = [aCoder decodeFloatForKey:CPCollectionViewVerticalMarginKey];
-        
+
         _isSelectable = [aCoder decodeBoolForKey:CPCollectionViewSelectableKey];
 
         [self setBackgroundColors:[aCoder decodeObjectForKey:CPCollectionViewBackgroundColorsKey]];
-          
+
         _tileWidth = -1.0;
 
         _selectionIndexes = [CPIndexSet indexSet];
-        
+
         _allowsEmptySelection = YES;
     }
 
@@ -822,12 +894,12 @@ var CPCollectionViewMinItemSizeKey      = @"CPCollectionViewMinItemSizeKey",
 
     if (!CGSizeEqualToSize(_minItemSize, CGSizeMakeZero()))
       [aCoder encodeSize:_minItemSize forKey:CPCollectionViewMinItemSizeKey];
-    
+
     if (!CGSizeEqualToSize(_maxItemSize, CGSizeMakeZero()))
       [aCoder encodeSize:_maxItemSize forKey:CPCollectionViewMaxItemSizeKey];
-    
+
     [aCoder encodeBool:_isSelectable forKey:CPCollectionViewSelectableKey];
-    
+
     [aCoder encodeFloat:_verticalMargin forKey:CPCollectionViewVerticalMarginKey];
 
     [aCoder encodeObject:_backgroundColors forKey:CPCollectionViewBackgroundColorsKey];

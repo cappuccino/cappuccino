@@ -91,6 +91,16 @@ CFPropertyList.writePropertyListToFile = function(/*CFPropertyList*/ aPropertyLi
 {
     return FILE.write(aFilePath, CFPropertyList.stringFromPropertyList(aPropertyList, aFormat), { charset:"UTF-8" });
 }
+CFPropertyList.modifyPlist = function(/*String*/ aFilePath, /*Function*/ aCallback, /*String*/ aFormat)
+{
+    var string = FILE.read(aFilePath, { charset:"UTF-8" });
+    var format = CFPropertyList.sniffedFormatOfString(string);
+    var plist = CFPropertyList.propertyListFromString(string, format);
+
+    aCallback(plist);
+
+    CFPropertyList.writePropertyListToFile(plist, aFilePath, aFormat || format);
+}
 #endif
 
 function serializePropertyList(/*CFPropertyList*/ aPropertyList, /*Object*/ serializers)
@@ -564,7 +574,7 @@ CFPropertyList.propertyListFromXML = function(/*String | XMLNode*/ aStringOrXMLN
                                         break;
                                         
             case PLIST_DATA:            object = new CFMutableData();
-                                        object.bytes = FIRST_CHILD(XMLNode) ? base64_decode_to_array(CHILD_VALUE(XMLNode), YES) : [];
+                                        object.bytes = FIRST_CHILD(XMLNode) ? CFData.decodeBase64ToArray(CHILD_VALUE(XMLNode), YES) : [];
                                         break;
                                         
             default:                    throw new Error("*** " + NODE_NAME(XMLNode) + " tag not recognized in Plist.");

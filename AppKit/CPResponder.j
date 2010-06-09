@@ -23,15 +23,18 @@
 @import <Foundation/CPObject.j>
 
 
-CPDeleteKeyCode     = 8;
-CPTabKeyCode        = 9;
-CPReturnKeyCode     = 13;
-CPEscapeKeyCode     = 27;
-CPSpaceKeyCode      = 32;
-CPLeftArrowKeyCode  = 37;
-CPUpArrowKeyCode    = 38;
-CPRightArrowKeyCode = 39;
-CPDownArrowKeyCode  = 40;
+CPDeleteKeyCode         = 8;
+CPTabKeyCode            = 9;
+CPReturnKeyCode         = 13;
+CPEscapeKeyCode         = 27;
+CPSpaceKeyCode          = 32;
+CPPageUpKeyCode         = 33;
+CPPageDownKeyCode       = 34;
+CPLeftArrowKeyCode      = 37;
+CPUpArrowKeyCode        = 38;
+CPRightArrowKeyCode     = 39;
+CPDownArrowKeyCode      = 40;
+CPDeleteForwardKeyCode  = 46;
 
 /*!
     @ingroup appkit
@@ -106,6 +109,10 @@ CPDownArrowKeyCode  = 40;
 
         switch([event keyCode])
         {
+            case CPPageUpKeyCode:       [self doCommandBySelector:@selector(pageUp:)];
+                                        break;
+            case CPPageDownKeyCode:     [self doCommandBySelector:@selector(pageDown:)];
+                                        break;
             case CPLeftArrowKeyCode:    [self doCommandBySelector:@selector(moveLeft:)];
                                         break;
             case CPRightArrowKeyCode:   [self doCommandBySelector:@selector(moveRight:)];
@@ -147,6 +154,15 @@ CPDownArrowKeyCode  = 40;
 }
 
 /*!
+    Notifies the receiver that the user has clicked the right mouse down in its area.
+    @param anEvent contains information about the right click
+*/
+- (void)rightMouseDown:(CPEvent)anEvent
+{
+    [_nextResponder performSelector:_cmd withObject:anEvent];
+}
+
+/*!
     Notifies the receiver that the user has initiated a drag
     over it. A drag is a mouse movement while the left button is down.
     @param anEvent contains information about the drag
@@ -161,6 +177,15 @@ CPDownArrowKeyCode  = 40;
     @param anEvent contains information about the release
 */
 - (void)mouseUp:(CPEvent)anEvent
+{
+    [_nextResponder performSelector:_cmd withObject:anEvent];
+}
+
+/*!
+    Notifies the receiver that the user has released the right mouse button.
+    @param anEvent contains information about the release
+*/
+- (void)rightMouseUp:(CPEvent)anEvent
 {
     [_nextResponder performSelector:_cmd withObject:anEvent];
 }

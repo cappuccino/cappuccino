@@ -20,16 +20,20 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+#ifdef BROWSER
+CPLogRegister(CPLogDefault);
+#endif
+
 // formatting helpers
 
 function objj_debug_object_format(aReceiver)
 {
-    return (aReceiver && aReceiver.isa) ? sprintf("<%s %#08x>", GETMETA(aReceiver).name, aReceiver._UID) : String(aReceiver);
+    return (aReceiver && aReceiver.isa) ? exports.sprintf("<%s %#08x>", GETMETA(aReceiver).name, aReceiver._UID) : String(aReceiver);
 }
 
 function objj_debug_message_format(aReceiver, aSelector)
 {
-    return sprintf("[%s %s]", objj_debug_object_format(aReceiver), aSelector);
+    return exports.sprintf("[%s %s]", objj_debug_object_format(aReceiver), aSelector);
 }
 
 
@@ -80,7 +84,7 @@ GLOBAL(objj_backtrace_print) = function(/*Callable*/ aStream)
     {
         var frame = objj_backtrace[index];
 
-        stream(objj_debug_message_format(frame.receiver, frame.selector));
+        aStream(objj_debug_message_format(frame.receiver, frame.selector));
     }
 }
 
@@ -89,7 +93,7 @@ GLOBAL(objj_backtrace_decorator) = function(msgSend)
     return function(aReceiverOrSuper, aSelector)
     {
         var aReceiver = aReceiverOrSuper && (aReceiverOrSuper.receiver || aReceiverOrSuper);
-        
+
         // push the receiver and selector onto the backtrace stack
         objj_backtrace.push({ receiver: aReceiver, selector : aSelector });
         try
@@ -101,11 +105,32 @@ GLOBAL(objj_backtrace_decorator) = function(msgSend)
             // print the exception and backtrace
             CPLog.warn("Exception " + anException + " in " + objj_debug_message_format(aReceiver, aSelector));
             objj_backtrace_print(CPLog.warn);
+
+            // re-throw the exception
+            throw anException;
         }
         finally
         {
             // make sure to always pop
             objj_backtrace.pop();
+        }
+    }
+}
+
+GLOBAL(objj_supress_exceptions_decorator) = function(msgSend)
+{
+    return function(aReceiverOrSuper, aSelector)
+    {
+        var aReceiver = aReceiverOrSuper && (aReceiverOrSuper.receiver || aReceiverOrSuper);
+
+        try
+        {
+            return msgSend.apply(NULL, arguments);
+        }
+        catch (anException)
+        {
+            // print the exception and backtrace
+            CPLog.warn("Exception " + anException + " in " + objj_debug_message_format(aReceiver, aSelector));
         }
     }
 }

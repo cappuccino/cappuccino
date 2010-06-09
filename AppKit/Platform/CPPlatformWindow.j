@@ -41,11 +41,13 @@ var PrimaryPlatformWindow   = NULL;
 
     DOMElement      _DOMBodyElement;
     DOMElement      _DOMFocusElement;
+    DOMElement      _DOMEventGuard;
 
     CPArray         _windowLevels;
     CPDictionary    _windowLayers;
 
     BOOL            _mouseIsDown;
+    BOOL            _mouseDownIsRightClick;
     CPWindow        _mouseDownWindow;
     CPTimeInterval  _lastMouseUp;
     CPTimeInterval  _lastMouseDown;
@@ -70,6 +72,15 @@ var PrimaryPlatformWindow   = NULL;
 + (CPSet)visiblePlatformWindows
 {
     return [CPSet set];
+}
+
++ (BOOL)supportsMultipleInstances
+{
+#if PLATFORM(DOM)
+    return !CPBrowserIsEngine(CPInternetExplorerBrowserEngine);
+#else
+    return NO;
+#endif
 }
 
 + (CPPlatformWindow)primaryPlatformWindow
@@ -149,7 +160,9 @@ var PrimaryPlatformWindow   = NULL;
 
     _contentRect = _CGRectMakeCopy(aRect);
 
-    [self updateNativeContentRect];
+#if PLATFORM(DOM)
+     [self updateNativeContentRect];
+#endif
 }
 
 - (void)updateFromNativeContentRect
@@ -193,6 +206,20 @@ var PrimaryPlatformWindow   = NULL;
 #if PLATFORM(DOM)
     if (_DOMWindow && typeof _DOMWindow["cpMiniaturize"] === "function")
         _DOMWindow.cpMiniaturize();
+#endif
+}
+
+- (void)moveWindow:(CPWindow)aWindow fromLevel:(int)fromLevel toLevel:(int)toLevel
+{
+#if PLATFORM(DOM)
+    if (!aWindow._isVisible)
+        return;
+
+    var fromLayer = [self layerAtLevel:fromLevel create:NO],
+        toLayer = [self layerAtLevel:toLevel create:YES];
+
+    [fromLayer removeWindow:aWindow];
+    [toLayer insertWindow:aWindow atIndex:CPNotFound];
 #endif
 }
 

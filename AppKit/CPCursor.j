@@ -167,7 +167,9 @@ var currentCursor = nil,
 {
     if (CPBrowserIsEngine(CPWebKitBrowserEngine))
         return [CPCursor cursorWithCSSString:@"-webkit-grab"];
-    else if (CPBrowserIsEngine(CPGeckoBrowserEngine) || CPBrowserIsEngine(CPOperaBrowserEngine))
+    else if (CPBrowserIsEngine(CPGeckoBrowserEngine))
+        return [CPCursor cursorWithCSSString:@"-moz-grab"];
+    else if (CPBrowserIsEngine(CPOperaBrowserEngine))
         return [CPCursor cursorWithCSSString:@"move"];
 
     return [CPCursor cursorWithImageNamed:CPStringFromSelector(_cmd)]; // WebKit only. move in FFMac|Opera 
@@ -177,8 +179,10 @@ var currentCursor = nil,
 {
     if (CPBrowserIsEngine(CPWebKitBrowserEngine))
         return [CPCursor cursorWithCSSString:@"-webkit-grabbing"];
+    else if (CPBrowserIsEngine(CPGeckoBrowserEngine))
+        return [CPCursor cursorWithCSSString:@"-moz-grabbing"];
 
-    return [CPCursor cursorWithImageNamed:CPStringFromSelector(_cmd)]; // WebKit only 
+    return [CPCursor cursorWithImageNamed:CPStringFromSelector(_cmd)]; // WebKit || FF 
 }
 
 + (CPCursor)disappearingItemCursor
@@ -230,8 +234,6 @@ var currentCursor = nil,
 + (void)_setCursorCSS:(CPString)aString
 {
 #if PLATFORM(DOM)
-    [CPPlatformWindow primaryPlatformWindow]._DOMBodyElement.style.cursor = aString;
-
     var platformWindows = [[CPPlatformWindow visiblePlatformWindows] allObjects];
     for (var i = 0, count = [platformWindows count]; i < count; i++)
         platformWindows[i]._DOMBodyElement.style.cursor = aString;

@@ -34,6 +34,8 @@ var TOKEN_ACCESSORS         = "accessors",
     TOKEN_SUPER             = "super",
     TOKEN_VAR               = "var",
     TOKEN_IN                = "in",
+    TOKEN_PRAGMA            = "pragma",
+    TOKEN_MARK              = "mark",
 
     TOKEN_EQUAL             = '=',
     TOKEN_PLUS              = '+',
@@ -50,6 +52,7 @@ var TOKEN_ACCESSORS         = "accessors",
     TOKEN_OPEN_BRACKET      = '[',
     TOKEN_DOUBLE_QUOTE      = '"',
     TOKEN_PREPROCESSOR      = '@',
+    TOKEN_HASH              = '#',
     TOKEN_CLOSE_BRACKET     = ']',
     TOKEN_QUESTION_MARK     = '?',
     TOKEN_OPEN_PARENTHESIS  = '(',
@@ -140,9 +143,9 @@ StringBuffer.prototype.toString = function()
     return this.atoms.join("");
 }
 
-exports.preprocess = function(/*String*/ aString, /*String*/ aPath, /*unsigned*/ flags)
+exports.preprocess = function(/*String*/ aString, /*CFURL*/ aURL, /*unsigned*/ flags)
 {
-    return new Preprocessor(aString, aPath, flags).executable();
+    return new Preprocessor(aString, aURL, flags).executable();
 }
 
 exports.eval = function(/*String*/ aString)
@@ -150,8 +153,10 @@ exports.eval = function(/*String*/ aString)
     return eval(exports.preprocess(aString).code());
 }
 
-var Preprocessor = function(/*String*/ aString, /*String*/ aPath, /*unsigned*/ flags)
+var Preprocessor = function(/*String*/ aString, /*CFURL|String*/ aURL, /*unsigned*/ flags)
 {
+    this._URL = new CFURL(aURL);
+
     // Remove the shebang.
     aString = aString.replace(/^#[^\n]+\n/, "\n");
 
@@ -159,8 +164,6 @@ var Preprocessor = function(/*String*/ aString, /*String*/ aPath, /*unsigned*/ f
     this._currentClass = "";
     this._currentSuperClass = "";
     this._currentSuperMetaClass = "";
-
-    this._filePath = aPath;
 
     this._buffer = new StringBuffer();
     this._preprocessed = NULL;
@@ -171,7 +174,41 @@ var Preprocessor = function(/*String*/ aString, /*String*/ aPath, /*unsigned*/ f
     this._classMethod = false;
     this._executable = NULL;
 
+    this._classLookupTable = {};
+
+    this._classVars = {};
+
+    var classObject = new objj_class();
+    for (var i in classObject)
+        this._classVars[i] = 1;
+
     this.preprocess(this._tokens, this._buffer);
+}
+
+Preprocessor.prototype.setClassInfo = function(className, superClassName, ivars)
+{
+    this._classLookupTable[className] = {superClassName:superClassName, ivars:ivars};
+}
+
+Preprocessor.prototype.getClassInfo = function(className)
+{
+    return this._classLookupTable[className];
+}
+
+Preprocessor.prototype.allIvarNamesForClassName = function(className)
+{
+    var names = {},
+        classInfo = this.getClassInfo(className);
+
+    while (classInfo)
+    {
+        for (var i in classInfo.ivars)
+            names[i] = 1;
+
+        classInfo = this.getClassInfo(classInfo.superClassName);
+    }
+
+    return names;
 }
 
 exports.Preprocessor = Preprocessor;
@@ -184,7 +221,7 @@ Preprocessor.Flags.IncludeTypeSignatures    = 1 << 1;
 Preprocessor.prototype.executable = function()
 {
     if (!this._executable)
-        this._executable = new Executable(this._buffer.toString(), this._dependencies);
+        this._executable = new Executable(this._buffer.toString(), this._dependencies, this._URL);
 
     return this._executable;
 }
@@ -207,19 +244,19 @@ Preprocessor.prototype.accessors = function(tokens)
             value = true;
 
         if (!IS_WORD(name))
-            throw new SyntaxError(this.error_message("*** @property attribute name not valid."));
+            throw new SyntaxError(this.error_message("*** @accessors attribute name not valid."));
 
         if ((token = tokens.skip_whitespace()) == TOKEN_EQUAL)
         {
             value = tokens.skip_whitespace();
             
             if (!IS_WORD(value))
-                throw new SyntaxError(this.error_message("*** @property attribute value not valid."));
+                throw new SyntaxError(this.error_message("*** @accessors attribute value not valid."));
 
             if (name == "setter")
             {
                 if ((token = tokens.next()) != TOKEN_COLON)
-                    throw new SyntaxError(this.error_message("*** @property setter attribute requires argument with \":\" at end of selector name."));
+                    throw new SyntaxError(this.error_message("*** @accessors setter attribute requires argument with \":\" at end of selector name."));
                 
                 value += ":";
             }
@@ -233,7 +270,7 @@ Preprocessor.prototype.accessors = function(tokens)
             break;
         
         if (token != TOKEN_COMMA)
-            throw new SyntaxError(this.error_message("*** Expected ',' or ')' in @property attribute list."));
+            throw new SyntaxError(this.error_message("*** Expected ',' or ')' in @accessors attribute list."));
     }
     
     return attributes;
@@ -425,6 +462,29 @@ Preprocessor.prototype.each = function(tokens, /*StringBuffer*/ aStringBuffer)
     CONCAT(aStringBuffer, ".i)");
 }
 
+Preprocessor.prototype.hash = function(tokens, aStringBuffer)
+{
+    // Grab the next token, C preprocessor directives follow '#' immediately.
+    var buffer = aStringBuffer ? aStringBuffer : new StringBuffer(),
+        token = tokens.next();
+
+    // #pragma (C Preprocessor directive)
+    if (token === TOKEN_PRAGMA)
+    {
+        token = tokens.skip_whitespace();
+        
+        // '#pragma mark' directive is used in Xcode editor for creating labels,
+        // which is irrelevant to Cappuccino - just swallow this line
+        if (token === TOKEN_MARK)
+        {
+            while ((token = tokens.next()).indexOf("\n") < 0);
+        }
+    }
+    // if not a #pragma directive, it should not be processed here
+    else
+        throw new SyntaxError(this.error_message("*** Expected \"pragma\" to follow # but instead saw \"" + token + "\"."));
+}
+
 Preprocessor.prototype.implementation = function(tokens, /*StringBuffer*/ aStringBuffer)
 {
     var buffer = aStringBuffer,
@@ -480,9 +540,9 @@ Preprocessor.prototype.implementation = function(tokens, /*StringBuffer*/ aStrin
         // If we are at an opening curly brace ('{'), then we have an ivar declaration.
         if (token == TOKEN_OPEN_BRACE)
         {
-            var ivar_count = 0,
+            var ivar_names = {},
+                ivar_count = 0,
                 declaration = [],
-                
                 attributes,
                 accessors = {};
             
@@ -498,15 +558,16 @@ Preprocessor.prototype.implementation = function(tokens, /*StringBuffer*/ aStrin
                 }
                 else if (token == TOKEN_SEMICOLON)
                 {
-                    if (ivar_count++ == 0)
+                    if (ivar_count++ === 0)
                         CONCAT(buffer, "class_addIvars(the_class, [");
                     else
                         CONCAT(buffer, ", ");
-                    
+
                     var name = declaration[declaration.length - 1];
-                    
+
                     CONCAT(buffer, "new objj_ivar(\"" + name + "\")");
                     
+                    ivar_names[name] = 1;
                     declaration = [];
                     
                     if (attributes)
@@ -518,7 +579,7 @@ Preprocessor.prototype.implementation = function(tokens, /*StringBuffer*/ aStrin
                 else
                     declaration.push(token);
             }
-            
+
             // If we have objects in our declaration, the user forgot a ';'.
             if (declaration.length)
                 throw new SyntaxError(this.error_message("*** Expected ';' in ivar declaration, found '}'."));
@@ -528,6 +589,11 @@ Preprocessor.prototype.implementation = function(tokens, /*StringBuffer*/ aStrin
             
             if (!token)
                 throw new SyntaxError(this.error_message("*** Expected '}'"));
+
+            this.setClassInfo(class_name, superclass_name === "Nil" ? null : superclass_name, ivar_names);
+
+            // build up the list of illegal method param names
+            var ivar_names = this.allIvarNamesForClassName(class_name);
 
             for (ivar_name in accessors)
             {
@@ -541,7 +607,7 @@ Preprocessor.prototype.implementation = function(tokens, /*StringBuffer*/ aStrin
                 if (IS_NOT_EMPTY(instance_methods))
                     CONCAT(instance_methods, ",\n");
                 
-                CONCAT(instance_methods, this.method(new Lexer(getterCode)));
+                CONCAT(instance_methods, this.method(new Lexer(getterCode), ivar_names));
                 
                 // setter
                 if (accessor["readonly"])
@@ -565,7 +631,7 @@ Preprocessor.prototype.implementation = function(tokens, /*StringBuffer*/ aStrin
                 if (IS_NOT_EMPTY(instance_methods))
                     CONCAT(instance_methods, ",\n");
                 
-                CONCAT(instance_methods, this.method(new Lexer(setterCode)));
+                CONCAT(instance_methods, this.method(new Lexer(setterCode), ivar_names));
             }
         }
         else
@@ -574,7 +640,10 @@ Preprocessor.prototype.implementation = function(tokens, /*StringBuffer*/ aStrin
         // We must make a new class object for our class definition.
         CONCAT(buffer, "objj_registerClassPair(the_class);\n");
     }
-    
+
+    if (!ivar_names)
+        var ivar_names = this.allIvarNamesForClassName(class_name);
+
     while ((token = tokens.skip_whitespace()))
     {
         if (token == TOKEN_PLUS)
@@ -583,10 +652,9 @@ Preprocessor.prototype.implementation = function(tokens, /*StringBuffer*/ aStrin
 
             if (IS_NOT_EMPTY(class_methods))
                 CONCAT(class_methods, ", ");
-            
-            CONCAT(class_methods, this.method(tokens));
+
+            CONCAT(class_methods, this.method(tokens, this._classVars));
         }
-        
         else if (token == TOKEN_MINUS)
         {
             this._classMethod = false;
@@ -594,19 +662,24 @@ Preprocessor.prototype.implementation = function(tokens, /*StringBuffer*/ aStrin
             if (IS_NOT_EMPTY(instance_methods))
                 CONCAT(instance_methods, ", ");
             
-            CONCAT(instance_methods, this.method(tokens));
+            CONCAT(instance_methods, this.method(tokens, ivar_names));
         }
-        
+        // If we reach a # symbol, we may be at a C preprocessor directive.
+        else if (token == TOKEN_HASH)
+        {
+            this.hash(tokens, buffer);
+        }
         // Check if we've reached @end...
         else if (token == TOKEN_PREPROCESSOR)
         {
             // The only preprocessor directive we should ever encounter at this point is @end.
             if ((token = tokens.next()) == TOKEN_END)
                 break;
-            
             else
                 throw new SyntaxError(this.error_message("*** Expected \"@end\", found \"@" + token + "\"."));
         }
+        //else
+        //    throw new SyntaxError(this.error_message("*** Expected a method declaration, or \"@end\", found \"" + token + "\"."));
     }
     
     if (IS_NOT_EMPTY(instance_methods))
@@ -630,41 +703,43 @@ Preprocessor.prototype.implementation = function(tokens, /*StringBuffer*/ aStrin
 
 Preprocessor.prototype._import = function(tokens)
 {
-    var path = "",
+    var URLString = "",
         token = tokens.skip_whitespace(),
-        isLocal = (token != TOKEN_LESS_THAN);
+        isQuoted = (token !== TOKEN_LESS_THAN);
 
     if (token === TOKEN_LESS_THAN)
     {
-        while((token = tokens.next()) && token != TOKEN_GREATER_THAN)
-            path += token;
+        while((token = tokens.next()) && token !== TOKEN_GREATER_THAN)
+            URLString += token;
         
         if(!token)
             throw new SyntaxError(this.error_message("*** Unterminated import statement."));
     }
     
-    else if (token.charAt(0) == TOKEN_DOUBLE_QUOTE)
-        path = token.substr(1, token.length - 2);
+    else if (token.charAt(0) === TOKEN_DOUBLE_QUOTE)
+        URLString = token.substr(1, token.length - 2);
     
     else
         throw new SyntaxError(this.error_message("*** Expecting '<' or '\"', found \"" + token + "\"."));
 
     CONCAT(this._buffer, "objj_executeFile(\"");
-    CONCAT(this._buffer, path);
-    CONCAT(this._buffer, isLocal ? "\", true);" : "\", false);");
+    CONCAT(this._buffer, URLString);
+    CONCAT(this._buffer, isQuoted ? "\", YES);" : "\", NO);");
 
-    this._dependencies.push(new FileDependency(path, isLocal));
+    this._dependencies.push(new FileDependency(new CFURL(URLString), isQuoted));
 }
 
-Preprocessor.prototype.method = function(/*Lexer*/ tokens)
+Preprocessor.prototype.method = function(/*Lexer*/ tokens, ivar_names)
 {
     var buffer = new StringBuffer(),
         token,
         selector = "",
         parameters = [],
         types = [null];
-    
-    while((token = tokens.skip_whitespace()) && token != TOKEN_OPEN_BRACE)
+
+    ivar_names = ivar_names || {};
+
+    while((token = tokens.skip_whitespace()) && token !== TOKEN_OPEN_BRACE && token !== TOKEN_SEMICOLON)
     {
         if (token == TOKEN_COLON)
         {
@@ -689,8 +764,10 @@ Preprocessor.prototype.method = function(/*Lexer*/ tokens)
 
             // Since this follows a colon, this must be the parameter name.
             parameters[parameters.length] = token;
+
+            if (token in ivar_names)
+                throw new SyntaxError(this.error_message("*** Method ( "+selector+" ) uses a parameter name that is already in use ( "+token+" )"));                
         }
-        
         else if (token == TOKEN_OPEN_PARENTHESIS)
         {
             var type = "";
@@ -702,7 +779,6 @@ Preprocessor.prototype.method = function(/*Lexer*/ tokens)
             // types[0] is the return argument
             types[0] = type || null;
         }
-        
         // Argument list ", ..."
         else if (token == TOKEN_COMMA)
         {
@@ -712,10 +788,19 @@ Preprocessor.prototype.method = function(/*Lexer*/ tokens)
 
             // FIXME: Shouldn't allow any more after this.
         }
-        
         // Build selector name.
         else
             selector += token;
+    }
+
+    if (token === TOKEN_SEMICOLON)
+    {
+        token = tokens.skip_whitespace();
+        if (token !== TOKEN_OPEN_BRACE)
+        {
+            throw new SyntaxError(this.error_message("Invalid semi-colon in method declaration. "+
+            "Semi-colons are allowed only to terminate the method signature, before the open brace."));
+        }
     }
 
     var index = 0,
@@ -938,6 +1023,10 @@ Preprocessor.prototype.preprocess = function(tokens, /*StringBuffer*/ aStringBuf
         // If we reach an @ symbol, we are at a preprocessor directive.
         else if (token == TOKEN_PREPROCESSOR)
             this.directive(tokens, buffer);
+            
+        // If we reach a # symbol, we may be at a C preprocessor directive.
+        else if (token == TOKEN_HASH)
+            this.hash(tokens, buffer);
         
         // If we reach a bracket, we will either be preprocessing a message send, a literal 
         // array, or an array index.
@@ -951,7 +1040,7 @@ Preprocessor.prototype.preprocess = function(tokens, /*StringBuffer*/ aStringBuf
     
     // If we get this far and we're parsing an objj_msgSend (or array), then we have a problem.
     if (tuple)
-        new SyntaxError(this.error_message("*** Expected ']' - Unterminated message send or array."));
+        throw new SyntaxError(this.error_message("*** Expected ']' - Unterminated message send or array."));
 
     if (!aStringBuffer)
         return buffer;
@@ -1004,7 +1093,7 @@ Preprocessor.prototype.selector = function(tokens, aStringBuffer)
 
 Preprocessor.prototype.error_message = function(errorMessage)
 {
-    return errorMessage + " <Context File: "+ this._filePath +
+    return errorMessage + " <Context File: "+ this._URL +
                                 (this._currentClass ? " Class: "+this._currentClass : "") +
                                 (this._currentSelector ? " Method: "+this._currentSelector : "") +">";
 }

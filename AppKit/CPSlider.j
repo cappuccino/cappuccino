@@ -362,14 +362,14 @@ CPCircularSlider    = 1;
     
     [self setNeedsLayout];
     [self setNeedsDisplay:YES];
-    
+
     return YES;   
 }
 
 - (BOOL)continueTracking:(CGPoint)lastPoint at:(CGPoint)aPoint
 {
     [self setObjectValue:[self _valueAtPoint:_CGPointMake(aPoint.x + _dragOffset.width, aPoint.y + _dragOffset.height)]];
-    
+
     return YES;
 }
 
@@ -394,6 +394,18 @@ CPCircularSlider    = 1;
         _sendActionOn |= CPLeftMouseDraggedMask;
     else 
         _sendActionOn &= ~CPLeftMouseDraggedMask;
+}
+
+- (void)takeValueFromKeyPath:(CPString)aKeyPath ofObjects:(CPArray)objects
+{
+    var count = objects.length,
+        value = [objects[0] valueForKeyPath:aKeyPath];
+
+    [self setObjectValue:value];
+
+    while (count-- > 1)
+        if (value !== ([objects[count] valueForKeyPath:aKeyPath]))
+            return [self setFloatValue:1.0];
 }
 
 @end

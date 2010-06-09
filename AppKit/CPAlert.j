@@ -252,6 +252,9 @@ var CPAlertWarningImage,
     Buttons will be added starting from the right hand side of the \c CPAlert panel.
     The first button will have the index 0, the second button 1 and so on.
 
+    The first button will automatically be given a key equivalent of Return,
+    and any button titled "Cancel" will be given a key equivalent of Escape.
+
     You really shouldn't need more than 3 buttons.
 */
 - (void)addButtonWithTitle:(CPString)title
@@ -271,6 +274,8 @@ var CPAlertWarningImage,
     
     if (_buttonCount == 0)
         [_alertPanel setDefaultButton:button];
+    else if ([title lowercaseString] === "cancel")
+        [button setKeyEquivalent:CPEscapeFunctionKey];
 
     _buttonCount++;
     [_buttons addObject:button];
