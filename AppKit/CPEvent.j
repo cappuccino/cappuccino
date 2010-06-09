@@ -41,7 +41,7 @@ CPAppKitDefined                         = 13;
 CPSystemDefined                         = 14;
 CPApplicationDefined                    = 15;
 CPPeriodic                              = 16;
-CPCursorUpdate                          = 17; 
+CPCursorUpdate                          = 17;
 CPScrollWheel                           = 22;
 CPOtherMouseDown                        = 25;
 CPOtherMouseUp                          = 26;
@@ -52,8 +52,7 @@ CPTouchStart                            = 28;
 CPTouchMove                             = 29;
 CPTouchEnd                              = 30;
 CPTouchCancel                           = 31;
-                                        
-                                        
+
 CPAlphaShiftKeyMask                     = 1 << 16;
 CPShiftKeyMask                          = 1 << 17;
 CPControlKeyMask                        = 1 << 18;
@@ -87,26 +86,101 @@ CPPeriodicMask                          = 1 << CPPeriodic;
 CPScrollWheelMask                       = 1 << CPScrollWheel;
 CPAnyEventMask                          = 0xffffffff;
 
-CPDOMEventDoubleClick                   = "dblclick",
-CPDOMEventMouseDown                     = "mousedown",
-CPDOMEventMouseUp                       = "mouseup",
-CPDOMEventMouseMoved                    = "mousemove",
-CPDOMEventMouseDragged                  = "mousedrag",
-CPDOMEventKeyUp                         = "keyup",
-CPDOMEventKeyDown                       = "keydown",
-CPDOMEventKeyPress                      = "keypress";
-CPDOMEventCopy                          = "copy";
-CPDOMEventPaste                         = "paste";
-CPDOMEventScrollWheel                   = "mousewheel";
-CPDOMEventTouchStart                    = "touchstart";
-CPDOMEventTouchMove                     = "touchmove";
-CPDOMEventTouchEnd                      = "touchend";
-CPDOMEventTouchCancel                   = "touchcancel";
+CPUpArrowFunctionKey                    = "\uF700";
+CPDownArrowFunctionKey                  = "\uF701";
+CPLeftArrowFunctionKey                  = "\uF702";
+CPRightArrowFunctionKey                 = "\uF703";
+CPF1FunctionKey                         = "\uF704";
+CPF2FunctionKey                         = "\uF705";
+CPF3FunctionKey                         = "\uF706";
+CPF4FunctionKey                         = "\uF707";
+CPF5FunctionKey                         = "\uF708";
+CPF6FunctionKey                         = "\uF709";
+CPF7FunctionKey                         = "\uF70A";
+CPF8FunctionKey                         = "\uF70B";
+CPF9FunctionKey                         = "\uF70C";
+CPF10FunctionKey                        = "\uF70D";
+CPF11FunctionKey                        = "\uF70E";
+CPF12FunctionKey                        = "\uF70F";
+CPF13FunctionKey                        = "\uF710";
+CPF14FunctionKey                        = "\uF711";
+CPF15FunctionKey                        = "\uF712";
+CPF16FunctionKey                        = "\uF713";
+CPF17FunctionKey                        = "\uF714";
+CPF18FunctionKey                        = "\uF715";
+CPF19FunctionKey                        = "\uF716";
+CPF20FunctionKey                        = "\uF717";
+CPF21FunctionKey                        = "\uF718";
+CPF22FunctionKey                        = "\uF719";
+CPF23FunctionKey                        = "\uF71A";
+CPF24FunctionKey                        = "\uF71B";
+CPF25FunctionKey                        = "\uF71C";
+CPF26FunctionKey                        = "\uF71D";
+CPF27FunctionKey                        = "\uF71E";
+CPF28FunctionKey                        = "\uF71F";
+CPF29FunctionKey                        = "\uF720";
+CPF30FunctionKey                        = "\uF721";
+CPF31FunctionKey                        = "\uF722";
+CPF32FunctionKey                        = "\uF723";
+CPF33FunctionKey                        = "\uF724";
+CPF34FunctionKey                        = "\uF725";
+CPF35FunctionKey                        = "\uF726";
+CPInsertFunctionKey                     = "\uF727";
+CPDeleteFunctionKey                     = "\uF728";
+CPHomeFunctionKey                       = "\uF729";
+CPBeginFunctionKey                      = "\uF72A";
+CPEndFunctionKey                        = "\uF72B";
+CPPageUpFunctionKey                     = "\uF72C";
+CPPageDownFunctionKey                   = "\uF72D";
+CPPrintScreenFunctionKey                = "\uF72E";
+CPScrollLockFunctionKey                 = "\uF72F";
+CPPauseFunctionKey                      = "\uF730";
+CPSysReqFunctionKey                     = "\uF731";
+CPBreakFunctionKey                      = "\uF732";
+CPResetFunctionKey                      = "\uF733";
+CPStopFunctionKey                       = "\uF734";
+CPMenuFunctionKey                       = "\uF735";
+CPUserFunctionKey                       = "\uF736";
+CPSystemFunctionKey                     = "\uF737";
+CPPrintFunctionKey                      = "\uF738";
+CPClearLineFunctionKey                  = "\uF739";
+CPClearDisplayFunctionKey               = "\uF73A";
+CPInsertLineFunctionKey                 = "\uF73B";
+CPDeleteLineFunctionKey                 = "\uF73C";
+CPInsertCharFunctionKey                 = "\uF73D";
+CPDeleteCharFunctionKey                 = "\uF73E";
+CPPrevFunctionKey                       = "\uF73F";
+CPNextFunctionKey                       = "\uF740";
+CPSelectFunctionKey                     = "\uF741";
+CPExecuteFunctionKey                    = "\uF742";
+CPUndoFunctionKey                       = "\uF743";
+CPRedoFunctionKey                       = "\uF744";
+CPFindFunctionKey                       = "\uF745";
+CPHelpFunctionKey                       = "\uF746";
+CPModeSwitchFunctionKey                 = "\uF747";
+CPEscapeFunctionKey                     = "\u001B";
+
+
+CPDOMEventDoubleClick                                = "dblclick",
+CPDOMEventMouseDown                                  = "mousedown",
+CPDOMEventMouseUp                                    = "mouseup",
+CPDOMEventMouseMoved                                 = "mousemove",
+CPDOMEventMouseDragged                               = "mousedrag",
+CPDOMEventKeyUp                                      = "keyup",
+CPDOMEventKeyDown                                    = "keydown",
+CPDOMEventKeyPress                                   = "keypress";
+CPDOMEventCopy                                       = "copy";
+CPDOMEventPaste                                      = "paste";
+CPDOMEventScrollWheel                                = "mousewheel";
+CPDOMEventTouchStart                                 = "touchstart";
+CPDOMEventTouchMove                                  = "touchmove";
+CPDOMEventTouchEnd                                   = "touchend";
+CPDOMEventTouchCancel                                = "touchcancel";
 
 var _CPEventPeriodicEventPeriod         = 0,
     _CPEventPeriodicEventTimer          = nil;
 
-/*! 
+/*!
     @ingroup appkit
     @class CPEvent
     CPEvent encapsulates the details of a Cappuccino keyboard or mouse event.
@@ -155,7 +229,7 @@ var _CPEventPeriodicEventPeriod         = 0,
     characters:(CPString)characters charactersIgnoringModifiers:(CPString)unmodCharacters isARepeat:(BOOL)repeatKey keyCode:(unsigned short)code
 {
     return [[self alloc] _initKeyEventWithType:anEventType location:aPoint modifierFlags:modifierFlags
-        timestamp:aTimestamp windowNumber:aWindowNumber context:aGraphicsContext 
+        timestamp:aTimestamp windowNumber:aWindowNumber context:aGraphicsContext
         characters:characters charactersIgnoringModifiers:unmodCharacters isARepeat:repeatKey keyCode:code];
 }
 
@@ -173,7 +247,7 @@ var _CPEventPeriodicEventPeriod         = 0,
     @throws CPInternalInconsistencyException if an invalid event type is provided
     @return the new mouse event
 */
-+ (id)mouseEventWithType:(CPEventType)anEventType location:(CGPoint)aPoint modifierFlags:(unsigned)modifierFlags 
++ (id)mouseEventWithType:(CPEventType)anEventType location:(CGPoint)aPoint modifierFlags:(unsigned)modifierFlags
     timestamp:(CPTimeInterval)aTimestamp windowNumber:(int)aWindowNumber context:(CPGraphicsContext)aGraphicsContext
     eventNumber:(int)anEventNumber clickCount:(int)aClickCount pressure:(float)aPressure
 {
@@ -204,12 +278,12 @@ var _CPEventPeriodicEventPeriod         = 0,
 }
 
 /* @ignore */
-- (id)_initMouseEventWithType:(CPEventType)anEventType location:(CPPoint)aPoint modifierFlags:(unsigned)modifierFlags 
+- (id)_initMouseEventWithType:(CPEventType)anEventType location:(CPPoint)aPoint modifierFlags:(unsigned)modifierFlags
     timestamp:(CPTimeInterval)aTimestamp windowNumber:(int)aWindowNumber context:(CPGraphicsContext)aGraphicsContext
     eventNumber:(int)anEventNumber clickCount:(int)aClickCount pressure:(float)aPressure
 {
     self = [super init];
-    
+
     if (self)
     {
         _type = anEventType;
@@ -222,7 +296,7 @@ var _CPEventPeriodicEventPeriod         = 0,
         _pressure = aPressure;
         _window = [CPApp windowWithWindowNumber:aWindowNumber];
     }
-    
+
     return self;
 }
 
@@ -232,7 +306,7 @@ var _CPEventPeriodicEventPeriod         = 0,
     characters:(CPString)characters charactersIgnoringModifiers:(CPString)unmodCharacters isARepeat:(BOOL)isARepeat keyCode:(unsigned short)code
 {
     self = [super init];
-    
+
     if (self)
     {
         _type = anEventType;
@@ -246,7 +320,7 @@ var _CPEventPeriodicEventPeriod         = 0,
         _keyCode = code;
         _windowNumber = aWindowNumber;
     }
-    
+
     return self;
 }
 
@@ -256,7 +330,7 @@ var _CPEventPeriodicEventPeriod         = 0,
     subtype:(short)aSubtype data1:(int)aData1 data2:(int)aData2
 {
     self = [super init];
-    
+
     if (self)
     {
         _type = anEventType;
@@ -267,7 +341,7 @@ var _CPEventPeriodicEventPeriod         = 0,
         _subtype = aSubtype;
         _data1 = aData1;
         _data2 = aData2;
-    }   
+    }
 
     return self;
 }
@@ -445,23 +519,72 @@ var _CPEventPeriodicEventPeriod         = 0,
     return _deltaZ;
 }
 
+- (BOOL)_triggersKeyEquivalent:(CPString)aKeyEquivalent withModifierMask:aKeyEquivalentModifierMask
+{
+    var characters = [self charactersIgnoringModifiers],
+        modifierFlags = [self modifierFlags];
+
+    if (new RegExp("[A-Z]").test(aKeyEquivalent))
+        aKeyEquivalentModifierMask |= CPShiftKeyMask;
+
+    if (CPBrowserIsOperatingSystem(CPWindowsOperatingSystem) && (aKeyEquivalentModifierMask & CPCommandKeyMask))
+    {
+        aKeyEquivalentModifierMask |= CPControlKeyMask;
+        aKeyEquivalentModifierMask &= ~CPCommandKeyMask;
+    }
+
+    if ((modifierFlags & (CPShiftKeyMask | CPAlternateKeyMask | CPCommandKeyMask | CPControlKeyMask)) !== aKeyEquivalentModifierMask)
+        return NO;
+
+    return [characters caseInsensitiveCompare:aKeyEquivalent] === CPOrderedSame;
+}
+
 - (BOOL)_couldBeKeyEquivalent
 {
     // FIXME: More cases? Space?
     return  _type === CPKeyDown &&
-            _modifierFlags & (CPCommandKeyMask | CPControlKeyMask) &&
-            [_characters length] > 0;
+            ((_modifierFlags & (CPCommandKeyMask | CPControlKeyMask) &&
+            [_characters length] > 0) ||
+            [self _hasActionCharacter]);
+}
+
+- (BOOL)_hasActionCharacter
+{
+    var characters = [self characters],
+        characterCount = [characters length];
+
+    for(var i=0; i<characterCount; i++)
+    {
+        var c = [characters characterAtIndex:i];
+        switch(c)
+        {
+            case CPBackspaceCharacter:
+            case CPDeleteCharacter:
+            case CPTabCharacter:
+            case CPCarriageReturnCharacter:
+            case CPEscapeFunctionKey:
+            case CPPageUpFunctionKey:
+            case CPPageDownFunctionKey:
+            case CPLeftArrowFunctionKey:
+            case CPUpArrowFunctionKey:
+            case CPRightArrowFunctionKey:
+            case CPDownArrowFunctionKey:
+                return YES;
+            default:
+                return NO;
+        }
+    }
 }
 
 /*!
-    Generates periodic events every \c aPeriod seconds.
+    Gene                            rates periodic events every \c aPeriod seconds.
     @param aDelay the number of seconds before the first event
     @param aPeriod the length of time in seconds between successive events
 */
 + (void)startPeriodicEventsAfterDelay:(CPTimeInterval)aDelay withPeriod:(CPTimeInterval)aPeriod
 {
     _CPEventPeriodicEventPeriod = aPeriod;
-    
+
     // FIXME: OH TIMERS!!!
     _CPEventPeriodicEventTimer = window.setTimeout(function() { _CPEventPeriodicEventTimer = window.setInterval(_CPEventFirePeriodEvent, aPeriod * 1000.0); }, aDelay * 1000.0);
 }
@@ -473,9 +596,9 @@ var _CPEventPeriodicEventPeriod         = 0,
 {
     if (_CPEventPeriodicEventTimer === nil)
         return;
-    
+
     window.clearTimeout(_CPEventPeriodicEventTimer);
-    
+
     _CPEventPeriodicEventTimer = nil;
 }
 

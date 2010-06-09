@@ -29,7 +29,7 @@
 @import "CPView.j"
 @import "_CPMenuItemView.j"
 
-/*! 
+/*!
     @ingroup appkit
     @class CPMenuItem
 
@@ -43,39 +43,39 @@
 
     CPString        _title;
     //CPAttributedString  _attributedTitle;
-    
+
     CPFont          _font;
-                  
+
     id              _target;
     SEL             _action;
-                    
+
     BOOL            _isEnabled;
     BOOL            _isHidden;
-                    
+
     int             _tag;
     int             _state;
-                    
+
     CPImage         _image;
     CPImage         _alternateImage;
     CPImage         _onStateImage;
     CPImage         _offStateImage;
     CPImage         _mixedStateImage;
-                    
+
     CPMenu          _submenu;
     CPMenu          _menu;
-                    
+
     CPString        _keyEquivalent;
     unsigned        _keyEquivalentModifierMask;
-                    
+
     int             _mnemonicLocation;
-                    
+
     BOOL            _isAlternate;
     int             _indentationLevel;
-                    
+
     CPString        _toolTip;
     id              _representedObject;
     CPView          _view;
-    
+
     _CPMenuItemView _menuItemView;
 }
 
@@ -94,19 +94,19 @@
 - (id)initWithTitle:(CPString)aTitle action:(SEL)anAction keyEquivalent:(CPString)aKeyEquivalent
 {
     self = [super init];
-    
+
     if (self)
     {
         _isSeparator = NO;
 
         _title = aTitle;
         _action = anAction;
-        
+
         _isEnabled = YES;
-        
+
         _tag = 0;
         _state = CPOffState;
-        
+
         _keyEquivalent = aKeyEquivalent || @"";
         _keyEquivalentModifierMask = CPPlatformActionKeyMask;
 
@@ -114,7 +114,7 @@
 
         _mnemonicLocation = CPNotFound;
     }
-    
+
     return self;
 }
 
@@ -152,7 +152,7 @@
 {
     if (_isHidden == isHidden)
         return;
-    
+
     _isHidden = isHidden;
 
     [_menu itemChanged:self];
@@ -173,9 +173,9 @@
 {
     if (_isHidden)
         return YES;
-    
+
     var supermenu = [_menu supermenu];
-    
+
     if ([[supermenu itemAtIndex:[supermenu indexOfItemWithSubmenu:_menu]] isHiddenOrHasHiddenAncestor])
         return YES;
 
@@ -228,11 +228,11 @@
 
     if (_title == aTitle)
         return;
-    
+
     _title = aTitle;
-    
+
     [_menuItemView setDirty];
-    
+
     [_menu itemChanged:self];
 }
 
@@ -260,11 +260,11 @@
 {
     if (_font == aFont)
         return;
-        
+
     _font = aFont;
 
     [_menu itemChanged:self];
-    
+
     [_menuItemView setDirty];
 }
 
@@ -316,9 +316,9 @@ CPOffState
 {
     if (_state == aState)
         return;
-    
+
     _state = aState;
-    
+
     [_menu itemChanged:self];
 
     [_menuItemView setDirty];
@@ -346,11 +346,11 @@ CPOffState
 {
     if (_image == anImage)
         return;
-    
+
     _image = anImage;
 
     [_menuItemView setDirty];
-    
+
     [_menu itemChanged:self];
 }
 
@@ -388,7 +388,7 @@ CPOffState
 {
     if (_onStateImage == anImage)
         return;
-    
+
     _onStateImage = anImage;
     [_menu itemChanged:self];
 }
@@ -409,7 +409,7 @@ CPOffState
 {
     if (_offStateImage == anImage)
         return;
-    
+
     _offStateImage = anImage;
     [_menu itemChanged:self];
 }
@@ -430,7 +430,7 @@ CPOffState
 {
     if (_mixedStateImage == anImage)
         return;
-    
+
     _mixedStateImage = anImage;
     [_menu itemChanged:self];
 }
@@ -648,14 +648,14 @@ CPControlKeyMask
 - (void)setTitleWithMnemonicLocation:(CPString)aTitle
 {
     var location = [aTitle rangeOfString:@"&"].location;
-    
+
     if (location == CPNotFound)
         [self setTitle:aTitle];
     else
     {
         [self setTitle:[aTitle substringToIndex:location] + [aTitle substringFromIndex:location + 1]];
         [self setMnemonicLocation:location];
-    }    
+    }
 }
 
 /*!
@@ -696,7 +696,7 @@ CPControlKeyMask
 {
     if (aLevel < 0)
         [CPException raise:CPInvalidArgumentException reason:"setIndentationLevel: argument must be greater than or equal to 0."];
-        
+
     _indentationLevel = MIN(15, aLevel);
 }
 
@@ -755,11 +755,11 @@ CPControlKeyMask
 {
     if (_view === aView)
         return;
-    
+
     _view = aView;
-    
+
     [_menuItemView setDirty];
-    
+
     [_menu itemChanged:self];
 }
 
@@ -790,7 +790,7 @@ CPControlKeyMask
 {
     if (!_menuItemView)
         _menuItemView = [[_CPMenuItemView alloc] initWithFrame:CGRectMakeZero() forMenuItem:self];
-    
+
     return _menuItemView;
 }
 
@@ -844,15 +844,15 @@ var CPMenuItemIsSeparatorKey                = @"CPMenuItemIsSeparatorKey",
 - (id)initWithCoder:(CPCoder)aCoder
 {
     self = [super init];
-    
+
     if (self)
     {
         _isSeparator = [aCoder containsValueForKey:CPMenuItemIsSeparatorKey] && [aCoder decodeBoolForKey:CPMenuItemIsSeparatorKey];
 
         _title = [aCoder decodeObjectForKey:CPMenuItemTitleKey];
-        
+
 //        _font;
-                  
+
         _target = [aCoder decodeObjectForKey:CPMenuItemTargetKey];
         _action = [aCoder decodeObjectForKey:CPMenuItemActionKey];
 
@@ -887,7 +887,7 @@ var CPMenuItemIsSeparatorKey                = @"CPMenuItemIsSeparatorKey",
         _representedObject = DEFAULT_VALUE(CPMenuItemRepresentedObjectKey, nil);
         _view = DEFAULT_VALUE(CPMenuItemViewKey, nil);
     }
-    
+
     return self;
 }
 
@@ -901,11 +901,11 @@ var CPMenuItemIsSeparatorKey                = @"CPMenuItemIsSeparatorKey",
         [aCoder encodeBool:_isSeparator forKey:CPMenuItemIsSeparatorKey];
 
     [aCoder encodeObject:_title forKey:CPMenuItemTitleKey];
-        
+
     [aCoder encodeObject:_target forKey:CPMenuItemTargetKey];
     [aCoder encodeObject:_action forKey:CPMenuItemActionKey];
 
-    ENCODE_IFNOT(CPMenuItemIsEnabledKey, _isEnabled, YES); 
+    ENCODE_IFNOT(CPMenuItemIsEnabledKey, _isEnabled, YES);
     ENCODE_IFNOT(CPMenuItemIsHiddenKey, _isHidden, NO);
 
     ENCODE_IFNOT(CPMenuItemTagKey, _tag, 0);
@@ -913,7 +913,7 @@ var CPMenuItemIsSeparatorKey                = @"CPMenuItemIsSeparatorKey",
 
     ENCODE_IFNOT(CPMenuItemImageKey, _image, nil);
     ENCODE_IFNOT(CPMenuItemAlternateImageKey, _alternateImage, nil);
-    
+
     ENCODE_IFNOT(CPMenuItemSubmenuKey, _submenu, nil);
     ENCODE_IFNOT(CPMenuItemMenuKey, _menu, nil);
 

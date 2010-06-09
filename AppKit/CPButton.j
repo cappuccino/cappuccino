@@ -99,6 +99,9 @@ CPButtonStateMixed  = CPThemeState("mixed");
     // NS-style Display Properties
     CPBezelStyle        _bezelStyle;
     CPControlSize       _controlSize;
+
+    CPString            _keyEquivalent;
+    unsigned            _keyEquivalentModifierMask;
 }
 
 + (id)buttonWithTitle:(CPString)aTitle
@@ -141,6 +144,9 @@ CPButtonStateMixed  = CPThemeState("mixed");
         [self setValue:CPScaleNone forThemeAttribute:@"image-scaling"];
 
         _controlSize = CPRegularControlSize;
+
+        _keyEquivalent = "";
+        _keyEquivalentModifierMask = 0;
 
 //        [self setBezelStyle:CPRoundRectBezelStyle];
         [self setBordered:YES];
@@ -553,6 +559,54 @@ CPButtonStateMixed  = CPThemeState("mixed");
 - (BOOL)isBordered
 {
     return [self hasThemeState:CPThemeStateBordered];
+}
+
+/*!
+    Sets the keyboard shortcut for this button. For special keys see
+    CPEvent.j CP...FunctionKey and CPText.j CP...Character.
+
+    @param aString the keyboard shortcut as a string
+*/
+- (void)setKeyEquivalent:(CPString)aString
+{
+    _keyEquivalent = aString || @"";
+}
+
+/*!
+    Returns the keyboard shortcut for this button.
+*/
+- (CPString)keyEquivalent
+{
+    return _keyEquivalent;
+}
+
+/*!
+    Returns the mask used with this button's key equivalent.
+*/
+- (void)setKeyEquivalentModifierMask:(unsigned)aMask
+{
+    _keyEquivalentModifierMask = aMask;
+}
+
+/*!
+    Sets the mask to be used with this button's key equivalent.
+*/
+- (unsigned)keyEquivalentModifierMask
+{
+    return _keyEquivalentModifierMask;
+}
+
+/*!
+    Checks the button's key equivalent against that in the event, and if they
+    match simulates a button click.
+*/
+- (BOOL)performKeyEquivalent:(CPEvent)anEvent
+{
+    if (![anEvent _triggersKeyEquivalent:[self keyEquivalent] withModifierMask:[self keyEquivalentModifierMask]])
+        return NO;
+
+    [self performClick:nil];
+    return YES;
 }
 
 @end
