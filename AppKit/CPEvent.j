@@ -21,6 +21,7 @@
  */
 
 @import <Foundation/CPObject.j>
+@import "CPText.j"
 
 #include "CoreGraphics/CGGeometry.h"
 
@@ -539,22 +540,20 @@ var _CPEventPeriodicEventPeriod         = 0,
 
 - (BOOL)_couldBeKeyEquivalent
 {
-    // FIXME: More cases? Space?
-    return  _type === CPKeyDown &&
-            ((_modifierFlags & (CPCommandKeyMask | CPControlKeyMask) &&
-            [_characters length] > 0) ||
-            [self _hasActionCharacter]);
-}
+    if (_type !== CPKeyDown)
+        return NO;
 
-- (BOOL)_hasActionCharacter
-{
-    var characters = [self characters],
-        characterCount = [characters length];
+    var characterCount = _characters.length;
+
+    if (!characterCount)
+        return NO;
+
+    if (_modifierFlags & (CPCommandKeyMask | CPControlKeyMask))
+        return YES;
 
     for(var i=0; i<characterCount; i++)
     {
-        var c = [characters characterAtIndex:i];
-        switch(c)
+        switch(_characters.charAt(i))
         {
             case CPBackspaceCharacter:
             case CPDeleteCharacter:
@@ -568,10 +567,10 @@ var _CPEventPeriodicEventPeriod         = 0,
             case CPRightArrowFunctionKey:
             case CPDownArrowFunctionKey:
                 return YES;
-            default:
-                return NO;
         }
     }
+    // FIXME: More cases? Space?
+    return NO;
 }
 
 /*!
