@@ -189,6 +189,8 @@ var CPCompoundPredicateType;
                     result = [predicate evaluateWithObject:object substitutionVariables:variables];
                 else
                     result = result && [predicate evaluateWithObject:object substitutionVariables:variables];
+                if (!result)
+                    return NO;
                 break;
             case CPOrPredicateType:
                 if ([predicate evaluateWithObject:object substitutionVariables:variables])
