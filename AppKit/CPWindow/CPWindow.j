@@ -1600,7 +1600,7 @@ CPTexturedBackgroundWindowMask
     if (!pasteboardTypes)
         return;
 
-    [_inclusiveRegisteredDraggedTypes minusSet:pasteboardTypes]
+    [_inclusiveRegisteredDraggedTypes minusSet:pasteboardTypes];
 
     if ([_inclusiveRegisteredDraggedTypes count] === 0)
         _inclusiveRegisteredDraggedTypes = nil;
@@ -1631,7 +1631,7 @@ CPTexturedBackgroundWindowMask
         return;
 
     [self _noteUnregisteredDraggedTypes:_registeredDraggedTypes];
-    [_registeredDraggedTypes addObjectsFromArray:pasteboardTypes]
+    [_registeredDraggedTypes addObjectsFromArray:pasteboardTypes];
     [self _noteRegisteredDraggedTypes:_registeredDraggedTypes];
 
     _registeredDraggedTypesArray = nil;
@@ -1644,7 +1644,7 @@ CPTexturedBackgroundWindowMask
 - (CPArray)registeredDraggedTypes
 {
     if (!_registeredDraggedTypesArray)
-        _registeredDraggedTypesArray = [_registeredDraggedTypes allObjects]
+        _registeredDraggedTypesArray = [_registeredDraggedTypes allObjects];
 
     return _registeredDraggedTypesArray;
 }

@@ -548,7 +548,7 @@ CPLog(@"Got some class: %@", inst);
 objj_class.prototype.toString = objj_object.prototype.toString = function()
 {
     if (this.isa && class_getInstanceMethod(this.isa, "description") != NULL)
-        return [this description]
+        return [this description];
     else
         return String(this) + " (-description not implemented)";
 }

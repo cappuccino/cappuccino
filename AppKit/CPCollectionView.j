@@ -313,7 +313,7 @@
         [_items[index] setSelected:YES];
 
     if ([_delegate respondsToSelector:@selector(collectionViewDidChangeSelection:)])
-        [_delegate collectionViewDidChangeSelection:self]
+        [_delegate collectionViewDidChangeSelection:self];
 }
 
 /*!

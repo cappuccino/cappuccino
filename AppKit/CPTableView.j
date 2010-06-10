@@ -654,9 +654,9 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
         return;
 
     _sourceListActiveGradient        = [aDictionary valueForKey:CPSourceListGradient];
-    _sourceListActiveTopLineColor    = [aDictionary valueForKey:CPSourceListTopLineColor]
+    _sourceListActiveTopLineColor    = [aDictionary valueForKey:CPSourceListTopLineColor];
     _sourceListActiveBottomLineColor = [aDictionary valueForKey:CPSourceListBottomLineColor];
-    [self setNeedsDisplay:YES]
+    [self setNeedsDisplay:YES];
 }
 
 /*!
@@ -3481,7 +3481,7 @@ var CPTableViewDataSourceKey                = @"CPTableViewDataSourceKey",
         _gridColor = [aCoder decodeObjectForKey:CPTableViewGridColorKey] || [CPColor grayColor];
         _gridStyleMask = [aCoder decodeIntForKey:CPTableViewGridStyleMaskKey] || CPTableViewGridNone;
 
-        _usesAlternatingRowBackgroundColors = [aCoder decodeObjectForKey:CPTableViewUsesAlternatingBackgroundKey]
+        _usesAlternatingRowBackgroundColors = [aCoder decodeObjectForKey:CPTableViewUsesAlternatingBackgroundKey];
         _alternatingRowBackgroundColors =
             [[CPColor whiteColor], [CPColor colorWithRed:245.0 / 255.0 green:249.0 / 255.0 blue:252.0 / 255.0 alpha:1.0]];
 
