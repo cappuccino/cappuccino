@@ -330,7 +330,7 @@ function(newValue)\
         }
         else
         {
-            l = [CPCompoundPredicate andPredicateWithSubpredicates:[CPArray arrayWithObjects:l, r, nil]];
+            l = [CPCompoundPredicate andPredicateWithSubpredicates:[CPArray arrayWithObjects:l, r]];
         }
     }
     return l;
@@ -389,7 +389,7 @@ function(newValue)\
         }
         else
         {
-            l = [CPCompoundPredicate orPredicateWithSubpredicates:[CPArray arrayWithObjects:l, r, nil]];
+            l = [CPCompoundPredicate orPredicateWithSubpredicates:[CPArray arrayWithObjects:l, r]];
         }
     }
     return l;
@@ -501,7 +501,7 @@ function(newValue)\
               type:CPLessThanPredicateOperatorType
               options:opts];
         return [CPCompoundPredicate andPredicateWithSubpredicates:
-                [CPArray arrayWithObjects:lp, up, nil]];
+                [CPArray arrayWithObjects:lp, up]];
     }
     else
         [CPException raise:CPInvalidArgumentException reason:@"Invalid comparison predicate: "+ [[self string] substringFromIndex: [self scanLocation]]];
@@ -779,7 +779,7 @@ function(newValue)\
             }
             else
             {
-                left = [CPExpression expressionForFunction:@"index" arguments:[CPArray arrayWithObjects:left, [self parseExpression], nil]];
+                left = [CPExpression expressionForFunction:@"index" arguments:[CPArray arrayWithObjects:left, [self parseExpression]]];
             }
             if (![self scanString:@"]" intoString:NULL])
                 [CPException raise:CPInvalidArgumentException reason:@"Missing ] in index argument"];
@@ -820,7 +820,7 @@ function(newValue)\
         if ([self scanString:@"**" intoString:NULL])
         {
             right = [self parseFunctionalExpression];
-            left = [CPExpression expressionForFunction:@"pow" arguments:[CPArray arrayWithObjects:left, right, nil]];
+            left = [CPExpression expressionForFunction:@"pow" arguments:[CPArray arrayWithObjects:left, right]];
         }
         else
         {
@@ -840,12 +840,12 @@ function(newValue)\
         if ([self scanString:@"*" intoString:NULL])
         {
             right = [self parsePowerExpression];
-            left = [CPExpression expressionForFunction:@"_mul" arguments:[CPArray arrayWithObjects:left, right, nil]];
+            left = [CPExpression expressionForFunction:@"_mul" arguments:[CPArray arrayWithObjects:left, right]];
         }
         else if ([self scanString:@"/" intoString:NULL])
         {
             right = [self parsePowerExpression];
-            left = [CPExpression expressionForFunction:@"_div" arguments:[CPArray arrayWithObjects:left, right, nil]];
+            left = [CPExpression expressionForFunction:@"_div" arguments:[CPArray arrayWithObjects:left, right]];
         }
         else
         {
@@ -865,12 +865,12 @@ function(newValue)\
         if ([self scanString:@"+" intoString:NULL])
         {
             right = [self parseMultiplicationExpression];
-            left = [CPExpression expressionForFunction:@"_add" arguments:[CPArray arrayWithObjects:left, right, nil]];
+            left = [CPExpression expressionForFunction:@"_add" arguments:[CPArray arrayWithObjects:left, right]];
         }
         else if ([self scanString:@"-" intoString:NULL])
         {
             right = [self parseMultiplicationExpression];
-            left = [CPExpression expressionForFunction:@"_sub" arguments:[CPArray arrayWithObjects:left, right, nil]];
+            left = [CPExpression expressionForFunction:@"_sub" arguments:[CPArray arrayWithObjects:left, right]];
         }
         else
         {
