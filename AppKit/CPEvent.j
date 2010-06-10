@@ -523,6 +523,9 @@ var _CPEventPeriodicEventPeriod         = 0,
 
 - (BOOL)_triggersKeyEquivalent:(CPString)aKeyEquivalent withModifierMask:aKeyEquivalentModifierMask
 {
+    if (!aKeyEquivalent)
+        return NO;
+
     if (_CPEventUpperCaseRegex.test(aKeyEquivalent))
         aKeyEquivalentModifierMask |= CPShiftKeyMask;
 
