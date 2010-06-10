@@ -368,10 +368,8 @@ var LEFT_SHADOW_INSET       = 3.0,
             case CPImageAlignBottomRight:
                 x = boundsWidth - width;
                 break;
-                
-            case CPImageAlignCenter:
-            case CPImageAlignTop:
-            case CPImageAlignBottom:
+
+            default:
                 x = (boundsWidth - width) / 2.0;
                 break;
         }
@@ -389,10 +387,8 @@ var LEFT_SHADOW_INSET       = 3.0,
             case CPImageAlignBottomRight:
                 y = boundsHeight - height;
                 break;
-                
-            case CPImageAlignLeft:
-            case CPImageAlignRight:
-            case CPImageAlignCenter:
+
+            default:
                 y = (boundsHeight - height) / 2.0;
                 break;
         }  
