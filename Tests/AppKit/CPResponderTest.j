@@ -29,6 +29,7 @@
         CPKeyCodes.DOWN,        CPDownArrowFunctionKey,     @selector(moveDown:),
         CPKeyCodes.BACKSPACE,   CPDeleteCharacter,          @selector(deleteBackward:),
         CPKeyCodes.ENTER,       CPCarriageReturnCharacter,  @selector(insertLineBreak:),
+        0,                      CPNewlineCharacter,         @selector(insertLineBreak:),
         CPKeyCodes.ESC,         CPEscapeFunctionKey,        @selector(cancel:),
         CPKeyCodes.TAB,         CPTabCharacter,             @selector(insertTab:)
     ];
