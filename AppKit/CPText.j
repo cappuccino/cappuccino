@@ -31,10 +31,9 @@ CPBackspaceCharacter            = "\u0008";
 CPBackTabCharacter              = "\u0019";
 CPDeleteCharacter               = "\u007f";
 
-@implementation CPText : CPView
+/*@implementation CPText : CPView
 {
 
 }
 
-@end
-
+@end*/
