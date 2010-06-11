@@ -47,6 +47,7 @@ var CPSplitViewHorizontalImage = nil,
 
     int         _currentDivider;
     float       _initialOffset;
+    float       _preCollapsePosition;
 
     CPString    _originComponent;
     CPString    _sizeComponent;
@@ -358,14 +359,14 @@ var CPSplitViewHorizontalImage = nil,
                     if ([_delegate splitView:self canCollapseSubview:_subviews[i]] && [_delegate splitView:self shouldCollapseSubview:_subviews[i] forDoubleClickOnDividerAtIndex:i])
                     {
                         if ([self isSubviewCollapsed:_subviews[i]])
-                            [self setPosition:(minPosition + (maxPosition - minPosition) / 2) ofDividerAtIndex:i];
+                            [self setPosition:_preCollapsePosition ? _preCollapsePosition : (minPosition + (maxPosition - minPosition) / 2) ofDividerAtIndex:i];
                         else
                             [self setPosition:minPosition ofDividerAtIndex:i];
                     }
                     else if ([_delegate splitView:self canCollapseSubview:_subviews[i+1]] && [_delegate splitView:self shouldCollapseSubview:_subviews[i+1] forDoubleClickOnDividerAtIndex:i])
                     {
                         if ([self isSubviewCollapsed:_subviews[i+1]])
-                            [self setPosition:(minPosition + (maxPosition - minPosition) / 2) ofDividerAtIndex:i];
+                            [self setPosition:_preCollapsePosition ? _preCollapsePosition : (minPosition + (maxPosition - minPosition) / 2) ofDividerAtIndex:i];
                         else
                             [self setPosition:maxPosition ofDividerAtIndex:i];
                     }
@@ -539,10 +540,18 @@ var CPSplitViewHorizontalImage = nil,
         viewB = _subviews[dividerIndex + 1],
         frameB = [viewB frame];
 
+    _preCollapsePosition = 0;
+
+    var preSize = frameA.size[_sizeComponent];
     frameA.size[_sizeComponent] = realPosition - frameA.origin[_originComponent];
+    if (preSize !== 0 && frameA.size[_sizeComponent] === 0)
+        _preCollapsePosition = preSize;
     [_subviews[dividerIndex] setFrame:frameA];
 
+    preSize = frameB.size[_sizeComponent];
     frameB.size[_sizeComponent] = frameB.origin[_originComponent] + frameB.size[_sizeComponent] - realPosition - [self dividerThickness];
+    if (preSize !== 0 && frameB.size[_sizeComponent] === 0)
+        _preCollapsePosition = preSize;
     frameB.origin[_originComponent] = realPosition + [self dividerThickness];
     [_subviews[dividerIndex + 1] setFrame:frameB];
 
