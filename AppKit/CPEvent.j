@@ -538,6 +538,10 @@ var _CPEventPeriodicEventPeriod         = 0,
     if ((_modifierFlags & (CPShiftKeyMask | CPAlternateKeyMask | CPCommandKeyMask | CPControlKeyMask)) !== aKeyEquivalentModifierMask)
         return NO;
 
+    // Treat \r and \n as the same key equivalent. See issue #710.
+    if (_characters === CPNewlineCharacter || _characters === CPCarriageReturnCharacter)
+        return CPNewlineCharacter === aKeyEquivalent || CPCarriageReturnCharacter === aKeyEquivalent;
+
     return [_characters caseInsensitiveCompare:aKeyEquivalent] === CPOrderedSame;
 }
 
@@ -563,6 +567,7 @@ var _CPEventPeriodicEventPeriod         = 0,
             case CPDeleteFunctionKey:
             case CPTabCharacter:
             case CPCarriageReturnCharacter:
+            case CPNewlineCharacter:
             case CPEscapeFunctionKey:
             case CPPageUpFunctionKey:
             case CPPageDownFunctionKey:
