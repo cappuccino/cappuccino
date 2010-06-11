@@ -293,7 +293,7 @@ var CPSplitViewHorizontalImage = nil,
     if ([_delegate respondsToSelector:@selector(splitView:additionalEffectiveRectOfDividerAtIndex:)])
         additionalRect = [_delegate splitView:self additionalEffectiveRectOfDividerAtIndex:anIndex];
 
-    return CGRectContainsPoint(effectiveRect, aPoint) || 
+    return CGRectContainsPoint(effectiveRect, aPoint) ||
            (additionalRect && CGRectContainsPoint(additionalRect, aPoint)) ||
            (buttonBarRect && CGRectContainsPoint(buttonBarRect, aPoint));
 }
@@ -444,10 +444,18 @@ var CPSplitViewHorizontalImage = nil,
         if (_currentDivider === i || (_currentDivider == CPNotFound && [self cursorAtPoint:point hitDividerAtIndex:i]))
         {
             var frame = [_subviews[i] frame],
-                startPosition = frame.origin[_originComponent] + frame.size[_sizeComponent],
+                size = frame.size[_sizeComponent],
+                startPosition = frame.origin[_originComponent] + size,
                 canShrink = [self _realPositionForPosition:startPosition-1 ofDividerAtIndex:i] < startPosition,
                 canGrow = [self _realPositionForPosition:startPosition+1 ofDividerAtIndex:i] > startPosition,
                 cursor = [CPCursor arrowCursor];
+
+            if (size === 0)
+                canGrow = YES; // Subview is collapsed.
+            else if (!canShrink &&
+                [_delegate respondsToSelector:@selector(splitView:canCollapseSubview:)] &&
+                [_delegate splitView:self canCollapseSubview:_subviews[i]])
+                canShrink = YES; // Subview is collapsible.
 
             if (_isVertical && canShrink && canGrow)
                 cursor = [CPCursor resizeLeftRightCursor];
@@ -641,14 +649,14 @@ var CPSplitViewHorizontalImage = nil,
 
 /*!
     Set the button bar who's resize control should act as a control for this splitview.
-    Each divider can have at most one button bar assigned to it, and that button bar must be 
+    Each divider can have at most one button bar assigned to it, and that button bar must be
     a subview of one of the split view's subviews.
 
     Calling this method with nil as the button bar will remove any currently assigned button bar
     for the divider at that index. Indexes will not be adjusted as new subviews are added, so you
     should usually call this method after adding all the desired subviews to the split view.
 
-    This method will automatically configure the hasResizeControl and resizeControlIsLeftAligned 
+    This method will automatically configure the hasResizeControl and resizeControlIsLeftAligned
     parameters of the button bar, and will override any currently set values.
 */
 - (void)setButtonBar:(CPButtonBar)aButtonBar forDividerAtIndex:(unsigned)dividerIndex
@@ -669,7 +677,7 @@ var CPSplitViewHorizontalImage = nil,
     }
 
     if (view !== self)
-        [CPException raise:CPInvalidArgumentException 
+        [CPException raise:CPInvalidArgumentException
                     reason:@"CPSplitView button bar must be a subview of the split view."];
 
     var viewIndex = [[self subviews] indexOfObject:subview];
@@ -677,7 +685,7 @@ var CPSplitViewHorizontalImage = nil,
     [aButtonBar setHasResizeControl:YES];
     [aButtonBar setResizeControlIsLeftAligned:dividerIndex < viewIndex];
 
-    _buttonBars[dividerIndex] = aButtonBar; 
+    _buttonBars[dividerIndex] = aButtonBar;
 }
 
 - (void)_postNotificationWillResize
@@ -714,7 +722,7 @@ var CPSplitViewDelegateKey          = "CPSplitViewDelegateKey",
         _DOMDividerElements = [];
 
         _buttonBars = [aCoder decodeObjectForKey:CPSplitViewButtonBarsKey] || [];
-        
+
         _delegate = [aCoder decodeObjectForKey:CPSplitViewDelegateKey];
 
         _isPaneSplitter = [aCoder decodeBoolForKey:CPSplitViewIsPaneSplitterKey];
