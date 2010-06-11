@@ -656,7 +656,7 @@ var CPButtonImageKey                    = @"CPButtonImageKey",
         [self setImageDimsWhenDisabled:[aCoder decodeObjectForKey:CPButtonImageDimsWhenDisabledKey]];
 
         if ([aCoder containsValueForKey:CPButtonKeyEquivalentKey])
-            [self setKeyEquivalent:CFData.decodeBase64ToString([aCoder decodeObjectForKey:CPButtonKeyEquivalentKey])];
+            [self setKeyEquivalent:CFData.decodeBase64ToUtf16String([aCoder decodeObjectForKey:CPButtonKeyEquivalentKey])];
 
         [self setKeyEquivalentModifierMask:[aCoder decodeObjectForKey:CPButtonKeyEquivalentMaskKey]];
 
@@ -684,7 +684,7 @@ var CPButtonImageKey                    = @"CPButtonImageKey",
     [aCoder encodeObject:[self imageDimsWhenDisabled] forKey:CPButtonImageDimsWhenDisabledKey];
 
     if (_keyEquivalent)
-        [aCoder encodeObject:CFData.encodeBase64String(_keyEquivalent) forKey:CPButtonKeyEquivalentKey];
+        [aCoder encodeObject:CFData.encodeBase64Utf16String(_keyEquivalent) forKey:CPButtonKeyEquivalentKey];
 
     [aCoder encodeInt:_keyEquivalentModifierMask forKey:CPButtonKeyEquivalentMaskKey];
 }
