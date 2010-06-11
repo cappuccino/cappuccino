@@ -144,8 +144,8 @@ var KeyCodesToPrevent = {},
 
 KeyCodesToPrevent[CPKeyCodes.A] = YES;
 
-KeyCodesToFunctionUnicodeMap[CPKeyCodes.BACKSPACE]     = CPBackspaceCharacter;
-KeyCodesToFunctionUnicodeMap[CPKeyCodes.DELETE]        = CPDeleteCharacter;
+KeyCodesToFunctionUnicodeMap[CPKeyCodes.BACKSPACE]     = CPDeleteCharacter;
+KeyCodesToFunctionUnicodeMap[CPKeyCodes.DELETE]        = CPDeleteFunctionKey;
 KeyCodesToFunctionUnicodeMap[CPKeyCodes.TAB]           = CPTabCharacter;
 KeyCodesToFunctionUnicodeMap[CPKeyCodes.ENTER]         = CPCarriageReturnCharacter;
 KeyCodesToFunctionUnicodeMap[CPKeyCodes.ESC]           = CPEscapeFunctionKey;

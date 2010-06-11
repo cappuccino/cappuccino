@@ -560,6 +560,7 @@ var _CPEventPeriodicEventPeriod         = 0,
         {
             case CPBackspaceCharacter:
             case CPDeleteCharacter:
+            case CPDeleteFunctionKey:
             case CPTabCharacter:
             case CPCarriageReturnCharacter:
             case CPEscapeFunctionKey:
