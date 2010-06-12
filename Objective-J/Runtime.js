@@ -50,7 +50,7 @@ GLOBAL(objj_method) = function(/*String*/ aName, /*IMP*/ anImplementation, /*Str
 
 DISPLAY_NAME(objj_method);
 
-GLOBAL(objj_class) = function()
+GLOBAL(objj_class) = function(displayName)
 {
     this.isa            = NULL;
     
@@ -67,7 +67,14 @@ GLOBAL(objj_class) = function()
     this.method_store   = function() { };
     this.method_dtable  = this.method_store.prototype;
     
+#if DEBUG
+    // naming the allocator allows the WebKit heap snapshot tool to display object class names correctly
+    // HACK: displayName property is not respected so we must eval a function to name it
+    this.allocator      = eval("(function " + (displayName || "OBJJ_OBJECT").replace(/\W/g, "_") + "() { })");
+#else
     this.allocator      = function() { };
+#endif
+
     this._UID           = -1;
 }
 
@@ -325,8 +332,8 @@ var REGISTERED_CLASSES  = { };
 
 GLOBAL(objj_allocateClassPair) = function(/*Class*/ superclass, /*String*/ aName)
 {
-    var classObject = new objj_class(),
-        metaClassObject = new objj_class(),
+    var classObject = new objj_class(aName),
+        metaClassObject = new objj_class(aName),
         rootClassObject = classObject;
     
     // If we don't have a superclass, we are the root class.

@@ -25,6 +25,7 @@
 @import "CPNull.j"
 @import "CPObject.j"
 
+
 var CPObjectAccessorsForClass   = nil,
     CPObjectModifiersForClass   = nil;
 
@@ -44,41 +45,41 @@ CPUnknownUserInfoKey        = @"CPUnknownUserInfoKey";
 {
     if (!CPObjectAccessorsForClass)
         CPObjectAccessorsForClass = [CPDictionary dictionary];
-    
+
     var UID = [isa UID],
         selector = nil,
         accessors = [CPObjectAccessorsForClass objectForKey:UID];
-    
+
     if (accessors)
     {
         selector = [accessors objectForKey:aKey];
-        
+
         if (selector)
             return selector === [CPNull null] ? nil : selector;
     }
     else
     {
         accessors = [CPDictionary dictionary];
-        
+
         [CPObjectAccessorsForClass setObject:accessors forKey:UID];
     }
 
     var capitalizedKey = aKey.charAt(0).toUpperCase() + aKey.substr(1);
-    
-    if ([self instancesRespondToSelector:selector = CPSelectorFromString("get" + capitalizedKey)] || 
-        [self instancesRespondToSelector:selector = CPSelectorFromString(aKey)] || 
-        [self instancesRespondToSelector:selector = CPSelectorFromString("is" + capitalizedKey)] || 
-        [self instancesRespondToSelector:selector = CPSelectorFromString("_get" + capitalizedKey)] || 
-        [self instancesRespondToSelector:selector = CPSelectorFromString("_" + aKey)] || 
+
+    if ([self instancesRespondToSelector:selector = CPSelectorFromString("get" + capitalizedKey)] ||
+        [self instancesRespondToSelector:selector = CPSelectorFromString(aKey)] ||
+        [self instancesRespondToSelector:selector = CPSelectorFromString("is" + capitalizedKey)] ||
+        [self instancesRespondToSelector:selector = CPSelectorFromString("_get" + capitalizedKey)] ||
+        [self instancesRespondToSelector:selector = CPSelectorFromString("_" + aKey)] ||
         [self instancesRespondToSelector:selector = CPSelectorFromString("_is" + capitalizedKey)])
     {
         [accessors setObject:selector forKey:aKey];
-        
+
         return selector;
     }
-    
+
     [accessors setObject:[CPNull null] forKey:aKey];
-    
+
     return nil;
 }
 
@@ -87,25 +88,25 @@ CPUnknownUserInfoKey        = @"CPUnknownUserInfoKey";
 {
     if (!CPObjectModifiersForClass)
         CPObjectModifiersForClass = [CPDictionary dictionary];
-    
+
     var UID = [isa UID],
         selector = nil,
         modifiers = [CPObjectModifiersForClass objectForKey:UID];
-    
+
     if (modifiers)
     {
         selector = [modifiers objectForKey:aKey];
-        
+
         if (selector)
             return selector === [CPNull null] ? nil : selector;
     }
     else
     {
         modifiers = [CPDictionary dictionary];
-        
+
         [CPObjectModifiersForClass setObject:modifiers forKey:UID];
     }
-    
+
     if (selector)
         return selector === [CPNull null] ? nil : selector;
 
@@ -115,12 +116,12 @@ CPUnknownUserInfoKey        = @"CPUnknownUserInfoKey";
         [self instancesRespondToSelector:selector = CPSelectorFromString("_set" + capitalizedKey)])
     {
         [modifiers setObject:selector forKey:aKey];
-        
+
         return selector;
     }
-    
+
     [modifiers setObject:[CPNull null] forKey:aKey];
-    
+
     return nil;
 }
 
@@ -128,30 +129,30 @@ CPUnknownUserInfoKey        = @"CPUnknownUserInfoKey";
 - (CPString)_ivarForKey:(CPString)aKey
 {
     var ivar = '_' + aKey;
-    
+
     if (typeof self[ivar] != "undefined")
         return ivar;
 
     var isKey = "is" + aKey.charAt(0).toUpperCase() + aKey.substr(1);
 
-    ivar = '_' + isKey;    
-    
+    ivar = '_' + isKey;
+
     if (typeof self[ivar] != "undefined")
         return ivar;
-    
+
     ivar = aKey;
-    
+
     if (typeof self[ivar] != "undefined")
         return ivar;
-        
+
     ivar = isKey;
-    
+
     if (typeof self[ivar] != "undefined")
         return ivar;
 
     return nil;
 }
-    
+
 - (id)valueForKey:(CPString)aKey
 {
     var theClass = [self class],
@@ -159,18 +160,18 @@ CPUnknownUserInfoKey        = @"CPUnknownUserInfoKey";
 
     if (selector)
         return objj_msgSend(self, selector);
-    
-    if([theClass accessInstanceVariablesDirectly])
+
+    if ([theClass accessInstanceVariablesDirectly])
     {
         var ivar = [self _ivarForKey:aKey];
-        
+
         if (ivar)
             return self[ivar];
     }
-    
+
     return [self valueForUndefinedKey:aKey];
 }
-    
+
 - (id)valueForKeyPath:(CPString)aKeyPath
 {
     var firstDotIndex = aKeyPath.indexOf(".");
@@ -179,7 +180,7 @@ CPUnknownUserInfoKey        = @"CPUnknownUserInfoKey";
         return [self valueForKey:aKeyPath];
 
     var firstKeyComponent = aKeyPath.substring(0, firstDotIndex),
-        remainingKeyPath = aKeyPath.substring(firstDotIndex+1),
+        remainingKeyPath = aKeyPath.substring(firstDotIndex + 1),
         value = [self valueForKey:firstKeyComponent];
 
     return [value valueForKeyPath:remainingKeyPath];
@@ -190,7 +191,7 @@ CPUnknownUserInfoKey        = @"CPUnknownUserInfoKey";
     var index = 0,
         count = keys.length,
         dictionary = [CPDictionary dictionary];
-    
+
     for (; index < count; ++index)
     {
         var key = keys[index],
@@ -201,7 +202,7 @@ CPUnknownUserInfoKey        = @"CPUnknownUserInfoKey";
         else
             [dictionary setObject:value forKey:key];
     }
-    
+
     return dictionary;
 }
 
@@ -211,7 +212,7 @@ CPUnknownUserInfoKey        = @"CPUnknownUserInfoKey";
                             reason:[self description] + " is not key value coding-compliant for the key " + aKey
                           userInfo:[CPDictionary dictionaryWithObjects:[self, aKey] forKeys:[CPTargetObjectUserInfoKey, CPUnknownUserInfoKey]]] raise];
 }
-    
+
 - (void)setValue:(id)aValue forKeyPath:(CPString)aKeyPath
 {
     if (!aKeyPath) aKeyPath = "self";
@@ -221,12 +222,12 @@ CPUnknownUserInfoKey        = @"CPUnknownUserInfoKey";
         count = keys.length - 1,
         owner = self;
 
-    for(; i < count; ++i) 
+    for (; i < count; ++i)
         owner = [owner valueForKey:keys[i]];
-    
+
     [owner setValue:aValue forKey:keys[i]];
 }
-    
+
 - (void)setValue:(id)aValue forKey:(CPString)aKey
 {
     var theClass = [self class],
@@ -234,26 +235,26 @@ CPUnknownUserInfoKey        = @"CPUnknownUserInfoKey";
 
     if (selector)
         return objj_msgSend(self, selector, aValue);
-    
-    if([theClass accessInstanceVariablesDirectly])
+
+    if ([theClass accessInstanceVariablesDirectly])
     {
         var ivar = [self _ivarForKey:aKey];
-        
+
         if (ivar)
         {
             [self willChangeValueForKey:aKey];
-            
+
             self[ivar] = aValue;
-        
+
             [self didChangeValueForKey:aKey];
 
             return;
         }
     }
-    
+
     [self setValue:aValue forUndefinedKey:aKey];
 }
-    
+
 - (void)setValue:(id)aValue forUndefinedKey:(CPString)aKey
 {
     [[CPException exceptionWithName:CPUndefinedKeyException
@@ -267,7 +268,10 @@ CPUnknownUserInfoKey        = @"CPUnknownUserInfoKey";
 
 - (id)valueForKey:(CPString)aKey
 {
-	return [self objectForKey:aKey];
+    if ([aKey hasPrefix:@"@"])
+        return [super valueForKey:aKey.substr(1)];
+
+    return [self objectForKey:aKey];
 }
 
 - (void)setValue:(id)aValue forKey:(CPString)aKey

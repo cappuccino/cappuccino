@@ -20,12 +20,12 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-@import "CPData.j"
-@import "CPCoder.j"
 @import "CPArray.j"
-@import "CPString.j"
-@import "CPNumber.j"
+@import "CPCoder.j"
+@import "CPData.j"
 @import "CPDictionary.j"
+@import "CPNumber.j"
+@import "CPString.j"
 @import "CPValue.j"
 
 
@@ -36,20 +36,20 @@ var _CPKeyedArchiverDidEncodeObjectSelector             = 1,
     _CPKeyedArchiverWillReplaceObjectWithObjectSelector = 4,
     _CPKeyedArchiverDidFinishSelector                   = 8,
     _CPKeyedArchiverWillFinishSelector                  = 16;
-    
+
 var _CPKeyedArchiverNullString                          = "$null",
     _CPKeyedArchiverNullReference                       = nil,
-    
+
     _CPKeyedArchiverUIDKey                              = "CP$UID",
-    
+
     _CPKeyedArchiverTopKey                              = "$top",
     _CPKeyedArchiverObjectsKey                          = "$objects",
     _CPKeyedArchiverArchiverKey                         = "$archiver",
     _CPKeyedArchiverVersionKey                          = "$version",
-    
+
     _CPKeyedArchiverClassNameKey                        = "$classname",
     _CPKeyedArchiverClassesKey                          = "$classes",
-    _CPKeyedArchiverClassKey                            = "$class";                     
+    _CPKeyedArchiverClassKey                            = "$class";
 
 var _CPKeyedArchiverStringClass                         = Nil,
     _CPKeyedArchiverNumberClass                         = Nil;
@@ -58,6 +58,7 @@ var _CPKeyedArchiverStringClass                         = Nil,
 @implementation _CPKeyedArchiverValue : CPValue
 {
 }
+
 @end
 
 /*!
@@ -71,7 +72,7 @@ var _CPKeyedArchiverStringClass                         = Nil,
     \c CPKeyedUnarchiver.
 
     @par Delegate Methods
-    
+
     @delegate -(void)archiverWillFinish:(CPKeyedArchiver)archiver;
     Called when the encoding is about to finish.
     @param archiver the archiver that's about to finish
@@ -103,22 +104,21 @@ var _CPKeyedArchiverStringClass                         = Nil,
 {
     id                      _delegate;
     unsigned                _delegateSelectors;
-    
+
     CPData                  _data;
-    
+
     CPArray                 _objects;
 
     CPDictionary            _UIDs;
     CPDictionary            _conditionalUIDs;
-    
+
     CPDictionary            _replacementObjects;
     CPDictionary            _replacementClassNames;
-    
+
     id                      _plistObject;
     CPMutableArray          _plistObjects;
-    
+
     CPPropertyListFormat    _outputFormat;
-    
 }
 
 /*
@@ -128,10 +128,10 @@ var _CPKeyedArchiverStringClass                         = Nil,
 {
     if (self != [CPKeyedArchiver class])
         return;
-    
+
     _CPKeyedArchiverStringClass = [CPString class];
     _CPKeyedArchiverNumberClass = [CPNumber class];
-    
+
     _CPKeyedArchiverNullReference = [CPDictionary dictionaryWithObject:0 forKey:_CPKeyedArchiverUIDKey];
 }
 
@@ -149,7 +149,7 @@ var _CPKeyedArchiverStringClass                         = Nil,
 {
     var data = [CPData dataWithPlistObject:nil],
         archiver = [[self alloc] initForWritingWithMutableData:data];
-    
+
     [archiver encodeObject:anObject forKey:@"root"];
     [archiver finishEncoding];
 
@@ -165,24 +165,24 @@ var _CPKeyedArchiverStringClass                         = Nil,
 - (id)initForWritingWithMutableData:(CPMutableData)data
 {
     self = [super init];
-    
+
     if (self)
     {
         _data = data;
-        
+
         _objects = [];
-        
+
         _UIDs = [CPDictionary dictionary];
         _conditionalUIDs = [CPDictionary dictionary];
-        
+
         _replacementObjects = [CPDictionary dictionary];
-        
+
         _data = data;
-        
+
         _plistObject = [CPDictionary dictionary];
         _plistObjects = [CPArray arrayWithObject:_CPKeyedArchiverNullString];
     }
-    
+
     return self;
 }
 
@@ -195,33 +195,33 @@ var _CPKeyedArchiverStringClass                         = Nil,
 {
     if (_delegate && _delegateSelectors & _CPKeyedArchiverWillFinishSelector)
         [_delegate archiverWillFinish:self];
-    
+
     var i = 0,
         topObject = _plistObject,
         classes = [];
-    
+
     for (; i < _objects.length; ++i)
     {
         var object = _objects[i],
             theClass = [object classForKeyedArchiver];
-        
+
         // Do whatever with the class, yo.
         // We call willEncodeObject previously.
-        
+
         _plistObject = _plistObjects[[_UIDs objectForKey:[object UID]]];
         [object encodeWithCoder:self];
 
         if (_delegate && _delegateSelectors & _CPKeyedArchiverDidEncodeObjectSelector)
             [_delegate archiver:self didEncodeObject:object];
     }
-    
+
     _plistObject = [CPDictionary dictionary];
-    
+
     [_plistObject setObject:topObject forKey:_CPKeyedArchiverTopKey];
     [_plistObject setObject:_plistObjects forKey:_CPKeyedArchiverObjectsKey];
     [_plistObject setObject:[self className] forKey:_CPKeyedArchiverArchiverKey];
     [_plistObject setObject:@"100000" forKey:_CPKeyedArchiverVersionKey];
-    
+
     [_data setPlistObject:_plistObject];
 
     if (_delegate && _delegateSelectors & _CPKeyedArchiverDidFinishSelector)
@@ -292,22 +292,22 @@ var _CPKeyedArchiverStringClass                         = Nil,
 - (void)setDelegate:(id)aDelegate
 {
     _delegate = aDelegate;
-    
+
     if ([_delegate respondsToSelector:@selector(archiver:didEncodeObject:)])
         _delegateSelectors |= _CPKeyedArchiverDidEncodeObjectSelector;
-        
+
     if ([_delegate respondsToSelector:@selector(archiver:willEncodeObject:)])
         _delegateSelectors |= _CPKeyedArchiverWillEncodeObjectSelector;
-    
+
     if ([_delegate respondsToSelector:@selector(archiver:willReplaceObject:withObject:)])
         _delegateSelectors |= _CPKeyedArchiverWillReplaceObjectWithObjectSelector;
 
     if ([_delegate respondsToSelector:@selector(archiver:didFinishEncoding:)])
         _delegateSelectors |= _CPKeyedArchiverDidFinishEncodingSelector;
-        
+
     if ([_delegate respondsToSelector:@selector(archiver:willFinishEncoding:)])
         _delegateSelectors |= _CPKeyedArchiverWillFinishEncodingSelector;
-    
+
 }
 
 /*!
@@ -377,7 +377,7 @@ var _CPKeyedArchiverStringClass                         = Nil,
 */
 - (void)encodeObject:(id)anObject forKey:(CPString)aKey
 {
-    [_plistObject setObject:_CPKeyedArchiverEncodeObject(self, anObject, NO) forKey:aKey]; 
+    [_plistObject setObject:_CPKeyedArchiverEncodeObject(self, anObject, NO) forKey:aKey];
 }
 
 /* @ignore */
@@ -386,10 +386,10 @@ var _CPKeyedArchiverStringClass                         = Nil,
     var i = 0,
         count = objects.length,
         references = [CPArray arrayWithCapacity:count];
-        
+
     for (; i < count; ++i)
         [references addObject:_CPKeyedArchiverEncodeObject(self, objects[i], NO)];
-        
+
     [_plistObject setObject:references forKey:aKey];
 }
 
@@ -399,10 +399,10 @@ var _CPKeyedArchiverStringClass                         = Nil,
     var key,
         keys = [aDictionary keyEnumerator],
         references = [CPDictionary dictionary];
-    
+
     while (key = [keys nextObject])
         [references setObject:_CPKeyedArchiverEncodeObject(self, [aDictionary objectForKey:key], NO) forKey:key];
-    
+
     [_plistObject setObject:references forKey:aKey];
 }
 
@@ -418,7 +418,7 @@ var _CPKeyedArchiverStringClass                         = Nil,
 {
     if (!CPArchiverReplacementClassNames)
         CPArchiverReplacementClassNames = [CPDictionary dictionary];
-    
+
     [CPArchiverReplacementClassNames setObject:aClassName forKey:CPStringFromClass(aClass)];
 }
 
@@ -435,7 +435,7 @@ var _CPKeyedArchiverStringClass                         = Nil,
         return aClass.name;
 
     var className = [CPArchiverReplacementClassNames objectForKey:CPStringFromClass(aClassName)];
-    
+
     return className ? className : aClass.name;
 }
 
@@ -450,7 +450,7 @@ var _CPKeyedArchiverStringClass                         = Nil,
 {
     if (!_replacementClassNames)
         _replacementClassNames = [CPDictionary dictionary];
-    
+
     [_replacementClassNames setObject:aClassName forKey:CPStringFromClass(aClass)];
 }
 
@@ -465,7 +465,7 @@ var _CPKeyedArchiverStringClass                         = Nil,
         return aClass.name;
 
     var className = [_replacementClassNames objectForKey:CPStringFromClass(aClassName)];
-    
+
     return className ? className : aClass.name;
 }
 
@@ -474,11 +474,11 @@ var _CPKeyedArchiverStringClass                         = Nil,
 var _CPKeyedArchiverEncodeObject = function(self, anObject, isConditional)
 {
     // We wrap primitive JavaScript objects in a unique subclass of CPValue.
-    // This way, when we unarchive, we know to unwrap it, since 
+    // This way, when we unarchive, we know to unwrap it, since
     // _CPKeyedArchiverValue should not be used anywhere else.
     if (anObject !== nil && !anObject.isa)
         anObject = [_CPKeyedArchiverValue valueWithJSObject:anObject];
-    
+
     // Get the proper replacement object
     var GUID = [anObject UID],
         object = [self._replacementObjects objectForKey:GUID];
@@ -488,42 +488,42 @@ var _CPKeyedArchiverEncodeObject = function(self, anObject, isConditional)
     if (object === nil)
     {
         object = [anObject replacementObjectForKeyedArchiver:self];
-        
+
         // Notify our delegate of this replacement.
         if (self._delegate)
         {
             if (object !== anObject && self._delegateSelectors & _CPKeyedArchiverWillReplaceObjectWithObjectSelector)
                 [self._delegate archiver:self willReplaceObject:anObject withObject:object];
-            
+
             if (self._delegateSelectors & _CPKeyedArchiverWillEncodeObjectSelector)
             {
                 anObject = [self._delegate archiver:self willEncodeObject:object];
-                
+
                 if (anObject !== object && self._delegateSelectors & _CPKeyedArchiverWillReplaceObjectWithObjectSelector)
                     [self._delegate archiver:self willReplaceObject:object withObject:anObject];
-                    
+
                 object = anObject;
             }
         }
-        
+
         [self._replacementObjects setObject:object forKey:GUID];
     }
-    
-    // If we still don't have an object by this point, then return a 
+
+    // If we still don't have an object by this point, then return a
     // reference to the null object.
     // Explicitly compare to nil because object could be === 0.
     if (object === nil)
         return _CPKeyedArchiverNullReference;
-    
+
     // If not, then grab the object's UID
     var UID = [self._UIDs objectForKey:GUID = [object UID]];
-    
-    // If this object doesn't have a unique index in the object table yet, 
-    // then it also hasn't been properly encoded.  We explicitly compare 
+
+    // If this object doesn't have a unique index in the object table yet,
+    // then it also hasn't been properly encoded.  We explicitly compare
     // index to nil since it could be 0, which would also evaluate to false.
     if (UID === nil)
     {
-        // If it is being conditionally encoded, then 
+        // If it is being conditionally encoded, then
         if (isConditional)
         {
             // If we haven't already noted this conditional object...
@@ -538,33 +538,33 @@ var _CPKeyedArchiverEncodeObject = function(self, anObject, isConditional)
         {
             var theClass = [object classForKeyedArchiver],
                 plistObject = nil;
-            
+
             if ((theClass === _CPKeyedArchiverStringClass) || (theClass === _CPKeyedArchiverNumberClass))// || theClass == _CPKeyedArchiverBooleanClass)
                 plistObject = object;
             else
             {
                 // Only actually encode the object and create a plist representation if it is not a simple type.
                 plistObject = [CPDictionary dictionary];
-                
+
                 [self._objects addObject:object];
-                
+
                 var className = [self classNameForClass:theClass];
-    
+
                 if (!className)
                     className = [[self class] classNameForClass:theClass];
-                
+
                 if (!className)
                     className = theClass.name;
                 else
                     theClass = CPClassFromString(className);
 
                 var classUID = [self._UIDs objectForKey:className];
-                
+
                 if (!classUID)
                 {
                     var plistClass = [CPDictionary dictionary],
                         hierarchy = [];
-                    
+
                     [plistClass setObject:className forKey:_CPKeyedArchiverClassNameKey];
 
                     do
@@ -581,9 +581,9 @@ var _CPKeyedArchiverEncodeObject = function(self, anObject, isConditional)
 
                 [plistObject setObject:[CPDictionary dictionaryWithObject:classUID forKey:_CPKeyedArchiverUIDKey] forKey:_CPKeyedArchiverClassKey];
             }
-            
+
             UID = [self._conditionalUIDs objectForKey:GUID];
-            
+
             // If this object WAS previously encoded conditionally...
             if (UID !== nil)
             {

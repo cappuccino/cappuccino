@@ -79,9 +79,9 @@ CPViewAnimationFadeOutEffect = @"CPViewAnimationFadeOut";
     while (animationIndex--)
     {
         var dictionary = [_viewAnimations objectAtIndex:animationIndex],
-            view = [self _targetView:dictionary]
-            startFrame = [self _startFrame:dictionary]
-            endFrame = [self _endFrame:dictionary]
+            view = [self _targetView:dictionary],
+            startFrame = [self _startFrame:dictionary],
+            endFrame = [self _endFrame:dictionary],
             differenceFrame = _CGRectMakeZero();
 
         differenceFrame.origin.x = endFrame.origin.x - startFrame.origin.x;

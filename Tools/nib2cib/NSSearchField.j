@@ -32,6 +32,12 @@
 
     if (self)
     {
+        var cell = [aCoder decodeObjectForKey:@"NSCell"];
+        
+        [self setRecentsAutosaveName:[cell recentsAutosaveName]];
+        [self setMaximumRecents:[cell maximumRecents]];
+        [self setSendsWholeSearchString:[cell sendsWholeSearchString]];
+        [self setSendsSearchStringImmediately:[cell sendsSearchStringImmediately]];
     }
 
     return self;
@@ -59,5 +65,25 @@
 
 @implementation NSSearchFieldCell : NSTextFieldCell
 {
+    CPString    _recentsAutosaveName @accessors(property=recentsAutosaveName);
+    int         _maximumRecents @accessors(property=maximumRecents);
+    BOOL        _sendsWholeSearchString @accessors(property=sendsWholeSearchString);
+    BOOL        _sendsSearchStringImmediately @accessors(property=sendsSearchStringImmediately);
 }
+
+- (id)initWithCoder:(CPCoder)aCoder
+{
+    if (self = [super initWithCoder:aCoder])
+    {
+        _recentsAutosaveName = [aCoder decodeObjectForKey:@"NSRecentsAutosaveName"];
+        _maximumRecents = [aCoder decodeIntForKey:@"NSMaximumRecents"];
+        _sendsWholeSearchString = [aCoder decodeBoolForKey:@"NSSendsWholeSearchString"] ? YES : NO;
+    
+        // These bytes don't seem to be used for anything else but the send immediatly flag
+        _sendsSearchStringImmediately = [aCoder decodeBytesForKey:@"NSSearchFieldFlags"] ? YES: NO;
+    }
+    
+    return self;
+}
+
 @end

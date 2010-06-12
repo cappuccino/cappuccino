@@ -105,7 +105,7 @@ var _CPFormatLogMessage = function(aString, aLevel, aTitle)
 
     if (typeof exports.sprintf == "function")
         return exports.sprintf("%4d-%02d-%02d %02d:%02d:%02d.%03d %s%s: %s",
-            now.getFullYear(), now.getMonth(), now.getDate(),
+            now.getFullYear(), now.getMonth() + 1, now.getDate(),
             now.getHours(), now.getMinutes(), now.getSeconds(), now.getMilliseconds(),
             aTitle, aLevel, aString);
     else

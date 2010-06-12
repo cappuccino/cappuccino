@@ -50,11 +50,11 @@ var _CPMenuBarVisible               = NO,
     _CPMenuBarAttributes            = nil,
     _CPMenuBarSharedWindow          = nil;
 
-/*! 
+/*!
     @ingroup appkit
     @class CPMenu
 
-    Menus provide the user with a list of actions and/or submenus. Submenus themselves are full fledged menus 
+    Menus provide the user with a list of actions and/or submenus. Submenus themselves are full fledged menus
     and so a heirarchical structure appears.
 */
 @implementation CPMenu : CPObject
@@ -69,12 +69,12 @@ var _CPMenuBarVisible               = NO,
     float           _minimumWidth;
 
     CPMutableArray  _items;
-    
+
     BOOL            _autoenablesItems;
     BOOL            _showsStateColumn;
 
     id              _delegate;
-    
+
     CPMenuItem      _highlightedIndex;
     _CPMenuWindow   _menuWindow;
 }
@@ -95,7 +95,7 @@ var _CPMenuBarVisible               = NO,
 {
     if (_CPMenuBarVisible === menuBarShouldBeVisible)
         return;
-    
+
     _CPMenuBarVisible = menuBarShouldBeVisible;
 
     if ([CPPlatform supportsNativeMainMenu])
@@ -105,13 +105,13 @@ var _CPMenuBarVisible               = NO,
     {
         if (!_CPMenuBarSharedWindow)
             _CPMenuBarSharedWindow = [[_CPMenuBarWindow alloc] init];
-        
+
         [_CPMenuBarSharedWindow setMenu:[CPApp mainMenu]];
-        
+
         [_CPMenuBarSharedWindow setTitle:_CPMenuBarTitle];
         [_CPMenuBarSharedWindow setIconImage:_CPMenuBarIconImage];
         [_CPMenuBarSharedWindow setIconImageAlphaValue:_CPMenuBarIconImageAlphaValue];
-        
+
         [_CPMenuBarSharedWindow setColor:[_CPMenuBarAttributes objectForKey:@"CPMenuBarBackgroundColor"]];
         [_CPMenuBarSharedWindow setTextColor:[_CPMenuBarAttributes objectForKey:@"CPMenuBarTextColor"]];
         [_CPMenuBarSharedWindow setTitleColor:[_CPMenuBarAttributes objectForKey:@"CPMenuBarTitleColor"]];
@@ -120,12 +120,12 @@ var _CPMenuBarVisible               = NO,
         [_CPMenuBarSharedWindow setHighlightColor:[_CPMenuBarAttributes objectForKey:@"CPMenuBarHighlightColor"]];
         [_CPMenuBarSharedWindow setHighlightTextColor:[_CPMenuBarAttributes objectForKey:@"CPMenuBarHighlightTextColor"]];
         [_CPMenuBarSharedWindow setHighlightTextShadowColor:[_CPMenuBarAttributes objectForKey:@"CPMenuBarHighlightTextShadowColor"]];
-        
+
         [_CPMenuBarSharedWindow orderFront:self];
     }
     else
         [_CPMenuBarSharedWindow orderOut:self];
-        
+
 // FIXME: There must be a better way to do this.
 #if PLATFORM(DOM)
     [[CPPlatformWindow primaryPlatformWindow] resizeEvent:nil];
@@ -159,9 +159,9 @@ var _CPMenuBarVisible               = NO,
 {
     if (_CPMenuBarAttributes == attributes)
         return;
-        
+
     _CPMenuBarAttributes = [attributes copy];
-    
+
     var textColor = [attributes objectForKey:@"CPMenuBarTextColor"],
         titleColor = [attributes objectForKey:@"CPMenuBarTitleColor"],
         textShadowColor = [attributes objectForKey:@"CPMenuBarTextShadowColor"],
@@ -169,40 +169,40 @@ var _CPMenuBarVisible               = NO,
         highlightColor = [attributes objectForKey:@"CPMenuBarHighlightColor"],
         highlightTextColor = [attributes objectForKey:@"CPMenuBarHighlightTextColor"],
         highlightTextShadowColor = [attributes objectForKey:@"CPMenuBarHighlightTextShadowColor"];
-    
+
     if (!textColor && titleColor)
         [_CPMenuBarAttributes setObject:titleColor forKey:@"CPMenuBarTextColor"];
-    
+
     else if (textColor && !titleColor)
         [_CPMenuBarAttributes setObject:textColor forKey:@"CPMenuBarTitleColor"];
-    
+
     else if (!textColor && !titleColor)
     {
         [_CPMenuBarAttributes setObject:[CPColor colorWithRed:0.051 green:0.2 blue:0.275 alpha:1.0] forKey:@"CPMenuBarTextColor"];
         [_CPMenuBarAttributes setObject:[CPColor colorWithRed:0.051 green:0.2 blue:0.275 alpha:1.0] forKey:@"CPMenuBarTitleColor"];
     }
-    
+
     if (!textShadowColor && titleShadowColor)
         [_CPMenuBarAttributes setObject:titleShadowColor forKey:@"CPMenuBarTextShadowColor"];
-    
+
     else if (textShadowColor && !titleShadowColor)
         [_CPMenuBarAttributes setObject:textShadowColor forKey:@"CPMenuBarTitleShadowColor"];
-    
+
     else if (!textShadowColor && !titleShadowColor)
     {
         [_CPMenuBarAttributes setObject:[CPColor whiteColor] forKey:@"CPMenuBarTextShadowColor"];
         [_CPMenuBarAttributes setObject:[CPColor whiteColor] forKey:@"CPMenuBarTitleShadowColor"];
     }
-    
+
     if (!highlightColor)
         [_CPMenuBarAttributes setObject:[CPColor colorWithCalibratedRed:94.0/255.0 green:130.0/255.0 blue:186.0/255.0 alpha:1.0] forKey:@"CPMenuBarHighlightColor"];
-    
+
     if (!highlightTextColor)
         [_CPMenuBarAttributes setObject:[CPColor whiteColor] forKey:@"CPMenuBarHighlightTextColor"];
-    
+
     if (!highlightTextShadowColor)
         [_CPMenuBarAttributes setObject:[CPColor blackColor] forKey:@"CPMenuBarHighlightTextShadowColor"];
-    
+
     if (_CPMenuBarSharedWindow)
     {
         [_CPMenuBarSharedWindow setColor:[_CPMenuBarAttributes objectForKey:@"CPMenuBarBackgroundColor"]];
@@ -231,7 +231,7 @@ var _CPMenuBarVisible               = NO,
 {
     if (self === [CPApp mainMenu])
         return MENUBAR_HEIGHT;
-    
+
     return 0.0;
 }
 
@@ -249,18 +249,18 @@ var _CPMenuBarVisible               = NO,
 - (id)initWithTitle:(CPString)aTitle
 {
     self = [super init];
-    
+
     if (self)
     {
         _title = aTitle;
         _items = [];
-        
+
         _autoenablesItems = YES;
         _showsStateColumn = YES;
 
         [self setMinimumWidth:0];
     }
-    
+
     return self;
 }
 
@@ -287,7 +287,7 @@ var _CPMenuBarVisible               = NO,
 
     [aMenuItem setMenu:self];
     [_items insertObject:aMenuItem atIndex:anIndex];
-    
+
     [[CPNotificationCenter defaultCenter]
         postNotificationName:CPMenuDidAddItemNotification
                       object:self
@@ -306,7 +306,7 @@ var _CPMenuBarVisible               = NO,
 - (CPMenuItem)insertItemWithTitle:(CPString)aTitle action:(SEL)anAction keyEquivalent:(CPString)aKeyEquivalent atIndex:(unsigned)anIndex
 {
     var item = [[CPMenuItem alloc] initWithTitle:aTitle action:anAction keyEquivalent:aKeyEquivalent];
-    
+
     [self insertItem:item atIndex:anIndex];
 
     return item;
@@ -351,10 +351,10 @@ var _CPMenuBarVisible               = NO,
 {
     if (anIndex < 0 || anIndex >= _items.length)
         return;
-    
+
     [_items[anIndex] setMenu:nil];
     [_items removeObjectAtIndex:anIndex];
-    
+
     [[CPNotificationCenter defaultCenter]
         postNotificationName:CPMenuDidRemoveItemNotification
                       object:self
@@ -369,7 +369,7 @@ var _CPMenuBarVisible               = NO,
 {
     if ([aMenuItem menu] != self)
         return;
-    
+
     [[CPNotificationCenter defaultCenter]
         postNotificationName:CPMenuDidChangeItemNotification
                       object:self
@@ -385,10 +385,10 @@ var _CPMenuBarVisible               = NO,
 - (CPMenuItem)itemWithTag:(int)aTag
 {
     var index = [self indexOfItemWithTag:aTag];
-    
+
     if (index == CPNotFound)
         return nil;
-    
+
     return _items[index];
 }
 
@@ -400,10 +400,10 @@ var _CPMenuBarVisible               = NO,
 - (CPMenuItem)itemWithTitle:(CPString)aTitle
 {
     var index = [self indexOfItemWithTitle:aTitle];
-    
+
     if (index == CPNotFound)
         return nil;
-    
+
     return _items[index];
 }
 
@@ -442,7 +442,7 @@ var _CPMenuBarVisible               = NO,
 {
     if ([aMenuItem menu] !== self)
         return CPNotFound;
-        
+
     return [_items indexOfObjectIdenticalTo:aMenuItem];
 }
 
@@ -455,7 +455,7 @@ var _CPMenuBarVisible               = NO,
 {
     var index = 0,
         count = _items.length;
-    
+
     for (; index < count; ++index)
         if ([_items[index] title] === aTitle)
             return index;
@@ -472,7 +472,7 @@ var _CPMenuBarVisible               = NO,
 {
     var index = 0,
         count = _items.length;
-    
+
     for (; index < count; ++index)
         if ([_items[index] tag] == aTag)
             return index;
@@ -490,11 +490,11 @@ var _CPMenuBarVisible               = NO,
 {
     var index = 0,
         count = _items.length;
-    
+
     for (; index < count; ++index)
     {
         var item = _items[index];
-        
+
         if ([item target] == aTarget && (!anAction || [item action] == anAction))
             return index;
     }
@@ -511,7 +511,7 @@ var _CPMenuBarVisible               = NO,
 {
     var index = 0,
         count = _items.length;
-    
+
     for (; index < count; ++index)
         if ([[_items[index] representedObject] isEqual:anObject])
             return index;
@@ -528,7 +528,7 @@ var _CPMenuBarVisible               = NO,
 {
     var index = 0,
         count = _items.length;
-    
+
     for (; index < count; ++index)
         if ([_items[index] submenu] == aMenu)
             return index;
@@ -546,7 +546,7 @@ var _CPMenuBarVisible               = NO,
 {
     [aMenuItem setTarget:aMenuItem];
     [aMenuItem setAction:@selector(submenuAction:)];
-    
+
     [aMenuItem setSubmenu:aMenu];
 }
 
@@ -683,7 +683,7 @@ var _CPMenuBarVisible               = NO,
         itemIndex = [self indexOfItem:anItem];
 
         if (itemIndex === CPNotFound)
-            throw   "In call to popUpMenuPositioningItem:atLocation:inView:callback:, menu item " + 
+            throw   "In call to popUpMenuPositioningItem:atLocation:inView:callback:, menu item " +
                     anItem  + " is not present in menu " + self;
     }
 
@@ -784,10 +784,10 @@ var _CPMenuBarVisible               = NO,
 + (void)popUpContextMenu:(CPMenu)aMenu withEvent:(CPEvent)anEvent forView:(CPView)aView withFont:(CPFont)aFont
 {
     var delegate = [aMenu delegate];
-    
+
     if ([delegate respondsToSelector:@selector(menuWillOpen:)])
         [delegate menuWillOpen:aMenu];
-    
+
     if (!aFont)
         aFont = [CPFont systemFontOfSize:12.0];
 
@@ -938,17 +938,7 @@ var _CPMenuBarVisible               = NO,
         var item = _items[index],
             modifierMask = [item keyEquivalentModifierMask];
 
-        if ([item keyEquivalent] === [[item keyEquivalent] uppercaseString])
-            modifierMask |= CPShiftKeyMask;
-
-        if (CPBrowserIsOperatingSystem(CPWindowsOperatingSystem) && (modifierMask & CPCommandKeyMask))
-        {
-            modifierMask |= CPControlKeyMask;
-            modifierMask &= ~CPCommandKeyMask;
-        }
-
-        if ((modifierFlags & (CPShiftKeyMask | CPAlternateKeyMask | CPCommandKeyMask | CPControlKeyMask)) == modifierMask &&
-            [characters caseInsensitiveCompare:[item keyEquivalent]] == CPOrderedSame)
+        if ([anEvent _triggersKeyEquivalent:[item keyEquivalent] withModifierMask:[item keyEquivalentModifierMask]])
         {
             if ([item isEnabled])
                 [self performActionForItemAtIndex:index];
@@ -956,7 +946,7 @@ var _CPMenuBarVisible               = NO,
             {
                 //beep?
             }
-            
+
             return YES;
         }
 
@@ -975,7 +965,7 @@ var _CPMenuBarVisible               = NO,
 - (void)performActionForItemAtIndex:(unsigned)anIndex
 {
     var item = _items[anIndex];
-    
+
     [CPApp sendAction:[item action] to:[item target] from:item];
 }
 
@@ -1064,7 +1054,7 @@ var CPMenuTitleKey              = @"CPMenuTitleKey",
 - (id)initWithCoder:(CPCoder)aCoder
 {
     self = [super init];
-    
+
     if (self)
     {
         _title = [aCoder decodeObjectForKey:CPMenuTitleKey];
@@ -1076,7 +1066,7 @@ var CPMenuTitleKey              = @"CPMenuTitleKey",
 
         [self setMinimumWidth:0];
     }
-    
+
     return self;
 }
 

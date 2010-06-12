@@ -35,7 +35,6 @@
 @import "CPKeyedUnarchiver.j"
 @import "CPKeyValueCoding.j"
 @import "CPKeyValueObserving.j"
-@import "CPLog.j"
 @import "CPNotification.j"
 @import "CPNotificationCenter.j"
 @import "CPNull.j"
@@ -58,6 +57,7 @@
 @import "CPURLResponse.j"
 @import "CPUserSessionManager.j"
 @import "CPValue.j"
+@import "CPValueTransformer.j"
 
 /*! @mainpage
     Cappuccino is distributed under the @ref license "GNU LGPL".

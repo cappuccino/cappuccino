@@ -22,6 +22,8 @@
 
 @import "CPColorPicker.j"
 
+#include "Platform/Platform.h"
+
 /*
     @ignore
 */

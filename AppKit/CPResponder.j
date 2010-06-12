@@ -22,23 +22,23 @@
 
 @import <Foundation/CPObject.j>
 
-
-CPDeleteKeyCode     = 8;
-CPTabKeyCode        = 9;
-CPReturnKeyCode     = 13;
-CPEscapeKeyCode     = 27;
-CPSpaceKeyCode      = 32;
-CPPageUpKeyCode     = 33;
-CPPageDownKeyCode   = 34;
-CPLeftArrowKeyCode  = 37;
-CPUpArrowKeyCode    = 38;
-CPRightArrowKeyCode = 39;
-CPDownArrowKeyCode  = 40;
+CPDeleteKeyCode         = 8;
+CPTabKeyCode            = 9;
+CPReturnKeyCode         = 13;
+CPEscapeKeyCode         = 27;
+CPSpaceKeyCode          = 32;
+CPPageUpKeyCode         = 33;
+CPPageDownKeyCode       = 34;
+CPLeftArrowKeyCode      = 37;
+CPUpArrowKeyCode        = 38;
+CPRightArrowKeyCode     = 39;
+CPDownArrowKeyCode      = 40;
+CPDeleteForwardKeyCode  = 46;
 
 /*!
     @ingroup appkit
     @class CPResponder
-    
+
     Subclasses of CPResonder can be part of the responder chain.
 */
 @implementation CPResponder : CPObject
@@ -106,39 +106,36 @@ CPDownArrowKeyCode  = 40;
     {
         var event = events[index];
 
-        switch([event keyCode])
+        switch([[event characters] characterAtIndex:0])
         {
-            case CPPageUpKeyCode:       [self doCommandBySelector:@selector(pageUp:)];
-                                        break;
-            case CPPageDownKeyCode:     [self doCommandBySelector:@selector(pageDown:)];
-                                        break;
-            case CPLeftArrowKeyCode:    [self doCommandBySelector:@selector(moveLeft:)];
-                                        break;
-            case CPRightArrowKeyCode:   [self doCommandBySelector:@selector(moveRight:)];
-                                        break;
-            case CPUpArrowKeyCode:      [self doCommandBySelector:@selector(moveUp:)];
-                                        break;
-            case CPDownArrowKeyCode:    [self doCommandBySelector:@selector(moveDown:)];
-                                        break;
-            case CPDeleteKeyCode:       [self doCommandBySelector:@selector(deleteBackward:)];
-                                        break;
-            case CPReturnKeyCode:
-            case 3:                     [self doCommandBySelector:@selector(insertLineBreak:)];
-                                        break;
-            
-            case CPEscapeKeyCode:       [self doCommandBySelector:@selector(cancel:)];
-                                        break;
+            case CPPageUpFunctionKey:       [self doCommandBySelector:@selector(pageUp:)];
+                                            break;
+            case CPPageDownFunctionKey:     [self doCommandBySelector:@selector(pageDown:)];
+                                            break;
+            case CPLeftArrowFunctionKey:    [self doCommandBySelector:@selector(moveLeft:)];
+                                            break;
+            case CPRightArrowFunctionKey:   [self doCommandBySelector:@selector(moveRight:)];
+                                            break;
+            case CPUpArrowFunctionKey:      [self doCommandBySelector:@selector(moveUp:)];
+                                            break;
+            case CPDownArrowFunctionKey:    [self doCommandBySelector:@selector(moveDown:)];
+                                            break;
+            case CPDeleteCharacter:         [self doCommandBySelector:@selector(deleteBackward:)];
+                                            break;
+            case CPCarriageReturnCharacter:
+            case CPNewlineCharacter:        [self doCommandBySelector:@selector(insertLineBreak:)];
+                                            break;
 
-            case CPTabKeyCode:          var shift = [event modifierFlags] & CPShiftKeyMask;
+            case CPEscapeFunctionKey:       [self doCommandBySelector:@selector(cancel:)];
+                                            break;
 
-                                        if (!shift)
-                                            [self doCommandBySelector:@selector(insertTab:)];
-                                        else
-                                            [self doCommandBySelector:@selector(insertBackTab:)];
+            case CPTabCharacter:            if (!([event modifierFlags] & CPShiftKeyMask))
+                                                [self doCommandBySelector:@selector(insertTab:)];
+                                            else
+                                                [self doCommandBySelector:@selector(insertBackTab:)];
+                                            break;
 
-                                        break;
-
-            default:                    [self insertText:[event characters]];
+            default:                        [self insertText:[event characters]];
         }
     }
 }
@@ -315,7 +312,7 @@ CPDownArrowKeyCode  = 40;
     if([self respondsToSelector:aSelector])
     {
         [self performSelector:aSelector withObject:anObject];
-        
+
         return YES;
     }
 
@@ -366,10 +363,10 @@ var CPResponderNextResponderKey = @"CPResponderNextResponderKey";
 - (id)initWithCoder:(CPCoder)aCoder
 {
     self = [super init];
-    
+
     if (self)
         _nextResponder = [aCoder decodeObjectForKey:CPResponderNextResponderKey];
-    
+
     return self;
 }
 
