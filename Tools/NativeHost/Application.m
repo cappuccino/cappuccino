@@ -15,6 +15,8 @@
 
 - (void)sendEvent:(NSEvent *)anEvent
 {
+    [WebWindow enableAllWindows];
+
     NSWindow * window = [anEvent window];
 
     if (!window || [window isKindOfClass:[WebWindow class]])
