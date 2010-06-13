@@ -1942,10 +1942,16 @@ CPTexturedBackgroundWindowMask
         else
         {
             var mainMenu = [CPApp mainMenu],
-                menuWindow = mainMenu ? mainMenu._menuWindow : nil;
+                menuBarClass = objj_getClass("_CPMenuBarWindow"),
+                menuWindow;
+
             for (var i = 0; i < windowCount; i++)
             {
                 var currentWindow = allWindows[i];
+
+                if ([currentWindow isKindOfClass:menuBarClass])
+                    menuWindow = currentWindow;
+
                 if (currentWindow === self || currentWindow === menuWindow)
                     continue;
 
@@ -1971,10 +1977,16 @@ CPTexturedBackgroundWindowMask
         else
         {
             var mainMenu = [CPApp mainMenu],
-                menuWindow = mainMenu ? mainMenu._menuWindow : nil;
+                menuBarClass = objj_getClass("_CPMenuBarWindow"),
+                menuWindow;
+
             for (var i = 0; i < windowCount; i++)
             {
                 var currentWindow = allWindows[i];
+
+                if ([currentWindow isKindOfClass:menuBarClass])
+                    menuWindow = currentWindow;
+
                 if (currentWindow === self || currentWindow === menuWindow)
                     continue;
 
