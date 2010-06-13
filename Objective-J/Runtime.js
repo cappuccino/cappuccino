@@ -645,6 +645,8 @@ GLOBAL(objj_fastEnumerator) = function(/*Object*/ anObject, /*Integer*/ anAssign
         this.e();
 }
 
+DISPLAY_NAME(objj_fastEnumerator);
+
 objj_fastEnumerator.prototype.e = function()
 {
     var object = this._target;
@@ -720,3 +722,5 @@ objj_fastEnumerator.prototype.e = function()
     // fast enumeration method again.
     return this.l > 0;
 }
+
+DISPLAY_NAME(objj_fastEnumerator.prototype.e);
