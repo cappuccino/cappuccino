@@ -847,11 +847,13 @@
 
 @end
 
-var CPCollectionViewMinItemSizeKey      = @"CPCollectionViewMinItemSizeKey",
-    CPCollectionViewMaxItemSizeKey      = @"CPCollectionViewMaxItemSizeKey",
-    CPCollectionViewVerticalMarginKey   = @"CPCollectionViewVerticalMarginKey",
-    CPCollectionViewSelectableKey       = @"CPCollectionViewSelectableKey",
-    CPCollectionViewBackgroundColorsKey = @"CPCollectionViewBackgroundColorsKey";
+var CPCollectionViewMinItemSizeKey        = @"CPCollectionViewMinItemSizeKey",
+    CPCollectionViewMaxItemSizeKey        = @"CPCollectionViewMaxItemSizeKey",
+    CPCollectionViewVerticalMarginKey     = @"CPCollectionViewVerticalMarginKey",
+    CPCollectionViewMaxNumberOfRowsKey    = @"CPCollectionViewMaxNumberOfRowsKey",
+    CPCollectionViewMaxNumberOfColumnsKey = @"CPCollectionViewMaxNumberOfColumnsKey",
+    CPCollectionViewSelectableKey         = @"CPCollectionViewSelectableKey",
+    CPCollectionViewBackgroundColorsKey   = @"CPCollectionViewBackgroundColorsKey";
 
 
 @implementation CPCollectionView (CPCoding)
@@ -871,6 +873,9 @@ var CPCollectionViewMinItemSizeKey      = @"CPCollectionViewMinItemSizeKey",
 
         _minItemSize = [aCoder decodeSizeForKey:CPCollectionViewMinItemSizeKey] || CGSizeMakeZero();
         _maxItemSize = [aCoder decodeSizeForKey:CPCollectionViewMaxItemSizeKey] || CGSizeMakeZero();
+        
+        _maxNumberOfRows = [aCoder decodeIntForKey:CPCollectionViewMaxNumberOfRowsKey] || 0;
+        _maxNumberOfColumns = [aCoder decodeIntForKey:CPCollectionViewMaxNumberOfColumnsKey] || 0;
 
         _verticalMargin = [aCoder decodeFloatForKey:CPCollectionViewVerticalMarginKey];
 
@@ -898,6 +903,9 @@ var CPCollectionViewMinItemSizeKey      = @"CPCollectionViewMinItemSizeKey",
     if (!CGSizeEqualToSize(_maxItemSize, CGSizeMakeZero()))
       [aCoder encodeSize:_maxItemSize forKey:CPCollectionViewMaxItemSizeKey];
 
+    [aCoder encodeInt:_maxNumberOfRows forKey:CPCollectionViewMaxNumberOfRowsKey];
+    [aCoder encodeInt:_maxNumberOfColumns forKey:CPCollectionViewMaxNumberOfColumnsKey];
+    
     [aCoder encodeBool:_isSelectable forKey:CPCollectionViewSelectableKey];
 
     [aCoder encodeFloat:_verticalMargin forKey:CPCollectionViewVerticalMarginKey];
