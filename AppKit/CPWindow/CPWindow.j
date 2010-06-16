@@ -320,6 +320,8 @@ var CPWindowSaveImage       = nil,
     CPDictionary                        _sheetContext;
     CPWindow                            _parentView;
     BOOL                                _isSheet;
+
+    _CPWindowFrameAnimation             _frameAnimation;
 }
 
 /*
@@ -659,9 +661,10 @@ CPTexturedBackgroundWindowMask
 
     if (shouldAnimate)
     {
-        var animation = [[_CPWindowFrameAnimation alloc] initWithWindow:self targetFrame:aFrame];
+        [_frameAnimation stopAnimation];
+        _frameAnimation = [[_CPWindowFrameAnimation alloc] initWithWindow:self targetFrame:aFrame];
 
-        [animation startAnimation];
+        [_frameAnimation startAnimation];
     }
     else
     {
@@ -2074,11 +2077,12 @@ CPTexturedBackgroundWindowMask
 
 - (void)_setFrame:(CGRect)aFrame delegate:(id)delegate duration:(int)duration curve:(CPAnimationCurve)curve
 {
-    var animation = [[_CPWindowFrameAnimation alloc] initWithWindow:self targetFrame:aFrame];
-    [animation setDelegate:delegate];
-    [animation setAnimationCurve:curve];
-    [animation setDuration:duration];
-    [animation startAnimation];
+    [_frameAnimation stopAnimation];
+    _frameAnimation = [[_CPWindowFrameAnimation alloc] initWithWindow:self targetFrame:aFrame];
+    [_frameAnimation setDelegate:delegate];
+    [_frameAnimation setAnimationCurve:curve];
+    [_frameAnimation setDuration:duration];
+    [_frameAnimation startAnimation];
 }
 
 /* @ignore */
