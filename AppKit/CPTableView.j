@@ -1020,7 +1020,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 
 - (int)selectedRow
 {
-    return [_selectedRowIndexes lastIndex];
+    return _lastSelectedRow;
 }
 
 - (CPIndexSet)selectedRowIndexes
