@@ -569,7 +569,23 @@ CPButtonStateMixed  = CPThemeState("mixed");
 */
 - (void)setKeyEquivalent:(CPString)aString
 {
+    // Check if the key equivalent is the enter key
+    // Treat \r and \n as the same key equivalent. See issue #710.
+    if (aString === CPNewlineCharacter || aString === CPCarriageReturnCharacter)
+        [[self window] setDefaultButton:self];
+    else if ([[self window] defaultButton] === self)
+        [[self window] setDefaultButton:NO];
+
     _keyEquivalent = aString || @"";
+}
+
+- (void)viewWillMoveToWindow:(CPWindow)aWindow
+{
+    if ([[self window] defaultButton] === self)
+        [[self window] setDefaultButton:nil];
+
+    if ([self keyEquivalent] === CPNewlineCharacter || [self keyEquivalent] === CPCarriageReturnCharacter)
+        [aWindow setDefaultButton:self];
 }
 
 /*!
@@ -602,6 +618,10 @@ CPButtonStateMixed  = CPThemeState("mixed");
 */
 - (BOOL)performKeyEquivalent:(CPEvent)anEvent
 {
+    // Don't handle the key equivalent for the default window because the window will handle it for us
+    if ([[self window] defaultButton] === self)
+        return NO;
+
     if (![anEvent _triggersKeyEquivalent:[self keyEquivalent] withModifierMask:[self keyEquivalentModifierMask]])
         return NO;
 
