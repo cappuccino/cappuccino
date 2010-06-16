@@ -909,6 +909,9 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     else
         _selectedRowIndexes = [rows copy];
 
+    // update last selected row
+    _lastSelectedRow = ([rows count] > 0) ? [rows lastIndex] : -1;
+
     [self _updateHighlightWithOldRows:previousSelectedIndexes newRows:_selectedRowIndexes];
     [_tableDrawView display]; // FIXME: should be setNeedsDisplayInRect:enclosing rect of new (de)selected rows
                               // but currently -drawRect: is not implemented here
@@ -3267,8 +3270,6 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
                 [newSelection removeIndex:index];
         }
     }
-
-    _lastSelectedRow = ([newSelection count] > 0) ? aRow : -1;
 
     // if empty selection is not allowed and the new selection has nothing selected, abort
     if (!_allowsEmptySelection && [newSelection count] === 0)
