@@ -1,9 +1,90 @@
+@import <Foundation/CPURL.j>
+@import <Foundation/CPDictionary.j>
 @import <Foundation/CPArray.j>
 @import <Foundation/CPString.j>
 @import <Foundation/CPNumber.j>
 @import <Foundation/CPSortDescriptor.j>
 
 @implementation CPArrayTest : OJTestCase
+
+- (void)testComparingSimpleArrays
+{
+    [self assertTrue:[["1", 2, [3, 4, 5]] isEqual:["1", 2, [3, 4, 5]]]];
+    [self assertFalse:[["1", 2, [3, 4, "5"]] isEqual:["1", 2, [3, 4, 5]]]];
+}
+
+- (void)testComparingArraysOfCappuccinoObjects
+{
+    var obj1 = [CPURL URLWithString:"/test/url"],
+        obj2 = [CPURL URLWithString:"/test/url"],
+        obj3 = [CPArray arrayWithObjects:["test1", "test2", "test3"]],
+        obj4 = [CPArray arrayWithObjects:["test1", "test2", "test3"]],
+        obj5 = [CPDictionary dictionaryWithObjects:[1, 2, 3] forKeys:["a", "b", "c"]],
+        obj6 = [CPDictionary dictionaryWithObjects:[1, 2, 3] forKeys:["a", "b", "c"]],
+        obj7 = [CPDictionary dictionaryWithObjects:[1, 2, 3] forKeys:["a", "b", "e"]];
+
+    [self assertTrue:[[obj1, [obj3, obj5]] isEqual:[obj2, [obj4, obj6]]]];
+    [self assertFalse:[[obj1, [obj3, obj5]] isEqual:[obj2, [obj4, obj7]]]];
+}
+
+- (void)testComparingArraysOfJSObjects
+{
+    var obj1 = {'name' : 'test',
+                'property' : [1, '2', [3, 4], {'inner_object' : {'a' : 'b'}}],
+                'another_inner_object' : {'prop1' : 8,
+                                          'prop2' : {'x' : [1, 2, 3]},
+                                          'prop3' : 'string'}};
+    var obj2 = {'name' : 'test',
+                'another_inner_object' : {'prop1' : 8,
+                                          'prop2' : {'x' : [1, 8, 3]},
+                                          'prop3' : 'string'}};
+    var obj3 = {'name' : 'test',
+                'property' : [1, '2', [3, 4], {'inner_object' : {'a' : 'b'}}],
+                'another_inner_object' : {'prop1' : 8,
+                                          'prop2' : {'x' : [1, 2, 3]},
+                                          'prop3' : 'string'}};
+    var obj4 = {'name' : 'test',
+                'another_inner_object' : {'prop1' : 8,
+                                          'prop2' : {'x' : [1, 8, 3]},
+                                          'prop3' : 'string'}};
+    [self assertTrue:[[obj1, obj2] isEqual:[obj3, obj4]]];
+    [self assertFalse:[[obj1, obj2] isEqual:[obj4, obj3]]];
+
+}
+
+- (void)testComparingArraysOfObjjAndJSObjects
+{
+    var obj1 = {'name' : 'test',
+                'property' : [1, '2', [3, 4], {'inner_object' : {'a' : 'b'}}],
+                'another_inner_object' : {'prop1' : 8,
+                                          'prop2' : {'x' : [1, 2, 3]},
+                                          'prop3' : 'string'}};
+    var obj2 = {'name' : 'test',
+                'another_inner_object' : {'prop1' : 8,
+                                          'prop2' : {'x' : [1, 8, 3]},
+                                          'prop3' : 'string'}};
+    var obj3 = {'name' : 'test',
+                'property' : [1, '2', [3, 4], {'inner_object' : {'a' : 'b'}}],
+                'another_inner_object' : {'prop1' : 8,
+                                          'prop2' : {'x' : [1, 2, 3]},
+                                          'prop3' : 'string'}};
+    var obj4 = {'name' : 'test',
+                'another_inner_object' : {'prop1' : 8,
+                                          'prop2' : {'x' : [1, 8, 3]},
+                                          'prop3' : 'string'}};
+
+    var obj6 = [CPURL URLWithString:"/test/url"],
+        obj7 = [CPURL URLWithString:"/test/url"],
+        obj8 = [CPArray arrayWithObjects:["test1", "test2", "test3"]],
+        obj9 = [CPArray arrayWithObjects:["test1", "test2", "test3"]],
+        obj10 = [CPDictionary dictionaryWithObjects:[1, 2, 3] forKeys:["a", "b", "c"]],
+        obj11 = [CPDictionary dictionaryWithObjects:[1, 2, 3] forKeys:["a", "b", "c"]],
+        obj12 = [CPDictionary dictionaryWithObjects:[1, 2, 3] forKeys:["a", "b", "e"]];
+    [self assertTrue:[[obj1, obj6, obj10, [obj2, obj8]] isEqual:[obj3, obj7, obj11, [obj4, obj9]]]];
+    [self assertFalse:[[obj1, obj6, obj10, [obj2, obj8]] isEqual:[obj3, {"json" : "test"}, obj11, [obj4, obj9]]]];
+    [self assertFalse:[[obj12, obj6, obj10, [obj2, obj8]] isEqual:[obj3, obj7, obj11, [obj4, obj9]]]];
+    [self assertFalse:[[obj1, obj6, obj10, [obj2, obj8]] isEqual:[obj3, obj7, obj11, [obj4, obj12]]]];
+}
 
 - (void)testComponentsJoinedByString
 {
