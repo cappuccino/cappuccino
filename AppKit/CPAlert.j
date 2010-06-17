@@ -301,9 +301,11 @@ var CPAlertWarningImage,
     [[_alertPanel contentView] addSubview:button];
     
     if (_buttonCount == 0)
-        [_alertPanel setDefaultButton:button];
+        [button setKeyEquivalent:CPCarriageReturnCharacter];
     else if ([title lowercaseString] === "cancel")
         [button setKeyEquivalent:CPEscapeFunctionKey];
+    else
+        [button setKeyEquivalent:nil];
 
     _buttonCount++;
     [_buttons addObject:button];
