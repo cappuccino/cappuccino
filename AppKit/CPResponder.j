@@ -135,7 +135,8 @@ CPDeleteForwardKeyCode  = 46;
                                                 [self doCommandBySelector:@selector(insertBackTab:)];
                                             break;
 
-            default:                        [self insertText:[event characters]];
+            default:                        if (!([event modifierFlags] & (CPCommandKeyMask | CPControlKeyMask)))
+                                                [self insertText:[event characters]];
         }
     }
 }
