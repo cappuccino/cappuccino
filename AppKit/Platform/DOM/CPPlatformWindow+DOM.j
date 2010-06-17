@@ -640,7 +640,15 @@ var supportsNativeDragAndDrop = [CPPlatform supportsDragAndDrop];
                             else
                                 _keyCode = aDOMEvent.keyCode;
 
-                            var characters = KeyCodesToFunctionUnicodeMap[_keyCode] || String.fromCharCode(_keyCode).toLowerCase();
+                            var characters;
+
+                            // Is this a special key?
+                            if (aDOMEvent.which === 0 || aDOMEvent.charCode === 0)
+                                characters = KeyCodesToFunctionUnicodeMap[_keyCode];
+
+                            if (!characters)
+                                characters = String.fromCharCode(_keyCode).toLowerCase();
+
                             overrideCharacters = (modifierFlags & CPShiftKeyMask || _capsLockActive) ? characters.toUpperCase() : characters;
 
                             // check for caps lock state
@@ -713,8 +721,15 @@ var supportsNativeDragAndDrop = [CPPlatform supportsDragAndDrop];
                             _lastKey = keyCode;
                             _charCodes[keyCode] = charCode;
 
-                            var characters = overrideCharacters || KeyCodesToFunctionUnicodeMap[charCode] || String.fromCharCode(charCode),
-                                charactersIgnoringModifiers = characters.toLowerCase();
+                            var characters = overrideCharacters;
+                            // Is this a special key?
+                            if (!characters && (aDOMEvent.which === 0 || aDOMEvent.charCode === 0))
+                                characters = KeyCodesToFunctionUnicodeMap[charCode];
+
+                            if (!characters)
+                                characters = String.fromCharCode(charCode);
+
+                            charactersIgnoringModifiers = characters.toLowerCase(); // FIXME: This isn't correct. It SHOULD include Shift.
 
                             // Safari won't send proper capitalization during cmd-key events
                             if (!overrideCharacters && (modifierFlags & CPCommandKeyMask) && ((modifierFlags & CPShiftKeyMask) || _capsLockActive))
@@ -722,7 +737,7 @@ var supportsNativeDragAndDrop = [CPPlatform supportsDragAndDrop];
 
                             event = [CPEvent keyEventWithType:CPKeyDown location:location modifierFlags:modifierFlags
                                         timestamp:timestamp windowNumber:windowNumber context:nil
-                                        characters:characters charactersIgnoringModifiers:charactersIgnoringModifiers isARepeat:isARepeat keyCode:keyCode];
+                                        characters:characters charactersIgnoringModifiers:charactersIgnoringModifiers isARepeat:isARepeat keyCode:charCode];
 
                             if (isNativePasteEvent)
                             {
