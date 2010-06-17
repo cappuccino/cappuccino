@@ -1379,6 +1379,8 @@ CPTexturedBackgroundWindowMask
 
     switch (type)
     {
+        case CPFlagsChanged:        return [[self firstResponder] flagsChanged:anEvent];
+
         case CPKeyUp:               return [[self firstResponder] keyUp:anEvent];
 
         case CPKeyDown:             [[self firstResponder] keyDown:anEvent];

@@ -156,6 +156,14 @@ KeyCodesToFunctionUnicodeMap[CPKeyCodes.UP]            = CPUpArrowFunctionKey;
 KeyCodesToFunctionUnicodeMap[CPKeyCodes.RIGHT]         = CPRightArrowFunctionKey;
 KeyCodesToFunctionUnicodeMap[CPKeyCodes.DOWN]          = CPDownArrowFunctionKey;
 
+var ModifierKeyCodes = [
+    CPKeyCodes.META,
+    CPKeyCodes.MAC_FF_META,
+    CPKeyCodes.CTRL,
+    CPKeyCodes.ALT,
+    CPKeyCodes.SHIFT
+];
+
 var supportsNativeDragAndDrop = [CPPlatform supportsDragAndDrop];
 
 @implementation CPPlatformWindow (DOM)
@@ -607,8 +615,8 @@ var supportsNativeDragAndDrop = [CPPlatform supportsDragAndDrop];
 - (void)keyEvent:(DOMEvent)aDOMEvent
 {
     var event,
-        timestamp = aDOMEvent.timeStamp ? aDOMEvent.timeStamp : new Date(),
-        sourceElement = (aDOMEvent.target || aDOMEvent.srcElement),
+        timestamp = aDOMEvent.timeStamp || new Date(),
+        sourceElement = aDOMEvent.target || aDOMEvent.srcElement,
         windowNumber = [[CPApp keyWindow] windowNumber],
         modifierFlags = (aDOMEvent.shiftKey ? CPShiftKeyMask : 0) |
                         (aDOMEvent.ctrlKey ? CPControlKeyMask : 0) |
@@ -627,7 +635,7 @@ var supportsNativeDragAndDrop = [CPPlatform supportsDragAndDrop];
     switch (aDOMEvent.type)
     {
         case "keydown":     // Grab and store the keycode now since it is correct and consistent at this point.
-                            if (aDOMEvent.keyCode.keyCode in MozKeyCodeToKeyCodeMap)
+                            if (aDOMEvent.keyCode in MozKeyCodeToKeyCodeMap)
                                 _keyCode = MozKeyCodeToKeyCodeMap[aDOMEvent.keyCode];
                             else
                                 _keyCode = aDOMEvent.keyCode;
@@ -639,7 +647,16 @@ var supportsNativeDragAndDrop = [CPPlatform supportsDragAndDrop];
                             if (_keyCode === CPKeyCodes.CAPS_LOCK)
                                 _capsLockActive = YES;
 
-                            if (modifierFlags & (CPControlKeyMask | CPCommandKeyMask))
+                            if ([ModifierKeyCodes containsObject:_keyCode])
+                            {
+                                // A modifier key will never fire keypress. We don't need to do any other processing so we just fire it here and break.
+                                event = [CPEvent keyEventWithType:CPFlagsChanged location:location modifierFlags:modifierFlags
+                                            timestamp:timestamp windowNumber:windowNumber context:nil
+                                            characters:nil charactersIgnoringModifiers:nil isARepeat:NO keyCode:_keyCode];
+
+                                break;
+                            }
+                            else if (modifierFlags & (CPControlKeyMask | CPCommandKeyMask))
                             {
                                 //we are simply going to skip all keypress events that use cmd/ctrl key
                                 //this lets us be consistent in all browsers and send on the keydown
@@ -727,6 +744,9 @@ var supportsNativeDragAndDrop = [CPPlatform supportsDragAndDrop];
                             // check for caps lock state
                             if (keyCode === CPKeyCodes.CAPS_LOCK)
                                 _capsLockActive = NO;
+
+                            if ([ModifierKeyCodes containsObject:keyCode])
+                                break;
 
                             var characters = KeyCodesToFunctionUnicodeMap[charCode] || String.fromCharCode(charCode),
                                 charactersIgnoringModifiers = characters.toLowerCase();

@@ -236,6 +236,15 @@ CPDeleteForwardKeyCode  = 46;
     [_nextResponder performSelector:_cmd withObject:anEvent];
 }
 
+/*!
+    Notifies the receiver that the user has pressed or released a modifier key (Shift, Control, and so on).
+    @param anEvent information about the key press
+*/
+- (void)flagsChanged:(CPEvent)anEvent
+{
+    [_nextResponder performSelector:_cmd withObject:anEvent];
+}
+
 /*
     FIXME This description is bad.
     Based on \c anEvent, the receiver should simulate the event.
