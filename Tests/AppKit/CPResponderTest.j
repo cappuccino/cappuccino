@@ -21,16 +21,16 @@
 - (void)testInterpretKeyEvents
 {
     var tests = [
-        CPKeyCodes.PAGE_UP,     CPPageUpFunctionKey,        @selector(pageUp:),
-        CPKeyCodes.PAGE_DOWN,   CPPageDownFunctionKey,      @selector(pageDown:),
+        CPKeyCodes.PAGE_UP,     CPPageUpFunctionKey,        @selector(scrollPageUp:),
+        CPKeyCodes.PAGE_DOWN,   CPPageDownFunctionKey,      @selector(scrollPageDown:),
         CPKeyCodes.LEFT,        CPLeftArrowFunctionKey,     @selector(moveLeft:),
         CPKeyCodes.RIGHT,       CPRightArrowFunctionKey,    @selector(moveRight:),
         CPKeyCodes.UP,          CPUpArrowFunctionKey,       @selector(moveUp:),
         CPKeyCodes.DOWN,        CPDownArrowFunctionKey,     @selector(moveDown:),
         CPKeyCodes.BACKSPACE,   CPDeleteCharacter,          @selector(deleteBackward:),
-        CPKeyCodes.ENTER,       CPCarriageReturnCharacter,  @selector(insertLineBreak:),
-        0,                      CPNewlineCharacter,         @selector(insertLineBreak:),
-        CPKeyCodes.ESC,         CPEscapeFunctionKey,        @selector(cancel:),
+        CPKeyCodes.ENTER,       CPCarriageReturnCharacter,  @selector(insertNewline:),
+        0,                      CPNewlineCharacter,         @selector(insertNewline:),
+        CPKeyCodes.ESC,         CPEscapeFunctionKey,        @selector(cancelOperation:),
         CPKeyCodes.TAB,         CPTabCharacter,             @selector(insertTab:)
     ];
 
@@ -47,13 +47,16 @@
         [responder interpretKeyEvents:[keyEvent]];
         [self assert:[selector] equals:responder.doCommandCalls];
     }
+}
 
+- (void)testInterpretKeyEventsWithModifierFlags
+{
     responder.doCommandCalls = [];
     keyEvent = [CPEvent keyEventWithType:CPKeyDown location:CGPointMakeZero() modifierFlags:CPShiftKeyMask
         timestamp:nil windowNumber:nil context:nil
-        characters:CPTabCharacter charactersIgnoringModifiers:CPTabCharacter isARepeat:NO keyCode:CPKeyCodes.TAB];
+        characters:CPLeftArrowFunctionKey charactersIgnoringModifiers:CPLeftArrowFunctionKey isARepeat:NO keyCode:CPKeyCodes.LEFT];
     [responder interpretKeyEvents:[keyEvent]];
-    [self assert:[@selector(insertBackTab:)] equals:responder.doCommandCalls];
+    [self assert:[@selector(moveLeftAndModifySelection:)] equals:responder.doCommandCalls];
 }
 
 @end
