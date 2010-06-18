@@ -104,40 +104,24 @@ CPDeleteForwardKeyCode  = 46;
 
     for (; index < count; ++index)
     {
-        var event = events[index];
+        var event = events[index],
+            modifierFlags = [event modifierFlags],
+            character = [event charactersIgnoringModifiers],
+            selectorNames = [CPKeyBinding selectorsForKey:character modifierFlags:modifierFlags];
 
-        switch([[event characters] characterAtIndex:0])
+        if (selectorNames)
         {
-            case CPPageUpFunctionKey:       [self doCommandBySelector:@selector(pageUp:)];
-                                            break;
-            case CPPageDownFunctionKey:     [self doCommandBySelector:@selector(pageDown:)];
-                                            break;
-            case CPLeftArrowFunctionKey:    [self doCommandBySelector:@selector(moveLeft:)];
-                                            break;
-            case CPRightArrowFunctionKey:   [self doCommandBySelector:@selector(moveRight:)];
-                                            break;
-            case CPUpArrowFunctionKey:      [self doCommandBySelector:@selector(moveUp:)];
-                                            break;
-            case CPDownArrowFunctionKey:    [self doCommandBySelector:@selector(moveDown:)];
-                                            break;
-            case CPDeleteCharacter:         [self doCommandBySelector:@selector(deleteBackward:)];
-                                            break;
-            case CPCarriageReturnCharacter:
-            case CPNewlineCharacter:        [self doCommandBySelector:@selector(insertLineBreak:)];
-                                            break;
+            for (var s = 0, scount = selectorNames.length; s < scount; s++)
+            {
+                var selector = selectorNames[s];
+                if (!selector)
+                    continue;
 
-            case CPEscapeFunctionKey:       [self doCommandBySelector:@selector(cancel:)];
-                                            break;
-
-            case CPTabCharacter:            if (!([event modifierFlags] & CPShiftKeyMask))
-                                                [self doCommandBySelector:@selector(insertTab:)];
-                                            else
-                                                [self doCommandBySelector:@selector(insertBackTab:)];
-                                            break;
-
-            default:                        if (!([event modifierFlags] & (CPCommandKeyMask | CPControlKeyMask)))
-                                                [self insertText:[event characters]];
+                [self doCommandBySelector:CPSelectorFromString(selector)];
+            }
         }
+        else if (!(modifierFlags & (CPCommandKeyMask | CPControlKeyMask)) && [self respondsToSelector:@selector(insertText:)])
+            [self insertText:[event characters]];
     }
 }
 
