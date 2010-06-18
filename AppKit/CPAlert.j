@@ -145,14 +145,13 @@ var CPAlertWarningImage,
     for(var i=0; i < count; i++)
     {
         var button = _buttons[i];
-        
-        [button setFrameSize:CGSizeMake([button frame].size.width, (styleMask == CPHUDBackgroundWindowMask) ? 20.0 : 24.0)];
-        
         [button setTheme:(_windowStyle === CPHUDBackgroundWindowMask) ? [CPTheme themeNamed:"Aristo-HUD"] : [CPTheme defaultTheme]];
 
         [[_alertPanel contentView] addSubview:button];
     }
-    
+
+    [self _layoutButtons];
+
     if (!_messageLabel)
     {
         _messageLabel = [[CPTextField alloc] initWithFrame:CGRectMakeZero()];
@@ -160,6 +159,7 @@ var CPAlertWarningImage,
         [_messageLabel setLineBreakMode:CPLineBreakByWordWrapping];
         [_messageLabel setAlignment:CPJustifiedTextAlignment];
         [_messageLabel setAutoresizingMask:CPViewWidthSizable|CPViewHeightSizable];
+
 
         _alertImageView = [[CPImageView alloc] initWithFrame:CGRectMake(15.0, 12.0, 32.0, 32.0)];
 
@@ -288,8 +288,8 @@ var CPAlertWarningImage,
 - (void)addButtonWithTitle:(CPString)title
 {
     var bounds = [[_alertPanel contentView] bounds],
-        button = [[CPButton alloc] initWithFrame:CGRectMake(CGRectGetWidth(bounds) - ((_buttonCount + 1) * 90.0), CGRectGetHeight(bounds) - 34.0, 80.0, (_windowStyle == CPHUDBackgroundWindowMask) ? 20.0 : 24.0)];
-    
+        button = [[CPButton alloc] initWithFrame:CGRectMakeZero()];
+
     [button setTitle:title];
     [button setTarget:self];
     [button setTag:_buttonCount];
@@ -309,6 +309,27 @@ var CPAlertWarningImage,
 
     _buttonCount++;
     [_buttons addObject:button];
+
+    [self _layoutButtons];
+}
+
+- (void)_layoutButtons
+{
+    var bounds = [[_alertPanel contentView] bounds],
+        count = [_buttons count],
+        offsetX = CGRectGetWidth(bounds),
+        offsetY = CGRectGetHeight(bounds) - 34.0;
+    for(var i=0; i < count; i++)
+    {
+        var button = _buttons[i];
+
+        [button sizeToFit];
+        var buttonBounds = [button bounds],
+            width = MAX(80.0, CGRectGetWidth(buttonBounds)),
+            height = CGRectGetHeight(buttonBounds);
+        offsetX -= (width + 10);
+        [button setFrame:CGRectMake(offsetX, offsetY, width, height)];
+    }
 }
 
 - (void)_layoutMessage
