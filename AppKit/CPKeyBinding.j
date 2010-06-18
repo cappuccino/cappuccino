@@ -135,7 +135,7 @@ CPStandardKeyBindings[CPPageDownFunctionKey] = @"scrollPageDown:";
 CPStandardKeyBindings[@"~" + CPPageDownFunctionKey] = @"pageDown:";
 CPStandardKeyBindings[@"$" + CPPageDownFunctionKey] = @"pageDownAndModifySelection:";
 
-var CPKeyBindingCache = [];
+var CPKeyBindingCache = {};
 
 @implementation CPKeyBinding : CPObject
 {
@@ -143,6 +143,8 @@ var CPKeyBindingCache = [];
     unsigned    _modifierFlags;
 
     CPArray     _selectors;
+    
+    CPString    _cacheName;
 }
 
 + (void)initialize
@@ -175,19 +177,16 @@ var CPKeyBindingCache = [];
 
 + (void)cacheKeyBinding:(CPKeyBinding)aBinding
 {
-    if (aBinding)
-        [CPKeyBindingCache addObject:aBinding];
+    if (!aBinding)
+        return;
+
+    CPKeyBindingCache[[aBinding _cacheName]] = aBinding;
 }
 
 + (CPKeyBinding)keyBindingForKey:(CPString)aKey modifierFlags:(unsigned)aFlag
 {
     var tempBinding = [[self alloc] initWithKey:aKey modifierFlags:aFlag selectors:nil];
-    for (var i = 0, count = CPKeyBindingCache.length; i < count; i++)
-    {
-        var binding = CPKeyBindingCache[i];
-        if ([binding isEqual:tempBinding])
-            return binding;
-    }
+    return CPKeyBindingCache[[tempBinding _cacheName]];
 }
 
 + (CPArray)selectorsForKey:(CPString)aKey modifierFlags:(unsigned)aFlag
@@ -205,6 +204,23 @@ var CPKeyBindingCache = [];
         _modifierFlags = aFlag;
 
         _selectors = selectors;
+
+        // We normalize our key binding string in order to properly cache it.
+        // We want to ensure the modifiers are always in the same order.
+        var cacheName = [];
+
+        if (_modifierFlags & CPCommandKeyMask)
+            cacheName.push(@"@");
+        if (_modifierFlags & CPControlKeyMask)
+            cacheName.push(@"^");
+        if (_modifierFlags & CPAlternateKeyMask)
+            cacheName.push(@"~");
+        if (_modifierFlags & CPShiftKeyMask)
+            cacheName.push(@"$");
+
+        cacheName.push(_key);
+
+        _cacheName = cacheName.join(@"");
     }
 
     return self;
@@ -223,6 +239,11 @@ var CPKeyBindingCache = [];
 - (CPArray)selectors
 {
     return _selectors;
+}
+
+- (CPString)_cacheName
+{
+    return _cacheName;
 }
 
 - (BOOL)isEqual:(CPKeyBinding)rhs
