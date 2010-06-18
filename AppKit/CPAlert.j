@@ -83,6 +83,7 @@ var CPAlertWarningImage,
     CPPanel         _alertPanel;
 
     CPTextField     _messageLabel;
+    CPTextField     _informativeLabel;
     CPImageView     _alertImageView;
 
     CPAlertStyle    _alertStyle;
@@ -140,8 +141,6 @@ var CPAlertWarningImage,
     [_alertPanel setFloatingPanel:YES];
     [_alertPanel center];
 
-    [_messageLabel setTextColor:(styleMask & CPHUDBackgroundWindowMask) ? [CPColor whiteColor] : [CPColor blackColor]];
-
     var count = [_buttons count];
     for(var i=0; i < count; i++)
     {
@@ -156,19 +155,28 @@ var CPAlertWarningImage,
     
     if (!_messageLabel)
     {
-        var bounds = [[_alertPanel contentView] bounds];
-
-        _messageLabel = [[CPTextField alloc] initWithFrame:CGRectMake(57.0, 10.0, CGRectGetWidth(bounds) - 73.0, 62.0)];
+        _messageLabel = [[CPTextField alloc] initWithFrame:CGRectMakeZero()];
         [_messageLabel setFont:[CPFont boldSystemFontOfSize:13.0]];
         [_messageLabel setLineBreakMode:CPLineBreakByWordWrapping];
         [_messageLabel setAlignment:CPJustifiedTextAlignment];
         [_messageLabel setAutoresizingMask:CPViewWidthSizable|CPViewHeightSizable];
 
         _alertImageView = [[CPImageView alloc] initWithFrame:CGRectMake(15.0, 12.0, 32.0, 32.0)];
+
+        _informativeLabel = [[CPTextField alloc] initWithFrame:CGRectMakeZero()];
+        [_informativeLabel setFont:[CPFont systemFontOfSize:12.0]];
+        [_informativeLabel setLineBreakMode:CPLineBreakByWordWrapping];
+        [_informativeLabel setAlignment:CPJustifiedTextAlignment];
+        [_informativeLabel setAutoresizingMask:CPViewWidthSizable|CPViewHeightSizable];
     }
+    [_messageLabel setTextColor:(styleMask & CPHUDBackgroundWindowMask) ? [CPColor whiteColor] : [CPColor blackColor]];
+    [_informativeLabel setTextColor:(styleMask & CPHUDBackgroundWindowMask) ? [CPColor whiteColor] : [CPColor blackColor]];
 
     [[_alertPanel contentView] addSubview:_messageLabel];
     [[_alertPanel contentView] addSubview:_alertImageView];
+    [[_alertPanel contentView] addSubview:_informativeLabel];
+
+    [self _layoutMessage];
 }
 
 /*!
@@ -231,20 +239,40 @@ var CPAlertWarningImage,
 }
 
 /*!
-    Set’s the receiver’s message text, or title, to a given text.
+    Sets the receiver’s message text, or title, to a given text.
     @param messageText - Message text for the alert.
 */
 - (void)setMessageText:(CPString)messageText
 {
     [_messageLabel setStringValue:messageText];
+    [self _layoutMessage];
 }
 
-/*! 
-    Return's the receiver's message text body.
+/*!
+    Returns the receiver's message text body.
 */
 - (CPString)messageText
 {
     return [_messageLabel stringValue];
+}
+
+/*!
+    Sets the receiver's informative text, shown below the message text.
+    @param informativeText - The informative text.
+*/
+- (void)setInformativeText:(CPString)informativeText
+{
+    [_informativeLabel setStringValue:informativeText];
+    // No need to call _layoutMessage - only the length of the messageText
+    // can affect anything there.
+}
+
+/*!
+    Returns the receiver's informative text.
+*/
+- (CPString)informativeText
+{
+    return [_informativeLabel stringValue];
 }
 
 /*!
@@ -279,6 +307,19 @@ var CPAlertWarningImage,
 
     _buttonCount++;
     [_buttons addObject:button];
+}
+
+- (void)_layoutMessage
+{
+    var bounds = [[_alertPanel contentView] bounds],
+        width = CGRectGetWidth(bounds) - 73.0,
+        size = [([_messageLabel stringValue] || " ") sizeWithFont:[_messageLabel currentValueForThemeAttribute:@"font"] inWidth:width],
+        contentInset = [_messageLabel currentValueForThemeAttribute:@"content-inset"],
+        height = size.height + contentInset.top + contentInset.bottom;
+
+    [_messageLabel setFrame:CGRectMake(57.0, 10.0, width, height)];
+
+    [_informativeLabel setFrame:CGRectMake(57.0, 10.0 + height + 6.0, width, CGRectGetHeight(bounds) - height - 50.0)];
 }
 
 /*!
