@@ -30,6 +30,7 @@ CPStandardKeyBindings = {
     @"^$a": @"moveToBeginningOfParagraphAndModifySelection:",
     @"^b": @"moveBackward:",
     @"^$b": @"moveBackwardAndModifySelection:",
+    @"^~b": @"moveWordBackward:",
     @"^~$b": @"moveWordBackwardAndModifySelection:",
     @"^d": @"deleteForward:",
     @"^e": @"moveToEndOfParagraph:",
@@ -48,7 +49,7 @@ CPStandardKeyBindings = {
     @"^$p": @"moveUpAndModifySelection:",
     @"^t": @"transpose:",
     @"^v": @"pageDown:",
-    @"^v": @"pageDownAndModifySelection:",
+    @"^$v": @"pageDownAndModifySelection:",
     @"^y": @"yank:"
 };
 
