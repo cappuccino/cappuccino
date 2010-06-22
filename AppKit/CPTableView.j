@@ -3070,15 +3070,16 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 {
 	// We don't use rowAtPoint here because the drag indicator can appear below the last row
 	// and rowAtPoint doesn't return rows that are larger than numberOfRows
-	var row = FLOOR(dragPoint.y / ( _rowHeight + _intercellSpacing.height ));
-
+    // FIX ME: this is going to break when we implement variable row heights... 
+	var row = FLOOR(dragPoint.y / ( _rowHeight + _intercellSpacing.height )),
 	// Determine if the mouse is currently closer to this row or the row below it
-	var lowerRow = row + 1,
+        lowerRow = row + 1,
 		rect = [self rectOfRow:row],
-		lowerRect = [self rectOfRow:lowerRow];
+        bottomPoint = CGRectGetMaxY(rect),
+        bottomThirty = bottomPoint - ((bottomPoint - CGRectGetMinY(rect)) * 0.3);
 
-	if (ABS(CPRectGetMinY(lowerRect) - dragPoint.y) < ABS(dragPoint.y - CPRectGetMinY(rect)))
-		row = lowerRow;
+    if (dragPoint.y > MAX(bottomThirty, bottomPoint - 6))
+    	row = lowerRow;
 
     if (row >= [self numberOfRows])
         row = [self numberOfRows];
