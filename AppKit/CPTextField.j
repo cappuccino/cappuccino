@@ -807,11 +807,8 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
     {
         if ([[self window] firstResponder] === self)
             window.setTimeout(function() { element.select(); }, 0);
-        else
-        {
-            [[self window] makeFirstResponder:self];
+        else if ([self window] !== nil && [[self window] makeFirstResponder:self])
             window.setTimeout(function() {[self selectText:sender];}, 0);
-        }
     }
 #endif
 }
