@@ -93,7 +93,7 @@ _CPButtonBezelStyleHeights[CPHUDBezelStyle] = 20;
                     _bezelStyle = CPHUDBezelStyle;
             }
 
-            if ([cell isBordered] && _frame.size.height === 32.0)
+            if ([cell isBordered])
             {
                 CPLog.info("Adjusting CPButton height from " +_frame.size.height+ " / " + _bounds.size.height+" to " + 24);
                 _frame.size.height = 24.0;
