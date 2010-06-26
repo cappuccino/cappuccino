@@ -312,6 +312,8 @@
     while ((index = [_selectionIndexes indexGreaterThanIndex:index]) != CPNotFound)
         [_items[index] setSelected:YES];
 
+    [[CPKeyValueBinding getBinding:@"selectionIndexes" forObject:self] reverseSetValueFor:@"selectionIndexes"];
+
     if ([_delegate respondsToSelector:@selector(collectionViewDidChangeSelection:)])
         [_delegate collectionViewDidChangeSelection:self];
 }
@@ -873,7 +875,7 @@ var CPCollectionViewMinItemSizeKey        = @"CPCollectionViewMinItemSizeKey",
 
         _minItemSize = [aCoder decodeSizeForKey:CPCollectionViewMinItemSizeKey] || CGSizeMakeZero();
         _maxItemSize = [aCoder decodeSizeForKey:CPCollectionViewMaxItemSizeKey] || CGSizeMakeZero();
-        
+
         _maxNumberOfRows = [aCoder decodeIntForKey:CPCollectionViewMaxNumberOfRowsKey] || 0;
         _maxNumberOfColumns = [aCoder decodeIntForKey:CPCollectionViewMaxNumberOfColumnsKey] || 0;
 
@@ -905,7 +907,7 @@ var CPCollectionViewMinItemSizeKey        = @"CPCollectionViewMinItemSizeKey",
 
     [aCoder encodeInt:_maxNumberOfRows forKey:CPCollectionViewMaxNumberOfRowsKey];
     [aCoder encodeInt:_maxNumberOfColumns forKey:CPCollectionViewMaxNumberOfColumnsKey];
-    
+
     [aCoder encodeBool:_isSelectable forKey:CPCollectionViewSelectableKey];
 
     [aCoder encodeFloat:_verticalMargin forKey:CPCollectionViewVerticalMarginKey];
