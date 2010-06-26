@@ -3360,6 +3360,11 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
         [self scrollRowToVisible:i];
 }
 
+- (void)moveDownAndModifySelection:(id)sender
+{
+    [self moveDown:sender];
+}
+
 - (void)moveUp:(id)sender
 {
     if (_implementedDelegateMethods & CPTableViewDelegate_selectionShouldChangeInTableView_ &&
@@ -3405,6 +3410,11 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 
      if(i >= 0)
         [self scrollRowToVisible:i];
+}
+
+- (void)moveUpAndModifySelection:(id)sender
+{
+    [self moveUp:sender];
 }
 
 - (void)deleteBackward:(id)sender
