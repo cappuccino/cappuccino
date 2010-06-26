@@ -742,6 +742,8 @@
 
 - (void)_modifySelectionWithNewIndex:(int)anIndex direction:(int)aDirection expand:(BOOL)shouldExpand
 {
+    anIndex = MIN(MAX(anIndex, 0), [[self items] count]-1);
+
     if (_allowsMultipleSelection && shouldExpand)
     {
         var indexes = [_selectionIndexes copy],
@@ -775,9 +777,7 @@
     if (index === CPNotFound)
         index = [[self items] count];
 
-    index = MAX(index - 1, 0);
-
-    [self _modifySelectionWithNewIndex:index direction:-1 expand:NO];
+    [self _modifySelectionWithNewIndex:index - 1 direction:-1 expand:NO];
 }
 
 - (void)moveLeftAndModifySelection:(id)sender
@@ -786,37 +786,27 @@
     if (index === CPNotFound)
         index = [[self items] count];
 
-    index = MAX(index - 1, 0);
-
-    [self _modifySelectionWithNewIndex:index direction:-1 expand:YES];
+    [self _modifySelectionWithNewIndex:index - 1 direction:-1 expand:YES];
 }
 
 - (void)moveRight:(id)sender
 {
-    var index = MIN([[self selectionIndexes] lastIndex] + 1, [[self items] count]-1);
-
-    [self _modifySelectionWithNewIndex:index direction:1 expand:NO];
+    [self _modifySelectionWithNewIndex:[[self selectionIndexes] lastIndex] + 1 direction:1 expand:NO];
 }
 
 - (void)moveRightAndModifySelection:(id)sender
 {
-    var index = MIN([[self selectionIndexes] lastIndex] + 1, [[self items] count]-1);
-
-    [self _modifySelectionWithNewIndex:index direction:1 expand:YES];
+    [self _modifySelectionWithNewIndex:[[self selectionIndexes] lastIndex] + 1 direction:1 expand:YES];
 }
 
 - (void)moveDown:(id)sender
 {
-    var index = MIN([[self selectionIndexes] lastIndex] + [self numberOfColumns], [[self items] count]-1);
-
-    [self _modifySelectionWithNewIndex:index direction:1 expand:NO];
+    [self _modifySelectionWithNewIndex:[[self selectionIndexes] lastIndex] + [self numberOfColumns] direction:1 expand:NO];
 }
 
 - (void)moveDownAndModifySelection:(id)sender
 {
-    var index = MIN([[self selectionIndexes] lastIndex] + [self numberOfColumns], [[self items] count]-1);
-
-    [self _modifySelectionWithNewIndex:index direction:1 expand:YES];
+    [self _modifySelectionWithNewIndex:[[self selectionIndexes] lastIndex] + [self numberOfColumns] direction:1 expand:YES];
 }
 
 - (void)moveUp:(id)sender
@@ -825,9 +815,7 @@
     if (index == CPNotFound)
         index = [[self items] count];
 
-    index = MAX(0, index - [self numberOfColumns]);
-
-    [self _modifySelectionWithNewIndex:index direction:-1 expand:NO];
+    [self _modifySelectionWithNewIndex:index - [self numberOfColumns] direction:-1 expand:NO];
 }
 
 - (void)moveUpAndModifySelection:(id)sender
@@ -836,9 +824,7 @@
     if (index == CPNotFound)
         index = [[self items] count];
 
-    index = MAX(0, index - [self numberOfColumns]);
-
-    [self _modifySelectionWithNewIndex:index direction:-1 expand:YES];
+    [self _modifySelectionWithNewIndex:index - [self numberOfColumns] direction:-1 expand:YES];
 }
 
 - (void)deleteBackward:(id)sender
