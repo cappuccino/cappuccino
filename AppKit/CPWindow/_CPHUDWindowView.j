@@ -148,7 +148,7 @@ var HUD_TITLEBAR_HEIGHT             = 26.0;
         {
             var closeSize = [_CPHUDWindowViewCloseImage size];
             
-            _closeButton = [[CPButton alloc] initWithFrame:CGRectMake(4.0, 4.0, closeSize.width, closeSize.height)];
+            _closeButton = [[CPButton alloc] initWithFrame:CGRectMake(8.0, 5.0, closeSize.width, closeSize.height)];
             
             [_closeButton setBordered:NO];
             
