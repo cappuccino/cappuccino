@@ -505,8 +505,6 @@
 */
 - (void)replaceCharactersInRange:(CPRange)aRange withString:(CPString)aString
 {
-    [self beginEditing];
-
     if (!aString)
         aString = "";
 
@@ -534,8 +532,6 @@
 
     while(endingIndex < _rangeEntries.length)
         _rangeEntries[endingIndex++].range.location+=additionalLength;
-
-    [self endEditing];
 }
 
 /*!
@@ -561,8 +557,6 @@
 */
 - (void)setAttributes:(CPDictionary)aDictionary range:(CPRange)aRange
 {
-    [self beginEditing];
-
     var startingEntryIndex = [self _indexOfRangeEntryForIndex:aRange.location splitOnMaxIndex:YES],
         endingEntryIndex = [self _indexOfRangeEntryForIndex:CPMaxRange(aRange) splitOnMaxIndex:YES],
         current = startingEntryIndex;
@@ -575,8 +569,6 @@
 
     //necessary?
     [self _coalesceRangeEntriesFromIndex:startingEntryIndex toIndex:endingEntryIndex];
-
-    [self endEditing];
 }
 
 /*!
@@ -591,8 +583,6 @@
 */
 - (void)addAttributes:(CPDictionary)aDictionary range:(CPRange)aRange
 {
-    [self beginEditing];
-
     var startingEntryIndex = [self _indexOfRangeEntryForIndex:aRange.location splitOnMaxIndex:YES],
         endingEntryIndex = [self _indexOfRangeEntryForIndex:CPMaxRange(aRange) splitOnMaxIndex:YES],
         current = startingEntryIndex;
@@ -613,8 +603,6 @@
 
     //necessary?
     [self _coalesceRangeEntriesFromIndex:startingEntryIndex toIndex:endingEntryIndex];
-
-    [self endEditing];
 }
 
 /*!
@@ -642,8 +630,6 @@
 */
 - (void)removeAttribute:(CPString)anAttribute range:(CPRange)aRange
 {
-    [self beginEditing];
-
     var startingEntryIndex = [self _indexOfRangeEntryForIndex:aRange.location splitOnMaxIndex:YES],
         endingEntryIndex = [self _indexOfRangeEntryForIndex:CPMaxRange(aRange) splitOnMaxIndex:YES],
         current = startingEntryIndex;
@@ -656,8 +642,6 @@
 
     //necessary?
     [self _coalesceRangeEntriesFromIndex:startingEntryIndex toIndex:endingEntryIndex];
-
-    [self endEditing];
 }
 
 //Changing Characters and Attributes
@@ -682,8 +666,6 @@
 */
 - (void)insertAttributedString:(CPAttributedString)aString atIndex:(unsigned)anIndex
 {
-    [self beginEditing];
-
     if (anIndex < 0 || anIndex > [self length])
         [CPException raise:CPRangeException reason:"tried to insert attributed string at an invalid index: "+anIndex];
 
@@ -713,8 +695,6 @@
 
     //necessary?
     //[self _coalesceRangeEntriesFromIndex:startingEntryIndex toIndex:startingEntryIndex+rangeEntries.length];
-
-    [self endEditing];
 }
 
 /*!
@@ -727,12 +707,8 @@
 */
 - (void)replaceCharactersInRange:(CPRange)aRange withAttributedString:(CPAttributedString)aString
 {
-    [self beginEditing];
-
     [self deleteCharactersInRange:aRange];
     [self insertAttributedString:aString atIndex:aRange.location];
-
-    [self endEditing];
 }
 
 /*!
@@ -742,8 +718,6 @@
 */
 - (void)setAttributedString:(CPAttributedString)aString
 {
-    [self beginEditing];
-
     _string = aString._string;
     _rangeEntries = [];
 
@@ -752,8 +726,6 @@
 
     for (; i < count; i++)
         _rangeEntries.push(copyRangeEntry(aString._rangeEntries[i]));
-
-    [self endEditing];
 }
 
 //Private methods
