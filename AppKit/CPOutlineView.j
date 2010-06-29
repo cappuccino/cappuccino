@@ -1245,13 +1245,34 @@ var _loadItemInfoForItem = function(/*CPOutlineView*/ anOutlineView, /*id*/ anIt
     CGContextAddLineToPoint(context, 9.0, 0.0);
     CGContextAddLineToPoint(context, 4.5, 8.0);
     CGContextAddLineToPoint(context, 0.0, 0.0);
-
+    
     CGContextClosePath(context);
-    var isHighlighted = [self hasThemeState:CPThemeStateHighlighted];
-    var color = [self hasThemeState:CPThemeStateSelected] ? (isHighlighted ? [CPColor lightGrayColor] : [CPColor whiteColor]) : (isHighlighted ? [CPColor blackColor] : [CPColor grayColor]);
-
-    CGContextSetFillColor(context, color);
+    CGContextSetFillColor(context, 
+        colorForDisclosureTriangle([self hasThemeState:CPThemeStateSelected], 
+            [self hasThemeState:CPThemeStateHighlighted]));
     CGContextFillPath(context);
+    
+    
+    CGContextBeginPath(context);
+    CGContextMoveToPoint(context, 0.0, 0.0);
+    if(_angle === 0.0) {
+        CGContextAddLineToPoint(context, 4.5, 8.0);
+        CGContextAddLineToPoint(context, 9.0, 0.0);
+    } else {    
+        CGContextAddLineToPoint(context, 4.5, 8.0);
+    }    
+    CGContextSetStrokeColor(context, [CPColor colorWithCalibratedWhite:1.0 alpha: 0.8]);
+    CGContextStrokePath(context);
 }
 
 @end
+
+var colorForDisclosureTriangle = function(isSelected, isHighlighted) {
+    return isSelected 
+        ? (isHighlighted 
+            ? [CPColor colorWithCalibratedWhite:0.9 alpha: 1.0]
+            : [CPColor colorWithCalibratedWhite:1.0 alpha: 1.0]) 
+        : (isHighlighted 
+            ? [CPColor colorWithCalibratedWhite:0.4 alpha: 1.0] 
+            : [CPColor colorWithCalibratedWhite:0.5 alpha: 1.0]);
+}

@@ -426,6 +426,11 @@ var kvoNewAndOld = CPKeyValueObservingOptionNew|CPKeyValueObservingOptionOld,
     }
     else
     {
+        // The isBefore path may not have been called as would happen if didChangeX
+        // was called alone.
+        if (!changes)
+            changes = [CPDictionary new];
+
         [changes removeObjectForKey:CPKeyValueChangeNotificationIsPriorKey];
 
         var indexes = [changes objectForKey:CPKeyValueChangeIndexesKey];
@@ -738,7 +743,7 @@ var _kvoInsertMethodForMethod = function _kvoInsertMethodForMethod(theKey, theMe
     {
         [self willChange:CPKeyValueChangeInsertion valuesAtIndexes:[CPIndexSet indexSetWithIndex:index] forKey:theKey];
         theMethod.method_imp(self, _cmd, object, index);
-        [self didChange:CPKeyValueChangeInsertion valuesAtIndexes:[CPIndexSet indexSetWithIndex:index] forKey:theKey]
+        [self didChange:CPKeyValueChangeInsertion valuesAtIndexes:[CPIndexSet indexSetWithIndex:index] forKey:theKey];
     }
 }
 
@@ -748,7 +753,7 @@ var _kvoReplaceMethodForMethod = function _kvoReplaceMethodForMethod(theKey, the
     {
         [self willChange:CPKeyValueChangeReplacement valuesAtIndexes:[CPIndexSet indexSetWithIndex:index] forKey:theKey];
         theMethod.method_imp(self, _cmd, index, object);
-        [self didChange:CPKeyValueChangeReplacement valuesAtIndexes:[CPIndexSet indexSetWithIndex:index] forKey:theKey]
+        [self didChange:CPKeyValueChangeReplacement valuesAtIndexes:[CPIndexSet indexSetWithIndex:index] forKey:theKey];
     }
 }
 
@@ -758,7 +763,7 @@ var _kvoRemoveMethodForMethod = function _kvoRemoveMethodForMethod(theKey, theMe
     {
         [self willChange:CPKeyValueChangeRemoval valuesAtIndexes:[CPIndexSet indexSetWithIndex:index] forKey:theKey];
         theMethod.method_imp(self, _cmd, index);
-        [self didChange:CPKeyValueChangeRemoval valuesAtIndexes:[CPIndexSet indexSetWithIndex:index] forKey:theKey]
+        [self didChange:CPKeyValueChangeRemoval valuesAtIndexes:[CPIndexSet indexSetWithIndex:index] forKey:theKey];
     }
 }
 

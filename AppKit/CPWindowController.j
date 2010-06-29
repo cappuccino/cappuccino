@@ -139,7 +139,7 @@
     if (_window)
         return;
 
-    [[CPBundle bundleForClass:[_cibOwner class]] loadCibFile:[self windowCibPath] externalNameTable:[CPDictionary dictionaryWithObject:_cibOwner forKey:CPCibOwner]];
+    [[CPBundle mainBundle] loadCibFile:[self windowCibPath] externalNameTable:[CPDictionary dictionaryWithObject:_cibOwner forKey:CPCibOwner]];
 }
 
 /*!
@@ -430,7 +430,7 @@
     if (_windowCibPath)
         return _windowCibPath;
 
-    return [[CPBundle bundleForClass:[_cibOwner class]] pathForResource:_windowCibName + @".cib"];
+    return [[CPBundle mainBundle] pathForResource:_windowCibName + @".cib"];
 }
 
 // Setting and Getting Window Attributes

@@ -99,6 +99,9 @@ CPButtonStateMixed  = CPThemeState("mixed");
     // NS-style Display Properties
     CPBezelStyle        _bezelStyle;
     CPControlSize       _controlSize;
+
+    CPString            _keyEquivalent;
+    unsigned            _keyEquivalentModifierMask;
 }
 
 + (id)buttonWithTitle:(CPString)aTitle
@@ -141,6 +144,9 @@ CPButtonStateMixed  = CPThemeState("mixed");
         [self setValue:CPScaleNone forThemeAttribute:@"image-scaling"];
 
         _controlSize = CPRegularControlSize;
+
+        _keyEquivalent = "";
+        _keyEquivalentModifierMask = 0;
 
 //        [self setBezelStyle:CPRoundRectBezelStyle];
         [self setBordered:YES];
@@ -555,6 +561,74 @@ CPButtonStateMixed  = CPThemeState("mixed");
     return [self hasThemeState:CPThemeStateBordered];
 }
 
+/*!
+    Sets the keyboard shortcut for this button. For special keys see
+    CPEvent.j CP...FunctionKey and CPText.j CP...Character.
+
+    @param aString the keyboard shortcut as a string
+*/
+- (void)setKeyEquivalent:(CPString)aString
+{
+    // Check if the key equivalent is the enter key
+    // Treat \r and \n as the same key equivalent. See issue #710.
+    if (aString === CPNewlineCharacter || aString === CPCarriageReturnCharacter)
+        [[self window] setDefaultButton:self];
+    else if ([[self window] defaultButton] === self)
+        [[self window] setDefaultButton:NO];
+
+    _keyEquivalent = aString || @"";
+}
+
+- (void)viewWillMoveToWindow:(CPWindow)aWindow
+{
+    if ([[self window] defaultButton] === self)
+        [[self window] setDefaultButton:nil];
+
+    if ([self keyEquivalent] === CPNewlineCharacter || [self keyEquivalent] === CPCarriageReturnCharacter)
+        [aWindow setDefaultButton:self];
+}
+
+/*!
+    Returns the keyboard shortcut for this button.
+*/
+- (CPString)keyEquivalent
+{
+    return _keyEquivalent;
+}
+
+/*!
+    Returns the mask used with this button's key equivalent.
+*/
+- (void)setKeyEquivalentModifierMask:(unsigned)aMask
+{
+    _keyEquivalentModifierMask = aMask;
+}
+
+/*!
+    Sets the mask to be used with this button's key equivalent.
+*/
+- (unsigned)keyEquivalentModifierMask
+{
+    return _keyEquivalentModifierMask;
+}
+
+/*!
+    Checks the button's key equivalent against that in the event, and if they
+    match simulates a button click.
+*/
+- (BOOL)performKeyEquivalent:(CPEvent)anEvent
+{
+    // Don't handle the key equivalent for the default window because the window will handle it for us
+    if ([[self window] defaultButton] === self)
+        return NO;
+
+    if (![anEvent _triggersKeyEquivalent:[self keyEquivalent] withModifierMask:[self keyEquivalentModifierMask]])
+        return NO;
+
+    [self performClick:nil];
+    return YES;
+}
+
 @end
 
 @implementation CPButton (NS)
@@ -575,7 +649,9 @@ var CPButtonImageKey                    = @"CPButtonImageKey",
     CPButtonTitleKey                    = @"CPButtonTitleKey",
     CPButtonAlternateTitleKey           = @"CPButtonAlternateTitleKey",
     CPButtonIsBorderedKey               = @"CPButtonIsBorderedKey",
-    CPButtonImageDimsWhenDisabledKey    = @"CPButtonImageDimsWhenDisabledKey";
+    CPButtonImageDimsWhenDisabledKey    = @"CPButtonImageDimsWhenDisabledKey",
+    CPButtonKeyEquivalentKey            = @"CPButtonKeyEquivalentKey",
+    CPButtonKeyEquivalentMaskKey        = @"CPButtonKeyEquivalentMaskKey";
 
 @implementation CPButton (CPCoding)
 
@@ -599,6 +675,11 @@ var CPButtonImageKey                    = @"CPButtonImageKey",
 
         [self setImageDimsWhenDisabled:[aCoder decodeObjectForKey:CPButtonImageDimsWhenDisabledKey]];
 
+        if ([aCoder containsValueForKey:CPButtonKeyEquivalentKey])
+            [self setKeyEquivalent:CFData.decodeBase64ToUtf16String([aCoder decodeObjectForKey:CPButtonKeyEquivalentKey])];
+
+        [self setKeyEquivalentModifierMask:[aCoder decodeObjectForKey:CPButtonKeyEquivalentMaskKey]];
+
         [self setNeedsLayout];
         [self setNeedsDisplay:YES];
     }
@@ -621,6 +702,11 @@ var CPButtonImageKey                    = @"CPButtonImageKey",
     [aCoder encodeObject:_alternateTitle forKey:CPButtonAlternateTitleKey];
 
     [aCoder encodeObject:[self imageDimsWhenDisabled] forKey:CPButtonImageDimsWhenDisabledKey];
+
+    if (_keyEquivalent)
+        [aCoder encodeObject:CFData.encodeBase64Utf16String(_keyEquivalent) forKey:CPButtonKeyEquivalentKey];
+
+    [aCoder encodeInt:_keyEquivalentModifierMask forKey:CPButtonKeyEquivalentMaskKey];
 }
 
 @end

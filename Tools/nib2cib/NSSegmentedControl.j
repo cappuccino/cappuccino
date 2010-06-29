@@ -98,6 +98,9 @@
         _selectedSegment    = [aCoder decodeIntForKey:"NSSelectedSegment"] || -1;
         _segmentStyle       = [aCoder decodeIntForKey:"NSSegmentStyle"];
         _trackingMode       = [aCoder decodeIntForKey:"NSTrackingMode"] || CPSegmentSwitchTrackingSelectOne;
+        
+        if (_trackingMode == CPSegmentSwitchTrackingSelectOne && _selectedSegment == -1)
+            _selectedSegment = 0;
     }
     
     return self;

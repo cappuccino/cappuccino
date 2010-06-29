@@ -152,7 +152,7 @@ var CPSplitViewHorizontalImage = nil,
     _isPaneSplitter = shouldBePaneSplitter;
 
     if(_DOMDividerElements[_drawingDivider])
-        [self _setupDOMDivider]
+        [self _setupDOMDivider];
 
     // The divider changes size when pane splitter mode is toggled, so the
     // subviews need to change size too.

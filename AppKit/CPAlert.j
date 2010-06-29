@@ -83,6 +83,7 @@ var CPAlertWarningImage,
     CPPanel         _alertPanel;
 
     CPTextField     _messageLabel;
+    CPTextField     _informativeLabel;
     CPImageView     _alertImageView;
 
     CPAlertStyle    _alertStyle;
@@ -140,35 +141,42 @@ var CPAlertWarningImage,
     [_alertPanel setFloatingPanel:YES];
     [_alertPanel center];
 
-    [_messageLabel setTextColor:(styleMask & CPHUDBackgroundWindowMask) ? [CPColor whiteColor] : [CPColor blackColor]];
-
     var count = [_buttons count];
     for(var i=0; i < count; i++)
     {
         var button = _buttons[i];
-        
-        [button setFrameSize:CGSizeMake([button frame].size.width, (styleMask == CPHUDBackgroundWindowMask) ? 20.0 : 24.0)];
-        
         [button setTheme:(_windowStyle === CPHUDBackgroundWindowMask) ? [CPTheme themeNamed:"Aristo-HUD"] : [CPTheme defaultTheme]];
 
         [[_alertPanel contentView] addSubview:button];
     }
-    
+
+    [self _layoutButtons];
+
     if (!_messageLabel)
     {
-        var bounds = [[_alertPanel contentView] bounds];
-
-        _messageLabel = [[CPTextField alloc] initWithFrame:CGRectMake(57.0, 10.0, CGRectGetWidth(bounds) - 73.0, 62.0)];
+        _messageLabel = [[CPTextField alloc] initWithFrame:CGRectMakeZero()];
         [_messageLabel setFont:[CPFont boldSystemFontOfSize:13.0]];
         [_messageLabel setLineBreakMode:CPLineBreakByWordWrapping];
         [_messageLabel setAlignment:CPJustifiedTextAlignment];
         [_messageLabel setAutoresizingMask:CPViewWidthSizable|CPViewHeightSizable];
 
+
         _alertImageView = [[CPImageView alloc] initWithFrame:CGRectMake(15.0, 12.0, 32.0, 32.0)];
+
+        _informativeLabel = [[CPTextField alloc] initWithFrame:CGRectMakeZero()];
+        [_informativeLabel setFont:[CPFont systemFontOfSize:12.0]];
+        [_informativeLabel setLineBreakMode:CPLineBreakByWordWrapping];
+        [_informativeLabel setAlignment:CPJustifiedTextAlignment];
+        [_informativeLabel setAutoresizingMask:CPViewWidthSizable|CPViewHeightSizable];
     }
+    [_messageLabel setTextColor:(styleMask & CPHUDBackgroundWindowMask) ? [CPColor whiteColor] : [CPColor blackColor]];
+    [_informativeLabel setTextColor:(styleMask & CPHUDBackgroundWindowMask) ? [CPColor whiteColor] : [CPColor blackColor]];
 
     [[_alertPanel contentView] addSubview:_messageLabel];
     [[_alertPanel contentView] addSubview:_alertImageView];
+    [[_alertPanel contentView] addSubview:_informativeLabel];
+
+    [self _layoutMessage];
 }
 
 /*!
@@ -231,16 +239,17 @@ var CPAlertWarningImage,
 }
 
 /*!
-    Set’s the receiver’s message text, or title, to a given text.
+    Sets the receiver’s message text, or title, to a given text.
     @param messageText - Message text for the alert.
 */
 - (void)setMessageText:(CPString)messageText
 {
     [_messageLabel setStringValue:messageText];
+    [self _layoutMessage];
 }
 
-/*! 
-    Return's the receiver's message text body.
+/*!
+    Returns the receiver's message text body.
 */
 - (CPString)messageText
 {
@@ -248,17 +257,39 @@ var CPAlertWarningImage,
 }
 
 /*!
+    Sets the receiver's informative text, shown below the message text.
+    @param informativeText - The informative text.
+*/
+- (void)setInformativeText:(CPString)informativeText
+{
+    [_informativeLabel setStringValue:informativeText];
+    // No need to call _layoutMessage - only the length of the messageText
+    // can affect anything there.
+}
+
+/*!
+    Returns the receiver's informative text.
+*/
+- (CPString)informativeText
+{
+    return [_informativeLabel stringValue];
+}
+
+/*!
     Adds a button with a given title to the receiver.
     Buttons will be added starting from the right hand side of the \c CPAlert panel.
     The first button will have the index 0, the second button 1 and so on.
+
+    The first button will automatically be given a key equivalent of Return,
+    and any button titled "Cancel" will be given a key equivalent of Escape.
 
     You really shouldn't need more than 3 buttons.
 */
 - (void)addButtonWithTitle:(CPString)title
 {
     var bounds = [[_alertPanel contentView] bounds],
-        button = [[CPButton alloc] initWithFrame:CGRectMake(CGRectGetWidth(bounds) - ((_buttonCount + 1) * 90.0), CGRectGetHeight(bounds) - 34.0, 80.0, (_windowStyle == CPHUDBackgroundWindowMask) ? 20.0 : 24.0)];
-    
+        button = [[CPButton alloc] initWithFrame:CGRectMakeZero()];
+
     [button setTitle:title];
     [button setTarget:self];
     [button setTag:_buttonCount];
@@ -270,10 +301,48 @@ var CPAlertWarningImage,
     [[_alertPanel contentView] addSubview:button];
     
     if (_buttonCount == 0)
-        [_alertPanel setDefaultButton:button];
+        [button setKeyEquivalent:CPCarriageReturnCharacter];
+    else if ([title lowercaseString] === "cancel")
+        [button setKeyEquivalent:CPEscapeFunctionKey];
+    else
+        [button setKeyEquivalent:nil];
 
     _buttonCount++;
     [_buttons addObject:button];
+
+    [self _layoutButtons];
+}
+
+- (void)_layoutButtons
+{
+    var bounds = [[_alertPanel contentView] bounds],
+        count = [_buttons count],
+        offsetX = CGRectGetWidth(bounds),
+        offsetY = CGRectGetHeight(bounds) - 34.0;
+    for(var i=0; i < count; i++)
+    {
+        var button = _buttons[i];
+
+        [button sizeToFit];
+        var buttonBounds = [button bounds],
+            width = MAX(80.0, CGRectGetWidth(buttonBounds)),
+            height = CGRectGetHeight(buttonBounds);
+        offsetX -= (width + 10);
+        [button setFrame:CGRectMake(offsetX, offsetY, width, height)];
+    }
+}
+
+- (void)_layoutMessage
+{
+    var bounds = [[_alertPanel contentView] bounds],
+        width = CGRectGetWidth(bounds) - 73.0,
+        size = [([_messageLabel stringValue] || " ") sizeWithFont:[_messageLabel currentValueForThemeAttribute:@"font"] inWidth:width],
+        contentInset = [_messageLabel currentValueForThemeAttribute:@"content-inset"],
+        height = size.height + contentInset.top + contentInset.bottom;
+
+    [_messageLabel setFrame:CGRectMake(57.0, 10.0, width, height)];
+
+    [_informativeLabel setFrame:CGRectMake(57.0, 10.0 + height + 6.0, width, CGRectGetHeight(bounds) - height - 50.0)];
 }
 
 /*!

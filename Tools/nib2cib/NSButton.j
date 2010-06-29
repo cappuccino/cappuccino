@@ -97,6 +97,7 @@ _CPButtonBezelStyleHeights[CPHUDBezelStyle] = 20;
             {
                 CPLog.info("Adjusting CPButton height from " +_frame.size.height+ " / " + _bounds.size.height+" to " + 24);
                 _frame.size.height = 24.0;
+                _frame.origin.y += 4.0;
                 _bounds.size.height = 24.0;
             }
         }
@@ -180,6 +181,9 @@ _CPButtonBezelStyleHeights[CPHUDBezelStyle] = 20;
         }
     }
 
+    [self setKeyEquivalent:[cell keyEquivalent]];
+    [self setKeyEquivalentModifierMask:[cell keyEquivalentModifierMask]];
+
     return [self NS_initWithCoder:aCoder];
 }
 
@@ -203,6 +207,9 @@ _CPButtonBezelStyleHeights[CPHUDBezelStyle] = 20;
 
     CPString    _title          @accessors(readonly, getter=title);
     CPImage     _alternateImage @accessors(readonly, getter=alternateImage);
+
+    CPString    _keyEquivalent  @accessors(readonly, getter=keyEquivalent);
+    unsigned    _keyEquivalentModifierMask @accessors(readonly, getter=keyEquivalentModifierMask);
 }
 
 - (id)initWithCoder:(CPCoder)aCoder
@@ -223,6 +230,9 @@ _CPButtonBezelStyleHeights[CPHUDBezelStyle] = 20;
         _objectValue = [self state];
 
         _alternateImage = [aCoder decodeObjectForKey:@"NSAlternateImage"];
+
+        _keyEquivalent = [aCoder decodeObjectForKey:@"NSKeyEquivalent"];
+        _keyEquivalentModifierMask = buttonFlags2 >> 8;
     }
 
     return self;

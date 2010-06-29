@@ -726,6 +726,12 @@ if (_currentGroup == nil)
                         change:(CPDictionary)aChange
                        context:(id)aContext
 {
+    // Don't add no-ops to the undo stack.
+    var before = [aChange valueForKey:CPKeyValueChangeOldKey],
+        after = [aChange valueForKey:CPKeyValueChangeNewKey];
+    if (before === after || (before !== nil && before.isa && (after === nil || after.isa) && [before isEqual:after]))
+        return;
+
     [[self prepareWithInvocationTarget:anObject]
         applyChange:[aChange inverseChangeDictionary]
           toKeyPath:aKeyPath];

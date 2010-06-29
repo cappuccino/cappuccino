@@ -306,6 +306,8 @@ var XML_XML                 = "xml",
 #define PARENT_NODE(anXMLNode)      (anXMLNode.parentNode)
 #define DOCUMENT_ELEMENT(aDocument) (aDocument.documentElement)
 
+#define HAS_ATTRIBUTE_VALUE(anXMLNode, anAttributeName, aValue) (anXMLNode.getAttribute(anAttributeName) === aValue)
+
 #define IS_OF_TYPE(anXMLNode, aType) (NODE_NAME(anXMLNode) === aType)
 #define IS_PLIST(anXMLNode) IS_OF_TYPE(anXMLNode, PLIST_PLIST)
 
@@ -559,13 +561,17 @@ CFPropertyList.propertyListFromXML = function(/*String | XMLNode*/ aStringOrXMLN
             case PLIST_DICTIONARY:      object = new CFMutableDictionary();
                                         containers.push(object);
                                         break;
-            
+
             case PLIST_NUMBER_REAL:     object = parseFloat(CHILD_VALUE(XMLNode));
                                         break;
             case PLIST_NUMBER_INTEGER:  object = parseInt(CHILD_VALUE(XMLNode), 10);
                                         break;
-                                        
-            case PLIST_STRING:          object = decodeHTMLComponent(FIRST_CHILD(XMLNode) ? CHILD_VALUE(XMLNode) : "");
+
+            case PLIST_STRING:          if (HAS_ATTRIBUTE_VALUE(XMLNode, "type", "base64"))
+                                            object = FIRST_CHILD(XMLNode) ? CFData.decodeBase64ToString(CHILD_VALUE(XMLNode)) : "";
+                                        else
+                                            object = decodeHTMLComponent(FIRST_CHILD(XMLNode) ? CHILD_VALUE(XMLNode) : "");
+
                                         break;
                                         
             case PLIST_BOOLEAN_TRUE:    object = YES;

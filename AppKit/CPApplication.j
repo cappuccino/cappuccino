@@ -325,7 +325,9 @@ CPRunContinuesResponse  = -1002;
             applicationVersion = [options objectForKey:@"ApplicationVersion"] || [mainInfo objectForKey:@"CPBundleShortVersionString"],
             copyright = [options objectForKey:@"Copyright"] || [mainInfo objectForKey:@"CPHumanReadableCopyright"];
 
-        var aboutPanelController = [[CPWindowController alloc] initWithWindowCibName:@"AboutPanel"],
+        var aboutPanelPath = [[CPBundle bundleForClass:[CPWindowController class]] pathForResource:@"AboutPanel.cib"],
+            aboutPanelController = [CPWindowController alloc],
+            aboutPanelController = [aboutPanelController initWithWindowCibPath:aboutPanelPath owner:aboutPanelController],
             aboutPanel = [aboutPanelController window],
             contentView = [aboutPanel contentView],
             imageView = [contentView viewWithTag:1],
