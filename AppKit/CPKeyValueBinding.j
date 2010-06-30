@@ -263,7 +263,7 @@ var CPBindingOperationAnd = 0,
     //    CPLog.warn("No binding exposed on "+self+" for "+aBinding);
 
     [self unbind:aBinding];
-    [[CPKeyValueBinding alloc] initWithBinding:[anObject _replacementKeyPathForBinding:aBinding] name:aBinding to:anObject keyPath:aKeyPath options:options from:self];
+    [[CPKeyValueBinding alloc] initWithBinding:[self _replacementKeyPathForBinding:aBinding] name:aBinding to:anObject keyPath:aKeyPath options:options from:self];
 }
 
 - (CPDictionary)infoForBinding:(CPString)aBinding
