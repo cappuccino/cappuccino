@@ -373,6 +373,7 @@ function descriptionWithoutEntity(aString)
     var differentSet = [CPIndexSet indexSetWithIndexesInRange:CPMakeRange(10, 11)],
         equalSet = [CPIndexSet indexSetWithIndexesInRange:CPMakeRange(10, 10)];
 
+    [self assertFalse:[_set isEqual:nil]];
     [self assertFalse:[_set isEqual:differentSet]];
     [self assertTrue:[_set isEqual:equalSet]];
     [self assertTrue:[_set isEqual:_set]];

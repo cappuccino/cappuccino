@@ -135,7 +135,7 @@
     if (self === anObject)
         return YES;
 
-    if (![anObject isKindOfClass:[CPIndexSet class]])
+    if (!anObject || ![anObject isKindOfClass:[CPIndexSet class]])
         return NO;
 
     return [self isEqualToIndexSet:anObject];
