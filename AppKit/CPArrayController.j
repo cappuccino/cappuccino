@@ -335,7 +335,7 @@
 {
     var objects = [[self arrangedObjects] objectsAtIndexes:[self selectionIndexes]];
 
-    return objects || [_CPObservableArray array];
+    return [_CPObservableArray arrayWithArray:(objects || [])];
 }
 
 - (BOOL)setSelectedObjects:(CPArray)objects
