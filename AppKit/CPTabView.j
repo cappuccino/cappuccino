@@ -240,7 +240,7 @@ var CPTabViewDidSelectTabViewItemSelector           = 1,
 */
 - (void)insertTabViewItem:(CPTabViewItem)aTabViewItem atIndex:(unsigned)anIndex
 {
-    if (!_labelsView && _tabViewType == CPTopTabsBezelBorder)
+    if (!_labelsView)
         [self _createBezelBorder];
 
     [_tabViewItems insertObject:aTabViewItem atIndex:anIndex];
@@ -459,12 +459,12 @@ var CPTabViewDidSelectTabViewItemSelector           = 1,
 
     if (_tabViewType == CPNoTabsBezelBorder || _tabViewType == CPNoTabsLineBorder || _tabViewType == CPNoTabsNoBorder)
         [_labelsView removeFromSuperview];
-    else if (![_labelsView superview])
+    else if (_labelsView && ![_labelsView superview])
         [self addSubview:_labelsView];
 
     if (_tabViewType == CPNoTabsLineBorder || _tabViewType == CPNoTabsNoBorder)
         [_backgroundView removeFromSuperview];
-    else if (![_backgroundView superview])
+    else if (_backgroundView && ![_backgroundView superview])
         [self addSubview:_backgroundView];
 
     [self layoutSubviews];
