@@ -1791,12 +1791,14 @@ setBoundsOrigin:
 
 - (void)displayRectIgnoringOpacity:(CGRect)aRect inContext:(CPGraphicsContext)aGraphicsContext
 {
+#if PLATFORM(DOM)
     [self lockFocus];
     
     CGContextClearRect([[CPGraphicsContext currentContext] graphicsPort], aRect);
     
     [self drawRect:aRect];
     [self unlockFocus];
+#endif
 }
 
 - (void)viewWillDraw
