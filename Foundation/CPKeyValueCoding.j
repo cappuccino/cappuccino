@@ -33,6 +33,9 @@ CPUndefinedKeyException     = @"CPUndefinedKeyException";
 CPTargetObjectUserInfoKey   = @"CPTargetObjectUserInfoKey";
 CPUnknownUserInfoKey        = @"CPUnknownUserInfoKey";
 
+var CPObjectAccessorsForClassKey = @"$CPObjectAccessorsForClassKey",
+    CPObjectModifiersForClassKey = @"$CPObjectModifiersForClassKey";
+
 @implementation CPObject (CPKeyValueCoding)
 
 + (BOOL)accessInstanceVariablesDirectly
@@ -43,26 +46,18 @@ CPUnknownUserInfoKey        = @"CPUnknownUserInfoKey";
 /* @ignore */
 + (SEL)_accessorForKey:(CPString)aKey
 {
-    if (!CPObjectAccessorsForClass)
-        CPObjectAccessorsForClass = [CPDictionary dictionary];
-
-    var UID = [isa UID],
-        selector = nil,
-        accessors = [CPObjectAccessorsForClass objectForKey:UID];
+    var selector = nil,
+        accessors = isa[CPObjectAccessorsForClassKey];
 
     if (accessors)
     {
-        selector = [accessors objectForKey:aKey];
+        selector = accessors[aKey];
 
         if (selector)
             return selector === [CPNull null] ? nil : selector;
     }
     else
-    {
-        accessors = [CPDictionary dictionary];
-
-        [CPObjectAccessorsForClass setObject:accessors forKey:UID];
-    }
+        accessors = isa[CPObjectAccessorsForClassKey] = {};
 
     var capitalizedKey = aKey.charAt(0).toUpperCase() + aKey.substr(1);
 
@@ -73,12 +68,12 @@ CPUnknownUserInfoKey        = @"CPUnknownUserInfoKey";
         [self instancesRespondToSelector:selector = CPSelectorFromString("_" + aKey)] ||
         [self instancesRespondToSelector:selector = CPSelectorFromString("_is" + capitalizedKey)])
     {
-        [accessors setObject:selector forKey:aKey];
+        accessors[aKey] = selector;
 
         return selector;
     }
 
-    [accessors setObject:[CPNull null] forKey:aKey];
+    accessors[aKey] = [CPNull null];
 
     return nil;
 }
