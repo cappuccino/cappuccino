@@ -75,8 +75,7 @@
 */
 - (CPString)editingStringForObjectValue:(id)anObject
 {
-    _CPRaiseInvalidAbstractInvocation(self, @selector(editingStringForObjectValue:));
-    return nil;
+    return [self stringForObjectValue:anObject];
 }
 
 
