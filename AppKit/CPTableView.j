@@ -1040,7 +1040,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 
 - (CPIndexSet)selectedRowIndexes
 {
-    return _selectedRowIndexes;
+    return [_selectedRowIndexes copy];
 }
 
 - (void)deselectColumn:(CPInteger)aColumn
