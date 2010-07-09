@@ -1365,7 +1365,15 @@ CPTexturedBackgroundWindowMask
     var size = [self frame].size,
         containerSize = [CPPlatform isBrowser] ? [_platformWindow contentBounds].size : [[self screen] visibleFrame].size;
 
-    [self setFrameOrigin:CGPointMake((containerSize.width - size.width) / 2.0, (containerSize.height - size.height) / 2.0)];
+    var origin = CGPointMake((containerSize.width - size.width) / 2.0, (containerSize.height - size.height) / 2.0);
+
+    if (origin.x < 0.0)
+        origin.x = 0.0;
+
+    if (origin.y < 0.0)
+        origin.y = 0.0;
+
+    [self setFrameOrigin:origin];
 }
 
 /*!
