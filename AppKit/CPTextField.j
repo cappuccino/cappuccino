@@ -715,6 +715,25 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
     [[[self window] platformWindow] _propagateCurrentDOMEvent:NO];
 }
 
+- (void)insertNewlineIgnoringFieldEditor:(id)sender
+{
+    var oldValue = [self stringValue];
+    
+    [self _inputElement].value += CPNewlineCharacter;
+    [self _setStringValue:[self _inputElement].value];
+
+    if (oldValue !== [self stringValue])
+    {
+        if (!_isEditing)
+        {
+            _isEditing = YES;
+            [self textDidBeginEditing:[CPNotification notificationWithName:CPControlTextDidBeginEditingNotification object:self userInfo:nil]];
+        }
+
+        [self textDidChange:[CPNotification notificationWithName:CPControlTextDidChangeNotification object:self userInfo:nil]];
+    }
+}
+
 - (void)selectNextKeyView:(id)sender
 {
     [[self window] selectNextKeyView:self];
@@ -738,6 +757,25 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 - (void)insertTab:(id)sender
 {
     [self selectNextKeyView:sender];
+}
+
+- (void)insertTabIgnoringFieldEditor:(id)sender
+{
+    var oldValue = [self stringValue];
+    
+    [self _inputElement].value += CPTabCharacter;
+    [self _setStringValue:[self _inputElement].value];
+
+    if (oldValue !== [self stringValue])
+    {
+        if (!_isEditing)
+        {
+            _isEditing = YES;
+            [self textDidBeginEditing:[CPNotification notificationWithName:CPControlTextDidBeginEditingNotification object:self userInfo:nil]];
+        }
+
+        [self textDidChange:[CPNotification notificationWithName:CPControlTextDidChangeNotification object:self userInfo:nil]];
+    }
 }
 
 - (void)insertBacktab:(id)sender
