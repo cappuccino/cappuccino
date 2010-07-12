@@ -181,7 +181,22 @@ var CPBindingOperationAnd = 0,
         valueTransformer;
 
     if (valueTransformerName)
+    {
+        if (valueTransformerName === @"ESIsEmptyIndexSetValueTransformer")
+            debugger;
+
         valueTransformer = [CPValueTransformer valueTransformerForName:valueTransformerName];
+
+        if (!valueTransformer)
+        {
+            var valueTransformerClass = CPClassFromString(valueTransformerName);
+            if (valueTransformerClass)
+            {
+                valueTransformer = [[valueTransformerClass alloc] init];
+                [valueTransformerClass setValueTransformer:valueTransformer forName:valueTransformerName];
+            }
+        }
+    }
     else
         valueTransformer = [options objectForKey:CPValueTransformerBindingOption];
 
