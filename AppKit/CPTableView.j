@@ -220,6 +220,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     CPColor     _sourceListActiveBottomLineColor;
 
     int         _draggedColumnIndex;
+    CPArray   _differedColumnDataToRemove;
 
 /*
     CPGradient  _sourceListInactiveGradient;
@@ -340,6 +341,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
         _sourceListInactiveGradient = CGGradientCreateWithColorComponents(CGColorSpaceCreateDeviceRGB(), [168.0/255.0,183.0/255.0,205.0/255.0,1.0,157.0/255.0,174.0/255.0,199.0/255.0,1.0], [0,1], 2);
         _sourceListInactiveTopLineColor = [CPColor colorWithCalibratedRed:(173.0/255.0) green:(187.0/255.0) blue:(209.0/255.0) alpha:1.0];
         _sourceListInactiveBottomLineColor = [CPColor colorWithCalibratedRed:(150.0/255.0) green:(161.0/255.0) blue:(183.0/255.0) alpha:1.0];*/
+        _differedColumnDataToRemove = [ ];
 }
 
 /*!
@@ -725,6 +727,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     else
         _dirtyTableColumnRangeIndex = MIN(NUMBER_OF_COLUMNS() - 1, _dirtyTableColumnRangeIndex);
 
+    [self tile];
     [self setNeedsLayout];
 }
 
@@ -742,8 +745,11 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     if (index === CPNotFound)
         return;
 
+    // we differ the actual removal until the end of the runloop in order to keep a reference to the column.
+    [_differedColumnDataToRemove addObject:{"column":aTableColumn, "shouldBeHidden": [aTableColumn isHidden]}];
+
+    [aTableColumn setHidden:YES];
     [aTableColumn setTableView:nil];
-    [_tableColumns removeObjectAtIndex:index];
 
     var tableColumnUID = [aTableColumn UID];
 
@@ -2242,6 +2248,20 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 
         while (count--)
             [dataViews[count] removeFromSuperview];
+    }
+
+    // if we have any columns to remove do that here
+    if ([_differedColumnDataToRemove count])
+    {
+        for (var i = 0; i < _differedColumnDataToRemove.length; i++)
+        {
+            var data = _differedColumnDataToRemove[i],
+                column = data.column;
+
+            [column setHidden:data.shouldBeHidden];
+            [_tableColumns removeObject:column];
+        }
+        [_differedColumnDataToRemove removeAllObjects];
     }
 
 }
