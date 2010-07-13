@@ -880,7 +880,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
         _selectedColumnIndexes = [columns copy];
 
     [self _updateHighlightWithOldColumns:previousSelectedIndexes newColumns:_selectedColumnIndexes];
-    [_tableDrawView display]; // FIXME: should be setNeedsDisplayInRect:enclosing rect of new (de)selected columns
+    [self setNeedsDisplay:YES]; // FIXME: should be setNeedsDisplayInRect:enclosing rect of new (de)selected columns
                               // but currently -drawRect: is not implemented here
     if (_headerView)
         [_headerView setNeedsDisplay:YES];
@@ -896,7 +896,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     _selectedRowIndexes = [rows copy];
 
     [self _updateHighlightWithOldRows:previousSelectedIndexes newRows:_selectedRowIndexes];
-    [_tableDrawView display]; // FIXME: should be setNeedsDisplayInRect:enclosing rect of new (de)selected rows
+    [self setNeedsDisplay:YES]; // FIXME: should be setNeedsDisplayInRect:enclosing rect of new (de)selected rows
                               // but currently -drawRect: is not implemented here
 
     [[CPKeyValueBinding getBinding:@"selectionIndexes" forObject:self] reverseSetValueFor:@"selectedRowIndexes"];
@@ -2237,7 +2237,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 
     [_tableDrawView setFrame:exposedRect];
 
-    [_tableDrawView display];
+    [self setNeedsDisplay:YES];
 
     // Now clear all the leftovers
     // FIXME: this could be faster!
@@ -2472,6 +2472,12 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
         return [self bounds];
 
     return [self convertRect:CGRectIntersection([superview bounds], [self frame]) fromView:superview];
+}
+
+- (void)setNeedsDisplay:(BOOL)aFlag
+{
+    [super setNeedsDisplay:aFlag];
+    [_tableDrawView setNeedsDisplay:aFlag];
 }
 
 - (void)_drawRect:(CGRect)aRect
