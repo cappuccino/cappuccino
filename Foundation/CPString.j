@@ -517,7 +517,7 @@ var CPStringRegexSpecialCharacters = [
     if (self === anObject)
         return YES;
 
-    if (![anObject isKindOfClass:[CPString class]])
+    if (!anObject || ![anObject isKindOfClass:[CPString class]])
         return NO;
 
     return [self isEqualToString:anObject];
