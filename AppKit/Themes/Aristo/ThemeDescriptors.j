@@ -8,6 +8,7 @@
 
 @import <Foundation/CPObject.j>
 @import <AppKit/AppKit.j>
+@import <AppKit/CPTableHeaderView.j>
 
 
 @implementation AristoThemeDescriptor : BKThemeDescriptor
@@ -770,6 +771,31 @@
     [buttonBar setButtons:[[CPButtonBar plusButton], [CPButtonBar minusButton], popup]];
 
     return buttonBar;
+}
+
++ (_CPTableColumnHeaderView)themedTableHeader
+{
+    var header             = [[_CPTableColumnHeaderView alloc] initWithFrame:CGRectMake(0,0,50,24)],
+        highlightedPressed = [CPColor colorWithPatternImage:[_CPCibCustomResource imageResourceWithName:"tableview-headerview-highlighted-pressed.png" size:CGSizeMake(1.0, 23.0)]],
+        highlighted        = [CPColor colorWithPatternImage:[_CPCibCustomResource imageResourceWithName:"tableview-headerview-highlighted.png" size:CGSizeMake(1.0, 23.0)]],
+        pressed            = [CPColor colorWithPatternImage:[_CPCibCustomResource imageResourceWithName:"tableview-headerview-pressed.png" size:CGSizeMake(1.0, 23.0)]],
+        normal             = [CPColor colorWithPatternImage:[_CPCibCustomResource imageResourceWithName:"tableview-headerview.png" size:CGSizeMake(1.0, 23.0)]];
+
+
+    [header setStringValue:@"Table Header"];
+
+    [header setValue:normal forThemeAttribute:@"background-color"];
+    [header setValue:CGInsetMake(0, 5, 0, 5) forThemeAttribute:@"text-inset"];
+    [header setValue:[CPColor colorWithRed:51.0 / 255.0 green:51.0 / 255.0 blue:51.0 / 255.0 alpha:1.0] forThemeAttribute:@"text-color"];
+    [header setValue:[CPFont boldSystemFontOfSize:12.0] forThemeAttribute:@"text-font"];
+    [header setValue:[CPColor whiteColor] forThemeAttribute:@"text-shadow-color"];
+    [header setValue:CGSizeMake(0,1) forThemeAttribute:@"text-shadow-offset"];
+
+    [header setValue:pressed forThemeAttribute:@"background-color" inState:CPThemeStateHighlighted];
+    [header setValue:highlighted forThemeAttribute:@"background-color" inState:CPThemeStateSelected];
+    [header setValue:highlightedPressed forThemeAttribute:@"background-color" inState:CPThemeStateHighlighted|CPThemeStateSelected];
+
+    return header;
 }
 
 @end
