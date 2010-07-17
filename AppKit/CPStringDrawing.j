@@ -60,7 +60,7 @@ var CPStringSizeWithFontInWidthCache = {};
         CPStringSizeWithFontInWidthCache[cacheKey] = size;
     }
 
-    return size;
+    return CGSizeMakeCopy(size);
 }
 
 
