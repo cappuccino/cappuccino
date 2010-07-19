@@ -162,7 +162,7 @@ var CPDateReferenceDate = new Date(Date.UTC(2001, 1, 1, 0, 0, 0, 0));
     if (!aDate)
         return NO;
 
-    return self === aDate;
+    return !(self < aDate || self > aDate);
 }
 
 - (CPComparisonResult)compare:(CPDate)anotherDate
