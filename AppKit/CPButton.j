@@ -574,7 +574,7 @@ CPButtonStateMixed  = CPThemeState("mixed");
     if (aString === CPNewlineCharacter || aString === CPCarriageReturnCharacter)
         [[self window] setDefaultButton:self];
     else if ([[self window] defaultButton] === self)
-        [[self window] setDefaultButton:NO];
+        [[self window] setDefaultButton:nil];
 
     _keyEquivalent = aString || @"";
 }
