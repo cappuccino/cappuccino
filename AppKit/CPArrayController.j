@@ -400,16 +400,23 @@
 
     if (_filterPredicate === nil || [_filterPredicate evaluateWithObject:object])
     {
-        var pos = [_arrangedObjects insertObject:object inArraySortedByDescriptors:_sortDescriptors];
+        var position;
+        if ([_sortDescriptors count] > 0)
+             position = [_arrangedObjects insertObject:object inArraySortedByDescriptors:_sortDescriptors];
+        else
+        {
+            [_arrangedObjects addObject:object];
+            position = [_arrangedObjects count] - 1;
+        }
 
         if (_selectsInsertedObjects)
         {
-            [self setSelectionIndex:pos];
+            [self setSelectionIndex:position];
         }
         else
         {
             [self willChangeValueForKey:@"selectionIndexes"];
-            [_selectionIndexes shiftIndexesStartingAtIndex:pos by:1];
+            [_selectionIndexes shiftIndexesStartingAtIndex:position by:1];
             [self didChangeValueForKey:@"selectionIndexes"];
         }
     }
