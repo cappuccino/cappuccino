@@ -148,12 +148,21 @@ var CPDateReferenceDate = new Date(Date.UTC(2001, 1, 1, 0, 0, 0, 0));
 
 - (BOOL)isEqual:(CPDate)aDate
 {
+    if (self === aDate)
+        return YES;
+
+    if (!aDate || ![aDate isKindOfClass:[CPDate class]])
+        return NO;
+
     return [self isEqualToDate:aDate];
 }
 
-- (BOOL)isEqualToDate:(CPDate)anotherDate
+- (BOOL)isEqualToDate:(CPDate)aDate
 {
-    return self === anotherDate || (anotherDate !== nil && anotherDate.isa && [anotherDate isKindOfClass:CPDate] && !(self < anotherDate || self > anotherDate));
+    if (!aDate)
+        return NO;
+
+    return !(self < aDate || self > aDate);
 }
 
 - (CPComparisonResult)compare:(CPDate)anotherDate
