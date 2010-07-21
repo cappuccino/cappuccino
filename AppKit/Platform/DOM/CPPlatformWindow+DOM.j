@@ -140,21 +140,32 @@ var KeyCodesToPrevent = {},
         61: 187,  // =, equals
         59: 186   // ;, semicolon
     },
-    KeyCodesToFunctionUnicodeMap = {};
+    KeyCodesToUnicodeMap = {};
 
 KeyCodesToPrevent[CPKeyCodes.A] = YES;
 
-KeyCodesToFunctionUnicodeMap[CPKeyCodes.BACKSPACE]     = CPDeleteCharacter;
-KeyCodesToFunctionUnicodeMap[CPKeyCodes.DELETE]        = CPDeleteFunctionKey;
-KeyCodesToFunctionUnicodeMap[CPKeyCodes.TAB]           = CPTabCharacter;
-KeyCodesToFunctionUnicodeMap[CPKeyCodes.ENTER]         = CPCarriageReturnCharacter;
-KeyCodesToFunctionUnicodeMap[CPKeyCodes.ESC]           = CPEscapeFunctionKey;
-KeyCodesToFunctionUnicodeMap[CPKeyCodes.PAGE_UP]       = CPPageUpFunctionKey;
-KeyCodesToFunctionUnicodeMap[CPKeyCodes.PAGE_DOWN]     = CPPageDownFunctionKey;
-KeyCodesToFunctionUnicodeMap[CPKeyCodes.LEFT]          = CPLeftArrowFunctionKey;
-KeyCodesToFunctionUnicodeMap[CPKeyCodes.UP]            = CPUpArrowFunctionKey;
-KeyCodesToFunctionUnicodeMap[CPKeyCodes.RIGHT]         = CPRightArrowFunctionKey;
-KeyCodesToFunctionUnicodeMap[CPKeyCodes.DOWN]          = CPDownArrowFunctionKey;
+KeyCodesToUnicodeMap[CPKeyCodes.BACKSPACE]              = CPDeleteCharacter;
+KeyCodesToUnicodeMap[CPKeyCodes.DELETE]                 = CPDeleteFunctionKey;
+KeyCodesToUnicodeMap[CPKeyCodes.TAB]                    = CPTabCharacter;
+KeyCodesToUnicodeMap[CPKeyCodes.ENTER]                  = CPCarriageReturnCharacter;
+KeyCodesToUnicodeMap[CPKeyCodes.ESC]                    = CPEscapeFunctionKey;
+KeyCodesToUnicodeMap[CPKeyCodes.PAGE_UP]                = CPPageUpFunctionKey;
+KeyCodesToUnicodeMap[CPKeyCodes.PAGE_DOWN]              = CPPageDownFunctionKey;
+KeyCodesToUnicodeMap[CPKeyCodes.LEFT]                   = CPLeftArrowFunctionKey;
+KeyCodesToUnicodeMap[CPKeyCodes.UP]                     = CPUpArrowFunctionKey;
+KeyCodesToUnicodeMap[CPKeyCodes.RIGHT]                  = CPRightArrowFunctionKey;
+KeyCodesToUnicodeMap[CPKeyCodes.DOWN]                   = CPDownArrowFunctionKey;
+KeyCodesToUnicodeMap[CPKeyCodes.SEMICOLON]              = ";";
+KeyCodesToUnicodeMap[CPKeyCodes.DASH]                   = "-";
+KeyCodesToUnicodeMap[CPKeyCodes.EQUALS]                 = "=";
+KeyCodesToUnicodeMap[CPKeyCodes.COMMA]                  = ",";
+KeyCodesToUnicodeMap[CPKeyCodes.PERIOD]                 = ".";
+KeyCodesToUnicodeMap[CPKeyCodes.SLASH]                  = "/";
+KeyCodesToUnicodeMap[CPKeyCodes.APOSTROPHE]             = "`";
+KeyCodesToUnicodeMap[CPKeyCodes.SINGLE_QUOTE]           = "'";
+KeyCodesToUnicodeMap[CPKeyCodes.OPEN_SQUARE_BRACKET]    = "[";
+KeyCodesToUnicodeMap[CPKeyCodes.BACKSLASH]              = "\\";
+KeyCodesToUnicodeMap[CPKeyCodes.CLOSE_SQUARE_BRACKET]   = "]";
 
 var ModifierKeyCodes = [
     CPKeyCodes.META,
@@ -642,9 +653,9 @@ var supportsNativeDragAndDrop = [CPPlatform supportsDragAndDrop];
 
                             var characters;
 
-                            // Is this a special key?
+                            // Handle key codes for which String.fromCharCode won't work.
                             if (aDOMEvent.which === 0 || aDOMEvent.charCode === 0)
-                                characters = KeyCodesToFunctionUnicodeMap[_keyCode];
+                                characters = KeyCodesToUnicodeMap[_keyCode];
 
                             if (!characters)
                                 characters = String.fromCharCode(_keyCode).toLowerCase();
@@ -724,7 +735,7 @@ var supportsNativeDragAndDrop = [CPPlatform supportsDragAndDrop];
                             var characters = overrideCharacters;
                             // Is this a special key?
                             if (!characters && (aDOMEvent.which === 0 || aDOMEvent.charCode === 0))
-                                characters = KeyCodesToFunctionUnicodeMap[charCode];
+                                characters = KeyCodesToUnicodeMap[charCode];
 
                             if (!characters)
                                 characters = String.fromCharCode(charCode);
@@ -763,7 +774,7 @@ var supportsNativeDragAndDrop = [CPPlatform supportsDragAndDrop];
                             if ([ModifierKeyCodes containsObject:keyCode])
                                 break;
 
-                            var characters = KeyCodesToFunctionUnicodeMap[charCode] || String.fromCharCode(charCode),
+                            var characters = KeyCodesToUnicodeMap[charCode] || String.fromCharCode(charCode),
                                 charactersIgnoringModifiers = characters.toLowerCase();
 
                             if (!(modifierFlags & CPShiftKeyMask) && (modifierFlags & CPCommandKeyMask) && !_capsLockActive)
