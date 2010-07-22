@@ -512,6 +512,18 @@ var CPStringRegexSpecialCharacters = [
     return aString && aString != "" && length >= aString.length && lastIndexOf(aString) == (length - aString.length);
 }
 
+- (BOOL)isEqual:(id)anObject
+{
+    if (self === anObject)
+        return YES;
+
+    if (!anObject || ![anObject isKindOfClass:[CPString class]])
+        return NO;
+
+    return [self isEqualToString:anObject];
+}
+
+
 /*!
     Returns \c YES if the specified string contains the same characters as the receiver.
 */
