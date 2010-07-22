@@ -33,13 +33,13 @@
 
 + (CPString)themeClass
 {
-    return @"tableHeader";
+    return @"columnHeader";
 }
 
 + (id)themeAttributes
 {
-    return [CPDictionary dictionaryWithObjects:[[CPNull null], CGInsetMakeZero(), [CPNull null], [CPNull null], [CPNull null], CGSizeMakeZero()]
-                                       forKeys:[@"background-color", @"text-inset", @"text-color", @"text-font", @"text-shadow-color", @"text-shadow-offset"]];
+    return [CPDictionary dictionaryWithObjects:[[CPNull null], [CPNull null], CGInsetMakeZero(), [CPNull null], [CPNull null], [CPNull null], CGSizeMakeZero()]
+                                       forKeys:[@"background-color", @"text-alignment", @"text-inset", @"text-color", @"text-font", @"text-shadow-color", @"text-shadow-offset"]];
 }
 
 - (void)initWithFrame:(CGRect)frame
@@ -76,6 +76,7 @@
     [_textField setFont:[self currentValueForThemeAttribute:@"text-font"]];
     [_textField setTextShadowColor:[self currentValueForThemeAttribute:@"text-shadow-color"]];
     [_textField setTextShadowOffset:[self currentValueForThemeAttribute:@"text-shadow-offset"]];
+    [_textField setAlignment:[self currentValueForThemeAttribute:@"text-alignment"]];
 }
 
 - (void)setStringValue:(CPString)string
@@ -158,10 +159,22 @@ var _CPTableColumnHeaderViewStringValueKey = @"_CPTableColumnHeaderViewStringVal
     BOOL                    _isResizing;
     BOOL                    _isDragging;
     BOOL                    _isTrackingColumn;
+    BOOL                    _drawsColumnLines;
 
     float                   _columnOldWidth;
 
     CPTableView             _tableView @accessors(property=tableView);
+}
+
++ (CPString)themeClass
+{
+    return @"tableHeaderRow";
+}
+
++ (id)themeAttributes
+{
+    return [CPDictionary dictionaryWithObjects:[[CPNull null]]
+                                       forKeys:[@"background-color"]];
 }
 
 - (void)_init
@@ -177,7 +190,7 @@ var _CPTableColumnHeaderViewStringValueKey = @"_CPTableColumnHeaderViewStringVal
 
     _columnOldWidth = 0.0;
 
-    [self setBackgroundColor:[CPColor colorWithPatternImage:CPAppKitImage("tableview-headerview.png", CGSizeMake(1.0, 23.0))]];
+    [self setBackgroundColor:[self currentValueForThemeAttribute:@"background-color"]];
 }
 
 - (id)initWithFrame:(CGRect)aFrame
@@ -204,6 +217,16 @@ var _CPTableColumnHeaderViewStringValueKey = @"_CPTableColumnHeaderViewStringVal
     headerRect.size.width = CPRectGetWidth(columnRect);
 
     return headerRect;
+}
+
+- (void)setDrawsColumnLines:(BOOL)aFlag
+{
+    _drawsColumnLines = aFlag;
+}
+
+- (BOOL)drawsColumnLines
+{
+    return _drawsColumnLines;
 }
 
 - (CGRect)_cursorRectForColumn:(int)column
@@ -582,11 +605,13 @@ var _CPTableColumnHeaderViewStringValueKey = @"_CPTableColumnHeaderViewStringVal
         if([headerView superview] != self)
             [self addSubview:headerView];
     }
+
+    [self setBackgroundColor:[self currentValueForThemeAttribute:@"background-color"]];
 }
 
 - (void)drawRect:(CGRect)aRect
 {
-    if (!_tableView)
+    if (!_tableView || ![self drawsColumnLines])
         return;
 
     var context = [[CPGraphicsContext currentContext] graphicsPort],

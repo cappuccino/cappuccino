@@ -356,6 +356,16 @@
     [textfield setStringValue:""];
     [textfield setEditable:YES];
 
+
+    // tableview dataview stuff 
+    [textfield setValue:[CPColor colorWithRed:51.0 / 255.0 green:51.0 / 255.0 blue:51.0 / 255.0 alpha:1.0] forThemeAttribute:"text-color" inState:CPThemeStateTableDataView];
+    [textfield setValue:CPLineBreakByTruncatingTail forThemeAttribute:@"line-break-mode" inState:CPThemeStateTableDataView|CPThemeStateTableDataView];
+    [textfield setValue:CPCenterVerticalTextAlignment forThemeAttribute:@"vertical-alignment" inState:CPThemeStateTableDataView|CPThemeStateTableDataView];
+    [textfield setValue:CGInsetMake(0.0, 0.0, 0.0, 5.0) forThemeAttribute:@"content-inset" inState:CPThemeStateTableDataView|CPThemeStateTableDataView];
+    [textfield setValue:[CPColor whiteColor] forThemeAttribute:@"text-color" inState:CPThemeStateTableDataView|CPThemeStateSelectedTableDataView];
+    [textfield setValue:[CPFont boldSystemFontOfSize:12.0] forThemeAttribute:@"font" inState:CPThemeStateTableDataView|CPThemeStateSelectedTableDataView];
+    
+
     return textfield;
 }
 
@@ -773,7 +783,7 @@
     return buttonBar;
 }
 
-+ (_CPTableColumnHeaderView)themedTableHeader
++ (_CPTableColumnHeaderView)themedColumnHeader
 {
     var header             = [[_CPTableColumnHeaderView alloc] initWithFrame:CGRectMake(0,0,50,24)],
         highlightedPressed = [CPColor colorWithPatternImage:[_CPCibCustomResource imageResourceWithName:"tableview-headerview-highlighted-pressed.png" size:CGSizeMake(1.0, 23.0)]],
@@ -790,12 +800,73 @@
     [header setValue:[CPFont boldSystemFontOfSize:12.0] forThemeAttribute:@"text-font"];
     [header setValue:[CPColor whiteColor] forThemeAttribute:@"text-shadow-color"];
     [header setValue:CGSizeMake(0,1) forThemeAttribute:@"text-shadow-offset"];
+    [header setValue:CPLeftTextAlignment forThemeAttribute:@"text-alignment"];
 
     [header setValue:pressed forThemeAttribute:@"background-color" inState:CPThemeStateHighlighted];
     [header setValue:highlighted forThemeAttribute:@"background-color" inState:CPThemeStateSelected];
     [header setValue:highlightedPressed forThemeAttribute:@"background-color" inState:CPThemeStateHighlighted|CPThemeStateSelected];
 
     return header;
+}
+
++ (CPTableHeaderView)themedTableHeaderRow
+{
+    var header = [[CPTableHeaderView alloc] initWithFrame:CGRectMake(0,0,50,24)],
+        normal = [CPColor colorWithPatternImage:[_CPCibCustomResource imageResourceWithName:"tableview-headerview.png" size:CGSizeMake(1.0, 23.0)]];
+
+    [header setValue:normal forThemeAttribute:@"background-color"];
+
+    return header;
+}
+
++ (_CPCornerView)themedCornerview
+{
+    var corner = [[_CPCornerView alloc] initWithFrame:CGRectMake(0,0,25, 23)],
+        normal = [CPColor colorWithPatternImage:[_CPCibCustomResource imageResourceWithName:"tableview-headerview.png" size:CGSizeMake(1.0, 23.0)]];
+
+    [corner setValue:normal forThemeAttribute:"background-color"];
+
+    return corner;
+}
+
++ (CPTableView)themedTableView
+{
+    // This is a bit more complicated than the rest because we actually set theme values for several different (table related) controls in this method
+
+    var tableview = [[CPTableView alloc] initWithFrame:CGRectMake(0,0,200,200)];
+
+    // Now theme the tableview
+    var sortImage = [_CPCibCustomResource imageResourceWithName:"tableview-headerview-ascending.png" size:CGSizeMake(9.0, 8.0)],
+        sortImageReversed = [_CPCibCustomResource imageResourceWithName:"tableview-headerview-descending.png" size:CGSizeMake(9.0, 8.0)],
+        alternatingRowColors = [[CPColor whiteColor], [CPColor colorWithHexString:@"e4e7ff"]],
+        gridColor = [CPColor colorWithHexString:@"dce0e2"],
+        selectionColor = [CPColor colorWithHexString:@"5f83b9"],
+        sourceListSelectionColor = [CPDictionary dictionaryWithObjects: [ CGGradientCreateWithColorComponents(CGColorSpaceCreateDeviceRGB(), [89.0/255.0, 153.0/255.0, 209.0/255.0,1.0, 33.0/255.0, 94.0/255.0, 208.0/255.0,1.0], [0,1], 2), 
+                                                                          [CPColor colorWithCalibratedRed:(61.0/255.0) green:(123.0/255.0) blue:(218.0/255.0) alpha:1.0],
+                                                                          [CPColor colorWithCalibratedRed:(31.0/255.0) green:(92.0/255.0) blue:(207.0/255.0) alpha:1.0]
+                                                                        ]
+                                                               forKeys: [CPSourceListGradient, CPSourceListTopLineColor, CPSourceListBottomLineColor]];
+
+    [tableview setValue:alternatingRowColors forThemeAttribute:"alternating-row-colors"];
+    [tableview setValue:gridColor forThemeAttribute:"grid-color"];
+    [tableview setValue:[CPColor whiteColor] forThemeAttribute:"highlighted-grid-color"];
+    [tableview setValue:selectionColor forThemeAttribute:"selection-color"];
+    [tableview setValue:sourceListSelectionColor forThemeAttribute:"sourcelist-selection-color"];
+    [tableview setValue:sortImage forThemeAttribute:"sort-image"];
+    [tableview setValue:sortImageReversed forThemeAttribute:"sort-image-reversed"];
+
+    return tableview;
+}
+
++ (CPTextField)themedTableDataView
+{
+    var view = [self themedStandardTextField];
+
+    [view setBezeled:NO];
+    [view setEditable:NO];
+    [view setThemeState:CPThemeStateTableDataView];
+
+    return view;
 }
 
 @end
