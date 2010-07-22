@@ -23,53 +23,60 @@
 @import "CPTableColumn.j"
 @import "CPTableView.j"
 @import "CPView.j"
+
+#include "CoreGraphics/CGGeometry.h"
  
 @implementation _CPTableColumnHeaderView : CPView
 {
     _CPImageAndTextView     _textField;
 }
 
++ (CPString)themeClass
+{
+    return @"columnHeader";
+}
+
++ (id)themeAttributes
+{
+    return [CPDictionary dictionaryWithObjects:[[CPNull null], [CPNull null], CGInsetMakeZero(), [CPNull null], [CPNull null], [CPNull null], CGSizeMakeZero()]
+                                       forKeys:[@"background-color", @"text-alignment", @"text-inset", @"text-color", @"text-font", @"text-shadow-color", @"text-shadow-offset"]];
+}
+
 - (void)initWithFrame:(CGRect)frame
 {
     self = [super initWithFrame:frame];
     if (self)
-    {   
         [self _init];
-    }
 
     return self;
 }
 
 - (void)_init
 {
-    _textField = [[_CPImageAndTextView alloc] initWithFrame:
-        CGRectMake(5.0, 0.0, CGRectGetWidth([self bounds]) - 10.0, CGRectGetHeight([self bounds]))];
-        
+    _textField = [[_CPImageAndTextView alloc] initWithFrame:_CGRectMakeZero()];
+
     [_textField setAutoresizingMask:CPViewWidthSizable|CPViewHeightSizable];
 
     [_textField setLineBreakMode:CPLineBreakByTruncatingTail];
-    [_textField setTextColor:[CPColor colorWithRed:51.0 / 255.0 green:51.0 / 255.0 blue:51.0 / 255.0 alpha:1.0]];
-    [_textField setFont:[CPFont boldSystemFontOfSize:12.0]];
     [_textField setAlignment:CPLeftTextAlignment];
     [_textField setVerticalAlignment:CPCenterVerticalTextAlignment];
-    [_textField setTextShadowColor:[CPColor whiteColor]];
-    [_textField setTextShadowOffset:CGSizeMake(0,1)];
 
     [self addSubview:_textField];
 }
 
 - (void)layoutSubviews
 {
-    var themeState = [self themeState];
+    [self setBackgroundColor:[self currentValueForThemeAttribute:@"background-color"]];
 
-    if(themeState & CPThemeStateSelected && themeState & CPThemeStateHighlighted)
-        [self setBackgroundColor:[CPColor colorWithPatternImage:CPAppKitImage("tableview-headerview-highlighted-pressed.png", CGSizeMake(1.0, 23.0))]];
-    else if (themeState & CPThemeStateSelected)
-        [self setBackgroundColor:[CPColor colorWithPatternImage:CPAppKitImage("tableview-headerview-highlighted.png", CGSizeMake(1.0, 23.0))]];
-    else if (themeState & CPThemeStateHighlighted)
-        [self setBackgroundColor:[CPColor colorWithPatternImage:CPAppKitImage("tableview-headerview-pressed.png", CGSizeMake(1.0, 23.0))]];
-    else 
-        [self setBackgroundColor:[CPColor colorWithPatternImage:CPAppKitImage("tableview-headerview.png", CGSizeMake(1.0, 23.0))]];
+    var inset = [self currentValueForThemeAttribute:@"text-inset"],
+        bounds = [self bounds];
+
+    [_textField setFrame:CGRectMake(inset.right, inset.top, bounds.size.width - inset.right - inset.left, bounds.size.height - inset.top - inset.bottom)];
+    [_textField setTextColor:[self currentValueForThemeAttribute:@"text-color"]];
+    [_textField setFont:[self currentValueForThemeAttribute:@"text-font"]];
+    [_textField setTextShadowColor:[self currentValueForThemeAttribute:@"text-shadow-color"]];
+    [_textField setTextShadowOffset:[self currentValueForThemeAttribute:@"text-shadow-offset"]];
+    [_textField setAlignment:[self currentValueForThemeAttribute:@"text-alignment"]];
 }
 
 - (void)setStringValue:(CPString)string
@@ -95,11 +102,6 @@
 - (void)setFont:(CPFont)aFont
 {
     [_textField setFont:aFont];
-}
-
-- (void)setValue:(id)aValue forThemeAttribute:(id)aKey
-{
-    [_textField setValue:aValue forThemeAttribute:aKey];
 }
 
 - (void)_setIndicatorImage:(CPImage)anImage
@@ -157,10 +159,22 @@ var _CPTableColumnHeaderViewStringValueKey = @"_CPTableColumnHeaderViewStringVal
     BOOL                    _isResizing;
     BOOL                    _isDragging;
     BOOL                    _isTrackingColumn;
+    BOOL                    _drawsColumnLines;
 
     float                   _columnOldWidth;
 
     CPTableView             _tableView @accessors(property=tableView);
+}
+
++ (CPString)themeClass
+{
+    return @"tableHeaderRow";
+}
+
++ (id)themeAttributes
+{
+    return [CPDictionary dictionaryWithObjects:[[CPNull null]]
+                                       forKeys:[@"background-color"]];
 }
 
 - (void)_init
@@ -176,7 +190,7 @@ var _CPTableColumnHeaderViewStringValueKey = @"_CPTableColumnHeaderViewStringVal
 
     _columnOldWidth = 0.0;
 
-    [self setBackgroundColor:[CPColor colorWithPatternImage:CPAppKitImage("tableview-headerview.png", CGSizeMake(1.0, 23.0))]];
+    [self setBackgroundColor:[self currentValueForThemeAttribute:@"background-color"]];
 }
 
 - (id)initWithFrame:(CGRect)aFrame
@@ -203,6 +217,16 @@ var _CPTableColumnHeaderViewStringValueKey = @"_CPTableColumnHeaderViewStringVal
     headerRect.size.width = CPRectGetWidth(columnRect);
 
     return headerRect;
+}
+
+- (void)setDrawsColumnLines:(BOOL)aFlag
+{
+    _drawsColumnLines = aFlag;
+}
+
+- (BOOL)drawsColumnLines
+{
+    return _drawsColumnLines;
 }
 
 - (CGRect)_cursorRectForColumn:(int)column
@@ -581,11 +605,13 @@ var _CPTableColumnHeaderViewStringValueKey = @"_CPTableColumnHeaderViewStringVal
         if([headerView superview] != self)
             [self addSubview:headerView];
     }
+
+    [self setBackgroundColor:[self currentValueForThemeAttribute:@"background-color"]];
 }
 
 - (void)drawRect:(CGRect)aRect
 {
-    if (!_tableView)
+    if (!_tableView || ![self drawsColumnLines])
         return;
 
     var context = [[CPGraphicsContext currentContext] graphicsPort],

@@ -591,7 +591,8 @@ CPControlKeyMask
         return @"";
 
     var string = _keyEquivalent.toUpperCase(),
-        needsShift = _keyEquivalentModifierMask & CPShiftKeyMask || string === _keyEquivalent;
+        needsShift = _keyEquivalentModifierMask & CPShiftKeyMask || 
+                    (string === _keyEquivalent && _keyEquivalent.toLowerCase() !== _keyEquivalent.toUpperCase());
 
     if (CPBrowserIsOperatingSystem(CPMacOperatingSystem))
     {
