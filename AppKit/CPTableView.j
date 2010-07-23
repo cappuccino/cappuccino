@@ -205,6 +205,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     unsigned    _destinationDragStyle;
     BOOL        _isSelectingSession;
     CPIndexSet  _draggedRowIndexes;
+    CPCursor    _dragCursor;
 
     _CPDropOperationDrawingView _dropOperationFeedbackView;
     CPDragOperation             _dragOperationDefaultMask;
@@ -336,6 +337,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
             _cornerView = [[_CPCornerView alloc] initWithFrame:CGRectMake(0, 0, [CPScroller scrollerWidth], CGRectGetHeight([_headerView frame]))];
 
         _draggedColumnIndex = -1;
+        _dragCursor = [CPCursor arrowCursor];
 
         // Gradients for the source list
         _sourceListActiveGradient = CGGradientCreateWithColorComponents(CGColorSpaceCreateDeviceRGB(), [89.0/255.0, 153.0/255.0, 209.0/255.0,1.0, 33.0/255.0, 94.0/255.0, 208.0/255.0,1.0], [0,1], 2);
@@ -2924,6 +2926,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
                 var viewLocation = CPPointMake(aPoint.x - CGRectGetWidth(bounds)/2 + offset.x, aPoint.y - CGRectGetHeight(bounds)/2 + offset.y);
                 [self dragView:view at:viewLocation offset:CPPointMakeZero() event:[CPApp currentEvent] pasteboard:pboard source:self slideBack:YES];
                 _startTrackingPoint = nil;
+                _dragCursor = [CPCursor currentCursor];
 
                 return NO;
             }
@@ -3051,6 +3054,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 - (void)draggingExited:(id)sender
 {
     [_dropOperationFeedbackView removeFromSuperview];
+    [_dragCursor set];
 }
 
 /*
@@ -3067,6 +3071,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     _retargetedDropRow = nil;
     _draggedRowIndexes = [CPIndexSet indexSet];
     [_dropOperationFeedbackView removeFromSuperview];
+    [_dragCursor set];
 }
 /*
     @ignore
