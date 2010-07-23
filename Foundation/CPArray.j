@@ -397,6 +397,63 @@
     return CPNotFound;
 }
 
+- (unsigned)indexOfObjectPassingTest:(Function)predicate
+{
+    return [self indexOfObjectWithOptions:CPEnumerationNormal passingTest:predicate context:nil];
+}
+
+- (unsigned)indexOfObjectPassingTest:(Function)predicate context:(id)aContext
+{
+    return [self indexOfObjectWithOptions:CPEnumerationNormal passingTest:predicate context:aContext];
+}
+
+- (unsigned)indexOfObjectWithOptions:(CPEnumerationOptions)opts passingTest:(Function)predicate
+{
+    return [self indexOfObjectWithOptions:opts passingTest:predicate context:nil];
+}    
+
+- (unsigned)indexOfObjectWithOptions:(CPEnumerationOptions)opts passingTest:(Function)predicate context:(id)aContext
+{
+    // We don't use an enumerator because they return nil to indicate end of enumeration,
+    // but nil may actually be the value we are looking for, so we have to loop over the array.
+    
+    var start, stop, increment;
+    
+    if (opts & CPEnumerationReverse)
+    {
+        start = [self count] - 1;
+        stop = -1;
+        increment = -1;
+    }
+    else
+    {
+        start = 0;
+        stop = [self count];
+        increment = 1;
+    }
+        
+    for (var i = start; i != stop; i += increment)
+    {
+        var result = predicate([self objectAtIndex:i], i, aContext);
+        
+        if (typeof result === 'boolean' && result)
+        {
+            return i;
+        }
+        else if (typeof result === 'object')
+        {
+            if (result == nil)
+                continue
+            else if (result.pass)
+                return i;
+            else if (result.stop)
+                return CPNotFound;
+        }
+    }
+    
+    return CPNotFound;
+}
+
 /*!
     Returns the index of \c anObject in the array, which must be sorted in the same order as
     calling sortUsingSelector: with the selector passed to this method would result in.
