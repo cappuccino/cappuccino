@@ -22,6 +22,7 @@
 
 @import "CPTextField.j"
 
+#include "CoreGraphics/CGGeometry.h"
 #include "Platform/Platform.h"
 
 CPSearchFieldRecentsTitleMenuItemTag    = 1000;
@@ -68,10 +69,10 @@ var SEARCH_BUTTON_DEFAULT_WIDTH = 25.0,
         return;
 
     var bundle = [CPBundle bundleForClass:self];
-    CPSearchFieldSearchImage = [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"CPSearchField/CPSearchFieldSearch.png"] size:CGSizeMake(SEARCH_BUTTON_DEFAULT_WIDTH, BUTTON_DEFAULT_HEIGHT)];
-    CPSearchFieldFindImage = [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"CPSearchField/CPSearchFieldFind.png"] size:CGSizeMake(SEARCH_BUTTON_DEFAULT_WIDTH, BUTTON_DEFAULT_HEIGHT)];
-    CPSearchFieldCancelImage = [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"CPSearchField/CPSearchFieldCancel.png"] size:CGSizeMake(CANCEL_BUTTON_DEFAULT_WIDTH, BUTTON_DEFAULT_HEIGHT)];
-    CPSearchFieldCancelPressedImage = [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"CPSearchField/CPSearchFieldCancelPressed.png"] size:CGSizeMake(CANCEL_BUTTON_DEFAULT_WIDTH, BUTTON_DEFAULT_HEIGHT)];
+    CPSearchFieldSearchImage = [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"CPSearchField/CPSearchFieldSearch.png"] size:_CGSizeMake(SEARCH_BUTTON_DEFAULT_WIDTH, BUTTON_DEFAULT_HEIGHT)];
+    CPSearchFieldFindImage = [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"CPSearchField/CPSearchFieldFind.png"] size:_CGSizeMake(SEARCH_BUTTON_DEFAULT_WIDTH, BUTTON_DEFAULT_HEIGHT)];
+    CPSearchFieldCancelImage = [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"CPSearchField/CPSearchFieldCancel.png"] size:_CGSizeMake(CANCEL_BUTTON_DEFAULT_WIDTH, BUTTON_DEFAULT_HEIGHT)];
+    CPSearchFieldCancelPressedImage = [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"CPSearchField/CPSearchFieldCancelPressed.png"] size:_CGSizeMake(CANCEL_BUTTON_DEFAULT_WIDTH, BUTTON_DEFAULT_HEIGHT)];
 }
 
 - (id)initWithFrame:(CGRect)frame
@@ -112,6 +113,8 @@ var SEARCH_BUTTON_DEFAULT_WIDTH = 25.0,
     var searchButton = [[CPButton alloc] initWithFrame:[self searchButtonRectForBounds:bounds]];
     [self setSearchButton:searchButton];
     [self resetSearchButton];
+    
+    _canResignFirstResponder = YES;
 }
 
 // Managing Buttons
@@ -211,21 +214,21 @@ var SEARCH_BUTTON_DEFAULT_WIDTH = 25.0,
 - (CGRect)searchTextRectForBounds:(CGRect)rect
 {
     var leftOffset = 0, 
-        width = CGRectGetWidth(rect);
+        width = _CGRectGetWidth(rect);
     
     if (_searchButton)
     {
         var searchBounds = [self searchButtonRectForBounds:rect];
-        leftOffset = CGRectGetWidth(searchBounds) + 6;
+        leftOffset = _CGRectGetWidth(searchBounds) + 6;
     }
     
     if (_cancelButton)
     {
         var cancelRect = [self cancelButtonRectForBounds:rect];
-        width = CGRectGetMinX(cancelRect) - leftOffset;
+        width = _CGRectGetMinX(cancelRect) - leftOffset;
     }
     
-    return CGRectMake(leftOffset, CGRectGetMinY(rect), width, CGRectGetHeight(rect));
+    return _CGRectMake(leftOffset, _CGRectGetMinY(rect), width, _CGRectGetHeight(rect));
 }
 
 /*!
@@ -235,7 +238,7 @@ var SEARCH_BUTTON_DEFAULT_WIDTH = 25.0,
 */
 - (CGRect)searchButtonRectForBounds:(CGRect)rect
 {
-    return CGRectMake(5, (CGRectGetHeight(rect) - BUTTON_DEFAULT_HEIGHT) / 2, SEARCH_BUTTON_DEFAULT_WIDTH, BUTTON_DEFAULT_HEIGHT);
+    return _CGRectMake(5, (_CGRectGetHeight(rect) - BUTTON_DEFAULT_HEIGHT) / 2, SEARCH_BUTTON_DEFAULT_WIDTH, BUTTON_DEFAULT_HEIGHT);
 }
 
 /*!
@@ -245,7 +248,7 @@ var SEARCH_BUTTON_DEFAULT_WIDTH = 25.0,
 */
 - (CGRect)cancelButtonRectForBounds:(CGRect)rect
 {    
-    return CGRectMake(CGRectGetWidth(rect) - CANCEL_BUTTON_DEFAULT_WIDTH - 5, (CGRectGetHeight(rect) - CANCEL_BUTTON_DEFAULT_WIDTH) / 2, BUTTON_DEFAULT_HEIGHT, BUTTON_DEFAULT_HEIGHT);
+    return _CGRectMake(_CGRectGetWidth(rect) - CANCEL_BUTTON_DEFAULT_WIDTH - 5, (_CGRectGetHeight(rect) - CANCEL_BUTTON_DEFAULT_WIDTH) / 2, BUTTON_DEFAULT_HEIGHT, BUTTON_DEFAULT_HEIGHT);
 }
 
 // Managing Menu Templates
@@ -463,6 +466,9 @@ var SEARCH_BUTTON_DEFAULT_WIDTH = 25.0,
 
 - (BOOL)resignFirstResponder
 {
+    if (_canResignFirstResponder)
+        [super resignFirstResponder];
+    
     return _canResignFirstResponder;
 }
 
@@ -471,14 +477,14 @@ var SEARCH_BUTTON_DEFAULT_WIDTH = 25.0,
     var location = [anEvent locationInWindow],
         point = [self convertPoint:location fromView:nil];
 
-    if (CGRectContainsPoint([self searchButtonRectForBounds:[self bounds]], point))
+    if (_CGRectContainsPoint([self searchButtonRectForBounds:[self bounds]], point))
     {
         if (_searchMenuTemplate == nil)
-            [self _sendAction];
+            [self _sendAction:self];
         else
            [self _showMenu];  
     }        
-    else if (CGRectContainsPoint([self cancelButtonRectForBounds:[self bounds]], point))
+    else if (_CGRectContainsPoint([self cancelButtonRectForBounds:[self bounds]], point))
         [_cancelButton mouseDown:anEvent];
     else
         [super mouseDown:anEvent];
