@@ -289,6 +289,9 @@ CPTableColumnUserResizingMask   = 1 << 1;
     var newDataView = [CPKeyedUnarchiver unarchiveObjectWithData:_dataViewData[dataViewUID]];
     newDataView.identifier = dataViewUID;
 
+    // make sure only we have control over the size and placement
+    [newDataView setAutoresizingMask:CPViewNotSizable];
+    
     return newDataView;
 }
 
