@@ -43,6 +43,14 @@ var _CPFonts                = {},
     CPString    _cssString;
 }
 
++ (void)initialize
+{
+    var systemFont = [[CPBundle mainBundle] objectForInfoDictionaryKey:"CPSystemFontFace"];
+    
+    if (systemFont)
+        _CPFontSystemFontFace = systemFont;
+}
+
 /*!
     Returns a font with the specified name and size.
     @param aName the name of the font
@@ -63,6 +71,15 @@ var _CPFonts                = {},
 + (CPFont)boldFontWithName:(CPString)aName size:(float)aSize
 {
     return _CPCachedFont(aName, aSize, YES) || [[CPFont alloc] _initWithName:aName size:aSize bold:YES];
+}
+
+/*!
+    Returns the name of the system font
+    @return the configured system font
+*/
++ (CPString)systemFontFace
+{
+    return _CPFontSystemFontFace;
 }
 
 /*!

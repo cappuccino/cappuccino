@@ -22,6 +22,8 @@
 
 @import <AppKit/CPFont.j>
 
+@import "Converter.j"
+
 
 @implementation CPFont (NSCoding)
 
@@ -37,12 +39,12 @@
         return nil;
     }
 
-    // FIXME: Is this alwasy true?
+    // FIXME: Is this always true?
     if (fontName.indexOf("-Bold") === fontName.length - "-Bold".length)
         isBold = YES;
-
+        
     if (fontName === "LucidaGrande" || fontName === "LucidaGrande-Bold")
-        fontName = "Arial";
+        fontName = [[Converter sharedConverterInstance] systemFontFace];
 
     return [self _initWithName:fontName size:size bold:isBold];
 }
