@@ -34,6 +34,10 @@ var CPSearchFieldSearchImage = nil,
     CPSearchFieldCancelImage = nil,
     CPSearchFieldCancelPressedImage = nil;
 
+var SEARCH_BUTTON_DEFAULT_WIDTH = 25.0,
+    CANCEL_BUTTON_DEFAULT_WIDTH = 22.0,
+    BUTTON_DEFAULT_HEIGHT = 22.0;
+
 /*! 
     @ingroup appkit
     @class CPSearchField
@@ -54,6 +58,7 @@ var CPSearchFieldSearchImage = nil,
     int         _maximumRecents;
     BOOL        _sendsWholeSearchString;
     BOOL        _sendsSearchStringImmediately;
+    BOOL        _canResignFirstResponder;
     CPTimer     _partialStringTimer;
 }
 
@@ -63,10 +68,10 @@ var CPSearchFieldSearchImage = nil,
         return;
 
     var bundle = [CPBundle bundleForClass:self];
-    CPSearchFieldSearchImage = [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"CPSearchField/CPSearchFieldSearch.png"] size:CGSizeMake(25, 22)];
-    CPSearchFieldFindImage = [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"CPSearchField/CPSearchFieldFind.png"] size:CGSizeMake(25, 22)];
-    CPSearchFieldCancelImage = [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"CPSearchField/CPSearchFieldCancel.png"] size:CGSizeMake(22, 22)];
-    CPSearchFieldCancelPressedImage = [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"CPSearchField/CPSearchFieldCancelPressed.png"] size:CGSizeMake(22, 22)];
+    CPSearchFieldSearchImage = [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"CPSearchField/CPSearchFieldSearch.png"] size:CGSizeMake(SEARCH_BUTTON_DEFAULT_WIDTH, BUTTON_DEFAULT_HEIGHT)];
+    CPSearchFieldFindImage = [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"CPSearchField/CPSearchFieldFind.png"] size:CGSizeMake(SEARCH_BUTTON_DEFAULT_WIDTH, BUTTON_DEFAULT_HEIGHT)];
+    CPSearchFieldCancelImage = [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"CPSearchField/CPSearchFieldCancel.png"] size:CGSizeMake(CANCEL_BUTTON_DEFAULT_WIDTH, BUTTON_DEFAULT_HEIGHT)];
+    CPSearchFieldCancelPressedImage = [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"CPSearchField/CPSearchFieldCancelPressed.png"] size:CGSizeMake(CANCEL_BUTTON_DEFAULT_WIDTH, BUTTON_DEFAULT_HEIGHT)];
 }
 
 - (id)initWithFrame:(CGRect)frame
@@ -91,21 +96,22 @@ var CPSearchFieldSearchImage = nil,
 
 - (void)_initWithFrame:(CGRect)frame
 {
+    var bounds = [self bounds];
+    
     [self setBezeled:YES];
     [self setBezelStyle:CPTextFieldRoundedBezel];
     [self setBordered:YES];
     [self setEditable:YES];
     [self setDelegate:self];
+    [self setContinuous:YES];
     
-    _cancelButton = [[CPButton alloc] initWithFrame:CGRectMake(frame.size.width - 27,(frame.size.height-22)/2,22,22)];
+    var cancelButton = [[CPButton alloc] initWithFrame:[self cancelButtonRectForBounds:bounds]];
+    [self setCancelButton:cancelButton];
     [self resetCancelButton];
-    [_cancelButton setHidden:YES];
-    [_cancelButton setAutoresizingMask:CPViewMinXMargin];
-    [self addSubview:_cancelButton];
     
-    _searchButton = [[CPButton alloc] initWithFrame:CGRectMake(5,(frame.size.height-25)/2,25,25)];
+    var searchButton = [[CPButton alloc] initWithFrame:[self searchButtonRectForBounds:bounds]];
+    [self setSearchButton:searchButton];
     [self resetSearchButton];
-    [self addSubview:_searchButton];
 }
 
 // Managing Buttons
@@ -115,7 +121,15 @@ var CPSearchFieldSearchImage = nil,
 */
 - (void)setSearchButton:(CPButton)button
 { 
-    _searchButton = button;
+    if (button != _searchButton)
+    {
+        [_searchButton removeFromSuperview];
+        _searchButton = button;
+        
+        [_searchButton setFrame:[self searchButtonRectForBounds:[self bounds]]];
+        [_searchButton setAutoresizingMask:CPViewMaxXMargin];
+        [self addSubview:_searchButton];
+    }
 }
 
 /*!
@@ -133,30 +147,13 @@ var CPSearchFieldSearchImage = nil,
 */
 - (void)resetSearchButton
 {
-    var searchButtonImage, 
-        action, 
-        target,
-        button = [self searchButton];
-        
-    if (_searchMenuTemplate === nil)
-    {
-        searchButtonImage = CPSearchFieldSearchImage;
-        action = @selector(_sendAction:);
-        target = self;
-    }
-    else
-    {
-        searchButtonImage = CPSearchFieldFindImage;
-        action = @selector(_showMenu:);
-        target = self;
-    }
+    var button = [self searchButton],
+        searchButtonImage = (_searchMenuTemplate === nil) ? CPSearchFieldSearchImage : CPSearchFieldFindImage;
     
     [button setBordered:NO];
     [button setImageScaling:CPScaleToFit];
     [button setImage:searchButtonImage];
     [button setAutoresizingMask:CPViewMaxXMargin];
-    [button setTarget:target];
-    [button setAction:action];
 }
 
 /*!
@@ -165,7 +162,18 @@ var CPSearchFieldSearchImage = nil,
 */
 - (void)setCancelButton:(CPButton)button
 {
-    _cancelButton = button;
+    if (button != _cancelButton)
+    {
+        [_cancelButton removeFromSuperview];
+        _cancelButton = button;
+        
+        [_cancelButton setFrame:[self cancelButtonRectForBounds:[self bounds]]];
+        [_cancelButton setAutoresizingMask:CPViewMinXMargin];
+        [_cancelButton setTarget:self];
+        [_cancelButton setAction:@selector(_searchFieldCancel:)];   
+        [self _updateCancelButtonVisibility];
+        [self addSubview:_cancelButton];
+    }
 }
 
 /*!
@@ -200,23 +208,24 @@ var CPSearchFieldSearchImage = nil,
     @return The updated bounding rectangle to use for the search text field. The default value is the value passed into the rect parameter.
     Subclasses can override this method to return a new bounding rectangle for the text-field object. You might use this method to provide a custom layout for the search field control.
 */
-- (CPRect)searchTextRectForBounds:(CPRect)rect
+- (CGRect)searchTextRectForBounds:(CGRect)rect
 {
-    var leftOffset = 0, width = rect.size.width;
+    var leftOffset = 0, 
+        width = CGRectGetWidth(rect);
     
     if (_searchButton)
     {
-        var searchRect = [_searchButton frame];
-        leftOffset = searchRect.origin.x + searchRect.size.width;
+        var searchBounds = [self searchButtonRectForBounds:rect];
+        leftOffset = CGRectGetWidth(searchBounds) + 6;
     }
     
     if (_cancelButton)
     {
-        var cancelRect = [_cancelButton frame];
-        width = cancelRect.origin.x - leftOffset;
+        var cancelRect = [self cancelButtonRectForBounds:rect];
+        width = CGRectGetMinX(cancelRect) - leftOffset;
     }
     
-    return CPMakeRect(leftOffset,rect.origin.y,width,rect.size.height);
+    return CGRectMake(leftOffset, CGRectGetMinY(rect), width, CGRectGetHeight(rect));
 }
 
 /*!
@@ -224,9 +233,9 @@ var CPSearchFieldSearchImage = nil,
     @param rect The current bounding rectangle for the search button.
     Subclasses can override this method to return a new bounding rectangle for the search button. You might use this method to provide a custom layout for the search field control.
 */
-- (CPRect)searchButtonRectForBounds:(CPRect)rect
+- (CGRect)searchButtonRectForBounds:(CGRect)rect
 {
-    return [_searchButton frame];
+    return CGRectMake(5, (CGRectGetHeight(rect) - BUTTON_DEFAULT_HEIGHT) / 2, SEARCH_BUTTON_DEFAULT_WIDTH, BUTTON_DEFAULT_HEIGHT);
 }
 
 /*!
@@ -234,9 +243,9 @@ var CPSearchFieldSearchImage = nil,
     @param rect The updated bounding rectangle to use for the cancel button. The default value is the value passed into the rect parameter.
     Subclasses can override this method to return a new bounding rectangle for the cancel button. You might use this method to provide a custom layout for the search field control.
 */
-- (CPRect)cancelButtonRectForBounds:(CPRect)rect
-{
-    return [_cancelButton frame];
+- (CGRect)cancelButtonRectForBounds:(CGRect)rect
+{    
+    return CGRectMake(CGRectGetWidth(rect) - CANCEL_BUTTON_DEFAULT_WIDTH - 5, (CGRectGetHeight(rect) - CANCEL_BUTTON_DEFAULT_WIDTH) / 2, BUTTON_DEFAULT_HEIGHT, BUTTON_DEFAULT_HEIGHT);
 }
 
 // Managing Menu Templates
@@ -373,7 +382,7 @@ var CPSearchFieldSearchImage = nil,
 
 // Private methods and subclassing
 
-- (CPRect)contentRectForBounds:(CPRect)bounds
+- (CGRect)contentRectForBounds:(CGRect)bounds
 {
     var superbounds = [super contentRectForBounds:bounds];    
     return [self searchTextRectForBounds:superbounds];
@@ -447,32 +456,38 @@ var CPSearchFieldSearchImage = nil,
     [self _updateSearchMenu];
 }
 
-- (BOOL)trackMouse:(CPEvent)event
+- (CPView)hitTest:(CGPoint)aPoint
 {
-    var rect,
-        point,
-        location = [event locationInWindow];
-    
-    point = [self convertPoint:location fromView:nil];
-    
-    rect = [self searchButtonRectForBounds:[self frame]];
-    if (CPRectContainsPoint(rect,point))
+    return self;
+}
+
+- (BOOL)resignFirstResponder
+{
+    return _canResignFirstResponder;
+}
+
+- (void)mouseDown:(CPEvent)anEvent
+{
+    var location = [anEvent locationInWindow],
+        point = [self convertPoint:location fromView:nil];
+
+    if (CGRectContainsPoint([self searchButtonRectForBounds:[self bounds]], point))
     {
-        return [[self searchButton] trackMouse:event];
-    }
-    
-    rect = [self cancelButtonRectForBounds:[self frame]];
-    if (CPRectContainsPoint(rect,point))
-    {
-        return [[self cancelButton] trackMouse:event];
-    }
-    
-    return [super trackMouse:event];
+        if (_searchMenuTemplate == nil)
+            [self _sendAction];
+        else
+           [self _showMenu];  
+    }        
+    else if (CGRectContainsPoint([self cancelButtonRectForBounds:[self bounds]], point))
+        [_cancelButton mouseDown:anEvent];
+    else
+        [super mouseDown:anEvent];
 }
 
 - (CPMenu)_defaultSearchMenuTemplate
 {
-    var template, item;
+    var template, 
+        item;
     
     template = [[CPMenu alloc] init];
     
@@ -512,7 +527,8 @@ var CPSearchFieldSearchImage = nil,
     if (_searchMenuTemplate === nil)
         return;
         
-    var i, menu = [[CPMenu alloc] init],
+    var i, 
+        menu = [[CPMenu alloc] init],
         countOfRecents = [_recentSearches count],
         numberOfItems = [_searchMenuTemplate numberOfItems];
     
@@ -548,6 +564,7 @@ var CPSearchFieldSearchImage = nil,
             [templateItem setTarget:itemTarget];
             [templateItem setEnabled:([item isEnabled] && itemAction != NULL)];
             [templateItem setTag:tag];
+            [templateItem setImage:[item image]];
             [menu addItem:templateItem];
         }
         else if (tag === CPSearchFieldRecentsMenuItemTag)
@@ -555,18 +572,31 @@ var CPSearchFieldSearchImage = nil,
             var j;
             for (j = 0; j < countOfRecents; j++)
             {
-                var rencentItem = [[CPMenuItem alloc] initWithTitle:[_recentSearches objectAtIndex:j] 
+                var recentItem = [[CPMenuItem alloc] initWithTitle:[_recentSearches objectAtIndex:j] 
                                                              action:@selector(_searchFieldSearch:) 
                                                       keyEquivalent:[item keyEquivalent]];
-                [rencentItem setTarget:self];
-                [menu addItem:rencentItem];
+                [recentItem setTarget:self];
+                [menu addItem:recentItem];
             }
         }
-    }    
+    }
+    
+    [menu setDelegate:self];
+
     _searchMenu = menu;
 }
 
-- (void)_showMenu:(id)sender
+- (void)menuWillOpen:(CPMenu)menu
+{
+    _canResignFirstResponder = NO;
+}
+
+- (void)menuDidClose:(CPMenu)menu
+{
+    _canResignFirstResponder = YES;
+}
+
+- (void)_showMenu
 {
     if (_searchMenu === nil || [_searchMenu numberOfItems] === 0 || ![self isEnabled])
         return;
@@ -576,12 +606,14 @@ var CPSearchFieldSearchImage = nil,
     
     var anEvent = [CPEvent mouseEventWithType:CPRightMouseDown location:location modifierFlags:0 timestamp:[[CPApp currentEvent] timestamp] windowNumber:[[self window] windowNumber] context:nil eventNumber:1 clickCount:1 pressure:0];
     
-    [CPMenu popUpContextMenu:_searchMenu withEvent:anEvent forView:sender];
+    [self selectAll:nil];
+    [CPMenu popUpContextMenu:_searchMenu withEvent:anEvent forView:self];
 }
 
 - (void)_sendPartialString
 {
-    [self _sendAction:self];
+    [super sendAction:[self action] to:[self target]];
+    [_partialStringTimer invalidate];
 }
 
 - (void)_searchFieldCancel:(id)sender
@@ -600,7 +632,8 @@ var CPSearchFieldSearchImage = nil,
     
     [self setObjectValue:searchString];
     [self _sendPartialString];
-
+    [self selectAll:nil];
+    
     [self _updateCancelButtonVisibility];
 }
 
