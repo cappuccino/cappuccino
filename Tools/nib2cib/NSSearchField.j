@@ -79,7 +79,7 @@
         _maximumRecents = [aCoder decodeIntForKey:@"NSMaximumRecents"];
         _sendsWholeSearchString = [aCoder decodeBoolForKey:@"NSSendsWholeSearchString"] ? YES : NO;
     
-        // These bytes don't seem to be used for anything else but the send immediatly flag
+        // These bytes don't seem to be used for anything else but the send immediately flag
         _sendsSearchStringImmediately = [aCoder decodeBytesForKey:@"NSSearchFieldFlags"] ? YES: NO;
     }
     

@@ -85,7 +85,7 @@ var SEARCH_BUTTON_DEFAULT_WIDTH = 25.0,
         _sendsSearchStringImmediately = NO;
         _recentsAutosaveName = nil;
 
-        [self _initWithFrame:frame];
+        [self _init];
 #if PLATFORM(DOM)
         _cancelButton._DOMElement.style.cursor = "default";
         _searchButton._DOMElement.style.cursor = "default";
@@ -95,7 +95,7 @@ var SEARCH_BUTTON_DEFAULT_WIDTH = 25.0,
     return self;
 }
 
-- (void)_initWithFrame:(CGRect)frame
+- (void)_init
 {
     var bounds = [self bounds];
     
@@ -468,7 +468,7 @@ var SEARCH_BUTTON_DEFAULT_WIDTH = 25.0,
 {
     if (_canResignFirstResponder)
         [super resignFirstResponder];
-    
+        
     return _canResignFirstResponder;
 }
 
@@ -737,7 +737,7 @@ var CPRecentsAutosaveNameKey            = @"CPRecentsAutosaveNameKey",
 {
     if (self = [super initWithCoder:coder])
     {
-        [self _initWithFrame:[self frame]];
+        [self _init];
 
         _recentsAutosaveName      = [coder decodeObjectForKey:CPRecentsAutosaveNameKey];
         _sendsWholeSearchString   = [coder decodeBoolForKey:CPSendsWholeSearchStringKey];
