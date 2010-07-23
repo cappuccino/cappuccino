@@ -75,7 +75,7 @@ var _CPMenuBarVisible               = NO,
 
     id              _delegate;
 
-    CPMenuItem      _highlightedIndex;
+    int             _highlightedIndex;
     _CPMenuWindow   _menuWindow;
 }
 
