@@ -69,7 +69,7 @@ var SUBMENU_INDICATOR_COLOR                     = nil,
 
     if (self)
     {
-        _stateView = [[CPImageView alloc] initWithFrame:CGRectMake(0.0, 0.0, 0.0, 0.0)];
+        _stateView = [[CPImageView alloc] initWithFrame:CGRectMake(3.0, 0.0, 0.0, 0.0)];
 
         [_stateView setImageScaling:CPScaleNone];
 
@@ -133,7 +133,8 @@ var SUBMENU_INDICATOR_COLOR                     = nil,
     if (hasStateColumn)
     {
         [_stateView setHidden:NO];
-        [_stateView setImage:_CPMenuItemDefaultStateImages[[_menuItem state]] || nil];
+        var image = [_menuItem state] === CPOnState ? [_menuItem onStateImage] : [_menuItem offStateImage];
+        [_stateView setImage:image || _CPMenuItemDefaultStateImages[[_menuItem state]] || nil];
 
         x += STATE_COLUMN_WIDTH;
     }
@@ -257,10 +258,13 @@ var SUBMENU_INDICATOR_COLOR                     = nil,
         [_keyEquivalentView setTextShadowColor:[self textShadowColor]];
     }
     
+    var image = [_menuItem state] === CPOnState ? [_menuItem onStateImage] : [_menuItem offStateImage],
+        highlightedImage = [image copy];
+    
     if (shouldHighlight)
-        [_stateView setImage:_CPMenuItemDefaultStateHighlightedImages[[_menuItem state]] || nil];
+        [_stateView setImage:image || _CPMenuItemDefaultStateHighlightedImages[[_menuItem state]] || nil];
     else
-        [_stateView setImage:_CPMenuItemDefaultStateImages[[_menuItem state]] || nil];
+        [_stateView setImage:image || _CPMenuItemDefaultStateImages[[_menuItem state]] || nil];
 }
 
 @end
