@@ -21,6 +21,7 @@
  */
 
 @import "_NSCornerView.j"
+@import "NSBox.j"
 @import "NSButton.j"
 @import "NSCell.j"
 @import "NSClassSwapper.j"
