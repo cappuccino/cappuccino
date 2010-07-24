@@ -3615,6 +3615,8 @@ var CPTableViewDataSourceKey                = @"CPTableViewDataSourceKey",
 
 @end
 
+var CPDropOperationIndicatorHeight = 8;
+
 @implementation _CPDropOperationDrawingView : CPView
 {
     unsigned    dropOperation @accessors;
@@ -3623,73 +3625,79 @@ var CPTableViewDataSourceKey                = @"CPTableViewDataSourceKey",
     BOOL        isBlinking @accessors;
 }
 
+- (void)_drawDropAboveIndicatorWithContext:(CGContext)context rect:(CGRect)aRect color:(CPColor)aColor width:(int)aWidth
+{
+    CGContextSetStrokeColor(context, aColor);
+    CGContextSetLineWidth(context, aWidth);
+    
+    // draw the circle thing
+    var inset = CPDropOperationIndicatorHeight / 2,
+        rect = _CGRectMake(aRect.origin.x + inset, 
+                           aRect.origin.y + inset, 
+                           CPDropOperationIndicatorHeight, 
+                           CPDropOperationIndicatorHeight);
+                           
+    CGContextStrokeEllipseInRect(context, rect);
+    
+    // then draw the line
+    CGContextBeginPath(context);
+    CGContextMoveToPoint(context, _CGRectGetMaxX(rect), _CGRectGetMidY(rect));
+    CGContextAddLineToPoint(context, _CGRectGetMaxX(aRect) - inset, _CGRectGetMidY(rect));
+    CGContextStrokePath(context);
+}
+
 - (void)drawRect:(CGRect)aRect
 {
-    if(tableView._destinationDragStyle === CPTableViewDraggingDestinationFeedbackStyleNone || isBlinking)
+    if (tableView._destinationDragStyle === CPTableViewDraggingDestinationFeedbackStyleNone || isBlinking)
         return;
 
-    var context = [[CPGraphicsContext currentContext] graphicsPort];
+    var context = [[CPGraphicsContext currentContext] graphicsPort],
+        highlightColor = [CPColor colorWithHexString:@"4886ca"];
 
-    CGContextSetStrokeColor(context, [CPColor colorWithHexString:@"4886ca"]);
-    CGContextSetLineWidth(context, 3);
+    CGContextSetStrokeColor(context, highlightColor);
 
     if (currentRow === -1)
     {
-        CGContextStrokeRect(context, [self bounds]);
+        var borderWidth = 4.0,
+            strokeRect = _CGRectInset([self bounds], borderWidth / 2.0, borderWidth / 2.0);
+            
+        CGContextSetLineWidth(context, borderWidth);
+        CGContextSetStrokeColor(context, [highlightColor colorWithAlphaComponent:0.8]);
+        CGContextStrokeRect(context, strokeRect);
     }
-
     else if (dropOperation === CPTableViewDropOn)
     {
-        //if row is selected don't fill and stroke white
+        // if row is selected don't fill and stroke white
         var selectedRows = [tableView selectedRowIndexes],
-            newRect = _CGRectMake(aRect.origin.x + 2, aRect.origin.y + 2, aRect.size.width - 4, aRect.size.height - 5);
+            newRect = _CGRectInset(aRect, 2.0, 2.0);
+            
+        --newRect.size.height;
 
-        if([selectedRows containsIndex:currentRow])
+        if ([selectedRows containsIndex:currentRow])
         {
             CGContextSetLineWidth(context, 2);
             CGContextSetStrokeColor(context, [CPColor whiteColor]);
         }
         else
         {
-            CGContextSetFillColor(context, [CPColor colorWithRed:72/255 green:134/255 blue:202/255 alpha:0.25]);
+            CGContextSetLineWidth(context, 3);
+            CGContextSetFillColor(context, [highlightColor colorWithAlphaComponent:0.25]);
             CGContextFillRoundedRectangleInRect(context, newRect, 8, YES, YES, YES, YES);
         }
+        
         CGContextStrokeRoundedRectangleInRect(context, newRect, 8, YES, YES, YES, YES);
-
     }
     else if (dropOperation === CPTableViewDropAbove)
     {
-        //reposition the view up a tad
-        [self setFrameOrigin:CGPointMake(_frame.origin.x, _frame.origin.y - 8)];
-
+        // reposition the view up a tad so indicator can draw above the row rect
+        [self setFrameOrigin:CGPointMake(_frame.origin.x, _frame.origin.y - CPDropOperationIndicatorHeight)];
+        
         var selectedRows = [tableView selectedRowIndexes];
 
-        if([selectedRows containsIndex:currentRow - 1] || [selectedRows containsIndex:currentRow])
-        {
-            CGContextSetStrokeColor(context, [CPColor whiteColor]);
-            CGContextSetLineWidth(context, 4);
-            //draw the circle thing
-            CGContextStrokeEllipseInRect(context, _CGRectMake(aRect.origin.x + 4, aRect.origin.y + 4, 8, 8));
-            //then draw the line
-            CGContextBeginPath(context);
-            CGContextMoveToPoint(context, 10, aRect.origin.y + 8);
-            CGContextAddLineToPoint(context, aRect.size.width - aRect.origin.y - 8, aRect.origin.y + 8);
-            CGContextClosePath(context);
-            CGContextStrokePath(context);
-
-            CGContextSetStrokeColor(context, [CPColor colorWithHexString:@"4886ca"]);
-            CGContextSetLineWidth(context, 3);
-        }
-
-        //draw the circle thing
-        CGContextStrokeEllipseInRect(context, _CGRectMake(aRect.origin.x + 4, aRect.origin.y + 4, 8, 8));
-        //then draw the line
-        CGContextBeginPath(context);
-        CGContextMoveToPoint(context, 10, aRect.origin.y + 8);
-        CGContextAddLineToPoint(context, aRect.size.width - aRect.origin.y - 8, aRect.origin.y + 8);
-        CGContextClosePath(context);
-        CGContextStrokePath(context);
-        //CGContextStrokeLineSegments(context, [aRect.origin.x + 8,  aRect.origin.y + 8, 300 , aRect.origin.y + 8]);
+        if ([selectedRows containsIndex:currentRow - 1] || [selectedRows containsIndex:currentRow])
+            [self _drawDropAboveIndicatorWithContext:context rect:aRect color:[CPColor whiteColor] width:4];
+            
+        [self _drawDropAboveIndicatorWithContext:context rect:aRect color:highlightColor width:3];
     }
 }
 
