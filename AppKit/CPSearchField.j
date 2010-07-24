@@ -470,7 +470,11 @@ var RECENT_SEARCH_PREFIX = @"   ";
 
 - (CPView)hitTest:(CGPoint)aPoint
 {
-    return self;
+    // Make sure a hit anywhere within the search field returns the search field itself    
+    if (_CGRectContainsPoint([self frame], aPoint))
+        return self;
+    else
+        return nil;
 }
 
 - (BOOL)resignFirstResponder
