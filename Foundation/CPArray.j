@@ -402,21 +402,65 @@ CPEnumerationReverse    = 1 << 1;
     return CPNotFound;
 }
 
+/*!
+    Returns the index of the first object in the receiver that passes a test in a given Javascript function.
+    @param predicate The function to apply to elements of the array. The function receives two arguments:
+                     object The element in the array.
+                     index  The index of the element in the array.
+    The predicate function should either return a Boolean value that indicates whether the object passed the test, 
+    or nil to stop the search, which will return CPNotFound to the sender.
+    @return The index of the first matching object, or \c CPNotFound if there is no matching object.
+*/
 - (unsigned)indexOfObjectPassingTest:(Function)predicate
 {
     return [self indexOfObjectWithOptions:CPEnumerationNormal passingTest:predicate context:nil];
 }
 
+/*!
+    Returns the index of the first object in the receiver that passes a test in a given Javascript function.
+    @param predicate The function to apply to elements of the array. The function receives two arguments:
+                     object  The element in the array.
+                     index   The index of the element in the array.
+                     context The object passed to the receiver in the aContext parameter.
+    The predicate function should either return a Boolean value that indicates whether the object passed the test, 
+    or nil to stop the search, which will return CPNotFound to the sender.
+    @param context An object that contains context information you want passed to the predicate function.
+    @return The index of the first matching object, or \c CPNotFound if there is no matching object.
+*/
 - (unsigned)indexOfObjectPassingTest:(Function)predicate context:(id)aContext
 {
     return [self indexOfObjectWithOptions:CPEnumerationNormal passingTest:predicate context:aContext];
 }
 
+/*!
+    Returns the index of the first object in the receiver that passes a test in a given Javascript function.
+    @param opts Specifies the direction in which the array is searched. Pass CPEnumerationNormal to search forwards 
+    or CPEnumerationReverse to search in reverse.
+    @param predicate The function to apply to elements of the array. The function receives two arguments:
+                     object The element in the array.
+                     index  The index of the element in the array.
+    The predicate function should either return a Boolean value that indicates whether the object passed the test, 
+    or nil to stop the search, which will return CPNotFound to the sender.
+    @return The index of the first matching object, or \c CPNotFound if there is no matching object.
+*/
 - (unsigned)indexOfObjectWithOptions:(CPEnumerationOptions)opts passingTest:(Function)predicate
 {
     return [self indexOfObjectWithOptions:opts passingTest:predicate context:nil];
 }    
 
+/*!
+    Returns the index of the first object in the receiver that passes a test in a given Javascript function.
+    @param opts Specifies the direction in which the array is searched. Pass CPEnumerationNormal to search forwards 
+    or CPEnumerationReverse to search in reverse.
+    @param predicate The function to apply to elements of the array. The function receives two arguments:
+                     object  The element in the array.
+                     index   The index of the element in the array.
+                     context The object passed to the receiver in the aContext parameter.
+    The predicate function should either return a Boolean value that indicates whether the object passed the test, 
+    or nil to stop the search, which will return CPNotFound to the sender.
+    @param context An object that contains context information you want passed to the predicate function.
+    @return The index of the first matching object, or \c CPNotFound if there is no matching object.
+*/
 - (unsigned)indexOfObjectWithOptions:(CPEnumerationOptions)opts passingTest:(Function)predicate context:(id)aContext
 {
     // We don't use an enumerator because they return nil to indicate end of enumeration,
@@ -442,18 +486,9 @@ CPEnumerationReverse    = 1 << 1;
         var result = predicate([self objectAtIndex:i], i, aContext);
         
         if (typeof result === 'boolean' && result)
-        {
             return i;
-        }
-        else if (typeof result === 'object')
-        {
-            if (result == nil)
-                continue
-            else if (result.pass)
-                return i;
-            else if (result.stop)
-                return CPNotFound;
-        }
+        else if (typeof result === 'object' && result == nil)
+            return CPNotFound;
     }
     
     return CPNotFound;
