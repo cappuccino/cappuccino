@@ -411,7 +411,7 @@ CPEnumerationReverse    = 1 << 1;
 */
 - (unsigned)indexOfObjectPassingTest:(Function)predicate
 {
-    return [self indexOfObjectWithOptions:CPEnumerationNormal passingTest:predicate context:nil];
+    return [self indexOfObjectWithOptions:CPEnumerationNormal passingTest:predicate context:undefined];
 }
 
 /*!
@@ -443,7 +443,7 @@ CPEnumerationReverse    = 1 << 1;
 */
 - (unsigned)indexOfObjectWithOptions:(CPEnumerationOptions)opts passingTest:(Function)predicate
 {
-    return [self indexOfObjectWithOptions:opts passingTest:predicate context:nil];
+    return [self indexOfObjectWithOptions:opts passingTest:predicate context:undefined];
 }    
 
 /*!
