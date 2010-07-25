@@ -30,8 +30,6 @@
 @import "Nib2CibKeyedUnarchiver.j"
 @import "Converter.j"
 
-var DefaultSystemFontFace = "Arial, sans-serif";
-
 var FILE = require("file");
 var OS = require("os");
 
@@ -46,10 +44,6 @@ parser.option("-F", "framework", "frameworks")
 parser.option("-R", "resources")
     .set()
     .help("Set the Resources directory");
-
-parser.option("--systemFontFace", "systemFontFace")
-    .set()
-    .help("Set the default system font");
 
 parser.option("--mac", "format")
     .set(NibFormatMac)
@@ -97,9 +91,6 @@ function main(args)
         parser.printUsage(options);
         OS.exit(1);
     }
-    
-    if (!options.systemFontFace)
-        options.systemFontFace = [CPFont systemFontFace];
 
     if (options.quiet) {}
     else if (options.verbose === 0)
@@ -109,21 +100,18 @@ function main(args)
     else
         CPLogRegister(CPLogPrint);
 
-    CPLog.debug("Input:       " + options.args[0]);
-    CPLog.debug("Output:      " + (options.args[1]||""));
-    CPLog.debug("Format:      " + ["Auto","Mac","iPhone"][options.format]);
-    CPLog.debug("Resources:   " + (options.resources||""));
-    CPLog.debug("Frameworks:  " + options.frameworks);
-    CPLog.debug("System font: " + options.systemFontFace);
+    CPLog.debug("Input:      " + options.args[0]);
+    CPLog.debug("Output:     " + (options.args[1]||""));
+    CPLog.debug("Format:     " + ["Auto","Mac","iPhone"][options.format]);
+    CPLog.debug("Resources:  " + (options.resources||""));
+    CPLog.debug("Frameworks: " + options.frameworks);
 
-    var converter = [Converter sharedConverterInstance];
+    var converter = [[Converter alloc] init];
 
     if (options.resources)
         [converter setResourcesPath:options.resources];
 
     [converter setFormat:options.format];
-    
-    [converter setSystemFontFace:options.systemFontFace];
 
     [converter setInputPath:options.args[0]];
 

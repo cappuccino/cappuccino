@@ -33,24 +33,12 @@ NibFormatIPhone                 = 2;
 
 ConverterConversionException    = @"ConverterConversionException";
 
-SharedConverterInstance         = nil;
-
-
 @implementation Converter : CPObject
 {
     NibFormat   format @accessors;
     CPString    inputPath @accessors;
     CPString    outputPath @accessors;
     CPString    resourcesPath @accessors;
-    CPString    systemFontFace @accessors;
-}
-
-+ (Converter)sharedConverterInstance
-{
-    if (!SharedConverterInstance)
-        SharedConverterInstance = [[Converter alloc] init];
-        
-    return SharedConverterInstance;
 }
 
 - (id)init

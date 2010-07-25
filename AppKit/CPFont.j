@@ -45,7 +45,7 @@ var _CPFonts                = {},
 
 + (void)initialize
 {
-    var systemFont = [[CPBundle mainBundle] objectForInfoDictionaryKey:"CPSystemFontFace"];
+    var systemFont = [[CPBundle bundleForClass:[CPView class]] objectForInfoDictionaryKey:"CPSystemFontFace"];
     
     if (systemFont)
         _CPFontSystemFontFace = systemFont;
