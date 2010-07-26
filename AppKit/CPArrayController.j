@@ -417,6 +417,33 @@
         [self rearrangeObjects];
 }
 
+- (void)insertObject:(id)anObject atArrangedObjectIndex:(int)anIndex
+{
+    if (![self canAdd])
+        return;
+
+    [self willChangeValueForKey:@"content"];
+    [_contentObject insertObject:anObject atIndex:anIndex];
+    [self didChangeValueForKey:@"content"];
+
+    if (_clearsFilterPredicateOnInsertion)
+        [self setFilterPredicate:nil];
+
+    [[self arrangedObjects] insertObject:anObject atIndex:anIndex];
+
+    if ([self selectsInsertedObjects])
+        [self setSelectionIndex:anIndex];
+    else
+    {
+        [self willChangeValueForKey:@"selectionIndexes"]
+        [[self selectionIndexes] shiftIndexesStartingAtIndex:anIndex by:1];
+        [self didChangeValueForKey:@"selectionIndexes"];
+    }
+
+    if ([self avoidsEmptySelection] && [[self selectionIndexes] count] <= 0 && [_contentObject count] > 0)
+        [self setSelectionIndexes:[CPIndexSet indexSetWithIndex:0]];
+}
+
 - (void)removeObject:(id)object
 {
     if (![self canRemove])
