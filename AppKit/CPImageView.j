@@ -71,6 +71,8 @@ var LEFT_SHADOW_INSET       = 3.0,
 
     CGRect              _imageRect;
     CPImageAlignment    _imageAlignment;
+    
+    CPImage             _emptyImage;
 }
 
 - (id)initWithFrame:(CGRect)aFrame
@@ -95,6 +97,10 @@ var LEFT_SHADOW_INSET       = 3.0,
         
         _DOMImageElement.style.visibility = "hidden";
 #endif
+        
+        var bundle = [CPBundle bundleForClass:[CPView class]];
+        
+        _emptyImage = [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"empty.png"]];
     }
     
     return self;
@@ -128,12 +134,10 @@ var LEFT_SHADOW_INSET       = 3.0,
     if (oldImage)
         [defaultCenter removeObserver:self name:CPImageDidLoadNotification object:oldImage];
 
-    var newImage = [self objectValue],
-        filename = [newImage filename];
+    var newImage = [self objectValue];
     
 #if PLATFORM(DOM)
-    if (filename)
-        _DOMImageElement.src = filename;
+    _DOMImageElement.src = newImage ? [newImage filename] : [_emptyImage filename];
 #endif
 
     var size = [newImage size];
