@@ -128,10 +128,12 @@ var LEFT_SHADOW_INSET       = 3.0,
     if (oldImage)
         [defaultCenter removeObserver:self name:CPImageDidLoadNotification object:oldImage];
 
-    var newImage = [self objectValue];
+    var newImage = [self objectValue],
+        filename = [newImage filename];
     
 #if PLATFORM(DOM)
-    _DOMImageElement.src = newImage ? [newImage filename] : "";
+    if (filename)
+        _DOMImageElement.src = filename;
 #endif
 
     var size = [newImage size];
