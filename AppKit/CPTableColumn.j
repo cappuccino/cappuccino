@@ -78,18 +78,7 @@ CPTableColumnUserResizingMask   = 1 << 1;
         var header = [[_CPTableColumnHeaderView alloc] initWithFrame:CGRectMakeZero()];
         [self setHeaderView:header];
 
-        var textDataView = [CPTextField new];
-
-        [textDataView setValue:[CPColor colorWithRed:51.0 / 255.0 green:51.0 / 255.0 blue:51.0 / 255.0 alpha:1.0] 
-          forThemeAttribute:"text-color"];
-
-        [textDataView setValue:[CPColor whiteColor] forThemeAttribute:@"text-color" inState:CPThemeStateSelectedDataView];
-        [textDataView setLineBreakMode:CPLineBreakByTruncatingTail];  
-        [textDataView setValue:[CPFont boldSystemFontOfSize:12.0] forThemeAttribute:@"font" inState:CPThemeStateSelectedDataView];
-        [textDataView setValue:CPCenterVerticalTextAlignment forThemeAttribute:@"vertical-alignment"];
-        [textDataView setValue:CGInsetMake(0.0, 0.0, 0.0, 5.0) forThemeAttribute:@"content-inset"];
-
-        [self setDataView:textDataView];
+        [self setDataView:[CPTextField new]];
     }
 
     return self;
@@ -258,6 +247,8 @@ CPTableColumnUserResizingMask   = 1 << 1;
 
     if (_dataView)
         _dataViewData[[_dataView UID]] = nil;
+
+    [aView setThemeState:CPThemeStateTableDataView];
 
     _dataView = aView;
     _dataViewData[[aView UID]] = [CPKeyedArchiver archivedDataWithRootObject:aView];

@@ -28,6 +28,7 @@
 @import "CPDictionary.j"
 @import "CPEnumerator.j"
 @import "CPException.j"
+@import "CPFormatter.j"
 @import "CPIndexSet.j"
 @import "CPInvocation.j"
 @import "CPJSONPConnection.j"
