@@ -44,7 +44,7 @@
         isBold = YES;
         
     if (fontName === "LucidaGrande" || fontName === "LucidaGrande-Bold")
-        fontName = [[Converter sharedConverterInstance] systemFontFace];
+        fontName = [CPFont systemFontFace];
 
     return [self _initWithName:fontName size:size bold:isBold];
 }
