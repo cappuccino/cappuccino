@@ -151,7 +151,7 @@
 - (BOOL)isPartialStringValue:(CPString)aPartialString proposedSelectedRange:(CPRange)aProposedSelectedRange originalString:(CPString)originalString originalSelectedRange:(CPRange)originalSelectedRange errorDescription:(CPString)anError
 {
     _CPRaiseInvalidAbstractInvocation(self, @selector(isPartialStringValue:proposedSelectedRange:originalString:originalSelectedRange:errorDescription:));
-    return nil;
+    return NO;
 }
 
 - (id)initWithCoder:(CPCoder)aCoder

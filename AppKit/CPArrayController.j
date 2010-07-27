@@ -154,7 +154,7 @@
         value = [value];
 
     var oldSelection = nil,
-        oldSelectionIndexes = [[self selectionIndexes] copy];
+        oldSelectionIndexes = [self selectionIndexes];
 
     if ([self preservesSelection])
         oldSelection = [self selectedObjects];

@@ -1364,6 +1364,9 @@ var CPViewFlags                     = { },
     if (_backgroundColor == aColor)
         return;
 
+    if (aColor == [CPNull null])
+        aColor = nil;
+
     _backgroundColor = aColor;
 
 #if PLATFORM(DOM)
