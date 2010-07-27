@@ -46,7 +46,7 @@
         _isEnabled = ![aCoder decodeBoolForKey:"NSIsDisabled"];
         _isHidden = [aCoder decodeBoolForKey:"NSIsHidden"];
 
-//      _tag = [aCoder decodeIntForKey:"NSTag"];
+        _tag = [aCoder decodeIntForKey:"NSTag"];
         _state = [aCoder decodeIntForKey:"NSState"];
 
 //      _image = [aCoder decodeObjectForKey:"NSImage"];
