@@ -838,7 +838,7 @@
     // Now theme the tableview
     var sortImage = [_CPCibCustomResource imageResourceWithName:"tableview-headerview-ascending.png" size:CGSizeMake(9.0, 8.0)],
         sortImageReversed = [_CPCibCustomResource imageResourceWithName:"tableview-headerview-descending.png" size:CGSizeMake(9.0, 8.0)],
-        alternatingRowColors = [[CPColor whiteColor], [CPColor colorWithHexString:@"e4e7ff"]],
+        alternatingRowColors = [[CPColor whiteColor], [CPColor colorWithRed:245.0 / 255.0 green:249.0 / 255.0 blue:252.0 / 255.0 alpha:1.0]],
         gridColor = [CPColor colorWithHexString:@"dce0e2"],
         selectionColor = [CPColor colorWithHexString:@"5f83b9"],
         sourceListSelectionColor = [CPDictionary dictionaryWithObjects: [ CGGradientCreateWithColorComponents(CGColorSpaceCreateDeviceRGB(), [89.0/255.0, 153.0/255.0, 209.0/255.0,1.0, 33.0/255.0, 94.0/255.0, 208.0/255.0,1.0], [0,1], 2), 
