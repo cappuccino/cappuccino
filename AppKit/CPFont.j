@@ -124,11 +124,19 @@ var _CPFonts                = {},
 }
 
 /*!
-    Returns the font size (in points)
+    Returns the font size (in CSS px)
 */
 - (float)size
 {
     return _size;
+}
+
+/*!
+    Returns whether the font is bold
+*/
+- (BOOL)isBold
+{
+    return _isBold;
 }
 
 /*!
