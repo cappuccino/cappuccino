@@ -41,6 +41,8 @@
         _hasVerticalScroller    = !!(flags & (1 << 4));
         _hasHorizontalScroller  = !!(flags & (1 << 5));
         _autohidesScrollers     = !!(flags & (1 << 9));
+        
+        _borderType             = flags & 0x03;
 
         //[aCoder decodeBytesForKey:"NSScrollAmts"];
         _verticalLineScroll     = 10.0;
