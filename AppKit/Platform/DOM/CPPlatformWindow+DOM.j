@@ -635,9 +635,9 @@ var supportsNativeDragAndDrop = [CPPlatform supportsDragAndDrop];
                         (aDOMEvent.metaKey ? CPCommandKeyMask : 0);
 
     //We want to stop propagation if this is a command key AND this character or keycode has been added to our blacklist
-    StopDOMEventPropagation = !!((modifierFlags & (CPControlKeyMask | CPCommandKeyMask)) &&
-                              (CharacterKeysToPrevent[String.fromCharCode(aDOMEvent.keyCode || aDOMEvent.charCode).toLowerCase()] ||
-                              KeyCodesToPrevent[aDOMEvent.keyCode]));
+    StopDOMEventPropagation = !!(!(modifierFlags & (CPControlKeyMask | CPCommandKeyMask)) ||
+                              CharacterKeysToPrevent[String.fromCharCode(aDOMEvent.keyCode || aDOMEvent.charCode).toLowerCase()] ||
+                              KeyCodesToPrevent[aDOMEvent.keyCode]);
 
     var isNativePasteEvent = NO,
         isNativeCopyOrCutEvent = NO,
