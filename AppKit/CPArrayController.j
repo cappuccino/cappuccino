@@ -358,29 +358,29 @@
 
 //Moving selection
 
--(BOOL)canSelectPrevious
+- (BOOL)canSelectPrevious
 {
     return [[self selectionIndexes] firstIndex] > 0
 }
 
--(BOOL)canSelectNext
+-(void)selectPrevious:(id)sender
 {
-    return [[self selectionIndexes] firstIndex] < [[self arrangedObjects] count] -1;
-}
+    var index = [[self selectionIndexes] firstIndex] - 1;
 
--(void)selectNext:(id)sender
-{
-    var index = [[self selectionIndexes] firstIndex] + 1 || 0;
-
-    if (index < [[self arrangedObjects] count])
+    if (index >= 0)
         [self setSelectionIndexes:[CPIndexSet indexSetWithIndex:index]];
 }
 
--(void)selectPrevious:(id)sender
+- (BOOL)canSelectNext
 {
-    var index = [[self selectionIndexes] firstIndex] - 1 || [[self arrangedObjects] count] - 1;
+    return [[self selectionIndexes] firstIndex] < [[self arrangedObjects] count] - 1;
+}
 
-    if (index >= 0)
+- (void)selectNext:(id)sender
+{
+    var index = [[self selectionIndexes] firstIndex] + 1;
+
+    if (index < [[self arrangedObjects] count])
         [self setSelectionIndexes:[CPIndexSet indexSetWithIndex:index]];
 }
 
