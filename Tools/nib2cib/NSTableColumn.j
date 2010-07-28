@@ -60,6 +60,8 @@
         _resizingMask = [aCoder decodeBoolForKey:@"NSIsResizeable"] ? CPTableColumnUserResizingMask : CPTableColumnAutoresizingMask;
         _isHidden = [aCoder decodeBoolForKey:@"NSHidden"];
 
+        _isEditable = [aCoder decodeBoolForKey:@"NSIsEditable"];
+
         _sortDescriptorPrototype = [aCoder decodeObjectForKey:@"NSSortDescriptorPrototype"];
     }
 
