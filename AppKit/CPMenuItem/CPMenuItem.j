@@ -782,7 +782,48 @@ CPControlKeyMask
     return [[self menu] highlightedItem] == self;
 }
 
-//
+#pragma mark CPObject Overrides
+
+/*!
+    Returns a copy of the item. The copy does not belong If the item has a submenu, it is NOT copied.
+*/
+- (id)copy
+{
+    var item = [[CPMenuItem alloc] init];
+    
+    // No point in going through accessors and doing lots of unnecessary state checking/updating
+    item._isSeparator = _isSeparator;
+    
+    [item setTitle:_title];
+    [item setFont:_font];        
+    [item setTarget:_target];
+    [item setAction:_action];
+    [item setEnabled:_isEnabled];
+    [item setHidden:_isHidden]
+    [item setTag:_tag];
+    [item setState:_state];
+    [item setImage:_image];
+    [item setAlternateImage:_alternateImage];
+    [item setOnStateImage:_onStateImage];
+    [item setOffStateImage:_offStateImage];
+    [item setMixedStateImage:_mixedStateImage];
+    [item setKeyEquivalent:_keyEquivalent];
+    [item setKeyEquivalentModifierMask:_keyEquivalentModifierMask];
+    [item setMnemonicLocation:_mnemonicLocation];
+    [item setAlternate:_isAlternate];
+    [item setIndentationLevel:_indentationLevel];
+    [item setToolTip:_toolTip];
+    [item setRepresentedObject:_representedObject];
+    
+    return item;
+}
+
+- (id)mutableCopy
+{
+    return [self copy];
+}
+
+#pragma mark Internal
 
 /*
     @ignore
@@ -861,7 +902,6 @@ var CPMenuItemIsSeparatorKey                = @"CPMenuItemIsSeparatorKey",
         _isHidden = DEFAULT_VALUE(CPMenuItemIsHiddenKey, NO);
         _tag = DEFAULT_VALUE(CPMenuItemTagKey, 0);
         _state = DEFAULT_VALUE(CPMenuItemStateKey, CPOffState);
-//    int             _state;
 
         _image = DEFAULT_VALUE(CPMenuItemImageKey, nil);
         _alternateImage = DEFAULT_VALUE(CPMenuItemAlternateImageKey, nil);
