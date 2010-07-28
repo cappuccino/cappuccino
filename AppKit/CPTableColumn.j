@@ -459,9 +459,9 @@ var CPTableColumnIdentifierKey   = @"CPTableColumnIdentifierKey",
     CPTableColumnMinWidthKey     = @"CPTableColumnMinWidthKey",
     CPTableColumnMaxWidthKey     = @"CPTableColumnMaxWidthKey",
     CPTableColumnResizingMaskKey = @"CPTableColumnResizingMaskKey",
-    CPTableColumnIsHiddenkey     = @"CPTableColumnIsHiddenKey",
-    CPSortDescriptorPrototypeKey = @"CPSortDescriptorPrototypeKey";
-    CPTableColumnIsHiddenkey     = @"CPTableColumnIsHiddenKey";
+    CPTableColumnIsHiddenKey     = @"CPTableColumnIsHiddenKey",
+    CPSortDescriptorPrototypeKey = @"CPSortDescriptorPrototypeKey",
+    CPTableColumnIsEditableKey   = @"CPTableColumnIsEditableKey";
 
 @implementation CPTableColumn (CPCoding)
 
@@ -483,7 +483,8 @@ var CPTableColumnIdentifierKey   = @"CPTableColumnIdentifierKey",
         [self setHeaderView:[aCoder decodeObjectForKey:CPTableColumnHeaderViewKey]];
 
         _resizingMask  = [aCoder decodeBoolForKey:CPTableColumnResizingMaskKey];
-        _isHidden = [aCoder decodeBoolForKey:CPTableColumnIsHiddenkey];
+        _isHidden = [aCoder decodeBoolForKey:CPTableColumnIsHiddenKey];
+        _isEditable = [aCoder decodeBoolForKey:CPTableColumnIsEditableKey];
         
         _sortDescriptorPrototype = [aCoder decodeObjectForKey:CPSortDescriptorPrototypeKey];
     }
@@ -503,7 +504,8 @@ var CPTableColumnIdentifierKey   = @"CPTableColumnIdentifierKey",
     [aCoder encodeObject:_dataView forKey:CPTableColumnDataViewKey];
 
     [aCoder encodeObject:_resizingMask forKey:CPTableColumnResizingMaskKey];
-    [aCoder encodeBool:_isHidden forKey:CPTableColumnIsHiddenkey];
+    [aCoder encodeBool:_isHidden forKey:CPTableColumnIsHiddenKey];
+    [aCoder encodeBool:_isEditable forKey:CPTableColumnIsEditableKey];
     
     [aCoder encodeObject:_sortDescriptorPrototype forKey:CPSortDescriptorPrototypeKey];
 }

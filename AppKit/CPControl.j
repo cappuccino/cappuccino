@@ -545,6 +545,7 @@ var CPControlBlackColor     = [CPColor blackColor];
         return;
 
     [self _reverseSetBinding];
+
     [[CPNotificationCenter defaultCenter] postNotificationName:CPControlTextDidEndEditingNotification object:self userInfo:[CPDictionary dictionaryWithObject:[note object] forKey:"CPFieldEditor"]];
 }
 
