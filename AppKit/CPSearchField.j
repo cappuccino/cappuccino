@@ -480,7 +480,7 @@ var RECENT_SEARCH_PREFIX = @"   ";
 - (BOOL)resignFirstResponder
 {
     if (_canResignFirstResponder)
-        [super resignFirstResponder];
+        return [super resignFirstResponder];
     
     return _canResignFirstResponder;
 }
