@@ -77,28 +77,6 @@
     [arrayController selectNext:self];
     [self assert:[CPIndexSet indexSetWithIndex:count - 1] equals:[arrayController selectionIndexes]];
 }
-// - (void)testSelectNext
-// {
-//     var arrayController = [self arrayController],
-//         arrangedObjects = [arrayController arrangedObjects],
-//         startIndex = 0,
-//         selectionIndexes = [CPIndexSet indexSetWithIndex:startIndex];
-// 
-//     [arrayController setSelectionIndexes:selectionIndexes];
-//     [arrayController selectNext:self];
-// 
-//     [selectionIndexes shiftIndexesStartingAtIndex:startIndex by:1]
-//     [self assert:selectionIndexes equals:[arrayController selectionIndexes]];
-// 
-//     // Test that the selection wraps around
-//     startIndex = [arrangedObjects count] - 1;
-//     selectionIndexes = [CPIndexSet indexSetWithIndex:startIndex];
-// 
-//     [arrayController setSelectionIndexes:selectionIndexes];
-//     [arrayController selectNext:self];
-// 
-//     [self assert:[CPIndexSet indexSetWithIndex:0] equals:[arrayController selectionIndexes]];
-// }
 
 - (void)testContentBinding
 {
