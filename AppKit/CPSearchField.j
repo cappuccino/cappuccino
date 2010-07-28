@@ -500,12 +500,45 @@ var RECENT_SEARCH_PREFIX = @"   ";
         [super mouseDown:anEvent];
 }
 
+/*!
+    Provides the common case items for a recent searches menu. If there are not recent searches,
+    displays a single disabled item:
+    
+        No Recent Searches
+        
+    If there are 1 more recent searches, it displays:
+    
+        Recent Searches
+           recent search 1
+           recent search 2
+           etc.
+        ---------------------
+        Clear Recent Searches
+        
+    If you wish to add items before or after the template, you can. If you put items
+    before, a separator will automatically be placed before the default template item.
+    If you add items after the default template, it is your responsibility to add a separator.
+    
+    To add a custom item:
+
+    item = [[CPMenuItem alloc] initWithTitle:@"google" 
+                                      action:@selector(google:) 
+                               keyEquivalent:@""];
+    [item setTag:700];
+    [item setTarget:self];
+    [template addItem:item];
+        
+    Be sure that your custom items do not use tags in the range 1000-1004 inclusive.
+    If you wish to maintain state in custom menu items that you add, you will need to maintain
+    the item state yourself, then in the action method of the custom items, modify the items
+    in the search menu template and send [searchField setSearchMenuTemplate:template] to update the menu.
+*/
 - (CPMenu)defaultSearchMenuTemplate
 {
     var template = [[CPMenu alloc] init], 
         item;
         
-    item = [[CPMenuItem alloc] initWithTitle:@"Recent searches" 
+    item = [[CPMenuItem alloc] initWithTitle:@"Recent Searches" 
                                       action:nil 
                                keyEquivalent:@""];
     [item setTag:CPSearchFieldRecentsTitleMenuItemTag];
@@ -519,35 +552,19 @@ var RECENT_SEARCH_PREFIX = @"   ";
     [item setTarget:self];
     [template addItem:item];
     
-    item = [[CPMenuItem alloc] initWithTitle:@"Clear recent searches" 
+    item = [[CPMenuItem alloc] initWithTitle:@"Clear Recent Searches" 
                                       action:@selector(_searchFieldClearRecents:) 
                                keyEquivalent:@""];
     [item setTag:CPSearchFieldClearRecentsMenuItemTag];
     [item setTarget:self];
     [template addItem:item];
     
-    item = [[CPMenuItem alloc] initWithTitle:@"No recent searches" 
+    item = [[CPMenuItem alloc] initWithTitle:@"No Recent Searches" 
                                       action:nil 
                                keyEquivalent:@""];
     [item setTag:CPSearchFieldNoRecentsMenuItemTag];
     [item setEnabled:NO];
     [template addItem:item];
-    
-    /*
-        To add a separator:
-        
-        [self _addSeparatorToMenu:template];
-        
-        
-        To add a custom item:
-    
-        item = [[CPMenuItem alloc] initWithTitle:@"google" 
-                                          action:@selector(_google:) 
-                                   keyEquivalent:@""];
-        [item setTag:@"google"];
-        [item setTarget:self];
-        [template addItem:item];
-    */
     
     return template;
 }
@@ -606,6 +623,9 @@ var RECENT_SEARCH_PREFIX = @"   ";
             case CPSearchFieldNoRecentsMenuItemTag:
                 if (countOfRecents !== 0)
                     continue;
+                    
+                if ([menu numberOfItems] > 0)
+                    [self _addSeparatorToMenu:menu];
                 break;
                 
             case CPSearchFieldSeparatorMenuItemTag:
