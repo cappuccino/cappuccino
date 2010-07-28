@@ -213,7 +213,6 @@ var kvoNewAndOld = CPKeyValueObservingOptionNew|CPKeyValueObservingOptionOld,
 
     _targetObject       = aTarget;
     _nativeClass        = [aTarget class];
-    _replacedKeys       = [CPSet set];
     _observersForKey    = {};
     _changesForKey      = {};
     _observersForKeyLength = 0;
@@ -230,12 +229,16 @@ var kvoNewAndOld = CPKeyValueObservingOptionNew|CPKeyValueObservingOptionOld,
     if (existingKVOClass)
     {
         _targetObject.isa = existingKVOClass;
+        _replacedKeys = existingKVOClass._replacedKeys;
         return;
     }
 
     var kvoClass = objj_allocateClassPair(currentClass, kvoClassName);
 
     objj_registerClassPair(kvoClass);
+
+    _replacedKeys = [CPSet set];
+    kvoClass._replacedKeys = _replacedKeys;
 
     //copy in the methods from our model subclass
     var methodList = _CPKVOModelSubclass.method_list,
@@ -293,6 +296,7 @@ var kvoNewAndOld = CPKeyValueObservingOptionNew|CPKeyValueObservingOptionOld,
             var theMethod = class_getInstanceMethod(_nativeClass, theSelector);
 
             class_addMethod(_targetObject.isa, theSelector, theReplacementMethod(aKey, theMethod), "");
+            [_replacedKeys addObject:aKey];
         }
     }
 
