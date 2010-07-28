@@ -698,12 +698,12 @@
         var range = _ranges[i],
             maximum = CPMaxRange(range);
 
-        if (anIndex > maximum)
+        if (anIndex >= maximum)
             break;
 
         // If our index is within our range, but not the first index,
         // then this range will be split.
-        if (anIndex > range.location && anIndex < maximum)
+        if (anIndex > range.location)
         {
             // Split the range into shift and unshifted.
             shifted = CPMakeRange(anIndex + aDelta, maximum - anIndex);
