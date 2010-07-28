@@ -6,7 +6,9 @@
  * Copyright 2009, 280 North, Inc. All rights reserved.
  */
 
-@import <Foundation/CPObject.j>
+@import <Foundation/Foundation.j>
+@import <AppKit/AppKit.j>
+
 
 CPLogRegister(CPLogConsole);
 
@@ -16,25 +18,35 @@ CPLogRegister(CPLogConsole);
     CPScrollView    theScrollView;
     CPTableView     theTableView;
     CPPopupButton   theBorderTypePopup;
+    CPTextField     horizontalIntercellSpacing;
+    CPTextField     verticalIntercellSpacing;
+    CPCheckBox      horizontalGridCB;
+    CPCheckBox      verticalGridCB;
+    CPColorWell     gridColorWell;
 }
 
 - (void)applicationDidFinishLaunching:(CPNotification)aNotification
-{
-    // This is called when the application is done loading.
+{    
+    [theBorderTypePopup selectItemWithTag:[theScrollView borderType]];
+    
+    var spacing = [theTableView intercellSpacing];
+    
+    [horizontalIntercellSpacing setDoubleValue:spacing.width];
+    [verticalIntercellSpacing setDoubleValue:spacing.height];
+    
+    var mask = [theTableView gridStyleMask];
+    
+    [horizontalGridCB setState:(mask & CPTableViewSolidHorizontalGridLineMask) ? CPOnState : CPOffState];
+    [verticalGridCB setState:(mask & CPTableViewSolidVerticalGridLineMask) ? CPOnState : CPOffState];
+    
+    [gridColorWell setColor:[theTableView gridColor]];
 }
 
 - (void)awakeFromCib
 {
-    // This is called when the cib is done loading.
-    // You can implement this method on any object instantiated from a Cib.
-    // It's a useful hook for setting up current UI values, and other things. 
-    
     // In this case, we want the window from Cib to become our full browser window
     [theWindow setFullPlatformWindow:YES];
-    
     [theWindow setBackgroundColor:[CPColor colorWithHexString:@"f3f4f5"]];
-    
-    [theBorderTypePopup selectItemWithTag:[theScrollView borderType]];
 }
 
 - (int)numberOfRowsInTableView:(CPTableView)tableView
@@ -52,9 +64,41 @@ CPLogRegister(CPLogConsole);
 - (void)setBorder:(id)sender
 {
     var type = [[sender selectedItem] tag];
-    console.log('type=%d', type);
     
     [theScrollView setBorderType:type];
+}
+
+- (void)setIntercellSpacing:(id)sender
+{
+    var spacing = [theTableView intercellSpacing],
+        horizontal = [horizontalIntercellSpacing doubleValue],
+        vertical = [verticalIntercellSpacing doubleValue];
+    
+    [theTableView setIntercellSpacing:CGSizeMake(horizontal, vertical)];
+    [theTableView setNeedsLayout];
+    [[theTableView headerView] setNeedsLayout];
+    [theTableView setNeedsDisplay:YES];
+    [theTableView reloadData];
+}
+
+- (void)setGridStyle:(id)sender
+{
+    var mask = CPTableViewGridNone;
+    
+    if ([horizontalGridCB state] == CPOnState)
+        mask |= CPTableViewSolidHorizontalGridLineMask;
+        
+    if ([verticalGridCB state] == CPOnState)
+        mask |= CPTableViewSolidVerticalGridLineMask;
+        
+    [theTableView setGridStyleMask:mask];
+    [theTableView setNeedsDisplay:YES];
+}
+
+- (void)setGridColor:(id)sender
+{
+    [theTableView setGridColor:[sender color]];
+    [theTableView setNeedsDisplay:YES];
 }
 
 @end
