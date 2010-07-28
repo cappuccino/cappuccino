@@ -12,13 +12,13 @@ var categories = ["firstName","lastName"];
 
 @implementation AppController : CPObject
 {
-	var searchField;	
-	var table;
+	CPSearchField searchField;	
+	CPTableView table;
 	
-	var tableArray;
-	var filteredArray;
+	CPArray tableArray;
+	CPArray filteredArray;
 	
-	var searchCategoryIndex;
+	CPInteger searchCategoryIndex;
 }
 
 - (void)applicationDidFinishLaunching:(CPNotification)aNotification
@@ -74,6 +74,17 @@ var categories = ["firstName","lastName"];
     [template addItem:item];
 
     [searchField setSearchMenuTemplate:template];
+    
+    var button = [[CPButton alloc] initWithFrame:CGRectMakeZero()];
+    [button setBackgroundColor:[CPColor greenColor]];
+    [button setBordered:NO];
+    [searchField setSearchButton:button];
+
+    button = [[CPButton alloc] initWithFrame:CGRectMakeZero()];
+    [button setBackgroundColor:[CPColor blueColor]];
+    [button setBordered:NO];
+    [searchField setCancelButton:button];
+    
     [searchFieldContainer addSubview:searchField];
     [contentView addSubview:searchFieldContainer];
     
