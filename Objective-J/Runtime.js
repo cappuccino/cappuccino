@@ -70,7 +70,7 @@ GLOBAL(objj_class) = function(displayName)
 #if DEBUG
     // naming the allocator allows the WebKit heap snapshot tool to display object class names correctly
     // HACK: displayName property is not respected so we must eval a function to name it
-    this.allocator      = eval("(function " + (displayName || "OBJJ_OBJECT").replace(/\W/g, "_") + "() { })");
+    eval("this.allocator = function " + (displayName || "OBJJ_OBJECT").replace(/\W/g, "_") + "() { }");
 #else
     this.allocator      = function() { };
 #endif
