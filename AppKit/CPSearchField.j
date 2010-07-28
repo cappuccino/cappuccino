@@ -22,17 +22,26 @@
 
 @import "CPTextField.j"
 
+#include "CoreGraphics/CGGeometry.h"
 #include "Platform/Platform.h"
 
 CPSearchFieldRecentsTitleMenuItemTag    = 1000;
 CPSearchFieldRecentsMenuItemTag         = 1001;
 CPSearchFieldClearRecentsMenuItemTag    = 1002;
 CPSearchFieldNoRecentsMenuItemTag       = 1003;
+CPSearchFieldSeparatorMenuItemTag       = 1004;
 
 var CPSearchFieldSearchImage = nil,
     CPSearchFieldFindImage = nil,
     CPSearchFieldCancelImage = nil,
     CPSearchFieldCancelPressedImage = nil;
+
+var SEARCH_BUTTON_DEFAULT_WIDTH = 25.0,
+    CANCEL_BUTTON_DEFAULT_WIDTH = 22.0,
+    BUTTON_DEFAULT_HEIGHT = 22.0;
+
+var RECENT_SEARCH_PREFIX = @"   ";
+
 
 /*! 
     @ingroup appkit
@@ -54,6 +63,7 @@ var CPSearchFieldSearchImage = nil,
     int         _maximumRecents;
     BOOL        _sendsWholeSearchString;
     BOOL        _sendsSearchStringImmediately;
+    BOOL        _canResignFirstResponder;
     CPTimer     _partialStringTimer;
 }
 
@@ -63,17 +73,16 @@ var CPSearchFieldSearchImage = nil,
         return;
 
     var bundle = [CPBundle bundleForClass:self];
-    CPSearchFieldSearchImage = [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"CPSearchField/CPSearchFieldSearch.png"] size:CGSizeMake(25, 22)];
-    CPSearchFieldFindImage = [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"CPSearchField/CPSearchFieldFind.png"] size:CGSizeMake(25, 22)];
-    CPSearchFieldCancelImage = [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"CPSearchField/CPSearchFieldCancel.png"] size:CGSizeMake(22, 22)];
-    CPSearchFieldCancelPressedImage = [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"CPSearchField/CPSearchFieldCancelPressed.png"] size:CGSizeMake(22, 22)];
+    CPSearchFieldSearchImage = [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"CPSearchField/CPSearchFieldSearch.png"] size:_CGSizeMake(SEARCH_BUTTON_DEFAULT_WIDTH, BUTTON_DEFAULT_HEIGHT)];
+    CPSearchFieldFindImage = [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"CPSearchField/CPSearchFieldFind.png"] size:_CGSizeMake(SEARCH_BUTTON_DEFAULT_WIDTH, BUTTON_DEFAULT_HEIGHT)];
+    CPSearchFieldCancelImage = [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"CPSearchField/CPSearchFieldCancel.png"] size:_CGSizeMake(CANCEL_BUTTON_DEFAULT_WIDTH, BUTTON_DEFAULT_HEIGHT)];
+    CPSearchFieldCancelPressedImage = [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"CPSearchField/CPSearchFieldCancelPressed.png"] size:_CGSizeMake(CANCEL_BUTTON_DEFAULT_WIDTH, BUTTON_DEFAULT_HEIGHT)];
 }
 
 - (id)initWithFrame:(CGRect)frame
 {
     if (self = [super initWithFrame:frame])
     {
-        _recentSearches = [CPArray array];
         _maximumRecents = 10;
         _sendsWholeSearchString = NO;
         _sendsSearchStringImmediately = NO;
@@ -91,21 +100,26 @@ var CPSearchFieldSearchImage = nil,
 
 - (void)_initWithFrame:(CGRect)frame
 {
+    _recentSearches = [CPArray array];
+
     [self setBezeled:YES];
     [self setBezelStyle:CPTextFieldRoundedBezel];
     [self setBordered:YES];
     [self setEditable:YES];
     [self setDelegate:self];
+    [self setContinuous:YES];
     
-    _cancelButton = [[CPButton alloc] initWithFrame:CGRectMake(frame.size.width - 27,(frame.size.height-22)/2,22,22)];
+    var bounds = [self bounds],
+        cancelButton = [[CPButton alloc] initWithFrame:[self cancelButtonRectForBounds:bounds]],
+        searchButton = [[CPButton alloc] initWithFrame:[self searchButtonRectForBounds:bounds]];
+        
+    [self setCancelButton:cancelButton];
     [self resetCancelButton];
-    [_cancelButton setHidden:YES];
-    [_cancelButton setAutoresizingMask:CPViewMinXMargin];
-    [self addSubview:_cancelButton];
     
-    _searchButton = [[CPButton alloc] initWithFrame:CGRectMake(5,(frame.size.height-25)/2,25,25)];
+    [self setSearchButton:searchButton];
     [self resetSearchButton];
-    [self addSubview:_searchButton];
+    
+    _canResignFirstResponder = YES;
 }
 
 // Managing Buttons
@@ -115,7 +129,15 @@ var CPSearchFieldSearchImage = nil,
 */
 - (void)setSearchButton:(CPButton)button
 { 
-    _searchButton = button;
+    if (button != _searchButton)
+    {
+        [_searchButton removeFromSuperview];
+        _searchButton = button;
+        
+        [_searchButton setFrame:[self searchButtonRectForBounds:[self bounds]]];
+        [_searchButton setAutoresizingMask:CPViewMaxXMargin];
+        [self addSubview:_searchButton];
+    }
 }
 
 /*!
@@ -133,30 +155,13 @@ var CPSearchFieldSearchImage = nil,
 */
 - (void)resetSearchButton
 {
-    var searchButtonImage, 
-        action, 
-        target,
-        button = [self searchButton];
-        
-    if (_searchMenuTemplate === nil)
-    {
-        searchButtonImage = CPSearchFieldSearchImage;
-        action = @selector(_sendAction:);
-        target = self;
-    }
-    else
-    {
-        searchButtonImage = CPSearchFieldFindImage;
-        action = @selector(_showMenu:);
-        target = self;
-    }
+    var button = [self searchButton],
+        searchButtonImage = (_searchMenuTemplate === nil) ? CPSearchFieldSearchImage : CPSearchFieldFindImage;
     
     [button setBordered:NO];
     [button setImageScaling:CPScaleToFit];
     [button setImage:searchButtonImage];
     [button setAutoresizingMask:CPViewMaxXMargin];
-    [button setTarget:target];
-    [button setAction:action];
 }
 
 /*!
@@ -165,7 +170,18 @@ var CPSearchFieldSearchImage = nil,
 */
 - (void)setCancelButton:(CPButton)button
 {
-    _cancelButton = button;
+    if (button != _cancelButton)
+    {
+        [_cancelButton removeFromSuperview];
+        _cancelButton = button;
+        
+        [_cancelButton setFrame:[self cancelButtonRectForBounds:[self bounds]]];
+        [_cancelButton setAutoresizingMask:CPViewMinXMargin];
+        [_cancelButton setTarget:self];
+        [_cancelButton setAction:@selector(_searchFieldCancel:)];   
+        [self _updateCancelButtonVisibility];
+        [self addSubview:_cancelButton];
+    }
 }
 
 /*!
@@ -200,23 +216,25 @@ var CPSearchFieldSearchImage = nil,
     @return The updated bounding rectangle to use for the search text field. The default value is the value passed into the rect parameter.
     Subclasses can override this method to return a new bounding rectangle for the text-field object. You might use this method to provide a custom layout for the search field control.
 */
-- (CPRect)searchTextRectForBounds:(CPRect)rect
+- (CGRect)searchTextRectForBounds:(CGRect)rect
 {
-    var leftOffset = 0, width = rect.size.width;
+    var leftOffset = 0, 
+        width = _CGRectGetWidth(rect),
+        bounds = [self bounds];
     
     if (_searchButton)
     {
-        var searchRect = [_searchButton frame];
-        leftOffset = searchRect.origin.x + searchRect.size.width;
+        var searchBounds = [self searchButtonRectForBounds:bounds];
+        leftOffset = _CGRectGetMaxX(searchBounds) + 2;
     }
     
     if (_cancelButton)
     {
-        var cancelRect = [_cancelButton frame];
-        width = cancelRect.origin.x - leftOffset;
+        var cancelRect = [self cancelButtonRectForBounds:bounds];
+        width = _CGRectGetMinX(cancelRect) - leftOffset;
     }
     
-    return CPMakeRect(leftOffset,rect.origin.y,width,rect.size.height);
+    return _CGRectMake(leftOffset, _CGRectGetMinY(rect), width, _CGRectGetHeight(rect));
 }
 
 /*!
@@ -224,9 +242,9 @@ var CPSearchFieldSearchImage = nil,
     @param rect The current bounding rectangle for the search button.
     Subclasses can override this method to return a new bounding rectangle for the search button. You might use this method to provide a custom layout for the search field control.
 */
-- (CPRect)searchButtonRectForBounds:(CPRect)rect
+- (CGRect)searchButtonRectForBounds:(CGRect)rect
 {
-    return [_searchButton frame];
+    return _CGRectMake(5, (_CGRectGetHeight(rect) - BUTTON_DEFAULT_HEIGHT) / 2, SEARCH_BUTTON_DEFAULT_WIDTH, BUTTON_DEFAULT_HEIGHT);
 }
 
 /*!
@@ -234,9 +252,9 @@ var CPSearchFieldSearchImage = nil,
     @param rect The updated bounding rectangle to use for the cancel button. The default value is the value passed into the rect parameter.
     Subclasses can override this method to return a new bounding rectangle for the cancel button. You might use this method to provide a custom layout for the search field control.
 */
-- (CPRect)cancelButtonRectForBounds:(CPRect)rect
-{
-    return [_cancelButton frame];
+- (CGRect)cancelButtonRectForBounds:(CGRect)rect
+{    
+    return _CGRectMake(_CGRectGetWidth(rect) - CANCEL_BUTTON_DEFAULT_WIDTH - 5, (_CGRectGetHeight(rect) - CANCEL_BUTTON_DEFAULT_WIDTH) / 2, BUTTON_DEFAULT_HEIGHT, BUTTON_DEFAULT_HEIGHT);
 }
 
 // Managing Menu Templates
@@ -254,9 +272,9 @@ var CPSearchFieldSearchImage = nil,
     @param menu The menu template to use.
     The receiver looks for the tag constants described in ŇMenu tagsÓ to determine how to populate the menu with items related to recent searches. See ŇConfiguring a Search MenuÓ for a sample of how you might set up the search menu template.
 */
-- (void)setSearchMenuTemplate:(CPMenu)menu
+- (void)setSearchMenuTemplate:(CPMenu)aMenu
 {
-    _searchMenuTemplate = menu;
+    _searchMenuTemplate = aMenu;
     
     [self resetSearchButton];
     [self _loadRecentSearchList];
@@ -373,7 +391,7 @@ var CPSearchFieldSearchImage = nil,
 
 // Private methods and subclassing
 
-- (CPRect)contentRectForBounds:(CPRect)bounds
+- (CGRect)contentRectForBounds:(CGRect)bounds
 {
     var superbounds = [super contentRectForBounds:bounds];    
     return [self searchTextRectForBounds:superbounds];
@@ -447,37 +465,81 @@ var CPSearchFieldSearchImage = nil,
     [self _updateSearchMenu];
 }
 
-- (BOOL)trackMouse:(CPEvent)event
+- (CPView)hitTest:(CGPoint)aPoint
 {
-    var rect,
-        point,
-        location = [event locationInWindow];
-    
-    point = [self convertPoint:location fromView:nil];
-    
-    rect = [self searchButtonRectForBounds:[self frame]];
-    if (CPRectContainsPoint(rect,point))
-    {
-        return [[self searchButton] trackMouse:event];
-    }
-    
-    rect = [self cancelButtonRectForBounds:[self frame]];
-    if (CPRectContainsPoint(rect,point))
-    {
-        return [[self cancelButton] trackMouse:event];
-    }
-    
-    return [super trackMouse:event];
+    // Make sure a hit anywhere within the search field returns the search field itself    
+    if (_CGRectContainsPoint([self frame], aPoint))
+        return self;
+    else
+        return nil;
 }
 
-- (CPMenu)_defaultSearchMenuTemplate
+- (BOOL)resignFirstResponder
 {
-    var template, item;
+    if (_canResignFirstResponder)
+        return [super resignFirstResponder];
     
-    template = [[CPMenu alloc] init];
+    return _canResignFirstResponder;
+}
+
+- (void)mouseDown:(CPEvent)anEvent
+{
+    var location = [anEvent locationInWindow],
+        point = [self convertPoint:location fromView:nil];
+
+    if (_CGRectContainsPoint([self searchButtonRectForBounds:[self bounds]], point))
+    {
+        if (_searchMenuTemplate == nil)
+            [self _sendAction:self];
+        else
+           [self _showMenu];  
+    }        
+    else if (_CGRectContainsPoint([self cancelButtonRectForBounds:[self bounds]], point))
+        [_cancelButton mouseDown:anEvent];
+    else
+        [super mouseDown:anEvent];
+}
+
+/*!
+    Provides the common case items for a recent searches menu. If there are not recent searches,
+    displays a single disabled item:
     
-    item = [[CPMenuItem alloc] initWithTitle:@"Recent searches" 
-                                      action:NULL 
+        No Recent Searches
+        
+    If there are 1 more recent searches, it displays:
+    
+        Recent Searches
+           recent search 1
+           recent search 2
+           etc.
+        ---------------------
+        Clear Recent Searches
+        
+    If you wish to add items before or after the template, you can. If you put items
+    before, a separator will automatically be placed before the default template item.
+    If you add items after the default template, it is your responsibility to add a separator.
+    
+    To add a custom item:
+
+    item = [[CPMenuItem alloc] initWithTitle:@"google" 
+                                      action:@selector(google:) 
+                               keyEquivalent:@""];
+    [item setTag:700];
+    [item setTarget:self];
+    [template addItem:item];
+        
+    Be sure that your custom items do not use tags in the range 1000-1004 inclusive.
+    If you wish to maintain state in custom menu items that you add, you will need to maintain
+    the item state yourself, then in the action method of the custom items, modify the items
+    in the search menu template and send [searchField setSearchMenuTemplate:template] to update the menu.
+*/
+- (CPMenu)defaultSearchMenuTemplate
+{
+    var template = [[CPMenu alloc] init], 
+        item;
+        
+    item = [[CPMenuItem alloc] initWithTitle:@"Recent Searches" 
+                                      action:nil 
                                keyEquivalent:@""];
     [item setTag:CPSearchFieldRecentsTitleMenuItemTag];
     [item setEnabled:NO];
@@ -490,15 +552,15 @@ var CPSearchFieldSearchImage = nil,
     [item setTarget:self];
     [template addItem:item];
     
-    item = [[CPMenuItem alloc] initWithTitle:@"Clear recent searches" 
+    item = [[CPMenuItem alloc] initWithTitle:@"Clear Recent Searches" 
                                       action:@selector(_searchFieldClearRecents:) 
                                keyEquivalent:@""];
     [item setTag:CPSearchFieldClearRecentsMenuItemTag];
     [item setTarget:self];
     [template addItem:item];
     
-    item = [[CPMenuItem alloc] initWithTitle:@"No recent searches" 
-                                      action:NULL 
+    item = [[CPMenuItem alloc] initWithTitle:@"No Recent Searches" 
+                                      action:nil 
                                keyEquivalent:@""];
     [item setTag:CPSearchFieldNoRecentsMenuItemTag];
     [item setEnabled:NO];
@@ -512,61 +574,96 @@ var CPSearchFieldSearchImage = nil,
     if (_searchMenuTemplate === nil)
         return;
         
-    var i, menu = [[CPMenu alloc] init],
+    var menu = [[CPMenu alloc] init],
         countOfRecents = [_recentSearches count],
         numberOfItems = [_searchMenuTemplate numberOfItems];
     
-    for (i = 0; i < numberOfItems; i++)
+    for (var i = 0; i < numberOfItems; i++)
     {
-        var item = [_searchMenuTemplate itemAtIndex:i],
-            tag = [item tag];
-        
-        if (!(tag === CPSearchFieldRecentsTitleMenuItemTag && countOfRecents === 0) &&
-            !(tag === CPSearchFieldClearRecentsMenuItemTag && countOfRecents === 0) &&
-            !(tag === CPSearchFieldNoRecentsMenuItemTag && countOfRecents != 0)    &&
-            !(tag === CPSearchFieldRecentsMenuItemTag))
-        {
-            var itemAction, itemTarget;
-            switch (tag)
-            {
-                case CPSearchFieldRecentsTitleMenuItemTag : itemAction = NULL; itemTarget = NULL; break;
-                case CPSearchFieldClearRecentsMenuItemTag : itemAction = @selector(_searchFieldClearRecents:); itemTarget = self; break;
-                case CPSearchFieldNoRecentsMenuItemTag : itemAction = NULL; itemTarget = NULL; break;
-                default: itemAction = [item action]; itemTarget = [item target]; break;
-            }
+        var item = [[_searchMenuTemplate itemAtIndex:i] copy];
             
-            if (tag === CPSearchFieldClearRecentsMenuItemTag || tag === CPSearchFieldRecentsTitleMenuItemTag)
-            {
-                var separator = [CPMenuItem separatorItem];
-                [separator setEnabled:NO];
-                [menu addItem:separator];
-            }
-        
-            var templateItem = [[CPMenuItem alloc] initWithTitle:[item title] 
-                                                          action:itemAction 
-                                                   keyEquivalent:[item keyEquivalent]];
-            [templateItem setTarget:itemTarget];
-            [templateItem setEnabled:([item isEnabled] && itemAction != NULL)];
-            [templateItem setTag:tag];
-            [menu addItem:templateItem];
-        }
-        else if (tag === CPSearchFieldRecentsMenuItemTag)
+        switch ([item tag])
         {
-            var j;
-            for (j = 0; j < countOfRecents; j++)
+            case CPSearchFieldRecentsTitleMenuItemTag:
+                if (countOfRecents === 0)
+                    continue;
+                    
+                if ([menu numberOfItems] > 0)
+                    [self _addSeparatorToMenu:menu];
+                break;
+                
+            case CPSearchFieldRecentsMenuItemTag:
             {
-                var rencentItem = [[CPMenuItem alloc] initWithTitle:[_recentSearches objectAtIndex:j] 
-                                                             action:@selector(_searchFieldSearch:) 
-                                                      keyEquivalent:[item keyEquivalent]];
-                [rencentItem setTarget:self];
-                [menu addItem:rencentItem];
+                var itemAction = @selector(_searchFieldSearch:);
+                
+                for (var recentIndex = 0; recentIndex < countOfRecents; ++recentIndex)
+                {
+                    // RECENT_SEARCH_PREFIX is a hack until CPMenuItem -setIndentationLevel works
+                    var recentItem = [[CPMenuItem alloc] initWithTitle:RECENT_SEARCH_PREFIX + [_recentSearches objectAtIndex:recentIndex] 
+                                                                 action:itemAction 
+                                                          keyEquivalent:[item keyEquivalent]];
+                    [item setTarget:self];
+                    [menu addItem:recentItem];
+                }
+                
+                continue;
             }
+                
+            case CPSearchFieldClearRecentsMenuItemTag:
+                if (countOfRecents === 0)
+                    continue;
+                    
+                if ([menu numberOfItems] > 0)
+                    [self _addSeparatorToMenu:menu];
+                    
+                [item setAction:@selector(_searchFieldClearRecents:)];
+                [item setTarget:self];
+                break;
+                
+            case CPSearchFieldNoRecentsMenuItemTag:
+                if (countOfRecents !== 0)
+                    continue;
+                    
+                if ([menu numberOfItems] > 0)
+                    [self _addSeparatorToMenu:menu];
+                break;
+                
+            case CPSearchFieldSeparatorMenuItemTag:
+                item = [CPMenuItem separatorItem];
+                [item setEnabled:NO];
+                [menu addItem:item];
+                continue;
         }
-    }    
+        
+        [item setEnabled:([item isEnabled] && [item action] != nil && [item target] != nil)];
+        [menu addItem:item];
+    }
+    
+    [menu setDelegate:self];
+
     _searchMenu = menu;
 }
 
-- (void)_showMenu:(id)sender
+- (void)_addSeparatorToMenu:(CPMenu)aMenu
+{
+    var separator = [CPMenuItem separatorItem];
+    [separator setEnabled:NO];
+    [aMenu addItem:separator];
+}
+
+- (void)menuWillOpen:(CPMenu)menu
+{
+    _canResignFirstResponder = NO;
+}
+
+- (void)menuDidClose:(CPMenu)menu
+{
+    _canResignFirstResponder = YES;
+    
+    [self becomeFirstResponder];
+}
+
+- (void)_showMenu
 {
     if (_searchMenu === nil || [_searchMenu numberOfItems] === 0 || ![self isEnabled])
         return;
@@ -576,12 +673,14 @@ var CPSearchFieldSearchImage = nil,
     
     var anEvent = [CPEvent mouseEventWithType:CPRightMouseDown location:location modifierFlags:0 timestamp:[[CPApp currentEvent] timestamp] windowNumber:[[self window] windowNumber] context:nil eventNumber:1 clickCount:1 pressure:0];
     
-    [CPMenu popUpContextMenu:_searchMenu withEvent:anEvent forView:sender];
+    [self selectAll:nil];
+    [CPMenu popUpContextMenu:_searchMenu withEvent:anEvent forView:self];
 }
 
 - (void)_sendPartialString
 {
-    [self _sendAction:self];
+    [super sendAction:[self action] to:[self target]];
+    [_partialStringTimer invalidate];
 }
 
 - (void)_searchFieldCancel:(id)sender
@@ -593,14 +692,15 @@ var CPSearchFieldSearchImage = nil,
 
 - (void)_searchFieldSearch:(id)sender
 {
-    var searchString = [sender title];
+    var searchString = [[sender title] substringFromIndex:[RECENT_SEARCH_PREFIX length]];
     
     if ([sender tag] != CPSearchFieldRecentsMenuItemTag)
         [self _addStringToRecentSearches:searchString];
     
     [self setObjectValue:searchString];
     [self _sendPartialString];
-
+    [self selectAll:nil];
+    
     [self _updateCancelButtonVisibility];
 }
 
@@ -608,6 +708,8 @@ var CPSearchFieldSearchImage = nil,
 {
     [self setRecentSearches:[CPArray array]];
     [self _updateSearchMenu];
+    [self setStringValue:@""];
+    [self _updateCancelButtonVisibility];
  }
 
 - (void)_registerForAutosaveNotification
@@ -668,7 +770,7 @@ var CPRecentsAutosaveNameKey            = @"CPRecentsAutosaveNameKey",
     CPSendsWholeSearchStringKey         = @"CPSendsWholeSearchStringKey",
     CPSendsSearchStringImmediatelyKey   = @"CPSendsSearchStringImmediatelyKey",
     CPMaximumRecentsKey                 = @"CPMaximumRecentsKey",
-    CPSearchMenuTemplateKey             = @"CPSearchMenuTemplateKey";   
+    CPSearchMenuTemplateKey             = @"CPSearchMenuTemplateKey";
 
 @implementation CPSearchField (CPCoding)
 
@@ -690,6 +792,7 @@ var CPRecentsAutosaveNameKey            = @"CPRecentsAutosaveNameKey",
 
     if (_recentsAutosaveName)
         [coder encodeObject:_recentsAutosaveName forKey:CPRecentsAutosaveNameKey];
+        
     if (_searchMenuTemplate)
         [coder encodeObject:_searchMenuTemplate forKey:CPSearchMenuTemplateKey];
 }
@@ -704,12 +807,13 @@ var CPRecentsAutosaveNameKey            = @"CPRecentsAutosaveNameKey",
         _sendsWholeSearchString   = [coder decodeBoolForKey:CPSendsWholeSearchStringKey];
         _sendsSearchStringImmediately = [coder decodeBoolForKey:CPSendsSearchStringImmediatelyKey];
         _maximumRecents           = [coder decodeIntForKey:CPMaximumRecentsKey];
-
+        
         var template              = [coder decodeObjectForKey:CPSearchMenuTemplateKey];
+        
         if (template)
             [self setSearchMenuTemplate:template];
             
-        [self setDelegate:self];
+        [self _init];
     }
 
     return self;

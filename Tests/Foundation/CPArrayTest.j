@@ -93,6 +93,56 @@
 	[self assert:array equals:[@"one", @"two", @"four", nil]];
 }
 
+- (void)testIndexOfObjectPassingTest
+{
+    var array = [CPArray arrayWithObjects:{name:@"Tom", age:7}, {name:@"Dick", age:13}, {name:@"Harry", age:27}, {name:@"Zelda", age:7}],
+        namePredicate = function(object, index) { return [object.name isEqual:@"Harry"]; },
+        agePredicate = function(object, index) { return object.age === 13; },
+        failPredicate = function(object, index) { return [object.name isEqual:@"Horton"]; },
+        noPredicate = function(object, index) { return NO; },
+        stopPredicate = function(object, index) { return nil; };
+    
+    [self assert:[array indexOfObjectPassingTest:namePredicate] equals:2];
+    [self assert:[array indexOfObjectPassingTest:agePredicate] equals:1];
+    [self assert:[array indexOfObjectPassingTest:failPredicate] equals:CPNotFound];
+    [self assert:[array indexOfObjectPassingTest:noPredicate] equals:CPNotFound];
+    [self assert:[array indexOfObjectPassingTest:stopPredicate] equals:CPNotFound];
+}
+
+- (void)testIndexOfObjectPassingTestContext
+{
+    var array = [CPArray arrayWithObjects:{name:@"Tom", age:7}, {name:@"Dick", age:13}, {name:@"Harry", age:27}, {name:@"Zelda", age:7}],
+        namePredicate = function(object, index, context) { return [object.name isEqual:context]; },
+        agePredicate = function(object, index, context) { return object.age === context; };
+    
+    [self assert:[array indexOfObjectPassingTest:namePredicate context:@"Harry"] equals:2];
+    [self assert:[array indexOfObjectPassingTest:agePredicate context:13] equals:1];
+}
+
+- (void)testIndexOfObjectWithOptionsPassingTest
+{
+    var array = [CPArray arrayWithObjects:{name:@"Tom", age:7}, {name:@"Dick", age:13}, {name:@"Harry", age:27}, {name:@"Zelda", age:7}],
+        namePredicate = function(object, index) { return [object.name isEqual:@"Harry"]; },
+        agePredicate = function(object, index) { return object.age === 7; };
+    
+    [self assert:[array indexOfObjectWithOptions:CPEnumerationNormal passingTest:namePredicate] equals:2];
+    [self assert:[array indexOfObjectWithOptions:CPEnumerationReverse passingTest:namePredicate] equals:2];
+    [self assert:[array indexOfObjectWithOptions:CPEnumerationNormal passingTest:agePredicate] equals:0];
+    [self assert:[array indexOfObjectWithOptions:CPEnumerationReverse passingTest:agePredicate] equals:3];
+}
+
+- (void)testIndexOfObjectWithOptionsPassingTestContext
+{
+    var array = [CPArray arrayWithObjects:{name:@"Tom", age:7}, {name:@"Dick", age:13}, {name:@"Harry", age:27}, {name:@"Zelda", age:7}],
+        namePredicate = function(object, index, context) { return [object.name isEqual:context]; },
+        agePredicate = function(object, index, context) { return object.age === context; };
+    
+    [self assert:[array indexOfObjectWithOptions:CPEnumerationNormal passingTest:namePredicate context:@"Harry"] equals:2];
+    [self assert:[array indexOfObjectWithOptions:CPEnumerationReverse passingTest:namePredicate context:@"Harry"] equals:2];
+    [self assert:[array indexOfObjectWithOptions:CPEnumerationNormal passingTest:agePredicate context:7] equals:0];
+    [self assert:[array indexOfObjectWithOptions:CPEnumerationReverse passingTest:agePredicate context:7] equals:3];
+}
+
 - (void)testIndexOfObjectSortedByFunction
 {
     var array = [0, 1, 2, 3, 4, 7];
