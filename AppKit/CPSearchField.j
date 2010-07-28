@@ -120,9 +120,6 @@ var RECENT_SEARCH_PREFIX = @"   ";
     [self resetSearchButton];
     
     _canResignFirstResponder = YES;
-    
-    if (_maximumRecents < 254 && !_searchMenuTemplate)
-        [self setSearchMenuTemplate:[self _defaultSearchMenuTemplate]];
 }
 
 // Managing Buttons
@@ -503,7 +500,7 @@ var RECENT_SEARCH_PREFIX = @"   ";
         [super mouseDown:anEvent];
 }
 
-- (CPMenu)_defaultSearchMenuTemplate
+- (CPMenu)defaultSearchMenuTemplate
 {
     var template = [[CPMenu alloc] init], 
         item;
@@ -566,12 +563,9 @@ var RECENT_SEARCH_PREFIX = @"   ";
     
     for (var i = 0; i < numberOfItems; i++)
     {
-        var item = [_searchMenuTemplate itemAtIndex:i],
-            tag = [item tag],
-            itemAction = [item action],
-            itemTarget = [item target];
+        var item = [[_searchMenuTemplate itemAtIndex:i] copy];
             
-        switch (tag)
+        switch ([item tag])
         {
             case CPSearchFieldRecentsTitleMenuItemTag:
                 if (countOfRecents === 0)
@@ -583,28 +577,15 @@ var RECENT_SEARCH_PREFIX = @"   ";
                 
             case CPSearchFieldRecentsMenuItemTag:
             {
-                var recentItemTemplate = [_searchMenuTemplate itemWithTag:CPSearchFieldRecentsMenuItemTag],
-                    recentItemAction, recentItemTarget, recentItemKeyEquivalent;
-
-                if (recentItemTemplate)
-                {
-                    recentItemAction = [recentItemTemplate action];
-                    recentItemTarget = [recentItemTemplate target];
-                    recentItemKeyEquivalent = [recentItemTemplate keyEquivalent];
-                }
-                else
-                {
-                    recentItemAction = @selector(_searchFieldSearch:);
-                    recentItemTarget = self;
-                    recentItemKeyEquivalent = @"";
-                }
-
+                var itemAction = @selector(_searchFieldSearch:);
+                
                 for (var recentIndex = 0; recentIndex < countOfRecents; ++recentIndex)
                 {
+                    // RECENT_SEARCH_PREFIX is a hack until CPMenuItem -setIndentationLevel works
                     var recentItem = [[CPMenuItem alloc] initWithTitle:RECENT_SEARCH_PREFIX + [_recentSearches objectAtIndex:recentIndex] 
-                                                                 action:recentItemAction 
-                                                          keyEquivalent:recentItemKeyEquivalent];
-                    [recentItem setTarget:recentItemTarget];
+                                                                 action:itemAction 
+                                                          keyEquivalent:[item keyEquivalent]];
+                    [item setTarget:self];
                     [menu addItem:recentItem];
                 }
                 
@@ -617,6 +598,9 @@ var RECENT_SEARCH_PREFIX = @"   ";
                     
                 if ([menu numberOfItems] > 0)
                     [self _addSeparatorToMenu:menu];
+                    
+                [item setAction:@selector(_searchFieldClearRecents:)];
+                [item setTarget:self];
                 break;
                 
             case CPSearchFieldNoRecentsMenuItemTag:
@@ -631,14 +615,8 @@ var RECENT_SEARCH_PREFIX = @"   ";
                 continue;
         }
         
-        var templateItem = [[CPMenuItem alloc] initWithTitle:[item title] 
-                                                      action:itemAction 
-                                               keyEquivalent:[item keyEquivalent]];
-        [templateItem setTarget:itemTarget];
-        [templateItem setEnabled:([item isEnabled] && itemAction != nil)];
-        [templateItem setTag:tag];
-        [templateItem setImage:[item image]];
-        [menu addItem:templateItem];
+        [item setEnabled:([item isEnabled] && [item action] != nil && [item target] != nil)];
+        [menu addItem:item];
     }
     
     [menu setDelegate:self];
