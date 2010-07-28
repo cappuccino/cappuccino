@@ -23,6 +23,8 @@
 @import "CPGraphics.j"
 @import "CPView.j"
 
+#include "CoreGraphics/CGGeometry.h"
+
 // CPBorderType
 CPNoBorder      = 0;
 CPLineBorder    = 1;    
@@ -45,7 +47,7 @@ CPGrooveBorder  = 3;
 
 + (id)boxEnclosingView:(CPView)aView
 {
-    var box = [[self alloc] initWithFrame:CGRectMakeZero()],
+    var box = [[self alloc] initWithFrame:_CGRectMakeZero()],
         enclosingView = [aView superview];
 
     [box setFrameFromContentFrame:[aView frame]];
@@ -67,7 +69,7 @@ CPGrooveBorder  = 3;
         _borderColor = [CPColor blackColor];
 
         _borderWidth = 1.0;
-        _contentMargin = CGSizeMake(0.0, 0.0);
+        _contentMargin = _CGSizeMake(0.0, 0.0);
 
         _contentView = [[CPView alloc] initWithFrame:[self bounds]];
 
@@ -164,7 +166,7 @@ CPGrooveBorder  = 3;
     if (aView === _contentView)
         return;
 
-    [aView setFrame:CGRectInset([self bounds], _contentMargin.width + _borderWidth, _contentMargin.height + _borderWidth)];
+    [aView setFrame:_CGRectInset([self bounds], _contentMargin.width + _borderWidth, _contentMargin.height + _borderWidth)];
     [self replaceSubview:_contentView with:aView];
     
     _contentView = aView;    
@@ -180,44 +182,35 @@ CPGrooveBorder  = 3;
 
 - (void)setContentViewMargins:(CPSize)size
 {
-     if(size.width < 0 || size.height < 0)
+     if (size.width < 0 || size.height < 0)
          [CPException raise:CPGenericException reason:@"Margins must be positive"];
          
-    _contentMargin = CGSizeMakeCopy(size);
+    _contentMargin = _CGSizeMakeCopy(size);
     [self setNeedsDisplay:YES];
 }
 
 - (void)setFrameFromContentFrame:(CPRect)aRect
 {
-    [self setFrame:CGRectInset(aRect, -(_contentMargin.width + _borderWidth), -(_contentMargin.height + _borderWidth))];
+    [self setFrame:_CGRectInset(aRect, -(_contentMargin.width + _borderWidth), -(_contentMargin.height + _borderWidth))];
     [self setNeedsDisplay:YES];
 }
 
 - (void)sizeToFit
 {
-    var contentFrame = [_contentView frame];
+    var contentFrameSize = [_contentView frameSize];
     
-    [self setFrameSize:CGSizeMake(contentFrame.size.width + _contentMargin.width * 2, 
-                                  contentFrame.size.height + _contentMargin.height * 2)];
+    [self setFrameSize:_CGSizeMake(contentFrameSize.width + (_contentMargin.width * 2), 
+                                   contentFrameSize.height + (_contentMargin.height * 2))];
     
-    [_contentView setFrameOrigin:CGPointMake(_contentMargin.width, _contentMargin.height)];
+    [_contentView setFrameOrigin:_CGPointMake(_contentMargin.width, _contentMargin.height)];
 }
 
 - (void)drawRect:(CPRect)rect
 {
     var bounds = [self bounds],
         context = [[CPGraphicsContext currentContext] graphicsPort],
-        border2 = _borderWidth/2,
-
-        strokeRect = CGRectMake(bounds.origin.x + border2, 
-                                bounds.origin.y + border2, 
-                                bounds.size.width - _borderWidth, 
-                                bounds.size.height - _borderWidth),
-                                
-        fillRect = CGRectMake(bounds.origin.x + border2, 
-                              bounds.origin.y + border2, 
-                              bounds.size.width - _borderWidth, 
-                              bounds.size.height - _borderWidth);
+        strokeRect = _CGRectInset(bounds, _borderWidth / 2.0, _borderWidth / 2.0),
+        fillRect = _CGRectInset(bounds, _borderWidth, _borderWidth);
 
     CGContextSetFillColor(context, [self fillColor]);
     CGContextSetStrokeColor(context, [self borderColor]);
@@ -235,7 +228,7 @@ CPGrooveBorder  = 3;
 
         case CPBezelBorder:
             CGContextFillRoundedRectangleInRect(context, fillRect, _cornerRadius, YES, YES, YES, YES);
-            CPDrawGrayBezel(fillRect);
+            CPDrawGrayBezel(bounds);
             break;
 
         default:
