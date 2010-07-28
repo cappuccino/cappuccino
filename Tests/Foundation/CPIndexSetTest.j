@@ -366,6 +366,13 @@ function descriptionWithoutEntity(aString)
     // negative delta for downward shift
     [_set shiftIndexesStartingAtIndex:1 by:-1];
     [self assertTrue:[_set containsIndexes:[CPIndexSet indexSetWithIndexesInRange:startRange]]];
+    
+    // test for fix to issue #746 (last item is mistakenly shifted)
+    _set = [CPIndexSet indexSetWithIndexesInRange:CPMakeRange(0, 1)];
+    [self assertTrue:[_set lastIndex] === 0];
+    
+    [_set shiftIndexesStartingAtIndex:[_set lastIndex] + 1 by:1];
+    [self assertTrue:[_set lastIndex] === 0];
 }
 
 - (void)tearDown
