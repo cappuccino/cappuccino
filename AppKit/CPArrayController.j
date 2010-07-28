@@ -489,13 +489,34 @@
 
 - (void)_removeObjects:(CPArray)objects
 {
-    var contentArray = [self contentArray],
-        count = [objects count];
+    [self willChangeValueForKey:@"content"];
+    [_contentObject removeObjectsInArray:objects];
+    [self didChangeValueForKey:@"content"];
 
-    for (var i=0; i<count; i++)
-        [contentArray removeObject:[objects objectAtIndex:i]];
+    var arrangedObjects = [self arrangedObjects],
+        position = [arrangedObjects indexOfObject:[objects objectAtIndex:0]];
 
-    [self setContent:contentArray];
+    [arrangedObjects removeObjectsInArray:objects];
+
+    var objectsCount = [arrangedObjects count],
+        selectionIndexes = [CPIndexSet indexSet];
+
+    if ([self preservesSelection] || [self avoidsEmptySelection])
+    {
+        selectionIndexes = [CPIndexSet indexSetWithIndex:position];
+
+        // Remove the selection if there are no objects
+        if (objectsCount <= 0)
+            selectionIndexes = [CPIndexSet indexSet];
+
+        // Shift selection to last object if position is out of bounds
+        else if (position >= objectsCount)
+            selectionIndexes = [CPIndexSet indexSetWithIndex:objectsCount - 1];
+     }
+
+     [self willChangeValueForKey:@"selectionIndexes"];
+     _selectionIndexes = selectionIndexes;
+     [self didChangeValueForKey:@"selectionIndexes"];
 }
 
 - (BOOL)canInsert
