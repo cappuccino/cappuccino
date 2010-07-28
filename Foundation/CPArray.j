@@ -507,6 +507,12 @@
 
 - (unsigned)insertObject:(id)anObject inArraySortedByDescriptors:(CPArray)descriptors
 {
+    if (!descriptors || ![descriptors count])
+    {
+        [self addObject:anObject];
+        return [self count] - 1;
+    }
+
     var index = [self _insertObject:anObject sortedByFunction:function(lhs, rhs)
     {
         var i = 0,
