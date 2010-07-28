@@ -45,7 +45,8 @@ CPImageAlignBottomLeft  = 6;
 CPImageAlignBottomRight = 7;
 CPImageAlignRight       = 8;
 
-var CPImageViewShadowBackgroundColor = nil;
+var CPImageViewShadowBackgroundColor = nil,
+    CPImageViewEmptyPlaceholderImage = nil;
     
 var LEFT_SHADOW_INSET       = 3.0,
     RIGHT_SHADOW_INSET      = 3.0,
@@ -71,8 +72,13 @@ var LEFT_SHADOW_INSET       = 3.0,
 
     CGRect              _imageRect;
     CPImageAlignment    _imageAlignment;
+}
+
++ (void)initialize
+{
+    var bundle = [CPBundle bundleForClass:[CPView class]];
     
-    CPImage             _emptyImage;
+    CPImageViewEmptyPlaceholderImage = [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"empty.png"]];
 }
 
 - (id)initWithFrame:(CGRect)aFrame
@@ -97,10 +103,6 @@ var LEFT_SHADOW_INSET       = 3.0,
         
         _DOMImageElement.style.visibility = "hidden";
 #endif
-        
-        var bundle = [CPBundle bundleForClass:[CPView class]];
-        
-        _emptyImage = [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"empty.png"]];
     }
     
     return self;
@@ -137,7 +139,7 @@ var LEFT_SHADOW_INSET       = 3.0,
     var newImage = [self objectValue];
     
 #if PLATFORM(DOM)
-    _DOMImageElement.src = newImage ? [newImage filename] : [_emptyImage filename];
+    _DOMImageElement.src = newImage ? [newImage filename] : [CPImageViewEmptyPlaceholderImage filename];
 #endif
 
     var size = [newImage size];
