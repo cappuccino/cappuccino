@@ -1362,6 +1362,9 @@ CPTexturedBackgroundWindowMask
 */
 - (void)center
 {
+    if (_isFullPlatformWindow)
+        return;
+
     var size = [self frame].size,
         containerSize = [CPPlatform isBrowser] ? [_platformWindow contentBounds].size : [[self screen] visibleFrame].size;
 
