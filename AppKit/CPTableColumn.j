@@ -460,8 +460,8 @@ var CPTableColumnIdentifierKey   = @"CPTableColumnIdentifierKey",
     CPTableColumnMaxWidthKey     = @"CPTableColumnMaxWidthKey",
     CPTableColumnResizingMaskKey = @"CPTableColumnResizingMaskKey",
     CPTableColumnIsHiddenKey     = @"CPTableColumnIsHiddenKey",
-    CPSortDescriptorPrototypeKey = @"CPSortDescriptorPrototypeKey";
-    CPTableColumnIsEditableKey     = @"CPTableColumnIsEditableKey";
+    CPSortDescriptorPrototypeKey = @"CPSortDescriptorPrototypeKey",
+    CPTableColumnIsEditableKey   = @"CPTableColumnIsEditableKey";
 
 @implementation CPTableColumn (CPCoding)
 
