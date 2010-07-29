@@ -476,10 +476,7 @@ var RECENT_SEARCH_PREFIX = @"   ";
 
 - (BOOL)resignFirstResponder
 {
-    if (_canResignFirstResponder)
-        return [super resignFirstResponder];
-    
-    return NO;
+    return _canResignFirstResponder && [super resignFirstResponder];
 }
 
 - (void)mouseDown:(CPEvent)anEvent
