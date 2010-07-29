@@ -160,6 +160,13 @@
     return YES;
 }
 
+- (BOOL)isEqual:(id)anObject
+{
+    return  self === anObject ||
+            [anObject isKindOfClass:[self class]] &&
+            [self isEqualToIndexSet:anObject];
+}
+
 /*!
     Returns \c YES if the index set contains the specified index.
     @param anIndex the index to check for in the set
@@ -698,12 +705,12 @@
         var range = _ranges[i],
             maximum = CPMaxRange(range);
 
-        if (anIndex > maximum)
+        if (anIndex >= maximum)
             break;
 
         // If our index is within our range, but not the first index,
         // then this range will be split.
-        if (anIndex > range.location && anIndex < maximum)
+        if (anIndex > range.location)
         {
             // Split the range into shift and unshifted.
             shifted = CPMakeRange(anIndex + aDelta, maximum - anIndex);
