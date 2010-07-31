@@ -122,15 +122,19 @@ task ("documentation", function()
     {
         print("Using " + doxygen + " for doxygen binary.");
         
-        if (OS.system(["ruby", FILE.join("Tools", "Documentation", "make_headers")]))
+        var documentationDir = FILE.join("Tools", "Documentation");
+        
+        if (OS.system(["ruby", FILE.join(documentationDir, "make_headers")]))
             OS.exit(1); //rake abort if ($? != 0)
 
-        if (OS.system([doxygen, FILE.join("Tools", "Documentation", "Cappuccino.doxygen")]))
-            OS.exit(1); //rake abort if ($? != 0)
-
-        rm_rf($DOCUMENTATION_BUILD);
-        mv("debug.txt", FILE.join("Documentation", "debug.txt"));
-        mv("Documentation", $DOCUMENTATION_BUILD);
+        if (!OS.system([doxygen, FILE.join(documentationDir, "Cappuccino.doxygen")]))
+        {
+            rm_rf($DOCUMENTATION_BUILD);
+            mv("debug.txt", FILE.join("Documentation", "debug.txt"));
+            mv("Documentation", $DOCUMENTATION_BUILD);
+        }
+        
+        OS.system(["ruby", FILE.join(documentationDir, "cleanup_headers")]);
     }
     else
         print("doxygen not installed, skipping documentation generation.");
