@@ -88,7 +88,7 @@ var RECENT_SEARCH_PREFIX = @"   ";
         _sendsSearchStringImmediately = NO;
         _recentsAutosaveName = nil;
 
-        [self _initWithFrame:frame];
+        [self _init];
 #if PLATFORM(DOM)
         _cancelButton._DOMElement.style.cursor = "default";
         _searchButton._DOMElement.style.cursor = "default";
@@ -98,7 +98,7 @@ var RECENT_SEARCH_PREFIX = @"   ";
     return self;
 }
 
-- (void)_initWithFrame:(CGRect)frame
+- (void)_init
 {
     _recentSearches = [CPArray array];
 
@@ -476,10 +476,7 @@ var RECENT_SEARCH_PREFIX = @"   ";
 
 - (BOOL)resignFirstResponder
 {
-    if (_canResignFirstResponder)
-        return [super resignFirstResponder];
-    
-    return _canResignFirstResponder;
+    return _canResignFirstResponder && [super resignFirstResponder];
 }
 
 - (void)mouseDown:(CPEvent)anEvent
@@ -801,7 +798,7 @@ var CPRecentsAutosaveNameKey            = @"CPRecentsAutosaveNameKey",
 {
     if (self = [super initWithCoder:coder])
     {
-        [self _initWithFrame:[self frame]];
+        [self _init];
 
         _recentsAutosaveName      = [coder decodeObjectForKey:CPRecentsAutosaveNameKey];
         _sendsWholeSearchString   = [coder decodeBoolForKey:CPSendsWholeSearchStringKey];

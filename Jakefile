@@ -4,6 +4,7 @@ require("./common.jake");
 var FILE = require("file"),
     SYSTEM = require("system"),
     OS = require("os"),
+    UTIL = require("util"),
     jake = require("jake"),
     stream = require("term").stream;
 
@@ -89,12 +90,42 @@ task ("docs", ["documentation"]);
 
 task ("documentation", function()
 {
-    if (executableExists("doxygen"))
+    var doxygen = null,
+        DoxygenAppPath = "/Applications/Doxygen.app/Contents/Resources";
+    
+    // If the Doxygen application is installed on Mac OS X, use that
+    if (executableExists("mdfind"))
     {
+        OS.system("mdfind \"kMDItemContentType == 'com.apple.application-bundle' && kMDItemCFBundleIdentifier == 'org.doxygen'\" > doxygen_app");
+        
+        if (FILE.exists("doxygen_app"))
+        {
+            doxygen = FILE.join(UTIL.trimEnd(FILE.read("doxygen_app")), "Contents/Resources/doxygen");
+            FILE.remove("doxygen_app");
+        }
+    }
+    else
+    {
+        SYSTEM.env["PATH"].split(':').some(function(/*String*/ aPath)
+        {
+            var path = FILE.join(aPath, "doxygen");
+            
+            if (FILE.exists(path))
+            {
+                doxygen = path;
+                return true;
+            }
+        });
+    }
+    
+    if (doxygen)
+    {
+        print("Using " + doxygen + " for doxygen binary.");
+        
         if (OS.system(["ruby", FILE.join("Tools", "Documentation", "make_headers")]))
             OS.exit(1); //rake abort if ($? != 0)
 
-        if (OS.system(["doxygen", FILE.join("Tools", "Documentation", "Cappuccino.doxygen")]))
+        if (OS.system([doxygen, FILE.join("Tools", "Documentation", "Cappuccino.doxygen")]))
             OS.exit(1); //rake abort if ($? != 0)
 
         rm_rf($DOCUMENTATION_BUILD);
@@ -102,7 +133,7 @@ task ("documentation", function()
         mv("Documentation", $DOCUMENTATION_BUILD);
     }
     else
-        print("doxygen not installed. skipping documentation generation.");
+        print("doxygen not installed, skipping documentation generation.");
 });
 
 // Downloads
