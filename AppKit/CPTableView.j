@@ -1438,11 +1438,11 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 
     var mask = _columnAutoResizingStyle;
 
-    if(mask === CPTableViewUniformColumnAutoresizingStyle)
+    if (mask === CPTableViewUniformColumnAutoresizingStyle)
        [self _resizeAllColumnUniformlyWithOldSize:aSize];
-    else if(mask === CPTableViewLastColumnOnlyAutoresizingStyle)
+    else if (mask === CPTableViewLastColumnOnlyAutoresizingStyle)
         [self sizeLastColumnToFit];
-    else if(mask === CPTableViewFirstColumnOnlyAutoresizingStyle)
+    else if (mask === CPTableViewFirstColumnOnlyAutoresizingStyle)
         [self _autoResizeFirstColumn];
 }
 
@@ -1467,7 +1467,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
         if(![_tableColumns[i] isHidden])
         {
              [visColumns addObject:i];
-             totalWidth += [_tableColumns[i] width];
+             totalWidth += [_tableColumns[i] width] + _intercellSpacing.width;
         }
     }
 
@@ -1601,7 +1601,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     if (count >= 0)
     {
         var columnToResize = _tableColumns[count],
-            newSize = MAX(0.0, superviewSize.width - CGRectGetMinX([self rectOfColumn:count]));
+            newSize = MAX(0.0, superviewSize.width - CGRectGetMinX([self rectOfColumn:count]) - _intercellSpacing.width);
 
         if (newSize > 0)
         {
