@@ -1498,10 +1498,9 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 
     var superviewSize = [superview bounds].size;
 
-    if (_dirtyTableColumnRangeIndex !== CPNotFound)
-        [self _recalculateTableColumnRanges];//UPDATE_COLUMN_RANGES_IF_NECESSARY();
+    UPDATE_COLUMN_RANGES_IF_NECESSARY();
 
-    var count = _tableColumns.length,//NUMBER_OF_COLUMNS(),
+    var count = NUMBER_OF_COLUMNS(),
         visColumns = [[CPArray alloc] init],
         buffer = 0.0;
 
