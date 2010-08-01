@@ -1500,14 +1500,15 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 
     var superviewSize = [superview bounds].size;
 
-    if (_dirtyTableColumnRangeIndex !== CPNotFound) [self _recalculateTableColumnRanges];//UPDATE_COLUMN_RANGES_IF_NECESSARY();
+    if (_dirtyTableColumnRangeIndex !== CPNotFound)
+        [self _recalculateTableColumnRanges];//UPDATE_COLUMN_RANGES_IF_NECESSARY();
 
     var count = _tableColumns.length,//NUMBER_OF_COLUMNS(),
         visColumns = [[CPArray alloc] init],
         buffer = 0.0;
 
     // Fixme: cache resizable columns because they won't changes betwwen two calls to this method.
-    for(var i=0; i < count; i++)
+    for (var i=0; i < count; i++)
     {
         var tableColumn = _tableColumns[i];
         if(![tableColumn isHidden] && ([tableColumn resizingMask] & CPTableColumnAutoresizingMask))
@@ -1531,7 +1532,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
             [self _resizeAllColumnUniformlyWithOldSize:CGSizeMake(maxXofColumns, 0)];
         }
 
-        if(!_lastColumnShouldSnap)
+        if (!_lastColumnShouldSnap)
             return;
 
         // FIX ME: This is wrong because this should continue to resize all columns
@@ -1540,7 +1541,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 
         for (var i = 0; i < count; i++)
         {
-            var column = visColumns[i];
+            var column = visColumns[i],
                 columnToResize = _tableColumns[column],
                 currentBuffer = buffer / (count - i),
                 realNewWidth = ([columnToResize width] / oldSize.width * [superview bounds].size.width) + currentBuffer,
@@ -1556,7 +1557,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
         }
 
         // if there is space left over that means column resize was too long or too short
-        if(buffer !== 0)
+        if (buffer !== 0)
             _lastColumnShouldSnap = NO;
     }
 
