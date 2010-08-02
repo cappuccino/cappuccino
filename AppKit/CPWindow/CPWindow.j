@@ -2406,9 +2406,12 @@ CPTexturedBackgroundWindowMask
     if (_defaultButton === aButton)
         return;
 
-    [_defaultButton setDefaultButton:NO];
+    if ([_defaultButton keyEquivalent] === CPCarriageReturnCharacter)
+        [_defaultButton setKeyEquivalent:nil];
+
     _defaultButton = aButton;
-    [_defaultButton setDefaultButton:YES];
+
+    [_defaultButton setKeyEquivalent:CPCarriageReturnCharacter];
 }
 
 - (CPButton)defaultButton
