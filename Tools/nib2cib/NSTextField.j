@@ -54,7 +54,12 @@
         
         [self setPlaceholderString:[cell placeholderString]];
         
-        [self setTextColor:[cell textColor]];
+        var textColor = [cell textColor],
+            defaultColor = [self currentValueForThemeAttribute:@"text-color"];
+            
+        // Don't change the text color if it is not the default, that messes up the theme lookups later        
+        if (![textColor isEqual:defaultColor])
+            [self setTextColor:[cell textColor]];
         
         var frame = [self frame];
 
