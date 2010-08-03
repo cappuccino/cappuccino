@@ -1442,31 +1442,30 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     if (!superview)
         return;
 
-    var superviewSize = [superview bounds].size;
-
     UPDATE_COLUMN_RANGES_IF_NECESSARY();
 
     var count = NUMBER_OF_COLUMNS(),
-        visColumns = [[CPArray alloc] init],
+        columnToResize = nil,
         totalWidth = 0,
         i = 0;
 
-    for(; i < count; i++)
+    for (; i < count; i++)
     {
-        if(![_tableColumns[i] isHidden])
+        var column = _tableColumns[i];
+
+        if (![column isHidden])
         {
-             [visColumns addObject:i];
-             totalWidth += [_tableColumns[i] width] + _intercellSpacing.width;
+            if (!columnToResize)
+                columnToResize = column;
+            totalWidth += [column width] + _intercellSpacing.width;
         }
     }
 
-    count = [visColumns count];
-
-    //if there are rows
-    if (count > 0)
+    // If there is a visible column
+    if (columnToResize)
     {
-        var columnToResize = _tableColumns[visColumns[0]],
-            newWidth = superviewSize.width - totalWidth;// - [columnToResize width];
+        var superviewSize = [superview bounds].size,
+            newWidth = superviewSize.width - totalWidth;
 
         newWidth += [columnToResize width];
         newWidth = MAX([columnToResize minWidth], newWidth);
