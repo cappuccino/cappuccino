@@ -108,9 +108,9 @@
             [@"min-size",       CGSizeMake(100.0, 100.0)]
         ];
         
-        // Now we just pass our values to utility function
+        // Now we just register our values
         
-        SetThemeValues(calendar, themedCalendarViewValues);
+        [self registerThemeValues:themedCalendarViewValues forView:calendar];
     }
     
     That's all there is to it. Note that PatternColor can also be used to create a simple
@@ -138,81 +138,146 @@
     PatternIsVertical);
 
     
-    HUD THEMES
+    SUBTHEMES
     
-    If you want to modify the look of your view when it is within a HUD window,
-    follow these steps:
+    If you want to create a theme that inherits from another theme, for example the way
+    the Aristo-HUD theme inherits from Aristo, you can do this easily by following
+    these steps:
     
-    1. Decide which elements will be changed and which will stay the same.
-       For example, in a HUD window you may want to use a dark or black background
+    1. Your subtheme should be named "<inherited>-<identifier>", where <inherited> is the name
+       of the theme from which you are inheriting, and <identifier> is the subtheme identifier.
+       For example, "Aristo-HUD" inherits from "Aristo".
+       
+    2. Decide which elements in the subtheme will be changed and which will be inherited.
+       For example, in a HUD theme you may want to use a dark or black background
        and white text.
        
-    2. If you are using different color pattern artwork, use the same filename as
-       the main theme but put it in the HUD directory of the main theme directory.
+    3. If your subtheme will replace pattern colors in the inherited theme, use the same filename as
+       in the inherited theme and put the pattern images in a subdirectory of the inherited
+       directory. The subdirectory's name should be the same as the subtheme identifier.
+       For example, Aristo-HUD's pattern images are in a "HUD" subdirectory of the "Aristo" directory.
        
-    3. In the HUD class (such as AristoHUDThemeDescriptor), add a method with this template:
+    4. In the subtheme class (such as AristoHUDThemeDescriptor), add a method with this template:
     
-    + (CPCalendarView)themedCalendarView
-    {
-        var calendar = [AristoThemeDescriptor makeCalendarView];
+        + (CPCalendarView)themedCalendarView
+        {
+            var calendar = [AristoThemeDescriptor makeCalendarView],
+                subthemeValues = nil;  // This may change according to your needs, see below
         
-        SetHUDThemeValues(calendar, themedCalendarViewValues);
+            [self registerThemeValues:subthemeValues forView:calendar inherit:themedCalendarViewValues];
         
-        return calendar;
-    }
+            return calendar;
+        }
     
-    In many cases that's all you need to do! SetHUDThemeValues() does the following:
+       NOTE: If you pass nil or an empty array for the subthemeValues, ALL pattern images
+       will be automatically inherited and MUST be present in the subtheme directory.
+       
+       Depending on your subtheme, you will change subthemeValues to indicate which values you
+       wish to override or remove from the inherited theme.
+        
+       For example, let's say in your subtheme you want to use white text instead of dark blue,
+       and slightly gray text when it is disabled. In addition, you decide not to inherit the
+       disabled bezel color pattern. Here is how your updated theme method would look:
+
+        + (CPCalendarView)themedCalendarView
+        {
+            var calendar = [AristoThemeDescriptor makeCalendarView],
+            
+                textColor = [CPColor whiteColor],
+                disabledTextColor = [textColor colorWithAlphaComponent:0.6],
+                subthemeValues = 
+                [
+                    [@"bezel-color",    nil,                CPThemeStateDisabled],
+                    [@"text-color",     textColor],
+                    [@"text-color",     disabledTextColor,  CPThemeStateDisabled]
+                ];
+
+            [self registerThemeValues:subthemeValues forView:calendar inherit:themedCalendarViewValues];
+
+            return calendar;
+        }
+        
+       If your subtheme consistently applies the same overrides to all themed views, you may
+       want to create a separate method that supplies those overrides. For example, Aristo-HUD
+       uses the following method:
+       
+        + (CPArray)defaultThemeOverridesAddedTo:(CPArray)themeValues
+       
+       For the example we used above, we could define such a method as follows:
+       
+        + (CPArray)defaultThemeOverridesAddedTo:(CPArray)themeValues
+        {
+            var textColor = [CPColor whiteColor],
+                disabledTextColor = [textColor colorWithAlphaComponent:0.6],
+                overrides = [CPArray arrayWithObjects:
+                    [@"bezel-color",    nil,                CPThemeStateDisabled],
+                    [@"text-color",     textColor],
+                    [@"text-color",     disabledTextColor,  CPThemeStateDisabled]
+                ];
+
+            if (themeValues)
+                [overrides addObjectsFromArray:themeValues];
+
+            return overrides;
+        }
+        
+       Note that the values in the themeValues parameter override the defaults provided
+       by the method.
+       
+       Our themed view method becomes:
+
+        + (CPCalendarView)themedCalendarView
+        {
+            var calendar = [AristoThemeDescriptor makeCalendarView];
+
+            [self registerThemeValues:[self defaultThemeOverridesAddedTo:nil] 
+                              forView:calendar 
+                              inherit:themedCalendarViewValues];
+
+            return calendar;
+        }
+        
+       As a last example, let's assume another type of themed view in your subtheme wants
+       to add some new theme values to the default overrides. The theme method might look like this:
+
+        + (CPCalendarView)themedCalendarHeaderView
+        {
+            var header = [AristoThemeDescriptor makeCalendarHeaderView],
+                headerColor = PatternColor(
+                    [
+                        ["calendar-header-left.png",   5.0, 23.0],
+                        ["calendar-header-center.png", 1.0, 23.0],
+                        ["calendar-header-right.png",  5.0, 23.0]
+                    ],
+                    PatternIsHorizontal),
+                subthemeValues = 
+                [
+                    [@"background-color", headerColor]
+                ];
+
+            [self registerThemeValues:[self defaultThemeOverridesAddedTo:subthemeValues] 
+                              forView:calendar 
+                              inherit:themedCalendarHeaderViewValues];;
+
+            return calendar;
+        }
+
+       
+    ADDING ARISTO-HUD CONTROLS
     
-    - Finds all colors defined with a pattern image, and redirects them to an image
-      with the same filename in the HUD directory.
-      
-    - Converts any "text-color" attributes to white in the normal state and
+    If you want to add a new themed control to Aristo-HUD, you should use the
+    +defaultThemeOverridesAddedTo: method to ensure visual consistency with the rest
+    of Aristo-HUD. The overrides returned by this method do the following:
+    
+    - Sets the "text-color" attribute to white in the normal state and
       [CPColor colorWithCalibratedWhite:1.0 alpha:0.6] in the disabled state.
       
-    - Converts any "text-shadow-color" to black.
+    - Set "text-shadow-color" to black.
     
-    - Converts any "text-shadow-offset" to (-1.0, -1.0).
+    - Sets "text-shadow-offset" to (-1.0, -1.0).
     
     These are the standards used by Aristo-HUD. If you want to override these defaults,
-    you can declare an array of overrides and pass it to SetHUDThemeValues().
-    For example, let's say with our calendar we decide to do the following for HUD:
-    
-    - Use a different, dark background bezel in normal state
-    - Use the same bezel in disabled state
-    - Use light blue text in normal state with a dark blue shadow
-    - Use the same text color with alpha 0.6 in disabled state
-    
-    Here is our modified method:
-    
-    + (CPCalendarView)themedCalendarView
-    {
-        var calendar = [AristoThemeDescriptor makeCalendarView],
-        
-            textColor = [CPColor colorWithHexString:@"#EEF3FF"],
-            disabledTextColor = [textColor colorWithAlphaComponent:0.6],
-        
-            overrides =
-            [
-                // We don't have to specify the normal bezel, that will be
-                // used automatically from the HUD directory. But we have
-                // to remove the disabled bezel by passing a nil value.
-                
-                [@"bezel-color", nil, CPThemeStateDisabled],
-                
-                // Now override the text colors
-                
-                [@"text-color", textColor],
-                [@"text-color", disabledTextColor, CPThemeStateDisabled]
-            ];
-    
-        // Pass the overrides when setting the theme values
-        
-        SetHUDThemeValues(calendar, themedCalendarViewValues, overrides);
-    
-        return calendar;
-    }
-    
-    That's it!
+    simply add those overrides to the values you pass to +defaultThemeOverridesAddedTo:.
 */
 
 @implementation AristoThemeDescriptor : BKThemeDescriptor
@@ -311,8 +376,8 @@ var themedButtonValues = nil;
             [@"min-size",           CGSizeMake(0.0, 24.0)],
             [@"max-size",           CGSizeMake(-1.0, 24.0)]
         ];
-
-    SetThemeValues(button, themedButtonValues);
+    
+    [self registerThemeValues:themedButtonValues forView:button];
     
     return button;
 }
@@ -372,7 +437,7 @@ var themedButtonValues = nil;
             [@"max-size",           CGSizeMake(-1.0, 24.0)]
         ];
             
-    SetThemeValues(button, themeValues);
+    [self registerThemeValues:themeValues forView:button];
     
     [button setTitle:@"Pop Up"];
     [button addItemWithTitle:@"item"];
@@ -416,7 +481,7 @@ var themedButtonValues = nil;
             [@"max-size",           CGSizeMake(-1.0, 24.0)]
         ];
 
-    SetThemeValues(button, themeValues);
+    [self registerThemeValues:themeValues forView:button];
     
     [button setTitle:@"Pull Down"];
     [button addItemWithTitle:@"item"];
@@ -489,7 +554,7 @@ var themedVerticalScrollerValues = nil;
             [@"increment-line-color",   disabledDownArrowColor,     CPThemeStateVertical | CPThemeStateDisabled]
         ];
                 
-    SetThemeValues(scroller, themedVerticalScrollerValues);
+    [self registerThemeValues:themedVerticalScrollerValues forView:scroller];
     
     return scroller;
 }
@@ -559,7 +624,7 @@ var themedHorizontalScrollerValues = nil;
             [@"increment-line-color",   disabledRightArrowColor,    CPThemeStateDisabled]
         ];
 
-    SetThemeValues(scroller, themedHorizontalScrollerValues);
+    [self registerThemeValues:themedHorizontalScrollerValues forView:scroller];
     
     return scroller;
 }
@@ -617,7 +682,7 @@ var themedHorizontalScrollerValues = nil;
             [@"font",               [CPFont boldSystemFontOfSize:12.0], CPThemeStateTableDataView | CPThemeStateSelectedTableDataView],
         ];
 
-    SetThemeValues(textfield, themeValues);
+    [self registerThemeValues:themeValues forView:textfield];
     
     [textfield setBezeled:YES];
 
@@ -665,7 +730,7 @@ var themedHorizontalScrollerValues = nil;
             [@"max-size",       CGSizeMake(-1.0, 30.0), CPTextFieldStateRounded | CPThemeStateBezeled]
         ];
 
-    SetThemeValues(textfield, themeValues);
+    [self registerThemeValues:themeValues forView:textfield];
     
     [textfield setBezeled:YES];
     [textfield setBezelStyle:CPTextFieldRoundedBezel];
@@ -734,7 +799,7 @@ var themedHorizontalScrollerValues = nil;
             [@"min-size",       CGSizeMake(0.0, 17.0)]
         ];
         
-    SetThemeValues(button, themeValues);
+    [self registerThemeValues:themeValues forView:button];
 
     [button setTitle:@"Hello Friend!"];
 
@@ -798,7 +863,7 @@ var themedHorizontalScrollerValues = nil;
             [@"min-size",       CGSizeMake(0.0, 17.0)]
         ];
 
-    SetThemeValues(button, themeValues);
+    [self registerThemeValues:themeValues forView:button];
         
     [button setTitle:@"Another option"];
 
@@ -837,7 +902,7 @@ var themedHorizontalScrollerValues = nil;
             [@"bezel-color",    mixedDisabledColor, CPButtonStateMixed | CPThemeStateBordered | CPThemeStateDisabled]
         ];
 
-    SetThemeValues(button, themeValues);
+    [self registerThemeValues:themeValues forView:button];
     
     return button;
 }
@@ -936,7 +1001,7 @@ var themedSegmentedControlValues = nil;
             [@"default-height",     24.0]
         ];
 
-    SetThemeValues(segmentedControl, themedSegmentedControlValues);
+    [self registerThemeValues:themedSegmentedControlValues forView:segmentedControl];
     
     return segmentedControl;
 }
@@ -984,7 +1049,7 @@ var themedHorizontalSliderValues = nil;
         [@"knob-color", knobDisabledColor,      CPThemeStateDisabled]
     ];
     
-    SetThemeValues(slider, themedHorizontalSliderValues);
+    [self registerThemeValues:themedHorizontalSliderValues forView:slider];
     
     return slider;
 }
@@ -1032,7 +1097,7 @@ var themedVerticalSliderValues = nil;
         [@"knob-color", knobDisabledColor,      CPThemeStateDisabled]
     ]
     
-    SetThemeValues(slider, themedVerticalSliderValues);
+    [self registerThemeValues:themedVerticalSliderValues forView:slider];
     
     return slider;
 }
@@ -1069,7 +1134,7 @@ var themedCircularSliderValues = nil;
         [@"knob-color", knobDisabledColor,      CPThemeStateCircular | CPThemeStateDisabled]
     ];
 
-    SetThemeValues(slider, themedCircularSliderValues);
+    [self registerThemeValues:themedCircularSliderValues forView:slider];
     
     return slider;
 }
@@ -1135,7 +1200,7 @@ var themedButtonBarValues = nil;
         [@"button-text-color",      [CPColor blackColor]]
     ];
     
-    SetThemeValues(buttonBar, themedButtonBarValues);
+    [self registerThemeValues:themedButtonBarValues forView:buttonBar];
     
     return buttonBar;
 }
@@ -1173,14 +1238,14 @@ var themedButtonBarValues = nil;
             [@"background-color",   highlightedPressed, CPThemeStateHighlighted | CPThemeStateSelected]
         ];
 
-    SetThemeValues(header, themedColumnHeaderValues);
+    [self registerThemeValues:themedColumnHeaderValues forView:header];
     
     return header;
 }
 
 + (CPTableHeaderView)themedTableHeaderRow
 {
-    var header = [[CPTableHeaderView alloc] initWithFrame:CGRectMake(0.0, 0.0, 100.0, 24.0)],
+    var header = [[CPTableHeaderView alloc] initWithFrame:CGRectMake(0.0, 0.0, 100.0, 23.0)],
         normal = PatternColor("tableview-headerview.png", 1.0, 23.0);
 
     [header setValue:normal forThemeAttribute:@"background-color"];
@@ -1191,8 +1256,8 @@ var themedButtonBarValues = nil;
 + (_CPCornerView)themedCornerview
 {
     var scrollerWidth = [CPScroller scrollerWidth],
-        corner = [[_CPCornerView alloc] initWithFrame:CGRectMake(0.0, 0.0, 25.0, scrollerWidth)],
-        normal = PatternColor("tableview-headerview.png", 1.0, scrollerWidth);
+        corner = [[_CPCornerView alloc] initWithFrame:CGRectMake(0.0, 0.0, scrollerWidth, 23.0)],
+        normal = PatternColor("tableview-headerview.png", 1.0, 23.0);
 
     [corner setValue:normal forThemeAttribute:"background-color"];
 
@@ -1227,7 +1292,7 @@ var themedButtonBarValues = nil;
             [@"sort-image-reversed",        sortImageReversed]
         ];
 
-    SetThemeValues(tableview, themedTableViewValues);
+    [self registerThemeValues:themedTableViewValues forView:tableview];
 
     return tableview;
 }
@@ -1259,11 +1324,27 @@ var themedButtonBarValues = nil;
     return [CPColor blackColor];
 }
 
++ (CPArray)defaultThemeOverridesAddedTo:(CPArray)themeValues
+{
+    var overrides = [CPArray arrayWithObjects:
+            [@"text-color",         [CPColor whiteColor]],
+            [@"text-color",         [CPColor colorWithCalibratedWhite:1.0 alpha:0.6], CPThemeStateDisabled],
+            [@"text-shadow-color",  [CPColor blackColor]],
+            [@"text-shadow-color",  [CPColor blackColor], CPThemeStateDisabled],
+            [@"text-shadow-offset", CGSizeMake(-1.0, -1.0)]
+        ];
+        
+    if (themeValues)
+        [overrides addObjectsFromArray:themeValues];
+        
+    return overrides;
+}
+
 + (CPPopUpButton)themedSegmentedControl
 {
     var segmentedControl = [AristoThemeDescriptor makeSegmentedControl];
     
-    SetHUDThemeValues(segmentedControl, themedSegmentedControlValues);
+    [self registerThemeValues:[self defaultThemeOverridesAddedTo:nil] forView:segmentedControl inherit:themedSegmentedControlValues];
 
     return segmentedControl;
 }
@@ -1273,7 +1354,7 @@ var
 {
     var button = [AristoThemeDescriptor makeButton];
 
-    SetHUDThemeValues(button, themedButtonValues);
+    [self registerThemeValues:[self defaultThemeOverridesAddedTo:nil] forView:button inherit:themedButtonValues];;
     
     return button;
 }
@@ -1305,7 +1386,7 @@ var
             [@"knob-color", nil, CPThemeStateVertical | CPThemeStateDisabled]
         ];
     
-    SetHUDThemeValues(scroller, themedVerticalScrollerValues, overrides);
+    [self registerThemeValues:[self defaultThemeOverridesAddedTo:overrides] forView:scroller inherit:themedVerticalScrollerValues];;
     
     return scroller;
 }
@@ -1318,7 +1399,7 @@ var
             [@"knob-color", nil, CPThemeStateDisabled]
         ];
     
-    SetHUDThemeValues(scroller, themedHorizontalScrollerValues, overrides);
+    [self registerThemeValues:[self defaultThemeOverridesAddedTo:overrides] forView:scroller inherit:themedHorizontalScrollerValues];;
 
     return scroller;
 }
@@ -1327,7 +1408,7 @@ var
 {
     var slider = [AristoThemeDescriptor makeHorizontalSlider];
     
-    SetHUDThemeValues(slider, themedHorizontalSliderValues);
+    [self registerThemeValues:[self defaultThemeOverridesAddedTo:nil] forView:slider inherit:themedHorizontalSliderValues];;
     
     return slider;
 }
@@ -1336,7 +1417,7 @@ var
 {
     var slider = [AristoThemeDescriptor makeVerticalSlider];
     
-    SetHUDThemeValues(slider, themedVerticalSliderValues);
+    [self registerThemeValues:[self defaultThemeOverridesAddedTo:nil] forView:slider inherit:themedVerticalSliderValues];;
     
     return slider;
 }
@@ -1345,7 +1426,7 @@ var
 {
     var slider = [AristoThemeDescriptor makeCircularSlider];
     
-    SetHUDThemeValues(slider, themedCircularSliderValues);
+    [self registerThemeValues:[self defaultThemeOverridesAddedTo:nil] forView:slider inherit:themedCircularSliderValues];;
     
     return slider;
 }
