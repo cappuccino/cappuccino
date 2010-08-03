@@ -176,6 +176,94 @@ var ItemSizes               = { },
     return [[self themeName] compare:[aThemeDescriptor themeName]];
 }
 
++ (void)registerThemeValues:(CPArray)themeValues forView:(CPView)aView
+{    
+    for (var i = 0; i < themeValues.length; ++i)
+    {
+        var attributeValueState = themeValues[i],
+            attribute = attributeValueState[0],
+            value = attributeValueState[1],
+            state = attributeValueState[2];
+            
+        if (state)
+            [aView setValue:value forThemeAttribute:attribute inState:state];
+        else
+            [aView setValue:value forThemeAttribute:attribute];
+    }
+}
+
++ (void)registerThemeValues:(CPArray)themeValues forView:aView inherit:(CPArray)inheritedValues
+{
+    // Register inherited values first, then override those with the subtheme values.
+    if (inheritedValues)
+    {
+        // Check the class name to see if it is a subtheme of another theme. If so,
+        // use the subtheme name as a relative path to image patterns.
+        var themeName = [self themeName],
+            index = themeName.indexOf("-");
+
+        if (index < 0)
+        {
+            // This theme is a subtheme, register the inherited values directly
+            [self registerThemeValues:inheritedValues forView:aView];
+        }
+        else
+        {
+            var themePath = themeName.substr(index + 1) + "/";
+
+            for (var i = 0; i < inheritedValues.length; ++i)
+            {
+                var attributeValueState = inheritedValues[i],
+                    attribute = attributeValueState[0],
+                    value = attributeValueState[1],
+                    state = attributeValueState[2],
+                    pattern = nil;
+            
+                if (typeof(value) === "object" && 
+                    value.hasOwnProperty("isa") && 
+                    [value isKindOfClass:CPColor] &&
+                    (pattern = [value patternImage]))
+                {
+                    if ([pattern isThreePartImage] || [pattern isNinePartImage])
+                    {
+                        var slices = [pattern imageSlices],
+                            newSlices = [];
+                
+                        for (var sliceIndex = 0; sliceIndex < slices.length; ++sliceIndex)
+                        {
+                            var slice = slices[sliceIndex],
+                                filename = themePath + [[slice filename] lastPathComponent],
+                                size = [slice size];
+                    
+                            newSlices.push([filename, size.width, size.height]);
+                        }
+                
+                        if ([pattern isThreePartImage])
+                            value = PatternColor(newSlices, [pattern isVertical]);
+                        else
+                            value = PatternColor(newSlices);
+                    }
+                    else
+                    {
+                        var filename = themePath + [[pattern filename] lastPathComponent],
+                            size = [pattern size];
+                
+                        value = PatternColor(filename, size.width, size.height);
+                    }
+                }
+        
+                if (state)
+                    [aView setValue:value forThemeAttribute:attribute inState:state];
+                else
+                    [aView setValue:value forThemeAttribute:attribute];
+            }
+        }
+    }
+    
+    if (themeValues)
+        [self registerThemeValues:themeValues forView:aView];
+}
+
 @end
 
 function BKLabelFromIdentifier(anIdentifier)
@@ -266,85 +354,4 @@ function PatternColor()
     {
         return nil;
     }
-}
-
-function SetThemeValues(object, values)
-{
-    for (var i = 0; i < values.length; ++i)
-    {
-        var attributeValueState = values[i],
-            attribute = attributeValueState[0],
-            value = attributeValueState[1],
-            state = attributeValueState[2];
-            
-        if (state)
-            [object setValue:value forThemeAttribute:attribute inState:state];
-        else
-            [object setValue:value forThemeAttribute:attribute];
-    }
-}
-
-function SetHUDThemeValues(object, values, overrides)
-{
-    for (var i = 0; i < values.length; ++i)
-    {
-        var attributeValueState = values[i],
-            attribute = attributeValueState[0],
-            value = attributeValueState[1],
-            state = attributeValueState[2];
-            
-        if (attribute == "text-color" || attribute == "text-shadow-color")
-        {
-            var whiteValue = attribute == "text-color" ? 1.0 : 0.0,
-                alpha = (state && (state & CPThemeStateDisabled)) ? 0.6 : 1.0;
-            
-            value = [CPColor colorWithCalibratedWhite:whiteValue alpha:alpha];
-        }
-        else if (typeof(value) === "object" && value.hasOwnProperty("isa") && [value isKindOfClass:CPColor])
-        {
-            var pattern = [value patternImage];
-            
-            if (pattern)
-            {
-                if ([pattern isThreePartImage] || [pattern isNinePartImage])
-                {
-                    var slices = [pattern imageSlices],
-                        newSlices = [];
-                    
-                    for (var sliceIndex = 0; sliceIndex < slices.length; ++sliceIndex)
-                    {
-                        var slice = slices[sliceIndex],
-                            filename = "HUD/" + [[slice filename] lastPathComponent],
-                            size = [slice size];
-                        
-                        newSlices.push([filename, size.width, size.height]);
-                    }
-                    
-                    if ([pattern isThreePartImage])
-                        value = PatternColor(newSlices, [pattern isVertical]);
-                    else
-                        value = PatternColor(newSlices);
-                }
-                else
-                {
-                    var filename = "HUD/" + [[pattern filename] lastPathComponent],
-                        size = [pattern size];
-                    
-                    value = PatternColor(filename, size.width, size.height);
-                }
-            }
-        }
-        else if (attribute == "text-shadow-offset")
-        {
-            value = CGSizeMake(-1.0, -1.0);
-        }
-        
-        if (state)
-            [object setValue:value forThemeAttribute:attribute inState:state];
-        else
-            [object setValue:value forThemeAttribute:attribute];
-    }
-    
-    if (overrides)
-        SetThemeValues(object, overrides);
 }
