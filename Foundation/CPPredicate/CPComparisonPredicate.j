@@ -388,7 +388,7 @@ var CPPredicateOperatorType;
     var leftIsNil = (lhs == nil || [lhs isEqual:[CPNull null]]),
         rightIsNil = (rhs == nil || [rhs isEqual:[CPNull null]]);
 
-    if (leftIsNil || rightIsNil)
+    if ((leftIsNil || rightIsNil) && _type != CPCustomSelectorPredicateOperatorType)
         return (leftIsNil == rightIsNil &&
                (_type == CPEqualToPredicateOperatorType ||
                 _type == CPLessThanOrEqualToPredicateOperatorType ||
