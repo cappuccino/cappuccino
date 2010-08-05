@@ -139,7 +139,7 @@ CPBetweenPredicateOperatorType = 100;
 var CPComparisonPredicateModifier;
 var CPPredicateOperatorType;
 
-/*! 
+/*!
     @ingroup foundation
     @class CPComparisonPredicate
     @brief CPComparisonPredicate is a subclass of CPPredicate used to compare expressions.
@@ -150,7 +150,7 @@ var CPPredicateOperatorType;
 {
     CPExpression                     _left;
     CPExpression                     _right;
-    
+
     CPComparisonPredicateModifier    _modifier;
     CPPredicateOperatorType          _type;
     unsigned int                     _options;
@@ -199,7 +199,7 @@ var CPPredicateOperatorType;
     _type = CPCustomSelectorPredicateOperatorType;
     _options = 0;
     _customSelector = selector;
-    
+
     return self;
 }
 
@@ -217,7 +217,7 @@ var CPPredicateOperatorType;
     _left = left;
     _right = right;
     _modifier = modifier;
-    _type = type;    
+    _type = type;
     _options = (type != CPMatchesPredicateOperatorType &&
                 type != CPLikePredicateOperatorType &&
                 type != CPBeginsWithPredicateOperatorType &&
@@ -226,7 +226,7 @@ var CPPredicateOperatorType;
                 type != CPContainsPredicateOperatorType) ? 0 : options;
 
     _customSelector = NULL;
-    
+
     return self;
 }
 
@@ -307,18 +307,18 @@ var CPPredicateOperatorType;
     }
 
     var options;
-    
+
     switch (_options)
     {
         case CPCaseInsensitivePredicateOption:
             options = "[c]";
-            break;                
+            break;
         case CPDiacriticInsensitivePredicateOption:
             options = "[d]";
-            break;            
+            break;
         case CPCaseInsensitivePredicateOption | CPDiacriticInsensitivePredicateOption:
             options = "[cd]";
-            break;            
+            break;
         default:
             options = "";
             break;
@@ -384,7 +384,7 @@ var CPPredicateOperatorType;
 }
 
 - (BOOL)_evaluateValue:lhs rightValue:rhs
-{   
+{
     var leftIsNil = (lhs == nil || [lhs isEqual:[CPNull null]]),
         rightIsNil = (rhs == nil || [rhs isEqual:[CPNull null]]);
 
@@ -393,7 +393,7 @@ var CPPredicateOperatorType;
                (_type == CPEqualToPredicateOperatorType ||
                 _type == CPLessThanOrEqualToPredicateOperatorType ||
                 _type == CPGreaterThanOrEqualToPredicateOperatorType));
-        
+
     var string_compare_options = 0;
 
     // left and right should be casted first [CAST()] following 10.5 rules.
@@ -414,15 +414,15 @@ var CPPredicateOperatorType;
         case CPMatchesPredicateOperatorType:
             var commut = (_options & CPCaseInsensitivePredicateOption) ? "gi":"g";
             if (_options & CPDiacriticInsensitivePredicateOption)
-            {    
+            {
                 lhs = lhs.stripDiacritics();
                 rhs = rhs.stripDiacritics();
             }
-    
+
             return (new RegExp(rhs,commut)).test(lhs);
-        case CPLikePredicateOperatorType: 
+        case CPLikePredicateOperatorType:
             if (_options & CPDiacriticInsensitivePredicateOption)
-            {    
+            {
                 lhs = lhs.stripDiacritics();
                 rhs = rhs.stripDiacritics();
             }
@@ -447,13 +447,13 @@ var CPPredicateOperatorType;
             {
                 if (![rhs respondsToSelector: @selector(objectEnumerator)])
                     [CPException raise:CPInvalidArgumentException reason:@"The right hand side for an IN operator must be a collection"];
-                
+
                 var e = [rhs objectEnumerator],
                     value;
                 while (value = [e nextObject])
-                    if ([value isEqual:lhs]) 
+                    if ([value isEqual:lhs])
                       return YES;
-            
+
                 return NO;
               }
 
@@ -461,38 +461,38 @@ var CPPredicateOperatorType;
                 string_compare_options |= CPCaseInsensitiveSearch;
             if (_options & CPDiacriticInsensitivePredicateOption)
                 string_compare_options |= CPDiacriticInsensitiveSearch;
-            
+
              return ([rhs rangeOfString:lhs options:string_compare_options].location != CPNotFound);
         case CPCustomSelectorPredicateOperatorType:
-            return [lhs performSelector:_customSelector withObject:rhs];            
-        case CPContainsPredicateOperatorType:       
+            return [lhs performSelector:_customSelector withObject:rhs];
+        case CPContainsPredicateOperatorType:
             if (![lhs isKindOfClass: [CPString class]])
             {
                  if (![lhs respondsToSelector: @selector(objectEnumerator)])
                      [CPException raise:CPInvalidArgumentException reason:@"The left hand side for a CONTAINS operator must be a collection or a string"];
-                 
+
                  var e = [lhs objectEnumerator],
                      value;
                  while (value = [e nextObject])
-                     if ([value isEqual:rhs]) 
+                     if ([value isEqual:rhs])
                        return YES;
-            
+
                  return NO;
             }
-            
+
             if (_options & CPCaseInsensitivePredicateOption)
                 string_compare_options |= CPCaseInsensitiveSearch;
             if (_options & CPDiacriticInsensitivePredicateOption)
                 string_compare_options |= CPDiacriticInsensitiveSearch;
-            
-             return ([lhs rangeOfString:rhs options:string_compare_options].location != CPNotFound);        
+
+             return ([lhs rangeOfString:rhs options:string_compare_options].location != CPNotFound);
         case CPBetweenPredicateOperatorType:
             if ([lhs count] < 2)
                 [CPException raise:CPInvalidArgumentException reason:@"The right hand side for a BETWEEN operator must contain 2 objects"];
 
             var lower = [rhs objectAtIndex:0],
                 upper = [rhs objectAtIndex:1];
-        
+
             return ([lhs compare:lower] == CPOrderedDescending && [lhs compare:upper] == CPOrderedAscending);
         default:
             return NO;
@@ -508,13 +508,13 @@ var CPPredicateOperatorType;
 {
     var left = _left,
         right = _right;
-        
-    if(variables != nil)
+
+    if (variables != nil)
     {
         left = [left _expressionWithSubstitutionVariables:variables];
         right = [right _expressionWithSubstitutionVariables:variables];
     }
-    
+
     var leftValue = [left expressionValueWithObject:object context:nil],
         rightValue = [right expressionValueWithObject:object context:nil];
 
@@ -532,7 +532,7 @@ var CPPredicateOperatorType;
         while (value = [e nextObject])
         {
             var eval = [self _evaluateValue:value rightValue:rightValue];
-            if (eval != result) 
+            if (eval != result)
                 return eval;
         }
 
@@ -556,7 +556,7 @@ var CPPredicateOperatorType;
         _options = [coder decodeIntForKey:@"CPComparisonPredicateOptions"];
         _customSelector = [coder decodeObjectForKey:@"CPComparisonPredicateCustomSelector"];
     }
-    
+
     return self;
 }
 
@@ -590,8 +590,8 @@ String.prototype.escapeForRegExp = function()
     if (!foundChar)
         return this;
 
-    var result = "";
-    var sourceIndex;
+    var result = "",
+        sourceIndex;
     for (var i = 0; i < this.length; ++i)
     {
         var sourceIndex = source.indexOf(this.charAt(i));
@@ -600,6 +600,6 @@ String.prototype.escapeForRegExp = function()
         else
             result += this.charAt(i);
     }
-    
+
     return result;
 }
