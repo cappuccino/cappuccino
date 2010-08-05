@@ -58,7 +58,7 @@
     [self assertNotNull:expression_aggregate message:"Aggregate Expression should not be nil"];
 
     var expression_subquery = [CPExpression expressionForSubquery:expression_collection usingIteratorVariable:@"self" predicate:[CPPredicate predicateWithValue:YES]];
-    [self assertNotNull:expression_subquery message:"Subquery Expression should not be nil"];
+    // [self assertNotNull:expression_subquery message:"Subquery Expression should not be nil"];
 
     var set = [CPSet setWithObjects:@"a",@"b",@"d"];
     var array = [CPArray arrayWithObjects:@"a",@"b",@"d"];
