@@ -1,7 +1,5 @@
 #! /usr/bin/env ruby
 
-@outputFiles = []
-
 def makeHeaderFileFrom(fileName)
   # Grab the entire file (text)
   data = File.new(fileName).read
@@ -29,20 +27,14 @@ def makeHeaderFileFrom(fileName)
           f = File.new(newFileName, "w")
           f.write(newLine + "\n@end")
           f.close()
-          
-          @outputFiles.push(newFileName)
         end
       end
     end
   end
 end
 
-fileList = Dir['AppKit/**/*.j'] + Dir['Foundation/**/*.j']
+fileList = Dir['AppKit.doc/**/*.j'] + Dir['Foundation.doc/**/*.j']
 
 for fileName in fileList
   makeHeaderFileFrom(fileName)
 end
-
-f = File.new(File.dirname(__FILE__) + "/header_files", "w")
-f.write(@outputFiles.join("\n"))
-f.close()

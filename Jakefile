@@ -111,7 +111,7 @@ task ("documentation", function()
         
         var documentationDir = FILE.join("Tools", "Documentation");
         
-        if (OS.system(["ruby", FILE.join(documentationDir, "make_headers")]))
+        if (OS.system(["ruby", FILE.join(documentationDir, "make_headers.sh")]))
             OS.exit(1); //rake abort if ($? != 0)
 
         if (!OS.system([doxygen, FILE.join(documentationDir, "Cappuccino.doxygen")]))
