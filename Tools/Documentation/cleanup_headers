@@ -1,10 +1,3 @@
-#! /usr/bin/env ruby
-
-filename = File.dirname(__FILE__) + "/header_files"
-@files = File.new(filename).read.split("\n")
-
-for file in @files
-	File.delete(file)
-end
-
-File.delete(filename)
+#! /bin/sh
+rm -rf AppKit.doc
+rm -rf Foundation.doc
