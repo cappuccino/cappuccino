@@ -197,14 +197,21 @@
 
 - (CPArray)arrangeObjects:(CPArray)objects
 {
-    var sortedObjects = objects;
+    var filterPredicate = [self filterPredicate],
+        sortDescriptors = [self sortDescriptors];
 
-    if ([self filterPredicate])
-        sortedObjects = [sortedObjects filteredArrayUsingPredicate:[self filterPredicate]];
-    if ([self sortDescriptors])
-        sortedObjects = [sortedObjects sortedArrayUsingDescriptors:[self sortDescriptors]];
+    if (filterPredicate && sortDescriptors)
+    {
+        var sortedObjects = [objects filteredArrayUsingPredicate:filterPredicate];
+        [sortedObjects sortUsingDescriptors:sortDescriptors];
+        return sortedObjects;
+    }
+    else if (filterPredicate)
+        return [objects filteredArrayUsingPredicate:filterPredicate];
+    else if (sortDescriptors)
+        return [objects sortedArrayUsingDescriptors:sortDescriptors];
 
-    return sortedObjects;
+    return [objects copy];
 }
 
 - (void)rearrangeObjects

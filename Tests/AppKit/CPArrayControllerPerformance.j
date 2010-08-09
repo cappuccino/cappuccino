@@ -7,11 +7,12 @@
 - (void)testRearrangeObjects
 {
     var ELEMENTS = 200,
-        REPEATS = 50,
+        REPEATS = 25,
         ac = [CPArrayController new],
         array = [];
 
-    for (var i=0; i<ELEMENTS; i++) {
+    for (var i = 0; i < ELEMENTS; i++)
+    {
         var s = [Sortable new];
         [s setA:i];
         [s setB:i % 3];
@@ -24,12 +25,12 @@
 
     [ac setContent:array];
 
+
+    [ac setFilterPredicate:[CPPredicate predicateWithFormat:@"(b != %@)", 0]];
+
+    // Filter alone
     var start = (new Date).getTime();
-
-    [ac setSortDescriptors:descriptors];
-    [ac setFilterPredicate:[CPPredicate predicateWithFormat:@"(b !=%@)", 0]];
-
-    for (var i=0; i<REPEATS; i++)
+    for (var i = 0; i < REPEATS; i++)
     {
         [ac rearrangeObjects];
 
@@ -37,7 +38,30 @@
             last = ELEMENTS;
 
         // Verify that all is well.
-        for (var j=0, count=[sorted count]; j<count; j++)
+        for (var j = 0, count = [sorted count]; j < count; j++)
+        {
+            if (sorted[j].b == 0)
+                [self fail:"b == 0 should be filtered out (position: "+j+")"];
+            last = sorted[j];
+        }
+    }
+    var end = (new Date).getTime();
+
+    CPLog.warn("testRearrangeObjects, filter: "+(end-start)+"ms");
+
+    [ac setSortDescriptors:descriptors];
+
+    // Filter and sort.
+    start = (new Date).getTime();
+    for (var i = 0; i < REPEATS; i++)
+    {
+        [ac rearrangeObjects];
+
+        var sorted = [ac arrangedObjects],
+            last = ELEMENTS;
+
+        // Verify that all is well.
+        for (var j = 0, count = [sorted count]; j < count; j++)
         {
             if (sorted[j].b == 0)
                 [self fail:"b == 0 should be filtered out (position: "+j+")"];
@@ -46,11 +70,9 @@
             last = sorted[j];
         }
     }
+    end = (new Date).getTime();
 
-
-    var end = (new Date).getTime();
-
-    CPLog.warn("testRearrangeObjects: "+(end-start)+"ms");
+    CPLog.warn("testRearrangeObjects, filter and sort: "+(end-start)+"ms");
 }
 
 @end
