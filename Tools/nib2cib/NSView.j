@@ -43,7 +43,7 @@
     {
         _tag = -1;
         
-        if([aCoder containsValueForKey:@"NSTag"])
+        if ([aCoder containsValueForKey:@"NSTag"])
             _tag = [aCoder decodeIntForKey:@"NSTag"];
         
         _bounds = CGRectMake(0.0, 0.0, CGRectGetWidth(_frame), CGRectGetHeight(_frame));
@@ -61,7 +61,7 @@
         _autoresizesSubviews = vFlags & (1 << 8);
         
         _hitTests = YES;
-        _isHidden = NO;//[aCoder decodeObjectForKey:CPViewIsHiddenKey];
+        _isHidden = vFlags & 0x80000000;
         _opacity = 1.0;//[aCoder decodeIntForKey:CPViewOpacityKey];
 
         _themeAttributes = {};
