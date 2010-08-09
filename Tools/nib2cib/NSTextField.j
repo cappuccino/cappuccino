@@ -49,7 +49,8 @@
         [self setBezelStyle:[cell bezelStyle]];
         [self setDrawsBackground:[cell drawsBackground]];
         
-        //[self setLineBreakMode:???];
+        [self setLineBreakMode:[cell lineBreakMode]];
+        [self setAlignment:[cell alignment]];
         [self setTextFieldBackgroundColor:[cell backgroundColor]];
         
         [self setPlaceholderString:[cell placeholderString]];
