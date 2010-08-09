@@ -187,6 +187,7 @@ var _CPTableColumnHeaderViewStringValueKey = @"_CPTableColumnHeaderViewStringVal
     _isResizing = NO;
     _isDragging = NO;
     _isTrackingColumn = NO;
+    _drawsColumnLines = YES;
 
     _columnOldWidth = 0.0;
 
@@ -656,7 +657,8 @@ var _CPTableColumnHeaderViewStringValueKey = @"_CPTableColumnHeaderViewStringVal
 
 @end
 
-var CPTableHeaderViewTableViewKey = @"CPTableHeaderViewTableViewKey";
+var CPTableHeaderViewTableViewKey = @"CPTableHeaderViewTableViewKey",
+    CPTableHeaderViewDrawsColumnLines = @"CPTableHeaderViewDrawsColumnLines";
 
 @implementation CPTableHeaderView (CPCoding)
 
@@ -666,6 +668,7 @@ var CPTableHeaderViewTableViewKey = @"CPTableHeaderViewTableViewKey";
     {
         [self _init];
         _tableView = [aCoder decodeObjectForKey:CPTableHeaderViewTableViewKey];
+        _drawsColumnLines = [aCoder decodeBoolForKey:CPTableHeaderViewDrawsColumnLines];
     }
 
     return self;
@@ -675,6 +678,7 @@ var CPTableHeaderViewTableViewKey = @"CPTableHeaderViewTableViewKey";
 {
     [super encodeWithCoder:aCoder];
     [aCoder encodeObject:_tableView forKey:CPTableHeaderViewTableViewKey];
+    [aCoder encodeBool:_drawsColumnLines forKey:CPTableHeaderViewDrawsColumnLines];
 }
 
 @end
