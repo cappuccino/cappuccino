@@ -26,6 +26,10 @@
 @import <AppKit/CPView.j>
 
 
+var NSViewAutoresizingMask = 0x3F,
+    NSViewAutoresizesSubviewsMask = 1 << 8,
+    NSViewHiddenMask = 1 << 31;
+
 @implementation CPView (NSCoding)
 
 - (id)NS_initWithCoder:(CPCoder)aCoder
@@ -57,11 +61,11 @@
         
         var vFlags = [aCoder decodeIntForKey:@"NSvFlags"];
 
-        _autoresizingMask = vFlags & 0x3F;
-        _autoresizesSubviews = vFlags & (1 << 8);
+        _autoresizingMask = vFlags & NSViewAutoresizingMask;
+        _autoresizesSubviews = vFlags & NSViewAutoresizesSubviewsMask;
         
         _hitTests = YES;
-        _isHidden = vFlags & 0x80000000;
+        _isHidden = vFlags & NSViewHiddenMask;
         _opacity = 1.0;//[aCoder decodeIntForKey:CPViewOpacityKey];
 
         _themeAttributes = {};
