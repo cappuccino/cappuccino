@@ -624,7 +624,7 @@ CPOutlineViewDropOnItemIndex = -1;
             if (_dropItem)
             {
                 [_dropOperationFeedbackView blink];
-                [CPTimer scheduledTimerWithTimeInterval:.3 callback:objj_msgSend(self, "expandItem:", _dropItem) repeats:NO]; //[self expandItem:_dropItem];
+                [CPTimer scheduledTimerWithTimeInterval:.3 callback:objj_msgSend(self, "expandItem:", _dropItem) repeats:NO];
             }
         }
 
@@ -645,10 +645,18 @@ CPOutlineViewDropOnItemIndex = -1;
     _shouldRetargetChildIndex = YES;
 
     // set CPTableView's _retargetedDropRow based on retargetedItem and retargetedChildIndex
-    var retargetedItemInfo = (_retargetedItem !== nil) ? _itemInfosForItems[[_retargetedItem UID]] : _rootItemInfo,
-        retargetedChildItem = (_retargedChildIndex !== CPOutlineViewDropOnItemIndex) ? retargetedItemInfo.children[_retargedChildIndex] : _retargetedItem;
+    var retargetedItemInfo = (_retargetedItem !== nil) ? _itemInfosForItems[[_retargetedItem UID]] : _rootItemInfo;
 
-    _retargetedDropRow = [self rowForItem:retargetedChildItem];
+    if (_retargedChildIndex === [retargetedItemInfo.children count])
+    {
+        var retargetedChildItem = [retargetedItemInfo.children lastObject];
+        _retargetedDropRow = [self rowForItem:retargetedChildItem] + 1;
+    }
+    else
+    {
+        var retargetedChildItem = (_retargedChildIndex !== CPOutlineViewDropOnItemIndex) ? retargetedItemInfo.children[_retargedChildIndex] : _retargetedItem;
+        _retargetedDropRow = [self rowForItem:retargetedChildItem];
+    }
 }
 
 - (void)_draggingEnded
