@@ -2021,9 +2021,9 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
         tableColumn = [[self tableColumns] objectAtIndex:theColumnIndex],
         bounds = CPRectMake(0.0, 0.0, [tableColumn width], CPRectGetHeight([self _exposedRect]) + 23.0),
         columnRect = [self rectOfColumn:theColumnIndex],
-        headerView = [tableColumn headerView];
+        headerView = [tableColumn headerView],
+        row = [_exposedRows firstIndex];
 
-    row = [_exposedRows firstIndex];
     while (row !== CPNotFound)
     {
         var dataView = [self _newDataViewForRow:row tableColumn:tableColumn],
@@ -2046,7 +2046,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     var headerFrame = [headerView frame];
     headerFrame.origin = CPPointMakeZero();
 
-    columnHeaderView = [[_CPTableColumnHeaderView alloc] initWithFrame:headerFrame];
+    var columnHeaderView = [[_CPTableColumnHeaderView alloc] initWithFrame:headerFrame];
     [columnHeaderView setStringValue:[headerView stringValue]];
     [columnHeaderView setThemeState:[headerView themeState]];
     [dragView addSubview:columnHeaderView];
