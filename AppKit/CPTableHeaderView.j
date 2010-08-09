@@ -71,7 +71,7 @@
     var inset = [self currentValueForThemeAttribute:@"text-inset"],
         bounds = [self bounds];
 
-    [_textField setFrame:CGRectMake(inset.right, inset.top, bounds.size.width - inset.right - inset.left, bounds.size.height - inset.top - inset.bottom)];
+    [_textField setFrame:_CGRectMake(inset.right, inset.top, bounds.size.width - inset.right - inset.left, bounds.size.height - inset.top - inset.bottom)];
     [_textField setTextColor:[self currentValueForThemeAttribute:@"text-color"]];
     [_textField setFont:[self currentValueForThemeAttribute:@"text-font"]];
     [_textField setTextShadowColor:[self currentValueForThemeAttribute:@"text-shadow-color"]];
@@ -233,11 +233,11 @@ var _CPTableColumnHeaderViewStringValueKey = @"_CPTableColumnHeaderViewStringVal
 - (CGRect)_cursorRectForColumn:(int)column
 {
     if (column == -1 || !([_tableView._tableColumns[column] resizingMask] & CPTableColumnUserResizingMask))
-        return CGRectMakeZero();
+        return _CGRectMakeZero();
 
     var rect = [self headerRectOfColumn:column];
 
-    rect.origin.x = CGRectGetMaxX(rect) - 5;
+    rect.origin.x = _CGRectGetMaxX(rect) - 5;
     rect.size.width = 20;
 
     return rect;    
@@ -409,7 +409,7 @@ var _CPTableColumnHeaderViewStringValueKey = @"_CPTableColumnHeaderViewStringVal
     frame.origin = [self convertPoint:frame.origin fromView:nil];
 
     // This effectively clamps the value between the minimum and maximum
-    frame.origin.x = MAX(0.0, MIN(CGRectGetMinX(frame), CGRectGetMaxX(lastColumnRect) - CGRectGetWidth(activeColumnRect)));
+    frame.origin.x = MAX(0.0, MIN(_CGRectGetMinX(frame), _CGRectGetMaxX(lastColumnRect) - _CGRectGetWidth(activeColumnRect)));
 
     // Make sure the column cannot move vertically
     frame.origin.y = _CGRectGetMinY(lastColumnRect);
@@ -451,9 +451,9 @@ var _CPTableColumnHeaderViewStringValueKey = @"_CPTableColumnHeaderViewStringVal
     var hoverPoint = CGPointCreateCopy(aPoint);
 
     if (aPoint.x < _previousTrackingLocation.x)
-        hoverPoint = CGPointMake(CGRectGetMinX(dragWindowFrame), CGRectGetMinY(dragWindowFrame));
+        hoverPoint = _CGPointMake(_CGRectGetMinX(dragWindowFrame), _CGRectGetMinY(dragWindowFrame));
     else if (aPoint.x > _previousTrackingLocation.x)
-        hoverPoint = CGPointMake(CGRectGetMaxX(dragWindowFrame), CGRectGetMinY(dragWindowFrame));
+        hoverPoint = _CGPointMake(_CGRectGetMaxX(dragWindowFrame), _CGRectGetMinY(dragWindowFrame));
 
     // Convert the hover point from the global coordinate system to windows' coordinate system
     hoverPoint = [[self window] convertGlobalToBase:hoverPoint];
@@ -465,7 +465,7 @@ var _CPTableColumnHeaderViewStringValueKey = @"_CPTableColumnHeaderViewStringVal
     if (hoveredColumn !== -1)
     {
         var columnRect = [self headerRectOfColumn:hoveredColumn],
-            columnCenterPoint = [self convertPoint:CGPointMake(CGRectGetMidX(columnRect), CGRectGetMidY(columnRect)) fromView:self];
+            columnCenterPoint = [self convertPoint:CGPointMake(_CGRectGetMidX(columnRect), _CGRectGetMidY(columnRect)) fromView:self];
         if (hoveredColumn < _activeColumn && hoverPoint.x < columnCenterPoint.x)
             [self _moveColumn:_activeColumn toColumn:hoveredColumn];
         else if (hoveredColumn > _activeColumn && hoverPoint.x > columnCenterPoint.x)
@@ -551,7 +551,7 @@ var _CPTableColumnHeaderViewStringValueKey = @"_CPTableColumnHeaderViewStringVal
         mouseOverLocation = CGPointMake(mouseLocation.x - 5, mouseLocation.y),
         overColumn = [self columnAtPoint:mouseOverLocation];
 
-    if (overColumn >= 0 && CGRectContainsPoint([self _cursorRectForColumn:overColumn], mouseLocation))
+    if (overColumn >= 0 && _CGRectContainsPoint([self _cursorRectForColumn:overColumn], mouseLocation))
     {
         var tableColumn = [[_tableView tableColumns] objectAtIndex:overColumn],
             width = [tableColumn width];
@@ -639,20 +639,20 @@ var _CPTableColumnHeaderViewStringValueKey = @"_CPTableColumnHeaderViewStringVal
         var columnIndex = columnsArray[columnArrayIndex],
             columnToStroke = [self headerRectOfColumn:columnIndex];
 
-        columnMaxX = CGRectGetMaxX(columnToStroke);
+        columnMaxX = _CGRectGetMaxX(columnToStroke);
 
-        CGContextMoveToPoint(context, ROUND(columnMaxX) + 0.5, ROUND(CGRectGetMinY(columnToStroke)));
-        CGContextAddLineToPoint(context, ROUND(columnMaxX) + 0.5, ROUND(CGRectGetMaxY(columnToStroke)));
+        CGContextMoveToPoint(context, ROUND(columnMaxX) + 0.5, ROUND(_CGRectGetMinY(columnToStroke)));
+        CGContextAddLineToPoint(context, ROUND(columnMaxX) + 0.5, ROUND(_CGRectGetMaxY(columnToStroke)));
     }
 
     CGContextClosePath(context);
     CGContextStrokePath(context);
 
-    if (_isDragging)
+    /*if (_isDragging)
     {
         CGContextSetFillColor(context, [CPColor grayColor]);
         CGContextFillRect(context, [self headerRectOfColumn:_activeColumn])
-    }
+    }*/
 }
 
 @end
