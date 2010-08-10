@@ -168,10 +168,9 @@
 
     for (i = 0; i < count; i++)
     {
-        var object = [self objectAtIndex:i];
-
+        var object = self[i];
         if ([predicate evaluateWithObject:object])
-            [result addObject:object];
+            result.push(object);
     }
 
     return result;
@@ -183,10 +182,8 @@
 
     while (count--)
     {
-        var object = [self objectAtIndex:count];
-
-        if (![predicate evaluateWithObject:object])
-            [self removeObjectAtIndex:count];
+        if (![predicate evaluateWithObject:self[count]])
+            splice(count, 1);
     }
 }
 
