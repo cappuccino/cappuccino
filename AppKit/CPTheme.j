@@ -364,9 +364,6 @@ CPThemeStateCircular        = CPThemeState("circular");
             }
         }
 
-        if (value === undefined || value === nil)
-          value = [_parentAttribute valueForState:aState];
-
         // Still don't have a value? OK, let's use the normal value.
         if (value === undefined || value === nil)
             value = [_values objectForKey:String(CPThemeStateNormal)];
