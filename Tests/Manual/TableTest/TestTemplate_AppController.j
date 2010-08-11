@@ -28,10 +28,6 @@
 
     table = [[CPTableView alloc] initWithFrame:CGRectMakeZero()];
     [table setDataSource:self];
-    [table setAllowsColumnReordering:NO];
-    [table setAllowsColumnSelection:YES];
-    [table setUsesAlternatingRowBackgroundColors:YES];
-
 
     columnA = [[CPTableColumn alloc] initWithIdentifier:"A"];
     [table addTableColumn:columnA];
