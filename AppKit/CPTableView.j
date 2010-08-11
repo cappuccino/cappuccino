@@ -214,7 +214,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     BOOL        _disableAutomaticResizing @accessors(property=disableAutomaticResizing);
     BOOL        _lastColumnShouldSnap;
 
-    int         _draggedColumnIndex;
+    CPTableColumn _draggedColumn;
     CPArray     _differedColumnDataToRemove;
 }
 
@@ -329,7 +329,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
         if (!_cornerView)
             _cornerView = [[_CPCornerView alloc] initWithFrame:CGRectMake(0, 0, [CPScroller scrollerWidth], CGRectGetHeight([_headerView frame]))];
 
-        _draggedColumnIndex = -1;
+        _draggedColumn = nil;
 
 /*      //gradients for the source list when CPTableView is NOT first responder or the window is NOT key
         // FIX ME: we need to actually implement this.
@@ -750,14 +750,14 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     [self setNeedsLayout];
 }
 
-- (void)_setDraggedColumn:(int)aColumnIndex
+- (void)_setDraggedColumn:(CPTableColumn)aColumn
 {
-    if (_draggedColumnIndex === aColumnIndex)
+    if (_draggedColumn === aColumn)
         return;
 
-    _draggedColumnIndex = aColumnIndex;
+    _draggedColumn = aColumn;
 
-    [self reloadDataForRowIndexes:_exposedRows columnIndexes:[CPIndexSet indexSetWithIndex:aColumnIndex]];
+    [self reloadDataForRowIndexes:_exposedRows columnIndexes:[CPIndexSet indexSetWithIndex:[_tableColumns indexOfObject:aColumn]]];
 }
 
 /*!
@@ -2219,6 +2219,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     [self _unloadDataViewsInRows:previouslyExposedRows columns:obscuredColumns];
     [self _unloadDataViewsInRows:obscuredRows columns:previouslyExposedColumns];
     [self _unloadDataViewsInRows:obscuredRows columns:obscuredColumns];
+    [self _unloadDataViewsInRows:newlyExposedRows columns:newlyExposedColumns];
 
     [self _loadDataViewsInRows:previouslyExposedRows columns:newlyExposedColumns];
     [self _loadDataViewsInRows:newlyExposedRows columns:previouslyExposedColumns];
@@ -2284,9 +2285,9 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
         for (; rowIndex < rowsCount; ++rowIndex)
         {
             var row = rowArray[rowIndex],
-                dataView = _dataViewsForTableColumns[tableColumnUID][row];
+                dataView = [_dataViewsForTableColumns[tableColumnUID] objectAtIndex:row];
 
-            _dataViewsForTableColumns[tableColumnUID][row] = nil;
+            [_dataViewsForTableColumns[tableColumnUID] replaceObjectAtIndex:row withObject:nil];
 
             [self _enqueueReusableDataView:dataView];
         }
@@ -2315,7 +2316,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
         var column = columnArray[columnIndex],
             tableColumn = _tableColumns[column];
 
-        if ([tableColumn isHidden] || columnIndex === _draggedColumnIndex)
+        if ([tableColumn isHidden] || tableColumn === _draggedColumn)
             continue;
 
         var tableColumnUID = [tableColumn UID];
