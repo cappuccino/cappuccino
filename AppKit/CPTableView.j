@@ -213,6 +213,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 
     BOOL        _disableAutomaticResizing @accessors(property=disableAutomaticResizing);
     BOOL        _lastColumnShouldSnap;
+    BOOL        _implementsCustomDrawRow;
 
     CPTableColumn _draggedColumn;
     CPArray     _differedColumnDataToRemove;
