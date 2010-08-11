@@ -1444,31 +1444,30 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     if (!superview)
         return;
 
-    var superviewSize = [superview bounds].size;
-
     UPDATE_COLUMN_RANGES_IF_NECESSARY();
 
     var count = NUMBER_OF_COLUMNS(),
-        visColumns = [[CPArray alloc] init],
+        columnToResize = nil,
         totalWidth = 0,
         i = 0;
 
-    for(; i < count; i++)
+    for (; i < count; i++)
     {
-        if(![_tableColumns[i] isHidden])
+        var column = _tableColumns[i];
+
+        if (![column isHidden])
         {
-             [visColumns addObject:i];
-             totalWidth += [_tableColumns[i] width] + _intercellSpacing.width;
+            if (!columnToResize)
+                columnToResize = column;
+            totalWidth += [column width] + _intercellSpacing.width;
         }
     }
 
-    count = [visColumns count];
-
-    //if there are rows
-    if (count > 0)
+    // If there is a visible column
+    if (columnToResize)
     {
-        var columnToResize = _tableColumns[visColumns[0]],
-            newWidth = superviewSize.width - totalWidth;// - [columnToResize width];
+        var superviewSize = [superview bounds].size,
+            newWidth = superviewSize.width - totalWidth;
 
         newWidth += [columnToResize width];
         newWidth = MAX([columnToResize minWidth], newWidth);
@@ -1917,7 +1916,11 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 - (void)setIndicatorImage:(CPImage)anImage inTableColumn:(CPTableColumn)aTableColumn
 {
     if (aTableColumn)
-        [[aTableColumn headerView] _setIndicatorImage:anImage];
+    {
+        var headerView = [aTableColumn headerView];
+        if ([headerView respondsToSelector:@selector(_setIndicatorImage:)])
+            [headerView _setIndicatorImage:anImage];
+    }
 }
 
 - (CPImage)_tableHeaderSortImage
@@ -2016,13 +2019,13 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 */
 - (CPView)_dragViewForColumn:(int)theColumnIndex event:(CPEvent)theDragEvent offset:(CPPointPointer)theDragViewOffset
 {
-    var dragView = [[CPView alloc] initWithFrame:CPRectMakeZero()];
+    var dragView = [[_CPColumnDragView alloc] initWithFrame:CPRectMakeZero()];
         tableColumn = [[self tableColumns] objectAtIndex:theColumnIndex],
         bounds = CPRectMake(0.0, 0.0, [tableColumn width], CPRectGetHeight([self _exposedRect]) + 23.0),
         columnRect = [self rectOfColumn:theColumnIndex],
-        headerView = [tableColumn headerView];
+        headerView = [tableColumn headerView],
+        row = [_exposedRows firstIndex];
 
-    row = [_exposedRows firstIndex];
     while (row !== CPNotFound)
     {
         var dataView = [self _newDataViewForRow:row tableColumn:tableColumn],
@@ -2045,7 +2048,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     var headerFrame = [headerView frame];
     headerFrame.origin = CPPointMakeZero();
 
-    columnHeaderView = [[_CPTableColumnHeaderView alloc] initWithFrame:headerFrame];
+    var columnHeaderView = [[_CPTableColumnHeaderView alloc] initWithFrame:headerFrame];
     [columnHeaderView setStringValue:[headerView stringValue]];
     [columnHeaderView setThemeState:[headerView themeState]];
     [dragView addSubview:columnHeaderView];
@@ -2481,15 +2484,6 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     [self drawBackgroundInClipRect:exposedRect];
     [self drawGridInClipRect:exposedRect];
     [self highlightSelectionInClipRect:exposedRect];
-
-    if (_draggedColumnIndex === -1)
-        return;
-
-    var context = [[CPGraphicsContext currentContext] graphicsPort],
-        columnRect = [self rectOfColumn:_draggedColumnIndex];
-
-    CGContextSetFillColor(context, [CPColor grayColor]);
-    CGContextFillRect(context, columnRect);
 }
 
 - (void)drawBackgroundInClipRect:(CGRect)aRect
@@ -3723,5 +3717,28 @@ var CPDropOperationIndicatorHeight = 8;
     [CPTimer scheduledTimerWithTimeInterval:0.1 callback:showCallback repeats:NO];
     [CPTimer scheduledTimerWithTimeInterval:0.19 callback:hideCallback repeats:NO];
     [CPTimer scheduledTimerWithTimeInterval:0.27 callback:showCallback repeats:NO];
+}
+@end
+
+@implementation _CPColumnDragView : CPView
+- (void)drawRect:(CGRect)aRect
+{
+    var context = [[CPGraphicsContext currentContext] graphicsPort];
+
+    CGContextSetStrokeColor(context, [CPColor grayColor]);
+
+    var points = [
+                    _CGPointMake(0.5, 0), 
+                    _CGPointMake(0.5, aRect.size.height)
+                 ];
+
+    CGContextStrokeLineSegments(context, points, 2);
+    
+    points = [
+                _CGPointMake(aRect.size.width - 0.5, 0), 
+                _CGPointMake(aRect.size.width - 0.5, aRect.size.height)
+             ];
+
+    CGContextStrokeLineSegments(context, points, 2);
 }
 @end

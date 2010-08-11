@@ -26,6 +26,9 @@
 @import "CPRange.j"
 @import "CPSortDescriptor.j"
 
+CPEnumerationNormal     = 0;
+CPEnumerationConcurrent = 1 << 0;
+CPEnumerationReverse    = 1 << 1;
 
 CPEnumerationNormal     = 0;
 CPEnumerationConcurrent = 1 << 0;
@@ -604,6 +607,12 @@ CPEnumerationReverse    = 1 << 1;
 
 - (unsigned)insertObject:(id)anObject inArraySortedByDescriptors:(CPArray)descriptors
 {
+    if (!descriptors || ![descriptors count])
+    {
+        [self addObject:anObject];
+        return [self count] - 1;
+    }
+
     var index = [self _insertObject:anObject sortedByFunction:function(lhs, rhs)
     {
         var i = 0,
@@ -1312,19 +1321,7 @@ CPEnumerationReverse    = 1 << 1;
 
 - (CPArray)sortUsingDescriptors:(CPArray)descriptors
 {
-    var count = [descriptors count];
-
-    sort(function(lhs, rhs)
-    {
-        var i = 0,
-            result = CPOrderedSame;
-
-        while (i < count)
-            if ((result = [descriptors[i++] compareObject:lhs withObject:rhs]) != CPOrderedSame)
-                return result;
-
-        return result;
-    });
+    [self sortUsingFunction:compareObjectsUsingDescriptors context:descriptors];
 }
 
 /*!
@@ -1334,7 +1331,36 @@ CPEnumerationReverse    = 1 << 1;
 */
 - (void)sortUsingFunction:(Function)aFunction context:(id)aContext
 {
-    sort(function(lhs, rhs) { return aFunction(lhs, rhs, aContext); });
+    var h, i, j, k, l, m, n = [self count];
+    var A, B = [];
+     
+    for (h = 1; h < n; h += h)
+    {
+        for (m = n - 1 - h; m >= 0; m -= h + h)
+        {
+            l = m - h + 1;
+            if (l < 0)
+                l = 0;
+            
+            for (i = 0, j = l; j <= m; i++, j++)
+                B[i] = self[j];
+            
+            for (i = 0, k = l; k < j && j <= m + h; k++)
+            {
+                A = self[j];
+                if (aFunction(A, B[i], aContext) == CPOrderedDescending)
+                    self[k] = B[i++];
+                else
+                {
+                    self[k] = A;
+                    j++;
+                }
+            }
+            
+            while (k < j)
+                self[k++] = B[i++];
+        }
+    }
 }
 
 /*!
@@ -1343,10 +1369,28 @@ CPEnumerationReverse    = 1 << 1;
 */
 - (void)sortUsingSelector:(SEL)aSelector
 {
-    sort(function(lhs, rhs) { return objj_msgSend(lhs, aSelector, rhs); });
+    [self sortUsingFunction:selectorCompare context:aSelector];
 }
 
 @end
+
+var selectorCompare = function selectorCompare(object1, object2, selector)
+{
+    return [object1 performSelector:selector withObject:object2];
+}
+
+// sort using sort descriptors
+var compareObjectsUsingDescriptors= function compareObjectsUsingDescriptors(lhs, rhs, descriptors)
+{ 
+    var result,
+        i = 0,  
+        n = [descriptors count];
+        
+    while (i < n && result == CPOrderedSame);
+       result = [descriptors[i++] compareObject:lhs withObject:rhs];
+    
+    return result;
+}
 
 @implementation CPArray (CPCoding)
 

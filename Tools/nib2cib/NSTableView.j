@@ -52,12 +52,9 @@
                                        [aCoder decodeFloatForKey:@"NSIntercellSpacingHeight"]);
         
         var gridColor = [aCoder decodeObjectForKey:@"NSGridColor"];
-        
-        // Convert xib default to cib default
-        if ([gridColor isEqual:[CPColor colorWithRed:127.0 / 255.0 green:127.0 / 255.0 blue:127.0 / 255.0 alpha:1.0]])
-            gridColor = [CPColor colorWithRed:229.0 / 255.0 green:229.0 / 255.0 blue:229.0 / 255.0 alpha:1.0];
-            
-        [self setValue:gridColor forThemeAttribute:@"grid-color"];
+
+        if (![gridColor isEqual:[CPColor colorWithRed:127.0 / 255.0 green:127.0 / 255.0 blue:127.0 / 255.0 alpha:1.0]])
+            [self setValue:gridColor forThemeAttribute:@"grid-color"];
         
         _gridStyleMask = [aCoder decodeIntForKey:@"NSGridStyleMask"];
         

@@ -252,10 +252,24 @@ function descriptionWithoutEntity(aString)
     var set1 = [CPIndexSet indexSetWithIndex:7];
     var set2 = [CPIndexSet indexSetWithIndex:7];
     var set3 = [CPIndexSet indexSetWithIndexesInRange:CPMakeRange(7, 2)];
-    
+
+    [self assertFalse:[set1 isEqualToIndexSet:nil]];
     [self assertTrue:[set1 isEqualToIndexSet:set2]];
     [self assertTrue:[set1 isEqualToIndexSet:set1]];
     [self assertFalse:[set1 isEqualToIndexSet:set3]];
+}
+
+- (void)testIsEqual
+{
+    var set1 = [CPIndexSet indexSetWithIndex:7];
+    var set2 = [CPIndexSet indexSetWithIndex:7];
+    var set3 = [CPIndexSet indexSetWithIndexesInRange:CPMakeRange(7, 2)];
+
+    [self assertFalse:[set1 isEqual:nil]];
+    [self assertFalse:[set1 isEqual:7]];
+    [self assertTrue:[set1 isEqual:set2]];
+    [self assertTrue:[set1 isEqual:set1]];
+    [self assertFalse:[set1 isEqual:set3]];
 }
 
 - (void)testCount
