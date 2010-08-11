@@ -2568,7 +2568,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
         var exposedRows = [self rowsInRect:aRect];
             row = exposedRows.location,
             lastRow = CPMaxRange(exposedRows) - 1,
-            rowY = 0.0,
+            rowY = -0.5,
             minX = _CGRectGetMinX(aRect),
             maxX = _CGRectGetMaxX(aRect);
 
