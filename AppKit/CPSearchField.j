@@ -798,8 +798,6 @@ var CPRecentsAutosaveNameKey            = @"CPRecentsAutosaveNameKey",
 {
     if (self = [super initWithCoder:coder])
     {
-        [self _init];
-
         _recentsAutosaveName      = [coder decodeObjectForKey:CPRecentsAutosaveNameKey];
         _sendsWholeSearchString   = [coder decodeBoolForKey:CPSendsWholeSearchStringKey];
         _sendsSearchStringImmediately = [coder decodeBoolForKey:CPSendsSearchStringImmediatelyKey];
