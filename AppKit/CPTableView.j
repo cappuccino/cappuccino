@@ -337,6 +337,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
         _sourceListInactiveTopLineColor = [CPColor colorWithCalibratedRed:(173.0/255.0) green:(187.0/255.0) blue:(209.0/255.0) alpha:1.0];
         _sourceListInactiveBottomLineColor = [CPColor colorWithCalibratedRed:(150.0/255.0) green:(161.0/255.0) blue:(183.0/255.0) alpha:1.0];*/
         _differedColumnDataToRemove = [ ];
+        _implementsCustomDrawRow = [self implementsSelector:@selector(drawRow:clipRect:)];
 }
 
 /*!
@@ -2749,6 +2750,22 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     CGContextClosePath(context);
     CGContextSetStrokeColor(context, [self currentValueForThemeAttribute:"highlighted-grid-color"]);
     CGContextStrokePath(context);
+}
+
+- (void)_drawRows:(CPIndexSet)rowsIndexes clipRect:(CGRect)clipRect
+{
+    var row = [rowsIndexes firstIndex];
+
+    while (row !== CPNotFound)
+    {
+        [self drawRow:row clipRect:CGRectIntersection(clipRect, [self rectOfRow:row])];
+        row = [rowsIndexes indexGreaterThanIndex:row];
+    }
+}
+
+- (void)drawRow:(CPInteger)row clipRect:(CGRect)rect
+{
+    // This method does currently nothing in cappuccino. Can be overriden by subclasses.
 }
 
 - (void)layoutSubviews
