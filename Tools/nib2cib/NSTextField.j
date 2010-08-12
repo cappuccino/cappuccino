@@ -49,12 +49,18 @@
         [self setBezelStyle:[cell bezelStyle]];
         [self setDrawsBackground:[cell drawsBackground]];
         
-        //[self setLineBreakMode:???];
+        [self setLineBreakMode:[cell lineBreakMode]];
+        [self setAlignment:[cell alignment]];
         [self setTextFieldBackgroundColor:[cell backgroundColor]];
         
         [self setPlaceholderString:[cell placeholderString]];
         
-        [self setTextColor:[cell textColor]];
+        var textColor = [cell textColor],
+            defaultColor = [self currentValueForThemeAttribute:@"text-color"];
+            
+        // Don't change the text color if it is not the default, that messes up the theme lookups later        
+        if (![textColor isEqual:defaultColor])
+            [self setTextColor:[cell textColor]];
         
         var frame = [self frame];
 

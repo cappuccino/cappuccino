@@ -3,7 +3,7 @@
 @import <Foundation/CPNumber.j>
 @import <Foundation/CPSortDescriptor.j>
 
-@implementation CPArrayPerformance : OJTestCase
+@implementation CPArrayPerformanceTest : OJTestCase
 
 - (void)testSortUsingDescriptorsSpeed
 {

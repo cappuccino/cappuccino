@@ -427,16 +427,16 @@ var _CPTableColumnHeaderViewStringValueKey = @"_CPTableColumnHeaderViewStringVal
     [_tableView moveColumn:aFromIndex toColumn:aToIndex];
     _activeColumn = aToIndex;
     _pressedColumn = _activeColumn;
-
-    [_tableView _setDraggedColumn:_activeColumn];
 }
 
 - (void)draggedView:(CPView)aView beganAt:(CGPoint)aPoint
 {
     _isDragging = YES;
 
-    [[[[_tableView tableColumns] objectAtIndex:_activeColumn] headerView] setHidden:YES];
-    [_tableView _setDraggedColumn:_activeColumn];
+    var column = [[_tableView tableColumns] objectAtIndex:_activeColumn];
+
+    [[column headerView] setHidden:YES];
+    [_tableView _setDraggedColumn:column];
 
     [self setNeedsDisplay:YES];
 }
@@ -480,7 +480,7 @@ var _CPTableColumnHeaderViewStringValueKey = @"_CPTableColumnHeaderViewStringVal
     _isDragging = NO;
     _isTrackingColumn = NO; // We need to do this explicitly because the mouse up section of trackMouse is never reached
 
-    [_tableView _setDraggedColumn:-1];
+    [_tableView _setDraggedColumn:nil];
     [[[[_tableView tableColumns] objectAtIndex:_activeColumn] headerView] setHidden:NO];
     [self stopTrackingTableColumn:_activeColumn at:aLocation];
 
