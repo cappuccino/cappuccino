@@ -538,7 +538,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     _dirtyTableColumnRangeIndex = 0; // so that _recalculateTableColumnRanges will work
     [self _recalculateTableColumnRanges];
 
-    [self setNeedsLayout];
+    [self reloadData];
     [_headerView setNeedsDisplay:YES];
     [_headerView setNeedsLayout];
 }
