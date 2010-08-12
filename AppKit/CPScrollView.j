@@ -40,21 +40,21 @@
     CPClipView      _contentView;
     CPClipView      _headerClipView;
     CPView          _cornerView;
-                    
+
     BOOL            _hasVerticalScroller;
     BOOL            _hasHorizontalScroller;
     BOOL            _autohidesScrollers;
-                    
+
     CPScroller      _verticalScroller;
     CPScroller      _horizontalScroller;
-                    
+
     int             _recursionCount;
-                    
+
     float           _verticalLineScroll;
     float           _verticalPageScroll;
     float           _horizontalLineScroll;
     float           _horizontalPageScroll;
-    
+
     CPBorderType    _borderType;
 }
 
@@ -69,7 +69,7 @@
 
         _horizontalLineScroll = 10.0;
         _horizontalPageScroll = 10.0;
-        
+
         _borderType = CPNoBorder;
 
         _contentView = [[CPClipView alloc] initWithFrame:[self _insetBounds]];
@@ -93,13 +93,13 @@
 {
     var bounds = [self _insetBounds:_CGRectMake(0.0, 0.0, frameSize.width, frameSize.height) borderType:borderType],
         scrollerWidth = [CPScroller scrollerWidth];
-        
+
     if (hFlag)
         bounds.size.height -= scrollerWidth;
-        
+
     if (vFlag)
         bounds.size.width -= scrollerWidth;
-        
+
     return bounds.size;
 }
 
@@ -110,13 +110,13 @@
         heightInset = contentSize.height - bounds.size.height,
         frameSize = _CGSizeMake(contentSize.width + widthInset, contentSize.height + heightInset),
         scrollerWidth = [CPScroller scrollerWidth];
-        
+
     if (hFlag)
         frameSize.height -= scrollerWidth;
-        
+
     if (vFlag)
         frameSize.width -= scrollerWidth;
-        
+
     return frameSize;
 }
 
@@ -127,14 +127,14 @@
         case CPLineBorder:
         case CPBezelBorder:
             return _CGRectInset(bounds, 1.0, 1.0);
-            
+
         case CPGrooveBorder:
             bounds = _CGRectInset(bounds, 2.0, 2.0);
             ++bounds.origin.y;
             --bounds.size.height;
-            
+
             return bounds;
-        
+
         case CPNoBorder:
         default:
             return bounds;
@@ -339,9 +339,9 @@
 {
     if (_borderType == borderType)
         return;
-        
+
     _borderType = borderType;
-    
+
     [self reflectScrolledClipView:_contentView];
     [self setNeedsDisplay:YES];
 }
@@ -401,8 +401,8 @@
     if (_hasHorizontalScroller && !_horizontalScroller)
     {
         var bounds = [self _insetBounds];
-        
-        [self setHorizontalScroller:[[CPScroller alloc] initWithFrame:CGRectMake(0.0, 0.0, MAX(_CGRectGetWidth(bounds), [CPScroller scrollerWidth]+1), [CPScroller scrollerWidth])]];
+
+        [self setHorizontalScroller:[[CPScroller alloc] initWithFrame:CGRectMake(0.0, 0.0, MAX(_CGRectGetWidth(bounds), [CPScroller scrollerWidth] + 1), [CPScroller scrollerWidth])]];
         [[self horizontalScroller] setFrameSize:CGSizeMake(_CGRectGetWidth(bounds), [CPScroller scrollerWidth])];
     }
 
@@ -464,8 +464,8 @@
     if (_hasVerticalScroller && !_verticalScroller)
     {
         var bounds = [self _insetBounds];
-        
-        [self setVerticalScroller:[[CPScroller alloc] initWithFrame:_CGRectMake(0.0, 0.0, [CPScroller scrollerWidth], MAX(_CGRectGetHeight(bounds), [CPScroller scrollerWidth]+1))]];
+
+        [self setVerticalScroller:[[CPScroller alloc] initWithFrame:_CGRectMake(0.0, 0.0, [CPScroller scrollerWidth], MAX(_CGRectGetHeight(bounds), [CPScroller scrollerWidth] + 1))]];
         [[self verticalScroller] setFrameSize:CGSizeMake([CPScroller scrollerWidth], _CGRectGetHeight(bounds))];
     }
 
@@ -755,13 +755,13 @@
 - (void)drawRect:(CPRect)aRect
 {
     [super drawRect:aRect];
-    
-    var strokeRect = [self bounds],
-        context = [[CPGraphicsContext currentContext] graphicsPort];
-        
+
     if (_borderType == CPNoBorder)
         return;
-    
+
+    var strokeRect = [self bounds],
+        context = [[CPGraphicsContext currentContext] graphicsPort];
+
     CGContextSetLineWidth(context, 1);
 
     switch (_borderType)
@@ -774,7 +774,7 @@
         case CPBezelBorder:
             CPDrawGrayBezel(strokeRect);
             break;
-            
+
         case CPGrooveBorder:
             CPDrawGroove(strokeRect, YES);
             break;
@@ -944,7 +944,7 @@ var CPScrollViewContentViewKey       = "CPScrollViewContentView",
     [aCoder encodeBool:_autohidesScrollers      forKey:CPScrollViewAutohidesScrollerKey];
 
     [aCoder encodeObject:_cornerView            forKey:CPScrollViewCornerViewKey];
-    
+
     [aCoder encodeInt:_borderType               forKey:CPScrollViewBorderTypeKey];
 }
 
