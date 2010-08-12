@@ -539,6 +539,8 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     [self _recalculateTableColumnRanges];
 
     [self setNeedsLayout];
+    [_headerView setNeedsDisplay:YES];
+    [_headerView setNeedsLayout];
 }
 
 - (void)setThemeState:(int)astae
