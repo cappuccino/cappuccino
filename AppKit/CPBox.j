@@ -27,20 +27,20 @@
 
 // CPBorderType
 CPNoBorder      = 0;
-CPLineBorder    = 1;    
+CPLineBorder    = 1;
 CPBezelBorder   = 2;
 CPGrooveBorder  = 3;
 
 @implementation CPBox : CPView
 {
     CPBorderType    _borderType;
-    
+
     CPColor         _borderColor;
     CPColor         _fillColor;
-    
+
     float           _cornerRadius;
     float           _borderWidth;
-    
+
     CPSize          _contentMargin;
     CPView          _contentView;
 }
@@ -53,26 +53,27 @@ CPGrooveBorder  = 3;
     [box setFrameFromContentFrame:[aView frame]];
 
     [enclosingView replaceSubview:aView with:box];
-    
+
     [box setContentView:aView];
-    
+
     return box;
 }
 
 - (id)initWithFrame:(CPRect)frameRect
 {
     self = [super initWithFrame:frameRect];
-    
+
     if (self)
     {
-        _fillColor = [CPColor clearColor];
+        _borderType = CPBezelBorder;
+        _fillColor = [CPColor colorWithWhite:0.75 alpha:0.1];
         _borderColor = [CPColor blackColor];
 
         _borderWidth = 1.0;
         _contentMargin = _CGSizeMake(0.0, 0.0);
 
         _contentView = [[CPView alloc] initWithFrame:[self bounds]];
-
+        [_contentView setAutoresizingMask:CPViewWidthSizable|CPViewHeightSizable];
         [self addSubview:_contentView];
 
         [_contentView setAutoresizesSubviews:YES];
@@ -167,12 +168,11 @@ CPGrooveBorder  = 3;
         return;
 
     [aView setFrame:_CGRectInset([self bounds], _contentMargin.width + _borderWidth, _contentMargin.height + _borderWidth)];
+    [aView setAutoresizingMask:CPViewWidthSizable|CPViewHeightSizable];
+    [aView setAutoresizesSubviews:YES];
     [self replaceSubview:_contentView with:aView];
-    
-    _contentView = aView;    
 
-    [_contentView setAutoresizesSubviews:YES];
-    [_contentView setAutoresizingMask:CPViewWidthSizable | CPViewHeightSizable];
+    _contentView = aView;
 }
 
 - (CPSize)contentViewMargins
@@ -184,7 +184,7 @@ CPGrooveBorder  = 3;
 {
      if (size.width < 0 || size.height < 0)
          [CPException raise:CPGenericException reason:@"Margins must be positive"];
-         
+
     _contentMargin = _CGSizeMakeCopy(size);
     [self setNeedsDisplay:YES];
 }
@@ -198,10 +198,10 @@ CPGrooveBorder  = 3;
 - (void)sizeToFit
 {
     var contentFrameSize = [_contentView frameSize];
-    
-    [self setFrameSize:_CGSizeMake(contentFrameSize.width + (_contentMargin.width * 2), 
+
+    [self setFrameSize:_CGSizeMake(contentFrameSize.width + (_contentMargin.width * 2),
                                    contentFrameSize.height + (_contentMargin.height * 2))];
-    
+
     [_contentView setFrameOrigin:_CGPointMake(_contentMargin.width, _contentMargin.height)];
 }
 
@@ -221,7 +221,7 @@ CPGrooveBorder  = 3;
         case CPNoBorder:
         case CPLineBorder:
             CGContextFillRoundedRectangleInRect(context, fillRect, _cornerRadius, YES, YES, YES, YES);
-            
+
             if (_borderType === CPLineBorder)
                 CGContextStrokeRoundedRectangleInRect(context, strokeRect, _cornerRadius, YES, YES, YES, YES);
             break;
@@ -254,17 +254,17 @@ var CPBoxBorderTypeKey    = @"CPBoxBorderTypeKey",
     if (self)
     {
         _borderType    = [aCoder decodeIntForKey:CPBoxBorderTypeKey];
-        
+
         _borderColor   = [aCoder decodeObjectForKey:CPBoxBorderColorKey];
         _fillColor     = [aCoder decodeObjectForKey:CPBoxFillColorKey];
 
         _cornerRadius  = [aCoder decodeFloatForKey:CPBoxCornerRadiusKey];
         _borderWidth   = [aCoder decodeFloatForKey:CPBoxBorderWidthKey];
-        
+
         _contentMargin = [aCoder decodeSizeForKey:CPBoxContentMarginKey];
-        
+
         _contentView   = [self subviews][0];
-        
+
         [self setAutoresizesSubviews:YES];
         [_contentView setAutoresizesSubviews:YES];
         [_contentView setAutoresizingMask:CPViewWidthSizable | CPViewHeightSizable];
@@ -276,15 +276,15 @@ var CPBoxBorderTypeKey    = @"CPBoxBorderTypeKey",
 - (void)encodeWithCoder:(CPCoder)aCoder
 {
     [super encodeWithCoder:aCoder];
-    
+
     [aCoder encodeInt:_borderType forKey:CPBoxBorderTypeKey];
-    
+
     [aCoder encodeObject:_borderColor forKey:CPBoxBorderColorKey];
     [aCoder encodeObject:_fillColor forKey:CPBoxFillColorKey];
 
     [aCoder encodeFloat:_cornerRadius forKey:CPBoxCornerRadiusKey];
     [aCoder encodeFloat:_borderWidth forKey:CPBoxBorderWidthKey];
-    
+
     [aCoder encodeSize:_contentMargin forKey:CPBoxContentMarginKey];
 }
 
