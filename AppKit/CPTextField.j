@@ -1188,7 +1188,10 @@ var CPTextFieldIsEditableKey            = "CPTextFieldIsEditableKey",
         [self setDrawsBackground:[aCoder decodeBoolForKey:CPTextFieldDrawsBackgroundKey]];
 
         [self setTextFieldBackgroundColor:[aCoder decodeObjectForKey:CPTextFieldBackgroundColorKey]];
-              
+
+        [self setLineBreakMode:[aCoder decodeIntForKey:CPTextFieldLineBreakModeKey]];
+        [self setAlignment:[aCoder decodeIntForKey:CPTextFieldAlignmentKey]];
+
         [self setLineBreakMode:[aCoder decodeIntForKey:CPTextFieldLineBreakModeKey]];
         [self setAlignment:[aCoder decodeIntForKey:CPTextFieldAlignmentKey]];
 
@@ -1212,10 +1215,10 @@ var CPTextFieldIsEditableKey            = "CPTextFieldIsEditableKey",
     [aCoder encodeBool:_drawsBackground forKey:CPTextFieldDrawsBackgroundKey];
 
     [aCoder encodeObject:_textFieldBackgroundColor forKey:CPTextFieldBackgroundColorKey];
-    
+
     [aCoder encodeInt:[self lineBreakMode] forKey:CPTextFieldLineBreakModeKey];
     [aCoder encodeInt:[self alignment] forKey:CPTextFieldAlignmentKey];
-    
+
     [aCoder encodeObject:_placeholderString forKey:CPTextFieldPlaceholderStringKey];
 }
 

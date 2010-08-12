@@ -410,7 +410,7 @@ CPEnumerationReverse    = 1 << 1;
     @param predicate The function to apply to elements of the array. The function receives two arguments:
                      object The element in the array.
                      index  The index of the element in the array.
-    The predicate function should either return a Boolean value that indicates whether the object passed the test, 
+    The predicate function should either return a Boolean value that indicates whether the object passed the test,
     or nil to stop the search, which will return CPNotFound to the sender.
     @return The index of the first matching object, or \c CPNotFound if there is no matching object.
 */
@@ -425,7 +425,7 @@ CPEnumerationReverse    = 1 << 1;
                      object  The element in the array.
                      index   The index of the element in the array.
                      context The object passed to the receiver in the aContext parameter.
-    The predicate function should either return a Boolean value that indicates whether the object passed the test, 
+    The predicate function should either return a Boolean value that indicates whether the object passed the test,
     or nil to stop the search, which will return CPNotFound to the sender.
     @param context An object that contains context information you want passed to the predicate function.
     @return The index of the first matching object, or \c CPNotFound if there is no matching object.
@@ -437,29 +437,29 @@ CPEnumerationReverse    = 1 << 1;
 
 /*!
     Returns the index of the first object in the receiver that passes a test in a given Javascript function.
-    @param opts Specifies the direction in which the array is searched. Pass CPEnumerationNormal to search forwards 
+    @param opts Specifies the direction in which the array is searched. Pass CPEnumerationNormal to search forwards
     or CPEnumerationReverse to search in reverse.
     @param predicate The function to apply to elements of the array. The function receives two arguments:
                      object The element in the array.
                      index  The index of the element in the array.
-    The predicate function should either return a Boolean value that indicates whether the object passed the test, 
+    The predicate function should either return a Boolean value that indicates whether the object passed the test,
     or nil to stop the search, which will return CPNotFound to the sender.
     @return The index of the first matching object, or \c CPNotFound if there is no matching object.
 */
 - (unsigned)indexOfObjectWithOptions:(CPEnumerationOptions)opts passingTest:(Function)predicate
 {
     return [self indexOfObjectWithOptions:opts passingTest:predicate context:undefined];
-}    
+}
 
 /*!
     Returns the index of the first object in the receiver that passes a test in a given Javascript function.
-    @param opts Specifies the direction in which the array is searched. Pass CPEnumerationNormal to search forwards 
+    @param opts Specifies the direction in which the array is searched. Pass CPEnumerationNormal to search forwards
     or CPEnumerationReverse to search in reverse.
     @param predicate The function to apply to elements of the array. The function receives two arguments:
                      object  The element in the array.
                      index   The index of the element in the array.
                      context The object passed to the receiver in the aContext parameter.
-    The predicate function should either return a Boolean value that indicates whether the object passed the test, 
+    The predicate function should either return a Boolean value that indicates whether the object passed the test,
     or nil to stop the search, which will return CPNotFound to the sender.
     @param context An object that contains context information you want passed to the predicate function.
     @return The index of the first matching object, or \c CPNotFound if there is no matching object.
@@ -468,9 +468,9 @@ CPEnumerationReverse    = 1 << 1;
 {
     // We don't use an enumerator because they return nil to indicate end of enumeration,
     // but nil may actually be the value we are looking for, so we have to loop over the array.
-    
+
     var start, stop, increment;
-    
+
     if (opts & CPEnumerationReverse)
     {
         start = [self count] - 1;
@@ -483,17 +483,17 @@ CPEnumerationReverse    = 1 << 1;
         stop = [self count];
         increment = 1;
     }
-        
+
     for (var i = start; i != stop; i += increment)
     {
         var result = predicate([self objectAtIndex:i], i, aContext);
-        
+
         if (typeof result === 'boolean' && result)
             return i;
         else if (typeof result === 'object' && result == nil)
             return CPNotFound;
     }
-    
+
     return CPNotFound;
 }
 
@@ -1331,9 +1331,9 @@ CPEnumerationReverse    = 1 << 1;
 */
 - (void)sortUsingFunction:(Function)aFunction context:(id)aContext
 {
-    var h, i, j, k, l, m, n = [self count];
+    var h, i, j, k, l, m, n = [self count], o;
     var A, B = [];
-     
+
     for (h = 1; h < n; h += h)
     {
         for (m = n - 1 - h; m >= 0; m -= h + h)
@@ -1341,14 +1341,15 @@ CPEnumerationReverse    = 1 << 1;
             l = m - h + 1;
             if (l < 0)
                 l = 0;
-            
+
             for (i = 0, j = l; j <= m; i++, j++)
                 B[i] = self[j];
-            
+
             for (i = 0, k = l; k < j && j <= m + h; k++)
             {
                 A = self[j];
-                if (aFunction(A, B[i], aContext) == CPOrderedDescending)
+                o = aFunction(A, B[i], aContext);
+                if (o == CPOrderedDescending || o == CPOrderedSame)
                     self[k] = B[i++];
                 else
                 {
@@ -1356,7 +1357,7 @@ CPEnumerationReverse    = 1 << 1;
                     j++;
                 }
             }
-            
+
             while (k < j)
                 self[k++] = B[i++];
         }
@@ -1381,14 +1382,14 @@ var selectorCompare = function selectorCompare(object1, object2, selector)
 
 // sort using sort descriptors
 var compareObjectsUsingDescriptors= function compareObjectsUsingDescriptors(lhs, rhs, descriptors)
-{ 
+{
     var result,
-        i = 0,  
+        i = 0,
         n = [descriptors count];
-        
+
     while (i < n && result == CPOrderedSame);
        result = [descriptors[i++] compareObject:lhs withObject:rhs];
-    
+
     return result;
 }
 

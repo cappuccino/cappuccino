@@ -25,7 +25,7 @@
 @import "CPView.j"
 
 #include "CoreGraphics/CGGeometry.h"
- 
+
 @implementation _CPTableColumnHeaderView : CPView
 {
     _CPImageAndTextView     _textField;
@@ -240,7 +240,7 @@ var _CPTableColumnHeaderViewStringValueKey = @"_CPTableColumnHeaderViewStringVal
     rect.origin.x = _CGRectGetMaxX(rect) - 5;
     rect.size.width = 20;
 
-    return rect;    
+    return rect;
 }
 
 - (void)_setPressedColumn:(CPInteger)column
@@ -249,7 +249,7 @@ var _CPTableColumnHeaderViewStringValueKey = @"_CPTableColumnHeaderViewStringVal
     {
         var headerView = [_tableView._tableColumns[_pressedColumn] headerView];
         [headerView unsetThemeState:CPThemeStateHighlighted];
-    }    
+    }
 
     if (column != -1)
     {
@@ -353,7 +353,7 @@ var _CPTableColumnHeaderViewStringValueKey = @"_CPTableColumnHeaderViewStringVal
         viewLocation.x = ( _CGRectGetMinX(columnRect) + offset.x ) + ( aPoint.x - _mouseDownLocation.x );
         viewLocation.y = _CGRectGetMinY(columnRect) + offset.y;
 
-        [self dragView:view at:viewLocation offset:_CGSizeMakeZero() event:[CPApp currentEvent] 
+        [self dragView:view at:viewLocation offset:_CGSizeMakeZero() event:[CPApp currentEvent]
             pasteboard:[CPPasteboard pasteboardWithName:CPDragPboard] source:self slideBack:YES];
 
         return NO;
@@ -364,7 +364,7 @@ var _CPTableColumnHeaderViewStringValueKey = @"_CPTableColumnHeaderViewStringVal
 
 - (BOOL)_shouldStopTrackingTableColumn:(int)aColumnIndex at:(CGPoint)aPoint
 {
-    return _isTrackingColumn && _activeColumn === aColumnIndex && 
+    return _isTrackingColumn && _activeColumn === aColumnIndex &&
         _CGRectContainsPoint([self headerRectOfColumn:aColumnIndex], aPoint);
 }
 
@@ -427,16 +427,16 @@ var _CPTableColumnHeaderViewStringValueKey = @"_CPTableColumnHeaderViewStringVal
     [_tableView moveColumn:aFromIndex toColumn:aToIndex];
     _activeColumn = aToIndex;
     _pressedColumn = _activeColumn;
-
-    [_tableView _setDraggedColumn:_activeColumn];
 }
 
 - (void)draggedView:(CPView)aView beganAt:(CGPoint)aPoint
 {
     _isDragging = YES;
 
-    [[[[_tableView tableColumns] objectAtIndex:_activeColumn] headerView] setHidden:YES];
-    [_tableView _setDraggedColumn:_activeColumn];
+    var column = [[_tableView tableColumns] objectAtIndex:_activeColumn];
+
+    [[column headerView] setHidden:YES];
+    [_tableView _setDraggedColumn:column];
 
     [self setNeedsDisplay:YES];
 }
@@ -480,7 +480,7 @@ var _CPTableColumnHeaderViewStringValueKey = @"_CPTableColumnHeaderViewStringVal
     _isDragging = NO;
     _isTrackingColumn = NO; // We need to do this explicitly because the mouse up section of trackMouse is never reached
 
-    [_tableView _setDraggedColumn:-1];
+    [_tableView _setDraggedColumn:nil];
     [[[[_tableView tableColumns] objectAtIndex:_activeColumn] headerView] setHidden:NO];
     [self stopTrackingTableColumn:_activeColumn at:aLocation];
 
@@ -547,7 +547,7 @@ var _CPTableColumnHeaderViewStringValueKey = @"_CPTableColumnHeaderViewStringVal
         return;
     }
 
-    var mouseLocation = [self convertPoint:[theEvent locationInWindow] fromView:nil],    
+    var mouseLocation = [self convertPoint:[theEvent locationInWindow] fromView:nil],
         mouseOverLocation = CGPointMake(mouseLocation.x - 5, mouseLocation.y),
         overColumn = [self columnAtPoint:mouseOverLocation];
 
@@ -568,7 +568,7 @@ var _CPTableColumnHeaderViewStringValueKey = @"_CPTableColumnHeaderViewStringVal
 }
 
 - (void)mouseEntered:(CPEvent)theEvent
-{   
+{
     [self _updateResizeCursor:theEvent];
 }
 
@@ -586,16 +586,16 @@ var _CPTableColumnHeaderViewStringValueKey = @"_CPTableColumnHeaderViewStringVal
 - (void)layoutSubviews
 {
     var tableColumns = [_tableView tableColumns],
-        count = [tableColumns count];    
+        count = [tableColumns count];
 
-    for (var i = 0; i < count; i++) 
+    for (var i = 0; i < count; i++)
     {
         var column = [tableColumns objectAtIndex:i],
             headerView = [column headerView];
 
         var frame = [self headerRectOfColumn:i];
         frame.size.height -= 0.5;
-        if (i > 0) 
+        if (i > 0)
         {
             frame.origin.x += 0.5;
             frame.size.width -= 1;

@@ -61,14 +61,14 @@ CPCircularSlider    = 1;
     {
         _minValue = 0.0;
         _maxValue = 100.0;
-        
+
         [self setObjectValue:50.0];
-        
+
         [self setContinuous:YES];
 
         [self _recalculateIsVertical];
     }
-    
+
     return self;
 }
 
@@ -76,11 +76,11 @@ CPCircularSlider    = 1;
 {
     if (_minValue === aMinimumValue)
         return;
-    
+
     _minValue = aMinimumValue;
 
     var doubleValue = [self doubleValue];
-    
+
     if (doubleValue < _minValue)
         [self setDoubleValue:_minValue];
 
@@ -98,11 +98,11 @@ CPCircularSlider    = 1;
 {
     if (_maxValue === aMaximumValue)
         return;
-    
+
     _maxValue = aMaximumValue;
-    
+
     var doubleValue = [self doubleValue];
-    
+
     if (doubleValue > _maxValue)
         [self setDoubleValue:_maxValue];
 
@@ -169,20 +169,20 @@ CPCircularSlider    = 1;
             bounds.size.height = trackWidth;
         }
     }
-    
+
     return bounds;
 }
 
 - (CGRect)knobRectForBounds:(CGRect)bounds
 {
     var knobSize = [self currentValueForThemeAttribute:@"knob-size"];
-    
+
     if (knobSize.width <= 0 || knobSize.height <= 0)
         return _CGRectMakeZero();
-    
+
     var knobRect = _CGRectMake(0.0, 0.0, knobSize.width, knobSize.height),
         trackRect = [self trackRectForBounds:bounds];
-    
+
     // No track, do our best to approximate a place for this thing.
     if (!trackRect || _CGRectIsEmpty(trackRect))
         trackRect = bounds;
@@ -198,7 +198,7 @@ CPCircularSlider    = 1;
     else if ([self isVertical])
     {
         knobRect.origin.x = _CGRectGetMidX(trackRect) - knobSize.width / 2.0;
-        knobRect.origin.y = (([self doubleValue] - _minValue) / (_maxValue - _minValue)) * (_CGRectGetHeight(trackRect) - knobSize.height);
+        knobRect.origin.y = ((_maxValue - [self doubleValue]) / (_maxValue - _minValue)) * (_CGRectGetHeight(trackRect) - knobSize.height);
     }
     else
     {
@@ -213,10 +213,10 @@ CPCircularSlider    = 1;
 {
     if (aName === "track-view")
         return [self trackRectForBounds:[self bounds]];
-    
+
     else if (aName === "knob-view")
         return [self knobRectForBounds:[self bounds]];
-    
+
     return [super rectForEphemeralSubviewNamed:aName];
 }
 
@@ -225,12 +225,12 @@ CPCircularSlider    = 1;
     if (aName === "track-view" || aName === "knob-view")
     {
         var view = [[CPView alloc] init];
-        
+
         [view setHitTests:NO];
-        
+
         return view;
     }
-    
+
     return [super createEphemeralSubviewNamed:aName];
 }
 
@@ -256,7 +256,7 @@ CPCircularSlider    = 1;
     var bounds = [self bounds],
         width = _CGRectGetWidth(bounds),
         height = _CGRectGetHeight(bounds);
-    
+
     _isVertical = width < height ? 1 : (width > height ? 0 : -1);
 
     if (_isVertical === 1)
@@ -282,7 +282,7 @@ CPCircularSlider    = 1;
     var knobView = [self layoutEphemeralSubviewNamed:@"knob-view"
                                           positioned:CPWindowAbove
                      relativeToEphemeralSubviewNamed:@"track-view"];
-      
+
     if (knobView)
         [knobView setBackgroundColor:[self currentValueForThemeAttribute:"knob-color"]];
 }
@@ -320,7 +320,7 @@ CPCircularSlider    = 1;
 
         var minValue = [self minValue];
 
-        return MAX(0.0, MIN(1.0, (aPoint.y - _CGRectGetMinY(trackRect)) / _CGRectGetHeight(trackRect))) * ([self maxValue] - minValue) + minValue;
+        return MAX(0.0, MIN(1.0, (_CGRectGetMaxY(trackRect) - aPoint.y) / _CGRectGetHeight(trackRect))) * ([self maxValue] - minValue) + minValue;
     }
     else
     {
@@ -339,31 +339,31 @@ CPCircularSlider    = 1;
 {
     var bounds = [self bounds],
         knobRect = [self knobRectForBounds:_CGRectMakeCopy(bounds)];
-    
+
     if (_CGRectContainsPoint(knobRect, aPoint))
         _dragOffset = _CGSizeMake(_CGRectGetMidX(knobRect) - aPoint.x, _CGRectGetMidY(knobRect) - aPoint.y);
-    
-    else 
+
+    else
     {
         var trackRect = [self trackRectForBounds:bounds];
-        
+
         if (trackRect && _CGRectContainsPoint(trackRect, aPoint))
         {
             _dragOffset = _CGSizeMakeZero();
-            
+
             [self setObjectValue:[self _valueAtPoint:aPoint]];
         }
-    
+
         else
             return NO;
     }
-    
+
     [self setHighlighted:YES];
-    
+
     [self setNeedsLayout];
     [self setNeedsDisplay:YES];
 
-    return YES;   
+    return YES;
 }
 
 - (BOOL)continueTracking:(CGPoint)lastPoint at:(CGPoint)aPoint
@@ -376,7 +376,7 @@ CPCircularSlider    = 1;
 - (void)stopTracking:(CGPoint)lastPoint at:(CGPoint)aPoint mouseIsUp:(BOOL)mouseIsUp
 {
     [self setHighlighted:NO];
-    
+
     if ([_target respondsToSelector:@selector(sliderDidFinish:)])
         [_target sliderDidFinish:self];
 
@@ -392,7 +392,7 @@ CPCircularSlider    = 1;
 {
     if (flag)
         _sendActionOn |= CPLeftMouseDraggedMask;
-    else 
+    else
         _sendActionOn &= ~CPLeftMouseDraggedMask;
 }
 
@@ -454,14 +454,14 @@ var CPSliderMinValueKey             = "CPSliderMinValueKey",
 - (id)value
 {
     CPLog.warn("[CPSlider value] is deprecated, use doubleValue or objectValue instead.");
-    
-    return [self doubleValue];    
+
+    return [self doubleValue];
 }
 
 - (void)setValue:(id)aValue
 {
     CPLog.warn("[CPSlider setValue:] is deprecated, use setDoubleValue: or setObjectValue: instead.");
-    
+
     [self setObjectValue:aValue];
 }
 

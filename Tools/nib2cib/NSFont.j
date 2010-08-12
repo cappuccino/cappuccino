@@ -33,7 +33,7 @@
         fontName = [aCoder decodeObjectForKey:@"NSName"],
         size = [aCoder decodeDoubleForKey:@"NSSize"];
 
-    if ((fontName === "LucidaGrande" || fontName === "LucidaGrande-Bold") && size === 13)
+    if (fontName === "LucidaGrande" && size === 13)
     {
         CPLog.debug("Removing default IB font: <"+fontName+", "+size+"> for theme default font.");
         return nil;
@@ -42,7 +42,7 @@
     // FIXME: Is this always true?
     if (fontName.indexOf("-Bold") === fontName.length - "-Bold".length)
         isBold = YES;
-        
+
     if (fontName === "LucidaGrande" || fontName === "LucidaGrande-Bold")
         fontName = [CPFont systemFontFace];
 
