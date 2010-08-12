@@ -2277,9 +2277,14 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
         for (; rowIndex < rowsCount; ++rowIndex)
         {
             var row = rowArray[rowIndex],
-                dataView = [_dataViewsForTableColumns[tableColumnUID] objectAtIndex:row];
+                dataViews = _dataViewsForTableColumns[tableColumnUID];
 
-            [_dataViewsForTableColumns[tableColumnUID] replaceObjectAtIndex:row withObject:nil];
+            if (!dataViews || row >= dataViews.length)
+                continue;
+
+            var dataView = [dataViews objectAtIndex:row];
+
+            [dataViews replaceObjectAtIndex:row withObject:nil];
 
             [self _enqueueReusableDataView:dataView];
         }
@@ -3722,14 +3727,14 @@ var CPTableViewDataSourceKey                = @"CPTableViewDataSourceKey",
     CGContextSetStrokeColor(context, _lineColor);
 
     var points = [
-                    _CGPointMake(0.5, 0), 
+                    _CGPointMake(0.5, 0),
                     _CGPointMake(0.5, aRect.size.height)
                  ];
 
     CGContextStrokeLineSegments(context, points, 2);
-    
+
     points = [
-                _CGPointMake(aRect.size.width - 0.5, 0), 
+                _CGPointMake(aRect.size.width - 0.5, 0),
                 _CGPointMake(aRect.size.width - 0.5, aRect.size.height)
              ];
 
