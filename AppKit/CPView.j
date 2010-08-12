@@ -1846,6 +1846,9 @@ setBoundsOrigin:
 
 - (void)displayRectIgnoringOpacity:(CGRect)aRect inContext:(CPGraphicsContext)aGraphicsContext
 {
+    if ([self isHidden])
+        return;
+
 #if PLATFORM(DOM)
     [self lockFocus];
 
