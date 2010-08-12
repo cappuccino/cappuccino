@@ -425,7 +425,7 @@
     @param aKey the key for the object's entry
     @return the object for the entry
 */
-- (id)objectForKey:(CPString)aKey
+- (id)objectForKey:(id)aKey
 {
     var object = _buckets[aKey];
 
