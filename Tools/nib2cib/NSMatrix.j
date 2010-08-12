@@ -8,7 +8,7 @@
 var NSMatrixRadioModeMask = 0x40000000,
     NSMatrixDrawsBackgroundMask = 0x01000000;
 
-                
+
 @implementation NSMatrix : CPObject
 {
 }
@@ -32,8 +32,8 @@ var NSMatrixRadioModeMask = 0x40000000,
     {
         var radioGroup = [CPRadioGroup new],
             frame = CGRectMake(0.0, 0.0, cellSize.width, cellSize.height);
-            
-        for (var rowIndex; rowIndex < numberOfRows; ++rowIndex)
+
+        for (var rowIndex = 0; rowIndex < numberOfRows; ++rowIndex)
         {
             frame.origin.x = 0;
 
@@ -46,7 +46,7 @@ var NSMatrixRadioModeMask = 0x40000000,
                 [cellView setTitle:[cell title]];
                 [cellView setBackgroundColor:[CPColor clearColor]];  // the IB default
                 [cellView setObjectValue:[cell objectValue]];
-                
+
                 [view addSubview:cellView];
 
                 NIB_CONNECTION_EQUIVALENCY_TABLE[[cell UID]] = cellView;
@@ -59,11 +59,16 @@ var NSMatrixRadioModeMask = 0x40000000,
 
         if (drawsBackground)
             [view setBackgroundColor:backgroundColor];
-            
+
         NIB_CONNECTION_EQUIVALENCY_TABLE[[self UID]] = view;
     }
 
     return view;
+}
+
+- (void)encodeWithCoder:(CPCoder)aCoder
+{
+    [super encodeWithCoder:aCoder];
 }
 
 @end
