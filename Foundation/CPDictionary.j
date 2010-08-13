@@ -338,6 +338,35 @@
 }
 
 /*!
+    Returns a new array containing the keys corresponding to all occurrences of a given object in the receiver.
+    @param anObject The value to look for in the receiver.
+    @return A new array containing the keys corresponding to all occurrences of anObject in the receiver. If no object matching anObject is found, returns an empty array.
+
+    Each object in the receiver is sent an isEqual: message to determine if it’s equal to anObject.
+    If the check for isEqual fails a check is made to see if the two objects are the same object. This provides compatability for JSObjects.
+*/
+- (CPArray)allKeysForObject:(id)anObject
+{
+    var count = _keys.length,
+        index = 0,
+        matchingKeys = [],
+        thisKey = nil,
+        thisValue = nil;
+
+    for (; index < count; ++index)
+    {
+        thisKey = _keys[index],
+        thisValue = _buckets[thisKey];
+        if (thisValue.isa && anObject && anObject.isa && [thisValue respondsToSelector:@selector(isEqual:)] && [thisValue isEqual:anObject])
+            matchingKeys.push(thisKey);
+        else if (thisValue === anObject)
+            matchingKeys.push(thisKey);
+    }
+
+    return matchingKeys;
+} 
+
+/*!
     Returns an enumerator that enumerates over all the dictionary's keys.
 */
 - (CPEnumerator)keyEnumerator
@@ -425,7 +454,7 @@
     @param aKey the key for the object's entry
     @return the object for the entry
 */
-- (id)objectForKey:(CPString)aKey
+- (id)objectForKey:(id)aKey
 {
     var object = _buckets[aKey];
 
