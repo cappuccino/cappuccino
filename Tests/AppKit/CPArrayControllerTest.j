@@ -94,7 +94,6 @@
 
     arrayController = [[CPArrayController alloc] initWithContent:[self contentArray]];
     [arrayController setPreservesSelection:YES];
-    print([self contentArray]);
 
     // Remove from middle
     var selectionIndexes = [CPIndexSet indexSetWithIndex:1];
