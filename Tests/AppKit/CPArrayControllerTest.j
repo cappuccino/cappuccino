@@ -26,6 +26,7 @@
     otherContent = [@"5", @"6"];
     [[self arrayController] setContent:otherContent];
 
+    [self assertFalse:otherContent === [[self arrayController] contentArray] message:@"array controller should copy it's content"];
     [self assert:otherContent equals:[[self arrayController] contentArray]];
     [self assert:[_CPObservableArray class] equals:[[[self arrayController] arrangedObjects] class]];
 }
@@ -78,14 +79,46 @@
     [self assert:[CPIndexSet indexSetWithIndex:count - 1] equals:[arrayController selectionIndexes]];
 }
 
+- (void)testRemoveObjects
+{
+    var arrayController = [self arrayController];
+    [arrayController setPreservesSelection:NO];
+
+    [arrayController setSelectionIndexes:[CPIndexSet indexSetWithIndexesInRange:CPMakeRange(1, 2)]];
+    [arrayController removeObjects:[arrayController selectedObjects]]
+
+    [self assert:[CPIndexSet indexSet] equals:[arrayController selectionIndexes]
+         message:@"selection should be empty if arraycontroller doesn't preserve selection"];
+
+    arrayController = [[CPArrayController alloc] initWithContent:[self contentArray]];
+    [arrayController setPreservesSelection:YES];
+    print([self contentArray]);
+
+    // Remove from middle
+    var selectionIndexes = [CPIndexSet indexSetWithIndex:1];
+    [arrayController setSelectionIndexes:selectionIndexes];
+    [arrayController removeObjects:[arrayController selectedObjects]];
+    [self assert:selectionIndexes equals:[arrayController selectionIndexes] message:@"selection should stay the same"];
+
+    // Remove from end
+    [arrayController removeObjects:[[[arrayController content] objectAtIndex:1]]];
+    [self assert:[CPIndexSet indexSetWithIndex:0] equals:[arrayController selectionIndexes]
+         message:@"last object removed; selection should shift to first available index"];
+
+    // Remove from all
+    [arrayController removeObjects:[[[arrayController content] objectAtIndex:0]]];
+    [self assert:[CPIndexSet indexSet] equals:[arrayController selectionIndexes] message:@"no objects left, selection should disappear"];
+}
+
 - (void)testContentBinding
 {
     [[self arrayController] bind:@"contentArray" toObject:self withKeyPath:@"contentArray" options:0];
 
     [self assert:[[self arrayController] contentArray] equals:[self contentArray]];
-    
+
     [[self mutableArrayValueForKey:@"contentArray"] addObject:@"4"];
-    [self assert:[self contentArray] equals:[[self arrayController] contentArray]];
+    [self assert:[self contentArray] equals:[[self arrayController] contentArray]
+         message:@"object 4 was added; contentArray should reflect this"];
 
     [[self arrayController] insertObject:@"2" atArrangedObjectIndex:1];
     [self assert:[[self arrayController] contentArray] equals:[self contentArray]];
