@@ -130,6 +130,17 @@
     return self;
 }
 
+- (BOOL)isEqual:(id)anObject
+{
+    if (self === anObject)
+        return YES;
+
+    if (!anObject || ![anObject isKindOfClass:[CPIndexSet class]])
+        return NO;
+
+    return [self isEqualToIndexSet:anObject];
+}
+
 // Querying an Index Set
 /*!
     Compares the receiver with the provided index set.

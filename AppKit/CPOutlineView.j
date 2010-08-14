@@ -1275,6 +1275,56 @@ var _loadItemInfoForItem = function(/*CPOutlineView*/ anOutlineView, /*id*/ anIt
 
 @end
 
+
+var CPOutlineViewIndentationPerLevelKey = @"CPOutlineViewIndentationPerLevelKey",
+    CPOutlineViewOutlineTableColumnKey = @"CPOutlineViewOutlineTableColumnKey",
+    CPOutlineViewDataSourceKey = @"CPOutlineViewDataSourceKey",
+    CPOutlineViewDelegateKey = @"CPOutlineViewDelegateKey";
+
+@implementation CPOutlineView (CPCoding)
+
+- (id)initWithCoder:(CPCoder)aCoder
+{
+    self = [super initWithCoder:aCoder];
+
+    if (self)
+    {
+        // The root item has weight "0", thus represents the weight solely of its descendants.
+        _rootItemInfo = { isExpanded:YES, isExpandable:NO, level:-1, row:-1, children:[], weight:0 };
+        
+        _itemsForRows = [];
+        _itemInfosForItems = { };
+        _disclosureControlsForRows = [];
+        
+        [self setIndentationMarkerFollowsDataView:YES];
+        [self setDisclosureControlPrototype:[[CPDisclosureButton alloc] initWithFrame:CGRectMake(0.0, 0.0, 10.0, 10.0)]];
+        
+        _outlineTableColumn = [aCoder decodeObjectForKey:CPOutlineViewOutlineTableColumnKey];
+        _indentationPerLevel = [aCoder decodeFloatForKey:CPOutlineViewIndentationPerLevelKey];
+        
+        _outlineViewDataSource = [aCoder decodeObjectForKey:CPOutlineViewDataSourceKey];
+        _outlineViewDelegate = [aCoder decodeObjectForKey:CPOutlineViewDelegateKey];
+        
+        [super setDataSource:[[_CPOutlineViewTableViewDataSource alloc] initWithOutlineView:self]];
+    }
+    
+    return self;
+}
+
+- (void)encodeWithCoder:(CPCoder)aCoder
+{
+    [super encodeWithCoder:aCoder];
+    
+    [aCoder encodeObject:_outlineTableColumn forKey:CPOutlineViewOutlineTableColumnKey];
+    [aCoder encodeFloat:_indentationPerLevel forKey:CPOutlineViewIndentationPerLevelKey];
+    
+    [aCoder encodeObject:_outlineViewDataSource forKey:CPOutlineViewDataSourceKey];
+    [aCoder encodeObject:_outlineViewDelegate forKey:CPOutlineViewDelegateKey];
+}
+
+@end
+
+
 var colorForDisclosureTriangle = function(isSelected, isHighlighted) {
     return isSelected 
         ? (isHighlighted 

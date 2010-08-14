@@ -365,29 +365,29 @@
 
 //Moving selection
 
--(BOOL)canSelectPrevious
+- (BOOL)canSelectPrevious
 {
     return [[self selectionIndexes] firstIndex] > 0
 }
 
--(BOOL)canSelectNext
+-(void)selectPrevious:(id)sender
 {
-    return [[self selectionIndexes] firstIndex] < [[self arrangedObjects] count] -1;
-}
+    var index = [[self selectionIndexes] firstIndex] - 1;
 
--(void)selectNext:(id)sender
-{
-    var index = [[self selectionIndexes] firstIndex] + 1 || 0;
-
-    if (index < [[self arrangedObjects] count])
+    if (index >= 0)
         [self setSelectionIndexes:[CPIndexSet indexSetWithIndex:index]];
 }
 
--(void)selectPrevious:(id)sender
+- (BOOL)canSelectNext
 {
-    var index = [[self selectionIndexes] firstIndex] - 1 || [[self arrangedObjects] count] - 1;
+    return [[self selectionIndexes] firstIndex] < [[self arrangedObjects] count] - 1;
+}
 
-    if (index >= 0)
+- (void)selectNext:(id)sender
+{
+    var index = [[self selectionIndexes] firstIndex] + 1;
+
+    if (index < [[self arrangedObjects] count])
         [self setSelectionIndexes:[CPIndexSet indexSetWithIndex:index]];
 }
 
@@ -424,6 +424,33 @@
         [self rearrangeObjects];
 }
 
+- (void)insertObject:(id)anObject atArrangedObjectIndex:(int)anIndex
+{
+    if (![self canAdd])
+        return;
+
+    [self willChangeValueForKey:@"content"];
+    [_contentObject insertObject:anObject atIndex:anIndex];
+    [self didChangeValueForKey:@"content"];
+
+    if (_clearsFilterPredicateOnInsertion)
+        [self setFilterPredicate:nil];
+
+    [[self arrangedObjects] insertObject:anObject atIndex:anIndex];
+
+    if ([self selectsInsertedObjects])
+        [self setSelectionIndex:anIndex];
+    else
+    {
+        [self willChangeValueForKey:@"selectionIndexes"]
+        [[self selectionIndexes] shiftIndexesStartingAtIndex:anIndex by:1];
+        [self didChangeValueForKey:@"selectionIndexes"];
+    }
+
+    if ([self avoidsEmptySelection] && [[self selectionIndexes] count] <= 0 && [_contentObject count] > 0)
+        [self setSelectionIndexes:[CPIndexSet indexSetWithIndex:0]];
+}
+
 - (void)removeObject:(id)object
 {
     if (![self canRemove])
@@ -433,12 +460,14 @@
    [_contentObject removeObject:object];
    [self didChangeValueForKey:@"content"];
 
-   if ([_filterPredicate evaluateWithObject:object])
+   if (_filterPredicate === nil || [_filterPredicate evaluateWithObject:object])
    {
         [self willChangeValueForKey:@"selectionIndexes"];
         var pos = [_arrangedObjects indexOfObject:object];
 
+        [_arrangedObjects removeObjectAtIndex:pos];
         [_selectionIndexes shiftIndexesStartingAtIndex:pos by:-1];
+
         [self didChangeValueForKey:@"selectionIndexes"];
    }
 }
@@ -496,13 +525,34 @@
 
 - (void)_removeObjects:(CPArray)objects
 {
-    var contentArray = [self contentArray],
-        count = [objects count];
+    [self willChangeValueForKey:@"content"];
+    [_contentObject removeObjectsInArray:objects];
+    [self didChangeValueForKey:@"content"];
 
-    for (var i=0; i<count; i++)
-        [contentArray removeObject:[objects objectAtIndex:i]];
+    var arrangedObjects = [self arrangedObjects],
+        position = [arrangedObjects indexOfObject:[objects objectAtIndex:0]];
 
-    [self setContent:contentArray];
+    [arrangedObjects removeObjectsInArray:objects];
+
+    var objectsCount = [arrangedObjects count],
+        selectionIndexes = [CPIndexSet indexSet];
+
+    if ([self preservesSelection] || [self avoidsEmptySelection])
+    {
+        selectionIndexes = [CPIndexSet indexSetWithIndex:position];
+
+        // Remove the selection if there are no objects
+        if (objectsCount <= 0)
+            selectionIndexes = [CPIndexSet indexSet];
+
+        // Shift selection to last object if position is out of bounds
+        else if (position >= objectsCount)
+            selectionIndexes = [CPIndexSet indexSetWithIndex:objectsCount - 1];
+     }
+
+     [self willChangeValueForKey:@"selectionIndexes"];
+     _selectionIndexes = selectionIndexes;
+     [self didChangeValueForKey:@"selectionIndexes"];
 }
 
 - (BOOL)canInsert

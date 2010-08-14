@@ -90,50 +90,41 @@ task ("docs", ["documentation"]);
 
 task ("documentation", function()
 {
-    var doxygen = null,
-        DoxygenAppPath = "/Applications/Doxygen.app/Contents/Resources";
+    // try to find a doxygen executable in the PATH;
+    var doxygen = executableExists("doxygen");
     
     // If the Doxygen application is installed on Mac OS X, use that
-    if (executableExists("mdfind"))
+    if (!doxygen && executableExists("mdfind"))
     {
-        OS.system("mdfind \"kMDItemContentType == 'com.apple.application-bundle' && kMDItemCFBundleIdentifier == 'org.doxygen'\" > doxygen_app");
-        
-        if (FILE.exists("doxygen_app"))
+        var p = OS.popen(["mdfind", "kMDItemContentType == 'com.apple.application-bundle' && kMDItemCFBundleIdentifier == 'org.doxygen'"]);
+        if (p.wait() === 0)
         {
-            doxygen = FILE.join(UTIL.trimEnd(FILE.read("doxygen_app")), "Contents/Resources/doxygen");
-            FILE.remove("doxygen_app");
+            var doxygenApps = p.stdout.read().split("\n");
+            if (doxygenApps[0])
+                doxygen = FILE.join(doxygenApps[0], "Contents/Resources/doxygen");
         }
     }
-    else
-    {
-        SYSTEM.env["PATH"].split(':').some(function(/*String*/ aPath)
-        {
-            var path = FILE.join(aPath, "doxygen");
-            
-            if (FILE.exists(path))
-            {
-                doxygen = path;
-                return true;
-            }
-        });
-    }
     
-    if (doxygen)
+    if (doxygen && FILE.exists(doxygen))
     {
-        print("Using " + doxygen + " for doxygen binary.");
+        stream.print("\0green(Using " + doxygen + " for doxygen binary.\0)");
         
-        if (OS.system(["ruby", FILE.join("Tools", "Documentation", "make_headers")]))
+        var documentationDir = FILE.join("Tools", "Documentation");
+        
+        if (OS.system(["ruby", FILE.join(documentationDir, "make_headers")]))
             OS.exit(1); //rake abort if ($? != 0)
 
-        if (OS.system([doxygen, FILE.join("Tools", "Documentation", "Cappuccino.doxygen")]))
-            OS.exit(1); //rake abort if ($? != 0)
-
-        rm_rf($DOCUMENTATION_BUILD);
-        mv("debug.txt", FILE.join("Documentation", "debug.txt"));
-        mv("Documentation", $DOCUMENTATION_BUILD);
+        if (!OS.system([doxygen, FILE.join(documentationDir, "Cappuccino.doxygen")]))
+        {
+            rm_rf($DOCUMENTATION_BUILD);
+            mv("debug.txt", FILE.join("Documentation", "debug.txt"));
+            mv("Documentation", $DOCUMENTATION_BUILD);
+        }
+        
+        OS.system(["ruby", FILE.join(documentationDir, "cleanup_headers")]);
     }
     else
-        print("doxygen not installed, skipping documentation generation.");
+        stream.print("\0yellow(Doxygen not installed, skipping documentation generation.\0)");
 });
 
 // Downloads

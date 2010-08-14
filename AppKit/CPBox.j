@@ -61,15 +61,16 @@ CPGrooveBorder  = 3;
     self = [super initWithFrame:frameRect];
     
     if (self)
-    {
-        _fillColor = [CPColor clearColor];
+    {   
+        _borderType = CPBezelBorder;
+        _fillColor = [CPColor colorWithWhite:0.75 alpha:0.1];
         _borderColor = [CPColor blackColor];
 
         _borderWidth = 1.0;
         _contentMargin = CGSizeMake(0.0, 0.0);
 
         _contentView = [[CPView alloc] initWithFrame:[self bounds]];
-
+        [_contentView setAutoresizingMask:CPViewWidthSizable|CPViewHeightSizable];
         [self addSubview:_contentView];
     }
 
@@ -161,6 +162,7 @@ CPGrooveBorder  = 3;
         return;
 
     [aView setFrame:CGRectInset([self bounds], _contentMargin.width + _borderWidth, _contentMargin.height + _borderWidth)];
+    [aView setAutoresizingMask:CPViewWidthSizable|CPViewHeightSizable];
     [self replaceSubview:_contentView with:aView];
     
     _contentView = aView;    
@@ -213,16 +215,17 @@ CPGrooveBorder  = 3;
                               bounds.size.height - _borderWidth);
 
     CGContextSetFillColor(aContext, [self fillColor]);
-    CGContextSetStrokeColor(aContext, [self borderColor]);
     CGContextSetLineWidth(aContext, _borderWidth);
 
     switch(_borderType)
     {
-        case CPLineBorder:  CGContextFillRoundedRectangleInRect(aContext, fillRect, _cornerRadius, YES, YES, YES, YES);
+        case CPLineBorder:  CGContextSetStrokeColor(aContext, [self borderColor]);
+                            CGContextFillRoundedRectangleInRect(aContext, fillRect, _cornerRadius, YES, YES, YES, YES);
                             CGContextStrokeRoundedRectangleInRect(aContext, strokeRect, _cornerRadius, YES, YES, YES, YES);
                             break;
 
-        case CPBezelBorder: CGContextFillRoundedRectangleInRect(aContext, fillRect, _cornerRadius, YES, YES, YES, YES);
+        case CPBezelBorder: CGContextSetStrokeColor(aContext, [CPColor colorWithWhite:0 alpha:0.42]);
+                            CGContextFillRoundedRectangleInRect(aContext, fillRect, _cornerRadius, YES, YES, YES, YES);
                             CGContextSetStrokeColor(aContext, [CPColor colorWithWhite:190.0/255.0 alpha:1.0]);
                             CGContextBeginPath(aContext);
                             CGContextMoveToPoint(aContext, strokeRect.origin.x, strokeRect.origin.y);
