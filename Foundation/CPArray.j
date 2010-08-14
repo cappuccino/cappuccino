@@ -1378,12 +1378,12 @@ var selectorCompare = function selectorCompare(object1, object2, selector)
 // sort using sort descriptors
 var compareObjectsUsingDescriptors= function compareObjectsUsingDescriptors(lhs, rhs, descriptors)
 { 
-    var result,
+    var result = CPOrderedSame,
         i = 0,  
         n = [descriptors count];
         
-    while (i < n && result == CPOrderedSame);
-       result = [descriptors[i++] compareObject:lhs withObject:rhs];
+    while (i < n && result === CPOrderedSame)
+        result = [descriptors[i++] compareObject:lhs withObject:rhs];
     
     return result;
 }
