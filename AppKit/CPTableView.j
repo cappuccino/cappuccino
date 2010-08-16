@@ -2472,6 +2472,9 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     [self drawBackgroundInClipRect:exposedRect];
     [self drawGridInClipRect:exposedRect];
     [self highlightSelectionInClipRect:exposedRect];
+
+    if (_implementsCustomDrawRow)
+        [self _drawRows:_exposedRows clipRect:exposedRect];
 }
 
 - (void)drawBackgroundInClipRect:(CGRect)aRect
