@@ -569,6 +569,7 @@ CPButtonStateMixed  = CPThemeState("mixed");
 */
 - (void)setKeyEquivalent:(CPString)aString
 {
+    _keyEquivalent = aString || @"";
     // Check if the key equivalent is the enter key
     // Treat \r and \n as the same key equivalent. See issue #710.
     if (aString === CPNewlineCharacter || aString === CPCarriageReturnCharacter)
@@ -581,8 +582,6 @@ CPButtonStateMixed  = CPThemeState("mixed");
         [[self window] setDefaultButton:nil];
         [self setDefaultButton:NO];
     }
-
-    _keyEquivalent = aString || @"";
 }
 
 - (void)viewWillMoveToWindow:(CPWindow)aWindow

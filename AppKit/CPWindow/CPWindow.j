@@ -2411,7 +2411,8 @@ CPTexturedBackgroundWindowMask
 
     _defaultButton = aButton;
 
-    [_defaultButton setKeyEquivalent:CPCarriageReturnCharacter];
+    if ([_defaultButton keyEquivalent] !== CPCarriageReturnCharacter)
+        [_defaultButton setKeyEquivalent:CPCarriageReturnCharacter];
 }
 
 - (CPButton)defaultButton
