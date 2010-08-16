@@ -553,7 +553,7 @@ var CPViewFlags                     = { },
 /* @ignore */
 - (void)_setWindow:(CPWindow)aWindow
 {
-    if (_window === aWindow || !aWindow)
+    if (_window === aWindow)
         return;
 
     [[self window] _dirtyKeyViewLoop];
