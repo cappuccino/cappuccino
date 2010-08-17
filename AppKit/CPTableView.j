@@ -3306,6 +3306,10 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
             if (![_delegate tableView:self shouldSelectRow:index])
                 [newSelection removeIndex:index];
         }
+
+        // as per cocoa
+        if ([newSelection count] === 0)
+            return;
     }
 
     // if empty selection is not allowed and the new selection has nothing selected, abort
