@@ -177,14 +177,14 @@ var ItemSizes               = { },
 }
 
 + (void)registerThemeValues:(CPArray)themeValues forView:(CPView)aView
-{    
+{
     for (var i = 0; i < themeValues.length; ++i)
     {
         var attributeValueState = themeValues[i],
             attribute = attributeValueState[0],
             value = attributeValueState[1],
             state = attributeValueState[2];
-            
+
         if (state)
             [aView setValue:value forThemeAttribute:attribute inState:state];
         else
@@ -218,9 +218,9 @@ var ItemSizes               = { },
                     value = attributeValueState[1],
                     state = attributeValueState[2],
                     pattern = nil;
-            
-                if (typeof(value) === "object" && 
-                    value.hasOwnProperty("isa") && 
+
+                if (typeof(value) === "object" &&
+                    value.hasOwnProperty("isa") &&
                     [value isKindOfClass:CPColor] &&
                     (pattern = [value patternImage]))
                 {
@@ -228,16 +228,16 @@ var ItemSizes               = { },
                     {
                         var slices = [pattern imageSlices],
                             newSlices = [];
-                
+
                         for (var sliceIndex = 0; sliceIndex < slices.length; ++sliceIndex)
                         {
                             var slice = slices[sliceIndex],
                                 filename = themePath + [[slice filename] lastPathComponent],
                                 size = [slice size];
-                    
+
                             newSlices.push([filename, size.width, size.height]);
                         }
-                
+
                         if ([pattern isThreePartImage])
                             value = PatternColor(newSlices, [pattern isVertical]);
                         else
@@ -247,11 +247,11 @@ var ItemSizes               = { },
                     {
                         var filename = themePath + [[pattern filename] lastPathComponent],
                             size = [pattern size];
-                
+
                         value = PatternColor(filename, size.width, size.height);
                     }
                 }
-        
+
                 if (state)
                     [aView setValue:value forThemeAttribute:attribute inState:state];
                 else
@@ -259,7 +259,7 @@ var ItemSizes               = { },
             }
         }
     }
-    
+
     if (themeValues)
         [self registerThemeValues:themeValues forView:aView];
 }
@@ -281,7 +281,7 @@ function BKLabelFromIdentifier(anIdentifier)
             isCapital = /^[A-Z]/.test(character);
 
         if (isCapital)
-        {        
+        {
             if (!isLeadingCapital)
             {
                 if (lastCapital === null)
@@ -311,21 +311,21 @@ function BKLabelFromIdentifier(anIdentifier)
 
 PatternIsVertical = YES,
 PatternIsHorizontal = NO;
-    
+
 /*
     To create a simple color with a pattern image:
         PatternColor(name, width, height)
-        
+
     To create a color with a three part pattern image:
         PatternColor(slices, orientation)
-        
+
     where slices is an array of three [name, width, height] arrays,
     and orientation is PatternIsVertical or PatternIsHorizontal.
-    
+
     To create a color with a nine part pattern image:
         PatternColor(slices);
-        
-    where slices is an array of nine [name, width, height] arrays.    
+
+    where slices is an array of nine [name, width, height] arrays.
 */
 function PatternColor()
 {
@@ -333,14 +333,14 @@ function PatternColor()
     {
         var slices = arguments[0],
             imageSlices = [];
-            
+
         for (var i = 0; i < slices.length; ++i)
         {
             var slice = slices[i];
-            
+
             imageSlices.push(slice ? [_CPCibCustomResource imageResourceWithName:slice[0] size:CGSizeMake(slice[1], slice[2])] : nil);
         }
-        
+
         if (arguments.length == 2)
             return [CPColor colorWithPatternImage:[[CPThreePartImage alloc] initWithImageSlices:imageSlices isVertical:arguments[1]]];
         else
