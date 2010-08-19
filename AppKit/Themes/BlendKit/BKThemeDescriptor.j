@@ -176,11 +176,99 @@ var ItemSizes               = { },
     return [[self themeName] compare:[aThemeDescriptor themeName]];
 }
 
++ (void)registerThemeValues:(CPArray)themeValues forView:(CPView)aView
+{
+    for (var i = 0; i < themeValues.length; ++i)
+    {
+        var attributeValueState = themeValues[i],
+            attribute = attributeValueState[0],
+            value = attributeValueState[1],
+            state = attributeValueState[2];
+
+        if (state)
+            [aView setValue:value forThemeAttribute:attribute inState:state];
+        else
+            [aView setValue:value forThemeAttribute:attribute];
+    }
+}
+
++ (void)registerThemeValues:(CPArray)themeValues forView:aView inherit:(CPArray)inheritedValues
+{
+    // Register inherited values first, then override those with the subtheme values.
+    if (inheritedValues)
+    {
+        // Check the class name to see if it is a subtheme of another theme. If so,
+        // use the subtheme name as a relative path to image patterns.
+        var themeName = [self themeName],
+            index = themeName.indexOf("-");
+
+        if (index < 0)
+        {
+            // This theme is a subtheme, register the inherited values directly
+            [self registerThemeValues:inheritedValues forView:aView];
+        }
+        else
+        {
+            var themePath = themeName.substr(index + 1) + "/";
+
+            for (var i = 0; i < inheritedValues.length; ++i)
+            {
+                var attributeValueState = inheritedValues[i],
+                    attribute = attributeValueState[0],
+                    value = attributeValueState[1],
+                    state = attributeValueState[2],
+                    pattern = nil;
+
+                if (typeof(value) === "object" &&
+                    value.hasOwnProperty("isa") &&
+                    [value isKindOfClass:CPColor] &&
+                    (pattern = [value patternImage]))
+                {
+                    if ([pattern isThreePartImage] || [pattern isNinePartImage])
+                    {
+                        var slices = [pattern imageSlices],
+                            newSlices = [];
+
+                        for (var sliceIndex = 0; sliceIndex < slices.length; ++sliceIndex)
+                        {
+                            var slice = slices[sliceIndex],
+                                filename = themePath + [[slice filename] lastPathComponent],
+                                size = [slice size];
+
+                            newSlices.push([filename, size.width, size.height]);
+                        }
+
+                        if ([pattern isThreePartImage])
+                            value = PatternColor(newSlices, [pattern isVertical]);
+                        else
+                            value = PatternColor(newSlices);
+                    }
+                    else
+                    {
+                        var filename = themePath + [[pattern filename] lastPathComponent],
+                            size = [pattern size];
+
+                        value = PatternColor(filename, size.width, size.height);
+                    }
+                }
+
+                if (state)
+                    [aView setValue:value forThemeAttribute:attribute inState:state];
+                else
+                    [aView setValue:value forThemeAttribute:attribute];
+            }
+        }
+    }
+
+    if (themeValues)
+        [self registerThemeValues:themeValues forView:aView];
+}
+
 @end
 
 function BKLabelFromIdentifier(anIdentifier)
 {
-    var string = anIdentifier.substr("themed".length);
+    var string = anIdentifier.substr("themed".length),
         index = 0,
         count = string.length,
         label = "",
@@ -193,7 +281,7 @@ function BKLabelFromIdentifier(anIdentifier)
             isCapital = /^[A-Z]/.test(character);
 
         if (isCapital)
-        {        
+        {
             if (!isLeadingCapital)
             {
                 if (lastCapital === null)
@@ -219,3 +307,51 @@ function BKLabelFromIdentifier(anIdentifier)
     return label;
 }
 
+
+
+PatternIsVertical = YES,
+PatternIsHorizontal = NO;
+
+/*
+    To create a simple color with a pattern image:
+        PatternColor(name, width, height)
+
+    To create a color with a three part pattern image:
+        PatternColor(slices, orientation)
+
+    where slices is an array of three [name, width, height] arrays,
+    and orientation is PatternIsVertical or PatternIsHorizontal.
+
+    To create a color with a nine part pattern image:
+        PatternColor(slices);
+
+    where slices is an array of nine [name, width, height] arrays.
+*/
+function PatternColor()
+{
+    if (arguments.length < 3)
+    {
+        var slices = arguments[0],
+            imageSlices = [];
+
+        for (var i = 0; i < slices.length; ++i)
+        {
+            var slice = slices[i];
+
+            imageSlices.push(slice ? [_CPCibCustomResource imageResourceWithName:slice[0] size:CGSizeMake(slice[1], slice[2])] : nil);
+        }
+
+        if (arguments.length == 2)
+            return [CPColor colorWithPatternImage:[[CPThreePartImage alloc] initWithImageSlices:imageSlices isVertical:arguments[1]]];
+        else
+            return [CPColor colorWithPatternImage:[[CPNinePartImage alloc] initWithImageSlices:imageSlices]];
+    }
+    else if (arguments.length == 3)
+    {
+        return [CPColor colorWithPatternImage:[_CPCibCustomResource imageResourceWithName:arguments[0] size:CGSizeMake(arguments[1], arguments[2])]];
+    }
+    else
+    {
+        return nil;
+    }
+}
