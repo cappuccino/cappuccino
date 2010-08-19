@@ -268,7 +268,7 @@ var ItemSizes               = { },
 
 function BKLabelFromIdentifier(anIdentifier)
 {
-    var string = anIdentifier.substr("themed".length);
+    var string = anIdentifier.substr("themed".length),
         index = 0,
         count = string.length,
         label = "",
