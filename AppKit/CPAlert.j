@@ -39,17 +39,17 @@
     @global
     @group CPAlertStyle
 */
-CPWarningAlertStyle =        0;
+CPWarningAlertStyle         = 0;
 /*
     @global
     @group CPAlertStyle
 */
-CPInformationalAlertStyle =  1;
+CPInformationalAlertStyle   = 1;
 /*
     @global
     @group CPAlertStyle
 */
-CPCriticalAlertStyle =       2;
+CPCriticalAlertStyle        = 2;
 
 
 var CPAlertWarningImage,
@@ -58,7 +58,7 @@ var CPAlertWarningImage,
 
 /*!
     @ingroup appkit
-    
+
     CPAlert is an alert panel that can be displayed modally to present the
     user with a message and one or more options.
 
@@ -74,7 +74,7 @@ var CPAlertWarningImage,
     @delegate -(void)alertDidEnd:(CPAlert)theAlert returnCode:(int)returnCode;
     Called when the user dismisses the alert by clicking one of the buttons.
     @param theAlert the alert panel that the user dismissed
-    @param returnCode the index of the button that the user clicked (starting from 0, 
+    @param returnCode the index of the button that the user clicked (starting from 0,
            representing the first button added to the alert which appears on the
            right, 1 representing the next button to the left and so on)
 */
@@ -100,15 +100,15 @@ var CPAlertWarningImage,
     if (self != CPAlert)
         return;
 
-    var bundle = [CPBundle bundleForClass:[self class]];   
+    var bundle = [CPBundle bundleForClass:[self class]];
 
-    CPAlertWarningImage     = [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"CPAlert/dialog-warning.png"] 
+    CPAlertWarningImage     = [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"CPAlert/dialog-warning.png"]
                                                                  size:CGSizeMake(32.0, 32.0)];
-                                                             
-    CPAlertInformationImage = [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"CPAlert/dialog-information.png"] 
+
+    CPAlertInformationImage = [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"CPAlert/dialog-information.png"]
                                                                  size:CGSizeMake(32.0, 32.0)];
-                                                                 
-    CPAlertErrorImage       = [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"CPAlert/dialog-error.png"] 
+
+    CPAlertErrorImage       = [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"CPAlert/dialog-error.png"]
                                                                  size:CGSizeMake(32.0, 32.0)];
 }
 
@@ -125,7 +125,7 @@ var CPAlertWarningImage,
 
         [self setWindowStyle:nil];
     }
-    
+
     return self;
 }
 
@@ -136,16 +136,16 @@ var CPAlertWarningImage,
 - (void)setWindowStyle:(int)styleMask
 {
     _windowStyle = styleMask;
-    
+
     _alertPanel = [[CPPanel alloc] initWithContentRect:CGRectMake(0.0, 0.0, 400.0, 110.0) styleMask:styleMask ? styleMask | CPTitledWindowMask : CPTitledWindowMask];
     [_alertPanel setFloatingPanel:YES];
     [_alertPanel center];
 
     var count = [_buttons count];
-    for(var i=0; i < count; i++)
+    for (var i = 0; i < count; i++)
     {
         var button = _buttons[i];
-        [button setTheme:(_windowStyle === CPHUDBackgroundWindowMask) ? [CPTheme themeNamed:"Aristo-HUD"] : [CPTheme defaultTheme]];
+        [button setTheme:(_windowStyle === CPHUDBackgroundWindowMask) ? [CPTheme defaultHudTheme] : [CPTheme defaultTheme]];
 
         [[_alertPanel contentView] addSubview:button];
     }
@@ -159,7 +159,6 @@ var CPAlertWarningImage,
         [_messageLabel setLineBreakMode:CPLineBreakByWordWrapping];
         [_messageLabel setAlignment:CPJustifiedTextAlignment];
         [_messageLabel setAutoresizingMask:CPViewWidthSizable|CPViewHeightSizable];
-
 
         _alertImageView = [[CPImageView alloc] initWithFrame:CGRectMake(15.0, 12.0, 32.0, 32.0)];
 
@@ -294,12 +293,12 @@ var CPAlertWarningImage,
     [button setTarget:self];
     [button setTag:_buttonCount];
     [button setAction:@selector(_notifyDelegate:)];
-    
-    [button setTheme:(_windowStyle === CPHUDBackgroundWindowMask) ? [CPTheme themeNamed:"Aristo-HUD"] : [CPTheme defaultTheme]];
+
+    [button setTheme:(_windowStyle === CPHUDBackgroundWindowMask) ? [CPTheme defaultHudTheme] : [CPTheme defaultTheme]];
     [button setAutoresizingMask:CPViewMinXMargin | CPViewMinYMargin];
 
     [[_alertPanel contentView] addSubview:button];
-    
+
     if (_buttonCount == 0)
         [button setKeyEquivalent:CPCarriageReturnCharacter];
     else if ([title lowercaseString] === "cancel")
@@ -319,7 +318,8 @@ var CPAlertWarningImage,
         count = [_buttons count],
         offsetX = CGRectGetWidth(bounds),
         offsetY = CGRectGetHeight(bounds) - 34.0;
-    for(var i=0; i < count; i++)
+
+    for (var i = 0; i < count; i++)
     {
         var button = _buttons[i];
 
@@ -353,7 +353,7 @@ var CPAlertWarningImage,
 - (void)runModal
 {
     var theTitle;
-    
+
     switch (_alertStyle)
     {
         case CPWarningAlertStyle:       [_alertImageView setImage:CPAlertWarningImage];
@@ -366,9 +366,9 @@ var CPAlertWarningImage,
                                         theTitle = @"Error";
                                         break;
     }
-    
+
     [_alertPanel setTitle:_windowTitle ? _windowTitle : theTitle];
-    
+
     [CPApp runModalForWindow:_alertPanel];
 }
 
