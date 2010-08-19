@@ -10,6 +10,15 @@
 @import <AppKit/AppKit.j>
 @import <AppKit/CPTableHeaderView.j>
 
+var themedButtonValues = nil,
+    themedVerticalScrollerValues = nil,
+    themedHorizontalScrollerValues = nil,
+    themedSegmentedControlValues = nil,
+    themedHorizontalSliderValues = nil,
+    themedVerticalSliderValues = nil,
+    themedCircularSliderValues = nil,
+    themedButtonBarValues = nil;
+
 /*
     HOW TO ADD OR MODIFY THEMED ELEMENTS
 
@@ -257,7 +266,7 @@
 
             [self registerThemeValues:[self defaultThemeOverridesAddedTo:subthemeValues]
                               forView:calendar
-                              inherit:themedCalendarHeaderViewValues];;
+                              inherit:themedCalendarHeaderViewValues];
 
             return calendar;
         }
@@ -279,7 +288,6 @@
     These are the standards used by Aristo-HUD. If you want to override these defaults,
     simply add those overrides to the values you pass to +defaultThemeOverridesAddedTo:.
 */
-
 @implementation AristoThemeDescriptor : BKThemeDescriptor
 {
 }
@@ -289,7 +297,6 @@
     return @"Aristo";
 }
 
-var themedButtonValues = nil;
 
 + (CPButton)makeButton
 {
@@ -489,8 +496,6 @@ var themedButtonValues = nil;
     return button;
 }
 
-var themedVerticalScrollerValues = nil;
-
 + (CPScroller)makeVerticalScroller
 {
     var scroller = [[CPScroller alloc] initWithFrame:CGRectMake(0.0, 0.0, 15.0, 170.0)];
@@ -558,8 +563,6 @@ var themedVerticalScrollerValues = nil;
 
     return scroller;
 }
-
-var themedHorizontalScrollerValues = nil;
 
 + (CPScroller)makeHorizontalScroller
 {
@@ -907,8 +910,6 @@ var themedHorizontalScrollerValues = nil;
     return button;
 }
 
-var themedSegmentedControlValues = nil;
-
 + (CPSegmentedControl)makeSegmentedControl
 {
     var segmentedControl = [[CPSegmentedControl alloc] initWithFrame:CGRectMake(0.0, 0.0, 0.0, 24.0)];
@@ -1006,8 +1007,6 @@ var themedSegmentedControlValues = nil;
     return segmentedControl;
 }
 
-var themedHorizontalSliderValues = nil;
-
 + (CPSlider)makeHorizontalSlider
 {
     return [[CPSlider alloc] initWithFrame:CGRectMake(0.0, 0.0, 50.0, 24.0)];
@@ -1053,8 +1052,6 @@ var themedHorizontalSliderValues = nil;
 
     return slider;
 }
-
-var themedVerticalSliderValues = nil;
 
 + (CPSlider)makeVerticalSlider
 {
@@ -1102,8 +1099,6 @@ var themedVerticalSliderValues = nil;
     return slider;
 }
 
-var themedCircularSliderValues = nil;
-
 + (CPSlider)makeCircularSlider
 {
     var slider = [[CPSlider alloc] initWithFrame:CGRectMake(0.0, 0.0, 34.0, 34.0)];
@@ -1138,8 +1133,6 @@ var themedCircularSliderValues = nil;
 
     return slider;
 }
-
-var themedButtonBarValues = nil;
 
 + (CPButtonBar)makeButtonBar
 {
@@ -1349,12 +1342,11 @@ var themedButtonBarValues = nil;
     return segmentedControl;
 }
 
-var
 + (CPButton)button
 {
     var button = [AristoThemeDescriptor makeButton];
 
-    [self registerThemeValues:[self defaultThemeOverridesAddedTo:nil] forView:button inherit:themedButtonValues];;
+    [self registerThemeValues:[self defaultThemeOverridesAddedTo:nil] forView:button inherit:themedButtonValues];
 
     return button;
 }
@@ -1386,7 +1378,7 @@ var
             [@"knob-color", nil, CPThemeStateVertical | CPThemeStateDisabled]
         ];
 
-    [self registerThemeValues:[self defaultThemeOverridesAddedTo:overrides] forView:scroller inherit:themedVerticalScrollerValues];;
+    [self registerThemeValues:[self defaultThemeOverridesAddedTo:overrides] forView:scroller inherit:themedVerticalScrollerValues];
 
     return scroller;
 }
@@ -1399,7 +1391,7 @@ var
             [@"knob-color", nil, CPThemeStateDisabled]
         ];
 
-    [self registerThemeValues:[self defaultThemeOverridesAddedTo:overrides] forView:scroller inherit:themedHorizontalScrollerValues];;
+    [self registerThemeValues:[self defaultThemeOverridesAddedTo:overrides] forView:scroller inherit:themedHorizontalScrollerValues];
 
     return scroller;
 }
@@ -1408,7 +1400,7 @@ var
 {
     var slider = [AristoThemeDescriptor makeHorizontalSlider];
 
-    [self registerThemeValues:[self defaultThemeOverridesAddedTo:nil] forView:slider inherit:themedHorizontalSliderValues];;
+    [self registerThemeValues:[self defaultThemeOverridesAddedTo:nil] forView:slider inherit:themedHorizontalSliderValues];
 
     return slider;
 }
@@ -1417,7 +1409,7 @@ var
 {
     var slider = [AristoThemeDescriptor makeVerticalSlider];
 
-    [self registerThemeValues:[self defaultThemeOverridesAddedTo:nil] forView:slider inherit:themedVerticalSliderValues];;
+    [self registerThemeValues:[self defaultThemeOverridesAddedTo:nil] forView:slider inherit:themedVerticalSliderValues];
 
     return slider;
 }
@@ -1426,7 +1418,7 @@ var
 {
     var slider = [AristoThemeDescriptor makeCircularSlider];
 
-    [self registerThemeValues:[self defaultThemeOverridesAddedTo:nil] forView:slider inherit:themedCircularSliderValues];;
+    [self registerThemeValues:[self defaultThemeOverridesAddedTo:nil] forView:slider inherit:themedCircularSliderValues];
 
     return slider;
 }
