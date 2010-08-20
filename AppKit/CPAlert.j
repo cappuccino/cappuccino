@@ -359,21 +359,24 @@ CPCriticalAlertStyle        = 2;
 
         textWidth = offsetX - inset.left,
         messageSize = [([_messageLabel stringValue] || " ") sizeWithFont:[_messageLabel font] inWidth:textWidth],
-        informativeSize = [([_informativeLabel stringValue] || " ") sizeWithFont:[_informativeLabel font] inWidth:textWidth],
+        informationString = [_informativeLabel stringValue],
+        informativeSize = [(informationString || " ") sizeWithFont:[_informativeLabel font] inWidth:textWidth],
         sizeWithFontCorrection = 6.0;
 
     [_messageLabel setFrame:CGRectMake(inset.left, inset.top, textWidth, messageSize.height + sizeWithFontCorrection)];
     [_informativeLabel setFrame:CGRectMake(inset.left, CGRectGetMaxY([_messageLabel frame]) + informativeOffset, textWidth, informativeSize.height + sizeWithFontCorrection)];
 
     var aRepresentativeButton = _buttons[0],
-        buttonY = CGRectGetMaxY([_informativeLabel frame]) + buttonOffset;
+        buttonY = MAX(CGRectGetMaxY([_alertImageView frame]), CGRectGetMaxY(informationString ? [_informativeLabel frame] : [_messageLabel frame])) + buttonOffset; // the lower of the bottom of the text and the bottom of the icon.
     [aRepresentativeButton setTheme:[self theme]];
     [aRepresentativeButton sizeToFit];
 
     // Make the window just tall enough to fit everything. Bit of a hack really.
-    var extraY = buttonY + CGRectGetHeight([aRepresentativeButton bounds]) + inset.bottom - CGRectGetHeight(bounds),
+    var minimumSize = [self currentValueForThemeAttribute:@"size"],
+        desiredHeight = MAX(minimumSize.height, buttonY + CGRectGetHeight([aRepresentativeButton bounds]) + inset.bottom),
+        deltaY = desiredHeight - CGRectGetHeight(bounds),
         frameSize = CGSizeMakeCopy([_alertPanel frame].size);
-    frameSize.height += extraY;
+    frameSize.height += deltaY;
     [_alertPanel setFrameSize:frameSize];
 
     var count = [_buttons count];
