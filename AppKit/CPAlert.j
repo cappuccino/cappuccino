@@ -125,12 +125,11 @@ CPCriticalAlertStyle        = 2;
         _buttons = [CPArray array];
         _alertStyle = CPWarningAlertStyle;
         _alertPanel = nil;
+        _windowStyle = nil;
 
         _messageLabel = [[CPTextField alloc] initWithFrame:CGRectMakeZero()];
         _alertImageView = [[CPImageView alloc] initWithFrame:CGRectMakeZero()];
         _informativeLabel = [[CPTextField alloc] initWithFrame:CGRectMakeZero()];
-
-        [self setWindowStyle:nil];
     }
 
     return self;
