@@ -13,10 +13,22 @@
 {
     CPTextField label;
     CPArray     variations;
+    CPArray     messages;
+    int         messageIndex;
 }
 
 - (void)applicationDidFinishLaunching:(CPNotification)aNotification
 {
+    messages = [
+        [@"Are you sure you want to theorise before you have data?",
+         @"Invariably, you end up twisting facts to suit theories, instead of theories to suit facts.",
+         "Theorise", "Cancel"],
+        [@"Snakes. Why did it have to be snakes?",
+         nil,
+         "Torch", "Cancel"]
+    ];
+    messageIndex = 0;
+
     variations = [
         [nil, CPWarningAlertStyle],
         [nil, CPInformationalAlertStyle],
@@ -45,7 +57,7 @@
 - (void)alertDidEnd:(CPAlert)anAlert returnCode:(id)returnCode
 {
     if (returnCode === 0)
-        [label setStringValue:"You chose 'Theorise'."];
+        [label setStringValue:"You chose the default action."];
     else
         [label setStringValue:"You cancelled the dialog."];
 
@@ -57,16 +69,19 @@
     if (![variations count])
         return;
 
-    var variation = [variations objectAtIndex:0],
+
+    var variation = variations[0],
+        message = messages[messageIndex],
         alert = [[CPAlert alloc] init];
 
+    messageIndex = 1 - messageIndex;
     [variations removeObjectAtIndex:0];
 
     [alert setDelegate:self];
-    [alert addButtonWithTitle:@"Theorise"];
-    [alert addButtonWithTitle:@"Cancel"];
-    [alert setMessageText:@"Do you want to theorise before you have data?"];
-    [alert setInformativeText:@"Invariably, you end up twisting facts to suit theories, instead of theories to suit facts."];
+    [alert setMessageText:message[0]];
+    [alert setInformativeText:message[1]];
+    [alert addButtonWithTitle:message[2]];
+    [alert addButtonWithTitle:message[3]];
     [alert setWindowStyle:variation[0]];
     [alert setAlertStyle:variation[1]];
 

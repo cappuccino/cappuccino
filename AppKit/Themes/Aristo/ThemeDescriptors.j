@@ -17,7 +17,8 @@ var themedButtonValues = nil,
     themedHorizontalSliderValues = nil,
     themedVerticalSliderValues = nil,
     themedCircularSliderValues = nil,
-    themedButtonBarValues = nil;
+    themedButtonBarValues = nil,
+    themedAlertValues = nil;
 
 /*
     HOW TO ADD OR MODIFY THEMED ELEMENTS
@@ -1301,6 +1302,37 @@ var themedButtonValues = nil,
     return view;
 }
 
++ (CPAlert)themedAlert
+{
+    var alert = [CPAlert new],
+        size = CGSizeMake(400.0, 110.0),
+        inset =  CGInsetMake(10, 15, 15, 55),
+        messageFont = [CPFont boldSystemFontOfSize:13.0],
+        informativeFont = [CPFont systemFontOfSize:12.0],
+        informationIcon = PatternImage("dialog-information.png", 32.0, 32.0),
+        warningIcon = PatternImage("dialog-warning.png", 32.0, 32.0),
+        errorIcon = PatternImage("dialog-error.png", 32.0, 32.0);
+
+    themedAlertValues =
+    [
+        [@"size",		                    size],
+        [@"content-inset",		            inset],
+        [@"message-text-alignment",	        CPJustifiedTextAlignment],
+        [@"message-text-color",		        [CPColor blackColor]],
+        [@"message-text-font",		        messageFont],
+        [@"informative-text-alignment",	    CPJustifiedTextAlignment],
+        [@"informative-text-color",		    [CPColor blackColor]],
+        [@"informative-text-font",		    informativeFont],
+        [@"information-image",		        informationIcon],
+        [@"warning-image",		            warningIcon],
+        [@"error-image",                    errorIcon]
+    ];
+
+    [self registerThemeValues:themedAlertValues forView:alert];
+
+    return alert;
+}
+
 @end
 
 @implementation AristoHUDThemeDescriptor : BKThemeDescriptor
@@ -1421,6 +1453,21 @@ var themedButtonValues = nil,
     [self registerThemeValues:[self defaultThemeOverridesAddedTo:nil] forView:slider inherit:themedCircularSliderValues];
 
     return slider;
+}
+
++ (CPAlert)themedAlert
+{
+    var alert = [CPAlert new],
+
+        hudSpecificValues =
+        [
+            [@"message-text-color",		        [CPColor whiteColor]],
+            [@"informative-text-color",		    [CPColor whiteColor]],
+        ];
+
+    [self registerThemeValues:hudSpecificValues forView:alert inherit:themedAlertValues];
+
+    return alert;
 }
 
 @end

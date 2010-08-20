@@ -348,10 +348,18 @@ function PatternColor()
     }
     else if (arguments.length == 3)
     {
-        return [CPColor colorWithPatternImage:[_CPCibCustomResource imageResourceWithName:arguments[0] size:CGSizeMake(arguments[1], arguments[2])]];
+        return [CPColor colorWithPatternImage:PatternImage(arguments[0], arguments[1], arguments[2])];
     }
     else
     {
         return nil;
     }
+}
+
+/*
+    Like the 3 argument PatternColor, but return an image instead of a color.
+*/
+function PatternImage(name, width, height)
+{
+    return [_CPCibCustomResource imageResourceWithName:name size:CGSizeMake(width, height)];
 }
