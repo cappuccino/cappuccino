@@ -1306,12 +1306,13 @@ var themedButtonValues = nil,
 {
     var alert = [CPAlert new],
         size = CGSizeMake(400.0, 110.0),
-        inset =  CGInsetMake(10, 15, 15, 55),
+        inset =  CGInsetMake(15, 15, 15, 80),
+        imageOffset = CGPointMake(15, 18),
         messageFont = [CPFont boldSystemFontOfSize:13.0],
         informativeFont = [CPFont systemFontOfSize:12.0],
-        informationIcon = PatternImage("dialog-information.png", 32.0, 32.0),
-        warningIcon = PatternImage("dialog-warning.png", 32.0, 32.0),
-        errorIcon = PatternImage("dialog-error.png", 32.0, 32.0);
+        informationIcon = PatternImage("alert-info.png", 53.0, 46.0),
+        warningIcon = PatternImage("alert-warning.png", 53.0, 46.0),
+        errorIcon = PatternImage("alert-error.png", 53.0, 46.0);
 
     themedAlertValues =
     [
@@ -1323,6 +1324,7 @@ var themedButtonValues = nil,
         [@"informative-text-alignment",	    CPJustifiedTextAlignment],
         [@"informative-text-color",		    [CPColor blackColor]],
         [@"informative-text-font",		    informativeFont],
+        [@"image-offset",                   imageOffset],
         [@"information-image",		        informationIcon],
         [@"warning-image",		            warningIcon],
         [@"error-image",                    errorIcon]
