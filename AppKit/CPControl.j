@@ -337,9 +337,19 @@ var CPControlBlackColor     = [CPColor blackColor];
 
     [self highlight:YES];
     [self setState:[self nextState]];
-    [self sendAction:[self action] to:[self target]];
 
-    [CPTimer scheduledTimerWithTimeInterval:0.1 target:self selector:@selector(unhighlightButtonTimerDidFinish:) userInfo:nil repeats:NO];
+    try
+    {
+        [self sendAction:[self action] to:[self target]];
+    }
+    catch (e)
+    {
+        throw e;
+    }
+    finally
+    {
+        [CPTimer scheduledTimerWithTimeInterval:0.1 target:self selector:@selector(unhighlightButtonTimerDidFinish:) userInfo:nil repeats:NO];
+    }
 }
 
 - (void)unhighlightButtonTimerDidFinish:(id)sender
