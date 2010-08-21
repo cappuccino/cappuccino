@@ -181,8 +181,8 @@ _CPButtonBezelStyleHeights[CPHUDBezelStyle] = 20;
         }
     }
 
-    [self setKeyEquivalent:[cell keyEquivalent]];
-    [self setKeyEquivalentModifierMask:[cell keyEquivalentModifierMask]];
+    _keyEquivalent = [cell keyEquivalent];
+    _keyEquivalentModifierMask = [cell keyEquivalentModifierMask];
 
     return [self NS_initWithCoder:aCoder];
 }

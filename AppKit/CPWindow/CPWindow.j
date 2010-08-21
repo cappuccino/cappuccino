@@ -2406,7 +2406,9 @@ CPTexturedBackgroundWindowMask
     if (_defaultButton === aButton)
         return;
 
-    if ([_defaultButton keyEquivalent] === CPCarriageReturnCharacter)
+    var keyEquivalent = [_defaultButton keyEquivalent];
+
+    if (keyEquivalent === CPNewlineCharacter || keyEquivalent === CPCarriageReturnCharacter)
         [_defaultButton setKeyEquivalent:nil];
 
     _defaultButton = aButton;
