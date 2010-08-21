@@ -365,6 +365,8 @@ CPCriticalAlertStyle        = 2;
 
     [_messageLabel setFrame:CGRectMake(inset.left, inset.top, textWidth, messageSize.height + sizeWithFontCorrection)];
     [_informativeLabel setFrame:CGRectMake(inset.left, CGRectGetMaxY([_messageLabel frame]) + informativeOffset, textWidth, informativeSize.height + sizeWithFontCorrection)];
+    // Don't let an empty informative label partially cover the buttons.
+    [_informativeLabel setHidden:!informationString];
 
     var aRepresentativeButton = _buttons[0],
         buttonY = MAX(CGRectGetMaxY([_alertImageView frame]), CGRectGetMaxY(informationString ? [_informativeLabel frame] : [_messageLabel frame])) + buttonOffset; // the lower of the bottom of the text and the bottom of the icon.

@@ -25,7 +25,10 @@
          "Theorise", "Cancel"],
         [@"Snakes. Why did it have to be snakes?",
          nil,
-         "Torch", "Cancel"]
+         "Torch", "Cancel"],
+         [@"Sometimes a message can be really long and just appear to go on and on. It could be a speech. It could be the television.",
+          nil,
+          "Off", "Cancel"]
     ];
     messageIndex = 0;
 
@@ -69,12 +72,11 @@
     if (![variations count])
         return;
 
-
     var variation = variations[0],
         message = messages[messageIndex],
         alert = [[CPAlert alloc] init];
 
-    messageIndex = 1 - messageIndex;
+    messageIndex = (messageIndex + 1) % messages.length;
     [variations removeObjectAtIndex:0];
 
     [alert setDelegate:self];
