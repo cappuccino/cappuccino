@@ -127,7 +127,7 @@ CPCriticalAlertStyle        = 2;
         _alertPanel = nil;
         _windowStyle = nil;
 
-        _messageLabel = [[CPTextField alloc] initWithFrame:CGRectMakeZero()];
+        _messageLabel = [CPTextField labelWithTitle:@"Alert"];
         _alertImageView = [[CPImageView alloc] initWithFrame:CGRectMakeZero()];
         _informativeLabel = [[CPTextField alloc] initWithFrame:CGRectMakeZero()];
     }
@@ -159,8 +159,14 @@ CPCriticalAlertStyle        = 2;
 
     var contentView = [_alertPanel contentView],
         count = [_buttons count];
-    while (count--)
-        [contentView addSubview:_buttons[count]];
+
+    if (count)
+    {
+        while (count--)
+            [contentView addSubview:_buttons[count]];
+    }
+    else
+        [self addButtonWithTitle:@"OK"];
 
     [contentView addSubview:_messageLabel];
     [contentView addSubview:_alertImageView];
@@ -301,7 +307,7 @@ CPCriticalAlertStyle        = 2;
     else
         [button setKeyEquivalent:nil];
 
-    [_buttons addObject:button];
+    [_buttons insertObject:button atIndex:0];
 
     // For reference: does not actually work since this 'view' is not in the hierarchy.
     // [self setNeedsLayout];
@@ -331,6 +337,7 @@ CPCriticalAlertStyle        = 2;
     }
 
     [_alertImageView setImage:theImage];
+
     var imageSize = theImage ? [theImage size] : CGSizeMakeZero();
     [_alertImageView setFrame:CGRectMake(iconOffset.x, iconOffset.y, imageSize.width, imageSize.height)];
 
@@ -370,6 +377,7 @@ CPCriticalAlertStyle        = 2;
 
     var aRepresentativeButton = _buttons[0],
         buttonY = MAX(CGRectGetMaxY([_alertImageView frame]), CGRectGetMaxY(informationString ? [_informativeLabel frame] : [_messageLabel frame])) + buttonOffset; // the lower of the bottom of the text and the bottom of the icon.
+
     [aRepresentativeButton setTheme:[self theme]];
     [aRepresentativeButton sizeToFit];
 
@@ -378,25 +386,26 @@ CPCriticalAlertStyle        = 2;
         desiredHeight = MAX(minimumSize.height, buttonY + CGRectGetHeight([aRepresentativeButton bounds]) + inset.bottom),
         deltaY = desiredHeight - CGRectGetHeight(bounds),
         frameSize = CGSizeMakeCopy([_alertPanel frame].size);
+
     frameSize.height += deltaY;
     [_alertPanel setFrameSize:frameSize];
 
     var count = [_buttons count];
+
     while (count--)
     {
         var button = _buttons[count];
-
         [button setTheme:[self theme]];
         [button sizeToFit];
 
         var buttonBounds = [button bounds],
             width = MAX(80.0, CGRectGetWidth(buttonBounds)),
             height = CGRectGetHeight(buttonBounds);
+
         offsetX -= width;
         [button setFrame:CGRectMake(offsetX, buttonY, width, height)];
         offsetX -= 10;
     }
-
 }
 
 /*!
