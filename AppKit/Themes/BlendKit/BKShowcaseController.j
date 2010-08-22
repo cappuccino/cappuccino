@@ -36,14 +36,17 @@ var BKLearnMoreToolbarItemIdentifier                = @"BKLearnMoreToolbarItemId
 
     CPCollectionView    _themesCollectionView;
     CPCollectionView    _themedObjectsCollectionView;
+
+    CPWindow            theWindow;
 }
 
 - (void)applicationDidFinishLaunching:(CPNotification)aNotification
 {
     _themeDescriptorClasses = [BKThemeDescriptor allThemeDescriptorClasses];
 
-    var theWindow = [[CPWindow alloc] initWithContentRect:CGRectMakeZero() styleMask:CPBorderlessBridgeWindowMask],
-        toolbar = [[CPToolbar alloc] initWithIdentifier:@"Toolbar"];
+    theWindow = [[CPWindow alloc] initWithContentRect:CGRectMakeZero() styleMask:CPBorderlessBridgeWindowMask];
+
+    var toolbar = [[CPToolbar alloc] initWithIdentifier:@"Toolbar"];
 
     [toolbar setDelegate:self];
     [theWindow setToolbar:toolbar];
@@ -118,7 +121,7 @@ var BKLearnMoreToolbarItemIdentifier                = @"BKLearnMoreToolbarItemId
 
     [_themesCollectionView setSelectionIndexes:[CPIndexSet indexSetWithIndex:0]];
 
-    [theWindow setFullBridge:YES];
+    [theWindow setFullPlatformWindow:YES];
     [theWindow makeKeyAndOrderFront:self];
 }
 
