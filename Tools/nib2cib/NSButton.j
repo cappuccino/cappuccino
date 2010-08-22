@@ -165,7 +165,8 @@ _CPButtonBezelStyleHeights[CPHUDBezelStyle] = 20;
 
 - (id)initWithCoder:(CPCoder)aCoder
 {
-    // We need to do a bit of magic to determine if this is a checkbox or radio button.
+    // We need to do a bit of magic to determine if this is a checkbox or radio button
+    // BEFORE we can initialize the rest of the object.
     var cell = [aCoder decodeObjectForKey:@"NSCell"],
         alternateImage = [cell alternateImage];
 
@@ -181,10 +182,12 @@ _CPButtonBezelStyleHeights[CPHUDBezelStyle] = 20;
         }
     }
 
-    [self setKeyEquivalent:[cell keyEquivalent]];
-    [self setKeyEquivalentModifierMask:[cell keyEquivalentModifierMask]];
+    var self = [self NS_initWithCoder:aCoder];
 
-    return [self NS_initWithCoder:aCoder];
+    [self setKeyEquivalent:[cell keyEquivalent]];
+    _keyEquivalentModifierMask = [cell keyEquivalentModifierMask];
+
+    return self;
 }
 
 - (Class)classForKeyedArchiver
