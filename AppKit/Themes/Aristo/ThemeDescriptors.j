@@ -1264,8 +1264,8 @@ var themedButtonValues = nil,
 
     var tableview = [[CPTableView alloc] initWithFrame:CGRectMake(0.0, 0.0, 150.0, 150.0)],
 
-        sortImage = PatternColor("tableview-headerview-ascending.png", 9.0, 8.0),
-        sortImageReversed = PatternColor("tableview-headerview-descending.png", 9.0, 8.0),
+        sortImage = PatternImage("tableview-headerview-ascending.png", 9.0, 8.0),
+        sortImageReversed = PatternImage("tableview-headerview-descending.png", 9.0, 8.0),
         alternatingRowColors = [[CPColor whiteColor], [CPColor colorWithRed:245.0 / 255.0 green:249.0 / 255.0 blue:252.0 / 255.0 alpha:1.0]],
         gridColor = [CPColor colorWithHexString:@"dce0e2"],
         selectionColor = [CPColor colorWithHexString:@"5f83b9"],
