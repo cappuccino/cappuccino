@@ -180,7 +180,7 @@ var BKLearnMoreToolbarItemIdentifier                = @"BKLearnMoreToolbarItemId
         [toolbarItem setMinSize:CGSizeMake(width + 20.0, 24.0)];
         [toolbarItem setMaxSize:CGSizeMake(width + 20.0, 24.0)];
     }
-    
+
     else if (anItemIdentifier === BKBackgroundColorToolbarItemIdentifier)
     {
         var popUpButton = [CPPopUpButton buttonWithTitle:@"Window Background"];
@@ -218,7 +218,7 @@ var BKLearnMoreToolbarItemIdentifier                = @"BKLearnMoreToolbarItemId
 
         var button = [CPButton buttonWithTitle:title];
 
-        [button setDefaultButton:YES];
+        [theWindow setDefaultButton:button];
 
         [toolbarItem setView:button];
         [toolbarItem setLabel:@"Learn More"];
@@ -320,7 +320,7 @@ var SelectionColor = nil;
 
         [self addSubview:_label];
     }
-    
+
     [_label setStringValue:[aThemeDescriptor themeName] + " (" + [[aThemeDescriptor themedObjectTemplates] count] + ")"];
 }
 
@@ -383,7 +383,7 @@ var BKShowcaseCellBackgroundColorDidChangeNotification  = @"BKShowcaseCellBackgr
 - (id)initWithCoder:(CPCoder)aCoder
 {
     self = [super initWithCoder:aCoder];
-    
+
     if (self)
         [[CPNotificationCenter defaultCenter]
             addObserver:self
@@ -419,7 +419,7 @@ var BKShowcaseCellBackgroundColorDidChangeNotification  = @"BKShowcaseCellBackgr
     [_label setStringValue:[anObject valueForKey:@"label"]];
     [_label sizeToFit];
 
-    [_label setFrame:CGRectMake(0.0, CGRectGetHeight([self bounds]) - CGRectGetHeight([_label frame]), 
+    [_label setFrame:CGRectMake(0.0, CGRectGetHeight([self bounds]) - CGRectGetHeight([_label frame]),
         CGRectGetWidth([self bounds]), CGRectGetHeight([_label frame]))];
 
     if (!_backgroundView)
