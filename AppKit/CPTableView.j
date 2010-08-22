@@ -2474,6 +2474,9 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     [self drawBackgroundInClipRect:exposedRect];
     [self drawGridInClipRect:exposedRect];
     [self highlightSelectionInClipRect:exposedRect];
+
+    if (_implementsCustomDrawRow)
+        [self _drawRows:_exposedRows clipRect:exposedRect];
 }
 
 - (void)drawBackgroundInClipRect:(CGRect)aRect
@@ -3308,6 +3311,10 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
             if (![_delegate tableView:self shouldSelectRow:index])
                 [newSelection removeIndex:index];
         }
+
+        // as per cocoa
+        if ([newSelection count] === 0)
+            return;
     }
 
     // if empty selection is not allowed and the new selection has nothing selected, abort

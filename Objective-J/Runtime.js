@@ -53,20 +53,20 @@ DISPLAY_NAME(objj_method);
 GLOBAL(objj_class) = function(displayName)
 {
     this.isa            = NULL;
-    
+
     this.super_class    = NULL;
     this.sub_classes    = [];
-    
+
     this.name           = NULL;
     this.info           = 0;
     this.ivars          = [];
-    
+
     this.method_list    = [];
     this.method_hash    = {};
-    
+
     this.method_store   = function() { };
     this.method_dtable  = this.method_store.prototype;
-    
+
 #if DEBUG
     // naming the allocator allows the WebKit heap snapshot tool to display object class names correctly
     // HACK: displayName property is not respected so we must eval a function to name it
@@ -94,7 +94,7 @@ GLOBAL(class_getName) = function(/*Class*/ aClass)
 {
     if (aClass == Nil)
         return "";
-    
+
     return aClass.name;
 }
 
@@ -104,7 +104,7 @@ GLOBAL(class_isMetaClass) = function(/*Class*/ aClass)
 {
     if (!aClass)
         return NO;
-    
+
     return ISMETA(aClass);
 }
 
@@ -114,7 +114,7 @@ GLOBAL(class_getSuperclass) = function(/*Class*/ aClass)
 {
     if (aClass == Nil)
         return Nil;
-    
+
     return aClass.super_class;
 }
 
@@ -132,13 +132,13 @@ DISPLAY_NAME(class_setSuperclass);
 GLOBAL(class_addIvar) = function(/*Class*/ aClass, /*String*/ aName, /*String*/ aType)
 {
     var thePrototype = aClass.allocator.prototype;
-    
+
     if (typeof thePrototype[aName] != "undefined")
         return NO;
-    
-    aClass.ivars.push(new objj_ivar(aName, aType)); 
+
+    aClass.ivars.push(new objj_ivar(aName, aType));
     thePrototype[aName] = NULL;
-    
+
     return YES;
 }
 
@@ -149,7 +149,7 @@ GLOBAL(class_addIvars) = function(/*Class*/ aClass, /*Array*/ivars)
     var index = 0,
         count = ivars.length,
         thePrototype = aClass.allocator.prototype;
-        
+
     for (; index < count; ++index)
     {
         var ivar = ivars[index],
@@ -157,7 +157,7 @@ GLOBAL(class_addIvars) = function(/*Class*/ aClass, /*Array*/ivars)
 
         if (typeof thePrototype[name] === "undefined")
         {
-            aClass.ivars.push(ivar); 
+            aClass.ivars.push(ivar);
             thePrototype[name] = NULL;
         }
     }
@@ -180,10 +180,10 @@ GLOBAL(class_addMethod) = function(/*Class*/ aClass, /*SEL*/ aName, /*IMP*/ anIm
 {
     if (aClass.method_hash[aName])
         return NO;
-    
+
     var method = new objj_method(aName, anImplementation, types);
-    
-    aClass.method_list.push(method); 
+
+    aClass.method_list.push(method);
     aClass.method_dtable[aName] = method;
 
 #if DEBUG
@@ -205,18 +205,18 @@ GLOBAL(class_addMethods) = function(/*Class*/ aClass, /*Array*/ methods)
 {
     var index = 0,
         count = methods.length,
-        
+
         method_list = aClass.method_list,
         method_dtable = aClass.method_dtable;
-    
+
     for (; index < count; ++index)
     {
         var method = methods[index];
-        
+
         if (aClass.method_hash[method.name])
             continue;
-        
-        method_list.push(method); 
+
+        method_list.push(method);
         method_dtable[method.name] = method;
 
 #if DEBUG
@@ -236,9 +236,9 @@ GLOBAL(class_getInstanceMethod) = function(/*Class*/ aClass, /*SEL*/ aSelector)
 {
     if (!aClass || !aSelector)
         return NULL;
-    
+
     var method = aClass.method_dtable[aSelector];
-    
+
     return method ? method : NULL;
 }
 
@@ -250,7 +250,7 @@ GLOBAL(class_getClassMethod) = function(/*Class*/ aClass, /*SEL*/ aSelector)
         return NULL;
 
     var method = GETMETA(aClass).method_dtable[aSelector];
-    
+
     return method ? method : NULL;
 }
 
@@ -284,17 +284,17 @@ DISPLAY_NAME(class_replaceMethod);
 var _class_initialize = function(/*Class*/ aClass)
 {
     var meta = GETMETA(aClass);
-    
+
     if (GETINFO(aClass, CLS_META))
         aClass = objj_getClass(aClass.name);
-    
+
     if (aClass.super_class && !ISINITIALIZED(aClass.super_class))
         _class_initialize(aClass.super_class);
-    
+
     if (!GETINFO(meta, CLS_INITIALIZED) && !GETINFO(meta, CLS_INITIALIZING))
     {
         SETINFO(meta, CLS_INITIALIZING);
-        
+
         objj_msgSend(aClass, "initialize");
 
         CHANGEINFO(meta, CLS_INITIALIZED, CLS_INITIALIZING);
@@ -321,7 +321,7 @@ var _objj_forward = new objj_method("forward", function(self, _cmd)
 GLOBAL(class_getMethodImplementation) = function(/*Class*/ aClass, /*SEL*/ aSelector)
 {
     CLASS_GET_METHOD_IMPLEMENTATION(var implementation, aClass, aSelector);
-    
+
     return implementation;
 }
 
@@ -335,25 +335,25 @@ GLOBAL(objj_allocateClassPair) = function(/*Class*/ superclass, /*String*/ aName
     var classObject = new objj_class(aName),
         metaClassObject = new objj_class(aName),
         rootClassObject = classObject;
-    
+
     // If we don't have a superclass, we are the root class.
     if (superclass)
     {
         rootClassObject = superclass;
-        
+
         while (rootClassObject.superclass)
             rootClassObject = rootClassObject.superclass;
-        
+
         // Give our current allocator all the instance variables of our super class' allocator.
         classObject.allocator.prototype = new superclass.allocator;
-        
+
         // "Inheret" parent methods.
         classObject.method_store.prototype = new superclass.method_store;
         classObject.method_dtable = classObject.method_store.prototype;
-        
+
         metaClassObject.method_store.prototype = new superclass.isa.method_store;
         metaClassObject.method_dtable = metaClassObject.method_store.prototype;
-        
+
         // Set up the actual class hierarchy.
         classObject.super_class = superclass;
         metaClassObject.super_class = superclass.isa;
@@ -406,7 +406,7 @@ GLOBAL(class_createInstance) = function(/*Class*/ aClass)
 DISPLAY_NAME(class_createInstance);
 
 // Opera 9.5.1 has a bug where prototypes "inheret" members from instances when "with" is used.
-// Given that the Opera team is so fond of bug-testing instead of version-testing, we'll go 
+// Given that the Opera team is so fond of bug-testing instead of version-testing, we'll go
 // ahead and do that.
 
 var prototype_bug = function() { }
@@ -417,7 +417,7 @@ with (new prototype_bug())
     member = true;
 
 // If the bug exists, go down the slow path.
-if (new prototype_bug().member) 
+if (new prototype_bug().member)
 {
 
 var fast_class_createInstance = class_createInstance;
@@ -425,23 +425,23 @@ var fast_class_createInstance = class_createInstance;
 class_createInstance = function(/*Class*/ aClass)
 {
     var object = fast_class_createInstance(aClass);
-    
+
     if (object)
     {
         var theClass = object.isa,
             actualClass = theClass;
-    
+
         while (theClass)
         {
             var ivars = theClass.ivars;
                 count = ivars.length;
-            
+
             while (count--)
                 object[ivars[count].name] = NULL;
-                
+
             theClass = theClass.super_class;
         }
-        
+
         object.isa = actualClass;
     }
 
@@ -464,11 +464,11 @@ GLOBAL(object_getClassName) = function(/*id*/ anObject)
 
 DISPLAY_NAME(object_getClassName);
 
-//objc_getClassList  
+//objc_getClassList
 GLOBAL(objj_lookUpClass) = function(/*String*/ aName)
 {
     var theClass = REGISTERED_CLASSES[aName];
-    
+
     return theClass ? theClass : Nil;
 }
 
@@ -477,22 +477,22 @@ DISPLAY_NAME(objj_lookUpClass);
 GLOBAL(objj_getClass) = function(/*String*/ aName)
 {
     var theClass = REGISTERED_CLASSES[aName];
-    
+
     if (!theClass)
     {
         // class handler callback???
     }
-    
+
     return theClass ? theClass : Nil;
 }
 
 DISPLAY_NAME(objj_getClass);
 
-//objc_getRequiredClass  
+//objc_getRequiredClass
 GLOBAL(objj_getMetaClass) = function(/*String*/ aName)
 {
     var theClass = objj_getClass(aName);
-    
+
     return GETMETA(theClass);
 }
 
@@ -569,9 +569,9 @@ DISPLAY_NAME(method_getImplementation);
 GLOBAL(method_setImplementation) = function(/*Method*/ aMethod, /*IMP*/ anImplementation)
 {
     var oldImplementation = aMethod.method_imp;
-    
+
     aMethod.method_imp = anImplementation;
-    
+
     return oldImplementation;
 }
 

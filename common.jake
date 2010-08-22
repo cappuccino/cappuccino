@@ -266,12 +266,15 @@ global.subjake = function(/*Array<String>*/ directories, /*String*/ aTaskName)
     });
 }
 
-global.executableExists = function(/*String*/ aFileName)
+global.executableExists = function(/*String*/ executableName)
 {
-    return SYSTEM.env["PATH"].split(':').some(function(/*String*/ aPath)
-    {
-        return FILE.exists(FILE.join(aPath, aFileName));
-    });
+    var paths = SYSTEM.env["PATH"].split(':');
+    for (var i = 0; i < paths.length; i++) {
+        var path = FILE.join(paths[i], executableName);
+        if (FILE.exists(path))
+            return path;
+    }
+    return null;
 }
 
 $OBJJ_TEMPLATE_EXECUTABLE = FILE.join($HOME_DIR, "Objective-J", "CommonJS", "objj-executable");
