@@ -40,19 +40,19 @@
 - (id)initWithContentsOfURL:(CPURL)aURL
 {
     self = [super init];
-    
+
     if (self)
     {
         _bundle = [[CPBundle alloc] initWithPath:aURL];
     }
-    
+
     return self;
 }
 
 - (void)loadWithDelegate:(id)aDelegate
 {
     _loadDelegate = aDelegate;
-    
+
     [_bundle loadWithDelegate:self];
 }
 

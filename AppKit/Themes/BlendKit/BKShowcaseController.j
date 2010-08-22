@@ -137,7 +137,7 @@ var BKLearnMoreToolbarItemIdentifier                = @"BKLearnMoreToolbarItemId
     [_themedObjectsCollectionView setMinItemSize:itemSize];
     [_themedObjectsCollectionView setMaxItemSize:itemSize];
 
-    [_themedObjectsCollectionView setContent:[themeDescriptorClass themedObjectTemplates]];
+    [_themedObjectsCollectionView setContent:[themeDescriptorClass themedShowcaseObjectTemplates]];
     [BKShowcaseCell setBackgroundColor:[themeDescriptorClass showcaseBackgroundColor]];
 }
 
@@ -249,12 +249,12 @@ var BKLearnMoreToolbarItemIdentifier                = @"BKLearnMoreToolbarItemId
 
 - (void)changeState:(id)aSender
 {
-    var themedObjectTemplates = [[self selectedThemeDescriptor] themedObjectTemplates],
-        count = [themedObjectTemplates count];
+    var themedShowcaseObjectTemplates = [[self selectedThemeDescriptor] themedShowcaseObjectTemplates],
+        count = [themedShowcaseObjectTemplates count];
 
     while (count--)
     {
-        var themedObject = [themedObjectTemplates[count] valueForKey:@"themedObject"];
+        var themedObject = [themedShowcaseObjectTemplates[count] valueForKey:@"themedObject"];
 
         if ([themedObject respondsToSelector:@selector(setEnabled:)])
             [themedObject setEnabled:[aSender title] === @"Enabled" ? YES : NO];
@@ -324,7 +324,7 @@ var SelectionColor = nil;
         [self addSubview:_label];
     }
 
-    [_label setStringValue:[aThemeDescriptor themeName] + " (" + [[aThemeDescriptor themedObjectTemplates] count] + ")"];
+    [_label setStringValue:[aThemeDescriptor themeName] + " (" + [[aThemeDescriptor themedShowcaseObjectTemplates] count] + ")"];
 }
 
 - (void)setSelected:(BOOL)isSelected
