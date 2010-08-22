@@ -148,6 +148,30 @@ var themedButtonValues = nil,
     PatternIsVertical);
 
 
+    EXCLUDING A THEMED OBJECT FROM THE SHOWCASE
+
+    When a theme is compiled, a showcase application is created that displays all of the themed objects
+    by default. There are some cases in which it is either not feasible or not desirable to display
+    the themed object in the showcase.
+
+    You can exclude themed objects from the showcases by defining the following method in your theme class:
+
+    + (CPArray)themeShowcaseExcludes
+
+    If such a method exists, it should return an array of themed object names to exclude from the showcase.
+    For example, let's say we want to exclude the themed objects that are defined by the methods
+    themedAlert, themedCornerview and themedTableDataView. Here is what the themeShowcaseExcludes method
+    could look like:
+
+    + (CPArray)themeShowcaseExcludes
+    {
+        return ["themedAlert", "cornerView", "tableDataView"];
+    }
+
+    Note that to make it easier to do the right thing, the names in the array can begin with "themed" or not.
+    If the name does not begin with "themed", it is prepended and the first character uppercased if it is not there.
+
+
     SUBTHEMES
 
     If you want to create a theme that inherits from another theme, for example the way
