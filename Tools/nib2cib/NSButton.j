@@ -165,29 +165,27 @@ _CPButtonBezelStyleHeights[CPHUDBezelStyle] = 20;
 
 - (id)initWithCoder:(CPCoder)aCoder
 {
+    // We need to do a bit of magic to determine if this is a checkbox or radio button
+    // BEFORE we can initialize the rest of the object.
+    var cell = [aCoder decodeObjectForKey:@"NSCell"],
+        alternateImage = [cell alternateImage];
+
+    if ([alternateImage isKindOfClass:[NSButtonImageSource class]])
+    {
+        if ([alternateImage imageName] === @"NSSwitch")
+            _isCheckBox = YES;
+
+        else if ([alternateImage imageName] === @"NSRadioButton")
+        {
+            _isRadio = YES;
+            self._radioGroup = [CPRadioGroup new];
+        }
+    }
+
     var self = [self NS_initWithCoder:aCoder];
 
-    if (self)
-    {
-        // We need to do a bit of magic to determine if this is a checkbox or radio button.
-        var cell = [aCoder decodeObjectForKey:@"NSCell"],
-            alternateImage = [cell alternateImage];
-
-        if ([alternateImage isKindOfClass:[NSButtonImageSource class]])
-        {
-            if ([alternateImage imageName] === @"NSSwitch")
-                _isCheckBox = YES;
-
-            else if ([alternateImage imageName] === @"NSRadioButton")
-            {
-                _isRadio = YES;
-                self._radioGroup = [CPRadioGroup new];
-            }
-        }
-
-        [self setKeyEquivalent:[cell keyEquivalent]];
-        _keyEquivalentModifierMask = [cell keyEquivalentModifierMask];
-    }
+    [self setKeyEquivalent:[cell keyEquivalent]];
+    _keyEquivalentModifierMask = [cell keyEquivalentModifierMask];
 
     return self;
 }
