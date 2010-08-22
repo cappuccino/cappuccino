@@ -298,6 +298,10 @@ var themedButtonValues = nil,
     return @"Aristo";
 }
 
++ (CPArray)themeShowcaseExcludes
+{
+    return ["alert", "cornerview", "tableView", "tableDataView"];
+}
 
 + (CPButton)makeButton
 {
@@ -1344,6 +1348,11 @@ var themedButtonValues = nil,
 + (CPString)themeName
 {
     return @"Aristo-HUD";
+}
+
++ (CPArray)themeShowcaseExcludes
+{
+    return ["alert"];
 }
 
 + (CPColor)defaultShowcaseBackgroundColor
