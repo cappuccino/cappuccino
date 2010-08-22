@@ -347,7 +347,9 @@ var SharedMenuManager = nil;
 
     if (!newMenu)
         return;
-
+    
+    if([newMenu autoenablesItems])
+        [newMenu update];
     // Unhighlight any previously highlighted item.
     [newMenu _highlightItemAtIndex:CPNotFound];
 

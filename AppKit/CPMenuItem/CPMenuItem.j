@@ -135,6 +135,16 @@
     [_menu itemChanged:self];
 }
 
+// a private function to toggle availability as part of update check
+- (void)_setEnabledByMenu:(BOOL)isEnabled
+{
+    if (![_menu autoenablesItems])
+        return;
+
+    _isEnabled = isEnabled;
+    [_menuItemView setDirty];
+}
+
 /*!
     Returns \c YES if the item is enabled.
 */

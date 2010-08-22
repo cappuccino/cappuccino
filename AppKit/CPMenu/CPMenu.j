@@ -605,12 +605,17 @@ var _CPMenuBarVisible               = NO,
     return _autoenablesItems;
 }
 
-/*!
-    Not implemented.
-*/
 - (void)update
 {
-
+    var cnt = [_items count];
+    for(var i=0; i<cnt; ++i) {
+        var item = [_items objectAtIndex:i];
+        if([[item target] respondsToSelector:@selector(validateMenuItem:)]) {
+            [item _setEnabledByMenu:[[item target] validateMenuItem:item]];
+        } else {
+            [item _setEnabledByMenu:NO];
+        }
+    }
 }
 
 // Managing the Title
