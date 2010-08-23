@@ -145,7 +145,7 @@ CPButtonStateMixed  = CPThemeState("mixed");
 
         _controlSize = CPRegularControlSize;
 
-        _keyEquivalent = "";
+        _keyEquivalent = @"";
         _keyEquivalentModifierMask = 0;
 
 //        [self setBezelStyle:CPRoundRectBezelStyle];
@@ -540,14 +540,6 @@ CPButtonStateMixed  = CPThemeState("mixed");
     }
 }
 
-- (void)setDefaultButton:(BOOL)shouldBeDefaultButton
-{
-    if (shouldBeDefaultButton)
-        [self setThemeState:CPThemeStateDefault];
-    else
-        [self unsetThemeState:CPThemeStateDefault];
-}
-
 - (void)setBordered:(BOOL)shouldBeBordered
 {
     if (shouldBeBordered)
@@ -570,24 +562,24 @@ CPButtonStateMixed  = CPThemeState("mixed");
 - (void)setKeyEquivalent:(CPString)aString
 {
     _keyEquivalent = aString || @"";
+
     // Check if the key equivalent is the enter key
     // Treat \r and \n as the same key equivalent. See issue #710.
     if (aString === CPNewlineCharacter || aString === CPCarriageReturnCharacter)
-    {
-        [[self window] setDefaultButton:self];
-        [self setDefaultButton:YES];
-    }
-    else if ([[self window] defaultButton] === self)
-    {
-        [[self window] setDefaultButton:nil];
-        [self setDefaultButton:NO];
-    }
+        [self setThemeState:CPThemeStateDefault];
+    else
+        [self unsetThemeState:CPThemeStateDefault];
 }
 
 - (void)viewWillMoveToWindow:(CPWindow)aWindow
 {
-    if ([[self window] defaultButton] === self)
-        [[self window] setDefaultButton:nil];
+    var selfWindow = [self window];
+
+    if (selfWindow === aWindow || aWindow === nil)
+        return;
+
+    if ([selfWindow defaultButton] === self)
+        [selfWindow setDefaultButton:nil];
 
     if ([self keyEquivalent] === CPNewlineCharacter || [self keyEquivalent] === CPCarriageReturnCharacter)
         [aWindow setDefaultButton:self];
@@ -672,18 +664,18 @@ var CPButtonImageKey                    = @"CPButtonImageKey",
     {
         _controlSize = CPRegularControlSize;
 
-        [self setImage:[aCoder decodeObjectForKey:CPButtonImageKey]];
-        [self setAlternateImage:[aCoder decodeObjectForKey:CPButtonAlternateImageKey]];
+        _image = [aCoder decodeObjectForKey:CPButtonImageKey];
+        _alternateImage = [aCoder decodeObjectForKey:CPButtonAlternateImageKey];
 
-        [self setTitle:[aCoder decodeObjectForKey:CPButtonTitleKey]];
-        [self setAlternateTitle:[aCoder decodeObjectForKey:CPButtonAlternateTitleKey]];
+        _title = [aCoder decodeObjectForKey:CPButtonTitleKey];
+        _alternateTitle = [aCoder decodeObjectForKey:CPButtonAlternateTitleKey];
 
         [self setImageDimsWhenDisabled:[aCoder decodeObjectForKey:CPButtonImageDimsWhenDisabledKey]];
 
         if ([aCoder containsValueForKey:CPButtonKeyEquivalentKey])
             [self setKeyEquivalent:CFData.decodeBase64ToUtf16String([aCoder decodeObjectForKey:CPButtonKeyEquivalentKey])];
 
-        [self setKeyEquivalentModifierMask:[aCoder decodeObjectForKey:CPButtonKeyEquivalentMaskKey]];
+        _keyEquivalentModifierMask = [aCoder decodeObjectForKey:CPButtonKeyEquivalentMaskKey];
 
         [self setNeedsLayout];
         [self setNeedsDisplay:YES];

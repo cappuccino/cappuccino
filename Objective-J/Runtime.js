@@ -256,6 +256,13 @@ GLOBAL(class_getClassMethod) = function(/*Class*/ aClass, /*SEL*/ aSelector)
 
 DISPLAY_NAME(class_getClassMethod);
 
+GLOBAL(class_respondsToSelector) = function(/*Class*/ aClass, /*SEL*/ aSelector)
+{
+    return class_getClassMethod(aClass, aSelector) != NULL;
+}
+
+DISPLAY_NAME(class_respondsToSelector);
+
 GLOBAL(class_copyMethodList) = function(/*Class*/ aClass)
 {
     return aClass.method_list.slice(0);

@@ -17,7 +17,8 @@ var themedButtonValues = nil,
     themedHorizontalSliderValues = nil,
     themedVerticalSliderValues = nil,
     themedCircularSliderValues = nil,
-    themedButtonBarValues = nil;
+    themedButtonBarValues = nil,
+    themedAlertValues = nil;
 
 /*
     HOW TO ADD OR MODIFY THEMED ELEMENTS
@@ -145,6 +146,30 @@ var themedButtonValues = nil,
         ["vertical-track-bottom.png", 5.0, 4.0]
     ],
     PatternIsVertical);
+
+
+    EXCLUDING A THEMED OBJECT FROM THE SHOWCASE
+
+    When a theme is compiled, a showcase application is created that displays all of the themed objects
+    by default. There are some cases in which it is either not feasible or not desirable to display
+    the themed object in the showcase.
+
+    You can exclude themed objects from the showcases by defining the following method in your theme class:
+
+    + (CPArray)themeShowcaseExcludes
+
+    If such a method exists, it should return an array of themed object names to exclude from the showcase.
+    For example, let's say we want to exclude the themed objects that are defined by the methods
+    themedAlert, themedCornerview and themedTableDataView. Here is what the themeShowcaseExcludes method
+    could look like:
+
+    + (CPArray)themeShowcaseExcludes
+    {
+        return ["themedAlert", "cornerView", "tableDataView"];
+    }
+
+    Note that to make it easier to do the right thing, the names in the array can begin with "themed" or not.
+    If the name does not begin with "themed", it is prepended and the first character uppercased if it is not there.
 
 
     SUBTHEMES
@@ -297,6 +322,10 @@ var themedButtonValues = nil,
     return @"Aristo";
 }
 
++ (CPArray)themeShowcaseExcludes
+{
+    return ["alert", "cornerview", "columnHeader", "tableView", "tableHeaderRow", "tableDataView"];
+}
 
 + (CPButton)makeButton
 {
@@ -403,7 +432,7 @@ var themedButtonValues = nil,
     var button = [self button];
 
     [button setTitle:@"OK"];
-    [button setDefaultButton:YES];
+    [button setThemeState:CPThemeStateDefault];
 
     return button;
 }
@@ -1263,8 +1292,8 @@ var themedButtonValues = nil,
 
     var tableview = [[CPTableView alloc] initWithFrame:CGRectMake(0.0, 0.0, 150.0, 150.0)],
 
-        sortImage = PatternColor("tableview-headerview-ascending.png", 9.0, 8.0),
-        sortImageReversed = PatternColor("tableview-headerview-descending.png", 9.0, 8.0),
+        sortImage = PatternImage("tableview-headerview-ascending.png", 9.0, 8.0),
+        sortImageReversed = PatternImage("tableview-headerview-descending.png", 9.0, 8.0),
         alternatingRowColors = [[CPColor whiteColor], [CPColor colorWithRed:245.0 / 255.0 green:249.0 / 255.0 blue:252.0 / 255.0 alpha:1.0]],
         gridColor = [CPColor colorWithHexString:@"dce0e2"],
         selectionColor = [CPColor colorWithHexString:@"5f83b9"],
@@ -1301,6 +1330,39 @@ var themedButtonValues = nil,
     return view;
 }
 
++ (CPAlert)themedAlert
+{
+    var alert = [CPAlert new],
+        size = CGSizeMake(400.0, 110.0),
+        inset =  CGInsetMake(15, 15, 15, 80),
+        imageOffset = CGPointMake(15, 18),
+        messageFont = [CPFont boldSystemFontOfSize:13.0],
+        informativeFont = [CPFont systemFontOfSize:12.0],
+        informationIcon = PatternImage("alert-info.png", 53.0, 46.0),
+        warningIcon = PatternImage("alert-warning.png", 53.0, 46.0),
+        errorIcon = PatternImage("alert-error.png", 53.0, 46.0);
+
+    themedAlertValues =
+    [
+        [@"size",		                    size],
+        [@"content-inset",		            inset],
+        [@"message-text-alignment",	        CPJustifiedTextAlignment],
+        [@"message-text-color",		        [CPColor blackColor]],
+        [@"message-text-font",		        messageFont],
+        [@"informative-text-alignment",	    CPJustifiedTextAlignment],
+        [@"informative-text-color",		    [CPColor blackColor]],
+        [@"informative-text-font",		    informativeFont],
+        [@"image-offset",                   imageOffset],
+        [@"information-image",		        informationIcon],
+        [@"warning-image",		            warningIcon],
+        [@"error-image",                    errorIcon]
+    ];
+
+    [self registerThemeValues:themedAlertValues forView:alert];
+
+    return alert;
+}
+
 @end
 
 @implementation AristoHUDThemeDescriptor : BKThemeDescriptor
@@ -1310,6 +1372,11 @@ var themedButtonValues = nil,
 + (CPString)themeName
 {
     return @"Aristo-HUD";
+}
+
++ (CPArray)themeShowcaseExcludes
+{
+    return ["alert"];
 }
 
 + (CPColor)defaultShowcaseBackgroundColor
@@ -1365,7 +1432,7 @@ var themedButtonValues = nil,
     var button = [self button];
 
     [button setTitle:@"OK"];
-    [button setDefaultButton:YES];
+    [button setThemeState:CPThemeStateDefault];
 
     return button;
 }
@@ -1421,6 +1488,21 @@ var themedButtonValues = nil,
     [self registerThemeValues:[self defaultThemeOverridesAddedTo:nil] forView:slider inherit:themedCircularSliderValues];
 
     return slider;
+}
+
++ (CPAlert)themedAlert
+{
+    var alert = [CPAlert new],
+
+        hudSpecificValues =
+        [
+            [@"message-text-color",		        [CPColor whiteColor]],
+            [@"informative-text-color",		    [CPColor whiteColor]],
+        ];
+
+    [self registerThemeValues:hudSpecificValues forView:alert inherit:themedAlertValues];
+
+    return alert;
 }
 
 @end

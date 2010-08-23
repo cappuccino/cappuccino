@@ -25,6 +25,7 @@
 
 var ItemSizes               = { },
     ThemedObjects           = { },
+    ThemedShowcaseObjects   = { },
     BackgroundColors        = { },
 
     LightCheckersColor      = nil,
@@ -120,15 +121,38 @@ var ItemSizes               = { },
     return ThemedObjects[className];
 }
 
++ (CPArray)themedShowcaseObjectTemplates
+{
+    var className = [self className];
+
+    if (!ThemedShowcaseObjects[className])
+        [self calculateThemedObjectTemplates];
+
+    return ThemedShowcaseObjects[className];
+}
+
 + (void)calculateThemedObjectTemplates
 {
     var templates = [],
+        showcaseTemplates = [],
         itemSize = CGSizeMake(0.0, 0.0),
         methods = class_copyMethodList([self class].isa),
         index = 0,
-        count = [methods count];
+        count = [methods count],
+        excludes = [];
 
-    for (; index < count; ++index)
+    if ([self respondsToSelector:@selector(themeShowcaseExcludes)])
+        excludes = [self themeShowcaseExcludes];
+
+    for (; index < excludes.length; ++index)
+    {
+        var name = excludes[index];
+
+        if (name && name.indexOf("themed") !== 0)
+            excludes[index] = "themed" + name.charAt(0).toUpperCase() + name.substr(1);
+    }
+
+    for (index = 0; index < count; ++index)
     {
         var method = methods[index],
             selector = method_getName(method);
@@ -142,26 +166,32 @@ var ItemSizes               = { },
         if (!object)
             continue;
 
-        var template = [[BKThemedObjectTemplate alloc] init];
+        var template = [[BKThemedObjectTemplate alloc] init],
+            excluded = [excludes containsObject:selector];
 
         [template setValue:object forKey:@"themedObject"];
         [template setValue:BKLabelFromIdentifier(selector) forKey:@"label"];
 
         [templates addObject:template];
 
-        if ([object isKindOfClass:[CPView class]])
+        if (!excluded)
         {
-            var size = [object frame].size,
-                labelWidth = [[template valueForKey:@"label"] sizeWithFont:[CPFont boldSystemFontOfSize:12.0]].width + 20.0;
+            if ([object isKindOfClass:[CPView class]])
+            {
+                var size = [object frame].size,
+                    labelWidth = [[template valueForKey:@"label"] sizeWithFont:[CPFont boldSystemFontOfSize:12.0]].width + 20.0;
 
-            if (size.width > itemSize.width)
-                itemSize.width = size.width;
+                if (size.width > itemSize.width)
+                    itemSize.width = size.width;
 
-            if (labelWidth > itemSize.width)
-                itemSize.width = labelWidth;
+                if (labelWidth > itemSize.width)
+                    itemSize.width = labelWidth;
 
-            if (size.height > itemSize.height)
-                itemSize.height = size.height;
+                if (size.height > itemSize.height)
+                    itemSize.height = size.height;
+            }
+
+            [showcaseTemplates addObject:template];
         }
     }
 
@@ -169,6 +199,7 @@ var ItemSizes               = { },
 
     ItemSizes[className] = itemSize;
     ThemedObjects[className] = templates;
+    ThemedShowcaseObjects[className] = showcaseTemplates;
 }
 
 + (int)compare:(BKThemeDescriptor)aThemeDescriptor
@@ -348,10 +379,18 @@ function PatternColor()
     }
     else if (arguments.length == 3)
     {
-        return [CPColor colorWithPatternImage:[_CPCibCustomResource imageResourceWithName:arguments[0] size:CGSizeMake(arguments[1], arguments[2])]];
+        return [CPColor colorWithPatternImage:PatternImage(arguments[0], arguments[1], arguments[2])];
     }
     else
     {
         return nil;
     }
+}
+
+/*
+    Like the 3 argument PatternColor, but return an image instead of a color.
+*/
+function PatternImage(name, width, height)
+{
+    return [_CPCibCustomResource imageResourceWithName:name size:CGSizeMake(width, height)];
 }
