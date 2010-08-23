@@ -324,7 +324,7 @@ var themedButtonValues = nil,
 
 + (CPArray)themeShowcaseExcludes
 {
-    return ["alert", "cornerview", "tableView", "tableDataView"];
+    return ["alert", "cornerview", "columnHeader", "tableView", "tableHeaderRow", "tableDataView"];
 }
 
 + (CPButton)makeButton
