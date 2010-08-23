@@ -880,7 +880,10 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 
 - (void)_setSelectedRowIndexes:(CPIndexSet)rows
 {
-    var previousSelectedIndexes = [_selectedRowIndexes copy];
+    if ([_selectedRowIndexes isEqualToIndexSet:rows])
+        return;
+
+    var previousSelectedIndexes = _selectedRowIndexes;
 
     _lastSelectedRow = ([rows count] > 0) ? [rows lastIndex] : -1;
     _selectedRowIndexes = [rows copy];
@@ -3574,7 +3577,7 @@ var CPTableViewDataSourceKey                = @"CPTableViewDataSourceKey",
 
     [aCoder encodeInt:_selectionHighlightStyle forKey:CPTableViewSelectionHighlightStyleKey];
     [aCoder encodeInt:_columnAutoResizingStyle forKey:CPTableViewColumnAutoresizingStyleKey];
-    
+
     [aCoder encodeBool:_allowsMultipleSelection forKey:CPTableViewMultipleSelectionKey];
     [aCoder encodeBool:_allowsEmptySelection forKey:CPTableViewEmptySelectionKey];
     [aCoder encodeBool:_allowsColumnReordering forKey:CPTableViewColumnReorderingKey];
