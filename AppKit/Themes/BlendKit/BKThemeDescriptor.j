@@ -141,7 +141,7 @@ var ItemSizes               = { },
         count = [methods count],
         excludes = [];
 
-    if (class_respondsToSelector(self, @selector(themeShowcaseExcludes)))
+    if ([self respondsToSelector:@selector(themeShowcaseExcludes)])
         excludes = [self themeShowcaseExcludes];
 
     for (; index < excludes.length; ++index)
