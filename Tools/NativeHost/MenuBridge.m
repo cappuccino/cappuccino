@@ -50,6 +50,7 @@
 
         for (; index < count; ++index)
             [self addItem:[[[MenuItemBridge alloc] initWithMenuItemObject:[aMenuObject bridgeSelector:@selector(itemAtIndex:) withObject:[NSNumber numberWithInt:index]]] autorelease]];
+        [self setAutoenablesItems:[[aMenuObject bridgeSelector:@selector(autoenablesItems)] boolValue]];
     }
 
     return self;

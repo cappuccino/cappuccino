@@ -135,14 +135,27 @@
     [_menu itemChanged:self];
 }
 
-// a private function to toggle availability as part of update check
-- (void)_setEnabledByMenu:(BOOL)isEnabled
+// Performs autoenable processing, returns isEnabled to propagate state to NativeHost
+- (BOOL)_performAutoenable
 {
-    if (![_menu autoenablesItems])
-        return;
-
-    _isEnabled = isEnabled;
-    [_menuItemView setDirty];
+    if ([_menu autoenablesItems]) {
+        if (_target) {
+            if ([_target respondsToSelector:@selector(validateMenuItem:)]) {
+                var isEnabled = [_target validateMenuItem:self];
+                
+                _isEnabled = isEnabled;
+                [_menuItemView setDirty];
+                return _isEnabled;
+            } else {
+                return YES; // enabled by default
+            }
+        } else {
+            return NO;
+        }
+    } else {
+        // XXX: should it return NO, if target is nil?..
+        return [self isEnabled];
+    }
 }
 
 /*!

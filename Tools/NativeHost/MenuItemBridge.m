@@ -46,13 +46,20 @@
 
     if (self)
     {
-        menuItemObject = aMenuItemObject;
+        menuItemObject = [aMenuItemObject retain];
 
         [self updateFromMenuItemObject];
     }
 
     return self;
 }
+
+- (void)dealloc
+{
+    [menuItemObject release];
+    [super dealloc];
+}
+
 /*
 - (BOOL)isSeparatorItem
 {
@@ -74,4 +81,13 @@
 {
 }
 
+- (BOOL)validateMenuItem:(MenuItemBridge *)mi
+{
+    if(mi == self) {
+        id isEnabled = [menuItemObject bridgeSelector:@selector(_performAutoenable)];
+        return [isEnabled boolValue];
+    } else {
+        return NO;
+    }
+}
 @end
