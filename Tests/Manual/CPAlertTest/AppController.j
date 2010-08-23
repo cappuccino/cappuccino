@@ -11,6 +11,7 @@
 
 @implementation AppController : CPObject
 {
+    CPWindow    theWindow;
     CPTextField label;
     CPArray     variations;
     CPArray     messages;
@@ -21,7 +22,7 @@
 {
     messages = [
         [@"Are you sure you want to theorise before you have data?",
-         @"Invariably, you end up twisting facts to suit theories, instead of theories to suit facts.",
+         @"Invariably, you end up twisting facts to suit theories, instead of theories to suit facts. lkjhdlkfjhlekjhglkjrshlkjfhsglksrjhfsmlgkjfskljhgkljflkjmlgkhjùlrkjhlmkjmrlekjghmlkjermlgkhjmlfekjghmlkjremlkjghmlkerjmlghkjmlerkjgmlhkjmerlkjgmhlkjmelrkjhmlkjrgmlkjhmlkrjgmlhkjrmelkgjhmlkrejhmlkjrgmlhkjmrlkgjhlmkrzj",
          "Theorise", "Cancel"],
         [@"Snakes. Why did it have to be snakes?",
          nil,
@@ -39,10 +40,13 @@
         [CPHUDBackgroundWindowMask, CPWarningAlertStyle],
         [CPHUDBackgroundWindowMask, CPInformationalAlertStyle],
         [CPHUDBackgroundWindowMask, CPCriticalAlertStyle],
+        [CPDocModalWindowMask, CPWarningAlertStyle],
+        [CPDocModalWindowMask, CPInformationalAlertStyle],
+        [CPDocModalWindowMask, CPCriticalAlertStyle]
     ];
 
-    var theWindow = [[CPWindow alloc] initWithContentRect:CGRectMakeZero() styleMask:CPBorderlessBridgeWindowMask],
-        contentView = [theWindow contentView];
+    theWindow = [[CPWindow alloc] initWithContentRect:CGRectMake(100,100,500,500) styleMask:CPTitledWindowMask];
+    var contentView = [theWindow contentView];
 
     label = [[CPTextField alloc] initWithFrame:CGRectMake(15, 15, 400, 24)];
 
@@ -57,14 +61,20 @@
     //[CPMenu setMenuBarVisible:YES];
 }
 
-- (void)alertDidEnd:(CPAlert)anAlert returnCode:(id)returnCode
+- (void)alertDidEnd:(CPAlert)anAlert returnCode:(CPInteger)returnCode
 {
+CPLogConsole(_cmd);
     if (returnCode === 0)
         [label setStringValue:"You chose the default action."];
     else
         [label setStringValue:"You cancelled the dialog."];
 
     [self showNextAlertVariation];
+}
+
+- (void)customDidEnd:(CPAlert)anAlert code:(id)code context:(id)context
+{
+    CPLogConsole(_cmd + anAlert + code + context);
 }
 
 - (void)showNextAlertVariation
@@ -79,15 +89,19 @@
     messageIndex = (messageIndex + 1) % messages.length;
     [variations removeObjectAtIndex:0];
 
+    var windowStyle = variation[0];
     [alert setDelegate:self];
     [alert setMessageText:message[0]];
     [alert setInformativeText:message[1]];
     [alert addButtonWithTitle:message[2]];
     [alert addButtonWithTitle:message[3]];
-    [alert setWindowStyle:variation[0]];
+    [alert setWindowStyle:windowStyle];
     [alert setAlertStyle:variation[1]];
 
-    [alert runModal];
+    if (windowStyle & CPDocModalWindowMask)
+        [alert beginSheetModalForWindow:theWindow modalDelegate:self didEndSelector:@selector(customDidEnd:code:context:) contextInfo:@"here is some context"];
+    else
+        [alert runModal];
 }
 
 @end
