@@ -53,7 +53,7 @@
 
 - (id)initWithContent:(id)aContent
 {
-    self = [super init];
+    self = [self init];
 
     if (self)
     {
@@ -453,6 +453,11 @@ var CPObjectControllerObjectClassNameKey                = @"CPObjectControllerOb
     }
 
     [super removeObjectAtIndex:anIndex];
+}
+
+- (_CPObservableArray)objectsAtIndexes:(CPIndexSet)theIndexes
+{
+    return [_CPObservableArray arrayWithArray:[super objectsAtIndexes:theIndexes]];
 }
 
 - (void)addObject:(id)anObject
