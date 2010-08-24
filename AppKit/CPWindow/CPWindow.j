@@ -199,7 +199,7 @@ var SHADOW_MARGIN_LEFT      = 20.0,
 
 var CPWindowSaveImage       = nil,
     CPWindowSavingImage     = nil;
-    
+
 var CPWindowResizeTime = 0.2;
 
 /*!
@@ -2211,7 +2211,7 @@ CPTexturedBackgroundWindowMask
     sheet._parentView = nil;
 
     if (delegate != nil && endSelector != nil)
-        objj_msgSend(delegate, endSelector, sheet, returnCode, contextInfo);    
+        objj_msgSend(delegate, endSelector, sheet, returnCode, contextInfo);
 }
 
 - (void)_setUpMasksForView:(CPView)aView

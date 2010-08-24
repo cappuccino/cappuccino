@@ -22,7 +22,7 @@
 {
     messages = [
         [@"Are you sure you want to theorise before you have data?",
-         @"Invariably, you end up twisting facts to suit theories, instead of theories to suit facts. lkjhdlkfjhlekjhglkjrshlkjfhsglksrjhfsmlgkjfskljhgkljflkjmlgkhjùlrkjhlmkjmrlekjghmlkjermlgkhjmlfekjghmlkjremlkjghmlkerjmlghkjmlerkjgmlhkjmerlkjgmhlkjmelrkjhmlkjrgmlkjhmlkrjgmlhkjrmelkgjhmlkrejhmlkjrgmlhkjmrlkgjhlmkrzj",
+         @"Invariably, you end up twisting facts to suit theories, instead of theories to suit facts.",
          "Theorise", "Cancel"],
         [@"Snakes. Why did it have to be snakes?",
          nil,
@@ -63,7 +63,7 @@
 
 - (void)alertDidEnd:(CPAlert)anAlert returnCode:(CPInteger)returnCode
 {
-CPLogConsole(_cmd);
+    CPLogConsole(_cmd);
     if (returnCode === 0)
         [label setStringValue:"You chose the default action."];
     else

@@ -399,7 +399,7 @@ CPCriticalAlertStyle        = 2;
     [CPApp runModalForWindow:_alertPanel];
 }
 
-/*
+/*!
     Runs the receiver modally as an alert sheet attached to a specified window.
 
     @param window The parent window for the sheet.
@@ -417,7 +417,7 @@ CPCriticalAlertStyle        = 2;
     [CPApp beginSheet:_alertPanel modalForWindow:window modalDelegate:self didEndSelector:@selector(_alertDidEnd:returnCode:contextInfo:) contextInfo:contextInfo];
 }
 
-/*
+/*!
     Runs the receiver modally as an alert sheet attached to a specified window.
 
     @param window The parent window for the sheet.
