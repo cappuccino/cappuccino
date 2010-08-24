@@ -130,6 +130,17 @@
     return self;
 }
 
+- (BOOL)isEqual:(id)anObject
+{
+    if (self === anObject)
+        return YES;
+
+    if (!anObject || ![anObject isKindOfClass:[CPIndexSet class]])
+        return NO;
+
+    return [self isEqualToIndexSet:anObject];
+}
+
 // Querying an Index Set
 /*!
     Compares the receiver with the provided index set.
@@ -158,6 +169,13 @@
             return NO;
 
     return YES;
+}
+
+- (BOOL)isEqual:(id)anObject
+{
+    return  self === anObject ||
+            [anObject isKindOfClass:[self class]] &&
+            [self isEqualToIndexSet:anObject];
 }
 
 /*!
@@ -698,12 +716,12 @@
         var range = _ranges[i],
             maximum = CPMaxRange(range);
 
-        if (anIndex > maximum)
+        if (anIndex >= maximum)
             break;
 
         // If our index is within our range, but not the first index,
         // then this range will be split.
-        if (anIndex > range.location && anIndex < maximum)
+        if (anIndex > range.location)
         {
             // Split the range into shift and unshifted.
             shifted = CPMakeRange(anIndex + aDelta, maximum - anIndex);

@@ -226,12 +226,12 @@ CPTableColumnUserResizingMask   = 1 << 1;
 
 /*!
     This method set's the "prototype" view which will be used to create all table cells in this column.
-    
-    It creates a snapshot of aView, using keyed archiving, which is then copied over and over for each 
+
+    It creates a snapshot of aView, using keyed archiving, which is then copied over and over for each
     individual cell that is shown. As a result, changes made after calling this method won't be reflected.
 
     Example:
-    
+
         [tableColumn setDataView:someView]; // snapshot taken
         [[tableColumn dataView] setSomething:x]; //won't work
 
@@ -288,6 +288,9 @@ CPTableColumnUserResizingMask   = 1 << 1;
     // unarchive the data view cache
     var newDataView = [CPKeyedUnarchiver unarchiveObjectWithData:_dataViewData[dataViewUID]];
     newDataView.identifier = dataViewUID;
+
+    // make sure only we have control over the size and placement
+    [newDataView setAutoresizingMask:CPViewNotSizable];
 
     return newDataView;
 }
@@ -347,9 +350,9 @@ CPTableColumnUserResizingMask   = 1 << 1;
     shouldBeHidden = !!shouldBeHidden
     if (_isHidden === shouldBeHidden)
         return;
-    
+
     _isHidden = shouldBeHidden;
-    
+
     [[self headerView] setHidden:shouldBeHidden];
     [[self tableView] _tableColumnVisibilityDidChange:self];
 }
@@ -404,7 +407,8 @@ CPTableColumnUserResizingMask   = 1 << 1;
     {
         var bindingName = keys[i],
             bindingPath = [aDataView _replacementKeyPathForBinding:bindingName],
-            bindingInfo = [bindingsDictionary objectForKey:bindingName]._info,
+            binding = [bindingsDictionary objectForKey:bindingName],
+            bindingInfo = binding._info,
             destination = [bindingInfo objectForKey:CPObservedObjectKey],
             keyPath = [bindingInfo objectForKey:CPObservedKeyPathKey],
             dotIndex = keyPath.lastIndexOf("."),
@@ -435,6 +439,8 @@ CPTableColumnUserResizingMask   = 1 << 1;
                 value = [[firstValue valueForKeyPath:secondPart] objectAtIndex:aRow];
         }
 
+        value = [binding transformValue:value withOptions:[bindingInfo objectForKey:CPOptionsKey]];
+
         // console.log(bindingName+" : "+keyPath+" : "+aRow+" : "+[[destination valueForKeyPath:keyPath] objectAtIndex:aRow]);
         [aDataView setValue:value forKey:bindingPath];
     }
@@ -459,9 +465,9 @@ var CPTableColumnIdentifierKey   = @"CPTableColumnIdentifierKey",
     CPTableColumnMinWidthKey     = @"CPTableColumnMinWidthKey",
     CPTableColumnMaxWidthKey     = @"CPTableColumnMaxWidthKey",
     CPTableColumnResizingMaskKey = @"CPTableColumnResizingMaskKey",
-    CPTableColumnIsHiddenkey     = @"CPTableColumnIsHiddenKey",
-    CPSortDescriptorPrototypeKey = @"CPSortDescriptorPrototypeKey";
-    CPTableColumnIsHiddenkey     = @"CPTableColumnIsHiddenKey";
+    CPTableColumnIsHiddenKey     = @"CPTableColumnIsHiddenKey",
+    CPSortDescriptorPrototypeKey = @"CPSortDescriptorPrototypeKey",
+    CPTableColumnIsEditableKey   = @"CPTableColumnIsEditableKey";
 
 @implementation CPTableColumn (CPCoding)
 
@@ -483,8 +489,9 @@ var CPTableColumnIdentifierKey   = @"CPTableColumnIdentifierKey",
         [self setHeaderView:[aCoder decodeObjectForKey:CPTableColumnHeaderViewKey]];
 
         _resizingMask  = [aCoder decodeBoolForKey:CPTableColumnResizingMaskKey];
-        _isHidden = [aCoder decodeBoolForKey:CPTableColumnIsHiddenkey];
-        
+        _isHidden = [aCoder decodeBoolForKey:CPTableColumnIsHiddenKey];
+        _isEditable = [aCoder decodeBoolForKey:CPTableColumnIsEditableKey];
+
         _sortDescriptorPrototype = [aCoder decodeObjectForKey:CPSortDescriptorPrototypeKey];
     }
 
@@ -503,8 +510,9 @@ var CPTableColumnIdentifierKey   = @"CPTableColumnIdentifierKey",
     [aCoder encodeObject:_dataView forKey:CPTableColumnDataViewKey];
 
     [aCoder encodeObject:_resizingMask forKey:CPTableColumnResizingMaskKey];
-    [aCoder encodeBool:_isHidden forKey:CPTableColumnIsHiddenkey];
-    
+    [aCoder encodeBool:_isHidden forKey:CPTableColumnIsHiddenKey];
+    [aCoder encodeBool:_isEditable forKey:CPTableColumnIsEditableKey];
+
     [aCoder encodeObject:_sortDescriptorPrototype forKey:CPSortDescriptorPrototypeKey];
 }
 

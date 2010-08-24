@@ -257,10 +257,13 @@ var SUBMENU_INDICATOR_COLOR                     = nil,
         [_keyEquivalentView setTextShadowColor:[self textShadowColor]];
     }
     
-    if (shouldHighlight)
-        [_stateView setImage:_CPMenuItemDefaultStateHighlightedImages[[_menuItem state]] || nil];
-    else
-        [_stateView setImage:_CPMenuItemDefaultStateImages[[_menuItem state]] || nil];
+    if ([[_menuItem menu] showsStateColumn])
+    {
+        if (shouldHighlight)
+            [_stateView setImage:_CPMenuItemDefaultStateHighlightedImages[[_menuItem state]] || nil];
+        else
+            [_stateView setImage:_CPMenuItemDefaultStateImages[[_menuItem state]] || nil];
+    }
 }
 
 @end

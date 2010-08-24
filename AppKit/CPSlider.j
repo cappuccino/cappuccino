@@ -198,7 +198,7 @@ CPCircularSlider    = 1;
     else if ([self isVertical])
     {
         knobRect.origin.x = _CGRectGetMidX(trackRect) - knobSize.width / 2.0;
-        knobRect.origin.y = (([self doubleValue] - _minValue) / (_maxValue - _minValue)) * (_CGRectGetHeight(trackRect) - knobSize.height);
+        knobRect.origin.y = ((_maxValue - [self doubleValue]) / (_maxValue - _minValue)) * (_CGRectGetHeight(trackRect) - knobSize.height);
     }
     else
     {
@@ -320,7 +320,7 @@ CPCircularSlider    = 1;
 
         var minValue = [self minValue];
 
-        return MAX(0.0, MIN(1.0, (aPoint.y - _CGRectGetMinY(trackRect)) / _CGRectGetHeight(trackRect))) * ([self maxValue] - minValue) + minValue;
+        return MAX(0.0, MIN(1.0, (_CGRectGetMaxY(trackRect) - aPoint.y) / _CGRectGetHeight(trackRect))) * ([self maxValue] - minValue) + minValue;
     }
     else
     {

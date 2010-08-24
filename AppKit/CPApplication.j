@@ -861,6 +861,7 @@ CPRunContinuesResponse  = -1002;
     }
 
     [aWindow orderFront:self];
+    [aSheet setPlatformWindow:[aWindow platformWindow]];
     [aWindow _attachSheet:aSheet modalDelegate:aModalDelegate didEndSelector:aDidEndSelector contextInfo:aContextInfo];
 }
 

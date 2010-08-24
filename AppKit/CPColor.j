@@ -56,18 +56,12 @@ var cachedBlackColor,
 
 /*! 
     @ingroup appkit
-    @code CPColor
 
     \c CPColor can be used to represent color
     in an RGB or HSB model with an optional transparency value.</p>
 
     <p>It also provides some class helper methods that
     returns instances of commonly used colors.</p>
-
-    <p>The class does not have a \c -set: method
-    like NextStep based frameworks to change the color of
-    the current context. To change the color of the current
-    context, use CGContextSetFillColor().
 */
 @implementation CPColor : CPObject
 {
@@ -82,12 +76,12 @@ var cachedBlackColor,
     Each component should be between the range of 0.0 to 1.0. For
     the alpha component, a value of 1.0 is opaque, and 0.0 means
     completely transparent.
-    
+
     @param red the red component of the color
     @param green the green component of the color
     @param blue the blue component of the color
     @param alpha the alpha component
-    
+
     @return a color initialized to the values specified
 */
 + (CPColor)colorWithRed:(float)red green:(float)green blue:(float)blue alpha:(float)alpha
@@ -97,17 +91,17 @@ var cachedBlackColor,
 
 /*!
     @deprecated in favor of colorWithRed:green:blue:alpha:
-    
+
     Creates a color in the RGB color space, with an alpha value.
     Each component should be between the range of 0.0 to 1.0. For
     the alpha component, a value of 1.0 is opaque, and 0.0 means
     completely transparent.
-    
+
     @param red the red component of the color
     @param green the green component of the color
     @param blue the blue component of the color
     @param alpha the alpha component
-    
+
     @return a color initialized to the values specified
 */
 + (CPColor)colorWithCalibratedRed:(float)red green:(float)green blue:(float)blue alpha:(float)alpha
@@ -119,10 +113,10 @@ var cachedBlackColor,
 /*!
     Creates a new color object with \c white for the RGB components.
     For the alpha component, a value of 1.0 is opaque, and 0.0 means completely transparent.
-    
+
     @param white a float between 0.0 and 1.0
     @param alpha the alpha component between 0.0 and 1.0
-    
+
     @return a color initialized to the values specified
 */
 + (CPColor)colorWithWhite:(float)white alpha:(float)alpha
@@ -132,13 +126,13 @@ var cachedBlackColor,
 
 /*!
     @deprecated in favor of colorWithWhite:apha:
-    
+
     Creates a new color object with \c white for the RGB components.
     For the alpha component, a value of 1.0 is opaque, and 0.0 means completely transparent.
-    
+
     @param white a float between 0.0 and 1.0
     @param alpha the alpha component between 0.0 and 1.0
-    
+
     @return a color initialized to the values specified
 */
 + (CPColor)colorWithCalibratedWhite:(float)white alpha:(float)alpha
@@ -148,11 +142,11 @@ var cachedBlackColor,
 
 /*!
     Creates a new color in HSB space.
-    
+
     @param hue the hue value
     @param saturation the saturation value
     @param brightness the brightness value
-    
+
     @return the initialized color
 */
 + (CPColor)colorWithHue:(float)hue saturation:(float)saturation brightness:(float)brightness
@@ -162,16 +156,16 @@ var cachedBlackColor,
 
 + (CPColor)colorWithHue:(float)hue saturation:(float)saturation brightness:(float)brightness alpha:(float)alpha
 {
-    if(saturation === 0.0)
+    if (saturation === 0.0)
         return [CPColor colorWithCalibratedWhite:brightness / 100.0 alpha:alpha];
-    
+
     var f = hue % 60,
         p = (brightness * (100 - saturation)) / 10000,
         q = (brightness * (6000 - saturation * f)) / 600000,
         t = (brightness * (6000 - saturation * (60 -f))) / 600000,
         b =  brightness / 100.0;
-        
-    switch(FLOOR(hue / 60))
+
+    switch (FLOOR(hue / 60))
     {
         case 0: return [CPColor colorWithCalibratedRed: b green: t blue: p alpha: alpha];
         case 1: return [CPColor colorWithCalibratedRed: q green: b blue: p alpha: alpha];
@@ -397,7 +391,7 @@ var cachedBlackColor,
 
 /*!
     Creates a CPColor from a valid CSS RGB string. Example, "rgb(32,64,129)".
-    
+
     @param aString a CSS color string
     @return a color initialized to the value in the css string
 */
@@ -409,23 +403,23 @@ var cachedBlackColor,
 /* @ignore */
 - (id)_initWithCSSString:(CPString)aString
 {
-    if(aString.indexOf("rgb") == CPNotFound)
+    if (aString.indexOf("rgb") == CPNotFound)
         return nil;
-        
+
     self = [super init];
-    
+
     var startingIndex = aString.indexOf("(");
     var parts = aString.substring(startingIndex+1).split(',');
-    
+
     _components = [
         parseInt(parts[0], 10) / 255.0,
         parseInt(parts[1], 10) / 255.0,
         parseInt(parts[2], 10) / 255.0,
         parts[3] ? parseInt(parts[3], 10) / 255.0 : 1.0        
     ];
-    
+
     _cssString = aString;
-    
+
     return self;
 }
 
@@ -433,7 +427,7 @@ var cachedBlackColor,
 - (id)_initWithRGBA:(CPArray)components
 {
     self = [super init];
-    
+
     if (self)
     {
         _components = components;
@@ -454,14 +448,14 @@ var cachedBlackColor,
 - (id)_initWithPatternImage:(CPImage)anImage
 {
     self = [super init];
-    
+
     if (self)
     {
         _patternImage = anImage;
         _cssString = "url(\"" + [_patternImage filename] + "\")";
         _components = [0.0, 0.0, 0.0, 1.0];
     }
-       
+
     return self;
 }
 
@@ -523,17 +517,17 @@ var cachedBlackColor,
 
 /*!
     Returns a new color with the same RGB as the receiver but a new alpha component.
-    
+
     @param anAlphaComponent the alpha component for the new color
-    
+
     @return a new color object
 */
 - (CPColor)colorWithAlphaComponent:(float)anAlphaComponent
 {
     var components = _components.slice();
-    
+
     components[components.length - 1] = anAlphaComponent;
-    
+
     return [[[self class] alloc] _initWithRGBA:components];
 }
 
@@ -552,35 +546,38 @@ var cachedBlackColor,
     var red   = ROUND(_components[_redComponent] * 255.0),
         green = ROUND(_components[_greenComponent] * 255.0),
         blue  = ROUND(_components[_blueComponent] * 255.0);
-        
+
     var max   = MAX(red, green, blue),
         min   = MIN(red, green, blue),
         delta = max - min;
-        
+
     var brightness = max / 255.0,
         saturation = (max != 0) ? delta / max : 0;
-        
+
     var hue;
-    if(saturation == 0)
+
+    if (saturation == 0)
+    {
         hue = 0;
+    }
     else
     {
         var rr = (max - red) / delta;
         var gr = (max - green) / delta;
         var br = (max - blue) / delta;
-        
+
         if (red == max) 
             hue = br - gr;
         else if (green == max) 
             hue = 2 + rr - br;
         else 
             hue = 4 + gr - rr;
-            
+
         hue /= 6;
         if (hue < 0) 
             hue++;
     }
-    
+
     return [
         ROUND(hue * 360.0), 
         ROUND(saturation * 100.0),
@@ -699,10 +696,8 @@ var CPColorComponentsKey    = @"CPColorComponentsKey",
 
 @end
 
-var hexCharacters = "0123456789ABCDEF";
 
-// HACK: prevent these from becoming globals. workaround for obj-j "function foo(){}" behavior
-var hexToRGB, rgbToHex, byteToHex;
+var hexCharacters = "0123456789ABCDEF";
 
 /*!
     Used for the CPColor \c +colorWithHexString: implementation
@@ -710,39 +705,39 @@ var hexToRGB, rgbToHex, byteToHex;
     @class CPColor
     @return an array of rgb components
 */
-function hexToRGB(hex) 
+var hexToRGB = function(hex) 
 {
-    if ( hex.length == 3 )
+    if (hex.length == 3)
         hex = hex.charAt(0) + hex.charAt(0) + hex.charAt(1) + hex.charAt(1) + hex.charAt(2) + hex.charAt(2);
-    if(hex.length != 6)
+
+    if (hex.length != 6)
         return null;
 
     hex = hex.toUpperCase();
 
-    for(var i=0; i<hex.length; i++)
-        if(hexCharacters.indexOf(hex.charAt(i)) == -1)
+    for (var i = 0; i < hex.length; i++)
+        if (hexCharacters.indexOf(hex.charAt(i)) == -1)
             return null;
-            
+
     var red   = (hexCharacters.indexOf(hex.charAt(0)) * 16 + hexCharacters.indexOf(hex.charAt(1))) / 255.0;
     var green = (hexCharacters.indexOf(hex.charAt(2)) * 16 + hexCharacters.indexOf(hex.charAt(3))) / 255.0;
     var blue  = (hexCharacters.indexOf(hex.charAt(4)) * 16 + hexCharacters.indexOf(hex.charAt(5))) / 255.0;
-    
+
     return [red, green, blue, 1.0];
-}
+};
 
-function rgbToHex(r,g,b) {
+var rgbToHex = function(r,g,b)
+{
     return byteToHex(r) + byteToHex(g) + byteToHex(b);
-}
+};
 
-function byteToHex(n) {
-    if (!n || isNaN(n)) return "00";
-    n = ROUND(MIN(255,MAX(0,256*n)));
-    return  hexCharacters.charAt((n - n % 16) / 16) +
-            hexCharacters.charAt(n % 16);
-}
+var byteToHex = function(n)
+{
+    if (!n || isNaN(n))
+        return "00";
 
-// Toll-Free bridge CPColor to CGColor.
-//CGColor.prototype.isa = CPColor;
-//[CPColor initialize];
+    n = ROUND(MIN(255, MAX(0, 256 * n)));
 
-//http://dev.mootools.net/browser/trunk/Source/Utilities/Color.js?rev=1184
+    return hexCharacters.charAt((n - n % 16) / 16) +
+           hexCharacters.charAt(n % 16);
+};

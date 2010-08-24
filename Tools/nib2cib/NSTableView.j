@@ -41,9 +41,6 @@
         // Convert xib default to cib default
         if (_rowHeight == 17)
             _rowHeight = 23;
-
-        if ([_gridColor isEqual:[CPColor colorWithRed:127.0 / 255.0 green:127.0 / 255.0 blue:127.0 / 255.0 alpha:1.0]])
-            _gridColor = [CPColor colorWithRed:229.0 / 255.0 green:229.0 / 255.0 blue:229.0 / 255.0 alpha:1.0];
         
         _headerView = [aCoder decodeObjectForKey:@"NSHeaderView"];     
         _cornerView = [aCoder decodeObjectForKey:@"NSCornerView"];
@@ -51,18 +48,21 @@
         _tableColumns = [aCoder decodeObjectForKey:@"NSTableColumns"];
         [_tableColumns makeObjectsPerformSelector:@selector(setTableView:) withObject:self];
         
-        _intercellSpacing = CGSizeMake(0.0, 0.0);//CGSizeMake([aCoder decodeFloatForKey:"NSIntercellSpacingWidth"], [aCoder decodeFloatForKey:"NSIntercellSpacingHeight"]);
+        _intercellSpacing = CGSizeMake([aCoder decodeFloatForKey:@"NSIntercellSpacingWidth"], 
+                                       [aCoder decodeFloatForKey:@"NSIntercellSpacingHeight"]);
         
-        _gridColor = [aCoder decodeObjectForKey:@"NSGridColor"];
-        
-        // Convert xib default to cib default
-        if ([_gridColor isEqual:[CPColor colorWithRed:127.0 / 255.0 green:127.0 / 255.0 blue:127.0 / 255.0 alpha:1.0]])
-            _gridColor = [CPColor colorWithRed:229.0 / 255.0 green:229.0 / 255.0 blue:229.0 / 255.0 alpha:1.0];
+        var gridColor = [aCoder decodeObjectForKey:@"NSGridColor"];
+
+        if (![gridColor isEqual:[CPColor colorWithRed:127.0 / 255.0 green:127.0 / 255.0 blue:127.0 / 255.0 alpha:1.0]])
+            [self setValue:gridColor forThemeAttribute:@"grid-color"];
         
         _gridStyleMask = [aCoder decodeIntForKey:@"NSGridStyleMask"];
         
         _usesAlternatingRowBackgroundColors = (flags & 0x00800000) ? YES : NO;
         _alternatingRowBackgroundColors =[[CPColor whiteColor], [CPColor colorWithHexString:@"e4e7ff"]];
+        
+        _selectionHighlightStyle = [aCoder decodeIntForKey:@"NSTableViewSelectionHighlightStyle"] || CPTableViewSelectionHighlightStyleRegular;
+        _columnAutoResizingStyle = [aCoder decodeIntForKey:@"NSColumnAutoresizingStyle"];
         
         _allowsMultipleSelection = (flags & 0x08000000) ? YES : NO;
         _allowsEmptySelection = (flags & 0x10000000) ? YES : NO;

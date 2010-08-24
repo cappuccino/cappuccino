@@ -27,7 +27,6 @@
 @import "CPObject.j"
 @import "CPSet.j"
 
-
 @implementation CPObject (KeyValueObserving)
 
 - (void)willChangeValueForKey:(CPString)aKey
@@ -394,6 +393,7 @@ var kvoNewAndOld = CPKeyValueObservingOptionNew|CPKeyValueObservingOptionOld,
 
 - (void)_sendNotificationsForKey:(CPString)aKey changeOptions:(CPDictionary)changeOptions isBefore:(BOOL)isBefore
 {
+    // CPLog.warn("_sendNotificationsForKey: " + aKey + " ...isBefore: " + isBefore);
     var changes = _changesForKey[aKey];
 
     if (isBefore)
@@ -491,6 +491,9 @@ var kvoNewAndOld = CPKeyValueObservingOptionNew|CPKeyValueObservingOptionOld,
     for (; index < count; ++index)
     {
         var keyPath = dependentKeyPaths[index];
+
+        // CPLog.warn("firing dependepent key " + index + " for " + aKey + ": "+keyPath);
+        // objj_backtrace_print(CPLog.error);
 
         [self _sendNotificationsForKey:keyPath
                          changeOptions:isBefore ? [changeOptions copy] : _changesForKey[keyPath]

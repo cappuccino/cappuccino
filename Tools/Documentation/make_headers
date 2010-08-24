@@ -9,6 +9,7 @@ def makeHeaderFileFrom(fileName)
   # Extract out all the "implementation" lines.  Note, there may be
   # more than on in a given .j file.
   m = data.scan(/.*?(@implementation.*?\{.*?\})/m)
+
   if m.length > 0
     for i in 0...m.length
       line = m[i][0]
@@ -18,6 +19,7 @@ def makeHeaderFileFrom(fileName)
       
         # Extract the class name
         m2 = line.scan(/.*?@implementation(.*?):.*/m)
+
         if !m2.nil? && !m2[0].nil?
           className = m2[0][0].strip()
         
@@ -35,12 +37,12 @@ def makeHeaderFileFrom(fileName)
   end
 end
 
-
 fileList = Dir['AppKit/**/*.j'] + Dir['Foundation/**/*.j']
+
 for fileName in fileList
   makeHeaderFileFrom(fileName)
 end
 
-for fileName in @outputFiles
-  File.delete(fileName)
-end
+f = File.new(File.dirname(__FILE__) + "/header_files", "w")
+f.write(@outputFiles.join("\n"))
+f.close()
