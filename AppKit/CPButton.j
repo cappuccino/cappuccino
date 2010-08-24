@@ -89,9 +89,6 @@ CPButtonStateMixed  = CPThemeState("mixed");
     CPString            _title;
     CPString            _alternateTitle;
 
-    CPImage             _image;
-    CPImage             _alternateImage;
-
     CPInteger           _showsStateBy;
     CPInteger           _highlightsBy;
     BOOL                _imageDimsWhenDisabled;
@@ -127,8 +124,8 @@ CPButtonStateMixed  = CPThemeState("mixed");
 
 + (id)themeAttributes
 {
-    return [CPDictionary dictionaryWithObjects:[_CGInsetMakeZero(), _CGInsetMakeZero(), [CPNull null]]
-                                       forKeys:[@"bezel-inset", @"content-inset", @"bezel-color"]];
+    return [CPDictionary dictionaryWithObjects:[[CPNull null], 0.0, _CGInsetMakeZero(), _CGInsetMakeZero(), [CPNull null]]
+                                       forKeys:[@"image", @"imageOffset", @"bezel-inset", @"content-inset", @"bezel-color"]];
 }
 
 - (id)initWithFrame:(CGRect)aFrame
@@ -284,18 +281,12 @@ CPButtonStateMixed  = CPThemeState("mixed");
 
 - (void)setImage:(CPImage)anImage
 {
-    if (_image === anImage)
-        return;
-
-    _image = anImage;
-
-    [self setNeedsLayout];
-    [self setNeedsDisplay:YES];
+    [self setValue:anImage forThemeAttribute:@"image"];
 }
 
 - (CPImage)image
 {
-    return _image;
+    return [self valueForThemeAttribute:@"image" inState:CPThemeStateNormal];
 }
 
 /*!
@@ -304,13 +295,7 @@ CPButtonStateMixed  = CPThemeState("mixed");
 */
 - (void)setAlternateImage:(CPImage)anImage
 {
-    if (_alternateImage === anImage)
-        return;
-
-    _alternateImage = anImage;
-
-    [self setNeedsLayout];
-    [self setNeedsDisplay:YES];
+    [self setValue:anImage forThemeAttribute:@"image" inState:CPThemeStateHighlighted];
 }
 
 /*!
@@ -318,7 +303,17 @@ CPButtonStateMixed  = CPThemeState("mixed");
 */
 - (CPImage)alternateImage
 {
-    return _alternateImage;
+    return [self valueForThemeAttribute:@"image" inState:CPThemeStateHighlighted];
+}
+
+- (void)setImageOffset:(float)theImageOffset
+{
+    [self setValue:theImageOffset forThemeAttribute:@"imageOffset"];
+}
+
+- (float)imageOffset
+{
+    return [self valueForThemeAttribute:@"imageOffset"];
 }
 
 - (void)setShowsStateBy:(CPInteger)aMask
@@ -525,7 +520,8 @@ CPButtonStateMixed  = CPThemeState("mixed");
     if (contentView)
     {
         [contentView setText:([self hasThemeState:CPThemeStateHighlighted] && _alternateTitle) ? _alternateTitle : _title];
-        [contentView setImage:([self hasThemeState:CPThemeStateHighlighted] && _alternateImage) ? _alternateImage : _image];
+        [contentView setImage:[self currentValueForThemeAttribute:@"image"]];
+        [contentView setImageOffset:[self currentValueForThemeAttribute:@"imageOffset"]];
 
         [contentView setFont:[self currentValueForThemeAttribute:@"font"]];
         [contentView setTextColor:[self currentValueForThemeAttribute:@"text-color"]];
@@ -664,8 +660,8 @@ var CPButtonImageKey                    = @"CPButtonImageKey",
     {
         _controlSize = CPRegularControlSize;
 
-        _image = [aCoder decodeObjectForKey:CPButtonImageKey];
-        _alternateImage = [aCoder decodeObjectForKey:CPButtonAlternateImageKey];
+        [self setImage:[aCoder decodeObjectForKey:CPButtonImageKey]];
+        [self setAlternateImage:[aCoder decodeObjectForKey:CPButtonAlternateImageKey]];
 
         _title = [aCoder decodeObjectForKey:CPButtonTitleKey];
         _alternateTitle = [aCoder decodeObjectForKey:CPButtonAlternateTitleKey];
@@ -692,8 +688,8 @@ var CPButtonImageKey                    = @"CPButtonImageKey",
 {
     [super encodeWithCoder:aCoder];
 
-    [aCoder encodeObject:_image forKey:CPButtonImageKey];
-    [aCoder encodeObject:_alternateImage forKey:CPButtonAlternateImageKey];
+    [aCoder encodeObject:[self image] forKey:CPButtonImageKey];
+    [aCoder encodeObject:[self alternateImage] forKey:CPButtonAlternateImageKey];
 
     [aCoder encodeObject:_title forKey:CPButtonTitleKey];
     [aCoder encodeObject:_alternateTitle forKey:CPButtonAlternateTitleKey];
