@@ -150,6 +150,10 @@
                 return YES; // enabled by default
             }
         } else {
+            // XXX: will toggle state as part of _target check, required to sync stane with NativeHost
+            _isEnabled = isEnabled;
+            [_menuItemView setDirty];
+            
             return NO;
         }
     } else {
