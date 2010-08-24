@@ -280,23 +280,36 @@ var CPStringRegexSpecialCharacters = [
     @param A character set containing the characters to use to split the receiver. Must not be nil.
     @return An CPArray object containing substrings from the receiver that have been divided by characters in separator.
 */
-- (CPArray)componentsSeparatedByCharactersInSet:(CPCharacterSet)separator 
-{
-	CPMutableArray components = [CPMutableArray array];
+/*
+	TODO Write some tests for cases with [CPCharacterSet whitespaceCharacterSet]
+	"Baku baku to jest  skład." ["Baku", "baku", "to", "jest", "", "skład."]
+	"Abradab" - ["Abradab"]
+	"" - [""]
+	" Test "  - check what is returned by NSString here, probably ["", "Test"];
+*/
+- (CPArray)componentsSeparatedByCharactersInSet:(CPCharacterSet)separator  {	
+	if (!separator) 
+		[CPException raise:CPInvalidArgumentException
+                    reason:"componentsSeparatedByCharactersInSet: the separator can't be 'nil'"];
 	
-    if (separator && self.length)
-    {
-		CPRange componentRange = CPMakeRange(0, 0);
+	CPMutableArray components = [CPMutableArray array];
+	CPRange componentRange = CPMakeRange(0, 0);
+	if (self.length) {
 		for (var i=0; i < self.length; i++) {
 			if ([separator characterIsMember:self.charAt(i)]) {
 				componentRange.length = i - componentRange.location;
 				[components addObject:[self substringWithRange:componentRange]];
-				componentRange.location += componentRange.length;
+				componentRange.location += componentRange.length + 1;
 			}
-		};
-		
-    }
-    return components;
+		}
+		if (componentRange.location < self.length ) {
+			componentRange.length = self.length - componentRange.location;
+			[components addObject:[self substringWithRange:componentRange]];
+		}
+	} else {
+		[components addObject:[NSString stringWithString:self]];
+	}
+	return components;
 }
 
 /*!
