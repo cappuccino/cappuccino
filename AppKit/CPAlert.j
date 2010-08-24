@@ -409,6 +409,8 @@ CPCriticalAlertStyle        = 2;
 */
 - (void)beginSheetModalForWindow:(CPWindow)window modalDelegate:(id)modalDelegate didEndSelector:(SEL)alertDidEndSelector contextInfo:(void)contextInfo
 {
+    if (!(_windowStyle & CPDocModalWindowMask))
+        [self setWindowStyle:CPDocModalWindowMask];
     [self layoutPanel];
 
     _didEndSelector = alertDidEndSelector;
@@ -424,6 +426,8 @@ CPCriticalAlertStyle        = 2;
 */
 - (void)beginSheetModalForWindow:(CPWindow)window
 {
+    if (!(_windowStyle & CPDocModalWindowMask))
+        [self setWindowStyle:CPDocModalWindowMask];
     [self layoutPanel];
 
     [CPApp beginSheet:_alertPanel modalForWindow:window modalDelegate:self didEndSelector:@selector(_alertDidEnd:returnCode:contextInfo:) contextInfo:nil];
