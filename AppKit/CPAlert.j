@@ -127,7 +127,7 @@ CPCriticalAlertStyle        = 2;
         _alertStyle = CPWarningAlertStyle;
         _alertPanel = nil;
         _windowStyle = nil;
-        _alertDidEndSelector = nil;
+        _didEndSelector = nil;
 
         _messageLabel = [[CPTextField alloc] initWithFrame:CGRectMakeZero()];
         _alertImageView = [[CPImageView alloc] initWithFrame:CGRectMakeZero()];
@@ -252,8 +252,6 @@ CPCriticalAlertStyle        = 2;
 - (void)setInformativeText:(CPString)informativeText
 {
     [_informativeLabel setStringValue:informativeText];
-    // No need to call _layoutMessage - only the length of the messageText
-    // can affect anything there.
 }
 
 /*!
