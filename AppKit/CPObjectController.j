@@ -51,15 +51,20 @@
     return [CPSet setWithObjects:"editable", "selection"];
 }
 
+- (id)init
+{
+    return [self initWithContent:nil];
+}
+
 - (id)initWithContent:(id)aContent
 {
-    self = [self init];
-
-    if (self)
+    if (self = [super init])
     {
         [self setContent:aContent];
         [self setEditable:YES];
         [self setObjectClass:[CPMutableDictionary class]];
+
+        _observedKeys = [[CPCountedSet alloc] init];
     }
 
     return self;
