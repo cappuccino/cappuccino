@@ -269,50 +269,6 @@ var CPStringRegexSpecialCharacters = [
 }
 
 /*!
-    Tokenizes the receiver string using the charactes
-    in a given set. For example, if the receiver is:
-    \c "Baku baku to jest  skład."
-    and the set is [CPCharacterSet whitespaceCharacterSet]
-    the returned array would contain:
-    <pre> ["Baku", "baku", "to", "jest", "", "skład."] </pre>
-	Adjacent occurences of the separator characters produce empty strings in the result.
-	@author Arkadiusz Młynarczyk <arek@tupux.com>
-    @param A character set containing the characters to use to split the receiver. Must not be nil.
-    @return An CPArray object containing substrings from the receiver that have been divided by characters in separator.
-*/
-/*
-	TODO Write some tests for cases with [CPCharacterSet whitespaceCharacterSet]
-	"Baku baku to jest  skład." ["Baku", "baku", "to", "jest", "", "skład."]
-	"Abradab" - ["Abradab"]
-	"" - [""]
-	" Test "  - check what is returned by NSString here, probably ["", "Test"];
-*/
-- (CPArray)componentsSeparatedByCharactersInSet:(CPCharacterSet)separator  {	
-	if (!separator) 
-		[CPException raise:CPInvalidArgumentException
-                    reason:"componentsSeparatedByCharactersInSet: the separator can't be 'nil'"];
-	
-	CPMutableArray components = [CPMutableArray array];
-	CPRange componentRange = CPMakeRange(0, 0);
-	if (self.length) {
-		for (var i=0; i < self.length; i++) {
-			if ([separator characterIsMember:self.charAt(i)]) {
-				componentRange.length = i - componentRange.location;
-				[components addObject:[self substringWithRange:componentRange]];
-				componentRange.location += componentRange.length + 1;
-			}
-		}
-		if (componentRange.location < self.length ) {
-			componentRange.length = self.length - componentRange.location;
-			[components addObject:[self substringWithRange:componentRange]];
-		}
-	} else {
-		[components addObject:[NSString stringWithString:self]];
-	}
-	return components;
-}
-
-/*!
     Returns a substring starting from the specified index to the end of the receiver.
     @param anIndex the starting string (inclusive)
     @return the substring
@@ -689,10 +645,9 @@ var CPStringRegexSpecialCharacters = [
     a digit 1-9. Returns \c NO otherwise. This method skips the initial
     whitespace characters, +,- followed by Zeroes.
 */
-
 - (BOOL)boolValue
 {
-    var replaceRegExp = new RegExp("^\\s*[\\+,\\-]*0*");
+    var replaceRegExp = new RegExp("^\\s*[\\+,\\-]?0*");
     return RegExp("^[Y,y,t,T,1-9]").test(self.replace(replaceRegExp, ''));
 }
 
