@@ -346,6 +346,15 @@
 }
 
 /*
+    Like setSelectionIndex but don't fire any change notifications.
+    @ignore
+*/
+- (BOOL)__setSelectionIndex:(int)theIndex
+{
+    [self __setSelectionIndexes:[CPIndexSet indexSetWithIndex:theIndex]];
+}
+
+/*
     Like setSelectionIndexes but don't fire any change notifications.
     @ignore
 */
