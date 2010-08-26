@@ -3545,7 +3545,7 @@ var CPTableViewDataSourceKey                = @"CPTableViewDataSourceKey",
 
         _intercellSpacing = [aCoder decodeSizeForKey:CPTableViewIntercellSpacingKey] || _CGSizeMake(3.0, 2.0);
 
-        [self setGridColor:[aCoder decodeObjectForKey:CPTableViewGridColorKey] || [CPColor grayColor]];
+        [self setGridColor:[aCoder decodeObjectForKey:CPTableViewGridColorKey]];
         _gridStyleMask = [aCoder decodeIntForKey:CPTableViewGridStyleMaskKey] || CPTableViewGridNone;
 
         _usesAlternatingRowBackgroundColors = [aCoder decodeObjectForKey:CPTableViewUsesAlternatingBackgroundKey];
