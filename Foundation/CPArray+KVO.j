@@ -242,8 +242,7 @@
     var index = 0,
         count = [anArray count];
 
-    for (; index < count; ++index)
-        [self insertObject:[anArray objectAtIndex:index] atIndex:index];
+    [self insertObjects:anArray atIndexes:[CPIndexSet indexSetWithIndexesInRange:CPMakeRange([self count], count)]];
 }
 
 - (void)insertObject:(id)anObject atIndex:(unsigned)anIndex
