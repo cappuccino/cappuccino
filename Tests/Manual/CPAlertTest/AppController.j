@@ -26,10 +26,9 @@
          "Theorise", "Cancel"],
         [@"Snakes. Why did it have to be snakes?",
          nil,
-         "Torch", "Cancel"],
-         [@"Sometimes a message can be really long and just appear to go on and on. It could be a speech. It could be the television.",
-          nil,
-          "Off", "Cancel"]
+         "Torch"],
+        [@"Sometimes a message can be really long and just appear to go on and on. It could be a speech. It could be the television.",
+         nil]
     ];
     messageIndex = 0;
 
@@ -84,7 +83,7 @@
 
     var variation = variations[0],
         message = messages[messageIndex],
-        alert = [[CPAlert alloc] init];
+        alert = [CPAlert new];
 
     messageIndex = (messageIndex + 1) % messages.length;
     [variations removeObjectAtIndex:0];
@@ -93,8 +92,10 @@
     [alert setDelegate:self];
     [alert setMessageText:message[0]];
     [alert setInformativeText:message[1]];
-    [alert addButtonWithTitle:message[2]];
-    [alert addButtonWithTitle:message[3]];
+    if (message.length > 2)
+        [alert addButtonWithTitle:message[2]];
+    if (message.length > 3)
+        [alert addButtonWithTitle:message[3]];
     [alert setWindowStyle:windowStyle];
     [alert setAlertStyle:variation[1]];
 
