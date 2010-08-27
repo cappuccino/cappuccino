@@ -300,7 +300,7 @@ var XML_XML                 = "xml",
 
 #define NODE_NAME(anXMLNode)        (String(anXMLNode.nodeName))
 #define NODE_TYPE(anXMLNode)        (anXMLNode.nodeType)
-#define NODE_VALUE(anXMLNode)       (String(anXMLNode.nodeValue))
+#define NODE_VALUE(anXMLNode)       (String(getTextContent(anXMLNode)))
 #define FIRST_CHILD(anXMLNode)      (anXMLNode.firstChild)
 #define NEXT_SIBLING(anXMLNode)     (anXMLNode.nextSibling)
 #define PARENT_NODE(anXMLNode)      (anXMLNode.parentNode)
@@ -323,7 +323,6 @@ var XML_XML                 = "xml",
 var _plist_traverseNextNode = function(anXMLNode, stayWithin, stack)
 {
     var node = anXMLNode;
-    
     PLIST_FIRST_CHILD(node);
     
     // If this element has a child, traverse to it.
@@ -512,6 +511,17 @@ function parseXML(/*String*/ aString)
     return NULL;
 }
 
+function getTextContent(Node){
+    if((Node || (Node = this)).nodeType === 3)
+        return Node.nodeValue;
+    var childNodes = Node.childNodes,
+        data = [],
+        i = 0;
+    while(childNodes[i])
+        data[i] = getTextContent(childNodes[i++]);
+    return data.join("");
+};
+
 CFPropertyList.propertyListFromXML = function(/*String | XMLNode*/ aStringOrXMLNode)
 {
     var XMLNode = aStringOrXMLNode;
@@ -570,8 +580,7 @@ CFPropertyList.propertyListFromXML = function(/*String | XMLNode*/ aStringOrXMLN
             case PLIST_STRING:          if (HAS_ATTRIBUTE_VALUE(XMLNode, "type", "base64"))
                                             object = FIRST_CHILD(XMLNode) ? CFData.decodeBase64ToString(CHILD_VALUE(XMLNode)) : "";
                                         else
-                                            object = decodeHTMLComponent(FIRST_CHILD(XMLNode) ? CHILD_VALUE(XMLNode) : "");
-
+                                            object = decodeHTMLComponent(FIRST_CHILD(XMLNode) ? NODE_VALUE(XMLNode) : "");
                                         break;
                                         
             case PLIST_BOOLEAN_TRUE:    object = YES;
@@ -595,6 +604,7 @@ CFPropertyList.propertyListFromXML = function(/*String | XMLNode*/ aStringOrXMLN
                 currentContainer.push(object);
             else
                 currentContainer.setValueForKey(key, object);
+
     }
     
     return plistObject;
