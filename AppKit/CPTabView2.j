@@ -138,7 +138,7 @@ var HEIGHT_OF_SEGMENTED_CONTROL = 24;
 */
 - (int)indexOfTabViewItemWithIdentifier:(CPString)anIdentifier
 {
-	for (var k = [items count]; k >= 0; index--)
+	for (var index = [items count]; index >= 0; index--)
 	    if ([[items[index] identifier] isEqual:anIdentifier])
 	        return index;
 
