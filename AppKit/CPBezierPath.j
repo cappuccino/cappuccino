@@ -183,7 +183,6 @@ var DefaultLineWidth = 1.0;
     CGContextBeginPath(ctx);
     CGContextAddPath(ctx, _path);
     CGContextSetLineWidth(ctx, [self lineWidth]);
-    CGContextClosePath(ctx);
     CGContextStrokePath(ctx);
 }
 
