@@ -51,15 +51,20 @@
     return [CPSet setWithObjects:"editable", "selection"];
 }
 
+- (id)init
+{
+    return [self initWithContent:nil];
+}
+
 - (id)initWithContent:(id)aContent
 {
-    self = [super init];
-
-    if (self)
+    if (self = [super init])
     {
         [self setContent:aContent];
         [self setEditable:YES];
         [self setObjectClass:[CPMutableDictionary class]];
+
+        _observedKeys = [[CPCountedSet alloc] init];
     }
 
     return self;
@@ -453,6 +458,11 @@ var CPObjectControllerObjectClassNameKey                = @"CPObjectControllerOb
     }
 
     [super removeObjectAtIndex:anIndex];
+}
+
+- (_CPObservableArray)objectsAtIndexes:(CPIndexSet)theIndexes
+{
+    return [_CPObservableArray arrayWithArray:[super objectsAtIndexes:theIndexes]];
 }
 
 - (void)addObject:(id)anObject

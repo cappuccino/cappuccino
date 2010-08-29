@@ -410,7 +410,9 @@ var themedButtonValues = nil,
             [@"bezel-color",        defaultHighlightedBezelColor,   CPThemeStateBordered | CPThemeStateHighlighted | CPThemeStateDefault],
 
             [@"min-size",           CGSizeMake(0.0, 24.0)],
-            [@"max-size",           CGSizeMake(-1.0, 24.0)]
+            [@"max-size",           CGSizeMake(-1.0, 24.0)],
+
+            [@"imageOffset",        3.0]
         ];
 
     [self registerThemeValues:themedButtonValues forView:button];

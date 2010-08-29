@@ -52,12 +52,12 @@
     @param arguments The arguments to substitute into predicateFormat. Values are substituted into predicateFormat in the order they appear in the array.
     @return A new predicate by substituting the values in arguments into predicateFormat, and parsing the result.
 */
-+ (CPPredicate)predicateWithFormat:(CPString)format argumentArray:(CPArray)arguments
++ (CPPredicate)predicateWithFormat:(CPString)format argumentArray:(CPArray)args
 {
     if (!format)
         [CPException raise:CPInvalidArgumentException reason:_cmd + " the format can't be 'nil'"];
 
-    var s = [[CPPredicateScanner alloc] initWithString:format args:arguments],
+    var s = [[CPPredicateScanner alloc] initWithString:format args:args],
         p = [s parse];
 
     return p;

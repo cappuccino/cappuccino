@@ -24,7 +24,11 @@
 
 var DOMFixedWidthSpanElement    = nil,
     DOMFlexibleWidthSpanElement = nil,
+    DOMMetricsDivElement        = nil,
+    DOMMetricsTextSpanElement   = nil,
+    DOMMetricsImgElement        = nil,
     DOMIFrameElement            = nil,
+    DOMIFrameDocument           = nil,
     DefaultFont                 = nil;
 
 @implementation CPPlatformString : CPBasePlatformString
@@ -59,7 +63,7 @@ var DOMFixedWidthSpanElement    = nil,
 
     bodyElement.appendChild(DOMIFrameElement);
 
-    var DOMIFrameDocument = (DOMIFrameElement.contentDocument || DOMIFrameElement.contentWindow.document);
+    DOMIFrameDocument = (DOMIFrameElement.contentDocument || DOMIFrameElement.contentWindow.document);
     DOMIFrameDocument.write('<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">'+
                             '<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en"><head></head><body></body></html>');
     DOMIFrameDocument.close();
@@ -88,6 +92,7 @@ var DOMFixedWidthSpanElement    = nil,
     style.margin = "0px";
     style.width = "1px";
     style.wordWrap = "break-word";
+
     try
     {
         style.whiteSpace = "pre";
@@ -106,6 +111,46 @@ var DOMFixedWidthSpanElement    = nil,
     DOMDivElement.appendChild(DOMFixedWidthSpanElement);
 }
 
++ (void)createDOMMetricsElements
+{
+    if (!DOMIFrameElement)
+        [self createDOMElements];
+
+    var style;
+
+    DOMMetricsDivElement = DOMIFrameDocument.createElement("div");
+    DOMMetricsDivElement.style.position = "absolute";
+    DOMMetricsDivElement.style.width = "100000px";
+
+    DOMIFrameDocument.body.appendChild(DOMMetricsDivElement);
+
+    DOMMetricsTextSpanElement = DOMIFrameDocument.createElement("span");
+    DOMMetricsTextSpanElement.innerHTML = "x";
+    style = DOMMetricsTextSpanElement.style;
+    style.position = "absolute";
+    style.visibility = "visible";
+    style.padding = "0px";
+    style.margin = "0px";
+    style.whiteSpace = "pre";
+
+    var imgPath = [[CPBundle bundleForClass:[CPView class]] pathForResource:@"empty.png"];
+
+    DOMMetricsImgElement = DOMIFrameDocument.createElement("img");
+    DOMMetricsImgElement.setAttribute("src", imgPath);
+    DOMMetricsImgElement.setAttribute("width", "1");
+    DOMMetricsImgElement.setAttribute("height", "1");
+    DOMMetricsImgElement.setAttribute("alt", "");
+    style = DOMMetricsImgElement.style;
+    style.visibility = "visible";
+    style.padding = "0px";
+    style.margin = "0px";
+    style.border = "none";
+    style.verticalAlign = "baseline";
+
+    DOMMetricsDivElement.appendChild(DOMMetricsTextSpanElement);
+    DOMMetricsDivElement.appendChild(DOMMetricsImgElement);
+}
+
 + (CGSize)sizeOfString:(CPString)aString withFont:(CPFont)aFont forWidth:(float)aWidth
 {
     if (!aFont)
@@ -120,6 +165,7 @@ var DOMFixedWidthSpanElement    = nil,
         [self createDOMElements];
 
     var span;
+
     if (!aWidth)
         span = DOMFlexibleWidthSpanElement;
     else
@@ -136,6 +182,28 @@ var DOMFixedWidthSpanElement    = nil,
         span.textContent = aString;
 
     return _CGSizeMake(span.clientWidth, span.clientHeight);
+}
+
++ (CPDictionary)metricsOfFont:(CPFont)aFont
+{
+    if (!aFont)
+    {
+        if (!DefaultFont)
+            DefaultFont = [CPFont systemFontOfSize:12.0];
+
+        aFont = DefaultFont;
+    }
+
+    if (!DOMMetricsDivElement)
+        [self createDOMMetricsElements];
+
+    DOMMetricsDivElement.style.font = [aFont cssString];
+
+    var baseline = DOMMetricsImgElement.offsetTop - DOMMetricsTextSpanElement.offsetTop + DOMMetricsImgElement.offsetHeight,
+        descender = baseline - DOMMetricsTextSpanElement.offsetHeight,
+        lineHeight = DOMMetricsTextSpanElement.offsetHeight;
+
+    return [CPDictionary dictionaryWithObjectsAndKeys:baseline, @"ascender", descender, @"descender", lineHeight, @"lineHeight"];
 }
 
 @end

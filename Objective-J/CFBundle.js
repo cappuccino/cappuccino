@@ -344,7 +344,7 @@ function loadExecutableAndResources(/*Bundle*/ aBundle, /*BOOL*/ shouldExecute)
         if ((typeof CPApp === "undefined" || !CPApp || !CPApp._finishedLaunching) &&
              typeof OBJJ_PROGRESS_CALLBACK === "function" && CPApplicationSizeInBytes)
         {
-            OBJJ_PROGRESS_CALLBACK(MAX(MIN(1.0, CFTotalBytesLoaded / CPApplicationSizeInBytes), 0.0), CPApplicationSizeInBytes, aBundle.path())
+            OBJJ_PROGRESS_CALLBACK(MAX(MIN(1.0, CFTotalBytesLoaded / CPApplicationSizeInBytes), 0.0), CPApplicationSizeInBytes, aBundle.bundlePath())
         }
 
         if (aBundle._loadStatus === CFBundleLoading)

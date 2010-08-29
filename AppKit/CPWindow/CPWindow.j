@@ -200,6 +200,8 @@ var SHADOW_MARGIN_LEFT      = 20.0,
 var CPWindowSaveImage       = nil,
     CPWindowSavingImage     = nil;
 
+var CPWindowResizeTime = 0.2;
+
 /*!
     @ingroup appkit
     @class CPWindow
@@ -2098,6 +2100,11 @@ CPTexturedBackgroundWindowMask
     [_frameAnimation startAnimation];
 }
 
+- (CPTimeInterval)animationResizeTime:(CGRect)newWindowFrame
+{
+    return CPWindowResizeTime;
+}
+
 /* @ignore */
 - (void)_setAttachedSheetFrameOrigin
 {
@@ -2146,7 +2153,7 @@ CPTexturedBackgroundWindowMask
     [aSheet setFrame:startFrame display:YES animate:NO];
     _sheetContext["opened"] = YES;
 
-    [aSheet _setFrame:endFrame delegate:self duration:0.2 curve:CPAnimationEaseOut];
+    [aSheet _setFrame:endFrame delegate:self duration:[self animationResizeTime:endFrame] curve:CPAnimationEaseOut];
 
     // Should run the main loop here until _isAnimating = FALSE
     [aSheet becomeKeyWindow];
@@ -2167,7 +2174,7 @@ CPTexturedBackgroundWindowMask
     [self _setUpMasksForView:sheetContent];
 
     _sheetContext["opened"] = NO;
-    [sheet _setFrame:endFrame delegate:self duration:0.2 curve:CPAnimationEaseIn];
+    [sheet _setFrame:endFrame delegate:self duration:[self animationResizeTime:endFrame] curve:CPAnimationEaseIn];
 }
 
 /* @ignore */
@@ -2196,13 +2203,15 @@ CPTexturedBackgroundWindowMask
     [self _restoreMasksForView:sheetContent];
 
     var delegate = _sheetContext["modalDelegate"],
-        endSelector = _sheetContext["endSelector"];
-
-    if (delegate != nil && endSelector != nil)
-        objj_msgSend(delegate, endSelector, sheet, _sheetContext["returnCode"], _sheetContext["contextInfo"]);
+        endSelector = _sheetContext["endSelector"],
+        returnCode = _sheetContext["returnCode"],
+        contextInfo = _sheetContext["contextInfo"];
 
     _sheetContext = nil;
     sheet._parentView = nil;
+
+    if (delegate != nil && endSelector != nil)
+        objj_msgSend(delegate, endSelector, sheet, returnCode, contextInfo);
 }
 
 - (void)_setUpMasksForView:(CPView)aView
@@ -2673,7 +2682,7 @@ var interpolate = function(fromValue, toValue, progress)
 
 - (id)initWithWindow:(CPWindow)aWindow targetFrame:(CGRect)aTargetFrame
 {
-    self = [super initWithDuration:0.2 animationCurve:CPAnimationLinear];
+    self = [super initWithDuration:[aWindow animationResizeTime:aTargetFrame] animationCurve:CPAnimationLinear];
 
     if (self)
     {
