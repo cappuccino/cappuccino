@@ -1113,8 +1113,15 @@ var _CPAppBootstrapperActions = nil;
 
 + (BOOL)loadDefaultTheme
 {
-    var blend = [[CPThemeBlend alloc] initWithContentsOfURL:[[CPBundle bundleForClass:[CPApplication class]] pathForResource:[CPApplication defaultThemeName] + ".blend"]];
+    var defaultThemeName = [CPApplication defaultThemeName],
+        themeURL = nil;
 
+    if (defaultThemeName === @"Aristo")
+        themeURL = [[CPBundle bundleForClass:[CPApplication class]] pathForResource:defaultThemeName + @".blend"];
+    else
+        themeURL = [[CPBundle mainBundle] pathForResource:defaultThemeName + @".blend"];
+
+    var blend = [[CPThemeBlend alloc] initWithContentsOfURL:themeURL];
     [blend loadWithDelegate:self];
 
     return YES;
