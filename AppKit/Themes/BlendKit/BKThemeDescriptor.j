@@ -146,10 +146,12 @@ var ItemSizes               = { },
 
     for (; index < excludes.length; ++index)
     {
-        var name = excludes[index];
+        var name = excludes[index].toLowerCase();
 
         if (name && name.indexOf("themed") !== 0)
-            excludes[index] = "themed" + name.charAt(0).toUpperCase() + name.substr(1);
+            excludes[index] = "themed" + name;
+        else
+            excludes[index] = name;
     }
 
     for (index = 0; index < count; ++index)
@@ -167,7 +169,7 @@ var ItemSizes               = { },
             continue;
 
         var template = [[BKThemedObjectTemplate alloc] init],
-            excluded = [excludes containsObject:selector];
+            excluded = [excludes containsObject:selector.toLowerCase()];
 
         [template setValue:object forKey:@"themedObject"];
         [template setValue:BKLabelFromIdentifier(selector) forKey:@"label"];

@@ -165,11 +165,12 @@ var themedButtonValues = nil,
 
     + (CPArray)themeShowcaseExcludes
     {
-        return ["themedAlert", "cornerView", "tableDataView"];
+        return ["themedAlert", "cornerview", "tableDataView"];
     }
 
     Note that to make it easier to do the right thing, the names in the array can begin with "themed" or not.
-    If the name does not begin with "themed", it is prepended and the first character uppercased if it is not there.
+    If the name does not begin with "themed", it is prepended. Name matching is case-insensitive, so you
+    don't have to worry about capitalization.
 
 
     SUBTHEMES
