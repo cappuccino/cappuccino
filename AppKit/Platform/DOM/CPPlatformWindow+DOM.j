@@ -316,6 +316,28 @@ var supportsNativeDragAndDrop = [CPPlatform supportsDragAndDrop];
     _DOMEventGuard.style.display = "none";
     _DOMEventGuard.className = "cpdontremove";
     _DOMBodyElement.appendChild(_DOMEventGuard);
+    
+    // We get scrolling deltas from this element
+    _DOMScrollingElement = theDocument.createElement("div");
+    _DOMScrollingElement.style.position = "absolute";
+    _DOMScrollingElement.style.zIndex = "100";
+    _DOMScrollingElement.style.height = "100px";
+    _DOMScrollingElement.style.width = "100px";
+    _DOMScrollingElement.style.overflow = "scroll";
+    _DOMScrollingElement.style.backgroundColor = "rgba(0,0,0,0.1)";
+    _DOMScrollingElement.style.opacity = "0";
+    _DOMScrollingElement.style.filter = "alpha(opacity=0)";
+    _DOMScrollingElement.className = "cpdontremove";
+    _DOMBodyElement.appendChild(_DOMScrollingElement);
+    
+    var _DOMInnerScrollingElement = theDocument.createElement("div");
+    _DOMInnerScrollingElement.style.width = "300px";
+    _DOMInnerScrollingElement.style.height = "300px";
+    _DOMScrollingElement.appendChild(_DOMInnerScrollingElement);
+    
+    // Set an initial scroll offset
+    _DOMScrollingElement.scrollTop = 150;
+    _DOMScrollingElement.scrollLeft = 150;
 }
 
 - (void)registerDOMWindow
@@ -982,7 +1004,8 @@ var supportsNativeDragAndDrop = [CPPlatform supportsDragAndDrop];
                         (aDOMEvent.altKey ? CPAlternateKeyMask : 0) |
                         (aDOMEvent.metaKey ? CPCommandKeyMask : 0);
 
-    StopDOMEventPropagation = YES;
+    // We let the browser handle the scrolling
+    StopDOMEventPropagation = NO;
 
     var theWindow = [self hitTest:location];
 
@@ -993,40 +1016,30 @@ var supportsNativeDragAndDrop = [CPPlatform supportsDragAndDrop];
 
     location = [theWindow convertBridgeToBase:location];
 
-    if(typeof aDOMEvent.wheelDeltaX != "undefined")
-    {
-        deltaX = aDOMEvent.wheelDeltaX / 120.0;
-        deltaY = aDOMEvent.wheelDeltaY / 120.0;
-    }
-
-    else if (aDOMEvent.wheelDelta)
-        deltaY = aDOMEvent.wheelDelta / 120.0;
-
-    else if (aDOMEvent.detail)
-        deltaY = -aDOMEvent.detail / 3.0;
-
-    else
-        return;
-
-    if(!CPFeatureIsCompatible(CPJavaScriptNegativeMouseWheelValues))
-    {
-        deltaX = -deltaX;
-        deltaY = -deltaY;
-    }
-
     var event = [CPEvent mouseEventWithType:CPScrollWheel location:location modifierFlags:modifierFlags
             timestamp:timestamp windowNumber:windowNumber context:nil eventNumber:-1 clickCount:1 pressure:0 ];
-
     event._DOMEvent = aDOMEvent;
-    event._deltaX = deltaX;
-    event._deltaY = deltaY;
+    
+    // We lag 1 event behind without this timeout.
+    setTimeout(function(){     
+           
+        // Find the scroll delta
+        event._deltaX = _DOMScrollingElement.scrollLeft - 150;
+        event._deltaY = _DOMScrollingElement.scrollTop - 150;
 
-    [CPApp sendEvent:event];
+        [CPApp sendEvent:event];
 
-    if (StopDOMEventPropagation)
-        CPDOMEventStop(aDOMEvent, self);
+        // We set StopDOMEventPropagation = NO on line 1008
+        //if (StopDOMEventPropagation)
+        //    CPDOMEventStop(aDOMEvent, self);
 
-    [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
+        [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
+    
+        // Reset the DOM elements scroll offset
+        _DOMScrollingElement.scrollLeft = 150;
+        _DOMScrollingElement.scrollTop = 150;
+        
+    }, 0);
 }
 
 - (void)resizeEvent:(DOMEvent)aDOMEvent
@@ -1216,6 +1229,9 @@ var supportsNativeDragAndDrop = [CPPlatform supportsDragAndDrop];
     {
         if (_DOMEventMode)
             return;
+
+        _DOMScrollingElement.style.top = (location.y - 50) + @"px";
+        _DOMScrollingElement.style.left = (location.x - 50) + @"px";
 
         event = _CPEventFromNativeMouseEvent(aDOMEvent, _mouseIsDown ? (_mouseDownIsRightClick ? CPRightMouseDragged : CPLeftMouseDragged) : CPMouseMoved, location, modifierFlags, timestamp, windowNumber, nil, -1, 1, 0);
     }
