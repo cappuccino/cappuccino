@@ -51,7 +51,6 @@ CPInformationalAlertStyle   = 1;
 */
 CPCriticalAlertStyle        = 2;
 
-
 /*!
     @ingroup appkit
 
@@ -88,6 +87,8 @@ CPCriticalAlertStyle        = 2;
     CPArray         _buttons;
 
     id              _delegate;
+    SEL             _didEndSelector;
+    id              _modalDelegate;
 }
 
 + (CPString)themeClass
@@ -126,6 +127,7 @@ CPCriticalAlertStyle        = 2;
         _alertStyle = CPWarningAlertStyle;
         _alertPanel = nil;
         _windowStyle = nil;
+        _didEndSelector = nil;
 
         _messageLabel = [CPTextField labelWithTitle:@"Alert"];
         _alertImageView = [[CPImageView alloc] initWithFrame:CGRectMakeZero()];
@@ -145,7 +147,7 @@ CPCriticalAlertStyle        = 2;
 {
     _windowStyle = styleMask;
 
-    [self setTheme:(_windowStyle === CPHUDBackgroundWindowMask) ? [CPTheme defaultHudTheme] : [CPTheme defaultTheme]];
+    [self setTheme:(_windowStyle & CPHUDBackgroundWindowMask) ? [CPTheme defaultHudTheme] : [CPTheme defaultTheme]];
 
     // We'll need to recreate the panel to get the new window style.
     _alertPanel = nil;
@@ -171,9 +173,6 @@ CPCriticalAlertStyle        = 2;
     [contentView addSubview:_messageLabel];
     [contentView addSubview:_alertImageView];
     [contentView addSubview:_informativeLabel];
-
-    // For reference: does not actually work since this 'view' is not in the hierarchy.
-    // [self setNeedsLayout];
 }
 
 /*!
@@ -225,9 +224,6 @@ CPCriticalAlertStyle        = 2;
 - (void)setAlertStyle:(CPAlertStyle)style
 {
     _alertStyle = style;
-
-    // For reference: does not actually work since this 'view' is not in the hierarchy.
-    // [self setNeedsLayout];
 }
 
 /*!
@@ -245,9 +241,6 @@ CPCriticalAlertStyle        = 2;
 - (void)setMessageText:(CPString)messageText
 {
     [_messageLabel setStringValue:messageText];
-
-    // For reference: does not actually work since this 'view' is not in the hierarchy.
-    // [self setNeedsLayout];
 }
 
 /*!
@@ -265,8 +258,6 @@ CPCriticalAlertStyle        = 2;
 - (void)setInformativeText:(CPString)informativeText
 {
     [_informativeLabel setStringValue:informativeText];
-    // No need to call _layoutMessage - only the length of the messageText
-    // can affect anything there.
 }
 
 /*!
@@ -296,7 +287,7 @@ CPCriticalAlertStyle        = 2;
     [button setTitle:title];
     [button setTarget:self];
     [button setTag:_buttonCount];
-    [button setAction:@selector(_notifyDelegate:)];
+    [button setAction:@selector(_dismissAlert:)];
 
     [[_alertPanel contentView] addSubview:button];
 
@@ -308,12 +299,9 @@ CPCriticalAlertStyle        = 2;
         [button setKeyEquivalent:nil];
 
     [_buttons insertObject:button atIndex:0];
-
-    // For reference: does not actually work since this 'view' is not in the hierarchy.
-    // [self setNeedsLayout];
 }
 
-- (void)layoutSubviews
+- (void)layoutPanel
 {
     if (!_alertPanel)
         [self _createPanel];
@@ -415,18 +403,68 @@ CPCriticalAlertStyle        = 2;
 */
 - (void)runModal
 {
-    [self layoutSubviews];
+    [self layoutPanel];
     [CPApp runModalForWindow:_alertPanel];
 }
 
-/* @ignore */
-- (void)_notifyDelegate:(id)button
-{
-    [CPApp abortModal];
-    [_alertPanel close];
+/*!
+    Runs the receiver modally as an alert sheet attached to a specified window.
 
-    if (_delegate && [_delegate respondsToSelector:@selector(alertDidEnd:returnCode:)])
-        [_delegate alertDidEnd:self returnCode:[button tag]];
+    @param window The parent window for the sheet.
+    @param modalDelegate The delegate for the modal-dialog session.
+    @param alertDidEndSelector Message the alert sends to modalDelegate after the sheet is dismissed.
+    @param contextInfo Contextual data passed to modalDelegate in didEndSelector message.
+*/
+- (void)beginSheetModalForWindow:(CPWindow)window modalDelegate:(id)modalDelegate didEndSelector:(SEL)alertDidEndSelector contextInfo:(void)contextInfo
+{
+    if (!(_windowStyle & CPDocModalWindowMask))
+        [self setWindowStyle:CPDocModalWindowMask];
+    [self layoutPanel];
+
+    _didEndSelector = alertDidEndSelector;
+    _modalDelegate = modalDelegate;
+
+    [CPApp beginSheet:_alertPanel modalForWindow:window modalDelegate:self didEndSelector:@selector(_alertDidEnd:returnCode:contextInfo:) contextInfo:contextInfo];
+}
+
+/*!
+    Runs the receiver modally as an alert sheet attached to a specified window.
+
+    @param window The parent window for the sheet.
+*/
+- (void)beginSheetModalForWindow:(CPWindow)window
+{
+    if (!(_windowStyle & CPDocModalWindowMask))
+        [self setWindowStyle:CPDocModalWindowMask];
+    [self layoutPanel];
+
+    [CPApp beginSheet:_alertPanel modalForWindow:window modalDelegate:self didEndSelector:@selector(_alertDidEnd:returnCode:contextInfo:) contextInfo:nil];
+}
+
+- (void)_alertDidEnd:(CPWindow)aSheet returnCode:(CPInteger)returnCode contextInfo:(id)contextInfo
+{
+    if ([_delegate respondsToSelector:@selector(alertDidEnd:returnCode:)])
+            [_delegate alertDidEnd:self returnCode:returnCode];
+
+    if (_didEndSelector)
+        objj_msgSend(_modalDelegate, _didEndSelector, self, returnCode, contextInfo);
+
+    _didEndSelector = nil;
+    _modalDelegate = nil;
+}
+
+/* @ignore */
+- (void)_dismissAlert:(CPButton)button
+{
+    if ([_alertPanel isSheet])
+        [CPApp endSheet:_alertPanel returnCode:[button tag]];
+    else
+    {
+        [CPApp abortModal];
+        [_alertPanel close];
+
+        [self _alertDidEnd:nil returnCode:[button tag] contextInfo:nil];
+    }
 }
 
 @end

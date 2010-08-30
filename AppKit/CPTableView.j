@@ -882,7 +882,10 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 
 - (void)_setSelectedRowIndexes:(CPIndexSet)rows
 {
-    var previousSelectedIndexes = [_selectedRowIndexes copy];
+    if ([_selectedRowIndexes isEqualToIndexSet:rows])
+        return;
+
+    var previousSelectedIndexes = _selectedRowIndexes;
 
     _lastSelectedRow = ([rows count] > 0) ? [rows lastIndex] : -1;
     _selectedRowIndexes = [rows copy];
@@ -3547,7 +3550,7 @@ var CPTableViewDataSourceKey                = @"CPTableViewDataSourceKey",
 
         _intercellSpacing = [aCoder decodeSizeForKey:CPTableViewIntercellSpacingKey] || _CGSizeMake(3.0, 2.0);
 
-        [self setGridColor:[aCoder decodeObjectForKey:CPTableViewGridColorKey] || [CPColor grayColor]];
+        [self setGridColor:[aCoder decodeObjectForKey:CPTableViewGridColorKey]];
         _gridStyleMask = [aCoder decodeIntForKey:CPTableViewGridStyleMaskKey] || CPTableViewGridNone;
 
         _usesAlternatingRowBackgroundColors = [aCoder decodeObjectForKey:CPTableViewUsesAlternatingBackgroundKey];
