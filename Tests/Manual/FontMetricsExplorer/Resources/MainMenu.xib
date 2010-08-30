@@ -221,6 +221,26 @@
 								<reference key="NSTextColor" ref="618459948"/>
 							</object>
 						</object>
+						<object class="NSTextField" id="553841872">
+							<reference key="NSNextResponder" ref="439893737"/>
+							<int key="NSvFlags">268</int>
+							<string key="NSFrame">{{146, 16}, {167, 14}}</string>
+							<reference key="NSSuperview" ref="439893737"/>
+							<bool key="NSEnabled">YES</bool>
+							<object class="NSTextFieldCell" key="NSCell" id="508133354">
+								<int key="NSCellFlags">68288064</int>
+								<int key="NSCellFlags2">138544128</int>
+								<string key="NSContents">Click grid to change text</string>
+								<object class="NSFont" key="NSSupport">
+									<string key="NSName">LucidaGrande</string>
+									<double key="NSSize">11</double>
+									<int key="NSfFlags">3100</int>
+								</object>
+								<reference key="NSControlView" ref="553841872"/>
+								<reference key="NSBackgroundColor" ref="44883150"/>
+								<reference key="NSTextColor" ref="618459948"/>
+							</object>
+						</object>
 						<object class="NSTextField" id="138531732">
 							<reference key="NSNextResponder" ref="439893737"/>
 							<int key="NSvFlags">268</int>
@@ -335,14 +355,14 @@
 									</object>
 								</object>
 							</array>
-							<string key="NSFrame">{{149, 20}, {163, 100}}</string>
+							<string key="NSFrame">{{149, 35}, {163, 100}}</string>
 							<reference key="NSSuperview" ref="439893737"/>
 							<string key="NSClassName">MetricsView</string>
 						</object>
 						<object class="NSCustomView" id="1067943843">
 							<reference key="NSNextResponder" ref="439893737"/>
 							<int key="NSvFlags">268</int>
-							<string key="NSFrame">{{149, 20}, {163, 100}}</string>
+							<string key="NSFrame">{{149, 35}, {163, 100}}</string>
 							<reference key="NSSuperview" ref="439893737"/>
 							<string key="NSClassName">BaselineView</string>
 						</object>
@@ -517,6 +537,7 @@
 							<reference ref="42125743"/>
 							<reference ref="1067943843"/>
 							<reference ref="605512847"/>
+							<reference ref="553841872"/>
 						</array>
 						<reference key="parent" ref="972006081"/>
 					</object>
@@ -736,6 +757,19 @@
 						<reference key="object" ref="1067943843"/>
 						<reference key="parent" ref="439893737"/>
 					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">1110</int>
+						<reference key="object" ref="553841872"/>
+						<array class="NSMutableArray" key="children">
+							<reference ref="508133354"/>
+						</array>
+						<reference key="parent" ref="439893737"/>
+					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">1111</int>
+						<reference key="object" ref="508133354"/>
+						<reference key="parent" ref="553841872"/>
+					</object>
 				</array>
 			</object>
 			<dictionary class="NSMutableDictionary" key="flattenedProperties">
@@ -774,6 +808,8 @@
 				<string key="1099.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
 				<string key="1106.IBEditorWindowLastContentRect">{{329, 888}, {163, 96}}</string>
 				<string key="1106.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
+				<string key="1110.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
+				<string key="1111.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
 				<string key="371.IBEditorWindowLastContentRect">{{884, 511}, {332, 290}}</string>
 				<string key="371.IBPluginDependency">com.apple.InterfaceBuilder.CocoaPlugin</string>
 				<string key="371.IBWindowTemplateEditedContentRect">{{884, 511}, {332, 290}}</string>
@@ -785,7 +821,7 @@
 			<nil key="activeLocalization"/>
 			<dictionary class="NSMutableDictionary" key="localizations"/>
 			<nil key="sourceID"/>
-			<int key="maxID">1109</int>
+			<int key="maxID">1111</int>
 		</object>
 		<object class="IBClassDescriber" key="IBDocument.Classes">
 			<array class="NSMutableArray" key="referencedPartialClassDescriptions">
