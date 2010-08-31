@@ -321,7 +321,7 @@ var supportsNativeDragAndDrop = [CPPlatform supportsDragAndDrop];
     _DOMScrollingElement = theDocument.createElement("div");
     _DOMScrollingElement.style.position = "absolute";
     _DOMScrollingElement.style.visibility = "hidden";
-    _DOMScrollingElement.style.zIndex = "0";
+    _DOMScrollingElement.style.zIndex = "998";
     _DOMScrollingElement.style.height = "100px";
     _DOMScrollingElement.style.width = "100px";
     _DOMScrollingElement.style.overflow = "scroll";
@@ -1007,6 +1007,8 @@ var supportsNativeDragAndDrop = [CPPlatform supportsDragAndDrop];
 
     // Show the dom element
     _DOMScrollingElement.style.visibility = "visible";
+    _DOMScrollingElement.style.top = (location.y - 50) + @"px";
+    _DOMScrollingElement.style.left = (location.x - 50) + @"px";
 
     // We let the browser handle the scrolling
     StopDOMEventPropagation = NO;
@@ -1241,9 +1243,6 @@ var supportsNativeDragAndDrop = [CPPlatform supportsDragAndDrop];
     {
         if (_DOMEventMode)
             return;
-
-        _DOMScrollingElement.style.top = (location.y - 50) + @"px";
-        _DOMScrollingElement.style.left = (location.x - 50) + @"px";
 
         event = _CPEventFromNativeMouseEvent(aDOMEvent, _mouseIsDown ? (_mouseDownIsRightClick ? CPRightMouseDragged : CPLeftMouseDragged) : CPMouseMoved, location, modifierFlags, timestamp, windowNumber, nil, -1, 1, 0);
     }
