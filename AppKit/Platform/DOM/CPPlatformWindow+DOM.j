@@ -320,7 +320,7 @@ var supportsNativeDragAndDrop = [CPPlatform supportsDragAndDrop];
     // We get scrolling deltas from this element
     _DOMScrollingElement = theDocument.createElement("div");
     _DOMScrollingElement.style.position = "absolute";
-    _DOMScrollingElement.style.display = "none";
+    _DOMScrollingElement.style.visibility = "hidden";
     _DOMScrollingElement.style.zIndex = "0";
     _DOMScrollingElement.style.height = "100px";
     _DOMScrollingElement.style.width = "100px";
@@ -1006,7 +1006,7 @@ var supportsNativeDragAndDrop = [CPPlatform supportsDragAndDrop];
                         (aDOMEvent.metaKey ? CPCommandKeyMask : 0);
 
     // Show the dom element
-    _DOMScrollingElement.style.display = "block";
+    _DOMScrollingElement.style.visibility = "visible";
 
     // We let the browser handle the scrolling
     StopDOMEventPropagation = NO;
@@ -1033,7 +1033,7 @@ var supportsNativeDragAndDrop = [CPPlatform supportsDragAndDrop];
         // Find the scroll delta
         event._deltaX = _DOMScrollingElement.scrollLeft - 150;
         event._deltaY = _DOMScrollingElement.scrollTop - 150;
-
+        
         [CPApp sendEvent:event];
 
         // We set StopDOMEventPropagation = NO on line 1008
@@ -1048,7 +1048,7 @@ var supportsNativeDragAndDrop = [CPPlatform supportsDragAndDrop];
         
         // We hide it after a little bit
         _hideDOMScrollingElementTimeout = setTimeout(function(){
-            _DOMScrollingElement.style.display = "none";
+            _DOMScrollingElement.style.visibility = "hidden";
         }, 300);
         
     }, 0);
