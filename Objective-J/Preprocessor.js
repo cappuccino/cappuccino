@@ -61,7 +61,7 @@ var TOKEN_ACCESSORS         = "accessors",
     TOKEN_WHITESPACE        = /^(?:(?:\s+$)|(?:\/(?:\/|\*)))/,
     TOKEN_NUMBER            = /^[+-]?\d+(([.]\d+)*([eE][+-]?\d+))?$/,
     TOKEN_IDENTIFIER        = /^[a-zA-Z_$](\w|$)*$/;
-    
+
 #define IS_WORD(token) /^\w+$/.test(token)
 
 function Lexer(/*String*/ aString)
@@ -70,7 +70,7 @@ function Lexer(/*String*/ aString)
     // FIXME: Used fixed regex
     this._tokens = (aString + '\n').match(/\/\/.*(\r|\n)?|\/\*(?:.|\n|\r)*?\*\/|\w+\b|[+-]?\d+(([.]\d+)*([eE][+-]?\d+))?|"[^"\\]*(\\[\s\S][^"\\]*)*"|'[^'\\]*(\\[\s\S][^'\\]*)*'|\s+|./g);
     this._context = [];
-    
+
     return this;
 }
 
@@ -84,17 +84,17 @@ Lexer.prototype.pop = function()
     this._index = this._context.pop();
 }
 
-Lexer.prototype.peak = function(shouldSkipWhitespace)
+Lexer.prototype.peek = function(shouldSkipWhitespace)
 {
     if (shouldSkipWhitespace)
     {
         this.push();
         var token = this.skip_whitespace();
         this.pop();
-        
+
         return token;
     }
-    
+
     return this._tokens[this._index + 1];
 }
 
@@ -112,18 +112,18 @@ Lexer.prototype.last = function()
 {
     if (this._index < 0)
         return NULL;
-    
+
     return this._tokens[this._index - 1];
 }
 
-Lexer.prototype.skip_whitespace= function(shouldMoveBackwards)
-{   
+Lexer.prototype.skip_whitespace = function(shouldMoveBackwards)
+{
     var token;
-    
+
     if (shouldMoveBackwards)
-        while((token = this.previous()) && TOKEN_WHITESPACE.test(token)) ;
+        while ((token = this.previous()) && TOKEN_WHITESPACE.test(token)) ;
     else
-        while((token = this.next()) && TOKEN_WHITESPACE.test(token)) ;
+        while ((token = this.next()) && TOKEN_WHITESPACE.test(token)) ;
 
     return token;
 }
@@ -187,7 +187,7 @@ var Preprocessor = function(/*String*/ aString, /*CFURL|String*/ aURL, /*unsigne
 
 Preprocessor.prototype.setClassInfo = function(className, superClassName, ivars)
 {
-    this._classLookupTable[className] = {superClassName:superClassName, ivars:ivars};
+    this._classLookupTable[className] = { superClassName:superClassName, ivars:ivars };
 }
 
 Preprocessor.prototype.getClassInfo = function(className)
@@ -234,7 +234,7 @@ Preprocessor.prototype.accessors = function(tokens)
     if (token != TOKEN_OPEN_PARENTHESIS)
     {
         tokens.previous();
-        
+
         return attributes;
     }
 
@@ -249,7 +249,7 @@ Preprocessor.prototype.accessors = function(tokens)
         if ((token = tokens.skip_whitespace()) == TOKEN_EQUAL)
         {
             value = tokens.skip_whitespace();
-            
+
             if (!IS_WORD(value))
                 throw new SyntaxError(this.error_message("*** @accessors attribute value not valid."));
 
@@ -257,7 +257,7 @@ Preprocessor.prototype.accessors = function(tokens)
             {
                 if ((token = tokens.next()) != TOKEN_COLON)
                     throw new SyntaxError(this.error_message("*** @accessors setter attribute requires argument with \":\" at end of selector name."));
-                
+
                 value += ":";
             }
 
@@ -268,30 +268,30 @@ Preprocessor.prototype.accessors = function(tokens)
 
         if (token == TOKEN_CLOSE_PARENTHESIS)
             break;
-        
+
         if (token != TOKEN_COMMA)
             throw new SyntaxError(this.error_message("*** Expected ',' or ')' in @accessors attribute list."));
     }
-    
+
     return attributes;
 }
 
 Preprocessor.prototype.brackets = function(/*Lexer*/ tokens, /*StringBuffer*/ aStringBuffer)
 {
     var tuples = [];
-        
+
     while (this.preprocess(tokens, NULL, NULL, NULL, tuples[tuples.length] = [])) ;
 
     if (tuples[0].length === 1)
     {
         CONCAT(aStringBuffer, '[');
-        
+
         // When we have an empty array literal ([]), tuples[0][0] will be an empty StringBuffer
         CONCAT(aStringBuffer, tuples[0][0]);
-        
+
         CONCAT(aStringBuffer, ']');
     }
-    
+
     else
     {
         var selector = new StringBuffer();
@@ -313,15 +313,15 @@ Preprocessor.prototype.brackets = function(/*Lexer*/ tokens, /*StringBuffer*/ aS
         var index = 1,
             count = tuples.length,
             marg_list = new StringBuffer();
-        
+
         for(; index < count; ++index)
         {
             var pair = tuples[index];
-            
-            CONCAT(selector, pair[1])
+
+            CONCAT(selector, pair[1]);
             CONCAT(marg_list, ", " + pair[0]);
         }
-        
+
         CONCAT(aStringBuffer, ", \"");
         CONCAT(aStringBuffer, selector); // FIXME: sel_getUid(selector + "") ?
         CONCAT(aStringBuffer, '\"');
@@ -335,21 +335,21 @@ Preprocessor.prototype.directive = function(tokens, aStringBuffer, allowedDirect
     // Grab the next token, preprocessor directives follow '@' immediately.
     var buffer = aStringBuffer ? aStringBuffer : new StringBuffer(),
         token = tokens.next();
-            
-    // To provide compatibility with Objective-C files, we convert NSString literals into 
+
+    // To provide compatibility with Objective-C files, we convert NSString literals into
     // toll-freed JavaScript/CPString strings.
     if (token.charAt(0) == TOKEN_DOUBLE_QUOTE)
         CONCAT(buffer, token);
-    
-    // Currently we simply swallow forward declarations and only provide them to allow 
+
+    // Currently we simply swallow forward declarations and only provide them to allow
     // compatibility with Objective-C files.
     else if (token === TOKEN_CLASS)
     {
         tokens.skip_whitespace();
-        
+
         return;
     }
-    
+
     // @implementation Class implementations
     else if (token === TOKEN_IMPLEMENTATION)
         this.implementation(tokens, buffer);
@@ -361,7 +361,7 @@ Preprocessor.prototype.directive = function(tokens, aStringBuffer, allowedDirect
     // @selector
     else if (token === TOKEN_SELECTOR)
         this.selector(tokens, buffer);
-    
+
     if (!aStringBuffer)
         return buffer;
 }
@@ -376,7 +376,7 @@ Preprocessor.prototype.hash = function(tokens, aStringBuffer)
     if (token === TOKEN_PRAGMA)
     {
         token = tokens.skip_whitespace();
-        
+
         // '#pragma mark' directive is used in Xcode editor for creating labels,
         // which is irrelevant to Cappuccino - just swallow this line
         if (token === TOKEN_MARK)
@@ -399,7 +399,7 @@ Preprocessor.prototype.implementation = function(tokens, /*StringBuffer*/ aStrin
 
         instance_methods = new StringBuffer(),
         class_methods = new StringBuffer();
-    
+
     if (!(/^\w/).test(class_name))
         throw new Error(this.error_message("*** Expected class name, found \"" + class_name + "\"."));
 
@@ -410,16 +410,16 @@ Preprocessor.prototype.implementation = function(tokens, /*StringBuffer*/ aStrin
     this._currentSelector = "";
 
     // If we reach an open parenthesis, we are declaring a category.
-    if((token = tokens.skip_whitespace()) == TOKEN_OPEN_PARENTHESIS)
+    if ((token = tokens.skip_whitespace()) == TOKEN_OPEN_PARENTHESIS)
     {
         token = tokens.skip_whitespace();
-        
+
         if (token == TOKEN_CLOSE_PARENTHESIS)
             throw new SyntaxError(this.error_message("*** Can't Have Empty Category Name for class \"" + class_name + "\"."));
-        
+
         if (tokens.skip_whitespace() != TOKEN_CLOSE_PARENTHESIS)
             throw new SyntaxError(this.error_message("*** Improper Category Definition for class \"" + class_name + "\"."));
-        
+
         CONCAT(buffer, "{\nvar the_class = objj_getClass(\"" + class_name + "\")\n");
         CONCAT(buffer, "if(!the_class) throw new SyntaxError(\"*** Could not find definition for class \\\"" + class_name + "\\\"\");\n");
         CONCAT(buffer, "var meta_class = the_class.isa;");
@@ -430,17 +430,17 @@ Preprocessor.prototype.implementation = function(tokens, /*StringBuffer*/ aStrin
         if(token == TOKEN_COLON)
         {
             token = tokens.skip_whitespace();
-            
+
             if (!TOKEN_IDENTIFIER.test(token))
                 throw new SyntaxError(this.error_message("*** Expected class name, found \"" + token + "\"."));
-            
+
             superclass_name = token;
 
             token = tokens.skip_whitespace();
         }
-        
+
         CONCAT(buffer, "{var the_class = objj_allocateClassPair(" + superclass_name + ", \"" + class_name + "\"),\nmeta_class = the_class.isa;");
-        
+
         // If we are at an opening curly brace ('{'), then we have an ivar declaration.
         if (token == TOKEN_OPEN_BRACE)
         {
@@ -449,7 +449,7 @@ Preprocessor.prototype.implementation = function(tokens, /*StringBuffer*/ aStrin
                 declaration = [],
                 attributes,
                 accessors = {};
-            
+
             while((token = tokens.skip_whitespace()) && token != TOKEN_CLOSE_BRACE)
             {
                 if (token === TOKEN_PREPROCESSOR)
@@ -470,10 +470,10 @@ Preprocessor.prototype.implementation = function(tokens, /*StringBuffer*/ aStrin
                     var name = declaration[declaration.length - 1];
 
                     CONCAT(buffer, "new objj_ivar(\"" + name + "\")");
-                    
+
                     ivar_names[name] = 1;
                     declaration = [];
-                    
+
                     if (attributes)
                     {
                         accessors[name] = attributes;
@@ -490,7 +490,7 @@ Preprocessor.prototype.implementation = function(tokens, /*StringBuffer*/ aStrin
 
             if (ivar_count)
                 CONCAT(buffer, "]);\n");
-            
+
             if (!token)
                 throw new SyntaxError(this.error_message("*** Expected '}'"));
 
@@ -503,44 +503,44 @@ Preprocessor.prototype.implementation = function(tokens, /*StringBuffer*/ aStrin
             {
                 var accessor = accessors[ivar_name],
                     property = accessor["property"] || ivar_name;
-                    
+
                 // getter
                 var getterName = accessor["getter"] || property,
                     getterCode = "(id)" + getterName + "\n{\nreturn " + ivar_name + ";\n}";
 
                 if (IS_NOT_EMPTY(instance_methods))
                     CONCAT(instance_methods, ",\n");
-                
+
                 CONCAT(instance_methods, this.method(new Lexer(getterCode), ivar_names));
-                
+
                 // setter
                 if (accessor["readonly"])
                     continue;
-                
+
                 var setterName = accessor["setter"];
-                
+
                 if (!setterName)
                 {
                     var start = property.charAt(0) == '_' ? 1 : 0;
                     setterName = (start ? "_" : "") + "set" + property.substr(start, 1).toUpperCase() + property.substring(start + 1) + ":";
                 }
-                
+
                 var setterCode = "(void)" + setterName + "(id)newValue\n{\n";
-                
+
                 if (accessor["copy"])
                     setterCode += "if (" + ivar_name + " !== newValue)\n" + ivar_name + " = [newValue copy];\n}";
                 else
                     setterCode += ivar_name + " = newValue;\n}";
-                
+
                 if (IS_NOT_EMPTY(instance_methods))
                     CONCAT(instance_methods, ",\n");
-                
+
                 CONCAT(instance_methods, this.method(new Lexer(setterCode), ivar_names));
             }
         }
         else
             tokens.previous();
-        
+
         // We must make a new class object for our class definition.
         CONCAT(buffer, "objj_registerClassPair(the_class);\n");
     }
@@ -565,7 +565,7 @@ Preprocessor.prototype.implementation = function(tokens, /*StringBuffer*/ aStrin
 
             if (IS_NOT_EMPTY(instance_methods))
                 CONCAT(instance_methods, ", ");
-            
+
             CONCAT(instance_methods, this.method(tokens, ivar_names));
         }
         // If we reach a # symbol, we may be at a C preprocessor directive.
@@ -585,21 +585,21 @@ Preprocessor.prototype.implementation = function(tokens, /*StringBuffer*/ aStrin
         //else
         //    throw new SyntaxError(this.error_message("*** Expected a method declaration, or \"@end\", found \"" + token + "\"."));
     }
-    
+
     if (IS_NOT_EMPTY(instance_methods))
     {
         CONCAT(buffer, "class_addMethods(the_class, [");
         CONCAT(buffer, instance_methods);
         CONCAT(buffer, "]);\n");
     }
-    
+
     if (IS_NOT_EMPTY(class_methods))
     {
         CONCAT(buffer, "class_addMethods(meta_class, [");
         CONCAT(buffer, class_methods);
         CONCAT(buffer, "]);\n");
     }
-    
+
     CONCAT(buffer, '}');
 
     this._currentClass = "";
@@ -613,16 +613,16 @@ Preprocessor.prototype._import = function(tokens)
 
     if (token === TOKEN_LESS_THAN)
     {
-        while((token = tokens.next()) && token !== TOKEN_GREATER_THAN)
+        while ((token = tokens.next()) && token !== TOKEN_GREATER_THAN)
             URLString += token;
-        
-        if(!token)
+
+        if (!token)
             throw new SyntaxError(this.error_message("*** Unterminated import statement."));
     }
-    
+
     else if (token.charAt(0) === TOKEN_DOUBLE_QUOTE)
         URLString = token.substr(1, token.length - 2);
-    
+
     else
         throw new SyntaxError(this.error_message("*** Expecting '<' or '\"', found \"" + token + "\"."));
 
@@ -643,7 +643,7 @@ Preprocessor.prototype.method = function(/*Lexer*/ tokens, ivar_names)
 
     ivar_names = ivar_names || {};
 
-    while((token = tokens.skip_whitespace()) && token !== TOKEN_OPEN_BRACE && token !== TOKEN_SEMICOLON)
+    while ((token = tokens.skip_whitespace()) && token !== TOKEN_OPEN_BRACE && token !== TOKEN_SEMICOLON)
     {
         if (token == TOKEN_COLON)
         {
@@ -651,33 +651,33 @@ Preprocessor.prototype.method = function(/*Lexer*/ tokens, ivar_names)
 
             // Colons are part of the selector name
             selector += token;
-            
+
             token = tokens.skip_whitespace();
-            
+
             if (token == TOKEN_OPEN_PARENTHESIS)
             {
                 // Swallow parameter/return type.  Perhaps later we can use this for debugging?
-                while((token = tokens.skip_whitespace()) && token != TOKEN_CLOSE_PARENTHESIS)
+                while ((token = tokens.skip_whitespace()) && token != TOKEN_CLOSE_PARENTHESIS)
                     type += token;
-    
+
                 token = tokens.skip_whitespace();
             }
-            
+
             // Add the type. If it's empty, add null instead.
-            types[parameters.length+1] = type || null;
+            types[parameters.length + 1] = type || null;
 
             // Since this follows a colon, this must be the parameter name.
             parameters[parameters.length] = token;
 
             if (token in ivar_names)
-                throw new SyntaxError(this.error_message("*** Method ( "+selector+" ) uses a parameter name that is already in use ( "+token+" )"));                
+                throw new SyntaxError(this.error_message("*** Method ( "+selector+" ) uses a parameter name that is already in use ( "+token+" )"));
         }
         else if (token == TOKEN_OPEN_PARENTHESIS)
         {
             var type = "";
 
             // Since :( is handled above, this must be the return type, just swallow it.
-            while((token = tokens.skip_whitespace()) && token != TOKEN_CLOSE_PARENTHESIS)
+            while ((token = tokens.skip_whitespace()) && token != TOKEN_CLOSE_PARENTHESIS)
                 type += token;
 
             // types[0] is the return argument
@@ -709,7 +709,7 @@ Preprocessor.prototype.method = function(/*Lexer*/ tokens, ivar_names)
 
     var index = 0,
         count = parameters.length;
-    
+
     CONCAT(buffer, "new objj_method(sel_getUid(\"");
     CONCAT(buffer, selector);
     CONCAT(buffer, "\"), function");
@@ -718,10 +718,10 @@ Preprocessor.prototype.method = function(/*Lexer*/ tokens, ivar_names)
 
     if (this._flags & Preprocessor.Flags.IncludeDebugSymbols)
         CONCAT(buffer, " $" + this._currentClass + "__" + selector.replace(/:/g, "_"));
-    
+
     CONCAT(buffer, "(self, _cmd");
-    
-    for(; index < count; ++index)
+
+    for (; index < count; ++index)
     {
         CONCAT(buffer, ", ");
         CONCAT(buffer, parameters[index]);
@@ -749,53 +749,53 @@ Preprocessor.prototype.preprocess = function(tokens, /*StringBuffer*/ aStringBuf
     if (tuple)
     {
         tuple[0] = buffer;
-        
+
         var bracket = false,
             closures = [0, 0, 0];
     }
-    
+
     while ((token = tokens.next()) && ((token !== terminator) || count))
     {
         if (tuple)
         {
-            // Ignore :'s the belong to tertiary operators (?:) 
+            // Ignore :'s the belong to tertiary operators (?:)
             if (token === TOKEN_QUESTION_MARK)
                 ++closures[2];
-            
-            // Ingore anything between { } and ()                
+
+            // Ingore anything between { } and ()
             else if (token === TOKEN_OPEN_BRACE)
                 ++closures[0];
-                
+
             else if (token === TOKEN_CLOSE_BRACE)
                 --closures[0];
-            
+
             else if (token === TOKEN_OPEN_PARENTHESIS)
                 ++closures[1];
-                
+
             else if (token === TOKEN_CLOSE_PARENTHESIS)
                 --closures[1];
-            
+
             // If not in {} and not in () and this is a colon and we don't belong to a tertiary operator OR this is a closing bracket...
-            else if ((token === TOKEN_COLON && closures[2]-- === 0 || 
+            else if ((token === TOKEN_COLON && closures[2]-- === 0 ||
                     (bracket = (token === TOKEN_CLOSE_BRACKET))) &&
                     closures[0] === 0 && closures[1] === 0)
             {
                 tokens.push(); // 1
-                
-                // If a bracket made us enter, go backwards skipping whitespace ([a b   ] allowed), 
+
+                // If a bracket made us enter, go backwards skipping whitespace ([a b   ] allowed),
                 // if not grab token immediately behind us ([a b  : c] not allowed
                 var label = bracket ? tokens.skip_whitespace(true) : tokens.previous(),
                     isEmptyLabel = TOKEN_WHITESPACE.test(label);
-                
+
                 // The label must be an identifier, and preceded by whitespace, or whitespace itself (the "empty label")
                 if (isEmptyLabel || TOKEN_IDENTIFIER.test(label) && TOKEN_WHITESPACE.test(tokens.previous()))
                 {
                     tokens.push(); // 2
-                    
+
                     var last = tokens.skip_whitespace(true),
                         operatorCheck = true,
                         isDoubleOperator = false;
-                    
+
                     // unary or binary, still disables.
                     // + - + x is bad because it could be (+ - + x) or (a + - + x)
                     // the only good is unbroken chain
@@ -807,28 +807,28 @@ Preprocessor.prototype.preprocess = function(tokens, /*StringBuffer*/ aStringBuf
                             last = tokens.skip_whitespace(true);
                             isDoubleOperator = true;
                         }}
-                        
+
                     tokens.pop(); // 2
-                    
+
                     tokens.pop(); // 1
-                    
+
                     //alert(operatorCheck + "operatorCheck for " + label + " and " + last);
                     if (operatorCheck && (
-                    
+
                         // <)> <label><:|]>
                         // <}> <label><:|]>
-                        // <]> <label><:|]>                        
-                        (!isDoubleOperator && (last === TOKEN_CLOSE_BRACE)) || 
-                        
-                        last === TOKEN_CLOSE_PARENTHESIS || last === TOKEN_CLOSE_BRACKET || 
-                    
+                        // <]> <label><:|]>
+                        (!isDoubleOperator && (last === TOKEN_CLOSE_BRACE)) ||
+
+                        last === TOKEN_CLOSE_PARENTHESIS || last === TOKEN_CLOSE_BRACKET ||
+
                     // <.> label<:|]> --> 5. label
                     // <5> label<:|]>
                         last === TOKEN_PERIOD || TOKEN_NUMBER.test(last) ||
-                        
+
                     // <string> <label><:\]>/
-                        last.charAt(last.length - 1) === '\"' || last.charAt(last.length - 1) === '\'' || 
-                    
+                        last.charAt(last.length - 1) === '\"' || last.charAt(last.length - 1) === '\'' ||
+
                     // <identifier-not> <label><:|]>
                         TOKEN_IDENTIFIER.test(last) && !/^(new|return|case|var)$/.test(last)))
                     {
@@ -837,33 +837,33 @@ Preprocessor.prototype.preprocess = function(tokens, /*StringBuffer*/ aStringBuf
                         else
                         {
                             tuple[1] = label;
-                        
+
                             if (!bracket)
                                 tuple[1] += ':';
-                                
+
                             var count = buffer.atoms.length;
-                    
+
                             while (buffer.atoms[count--] !== label) ;
-                
+
                             buffer.atoms.length = count;
                         }
-                        
+
                         return !bracket;
                     }
-                
+
                     if (bracket)
                         return NO;
                 }
-                
+
                 tokens.pop(); // 2
-                
+
                 if (bracket)
-                    return NO;    
+                    return NO;
             }
-            
+
             closures[2] = MAX(closures[2], 0);
         }
-            
+
         if (instigator)
         {
             if (token === instigator)
@@ -873,18 +873,18 @@ Preprocessor.prototype.preprocess = function(tokens, /*StringBuffer*/ aStringBuf
                 --count;
         }
 
-        // Safari can't handle function declarations of the form function [name]([arguments]) { } 
-        // in evals.  It requires them to be in the form [name] = function([arguments]) { }.  So we 
+        // Safari can't handle function declarations of the form function [name]([arguments]) { }
+        // in evals.  It requires them to be in the form [name] = function([arguments]) { }.  So we
         // need to find these and fix them.
         if (token === TOKEN_FUNCTION)
         {//if (window.p) alert("function");
             var accumulator = "";
-        
+
             // Following the function identifier we can either have an open parenthesis or an identifier:
-            while((token = tokens.next()) && token !== TOKEN_OPEN_PARENTHESIS && !(/^\w/).test(token))
+            while ((token = tokens.next()) && token !== TOKEN_OPEN_PARENTHESIS && !(/^\w/).test(token))
                 accumulator += token;
 
-            // If the next token is an open parenthesis, we have a standard function and we don't have to 
+            // If the next token is an open parenthesis, we have a standard function and we don't have to
             // change it:
             if (token === TOKEN_OPEN_PARENTHESIS)
             {
@@ -892,7 +892,7 @@ Preprocessor.prototype.preprocess = function(tokens, /*StringBuffer*/ aStringBuf
                     ++count;
 
                 CONCAT(buffer, "function" + accumulator + '(');
-                
+
                 if (tuple)
                     ++closures[1];
             }
@@ -900,48 +900,48 @@ Preprocessor.prototype.preprocess = function(tokens, /*StringBuffer*/ aStringBuf
             else
             {
                 CONCAT(buffer, token + "= function");
-            
+
 #if FIREBUG
                 var functionName = token;
 
                 // Skip everything until the next close parenthesis.
-                while((token = tokens.next()) && token != TOKEN_CLOSE_PARENTHESIS)
+                while ((token = tokens.next()) && token != TOKEN_CLOSE_PARENTHESIS)
                     CONCAT(buffer, token);
-                    
+
                 // Don't forget the last token!
                 CONCAT(buffer, token);
-                
-                // Skip everything until the next open curly brace. 
-                while((token = tokens.next()) && token != TOKEN_OPEN_BRACE)
+
+                // Skip everything until the next open curly brace.
+                while ((token = tokens.next()) && token != TOKEN_OPEN_BRACE)
                     CONCAT(buffer, token);
-                
+
                 if (tuple)
                     ++closures[2];
-                
+
                 // Place the open curly brace as well, and the function name
                 CONCAT(buffer, token + "\n \"__FIREBUG_FNAME__" + functionName + "\".length;\n");
 #endif
             }
         }
-        
+
         // If we reach an @ symbol, we are at a preprocessor directive.
         else if (token == TOKEN_PREPROCESSOR)
             this.directive(tokens, buffer);
-            
+
         // If we reach a # symbol, we may be at a C preprocessor directive.
         else if (token == TOKEN_HASH)
             this.hash(tokens, buffer);
-        
-        // If we reach a bracket, we will either be preprocessing a message send, a literal 
+
+        // If we reach a bracket, we will either be preprocessing a message send, a literal
         // array, or an array index.
         else if (token == TOKEN_OPEN_BRACKET)
             this.brackets(tokens, buffer);
-                
+
         // If not simply append the token.
         else
             CONCAT(buffer, token);
     }
-    
+
     // If we get this far and we're parsing an objj_msgSend (or array), then we have a problem.
     if (tuple)
         throw new SyntaxError(this.error_message("*** Expected ']' - Unterminated message send or array."));
@@ -953,24 +953,24 @@ Preprocessor.prototype.preprocess = function(tokens, /*StringBuffer*/ aStringBuf
 Preprocessor.prototype.selector = function(tokens, aStringBuffer)
 {
     var buffer = aStringBuffer ? aStringBuffer : new StringBuffer();
-    
+
     CONCAT(buffer, "sel_getUid(\"");
-    
+
     // Swallow open parenthesis.
     if (tokens.skip_whitespace() != TOKEN_OPEN_PARENTHESIS)
         throw new SyntaxError(this.error_message("*** Expected '('"));
 
     // Eat leading whitespace
     var selector = tokens.skip_whitespace();
-    
+
     if (selector == TOKEN_CLOSE_PARENTHESIS)
         throw new SyntaxError(this.error_message("*** Unexpected ')', can't have empty @selector()"));
 
     CONCAT(aStringBuffer, selector);
-    
+
     var token,
         starting = true;
-    
+
     while ((token = tokens.next()) && token != TOKEN_CLOSE_PARENTHESIS)
     {
         if (starting && /^\d+$/.test(token) || !(/^(\w|$|\:)/.test(token)))
@@ -984,11 +984,11 @@ Preprocessor.prototype.selector = function(tokens, aStringBuffer)
             else
                 throw new SyntaxError(this.error_message("*** Illegal character '" + token + "' in @selector()."));
         }
-        
+
         CONCAT(buffer, token);
         starting = (token == TOKEN_COLON);
     }
-    
+
     CONCAT(buffer, "\")");
 
     if (!aStringBuffer)
