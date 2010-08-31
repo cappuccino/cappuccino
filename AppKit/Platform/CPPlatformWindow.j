@@ -43,6 +43,7 @@ var PrimaryPlatformWindow   = NULL;
     DOMElement      _DOMFocusElement;
     DOMElement      _DOMEventGuard;
     DOMElement      _DOMScrollingElement;
+    id              _hideDOMScrollingElementTimeout;
 
     CPArray         _windowLevels;
     CPDictionary    _windowLayers;

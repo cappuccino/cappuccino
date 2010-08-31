@@ -320,11 +320,12 @@ var supportsNativeDragAndDrop = [CPPlatform supportsDragAndDrop];
     // We get scrolling deltas from this element
     _DOMScrollingElement = theDocument.createElement("div");
     _DOMScrollingElement.style.position = "absolute";
-    _DOMScrollingElement.style.zIndex = "100";
+    _DOMScrollingElement.style.display = "none";
+    _DOMScrollingElement.style.zIndex = "0";
     _DOMScrollingElement.style.height = "100px";
     _DOMScrollingElement.style.width = "100px";
     _DOMScrollingElement.style.overflow = "scroll";
-    _DOMScrollingElement.style.backgroundColor = "rgba(0,0,0,0.1)";
+    //_DOMScrollingElement.style.backgroundColor = "rgba(0,0,0,1.0)"; // debug help.
     _DOMScrollingElement.style.opacity = "0";
     _DOMScrollingElement.style.filter = "alpha(opacity=0)";
     _DOMScrollingElement.className = "cpdontremove";
@@ -1004,6 +1005,9 @@ var supportsNativeDragAndDrop = [CPPlatform supportsDragAndDrop];
                         (aDOMEvent.altKey ? CPAlternateKeyMask : 0) |
                         (aDOMEvent.metaKey ? CPCommandKeyMask : 0);
 
+    // Show the dom element
+    _DOMScrollingElement.style.display = "block";
+
     // We let the browser handle the scrolling
     StopDOMEventPropagation = NO;
 
@@ -1017,8 +1021,11 @@ var supportsNativeDragAndDrop = [CPPlatform supportsDragAndDrop];
     location = [theWindow convertBridgeToBase:location];
 
     var event = [CPEvent mouseEventWithType:CPScrollWheel location:location modifierFlags:modifierFlags
-            timestamp:timestamp windowNumber:windowNumber context:nil eventNumber:-1 clickCount:1 pressure:0 ];
+                                  timestamp:timestamp windowNumber:windowNumber context:nil eventNumber:-1 clickCount:1 pressure:0];
     event._DOMEvent = aDOMEvent;
+    
+    if (_hideDOMScrollingElementTimeout)
+        clearTimeout(_hideDOMScrollingElementTimeout);
     
     // We lag 1 event behind without this timeout.
     setTimeout(function(){     
@@ -1038,6 +1045,11 @@ var supportsNativeDragAndDrop = [CPPlatform supportsDragAndDrop];
         // Reset the DOM elements scroll offset
         _DOMScrollingElement.scrollLeft = 150;
         _DOMScrollingElement.scrollTop = 150;
+        
+        // We hide it after a little bit
+        _hideDOMScrollingElementTimeout = setTimeout(function(){
+            _DOMScrollingElement.style.display = "none";
+        }, 300);
         
     }, 0);
 }
