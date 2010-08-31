@@ -1269,7 +1269,7 @@ var _loadItemInfoForItem = function(/*CPOutlineView*/ anOutlineView, /*id*/ anIt
     } else {
         CGContextAddLineToPoint(context, 4.5, 8.0);
     }
-    CGContextSetStrokeColor(context, [CPColor colorWithCalibratedWhite:1.0 alpha: 0.8]);
+    CGContextSetStrokeColor(context, [CPColor colorWithWhite:1.0 alpha: 0.8]);
     CGContextStrokePath(context);
 }
 
@@ -1328,9 +1328,9 @@ var CPOutlineViewIndentationPerLevelKey = @"CPOutlineViewIndentationPerLevelKey"
 var colorForDisclosureTriangle = function(isSelected, isHighlighted) {
     return isSelected
         ? (isHighlighted
-            ? [CPColor colorWithCalibratedWhite:0.9 alpha: 1.0]
-            : [CPColor colorWithCalibratedWhite:1.0 alpha: 1.0])
+            ? [CPColor colorWithWhite:0.9 alpha: 1.0]
+            : [CPColor colorWithWhite:1.0 alpha: 1.0])
         : (isHighlighted
-            ? [CPColor colorWithCalibratedWhite:0.4 alpha: 1.0]
-            : [CPColor colorWithCalibratedWhite:0.5 alpha: 1.0]);
+            ? [CPColor colorWithWhite:0.4 alpha: 1.0]
+            : [CPColor colorWithWhite:0.5 alpha: 1.0]);
 }

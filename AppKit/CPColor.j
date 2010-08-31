@@ -157,7 +157,7 @@ var cachedBlackColor,
 + (CPColor)colorWithHue:(float)hue saturation:(float)saturation brightness:(float)brightness alpha:(float)alpha
 {
     if (saturation === 0.0)
-        return [CPColor colorWithCalibratedWhite:brightness / 100.0 alpha:alpha];
+        return [CPColor colorWithWhite:brightness / 100.0 alpha:alpha];
 
     var f = hue % 60,
         p = (brightness * (100 - saturation)) / 10000,
@@ -219,7 +219,7 @@ var cachedBlackColor,
 + (CPColor)darkGrayColor
 {
     if (!cachedDarkGrayColor)
-        cachedDarkGrayColor = [CPColor colorWithCalibratedWhite:1.0 / 3.0 alpha:1.0];
+        cachedDarkGrayColor = [CPColor colorWithWhite:1.0 / 3.0 alpha:1.0];
 
     return cachedDarkGrayColor;
 }
@@ -230,7 +230,7 @@ var cachedBlackColor,
 + (CPColor)grayColor
 {
     if (!cachedGrayColor)
-        cachedGrayColor = [CPColor colorWithCalibratedWhite:0.5 alpha: 1.0];
+        cachedGrayColor = [CPColor colorWithWhite:0.5 alpha: 1.0];
 
     return cachedGrayColor;
 }
@@ -252,7 +252,7 @@ var cachedBlackColor,
 + (CPColor)lightGrayColor
 {
     if (!cachedLightGrayColor)
-        cachedLightGrayColor = [CPColor colorWithCalibratedWhite:2.0 / 3.0 alpha:1.0];
+        cachedLightGrayColor = [CPColor colorWithWhite:2.0 / 3.0 alpha:1.0];
 
     return cachedLightGrayColor;
 }
@@ -364,7 +364,7 @@ var cachedBlackColor,
 + (CPColor)clearColor
 {
     if (!cachedClearColor)
-        cachedClearColor = [self colorWithCalibratedWhite:0.0 alpha:0.0];
+        cachedClearColor = [self colorWithWhite:0.0 alpha:0.0];
 
     return cachedClearColor;
 }

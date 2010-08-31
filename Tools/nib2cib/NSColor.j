@@ -61,7 +61,7 @@ var NSUnknownColorSpaceModel    = -1,
             result = [CPColor colorWithCalibratedRed:values[0] green:values[1] blue:values[2] alpha:values[3]];
             break;
             
-        case 3: // [NSColor colorWithCalibratedWhite:values[0] alpha:values[1]];
+        case 3: // [NSColor colorWithWhite:values[0] alpha:values[1]];
         case 4: // [NSColor colorWithDeviceWhite:values[0] alpha:values[1]];
         
             var bytes       = [aCoder decodeBytesForKey:@"NSWhite"],
@@ -72,7 +72,7 @@ var NSUnknownColorSpaceModel    = -1,
             for (var i = 0; i < components.length && i < 2; i++)
                 values[i] = [components[i] floatValue];
 
-            result = [CPColor colorWithCalibratedWhite:values[0] alpha:values[1]];
+            result = [CPColor colorWithWhite:values[0] alpha:values[1]];
             break;
 /*
         case 5:
