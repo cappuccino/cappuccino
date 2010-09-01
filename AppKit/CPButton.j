@@ -99,6 +99,9 @@ CPButtonStateMixed  = CPThemeState("mixed");
 
     CPString            _keyEquivalent;
     unsigned            _keyEquivalentModifierMask;
+
+    CPView              _bezelView;
+    _CPImageAndTextView _contentView;
 }
 
 + (id)buttonWithTitle:(CPString)aTitle
@@ -463,7 +466,11 @@ CPButtonStateMixed  = CPThemeState("mixed");
 */
 - (void)sizeToFit
 {
-    var size = [([self title] || " ") sizeWithFont:[self currentValueForThemeAttribute:@"font"]],
+    [self _createSubviewsIfNeeded];
+
+    [_contentView sizeToFit];
+
+    var size = [_contentView frameSize],
         contentInset = [self currentValueForThemeAttribute:@"content-inset"],
         minSize = [self currentValueForThemeAttribute:@"min-size"],
         maxSize = [self currentValueForThemeAttribute:@"max-size"];
@@ -480,59 +487,54 @@ CPButtonStateMixed  = CPThemeState("mixed");
     [self setFrameSize:size];
 }
 
-- (CGRect)rectForEphemeralSubviewNamed:(CPString)aName
-{
-    if (aName === "bezel-view")
-        return [self bezelRectForBounds:[self bounds]];
-
-    else if (aName === "content-view")
-        return [self contentRectForBounds:[self bounds]];
-
-    return [super rectForEphemeralSubviewNamed:aName];
-}
-
-- (CPView)createEphemeralSubviewNamed:(CPString)aName
-{
-    if (aName === "bezel-view")
-    {
-        var view = [[CPView alloc] initWithFrame:_CGRectMakeZero()];
-
-        [view setHitTests:NO];
-
-        return view;
-    }
-    else
-        return [[_CPImageAndTextView alloc] initWithFrame:_CGRectMakeZero()];
-}
-
 - (void)layoutSubviews
 {
-    var bezelView = [self layoutEphemeralSubviewNamed:@"bezel-view"
-                                           positioned:CPWindowBelow
-                      relativeToEphemeralSubviewNamed:@"content-view"];
-
-    [bezelView setBackgroundColor:[self currentValueForThemeAttribute:@"bezel-color"]];
-
-    var contentView = [self layoutEphemeralSubviewNamed:@"content-view"
-                                             positioned:CPWindowAbove
-                        relativeToEphemeralSubviewNamed:@"bezel-view"];
-
-    if (contentView)
+    // Force subviews to be created by removing them
+    if (_contentView)
     {
-        [contentView setText:([self hasThemeState:CPThemeStateHighlighted] && _alternateTitle) ? _alternateTitle : _title];
-        [contentView setImage:[self currentValueForThemeAttribute:@"image"]];
-        [contentView setImageOffset:[self currentValueForThemeAttribute:@"imageOffset"]];
+        [_contentView removeFromSuperview];
+        _contentView = nil;
+    }
 
-        [contentView setFont:[self currentValueForThemeAttribute:@"font"]];
-        [contentView setTextColor:[self currentValueForThemeAttribute:@"text-color"]];
-        [contentView setAlignment:[self currentValueForThemeAttribute:@"alignment"]];
-        [contentView setVerticalAlignment:[self currentValueForThemeAttribute:@"vertical-alignment"]];
-        [contentView setLineBreakMode:[self currentValueForThemeAttribute:@"line-break-mode"]];
-        [contentView setTextShadowColor:[self currentValueForThemeAttribute:@"text-shadow-color"]];
-        [contentView setTextShadowOffset:[self currentValueForThemeAttribute:@"text-shadow-offset"]];
-        [contentView setImagePosition:[self currentValueForThemeAttribute:@"image-position"]];
-        [contentView setImageScaling:[self currentValueForThemeAttribute:@"image-scaling"]];
-        [contentView setDimsImage:[self hasThemeState:CPThemeStateDisabled] && _imageDimsWhenDisabled];
+    if (_bezelView)
+    {
+        [_bezelView removeFromSuperview];
+        _bezelView= nil;
+    }
+
+    [self _createSubviewsIfNeeded];
+}
+
+- (void)_createSubviewsIfNeeded
+{
+    if (!_bezelView)
+    {
+        _bezelView = [[CPView alloc] initWithFrame:[self bezelRectForBounds:[self bounds]]];
+
+        [_bezelView setBackgroundColor:[self currentValueForThemeAttribute:@"bezel-color"]];
+        [self addSubview:_bezelView];
+    }
+
+    if (!_contentView)
+    {
+        _contentView = [[_CPImageAndTextView alloc] initWithFrame:[self contentRectForBounds:[self bounds]]];
+
+        [_contentView setText:([self hasThemeState:CPThemeStateHighlighted] && _alternateTitle) ? _alternateTitle : _title];
+        [_contentView setImage:[self currentValueForThemeAttribute:@"image"]];
+        [_contentView setImageOffset:[self currentValueForThemeAttribute:@"imageOffset"]];
+
+        [_contentView setFont:[self currentValueForThemeAttribute:@"font"]];
+        [_contentView setTextColor:[self currentValueForThemeAttribute:@"text-color"]];
+        [_contentView setAlignment:[self currentValueForThemeAttribute:@"alignment"]];
+        [_contentView setVerticalAlignment:[self currentValueForThemeAttribute:@"vertical-alignment"]];
+        [_contentView setLineBreakMode:[self currentValueForThemeAttribute:@"line-break-mode"]];
+        [_contentView setTextShadowColor:[self currentValueForThemeAttribute:@"text-shadow-color"]];
+        [_contentView setTextShadowOffset:[self currentValueForThemeAttribute:@"text-shadow-offset"]];
+        [_contentView setImagePosition:[self currentValueForThemeAttribute:@"image-position"]];
+        [_contentView setImageScaling:[self currentValueForThemeAttribute:@"image-scaling"]];
+        [_contentView setDimsImage:[self hasThemeState:CPThemeStateDisabled] && _imageDimsWhenDisabled];
+
+        [self addSubview:_contentView];
     }
 }
 
@@ -642,7 +644,9 @@ var CPButtonImageKey                    = @"CPButtonImageKey",
     CPButtonTitleKey                    = @"CPButtonTitleKey",
     CPButtonAlternateTitleKey           = @"CPButtonAlternateTitleKey",
     CPButtonIsBorderedKey               = @"CPButtonIsBorderedKey",
+    CPButtonAllowsMixedStateKey         = @"CPButtonAllowsMixedStateKey",
     CPButtonImageDimsWhenDisabledKey    = @"CPButtonImageDimsWhenDisabledKey",
+    CPButtonImagePositionKey            = @"CPButtonImagePositionKey",
     CPButtonKeyEquivalentKey            = @"CPButtonKeyEquivalentKey",
     CPButtonKeyEquivalentMaskKey        = @"CPButtonKeyEquivalentMaskKey";
 
@@ -666,12 +670,18 @@ var CPButtonImageKey                    = @"CPButtonImageKey",
         _title = [aCoder decodeObjectForKey:CPButtonTitleKey];
         _alternateTitle = [aCoder decodeObjectForKey:CPButtonAlternateTitleKey];
 
+        if ([aCoder containsValueForKey:CPButtonAllowsMixedStateKey])
+            _allowsMixedState = [aCoder decodeBoolForKey:CPButtonAllowsMixedStateKey];
+
         [self setImageDimsWhenDisabled:[aCoder decodeObjectForKey:CPButtonImageDimsWhenDisabledKey]];
+
+        if ([aCoder containsValueForKey:CPButtonImagePositionKey])
+            [self setImagePosition:[aCoder decodeIntForKey:CPButtonImagePositionKey]];
 
         if ([aCoder containsValueForKey:CPButtonKeyEquivalentKey])
             [self setKeyEquivalent:CFData.decodeBase64ToUtf16String([aCoder decodeObjectForKey:CPButtonKeyEquivalentKey])];
 
-        _keyEquivalentModifierMask = [aCoder decodeObjectForKey:CPButtonKeyEquivalentMaskKey];
+        _keyEquivalentModifierMask = [aCoder decodeIntForKey:CPButtonKeyEquivalentMaskKey];
 
         [self setNeedsLayout];
         [self setNeedsDisplay:YES];
@@ -694,7 +704,10 @@ var CPButtonImageKey                    = @"CPButtonImageKey",
     [aCoder encodeObject:_title forKey:CPButtonTitleKey];
     [aCoder encodeObject:_alternateTitle forKey:CPButtonAlternateTitleKey];
 
-    [aCoder encodeObject:[self imageDimsWhenDisabled] forKey:CPButtonImageDimsWhenDisabledKey];
+    [aCoder encodeBool:_allowsMixedState forKey:CPButtonAllowsMixedStateKey];
+
+    [aCoder encodeBool:[self imageDimsWhenDisabled] forKey:CPButtonImageDimsWhenDisabledKey];
+    [aCoder encodeInt:[self imagePosition] forKey:CPButtonImagePositionKey];
 
     if (_keyEquivalent)
         [aCoder encodeObject:CFData.encodeBase64Utf16String(_keyEquivalent) forKey:CPButtonKeyEquivalentKey];
