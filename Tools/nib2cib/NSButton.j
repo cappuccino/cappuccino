@@ -197,15 +197,15 @@ var NSButtonIsBorderedMask = 0x00800000,
         }
     }
 
-    var myself = [self NS_initWithCoder:aCoder];
+    self = [self NS_initWithCoder:aCoder];
 
-    myself._allowsMixedState = [cell allowsMixedState];
-    [myself setImagePosition:[cell imagePosition]];
+    self._allowsMixedState = [cell allowsMixedState];
+    [self setImagePosition:[cell imagePosition]];
 
-    [myself setKeyEquivalent:[cell keyEquivalent]];
-    myself._keyEquivalentModifierMask = [cell keyEquivalentModifierMask];
+    [self setKeyEquivalent:[cell keyEquivalent]];
+    self._keyEquivalentModifierMask = [cell keyEquivalentModifierMask];
 
-    return myself;
+    return self;
 }
 
 - (Class)classForKeyedArchiver
