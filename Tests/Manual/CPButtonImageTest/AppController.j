@@ -1,8 +1,8 @@
 /*
  * AppController.j
- * CPFontMetricsExplorer
+ * CPButtonImageTest
  *
- * Created by Aparajita Fishman on August 23, 2010.
+ * Created by Aparajita Fishman on August 31, 2010.
  */
 
 @import <Foundation/CPObject.j>
@@ -23,6 +23,7 @@ CPLogRegister(CPLogConsole);
     @outlet CPPopUpButton   positionMenu;
 
     CPArray buttons;
+    CPArray checksAndRadios;
 }
 
 - (void)awakeFromCib
@@ -37,12 +38,14 @@ CPLogRegister(CPLogConsole);
 
 - (void)_setupButtons
 {
-    buttons = [button, imageButton, checkbox, multiCheckbox, radio1, radio2];
+    buttons = [button, imageButton];
+    checksAndRadios = [checkbox, multiCheckbox, radio1, radio2];
 
     var checkboxHeight = [checkbox frameSize].height,
         radioHeight = [radio1 frameSize].height;
 
     [buttons makeObjectsPerformSelector:@selector(sizeToFit)];
+    [checksAndRadios makeObjectsPerformSelector:@selector(sizeToFit)];
 
     [checkbox setFrameSize:CGSizeMake([checkbox frameSize].width, checkboxHeight)];
     [multiCheckbox setFrameSize:CGSizeMake([multiCheckbox frameSize].width, checkboxHeight)];
@@ -61,6 +64,7 @@ CPLogRegister(CPLogConsole);
 - (void)_setImagePosition:(unsigned)position
 {
     [buttons makeObjectsPerformSelector:@selector(setImagePosition:) withObject:position];
+    [checksAndRadios makeObjectsPerformSelector:@selector(setImagePosition:) withObject:position];
 
     var alignment;
 
@@ -85,7 +89,7 @@ CPLogRegister(CPLogConsole);
             break;
     }
 
-    [buttons makeObjectsPerformSelector:@selector(setAlignment:) withObject:alignment];
+    [checksAndRadios makeObjectsPerformSelector:@selector(setAlignment:) withObject:alignment];
 }
 
 @end
