@@ -1,14 +1,11 @@
 /*
  * AppController.j
- * CPFontMetricsExplorer
+ * CPGraphicsTest
  *
  * Created by Aparajita Fishman on August 23, 2010.
  */
 
 @import <Foundation/CPObject.j>
-
-CPLogRegister(CPLogConsole);
-
 
 @implementation AppController : CPObject
 {
