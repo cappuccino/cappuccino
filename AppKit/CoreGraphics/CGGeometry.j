@@ -70,12 +70,61 @@ _function(CGInsetMakeZero())
 _function(CGInsetMakeCopy(anInset))
 _function(CGInsetIsEmpty(anInset))
 
+CGMinXEdge = 0;
+CGMinYEdge = 1;
+CGMaxXEdge = 2;
+CGMaxYEdge = 3;
+
 CGRectNull = _CGRectMake(Infinity, Infinity, 0.0, 0.0);
 
 /*!
     @addtogroup appkit
     @{
 */
+
+/*!
+    Creates two rectangles -- slice and rem -- from inRect, by dividing inRect
+    with a line that's parallel to the side of inRect specified by edge.
+    The size of slice is determined by amount, which specifies the distance from edge.
+
+    slice and rem must not be NULL, must not be the same object, and must not be the
+    same object as inRect.
+
+    @group CGRect
+*/
+function CGRectDivide(inRect, slice, rem, amount, edge)
+{
+    slice.origin = _CGPointMakeCopy(inRect.origin);
+    slice.size = _CGSizeMakeCopy(inRect.size);
+    rem.origin = _CGPointMakeCopy(inRect.origin);
+    rem.size = _CGSizeMakeCopy(inRect.size);
+
+    switch (edge)
+    {
+        case CGMinXEdge:
+            slice.size.width = amount;
+            rem.origin.x += amount;
+            rem.size.width -= amount;
+            break;
+
+        case CGMaxXEdge:
+            slice.origin.x = _CGRectGetMaxX(slice) - amount;
+            slice.size.width = amount;
+            rem.size.width -= amount;
+            break;
+
+        case CGMinYEdge:
+            slice.size.height = amount;
+            rem.origin.y += amount;
+            rem.size.height -= amount;
+            break;
+
+        case CGMaxYEdge:
+            slice.origin.y = _CGRectGetMaxY(slice) - amount;
+            slice.size.height = amount;
+            rem.size.height -= amount;
+    }
+}
 
 /*!
     Returns a \c BOOL indicating whether CGRect \c lhsRect
@@ -88,7 +137,7 @@ CGRectNull = _CGRectMake(Infinity, Infinity, 0.0, 0.0);
 function CGRectContainsRect(lhsRect, rhsRect)
 {
     var union = CGRectUnion(lhsRect, rhsRect);
-    
+
     return _CGRectEqualToRect(union, lhsRect);
 }
 
@@ -102,12 +151,12 @@ function CGRectContainsRect(lhsRect, rhsRect)
 function CGRectIntersectsRect(lhsRect, rhsRect)
 {
     var intersection = CGRectIntersection(lhsRect, rhsRect);
-    
+
     return !_CGRectIsEmpty(intersection);
 }
 
 /*!
-    Makes the origin and size of a CGRect all integers. Specifically, by making 
+    Makes the origin and size of a CGRect all integers. Specifically, by making
     the southwest corner the origin (rounded down), and the northeast corner a CGSize (rounded up).
     @param aRect the rectangle to operate on
     @return CGRect the modified rectangle (same as the input)
@@ -120,7 +169,7 @@ function CGRectIntegral(aRect)
     // Store these out separately, if not the GetMaxes will return incorrect values.
     var x = FLOOR(_CGRectGetMinX(aRect)),
         y = FLOOR(_CGRectGetMinY(aRect));
-    
+
     aRect.size.width = CEIL(_CGRectGetMaxX(aRect)) - x;
     aRect.size.height = CEIL(_CGRectGetMaxY(aRect)) - y;
 
@@ -140,18 +189,18 @@ function CGRectIntegral(aRect)
 function CGRectIntersection(lhsRect, rhsRect)
 {
     var intersection = _CGRectMake(
-        MAX(_CGRectGetMinX(lhsRect), _CGRectGetMinX(rhsRect)), 
-        MAX(_CGRectGetMinY(lhsRect), _CGRectGetMinY(rhsRect)), 
+        MAX(_CGRectGetMinX(lhsRect), _CGRectGetMinX(rhsRect)),
+        MAX(_CGRectGetMinY(lhsRect), _CGRectGetMinY(rhsRect)),
         0, 0);
-    
+
     intersection.size.width = MIN(_CGRectGetMaxX(lhsRect), _CGRectGetMaxX(rhsRect)) - _CGRectGetMinX(intersection);
     intersection.size.height = MIN(_CGRectGetMaxY(lhsRect), _CGRectGetMaxY(rhsRect)) - _CGRectGetMinY(intersection);
-    
+
     return _CGRectIsEmpty(intersection) ? _CGRectMakeZero() : intersection;
 }
 
 /*
-    
+
 */
 function CGRectStandardize(aRect)
 {
@@ -189,28 +238,28 @@ function CGRectUnion(lhsRect, rhsRect)
         minY = MIN(_CGRectGetMinY(lhsRect), _CGRectGetMinY(rhsRect)),
         maxX = MAX(_CGRectGetMaxX(lhsRect), _CGRectGetMaxX(rhsRect)),
         maxY = MAX(_CGRectGetMaxY(lhsRect), _CGRectGetMaxY(rhsRect));
-    
+
     return _CGRectMake(minX, minY, maxX - minX, maxY - minY);
 }
 
 function CGPointFromString(aString)
 {
     var comma = aString.indexOf(',');
-    
+
     return { x:parseInt(aString.substr(1, comma - 1)), y:parseInt(aString.substring(comma + 1, aString.length)) };
 }
 
 function CGSizeFromString(aString)
 {
     var comma = aString.indexOf(',');
-    
+
     return { width:parseInt(aString.substr(1, comma - 1)), height:parseInt(aString.substring(comma + 1, aString.length)) };
 }
 
 function CGRectFromString(aString)
 {
     var comma = aString.indexOf(',', aString.indexOf(',') + 1);
-    
+
     return { origin:CGPointFromString(aString.substr(1, comma - 1)), size:CGSizeFromString(aString.substring(comma + 2, aString.length)) };
 }
 
@@ -233,6 +282,6 @@ function CPStringFromCGInset(anInset)
     return '{' + anInset.top + ", " + anInset.left + ", " + anInset.bottom + ", " + anInset.right + '}';
 }
 
-/*! 
-    @} 
+/*!
+    @}
 */

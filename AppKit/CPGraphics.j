@@ -26,97 +26,80 @@
 #include "CoreGraphics/CGGeometry.h"
 
 
-function CPDrawGrayBezel(aRect)
+function CPDrawTiledRects(
+   /* CGRect */ boundsRect,
+   /* CGRect */ clipRect,
+   /* CPRectEdge[] */ sides,
+   /* float[] */ grays)
 {
-    var context = [[CPGraphicsContext currentContext] graphicsPort];
+    if (sides.length != grays.length)
+        [CPException raise:CPInvalidArgumentException reason:@"sides (length: " + sides.length + ") and grays (length: " + grays.length + ") must have the same length."];
 
-    CGContextBeginPath(context);
-    CGContextSetStrokeColor(context, [CPColor colorWithWhite:142.0/255.0 alpha:1.0]);
+    var colors = [];
 
-    var y = _CGRectGetMinY(aRect) + 0.5;
+    for (var i = 0; i < grays.length; ++i)
+        colors.push([CPColor colorWithWhite:grays[i] alpha:1.0]);
 
-    CGContextMoveToPoint(context, _CGRectGetMinX(aRect), y);
-    CGContextAddLineToPoint(context, _CGRectGetMinX(aRect) + 1.0, y);
-    CGContextStrokePath(context);
-
-    CGContextBeginPath(context);
-    CGContextSetStrokeColor(context, [CPColor colorWithWhite:192.0/255.0 alpha:1.0]);
-    CGContextMoveToPoint(context, _CGRectGetMinX(aRect) + 1.0, y);
-    CGContextAddLineToPoint(context, _CGRectGetMaxX(aRect) - 1.0, y);
-    CGContextStrokePath(context);
-
-    CGContextBeginPath(context);
-    CGContextSetStrokeColor(context, [CPColor colorWithWhite:142.0/255.0 alpha:1.0]);
-    CGContextMoveToPoint(context, _CGRectGetMaxX(aRect) - 1.0, y);
-    CGContextAddLineToPoint(context, _CGRectGetMaxX(aRect), y);
-    CGContextStrokePath(context);
-
-    CGContextBeginPath(context);
-    CGContextSetStrokeColor(context, [CPColor colorWithWhite:190.0/255.0 alpha:1.0]);
-
-    var x = _CGRectGetMaxX(aRect) - 0.5;
-
-    CGContextMoveToPoint(context, x, _CGRectGetMinY(aRect) + 1.0);
-    CGContextAddLineToPoint(context, x, _CGRectGetMaxY(aRect));
-
-    CGContextMoveToPoint(context, x - 0.5, _CGRectGetMaxY(aRect) - 0.5);
-    CGContextAddLineToPoint(context, _CGRectGetMinX(aRect), _CGRectGetMaxY(aRect) - 0.5);
-
-    x = _CGRectGetMinX(aRect) + 0.5;
-
-    CGContextMoveToPoint(context, x, _CGRectGetMaxY(aRect));
-    CGContextAddLineToPoint(context, x, _CGRectGetMinY(aRect) + 1.0);
-
-    CGContextStrokePath(context);
+    return CPDrawColorTiledRects(boundsRect, clipRect, sides, colors);
 }
 
-function CPDrawGroove(aRect, drawTopBorder)
+function CPDrawColorTiledRects(
+   /* CGRect */ boundsRect,
+   /* CGRect */ clipRect,
+   /* CPRectEdge[] */ sides,
+   /* CPColor[] */ colors)
 {
-    var context = [[CPGraphicsContext currentContext] graphicsPort];
+    if (sides.length != colors.length)
+        [CPException raise:CPInvalidArgumentException reason:@"sides (length: " + sides.length + ") and colors (length: " + colors.length + ") must have the same length."];
 
-    CGContextBeginPath(context);
-    CGContextSetStrokeColor(context, [CPColor colorWithWhite:159.0/255.0 alpha:1.0]);
+    var resultRect = _CGRectMakeCopy(boundsRect),
+        slice = _CGRectMakeZero(),
+        remainder = _CGRectMakeZero(),
+        context = [[CPGraphicsContext currentContext] graphicsPort];
 
-    var y = _CGRectGetMinY(aRect) + 0.5;
-
-    CGContextMoveToPoint(context, _CGRectGetMinX(aRect), y);
-    CGContextAddLineToPoint(context, _CGRectGetMaxX(aRect), y);
-
-    var x = _CGRectGetMaxX(aRect) - 1.5;
-
-    CGContextMoveToPoint(context, x, _CGRectGetMinY(aRect) + 2.0);
-    CGContextAddLineToPoint(context, x, _CGRectGetMaxY(aRect) - 1.0);
-
-    y = _CGRectGetMaxY(aRect) - 1.5;
-
-    CGContextMoveToPoint(context, _CGRectGetMaxX(aRect) - 1.0, y);
-    CGContextAddLineToPoint(context, _CGRectGetMinX(aRect) + 2.0, y);
-
-    x = _CGRectGetMinX(aRect) + 0.5;
-
-    CGContextMoveToPoint(context, x, _CGRectGetMaxY(aRect));
-    CGContextAddLineToPoint(context, x, _CGRectGetMinY(aRect));
-
-    CGContextStrokePath(context);
-
-    CGContextBeginPath(context);
-    CGContextSetStrokeColor(context, [CPColor whiteColor]);
-
-    var rect = _CGRectOffset(aRect, 1.0, 1.0);
-
-    rect.size.width -= 1.0;
-    rect.size.height -= 1.0;
-    CGContextStrokeRect(context, _CGRectInset(rect, 0.5, 0.5));
-
-    if (drawTopBorder)
+    for (var sideIndex = 0; sideIndex < sides.length; ++sideIndex)
     {
+        var side = sides[sideIndex];
+
+        CGRectDivide(resultRect, slice, remainder, 1.0, side);
+        resultRect = remainder;
+        slice = CGRectIntersection(slice, clipRect);
+
+        // Cocoa docs say that only slices that are within the clipRect are actually drawn
+        if (_CGRectIsEmpty(slice))
+            continue;
+
+        var minX, maxX, minY, maxY;
+
+        if (side == CPMinXEdge || side == CPMaxXEdge)
+        {
+            // Make sure we have at least 1 pixel to draw a line
+            if (_CGRectGetWidth(slice) < 1.0)
+                continue;
+
+            minX = _CGRectGetMinX(slice) + 0.5;
+            maxX = minX;
+            minY = _CGRectGetMinY(slice);
+            maxY = _CGRectGetMaxY(slice);
+        }
+        else // CPMinYEdge || CPMaxYEdge
+        {
+            // Make sure we have at least 1 pixel to draw a line
+            if (_CGRectGetHeight(slice) < 1.0)
+                continue;
+
+            minX = _CGRectGetMinX(slice);
+            maxX = _CGRectGetMaxX(slice);
+            minY = _CGRectGetMinY(slice) + 0.5;
+            maxY = minY;
+        }
+
         CGContextBeginPath(context);
-        CGContextSetStrokeColor(context, [CPColor colorWithWhite:192.0/255.0 alpha:1.0]);
-
-        y = _CGRectGetMinY(aRect) + 2.5;
-
-        CGContextMoveToPoint(context, _CGRectGetMinX(aRect) + 2.0, y);
-        CGContextAddLineToPoint(context, _CGRectGetMaxX(aRect) - 2.0, y);
+        CGContextMoveToPoint(context, minX, minY);
+        CGContextAddLineToPoint(context, maxX, maxY);
+        CGContextSetStrokeColor(context, colors[sideIndex]);
         CGContextStrokePath(context);
     }
+
+    return resultRect;
 }
