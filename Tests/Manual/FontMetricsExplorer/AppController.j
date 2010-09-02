@@ -29,7 +29,7 @@ var SharedAppController = nil;
     @outlet CPTextField     ascenderText;
     @outlet CPTextField     descenderText;
     @outlet CPTextField     lineHeightText;
-    @outlet MetricsView     metricsView;
+    @outlet MetricsView     metricsView @accessors(readonly);
     @outlet BaselineView    baselineView @accessors(readonly);
 }
 
@@ -159,6 +159,14 @@ var SharedAppController = nil;
     [[SharedAppController baselineView] updateWithText:sampleText ascender:ascender descender:descender];
 }
 
+- (void)setSampleText
+{
+    var text = prompt("Enter the text to display:", [sampleText stringValue]);
+
+    if (text)
+        [sampleText setStringValue:text];
+}
+
 @end
 
 
@@ -216,6 +224,19 @@ var SharedAppController = nil;
     }
 
     CGContextStrokePath(context);
+}
+
+- (void)mouseDown:(CPEvent)anEvent
+{
+    [super mouseDown:anEvent];
+}
+
+- (void)mouseUp:(CPEvent)anEvent
+{
+    var point = [self convertPoint:[anEvent locationInWindow] fromView:nil];
+
+    if (CGRectContainsPoint([self bounds], point))
+        [[SharedAppController metricsView] setSampleText];
 }
 
 @end
