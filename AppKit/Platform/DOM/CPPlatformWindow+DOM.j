@@ -322,8 +322,8 @@ var supportsNativeDragAndDrop = [CPPlatform supportsDragAndDrop];
     _DOMScrollingElement.style.position = "absolute";
     _DOMScrollingElement.style.visibility = "hidden";
     _DOMScrollingElement.style.zIndex = "998";
-    _DOMScrollingElement.style.height = "100px";
-    _DOMScrollingElement.style.width = "100px";
+    _DOMScrollingElement.style.height = "60px";
+    _DOMScrollingElement.style.width = "60px";
     _DOMScrollingElement.style.overflow = "scroll";
     //_DOMScrollingElement.style.backgroundColor = "rgba(0,0,0,1.0)"; // debug help.
     _DOMScrollingElement.style.opacity = "0";
@@ -332,8 +332,8 @@ var supportsNativeDragAndDrop = [CPPlatform supportsDragAndDrop];
     _DOMBodyElement.appendChild(_DOMScrollingElement);
     
     var _DOMInnerScrollingElement = theDocument.createElement("div");
-    _DOMInnerScrollingElement.style.width = "300px";
-    _DOMInnerScrollingElement.style.height = "300px";
+    _DOMInnerScrollingElement.style.width = "400px";
+    _DOMInnerScrollingElement.style.height = "400px";
     _DOMScrollingElement.appendChild(_DOMInnerScrollingElement);
     
     // Set an initial scroll offset
@@ -966,6 +966,12 @@ var supportsNativeDragAndDrop = [CPPlatform supportsDragAndDrop];
 
 - (void)scrollEvent:(DOMEvent)aDOMEvent
 {
+    if (_hideDOMScrollingElementTimeout)
+    {
+        clearTimeout(_hideDOMScrollingElementTimeout);
+        _hideDOMScrollingElementTimeout = nil;
+    }
+    
     if(!aDOMEvent)
         aDOMEvent = window.event;
 
@@ -1007,8 +1013,8 @@ var supportsNativeDragAndDrop = [CPPlatform supportsDragAndDrop];
 
     // Show the dom element
     _DOMScrollingElement.style.visibility = "visible";
-    _DOMScrollingElement.style.top = (location.y - 50) + @"px";
-    _DOMScrollingElement.style.left = (location.x - 50) + @"px";
+    _DOMScrollingElement.style.top = (location.y - 15) + @"px";
+    _DOMScrollingElement.style.left = (location.x - 15) + @"px";
 
     // We let the browser handle the scrolling
     StopDOMEventPropagation = NO;
@@ -1026,34 +1032,49 @@ var supportsNativeDragAndDrop = [CPPlatform supportsDragAndDrop];
                                   timestamp:timestamp windowNumber:windowNumber context:nil eventNumber:-1 clickCount:1 pressure:0];
     event._DOMEvent = aDOMEvent;
     
-    if (_hideDOMScrollingElementTimeout)
-        clearTimeout(_hideDOMScrollingElementTimeout);
-    
     // We lag 1 event behind without this timeout.
     setTimeout(function(){     
            
         // Find the scroll delta
-        event._deltaX = _DOMScrollingElement.scrollLeft - 150;
-        event._deltaY = _DOMScrollingElement.scrollTop - 150;
+        var deltaX = _DOMScrollingElement.scrollLeft - 150,
+            deltaY = _DOMScrollingElement.scrollTop - 150;
         
-        [CPApp sendEvent:event];
+        // If we scroll super with momentum,
+        // there are so many events going off that
+        // a tiny percent don't actually have any deltas.
+        //
+        // This does *not* make scrolling appear sluggish,
+        // it just seems like that is something that happens.
+        //
+        // We get free performance boost if we skip sending these events,
+        // as sending a scroll event with no deltas doesn't do anything.
+        if (deltaX || deltaY)
+        {
+            event._deltaX = deltaX;
+            event._deltaY = deltaY;
+            
+            [CPApp sendEvent:event];
+        }
 
         // We set StopDOMEventPropagation = NO on line 1008
         //if (StopDOMEventPropagation)
         //    CPDOMEventStop(aDOMEvent, self);
 
-        [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
-    
         // Reset the DOM elements scroll offset
         _DOMScrollingElement.scrollLeft = 150;
         _DOMScrollingElement.scrollTop = 150;
-        
-        // We hide it after a little bit
-        _hideDOMScrollingElementTimeout = setTimeout(function(){
-            _DOMScrollingElement.style.visibility = "hidden";
-        }, 300);
+
+        // Is this needed?
+        //[[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
         
     }, 0);
+    
+    // We hide the dom element after a little bit
+    // so that other DOM elements such as inputs
+    // can receive events.
+    _hideDOMScrollingElementTimeout = setTimeout(function(){
+        _DOMScrollingElement.style.visibility = "hidden";
+    }, 300);
 }
 
 - (void)resizeEvent:(DOMEvent)aDOMEvent
