@@ -316,6 +316,29 @@ var supportsNativeDragAndDrop = [CPPlatform supportsDragAndDrop];
     _DOMEventGuard.style.display = "none";
     _DOMEventGuard.className = "cpdontremove";
     _DOMBodyElement.appendChild(_DOMEventGuard);
+    
+    // We get scrolling deltas from this element
+    _DOMScrollingElement = theDocument.createElement("div");
+    _DOMScrollingElement.style.position = "absolute";
+    _DOMScrollingElement.style.visibility = "hidden";
+    _DOMScrollingElement.style.zIndex = "998";
+    _DOMScrollingElement.style.height = "60px";
+    _DOMScrollingElement.style.width = "60px";
+    _DOMScrollingElement.style.overflow = "scroll";
+    //_DOMScrollingElement.style.backgroundColor = "rgba(0,0,0,1.0)"; // debug help.
+    _DOMScrollingElement.style.opacity = "0";
+    _DOMScrollingElement.style.filter = "alpha(opacity=0)";
+    _DOMScrollingElement.className = "cpdontremove";
+    _DOMBodyElement.appendChild(_DOMScrollingElement);
+    
+    var _DOMInnerScrollingElement = theDocument.createElement("div");
+    _DOMInnerScrollingElement.style.width = "400px";
+    _DOMInnerScrollingElement.style.height = "400px";
+    _DOMScrollingElement.appendChild(_DOMInnerScrollingElement);
+    
+    // Set an initial scroll offset
+    _DOMScrollingElement.scrollTop = 150;
+    _DOMScrollingElement.scrollLeft = 150;
 }
 
 - (void)registerDOMWindow
@@ -943,6 +966,12 @@ var supportsNativeDragAndDrop = [CPPlatform supportsDragAndDrop];
 
 - (void)scrollEvent:(DOMEvent)aDOMEvent
 {
+    if (_hideDOMScrollingElementTimeout)
+    {
+        clearTimeout(_hideDOMScrollingElementTimeout);
+        _hideDOMScrollingElementTimeout = nil;
+    }
+    
     if(!aDOMEvent)
         aDOMEvent = window.event;
 
@@ -982,7 +1011,13 @@ var supportsNativeDragAndDrop = [CPPlatform supportsDragAndDrop];
                         (aDOMEvent.altKey ? CPAlternateKeyMask : 0) |
                         (aDOMEvent.metaKey ? CPCommandKeyMask : 0);
 
-    StopDOMEventPropagation = YES;
+    // Show the dom element
+    _DOMScrollingElement.style.visibility = "visible";
+    _DOMScrollingElement.style.top = (location.y - 15) + @"px";
+    _DOMScrollingElement.style.left = (location.x - 15) + @"px";
+
+    // We let the browser handle the scrolling
+    StopDOMEventPropagation = NO;
 
     var theWindow = [self hitTest:location];
 
@@ -993,40 +1028,53 @@ var supportsNativeDragAndDrop = [CPPlatform supportsDragAndDrop];
 
     location = [theWindow convertBridgeToBase:location];
 
-    if(typeof aDOMEvent.wheelDeltaX != "undefined")
-    {
-        deltaX = aDOMEvent.wheelDeltaX / 120.0;
-        deltaY = aDOMEvent.wheelDeltaY / 120.0;
-    }
-
-    else if (aDOMEvent.wheelDelta)
-        deltaY = aDOMEvent.wheelDelta / 120.0;
-
-    else if (aDOMEvent.detail)
-        deltaY = -aDOMEvent.detail / 3.0;
-
-    else
-        return;
-
-    if(!CPFeatureIsCompatible(CPJavaScriptNegativeMouseWheelValues))
-    {
-        deltaX = -deltaX;
-        deltaY = -deltaY;
-    }
-
     var event = [CPEvent mouseEventWithType:CPScrollWheel location:location modifierFlags:modifierFlags
-            timestamp:timestamp windowNumber:windowNumber context:nil eventNumber:-1 clickCount:1 pressure:0 ];
-
+                                  timestamp:timestamp windowNumber:windowNumber context:nil eventNumber:-1 clickCount:1 pressure:0];
     event._DOMEvent = aDOMEvent;
-    event._deltaX = deltaX;
-    event._deltaY = deltaY;
+    
+    // We lag 1 event behind without this timeout.
+    setTimeout(function(){     
+           
+        // Find the scroll delta
+        var deltaX = _DOMScrollingElement.scrollLeft - 150,
+            deltaY = _DOMScrollingElement.scrollTop - 150;
+        
+        // If we scroll super with momentum,
+        // there are so many events going off that
+        // a tiny percent don't actually have any deltas.
+        //
+        // This does *not* make scrolling appear sluggish,
+        // it just seems like that is something that happens.
+        //
+        // We get free performance boost if we skip sending these events,
+        // as sending a scroll event with no deltas doesn't do anything.
+        if (deltaX || deltaY)
+        {
+            event._deltaX = deltaX;
+            event._deltaY = deltaY;
+            
+            [CPApp sendEvent:event];
+        }
 
-    [CPApp sendEvent:event];
+        // We set StopDOMEventPropagation = NO on line 1008
+        //if (StopDOMEventPropagation)
+        //    CPDOMEventStop(aDOMEvent, self);
 
-    if (StopDOMEventPropagation)
-        CPDOMEventStop(aDOMEvent, self);
+        // Reset the DOM elements scroll offset
+        _DOMScrollingElement.scrollLeft = 150;
+        _DOMScrollingElement.scrollTop = 150;
 
-    [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
+        // Is this needed?
+        //[[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
+        
+    }, 0);
+    
+    // We hide the dom element after a little bit
+    // so that other DOM elements such as inputs
+    // can receive events.
+    _hideDOMScrollingElementTimeout = setTimeout(function(){
+        _DOMScrollingElement.style.visibility = "hidden";
+    }, 300);
 }
 
 - (void)resizeEvent:(DOMEvent)aDOMEvent
