@@ -881,8 +881,7 @@
 */
 - (void)scrollWheel:(CPEvent)anEvent
 {
-    [self _respondToScrollWheelEventWithDeltaX:[anEvent deltaX] * _horizontalLineScroll
-                                        deltaY:[anEvent deltaY] * _verticalLineScroll];
+    [self _respondToScrollWheelEventWithDeltaX:[anEvent deltaX] deltaY:[anEvent deltaY]];
 }
 
 - (void)_respondToScrollWheelEventWithDeltaX:(float)deltaX deltaY:(float)deltaY
@@ -890,17 +889,15 @@
     var documentFrame = [[self documentView] frame],
         contentBounds = [_contentView bounds],
         contentFrame = [_contentView frame],
-        enclosingScrollView = [self enclosingScrollView],
-        extraX = 0,
-        extraY = 0;
+        enclosingScrollView = [self enclosingScrollView];
 
     // We want integral bounds!
     contentBounds.origin.x = ROUND(contentBounds.origin.x + deltaX);
     contentBounds.origin.y = ROUND(contentBounds.origin.y + deltaY);
 
-    var constrainedOrigin = [_contentView constrainScrollPoint:CGPointCreateCopy(contentBounds.origin)];
-    extraX = ((contentBounds.origin.x - constrainedOrigin.x) / _horizontalLineScroll) * [enclosingScrollView horizontalLineScroll];
-    extraY = ((contentBounds.origin.y - constrainedOrigin.y) / _verticalLineScroll) * [enclosingScrollView verticalLineScroll];
+    var constrainedOrigin = [_contentView constrainScrollPoint:CGPointCreateCopy(contentBounds.origin)],
+        extraX = contentBounds.origin.x - constrainedOrigin.x,
+        extraY = contentBounds.origin.y - constrainedOrigin.y;
 
     [_contentView scrollToPoint:constrainedOrigin];
     [_headerClipView scrollToPoint:CGPointMake(constrainedOrigin.x, 0.0)];
