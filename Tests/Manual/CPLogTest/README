@@ -23,5 +23,13 @@ Each provider/level pair can have its own formatter. So, for example, you can us
 sent to CPLogPopup, a different formatter for other levels sent to CPLogPopup, and a totally different
 formatter for CPLogConsole.
 
+If you are writing a command line app and want to colorize all or part of a message according to the level,
+you can use:
+
+CPLogColorize(aString, aLevel)
+
+This function can safely be used within a browser environment, it just returns the string unmodified.
+This allows you to reuse the same formatting functions for both environments.
+
 For examples of usage in the browser, see main.j and AppController.j in the test app. For examples of usage
 in a command-line app, see test.j and run the file "execute_me".
