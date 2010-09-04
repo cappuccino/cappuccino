@@ -7,6 +7,7 @@
 {
     CPWindow    _window;
     CPView      _view;
+    CPTextField textField;
 }
 
 - (void)applicationDidFinishLaunching:(CPNotification)aNotification
@@ -21,6 +22,8 @@
 
     [contentView addSubview:_view];
     [theWindow orderFront:self];
+    
+    CPLogConsole("NSTextField tag was 0 in IB. CPTextField tag is " + [textField tag]);
     
     // HACK: shift the window down to accomodate for menubar
     [theWindow setFrameOrigin:CGPointMake([theWindow frame].origin.x, [theWindow frame].origin.y + 29)];
