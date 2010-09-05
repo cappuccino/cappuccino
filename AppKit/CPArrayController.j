@@ -363,9 +363,6 @@
     if (!indexes)
         indexes = [CPIndexSet indexSet];
 
-    if ([_selectionIndexes isEqualToIndexSet:indexes])
-        return NO;
-
     if (![indexes count])
     {
         if(_avoidsEmptySelection && [[self arrangedObjects] count])
@@ -380,6 +377,9 @@
         if(![indexes count] && _avoidsEmptySelection && objectsCount)
             indexes = [CPIndexSet indexSetWithIndex:objectsCount-1];
     }
+
+    if ([_selectionIndexes isEqualToIndexSet:indexes])
+        return NO;
 
     _selectionIndexes = [indexes copy];
 
