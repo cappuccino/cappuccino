@@ -84,8 +84,9 @@
 */
 + (id)alloc
 {
-	if ([self class] !== CPDictionary && [self class] !== CPMutableDictionary) return [super alloc];
-    return new CFMutableDictionary();
+	var result = new CFMutableDictionary();
+	if ([self class] !== CPDictionary && [self class] !== CPMutableDictionary) result.isa = [self class];
+    return result;
 }
 
 /*!
