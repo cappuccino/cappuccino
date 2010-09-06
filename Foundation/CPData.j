@@ -36,8 +36,9 @@
 
 + (id)alloc
 {
-	if ([self class] !== CPData) return [super alloc];
-    return new CFMutableData();
+    result = new CFMutableData();
+	result.isa = [self class];
+	return result;
 }
 
 + (CPData)data

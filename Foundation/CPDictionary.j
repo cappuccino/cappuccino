@@ -85,7 +85,7 @@
 + (id)alloc
 {
 	var result = new CFMutableDictionary();
-	if ([self class] !== CPDictionary && [self class] !== CPMutableDictionary) result.isa = [self class];
+	result.isa = [self class];
     return result;
 }
 

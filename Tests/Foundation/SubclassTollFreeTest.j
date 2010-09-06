@@ -1,3 +1,8 @@
+@import "../../Foundation/CPNumber.j"
+@import "../../Foundation/CPArray.j"
+@import "../../Foundation/CPDate.j"
+@import "../../Foundation/CPData.j"
+
 @implementation SubclassTollFreeTest : OJTestCase
 
 - (void)testThatSubclassTollFreeDoesAllowForSubclassingDictionary
@@ -20,27 +25,37 @@
 
 - (void)testThatSubclassTollFreeDoesAllowForSubclassingNumber
 {
-	[OJAssert assert:@"a" equals:[[[MyNum alloc] init] newMessage]];
+	var target = [[MyNum alloc] init];
+	[OJAssert assert:@"a" equals:[target newMessage]];
+	[OJAssert assertFalse:[target isEqualToNumber:5]];
 }
 
 - (void)testThatSubclassTollFreeDoesAllowForSubclassingException
 {
-	[OJAssert assert:@"a" equals:[[[MyException alloc] init] newMessage]];
+	var target = [[MyException alloc] init];
+	[OJAssert assert:@"a" equals:[target newMessage]];
+	// there are no internal properties to test here.. so no need to jimmyrig it.
 }
 
 - (void)testThatSubclassTollFreeDoesAllowForSubclassingArray
 {
-	[OJAssert assert:@"a" equals:[[[MyArray alloc] init] newMessage]];
+	var target = [[MyArray alloc] initWithObjects:@"a"];
+	[OJAssert assert:@"a" equals:[target newMessage]];
+	[OJAssert assert:1 equals:[target count]];
 }
 
 - (void)testThatSubclassTollFreeDoesAllowForSubclassingDate
 {
-	[OJAssert assert:@"a" equals:[[[MyDate alloc] init] newMessage]];
+	var target = [[MyDate alloc] init];
+	[OJAssert assert:@"a" equals:[target newMessage]];
+	[OJAssert assertTrue:[target timeIntervalSince1970] > 0];
 }
 
 - (void)testThatSubclassTollFreeDoesAllowForSubclassingData
 {
-	[OJAssert assert:@"a" equals:[[[MyData alloc] init] newMessage]];
+	var target = [[MyData alloc] initWithRawString:@"b"];
+	[OJAssert assert:@"a" equals:[target newMessage]];
+	[OJAssert assert:@"b" equals:[target rawString]];
 }
 
 @end
