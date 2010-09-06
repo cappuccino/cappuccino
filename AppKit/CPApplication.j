@@ -1019,7 +1019,6 @@ CPRunContinuesResponse  = -1002;
 
 + (CPString)defaultThemeName
 {
-    // FIXME: don't hardcode
     return ([[CPBundle mainBundle] objectForInfoDictionaryKey:"CPDefaultTheme"] || @"Aristo");
 }
 
