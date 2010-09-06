@@ -1,8 +1,3 @@
-@import "../../Foundation/CPNumber.j"
-@import "../../Foundation/CPArray.j"
-@import "../../Foundation/CPDate.j"
-@import "../../Foundation/CPData.j"
-
 @implementation SubclassTollFreeTest : OJTestCase
 
 - (void)testThatSubclassTollFreeDoesAllowForSubclassingDictionary
@@ -57,6 +52,14 @@
 	[OJAssert assert:@"a" equals:[target newMessage]];
 	[OJAssert assert:@"b" equals:[target rawString]];
 }
+
+- (void)testThatSubclassTollFreeDoesAllowForSubclassingURL
+{
+	var target = [[MyURL alloc] initWithString:@"http://www.google.com"];
+	[OJAssert assert:@"a" equals:[target newMessage]];
+	[OJAssert assert:@"http://www.google.com" equals:[target absoluteString]];
+}
+
 
 @end
 
@@ -117,6 +120,15 @@
 @end
 
 @implementation MyData : CPData
+
+- (id)newMessage
+{
+	return "a";
+}
+
+@end
+
+@implementation MyURL : CPURL
 
 - (id)newMessage
 {
