@@ -91,6 +91,7 @@ var CPStringRegexSpecialCharacters = [
 */
 + (id)alloc
 {
+	if ([self class] !== CPString) return [super alloc];
     return new String;
 }
 

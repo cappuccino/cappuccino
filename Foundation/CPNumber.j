@@ -43,6 +43,7 @@ var __placeholder   = new Number(),
 
 + (id)alloc
 {
+	if ([self class] !== CPNumber) return [super alloc];
     return __placeholder;
 }
 

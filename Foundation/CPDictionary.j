@@ -84,6 +84,7 @@
 */
 + (id)alloc
 {
+	if ([self class] !== CPDictionary && [self class] !== CPMutableDictionary) return [super alloc];
     return new CFMutableDictionary();
 }
 

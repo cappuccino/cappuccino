@@ -108,6 +108,7 @@ CPEnumerationReverse    = 1 << 1;
 */
 + (id)alloc
 {
+	if ([self class] !== CPArray && [self class] !== CPMutableArray) return [super alloc];
     return [];
 }
 
