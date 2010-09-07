@@ -61,6 +61,17 @@ var CPSplitViewHorizontalImage = nil,
     CPArray     _buttonBars;
 }
 
++ (CPString)themeClass
+{
+    return @"splitview";
+}
+
++ (id)themeAttributes
+{
+    return [CPDictionary dictionaryWithObjects:[10.0, 1.0]
+                                       forKeys:[@"divider-thickness", @"pane-divider-thickness"]];
+}
+
 /*
     @ignore
 */
@@ -91,7 +102,7 @@ var CPSplitViewHorizontalImage = nil,
 
 - (float)dividerThickness
 {
-    return _isPaneSplitter ? 1.0 : 10.0;
+    return [self currentValueForThemeAttribute:[self isPaneSplitter] ? @"pane-divider-thickness" : @"divider-thickness"];
 }
 
 - (BOOL)isVertical
