@@ -327,6 +327,9 @@
     [_headerClipView setFrame:headerClipViewFrame];
     [_cornerView setFrame:[self _cornerViewFrame]];
 
+    if (shouldShowHorizontalScroller && shouldShowVerticalScroller)
+        [self setNeedsDisplay:YES];
+
     --_recursionCount;
 }
 
@@ -781,6 +784,29 @@
 
         default:
             break;
+    }
+
+
+    if (![[self verticalScroller] isHidden] && ![[self horizontalScroller] isHidden])
+    {
+        var verticalScrollerFrame = [[self verticalScroller] frame],
+            bottomCornerRect = CGRectMakeCopy(verticalScrollerFrame);
+
+        bottomCornerRect.origin.y = CGRectGetMaxY(verticalScrollerFrame);
+        bottomCornerRect.size.height = [CPScroller scrollerWidth];
+
+        CGContextSetFillColor(context, [CPColor colorWithRed:242.0 / 255.0 green:242.0 / 255.0 blue:243.0 / 255.0 alpha:1.0]);
+        CGContextFillRect(context, bottomCornerRect);
+
+        CGContextSetStrokeColor(context, [CPColor colorWithRed:184.0 / 255.0 green:184.0 / 255.0 blue:184.0 / 255.0 alpha:1.0]);
+
+        CGContextMoveToPoint(context, CGRectGetMinX(bottomCornerRect), CGRectGetMinY(bottomCornerRect));
+        CGContextAddLineToPoint(context, CGRectGetMaxX(bottomCornerRect), CGRectGetMinY(bottomCornerRect));
+        CGContextStrokePath(context);
+
+        CGContextMoveToPoint(context, CGRectGetMinX(bottomCornerRect), CGRectGetMinY(bottomCornerRect));
+        CGContextAddLineToPoint(context, CGRectGetMinX(bottomCornerRect), CGRectGetMaxY(bottomCornerRect));
+        CGContextStrokePath(context);
     }
 }
 
