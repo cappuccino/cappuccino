@@ -1333,6 +1333,14 @@ var themedButtonValues = nil,
     return view;
 }
 
++ (CPSplitView)themedSplitView
+{
+    var splitView = [[CPSplitView alloc] initWithFrame:CGRectMake(0.0, 0.0, 200.0, 200.0)];
+    [splitView setValue:10.0 forThemeAttribute:@"divider-thickness"];
+    [splitView setValue:1.0 forThemeAttribute:@"pane-divider-thickness"];
+    return splitView;
+}
+
 + (CPAlert)themedAlert
 {
     var alert = [CPAlert new],

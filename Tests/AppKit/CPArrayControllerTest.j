@@ -113,6 +113,25 @@
     [self assert:[CPIndexSet indexSet] equals:[arrayController selectionIndexes] message:@"no objects left, selection should disappear"];
 }
 
+- (void)testSelectionWhenObjectsDisappear
+{
+    // If the selected object disappeares during a rearrange, the selection
+    // should update appropriately, even if preserve selection is off.
+    var arrayController = [self arrayController];
+    [arrayController setPreservesSelection:NO];
+
+    // Use a copy to make sure our original remains pristine.
+    [arrayController setSelectionIndexes:[CPIndexSet indexSetWithIndexesInRange:CPMakeRange(0, 3)]];
+
+    var newContent = [[self contentArray] copy];
+    [newContent removeObjectAtIndex:2];
+
+    [arrayController setContent:newContent];
+
+    [self assert:[CPIndexSet indexSetWithIndexesInRange:CPMakeRange(0, 2)] equals:[arrayController selectionIndexes]
+         message:@"last object cannot be selected"];
+}
+
 - (void)testContentBinding
 {
     [[self arrayController] bind:@"contentArray" toObject:self withKeyPath:@"contentArray" options:0];

@@ -235,7 +235,7 @@ var CPArrayClass                                                            = Ni
 */
 - (BOOL)decodeBoolForKey:(CPString)aKey
 {
-    return [self decodeObjectForKey:aKey];
+    return !![self decodeObjectForKey:aKey];
 }
 
 /*
