@@ -2480,6 +2480,14 @@ setBoundsOrigin:
     return _ephemeralSubviewsForNames[aViewName];
 }
 
+- (CPView)ephemeralSubviewNamed:(CPString)aViewName
+{
+    if (!_ephemeralSubviewsForNames)
+        return nil;
+
+    return (_ephemeralSubviewsForNames[aViewName] || nil);
+}
+
 @end
 
 var CPViewAutoresizingMaskKey       = @"CPViewAutoresizingMask",

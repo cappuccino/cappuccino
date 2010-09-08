@@ -55,7 +55,7 @@
         [self setImagePosition:CPImageLeft];
         [self setAlignment:CPLeftTextAlignment];
 
-        [self setBordered:YES];
+        [self setBordered:NO];
     }
 
     return self;

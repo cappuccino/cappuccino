@@ -463,8 +463,20 @@ CPButtonStateMixed  = CPThemeState("mixed");
 */
 - (void)sizeToFit
 {
-    var size = [([self title] || " ") sizeWithFont:[self currentValueForThemeAttribute:@"font"]],
-        contentInset = [self currentValueForThemeAttribute:@"content-inset"],
+    [self layoutSubviews];
+
+    var size,
+        contentView = [self ephemeralSubviewNamed:@"content-view"];
+
+    if (contentView)
+    {
+        [contentView sizeToFit];
+        size = [contentView frameSize];
+    }
+    else
+        size = [([self title] || " ") sizeWithFont:[self currentValueForThemeAttribute:@"font"]];
+
+    var contentInset = [self currentValueForThemeAttribute:@"content-inset"],
         minSize = [self currentValueForThemeAttribute:@"min-size"],
         maxSize = [self currentValueForThemeAttribute:@"max-size"];
 
@@ -642,7 +654,9 @@ var CPButtonImageKey                    = @"CPButtonImageKey",
     CPButtonTitleKey                    = @"CPButtonTitleKey",
     CPButtonAlternateTitleKey           = @"CPButtonAlternateTitleKey",
     CPButtonIsBorderedKey               = @"CPButtonIsBorderedKey",
+    CPButtonAllowsMixedStateKey         = @"CPButtonAllowsMixedStateKey",
     CPButtonImageDimsWhenDisabledKey    = @"CPButtonImageDimsWhenDisabledKey",
+    CPButtonImagePositionKey            = @"CPButtonImagePositionKey",
     CPButtonKeyEquivalentKey            = @"CPButtonKeyEquivalentKey",
     CPButtonKeyEquivalentMaskKey        = @"CPButtonKeyEquivalentMaskKey";
 
@@ -666,12 +680,18 @@ var CPButtonImageKey                    = @"CPButtonImageKey",
         _title = [aCoder decodeObjectForKey:CPButtonTitleKey];
         _alternateTitle = [aCoder decodeObjectForKey:CPButtonAlternateTitleKey];
 
+        if ([aCoder containsValueForKey:CPButtonAllowsMixedStateKey])
+            _allowsMixedState = [aCoder decodeBoolForKey:CPButtonAllowsMixedStateKey];
+
         [self setImageDimsWhenDisabled:[aCoder decodeObjectForKey:CPButtonImageDimsWhenDisabledKey]];
+
+        if ([aCoder containsValueForKey:CPButtonImagePositionKey])
+            [self setImagePosition:[aCoder decodeIntForKey:CPButtonImagePositionKey]];
 
         if ([aCoder containsValueForKey:CPButtonKeyEquivalentKey])
             [self setKeyEquivalent:CFData.decodeBase64ToUtf16String([aCoder decodeObjectForKey:CPButtonKeyEquivalentKey])];
 
-        _keyEquivalentModifierMask = [aCoder decodeObjectForKey:CPButtonKeyEquivalentMaskKey];
+        _keyEquivalentModifierMask = [aCoder decodeIntForKey:CPButtonKeyEquivalentMaskKey];
 
         [self setNeedsLayout];
         [self setNeedsDisplay:YES];
@@ -694,7 +714,10 @@ var CPButtonImageKey                    = @"CPButtonImageKey",
     [aCoder encodeObject:_title forKey:CPButtonTitleKey];
     [aCoder encodeObject:_alternateTitle forKey:CPButtonAlternateTitleKey];
 
-    [aCoder encodeObject:[self imageDimsWhenDisabled] forKey:CPButtonImageDimsWhenDisabledKey];
+    [aCoder encodeBool:_allowsMixedState forKey:CPButtonAllowsMixedStateKey];
+
+    [aCoder encodeBool:[self imageDimsWhenDisabled] forKey:CPButtonImageDimsWhenDisabledKey];
+    [aCoder encodeInt:[self imagePosition] forKey:CPButtonImagePositionKey];
 
     if (_keyEquivalent)
         [aCoder encodeObject:CFData.encodeBase64Utf16String(_keyEquivalent) forKey:CPButtonKeyEquivalentKey];
