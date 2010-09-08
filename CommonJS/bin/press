@@ -130,7 +130,12 @@ function press(rootPath, outputPath, options) {
 
     // read in the default theme name, and attempt to get its size
     var themeName = outputInfoPlist.valueForKey("CPDefaultTheme") || "Aristo",
+        themePath = nil;
+
+    if (themeName === "Aristo")
         themePath = FILE.join(outputPath, options.frameworks, "AppKit", "Resources", themeName+".blend");
+    else
+        themePath = FILE.join(outputPath, "Resources", themeName + ".blend");
 
     if (FILE.exists(themePath))
     {
