@@ -33,7 +33,7 @@
         objectData = [unarchiver decodeObjectForKey:@"IB.objectdata"];
 
     // Perform a bit of post-processing on views since all CP views are flipped.
-    // It's better to do this here (instead of say, in NSView::initWithCoder:), 
+    // It's better to do this here (instead of say, in NSView::initWithCoder:),
     // because at this point all the objects an mappings are stabilized.
     var objects = [unarchiver allObjects],
         count = [objects count];
@@ -76,10 +76,20 @@
     var convertedData = [CPData data],
         archiver = [[CPKeyedArchiver alloc] initForWritingWithMutableData:convertedData];
 
+    [archiver setDelegate:self];
     [archiver encodeObject:objectData forKey:@"CPCibObjectDataKey"];
     [archiver finishEncoding];
 
     return convertedData;
+}
+
+// For some reason, occasionally an attempt is made to archive NSMatrix. That will fail, so prevent it here.
+- (id)archiver:(CPKeyedArchiver)archiver willEncodeObject:(id)object
+{
+    if ([object isKindOfClass:[NSMatrix class]])
+        return nil;
+    else
+        return object;
 }
 
 @end

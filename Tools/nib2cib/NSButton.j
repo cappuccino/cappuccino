@@ -36,6 +36,22 @@ _CPButtonBezelStyleHeights[CPRoundedBezelStyle] = 18;
 _CPButtonBezelStyleHeights[CPTexturedRoundedBezelStyle] = 20;
 _CPButtonBezelStyleHeights[CPHUDBezelStyle] = 20;
 
+var NSButtonIsBorderedMask = 0x00800000,
+    NSButtonAllowsMixedStateMask = 0x1000000,
+
+    // The image position is contained in the third byte, and the values
+    // don't really follow much of a pattern.
+    NSButtonImagePositionMask = 0xFF0000,
+    NSButtonImagePositionShift = 16,
+    NSButtonNoImagePositionMask = 0x04,
+    NSButtonImageAbovePositionMask = 0x0C,
+    NSButtonImageBelowPositionMask = 0x1C;
+    NSButtonImageRightPositionMask = 0x2C,
+    NSButtonImageLeftPositionMask = 0x3C,
+    NSButtonImageOnlyPositionMask = 0x44,
+    NSButtonImageOverlapsPositionMask = 0x6C;
+
+
 @implementation CPButton (NSCoding)
 
 - (id)NS_initWithCoder:(CPCoder)aCoder
@@ -47,13 +63,13 @@ _CPButtonBezelStyleHeights[CPHUDBezelStyle] = 20;
         var cell = [aCoder decodeObjectForKey:@"NSCell"];
         NIB_CONNECTION_EQUIVALENCY_TABLE[[cell UID]] = self;
 
+        _title = [cell title];
+
         if (![self NS_isCheckBox] && ![self NS_isRadio])
         {
             _controlSize = CPRegularControlSize;
-            _title = [cell title];
 
             [self setBordered:[cell isBordered]];
-
             _bezelStyle = [cell bezelStyle];
 
             // clean up:
@@ -112,7 +128,6 @@ _CPButtonBezelStyleHeights[CPHUDBezelStyle] = 20;
             }
 
             [self setBordered:YES];
-            self._title = [cell title];
         }
     }
 
@@ -178,14 +193,17 @@ _CPButtonBezelStyleHeights[CPHUDBezelStyle] = 20;
         else if ([alternateImage imageName] === @"NSRadioButton")
         {
             _isRadio = YES;
-            self._radioGroup = [CPRadioGroup new];
+            _radioGroup = [CPRadioGroup new];
         }
     }
 
-    var self = [self NS_initWithCoder:aCoder];
+    self = [self NS_initWithCoder:aCoder];
+
+    self._allowsMixedState = [cell allowsMixedState];
+    [self setImagePosition:[cell imagePosition]];
 
     [self setKeyEquivalent:[cell keyEquivalent]];
-    _keyEquivalentModifierMask = [cell keyEquivalentModifierMask];
+    self._keyEquivalentModifierMask = [cell keyEquivalentModifierMask];
 
     return self;
 }
@@ -205,11 +223,14 @@ _CPButtonBezelStyleHeights[CPHUDBezelStyle] = 20;
 
 @implementation NSButtonCell : NSActionCell
 {
-    BOOL        _isBordered     @accessors(readonly, getter=isBordered);
-    int         _bezelStyle     @accessors(readonly, getter=bezelStyle);
+    BOOL        _isBordered         @accessors(readonly, getter=isBordered);
+    int         _bezelStyle         @accessors(readonly, getter=bezelStyle);
 
-    CPString    _title          @accessors(readonly, getter=title);
-    CPImage     _alternateImage @accessors(readonly, getter=alternateImage);
+    CPString    _title              @accessors(readonly, getter=title);
+    CPImage     _alternateImage     @accessors(readonly, getter=alternateImage);
+
+    BOOL        _allowsMixedState   @accessors(readonly, getter=allowsMixedState);
+    BOOL        _imagePosition      @accessors(readonly, getter=imagePosition);
 
     CPString    _keyEquivalent  @accessors(readonly, getter=keyEquivalent);
     unsigned    _keyEquivalentModifierMask @accessors(readonly, getter=keyEquivalentModifierMask);
@@ -222,9 +243,11 @@ _CPButtonBezelStyleHeights[CPHUDBezelStyle] = 20;
     if (self)
     {
         var buttonFlags = [aCoder decodeIntForKey:@"NSButtonFlags"],
-            buttonFlags2 = [aCoder decodeIntForKey:@"NSButtonFlags2"];
+            buttonFlags2 = [aCoder decodeIntForKey:@"NSButtonFlags2"],
+            cellFlags2 = [aCoder decodeIntForKey:@"NSCellFlags2"],
+            position = (buttonFlags & NSButtonImagePositionMask) >> NSButtonImagePositionShift;
 
-        _isBordered = (buttonFlags & 0x00800000) ? YES : NO;
+        _isBordered = (buttonFlags & NSButtonIsBorderedMask) ? YES : NO;
         _bezelStyle = (buttonFlags2 & 0x7) | ((buttonFlags2 & 0x20) >> 2);
 
         // NSContents for NSButton is actually the title
@@ -233,6 +256,25 @@ _CPButtonBezelStyleHeights[CPHUDBezelStyle] = 20;
         _objectValue = [self state];
 
         _alternateImage = [aCoder decodeObjectForKey:@"NSAlternateImage"];
+        _allowsMixedState = (cellFlags2 & NSButtonAllowsMixedStateMask) ? YES : NO;
+
+        // Test in decreasing order of mask value to ensure the correct match,
+        // because some of the positions don't care about some bits.
+
+        if ((position & NSButtonImageOverlapsPositionMask) == NSButtonImageOverlapsPositionMask)
+            _imagePosition = CPImageOverlaps;
+        else if ((position & NSButtonImageOnlyPositionMask) == NSButtonImageOnlyPositionMask)
+            _imagePosition = CPImageOnly;
+        else if ((position & NSButtonImageLeftPositionMask) == NSButtonImageLeftPositionMask)
+            _imagePosition = CPImageLeft;
+        else if ((position & NSButtonImageRightPositionMask) == NSButtonImageRightPositionMask)
+            _imagePosition = CPImageRight;
+        else if ((position & NSButtonImageBelowPositionMask) == NSButtonImageBelowPositionMask)
+            _imagePosition = CPImageBelow;
+        else if ((position & NSButtonImageAbovePositionMask) == NSButtonImageAbovePositionMask)
+            _imagePosition = CPImageAbove;
+        else if ((position & NSButtonNoImagePositionMask) == NSButtonNoImagePositionMask)
+            _imagePosition = CPNoImage;
 
         _keyEquivalent = [aCoder decodeObjectForKey:@"NSKeyEquivalent"];
         _keyEquivalentModifierMask = buttonFlags2 >> 8;
