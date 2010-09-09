@@ -274,8 +274,7 @@
     [_hexLabel setTextColor:[CPColor blackColor]];
 
     //hex input box
-    _hexValue = [CPTextField textFieldWithStringValue: @"" placeholder: @"" width: 80];
-    [_hexValue setFrameOrigin: CGPointMake(32, 225)];
+    _hexValue = [[CPTextField alloc] initWithFrame: CGRectMake(32, 225, 80, 29)];
     [_hexValue setEditable: YES];
     [_hexValue setBezeled: YES];
     [_hexValue setDelegate: self];
