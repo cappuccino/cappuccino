@@ -58,6 +58,18 @@
     CPBorderType    _borderType;
 }
 
++ (CPString)themeClass
+{
+    return @"scrollview"
+}
+
++ (CPDictionary)themeAttributes
+{
+    return [CPDictionary dictionaryWithJSObject:{
+        @"line-border-color": [CPColor blackColor],
+    }]
+}
+
 - (id)initWithFrame:(CGRect)aFrame
 {
     self = [super initWithFrame:aFrame];
@@ -770,7 +782,7 @@
     switch (_borderType)
     {
         case CPLineBorder:
-            CGContextSetStrokeColor(context, [CPColor blackColor]);
+            CGContextSetStrokeColor(context, [self currentValueForThemeAttribute:@"line-border-color"]);
             CGContextStrokeRect(context, _CGRectInset(strokeRect, 0.5, 0.5));
             break;
 
@@ -786,20 +798,19 @@
             break;
     }
 
-
     if (![[self verticalScroller] isHidden] && ![[self horizontalScroller] isHidden])
     {
         var verticalScrollerFrame = [[self verticalScroller] frame],
-            bottomCornerRect = CGRectMakeCopy(verticalScrollerFrame);
+            bottomCornerRect = CGRectMakeCopy(verticalScrollerFrame),
+            borderColor = [self currentValueForThemeAttribute:@"line-border-color"];
 
         bottomCornerRect.origin.y = CGRectGetMaxY(verticalScrollerFrame);
         bottomCornerRect.size.height = [CPScroller scrollerWidth];
 
-        CGContextSetFillColor(context, [CPColor colorWithRed:242.0 / 255.0 green:242.0 / 255.0 blue:243.0 / 255.0 alpha:1.0]);
+        CGContextSetFillColor(context, borderColor);
         CGContextFillRect(context, bottomCornerRect);
 
-        CGContextSetStrokeColor(context, [CPColor colorWithRed:184.0 / 255.0 green:184.0 / 255.0 blue:184.0 / 255.0 alpha:1.0]);
-
+        CGContextSetStrokeColor(context, borderColor);
         CGContextMoveToPoint(context, CGRectGetMinX(bottomCornerRect), CGRectGetMinY(bottomCornerRect));
         CGContextAddLineToPoint(context, CGRectGetMaxX(bottomCornerRect), CGRectGetMinY(bottomCornerRect));
         CGContextStrokePath(context);

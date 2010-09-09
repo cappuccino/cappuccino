@@ -528,6 +528,18 @@ var themedButtonValues = nil,
     return button;
 }
 
++ (CPScrollView)themedScrollView
+{
+    var scrollView = [[CPScrollView alloc] initWithFrame:CGRectMake(0.0, 0.0, 200.0, 200.0)];
+
+    [scrollView setValue:[CPColor colorWithWhite:0.0 alpha:0.2] forThemeAttribute:@"line-border-color"];
+
+    [scrollView setAutohidesScrollers:YES];
+    [scrollView setBorderType:CPLineBorder];
+
+    return scrollView;
+}
+
 + (CPScroller)makeVerticalScroller
 {
     var scroller = [[CPScroller alloc] initWithFrame:CGRectMake(0.0, 0.0, 15.0, 170.0)];
