@@ -488,7 +488,7 @@ var CPTableColumnIdentifierKey   = @"CPTableColumnIdentifierKey",
         [self setDataView:[aCoder decodeObjectForKey:CPTableColumnDataViewKey]];
         [self setHeaderView:[aCoder decodeObjectForKey:CPTableColumnHeaderViewKey]];
 
-        _resizingMask  = [aCoder decodeBoolForKey:CPTableColumnResizingMaskKey];
+        _resizingMask  = [aCoder decodeIntForKey:CPTableColumnResizingMaskKey];
         _isHidden = [aCoder decodeBoolForKey:CPTableColumnIsHiddenKey];
         _isEditable = [aCoder decodeBoolForKey:CPTableColumnIsEditableKey];
 
