@@ -70,7 +70,7 @@ function CPPointMake(x, y)
 */
 function CPRectInset(aRect, dX, dY)
 {
-    return CPRectMake(  aRect.origin.x + dX, aRect.origin.y + dY, 
+    return CPRectMake(  aRect.origin.x + dX, aRect.origin.y + dY,
                         aRect.size.width - 2 * dX, aRect.size.height - 2*dY);
 }
 
@@ -96,13 +96,13 @@ function CPRectIntegral(aRect)
 function CPRectIntersection(lhsRect, rhsRect)
 {
     var intersection = CPRectMake(
-        Math.max(CPRectGetMinX(lhsRect), CPRectGetMinX(rhsRect)), 
-        Math.max(CPRectGetMinY(lhsRect), CPRectGetMinY(rhsRect)), 
+        Math.max(CPRectGetMinX(lhsRect), CPRectGetMinX(rhsRect)),
+        Math.max(CPRectGetMinY(lhsRect), CPRectGetMinY(rhsRect)),
         0, 0);
-    
+
     intersection.size.width = Math.min(CPRectGetMaxX(lhsRect), CPRectGetMaxX(rhsRect)) - CPRectGetMinX(intersection);
     intersection.size.height = Math.min(CPRectGetMaxY(lhsRect), CPRectGetMaxY(rhsRect)) - CPRectGetMinY(intersection);
-    
+
     return CPRectIsEmpty(intersection) ? CPRectMakeZero() : intersection;
 }
 
@@ -160,13 +160,13 @@ function CPRectStandardize(aRect)
         standardized.origin.x += width;
         standardized.size.width = -width;
     }
-    
+
     if (height < 0.0)
     {
         standardized.origin.y += height;
         standardized.size.height = -height;
     }
-    
+
     return standardized;
 }
 
@@ -183,7 +183,7 @@ function CPRectUnion(lhsRect, rhsRect)
         minY = Math.min(CPRectGetMinY(lhsRect), CPRectGetMinY(rhsRect)),
         maxX = Math.max(CPRectGetMaxX(lhsRect), CPRectGetMaxX(rhsRect)),
         maxY = Math.max(CPRectGetMaxY(lhsRect), CPRectGetMaxY(rhsRect));
-    
+
     return CPRectMake(minX, minY, maxX - minX, maxY - minY);
 }
 
@@ -222,8 +222,8 @@ function CPRectContainsPoint(aRect, aPoint)
 {
     return  aPoint.x >= CPRectGetMinX(aRect) &&
             aPoint.y >= CPRectGetMinY(aRect) &&
-   			aPoint.x < CPRectGetMaxX(aRect) &&
-   			aPoint.y < CPRectGetMaxY(aRect);
+            aPoint.x < CPRectGetMaxX(aRect) &&
+            aPoint.y < CPRectGetMaxY(aRect);
 }
 
 /*!
@@ -261,7 +261,7 @@ function CPPointEqualToPoint(lhsPoint, rhsPoint)
 */
 function CPRectEqualToRect(lhsRect, rhsRect)
 {
-    return  CPPointEqualToPoint(lhsRect.origin, rhsRect.origin) && 
+    return  CPPointEqualToPoint(lhsRect.origin, rhsRect.origin) &&
             CPSizeEqualToSize(lhsRect.size, rhsRect.size);
 }
 
@@ -381,6 +381,20 @@ function CPRectIsNull(aRect)
 }
 
 /*!
+    Creates two rectangles -- slice and rem -- from inRect, by dividing inRect
+    with a line that's parallel to the side of inRect specified by edge.
+    The size of slice is determined by amount, which specifies the distance from edge.
+
+    slice and rem must not be NULL.
+
+    @group CGRect
+*/
+function CPDivideRect(inRect, slice, rem, amount, edge)
+{
+    CGRectDivide(inRect, slice, rem, amount, edge);
+}
+
+/*!
     Returns \c YES if the two CGSizes are identical.
     @group CGSize
     @param lhsSize the first CGSize to compare
@@ -434,7 +448,7 @@ function CPStringFromRect(aRect)
 function CPPointFromString(aString)
 {
     var comma = aString.indexOf(',');
-    
+
     return { x:parseFloat(aString.substr(1, comma - 1), 10), y:parseFloat(aString.substring(comma + 1, aString.length), 10) };
 }
 
@@ -447,7 +461,7 @@ function CPPointFromString(aString)
 function CPSizeFromString(aString)
 {
     var comma = aString.indexOf(',');
-    
+
     return { width:parseFloat(aString.substr(1, comma - 1), 10), height:parseFloat(aString.substring(comma + 1, aString.length), 10) };
 }
 
@@ -460,7 +474,7 @@ function CPSizeFromString(aString)
 function CPRectFromString(aString)
 {
     var comma = aString.indexOf(',', aString.indexOf(',') + 1);
-    
+
     return { origin:CPPointFromString(aString.substr(1, comma - 1)), size:CPSizeFromString(aString.substring(comma + 2, aString.length)) };
 }
 
@@ -504,6 +518,6 @@ function CPPointMakeZero()
     return CPPointMake(0, 0, 0);
 }
 
-/*! 
+/*!
     @}
 */

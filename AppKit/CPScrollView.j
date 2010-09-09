@@ -772,17 +772,106 @@
             break;
 
         case CPBezelBorder:
-            CPDrawGrayBezel(strokeRect);
+            [self _drawGrayBezelInContext:context bounds:strokeRect];
             break;
 
         case CPGrooveBorder:
-            CPDrawGroove(strokeRect, YES);
+            [self _drawGrooveInContext:context bounds:strokeRect];
             break;
 
         default:
             break;
     }
 }
+
+- (void)_drawGrayBezelInContext:(CGContext)context bounds:(CGRect)aRect
+{
+    CGContextBeginPath(context);
+    CGContextSetStrokeColor(context, [CPColor colorWithWhite:142.0/255.0 alpha:1.0]);
+
+    var y = _CGRectGetMinY(aRect) + 0.5;
+
+    CGContextMoveToPoint(context, _CGRectGetMinX(aRect), y);
+    CGContextAddLineToPoint(context, _CGRectGetMinX(aRect) + 1.0, y);
+    CGContextStrokePath(context);
+
+    CGContextBeginPath(context);
+    CGContextSetStrokeColor(context, [CPColor colorWithWhite:192.0/255.0 alpha:1.0]);
+    CGContextMoveToPoint(context, _CGRectGetMinX(aRect) + 1.0, y);
+    CGContextAddLineToPoint(context, _CGRectGetMaxX(aRect) - 1.0, y);
+    CGContextStrokePath(context);
+
+    CGContextBeginPath(context);
+    CGContextSetStrokeColor(context, [CPColor colorWithWhite:142.0/255.0 alpha:1.0]);
+    CGContextMoveToPoint(context, _CGRectGetMaxX(aRect) - 1.0, y);
+    CGContextAddLineToPoint(context, _CGRectGetMaxX(aRect), y);
+    CGContextStrokePath(context);
+
+    CGContextBeginPath(context);
+    CGContextSetStrokeColor(context, [CPColor colorWithWhite:190.0/255.0 alpha:1.0]);
+
+    var x = _CGRectGetMaxX(aRect) - 0.5;
+
+    CGContextMoveToPoint(context, x, _CGRectGetMinY(aRect) + 1.0);
+    CGContextAddLineToPoint(context, x, _CGRectGetMaxY(aRect));
+
+    CGContextMoveToPoint(context, x - 0.5, _CGRectGetMaxY(aRect) - 0.5);
+    CGContextAddLineToPoint(context, _CGRectGetMinX(aRect), _CGRectGetMaxY(aRect) - 0.5);
+
+    x = _CGRectGetMinX(aRect) + 0.5;
+
+    CGContextMoveToPoint(context, x, _CGRectGetMaxY(aRect));
+    CGContextAddLineToPoint(context, x, _CGRectGetMinY(aRect) + 1.0);
+
+    CGContextStrokePath(context);
+}
+
+- (void)_drawGrooveInContext:(CGContext)context bounds:(CGRect)aRect
+{
+    CGContextBeginPath(context);
+    CGContextSetStrokeColor(context, [CPColor colorWithWhite:159.0/255.0 alpha:1.0]);
+
+    var y = _CGRectGetMinY(aRect) + 0.5;
+
+    CGContextMoveToPoint(context, _CGRectGetMinX(aRect), y);
+    CGContextAddLineToPoint(context, _CGRectGetMaxX(aRect), y);
+
+    var x = _CGRectGetMaxX(aRect) - 1.5;
+
+    CGContextMoveToPoint(context, x, _CGRectGetMinY(aRect) + 2.0);
+    CGContextAddLineToPoint(context, x, _CGRectGetMaxY(aRect) - 1.0);
+
+    y = _CGRectGetMaxY(aRect) - 1.5;
+
+    CGContextMoveToPoint(context, _CGRectGetMaxX(aRect) - 1.0, y);
+    CGContextAddLineToPoint(context, _CGRectGetMinX(aRect) + 2.0, y);
+
+    x = _CGRectGetMinX(aRect) + 0.5;
+
+    CGContextMoveToPoint(context, x, _CGRectGetMaxY(aRect));
+    CGContextAddLineToPoint(context, x, _CGRectGetMinY(aRect));
+
+    CGContextStrokePath(context);
+
+    CGContextBeginPath(context);
+    CGContextSetStrokeColor(context, [CPColor whiteColor]);
+
+    var rect = _CGRectOffset(aRect, 1.0, 1.0);
+
+    rect.size.width -= 1.0;
+    rect.size.height -= 1.0;
+    CGContextStrokeRect(context, _CGRectInset(rect, 0.5, 0.5));
+
+    CGContextBeginPath(context);
+    CGContextSetStrokeColor(context, [CPColor colorWithWhite:192.0/255.0 alpha:1.0]);
+
+    y = _CGRectGetMinY(aRect) + 2.5;
+
+    CGContextMoveToPoint(context, _CGRectGetMinX(aRect) + 2.0, y);
+    CGContextAddLineToPoint(context, _CGRectGetMaxX(aRect) - 2.0, y);
+    CGContextStrokePath(context);
+}
+
 
 // CPResponder Overrides
 
@@ -792,8 +881,7 @@
 */
 - (void)scrollWheel:(CPEvent)anEvent
 {
-    [self _respondToScrollWheelEventWithDeltaX:[anEvent deltaX] * _horizontalLineScroll
-                                        deltaY:[anEvent deltaY] * _verticalLineScroll];
+    [self _respondToScrollWheelEventWithDeltaX:[anEvent deltaX] deltaY:[anEvent deltaY]];
 }
 
 - (void)_respondToScrollWheelEventWithDeltaX:(float)deltaX deltaY:(float)deltaY
@@ -801,17 +889,15 @@
     var documentFrame = [[self documentView] frame],
         contentBounds = [_contentView bounds],
         contentFrame = [_contentView frame],
-        enclosingScrollView = [self enclosingScrollView],
-        extraX = 0,
-        extraY = 0;
+        enclosingScrollView = [self enclosingScrollView];
 
     // We want integral bounds!
     contentBounds.origin.x = ROUND(contentBounds.origin.x + deltaX);
     contentBounds.origin.y = ROUND(contentBounds.origin.y + deltaY);
 
-    var constrainedOrigin = [_contentView constrainScrollPoint:CGPointCreateCopy(contentBounds.origin)];
-    extraX = ((contentBounds.origin.x - constrainedOrigin.x) / _horizontalLineScroll) * [enclosingScrollView horizontalLineScroll];
-    extraY = ((contentBounds.origin.y - constrainedOrigin.y) / _verticalLineScroll) * [enclosingScrollView verticalLineScroll];
+    var constrainedOrigin = [_contentView constrainScrollPoint:CGPointCreateCopy(contentBounds.origin)],
+        extraX = contentBounds.origin.x - constrainedOrigin.x,
+        extraY = contentBounds.origin.y - constrainedOrigin.y;
 
     [_contentView scrollToPoint:constrainedOrigin];
     [_headerClipView scrollToPoint:CGPointMake(constrainedOrigin.x, 0.0)];
