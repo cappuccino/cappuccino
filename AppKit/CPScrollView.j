@@ -346,9 +346,6 @@
     [[self bottomCornerView] setFrame:[self _bottomCornerViewFrame]];
     [[self bottomCornerView] setBackgroundColor:[self currentValueForThemeAttribute:@"bottom-corner-color"]];
 
-    if (shouldShowHorizontalScroller && shouldShowVerticalScroller)
-        [self setNeedsDisplay:YES];
-
     --_recursionCount;
 }
 

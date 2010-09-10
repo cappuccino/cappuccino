@@ -50,15 +50,15 @@
     [[self scrollView] setBorderType:borderType];
 }
 
-- (@action)changeBorderWidth:(id)aSender
-{
-    [[self scrollView] setValue:[aSender integerValue] forThemeAttribute:@"line-border-width"];
-}
-
 - (@action)toggleHeaderView:(id)aSender
 {
     [[[self scrollView] documentView] setShowHeaderView:[aSender objectValue]];
     [[self scrollView] _updateCornerAndHeaderView];
+}
+
+- (@action)changeBorderColor:(id)aSender
+{
+    [[self scrollView] setValue:[aSender color] forThemeAttribute:@"border-color"];
 }
 
 @end
