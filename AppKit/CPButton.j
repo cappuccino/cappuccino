@@ -74,6 +74,9 @@ CPChangeBackgroundCellMask  = CPBackgroundButtonMask;
 
 CPButtonStateMixed  = CPThemeState("mixed");
 
+CPButtonDefaultHeight = 24.0;
+CPButtonImageOffset   = 3.0;
+
 /*!
     @ingroup appkit
     @class CPButton
@@ -674,9 +677,6 @@ var CPButtonImageKey                    = @"CPButtonImageKey",
     {
         _controlSize = CPRegularControlSize;
 
-        [self setImage:[aCoder decodeObjectForKey:CPButtonImageKey]];
-        [self setAlternateImage:[aCoder decodeObjectForKey:CPButtonAlternateImageKey]];
-
         _title = [aCoder decodeObjectForKey:CPButtonTitleKey];
         _alternateTitle = [aCoder decodeObjectForKey:CPButtonAlternateTitleKey];
 
@@ -707,9 +707,6 @@ var CPButtonImageKey                    = @"CPButtonImageKey",
 - (void)encodeWithCoder:(CPCoder)aCoder
 {
     [super encodeWithCoder:aCoder];
-
-    [aCoder encodeObject:[self image] forKey:CPButtonImageKey];
-    [aCoder encodeObject:[self alternateImage] forKey:CPButtonAlternateImageKey];
 
     [aCoder encodeObject:_title forKey:CPButtonTitleKey];
     [aCoder encodeObject:_alternateTitle forKey:CPButtonAlternateTitleKey];

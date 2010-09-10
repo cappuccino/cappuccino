@@ -62,6 +62,9 @@
     option.
 
 */
+
+CPRadioImageOffset = 4.0;
+
 @implementation CPRadio : CPButton
 {
     CPRadioGroup    _radioGroup;

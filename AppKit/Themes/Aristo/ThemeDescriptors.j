@@ -330,7 +330,7 @@ var themedButtonValues = nil,
 
 + (CPButton)makeButton
 {
-    return [[CPButton alloc] initWithFrame:CGRectMake(0.0, 0.0, 60.0, 24.0)];
+    return [[CPButton alloc] initWithFrame:CGRectMake(0.0, 0.0, 60.0, CPButtonDefaultHeight)];
 }
 
 + (CPButton)button
@@ -410,10 +410,10 @@ var themedButtonValues = nil,
             [@"bezel-color",        defaultBezelColor,              CPThemeStateBordered | CPThemeStateDefault],
             [@"bezel-color",        defaultHighlightedBezelColor,   CPThemeStateBordered | CPThemeStateHighlighted | CPThemeStateDefault],
 
-            [@"min-size",           CGSizeMake(0.0, 24.0)],
-            [@"max-size",           CGSizeMake(-1.0, 24.0)],
+            [@"min-size",           CGSizeMake(0.0, CPButtonDefaultHeight)],
+            [@"max-size",           CGSizeMake(-1.0, CPButtonDefaultHeight)],
 
-            [@"imageOffset",        3.0]
+            [@"imageOffset",        CPButtonImageOffset]
         ];
 
     [self registerThemeValues:themedButtonValues forView:button];
@@ -800,7 +800,7 @@ var themedButtonValues = nil,
             [@"image",          imageHighlighted,                   CPThemeStateHighlighted],
             [@"image",          imageDisabled,                      CPThemeStateDisabled],
             [@"image",          imageSelectedDisabled,              CPThemeStateSelected | CPThemeStateDisabled],
-            [@"imageOffset",    4.0],
+            [@"imageOffset",    CPRadioImageOffset],
 
             [@"text-color",     [CPColor colorWithCalibratedWhite:79.0 / 255.0 alpha:1.0],  CPThemeStateDisabled],
 
@@ -836,7 +836,7 @@ var themedButtonValues = nil,
             [@"image",          imageHighlighted,                   CPThemeStateHighlighted],
             [@"image",          imageDisabled,                      CPThemeStateDisabled],
             [@"image",          imageSelectedDisabled,              CPThemeStateSelected | CPThemeStateDisabled],
-            [@"imageOffset",    4.0],
+            [@"imageOffset",    CPCheckBoxImageOffset],
 
             [@"text-color",     [CPColor colorWithCalibratedWhite:79.0 / 255.0 alpha:1.0],  CPThemeStateDisabled],
 
@@ -865,7 +865,7 @@ var themedButtonValues = nil,
             [@"image",          mixedImage,             CPButtonStateMixed],
             [@"image",          mixedHighlightedImage,  CPButtonStateMixed | CPThemeStateHighlighted],
             [@"image",          mixedDisabledImage,     CPButtonStateMixed | CPThemeStateDisabled],
-            [@"imageOffset",    4.0,                    CPButtonStateMixed],
+            [@"imageOffset",    CPCheckBoxImageOffset,  CPButtonStateMixed],
             [@"max-size",       CGSizeMake(-1.0, -1.0)]
         ];
 
