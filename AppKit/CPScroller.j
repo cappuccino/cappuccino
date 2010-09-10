@@ -79,17 +79,18 @@ NAMES_FOR_PARTS[CPScrollerKnob]             = @"knob";
 
 + (id)themeAttributes
 {
-    return [CPDictionary dictionaryWithObjects:[    [CPNull null], [CPNull null], [CPNull null], [CPNull null],
-                                                    _CGSizeMakeZero(), _CGSizeMakeZero(), _CGInsetMakeZero(), _CGInsetMakeZero(), _CGSizeMakeZero()]
-                                       forKeys:[    @"knob-slot-color",
-                                                    @"decrement-line-color",
-                                                    @"increment-line-color",
-                                                    @"knob-color",
-                                                    @"decrement-line-size",
-                                                    @"increment-line-size",
-                                                    @"track-inset",
-                                                    @"knob-inset",
-                                                    @"minimum-knob-length"]];
+    return [CPDictionary dictionaryWithJSObject:{
+        @"scroller-width": 15.0,
+        @"knob-slot-color": [CPColor lightGrayColor],
+        @"decrement-line-color": [CPNull null],
+        @"increment-line-color": [CPNull null],
+        @"knob-color": [CPColor grayColor],
+        @"decrement-line-size":_CGSizeMakeZero(),
+        @"increment-line-size":_CGSizeMakeZero(),
+        @"track-inset":_CGInsetMakeZero(),
+        @"knob-inset": _CGInsetMakeZero(),
+        @"minimum-knob-length":21.0
+    }]
 }
 
 
@@ -98,7 +99,7 @@ NAMES_FOR_PARTS[CPScrollerKnob]             = @"knob";
 - (id)initWithFrame:(CGRect)aFrame
 {
     self = [super initWithFrame:aFrame];
-    
+
     if (self)
     {
         _controlSize = CPRegularControlSize;
@@ -121,7 +122,7 @@ NAMES_FOR_PARTS[CPScrollerKnob]             = @"knob";
 */
 + (float)scrollerWidth
 {
-    return 15.0;//[self scrollerWidthForControlSize:CPRegularControlSize];
+    return [[[CPScroller alloc] init] currentValueForThemeAttribute:@"scroller-width"];
 }
 
 /*!
@@ -130,7 +131,7 @@ NAMES_FOR_PARTS[CPScrollerKnob]             = @"knob";
 */
 + (float)scrollerWidthForControlSize:(CPControlSize)aControlSize
 {
-    return 15.0;//_CPScrollerWidths[aControlSize];
+    return [self scrollerWidth];
 }
 
 /*!
@@ -607,6 +608,19 @@ var CPScrollerControlSizeKey = "CPScrollerControlSize",
         _hitPart = CPScrollerNoPart;
 
         [self _calculateIsVertical];
+
+        // Adjust the size of the scroller if the size from cib
+        // isn't equal to the scrollerWidth
+        var frame = [self frame],
+            scrollerWidth = [CPScroller scrollerWidth];
+
+        if ([self isVertical] && CGRectGetWidth(frame) !== scrollerWidth)
+            frame.size.width = scrollerWidth;
+
+        if (![self isVertical] && CGRectGetHeight(frame) !== scrollerWidth)
+            frame.size.height = scrollerWidth;
+
+        [self setFrame:frame];
     }
     
     return self;
