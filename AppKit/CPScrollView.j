@@ -40,6 +40,7 @@
     CPClipView      _contentView;
     CPClipView      _headerClipView;
     CPView          _cornerView;
+    CPView          _bottomCornerView;
 
     BOOL            _hasVerticalScroller;
     BOOL            _hasHorizontalScroller;
@@ -56,6 +57,19 @@
     float           _horizontalPageScroll;
 
     CPBorderType    _borderType;
+}
+
++ (CPString)themeClass
+{
+    return @"scrollview"
+}
+
++ (CPDictionary)themeAttributes
+{
+    return [CPDictionary dictionaryWithJSObject:{
+        @"bottom-corner-color": [CPColor whiteColor],
+        @"border-color": [CPColor blackColor]
+    }];
 }
 
 - (id)initWithFrame:(CGRect)aFrame
@@ -77,8 +91,10 @@
         [self addSubview:_contentView];
 
         _headerClipView = [[CPClipView alloc] init];
-
         [self addSubview:_headerClipView];
+
+        _bottomCornerView = [[CPView alloc] init];
+        [self addSubview:_bottomCornerView];
 
         [self setHasVerticalScroller:YES];
         [self setHasHorizontalScroller:YES];
@@ -298,7 +314,7 @@
 
     if (shouldShowVerticalScroller)
     {
-        var verticalScrollerY = MAX(_CGRectGetMaxY([self _cornerViewFrame]), headerClipViewHeight),
+        var verticalScrollerY = MAX(_CGRectGetMaxY([self _cornerViewFrame]), headerClipViewHeight + 1.0),
             verticalScrollerHeight = _CGRectGetMaxY(contentFrame) - verticalScrollerY;
 
         [_verticalScroller setFloatValue:(difference.height <= 0.0) ? 0.0 : scrollPoint.y / difference.height];
@@ -327,8 +343,8 @@
     [_headerClipView setFrame:headerClipViewFrame];
     [_cornerView setFrame:[self _cornerViewFrame]];
 
-    if (shouldShowHorizontalScroller && shouldShowVerticalScroller)
-        [self setNeedsDisplay:YES];
+    [[self bottomCornerView] setFrame:[self _bottomCornerViewFrame]];
+    [[self bottomCornerView] setBackgroundColor:[self currentValueForThemeAttribute:@"bottom-corner-color"]];
 
     --_recursionCount;
 }
@@ -568,6 +584,42 @@
     return frame;
 }
 
+- (CGRect)_bottomCornerViewFrame
+{
+    if ([[self horizontalScroller] isHidden] || [[self verticalScroller] isHidden])
+        return CGRectMakeZero();
+
+    var verticalFrame = [[self verticalScroller] frame],
+        bottomCornerFrame = CGRectMakeZero();
+
+    bottomCornerFrame.origin.x = CGRectGetMinX(verticalFrame);
+    bottomCornerFrame.origin.y = CGRectGetMaxY(verticalFrame);
+    bottomCornerFrame.size.width = [CPScroller scrollerWidth];
+    bottomCornerFrame.size.height = [CPScroller scrollerWidth];
+
+    return bottomCornerFrame;
+}
+
+- (void)setBottomCornerView:(CPView)aBottomCornerView
+{
+    if (_bottomCornerView === aBottomCornerView)
+        return;
+
+    [_bottomCornerView removeFromSuperview];
+
+    [aBottomCornerView setFrame:[self _bottomCornerViewFrame]];
+    [self addSubview:aBottomCornerView];
+
+    _bottomCornerView = aBottomCornerView;
+
+    [self _updateCornerAndHeaderView];
+}
+
+- (CPView)bottomCornerView
+{
+    return _bottomCornerView;
+}
+
 /* @ignore */
 - (void)_verticalScrollerDidScroll:(CPScroller)aScroller
 {
@@ -770,7 +822,7 @@
     switch (_borderType)
     {
         case CPLineBorder:
-            CGContextSetStrokeColor(context, [CPColor blackColor]);
+            CGContextSetStrokeColor(context, [self currentValueForThemeAttribute:@"border-color"]);
             CGContextStrokeRect(context, _CGRectInset(strokeRect, 0.5, 0.5));
             break;
 
@@ -784,29 +836,6 @@
 
         default:
             break;
-    }
-
-
-    if (![[self verticalScroller] isHidden] && ![[self horizontalScroller] isHidden])
-    {
-        var verticalScrollerFrame = [[self verticalScroller] frame],
-            bottomCornerRect = CGRectMakeCopy(verticalScrollerFrame);
-
-        bottomCornerRect.origin.y = CGRectGetMaxY(verticalScrollerFrame);
-        bottomCornerRect.size.height = [CPScroller scrollerWidth];
-
-        CGContextSetFillColor(context, [CPColor colorWithRed:242.0 / 255.0 green:242.0 / 255.0 blue:243.0 / 255.0 alpha:1.0]);
-        CGContextFillRect(context, bottomCornerRect);
-
-        CGContextSetStrokeColor(context, [CPColor colorWithRed:184.0 / 255.0 green:184.0 / 255.0 blue:184.0 / 255.0 alpha:1.0]);
-
-        CGContextMoveToPoint(context, CGRectGetMinX(bottomCornerRect), CGRectGetMinY(bottomCornerRect));
-        CGContextAddLineToPoint(context, CGRectGetMaxX(bottomCornerRect), CGRectGetMinY(bottomCornerRect));
-        CGContextStrokePath(context);
-
-        CGContextMoveToPoint(context, CGRectGetMinX(bottomCornerRect), CGRectGetMinY(bottomCornerRect));
-        CGContextAddLineToPoint(context, CGRectGetMinX(bottomCornerRect), CGRectGetMaxY(bottomCornerRect));
-        CGContextStrokePath(context);
     }
 }
 
@@ -1017,6 +1046,9 @@ var CPScrollViewContentViewKey       = "CPScrollViewContentView",
             _headerClipView = [[CPClipView alloc] init];
             [self addSubview:_headerClipView];
         }
+
+        _bottomCornerView       = [[CPView alloc] init];
+        [self addSubview:_bottomCornerView];
 
         _verticalScroller       = [aCoder decodeObjectForKey:CPScrollViewVScrollerKey];
         _horizontalScroller     = [aCoder decodeObjectForKey:CPScrollViewHScrollerKey];
