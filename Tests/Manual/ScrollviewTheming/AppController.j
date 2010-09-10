@@ -7,7 +7,7 @@
  */
 
 @import <Foundation/CPObject.j>
-
+@import "DocumentView.j"
 
 @implementation AppController : CPObject
 {
@@ -17,6 +17,9 @@
 
 - (void)awakeFromCib
 {
+    var headerView = [[CPView alloc] initWithFrame:CGRectMakeZero()];
+    [headerView setBackgroundColor:[CPColor blueColor]];
+
     [[self window] setFullBridge:YES];
 }
 
@@ -50,6 +53,12 @@
 - (@action)changeBorderWidth:(id)aSender
 {
     [[self scrollView] setValue:[aSender integerValue] forThemeAttribute:@"line-border-width"];
+}
+
+- (@action)toggleHeaderView:(id)aSender
+{
+    [[[self scrollView] documentView] setShowHeaderView:[aSender objectValue]];
+    [[self scrollView] _updateCornerAndHeaderView];
 }
 
 @end
