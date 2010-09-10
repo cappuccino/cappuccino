@@ -12,7 +12,7 @@
 		</object>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
-			<integer value="372"/>
+			<integer value="463"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -92,7 +92,7 @@
 									<reference key="NSSuperview" ref="918341552"/>
 									<reference key="NSTarget" ref="918341552"/>
 									<string key="NSAction">_doScroller:</string>
-									<double key="NSCurValue">1</double>
+									<double key="NSCurValue">0.97382198952879584</double>
 									<double key="NSPercent">0.96363627910614014</double>
 								</object>
 								<object class="NSScroller" id="974458220">
@@ -464,6 +464,9 @@
 					<object class="IBObjectRecord">
 						<int key="objectID">463</int>
 						<reference key="object" ref="260322488"/>
+						<object class="NSMutableArray" key="children">
+							<bool key="EncodedWithXMLCoder">YES</bool>
+						</object>
 						<reference key="parent" ref="918341552"/>
 					</object>
 					<object class="IBObjectRecord">
@@ -657,7 +660,7 @@
 				</object>
 			</object>
 			<nil key="sourceID"/>
-			<int key="maxID">523</int>
+			<int key="maxID">525</int>
 		</object>
 		<object class="IBClassDescriber" key="IBDocument.Classes">
 			<object class="NSMutableArray" key="referencedPartialClassDescriptions">

@@ -6,6 +6,11 @@
     CPView                          _cornerView @accessors(property=cornerView);
 }
 
+- (void)awakeFromCib
+{
+    [self setFrame:CGRectMake(0.0, 0.0, 2000.0, 2000.0)];
+}
+
 - (CPView)headerView
 {
     if (![self showHeaderView])

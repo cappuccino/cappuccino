@@ -532,7 +532,16 @@ var themedButtonValues = nil,
 {
     var scrollView = [[CPScrollView alloc] initWithFrame:CGRectMake(0.0, 0.0, 200.0, 200.0)];
 
-    [scrollView setValue:[CPColor colorWithWhite:0.0 alpha:0.2] forThemeAttribute:@"line-border-color"];
+    var borderColor = [CPColor colorWithWhite:0.0 alpha:0.2],
+        bottomCornerColor = PatternColor(@"scrollview-bottom-corner-color.png", 15.0, 15.0);
+
+    var themedScrollViewValues = 
+        [
+            [@"border-color", borderColor],
+            [@"bottom-corner-color", bottomCornerColor]
+        ];
+
+    [self registerThemeValues:themedScrollViewValues forView:scrollView];
 
     [scrollView setAutohidesScrollers:YES];
     [scrollView setBorderType:CPLineBorder];
@@ -1279,9 +1288,22 @@ var themedButtonValues = nil,
 
 + (CPSplitView)themedSplitView
 {
-    var splitView = [[CPSplitView alloc] initWithFrame:CGRectMake(0.0, 0.0, 200.0, 200.0)];
-    [splitView setValue:10.0 forThemeAttribute:@"divider-thickness"];
-    [splitView setValue:1.0 forThemeAttribute:@"pane-divider-thickness"];
+    var splitView = [[CPSplitView alloc] initWithFrame:CGRectMake(0.0, 0.0, 200.0, 200.0)],
+        leftView = [[CPView alloc] initWithFrame:CGRectMake(0.0, 0.0, 75.0, 150.0)],
+        rightView = [[CPView alloc] initWithFrame:CGRectMake(75.0, 0.0, 75.0, 150.0)];
+
+    [splitView addSubview:leftView];
+    [splitView addSubview:rightView];
+
+
+    var themedSplitViewValues = 
+        [
+            [@"divider-thickness", 10.0],
+            [@"pane-divider-thickness", 1.0]
+        ];
+
+    [self registerThemeValues:themedSplitViewValues forView:splitView];
+
     return splitView;
 }
 
