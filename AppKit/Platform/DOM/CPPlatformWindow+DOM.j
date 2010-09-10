@@ -1221,6 +1221,9 @@ var supportsNativeDragAndDrop = [CPPlatform supportsDragAndDrop];
 
     else if (type === "mousedown")
     {
+        var button = aDOMEvent.button;
+        _mouseDownIsRightClick = button == 2 || (button == 0 && modifierFlags & CPControlKeyMask);
+
         if (sourceElement.tagName === "INPUT" && sourceElement != _DOMFocusElement)
         {
             if ([CPPlatform supportsDragAndDrop])
@@ -1233,11 +1236,11 @@ var supportsNativeDragAndDrop = [CPPlatform supportsDragAndDrop];
             _mouseIsDown = YES;
 
             //fake a down and up event so that event tracking mode will work correctly
-            [CPApp sendEvent:[CPEvent mouseEventWithType:CPLeftMouseDown location:location modifierFlags:modifierFlags
+            [CPApp sendEvent:[CPEvent mouseEventWithType:_mouseDownIsRightClick ? CPRightMouseDown : CPLeftMouseDown location:location modifierFlags:modifierFlags
                     timestamp:timestamp windowNumber:windowNumber context:nil eventNumber:-1
                     clickCount:CPDOMEventGetClickCount(_lastMouseDown, timestamp, location) pressure:0]];
 
-            [CPApp sendEvent:[CPEvent mouseEventWithType:CPLeftMouseUp location:location modifierFlags:modifierFlags
+            [CPApp sendEvent:[CPEvent mouseEventWithType:_mouseDownIsRightClick ? CPRightMouseUp : CPLeftMouseUp location:location modifierFlags:modifierFlags
                     timestamp:timestamp windowNumber:windowNumber context:nil eventNumber:-1
                     clickCount:CPDOMEventGetClickCount(_lastMouseDown, timestamp, location) pressure:0]];
 
@@ -1248,9 +1251,6 @@ var supportsNativeDragAndDrop = [CPPlatform supportsDragAndDrop];
             _DOMBodyElement.setAttribute("draggable", "true");
             _DOMBodyElement.style["-khtml-user-drag"] = "element";
         }
-
-        var button = aDOMEvent.button;
-        _mouseDownIsRightClick = button == 2 || (button == 0 && modifierFlags & CPControlKeyMask);
 
         StopContextMenuDOMEventPropagation = YES;
 
