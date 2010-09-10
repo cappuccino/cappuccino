@@ -797,28 +797,6 @@
         default:
             break;
     }
-
-    if (![[self verticalScroller] isHidden] && ![[self horizontalScroller] isHidden])
-    {
-        var verticalScrollerFrame = [[self verticalScroller] frame],
-            bottomCornerRect = CGRectMakeCopy(verticalScrollerFrame),
-            borderColor = [self currentValueForThemeAttribute:@"line-border-color"];
-
-        bottomCornerRect.origin.y = CGRectGetMaxY(verticalScrollerFrame);
-        bottomCornerRect.size.height = [CPScroller scrollerWidth];
-
-        CGContextSetFillColor(context, borderColor);
-        CGContextFillRect(context, bottomCornerRect);
-
-        CGContextSetStrokeColor(context, borderColor);
-        CGContextMoveToPoint(context, CGRectGetMinX(bottomCornerRect), CGRectGetMinY(bottomCornerRect));
-        CGContextAddLineToPoint(context, CGRectGetMaxX(bottomCornerRect), CGRectGetMinY(bottomCornerRect));
-        CGContextStrokePath(context);
-
-        CGContextMoveToPoint(context, CGRectGetMinX(bottomCornerRect), CGRectGetMinY(bottomCornerRect));
-        CGContextAddLineToPoint(context, CGRectGetMinX(bottomCornerRect), CGRectGetMaxY(bottomCornerRect));
-        CGContextStrokePath(context);
-    }
 }
 
 - (void)_drawGrayBezelInContext:(CGContext)context bounds:(CGRect)aRect
