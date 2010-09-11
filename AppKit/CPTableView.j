@@ -1168,7 +1168,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 {
     if (!_editingCellIndex)
         return -1;
-    return _editingCellIndex.x;
+    return _editingCellIndex.y;
 }
 
 //Setting Auxiliary Views
