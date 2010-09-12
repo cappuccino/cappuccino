@@ -47,6 +47,7 @@
     CPTextField _saturationLabel;
     CPTextField _brightnessLabel;
     CPTextField _hexLabel;
+    CPTextField _hexValue;
 
 #if PLATFORM(DOM)
     DOMElement  _redValue;
@@ -55,7 +56,6 @@
     DOMElement  _hueValue;
     DOMElement  _saturationValue;
     DOMElement  _brightnessValue;
-    DOMElement  _hexValue;
 #endif
 }
 
@@ -273,36 +273,12 @@
     [_hexLabel setStringValue: "Hex"];
     [_hexLabel setTextColor:[CPColor blackColor]];
 
-#if PLATFORM(DOM)
     //hex input box
-    _hexValue = _redValue.cloneNode(false);
-    _hexValue.style.top = "228px";
-    _hexValue.style.width = "80px";
-    _hexValue.style.left = "35px";
-    _hexValue.onkeypress = function(aDOMEvent) 
-    { 
-        aDOMEvent = aDOMEvent || window.event;
-        if (aDOMEvent.keyCode == 13) 
-        { 
-            var newColor = [CPColor colorWithHexString: this.value];
-            
-            if(newColor)
-            {
-                [self setColor: newColor];
-                [[self colorPanel] setColor: newColor];
-            }
-            
-            if(aDOMEvent.preventDefault)
-                aDOMEvent.preventDefault(); 
-            else if(aDOMEvent.stopPropagation)
-                aDOMEvent.stopPropagation();
-            
-            this.blur();
-        } 
-    };
-
-    _contentView._DOMElement.appendChild(_hexValue);
-#endif
+    _hexValue = [[CPTextField alloc] initWithFrame: CGRectMake(32, 225, 80, 29)];
+    [_hexValue setEditable: YES];
+    [_hexValue setBezeled: YES];
+    [_hexValue setDelegate: self];
+    [_contentView addSubview: _hexValue];
 
     [_contentView addSubview: _rgbLabel];
     [_contentView addSubview: _redLabel];
@@ -394,9 +370,7 @@
 
 - (void)updateHex:(CPColor)aColor
 {
-#if PLATFORM(DOM)
-    _hexValue.value = [aColor hexString];
-#endif
+    [_hexValue setStringValue:[aColor hexString]];
 }
 
 - (void)updateRGBSliders:(CPColor)aColor
@@ -429,6 +403,15 @@
 - (CPImage)provideNewAlternateButtonImage
 {
     return [[CPImage alloc] initWithContentsOfFile:[[CPBundle bundleForClass:CPColorPicker] pathForResource:"slider_button_h.png"] size:CGSizeMake(32, 32)];
+}
+
+- (void)controlTextDidEndEditing:(CPNotification)aNotification
+{
+    var newColor = [CPColor colorWithHexString:[[_hexValue stringValue] stringByTrimmingWhitespace]];
+    if (newColor) {
+        [self setColor: newColor];
+        [[self colorPanel] setColor: newColor];
+    }
 }
 
 @end

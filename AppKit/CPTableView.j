@@ -1152,23 +1152,23 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 }
 
 /*!
-    Returns the column of the currently edited cell, or -1 if none.
+    Returns the column of the currently edited cell, or CPNotFound if none.
 */
 - (CPInteger)editedColumn
 {
     if (!_editingCellIndex)
-        return -1;
+        return CPNotFound;
     return _editingCellIndex.x;
 }
 
 /*!
-    Returns the row of the currently edited cell, or -1 if none.
+    Returns the row of the currently edited cell, or CPNotFound if none.
 */
 - (CPInteger)editedRow
 {
     if (!_editingCellIndex)
-        return -1;
-    return _editingCellIndex.x;
+        return CPNotFound;
+    return _editingCellIndex.y;
 }
 
 //Setting Auxiliary Views
