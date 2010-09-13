@@ -19,25 +19,25 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
- 
+
 @import "CPView.j"
 
 // CPBorderType
 CPNoBorder      = 0;
-CPLineBorder    = 1;    
+CPLineBorder    = 1;
 CPBezelBorder   = 2;
 CPGrooveBorder  = 3;
 
 @implementation CPBox : CPView
 {
     CPBorderType    _borderType;
-    
+
     CPColor         _borderColor;
     CPColor         _fillColor;
-    
+
     float           _cornerRadius;
     float           _borderWidth;
-    
+
     CPSize          _contentMargin;
     CPView          _contentView;
 }
@@ -50,20 +50,20 @@ CPGrooveBorder  = 3;
     [box setFrameFromContentFrame:[aView frame]];
 
     [enclosingView replaceSubview:aView with:box];
-    
+
     [box setContentView:aView];
-    
+
     return box;
 }
 
 - (id)initWithFrame:(CPRect)frameRect
 {
     self = [super initWithFrame:frameRect];
-    
+
     if (self)
-    {   
+    {
         _borderType = CPBezelBorder;
-        _fillColor = [CPColor colorWithWhite:0.75 alpha:0.1];
+        _fillColor = [CPColor clearColor];
         _borderColor = [CPColor blackColor];
 
         _borderWidth = 1.0;
@@ -71,6 +71,8 @@ CPGrooveBorder  = 3;
 
         _contentView = [[CPView alloc] initWithFrame:[self bounds]];
         [_contentView setAutoresizingMask:CPViewWidthSizable|CPViewHeightSizable];
+
+        [self setAutoresizesSubviews:YES];
         [self addSubview:_contentView];
     }
 
@@ -164,8 +166,8 @@ CPGrooveBorder  = 3;
     [aView setFrame:CGRectInset([self bounds], _contentMargin.width + _borderWidth, _contentMargin.height + _borderWidth)];
     [aView setAutoresizingMask:CPViewWidthSizable|CPViewHeightSizable];
     [self replaceSubview:_contentView with:aView];
-    
-    _contentView = aView;    
+
+    _contentView = aView;
 }
 
 - (CPSize)contentViewMargins
@@ -177,7 +179,7 @@ CPGrooveBorder  = 3;
 {
      if(size.width < 0 || size.height < 0)
          [CPException raise:CPGenericException reason:@"Margins must be positive"];
-         
+
     _contentMargin = CGSizeMakeCopy(size);
     [self setNeedsDisplay:YES];
 }
@@ -191,57 +193,97 @@ CPGrooveBorder  = 3;
 - (void)sizeToFit
 {
     var contentFrame = [_contentView frame];
-    
-    [self setFrameSize:CGSizeMake(contentFrame.size.width + _contentMargin.width * 2, 
+
+    [self setFrameSize:CGSizeMake(contentFrame.size.width + _contentMargin.width * 2,
                                   contentFrame.size.height + _contentMargin.height * 2)];
-    
+
     [_contentView setFrameOrigin:CGPointMake(_contentMargin.width, _contentMargin.height)];
 }
 
 - (void)drawRect:(CPRect)rect
 {
+    if (_borderType === CPNoBorder)
+        return;
+
     var bounds = [self bounds],
-        aContext = [[CPGraphicsContext currentContext] graphicsPort],
-        border2 = _borderWidth/2,
+        context = [[CPGraphicsContext currentContext] graphicsPort];
 
-        strokeRect = CGRectMake(bounds.origin.x + border2, 
-                                bounds.origin.y + border2, 
-                                bounds.size.width - _borderWidth, 
-                                bounds.size.height - _borderWidth),
-                                
-        fillRect = CGRectMake(bounds.origin.x + border2, 
-                              bounds.origin.y + border2, 
-                              bounds.size.width - _borderWidth, 
-                              bounds.size.height - _borderWidth);
+    CGContextSetFillColor(context, [self fillColor]);
 
-    CGContextSetFillColor(aContext, [self fillColor]);
-    CGContextSetLineWidth(aContext, _borderWidth);
-
-    switch(_borderType)
+    switch (_borderType)
     {
-        case CPLineBorder:  CGContextSetStrokeColor(aContext, [self borderColor]);
-                            CGContextFillRoundedRectangleInRect(aContext, fillRect, _cornerRadius, YES, YES, YES, YES);
-                            CGContextStrokeRoundedRectangleInRect(aContext, strokeRect, _cornerRadius, YES, YES, YES, YES);
-                            break;
+        case CPBezelBorder:
+            var sides = [CPMinYEdge, CPMaxXEdge, CPMaxYEdge, CPMinXEdge],
+                sideGray = 190.0 / 255.0,
+                grays = [142.0 / 255.0, sideGray, sideGray, sideGray],
+                borderWidth = _borderWidth;
 
-        case CPBezelBorder: CGContextSetStrokeColor(aContext, [CPColor colorWithWhite:0 alpha:0.42]);
-                            CGContextFillRoundedRectangleInRect(aContext, fillRect, _cornerRadius, YES, YES, YES, YES);
-                            CGContextSetStrokeColor(aContext, [CPColor colorWithWhite:190.0/255.0 alpha:1.0]);
-                            CGContextBeginPath(aContext);
-                            CGContextMoveToPoint(aContext, strokeRect.origin.x, strokeRect.origin.y);
-                            CGContextAddLineToPoint(aContext, CGRectGetMinX(strokeRect), CGRectGetMaxY(strokeRect)),
-                            CGContextAddLineToPoint(aContext, CGRectGetMaxX(strokeRect), CGRectGetMaxY(strokeRect)),
-                            CGContextAddLineToPoint(aContext, CGRectGetMaxX(strokeRect), CGRectGetMinY(strokeRect)),
-                            CGContextStrokePath(aContext);
-                            CGContextSetStrokeColor(aContext, [CPColor colorWithWhite:142.0/255.0 alpha:1.0]);
-                            CGContextBeginPath(aContext);
-                            CGContextMoveToPoint(aContext, bounds.origin.x, strokeRect.origin.y);
-                            CGContextAddLineToPoint(aContext, CGRectGetMaxX(bounds), CGRectGetMinY(strokeRect));
-                            CGContextStrokePath(aContext);
-                            break;
+            while (borderWidth--)
+                bounds = CPDrawTiledRects(bounds, bounds, sides, grays);
 
-        default:            break;
+            CGContextFillRect(context, bounds);
+            break;
+
+        default:
+            bounds = CGRectInset(bounds, _borderWidth / 2.0, _borderWidth / 2.0);
+
+            CGContextSetStrokeColor(context, [self borderColor]);
+            CGContextSetLineWidth(context, _borderWidth);
+            CGContextFillRoundedRectangleInRect(context, bounds, _cornerRadius, YES, YES, YES, YES);
+            CGContextStrokeRoundedRectangleInRect(context, bounds, _cornerRadius, YES, YES, YES, YES);
+            break;
     }
+}
+
+@end
+
+var CPBoxBorderTypeKey    = @"CPBoxBorderTypeKey",
+    CPBoxBorderColorKey   = @"CPBoxBorderColorKey",
+    CPBoxFillColorKey     = @"CPBoxFillColorKey",
+    CPBoxCornerRadiusKey  = @"CPBoxCornerRadiusKey",
+    CPBoxBorderWidthKey   = @"CPBoxBorderWidthKey",
+    CPBoxContentMarginKey = @"CPBoxContentMarginKey";
+
+@implementation CPBox (CPCoding)
+
+- (id)initWithCoder:(CPCoder)aCoder
+{
+    self = [super initWithCoder:aCoder];
+
+    if (self)
+    {
+        _borderType    = [aCoder decodeIntForKey:CPBoxBorderTypeKey];
+
+        _borderColor   = [aCoder decodeObjectForKey:CPBoxBorderColorKey];
+        _fillColor     = [aCoder decodeObjectForKey:CPBoxFillColorKey];
+
+        _cornerRadius  = [aCoder decodeFloatForKey:CPBoxCornerRadiusKey];
+        _borderWidth   = [aCoder decodeFloatForKey:CPBoxBorderWidthKey];
+
+        _contentMargin = [aCoder decodeSizeForKey:CPBoxContentMarginKey];
+
+        _contentView   = [self subviews][0];
+
+        [self setAutoresizesSubviews:YES];
+        [_contentView setAutoresizingMask:CPViewWidthSizable|CPViewHeightSizable];
+    }
+
+    return self;
+}
+
+- (void)encodeWithCoder:(CPCoder)aCoder
+{
+    [super encodeWithCoder:aCoder];
+
+    [aCoder encodeInt:_borderType forKey:CPBoxBorderTypeKey];
+
+    [aCoder encodeObject:_borderColor forKey:CPBoxBorderColorKey];
+    [aCoder encodeObject:_fillColor forKey:CPBoxFillColorKey];
+
+    [aCoder encodeFloat:_cornerRadius forKey:CPBoxCornerRadiusKey];
+    [aCoder encodeFloat:_borderWidth forKey:CPBoxBorderWidthKey];
+
+    [aCoder encodeSize:_contentMargin forKey:CPBoxContentMarginKey];
 }
 
 @end

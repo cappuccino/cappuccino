@@ -22,6 +22,7 @@
 
 @import "CPButton.j"
 
+CPCheckBoxImageOffset = 4.0;
 
 @implementation CPCheckBox : CPButton
 {

@@ -645,10 +645,9 @@ var CPStringRegexSpecialCharacters = [
     a digit 1-9. Returns \c NO otherwise. This method skips the initial
     whitespace characters, +,- followed by Zeroes.
 */
-
 - (BOOL)boolValue
 {
-    var replaceRegExp = new RegExp("^\\s*[\\+,\\-]*0*");
+    var replaceRegExp = new RegExp("^\\s*[\\+,\\-]?0*");
     return RegExp("^[Y,y,t,T,1-9]").test(self.replace(replaceRegExp, ''));
 }
 

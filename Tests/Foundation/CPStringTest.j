@@ -1,4 +1,5 @@
 @import <Foundation/CPString.j>
+@import <Foundation/CPCharacterSet.j>
 
 @implementation CPStringTest : OJTestCase
 
@@ -144,7 +145,8 @@
         ["  NO",    NO],
         ["  -N00",  NO],
         ["  00",    NO],
-        ["  -00",   NO]
+        ["  -00",   NO],
+		["  -+001", NO],
     ];
     
     for (var i = 0; i < testStrings.length; i++)
@@ -312,4 +314,41 @@
     [self assertFalse:["abc" hasSuffix:""]];
 }
 
+- (void)testComponentsSeparatedByCharactersInSetEmptyString
+{
+	[self assert:[""]
+	  equals:["" componentsSeparatedByCharactersInSet:[CPCharacterSet whitespaceCharacterSet]]];
+}
+
+- (void)testComponentsSeparatedByCharactersInSetStringWithoutCharactersFromSet
+{
+	[self assert:["Abradab"] 
+	  equals:["Abradab" componentsSeparatedByCharactersInSet:[CPCharacterSet whitespaceCharacterSet]]];
+}
+
+- (void)testComponentsSeparatedByCharactersInSet
+{
+	[self assert:["Baku", "baku", "to", "jest", "", "skład."]
+	  equals:["Baku baku to jest  skład." componentsSeparatedByCharactersInSet:[CPCharacterSet whitespaceCharacterSet]]];
+}
+
+- (void)testComponentsSeparatedByCharactersInSetLeadingAndTrailingCharacterFromSet
+{
+	[self assert:["", "Test", ""]
+	  equals:[" Test " componentsSeparatedByCharactersInSet:[CPCharacterSet whitespaceCharacterSet]]];
+}
+
+- (void)testComponentsSeparatedByCharactersExceptionRaiseOnNilSeparator 
+{
+	try
+    {
+        [[CPString string] componentsSeparatedByCharactersInSet:nil];
+		[self assert:false];
+    }
+    catch (anException)
+	{
+		[self assert:[anException name] equals:CPInvalidArgumentException];
+        [self assert:[anException reason] equals:@"componentsSeparatedByCharactersInSet: the separator can't be 'nil'"];
+	}
+}
 @end

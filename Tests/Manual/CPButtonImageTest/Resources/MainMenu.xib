@@ -11,7 +11,7 @@
 			<string key="NS.object.0">788</string>
 		</object>
 		<array class="NSMutableArray" key="IBDocument.EditedObjectIDs">
-			<integer value="1182"/>
+			<integer value="372"/>
 		</array>
 		<array key="IBDocument.PluginDependencies">
 			<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
@@ -43,7 +43,7 @@
 						<object class="NSTextField" id="1048195509">
 							<reference key="NSNextResponder" ref="439893737"/>
 							<int key="NSvFlags">268</int>
-							<string key="NSFrame">{{40, 20}, {101, 17}}</string>
+							<string key="NSFrame">{{40, 24}, {101, 17}}</string>
 							<reference key="NSSuperview" ref="439893737"/>
 							<bool key="NSEnabled">YES</bool>
 							<object class="NSTextFieldCell" key="NSCell" id="889147185">
@@ -352,7 +352,7 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 								<object class="NSButton" id="463191555">
 									<reference key="NSNextResponder" ref="65589413"/>
 									<int key="NSvFlags">268</int>
-									<string key="NSFrame">{{143, 126}, {176, 32}}</string>
+									<string key="NSFrame">{{143, 133}, {176, 25}}</string>
 									<reference key="NSSuperview" ref="65589413"/>
 									<bool key="NSEnabled">YES</bool>
 									<object class="NSButtonCell" key="NSCell" id="44707779">
@@ -361,8 +361,8 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 										<string key="NSContents">Button With Image</string>
 										<reference key="NSSupport" ref="688777490"/>
 										<reference key="NSControlView" ref="463191555"/>
-										<int key="NSButtonFlags">-2038284033</int>
-										<int key="NSButtonFlags2">129</int>
+										<int key="NSButtonFlags">-2034482945</int>
+										<int key="NSButtonFlags2">163</int>
 										<string key="NSAlternateContents"/>
 										<string key="NSKeyEquivalent"/>
 										<int key="NSPeriodicDelay">200</int>
@@ -372,7 +372,7 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 								<object class="NSButton" id="938838346">
 									<reference key="NSNextResponder" ref="65589413"/>
 									<int key="NSvFlags">268</int>
-									<string key="NSFrame">{{24, 126}, {96, 32}}</string>
+									<string key="NSFrame">{{24, 133}, {96, 25}}</string>
 									<reference key="NSSuperview" ref="65589413"/>
 									<bool key="NSEnabled">YES</bool>
 									<object class="NSButtonCell" key="NSCell" id="988784972">
@@ -382,7 +382,7 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 										<reference key="NSSupport" ref="688777490"/>
 										<reference key="NSControlView" ref="938838346"/>
 										<int key="NSButtonFlags">-2038284033</int>
-										<int key="NSButtonFlags2">129</int>
+										<int key="NSButtonFlags2">163</int>
 										<string key="NSAlternateContents"/>
 										<string key="NSKeyEquivalent"/>
 										<int key="NSPeriodicDelay">200</int>

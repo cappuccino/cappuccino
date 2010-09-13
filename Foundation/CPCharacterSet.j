@@ -34,7 +34,7 @@ var _builtInCharacterSets = {};
 {
     self = [super init];
     _inverted = NO;
-    
+
     return self;
 }
 
@@ -132,7 +132,7 @@ var _builtInCharacterSets = {};
         var i,
             ranges = [CPArray array],
             rangeArray = eval(csname);
-        
+
         for(i = 0; i < rangeArray.length; i+= 2)
         {
             var loc = rangeArray[i];
@@ -141,9 +141,9 @@ var _builtInCharacterSets = {};
             [ranges addObject:range];
         }
         cs = [[_CPRangeCharacterSet alloc] initWithRanges:ranges];
-        _builtInCharacterSets[csname] = cs; 
+        _builtInCharacterSets[csname] = cs;
     }
-    
+
     return cs;
 }
 
@@ -174,7 +174,7 @@ var _builtInCharacterSets = {};
     {
         _ranges = ranges;
     }
-    
+
     return self;
 }
 
@@ -197,13 +197,13 @@ var _builtInCharacterSets = {};
     c = aCharacter.charCodeAt(0);
     var enu = [_ranges objectEnumerator];
     var range;
-    
+
     while (range = [enu nextObject])
     {
         if (CPLocationInRange(c, range))
         	return !_inverted;
     }
-    
+
     return _inverted;
 }
 
@@ -212,7 +212,7 @@ var _builtInCharacterSets = {};
     // the highest Unicode plane we reach.
     // (There are 65536 code points in each plane.)
     var maxPlane = Math.floor((range.start + range.length - 1) / 65536); // should iterate _ranges
-    
+
     return (plane <= maxPlane);
 }
 
@@ -224,12 +224,12 @@ var _builtInCharacterSets = {};
 - (void)addCharactersInString:(CPString)aString // Needs _inverted support
 {
     var i;
-    
+
     for(i = 0; i < aString.length; i++)
     {
         var code = aString.charCodeAt(i);
         var range = CPMakeRange(code,1);
-        
+
         [_ranges addObject:range];
     }
 }
@@ -249,7 +249,7 @@ var _builtInCharacterSets = {};
     {
         _string = s;
     }
-    
+
     return self;
 }
 
@@ -257,7 +257,7 @@ var _builtInCharacterSets = {};
 {
     var set = [[_CPStringContentCharacterSet alloc] initWithString:_string];
     [set _setInverted:_inverted];
-    
+
     return set;
 }
 
@@ -265,7 +265,7 @@ var _builtInCharacterSets = {};
 {
     var set = [[_CPStringContentCharacterSet alloc] initWithString:_string];
     [set invert];
-    
+
     return set;
 }
 
@@ -286,7 +286,7 @@ var _builtInCharacterSets = {};
     // they all live in the Basic Multilingual Plane
     // (aka plane 0).
     // TODO if the above is wrong, this must be changed!
-    
+
     return plane == 0;
 }
 
@@ -296,7 +296,7 @@ var _builtInCharacterSets = {};
     for(i = aRange.location; i < aRange.location + aRange.length; i++)
     {
         var s = String.fromCharCode(i);
-        
+
         if (![self characterIsMember:s])
             _string = [_string stringByAppendingString:s];
     }
@@ -305,11 +305,11 @@ var _builtInCharacterSets = {};
 - (void)addCharactersInString:(CPString)aString // Needs _inverted support
 {
     var i;
-    
+
     for(i = 0; i < aString.length; i++)
     {
         var s = aString.charAt(i);
-        
+
         if (![self characterIsMember:s])
             _string = [_string stringByAppendingString:s];
     }
@@ -321,6 +321,43 @@ _CPCharacterSetTrimAtBeginning = 1 << 1;
 _CPCharacterSetTrimAtEnd = 1 << 2;
 
 @implementation CPString (CPCharacterSetAdditions)
+
+/*!
+    Tokenizes the receiver string using the charactes
+    in a given set. For example, if the receiver is:
+    \c "Baku baku to jest  skład."
+    and the set is [CPCharacterSet whitespaceCharacterSet]
+    the returned array would contain:
+    <pre> ["Baku", "baku", "to", "jest", "", "skład."] </pre>
+	Adjacent occurences of the separator characters produce empty strings in the result.
+	@author Arkadiusz Młynarczyk <arek@tupux.com>
+    @param A character set containing the characters to use to split the receiver. Must not be nil.
+    @return An CPArray object containing substrings from the receiver that have been divided by characters in separator.
+*/
+- (CPArray)componentsSeparatedByCharactersInSet:(CPCharacterSet)separator
+{
+	if (!separator)
+		[CPException raise:CPInvalidArgumentException
+                    reason:"componentsSeparatedByCharactersInSet: the separator can't be 'nil'"];
+
+	var components = [CPMutableArray array],
+	    componentRange = CPMakeRange(0, 0);
+
+	for (var i=0; i < self.length; i++)
+	{
+		if ([separator characterIsMember:self.charAt(i)])
+		{
+			componentRange.length = i - componentRange.location;
+			[components addObject:[self substringWithRange:componentRange]];
+			componentRange.location += componentRange.length + 1;
+		}
+	}
+
+	componentRange.length = self.length - componentRange.location;
+	[components addObject:[self substringWithRange:componentRange]];
+
+	return components;
+}
 
 // As per the Cocoa method.
 - (id)stringByTrimmingCharactersInSet:(CPCharacterSet)set
@@ -334,27 +371,27 @@ _CPCharacterSetTrimAtEnd = 1 << 2;
 - (id)_stringByTrimmingCharactersInSet:(CPCharacterSet)set options:(int)options
 {
     var str = self;
-    
+
     if (options & _CPCharacterSetTrimAtBeginning)
     {
         var cutEdgeBeginning = 0;
-        
+
         while (cutEdgeBeginning < self.length && [set characterIsMember:self.charAt(cutEdgeBeginning)])
             cutEdgeBeginning++;
-            
+
         str = str.substr(cutEdgeBeginning);
     }
-    
+
     if (options & _CPCharacterSetTrimAtEnd)
     {
         var cutEdgeEnd = str.length;
-        
+
         while (cutEdgeEnd > 0 && [set characterIsMember:self.charAt(cutEdgeEnd)])
             cutEdgeEnd--;
-            
+
         str = str.substr(0, cutEdgeEnd + 1);
     }
-    
+
     return str;
 }
 

@@ -188,7 +188,8 @@ var cachedBlackColor,
 */
 + (CPColor)colorWithHexString:(string)hex
 {
-    return [[CPColor alloc] _initWithRGBA: hexToRGB(hex)];
+    var rgba = hexToRGB(hex);
+    return rgba ? [[CPColor alloc] _initWithRGBA: rgba] : null;
 }
 
 /*!
@@ -736,7 +737,7 @@ var byteToHex = function(n)
     if (!n || isNaN(n))
         return "00";
 
-    n = ROUND(MIN(255, MAX(0, 256 * n)));
+    n = FLOOR(MIN(255, MAX(0, 256 * n)));
 
     return hexCharacters.charAt((n - n % 16) / 16) +
            hexCharacters.charAt(n % 16);

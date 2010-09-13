@@ -21,6 +21,7 @@
  */
 
 @import "_NSCornerView.j"
+@import "NSBox.j"
 @import "NSButton.j"
 @import "NSCell.j"
 @import "NSClassSwapper.j"
@@ -76,7 +77,7 @@ function CP_NSMapClassName(aClassName)
     if (aClassName.indexOf("NS") === 0)
     {
         var mappedClassName = @"CP" + aClassName.substr(2);
-        
+
         if (CPClassFromString(mappedClassName))
         {
             CPLog.info("Mapping " + aClassName + " to " + mappedClassName);

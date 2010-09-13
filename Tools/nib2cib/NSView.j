@@ -45,7 +45,7 @@ var NSViewAutoresizingMask = 0x3F,
 
     if (self)
     {
-        _tag = -1;
+        _tag = 0;
         
         if ([aCoder containsValueForKey:@"NSTag"])
             _tag = [aCoder decodeIntForKey:@"NSTag"];

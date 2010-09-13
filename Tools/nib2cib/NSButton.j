@@ -111,10 +111,10 @@ var NSButtonIsBorderedMask = 0x00800000,
 
             if ([cell isBordered])
             {
-                CPLog.info("Adjusting CPButton height from " +_frame.size.height+ " / " + _bounds.size.height+" to " + 24);
-                _frame.size.height = 24.0;
+                CPLog.info("Adjusting CPButton height from " +_frame.size.height+ " / " + _bounds.size.height+" to " + CPButtonDefaultHeight);
+                _frame.size.height = CPButtonDefaultHeight;
                 _frame.origin.y += 4.0;
-                _bounds.size.height = 24.0;
+                _bounds.size.height = CPButtonDefaultHeight;
             }
         }
         else

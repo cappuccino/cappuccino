@@ -330,7 +330,7 @@ var themedButtonValues = nil,
 
 + (CPButton)makeButton
 {
-    return [[CPButton alloc] initWithFrame:CGRectMake(0.0, 0.0, 60.0, 24.0)];
+    return [[CPButton alloc] initWithFrame:CGRectMake(0.0, 0.0, 60.0, CPButtonDefaultHeight)];
 }
 
 + (CPButton)button
@@ -410,10 +410,10 @@ var themedButtonValues = nil,
             [@"bezel-color",        defaultBezelColor,              CPThemeStateBordered | CPThemeStateDefault],
             [@"bezel-color",        defaultHighlightedBezelColor,   CPThemeStateBordered | CPThemeStateHighlighted | CPThemeStateDefault],
 
-            [@"min-size",           CGSizeMake(0.0, 24.0)],
-            [@"max-size",           CGSizeMake(-1.0, 24.0)],
+            [@"min-size",           CGSizeMake(0.0, CPButtonDefaultHeight)],
+            [@"max-size",           CGSizeMake(-1.0, CPButtonDefaultHeight)],
 
-            [@"imageOffset",        3.0]
+            [@"imageOffset",        CPButtonImageOffset]
         ];
 
     [self registerThemeValues:themedButtonValues forView:button];
@@ -526,6 +526,27 @@ var themedButtonValues = nil,
     [button addItemWithTitle:@"item"];
 
     return button;
+}
+
++ (CPScrollView)themedScrollView
+{
+    var scrollView = [[CPScrollView alloc] initWithFrame:CGRectMake(0.0, 0.0, 200.0, 200.0)];
+
+    var borderColor = [CPColor colorWithWhite:0.0 alpha:0.2],
+        bottomCornerColor = PatternColor(@"scrollview-bottom-corner-color.png", 15.0, 15.0);
+
+    var themedScrollViewValues = 
+        [
+            [@"border-color", borderColor],
+            [@"bottom-corner-color", bottomCornerColor]
+        ];
+
+    [self registerThemeValues:themedScrollViewValues forView:scrollView];
+
+    [scrollView setAutohidesScrollers:YES];
+    [scrollView setBorderType:CPLineBorder];
+
+    return scrollView;
 }
 
 + (CPScroller)makeVerticalScroller
@@ -800,7 +821,7 @@ var themedButtonValues = nil,
             [@"image",          imageHighlighted,                   CPThemeStateHighlighted],
             [@"image",          imageDisabled,                      CPThemeStateDisabled],
             [@"image",          imageSelectedDisabled,              CPThemeStateSelected | CPThemeStateDisabled],
-            [@"imageOffset",    4.0],
+            [@"imageOffset",    CPRadioImageOffset],
 
             [@"text-color",     [CPColor colorWithCalibratedWhite:79.0 / 255.0 alpha:1.0],  CPThemeStateDisabled],
 
@@ -836,7 +857,7 @@ var themedButtonValues = nil,
             [@"image",          imageHighlighted,                   CPThemeStateHighlighted],
             [@"image",          imageDisabled,                      CPThemeStateDisabled],
             [@"image",          imageSelectedDisabled,              CPThemeStateSelected | CPThemeStateDisabled],
-            [@"imageOffset",    4.0],
+            [@"imageOffset",    CPCheckBoxImageOffset],
 
             [@"text-color",     [CPColor colorWithCalibratedWhite:79.0 / 255.0 alpha:1.0],  CPThemeStateDisabled],
 
@@ -865,7 +886,7 @@ var themedButtonValues = nil,
             [@"image",          mixedImage,             CPButtonStateMixed],
             [@"image",          mixedHighlightedImage,  CPButtonStateMixed | CPThemeStateHighlighted],
             [@"image",          mixedDisabledImage,     CPButtonStateMixed | CPThemeStateDisabled],
-            [@"imageOffset",    4.0,                    CPButtonStateMixed],
+            [@"imageOffset",    CPCheckBoxImageOffset,  CPButtonStateMixed],
             [@"max-size",       CGSizeMake(-1.0, -1.0)]
         ];
 
@@ -1267,9 +1288,22 @@ var themedButtonValues = nil,
 
 + (CPSplitView)themedSplitView
 {
-    var splitView = [[CPSplitView alloc] initWithFrame:CGRectMake(0.0, 0.0, 200.0, 200.0)];
-    [splitView setValue:10.0 forThemeAttribute:@"divider-thickness"];
-    [splitView setValue:1.0 forThemeAttribute:@"pane-divider-thickness"];
+    var splitView = [[CPSplitView alloc] initWithFrame:CGRectMake(0.0, 0.0, 200.0, 200.0)],
+        leftView = [[CPView alloc] initWithFrame:CGRectMake(0.0, 0.0, 75.0, 150.0)],
+        rightView = [[CPView alloc] initWithFrame:CGRectMake(75.0, 0.0, 75.0, 150.0)];
+
+    [splitView addSubview:leftView];
+    [splitView addSubview:rightView];
+
+
+    var themedSplitViewValues = 
+        [
+            [@"divider-thickness", 10.0],
+            [@"pane-divider-thickness", 1.0]
+        ];
+
+    [self registerThemeValues:themedSplitViewValues forView:splitView];
+
     return splitView;
 }
 
