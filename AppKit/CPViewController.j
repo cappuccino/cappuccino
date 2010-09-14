@@ -47,7 +47,8 @@ var CPViewControllerCachedCibs;
 */
 @implementation CPViewController : CPResponder
 {
-    CPView          _view;
+    CPView          _view @accessors(property=view);
+    BOOL            _isLoading;
 
     id              _representedObject @accessors(property=representedObject);
     CPString        _title @accessors(property=title);
@@ -99,6 +100,8 @@ var CPViewControllerCachedCibs;
         _cibName = aCibNameOrNil;
         _cibBundle = aCibBundleOrNil || [CPBundle mainBundle];
         _cibExternalNameTable = anExternalNameTable || [CPDictionary dictionaryWithObject:self forKey:CPCibOwner];
+
+        _isLoading = NO;
     }
 
     return self;
@@ -120,7 +123,7 @@ var CPViewControllerCachedCibs;
 {
     if (_view)
         return;
-    
+
     // check if a cib is already cached for the current _cibName
     var cib = [CPViewControllerCachedCibs objectForKey:_cibName];
 
@@ -143,6 +146,8 @@ var CPViewControllerCachedCibs;
 {
     if (!_view)
     {
+        _isLoading = YES;
+
         var cibOwner = [_cibExternalNameTable objectForKey:CPCibOwner];
 
         if ([cibOwner respondsToSelector:@selector(viewControllerWillLoadCib:)])
@@ -162,6 +167,9 @@ var CPViewControllerCachedCibs;
 
         if ([cibOwner respondsToSelector:@selector(viewControllerDidLoadCib:)])
             [cibOwner viewControllerDidLoadCib:self];
+
+        _isLoading = NO;
+        [self viewDidLoad];
     }
 
     return _view;
@@ -192,7 +200,7 @@ var CPViewControllerCachedCibs;
     _view = aView;
 
     // Make sure the viewDidLoad method is called if the view is set directly
-    if (viewWasLoaded)
+    if (!_isLoading && viewWasLoaded)
         [self viewDidLoad];
 }
 
