@@ -188,7 +188,8 @@ var cachedBlackColor,
 */
 + (CPColor)colorWithHexString:(string)hex
 {
-    return [[CPColor alloc] _initWithRGBA: hexToRGB(hex)];
+    var rgba = hexToRGB(hex);
+    return rgba ? [[CPColor alloc] _initWithRGBA: rgba] : null;
 }
 
 /*!

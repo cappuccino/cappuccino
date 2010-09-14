@@ -314,8 +314,10 @@
 
     if (shouldShowVerticalScroller)
     {
-        var verticalScrollerY = MAX(_CGRectGetMaxY([self _cornerViewFrame]), headerClipViewHeight + 1.0),
-            verticalScrollerHeight = _CGRectGetMaxY(contentFrame) - verticalScrollerY;
+        var verticalScrollerY =
+            MAX(_CGRectGetMinY(contentFrame), MAX(_CGRectGetMaxY([self _cornerViewFrame]), _CGRectGetMaxY(headerClipViewFrame)));
+
+        var verticalScrollerHeight = _CGRectGetMaxY(contentFrame) - verticalScrollerY;
 
         [_verticalScroller setFloatValue:(difference.height <= 0.0) ? 0.0 : scrollPoint.y / difference.height];
         [_verticalScroller setKnobProportion:_CGRectGetHeight(contentFrame) / _CGRectGetHeight(documentFrame)];
