@@ -316,7 +316,7 @@ var supportsNativeDragAndDrop = [CPPlatform supportsDragAndDrop];
     _DOMEventGuard.style.display = "none";
     _DOMEventGuard.className = "cpdontremove";
     _DOMBodyElement.appendChild(_DOMEventGuard);
-    
+
     // We get scrolling deltas from this element
     _DOMScrollingElement = theDocument.createElement("div");
     _DOMScrollingElement.style.position = "absolute";
@@ -330,12 +330,12 @@ var supportsNativeDragAndDrop = [CPPlatform supportsDragAndDrop];
     _DOMScrollingElement.style.filter = "alpha(opacity=0)";
     _DOMScrollingElement.className = "cpdontremove";
     _DOMBodyElement.appendChild(_DOMScrollingElement);
-    
+
     var _DOMInnerScrollingElement = theDocument.createElement("div");
     _DOMInnerScrollingElement.style.width = "400px";
     _DOMInnerScrollingElement.style.height = "400px";
     _DOMScrollingElement.appendChild(_DOMInnerScrollingElement);
-    
+
     // Set an initial scroll offset
     _DOMScrollingElement.scrollTop = 150;
     _DOMScrollingElement.scrollLeft = 150;
@@ -971,7 +971,7 @@ var supportsNativeDragAndDrop = [CPPlatform supportsDragAndDrop];
         clearTimeout(_hideDOMScrollingElementTimeout);
         _hideDOMScrollingElementTimeout = nil;
     }
-    
+
     if(!aDOMEvent)
         aDOMEvent = window.event;
 
@@ -1031,14 +1031,14 @@ var supportsNativeDragAndDrop = [CPPlatform supportsDragAndDrop];
     var event = [CPEvent mouseEventWithType:CPScrollWheel location:location modifierFlags:modifierFlags
                                   timestamp:timestamp windowNumber:windowNumber context:nil eventNumber:-1 clickCount:1 pressure:0];
     event._DOMEvent = aDOMEvent;
-    
+
     // We lag 1 event behind without this timeout.
-    setTimeout(function(){     
-           
+    setTimeout(function(){
+
         // Find the scroll delta
         var deltaX = _DOMScrollingElement.scrollLeft - 150,
             deltaY = _DOMScrollingElement.scrollTop - 150;
-        
+
         // If we scroll super with momentum,
         // there are so many events going off that
         // a tiny percent don't actually have any deltas.
@@ -1052,7 +1052,7 @@ var supportsNativeDragAndDrop = [CPPlatform supportsDragAndDrop];
         {
             event._deltaX = deltaX;
             event._deltaY = deltaY;
-            
+
             [CPApp sendEvent:event];
         }
 
@@ -1066,9 +1066,9 @@ var supportsNativeDragAndDrop = [CPPlatform supportsDragAndDrop];
 
         // Is this needed?
         //[[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
-        
+
     }, 0);
-    
+
     // We hide the dom element after a little bit
     // so that other DOM elements such as inputs
     // can receive events.
@@ -1281,7 +1281,18 @@ var supportsNativeDragAndDrop = [CPPlatform supportsDragAndDrop];
         CPDOMEventStop(aDOMEvent, self);
 
     // if there are any tracking event listeners then show the event guard so we don't lose events to iframes
-    _DOMEventGuard.style.display = (CPApp._eventListeners.length === 0) ? "none" : "";
+    // TODO Actually check for tracking event listeners, not just any listener but _CPRunModalLoop.
+    var hasTrackingEventListener = NO;
+    for (var i=0; i < CPApp._eventListeners.length; i++)
+    {
+        if (CPApp._eventListeners[i]._callback !== _CPRunModalLoop)
+        {
+            hasTrackingEventListener = YES;
+            break;
+        }
+    }
+
+    _DOMEventGuard.style.display = hasTrackingEventListener ? "" : "none";
 
     [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
 }

@@ -1034,7 +1034,8 @@ var _CPEventListenerMake = function(anEventMask, aCallback)
     return { _mask:anEventMask, _callback:aCallback };
 }
 
-var _CPRunModalLoop = function(anEvent)
+// Make this a global for use in CPPlatformWindow+DOM.j.
+_CPRunModalLoop = function(anEvent)
 {
     [CPApp setCallback:_CPRunModalLoop forNextEventMatchingMask:CPAnyEventMask untilDate:nil inMode:0 dequeue:NO];
 
