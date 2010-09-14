@@ -1224,9 +1224,11 @@ var themedButtonValues = nil,
 + (CPTableHeaderView)themedTableHeaderRow
 {
     var header = [[CPTableHeaderView alloc] initWithFrame:CGRectMake(0.0, 0.0, 100.0, 23.0)],
-        normal = PatternColor("tableview-headerview.png", 1.0, 23.0);
+        normal = PatternColor("tableview-headerview.png", 1.0, 23.0),
+        gridColor = [CPColor colorWithHexString:@"dce0e2"];
 
     [header setValue:normal forThemeAttribute:@"background-color"];
+    [header setValue:gridColor forThemeAttribute:@"divider-color"];
 
     return header;
 }

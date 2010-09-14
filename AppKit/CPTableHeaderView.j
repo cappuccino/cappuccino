@@ -173,8 +173,8 @@ var _CPTableColumnHeaderViewStringValueKey = @"_CPTableColumnHeaderViewStringVal
 
 + (id)themeAttributes
 {
-    return [CPDictionary dictionaryWithObjects:[[CPNull null]]
-                                       forKeys:[@"background-color"]];
+    return [CPDictionary dictionaryWithObjects:[[CPNull null], [CPColor grayColor]]
+                                       forKeys:[@"background-color", @"divider-color"]];
 }
 
 - (void)_init
@@ -624,7 +624,7 @@ var _CPTableColumnHeaderViewStringValueKey = @"_CPTableColumnHeaderViewStringVal
         exposedRange = CPMakeRange(firstIndex, [exposedTableColumns lastIndex] - firstIndex + 1);
 
     CGContextSetLineWidth(context, 1);
-    CGContextSetStrokeColor(context, [_tableView gridColor]);
+    CGContextSetStrokeColor(context, [self currentValueForThemeAttribute:@"divider-color"]);
 
     [exposedColumnIndexes getIndexes:columnsArray maxCount:-1 inIndexRange:exposedRange];
 
