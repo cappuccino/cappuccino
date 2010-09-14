@@ -11,6 +11,7 @@
 
 @implementation AppController : CPObject
 {
+    CPWindow    aWindow;
 }
 
 - (void)applicationDidFinishLaunching:(CPNotification)aNotification
@@ -36,8 +37,33 @@
 
     [theWindow orderFront:self];
 
-    // Uncomment the following line to turn on the standard menu bar.
-    //[CPMenu setMenuBarVisible:YES];
+    aWindow = [[CPWindow alloc] initWithContentRect:CGRectMake(150, 300, 400, 150) styleMask:CPTitledWindowMask | CPClosableWindowMask | CPDocModalWindowMask];
+    [aWindow setTitle:@"Text Field in a Window"]
+
+    contentView = [aWindow contentView];
+
+    textField = [CPTextField textFieldWithStringValue:"Select me!" placeholder:"" width:0];
+    label = [[CPTextField alloc] initWithFrame:CGRectMake(15, 15, 360, 30)];
+    [label setLineBreakMode:CPLineBreakByWordWrapping];
+
+    [label setStringValue:"Select the field and double click it to select text. The text should become selected. Then hit enter to continue."];
+    [contentView addSubview:label];
+
+    [textField setFrame:CGRectMake(15, CGRectGetMaxY([label frame]) + 10, 300, 30)];
+
+    [textField setEditable:YES];
+
+    [textField setTarget:self];
+    [textField setAction:@selector(modalAction:)];
+
+    [contentView addSubview:textField];
+
+    [CPApp beginSheet:aWindow modalForWindow:theWindow modalDelegate:self didEndSelector:nil contextInfo:nil];
+}
+
+- (void)modalAction:(id)sender
+{
+    [CPApp endSheet:aWindow returnCode:0];
 }
 
 - (void)textAction:(id)sender
