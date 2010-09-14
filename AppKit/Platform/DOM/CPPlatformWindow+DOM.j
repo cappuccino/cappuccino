@@ -598,7 +598,6 @@ var supportsNativeDragAndDrop = [CPPlatform supportsDragAndDrop];
 
         [dragServer draggingStartedInPlatformWindow:self globalLocation:[CPPlatform isBrowser] ? location : _CGPointMake(aDOMEvent.screenX, aDOMEvent.screenY)];
     }
-
     else if (type === "drag")
     {
         var y = aDOMEvent.screenY;
@@ -608,7 +607,6 @@ var supportsNativeDragAndDrop = [CPPlatform supportsDragAndDrop];
 
         [dragServer draggingSourceUpdatedWithGlobalLocation:[CPPlatform isBrowser] ? location : _CGPointMake(aDOMEvent.screenX, y)];
     }
-
     else if (type === "dragover" || type === "dragleave")
     {
         if (aDOMEvent.preventDefault)
@@ -619,16 +617,13 @@ var supportsNativeDragAndDrop = [CPPlatform supportsDragAndDrop];
 
         if (dragOperation === CPDragOperationMove || dragOperation === CPDragOperationGeneric || dragOperation === CPDragOperationPrivate)
             dropEffect = "move";
-
         else if (dragOperation === CPDragOperationCopy)
             dropEffect = "copy";
-
         else if (dragOperation === CPDragOperationLink)
             dropEffect = "link";
 
         aDOMEvent.dataTransfer.dropEffect = dropEffect;
     }
-
     else if (type === "dragend")
     {
         var dropEffect = aDOMEvent.dataTransfer.dropEffect;
@@ -644,7 +639,6 @@ var supportsNativeDragAndDrop = [CPPlatform supportsDragAndDrop];
 
         [dragServer draggingEndedInPlatformWindow:self globalLocation:[CPPlatform isBrowser] ? location : _CGPointMake(aDOMEvent.screenX, aDOMEvent.screenY) operation:dragOperation];
     }
-
     else //if (type === "drop")
     {
         [dragServer performDragOperationInPlatformWindow:self];
@@ -687,14 +681,12 @@ var supportsNativeDragAndDrop = [CPPlatform supportsDragAndDrop];
     StopDOMEventPropagation = YES;
 
     // Make sure it is not in the blacklists.
-    if(! (CharacterKeysToPrevent[String.fromCharCode(aDOMEvent.keyCode || aDOMEvent.charCode).toLowerCase()] || KeyCodesToPrevent[aDOMEvent.keyCode]))
+    if (!(CharacterKeysToPrevent[String.fromCharCode(aDOMEvent.keyCode || aDOMEvent.charCode).toLowerCase()] || KeyCodesToPrevent[aDOMEvent.keyCode]))
     {
         // It is not in the blacklist, let it through if the ctrl/cmd key is
         // also down or it's in the whitelist.
-        if((modifierFlags & (CPControlKeyMask | CPCommandKeyMask)) || KeyCodesToAllow[aDOMEvent.keyCode])
-        {
+        if ((modifierFlags & (CPControlKeyMask | CPCommandKeyMask)) || KeyCodesToAllow[aDOMEvent.keyCode])
             StopDOMEventPropagation = NO;
-        }
     }
 
     var isNativePasteEvent = NO,
@@ -972,7 +964,7 @@ var supportsNativeDragAndDrop = [CPPlatform supportsDragAndDrop];
         _hideDOMScrollingElementTimeout = nil;
     }
 
-    if(!aDOMEvent)
+    if (!aDOMEvent)
         aDOMEvent = window.event;
 
     var location = nil;
@@ -991,7 +983,6 @@ var supportsNativeDragAndDrop = [CPPlatform supportsDragAndDrop];
             {
                 x += element.offsetLeft;
                 y += element.offsetTop;
-
             } while (element = element.offsetParent);
         }
 
@@ -1033,8 +1024,8 @@ var supportsNativeDragAndDrop = [CPPlatform supportsDragAndDrop];
     event._DOMEvent = aDOMEvent;
 
     // We lag 1 event behind without this timeout.
-    setTimeout(function(){
-
+    setTimeout(function()
+    {
         // Find the scroll delta
         var deltaX = _DOMScrollingElement.scrollLeft - 150,
             deltaY = _DOMScrollingElement.scrollTop - 150;
@@ -1072,7 +1063,8 @@ var supportsNativeDragAndDrop = [CPPlatform supportsDragAndDrop];
     // We hide the dom element after a little bit
     // so that other DOM elements such as inputs
     // can receive events.
-    _hideDOMScrollingElementTimeout = setTimeout(function(){
+    _hideDOMScrollingElementTimeout = setTimeout(function()
+    {
         _DOMScrollingElement.style.visibility = "hidden";
     }, 300);
 }
@@ -1136,8 +1128,8 @@ var supportsNativeDragAndDrop = [CPPlatform supportsDragAndDrop];
 
         newEvent.shiftKey = newEvent.ctrlKey = newEvent.altKey = newEvent.metaKey = false;
 
-        newEvent.preventDefault = function(){if(aDOMEvent.preventDefault) aDOMEvent.preventDefault()};
-        newEvent.stopPropagation = function(){if(aDOMEvent.stopPropagation) aDOMEvent.stopPropagation()};
+        newEvent.preventDefault = function() { if (aDOMEvent.preventDefault) aDOMEvent.preventDefault() };
+        newEvent.stopPropagation = function() { if (aDOMEvent.stopPropagation) aDOMEvent.stopPropagation() };
 
         [self mouseEvent:newEvent];
 
@@ -1186,7 +1178,6 @@ var supportsNativeDragAndDrop = [CPPlatform supportsDragAndDrop];
 
     if (_mouseDownWindow)
         windowNumber = [_mouseDownWindow windowNumber];
-
     else
     {
         var theWindow = [self hitTest:location];
@@ -1202,7 +1193,7 @@ var supportsNativeDragAndDrop = [CPPlatform supportsDragAndDrop];
 
     if (type === "mouseup")
     {
-        if(_mouseIsDown)
+        if (_mouseIsDown)
         {
             event = _CPEventFromNativeMouseEvent(aDOMEvent, _mouseDownIsRightClick ? CPRightMouseUp : CPLeftMouseUp, location, modifierFlags, timestamp, windowNumber, nil, -1, CPDOMEventGetClickCount(_lastMouseUp, timestamp, location), 0);
 
@@ -1212,7 +1203,7 @@ var supportsNativeDragAndDrop = [CPPlatform supportsDragAndDrop];
             _mouseDownIsRightClick = NO;
         }
 
-        if(_DOMEventMode)
+        if (_DOMEventMode)
         {
             _DOMEventMode = NO;
             return;
@@ -1496,7 +1487,7 @@ var supportsNativeDragAndDrop = [CPPlatform supportsDragAndDrop];
 */
 + (void)preventCharacterKeysFromPropagating:(CPArray)characters
 {
-    for(var i=characters.length; i>0; i--)
+    for (var i = characters.length; i > 0; i--)
         CharacterKeysToPrevent[""+characters[i-1].toLowerCase()] = YES;
 }
 
@@ -1522,7 +1513,7 @@ var supportsNativeDragAndDrop = [CPPlatform supportsDragAndDrop];
 */
 + (void)preventKeyCodesFromPropagating:(CPArray)keyCodes
 {
-    for(var i=keyCodes.length; i>0; i--)
+    for (var i = keyCodes.length; i > 0; i--)
         KeyCodesToPrevent[keyCodes[i-1]] = YES;
 }
 
