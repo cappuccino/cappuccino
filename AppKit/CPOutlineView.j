@@ -1110,7 +1110,7 @@ var _loadItemInfoForItem = function(/*CPOutlineView*/ anOutlineView, /*id*/ anIt
     _outlineView._shouldRetargetChildIndex = NO;
 
     var location = [_outlineView convertPoint:[theInfo draggingLocation] fromView:nil],
-        parentItem = [self _parentItemForDropOperation:theOperation row:theRow offset:location];
+        parentItem = [self _parentItemForDropOperation:theOperation row:theRow offset:location],
         childIndex = [self _childIndexForDropOperation:theOperation row:theRow offset:location];
 
     return [_outlineView._outlineViewDataSource outlineView:_outlineView validateDrop:theInfo proposedItem:parentItem proposedChildIndex:childIndex];
@@ -1253,22 +1253,22 @@ var _loadItemInfoForItem = function(/*CPOutlineView*/ anOutlineView, /*id*/ anIt
     CGContextAddLineToPoint(context, 9.0, 0.0);
     CGContextAddLineToPoint(context, 4.5, 8.0);
     CGContextAddLineToPoint(context, 0.0, 0.0);
-    
+
     CGContextClosePath(context);
-    CGContextSetFillColor(context, 
-        colorForDisclosureTriangle([self hasThemeState:CPThemeStateSelected], 
+    CGContextSetFillColor(context,
+        colorForDisclosureTriangle([self hasThemeState:CPThemeStateSelected],
             [self hasThemeState:CPThemeStateHighlighted]));
     CGContextFillPath(context);
-    
-    
+
+
     CGContextBeginPath(context);
     CGContextMoveToPoint(context, 0.0, 0.0);
     if(_angle === 0.0) {
         CGContextAddLineToPoint(context, 4.5, 8.0);
         CGContextAddLineToPoint(context, 9.0, 0.0);
-    } else {    
+    } else {
         CGContextAddLineToPoint(context, 4.5, 8.0);
-    }    
+    }
     CGContextSetStrokeColor(context, [CPColor colorWithCalibratedWhite:1.0 alpha: 0.8]);
     CGContextStrokePath(context);
 }
@@ -1291,33 +1291,33 @@ var CPOutlineViewIndentationPerLevelKey = @"CPOutlineViewIndentationPerLevelKey"
     {
         // The root item has weight "0", thus represents the weight solely of its descendants.
         _rootItemInfo = { isExpanded:YES, isExpandable:NO, level:-1, row:-1, children:[], weight:0 };
-        
+
         _itemsForRows = [];
         _itemInfosForItems = { };
         _disclosureControlsForRows = [];
-        
+
         [self setIndentationMarkerFollowsDataView:YES];
         [self setDisclosureControlPrototype:[[CPDisclosureButton alloc] initWithFrame:CGRectMake(0.0, 0.0, 10.0, 10.0)]];
-        
+
         _outlineTableColumn = [aCoder decodeObjectForKey:CPOutlineViewOutlineTableColumnKey];
         _indentationPerLevel = [aCoder decodeFloatForKey:CPOutlineViewIndentationPerLevelKey];
-        
+
         _outlineViewDataSource = [aCoder decodeObjectForKey:CPOutlineViewDataSourceKey];
         _outlineViewDelegate = [aCoder decodeObjectForKey:CPOutlineViewDelegateKey];
-        
+
         [super setDataSource:[[_CPOutlineViewTableViewDataSource alloc] initWithOutlineView:self]];
     }
-    
+
     return self;
 }
 
 - (void)encodeWithCoder:(CPCoder)aCoder
 {
     [super encodeWithCoder:aCoder];
-    
+
     [aCoder encodeObject:_outlineTableColumn forKey:CPOutlineViewOutlineTableColumnKey];
     [aCoder encodeFloat:_indentationPerLevel forKey:CPOutlineViewIndentationPerLevelKey];
-    
+
     [aCoder encodeObject:_outlineViewDataSource forKey:CPOutlineViewDataSourceKey];
     [aCoder encodeObject:_outlineViewDelegate forKey:CPOutlineViewDelegateKey];
 }
@@ -1326,11 +1326,11 @@ var CPOutlineViewIndentationPerLevelKey = @"CPOutlineViewIndentationPerLevelKey"
 
 
 var colorForDisclosureTriangle = function(isSelected, isHighlighted) {
-    return isSelected 
-        ? (isHighlighted 
+    return isSelected
+        ? (isHighlighted
             ? [CPColor colorWithCalibratedWhite:0.9 alpha: 1.0]
-            : [CPColor colorWithCalibratedWhite:1.0 alpha: 1.0]) 
-        : (isHighlighted 
-            ? [CPColor colorWithCalibratedWhite:0.4 alpha: 1.0] 
+            : [CPColor colorWithCalibratedWhite:1.0 alpha: 1.0])
+        : (isHighlighted
+            ? [CPColor colorWithCalibratedWhite:0.4 alpha: 1.0]
             : [CPColor colorWithCalibratedWhite:0.5 alpha: 1.0]);
 }
