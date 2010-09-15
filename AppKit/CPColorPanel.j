@@ -107,7 +107,7 @@ CPColorPickerViewHeight = 370;
 + (void)setPickerMode:(CPColorPanelMode)mode
 {
     var panel = [CPColorPanel sharedColorPanel];
-    [panel setMode: mode];
+    [panel setMode:mode];
 }
 
 /*
@@ -243,11 +243,11 @@ CPColorPickerViewHeight = 370;
         [view setFrame:[_currentView frame]];
     else
     {
-        var height = (TOOLBAR_HEIGHT+10+PREVIEW_HEIGHT+5+SWATCH_HEIGHT+32),
+        var height = (TOOLBAR_HEIGHT + 10 + PREVIEW_HEIGHT + 5 + SWATCH_HEIGHT + 32),
             bounds = [[self contentView] bounds];
 
-        [view setFrameSize: CPSizeMake(bounds.size.width - 10, bounds.size.height - height)];
-        [view setFrameOrigin: CPPointMake(5, height)];
+        [view setFrameSize:CPSizeMake(bounds.size.width - 10, bounds.size.height - height)];
+        [view setFrameOrigin:CPPointMake(5, height)];
     }
 
     [_currentView removeFromSuperview];
@@ -285,7 +285,7 @@ CPColorPickerViewHeight = 370;
     _colorPickers = [];
 
     var count = [ColorPickerClasses count];
-    for (var i=0; i<count; i++)
+    for (var i = 0; i < count; i++)
     {
         var currentPickerClass = ColorPickerClasses[i],
             currentPicker = [[currentPickerClass alloc] initWithPickerMask:0 colorPanel:self];
@@ -303,11 +303,11 @@ CPColorPickerViewHeight = 370;
         leftOffset = (CGRectGetWidth(bounds) - totalToolbarWidth) / 2.0,
         buttonForLater = nil;
 
-    for (var i=0; i<count; i++)
+    for (var i = 0; i < count; i++)
     {
         var image = [_colorPickers[i] provideNewButtonImage],
             highlightImage = [_colorPickers[i] provideNewAlternateButtonImage],
-            button = [[CPButton alloc] initWithFrame:CGRectMake(leftOffset + i*(ICON_WIDTH+ICON_PADDING), 0, ICON_WIDTH, ICON_WIDTH)];
+            button = [[CPButton alloc] initWithFrame:CGRectMake(leftOffset + i * (ICON_WIDTH + ICON_PADDING), 0, ICON_WIDTH, ICON_WIDTH)];
 
         [button setTag:i];
         [button setTarget:self];
@@ -338,7 +338,7 @@ CPColorPickerViewHeight = 370;
     [previewBox addSubview:_previewView];
 
     var _previewLabel = [[CPTextField alloc] initWithFrame: CPRectMake(10, TOOLBAR_HEIGHT + 10, 60, 15)];
-    [_previewLabel setStringValue: "Preview:"];
+    [_previewLabel setStringValue:"Preview:"];
     [_previewLabel setTextColor:[CPColor blackColor]];
     [_previewLabel setAlignment:CPRightTextAlignment];
 
@@ -350,8 +350,8 @@ CPColorPickerViewHeight = 370;
 
     _swatchView = [[_CPColorPanelSwatches alloc] initWithFrame:CGRectInset([swatchBox bounds], 1.0, 1.0)];
 
-    [_swatchView setColorPanel: self];
-    [_swatchView setAutoresizingMask: CPViewWidthSizable];
+    [_swatchView setColorPanel:self];
+    [_swatchView setAutoresizingMask:CPViewWidthSizable];
 
     [swatchBox addSubview:_swatchView];
 
@@ -544,7 +544,7 @@ var CPColorPanelSwatchesCookie = "CPColorPanelSwatchesCookie";
     var bounds = CPRectCreateCopy([swatch bounds]);
 
     // FIXME: http://280north.lighthouseapp.com/projects/13294-cappuccino/tickets/25-implement-cpbox
-    var dragView = [[CPView alloc] initWithFrame: bounds];
+    var dragView = [[CPView alloc] initWithFrame: bounds],
         dragFillView = [[CPView alloc] initWithFrame:CGRectInset(bounds, 1.0, 1.0)];
 
     [dragView setBackgroundColor:[CPColor blackColor]];
@@ -610,7 +610,7 @@ var CPColorPanelSwatchesCookie = "CPColorPanelSwatchesCookie";
 {
     var pasteboard = [aSender draggingPasteboard];
 
-    if(![pasteboard availableTypeFromArray:[CPColorDragType]])
+    if (![pasteboard availableTypeFromArray:[CPColorDragType]])
         return NO;
 
     var color = [CPKeyedUnarchiver unarchiveObjectWithData:[pasteboard dataForType:CPColorDragType]];
@@ -631,7 +631,7 @@ var CPColorPanelSwatchesCookie = "CPColorPanelSwatchesCookie";
     var bounds = CPRectMake(0, 0, 15, 15);
 
     // FIXME: http://280north.lighthouseapp.com/projects/13294-cappuccino/tickets/25-implement-cpbox
-    var dragView = [[CPView alloc] initWithFrame: bounds];
+    var dragView = [[CPView alloc] initWithFrame: bounds],
         dragFillView = [[CPView alloc] initWithFrame:CGRectInset(bounds, 1.0, 1.0)];
 
     [dragView setBackgroundColor:[CPColor blackColor]];
@@ -650,7 +650,7 @@ var CPColorPanelSwatchesCookie = "CPColorPanelSwatchesCookie";
 
 - (void)pasteboard:(CPPasteboard)aPasteboard provideDataForType:(CPString)aType
 {
-    if(aType == CPColorDragType)
+    if (aType == CPColorDragType)
         [aPasteboard setData:[CPKeyedArchiver archivedDataWithRootObject:[self backgroundColor]] forType:aType];
 }
 
