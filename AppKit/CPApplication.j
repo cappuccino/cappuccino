@@ -108,6 +108,8 @@ CPRunContinuesResponse  = -1002;
     CPImage                 _applicationIconImage;
 
     CPPanel                 _aboutPanel;
+
+    CPThemeBlend            _themeBlend @accessors(property=themeBlend);
 }
 
 /*!
@@ -1129,6 +1131,7 @@ var _CPAppBootstrapperActions = nil;
 
 + (void)blendDidFinishLoading:(CPThemeBlend)aThemeBlend
 {
+    [[CPApplication sharedApplication] setThemeBlend:aThemeBlend];
     [CPTheme setDefaultTheme:[CPTheme themeNamed:[CPApplication defaultThemeName]]];
 
     [self performActions];
@@ -1226,7 +1229,7 @@ var _CPAppBootstrapperActions = nil;
 
 + (void)reset
 {
-	_CPAppBootstrapperActions = nil;
+    _CPAppBootstrapperActions = nil;
 }
 
 @end

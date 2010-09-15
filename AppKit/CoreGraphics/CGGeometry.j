@@ -69,6 +69,7 @@ _function(CGInsetMake(top, right, bottom, left))
 _function(CGInsetMakeZero())
 _function(CGInsetMakeCopy(anInset))
 _function(CGInsetIsEmpty(anInset))
+_function(CGInsetEqualToInset(lhsInset, rhsInset))
 
 CGMinXEdge = 0;
 CGMinYEdge = 1;
