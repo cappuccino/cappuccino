@@ -139,7 +139,7 @@ var _CPUndoGroupingPool         = [],
 @end
 
 var _CPUndoGroupingParentKey        = @"_CPUndoGroupingParentKey",
-    _CPUndoGroupingInvocationsKey   = @"_CPUndoGroupingInvocationsKey"
+    _CPUndoGroupingInvocationsKey   = @"_CPUndoGroupingInvocationsKey",
     _CPUndoGroupingActionNameKey   = @"_CPUndoGroupingActionNameKey";
 
 @implementation _CPUndoGrouping (CPCoder)
