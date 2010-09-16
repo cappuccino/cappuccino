@@ -526,7 +526,7 @@ if (_currentGroup == nil)
 - (unsigned)groupingLevel
 {
     var grouping = _currentGrouping,
-        level = _currentGrouping != nil;
+        level = _currentGrouping ? 1 : 0;
 
     while (grouping = [grouping parent])
         ++level;
