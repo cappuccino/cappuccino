@@ -393,6 +393,7 @@ CPTexturedBackgroundWindowMask
         _registeredDraggedTypes = [CPSet set];
         _registeredDraggedTypesArray = [];
         _isSheet = NO;
+        _acceptsMouseMovedEvents = YES;
 
         // Set up our window number.
         _windowNumber = [CPApp._windows count];
