@@ -401,7 +401,13 @@ var CPControlBlackColor     = [CPColor blackColor];
 
 - (void)mouseExited:(CPEvent)anEvent
 {
-    [self unsetThemeState:CPThemeStateHovered];
+    var currentLocation = [self convertPoint:[anEvent locationInWindow] fromView:nil],
+        isWithinFrame = [self tracksMouseOutsideOfFrame] || CGRectContainsPoint([self bounds], currentLocation);
+
+    // Make sure we're not still in the frame because Cappuccino will sent mouseExited events
+    // for all of the (ephemeral) subviews of a view as well.
+    if (!isWithinFrame)
+        [self unsetThemeState:CPThemeStateHovered];
 }
 
 /*!
