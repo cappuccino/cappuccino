@@ -740,13 +740,13 @@ if (_currentGroup == nil)
 @end
 
 var CPUndoManagerRedoStackKey       = @"CPUndoManagerRedoStackKey",
-    CPUndoManagerUndoStackKey       = @"CPUndoManagerUndoStackKey";
+    CPUndoManagerUndoStackKey       = @"CPUndoManagerUndoStackKey",
 
-    CPUndoManagerLevelsOfUndoKey    = @"CPUndoManagerLevelsOfUndoKey";
-    CPUndoManagerActionNameKey      = @"CPUndoManagerActionNameKey";
-    CPUndoManagerCurrentGroupingKey = @"CPUndoManagerCurrentGroupingKey";
+    CPUndoManagerLevelsOfUndoKey    = @"CPUndoManagerLevelsOfUndoKey",
+    CPUndoManagerActionNameKey      = @"CPUndoManagerActionNameKey",
+    CPUndoManagerCurrentGroupingKey = @"CPUndoManagerCurrentGroupingKey",
 
-    CPUndoManagerRunLoopModesKey    = @"CPUndoManagerRunLoopModesKey";
+    CPUndoManagerRunLoopModesKey    = @"CPUndoManagerRunLoopModesKey",
     CPUndoManagerGroupsByEventKey   = @"CPUndoManagerGroupsByEventKey";
 
 @implementation CPUndoManager (CPCoding)
