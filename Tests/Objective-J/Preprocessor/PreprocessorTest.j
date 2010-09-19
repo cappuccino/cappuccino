@@ -3,7 +3,14 @@ var FILE = require("file"),
     compressor = require("minify/shrinksafe");
 
 var FILENAMES = [
-        "Class", "ClassWithIvar", "ClassWithIvars"
+        "Class/root-class",
+        "Class/root-class-one-ivar",
+        "Class/root-class-multiple-ivars",
+
+        "Messages/no-parameter",
+        "Messages/one-parameter",
+        "Messages/multiple-parameters",
+        "Messages/ternary-operator-argument"
                 ];
 
 @implementation PreprocessorTest : OJTestCase
@@ -22,10 +29,10 @@ var FILENAMES = [
 
         class_addMethod(self, testSelector, function(self, _cmd)
         {
-            var filePath = FILE.join(FILE.dirname(module.path), "Sources", filename + ".j"),
+            var filePath = FILE.join(FILE.dirname(module.path), filename + ".j"),
                 unpreprocessed = FILE.read(filePath, { charset:"UTF-8" });
                 preprocessed = ObjectiveJ.preprocess(unpreprocessed).code(),
-                correct = FILE.read(FILE.join(FILE.dirname(module.path), "Sources", filename + ".js"));
+                correct = FILE.read(FILE.join(FILE.dirname(module.path), filename + ".js"));
 
             preprocessed = compressor.compress(preprocessed, { charset : "UTF-8", useServer : true });
             correct = compressor.compress(correct, { charset : "UTF-8", useServer : true });
