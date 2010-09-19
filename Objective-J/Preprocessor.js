@@ -499,6 +499,7 @@ Preprocessor.prototype.implementation = function(tokens, /*StringBuffer*/ aStrin
             // build up the list of illegal method param names
             var ivar_names = this.allIvarNamesForClassName(class_name);
 
+            var k = 0;
             for (ivar_name in accessors)
             {
                 var accessor = accessors[ivar_name],
@@ -512,6 +513,7 @@ Preprocessor.prototype.implementation = function(tokens, /*StringBuffer*/ aStrin
                     CONCAT(instance_methods, ",\n");
 
                 CONCAT(instance_methods, this.method(new Lexer(getterCode), ivar_names));
+                CONCAT(buffer, "the_class.ivars[" + k + "].accessors = { 'get' : \"" + getterName + "\"};");
 
                 // setter
                 if (accessor["readonly"])
@@ -536,6 +538,9 @@ Preprocessor.prototype.implementation = function(tokens, /*StringBuffer*/ aStrin
                     CONCAT(instance_methods, ",\n");
 
                 CONCAT(instance_methods, this.method(new Lexer(setterCode), ivar_names));
+                CONCAT(buffer, "the_class.ivars[" + k + "].accessors.set = \"" + setterName + "\";");
+                
+                k++;
             }
         }
         else
