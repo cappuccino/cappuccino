@@ -35,7 +35,18 @@ CPScaleProportionally   = 0;
 CPScaleToFit            = 1;
 CPScaleNone             = 2;
 
-var CPImageViewShadowBackgroundColor = nil;
+CPImageAlignCenter      = 0;
+CPImageAlignTop         = 1;
+CPImageAlignTopLeft     = 2;
+CPImageAlignTopRight    = 3;
+CPImageAlignLeft        = 4;
+CPImageAlignBottom      = 5;
+CPImageAlignBottomLeft  = 6;
+CPImageAlignBottomRight = 7;
+CPImageAlignRight       = 8;
+
+var CPImageViewShadowBackgroundColor = nil,
+    CPImageViewEmptyPlaceholderImage = nil;
     
 var LEFT_SHADOW_INSET       = 3.0,
     RIGHT_SHADOW_INSET      = 3.0,
@@ -52,14 +63,22 @@ var LEFT_SHADOW_INSET       = 3.0,
 */
 @implementation CPImageView : CPControl
 {
-    DOMElement      _DOMImageElement;
+    DOMElement          _DOMImageElement;
     
-    BOOL            _hasShadow;
-    CPView          _shadowView;
+    BOOL                _hasShadow;
+    CPView              _shadowView;
 
-    BOOL            _isEditable;
+    BOOL                _isEditable;
 
-    CGRect          _imageRect;
+    CGRect              _imageRect;
+    CPImageAlignment    _imageAlignment;
+}
+
++ (void)initialize
+{
+    var bundle = [CPBundle bundleForClass:[CPView class]];
+    
+    CPImageViewEmptyPlaceholderImage = [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"empty.png"]];
 }
 
 - (id)initWithFrame:(CGRect)aFrame
@@ -120,7 +139,7 @@ var LEFT_SHADOW_INSET       = 3.0,
     var newImage = [self objectValue];
     
 #if PLATFORM(DOM)
-    _DOMImageElement.src = newImage ? [newImage filename] : "";
+    _DOMImageElement.src = newImage ? [newImage filename] : [CPImageViewEmptyPlaceholderImage filename];
 #endif
 
     var size = [newImage size];
@@ -189,6 +208,30 @@ var LEFT_SHADOW_INSET       = 3.0,
     }
     
     [self hideOrDisplayContents];
+}
+
+/*!
+    Sets the type of image alignment that should be used to
+    render the image.
+    @param anImageAlignment the type of scaling to use
+*/
+- (void)setImageAlignment:(CPImageAlignment)anImageAlignment
+{
+    if (_imageAlignment == anImageAlignment)
+        return;
+        
+    _imageAlignment = anImageAlignment;
+    
+    if (![self image])
+        return;
+        
+    [self setNeedsLayout];
+    [self setNeedsDisplay:YES];
+}
+
+- (unsigned)imageAlignment
+{
+    return _imageAlignment;
 }
 
 /*!
@@ -318,8 +361,45 @@ var LEFT_SHADOW_INSET       = 3.0,
 #endif
         }
 
-        var x = (boundsWidth - width) / 2.0,
-            y = (boundsHeight - height) / 2.0;
+        var x, y;
+            
+        switch (_imageAlignment)
+        {
+            case CPImageAlignLeft:
+            case CPImageAlignTopLeft:
+            case CPImageAlignBottomLeft:
+                x = 0.0;
+                break;
+                
+            case CPImageAlignRight:
+            case CPImageAlignTopRight:
+            case CPImageAlignBottomRight:
+                x = boundsWidth - width;
+                break;
+
+            default:
+                x = (boundsWidth - width) / 2.0;
+                break;
+        }
+                
+        switch (_imageAlignment)
+        {
+            case CPImageAlignTop:
+            case CPImageAlignTopLeft:
+            case CPImageAlignTopRight:
+                y = 0.0;
+                break;
+                
+            case CPImageAlignBottom:
+            case CPImageAlignBottomLeft:
+            case CPImageAlignBottomRight:
+                y = boundsHeight - height;
+                break;
+
+            default:
+                y = (boundsHeight - height) / 2.0;
+                break;
+        }  
 
 #if PLATFORM(DOM)
         CPDOMDisplayServerSetStyleLeftTop(_DOMImageElement, NULL, x, y);
@@ -380,10 +460,11 @@ var LEFT_SHADOW_INSET       = 3.0,
 
 @end
 
-var CPImageViewImageKey         = @"CPImageViewImageKey",
-    CPImageViewImageScalingKey  = @"CPImageViewImageScalingKey",
-    CPImageViewHasShadowKey     = @"CPImageViewHasShadowKey",
-    CPImageViewIsEditableKey    = @"CPImageViewIsEditableKey";
+var CPImageViewImageKey          = @"CPImageViewImageKey",
+    CPImageViewImageScalingKey   = @"CPImageViewImageScalingKey",
+    CPImageViewImageAlignmentKey = @"CPImageViewImageAlignmentKey",
+    CPImageViewHasShadowKey      = @"CPImageViewHasShadowKey",
+    CPImageViewIsEditableKey     = @"CPImageViewIsEditableKey";
 
 @implementation CPImageView (CPCoding)
 
@@ -416,6 +497,7 @@ var CPImageViewImageKey         = @"CPImageViewImageKey",
 #endif
 
         [self setHasShadow:[aCoder decodeBoolForKey:CPImageViewHasShadowKey]];
+        [self setImageAlignment:[aCoder decodeIntForKey:CPImageViewImageAlignmentKey]];
         
         if ([aCoder decodeBoolForKey:CPImageViewIsEditableKey] || NO)
             [self setEditable:YES];
@@ -450,6 +532,7 @@ var CPImageViewImageKey         = @"CPImageViewImageKey",
         _subviews = actualSubviews;
     
     [aCoder encodeBool:_hasShadow forKey:CPImageViewHasShadowKey];
+    [aCoder encodeInt:_imageAlignment forKey:CPImageViewImageAlignmentKey];
 
     if (_isEditable)
         [aCoder encodeBool:_isEditable forKey:CPImageViewIsEditableKey];

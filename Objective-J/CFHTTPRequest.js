@@ -219,17 +219,17 @@ CFHTTPRequest.prototype.open = function(/*String*/ aMethod, /*String*/ aURL, /*B
 
 CFHTTPRequest.prototype.send = function(/*Object*/ aBody)
 {
-    for (var i in this._requestHeaders)
-    {
-        if (this._requestHeaders.hasOwnProperty(i))
-            this._nativeRequest.setRequestHeader(i, this._requestHeaders[i]);
-    }
-
     if (!this._isOpen)
     {
         delete this._nativeRequest.onreadystatechange;
         this._nativeRequest.open(this._method, this._URL, this._async, this._user, this._password);
         this._nativeRequest.onreadystatechange = this._stateChangeHandler;
+    }
+
+    for (var i in this._requestHeaders)
+    {
+        if (this._requestHeaders.hasOwnProperty(i))
+            this._nativeRequest.setRequestHeader(i, this._requestHeaders[i]);
     }
 
     if (this._mimeType && "overrideMimeType" in this._nativeRequest)

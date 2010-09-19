@@ -148,12 +148,21 @@ var CPDateReferenceDate = new Date(Date.UTC(2001, 1, 1, 0, 0, 0, 0));
 
 - (BOOL)isEqual:(CPDate)aDate
 {
+    if (self === aDate)
+        return YES;
+
+    if (!aDate || ![aDate isKindOfClass:[CPDate class]])
+        return NO;
+
     return [self isEqualToDate:aDate];
 }
 
-- (BOOL)isEqualToDate:(CPDate)anotherDate
+- (BOOL)isEqualToDate:(CPDate)aDate
 {
-    return self === anotherDate || (anotherDate !== nil && anotherDate.isa && [anotherDate isKindOfClass:CPDate] && !(self < anotherDate || self > anotherDate));
+    if (!aDate)
+        return NO;
+
+    return !(self < aDate || self > aDate);
 }
 
 - (CPComparisonResult)compare:(CPDate)anotherDate
@@ -177,10 +186,11 @@ var CPDateReferenceDate = new Date(Date.UTC(2001, 1, 1, 0, 0, 0, 0));
 */
 - (CPString)description
 {
-    var hours = Math.floor(self.getTimezoneOffset() / 60),
+    var positive = self.getTimezoneOffset() >= 0,
+        hours = FLOOR(self.getTimezoneOffset() / 60),
         minutes = self.getTimezoneOffset() - hours * 60;
 
-    return [CPString stringWithFormat:@"%04d-%02d-%02d %02d:%02d:%02d +%02d%02d", self.getFullYear(), self.getMonth() + 1, self.getDate(), self.getHours(), self.getMinutes(), self.getSeconds(), hours, minutes];
+    return [CPString stringWithFormat:@"%04d-%02d-%02d %02d:%02d:%02d %s%02d%02d", self.getFullYear(), self.getMonth()+1, self.getDate(), self.getHours(), self.getMinutes(), self.getSeconds(), positive ? "+" : "-", ABS(hours), ABS(minutes)];
 }
 
 - (id)copy

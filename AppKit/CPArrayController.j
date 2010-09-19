@@ -58,22 +58,30 @@
 
 + (CPSet)keyPathsForValuesAffectingArrangedObjects
 {
-    return [CPSet setWithObjects:"content", "contentArray", "contentSet", "filterPredicate", "sortDescriptors"];
+    return [CPSet setWithObjects:"content", "filterPredicate", "sortDescriptors"];
 }
 
 + (CPSet)keyPathsForValuesAffectingSelection
 {
-    return [CPSet setWithObjects:"content", "contentArray", "contentSet", "selectionIndexes"];
+    return [CPSet setWithObjects:"selectionIndexes"];
 }
 
 + (CPSet)keyPathsForValuesAffectingSelectionIndex
 {
-    return [CPSet setWithObjects:"content", "contentArray", "contentSet", "selectionIndexes", "selection"];
+    return [CPSet setWithObjects:"selectionIndexes"];
+}
+
++ (CPSet)keyPathsForValuesAffectingSelectionIndexes
+{
+    // When the arranged objects change, selection preservation may cause the indexes
+    // to change.
+    return [CPSet setWithObjects:"arrangedObjects"];
 }
 
 + (CPSet)keyPathsForValuesAffectingSelectedObjects
 {
-    return [CPSet setWithObjects:"content", "contentArray", "contentSet", "selectionIndexes", "selection"];
+    // Don't need to depend on arrangedObjects here because selectionIndexes already does.
+    return [CPSet setWithObjects:"selectionIndexes"];
 }
 
 + (CPSet)keyPathsForValuesAffectingCanRemove
@@ -89,16 +97,6 @@
 + (CPSet)keyPathsForValuesAffectingCanSelectPrevious
 {
     return [CPSet setWithObjects:"selectionIndexes"];
-}
-
-+ (BOOL)automaticallyNotifiesObserversForKey:(CPString)aKey
-{
-    if (![super automaticallyNotifiesObserversForKey:aKey])
-        return NO;
-    if (aKey === @"selectionIndexes")
-        return NO;
-
-    return YES;
 }
 
 - (id)init
@@ -153,31 +151,50 @@
     if(![value isKindOfClass:[CPArray class]])
         value = [value];
 
-    var oldSelection = nil,
-        oldSelectionIndexes = [[self selectionIndexes] copy];
+    var oldSelectedObjects = nil,
+        oldSelectionIndexes = nil;
 
     if ([self preservesSelection])
-        oldSelection = [self selectedObjects];
+        oldSelectedObjects = [self selectedObjects];
+    else
+        oldSelectionIndexes = [self selectionIndexes];
 
-    // Avoid out of bounds selections.
-    _selectionIndexes = [CPIndexSet indexSet];
-    //FIXME: copy?
-    [super setContent:value];
+    /*
+        When the contents are changed, the selected indexes may no longer refer to the
+        same items. This would cause problems when setSelectedObjects is called below.
+        Any KVO observation would try to retrieve the 'before' value which could be
+        wrong or even throw an exception for no longer existing indexes.
+
+        To avoid that, use the internal __setSelectedObjects which fires no notifications.
+        The selectionIndexes notifications will fire later since they depend on the
+        content key. This pattern is also applied for many other methods throughout this
+        class.
+    */
+
+    if (_clearsFilterPredicateOnInsertion)
+        [self willChangeValueForKey:@"filterPredicate"];
+
+    // Don't use [super setContent:] as that would fire the contentObject change.
+    // We need to be in control of when notifications fire.
+    _contentObject = value;
 
     if(_clearsFilterPredicateOnInsertion)
-        [self setFilterPredicate:nil];
-
-    [self rearrangeObjects];
-
-    if (oldSelection)
-        [self setSelectedObjects:oldSelection];
+        [self __setFilterPredicate:nil]; // Causes a _rearrangeObjects.
     else
-        [self setSelectionIndexes:oldSelectionIndexes];
+        [self _rearrangeObjects];
+
+    if ([self preservesSelection])
+        [self __setSelectedObjects:oldSelectedObjects];
+    else
+        [self __setSelectionIndexes:oldSelectionIndexes];
+
+    if (_clearsFilterPredicateOnInsertion)
+        [self didChangeValueForKey:@"filterPredicate"];
 }
 
 - (void)_setContentArray:(id)anArray
 {
-   [self setContent:anArray];
+    [self setContent:anArray];
 }
 
 - (void)_setContentSet:(id)aSet
@@ -197,42 +214,57 @@
 
 - (CPArray)arrangeObjects:(CPArray)objects
 {
-    var sortedObjects = objects;
+    var filterPredicate = [self filterPredicate],
+        sortDescriptors = [self sortDescriptors];
 
-    if ([self filterPredicate])
-        sortedObjects = [sortedObjects filteredArrayUsingPredicate:[self filterPredicate]];
-    if ([self sortDescriptors])
-        sortedObjects = [sortedObjects sortedArrayUsingDescriptors:[self sortDescriptors]];
+    if (filterPredicate && sortDescriptors)
+    {
+        var sortedObjects = [objects filteredArrayUsingPredicate:filterPredicate];
+        [sortedObjects sortUsingDescriptors:sortDescriptors];
+        return sortedObjects;
+    }
+    else if (filterPredicate)
+        return [objects filteredArrayUsingPredicate:filterPredicate];
+    else if (sortDescriptors)
+        return [objects sortedArrayUsingDescriptors:sortDescriptors];
 
-    return sortedObjects;
+    return [objects copy];
 }
 
 - (void)rearrangeObjects
 {
-    // Rearranging reapplies the selection criteria and may cause objects to disappear,
-    // so take care of the selection.
-    //
-    // Sometimes rearrangeObjects is called by setContent which may cause two rounds of
-    // selection preservation. This is okay because setContent temporarily clears the
-    // selection and so this code below ends up preserving nothing in that case.
-    var oldSelection = nil,
-        oldSelectionIndexes = [[self selectionIndexes] copy];
-
-    if ([self preservesSelection])
-        oldSelection = [self selectedObjects];
-
-    // Avoid out of bounds selections.
-    _selectionIndexes = [CPIndexSet indexSet];
-
-    [self _setArrangedObjects:[self arrangeObjects:[self contentArray]]];
-
-    if (oldSelection)
-        [self setSelectedObjects:oldSelection];
-    else
-        [self setSelectionIndexes:oldSelectionIndexes];
+    [self willChangeValueForKey:@"arrangedObjects"];
+    [self _rearrangeObjects];
+    [self didChangeValueForKey:@"arrangedObjects"];
 }
 
-- (void)_setArrangedObjects:(id)value
+/*
+    Like rearrangeObjects but don't fire any change notifications.
+    @ignore
+*/
+- (void)_rearrangeObjects
+{
+    /*
+        Rearranging reapplies the selection criteria and may cause objects to disappear,
+        so take care of the selection.
+    */
+    var oldSelectedObjects = nil,
+        oldSelectionIndexes = nil;
+
+    if ([self preservesSelection])
+        oldSelectedObjects = [self selectedObjects];
+    else
+        oldSelectionIndexes = [self selectionIndexes];
+
+    [self __setArrangedObjects:[self arrangeObjects:[self contentArray]]];
+
+    if ([self preservesSelection])
+        [self __setSelectedObjects:oldSelectedObjects];
+    else
+        [self __setSelectionIndexes:oldSelectionIndexes];
+}
+
+- (void)__setArrangedObjects:(id)value
 {
     if (_arrangedObjects === value)
         return;
@@ -245,7 +277,6 @@
     return _arrangedObjects;
 }
 
-
 - (CPArray)sortDescriptors
 {
     return _sortDescriptors;
@@ -257,7 +288,9 @@
         return;
 
     _sortDescriptors = [value copy];
-    [self rearrangeObjects];
+    // Use the non-notification version since arrangedObjects already depends
+    // on sortDescriptors.
+    [self _rearrangeObjects];
 }
 
 - (CPPredicate)filterPredicate
@@ -267,11 +300,22 @@
 
 - (void)setFilterPredicate:(CPPredicate)value
 {
+    [self __setFilterPredicate:value];
+}
+
+/*
+    Like setFilterPredicate but don't fire any change notifications.
+    @ignore
+*/
+- (void)__setFilterPredicate:(CPPredicate)value
+{
     if (_filterPredicate === value)
         return;
 
     _filterPredicate = value;
-    [self rearrangeObjects];
+    // Use the non-notification version since arrangedObjects already depends
+    // on filterPredicate.
+    [self _rearrangeObjects];
 }
 
 - (BOOL)alwaysUsesMultipleValuesMarker
@@ -298,8 +342,26 @@
 
 - (BOOL)setSelectionIndexes:(CPIndexSet)indexes
 {
-    if ([_selectionIndexes isEqualToIndexSet:indexes])
-        return NO;
+    [self __setSelectionIndexes:indexes];
+}
+
+/*
+    Like setSelectionIndex but don't fire any change notifications.
+    @ignore
+*/
+- (BOOL)__setSelectionIndex:(int)theIndex
+{
+    [self __setSelectionIndexes:[CPIndexSet indexSetWithIndex:theIndex]];
+}
+
+/*
+    Like setSelectionIndexes but don't fire any change notifications.
+    @ignore
+*/
+- (BOOL)__setSelectionIndexes:(CPIndexSet)indexes
+{
+    if (!indexes)
+        indexes = [CPIndexSet indexSet];
 
     if (![indexes count])
     {
@@ -316,13 +378,10 @@
             indexes = [CPIndexSet indexSetWithIndex:objectsCount-1];
     }
 
-    [self willChangeValueForKey:@"selectionIndexes"];
-    [self _selectionWillChange];
+    if ([_selectionIndexes isEqualToIndexSet:indexes])
+        return NO;
 
     _selectionIndexes = [indexes copy];
-
-    [self _selectionDidChange];
-    [self didChangeValueForKey:@"selectionIndexes"];
 
     // Push back the new selection to the model for selectionIndexes if we have one.
     // There won't be an infinite loop because of the equality check above.
@@ -335,10 +394,25 @@
 {
     var objects = [[self arrangedObjects] objectsAtIndexes:[self selectionIndexes]];
 
-    return objects || [_CPObservableArray array];
+    return [_CPObservableArray arrayWithArray:(objects || [])];
 }
 
 - (BOOL)setSelectedObjects:(CPArray)objects
+{
+    [self willChangeValueForKey:@"selectionIndexes"];
+    [self _selectionWillChange];
+
+    [self __setSelectedObjects:objects];
+
+    [self didChangeValueForKey:@"selectionIndexes"];
+    [self _selectionDidChange];
+}
+
+/*
+    Like setSelectedObjects but don't fire any change notifications.
+    @ignore
+*/
+- (BOOL)__setSelectedObjects:(CPArray)objects
 {
     var set = [CPIndexSet indexSet],
         count = [objects count],
@@ -352,35 +426,35 @@
             [set addIndex:index];
     }
 
-    [self setSelectionIndexes:set];
+    [self __setSelectionIndexes:set];
     return YES;
 }
 
 //Moving selection
 
--(BOOL)canSelectPrevious
+- (BOOL)canSelectPrevious
 {
     return [[self selectionIndexes] firstIndex] > 0
 }
 
--(BOOL)canSelectNext
+-(void)selectPrevious:(id)sender
 {
-    return [[self selectionIndexes] firstIndex] < [[self arrangedObjects] count] -1;
-}
+    var index = [[self selectionIndexes] firstIndex] - 1;
 
--(void)selectNext:(id)sender
-{
-    var index = [[self selectionIndexes] firstIndex] + 1 || 0;
-
-    if (index < [[self arrangedObjects] count])
+    if (index >= 0)
         [self setSelectionIndexes:[CPIndexSet indexSetWithIndex:index]];
 }
 
--(void)selectPrevious:(id)sender
+- (BOOL)canSelectNext
 {
-    var index = [[self selectionIndexes] firstIndex] - 1 || [[self arrangedObjects] count] - 1;
+    return [[self selectionIndexes] firstIndex] < [[self arrangedObjects] count] - 1;
+}
 
-    if (index >= 0)
+- (void)selectNext:(id)sender
+{
+    var index = [[self selectionIndexes] firstIndex] + 1;
+
+    if (index < [[self arrangedObjects] count])
         [self setSelectionIndexes:[CPIndexSet indexSetWithIndex:index]];
 }
 
@@ -391,30 +465,63 @@
     if (![self canAdd])
         return;
 
+    if (_clearsFilterPredicateOnInsertion)
+        [self willChangeValueForKey:@"filterPredicate"];
+
     [self willChangeValueForKey:@"content"];
     [_contentObject addObject:object];
-    [self didChangeValueForKey:@"content"];
 
     if (_clearsFilterPredicateOnInsertion)
-        [self setFilterPredicate:nil];
+        [self __setFilterPredicate:nil];
 
     if (_filterPredicate === nil || [_filterPredicate evaluateWithObject:object])
     {
         var pos = [_arrangedObjects insertObject:object inArraySortedByDescriptors:_sortDescriptors];
 
+        // selectionIndexes change notification will be fired as a result of the
+        // content change. Don't fire manually.
         if (_selectsInsertedObjects)
-        {
-            [self setSelectionIndex:pos];
-        }
+            [self __setSelectionIndex:pos];
         else
-        {
-            [self willChangeValueForKey:@"selectionIndexes"];
             [_selectionIndexes shiftIndexesStartingAtIndex:pos by:1];
-            [self didChangeValueForKey:@"selectionIndexes"];
-        }
     }
     else
-        [self rearrangeObjects];
+        [self _rearrangeObjects];
+
+    [self didChangeValueForKey:@"content"];
+    if (_clearsFilterPredicateOnInsertion)
+        [self didChangeValueForKey:@"filterPredicate"];
+}
+
+- (void)insertObject:(id)anObject atArrangedObjectIndex:(int)anIndex
+{
+    if (![self canAdd])
+        return;
+
+    if (_clearsFilterPredicateOnInsertion)
+        [self willChangeValueForKey:@"filterPredicate"];
+
+    [self willChangeValueForKey:@"content"];
+    [_contentObject insertObject:anObject atIndex:anIndex];
+
+    if (_clearsFilterPredicateOnInsertion)
+        [self __setFilterPredicate:nil];
+
+    [[self arrangedObjects] insertObject:anObject atIndex:anIndex];
+
+    // selectionIndexes change notification will be fired as a result of the
+    // content change. Don't fire manually.
+    if ([self selectsInsertedObjects])
+        [self __setSelectionIndex:anIndex];
+    else
+        [[self selectionIndexes] shiftIndexesStartingAtIndex:anIndex by:1];
+
+    if ([self avoidsEmptySelection] && [[self selectionIndexes] count] <= 0 && [_contentObject count] > 0)
+        [self __setSelectionIndexes:[CPIndexSet indexSetWithIndex:0]];
+
+    [self didChangeValueForKey:@"content"];
+    if (_clearsFilterPredicateOnInsertion)
+        [self didChangeValueForKey:@"filterPredicate"];
 }
 
 - (void)removeObject:(id)object
@@ -424,16 +531,18 @@
 
    [self willChangeValueForKey:@"content"];
    [_contentObject removeObject:object];
-   [self didChangeValueForKey:@"content"];
 
-   if ([_filterPredicate evaluateWithObject:object])
+   if (_filterPredicate === nil || [_filterPredicate evaluateWithObject:object])
    {
-        [self willChangeValueForKey:@"selectionIndexes"];
+       // selectionIndexes change notification will be fired as a result of the
+       // content change. Don't fire manually.
         var pos = [_arrangedObjects indexOfObject:object];
 
+        [_arrangedObjects removeObjectAtIndex:pos];
         [_selectionIndexes shiftIndexesStartingAtIndex:pos by:-1];
-        [self didChangeValueForKey:@"selectionIndexes"];
    }
+
+   [self didChangeValueForKey:@"content"];
 }
 
 -(void)add:(id)sender
@@ -489,13 +598,33 @@
 
 - (void)_removeObjects:(CPArray)objects
 {
-    var contentArray = [self contentArray],
-        count = [objects count];
+    [self willChangeValueForKey:@"content"];
+    [_contentObject removeObjectsInArray:objects];
 
-    for (var i=0; i<count; i++)
-        [contentArray removeObject:[objects objectAtIndex:i]];
+    var arrangedObjects = [self arrangedObjects],
+        position = [arrangedObjects indexOfObject:[objects objectAtIndex:0]];
 
-    [self setContent:contentArray];
+    [arrangedObjects removeObjectsInArray:objects];
+
+    var objectsCount = [arrangedObjects count],
+        selectionIndexes = [CPIndexSet indexSet];
+
+    if ([self preservesSelection] || [self avoidsEmptySelection])
+    {
+        selectionIndexes = [CPIndexSet indexSetWithIndex:position];
+
+        // Remove the selection if there are no objects
+        if (objectsCount <= 0)
+            selectionIndexes = [CPIndexSet indexSet];
+
+        // Shift selection to last object if position is out of bounds
+        else if (position >= objectsCount)
+            selectionIndexes = [CPIndexSet indexSetWithIndex:objectsCount - 1];
+     }
+
+     _selectionIndexes = selectionIndexes;
+
+     [self didChangeValueForKey:@"content"];
 }
 
 - (BOOL)canInsert

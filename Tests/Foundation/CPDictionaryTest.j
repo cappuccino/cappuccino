@@ -17,7 +17,7 @@
         }
     }
 
-    string_dict = [[CPDictionary alloc] initWithObjects:[@"1", @"2"] forKeys:[@"key1", @"key2"]];
+    string_dict = [[CPDictionary alloc] initWithObjects:[@"1", @"2", @"This is a String", @"This is a String"] forKeys:[@"key1", @"key2", @"key3", @"key4"]];
     json_dict = [CPDictionary dictionaryWithJSObject:json recursively:YES];
 }
 
@@ -90,19 +90,19 @@
 
 - (void)testCount
 {
-    [self assert:[string_dict count] equals:2];
+    [self assert:[string_dict count] equals:4];
     [self assert:[json_dict count] equals:3];
 }
 
 - (void)testAllKeys
 {
-    [self assert:[string_dict allKeys] equals:[@"key2", @"key1"]];
+    [self assert:[string_dict allKeys] equals:[@"key4", @"key3", @"key2", @"key1"]];
     [self assert:[json_dict allKeys] equals:[@"key1", @"key2", @"key3"]];
 }
 
 - (void)testAllValues
 {
-    [self assert:[string_dict allValues] equals:[@"1", @"2"]];
+    [self assert:[string_dict allValues] equals:[@"1", @"2", @"This is a String",  @"This is a String"]];
     // Had to get object from key to get test passing
     [self assert:[json_dict allValues] equals:[[json_dict objectForKey:@"key3"], @"This is a string", ['1', '2', '3']]];
 }
@@ -111,6 +111,11 @@
 {
     [self assert:[string_dict objectForKey:@"key1"] equals:"1"];
     [self assert:[json_dict objectForKey:@"key1"] equals:['1', '2', '3']];
+}
+
+- (void)testAllKeysForObject
+{
+    [self assert:[string_dict allKeysForObject:@"This is a String"] equals:[@"key4", @"key3"]];
 }
 
 - (void)testKeyEnumerator
@@ -156,7 +161,7 @@
 {
     [string_dict removeObjectForKey:@"key1"];
     [json_dict removeObjectForKey:@"key1"];
-    [self assert:[string_dict count] equals:1];
+    [self assert:[string_dict count] equals:3];
     [self assert:[json_dict count] equals:2];
 }
 
@@ -164,7 +169,7 @@
 {
     [string_dict removeObjectsForKeys:[@"key1"]];
     [json_dict removeObjectsForKeys:[@"key1", @"key2"]];
-    [self assert:[string_dict count] equals:1];
+    [self assert:[string_dict count] equals:3];
     [self assert:[json_dict count] equals:1];
 }
 
@@ -178,10 +183,10 @@
 
 - (void)testAddEntriesFromDictionary
 {
-    var dict = [[CPDictionary alloc] initWithObjects:[@"1", @"2"] forKeys:[@"key4", @"key5"]];
+    var dict = [[CPDictionary alloc] initWithObjects:[@"1", @"2"] forKeys:[@"key5", @"key6"]];
     [string_dict addEntriesFromDictionary:dict]
     [json_dict addEntriesFromDictionary:dict]
-    [self assert:[string_dict count] equals:4];
+    [self assert:[string_dict count] equals:6];
     [self assert:[json_dict count] equals:5];
 }
 

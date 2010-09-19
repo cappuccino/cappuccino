@@ -121,9 +121,9 @@ ConverterConversionException    = @"ConverterConversionException";
     else
         plistContents = plistContents.replace(/\<key\>\s*CF\$UID\s*\<\/key\>/g, "<key>CP$UID</key>");
 
-    plistContents = plistContents.replace(/\u001b/g, function(c) {
-        CPLog.warn("Warning: Stripping character 0x"+c.charCodeAt(0).toString(16));
-        return "";
+    plistContents = plistContents.replace(/<string>[\u0000-\u0008\u000B\u000C\u000E-\u001F]<\/string>/g, function(c) {
+        CPLog.warn("Warning: Converting character 0x"+c.charCodeAt(8).toString(16)+" to base64 representation");
+        return "<string type=\"base64\">"+CFData.encodeBase64String(c.charAt(8))+"</string>";
     });
 
     return [CPData dataWithRawString:plistContents];

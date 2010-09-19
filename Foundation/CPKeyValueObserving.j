@@ -27,7 +27,6 @@
 @import "CPObject.j"
 @import "CPSet.j"
 
-
 @implementation CPObject (KeyValueObserving)
 
 - (void)willChangeValueForKey:(CPString)aKey
@@ -213,7 +212,6 @@ var kvoNewAndOld = CPKeyValueObservingOptionNew|CPKeyValueObservingOptionOld,
 
     _targetObject       = aTarget;
     _nativeClass        = [aTarget class];
-    _replacedKeys       = [CPSet set];
     _observersForKey    = {};
     _changesForKey      = {};
     _observersForKeyLength = 0;
@@ -230,12 +228,16 @@ var kvoNewAndOld = CPKeyValueObservingOptionNew|CPKeyValueObservingOptionOld,
     if (existingKVOClass)
     {
         _targetObject.isa = existingKVOClass;
+        _replacedKeys = existingKVOClass._replacedKeys;
         return;
     }
 
     var kvoClass = objj_allocateClassPair(currentClass, kvoClassName);
 
     objj_registerClassPair(kvoClass);
+
+    _replacedKeys = [CPSet set];
+    kvoClass._replacedKeys = _replacedKeys;
 
     //copy in the methods from our model subclass
     var methodList = _CPKVOModelSubclass.method_list,
@@ -293,6 +295,7 @@ var kvoNewAndOld = CPKeyValueObservingOptionNew|CPKeyValueObservingOptionOld,
             var theMethod = class_getInstanceMethod(_nativeClass, theSelector);
 
             class_addMethod(_targetObject.isa, theSelector, theReplacementMethod(aKey, theMethod), "");
+            [_replacedKeys addObject:aKey];
         }
     }
 
@@ -390,6 +393,7 @@ var kvoNewAndOld = CPKeyValueObservingOptionNew|CPKeyValueObservingOptionOld,
 
 - (void)_sendNotificationsForKey:(CPString)aKey changeOptions:(CPDictionary)changeOptions isBefore:(BOOL)isBefore
 {
+    // CPLog.warn("_sendNotificationsForKey: " + aKey + " ...isBefore: " + isBefore);
     var changes = _changesForKey[aKey];
 
     if (isBefore)
@@ -426,6 +430,11 @@ var kvoNewAndOld = CPKeyValueObservingOptionNew|CPKeyValueObservingOptionOld,
     }
     else
     {
+        // The isBefore path may not have been called as would happen if didChangeX
+        // was called alone.
+        if (!changes)
+            changes = [CPDictionary new];
+
         [changes removeObjectForKey:CPKeyValueChangeNotificationIsPriorKey];
 
         var indexes = [changes objectForKey:CPKeyValueChangeIndexesKey];
@@ -482,6 +491,9 @@ var kvoNewAndOld = CPKeyValueObservingOptionNew|CPKeyValueObservingOptionOld,
     for (; index < count; ++index)
     {
         var keyPath = dependentKeyPaths[index];
+
+        // CPLog.warn("firing dependepent key " + index + " for " + aKey + ": "+keyPath);
+        // objj_backtrace_print(CPLog.error);
 
         [self _sendNotificationsForKey:keyPath
                          changeOptions:isBefore ? [changeOptions copy] : _changesForKey[keyPath]
@@ -738,7 +750,7 @@ var _kvoInsertMethodForMethod = function _kvoInsertMethodForMethod(theKey, theMe
     {
         [self willChange:CPKeyValueChangeInsertion valuesAtIndexes:[CPIndexSet indexSetWithIndex:index] forKey:theKey];
         theMethod.method_imp(self, _cmd, object, index);
-        [self didChange:CPKeyValueChangeInsertion valuesAtIndexes:[CPIndexSet indexSetWithIndex:index] forKey:theKey]
+        [self didChange:CPKeyValueChangeInsertion valuesAtIndexes:[CPIndexSet indexSetWithIndex:index] forKey:theKey];
     }
 }
 
@@ -748,7 +760,7 @@ var _kvoReplaceMethodForMethod = function _kvoReplaceMethodForMethod(theKey, the
     {
         [self willChange:CPKeyValueChangeReplacement valuesAtIndexes:[CPIndexSet indexSetWithIndex:index] forKey:theKey];
         theMethod.method_imp(self, _cmd, index, object);
-        [self didChange:CPKeyValueChangeReplacement valuesAtIndexes:[CPIndexSet indexSetWithIndex:index] forKey:theKey]
+        [self didChange:CPKeyValueChangeReplacement valuesAtIndexes:[CPIndexSet indexSetWithIndex:index] forKey:theKey];
     }
 }
 
@@ -758,7 +770,7 @@ var _kvoRemoveMethodForMethod = function _kvoRemoveMethodForMethod(theKey, theMe
     {
         [self willChange:CPKeyValueChangeRemoval valuesAtIndexes:[CPIndexSet indexSetWithIndex:index] forKey:theKey];
         theMethod.method_imp(self, _cmd, index);
-        [self didChange:CPKeyValueChangeRemoval valuesAtIndexes:[CPIndexSet indexSetWithIndex:index] forKey:theKey]
+        [self didChange:CPKeyValueChangeRemoval valuesAtIndexes:[CPIndexSet indexSetWithIndex:index] forKey:theKey];
     }
 }
 

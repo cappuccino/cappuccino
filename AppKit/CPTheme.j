@@ -24,8 +24,9 @@
 @import <Foundation/CPString.j>
 @import <Foundation/CPKeyedUnarchiver.j>
 
-var CPThemesByName      = { },
-    CPThemeDefaultTheme = nil;
+var CPThemesByName          = { },
+    CPThemeDefaultTheme     = nil,
+    CPThemeDefaultHudTheme  = nil;
 
 
 /*!
@@ -46,6 +47,27 @@ var CPThemesByName      = { },
 + (CPTheme)defaultTheme
 {
     return CPThemeDefaultTheme;
+}
+
+/*!
+    Set the default HUD theme. If set to nil, the default described in defaultHudTheme
+    will be used.
+*/
++ (void)setDefaultHudTheme:(CPTheme)aTheme
+{
+    CPThemeDefaultHudTheme = aTheme;
+}
+
+/*!
+    The default HUD theme is (sometimes) used for windows with the CPHUDBackgroundWindowMask
+    style mask. The default is theme with the name of the default theme with -HUD appended
+    at the end.
+*/
++ (CPTheme)defaultHudTheme
+{
+    if (!CPThemeDefaultHudTheme)
+        CPThemeDefaultHudTheme = [CPTheme themeNamed:[[self defaultTheme] name] + "-HUD"];
+    return CPThemeDefaultHudTheme;
 }
 
 + (CPTheme)themeNamed:(CPString)aName
@@ -73,14 +95,151 @@ var CPThemesByName      = { },
     return _name;
 }
 
-- (_CPThemeAttribute)_attributeWithName:(CPString)aName forClass:(CPString)aClass
+/*!
+    Returns an array of names of themed classes defined in this theme, as found in its
+    ThemeDescriptors.j file.
+
+    NOTE: The names are not class names (such as "CPButton"), but the names returned
+    by the class' +themeClass method. For example, the name for CPCheckBox is "check-box",
+    as defined in CPCheckBox::themeClass.
+*/
+- (CPArray)classNames
 {
-    var attributes = [_attributes objectForKey:aClass];
+    return [_attributes allKeys];
+}
+
+/*!
+    Returns a dictionary of all theme attributes defined for the given class, as found in the
+    theme's ThemeDescriptors.j file. The keys of the dictionary are attribute names, and the values
+    are instances of _CPThemeAttribute.
+
+    For a description of valid values for \c aClass, see \ref attributeNamesForClass:.
+
+    @param aClass The themed class whose attributes you want to retrieve
+    @return       A dictionary of attributes or nil
+*/
+- (CPDictionary)attributesForClass:(id)aClass
+{
+    if (!aClass)
+        return nil;
+
+    var className = nil;
+
+    if ([aClass isKindOfClass:[CPString class]])
+    {
+        // See if it is a class name
+        var theClass = CPClassFromString(aClass);
+
+        if (theClass)
+            aClass = theClass;
+        else
+            className = aClass;
+    }
+
+    if (!className)
+    {
+        if ([aClass isKindOfClass:[CPView class]])
+        {
+            if ([aClass respondsToSelector:@selector(themeClass)])
+                className = [aClass themeClass];
+            else
+                return nil;
+        }
+        else
+            [CPException raise:CPInvalidArgumentException reason:@"aClass must be a class object or a string."];
+    }
+
+    return [_attributes objectForKey:className];
+}
+
+/*!
+    Returns an array of names of all theme attributes defined for the given class, as found in the
+    theme's ThemeDescriptors.j file.
+
+    The \c aClass parameter can be one of the following:
+
+    - A class instance, for example the result of [CPCheckBox class]. The class must be a subclass
+      of CPView.
+    - A class name, for example "CPCheckBox".
+    - A themed class name, for example "check-box".
+
+    If \c aClass does not refer to a themed class in this theme, nil is returned.
+
+    @param aClass The themed class whose attributes you want to retrieve
+    @return       An array of attribute names or nil
+*/
+- (CPDictionary)attributeNamesForClass:(id)aClass
+{
+    var attributes = [self attributesForClass:aClass];
+
+    if (attributes)
+        return [attributes allKeys];
+    else
+        return [CPArray array];
+}
+
+/*!
+    Returns a theme attribute defined for the given class, as found in the
+    theme's ThemeDescriptors.j file.
+
+    \c aName should be the attribute name as you would pass to the method
+    CPView::valueForThemeAttribute:.
+
+    For a description of valid values for \c aClass, see \ref attributeNamesForClass:.
+
+    @param aName  The name of the attribute you want to retrieve
+    @param aClass The themed class in which to look for the attribute
+    @return       An instance of _CPThemeAttribute or nil
+*/
+- (_CPThemeAttribute)attributeWithName:(CPString)aName forClass:(id)aClass
+{
+    var attributes = [self attributesForClass:aClass];
 
     if (!attributes)
         return nil;
 
     return [attributes objectForKey:aName];
+}
+
+/*!
+    Returns the value for a theme attribute in its normal state, as defined for the given class
+    in the theme's ThemeDescriptors.j file.
+
+    \c aName should be the attribute name as you would pass to the method
+    CPView::valueForThemeAttribute:.
+
+    For a description of valid values for \c aClass, see \ref attributeNamesForClass:.
+
+    @param aName  The name of the attribute whose value you want to retrieve
+    @param aClass The themed class in which to look for the attribute
+    @return       A value or nil
+*/
+- (id)valueForAttributeWithName:(CPString)aName forClass:(id)aClass
+{
+    return [self valueForAttributeWithName:aName inState:CPThemeStateNormal forClass:aClass];
+}
+
+/*!
+    Returns the value for a theme attribute in a given state, as defined for the given class
+    in the theme's ThemeDescriptors.j file. This is the equivalent of the method
+    CPView::valueForThemeAttribute:inState:, but retrieves the value from the theme definition as
+    opposed to a single view's current theme state.
+
+    For a description of valid values for \c aClass, see \ref attributeNamesForClass:.
+
+    @param aName  The name of the attribute whose value you want to retrieve
+    @param aState The state qualifier for the attribute
+    @param aClass The themed class in which to look for the attribute
+    @return       A value or nil
+*/
+- (id)valueForAttributeWithName:(CPString)aName inState:(CPThemeState)aState forClass:(id)aClass
+{
+    var attribute = [self attributeWithName:aName forClass:aClass];
+
+    if (!attribute)
+        return nil;
+
+    return [attribute valueForState:aState];
 }
 
 - (void)takeThemeFromObject:(id)anObject
@@ -242,7 +401,8 @@ CPThemeStateNormal          = CPThemeStates["normal"] = 0;
 CPThemeStateDisabled        = CPThemeState("disabled");
 CPThemeStateHighlighted     = CPThemeState("highlighted");
 CPThemeStateSelected        = CPThemeState("selected");
-CPThemeStateSelectedDataView = CPThemeState("selectedDataView"); 
+CPThemeStateTableDataView   = CPThemeState("tableDataView");
+CPThemeStateSelectedDataView = CPThemeStateSelectedTableDataView = CPThemeState("selectedTableDataView");
 CPThemeStateBezeled         = CPThemeState("bezeled");
 CPThemeStateBordered        = CPThemeState("bordered");
 CPThemeStateEditable        = CPThemeState("editable");
@@ -255,10 +415,10 @@ CPThemeStateCircular        = CPThemeState("circular");
 {
     CPString            _name;
     id                  _defaultValue;
-    CPDictionary        _values;
+    CPDictionary        _values @accessors(readonly, getter=values);
 
     JSObject            _cache;
-    CPThemeAttribute    _parentAttribute;
+    _CPThemeAttribute   _parentAttribute;
 }
 
 - (id)initWithName:(CPString)aName defaultValue:(id)aDefaultValue
@@ -379,7 +539,7 @@ CPThemeStateCircular        = CPThemeState("circular");
     return value;
 }
 
-- (void)setParentAttribute:(CPThemeAttribute)anAttribute
+- (void)setParentAttribute:(_CPThemeAttribute)anAttribute
 {
     if (_parentAttribute === anAttribute)
         return;
@@ -388,7 +548,7 @@ CPThemeStateCircular        = CPThemeState("circular");
     _parentAttribute = anAttribute;
 }
 
-- (CPThemeAttribute)attributeMergedWithAttribute:(_CPThemeAttribute)anAttribute
+- (_CPThemeAttribute)attributeMergedWithAttribute:(_CPThemeAttribute)anAttribute
 {
     var mergedAttribute = [[_CPThemeAttribute alloc] initWithName:_name defaultValue:_defaultValue];
 
@@ -473,15 +633,15 @@ CPThemeStateCircular        = CPThemeState("circular");
 
 @end
 
-var cachedNumberOfOnes = [  0 /*000000*/, 1 /*000001*/, 1 /*000010*/, 2 /*000011*/, 1 /*000100*/, 2 /*000101*/, 2 /*000110*/, 
-                            3 /*000111*/, 1 /*001000*/, 2 /*001001*/, 2 /*001010*/, 3 /*001011*/, 2 /*001100*/, 3 /*001101*/, 
-                            3 /*001110*/, 4 /*001111*/, 1 /*010000*/, 2 /*010001*/, 2 /*010010*/, 3 /*010011*/, 2 /*010100*/, 
-                            3 /*010101*/, 3 /*010110*/, 4 /*010111*/, 2 /*011000*/, 3 /*011001*/, 3 /*011010*/, 4 /*011011*/, 
-                            3 /*011100*/, 4 /*011101*/, 4 /*011110*/, 5 /*011111*/, 1 /*100000*/, 2 /*100001*/, 2 /*100010*/, 
-                            3 /*100011*/, 2 /*100100*/, 3 /*100101*/, 3 /*100110*/, 4 /*100111*/, 2 /*101000*/, 3 /*101001*/, 
-                            3 /*101010*/, 4 /*101011*/, 3 /*101100*/, 4 /*101101*/, 4 /*101110*/, 5 /*101111*/, 2 /*110000*/, 
-                            3 /*110001*/, 3 /*110010*/, 4 /*110011*/, 3 /*110100*/, 4 /*110101*/, 4 /*110110*/, 5 /*110111*/, 
-                            3 /*111000*/, 4 /*111001*/, 4 /*111010*/, 5 /*111011*/, 4 /*111100*/, 5 /*111101*/, 5 /*111110*/, 
+var cachedNumberOfOnes = [  0 /*000000*/, 1 /*000001*/, 1 /*000010*/, 2 /*000011*/, 1 /*000100*/, 2 /*000101*/, 2 /*000110*/,
+                            3 /*000111*/, 1 /*001000*/, 2 /*001001*/, 2 /*001010*/, 3 /*001011*/, 2 /*001100*/, 3 /*001101*/,
+                            3 /*001110*/, 4 /*001111*/, 1 /*010000*/, 2 /*010001*/, 2 /*010010*/, 3 /*010011*/, 2 /*010100*/,
+                            3 /*010101*/, 3 /*010110*/, 4 /*010111*/, 2 /*011000*/, 3 /*011001*/, 3 /*011010*/, 4 /*011011*/,
+                            3 /*011100*/, 4 /*011101*/, 4 /*011110*/, 5 /*011111*/, 1 /*100000*/, 2 /*100001*/, 2 /*100010*/,
+                            3 /*100011*/, 2 /*100100*/, 3 /*100101*/, 3 /*100110*/, 4 /*100111*/, 2 /*101000*/, 3 /*101001*/,
+                            3 /*101010*/, 4 /*101011*/, 3 /*101100*/, 4 /*101101*/, 4 /*101110*/, 5 /*101111*/, 2 /*110000*/,
+                            3 /*110001*/, 3 /*110010*/, 4 /*110011*/, 3 /*110100*/, 4 /*110101*/, 4 /*110110*/, 5 /*110111*/,
+                            3 /*111000*/, 4 /*111001*/, 4 /*111010*/, 5 /*111011*/, 4 /*111100*/, 5 /*111101*/, 5 /*111110*/,
                             6 /*111111*/ ];
 
 var numberOfOnes = function(aNumber)
@@ -552,7 +712,7 @@ function CPThemeAttributeDecode(aCoder, anAttributeName, aDefaultValue, aTheme, 
     }
 
     if (aTheme && aClass)
-        [attribute setParentAttribute:[aTheme _attributeWithName:anAttributeName forClass:aClass]];
+        [attribute setParentAttribute:[aTheme attributeWithName:anAttributeName forClass:aClass]];
 
     return attribute;
 }

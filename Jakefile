@@ -4,6 +4,7 @@ require("./common.jake");
 var FILE = require("file"),
     SYSTEM = require("system"),
     OS = require("os"),
+    UTIL = require("util"),
     jake = require("jake"),
     stream = require("term").stream;
 
@@ -89,20 +90,41 @@ task ("docs", ["documentation"]);
 
 task ("documentation", function()
 {
-    if (executableExists("doxygen"))
+    // try to find a doxygen executable in the PATH;
+    var doxygen = executableExists("doxygen");
+
+    // If the Doxygen application is installed on Mac OS X, use that
+    if (!doxygen && executableExists("mdfind"))
     {
-        if (OS.system(["ruby", FILE.join("Tools", "Documentation", "make_headers")]))
+        var p = OS.popen(["mdfind", "kMDItemContentType == 'com.apple.application-bundle' && kMDItemCFBundleIdentifier == 'org.doxygen'"]);
+        if (p.wait() === 0)
+        {
+            var doxygenApps = p.stdout.read().split("\n");
+            if (doxygenApps[0])
+                doxygen = FILE.join(doxygenApps[0], "Contents/Resources/doxygen");
+        }
+    }
+
+    if (doxygen && FILE.exists(doxygen))
+    {
+        stream.print("\0green(Using " + doxygen + " for doxygen binary.\0)");
+
+        var documentationDir = FILE.join("Tools", "Documentation");
+
+        if (OS.system([FILE.join(documentationDir, "make_headers.sh")]))
             OS.exit(1); //rake abort if ($? != 0)
 
-        if (OS.system(["doxygen", FILE.join("Tools", "Documentation", "Cappuccino.doxygen")]))
-            OS.exit(1); //rake abort if ($? != 0)
+        if (!OS.system([doxygen, FILE.join(documentationDir, "Cappuccino.doxygen")]))
+        {
+            rm_rf($DOCUMENTATION_BUILD);
+            mv("debug.txt", FILE.join("Documentation", "debug.txt"));
+            mv("Documentation", $DOCUMENTATION_BUILD);
+        }
 
-        rm_rf($DOCUMENTATION_BUILD);
-        mv("debug.txt", FILE.join("Documentation", "debug.txt"));
-        mv("Documentation", $DOCUMENTATION_BUILD);
+        OS.system(["ruby", FILE.join(documentationDir, "cleanup_headers")]);
     }
     else
-        print("doxygen not installed. skipping documentation generation.");
+        stream.print("\0yellow(Doxygen not installed, skipping documentation generation.\0)");
 });
 
 // Downloads
@@ -190,17 +212,17 @@ task ("demos", function()
             return this._plist.valueForKey(key);
         return this._plist;
     }
-    
+
     Demo.prototype.name = function()
     {
         return this.plist("CPBundleName");
     }
-    
+
     Demo.prototype.path = function()
     {
         return this._path;
     }
-    
+
     Demo.prototype.excluded = function()
     {
         return !!this.plist("CPDemoExcluded");
@@ -210,7 +232,7 @@ task ("demos", function()
     {
         return this.name();
     }
-    
+
     FILE.glob(FILE.join(demosDir, "demos", "**/Info.plist")).map(function(demoPath){
         return new Demo(FILE.dirname(demoPath))
     }).filter(function(demo){
@@ -224,7 +246,7 @@ task ("demos", function()
         var outputPath = demo.name().replace(/\s/g, "-")+".zip";
         OS.system("cd "+OS.enquote(FILE.dirname(demo.path()))+" && zip -ry -8 "+OS.enquote(outputPath)+" "+OS.enquote(FILE.basename(demo.path())));
 
-        // remove the frameworks 
+        // remove the frameworks
         rm_rf(FILE.join(demo.path(), "Frameworks"));
     });
 });
@@ -308,7 +330,7 @@ function pushPackage(path, remote, branch)
         cmd.push(["git", "tag", "rev-"+pkg["cappuccino-revision"].slice(0,6)]);
 
     OS.system(buildCmd(cmd));
-    
+
     if (OS.system(buildCmd([
         ["cd", packagePath],
         ["git", "push", "--tags", "origin", "HEAD:"+branch]

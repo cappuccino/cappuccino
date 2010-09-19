@@ -200,6 +200,8 @@ var SHADOW_MARGIN_LEFT      = 20.0,
 var CPWindowSaveImage       = nil,
     CPWindowSavingImage     = nil;
 
+var CPWindowResizeTime = 0.2;
+
 /*!
     @ingroup appkit
     @class CPWindow
@@ -320,6 +322,8 @@ var CPWindowSaveImage       = nil,
     CPDictionary                        _sheetContext;
     CPWindow                            _parentView;
     BOOL                                _isSheet;
+
+    _CPWindowFrameAnimation             _frameAnimation;
 }
 
 /*
@@ -659,9 +663,10 @@ CPTexturedBackgroundWindowMask
 
     if (shouldAnimate)
     {
-        var animation = [[_CPWindowFrameAnimation alloc] initWithWindow:self targetFrame:aFrame];
+        [_frameAnimation stopAnimation];
+        _frameAnimation = [[_CPWindowFrameAnimation alloc] initWithWindow:self targetFrame:aFrame];
 
-        [animation startAnimation];
+        [_frameAnimation startAnimation];
     }
     else
     {
@@ -1359,10 +1364,21 @@ CPTexturedBackgroundWindowMask
 */
 - (void)center
 {
+    if (_isFullPlatformWindow)
+        return;
+
     var size = [self frame].size,
         containerSize = [CPPlatform isBrowser] ? [_platformWindow contentBounds].size : [[self screen] visibleFrame].size;
 
-    [self setFrameOrigin:CGPointMake((containerSize.width - size.width) / 2.0, (containerSize.height - size.height) / 2.0)];
+    var origin = CGPointMake((containerSize.width - size.width) / 2.0, (containerSize.height - size.height) / 2.0);
+
+    if (origin.x < 0.0)
+        origin.x = 0.0;
+
+    if (origin.y < 0.0)
+        origin.y = 0.0;
+
+    [self setFrameOrigin:origin];
 }
 
 /*!
@@ -1376,8 +1392,18 @@ CPTexturedBackgroundWindowMask
 
     switch (type)
     {
+        case CPFlagsChanged:        return [[self firstResponder] flagsChanged:anEvent];
+
         case CPKeyUp:               return [[self firstResponder] keyUp:anEvent];
-        case CPKeyDown:             return [[self firstResponder] keyDown:anEvent];
+
+        case CPKeyDown:             [[self firstResponder] keyDown:anEvent];
+
+                                    // Trigger the default button if needed
+                                    if (![self disableKeyEquivalentForDefaultButton])
+                                        if ([anEvent _triggersKeyEquivalent:[[self defaultButton] keyEquivalent] withModifierMask:[[self defaultButton] keyEquivalentModifierMask]])
+                                            [[self defaultButton] performClick:self];
+
+                                    return;
 
         case CPScrollWheel:         return [[_windowView hitTest:point] scrollWheel:anEvent];
 
@@ -1600,7 +1626,7 @@ CPTexturedBackgroundWindowMask
     if (!pasteboardTypes)
         return;
 
-    [_inclusiveRegisteredDraggedTypes minusSet:pasteboardTypes]
+    [_inclusiveRegisteredDraggedTypes minusSet:pasteboardTypes];
 
     if ([_inclusiveRegisteredDraggedTypes count] === 0)
         _inclusiveRegisteredDraggedTypes = nil;
@@ -1631,7 +1657,7 @@ CPTexturedBackgroundWindowMask
         return;
 
     [self _noteUnregisteredDraggedTypes:_registeredDraggedTypes];
-    [_registeredDraggedTypes addObjectsFromArray:pasteboardTypes]
+    [_registeredDraggedTypes addObjectsFromArray:pasteboardTypes];
     [self _noteRegisteredDraggedTypes:_registeredDraggedTypes];
 
     _registeredDraggedTypesArray = nil;
@@ -1644,7 +1670,7 @@ CPTexturedBackgroundWindowMask
 - (CPArray)registeredDraggedTypes
 {
     if (!_registeredDraggedTypesArray)
-        _registeredDraggedTypesArray = [_registeredDraggedTypes allObjects]
+        _registeredDraggedTypesArray = [_registeredDraggedTypes allObjects];
 
     return _registeredDraggedTypesArray;
 }
@@ -1942,10 +1968,16 @@ CPTexturedBackgroundWindowMask
         else
         {
             var mainMenu = [CPApp mainMenu],
-                menuWindow = mainMenu ? mainMenu._menuWindow : nil;
+                menuBarClass = objj_getClass("_CPMenuBarWindow"),
+                menuWindow;
+
             for (var i = 0; i < windowCount; i++)
             {
                 var currentWindow = allWindows[i];
+
+                if ([currentWindow isKindOfClass:menuBarClass])
+                    menuWindow = currentWindow;
+
                 if (currentWindow === self || currentWindow === menuWindow)
                     continue;
 
@@ -1971,10 +2003,16 @@ CPTexturedBackgroundWindowMask
         else
         {
             var mainMenu = [CPApp mainMenu],
-                menuWindow = mainMenu ? mainMenu._menuWindow : nil;
+                menuBarClass = objj_getClass("_CPMenuBarWindow"),
+                menuWindow;
+
             for (var i = 0; i < windowCount; i++)
             {
                 var currentWindow = allWindows[i];
+
+                if ([currentWindow isKindOfClass:menuBarClass])
+                    menuWindow = currentWindow;
+
                 if (currentWindow === self || currentWindow === menuWindow)
                     continue;
 
@@ -2054,11 +2092,17 @@ CPTexturedBackgroundWindowMask
 
 - (void)_setFrame:(CGRect)aFrame delegate:(id)delegate duration:(int)duration curve:(CPAnimationCurve)curve
 {
-    var animation = [[_CPWindowFrameAnimation alloc] initWithWindow:self targetFrame:aFrame];
-    [animation setDelegate:delegate];
-    [animation setAnimationCurve:curve];
-    [animation setDuration:duration];
-    [animation startAnimation];
+    [_frameAnimation stopAnimation];
+    _frameAnimation = [[_CPWindowFrameAnimation alloc] initWithWindow:self targetFrame:aFrame];
+    [_frameAnimation setDelegate:delegate];
+    [_frameAnimation setAnimationCurve:curve];
+    [_frameAnimation setDuration:duration];
+    [_frameAnimation startAnimation];
+}
+
+- (CPTimeInterval)animationResizeTime:(CGRect)newWindowFrame
+{
+    return CPWindowResizeTime;
 }
 
 /* @ignore */
@@ -2109,7 +2153,7 @@ CPTexturedBackgroundWindowMask
     [aSheet setFrame:startFrame display:YES animate:NO];
     _sheetContext["opened"] = YES;
 
-    [aSheet _setFrame:endFrame delegate:self duration:0.2 curve:CPAnimationEaseOut];
+    [aSheet _setFrame:endFrame delegate:self duration:[self animationResizeTime:endFrame] curve:CPAnimationEaseOut];
 
     // Should run the main loop here until _isAnimating = FALSE
     [aSheet becomeKeyWindow];
@@ -2130,7 +2174,7 @@ CPTexturedBackgroundWindowMask
     [self _setUpMasksForView:sheetContent];
 
     _sheetContext["opened"] = NO;
-    [sheet _setFrame:endFrame delegate:self duration:0.2 curve:CPAnimationEaseIn];
+    [sheet _setFrame:endFrame delegate:self duration:[self animationResizeTime:endFrame] curve:CPAnimationEaseIn];
 }
 
 /* @ignore */
@@ -2159,13 +2203,15 @@ CPTexturedBackgroundWindowMask
     [self _restoreMasksForView:sheetContent];
 
     var delegate = _sheetContext["modalDelegate"],
-        endSelector = _sheetContext["endSelector"];
-
-    if (delegate != nil && endSelector != nil)
-        objj_msgSend(delegate, endSelector, sheet, _sheetContext["returnCode"], _sheetContext["contextInfo"]);
+        endSelector = _sheetContext["endSelector"],
+        returnCode = _sheetContext["returnCode"],
+        contextInfo = _sheetContext["contextInfo"];
 
     _sheetContext = nil;
     sheet._parentView = nil;
+
+    if (delegate != nil && endSelector != nil)
+        objj_msgSend(delegate, endSelector, sheet, returnCode, contextInfo);
 }
 
 - (void)_setUpMasksForView:(CPView)aView
@@ -2238,7 +2284,7 @@ CPTexturedBackgroundWindowMask
     return NO;
 }
 
-- (void)performKeyEquivalent:(CPEvent)anEvent
+- (BOOL)performKeyEquivalent:(CPEvent)anEvent
 {
     // FIXME: should we be starting at the root, in other words _windowView?
     // The evidence seems to point to no...
@@ -2249,14 +2295,11 @@ CPTexturedBackgroundWindowMask
 {
     // It's not clear why we do performKeyEquivalent again here...
     // Perhaps to allow something to happen between sendEvent: and keyDown:?
-    if (![anEvent _couldBeKeyEquivalent] || ![self performKeyEquivalent:anEvent])
-        [self interpretKeyEvents:[anEvent]];
-}
+    if ([anEvent _couldBeKeyEquivalent] && [self performKeyEquivalent:anEvent])
+        return;
 
-- (void)insertNewline:(id)sender
-{
-    if (_defaultButton && _defaultButtonEnabled)
-        [_defaultButton performClick:nil];
+    // Interpret the key events
+    [self interpretKeyEvents:[anEvent]];
 }
 
 - (void)insertTab:(id)sender
@@ -2369,11 +2412,16 @@ CPTexturedBackgroundWindowMask
 
 - (void)setDefaultButton:(CPButton)aButton
 {
-    [_defaultButton setDefaultButton:NO];
+    if (_defaultButton === aButton)
+        return;
+
+    if ([_defaultButton keyEquivalent] === CPCarriageReturnCharacter)
+        [_defaultButton setKeyEquivalent:nil];
 
     _defaultButton = aButton;
 
-    [_defaultButton setDefaultButton:YES];
+    if ([_defaultButton keyEquivalent] !== CPCarriageReturnCharacter)
+        [_defaultButton setKeyEquivalent:CPCarriageReturnCharacter];
 }
 
 - (CPButton)defaultButton
@@ -2634,7 +2682,7 @@ var interpolate = function(fromValue, toValue, progress)
 
 - (id)initWithWindow:(CPWindow)aWindow targetFrame:(CGRect)aTargetFrame
 {
-    self = [super initWithDuration:0.2 animationCurve:CPAnimationLinear];
+    self = [super initWithDuration:[aWindow animationResizeTime:aTargetFrame] animationCurve:CPAnimationLinear];
 
     if (self)
     {

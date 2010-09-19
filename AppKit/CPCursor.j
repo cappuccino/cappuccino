@@ -197,7 +197,7 @@ var currentCursor = nil,
 
 + (void)unhide
 {
-    [self _setCursorCSS:[currentCursor _cssString]]
+    [self _setCursorCSS:[currentCursor _cssString]];
 }
 
 + (void)setHiddenUntilMouseMoves:(BOOL)flag

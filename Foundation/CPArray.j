@@ -26,6 +26,9 @@
 @import "CPRange.j"
 @import "CPSortDescriptor.j"
 
+CPEnumerationNormal     = 0;
+CPEnumerationConcurrent = 1 << 0;
+CPEnumerationReverse    = 1 << 1;
 
 /* @ignore */
 @implementation _CPArrayEnumerator : CPEnumerator
@@ -403,6 +406,98 @@
 }
 
 /*!
+    Returns the index of the first object in the receiver that passes a test in a given Javascript function.
+    @param predicate The function to apply to elements of the array. The function receives two arguments:
+                     object The element in the array.
+                     index  The index of the element in the array.
+    The predicate function should either return a Boolean value that indicates whether the object passed the test, 
+    or nil to stop the search, which will return CPNotFound to the sender.
+    @return The index of the first matching object, or \c CPNotFound if there is no matching object.
+*/
+- (unsigned)indexOfObjectPassingTest:(Function)predicate
+{
+    return [self indexOfObjectWithOptions:CPEnumerationNormal passingTest:predicate context:undefined];
+}
+
+/*!
+    Returns the index of the first object in the receiver that passes a test in a given Javascript function.
+    @param predicate The function to apply to elements of the array. The function receives two arguments:
+                     object  The element in the array.
+                     index   The index of the element in the array.
+                     context The object passed to the receiver in the aContext parameter.
+    The predicate function should either return a Boolean value that indicates whether the object passed the test, 
+    or nil to stop the search, which will return CPNotFound to the sender.
+    @param context An object that contains context information you want passed to the predicate function.
+    @return The index of the first matching object, or \c CPNotFound if there is no matching object.
+*/
+- (unsigned)indexOfObjectPassingTest:(Function)predicate context:(id)aContext
+{
+    return [self indexOfObjectWithOptions:CPEnumerationNormal passingTest:predicate context:aContext];
+}
+
+/*!
+    Returns the index of the first object in the receiver that passes a test in a given Javascript function.
+    @param opts Specifies the direction in which the array is searched. Pass CPEnumerationNormal to search forwards 
+    or CPEnumerationReverse to search in reverse.
+    @param predicate The function to apply to elements of the array. The function receives two arguments:
+                     object The element in the array.
+                     index  The index of the element in the array.
+    The predicate function should either return a Boolean value that indicates whether the object passed the test, 
+    or nil to stop the search, which will return CPNotFound to the sender.
+    @return The index of the first matching object, or \c CPNotFound if there is no matching object.
+*/
+- (unsigned)indexOfObjectWithOptions:(CPEnumerationOptions)opts passingTest:(Function)predicate
+{
+    return [self indexOfObjectWithOptions:opts passingTest:predicate context:undefined];
+}    
+
+/*!
+    Returns the index of the first object in the receiver that passes a test in a given Javascript function.
+    @param opts Specifies the direction in which the array is searched. Pass CPEnumerationNormal to search forwards 
+    or CPEnumerationReverse to search in reverse.
+    @param predicate The function to apply to elements of the array. The function receives two arguments:
+                     object  The element in the array.
+                     index   The index of the element in the array.
+                     context The object passed to the receiver in the aContext parameter.
+    The predicate function should either return a Boolean value that indicates whether the object passed the test, 
+    or nil to stop the search, which will return CPNotFound to the sender.
+    @param context An object that contains context information you want passed to the predicate function.
+    @return The index of the first matching object, or \c CPNotFound if there is no matching object.
+*/
+- (unsigned)indexOfObjectWithOptions:(CPEnumerationOptions)opts passingTest:(Function)predicate context:(id)aContext
+{
+    // We don't use an enumerator because they return nil to indicate end of enumeration,
+    // but nil may actually be the value we are looking for, so we have to loop over the array.
+    
+    var start, stop, increment;
+    
+    if (opts & CPEnumerationReverse)
+    {
+        start = [self count] - 1;
+        stop = -1;
+        increment = -1;
+    }
+    else
+    {
+        start = 0;
+        stop = [self count];
+        increment = 1;
+    }
+        
+    for (var i = start; i != stop; i += increment)
+    {
+        var result = predicate([self objectAtIndex:i], i, aContext);
+        
+        if (typeof result === 'boolean' && result)
+            return i;
+        else if (typeof result === 'object' && result == nil)
+            return CPNotFound;
+    }
+    
+    return CPNotFound;
+}
+
+/*!
     Returns the index of \c anObject in the array, which must be sorted in the same order as
     calling sortUsingSelector: with the selector passed to this method would result in.
     @param anObject the object to search for
@@ -512,6 +607,12 @@
 
 - (unsigned)insertObject:(id)anObject inArraySortedByDescriptors:(CPArray)descriptors
 {
+    if (!descriptors || ![descriptors count])
+    {
+        [self addObject:anObject];
+        return [self count] - 1;
+    }
+
     var index = [self _insertObject:anObject sortedByFunction:function(lhs, rhs)
     {
         var i = 0,
@@ -801,7 +902,7 @@
 */
 - (CPArray)sortedArrayUsingSelector:(SEL)aSelector
 {
-    var sorted = [self copy]
+    var sorted = [self copy];
 
     [sorted sortUsingSelector:aSelector];
 
@@ -1220,19 +1321,7 @@
 
 - (CPArray)sortUsingDescriptors:(CPArray)descriptors
 {
-    var count = [descriptors count];
-
-    sort(function(lhs, rhs)
-    {
-        var i = 0,
-            result = CPOrderedSame;
-
-        while (i < count)
-            if ((result = [descriptors[i++] compareObject:lhs withObject:rhs]) != CPOrderedSame)
-                return result;
-
-        return result;
-    });
+    [self sortUsingFunction:compareObjectsUsingDescriptors context:descriptors];
 }
 
 /*!
@@ -1242,7 +1331,37 @@
 */
 - (void)sortUsingFunction:(Function)aFunction context:(id)aContext
 {
-    sort(function(lhs, rhs) { return aFunction(lhs, rhs, aContext); });
+    var h, i, j, k, l, m, n = [self count], o;
+    var A, B = [];
+     
+    for (h = 1; h < n; h += h)
+    {
+        for (m = n - 1 - h; m >= 0; m -= h + h)
+        {
+            l = m - h + 1;
+            if (l < 0)
+                l = 0;
+            
+            for (i = 0, j = l; j <= m; i++, j++)
+                B[i] = self[j];
+            
+            for (i = 0, k = l; k < j && j <= m + h; k++)
+            {
+                A = self[j];
+                o = aFunction(A, B[i], aContext);
+                if (o == CPOrderedDescending || o == CPOrderedSame)
+                    self[k] = B[i++];
+                else
+                {
+                    self[k] = A;
+                    j++;
+                }
+            }
+            
+            while (k < j)
+                self[k++] = B[i++];
+        }
+    }
 }
 
 /*!
@@ -1251,7 +1370,7 @@
 */
 - (void)sortUsingSelector:(SEL)aSelector
 {
-    sort(function(lhs, rhs) { return objj_msgSend(lhs, aSelector, rhs); });
+    [self sortUsingFunction:selectorCompare context:aSelector];
 }
 
 @end
@@ -1280,6 +1399,24 @@
 }
 
 @end
+
+var selectorCompare = function selectorCompare(object1, object2, selector)
+{
+    return [object1 performSelector:selector withObject:object2];
+}
+
+// sort using sort descriptors
+var compareObjectsUsingDescriptors= function compareObjectsUsingDescriptors(lhs, rhs, descriptors)
+{ 
+    var result = CPOrderedSame,
+        i = 0,  
+        n = [descriptors count];
+        
+    while (i < n && result === CPOrderedSame)
+        result = [descriptors[i++] compareObject:lhs withObject:rhs];
+    
+    return result;
+}
 
 @implementation CPArray (CPCoding)
 

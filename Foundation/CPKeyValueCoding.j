@@ -33,6 +33,9 @@ CPUndefinedKeyException     = @"CPUndefinedKeyException";
 CPTargetObjectUserInfoKey   = @"CPTargetObjectUserInfoKey";
 CPUnknownUserInfoKey        = @"CPUnknownUserInfoKey";
 
+var CPObjectAccessorsForClassKey = @"$CPObjectAccessorsForClassKey",
+    CPObjectModifiersForClassKey = @"$CPObjectModifiersForClassKey";
+
 @implementation CPObject (CPKeyValueCoding)
 
 + (BOOL)accessInstanceVariablesDirectly
@@ -43,26 +46,18 @@ CPUnknownUserInfoKey        = @"CPUnknownUserInfoKey";
 /* @ignore */
 + (SEL)_accessorForKey:(CPString)aKey
 {
-    if (!CPObjectAccessorsForClass)
-        CPObjectAccessorsForClass = [CPDictionary dictionary];
-
-    var UID = [isa UID],
-        selector = nil,
-        accessors = [CPObjectAccessorsForClass objectForKey:UID];
+    var selector = nil,
+        accessors = isa[CPObjectAccessorsForClassKey];
 
     if (accessors)
     {
-        selector = [accessors objectForKey:aKey];
+        selector = accessors[aKey];
 
         if (selector)
             return selector === [CPNull null] ? nil : selector;
     }
     else
-    {
-        accessors = [CPDictionary dictionary];
-
-        [CPObjectAccessorsForClass setObject:accessors forKey:UID];
-    }
+        accessors = isa[CPObjectAccessorsForClassKey] = {};
 
     var capitalizedKey = aKey.charAt(0).toUpperCase() + aKey.substr(1);
 
@@ -73,12 +68,12 @@ CPUnknownUserInfoKey        = @"CPUnknownUserInfoKey";
         [self instancesRespondToSelector:selector = CPSelectorFromString("_" + aKey)] ||
         [self instancesRespondToSelector:selector = CPSelectorFromString("_is" + capitalizedKey)])
     {
-        [accessors setObject:selector forKey:aKey];
+        accessors[aKey] = selector;
 
         return selector;
     }
 
-    [accessors setObject:[CPNull null] forKey:aKey];
+    accessors[aKey] = [CPNull null];
 
     return nil;
 }
@@ -156,7 +151,7 @@ CPUnknownUserInfoKey        = @"CPUnknownUserInfoKey";
 - (id)valueForKey:(CPString)aKey
 {
     var theClass = [self class],
-        selector = [theClass _accessorForKey:aKey];
+        selector = _accessorForKey(theClass, aKey);
 
     if (selector)
         return objj_msgSend(self, selector);
@@ -263,6 +258,41 @@ CPUnknownUserInfoKey        = @"CPUnknownUserInfoKey";
 }
 
 @end
+
+var Null = [CPNull null];
+var _accessorForKey = function(theClass, aKey)
+{
+    var selector = nil,
+        accessors = theClass.isa[CPObjectAccessorsForClassKey];
+
+    if (accessors)
+    {
+        selector = accessors[aKey];
+
+        if (selector)
+            return selector === Null ? nil : selector;
+    }
+    else
+        accessors = theClass.isa[CPObjectAccessorsForClassKey] = {};
+
+    var capitalizedKey = aKey.charAt(0).toUpperCase() + aKey.substr(1);
+
+    if ([theClass instancesRespondToSelector:selector = CPSelectorFromString("get" + capitalizedKey)] ||
+        [theClass instancesRespondToSelector:selector = CPSelectorFromString(aKey)] ||
+        [theClass instancesRespondToSelector:selector = CPSelectorFromString("is" + capitalizedKey)] ||
+        [theClass instancesRespondToSelector:selector = CPSelectorFromString("_get" + capitalizedKey)] ||
+        [theClass instancesRespondToSelector:selector = CPSelectorFromString("_" + aKey)] ||
+        [theClass instancesRespondToSelector:selector = CPSelectorFromString("_is" + capitalizedKey)])
+    {
+        accessors[aKey] = selector;
+
+        return selector;
+    }
+
+    accessors[aKey] = Null;
+
+    return nil;
+}
 
 @implementation CPDictionary (KeyValueCoding)
 

@@ -22,19 +22,11 @@
 
 @import "CPView.j"
 
-CPTabCharacter                  = "\u0009";
-CPFormFeedCharacter             = "\u000c";
-CPNewlineCharacter              = "\u000a";
-CPCarriageReturnCharacter       = "\u000d";
 CPEnterCharacter                = "\u0003";
 CPBackspaceCharacter            = "\u0008";
+CPTabCharacter                  = "\u0009";
+CPNewlineCharacter              = "\u000a";
+CPFormFeedCharacter             = "\u000c";
+CPCarriageReturnCharacter       = "\u000d";
 CPBackTabCharacter              = "\u0019";
 CPDeleteCharacter               = "\u007f";
-
-@implementation CPText : CPView
-{
-
-}
-
-@end
-

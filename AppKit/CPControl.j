@@ -280,7 +280,7 @@ var CPControlBlackColor     = [CPColor blackColor];
 - (void)trackMouse:(CPEvent)anEvent
 {
     var type = [anEvent type],
-        currentLocation = [self convertPoint:[anEvent locationInWindow] fromView:nil];
+        currentLocation = [self convertPoint:[anEvent locationInWindow] fromView:nil],
         isWithinFrame = [self tracksMouseOutsideOfFrame] || CGRectContainsPoint([self bounds], currentLocation);
 
     if (type === CPLeftMouseUp)
@@ -289,7 +289,6 @@ var CPControlBlackColor     = [CPColor blackColor];
 
         _trackingMouseDownFlags = 0;
     }
-
     else
     {
         if (type === CPLeftMouseDown)
@@ -337,9 +336,19 @@ var CPControlBlackColor     = [CPColor blackColor];
 
     [self highlight:YES];
     [self setState:[self nextState]];
-    [self sendAction:[self action] to:[self target]];
 
-    [CPTimer scheduledTimerWithTimeInterval:0.1 target:self selector:@selector(unhighlightButtonTimerDidFinish:) userInfo:nil repeats:NO];
+    try
+    {
+        [self sendAction:[self action] to:[self target]];
+    }
+    catch (e)
+    {
+        throw e;
+    }
+    finally
+    {
+        [CPTimer scheduledTimerWithTimeInterval:0.1 target:self selector:@selector(unhighlightButtonTimerDidFinish:) userInfo:nil repeats:NO];
+    }
 }
 
 - (void)unhighlightButtonTimerDidFinish:(id)sender
@@ -545,6 +554,7 @@ var CPControlBlackColor     = [CPColor blackColor];
         return;
 
     [self _reverseSetBinding];
+
     [[CPNotificationCenter defaultCenter] postNotificationName:CPControlTextDidEndEditingNotification object:self userInfo:[CPDictionary dictionaryWithObject:[note object] forKey:"CPFieldEditor"]];
 }
 

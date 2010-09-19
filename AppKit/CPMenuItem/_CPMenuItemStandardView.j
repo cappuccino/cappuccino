@@ -39,7 +39,7 @@ var SUBMENU_INDICATOR_COLOR                     = nil,
     SUBMENU_INDICATOR_COLOR = [CPColor grayColor];
 
     _CPMenuItemSelectionColor =  [CPColor colorWithCalibratedRed:95.0 / 255.0 green:131.0 / 255.0 blue:185.0 / 255.0 alpha:1.0];
-    _CPMenuItemTextShadowColor = [CPColor colorWithCalibratedRed:26.0 / 255.0 green: 73.0 / 255.0 blue:109.0 / 255.0 alpha:1.0]
+    _CPMenuItemTextShadowColor = [CPColor colorWithCalibratedRed:26.0 / 255.0 green: 73.0 / 255.0 blue:109.0 / 255.0 alpha:1.0];
     
     var bundle = [CPBundle bundleForClass:self];
     
@@ -257,10 +257,13 @@ var SUBMENU_INDICATOR_COLOR                     = nil,
         [_keyEquivalentView setTextShadowColor:[self textShadowColor]];
     }
     
-    if (shouldHighlight)
-        [_stateView setImage:_CPMenuItemDefaultStateHighlightedImages[[_menuItem state]] || nil];
-    else
-        [_stateView setImage:_CPMenuItemDefaultStateImages[[_menuItem state]] || nil];
+    if ([[_menuItem menu] showsStateColumn])
+    {
+        if (shouldHighlight)
+            [_stateView setImage:_CPMenuItemDefaultStateHighlightedImages[[_menuItem state]] || nil];
+        else
+            [_stateView setImage:_CPMenuItemDefaultStateImages[[_menuItem state]] || nil];
+    }
 }
 
 @end

@@ -21,6 +21,7 @@
  */
 
 @import <Foundation/CPObject.j>
+@import "CPText.j"
 
 #include "CoreGraphics/CGGeometry.h"
 
@@ -178,7 +179,8 @@ CPDOMEventTouchEnd                                   = "touchend";
 CPDOMEventTouchCancel                                = "touchcancel";
 
 var _CPEventPeriodicEventPeriod         = 0,
-    _CPEventPeriodicEventTimer          = nil;
+    _CPEventPeriodicEventTimer          = nil,
+    _CPEventUpperCaseRegex              = new RegExp("[A-Z]");
 
 /*!
     @ingroup appkit
@@ -521,10 +523,10 @@ var _CPEventPeriodicEventPeriod         = 0,
 
 - (BOOL)_triggersKeyEquivalent:(CPString)aKeyEquivalent withModifierMask:aKeyEquivalentModifierMask
 {
-    var characters = [self charactersIgnoringModifiers],
-        modifierFlags = [self modifierFlags];
+    if (!aKeyEquivalent)
+        return NO;
 
-    if (new RegExp("[A-Z]").test(aKeyEquivalent))
+    if (_CPEventUpperCaseRegex.test(aKeyEquivalent))
         aKeyEquivalentModifierMask |= CPShiftKeyMask;
 
     if (CPBrowserIsOperatingSystem(CPWindowsOperatingSystem) && (aKeyEquivalentModifierMask & CPCommandKeyMask))
@@ -533,35 +535,39 @@ var _CPEventPeriodicEventPeriod         = 0,
         aKeyEquivalentModifierMask &= ~CPCommandKeyMask;
     }
 
-    if ((modifierFlags & (CPShiftKeyMask | CPAlternateKeyMask | CPCommandKeyMask | CPControlKeyMask)) !== aKeyEquivalentModifierMask)
+    if ((_modifierFlags & (CPShiftKeyMask | CPAlternateKeyMask | CPCommandKeyMask | CPControlKeyMask)) !== aKeyEquivalentModifierMask)
         return NO;
 
-    return [characters caseInsensitiveCompare:aKeyEquivalent] === CPOrderedSame;
+    // Treat \r and \n as the same key equivalent. See issue #710.
+    if (_characters === CPNewlineCharacter || _characters === CPCarriageReturnCharacter)
+        return CPNewlineCharacter === aKeyEquivalent || CPCarriageReturnCharacter === aKeyEquivalent;
+
+    return [_characters caseInsensitiveCompare:aKeyEquivalent] === CPOrderedSame;
 }
 
 - (BOOL)_couldBeKeyEquivalent
 {
-    // FIXME: More cases? Space?
-    return  _type === CPKeyDown &&
-            ((_modifierFlags & (CPCommandKeyMask | CPControlKeyMask) &&
-            [_characters length] > 0) ||
-            [self _hasActionCharacter]);
-}
+    if (_type !== CPKeyDown)
+        return NO;
 
-- (BOOL)_hasActionCharacter
-{
-    var characters = [self characters],
-        characterCount = [characters length];
+    var characterCount = _characters.length;
+
+    if (!characterCount)
+        return NO;
+
+    if (_modifierFlags & (CPCommandKeyMask | CPControlKeyMask))
+        return YES;
 
     for(var i=0; i<characterCount; i++)
     {
-        var c = [characters characterAtIndex:i];
-        switch(c)
+        switch(_characters.charAt(i))
         {
             case CPBackspaceCharacter:
             case CPDeleteCharacter:
+            case CPDeleteFunctionKey:
             case CPTabCharacter:
             case CPCarriageReturnCharacter:
+            case CPNewlineCharacter:
             case CPEscapeFunctionKey:
             case CPPageUpFunctionKey:
             case CPPageDownFunctionKey:
@@ -570,10 +576,10 @@ var _CPEventPeriodicEventPeriod         = 0,
             case CPRightArrowFunctionKey:
             case CPDownArrowFunctionKey:
                 return YES;
-            default:
-                return NO;
         }
     }
+    // FIXME: More cases? Space?
+    return NO;
 }
 
 /*!

@@ -110,9 +110,6 @@ global.file = JAKE.file;
 global.filedir = JAKE.filedir;
 global.FileList = JAKE.FileList;
 
-global.CLEAN = require("jake/clean").CLEAN;
-global.CLOBBER = require("jake/clean").CLOBBER;
-
 global.$CONFIGURATION                   = SYSTEM.env['CONFIG'];
 global.$BUILD_DIR                       = SYSTEM.env['BUILD_PATH'];
 global.$BUILD_CONFIGURATION_DIR         = FILE.join($BUILD_DIR, $CONFIGURATION);
@@ -123,6 +120,11 @@ global.$BUILD_CJS_CAPPUCCINO            = FILE.join($BUILD_CONFIGURATION_DIR, "C
 global.$BUILD_CJS_CAPPUCCINO_BIN        = FILE.join($BUILD_CJS_CAPPUCCINO, "bin");
 global.$BUILD_CJS_CAPPUCCINO_LIB        = FILE.join($BUILD_CJS_CAPPUCCINO, "lib");
 global.$BUILD_CJS_CAPPUCCINO_FRAMEWORKS = FILE.join($BUILD_CJS_CAPPUCCINO, "Frameworks");
+
+global.CLEAN = require("jake/clean").CLEAN;
+global.CLOBBER = require("jake/clean").CLOBBER;
+global.CLEAN.push(global.$BUILD_DIR);
+global.CLOBBER.push(global.$BUILD_DIR);
 
 global.$HOME_DIR        = FILE.absolute(FILE.dirname(module.path));
 global.$LICENSE_FILE    = FILE.absolute(FILE.join(FILE.dirname(module.path), 'LICENSE'));
@@ -266,12 +268,15 @@ global.subjake = function(/*Array<String>*/ directories, /*String*/ aTaskName)
     });
 }
 
-global.executableExists = function(/*String*/ aFileName)
+global.executableExists = function(/*String*/ executableName)
 {
-    return SYSTEM.env["PATH"].split(':').some(function(/*String*/ aPath)
-    {
-        return FILE.exists(FILE.join(aPath, aFileName));
-    });
+    var paths = SYSTEM.env["PATH"].split(':');
+    for (var i = 0; i < paths.length; i++) {
+        var path = FILE.join(paths[i], executableName);
+        if (FILE.exists(path))
+            return path;
+    }
+    return null;
 }
 
 $OBJJ_TEMPLATE_EXECUTABLE = FILE.join($HOME_DIR, "Objective-J", "CommonJS", "objj-executable");

@@ -118,6 +118,16 @@ var CPBundlesForURLStrings = { };
     return className ? CPClassFromString(className) : Nil;
 }
 
+- (CPString)bundleIdentifier
+{
+    return [self objectForInfoDictionaryKey:@"CPBundleIdentifier"];
+}
+
+- (BOOL)isLoaded
+{
+    return _bundle.isLoaded();
+}
+
 - (CPString)pathForResource:(CPString)aFilename
 {
     return _bundle.pathForResource(aFilename);
@@ -132,8 +142,6 @@ var CPBundlesForURLStrings = { };
 {
     return _bundle.valueForInfoDictionaryKey(aKey);
 }
-
-//
 
 - (void)loadWithDelegate:(id)aDelegate
 {

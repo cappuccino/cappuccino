@@ -49,7 +49,7 @@ var CPTextFieldDOMInputElement = nil,
     CPTextFieldCachedSelectStartFunction = nil,
     CPTextFieldCachedDragFunction = nil,
     CPTextFieldBlurFunction = nil;
-    
+
 #endif
 
 var CPSecureTextFieldCharacter = "\u2022";
@@ -82,13 +82,13 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
     BOOL                    _isSecure;
 
     BOOL                    _drawsBackground;
-    
+
     CPColor                 _textFieldBackgroundColor;
-    
+
     id                      _placeholderString;
-    
+
     id                      _delegate;
-    
+
     CPString                _textDidChangeValue;
 
     // NS-style Display Properties
@@ -199,7 +199,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
         }
 
         CPTextFieldHandleBlur = function(anEvent)
-        {            
+        {
             CPTextFieldInputOwner = nil;
 
             [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
@@ -207,10 +207,10 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 
         //FIXME make this not onblur
         CPTextFieldDOMInputElement.onblur = CPTextFieldBlurFunction;
-        
+
         CPTextFieldDOMStandardInputElement = CPTextFieldDOMInputElement;
     }
-    
+
     if (CPFeatureIsCompatible(CPInputTypeCanBeChangedFeature))
     {
         if ([self isSecure])
@@ -237,14 +237,14 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 
             CPTextFieldDOMPasswordInputElement.onblur = CPTextFieldBlurFunction;
         }
-        
+
         CPTextFieldDOMInputElement = CPTextFieldDOMPasswordInputElement;
     }
     else
     {
         CPTextFieldDOMInputElement = CPTextFieldDOMStandardInputElement;
     }
-    
+
     return CPTextFieldDOMInputElement;
 }
 #endif
@@ -262,18 +262,29 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 
         [self setValue:CPLeftTextAlignment forThemeAttribute:@"alignment"];
     }
-    
+
     return self;
 }
 
 #pragma mark Controlling Editability and Selectability
 
-/*! 
-    Sets whether or not the receiver text field can be edited
+/*!
+    Sets whether or not the receiver text field can be edited. If NO, any
+    ongoing edit is ended.
 */
 - (void)setEditable:(BOOL)shouldBeEditable
 {
+    if (_isEditable === shouldBeEditable)
+        return;
+
     _isEditable = shouldBeEditable;
+
+    if(shouldBeEditable)
+        _isSelectable = YES;
+
+    // We only allow first responder status if the field is editable and enabled.
+    if (!shouldBeEditable && [[self window] firstResponder] === self)
+        [[self window] makeFirstResponder:nil];
 }
 
 /*!
@@ -282,6 +293,19 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 - (BOOL)isEditable
 {
     return _isEditable;
+}
+
+/*!
+    Sets whether the field reacts to events. If NO, any ongoing edit is
+    ended.
+*/
+- (void)setEnabled:(BOOL)shouldBeEnabled
+{
+    [super setEnabled:shouldBeEnabled];
+
+    // We only allow first responder status if the field is editable and enabled.
+    if (!shouldBeEnabled && [[self window] firstResponder] === self)
+        [[self window] makeFirstResponder:nil];
 }
 
 /*!
@@ -346,7 +370,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 - (void)setBezelStyle:(CPTextFieldBezelStyle)aBezelStyle
 {
     var shouldBeRounded = aBezelStyle === CPTextFieldRoundedBezel;
-    
+
     if (shouldBeRounded)
         [self setThemeState:CPTextFieldStateRounded];
     else
@@ -392,9 +416,9 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 {
     if (_drawsBackground == shouldDrawBackground)
         return;
-        
+
     _drawsBackground = shouldDrawBackground;
-    
+
     [self setNeedsLayout];
     [self setNeedsDisplay:YES];
 }
@@ -415,9 +439,9 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 {
     if (_textFieldBackgroundColor == aColor)
         return;
-        
+
     _textFieldBackgroundColor = aColor;
-    
+
     [self setNeedsLayout];
     [self setNeedsDisplay:YES];
 }
@@ -480,24 +504,24 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 
     _DOMElement.appendChild(element);
 
-    window.setTimeout(function() 
-    { 
+    window.setTimeout(function()
+    {
         element.focus();
         [self textDidFocus:[CPNotification notificationWithName:CPTextFieldDidFocusNotification object:self userInfo:nil]];
         CPTextFieldInputOwner = self;
     }, 0.0);
- 
+
     element.value = [self stringValue];
 
     [[[self window] platformWindow] _propagateCurrentDOMEvent:YES];
-    
+
     CPTextFieldInputIsActive = YES;
 
     if (document.attachEvent)
     {
         CPTextFieldCachedSelectStartFunction = [[self window] platformWindow]._DOMBodyElement.onselectstart;
         CPTextFieldCachedDragFunction = [[self window] platformWindow]._DOMBodyElement.ondrag;
-        
+
         [[self window] platformWindow]._DOMBodyElement.ondrag = function () {};
         [[self window] platformWindow]._DOMBodyElement.onselectstart = function () {};
     }
@@ -523,10 +547,10 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 
     CPTextFieldInputResigning = YES;
     element.blur();
-    
+
     if (!CPTextFieldInputDidBlur)
         CPTextFieldBlurFunction();
-    
+
     CPTextFieldInputDidBlur = NO;
     CPTextFieldInputResigning = NO;
 
@@ -536,14 +560,14 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
     CPTextFieldInputIsActive = NO;
 
     if (document.attachEvent)
-    {   
+    {
         [[self window] platformWindow]._DOMBodyElement.ondrag = CPTextFieldCachedDragFunction;
         [[self window] platformWindow]._DOMBodyElement.onselectstart = CPTextFieldCachedSelectStartFunction;
 
         CPTextFieldCachedSelectStartFunction = nil;
         CPTextFieldCachedDragFunction = nil;
     }
-    
+
 #endif
 
     //post CPControlTextDidEndEditingNotification
@@ -580,7 +604,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
         {
             CPTextFieldCachedSelectStartFunction = [[self window] platformWindow]._DOMBodyElement.onselectstart;
             CPTextFieldCachedDragFunction = [[self window] platformWindow]._DOMBodyElement.ondrag;
-            
+
             [[self window] platformWindow]._DOMBodyElement.ondrag = function () {};
             [[self window] platformWindow]._DOMBodyElement.onselectstart = function () {};
         }
@@ -599,7 +623,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
         if (document.attachEvent)
         {
             [[self window] platformWindow]._DOMBodyElement.ondrag = CPTextFieldCachedDragFunction;
-            [[self window] platformWindow]._DOMBodyElement.onselectstart = CPTextFieldCachedSelectStartFunction; 
+            [[self window] platformWindow]._DOMBodyElement.onselectstart = CPTextFieldCachedSelectStartFunction;
 
             CPTextFieldCachedSelectStartFunction = nil
             CPTextFieldCachedDragFunction = nil;
@@ -709,7 +733,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 - (void)setObjectValue:(id)aValue
 {
     [super setObjectValue:aValue];
-	
+
 #if PLATFORM(DOM)
 
     if (CPTextFieldInputOwner === self || [[self window] firstResponder] === self)
@@ -737,7 +761,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 {
     if (_placeholderString === aStringValue)
         return;
-    
+
     _placeholderString = aStringValue;
 
     // Only update things if we need to show the placeholder
@@ -758,17 +782,17 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 
 /*!
     Size to fit has two behavior, depending on if the receiver is an editable text field or not.
-    
-    For non-editable text fields (typically, a label), sizeToFit will change the frame of the 
+
+    For non-editable text fields (typically, a label), sizeToFit will change the frame of the
     receiver to perfectly fit the current text in stringValue in the current font, and respecting
     the current theme values for content-inset, min-size, and max-size.
-    
-    For editable text fields, sizeToFit will ONLY change the HEIGHT of the text field. It will not 
-    change the width of the text field. You can use setFrameSize: with the current height to set the 
-    width, and you can get the size of a string with [CPString sizeWithFont:]. 
-    
+
+    For editable text fields, sizeToFit will ONLY change the HEIGHT of the text field. It will not
+    change the width of the text field. You can use setFrameSize: with the current height to set the
+    width, and you can get the size of a string with [CPString sizeWithFont:].
+
     The logic behind this decision is that most of the time you do not know what content will be placed
-    in an editable text field, so you want to just choose a fixed width and leave it at that size. 
+    in an editable text field, so you want to just choose a fixed width and leave it at that size.
     However, since you don't know how tall it needs to be if you change the font, sizeToFit will still be
     useful for making the textfield an appropriate height.
 */
@@ -802,16 +826,13 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 {
 #if PLATFORM(DOM)
     var element = [self _inputElement];
-    
+
     if (([self isEditable] || [self isSelectable]))
     {
         if ([[self window] firstResponder] === self)
             window.setTimeout(function() { element.select(); }, 0);
-        else
-        {
-            [[self window] makeFirstResponder:self];
+        else if ([self window] !== nil && [[self window] makeFirstResponder:self])
             window.setTimeout(function() {[self selectText:sender];}, 0);
-        }
     }
 #endif
 }
@@ -870,14 +891,14 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
         return CPMakeRange(0, 0);
 
     // we wrap this in try catch because firefox will throw an exception in certain instances
-    try 
+    try
     {
         var inputElement = [self _inputElement],
             selectionStart = inputElement.selectionStart,
             selectionEnd = inputElement.selectionEnd;
 
         if ([selectionStart isKindOfClass:CPNumber])
-            return CPMakeRange(selectionStart, selectionEnd - selectionStart);    
+            return CPMakeRange(selectionStart, selectionEnd - selectionStart);
 
         // browsers which don't support selectionStart/selectionEnd (aka IE).
         var theDocument = inputElement.ownerDocument || inputElement.document,
@@ -889,8 +910,8 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
             range.setEndPoint('EndToStart', selectionRange);
             return CPMakeRange(range.text.length, selectionRange.text.length);
         }
-    } 
-    catch (e) 
+    }
+    catch (e)
     {
         // fall through to the return
     }
@@ -905,7 +926,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 
     var inputElement = [self _inputElement];
 
-    try 
+    try
     {
         if ([inputElement.selectionStart isKindOfClass:CPNumber])
         {
@@ -918,7 +939,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
             var theDocument = inputElement.ownerDocument || inputElement.document,
                 existingRange = theDocument.selection.createRange(),
                 range = inputElement.createTextRange();
-    
+
             if (range.inRange(existingRange))
             {
                 range.collapse(true);
@@ -953,7 +974,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 - (void)setDelegate:(id)aDelegate
 {
     var defaultCenter = [CPNotificationCenter defaultCenter];
-    
+
     //unsubscribe the existing delegate if it exists
     if (_delegate)
     {
@@ -963,24 +984,24 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
         [defaultCenter removeObserver:_delegate name:CPTextFieldDidFocusNotification object:self];
         [defaultCenter removeObserver:_delegate name:CPTextFieldDidBlurNotification object:self];
     }
-    
+
     _delegate = aDelegate;
-    
+
     if ([_delegate respondsToSelector:@selector(controlTextDidBeginEditing:)])
         [defaultCenter
             addObserver:_delegate
                selector:@selector(controlTextDidBeginEditing:)
                    name:CPControlTextDidBeginEditingNotification
                  object:self];
-    
+
     if ([_delegate respondsToSelector:@selector(controlTextDidChange:)])
         [defaultCenter
             addObserver:_delegate
                selector:@selector(controlTextDidChange:)
                    name:CPControlTextDidChangeNotification
                  object:self];
-    
-    
+
+
     if ([_delegate respondsToSelector:@selector(controlTextDidEndEditing:)])
         [defaultCenter
             addObserver:_delegate
@@ -1011,15 +1032,15 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 - (CGRect)contentRectForBounds:(CGRect)bounds
 {
     var contentInset = [self currentValueForThemeAttribute:@"content-inset"];
-    
+
     if (!contentInset)
         return bounds;
-    
+
     bounds.origin.x += contentInset.left;
     bounds.origin.y += contentInset.top;
     bounds.size.width -= contentInset.left + contentInset.right;
     bounds.size.height -= contentInset.top + contentInset.bottom;
-    
+
     return bounds;
 }
 
@@ -1029,12 +1050,12 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 
     if (_CGInsetIsEmpty(bezelInset))
         return bounds;
-    
+
     bounds.origin.x += bezelInset.left;
     bounds.origin.y += bezelInset.top;
     bounds.size.width -= bezelInset.left + bezelInset.right;
     bounds.size.height -= bezelInset.top + bezelInset.bottom;
-    
+
     return bounds;
 }
 
@@ -1042,10 +1063,10 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 {
     if (aName === "bezel-view")
         return [self bezelRectForBounds:[self bounds]];
-    
+
     else if (aName === "content-view")
         return [self contentRectForBounds:[self bounds]];
-    
+
     return [super rectForEphemeralSubviewNamed:aName];
 }
 
@@ -1056,19 +1077,19 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
         var view = [[CPView alloc] initWithFrame:_CGRectMakeZero()];
 
         [view setHitTests:NO];
-        
+
         return view;
     }
     else
     {
         var view = [[_CPImageAndTextView alloc] initWithFrame:_CGRectMakeZero()];
         //[view setImagePosition:CPNoImage];
-        
+
         [view setHitTests:NO];
-        
+
         return view;
     }
-    
+
     return [super createEphemeralSubviewNamed:aName];
 }
 
@@ -1077,10 +1098,10 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
     var bezelView = [self layoutEphemeralSubviewNamed:@"bezel-view"
                                            positioned:CPWindowBelow
                       relativeToEphemeralSubviewNamed:@"content-view"];
-      
+
     if (bezelView)
         [bezelView setBackgroundColor:[self currentValueForThemeAttribute:@"bezel-color"]];
-    
+
     var contentView = [self layoutEphemeralSubviewNamed:@"content-view"
                                              positioned:CPWindowAbove
                         relativeToEphemeralSubviewNamed:@"bezel-view"];
@@ -1090,7 +1111,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
         [contentView setHidden:[self hasThemeState:CPThemeStateEditing]];
 
         var string = "";
-        
+
         if ([self hasThemeState:CPTextFieldStatePlaceholder])
             string = [self placeholderString];
         else
@@ -1148,6 +1169,7 @@ var CPTextFieldIsEditableKey            = "CPTextFieldIsEditableKey",
     CPTextFieldBezelStyleKey            = "CPTextFieldBezelStyleKey",
     CPTextFieldDrawsBackgroundKey       = "CPTextFieldDrawsBackgroundKey",
     CPTextFieldLineBreakModeKey         = "CPTextFieldLineBreakModeKey",
+    CPTextFieldAlignmentKey             = "CPTextFieldAlignmentKey",
     CPTextFieldBackgroundColorKey       = "CPTextFieldBackgroundColorKey",
     CPTextFieldPlaceholderStringKey     = "CPTextFieldPlaceholderStringKey";
 
@@ -1161,7 +1183,7 @@ var CPTextFieldIsEditableKey            = "CPTextFieldIsEditableKey",
 - (id)initWithCoder:(CPCoder)aCoder
 {
     self = [super initWithCoder:aCoder];
-    
+
     if (self)
     {
         [self setEditable:[aCoder decodeBoolForKey:CPTextFieldIsEditableKey]];
@@ -1171,9 +1193,12 @@ var CPTextFieldIsEditableKey            = "CPTextFieldIsEditableKey",
 
         [self setTextFieldBackgroundColor:[aCoder decodeObjectForKey:CPTextFieldBackgroundColorKey]];
 
+        [self setLineBreakMode:[aCoder decodeIntForKey:CPTextFieldLineBreakModeKey]];
+        [self setAlignment:[aCoder decodeIntForKey:CPTextFieldAlignmentKey]];
+
         [self setPlaceholderString:[aCoder decodeObjectForKey:CPTextFieldPlaceholderStringKey]];
     }
-    
+
     return self;
 }
 
@@ -1184,14 +1209,17 @@ var CPTextFieldIsEditableKey            = "CPTextFieldIsEditableKey",
 - (void)encodeWithCoder:(CPCoder)aCoder
 {
     [super encodeWithCoder:aCoder];
-    
+
     [aCoder encodeBool:_isEditable forKey:CPTextFieldIsEditableKey];
     [aCoder encodeBool:_isSelectable forKey:CPTextFieldIsSelectableKey];
-    
+
     [aCoder encodeBool:_drawsBackground forKey:CPTextFieldDrawsBackgroundKey];
-    
+
     [aCoder encodeObject:_textFieldBackgroundColor forKey:CPTextFieldBackgroundColorKey];
-    
+
+    [aCoder encodeInt:[self lineBreakMode] forKey:CPTextFieldLineBreakModeKey];
+    [aCoder encodeInt:[self alignment] forKey:CPTextFieldAlignmentKey];
+
     [aCoder encodeObject:_placeholderString forKey:CPTextFieldPlaceholderStringKey];
 }
 

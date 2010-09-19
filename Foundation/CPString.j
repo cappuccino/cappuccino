@@ -55,6 +55,12 @@ CPAnchoredSearch        = 8;
     @class CPString
 */
 CPNumericSearch         = 64;
+/*!
+    Search ignores diacritic marks.
+    @global
+    @class CPString
+*/
+CPDiacriticInsensitiveSearch = 128;
 
 var CPStringUIDs        = new CFMutableDictionary();
 
@@ -469,6 +475,12 @@ var CPStringRegexSpecialCharacters = [
         rhs = rhs.toLowerCase();
     }
 
+    if(aMask & CPDiacriticInsensitiveSearch)
+    {
+    	lhs = lhs.stripDiacritics();
+    	rhs = rhs.stripDiacritics();
+    }
+
     if (lhs < rhs)
         return CPOrderedAscending;
     else if (lhs > rhs)
@@ -511,6 +523,18 @@ var CPStringRegexSpecialCharacters = [
 {
     return aString && aString != "" && length >= aString.length && lastIndexOf(aString) == (length - aString.length);
 }
+
+- (BOOL)isEqual:(id)anObject
+{
+    if (self === anObject)
+        return YES;
+
+    if (!anObject || ![anObject isKindOfClass:[CPString class]])
+        return NO;
+
+    return [self isEqualToString:anObject];
+}
+
 
 /*!
     Returns \c YES if the specified string contains the same characters as the receiver.
@@ -621,10 +645,9 @@ var CPStringRegexSpecialCharacters = [
     a digit 1-9. Returns \c NO otherwise. This method skips the initial
     whitespace characters, +,- followed by Zeroes.
 */
-
 - (BOOL)boolValue
 {
-    var replaceRegExp = new RegExp("^\\s*[\\+,\\-]*0*");
+    var replaceRegExp = new RegExp("^\\s*[\\+,\\-]?0*");
     return RegExp("^[Y,y,t,T,1-9]").test(self.replace(replaceRegExp, ''));
 }
 
@@ -770,5 +793,32 @@ var CPStringRegexSpecialCharacters = [
 }
 
 @end
+
+var diacritics = [[192,198],[224,230],[231,231],[232,235],[236,239],[242,246],[249,252]]; // Basic Latin ; Latin-1 Supplement.
+var normalized = [65,97,99,101,105,111,117];
+
+String.prototype.stripDiacritics = function ()
+{
+    var output = "";
+    for (var indexSource = 0; indexSource < this.length; indexSource++)
+    {
+        var code = this.charCodeAt(indexSource);
+
+        for (var i = 0; i < diacritics.length; i++)
+        {
+            var drange = diacritics[i];
+
+            if (code >= drange[0] && code <= drange[drange.length-1])
+            {
+                code = normalized[i];
+                break;
+            }
+        }
+
+        output += String.fromCharCode(code);
+    }
+
+    return output;
+}
 
 String.prototype.isa = CPString;

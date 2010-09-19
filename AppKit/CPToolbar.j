@@ -563,6 +563,7 @@ var _CPToolbarItemInfoMake = function(anIndex, aView, aLabel, aMinWidth)
 
         [_additionalItemsButton setImagePosition:CPImageOnly];
         [[_additionalItemsButton menu] setShowsStateColumn:NO];
+        [[_additionalItemsButton menu] setAutoenablesItems:NO];
 
         [_additionalItemsButton setAlternateImage:_CPToolbarViewExtraItemsAlternateImage];
     }
@@ -793,14 +794,13 @@ var _CPToolbarItemInfoMake = function(anIndex, aView, aLabel, aMinWidth)
 
             hasNonSeparatorItem = YES;
 
-            [_additionalItemsButton addItemWithTitle:[item label]];
-
-            var menuItem = [_additionalItemsButton itemArray][index + 1];
+            var menuItem = [[CPMenuItem alloc] initWithTitle:[item label] action:[item action] keyEquivalent:nil];
 
             [menuItem setImage:[item image]];
-
             [menuItem setTarget:[item target]];
-            [menuItem setAction:[item action]];
+            [menuItem setEnabled:[item isEnabled]];
+
+            [_additionalItemsButton addItem:menuItem];
         }
     }
     else
@@ -1055,6 +1055,8 @@ var TOP_MARGIN      = 5.0,
         [_imageView setAlphaValue:0.5];
         [_labelField setAlphaValue:0.5];
     }
+
+    [_toolbar tile];
 }
 
 - (CPColor)FIXME_labelColor
