@@ -149,7 +149,7 @@ exports.main = function(args)
 
     var resolved = resolveFlags(args),
         outputFilePaths = resolved.outputFilePaths,
-        objjcFlags = resolved.objjFlags,
+        objjcFlags = resolved.objjcFlags,
         gccFlags = resolved.gccFlags;
 
     resolved.filePaths.forEach(function(filePath, index)
