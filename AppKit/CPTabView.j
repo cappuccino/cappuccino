@@ -35,7 +35,7 @@ var CPTabViewDidSelectTabViewItemSelector           = 1,
 
 var HEIGHT_OF_SEGMENTED_CONTROL = 24;
 
-@implementation CPTabView2 : CPView
+@implementation CPTabView : CPView
 {
     CPArray             items;
 
@@ -53,15 +53,15 @@ var HEIGHT_OF_SEGMENTED_CONTROL = 24;
 - (id)initWithFrame:(CGRect)aFrame
 {
     self = [super initWithFrame:aFrame];
-    if(self)
+    if (self)
     {
         items = [CPArray array];
     
         tabs = [[CPSegmentedControl alloc] initWithFrame:CGRectMake(0, 0, 0, HEIGHT_OF_SEGMENTED_CONTROL)];
         [tabs setHitTests:NO];
     
-        box = [[CPBox alloc] initWithFrame:CGRectMake(0, HEIGHT_OF_SEGMENTED_CONTROL/2, CGRectGetWidth(aFrame), 
-                                                            CGRectGetHeight(aFrame)-HEIGHT_OF_SEGMENTED_CONTROL)];
+        box = [[CPBox alloc] initWithFrame:CGRectMake(0, HEIGHT_OF_SEGMENTED_CONTROL / 2, CGRectGetWidth(aFrame),
+                                                            CGRectGetHeight(aFrame) - HEIGHT_OF_SEGMENTED_CONTROL)];
     
         selectedIndex = CPNotFound;
     
@@ -107,13 +107,13 @@ var HEIGHT_OF_SEGMENTED_CONTROL = 24;
 */
 - (void)removeTabViewItem:(CPTabViewItem)aTabViewItem
 {
-    for(var i = 0; i < [items count]; i++)
+    for (var i = 0; i < [items count]; i++)
     {
-        if([items objectAtIndex:i] === aTabViewItem)
+        if ([items objectAtIndex:i] === aTabViewItem)
         {
             [items removeObjectAtIndex:i];
         }
-    } 
+    }
 
     [self _updateItems];
     [self _repositionTabs];
@@ -176,7 +176,7 @@ var HEIGHT_OF_SEGMENTED_CONTROL = 24;
 */
 - (void)selectFirstTabViewItem:(id)aSender
 {
-    if([items count] === 0)
+    if ([items count] === 0)
         return; // throw?
     
     [self selectTabViewItemAtIndex:0];
@@ -188,10 +188,10 @@ var HEIGHT_OF_SEGMENTED_CONTROL = 24;
 */
 - (void)selectLastTabViewItem:(id)aSender
 {
-    if([items count] === 0)
+    if ([items count] === 0)
         return; // throw?
     
-    [self selectTabViewItemAtIndex:[items count]-1];
+    [self selectTabViewItemAtIndex:[items count] - 1];
 }
 
 /*!
@@ -200,12 +200,12 @@ var HEIGHT_OF_SEGMENTED_CONTROL = 24;
 */
 - (void)selectNextTabViewItem:(id)aSender
 {
-    if(selectedIndex === CPNotFound)
+    if (selectedIndex === CPNotFound)
         return;
     
     var nextIndex = selectedIndex + 1;
     
-    if(nextIndex === [items count])
+    if (nextIndex === [items count])
         return; // does nothing. According to spec at (http://developer.apple.com/mac/library/DOCUMENTATION/Cocoa/Reference/ApplicationKit/Classes/NSTabView_Class/Reference/Reference.html#//apple_ref/occ/instm/NSTabView/selectNextTabViewItem:)
     
     [self selectTabViewItemAtIndex:nextIndex];
@@ -217,12 +217,12 @@ var HEIGHT_OF_SEGMENTED_CONTROL = 24;
 */
 - (void)selectPreviousTabViewItem:(id)aSender
 {
-    if(selectedIndex === CPNotFound)
+    if (selectedIndex === CPNotFound)
         return;
     
     var previousIndex = selectedIndex - 1;
 
-    if(previousIndex < 0)
+    if (previousIndex < 0)
         return; // does nothing. See above.
     
     [self selectTabViewItemAtIndex:previousIndex];
@@ -243,7 +243,7 @@ var HEIGHT_OF_SEGMENTED_CONTROL = 24;
 */
 - (void)selectTabViewItemAtIndex:(unsigned)anIndex
 {
-    if(anIndex === selectedIndex)
+    if (anIndex === selectedIndex)
         return;
     
     if ((delegateSelectors & CPTabViewShouldSelectTabViewItemSelector) && ![delegate tabView:self shouldSelectTabViewItem:aTabViewItem])
@@ -287,7 +287,7 @@ var HEIGHT_OF_SEGMENTED_CONTROL = 24;
     
     type = aTabViewType;
     
-    switch(type) {
+    switch (type) {
         case CPTopTabsBezelBorder:
         case CPBottomTabsBezelBorder:
         case CPNoTabsBezelBorder:
@@ -353,7 +353,8 @@ var HEIGHT_OF_SEGMENTED_CONTROL = 24;
 {
     var segmentIndex = [tabs testSegment:[tabs convertPoint:[anEvent locationInWindow] fromView:nil]];
     
-    if(segmentIndex != CPNotFound) {
+    if (segmentIndex != CPNotFound)
+    {
         [self selectTabViewItemAtIndex:segmentIndex];
         [tabs trackSegment:anEvent];
     }
@@ -361,10 +362,10 @@ var HEIGHT_OF_SEGMENTED_CONTROL = 24;
 
 - (void)_repositionTabs
 {
-    var horizontalCenterOfSelf = CGRectGetWidth([self bounds])/2;
-    var verticalCenterOfTabs = CGRectGetHeight([tabs bounds])/2;
+    var horizontalCenterOfSelf = CGRectGetWidth([self bounds]) / 2,
+        verticalCenterOfTabs = CGRectGetHeight([tabs bounds]) / 2;
     
-    if(type === CPBottomTabsBezelBorder)
+    if (type === CPBottomTabsBezelBorder)
         [tabs setCenter:CGPointMake(horizontalCenterOfSelf, CGRectGetHeight([self bounds]) - verticalCenterOfTabs)];
     else
         [tabs setCenter:CGPointMake(horizontalCenterOfSelf, verticalCenterOfTabs)];
@@ -381,13 +382,13 @@ var HEIGHT_OF_SEGMENTED_CONTROL = 24;
 {
     [tabs setSegmentCount:[items count]];
 
-    for(var i = 0; i < [items count]; i++)
+    for (var i = 0; i < [items count]; i++)
     {
         [tabs setLabel:[[items objectAtIndex:i] label] forSegment:i];
         [tabs setTag:i forSegment:i];
     }
 
-    if(selectedIndex === CPNotFound)
+    if (selectedIndex === CPNotFound)
     {
         [self selectFirstTabViewItem:self];
     }
