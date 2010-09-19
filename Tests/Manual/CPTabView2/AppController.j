@@ -16,7 +16,7 @@
     var theWindow = [[CPWindow alloc] initWithContentRect:CGRectMakeZero() styleMask:CPBorderlessBridgeWindowMask],
         contentView = [theWindow contentView];
 
-	var tabView = [[CPTabView2 alloc] initWithFrame:CGRectMake(50,50,400,400)];
+	var tabView = [[CPTabView alloc] initWithFrame:CGRectMake(50,50,400,400)];
 	[tabView setTabViewType:CPNoTabsBezelBorder];
 	[tabView setTabViewType:CPBottomTabsBezelBorder];
 	
