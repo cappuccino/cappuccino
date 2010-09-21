@@ -81,7 +81,7 @@ var HEIGHT_OF_SEGMENTED_CONTROL = 24;
     
     @param unsigned aMask the autoresizing mask
 */
--(void)setAutoresizingMask:(unsigned)aMask
+- (void)setAutoresizingMask:(unsigned)aMask
 {
     [box setAutoresizingMask:aMask];
     
@@ -99,7 +99,6 @@ var HEIGHT_OF_SEGMENTED_CONTROL = 24;
 {
     [super setFrame:aFrame];
     
-    [self _updateItems];
     [self _repositionTabs];
 }
 
@@ -113,7 +112,6 @@ var HEIGHT_OF_SEGMENTED_CONTROL = 24;
 {
     [super setBounds:someBounds];
     
-    [self _updateItems];
     [self _repositionTabs];
 }
 
@@ -332,7 +330,8 @@ var HEIGHT_OF_SEGMENTED_CONTROL = 24;
     
     type = aTabViewType;
     
-    switch (type) {
+    switch (type)
+    {
         case CPTopTabsBezelBorder:
         case CPBottomTabsBezelBorder:
         case CPNoTabsBezelBorder:
