@@ -75,6 +75,48 @@ var HEIGHT_OF_SEGMENTED_CONTROL = 24;
     return self;
 }
 
+/*! 
+    Override CPView message to allow to set the autoresizing mask 
+    of the tabview and it's subview
+    
+    @param unsigned aMask the autoresizing mask
+*/
+-(void)setAutoresizingMask:(unsigned)aMask
+{
+    [box setAutoresizingMask:aMask];
+    
+    [super setAutoresizingMask:aMask];
+}
+
+
+/*! 
+    Override the CPView method in order
+    to allow to reposition the segmented control
+    
+    @param aFrame the new frame
+*/
+- (void)setFrame:(CGRect)aFrame
+{
+    [super setFrame:aFrame];
+    
+    [self _updateItems];
+    [self _repositionTabs];
+}
+
+/*! 
+    Override the CPView method in order
+    to allow to reposition the segmented control
+    
+    @param someBounds the new bounds
+*/
+- (void)setBounds:(CGRect)someBounds
+{
+    [super setBounds:someBounds];
+    
+    [self _updateItems];
+    [self _repositionTabs];
+}
+
 // Adding and Removing Tabs
 /*!
     Adds a CPTabViewItem to the tab view.
@@ -247,9 +289,11 @@ var HEIGHT_OF_SEGMENTED_CONTROL = 24;
     if (anIndex === selectedIndex)
         return;
     
+    var aTabViewItem = [self tabViewItemAtIndex:anIndex];
+    
     if ((delegateSelectors & CPTabViewShouldSelectTabViewItemSelector) && ![delegate tabView:self shouldSelectTabViewItem:aTabViewItem])
         return;
-
+    
     if (delegateSelectors & CPTabViewWillSelectTabViewItemSelector)
         [delegate tabView:self willSelectTabViewItem:aTabViewItem];
     
