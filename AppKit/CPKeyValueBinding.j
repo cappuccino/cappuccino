@@ -146,18 +146,13 @@ var CPBindingOperationAnd = 0,
     var destination = [_info objectForKey:CPObservedObjectKey],
         keyPath = [_info objectForKey:CPObservedKeyPathKey],
         options = [_info objectForKey:CPOptionsKey],
-        newValue = [destination valueForKeyPath:keyPath];
+        newValue = [destination valueForKeyPath:keyPath],
+        isPlaceholder = CPIsControllerMarker(newValue);
 
-    if (CPIsControllerMarker(newValue))
+    if (isPlaceholder)
     {
-        var valueIsPlaceholder = YES;
-
         switch (newValue)
         {
-            default:
-                valueIsPlaceholder = NO;
-                break;
-
             case CPMultipleValuesMarker:
                 newValue = [options objectForKey:CPMultipleValuesPlaceholderBindingOption] || @"Multiple Values";
                 break;
@@ -173,22 +168,17 @@ var CPBindingOperationAnd = 0,
                 newValue = [options objectForKey:CPNotApplicablePlaceholderBindingOption] || @"Not Applicable";
                 break;
         }
-
-        if (valueIsPlaceholder &&
-            [_source respondsToSelector:@selector(setPlaceholderString:)] &&
-            [_source respondsToSelector:@selector(setStringValue:)])
-        {
-            [_source setStringValue:nil];
-            [_source setPlaceholderString:newValue];
-        }
-        else
-            [_source setValue:newValue forKey:aBinding];
     }
     else
     {
+        // Only transform the value if the current value is not a placeholder
         newValue = [self transformValue:newValue withOptions:options];
-        [_source setValue:newValue forKey:aBinding];
     }
+
+    [_source setValue:newValue forKey:aBinding];
+
+    if ([_source respondsToSelector:@selector(_setCurrentValueIsPlaceholder:)])
+        [_source _setCurrentValueIsPlaceholder:isPlaceholder];
 }
 
 - (void)reverseSetValueFor:(CPString)aBinding
@@ -276,7 +266,7 @@ var CPBindingOperationAnd = 0,
     var exposedBindings = [],
         theClass = [self class];
 
-    while(theClass)
+    while (theClass)
     {
         var temp = [CPKeyValueBinding exposedBindingsForClass:theClass];
 
@@ -407,7 +397,7 @@ var invokeAction = function invokeAction(/*CPString*/targetKey, /*CPString*/argu
     var invocation = [CPInvocation invocationWithMethodSignature:[target methodSignatureForSelector:selector]];
     [invocation setSelector:selector];
 
-    var bindingName = argumentKey
+    var bindingName = argumentKey,
         count = 1;
 
     while (theBinding = [bindings objectForKey:bindingName])
