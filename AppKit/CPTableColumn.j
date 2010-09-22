@@ -275,9 +275,8 @@ CPTableColumnUserResizingMask   = 1 << 1;
 - (id)_newDataViewForRow:(int)aRowIndex
 {
     var dataView = [self dataViewForRow:aRowIndex],
-        dataViewUID = [dataView UID];
-
-    var x = [self tableView]._cachedDataViews[dataViewUID];
+        dataViewUID = [dataView UID],
+        x = [self tableView]._cachedDataViews[dataViewUID];
     if (x && x.length)
     return x.pop();
 
@@ -403,7 +402,7 @@ CPTableColumnUserResizingMask   = 1 << 1;
     var bindingsDictionary = [CPKeyValueBinding allBindingsForObject:self],
         keys = [bindingsDictionary allKeys];
 
-    for (var i=0, count = [keys count]; i<count; i++)
+    for (var i = 0, count = [keys count]; i < count; i++)
     {
         var bindingName = keys[i],
             bindingPath = [aDataView _replacementKeyPathForBinding:bindingName],
@@ -430,7 +429,7 @@ CPTableColumnUserResizingMask   = 1 << 1;
             */
 
             var firstPart = keyPath.substring(0, dotIndex),
-                secondPart = keyPath.substring(dotIndex+1),
+                secondPart = keyPath.substring(dotIndex + 1),
                 firstValue = [destination valueForKeyPath:firstPart];
 
             if ([firstValue isKindOfClass:CPArray])

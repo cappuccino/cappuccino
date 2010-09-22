@@ -22,7 +22,7 @@
 {
     NSURL * requestURL = [aRequest URL];
 
-    if([aWebView mainFrame] != aWebFrame || 
+    if ([aWebView mainFrame] != aWebFrame || 
        [[baseURL scheme] isEqualTo:[requestURL scheme]] &&
        ![baseURL host] || [[baseURL host] isEqualTo:[requestURL host]] &&
        ![baseURL port] || [[baseURL port] isEqualTo:[requestURL port]])

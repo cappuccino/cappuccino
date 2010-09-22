@@ -80,24 +80,24 @@ var CPArrayClass                                                            = Ni
     @return the Class to use instead or \c nil
     to abort the unarchiving operation
 
-    @delegate -(id)unarchiver:(CPKeyedUnarchiver)unarchiver didDecodeObject:(id)object;
+    @delegate - (id)unarchiver:(CPKeyedUnarchiver)unarchiver didDecodeObject:(id)object;
     Called when the unarchiver decodes an object.
     @param unarchiver the unarchiver doing the decoding
     @param object the decoded objec
     @return a substitute to use for the decoded object. This can be the same object argument provide,
     another object or \c nil.
 
-    @delegate -(void)unarchiver:(CPKeyedUnarchiver)unarchiver willReplaceObject:(id)object withObject:(id)newObject;
+    @delegate - (void)unarchiver:(CPKeyedUnarchiver)unarchiver willReplaceObject:(id)object withObject:(id)newObject;
     Called when a decoded object has been substituted with another. (for example, from \c -unarchiver:didDecodeObject:.
     @param unarchiver the unarchiver that decoded the object
     @param object the original decoded object
     @param newObject the replacement object
 
-    @delegate -(void)unarchiverWillFinish:(CPKeyedUnarchiver)unarchiver;
+    @delegate - (void)unarchiverWillFinish:(CPKeyedUnarchiver)unarchiver;
     Called when the unarchiver is about to finish decoding.
     @param unarchiver the unarchiver that's about to finish
 
-    @delegate -(void)unarchiverDidFinish:(CPKeyedUnarchiver)unarchiver;
+    @delegate - (void)unarchiverDidFinish:(CPKeyedUnarchiver)unarchiver;
     Called when the unarchiver has finished decoding.
     @param unarchiver the unarchiver that finished decoding
 */

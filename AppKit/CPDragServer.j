@@ -40,13 +40,11 @@ CPDragOperationEvery    = -1;
 
 #define DRAGGING_WINDOW(anObject) ([anObject isKindOfClass:[CPWindow class]] ? anObject : [anObject window])
 
-var CPDragServerPreviousEvent = nil,
-    CPDragServerPeriodicUpdateInterval = 0.05;
-
-var CPSharedDragServer = nil;
-
-var CPDragServerSource             = nil;
-var CPDragServerDraggingInfo       = nil;
+var CPDragServerPreviousEvent           = nil,
+    CPDragServerPeriodicUpdateInterval  = 0.05,
+    CPSharedDragServer                  = nil,
+    CPDragServerSource                  = nil,
+    CPDragServerDraggingInfo            = nil;
 
 /*
     CPDraggingInfo is a container of information about a specific dragging session.
@@ -221,14 +219,13 @@ var CPDraggingSource_draggedImage_movedTo_          = 1 << 0,
     [_draggingUpdateTimer invalidate];
     _draggingUpdateTimer = nil;
 
-    var dragOperation = CPDragOperationCopy;
-    // We have to convert base to bridge since the drag event comes from the source window, not the drag window.
-    var draggingDestination = [aPlatformWindow _dragHitTest:aLocation pasteboard:[CPDragServerDraggingInfo draggingPasteboard]];
+    var dragOperation = CPDragOperationCopy,
+        draggingDestination = [aPlatformWindow _dragHitTest:aLocation pasteboard:[CPDragServerDraggingInfo draggingPasteboard]]; // We have to convert base to bridge since the drag event comes from the source window, not the drag window.
 
     if (draggingDestination)
         _draggingLocation = [DRAGGING_WINDOW(draggingDestination) convertPlatformWindowToBase:aLocation];
 
-    if(draggingDestination !== _draggingDestination)
+    if (draggingDestination !== _draggingDestination)
     {
         if ([_draggingDestination respondsToSelector:@selector(draggingExited:)])
             [_draggingDestination draggingExited:CPDragServerDraggingInfo];

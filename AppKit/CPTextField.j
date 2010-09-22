@@ -279,7 +279,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 
     _isEditable = shouldBeEditable;
 
-    if(shouldBeEditable)
+    if (shouldBeEditable)
         _isSelectable = YES;
 
     // We only allow first responder status if the field is editable and enabled.
@@ -696,7 +696,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 - (void)textDidBlur:(CPNotification)note
 {
     //this looks to prevent false propagation of notifications for other objects
-    if([note object] != self)
+    if ([note object] != self)
         return;
 
     [[CPNotificationCenter defaultCenter] postNotification:note];
@@ -705,7 +705,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 - (void)textDidFocus:(CPNotification)note
 {
     //this looks to prevent false propagation of notifications for other objects
-    if([note object] != self)
+    if ([note object] != self)
         return;
 
     [[CPNotificationCenter defaultCenter] postNotification:note];
@@ -757,7 +757,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
     Sets a placeholder string for the receiver.  The placeholder is displayed until editing begins,
     and after editing ends, if the text field has an empty string value
 */
--(void)setPlaceholderString:(CPString)aStringValue
+- (void)setPlaceholderString:(CPString)aStringValue
 {
     if (_placeholderString === aStringValue)
         return;
@@ -881,7 +881,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
             newValue = [stringValue stringByReplacingCharactersInRange:selectedRange withString:pasteString];
 
         [self setStringValue:newValue];
-        [self setSelectedRange:CPMakeRange(selectedRange.location+pasteString.length, 0)];
+        [self setSelectedRange:CPMakeRange(selectedRange.location + pasteString.length, 0)];
     }
 }
 
@@ -1158,7 +1158,7 @@ var secureStringForString = function(aString)
     if (!aString)
         return "";
 
-    return Array(aString.length+1).join(CPSecureTextFieldCharacter);
+    return Array(aString.length + 1).join(CPSecureTextFieldCharacter);
 }
 
 

@@ -532,7 +532,7 @@ GLOBAL(objj_msgSend) = function(/*id*/ aReceiver, /*SEL*/ aSelector)
 
     CLASS_GET_METHOD_IMPLEMENTATION(var implementation, isa, aSelector);
 
-    switch(arguments.length)
+    switch (arguments.length)
     {
         case 2: return implementation(aReceiver, aSelector);
         case 3: return implementation(aReceiver, aSelector, arguments[2]);

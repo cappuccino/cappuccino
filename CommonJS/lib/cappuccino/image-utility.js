@@ -9,7 +9,7 @@ var javaImageSize = function (aFilePath)
         readers = javax.imageio.ImageIO.getImageReaders(imageStream),
         reader = null;
 
-    if(readers.hasNext())
+    if (readers.hasNext())
         reader = readers.next();
 
     else

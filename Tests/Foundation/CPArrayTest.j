@@ -321,7 +321,7 @@
     var target = ["a", "b", "c", "d"],
         pretty = [];
 
-    for(var i = 0; i < target.length; i++)
+    for (var i = 0; i < target.length; i++)
         pretty.push([[CPPrettyObject alloc] initWithValue:target[i] number:i]);
 
     [pretty sortUsingDescriptors:[[[CPSortDescriptor alloc] initWithKey:@"value" ascending:NO]]];

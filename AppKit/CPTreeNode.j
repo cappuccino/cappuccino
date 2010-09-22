@@ -5,7 +5,7 @@
 @implementation CPTreeNode : CPObject
 {
     id              _representedObject @accessors(readonly, property=representedObject);
-    
+
     CPTreeNode      _parentNode @accessors(readonly, property=parentNode);
     CPMutableArray  _childNodes;
 }

@@ -19,7 +19,7 @@ var ELEMENTS = 100,
 
     var start = (new Date).getTime();
 
-    for (var i=0; i<REPEATS; i++)
+    for (var i = 0; i<REPEATS; i++)
     {
         var sorted = [array sortedArrayUsingDescriptors:descriptors];
         [self checkSorted:sorted];
@@ -45,7 +45,7 @@ var ELEMENTS = 100,
 
     var start = (new Date).getTime();
 
-    for (var i=0; i<REPEATS; i++)
+    for (var i = 0; i<REPEATS; i++)
     {
         var sorted = [array copy];
         sorted.sort(sortFunction)
@@ -60,7 +60,7 @@ var ELEMENTS = 100,
 - (CPArray)makeUnsorted
 {
     var array = [];
-    for (var i=0; i<ELEMENTS; i++) {
+    for (var i = 0; i<ELEMENTS; i++) {
         var s = [Sortable new];
         [s setA:(i % 5)];
         [s setB:(ELEMENTS-i)];

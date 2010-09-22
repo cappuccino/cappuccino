@@ -34,10 +34,10 @@
         CPKeyCodes.TAB,         CPTabCharacter,             @selector(insertTab:)
     ];
 
-    for (var i=0; i<tests.length; i += 3)
+    for (var i = 0; i<tests.length; i += 3)
     {
         var keyCode = tests[i],
-            character = tests[i+1],
+            character = tests[i + 1],
             selector = tests[i+2];
 
         responder.doCommandCalls = [];

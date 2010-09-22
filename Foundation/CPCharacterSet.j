@@ -127,16 +127,16 @@ var _builtInCharacterSets = {};
 + (id)_sharedCharacterSetWithName:(id)csname
 {
     var cs = _builtInCharacterSets[csname];
-    if(cs == nil)
+    if (cs == nil)
     {
         var i,
             ranges = [CPArray array],
             rangeArray = eval(csname);
 
-        for(i = 0; i < rangeArray.length; i+= 2)
+        for (i = 0; i < rangeArray.length; i+= 2)
         {
             var loc = rangeArray[i];
-            var length = rangeArray[i+1];
+            var length = rangeArray[i + 1];
             var range = CPMakeRange(loc,length);
             [ranges addObject:range];
         }
@@ -225,7 +225,7 @@ var _builtInCharacterSets = {};
 {
     var i;
 
-    for(i = 0; i < aString.length; i++)
+    for (i = 0; i < aString.length; i++)
     {
         var code = aString.charCodeAt(i);
         var range = CPMakeRange(code,1);
@@ -261,7 +261,7 @@ var _builtInCharacterSets = {};
     return set;
 }
 
--(id)invertedSet
+- (id)invertedSet
 {
     var set = [[_CPStringContentCharacterSet alloc] initWithString:_string];
     [set invert];
@@ -293,7 +293,7 @@ var _builtInCharacterSets = {};
 - (void)addCharactersInRange:(CPRange)aRange // Needs _inverted support
 {
     var i;
-    for(i = aRange.location; i < aRange.location + aRange.length; i++)
+    for (i = aRange.location; i < aRange.location + aRange.length; i++)
     {
         var s = String.fromCharCode(i);
 
@@ -306,7 +306,7 @@ var _builtInCharacterSets = {};
 {
     var i;
 
-    for(i = 0; i < aString.length; i++)
+    for (i = 0; i < aString.length; i++)
     {
         var s = aString.charAt(i);
 
@@ -343,7 +343,7 @@ _CPCharacterSetTrimAtEnd = 1 << 2;
 	var components = [CPMutableArray array],
 	    componentRange = CPMakeRange(0, 0);
 
-	for (var i=0; i < self.length; i++)
+	for (var i = 0; i < self.length; i++)
 	{
 		if ([separator characterIsMember:self.charAt(i)])
 		{

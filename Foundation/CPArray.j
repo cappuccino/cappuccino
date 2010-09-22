@@ -615,7 +615,7 @@ CPEnumerationReverse    = 1 << 1;
             result = CPOrderedSame;
 
         while (i < count)
-            if((result = [descriptors[i++] compareObject:lhs withObject:rhs]) != CPOrderedSame)
+            if ((result = [descriptors[i++] compareObject:lhs withObject:rhs]) != CPOrderedSame)
                 return result;
 
         return result;
@@ -832,7 +832,7 @@ CPEnumerationReverse    = 1 << 1;
         count = [self count],
         array = [CPArray array];
 
-    for (; i<count; ++i)
+    for (; i < count; ++i)
         if (aPredicate.evaluateWithObject(self[i]))
             array.push(self[i]);
 
@@ -1103,7 +1103,7 @@ CPEnumerationReverse    = 1 << 1;
             result = CPOrderedSame;
 
         while (i < count)
-            if((result = [descriptors[i++] compareObject:lhs withObject:rhs]) != CPOrderedSame)
+            if ((result = [descriptors[i++] compareObject:lhs withObject:rhs]) != CPOrderedSame)
                 return result;
 
         return result;

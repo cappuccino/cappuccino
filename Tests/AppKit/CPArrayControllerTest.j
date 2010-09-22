@@ -187,7 +187,7 @@
     [observations sortUsingFunction:function(a, b) { return [a.keyPath compare:b.keyPath] } context:nil];
     [self assert:4 equals:[observations count] message:"exactly 4 change notifications should be sent for new content"];
 
-    // for (var i=0; i<observations.length; i++)
+    // for (var i = 0; i<observations.length; i++)
     //    CPLog.error(observations[i].keyPath);
 
     var observation = observations[0];
@@ -225,7 +225,7 @@
     [ac setFilterPredicate:[CPPredicate predicateWithFormat:@"(name != %@)", "Francisco"]];
 
     [observations sortUsingFunction:function(a, b) { return [a.keyPath compare:b.keyPath] } context:nil];
-    //for (var i=0; i<observations.length; i++)
+    //for (var i = 0; i<observations.length; i++)
     //    CPLog.error(observations[i].keyPath);
     [self assert:3 equals:[observations count] message:"exactly 3 change notifications should be sent for new filter"];
 

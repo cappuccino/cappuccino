@@ -54,13 +54,13 @@ var CALayerRegisteredRunLoopUpdates             = nil;
     A CALayer is similar to a CPView, but with the ability
     to have a transform applied to it.
 
-    @delegate -(void)drawLayer:(CALayer)layer inContext:(CGContextRef)ctx;
+    @delegate - (void)drawLayer:(CALayer)layer inContext:(CGContextRef)ctx;
     If the delegate implements this method, the CALayer will
     call this in place of its \c -drawInContext:.
     @param layer the layer to draw for
     @param ctx the context to draw on
 
-    @delegate  -(void)displayLayer:(CALayer)layer;
+    @delegate  - (void)displayLayer:(CALayer)layer;
     The delegate can override the layer's \c -display method
     by implementing this method.
 */

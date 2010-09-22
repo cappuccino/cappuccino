@@ -28,16 +28,16 @@
     @ignore
 */
 @implementation CPSliderColorPicker : CPColorPicker
-{    
+{
     CPView      _contentView;
-    
+
     CPSlider    _redSlider;
     CPSlider    _greenSlider;
     CPSlider    _blueSlider;
     CPSlider    _hueSlider;
     CPSlider    _saturationSlider;
     CPSlider    _brightnessSlider;
-    
+
     CPTextField _rgbLabel;
     CPTextField _hsbLabel;
     CPTextField _redLabel;
@@ -58,18 +58,18 @@
     CPTextField _brightnessValue;
 }
 
-- (id)initWithPickerMask:(int)mask colorPanel:(CPColorPanel)owningColorPanel 
+- (id)initWithPickerMask:(int)mask colorPanel:(CPColorPanel)owningColorPanel
 {
     return [super initWithPickerMask:mask colorPanel: owningColorPanel];
 }
-  
--(id)initView
+
+- (id)initView
 {
-    aFrame = CPRectMake(0, 0, CPColorPickerViewWidth, CPColorPickerViewHeight);    
-    
+    aFrame = CPRectMake(0, 0, CPColorPickerViewWidth, CPColorPickerViewHeight);
+
     _contentView = [[CPView alloc] initWithFrame:aFrame];
-    [_contentView setAutoresizingMask:CPViewWidthSizable|CPViewHeightSizable];
-    
+    [_contentView setAutoresizingMask:CPViewWidthSizable | CPViewHeightSizable];
+
     _rgbLabel = [[CPTextField alloc] initWithFrame: CPRectMake(0, 10, 100, 20)];
     [_rgbLabel setStringValue: "Red, Green, Blue"];
     [_rgbLabel setTextColor:[CPColor blackColor]];
@@ -77,7 +77,7 @@
     _redLabel = [[CPTextField alloc] initWithFrame: CPRectMake(0, 35, 15, 20)];
     [_redLabel setStringValue: "R"];
     [_redLabel setTextColor:[CPColor blackColor]];
-    
+
     _redSlider = [[CPSlider alloc] initWithFrame: CPRectMake(15, 35, aFrame.size.width - 70, 20)];
     [_redSlider setMaxValue: 1.0];
     [_redSlider setMinValue: 0.0];
@@ -138,7 +138,7 @@
     _hueLabel = [[CPTextField alloc] initWithFrame: CPRectMake(0, 145, 15, 20)];
     [_hueLabel setStringValue: "H"];
     [_hueLabel setTextColor:[CPColor blackColor]];
-    
+
     _hueSlider = [[CPSlider alloc] initWithFrame: CPRectMake(15, 145, aFrame.size.width - 70, 20)];
     [_hueSlider setMaxValue: 359.0];
     [_hueSlider setMinValue: 0.0];
@@ -210,7 +210,7 @@
     [_contentView addSubview: _redSlider];
     [_contentView addSubview: _greenSlider];
     [_contentView addSubview: _blueSlider];
-    
+
     [_contentView addSubview: _hsbLabel];
     [_contentView addSubview: _hueLabel];
     [_contentView addSubview: _saturationLabel];
@@ -218,35 +218,35 @@
     [_contentView addSubview: _hueSlider];
     [_contentView addSubview: _saturationSlider];
     [_contentView addSubview: _brightnessSlider];
-    
+
     [_contentView addSubview: _hexLabel];
 }
 
-- (CPView)provideNewView:(BOOL)initialRequest 
+- (CPView)provideNewView:(BOOL)initialRequest
 {
-    if (initialRequest) 
+    if (initialRequest)
         [self initView];
-    
+
     return _contentView;
 }
 
-- (int)currentMode 
+- (int)currentMode
 {
     return CPSliderColorPickerMode;
 }
 
-- (BOOL)supportsMode:(int)mode 
+- (BOOL)supportsMode:(int)mode
 {
     return (mode == CPSliderColorPickerMode) ? YES : NO;
 }
 
--(void)sliderChanged:(id)sender
+- (void)sliderChanged:(id)sender
 {
     var newColor,
         colorPanel = [self colorPanel],
         alpha = [colorPanel opacity];
 
-    switch(sender)
+    switch (sender)
     {
         case    _hueSlider:
         case    _saturationSlider:
@@ -254,27 +254,27 @@
                                                               saturation: [_saturationSlider floatValue]
                                                               brightness: [_brightnessSlider floatValue]
                                                                    alpha: alpha];
-                                                              
+
                                         [self updateRGBSliders: newColor];
                                         break;
-                                        
+
         case    _redSlider:
         case    _greenSlider:
         case    _blueSlider:            newColor = [CPColor colorWithCalibratedRed: [_redSlider floatValue]
                                                                              green: [_greenSlider floatValue]
                                                                               blue: [_blueSlider floatValue]
                                                                              alpha: alpha];
-                                                              
+
                                         [self updateHSBSliders: newColor];
                                         break;
     }
-        
+
     [self updateLabels];
     [self updateHex: newColor];
     [colorPanel setColor: newColor];
 }
 
--(void)setColor:(CPColor)aColor
+- (void)setColor:(CPColor)aColor
 {
     [self updateRGBSliders: aColor];
     [self updateHSBSliders: aColor];
@@ -282,10 +282,10 @@
     [self updateLabels];
 }
 
--(void)updateHSBSliders:(CPColor)aColor
+- (void)updateHSBSliders:(CPColor)aColor
 {
     var hsb = [aColor hsbComponents];
-        
+
     [_hueSlider setFloatValue:hsb[0]];
     [_saturationSlider setFloatValue:hsb[1]];
     [_brightnessSlider setFloatValue:hsb[2]];
@@ -310,7 +310,7 @@
     [_hueValue setStringValue: ROUND([_hueSlider floatValue])];
     [_saturationValue setStringValue: ROUND([_saturationSlider floatValue])];
     [_brightnessValue setStringValue: ROUND([_brightnessSlider floatValue])];
-    
+
     [_redValue setStringValue: ROUND([_redSlider floatValue] * 255)];
     [_greenValue setStringValue: ROUND([_greenSlider floatValue] * 255)];
     [_blueValue setStringValue: ROUND([_blueSlider floatValue] * 255)];
@@ -330,14 +330,17 @@
 {
     var field = [aNotification object],
         value = [[field stringValue] stringByTrimmingWhitespace];
-    if (field === _hexValue) {
+    if (field === _hexValue)
+    {
         var newColor = [CPColor colorWithHexString: value];
-        if (newColor) {
+        if (newColor)
+        {
             [self setColor: newColor];
             [[self colorPanel] setColor: newColor];
         }
     } else {
-        switch(field) {
+        switch (field)
+        {
             case _redValue:        [_redSlider setFloatValue:MAX(MIN(ROUND(value), 255) / 255.0, 0)];
                                    [self sliderChanged: _redSlider];
                                    break;

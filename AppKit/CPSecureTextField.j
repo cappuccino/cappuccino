@@ -1,4 +1,3 @@
-
 @import "CPTextField.j"
 
 /*!

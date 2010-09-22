@@ -475,7 +475,7 @@ var CPStringRegexSpecialCharacters = [
         rhs = rhs.toLowerCase();
     }
 
-    if(aMask & CPDiacriticInsensitiveSearch)
+    if (aMask & CPDiacriticInsensitiveSearch)
     {
     	lhs = lhs.stripDiacritics();
     	rhs = rhs.stripDiacritics();

@@ -35,7 +35,7 @@ GLOBAL(objj_eval) = function(/*String*/ aString)
     // A bit of a hack. Executable compiles the code itself into a function, but we want
     // the raw code to eval here so we can get the result.
     // No known way to get the result of a statement except via eval.
-    var code = "with(_objj_eval_scope){" + executable._code + "\n//*/\n}";
+    var code = "with (_objj_eval_scope){" + executable._code + "\n//*/\n}";
 
     var result;
 #if COMMONJS

@@ -164,7 +164,7 @@ var _CPWindowViewResizeIndicatorImage = nil;
 
     var minPointY = 0;
     
-    if([CPMenu menuBarVisible])
+    if ([CPMenu menuBarVisible])
         minPointY = [[CPApp mainMenu] menuBarHeight];
     
     var restrictedPoint = CGPointMake(0, 0);

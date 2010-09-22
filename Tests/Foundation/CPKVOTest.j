@@ -407,7 +407,7 @@
 
     var startTime = new Date();
 
-    for(var i=0; i<1000; i++)
+    for (var i = 0; i<1000; i++)
         [bob setValue:i+"bob" forKey:"name"];
 
     var total = new Date() - startTime;
@@ -416,7 +416,7 @@
 
     startTime = new Date();
 
-    for(var i=0; i<1000; i++)
+    for (var i = 0; i<1000; i++)
         [bob setValue: i+"bob" forKey:"name"];
 
     var secondTotal = new Date() - startTime;

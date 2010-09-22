@@ -127,7 +127,7 @@ function CPUnionRange(lhsRange, rhsRange)
 */
 function CPIntersectionRange(lhsRange, rhsRange)
 {
-    if(CPMaxRange(lhsRange) < rhsRange.location || CPMaxRange(rhsRange) < lhsRange.location)
+    if (CPMaxRange(lhsRange) < rhsRange.location || CPMaxRange(rhsRange) < lhsRange.location)
         return CPMakeRange(0, 0);
 
     var location = MAX(lhsRange.location, rhsRange.location);

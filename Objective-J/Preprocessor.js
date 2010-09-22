@@ -314,7 +314,7 @@ Preprocessor.prototype.brackets = function(/*Lexer*/ tokens, /*StringBuffer*/ aS
             count = tuples.length,
             marg_list = new StringBuffer();
 
-        for(; index < count; ++index)
+        for (; index < count; ++index)
         {
             var pair = tuples[index];
 
@@ -421,13 +421,13 @@ Preprocessor.prototype.implementation = function(tokens, /*StringBuffer*/ aStrin
             throw new SyntaxError(this.error_message("*** Improper Category Definition for class \"" + class_name + "\"."));
 
         CONCAT(buffer, "{\nvar the_class = objj_getClass(\"" + class_name + "\")\n");
-        CONCAT(buffer, "if(!the_class) throw new SyntaxError(\"*** Could not find definition for class \\\"" + class_name + "\\\"\");\n");
+        CONCAT(buffer, "if (!the_class) throw new SyntaxError(\"*** Could not find definition for class \\\"" + class_name + "\\\"\");\n");
         CONCAT(buffer, "var meta_class = the_class.isa;");
     }
     else
     {
         // If we reach a colon (':'), then a superclass is being declared.
-        if(token == TOKEN_COLON)
+        if (token == TOKEN_COLON)
         {
             token = tokens.skip_whitespace();
 
@@ -450,7 +450,7 @@ Preprocessor.prototype.implementation = function(tokens, /*StringBuffer*/ aStrin
                 attributes,
                 accessors = {};
 
-            while((token = tokens.skip_whitespace()) && token != TOKEN_CLOSE_BRACE)
+            while ((token = tokens.skip_whitespace()) && token != TOKEN_CLOSE_BRACE)
             {
                 if (token === TOKEN_PREPROCESSOR)
                 {
@@ -727,7 +727,7 @@ Preprocessor.prototype.method = function(/*Lexer*/ tokens, ivar_names)
         CONCAT(buffer, parameters[index]);
     }
 
-    CONCAT(buffer, ")\n{ with(self)\n{");
+    CONCAT(buffer, ")\n{ with (self)\n{");
     CONCAT(buffer, this.preprocess(tokens, NULL, TOKEN_CLOSE_BRACE, TOKEN_OPEN_BRACE));
     CONCAT(buffer, "}\n}");
     // TODO: actually use Flags.IncludeTypeSignatures flag instead of tying to Flags.IncludeDebugSymbols

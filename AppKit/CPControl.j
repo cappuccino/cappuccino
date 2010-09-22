@@ -229,7 +229,7 @@ var CPControlBlackColor     = [CPColor blackColor];
     @param aToolTip the tooltip
 */
 /*
--(void)setToolTip:(CPString)aToolTip
+- (void)setToolTip:(CPString)aToolTip
 {
     if (_toolTip == aToolTip)
         return;
@@ -532,7 +532,7 @@ var CPControlBlackColor     = [CPColor blackColor];
 - (void)textDidBeginEditing:(CPNotification)note
 {
     //this looks to prevent false propagation of notifications for other objects
-    if([note object] != self)
+    if ([note object] != self)
         return;
 
     [[CPNotificationCenter defaultCenter] postNotificationName:CPControlTextDidBeginEditingNotification object:self userInfo:[CPDictionary dictionaryWithObject:[note object] forKey:"CPFieldEditor"]];
@@ -541,7 +541,7 @@ var CPControlBlackColor     = [CPColor blackColor];
 - (void)textDidChange:(CPNotification)note
 {
     //this looks to prevent false propagation of notifications for other objects
-    if([note object] != self)
+    if ([note object] != self)
         return;
 
     [[CPNotificationCenter defaultCenter] postNotificationName:CPControlTextDidChangeNotification object:self userInfo:[CPDictionary dictionaryWithObject:[note object] forKey:"CPFieldEditor"]];
@@ -550,7 +550,7 @@ var CPControlBlackColor     = [CPColor blackColor];
 - (void)textDidEndEditing:(CPNotification)note
 {
     //this looks to prevent false propagation of notifications for other objects
-    if([note object] != self)
+    if ([note object] != self)
         return;
 
     [self _reverseSetBinding];

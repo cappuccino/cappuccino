@@ -31,7 +31,7 @@
     
     if (self)
     {
-        if([aCoder containsValueForKey:"NSOutlineViewOutlineTableColumnKey"])
+        if ([aCoder containsValueForKey:"NSOutlineViewOutlineTableColumnKey"])
             _outlineTableColumn = [aCoder decodeObjectForKey:@"NSOutlineViewOutlineTableColumnKey"];
         else
             _outlineTableColumn = [[self tableColumns] objectAtIndex:0];

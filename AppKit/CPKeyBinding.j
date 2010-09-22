@@ -25,7 +25,7 @@
 
 CPStandardKeyBindings = {
     @"@.": @"cancelOperation:",
-    
+
     @"^a": @"moveToBeginningOfParagraph:",
     @"^$a": @"moveToBeginningOfParagraphAndModifySelection:",
     @"^b": @"moveBackward:",
@@ -144,7 +144,7 @@ var CPKeyBindingCache = {};
     unsigned    _modifierFlags;
 
     CPArray     _selectors;
-    
+
     CPString    _cacheName;
 }
 
@@ -152,7 +152,7 @@ var CPKeyBindingCache = {};
 {
     if ([self class] !== CPKeyBinding)
         return;
-    
+
     [self createKeyBindingsFromJSObject:CPStandardKeyBindings];
 }
 

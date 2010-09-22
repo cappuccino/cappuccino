@@ -52,8 +52,8 @@ CPToolbarDisplayModeIconOnly            = 2;
 */
 CPToolbarDisplayModeLabelOnly           = 3;
 
-var CPToolbarsByIdentifier              = nil;
-var CPToolbarConfigurationsByIdentifier = nil;
+var CPToolbarsByIdentifier              = nil,
+    CPToolbarConfigurationsByIdentifier = nil;
 
 /*!
     @ingroup appkit
@@ -662,7 +662,7 @@ var _CPToolbarItemInfoMake = function(anIndex, aView, aLabel, aMinWidth)
 
     // Determine all the items that have flexible width.
     // Also determine the height of the toolbar.
-    var count = _visibleItems.length
+    var count = _visibleItems.length,
         flexibleItemIndexes = [CPIndexSet indexSet];
 
     while (count--)

@@ -67,7 +67,7 @@ function CPAppKitImage(aFilename, aSize)
     return CPImageInBundle(aFilename, aSize, [CPBundle bundleForClass:[CPView class]]);
 }
 
-/*! 
+/*!
     @ingroup appkit
     @class CPImage
 
@@ -75,16 +75,16 @@ function CPAppKitImage(aFilename, aSize)
     all image types supported by the browser.
 
     @par Delegate Methods
-    
-    @delegate -(void)imageDidLoad:(CPImage)image;
+
+    @delegate - (void)imageDidLoad:(CPImage)image;
     Called when the specified image has finished loading.
     @param image the image that loaded
 
-    @delegate -(void)imageDidError:(CPImage)image;
+    @delegate - (void)imageDidError:(CPImage)image;
     Called when the specified image had an error loading.
     @param image the image with the loading error
 
-    @delegate -(void)imageDidAbort:(CPImage)image;
+    @delegate - (void)imageDidAbort:(CPImage)image;
     Called when the image loading was aborted.
     @param image the image that was aborted
 */

@@ -136,7 +136,7 @@ function CGContextDrawPath(aContext, aMode)
         var element = elements[i],
             type = element.type;
 
-        switch(type)
+        switch (type)
         {
             case kCGPathElementMoveToPoint: 
             case kCGPathElementAddLineToPoint:      vml.push(VML_ELEMENT_TABLE[type], COORD(element.x), ',', COORD(element.y));
@@ -211,7 +211,7 @@ function CGContextDrawPath(aContext, aMode)
 
       // Figure out dimensions so we can do gradient fills
       // properly
-      /*if(c) {
+      /*if (c) {
         if (min.x == null || c.x < min.x) {
           min.x = c.x;
         }
@@ -306,7 +306,7 @@ function CGContextDrawLinearGradient(aContext, aGradient, aStartPoint, anEndPoin
         vml.push("colors=\"");
 
         for (var i = 0; i < count; i++)
-            vml.push((aGradient.locations[i]*100).toFixed(0)+"% "+to_string(colors[i])+(i<count-1 ? "," : ""));
+            vml.push((aGradient.locations[i]*100).toFixed(0)+"% "+to_string(colors[i])+(i < count-1 ? "," : ""));
 
         vml.push("\" />");
     }

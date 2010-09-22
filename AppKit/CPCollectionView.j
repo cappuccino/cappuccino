@@ -40,11 +40,11 @@
 
     @par Delegate Methods
 
-    @delegate -(void)collectionViewDidChangeSelection:(CPCollectionView)collectionView;
+    @delegate - (void)collectionViewDidChangeSelection:(CPCollectionView)collectionView;
     Called when the selection in the collection view has changed.
     @param collectionView the collection view who's selection changed
 
-    @delegate -(void)collectionView:(CPCollectionView)collectionView didDoubleClickOnItemAtIndex:(int)index;
+    @delegate - (void)collectionView:(CPCollectionView)collectionView didDoubleClickOnItemAtIndex:(int)index;
     Called when the user double-clicks on an item in the collection view.
     @param collectionView the collection view that received the double-click
     @param index the index of the item that received the double-click
@@ -742,7 +742,7 @@
 
 - (void)_modifySelectionWithNewIndex:(int)anIndex direction:(int)aDirection expand:(BOOL)shouldExpand
 {
-    anIndex = MIN(MAX(anIndex, 0), [[self items] count]-1);
+    anIndex = MIN(MAX(anIndex, 0), [[self items] count] - 1);
 
     if (_allowsMultipleSelection && shouldExpand)
     {
@@ -834,8 +834,8 @@
         [[self delegate] collectionView:self shouldDeleteItemsAtIndexes:[self selectionIndexes]];
 
         var index = [[self selectionIndexes] firstIndex];
-        if (index > [[self content] count]-1)
-            [self setSelectionIndexes:[CPIndexSet indexSetWithIndex:[[self content] count]-1]];
+        if (index > [[self content] count] - 1)
+            [self setSelectionIndexes:[CPIndexSet indexSetWithIndex:[[self content] count] - 1]];
 
         [self _scrollToSelection];
         [self setNeedsDisplay:YES];

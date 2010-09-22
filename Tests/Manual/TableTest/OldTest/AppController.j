@@ -21,10 +21,10 @@ tableTestDragType = @"CPTableViewTestDragType";
     dataSet2 = [],
     dataSet3 = [];
     
-    for(var i = 1; i < 10; i++)
+    for (var i = 1; i < 10; i++)
     {
         dataSet1[i - 1] = [CPNumber numberWithInt:i];
-        dataSet2[i - 1] = [CPNumber numberWithInt:i+10];
+        dataSet2[i - 1] = [CPNumber numberWithInt:i + 10];
         dataSet3[i - 1] = [CPNumber numberWithInt:i+20];
     }
 
@@ -124,9 +124,9 @@ tableTestDragType = @"CPTableViewTestDragType";
     [button setAction:@selector(addColumn:)];
     [contentView addSubview:button];
 
-    var sourceListActiveGradient = CGGradientCreateWithColorComponents(CGColorSpaceCreateDeviceRGB(), [255.0/255.0, 153.0/255.0, 209.0/255.0,1.0, 33.0/255.0, 94.0/255.0, 208.0/255.0,1.0], [0,1], 2),
-        sourceListActiveTopLineColor = [CPColor colorWithCalibratedRed:(255.0/255.0) green:(123.0/255.0) blue:(218.0/255.0) alpha:1.0],
-        sourceListActiveBottomLineColor = [CPColor colorWithCalibratedRed:(255.0/255.0) green:(92.0/255.0) blue:(207.0/255.0) alpha:1.0];
+    var sourceListActiveGradient = CGGradientCreateWithColorComponents(CGColorSpaceCreateDeviceRGB(), [255.0 / 255.0, 153.0 / 255.0, 209.0 / 255.0,1.0, 33.0 / 255.0, 94.0 / 255.0, 208.0 / 255.0,1.0], [0,1], 2),
+        sourceListActiveTopLineColor = [CPColor colorWithCalibratedRed:(255.0 / 255.0) green:(123.0 / 255.0) blue:(218.0 / 255.0) alpha:1.0],
+        sourceListActiveBottomLineColor = [CPColor colorWithCalibratedRed:(255.0 / 255.0) green:(92.0 / 255.0) blue:(207.0 / 255.0) alpha:1.0];
     [tableView setSelectionGradientColors:[CPDictionary dictionaryWithObjects:[sourceListActiveGradient, sourceListActiveTopLineColor, sourceListActiveBottomLineColor] forKeys:[CPSourceListGradient, CPSourceListTopLineColor, CPSourceListBottomLineColor]]];
 }
 
@@ -257,9 +257,9 @@ tableTestDragType = @"CPTableViewTestDragType";
     [scrollView3 setDocumentView:tableView3];
     [scrollView3 setAutoresizingMask:CPViewWidthSizable | CPViewHeightSizable];
 
-    var sourceListActiveGradient = CGGradientCreateWithColorComponents(CGColorSpaceCreateDeviceRGB(), [255.0/255.0, 153.0/255.0, 209.0/255.0,1.0, 33.0/255.0, 94.0/255.0, 208.0/255.0,1.0], [0,1], 2),
-        sourceListActiveTopLineColor = [CPColor colorWithCalibratedRed:(255.0/255.0) green:(123.0/255.0) blue:(218.0/255.0) alpha:1.0],
-        sourceListActiveBottomLineColor = [CPColor colorWithCalibratedRed:(255.0/255.0) green:(92.0/255.0) blue:(207.0/255.0) alpha:1.0];
+    var sourceListActiveGradient = CGGradientCreateWithColorComponents(CGColorSpaceCreateDeviceRGB(), [255.0 / 255.0, 153.0 / 255.0, 209.0 / 255.0,1.0, 33.0 / 255.0, 94.0 / 255.0, 208.0 / 255.0,1.0], [0,1], 2),
+        sourceListActiveTopLineColor = [CPColor colorWithCalibratedRed:(255.0 / 255.0) green:(123.0 / 255.0) blue:(218.0 / 255.0) alpha:1.0],
+        sourceListActiveBottomLineColor = [CPColor colorWithCalibratedRed:(255.0 / 255.0) green:(92.0 / 255.0) blue:(207.0 / 255.0) alpha:1.0];
     [tableView3 setSelectionGradientColors:[CPDictionary dictionaryWithObjects:[sourceListActiveGradient, sourceListActiveTopLineColor, sourceListActiveBottomLineColor] forKeys:[CPSourceListGradient, CPSourceListTopLineColor, CPSourceListBottomLineColor]]];
     
     [[window3 contentView] addSubview:scrollView3];
@@ -271,11 +271,11 @@ tableTestDragType = @"CPTableViewTestDragType";
 
 - (int)numberOfRowsInTableView:(CPTableView)atableView
 {
-    if(atableView === tableView)
+    if (atableView === tableView)
         return dataSet1.length;
-    else if(atableView === tableView2)
+    else if (atableView === tableView2)
         return dataSet2.length;
-    else if(atableView === tableView3)
+    else if (atableView === tableView3)
         return dataSet3.length;
 }
 
@@ -288,7 +288,7 @@ tableTestDragType = @"CPTableViewTestDragType";
         return String(dataSet1[aRow]* ([[aTableView tableColumns] indexOfObject:aColumn] + 1));
     else if (aTableView === tableView2)
         return String(dataSet2[aRow]);
-    else if(aTableView === tableView3)
+    else if (aTableView === tableView3)
         return String(dataSet3[aRow]);
 }
 
@@ -341,7 +341,7 @@ tableTestDragType = @"CPTableViewTestDragType";
 }
 - (BOOL)tableView:(CPTableView)aTableView shouldEditTableColumn:(CPTableColumn)tableColumn row:(int)row
 {
-    if(aTableView === tableView3)
+    if (aTableView === tableView3)
         return YES;
     else
         return NO;
@@ -354,7 +354,7 @@ tableTestDragType = @"CPTableViewTestDragType";
 
 - (void)tableView:(CPTableView)aTableView setObjectValue:(id)aValue forTableColumn:(CPTableColumn)tableColumn row:(int)row
 {
-    if(aTableView === tableView3)
+    if (aTableView === tableView3)
         dataSet3[row] = aValue;
 }
 
@@ -390,7 +390,7 @@ tableTestDragType = @"CPTableViewTestDragType";
 
     [[aTableView window] orderFront:nil];
 
-    if(aTableView === tableView)
+    if (aTableView === tableView)
         [aTableView setDropRow:row dropOperation:CPTableViewDropOn];
     else 
         [aTableView setDropRow:row dropOperation:CPTableViewDropAbove];
@@ -417,7 +417,7 @@ tableTestDragType = @"CPTableViewTestDragType";
         destinationDataSet = dataSets[1 - index],
         sourceDataSet = dataSets[index];
 
-    if(operation | CPDragOperationMove)
+    if (operation | CPDragOperationMove)
     {
         if (sourceTableUID == [aTableView UID])
         {

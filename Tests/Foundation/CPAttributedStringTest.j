@@ -391,7 +391,7 @@ var sharedObject = [CPObject new];
     [self assertTrue:CPEqualRanges(range, CPMakeRange(15, 20)) message:"expected key to be valid across {15, 20}, was: "+CPStringFromRange(range)];
     
     var index = range.location;
-    while(index < CPMaxRange(range))
+    while (index < CPMaxRange(range))
         [self assertTrue:[string attribute:"BAR" atIndex:index++ effectiveRange:nil]=="FOO" message:"incorrect value for key BAR"];
 
     string = [self stringForTesting];
@@ -404,7 +404,7 @@ var sharedObject = [CPObject new];
     [self assertTrue:CPEqualRanges(range, CPMakeRange(0, 45)) message:"expected key to be valid across {0, 45}, was: "+CPStringFromRange(range)];
     
     var index = range.location;
-    while(index < CPMaxRange(range))
+    while (index < CPMaxRange(range))
         [self assertTrue:[string attribute:"BAR" atIndex:index++ effectiveRange:nil]=="FOO" message:"incorrect value for key BAR"];        
 }
 
@@ -422,7 +422,7 @@ var sharedObject = [CPObject new];
     [self assertTrue:CPEqualRanges(range, CPMakeRange(15, 20)) message:"expected key to be valid across {15, 20}, was: "+CPStringFromRange(range)];
     
     var index = range.location;
-    while(index < CPMaxRange(range))
+    while (index < CPMaxRange(range))
         [self assertTrue:[string attribute:"BAR" atIndex:index++ effectiveRange:nil]=="FOO" message:"incorrect value for key BAR"];
     
     string = [self stringForTesting];
@@ -441,7 +441,7 @@ var sharedObject = [CPObject new];
     [self assertTrue:CPEqualRanges(range, CPMakeRange(0, 45)) message:"expected key to be valid across {0, 45}, was: "+CPStringFromRange(range)];
     
     var index = range.location;
-    while(index < CPMaxRange(range))
+    while (index < CPMaxRange(range))
         [self assertTrue:[string attribute:"BAR" atIndex:index++ effectiveRange:nil]=="FOO" message:"incorrect value for key BAR"];        
 }
 
@@ -563,15 +563,15 @@ function testAttributesAtIndexWithValues(aString, anIndex, values, aSelf)
     var range = CPMakeRange(0, 0),
         attributes = [aString attributesAtIndex:anIndex effectiveRange:range];
 
-    for(key in values)
+    for (key in values)
         [aSelf assertTrue:isEqualAllowingUndefinedCast([attributes objectForKey:key], values[key]) message: "expecting '"+key+"' to be '"+values[key]+"', was '"+[attributes objectForKey:key]];
 
     var index = range.location;
-    while(index < CPMaxRange(range))
+    while (index < CPMaxRange(range))
     {
         attributes = [aString attributesAtIndex:index++ effectiveRange:nil];
         
-        for(key in values)
+        for (key in values)
             [aSelf assertTrue:isEqualAllowingUndefinedCast([attributes objectForKey:key], values[key]) message: "expecting '"+key+"' in loop to be '"+values[key]+"', was '"+[attributes objectForKey:key]];
     }
 }
@@ -584,7 +584,7 @@ function testAttributeAtIndexWithValue(aString, anIndex, aKey, aValue, aSelf)
     [aSelf assertTrue: isEqualAllowingUndefinedCast(attribute, aValue) message: "expecting '"+aKey+"' to be '"+aValue+"', was '"+attribute];
 
     var index = range.location;
-    while(index < CPMaxRange(range))
+    while (index < CPMaxRange(range))
     {
         attribute = [aString attribute:aKey atIndex:index++ effectiveRange:nil];
         

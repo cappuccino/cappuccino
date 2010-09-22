@@ -145,7 +145,7 @@ static NSMutableDictionary * MethodClasses;
     NSArray *existingURLs = [[NSDocumentController sharedDocumentController] recentDocumentURLs];
     NSMutableArray *urlsAsStrings = [NSMutableArray array];
 
-    for (int i=0, count = [existingURLs count]; i < count; i++)
+    for (int i = 0, count = [existingURLs count]; i < count; i++)
         [urlsAsStrings addObject:[[existingURLs objectAtIndex:i] absoluteString]];
 
     return urlsAsStrings;
@@ -284,7 +284,7 @@ static NSMutableDictionary * MethodClasses;
 
     NSMutableArray * newItems = [[NSMutableArray alloc] init];
 
-    for (int i=0; [incomingObject webScriptValueAtIndex:i]!=[WebUndefined undefined]; i++)
+    for (int i = 0; [incomingObject webScriptValueAtIndex:i]!=[WebUndefined undefined]; i++)
     {
         id oneItem =[incomingObject webScriptValueAtIndex:i];
         [newItems addObject:oneItem];

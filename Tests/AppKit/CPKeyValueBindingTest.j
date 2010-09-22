@@ -164,7 +164,7 @@
     [tableColumn bind:@"value" toObject:arrayController withKeyPath:@"arrangedObjects.valueA" options:nil];
 
     // Reset these if they were read during initialization.
-    for(var i=0; i<[content count];i++)
+    for (var i = 0; i<[content count];i++)
         [content[i] setAccesses:0];
     var testView = [DataViewTester new];
     [tableColumn prepareDataView:testView forRow:0];

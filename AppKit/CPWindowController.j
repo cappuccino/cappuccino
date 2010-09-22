@@ -30,7 +30,7 @@
 #include "Platform/Platform.h"
 
 
-/*! 
+/*!
     @ingroup appkit
     @class CPWindowController
 
@@ -173,8 +173,8 @@
 
         if (_window === nil && [_cibOwner isKindOfClass:[CPDocument class]])
             [self setWindow:[_cibOwner valueForKey:@"window"]];
-        
-        if (!_window) 
+
+        if (!_window)
         {
             var reason = [CPString stringWithFormat:@"Window for %@ could not be loaded from Cib or no window specified. \
                                                         Override loadWindow to load the window manually.", self];
@@ -234,7 +234,7 @@
     {
         if (![self supportsMultipleDocuments])
             [self removeDocument:_document];
-        
+
         [defaultCenter removeObserver:self
                                  name:CPDocumentWillSaveNotification
                                object:_document];
@@ -383,7 +383,7 @@
 }
 
 /*!
-    Sets whether the document has unsaved changes. The window can use this as a hint to 
+    Sets whether the document has unsaved changes. The window can use this as a hint to
     @param isEdited \c YES means the document has unsaved changes.
 */
 - (void)setDocumentEdited:(BOOL)isEdited

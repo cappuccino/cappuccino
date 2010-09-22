@@ -36,29 +36,29 @@ var CPURLConnectionDelegate = nil;
     An interface to downloading content at a specified URL. Using one of the
     class methods, you can obtain the data.
 
-    @delegate -(void)connection:(CPURLConnection)connection didFailWithError:(id)error;
+    @delegate - (void)connection:(CPURLConnection)connection didFailWithError:(id)error;
     Called when the connection encounters an error.
     @param connection the connection that had an error
     @param error the error, which is either a javascript DOMException or an http
     status code (javascript number/CPNumber)
 
-    @delegate -(void)connection:(CPURLConnection)connection didReceiveResponse:(CPHTTPURLResponse)response;
+    @delegate - (void)connection:(CPURLConnection)connection didReceiveResponse:(CPHTTPURLResponse)response;
     Called when the connection receives a response.
     @param connection the connection that received a response
     @param response the received response
 
-    @delegate -(void)connection:(CPURLConnection)connection didReceiveData:(CPString)data;
+    @delegate - (void)connection:(CPURLConnection)connection didReceiveData:(CPString)data;
     Called when the connection has received data.
     @param connection the connection that received data
     @param data the received data
 
-    @delegate -(void)connectionDidFinishLoading:(CPURLConnection)connection;
+    @delegate - (void)connectionDidFinishLoading:(CPURLConnection)connection;
     Called when the URL has finished loading.
     @param connection the connection that finished loading
 
     Class Delegate Method:
 
-    @delegate -(void)connectionDidReceiveAuthenticationChallenge:(id)connection
+    @delegate - (void)connectionDidReceiveAuthenticationChallenge:(id)connection
     The class delegate allows you to set global behavior for when authentication challenges (401 status codes) are returned.
 
     The recommended way to handle this method is to store a reference to the connection, and then use whatever

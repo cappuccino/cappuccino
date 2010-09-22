@@ -55,7 +55,7 @@
 {
     _textField = [[_CPImageAndTextView alloc] initWithFrame:_CGRectMakeZero()];
 
-    [_textField setAutoresizingMask:CPViewWidthSizable|CPViewHeightSizable];
+    [_textField setAutoresizingMask:CPViewWidthSizable | CPViewHeightSizable];
 
     [_textField setLineBreakMode:CPLineBreakByTruncatingTail];
     [_textField setAlignment:CPLeftTextAlignment];
@@ -106,15 +106,15 @@
 
 - (void)_setIndicatorImage:(CPImage)anImage
 {
-	if (anImage)
-	{
-		[_textField setImage:anImage];
-		[_textField setImagePosition:CPImageRight];
-	}
-	else
-	{
-		[_textField setImagePosition:CPNoImage];
-	}
+    if (anImage)
+    {
+        [_textField setImage:anImage];
+        [_textField setImagePosition:CPImageRight];
+    }
+    else
+    {
+        [_textField setImagePosition:CPNoImage];
+    }
 }
 
 @end
@@ -446,9 +446,8 @@ var _CPTableColumnHeaderViewStringValueKey = @"_CPTableColumnHeaderViewStringVal
     [self _constrainDragView:aView at:aPoint];
 
     var dragWindow = [aView window],
-        dragWindowFrame = [dragWindow frame];
-
-    var hoverPoint = CGPointCreateCopy(aPoint);
+        dragWindowFrame = [dragWindow frame],
+        hoverPoint = CGPointCreateCopy(aPoint);
 
     if (aPoint.x < _previousTrackingLocation.x)
         hoverPoint = _CGPointMake(_CGRectGetMinX(dragWindowFrame), _CGRectGetMinY(dragWindowFrame));
@@ -591,9 +590,8 @@ var _CPTableColumnHeaderViewStringValueKey = @"_CPTableColumnHeaderViewStringVal
     for (var i = 0; i < count; i++)
     {
         var column = [tableColumns objectAtIndex:i],
-            headerView = [column headerView];
-
-        var frame = [self headerRectOfColumn:i];
+            headerView = [column headerView],
+            frame = [self headerRectOfColumn:i];
         frame.size.height -= 0.5;
         if (i > 0)
         {
@@ -603,7 +601,7 @@ var _CPTableColumnHeaderViewStringValueKey = @"_CPTableColumnHeaderViewStringVal
 
         [headerView setFrame:frame];
 
-        if([headerView superview] != self)
+        if ([headerView superview] != self)
             [self addSubview:headerView];
     }
 
@@ -633,7 +631,7 @@ var _CPTableColumnHeaderViewStringValueKey = @"_CPTableColumnHeaderViewStringVal
         columnMaxX;
 
     CGContextBeginPath(context);
-    for(; columnArrayIndex < columnArrayCount; columnArrayIndex++)
+    for (; columnArrayIndex < columnArrayCount; columnArrayIndex++)
     {
         // grab each column rect and add vertical lines
         var columnIndex = columnsArray[columnArrayIndex],

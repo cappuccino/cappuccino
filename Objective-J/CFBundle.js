@@ -215,13 +215,13 @@ CFBundle.prototype.mostEligibleEnvironment = function(/*Array*/ environments)
         innerCount = environments.length;
 
     // Ugh, no indexOf, no objects-in-common.
-    for(; index < count; ++index)
+    for (; index < count; ++index)
     {
         var innerIndex = 0,
             environment = objj_environments[index];
 
         for (; innerIndex < innerCount; ++innerIndex)
-            if(environment === environments[innerIndex])
+            if (environment === environments[innerIndex])
                 return environment;
     }
 

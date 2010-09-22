@@ -73,27 +73,27 @@ var _CPKeyedArchiverStringClass                         = Nil,
 
     @par Delegate Methods
 
-    @delegate -(void)archiverWillFinish:(CPKeyedArchiver)archiver;
+    @delegate - (void)archiverWillFinish:(CPKeyedArchiver)archiver;
     Called when the encoding is about to finish.
     @param archiver the archiver that's about to finish
 
-    @delegate -(void)archiver:(CPKeyedArchiver)archiver didEncodeObject:(id)object;
+    @delegate - (void)archiver:(CPKeyedArchiver)archiver didEncodeObject:(id)object;
     Called when an object is encoded into the archiver.
     @param archiver the archiver that encoded the object
     @param object the object that was encoded
 
-    @delegate -(void)archiverDidFinish:(CPKeyedArchiver)archiver;
+    @delegate - (void)archiverDidFinish:(CPKeyedArchiver)archiver;
     Called when the archiver finishes encoding.
     @param archiver the arhiver that finished encoding
 
-    @delegate -(id)archiver:(CPKeyedArchiver)archiver willEncodeObject:(id)object;
+    @delegate - (id)archiver:(CPKeyedArchiver)archiver willEncodeObject:(id)object;
     Called when an object is about to be encoded. Allows the delegate to replace
     the object that gets encoded with a substitute or \c nil.
     @param archiver the archiver encoding the object
     @param object the candidate object for encoding
     @return the object to encode
 
-    @delegate -(void)archiver:(CPKeyedArchiver)archiver willReplaceObject:(id)object withObject:(id)newObject;
+    @delegate - (void)archiver:(CPKeyedArchiver)archiver willReplaceObject:(id)object withObject:(id)newObject;
     Called when an object is being replaced in the archiver.
     @param archiver the archiver encoding the object
     @param object the object to be replaced

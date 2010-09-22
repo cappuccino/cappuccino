@@ -158,7 +158,7 @@ var CPViewControllerCachedCibs;
         if (_view === nil && [cibOwner isKindOfClass:[CPDocument class]])
             [self setView:[cibOwner valueForKey:@"view"]];
 
-        if (!_view) 
+        if (!_view)
         {
             var reason = [CPString stringWithFormat:@"View for %@ could not be loaded from Cib or no view specified. Override loadView to load the view manually.", self];
 
@@ -177,13 +177,13 @@ var CPViewControllerCachedCibs;
 
 
 /*!
-    This method is called after the view controller has loaded its associated views into memory. 
-    This method is called regardless of whether the views were stored in a nib file or created programmatically in the loadView method. 
+    This method is called after the view controller has loaded its associated views into memory.
+    This method is called regardless of whether the views were stored in a nib file or created programmatically in the loadView method.
     This method is most commonly used to perform additional initialization steps on views that are loaded from cib files.
 */
 - (void)viewDidLoad
 {
-    
+
 }
 
 

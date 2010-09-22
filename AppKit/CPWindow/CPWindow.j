@@ -218,7 +218,7 @@ var CPWindowResizeTime = 0.2;
 
     @par Delegate Methods
 
-    @delegate -(void)windowDidResize:(CPNotification)notification;
+    @delegate - (void)windowDidResize:(CPNotification)notification;
     Sent from the notification center when the window has been resized.
     @param notification contains information about the resize event
 
@@ -227,17 +227,17 @@ var CPWindowResizeTime = 0.2;
     @param window the window for which to return the undo manager
     @return the window's undo manager
 
-    @delegate -(void)windowDidBecomeMain:(CPNotification)notification;
+    @delegate - (void)windowDidBecomeMain:(CPNotification)notification;
     Sent from the notification center when the delegate's window becomes
     the main window.
     @param notification contains information about the event
 
-    @delegate -(void)windowDidResignMain:(CPNotification)notification;
+    @delegate - (void)windowDidResignMain:(CPNotification)notification;
     Sent from the notification center when the delegate's window has
     resigned main window status.
     @param notification contains information about the event
 
-    @delegate -(void)windowDidResignKey:(CPNotification)notification;
+    @delegate - (void)windowDidResignKey:(CPNotification)notification;
     Sent from the notification center when the delegate's window has
     resigned key window status.
     @param notification contains information about the event
@@ -1228,10 +1228,10 @@ CPTexturedBackgroundWindowMask
     if (_firstResponder === aResponder)
         return YES;
 
-    if(![_firstResponder resignFirstResponder])
+    if (![_firstResponder resignFirstResponder])
         return NO;
 
-    if(!aResponder || ![aResponder acceptsFirstResponder] || ![aResponder becomeFirstResponder])
+    if (!aResponder || ![aResponder acceptsFirstResponder] || ![aResponder becomeFirstResponder])
     {
         _firstResponder = self;
 
@@ -2319,7 +2319,7 @@ CPTexturedBackgroundWindowMask
 
     [self _appendSubviewsOf:_contentView toArray:subviews];
 
-    for (var i = 0, count = [subviews count]; i<count; i++)
+    for (var i = 0, count = [subviews count]; i < count; i++)
     {
         if (subviews[i]._nextKeyView)
             return YES;
@@ -2337,8 +2337,8 @@ CPTexturedBackgroundWindowMask
     var keyViewOrder = [subviews sortedArrayUsingFunction:keyViewComparator context:_contentView],
         count = [keyViewOrder count];
 
-    for (var i=0; i<count; i++)
-        [keyViewOrder[i] setNextKeyView:keyViewOrder[(i+1)%count]];
+    for (var i = 0; i < count; i++)
+        [keyViewOrder[i] setNextKeyView:keyViewOrder[(i + 1)%count]];
 
     _keyViewLoopIsDirty = NO;
 }

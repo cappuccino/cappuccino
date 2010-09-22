@@ -32,7 +32,7 @@ var _redComponent        = 0,
     _greenComponent      = 1,
     _blueComponent       = 2,
     _alphaCompnent       = 3;
-    
+
 var _hueComponent        = 0,
     _saturationComponent = 1,
     _brightnessComponent = 2;
@@ -54,7 +54,7 @@ var cachedBlackColor,
     cachedShadowColor,
     cachedClearColor;
 
-/*! 
+/*!
     @ingroup appkit
 
     \c CPColor can be used to represent color
@@ -68,7 +68,7 @@ var cachedBlackColor,
     CPArray     _components;
 
     CPImage     _patternImage;
-    CPString    _cssString;    
+    CPString    _cssString;
 }
 
 /*!
@@ -180,7 +180,7 @@ var cachedBlackColor,
     Creates an RGB color from a hexadecimal string. For example,
     the a string of "FFFFFF" would return a white CPColor.
     "FF0000" would return a pure red, "00FF00" would return a
-    pure blue, and "0000FF" would return a pure green. 
+    pure blue, and "0000FF" would return a pure green.
 
     @param hex a 6 character long string of hex
 
@@ -409,14 +409,14 @@ var cachedBlackColor,
 
     self = [super init];
 
-    var startingIndex = aString.indexOf("(");
-    var parts = aString.substring(startingIndex+1).split(',');
+    var startingIndex   = aString.indexOf("("),
+        parts           = aString.substring(startingIndex + 1).split(',');
 
     _components = [
         parseInt(parts[0], 10) / 255.0,
         parseInt(parts[1], 10) / 255.0,
         parseInt(parts[2], 10) / 255.0,
-        parts[3] ? parseInt(parts[3], 10) / 255.0 : 1.0        
+        parts[3] ? parseInt(parts[3], 10) / 255.0 : 1.0
     ];
 
     _cssString = aString;
@@ -546,16 +546,13 @@ var cachedBlackColor,
 {
     var red   = ROUND(_components[_redComponent] * 255.0),
         green = ROUND(_components[_greenComponent] * 255.0),
-        blue  = ROUND(_components[_blueComponent] * 255.0);
-
-    var max   = MAX(red, green, blue),
+        blue  = ROUND(_components[_blueComponent] * 255.0),
+        max   = MAX(red, green, blue),
         min   = MIN(red, green, blue),
-        delta = max - min;
-
-    var brightness = max / 255.0,
-        saturation = (max != 0) ? delta / max : 0;
-
-    var hue;
+        delta = max - min,
+        brightness = max / 255.0,
+        saturation = (max != 0) ? delta / max : 0,
+        hue;
 
     if (saturation == 0)
     {
@@ -563,24 +560,24 @@ var cachedBlackColor,
     }
     else
     {
-        var rr = (max - red) / delta;
-        var gr = (max - green) / delta;
-        var br = (max - blue) / delta;
+        var rr = (max - red) / delta,
+            gr = (max - green) / delta,
+            br = (max - blue) / delta;
 
-        if (red == max) 
+        if (red == max)
             hue = br - gr;
-        else if (green == max) 
+        else if (green == max)
             hue = 2 + rr - br;
-        else 
+        else
             hue = 4 + gr - rr;
 
         hue /= 6;
-        if (hue < 0) 
+        if (hue < 0)
             hue++;
     }
 
     return [
-        ROUND(hue * 360.0), 
+        ROUND(hue * 360.0),
         ROUND(saturation * 100.0),
         ROUND(brightness * 100.0)
     ];
@@ -628,7 +625,7 @@ url("data:image/png;base64,BASE64ENCODEDDATA")  // if there is a pattern image
 
 @implementation CPColor (CoreGraphicsExtensions)
 
-/*! 
+/*!
     Set's the receiver to be the fill and stroke color in the current graphics context
 */
 - (void)set
@@ -637,16 +634,16 @@ url("data:image/png;base64,BASE64ENCODEDDATA")  // if there is a pattern image
     [self setStroke];
 }
 
-/*! 
+/*!
     Set's the receiver to be the fill color in the current graphics context
 */
 - (void)setFill
 {
     var ctx = [[CPGraphicsContext currentContext] graphicsPort];
-    CGContextSetFillColor(ctx, self);   
+    CGContextSetFillColor(ctx, self);
 }
 
-/*! 
+/*!
     Set's the receiver to be the stroke color in the current graphics context
 */
 - (void)setStroke
@@ -679,7 +676,7 @@ var CPColorComponentsKey    = @"CPColorComponentsKey",
 {
     if ([aCoder containsValueForKey:CPColorPatternImageKey])
         return [self _initWithPatternImage:[aCoder decodeObjectForKey:CPColorPatternImageKey]];
-    
+
     return [self _initWithRGBA:[aCoder decodeObjectForKey:CPColorComponentsKey]];
 }
 
@@ -706,7 +703,7 @@ var hexCharacters = "0123456789ABCDEF";
     @class CPColor
     @return an array of rgb components
 */
-var hexToRGB = function(hex) 
+var hexToRGB = function(hex)
 {
     if (hex.length == 3)
         hex = hex.charAt(0) + hex.charAt(0) + hex.charAt(1) + hex.charAt(1) + hex.charAt(2) + hex.charAt(2);
@@ -720,9 +717,9 @@ var hexToRGB = function(hex)
         if (hexCharacters.indexOf(hex.charAt(i)) == -1)
             return null;
 
-    var red   = (hexCharacters.indexOf(hex.charAt(0)) * 16 + hexCharacters.indexOf(hex.charAt(1))) / 255.0;
-    var green = (hexCharacters.indexOf(hex.charAt(2)) * 16 + hexCharacters.indexOf(hex.charAt(3))) / 255.0;
-    var blue  = (hexCharacters.indexOf(hex.charAt(4)) * 16 + hexCharacters.indexOf(hex.charAt(5))) / 255.0;
+    var red   = (hexCharacters.indexOf(hex.charAt(0)) * 16 + hexCharacters.indexOf(hex.charAt(1))) / 255.0,
+        green = (hexCharacters.indexOf(hex.charAt(2)) * 16 + hexCharacters.indexOf(hex.charAt(3))) / 255.0,
+        blue  = (hexCharacters.indexOf(hex.charAt(4)) * 16 + hexCharacters.indexOf(hex.charAt(5))) / 255.0;
 
     return [red, green, blue, 1.0];
 };

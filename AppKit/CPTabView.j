@@ -32,9 +32,8 @@ CPNoTabsNoBorder         = 6;
 var CPTabViewDidSelectTabViewItemSelector           = 1,
     CPTabViewShouldSelectTabViewItemSelector        = 2,
     CPTabViewWillSelectTabViewItemSelector          = 4,
-    CPTabViewDidChangeNumberOfTabViewItemsSelector  = 8;
-
-var HEIGHT_OF_SEGMENTED_CONTROL = 24;
+    CPTabViewDidChangeNumberOfTabViewItemsSelector  = 8,
+    HEIGHT_OF_SEGMENTED_CONTROL = 24;
 
 @implementation CPTabView : CPView
 {
@@ -290,7 +289,8 @@ var HEIGHT_OF_SEGMENTED_CONTROL = 24;
 
     type = aTabViewType;
 
-    switch (type) {
+    switch (type)
+    {
         case CPTopTabsBezelBorder:
         case CPBottomTabsBezelBorder:
         case CPNoTabsBezelBorder:

@@ -30,7 +30,7 @@ CPSegmentSwitchTrackingSelectOne = 0;
 CPSegmentSwitchTrackingSelectAny = 1;
 CPSegmentSwitchTrackingMomentary = 2;
 
-/*! 
+/*!
     @ingroup appkit
     @class CPSegmentedControl
 
@@ -64,16 +64,16 @@ CPSegmentSwitchTrackingMomentary = 2;
 {
     _segments = [];
     _themeStates = [];
-    
+
     self = [super initWithFrame:aRect];
-    
+
     if (self)
     {
         _selectedSegment = -1;
-        
+
         _trackingMode = CPSegmentSwitchTrackingSelectOne;
     }
-    
+
     return self;
 }
 
@@ -94,11 +94,11 @@ CPSegmentSwitchTrackingMomentary = 2;
 {
     if (_segments.length == aCount)
         return;
-        
+
     var height = CGRectGetHeight([self bounds]);
-    
+
     if (_segments.length < aCount)
-    {        
+    {
         for (var index = _segments.length; index < aCount; ++index)
         {
             _segments[index] = [[_CPSegmentItem alloc] init];
@@ -151,15 +151,15 @@ CPSegmentSwitchTrackingMomentary = 2;
 - (BOOL)selectSegmentWithTag:(int)aTag
 {
     var index = 0;
-    
+
     for (; index < _segments.length; ++index)
         if (_segments[index].tag == aTag)
         {
             [self setSelectedSegment:index];
-            
+
             return YES;
         }
-    
+
     return NO;
 }
 
@@ -174,14 +174,14 @@ CPSegmentSwitchTrackingMomentary = 2;
 {
     if (_trackingMode == aTrackingMode)
         return;
-        
+
     _trackingMode = aTrackingMode;
-    
+
     if (_trackingMode == CPSegmentSwitchTrackingSelectOne)
     {
         var index = 0,
             selected = NO;
-        
+
         for (; index < _segments.length; ++index)
             if ([_segments[index] selected])
                 if (selected)
@@ -189,11 +189,11 @@ CPSegmentSwitchTrackingMomentary = 2;
                 else
                     selected = YES;
     }
-    
+
     else if (_trackingMode == CPSegmentSwitchTrackingMomentary)
     {
         var index = 0;
-        
+
         for (; index < _segments.length; ++index)
             if ([_segments[index] selected])
                 [self setSelected:NO forSegment:index];
@@ -218,7 +218,7 @@ CPSegmentSwitchTrackingMomentary = 2;
 - (void)setWidth:(float)aWidth forSegment:(unsigned)aSegment
 {
     [_segments[aSegment] setWidth:aWidth];
-    
+
     [self tileWithChangedSegment:aSegment];
 }
 
@@ -264,7 +264,7 @@ CPSegmentSwitchTrackingMomentary = 2;
 - (void)setLabel:(CPString)aLabel forSegment:(unsigned)aSegment
 {
     [_segments[aSegment] setLabel:aLabel];
-    
+
     [self tileWithChangedSegment:aSegment];
 }
 
@@ -309,11 +309,11 @@ CPSegmentSwitchTrackingMomentary = 2;
 - (void)setSelected:(BOOL)isSelected forSegment:(unsigned)aSegment
 {
     var segment = _segments[aSegment];
-    
+
     // If we're already in this state, bail.
     if ([segment selected] == isSelected)
         return;
-    
+
     [segment setSelected:isSelected];
 
     _themeStates[aSegment] = isSelected ? CPThemeStateSelected : CPThemeStateNormal;
@@ -322,9 +322,9 @@ CPSegmentSwitchTrackingMomentary = 2;
     if (isSelected)
     {
         var oldSelectedSegment = _selectedSegment;
-        
+
         _selectedSegment = aSegment;
-        
+
         if (_trackingMode == CPSegmentSwitchTrackingSelectOne && oldSelectedSegment != aSegment && oldSelectedSegment != -1)
         {
             [_segments[oldSelectedSegment] setSelected:NO];
@@ -333,7 +333,7 @@ CPSegmentSwitchTrackingMomentary = 2;
             [self drawSegmentBezel:oldSelectedSegment highlight:NO];
         }
     }
-    
+
     if (_trackingMode != CPSegmentSwitchTrackingMomentary)
         [self drawSegmentBezel:aSegment highlight:NO];
 
@@ -508,10 +508,8 @@ CPSegmentSwitchTrackingMomentary = 2;
 
     themeState |= _themeState & CPThemeStateDisabled;
 
-    var leftCapColor = [self valueForThemeAttribute:@"left-segment-bezel-color" 
-                                            inState:themeState];
-
-    var leftBezelView = [self layoutEphemeralSubviewNamed:@"left-segment-bezel"
+    var leftCapColor    = [self valueForThemeAttribute:@"left-segment-bezel-color" inState:themeState],
+        leftBezelView   = [self layoutEphemeralSubviewNamed:@"left-segment-bezel"
                                                positioned:CPWindowBelow
                           relativeToEphemeralSubviewNamed:nil];
 
@@ -521,38 +519,32 @@ CPSegmentSwitchTrackingMomentary = 2;
 
     themeState |= _themeState & CPThemeStateDisabled;
 
-    var rightCapColor = [self valueForThemeAttribute:@"right-segment-bezel-color" 
-                                             inState:themeState];
-
-    var rightBezelView = [self layoutEphemeralSubviewNamed:@"right-segment-bezel"
+    var rightCapColor   = [self valueForThemeAttribute:@"right-segment-bezel-color" inState:themeState],
+        rightBezelView  = [self layoutEphemeralSubviewNamed:@"right-segment-bezel"
                                                positioned:CPWindowBelow
                           relativeToEphemeralSubviewNamed:nil];
 
     [rightBezelView setBackgroundColor:rightCapColor];
 
-    for (var i=0, count = _themeStates.length; i<count; i++)
+    for (var i = 0, count = _themeStates.length; i < count; i++)
     {
         var themeState = _themeStates[i];
 
         themeState |= _themeState & CPThemeStateDisabled;
 
-        var bezelColor = [self valueForThemeAttribute:@"center-segment-bezel-color" 
-                                              inState:themeState];
-
-        var bezelView = [self layoutEphemeralSubviewNamed:"segment-bezel-"+i 
-                                               positioned:CPWindowBelow 
+        var bezelColor  = [self valueForThemeAttribute:@"center-segment-bezel-color" inState:themeState],
+            bezelView   = [self layoutEphemeralSubviewNamed:"segment-bezel-" + i
+                                               positioned:CPWindowBelow
                           relativeToEphemeralSubviewNamed:nil];
 
         [bezelView setBackgroundColor:bezelColor];
 
 
         //layout image/title views
-        var segment = _segments[i];
-
-
-        var contentView = [self layoutEphemeralSubviewNamed:@"segment-content-"+i
+        var segment     = _segments[i],
+            contentView = [self layoutEphemeralSubviewNamed:@"segment-content-" + i
                                                  positioned:CPWindowAbove
-                            relativeToEphemeralSubviewNamed:@"segment-bezel-"+i];
+                            relativeToEphemeralSubviewNamed:@"segment-bezel-" + i];
 
         [contentView setText:[segment label]];
         [contentView setImage:[segment image]];
@@ -564,8 +556,8 @@ CPSegmentSwitchTrackingMomentary = 2;
         [contentView setLineBreakMode:[self valueForThemeAttribute:@"line-break-mode" inState:themeState]];
         [contentView setTextShadowColor:[self valueForThemeAttribute:@"text-shadow-color" inState:themeState]];
         [contentView setTextShadowOffset:[self valueForThemeAttribute:@"text-shadow-offset" inState:themeState]];
-        [contentView setImageScaling:[self valueForThemeAttribute:@"image-scaling" inState:themeState]];        
-        
+        [contentView setImageScaling:[self valueForThemeAttribute:@"image-scaling" inState:themeState]];
+
         if ([segment image] && [segment label])
             [contentView setImagePosition:[self valueForThemeAttribute:@"image-position" inState:themeState]];
         else if ([segment image])
@@ -574,17 +566,15 @@ CPSegmentSwitchTrackingMomentary = 2;
         if (i == count - 1)
             continue;
 
-        var borderState = _themeStates[i] | _themeStates[i+1];
-        
+        var borderState = _themeStates[i] | _themeStates[i + 1];
+
         borderState = (borderState & CPThemeStateSelected & ~CPThemeStateHighlighted) ? CPThemeStateSelected : CPThemeStateNormal;
 
         borderState |= _themeState & CPThemeStateDisabled;
 
-        var borderColor = [self valueForThemeAttribute:@"divider-bezel-color"
-                                               inState:borderState];
-
-        var borderView = [self layoutEphemeralSubviewNamed:"divider-bezel-"+i 
-                                                positioned:CPWindowBelow 
+        var borderColor = [self valueForThemeAttribute:@"divider-bezel-color" inState:borderState],
+            borderView  = [self layoutEphemeralSubviewNamed:"divider-bezel-" + i
+                                                positioned:CPWindowBelow
                            relativeToEphemeralSubviewNamed:nil];
 
         [borderView setBackgroundColor:borderColor];
@@ -636,7 +626,7 @@ CPSegmentSwitchTrackingMomentary = 2;
 
     // Update Contorl Size
     var frame = [self frame];
-    
+
     [self setFrameSize:CGSizeMake(CGRectGetWidth(frame) + delta, CGRectGetHeight(frame))];
 
     // Update Segment Width
@@ -645,15 +635,15 @@ CPSegmentSwitchTrackingMomentary = 2;
 
     // Update Following Segments Widths
     var index = aSegment + 1;
-    
+
     for (; index < _segments.length; ++index)
     {
         [_segments[index] frame].origin.x += delta;
-        
+
         [self drawSegmentBezel:index highlight:NO];
         [self drawSegment:index highlight:NO];
     }
-    
+
     [self drawSegmentBezel:aSegment highlight:NO];
     [self drawSegment:aSegment highlight:NO];
 
@@ -699,7 +689,7 @@ CPSegmentSwitchTrackingMomentary = 2;
 {
     var location = [self convertPoint:aPoint fromView:nil],
         count = _segments.length;
-    
+
     while (count--)
         if (CGRectContainsPoint([_segments[count] frame], aPoint))
             return count;
@@ -720,7 +710,7 @@ CPSegmentSwitchTrackingMomentary = 2;
 {
     if (![self isEnabled])
         return;
-    
+
     [self trackSegment:anEvent];
 }
 
@@ -734,10 +724,10 @@ CPSegmentSwitchTrackingMomentary = 2;
     @param anEvent the event to handle
 */
 - (void)trackSegment:(CPEvent)anEvent
-{     
+{
     var type = [anEvent type],
         location = [self convertPoint:[anEvent locationInWindow] fromView:nil];
-        
+
     if (type == CPLeftMouseUp)
     {
         if (_trackingSegment == -1)
@@ -748,30 +738,30 @@ CPSegmentSwitchTrackingMomentary = 2;
             if (_trackingMode == CPSegmentSwitchTrackingSelectAny)
             {
                 [self setSelected:![self isSelectedForSegment:_trackingSegment] forSegment:_trackingSegment];
-                
+
                 // With ANY, _selectedSegment means last pressed.
                 _selectedSegment = _trackingSegment;
             }
             else
                 [self setSelected:YES forSegment:_trackingSegment];
-        
+
             [self sendAction:[self action] to:[self target]];
-            
+
             if (_trackingMode == CPSegmentSwitchTrackingMomentary)
             {
                 [self setSelected:NO forSegment:_trackingSegment];
-                
+
                 _selectedSegment = -1;
             }
         }
 
         [self drawSegmentBezel:_trackingSegment highlight:NO];
-        
+
         _trackingSegment = -1;
-        
+
         return;
     }
-    
+
     if (type == CPLeftMouseDown)
     {
         var trackingSegment = [self testSegment:location];
@@ -782,7 +772,7 @@ CPSegmentSwitchTrackingMomentary = 2;
             [self drawSegmentBezel:_trackingSegment highlight:YES];
         }
     }
-    
+
     else if (type == CPLeftMouseDragged)
     {
         if (_trackingSegment == -1)
@@ -796,14 +786,14 @@ CPSegmentSwitchTrackingMomentary = 2;
             [self drawSegmentBezel:_trackingSegment highlight:_trackingHighlighted];
         }
     }
-    
+
     [CPApp setTarget:self selector:@selector(trackSegment:) forNextEventMatchingMask:CPLeftMouseDraggedMask | CPLeftMouseUpMask untilDate:nil inMode:nil dequeue:YES];
 }
 
 - (void)setFont:(CPFont)aFont
 {
     [super setFont:aFont];
-    
+
     [self tileWithChangedSegment:0];
 }
 
@@ -819,12 +809,12 @@ var CPSegmentedControlSegmentsKey       = "CPSegmentedControlSegmentsKey",
 - (id)initWithCoder:(CPCoder)aCoder
 {
     self = [super initWithCoder:aCoder];
-    
+
     if (self)
     {
         var frame = [self frame],
             originalWidth = frame.size.width;
-        
+
         frame.size.width = 0;
 
         [self setFrame:frame];
@@ -835,14 +825,14 @@ var CPSegmentedControlSegmentsKey       = "CPSegmentedControlSegmentsKey",
 
         if ([aCoder containsValueForKey:CPSegmentedControlSelectedKey])
             _selectedSegment = [aCoder decodeIntForKey:CPSegmentedControlSelectedKey];
-        else    
+        else
             _selectedSegment = -1;
-        
+
         if ([aCoder containsValueForKey:CPSegmentedControlTrackingModeKey])
             _trackingMode = [aCoder decodeIntForKey:CPSegmentedControlTrackingModeKey];
         else
             _trackingMode = CPSegmentSwitchTrackingSelectOne;
-        
+
         // HACK
 
         for (var i = 0; i < _segments.length; i++)
@@ -854,19 +844,19 @@ var CPSegmentedControlSegmentsKey       = "CPSegmentedControlSegmentsKey",
         var difference = MAX(originalWidth - [self frame].size.width, 0.0),
             remainingWidth = FLOOR(difference / _segments.length);
 
-        for (var i=0; i < _segments.length; i++)
+        for (var i = 0; i < _segments.length; i++)
             [self setWidth:[_segments[i] width] + remainingWidth forSegment:i];
 
         [self tileWithChangedSegment:0];
     }
-    
+
     return self;
 }
 
 - (void)encodeWithCoder:(CPCoder)aCoder
 {
     [super encodeWithCoder:aCoder];
-    
+
     [aCoder encodeObject:_segments forKey:CPSegmentedControlSegmentsKey];
     [aCoder encodeInt:_selectedSegment forKey:CPSegmentedControlSelectedKey];
     [aCoder encodeInt:_segmentStyle forKey:CPSegmentedControlSegmentStyleKey];
@@ -921,7 +911,7 @@ var CPSegmentItemImageKey       = "CPSegmentItemImageKey",
 - (id)initWithCoder:(CPCoder)aCoder
 {
     self = [super init];
-    
+
     if (self)
     {
         image        = [aCoder decodeObjectForKey:CPSegmentItemImageKey];
@@ -934,7 +924,7 @@ var CPSegmentItemImageKey       = "CPSegmentItemImageKey",
 
         frame        = CGRectMakeZero();
     }
-    
+
     return self;
 }
 

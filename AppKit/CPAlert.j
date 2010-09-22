@@ -66,7 +66,7 @@ CPCriticalAlertStyle        = 2;
     dismissed the panel, a message will be sent to the panel's delegate (if set), informing
     it which button was clicked (see delegate methods).
 
-    @delegate -(void)alertDidEnd:(CPAlert)theAlert returnCode:(int)returnCode;
+    @delegate - (void)alertDidEnd:(CPAlert)theAlert returnCode:(int)returnCode;
     Called when the user dismisses the alert by clicking one of the buttons.
     @param theAlert the alert panel that the user dismissed
     @param returnCode the index of the button that the user clicked (starting from 0,

@@ -74,7 +74,7 @@
     if (!aMenu)
         return;
 
-    for(var i=0; i<[aMenu numberOfItems]; i++)
+    for (var i = 0; i<[aMenu numberOfItems]; i++)
     {
         var item = [aMenu itemAtIndex:i];
         [item setTarget:self];

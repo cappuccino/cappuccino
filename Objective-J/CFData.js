@@ -253,7 +253,7 @@ CFData.bytesToUtf16String = function(bytes)
     // Strings are encoded with 16 bits per character.
     var temp = [];
     for (var i = 0; i < bytes.length; i+=2)
-        temp.push(bytes[i+1] << 8 | bytes[i]);
+        temp.push(bytes[i + 1] << 8 | bytes[i]);
     // This is relatively efficient, I think:
     return String.fromCharCode.apply(NULL, temp);
 }

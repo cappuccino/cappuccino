@@ -303,7 +303,7 @@
         var pos, foundDash = NO;
 /*
         var decimalSeparatorString;
-        if(_locale != nil)
+        if (_locale != nil)
             decimalSeparatorString = [_locale objectForKey:CPLocaleDecimalSeparator];
         else
             decimalSeparatorString = [[CPLocale systemLocale] objectForKey:CPLocaleDecimalSeparator];
@@ -312,7 +312,7 @@
 */
         var separatorCode = 45;
 
-        for(pos = current; pos < current + str.length; pos++)
+        for (pos = current; pos < current + str.length; pos++)
         {
             var charCode = str.charCodeAt(pos);
             if (charCode == separatorCode)

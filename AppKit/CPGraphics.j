@@ -72,7 +72,10 @@ function CPDrawColorTiledRects(
         if (_CGRectIsEmpty(slice))
             continue;
 
-        var minX, maxX, minY, maxY;
+        var minX,
+            maxX,
+            minY,
+            maxY;
 
         if (side == CPMinXEdge || side == CPMaxXEdge)
         {

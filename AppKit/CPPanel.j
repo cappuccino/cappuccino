@@ -26,7 +26,7 @@
 CPOKButton      = 1;
 CPCancelButton  = 0;
 
-/*! 
+/*!
     @ingroup appkit
     @class CPPanel
 
@@ -51,7 +51,7 @@ CPCancelButton  = 0;
     @global
     @class CPWindow
 */
-CPDocModalWindowMask			= 1 << 6;
+CPDocModalWindowMask            = 1 << 6;
 
 @implementation CPPanel : CPWindow
 {

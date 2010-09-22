@@ -39,7 +39,8 @@
     <pre>- (id)init
 {
     self = [super init];
-    if (self) {
+    if (self)
+    {
         ... provide default initialization code for your object ...
     }
     return self;

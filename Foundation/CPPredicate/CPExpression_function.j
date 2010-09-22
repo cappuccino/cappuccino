@@ -110,7 +110,7 @@
         i;
   
     for (i = 0; i < _argc; i++)
-        result = result + [_arguments objectAtIndex:i] + (i+1<_argc) ? ", " : "";
+        result = result + [_arguments objectAtIndex:i] + (i + 1<_argc) ? ", " : "";
     
     result = result + ")";
    

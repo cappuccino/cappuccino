@@ -44,7 +44,7 @@ CPBackgroundTab = 1;
 */
 CPPressedTab    = 2;
 
-/*! 
+/*!
     @ingroup appkit
     @class CPTabViewItem
 
@@ -55,10 +55,10 @@ CPPressedTab    = 2;
 {
     id          _identifier;
     CPString    _label;
-    
+
     CPView      _view;
     CPView      _auxiliaryView;
-    
+
     CPTabView   _tabView;
 }
 
@@ -74,10 +74,10 @@ CPPressedTab    = 2;
 - (id)initWithIdentifier:(id)anIdentifier
 {
     self = [super init];
-    
+
     if (self)
         _identifier = anIdentifier;
-        
+
     return self;
 }
 
@@ -191,16 +191,16 @@ var CPTabViewItemIdentifierKey  = "CPTabViewItemIdentifierKey",
 - (id)initWithCoder:(CPCoder)aCoder
 {
     self = [super init];
-    
+
     if (self)
     {
         _identifier     = [aCoder decodeObjectForKey:CPTabViewItemIdentifierKey];
         _label          = [aCoder decodeObjectForKey:CPTabViewItemLabelKey];
-        
+
         _view           = [aCoder decodeObjectForKey:CPTabViewItemViewKey];
         _auxiliaryView  = [aCoder decodeObjectForKey:CPTabViewItemAuxViewKey];
     }
-    
+
     return self;
 }
 
@@ -208,7 +208,7 @@ var CPTabViewItemIdentifierKey  = "CPTabViewItemIdentifierKey",
 {
     [aCoder encodeObject:_identifier    forKey:CPTabViewItemIdentifierKey];
     [aCoder encodeObject:_label         forKey:CPTabViewItemLabelKey];
-    
+
     [aCoder encodeObject:_view          forKey:CPTabViewItemViewKey];
     [aCoder encodeObject:_auxiliaryView forKey:CPTabViewItemAuxViewKey];
 }

@@ -248,7 +248,7 @@ var CPBindingOperationAnd = 0,
     var exposedBindings = [],
         theClass = [self class];
 
-    while(theClass)
+    while (theClass)
     {
         var temp = [CPKeyValueBinding exposedBindingsForClass:theClass];
 
@@ -348,9 +348,8 @@ var resolveMultipleValues = function resolveMultipleValues(/*CPString*/key, /*CP
         var infoDictionary = theBinding._info,
             object  = [infoDictionary objectForKey:CPObservedObjectKey],
             keyPath = [infoDictionary objectForKey:CPObservedKeyPathKey],
-            options = [infoDictionary objectForKey:CPOptionsKey];
-
-        var value = [theBinding transformValue:[object valueForKeyPath:keyPath] withOptions:options];
+            options = [infoDictionary objectForKey:CPOptionsKey],
+            value   = [theBinding transformValue:[object valueForKeyPath:keyPath] withOptions:options];
 
         if (value == operation)
             return operation;
@@ -379,7 +378,7 @@ var invokeAction = function invokeAction(/*CPString*/targetKey, /*CPString*/argu
     var invocation = [CPInvocation invocationWithMethodSignature:[target methodSignatureForSelector:selector]];
     [invocation setSelector:selector];
 
-    var bindingName = argumentKey
+    var bindingName = argumentKey,
         count = 1;
 
     while (theBinding = [bindings objectForKey:bindingName])

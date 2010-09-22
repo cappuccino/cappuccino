@@ -515,10 +515,10 @@ CPOutlineViewDropOnItemIndex = -1;
         ],
         delegateCount = [delegateMethods count];
 
-    for (var i=0; i < delegateCount; i += 2)
+    for (var i = 0; i < delegateCount; i += 2)
     {
         var bitMask = delegateMethods[i],
-            selector = delegateMethods[i+1];
+            selector = delegateMethods[i + 1];
 
         if ([_outlineViewDelegate respondsToSelector:selector])
             _implementedOutlineViewDelegateMethods |= bitMask;
@@ -672,8 +672,8 @@ CPOutlineViewDropOnItemIndex = -1;
     if (_shouldRetargetItem)
         return _retargetedItem;
 
-    var lowerLevel = [self levelForRow:theLowerRowIndex]
-        upperItem = [self itemAtRow:theUpperRowIndex];
+    var lowerLevel = [self levelForRow:theLowerRowIndex],
+        upperItem = [self itemAtRow:theUpperRowIndex],
         upperLevel = [self levelForItem:upperItem];
 
     // If the row above us has a higher level the item can be added to multiple parent items
@@ -871,13 +871,13 @@ CPOutlineViewDropOnItemIndex = -1;
 
 @end
 
-// FIX ME: We're using with() here because Safari fails if we use anOutlineView._itemInfosForItems or whatever...
+// FIX ME: We're using with () here because Safari fails if we use anOutlineView._itemInfosForItems or whatever...
 var _reloadItem = function(/*CPOutlineView*/ anOutlineView, /*id*/ anItem)
 {
     if (!anItem)
         return;
 
-    with(anOutlineView)
+    with (anOutlineView)
     {
         // Get the existing info if it exists.
         var itemInfosForItems = _itemInfosForItems,
@@ -910,10 +910,10 @@ var _reloadItem = function(/*CPOutlineView*/ anOutlineView, /*id*/ anItem)
     }
 }
 
-// FIX ME: We're using with() here because Safari fails if we use anOutlineView._itemInfosForItems or whatever...
+// FIX ME: We're using with () here because Safari fails if we use anOutlineView._itemInfosForItems or whatever...
 var _loadItemInfoForItem = function(/*CPOutlineView*/ anOutlineView, /*id*/ anItem,  /*BOOL*/ isIntermediate)
 {
-    with(anOutlineView)
+    with (anOutlineView)
     {
         var itemInfosForItems = _itemInfosForItems,
             dataSource = _outlineViewDataSource;
@@ -1121,8 +1121,8 @@ var _loadItemInfoForItem = function(/*CPOutlineView*/ anOutlineView, /*id*/ anIt
     if (!(_outlineView._implementedOutlineViewDataSourceMethods & CPOutlineViewDataSource_outlineView_acceptDrop_item_childIndex_))
         return NO;
 
-     var location = [_outlineView convertPoint:[theInfo draggingLocation] fromView:nil],
-        parentItem = [self _parentItemForDropOperation:theOperation row:theRow offset:location];
+    var location = [_outlineView convertPoint:[theInfo draggingLocation] fromView:nil],
+        parentItem = [self _parentItemForDropOperation:theOperation row:theRow offset:location],
         childIndex = [self _childIndexForDropOperation:theOperation row:theRow offset:location];
 
     _outlineView._retargetedItem = nil;
@@ -1263,7 +1263,8 @@ var _loadItemInfoForItem = function(/*CPOutlineView*/ anOutlineView, /*id*/ anIt
 
     CGContextBeginPath(context);
     CGContextMoveToPoint(context, 0.0, 0.0);
-    if(_angle === 0.0) {
+    if (_angle === 0.0)
+    {
         CGContextAddLineToPoint(context, 4.5, 8.0);
         CGContextAddLineToPoint(context, 9.0, 0.0);
     } else {

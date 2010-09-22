@@ -662,7 +662,7 @@ CPPopUpButtonStatePullsDown = CPThemeState("pulls-down");
             location = CGPointMake(CGRectGetMinX(contentRect) - standardLeftMargin, 0.0);
 
         minimumWidth += standardLeftMargin;
-        
+
         // To ensure the selected item is highlighted correctly, unset the highlighted item
         [menu _highlightItemAtIndex:CPNotFound];
     }

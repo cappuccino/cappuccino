@@ -8,7 +8,7 @@
     CPWindow theWindow;
 }
 
--(void)testCanAllocWindow
+- (void)testCanAllocWindow
 {
     theWindow = [[CPWindow alloc] initWithContentRect:CGRectMake(0,0,200,150) 
                                             styleMask:CPWindowNotSizable];

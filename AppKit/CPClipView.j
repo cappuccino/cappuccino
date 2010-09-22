@@ -25,11 +25,11 @@
 #include "CoreGraphics/CGGeometry.h"
 
 
-/*! 
+/*!
     @ingroup appkit
     @class CPClipView
 
-    CPClipView allows you to define a clip rect and display only that portion of its containing view.  
+    CPClipView allows you to define a clip rect and display only that portion of its containing view.
     It is used to hold the document view in a CPScrollView.
 */
 @implementation CPClipView : CPView
@@ -47,7 +47,7 @@
         return;
 
     var defaultCenter = [CPNotificationCenter defaultCenter];
-    
+
     if (_documentView)
     {
         [defaultCenter
@@ -59,29 +59,29 @@
             removeObserver:self
                       name:CPViewBoundsDidChangeNotification
                     object:_documentView];
-        
+
         [_documentView removeFromSuperview];
     }
-    
+
     _documentView = aView;
-    
+
     if (_documentView)
     {
         [self addSubview:_documentView];
-        
-		[_documentView setPostsFrameChangedNotifications:YES];
-		[_documentView setPostsBoundsChangedNotifications:YES];
 
-		[defaultCenter
+        [_documentView setPostsFrameChangedNotifications:YES];
+        [_documentView setPostsBoundsChangedNotifications:YES];
+
+        [defaultCenter
             addObserver:self
                selector:@selector(viewFrameChanged:)
-                   name:CPViewFrameDidChangeNotification 
+                   name:CPViewFrameDidChangeNotification
                  object:_documentView];
 
-		[defaultCenter
+        [defaultCenter
             addObserver:self
                selector:@selector(viewBoundsChanged:)
-                   name:CPViewBoundsDidChangeNotification 
+                   name:CPViewBoundsDidChangeNotification
                  object:_documentView];
     }
 }
@@ -106,7 +106,7 @@
         return _CGPointMakeZero();
 
     var documentFrame = [_documentView frame];
-    
+
     aPoint.x = MAX(0.0, MIN(aPoint.x, MAX(_CGRectGetWidth(documentFrame) - _CGRectGetWidth(_bounds), 0.0)));
     aPoint.y = MAX(0.0, MIN(aPoint.y, MAX(_CGRectGetHeight(documentFrame) - _CGRectGetHeight(_bounds), 0.0)));
 
@@ -117,7 +117,7 @@
 {
     if (_CGPointEqualToPoint(_bounds.origin, aPoint))
         return;
-        
+
     [super setBoundsOrigin:aPoint];
 
     var superview = [self superview],
@@ -126,7 +126,7 @@
         // FIXME: Should CPScrollView be finding out about this on its own somehow?
         scrollViewClass = objj_getClass("CPScrollView");
 
-    if([superview isKindOfClass:scrollViewClass])
+    if ([superview isKindOfClass:scrollViewClass])
         [superview reflectScrolledClipView:self];
 }
 
@@ -166,12 +166,12 @@
 - (void)_constrainScrollPoint
 {
     var oldScrollPoint = [self bounds].origin;
-    
-    // Call scrollToPoint: because the current scroll point may no longer make 
+
+    // Call scrollToPoint: because the current scroll point may no longer make
     // sense given the new frame of the document view.
     [self scrollToPoint:oldScrollPoint];
-    
-    // scrollToPoint: takes care of reflectScrollClipView: for us, so bail if 
+
+    // scrollToPoint: takes care of reflectScrollClipView: for us, so bail if
     // the scroll points are not equal (meaning scrollToPoint: didn't early bail).
     if (!CGPointEqualToPoint(oldScrollPoint, [self bounds].origin))
         return;
@@ -187,7 +187,7 @@
         [superview reflectScrolledClipView:self];
 }
 
-- (BOOL)autoscroll:(CPEvent)anEvent 
+- (BOOL)autoscroll:(CPEvent)anEvent
 {
     var bounds = [self bounds],
         eventLocation = [self convertPoint:[anEvent locationInWindow] fromView:nil],
@@ -222,7 +222,7 @@
             deltaX = bounds.size.width;
     }
 
-	return [self scrollToPoint:CGPointMake(bounds.origin.x - deltaX, bounds.origin.y - deltaY)];
+    return [self scrollToPoint:CGPointMake(bounds.origin.x - deltaX, bounds.origin.y - deltaY)];
 }
 
 @end
@@ -236,14 +236,14 @@ var CPClipViewDocumentViewKey = @"CPScrollViewDocumentView";
 {
     if (self = [super initWithCoder:aCoder])
         [self setDocumentView:[aCoder decodeObjectForKey:CPClipViewDocumentViewKey]];
-    
+
     return self;
 }
 
 - (void)encodeWithCoder:(CPCoder)aCoder
 {
     [super encodeWithCoder:aCoder];
-    
+
     [aCoder encodeObject:_documentView forKey:CPClipViewDocumentViewKey];
 }
 

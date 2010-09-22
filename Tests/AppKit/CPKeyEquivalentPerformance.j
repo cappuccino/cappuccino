@@ -45,7 +45,7 @@
 
     var start = (new Date).getTime();
 
-    for (var i=0; i<REPEATS; i++)
+    for (var i = 0; i<REPEATS; i++)
     {
         [theWindow sendEvent:[CPEvent keyEventWithType:CPKeyDown location:CGPointMakeZero() modifierFlags:CPControlKeyMask
             timestamp:nil windowNumber:nil context:nil

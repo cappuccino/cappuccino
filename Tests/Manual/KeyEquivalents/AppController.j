@@ -45,7 +45,7 @@
         "]"
     ];
 
-    for (var i=0; i<keysToTest.length; i++)
+    for (var i = 0; i<keysToTest.length; i++)
     {
         var button = [[TestButton alloc] initWithFrame:CGRectMake(10 + i * 50, 100, 40, 24)];
         [button setTitle:keysToTest[i]];

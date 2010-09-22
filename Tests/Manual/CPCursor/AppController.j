@@ -42,7 +42,7 @@ var selectors = ["pointingHandCursor", "resizeDownCursor", "resizeLeftCursor", "
     //[CPMenu setMenuBarVisible:YES];
 }
 
--(void)setCursor:(id)sender
+- (void)setCursor:(id)sender
 {
     var selector = CPSelectorFromString([popup titleOfSelectedItem]);
     var cursor = [CPCursor performSelector:selector];

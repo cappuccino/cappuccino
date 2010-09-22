@@ -530,7 +530,7 @@
 
     endingIndex = startingIndex + 1;
 
-    while(endingIndex < _rangeEntries.length)
+    while (endingIndex < _rangeEntries.length)
         _rangeEntries[endingIndex++].range.location+=additionalLength;
 }
 

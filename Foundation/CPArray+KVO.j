@@ -518,7 +518,7 @@ kvoOperators["sum"] = function sumOperator(self, _cmd, param)
         [super addObserver:observer forKeyPath:aKeyPath options:options context:context];
 }
 
--(void)removeObserver:(id)observer forKeyPath:(CPString)aKeyPath
+- (void)removeObserver:(id)observer forKeyPath:(CPString)aKeyPath
 {
     if ([isa instanceMethodForSelector:_cmd] === [CPArray instanceMethodForSelector:_cmd])
         [CPException raise:CPInvalidArgumentException reason:"Unsupported method on CPArray"];

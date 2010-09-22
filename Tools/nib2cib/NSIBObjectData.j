@@ -35,7 +35,7 @@
     {
 /*         id                    owner;
     
-        if((owner=[nameTable objectForKey:NSNibOwner])!=nil)
+        if ((owner=[nameTable objectForKey:NSNibOwner])!=nil)
          [nameTable setObject:owner forKey:@"File's Owner"];
         
         [nameTable setObject:[NSFontManager sharedFontManager] forKey:@"Font Manager"];

@@ -82,7 +82,7 @@ CPDocumentDidFailToSaveNotification = @"CPDocumentDidFailToSaveNotification";
 
 var CPDocumentUntitledCount = 0;
 
-/*! 
+/*!
     @ingroup appkit
     @class CPDocument
 
@@ -120,7 +120,7 @@ var CPDocumentUntitledCount = 0;
 - (id)init
 {
     self = [super init];
-    
+
     if (self)
     {
         _windowControllers = [];
@@ -131,7 +131,7 @@ var CPDocumentUntitledCount = 0;
 
         [self setNextResponder:CPApp];
     }
-    
+
     return self;
 }
 
@@ -144,10 +144,10 @@ var CPDocumentUntitledCount = 0;
 - (id)initWithType:(CPString)aType error:({CPError})anError
 {
     self = [self init];
-    
+
     if (self)
         [self setFileType:aType];
-    
+
     return self;
 }
 
@@ -165,7 +165,7 @@ var CPDocumentUntitledCount = 0;
 - (id)initWithContentsOfURL:(CPURL)anAbsoluteURL ofType:(CPString)aType delegate:(id)aDelegate didReadSelector:(SEL)aDidReadSelector contextInfo:(id)aContextInfo
 {
     self = [self init];
-    
+
     if (self)
     {
         [self setFileURL:anAbsoluteURL];
@@ -173,7 +173,7 @@ var CPDocumentUntitledCount = 0;
 
         [self readFromURL:anAbsoluteURL ofType:aType delegate:aDelegate didReadSelector:aDidReadSelector contextInfo:aContextInfo];
     }
-    
+
     return self;
 }
 
@@ -190,7 +190,7 @@ var CPDocumentUntitledCount = 0;
 - (id)initForURL:(CPURL)anAbsoluteURL withContentsOfURL:(CPURL)absoluteContentsURL ofType:(CPString)aType delegate:(id)aDelegate didReadSelector:(SEL)aDidReadSelector contextInfo:(id)aContextInfo
 {
     self = [self init];
-    
+
     if (self)
     {
         [self setFileURL:anAbsoluteURL];
@@ -198,7 +198,7 @@ var CPDocumentUntitledCount = 0;
 
         [self readFromURL:absoluteContentsURL ofType:aType delegate:aDelegate didReadSelector:aDidReadSelector contextInfo:aContextInfo];
     }
-    
+
     return self;
 }
 
@@ -281,7 +281,7 @@ var CPDocumentUntitledCount = 0;
         {
             var view = [viewController view],
                 viewFrame = [view frame];
-            
+
             viewFrame.origin = CGPointMake(50, 50);
 
             var theWindow = [[CPWindow alloc] initWithContentRect:viewFrame styleMask:CPTitledWindowMask | CPClosableWindowMask | CPMiniaturizableWindowMask | CPResizableWindowMask];
@@ -381,14 +381,14 @@ var CPDocumentUntitledCount = 0;
 {
     if (_fileURL)
         return [_fileURL lastPathComponent];
-    
+
     if (!_untitledDocumentIndex)
         _untitledDocumentIndex = ++CPDocumentUntitledCount;
-	
-	if (_untitledDocumentIndex == 1)
-	   return @"Untitled";
 
-	return @"Untitled " + _untitledDocumentIndex;
+    if (_untitledDocumentIndex == 1)
+       return @"Untitled";
+
+    return @"Untitled " + _untitledDocumentIndex;
 }
 
 - (CPString)viewCibName
@@ -457,7 +457,7 @@ var CPDocumentUntitledCount = 0;
         return;
 
     _fileURL = aFileURL;
-    
+
     [_windowControllers makeObjectsPerformSelector:@selector(synchronizeWindowTitleWithDocumentName)];
 }
 
@@ -509,21 +509,21 @@ var CPDocumentUntitledCount = 0;
     // If we got this far and it wasn't an HTTP request, then everything is fine.
     if (![aResponse isKindOfClass:[CPHTTPURLResponse class]])
         return;
-    
+
     var statusCode = [aResponse statusCode];
-    
+
     // Nothing to do if everything is hunky dory.
     if (statusCode === 200)
         return;
-    
+
     var session = aConnection.session;
-    
+
     if (aConnection == _readConnection)
     {
         [aConnection cancel];
-            
+
         alert("There was an error retrieving the document.");
-        
+
         objj_msgSend(session.delegate, session.didReadSelector, self, NO, session.contextInfo);
     }
     else
@@ -532,23 +532,23 @@ var CPDocumentUntitledCount = 0;
         if (statusCode == 409)
         {
             [aConnection cancel];
-            
+
             if (confirm("There already exists a file with that name, would you like to overwrite it?"))
             {
                 [_writeRequest setValue:@"true" forHTTPHeaderField:@"x-cappuccino-overwrite"];
-    
+
                 [aConnection start];
             }
-            else        
+            else
             {
                 if (session.saveOperation != CPSaveToOperation)
                 {
                     _changeCount += session.changeCount;
                     [_windowControllers makeObjectsPerformSelector:@selector(setDocumentEdited:) withObject:[self isDocumentEdited]];
                 }
-                
+
                 _writeRequest = nil;
-    
+
                 objj_msgSend(session.delegate, session.didSaveSelector, self, NO, session.contextInfo);
                 [self _sendDocumentSavedNotification:NO];
             }
@@ -563,7 +563,7 @@ var CPDocumentUntitledCount = 0;
 - (void)connection:(CPURLConnection)aConnection didReceiveData:(CPString)aData
 {
     var session = aConnection.session;
-        
+
     // READ
     if (aConnection == _readConnection)
     {
@@ -575,9 +575,9 @@ var CPDocumentUntitledCount = 0;
     {
         if (session.saveOperation != CPSaveToOperation)
             [self setFileURL:session.absoluteURL];
-            
+
         _writeRequest = nil;
-        
+
         objj_msgSend(session.delegate, session.didSaveSelector, self, YES, session.contextInfo);
         [self _sendDocumentSavedNotification:YES];
     }
@@ -590,17 +590,17 @@ var CPDocumentUntitledCount = 0;
 - (void)connection:(CPURLConnection)aConnection didFailWithError:(CPError)anError
 {
     var session = aConnection.session;
-        
+
     if (_readConnection == aConnection)
         objj_msgSend(session.delegate, session.didReadSelector, self, NO, session.contextInfo);
-    
+
     else
-    {        
+    {
         if (session.saveOperation != CPSaveToOperation)
         {
             _changeCount += session.changeCount;
             [_windowControllers makeObjectsPerformSelector:@selector(setDocumentEdited:) withObject:[self isDocumentEdited]];
-        }        
+        }
 
         _writeRequest = nil;
 
@@ -643,9 +643,9 @@ var CPDocumentUntitledCount = 0;
     else if (aChangeType == CPChangeCleared)
         _changeCount = 0;
     /*else if (aChangeType == CPCHangeReadOtherContents)
-        
-    else if (aChangeType == CPChangeAutosaved)*/ 
-    
+
+    else if (aChangeType == CPChangeAutosaved)*/
+
     [_windowControllers makeObjectsPerformSelector:@selector(setDocumentEdited:) withObject:[self isDocumentEdited]];
 }
 
@@ -685,9 +685,9 @@ var CPDocumentUntitledCount = 0;
 {
     if (_hasUndoManager == aFlag)
         return;
-    
+
     _hasUndoManager = aFlag;
-    
+
     if (!_hasUndoManager)
         [self setUndoManager:nil];
 }
@@ -696,7 +696,7 @@ var CPDocumentUntitledCount = 0;
 - (void)_undoManagerWillCloseGroup:(CPNotification)aNotification
 {
     var undoManager = [aNotification object];
-    
+
     if ([undoManager isUndoing] || [undoManager isRedoing])
         return;
 
@@ -723,13 +723,13 @@ var CPDocumentUntitledCount = 0;
 - (void)setUndoManager:(CPUndoManager)anUndoManager
 {
     var defaultCenter = [CPNotificationCenter defaultCenter];
-    
+
     if (_undoManager)
     {
         [defaultCenter removeObserver:self
                                  name:CPUndoManagerDidUndoChangeNotification
                                object:_undoManager];
-                               
+
         [defaultCenter removeObserver:self
                                  name:CPUndoManagerDidRedoChangeNotification
                                object:_undoManager];
@@ -738,17 +738,17 @@ var CPDocumentUntitledCount = 0;
                                  name:CPUndoManagerWillCloseUndoGroupNotification
                                object:_undoManager];
     }
-    
+
     _undoManager = anUndoManager;
-    
+
     if (_undoManager)
     {
-    
+
         [defaultCenter addObserver:self
                           selector:@selector(_undoManagerDidUndoChange:)
                               name:CPUndoManagerDidUndoChangeNotification
                             object:_undoManager];
-                            
+
         [defaultCenter addObserver:self
                           selector:@selector(_undoManagerDidRedoChange:)
                               name:CPUndoManagerDidRedoChangeNotification
@@ -774,7 +774,7 @@ var CPDocumentUntitledCount = 0;
 
     return _undoManager;
 }
- 
+
 /*
     Implemented as a delegate of a CPWindow
     @ignore
@@ -803,7 +803,7 @@ var CPDocumentUntitledCount = 0;
         [[CPNotificationCenter defaultCenter]
             postNotificationName:CPDocumentWillSaveNotification
                           object:self];
-        
+
         [self saveToURL:_fileURL ofType:[self fileType] forSaveOperation:CPSaveOperation delegate:delegate didSaveSelector:didSaveSelector contextInfo:contextInfo];
     }
     else
@@ -861,7 +861,7 @@ var CPDocumentUntitledCount = 0;
     [[CPDocumentController sharedDocumentController] removeDocument:self];
 }
 
-- (void)shouldCloseWindowController:(CPWindowController)controller delegate:(id)delegate shouldCloseSelector:(SEL)selector contextInfo:(Object)info 
+- (void)shouldCloseWindowController:(CPWindowController)controller delegate:(id)delegate shouldCloseSelector:(SEL)selector contextInfo:(Object)info
 {
     if ([controller shouldCloseDocument] || ([_windowControllers count] < 2 && [_windowControllers indexOfObject:controller] !== CPNotFound))
         [self canCloseDocumentWithDelegate:self shouldCloseSelector:@selector(_document:shouldClose:context:) contextInfo:{delegate:delegate, selector:selector, context:info}];
@@ -878,7 +878,7 @@ var CPDocumentUntitledCount = 0;
     objj_msgSend(context.delegate, context.selector, aDocument, shouldClose, context.context);
 }
 
-- (void)canCloseDocumentWithDelegate:(id)aDelegate shouldCloseSelector:(SEL)aSelector contextInfo:(Object)context 
+- (void)canCloseDocumentWithDelegate:(id)aDelegate shouldCloseSelector:(SEL)aSelector contextInfo:(Object)context
 {
     if (![self isDocumentEdited])
         return [aDelegate respondsToSelector:aSelector] && objj_msgSend(aDelegate, aSelector, self, YES, context);
