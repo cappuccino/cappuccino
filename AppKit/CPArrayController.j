@@ -342,7 +342,9 @@
 
 - (BOOL)setSelectionIndexes:(CPIndexSet)indexes
 {
+    [self _selectionWillChange]
     [self __setSelectionIndexes:indexes];
+    [self _selectionDidChange];
 }
 
 /*
