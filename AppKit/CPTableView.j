@@ -944,9 +944,8 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 
     for (var identifier in _dataViewsForTableColumns)
     {
-        var dataViewsInTableColumn = _dataViewsForTableColumns[identifier];
-
-        var count = deselectRows.length;
+        var dataViewsInTableColumn = _dataViewsForTableColumns[identifier],
+            count = deselectRows.length;
         while (count--)
             [self _performSelection:NO forRow:deselectRows[count] context:dataViewsInTableColumn];
 
@@ -1500,10 +1499,10 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
         buffer = 0.0;
 
     // Fixme: cache resizable columns because they won't changes betwwen two calls to this method.
-    for (var i=0; i < count; i++)
+    for (var i = 0; i < count; i++)
     {
         var tableColumn = _tableColumns[i];
-        if(![tableColumn isHidden] && ([tableColumn resizingMask] & CPTableColumnAutoresizingMask))
+        if (![tableColumn isHidden] && ([tableColumn resizingMask] & CPTableColumnAutoresizingMask))
             [visColumns addObject:i];
     }
 
@@ -2010,8 +2009,8 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     }
 
     var dragPoint = [self convertPoint:[theDragEvent locationInWindow] fromView:nil];
-    dragViewOffset.x = CGRectGetWidth(bounds)/2 - dragPoint.x;
-    dragViewOffset.y = CGRectGetHeight(bounds)/2 - dragPoint.y;
+    dragViewOffset.x = CGRectGetWidth(bounds) / 2 - dragPoint.x;
+    dragViewOffset.y = CGRectGetHeight(bounds) / 2 - dragPoint.y;
 
     return view;
 }
@@ -2024,7 +2023,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 */
 - (CPView)_dragViewForColumn:(int)theColumnIndex event:(CPEvent)theDragEvent offset:(CPPointPointer)theDragViewOffset
 {
-    var dragView = [[_CPColumnDragView alloc] initWithLineColor:[self gridColor]];
+    var dragView = [[_CPColumnDragView alloc] initWithLineColor:[self gridColor]],
         tableColumn = [[self tableColumns] objectAtIndex:theColumnIndex],
         bounds = CPRectMake(0.0, 0.0, [tableColumn width], _CGRectGetHeight([self visibleRect]) + 23.0),
         columnRect = [self rectOfColumn:theColumnIndex],
@@ -2078,11 +2077,11 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 */
 - (void)setDropRow:(CPInteger)row dropOperation:(CPTableViewDropOperation)operation
 {
-    if(row > [self numberOfRows] && operation === CPTableViewDropOn)
+    if (row > [self numberOfRows] && operation === CPTableViewDropOn)
     {
-        var numberOfRows = [self numberOfRows] + 1;
-        var reason = @"Attempt to set dropRow=" + row +
-                     " dropOperation=CPTableViewDropOn when [0 - " + numberOfRows + "] is valid range of rows."
+        var numberOfRows = [self numberOfRows] + 1,
+            reason = @"Attempt to set dropRow=" + row +
+                     " dropOperation=CPTableViewDropOn when [0 - " + numberOfRows + "] is valid range of rows.";
 
         [[CPException exceptionWithName:@"Error" reason:reason userInfo:nil] raise];
     }
@@ -2274,9 +2273,8 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     {
         var column = columnArray[columnIndex],
             tableColumn = _tableColumns[column],
-            tableColumnUID = [tableColumn UID];
-
-        var rowIndex = 0,
+            tableColumnUID = [tableColumn UID],
+            rowIndex = 0,
             rowsCount = rowArray.length;
 
         for (; rowIndex < rowsCount; ++rowIndex)
@@ -2327,9 +2325,9 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
             _dataViewsForTableColumns[tableColumnUID] = [];
 
         var rowIndex = 0,
-            rowsCount = rowArray.length;
+            rowsCount = rowArray.length,
+            isColumnSelected = [_selectedColumnIndexes containsIndex:column];
 
-        var isColumnSelected = [_selectedColumnIndexes containsIndex:column];
         for (; rowIndex < rowsCount; ++rowIndex)
         {
             var row = rowArray[rowIndex],
@@ -2402,9 +2400,8 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
             tableColumn = _tableColumns[column],
             tableColumnUID = [tableColumn UID],
             dataViewsForTableColumn = _dataViewsForTableColumns[tableColumnUID],
-            columnRange = _tableColumnRanges[column];
-
-        var rowIndex = 0,
+            columnRange = _tableColumnRanges[column],
+            rowIndex = 0,
             rowsCount = rowArray.length;
 
         for (; rowIndex < rowsCount; ++rowIndex)
@@ -2559,7 +2556,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 
     if (gridStyleMask & CPTableViewSolidHorizontalGridLineMask)
     {
-        var exposedRows = [self rowsInRect:aRect];
+        var exposedRows = [self rowsInRect:aRect],
             row = exposedRows.location,
             lastRow = CPMaxRange(exposedRows) - 1,
             rowY = -0.5,
@@ -2704,8 +2701,8 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     }
 
     CGContextBeginPath(context);
-    gridStyleMask = [self gridStyleMask];
-    for(var i=0; i < count2; i++)
+    var gridStyleMask = [self gridStyleMask];
+    for(var i = 0; i < count2; i++)
     {
          var rect = objj_msgSend(self, rectSelector, indexes[i]),
              minX = CGRectGetMinX(rect) - 0.5,
@@ -2716,13 +2713,13 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
         if ([_selectedRowIndexes count] >= 1 && gridStyleMask & CPTableViewSolidVerticalGridLineMask)
         {
             var exposedColumns = [self columnIndexesInRect:aRect],
-            exposedColumnIndexes = [],
-            firstExposedColumn = [exposedColumns firstIndex],
-            exposedRange = CPMakeRange(firstExposedColumn, [exposedColumns lastIndex] - firstExposedColumn + 1);
+                exposedColumnIndexes = [],
+                firstExposedColumn = [exposedColumns firstIndex],
+                exposedRange = CPMakeRange(firstExposedColumn, [exposedColumns lastIndex] - firstExposedColumn + 1);
             [exposedColumns getIndexes:exposedColumnIndexes maxCount:-1 inIndexRange:exposedRange];
             var exposedColumnCount = [exposedColumnIndexes count];
 
-            for(var c = firstExposedColumn; c < exposedColumnCount; c++)
+            for (var c = firstExposedColumn; c < exposedColumnCount; c++)
             {
                 var colRect = [self rectOfColumn:exposedColumnIndexes[c]],
                     colX = CGRectGetMaxX(colRect) + 0.5;
@@ -2730,11 +2727,10 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
                 CGContextMoveToPoint(context, colX, minY);
                 CGContextAddLineToPoint(context, colX, maxY);
             }
-
         }
 
         //if the row after the current row is not selected then there is no need to draw the bottom grid line white.
-        if([indexes containsObject:indexes[i]+1])
+        if ([indexes containsObject:indexes[i] + 1])
         {
             CGContextMoveToPoint(context, minX, maxY);
             CGContextAddLineToPoint(context, maxX, maxY);
@@ -2852,7 +2848,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 
     // if the table has drag support then we use mouseUp to select a single row.
     // otherwise it uses mouse down.
-    if (row >=0 && !(_implementedDataSourceMethods & CPTableViewDataSource_tableView_writeRowsWithIndexes_toPasteboard_))
+    if (row >= 0 && !(_implementedDataSourceMethods & CPTableViewDataSource_tableView_writeRowsWithIndexes_toPasteboard_))
         [self _updateSelectionWithMouseAtRow:row];
 
     [[self window] makeFirstResponder:self];
@@ -2883,7 +2879,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 
     // begin the drag is the datasource lets us, we've move at least +-3px vertical or horizontal,
     // or we're dragging from selected rows and we haven't begun a drag session
-    if(!_isSelectingSession && _implementedDataSourceMethods & CPTableViewDataSource_tableView_writeRowsWithIndexes_toPasteboard_)
+    if (!_isSelectingSession && _implementedDataSourceMethods & CPTableViewDataSource_tableView_writeRowsWithIndexes_toPasteboard_)
     {
         if (row >= 0 && (ABS(_startTrackingPoint.x - aPoint.x) > 3 || (_verticalMotionCanDrag && ABS(_startTrackingPoint.y - aPoint.y) > 3)) ||
             ([_selectedRowIndexes containsIndex:row]))
@@ -2921,8 +2917,8 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
                     [view setImage:image];
                 }
 
-                var bounds = [view bounds];
-                var viewLocation = CPPointMake(aPoint.x - CGRectGetWidth(bounds)/2 + offset.x, aPoint.y - CGRectGetHeight(bounds)/2 + offset.y);
+                var bounds = [view bounds],
+                    viewLocation = CPPointMake(aPoint.x - CGRectGetWidth(bounds) / 2 + offset.x, aPoint.y - CGRectGetHeight(bounds) / 2 + offset.y);
                 [self dragView:view at:viewLocation offset:CPPointMakeZero() event:[CPApp currentEvent] pasteboard:pboard source:self slideBack:YES];
                 _startTrackingPoint = nil;
 
@@ -2937,7 +2933,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     }
 
     _isSelectingSession = YES;
-    if(row >= 0 && row !== _lastTrackedRowIndex)
+    if (row >= 0 && row !== _lastTrackedRowIndex)
     {
         _lastTrackedRowIndex = row;
         [self _updateSelectionWithMouseAtRow:row];
@@ -2970,7 +2966,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
         rowIndex,
         shouldEdit = YES;
 
-    if(_implementedDataSourceMethods & CPTableViewDataSource_tableView_writeRowsWithIndexes_toPasteboard_)
+    if (_implementedDataSourceMethods & CPTableViewDataSource_tableView_writeRowsWithIndexes_toPasteboard_)
     {
         rowIndex = [self rowAtPoint:aPoint];
         if (rowIndex !== -1)
@@ -3014,7 +3010,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     } //end of editing conditional
 
     //double click actions
-    if([[CPApp currentEvent] clickCount] === 2 && _doubleAction)
+    if ([[CPApp currentEvent] clickCount] === 2 && _doubleAction)
     {
         _clickedRow = [self rowAtPoint:aPoint];
         [self sendAction:_doubleAction to:_target];
@@ -3030,7 +3026,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
         dropOperation = [self _proposedDropOperationAtPoint:location],
         row = [self _proposedRowAtPoint:location];
 
-    if(_retargetedDropRow !== nil)
+    if (_retargetedDropRow !== nil)
         row = _retargetedDropRow;
 
     var draggedTypes = [self registeredDraggedTypes],
@@ -3082,7 +3078,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 */
 - (CPTableViewDropOperation)_proposedDropOperationAtPoint:(CGPoint)theDragPoint
 {
-    if(_retargetedDropOperation !== nil)
+    if (_retargetedDropOperation !== nil)
         return _retargetedDropOperation;
 
     var row = [self _proposedRowAtPoint:theDragPoint],
@@ -3128,7 +3124,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 
 - (void)_validateDrop:(id)info proposedRow:(CPInteger)row proposedDropOperation:(CPTableViewDropOperation)dropOperation
 {
-    if(_implementedDataSourceMethods & CPTableViewDataSource_tableView_validateDrop_proposedRow_proposedDropOperation_)
+    if (_implementedDataSourceMethods & CPTableViewDataSource_tableView_validateDrop_proposedRow_proposedDropOperation_)
         return [_dataSource tableView:self validateDrop:info proposedRow:row proposedDropOperation:dropOperation];
 
     return CPDragOperationNone;
@@ -3154,13 +3150,12 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 {
     var location = [self convertPoint:[sender draggingLocation] fromView:nil],
         dropOperation = [self _proposedDropOperationAtPoint:location],
-        numberOfRows = [self numberOfRows];
-
-    var row = [self _proposedRowAtPoint:location],
-        dragOperation = [self _validateDrop:sender proposedRow:row proposedDropOperation:dropOperation];
+        numberOfRows = [self numberOfRows],
+        row = [self _proposedRowAtPoint:location],
+        dragOperation = [self _validateDrop:sender proposedRow:row proposedDropOperation:dropOperation],
         exposedClipRect = [self visibleRect];
 
-    if(_retargetedDropRow !== nil)
+    if (_retargetedDropRow !== nil)
         row = _retargetedDropRow;
 
 
@@ -3204,11 +3199,11 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 */
 - (BOOL)performDragOperation:(id)sender
 {
-    var location = [self convertPoint:[sender draggingLocation] fromView:nil];
+    var location = [self convertPoint:[sender draggingLocation] fromView:nil],
         operation = [self _proposedDropOperationAtPoint:location],
         row = _retargetedDropRow;
 
-    if(row === nil)
+    if (row === nil)
         var row = [self _proposedRowAtPoint:location];
 
     return [_dataSource tableView:self acceptDrop:sender row:row dropOperation:operation];

@@ -25,7 +25,7 @@
 @import "CPView.j"
 
 #include "CoreGraphics/CGGeometry.h"
- 
+
 @implementation _CPTableColumnHeaderView : CPView
 {
     _CPImageAndTextView     _textField;
@@ -173,8 +173,8 @@ var _CPTableColumnHeaderViewStringValueKey = @"_CPTableColumnHeaderViewStringVal
 
 + (id)themeAttributes
 {
-    return [CPDictionary dictionaryWithObjects:[[CPNull null]]
-                                       forKeys:[@"background-color"]];
+    return [CPDictionary dictionaryWithObjects:[[CPNull null], [CPColor grayColor]]
+                                       forKeys:[@"background-color", @"divider-color"]];
 }
 
 - (void)_init
@@ -240,7 +240,7 @@ var _CPTableColumnHeaderViewStringValueKey = @"_CPTableColumnHeaderViewStringVal
     rect.origin.x = _CGRectGetMaxX(rect) - 5;
     rect.size.width = 20;
 
-    return rect;    
+    return rect;
 }
 
 - (void)_setPressedColumn:(CPInteger)column
@@ -249,7 +249,7 @@ var _CPTableColumnHeaderViewStringValueKey = @"_CPTableColumnHeaderViewStringVal
     {
         var headerView = [_tableView._tableColumns[_pressedColumn] headerView];
         [headerView unsetThemeState:CPThemeStateHighlighted];
-    }    
+    }
 
     if (column != -1)
     {
@@ -353,7 +353,7 @@ var _CPTableColumnHeaderViewStringValueKey = @"_CPTableColumnHeaderViewStringVal
         viewLocation.x = ( _CGRectGetMinX(columnRect) + offset.x ) + ( aPoint.x - _mouseDownLocation.x );
         viewLocation.y = _CGRectGetMinY(columnRect) + offset.y;
 
-        [self dragView:view at:viewLocation offset:_CGSizeMakeZero() event:[CPApp currentEvent] 
+        [self dragView:view at:viewLocation offset:_CGSizeMakeZero() event:[CPApp currentEvent]
             pasteboard:[CPPasteboard pasteboardWithName:CPDragPboard] source:self slideBack:YES];
 
         return NO;
@@ -364,7 +364,7 @@ var _CPTableColumnHeaderViewStringValueKey = @"_CPTableColumnHeaderViewStringVal
 
 - (BOOL)_shouldStopTrackingTableColumn:(int)aColumnIndex at:(CGPoint)aPoint
 {
-    return _isTrackingColumn && _activeColumn === aColumnIndex && 
+    return _isTrackingColumn && _activeColumn === aColumnIndex &&
         _CGRectContainsPoint([self headerRectOfColumn:aColumnIndex], aPoint);
 }
 
@@ -398,8 +398,8 @@ var _CPTableColumnHeaderViewStringValueKey = @"_CPTableColumnHeaderViewStringVal
 - (void)_constrainDragView:(CPView)theDragView at:(CGPoint)aPoint
 {
     var tableColumns = [_tableView tableColumns],
-        lastColumnRect = [self _headerRectOfLastVisibleColumn];
-        activeColumnRect = [self headerRectOfColumn:_activeColumn];
+        lastColumnRect = [self _headerRectOfLastVisibleColumn],
+        activeColumnRect = [self headerRectOfColumn:_activeColumn],
         dragWindow = [theDragView window],
         frame = [dragWindow frame];
 
@@ -547,7 +547,7 @@ var _CPTableColumnHeaderViewStringValueKey = @"_CPTableColumnHeaderViewStringVal
         return;
     }
 
-    var mouseLocation = [self convertPoint:[theEvent locationInWindow] fromView:nil],    
+    var mouseLocation = [self convertPoint:[theEvent locationInWindow] fromView:nil],
         mouseOverLocation = CGPointMake(mouseLocation.x - 5, mouseLocation.y),
         overColumn = [self columnAtPoint:mouseOverLocation];
 
@@ -568,7 +568,7 @@ var _CPTableColumnHeaderViewStringValueKey = @"_CPTableColumnHeaderViewStringVal
 }
 
 - (void)mouseEntered:(CPEvent)theEvent
-{   
+{
     [self _updateResizeCursor:theEvent];
 }
 
@@ -586,16 +586,16 @@ var _CPTableColumnHeaderViewStringValueKey = @"_CPTableColumnHeaderViewStringVal
 - (void)layoutSubviews
 {
     var tableColumns = [_tableView tableColumns],
-        count = [tableColumns count];    
+        count = [tableColumns count];
 
-    for (var i = 0; i < count; i++) 
+    for (var i = 0; i < count; i++)
     {
         var column = [tableColumns objectAtIndex:i],
             headerView = [column headerView];
 
         var frame = [self headerRectOfColumn:i];
         frame.size.height -= 0.5;
-        if (i > 0) 
+        if (i > 0)
         {
             frame.origin.x += 0.5;
             frame.size.width -= 1;
@@ -624,7 +624,7 @@ var _CPTableColumnHeaderViewStringValueKey = @"_CPTableColumnHeaderViewStringVal
         exposedRange = CPMakeRange(firstIndex, [exposedTableColumns lastIndex] - firstIndex + 1);
 
     CGContextSetLineWidth(context, 1);
-    CGContextSetStrokeColor(context, [_tableView gridColor]);
+    CGContextSetStrokeColor(context, [self currentValueForThemeAttribute:@"divider-color"]);
 
     [exposedColumnIndexes getIndexes:columnsArray maxCount:-1 inIndexRange:exposedRange];
 

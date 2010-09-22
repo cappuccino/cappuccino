@@ -2323,7 +2323,7 @@ setBoundsOrigin:
         var attributeName = attributes[count--],
             attribute = [[_CPThemeAttribute alloc] initWithName:attributeName defaultValue:attributes[count]];
 
-        [attribute setParentAttribute:[theme _attributeWithName:attributeName forClass:themeClass]];
+        [attribute setParentAttribute:[theme attributeWithName:attributeName forClass:themeClass]];
 
         _themeAttributes[attributeName] = attribute;
     }
@@ -2354,7 +2354,7 @@ setBoundsOrigin:
 
     for (var attributeName in _themeAttributes)
         if (_themeAttributes.hasOwnProperty(attributeName))
-            [_themeAttributes[attributeName] setParentAttribute:[theme _attributeWithName:attributeName forClass:themeClass]];
+            [_themeAttributes[attributeName] setParentAttribute:[theme attributeWithName:attributeName forClass:themeClass]];
 
     [self setNeedsLayout];
     [self setNeedsDisplay:YES];

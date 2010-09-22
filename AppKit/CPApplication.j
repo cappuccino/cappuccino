@@ -108,6 +108,8 @@ CPRunContinuesResponse  = -1002;
     CPImage                 _applicationIconImage;
 
     CPPanel                 _aboutPanel;
+
+    CPThemeBlend            _themeBlend @accessors(property=themeBlend);
 }
 
 /*!
@@ -1034,7 +1036,8 @@ var _CPEventListenerMake = function(anEventMask, aCallback)
     return { _mask:anEventMask, _callback:aCallback };
 }
 
-var _CPRunModalLoop = function(anEvent)
+// Make this a global for use in CPPlatformWindow+DOM.j.
+_CPRunModalLoop = function(anEvent)
 {
     [CPApp setCallback:_CPRunModalLoop forNextEventMatchingMask:CPAnyEventMask untilDate:nil inMode:0 dequeue:NO];
 
@@ -1128,6 +1131,7 @@ var _CPAppBootstrapperActions = nil;
 
 + (void)blendDidFinishLoading:(CPThemeBlend)aThemeBlend
 {
+    [[CPApplication sharedApplication] setThemeBlend:aThemeBlend];
     [CPTheme setDefaultTheme:[CPTheme themeNamed:[CPApplication defaultThemeName]]];
 
     [self performActions];
@@ -1225,7 +1229,7 @@ var _CPAppBootstrapperActions = nil;
 
 + (void)reset
 {
-	_CPAppBootstrapperActions = nil;
+    _CPAppBootstrapperActions = nil;
 }
 
 @end

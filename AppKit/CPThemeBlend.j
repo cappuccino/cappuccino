@@ -33,7 +33,7 @@
 @implementation CPThemeBlend : CPObject
 {
     CPBundle    _bundle;
-    CPArray     _themes @accessors(readonly, getter=themes);
+    CPArray     _themes;
     id          _loadDelegate;
 }
 
@@ -49,6 +49,28 @@
     return self;
 }
 
+/*!
+    Returns an array of names of the keyed theme archives that make up this blend.
+    Each item in the array will have the extension ".keyedtheme".
+*/
+- (CPArray)themes
+{
+    return _themes;
+}
+
+/*!
+    Returns an array of names of the themes that make up this blend.
+*/
+- (CPArray)themeNames
+{
+    var names = [];
+
+    for (var i = 0; i < _themes.length; ++i)
+        names.push(_themes[i].substring(0, _themes[i].indexOf(".keyedtheme")));
+
+    return names;
+}
+
 - (void)loadWithDelegate:(id)aDelegate
 {
     _loadDelegate = aDelegate;
@@ -58,12 +80,13 @@
 
 - (void)bundleDidFinishLoading:(CPBundle)aBundle
 {
-    var themes = [_bundle objectForInfoDictionaryKey:@"CPKeyedThemes"],
-        count = themes.length;
+    _themes = [_bundle objectForInfoDictionaryKey:@"CPKeyedThemes"];
+
+    var count = _themes.length;
 
     while (count--)
     {
-        var path = [aBundle pathForResource:themes[count]],
+        var path = [aBundle pathForResource:_themes[count]],
             unarchiver = [[_CPThemeKeyedUnarchiver alloc]
                             initForReadingWithData:[[CPURL URLWithString:path] staticResourceData]
                             bundle:_bundle];

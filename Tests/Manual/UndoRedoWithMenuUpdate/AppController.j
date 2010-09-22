@@ -1,7 +1,7 @@
 
 @implementation AppController : CPObject
 {
-    CPTextField     label;    
+    CPTextField     label;
     CPSlider        theSlider;
     CPUndoManager   undoManager @accessors;
 }
@@ -42,18 +42,19 @@
 
 // setup the menus to manage
     undoManager = [[CPUndoManager alloc] init];
-    
-    var editmenuItem = [[[CPApplication sharedApplication] mainMenu] itemWithTitle: @"Edit"]; 
-    [[editmenuItem submenu] setAutoenablesItems:YES]; 
 
-    var undoMenuItem = [[editmenuItem submenu] itemWithTitle:@"Undo"],
-    [undoMenuItem setTag:@"Undo"],
+    var editmenuItem = [[[CPApplication sharedApplication] mainMenu] itemWithTitle: @"Edit"];
+    [[editmenuItem submenu] setAutoenablesItems:YES];
+
+    var undoMenuItem = [[editmenuItem submenu] itemWithTitle:@"Undo"];
+
+    [undoMenuItem setTag:@"Undo"];
     [undoMenuItem setTarget:self];
 
     var redoMenuItem = [[editmenuItem submenu] itemWithTitle:@"Redo"];
-    [redoMenuItem setTag:@"Redo"],
-    [redoMenuItem setTarget:self];
 
+    [redoMenuItem setTag:@"Redo"];
+    [redoMenuItem setTarget:self];
 }
 
 
@@ -69,11 +70,9 @@
     [theSlider setObjectValue:aValue];
     [undoManager setActionName:@"slideto: " + aValue];
 
-    [label setObjectValue:aValue];   
+    [label setObjectValue:aValue];
     [label sizeToFit];
 }
-
-
 
 - (void)undo:(id)sender
 {
@@ -124,7 +123,7 @@
         var item = [_items objectAtIndex:i];
         if([[item target] respondsToSelector:@selector(validateMenuItem:)])
             [item _setEnabledByMenu:[[item target] validateMenuItem:item]];
-        else 
+        else
             [item _setEnabledByMenu:[item isEnabled]]; /// BD Change from NO
     }
 }
@@ -206,7 +205,7 @@
             [newMenu _highlightItemAtIndex:CPNotFound];
             return;
         }
-        
+
         [menuContainer orderOut:self];
         [menuContainer setMenu:nil];
 
@@ -216,7 +215,7 @@
 
     if (!newMenu)
         return;
-    
+
     if([newMenu autoenablesItems])
         [newMenu update];
     // Unhighlight any previously highlighted item.
@@ -232,8 +231,8 @@
     if (baseMenu === [self trackingMenu] && [[self trackingMenuContainer] isMenuBar])
         [menuWindow setBackgroundStyle:_CPMenuWindowMenuBarBackgroundStyle];
     else
-        [menuWindow setBackgroundStyle:_CPMenuWindowPopUpBackgroundStyle];        
-    
+        [menuWindow setBackgroundStyle:_CPMenuWindowPopUpBackgroundStyle];
+
     [menuWindow setFrameOrigin:aGlobalLocation];
     [menuWindow orderFront:self];
 }

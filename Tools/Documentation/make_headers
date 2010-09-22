@@ -1,36 +1,132 @@
 #! /usr/bin/env ruby
 
+ACCESSOR_GET_TEMPLATE = <<EOS
+/*!
+  Synthesized accessor method.
+*/
+- (\#{ivarType})\#{getter}
+{
+    return \#{ivar};
+}
+
+EOS
+
+ACCESSOR_SET_TEMPLATE = <<EOS
+/*!
+  Synthesized accessor method.
+*/
+- (void)\#{setter}:(\#{ivarType})aValue
+{
+    \#{ivar} = aValue;
+}
+
+EOS
+
+ACCESSORS_IMPLEMENTATION_TEMPLATE = <<EOS
+
+@implementation \#{className} (CPSynthesizedAccessors)
+
+\#{accessorsSource}@end
+EOS
+
+
 def makeHeaderFileFrom(fileName)
   # Grab the entire file (text)
-  data = File.new(fileName).read
-  
-  # Extract out all the "implementation" lines.  Note, there may be
+  sourceFile = File.new(fileName, "r")
+  source = sourceFile.read
+  sourceFile.close()
+
+  # Remove @accessor declarations from ivars in the source file
+  sourceFile = File.new(fileName, "w")
+  sourceFile.write(source.gsub(/(\s*\w+\s+\w+)\s+@accessors(\(.+?\))?;/m, "\\1;"))
+
+  # Extract all the @implementations blocks. Note, there may be
   # more than on in a given .j file.
-  m = data.scan(/.*?(@implementation.*?\{.*?\})/m)
+  m = source.scan(/^\s*(@implementation\s*(\w+)\s*:\s*\w+\s*\{(.*?)\}).*?^\s*@end\s*$/m)
 
-  if m.length > 0
-    for i in 0...m.length
-      line = m[i][0]
-    
-      # Skip category definitions
-      if not /.*?\(.*?\).*?\{/m.match(line)
-      
-        # Extract the class name
-        m2 = line.scan(/.*?@implementation(.*?):.*/m)
+  return if m.length == 0
 
-        if !m2.nil? && !m2[0].nil?
-          className = m2[0][0].strip()
-        
-          # Change "implementation" to "interface", create the .h file, and write the interface
-          newLine = line.sub("implementation", "interface")
-          newFileName = File.dirname(fileName) + "/" + className + ".h"
-          f = File.new(newFileName, "w")
-          f.write(newLine + "\n@end")
-          f.close()
+  for i in 0...m.length
+    groups = m[i]
+    declaration = groups[0]
+    className = groups[1]
+    ivars = groups[2]
+
+    # Change "implementation" to "interface", create the .h file, and write the interface
+    newDeclaration = declaration.sub("@implementation", "@interface")
+    newFileName = File.dirname(fileName) + "/" + className + ".h"
+    f = File.new(newFileName, "a")
+
+    # Change @accessors declarations to a comment, doxygen chokes on them
+    f.write("\n" + newDeclaration.gsub(/(\s*\w+\s+\w+)\s+(@accessors.*?);/m, "\\1;  // \\2") + "\n@end\n")
+    f.close()
+
+    # Skip @accessors parsing for private classes
+    next if className[0, 1] == "_"
+
+    # See if there are any @accessors in the ivars
+    accessorsMatches = ivars.scan(/\s*(\w+)\s+(\w+)\s+@accessors(\(.+?\))?;/m)
+    next if accessorsMatches.length == 0
+
+    accessorsSource = ""
+
+    # Create a CPSynthesizedAccessor category for the class with synthesized
+    # accessor methods for each @accessors declaration.
+    for accessorIndex in 0...accessorsMatches.length
+      ivarDeclaration = accessorsMatches[accessorIndex]
+      attributes = ivarDeclaration[2]
+      next if attributes.nil?
+      ivarType = ivarDeclaration[0];
+      ivar = ivarDeclaration[1];
+
+      attributesMatch = attributes.scan(/(\bproperty\s*=\s*(\w+)|\b(readonly)\b|\bgetter\s*=\s*(\w+)|\bsetter\s*=\s*(\w+))/m)
+      next if attributesMatch.length == 0
+
+      getter = nil
+      setter = nil
+      readonly = false
+
+      for attributeIndex in 0...attributesMatch.length
+        if not attributesMatch[attributeIndex][1].nil?   # property
+          getter = attributesMatch[attributeIndex][1]
+          setter = readonly ? nil : "set#{getter[0,1].upcase}#{getter[1..-1]}"
+        elsif not attributesMatch[attributeIndex][2].nil?   # readonly
+          readonly = true
+          setter = nil
+        elsif not attributesMatch[attributeIndex][3].nil?   # getter
+          getter = attributesMatch[attributeIndex][3]
+        elsif not attributesMatch[attributeIndex][4].nil? and not readonly   # setter
+          setter = attributesMatch[attributeIndex][4]
         end
       end
+
+      # Check for @accessors with no attributes
+      if getter.nil? and setter.nil?
+        getter = ivar
+        setter = "set#{getter[0,1].upcase}#{getter[1..-1]}"
+      end
+
+      accessorsSource += makeAccessors(getter, setter, ivar, ivarType)
     end
+
+    sourceFile.write(eval('"' + ACCESSORS_IMPLEMENTATION_TEMPLATE + '"'))
   end
+
+  sourceFile.close()
+end
+
+def makeAccessors(getter, setter, ivar, ivarType)
+  accessors = ""
+
+  if not getter.nil?
+    accessors += eval('"' + ACCESSOR_GET_TEMPLATE + '"')
+  end
+
+  if not setter.nil?
+    accessors += eval('"' + ACCESSOR_SET_TEMPLATE + '"')
+  end
+
+  return accessors
 end
 
 fileList = Dir['AppKit.doc/**/*.j'] + Dir['Foundation.doc/**/*.j']

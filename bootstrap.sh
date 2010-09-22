@@ -154,7 +154,7 @@ PATH_SAVED="$PATH"
 
 ask_remove_dir "/usr/local/share/objj"
 ask_remove_dir "/usr/local/share/narwhal"
-ask_remove_dir "/usr/local/narwhal"
+# ask_remove_dir "/usr/local/narwhal"
 if which "narwhal" > /dev/null; then
     narwhal_path=$(which "narwhal")
     # resolve symlinks

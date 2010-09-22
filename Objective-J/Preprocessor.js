@@ -758,7 +758,7 @@ Preprocessor.prototype.preprocess = function(tokens, /*StringBuffer*/ aStringBuf
     {
         if (tuple)
         {
-            // Ignore :'s the belong to tertiary operators (?:)
+            // Ignore :'s the belong to ternary operators (?:)
             if (token === TOKEN_QUESTION_MARK)
                 ++closures[2];
 
