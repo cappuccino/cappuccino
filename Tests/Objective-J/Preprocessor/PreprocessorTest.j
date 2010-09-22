@@ -7,7 +7,7 @@ var FILENAMES = [
         "Class/root-class-one-ivar",
         "Class/root-class-multiple-ivars",
 
-        "Messages/no-parameter",
+        "Messages/no-parameters",
         "Messages/one-parameter",
         "Messages/multiple-parameters",
         "Messages/ternary-operator-argument"
@@ -24,21 +24,24 @@ var FILENAMES = [
 
     for (; index < count; ++index)
     {
-        var filename = FILENAMES[index],
-            testSelector = sel_getUid("test" + FILENAMES[index])
-
-        class_addMethod(self, testSelector, function(self, _cmd)
+        (function ()
         {
-            var filePath = FILE.join(FILE.dirname(module.path), filename + ".j"),
-                unpreprocessed = FILE.read(filePath, { charset:"UTF-8" });
-                preprocessed = ObjectiveJ.preprocess(unpreprocessed).code(),
-                correct = FILE.read(FILE.join(FILE.dirname(module.path), filename + ".js"));
+            var filename = FILENAMES[index],
+                testSelector = sel_getUid("test" + FILENAMES[index]);
 
-            preprocessed = compressor.compress(preprocessed, { charset : "UTF-8", useServer : true });
-            correct = compressor.compress(correct, { charset : "UTF-8", useServer : true });
+            class_addMethod(self, testSelector, function(self, _cmd)
+            {
+                var filePath = FILE.join(FILE.dirname(module.path), filename + ".j"),
+                    unpreprocessed = FILE.read(filePath, { charset:"UTF-8" }),
+                    preprocessed = ObjectiveJ.preprocess(unpreprocessed).code(),
+                    correct = FILE.read(FILE.join(FILE.dirname(module.path), filename + ".js"));
 
-            [self assert:preprocessed equals:correct];
-        });
+                preprocessed = compressor.compress(preprocessed, { charset : "UTF-8", useServer : true });
+                correct = compressor.compress(correct, { charset : "UTF-8", useServer : true });
+
+                [self assert:preprocessed equals:correct];
+            });
+        })();
     }
 }
 
