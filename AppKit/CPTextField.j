@@ -86,6 +86,8 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
     CPColor                 _textFieldBackgroundColor;
 
     id                      _placeholderString;
+    id                      _originalPlaceholderString;
+    BOOL                    _currentValueIsPlaceholder;
 
     id                      _delegate;
 
@@ -778,6 +780,30 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 - (CPString)placeholderString
 {
     return _placeholderString;
+}
+
+- (void)_setCurrentValueIsPlaceholder:(BOOL)isPlaceholder
+{
+    if (isPlaceholder)
+    {
+        // Save the original placeholder value so we can restore it later
+        // Only do this if the placeholder is not already overridden because the bindings logic might call this method 
+        // several times and we don't want the bindings placeholder to ever become the original placeholder
+        if (!_currentValueIsPlaceholder)
+            _originalPlaceholderString = [self placeholderString];
+
+        // Set the current string value as the current placeholder and clear the string value
+        [self setPlaceholderString:[self stringValue]];
+        [self setStringValue:@""];
+    }
+    else
+    {
+        // Restore the original placeholder, the actual textfield value is already correct
+        // because it was set using setValue:forKey:
+        [self setPlaceholderString:_originalPlaceholderString];
+    }
+
+    _currentValueIsPlaceholder = isPlaceholder;
 }
 
 /*!

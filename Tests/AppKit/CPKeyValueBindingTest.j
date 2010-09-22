@@ -190,6 +190,29 @@
     [self assert:'value' equals:testView.lastKey];
 }
 
+- (void)testTextField
+{
+    var textField = [[CPTextField alloc] initWithFrame:CGRectMakeZero()];
+    [textField setPlaceholderString:@"cheese"];
+
+
+    content = [
+        [BindingTester testerWithCheese:@"yellow"],
+        [BindingTester testerWithCheese:@"green"]
+    ];
+    arrayController = [[CPArrayController alloc] initWithContent:content];
+
+    [arrayController setSelectionIndexes:[CPIndexSet indexSetWithIndexesInRange:CPMakeRange(0, 2)]];
+
+    var options = [CPDictionary dictionaryWithJSObject:{CPMultipleValuesPlaceholderBindingOption:@"Multiple Values"}];
+    [textField bind:@"value" toObject:arrayController withKeyPath:@"selection.cheese" options:options];
+
+    [self assert:@"Multiple Values" equals:[textField placeholderString]];
+
+    [arrayController setSelectionIndex:0];
+    [self assert:@"cheese" equals:[textField placeholderString]];
+}
+
 - (void)observeValueForKeyPath:(CPString)aKeyPath ofObject:(id)anObject change:(CPDictionary)changes context:(id)aContext
 {
     CPLog(@"here: "+aKeyPath+" value: "+[anObject valueForKey:aKeyPath]);
@@ -200,6 +223,13 @@
 @implementation BindingTester : CPObject
 {
     id cheese;
+}
+
++ (id)testerWithCheese:(id)aCheese
+{
+    var tester = [[self alloc] init];
+    [tester setCheese:aCheese];
+    return tester;
 }
 
 - (void)setCheese:(id)aCheese
