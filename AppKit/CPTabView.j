@@ -247,6 +247,8 @@ var HEIGHT_OF_SEGMENTED_CONTROL = 24;
     if (anIndex === selectedIndex)
         return;
     
+    var aTabViewItem = [self tabViewItemAtIndex:anIndex];
+
     if ((delegateSelectors & CPTabViewShouldSelectTabViewItemSelector) && ![delegate tabView:self shouldSelectTabViewItem:aTabViewItem])
         return;
 
