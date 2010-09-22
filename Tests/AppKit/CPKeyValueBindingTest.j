@@ -39,7 +39,7 @@
 
     [binder setCheese:@"banana"];
 
-    [self assertTrue:[self valueForKey:@"FOO"]==="banana" message:"Bound value should have been updated to banana, was "+FOO];
+    [self assertTrue:[self valueForKey:@"FOO"] === "banana" message:"Bound value should have been updated to banana, was " + FOO];
 }
 
 - (void)testBindOptions
@@ -164,7 +164,7 @@
     [tableColumn bind:@"value" toObject:arrayController withKeyPath:@"arrangedObjects.valueA" options:nil];
 
     // Reset these if they were read during initialization.
-    for(var i=0; i<[content count];i++)
+    for (var i = 0; i < [content count]; i++)
         [content[i] setAccesses:0];
     var testView = [DataViewTester new];
     [tableColumn prepareDataView:testView forRow:0];
@@ -242,7 +242,7 @@
     CPNumber    accesses @accessors;
 }
 
-+ (AccessCounter) counterWithValueA:aValue valueB:anotherValue
++ (AccessCounter)counterWithValueA:aValue valueB:anotherValue
 {
     r = [self new];
     [r setValueA:aValue];
