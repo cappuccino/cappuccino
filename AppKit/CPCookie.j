@@ -23,6 +23,7 @@
 @import <Foundation/CPObject.j>
 @import <Foundation/CPString.j>
 
+#include "Platform/Platform.h"
 
 /*! 
     @ingroup appkit

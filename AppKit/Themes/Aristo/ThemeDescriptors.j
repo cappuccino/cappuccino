@@ -1071,7 +1071,7 @@ var themedButtonValues = nil,
     [
         [@"track-width", 5.0],
         [@"track-color", trackColor,            CPThemeStateVertical],
-        [@"track-color", trackDisabledColor,    CPThemeStateDisabled],
+        [@"track-color", trackDisabledColor,    CPThemeStateVertical | CPThemeStateDisabled],
 
         [@"knob-size",  CGSizeMake(23.0, 24.0)],
         [@"knob-color", knobColor],

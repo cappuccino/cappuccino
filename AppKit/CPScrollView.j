@@ -166,7 +166,7 @@
 /*!
     Returns the size of the scroll view's content view.
 */
-- (CGRect)contentSize
+- (CGSize)contentSize
 {
     return [_contentView frame].size;
 }
