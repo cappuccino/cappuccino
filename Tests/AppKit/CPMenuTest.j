@@ -74,7 +74,7 @@
     if (!aMenu)
         return;
 
-    for (var i = 0; i<[aMenu numberOfItems]; i++)
+    for (var i = 0; i < [aMenu numberOfItems]; i++)
     {
         var item = [aMenu itemAtIndex:i];
         [item setTarget:self];
@@ -142,7 +142,7 @@
 
     saveDocumentWasCalled = NO;
 
-    [menu performKeyEquivalent:[CPEvent keyEventWithType:CPKeyDown location:CGPointMakeZero() modifierFlags:CPPlatformActionKeyMask|CPShiftKeyMask
+    [menu performKeyEquivalent:[CPEvent keyEventWithType:CPKeyDown location:CGPointMakeZero() modifierFlags:CPPlatformActionKeyMask | CPShiftKeyMask
         timestamp:nil windowNumber:nil context:nil
         characters:@"s" charactersIgnoringModifiers:@"s" isARepeat:NO keyCode:0]];
     [self assertFalse:escapeWasCalled || escapeNoModifierWasCalled || openDocumentWasCalled || saveDocumentWasCalled || undoWasCalled];

@@ -68,7 +68,7 @@
 
 + (CPSet)keyPathsForValuesAffectingValueForKey:(CPString)aKey
 {
-    var capitalizedKey = aKey.charAt(0).toUpperCase() + aKey.substring(1);
+    var capitalizedKey = aKey.charAt(0).toUpperCase() + aKey.substring(1),
         selector = "keyPathsForValuesAffecting" + capitalizedKey;
 
     if ([[self class] respondsToSelector:selector])
@@ -173,7 +173,7 @@ CPKeyValueChangeInsertion   = 2;
 CPKeyValueChangeRemoval     = 3;
 CPKeyValueChangeReplacement = 4;
 
-var kvoNewAndOld = CPKeyValueObservingOptionNew|CPKeyValueObservingOptionOld,
+var kvoNewAndOld = CPKeyValueObservingOptionNew | CPKeyValueObservingOptionOld,
     DependentKeysKey = "$KVODEPENDENT",
     KVOProxyKey = "$KVOPROXY";
 

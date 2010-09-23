@@ -10,7 +10,7 @@
         [[1,2], "-", "1-2"],
         [[1,2,3], "-", "1-2-3"],
         [["123", 456], "-", "123-456"]
-    ];
+        ];
 
     for (var i = 0; i < testStrings.length; i++)
         [self assert:[testStrings[i][0] componentsJoinedByString:testStrings[i][1]] equals:testStrings[i][2]];
@@ -83,7 +83,7 @@
 - (void)testRemoveObjectsAtIndexes
 {
     var array = [CPMutableArray arrayWithObjects:@"one", @"two", @"three", @"four", nil],
-            indexes = [CPMutableIndexSet indexSetWithIndex: 2];
+        indexes = [CPMutableIndexSet indexSetWithIndex: 2];
 
     [array removeObjectsAtIndexes: indexes];
 
@@ -203,8 +203,8 @@
 
 - (void)testInsertObjectInArraySortedByDescriptors
 {
-    var descriptors = [[[CPSortDescriptor alloc] initWithKey:@"intValue" ascending:YES]];
-    var array = [1, 3, 5];
+    var descriptors = [[[CPSortDescriptor alloc] initWithKey:@"intValue" ascending:YES]],
+        array = [1, 3, 5];
 
     [array insertObject: 0 inArraySortedByDescriptors:descriptors];
     [self assert:[0, 1, 3, 5] equals:array];
@@ -285,8 +285,8 @@
 
 - (void)testInitWithArrayCopyItems
 {
-    var a = [[CopyableObject new], 2, 3, {empty:true}];
-    var b = [[CPArray alloc] initWithArray:a copyItems:YES];
+    var a = [[CopyableObject new], 2, 3, {empty:true}],
+        b = [[CPArray alloc] initWithArray:a copyItems:YES];
 
     [self assert:a notEqual:b];
 
@@ -425,7 +425,7 @@
 - (CPArray)arrayByReversingArray
 {
     var a = [];
-    for (i = length - 1; i>0; --i)
+    for (i = length - 1; i > 0; --i)
         a.push(self[i]);
 
     return a;

@@ -9,7 +9,7 @@
 - (id)init
 {
     [super initWithExpressionType:CPEvaluatedObjectExpressionType];
-    
+
     return self;
 }
 

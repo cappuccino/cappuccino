@@ -77,7 +77,7 @@
 
 - (CPString )description
 {
-    return [_left description] +" UNION "+ [_right description];
+    return [_left description] + " UNION " + [_right description];
 }
 
 @end

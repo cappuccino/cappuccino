@@ -189,9 +189,8 @@ var parsePROPFINDResponse = function(anXMLString)
     var XMLDocument = XMLDocumentFromString(anXMLString),
         responses = XMLDocument.getElementsByTagNameNS("*", "response"),
         responseIndex = 0,
-        responseCount = responses.length;
-
-    var propertiesForURLs = [CPDictionary dictionary];
+        responseCount = responses.length,
+        propertiesForURLs = [CPDictionary dictionary];
 
     for (; responseIndex < responseCount; ++responseIndex)
     {

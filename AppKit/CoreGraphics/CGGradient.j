@@ -33,13 +33,13 @@ function CGGradientCreateWithColorComponents(aColorSpace, components, locations,
         var count = locations.length;
 
     var colors = [];
-    
+
     while (count--)
     {
         var offset = count * 4;
         colors[count] = CGColorCreate(aColorSpace, components.slice(offset, offset + 4));
     }
-    
+
     return CGGradientCreateWithColors(aColorSpace, colors, locations);
 }
 

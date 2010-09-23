@@ -10,7 +10,7 @@
 
 - (void)testCanAllocWindow
 {
-    theWindow = [[CPWindow alloc] initWithContentRect:CGRectMake(0,0,200,150) 
+    theWindow = [[CPWindow alloc] initWithContentRect:CGRectMake(0,0,200,150)
                                             styleMask:CPWindowNotSizable];
 
     [self assertTrue:!!theWindow];

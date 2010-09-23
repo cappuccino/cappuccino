@@ -14,7 +14,7 @@
 {
     _assignmentVariable = [CPExpression expressionForVariable:variable];
     _subexpression = expression;
-   
+
     return self;
 }
 
@@ -22,15 +22,15 @@
 {
     _assignmentVariable = variableExpression;
     _subexpression = expression;
-   
+
     return self;
 }
 
 - (id)initWithCoder:(CPCoder)coder
 {
-    var variable = [coder decodeObjectForKey:@"CPExpressionAssignmentVariable"];
-    var expression = [coder decodeObjectForKey:@"CPExpressionAssignmentExpression"];
-    
+    var variable = [coder decodeObjectForKey:@"CPExpressionAssignmentVariable"],
+        expression = [coder decodeObjectForKey:@"CPExpressionAssignmentExpression"];
+
     return [self initWithAssignmentVariable:variable expression:expression];
 }
 
@@ -44,10 +44,10 @@
 {
     if (self == object)
         return YES;
-        
+
     if (object.isa != self.isa || [object expressionType] != [self expressionType] || ![[object subexpression] isEqual:[self subexpression]] || ![[object variable] isEqualToString:[self variable]])
         return NO;
-        
+
     return YES;
 }
 
@@ -69,10 +69,10 @@
 - (CPString)description
 {
     var pretty = [_expression description];
-   
+
     if ([_subexpression isKindOfClass:[CPExpression_operator class]])
         pretty = [CPString stringWithFormat:@"(%@)", pretty];
-    
+
     return [CPString stringWithFormat:@"%@ := %@", [self variable], pretty];
 }
 

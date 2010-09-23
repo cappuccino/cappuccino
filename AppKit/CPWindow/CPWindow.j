@@ -198,9 +198,8 @@ var SHADOW_MARGIN_LEFT      = 20.0,
     _CPWindowShadowColor    = nil;
 
 var CPWindowSaveImage       = nil,
-    CPWindowSavingImage     = nil;
-
-var CPWindowResizeTime = 0.2;
+    CPWindowSavingImage     = nil,
+    CPWindowResizeTime      = 0.2;
 
 /*!
     @ingroup appkit
@@ -1368,9 +1367,8 @@ CPTexturedBackgroundWindowMask
         return;
 
     var size = [self frame].size,
-        containerSize = [CPPlatform isBrowser] ? [_platformWindow contentBounds].size : [[self screen] visibleFrame].size;
-
-    var origin = CGPointMake((containerSize.width - size.width) / 2.0, (containerSize.height - size.height) / 2.0);
+        containerSize = [CPPlatform isBrowser] ? [_platformWindow contentBounds].size : [[self screen] visibleFrame].size,
+        origin = CGPointMake((containerSize.width - size.width) / 2.0, (containerSize.height - size.height) / 2.0);
 
     if (origin.x < 0.0)
         origin.x = 0.0;
@@ -2109,8 +2107,8 @@ CPTexturedBackgroundWindowMask
 - (void)_setAttachedSheetFrameOrigin
 {
     // Position the sheet above the contentRect.
-    var attachedSheet = [self attachedSheet];
-    var contentRect = [[self contentView] frame],
+    var attachedSheet = [self attachedSheet],
+        contentRect = [[self contentView] frame],
         sheetFrame = CGRectMakeCopy([attachedSheet frame]);
 
     sheetFrame.origin.y = CGRectGetMinY(_frame) + CGRectGetMinY(contentRect);
@@ -2141,7 +2139,7 @@ CPTexturedBackgroundWindowMask
     aSheet._isSheet = YES;
     aSheet._parentView = self;
 
-    var originx = frame.origin.x + FLOOR((frame.size.width - sheetFrame.size.width)/2),
+    var originx = frame.origin.x + FLOOR((frame.size.width - sheetFrame.size.width) / 2),
         originy = frame.origin.y + [[self contentView] frame].origin.y,
         startFrame = CGRectMake(originx, originy, sheetFrame.size.width, 0),
         endFrame = CGRectMake(originx, originy, sheetFrame.size.width, sheetFrame.size.height);
@@ -2338,7 +2336,7 @@ CPTexturedBackgroundWindowMask
         count = [keyViewOrder count];
 
     for (var i = 0; i < count; i++)
-        [keyViewOrder[i] setNextKeyView:keyViewOrder[(i + 1)%count]];
+        [keyViewOrder[i] setNextKeyView:keyViewOrder[(i + 1) % count]];
 
     _keyViewLoopIsDirty = NO;
 }
@@ -2494,10 +2492,8 @@ var keyViewComparator = function(a, b, context)
 
     var frame = [_platformWindow contentBounds],
         newFrame = CGRectMakeCopy(_frame),
-        dX = (CGRectGetWidth(frame) - aSize.width) /
-            (((_autoresizingMask & CPWindowMinXMargin) ? 1 : 0) + (_autoresizingMask & CPWindowWidthSizable ? 1 : 0) + (_autoresizingMask & CPWindowMaxXMargin ? 1 : 0)),
-        dY = (CGRectGetHeight(frame) - aSize.height) /
-            ((_autoresizingMask & CPWindowMinYMargin ? 1 : 0) + (_autoresizingMask & CPWindowHeightSizable ? 1 : 0) + (_autoresizingMask & CPWindowMaxYMargin ? 1 : 0));
+        dX = (CGRectGetWidth(frame) - aSize.width) / (((_autoresizingMask & CPWindowMinXMargin) ? 1 : 0) + (_autoresizingMask & CPWindowWidthSizable ? 1 : 0) + (_autoresizingMask & CPWindowMaxXMargin ? 1 : 0)),
+        dY = (CGRectGetHeight(frame) - aSize.height) / ((_autoresizingMask & CPWindowMinYMargin ? 1 : 0) + (_autoresizingMask & CPWindowHeightSizable ? 1 : 0) + (_autoresizingMask & CPWindowMaxYMargin ? 1 : 0));
 
     if (_autoresizingMask & CPWindowMinXMargin)
         newFrame.origin.x += dX;

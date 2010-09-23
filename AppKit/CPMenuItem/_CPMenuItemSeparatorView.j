@@ -27,10 +27,10 @@
         bounds = [self bounds];
 
     CGContextBeginPath(context);
-    
+
     CGContextMoveToPoint(context, CGRectGetMinX(bounds), FLOOR(CGRectGetMidY(bounds)) - 0.5);
     CGContextAddLineToPoint(context, CGRectGetMaxX(bounds), FLOOR(CGRectGetMidY(bounds)) - 0.5);
-    
+
     CGContextSetStrokeColor(context, [CPColor lightGrayColor]);
     CGContextStrokePath(context);
 }

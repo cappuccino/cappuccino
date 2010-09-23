@@ -23,9 +23,8 @@
 
 - (void)testInitWithDictionary
 {
-    var dict = [[CPDictionary alloc] initWithObjects:[@"1", @"2"] forKeys:[@"key1", @"key2"]];
-
-    var new_dict = [[CPDictionary alloc] initWithDictionary:dict];
+    var dict = [[CPDictionary alloc] initWithObjects:[@"1", @"2"] forKeys:[@"key1", @"key2"]],
+        new_dict = [[CPDictionary alloc] initWithDictionary:dict];
     [self assert:[new_dict objectForKey:@"key1"] equals:[dict objectForKey:@"key1"]];
     [self assert:[new_dict objectForKey:@"key2"] equals:[dict objectForKey:@"key2"]];
 
@@ -67,10 +66,10 @@
         "key1": ['1', '2', '3'],
         "key2": "This is a string",
         "key3": null
-    }
- 
-    var dict = [CPDictionary dictionaryWithJSObject:json_with_nulls recursively:YES];
- 
+        },
+
+        dict = [CPDictionary dictionaryWithJSObject:json_with_nulls recursively:YES];
+
     [self assert:3 equals:[dict count]];
     [self assert:[@"key1", @"key2", @"key3"] equals:[dict allKeys]];
     [self assert:[CPNull null] equals:[dict objectForKey:@"key3"]];

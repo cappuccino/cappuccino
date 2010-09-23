@@ -18,18 +18,18 @@ var _CPMenuBarWindowBackgroundColor = nil,
     CPMenu      _menu;
     CPView      _highlightView;
     CPArray     _menuItemViews;
-    
+
     CPMenuItem  _trackingMenuItem;
-    
+
     CPImageView _iconImageView;
     CPTextField _titleField;
-    
+
     CPColor     _textColor;
     CPColor     _titleColor;
-    
+
     CPColor     _textShadowColor;
     CPColor     _titleShadowColor;
-    
+
     CPColor     _highlightColor;
     CPColor     _highlightTextColor;
     CPColor     _highlightTextShadowColor;
@@ -39,9 +39,9 @@ var _CPMenuBarWindowBackgroundColor = nil,
 {
     if (self != [_CPMenuBarWindow class])
         return;
-        
+
     var bundle = [CPBundle bundleForClass:self];
-    
+
     _CPMenuBarWindowFont = [CPFont boldSystemFontOfSize:12.0];
 }
 
@@ -63,27 +63,27 @@ var _CPMenuBarWindowBackgroundColor = nil,
     {
         [self setLevel:CPMainMenuWindowLevel];
         [self setAutoresizingMask:CPWindowWidthSizable];
-     
+
         var contentView = [self contentView];
-        
+
         [contentView setAutoresizesSubviews:NO];
-        
+
         [self setBecomesKeyOnlyIfNeeded:YES];
-        
+
         //
         _iconImageView = [[CPImageView alloc] initWithFrame:CGRectMake(0.0, 0.0, 16.0, 16.0)];
-        
+
         [contentView addSubview:_iconImageView];
-        
+
         _titleField = [[CPTextField alloc] initWithFrame:CGRectMakeZero()];
 
         [_titleField setFont:[CPFont boldSystemFontOfSize:13.0]];
         [_titleField setAlignment:CPCenterTextAlignment];
         [_titleField setTextShadowOffset:CGSizeMake(0, 1)];
-        
+
         [contentView addSubview:_titleField];
     }
-    
+
     return self;
 }
 
@@ -102,7 +102,7 @@ var _CPMenuBarWindowBackgroundColor = nil,
 
     [_titleField setStringValue:aTitle];
     [_titleField sizeToFit];
-    
+
     [self tile];
 }
 
@@ -125,7 +125,7 @@ var _CPMenuBarWindowBackgroundColor = nil,
     {
         if (!_CPMenuBarWindowBackgroundColor)
             _CPMenuBarWindowBackgroundColor = [CPColor colorWithPatternImage:[[CPImage alloc] initWithContentsOfFile:[[CPBundle bundleForClass:[_CPMenuBarWindow class]] pathForResource:@"_CPMenuBarWindow/_CPMenuBarWindowBackground.png"] size:CGSizeMake(1.0, 28.0)]];
-            
+
         [[self contentView] setBackgroundColor:_CPMenuBarWindowBackgroundColor];
     }
     else
@@ -136,9 +136,9 @@ var _CPMenuBarWindowBackgroundColor = nil,
 {
     if (_textColor == aColor)
         return;
-    
+
     _textColor = aColor;
-    
+
     [_menuItemViews makeObjectsPerformSelector:@selector(setTextColor:) withObject:_textColor];
 }
 
@@ -146,9 +146,9 @@ var _CPMenuBarWindowBackgroundColor = nil,
 {
     if (_titleColor == aColor)
         return;
-    
+
     _titleColor = aColor;
-    
+
     [_titleField setTextColor:aColor ? aColor : [CPColor blackColor]];
 }
 
@@ -156,9 +156,9 @@ var _CPMenuBarWindowBackgroundColor = nil,
 {
     if (_textShadowColor == aColor)
         return;
-    
+
     _textShadowColor = aColor;
-    
+
     [_menuItemViews makeObjectsPerformSelector:@selector(setTextShadowColor:) withObject:_textShadowColor];
 }
 
@@ -166,9 +166,9 @@ var _CPMenuBarWindowBackgroundColor = nil,
 {
     if (_titleShadowColor == aColor)
         return;
-    
+
     _titleShadowColor = aColor;
-    
+
     [_titleField setTextShadowColor:aColor ? aColor : [CPColor whiteColor]];
 }
 
@@ -176,7 +176,7 @@ var _CPMenuBarWindowBackgroundColor = nil,
 {
     if (_highlightColor == aColor)
         return;
-    
+
     _highlightColor = aColor;
 }
 
@@ -184,7 +184,7 @@ var _CPMenuBarWindowBackgroundColor = nil,
 {
     if (_highlightTextColor == aColor)
         return;
-    
+
     _highlightTextColor = aColor;
 
 //    [_menuItemViews makeObjectsPerformSelector:@selector(setActivateColor:) withObject:_highlightTextColor];
@@ -194,9 +194,9 @@ var _CPMenuBarWindowBackgroundColor = nil,
 {
     if (_highlightTextShadowColor == aColor)
         return;
-    
+
     _highlightTextShadowColor = aColor;
-    
+
 //    [_menuItemViews makeObjectsPerformSelector:@selector(setActivateShadowColor:) withObject:_highlightTextShadowColor];
 }
 
@@ -204,9 +204,9 @@ var _CPMenuBarWindowBackgroundColor = nil,
 {
     if (_menu == aMenu)
         return;
-    
+
     var defaultCenter = [CPNotificationCenter defaultCenter];
-    
+
     if (_menu)
     {
         [defaultCenter
@@ -223,16 +223,16 @@ var _CPMenuBarWindowBackgroundColor = nil,
             removeObserver:self
                       name:CPMenuDidRemoveItemNotification
                     object:_menu];
-                    
+
         var items = [_menu itemArray],
             count = items.length;
-        
+
         while (count--)
             [[items[count] _menuItemView] removeFromSuperview];
     }
 
     _menu = aMenu;
-    
+
     if (_menu)
     {
         [defaultCenter
@@ -240,41 +240,41 @@ var _CPMenuBarWindowBackgroundColor = nil,
               selector:@selector(menuDidAddItem:)
                   name:CPMenuDidAddItemNotification
                 object:_menu];
-    
+
         [defaultCenter
             addObserver:self
               selector:@selector(menuDidChangeItem:)
                   name:CPMenuDidChangeItemNotification
                 object:_menu];
-                
+
         [defaultCenter
             addObserver:self
               selector:@selector(menuDidRemoveItem:)
                   name:CPMenuDidRemoveItemNotification
                 object:_menu];
     }
-    
+
     _menuItemViews = [];
-    
+
     var contentView = [self contentView],
         items = [_menu itemArray],
         count = items.length;
-    
+
     for (index = 0; index < count; ++index)
     {
         var item = items[index],
             menuItemView = [item _menuItemView];
-            
+
         _menuItemViews.push(menuItemView);
 
         [menuItemView setTextColor:_textColor];
         [menuItemView setHidden:[item isHidden]];
-        
+
         [menuItemView synchronizeWithMenuItem];
-        
+
         [contentView addSubview:menuItemView];
     }
-        
+
     [self tile];
 }
 
@@ -285,7 +285,7 @@ var _CPMenuBarWindowBackgroundColor = nil,
 
     [menuItemView setHidden:[menuItem isHidden]];
     [menuItemView synchronizeWithMenuItem];
-    
+
     [self tile];
 }
 
@@ -301,9 +301,9 @@ var _CPMenuBarWindowBackgroundColor = nil,
     [menuItemView setHidden:[menuItem isHidden]];
 
     [menuItemView synchronizeWithMenuItem];
-    
+
     [[self contentView] addSubview:menuItemView];
-    
+
     [self tile];
 }
 
@@ -315,7 +315,7 @@ var _CPMenuBarWindowBackgroundColor = nil,
     [_menuItemViews removeObjectAtIndex:index];
 
     [menuItemView removeFromSuperview];
-        
+
     [self tile];
 }
 
@@ -346,29 +346,29 @@ var _CPMenuBarWindowBackgroundColor = nil,
     var items = [_menu itemArray],
         index = 0,
         count = items.length,
-        
+
         x = MENUBAR_LEFT_MARGIN,
         y = 0.0,
         isLeftAligned = YES;
-    
+
     for (; index < count; ++index)
     {
         var item = items[index];
-        
+
         if ([item isSeparatorItem])
         {
             x = CGRectGetWidth([self frame]) - MENUBAR_RIGHT_MARGIN;
             isLeftAligned = NO;
-            
+
             continue;
         }
-        
+
          if ([item isHidden])
             continue;
 
         var menuItemView = [item _menuItemView],
             frame = [menuItemView frame];
-        
+
         if (isLeftAligned)
         {
             [menuItemView setFrame:CGRectMake(x, 0.0, CGRectGetWidth(frame), MENUBAR_HEIGHT)];
@@ -378,14 +378,14 @@ var _CPMenuBarWindowBackgroundColor = nil,
         else
         {
             [menuItemView setFrame:CGRectMake(x - CGRectGetWidth(frame), 0.0, CGRectGetWidth(frame), MENUBAR_HEIGHT)];
-     
+
             x = CGRectGetMinX([menuItemView frame]);
         }
     }
-    
+
     var bounds = [[self contentView] bounds],
         titleFrame = [_titleField frame];
-    
+
     if ([_iconImageView isHidden])
         [_titleField setFrameOrigin:CGPointMake((CGRectGetWidth(bounds) - CGRectGetWidth(titleFrame)) / 2.0, (CGRectGetHeight(bounds) - CGRectGetHeight(titleFrame)) / 2.0)];
     else
@@ -393,7 +393,7 @@ var _CPMenuBarWindowBackgroundColor = nil,
         var iconFrame = [_iconImageView frame],
             iconWidth = CGRectGetWidth(iconFrame),
             totalWidth = iconWidth + CGRectGetWidth(titleFrame);
-        
+
         [_iconImageView setFrameOrigin:CGPointMake((CGRectGetWidth(bounds) - totalWidth) / 2.0, (CGRectGetHeight(bounds) - CGRectGetHeight(iconFrame)) / 2.0)];
         [_titleField setFrameOrigin:CGPointMake((CGRectGetWidth(bounds) - totalWidth) / 2.0 + iconWidth, (CGRectGetHeight(bounds) - CGRectGetHeight(titleFrame)) / 2.0)];
     }
@@ -508,38 +508,38 @@ var _CPMenuBarWindowBackgroundColor = nil,
     for (; index < count; ++index)
     {
         var item = items[index];
-        
+
         if ([item isSeparatorItem])
         {
             x = CGRectGetWidth([self frame]) - MENUBAR_RIGHT_MARGIN;
             isLeftAligned = NO;
-            
+
             continue;
         }
-        
+
          if ([item isHidden])
             continue;
 
         var menuItemView = [item _menuItemView],
             frame = [menuItemView frame];
-        
+
         if (isLeftAligned)
         {
             [menuItemView setFrameOrigin:CGPointMake(x, (MENUBAR_HEIGHT - 1.0 - CGRectGetHeight(frame)) / 2.0)];
-     
+
             x += CGRectGetWidth([menuItemView frame]) + MENUBAR_MARGIN;
         }
         else
         {
             [menuItemView setFrameOrigin:CGPointMake(x - CGRectGetWidth(frame), (MENUBAR_HEIGHT - 1.0 - CGRectGetHeight(frame)) / 2.0)];
-     
+
             x = CGRectGetMinX([menuItemView frame]) - MENUBAR_MARGIN;
         }
     }
-    
+
     var bounds = [[self contentView] bounds],
         titleFrame = [_titleField frame];
-    
+
     if ([_iconImageView isHidden])
         [_titleField setFrameOrigin:CGPointMake((CGRectGetWidth(bounds) - CGRectGetWidth(titleFrame)) / 2.0, (CGRectGetHeight(bounds) - CGRectGetHeight(titleFrame)) / 2.0)];
     else
@@ -547,7 +547,7 @@ var _CPMenuBarWindowBackgroundColor = nil,
         var iconFrame = [_iconImageView frame],
             iconWidth = CGRectGetWidth(iconFrame),
             totalWidth = iconWidth + CGRectGetWidth(titleFrame);
-        
+
         [_iconImageView setFrameOrigin:CGPointMake((CGRectGetWidth(bounds) - totalWidth) / 2.0, (CGRectGetHeight(bounds) - CGRectGetHeight(iconFrame)) / 2.0)];
         [_titleField setFrameOrigin:CGPointMake((CGRectGetWidth(bounds) - totalWidth) / 2.0 + iconWidth, (CGRectGetHeight(bounds) - CGRectGetHeight(titleFrame)) / 2.0)];
     }

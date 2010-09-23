@@ -62,9 +62,8 @@ CPNumericSearch         = 64;
 */
 CPDiacriticInsensitiveSearch = 128;
 
-var CPStringUIDs        = new CFMutableDictionary();
-
-var CPStringRegexSpecialCharacters = [
+var CPStringUIDs        = new CFMutableDictionary(),
+    CPStringRegexSpecialCharacters = [
       '/', '.', '*', '+', '?', '|', '$', '^',
       '(', ')', '[', ']', '{', '}', '\\'
     ],
@@ -425,7 +424,7 @@ var CPStringRegexSpecialCharacters = [
 
 - (CPString)stringByReplacingCharactersInRange:(CPRange)range withString:(CPString)replacement
 {
-	return '' + substring(0, range.location) + replacement + substring(range.location + range.length, self.length);
+    return '' + substring(0, range.location) + replacement + substring(range.location + range.length, self.length);
 }
 
 /*!
@@ -477,8 +476,8 @@ var CPStringRegexSpecialCharacters = [
 
     if (aMask & CPDiacriticInsensitiveSearch)
     {
-    	lhs = lhs.stripDiacritics();
-    	rhs = rhs.stripDiacritics();
+        lhs = lhs.stripDiacritics();
+        rhs = rhs.stripDiacritics();
     }
 
     if (lhs < rhs)
@@ -707,9 +706,9 @@ var CPStringRegexSpecialCharacters = [
 }
 
 /*!
-	Deletes the last path component of a string.
-	This method assumes that the string's content is a '/'
-	separated file system path.
+    Deletes the last path component of a string.
+    This method assumes that the string's content is a '/'
+    separated file system path.
 */
 - (CPString)stringByDeletingLastPathComponent
 {
@@ -794,8 +793,8 @@ var CPStringRegexSpecialCharacters = [
 
 @end
 
-var diacritics = [[192,198],[224,230],[231,231],[232,235],[236,239],[242,246],[249,252]]; // Basic Latin ; Latin-1 Supplement.
-var normalized = [65,97,99,101,105,111,117];
+var diacritics = [[192,198],[224,230],[231,231],[232,235],[236,239],[242,246],[249,252]], // Basic Latin ; Latin-1 Supplement.
+    normalized = [65,97,99,101,105,111,117];
 
 String.prototype.stripDiacritics = function ()
 {
@@ -808,7 +807,7 @@ String.prototype.stripDiacritics = function ()
         {
             var drange = diacritics[i];
 
-            if (code >= drange[0] && code <= drange[drange.length-1])
+            if (code >= drange[0] && code <= drange[drange.length - 1])
             {
                 code = normalized[i];
                 break;

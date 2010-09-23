@@ -14,40 +14,40 @@
 
 - (id)initWithSelector:(SEL)aselector arguments:(CPArray)parameters
 {
-    [super initWithExpressionType:CPFunctionExpressionType];  
-     
+    [super initWithExpressionType:CPFunctionExpressionType];
+
     if (![self respondsToSelector:aselector])
        [CPException raise: CPInvalidArgumentException reason:@"Unknown function implementation: " + aselector];
-     
+
     _selector = aselector;
     _operand = nil;
     _arguments = parameters;
     _argc = [parameters count];
-    
+
     return self;
 }
 
 - (id)initWithTarget:(CPExpression)targetExpression selector:(SEL)aselector arguments:(CPArray)parameters
 {
-    [super initWithExpressionType:CPFunctionExpressionType];  
-    
+    [super initWithExpressionType:CPFunctionExpressionType];
+
     var target = [targetExpression expressionValueWithObject:object context:context];
     if (![target respondsToSelector:aselector])
        [CPException raise: CPInvalidArgumentException reason:@"Unknown function implementation: " + aselector];
-     
+
     _selector = aselector;
     _operand = targetExpression;
     _arguments = parameters;
     _argc = [parameters count];
-    
+
     return self;
 }
 
 - (id)initWithCoder:(CPCoder)coder
 {
-    var selector = CPSelectorFromString([coder decodeObjectForKey:@"CPExpressionFunctionName"]);
-    var arguments = [coder decodeObjectForKey:@"CPExpressionFunctionArguments"];
-    
+    var selector = CPSelectorFromString([coder decodeObjectForKey:@"CPExpressionFunctionName"]),
+        arguments = [coder decodeObjectForKey:@"CPExpressionFunctionArguments"];
+
     return [self initWithSelector:selector arguments:arguments];
 }
 
@@ -61,10 +61,10 @@
 {
     if (self == object)
         return YES;
-        
+
     if (object.isa != self.isa || [object expressionType] != [self expressionType] || ![[object _function] isEqualToString:[self _function]] || ![[object operand] isEqual:[self operand]] || ![[object arguments] isEqualToArray:[self arguments]])
         return NO;
-        
+
     return YES;
 }
 
@@ -105,15 +105,15 @@
 }
 
 - (CPString)description
-{  
+{
     var result =  [CPString stringWithFormat:@"%@ %s(", [_operand description], [self _function]],
         i;
-  
+
     for (i = 0; i < _argc; i++)
-        result = result + [_arguments objectAtIndex:i] + (i + 1<_argc) ? ", " : "";
-    
+        result = result + [_arguments objectAtIndex:i] + (i + 1 < _argc) ? ", " : "";
+
     result = result + ")";
-   
+
     return result ;
 }
 
@@ -122,7 +122,7 @@
 {
     var array = [CPArray array],
         i;
-    
+
     for (i = 0; i < _argc; i++)
         [array addObject:[[_arguments objectAtIndex:i] _expressionWithSubstitutionVariables:variables]];
 
@@ -133,13 +133,13 @@
 {
     if (_argc < 1)
         [CPException raise:CPInvalidArgumentException reason:"Invalid number of parameters"];
-    
+
     var i,
         sum = 0.0;
-    
+
     for (i = 0; i < _argc; i++)
         sum += [[parameters objectAtIndex:i] doubleValue];
-    
+
     return [CPNumber numberWithDouble: sum];
 }
 
@@ -147,7 +147,7 @@
 {
     if (_argc < 1)
         [CPException raise:CPInvalidArgumentException reason:"Invalid number of parameters"];
-    
+
     return [CPNumber numberWithUnsignedInt: [[parameters objectAtIndex:0] count]];
 }
 
@@ -155,7 +155,7 @@
 {
     if (_argc < 1)
         [CPException raise:CPInvalidArgumentException reason:"Invalid number of parameters"];
-    
+
     return MIN([parameters objectAtIndex:0],[parameters objectAtIndex:1]);
 }
 
@@ -163,21 +163,21 @@
 {
     if (_argc < 1)
         [CPException raise:CPInvalidArgumentException reason:"Invalid number of parameters"];
-    
+
     return MAX([parameters objectAtIndex:0],[parameters objectAtIndex:1]);
 }
 
-- (CPNumber)average:(CPArray)parameters 
+- (CPNumber)average:(CPArray)parameters
 {
     if (_argc < 1)
         [CPException raise:CPInvalidArgumentException reason:"Invalid number of parameters"];
-    
+
     var i,
         sum = 0.0;
-    
+
     for (i = 0; i < _argc; i++)
         sum += [[parameters objectAtIndex:i] doubleValue];
-    
+
     return [CPNumber numberWithDouble: sum / _argc];
 }
 
@@ -185,10 +185,10 @@
 {
     if (_argc != 2)
         [CPException raise:CPInvalidArgumentException reason:"Invalid number of parameters"];
-    
+
     var left = [parameters objectAtIndex:0],
         right = [parameters objectAtIndex:1];
-    
+
     return [CPNumber numberWithDouble: [left doubleValue] + [right doubleValue]];
 }
 
@@ -196,10 +196,10 @@
 {
     if (_argc != 2)
         [CPException raise:CPInvalidArgumentException reason:"Invalid number of parameters"];
-    
+
     var left = [parameters objectAtIndex:0],
         right = [parameters objectAtIndex:1];
-    
+
     return [CPNumber numberWithDouble: [left doubleValue] - [right doubleValue]];
 }
 
@@ -207,10 +207,10 @@
 {
     if (_argc != 2)
       [CPException raise:CPInvalidArgumentException reason:"Invalid number of parameters"];
-    
+
     var left = [parameters objectAtIndex:0],
         right = [parameters objectAtIndex:1];
-    
+
     return [CPNumber numberWithDouble: [left doubleValue] * [right doubleValue]];
 }
 
@@ -218,10 +218,10 @@
 {
     if (_argc != 2)
         [CPException raise:CPInvalidArgumentException reason:"Invalid number of parameters"];
-    
+
     var left = [parameters objectAtIndex:0],
         right = [parameters objectAtIndex:1];
-    
+
     return [CPNumber numberWithDouble: [left doubleValue] / [right doubleValue]];
 }
 
@@ -229,9 +229,9 @@
 {
     if (_argc != 1)
         [CPException raise:CPInvalidArgumentException reason:"Invalid number of parameters"];
-    
+
     var num = [[parameters objectAtIndex:0] doubleValue];
-    
+
     return [CPNumber numberWithDouble: SQRT(num)];
 }
 
@@ -239,20 +239,20 @@
 {
     if (_argc < 2)
         [CPException raise:CPInvalidArgumentException reason:"Invalid number of parameters"];
-    
+
     var num = [[parameters objectAtIndex:0] doubleValue],
         power = [[parameters objectAtIndex:1] doubleValue];
-    
-    return [CPNumber numberWithDouble: POW(num,power)];    
+
+    return [CPNumber numberWithDouble: POW(num,power)];
 }
 
 - (CPNumber)abs:(CPArray)parameters
 {
     if (_argc != 1)
         [CPException raise:CPInvalidArgumentException reason:"Invalid number of parameters"];
-    
+
     var num = [[parameters objectAtIndex:0] doubleValue];
-    
+
     return [CPNumber numberWithDouble:ABS(num)];
 }
 
@@ -265,9 +265,9 @@
 {
     if (_argc != 1)
         [CPException raise:CPInvalidArgumentException reason:"Invalid number of parameters"];
-    
+
     var num = [[parameters objectAtIndex:0] doubleValue];
-    
+
     return [CPNumber numberWithDouble:Math.log(num)];
 }
 
@@ -275,9 +275,9 @@
 {
     if (_argc != 1)
         [CPException raise:CPInvalidArgumentException reason:"Invalid number of parameters"];
-    
+
     var num = [[parameters objectAtIndex:0] doubleValue];
-    
+
     return [CPNumber numberWithDouble:EXP(num)];
 }
 
@@ -285,9 +285,9 @@
 {
     if (_argc != 1)
         [CPException raise:CPInvalidArgumentException reason:"Invalid number of parameters"];
-    
+
     var num = [[parameters objectAtIndex:0] doubleValue];
-    
+
     return [CPNumber numberWithDouble:CEIL(num)];
 }
 
@@ -300,10 +300,10 @@
 {
     if (_argc != 2)
         [CPException raise:CPInvalidArgumentException reason:"Invalid number of parameters"];
-    
+
     var left = [parameters objectAtIndex:0],
         right = [parameters objectAtIndex:1];
-    
+
     return [CPNumber numberWithInt:([left intValue] % [right intValue])];
 }
 
@@ -312,7 +312,7 @@
 {
     if (_argc == 0)
         [CPException raise:CPInvalidArgumentException reason:"Invalid number of parameters"];
-    
+
     return [[parameters objectAtIndex:0] objectAtIndex:0];
 }
 
@@ -320,7 +320,7 @@
 {
     if (_argc == 0)
         [CPException raise:CPInvalidArgumentException reason:"Invalid number of parameters"];
-    
+
     return [[parameters objectAtIndex:0] lastObject];
 }
 
@@ -328,7 +328,7 @@
 {
     if (_argc == 0)
         [CPException raise:CPInvalidArgumentException reason:"Invalid number of parameters"];
-    
+
     return [CPNumber numberWithInt: - [[parameters objectAtIndex:0] intValue]];
 }
 
@@ -336,10 +336,10 @@
 {
     if (_argc < 2)
         [CPException raise:CPInvalidArgumentException reason:"Invalid number of parameters"];
-    
+
     var left = [parameters objectAtIndex:0],
         right = [parameters objectAtIndex:1];
-    
+
     if ([left isKindOfClass: [CPDictionary class]])
         return [left objectForKey:right];
     else

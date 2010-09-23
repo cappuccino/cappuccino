@@ -29,15 +29,15 @@
 @import "CPValue.j"
 
 
-var CPArchiverReplacementClassNames                     = nil;
+var CPArchiverReplacementClassNames                     = nil,
 
-var _CPKeyedArchiverDidEncodeObjectSelector             = 1,
+    _CPKeyedArchiverDidEncodeObjectSelector             = 1,
     _CPKeyedArchiverWillEncodeObjectSelector            = 2,
     _CPKeyedArchiverWillReplaceObjectWithObjectSelector = 4,
     _CPKeyedArchiverDidFinishSelector                   = 8,
-    _CPKeyedArchiverWillFinishSelector                  = 16;
+    _CPKeyedArchiverWillFinishSelector                  = 16,
 
-var _CPKeyedArchiverNullString                          = "$null",
+    _CPKeyedArchiverNullString                          = "$null",
     _CPKeyedArchiverNullReference                       = nil,
 
     _CPKeyedArchiverUIDKey                              = "CP$UID",
@@ -49,9 +49,9 @@ var _CPKeyedArchiverNullString                          = "$null",
 
     _CPKeyedArchiverClassNameKey                        = "$classname",
     _CPKeyedArchiverClassesKey                          = "$classes",
-    _CPKeyedArchiverClassKey                            = "$class";
+    _CPKeyedArchiverClassKey                            = "$class",
 
-var _CPKeyedArchiverStringClass                         = Nil,
+    _CPKeyedArchiverStringClass                         = Nil,
     _CPKeyedArchiverNumberClass                         = Nil;
 
 /* @ignore */

@@ -136,8 +136,8 @@ CPContainsPredicateOperatorType = 99;
 */
 CPBetweenPredicateOperatorType = 100;
 
-var CPComparisonPredicateModifier;
-var CPPredicateOperatorType;
+var CPComparisonPredicateModifier,
+    CPPredicateOperatorType;
 
 /*!
     @ingroup foundation
@@ -426,8 +426,8 @@ var CPPredicateOperatorType;
                 lhs = lhs.stripDiacritics();
                 rhs = rhs.stripDiacritics();
             }
-            var commut = (_options & CPCaseInsensitivePredicateOption) ? "gi":"g";
-            var reg = new RegExp(rhs.escapeForRegExp(),commut);
+            var commut = (_options & CPCaseInsensitivePredicateOption) ? "gi":"g",
+                reg = new RegExp(rhs.escapeForRegExp(),commut);
             return reg.test(lhs);
         case CPBeginsWithPredicateOperatorType:
             var range = CPMakeRange(0,[rhs length]);
@@ -572,8 +572,8 @@ var CPPredicateOperatorType;
 
 @end
 
-var source = ['*','?','(',')','{','}','.','+','|','/','$','^'];
-var dest = ['.*','.?','\\(','\\)','\\{','\\}','\\.','\\+','\\|','\\/','\\$','\\^'];
+var source = ['*','?','(',')','{','}','.','+','|','/','$','^'],
+    dest = ['.*','.?','\\(','\\)','\\{','\\}','\\.','\\+','\\|','\\/','\\$','\\^'];
 
 String.prototype.escapeForRegExp = function()
 {

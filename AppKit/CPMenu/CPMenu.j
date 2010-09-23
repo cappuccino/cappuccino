@@ -41,9 +41,8 @@ CPMenuDidRemoveItemNotification     = @"CPMenuDidRemoveItemNotification";
 
 CPMenuDidEndTrackingNotification    = @"CPMenuDidEndTrackingNotification";
 
-var MENUBAR_HEIGHT = 28.0;
-
-var _CPMenuBarVisible               = NO,
+var MENUBAR_HEIGHT                  = 28.0,
+    _CPMenuBarVisible               = NO,
     _CPMenuBarTitle                 = @"",
     _CPMenuBarIconImage             = nil,
     _CPMenuBarIconImageAlphaValue   = 1.0,
@@ -873,7 +872,7 @@ var _CPMenuBarVisible               = NO,
 
 // Handling Tracking
 /*!
-	Cancels tracking.
+    Cancels tracking.
 */
 - (void)cancelTracking
 {

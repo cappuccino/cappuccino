@@ -7,10 +7,10 @@
 - (void)testImplementsSelector
 {
     var receiver = [[Receiver alloc] init];
-    
+
     [self assertTrue:[receiver implementsSelector:@selector(implementedInReceiverAndSuper)]];
     [self assertTrue:[receiver implementsSelector:@selector(implementedInReceiverOnly)]];
-    
+
     [self assertFalse:[receiver implementsSelector:@selector(implementedInSuperOnly)]];
     [self assertFalse:[receiver implementsSelector:@selector(notImplementedInSuperNorReceiver)]];
 

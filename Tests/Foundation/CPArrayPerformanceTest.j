@@ -10,16 +10,15 @@ var ELEMENTS = 100,
 
 - (void)testSortUsingDescriptorsSpeed
 {
-    var array = [self makeUnsorted];
+    var array = [self makeUnsorted],
+        descriptors = [
+            [CPSortDescriptor sortDescriptorWithKey:"a" ascending:NO],
+            [CPSortDescriptor sortDescriptorWithKey:"b" ascending:YES]
+            ],
 
-    var descriptors = [
-        [CPSortDescriptor sortDescriptorWithKey:"a" ascending:NO],
-        [CPSortDescriptor sortDescriptorWithKey:"b" ascending:YES]
-    ];
+        start = (new Date).getTime();
 
-    var start = (new Date).getTime();
-
-    for (var i = 0; i<REPEATS; i++)
+    for (var i = 0; i < REPEATS; i++)
     {
         var sorted = [array sortedArrayUsingDescriptors:descriptors];
         [self checkSorted:sorted];
@@ -27,25 +26,24 @@ var ELEMENTS = 100,
 
     var end = (new Date).getTime();
 
-    CPLog.warn(_cmd+": "+(end-start)+"ms");
+    CPLog.warn(_cmd + ": " + (end - start) + "ms");
 }
 
 - (void)testSortUsingNativeSort
 {
-    var array = [self makeUnsorted];
+    var array = [self makeUnsorted],
+        descriptors = [
+            [CPSortDescriptor sortDescriptorWithKey:"a" ascending:NO],
+            [CPSortDescriptor sortDescriptorWithKey:"b" ascending:YES]
+            ];
 
-    var descriptors = [
-        [CPSortDescriptor sortDescriptorWithKey:"a" ascending:NO],
-        [CPSortDescriptor sortDescriptorWithKey:"b" ascending:YES]
-    ];
-    
     function sortFunction(lhs, rhs) {
         return ([lhs a] === [rhs a]) ? ([lhs b] - [rhs b]) : ([rhs a] - [lhs a]);
     }
 
     var start = (new Date).getTime();
 
-    for (var i = 0; i<REPEATS; i++)
+    for (var i = 0; i < REPEATS; i++)
     {
         var sorted = [array copy];
         sorted.sort(sortFunction)
@@ -60,10 +58,11 @@ var ELEMENTS = 100,
 - (CPArray)makeUnsorted
 {
     var array = [];
-    for (var i = 0; i<ELEMENTS; i++) {
+    for (var i = 0; i < ELEMENTS; i++)
+    {
         var s = [Sortable new];
         [s setA:(i % 5)];
-        [s setB:(ELEMENTS-i)];
+        [s setB:(ELEMENTS - i)];
         array.push(s);
     }
     return array;
@@ -72,11 +71,12 @@ var ELEMENTS = 100,
 - (void)checkSorted:(CPArray)sorted
 {
     // Verify it really got sorted.
-    for (var j=0; j<ELEMENTS; j++) {
-        var expectedA = 4-FLOOR(j * 5 / ELEMENTS);
+    for (var j = 0; j < ELEMENTS; j++)
+    {
+        var expectedA = 4 - FLOOR(j * 5 / ELEMENTS);
         if (sorted[j].a != expectedA)
             [self fail:"a out of order: "+expectedA+" != "+sorted[j].a];
-        var expectedB = (5-expectedA) + 5 * (j % (ELEMENTS / 5))
+        var expectedB = (5 - expectedA) + 5 * (j % (ELEMENTS / 5));
         if (sorted[j].b != expectedB)
             [self fail:"b out of order: "+expectedB+" != "+sorted[j].b];
     }

@@ -28,7 +28,7 @@
 
 - (id)mutableArrayValueForKey:(id)aKey
 {
-	return [[_CPKVCArray alloc] initWithKey:aKey forProxyObject:self];
+    return [[_CPKVCArray alloc] initWithKey:aKey forProxyObject:self];
 }
 
 - (id)mutableArrayValueForKeyPath:(id)aKeyPath
@@ -417,13 +417,17 @@
 var kvoOperators = [];
 
 // HACK: prevent these from becoming globals. workaround for obj-j "function foo(){}" behavior
-var avgOperator, maxOperator, minOperator, countOperator, sumOperator;
+var avgOperator,
+    maxOperator,
+    minOperator,
+    countOperator,
+    sumOperator;
 
 kvoOperators["avg"] = function avgOperator(self, _cmd, param)
 {
     var objects = [self valueForKeyPath:param],
         length = [objects count],
-        index = length;
+        index = length,
         average = 0.0;
 
     if (!length)

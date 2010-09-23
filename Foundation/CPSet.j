@@ -152,8 +152,8 @@
 {
     if (self = [self init])
     {
-		var argLength = arguments.length,
-			i = 2;
+        var argLength = arguments.length,
+            i = 2;
 
         for (; i < argLength && (argument = arguments[i]) != nil; ++i)
             [self addObject:argument];

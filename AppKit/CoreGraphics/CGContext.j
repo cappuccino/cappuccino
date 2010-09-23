@@ -28,7 +28,7 @@
 @import "CGPath.j"
 
 kCGLineCapButt              = 0;
-kCGLineCapRound             = 1; 
+kCGLineCapRound             = 1;
 kCGLineCapSquare            = 2;
 
 kCGLineJoinMiter            = 0;
@@ -115,8 +115,8 @@ if (!CPFeatureIsCompatible(CPHTMLCanvasFeature))
 */
 function CGGStateCreate()
 {
-    return { alpha:1.0, strokeStyle:"#000", fillStyle:"#ccc", lineWidth:1.0, lineJoin:kCGLineJoinMiter, lineCap:kCGLineCapButt, miterLimit:10.0, globalAlpha:1.0, 
-        blendMode:kCGBlendModeNormal, 
+    return { alpha:1.0, strokeStyle:"#000", fillStyle:"#ccc", lineWidth:1.0, lineJoin:kCGLineJoinMiter, lineCap:kCGLineCapButt, miterLimit:10.0, globalAlpha:1.0,
+        blendMode:kCGBlendModeNormal,
         shadowOffset:_CGSizeMakeZero(), shadowBlur:0.0, shadowColor:NULL, CTM:_CGAffineTransformMakeIdentity() };
 }
 
@@ -127,9 +127,9 @@ function CGGStateCreate()
 */
 function CGGStateCreateCopy(aGState)
 {
-    return { alpha:aGState.alpha, strokeStyle:aGState.strokeStyle, fillStyle:aGState.fillStyle, lineWidth:aGState.lineWidth, 
-        lineJoin:aGState.lineJoin, lineCap:aGState.lineCap, miterLimit:aGState.miterLimit, globalAlpha:aGState.globalAlpha, 
-        blendMode:aGState.blendMode, 
+    return { alpha:aGState.alpha, strokeStyle:aGState.strokeStyle, fillStyle:aGState.fillStyle, lineWidth:aGState.lineWidth,
+        lineJoin:aGState.lineJoin, lineCap:aGState.lineCap, miterLimit:aGState.miterLimit, globalAlpha:aGState.globalAlpha,
+        blendMode:aGState.blendMode,
         shadowOffset:aGState.shadowOffset, shadowBlur:aGState.shadowBlur, shadowColor:aGState.shadowColor, CTM:_CGAffineTransformMakeCopy(aGState.CTM) };
 }
 
@@ -257,10 +257,10 @@ function CGContextAddPath(aContext, aPath)
 {
     if (!aContext || CGPathIsEmpty(aPath))
         return;
-        
+
     if (!aContext.path)
         aContext.path = CGPathCreateMutable();
-        
+
     CGPathAddPath(aContext.path, aContext.gState.CTM, aPath);
 }
 
@@ -333,7 +333,7 @@ function CGContextMoveToPoint(aContext, x, y)
 {
     if (!aContext.path)
         aContext.path = CGPathCreateMutable();
-    
+
     CGPathMoveToPoint(aContext.path, aContext.gState.CTM, x, y);
 }
 
@@ -359,11 +359,11 @@ function CGContextFillRects(aContext, rects, count)
 {
     if (arguments[2] === undefined)
         var count = rects.length;
-    
+
     CGContextBeginPath(aContext);
     CGContextAddRects(aContext, rects, count);
     CGContextClosePath(aContext);
-    
+
     CGContextDrawPath(aContext, kCGPathFill);
 }
 
@@ -374,11 +374,11 @@ function CGContextFillRects(aContext, rects, count)
     @return void
 */
 function CGContextStrokeRect(aContext, aRect)
-{   
+{
     CGContextBeginPath(aContext);
     CGContextAddRect(aContext, aRect);
     CGContextClosePath(aContext);
-    
+
     CGContextDrawPath(aContext, kCGPathStroke);
 }
 
@@ -392,10 +392,10 @@ function CGContextStrokeRect(aContext, aRect)
 function CGContextStrokeRectWithWidth(aContext, aRect, aWidth)
 {
     CGContextSaveGState(aContext);
-    
+
     CGContextSetLineWidth(aContext, aWidth);
     CGContextStrokeRect(aContext, aRect);
-    
+
     CGContextRestoreGState(aContext);
 }
 
@@ -408,7 +408,7 @@ function CGContextStrokeRectWithWidth(aContext, aRect, aWidth)
 function CGContextConcatCTM(aContext, aTransform)
 {
     var CTM = aContext.gState.CTM;
-    
+
     _CGAffineTransformConcatTo(CTM, aTransform, CTM);
 }
 
@@ -432,7 +432,7 @@ function CGContextGetCTM(aContext)
 function CGContextRotateCTM(aContext, anAngle)
 {
     var gState = aContext.gState;
-    
+
     gState.CTM = CGAffineTransformRotate(gState.CTM, anAngle);
 }
 
@@ -446,7 +446,7 @@ function CGContextRotateCTM(aContext, anAngle)
 function CGContextScaleCTM(aContext, sx, sy)
 {
     var gState = aContext.gState;
-    
+
     gState.CTM = _CGAffineTransformScale(gState.CTM, sx, sy);
 }
 
@@ -460,7 +460,7 @@ function CGContextScaleCTM(aContext, sx, sy)
 function CGContextTranslateCTM(aContext, tx, ty)
 {
     var gState = aContext.gState;
-    
+
     gState.CTM = _CGAffineTransformTranslate(gState.CTM, tx, ty);
 }
 
@@ -475,7 +475,7 @@ function CGContextTranslateCTM(aContext, tx, ty)
 function CGContextSetShadow(aContext, aSize, aBlur)
 {
     var gState = aContext.gState;
-    
+
     gState.shadowOffset = _CGSizeMakeCopy(aSize);
     gState.shadowBlur = aBlur;
     gState.shadowColor = [CPColor shadowColor];
@@ -492,7 +492,7 @@ function CGContextSetShadow(aContext, aSize, aBlur)
 function CGContextSetShadowWithColor(aContext, aSize, aBlur, aColor)
 {
     var gState = aContext.gState;
-    
+
     gState.shadowOffset = _CGSizeMakeCopy(aSize);
     gState.shadowBlur = aBlur;
     gState.shadowColor = aColor;
@@ -604,10 +604,10 @@ function CGContextStrokePath(aContext)
 function CGContextStrokeLineSegments(aContext, points, count)
 {
     var i = 0;
-    
+
     if (arguments["count"] == NULL)
         var count = points.length;
-    
+
     CGContextBeginPath(aContext);
 
     for (; i < count; i += 2)
@@ -615,7 +615,7 @@ function CGContextStrokeLineSegments(aContext, points, count)
         CGContextMoveToPoint(aContext, points[i].x, points[i].y);
         CGContextAddLineToPoint(aContext, points[i + 1].x, points[i + 1].y);
     }
-    
+
     CGContextStrokePath(aContext);
 }
 
@@ -680,12 +680,12 @@ function CGContextFillRoundedRectangleInRect(aContext, aRect, aRadius, ne, se, s
 function CGContextStrokeRoundedRectangleInRect(aContext, aRect, aRadius, ne, se, sw, nw)
 {
     CGContextBeginPath(aContext);
-    CGContextAddPath(aContext, CGPathWithRoundedRectangleInRect(aRect, aRadius, aRadius, ne, se, sw, nw));		
+    CGContextAddPath(aContext, CGPathWithRoundedRectangleInRect(aRect, aRadius, aRadius, ne, se, sw, nw));
     CGContextClosePath(aContext);
     CGContextStrokePath(aContext);
 }
 
-/*! 
+/*!
     @}
 */
 

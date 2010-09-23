@@ -16,9 +16,9 @@
 - (void)testCPTableDoubleAction
 {
     // CPEvent with 2 clickCount
-    var dblClk = [CPEvent mouseEventWithType:CPLeftMouseUp location:CGPointMakeZero() modifierFlags:0 
+    var dblClk = [CPEvent mouseEventWithType:CPLeftMouseUp location:CGPointMakeZero() modifierFlags:0
                           timestamp:0 windowNumber:0 context:nil eventNumber:0 clickCount:2 pressure:0];
-    
+
     [_tableView trackSelection:dblClk];
 }
 */

@@ -38,7 +38,7 @@ CPCibOwner              = @"CPCibOwner",
 CPCibTopLevelObjects    = @"CPCibTopLevelObjects",
 CPCibReplacementClasses = @"CPCibReplacementClasses",
 CPCibExternalObjects    = @"CPCibExternalObjects";
-    
+
 var CPCibObjectDataKey  = @"CPCibObjectDataKey";
 
 /*!
@@ -87,7 +87,7 @@ var CPCibObjectDataKey  = @"CPCibObjectDataKey";
 {
     if (![aName hasSuffix:@".cib"])
         aName = [aName stringByAppendingString:@".cib"];
-    
+
     // If aBundle is nil, use mainBundle, but ONLY for searching for the nib, not for resources later.
     self = [self initWithContentsOfURL:[aBundle || [CPBundle mainBundle] pathForResource:aName]];
 

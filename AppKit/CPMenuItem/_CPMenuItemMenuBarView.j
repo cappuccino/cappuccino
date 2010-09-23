@@ -6,7 +6,7 @@ var SelectionColor                              = nil,
     SUBMENU_INDICATOR_COLOR                     = nil,
     _CPMenuItemSelectionColor                   = nil,
     _CPMenuItemTextShadowColor                  = nil,
-    
+
     _CPMenuItemDefaultStateImages               = [],
     _CPMenuItemDefaultStateHighlightedImages    = [];
 
@@ -37,7 +37,7 @@ var SelectionColor                              = nil,
 
     _CPMenuItemSelectionColor =  [CPColor colorWithCalibratedRed:95.0 / 255.0 green:131.0 / 255.0 blue:185.0 / 255.0 alpha:1.0];
     _CPMenuItemTextShadowColor = [CPColor colorWithCalibratedRed:26.0 / 255.0 green: 73.0 / 255.0 blue:109.0 / 255.0 alpha:1.0];
-    
+
     _CPMenuItemDefaultStateImages[CPOffState]               = nil;
     _CPMenuItemDefaultStateHighlightedImages[CPOffState]    = nil;
 
@@ -138,7 +138,7 @@ var SelectionColor                              = nil,
 
     imageAndTextViewFrame.origin.y = FLOOR((height - CGRectGetHeight(imageAndTextViewFrame)) / 2.0);
     [_imageAndTextView setFrame:imageAndTextViewFrame];
-    
+
     if (hasSubmenuIndicator)
     {
         submenuViewFrame.origin.y = FLOOR((height - CGRectGetHeight(submenuViewFrame)) / 2.0) + 1.0;
@@ -146,7 +146,7 @@ var SelectionColor                              = nil,
     }
 
     _minSize = CGSizeMake(x + HORIZONTAL_MARGIN, height);
-    
+
     [self setAutoresizesSubviews:NO];
     [self setFrameSize:_minSize];
     [self setAutoresizesSubviews:YES];
@@ -215,19 +215,19 @@ var SelectionColor                              = nil,
 {
     var context = [[CPGraphicsContext currentContext] graphicsPort],
         bounds = [self bounds];
-    
+
     bounds.size.height -= 1.0;
     bounds.size.width -= 2.0;
     bounds.origin.x += 1.0;
 
     CGContextBeginPath(context);
-    
+
     CGContextMoveToPoint(context, CGRectGetMinX(bounds), CGRectGetMinY(bounds));
     CGContextAddLineToPoint(context, CGRectGetMaxX(bounds), CGRectGetMinY(bounds));
     CGContextAddLineToPoint(context, CGRectGetMidX(bounds), CGRectGetMaxY(bounds));
-    
+
     CGContextClosePath(context);
-    
+
     CGContextSetShadowWithColor(context, CGSizeMake(0.0, 1.0), 1.1, _shadowColor || [CPColor whiteColor]);
     CGContextSetFillColor(context, _color || [CPColor blackColor]);
     CGContextFillPath(context);

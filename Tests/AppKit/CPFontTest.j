@@ -4,7 +4,7 @@
 {
     CPFont _systemFont;
     CPFont _boldSystemFont;
-    
+
     CPFont _customFont;
     CPFont _boldCustomFont;
 }
@@ -13,7 +13,7 @@
 {
     _systemFont = [CPFont systemFontOfSize:15];
     _boldSystemFont = [CPFont boldSystemFontOfSize:15];
-    
+
     _customFont = [CPFont fontWithName:@"Marker Felt, Lucida Grande, Helvetica" size:30];
     _boldCustomFont = [CPFont boldFontWithName:@"Helvetica" size:30];
 }

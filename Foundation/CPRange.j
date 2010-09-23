@@ -115,7 +115,7 @@ function CPLocationInRange(aLocation, aRange)
 function CPUnionRange(lhsRange, rhsRange)
 {
     var location = MIN(lhsRange.location, rhsRange.location);
-   	return CPMakeRange(location, MAX(CPMaxRange(lhsRange), CPMaxRange(rhsRange)) - location);
+    return CPMakeRange(location, MAX(CPMaxRange(lhsRange), CPMaxRange(rhsRange)) - location);
 }
 
 /*!

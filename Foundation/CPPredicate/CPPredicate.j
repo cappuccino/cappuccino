@@ -238,7 +238,7 @@ function(newValue)\
     unsigned        _retrieved;
 }
 
-- (id) initWithString:(CPString)format args:(CPArray)args
+- (id)initWithString:(CPString)format args:(CPArray)args
 {
     self = [super initWithString:format];
     if (self != nil)
@@ -248,15 +248,15 @@ function(newValue)\
     return self;
 }
 
-- (id) nextArg
+- (id)nextArg
 {
     return [_args nextObject];
 }
 
 - (BOOL)scanPredicateKeyword:(CPString)key
 {
-    var loc = [self scanLocation];
-    var c;
+    var loc = [self scanLocation],
+        c;
 
     [self setCaseSensitive:NO];
     if (![self scanString:key intoString:NULL])
@@ -274,7 +274,7 @@ function(newValue)\
     return NO;
 }
 
-- (CPPredicate) parse
+- (CPPredicate)parse
 {
     var r = nil;
 
@@ -285,23 +285,23 @@ function(newValue)\
     }
     catch(error)
     {
-        CPLogConsole(@"Parsing failed for "+[self string]+" with " + error);
+        CPLogConsole(@"Parsing failed for " + [self string] + " with " + error);
     }
     finally
     {
         if (![self isAtEnd])
-            CPLogConsole(@"Format string contains extra characters: \""+[self string]+"\"");
+            CPLogConsole(@"Format string contains extra characters: \"" + [self string] + "\"");
     }
 
     return r;
 }
 
-- (CPPredicate) parsePredicate
+- (CPPredicate)parsePredicate
 {
     return [self parseAnd];
 }
 
-- (CPPredicate) parseAnd
+- (CPPredicate)parseAnd
 {
     var l = [self parseOr];
 
@@ -333,7 +333,7 @@ function(newValue)\
     return l;
 }
 
-- (CPPredicate) parseNot
+- (CPPredicate)parseNot
 {
     if ([self scanString:@"(" intoString:NULL])
     {
@@ -361,7 +361,7 @@ function(newValue)\
     return [self parseComparison];
 }
 
-- (CPPredicate) parseOr
+- (CPPredicate)parseOr
 {
     var l = [self parseNot];
     while ([self scanPredicateKeyword:@"OR"] || [self scanPredicateKeyword:@"||"])
@@ -392,7 +392,7 @@ function(newValue)\
     return l;
 }
 
-- (CPPredicate) parseComparison
+- (CPPredicate)parseComparison
 {
     var modifier = CPDirectPredicateModifier,
         type = 0,
@@ -476,9 +476,12 @@ function(newValue)\
     {
         var exp = [self parseSimpleExpression],
             a = [exp constantValue],
-            lower, upper,
-            lexp, uexp,
-            lp, up;
+            lower,
+            upper,
+            lexp,
+            uexp,
+            lp,
+            up;
 
         if (![a isKindOfClass:[CPArray class]])
             [CPException raise:CPInvalidArgumentException reason:@"BETWEEN operator requires array argument"];
@@ -501,7 +504,7 @@ function(newValue)\
                 [CPArray arrayWithObjects:lp, up]];
     }
     else
-        [CPException raise:CPInvalidArgumentException reason:@"Invalid comparison predicate: "+ [[self string] substringFromIndex: [self scanLocation]]];
+        [CPException raise:CPInvalidArgumentException reason:@"Invalid comparison predicate: " + [[self string] substringFromIndex: [self scanLocation]]];
 
     if ([self scanString:@"[cd]" intoString:NULL])
     {
@@ -535,12 +538,12 @@ function(newValue)\
     return negate ? [CPCompoundPredicate notPredicateWithSubpredicate:p]:p;
 }
 
-- (CPExpression) parseExpression
+- (CPExpression)parseExpression
 {
     return [self parseBinaryExpression];
 }
 
-- (CPExpression) parseSimpleExpression
+- (CPExpression)parseSimpleExpression
 {
     var identifier,
         location,
@@ -715,7 +718,7 @@ function(newValue)\
         if (![e keyPath])
             [CPException raise:CPInvalidArgumentException reason:@"Invalid keypath identifier: "+e];
 
-        return [CPExpression expressionForKeyPath:[e keyPath]+"@"];
+        return [CPExpression expressionForKeyPath:[e keyPath] + "@"];
     }
 
     [self scanString:@"#" intoString:NULL];

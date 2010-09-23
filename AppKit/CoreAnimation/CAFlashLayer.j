@@ -33,12 +33,12 @@
 {
     if (_flashMovie == aFlashMovie)
         return;
-        
+
     _flashMovie = aFlashMovie;
-    
+
     _DOMElement.innerHTML = "<object width = \"100%\" height = \"100%\"><param name = \"movie\" value = \"" +
-                            aFlashMovie._fileName + 
-                            "\"></param><param name = \"wmode\" value = \"transparent\"></param><embed src = \"" + 
+                            aFlashMovie._fileName +
+                            "\"></param><param name = \"wmode\" value = \"transparent\"></param><embed src = \"" +
                             aFlashMovie._fileName + "\" type = \"application/x-shockwave-flash\" wmode = \"transparent\" width = \"100%\" height = \"100%\"></embed></object>";
 }
 

@@ -12,14 +12,14 @@
 {
     [super initWithExpressionType:CPKeyPathExpressionType];
     _keyPath = keyPath ;
-    
+
     return self;
 }
 
 - (id)initWithCoder:(CPCoder)coder
 {
     var keyPath = [coder decodeObjectForKey:@"CPExpressionKeyPath"];
-    
+
     return [self initWithKeyPath:keyPath];
 }
 
@@ -32,10 +32,10 @@
 {
     if (self == object)
         return YES;
-        
+
     if (object.isa != self.isa || [object expressionType] != [self expressionType] || ![[object keyPath] isEqualToString:[self keyPath]])
         return NO;
-        
+
     return YES;
 }
 

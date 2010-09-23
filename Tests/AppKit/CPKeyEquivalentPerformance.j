@@ -34,7 +34,7 @@
     [button2 setTarget:self];
     [button2 setAction:@selector(clicked:)];
     [button2 setKeyEquivalent:"a"];
-    [button2 setKeyEquivalentModifierMask:CPAlternateKeyMask|CPCommandKeyMask];
+    [button2 setKeyEquivalentModifierMask:CPAlternateKeyMask | CPCommandKeyMask];
     button2.clicks = 0;
 
     [button3 setTarget:self];
@@ -45,15 +45,15 @@
 
     var start = (new Date).getTime();
 
-    for (var i = 0; i<REPEATS; i++)
+    for (var i = 0; i < REPEATS; i++)
     {
         [theWindow sendEvent:[CPEvent keyEventWithType:CPKeyDown location:CGPointMakeZero() modifierFlags:CPControlKeyMask
             timestamp:nil windowNumber:nil context:nil
             characters:"a" charactersIgnoringModifiers:"a" isARepeat:NO keyCode:0]];
-        [theWindow sendEvent:[CPEvent keyEventWithType:CPKeyDown location:CGPointMakeZero() modifierFlags:CPAlternateKeyMask|CPCommandKeyMask
+        [theWindow sendEvent:[CPEvent keyEventWithType:CPKeyDown location:CGPointMakeZero() modifierFlags:CPAlternateKeyMask | CPCommandKeyMask
             timestamp:nil windowNumber:nil context:nil
             characters:"a" charactersIgnoringModifiers:"a" isARepeat:NO keyCode:0]];
-        [theWindow sendEvent:[CPEvent keyEventWithType:CPKeyDown location:CGPointMakeZero() modifierFlags:CPControlKeyMask|CPShiftKeyMask
+        [theWindow sendEvent:[CPEvent keyEventWithType:CPKeyDown location:CGPointMakeZero() modifierFlags:CPControlKeyMask | CPShiftKeyMask
             timestamp:nil windowNumber:nil context:nil
             characters:"a" charactersIgnoringModifiers:"a" isARepeat:NO keyCode:0]];
     }

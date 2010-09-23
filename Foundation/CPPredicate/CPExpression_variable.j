@@ -12,7 +12,7 @@
 {
     [super initWithExpressionType:CPVariableExpressionType];
     _variable = [variable copy];
-    
+
     return self;
 }
 
@@ -31,10 +31,10 @@
 {
     if (self == object)
         return YES;
-    
+
     if (object.isa != self.isa || [object expressionType] != [self expressionType] || ![[object variable] isEqualToString:[self variable]])
         return NO;
-    
+
     return YES;
 }
 
@@ -56,10 +56,10 @@
 - (CPExpression)_expressionWithSubstitutionVariables:(CPDictionary)variables
 {
     var aconstant = [variables objectForKey:_variable];
-      
+
     if (aconstant != nil)
         return [CPExpression expressionForConstantValue:aconstant];
-   
+
     return self;
 }
 
