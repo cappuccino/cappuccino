@@ -714,6 +714,15 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
     [[CPNotificationCenter defaultCenter] postNotification:note];
 }
 
+- (void)sendAction:(SEL)anAction to:(id)anObject
+{
+    // Don't reverse set our empty value
+    if (!_currentValueIsPlaceholder)
+        [self _reverseSetBinding];
+
+    [CPApp sendAction:anAction to:anObject from:self];
+}
+
 /*!
     Returns the string the text field.
 */
