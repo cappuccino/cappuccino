@@ -10,7 +10,9 @@ var FILENAMES = [
         "Messages/no-parameters",
         "Messages/one-parameter",
         "Messages/multiple-parameters",
-        "Messages/ternary-operator-argument"
+        "Messages/ternary-operator-argument",
+
+        "Misc/regex-simple-char-classes"
                 ];
 
 @implementation OutputTest : OJTestCase
@@ -33,11 +35,14 @@ var FILENAMES = [
             {
                 var filePath = FILE.join(FILE.dirname(module.path), filename + ".j"),
                     unpreprocessed = FILE.read(filePath, { charset:"UTF-8" }),
-                    preprocessed = ObjectiveJ.preprocess(unpreprocessed).code(),
+                    preprocessed,
                     correct = FILE.read(FILE.join(FILE.dirname(module.path), filename + ".js"));
 
-                preprocessed = compressor.compress(preprocessed, { charset : "UTF-8", useServer : true });
-                correct = compressor.compress(correct, { charset : "UTF-8", useServer : true });
+                [self assertNoThrow:function() {
+                    preprocessed = ObjectiveJ.preprocess(unpreprocessed).code(),
+                    preprocessed = compressor.compress(preprocessed, { charset : "UTF-8", useServer : true });
+                    correct = compressor.compress(correct, { charset : "UTF-8", useServer : true });
+                }];
 
                 [self assert:preprocessed equals:correct];
             });
