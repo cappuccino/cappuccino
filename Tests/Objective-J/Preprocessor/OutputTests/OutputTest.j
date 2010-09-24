@@ -13,7 +13,7 @@ var FILENAMES = [
         "Messages/ternary-operator-argument"
                 ];
 
-@implementation PreprocessorTest : OJTestCase
+@implementation OutputTest : OJTestCase
 {
 }
 
@@ -47,4 +47,4 @@ var FILENAMES = [
 
 @end
 
-[PreprocessorTest alloc];
+[OutputTest alloc];
