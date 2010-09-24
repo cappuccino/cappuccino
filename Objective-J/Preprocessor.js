@@ -670,7 +670,7 @@ Preprocessor.prototype.method = function(/*Lexer*/ tokens, ivar_names)
             parameters[parameters.length] = token;
 
             if (token in ivar_names)
-                throw new SyntaxError(this.error_message("*** Method ( "+selector+" ) uses a parameter name that is already in use ( "+token+" )"));
+                CPLog.warn(this.error_message("*** Warning: Method ( "+selector+" ) uses a parameter name that is already in use ( "+token+" )"));
         }
         else if (token == TOKEN_OPEN_PARENTHESIS)
         {
