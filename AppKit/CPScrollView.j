@@ -963,18 +963,13 @@
         [enclosingScrollView _respondToScrollWheelEventWithDeltaX:extraX deltaY:extraY];
 }
 
-- (void)keyDown:(CPEvent)anEvent
-{
-    [self interpretKeyEvents:[anEvent]];
-}
-
-- (void)pageUp:(id)sender
+- (void)scrollPageUp:(id)sender
 {
     var contentBounds = [_contentView bounds];
     [self moveByOffset:CGSizeMake(0.0, -(_CGRectGetHeight(contentBounds) - _verticalPageScroll))];
 }
 
-- (void)pageDown:(id)sender
+- (void)scrollPageDown:(id)sender
 {
     var contentBounds = [_contentView bounds];
     [self moveByOffset:CGSizeMake(0.0, _CGRectGetHeight(contentBounds) - _verticalPageScroll)];
