@@ -1833,6 +1833,19 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
             [_delegate tableView:self mouseDownInHeaderOfTableColumn:_tableColumns[column]];
 }
 
+/*
+*/
+- (BOOL)_sendDelegateDeleteKeyPressed
+{
+    if([_delegate respondsToSelector: @selector(tableViewDeleteKeyPressed:)])
+    {
+        [_delegate tableViewDeleteKeyPressed:self];
+        return YES;
+    }
+
+    return NO;
+}
+
 - (void)_sendDataSourceSortDescriptorsDidChange:(CPArray)oldDescriptors
 {
     if (_implementedDataSourceMethods & CPTableViewDataSource_tableView_sortDescriptorsDidChange_)
@@ -3348,21 +3361,48 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 
 - (void)keyDown:(CPEvent)anEvent
 {
-    [self interpretKeyEvents:[anEvent]];
+    var character = [anEvent charactersIgnoringModifiers],
+        modifierFlags = [anEvent modifierFlags];
+
+    // Check for the key events manually, as opossed to waiting for CPWindow to sent the actual actio message
+    // in _processKeyboardUIKey:, because we might not want to handle the arrow events.
+    if (character === CPUpArrowFunctionKey || character === CPDownArrowFunctionKey)
+    {
+        // We're not interested in the arrow keys if there are no rows.
+        // Technically we should also not be interested if we can't scroll,
+        // but Cocoa doesn't handle that situation either.
+        if ([self numberOfRows] === 0)
+        {
+            if (character === CPUpArrowFunctionKey)
+                [self _moveSelectionUp:anEvent];
+            else
+                [self _moveSelectionDown:anEvent]
+
+            return;
+        }
+    }
+    else if (character === CPDeleteCharacter || character === CPDeleteFunctionKey)
+    {
+        // Don't call super if the delegate is interested in the delete key
+        if ([self _sendDelegateDeleteKeyPressed])
+            return;
+    }
+
+    [super keyDown:anEvent];
 }
 
-- (void)moveDown:(id)sender
+- (void)moveDown:(id)aSender
 {
     if (_implementedDelegateMethods & CPTableViewDelegate_selectionShouldChangeInTableView_ &&
         ![_delegate selectionShouldChangeInTableView:self])
         return;
 
-    var anEvent = [CPApp currentEvent];
+    var theEvent = [CPApp currentEvent];
     if([[self selectedRowIndexes] count] > 0)
     {
         var extend = NO;
 
-        if(([anEvent modifierFlags] & CPShiftKeyMask) && _allowsMultipleSelection)
+        if(([theEvent modifierFlags] & CPShiftKeyMask) && _allowsMultipleSelection)
             extend = YES;
 
         var i = [[self selectedRowIndexes] lastIndex];
@@ -3398,23 +3438,18 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
         [self scrollRowToVisible:i];
 }
 
-- (void)moveDownAndModifySelection:(id)sender
-{
-    [self moveDown:sender];
-}
-
-- (void)moveUp:(id)sender
+- (void)moveUp:(id)aSender
 {
     if (_implementedDelegateMethods & CPTableViewDelegate_selectionShouldChangeInTableView_ &&
         ![_delegate selectionShouldChangeInTableView:self])
         return;
 
-    var anEvent = [CPApp currentEvent];
+    var theEvent = [CPApp currentEvent];
     if([[self selectedRowIndexes] count] > 0)
     {
          var extend = NO;
 
-         if(([anEvent modifierFlags] & CPShiftKeyMask) && _allowsMultipleSelection)
+         if(([theEvent modifierFlags] & CPShiftKeyMask) && _allowsMultipleSelection)
            extend = YES;
 
           var i = [[self selectedRowIndexes] firstIndex];
@@ -3448,17 +3483,6 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 
      if(i >= 0)
         [self scrollRowToVisible:i];
-}
-
-- (void)moveUpAndModifySelection:(id)sender
-{
-    [self moveUp:sender];
-}
-
-- (void)deleteBackward:(id)sender
-{
-    if([_delegate respondsToSelector: @selector(tableViewDeleteKeyPressed:)])
-        [_delegate tableViewDeleteKeyPressed:self];
 }
 
 @end
