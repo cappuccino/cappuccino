@@ -1325,7 +1325,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 // O(Columns) if table view contains hidden columns
 
 /*!
-    Returns the indexes of the receiver’s columns that intersect the specified rectangle.
+    Returns the indexes of the receiver's columns that intersect the specified rectangle.
     @param aRect A rectangle in the coordinate system of the receiver.
 */
 - (CPIndexSet)columnIndexesInRect:(CGRect)aRect
@@ -1573,7 +1573,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 }
 
 /*!
-   Resizes the last column if there’s room so the receiver fits exactly within its enclosing clip view.
+   Resizes the last column if there's room so the receiver fits exactly within its enclosing clip view.
 */
 - (void)sizeLastColumnToFit
 {
