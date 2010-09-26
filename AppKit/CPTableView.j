@@ -3612,7 +3612,7 @@ var CPTableViewDataSourceKey                = @"CPTableViewDataSourceKey",
     [aCoder encodeInt:_gridStyleMask forKey:CPTableViewGridStyleMaskKey];
 
     [aCoder encodeBool:_usesAlternatingRowBackgroundColors forKey:CPTableViewUsesAlternatingBackgroundKey];
-    [aCoder encodeObject:[self alternatingRowBackgroundColors] forKey:CPTableViewAlternatingRowColorsKey]
+    [aCoder encodeObject:[self alternatingRowBackgroundColors] forKey:CPTableViewAlternatingRowColorsKey];
 
     [aCoder encodeObject:_cornerView forKey:CPTableViewCornerViewKey];
     [aCoder encodeObject:_headerView forKey:CPTableViewHeaderViewKey];
@@ -3622,10 +3622,10 @@ var CPTableViewDataSourceKey                = @"CPTableViewDataSourceKey",
 
 @implementation CPIndexSet (tableview)
 
-- (void)removeMatches:otherSet
+- (void)removeMatches:(CPIndexSet)otherSet
 {
     var firstindex = [self firstIndex];
-    var index = MIN(firstindex,[otherSet firstIndex]);
+    var index = MIN(firstindex, [otherSet firstIndex]);
     var switchFlag = (index == firstindex);
     while(index != CPNotFound)
     {
