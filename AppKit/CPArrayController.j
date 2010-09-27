@@ -111,7 +111,7 @@
     return self;
 }
 
--(void)prepareContent
+- (void)prepareContent
 {
     [self _setContentArray:[[self newObject]]];
 }
@@ -148,7 +148,7 @@
 
 - (void)setContent:(id)value
 {
-    if(![value isKindOfClass:[CPArray class]])
+    if (![value isKindOfClass:[CPArray class]])
         value = [value];
 
     var oldSelectedObjects = nil,
@@ -178,7 +178,7 @@
     // We need to be in control of when notifications fire.
     _contentObject = value;
 
-    if(_clearsFilterPredicateOnInsertion)
+    if (_clearsFilterPredicateOnInsertion)
         [self __setFilterPredicate:nil]; // Causes a _rearrangeObjects.
     else
         [self _rearrangeObjects];
@@ -342,7 +342,9 @@
 
 - (BOOL)setSelectionIndexes:(CPIndexSet)indexes
 {
+    [self _selectionWillChange]
     [self __setSelectionIndexes:indexes];
+    [self _selectionDidChange];
 }
 
 /*
@@ -365,17 +367,17 @@
 
     if (![indexes count])
     {
-        if(_avoidsEmptySelection && [[self arrangedObjects] count])
+        if (_avoidsEmptySelection && [[self arrangedObjects] count])
             indexes = [CPIndexSet indexSetWithIndex:0];
     }
     else
     {
         var objectsCount = [[self arrangedObjects] count];
         // Remove out of bounds indexes.
-        [indexes removeIndexesInRange:CPMakeRange(objectsCount, [indexes lastIndex]+1)];
+        [indexes removeIndexesInRange:CPMakeRange(objectsCount, [indexes lastIndex] + 1)];
         // When avoiding empty selection and the deleted selection was at the bottom, select the last item.
-        if(![indexes count] && _avoidsEmptySelection && objectsCount)
-            indexes = [CPIndexSet indexSetWithIndex:objectsCount-1];
+        if (![indexes count] && _avoidsEmptySelection && objectsCount)
+            indexes = [CPIndexSet indexSetWithIndex:objectsCount - 1];
     }
 
     if ([_selectionIndexes isEqualToIndexSet:indexes])
@@ -418,7 +420,7 @@
         count = [objects count],
         arrangedObjects = [self arrangedObjects];
 
-    for (var i=0; i<count; i++)
+    for (var i = 0; i < count; i++)
     {
         var index = [arrangedObjects indexOfObject:[objects objectAtIndex:i]];
 
@@ -437,7 +439,7 @@
     return [[self selectionIndexes] firstIndex] > 0
 }
 
--(void)selectPrevious:(id)sender
+- (void)selectPrevious:(id)sender
 {
     var index = [[self selectionIndexes] firstIndex] - 1;
 
@@ -545,9 +547,9 @@
    [self didChangeValueForKey:@"content"];
 }
 
--(void)add:(id)sender
+- (void)add:(id)sender
 {
-    if(![self canAdd])
+    if (![self canAdd])
         return;
 
     [self insert:sender];
@@ -555,7 +557,7 @@
 
 - (void)insert:(id)sender
 {
-    if(![self canInsert])
+    if (![self canInsert])
         return;
 
     var newObject = [self automaticallyPreparesContent] ? [self newObject] : [self _defaultNewObject];
@@ -576,13 +578,13 @@
 
 - (void)addObjects:(CPArray)objects
 {
-    if(![self canAdd])
+    if (![self canAdd])
         return;
 
     var contentArray = [self contentArray],
         count = [objects count];
 
-    for (var i=0; i<count; i++)
+    for (var i = 0; i < count; i++)
         [contentArray addObject:[objects objectAtIndex:i]];
 
     [self setContent:contentArray];
@@ -590,7 +592,7 @@
 
 - (void)removeObjects:(CPArray)objects
 {
-    if(![self canRemove])
+    if (![self canRemove])
         return;
 
     [self _removeObjects:objects];

@@ -245,6 +245,19 @@
     [self assert:[CPIndexSet indexSetWithIndex:0] equals:observation.newValue message:"new selected index should be 0"];
 }
 
+- (void)testObservationDuringSetSelectionIndexes
+{
+    var arrayController = [self arrayController],
+        newContent = [self setupObservationFixture];
+
+    var newSelection = [CPIndexSet indexSetWithIndex:2];
+    [arrayController setSelectionIndexes:newSelection];
+
+    [self assertNotNull:[arrayController selection] message:@"a selection was made, selection proxy should be defined"];
+    [self assert:2 equals:[observations count] message:@"exactly 2 change notifications should be sent for new selection indexes"];
+    [self assert:newSelection equals:[arrayController selectionIndexes] message:@"selection was not set properly"];
+}
+
 - (void)observeValueForKeyPath:keyPath
     ofObject:anActivity
     change:change
