@@ -3576,8 +3576,8 @@ var CPTableViewDataSourceKey                = @"CPTableViewDataSourceKey",
         if (_cornerView)
             [_cornerView setHidden:NO];
 
-        _dataSource = [aCoder decodeObjectForKey:CPTableViewDataSourceKey];
-        _delegate = [aCoder decodeObjectForKey:CPTableViewDelegateKey];
+        [self setDataSource:[aCoder decodeObjectForKey:CPTableViewDataSourceKey]];
+        [self setDelegate:[aCoder decodeObjectForKey:CPTableViewDelegateKey]];
 
         [self _init];
 
