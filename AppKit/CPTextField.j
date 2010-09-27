@@ -80,6 +80,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
     BOOL                    _isEditable;
     BOOL                    _isSelectable;
     BOOL                    _isSecure;
+    BOOL                    _willBecomeFirstResponderByClick;
 
     BOOL                    _drawsBackground;
 
@@ -509,6 +510,13 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
     window.setTimeout(function()
     {
         element.focus();
+
+        // Select the text if the textfield became first responder through keyboard interaction
+        if (!_willBecomeFirstResponderByClick)
+            [self selectText:self];
+
+        _willBecomeFirstResponderByClick = NO;
+
         [self textDidFocus:[CPNotification notificationWithName:CPTextFieldDidFocusNotification object:self userInfo:nil]];
         CPTextFieldInputOwner = self;
     }, 0.0);
@@ -600,7 +608,10 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 {
     // Don't track! (ever?)
     if ([self isEditable] && [self isEnabled])
-        return [[self window] makeFirstResponder:self];
+    {
+        _willBecomeFirstResponderByClick = YES;
+        [[self window] makeFirstResponder:self];
+    }
     else if ([self isSelectable])
     {
         if (document.attachEvent)
@@ -677,24 +688,11 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 
         [[[self window] platformWindow] _propagateCurrentDOMEvent:NO];
     }
-    else if ([anEvent keyCode] === CPTabKeyCode)
-    {
-        if ([anEvent modifierFlags] & CPShiftKeyMask)
-            [[self window] selectPreviousKeyView:self];
-        else
-            [[self window] selectNextKeyView:self];
-
-        if ([[[self window] firstResponder] respondsToSelector:@selector(selectText:)])
-            [[[self window] firstResponder] selectText:self];
-
-        [[[self window] platformWindow] _propagateCurrentDOMEvent:NO];
-    }
     else
         [[[self window] platformWindow] _propagateCurrentDOMEvent:YES];
 
     [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
 }
-
 
 - (void)textDidBlur:(CPNotification)note
 {
