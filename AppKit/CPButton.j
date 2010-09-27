@@ -74,6 +74,9 @@ CPChangeBackgroundCellMask  = CPBackgroundButtonMask;
 
 CPButtonStateMixed  = CPThemeState("mixed");
 
+CPButtonDefaultHeight = 24.0;
+CPButtonImageOffset   = 3.0;
+
 /*!
     @ingroup appkit
     @class CPButton
@@ -125,7 +128,7 @@ CPButtonStateMixed  = CPThemeState("mixed");
 + (id)themeAttributes
 {
     return [CPDictionary dictionaryWithObjects:[[CPNull null], 0.0, _CGInsetMakeZero(), _CGInsetMakeZero(), [CPNull null]]
-                                       forKeys:[@"image", @"imageOffset", @"bezel-inset", @"content-inset", @"bezel-color"]];
+                                       forKeys:[@"image", @"image-offset", @"bezel-inset", @"content-inset", @"bezel-color"]];
 }
 
 - (id)initWithFrame:(CGRect)aFrame
@@ -308,12 +311,12 @@ CPButtonStateMixed  = CPThemeState("mixed");
 
 - (void)setImageOffset:(float)theImageOffset
 {
-    [self setValue:theImageOffset forThemeAttribute:@"imageOffset"];
+    [self setValue:theImageOffset forThemeAttribute:@"image-offset"];
 }
 
 - (float)imageOffset
 {
-    return [self valueForThemeAttribute:@"imageOffset"];
+    return [self valueForThemeAttribute:@"image-offset"];
 }
 
 - (void)setShowsStateBy:(CPInteger)aMask
@@ -463,8 +466,20 @@ CPButtonStateMixed  = CPThemeState("mixed");
 */
 - (void)sizeToFit
 {
-    var size = [([self title] || " ") sizeWithFont:[self currentValueForThemeAttribute:@"font"]],
-        contentInset = [self currentValueForThemeAttribute:@"content-inset"],
+    [self layoutSubviews];
+
+    var size,
+        contentView = [self ephemeralSubviewNamed:@"content-view"];
+
+    if (contentView)
+    {
+        [contentView sizeToFit];
+        size = [contentView frameSize];
+    }
+    else
+        size = [([self title] || " ") sizeWithFont:[self currentValueForThemeAttribute:@"font"]];
+
+    var contentInset = [self currentValueForThemeAttribute:@"content-inset"],
         minSize = [self currentValueForThemeAttribute:@"min-size"],
         maxSize = [self currentValueForThemeAttribute:@"max-size"];
 
@@ -521,7 +536,7 @@ CPButtonStateMixed  = CPThemeState("mixed");
     {
         [contentView setText:([self hasThemeState:CPThemeStateHighlighted] && _alternateTitle) ? _alternateTitle : _title];
         [contentView setImage:[self currentValueForThemeAttribute:@"image"]];
-        [contentView setImageOffset:[self currentValueForThemeAttribute:@"imageOffset"]];
+        [contentView setImageOffset:[self currentValueForThemeAttribute:@"image-offset"]];
 
         [contentView setFont:[self currentValueForThemeAttribute:@"font"]];
         [contentView setTextColor:[self currentValueForThemeAttribute:@"text-color"]];
@@ -642,7 +657,9 @@ var CPButtonImageKey                    = @"CPButtonImageKey",
     CPButtonTitleKey                    = @"CPButtonTitleKey",
     CPButtonAlternateTitleKey           = @"CPButtonAlternateTitleKey",
     CPButtonIsBorderedKey               = @"CPButtonIsBorderedKey",
+    CPButtonAllowsMixedStateKey         = @"CPButtonAllowsMixedStateKey",
     CPButtonImageDimsWhenDisabledKey    = @"CPButtonImageDimsWhenDisabledKey",
+    CPButtonImagePositionKey            = @"CPButtonImagePositionKey",
     CPButtonKeyEquivalentKey            = @"CPButtonKeyEquivalentKey",
     CPButtonKeyEquivalentMaskKey        = @"CPButtonKeyEquivalentMaskKey";
 
@@ -660,18 +677,21 @@ var CPButtonImageKey                    = @"CPButtonImageKey",
     {
         _controlSize = CPRegularControlSize;
 
-        [self setImage:[aCoder decodeObjectForKey:CPButtonImageKey]];
-        [self setAlternateImage:[aCoder decodeObjectForKey:CPButtonAlternateImageKey]];
-
         _title = [aCoder decodeObjectForKey:CPButtonTitleKey];
         _alternateTitle = [aCoder decodeObjectForKey:CPButtonAlternateTitleKey];
 
+        if ([aCoder containsValueForKey:CPButtonAllowsMixedStateKey])
+            _allowsMixedState = [aCoder decodeBoolForKey:CPButtonAllowsMixedStateKey];
+
         [self setImageDimsWhenDisabled:[aCoder decodeObjectForKey:CPButtonImageDimsWhenDisabledKey]];
+
+        if ([aCoder containsValueForKey:CPButtonImagePositionKey])
+            [self setImagePosition:[aCoder decodeIntForKey:CPButtonImagePositionKey]];
 
         if ([aCoder containsValueForKey:CPButtonKeyEquivalentKey])
             [self setKeyEquivalent:CFData.decodeBase64ToUtf16String([aCoder decodeObjectForKey:CPButtonKeyEquivalentKey])];
 
-        _keyEquivalentModifierMask = [aCoder decodeObjectForKey:CPButtonKeyEquivalentMaskKey];
+        _keyEquivalentModifierMask = [aCoder decodeIntForKey:CPButtonKeyEquivalentMaskKey];
 
         [self setNeedsLayout];
         [self setNeedsDisplay:YES];
@@ -688,13 +708,13 @@ var CPButtonImageKey                    = @"CPButtonImageKey",
 {
     [super encodeWithCoder:aCoder];
 
-    [aCoder encodeObject:[self image] forKey:CPButtonImageKey];
-    [aCoder encodeObject:[self alternateImage] forKey:CPButtonAlternateImageKey];
-
     [aCoder encodeObject:_title forKey:CPButtonTitleKey];
     [aCoder encodeObject:_alternateTitle forKey:CPButtonAlternateTitleKey];
 
-    [aCoder encodeObject:[self imageDimsWhenDisabled] forKey:CPButtonImageDimsWhenDisabledKey];
+    [aCoder encodeBool:_allowsMixedState forKey:CPButtonAllowsMixedStateKey];
+
+    [aCoder encodeBool:[self imageDimsWhenDisabled] forKey:CPButtonImageDimsWhenDisabledKey];
+    [aCoder encodeInt:[self imagePosition] forKey:CPButtonImagePositionKey];
 
     if (_keyEquivalent)
         [aCoder encodeObject:CFData.encodeBase64Utf16String(_keyEquivalent) forKey:CPButtonKeyEquivalentKey];

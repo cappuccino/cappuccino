@@ -22,6 +22,7 @@
 
 @import "CPButton.j"
 
+CPCheckBoxImageOffset = 4.0;
 
 @implementation CPCheckBox : CPButton
 {
@@ -55,7 +56,7 @@
         [self setImagePosition:CPImageLeft];
         [self setAlignment:CPLeftTextAlignment];
 
-        [self setBordered:YES];
+        [self setBordered:NO];
     }
 
     return self;

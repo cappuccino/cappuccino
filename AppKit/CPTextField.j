@@ -80,12 +80,15 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
     BOOL                    _isEditable;
     BOOL                    _isSelectable;
     BOOL                    _isSecure;
+    BOOL                    _willBecomeFirstResponderByClick;
 
     BOOL                    _drawsBackground;
 
     CPColor                 _textFieldBackgroundColor;
 
     id                      _placeholderString;
+    id                      _originalPlaceholderString;
+    BOOL                    _currentValueIsPlaceholder;
 
     id                      _delegate;
 
@@ -279,7 +282,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 
     _isEditable = shouldBeEditable;
 
-    if(shouldBeEditable)
+    if (shouldBeEditable)
         _isSelectable = YES;
 
     // We only allow first responder status if the field is editable and enabled.
@@ -507,6 +510,13 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
     window.setTimeout(function()
     {
         element.focus();
+
+        // Select the text if the textfield became first responder through keyboard interaction
+        if (!_willBecomeFirstResponderByClick)
+            [self selectText:self];
+
+        _willBecomeFirstResponderByClick = NO;
+
         [self textDidFocus:[CPNotification notificationWithName:CPTextFieldDidFocusNotification object:self userInfo:nil]];
         CPTextFieldInputOwner = self;
     }, 0.0);
@@ -543,7 +553,8 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 
     var element = [self _inputElement];
 
-    [self setObjectValue:element.value];
+    if ([self stringValue] !== element.value)
+        [self _setStringValue:element.value];
 
     CPTextFieldInputResigning = YES;
     element.blur();
@@ -597,7 +608,10 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 {
     // Don't track! (ever?)
     if ([self isEditable] && [self isEnabled])
-        return [[self window] makeFirstResponder:self];
+    {
+        _willBecomeFirstResponderByClick = YES;
+        [[self window] makeFirstResponder:self];
+    }
     else if ([self isSelectable])
     {
         if (document.attachEvent)
@@ -674,29 +688,16 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 
         [[[self window] platformWindow] _propagateCurrentDOMEvent:NO];
     }
-    else if ([anEvent keyCode] === CPTabKeyCode)
-    {
-        if ([anEvent modifierFlags] & CPShiftKeyMask)
-            [[self window] selectPreviousKeyView:self];
-        else
-            [[self window] selectNextKeyView:self];
-
-        if ([[[self window] firstResponder] respondsToSelector:@selector(selectText:)])
-            [[[self window] firstResponder] selectText:self];
-
-        [[[self window] platformWindow] _propagateCurrentDOMEvent:NO];
-    }
     else
         [[[self window] platformWindow] _propagateCurrentDOMEvent:YES];
 
     [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
 }
 
-
 - (void)textDidBlur:(CPNotification)note
 {
-    //this looks to prevent false propagation of notifications for other objects
-    if([note object] != self)
+    // this looks to prevent false propagation of notifications for other objects
+    if ([note object] != self)
         return;
 
     [[CPNotificationCenter defaultCenter] postNotification:note];
@@ -704,11 +705,20 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 
 - (void)textDidFocus:(CPNotification)note
 {
-    //this looks to prevent false propagation of notifications for other objects
-    if([note object] != self)
+    // this looks to prevent false propagation of notifications for other objects
+    if ([note object] != self)
         return;
 
     [[CPNotificationCenter defaultCenter] postNotification:note];
+}
+
+- (void)sendAction:(SEL)anAction to:(id)anObject
+{
+    // Don't reverse set our empty value
+    if (!_currentValueIsPlaceholder)
+        [self _reverseSetBinding];
+
+    [CPApp sendAction:anAction to:anObject from:self];
 }
 
 /*!
@@ -757,7 +767,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
     Sets a placeholder string for the receiver.  The placeholder is displayed until editing begins,
     and after editing ends, if the text field has an empty string value
 */
--(void)setPlaceholderString:(CPString)aStringValue
+- (void)setPlaceholderString:(CPString)aStringValue
 {
     if (_placeholderString === aStringValue)
         return;
@@ -778,6 +788,30 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 - (CPString)placeholderString
 {
     return _placeholderString;
+}
+
+- (void)_setCurrentValueIsPlaceholder:(BOOL)isPlaceholder
+{
+    if (isPlaceholder)
+    {
+        // Save the original placeholder value so we can restore it later
+        // Only do this if the placeholder is not already overridden because the bindings logic might call this method 
+        // several times and we don't want the bindings placeholder to ever become the original placeholder
+        if (!_currentValueIsPlaceholder)
+            _originalPlaceholderString = [self placeholderString];
+
+        // Set the current string value as the current placeholder and clear the string value
+        [self setPlaceholderString:[self stringValue]];
+        [self setStringValue:@""];
+    }
+    else
+    {
+        // Restore the original placeholder, the actual textfield value is already correct
+        // because it was set using setValue:forKey:
+        [self setPlaceholderString:_originalPlaceholderString];
+    }
+
+    _currentValueIsPlaceholder = isPlaceholder;
 }
 
 /*!
@@ -881,7 +915,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
             newValue = [stringValue stringByReplacingCharactersInRange:selectedRange withString:pasteString];
 
         [self setStringValue:newValue];
-        [self setSelectedRange:CPMakeRange(selectedRange.location+pasteString.length, 0)];
+        [self setSelectedRange:CPMakeRange(selectedRange.location + pasteString.length, 0)];
     }
 }
 
@@ -1158,7 +1192,7 @@ var secureStringForString = function(aString)
     if (!aString)
         return "";
 
-    return Array(aString.length+1).join(CPSecureTextFieldCharacter);
+    return Array(aString.length + 1).join(CPSecureTextFieldCharacter);
 }
 
 

@@ -41,9 +41,9 @@ CPNoScrollerParts           = 0;
 CPOnlyScrollerArrows        = 1;
 CPAllScrollerParts          = 2;
 
-/*! 
+/*!
     @ingroup appkit
-    @class CPScroller    
+    @class CPScroller
 */
 
 var PARTS_ARRANGEMENT   = [CPScrollerKnobSlot, CPScrollerDecrementLine, CPScrollerIncrementLine, CPScrollerKnob],
@@ -79,17 +79,18 @@ NAMES_FOR_PARTS[CPScrollerKnob]             = @"knob";
 
 + (id)themeAttributes
 {
-    return [CPDictionary dictionaryWithObjects:[    [CPNull null], [CPNull null], [CPNull null], [CPNull null],
-                                                    _CGSizeMakeZero(), _CGSizeMakeZero(), _CGInsetMakeZero(), _CGInsetMakeZero(), _CGSizeMakeZero()]
-                                       forKeys:[    @"knob-slot-color",
-                                                    @"decrement-line-color",
-                                                    @"increment-line-color",
-                                                    @"knob-color",
-                                                    @"decrement-line-size",
-                                                    @"increment-line-size",
-                                                    @"track-inset",
-                                                    @"knob-inset",
-                                                    @"minimum-knob-length"]];
+    return [CPDictionary dictionaryWithJSObject:{
+        @"scroller-width": 15.0,
+        @"knob-slot-color": [CPColor lightGrayColor],
+        @"decrement-line-color": [CPNull null],
+        @"increment-line-color": [CPNull null],
+        @"knob-color": [CPColor grayColor],
+        @"decrement-line-size":_CGSizeMakeZero(),
+        @"increment-line-size":_CGSizeMakeZero(),
+        @"track-inset":_CGInsetMakeZero(),
+        @"knob-inset": _CGInsetMakeZero(),
+        @"minimum-knob-length":21.0
+    }]
 }
 
 
@@ -98,7 +99,7 @@ NAMES_FOR_PARTS[CPScrollerKnob]             = @"knob";
 - (id)initWithFrame:(CGRect)aFrame
 {
     self = [super initWithFrame:aFrame];
-    
+
     if (self)
     {
         _controlSize = CPRegularControlSize;
@@ -106,7 +107,7 @@ NAMES_FOR_PARTS[CPScrollerKnob]             = @"knob";
 
         [self setFloatValue:0.0];
         [self setKnobProportion:1.0];
-        
+
         _hitPart = CPScrollerNoPart;
 
         [self _calculateIsVertical];
@@ -121,7 +122,7 @@ NAMES_FOR_PARTS[CPScrollerKnob]             = @"knob";
 */
 + (float)scrollerWidth
 {
-    return 15.0;//[self scrollerWidthForControlSize:CPRegularControlSize];
+    return [[[CPScroller alloc] init] currentValueForThemeAttribute:@"scroller-width"];
 }
 
 /*!
@@ -130,7 +131,7 @@ NAMES_FOR_PARTS[CPScrollerKnob]             = @"knob";
 */
 + (float)scrollerWidthForControlSize:(CPControlSize)aControlSize
 {
-    return 15.0;//_CPScrollerWidths[aControlSize];
+    return [self scrollerWidth];
 }
 
 /*!
@@ -180,10 +181,10 @@ NAMES_FOR_PARTS[CPScrollerKnob]             = @"knob";
 - (id)currentValueForThemeAttribute:(CPString)anAttributeName
 {
     var themeState = _themeState;
-    
+
     if (NAMES_FOR_PARTS[_hitPart] + "-color" !== anAttributeName)
         themeState &= ~CPThemeStateHighlighted;
-    
+
     return [self valueForThemeAttribute:anAttributeName inState:themeState];
 }
 
@@ -205,25 +206,25 @@ NAMES_FOR_PARTS[CPScrollerKnob]             = @"knob";
 - (CPScrollerPart)testPart:(CGPoint)aPoint
 {
     aPoint = [self convertPoint:aPoint fromView:nil];
-    
-    // The ordering of these tests is important.  We check the knob and 
+
+    // The ordering of these tests is important.  We check the knob and
     // page rects first since they may overlap with the arrows.
-    
+
     if (CGRectContainsPoint([self rectForPart:CPScrollerKnob], aPoint))
         return CPScrollerKnob;
-    
+
     if (CGRectContainsPoint([self rectForPart:CPScrollerDecrementPage], aPoint))
         return CPScrollerDecrementPage;
-    
+
     if (CGRectContainsPoint([self rectForPart:CPScrollerIncrementPage], aPoint))
         return CPScrollerIncrementPage;
-    
+
     if (CGRectContainsPoint([self rectForPart:CPScrollerDecrementLine], aPoint))
         return CPScrollerDecrementLine;
-    
+
     if (CGRectContainsPoint([self rectForPart:CPScrollerIncrementLine], aPoint))
         return CPScrollerIncrementLine;
-    
+
     if (CGRectContainsPoint([self rectForPart:CPScrollerKnobSlot], aPoint))
         return CPScrollerKnobSlot;
 
@@ -241,7 +242,7 @@ NAMES_FOR_PARTS[CPScrollerKnob]             = @"knob";
     if (_knobProportion === 1.0)
     {
         _usableParts = CPNoScrollerParts;
-    
+
         _partRects[CPScrollerDecrementPage] = CGRectMakeZero();
         _partRects[CPScrollerKnob]          = CGRectMakeZero();
         _partRects[CPScrollerIncrementPage] = CGRectMakeZero();
@@ -250,7 +251,7 @@ NAMES_FOR_PARTS[CPScrollerKnob]             = @"knob";
 
         // In this case, the slot is the entirety of the scroller.
         _partRects[CPScrollerKnobSlot] = CGRectMakeCopy(bounds);
-        
+
         return;
     }
 
@@ -260,8 +261,8 @@ NAMES_FOR_PARTS[CPScrollerKnob]             = @"knob";
     var knobInset = [self currentValueForThemeAttribute:@"knob-inset"],
         trackInset = [self currentValueForThemeAttribute:@"track-inset"],
         width = _CGRectGetWidth(bounds),
-        height = _CGRectGetHeight(bounds); 
-    
+        height = _CGRectGetHeight(bounds);
+
     if ([self isVertical])
     {
         var decrementLineSize = [self currentValueForThemeAttribute:"decrement-line-size"],
@@ -280,10 +281,10 @@ NAMES_FOR_PARTS[CPScrollerKnob]             = @"knob";
         _partRects[CPScrollerKnobSlot]      = _CGRectMake(trackInset.left, effectiveDecrementLineHeight, width - trackInset.left - trackInset.right, slotHeight);
         _partRects[CPScrollerDecrementLine] = _CGRectMake(0.0, 0.0, decrementLineSize.width, decrementLineSize.height);
         _partRects[CPScrollerIncrementLine] = _CGRectMake(0.0, height - incrementLineSize.height, incrementLineSize.width, incrementLineSize.height);
-        
+
         if(height < knobHeight + decrementLineSize.height + incrementLineSize.height + trackInset.top + trackInset.bottom)
             _partRects[CPScrollerKnob] = _CGRectMakeZero();
-        
+
         if(height < decrementLineSize.height + incrementLineSize.height - 2)
         {
             _partRects[CPScrollerIncrementLine] = _CGRectMakeZero();
@@ -309,10 +310,10 @@ NAMES_FOR_PARTS[CPScrollerKnob]             = @"knob";
         _partRects[CPScrollerKnobSlot]      = _CGRectMake(effectiveDecrementLineWidth, trackInset.top, slotWidth, height - trackInset.top - trackInset.bottom);
         _partRects[CPScrollerDecrementLine] = _CGRectMake(0.0, 0.0, decrementLineSize.width, decrementLineSize.height);
         _partRects[CPScrollerIncrementLine] = _CGRectMake(width - incrementLineSize.width, 0.0, incrementLineSize.width, incrementLineSize.height);
-        
+
         if(width < knobWidth + decrementLineSize.width + incrementLineSize.width + trackInset.left + trackInset.right)
             _partRects[CPScrollerKnob] = _CGRectMakeZero();
-        
+
         if(width < decrementLineSize.width + incrementLineSize.width - 2)
         {
             _partRects[CPScrollerIncrementLine] = _CGRectMakeZero();
@@ -358,9 +359,9 @@ NAMES_FOR_PARTS[CPScrollerKnob]             = @"knob";
 - (CPView)createViewForPart:(CPScrollerPart)aPart
 {
     var view = [[CPView alloc] initWithFrame:_CGRectMakeZero()];
-    
+
     [view setHitTests:NO];
-    
+
     return view;
 }
 
@@ -374,7 +375,7 @@ NAMES_FOR_PARTS[CPScrollerKnob]             = @"knob";
     var view = [[CPView alloc] initWithFrame:_CGRectMakeZero()];
 
     [view setHitTests:NO];
-        
+
     return view;
 }
 
@@ -388,12 +389,12 @@ NAMES_FOR_PARTS[CPScrollerKnob]             = @"knob";
     for (; index < count; ++index)
     {
         var part = PARTS_ARRANGEMENT[index];
-    
+
         if (index === 0)
             view = [self layoutEphemeralSubviewNamed:part positioned:CPWindowBelow relativeToEphemeralSubviewNamed:PARTS_ARRANGEMENT[index + 1]];
         else
             view = [self layoutEphemeralSubviewNamed:part positioned:CPWindowAbove relativeToEphemeralSubviewNamed:PARTS_ARRANGEMENT[index - 1]];
-        
+
         if (view)
             [view setBackgroundColor:[self currentValueForThemeAttribute:NAMES_FOR_PARTS[part] + "-color"]];
     }
@@ -403,7 +404,7 @@ NAMES_FOR_PARTS[CPScrollerKnob]             = @"knob";
     Caches images for the scroll arrow and knob.
 */
 - (void)drawParts
-{   
+{
     [self drawKnobSlot];
     [self drawKnob];
     [self drawArrow:CPScrollerDecrementArrow highlight:NO];
@@ -426,37 +427,37 @@ NAMES_FOR_PARTS[CPScrollerKnob]             = @"knob";
 - (void)trackKnob:(CPEvent)anEvent
 {
     var type = [anEvent type];
-    
+
     if (type === CPLeftMouseUp)
     {
         _hitPart = CPScrollerNoPart;
-        
+
         return;
     }
-    
+
     if (type === CPLeftMouseDown)
     {
         _trackingFloatValue = [self floatValue];
         _trackingStartPoint = [self convertPoint:[anEvent locationInWindow] fromView:nil];
     }
-    
+
     else if (type === CPLeftMouseDragged)
     {
         var knobRect = [self rectForPart:CPScrollerKnob],
             knobSlotRect = [self rectForPart:CPScrollerKnobSlot],
             remainder = ![self isVertical] ? (_CGRectGetWidth(knobSlotRect) - _CGRectGetWidth(knobRect)) : (_CGRectGetHeight(knobSlotRect) - _CGRectGetHeight(knobRect));
-            
+
         if (remainder <= 0)
             [self setFloatValue:0.0];
         else
         {
-            var location = [self convertPoint:[anEvent locationInWindow] fromView:nil];
+            var location = [self convertPoint:[anEvent locationInWindow] fromView:nil],
                 delta = ![self isVertical] ? location.x - _trackingStartPoint.x : location.y - _trackingStartPoint.y;
 
             [self setFloatValue:_trackingFloatValue + delta / remainder];
         }
     }
-    
+
     [CPApp setTarget:self selector:@selector(trackKnob:) forNextEventMatchingMask:CPLeftMouseDraggedMask | CPLeftMouseUpMask untilDate:nil inMode:nil dequeue:YES];
 
     [self sendAction:[self action] to:[self target]];
@@ -474,26 +475,26 @@ NAMES_FOR_PARTS[CPScrollerKnob]             = @"knob";
     {
         [self highlight:NO];
         [CPEvent stopPeriodicEvents];
-        
+
         _hitPart = CPScrollerNoPart;
-        
+
         return;
     }
-    
+
     if (type === CPLeftMouseDown)
     {
         _trackingPart = [self hitPart];
-        
+
         _trackingStartPoint = [self convertPoint:[anEvent locationInWindow] fromView:nil];
 
         if ([anEvent modifierFlags] & CPAlternateKeyMask)
         {
             if (_trackingPart == CPScrollerDecrementLine)
                 _hitPart = CPScrollerDecrementPage;
-            
+
             else if (_trackingPart == CPScrollerIncrementLine)
                 _hitPart = CPScrollerIncrementPage;
-            
+
             else if (_trackingPart == CPScrollerDecrementPage || _trackingPart == CPScrollerIncrementPage)
             {
                 var knobRect = [self rectForPart:CPScrollerKnob],
@@ -502,42 +503,42 @@ NAMES_FOR_PARTS[CPScrollerKnob]             = @"knob";
                     remainder = (![self isVertical] ? _CGRectGetWidth(knobSlotRect) : _CGRectGetHeight(knobSlotRect)) - knobWidth;
 
                 [self setFloatValue:((![self isVertical] ? _trackingStartPoint.x - _CGRectGetMinX(knobSlotRect) : _trackingStartPoint.y - _CGRectGetMinY(knobSlotRect)) - knobWidth / 2.0) / remainder];
-                
+
                 _hitPart = CPScrollerKnob;
-                
-                [self sendAction:[self action] to:[self target]];        
-                
+
+                [self sendAction:[self action] to:[self target]];
+
                 // Now just track the knob.
                 return [self trackKnob:anEvent];
             }
         }
-        
+
         [self highlight:YES];
         [self sendAction:[self action] to:[self target]];
-        
+
         [CPEvent startPeriodicEventsAfterDelay:0.5 withPeriod:0.04];
     }
-    
+
     else if (type === CPLeftMouseDragged)
     {
         _trackingStartPoint = [self convertPoint:[anEvent locationInWindow] fromView:nil];
-        
+
         if (_trackingPart == CPScrollerDecrementPage || _trackingPart == CPScrollerIncrementPage)
         {
             var hitPart = [self testPart:[anEvent locationInWindow]];
-            
+
             if (hitPart == CPScrollerDecrementPage || hitPart == CPScrollerIncrementPage)
             {
                 _trackingPart = hitPart;
                 _hitPart = hitPart;
             }
         }
-        
+
         [self highlight:CGRectContainsPoint([self rectForPart:_trackingPart], _trackingStartPoint)];
     }
     else if (type == CPPeriodic && CGRectContainsPoint([self rectForPart:_trackingPart], _trackingStartPoint))
         [self sendAction:[self action] to:[self target]];
-    
+
     [CPApp setTarget:self selector:@selector(trackScrollButtons:) forNextEventMatchingMask:CPPeriodicMask | CPLeftMouseDraggedMask | CPLeftMouseUpMask untilDate:nil inMode:nil dequeue:YES];
 
 }
@@ -569,15 +570,15 @@ NAMES_FOR_PARTS[CPScrollerKnob]             = @"knob";
 {
     if (![self isEnabled])
         return;
-    
+
     _hitPart = [self testPart:[anEvent locationInWindow]];
-    
+
     switch (_hitPart)
     {
         case CPScrollerKnob:            return [self trackKnob:anEvent];
-        
-        case CPScrollerDecrementLine:   
-        case CPScrollerIncrementLine:   
+
+        case CPScrollerDecrementLine:
+        case CPScrollerIncrementLine:
         case CPScrollerDecrementPage:
         case CPScrollerIncrementPage:   return [self trackScrollButtons:anEvent];
     }
@@ -603,19 +604,32 @@ var CPScrollerControlSizeKey = "CPScrollerControlSize",
             _knobProportion = [aCoder decodeFloatForKey:CPScrollerKnobProportionKey];
 
         _partRects = [];
-        
+
         _hitPart = CPScrollerNoPart;
 
         [self _calculateIsVertical];
+
+        // Adjust the size of the scroller if the size from cib
+        // isn't equal to the scrollerWidth
+        var frame = [self frame],
+            scrollerWidth = [CPScroller scrollerWidth];
+
+        if ([self isVertical] && CGRectGetWidth(frame) !== scrollerWidth)
+            frame.size.width = scrollerWidth;
+
+        if (![self isVertical] && CGRectGetHeight(frame) !== scrollerWidth)
+            frame.size.height = scrollerWidth;
+
+        [self setFrame:frame];
     }
-    
+
     return self;
 }
 
 - (void)encodeWithCoder:(CPCoder)aCoder
 {
     [super encodeWithCoder:aCoder];
-    
+
     [aCoder encodeInt:_controlSize forKey:CPScrollerControlSizeKey];
     [aCoder encodeFloat:_knobProportion forKey:CPScrollerKnobProportionKey];
 }

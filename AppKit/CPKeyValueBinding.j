@@ -146,10 +146,39 @@ var CPBindingOperationAnd = 0,
     var destination = [_info objectForKey:CPObservedObjectKey],
         keyPath = [_info objectForKey:CPObservedKeyPathKey],
         options = [_info objectForKey:CPOptionsKey],
-        newValue = [destination valueForKeyPath:keyPath];
+        newValue = [destination valueForKeyPath:keyPath],
+        isPlaceholder = CPIsControllerMarker(newValue);
 
-    newValue = [self transformValue:newValue withOptions:options];
+    if (isPlaceholder)
+    {
+        switch (newValue)
+        {
+            case CPMultipleValuesMarker:
+                newValue = [options objectForKey:CPMultipleValuesPlaceholderBindingOption] || @"Multiple Values";
+                break;
+
+            case CPNoSelectionMarker:
+                newValue = [options objectForKey:CPNoSelectionPlaceholderBindingOption] || @"No Selection";
+                break;
+
+            case CPNotApplicableMarker:
+                if ([options objectForKey:CPRaisesForNotApplicableKeysBindingOption])
+                    [CPException raise:CPGenericException reason:@"can't transform non applicable key on: "+_source+" value: "+newValue];
+
+                newValue = [options objectForKey:CPNotApplicablePlaceholderBindingOption] || @"Not Applicable";
+                break;
+        }
+    }
+    else
+    {
+        // Only transform the value if the current value is not a placeholder
+        newValue = [self transformValue:newValue withOptions:options];
+    }
+
     [_source setValue:newValue forKey:aBinding];
+
+    if ([_source respondsToSelector:@selector(_setCurrentValueIsPlaceholder:)])
+        [_source _setCurrentValueIsPlaceholder:isPlaceholder];
 }
 
 - (void)reverseSetValueFor:(CPString)aBinding
@@ -200,20 +229,9 @@ var CPBindingOperationAnd = 0,
     if (valueTransformer)
         aValue = [valueTransformer transformedValue:aValue];
 
-    switch (aValue)
-    {
-        case CPMultipleValuesMarker:    return [options objectForKey:CPMultipleValuesPlaceholderBindingOption] || @"Multiple Values";
 
-        case CPNoSelectionMarker:       return [options objectForKey:CPNoSelectionPlaceholderBindingOption] || @"No Selection";
-
-        case CPNotApplicableMarker:     if ([options objectForKey:CPRaisesForNotApplicableKeysBindingOption])
-                                            [CPException raise:CPGenericException reason:@"can't transform non applicable key on: "+_source+" value: "+aValue];
-
-                                        return [options objectForKey:CPNotApplicablePlaceholderBindingOption] || @"Not Applicable";
-
-        case nil:
-        case undefined:                 return [options objectForKey:CPNullPlaceholderBindingOption] || nil;
-    }
+    if (aValue === undefined || aValue === nil)
+        aValue = [options objectForKey:CPNullPlaceholderBindingOption] || nil;
 
     return aValue;
 }
@@ -248,7 +266,7 @@ var CPBindingOperationAnd = 0,
     var exposedBindings = [],
         theClass = [self class];
 
-    while(theClass)
+    while (theClass)
     {
         var temp = [CPKeyValueBinding exposedBindingsForClass:theClass];
 
@@ -379,7 +397,7 @@ var invokeAction = function invokeAction(/*CPString*/targetKey, /*CPString*/argu
     var invocation = [CPInvocation invocationWithMethodSignature:[target methodSignatureForSelector:selector]];
     [invocation setSelector:selector];
 
-    var bindingName = argumentKey
+    var bindingName = argumentKey,
         count = 1;
 
     while (theBinding = [bindings objectForKey:bindingName])
@@ -447,3 +465,7 @@ CPValidatesImmediatelyBindingOption                 = @"CPValidatesImmediatelyBi
 CPValueTransformerNameBindingOption                 = @"CPValueTransformerNameBindingOption";
 CPValueTransformerBindingOption                     = @"CPValueTransformerBindingOption";
 
+CPIsControllerMarker = function(/*id*/anObject)
+{
+    return anObject === CPMultipleValuesMarker || anObject === CPNoSelectionMarker || anObject === CPNotApplicableMarker;
+}

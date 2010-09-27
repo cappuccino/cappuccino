@@ -184,6 +184,11 @@ var _CPimageAndTextViewFrameSizeChangedFlag         = 1 << 0,
     if (_imagePosition == anImagePosition)
         return;
 
+    // If the position was CPNoImage, there is an image now,
+    // so mark the flags accordingly so that the image will load.
+    if (_imagePosition == CPNoImage)
+        _flags |= _CPImageAndTextViewImageChangedFlag;
+
     _imagePosition = anImagePosition;
     _flags |= _CPImageAndTextViewImagePositionChangedFlag;
 
@@ -616,7 +621,8 @@ var _CPimageAndTextViewFrameSizeChangedFlag         = 1 << 0,
         }
         else if (_imagePosition === CPImageAbove)
         {
-            CPDOMDisplayServerSetStyleLeftTop(_DOMImageElement, NULL, FLOOR(centerX - imageWidth / 2.0), 0);
+            imageStyle.left = FLOOR(centerX - imageWidth / 2.0) + "px";
+            imageStyle.top = 0 + "px";
 
             textRect.origin.y += imageHeight + _imageOffset;
             textRect.size.height = size.height - imageHeight - _imageOffset;
@@ -636,7 +642,7 @@ var _CPimageAndTextViewFrameSizeChangedFlag         = 1 << 0,
 
             textRect.size.width -= imageWidth + _imageOffset;
         }
-        else if (_imagePosition === CPImageOnly)
+        else if (_imagePosition === CPImageOnly || _imagePosition == CPImageOverlaps)
         {
             imageStyle.top = FLOOR(centerY - imageHeight / 2.0) + "px";
             imageStyle.left = FLOOR(centerX - imageWidth / 2.0) + "px";

@@ -1396,12 +1396,31 @@ CPTexturedBackgroundWindowMask
 
         case CPKeyUp:               return [[self firstResponder] keyUp:anEvent];
 
-        case CPKeyDown:             [[self firstResponder] keyDown:anEvent];
+        case CPKeyDown:             if ([anEvent charactersIgnoringModifiers] === CPTabCharacter)
+                                    {
+                                        if ([anEvent modifierFlags] & CPShiftKeyMask)
+                                            [self selectPreviousKeyView:self];
+                                        else
+                                            [self selectNextKeyView:self];
+
+                                        return;
+                                    }
+                                    else if ([anEvent charactersIgnoringModifiers] === CPBackTabCharacter)
+                                        return [self selectPreviousKeyView:self];
+
+                                    [[self firstResponder] keyDown:anEvent];
 
                                     // Trigger the default button if needed
+                                    // FIXME: Is this only applicable in a sheet? See isse: #722.
                                     if (![self disableKeyEquivalentForDefaultButton])
-                                        if ([anEvent _triggersKeyEquivalent:[[self defaultButton] keyEquivalent] withModifierMask:[[self defaultButton] keyEquivalentModifierMask]])
+                                    {
+                                        var defaultButton = [self defaultButton],
+                                            keyEquivalent = [defaultButton keyEquivalent],
+                                            modifierMask = [defaultButton keyEquivalentModifierMask];
+
+                                        if ([anEvent _triggersKeyEquivalent:keyEquivalent withModifierMask:modifierMask])
                                             [[self defaultButton] performClick:self];
+                                    }
 
                                     return;
 
@@ -2298,13 +2317,89 @@ CPTexturedBackgroundWindowMask
     if ([anEvent _couldBeKeyEquivalent] && [self performKeyEquivalent:anEvent])
         return;
 
-    // Interpret the key events
-    [self interpretKeyEvents:[anEvent]];
+    // Apple's documentation is inconsistent with their behavior here. According to the docs
+    // an event going of the responder chain is passed to the input system as a last resort.
+    // However, the only methods I could get Cocoa to call automatically are 
+    // moveUp: moveDown: moveLeft: moveRight: pageUp: pageDown: and complete:
+    [self _processKeyboardUIKey:anEvent];
 }
 
-- (void)insertTab:(id)sender
+/*
+    @ignore
+    Interprets the key event for action messages and sends the action message down the responder chain
+    Cocoa only sends moveDown:, moveUp:, moveLeft:, moveRight:, pageUp:, pageDown: and complete: messages.
+    We deviate from this by sending (the default) scrollPageUp: scrollPageDown: for pageUp and pageDown keys.
+    @param anEvent the event to handle. 
+    @return YES if the key event was handled, NO if no responder handled the key event
+*/
+- (BOOL)_processKeyboardUIKey:(CPEvent)anEvent
 {
-    [self selectNextKeyView:nil];
+    var character = [anEvent charactersIgnoringModifiers],
+        uiKeys = [CPLeftArrowFunctionKey, CPRightArrowFunctionKey, CPUpArrowFunctionKey, CPDownArrowFunctionKey, CPPageUpFunctionKey, CPPageDownFunctionKey, CPEscapeFunctionKey];
+
+    if (![uiKeys containsObject:character])
+        return NO;
+
+    var selectors = [CPKeyBinding selectorsForKey:character modifierFlags:0];
+
+    if ([selectors count] <= 0)
+        return NO;
+
+    if (character !== CPEscapeFunctionKey)
+    {
+        var selector = [selectors objectAtIndex:0];
+        return [[self firstResponder] tryToPerform:selector with:self];
+    }
+    else
+    {
+        // Cocoa sends complete: for the escape key (in stead of the default cancelOperation:)
+        // This is also the only action that is not sent directly to the first responder, but through doCommandBySelector.
+        // The difference is that doCommandBySelector: will also send the action to the window and application delegates.
+        [[self firstResponder] doCommandBySelector:@selector(complete:)];
+    }
+}
+
+/*
+    @ignore
+    Interprets the key event for action messages and sends the action message down the responder chain
+    Cocoa only sends moveDown:, moveUp:, moveLeft:, moveRight:, pageUp:, pageDown: and complete: messages.
+    We deviate from this by sending (the default) scrollPageUp: scrollPageDown: for pageUp and pageDown keys.
+    @param anEvent the event to handle. 
+    @return YES if the key event was handled, NO if no responder handled the key event
+*/
+- (BOOL)_processKeyboardUIKey:(CPEvent)anEvent
+{
+    var character = [anEvent charactersIgnoringModifiers],
+        uiKeys = [
+            CPLeftArrowFunctionKey,
+            CPRightArrowFunctionKey,
+            CPUpArrowFunctionKey,
+            CPDownArrowFunctionKey,
+            CPPageUpFunctionKey,
+            CPPageDownFunctionKey,
+            CPEscapeFunctionKey
+        ];
+
+    if (![uiKeys containsObject:character])
+        return NO;
+
+    var selectors = [CPKeyBinding selectorsForKey:character modifierFlags:0];
+
+    if ([selectors count] <= 0)
+        return NO;
+
+    if (character !== CPEscapeFunctionKey)
+    {
+        var selector = [selectors objectAtIndex:0];
+        return [[self firstResponder] tryToPerform:selector with:self];
+    }
+    else
+    {
+        // Cocoa sends complete: for the escape key (in stead of the default cancelOperation:)
+        // This is also the only action that is not sent directly to the first responder, but through doCommandBySelector.
+        // The difference is that doCommandBySelector: will also send the action to the window and application delegates.
+        [[self firstResponder] doCommandBySelector:@selector(complete:)];
+    }
 }
 
 - (void)_dirtyKeyViewLoop

@@ -278,7 +278,7 @@ var CPColorWellColorKey     = "CPColorWellColorKey",
     if (self)
     {
         _active = NO;
-        _bordered = [aCoder decodeObjectForKey:CPColorWellBorderedKey];
+        _bordered = [aCoder decodeBoolForKey:CPColorWellBorderedKey];
         _color = [aCoder decodeObjectForKey:CPColorWellColorKey];
 
         [self drawBezelWithHighlight:NO];

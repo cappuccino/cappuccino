@@ -47,6 +47,7 @@ var _CPUndoGroupingPool         = [],
 {
     _CPUndoGrouping _parent;
     CPMutableArray  _invocations;
+    CPString        _actionName;
 }
 
 + (void)_poolUndoGrouping:(_CPUndoGrouping)anUndoGrouping
@@ -82,6 +83,7 @@ var _CPUndoGroupingPool         = [],
     {
         _parent = anUndoGrouping;
         _invocations = [];
+        _actionName = @"";
     }
 
     return self;
@@ -124,10 +126,21 @@ var _CPUndoGroupingPool         = [],
         [_invocations[index] invoke];
 }
 
+- (void)setActionName:(CPString)aName
+{
+    _actionName = aName;
+}
+
+- (CPString)actionName
+{
+    return _actionName;
+}
+
 @end
 
 var _CPUndoGroupingParentKey        = @"_CPUndoGroupingParentKey",
-    _CPUndoGroupingInvocationsKey   = @"_CPUndoGroupingInvocationsKey";
+    _CPUndoGroupingInvocationsKey   = @"_CPUndoGroupingInvocationsKey",
+    _CPUndoGroupingActionNameKey    = @"_CPUndoGroupingActionNameKey";
 
 @implementation _CPUndoGrouping (CPCoder)
 
@@ -139,6 +152,7 @@ var _CPUndoGroupingParentKey        = @"_CPUndoGroupingParentKey",
     {
         _parent = [aCoder decodeObjectForKey:_CPUndoGroupingParentKey];
         _invocations = [aCoder decodeObjectForKey:_CPUndoGroupingInvocationsKey];
+        _actionName = [aCoder decodeObjectForKey:_CPUndoGroupingActionNameKey];
     }
 
     return self;
@@ -148,6 +162,7 @@ var _CPUndoGroupingParentKey        = @"_CPUndoGroupingParentKey",
 {
     [aCoder encodeObject:_parent forKey:_CPUndoGroupingParentKey];
     [aCoder encodeObject:_invocations forKey:_CPUndoGroupingInvocationsKey];
+    [aCoder encodeObject:_actionName forKey:_CPUndoGroupingActionNameKey];
 }
 
 @end
@@ -177,7 +192,6 @@ var _CPUndoGroupingParentKey        = @"_CPUndoGroupingParentKey",
     int             _levelsOfUndo;
     id              _currentGrouping;
     int             _state;
-    CPString        _actionName;
 
     id              _preparedTarget;
     id              _undoManagerProxy;
@@ -349,7 +363,8 @@ if (_currentGroup == nil)
     [defaultCenter postNotificationName:CPUndoManagerWillUndoChangeNotification
                                  object:self];
 
-    var undoGrouping = _undoStack.pop();
+    var undoGrouping = _undoStack.pop(),
+        actionName = [undoGrouping actionName];
 
     _state = CPUndoManagerUndoing;
 
@@ -360,6 +375,8 @@ if (_currentGroup == nil)
     [_CPUndoGrouping _poolUndoGrouping:undoGrouping];
 
     _state = CPUndoManagerNormal;
+
+    [[_redoStack lastObject] setActionName:actionName];
 
     [defaultCenter postNotificationName:CPUndoManagerDidUndoChangeNotification
                                  object:self];
@@ -388,7 +405,8 @@ if (_currentGroup == nil)
                                  object:self];
 
     var oldUndoGrouping = _currentGrouping,
-        undoGrouping = _redoStack.pop();
+        undoGrouping = _redoStack.pop(),
+        actionName = [undoGrouping actionName];
 
     _currentGrouping = nil;
     _state = CPUndoManagerRedoing;
@@ -402,6 +420,7 @@ if (_currentGroup == nil)
     _currentGrouping = oldUndoGrouping;
     _state = CPUndoManagerNormal;
 
+    [[_undoStack lastObject] setActionName:actionName];
     [defaultCenter postNotificationName:CPUndoManagerDidRedoChangeNotification object:self];
 }
 
@@ -526,7 +545,7 @@ if (_currentGroup == nil)
 - (unsigned)groupingLevel
 {
     var grouping = _currentGrouping,
-        level = _currentGrouping != nil;
+        level = _currentGrouping ? 1 : 0;
 
     while (grouping = [grouping parent])
         ++level;
@@ -620,7 +639,8 @@ if (_currentGroup == nil)
 */
 - (void)setActionName:(CPString)anActionName
 {
-    _actionName = anActionName;
+    if (anActionName !== nil && _currentGrouping)
+        [_currentGrouping setActionName:anActionName];
 }
 
 /*!
@@ -631,7 +651,37 @@ if (_currentGroup == nil)
 */
 - (CPString)redoActionName
 {
-    return [self canRedo] ? _actionName : nil;
+    if (![self canRedo])
+        return nil;
+
+    return [[_redoStack lastObject] actionName];
+}
+
+/*!
+    Returns the full localized title of the actions to be displayed
+    as a menu item.  This method first invokes [-redoActionName] and
+    passes it to [-redoMenuTitleForUndoActionName:] and returns the result.
+*/
+- (CPString)redoMenuItemTitle
+{
+    return [self redoMenuTitleForUndoActionName:[self redoActionName]];
+}
+
+/*!
+    Returns the localized title of the actions to be displayed
+    as a menu item identified by actionName, by appending a
+    localized command string like @"Redo <localized(actionName)>".
+*/
+- (CPString)redoMenuTitleForUndoActionName:(CPString)anActionName
+{
+    // This handles the empty string ("") case as well.
+    if (anActionName || anActionName === 0)
+
+        // FIXME: The terms @"Redo" and @"Redo %@" should be localized.
+        // KEYWORDS: Localization
+        return @"Redo " + anActionName;
+
+    return @"Redo";
 }
 
 /*!
@@ -642,7 +692,37 @@ if (_currentGroup == nil)
 */
 - (CPString)undoActionName
 {
-    return [self canUndo] ? _actionName : nil;
+    if (![self canUndo])
+        return nil;
+
+    return [[_undoStack lastObject] actionName];
+}
+
+/*!
+    Returns the full localized title of the actions to be displayed
+    as a menu item.  This method first invokes [-undoActionName] and
+    passes it to [-undoMenuTitleForUndoActionName:] and returns the result.
+*/
+- (CPString)undoMenuItemTitle
+{
+    return [self undoMenuTitleForUndoActionName:[self undoActionName]];
+}
+
+/*!
+    Returns the localized title of the actions to be displayed
+    as a menu item identified by actionName, by appending a
+    localized command string like @"Undo <localized(actionName)>".
+*/
+- (CPString)undoMenuTitleForUndoActionName:(CPString)anActionName
+{
+    // This handles the empty string ("") case as well.
+    if (anActionName || anActionName === 0)
+
+        // FIXME: The terms @"Undo" and @"Undo %@" should be localized.
+        // KEYWORDS: Localization
+        return @"Undo " + anActionName;
+
+    return @"Undo";
 }
 
 // Working With Run Loops
@@ -740,13 +820,13 @@ if (_currentGroup == nil)
 @end
 
 var CPUndoManagerRedoStackKey       = @"CPUndoManagerRedoStackKey",
-    CPUndoManagerUndoStackKey       = @"CPUndoManagerUndoStackKey";
+    CPUndoManagerUndoStackKey       = @"CPUndoManagerUndoStackKey",
 
-    CPUndoManagerLevelsOfUndoKey    = @"CPUndoManagerLevelsOfUndoKey";
-    CPUndoManagerActionNameKey      = @"CPUndoManagerActionNameKey";
-    CPUndoManagerCurrentGroupingKey = @"CPUndoManagerCurrentGroupingKey";
+    CPUndoManagerLevelsOfUndoKey    = @"CPUndoManagerLevelsOfUndoKey",
+    CPUndoManagerActionNameKey      = @"CPUndoManagerActionNameKey",
+    CPUndoManagerCurrentGroupingKey = @"CPUndoManagerCurrentGroupingKey",
 
-    CPUndoManagerRunLoopModesKey    = @"CPUndoManagerRunLoopModesKey";
+    CPUndoManagerRunLoopModesKey    = @"CPUndoManagerRunLoopModesKey",
     CPUndoManagerGroupsByEventKey   = @"CPUndoManagerGroupsByEventKey";
 
 @implementation CPUndoManager (CPCoding)

@@ -47,7 +47,8 @@ var CPViewControllerCachedCibs;
 */
 @implementation CPViewController : CPResponder
 {
-    CPView          _view;
+    CPView          _view @accessors(property=view);
+    BOOL            _isLoading;
 
     id              _representedObject @accessors(property=representedObject);
     CPString        _title @accessors(property=title);
@@ -99,6 +100,8 @@ var CPViewControllerCachedCibs;
         _cibName = aCibNameOrNil;
         _cibBundle = aCibBundleOrNil || [CPBundle mainBundle];
         _cibExternalNameTable = anExternalNameTable || [CPDictionary dictionaryWithObject:self forKey:CPCibOwner];
+
+        _isLoading = NO;
     }
 
     return self;
@@ -111,16 +114,16 @@ var CPViewControllerCachedCibs;
     If you create your views manually, you must override this method and use it to create your view and assign it to the view property.
     The default implementation for programmatic views is to create a plain view. You can invoke super to utilize this view.
 
-    If you use Interface Builder to create your views and initialize the view controllerŃthat is, you initialize the view using the
-    initWithCibName:bundle: methodŃthen you must not override this method. The consequences risk shattering the space-time continuum.
+    If you use Interface Builder to create your views, you initialize the view using the
+    initWithCibName:bundle: method then you must not override this method. The consequences risk shattering the space-time continuum.
 
-    Note: The cib loading system is currently asynchronous.
+    Note: The cib loading system is currently synchronous.
 */
 - (void)loadView
 {
     if (_view)
         return;
-    
+
     // check if a cib is already cached for the current _cibName
     var cib = [CPViewControllerCachedCibs objectForKey:_cibName];
 
@@ -143,6 +146,8 @@ var CPViewControllerCachedCibs;
 {
     if (!_view)
     {
+        _isLoading = YES;
+
         var cibOwner = [_cibExternalNameTable objectForKey:CPCibOwner];
 
         if ([cibOwner respondsToSelector:@selector(viewControllerWillLoadCib:)])
@@ -162,6 +167,9 @@ var CPViewControllerCachedCibs;
 
         if ([cibOwner respondsToSelector:@selector(viewControllerDidLoadCib:)])
             [cibOwner viewControllerDidLoadCib:self];
+
+        _isLoading = NO;
+        [self viewDidLoad];
     }
 
     return _view;
@@ -171,7 +179,7 @@ var CPViewControllerCachedCibs;
 /*!
     This method is called after the view controller has loaded its associated views into memory. 
     This method is called regardless of whether the views were stored in a nib file or created programmatically in the loadView method. 
-    This method is most commonly used to perform additional initialization steps on views that are loaded from nib files.
+    This method is most commonly used to perform additional initialization steps on views that are loaded from cib files.
 */
 - (void)viewDidLoad
 {
@@ -192,7 +200,7 @@ var CPViewControllerCachedCibs;
     _view = aView;
 
     // Make sure the viewDidLoad method is called if the view is set directly
-    if (viewWasLoaded)
+    if (!_isLoading && viewWasLoaded)
         [self viewDidLoad];
 }
 

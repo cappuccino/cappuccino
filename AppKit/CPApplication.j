@@ -108,6 +108,8 @@ CPRunContinuesResponse  = -1002;
     CPImage                 _applicationIconImage;
 
     CPPanel                 _aboutPanel;
+
+    CPThemeBlend            _themeBlend @accessors(property=themeBlend);
 }
 
 /*!
@@ -1019,7 +1021,6 @@ CPRunContinuesResponse  = -1002;
 
 + (CPString)defaultThemeName
 {
-    // FIXME: don't hardcode
     return ([[CPBundle mainBundle] objectForInfoDictionaryKey:"CPDefaultTheme"] || @"Aristo");
 }
 
@@ -1035,7 +1036,8 @@ var _CPEventListenerMake = function(anEventMask, aCallback)
     return { _mask:anEventMask, _callback:aCallback };
 }
 
-var _CPRunModalLoop = function(anEvent)
+// Make this a global for use in CPPlatformWindow+DOM.j.
+_CPRunModalLoop = function(anEvent)
 {
     [CPApp setCallback:_CPRunModalLoop forNextEventMatchingMask:CPAnyEventMask untilDate:nil inMode:0 dequeue:NO];
 
@@ -1113,8 +1115,15 @@ var _CPAppBootstrapperActions = nil;
 
 + (BOOL)loadDefaultTheme
 {
-    var blend = [[CPThemeBlend alloc] initWithContentsOfURL:[[CPBundle bundleForClass:[CPApplication class]] pathForResource:[CPApplication defaultThemeName] + ".blend"]];
+    var defaultThemeName = [CPApplication defaultThemeName],
+        themeURL = nil;
 
+    if (defaultThemeName === @"Aristo")
+        themeURL = [[CPBundle bundleForClass:[CPApplication class]] pathForResource:defaultThemeName + @".blend"];
+    else
+        themeURL = [[CPBundle mainBundle] pathForResource:defaultThemeName + @".blend"];
+
+    var blend = [[CPThemeBlend alloc] initWithContentsOfURL:themeURL];
     [blend loadWithDelegate:self];
 
     return YES;
@@ -1122,6 +1131,7 @@ var _CPAppBootstrapperActions = nil;
 
 + (void)blendDidFinishLoading:(CPThemeBlend)aThemeBlend
 {
+    [[CPApplication sharedApplication] setThemeBlend:aThemeBlend];
     [CPTheme setDefaultTheme:[CPTheme themeNamed:[CPApplication defaultThemeName]]];
 
     [self performActions];
@@ -1219,7 +1229,7 @@ var _CPAppBootstrapperActions = nil;
 
 + (void)reset
 {
-	_CPAppBootstrapperActions = nil;
+    _CPAppBootstrapperActions = nil;
 }
 
 @end

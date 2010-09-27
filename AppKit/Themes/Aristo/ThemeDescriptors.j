@@ -330,7 +330,7 @@ var themedButtonValues = nil,
 
 + (CPButton)makeButton
 {
-    return [[CPButton alloc] initWithFrame:CGRectMake(0.0, 0.0, 60.0, 24.0)];
+    return [[CPButton alloc] initWithFrame:CGRectMake(0.0, 0.0, 60.0, CPButtonDefaultHeight)];
 }
 
 + (CPButton)button
@@ -410,10 +410,10 @@ var themedButtonValues = nil,
             [@"bezel-color",        defaultBezelColor,              CPThemeStateBordered | CPThemeStateDefault],
             [@"bezel-color",        defaultHighlightedBezelColor,   CPThemeStateBordered | CPThemeStateHighlighted | CPThemeStateDefault],
 
-            [@"min-size",           CGSizeMake(0.0, 24.0)],
-            [@"max-size",           CGSizeMake(-1.0, 24.0)],
+            [@"min-size",           CGSizeMake(0.0, CPButtonDefaultHeight)],
+            [@"max-size",           CGSizeMake(-1.0, CPButtonDefaultHeight)],
 
-            [@"imageOffset",        3.0]
+            [@"image-offset",       CPButtonImageOffset]
         ];
 
     [self registerThemeValues:themedButtonValues forView:button];
@@ -526,6 +526,27 @@ var themedButtonValues = nil,
     [button addItemWithTitle:@"item"];
 
     return button;
+}
+
++ (CPScrollView)themedScrollView
+{
+    var scrollView = [[CPScrollView alloc] initWithFrame:CGRectMake(0.0, 0.0, 200.0, 200.0)];
+
+    var borderColor = [CPColor colorWithWhite:0.0 alpha:0.2],
+        bottomCornerColor = PatternColor(@"scrollview-bottom-corner-color.png", 15.0, 15.0);
+
+    var themedScrollViewValues = 
+        [
+            [@"border-color", borderColor],
+            [@"bottom-corner-color", bottomCornerColor]
+        ];
+
+    [self registerThemeValues:themedScrollViewValues forView:scrollView];
+
+    [scrollView setAutohidesScrollers:YES];
+    [scrollView setBorderType:CPLineBorder];
+
+    return scrollView;
 }
 
 + (CPScroller)makeVerticalScroller
@@ -779,162 +800,94 @@ var themedButtonValues = nil,
 
 + (CPRadioButton)themedRadioButton
 {
-    var button = [[CPRadio alloc] initWithFrame:CGRectMake(0.0, 0.0, 120.0, 17.0)],
+    var button = [CPRadio radioWithTitle:@"Hello Friend!"],
 
-        bezelColor = PatternColor(
-            [
-                ["radio-bezel.png", 17.0, 17.0], nil, nil
-            ],
-            PatternIsHorizontal),
-
-        bezelColorSelected = PatternColor(
-            [
-                ["radio-bezel-selected.png", 17.0, 17.0], nil, nil
-            ],
-            PatternIsHorizontal),
-
-        bezelColorSelectedHighlighted = PatternColor(
-            [
-                ["radio-bezel-selected-highlighted.png", 17.0, 17.0], nil, nil
-            ],
-            PatternIsHorizontal),
-
-        bezelColorSelectedDisabled = PatternColor(
-            [
-                ["radio-bezel-selected-disabled.png", 17.0, 17.0], nil, nil
-            ],
-            PatternIsHorizontal),
-
-        bezelColorDisabled = PatternColor(
-            [
-                ["radio-bezel-disabled.png", 17.0, 17.0], nil, nil
-            ],
-            PatternIsHorizontal),
-
-        bezelColorHighlighted = PatternColor(
-            [
-                ["radio-bezel-highlighted.png", 17.0, 17.0], nil, nil
-            ],
-            PatternIsHorizontal),
+        imageNormal = PatternImage("radio-image.png", 17.0, 17.0),
+        imageSelected = PatternImage("radio-image-selected.png", 17.0, 17.0),
+        imageSelectedHighlighted = PatternImage("radio-image-selected-highlighted.png", 17.0, 17.0),
+        imageSelectedDisabled = PatternImage("radio-image-selected-disabled.png", 17.0, 17.0),
+        imageDisabled = PatternImage("radio-image-disabled.png", 17.0, 17.0),
+        imageHighlighted = PatternImage("radio-image-highlighted.png", 17.0, 17.0),
 
         themeValues =
         [
-            [@"alignment",      CPLeftTextAlignment,                CPThemeStateBordered],
-            [@"font",           [CPFont systemFontOfSize:12.0],     CPThemeStateBordered],
-            [@"content-inset",  CGInsetMake(0.0, 0.0, 0.0, 20.0),   CPThemeStateBordered],
-            [@"bezel-color",    bezelColor,                         CPThemeStateBordered],
-            [@"bezel-color",    bezelColorSelected,                 CPThemeStateBordered | CPThemeStateSelected],
-            [@"bezel-color",    bezelColorSelectedHighlighted,      CPThemeStateBordered | CPThemeStateSelected | CPThemeStateHighlighted],
-            [@"bezel-color",    bezelColorHighlighted,              CPThemeStateBordered | CPThemeStateHighlighted],
-            [@"bezel-color",    bezelColorDisabled,                 CPThemeStateBordered | CPThemeStateDisabled],
-            [@"bezel-color",    bezelColorSelectedDisabled,         CPThemeStateBordered | CPThemeStateSelected | CPThemeStateDisabled],
+            [@"alignment",      CPLeftTextAlignment,                CPThemeStateNormal],
+            [@"font",           [CPFont systemFontOfSize:12.0],     CPThemeStateNormal],
+            [@"content-inset",  CGInsetMake(0.0, 0.0, 0.0, 0.0),    CPThemeStateNormal],
+
+            [@"image",          imageNormal,                        CPThemeStateNormal],
+            [@"image",          imageSelected,                      CPThemeStateSelected],
+            [@"image",          imageSelectedHighlighted,           CPThemeStateSelected | CPThemeStateHighlighted],
+            [@"image",          imageHighlighted,                   CPThemeStateHighlighted],
+            [@"image",          imageDisabled,                      CPThemeStateDisabled],
+            [@"image",          imageSelectedDisabled,              CPThemeStateSelected | CPThemeStateDisabled],
+            [@"image-offset",   CPRadioImageOffset],
 
             [@"text-color",     [CPColor colorWithCalibratedWhite:79.0 / 255.0 alpha:1.0],  CPThemeStateDisabled],
 
-            [@"min-size",       CGSizeMake(0.0, 17.0)]
+            [@"min-size",       CGSizeMake(0.0, 17.0)],
+            [@"max-size",       CGSizeMake(-1.0, -1.0)]
         ];
 
     [self registerThemeValues:themeValues forView:button];
 
-    [button setTitle:@"Hello Friend!"];
-
     return button;
 }
 
-+ (CPRadioButton)themedCheckBoxButton
++ (CPCheckBox)themedCheckBoxButton
 {
-    var button = [[CPCheckBox alloc] initWithFrame:CGRectMake(0.0, 0.0, 120.0, 17.0)],
+    var button = [CPCheckBox checkBoxWithTitle:@"Another Option"],
 
-        bezelColor = PatternColor(
-            [
-                ["check-box-bezel.png", 15.0, 16.0], nil, nil
-            ],
-            PatternIsHorizontal),
-
-        bezelColorSelected = PatternColor(
-            [
-                ["check-box-bezel-selected.png", 15.0, 16.0], nil, nil
-            ],
-            PatternIsHorizontal),
-
-        bezelColorSelectedHighlighted = PatternColor(
-            [
-                ["check-box-bezel-selected-highlighted.png", 15.0, 16.0], nil, nil
-            ],
-            PatternIsHorizontal),
-
-        bezelColorSelectedDisabled = PatternColor(
-            [
-                ["check-box-bezel-selected-disabled.png", 15.0, 16.0], nil, nil
-            ],
-            PatternIsHorizontal),
-
-        bezelColorDisabled = PatternColor(
-            [
-                ["check-box-bezel-disabled.png", 15.0, 16.0], nil, nil
-            ],
-            PatternIsHorizontal),
-
-        bezelColorHighlighted = PatternColor(
-            [
-                ["check-box-bezel-highlighted.png", 15.0, 16.0], nil, nil
-            ],
-            PatternIsHorizontal),
+        imageNormal = PatternImage("check-box-image.png", 15.0, 16.0),
+        imageSelected = PatternImage("check-box-image-selected.png", 15.0, 16.0),
+        imageSelectedHighlighted = PatternImage("check-box-image-selected-highlighted.png", 15.0, 16.0),
+        imageSelectedDisabled = PatternImage("check-box-image-selected-disabled.png", 15.0, 16.0),
+        imageDisabled = PatternImage("check-box-image-disabled.png", 15.0, 16.0),
+        imageHighlighted = PatternImage("check-box-image-highlighted.png", 15.0, 16.0),
 
         themeValues =
         [
-            [@"alignment",      CPLeftTextAlignment,                CPThemeStateBordered],
-            [@"font",           [CPFont systemFontOfSize:12.0],     CPThemeStateBordered],
-            [@"content-inset",  CGInsetMake(0.0, 0.0, 0.0, 20.0),   CPThemeStateBordered],
-            [@"bezel-color",    bezelColor,                         CPThemeStateBordered],
-            [@"bezel-color",    bezelColorSelected,                 CPThemeStateBordered | CPThemeStateSelected],
-            [@"bezel-color",    bezelColorSelectedHighlighted,      CPThemeStateBordered | CPThemeStateSelected | CPThemeStateHighlighted],
-            [@"bezel-color",    bezelColorHighlighted,              CPThemeStateBordered | CPThemeStateHighlighted],
-            [@"bezel-color",    bezelColorDisabled,                 CPThemeStateBordered | CPThemeStateDisabled],
-            [@"bezel-color",    bezelColorSelectedDisabled,         CPThemeStateBordered | CPThemeStateSelected | CPThemeStateDisabled],
+            [@"alignment",      CPLeftTextAlignment,                CPThemeStateNormal],
+            [@"font",           [CPFont systemFontOfSize:12.0],     CPThemeStateNormal],
+            [@"content-inset",  CGInsetMake(0.0, 0.0, 0.0, 0.0),    CPThemeStateNormal],
+
+            [@"image",          imageNormal,                        CPThemeStateNormal],
+            [@"image",          imageSelected,                      CPThemeStateSelected],
+            [@"image",          imageSelectedHighlighted,           CPThemeStateSelected | CPThemeStateHighlighted],
+            [@"image",          imageHighlighted,                   CPThemeStateHighlighted],
+            [@"image",          imageDisabled,                      CPThemeStateDisabled],
+            [@"image",          imageSelectedDisabled,              CPThemeStateSelected | CPThemeStateDisabled],
+            [@"image-offset",   CPCheckBoxImageOffset],
 
             [@"text-color",     [CPColor colorWithCalibratedWhite:79.0 / 255.0 alpha:1.0],  CPThemeStateDisabled],
 
-            [@"min-size",       CGSizeMake(0.0, 17.0)]
+            [@"min-size",       CGSizeMake(0.0, 17.0)],
+            [@"max-size",       CGSizeMake(-1.0, -1.0)]
         ];
 
     [self registerThemeValues:themeValues forView:button];
 
-    [button setTitle:@"Another option"];
-
     return button;
 }
 
-+ (CPRadioButton)themedMixedCheckBoxButton
++ (CPCheckBox)themedMixedCheckBoxButton
 {
     var button = [self themedCheckBoxButton];
 
     [button setAllowsMixedState:YES];
     [button setState:CPMixedState];
 
-    var mixedSelectedColor = PatternColor(
-            [
-                ["check-box-bezel-mixed-highlighted.png", 15.0, 16.0], nil, nil
-            ],
-            PatternIsHorizontal),
-
-        mixedDisabledColor = PatternColor(
-            [
-                ["check-box-bezel-mixed-disabled.png", 15.0, 16.0], nil, nil
-            ],
-            PatternIsHorizontal),
-
-        mixedColor = PatternColor(
-            [
-                ["check-box-bezel-mixed.png", 15.0, 16.0], nil, nil
-            ],
-            PatternIsHorizontal),
+    var mixedHighlightedImage = PatternImage("check-box-image-mixed-highlighted.png", 15.0, 16.0),
+        mixedDisabledImage = PatternImage("check-box-image-mixed-disabled.png", 15.0, 16.0),
+        mixedImage = PatternImage("check-box-image-mixed.png", 15.0, 16.0),
 
         themeValues =
         [
-            [@"bezel-color",    mixedColor,         CPButtonStateMixed | CPThemeStateBordered],
-            [@"bezel-color",    mixedSelectedColor, CPButtonStateMixed | CPThemeStateBordered | CPThemeStateSelected],
-            [@"bezel-color",    mixedDisabledColor, CPButtonStateMixed | CPThemeStateBordered | CPThemeStateDisabled]
+            [@"image",          mixedImage,             CPButtonStateMixed],
+            [@"image",          mixedHighlightedImage,  CPButtonStateMixed | CPThemeStateHighlighted],
+            [@"image",          mixedDisabledImage,     CPButtonStateMixed | CPThemeStateDisabled],
+            [@"image-offset",   CPCheckBoxImageOffset,  CPButtonStateMixed],
+            [@"max-size",       CGSizeMake(-1.0, -1.0)]
         ];
 
     [self registerThemeValues:themeValues forView:button];
@@ -986,7 +939,7 @@ var themedButtonValues = nil,
         rightBezelColor = PatternColor("segmented-control-bezel-right.png", 4.0, 24.0),
         pushedCenterBezelColor = PatternColor("segmented-control-bezel-pushed-center.png", 1.0, 24.0),
         pushedLeftBezelColor = PatternColor("segmented-control-bezel-pushed-left.png", 4.0, 24.0),
-        pushedRightBezelColor = PatternColor("segmented-control-bezel-pushed-right.png", 4.0, 24.0);
+        pushedRightBezelColor = PatternColor("segmented-control-bezel-pushed-right.png", 4.0, 24.0),
         pushedHighlightedCenterBezelColor = PatternColor("segmented-control-bezel-pushed-highlighted-center.png", 1.0, 24.0),
         pushedHighlightedLeftBezelColor = PatternColor("segmented-control-bezel-pushed-highlighted-left.png", 4.0, 24.0),
         pushedHighlightedRightBezelColor = PatternColor("segmented-control-bezel-pushed-highlighted-right.png", 4.0, 24.0);
@@ -1118,13 +1071,13 @@ var themedButtonValues = nil,
     [
         [@"track-width", 5.0],
         [@"track-color", trackColor,            CPThemeStateVertical],
-        [@"track-color", trackDisabledColor,    CPThemeStateDisabled],
+        [@"track-color", trackDisabledColor,    CPThemeStateVertical | CPThemeStateDisabled],
 
         [@"knob-size",  CGSizeMake(23.0, 24.0)],
         [@"knob-color", knobColor],
         [@"knob-color", knobHighlightedColor,   CPThemeStateHighlighted],
         [@"knob-color", knobDisabledColor,      CPThemeStateDisabled]
-    ]
+    ];
 
     [self registerThemeValues:themedVerticalSliderValues forView:slider];
 
@@ -1145,7 +1098,7 @@ var themedButtonValues = nil,
     var slider = [self makeCircularSlider],
 
         trackColor = PatternColor("slider-circular-bezel.png", 34.0, 34.0),
-        trackDisabledColor = PatternColor("slider-circular-disabled-bezel.png", 34.0, 34.0)
+        trackDisabledColor = PatternColor("slider-circular-disabled-bezel.png", 34.0, 34.0),
         knobColor = PatternColor("slider-circular-knob.png", 5.0, 5.0),
         knobDisabledColor = PatternColor("slider-circular-disabled-knob.png", 5.0, 5.0),
         knobHighlightedColor = knobColor;
@@ -1271,9 +1224,11 @@ var themedButtonValues = nil,
 + (CPTableHeaderView)themedTableHeaderRow
 {
     var header = [[CPTableHeaderView alloc] initWithFrame:CGRectMake(0.0, 0.0, 100.0, 23.0)],
-        normal = PatternColor("tableview-headerview.png", 1.0, 23.0);
+        normal = PatternColor("tableview-headerview.png", 1.0, 23.0),
+        gridColor = [CPColor colorWithHexString:@"dce0e2"];
 
     [header setValue:normal forThemeAttribute:@"background-color"];
+    [header setValue:gridColor forThemeAttribute:@"divider-color"];
 
     return header;
 }
@@ -1333,6 +1288,27 @@ var themedButtonValues = nil,
     return view;
 }
 
++ (CPSplitView)themedSplitView
+{
+    var splitView = [[CPSplitView alloc] initWithFrame:CGRectMake(0.0, 0.0, 200.0, 200.0)],
+        leftView = [[CPView alloc] initWithFrame:CGRectMake(0.0, 0.0, 75.0, 150.0)],
+        rightView = [[CPView alloc] initWithFrame:CGRectMake(75.0, 0.0, 75.0, 150.0)];
+
+    [splitView addSubview:leftView];
+    [splitView addSubview:rightView];
+
+
+    var themedSplitViewValues = 
+        [
+            [@"divider-thickness", 10.0],
+            [@"pane-divider-thickness", 1.0]
+        ];
+
+    [self registerThemeValues:themedSplitViewValues forView:splitView];
+
+    return splitView;
+}
+
 + (CPAlert)themedAlert
 {
     var alert = [CPAlert new],
@@ -1347,17 +1323,17 @@ var themedButtonValues = nil,
 
     themedAlertValues =
     [
-        [@"size",		                    size],
-        [@"content-inset",		            inset],
-        [@"message-text-alignment",	        CPJustifiedTextAlignment],
-        [@"message-text-color",		        [CPColor blackColor]],
-        [@"message-text-font",		        messageFont],
-        [@"informative-text-alignment",	    CPJustifiedTextAlignment],
-        [@"informative-text-color",		    [CPColor blackColor]],
-        [@"informative-text-font",		    informativeFont],
+        [@"size",                           size],
+        [@"content-inset",                  inset],
+        [@"message-text-alignment",         CPJustifiedTextAlignment],
+        [@"message-text-color",             [CPColor blackColor]],
+        [@"message-text-font",              messageFont],
+        [@"informative-text-alignment",     CPJustifiedTextAlignment],
+        [@"informative-text-color",         [CPColor blackColor]],
+        [@"informative-text-font",          informativeFont],
         [@"image-offset",                   imageOffset],
-        [@"information-image",		        informationIcon],
-        [@"warning-image",		            warningIcon],
+        [@"information-image",              informationIcon],
+        [@"warning-image",                  warningIcon],
         [@"error-image",                    errorIcon]
     ];
 
@@ -1499,8 +1475,8 @@ var themedButtonValues = nil,
 
         hudSpecificValues =
         [
-            [@"message-text-color",		        [CPColor whiteColor]],
-            [@"informative-text-color",		    [CPColor whiteColor]],
+            [@"message-text-color",             [CPColor whiteColor]],
+            [@"informative-text-color",         [CPColor whiteColor]],
         ];
 
     [self registerThemeValues:hudSpecificValues forView:alert inherit:themedAlertValues];

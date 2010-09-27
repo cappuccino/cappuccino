@@ -113,6 +113,25 @@
     [self assert:[CPIndexSet indexSet] equals:[arrayController selectionIndexes] message:@"no objects left, selection should disappear"];
 }
 
+- (void)testSelectionWhenObjectsDisappear
+{
+    // If the selected object disappeares during a rearrange, the selection
+    // should update appropriately, even if preserve selection is off.
+    var arrayController = [self arrayController];
+    [arrayController setPreservesSelection:NO];
+
+    // Use a copy to make sure our original remains pristine.
+    [arrayController setSelectionIndexes:[CPIndexSet indexSetWithIndexesInRange:CPMakeRange(0, 3)]];
+
+    var newContent = [[self contentArray] copy];
+    [newContent removeObjectAtIndex:2];
+
+    [arrayController setContent:newContent];
+
+    [self assert:[CPIndexSet indexSetWithIndexesInRange:CPMakeRange(0, 2)] equals:[arrayController selectionIndexes]
+         message:@"last object cannot be selected"];
+}
+
 - (void)testContentBinding
 {
     [[self arrayController] bind:@"contentArray" toObject:self withKeyPath:@"contentArray" options:0];
@@ -224,6 +243,19 @@
     [self assert:"selectionIndexes" equals:observation.keyPath];
     [self assert:selection equals:observation.oldValue message:"old selected index should be 0 and 1"];
     [self assert:[CPIndexSet indexSetWithIndex:0] equals:observation.newValue message:"new selected index should be 0"];
+}
+
+- (void)testObservationDuringSetSelectionIndexes
+{
+    var arrayController = [self arrayController],
+        newContent = [self setupObservationFixture];
+
+    var newSelection = [CPIndexSet indexSetWithIndex:2];
+    [arrayController setSelectionIndexes:newSelection];
+
+    [self assertNotNull:[arrayController selection] message:@"a selection was made, selection proxy should be defined"];
+    [self assert:2 equals:[observations count] message:@"exactly 2 change notifications should be sent for new selection indexes"];
+    [self assert:newSelection equals:[arrayController selectionIndexes] message:@"selection was not set properly"];
 }
 
 - (void)observeValueForKeyPath:keyPath
