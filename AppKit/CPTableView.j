@@ -3371,7 +3371,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
         // We're not interested in the arrow keys if there are no rows.
         // Technically we should also not be interested if we can't scroll,
         // but Cocoa doesn't handle that situation either.
-        if ([self numberOfRows] === 0)
+        if ([self numberOfRows] !== 0)
         {
             if (character === CPUpArrowFunctionKey)
                 [self _moveSelectionUp:anEvent];
@@ -3391,13 +3391,12 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     [super keyDown:anEvent];
 }
 
-- (void)moveDown:(id)aSender
+- (void)_moveSelectionDown:(CPEvent)theEvent
 {
     if (_implementedDelegateMethods & CPTableViewDelegate_selectionShouldChangeInTableView_ &&
         ![_delegate selectionShouldChangeInTableView:self])
         return;
 
-    var theEvent = [CPApp currentEvent];
     if([[self selectedRowIndexes] count] > 0)
     {
         var extend = NO;
@@ -3438,13 +3437,12 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
         [self scrollRowToVisible:i];
 }
 
-- (void)moveUp:(id)aSender
+- (void)_moveSelectionUp:(CPEvent)theEvent
 {
     if (_implementedDelegateMethods & CPTableViewDelegate_selectionShouldChangeInTableView_ &&
         ![_delegate selectionShouldChangeInTableView:self])
         return;
 
-    var theEvent = [CPApp currentEvent];
     if([[self selectedRowIndexes] count] > 0)
     {
          var extend = NO;
