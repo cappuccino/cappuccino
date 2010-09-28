@@ -244,6 +244,8 @@ var HEIGHT_OF_SEGMENTED_CONTROL = 24;
 */
 - (void)selectTabViewItemAtIndex:(unsigned)anIndex
 {
+    var aTabViewItem = [items objectAtIndex:anIndex];
+
     if (anIndex === selectedIndex)
         return;
     
