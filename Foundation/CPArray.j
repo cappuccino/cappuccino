@@ -1344,7 +1344,7 @@ CPEnumerationReverse    = 1 << 1;
             {
                 A = self[j];
                 o = aFunction(A, B[i], aContext);
-                if (o == CPOrderedDescending || o == CPOrderedSame)
+                if (o >= 0)
                     self[k] = B[i++];
                 else
                 {
