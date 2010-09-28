@@ -282,10 +282,10 @@ NAMES_FOR_PARTS[CPScrollerKnob]             = @"knob";
         _partRects[CPScrollerDecrementLine] = _CGRectMake(0.0, 0.0, decrementLineSize.width, decrementLineSize.height);
         _partRects[CPScrollerIncrementLine] = _CGRectMake(0.0, height - incrementLineSize.height, incrementLineSize.width, incrementLineSize.height);
 
-        if(height < knobHeight + decrementLineSize.height + incrementLineSize.height + trackInset.top + trackInset.bottom)
+        if (height < knobHeight + decrementLineSize.height + incrementLineSize.height + trackInset.top + trackInset.bottom)
             _partRects[CPScrollerKnob] = _CGRectMakeZero();
 
-        if(height < decrementLineSize.height + incrementLineSize.height - 2)
+        if (height < decrementLineSize.height + incrementLineSize.height - 2)
         {
             _partRects[CPScrollerIncrementLine] = _CGRectMakeZero();
             _partRects[CPScrollerDecrementLine] = _CGRectMakeZero();
@@ -297,7 +297,7 @@ NAMES_FOR_PARTS[CPScrollerKnob]             = @"knob";
         var decrementLineSize = [self currentValueForThemeAttribute:"decrement-line-size"],
             incrementLineSize = [self currentValueForThemeAttribute:"increment-line-size"],
             effectiveDecrementLineWidth = decrementLineSize.width + trackInset.left,
-            effectiveIncrementLineWidth = incrementLineSize.width + trackInset.right;
+            effectiveIncrementLineWidth = incrementLineSize.width + trackInset.right,
             slotWidth = width - effectiveDecrementLineWidth - effectiveIncrementLineWidth,
             minimumKnobLength = [self currentValueForThemeAttribute:"minimum-knob-length"],
             knobWidth = MAX(minimumKnobLength, (slotWidth * _knobProportion)),
@@ -311,10 +311,10 @@ NAMES_FOR_PARTS[CPScrollerKnob]             = @"knob";
         _partRects[CPScrollerDecrementLine] = _CGRectMake(0.0, 0.0, decrementLineSize.width, decrementLineSize.height);
         _partRects[CPScrollerIncrementLine] = _CGRectMake(width - incrementLineSize.width, 0.0, incrementLineSize.width, incrementLineSize.height);
 
-        if(width < knobWidth + decrementLineSize.width + incrementLineSize.width + trackInset.left + trackInset.right)
+        if (width < knobWidth + decrementLineSize.width + incrementLineSize.width + trackInset.left + trackInset.right)
             _partRects[CPScrollerKnob] = _CGRectMakeZero();
 
-        if(width < decrementLineSize.width + incrementLineSize.width - 2)
+        if (width < decrementLineSize.width + incrementLineSize.width - 2)
         {
             _partRects[CPScrollerIncrementLine] = _CGRectMakeZero();
             _partRects[CPScrollerDecrementLine] = _CGRectMakeZero();
