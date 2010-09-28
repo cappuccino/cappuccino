@@ -78,7 +78,7 @@ CPGrooveBorder  = 3;
         _contentMargin = CGSizeMake(0.0, 0.0);
 
         _contentView = [[CPView alloc] initWithFrame:[self bounds]];
-        [_contentView setAutoresizingMask:CPViewWidthSizable|CPViewHeightSizable];
+        [_contentView setAutoresizingMask:CPViewWidthSizable | CPViewHeightSizable];
 
         [self setAutoresizesSubviews:YES];
         [self addSubview:_contentView];
@@ -189,7 +189,7 @@ CPGrooveBorder  = 3;
         return;
 
     [aView setFrame:CGRectInset([self bounds], _contentMargin.width + _borderWidth, _contentMargin.height + _borderWidth)];
-    [aView setAutoresizingMask:CPViewWidthSizable|CPViewHeightSizable];
+    [aView setAutoresizingMask:CPViewWidthSizable | CPViewHeightSizable];
     [self replaceSubview:_contentView with:aView];
 
     _contentView = aView;
@@ -202,7 +202,7 @@ CPGrooveBorder  = 3;
 
 - (void)setContentViewMargins:(CPSize)size
 {
-     if(size.width < 0 || size.height < 0)
+     if (size.width < 0 || size.height < 0)
          [CPException raise:CPGenericException reason:@"Margins must be positive"];
 
     _contentMargin = CGSizeMakeCopy(size);
@@ -343,7 +343,7 @@ var CPBoxTypeKey          = @"CPBoxTypeKey",
         _contentView   = [self subviews][0];
 
         [self setAutoresizesSubviews:YES];
-        [_contentView setAutoresizingMask:CPViewWidthSizable|CPViewHeightSizable];
+        [_contentView setAutoresizingMask:CPViewWidthSizable | CPViewHeightSizable];
     }
 
     return self;

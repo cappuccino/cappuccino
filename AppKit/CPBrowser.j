@@ -25,9 +25,9 @@
 @import "CPTableView.j"
 @import "CPScrollView.j"
 
-/*! 
+/*!
     @ingroup appkit
-    @class CPBrowser    
+    @class CPBrowser
 */
 
 @implementation CPBrowser : CPControl
@@ -64,14 +64,14 @@
 
 + (CPImage)branchImage
 {
-    return [[CPImage alloc] initWithContentsOfFile:[[CPBundle bundleForClass:[CPBrowser class]] 
+    return [[CPImage alloc] initWithContentsOfFile:[[CPBundle bundleForClass:[CPBrowser class]]
                                                     pathForResource:"browser-leaf.png"]
                                               size:CGSizeMake(9,9)];
 }
 
 + (CPImage)highlightedBranchImage
 {
-    return [[CPImage alloc] initWithContentsOfFile:[[CPBundle bundleForClass:[CPBrowser class]] 
+    return [[CPImage alloc] initWithContentsOfFile:[[CPBundle bundleForClass:[CPBrowser class]]
                                                     pathForResource:"browser-leaf-highlighted.png"]
                                               size:CGSizeMake(9,9)];
 }
@@ -103,11 +103,11 @@
 
         [_horizontalScrollView setHasVerticalScroller:NO];
         [_horizontalScrollView setAutohidesScrollers:YES];
-        [_horizontalScrollView setAutoresizingMask:CPViewWidthSizable|CPViewHeightSizable];
-        
+        [_horizontalScrollView setAutoresizingMask:CPViewWidthSizable | CPViewHeightSizable];
+
         _contentView = [[CPView alloc] initWithFrame:CGRectMake(0, 0, 0, CGRectGetHeight([self bounds]))];
         [_contentView setAutoresizingMask:CPViewHeightSizable];
-        
+
         [_horizontalScrollView setDocumentView:_contentView];
 
         [self addSubview:_horizontalScrollView];
@@ -129,7 +129,7 @@
 }
 
 - (void)setDelegate:(id)anObject
-{    
+{
     _delegate = anObject;
     _delegateSupportsImages = [_delegate respondsToSelector:@selector(browser:imageValueForItem:)];
 
@@ -167,12 +167,10 @@
     if (columnIndex >= _tableViews.length)
         return;
 
-    var oldValue = _tableViews.length - 1;
+    var oldValue = _tableViews.length - 1,
+        indexPlusOne = columnIndex + 1; // unloads all later columns.
 
-    // unloads all later columns.
-    var indexPlusOne = columnIndex + 1;
-
-    [[_tableViews.slice(indexPlusOne) valueForKey:"enclosingScrollView"] 
+    [[_tableViews.slice(indexPlusOne) valueForKey:"enclosingScrollView"]
       makeObjectsPerformSelector:@selector(removeFromSuperview)];
 
     _tableViews = _tableViews.slice(0, indexPlusOne);
@@ -196,10 +194,10 @@
         selectionIndexes = [lastColumn selectedRowIndexes];
 
     if (lastIndex >= 0 && [selectionIndexes count] > 1)
-        [CPException raise:CPInvalidArgumentException 
+        [CPException raise:CPInvalidArgumentException
                     reason:"Can't add column, column "+lastIndex+" has invalid selection."];
 
-    var index = lastIndex+1,
+    var index = lastIndex + 1,
         item = index === 0 ? _rootItem : [_tableDelegates[lastIndex] childAtIndex:[selectionIndexes firstIndex]];
 
     if (index > 0 && item && [self isLeafItem:item])
@@ -231,7 +229,7 @@
     [table setAction:@selector(_tableViewClicked:)];
     [table setDoubleAction:@selector(_tableViewDoubleClicked:)];
     [table setDraggingDestinationFeedbackStyle:CPTableViewDraggingDestinationFeedbackStyleRegular];
-    
+
     var scrollView = [[_CPBrowserScrollView alloc] initWithFrame:CGRectMakeZero()];
     [scrollView _setBrowser:self];
     [scrollView setDocumentView:table];
@@ -272,10 +270,10 @@
 
     [view setBranchImage:[[self class] branchImage]];
     [view setHighlightedBranchImage:[[self class] highlightedBranchImage]];
-    
+
     [column setDataView:view];
     [column setResizingMask:CPTableColumnNoResizing];
-    
+
     [aTableView addTableColumn:column];
 }
 
@@ -584,7 +582,7 @@
     if ([_delegate respondsToSelector:@selector(browser:selectionIndexesForProposedSelection:inColumn:)])
         indexSet = [_delegate browser:self selectionIndexesForProposedSelection:indexSet inColumn:column];
 
-    if ([_delegate respondsToSelector:@selector(browser:shouldSelectRowIndexes:inColumn:)] && 
+    if ([_delegate respondsToSelector:@selector(browser:shouldSelectRowIndexes:inColumn:)] &&
        ![_delegate browser:self shouldSelectRowIndexes:indexSet inColumn:column])
         return;
 
@@ -796,7 +794,7 @@ var _CPBrowserResizeControlBackgroundImage = nil;
 }
 
 - (void)moveLeft:(id)sender
-{    
+{
     var previousColumn = [_browser selectedColumn] - 1,
         selectedRow = [_browser selectedRowInColumn:previousColumn];
 
@@ -804,7 +802,7 @@ var _CPBrowserResizeControlBackgroundImage = nil;
 }
 
 - (void)moveRight:(id)sender
-{    
+{
     [_browser selectRow:0 inColumn:[_browser selectedColumn] + 1];
 }
 
@@ -921,9 +919,9 @@ var _CPBrowserResizeControlBackgroundImage = nil;
 {
     var imageView = [self layoutEphemeralSubviewNamed:@"image-view"
                                            positioned:CPWindowAbove
-                      relativeToEphemeralSubviewNamed:nil];
+                      relativeToEphemeralSubviewNamed:nil],
+        isHighlighted = [self themeState] & CPThemeStateSelectedDataView;
 
-    var isHighlighted = [self themeState] & CPThemeStateSelectedDataView;
     [imageView setImage: _isLeaf ? (isHighlighted ? _highlightedBranchImage : _branchImage) : nil];
     [imageView setImageScaling:CPScaleNone];
 }
