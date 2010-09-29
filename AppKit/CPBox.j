@@ -104,7 +104,7 @@ CPGrooveBorder  = 3;
     if (_borderType === aBorderType)
         return;
 
-    _borderType = value;
+    _borderType = aBorderType;
     [self setNeedsDisplay:YES];
 }
 
