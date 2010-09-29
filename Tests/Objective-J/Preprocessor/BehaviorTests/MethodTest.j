@@ -23,7 +23,7 @@
 {
     var product;
 
-    for (var i = 0, ii = arguments.length; i < ii; ++i)
+    for (var i = 2, ii = arguments.length; i < ii; ++i)
         product = product ? product * arguments[i] : arguments[i];
 
     return product;
