@@ -66,7 +66,7 @@ var _CPimageAndTextViewFrameSizeChangedFlag         = 1 << 0,
     CPImage                 _image;
     CPString                _text;
 
-    CGRect                  _textSize;
+    CGSize                  _textSize;
 
     unsigned                _flags;
 
@@ -107,7 +107,7 @@ var _CPimageAndTextViewFrameSizeChangedFlag         = 1 << 0,
             [self setImageScaling:CPScaleNone];
         }
 
-        _textSize = NULL;
+        _textSize = nil;
     }
 
     return self;
@@ -251,7 +251,7 @@ var _CPimageAndTextViewFrameSizeChangedFlag         = 1 << 0,
 
     _font = aFont;
     _flags |= _CPImageAndTextViewFontChangedFlag;
-    _textSize = NULL;
+    _textSize = nil;
 
     [self setNeedsLayout];
 }
@@ -345,7 +345,7 @@ var _CPimageAndTextViewFrameSizeChangedFlag         = 1 << 0,
     _text = text;
     _flags |= _CPImageAndTextViewTextChangedFlag;
 
-    _textSize = NULL;
+    _textSize = nil;
 
     [self setNeedsLayout];
 }
@@ -368,7 +368,7 @@ var _CPimageAndTextViewFrameSizeChangedFlag         = 1 << 0,
         {
             _DOMElement.removeChild(_DOMTextElement);
 
-            _DOMTextElement = NULL;
+            _DOMTextElement = nil;
 
             hasDOMTextElement = NO;
         }
@@ -406,7 +406,7 @@ var _CPimageAndTextViewFrameSizeChangedFlag         = 1 << 0,
         {
             _DOMElement.removeChild(_DOMTextShadowElement);
 
-            _DOMTextShadowElement = NULL;
+            _DOMTextShadowElement = nil;
 
             hasDOMTextShadowElement = NO;
         }
@@ -544,7 +544,7 @@ var _CPimageAndTextViewFrameSizeChangedFlag         = 1 << 0,
         {
             _DOMElement.removeChild(_DOMImageElement);
 
-            _DOMImageElement = NULL;
+            _DOMImageElement = nil;
 
             hasDOMImageElement = NO;
         }
