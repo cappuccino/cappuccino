@@ -342,7 +342,7 @@
     @param anObject The value to look for in the receiver.
     @return A new array containing the keys corresponding to all occurrences of anObject in the receiver. If no object matching anObject is found, returns an empty array.
 
-    Each object in the receiver is sent an isEqual: message to determine if it’s equal to anObject.
+    Each object in the receiver is sent an isEqual: message to determine if it's equal to anObject.
     If the check for isEqual fails a check is made to see if the two objects are the same object. This provides compatability for JSObjects.
 */
 - (CPArray)allKeysForObject:(id)anObject
