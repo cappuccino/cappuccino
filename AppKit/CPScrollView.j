@@ -232,7 +232,7 @@
 */
 - (void)reflectScrolledClipView:(CPClipView)aClipView
 {
-    if(_contentView !== aClipView)
+    if (_contentView !== aClipView)
         return;
 
     if (_recursionCount > 5)
@@ -697,7 +697,7 @@
 /*
     @ignore
 */
--(void)resizeSubviewsWithOldSize:(CGSize)aSize
+- (void)resizeSubviewsWithOldSize:(CGSize)aSize
 {
     [self reflectScrolledClipView:_contentView];
 }
@@ -844,7 +844,7 @@
 - (void)_drawGrayBezelInContext:(CGContext)context bounds:(CGRect)aRect
 {
     CGContextBeginPath(context);
-    CGContextSetStrokeColor(context, [CPColor colorWithWhite:142.0/255.0 alpha:1.0]);
+    CGContextSetStrokeColor(context, [CPColor colorWithWhite:142.0 / 255.0 alpha:1.0]);
 
     var y = _CGRectGetMinY(aRect) + 0.5;
 
@@ -853,19 +853,19 @@
     CGContextStrokePath(context);
 
     CGContextBeginPath(context);
-    CGContextSetStrokeColor(context, [CPColor colorWithWhite:192.0/255.0 alpha:1.0]);
+    CGContextSetStrokeColor(context, [CPColor colorWithWhite:192.0 / 255.0 alpha:1.0]);
     CGContextMoveToPoint(context, _CGRectGetMinX(aRect) + 1.0, y);
     CGContextAddLineToPoint(context, _CGRectGetMaxX(aRect) - 1.0, y);
     CGContextStrokePath(context);
 
     CGContextBeginPath(context);
-    CGContextSetStrokeColor(context, [CPColor colorWithWhite:142.0/255.0 alpha:1.0]);
+    CGContextSetStrokeColor(context, [CPColor colorWithWhite:142.0 / 255.0 alpha:1.0]);
     CGContextMoveToPoint(context, _CGRectGetMaxX(aRect) - 1.0, y);
     CGContextAddLineToPoint(context, _CGRectGetMaxX(aRect), y);
     CGContextStrokePath(context);
 
     CGContextBeginPath(context);
-    CGContextSetStrokeColor(context, [CPColor colorWithWhite:190.0/255.0 alpha:1.0]);
+    CGContextSetStrokeColor(context, [CPColor colorWithWhite:190.0 / 255.0 alpha:1.0]);
 
     var x = _CGRectGetMaxX(aRect) - 0.5;
 
@@ -886,7 +886,7 @@
 - (void)_drawGrooveInContext:(CGContext)context bounds:(CGRect)aRect
 {
     CGContextBeginPath(context);
-    CGContextSetStrokeColor(context, [CPColor colorWithWhite:159.0/255.0 alpha:1.0]);
+    CGContextSetStrokeColor(context, [CPColor colorWithWhite:159.0 / 255.0 alpha:1.0]);
 
     var y = _CGRectGetMinY(aRect) + 0.5;
 
@@ -920,7 +920,7 @@
     CGContextStrokeRect(context, _CGRectInset(rect, 0.5, 0.5));
 
     CGContextBeginPath(context);
-    CGContextSetStrokeColor(context, [CPColor colorWithWhite:192.0/255.0 alpha:1.0]);
+    CGContextSetStrokeColor(context, [CPColor colorWithWhite:192.0 / 255.0 alpha:1.0]);
 
     y = _CGRectGetMinY(aRect) + 2.5;
 
@@ -1059,7 +1059,7 @@ var CPScrollViewContentViewKey       = "CPScrollViewContentView",
         _cornerView             = [aCoder decodeObjectForKey:CPScrollViewCornerViewKey];
 
         // Do to the anything goes nature of decoding, our subviews may not exist yet, so layout at the end of the run loop when we're sure everything is in a correct state.
-        [[CPRunLoop currentRunLoop] performSelector:@selector(reflectScrolledClipView:) target:self argument:_contentView order:0 modes:[CPDefaultRunLoopMode]];
+        [[CPRunLoop currentRunLoop] performSelector:@selector(_updateCornerAndHeaderView) target:self argument:_contentView order:0 modes:[CPDefaultRunLoopMode]];
     }
 
     return self;
