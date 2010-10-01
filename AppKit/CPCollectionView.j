@@ -596,12 +596,28 @@
     {
         if (_allowsMultipleSelection && ([anEvent modifierFlags] & CPCommandKeyMask || [anEvent modifierFlags] & CPShiftKeyMask))
         {
-            var indexes = [_selectionIndexes copy];
+            if ([anEvent modifierFlags] & CPCommandKeyMask)
+            {
+                var indexes = [_selectionIndexes copy];
 
-            if ([indexes containsIndex:index])
-                [indexes removeIndex:index];
-            else
-                [indexes addIndex:index];
+                if ([indexes containsIndex:index])
+                    [indexes removeIndex:index];
+                else
+                    [indexes addIndex:index];
+            }
+            else if ([anEvent modifierFlags] & CPShiftKeyMask)
+            {
+                var firstSelectedIndex = [[self selectionIndexes] firstIndex],
+                    newSelectedRange = nil;
+
+                if (index < firstSelectedIndex)
+                    newSelectedRange = CPMakeRange(index, (firstSelectedIndex - index) + 1);
+                else
+                    newSelectedRange = CPMakeRange(firstSelectedIndex, (index - firstSelectedIndex) + 1);
+
+                indexes = [[self selectionIndexes] copy];
+                [indexes addIndexesInRange:newSelectedRange];
+            }
         }
         else
             indexes = [CPIndexSet indexSetWithIndex:index];
