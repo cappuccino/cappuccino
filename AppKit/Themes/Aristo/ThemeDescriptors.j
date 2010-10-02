@@ -535,7 +535,7 @@ var themedButtonValues = nil,
     var borderColor = [CPColor colorWithWhite:0.0 alpha:0.2],
         bottomCornerColor = PatternColor(@"scrollview-bottom-corner-color.png", 15.0, 15.0);
 
-    var themedScrollViewValues = 
+    var themedScrollViewValues =
         [
             [@"border-color", borderColor],
             [@"bottom-corner-color", bottomCornerColor]
@@ -1298,7 +1298,7 @@ var themedButtonValues = nil,
     [splitView addSubview:rightView];
 
 
-    var themedSplitViewValues = 
+    var themedSplitViewValues =
         [
             [@"divider-thickness", 10.0],
             [@"pane-divider-thickness", 1.0]
