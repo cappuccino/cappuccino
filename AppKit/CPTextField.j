@@ -792,10 +792,14 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 
 - (void)_setCurrentValueIsPlaceholder:(BOOL)isPlaceholder
 {
+    // The initial _currentValueIsPlaceholder is null so convert it to NO for comparison purposes.
+    if (!!_currentValueIsPlaceholder === isPlaceholder)
+        return;
+
     if (isPlaceholder)
     {
         // Save the original placeholder value so we can restore it later
-        // Only do this if the placeholder is not already overridden because the bindings logic might call this method 
+        // Only do this if the placeholder is not already overridden because the bindings logic might call this method
         // several times and we don't want the bindings placeholder to ever become the original placeholder
         if (!_currentValueIsPlaceholder)
             _originalPlaceholderString = [self placeholderString];
