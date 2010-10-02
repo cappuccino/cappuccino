@@ -195,6 +195,9 @@
     var textField = [[CPTextField alloc] initWithFrame:CGRectMakeZero()];
     [textField setPlaceholderString:@"cheese"];
 
+    // Establish a random binding.
+    [textField bind:@"hidden" toObject:self withKeyPath:@"FOO" options:nil];
+    [self assert:@"cheese" equals:[textField placeholderString] message:"placeholder should not be cleared when a binding is established"];
 
     content = [
         [BindingTester testerWithCheese:@"yellow"],
