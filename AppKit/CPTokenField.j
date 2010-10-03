@@ -629,17 +629,16 @@ var CPTokenFieldTableColumnIdentifier = @"CPTokenFieldTableColumnIdentifier";
 		{
             aDOMEvent = aDOMEvent || window.event;
 
-            var character = String.fromCharCode(aDOMEvent.keyCode || aDOMEvent.which);
+            var character = String.fromCharCode(aDOMEvent.keyCode || aDOMEvent.which),
+                owner = CPTokenFieldInputOwner;
 
-            if ([_tokenizingCharacterSet characterIsMember:character])
+            if ([[owner tokenizingCharacterSet] characterIsMember:character])
             {
                 if (aDOMEvent.preventDefault)
                     aDOMEvent.preventDefault();
                 if (aDOMEvent.stopPropagation)
                     aDOMEvent.stopPropagation();
                 aDOMEvent.cancelBubble = true;
-
-                var owner = CPTokenFieldInputOwner;
 
                 [owner _autocompleteWithDOMEvent:aDOMEvent];
                 [owner setNeedsLayout];
