@@ -806,9 +806,11 @@ var themedButtonValues = nil,
 
         overrides =
         [
-            [@"content-inset", CGInsetMake(7.0, 0.0, 7.0, 6.0)],
+            [@"content-inset", CGInsetMake(7.0, 0.0, 7.0, 0.0)],
             // Placeholder is displayed as regular text, not tokens; requires a different inset.
-            [@"content-inset", CGInsetMake(9.0, 7.0, 5.0, 8.0), CPTextFieldStatePlaceholder],
+            [@"content-inset", CGInsetMake(9.0, 0.0, 5.0, 2.0), CPTextFieldStatePlaceholder],
+            [@"content-inset", CGInsetMake(7.0, 5.0, 7.0, 6.0), CPThemeStateBezeled],
+            [@"content-inset", CGInsetMake(9.0, 7.0, 5.0, 8.0), CPThemeStateBezeled | CPTextFieldStatePlaceholder],
         ];
 
     [self registerThemeValues:overrides forView:tokenfield inherit:themedTextFieldValues];
