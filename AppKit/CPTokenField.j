@@ -111,6 +111,8 @@ var CPTokenFieldTableColumnIdentifier = @"CPTokenFieldTableColumnIdentifier";
 
 		[_autocompleteScrollView setDocumentView:_autocompleteView];
 
+        [self setBezeled:YES];
+
 		[self setObjectValue:[]];
 	}
 
@@ -965,8 +967,10 @@ var CPTokenFieldTableColumnIdentifier = @"CPTokenFieldTableColumnIdentifier";
 {
 	[super sizeToFit];
 
-	var size = [self bounds].size;
-	size.height = 24.0; // For now just hardcode this
+	var size = [self bounds].size,
+	    minSize = [self currentValueForThemeAttribute:@"min-size"];
+
+	size.height = minSize.height;
 	[self setFrameSize:size];
 }
 
@@ -983,9 +987,11 @@ var CPTokenFieldTableColumnIdentifier = @"CPTokenFieldTableColumnIdentifier";
 		[_deleteButton setTarget:self];
 		[_deleteButton setAction:@selector(_delete:)];
 
-		var frame = [bezelView frame];
+		var frame = [bezelView frame],
+		    buttonOffset = [_deleteButton currentValueForThemeAttribute:@"offset"],
+		    buttonSize = [_deleteButton currentValueForThemeAttribute:@"min-size"];
 
-		[_deleteButton setFrame:CPRectMake(CPRectGetMaxX(frame) - 12.0, CPRectGetMidY(frame) - 4.0, 9.0, 10.0)];
+		[_deleteButton setFrame:CPRectMake(CPRectGetMaxX(frame) - buttonOffset.x, CPRectGetMinY(frame) + buttonOffset.y, buttonSize.width, buttonSize.height)];
 	}
 }
 
@@ -1002,10 +1008,19 @@ var CPTokenFieldTableColumnIdentifier = @"CPTokenFieldTableColumnIdentifier";
 @end
 
 /*
-    This class left empty on purpose as a theming hook.
+    Theming hook.
 */
 @implementation _CPTokenFieldTokenCloseButton : CPButton
 {
+}
+
++ (id)themeAttributes
+{
+    var attributes = [CPButton themeAttributes];
+
+    [attributes setObject:CGPointMake(15, 5) forKey:@"offset"];
+
+    return attributes;
 }
 
 + (CPString)themeClass
