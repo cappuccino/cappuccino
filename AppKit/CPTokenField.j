@@ -27,40 +27,40 @@
 #if PLATFORM(DOM)
 
 var CPTokenFieldDOMInputElement = nil,
-	CPTokenFieldDOMPasswordInputElement = nil,
-	CPTokenFieldDOMStandardInputElement = nil,
-	CPTokenFieldInputOwner = nil,
-	CPTokenFieldTextDidChangeValue = nil,
-	CPTokenFieldInputResigning = NO,
-	CPTokenFieldInputDidBlur = NO,
-	CPTokenFieldInputIsActive = NO,
-	CPTokenFieldCachedSelectStartFunction = nil,
-	CPTokenFieldCachedDragFunction = nil,
-	CPTokenFieldFocusInput = NO;
+    CPTokenFieldDOMPasswordInputElement = nil,
+    CPTokenFieldDOMStandardInputElement = nil,
+    CPTokenFieldInputOwner = nil,
+    CPTokenFieldTextDidChangeValue = nil,
+    CPTokenFieldInputResigning = NO,
+    CPTokenFieldInputDidBlur = NO,
+    CPTokenFieldInputIsActive = NO,
+    CPTokenFieldCachedSelectStartFunction = nil,
+    CPTokenFieldCachedDragFunction = nil,
+    CPTokenFieldFocusInput = NO,
 
-	CPTokenFieldBlurFunction = nil,
-	CPTokenFieldKeyUpFunction = nil,
-	CPTokenFieldKeyPressFunction = nil,
-	CPTokenFieldKeyDownFunction = nil;
+    CPTokenFieldBlurFunction = nil,
+    CPTokenFieldKeyUpFunction = nil,
+    CPTokenFieldKeyPressFunction = nil,
+    CPTokenFieldKeyDownFunction = nil;
 
 #endif
 
-var CPThemeStateAutoCompleting = @"CPThemeStateAutoCompleting";
-var CPTokenFieldTableColumnIdentifier = @"CPTokenFieldTableColumnIdentifier";
+var CPThemeStateAutoCompleting = @"CPThemeStateAutoCompleting",
+    CPTokenFieldTableColumnIdentifier = @"CPTokenFieldTableColumnIdentifier";
 
 @implementation CPTokenField : CPTextField
 {
-	CPView				_autocompleteContainer;
-	CPScrollView		_autocompleteScrollView;
-	CPTableView			_autocompleteView;
-	CPTimeInterval		_completionDelay;
-	CPTimer				_showCompletionsTimer;
+    CPView              _autocompleteContainer;
+    CPScrollView        _autocompleteScrollView;
+    CPTableView         _autocompleteView;
+    CPTimeInterval      _completionDelay;
+    CPTimer             _showCompletionsTimer;
 
-	CPArray				_cachedCompletions;
+    CPArray             _cachedCompletions;
 
-	CPIndexSet			_selectedTokenIndexes;
+    CPIndexSet          _selectedTokenIndexes;
 
-	CPCharacterSet      _tokenizingCharacterSet @accessors(property=tokenizingCharacterSet);
+    CPCharacterSet      _tokenizingCharacterSet @accessors(property=tokenizingCharacterSet);
 }
 
 + (CPCharacterSet)defaultTokenizingCharacterSet
@@ -75,48 +75,48 @@ var CPTokenFieldTableColumnIdentifier = @"CPTokenFieldTableColumnIdentifier";
 
 - (id)initWithFrame:(CPRect)frame
 {
-	if (self = [super initWithFrame:frame])
-	{
-		_tokenIndex = 0;
-		_selectedTokenIndexes = [CPIndexSet indexSet];
+    if (self = [super initWithFrame:frame])
+    {
+        _tokenIndex = 0;
+        _selectedTokenIndexes = [CPIndexSet indexSet];
 
-		_cachedCompletions = [];
-		_completionDelay = [CPTokenField defaultCompletionDelay];
+        _cachedCompletions = [];
+        _completionDelay = [CPTokenField defaultCompletionDelay];
 
         _tokenizingCharacterSet = [[self class] defaultTokenizingCharacterSet];
 
-		_autocompleteContainer = [[CPView alloc] initWithFrame:CPRectMake(0.0, 0.0, frame.size.width, 92.0)];
-		[_autocompleteContainer setBackgroundColor:[_CPMenuWindow backgroundColorForBackgroundStyle:_CPMenuWindowPopUpBackgroundStyle]];
+        _autocompleteContainer = [[CPView alloc] initWithFrame:CPRectMake(0.0, 0.0, frame.size.width, 92.0)];
+        [_autocompleteContainer setBackgroundColor:[_CPMenuWindow backgroundColorForBackgroundStyle:_CPMenuWindowPopUpBackgroundStyle]];
 
-		_autocompleteScrollView = [[CPScrollView alloc] initWithFrame:CPRectMake(1.0, 1.0, frame.size.width - 2.0, 90.0)];
-		[_autocompleteScrollView setAutohidesScrollers:YES];
-		[_autocompleteScrollView setHasHorizontalScroller:NO];
-		[_autocompleteContainer addSubview:_autocompleteScrollView];
+        _autocompleteScrollView = [[CPScrollView alloc] initWithFrame:CPRectMake(1.0, 1.0, frame.size.width - 2.0, 90.0)];
+        [_autocompleteScrollView setAutohidesScrollers:YES];
+        [_autocompleteScrollView setHasHorizontalScroller:NO];
+        [_autocompleteContainer addSubview:_autocompleteScrollView];
 
-		_autocompleteView = [[CPTableView alloc] initWithFrame:CPRectMakeZero()];
+        _autocompleteView = [[CPTableView alloc] initWithFrame:CPRectMakeZero()];
 
-		var tableColumn = [[CPTableColumn alloc] initWithIdentifier:CPTokenFieldTableColumnIdentifier];
-		[tableColumn setResizingMask:CPTableColumnAutoresizingMask];
-		[_autocompleteView addTableColumn:tableColumn];
+        var tableColumn = [[CPTableColumn alloc] initWithIdentifier:CPTokenFieldTableColumnIdentifier];
+        [tableColumn setResizingMask:CPTableColumnAutoresizingMask];
+        [_autocompleteView addTableColumn:tableColumn];
 
-		[_autocompleteView setDataSource:self];
-		[_autocompleteView setDelegate:self];
-		[_autocompleteView setAllowsMultipleSelection:NO];
-		[_autocompleteView setHeaderView:nil];
-		[_autocompleteView setCornerView:nil];
-		[_autocompleteView setRowHeight:30.0];
-		[_autocompleteView setGridStyleMask:CPTableViewSolidHorizontalGridLineMask];
-		[_autocompleteView setBackgroundColor:[CPColor clearColor]];
-		[_autocompleteView setGridColor:[CPColor colorWithRed:242.0 / 255.0 green:243.0 / 255.0 blue:245.0 / 255.0 alpha:1.0]];
+        [_autocompleteView setDataSource:self];
+        [_autocompleteView setDelegate:self];
+        [_autocompleteView setAllowsMultipleSelection:NO];
+        [_autocompleteView setHeaderView:nil];
+        [_autocompleteView setCornerView:nil];
+        [_autocompleteView setRowHeight:30.0];
+        [_autocompleteView setGridStyleMask:CPTableViewSolidHorizontalGridLineMask];
+        [_autocompleteView setBackgroundColor:[CPColor clearColor]];
+        [_autocompleteView setGridColor:[CPColor colorWithRed:242.0 / 255.0 green:243.0 / 255.0 blue:245.0 / 255.0 alpha:1.0]];
 
-		[_autocompleteScrollView setDocumentView:_autocompleteView];
+        [_autocompleteScrollView setDocumentView:_autocompleteView];
 
         [self setBezeled:YES];
 
-		[self setObjectValue:[]];
-	}
+        [self setObjectValue:[]];
+    }
 
-	return self;
+    return self;
 }
 
 // ===============
@@ -124,62 +124,62 @@ var CPTokenFieldTableColumnIdentifier = @"CPTokenFieldTableColumnIdentifier";
 // ===============
 - (void)_retrieveCompletions
 {
-	var indexOfSelectedItem = 0;
+    var indexOfSelectedItem = 0;
 
-	_cachedCompletions = [self tokenField:self completionsForSubstring:[self _inputElement].value indexOfToken:_tokenIndex indexOfSelectedItem:indexOfSelectedItem];
+    _cachedCompletions = [self tokenField:self completionsForSubstring:[self _inputElement].value indexOfToken:_tokenIndex indexOfSelectedItem:indexOfSelectedItem];
 
-	[_autocompleteView selectRowIndexes:[CPIndexSet indexSetWithIndex:indexOfSelectedItem] byExtendingSelection:NO];
-	[_autocompleteView reloadData];
+    [_autocompleteView selectRowIndexes:[CPIndexSet indexSetWithIndex:indexOfSelectedItem] byExtendingSelection:NO];
+    [_autocompleteView reloadData];
 }
 
 - (void)_autocompleteWithDOMEvent:(JSObject)DOMEvent
 {
-	if (!_cachedCompletions || ![self hasThemeState:CPThemeStateAutoCompleting])
-		return;
+    if (!_cachedCompletions || ![self hasThemeState:CPThemeStateAutoCompleting])
+        return;
 
-	[self _hideCompletions];
+    [self _hideCompletions];
 
-	var token = _cachedCompletions[[_autocompleteView selectedRow]],
-		shouldRemoveLastObject = token !== @"" && [self _inputElement].value !== @"";
+    var token = _cachedCompletions[[_autocompleteView selectedRow]],
+        shouldRemoveLastObject = token !== @"" && [self _inputElement].value !== @"";
 
-	if (!token)
-		token = [self _inputElement].value;
+    if (!token)
+        token = [self _inputElement].value;
 
-	// Make sure the user typed an actual token to prevent the previous token from being emptied
-	// If the input area is empty, we want to fallback to the normal behaviour, resigning first responder or select the next or previous key view
-	if (!token || token === @"")
-	{
-		if (DOMEvent && DOMEvent.keyCode === CPTabKeyCode)
-		{
-			if (!DOMEvent.shiftKey)
-				[[self window] selectNextKeyView:self];
-			else
-				[[self window] selectPreviousKeyView:self];
-		}
-		else
-			[[self window] makeFirstResponder:nil];
-		return;
-	}
+    // Make sure the user typed an actual token to prevent the previous token from being emptied
+    // If the input area is empty, we want to fallback to the normal behaviour, resigning first responder or select the next or previous key view
+    if (!token || token === @"")
+    {
+        if (DOMEvent && DOMEvent.keyCode === CPTabKeyCode)
+        {
+            if (!DOMEvent.shiftKey)
+                [[self window] selectNextKeyView:self];
+            else
+                [[self window] selectPreviousKeyView:self];
+        }
+        else
+            [[self window] makeFirstResponder:nil];
+        return;
+    }
 
 
-	var objectValue = [self objectValue];
+    var objectValue = [self objectValue];
 
-	// Remove the uncompleted token and add the token string.
-	// Explicitely remove the last object because the array contains strings and removeObject uses isEqual to compare objects
-	if (shouldRemoveLastObject)
-	{
-		var indexOfLastObject = [objectValue count] - 1;
-		if (!indexOfLastObject)
-			indexOfLastObject = 0;
+    // Remove the uncompleted token and add the token string.
+    // Explicitely remove the last object because the array contains strings and removeObject uses isEqual to compare objects
+    if (shouldRemoveLastObject)
+    {
+        var indexOfLastObject = [objectValue count] - 1;
+        if (!indexOfLastObject)
+            indexOfLastObject = 0;
 
-		[objectValue removeObjectAtIndex:indexOfLastObject];
-	}
+        [objectValue removeObjectAtIndex:indexOfLastObject];
+    }
 
-	[objectValue addObject:token];
-	[self setObjectValue:objectValue];
+    [objectValue addObject:token];
+    [self setObjectValue:objectValue];
 
-	[self _inputElement].value = @"";
-	[self setNeedsLayout];
+    [self _inputElement].value = @"";
+    [self setNeedsLayout];
 
     var theBinding = [CPKeyValueBinding getBinding:CPValueBinding forObject:self];
 
@@ -189,54 +189,54 @@ var CPTokenFieldTableColumnIdentifier = @"CPTokenFieldTableColumnIdentifier";
 
 - (void)_autocomplete
 {
-	[self _autocompleteWithDOMEvent:nil];
+    [self _autocompleteWithDOMEvent:nil];
 }
 
 - (void)_selectToken:(_CPTokenFieldToken)token byExtendingSelection:(BOOL)extend
 {
-	var indexOfToken = [[self _tokens] indexOfObject:token];
+    var indexOfToken = [[self _tokens] indexOfObject:token];
 
-	if (extend)
-		[_selectedTokenIndexes addIndex:indexOfToken];
-	else
-		_selectedTokenIndexes = [CPIndexSet indexSetWithIndex:indexOfToken];
+    if (extend)
+        [_selectedTokenIndexes addIndex:indexOfToken];
+    else
+        _selectedTokenIndexes = [CPIndexSet indexSetWithIndex:indexOfToken];
 
-	[self setNeedsLayout];
+    [self setNeedsLayout];
 }
 
 - (void)_deselectToken:(_CPTokenFieldToken)token
 {
-	var indexOfToken = [[self _tokens] indexOfObject:token];
-	[_selectedTokenIndexes removeIndex:indexOfToken];
+    var indexOfToken = [[self _tokens] indexOfObject:token];
+    [_selectedTokenIndexes removeIndex:indexOfToken];
 
-	[self setNeedsLayout];
+    [self setNeedsLayout];
 }
 
 - (void)_deleteToken:(_CPTokenFieldToken)token
 {
-	var indexOfToken = [[self _tokens] indexOfObject:token],
-		objectValue = [self objectValue];
+    var indexOfToken = [[self _tokens] indexOfObject:token],
+        objectValue = [self objectValue];
 
-	[objectValue removeObjectAtIndex:indexOfToken];
-	[self setObjectValue:objectValue];
+    [objectValue removeObjectAtIndex:indexOfToken];
+    [self setObjectValue:objectValue];
 
     var theBinding = [CPKeyValueBinding getBinding:CPValueBinding forObject:self];
 
     if (theBinding)
         [theBinding reverseSetValueFor:@"objectValue"];
 
-	[self textDidChange:[CPNotification notificationWithName:CPControlTextDidChangeNotification object:self userInfo:nil]];
+    [self textDidChange:[CPNotification notificationWithName:CPControlTextDidChangeNotification object:self userInfo:nil]];
 }
 
 - (CPIndexSet)_selectedTokenIndexes
 {
-	return _selectedTokenIndexes;
+    return _selectedTokenIndexes;
 }
 
 - (void)_setSelectedTokenIndexes:(CPIndexSet)selectedIndexes
 {
-	_selectedTokenIndexes = selectedIndexes;
-	[self setNeedsLayout];
+    _selectedTokenIndexes = selectedIndexes;
+    [self setNeedsLayout];
 }
 
 // =============
@@ -245,121 +245,121 @@ var CPTokenFieldTableColumnIdentifier = @"CPTokenFieldTableColumnIdentifier";
 
 - (BOOL)becomeFirstResponder
 {
-	if (CPTokenFieldInputOwner && [CPTokenFieldInputOwner window] !== [self window])
-		[[CPTokenFieldInputOwner window] makeFirstResponder:nil];
+    if (CPTokenFieldInputOwner && [CPTokenFieldInputOwner window] !== [self window])
+        [[CPTokenFieldInputOwner window] makeFirstResponder:nil];
 
-	[self setThemeState:CPThemeStateEditing];
+    [self setThemeState:CPThemeStateEditing];
 
-	[self _updatePlaceholderState];
+    [self _updatePlaceholderState];
 
-	[self setNeedsLayout];
+    [self setNeedsLayout];
 
 #if PLATFORM(DOM)
 
-	var string = [self stringValue],
-		element = [self _inputElement];
+    var string = [self stringValue],
+        element = [self _inputElement];
 
-	element.value = nil;
-	element.style.color = [[self currentValueForThemeAttribute:@"text-color"] cssString];
-	element.style.font = [[self currentValueForThemeAttribute:@"font"] cssString];
-	element.style.zIndex = 1000;
+    element.value = nil;
+    element.style.color = [[self currentValueForThemeAttribute:@"text-color"] cssString];
+    element.style.font = [[self currentValueForThemeAttribute:@"font"] cssString];
+    element.style.zIndex = 1000;
 
-	switch ([self alignment])
-	{
-		case CPCenterTextAlignment: element.style.textAlign = "center";
-									break;
-		case CPRightTextAlignment:	element.style.textAlign = "right";
-									break;
-		default:					element.style.textAlign = "left";
-	}
+    switch ([self alignment])
+    {
+        case CPCenterTextAlignment: element.style.textAlign = "center";
+                                    break;
+        case CPRightTextAlignment:  element.style.textAlign = "right";
+                                    break;
+        default:                    element.style.textAlign = "left";
+    }
 
-	var contentRect = [self contentRectForBounds:[self bounds]];
+    var contentRect = [self contentRectForBounds:[self bounds]];
 
-	element.style.top = CGRectGetMinY(contentRect) + "px";
-	element.style.left = (CGRectGetMinX(contentRect) - 1) + "px"; // why -1?
-	element.style.width = CGRectGetWidth(contentRect) + "px";
-	element.style.height = CGRectGetHeight(contentRect) + "px";
+    element.style.top = CGRectGetMinY(contentRect) + "px";
+    element.style.left = (CGRectGetMinX(contentRect) - 1) + "px"; // why -1?
+    element.style.width = CGRectGetWidth(contentRect) + "px";
+    element.style.height = CGRectGetHeight(contentRect) + "px";
 
-	_DOMElement.appendChild(element);
+    _DOMElement.appendChild(element);
 
-	window.setTimeout(function()
-	{
-		element.focus();
-		CPTokenFieldInputOwner = self;
-	}, 0.0);
+    window.setTimeout(function()
+    {
+        element.focus();
+        CPTokenFieldInputOwner = self;
+    }, 0.0);
 
-	//post CPControlTextDidBeginEditingNotification
-	[self textDidBeginEditing:[CPNotification notificationWithName:CPControlTextDidBeginEditingNotification object:self userInfo:nil]];
+    //post CPControlTextDidBeginEditingNotification
+    [self textDidBeginEditing:[CPNotification notificationWithName:CPControlTextDidBeginEditingNotification object:self userInfo:nil]];
 
-	[[[self window] platformWindow] _propagateCurrentDOMEvent:YES];
+    [[[self window] platformWindow] _propagateCurrentDOMEvent:YES];
 
-	CPTokenFieldInputIsActive = YES;
+    CPTokenFieldInputIsActive = YES;
 
-	if (document.attachEvent)
-	{
-		CPTokenFieldCachedSelectStartFunction = document.body.onselectstart;
-		CPTokenFieldCachedDragFunction = document.body.ondrag;
+    if (document.attachEvent)
+    {
+        CPTokenFieldCachedSelectStartFunction = document.body.onselectstart;
+        CPTokenFieldCachedDragFunction = document.body.ondrag;
 
-		document.body.ondrag = function () {};
-		document.body.onselectstart = function () {};
-	}
+        document.body.ondrag = function () {};
+        document.body.onselectstart = function () {};
+    }
 
 #endif
 
-	return YES;
+    return YES;
 }
 
 - (BOOL)resignFirstResponder
 {
-	[self unsetThemeState:CPThemeStateEditing];
+    [self unsetThemeState:CPThemeStateEditing];
 
-	[self _updatePlaceholderState];
+    [self _updatePlaceholderState];
 
-	[self setNeedsLayout];
+    [self setNeedsLayout];
 
-	[self _autocomplete];
+    [self _autocomplete];
 
 #if PLATFORM(DOM)
 
-	var element = [self _inputElement];
+    var element = [self _inputElement];
 
-	CPTokenFieldInputResigning = YES;
-	element.blur();
+    CPTokenFieldInputResigning = YES;
+    element.blur();
 
-	if (!CPTokenFieldInputDidBlur)
-		CPTokenFieldBlurFunction();
+    if (!CPTokenFieldInputDidBlur)
+        CPTokenFieldBlurFunction();
 
-	CPTokenFieldInputDidBlur = NO;
-	CPTokenFieldInputResigning = NO;
+    CPTokenFieldInputDidBlur = NO;
+    CPTokenFieldInputResigning = NO;
 
-	if (element.parentNode == _DOMElement)
-		element.parentNode.removeChild(element);
+    if (element.parentNode == _DOMElement)
+        element.parentNode.removeChild(element);
 
-	CPTokenFieldInputIsActive = NO;
+    CPTokenFieldInputIsActive = NO;
 
-	if (document.attachEvent)
-	{
-		CPTokenFieldCachedSelectStartFunction = nil;
-		CPTokenFieldCachedDragFunction = nil;
+    if (document.attachEvent)
+    {
+        CPTokenFieldCachedSelectStartFunction = nil;
+        CPTokenFieldCachedDragFunction = nil;
 
-		document.body.ondrag = CPTokenFieldCachedDragFunction
-		document.body.onselectstart = CPTokenFieldCachedSelectStartFunction
-	}
+        document.body.ondrag = CPTokenFieldCachedDragFunction
+        document.body.onselectstart = CPTokenFieldCachedSelectStartFunction
+    }
 
 #endif
-	_selectedTokenIndexes = [CPIndexSet indexSet];
+    _selectedTokenIndexes = [CPIndexSet indexSet];
 
-	[self textDidEndEditing:[CPNotification notificationWithName:CPControlTextDidBeginEditingNotification object:self userInfo:nil]];
+    [self textDidEndEditing:[CPNotification notificationWithName:CPControlTextDidBeginEditingNotification object:self userInfo:nil]];
 
-	return YES;
+    return YES;
 }
 
 - (void)mouseDown:(CPEvent)anEvent
 {
-	_selectedTokenIndexes = [CPIndexSet indexSet];
+    _selectedTokenIndexes = [CPIndexSet indexSet];
 
-	// CPTokenFieldFocusInput = YES;
-	[super mouseDown:anEvent];
+    // CPTokenFieldFocusInput = YES;
+    [super mouseDown:anEvent];
 }
 
 // ===========
@@ -367,73 +367,73 @@ var CPTokenFieldTableColumnIdentifier = @"CPTokenFieldTableColumnIdentifier";
 // ===========
 - (CPArray)_tokens
 {
-	// We return super here because objectValue uses this method
-	// If we called self we would loop infinitly
-	return [super objectValue];
+    // We return super here because objectValue uses this method
+    // If we called self we would loop infinitly
+    return [super objectValue];
 }
 
 - (CPString)stringValue
 {
-	return [[self objectValue] componentsJoinedByString:@","];
+    return [[self objectValue] componentsJoinedByString:@","];
 }
 
 - (id)objectValue
 {
-	var objectValue = [];
-	for (var i = 0; i < [[self _tokens] count]; i++)
-	{
-		var token = [[self _tokens] objectAtIndex:i];
+    var objectValue = [];
+    for (var i = 0; i < [[self _tokens] count]; i++)
+    {
+        var token = [[self _tokens] objectAtIndex:i];
 
-		if ([token isKindOfClass:[CPString class]])
-			continue;
+        if ([token isKindOfClass:[CPString class]])
+            continue;
 
-		[objectValue addObject:[token stringValue]];
-	}
+        [objectValue addObject:[token stringValue]];
+    }
 
 #if PLATFORM(DOM)
 
-	if ([self _inputElement].value != @"")
-		[objectValue addObject:[self _inputElement].value];
+    if ([self _inputElement].value != @"")
+        [objectValue addObject:[self _inputElement].value];
 
 #endif
 
-	return objectValue;
+    return objectValue;
 }
 
 - (void)setObjectValue:(id)aValue
 {
-	if (aValue !== nil && ![aValue isKindOfClass:[CPArray class]])
-	{
-		[super setObjectValue:nil];
-		return;
-	}
+    if (aValue !== nil && ![aValue isKindOfClass:[CPArray class]])
+    {
+        [super setObjectValue:nil];
+        return;
+    }
 
     var superValue = [super objectValue];
-	if (aValue === superValue || [aValue isEqualToArray:superValue])
-	    return;
+    if (aValue === superValue || [aValue isEqualToArray:superValue])
+        return;
 
-	var objectValue = [aValue copy];
+    var objectValue = [aValue copy];
 
-	// Because we do not know for sure which tokens are removed we remove them all
-	for (var i = 0; i < [[self _tokens] count]; i++)
-		[[[self _tokens] objectAtIndex:i] removeFromSuperview];
+    // Because we do not know for sure which tokens are removed we remove them all
+    for (var i = 0; i < [[self _tokens] count]; i++)
+        [[[self _tokens] objectAtIndex:i] removeFromSuperview];
 
-	objectValue = [];
+    objectValue = [];
 
     if (aValue !== nil)
     {
-    	// Re-add all tokens
-    	for (var i = 0; i < [aValue count]; i++)
-    	{
-    		var token = [aValue objectAtIndex:i];
+        // Re-add all tokens
+        for (var i = 0; i < [aValue count]; i++)
+        {
+            var token = [aValue objectAtIndex:i],
+                tokenView = [[_CPTokenFieldToken alloc] init];
 
-    		var tokenView = [[_CPTokenFieldToken alloc] init]
-    		[tokenView setTokenField:self];
-    		[tokenView setStringValue:token];
-    		[objectValue addObject:tokenView];
+            [tokenView setTokenField:self];
+            [tokenView setStringValue:token];
+            [objectValue addObject:tokenView];
 
-    		[self addSubview:tokenView];
-    	}
+            [self addSubview:tokenView];
+        }
     }
 
     /*
@@ -446,7 +446,7 @@ var CPTokenFieldTableColumnIdentifier = @"CPTokenFieldTableColumnIdentifier";
     */
     _value = objectValue;
 
-	[self _updatePlaceholderState];
+    [self _updatePlaceholderState];
 
     [self setNeedsLayout];
     [self setNeedsDisplay:YES];
@@ -464,13 +464,13 @@ var CPTokenFieldTableColumnIdentifier = @"CPTokenFieldTableColumnIdentifier";
 // ========
 - (void)viewDidMoveToWindow
 {
-	[[[self window] contentView] addSubview:_autocompleteContainer];
-	_autocompleteContainer._DOMElement.style.zIndex = 1000; // Anything else doesn't seem to work
+    [[[self window] contentView] addSubview:_autocompleteContainer];
+    _autocompleteContainer._DOMElement.style.zIndex = 1000; // Anything else doesn't seem to work
 }
 
 - (void)removeFromSuperview
 {
-	[_autocompleteContainer removeFromSuperview];
+    [_autocompleteContainer removeFromSuperview];
 }
 
 // =============
@@ -479,154 +479,154 @@ var CPTokenFieldTableColumnIdentifier = @"CPTokenFieldTableColumnIdentifier";
 #if PLATFORM(DOM)
 - (DOMElement)_inputElement
 {
-	if (!CPTokenFieldDOMInputElement)
-	{
-		CPTokenFieldDOMInputElement = document.createElement("input");
-		CPTokenFieldDOMInputElement.style.position = "absolute";
-		CPTokenFieldDOMInputElement.style.border = "0px";
-		CPTokenFieldDOMInputElement.style.padding = "0px";
-		CPTokenFieldDOMInputElement.style.margin = "0px";
-		CPTokenFieldDOMInputElement.style.whiteSpace = "pre";
-		CPTokenFieldDOMInputElement.style.background = "transparent";
-		CPTokenFieldDOMInputElement.style.outline = "none";
+    if (!CPTokenFieldDOMInputElement)
+    {
+        CPTokenFieldDOMInputElement = document.createElement("input");
+        CPTokenFieldDOMInputElement.style.position = "absolute";
+        CPTokenFieldDOMInputElement.style.border = "0px";
+        CPTokenFieldDOMInputElement.style.padding = "0px";
+        CPTokenFieldDOMInputElement.style.margin = "0px";
+        CPTokenFieldDOMInputElement.style.whiteSpace = "pre";
+        CPTokenFieldDOMInputElement.style.background = "transparent";
+        CPTokenFieldDOMInputElement.style.outline = "none";
 
-		CPTokenFieldBlurFunction = function(anEvent)
-		{
-			if (CPTokenFieldInputOwner && CPTokenFieldInputOwner._DOMElement != CPTokenFieldDOMInputElement.parentNode)
-				return;
+        CPTokenFieldBlurFunction = function(anEvent)
+        {
+            if (CPTokenFieldInputOwner && CPTokenFieldInputOwner._DOMElement != CPTokenFieldDOMInputElement.parentNode)
+                return;
 
-			if (!CPTokenFieldInputResigning && !CPTokenFieldFocusInput)
-			{
-				[[CPTokenFieldInputOwner window] makeFirstResponder:nil];
-				return;
-			}
+            if (!CPTokenFieldInputResigning && !CPTokenFieldFocusInput)
+            {
+                [[CPTokenFieldInputOwner window] makeFirstResponder:nil];
+                return;
+            }
 
-			CPTokenFieldHandleBlur(anEvent, CPTokenFieldDOMInputElement);
-			CPTokenFieldInputDidBlur = YES;
+            CPTokenFieldHandleBlur(anEvent, CPTokenFieldDOMInputElement);
+            CPTokenFieldInputDidBlur = YES;
 
-			return true;
-		}
+            return true;
+        }
 
-		CPTokenFieldKeyDownFunction = function(aDOMEvent)
-		{
-			CPTokenFieldTextDidChangeValue = [CPTokenFieldInputOwner stringValue];
+        CPTokenFieldKeyDownFunction = function(aDOMEvent)
+        {
+            CPTokenFieldTextDidChangeValue = [CPTokenFieldInputOwner stringValue];
 
-			// CPTokenFieldKeyPressFunction(anEvent);
-			aDOMEvent = aDOMEvent || window.event
+            // CPTokenFieldKeyPressFunction(anEvent);
+            aDOMEvent = aDOMEvent || window.event
 
-			// Update the selectedIndex if necesary
-			var index = [[CPTokenFieldInputOwner autocompleteView] selectedRow];
+            // Update the selectedIndex if necesary
+            var index = [[CPTokenFieldInputOwner autocompleteView] selectedRow];
 
-			if (aDOMEvent.keyCode === CPUpArrowKeyCode)
-				index -= 1;
+            if (aDOMEvent.keyCode === CPUpArrowKeyCode)
+                index -= 1;
 
-			else if (aDOMEvent.keyCode === CPDownArrowKeyCode)
-				index += 1;
+            else if (aDOMEvent.keyCode === CPDownArrowKeyCode)
+                index += 1;
 
-			if (index > [[CPTokenFieldInputOwner autocompleteView] numberOfRows] - 1)
-				index = [[CPTokenFieldInputOwner autocompleteView] numberOfRows] - 1;
+            if (index > [[CPTokenFieldInputOwner autocompleteView] numberOfRows] - 1)
+                index = [[CPTokenFieldInputOwner autocompleteView] numberOfRows] - 1;
 
-			if (index < 0)
-				index = 0;
+            if (index < 0)
+                index = 0;
 
-			[[CPTokenFieldInputOwner autocompleteView] selectRowIndexes:[CPIndexSet indexSetWithIndex:index] byExtendingSelection:NO];
+            [[CPTokenFieldInputOwner autocompleteView] selectRowIndexes:[CPIndexSet indexSetWithIndex:index] byExtendingSelection:NO];
 
-			var autocompleteView = [CPTokenFieldInputOwner autocompleteView],
-				clipView = [[autocompleteView enclosingScrollView] contentView],
-				rowRect = [autocompleteView rectOfRow:index];
+            var autocompleteView = [CPTokenFieldInputOwner autocompleteView],
+                clipView = [[autocompleteView enclosingScrollView] contentView],
+                rowRect = [autocompleteView rectOfRow:index];
 
-			// The clipview's and row it's width are equal, this makes sure the clipview can contain the row rect
-			// rowRect.size.width -= 2.0;
-			if (rowRect && !CPRectContainsRect([clipView bounds], rowRect))
-				[clipView scrollToPoint:[autocompleteView rectOfRow:index].origin];
+            // The clipview's and row it's width are equal, this makes sure the clipview can contain the row rect
+            // rowRect.size.width -= 2.0;
+            if (rowRect && !CPRectContainsRect([clipView bounds], rowRect))
+                [clipView scrollToPoint:[autocompleteView rectOfRow:index].origin];
 
-			if (aDOMEvent.keyCode === CPReturnKeyCode || aDOMEvent.keyCode === CPTabKeyCode)
-			{
-				if (aDOMEvent.preventDefault)
-					aDOMEvent.preventDefault();
-				if (aDOMEvent.stopPropagation)
-					aDOMEvent.stopPropagation();
-				aDOMEvent.cancelBubble = true;
+            if (aDOMEvent.keyCode === CPReturnKeyCode || aDOMEvent.keyCode === CPTabKeyCode)
+            {
+                if (aDOMEvent.preventDefault)
+                    aDOMEvent.preventDefault();
+                if (aDOMEvent.stopPropagation)
+                    aDOMEvent.stopPropagation();
+                aDOMEvent.cancelBubble = true;
 
-				var owner = CPTokenFieldInputOwner;
+                var owner = CPTokenFieldInputOwner;
 
-				if (aDOMEvent && aDOMEvent.keyCode === CPReturnKeyCode)
-				{
-					// Only resign first responder if we weren't autocompleting
-					if (![CPTokenFieldInputOwner hasThemeState:CPThemeStateAutoCompleting])
-					{
-						[owner sendAction:[owner action] to:[owner target]];
-						[[owner window] makeFirstResponder:nil];
-					}
-				}
-				else if (aDOMEvent && aDOMEvent.keyCode === CPTabKeyCode)
-				{
-					// Only resign first responder if we weren't autocompleting
-					if (![CPTokenFieldInputOwner hasThemeState:CPThemeStateAutoCompleting])
-					{
-						if (!aDOMEvent.shiftKey)
-							[[owner window] selectNextKeyView:owner];
-						else
-							[[owner window] selectPreviousKeyView:owner];
-					}
-				}
+                if (aDOMEvent && aDOMEvent.keyCode === CPReturnKeyCode)
+                {
+                    // Only resign first responder if we weren't autocompleting
+                    if (![CPTokenFieldInputOwner hasThemeState:CPThemeStateAutoCompleting])
+                    {
+                        [owner sendAction:[owner action] to:[owner target]];
+                        [[owner window] makeFirstResponder:nil];
+                    }
+                }
+                else if (aDOMEvent && aDOMEvent.keyCode === CPTabKeyCode)
+                {
+                    // Only resign first responder if we weren't autocompleting
+                    if (![CPTokenFieldInputOwner hasThemeState:CPThemeStateAutoCompleting])
+                    {
+                        if (!aDOMEvent.shiftKey)
+                            [[owner window] selectNextKeyView:owner];
+                        else
+                            [[owner window] selectPreviousKeyView:owner];
+                    }
+                }
 
-				[owner _autocompleteWithDOMEvent:aDOMEvent];
-				[owner setNeedsLayout];
-			}
-			else if (aDOMEvent.keyCode === CPEscapeKeyCode)
-			{
-				[CPTokenFieldInputOwner _hideCompletions];
-			}
-			else if(aDOMEvent.keyCode === CPUpArrowKeyCode || aDOMEvent.keyCode === CPDownArrowKeyCode)
-			{
-				if (aDOMEvent.preventDefault)
-					aDOMEvent.preventDefault();
-				if (aDOMEvent.stopPropagation)
-					aDOMEvent.stopPropagation();
-				aDOMEvent.cancelBubble = true;
-			}
-			else if (aDOMEvent.keyCode === CPDeleteKeyCode)
-			{
-				// Highlight the previous token if backspace was pressed in an empty input element or re-show the completions view
-				if (CPTokenFieldDOMInputElement.value == @"")
-				{
-					[self _hideCompletions];
+                [owner _autocompleteWithDOMEvent:aDOMEvent];
+                [owner setNeedsLayout];
+            }
+            else if (aDOMEvent.keyCode === CPEscapeKeyCode)
+            {
+                [CPTokenFieldInputOwner _hideCompletions];
+            }
+            else if (aDOMEvent.keyCode === CPUpArrowKeyCode || aDOMEvent.keyCode === CPDownArrowKeyCode)
+            {
+                if (aDOMEvent.preventDefault)
+                    aDOMEvent.preventDefault();
+                if (aDOMEvent.stopPropagation)
+                    aDOMEvent.stopPropagation();
+                aDOMEvent.cancelBubble = true;
+            }
+            else if (aDOMEvent.keyCode === CPDeleteKeyCode)
+            {
+                // Highlight the previous token if backspace was pressed in an empty input element or re-show the completions view
+                if (CPTokenFieldDOMInputElement.value == @"")
+                {
+                    [self _hideCompletions];
 
-					// var tokenViews = [[CPTokenFieldInputOwner _tokens] lastObject];
-					var tokens = [CPTokenFieldInputOwner _tokens];
+                    // var tokenViews = [[CPTokenFieldInputOwner _tokens] lastObject];
+                    var tokens = [CPTokenFieldInputOwner _tokens];
 
-					if (![[CPTokenFieldInputOwner _selectedTokenIndexes] count])
-					{
-						var tokenView = [tokens lastObject];
-						[CPTokenFieldInputOwner _setSelectedTokenIndexes:[CPIndexSet indexSetWithIndex:[tokens indexOfObject:tokenView]]];
-						[CPTokenFieldInputOwner _hideCompletions];
-					}
-					else
-					{
-						var tokenViews = [tokens objectsAtIndexes:[CPTokenFieldInputOwner _selectedTokenIndexes]];
+                    if (![[CPTokenFieldInputOwner _selectedTokenIndexes] count])
+                    {
+                        var tokenView = [tokens lastObject];
+                        [CPTokenFieldInputOwner _setSelectedTokenIndexes:[CPIndexSet indexSetWithIndex:[tokens indexOfObject:tokenView]]];
+                        [CPTokenFieldInputOwner _hideCompletions];
+                    }
+                    else
+                    {
+                        var tokenViews = [tokens objectsAtIndexes:[CPTokenFieldInputOwner _selectedTokenIndexes]];
 
-						for (var i = 0; i < [tokenViews count]; i++)
-						{
-							var tokenView = [tokenViews objectAtIndex:i];
+                        for (var i = 0; i < [tokenViews count]; i++)
+                        {
+                            var tokenView = [tokenViews objectAtIndex:i];
 
-							[tokenView removeFromSuperview];
-							[[CPTokenFieldInputOwner _tokens] removeObject:tokenView];
-						}
+                            [tokenView removeFromSuperview];
+                            [[CPTokenFieldInputOwner _tokens] removeObject:tokenView];
+                        }
 
-						[CPTokenFieldInputOwner _setSelectedTokenIndexes:[CPIndexSet indexSet]];
-					}
+                        [CPTokenFieldInputOwner _setSelectedTokenIndexes:[CPIndexSet indexSet]];
+                    }
 
-				}
-				else
-					[CPTokenFieldInputOwner _delayedShowCompletions];
-			}
+                }
+                else
+                    [CPTokenFieldInputOwner _delayedShowCompletions];
+            }
 
-			return true;
-		}
+            return true;
+        }
 
-		CPTokenFieldKeyPressFunction = function(aDOMEvent)
-		{
+        CPTokenFieldKeyPressFunction = function(aDOMEvent)
+        {
             aDOMEvent = aDOMEvent || window.event;
 
             var character = String.fromCharCode(aDOMEvent.keyCode || aDOMEvent.which),
@@ -650,59 +650,59 @@ var CPTokenFieldTableColumnIdentifier = @"CPTokenFieldTableColumnIdentifier";
             _selectedTokenIndexes = [CPIndexSet indexSet];
 
             [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
-		}
+        }
 
-		CPTokenFieldKeyUpFunction = function()
-		{
-			if ([CPTokenFieldInputOwner stringValue] !== CPTokenFieldTextDidChangeValue)
-			{
-				CPTokenFieldTextDidChangeValue = [CPTokenFieldInputOwner stringValue];
-				[CPTokenFieldInputOwner textDidChange:[CPNotification notificationWithName:CPControlTextDidChangeNotification object:CPTokenFieldInputOwner userInfo:nil]];
-			}
+        CPTokenFieldKeyUpFunction = function()
+        {
+            if ([CPTokenFieldInputOwner stringValue] !== CPTokenFieldTextDidChangeValue)
+            {
+                CPTokenFieldTextDidChangeValue = [CPTokenFieldInputOwner stringValue];
+                [CPTokenFieldInputOwner textDidChange:[CPNotification notificationWithName:CPControlTextDidChangeNotification object:CPTokenFieldInputOwner userInfo:nil]];
+            }
 
-			[self setNeedsLayout];
+            [self setNeedsLayout];
 
-			[[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
-		}
+            [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
+        }
 
-		CPTokenFieldHandleBlur = function(anEvent)
-		{
-			var owner = CPTokenFieldInputOwner;
-			CPTokenFieldInputOwner = nil;
+        CPTokenFieldHandleBlur = function(anEvent)
+        {
+            var owner = CPTokenFieldInputOwner;
+            CPTokenFieldInputOwner = nil;
 
-			[[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
-		}
+            [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
+        }
 
-		if (document.attachEvent)
-		{
-			CPTokenFieldDOMInputElement.attachEvent("on" + CPDOMEventKeyUp, CPTokenFieldKeyUpFunction);
-			CPTokenFieldDOMInputElement.attachEvent("on" + CPDOMEventKeyDown, CPTokenFieldKeyDownFunction);
-			CPTokenFieldDOMInputElement.attachEvent("on" + CPDOMEventKeyPress, CPTokenFieldKeyPressFunction);
-		}
-		else
-		{
-			CPTokenFieldDOMInputElement.addEventListener(CPDOMEventKeyUp, CPTokenFieldKeyUpFunction, NO);
-			CPTokenFieldDOMInputElement.addEventListener(CPDOMEventKeyDown, CPTokenFieldKeyDownFunction, NO);
-			CPTokenFieldDOMInputElement.addEventListener(CPDOMEventKeyPress, CPTokenFieldKeyPressFunction, NO);
-		}
+        if (document.attachEvent)
+        {
+            CPTokenFieldDOMInputElement.attachEvent("on" + CPDOMEventKeyUp, CPTokenFieldKeyUpFunction);
+            CPTokenFieldDOMInputElement.attachEvent("on" + CPDOMEventKeyDown, CPTokenFieldKeyDownFunction);
+            CPTokenFieldDOMInputElement.attachEvent("on" + CPDOMEventKeyPress, CPTokenFieldKeyPressFunction);
+        }
+        else
+        {
+            CPTokenFieldDOMInputElement.addEventListener(CPDOMEventKeyUp, CPTokenFieldKeyUpFunction, NO);
+            CPTokenFieldDOMInputElement.addEventListener(CPDOMEventKeyDown, CPTokenFieldKeyDownFunction, NO);
+            CPTokenFieldDOMInputElement.addEventListener(CPDOMEventKeyPress, CPTokenFieldKeyPressFunction, NO);
+        }
 
-		//FIXME make this not onblur
-		CPTokenFieldDOMInputElement.onblur = CPTokenFieldBlurFunction;
+        //FIXME make this not onblur
+        CPTokenFieldDOMInputElement.onblur = CPTokenFieldBlurFunction;
 
-		CPTokenFieldDOMStandardInputElement = CPTokenFieldDOMInputElement;
-	}
+        CPTokenFieldDOMStandardInputElement = CPTokenFieldDOMInputElement;
+    }
 
-	if (CPFeatureIsCompatible(CPInputTypeCanBeChangedFeature))
-	{
-		if ([CPTokenFieldInputOwner isSecure])
-			CPTokenFieldDOMInputElement.type = "password";
-		else
-			CPTokenFieldDOMInputElement.type = "text";
+    if (CPFeatureIsCompatible(CPInputTypeCanBeChangedFeature))
+    {
+        if ([CPTokenFieldInputOwner isSecure])
+            CPTokenFieldDOMInputElement.type = "password";
+        else
+            CPTokenFieldDOMInputElement.type = "text";
 
-		return CPTokenFieldDOMInputElement;
-	}
+        return CPTokenFieldDOMInputElement;
+    }
 
-	return CPTokenFieldDOMInputElement;
+    return CPTokenFieldDOMInputElement;
 }
 #endif
 
@@ -715,17 +715,17 @@ var CPTokenFieldTableColumnIdentifier = @"CPTokenFieldTableColumnIdentifier";
 // ====================
 - (void)setCompletionDelay:(CPTimeInterval)delay
 {
-	_completionDelay = delay;
+    _completionDelay = delay;
 }
 
 - (NSTimeInterval)completionDelay
 {
-	return _completionDelay;
+    return _completionDelay;
 }
 
 + (NSTimeInterval)defaultCompletionDelay
 {
-	return 0.5;
+    return 0.5;
 }
 
 // ===========================
@@ -733,32 +733,32 @@ var CPTokenFieldTableColumnIdentifier = @"CPTokenFieldTableColumnIdentifier";
 // ===========================
 - (void)_showCompletions:(CPTimer)timer
 {
-	[self _retrieveCompletions]
-	[self setThemeState:CPThemeStateAutoCompleting];
+    [self _retrieveCompletions]
+    [self setThemeState:CPThemeStateAutoCompleting];
 
-	[self setNeedsLayout];
+    [self setNeedsLayout];
 }
 
 - (void)_delayedShowCompletions
 {
-	_showCompletionsTimer = [CPTimer scheduledTimerWithTimeInterval:[self completionDelay] target:self
-														   selector:@selector(_showCompletions:) userInfo:nil repeats:NO];
+    _showCompletionsTimer = [CPTimer scheduledTimerWithTimeInterval:[self completionDelay] target:self
+                                                           selector:@selector(_showCompletions:) userInfo:nil repeats:NO];
 }
 
 - (void)_cancelShowCompletions
 {
-	if ([_showCompletionsTimer isValid])
-	{
-		[_showCompletionsTimer invalidate];
-	}
+    if ([_showCompletionsTimer isValid])
+    {
+        [_showCompletionsTimer invalidate];
+    }
 }
 
 - (void)_hideCompletions
 {
-	[self _cancelShowCompletions];
+    [self _cancelShowCompletions];
 
-	[self unsetThemeState:CPThemeStateAutoCompleting];
-	[self setNeedsLayout];
+    [self unsetThemeState:CPThemeStateAutoCompleting];
+    [self setNeedsLayout];
 }
 
 
@@ -771,87 +771,87 @@ var CPTokenFieldTableColumnIdentifier = @"CPTokenFieldTableColumnIdentifier";
 // ==========
 - (void)layoutSubviews
 {
-	[super layoutSubviews];
+    [super layoutSubviews];
 
-	var frame = [self frame];
+    var frame = [self frame],
 
-	var contentView = [self layoutEphemeralSubviewNamed:@"content-view"
+        contentView = [self layoutEphemeralSubviewNamed:@"content-view"
                                              positioned:CPWindowAbove
                         relativeToEphemeralSubviewNamed:@"bezel-view"];
 
-	if (contentView)
-		[contentView setHidden:[self stringValue] !== @""];
+    if (contentView)
+        [contentView setHidden:[self stringValue] !== @""];
 
-	// Correctly size the tableview
-	// FIXME Horizontal scrolling will not work because we are not actually looking at the content to set the width for the table column
-	[[_autocompleteView tableColumnWithIdentifier:CPTokenFieldTableColumnIdentifier] setWidth:[[_autocompleteScrollView contentView] frame].size.width];
+    // Correctly size the tableview
+    // FIXME Horizontal scrolling will not work because we are not actually looking at the content to set the width for the table column
+    [[_autocompleteView tableColumnWithIdentifier:CPTokenFieldTableColumnIdentifier] setWidth:[[_autocompleteScrollView contentView] frame].size.width];
 
-	if ([self hasThemeState:CPThemeStateAutoCompleting] && [_cachedCompletions count])
-	{
-		// Manually sizeToFit because CPTableView's sizeToFit doesn't work properly
-		[_autocompleteContainer setHidden:NO];
-		var frameOrigin = [self convertPoint:[self bounds].origin toView:[_autocompleteContainer superview]];
-		[_autocompleteContainer setFrameOrigin:CPPointMake(frameOrigin.x, frameOrigin.y + frame.size.height)];
-		[_autocompleteContainer setFrameSize:CPSizeMake(CPRectGetWidth([self bounds]), 92.0)];
-		[_autocompleteScrollView setFrameSize:CPSizeMake([_autocompleteContainer frame].size.width - 2.0, 90.0)];
-	}
-	else
-		[_autocompleteContainer setHidden:YES];
+    if ([self hasThemeState:CPThemeStateAutoCompleting] && [_cachedCompletions count])
+    {
+        // Manually sizeToFit because CPTableView's sizeToFit doesn't work properly
+        [_autocompleteContainer setHidden:NO];
+        var frameOrigin = [self convertPoint:[self bounds].origin toView:[_autocompleteContainer superview]];
+        [_autocompleteContainer setFrameOrigin:CPPointMake(frameOrigin.x, frameOrigin.y + frame.size.height)];
+        [_autocompleteContainer setFrameSize:CPSizeMake(CPRectGetWidth([self bounds]), 92.0)];
+        [_autocompleteScrollView setFrameSize:CPSizeMake([_autocompleteContainer frame].size.width - 2.0, 90.0)];
+    }
+    else
+        [_autocompleteContainer setHidden:YES];
 
-	// Add every token as a seperate view
-	var contentRect = [self contentRectForBounds:[self bounds]];
-		contentOrigin = contentRect.origin,
-		contentSize = contentRect.size,
-		offset = CPPointMake(contentOrigin.x, contentOrigin.y),
-		spaceBetweenTokens = CPSizeMake(2.0, 2.0);
+    // Add every token as a seperate view
+    var contentRect = [self contentRectForBounds:[self bounds]],
+        contentOrigin = contentRect.origin,
+        contentSize = contentRect.size,
+        offset = CPPointMake(contentOrigin.x, contentOrigin.y),
+        spaceBetweenTokens = CPSizeMake(2.0, 2.0);
 
-	// Hack to make sure we are handling with an array
-	if (![[self _tokens] isKindOfClass:[CPArray class]])
-		return;
+    // Hack to make sure we are handling with an array
+    if (![[self _tokens] isKindOfClass:[CPArray class]])
+        return;
 
-	for (var i = 0; i < [[self _tokens] count]; i++)
-	{
-		var tokenView = [[self _tokens] objectAtIndex:i];
+    for (var i = 0; i < [[self _tokens] count]; i++)
+    {
+        var tokenView = [[self _tokens] objectAtIndex:i];
 
-		// Make sure we are only changing completed tokens
-		if ([tokenView isKindOfClass:[CPString class]])
-			continue;
+        // Make sure we are only changing completed tokens
+        if ([tokenView isKindOfClass:[CPString class]])
+            continue;
 
-		[tokenView setHighlighted:[_selectedTokenIndexes containsIndex:i]];
-		[tokenView sizeToFit];
+        [tokenView setHighlighted:[_selectedTokenIndexes containsIndex:i]];
+        [tokenView sizeToFit];
 
-		// Increase the token fields height if the token view is outside of the bounds
-		var size = [self bounds].size,
-			tokenViewSize = [tokenView bounds].size;
+        // Increase the token fields height if the token view is outside of the bounds
+        var size = [self bounds].size,
+            tokenViewSize = [tokenView bounds].size;
 
-		if (contentSize.width < offset.x + tokenViewSize.width)
-		{
-			// Reset the x coordinate to the beginnning of the field
-			offset.x = contentOrigin.x;
+        if (contentSize.width < offset.x + tokenViewSize.width)
+        {
+            // Reset the x coordinate to the beginnning of the field
+            offset.x = contentOrigin.x;
 
-			// Increase the y offset to fall below the current tokens
-			offset.y += tokenViewSize.height + spaceBetweenTokens.height;
+            // Increase the y offset to fall below the current tokens
+            offset.y += tokenViewSize.height + spaceBetweenTokens.height;
 
-			if (offset.y + tokenViewSize.height > contentSize.height)
-			{
-				size.height += offset.y + tokenViewSize.height;
-				[self setFrameSize:size];
-			}
-		}
+            if (offset.y + tokenViewSize.height > contentSize.height)
+            {
+                size.height += offset.y + tokenViewSize.height;
+                [self setFrameSize:size];
+            }
+        }
 
-		[tokenView setFrameOrigin:offset];
-		offset.x += [tokenView bounds].size.width + spaceBetweenTokens.width;
-	}
+        [tokenView setFrameOrigin:offset];
+        offset.x += [tokenView bounds].size.width + spaceBetweenTokens.width;
+    }
 
-	if ([[self window] firstResponder] != self)
-		return;
+    if ([[self window] firstResponder] != self)
+        return;
 
-	var element = [self _inputElement];
+    var element = [self _inputElement];
 
-	element.style.left = offset.x + @"px";
-	element.style.top = offset.y + @"px";
-	element.style.width = [self bounds].size.width - offset.x - 8.0 + "px";
-	element.style.height = contentRect.size.height;
+    element.style.left = offset.x + @"px";
+    element.style.top = offset.y + @"px";
+    element.style.width = [self bounds].size.width - offset.x - 8.0 + "px";
+    element.style.height = contentRect.size.height;
 }
 
 // ======================
@@ -859,18 +859,18 @@ var CPTokenFieldTableColumnIdentifier = @"CPTokenFieldTableColumnIdentifier";
 // ======================
 - (int)numberOfRowsInTableView:(CPTableView)tableView
 {
-	return [_cachedCompletions count];
+    return [_cachedCompletions count];
 }
 
 - (void)tableView:(CPTableView)tableView objectValueForTableColumn:(CPTableColumn)tableColumn row:(int)row
 {
-	return [_cachedCompletions objectAtIndex:row];
+    return [_cachedCompletions objectAtIndex:row];
 }
 
 - (void)tableViewSelectionDidChange:(CPNotification)notification
 {
-	// make sure a mouse click in the tableview doesn't steal first responder state
-	window.setTimeout(function() { [[self window] makeFirstResponder:self]; }, 2.0);
+    // make sure a mouse click in the tableview doesn't steal first responder state
+    window.setTimeout(function() { [[self window] makeFirstResponder:self]; }, 2.0);
 }
 
 // =============
@@ -878,7 +878,7 @@ var CPTokenFieldTableColumnIdentifier = @"CPTokenFieldTableColumnIdentifier";
 // =============
 - (CPTableView)autocompleteView
 {
-	return _autocompleteView;
+    return _autocompleteView;
 }
 
 @end
@@ -886,17 +886,17 @@ var CPTokenFieldTableColumnIdentifier = @"CPTokenFieldTableColumnIdentifier";
 @implementation CPTokenField (CPTokenFieldDelegate)
 
 // // Each element in the array should be an NSString or an array of NSStrings.
-// // substring is the partial string that is being completed.	tokenIndex is the index of the token being completed.
+// // substring is the partial string that is being completed.  tokenIndex is the index of the token being completed.
 // // selectedIndex allows you to return by reference an index specifying which of the completions should be selected initially.
 // // The default behavior is not to have any completions.
 - (CPArray)tokenField:(CPTokenField)tokenField completionsForSubstring:(CPString)substring indexOfToken:(int)tokenIndex indexOfSelectedItem:(int)selectedIndex
 {
-	if ([[self delegate] respondsToSelector:@selector(tokenField:completionsForSubstring:indexOfToken:indexOfSelectedItem:)])
-	{
-		return [[self delegate] tokenField:tokenField completionsForSubstring:substring indexOfToken:_tokenIndex indexOfSelectedItem:selectedIndex];
-	}
+    if ([[self delegate] respondsToSelector:@selector(tokenField:completionsForSubstring:indexOfToken:indexOfSelectedItem:)])
+    {
+        return [[self delegate] tokenField:tokenField completionsForSubstring:substring indexOfToken:_tokenIndex indexOfSelectedItem:selectedIndex];
+    }
 
-	return [];
+    return [];
 }
 //
 // // return an array of represented objects you want to add.
@@ -928,8 +928,8 @@ var CPTokenFieldTableColumnIdentifier = @"CPTokenFieldTableColumnIdentifier";
 
 @implementation _CPTokenFieldToken : CPTextField
 {
-	_CPTokenFieldTokenCloseButton   _deleteButton;
-	CPTokenField                    _tokenField;
+    _CPTokenFieldTokenCloseButton   _deleteButton;
+    CPTokenField                    _tokenField;
 }
 
 + (CPString)themeClass
@@ -939,69 +939,69 @@ var CPTokenFieldTableColumnIdentifier = @"CPTokenFieldTableColumnIdentifier";
 
 - (id)initWithFrame:(CPRect)frame
 {
-	if (self = [super initWithFrame:frame])
-	{
-		_deleteButton = [[_CPTokenFieldTokenCloseButton alloc] initWithFrame:CPRectMakeZero()];
-		[self addSubview:_deleteButton];
+    if (self = [super initWithFrame:frame])
+    {
+        _deleteButton = [[_CPTokenFieldTokenCloseButton alloc] initWithFrame:CPRectMakeZero()];
+        [self addSubview:_deleteButton];
 
-		[self setEditable:NO];
-		[self setHighlighted:NO];
-		[self setBezeled:YES];
-	}
+        [self setEditable:NO];
+        [self setHighlighted:NO];
+        [self setBezeled:YES];
+    }
 
-	return self;
+    return self;
 }
 
 - (CPTokenField)tokenField
 {
-	return _tokenField;
+    return _tokenField;
 }
 
 - (void)setTokenField:(CPTokenField)tokenField
 {
-	_tokenField = tokenField;
+    _tokenField = tokenField;
 }
 
 - (void)sizeToFit
 {
-	[super sizeToFit];
+    [super sizeToFit];
 
-	var size = [self bounds].size,
-	    minSize = [self currentValueForThemeAttribute:@"min-size"];
+    var size = [self bounds].size,
+        minSize = [self currentValueForThemeAttribute:@"min-size"];
 
-	size.height = minSize.height;
-	[self setFrameSize:size];
+    size.height = minSize.height;
+    [self setFrameSize:size];
 }
 
 - (void)layoutSubviews
 {
-	[super layoutSubviews];
+    [super layoutSubviews];
 
-	var bezelView = [self layoutEphemeralSubviewNamed:@"bezel-view"
+    var bezelView = [self layoutEphemeralSubviewNamed:@"bezel-view"
                                            positioned:CPWindowBelow
                       relativeToEphemeralSubviewNamed:@"content-view"];
 
     if (bezelView)
-	{
-		[_deleteButton setTarget:self];
-		[_deleteButton setAction:@selector(_delete:)];
+    {
+        [_deleteButton setTarget:self];
+        [_deleteButton setAction:@selector(_delete:)];
 
-		var frame = [bezelView frame],
-		    buttonOffset = [_deleteButton currentValueForThemeAttribute:@"offset"],
-		    buttonSize = [_deleteButton currentValueForThemeAttribute:@"min-size"];
+        var frame = [bezelView frame],
+            buttonOffset = [_deleteButton currentValueForThemeAttribute:@"offset"],
+            buttonSize = [_deleteButton currentValueForThemeAttribute:@"min-size"];
 
-		[_deleteButton setFrame:CPRectMake(CPRectGetMaxX(frame) - buttonOffset.x, CPRectGetMinY(frame) + buttonOffset.y, buttonSize.width, buttonSize.height)];
-	}
+        [_deleteButton setFrame:CPRectMake(CPRectGetMaxX(frame) - buttonOffset.x, CPRectGetMinY(frame) + buttonOffset.y, buttonSize.width, buttonSize.height)];
+    }
 }
 
 - (void)mouseDown:(CPEvent)anEvent
 {
-	[_tokenField mouseDown:anEvent];
+    [_tokenField mouseDown:anEvent];
 }
 
 - (void)_delete:(id)sender
 {
-	[_tokenField _deleteToken:self];
+    [_tokenField _deleteToken:self];
 }
 
 @end
