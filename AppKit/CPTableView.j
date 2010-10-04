@@ -735,7 +735,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     if (index === CPNotFound)
         return;
 
-    // we differ the actual removal until the end of the runloop in order to keep a reference to the column.
+    // we defer the actual removal until the end of the runloop in order to keep a reference to the column.
     [_differedColumnDataToRemove addObject:{"column":aTableColumn, "shouldBeHidden": [aTableColumn isHidden]}];
 
     [aTableColumn setHidden:YES];
