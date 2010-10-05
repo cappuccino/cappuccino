@@ -23,6 +23,7 @@
 @import <Foundation/CPString.j>
 @import <Foundation/CPArray.j>
 
+@import "CPApplication.j"
 @import "CPResponder.j"
 @import "CPSavePanel.j"
 @import "CPViewController.j"

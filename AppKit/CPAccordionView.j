@@ -27,6 +27,7 @@
 @import <Foundation/CPString.j>
 
 @import <AppKit/CPView.j>
+@import <AppKit/CPButton.j>
 
 #import "CoreGraphics/CGGeometry.h"
 

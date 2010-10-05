@@ -20,8 +20,6 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-@import "CPView.j"
-
 CPEnterCharacter                = "\u0003";
 CPBackspaceCharacter            = "\u0008";
 CPTabCharacter                  = "\u0009";

@@ -21,6 +21,7 @@
  */
 
 @import <Foundation/CPArray.j>
+@import <Foundation/CPIndexSet.j>
 @import <AppKit/CGGradient.j>
 
 @import "CPControl.j"

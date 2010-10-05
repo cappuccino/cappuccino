@@ -24,6 +24,8 @@
 #include "CoreGraphics/CGAffineTransform.h"
 #include "Platform/DOM/CPDOMDisplayServer.h"
 
+@import <Foundation/CPRunLoop.j>
+
 PREPARE_DOM_OPTIMIZATION();
 
 var displayObjects      = [],

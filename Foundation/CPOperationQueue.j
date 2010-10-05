@@ -23,6 +23,7 @@
 @import "CPInvocationOperation.j"
 @import "CPObject.j"
 @import "CPOperation.j"
+@import "CPTimer.j"
 
 // the global queue (mainQueue)
 var cpOperationMainQueue = nil;

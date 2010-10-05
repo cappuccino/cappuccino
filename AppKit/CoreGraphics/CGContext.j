@@ -23,8 +23,9 @@
 #include "CGGeometry.h"
 #include "CGAffineTransform.h"
 
-@import "CGGeometry.j"
 @import "CGAffineTransform.j"
+@import "CPCompatibility.j"
+@import "CGGeometry.j"
 @import "CGPath.j"
 
 kCGLineCapButt              = 0;

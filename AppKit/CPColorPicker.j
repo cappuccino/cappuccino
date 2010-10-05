@@ -21,7 +21,7 @@
  */
 
 @import <Foundation/CPObject.j>
-@import "CPColorPanel.j"
+@import <AppKit/CPView.j>
 
 #include "Platform/Platform.h"
 
