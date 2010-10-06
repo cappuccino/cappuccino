@@ -507,7 +507,8 @@ CPRunContinuesResponse  = -1002;
     var theWindow = aModalSession._window;
 
     [theWindow center];
-    [theWindow makeKeyAndOrderFront:self];
+    [theWindow makeKeyWindow];
+    [theWindow orderFront:self];
 
 //    [theWindow._bridge _obscureWindowsBelowModalWindow];
 
