@@ -837,6 +837,11 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 
 - (void)sizeToFit
 {
+    [self setFrameSize:[self _minimumFrameSize]];
+}
+
+- (CGSize)_minimumFrameSize
+{
     var size = [([self stringValue] || " ") sizeWithFont:[self currentValueForThemeAttribute:@"font"]],
         contentInset = [self currentValueForThemeAttribute:@"content-inset"],
         minSize = [self currentValueForThemeAttribute:@"min-size"],
@@ -854,7 +859,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
     if ([self isEditable])
         size.width = CGRectGetWidth([self frame]);
 
-    [self setFrameSize:size];
+    return size;
 }
 
 /*!
@@ -1235,6 +1240,11 @@ var CPTextFieldIsEditableKey            = "CPTextFieldIsEditableKey",
         [self setAlignment:[aCoder decodeIntForKey:CPTextFieldAlignmentKey]];
 
         [self setPlaceholderString:[aCoder decodeObjectForKey:CPTextFieldPlaceholderStringKey]];
+
+        // Make sure the frame height is big enough
+        var minSize = [self _minimumFrameSize];
+
+        [self setFrameSize:_CGSizeMake(_CGRectGetWidth([self bounds]), minSize.height)];
     }
 
     return self;
