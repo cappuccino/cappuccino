@@ -352,7 +352,7 @@ CPLog(@"Got some class: %@", inst);
 
     if (signature)
     {
-        invocation = [CPInvocation invocationWithMethodSignature:signature];
+        var invocation = [CPInvocation invocationWithMethodSignature:signature];
 
         [invocation setTarget:self];
         [invocation setSelector:aSelector];
