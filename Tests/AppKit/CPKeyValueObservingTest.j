@@ -29,10 +29,22 @@
                         change:(CPDictionary)aChange
                        context:(id)aContext
 {
-  _lastKeyPath = aKeyPath;
-  _lastObject  = anObject;
-  _lastChange  = aChange;
-  _lastContext = aContext;
+    _lastKeyPath = aKeyPath;
+    _lastObject  = anObject;
+    _lastChange  = aChange;
+    _lastContext = aContext;
+}
+
+- (void)testSendNotificationsForDependantKeyPaths
+{
+    var observingTester = [ObservingTester testerWithCheese:@"cheese"],
+        dependantKeyPathTester = [DependantKeyPathsTester testerWithObservingTester:observingTester];
+
+    [dependantKeyPathTester addObserver:self forKeyPath:@"observedCheese" options:CPKeyValueObservingOptionNew context:nil];
+    [observingTester setCheese:@"changed cheese"];
+
+    [self assert:@"observedCheese" equals:_lastKeyPath]
+    [self assert:dependantKeyPathTester equals:_lastObject];
 }
 
 @end
@@ -60,3 +72,33 @@
 }
 
 @end
+
+@implementation DependantKeyPathsTester: CPObject
+{
+    ObservingTester                 _observingTester @accessors(property=observingTester);
+}
+
++ (CPSet)keyPathsForValuesAffectingObservedCheese
+{
+    return [CPSet setWithObjects:@"observingTester.cheese"];
+}
+
++ (id)testerWithObservingTester:(ObservingTester)theObservingTester
+{
+    return [[self alloc] initWithObservingTester:theObservingTester];
+}
+
+- (id)initWithObservingTester:(ObservingTester)theObservingTester
+{
+    if (self = [super init])
+    {
+        _observingTester = theObservingTester;
+    }
+
+    return self;
+}
+
+- (CPString)observedCheese
+{
+    return [[self observingTester] cheese];
+}
