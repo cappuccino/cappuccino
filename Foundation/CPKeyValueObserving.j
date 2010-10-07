@@ -360,7 +360,7 @@ var kvoNewAndOld = CPKeyValueObservingOptionNew|CPKeyValueObservingOptionOld,
             newValue = [CPNull null];
 
         var changes = [CPDictionary dictionaryWithObject:newValue forKey:CPKeyValueChangeNewKey];
-        [anObserver observeValueForKeyPath:aPath ofObject:self change:changes context:aContext];
+        [anObserver observeValueForKeyPath:aPath ofObject:_targetObject change:changes context:aContext];
     }
 }
 
