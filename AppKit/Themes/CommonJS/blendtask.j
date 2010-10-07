@@ -6,7 +6,7 @@
 
 
 var FILE = require("file"),
-    TERM = require("term"),
+    TERM = require("narwhal/term"),
     task = require("jake").task,
     filedir = require("jake").filedir,
     BundleTask = require("objective-j/jake/bundletask").BundleTask;
@@ -32,7 +32,7 @@ BlendTask.prototype.infoPlist = function()
 {
     var infoPlist = BundleTask.prototype.infoPlist.apply(this, arguments);
 
-    infoPlist.setValueForKey("CPKeyedThemes", require("util").unique(this._keyedThemes));
+    infoPlist.setValueForKey("CPKeyedThemes", require("narwhal/util").unique(this._keyedThemes));
 
     return infoPlist;
 }

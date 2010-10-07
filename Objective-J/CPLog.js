@@ -182,7 +182,7 @@ GLOBAL(CPLogPrint) = function(aString, aLevel, aTitle, aFormatter)
 {
     if (stream === undefined) {
         try {
-            stream = require("term").stream;
+            stream = require("narwhal/term").stream;
         } catch (e) {
             stream = null;
         }

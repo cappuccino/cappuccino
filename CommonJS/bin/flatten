@@ -8,12 +8,12 @@ require("narwhal").ensureEngine("rhino");
 
 var FILE = require("file");
 var OS = require("os");
-var UTIL = require("util");
+var UTIL = require("narwhal/util");
 
 var CACHEMANIFEST = require("objective-j/cache-manifest");
 
-var stream = require("term").stream;
-var parser = new (require("args").Parser)();
+var stream = require("narwhal/term").stream;
+var parser = new (require("narwhal/args").Parser)();
 
 parser.usage("INPUT_PROJECT OUTPUT_PROJECT");
 parser.help("Combine a Cappuccino application into a single JavaScript file.");

@@ -4,9 +4,9 @@ require("./common.jake");
 var FILE = require("file"),
     SYSTEM = require("system"),
     OS = require("os"),
-    UTIL = require("util"),
+    UTIL = require("narwhal/util"),
     jake = require("jake"),
-    stream = require("term").stream;
+    stream = require("narwhal/term").stream;
 
 var subprojects = ["Objective-J", "CommonJS", "Foundation", "AppKit", "Tools"];
 
