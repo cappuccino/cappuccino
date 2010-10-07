@@ -260,10 +260,6 @@ CPDeleteForwardKeyCode  = 46;
     [[self nextResponder] insertNewline:aSender];
 }
 
-- (void)cancel:(id)sender
-{
-}
-
 - (void)insertTab:(id)sender
 {
 }
@@ -303,7 +299,7 @@ CPDeleteForwardKeyCode  = 46;
 */
 - (BOOL)tryToPerform:(SEL)aSelector with:(id)anObject
 {
-    if([self respondsToSelector:aSelector])
+    if ([self respondsToSelector:aSelector])
     {
         [self performSelector:aSelector withObject:anObject];
 
