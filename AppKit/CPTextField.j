@@ -819,18 +819,22 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 }
 
 /*!
-    Size to fit has two behavior, depending on if the receiver is an editable text field or not.
+    For non-bezeled text fields (typically a label), sizeToFit has two behaviors, depending
+    on the line break mode of the receiver.
 
-    For non-editable text fields (typically, a label), sizeToFit will change the frame of the
-    receiver to perfectly fit the current text in stringValue in the current font, and respecting
-    the current theme values for content-inset, min-size, and max-size.
+    For non-bezeled receivers with a non-wrapping line break mode, sizeToFit will change the frame of the
+    receiver to perfectly fit the current text in stringValue in the current font, respecting
+    the current theme value for content-inset. For receivers with a wrapping line break mode,
+    sizeToFit will wrap the text within the current width (respecting the current content-inset),
+    so it will ONLY change the HEIGHT.
 
-    For editable text fields, sizeToFit will ONLY change the HEIGHT of the text field. It will not
-    change the width of the text field. You can use setFrameSize: with the current height to set the
-    width, and you can get the size of a string with [CPString sizeWithFont:].
+    For bezeled text fields (typically editable fields), sizeToFit will ONLY change the HEIGHT
+    of the text field. It will not change the width of the text field. sizeToFit will attempt to
+    change the height to fit a single line of text, respecting the current theme values for min-size,
+    max-size and content-inset.
 
     The logic behind this decision is that most of the time you do not know what content will be placed
-    in an editable text field, so you want to just choose a fixed width and leave it at that size.
+    in a bezeled text field, so you want to just choose a fixed width and leave it at that size.
     However, since you don't know how tall it needs to be if you change the font, sizeToFit will still be
     useful for making the textfield an appropriate height.
 */
