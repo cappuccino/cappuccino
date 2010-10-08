@@ -178,6 +178,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     unsigned    _gridStyleMask;
 
     unsigned    _numberOfRows;
+    CPIndexSet  _groupRows;
 
 
     CPTableHeaderView _headerView;
@@ -317,6 +318,8 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
         _exposedRows = [CPIndexSet indexSet];
         _exposedColumns = [CPIndexSet indexSet];
         _cachedDataViews = { };
+
+        _groupRows = [CPIndexSet indexSet];
 
         _tableDrawView = [[_CPTableDrawView alloc] initWithTableView:self];
         [_tableDrawView setBackgroundColor:[CPColor clearColor]];
@@ -2361,6 +2364,22 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
             else
                 [dataView unsetThemeState:CPThemeStateSelectedDataView];
 
+            if (_implementedDelegateMethods & CPTableViewDelegate_tableView_isGroupRow_)
+            {
+                if([_delegate tableView:self isGroupRow:row])
+                {
+                    [_groupRows addIndex:row];
+                    [dataView setThemeState:CPThemeStateGroupRow];
+                }
+                else
+                {
+                    [_groupRows removeIndexesInRange:CPMakeRange(row, 1)];
+                    [dataView unsetThemeState:CPThemeStateGroupRow];
+                }
+
+                [self setNeedsDisplay:YES]
+            }
+
             if (_implementedDelegateMethods & CPTableViewDelegate_tableView_willDisplayView_forTableColumn_row_)
                 [_delegate tableView:self willDisplayView:dataView forTableColumn:tableColumn row:row];
 
@@ -2516,18 +2535,24 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
         firstRow = exposedRows.location,
         lastRow = CPMaxRange(exposedRows) - 1,
         colorIndex = MIN(exposedRows.length, colorCount),
-        heightFilled = 0.0;
+        heightFilled = 0.0,
+        groupRowRects = [ ];
 
     while (colorIndex--)
     {
         var row = firstRow - firstRow % colorCount + colorIndex,
-            fillRect = nil;
+            fillRect = _CGRectMakeZero();
 
         CGContextBeginPath(context);
 
         for (; row <= lastRow; row += colorCount)
             if (row >= firstRow)
-                CGContextAddRect(context, CGRectIntersection(aRect, fillRect = [self rectOfRow:row]));
+            {
+                if (![_groupRows containsIndex:row] && _selectionHighlightStyle !== CPTableViewSelectionHighlightStyleSourceList)
+                    CGContextAddRect(context, CGRectIntersection(aRect, fillRect = [self rectOfRow:row]));    
+                else
+                    groupRowRects.push(CGRectIntersection(aRect, [self rectOfRow:row]));
+            }
 
         if (row - colorCount === lastRow)
             heightFilled = _CGRectGetMaxY(fillRect);
@@ -2539,22 +2564,33 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     }
     // console.profileEnd("row-paint");
 
+    
+
+    // FIX ME: this is really terrible, it seems like such a hack... 
     var totalHeight = _CGRectGetMaxY(aRect);
 
     if (heightFilled >= totalHeight || _rowHeight <= 0.0)
+    {
+        [self _drawGroupRowsForRects:groupRowRects];
         return;
+    }
 
     var rowHeight = _rowHeight + _intercellSpacing.height,
         fillRect = _CGRectMake(_CGRectGetMinX(aRect), _CGRectGetMinY(aRect) + heightFilled, _CGRectGetWidth(aRect), rowHeight);
 
     for (row = lastRow + 1; heightFilled < totalHeight; ++row)
     {
-        CGContextSetFillColor(context, rowColors[row % colorCount]);
-        CGContextFillRect(context, fillRect);
+        if(![_groupRows containsIndex:row] && _selectionHighlightStyle !== CPTableViewSelectionHighlightStyleSourceList)
+        {
+            CGContextSetFillColor(context, rowColors[row % colorCount]);
+            CGContextFillRect(context, fillRect);
+        }
 
         heightFilled += rowHeight;
         fillRect.origin.y += rowHeight;
     }
+
+    [self _drawGroupRowsForRects:groupRowRects];
 }
 
 - (void)drawGridInClipRect:(CGRect)aRect
@@ -2672,46 +2708,73 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     var gradientCache = [self selectionGradientColors],
         topLineColor = [gradientCache objectForKey:CPSourceListTopLineColor],
         bottomLineColor = [gradientCache objectForKey:CPSourceListBottomLineColor],
-        gradientColor = [gradientCache objectForKey:CPSourceListGradient];
+        gradientColor = [gradientCache objectForKey:CPSourceListGradient],
+        normalSelectionHighlightColor = [self selectionHighlightColor];
+
+    // dont do these lookups if there are no group rows
+    if ([_groupRows count])
+    {
+        var topGroupLineColor = [CPColor colorWithCalibratedWhite:212.0 / 255.0 alpha:1.0],
+            bottomGroupLineColor = [CPColor colorWithCalibratedWhite:185.0 / 255.0 alpha:1.0],
+            gradientGroupColor = CGGradientCreateWithColorComponents(CGColorSpaceCreateDeviceRGB(), [212.0 / 255.0, 212.0 / 255.0, 212.0 / 255.0,1.0, 197.0 / 255.0, 197.0 / 255.0, 197.0 / 255.0,1.0], [0,1], 2);
+    }
 
     while (count--)
-    {
-        var rowRect = CGRectIntersection(objj_msgSend(self, rectSelector, indexes[count]), aRect);
+    {   
+        var currentIndex = indexes[count],
+            rowRect = CGRectIntersection(objj_msgSend(self, rectSelector, currentIndex), aRect);
         CGContextAddRect(context, rowRect);
 
-        if (drawGradient)
+        var shouldUseGroupGradient = [_groupRows containsIndex:currentIndex];
+        console.log(currentIndex, [_groupRows description], shouldUseGroupGradient);
+
+        if (drawGradient || shouldUseGroupGradient)
         {
+            //console.log("gradiant fill for row: " + currentIndex);
             var minX = _CGRectGetMinX(rowRect),
                 minY = _CGRectGetMinY(rowRect),
                 maxX = _CGRectGetMaxX(rowRect),
                 maxY = _CGRectGetMaxY(rowRect) - deltaHeight;
 
-            CGContextDrawLinearGradient(context, gradientColor, rowRect.origin, CGPointMake(minX, maxY), 0);
+            // use a special selection gradient for group rows
+
+
+            CGContextDrawLinearGradient(context, (shouldUseGroupGradient) ? gradientGroupColor : gradientColor, rowRect.origin, _CGPointMake(minX, maxY), 0);
             CGContextClosePath(context);
 
             CGContextBeginPath(context);
             CGContextMoveToPoint(context, minX, minY);
             CGContextAddLineToPoint(context, maxX, minY);
             CGContextClosePath(context);
-            CGContextSetStrokeColor(context, topLineColor);
+            CGContextSetStrokeColor(context, (shouldUseGroupGradient) ? topGroupLineColor : topLineColor);
             CGContextStrokePath(context);
 
             CGContextBeginPath(context);
             CGContextMoveToPoint(context, minX, maxY);
             CGContextAddLineToPoint(context, maxX, maxY - 1);
             CGContextClosePath(context);
-            CGContextSetStrokeColor(context, bottomLineColor);
+            CGContextSetStrokeColor(context, (shouldUseGroupGradient) ? bottomGroupLineColor : bottomLineColor);
             CGContextStrokePath(context);
+            CGContextClosePath(context);
+        }
+        else
+        {
+            CGContextClosePath(context);
+            //console.log("fill 1 for row:" + currentIndex);
+            [normalSelectionHighlightColor setFill];
+            CGContextFillPath(context);
+            
         }
     }
 
     CGContextClosePath(context);
 
-    if (!drawGradient)
+    /*if (!drawGradient)
     {
-        [[self selectionHighlightColor] setFill];
+        console.log("fill 2 for row: " +  currentIndex);
+        [normalSelectionHighlightColor setFill];
         CGContextFillPath(context);
-    }
+    }*/
 
     CGContextBeginPath(context);
     var gridStyleMask = [self gridStyleMask];
@@ -2755,6 +2818,59 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     CGContextStrokePath(context);
 }
 
+- (void)_drawGroupRowsForRects:(CPArray)rects
+{
+    if (_selectionHighlightStyle === CPTableViewSelectionHighlightStyleSourceList || !rects.length)
+        return;
+
+    var context = [[CPGraphicsContext currentContext] graphicsPort],
+        i = rects.length;
+
+    CGContextBeginPath(context);
+
+    var gradientCache = [self selectionGradientColors],
+        topLineColor = [CPColor colorWithHexString:"d3d3d3"],
+        bottomLineColor = [CPColor colorWithHexString:"bebebd"],
+        gradientColor = CGGradientCreateWithColorComponents(CGColorSpaceCreateDeviceRGB(), [220.0 / 255.0, 220.0 / 255.0, 220.0 / 255.0,1.0, 
+                                                                                            199.0 / 255.0, 199.0 / 255.0, 199.0 / 255.0,1.0], [0,1], 2),
+        drawGradient = YES;
+
+        while (i--)
+        {
+            var rowRect = rects[i];
+
+            CGContextAddRect(context, rowRect);
+
+            if (drawGradient)
+            {
+                var minX = CGRectGetMinX(rowRect),
+                    minY = CGRectGetMinY(rowRect),
+                    maxX = CGRectGetMaxX(rowRect),
+                    maxY = CGRectGetMaxY(rowRect);
+
+                CGContextDrawLinearGradient(context, gradientColor, rowRect.origin, CGPointMake(minX, maxY), 0);
+                CGContextClosePath(context);
+
+                CGContextBeginPath(context);
+                CGContextMoveToPoint(context, minX, minY);
+                CGContextAddLineToPoint(context, maxX, minY);
+                CGContextClosePath(context);
+                CGContextSetStrokeColor(context, topLineColor);
+                CGContextStrokePath(context);
+
+                CGContextBeginPath(context);
+                CGContextMoveToPoint(context, minX, maxY);
+                CGContextAddLineToPoint(context, maxX, maxY - 1);
+                CGContextClosePath(context);
+                CGContextSetStrokeColor(context, bottomLineColor);
+                CGContextStrokePath(context);
+            }
+        }
+
+    CGContextClosePath(context);
+}
+
+
 - (void)_drawRows:(CPIndexSet)rowsIndexes clipRect:(CGRect)clipRect
 {
     var row = [rowsIndexes firstIndex];
@@ -2769,6 +2885,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 - (void)drawRow:(CPInteger)row clipRect:(CGRect)rect
 {
     // This method does currently nothing in cappuccino. Can be overriden by subclasses.
+
 }
 
 - (void)layoutSubviews
