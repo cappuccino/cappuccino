@@ -842,24 +842,45 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
 
 - (CGSize)_minimumFrameSize
 {
-    var size = [([self stringValue] || " ") sizeWithFont:[self currentValueForThemeAttribute:@"font"]],
+    var frameSize = [self frameSize],
         contentInset = [self currentValueForThemeAttribute:@"content-inset"],
         minSize = [self currentValueForThemeAttribute:@"min-size"],
-        maxSize = [self currentValueForThemeAttribute:@"max-size"];
+        maxSize = [self currentValueForThemeAttribute:@"max-size"],
+        lineBreakMode = [self lineBreakMode],
+        text = ([self stringValue] || @" "),
+        textSize = _CGSizeMakeCopy(frameSize),
+        font = [self currentValueForThemeAttribute:@"font"];
 
-    size.width = MAX(size.width + contentInset.left + contentInset.right, minSize.width);
-    size.height = MAX(size.height + contentInset.top + contentInset.bottom, minSize.height);
+    textSize.width -= contentInset.left + contentInset.right;
+    textSize.height -= contentInset.top + contentInset.bottom;
 
-    if (maxSize.width >= 0.0)
-        size.width = MIN(size.width, maxSize.width);
+    if (frameSize.width !== 0 &&
+        ![self isBezeled]     &&
+        (lineBreakMode === CPLineBreakByWordWrapping || lineBreakMode === CPLineBreakByCharWrapping))
+    {
+        textSize = [text sizeWithFont:font inWidth:textSize.width];
+    }
+    else
+        textSize = [text sizeWithFont:font];
 
-    if (maxSize.height >= 0.0)
-        size.height = MIN(size.height, maxSize.height);
+    frameSize.height = textSize.height + contentInset.top + contentInset.bottom;
 
-    if ([self isEditable])
-        size.width = CGRectGetWidth([self frame]);
+    if ([self isBezeled])
+    {
+        frameSize.height = MAX(frameSize.height, minSize.height);
 
-    return size;
+        if (maxSize.width > 0.0)
+            frameSize.width = MIN(frameSize.width, maxSize.width);
+
+        if (maxSize.height > 0.0)
+            frameSize.height = MIN(frameSize.height, maxSize.height);
+    }
+    else
+        frameSize.width = textSize.width + contentInset.left + contentInset.right;
+
+    frameSize.width = MAX(frameSize.width, minSize.width);
+
+    return frameSize;
 }
 
 /*!
@@ -1241,10 +1262,11 @@ var CPTextFieldIsEditableKey            = "CPTextFieldIsEditableKey",
 
         [self setPlaceholderString:[aCoder decodeObjectForKey:CPTextFieldPlaceholderStringKey]];
 
-        // Make sure the frame height is big enough
+        // Make sure the frame is big enough
         var minSize = [self _minimumFrameSize];
 
-        [self setFrameSize:_CGSizeMake(_CGRectGetWidth([self bounds]), minSize.height)];
+        minSize.width = MAX(CGRectGetWidth([self frame]), minSize.width);
+        [self setFrameSize:minSize];
     }
 
     return self;
