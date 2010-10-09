@@ -1,9 +1,8 @@
 /*
  * AppController.j
- * TableCibTest
+ * CPTextFieldHeightTest
  *
- * Created by Francisco Tolmasky on July 5, 2009.
- * Copyright 2009, 280 North, Inc. All rights reserved.
+ * Created by Aparajita Fishman on August 31, 2010.
  */
 
 @import <Foundation/Foundation.j>
