@@ -2,6 +2,7 @@
 #include "../CoreGraphics/CGGeometry.h"
 #include "../Platform/Platform.h"
 
+@import "CPPanel.j"
 @import "_CPMenuWindow.j"
 
 

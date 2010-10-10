@@ -6,6 +6,7 @@
 // Please see Cappuccino's LICENSE file for details.
 
 @import <Foundation/CPObject.j>
+@import <Foundation/CPString.j>
 
 // CPCharacterSet is a class cluster. Concrete implementations
 // follow after the main abstract class.

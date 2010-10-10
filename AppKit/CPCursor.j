@@ -14,6 +14,8 @@ Implemented class methods:
 
 #include "Platform/Platform.h"
 
+@import <Foundation/CPObject.j>
+
 var currentCursor = nil,
     cursorStack = [],
     cursors = {},

@@ -22,6 +22,7 @@
 
 @import <Foundation/CPDictionary.j>
 @import <Foundation/CPObject.j>
+@import <Foundation/CPIndexSet.j>
 @import <Foundation/CPSortDescriptor.j>
 @import <Foundation/CPString.j>
 

@@ -20,7 +20,14 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+@import <Foundation/CPCharacterSet.j>
+@import <Foundation/CPIndexSet.j>
+
+@import <AppKit/CPButton.j>
+@import <AppKit/_CPMenuWindow.j>
+@import <AppKit/CPScrollView.j>
 @import <AppKit/CPTextField.j>
+@import <AppKit/CPWindow.j>
 
 #include "Platform/Platform.h"
 

@@ -20,6 +20,11 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+@import <Foundation/CPObject.j>
+@import <Foundation/CPBundle.j>
+
+@import <AppKit/CPView.j>
+
 var _CPFonts                = {},
     _CPFontSystemFontFace   = @"Arial, sans-serif",
     _CPWrapRegExp           = new RegExp("\\s*,\\s*", "g");
