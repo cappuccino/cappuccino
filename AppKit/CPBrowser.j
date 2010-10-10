@@ -498,7 +498,7 @@
     [_contentView scrollRectToVisible:[[[self tableViewInColumn:columnIndex] enclosingScrollView] frame]];
 }
 
-– (void)scrollRowToVisible:(unsigned)rowIndex inColumn:(unsigned)columnIndex
+- (void)scrollRowToVisible:(unsigned)rowIndex inColumn:(unsigned)columnIndex
 {
     [self scrollColumnToVisible:columnIndex];
     [[self tableViewInColumn:columnIndex] scrollRowToVisible:rowIndex];
