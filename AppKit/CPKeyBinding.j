@@ -26,7 +26,7 @@
 
 CPStandardKeyBindings = {
     @"@.": @"cancelOperation:",
-    
+
     @"^a": @"moveToBeginningOfParagraph:",
     @"^$a": @"moveToBeginningOfParagraphAndModifySelection:",
     @"^b": @"moveBackward:",
@@ -145,7 +145,7 @@ var CPKeyBindingCache = {};
     unsigned    _modifierFlags;
 
     CPArray     _selectors;
-    
+
     CPString    _cacheName;
 }
 
@@ -153,7 +153,7 @@ var CPKeyBindingCache = {};
 {
     if ([self class] !== CPKeyBinding)
         return;
-    
+
     [self createKeyBindingsFromJSObject:CPStandardKeyBindings];
 }
 
@@ -161,20 +161,7 @@ var CPKeyBindingCache = {};
 {
     var binding;
     for (binding in anObject)
-    {
-        var components = binding.split(@""),
-            modifierFlags = ([components containsObject:@"$"] ? CPShiftKeyMask : 0) |
-                            ([components containsObject:@"^"] ? CPControlKeyMask : 0) |
-                            ([components containsObject:@"~"] ? CPAlternateKeyMask : 0) |
-                            ([components containsObject:@"@"] ? CPCommandKeyMask : 0);
-
-        var selectors = anObject[binding];
-        if (![selectors isKindOfClass:CPArray])
-            selectors = [selectors];
-
-        var keyBinding = [[self alloc] initWithKey:[components lastObject] modifierFlags:modifierFlags selectors:selectors];
-        [self cacheKeyBinding:keyBinding];
-    }
+        [self cacheKeyBinding:[[CPKeyBinding alloc] initWithPhysicalKeyString:binding selectors:anObject[binding]]];
 }
 
 + (void)cacheKeyBinding:(CPKeyBinding)aBinding
@@ -194,6 +181,20 @@ var CPKeyBindingCache = {};
 + (CPArray)selectorsForKey:(CPString)aKey modifierFlags:(unsigned)aFlag
 {
     return [[self keyBindingForKey:aKey modifierFlags:aFlag] selectors];
+}
+
+- (id)initWithPhysicalKeyString:(CPString)binding selectors:(CPArray)selectors
+{
+    var components = binding.split(@""),
+        modifierFlags = ([components containsObject:@"$"] ? CPShiftKeyMask : 0) |
+                        ([components containsObject:@"^"] ? CPControlKeyMask : 0) |
+                        ([components containsObject:@"~"] ? CPAlternateKeyMask : 0) |
+                        ([components containsObject:@"@"] ? CPCommandKeyMask : 0);
+
+    if (![selectors isKindOfClass:CPArray])
+        selectors = [selectors];
+
+    return [self initWithKey:[components lastObject] modifierFlags:modifierFlags selectors:selectors];
 }
 
 - (id)initWithKey:(CPString)aKey modifierFlags:(unsigned)aFlag selectors:(CPArray)selectors
@@ -251,6 +252,11 @@ var CPKeyBindingCache = {};
 - (BOOL)isEqual:(CPKeyBinding)rhs
 {
     return _key === [rhs key] && _modifierFlags === [rhs modifierFlags];
+}
+
+- (CPString)description
+{
+    return [CPString stringWithFormat:@"<KeyBinding string: '%@' modifierFlags: 0x%lx selectors: %@>", _key, _modifierFlags, _selectors];
 }
 
 @end
