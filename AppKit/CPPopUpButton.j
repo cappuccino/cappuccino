@@ -662,7 +662,7 @@ CPPopUpButtonStatePullsDown = CPThemeState("pulls-down");
             location = CGPointMake(CGRectGetMinX(contentRect) - standardLeftMargin, 0.0);
 
         minimumWidth += standardLeftMargin;
-        
+
         // To ensure the selected item is highlighted correctly, unset the highlighted item
         [menu _highlightItemAtIndex:CPNotFound];
     }
@@ -700,6 +700,11 @@ CPPopUpButtonStatePullsDown = CPThemeState("pulls-down");
         menuOrigin.y -= CGRectGetMinY(menuItemRect) + (CGRectGetHeight(menuItemRect) - CGRectGetHeight(contentRect)) / 2.0;
     }
 */
+}
+
+- (void)rightMouseDown:(CPEvent)anEvent
+{
+    // Disable standard CPView behaviour which incorrectly displays the menu as a 'context menu'.
 }
 
 - (void)_popUpItemAction:(id)aSender
