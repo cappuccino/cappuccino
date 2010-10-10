@@ -4,7 +4,7 @@
  * Created by Ross Boucher.
  * Copyright 2009, 280 North, Inc.
  *
- * Adapted from Kevin Wojniak, portions Copyright 2009 Kevin Wojniak. 
+ * Adapted from Kevin Wojniak, portions Copyright 2009 Kevin Wojniak.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -20,7 +20,7 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  * Copyright 2009 280 North, Inc.
- 
+
  */
 
 @import <AppKit/CPGraphicsContext.j>
@@ -32,14 +32,14 @@
 var DefaultLineWidth = 1.0;
 
 
-/*! 
+/*!
     @ingroup appkit
     @class CPBezierPath
 
     A CPBezierPath allows you to create paths for drawing to the screen using a simpler API than CoreGraphics.
     Paths can form any shape, including regular polgyons like squares and triangles; circles, arcs; or complex
-    line segments. 
-    
+    line segments.
+
     A path can be stroked and filled using the relevant method. The currently active fill and stroke color will
     be used, which can be set by calling setFill: and setStroke: on any CPColor object (or set: for both).
 */
@@ -64,9 +64,9 @@ var DefaultLineWidth = 1.0;
 + (CPBezierPath)bezierPathWithOvalInRect:(CGRect)rect
 {
     var path = [self bezierPath];
-    
+
     [path appendBezierPathWithOvalInRect:rect];
-    
+
     return path;
 }
 
@@ -76,9 +76,9 @@ var DefaultLineWidth = 1.0;
 + (CPBezierPath)bezierPathWithRect:(CGRect)rect
 {
     var path = [self bezierPath];
-    
+
     [path appendBezierPathWithRect:rect];
-    
+
     return path;
 }
 
