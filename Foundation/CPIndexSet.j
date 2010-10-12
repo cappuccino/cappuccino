@@ -745,6 +745,7 @@
         // Shift the range, and normalize it if the result is negative.
         if ((range.location += aDelta) < 0)
         {
+            _count -= range.length - CPMaxRange(range);
             range.length = CPMaxRange(range);
             range.location = 0;
         }
