@@ -77,7 +77,7 @@ if (typeof window !== "undefined" && typeof window.navigator !== "undefined")
     USER_AGENT = window.navigator.userAgent;
 
 // Opera
-if (window.opera)
+if (typeof window !== "undefined" && window.opera)
 {
     PLATFORM_ENGINE = CPOperaBrowserEngine;
     
@@ -85,7 +85,7 @@ if (window.opera)
 }
 
 // Internet Explorer
-else if (window.attachEvent) // Must follow Opera check.
+else if (typeof window !== "undefined" && window.attachEvent) // Must follow Opera check.
 {
     PLATFORM_ENGINE = CPInternetExplorerBrowserEngine;
     
