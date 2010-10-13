@@ -495,7 +495,7 @@ var CPObjectControllerObjectClassNameKey                = @"CPObjectControllerOb
             [self didChangeValueForKey:keyPath];
     }
 
-    [self replaceObjectAtIndex:anIndex withObject:anObject];
+    [super replaceObjectAtIndex:anIndex withObject:anObject];
 }
 
 @end
