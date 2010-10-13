@@ -79,15 +79,16 @@ function check_and_exit () {
 }
 
 function check_build_environment () {
-    # make sure user is running HotSpot JVM
-    java -version 2>&1 | grep HotSpot &> /dev/null
-    if [ ! "$?" = "0" ]; then
-        java_ver=`java -version 2>&1 | egrep "(Client|Server)"`
-        if [ "$java_ver" = "" ]; then
-            java_ver="your JVM"
+    # make sure user is running the Sun JVM or OpenJDK >= 6b18
+    java_version=$(java -version 2>&1)
+    echo $java_version | grep OpenJDK > /dev/null
+    if [ "$?" = "0" ]; then # OpenJDK: make sure >= 6b18
+        openjdk_version=$(echo $java_version | egrep -o '[0-9]b[0-9]+')
+        if [ $(echo $openjdk_version | tr -d 'b') -lt 618 ]; then
+            echo "Error: Narwhal is not compatible with your version of OpenJDK: $openjdk_version."
+            echo "Please upgrade to OpenJDK >= 6b18 or switch to the Sun JVM. Then re-run bootstrap.sh."
+            exit 1
         fi
-        echo "Error: Narwhal is not compatible with $java_ver. Please switch to the Sun (HotSpot) JVM and re-run bootstrap.sh."
-        exit 1
     fi
 
     # make sure other dependencies are installed and on the $PATH
