@@ -97,7 +97,6 @@ CPTableViewReverseSequentialColumnAutoresizingStyle = 3;
 CPTableViewLastColumnOnlyAutoresizingStyle = 4;
 CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 
-
 #define NUMBER_OF_COLUMNS() (_tableColumns.length)
 #define UPDATE_COLUMN_RANGES_IF_NECESSARY() if (_dirtyTableColumnRangeIndex !== CPNotFound) [self _recalculateTableColumnRanges];
 
@@ -181,6 +180,9 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     unsigned    _numberOfRows;
     CPIndexSet  _groupRows;
 
+    // Persistence
+    CPString                _autosaveName;
+    BOOL                    _autosaveTableColumns;
 
     CPTableHeaderView _headerView;
     _CPCornerView     _cornerView;
@@ -768,12 +770,11 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     [self reloadDataForRowIndexes:_exposedRows columnIndexes:[CPIndexSet indexSetWithIndex:[_tableColumns indexOfObject:aColumn]]];
 }
 
-/*!
-    Moves the column and heading at a given index to a new given index.
-    @param columnIndex The current index of the column to move.
-    @param newIndex The new index for the moved column.
+/*
+    @ignore
+    Same as moveColumn:toColumn: but doesn't trigger an autosave
 */
-- (void)moveColumn:(unsigned)fromIndex toColumn:(unsigned)toIndex
+- (void)_moveColumn:(unsigned)fromIndex toColumn:(unsigned)toIndex
 {
     fromIndex = +fromIndex;
     toIndex = +toIndex;
@@ -798,6 +799,17 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
         columnIndexes = [CPIndexSet indexSetWithIndexesInRange:CPMakeRange(fromIndex, toIndex)];
 
     [self reloadDataForRowIndexes:rowIndexes columnIndexes:columnIndexes];
+}
+
+/*!
+    Moves the column and heading at a given index to a new given index.
+    @param theColumnIndex The current index of the column to move.
+    @param theToIndex The new index for the moved column.
+*/
+- (void)moveColumn:(int)theColumnIndex toColumn:(int)theToIndex
+{
+    [self _moveColumn:theColumnIndex toColumn:theToIndex];
+    [self _autosave];
 }
 
 /*!
@@ -1689,13 +1701,94 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     /*FIX ME: tableview header isn't rendered until you click the horizontal scroller (or scroll)*/
 }
 
-//Persistence
-/*
-    * - autosaveName
-    * - autosaveTableColumns
-    * - setAutosaveName:
-    * - setAutosaveTableColumns:
+- (void)setAutosaveName:(CPString)theAutosaveName
+{
+    if (_autosaveName === theAutosaveName)
+        return;
+
+    _autosaveName = theAutosaveName;
+
+    [self setAutosaveTableColumns:!!theAutosaveName];
+    [self _restoreFromAutosave];
+}
+
+- (CPString)autosaveName
+{
+    return _autosaveName;
+}
+
+- (void)setAutosaveTableColumns:(BOOL)shouldAutosave
+{
+    _autosaveTableColumns = shouldAutosave;
+}
+
+- (BOOL)autosaveTableColumns
+{
+    return _autosaveTableColumns;
+}
+
+- (CPString)_columnsKeyForAutosaveName:(CPString)theAutosaveName
+{
+    return @"CPTableView Columns " + theAutosaveName;
+}
+
+- (BOOL)_autosaveEnabled
+{
+    return [self autosaveName] && [self autosaveTableColumns];
+}
+
+/*!
+    @ignore
+    Stores the tablecolumn setup in user defaults.
+    I believe Apple stores the entire encoded table column,
+    in our case that seems overkill since we need to store everything in a cookie.
 */
+- (void)_autosave
+{
+    if (![self _autosaveEnabled])
+        return;
+
+    var userDefaults = [CPUserDefaults standardUserDefaults],
+        autosaveName = [self autosaveName];
+
+    var columns = [self tableColumns],
+        columnsSetup = [];
+
+    for (var i = 0; i < [columns count]; i++)
+    {
+        var column = [columns objectAtIndex:i];
+
+        var metaData = [CPDictionary dictionaryWithJSObject:{
+            @"identifier": [column identifier],
+            @"width": [column width]
+        }]
+
+        [columnsSetup addObject:metaData];
+    }
+
+    [userDefaults setObject:columnsSetup forKey:[self _columnsKeyForAutosaveName:autosaveName]];
+}
+
+- (void)_restoreFromAutosave
+{
+    if (![self _autosaveEnabled])
+        return;
+
+    var userDefaults = [CPUserDefaults standardUserDefaults],
+        autosaveName = [self autosaveName],
+        tableColumns = [userDefaults objectForKey:[self _columnsKeyForAutosaveName:autosaveName]];
+
+    for (var i = 0; i < [tableColumns count]; i++)
+    {
+        var metaData = [tableColumns objectAtIndex:i],
+            columnIdentifier = [metaData objectForKey:@"identifier"],
+            column = [self columnWithIdentifier:columnIdentifier],
+            tableColumn = [self tableColumnWithIdentifier:columnIdentifier];
+
+        [self _moveColumn:column toColumn:i];
+        [tableColumn setWidth:[metaData objectForKey:@"width"]];
+    }
+}
 
 //Setting the Delegate:(id)aDelegate
 
