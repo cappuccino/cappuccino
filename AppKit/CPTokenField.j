@@ -22,12 +22,13 @@
 
 @import <Foundation/CPCharacterSet.j>
 @import <Foundation/CPIndexSet.j>
+@import <Foundation/CPTimer.j>
 
-@import <AppKit/CPButton.j>
-@import <AppKit/_CPMenuWindow.j>
-@import <AppKit/CPScrollView.j>
-@import <AppKit/CPTextField.j>
-@import <AppKit/CPWindow.j>
+@import "CPButton.j"
+@import "CPScrollView.j"
+@import "CPTextField.j"
+@import "CPWindow.j"
+@import "_CPMenuWindow.j"
 
 #include "Platform/Platform.h"
 
@@ -974,9 +975,15 @@ var CPThemeStateAutoCompleting = @"CPThemeStateAutoCompleting",
     [super sizeToFit];
 
     var size = [self bounds].size,
-        minSize = [self currentValueForThemeAttribute:@"min-size"];
+        minSize = [self currentValueForThemeAttribute:@"min-size"],
+        contentInset = [self currentValueForThemeAttribute:@"content-inset"];
 
     size.height = minSize.height;
+
+    // this is necessary to recalculate the width of the token due to new CPTextField sizeToFit
+    // behaviour that doesn't resize width on bezeled textfield
+    size.width = [([self stringValue] || @" ") sizeWithFont:[self font]].width + contentInset.left + contentInset.right;
+
     [self setFrameSize:size];
 }
 
