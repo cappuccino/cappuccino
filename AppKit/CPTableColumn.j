@@ -243,9 +243,6 @@ CPTableColumnUserResizingMask   = 1 << 1;
 */
 - (void)setDataView:(CPView)aView
 {
-    if (_dataView === aView)
-        return;
-
     if (_dataView)
         _dataViewData[[_dataView UID]] = nil;
 
@@ -404,7 +401,7 @@ CPTableColumnUserResizingMask   = 1 << 1;
     var bindingsDictionary = [CPKeyValueBinding allBindingsForObject:self],
         keys = [bindingsDictionary allKeys];
 
-    for (var i=0, count = [keys count]; i<count; i++)
+    for (var i = 0, count = [keys count]; i < count; i++)
     {
         var bindingName = keys[i],
             bindingPath = [aDataView _replacementKeyPathForBinding:bindingName],
@@ -431,7 +428,7 @@ CPTableColumnUserResizingMask   = 1 << 1;
             */
 
             var firstPart = keyPath.substring(0, dotIndex),
-                secondPart = keyPath.substring(dotIndex+1),
+                secondPart = keyPath.substring(dotIndex + 1),
                 firstValue = [destination valueForKeyPath:firstPart];
 
             if ([firstValue isKindOfClass:CPArray])

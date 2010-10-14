@@ -1,3 +1,6 @@
+
+@import <AppKit/CPArrayController.j>
+
 @implementation CPArrayControllerTest : OJTestCase
 {
     CPArrayController   _arrayController @accessors(property=arrayController);

@@ -263,6 +263,8 @@ task("test-only", function()
     var code = OS.system(serializedENV() + " " + cmd.map(OS.enquote).join(" "));
     if (code !== 0)
         OS.exit(code);
+
+    OS.system(serializedENV() + " " + ["js", "Tests/DetectMissingImports.js"].map(OS.enquote).join(" "));
 });
 
 task("push-packages", ["push-cappuccino", "push-objective-j"]);
