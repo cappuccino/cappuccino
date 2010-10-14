@@ -186,7 +186,7 @@
 */
 - (void)setContentView:(CPClipView)aContentView
 {
-    if (_contentView !== aContentView || !aContentView)
+    if (_contentView === aContentView || !aContentView)
         return;
 
     var documentView = [aContentView documentView];
