@@ -22,12 +22,13 @@
 
 @import <Foundation/CPCharacterSet.j>
 @import <Foundation/CPIndexSet.j>
+@import <Foundation/CPTimer.j>
 
-@import <AppKit/CPButton.j>
-@import <AppKit/_CPMenuWindow.j>
-@import <AppKit/CPScrollView.j>
-@import <AppKit/CPTextField.j>
-@import <AppKit/CPWindow.j>
+@import "CPButton.j"
+@import "CPScrollView.j"
+@import "CPTextField.j"
+@import "CPWindow.j"
+@import "_CPMenuWindow.j"
 
 #include "Platform/Platform.h"
 
