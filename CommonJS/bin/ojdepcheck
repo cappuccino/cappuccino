@@ -8,8 +8,8 @@ require("narwhal").ensureEngine("rhino");
 
 var FILE = require("file");
 
-var stream = require("term").stream
-var parser = new (require("args").Parser)();
+var stream = require("narwhal/term").stream
+var parser = new (require("narwhal/args").Parser)();
 
 parser.usage("INPUT_PROJECT");
 parser.help("Checks a project for missing imports.");

@@ -1,8 +1,8 @@
 var SYSTEM = require("system");
 var FILE = require("file");
 var OS = require("os");
-var UTIL = require("util");
-var stream = require("term").stream;
+var UTIL = require("narwhal/util");
+var stream = require("narwhal/term").stream;
 
 var requiresSudo = false;
 
@@ -15,7 +15,7 @@ function ensurePackageUpToDate(packageName, requiredVersion, options)
 {
     options = options || {};
     
-    var packageInfo = require("packages").catalog[packageName];
+    var packageInfo = require("narwhal/packages").catalog[packageName];
     if (!packageInfo)
     {
         if (options.optional)
@@ -163,7 +163,7 @@ function additionalPackages()
 // checks to see if a path is in the package catalog
 function packageInCatalog(path)
 {
-    var catalog = require("packages").catalog;
+    var catalog = require("narwhal/packages").catalog;
     for (var name in catalog)
         if (String(catalog[name].directory) === String(path))
             return true;

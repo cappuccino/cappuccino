@@ -23,7 +23,7 @@ var OBJJ_INCLUDE_PATHS = global.OBJJ_INCLUDE_PATHS = exports.OBJJ_INCLUDE_PATHS 
 exports.objj_frameworks = [];
 exports.objj_debug_frameworks = [];
 
-var catalog = require("packages").catalog;
+var catalog = require("narwhal/packages").catalog;
 for (var name in catalog)
 {
     if (!catalog.hasOwnProperty(name))
