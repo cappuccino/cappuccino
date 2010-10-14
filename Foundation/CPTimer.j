@@ -263,6 +263,8 @@ var _CPTimerBridgeTimer = function(codeOrFunction, aDelay, shouldRepeat, functio
     return timeoutID;
 }
 
+#if PLATFORM(DOM)
+
 window.setTimeout = function(codeOrFunction, aDelay)
 {
     return _CPTimerBridgeTimer(codeOrFunction, aDelay, NO, Array.prototype.slice.apply(arguments, [2]));
@@ -287,3 +289,5 @@ window.clearInterval = function(aTimeoutID)
 {
     window.clearTimeout(aTimeoutID);
 }
+
+#endif
