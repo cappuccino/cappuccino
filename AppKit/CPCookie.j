@@ -25,7 +25,7 @@
 
 #include "Platform/Platform.h"
 
-/*! 
+/*!
     @ingroup appkit
     @class CPCookie
     CPCookie is the Cappuccino interface to a web browser cookie. You can set the name
@@ -34,7 +34,7 @@
 {
     CPString    _cookieName;
     CPString    _cookieValue;
-    
+
     CPString    _expires;
 }
 
@@ -45,7 +45,7 @@
 - (id)initWithName:(CPString)aName
 {
     self = [super init];
-    
+
     _cookieName  = aName;
     _cookieValue = [self _readCookieValue];
 
@@ -84,17 +84,17 @@
 */
 - (void)setValue:(CPString)value expires:(CPDate)date domain:(CPString)domain
 {
-    if(date)
-        var expires = "; expires="+date.toGMTString();
-    else 
+    if (date)
+        var expires = "; expires=" + date.toGMTString();
+    else
         var expires = "";
-        
-    if(domain)
-        domain = "; domain="+domain;
-    else 
+
+    if (domain)
+        domain = "; domain=" + domain;
+    else
         domain = "";
-    
-#if PLATFORM(DOM)    
+
+#if PLATFORM(DOM)
     document.cookie = _cookieName+"="+value+expires+"; path=/"+domain;
 #else
     _cookieValue = value;
@@ -106,12 +106,14 @@
 - (CPString)_readCookieValue
 {
 #if PLATFORM(DOM)
-    var nameEQ = _cookieName + "=";
-    var ca = document.cookie.split(';');
-    for(var i=0;i < ca.length;i++) {
+    var nameEQ = _cookieName + "=",
+        ca = document.cookie.split(';');
+
+    for (var i = 0; i < ca.length; i++)
+    {
         var c = ca[i];
-        while (c.charAt(0)==' ') c = c.substring(1,c.length);
-        if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length,c.length);
+        while (c.charAt(0) == ' ') c = c.substring(1, c.length);
+        if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length, c.length);
     }
 #endif
     return "";

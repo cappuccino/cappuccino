@@ -29,7 +29,7 @@
 
 var CPSharedDocumentController = nil;
 
-/*! 
+/*!
     @ingroup appkit
     @class CPDocumentController
     This class is responsible for managing an application's open documents.
@@ -41,7 +41,7 @@ var CPSharedDocumentController = nil;
 }
 
 /*!
-    Returns the singleton instance of the application's document controller. If it has not 
+    Returns the singleton instance of the application's document controller. If it has not
     been created yet, it will be created then returned.
     @return a CPDocumentController
 */
@@ -49,7 +49,7 @@ var CPSharedDocumentController = nil;
 {
     if (!CPSharedDocumentController)
         [[self alloc] init];
-    
+
     return CPSharedDocumentController;
 }
 
@@ -59,11 +59,11 @@ var CPSharedDocumentController = nil;
 - (id)init
 {
     self = [super init];
-    
+
     if (self)
     {
         _documents = [[CPArray alloc] init];
-        
+
         if (!CPSharedDocumentController)
             CPSharedDocumentController = self;
 
@@ -85,16 +85,16 @@ var CPSharedDocumentController = nil;
 {
     var index = 0,
         count = [_documents count];
-	
-	for (; index < count; ++index)
+
+    for (; index < count; ++index)
     {
         var theDocument = _documents[index];
-        
-		if ([[theDocument fileURL] isEqual:aURL])
-			return theDocument;
+
+        if ([[theDocument fileURL] isEqual:aURL])
+            return theDocument;
     }
-	
-	return nil;
+
+    return nil;
 }
 
 /*!
@@ -105,10 +105,10 @@ var CPSharedDocumentController = nil;
 - (void)openUntitledDocumentOfType:(CPString)aType display:(BOOL)shouldDisplay
 {
     var theDocument = [self makeUntitledDocumentOfType:aType error:nil];
-    
+
     if (theDocument)
         [self addDocument:theDocument];
-    
+
     if (shouldDisplay)
     {
         [theDocument makeWindowControllers];
@@ -210,7 +210,7 @@ var CPSharedDocumentController = nil;
         return;
 
     [aDocument makeWindowControllers];
-    
+
     if ([aContextInfo objectForKey:@"shouldDisplay"])
         [aDocument showWindows];
 }
@@ -224,7 +224,7 @@ var CPSharedDocumentController = nil;
     [self openUntitledDocumentOfType:[[_documentTypes objectAtIndex:0] objectForKey:@"CPBundleTypeName"] display:YES];
 }
 
--(void)openDocument:(id)aSender
+- (void)openDocument:(id)aSender
 {
     var openPanel = [CPOpenPanel openPanel];
 
@@ -276,17 +276,17 @@ var CPSharedDocumentController = nil;
 {
     var index = 0,
         count = _documentTypes.length,
-        
+
         extension = [[anAbsoluteURL pathExtension] lowercaseString],
         starType = nil;
-    
+
     for (; index < count; ++index)
     {
         var documentType = _documentTypes[index],
             extensions = [documentType objectForKey:@"CFBundleTypeExtensions"],
             extensionIndex = 0,
             extensionCount = extensions.length;
-        
+
         for (; extensionIndex < extensionCount; ++extensionIndex)
         {
             var thisExtension = [extensions[extensionIndex] lowercaseString];
@@ -312,11 +312,11 @@ var CPSharedDocumentController = nil;
     for (;i < count; ++i)
     {
         var documentType = _documentTypes[i];
-        
+
         if ([documentType objectForKey:@"CPBundleTypeName"] == aType)
             return documentType;
     }
-    
+
     return nil;
 }
 
@@ -336,7 +336,7 @@ var CPSharedDocumentController = nil;
 
 @implementation CPDocumentController (Closing)
 
-- (void)closeAllDocumentsWithDelegate:(id)aDelegate didCloseAllSelector:(SEL)didCloseSelector contextInfo:(Object)info 
+- (void)closeAllDocumentsWithDelegate:(id)aDelegate didCloseAllSelector:(SEL)didCloseSelector contextInfo:(Object)info
 {
     var context = {
         delegate: aDelegate,
