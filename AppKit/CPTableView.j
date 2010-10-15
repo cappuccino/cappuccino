@@ -2667,7 +2667,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 }
 
 
-- (void)highlightSelectionInClipRect:(_CGRect)aRect
+- (void)highlightSelectionInClipRect:(CGRect)aRect
 {
     if (_selectionHighlightStyle === CPTableViewSelectionHighlightStyleNone)
         return;
