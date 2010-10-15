@@ -2706,11 +2706,15 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 
     CGContextBeginPath(context);
 
-    var gradientCache = [self selectionGradientColors],
-        topLineColor = [gradientCache objectForKey:CPSourceListTopLineColor],
-        bottomLineColor = [gradientCache objectForKey:CPSourceListBottomLineColor],
-        gradientColor = [gradientCache objectForKey:CPSourceListGradient],
-        normalSelectionHighlightColor = [self selectionHighlightColor];
+    if (drawGradient)
+    {
+        var gradientCache = [self selectionGradientColors],
+            topLineColor = [gradientCache objectForKey:CPSourceListTopLineColor],
+            bottomLineColor = [gradientCache objectForKey:CPSourceListBottomLineColor],
+            gradientColor = [gradientCache objectForKey:CPSourceListGradient];
+    }
+    
+    var normalSelectionHighlightColor = [self selectionHighlightColor];
 
     // dont do these lookups if there are no group rows
     if ([_groupRows count])
