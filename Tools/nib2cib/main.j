@@ -33,7 +33,7 @@
 var FILE = require("file");
 var OS = require("os");
 
-var parser = new (require("args").Parser)();
+var parser = new (require("narwhal/args").Parser)();
 
 parser.usage("INPUT_FILE [OUTPUT_FILE]");
 

@@ -1,8 +1,8 @@
 var SYSTEM = require("system");
 var FILE = require("file");
 var OS = require("os");
-var UTIL = require("util");
-var stream = require("term").stream;
+var UTIL = require("narwhal/util");
+var stream = require("narwhal/term").stream;
 
 var requiresSudo = false;
 
@@ -15,7 +15,7 @@ function ensurePackageUpToDate(packageName, requiredVersion, options)
 {
     options = options || {};
     
-    var packageInfo = require("packages").catalog[packageName];
+    var packageInfo = require("narwhal/packages").catalog[packageName];
     if (!packageInfo)
     {
         if (options.optional)
@@ -39,7 +39,7 @@ function ensurePackageUpToDate(packageName, requiredVersion, options)
 
     if (!options.noupdate)
     {
-        print("Update? yes or no:");
+        print("Update? Existing package will be overwritten. yes or no:");
         if (!SYSTEM.env["CAPP_AUTO_UPGRADE"] && system.stdin.readLine() !== "yes\n")
         {
             print("Jake aborted.");
@@ -58,25 +58,35 @@ function ensurePackageUpToDate(packageName, requiredVersion, options)
         else
             OS.system(["tusk", "install", "--force", packageName]);
     }
-    
+
+    if (options.after)
+    {
+        options.after(packageInfo.directory);
+    }
+
     if (options.message)
     {
-        print(options.message)
+        print(options.message);
         OS.exit(1);
     }
 }
 
 // UPDATE THESE TO PICK UP CORRESPONDING CHANGES IN DEPENDENCIES
-ensurePackageUpToDate("jake",           "0.1.5");
+ensurePackageUpToDate("jake",           "0.3");
 ensurePackageUpToDate("browserjs",      "0.1.1");
 ensurePackageUpToDate("shrinksafe",     "0.2");
-ensurePackageUpToDate("narwhal",        "0.2.2", {
+ensurePackageUpToDate("narwhal",        "0.3.1", {
     noupdate : true,
-    message : "Update Narwhal to 0.2.1 by running bootstrap.sh, or pulling the latest from git (see: http://github.com/280north/narwhal)."
+    message : "Update Narwhal by re-running bootstrap.sh, or pulling the latest from git (see: http://github.com/280north/narwhal)."
 });
-ensurePackageUpToDate("narwhal-jsc",    "0.1.1", {
+ensurePackageUpToDate("narwhal-jsc",    "0.3", {
     optional : true,
-    message : "Rebuild narwhal-jsc by changing to the narwhal-jsc package directory and running \"make webkit\"."
+    after : function(dir) {
+        if (OS.system("cd " + OS.enquote(dir) + " && make webkit")) {
+            print("Problem building narwhal-jsc.");
+            OS.exit(1);
+        }
+    }
 });
 
 var JAKE = require("jake");
@@ -163,7 +173,7 @@ function additionalPackages()
 // checks to see if a path is in the package catalog
 function packageInCatalog(path)
 {
-    var catalog = require("packages").catalog;
+    var catalog = require("narwhal/packages").catalog;
     for (var name in catalog)
         if (String(catalog[name].directory) === String(path))
             return true;

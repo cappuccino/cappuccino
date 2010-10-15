@@ -6,9 +6,9 @@ var OS = require("os"),
     FILE = require("file"),
     OBJJ = require("objective-j");
 
-var stream = require("term").stream;
+var stream = require("narwhal/term").stream;
 
-var parser = new (require("args").Parser)();
+var parser = new (require("narwhal/args").Parser)();
 
 parser.usage("DESTINATION_DIRECTORY");
 
@@ -63,7 +63,7 @@ parser.option("--list-frameworks", "listFrameworks")
 parser.helpful();
 
 // FIXME: better way to do this:
-var CAPP_HOME = require("packages").catalog["cappuccino"].directory;
+var CAPP_HOME = require("narwhal/packages").catalog["cappuccino"].directory;
 var templatesDirectory = FILE.join(CAPP_HOME, "lib", "capp", "Resources", "Templates");
 
 function gen(/*va_args*/)
