@@ -970,21 +970,17 @@ var CPThemeStateAutoCompleting = @"CPThemeStateAutoCompleting",
     _tokenField = tokenField;
 }
 
-- (void)sizeToFit
+- (CGSize)_minimumFrameSize
 {
-    [super sizeToFit];
-
-    var size = [self bounds].size,
+    var size = CGRectMakeZero(),
         minSize = [self currentValueForThemeAttribute:@"min-size"],
         contentInset = [self currentValueForThemeAttribute:@"content-inset"];
 
+    // Tokens are fixed height, so we could as well have used max-size here.
     size.height = minSize.height;
+    size.width = MAX(minSize.width, [([self stringValue] || @" ") sizeWithFont:[self font]].width + contentInset.left + contentInset.right);
 
-    // this is necessary to recalculate the width of the token due to new CPTextField sizeToFit
-    // behaviour that doesn't resize width on bezeled textfield
-    size.width = [([self stringValue] || @" ") sizeWithFont:[self font]].width + contentInset.left + contentInset.right;
-
-    [self setFrameSize:size];
+    return size;
 }
 
 - (void)layoutSubviews
