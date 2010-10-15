@@ -1,6 +1,6 @@
 /*
  * AppController.j
- * ScrollPerformanceTest
+ * GroupRowTest
  *
  * Created by You on August 27, 2010.
  * Copyright 2010, Your Company All rights reserved.
@@ -35,7 +35,7 @@
     [iconColumn setWidth:32.0];
     [iconColumn setMinWidth:32.0];
     [iconColumn setDataView:iconView];
-    //[tableView addTableColumn:iconColumn];
+    [tableView addTableColumn:iconColumn];
 
     iconImage = [[CPImage alloc] initWithContentsOfFile:"http://cappuccino.org/images/favicon.png" size:CGSizeMake(16,16)];
 
@@ -52,7 +52,48 @@
         [tableView addTableColumn:column];
     }
 
-    var scrollView = [[CPScrollView alloc] initWithFrame:CGRectMake(0, 0, CGRectGetWidth([contentView bounds]), CGRectGetHeight([contentView bounds]))];
+    var scrollView = [[CPScrollView alloc] initWithFrame:CGRectMake(0, 0, CGRectGetWidth([contentView bounds]), CGRectGetHeight([contentView bounds]) / 2)];
+   
+    [scrollView setDocumentView:tableView];
+    [scrollView setAutoresizingMask:CPViewWidthSizable | CPViewHeightSizable];
+    
+    [contentView addSubview:scrollView];
+
+    tableView = [[CPTableView alloc] initWithFrame:CGRectMake(0.0, 0.0, 400.0, 400.0)];
+
+    [tableView setAllowsMultipleSelection:YES];
+    [tableView setAllowsColumnSelection:YES];
+
+    [tableView setColumnAutoresizingStyle:CPTableViewLastColumnOnlyAutoresizingStyle];
+    [tableView setSelectionHighlightStyle:CPTableViewSelectionHighlightStyleSourceList];
+    [tableView setDelegate:self];
+    [tableView setDataSource:self];
+
+    
+    var iconView = [[CPImageView alloc] initWithFrame:CGRectMake(16,16,0,0)];
+    [iconView setImageScaling:CPScaleNone];
+    var iconColumn = [[CPTableColumn alloc] initWithIdentifier:"icons"];
+    [iconColumn setWidth:32.0];
+    [iconColumn setMinWidth:32.0];
+    [iconColumn setDataView:iconView];
+    [tableView addTableColumn:iconColumn];
+
+    iconImage = [[CPImage alloc] initWithContentsOfFile:"http://cappuccino.org/images/favicon.png" size:CGSizeMake(16,16)];
+
+
+    for (var i = 1; i <= 5; i++)
+    {
+        var column = [[CPTableColumn alloc] initWithIdentifier:String(i)];
+
+        [[column headerView] setStringValue:"Number " + i];
+
+        [column setMaxWidth:500.0];
+        [column setWidth:200.0];
+        
+        [tableView addTableColumn:column];
+    }
+
+    var scrollView = [[CPScrollView alloc] initWithFrame:CGRectMake(0, CGRectGetHeight([contentView bounds]) / 2, CGRectGetWidth([contentView bounds]), CGRectGetHeight([contentView bounds]) / 2)];
    
     [scrollView setDocumentView:tableView];
     [scrollView setAutoresizingMask:CPViewWidthSizable | CPViewHeightSizable];
@@ -78,7 +119,6 @@
 
 - (BOOL)tableView:(CPTableView)aTableView isGroupRow:(int)aRow
 {
-    console.log("called: "+aRow);
     var groups = [];
 
     for(var i = 0; i < 100; i+=5)
@@ -87,58 +127,4 @@
     return [groups containsObject:aRow];
 }
 
-@end
-
-@implementation CPTableView (foo)
-- (void)_drawGroupRowsForRects:(CPArray)rects
-{
-    if (_selectionHighlightStyle === CPTableViewSelectionHighlightStyleSourceList || !rects.length)
-        return;
-
-    var context = [[CPGraphicsContext currentContext] graphicsPort],
-        i = rects.length;
-
-    CGContextBeginPath(context);
-
-    var gradientCache = [self selectionGradientColors],
-        topLineColor = [CPColor colorWithHexString:"d3d3d3"],
-        bottomLineColor = [CPColor colorWithHexString:"bebebd"],
-        gradientColor = CGGradientCreateWithColorComponents(CGColorSpaceCreateDeviceRGB(), [220.0 / 255.0, 220.0 / 255.0, 220.0 / 255.0,1.0, 
-                                                                                            199.0 / 255.0, 199.0 / 255.0, 199.0 / 255.0,1.0], [0,1], 2),
-        drawGradient = YES;
-
-        while (i--)
-        {
-            var rowRect = rects[i];
-
-            CGContextAddRect(context, rowRect);
-
-            if (drawGradient)
-            {
-                var minX = CGRectGetMinX(rowRect),
-                    minY = CGRectGetMinY(rowRect),
-                    maxX = CGRectGetMaxX(rowRect),
-                    maxY = CGRectGetMaxY(rowRect);
-
-                CGContextDrawLinearGradient(context, gradientColor, rowRect.origin, CGPointMake(minX, maxY), 0);
-                CGContextClosePath(context);
-
-                CGContextBeginPath(context);
-                CGContextMoveToPoint(context, minX, minY);
-                CGContextAddLineToPoint(context, maxX, minY);
-                CGContextClosePath(context);
-                CGContextSetStrokeColor(context, topLineColor);
-                CGContextStrokePath(context);
-
-                CGContextBeginPath(context);
-                CGContextMoveToPoint(context, minX, maxY);
-                CGContextAddLineToPoint(context, maxX, maxY - 1);
-                CGContextClosePath(context);
-                CGContextSetStrokeColor(context, bottomLineColor);
-                CGContextStrokePath(context);
-            }
-        }
-
-    CGContextClosePath(context);
-}
 @end

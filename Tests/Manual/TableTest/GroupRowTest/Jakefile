@@ -1,6 +1,6 @@
 /*
  * Jakefile
- * ScrollPerformanceTest
+ * GroupRowTest
  *
  * Created by You on August 27, 2010.
  * Copyright 2010, Your Company All rights reserved.
@@ -15,17 +15,17 @@ var ENV = require("system").env,
     configuration = ENV["CONFIG"] || ENV["CONFIGURATION"] || ENV["c"] || "Debug",
     OS = require("os");
 
-app ("ScrollPerformanceTest", function(task)
+app ("GroupRowTest", function(task)
 {
-    task.setBuildIntermediatesPath(FILE.join("Build", "ScrollPerformanceTest.build", configuration));
+    task.setBuildIntermediatesPath(FILE.join("Build", "GroupRowTest.build", configuration));
     task.setBuildPath(FILE.join("Build", configuration));
 
-    task.setProductName("ScrollPerformanceTest");
-    task.setIdentifier("com.yourcompany.ScrollPerformanceTest");
+    task.setProductName("GroupRowTest");
+    task.setIdentifier("com.yourcompany.GroupRowTest");
     task.setVersion("1.0");
     task.setAuthor("Your Company");
     task.setEmail("feedback @nospam@ yourcompany.com");
-    task.setSummary("ScrollPerformanceTest");
+    task.setSummary("GroupRowTest");
     task.setSources((new FileList("**/*.j")).exclude(FILE.join("Build", "**")));
     task.setResources(new FileList("Resources/**"));
     task.setIndexFilePath("index.html");
@@ -37,7 +37,7 @@ app ("ScrollPerformanceTest", function(task)
         task.setCompilerFlags("-O");
 });
 
-task ("default", ["ScrollPerformanceTest"], function()
+task ("default", ["GroupRowTest"], function()
 {
     printResults(configuration);
 });
@@ -58,36 +58,36 @@ task ("release", function()
 
 task ("run", ["debug"], function()
 {
-    OS.system(["open", FILE.join("Build", "Debug", "ScrollPerformanceTest", "index.html")]);
+    OS.system(["open", FILE.join("Build", "Debug", "GroupRowTest", "index.html")]);
 });
 
 task ("run-release", ["release"], function()
 {
-    OS.system(["open", FILE.join("Build", "Release", "ScrollPerformanceTest", "index.html")]);
+    OS.system(["open", FILE.join("Build", "Release", "GroupRowTest", "index.html")]);
 });
 
 task ("deploy", ["release"], function()
 {
-    FILE.mkdirs(FILE.join("Build", "Deployment", "ScrollPerformanceTest"));
-    OS.system(["press", "-f", FILE.join("Build", "Release", "ScrollPerformanceTest"), FILE.join("Build", "Deployment", "ScrollPerformanceTest")]);
+    FILE.mkdirs(FILE.join("Build", "Deployment", "GroupRowTest"));
+    OS.system(["press", "-f", FILE.join("Build", "Release", "GroupRowTest"), FILE.join("Build", "Deployment", "GroupRowTest")]);
     printResults("Deployment")
 });
 
 task ("desktop", ["release"], function()
 {
-    FILE.mkdirs(FILE.join("Build", "Desktop", "ScrollPerformanceTest"));
-    require("cappuccino/nativehost").buildNativeHost(FILE.join("Build", "Release", "ScrollPerformanceTest"), FILE.join("Build", "Desktop", "ScrollPerformanceTest", "ScrollPerformanceTest.app"));
+    FILE.mkdirs(FILE.join("Build", "Desktop", "GroupRowTest"));
+    require("cappuccino/nativehost").buildNativeHost(FILE.join("Build", "Release", "GroupRowTest"), FILE.join("Build", "Desktop", "GroupRowTest", "GroupRowTest.app"));
     printResults("Desktop")
 });
 
 task ("run-desktop", ["desktop"], function()
 {
-    OS.system([FILE.join("Build", "Desktop", "ScrollPerformanceTest", "ScrollPerformanceTest.app", "Contents", "MacOS", "NativeHost"), "-i"]);
+    OS.system([FILE.join("Build", "Desktop", "GroupRowTest", "GroupRowTest.app", "Contents", "MacOS", "NativeHost"), "-i"]);
 });
 
 function printResults(configuration)
 {
     print("----------------------------");
-    print(configuration+" app built at path: "+FILE.join("Build", configuration, "ScrollPerformanceTest"));
+    print(configuration+" app built at path: "+FILE.join("Build", configuration, "GroupRowTest"));
     print("----------------------------");
 }

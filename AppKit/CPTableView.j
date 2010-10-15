@@ -2666,7 +2666,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
 }
 
 
-- (void)highlightSelectionInClipRect:(CGRect)aRect
+- (void)highlightSelectionInClipRect:(_CGRect)aRect
 {
     if (_selectionHighlightStyle === CPTableViewSelectionHighlightStyleNone)
         return;
@@ -2723,21 +2723,27 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     {   
         var currentIndex = indexes[count],
             rowRect = CGRectIntersection(objj_msgSend(self, rectSelector, currentIndex), aRect);
-        CGContextAddRect(context, rowRect);
 
-        var shouldUseGroupGradient = [_groupRows containsIndex:currentIndex];
-        console.log(currentIndex, [_groupRows description], shouldUseGroupGradient);
+        // group rows get the same highlight style as other rows if they're source list...
+        if (!drawGradient)
+            var shouldUseGroupGradient = [_groupRows containsIndex:currentIndex];
 
         if (drawGradient || shouldUseGroupGradient)
         {
-            //console.log("gradiant fill for row: " + currentIndex);
             var minX = _CGRectGetMinX(rowRect),
                 minY = _CGRectGetMinY(rowRect),
                 maxX = _CGRectGetMaxX(rowRect),
                 maxY = _CGRectGetMaxY(rowRect) - deltaHeight;
 
-            // use a special selection gradient for group rows
-
+            if (!drawGradient)
+            {
+                //If there is no source list gradient we need to close the selection path and fill it now
+                [normalSelectionHighlightColor setFill];
+                CGContextClosePath(context);
+                CGContextFillPath(context);
+                CGContextBeginPath(context);
+            }
+            CGContextAddRect(context, rowRect);
 
             CGContextDrawLinearGradient(context, (shouldUseGroupGradient) ? gradientGroupColor : gradientColor, rowRect.origin, _CGPointMake(minX, maxY), 0);
             CGContextClosePath(context);
@@ -2755,36 +2761,28 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
             CGContextClosePath(context);
             CGContextSetStrokeColor(context, (shouldUseGroupGradient) ? bottomGroupLineColor : bottomLineColor);
             CGContextStrokePath(context);
-            CGContextClosePath(context);
         }
         else
-        {
-            CGContextClosePath(context);
-            //console.log("fill 1 for row:" + currentIndex);
-            [normalSelectionHighlightColor setFill];
-            CGContextFillPath(context);
-            
-        }
+            CGContextAddRect(context, rowRect);
     }
 
     CGContextClosePath(context);
 
-    /*if (!drawGradient)
+    if (!drawGradient)
     {
-        console.log("fill 2 for row: " +  currentIndex);
         [normalSelectionHighlightColor setFill];
         CGContextFillPath(context);
-    }*/
+    }
 
     CGContextBeginPath(context);
     var gridStyleMask = [self gridStyleMask];
     for(var i = 0; i < count2; i++)
     {
          var rect = objj_msgSend(self, rectSelector, indexes[i]),
-             minX = CGRectGetMinX(rect) - 0.5,
-             maxX = CGRectGetMaxX(rect) - 0.5,
-             minY = CGRectGetMinY(rect) - 0.5,
-             maxY = CGRectGetMaxY(rect) - 0.5;
+             minX = _CGRectGetMinX(rect) - 0.5,
+             maxX = _CGRectGetMaxX(rect) - 0.5,
+             minY = _CGRectGetMinY(rect) - 0.5,
+             maxY = _CGRectGetMaxY(rect) - 0.5;
 
         if ([_selectedRowIndexes count] >= 1 && gridStyleMask & CPTableViewSolidVerticalGridLineMask)
         {
@@ -2798,7 +2796,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
             for (var c = firstExposedColumn; c < exposedColumnCount; c++)
             {
                 var colRect = [self rectOfColumn:exposedColumnIndexes[c]],
-                    colX = CGRectGetMaxX(colRect) + 0.5;
+                    colX = _CGRectGetMaxX(colRect) + 0.5;
 
                 CGContextMoveToPoint(context, colX, minY);
                 CGContextAddLineToPoint(context, colX, maxY);
