@@ -135,7 +135,14 @@ var CPStringRegexSpecialCharacters = [
 */
 - (id)initWithString:(CPString)aString
 {
-	return CreateSubclassableString(aString, [self class]);
+    if (aClass === CPString) 
+        return String(aString);
+
+    var result = new String(aString);
+
+    result.isa = [self class];
+
+    return result;
 }
 
 /*!
@@ -795,17 +802,6 @@ var CPStringRegexSpecialCharacters = [
 }
 
 @end
-
-var CreateSubclassableString = function(aString, aClass)
-{
-	if (aClass === CPString) return String(aString);
-	
-	var result = new String(aString);
-	
-	result.isa = aClass;
-	
-	return result;
-};
 
 var diacritics = [[192,198],[224,230],[231,231],[232,235],[236,239],[242,246],[249,252]]; // Basic Latin ; Latin-1 Supplement.
 var normalized = [65,97,99,101,105,111,117];
