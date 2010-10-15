@@ -403,6 +403,7 @@ CPThemeStateHighlighted     = CPThemeState("highlighted");
 CPThemeStateSelected        = CPThemeState("selected");
 CPThemeStateTableDataView   = CPThemeState("tableDataView");
 CPThemeStateSelectedDataView = CPThemeStateSelectedTableDataView = CPThemeState("selectedTableDataView");
+CPThemeStateGroupRow        = CPThemeState("CPThemeStateGroupRow");
 CPThemeStateBezeled         = CPThemeState("bezeled");
 CPThemeStateBordered        = CPThemeState("bordered");
 CPThemeStateEditable        = CPThemeState("editable");
