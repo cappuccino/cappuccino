@@ -91,3 +91,4 @@
 @import "CPWindow.j"
 @import "CPWindowController.j"
 @import "CPArrayController.j"
+@import "CPStepper.j"
