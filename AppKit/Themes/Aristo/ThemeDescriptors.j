@@ -1488,15 +1488,16 @@ var themedButtonValues = nil,
                 [@"stepper-bezel-big-highlighted-down-right.png", 3.0, 12.0]
             ],
             PatternIsHorizontal),
-        
+
         themeValues =
         [
-            [@"bezel-color-up-button",      bezelUp,                CPThemeStateBordered],
-            [@"bezel-color-down-button",    bezelDown,              CPThemeStateBordered],
-            [@"bezel-color-up-button",      bezelUpDisabled,        CPThemeStateBordered | CPThemeStateDisabled],
-            [@"bezel-color-down-button",    bezelDownDisabled,      CPThemeStateBordered | CPThemeStateDisabled],
-            [@"bezel-color-up-button",      bezelUpHighlighted,     CPThemeStateBordered | CPThemeStateHighlighted],
-            [@"bezel-color-down-button",    bezelDownHighlighted,   CPThemeStateBordered | CPThemeStateHighlighted]
+            [@"bezel-color-up-button",      bezelUp,                        CPThemeStateBordered],
+            [@"bezel-color-down-button",    bezelDown,                      CPThemeStateBordered],
+            [@"bezel-color-up-button",      bezelUpDisabled,                CPThemeStateBordered | CPThemeStateDisabled],
+            [@"bezel-color-down-button",    bezelDownDisabled,              CPThemeStateBordered | CPThemeStateDisabled],
+            [@"bezel-color-up-button",      bezelUpHighlighted,             CPThemeStateBordered | CPThemeStateHighlighted],
+            [@"bezel-color-down-button",    bezelDownHighlighted,           CPThemeStateBordered | CPThemeStateHighlighted],
+            [@"min-size",                   CGSizeMake(19.0, 25.0)]
         ];
 
     [self registerThemeValues:themeValues forView:stepper];
@@ -1504,6 +1505,88 @@ var themedButtonValues = nil,
     return stepper;
 }
 
+
++ (CPTextFieldStepper)themedTextFieldStepper
+{
+    var texfieldStepper = [CPTextFieldStepper stepper],
+
+        bezelUpTextField = PatternColor(
+            [
+                ["stepper-textfield-bezel-big-up-left.png", 3.0, 13.0],
+                ["stepper-textfield-bezel-big-up-center.png", 13.0, 13.0],
+                ["stepper-textfield-bezel-big-up-right.png", 3.0, 13.0]
+            ],
+            PatternIsHorizontal),
+
+        bezelDownTextField = PatternColor(
+            [
+                ["stepper-textfield-bezel-big-down-left.png", 3.0, 12.0],
+                ["stepper-textfield-bezel-big-down-center.png", 13.0, 12.0],
+                ["stepper-textfield-bezel-big-down-right.png", 3.0, 12.0]
+            ],
+            PatternIsHorizontal),
+
+        bezelUpDisabledTextField = PatternColor(
+            [
+                ["stepper-textfield-bezel-big-disabled-up-left.png", 3.0, 13.0],
+                ["stepper-textfield-bezel-big-disabled-up-center.png", 13.0, 13.0],
+                ["stepper-textfield-bezel-big-disabled-up-right.png", 3.0, 13.0]
+            ],
+            PatternIsHorizontal),
+
+        bezelDownDisabledTextField = PatternColor(
+            [
+                ["stepper-textfield-bezel-big-disabled-down-left.png", 3.0, 12.0],
+                ["stepper-textfield-bezel-big-disabled-down-center.png", 13.0, 12.0],
+                ["stepper-textfield-bezel-big-disabled-down-right.png", 3.0, 12.0]
+            ],
+            PatternIsHorizontal),
+
+        bezelUpHighlightedTextField = PatternColor(
+            [
+                [@"stepper-textfield-bezel-big-highlighted-up-left.png", 3.0, 13.0],
+                [@"stepper-textfield-bezel-big-highlighted-up-center.png", 13.0, 13.0],
+                [@"stepper-textfield-bezel-big-highlighted-up-right.png", 3.0, 13.0]
+            ],
+            PatternIsHorizontal),
+
+        bezelDownHighlightedTextField = PatternColor(
+            [
+                [@"stepper-textfield-bezel-big-highlighted-down-left.png", 3.0, 12.0],
+                [@"stepper-textfield-bezel-big-highlighted-down-center.png", 13.0, 12.0],
+                [@"stepper-textfield-bezel-big-highlighted-down-right.png", 3.0, 12.0]
+            ],
+            PatternIsHorizontal),
+            
+        bezelColorTextField = PatternColor(
+            [
+                ["stepper-textfield-bezel-big-bezel-square-0.png", 2.0, 3.0],
+                ["stepper-textfield-bezel-big-bezel-square-1.png", 1.0, 3.0],
+                ["stepper-textfield-bezel-big-bezel-square-2.png", 2.0, 3.0],
+                ["stepper-textfield-bezel-big-bezel-square-3.png", 2.0, 1.0],
+                ["stepper-textfield-bezel-big-bezel-square-4.png", 1.0, 1.0],
+                ["stepper-textfield-bezel-big-bezel-square-5.png", 2.0, 1.0],
+                ["stepper-textfield-bezel-big-bezel-square-6.png", 2.0, 2.0],
+                ["stepper-textfield-bezel-big-bezel-square-7.png", 1.0, 2.0],
+                ["stepper-textfield-bezel-big-bezel-square-8.png", 2.0, 2.0]
+            ]),        
+            
+        themeValues =
+        [
+            [@"bezel-color-up-button",      bezelUpTextField,                   CPThemeStateBordered],
+            [@"bezel-color-down-button",    bezelDownTextField,                 CPThemeStateBordered],
+            [@"bezel-color-up-button",      bezelUpDisabledTextField,           CPThemeStateBordered | CPThemeStateDisabled],
+            [@"bezel-color-down-button",    bezelDownDisabledTextField,         CPThemeStateBordered | CPThemeStateDisabled],
+            [@"bezel-color-up-button",      bezelUpHighlightedTextField,        CPThemeStateBordered | CPThemeStateHighlighted],
+            [@"bezel-color-down-button",    bezelDownHighlightedTextField,      CPThemeStateBordered | CPThemeStateHighlighted],
+            [@"bezel-color-textfield",      bezelColorTextField,                CPThemeStateBezeled],
+            [@"min-size",                   CGSizeMake(43.0, 25.0)]
+        ];
+
+    [self registerThemeValues:themeValues forView:texfieldStepper];
+
+    return texfieldStepper;
+}
 
 @end
 
