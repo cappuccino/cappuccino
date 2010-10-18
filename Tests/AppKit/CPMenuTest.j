@@ -149,6 +149,20 @@
     [self assertTrue:saveDocumentAsWasCalled message:"saveDocumentAsWasCalled"];
 }
 
+- (void)testIndexOfItemWithTitleWithCopiedString
+{
+    var aMenu = [[CPMenu alloc] init],
+        firstTitle = "first"
+        secondTitle = "second",
+        firstItem = [[CPMenuItem alloc] initWithTitle:firstTitle action:nil keyEquivalent:@""],
+        secondItem = [[CPMenuItem alloc] initWithTitle:[secondTitle copy] action:nil keyEquivalent:@""];
+        
+    [aMenu addItem:firstItem];
+    [aMenu addItem:secondItem]; 
+    [self assertTrue:([aMenu indexOfItemWithTitle:[firstTitle copy]] == 0)];
+    [self assertTrue:([aMenu indexOfItemWithTitle:secondTitle] == 1)];
+}
+
 - (void)escape:(id)sender
 {
     escapeWasCalled = YES;
