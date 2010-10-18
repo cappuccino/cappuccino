@@ -33,13 +33,14 @@ var CPStepperButtonsSize = CPSizeMake(19, 13);
 */
 @implementation CPStepper: CPControl
 {
+    BOOL        _valueWraps     @accessors(property=valueWraps);
     int         _increment      @accessors(property=increment);
     int         _maxValue       @accessors(property=maxValue);
     int         _minValue       @accessors(property=minValue);
     int         _value          @accessors(getter=value);
     
-    CPButton    _buttonDown;
-    CPButton    _buttonUp;
+    _CPContinuousButton    _buttonDown;
+    _CPContinuousButton    _buttonUp;
 }
 
 #pragma mark -
@@ -84,8 +85,10 @@ var CPStepperButtonsSize = CPSizeMake(19, 13);
         _maxValue       = 10;
         _minValue       = -10;
         _increment      = 1;
+        _valueWraps     = YES;
         
-        _buttonUp = [[CPButton alloc] initWithFrame:CPRectMake(aFrame.size.width - CPStepperButtonsSize.width, 0, CPStepperButtonsSize.width, CPStepperButtonsSize.height)];
+        _buttonUp = [[_CPContinuousButton alloc] initWithFrame:CPRectMake(aFrame.size.width - CPStepperButtonsSize.width, 0, CPStepperButtonsSize.width, CPStepperButtonsSize.height)];
+        [_buttonUp setContinuous:YES];
         [_buttonUp setTarget:self];
         [_buttonUp setAction:@selector(_buttonDidClick:)];
         [_buttonUp setAutoresizingMask:CPViewNotSizable];
@@ -94,7 +97,8 @@ var CPStepperButtonsSize = CPSizeMake(19, 13);
         [_buttonUp setValue:[self valueForThemeAttribute:@"bezel-color-up-button" inState:CPThemeStateBordered | CPThemeStateHighlighted] forThemeAttribute:@"bezel-color" inState:CPThemeStateBordered | CPThemeStateHighlighted];
         [self addSubview:_buttonUp];
         
-        _buttonDown = [[CPButton alloc] initWithFrame:CPRectMake(aFrame.size.width - CPStepperButtonsSize.width, CPStepperButtonsSize.height, CPStepperButtonsSize.width, CPStepperButtonsSize.height - 1)];
+        _buttonDown = [[_CPContinuousButton alloc] initWithFrame:CPRectMake(aFrame.size.width - CPStepperButtonsSize.width, CPStepperButtonsSize.height, CPStepperButtonsSize.width, CPStepperButtonsSize.height - 1)];
+        [_buttonDown setContinuous:YES];
         [_buttonDown setTarget:self];
         [_buttonDown setAction:@selector(_buttonDidClick:)];
         [_buttonDown setAutoresizingMask:CPViewNotSizable];
@@ -130,15 +134,24 @@ var CPStepperButtonsSize = CPSizeMake(19, 13);
         [super setFrame:aFrame];
 }
 
+/*!  set is CPStepper should autorepear
+    @param shouldAutoRepeat if YES, the first mouse down does one increment (decrement) and, after each delay of 0.5 seconds
+*/
+- (void)setAutorepeat:(BOOL)shouldAutoRepeat
+{
+    [_buttonUp setContinuous:shouldAutoRepeat];
+    [_buttonDown setContinuous:shouldAutoRepeat];
+}
+
 #pragma mark -
 #pragma mark Accessors
 
 - (void)setValue:(int)aValue
 {
     if (aValue > _maxValue)
-        [self setValue:_maxValue forKeyPath:@"_value"];
+        [self setValue:_valueWraps ? _minValue : _maxValue forKeyPath:@"_value"];
     else if (aValue < _minValue)
-        [self setValue:_minValue forKeyPath:@"_value"];
+        [self setValue:_valueWraps ? _maxValue : _minValue forKeyPath:@"_value"];
     else
         [self setValue:aValue forKeyPath:@"_value"];
 }
@@ -339,4 +352,101 @@ var CPStepperButtonsSize = CPSizeMake(19, 13);
     [aCoder encodeObject:_textField forKey:@"_textField"];
 }
 
+@end
+
+
+
+/*! This is a subclass of CPButton that allows to send continuous action.
+    This may should be include in CPButton..
+*/
+@implementation _CPContinuousButton : CPButton
+{
+    CPTimer _continuousDelayTimer;
+    CPTimer _continuousTimer;
+    float   _periodicDelay;
+    float   _periodicInterval;
+}
+
+- (void)initWithFrame:(CGRect)aFrame
+{
+    if (self = [super initWithFrame:aFrame])
+    {
+        _periodicInterval   = 0.05;
+        _periodicDelay      = 0.5;
+    }
+    
+    return self;
+}
+
+- (void)setPeriodicDelay:(float)aDelay interval:(float)anInterval
+{
+    _periodicDelay      = aDelay;
+    _periodicInterval   = anInterval;
+}
+
+- (void)mouseDown:(CPEvent)anEvent
+{
+    if ([self isContinuous])
+    {
+        _continuousDelayTimer = [CPTimer scheduledTimerWithTimeInterval:_periodicDelay callback: function(){
+            if (!_continuousTimer)
+                _continuousTimer = [CPTimer scheduledTimerWithTimeInterval:_periodicInterval target:self selector:@selector(onContinousEvent:) userInfo:anEvent repeats:YES];
+        } 
+        repeats:NO];
+    }
+    
+    [super mouseDown:anEvent];
+}
+
+- (void)onContinousEvent:(CPTimer)aTimer
+{
+    if (_target && _action && [_target respondsToSelector:_action])
+        [_target performSelector:_action withObject:self];
+}
+
+- (void)stopTracking:(CGPoint)lastPoint at:(CGPoint)aPoint mouseIsUp:(BOOL)mouseIsUp
+{
+    [self invalidateTimers];
+    [super stopTracking:lastPoint at:aPoint mouseIsUp:mouseIsUp];
+}
+
+- (void)invalidateTimers
+{
+    if (_continuousTimer)
+    {
+        [_continuousTimer invalidate];    
+        _continuousTimer = nil;
+    }
+    
+    if (_continuousDelayTimer)
+    {
+        [_continuousDelayTimer invalidate];
+        _continuousDelayTimer = nil;
+    }
+}
+
+@end
+
+
+
+@implementation _CPContinuousButton (CPCodingCompliance)
+
+- (id)initWithCoder:(CPCoder)aCoder
+{
+    if (self = [super initWithCoder:aCoder])
+    {
+        _periodicDelay      = [aCoder decodeObjectForKey:@"_periodicDelay"];
+        _periodicInterval   = [aCoder decodeObjectForKey:@"_periodicInterval"];
+    }
+    return self;
+}
+
+- (void)encodeWithCoder:(CPCoder)aCoder
+{
+    [super encodeWithCoder:aCoder];
+    
+    [self invalidateTimers];
+    [aCoder encodeObject:_periodicDelay forKey:@"_periodicDelay"];
+    [aCoder encodeObject:_periodicInterval forKey:@"_periodicInterval"];
+}
 @end
