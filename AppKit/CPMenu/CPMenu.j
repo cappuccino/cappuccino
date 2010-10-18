@@ -435,7 +435,7 @@ var _CPMenuBarVisible               = NO,
         count = _items.length;
 
     for (; index < count; ++index)
-        if ([_items[index] title] === aTitle)
+        if ([_items[index] title] == aTitle)
             return index;
 
     return CPNotFound;
