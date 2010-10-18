@@ -29,12 +29,10 @@
 */
 @implementation CPStepper: CPControl
 {
-    id          _target     @accessors(property=target);
     int         _increment  @accessors(property=increment);
     int         _maxValue   @accessors(property=maxValue);
     int         _minValue   @accessors(property=minValue);
     int         _value      @accessors(getter=value);
-    SEL         _action     @accessors(property=action);
 
     CPButton    _buttonDown;
     CPButton    _buttonUp;
@@ -136,8 +134,8 @@
     else
         _value = ((_value - _increment) < _minValue) ? _minValue : _value - _increment;
 
-    if (_target && _action && [_target respondsToSelector:_action])
-        [_target performSelector:_action withObject:self];
+    if ([self target] && [self action] && [[self target] respondsToSelector:[self action]])
+        [[self target] performSelector:[self action] withObject:self];
 }
 
 - (IBAction)performClickUp:(id)aSender
@@ -173,8 +171,6 @@
 {
     if (self = [super initWithCoder:aCoder])
     {
-        _target     = [aCoder decodeObjectForKey:@"_target"];
-        _action     = [aCoder decodeObjectForKey:@"_action"];
         _maxValue   = [aCoder decodeObjectForKey:@"_maxValue"];
         _minValue   = [aCoder decodeObjectForKey:@"_minValue"];
         _increment  = [aCoder decodeObjectForKey:@"_increment"];
@@ -188,12 +184,11 @@
 {
     [super encodeWithCoder:aCoder];
     
-    [aCoder encodeObject:_target forKey:@"_target"];
-    [aCoder encodeObject:_target forKey:@"_target"];
-    [aCoder encodeObject:_target forKey:@"_target"];
-    [aCoder encodeObject:_target forKey:@"_target"];
-    [aCoder encodeObject:_target forKey:@"_target"];
-    [aCoder encodeObject:_target forKey:@"_target"];
+    [aCoder encodeObject:_maxValue forKey:@"_maxValue"];
+    [aCoder encodeObject:_minValue forKey:@"_minValue"];
+    [aCoder encodeObject:_increment forKey:@"_increment"];
+    [aCoder encodeObject:_buttonUp forKey:@"_buttonUp"];
+    [aCoder encodeObject:_buttonDown forKey:@"_buttonDown"];
 }
 
 @end
