@@ -37,7 +37,6 @@ var CPStepperButtonsSize = CPSizeMake(19, 13);
     int         _increment      @accessors(property=increment);
     int         _maxValue       @accessors(property=maxValue);
     int         _minValue       @accessors(property=minValue);
-    int         _value          @accessors(getter=value);
     
     _CPContinuousButton    _buttonDown;
     _CPContinuousButton    _buttonUp;
@@ -52,10 +51,10 @@ var CPStepperButtonsSize = CPSizeMake(19, 13);
     @param maxValue the maximal acceptable value of the stepper
     @return Initialized CPStepper
 */
-+ (CPStepper)stepperWithInitialValue:(int)aValue minValue:(int)aMinValue maxValue:(int)aMaxValue
++ (CPStepper)stepperWithInitialValue:(float)aValue minValue:(float)aMinValue maxValue:(float)aMaxValue
 {
     var stepper = [[CPStepper alloc] initWithFrame:CPRectMake(0, 0, 19, 25)];
-    [stepper setValue:aValue];
+    [stepper setDoubleValue:aValue];
     [stepper setMinValue:aMinValue];
     [stepper setMaxValue:aMaxValue];
     
@@ -63,14 +62,14 @@ var CPStepperButtonsSize = CPSizeMake(19, 13);
 }
 
 /*! Initializes a CPStepper with default values: 
-        - minValue = -100
-        - maxValue = 100
-        - value = 0
+        - minValue = 0.0
+        - maxValue = 59.0
+        - value = 0.0
     @return Initialized CPStepper
 */
 + (CPStepper)stepper
 {
-    return [CPStepper stepperWithInitialValue:0 minValue:-100 maxValue:100];
+    return [CPStepper stepperWithInitialValue:0.0 minValue:0.0 maxValue:59.0];
 }
 
 /*! Initializes the CPStepper
@@ -81,11 +80,12 @@ var CPStepperButtonsSize = CPSizeMake(19, 13);
 {
     if (self = [super initWithFrame:aFrame])
     {
-        _value          = 0;
-        _maxValue       = 10;
-        _minValue       = -10;
-        _increment      = 1;
+        _maxValue       = 59.0;
+        _minValue       = 0.0;
+        _increment      = 1.0;
         _valueWraps     = YES;
+        
+        [self setDoubleValue:0.0];
         
         _buttonUp = [[_CPContinuousButton alloc] initWithFrame:CPRectMake(aFrame.size.width - CPStepperButtonsSize.width, 0, CPStepperButtonsSize.width, CPStepperButtonsSize.height)];
         [_buttonUp setContinuous:YES];
@@ -126,7 +126,7 @@ var CPStepperButtonsSize = CPSizeMake(19, 13);
 }
 
 /*! set the frame of the CPStepper and check if width is not smaller than theme min-size
-    
+    @param aFrame the frame
 */
 - (void)setFrame:(CGRect)aFrame
 {
@@ -143,17 +143,17 @@ var CPStepperButtonsSize = CPSizeMake(19, 13);
     [_buttonDown setContinuous:shouldAutoRepeat];
 }
 
-#pragma mark -
-#pragma mark Accessors
-
-- (void)setValue:(int)aValue
+/*! set the current value of the stepper
+    @param aValue a float contaning the value
+*/
+- (void)setDoubleValue:(float)aValue
 {
     if (aValue > _maxValue)
-        [self setValue:_valueWraps ? _minValue : _maxValue forKeyPath:@"_value"];
+        [super setDoubleValue:_valueWraps ? _minValue : _maxValue];
     else if (aValue < _minValue)
-        [self setValue:_valueWraps ? _maxValue : _minValue forKeyPath:@"_value"];
+        [super setDoubleValue:_valueWraps ? _maxValue : _minValue];
     else
-        [self setValue:aValue forKeyPath:@"_value"];
+        [super setDoubleValue:aValue];
 }
 
 #pragma mark -
@@ -167,12 +167,12 @@ var CPStepperButtonsSize = CPSizeMake(19, 13);
         return;
 
     if (aSender == _buttonUp)
-        [self setValue:_value + _increment];
+        [self setDoubleValue:([self doubleValue] + _increment)];
     else
-        [self setValue:_value - _increment];
+        [self setDoubleValue:([self doubleValue] - _increment)];
 
-    if ([self target] && [self action] && [[self target] respondsToSelector:[self action]])
-        [[self target] performSelector:[self action] withObject:self];
+    if (_target && _action && [_target respondsToSelector:_action])
+        [self sendAction:_action to:_target];
 }
 
 /*! @perform a programatic click on up button
@@ -236,124 +236,6 @@ var CPStepperButtonsSize = CPSizeMake(19, 13);
 }
 
 @end
-
-
-
-
-/*! CPTextFieldStepper is a subclass of CPStepper. it contains a textfield that displays the current stepper value
-*/
-@implementation CPTextFieldStepper : CPStepper
-{
-    CPTextField    _textField;
-}
-
-
-#pragma mark -
-#pragma mark Initialization
-
-/*! Initializes a CPTextFieldStepper with given values
-    @param aValue the initial value of the CPStepper
-    @param minValue the minimal acceptable value of the stepper
-    @param maxValue the maximal acceptable value of the stepper
-    @return Initialized CPStepper
-*/
-+ (CPTextFieldStepper)stepperWithInitialValue:(int)aValue minValue:(int)aMinValue maxValue:(int)aMaxValue
-{
-    var stepper = [[CPTextFieldStepper alloc] initWithFrame:CPRectMake(0, 0, 100, 25)];
-    [stepper setValue:aValue];
-    [stepper setMinValue:aMinValue];
-    [stepper setMaxValue:aMaxValue];
-    
-    return stepper;
-}
-
-/*! Initializes a CPStepper with default values: 
-        - minValue = -100
-        - maxValue = 100
-        - value = 0
-    @return Initialized CPStepper
-*/
-+ (CPTextFieldStepper)stepper
-{
-    return [CPTextFieldStepper stepperWithInitialValue:0 minValue:-100 maxValue:100];
-}
-
-
-/*! Initializes the CPTextFieldStepper with the textfield
-    @param aFrame the frame of the control
-    @return initialized CPTextFieldStepper
-*/
-- (id)initWithFrame:(CGRect)aFrame
-{
-    if (self = [super initWithFrame:aFrame])
-    {
-        [_buttonUp setAutoresizingMask:CPViewMinXMargin];
-        [_buttonDown setAutoresizingMask:CPViewMinXMargin];
-        
-        _textField = [[CPTextField alloc] initWithFrame:CPRectMake(0, 0, aFrame.size.width - CPStepperButtonsSize.width, aFrame.size.height)];
-        [_textField setBezeled:YES];
-        [_textField setEditable:NO];
-        [_textField setAutoresizingMask:CPViewWidthSizable];
-        [_textField bind:@"intValue" toObject:self withKeyPath:@"value" options:nil];
-        [_textField setValue:CGInsetMake(0.0, 0.0, 0.0, 0.0) forThemeAttribute:@"bezel-inset"];
-        [_textField setValue:[self valueForThemeAttribute:@"bezel-color-textfield" inState:CPThemeStateBezeled] forThemeAttribute:@"bezel-color"];
-        [_textField setValue:[self valueForThemeAttribute:@"bezel-color-textfield" inState:CPThemeStateBezeled | CPThemeStateDisabled] forThemeAttribute:@"bezel-color" inState:CPThemeStateBezeled | CPThemeStateDisabled];
-        [_textField setValue:CGInsetMake(7.0, 7.0, 5.0, 8.0) forThemeAttribute:@"content-inset"];
-        
-        [self addSubview:_textField];
-    }
-    
-    return self;
-}
-
-/*! set the CPTextFieldStepper enabled or not
-    @param shouldEnabled BOOL that define if stepper is enabled or not.
-*/
-- (void)setEnabled:(BOOL)shouldEnabled
-{
-    [super setEnabled:shouldEnabled];
-    [_textField setEnabled:shouldEnabled];
-}
-
-
-#pragma mark -
-#pragma mark Theming
-
-+ (CPString)themeClass
-{
-    return @"textfieldstepper";
-}
-
-+ (id)themeAttributes
-{
-    return [CPDictionary dictionaryWithObjects:[[CPNull null], [CPNull null], [CPNull null]]
-                                       forKeys:[@"bezel-color-up-button", @"bezel-color-down-button", @"bezel-color-textfield"]];
-}
-
-@end
-
-
-@implementation CPTextFieldStepper (CPCodingCompliance)
-
-- (id)initWithCoder:(CPCoder)aCoder
-{
-    if (self = [super initWithCoder:aCoder])
-    {
-        _textField   = [aCoder decodeObjectForKey:@"_textField"];
-
-    }
-    return self;
-}
-
-- (void)encodeWithCoder:(CPCoder)aCoder
-{
-    [super encodeWithCoder:aCoder];
-    
-    [aCoder encodeObject:_textField forKey:@"_textField"];
-}
-
-@end
-
 
 
 /*! This is a subclass of CPButton that allows to send continuous action.
