@@ -284,12 +284,22 @@ var CPStepperButtonsSize = CPSizeMake(19, 13);
         [_textField bind:@"intValue" toObject:self withKeyPath:@"value" options:nil];
         [_textField setValue:CGInsetMake(0.0, 0.0, 0.0, 0.0) forThemeAttribute:@"bezel-inset"];
         [_textField setValue:[self valueForThemeAttribute:@"bezel-color-textfield" inState:CPThemeStateBezeled] forThemeAttribute:@"bezel-color"];
+        [_textField setValue:[self valueForThemeAttribute:@"bezel-color-textfield" inState:CPThemeStateBezeled | CPThemeStateDisabled] forThemeAttribute:@"bezel-color" inState:CPThemeStateBezeled | CPThemeStateDisabled];
         [_textField setValue:CGInsetMake(7.0, 7.0, 5.0, 8.0) forThemeAttribute:@"content-inset"];
         
         [self addSubview:_textField];
     }
     
     return self;
+}
+
+/*! set the CPTextFieldStepper enabled or not
+    @param shouldEnabled BOOL that define if stepper is enabled or not.
+*/
+- (void)setEnabled:(BOOL)shouldEnabled
+{
+    [super setEnabled:shouldEnabled];
+    [_textField setEnabled:shouldEnabled];
 }
 
 

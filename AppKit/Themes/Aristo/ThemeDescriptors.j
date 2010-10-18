@@ -1569,7 +1569,20 @@ var themedButtonValues = nil,
                 ["stepper-textfield-bezel-big-bezel-square-6.png", 2.0, 2.0],
                 ["stepper-textfield-bezel-big-bezel-square-7.png", 1.0, 2.0],
                 ["stepper-textfield-bezel-big-bezel-square-8.png", 2.0, 2.0]
-            ]),        
+            ]),
+        
+        bezelColorTextFieldDisabled = PatternColor(
+            [
+                ["stepper-textfield-bezel-big-disabled-bezel-square-0.png", 2.0, 3.0],
+                ["stepper-textfield-bezel-big-disabled-bezel-square-1.png", 1.0, 3.0],
+                ["stepper-textfield-bezel-big-disabled-bezel-square-2.png", 2.0, 3.0],
+                ["stepper-textfield-bezel-big-disabled-bezel-square-3.png", 2.0, 1.0],
+                ["stepper-textfield-bezel-big-disabled-bezel-square-4.png", 1.0, 1.0],
+                ["stepper-textfield-bezel-big-disabled-bezel-square-5.png", 2.0, 1.0],
+                ["stepper-textfield-bezel-big-disabled-bezel-square-6.png", 2.0, 2.0],
+                ["stepper-textfield-bezel-big-disabled-bezel-square-7.png", 1.0, 2.0],
+                ["stepper-textfield-bezel-big-disabled-bezel-square-8.png", 2.0, 2.0]
+            ]),
             
         themeValues =
         [
@@ -1580,6 +1593,7 @@ var themedButtonValues = nil,
             [@"bezel-color-up-button",      bezelUpHighlightedTextField,        CPThemeStateBordered | CPThemeStateHighlighted],
             [@"bezel-color-down-button",    bezelDownHighlightedTextField,      CPThemeStateBordered | CPThemeStateHighlighted],
             [@"bezel-color-textfield",      bezelColorTextField,                CPThemeStateBezeled],
+            [@"bezel-color-textfield",      bezelColorTextFieldDisabled,        CPThemeStateBezeled | CPThemeStateDisabled],
             [@"min-size",                   CGSizeMake(43.0, 25.0)]
         ];
 
