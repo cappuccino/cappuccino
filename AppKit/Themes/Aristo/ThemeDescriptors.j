@@ -777,9 +777,10 @@ var themedButtonValues = nil,
             ],
             PatternIsHorizontal),
 
-        placeholderColor = [CPColor colorWithCalibratedRed:189.0 / 255.0 green:199.0 / 255.0 blue:211.0 / 255.0 alpha:1.0],
+        placeholderColor = [CPColor colorWithCalibratedRed:189.0 / 255.0 green:199.0 / 255.0 blue:211.0 / 255.0 alpha:1.0];
 
-        themeValues =
+    // Global for reuse by CPSearchField
+    themedRoundedTextFieldValues =
         [
             [@"bezel-color",    bezelColor,                         CPTextFieldStateRounded | CPThemeStateBezeled],
             [@"bezel-color",    bezelFocusedColor,                  CPTextFieldStateRounded | CPThemeStateBezeled | CPThemeStateEditing],
@@ -795,7 +796,7 @@ var themedButtonValues = nil,
             [@"max-size",       CGSizeMake(-1.0, 30.0), CPTextFieldStateRounded | CPThemeStateBezeled]
         ];
 
-    [self registerThemeValues:themeValues forView:textfield];
+    [self registerThemeValues:themedRoundedTextFieldValues forView:textfield];
 
     [textfield setBezeled:YES];
     [textfield setBezelStyle:CPTextFieldRoundedBezel];
@@ -805,6 +806,13 @@ var themedButtonValues = nil,
     [textfield setEditable:YES];
 
     return textfield;
+}
+
++ (CPSearchField)themedSearchField
+{
+    var searchField = [[CPSearchField alloc] initWithFrame:CGRectMake(0.0, 0.0, 60.0, 30.0)];
+    [self registerThemeValues:nil forView:searchField inherit:themedRoundedTextFieldValues];
+    return searchField;
 }
 
 + (CPTokenField)themedTokenField
