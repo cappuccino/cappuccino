@@ -226,7 +226,7 @@ var currentCursor = nil,
     currentCursor = self; 
 
 #if PLATFORM(DOM)
-    [[self class] _setCursorCSS:_cssString];
+    [[self class] _setCursorCSS:_cssString + ", auto"];
 #endif
 
 }
