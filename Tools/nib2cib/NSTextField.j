@@ -31,37 +31,37 @@
 - (id)NS_initWithCoder:(CPCoder)aCoder
 {
     self = [super NS_initWithCoder:aCoder];
-    
+
     if (self)
     {
         var cell = [aCoder decodeObjectForKey:@"NSCell"];
-        
+
         if ([cell isEditable] && [[cell font] isEqual:[CPFont boldSystemFontOfSize:12.0]])
             [self setFont:[CPFont systemFontOfSize:12.0]];
 
-        [self sendActionOn:CPKeyUpMask|CPKeyDownMask];
-        
+        [self sendActionOn:CPKeyUpMask | CPKeyDownMask];
+
         [self setEditable:[cell isEditable]];
         [self setSelectable:[cell isSelectable]];
-        
+
         [self setBordered:[cell isBordered]];
         [self setBezeled:[cell isBezeled]];
         [self setBezelStyle:[cell bezelStyle]];
         [self setDrawsBackground:[cell drawsBackground]];
-        
+
         [self setLineBreakMode:[cell lineBreakMode]];
         [self setAlignment:[cell alignment]];
         [self setTextFieldBackgroundColor:[cell backgroundColor]];
-        
+
         [self setPlaceholderString:[cell placeholderString]];
-        
+
         var textColor = [cell textColor],
             defaultColor = [self currentValueForThemeAttribute:@"text-color"];
-            
+
         // Don't change the text color if it is not the default, that messes up the theme lookups later        
         if (![textColor isEqual:defaultColor])
             [self setTextColor:[cell textColor]];
-        
+
         var frame = [self frame];
 
         [self setFrameOrigin:CGPointMake(frame.origin.x, frame.origin.y)];
@@ -69,7 +69,7 @@
 
         CPLog.debug([self stringValue] + " => isBordered=" + [self isBordered] + ", isBezeled="  + [self isBezeled] + ", bezelStyle=" + [self bezelStyle] + "("+[cell stringValue]+", " + [cell placeholderString] + ")");
     }
-    
+
     return self;
 }
 
@@ -103,7 +103,7 @@
 - (id)initWithCoder:(CPCoder)aCoder
 {
     self = [super initWithCoder:aCoder];
-    
+
     if (self)
     {
         _bezelStyle         = [aCoder decodeObjectForKey:@"NSTextBezelStyle"] || CPTextFieldSquareBezel;
@@ -112,7 +112,7 @@
         _textColor          = [aCoder decodeObjectForKey:@"NSTextColor"];
         _placeholderString  = [aCoder decodeObjectForKey:@"NSPlaceholderString"];
     }
-    
+
     return self;
 }
 
