@@ -67,14 +67,6 @@
         [self setFrameOrigin:CGPointMake(frame.origin.x, frame.origin.y)];
         [self setFrameSize:CGSizeMake(frame.size.width, frame.size.height)];
 
-        // Only adjust the origin and size if this is a bezeled textfield
-        // this makes sure that labels positioned in IB are properly positioned after nibcib
-        if ([self isBezeled])
-        {
-            [self setFrameOrigin:CGPointMake(frame.origin.x - 4.0, frame.origin.y - 4.0)];
-            [self setFrameSize:CGSizeMake(frame.size.width + 8.0, frame.size.height + 8.0)];
-        }
-
         CPLog.debug([self stringValue] + " => isBordered=" + [self isBordered] + ", isBezeled="  + [self isBezeled] + ", bezelStyle=" + [self bezelStyle] + "("+[cell stringValue]+", " + [cell placeholderString] + ")");
     }
     
