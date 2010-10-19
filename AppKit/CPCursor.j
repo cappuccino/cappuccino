@@ -212,8 +212,9 @@ var currentCursor = nil,
 
 - (id)initWithImage:(CPImage)image hotSpot:(CPPoint)hotSpot
 {
-    return [self initWithCSSString:"url(" + [image filename] + ")"];
+    return [self initWithCSSString:"url(" + [image filename] + "), auto"];
 }
+
 
 - (void)mouseEntered:(CPEvent)event
 {
@@ -228,7 +229,7 @@ var currentCursor = nil,
     currentCursor = self;
 
 #if PLATFORM(DOM)
-    [[self class] _setCursorCSS:_cssString + ", auto"];
+    [[self class] _setCursorCSS:_cssString];
 #endif
 
 }
