@@ -212,8 +212,9 @@ var currentCursor = nil,
 
 - (id)initWithImage:(CPImage)image hotSpot:(CPPoint)hotSpot
 {
-    return [self initWithCSSString:"url(" + [image filename] + ")"];
+    return [self initWithCSSString:"url(" + [image filename] + "), auto"];
 }
+
 
 - (void)mouseEntered:(CPEvent)event
 {

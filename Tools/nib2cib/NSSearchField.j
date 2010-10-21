@@ -33,7 +33,7 @@
     if (self)
     {
         var cell = [aCoder decodeObjectForKey:@"NSCell"];
-        
+
         [self setRecentsAutosaveName:[cell recentsAutosaveName]];
         [self setMaximumRecents:[cell maximumRecents]];
         [self setSendsWholeSearchString:[cell sendsWholeSearchString]];
@@ -78,11 +78,11 @@
         _recentsAutosaveName = [aCoder decodeObjectForKey:@"NSRecentsAutosaveName"];
         _maximumRecents = [aCoder decodeIntForKey:@"NSMaximumRecents"];
         _sendsWholeSearchString = [aCoder decodeBoolForKey:@"NSSendsWholeSearchString"] ? YES : NO;
-    
+
         // These bytes don't seem to be used for anything else but the send immediately flag
         _sendsSearchStringImmediately = [aCoder decodeBytesForKey:@"NSSearchFieldFlags"] ? YES: NO;
     }
-    
+
     return self;
 }
 

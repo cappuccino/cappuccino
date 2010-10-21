@@ -247,7 +247,7 @@ var CPBindingOperationAnd = 0,
         valueTransformer = [options objectForKey:CPValueTransformerBindingOption];
 
     if (valueTransformer && [[valueTransformer class] allowsReverseTransformation])
-        aValue = [valueTransformer transformedValue:aValue];
+        aValue = [valueTransformer reverseTransformedValue:aValue];
 
     return aValue;
 }

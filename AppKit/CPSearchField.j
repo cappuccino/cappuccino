@@ -68,6 +68,11 @@ var RECENT_SEARCH_PREFIX = @"   ";
     CPTimer     _partialStringTimer;
 }
 
++ (CPString)themeClass
+{
+    return @"searchfield"
+}
+
 + (void)initialize
 {
     if (self != [CPSearchField class])

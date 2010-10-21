@@ -248,7 +248,7 @@ var _CPNotificationCenterPostNotification = function(/* CPNotificationCenter */ 
     else
     {
         var key = [anObject UID],
-            observers = [_objectObservers objectForKey:key];
+            observers = [_objectObservers objectForKey:key],
             count = observers ? observers.length : 0;
 
         while (count--)
