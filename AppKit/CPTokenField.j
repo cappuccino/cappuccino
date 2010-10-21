@@ -93,6 +93,8 @@ var CPThemeStateAutoCompleting = @"CPThemeStateAutoCompleting",
         [_tokenScrollView setHasVerticalScroller:NO];
         var contentView = [[CPView alloc] initWithFrame:CGRectMakeZero()];
         [_tokenScrollView setDocumentView:contentView];
+        [contentView setAutoresizingMask:CPViewWidthSizable];
+        [_tokenScrollView setAutoresizingMask:CPViewWidthSizable | CPViewHeightSizable];
         [self addSubview:_tokenScrollView];
 
         _tokenIndex = 0;
@@ -132,6 +134,7 @@ var CPThemeStateAutoCompleting = @"CPThemeStateAutoCompleting",
         [self setBezeled:YES];
 
         [self setObjectValue:[]];
+        [self setNeedsLayout];
     }
 
     return self;
@@ -431,7 +434,8 @@ var CPThemeStateAutoCompleting = @"CPThemeStateAutoCompleting",
     if (aValue === superValue || [aValue isEqualToArray:superValue])
         return;
 
-    var objectValue = [aValue copy];
+    var objectValue = [aValue copy],
+        contentView = [_tokenScrollView documentView];
 
     // Because we do not know for sure which tokens are removed we remove them all
     for (var i = 0; i < [[self _tokens] count]; i++)
@@ -450,6 +454,8 @@ var CPThemeStateAutoCompleting = @"CPThemeStateAutoCompleting",
             [tokenView setTokenField:self];
             [tokenView setStringValue:token];
             [objectValue addObject:tokenView];
+
+            [contentView addSubview:tokenView];
         }
     }
 
@@ -827,7 +833,6 @@ var CPThemeStateAutoCompleting = @"CPThemeStateAutoCompleting",
     if (![[self _tokens] isKindOfClass:[CPArray class]])
         return;
 
-    [contentView setSubviews:[]];
     for (var i = 0, count = [[self _tokens] count]; i < count; i++)
     {
         var tokenView = [[self _tokens] objectAtIndex:i];
@@ -835,8 +840,6 @@ var CPThemeStateAutoCompleting = @"CPThemeStateAutoCompleting",
         // Make sure we are only changing completed tokens
         if ([tokenView isKindOfClass:[CPString class]])
             continue;
-
-        [contentView addSubview:tokenView];
 
         [tokenView setHighlighted:[_selectedTokenIndexes containsIndex:i]];
         [tokenView sizeToFit];
@@ -862,8 +865,8 @@ var CPThemeStateAutoCompleting = @"CPThemeStateAutoCompleting",
 
     if (_scrollToLastToken)
     {
-        // This code is responsible for showing the end of the token list
-        // by default when a new object value is set.
+        // This code is responsible for showing the last line of tokens
+        // initially.
         if ([[self window] firstResponder] != self)
             [self _scrollTokenViewToVisible:[[self _tokens] lastObject]];
         _scrollToLastToken = NO;
