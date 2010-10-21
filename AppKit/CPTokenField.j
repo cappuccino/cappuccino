@@ -823,12 +823,12 @@ var CPThemeStateAutoCompleting = @"CPThemeStateAutoCompleting",
         offset = CPPointMake(contentOrigin.x, contentOrigin.y),
         spaceBetweenTokens = CPSizeMake(2.0, 2.0);
 
-    // Hack to make sure we are handling with an array
+    // Hack to make sure we are handling an array
     if (![[self _tokens] isKindOfClass:[CPArray class]])
         return;
 
     [contentView setSubviews:[]];
-    for (var i = 0; i < [[self _tokens] count]; i++)
+    for (var i = 0, count = [[self _tokens] count]; i < count; i++)
     {
         var tokenView = [[self _tokens] objectAtIndex:i];
 
@@ -853,7 +853,7 @@ var CPThemeStateAutoCompleting = @"CPThemeStateAutoCompleting",
             offset.y += tokenViewSize.height + spaceBetweenTokens.height;
         }
 
-        // Shrink to fit.
+        // Make sure there is enough space to hold the new token.
         [contentView setFrame:CGRectMake(0, 0, CGRectGetWidth([_tokenScrollView bounds]), offset.y + tokenViewSize.height)];
 
         [tokenView setFrameOrigin:offset];
@@ -892,11 +892,9 @@ var CPThemeStateAutoCompleting = @"CPThemeStateAutoCompleting",
         {
             offset.x = contentOrigin.x;
             offset.y += tokenHeight + spaceBetweenTokens.height;
+            [contentView setFrame:CGRectMake(0, 0, CGRectGetWidth([_tokenScrollView bounds]), offset.y + tokenHeight)];
         }
     }
-
-    // Make the content view just the right size.
-    [contentView setFrame:CGRectMake(0, 0, CGRectGetWidth([_tokenScrollView bounds]), offset.y + tokenHeight)];
 
     var inputFrame = CGRectMake(offset.x, offset.y, [contentView bounds].size.width - offset.x, tokenHeight);
     element.style.left = inputFrame.origin.x + "px";
