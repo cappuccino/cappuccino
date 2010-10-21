@@ -41,7 +41,7 @@
     var firstPart = aKeyPath.substring(0, dotIndex),
         lastPart = aKeyPath.substring(dotIndex + 1);
 
-    return [[self valueForKeyPath:firstPart] valueForKeyPath:lastPart];
+    return [[self valueForKeyPath:firstPart] mutableArrayValueForKeyPath:lastPart];
 }
 
 @end
@@ -114,19 +114,19 @@
     if ([_proxyObject respondsToSelector:_removeSEL])
         _remove = [_proxyObject methodForSelector:_removeSEL];
 
-    _replaceSEL = sel_getName(@"replaceObjectFrom"+capitalizedKey+"AtIndex:withObject:");
+    _replaceSEL = sel_getName(@"replaceObjectIn"+capitalizedKey+"AtIndex:withObject:");
     if ([_proxyObject respondsToSelector:_replaceSEL])
         _replace = [_proxyObject methodForSelector:_replaceSEL];
 
-    _insertManySEL = sel_getName(@"insertObjects:in"+capitalizedKey+"AtIndexes:");
+    _insertManySEL = sel_getName(@"insert"+capitalizedKey+":atIndexes:");
     if ([_proxyObject respondsToSelector:_insertManySEL])
         _insertMany = [_proxyObject methodForSelector:_insertManySEL];
 
-    _removeManySEL = sel_getName(@"removeObjectsFrom"+capitalizedKey+"AtIndexes:");
+    _removeManySEL = sel_getName(@"remove"+capitalizedKey+"AtIndexes:");
     if ([_proxyObject respondsToSelector:_removeManySEL])
         _remove = [_proxyObject methodForSelector:_removeManySEL];
 
-    _replaceManySEL = sel_getName(@"replaceObjectsFrom"+capitalizedKey+"AtIndexes:withObjects:");
+    _replaceManySEL = sel_getName(@"replace"+capitalizedKey+"AtIndexes:with"+capitalizedKey+":");
     if ([_proxyObject respondsToSelector:_replaceManySEL])
         _replace = [_proxyObject methodForSelector:_replaceManySEL];
 
