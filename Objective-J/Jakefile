@@ -24,7 +24,7 @@ require("../common.jake");
 
 var FILE = require("file"),
     OS = require("os"),
-    stream = require("term").stream;
+    stream = require("narwhal/term").stream;
 
 //$BUILD_CONFIGURATION_DIR = "../Build"
 $BROWSER_FILE       = FILE.join("Browser", "Objective-J.js");

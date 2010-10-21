@@ -23,6 +23,7 @@
 @import "CPInvocation.j"
 @import "CPObject.j"
 @import "CPProxy.j"
+@import "CPRunLoop.j"
 
 
 var CPUndoManagerNormal     = 0,

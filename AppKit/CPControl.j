@@ -532,7 +532,7 @@ var CPControlBlackColor     = [CPColor blackColor];
 - (void)textDidBeginEditing:(CPNotification)note
 {
     //this looks to prevent false propagation of notifications for other objects
-    if([note object] != self)
+    if ([note object] != self)
         return;
 
     [[CPNotificationCenter defaultCenter] postNotificationName:CPControlTextDidBeginEditingNotification object:self userInfo:[CPDictionary dictionaryWithObject:[note object] forKey:"CPFieldEditor"]];
@@ -541,7 +541,7 @@ var CPControlBlackColor     = [CPColor blackColor];
 - (void)textDidChange:(CPNotification)note
 {
     //this looks to prevent false propagation of notifications for other objects
-    if([note object] != self)
+    if ([note object] != self)
         return;
 
     [[CPNotificationCenter defaultCenter] postNotificationName:CPControlTextDidChangeNotification object:self userInfo:[CPDictionary dictionaryWithObject:[note object] forKey:"CPFieldEditor"]];
@@ -550,7 +550,7 @@ var CPControlBlackColor     = [CPColor blackColor];
 - (void)textDidEndEditing:(CPNotification)note
 {
     //this looks to prevent false propagation of notifications for other objects
-    if([note object] != self)
+    if ([note object] != self)
         return;
 
     [self _reverseSetBinding];
@@ -558,27 +558,95 @@ var CPControlBlackColor     = [CPColor blackColor];
     [[CPNotificationCenter defaultCenter] postNotificationName:CPControlTextDidEndEditingNotification object:self userInfo:[CPDictionary dictionaryWithObject:[note object] forKey:"CPFieldEditor"]];
 }
 
-#define BRIDGE(UPPERCASE, LOWERCASE, ATTRIBUTENAME) \
-/*! Sets the value for ATTRIBUTENAME */\
-- (void)set##UPPERCASE:(id)aValue\
-{\
-[self setValue:aValue forThemeAttribute:ATTRIBUTENAME];\
-}\
-/*! Returns the current value for ATTRIBUTENAME */\
-- (id)LOWERCASE\
-{\
-return [self valueForThemeAttribute:ATTRIBUTENAME];\
+- (void)setAlignment:(CPTextAlignment)alignment
+{
+    [self setValue:alignment forThemeAttribute:@"alignment"];
 }
 
-BRIDGE(Alignment, alignment, "alignment")
-BRIDGE(VerticalAlignment, verticalAlignment, "vertical-alignment")
-BRIDGE(LineBreakMode, lineBreakMode, "line-break-mode")
-BRIDGE(TextColor, textColor, "text-color")
-BRIDGE(Font, font, "font")
-BRIDGE(TextShadowColor, textShadowColor, "text-shadow-color")
-BRIDGE(TextShadowOffset, textShadowOffset, "text-shadow-offset")
-BRIDGE(ImagePosition, imagePosition, "image-position")
-BRIDGE(ImageScaling, imageScaling, "image-scaling")
+- (CPTextAlignment)alignment
+{
+    return [self valueForThemeAttribute:@"alignment"];
+}
+
+- (void)setVerticalAlignment:(CPTextVerticalAlignment)alignment
+{
+    [self setValue:alignment forThemeAttribute:@"vertical-alignment"];
+}
+
+- (CPTextVerticalAlignment)verticalAlignment
+{
+    return [self valueForThemeAttribute:@"vertical-alignment"];
+}
+
+- (void)setLineBreakMode:(CPLineBreakMode)mode
+{
+    [self setValue:mode forThemeAttribute:@"line-break-mode"];
+}
+
+- (CPLineBreakMode)lineBreakMode
+{
+    return [self valueForThemeAttribute:@"line-break-mode"];
+}
+
+- (void)setTextColor:(CPColor)aColor
+{
+    [self setValue:aColor forThemeAttribute:@"text-color"];
+}
+
+- (CPColor)textColor
+{
+    return [self valueForThemeAttribute:@"text-color"];
+}
+
+- (void)setTextShadowColor:(CPColor)aColor
+{
+    [self setValue:aColor forThemeAttribute:@"text-shadow-color"];
+}
+
+- (CPColor)textShadowColor
+{
+    return [self valueForThemeAttribute:@"text-shadow-color"];
+}
+
+- (void)setTextShadowOffset:(float)offset
+{
+    [self setValue:offset forThemeAttribute:@"text-shadow-offset"];
+}
+
+- (float)textShadowOffset
+{
+    return [self valueForThemeAttribute:@"text-shadow-offset"];
+}
+
+- (void)setFont:(CPFont)aFont
+{
+    [self setValue:aFont forThemeAttribute:@"font"];
+}
+
+- (CPFont)font
+{
+    return [self valueForThemeAttribute:@"font"];
+}
+
+- (void)setImagePosition:(CPCellImagePosition)position
+{
+    [self setValue:position forThemeAttribute:@"image-position"];
+}
+
+- (CPCellImagePosition)imagePosition
+{
+    return [self valueForThemeAttribute:@"image-position"];
+}
+
+- (void)setImageScaling:(CPImageScaling)scaling
+{
+    [self setValue:scaling forThemeAttribute:@"image-scaling"];
+}
+
+- (CPImageScaling)imageScaling
+{
+    return [self valueForThemeAttribute:@"image-scaling"];
+}
 
 - (void)setEnabled:(BOOL)isEnabled
 {

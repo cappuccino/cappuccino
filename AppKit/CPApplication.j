@@ -507,7 +507,8 @@ CPRunContinuesResponse  = -1002;
     var theWindow = aModalSession._window;
 
     [theWindow center];
-    [theWindow makeKeyAndOrderFront:self];
+    [theWindow makeKeyWindow];
+    [theWindow orderFront:self];
 
 //    [theWindow._bridge _obscureWindowsBelowModalWindow];
 
@@ -683,7 +684,7 @@ CPRunContinuesResponse  = -1002;
     if ([super tryToPerform:anAction with:anObject])
         return YES;
 
-    if([_delegate respondsToSelector:anAction])
+    if ([_delegate respondsToSelector:anAction])
     {
         [_delegate performSelector:anAction withObject:anObject];
 
@@ -873,8 +874,8 @@ CPRunContinuesResponse  = -1002;
 
     while (--count >= 0)
     {
-        var aWindow = [_windows objectAtIndex:count];
-        var context = aWindow._sheetContext;
+        var aWindow = [_windows objectAtIndex:count],
+            context = aWindow._sheetContext;
 
         if (context != nil && context["sheet"] === sheet)
         {
@@ -892,7 +893,7 @@ CPRunContinuesResponse  = -1002;
 
 - (CPArray)arguments
 {
-    if(_fullArgsString !== window.location.hash)
+    if (_fullArgsString !== window.location.hash)
         [self _reloadArguments];
 
     return _args;
@@ -900,7 +901,7 @@ CPRunContinuesResponse  = -1002;
 
 - (void)setArguments:(CPArray)args
 {
-    if(!args || args.length == 0)
+    if (!args || args.length == 0)
     {
         _args = [];
         window.location.hash = @"#";
@@ -908,13 +909,13 @@ CPRunContinuesResponse  = -1002;
         return;
     }
 
-    if([args class] != CPArray)
+    if ([args class] != CPArray)
         args = [CPArray arrayWithObject:args];
 
     _args = args;
 
     var toEncode = [_args copy];
-    for(var i=0, count = toEncode.length; i<count; i++)
+    for (var i = 0, count = toEncode.length; i < count; i++)
         toEncode[i] = encodeURIComponent(toEncode[i]);
 
     var hash = [toEncode componentsJoinedByString:@"/"];

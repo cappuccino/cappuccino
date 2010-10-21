@@ -1,3 +1,5 @@
+@import <AppKit/CPView.j>
+
 var HORIZONTAL_MARGIN           = 8.0,
     SUBMENU_INDICATOR_MARGIN    = 3.0,
     VERTICAL_MARGIN             = 4.0;

@@ -14,6 +14,8 @@ Implemented class methods:
 
 #include "Platform/Platform.h"
 
+@import <Foundation/CPObject.j>
+
 var currentCursor = nil,
     cursorStack = [],
     cursors = {},
@@ -61,9 +63,9 @@ var currentCursor = nil,
         if (CPBrowserIsEngine(CPGeckoBrowserEngine))
             cursorURLFormat += ", default";
     }
-    
+
     var url = [CPString stringWithFormat:cursorURLFormat, imageName];
-    
+
     return [[CPCursor alloc] initWithCSSString:url];
 }
 
@@ -96,7 +98,7 @@ var currentCursor = nil,
 {
     if (CPBrowserIsEngine(CPInternetExplorerBrowserEngine))
         return [CPCursor cursorWithImageNamed:CPStringFromSelector(_cmd)];
-        
+
     return [CPCursor cursorWithCSSString:"s-resize"]; // WebKit | FF | opera
 }
 
@@ -172,7 +174,7 @@ var currentCursor = nil,
     else if (CPBrowserIsEngine(CPOperaBrowserEngine))
         return [CPCursor cursorWithCSSString:@"move"];
 
-    return [CPCursor cursorWithImageNamed:CPStringFromSelector(_cmd)]; // WebKit only. move in FFMac|Opera 
+    return [CPCursor cursorWithImageNamed:CPStringFromSelector(_cmd)]; // WebKit only. move in FFMac|Opera
 }
 
 + (CPCursor)closedHandCursor
@@ -182,7 +184,7 @@ var currentCursor = nil,
     else if (CPBrowserIsEngine(CPGeckoBrowserEngine))
         return [CPCursor cursorWithCSSString:@"-moz-grabbing"];
 
-    return [CPCursor cursorWithImageNamed:CPStringFromSelector(_cmd)]; // WebKit || FF 
+    return [CPCursor cursorWithImageNamed:CPStringFromSelector(_cmd)]; // WebKit || FF
 }
 
 + (CPCursor)disappearingItemCursor
@@ -224,7 +226,7 @@ var currentCursor = nil,
 
 - (void)set
 {
-    currentCursor = self; 
+    currentCursor = self;
 
 #if PLATFORM(DOM)
     [[self class] _setCursorCSS:_cssString];

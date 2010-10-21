@@ -22,6 +22,13 @@
 
 @import "CPView.j"
 
+// CPBoxType
+CPBoxPrimary    = 0;
+CPBoxSecondary  = 1;
+CPBoxSeperator  = 2;
+CPBoxOldStyle   = 3;
+CPBoxCustom     = 4;
+
 // CPBorderType
 CPNoBorder      = 0;
 CPLineBorder    = 1;
@@ -30,6 +37,7 @@ CPGrooveBorder  = 3;
 
 @implementation CPBox : CPView
 {
+    CPBoxType       _boxType;
     CPBorderType    _borderType;
 
     CPColor         _borderColor;
@@ -70,7 +78,7 @@ CPGrooveBorder  = 3;
         _contentMargin = CGSizeMake(0.0, 0.0);
 
         _contentView = [[CPView alloc] initWithFrame:[self bounds]];
-        [_contentView setAutoresizingMask:CPViewWidthSizable|CPViewHeightSizable];
+        [_contentView setAutoresizingMask:CPViewWidthSizable | CPViewHeightSizable];
 
         [self setAutoresizesSubviews:YES];
         [self addSubview:_contentView];
@@ -91,9 +99,26 @@ CPGrooveBorder  = 3;
     return _borderType;
 }
 
-- (void)setBorderType:(CPBorderType)value
+- (void)setBorderType:(CPBorderType)aBorderType
 {
-    _borderType = value;
+    if (_borderType === aBorderType)
+        return;
+
+    _borderType = aBorderType;
+    [self setNeedsDisplay:YES];
+}
+
+- (CPBoxType)boxType
+{
+    return _boxType;
+}
+
+- (void)setBoxType:(CPBoxType)aBoxType
+{
+    if (_boxType === aBoxType)
+        return;
+
+    _boxType = aBoxType;
     [self setNeedsDisplay:YES];
 }
 
@@ -164,7 +189,7 @@ CPGrooveBorder  = 3;
         return;
 
     [aView setFrame:CGRectInset([self bounds], _contentMargin.width + _borderWidth, _contentMargin.height + _borderWidth)];
-    [aView setAutoresizingMask:CPViewWidthSizable|CPViewHeightSizable];
+    [aView setAutoresizingMask:CPViewWidthSizable | CPViewHeightSizable];
     [self replaceSubview:_contentView with:aView];
 
     _contentView = aView;
@@ -177,7 +202,7 @@ CPGrooveBorder  = 3;
 
 - (void)setContentViewMargins:(CPSize)size
 {
-     if(size.width < 0 || size.height < 0)
+     if (size.width < 0 || size.height < 0)
          [CPException raise:CPGenericException reason:@"Margins must be positive"];
 
     _contentMargin = CGSizeMakeCopy(size);
@@ -205,39 +230,91 @@ CPGrooveBorder  = 3;
     if (_borderType === CPNoBorder)
         return;
 
-    var bounds = [self bounds],
-        context = [[CPGraphicsContext currentContext] graphicsPort];
+    var bounds = [self bounds];
 
-    CGContextSetFillColor(context, [self fillColor]);
+    switch (_boxType)
+    {
+        case CPBoxSeperator:
+            // NSBox does not include a horitontal flag for the seperator type. We have to determine
+            // the type of seperator to draw by the width and height of the frame.
+            if (CGRectGetWidth(bounds) === 5.0)
+                return [self _drawVerticalSeperatorInRect:bounds];
+            else if (CGRectGetHeight(bounds) === 5.0)
+                return [self _drawHorizontalSeperatorInRect:bounds];
+
+            break;
+    }
 
     switch (_borderType)
     {
         case CPBezelBorder:
-            var sides = [CPMinYEdge, CPMaxXEdge, CPMaxYEdge, CPMinXEdge],
-                sideGray = 190.0 / 255.0,
-                grays = [142.0 / 255.0, sideGray, sideGray, sideGray],
-                borderWidth = _borderWidth;
-
-            while (borderWidth--)
-                bounds = CPDrawTiledRects(bounds, bounds, sides, grays);
-
-            CGContextFillRect(context, bounds);
+            [self _drawBezelBorderInRect:bounds];
             break;
 
         default:
-            bounds = CGRectInset(bounds, _borderWidth / 2.0, _borderWidth / 2.0);
-
-            CGContextSetStrokeColor(context, [self borderColor]);
-            CGContextSetLineWidth(context, _borderWidth);
-            CGContextFillRoundedRectangleInRect(context, bounds, _cornerRadius, YES, YES, YES, YES);
-            CGContextStrokeRoundedRectangleInRect(context, bounds, _cornerRadius, YES, YES, YES, YES);
+        case CPLineBorder:
+            [self _drawLineBorderInRect:bounds];
             break;
     }
 }
 
+- (void)_drawHorizontalSeperatorInRect:(CGRect)aRect
+{
+    var context = [[CPGraphicsContext currentContext] graphicsPort];
+
+    CGContextSetStrokeColor(context, [self borderColor]);
+    CGContextSetLineWidth(context, 1.0);
+
+    CGContextMoveToPoint(context, CGRectGetMinX(aRect), CGRectGetMinY(aRect));
+    CGContextAddLineToPoint(context, CGRectGetWidth(aRect), CGRectGetMinY(aRect));
+    CGContextStrokePath(context);
+}
+
+- (void)_drawVerticalSeperatorInRect:(CGRect)aRect
+{
+    var context = [[CPGraphicsContext currentContext] graphicsPort];
+
+    CGContextSetStrokeColor(context, [self borderColor]);
+    CGContextSetLineWidth(context, 1.0);
+
+    CGContextMoveToPoint(context, CGRectGetMinX(aRect), CGRectGetMinY(aRect));
+    CGContextAddLineToPoint(context, CGRectGetMinX(aRect), CGRectGetHeight(aRect));
+    CGContextStrokePath(context);
+}
+
+- (void)_drawBezelBorderInRect:(CGRect)aRect
+{
+    var context = [[CPGraphicsContext currentContext] graphicsPort],
+        sides = [CPMinYEdge, CPMaxXEdge, CPMaxYEdge, CPMinXEdge],
+        sideGray = 190.0 / 255.0,
+        grays = [142.0 / 255.0, sideGray, sideGray, sideGray],
+        borderWidth = _borderWidth;
+
+    while (borderWidth--)
+        aRect = CPDrawTiledRects(aRect, aRect, sides, grays);
+
+    CGContextSetFillColor(context, [self fillColor]);
+    CGContextFillRect(context, aRect);
+}
+
+- (void)_drawLineBorderInRect:(CGRect)aRect
+{
+    var context = [[CPGraphicsContext currentContext] graphicsPort];
+
+    aRect = CGRectInset(aRect, _borderWidth / 2.0, _borderWidth / 2.0);
+
+    CGContextSetFillColor(context, [self fillColor]);
+    CGContextSetStrokeColor(context, [self borderColor]);
+
+    CGContextSetLineWidth(context, _borderWidth);
+    CGContextFillRoundedRectangleInRect(context, aRect, _cornerRadius, YES, YES, YES, YES);
+    CGContextStrokeRoundedRectangleInRect(context, aRect, _cornerRadius, YES, YES, YES, YES);
+}
+
 @end
 
-var CPBoxBorderTypeKey    = @"CPBoxBorderTypeKey",
+var CPBoxTypeKey          = @"CPBoxTypeKey",
+    CPBoxBorderTypeKey    = @"CPBoxBorderTypeKey",
     CPBoxBorderColorKey   = @"CPBoxBorderColorKey",
     CPBoxFillColorKey     = @"CPBoxFillColorKey",
     CPBoxCornerRadiusKey  = @"CPBoxCornerRadiusKey",
@@ -252,6 +329,7 @@ var CPBoxBorderTypeKey    = @"CPBoxBorderTypeKey",
 
     if (self)
     {
+        _boxType       = [aCoder decodeIntForKey:CPBoxTypeKey];
         _borderType    = [aCoder decodeIntForKey:CPBoxBorderTypeKey];
 
         _borderColor   = [aCoder decodeObjectForKey:CPBoxBorderColorKey];
@@ -265,7 +343,7 @@ var CPBoxBorderTypeKey    = @"CPBoxBorderTypeKey",
         _contentView   = [self subviews][0];
 
         [self setAutoresizesSubviews:YES];
-        [_contentView setAutoresizingMask:CPViewWidthSizable|CPViewHeightSizable];
+        [_contentView setAutoresizingMask:CPViewWidthSizable | CPViewHeightSizable];
     }
 
     return self;
@@ -275,6 +353,7 @@ var CPBoxBorderTypeKey    = @"CPBoxBorderTypeKey",
 {
     [super encodeWithCoder:aCoder];
 
+    [aCoder encodeInt:_boxType forKey:CPBoxTypeKey];
     [aCoder encodeInt:_borderType forKey:CPBoxBorderTypeKey];
 
     [aCoder encodeObject:_borderColor forKey:CPBoxBorderColorKey];

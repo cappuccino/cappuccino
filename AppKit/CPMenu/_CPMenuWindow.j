@@ -1,6 +1,7 @@
 
 #include "../CoreGraphics/CGGeometry.h"
 
+@import <AppKit/CPWindow.j>
 
 var _CPMenuWindowPool                       = [],
     _CPMenuWindowPoolCapacity               = 5,

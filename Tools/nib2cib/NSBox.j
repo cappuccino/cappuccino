@@ -30,6 +30,7 @@
 
     if (self)
     {
+        _boxType       = [aCoder decodeIntForKey:@"NSBoxType"];
         _borderType    = [aCoder decodeIntForKey:@"NSBorderType"];
 
         _borderColor   = [aCoder decodeObjectForKey:@"NSBorderColor2"] || [CPColor colorWithRed:0.0 green:0.0 blue:0.0 alpha:0.42];

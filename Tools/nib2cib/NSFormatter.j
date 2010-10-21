@@ -1,0 +1,5 @@
+@implementation NSFormatter : CPObject
+{
+}
+
+@end

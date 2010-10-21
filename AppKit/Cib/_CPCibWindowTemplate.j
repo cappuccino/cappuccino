@@ -1,6 +1,9 @@
 
 @import <Foundation/CPObject.j>
 
+@import <AppKit/CGGeometry.j>
+@import <AppKit/CPWindow.j>
+
 
 var _CPCibWindowTemplateMinSizeKey                  = @"_CPCibWindowTemplateMinSizeKey",
     _CPCibWindowTemplateMaxSizeKey                  = @"_CPCibWindowTemplateMaxSizeKey",

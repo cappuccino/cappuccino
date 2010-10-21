@@ -1,8 +1,8 @@
 
 var FILE = require("file"),
     OS = require("os"),
-    UTIL = require("util"),
-    TERM = require("term"),
+    UTIL = require("narwhal/util"),
+    TERM = require("narwhal/term"),
     Jake = require("jake"),
     CLEAN = require("jake/clean").CLEAN,
     CLOBBER = require("jake/clean").CLOBBER,

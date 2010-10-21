@@ -77,23 +77,23 @@ if (typeof window !== "undefined" && typeof window.navigator !== "undefined")
     USER_AGENT = window.navigator.userAgent;
 
 // Opera
-if (window.opera)
+if (typeof window !== "undefined" && window.opera)
 {
     PLATFORM_ENGINE = CPOperaBrowserEngine;
-    
+
     PLATFORM_FEATURES |= CPJavaScriptCanvasDrawFeature;
 }
 
 // Internet Explorer
-else if (window.attachEvent) // Must follow Opera check.
+else if (typeof window !== "undefined" && window.attachEvent) // Must follow Opera check.
 {
     PLATFORM_ENGINE = CPInternetExplorerBrowserEngine;
-    
+
     // Features we can only be sure of with IE (no known independent tests)
     PLATFORM_FEATURES |= CPVMLFeature;
     PLATFORM_FEATURES |= CPJavascriptRemedialKeySupport;
     PLATFORM_FEATURES |= CPJavaScriptShadowFeature;
-    
+
     PLATFORM_FEATURES |= CPOpacityRequiresFilterFeature;
 
     PLATFORM_FEATURES &= ~CPInputTypeCanBeChangedFeature;
@@ -103,7 +103,7 @@ else if (window.attachEvent) // Must follow Opera check.
 else if (USER_AGENT.indexOf("AppleWebKit/") != -1)
 {
     PLATFORM_ENGINE = CPWebKitBrowserEngine;
-    
+
     // Features we can only be sure of with WebKit (no known independent tests)
     PLATFORM_FEATURES |= CPCSSRGBAFeature;
     PLATFORM_FEATURES |= CPHTMLContentEditableFeature;
@@ -114,7 +114,7 @@ else if (USER_AGENT.indexOf("AppleWebKit/") != -1)
     PLATFORM_FEATURES |= CPJavascriptClipboardEventsFeature;
     PLATFORM_FEATURES |= CPJavascriptClipboardAccessFeature;
     PLATFORM_FEATURES |= CPJavaScriptShadowFeature;
-    
+
     var versionStart = USER_AGENT.indexOf("AppleWebKit/") + "AppleWebKit/".length,
         versionEnd = USER_AGENT.indexOf(" ", versionStart),
         versionString = USER_AGENT.substring(versionStart, versionEnd),
@@ -122,7 +122,7 @@ else if (USER_AGENT.indexOf("AppleWebKit/") != -1)
         majorVersion = parseInt(versionString.substring(0, versionDivision)),
         minorVersion = parseInt(versionString.substr(versionDivision + 1));
 
-    if((USER_AGENT.indexOf("Safari") !== CPNotFound && (majorVersion > 525 || (majorVersion === 525 && minorVersion > 14))) || USER_AGENT.indexOf("Chrome") !== CPNotFound)
+    if ((USER_AGENT.indexOf("Safari") !== CPNotFound && (majorVersion > 525 || (majorVersion === 525 && minorVersion > 14))) || USER_AGENT.indexOf("Chrome") !== CPNotFound)
         PLATFORM_FEATURES |= CPJavascriptRemedialKeySupport;
 
     // FIXME this is a terrible hack to get around this bug:
@@ -144,12 +144,12 @@ else if (USER_AGENT.indexOf("KHTML") != -1) // Must follow WebKit check.
 else if (USER_AGENT.indexOf("Gecko") !== -1) // Must follow KHTML check.
 {
     PLATFORM_ENGINE = CPGeckoBrowserEngine;
-    
+
     PLATFORM_FEATURES |= CPJavaScriptCanvasDrawFeature;
-    
+
     var index = USER_AGENT.indexOf("Firefox"),
         version = (index === -1) ? 2.0 : parseFloat(USER_AGENT.substring(index + "Firefox".length + 1));
-    
+
     if (version >= 3.0)
         PLATFORM_FEATURES |= CPCSSRGBAFeature;
 
@@ -165,16 +165,16 @@ if (typeof document != "undefined")
     if (canvasElement && canvasElement.getContext)
     {
         PLATFORM_FEATURES |= CPHTMLCanvasFeature;
-    
+
         // Detect Canvas setTransform/transform support
         var context = document.createElement("canvas").getContext("2d");
-        
+
         if (context && context.setTransform && context.transform)
             PLATFORM_FEATURES |= CPJavaScriptCanvasTransformFeature;
     }
-    
+
     var DOMElement = document.createElement("div");
-    
+
     // Detect whether we have innerText or textContent (or neither)
     if (DOMElement.innerText != undefined)
         PLATFORM_FEATURES |= CPJavascriptInnerTextFeature;

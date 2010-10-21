@@ -1,5 +1,7 @@
-@import <AppKit/CPView.j>
+@import <AppKit/CPBox.j>
+@import <AppKit/CPSegmentedControl.j>
 @import <AppKit/CPTabViewItem.j>
+@import <AppKit/CPView.j>
 
 /*
     Places tabs on top with a bezeled border.
@@ -244,6 +246,8 @@ var HEIGHT_OF_SEGMENTED_CONTROL = 24;
 */
 - (void)selectTabViewItemAtIndex:(unsigned)anIndex
 {
+    var aTabViewItem = [items objectAtIndex:anIndex];
+
     if (anIndex === selectedIndex)
         return;
     

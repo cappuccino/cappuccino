@@ -21,6 +21,7 @@
  */
 
 @import <AppKit/CPView.j>
+@import <AppKit/CPScrollView.j>
 
 #include "Platform/Platform.h"
 

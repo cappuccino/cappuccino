@@ -41,8 +41,8 @@
     The default implementation of this method raises an exception.
 
     When implementing a subclass, return the CPString object that textually represents 
-    the view's object for display and—if editingStringForObjectValue: is unimplemented—for editing. 
-    First test the passed-in object to see if it’s of the correct class. If it isn’t, return nil; 
+    the view's object for display and if editingStringForObjectValue: is unimplemented for editing. 
+    First test the passed-in object to see if it's of the correct class. If it isn't, return nil; 
     but if it is of the right class, return a properly formatted and, if necessary, localized string. 
     (See the specification of the CPString class for formatting and localizing details.)
 
@@ -104,7 +104,7 @@
 /*!
     Returns a Boolean value that indicates whether a partial string is valid.
 
-    This method is invoked each time the user presses a key while the cell has the keyboard focus—it lets you verify and 
+    This method is invoked each time the user presses a key while the cell has the keyboard focus it lets you verify and 
     edit the cell text as the user types it.
 
     In a subclass implementation, evaluate partialString according to the context, edit the text if necessary, and return 

@@ -1,3 +1,5 @@
+@import <AppKit/CPControl.j>
+
 var LEFT_MARGIN                 = 3.0,
     RIGHT_MARGIN                = 14.0 + 3.0,
     STATE_COLUMN_WIDTH          = 14.0,

@@ -21,11 +21,11 @@
  */
 
 @import <Foundation/CPObject.j>
-@import "CPColorPanel.j"
+@import <AppKit/CPView.j>
 
 #include "Platform/Platform.h"
 
-/*! 
+/*!
     @ingroup appkit
     @class CPColorPicker
 
@@ -102,18 +102,18 @@
 
     CPColor         _cachedColor;
 }
- 
-- (id)initWithPickerMask:(int)mask colorPanel:(CPColorPanel)owningColorPanel 
+
+- (id)initWithPickerMask:(int)mask colorPanel:(CPColorPanel)owningColorPanel
 {
     return [super initWithPickerMask:mask colorPanel: owningColorPanel];
 }
 
--(id)initView
+- (id)initView
 {
     aFrame = CPRectMake(0, 0, CPColorPickerViewWidth, CPColorPickerViewHeight);
 
     _pickerView = [[CPView alloc] initWithFrame:aFrame];
-    [_pickerView setAutoresizingMask:CPViewWidthSizable|CPViewHeightSizable];
+    [_pickerView setAutoresizingMask:CPViewWidthSizable | CPViewHeightSizable];
 
     _brightnessSlider = [[CPSlider alloc] initWithFrame:CGRectMake(0, (aFrame.size.height - 34), aFrame.size.width, 15)];
 
@@ -136,17 +136,17 @@
     [_pickerView addSubview:_brightnessSlider];
 }
 
--(void)brightnessSliderDidChange:(id)sender
+- (void)brightnessSliderDidChange:(id)sender
 {
     [self updateColor];
 }
 
--(void)colorWheelDidChange:(id)sender
+- (void)colorWheelDidChange:(id)sender
 {
     [self updateColor];
 }
 
--(void)updateColor
+- (void)updateColor
 {
     var hue        = [_hueSaturationView angle],
         saturation = [_hueSaturationView distance],
@@ -223,7 +223,7 @@
     float       _radius;
 }
 
--(id)initWithFrame:(CPRect)aFrame
+- (id)initWithFrame:(CPRect)aFrame
 {
     self = [super initWithFrame:aFrame];
 
@@ -261,19 +261,19 @@
     return self;
 }
 
--(void)setWheelBrightness:(float)brightness
+- (void)setWheelBrightness:(float)brightness
 {
     _blackWheelImage.style.opacity = 1.0 - brightness;
-    _blackWheelImage.style.filter = "alpha(opacity=" + (1.0 - brightness)*100 + ")"
+    _blackWheelImage.style.filter = "alpha(opacity=" + (1.0 - brightness) * 100 + ")"
 }
 
--(void)setFrameSize:(CPSize)aSize
+- (void)setFrameSize:(CPSize)aSize
 {
     [super setFrameSize:aSize];
     [self setWheelSize:aSize];
 }
 
--(void)setWheelSize:(CPSize)aSize
+- (void)setWheelSize:(CPSize)aSize
 {
     var min = MIN(aSize.width, aSize.height);
 
@@ -296,57 +296,55 @@
     [self setAngle:[self degreesToRadians:_angle] distance:(_distance / 100.0) * _radius];
 }
 
--(void)setDelegate:(id)aDelegate
+- (void)setDelegate:(id)aDelegate
 {
     _delegate = aDelegate;
 }
 
--(id)delegate
+- (id)delegate
 {
     return _delegate;
 }
 
--(float)angle
+- (float)angle
 {
     return _angle;
 }
 
--(float)distance
+- (float)distance
 {
     return _distance;
 }
 
--(void)mouseDown:(CPEvent)anEvent
+- (void)mouseDown:(CPEvent)anEvent
 {
     [self reposition:anEvent];
 }
 
--(void)mouseDragged:(CPEvent)anEvent
+- (void)mouseDragged:(CPEvent)anEvent
 {
     [self reposition:anEvent];
 }
 
--(void)reposition:(CPEvent)anEvent
+- (void)reposition:(CPEvent)anEvent
 {
     var bounds   = [self bounds],
-        location = [self convertPoint:[anEvent locationInWindow] fromView:nil];
-
-    var midX   = CGRectGetMidX(bounds);
-    var midY   = CGRectGetMidY(bounds);
-
-    var distance = MIN(SQRT((location.x - midX)*(location.x - midX) + (location.y - midY)*(location.y - midY)), _radius);
-    var angle    = ATAN2(location.y - midY, location.x - midX);
+        location = [self convertPoint:[anEvent locationInWindow] fromView:nil],
+        midX     = CGRectGetMidX(bounds),
+        midY     = CGRectGetMidY(bounds),
+        distance = MIN(SQRT((location.x - midX) * (location.x - midX) + (location.y - midY) * (location.y - midY)), _radius),
+        angle    = ATAN2(location.y - midY, location.x - midX);
 
     [self setAngle:angle distance:distance];
 
     [_delegate colorWheelDidChange:self];
 }
 
--(void)setAngle:(int)angle distance:(float)distance
+- (void)setAngle:(int)angle distance:(float)distance
 {
-    var bounds = [self bounds];
-    var midX   = CGRectGetMidX(bounds);
-    var midY   = CGRectGetMidY(bounds);
+    var bounds = [self bounds],
+        midX   = CGRectGetMidX(bounds),
+        midY   = CGRectGetMidY(bounds);
 
     _angle     = [self radiansToDegrees:angle];
     _distance  = (distance / _radius) * 100.0;
@@ -354,23 +352,22 @@
     [_crosshair setFrameOrigin:CPPointMake(COS(angle) * distance + midX - 2.0, SIN(angle) * distance + midY - 2.0)];
 }
 
--(void)setPositionToColor:(CPColor)aColor
+- (void)setPositionToColor:(CPColor)aColor
 {
     var hsb    = [aColor hsbComponents],
-        bounds = [self bounds];
-
-    var angle    = [self degreesToRadians:hsb[0]],
+        bounds = [self bounds],
+        angle    = [self degreesToRadians:hsb[0]],
         distance = (hsb[1] / 100.0) * _radius;
 
     [self setAngle:angle distance:distance];
 }
 
--(int)radiansToDegrees:(float)radians
+- (int)radiansToDegrees:(float)radians
 {
     return ((-radians / PI) * 180 + 360) % 360;
 }
 
--(float)degreesToRadians:(float)degrees
+- (float)degreesToRadians:(float)degrees
 {
     return -(((degrees - 360) / 180) * PI);
 }

@@ -197,12 +197,12 @@
         availableWidth = frameWidth - resizeWidth - 1;
 
     for (var i = 0, count = [buttonsNotHidden count]; i < count; i++)
-    {   
+    {
         var button = buttonsNotHidden[i],
             width = CGRectGetWidth([button frame]);
 
         if (availableWidth > width)
-            availableWidth -=width;
+            availableWidth -= width;
         else
             break;
 
@@ -217,15 +217,15 @@
             currentButtonOffset += width - 1;
         }
 
-        [button setValue:normalColor forThemeAttribute:@"bezel-color" inState:CPThemeStateNormal|CPThemeStateBordered];    
-        [button setValue:highlightedColor forThemeAttribute:@"bezel-color" inState:CPThemeStateHighlighted|CPThemeStateBordered];    
-        [button setValue:disabledColor forThemeAttribute:@"bezel-color" inState:CPThemeStateDisabled|CPThemeStateBordered];    
-        [button setValue:textColor forThemeAttribute:@"text-color" inState:CPThemeStateBordered];    
+        [button setValue:normalColor forThemeAttribute:@"bezel-color" inState:CPThemeStateNormal | CPThemeStateBordered];
+        [button setValue:highlightedColor forThemeAttribute:@"bezel-color" inState:CPThemeStateHighlighted | CPThemeStateBordered];
+        [button setValue:disabledColor forThemeAttribute:@"bezel-color" inState:CPThemeStateDisabled | CPThemeStateBordered];
+        [button setValue:textColor forThemeAttribute:@"text-color" inState:CPThemeStateBordered];
 
         // FIXME shouldn't need this
-        [button setValue:normalColor forThemeAttribute:@"bezel-color" inState:CPThemeStateNormal|CPThemeStateBordered|CPPopUpButtonStatePullsDown];    
-        [button setValue:highlightedColor forThemeAttribute:@"bezel-color" inState:CPThemeStateHighlighted|CPThemeStateBordered|CPPopUpButtonStatePullsDown];    
-        [button setValue:disabledColor forThemeAttribute:@"bezel-color" inState:CPThemeStateDisabled|CPThemeStateBordered|CPPopUpButtonStatePullsDown];    
+        [button setValue:normalColor forThemeAttribute:@"bezel-color" inState:CPThemeStateNormal | CPThemeStateBordered | CPPopUpButtonStatePullsDown];
+        [button setValue:highlightedColor forThemeAttribute:@"bezel-color" inState:CPThemeStateHighlighted | CPThemeStateBordered | CPPopUpButtonStatePullsDown];
+        [button setValue:disabledColor forThemeAttribute:@"bezel-color" inState:CPThemeStateDisabled | CPThemeStateBordered | CPPopUpButtonStatePullsDown];
 
         [self addSubview:button];
     }

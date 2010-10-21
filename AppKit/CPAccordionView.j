@@ -27,15 +27,16 @@
 @import <Foundation/CPString.j>
 
 @import <AppKit/CPView.j>
+@import <AppKit/CPButton.j>
 
 #import "CoreGraphics/CGGeometry.h"
 
 /*!
   @ingroup appkit
   @class CPAccordionViewItem
-  
+
   <p>A CPAccordionViewItem represents a single section of a CPAccordionView.</p>
-*/  
+*/
 @implementation CPAccordionViewItem : CPObject
 {
     CPString    _identifier @accessors(property=identifier);
@@ -67,10 +68,10 @@
 /*!
   @ingroup appkit
   @class CPAccordionView
-  
+
   <p>CPAccordionView provides a container for CPAccordionViewItem objects and manages layout state
   for all sublayout items.</p>
-  
+
   <strong>Example</strong><br />
   <pre>
 var myAccordionView = [[CPAccordionView alloc] initWithFrame:CGRectMakeZero()];
@@ -213,7 +214,7 @@ var secondItem = [[CPAccordionViewItem alloc] initWithIdentifier:@"secondSection
 
     if ([itemView isCollapsed])
         [self expandItemAtIndex:anIndex];
-    
+
     else
         [self collapseItemAtIndex:anIndex];
 }
@@ -237,12 +238,12 @@ var secondItem = [[CPAccordionViewItem alloc] initWithIdentifier:@"secondSection
     var itemView = _itemViews[anIndex];
     if (!itemView)
         return;
-    
+
     if (!isEnabled)
         [self collapseItemAtIndex:anIndex];
     else
         [self expandItemAtIndex:anIndex];
-    
+
     [itemView setEnabled:isEnabled];
 }
 
@@ -270,7 +271,7 @@ var secondItem = [[CPAccordionViewItem alloc] initWithIdentifier:@"secondSection
 {
     if (_items.length <= 0)
         return [self setFrameSize:_CGSizeMake(_CGRectGetWidth([self frame]), 0.0)];
-    
+
     if (_dirtyItemIndex === CPNotFound)
         return;
 
@@ -391,7 +392,7 @@ var secondItem = [[CPAccordionViewItem alloc] initWithIdentifier:@"secondSection
 
         [_contentView setFrameSize:_CGSizeMake(aWidth, contentHeight)];
         [self setFrame:_CGRectMake(0.0, aY, aWidth, contentHeight + headerHeight)];
-    }    
+    }
 }
 
 - (void)resizeSubviewsWithOldSize:(CGSize)aSize
@@ -408,7 +409,7 @@ var secondItem = [[CPAccordionViewItem alloc] initWithIdentifier:@"secondSection
 /*
     else if (aKeyPath === "itemHeaderPrototype")
     {
-        
+
     }
 */
 }
