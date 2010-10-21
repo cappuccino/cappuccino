@@ -58,6 +58,9 @@ var CPThemeStateAutoCompleting = @"CPThemeStateAutoCompleting",
 
 @implementation CPTokenField : CPTextField
 {
+    CPScrollView        _tokenScrollView;
+    BOOL                _scrollToLastToken;
+
     CPView              _autocompleteContainer;
     CPScrollView        _autocompleteScrollView;
     CPTableView         _autocompleteView;
@@ -85,6 +88,13 @@ var CPThemeStateAutoCompleting = @"CPThemeStateAutoCompleting",
 {
     if (self = [super initWithFrame:frame])
     {
+        _tokenScrollView = [[CPScrollView alloc] initWithFrame:CGRectMakeZero()];
+        [_tokenScrollView setHasHorizontalScroller:NO];
+        [_tokenScrollView setHasVerticalScroller:NO];
+        var contentView = [[CPView alloc] initWithFrame:CGRectMakeZero()];
+        [_tokenScrollView setDocumentView:contentView];
+        [self addSubview:_tokenScrollView];
+
         _tokenIndex = 0;
         _selectedTokenIndexes = [CPIndexSet indexSet];
 
@@ -185,6 +195,7 @@ var CPThemeStateAutoCompleting = @"CPThemeStateAutoCompleting",
 
     [objectValue addObject:token];
     [self setObjectValue:objectValue];
+    _scrollToLastToken = NO;
 
     [self _inputElement].value = @"";
     [self setNeedsLayout];
@@ -288,7 +299,7 @@ var CPThemeStateAutoCompleting = @"CPThemeStateAutoCompleting",
     element.style.width = CGRectGetWidth(contentRect) + "px";
     element.style.height = CGRectGetHeight(contentRect) + "px";
 
-    _DOMElement.appendChild(element);
+    [_tokenScrollView documentView]._DOMElement.appendChild(element);
 
     window.setTimeout(function()
     {
@@ -340,7 +351,7 @@ var CPThemeStateAutoCompleting = @"CPThemeStateAutoCompleting",
     CPTokenFieldInputDidBlur = NO;
     CPTokenFieldInputResigning = NO;
 
-    if (element.parentNode == _DOMElement)
+    if (element.parentNode == [_tokenScrollView documentView]._DOMElement)
         element.parentNode.removeChild(element);
 
     CPTokenFieldInputIsActive = NO;
@@ -439,8 +450,6 @@ var CPThemeStateAutoCompleting = @"CPThemeStateAutoCompleting",
             [tokenView setTokenField:self];
             [tokenView setStringValue:token];
             [objectValue addObject:tokenView];
-
-            [self addSubview:tokenView];
         }
     }
 
@@ -456,6 +465,7 @@ var CPThemeStateAutoCompleting = @"CPThemeStateAutoCompleting",
 
     [self _updatePlaceholderState];
 
+    _scrollToLastToken = YES;
     [self setNeedsLayout];
     [self setNeedsDisplay:YES];
 }
@@ -500,7 +510,7 @@ var CPThemeStateAutoCompleting = @"CPThemeStateAutoCompleting",
 
         CPTokenFieldBlurFunction = function(anEvent)
         {
-            if (CPTokenFieldInputOwner && CPTokenFieldInputOwner._DOMElement != CPTokenFieldDOMInputElement.parentNode)
+            if (CPTokenFieldInputOwner && [CPTokenFieldInputOwner._tokenScrollView documentView]._DOMElement != CPTokenFieldDOMInputElement.parentNode)
                 return;
 
             if (!CPTokenFieldInputResigning && !CPTokenFieldFocusInput)
@@ -776,14 +786,17 @@ var CPThemeStateAutoCompleting = @"CPThemeStateAutoCompleting",
 {
     [super layoutSubviews];
 
+    [_tokenScrollView setFrame:[self rectForEphemeralSubviewNamed:"content-view"]];
+
+    var textFieldContentView = [self layoutEphemeralSubviewNamed:@"content-view"
+                                                      positioned:CPWindowAbove
+                                 relativeToEphemeralSubviewNamed:@"bezel-view"];
+
+    if (textFieldContentView)
+        [textFieldContentView setHidden:[self stringValue] !== @""];
+
     var frame = [self frame],
-
-        contentView = [self layoutEphemeralSubviewNamed:@"content-view"
-                                             positioned:CPWindowAbove
-                        relativeToEphemeralSubviewNamed:@"bezel-view"];
-
-    if (contentView)
-        [contentView setHidden:[self stringValue] !== @""];
+        contentView = [_tokenScrollView documentView];
 
     // Correctly size the tableview
     // FIXME Horizontal scrolling will not work because we are not actually looking at the content to set the width for the table column
@@ -802,7 +815,7 @@ var CPThemeStateAutoCompleting = @"CPThemeStateAutoCompleting",
         [_autocompleteContainer setHidden:YES];
 
     // Add every token as a seperate view
-    var contentRect = [self contentRectForBounds:[self bounds]],
+    var contentRect = CGRectMakeCopy([contentView bounds]),
         contentOrigin = contentRect.origin,
         contentSize = contentRect.size,
         offset = CPPointMake(contentOrigin.x, contentOrigin.y),
@@ -812,6 +825,7 @@ var CPThemeStateAutoCompleting = @"CPThemeStateAutoCompleting",
     if (![[self _tokens] isKindOfClass:[CPArray class]])
         return;
 
+    [contentView setSubviews:[]];
     for (var i = 0; i < [[self _tokens] count]; i++)
     {
         var tokenView = [[self _tokens] objectAtIndex:i];
@@ -820,11 +834,12 @@ var CPThemeStateAutoCompleting = @"CPThemeStateAutoCompleting",
         if ([tokenView isKindOfClass:[CPString class]])
             continue;
 
+        [contentView addSubview:tokenView];
+
         [tokenView setHighlighted:[_selectedTokenIndexes containsIndex:i]];
         [tokenView sizeToFit];
 
-        // Increase the token fields height if the token view is outside of the bounds
-        var size = [self bounds].size,
+        var size = [contentView bounds].size,
             tokenViewSize = [tokenView bounds].size;
 
         if (contentSize.width < offset.x + tokenViewSize.width)
@@ -834,27 +849,48 @@ var CPThemeStateAutoCompleting = @"CPThemeStateAutoCompleting",
 
             // Increase the y offset to fall below the current tokens
             offset.y += tokenViewSize.height + spaceBetweenTokens.height;
-
-            if (offset.y + tokenViewSize.height > contentSize.height)
-            {
-                size.height += offset.y + tokenViewSize.height;
-                [self setFrameSize:size];
-            }
         }
+
+        // Shrink to fit.
+        [contentView setFrame:CGRectMake(0, 0, CGRectGetWidth([_tokenScrollView bounds]), offset.y + tokenViewSize.height)];
 
         [tokenView setFrameOrigin:offset];
         offset.x += [tokenView bounds].size.width + spaceBetweenTokens.width;
     }
 
+    if (_scrollToLastToken)
+    {
+        // This code is responsible for showing the end of the token list
+        // by default when a new object value is set.
+        if ([[self window] firstResponder] != self)
+            [self _scrollTokenViewToVisible:[[self _tokens] lastObject]];
+        _scrollToLastToken = NO;
+    }
+
     if ([[self window] firstResponder] != self)
         return;
 
-    var element = [self _inputElement];
+    var element = [self _inputElement],
+        tokenToken = [_CPTokenFieldToken new];
 
-    element.style.left = offset.x + @"px";
-    element.style.top = offset.y + @"px";
-    element.style.width = [self bounds].size.width - offset.x - 8.0 + "px";
-    element.style.height = contentRect.size.height;
+    // Get the height of a typical token, or a token token if you will, and make the editor that tall.
+    [tokenToken sizeToFit];
+
+    var inputFrame = CGRectMake(offset.x, offset.y, [self bounds].size.width - offset.x - 8.0, CGRectGetHeight([tokenToken bounds]));
+    element.style.left = inputFrame.origin.x + "px";
+    element.style.top = inputFrame.origin.y + "px";
+    element.style.width = inputFrame.size.width + "px";
+    element.style.height = inputFrame.size.height + "px";
+
+    // When editing, always show the cursor.
+    [[_tokenScrollView documentView] scrollRectToVisible:inputFrame];
+}
+
+- (BOOL)_scrollTokenViewToVisible:(_CPTokenFieldToken)aToken
+{
+    if (!aToken)
+        return;
+    return [[_tokenScrollView documentView] scrollRectToVisible:[aToken frame]];
 }
 
 // ======================
@@ -967,7 +1003,7 @@ var CPThemeStateAutoCompleting = @"CPThemeStateAutoCompleting",
 
 - (CGSize)_minimumFrameSize
 {
-    var size = CGRectMakeZero(),
+    var size = CGSizeMakeZero(),
         minSize = [self currentValueForThemeAttribute:@"min-size"],
         contentInset = [self currentValueForThemeAttribute:@"content-inset"];
 
