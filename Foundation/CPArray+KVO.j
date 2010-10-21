@@ -46,7 +46,7 @@
 
 @end
 
-@implementation _CPKVCArray : CPArray
+@implementation _CPKVCArray : CPMutableArray
 {
     id _proxyObject;
     id _key;
