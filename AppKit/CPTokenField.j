@@ -667,6 +667,8 @@ var CPThemeStateAutoCompleting = @"CPThemeStateAutoCompleting",
             [CPTokenFieldInputOwner _delayedShowCompletions];
             _selectedTokenIndexes = [CPIndexSet indexSet];
 
+            // Force immediate layout in case word wrapping is now necessary.
+            [owner setNeedsLayout];
             [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
         }
 
@@ -873,10 +875,30 @@ var CPThemeStateAutoCompleting = @"CPThemeStateAutoCompleting",
     var element = [self _inputElement],
         tokenToken = [_CPTokenFieldToken new];
 
-    // Get the height of a typical token, or a token token if you will, and make the editor that tall.
+    // Get the height of a typical token, or a token token if you will.
     [tokenToken sizeToFit];
 
-    var inputFrame = CGRectMake(offset.x, offset.y, [self bounds].size.width - offset.x - 8.0, CGRectGetHeight([tokenToken bounds]));
+    var tokenHeight = CGRectGetHeight([tokenToken bounds]);
+
+    // Do we need to line wrap the editor element?
+    if (offset.x > contentOrigin.x)
+    {
+        // XXX The "X" here is used to estimate the space needed for one more character,
+        // so that we can wrap before we're out of bounds. Since different fonts
+        // might have different sizes of "X" this solution is not ideal, but it works.
+        var textWidth = [(element.value || @" ") + "X" sizeWithFont:[self font]].width;
+
+        if (offset.x + textWidth >= contentSize.width)
+        {
+            offset.x = contentOrigin.x;
+            offset.y += tokenHeight + spaceBetweenTokens.height;
+        }
+    }
+
+    // Make the content view just the right size.
+    [contentView setFrame:CGRectMake(0, 0, CGRectGetWidth([_tokenScrollView bounds]), offset.y + tokenHeight)];
+
+    var inputFrame = CGRectMake(offset.x, offset.y, [contentView bounds].size.width - offset.x, tokenHeight);
     element.style.left = inputFrame.origin.x + "px";
     element.style.top = inputFrame.origin.y + "px";
     element.style.width = inputFrame.size.width + "px";
