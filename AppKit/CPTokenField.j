@@ -769,11 +769,6 @@ var CPThemeStateAutoCompleting = @"CPThemeStateAutoCompleting",
     [self setNeedsLayout];
 }
 
-
-// - (void)setTokenizingCharacterSet:(NSCharacterSet *)characterSet;
-// - (NSCharacterSet *)tokenizingCharacterSet;
-// + (NSCharacterSet *)defaultTokenizingCharacterSet
-
 // ==========
 // = LAYOUT =
 // ==========
