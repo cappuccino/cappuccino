@@ -61,6 +61,8 @@ var CPThemeStateAutoCompleting = @"CPThemeStateAutoCompleting",
     CPScrollView        _tokenScrollView;
     BOOL                _scrollToLastToken;
 
+    CPRange             _selectedRange;
+
     CPView              _autocompleteContainer;
     CPScrollView        _autocompleteScrollView;
     CPTableView         _autocompleteView;
@@ -88,6 +90,8 @@ var CPThemeStateAutoCompleting = @"CPThemeStateAutoCompleting",
 {
     if (self = [super initWithFrame:frame])
     {
+        _selectedRange = CPMakeRange(0, 0);
+
         _tokenScrollView = [[CPScrollView alloc] initWithFrame:CGRectMakeZero()];
         [_tokenScrollView setHasHorizontalScroller:NO];
         [_tokenScrollView setHasVerticalScroller:NO];
@@ -469,6 +473,9 @@ var CPThemeStateAutoCompleting = @"CPThemeStateAutoCompleting",
     */
     _value = objectValue;
 
+    // Place the cursor at the end
+    _selectedRange = CPMakeRange([[self _tokens] count], 0);
+
     [self _updatePlaceholderState];
 
     _scrollToLastToken = YES;
@@ -827,14 +834,63 @@ var CPThemeStateAutoCompleting = @"CPThemeStateAutoCompleting",
         contentOrigin = contentRect.origin,
         contentSize = contentRect.size,
         offset = CPPointMake(contentOrigin.x, contentOrigin.y),
-        spaceBetweenTokens = CPSizeMake(2.0, 2.0);
+        spaceBetweenTokens = CPSizeMake(2.0, 2.0),
+        isEditing = [[self window] firstResponder] == self;
 
     // Hack to make sure we are handling an array
     if (![[self _tokens] isKindOfClass:[CPArray class]])
         return;
 
+    var fitAndFrame = function(width, height)
+    {
+        var r = CGRectMake(0, 0, width, height);
+
+        if (offset.x + width >= contentSize.width && offset.x > contentOrigin.x)
+        {
+            offset.x = contentOrigin.x;
+            offset.y += height + spaceBetweenTokens.height;
+        }
+
+        r.origin.x = offset.x;
+        r.origin.y = offset.y;
+
+        // Make sure the frame fits.
+        [contentView setFrame:CGRectMake(0, 0, CGRectGetWidth([_tokenScrollView bounds]), offset.y + height)];
+
+        offset.x += width + spaceBetweenTokens.width;
+
+        return r;
+    }
+
+    var placeEditor = function()
+    {
+        var element = [self _inputElement],
+            tokenToken = [_CPTokenFieldToken new];
+
+        // Get the height of a typical token, or a token token if you will.
+        [tokenToken sizeToFit];
+
+        // XXX The "X" here is used to estimate the space needed for one more character,
+        // so that we can wrap before we're out of bounds. Since different fonts
+        // might have different sizes of "X" this solution is not ideal, but it works.
+        var textWidth = [(element.value || @"") + "X" sizeWithFont:[self font]].width,
+            tokenHeight = CGRectGetHeight([tokenToken bounds]),
+            inputFrame = fitAndFrame(textWidth, tokenHeight);
+
+        element.style.left = inputFrame.origin.x + "px";
+        element.style.top = inputFrame.origin.y + "px";
+        element.style.width = inputFrame.size.width + "px";
+        element.style.height = inputFrame.size.height + "px";
+
+        // When editing, always show the cursor.
+        [[_tokenScrollView documentView] scrollRectToVisible:inputFrame];
+    }
+
     for (var i = 0, count = [[self _tokens] count]; i < count; i++)
     {
+        if (isEditing && i == _selectedRange.location)
+            placeEditor(i);
+
         var tokenView = [[self _tokens] objectAtIndex:i];
 
         // Make sure we are only changing completed tokens
@@ -845,23 +901,14 @@ var CPThemeStateAutoCompleting = @"CPThemeStateAutoCompleting",
         [tokenView sizeToFit];
 
         var size = [contentView bounds].size,
-            tokenViewSize = [tokenView bounds].size;
+            tokenViewSize = [tokenView bounds].size,
+            tokenFrame = fitAndFrame(tokenViewSize.width, tokenViewSize.height);
 
-        if (contentSize.width < offset.x + tokenViewSize.width)
-        {
-            // Reset the x coordinate to the beginnning of the field
-            offset.x = contentOrigin.x;
-
-            // Increase the y offset to fall below the current tokens
-            offset.y += tokenViewSize.height + spaceBetweenTokens.height;
-        }
-
-        // Make sure there is enough space to hold the new token.
-        [contentView setFrame:CGRectMake(0, 0, CGRectGetWidth([_tokenScrollView bounds]), offset.y + tokenViewSize.height)];
-
-        [tokenView setFrameOrigin:offset];
-        offset.x += [tokenView bounds].size.width + spaceBetweenTokens.width;
+        [tokenView setFrame:tokenFrame];
     }
+
+    if (isEditing && _selectedRange.location >= [[self _tokens] count])
+        placeEditor();
 
     if (_scrollToLastToken)
     {
@@ -871,42 +918,6 @@ var CPThemeStateAutoCompleting = @"CPThemeStateAutoCompleting",
             [self _scrollTokenViewToVisible:[[self _tokens] lastObject]];
         _scrollToLastToken = NO;
     }
-
-    if ([[self window] firstResponder] != self)
-        return;
-
-    var element = [self _inputElement],
-        tokenToken = [_CPTokenFieldToken new];
-
-    // Get the height of a typical token, or a token token if you will.
-    [tokenToken sizeToFit];
-
-    var tokenHeight = CGRectGetHeight([tokenToken bounds]);
-
-    // Do we need to line wrap the editor element?
-    if (offset.x > contentOrigin.x)
-    {
-        // XXX The "X" here is used to estimate the space needed for one more character,
-        // so that we can wrap before we're out of bounds. Since different fonts
-        // might have different sizes of "X" this solution is not ideal, but it works.
-        var textWidth = [(element.value || @" ") + "X" sizeWithFont:[self font]].width;
-
-        if (offset.x + textWidth >= contentSize.width)
-        {
-            offset.x = contentOrigin.x;
-            offset.y += tokenHeight + spaceBetweenTokens.height;
-            [contentView setFrame:CGRectMake(0, 0, CGRectGetWidth([_tokenScrollView bounds]), offset.y + tokenHeight)];
-        }
-    }
-
-    var inputFrame = CGRectMake(offset.x, offset.y, [contentView bounds].size.width - offset.x, tokenHeight);
-    element.style.left = inputFrame.origin.x + "px";
-    element.style.top = inputFrame.origin.y + "px";
-    element.style.width = inputFrame.size.width + "px";
-    element.style.height = inputFrame.size.height + "px";
-
-    // When editing, always show the cursor.
-    [[_tokenScrollView documentView] scrollRectToVisible:inputFrame];
 }
 
 - (BOOL)_scrollTokenViewToVisible:(_CPTokenFieldToken)aToken
