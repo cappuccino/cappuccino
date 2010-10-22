@@ -55,7 +55,7 @@ exports.sprintf = function(format)
             }
 
             var percentSign     = subtokens[1],
-                argIndex        = subtokens[2]
+                argIndex        = subtokens[2],
                 flags           = subtokens[3],
                 widthString     = subtokens[4],
                 precisionString = subtokens[5],
