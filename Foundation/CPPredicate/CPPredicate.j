@@ -37,7 +37,7 @@
     @param … A comma-separated list of arguments to substitute into format.
     @return A new predicate formed by creating a new string with format and parsing the result.
 */
-+ (CPPredicate)predicateWithFormat:(CPString) format, ...
++ (CPPredicate)predicateWithFormat:(CPString)format, ...
 {
     if (!format)
         [CPException raise:CPInvalidArgumentException reason:_cmd + " the format can't be 'nil'"];
@@ -238,7 +238,7 @@ function(newValue)\
     unsigned        _retrieved;
 }
 
-- (id) initWithString:(CPString)format args:(CPArray)args
+- (id)initWithString:(CPString)format args:(CPArray)args
 {
     self = [super initWithString:format];
     if (self != nil)
@@ -248,7 +248,7 @@ function(newValue)\
     return self;
 }
 
-- (id) nextArg
+- (id)nextArg
 {
     return [_args nextObject];
 }
@@ -274,7 +274,7 @@ function(newValue)\
     return NO;
 }
 
-- (CPPredicate) parse
+- (CPPredicate)parse
 {
     var r = nil;
 
@@ -296,12 +296,12 @@ function(newValue)\
     return r;
 }
 
-- (CPPredicate) parsePredicate
+- (CPPredicate)parsePredicate
 {
     return [self parseAnd];
 }
 
-- (CPPredicate) parseAnd
+- (CPPredicate)parseAnd
 {
     var l = [self parseOr];
 
@@ -333,7 +333,7 @@ function(newValue)\
     return l;
 }
 
-- (CPPredicate) parseNot
+- (CPPredicate)parseNot
 {
     if ([self scanString:@"(" intoString:NULL])
     {
@@ -361,7 +361,7 @@ function(newValue)\
     return [self parseComparison];
 }
 
-- (CPPredicate) parseOr
+- (CPPredicate)parseOr
 {
     var l = [self parseNot];
     while ([self scanPredicateKeyword:@"OR"] || [self scanPredicateKeyword:@"||"])
@@ -392,7 +392,7 @@ function(newValue)\
     return l;
 }
 
-- (CPPredicate) parseComparison
+- (CPPredicate)parseComparison
 {
     var modifier = CPDirectPredicateModifier,
         type = 0,
@@ -400,8 +400,7 @@ function(newValue)\
         left,
         right,
         p,
-        negate = NO,
-        swap = NO;
+        negate = NO;
 
     if ([self scanPredicateKeyword:@"ANY"])
     {
@@ -469,36 +468,11 @@ function(newValue)\
     }
     else if ([self scanPredicateKeyword:@"CONTAINS"])
     {
-        type = CPInPredicateOperatorType;
-        swap = YES;
+        type = CPContainsPredicateOperatorType;
     }
     else if ([self scanPredicateKeyword:@"BETWEEN"])
     {
-        var exp = [self parseSimpleExpression],
-            a = [exp constantValue],
-            lower, upper,
-            lexp, uexp,
-            lp, up;
-
-        if (![a isKindOfClass:[CPArray class]])
-            [CPException raise:CPInvalidArgumentException reason:@"BETWEEN operator requires array argument"];
-
-        lower = [a objectAtIndex:0];
-        upper = [a objectAtIndex:1];
-        lexp = [CPExpression expressionForConstantValue:lower];
-        uexp = [CPExpression expressionForConstantValue:upper];
-        lp = [CPComparisonPredicate predicateWithLeftExpression:left
-              rightExpression:lexp
-              modifier:modifier
-              type:CPGreaterThanPredicateOperatorType
-              options:opts];
-        up = [CPComparisonPredicate predicateWithLeftExpression:left
-              rightExpression:uexp
-              modifier:modifier
-              type:CPLessThanPredicateOperatorType
-              options:opts];
-        return [CPCompoundPredicate andPredicateWithSubpredicates:
-                [CPArray arrayWithObjects:lp, up]];
+        type = CPBetweenPredicateOperatorType;
     }
     else
         [CPException raise:CPInvalidArgumentException reason:@"Invalid comparison predicate: "+ [[self string] substringFromIndex: [self scanLocation]]];
@@ -518,14 +492,6 @@ function(newValue)\
 
     right = [self parseExpression];
 
-    if (swap == YES)
-    {
-        var tmp = left;
-
-        left = right;
-        right = tmp;
-    }
-
     p = [CPComparisonPredicate predicateWithLeftExpression:left
          rightExpression:right
          modifier:modifier
@@ -535,12 +501,12 @@ function(newValue)\
     return negate ? [CPCompoundPredicate notPredicateWithSubpredicate:p]:p;
 }
 
-- (CPExpression) parseExpression
+- (CPExpression)parseExpression
 {
     return [self parseBinaryExpression];
 }
 
-- (CPExpression) parseSimpleExpression
+- (CPExpression)parseSimpleExpression
 {
     var identifier,
         location,

@@ -209,8 +209,18 @@
     predicate = [CPPredicate predicateWithFormat: @"%@ IN %K", @"Kid1", @"Record1.Children"];
     [self assertTrue:[predicate evaluateWithObject:dict] message:[predicate description] + " should be true"];
 
+    predicate = [CPPredicate predicateWithFormat: @"%K CONTAINS %@", @"Record1.Children", @"Kid1"];
+    [self assertTrue:[predicate evaluateWithObject:dict] message:[predicate description] + " should be true"];
+
     predicate = [CPPredicate predicateWithFormat: @"ANY %K == %@", @"Record2.Children", @"Girl1"];
     [self assertTrue:[predicate evaluateWithObject:dict] message:[predicate description] + " should be true"];
+
+// TEST Operator type    
+    predicate = [CPPredicate predicateWithFormat: @"a CONTAINS[c] \"b\""];
+    [self assertTrue:([predicate predicateOperatorType] == CPContainsPredicateOperatorType) message:[predicate description] + " operator should be a CPContainsPredicateOperatorType"];
+    
+    predicate = [CPPredicate predicateWithFormat: @"a BETWEEN {%f,%f}", 20, 40];
+    [self assertTrue:([predicate predicateOperatorType] == CPBetweenPredicateOperatorType) message:[predicate description] + " operator should be a CPBetweenPredicateOperatorType"];
 }
 
 @end
