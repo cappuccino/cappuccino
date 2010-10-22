@@ -62,7 +62,7 @@ exports.sprintf = function(format)
                 length          = subtokens[6],
                 specifier       = subtokens[7];
 
-            if (argIndex === undefined)
+            if (argIndex === undefined || argIndex === null || argIndex === "")
                 argIndex = arg++;
             else
                 argIndex = Number(argIndex);
