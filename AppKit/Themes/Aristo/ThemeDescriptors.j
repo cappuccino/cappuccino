@@ -1401,10 +1401,13 @@ var themedButtonValues = nil,
     [splitView addSubview:rightView];
 
 
+    [splitView setIsPaneSplitter:YES];
+
     var themedSplitViewValues =
         [
             [@"divider-thickness", 10.0],
-            [@"pane-divider-thickness", 1.0]
+            [@"pane-divider-thickness", 1.0],
+            [@"pane-divider-color", [CPColor colorWithRed:165.0 / 255.0 green:165.0 / 255.0 blue:165.0 / 255.0 alpha:1.0]]
         ];
 
     [self registerThemeValues:themedSplitViewValues forView:splitView];

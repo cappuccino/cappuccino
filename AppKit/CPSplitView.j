@@ -68,8 +68,8 @@ var CPSplitViewHorizontalImage = nil,
 
 + (id)themeAttributes
 {
-    return [CPDictionary dictionaryWithObjects:[10.0, 1.0]
-                                       forKeys:[@"divider-thickness", @"pane-divider-thickness"]];
+    return [CPDictionary dictionaryWithObjects:[10.0, 1.0, [CPColor grayColor]]
+                                       forKeys:[@"divider-thickness", @"pane-divider-thickness", @"pane-divider-color"]];
 }
 
 /*
@@ -241,7 +241,7 @@ var CPSplitViewHorizontalImage = nil,
 {
     if (_isPaneSplitter)
     {
-        _DOMDividerElements[_drawingDivider].style.backgroundColor = "#A5A5A5";
+        _DOMDividerElements[_drawingDivider].style.backgroundColor = [[self currentValueForThemeAttribute:@"pane-divider-color"] cssString];
         _DOMDividerElements[_drawingDivider].style.backgroundImage = "";
     }
     else
