@@ -192,15 +192,9 @@ var CPThemeStateAutoCompleting = @"CPThemeStateAutoCompleting",
     // Remove the uncompleted token and add the token string.
     // Explicitely remove the last object because the array contains strings and removeObject uses isEqual to compare objects
     if (shouldRemoveLastObject)
-    {
-        var indexOfLastObject = [objectValue count] - 1;
-        if (!indexOfLastObject)
-            indexOfLastObject = 0;
+        [objectValue removeObjectAtIndex:_selectedRange.location];
 
-        [objectValue removeObjectAtIndex:indexOfLastObject];
-    }
-
-    [objectValue addObject:token];
+    [objectValue insertObject:token atIndex:_selectedRange.location];
     [self setObjectValue:objectValue];
     _scrollToLastToken = NO;
 
@@ -419,7 +413,7 @@ var CPThemeStateAutoCompleting = @"CPThemeStateAutoCompleting",
 #if PLATFORM(DOM)
 
     if ([self _inputElement].value != @"")
-        [objectValue addObject:[self _inputElement].value];
+        [objectValue insertObject:[self _inputElement].value atIndex:_selectedRange.location];
 
 #endif
 
@@ -550,7 +544,6 @@ var CPThemeStateAutoCompleting = @"CPThemeStateAutoCompleting",
 
             if (aDOMEvent.keyCode === CPUpArrowKeyCode)
                 index -= 1;
-
             else if (aDOMEvent.keyCode === CPDownArrowKeyCode)
                 index += 1;
 
@@ -564,7 +557,8 @@ var CPThemeStateAutoCompleting = @"CPThemeStateAutoCompleting",
 
             var autocompleteView = [CPTokenFieldInputOwner autocompleteView],
                 clipView = [[autocompleteView enclosingScrollView] contentView],
-                rowRect = [autocompleteView rectOfRow:index];
+                rowRect = [autocompleteView rectOfRow:index],
+                owner = CPTokenFieldInputOwner;
 
             // The clipview's and row it's width are equal, this makes sure the clipview can contain the row rect
             // rowRect.size.width -= 2.0;
@@ -578,8 +572,6 @@ var CPThemeStateAutoCompleting = @"CPThemeStateAutoCompleting",
                 if (aDOMEvent.stopPropagation)
                     aDOMEvent.stopPropagation();
                 aDOMEvent.cancelBubble = true;
-
-                var owner = CPTokenFieldInputOwner;
 
                 if (aDOMEvent && aDOMEvent.keyCode === CPReturnKeyCode)
                 {
@@ -617,10 +609,26 @@ var CPThemeStateAutoCompleting = @"CPThemeStateAutoCompleting",
                     aDOMEvent.stopPropagation();
                 aDOMEvent.cancelBubble = true;
             }
+            else if (aDOMEvent.keyCode == CPLeftArrowKeyCode && owner._selectedRange.location > 0 && CPTokenFieldDOMInputElement.value == "")
+            {
+                // Move the cursor back one token if the input is empty and the left arrow key is pressed.
+                owner._selectedRange.location--;
+                // Collapse the range.
+                owner._selectedRange.length = 0;
+                [owner setNeedsLayout];
+            }
+            else if (aDOMEvent.keyCode == CPRightArrowKeyCode && owner._selectedRange.location < [[owner _tokens] count] && CPTokenFieldDOMInputElement.value == "")
+            {
+                // Move the cursor forward one token if the input is empty and the right arrow key is pressed.
+                owner._selectedRange.location = MIN([[owner _tokens] count], owner._selectedRange.location + owner._selectedRange.length + 1);
+                // Collapse the range.
+                owner._selectedRange.length = 0;
+                [owner setNeedsLayout];
+            }
             else if (aDOMEvent.keyCode === CPDeleteKeyCode)
             {
                 // Highlight the previous token if backspace was pressed in an empty input element or re-show the completions view
-                if (CPTokenFieldDOMInputElement.value == @"")
+                if (CPTokenFieldDOMInputElement.value == @"" && CPTokenFieldInputOwner._selectedRange.location > 0)
                 {
                     [self _hideCompletions];
 
@@ -629,7 +637,7 @@ var CPThemeStateAutoCompleting = @"CPThemeStateAutoCompleting",
 
                     if (![[CPTokenFieldInputOwner _selectedTokenIndexes] count])
                     {
-                        var tokenView = [tokens lastObject];
+                        var tokenView = [tokens objectAtIndex:(CPTokenFieldInputOwner._selectedRange.location - 1)];
                         [CPTokenFieldInputOwner _setSelectedTokenIndexes:[CPIndexSet indexSetWithIndex:[tokens indexOfObject:tokenView]]];
                         [CPTokenFieldInputOwner _hideCompletions];
                     }
