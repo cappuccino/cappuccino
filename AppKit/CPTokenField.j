@@ -252,9 +252,15 @@ var CPThemeStateAutoCompleting          = @"CPThemeStateAutoCompleting",
     var indexOfToken = [[self _tokens] indexOfObject:token],
         objectValue = [self objectValue];
 
+    // If the token was selected, deselect it for selection preservation.
+    [self _deselectToken:token];
+    // Preserve selection.
+    var selection = CPCopyRange(_selectedRange);
     [objectValue removeObjectAtIndex:indexOfToken];
     [self setObjectValue:objectValue];
+    _selectedRange = selection;
 
+    [self setNeedsLayout];
     [self _controlTextDidChange];
 }
 
@@ -716,7 +722,6 @@ var CPThemeStateAutoCompleting          = @"CPThemeStateAutoCompleting",
                             var tokens = [CPTokenFieldInputOwner _tokens],
                                 tokenView = [tokens objectAtIndex:(CPTokenFieldInputOwner._selectedRange.location - 1)];
                             [CPTokenFieldInputOwner _selectToken:tokenView byExtendingSelection:NO];
-                            [CPTokenFieldInputOwner _hideCompletions];
                         }
                     }
                     else
@@ -724,6 +729,20 @@ var CPThemeStateAutoCompleting          = @"CPThemeStateAutoCompleting",
                 }
                 else
                     [CPTokenFieldInputOwner _delayedShowCompletions];
+            }
+            else if (aDOMEvent.keyCode === CPDeleteForwardKeyCode && CPTokenFieldDOMInputElement.value == @"")
+            {
+                // Delete forward if nothing is selected, else delete all selected.
+                [self _hideCompletions];
+
+                if (CPEmptyRange(CPTokenFieldInputOwner._selectedRange))
+                {
+                    var tokens = [CPTokenFieldInputOwner _tokens];
+                    if (CPTokenFieldInputOwner._selectedRange.location < [tokens count])
+                        [CPTokenFieldInputOwner _deleteToken:tokens[CPTokenFieldInputOwner._selectedRange.location]];
+                }
+                else
+                    [CPTokenFieldInputOwner _removeSelectedTokens:nil];
             }
 
             return true;
@@ -951,7 +970,9 @@ var CPThemeStateAutoCompleting          = @"CPThemeStateAutoCompleting",
             // XXX The "X" here is used to estimate the space needed to fit the next character
             // without clipping. Since different fonts might have different sizes of "X" this
             // solution is not ideal, but it works.
-            textWidth = useRemainingWidth ? contentSize.width - offset.x - 1 : [(element.value || @"") + "X" sizeWithFont:[self font]].width;
+            textWidth = [(element.value || @"") + "X" sizeWithFont:[self font]].width;
+            if (useRemainingWidth)
+                textWidth = MAX(contentSize.width - offset.x - 1, textWidth);
         }
 
         var inputFrame = fitAndFrame(textWidth, tokenHeight);
