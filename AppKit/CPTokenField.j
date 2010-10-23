@@ -71,8 +71,6 @@ var CPThemeStateAutoCompleting = @"CPThemeStateAutoCompleting",
 
     CPArray             _cachedCompletions;
 
-    CPIndexSet          _selectedTokenIndexes;
-
     CPCharacterSet      _tokenizingCharacterSet @accessors(property=tokenizingCharacterSet);
 }
 
@@ -102,7 +100,6 @@ var CPThemeStateAutoCompleting = @"CPThemeStateAutoCompleting",
         [self addSubview:_tokenScrollView];
 
         _tokenIndex = 0;
-        _selectedTokenIndexes = [CPIndexSet indexSet];
 
         _cachedCompletions = [];
         _completionDelay = [CPTokenField defaultCompletionDelay];
@@ -216,10 +213,15 @@ var CPThemeStateAutoCompleting = @"CPThemeStateAutoCompleting",
 {
     var indexOfToken = [[self _tokens] indexOfObject:token];
 
-    if (extend)
-        [_selectedTokenIndexes addIndex:indexOfToken];
+    if (indexOfToken == CPNotFound)
+    {
+        if (!extend)
+            _selectedRange = CPMakeRange([[self _tokens] count], 0);
+    }
+    else if (extend)
+        _selectedRange = CPUnionRange(_selectedRange, CPMakeRange(indexOfToken, 1));
     else
-        _selectedTokenIndexes = [CPIndexSet indexSetWithIndex:indexOfToken];
+        _selectedRange = CPMakeRange(indexOfToken, 1);
 
     [self setNeedsLayout];
 }
@@ -227,7 +229,9 @@ var CPThemeStateAutoCompleting = @"CPThemeStateAutoCompleting",
 - (void)_deselectToken:(_CPTokenFieldToken)token
 {
     var indexOfToken = [[self _tokens] indexOfObject:token];
-    [_selectedTokenIndexes removeIndex:indexOfToken];
+
+    if (CPLocationInRange(indexOfToken, _selectedRange))
+        _selectedRange = CPMakeRange(MAX(indexOfToken, _selectedRange.location), MIN(_selectedRange.length, indexOfToken - _selectedRange.location));
 
     [self setNeedsLayout];
 }
@@ -240,6 +244,11 @@ var CPThemeStateAutoCompleting = @"CPThemeStateAutoCompleting",
     [objectValue removeObjectAtIndex:indexOfToken];
     [self setObjectValue:objectValue];
 
+    [self _controlTextDidChange];
+}
+
+- (void)_controlTextDidChange
+{
     var theBinding = [CPKeyValueBinding getBinding:CPValueBinding forObject:self];
 
     if (theBinding)
@@ -248,15 +257,20 @@ var CPThemeStateAutoCompleting = @"CPThemeStateAutoCompleting",
     [self textDidChange:[CPNotification notificationWithName:CPControlTextDidChangeNotification object:self userInfo:nil]];
 }
 
-- (CPIndexSet)_selectedTokenIndexes
+- (void)_removeSelectedTokens:(id)sender
 {
-    return _selectedTokenIndexes;
-}
+    var tokens = [self objectValue];
 
-- (void)_setSelectedTokenIndexes:(CPIndexSet)selectedIndexes
-{
-    _selectedTokenIndexes = selectedIndexes;
-    [self setNeedsLayout];
+    for (var i = 0; i < _selectedRange.length; i++)
+        [tokens removeObjectAtIndex:_selectedRange.location + i];
+
+    var collapsedSelection = _selectedRange.location;
+    [self setObjectValue:tokens];
+    // setObjectValue moves the cursor to the end of the selection. We want it to stay
+    // where the selected tokens were.
+    _selectedRange = CPMakeRange(collapsedSelection, 0);
+
+    [self _controlTextDidChange];
 }
 
 // =============
@@ -367,7 +381,6 @@ var CPThemeStateAutoCompleting = @"CPThemeStateAutoCompleting",
     }
 
 #endif
-    _selectedTokenIndexes = [CPIndexSet indexSet];
 
     [self textDidEndEditing:[CPNotification notificationWithName:CPControlTextDidBeginEditingNotification object:self userInfo:nil]];
 
@@ -376,7 +389,7 @@ var CPThemeStateAutoCompleting = @"CPThemeStateAutoCompleting",
 
 - (void)mouseDown:(CPEvent)anEvent
 {
-    _selectedTokenIndexes = [CPIndexSet indexSet];
+    [self _selectToken:nil byExtendingSelection:NO];
 
     // CPTokenFieldFocusInput = YES;
     [super mouseDown:anEvent];
@@ -467,8 +480,8 @@ var CPThemeStateAutoCompleting = @"CPThemeStateAutoCompleting",
     */
     _value = objectValue;
 
-    // Place the cursor at the end
-    _selectedRange = CPMakeRange([[self _tokens] count], 0);
+    // Reset the selection.
+    [self _selectToken:nil byExtendingSelection:NO];
 
     [self _updatePlaceholderState];
 
@@ -628,34 +641,24 @@ var CPThemeStateAutoCompleting = @"CPThemeStateAutoCompleting",
             else if (aDOMEvent.keyCode === CPDeleteKeyCode)
             {
                 // Highlight the previous token if backspace was pressed in an empty input element or re-show the completions view
-                if (CPTokenFieldDOMInputElement.value == @"" && CPTokenFieldInputOwner._selectedRange.location > 0)
+                if (CPTokenFieldDOMInputElement.value == @"")
                 {
                     [self _hideCompletions];
 
                     // var tokenViews = [[CPTokenFieldInputOwner _tokens] lastObject];
                     var tokens = [CPTokenFieldInputOwner _tokens];
 
-                    if (![[CPTokenFieldInputOwner _selectedTokenIndexes] count])
+                    if (CPEmptyRange(CPTokenFieldInputOwner._selectedRange))
                     {
-                        var tokenView = [tokens objectAtIndex:(CPTokenFieldInputOwner._selectedRange.location - 1)];
-                        [CPTokenFieldInputOwner _setSelectedTokenIndexes:[CPIndexSet indexSetWithIndex:[tokens indexOfObject:tokenView]]];
-                        [CPTokenFieldInputOwner _hideCompletions];
+                        if (CPTokenFieldInputOwner._selectedRange.location > 0)
+                        {
+                            var tokenView = [tokens objectAtIndex:(CPTokenFieldInputOwner._selectedRange.location - 1)];
+                            [CPTokenFieldInputOwner _selectToken:tokenView byExtendingSelection:NO];
+                            [CPTokenFieldInputOwner _hideCompletions];
+                        }
                     }
                     else
-                    {
-                        var tokenViews = [tokens objectsAtIndexes:[CPTokenFieldInputOwner _selectedTokenIndexes]];
-
-                        for (var i = 0; i < [tokenViews count]; i++)
-                        {
-                            var tokenView = [tokenViews objectAtIndex:i];
-
-                            [tokenView removeFromSuperview];
-                            [[CPTokenFieldInputOwner _tokens] removeObject:tokenView];
-                        }
-
-                        [CPTokenFieldInputOwner _setSelectedTokenIndexes:[CPIndexSet indexSet]];
-                    }
-
+                        [CPTokenFieldInputOwner _removeSelectedTokens:nil];
                 }
                 else
                     [CPTokenFieldInputOwner _delayedShowCompletions];
@@ -686,7 +689,8 @@ var CPThemeStateAutoCompleting = @"CPThemeStateAutoCompleting",
             }
 
             [CPTokenFieldInputOwner _delayedShowCompletions];
-            _selectedTokenIndexes = [CPIndexSet indexSet];
+            // If there was a selection, collapse it now since we're typing in a new token.
+            owner._selectedRange.length = 0;
 
             // Force immediate layout in case word wrapping is now necessary.
             [owner setNeedsLayout];
@@ -896,7 +900,7 @@ var CPThemeStateAutoCompleting = @"CPThemeStateAutoCompleting",
 
     for (var i = 0, count = [[self _tokens] count]; i < count; i++)
     {
-        if (isEditing && i == _selectedRange.location)
+        if (isEditing && i == _selectedRange.location && !_selectedRange.length)
             placeEditor(i);
 
         var tokenView = [[self _tokens] objectAtIndex:i];
@@ -905,7 +909,7 @@ var CPThemeStateAutoCompleting = @"CPThemeStateAutoCompleting",
         if ([tokenView isKindOfClass:[CPString class]])
             continue;
 
-        [tokenView setHighlighted:[_selectedTokenIndexes containsIndex:i]];
+        [tokenView setHighlighted:CPLocationInRange(i, _selectedRange)];
         [tokenView sizeToFit];
 
         var size = [contentView bounds].size,
@@ -915,8 +919,13 @@ var CPThemeStateAutoCompleting = @"CPThemeStateAutoCompleting",
         [tokenView setFrame:tokenFrame];
     }
 
-    if (isEditing && _selectedRange.location >= [[self _tokens] count])
+    if (isEditing && _selectedRange.location >= [[self _tokens] count] && !_selectedRange.length)
         placeEditor();
+
+    // Hide the editor if there are selected tokens, but still keep it active
+    // so we can continue using our standard keyboard handling events.
+    if (_selectedRange.length)
+        [self _inputElement].style.left = "-10000px";
 
     if (_scrollToLastToken)
     {
