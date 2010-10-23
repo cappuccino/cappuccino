@@ -930,15 +930,20 @@ var CPThemeStateAutoCompleting          = @"CPThemeStateAutoCompleting",
         return r;
     }
 
-    var placeEditor = function()
+    var placeEditor = function(useRemainingWidth)
     {
         var element = [self _inputElement];
 
-        // XXX The "X" here is used to estimate the space needed to fit the next character
-        // without clipping. Since different fonts might have different sizes of "X" this
-        // solution is not ideal, but it works.
-        var textWidth = _selectedRange.length ? 1 : [(element.value || @"") + "X" sizeWithFont:[self font]].width,
-            inputFrame = fitAndFrame(textWidth, tokenHeight);
+        var textWidth = 1;
+        if (_selectedRange.length === 0)
+        {
+            // XXX The "X" here is used to estimate the space needed to fit the next character
+            // without clipping. Since different fonts might have different sizes of "X" this
+            // solution is not ideal, but it works.
+            textWidth = useRemainingWidth ? contentSize.width - offset.x - 1 : [(element.value || @"") + "X" sizeWithFont:[self font]].width;
+        }
+
+        var inputFrame = fitAndFrame(textWidth, tokenHeight);
 
         element.style.left = inputFrame.origin.x + "px";
         element.style.top = inputFrame.origin.y + "px";
@@ -953,7 +958,7 @@ var CPThemeStateAutoCompleting          = @"CPThemeStateAutoCompleting",
     for (var i = 0, count = [tokens count]; i < count; i++)
     {
         if (isEditing && i == CPMaxRange(_selectedRange))
-            placeEditor(i);
+            placeEditor(false);
 
         var tokenView = [tokens objectAtIndex:i];
 
@@ -972,7 +977,7 @@ var CPThemeStateAutoCompleting          = @"CPThemeStateAutoCompleting",
     }
 
     if (isEditing && CPMaxRange(_selectedRange) >= [tokens count])
-        placeEditor();
+        placeEditor(true);
 
     // Hide the editor if there are selected tokens, but still keep it active
     // so we can continue using our standard keyboard handling events.
