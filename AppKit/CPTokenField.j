@@ -93,10 +93,12 @@ var CPThemeStateAutoCompleting = @"CPThemeStateAutoCompleting",
         _tokenScrollView = [[CPScrollView alloc] initWithFrame:CGRectMakeZero()];
         [_tokenScrollView setHasHorizontalScroller:NO];
         [_tokenScrollView setHasVerticalScroller:NO];
-        var contentView = [[CPView alloc] initWithFrame:CGRectMakeZero()];
-        [_tokenScrollView setDocumentView:contentView];
-        [contentView setAutoresizingMask:CPViewWidthSizable];
         [_tokenScrollView setAutoresizingMask:CPViewWidthSizable | CPViewHeightSizable];
+
+        var contentView = [[CPView alloc] initWithFrame:CGRectMakeZero()];
+        [contentView setAutoresizingMask:CPViewWidthSizable];
+        [_tokenScrollView setDocumentView:contentView];
+
         [self addSubview:_tokenScrollView];
 
         _tokenIndex = 0;
@@ -413,7 +415,7 @@ var CPThemeStateAutoCompleting = @"CPThemeStateAutoCompleting",
 - (id)objectValue
 {
     var objectValue = [];
-    for (var i = 0; i < [[self _tokens] count]; i++)
+    for (var i = 0, count = [[self _tokens] count]; i < count; i++)
     {
         var token = [[self _tokens] objectAtIndex:i];
 
@@ -449,7 +451,7 @@ var CPThemeStateAutoCompleting = @"CPThemeStateAutoCompleting",
         contentView = [_tokenScrollView documentView];
 
     // Because we do not know for sure which tokens are removed we remove them all
-    for (var i = 0; i < [[self _tokens] count]; i++)
+    for (var i = 0, count = [[self _tokens] count]; i < count; i++)
         [[[self _tokens] objectAtIndex:i] removeFromSuperview];
 
     objectValue = [];
@@ -457,7 +459,7 @@ var CPThemeStateAutoCompleting = @"CPThemeStateAutoCompleting",
     if (aValue !== nil)
     {
         // Re-add all tokens
-        for (var i = 0; i < [aValue count]; i++)
+        for (var i = 0, count = [aValue count]; i < count; i++)
         {
             var token = [aValue objectAtIndex:i],
                 tokenView = [[_CPTokenFieldToken alloc] init];
@@ -547,10 +549,9 @@ var CPThemeStateAutoCompleting = @"CPThemeStateAutoCompleting",
 
         CPTokenFieldKeyDownFunction = function(aDOMEvent)
         {
-            CPTokenFieldTextDidChangeValue = [CPTokenFieldInputOwner stringValue];
-
-            // CPTokenFieldKeyPressFunction(anEvent);
             aDOMEvent = aDOMEvent || window.event
+
+            CPTokenFieldTextDidChangeValue = [CPTokenFieldInputOwner stringValue];
 
             // Update the selectedIndex if necesary
             var index = [[CPTokenFieldInputOwner autocompleteView] selectedRow];
@@ -573,8 +574,6 @@ var CPThemeStateAutoCompleting = @"CPThemeStateAutoCompleting",
                 rowRect = [autocompleteView rectOfRow:index],
                 owner = CPTokenFieldInputOwner;
 
-            // The clipview's and row it's width are equal, this makes sure the clipview can contain the row rect
-            // rowRect.size.width -= 2.0;
             if (rowRect && !CPRectContainsRect([clipView bounds], rowRect))
                 [clipView scrollToPoint:[autocompleteView rectOfRow:index].origin];
 
@@ -586,19 +585,15 @@ var CPThemeStateAutoCompleting = @"CPThemeStateAutoCompleting",
                     aDOMEvent.stopPropagation();
                 aDOMEvent.cancelBubble = true;
 
-                if (aDOMEvent && aDOMEvent.keyCode === CPReturnKeyCode)
+                // Only resign first responder if we weren't autocompleting
+                if (![CPTokenFieldInputOwner hasThemeState:CPThemeStateAutoCompleting])
                 {
-                    // Only resign first responder if we weren't autocompleting
-                    if (![CPTokenFieldInputOwner hasThemeState:CPThemeStateAutoCompleting])
+                    if (aDOMEvent && aDOMEvent.keyCode === CPReturnKeyCode)
                     {
                         [owner sendAction:[owner action] to:[owner target]];
                         [[owner window] makeFirstResponder:nil];
                     }
-                }
-                else if (aDOMEvent && aDOMEvent.keyCode === CPTabKeyCode)
-                {
-                    // Only resign first responder if we weren't autocompleting
-                    if (![CPTokenFieldInputOwner hasThemeState:CPThemeStateAutoCompleting])
+                    else if (aDOMEvent && aDOMEvent.keyCode === CPTabKeyCode)
                     {
                         if (!aDOMEvent.shiftKey)
                             [[owner window] selectNextKeyView:owner];
@@ -645,14 +640,12 @@ var CPThemeStateAutoCompleting = @"CPThemeStateAutoCompleting",
                 {
                     [self _hideCompletions];
 
-                    // var tokenViews = [[CPTokenFieldInputOwner _tokens] lastObject];
-                    var tokens = [CPTokenFieldInputOwner _tokens];
-
                     if (CPEmptyRange(CPTokenFieldInputOwner._selectedRange))
                     {
                         if (CPTokenFieldInputOwner._selectedRange.location > 0)
                         {
-                            var tokenView = [tokens objectAtIndex:(CPTokenFieldInputOwner._selectedRange.location - 1)];
+                            var tokens = [CPTokenFieldInputOwner _tokens],
+                                tokenView = [tokens objectAtIndex:(CPTokenFieldInputOwner._selectedRange.location - 1)];
                             [CPTokenFieldInputOwner _selectToken:tokenView byExtendingSelection:NO];
                             [CPTokenFieldInputOwner _hideCompletions];
                         }
@@ -712,7 +705,6 @@ var CPThemeStateAutoCompleting = @"CPThemeStateAutoCompleting",
 
         CPTokenFieldHandleBlur = function(anEvent)
         {
-            var owner = CPTokenFieldInputOwner;
             CPTokenFieldInputOwner = nil;
 
             [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
@@ -793,9 +785,7 @@ var CPThemeStateAutoCompleting = @"CPThemeStateAutoCompleting",
 - (void)_cancelShowCompletions
 {
     if ([_showCompletionsTimer isValid])
-    {
         [_showCompletionsTimer invalidate];
-    }
 }
 
 - (void)_hideCompletions
@@ -927,10 +917,10 @@ var CPThemeStateAutoCompleting = @"CPThemeStateAutoCompleting",
     if (_selectedRange.length)
         [self _inputElement].style.left = "-10000px";
 
+    // This code is responsible for showing the last line of tokens
+    // initially.
     if (_scrollToLastToken)
     {
-        // This code is responsible for showing the last line of tokens
-        // initially.
         if ([[self window] firstResponder] != self)
             [self _scrollTokenViewToVisible:[[self _tokens] lastObject]];
         _scrollToLastToken = NO;
@@ -960,7 +950,10 @@ var CPThemeStateAutoCompleting = @"CPThemeStateAutoCompleting",
 - (void)tableViewSelectionDidChange:(CPNotification)notification
 {
     // make sure a mouse click in the tableview doesn't steal first responder state
-    window.setTimeout(function() { [[self window] makeFirstResponder:self]; }, 2.0);
+    window.setTimeout(function()
+    {
+        [[self window] makeFirstResponder:self];
+    }, 2.0);
 }
 
 // =============
