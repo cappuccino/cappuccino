@@ -140,11 +140,14 @@
 - (BOOL)_performScanWithSelector:(SEL)s withObject:(id)arg into:(id)ref
 {
     var ret = [self performSelector:s withObject:arg];
-
+    
+    if (ret == nil)
+        return NO;
+        
     if (ref != nil)
         ref(ret);
 
-    return ret != NULL;
+    return YES;
 }
 
 /* ================================ */
