@@ -361,10 +361,6 @@ var CPThemeStateAutoCompleting          = @"CPThemeStateAutoCompleting",
 
     [self unsetThemeState:CPThemeStateEditing];
 
-    [self _updatePlaceholderState];
-
-    [self setNeedsLayout];
-
     [self _autocomplete];
 
 #if PLATFORM(DOM)
@@ -395,6 +391,10 @@ var CPThemeStateAutoCompleting          = @"CPThemeStateAutoCompleting",
     }
 
 #endif
+
+    [self _updatePlaceholderState];
+
+    [self setNeedsLayout];
 
     [self textDidEndEditing:[CPNotification notificationWithName:CPControlTextDidBeginEditingNotification object:self userInfo:nil]];
 
@@ -661,14 +661,17 @@ var CPThemeStateAutoCompleting          = @"CPThemeStateAutoCompleting",
             else if (aDOMEvent.keyCode == CPLeftArrowKeyCode && owner._selectedRange.location > 0 && CPTokenFieldDOMInputElement.value == "")
             {
                 // Move the cursor back one token if the input is empty and the left arrow key is pressed.
-                owner._selectedRange.location--;
                 if (!aDOMEvent.shiftKey)
                 {
-                    // Collapse the range.
-                    owner._selectedRange.length = 0;
+                    if (owner._selectedRange.length)
+                        // Simply collapse the range.
+                        owner._selectedRange.length = 0;
+                    else
+                        owner._selectedRange.location--;
                 }
                 else
                 {
+                    owner._selectedRange.location--;
                     // When shift is depressed, select the next token backwards.
                     owner._selectedRange.length++;
                 }
@@ -679,10 +682,17 @@ var CPThemeStateAutoCompleting          = @"CPThemeStateAutoCompleting",
             {
                 if (!aDOMEvent.shiftKey)
                 {
-                    // Move the cursor forward one token if the input is empty and the right arrow key is pressed.
-                    owner._selectedRange.location = MIN([[owner _tokens] count], owner._selectedRange.location + owner._selectedRange.length + 1);
-                    // Collapse the range.
-                    owner._selectedRange.length = 0;
+                    if (owner._selectedRange.length)
+                    {
+                        // Place the cursor at the end of the selection and collapse.
+                        owner._selectedRange.location = CPMaxRange(owner._selectedRange);
+                        owner._selectedRange.length = 0;
+                    }
+                    else
+                    {
+                        // Move the cursor forward one token if the input is empty and the right arrow key is pressed.
+                        owner._selectedRange.location = MIN([[owner _tokens] count], owner._selectedRange.location + owner._selectedRange.length + 1);
+                    }
                 }
                 else
                 {
