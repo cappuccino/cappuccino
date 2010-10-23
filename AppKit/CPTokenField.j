@@ -872,10 +872,12 @@ var CPThemeStateAutoCompleting = @"CPThemeStateAutoCompleting",
         // Get the height of a typical token, or a token token if you will.
         [tokenToken sizeToFit];
 
-        // XXX The "X" here is used to estimate the space needed for one more character,
-        // so that we can wrap before we're out of bounds. Since different fonts
-        // might have different sizes of "X" this solution is not ideal, but it works.
-        var textWidth = [(element.value || @"") + "X" sizeWithFont:[self font]].width,
+        // XXX The "X" here is used to estimate the space needed to fit the next character
+        // without clipping. Since different fonts might have different sizes of "X" this
+        // solution is not ideal, but it works. Also, if tokens are selected, make a small
+        // 1 pixel editor as to not displace the tokens too much. We still want >0px because
+        // it makes an easy scroll to target.
+        var textWidth = _selectedRange.length ? 1 : [(element.value || @"") + "X" sizeWithFont:[self font]].width,
             tokenHeight = CGRectGetHeight([tokenToken bounds]),
             inputFrame = fitAndFrame(textWidth, tokenHeight);
 
@@ -890,7 +892,7 @@ var CPThemeStateAutoCompleting = @"CPThemeStateAutoCompleting",
 
     for (var i = 0, count = [[self _tokens] count]; i < count; i++)
     {
-        if (isEditing && i == _selectedRange.location && !_selectedRange.length)
+        if (isEditing && i == _selectedRange.location)
             placeEditor(i);
 
         var tokenView = [[self _tokens] objectAtIndex:i];
@@ -909,7 +911,7 @@ var CPThemeStateAutoCompleting = @"CPThemeStateAutoCompleting",
         [tokenView setFrame:tokenFrame];
     }
 
-    if (isEditing && _selectedRange.location >= [[self _tokens] count] && !_selectedRange.length)
+    if (isEditing && _selectedRange.location >= [[self _tokens] count])
         placeEditor();
 
     // Hide the editor if there are selected tokens, but still keep it active
