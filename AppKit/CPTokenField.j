@@ -202,8 +202,9 @@ var CPThemeStateAutoCompleting          = @"CPThemeStateAutoCompleting",
         [objectValue removeObjectAtIndex:_selectedRange.location];
 
     [objectValue insertObject:token atIndex:_selectedRange.location];
+    var location = _selectedRange.location;
     [self setObjectValue:objectValue];
-    _shouldScrollTo = CPScrollDestinationNone;
+    _selectedRange = CPMakeRange(location + 1, 0);
 
     [self _inputElement].value = @"";
     [self setNeedsLayout];
