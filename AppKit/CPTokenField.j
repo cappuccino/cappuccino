@@ -72,6 +72,8 @@ var CPThemeStateAutoCompleting = @"CPThemeStateAutoCompleting",
     CPArray             _cachedCompletions;
 
     CPCharacterSet      _tokenizingCharacterSet @accessors(property=tokenizingCharacterSet);
+
+    CPEvent             _mouseDownEvent;
 }
 
 + (CPCharacterSet)defaultTokenizingCharacterSet
@@ -263,7 +265,7 @@ var CPThemeStateAutoCompleting = @"CPThemeStateAutoCompleting",
 {
     var tokens = [self objectValue];
 
-    for (var i = 0; i < _selectedRange.length; i++)
+    for (var i = _selectedRange.length - 1; i >= 0; i--)
         [tokens removeObjectAtIndex:_selectedRange.location + i];
 
     var collapsedSelection = _selectedRange.location;
@@ -391,10 +393,30 @@ var CPThemeStateAutoCompleting = @"CPThemeStateAutoCompleting",
 
 - (void)mouseDown:(CPEvent)anEvent
 {
+    _mouseDownEvent = anEvent;
+
     [self _selectToken:nil byExtendingSelection:NO];
 
-    // CPTokenFieldFocusInput = YES;
     [super mouseDown:anEvent];
+}
+
+- (void)mouseUp:(CPEvent)anEvent
+{
+    _mouseDownEvent = nil;
+}
+
+- (void)mouseDownOnToken:(_CPTokenFieldToken)aToken withEvent:(CPEvent)anEvent
+{
+    _mouseDownEvent = anEvent;
+}
+
+- (void)mouseUpOnToken:(_CPTokenFieldToken)aToken withEvent:(CPEvent)anEvent
+{
+    if (_mouseDownEvent && CGPointEqualToPoint([_mouseDownEvent locationInWindow], [anEvent locationInWindow]))
+    {
+        [[self window] makeFirstResponder:self];
+        [self _selectToken:aToken byExtendingSelection:[anEvent modifierFlags] & CPShiftKeyMask];
+    }
 }
 
 // ===========
@@ -1083,7 +1105,12 @@ var CPThemeStateAutoCompleting = @"CPThemeStateAutoCompleting",
 
 - (void)mouseDown:(CPEvent)anEvent
 {
-    [_tokenField mouseDown:anEvent];
+    [_tokenField mouseDownOnToken:self withEvent:anEvent];
+}
+
+- (void)mouseUp:(CPEvent)anEvent
+{
+    [_tokenField mouseUpOnToken:self withEvent:anEvent];
 }
 
 - (void)_delete:(id)sender
