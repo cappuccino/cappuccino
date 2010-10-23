@@ -962,9 +962,9 @@ var CPThemeStateAutoCompleting          = @"CPThemeStateAutoCompleting",
 
     var placeEditor = function(useRemainingWidth)
     {
-        var element = [self _inputElement];
+        var element = [self _inputElement],
+            textWidth = 1;
 
-        var textWidth = 1;
         if (_selectedRange.length === 0)
         {
             // XXX The "X" here is used to estimate the space needed to fit the next character
