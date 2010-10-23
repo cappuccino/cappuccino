@@ -78,6 +78,8 @@ var CPThemeStateAutoCompleting          = @"CPThemeStateAutoCompleting",
     CPCharacterSet      _tokenizingCharacterSet @accessors(property=tokenizingCharacterSet);
 
     CPEvent             _mouseDownEvent;
+
+    BOOL                _preventResign;
 }
 
 + (CPCharacterSet)defaultTokenizingCharacterSet
@@ -353,6 +355,9 @@ var CPThemeStateAutoCompleting          = @"CPThemeStateAutoCompleting",
 
 - (BOOL)resignFirstResponder
 {
+    if (_preventResign)
+        return NO;
+
     [self unsetThemeState:CPThemeStateEditing];
 
     [self _updatePlaceholderState];
@@ -397,6 +402,7 @@ var CPThemeStateAutoCompleting          = @"CPThemeStateAutoCompleting",
 
 - (void)mouseDown:(CPEvent)anEvent
 {
+    _preventResign = YES;
     _mouseDownEvent = anEvent;
 
     [self _selectToken:nil byExtendingSelection:NO];
@@ -406,11 +412,13 @@ var CPThemeStateAutoCompleting          = @"CPThemeStateAutoCompleting",
 
 - (void)mouseUp:(CPEvent)anEvent
 {
+    _preventResign = NO;
     _mouseDownEvent = nil;
 }
 
 - (void)mouseDownOnToken:(_CPTokenFieldToken)aToken withEvent:(CPEvent)anEvent
 {
+    _preventResign = YES;
     _mouseDownEvent = anEvent;
 }
 
@@ -420,11 +428,10 @@ var CPThemeStateAutoCompleting          = @"CPThemeStateAutoCompleting",
     {
         [self _selectToken:aToken byExtendingSelection:[anEvent modifierFlags] & CPShiftKeyMask];
         [[self window] makeFirstResponder:self];
-        // When a token is clicked on and the editor was active, it blurs and causes the field to
-        // resign first responder. The line above restores first responder status in that case,
-        // but the scroll position will be lost. So scroll to the just clicked token.
+        // Snap to the token if it's only half visible due to mouse wheel scrolling.
         _shouldScrollTo = aToken;
     }
+    _preventResign = NO;
 }
 
 // ===========
@@ -564,6 +571,9 @@ var CPThemeStateAutoCompleting          = @"CPThemeStateAutoCompleting",
         {
             if (CPTokenFieldInputOwner && [CPTokenFieldInputOwner._tokenScrollView documentView]._DOMElement != CPTokenFieldDOMInputElement.parentNode)
                 return;
+
+            if (CPTokenFieldInputOwner && CPTokenFieldInputOwner._preventResign)
+                return false;
 
             if (!CPTokenFieldInputResigning && !CPTokenFieldFocusInput)
             {
