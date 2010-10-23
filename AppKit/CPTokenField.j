@@ -992,8 +992,11 @@ var CPThemeStateAutoCompleting          = @"CPThemeStateAutoCompleting",
 
     // Hide the editor if there are selected tokens, but still keep it active
     // so we can continue using our standard keyboard handling events.
-    if (_selectedRange.length)
+    if (isEditing && _selectedRange.length)
+    {
         [self _inputElement].style.left = "-10000px";
+        [self _inputElement].focus();
+    }
 
     // Trim off any excess height downwards.
     if (CGRectGetHeight([contentView bounds]) > offset.y + tokenHeight)
