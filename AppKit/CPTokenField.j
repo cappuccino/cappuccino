@@ -853,17 +853,23 @@ var CPThemeStateAutoCompleting = @"CPThemeStateAutoCompleting",
     else
         [_autocompleteContainer setHidden:YES];
 
-    // Add every token as a seperate view
+    // Hack to make sure we are handling an array
+    if (![[self _tokens] isKindOfClass:[CPArray class]])
+        return;
+
+    // Move each token into the right position.
     var contentRect = CGRectMakeCopy([contentView bounds]),
         contentOrigin = contentRect.origin,
         contentSize = contentRect.size,
         offset = CPPointMake(contentOrigin.x, contentOrigin.y),
         spaceBetweenTokens = CPSizeMake(2.0, 2.0),
-        isEditing = [[self window] firstResponder] == self;
+        isEditing = [[self window] firstResponder] == self,
+        tokenToken = [_CPTokenFieldToken new];
 
-    // Hack to make sure we are handling an array
-    if (![[self _tokens] isKindOfClass:[CPArray class]])
-        return;
+    // Get the height of a typical token, or a token token if you will.
+    [tokenToken sizeToFit];
+
+    var tokenHeight = CGRectGetHeight([tokenToken bounds]);
 
     var fitAndFrame = function(width, height)
     {
@@ -879,7 +885,8 @@ var CPThemeStateAutoCompleting = @"CPThemeStateAutoCompleting",
         r.origin.y = offset.y;
 
         // Make sure the frame fits.
-        [contentView setFrame:CGRectMake(0, 0, CGRectGetWidth([_tokenScrollView bounds]), offset.y + height)];
+        if (CGRectGetHeight([contentView bounds]) < offset.y + height)
+            [contentView setFrame:CGRectMake(0, 0, CGRectGetWidth([_tokenScrollView bounds]), offset.y + height)];
 
         offset.x += width + spaceBetweenTokens.width;
 
@@ -888,19 +895,13 @@ var CPThemeStateAutoCompleting = @"CPThemeStateAutoCompleting",
 
     var placeEditor = function()
     {
-        var element = [self _inputElement],
-            tokenToken = [_CPTokenFieldToken new];
+        var element = [self _inputElement];
 
-        // Get the height of a typical token, or a token token if you will.
-        [tokenToken sizeToFit];
 
         // XXX The "X" here is used to estimate the space needed to fit the next character
         // without clipping. Since different fonts might have different sizes of "X" this
-        // solution is not ideal, but it works. Also, if tokens are selected, make a small
-        // 1 pixel editor as to not displace the tokens too much. We still want >0px because
-        // it makes an easy scroll to target.
+        // solution is not ideal, but it works.
         var textWidth = _selectedRange.length ? 1 : [(element.value || @"") + "X" sizeWithFont:[self font]].width,
-            tokenHeight = CGRectGetHeight([tokenToken bounds]),
             inputFrame = fitAndFrame(textWidth, tokenHeight);
 
         element.style.left = inputFrame.origin.x + "px";
@@ -908,13 +909,14 @@ var CPThemeStateAutoCompleting = @"CPThemeStateAutoCompleting",
         element.style.width = inputFrame.size.width + "px";
         element.style.height = inputFrame.size.height + "px";
 
-        // When editing, always show the cursor.
-        [[_tokenScrollView documentView] scrollRectToVisible:inputFrame];
+        // When editing, always scroll to the cursor.
+        if (_selectedRange.length == 0)
+            [[_tokenScrollView documentView] scrollRectToVisible:inputFrame];
     }
 
     for (var i = 0, count = [[self _tokens] count]; i < count; i++)
     {
-        if (isEditing && i == _selectedRange.location)
+        if (isEditing && i == CPMaxRange(_selectedRange))
             placeEditor(i);
 
         var tokenView = [[self _tokens] objectAtIndex:i];
@@ -933,13 +935,17 @@ var CPThemeStateAutoCompleting = @"CPThemeStateAutoCompleting",
         [tokenView setFrame:tokenFrame];
     }
 
-    if (isEditing && _selectedRange.location >= [[self _tokens] count])
+    if (isEditing && CPMaxRange(_selectedRange) >= [[self _tokens] count])
         placeEditor();
 
     // Hide the editor if there are selected tokens, but still keep it active
     // so we can continue using our standard keyboard handling events.
     if (_selectedRange.length)
         [self _inputElement].style.left = "-10000px";
+
+    // Trim off any excess height downwards.
+    if (CGRectGetHeight([contentView bounds]) > offset.y + tokenHeight)
+        [contentView setFrame:CGRectMake(0, 0, CGRectGetWidth([_tokenScrollView bounds]), offset.y + tokenHeight)];
 
     // This code is responsible for showing the last line of tokens
     // initially.
@@ -955,6 +961,7 @@ var CPThemeStateAutoCompleting = @"CPThemeStateAutoCompleting",
 {
     if (!aToken)
         return;
+
     return [[_tokenScrollView documentView] scrollRectToVisible:[aToken frame]];
 }
 
