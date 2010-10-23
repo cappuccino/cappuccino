@@ -638,37 +638,40 @@ function(newValue)\
 
         [self setScanLocation:location];
     }
-
+    
     if ([self scanString:@"\"" intoString:NULL])
     {
         var skip = [self charactersToBeSkipped],
-            str;
+            str = @"";
 
         [self setCharactersToBeSkipped:nil];
-        if ([self scanUpToString:@"\"" intoString:REFERENCE(str)] == NO)
+        [self scanUpToString:@"\"" intoString:REFERENCE(str)];
+
+        if ([self scanString:@"\"" intoString:NULL] == NO)
         {
             [self setCharactersToBeSkipped:skip];
             [CPException raise:CPInvalidArgumentException reason:@"Invalid double quoted literal at "+location];
         }
 
-        [self scanString:@"\"" intoString:NULL];
         [self setCharactersToBeSkipped:skip];
 
         return [CPExpression expressionForConstantValue:str];
     }
+
     if ([self scanString:@"'" intoString:NULL])
     {
         var skip = [self charactersToBeSkipped],
-            str;
+            str = @"";
 
         [self setCharactersToBeSkipped:nil];
-        if ([self scanUpToString:@"'" intoString:REFERENCE(str)] == NO)
+        [self scanUpToString:@"'" intoString:REFERENCE(str)];
+
+        if ([self scanString:@"'" intoString:NULL] == NO)
         {
             [self setCharactersToBeSkipped:skip];
-            [CPException raise:CPInvalidArgumentException reason:@"Invalid single quoted literal at "+location];
+            [CPException raise:CPInvalidArgumentException reason:@"Invalid double quoted literal at "+location];
         }
 
-        [self scanString:@"'" intoString:NULL];
         [self setCharactersToBeSkipped:skip];
 
         return [CPExpression expressionForConstantValue:str];

@@ -221,6 +221,9 @@
     
     predicate = [CPPredicate predicateWithFormat: @"a BETWEEN {%f,%f}", 20, 40];
     [self assertTrue:([predicate predicateOperatorType] == CPBetweenPredicateOperatorType) message:[predicate description] + " operator should be a CPBetweenPredicateOperatorType"];
+
+    predicate = [CPPredicate predicateWithFormat: @"a CONTAINS \"\""];
+    [self assertNotNull:predicate message:[predicate description] + " should not be nil"];
 }
 
 @end
