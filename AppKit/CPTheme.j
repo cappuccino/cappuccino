@@ -142,6 +142,11 @@ var CPThemesByName          = { },
         {
             if ([aClass respondsToSelector:@selector(defaultThemeClass)])
                 className = [aClass defaultThemeClass];
+            else if ([aClass respondsToSelector:@selector(themeClass)])
+            {
+                CPLog.warn(@"%@ themeClass is deprecated in favor of defaultThemeClass",CPStringFromClass([anObject class]));
+                className = [aClass themeClass];
+            }
             else
                 return nil;
         }
@@ -247,7 +252,7 @@ var CPThemesByName          = { },
     var attributes = [anObject _themeAttributeDictionary],
         attributeName = nil,
         attributeNames = [attributes keyEnumerator],
-        objectThemeClass = [[anObject class] defaultThemeClass];
+        objectThemeClass = [anObject themeClass];
 
     while (attributeName = [attributeNames nextObject])
         [self _recordAttribute:[attributes objectForKey:attributeName] forClass:objectThemeClass];
