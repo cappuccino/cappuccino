@@ -179,6 +179,7 @@ var CPViewFlags                     = { },
 
     // Theming Support
     CPTheme             _theme;
+    CPString            _themeClass;
     JSObject            _themeAttributes;
     unsigned            _themeState;
 
@@ -2257,6 +2258,24 @@ setBoundsOrigin:
     return nil;
 }
 
+- (CPString)themeClass
+{
+    if (_themeClass)
+        return _themeClass;
+
+    return [[self class] themeClass];
+}
+
+- (void)setThemeClass:(CPString)theClass
+{
+    _themeClass = theClass;
+
+    [self _loadThemeAttributes];
+
+    [self setNeedsLayout];
+    [self setNeedsDisplay:YES];
+}
+
 + (CPDictionary)themeAttributes
 {
     return nil;
@@ -2315,7 +2334,7 @@ setBoundsOrigin:
         return;
 
     var theme = [self theme],
-        themeClass = [theClass themeClass];
+        themeClass = [self themeClass];
 
     _themeAttributes = {};
 
@@ -2351,7 +2370,7 @@ setBoundsOrigin:
         return;
 
     var theme = [self theme],
-        themeClass = [[self class] themeClass];
+        themeClass = [self themeClass];
 
     for (var attributeName in _themeAttributes)
         if (_themeAttributes.hasOwnProperty(attributeName))
@@ -2585,7 +2604,7 @@ var CPViewAutoresizingMaskKey       = @"CPViewAutoresizingMask",
         _themeAttributes = {};
 
         var theClass = [self class],
-            themeClass = [theClass themeClass],
+            themeClass = [self themeClass],
             attributes = [theClass _themeAttributes],
             count = attributes.length;
 
