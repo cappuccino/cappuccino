@@ -739,12 +739,12 @@ var themedButtonValues = nil,
         [@"text-color",         [CPColor whiteColor],               CPThemeStateTableDataView | CPThemeStateSelectedTableDataView],
         [@"font",               [CPFont boldSystemFontOfSize:12.0], CPThemeStateTableDataView | CPThemeStateSelectedTableDataView],
 
-        [@"text-color",         [CPColor colorWithCalibratedWhite:125.0 / 255.0 alpha:1.0], CPThemeStateTableDataView|CPThemeStateGroupRow],
-        [@"text-color",         [CPColor colorWithCalibratedWhite:1.0 alpha:1.0], CPThemeStateTableDataView|CPThemeStateGroupRow|CPThemeStateSelectedTableDataView],
-        [@"text-shadow-color",  [CPColor whiteColor],                CPThemeStateTableDataView|CPThemeStateGroupRow],
-        [@"text-shadow-offset",  CGSizeMake(0,1),                    CPThemeStateTableDataView|CPThemeStateGroupRow],
-        [@"text-shadow-color",  [CPColor colorWithCalibratedWhite:0.0 alpha:0.6],                CPThemeStateTableDataView|CPThemeStateGroupRow|CPThemeStateSelectedTableDataView],
-        [@"font",               [CPFont boldSystemFontOfSize:12.0],  CPThemeStateTableDataView|CPThemeStateGroupRow]
+        [@"text-color",         [CPColor colorWithCalibratedWhite:125.0 / 255.0 alpha:1.0], CPThemeStateTableDataView | CPThemeStateGroupRow],
+        [@"text-color",         [CPColor colorWithCalibratedWhite:1.0 alpha:1.0], CPThemeStateTableDataView | CPThemeStateGroupRow | CPThemeStateSelectedTableDataView],
+        [@"text-shadow-color",  [CPColor whiteColor],                CPThemeStateTableDataView | CPThemeStateGroupRow],
+        [@"text-shadow-offset",  CGSizeMake(0,1),                    CPThemeStateTableDataView | CPThemeStateGroupRow],
+        [@"text-shadow-color",  [CPColor colorWithCalibratedWhite:0.0 alpha:0.6],                CPThemeStateTableDataView | CPThemeStateGroupRow | CPThemeStateSelectedTableDataView],
+        [@"font",               [CPFont boldSystemFontOfSize:12.0],  CPThemeStateTableDataView | CPThemeStateGroupRow]
     ];
 
     [self registerThemeValues:themedTextFieldValues forView:textfield];
@@ -821,10 +821,10 @@ var themedButtonValues = nil,
 
         overrides =
         [
-            [@"content-inset", CGInsetMake(7.0, 0.0, 7.0, 0.0)],
+            [@"content-inset", CGInsetMake(7.0, 0.0, 4.0, 0.0)],
             // Placeholder is displayed as regular text, not tokens; requires a different inset.
             [@"content-inset", CGInsetMake(9.0, 0.0, 5.0, 2.0), CPTextFieldStatePlaceholder],
-            [@"content-inset", CGInsetMake(7.0, 5.0, 7.0, 6.0), CPThemeStateBezeled],
+            [@"content-inset", CGInsetMake(7.0, 5.0, 4.0, 6.0), CPThemeStateBezeled],
             [@"content-inset", CGInsetMake(9.0, 7.0, 5.0, 8.0), CPThemeStateBezeled | CPTextFieldStatePlaceholder],
         ];
 
@@ -853,12 +853,16 @@ var themedButtonValues = nil,
             ],
             PatternIsHorizontal),
 
+        textColor = [CPColor colorWithRed:41.0 / 255.0 green:51.0 / 255.0 blue:64.0 / 255.0 alpha:1.0],
+        textHighlightedColor = [CPColor whiteColor],
+
         themeValues =
         [
             [@"bezel-color",    bezelColor,                         CPThemeStateBezeled],
             [@"bezel-color",    bezelHighlightedColor,              CPThemeStateBezeled | CPThemeStateHighlighted],
 
-            [@"text-color",     [CPColor colorWithRed:41.0 / 255.0 green:51.0 / 255.0 blue:64.0 / 255.0 alpha:1.0]],
+            [@"text-color",     textColor],
+            [@"text-color",     textHighlightedColor,               CPThemeStateHighlighted],
 
             [@"bezel-inset",    CGInsetMake(0.0, 0.0, 0.0, 0.0),    CPThemeStateBezeled],
             [@"content-inset",  CGInsetMake(1.0, 24.0, 2.0, 16.0),  CPThemeStateBezeled],
@@ -1401,10 +1405,13 @@ var themedButtonValues = nil,
     [splitView addSubview:rightView];
 
 
+    [splitView setIsPaneSplitter:YES];
+
     var themedSplitViewValues =
         [
             [@"divider-thickness", 10.0],
-            [@"pane-divider-thickness", 1.0]
+            [@"pane-divider-thickness", 1.0],
+            [@"pane-divider-color", [CPColor colorWithRed:165.0 / 255.0 green:165.0 / 255.0 blue:165.0 / 255.0 alpha:1.0]]
         ];
 
     [self registerThemeValues:themedSplitViewValues forView:splitView];

@@ -47,6 +47,20 @@ var STATES = ['Alabama', 'Alaska', 'Arizona', 'Arkansas', 'California', 'Colorad
 
     [contentView addSubview:tokenFieldB];
 
+    var tokenFieldC = [[CPTokenField alloc] initWithFrame:CGRectMake(15, 170, 500, 30)],
+        labelC = [[CPTextField alloc] initWithFrame:CGRectMake(15, 150, 500, 24)];
+
+    [labelC setStringValue:"This token field can't fit all its tokens."];
+    [contentView addSubview:labelC];
+
+    [tokenFieldC setEditable:YES];
+    [tokenFieldC setPlaceholderString:"Edit me!"];
+
+	[tokenFieldC setObjectValue:['Alabama', 'Alaska', 'Arizona', 'Arkansas', 'California', 'Colorado']];
+    [tokenFieldC setDelegate:self];
+
+    [contentView addSubview:tokenFieldC];
+
     [theWindow orderFront:self];
 
 }
