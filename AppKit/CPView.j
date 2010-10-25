@@ -2521,6 +2521,7 @@ var CPViewAutoresizingMaskKey       = @"CPViewAutoresizingMask",
     CPViewSubviewsKey               = @"CPViewSubviewsKey",
     CPViewSuperviewKey              = @"CPViewSuperviewKey",
     CPViewTagKey                    = @"CPViewTagKey",
+    CPViewThemeClassKey             = @"CPViewThemeClassKey",
     CPViewThemeStateKey             = @"CPViewThemeStateKey",
     CPViewWindowKey                 = @"CPViewWindowKey",
     CPViewNextKeyViewKey            = @"CPViewNextKeyViewKey",
@@ -2600,6 +2601,7 @@ var CPViewAutoresizingMaskKey       = @"CPViewAutoresizingMask",
         [self setupViewFlags];
 
         _theme = [CPTheme defaultTheme];
+        _themeClass = [aCoder decodeObjectForKey:CPViewThemeClassKey];
         _themeState = CPThemeState([aCoder decodeIntForKey:CPViewThemeStateKey]);
         _themeAttributes = {};
 
@@ -2687,6 +2689,7 @@ var CPViewAutoresizingMaskKey       = @"CPViewAutoresizingMask",
     if (previousKeyView !== nil)
         [aCoder encodeConditionalObject:previousKeyView forKey:CPViewPreviousKeyViewKey];
 
+    [aCoder encodeObject:[self themeClass] forKey:CPViewThemeClassKey];
     [aCoder encodeInt:CPThemeStateName(_themeState) forKey:CPViewThemeStateKey];
 
     for (var attributeName in _themeAttributes)
