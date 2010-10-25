@@ -1004,7 +1004,7 @@ var CPViewFlags                     = { },
 {
     var mask = [self autoresizingMask];
 
-    if(mask == CPViewNotSizable)
+    if (mask == CPViewNotSizable)
         return;
 
     var frame = _superview._frame,
@@ -1160,7 +1160,7 @@ var CPViewFlags                     = { },
 {
     aFlag = !!aFlag;
 
-    if(_isHidden === aFlag)
+    if (_isHidden === aFlag)
         return;
 
 //  FIXME: Should we return to visibility?  This breaks in FireFox, Opera, and IE.
@@ -1352,7 +1352,7 @@ var CPViewFlags                     = { },
 */
 - (CPView)hitTest:(CPPoint)aPoint
 {
-    if(_isHidden || !_hitTests || !CPRectContainsPoint(_frame, aPoint))
+    if (_isHidden || !_hitTests || !CPRectContainsPoint(_frame, aPoint))
         return nil;
 
     var view = nil,
@@ -1960,7 +1960,7 @@ setBoundsOrigin:
     var superview = _superview,
         clipViewClass = [CPClipView class];
 
-    while(superview && ![superview isKindOfClass:clipViewClass])
+    while (superview && ![superview isKindOfClass:clipViewClass])
         superview = superview._superview;
 
     return superview;
@@ -2056,7 +2056,7 @@ setBoundsOrigin:
     var superview = _superview,
         scrollViewClass = [CPScrollView class];
 
-    while(superview && ![superview isKindOfClass:scrollViewClass])
+    while (superview && ![superview isKindOfClass:scrollViewClass])
         superview = superview._superview;
 
     return superview;
