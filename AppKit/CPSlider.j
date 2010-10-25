@@ -42,7 +42,7 @@ CPCircularSlider    = 1;
     BOOL            _isVertical;
 }
 
-+ (CPString)themeClass
++ (CPString)defaultThemeClass
 {
     return "slider";
 }

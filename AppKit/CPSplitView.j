@@ -61,7 +61,7 @@ var CPSplitViewHorizontalImage = nil,
     CPArray     _buttonBars;
 }
 
-+ (CPString)themeClass
++ (CPString)defaultThemeClass
 {
     return @"splitview";
 }

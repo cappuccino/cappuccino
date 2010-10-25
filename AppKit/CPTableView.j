@@ -221,7 +221,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     CPArray     _differedColumnDataToRemove;
 }
 
-+ (CPString)themeClass
++ (CPString)defaultThemeClass
 {
     return @"tableview";
 }

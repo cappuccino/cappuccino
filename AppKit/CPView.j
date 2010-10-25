@@ -2253,7 +2253,7 @@ setBoundsOrigin:
 
 #pragma mark Theme Attributes
 
-+ (CPString)themeClass
++ (CPString)defaultThemeClass
 {
     return nil;
 }
@@ -2263,7 +2263,7 @@ setBoundsOrigin:
     if (_themeClass)
         return _themeClass;
 
-    return [[self class] themeClass];
+    return [[self class] defaultThemeClass];
 }
 
 - (void)setThemeClass:(CPString)theClass

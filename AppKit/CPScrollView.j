@@ -60,7 +60,7 @@
     CPBorderType    _borderType;
 }
 
-+ (CPString)themeClass
++ (CPString)defaultThemeClass
 {
     return @"scrollview"
 }

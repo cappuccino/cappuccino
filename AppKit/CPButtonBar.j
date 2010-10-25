@@ -50,7 +50,7 @@
     return button;
 }
 
-+ (CPString)themeClass
++ (CPString)defaultThemeClass
 {
     return @"button-bar";
 }

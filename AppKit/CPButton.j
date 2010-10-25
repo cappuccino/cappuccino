@@ -120,7 +120,7 @@ CPButtonImageOffset   = 3.0;
     return button;
 }
 
-+ (CPString)themeClass
++ (CPString)defaultThemeClass
 {
     return @"button";
 }

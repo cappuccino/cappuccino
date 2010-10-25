@@ -100,7 +100,7 @@ var CPThemesByName          = { },
     ThemeDescriptors.j file.
 
     NOTE: The names are not class names (such as "CPButton"), but the names returned
-    by the class' +themeClass method. For example, the name for CPCheckBox is "check-box",
+    by the class' +defaultThemeClass method. For example, the name for CPCheckBox is "check-box",
     as defined in CPCheckBox::themeClass.
 */
 - (CPArray)classNames
@@ -140,8 +140,8 @@ var CPThemesByName          = { },
     {
         if ([aClass isKindOfClass:[CPView class]])
         {
-            if ([aClass respondsToSelector:@selector(themeClass)])
-                className = [aClass themeClass];
+            if ([aClass respondsToSelector:@selector(defaultThemeClass)])
+                className = [aClass defaultThemeClass];
             else
                 return nil;
         }
@@ -247,7 +247,7 @@ var CPThemesByName          = { },
     var attributes = [anObject _themeAttributeDictionary],
         attributeName = nil,
         attributeNames = [attributes keyEnumerator],
-        objectThemeClass = [[anObject class] themeClass];
+        objectThemeClass = [[anObject class] defaultThemeClass];
 
     while (attributeName = [attributeNames nextObject])
         [self _recordAttribute:[attributes objectForKey:attributeName] forClass:objectThemeClass];

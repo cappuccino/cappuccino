@@ -46,7 +46,7 @@ CPPopUpButtonStatePullsDown = CPThemeState("pulls-down");
     CPMenu      _menu;
 }
 
-+ (CPString)themeClass
++ (CPString)defaultThemeClass
 {
     return "popup-button";
 }
