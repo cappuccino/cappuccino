@@ -248,6 +248,19 @@ var _ivarForKey = function(theObject, aKey)
     [self setValue:aValue forUndefinedKey:aKey];
 }
 
+- (void)setValuesForKeysWithDictionary:(CPDictionary)keyedValues
+{
+	var value, key, keyEnumerator = [keyedValues keyEnumerator];
+	while(key = [keyEnumerator nextObject])
+	{
+		value = [keyedValues objectForKey: key];
+		if(value === [CPNull null])
+			[self setValue: nil forKey: key];
+		else
+			[self setValue: value forKey: key];
+	}
+}
+
 - (void)setValue:(id)aValue forUndefinedKey:(CPString)aKey
 {
     [[CPException exceptionWithName:CPUndefinedKeyException
