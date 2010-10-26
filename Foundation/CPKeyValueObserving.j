@@ -45,6 +45,14 @@
 {
 }
 
+- (void)willChangeValueForKey:(CPString)key withSetMutation:(CPKeyValueSetMutationKind)mutationKind usingObjects:(CPSet)objects
+{
+}
+
+- (void)didChangeValueForKey:(CPString)key withSetMutation:(CPKeyValueSetMutationKind)mutationKind usingObjects:(CPSet)objects
+{
+}
+
 - (void)addObserver:(id)anObserver forKeyPath:(CPString)aPath options:(unsigned)options context:(id)aContext
 {
     if (!anObserver || !aPath)
