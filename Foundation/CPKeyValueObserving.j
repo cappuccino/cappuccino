@@ -181,6 +181,12 @@ CPKeyValueChangeInsertion   = 2;
 CPKeyValueChangeRemoval     = 3;
 CPKeyValueChangeReplacement = 4;
 
+// CPKeyValueSetMutationKind
+CPKeyValueUnionSetMutation = 1;
+CPKeyValueMinusSetMutation = 2;
+CPKeyValueIntersectSetMutation = 3;
+CPKeyValueSetSetMutation = 4;
+
 var kvoNewAndOld = CPKeyValueObservingOptionNew | CPKeyValueObservingOptionOld,
     DependentKeysKey = "$KVODEPENDENT",
     KVOProxyKey = "$KVOPROXY";
