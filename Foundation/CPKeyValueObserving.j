@@ -282,8 +282,16 @@ var kvoNewAndOld = CPKeyValueObservingOptionNew | CPKeyValueObservingOptionOld,
             "set" + capitalizedKey + ":", _kvoMethodForMethod,
             "_set" + capitalizedKey + ":", _kvoMethodForMethod,
             "insertObject:in" + capitalizedKey + "AtIndex:", _kvoInsertMethodForMethod,
+            "insert" + capitalizedKey + ":atIndexes:", _kvoInsertManyMethodForMethod,
             "replaceObjectIn" + capitalizedKey + "AtIndex:withObject:", _kvoReplaceMethodForMethod,
-            "removeObjectFrom" + capitalizedKey + "AtIndex:", _kvoRemoveMethodForMethod
+            "replace" + capitalizedKey + "AtIndexes:with" + capitalizedKey + ":", _kvoReplaceManyMethodForMethod,
+            "removeObjectFrom" + capitalizedKey + "AtIndex:", _kvoRemoveMethodForMethod,
+            "remove" + capitalizedKey + "AtIndexes:", _kvoRemoveManyMethodForMethod,
+			"add" + capitalizedKey + "Object:", _kvoUnionMethodForMethod,
+			"add" + capitalizedKey + ":", _kvoUnionManyMethodForMethod,
+			"remove" + capitalizedKey + "Object:", _kvoMinusMethodForMethod,
+			"remove" + capitalizedKey + ":", _kvoMinusManyMethodForMethod,
+			"intersect" + capitalizedKey + ":", _kvoIntersectManyMethodForMethod
         ];
 
     var i = 0,
