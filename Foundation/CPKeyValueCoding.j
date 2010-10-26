@@ -76,7 +76,7 @@ var _modifierForKey = function(theClass, aKey)
     if (!CPObjectModifiersForClass)
         CPObjectModifiersForClass = [CPDictionary dictionary];
 
-    var UID = [theClass.isa UID],
+    var UID = [theClass UID],
         selector = nil,
         modifiers = [CPObjectModifiersForClass objectForKey:UID];
 
@@ -96,8 +96,8 @@ var _modifierForKey = function(theClass, aKey)
 
     var capitalizedKey = aKey.charAt(0).toUpperCase() + aKey.substr(1) + ':';
 
-    if ([self instancesRespondToSelector:selector = CPSelectorFromString("set" + capitalizedKey)] ||
-        [self instancesRespondToSelector:selector = CPSelectorFromString("_set" + capitalizedKey)])
+    if ([theClass instancesRespondToSelector:selector = CPSelectorFromString("set" + capitalizedKey)] ||
+        [theClass instancesRespondToSelector:selector = CPSelectorFromString("_set" + capitalizedKey)])
     {
         [modifiers setObject:selector forKey:aKey];
 
