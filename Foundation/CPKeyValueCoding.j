@@ -94,9 +94,6 @@ var _modifierForKey = function(theClass, aKey)
         [CPObjectModifiersForClass setObject:modifiers forKey:UID];
     }
 
-    if (selector)
-        return selector === Null ? nil : selector;
-
     var capitalizedKey = aKey.charAt(0).toUpperCase() + aKey.substr(1) + ':';
 
     if ([self instancesRespondToSelector:selector = CPSelectorFromString("set" + capitalizedKey)] ||
