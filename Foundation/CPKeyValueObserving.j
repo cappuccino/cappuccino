@@ -813,6 +813,7 @@ var _kvoMethodForMethod = function _kvoMethodForMethod(theKey, theMethod)
 {
     return function(self, _cmd, object)
     {
+		//FIXME: do we have to call the specific willChange methods for to-many relationships?
         [self willChangeValueForKey:theKey];
         theMethod.method_imp(self, _cmd, object);
         [self didChangeValueForKey:theKey];
@@ -829,6 +830,16 @@ var _kvoInsertMethodForMethod = function _kvoInsertMethodForMethod(theKey, theMe
     }
 }
 
+var _kvoInsertManyMethodForMethod = function _kvoInsertManyMethodForMethod(theKey, theMethod)
+{
+    return function(self, _cmd, objects, indexes)
+    {
+        [self willChange:CPKeyValueChangeInsertion valuesAtIndexes:indexes forKey:theKey];
+        theMethod.method_imp(self, _cmd, objects, indexes);
+        [self didChange:CPKeyValueChangeInsertion valuesAtIndexes:indexes forKey:theKey];
+    }
+}
+
 var _kvoReplaceMethodForMethod = function _kvoReplaceMethodForMethod(theKey, theMethod)
 {
     return function(self, _cmd, index, object)
@@ -836,6 +847,16 @@ var _kvoReplaceMethodForMethod = function _kvoReplaceMethodForMethod(theKey, the
         [self willChange:CPKeyValueChangeReplacement valuesAtIndexes:[CPIndexSet indexSetWithIndex:index] forKey:theKey];
         theMethod.method_imp(self, _cmd, index, object);
         [self didChange:CPKeyValueChangeReplacement valuesAtIndexes:[CPIndexSet indexSetWithIndex:index] forKey:theKey];
+    }
+}
+
+var _kvoReplaceManyMethodForMethod = function _kvoReplaceManyMethodForMethod(theKey, theMethod)
+{
+    return function(self, _cmd, indexes, objects)
+    {
+        [self willChange:CPKeyValueChangeReplacement valuesAtIndexes:indexes forKey:theKey];
+        theMethod.method_imp(self, _cmd, indexes, objects);
+        [self didChange:CPKeyValueChangeReplacement valuesAtIndexes:indexes forKey:theKey];
     }
 }
 
@@ -848,5 +869,66 @@ var _kvoRemoveMethodForMethod = function _kvoRemoveMethodForMethod(theKey, theMe
         [self didChange:CPKeyValueChangeRemoval valuesAtIndexes:[CPIndexSet indexSetWithIndex:index] forKey:theKey];
     }
 }
+
+var _kvoRemoveManyMethodForMethod = function _kvoRemoveManyMethodForMethod(theKey, theMethod)
+{
+    return function(self, _cmd, indexes)
+    {
+        [self willChange:CPKeyValueChangeRemoval valuesAtIndexes:indexes forKey:theKey];
+        theMethod.method_imp(self, _cmd, indexes);
+        [self didChange:CPKeyValueChangeRemoval valuesAtIndexes:indexes forKey:theKey];
+    }
+}
+
+var _kvoUnionMethodForMethod = function _kvoUnionMethodForMethod(theKey, theMethod)
+{
+	return function(self, _cmd, object)
+	{
+		[self willChangeValueForKey:theKey withSetMutation:CPKeyValueUnionSetMutation usingObjects: [CPSet setWithObject: object]];
+		theMethod.method_imp(self, _cmd, object);
+		[self didChangeValueForKey:theKey withSetMutation:CPKeyValueUnionSetMutation usingObjects: [CPSet setWithObject: object]];
+	}
+}
+
+var _kvoUnionManyMethodForMethod = function _kvoUnionManyMethodForMethod(theKey, theMethod)
+{
+	return function(self, _cmd, objects)
+	{
+		[self willChangeValueForKey:theKey withSetMutation:CPKeyValueUnionSetMutation usingObjects: objects];
+		theMethod.method_imp(self, _cmd, objects);
+		[self didChangeValueForKey:theKey withSetMutation:CPKeyValueUnionSetMutation usingObjects: objects];
+	}
+}
+
+var _kvoMinusMethodForMethod = function _kvoMinusMethodForMethod(theKey, theMethod)
+{
+	return function(self, _cmd, object)
+	{
+		[self willChangeValueForKey:theKey withSetMutation:CPKeyValueMinusSetMutation usingObjects: [CPSet setWithObject: object]];
+		theMethod.method_imp(self, _cmd, object);
+		[self didChangeValueForKey:theKey withSetMutation:CPKeyValueMinusSetMutation usingObjects: [CPSet setWithObject: object]];
+	}
+}
+
+var _kvoMinusManyMethodForMethod = function _kvoMinusManyMethodForMethod(theKey, theMethod)
+{
+	return function(self, _cmd, objects)
+	{
+		[self willChangeValueForKey:theKey withSetMutation:CPKeyValueMinusSetMutation usingObjects: objects];
+		theMethod.method_imp(self, _cmd, objects);
+		[self didChangeValueForKey:theKey withSetMutation:CPKeyValueMinusSetMutation usingObjects: objects];
+	}
+}
+
+var _kvoIntersectManyMethodForMethod = function _kvoIntersectManyMethodForMethod(theKey, theMethod)
+{
+	return function(self, _cmd, objects)
+	{
+		[self willChangeValueForKey:theKey withSetMutation:CPKeyValueIntersectSetMutation usingObjects: objects];
+		theMethod.method_imp(self, _cmd, objects);
+		[self didChangeValueForKey:theKey withSetMutation:CPKeyValueIntersectSetMutation usingObjects: objects];
+	}
+}
+
 
 @import "CPArray+KVO.j"
