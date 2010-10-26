@@ -597,6 +597,51 @@ var kvoNewAndOld = CPKeyValueObservingOptionNew | CPKeyValueObservingOptionOld,
     [[_CPKVOProxy proxyForObject:self] _sendNotificationsForKey:aKey changeOptions:nil isBefore:NO];
 }
 
+- (void)willChangeValueForKey:(CPString)aKey withSetMutation:(CPKeyValueSetMutationKind)mutationKind usingObjects:(CPSet)objects
+{
+    var superClass = [self class],
+        methodSelector = @selector(willChangeValueForKey:withSetMutation:usingObjects:),
+        methodImp = class_getMethodImplementation(superClass, methodSelector);
+
+    methodImp(self, methodSelector, aKey, mutationKind, objects);
+
+    if (!aKey)
+        return;
+
+    var changeOptions = [CPDictionary dictionary];
+	switch(mutationKind)
+	{
+		case CPKeyValueUnionSetMutation:
+		  [changeOptions setObject:CPKeyValueChangeInsertion forKey:CPKeyValueChangeKindKey];
+		  break;
+		case CPKeyValueMinusSetMutation:
+		  [changeOptions setObject:CPKeyValueChangeRemoval forKey:CPKeyValueChangeKindKey];
+		  break;
+		case CPKeyValueIntersectSetMutation:
+		  [changeOptions setObject:CPKeyValueChangeRemoval forKey:CPKeyValueChangeKindKey];
+		  break;
+		case CPKeyValueSetSetMutation:
+		  [changeOptions setObject:CPKeyValueChangeReplacement forKey:CPKeyValueChangeKindKey];
+		  break;
+	}
+	//TO DO: find a way to specify "objects"
+    [[_CPKVOProxy proxyForObject:self] _sendNotificationsForKey:aKey changeOptions:changeOptions isBefore:YES];
+}
+
+- (void)didChangeValueForKey:(CPString)aKey withSetMutation:(CPKeyValueSetMutationKind)mutationKind usingObjects:(CPSet)objects
+{
+    var superClass = [self class],
+        methodSelector = @selector(didChangeValueForKey:withSetMutation:usingObjects:),
+        methodImp = class_getMethodImplementation(superClass, methodSelector);
+
+    methodImp(self, methodSelector, aKey, mutationKind, objects);
+
+    if (!aKey)
+        return;
+
+    [[_CPKVOProxy proxyForObject:self] _sendNotificationsForKey:aKey changeOptions:nil isBefore:NO];
+}
+
 - (Class)class
 {
     return self[KVOProxyKey]._nativeClass;
