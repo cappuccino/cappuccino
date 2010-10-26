@@ -4,7 +4,6 @@
 @import "CPEnumerator.j"
 @import "CPPredicate.j"
 @import "CPExpression.j"
-@import "CPExpression_operator.j"
 
 /*!
     A predicate to compare directly the left and right hand sides.

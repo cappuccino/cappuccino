@@ -514,11 +514,11 @@ function(newValue)\
         dbl;
 
     if ([self scanDouble:REFERENCE(dbl)])
-        return [CPExpression expressionForConstantValue:[CPNumber numberWithDouble:dbl]];
+        return [CPExpression expressionForConstantValue:dbl];
 
     // FIXME: handle integer, hex constants, 0x 0o 0b
     if ([self scanString:@"-" intoString:NULL])
-        return [CPExpression expressionForFunction:@"chs" arguments:[CPArray arrayWithObject:[self parseExpression]]];
+        return [CPExpression expressionForFunction:@"chs:" arguments:[CPArray arrayWithObject:[self parseExpression]]];
 
     if ([self scanString:@"(" intoString:NULL])
     {
@@ -544,7 +544,7 @@ function(newValue)\
         if (![self scanString:@"}" intoString:NULL])
             [CPException raise:CPInvalidArgumentException reason:@"Missing } in aggregate"];
 
-        return [CPExpression expressionForConstantValue:a];
+        return [CPExpression expressionForAggregate:a];
     }
 
     if ([self scanPredicateKeyword:@"NULL"] || [self scanPredicateKeyword:@"NIL"])
@@ -728,28 +728,6 @@ function(newValue)\
             }
             left = [CPExpression expressionForFunction:[left keyPath] arguments:args];
         }
-        else if ([self scanString:@"[" intoString:NULL])
-        {
-            // index expression
-            if ([self scanPredicateKeyword:@"FIRST"])
-            {
-                left = [CPExpression expressionForFunction:@"first" arguments:[CPArray arrayWithObject:[self parseExpression]]];
-            }
-            else if ([self scanPredicateKeyword:@"LAST"])
-            {
-                left = [CPExpression expressionForFunction:@"last" arguments:[CPArray arrayWithObject:[self parseExpression]]];
-            }
-            else if ([self scanPredicateKeyword:@"SIZE"])
-            {
-                left = [CPExpression expressionForFunction:@"count" arguments:[CPArray arrayWithObject:[self parseExpression]]];
-            }
-            else
-            {
-                left = [CPExpression expressionForFunction:@"index" arguments:[CPArray arrayWithObjects:left, [self parseExpression]]];
-            }
-            if (![self scanString:@"]" intoString:NULL])
-                [CPException raise:CPInvalidArgumentException reason:@"Missing ] in index argument"];
-        }
         else if ([self scanString:@"." intoString:NULL])
         {
             // keypath - this parser allows for (a).(b.c)
@@ -760,12 +738,38 @@ function(newValue)\
             if (![left keyPath])
                 [CPException raise:CPInvalidArgumentException reason:@"Invalid left keypath:" + left];
 
-            var right = [self parseExpression];
+            var right = [self parseSimpleExpression];
             if (![right keyPath])
                 [CPException raise:CPInvalidArgumentException reason:@"Invalid right keypath:" + right];
 
             // concatenate
             left = [CPExpression expressionForKeyPath:[left keyPath]+ "." + [right keyPath]];
+        
+        }
+        else if ([self scanString:@"[" intoString:NULL])
+        {
+            // index expression
+            if ([self scanPredicateKeyword:@"FIRST"])
+            {
+                left = [CPExpression expressionForFunction:@"first:" arguments:[CPArray arrayWithObject:left]];
+            }
+            else if ([self scanPredicateKeyword:@"LAST"])
+            {
+                left = [CPExpression expressionForFunction:@"last:" arguments:[CPArray arrayWithObject:left]];
+            }
+            else if ([self scanPredicateKeyword:@"SIZE"])
+            {
+                left = [CPExpression expressionForFunction:@"count:" arguments:[CPArray arrayWithObject:left]];
+            }
+            else
+            {
+                var integer;
+                if ([self scanInt:REFERENCE(integer)])
+                    left = [CPExpression expressionForFunction:@"fromObject:index:" arguments:[CPArray arrayWithObjects:left, [CPExpression expressionForConstantValue:integer]]];
+            }
+         
+            if (![self scanString:@"]" intoString:NULL])
+                [CPException raise:CPInvalidArgumentException reason:@"Missing ] in index argument"];
         }
         else
         {
@@ -786,7 +790,7 @@ function(newValue)\
         if ([self scanString:@"**" intoString:NULL])
         {
             right = [self parseFunctionalExpression];
-            left = [CPExpression expressionForFunction:@"pow" arguments:[CPArray arrayWithObjects:left, right]];
+            left = [CPExpression expressionForFunction:@"raise:to:" arguments:[CPArray arrayWithObjects:left, right]];
         }
         else
         {
@@ -806,12 +810,12 @@ function(newValue)\
         if ([self scanString:@"*" intoString:NULL])
         {
             right = [self parsePowerExpression];
-            left = [CPExpression expressionForFunction:@"_mul" arguments:[CPArray arrayWithObjects:left, right]];
+            left = [CPExpression expressionForFunction:@"multiply:by:" arguments:[CPArray arrayWithObjects:left, right]];
         }
         else if ([self scanString:@"/" intoString:NULL])
         {
             right = [self parsePowerExpression];
-            left = [CPExpression expressionForFunction:@"_div" arguments:[CPArray arrayWithObjects:left, right]];
+            left = [CPExpression expressionForFunction:@"divide:by:" arguments:[CPArray arrayWithObjects:left, right]];
         }
         else
         {
@@ -831,12 +835,12 @@ function(newValue)\
         if ([self scanString:@"+" intoString:NULL])
         {
             right = [self parseMultiplicationExpression];
-            left = [CPExpression expressionForFunction:@"_add" arguments:[CPArray arrayWithObjects:left, right]];
+            left = [CPExpression expressionForFunction:@"add:to:" arguments:[CPArray arrayWithObjects:left, right]];
         }
         else if ([self scanString:@"-" intoString:NULL])
         {
             right = [self parseMultiplicationExpression];
-            left = [CPExpression expressionForFunction:@"_sub" arguments:[CPArray arrayWithObjects:left, right]];
+            left = [CPExpression expressionForFunction:@"from:substract:" arguments:[CPArray arrayWithObjects:left, right]];
         }
         else
         {
@@ -872,6 +876,3 @@ function(newValue)\
 @import "CPComparisonPredicate.j"
 
 @import "CPExpression.j"
-@import "CPExpression_operator.j"
-@import "CPExpression_aggregate.j"
-@import "CPExpression_assignment.j"
