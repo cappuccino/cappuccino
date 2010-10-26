@@ -41,7 +41,7 @@
     var firstPart = aKeyPath.substring(0, dotIndex),
         lastPart = aKeyPath.substring(dotIndex + 1);
 
-    return [[self valueForKeyPath:firstPart] valueForKeyPath:lastPart];
+    return [[self valueForKeyPath:firstPart] mutableArrayValueForKeyPath:lastPart];
 }
 
 @end
