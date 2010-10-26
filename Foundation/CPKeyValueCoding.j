@@ -40,7 +40,7 @@ var Null = [CPNull null];
 var _accessorForKey = function(theClass, aKey)
 {
     var selector = nil,
-        accessors = theClass.isa[CPObjectAccessorsForClassKey];
+        accessors = theClass[CPObjectAccessorsForClassKey];
 
     if (accessors)
     {
@@ -50,7 +50,7 @@ var _accessorForKey = function(theClass, aKey)
             return selector === Null ? nil : selector;
     }
     else
-        accessors = theClass.isa[CPObjectAccessorsForClassKey] = {};
+        accessors = theClass[CPObjectAccessorsForClassKey] = {};
 
     var capitalizedKey = aKey.charAt(0).toUpperCase() + aKey.substr(1);
 
