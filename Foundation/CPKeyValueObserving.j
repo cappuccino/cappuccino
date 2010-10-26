@@ -932,3 +932,4 @@ var _kvoIntersectManyMethodForMethod = function _kvoIntersectManyMethodForMethod
 
 
 @import "CPArray+KVO.j"
+@import "CPSet+KVO.j"
