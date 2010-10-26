@@ -32,10 +32,10 @@ var accessIVARS = YES;
 	id			isPublicBoolPropertyWithoutAccessors;
 
 	id			___propertyWithPublicGetAccessor			@accessors(getter=getPropertyWithPublicGetAccessor);
-	id			___propertyWithPublicAccessor				@accessors(getter=propertyWithPublicAccessor);
+	id			___propertyWithPublicAccessor				@accessors(getter=propertyWithPublicAccessor, setter=setPropertyWithPublicAccessor:);
 	id			___propertyWithPublicBoolAccessor			@accessors(getter=isPropertyWithPublicBoolAccessor);
 	id			___propertyWithPrivateGetAccessor			@accessors(getter=_getPropertyWithPrivateGetAccessor);
-	id			___propertyWithPrivateAccessor				@accessors(getter=_propertyWithPrivateAccessor);
+	id			___propertyWithPrivateAccessor				@accessors(getter=_propertyWithPrivateAccessor, setter=_setPropertyWithPrivateAccessor:);
 	id			___propertyWithPrivateBoolAccessor			@accessors(getter=_isPropertyWithPrivateBoolAccessor);
 }
 
@@ -47,6 +47,25 @@ var accessIVARS = YES;
 + (void)setAccessInstanceVariablesDirectly:(BOOL)accessDirectly
 {
 	accessIVARS = accessDirectly;
+}
+
+- (id)init
+{
+	if(self = [super init])
+	{
+		_privatePropertyWithoutAccessors = "_privatePropertyWithoutAccessors";
+		publicPropertyWithoutAccessors = "publicPropertyWithoutAccessors";
+		_isPrivateBoolPropertyWithoutAccessors = "_isPrivateBoolPropertyWithoutAccessors";
+		isPublicBoolPropertyWithoutAccessors = "isPublicBoolPropertyWithoutAccessors";
+
+		___propertyWithPublicGetAccessor = "___propertyWithPublicGetAccessor";
+		___propertyWithPublicAccessor = "___propertyWithPublicAccessor";
+		___propertyWithPublicBoolAccessor = "___propertyWithPublicBoolAccessor";
+		___propertyWithPrivateGetAccessor = "___propertyWithPrivateGetAccessor";
+		___propertyWithPrivateAccessor = "___propertyWithPrivateAccessor";
+		___propertyWithPrivateBoolAccessor = "___propertyWithPrivateBoolAccessor";
+	}
+	return self;
 }
 
 @end
@@ -84,7 +103,7 @@ var accessIVARS = YES;
 
 @implementation CPKeyValueCodingTest (AccessValueForUndefinedKey)
 
-- (void)testIfExceptionIsThrownForUndefinedKey
+- (void)testIfExceptionIsThrownWhenUndefinedKeyIsAccessed
 {
 	[self assertThrows:function(){[kvcTestObject valueForKey:@"anUndefinedKey"];}];
 }
@@ -200,7 +219,7 @@ var accessIVARS = YES;
 	[self assertThrows:function(){[kvcTestObject dictionaryWithValuesForKeys: allKeys];}];
 }
 
-- (void)testIfDictionaryWithValuesForKeysContainsValuesForEveryProperty
+- (void)testIfDictionaryWithValuesForKeysCountIsEqualToNumberOfPropertyKeysGiven
 {
 	[KVCTestClass setAccessInstanceVariablesDirectly: YES];
 	var allKeys = [	"privatePropertyWithoutAccessors","publicPropertyWithoutAccessors",
@@ -213,6 +232,165 @@ var accessIVARS = YES;
 	[self assert: [allKeys count] equals: [dictForKeys count]];
 }
 
+- (void)testIfDictionaryWithValuesForKeysAreSameAsPropertyValues
+{
+	[KVCTestClass setAccessInstanceVariablesDirectly: YES];
+	var allKeys = [	"privatePropertyWithoutAccessors","publicPropertyWithoutAccessors",
+					"privateBoolPropertyWithoutAccessors","publicBoolPropertyWithoutAccessors",
+	 				"propertyWithPublicGetAccessor", "propertyWithPublicAccessor","propertyWithPublicBoolAccessor",
+					"propertyWithPrivateGetAccessor", "propertyWithPrivateAccessor", "propertyWithPrivateBoolAccessor"
+					];
+	var dictForKeys = [kvcTestObject dictionaryWithValuesForKeys: allKeys];
+	var key, value, keyEnumerator = [dictForKeys keyEnumerator];
+	while(key = [keyEnumerator nextObject])
+	{
+		value = [dictForKeys objectForKey: key];
+		[self assert: [kvcTestObject valueForKey: key] same: value];
+	}
+}
+
 @end
 
 // "setValue: forKey:"
+
+@implementation CPKeyValueCodingTest (ModifyValueForUndefinedKey)
+
+- (void)testIfExceptionIsThrownWhenUndefinedKeyIsModified
+{
+	[self assertThrows:function(){[kvcTestObject setValue: "aValue" forKey:@"anUndefinedKey"];}];
+}
+
+@end
+
+@implementation CPKeyValueCodingTest (ModifyInstanceVariablesDirectly)
+
+- (void)testIfPrivateInstanceVariableCanDirectlyBeModifiedWhenAllowedByClassMethod
+{
+	var aValue = @"aValue";
+	[KVCTestClass setAccessInstanceVariablesDirectly: YES];
+	[self assert: aValue notSame: [kvcTestObject valueForKey:@"privatePropertyWithoutAccessors"]];
+	[self assertNoThrow:function(){[kvcTestObject setValue: aValue forKey:@"privatePropertyWithoutAccessors"];}];
+	[self assert: aValue same: [kvcTestObject valueForKey:@"privatePropertyWithoutAccessors"]];
+}
+
+- (void)testIfPublicInstanceVariableCanDirectlyBeModifiedWhenAllowedByClassMethod
+{
+	var aValue = @"aValue";
+	[KVCTestClass setAccessInstanceVariablesDirectly: YES];
+	[self assert: aValue notSame: [kvcTestObject valueForKey:@"publicPropertyWithoutAccessors"]];
+	[self assertNoThrow:function(){[kvcTestObject setValue: aValue forKey:@"publicPropertyWithoutAccessors"];}];
+	[self assert: aValue same: [kvcTestObject valueForKey:@"publicPropertyWithoutAccessors"]];
+}
+
+- (void)testIfBooleanPrivateInstanceVariableCanDirectlyBeModifiedWhenAllowedByClassMethod
+{
+	var aValue = @"aValue";
+	[KVCTestClass setAccessInstanceVariablesDirectly: YES];
+	[self assert: aValue notSame: [kvcTestObject valueForKey:@"privateBoolPropertyWithoutAccessors"]];
+	[self assertNoThrow:function(){[kvcTestObject setValue: aValue forKey:@"privateBoolPropertyWithoutAccessors"];}];
+	[self assert: aValue same: [kvcTestObject valueForKey:@"privateBoolPropertyWithoutAccessors"]];
+}
+
+- (void)testIfBooleanPublicInstanceVariableCanDirectlyBeModifiedWhenAllowedByClassMethod
+{
+	var aValue = @"aValue";
+	[KVCTestClass setAccessInstanceVariablesDirectly: YES];
+	[self assert: aValue notSame: [kvcTestObject valueForKey:@"publicBoolPropertyWithoutAccessors"]];
+	[self assertNoThrow:function(){[kvcTestObject setValue: aValue forKey:@"publicBoolPropertyWithoutAccessors"];}];
+	[self assert: aValue same: [kvcTestObject valueForKey:@"publicBoolPropertyWithoutAccessors"]];
+}
+
+@end
+
+@implementation CPKeyValueCodingTest (DoNotModifyInstanceVariables)
+
+- (void)testIfPrivateInstanceVariableCanNotDirectlyBeModifiedWhenProhibitedByClassMethod
+{
+	[self assertThrows:function(){[kvcTestObject setValue: @"aValue" forKey:@"privatePropertyWithoutAccessors"];}];
+}
+
+- (void)testIfPublicInstanceVariableCanNotDirectlyBeModifiedWhenProhibitedByClassMethod
+{
+	[self assertThrows:function(){[kvcTestObject setValue: @"aValue" forKey:@"publicPropertyWithoutAccessors"];}];
+}
+
+- (void)testIfBooleanPrivateInstanceVariableCanNotDirectlyBeModifiedWhenProhibitedByClassMethod
+{
+	[self assertThrows:function(){[kvcTestObject setValue: @"aValue" forKey:@"privateBoolPropertyWithoutAccessors"];}];
+}
+
+- (void)testIfBooleanPublicInstanceVariableCanNotDirectlyBeModifiedWhenProhibitedByClassMethod
+{
+	[self assertThrows:function(){[kvcTestObject setValue: @"aValue" forKey:@"publicBoolPropertyWithoutAccessors"];}];
+}
+
+@end
+
+@implementation CPKeyValueCodingTest (ModifierMethodPatterns)
+
+- (void)testIfPublicModifierIsFound
+{
+	var aValue = @"aValue";
+	[self assert: aValue notSame: [kvcTestObject valueForKey:@"propertyWithPublicAccessor"]];
+	[self assertNoThrow:function(){[kvcTestObject setValue: aValue forKey:@"propertyWithPublicAccessor"];}];
+	[self assert: aValue same: [kvcTestObject valueForKey:@"propertyWithPublicAccessor"]];
+}
+
+- (void)testIfPrivateModifierIsFound
+{
+	var aValue = @"aValue";
+	[self assert: aValue notSame: [kvcTestObject valueForKey:@"propertyWithPrivateAccessor"]];
+	[self assertNoThrow:function(){[kvcTestObject setValue: aValue forKey:@"propertyWithPrivateAccessor"];}];
+	[self assert: aValue same: [kvcTestObject valueForKey:@"propertyWithPrivateAccessor"]];
+}
+
+@end
+
+@implementation CPKeyValueCodingTest (SetValuesForKeysWithDictionary)
+
+- (void)testIfSetValuesForKeysWithDictionaryDoesNotThrowsUndefinedKeyException
+{
+	var value = @"aValue";
+	[KVCTestClass setAccessInstanceVariablesDirectly: YES];
+	var allKeys = [	"privatePropertyWithoutAccessors","publicPropertyWithoutAccessors",
+					"privateBoolPropertyWithoutAccessors","publicBoolPropertyWithoutAccessors",
+	 				"propertyWithPublicAccessor","propertyWithPrivateAccessor"
+					];
+	var allValues = [value,value,value,value,value,value];
+	var dictForKeys = [CPDictionary dictionaryWithObjects: allValues forKeys: allKeys];				
+	[self assertNoThrow:function(){[kvcTestObject setValuesForKeysWithDictionary: dictForKeys];}];
+}
+
+- (void)testIfSetValuesForKeysWithDictionaryDoesThrowUndefinedKeyExceptionBecauseOfProhibitedDirectInstanceVariableAccess
+{
+	var value = @"aValue";
+	var allKeys = [	"privatePropertyWithoutAccessors","publicPropertyWithoutAccessors",
+					"privateBoolPropertyWithoutAccessors","publicBoolPropertyWithoutAccessors",
+	 				"propertyWithPublicAccessor","propertyWithPrivateAccessor"
+					];
+	var allValues = [value,value,value,value,value,value];
+	var dictForKeys = [CPDictionary dictionaryWithObjects: allValues forKeys: allKeys];				
+	[self assertThrows:function(){[kvcTestObject setValuesForKeysWithDictionary: dictForKeys];}];
+}
+
+- (void)testIfDictionaryWithValuesForKeysAreSameAsPropertyValues
+{
+	var value = @"aValue";
+	[KVCTestClass setAccessInstanceVariablesDirectly: YES];
+	var allKeys = [	"privatePropertyWithoutAccessors","publicPropertyWithoutAccessors",
+					"privateBoolPropertyWithoutAccessors","publicBoolPropertyWithoutAccessors",
+	 				"propertyWithPublicAccessor","propertyWithPrivateAccessor"
+					];
+	var allValues = [value,value,value,value,value,value];
+	var dictForKeys = [CPDictionary dictionaryWithObjects: allValues forKeys: allKeys];				
+	[kvcTestObject setValuesForKeysWithDictionary: dictForKeys];
+
+	var key, aValue, keyEnumerator = [dictForKeys keyEnumerator];
+	while(key = [keyEnumerator nextObject])
+	{
+		aValue = [dictForKeys objectForKey: key];
+		[self assert: [kvcTestObject valueForKey: key] same: aValue];
+	}
+}
+
+@end
