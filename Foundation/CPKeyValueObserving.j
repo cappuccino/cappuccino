@@ -254,27 +254,17 @@ var kvoNewAndOld = CPKeyValueObservingOptionNew | CPKeyValueObservingOptionOld,
     kvoClass._replacedKeys = _replacedKeys;
 
     //copy in the methods from our model subclass
-    var methodList = _CPKVOModelSubclass.method_list,
-        count = methodList.length,
+    var methodList = _CPKVOModelSubclass.method_list;
+    if ([_targetObject isKindOfClass:[CPDictionary class]])
+		methodList = methodList.concat(_CPKVOModelDictionarySubclass.method_list);
+
+    var count = methodList.length,
         i = 0;
 
     for (; i < count; i++)
     {
         var method = methodList[i];
         class_addMethod(kvoClass, method_getName(method), method_getImplementation(method), "");
-    }
-
-    if ([_targetObject isKindOfClass:[CPDictionary class]])
-    {
-        var methodList = _CPKVOModelDictionarySubclass.method_list,
-            count = methodList.length,
-            i = 0;
-
-        for (; i < count; i++)
-        {
-            var method = methodList[i];
-            class_addMethod(kvoClass, method_getName(method), method_getImplementation(method), "");
-        }
     }
 
     _targetObject.isa = kvoClass;
