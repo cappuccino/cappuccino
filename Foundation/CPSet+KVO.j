@@ -529,12 +529,18 @@ kvoOperators["sum"] = function sumOperator(self, _cmd, param)
 
 - (void)addObserver:(id)observer forKeyPath:(CPString)aKeyPath options:(unsigned)options context:(id)context
 {
-	[CPException raise:@"CPKeyValueObservingException" reason:@"CPSet is not key-value observable"];
+    if ([isa instanceMethodForSelector:_cmd] === [CPSet instanceMethodForSelector:_cmd])
+        [CPException raise:CPInvalidArgumentException reason:"Unsupported method on CPSet"];
+    else
+        [super addObserver:observer forKeyPath:aKeyPath options:options context:context];
 }
 
-- (void)removeObserver:(id)observer forKeyPath:(CPString)aKeyPath
+-(void)removeObserver:(id)observer forKeyPath:(CPString)aKeyPath
 {
-	[CPException raise:@"CPKeyValueObservingException" reason:@"CPSet is not key-value observable"];
+    if ([isa instanceMethodForSelector:_cmd] === [CPSet instanceMethodForSelector:_cmd])
+        [CPException raise:CPInvalidArgumentException reason:"Unsupported method on CPSet"];
+    else
+        [super removeObserver:observer forKeyPath:aKeyPath];
 }
 
 @end
