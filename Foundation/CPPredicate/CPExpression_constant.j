@@ -15,18 +15,6 @@
     return self;
 }
 
-- (id)initWithCoder:(CPCoder)coder
-{
-    var value = [coder decodeObjectForKey:@"CPExpressionConstantValue"];
-    
-    return [self initWithValue:value];
-}
-
-- (void)encodeWithCoder:(CPCoder)coder
-{
-    [coder encodeObject:_value forKey:@"CPExpressionConstantValue"];
-}
-
 - (BOOL)isEqual:(id)object
 {
     if (self == object)
@@ -63,3 +51,19 @@
 
 @end
 
+var CPConstantValueKey = @"CPConstantValue";
+
+@implementation CPExpression_constant (CPCoding)
+
+- (id)initWithCoder:(CPCoder)coder
+{
+    var value = [coder decodeObjectForKey:CPConstantValueKey];
+    return [self initWithValue:value];
+}
+
+- (void)encodeWithCoder:(CPCoder)coder
+{
+    [coder encodeObject:_value forKey:CPConstantValueKey];
+}
+
+@end

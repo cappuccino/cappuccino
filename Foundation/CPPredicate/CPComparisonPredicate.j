@@ -4,7 +4,6 @@
 @import "CPEnumerator.j"
 @import "CPPredicate.j"
 @import "CPExpression.j"
-@import "CPExpression_operator.j"
 
 /*!
     A predicate to compare directly the left and right hand sides.
@@ -441,43 +440,19 @@ var CPPredicateOperatorType;
             if (_options & CPDiacriticInsensitivePredicateOption) string_compare_options |= CPDiacriticInsensitiveSearch;
 
             return ([lhs compare:rhs options:string_compare_options range:range] == CPOrderedSame);
-        case CPInPredicateOperatorType:
-            // Handle special case where rhs is a collection and lhs an element of it.
-            if (![rhs isKindOfClass: [CPString class]])
-            {
-                if (![rhs respondsToSelector: @selector(objectEnumerator)])
-                    [CPException raise:CPInvalidArgumentException reason:@"The right hand side for an IN operator must be a collection"];
-
-                var e = [rhs objectEnumerator],
-                    value;
-                while (value = [e nextObject])
-                    if ([value isEqual:lhs])
-                      return YES;
-
-                return NO;
-              }
-
-            if (_options & CPCaseInsensitivePredicateOption)
-                string_compare_options |= CPCaseInsensitiveSearch;
-            if (_options & CPDiacriticInsensitivePredicateOption)
-                string_compare_options |= CPDiacriticInsensitiveSearch;
-
-             return ([rhs rangeOfString:lhs options:string_compare_options].location != CPNotFound);
         case CPCustomSelectorPredicateOperatorType:
             return [lhs performSelector:_customSelector withObject:rhs];
+        case CPInPredicateOperatorType:
+            var a = lhs; // swap
+            lhs = rhs;
+            rhs = a;
         case CPContainsPredicateOperatorType:
-            if (![lhs isKindOfClass: [CPString class]])
+            if (![lhs isKindOfClass:[CPString class]])
             {
                  if (![lhs respondsToSelector: @selector(objectEnumerator)])
-                     [CPException raise:CPInvalidArgumentException reason:@"The left hand side for a CONTAINS operator must be a collection or a string"];
+                     [CPException raise:CPInvalidArgumentException reason:@"The left/right hand side for a CONTAINS/IN  operator must be a collection or a string"];
 
-                 var e = [lhs objectEnumerator],
-                     value;
-                 while (value = [e nextObject])
-                     if ([value isEqual:rhs])
-                       return YES;
-
-                 return NO;
+                 return [lhs containsObject:rhs];
             }
 
             if (_options & CPCaseInsensitivePredicateOption)
@@ -487,13 +462,10 @@ var CPPredicateOperatorType;
 
              return ([lhs rangeOfString:rhs options:string_compare_options].location != CPNotFound);
         case CPBetweenPredicateOperatorType:
-            if ([lhs count] < 2)
+            if ([rhs count] < 2)
                 [CPException raise:CPInvalidArgumentException reason:@"The right hand side for a BETWEEN operator must contain 2 objects"];
 
-            var lower = [rhs objectAtIndex:0],
-                upper = [rhs objectAtIndex:1];
-
-            return ([lhs compare:lower] == CPOrderedDescending && [lhs compare:upper] == CPOrderedAscending);
+            return ([lhs compare:rhs[0]] == CPOrderedDescending && [lhs compare:rhs[1]] == CPOrderedAscending);
         default:
             return NO;
     }
