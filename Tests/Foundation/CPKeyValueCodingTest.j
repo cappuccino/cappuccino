@@ -31,6 +31,7 @@ var accessIVARS = YES;
 	id			_isPrivateBoolPropertyWithoutAccessors;
 	id			isPublicBoolPropertyWithoutAccessors;
 
+	//use triple underscore to avoid direct access to instance variables
 	id			___propertyWithPublicGetAccessor			@accessors(getter=getPropertyWithPublicGetAccessor);
 	id			___propertyWithPublicAccessor				@accessors(getter=propertyWithPublicAccessor, setter=setPropertyWithPublicAccessor:);
 	id			___propertyWithPublicBoolAccessor			@accessors(getter=isPropertyWithPublicBoolAccessor);
@@ -83,23 +84,9 @@ var accessIVARS = YES;
 	kvcTestObject = [[KVCTestClass alloc] init];
 }
 
-- (void)tearDown
-{
-}
-
 @end
 
 // "valueForKey:"
-
-@implementation CPKeyValueCodingTest (CPNullTest)
-
-- (void)testIfCPNullReturnsCPNullForAllKeys
-{
-    var nullObject = [CPNull null];
-    [self assert:[CPNull null] equals:[nullObject valueForKey:@"a"] message:@"CPNull valueForKey:X returns nil"];
-}
-
-@end
 
 @implementation CPKeyValueCodingTest (AccessValueForUndefinedKey)
 
@@ -138,7 +125,7 @@ var accessIVARS = YES;
 
 @end
 
-@implementation CPKeyValueCodingTest (DoNotAccessInstanceVariables)
+@implementation CPKeyValueCodingTest (DoNotAccessInstanceVariablesDirectly)
 
 - (void)testIfPrivateInstanceVariableCanNotDirectlyBeAccessedWhenProhibitedByClassMethod
 {
@@ -266,8 +253,9 @@ var accessIVARS = YES;
 
 - (void)testIfPrivateInstanceVariableCanDirectlyBeModifiedWhenAllowedByClassMethod
 {
-	var aValue = @"aValue";
 	[KVCTestClass setAccessInstanceVariablesDirectly: YES];
+
+	var aValue = @"aValue";
 	[self assert: aValue notSame: [kvcTestObject valueForKey:@"privatePropertyWithoutAccessors"]];
 	[self assertNoThrow:function(){[kvcTestObject setValue: aValue forKey:@"privatePropertyWithoutAccessors"];}];
 	[self assert: aValue same: [kvcTestObject valueForKey:@"privatePropertyWithoutAccessors"]];
@@ -275,8 +263,9 @@ var accessIVARS = YES;
 
 - (void)testIfPublicInstanceVariableCanDirectlyBeModifiedWhenAllowedByClassMethod
 {
-	var aValue = @"aValue";
 	[KVCTestClass setAccessInstanceVariablesDirectly: YES];
+
+	var aValue = @"aValue";
 	[self assert: aValue notSame: [kvcTestObject valueForKey:@"publicPropertyWithoutAccessors"]];
 	[self assertNoThrow:function(){[kvcTestObject setValue: aValue forKey:@"publicPropertyWithoutAccessors"];}];
 	[self assert: aValue same: [kvcTestObject valueForKey:@"publicPropertyWithoutAccessors"]];
@@ -284,8 +273,9 @@ var accessIVARS = YES;
 
 - (void)testIfBooleanPrivateInstanceVariableCanDirectlyBeModifiedWhenAllowedByClassMethod
 {
-	var aValue = @"aValue";
 	[KVCTestClass setAccessInstanceVariablesDirectly: YES];
+
+	var aValue = @"aValue";
 	[self assert: aValue notSame: [kvcTestObject valueForKey:@"privateBoolPropertyWithoutAccessors"]];
 	[self assertNoThrow:function(){[kvcTestObject setValue: aValue forKey:@"privateBoolPropertyWithoutAccessors"];}];
 	[self assert: aValue same: [kvcTestObject valueForKey:@"privateBoolPropertyWithoutAccessors"]];
@@ -293,8 +283,9 @@ var accessIVARS = YES;
 
 - (void)testIfBooleanPublicInstanceVariableCanDirectlyBeModifiedWhenAllowedByClassMethod
 {
-	var aValue = @"aValue";
 	[KVCTestClass setAccessInstanceVariablesDirectly: YES];
+
+	var aValue = @"aValue";
 	[self assert: aValue notSame: [kvcTestObject valueForKey:@"publicBoolPropertyWithoutAccessors"]];
 	[self assertNoThrow:function(){[kvcTestObject setValue: aValue forKey:@"publicBoolPropertyWithoutAccessors"];}];
 	[self assert: aValue same: [kvcTestObject valueForKey:@"publicBoolPropertyWithoutAccessors"]];
@@ -302,7 +293,7 @@ var accessIVARS = YES;
 
 @end
 
-@implementation CPKeyValueCodingTest (DoNotModifyInstanceVariables)
+@implementation CPKeyValueCodingTest (DoNotModifyInstanceVariablesDirectly)
 
 - (void)testIfPrivateInstanceVariableCanNotDirectlyBeModifiedWhenProhibitedByClassMethod
 {
@@ -350,8 +341,9 @@ var accessIVARS = YES;
 
 - (void)testIfSetValuesForKeysWithDictionaryDoesNotThrowsUndefinedKeyException
 {
-	var value = @"aValue";
 	[KVCTestClass setAccessInstanceVariablesDirectly: YES];
+
+	var value = @"aValue";
 	var allKeys = [	"privatePropertyWithoutAccessors","publicPropertyWithoutAccessors",
 					"privateBoolPropertyWithoutAccessors","publicBoolPropertyWithoutAccessors",
 	 				"propertyWithPublicAccessor","propertyWithPrivateAccessor"
@@ -373,10 +365,11 @@ var accessIVARS = YES;
 	[self assertThrows:function(){[kvcTestObject setValuesForKeysWithDictionary: dictForKeys];}];
 }
 
-- (void)testIfDictionaryWithValuesForKeysAreSameAsPropertyValues
+- (void)testIfSetValuesForKeysWithDictionaryAreSameAsPropertyValues
 {
-	var value = @"aValue";
 	[KVCTestClass setAccessInstanceVariablesDirectly: YES];
+
+	var value = @"aValue";
 	var allKeys = [	"privatePropertyWithoutAccessors","publicPropertyWithoutAccessors",
 					"privateBoolPropertyWithoutAccessors","publicBoolPropertyWithoutAccessors",
 	 				"propertyWithPublicAccessor","propertyWithPrivateAccessor"
@@ -394,3 +387,87 @@ var accessIVARS = YES;
 }
 
 @end
+
+// CPNull - nil conversion for Dictionaries
+
+@implementation CPKeyValueCodingTest (NilToCPNullConversion)
+
+- (void)testIfNilValuesAreProperlyConvertedToCPNullInDictionary
+{
+	[KVCTestClass setAccessInstanceVariablesDirectly: YES];
+
+	[kvcTestObject setValue:nil forKey: "privatePropertyWithoutAccessors"];
+	[kvcTestObject setValue:nil forKey: "publicPropertyWithoutAccessors"];
+	[kvcTestObject setValue:nil forKey: "privateBoolPropertyWithoutAccessors"];
+	[kvcTestObject setValue:nil forKey: "publicBoolPropertyWithoutAccessors"];
+	[kvcTestObject setValue:nil forKey: "propertyWithPublicAccessor"];
+	[kvcTestObject setValue:nil forKey: "propertyWithPrivateAccessor"];
+
+	var allKeys = [	"privatePropertyWithoutAccessors","publicPropertyWithoutAccessors",
+					"privateBoolPropertyWithoutAccessors","publicBoolPropertyWithoutAccessors",
+	 				"propertyWithPublicAccessor", "propertyWithPrivateAccessor"
+					];
+	var dictForKeys = [kvcTestObject dictionaryWithValuesForKeys: allKeys];
+	var key, value, keyEnumerator = [dictForKeys keyEnumerator];
+	while(key = [keyEnumerator nextObject])
+	{
+		value = [dictForKeys objectForKey: key];
+		[self assert: [CPNull null] same:value ];
+	}
+}
+
+- (void)testIfCPNullInDictionaryIsProperlyConvertedToNilValues
+{
+	[KVCTestClass setAccessInstanceVariablesDirectly: YES];
+
+	var value = [CPNull null];
+	var allKeys = [	"privatePropertyWithoutAccessors","publicPropertyWithoutAccessors",
+					"privateBoolPropertyWithoutAccessors","publicBoolPropertyWithoutAccessors",
+	 				"propertyWithPublicAccessor","propertyWithPrivateAccessor"
+					];
+	var allValues = [value,value,value,value,value,value];
+	var dictForKeys = [CPDictionary dictionaryWithObjects: allValues forKeys: allKeys];				
+	[kvcTestObject setValuesForKeysWithDictionary: dictForKeys];
+
+	[self assertNull: [kvcTestObject valueForKey: "privatePropertyWithoutAccessors"]];
+	[self assertNull: [kvcTestObject valueForKey: "publicPropertyWithoutAccessors"]];
+	[self assertNull: [kvcTestObject valueForKey: "privateBoolPropertyWithoutAccessors"]];
+	[self assertNull: [kvcTestObject valueForKey: "publicBoolPropertyWithoutAccessors"]];
+	[self assertNull: [kvcTestObject valueForKey: "propertyWithPublicAccessor"]];
+	[self assertNull: [kvcTestObject valueForKey: "propertyWithPrivateAccessor"]];
+}
+
+@end
+
+// CPDictionary
+
+@implementation CPKeyValueCodingTest (CPDictionaryTests)
+
+- (void)testIfValueForKeyAccessesObjectForKey
+{
+	var testDictionary = [CPDictionary dictionary];
+	[testDictionary setObject:kvcTestObject forKey:@"testKey"];
+	[self assert: kvcTestObject same: [testDictionary valueForKey: @"testKey"]];
+}
+
+- (void)testIfSetValueForKeyModifiesObjectForKey
+{
+	var testDictionary = [CPDictionary dictionary];
+	[testDictionary setValue:kvcTestObject forKey:@"testKey"];
+	[self assert: kvcTestObject same: [testDictionary objectForKey: @"testKey"]];
+}
+
+@end
+
+// CPNull 
+
+@implementation CPKeyValueCodingTest (CPNullTest)
+
+- (void)testIfCPNullReturnsCPNullForAllKeys
+{
+    var nullObject = [CPNull null];
+    [self assert:[CPNull null] equals:[nullObject valueForKey:@"a"] message:@"CPNull valueForKey:X returns nil"];
+}
+
+@end
+
