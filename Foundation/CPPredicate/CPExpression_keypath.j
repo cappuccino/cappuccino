@@ -18,7 +18,7 @@
     var arg = [CPExpression expressionForConstantValue:keyPath];
     // Cocoa: if it's a direct path selector is valueForKey:
     self = [super initWithTarget:operand selector:@selector(valueForKeyPath:) arguments:[arg]];
-    
+
     return self;
 }
 

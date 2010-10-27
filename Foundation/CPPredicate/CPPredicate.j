@@ -255,8 +255,8 @@ function(newValue)\
 
 - (BOOL)scanPredicateKeyword:(CPString)key
 {
-    var loc = [self scanLocation];
-    var c;
+    var loc = [self scanLocation],
+        c;
 
     [self setCaseSensitive:NO];
     if (![self scanString:key intoString:NULL])
@@ -638,7 +638,7 @@ function(newValue)\
 
         [self setScanLocation:location];
     }
-    
+
     if ([self scanString:@"\"" intoString:NULL])
     {
         var skip = [self charactersToBeSkipped],
@@ -669,7 +669,7 @@ function(newValue)\
         if ([self scanString:@"'" intoString:NULL] == NO)
         {
             [self setCharactersToBeSkipped:skip];
-            [CPException raise:CPInvalidArgumentException reason:@"Invalid double quoted literal at "+location];
+            [CPException raise:CPInvalidArgumentException reason:@"Invalid double quoted literal at " + location];
         }
 
         [self setCharactersToBeSkipped:skip];
@@ -682,9 +682,9 @@ function(newValue)\
         var e = [self parseExpression];
 
         if (![e keyPath])
-            [CPException raise:CPInvalidArgumentException reason:@"Invalid keypath identifier: "+e];
+            [CPException raise:CPInvalidArgumentException reason:@"Invalid keypath identifier: " + e];
 
-        return [CPExpression expressionForKeyPath:[e keyPath]+"@"];
+        return [CPExpression expressionForKeyPath:[e keyPath] + "@"];
     }
 
     [self scanString:@"#" intoString:NULL];
@@ -744,7 +744,7 @@ function(newValue)\
 
             // concatenate
             left = [CPExpression expressionForKeyPath:[left keyPath]+ "." + [right keyPath]];
-        
+
         }
         else if ([self scanString:@"[" intoString:NULL])
         {
@@ -767,7 +767,7 @@ function(newValue)\
                 if ([self scanInt:REFERENCE(integer)])
                     left = [CPExpression expressionForFunction:@"fromObject:index:" arguments:[CPArray arrayWithObjects:left, [CPExpression expressionForConstantValue:integer]]];
             }
-         
+
             if (![self scanString:@"]" intoString:NULL])
                 [CPException raise:CPInvalidArgumentException reason:@"Missing ] in index argument"];
         }

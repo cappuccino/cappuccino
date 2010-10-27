@@ -11,7 +11,7 @@
 {
     [super initWithExpressionType:CPConstantValueExpressionType];
     _value = value;
-    
+
     return self;
 }
 
@@ -19,10 +19,10 @@
 {
     if (self == object)
         return YES;
-        
+
     if (object.isa != self.isa || [object expressionType] != [self expressionType] || ![[object constantValue] isEqual:[self constantValue]])
         return NO;
-        
+
     return YES;
 }
 

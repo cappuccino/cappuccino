@@ -17,22 +17,22 @@
     var target = [CPPredicateUtilities class];
     if (![target respondsToSelector:aSelector])
         [CPException raise:CPInvalidArgumentException reason:@"Unknown function implementation: " + aSelector];
-        
+
     var operand = [CPExpression expressionForConstantValue:target];
     return [self initWithTarget:operand selector:aSelector arguments:parameters];
 }
 
 - (id)initWithTarget:(CPExpression)targetExpression selector:aSelector arguments:parameters
 {
-    [super initWithExpressionType:CPFunctionExpressionType];  
-    
+    [super initWithExpressionType:CPFunctionExpressionType];
+
 // Cocoa doc: "This method throws an exception immediately if the selector is unknown"
-// but targetExpression's value (selector's target) may be resolved only at runtime.  
+// but targetExpression's value (selector's target) may be resolved only at runtime.
     _selector = aSelector;
     _operand = targetExpression;
     _arguments = parameters;
     _argc = [parameters count];
-    
+
     return self;
 }
 
@@ -40,10 +40,10 @@
 {
     if (self == object)
         return YES;
-        
+
     if (object.isa != self.isa || [object expressionType] != [self expressionType] || ![[object _function] isEqualToString:[self _function]] || ![[object operand] isEqual:[self operand]] || ![[object arguments] isEqualToArray:[self arguments]])
         return NO;
-        
+
     return YES;
 }
 
@@ -77,20 +77,20 @@
     {
         var arg = [_arguments[i] expressionValueWithObject:object context:context];
         objj_args.push(arg);
-    }   
-    
+    }
+
     return objj_msgSend.apply(this, objj_args);
 }
 
 - (CPString)description
-{  
+{
     var result = _operand + [self _function] + "(";
-  
+
     for (var i = 0; i < _argc; i++)
         result = result + [_arguments[i] description] + ((i + 1 < _argc) ? ", " : "");
-    
+
     result = result + ")";
-   
+
     return result ;
 }
 
@@ -98,7 +98,7 @@
 {
     var array = [CPArray array],
         i;
-    
+
     for (i = 0; i < _argc; i++)
         [array addObject:[[_arguments objectAtIndex:i] _expressionWithSubstitutionVariables:variables]];
 
@@ -118,7 +118,7 @@ var CPSelectorNameKey = @"CPSelectorName",
     var target = [coder decodeObjectForKey:CPOperandKey],
         selector = CPSelectorFromString([coder decodeObjectForKey:CPSelectorNameKey]),
         arguments = [coder decodeObjectForKey:CPArgumentsKey];
-    
+
     return [self initWithTarget:target selector:selector arguments:arguments];
 }
 
@@ -140,10 +140,10 @@ var CPSelectorNameKey = @"CPSelectorName",
 {
     var sum = 0,
         count = parameters.length;
-    
+
     while (count--)
         sum += parameters[count];
-    
+
     return sum;
 }
 
@@ -162,7 +162,7 @@ var CPSelectorNameKey = @"CPSelectorName",
     return parameters.sort()[parameters.length - 1];
 }
 
-+ (float)average:(CPArray)parameters 
++ (float)average:(CPArray)parameters
 {
     return [self sum:parameters] / parameters.length;
 }
@@ -183,7 +183,7 @@ var CPSelectorNameKey = @"CPSelectorName",
         return [object objectForKey:anIndex];
     else ([object isKindOfClass:[CPArray class]])
         return [object objectAtIndex:anIndex];
-        
+
     [CPException raise:CPInvalidArgumentException reason:@"object[#] requires a CPDictionary or CPArray"];
 }
 
@@ -214,7 +214,7 @@ var CPSelectorNameKey = @"CPSelectorName",
 
 + (float)raise:(float)num to:(int)power
 {
-    return POW(num, power);    
+    return POW(num, power);
 }
 
 + (float)abs:(float)num

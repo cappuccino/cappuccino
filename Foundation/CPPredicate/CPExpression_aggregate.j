@@ -19,10 +19,10 @@
 {
     if (self == object)
         return YES;
-        
+
     if (object.isa != self.isa || [object expressionType] != [self expressionType] || ![[object collection] isEqual:[self collection]])
         return NO;
-        
+
     return YES;
 }
 
@@ -36,7 +36,7 @@
     var eval_array = [CPArray array],
         collection  = [_aggregate objectEnumerator],
         exp;
-        
+
     while (exp = [collection nextObject])
     {
         var eval = [exp expressionValueWithObject:object context:context];
@@ -49,14 +49,14 @@
 - (CPString)description
 {
     var i,
-        count = [_aggregate count],   
+        count = [_aggregate count],
         result = "{";
-   
+
     for (i = 0; i < count; i++)
         result = result + [CPString stringWithFormat:@"%s%s", [[_aggregate objectAtIndex:i] description], (i + 1 < count) ? @", " : @""];
-    
+
     result = result + "}";
-   
+
     return result;
 }
 
@@ -65,7 +65,7 @@
     var subst_array = [CPArray array],
         count = [_aggregate count],
         i;
-      
+
     for (i = 0; i < count; i++)
         [subst_array addObject:[[_aggregate objectAtIndex:i] _expressionWithSubstitutionVariables:variables]];
 
