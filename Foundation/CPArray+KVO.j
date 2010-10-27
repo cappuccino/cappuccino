@@ -28,7 +28,7 @@
 
 - (id)mutableArrayValueForKey:(id)aKey
 {
-	return [[_CPKVCArray alloc] initWithKey:aKey forProxyObject:self];
+    return [[_CPKVCArray alloc] initWithKey:aKey forProxyObject:self];
 }
 
 - (id)mutableArrayValueForKeyPath:(id)aKeyPath
@@ -423,7 +423,7 @@ kvoOperators["avg"] = function avgOperator(self, _cmd, param)
 {
     var objects = [self valueForKeyPath:param],
         length = [objects count],
-        index = length;
+        index = length,
         average = 0.0;
 
     if (!length)
@@ -518,7 +518,7 @@ kvoOperators["sum"] = function sumOperator(self, _cmd, param)
         [super addObserver:observer forKeyPath:aKeyPath options:options context:context];
 }
 
--(void)removeObserver:(id)observer forKeyPath:(CPString)aKeyPath
+- (void)removeObserver:(id)observer forKeyPath:(CPString)aKeyPath
 {
     if ([isa instanceMethodForSelector:_cmd] === [CPArray instanceMethodForSelector:_cmd])
         [CPException raise:CPInvalidArgumentException reason:"Unsupported method on CPArray"];
