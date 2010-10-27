@@ -1,9 +1,9 @@
 /*
- * CPArray+KVO.j
+ * CPSet+KVO.j
  * Foundation
  *
  * Created by Daniel Stolzenberg.
- * Copyright 2010, 280 North, Inc.
+ * Copyright 2010, University of Rostock
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -83,7 +83,7 @@
 
 + (id)alloc
 {
-    var set = [CPSet set];
+    var set = [CPMutableSet set];
 
     set.isa = self;
 
@@ -302,7 +302,23 @@
 
 - (void)removeAllObjects
 {
-	[self _setRepresentedObject: [CPSet set]];
+	if(_removeMany)
+	{
+		var allObjectsSet = [[self _representedObject] copy];
+		_removeMany(_proxyObject, _removeManySEL, allObjectsSet);
+	}
+	else if(_remove)
+	{
+		var object, objectEnumerator = [[[self _representedObject] copy] objectEnumerator];
+		while(object = [objectEnumerator nextObject])
+			_remove(_proxyObject, _removeSEL, object);
+	}
+	else
+	{
+		var target = [[self _representedObject] copy];
+		[target removeAllObjects];
+		[self _setRepresentedObject:target];
+	}
 }
 
 - (void)intersectSet:(CPSet)aSet
