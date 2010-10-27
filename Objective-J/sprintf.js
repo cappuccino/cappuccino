@@ -22,8 +22,8 @@
 
 // sprintf:
 
-var formatRegex = new RegExp("([^%]+|%[\\+\\-\\ \\#0]*[0-9\\*]*(.[0-9\\*]+)?[hlL]?[cbBdieEfgGosuxXpn%@])", "g");
-var tagRegex = new RegExp("(%)([\\+\\-\\ \\#0]*)([0-9\\*]*)((.[0-9\\*]+)?)([hlL]?)([cbBdieEfgGosuxXpn%@])");
+var formatRegex = new RegExp("([^%]+|%(?:\\d+\\$)?[\\+\\-\\ \\#0]*[0-9\\*]*(.[0-9\\*]+)?[hlL]?[cbBdieEfgGosuxXpn%@])", "g");
+var tagRegex = new RegExp("(%)(?:(\\d+)\\$)?([\\+\\-\\ \\#0]*)([0-9\\*]*)((?:.[0-9\\*]+)?)([hlL]?)([cbBdieEfgGosuxXpn%@])");
 
 exports.sprintf = function(format)
 {
@@ -55,21 +55,27 @@ exports.sprintf = function(format)
             }
 
             var percentSign     = subtokens[1],
-                flags           = subtokens[2],
-                widthString     = subtokens[3],
-                precisionString = subtokens[4],
+                argIndex        = subtokens[2],
+                flags           = subtokens[3],
+                widthString     = subtokens[4],
+                precisionString = subtokens[5],
                 length          = subtokens[6],
                 specifier       = subtokens[7];
 
+            if (argIndex === undefined || argIndex === null || argIndex === "")
+                argIndex = arg++;
+            else
+                argIndex = Number(argIndex);
+
             var width = null;
             if (widthString == "*")
-                width = arguments[arg++];
+                width = arguments[argIndex];
             else if (widthString != "")
                 width = Number(widthString);
 
             var precision = null;
             if (precisionString == ".*")
-                precision = arguments[arg++];
+                precision = arguments[argIndex];
             else if (precisionString != "")
                 precision = Number(precisionString.substring(1));
 
@@ -80,7 +86,7 @@ exports.sprintf = function(format)
 
             if (RegExp("[bBdiufeExXo]").test(specifier))
             {
-                var num = Number(arguments[arg++]);
+                var num = Number(arguments[argIndex]);
 
                 var sign = "";
                 if (num < 0)
@@ -154,12 +160,11 @@ exports.sprintf = function(format)
                 if (specifier == "%")
                     subresult = "%";
                 else if (specifier == "c")
-                    subresult = String(arguments[arg++]).charAt(0);
+                    subresult = String(arguments[argIndex]).charAt(0);
                 else if (specifier == "s" || specifier == "@")
-                    subresult = String(arguments[arg++]);
+                    subresult = String(arguments[argIndex]);
                 else if (specifier == "p" || specifier == "n")
                 {
-                    arg++;
                     subresult = "";
                 }
 
