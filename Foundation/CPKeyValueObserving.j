@@ -57,7 +57,7 @@
 {
     if (!anObserver || !aPath)
         return;
-    //CPLog.warn(anObserver+" is adding itself as an observer to object: "+self+" forKeyPath: "+aPath+" context: "+aContext);
+
     [[_CPKVOProxy proxyForObject:self] _addObserver:anObserver forKeyPath:aPath options:options context:aContext];
 }
 
@@ -87,28 +87,36 @@
 
 - (void)applyChange:(CPDictionary)aChange toKeyPath:(CPString)aKeyPath
 {
-    var changeKind = [aChange objectForKey:CPKeyValueChangeKindKey];
+    var changeKind = [aChange objectForKey:CPKeyValueChangeKindKey],
+        oldValue = [aChange objectForKey:CPKeyValueChangeOldKey],
+        newValue = [aChange objectForKey:CPKeyValueChangeNewKey],
+        indexes = [aChange objectForKey:CPKeyValueChangeIndexesKey];
+
+    if(newValue === [CPNull null])
+        newValue = nil;
 
     if (changeKind === CPKeyValueChangeSetting)
+        [self setValue:newValue forKeyPath:aKeyPath];
+
+    //decide if this is a unordered or ordered to-many relationship
+    if([newValue isKindOfClass: [CPSet class]] || [oldValue isKindOfClass: [CPSet class]])
     {
-        var value = [aChange objectForKey:CPKeyValueChangeNewKey];
-
-        [self setValue:value === [CPNull null] ? nil : value forKeyPath:aKeyPath];
+        if (changeKind === CPKeyValueChangeInsertion)
+            [[self mutableSetValueForKeyPath:aKeyPath] unionSet:newValue];
+        else if (changeKind === CPKeyValueChangeRemoval)
+            [[self mutableSetValueForKeyPath:aKeyPath] minusSet:newValue];
+        else if (changeKind === CPKeyValueChangeReplacement)
+            [[self mutableSetValueForKeyPath:aKeyPath] setSet: newValue];
     }
-
-    else if (changeKind === CPKeyValueChangeInsertion)
-        [[self mutableArrayValueForKeyPath:aKeyPath]
-            insertObjects:[aChange objectForKey:CPKeyValueChangeNewKey]
-                atIndexes:[aChange objectForKey:CPKeyValueChangeIndexesKey]];
-
-    else if (changeKind === CPKeyValueChangeRemoval)
-        [[self mutableArrayValueForKeyPath:aKeyPath]
-            removeObjectsAtIndexes:[aChange objectForKey:CPKeyValueChangeIndexesKey]];
-
-    else if (changeKind === CPKeyValueChangeReplacement)
-        [[self mutableArrayValueForKeyPath:aKeyPath]
-            replaceObjectAtIndexes:[aChange objectForKey:CPKeyValueChangeIndexesKey]
-                       withObjects:[aChange objectForKey:CPKeyValueChangeNewKey]];
+    else
+    {
+        if (changeKind === CPKeyValueChangeInsertion)
+            [[self mutableArrayValueForKeyPath:aKeyPath] insertObjects:newValue atIndexes:indexes];
+        else if (changeKind === CPKeyValueChangeRemoval)
+            [[self mutableArrayValueForKeyPath:aKeyPath] removeObjectsAtIndexes:indexes];
+        else if (changeKind === CPKeyValueChangeReplacement)
+            [[self mutableArrayValueForKeyPath:aKeyPath] replaceObjectAtIndexes:indexes withObjects:newValue];
+    }
 }
 
 @end
@@ -187,6 +195,26 @@ CPKeyValueMinusSetMutation = 2;
 CPKeyValueIntersectSetMutation = 3;
 CPKeyValueSetSetMutation = 4;
 
+//FIXME: "secret" dict ivar-keys are workaround to support unordered to-many relationships without too many modifications
+_CPKeyValueChangeSetMutationObjectsKey  = @"_CPKeyValueChangeSetMutationObjectsKey";
+_CPKeyValueChangeSetMutationKindKey     = @"_CPKeyValueChangeSetMutationKindKey";
+_CPKeyValueChangeSetMutationNewValueKey = @"_CPKeyValueChangeSetMutationNewValueKey";
+
+var _changeKindForSetMutationKind = function(mutationKind)
+{
+    switch(mutationKind)
+    {
+        case CPKeyValueUnionSetMutation:
+            return CPKeyValueChangeInsertion;
+        case CPKeyValueMinusSetMutation:
+            return CPKeyValueChangeRemoval;
+        case CPKeyValueIntersectSetMutation:
+            return CPKeyValueChangeRemoval;
+        case CPKeyValueSetSetMutation:
+            return CPKeyValueChangeReplacement;
+    }
+}
+
 var kvoNewAndOld = CPKeyValueObservingOptionNew | CPKeyValueObservingOptionOld,
     DependentKeysKey = "$KVODEPENDENT",
     KVOProxyKey = "$KVOPROXY";
@@ -211,25 +239,22 @@ var kvoNewAndOld = CPKeyValueObservingOptionNew | CPKeyValueObservingOptionOld,
     if (proxy)
         return proxy;
 
-    proxy = [[self alloc] initWithTarget:anObject];
-
-    [proxy _replaceClass];
-
-    anObject[KVOProxyKey] = proxy;
-
-    return proxy;
+    return [[self alloc] initWithTarget:anObject];
 }
 
 - (id)initWithTarget:(id)aTarget
 {
-    self = [super init];
+    if(self = [super init])
+    {
+        _targetObject       = aTarget;
+        _nativeClass        = [aTarget class];
+        _observersForKey    = {};
+        _changesForKey      = {};
+        _observersForKeyLength = 0;
 
-    _targetObject       = aTarget;
-    _nativeClass        = [aTarget class];
-    _observersForKey    = {};
-    _changesForKey      = {};
-    _observersForKeyLength = 0;
-
+        [self _replaceClass];
+        aTarget[KVOProxyKey] = self;
+    }
     return self;
 }
 
@@ -256,7 +281,7 @@ var kvoNewAndOld = CPKeyValueObservingOptionNew | CPKeyValueObservingOptionOld,
     //copy in the methods from our model subclass
     var methodList = _CPKVOModelSubclass.method_list;
     if ([_targetObject isKindOfClass:[CPDictionary class]])
-		methodList = methodList.concat(_CPKVOModelDictionarySubclass.method_list);
+        methodList = methodList.concat(_CPKVOModelDictionarySubclass.method_list);
 
     var count = methodList.length,
         i = 0;
@@ -270,7 +295,7 @@ var kvoNewAndOld = CPKeyValueObservingOptionNew | CPKeyValueObservingOptionOld,
     _targetObject.isa = kvoClass;
 }
 
-- (void)_replaceSetterForKey:(CPString)aKey
+- (void)_replaceModifiersForKey:(CPString)aKey
 {
     if ([_replacedKeys containsObject:aKey] || ![_nativeClass automaticallyNotifiesObserversForKey:aKey])
         return;
@@ -287,11 +312,11 @@ var kvoNewAndOld = CPKeyValueObservingOptionNew | CPKeyValueObservingOptionOld,
             "replace" + capitalizedKey + "AtIndexes:with" + capitalizedKey + ":", _kvoReplaceManyMethodForMethod,
             "removeObjectFrom" + capitalizedKey + "AtIndex:", _kvoRemoveMethodForMethod,
             "remove" + capitalizedKey + "AtIndexes:", _kvoRemoveManyMethodForMethod,
-			"add" + capitalizedKey + "Object:", _kvoUnionMethodForMethod,
-			"add" + capitalizedKey + ":", _kvoUnionManyMethodForMethod,
-			"remove" + capitalizedKey + "Object:", _kvoMinusMethodForMethod,
-			"remove" + capitalizedKey + ":", _kvoMinusManyMethodForMethod,
-			"intersect" + capitalizedKey + ":", _kvoIntersectManyMethodForMethod
+            "add" + capitalizedKey + "Object:", _kvoUnionMethodForMethod,
+            "add" + capitalizedKey + ":", _kvoUnionManyMethodForMethod,
+            "remove" + capitalizedKey + "Object:", _kvoMinusMethodForMethod,
+            "remove" + capitalizedKey + ":", _kvoMinusManyMethodForMethod,
+            "intersect" + capitalizedKey + ":", _kvoIntersectManyMethodForMethod
         ];
 
     var i = 0,
@@ -342,7 +367,7 @@ var kvoNewAndOld = CPKeyValueObservingOptionNew | CPKeyValueObservingOptionOld,
         if (affectingKey.indexOf(@".") !== -1)
             [_targetObject addObserver:self forKeyPath:affectingKey options:0 context:nil];
         else
-            [self _replaceSetterForKey:affectingKey];
+            [self _replaceModifiersForKey:affectingKey];
     }
 }
 
@@ -369,7 +394,7 @@ var kvoNewAndOld = CPKeyValueObservingOptionNew | CPKeyValueObservingOptionOld,
     if (aPath.indexOf('.') != CPNotFound)
         forwarder = [[_CPKVOForwardingObserver alloc] initWithKeyPath:aPath object:_targetObject observer:anObserver options:options context:aContext];
     else
-        [self _replaceSetterForKey:aPath];
+        [self _replaceModifiersForKey:aPath];
 
     var observers = _observersForKey[aPath];
 
@@ -423,7 +448,6 @@ var kvoNewAndOld = CPKeyValueObservingOptionNew | CPKeyValueObservingOptionOld,
 
 - (void)_sendNotificationsForKey:(CPString)aKey changeOptions:(CPDictionary)changeOptions isBefore:(BOOL)isBefore
 {
-    // CPLog.warn("_sendNotificationsForKey: " + aKey + " ...isBefore: " + isBefore);
     var changes = _changesForKey[aKey];
 
     if (isBefore)
@@ -431,12 +455,36 @@ var kvoNewAndOld = CPKeyValueObservingOptionNew | CPKeyValueObservingOptionOld,
         changes = changeOptions;
 
         var indexes = [changes objectForKey:CPKeyValueChangeIndexesKey];
+        var setMutationKind = changes[_CPKeyValueChangeSetMutationKindKey];
 
-        if (indexes)
+        if(setMutationKind)
+        {
+            var setMutationObjects = [changes[_CPKeyValueChangeSetMutationObjectsKey] copy];
+            var setExistingObjects = [[_targetObject valueForKey: aKey] copy];
+            if(setMutationKind == CPKeyValueMinusSetMutation)
+            {
+                [setExistingObjects intersectSet: setMutationObjects];
+                [changes setValue:setExistingObjects forKey:CPKeyValueChangeOldKey];
+            }
+            else if (setMutationKind === CPKeyValueIntersectSetMutation || setMutationKind === CPKeyValueSetSetMutation)
+            {
+                [setExistingObjects minusSet: setMutationObjects];
+                [changes setValue:setExistingObjects forKey:CPKeyValueChangeOldKey];
+            }
+            
+            //for unordered to-many relationships (CPSet) even new values can only be calculated before!!!
+            if (setMutationKind === CPKeyValueUnionSetMutation || setMutationKind === CPKeyValueSetSetMutation)
+            {
+                [setMutationObjects minusSet: setExistingObjects];
+                //hide new value (for CPKeyValueObservingOptionPrior messages)
+                //as long as "didChangeValue..." is not yet called! 
+                changes[_CPKeyValueChangeSetMutationNewValueKey] = setMutationObjects;
+            }
+        }
+        else if (indexes)
         {
             var type = [changes objectForKey:CPKeyValueChangeKindKey];
-
-            // for to-many relationships, oldvalue is only sensible for replace and remove
+            // for ordered to-many relationships, oldvalue is only sensible for replace and remove
             if (type === CPKeyValueChangeReplacement || type === CPKeyValueChangeRemoval)
             {
                 //FIXME: do we need to go through and replace "" with CPNull?
@@ -460,20 +508,30 @@ var kvoNewAndOld = CPKeyValueObservingOptionNew | CPKeyValueObservingOptionOld,
     }
     else
     {
-        // The isBefore path may not have been called as would happen if didChangeX
-        // was called alone.
         if (!changes)
-            changes = [CPDictionary new];
+            [CPException raise:@"CPKeyValueObservingException" reason:@"'didChange...' message called without prior call of 'willChange...'"];
 
         [changes removeObjectForKey:CPKeyValueChangeNotificationIsPriorKey];
 
         var indexes = [changes objectForKey:CPKeyValueChangeIndexesKey];
+        var setMutationKind = changes[_CPKeyValueChangeSetMutationKindKey];
 
-        if (indexes)
+        if(setMutationKind)
+        {
+            //old and new values for unordered to-many relationships can only be calculated before
+            //set precalculated hidden new value as soon as "didChangeValue..." is called!
+            var newValue = changes[_CPKeyValueChangeSetMutationNewValueKey];
+            [changes setValue:newValue forKey:CPKeyValueChangeNewKey];
+
+            //delete hidden values
+            delete changes[_CPKeyValueChangeSetMutationNewValueKey];
+            delete changes[_CPKeyValueChangeSetMutationObjectsKey];
+            delete changes[_CPKeyValueChangeSetMutationKindKey];
+        }
+        else if (indexes)
         {
             var type = [changes objectForKey:CPKeyValueChangeKindKey];
-
-            // for to-many relationships, oldvalue is only sensible for replace and remove
+            // for to-many relationships, newvalue is only sensible for replace and insert
             if (type == CPKeyValueChangeReplacement || type == CPKeyValueChangeInsertion)
             {
                 //FIXME: do we need to go through and replace "" with CPNull?
@@ -521,9 +579,6 @@ var kvoNewAndOld = CPKeyValueObservingOptionNew | CPKeyValueObservingOptionOld,
     for (; index < count; ++index)
     {
         var keyPath = dependentKeyPaths[index];
-
-        // CPLog.warn("firing dependepent key " + index + " for " + aKey + ": "+keyPath);
-        // objj_backtrace_print(CPLog.error);
 
         [self _sendNotificationsForKey:keyPath
                          changeOptions:isBefore ? [changeOptions copy] : _changesForKey[keyPath]
@@ -607,24 +662,12 @@ var kvoNewAndOld = CPKeyValueObservingOptionNew | CPKeyValueObservingOptionOld,
 
     if (!aKey)
         return;
+    var changeKind = _changeKindForSetMutationKind(mutationKind);
+    var changeOptions = [CPDictionary dictionaryWithObject:changeKind forKey:CPKeyValueChangeKindKey];
+    //set hidden change-dict ivars to support unordered to-many relationships
+    changeOptions[_CPKeyValueChangeSetMutationObjectsKey] = objects;
+    changeOptions[_CPKeyValueChangeSetMutationKindKey] = mutationKind;
 
-    var changeOptions = [CPDictionary dictionary];
-	switch(mutationKind)
-	{
-		case CPKeyValueUnionSetMutation:
-		  [changeOptions setObject:CPKeyValueChangeInsertion forKey:CPKeyValueChangeKindKey];
-		  break;
-		case CPKeyValueMinusSetMutation:
-		  [changeOptions setObject:CPKeyValueChangeRemoval forKey:CPKeyValueChangeKindKey];
-		  break;
-		case CPKeyValueIntersectSetMutation:
-		  [changeOptions setObject:CPKeyValueChangeRemoval forKey:CPKeyValueChangeKindKey];
-		  break;
-		case CPKeyValueSetSetMutation:
-		  [changeOptions setObject:CPKeyValueChangeReplacement forKey:CPKeyValueChangeKindKey];
-		  break;
-	}
-	//TO DO: find a way to specify "objects"
     [[_CPKVOProxy proxyForObject:self] _sendNotificationsForKey:aKey changeOptions:changeOptions isBefore:YES];
 }
 
@@ -813,7 +856,7 @@ var _kvoMethodForMethod = function _kvoMethodForMethod(theKey, theMethod)
 {
     return function(self, _cmd, object)
     {
-		//FIXME: do we have to call the specific willChange methods for to-many relationships?
+        //FIXME: do we have to call the specific willChange methods for to-many relationships?
         [self willChangeValueForKey:theKey];
         theMethod.method_imp(self, _cmd, object);
         [self didChangeValueForKey:theKey];
@@ -882,52 +925,52 @@ var _kvoRemoveManyMethodForMethod = function _kvoRemoveManyMethodForMethod(theKe
 
 var _kvoUnionMethodForMethod = function _kvoUnionMethodForMethod(theKey, theMethod)
 {
-	return function(self, _cmd, object)
-	{
-		[self willChangeValueForKey:theKey withSetMutation:CPKeyValueUnionSetMutation usingObjects: [CPSet setWithObject: object]];
-		theMethod.method_imp(self, _cmd, object);
-		[self didChangeValueForKey:theKey withSetMutation:CPKeyValueUnionSetMutation usingObjects: [CPSet setWithObject: object]];
-	}
+    return function(self, _cmd, object)
+    {
+        [self willChangeValueForKey:theKey withSetMutation:CPKeyValueUnionSetMutation usingObjects: [CPSet setWithObject: object]];
+        theMethod.method_imp(self, _cmd, object);
+        [self didChangeValueForKey:theKey withSetMutation:CPKeyValueUnionSetMutation usingObjects: [CPSet setWithObject: object]];
+    }
 }
 
 var _kvoUnionManyMethodForMethod = function _kvoUnionManyMethodForMethod(theKey, theMethod)
 {
-	return function(self, _cmd, objects)
-	{
-		[self willChangeValueForKey:theKey withSetMutation:CPKeyValueUnionSetMutation usingObjects: objects];
-		theMethod.method_imp(self, _cmd, objects);
-		[self didChangeValueForKey:theKey withSetMutation:CPKeyValueUnionSetMutation usingObjects: objects];
-	}
+    return function(self, _cmd, objects)
+    {
+        [self willChangeValueForKey:theKey withSetMutation:CPKeyValueUnionSetMutation usingObjects: objects];
+        theMethod.method_imp(self, _cmd, objects);
+        [self didChangeValueForKey:theKey withSetMutation:CPKeyValueUnionSetMutation usingObjects: objects];
+    }
 }
 
 var _kvoMinusMethodForMethod = function _kvoMinusMethodForMethod(theKey, theMethod)
 {
-	return function(self, _cmd, object)
-	{
-		[self willChangeValueForKey:theKey withSetMutation:CPKeyValueMinusSetMutation usingObjects: [CPSet setWithObject: object]];
-		theMethod.method_imp(self, _cmd, object);
-		[self didChangeValueForKey:theKey withSetMutation:CPKeyValueMinusSetMutation usingObjects: [CPSet setWithObject: object]];
-	}
+    return function(self, _cmd, object)
+    {
+        [self willChangeValueForKey:theKey withSetMutation:CPKeyValueMinusSetMutation usingObjects: [CPSet setWithObject: object]];
+        theMethod.method_imp(self, _cmd, object);
+        [self didChangeValueForKey:theKey withSetMutation:CPKeyValueMinusSetMutation usingObjects: [CPSet setWithObject: object]];
+    }
 }
 
 var _kvoMinusManyMethodForMethod = function _kvoMinusManyMethodForMethod(theKey, theMethod)
 {
-	return function(self, _cmd, objects)
-	{
-		[self willChangeValueForKey:theKey withSetMutation:CPKeyValueMinusSetMutation usingObjects: objects];
-		theMethod.method_imp(self, _cmd, objects);
-		[self didChangeValueForKey:theKey withSetMutation:CPKeyValueMinusSetMutation usingObjects: objects];
-	}
+    return function(self, _cmd, objects)
+    {
+        [self willChangeValueForKey:theKey withSetMutation:CPKeyValueMinusSetMutation usingObjects: objects];
+        theMethod.method_imp(self, _cmd, objects);
+        [self didChangeValueForKey:theKey withSetMutation:CPKeyValueMinusSetMutation usingObjects: objects];
+    }
 }
 
 var _kvoIntersectManyMethodForMethod = function _kvoIntersectManyMethodForMethod(theKey, theMethod)
 {
-	return function(self, _cmd, objects)
-	{
-		[self willChangeValueForKey:theKey withSetMutation:CPKeyValueIntersectSetMutation usingObjects: objects];
-		theMethod.method_imp(self, _cmd, objects);
-		[self didChangeValueForKey:theKey withSetMutation:CPKeyValueIntersectSetMutation usingObjects: objects];
-	}
+    return function(self, _cmd, objects)
+    {
+        [self willChangeValueForKey:theKey withSetMutation:CPKeyValueIntersectSetMutation usingObjects: objects];
+        theMethod.method_imp(self, _cmd, objects);
+        [self didChangeValueForKey:theKey withSetMutation:CPKeyValueIntersectSetMutation usingObjects: objects];
+    }
 }
 
 
