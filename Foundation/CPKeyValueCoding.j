@@ -301,4 +301,3 @@ var _ivarForKey = function(theObject, aKey)
 @end
 
 @import "CPKeyValueObserving.j"
-@import "CPArray+KVO.j"
