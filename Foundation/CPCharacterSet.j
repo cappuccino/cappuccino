@@ -128,17 +128,17 @@ var _builtInCharacterSets = {};
 + (id)_sharedCharacterSetWithName:(id)csname
 {
     var cs = _builtInCharacterSets[csname];
-    if(cs == nil)
+    if (cs == nil)
     {
         var i,
             ranges = [CPArray array],
             rangeArray = eval(csname);
 
-        for(i = 0; i < rangeArray.length; i+= 2)
+        for (i = 0; i < rangeArray.length; i+= 2)
         {
-            var loc = rangeArray[i];
-            var length = rangeArray[i+1];
-            var range = CPMakeRange(loc,length);
+            var loc = rangeArray[i],
+                length = rangeArray[i + 1],
+                range = CPMakeRange(loc,length);
             [ranges addObject:range];
         }
         cs = [[_CPRangeCharacterSet alloc] initWithRanges:ranges];
@@ -196,13 +196,13 @@ var _builtInCharacterSets = {};
 - (BOOL)characterIsMember:(CPString)aCharacter
 {
     c = aCharacter.charCodeAt(0);
-    var enu = [_ranges objectEnumerator];
-    var range;
+    var enu = [_ranges objectEnumerator],
+        range;
 
     while (range = [enu nextObject])
     {
         if (CPLocationInRange(c, range))
-        	return !_inverted;
+            return !_inverted;
     }
 
     return _inverted;
@@ -226,10 +226,10 @@ var _builtInCharacterSets = {};
 {
     var i;
 
-    for(i = 0; i < aString.length; i++)
+    for (i = 0; i < aString.length; i++)
     {
-        var code = aString.charCodeAt(i);
-        var range = CPMakeRange(code,1);
+        var code = aString.charCodeAt(i),
+            range = CPMakeRange(code,1);
 
         [_ranges addObject:range];
     }
@@ -262,7 +262,7 @@ var _builtInCharacterSets = {};
     return set;
 }
 
--(id)invertedSet
+- (id)invertedSet
 {
     var set = [[_CPStringContentCharacterSet alloc] initWithString:_string];
     [set invert];
@@ -294,7 +294,7 @@ var _builtInCharacterSets = {};
 - (void)addCharactersInRange:(CPRange)aRange // Needs _inverted support
 {
     var i;
-    for(i = aRange.location; i < aRange.location + aRange.length; i++)
+    for (i = aRange.location; i < aRange.location + aRange.length; i++)
     {
         var s = String.fromCharCode(i);
 
@@ -307,7 +307,7 @@ var _builtInCharacterSets = {};
 {
     var i;
 
-    for(i = 0; i < aString.length; i++)
+    for (i = 0; i < aString.length; i++)
     {
         var s = aString.charAt(i);
 
@@ -330,34 +330,34 @@ _CPCharacterSetTrimAtEnd = 1 << 2;
     and the set is [CPCharacterSet whitespaceCharacterSet]
     the returned array would contain:
     <pre> ["Baku", "baku", "to", "jest", "", "skład."] </pre>
-	Adjacent occurences of the separator characters produce empty strings in the result.
-	@author Arkadiusz Młynarczyk <arek@tupux.com>
+    Adjacent occurences of the separator characters produce empty strings in the result.
+    @author Arkadiusz Młynarczyk <arek@tupux.com>
     @param A character set containing the characters to use to split the receiver. Must not be nil.
     @return An CPArray object containing substrings from the receiver that have been divided by characters in separator.
 */
 - (CPArray)componentsSeparatedByCharactersInSet:(CPCharacterSet)separator
 {
-	if (!separator)
-		[CPException raise:CPInvalidArgumentException
+    if (!separator)
+        [CPException raise:CPInvalidArgumentException
                     reason:"componentsSeparatedByCharactersInSet: the separator can't be 'nil'"];
 
-	var components = [CPMutableArray array],
-	    componentRange = CPMakeRange(0, 0);
+    var components = [CPMutableArray array],
+        componentRange = CPMakeRange(0, 0);
 
-	for (var i=0; i < self.length; i++)
-	{
-		if ([separator characterIsMember:self.charAt(i)])
-		{
-			componentRange.length = i - componentRange.location;
-			[components addObject:[self substringWithRange:componentRange]];
-			componentRange.location += componentRange.length + 1;
-		}
-	}
+    for (var i = 0; i < self.length; i++)
+    {
+        if ([separator characterIsMember:self.charAt(i)])
+        {
+            componentRange.length = i - componentRange.location;
+            [components addObject:[self substringWithRange:componentRange]];
+            componentRange.location += componentRange.length + 1;
+        }
+    }
 
-	componentRange.length = self.length - componentRange.location;
-	[components addObject:[self substringWithRange:componentRange]];
+    componentRange.length = self.length - componentRange.location;
+    [components addObject:[self substringWithRange:componentRange]];
 
-	return components;
+    return components;
 }
 
 // As per the Cocoa method.

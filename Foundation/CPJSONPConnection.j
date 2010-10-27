@@ -134,7 +134,7 @@ CPJSONPCallbackReplacementString = @"${JSONP_CALLBACK}";
 {
     var head = document.getElementsByTagName("head").item(0);
 
-    if(_scriptTag && _scriptTag.parentNode == head)
+    if (_scriptTag && _scriptTag.parentNode == head)
         head.removeChild(_scriptTag);
 
     CPJSONPConnectionCallbacks["callback" + [self UID]] = nil;
