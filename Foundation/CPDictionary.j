@@ -364,7 +364,7 @@
     }
 
     return matchingKeys;
-} 
+}
 
 /*!
     Returns an enumerator that enumerates over all the dictionary's keys.
