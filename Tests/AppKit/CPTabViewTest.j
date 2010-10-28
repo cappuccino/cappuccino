@@ -58,8 +58,8 @@
 - (void)testMiddleAfterMoveBound
 {
     var tabs = [_tabView tabs];
-    [_tabView setBounds:CPRectMake(12, 13, 20, 300)];
-    [self assert:([_tabView boundsSize].width / 2)  equals:CPRectGetMidX([tabs frame])];
+    [_tabView setBounds:CPRectMake(100, 100, 20, 300)];
+    [self assert:([tabs boundsSize].width / 2)  equals:CPRectGetMidX([tabs bounds])];
 }
 
 @end
