@@ -1,5 +1,6 @@
 
 @import <Foundation/CPDictionary.j>
+@import <Foundation/CPCountedSet.j>
 
 @import "CPController.j"
 

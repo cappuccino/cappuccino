@@ -27,6 +27,12 @@
     [self assert:[_CPObservableArray class] equals:[[[self arrayController] arrangedObjects] class] message:"arranged objects should be observable"];
 }
 
+- (void)testInitWithoutContent
+{
+    _arrayController = [[CPArrayController alloc] init];
+    [self assert:[] equals:[[self arrayController] contentArray]];
+}
+
 - (void)testSetContent
 {
     otherContent = [@"5", @"6"];
