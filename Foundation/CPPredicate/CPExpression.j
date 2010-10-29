@@ -227,12 +227,10 @@ CPMinusSetExpressionType = 9;
     return [[CPExpression_function alloc] initWithTarget:target selector:CPSelectorFromString(function_name) arguments:parameters];
 }
 
-
-+ (CPExpression)expressionForSubquery:(CPExpression)expression usingIteratorVariable:(CPString)variable predicate:(id)predicate
++ (CPExpression)expressionForSubquery:(CPExpression)expression usingIteratorVariable:(CPString)variable predicate:(CPPredicate)predicate
 {
-    return nil; // UNIMPLEMENTED
+    return [[CPExpression_subquery alloc] initWithExpression:expression usingIteratorVariable:variable predicate:predicate];
 }
-
 
 // Getting Information About an Expression
 /*!
@@ -252,7 +250,7 @@ CPMinusSetExpressionType = 9;
 */
 - (id)constantValue
 {
-    [CPException raise:CPInvalidArgumentException reason:@"self is not of CPConstantValueExpressionType"];
+    _CPRaiseInvalidAbstractInvocation(self, _cmd);
     return nil;
 }
 
@@ -263,7 +261,7 @@ CPMinusSetExpressionType = 9;
 */
 - (CPString)variable
 {
-    [CPException raise:CPInvalidArgumentException reason:@"self is not of CPVariableExpressionType"];
+    _CPRaiseInvalidAbstractInvocation(self, _cmd);
     return nil;
 }
 
@@ -274,7 +272,7 @@ CPMinusSetExpressionType = 9;
 */
 - (CPString)keyPath
 {
-    [CPException raise:CPInvalidArgumentException reason:@"self is not of CPKeyPathExpressionType"];
+    _CPRaiseInvalidAbstractInvocation(self, _cmd);
     return nil;
 }
 
@@ -285,7 +283,7 @@ CPMinusSetExpressionType = 9;
 */
 - (CPString)function
 {
-    [CPException raise:CPInvalidArgumentException reason:@"self is not of CPFunctionExpressionType"];
+    _CPRaiseInvalidAbstractInvocation(self, _cmd);
     return nil;
 }
 
@@ -296,19 +294,68 @@ CPMinusSetExpressionType = 9;
 */
 - (CPArray)arguments
 {
-    [CPException raise:CPInvalidArgumentException reason:@"self is not of CPFunctionExpressionType"];
+    _CPRaiseInvalidAbstractInvocation(self, _cmd);
     return nil;
 }
 
 /*!
     Returns the collection of expressions in an aggregate expression, or the collection element of a subquery expression.
-    @return Returns the collection of expressions in an aggregate expression, or the collection element of a subquery expression.
+    @return The collection of expressions in an aggregate expression, or the collection element of a subquery expression.
     This method raises an exception if it is not applicable to the receiver.
 */
 - (id)collection
 {
-    [CPException raise:CPInvalidArgumentException reason:@"self is not of CPAggregateExpressionType"];
+    _CPRaiseInvalidAbstractInvocation(self, _cmd);
     return nil;
+}
+
+/*!
+    Returns the predicate in a subquery expression.
+    @return The predicate in a subquery expression..
+    This method raises an exception if it is not applicable to the receiver.
+*/
+- (CPPredicate)predicate
+{
+    _CPRaiseInvalidAbstractInvocation(self, _cmd);
+    return nil;
+}
+
+/*!
+    Returns the operand for the receiver.
+    @return The operand for the receiver—that is, the object on which the selector will be invoked.
+    This method raises an exception if it is not applicable to the receiver.
+*/
+- (CPExpression)operand
+{
+    _CPRaiseInvalidAbstractInvocation(self, _cmd);
+    return nil;
+}
+
+/*!
+    Returns the left expression of a set expression.
+    @return The left expression of a set expression.
+    This method raises an exception if it is not applicable to the receiver.
+*/
+- (CPExpression)leftExpression
+{
+    _CPRaiseInvalidAbstractInvocation(self, _cmd);
+    return nil;
+}
+
+/*!
+    Returns the right expression of a set expression.
+    @return The right expression of a set expression.
+    This method raises an exception if it is not applicable to the receiver.
+*/
+- (CPExpression)rightExpression
+{
+    _CPRaiseInvalidAbstractInvocation(self, _cmd);
+    return nil;
+}
+
+- (CPExpression)_expressionWithSubstitutionVariables:(CPDictionary)variables
+{
+    return self;
 }
 
 @end
@@ -320,3 +367,4 @@ CPMinusSetExpressionType = 9;
 @import "CPExpression_function.j"
 @import "CPExpression_aggregate.j"
 @import "CPExpression_set.j"
+@import "CPExpression_subquery.j"

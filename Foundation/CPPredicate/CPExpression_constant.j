@@ -17,7 +17,7 @@
 
 - (BOOL)isEqual:(id)object
 {
-    if (self == object)
+    if (self === object)
         return YES;
 
     if (object.isa != self.isa || [object expressionType] != [self expressionType] || ![[object constantValue] isEqual:[self constantValue]])
@@ -31,14 +31,9 @@
     return _value;
 }
 
-- (id)expressionValueWithObject:object context:(CPDictionary)context
+- (id)expressionValueWithObject:(id)object context:(CPDictionary)context
 {
     return _value;
-}
-
-- (CPExpression)_expressionWithSubstitutionVariables:(CPDictionary)variables
-{
-    return self;
 }
 
 - (CPString)description

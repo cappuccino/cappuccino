@@ -478,17 +478,8 @@ var CPComparisonPredicateModifier,
 
 - (BOOL)evaluateWithObject:(id)object substitutionVariables:(CPDictionary)variables
 {
-    var left = _left,
-        right = _right;
-
-    if (variables != nil)
-    {
-        left = [left _expressionWithSubstitutionVariables:variables];
-        right = [right _expressionWithSubstitutionVariables:variables];
-    }
-
-    var leftValue = [left expressionValueWithObject:object context:nil],
-        rightValue = [right expressionValueWithObject:object context:nil];
+    var leftValue = [_left expressionValueWithObject:object context:variables],
+        rightValue = [_right expressionValueWithObject:object context:variables];
 
     if (_modifier == CPDirectPredicateModifier)
         return [self _evaluateValue:leftValue rightValue:rightValue];

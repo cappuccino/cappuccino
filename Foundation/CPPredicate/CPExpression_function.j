@@ -22,14 +22,19 @@
     return [self initWithTarget:operand selector:aSelector arguments:parameters];
 }
 
-- (id)initWithTarget:(CPExpression)targetExpression selector:aSelector arguments:parameters
+- (id)initWithTarget:(CPExpression)operand selector:(SEL)aSelector arguments:(CPArray)parameters
 {
-    [super initWithExpressionType:CPFunctionExpressionType];
+    return [self initWithTarget:operand selector:aSelector arguments:parameters type:CPFunctionExpressionType];
+}
+
+- (id)initWithTarget:(CPExpression)operand selector:(SEL)aSelector arguments:(CPArray)parameters type:(int)type
+{
+    [super initWithExpressionType:type];
 
 // Cocoa doc: "This method throws an exception immediately if the selector is unknown"
-// but targetExpression's value (selector's target) may be resolved only at runtime.
+// but operand's value (the target) may be resolved only at runtime.
     _selector = aSelector;
-    _operand = targetExpression;
+    _operand = operand;
     _arguments = parameters;
     _argc = [parameters count];
 
@@ -98,7 +103,7 @@
 {
     var array = [CPArray array],
         i;
-
+    // should we also allow variables for target and selectors ?
     for (i = 0; i < _argc; i++)
         [array addObject:[[_arguments objectAtIndex:i] _expressionWithSubstitutionVariables:variables]];
 
@@ -109,17 +114,19 @@
 
 var CPSelectorNameKey = @"CPSelectorName",
     CPArgumentsKey = @"CPArguments",
-    CPOperandKey = @"CPOperand";
+    CPOperandKey = @"CPOperand",
+    CPExpressionTypeKey = @"CPExpressionType";
 
 @implementation CPExpression_function (CPCoding)
 
 - (id)initWithCoder:(CPCoder)coder
 {
-    var target = [coder decodeObjectForKey:CPOperandKey],
+    var type = [coder decodeIntForKey:CPExpressionTypeKey],
+        operand = [coder decodeObjectForKey:CPOperandKey],
         selector = CPSelectorFromString([coder decodeObjectForKey:CPSelectorNameKey]),
-        arguments = [coder decodeObjectForKey:CPArgumentsKey];
+        parameters = [coder decodeObjectForKey:CPArgumentsKey];
 
-    return [self initWithTarget:target selector:selector arguments:arguments];
+    return [self initWithTarget:operand selector:selector arguments:parameters type:type];
 }
 
 - (void)encodeWithCoder:(CPCoder)coder
@@ -127,6 +134,7 @@ var CPSelectorNameKey = @"CPSelectorName",
     [coder encodeObject:[self _function] forKey:CPSelectorNameKey];
     [coder encodeObject:_arguments forKey:CPArgumentsKey];
     [coder encodeObject:_operand forKey:CPOperandKey];
+    [coder encodeInt:_type forKey:CPExpressionTypeKey];
 }
 
 @end
