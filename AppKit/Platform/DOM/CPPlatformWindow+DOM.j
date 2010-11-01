@@ -120,7 +120,6 @@
 @import "CPPlatformWindow.j"
 @import "CPPlatformWindow+DOMKeys.j"
 
-#import "../../CoreGraphics/CGGeometry.h"
 
 // List of all open native windows
 var PlatformWindows = [CPSet set];

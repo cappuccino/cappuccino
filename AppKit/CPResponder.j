@@ -22,6 +22,7 @@
 
 @import <Foundation/CPObject.j>
 
+
 CPDeleteKeyCode         = 8;
 CPTabKeyCode            = 9;
 CPReturnKeyCode         = 13;

@@ -22,9 +22,10 @@
 
 @import <Foundation/CPObject.j>
 
-@import <AppKit/CPTheme.j>
-@import <AppKit/_CPCibCustomResource.j>
-@import <AppKit/_CPCibKeyedUnarchiver.j>
+@import "CPTheme.j"
+@import "_CPCibCustomResource.j"
+@import "_CPCibKeyedUnarchiver.j"
+
 
 /*!
     @ingroup appkit

@@ -22,8 +22,6 @@
 
 @import <Foundation/CPObject.j>
 
-#include "Platform.h"
-
 
 @implementation CPBasePlatform : CPObject
 {

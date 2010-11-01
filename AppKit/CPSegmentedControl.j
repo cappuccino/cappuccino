@@ -24,7 +24,6 @@
 
 @import "CPControl.j"
 
-#include "CoreGraphics/CGGeometry.h"
 
 CPSegmentSwitchTrackingSelectOne = 0;
 CPSegmentSwitchTrackingSelectAny = 1;

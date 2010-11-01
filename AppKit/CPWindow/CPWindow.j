@@ -30,11 +30,6 @@
 @import "CPResponder.j"
 @import "CPScreen.j"
 
-#include "../Platform/Platform.h"
-#include "../Platform/DOM/CPDOMDisplayServer.h"
-
-#include "../CoreGraphics/CGGeometry.h"
-
 
 /*
     Borderless window mask option.

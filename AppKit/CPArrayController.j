@@ -25,8 +25,8 @@
 
 @import <Foundation/CPIndexSet.j>
 
-@import <AppKit/CPObjectController.j>
-@import <AppKit/CPKeyValueBinding.j>
+@import "CPObjectController.j"
+@import "CPKeyValueBinding.j"
 
 
 @implementation CPArrayController : CPObjectController

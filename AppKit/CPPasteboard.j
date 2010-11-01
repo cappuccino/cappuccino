@@ -25,8 +25,6 @@
 @import <Foundation/CPDictionary.j>
 @import <Foundation/CPPropertyListSerialization.j>
 
-#include "Platform/Platform.h"
-
 
 CPGeneralPboard         = @"CPGeneralPboard";
 CPFontPboard            = @"CPFontPboard";

@@ -22,7 +22,7 @@
 
 @import <Foundation/CPObject.j>
 
-@import <AppKit/CPView.j>
+@import "CPView.j"
 
 
 /*

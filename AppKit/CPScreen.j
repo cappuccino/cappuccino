@@ -1,8 +1,6 @@
 
 @import <Foundation/CPObject.j>
 
-#import "CoreGraphics/CGGeometry.h"
-#import "Platform/Platform.h"
 
 @implementation CPScreen : CPObject
 {

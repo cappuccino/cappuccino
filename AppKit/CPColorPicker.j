@@ -21,9 +21,9 @@
  */
 
 @import <Foundation/CPObject.j>
-@import <AppKit/CPView.j>
 
-#include "Platform/Platform.h"
+@import "CPView.j"
+
 
 /*!
     @ingroup appkit

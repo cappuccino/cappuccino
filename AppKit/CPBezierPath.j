@@ -23,8 +23,9 @@
 
  */
 
-@import <AppKit/CPGraphicsContext.j>
 @import <Foundation/CPObject.j>
+
+@import "CPGraphicsContext.j"
 
 
 // Class defaults

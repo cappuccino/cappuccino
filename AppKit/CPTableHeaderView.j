@@ -26,7 +26,6 @@
 @import "CPTableView.j"
 @import "CPView.j"
 
-#include "CoreGraphics/CGGeometry.h"
 
 @implementation _CPTableColumnHeaderView : CPView
 {

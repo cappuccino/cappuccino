@@ -22,8 +22,6 @@
 
 @import "CPView.j"
 
-#include "CoreGraphics/CGGeometry.h"
-
 
 /*!
     @ingroup appkit

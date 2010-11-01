@@ -1,7 +1,5 @@
 
-@import <AppKit/CPView.j>
-
-#include "CoreGraphics/CGGeometry.h"
+@import "CPView.j"
 
 
 @implementation CPButtonBar : CPView

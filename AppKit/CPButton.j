@@ -26,8 +26,6 @@
 @import "CPControl.j"
 @import "CPStringDrawing.j"
 
-#include "CoreGraphics/CGGeometry.h"
-
 
 /* @group CPBezelStyle */
 

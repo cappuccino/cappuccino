@@ -22,7 +22,6 @@
 
 @import "CPControl.j"
 
-#include "CoreGraphics/CGGeometry.h"
 
 /*! SLIDER STATES */
 

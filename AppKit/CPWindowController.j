@@ -27,8 +27,6 @@
 @import "CPWindow.j"
 @import "CPDocument.j"
 
-#include "Platform/Platform.h"
-
 
 /*! 
     @ingroup appkit

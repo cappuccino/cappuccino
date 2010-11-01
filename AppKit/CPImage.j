@@ -28,8 +28,6 @@
 
 @import "CPGeometry.j"
 
-#include "Platform/Platform.h"
-
 
 CPImageLoadStatusInitialized    = 0;
 CPImageLoadStatusLoading        = 1;

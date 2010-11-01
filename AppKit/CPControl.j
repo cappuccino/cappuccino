@@ -25,8 +25,6 @@
 @import "CPView.j"
 @import "CPKeyValueBinding.j"
 
-#include "CoreGraphics/CGGeometry.h"
-#include "Platform/Platform.h"
 
 CPLeftTextAlignment             = 0;
 CPRightTextAlignment            = 1;

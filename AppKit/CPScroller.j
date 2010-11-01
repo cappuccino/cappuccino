@@ -22,8 +22,6 @@
 
 @import "CPControl.j"
 
-#include "CoreGraphics/CGGeometry.h"
-
 
 // CPScroller Constants
 CPScrollerNoPart            = 0;

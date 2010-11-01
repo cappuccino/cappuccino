@@ -1,7 +1,7 @@
-@import <AppKit/CPBox.j>
-@import <AppKit/CPSegmentedControl.j>
-@import <AppKit/CPTabViewItem.j>
-@import <AppKit/CPView.j>
+@import "CPBox.j"
+@import "CPSegmentedControl.j"
+@import "CPTabViewItem.j"
+@import "CPView.j"
 
 /*
     Places tabs on top with a bezeled border.

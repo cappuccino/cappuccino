@@ -23,8 +23,6 @@
 @import "CPButton.j"
 @import "CPTextField.j"
 
-#include "CoreGraphics/CGGeometry.h"
-#include "Platform/Platform.h"
 
 CPSearchFieldRecentsTitleMenuItemTag    = 1000;
 CPSearchFieldRecentsMenuItemTag         = 1001;

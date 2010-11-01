@@ -25,8 +25,6 @@
 @import "CPMenu.j"
 @import "CPMenuItem.j"
 
-#include "CoreGraphics/CGGeometry.h"
-
 
 var VISIBLE_MARGIN  = 7.0;
 

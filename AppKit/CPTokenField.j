@@ -30,7 +30,6 @@
 @import "CPWindow.j"
 @import "_CPMenuWindow.j"
 
-#include "Platform/Platform.h"
 
 #if PLATFORM(DOM)
 

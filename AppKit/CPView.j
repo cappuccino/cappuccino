@@ -35,11 +35,6 @@
 @import "_CPDisplayServer.j"
 
 
-#include "Platform/Platform.h"
-#include "CoreGraphics/CGAffineTransform.h"
-#include "CoreGraphics/CGGeometry.h"
-#include "Platform/DOM/CPDOMDisplayServer.h"
-
 /*
     @global
     @group CPViewAutoresizingMasks
