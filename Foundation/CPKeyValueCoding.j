@@ -57,9 +57,9 @@ var _accessorForKey = function(theClass, aKey)
     if ([theClass instancesRespondToSelector:selector = CPSelectorFromString("get" + capitalizedKey)] ||
         [theClass instancesRespondToSelector:selector = CPSelectorFromString(aKey)] ||
         [theClass instancesRespondToSelector:selector = CPSelectorFromString("is" + capitalizedKey)] ||
-        [theClass instancesRespondToSelector:selector = CPSelectorFromString("_get" + capitalizedKey)] ||	//FIXME: is deprecated in Cocoa 10.3
-        [theClass instancesRespondToSelector:selector = CPSelectorFromString("_" + aKey)] ||				//FIXME: is deprecated in Cocoa 10.3
-        [theClass instancesRespondToSelector:selector = CPSelectorFromString("_is" + capitalizedKey)])		//FIXME: was NEVER supported by Cocoa
+        [theClass instancesRespondToSelector:selector = CPSelectorFromString("_get" + capitalizedKey)] ||   //FIXME: is deprecated in Cocoa 10.3
+        [theClass instancesRespondToSelector:selector = CPSelectorFromString("_" + aKey)] ||                //FIXME: is deprecated in Cocoa 10.3
+        [theClass instancesRespondToSelector:selector = CPSelectorFromString("_is" + capitalizedKey)])      //FIXME: was NEVER supported by Cocoa
     {
         accessors[aKey] = selector;
 
@@ -97,7 +97,7 @@ var _modifierForKey = function(theClass, aKey)
     var capitalizedKey = aKey.charAt(0).toUpperCase() + aKey.substr(1) + ':';
 
     if ([theClass instancesRespondToSelector:selector = CPSelectorFromString("set" + capitalizedKey)] ||
-        [theClass instancesRespondToSelector:selector = CPSelectorFromString("_set" + capitalizedKey)])		//FIXME: deprecated in Cocoa 10.3
+        [theClass instancesRespondToSelector:selector = CPSelectorFromString("_set" + capitalizedKey)])     //FIXME: deprecated in Cocoa 10.3
     {
         [modifiers setObject:selector forKey:aKey];
 
@@ -151,9 +151,9 @@ var _ivarForKey = function(theObject, aKey)
     if (selector)
         return objj_msgSend(self, selector);
 
-	//FIXME: at this point search for array access methods: "countOf<Key>", "objectIn<Key>AtIndex:", "<key>AtIndexes:"
-	// or set access methods: "countOf<Key>", "enumeratorOf<Key>", "memberOf<Key>:"
-	//and return (immutable) array/set proxy! (see NSKeyValueCoding.h)
+    //FIXME: at this point search for array access methods: "countOf<Key>", "objectIn<Key>AtIndex:", "<key>AtIndexes:"
+    // or set access methods: "countOf<Key>", "enumeratorOf<Key>", "memberOf<Key>:"
+    //and return (immutable) array/set proxy! (see NSKeyValueCoding.h)
 
     if ([theClass accessInstanceVariablesDirectly])
     {
@@ -251,15 +251,15 @@ var _ivarForKey = function(theObject, aKey)
 
 - (void)setValuesForKeysWithDictionary:(CPDictionary)keyedValues
 {
-	var value, key, keyEnumerator = [keyedValues keyEnumerator];
-	while(key = [keyEnumerator nextObject])
-	{
-		value = [keyedValues objectForKey: key];
-		if(value === [CPNull null])
-			[self setValue: nil forKey: key];
-		else
-			[self setValue: value forKey: key];
-	}
+    var value, key, keyEnumerator = [keyedValues keyEnumerator];
+    while(key = [keyEnumerator nextObject])
+    {
+        value = [keyedValues objectForKey: key];
+        if(value === [CPNull null])
+            [self setValue: nil forKey: key];
+        else
+            [self setValue: value forKey: key];
+    }
 }
 
 - (void)setValue:(id)aValue forUndefinedKey:(CPString)aKey
@@ -283,10 +283,10 @@ var _ivarForKey = function(theObject, aKey)
 
 - (void)setValue:(id)aValue forKey:(CPString)aKey
 {
-	if(aValue)
-	    [self setObject:aValue forKey:aKey];
-	else
-		[self removeObjectForKey: aKey];
+    if(aValue)
+        [self setObject:aValue forKey:aKey];
+    else
+        [self removeObjectForKey: aKey];
 }
 
 @end

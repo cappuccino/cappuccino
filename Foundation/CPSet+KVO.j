@@ -26,7 +26,7 @@
 
 - (id)mutableSetValueForKey:(id)aKey
 {
-	return [[_CPKVCSet alloc] initWithKey:aKey forProxyObject:self];
+    return [[_CPKVCSet alloc] initWithKey:aKey forProxyObject:self];
 }
 
 - (id)mutableSetValueForKeyPath:(id)aKeyPath
@@ -59,26 +59,26 @@
     SEL         _countSEL;
     Function    _count;
 
-	SEL			_enumeratorSEL;
-	Function	_enumerator;
-	
-	SEL			_memberSEL;
-	Function	_member;
-	
-	SEL			_addSEL;
-	Function	_add;
-	
-	SEL			_addManySEL;
-	Function	_addMany;
-	
-	SEL			_removeSEL;
-	Function	_remove;
-	
-	SEL			_removeManySEL;
-	Function	_removeMany;
-	
-	SEL			_intersectSEL;
-	Function	_intersect;
+    SEL         _enumeratorSEL;
+    Function    _enumerator;
+    
+    SEL         _memberSEL;
+    Function    _member;
+    
+    SEL         _addSEL;
+    Function    _add;
+    
+    SEL         _addManySEL;
+    Function    _addMany;
+    
+    SEL         _removeSEL;
+    Function    _remove;
+    
+    SEL         _removeManySEL;
+    Function    _removeMany;
+    
+    SEL         _intersectSEL;
+    Function    _intersect;
 }
 
 + (id)alloc
@@ -166,206 +166,206 @@
 
 - (unsigned)count
 {
-	if (_count)
-		return _count(_proxyObject, _countSEL);
+    if (_count)
+        return _count(_proxyObject, _countSEL);
 
-	return [[self _representedObject] count];
+    return [[self _representedObject] count];
 }
 
 - (CPEnumerator)objectEnumerator
 {
-	if (_enumerator)
-		return _enumerator(_proxyObject, _enumeratorSEL);
+    if (_enumerator)
+        return _enumerator(_proxyObject, _enumeratorSEL);
 
-	return [[self _representedObject] objectEnumerator];
+    return [[self _representedObject] objectEnumerator];
 }
 
 - (id)member:(id)anObject
 {
-	if (_member)
-		return _member(_proxyObject, _memberSEL, anObject);
+    if (_member)
+        return _member(_proxyObject, _memberSEL, anObject);
 
-	return [[self _representedObject] member:anObject];
+    return [[self _representedObject] member:anObject];
 }
 
 - (void)addObject:(id)anObject
 {
-	if (_add)
-		_add(_proxyObject, _addSEL, anObject);
-	else if(_addMany)
-	{
-		var objectSet = [CPSet setWithObject: anObject];
-		_addMany(_proxyObject, _addManySEL, objectSet);
-	}
-	else
-	{
-		var target = [[self _representedObject] copy];
-		[target addObject:anObject];
-		[self _setRepresentedObject:target];
-	}
+    if (_add)
+        _add(_proxyObject, _addSEL, anObject);
+    else if(_addMany)
+    {
+        var objectSet = [CPSet setWithObject: anObject];
+        _addMany(_proxyObject, _addManySEL, objectSet);
+    }
+    else
+    {
+        var target = [[self _representedObject] copy];
+        [target addObject:anObject];
+        [self _setRepresentedObject:target];
+    }
 }
 
 - (void)addObjectsFromArray:(CPArray)objects
 {
-	if(_addMany)
-	{
-		var objectSet = [CPSet setWithArray: objects];
-		_addMany(_proxyObject, _addManySEL, objectSet);
-	}
-	else if(_add)
-	{
-		var object, objectEnumerator = [objects objectEnumerator];
-		while(object = [objectEnumerator nextObject])
-			_add(_proxyObject, _addSEL, object);
-	}
-	else
-	{
-		var target = [[self _representedObject] copy];
-		[target addObjectsFromArray:objects];
-		[self _setRepresentedObject:target];
-	}
+    if(_addMany)
+    {
+        var objectSet = [CPSet setWithArray: objects];
+        _addMany(_proxyObject, _addManySEL, objectSet);
+    }
+    else if(_add)
+    {
+        var object, objectEnumerator = [objects objectEnumerator];
+        while(object = [objectEnumerator nextObject])
+            _add(_proxyObject, _addSEL, object);
+    }
+    else
+    {
+        var target = [[self _representedObject] copy];
+        [target addObjectsFromArray:objects];
+        [self _setRepresentedObject:target];
+    }
 }
 
 - (void)unionSet:(CPSet)aSet
 {
-	if (_addMany)
-		_addMany(_proxyObject, _addManySEL, aSet);
-	else if(_add)
-	{
-		var object, objectEnumerator = [aSet objectEnumerator];
-		while(object = [objectEnumerator nextObject])
-			_add(_proxyObject, _addSEL, object);
-	}
-	else
-	{
-		var target = [[self _representedObject] copy];
-		[target unionSet:aSet];
-		[self _setRepresentedObject:target];
-	}
+    if (_addMany)
+        _addMany(_proxyObject, _addManySEL, aSet);
+    else if(_add)
+    {
+        var object, objectEnumerator = [aSet objectEnumerator];
+        while(object = [objectEnumerator nextObject])
+            _add(_proxyObject, _addSEL, object);
+    }
+    else
+    {
+        var target = [[self _representedObject] copy];
+        [target unionSet:aSet];
+        [self _setRepresentedObject:target];
+    }
 }
 
 - (void)removeObject:(id)anObject
 {
-	if (_remove)
-		_remove(_proxyObject, _removeSEL, anObject);
-	else if(_removeMany)
-	{
-		var objectSet = [CPSet setWithObject: anObject];
-		_removeMany(_proxyObject, _removeManySEL, objectSet);
-	}
-	else
-	{
-		var target = [[self _representedObject] copy];
-		[target removeObject:anObject];
-		[self _setRepresentedObject:target];
-	}
+    if (_remove)
+        _remove(_proxyObject, _removeSEL, anObject);
+    else if(_removeMany)
+    {
+        var objectSet = [CPSet setWithObject: anObject];
+        _removeMany(_proxyObject, _removeManySEL, objectSet);
+    }
+    else
+    {
+        var target = [[self _representedObject] copy];
+        [target removeObject:anObject];
+        [self _setRepresentedObject:target];
+    }
 }
 
 - (void)minusSet:(CPSet)aSet
 {
-	if(_removeMany)
-		_removeMany(_proxyObject, _removeManySEL, aSet);
-	else if(_remove)
-	{
-		var object, objectEnumerator = [aSet objectEnumerator];
-		while(object = [objectEnumerator nextObject])
-			_remove(_proxyObject, _removeSEL, object);
-	}
-	else
-	{
-		var target = [[self _representedObject] copy];
-		[target minusSet:aSet];
-		[self _setRepresentedObject:target];
-	}
+    if(_removeMany)
+        _removeMany(_proxyObject, _removeManySEL, aSet);
+    else if(_remove)
+    {
+        var object, objectEnumerator = [aSet objectEnumerator];
+        while(object = [objectEnumerator nextObject])
+            _remove(_proxyObject, _removeSEL, object);
+    }
+    else
+    {
+        var target = [[self _representedObject] copy];
+        [target minusSet:aSet];
+        [self _setRepresentedObject:target];
+    }
 }
 
 - (void)removeObjectsInArray:(CPArray)objects
 {
-	if(_removeMany)
-	{
-		var objectSet = [CPSet setWithArray:objects];
-		_removeMany(_proxyObject, _removeManySEL, objectSet);
-	}
-	else if(_remove)
-	{
-		var object, objectEnumerator = [objects objectEnumerator];
-		while(object = [objectEnumerator nextObject])
-			_remove(_proxyObject, _removeSEL, object);
-	}
-	else
-	{
-		var target = [[self _representedObject] copy];
-		[target removeObjectsInArray:objects];
-		[self _setRepresentedObject:target];
-	}
+    if(_removeMany)
+    {
+        var objectSet = [CPSet setWithArray:objects];
+        _removeMany(_proxyObject, _removeManySEL, objectSet);
+    }
+    else if(_remove)
+    {
+        var object, objectEnumerator = [objects objectEnumerator];
+        while(object = [objectEnumerator nextObject])
+            _remove(_proxyObject, _removeSEL, object);
+    }
+    else
+    {
+        var target = [[self _representedObject] copy];
+        [target removeObjectsInArray:objects];
+        [self _setRepresentedObject:target];
+    }
 }
 
 - (void)removeAllObjects
 {
-	if(_removeMany)
-	{
-		var allObjectsSet = [[self _representedObject] copy];
-		_removeMany(_proxyObject, _removeManySEL, allObjectsSet);
-	}
-	else if(_remove)
-	{
-		var object, objectEnumerator = [[[self _representedObject] copy] objectEnumerator];
-		while(object = [objectEnumerator nextObject])
-			_remove(_proxyObject, _removeSEL, object);
-	}
-	else
-	{
-		var target = [[self _representedObject] copy];
-		[target removeAllObjects];
-		[self _setRepresentedObject:target];
-	}
+    if(_removeMany)
+    {
+        var allObjectsSet = [[self _representedObject] copy];
+        _removeMany(_proxyObject, _removeManySEL, allObjectsSet);
+    }
+    else if(_remove)
+    {
+        var object, objectEnumerator = [[[self _representedObject] copy] objectEnumerator];
+        while(object = [objectEnumerator nextObject])
+            _remove(_proxyObject, _removeSEL, object);
+    }
+    else
+    {
+        var target = [[self _representedObject] copy];
+        [target removeAllObjects];
+        [self _setRepresentedObject:target];
+    }
 }
 
 - (void)intersectSet:(CPSet)aSet
 {
-	if(_intersect)
-		_intersect(_proxyObject, _intersectSEL, aSet);
-	else
-	{
-		var target = [[self _representedObject] copy];
-		[target intersectSet:aSet];
-		[self _setRepresentedObject:target];
-	}
+    if(_intersect)
+        _intersect(_proxyObject, _intersectSEL, aSet);
+    else
+    {
+        var target = [[self _representedObject] copy];
+        [target intersectSet:aSet];
+        [self _setRepresentedObject:target];
+    }
 }
 
 - (void)setSet:(CPSet)set
 {
-	[self _setRepresentedObject: set];
+    [self _setRepresentedObject: set];
 }
 
 - (CPArray)allObjects
 {
-	return [[self _representedObject] allObjects];
+    return [[self _representedObject] allObjects];
 }
 
 - (id)anyObject
 {
-	return [[self _representedObject] anyObject];
+    return [[self _representedObject] anyObject];
 }
 
 - (BOOL)containsObject:(id)anObject
 {
-	return [[self _representedObject] containsObject: anObject];
+    return [[self _representedObject] containsObject: anObject];
 }
 
 - (BOOL)intersectsSet:(CPSet)aSet
 {
-	return [[self _representedObject] intersectsSet: aSet];
+    return [[self _representedObject] intersectsSet: aSet];
 }
 
 - (BOOL)isEqualToSet:(CPSet)aSet
 {
-	return [[self _representedObject] isEqualToSet: aSet];
+    return [[self _representedObject] isEqualToSet: aSet];
 }
 
 - (id)copy
 {
-	return [[self _representedObject] copy];
+    return [[self _representedObject] copy];
 }
 
 @end
@@ -387,12 +387,12 @@
     else
     {
         var valuesForKeySet = [CPSet set];
-		var containedObject, containedObjectValue, containedObjectEnumerator = [self objectEnumerator];
+        var containedObject, containedObjectValue, containedObjectEnumerator = [self objectEnumerator];
         while(containedObject = [containedObjectEnumerator nextObject])
         {
             containedObjectValue = [containedObject valueForKey:aKey];
-			if(containedObjectValue)
-	            [valuesForKeySet addObject:containedObjectValue];
+            if(containedObjectValue)
+                [valuesForKeySet addObject:containedObjectValue];
         }
         return valuesForKeySet;
     }
@@ -422,12 +422,12 @@
     else
     {
         var valuesForKeySet = [CPSet set];
-		var containedObject, containedObjectValue, containedObjectEnumerator = [self objectEnumerator];
+        var containedObject, containedObjectValue, containedObjectEnumerator = [self objectEnumerator];
         while(containedObject = [containedObjectEnumerator nextObject])
         {
             containedObjectValue = [containedObject valueForKeyPath:aKeyPath];
-			if(containedObjectValue)
-	            [valuesForKeySet addObject:containedObjectValue];
+            if(containedObjectValue)
+                [valuesForKeySet addObject:containedObjectValue];
         }
         return valuesForKeySet;
     }
@@ -457,7 +457,7 @@ var avgOperator, maxOperator, minOperator, countOperator, sumOperator;
 
 kvoOperators["avg"] = function avgOperator(self, _cmd, param)
 {
-	//CPSet returns a CPSet - to obtain an array call allObjects
+    //CPSet returns a CPSet - to obtain an array call allObjects
     var objects = [[self valueForKeyPath:param] allObjects],
         length = [objects count],
         index = length;
@@ -474,7 +474,7 @@ kvoOperators["avg"] = function avgOperator(self, _cmd, param)
 
 kvoOperators["max"] = function maxOperator(self, _cmd, param)
 {
-	//CPSet returns a CPSet - to obtain an array call allObjects
+    //CPSet returns a CPSet - to obtain an array call allObjects
     var objects = [[self valueForKeyPath:param] allObjects],
         index = [objects count] - 1,
         max = [objects lastObject];
@@ -491,7 +491,7 @@ kvoOperators["max"] = function maxOperator(self, _cmd, param)
 
 kvoOperators["min"] = function minOperator(self, _cmd, param)
 {
-	//CPSet returns a CPSet - to obtain an array call allObjects
+    //CPSet returns a CPSet - to obtain an array call allObjects
     var objects = [[self valueForKeyPath:param] allObjects],
         index = [objects count] - 1,
         min = [objects lastObject];
@@ -513,7 +513,7 @@ kvoOperators["count"] = function countOperator(self, _cmd, param)
 
 kvoOperators["sum"] = function sumOperator(self, _cmd, param)
 {
-	//CPSet returns a CPSet - to obtain an array call allObjects
+    //CPSet returns a CPSet - to obtain an array call allObjects
     var objects = [[self valueForKeyPath:param] allObjects],
         index = [objects count],
         sum = 0.0;
