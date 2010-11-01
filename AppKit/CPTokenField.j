@@ -491,30 +491,47 @@ var CPThemeStateAutoCompleting          = @"CPThemeStateAutoCompleting",
     if (aValue === superValue || [aValue isEqualToArray:superValue])
         return;
 
-    var objectValue = [aValue copy],
-        contentView = [_tokenScrollView documentView];
+    var contentView = [_tokenScrollView documentView];
 
-    // Because we do not know for sure which tokens are removed we remove them all
-    for (var i = 0, count = [[self _tokens] count]; i < count; i++)
-        [[[self _tokens] objectAtIndex:i] removeFromSuperview];
-
-    objectValue = [];
+    // Preserve as many existing tokens as possible to reduce redraw flickering.
+    var oldTokens = [self _tokens],
+        newTokens = [];
 
     if (aValue !== nil)
     {
-        // Re-add all tokens
         for (var i = 0, count = [aValue count]; i < count; i++)
         {
-            var token = [aValue objectAtIndex:i],
-                tokenView = [[_CPTokenFieldToken alloc] init];
+            // Do we have this token among the old ones?
+            var tokenValue = aValue[i],
+                newToken = nil;
 
-            [tokenView setTokenField:self];
-            [tokenView setStringValue:token];
-            [objectValue addObject:tokenView];
+            for (var j = 0, oldCount = [oldTokens count]; j < oldCount; j++)
+            {
+                var oldToken = oldTokens[j];
+                if ([oldToken stringValue] == tokenValue)
+                {
+                    // Yep. Reuse it.
+                    [oldTokens removeObjectAtIndex:j];
+                    newToken = oldToken;
+                    break;
+                }
+            }
 
-            [contentView addSubview:tokenView];
+            if (newToken === nil)
+            {
+                newToken = [[_CPTokenFieldToken alloc] init];
+                [newToken setTokenField:self];
+                [newToken setStringValue:tokenValue];
+                [contentView addSubview:newToken];
+            }
+
+            newTokens.push(newToken);
         }
     }
+
+    // Remove any now unused tokens.
+    for (var j = 0, oldCount = [oldTokens count]; j < oldCount; j++)
+        [oldTokens[j] removeFromSuperview];
 
     /*
     [CPTextField setObjectValue] will try to set the _inputElement.value to
@@ -524,7 +541,7 @@ var CPThemeStateAutoCompleting          = @"CPThemeStateAutoCompleting",
 
     Instead do what CPControl setObjectValue would.
     */
-    _value = objectValue;
+    _value = newTokens;
 
     // Reset the selection.
     [self _selectToken:nil byExtendingSelection:NO];

@@ -824,8 +824,8 @@ var themedButtonValues = nil,
             [@"content-inset", CGInsetMake(7.0, 0.0, 4.0, 0.0)],
             // Placeholder is displayed as regular text, not tokens; requires a different inset.
             [@"content-inset", CGInsetMake(9.0, 0.0, 5.0, 2.0), CPTextFieldStatePlaceholder],
-            [@"content-inset", CGInsetMake(7.0, 5.0, 4.0, 6.0), CPThemeStateBezeled],
-            [@"content-inset", CGInsetMake(9.0, 7.0, 5.0, 8.0), CPThemeStateBezeled | CPTextFieldStatePlaceholder],
+            [@"content-inset", CGInsetMake(7.0, 5.0, 5.0, 6.0), CPThemeStateBezeled],
+            [@"content-inset", CGInsetMake(9.0, 7.0, 6.0, 8.0), CPThemeStateBezeled | CPTextFieldStatePlaceholder],
         ];
 
     [self registerThemeValues:overrides forView:tokenfield inherit:themedTextFieldValues];
@@ -835,21 +835,21 @@ var themedButtonValues = nil,
 
 + (_CPTokenFieldToken)themedTokenFieldToken
 {
-    var token = [[_CPTokenFieldToken alloc] initWithFrame:CGRectMake(0.0, 0.0, 60.0, 19.0)],
+    var token = [[_CPTokenFieldToken alloc] initWithFrame:CGRectMake(0.0, 0.0, 60.0, 18.0)],
 
         bezelColor = PatternColor(
             [
-                ["token-left.png", 11.0, 19.0],
-                ["token-center.png", 1.0, 19.0],
-                ["token-right.png", 11.0, 19.0]
+                ["token-left.png", 11.0, 18.0],
+                ["token-center.png", 1.0, 18.0],
+                ["token-right.png", 11.0, 18.0]
             ],
             PatternIsHorizontal),
 
         bezelHighlightedColor = PatternColor(
             [
-                ["token-highlighted-left.png", 11.0, 19.0],
-                ["token-highlighted-center.png", 1.0, 19.0],
-                ["token-highlighted-right.png", 11.0, 19.0]
+                ["token-highlighted-left.png", 11.0, 18.0],
+                ["token-highlighted-center.png", 1.0, 18.0],
+                ["token-highlighted-right.png", 11.0, 18.0]
             ],
             PatternIsHorizontal),
 
@@ -865,11 +865,11 @@ var themedButtonValues = nil,
             [@"text-color",     textHighlightedColor,               CPThemeStateHighlighted],
 
             [@"bezel-inset",    CGInsetMake(0.0, 0.0, 0.0, 0.0),    CPThemeStateBezeled],
-            [@"content-inset",  CGInsetMake(1.0, 24.0, 2.0, 16.0),  CPThemeStateBezeled],
+            [@"content-inset",  CGInsetMake(2.0, 24.0, 2.0, 16.0),  CPThemeStateBezeled],
 
             // Minimum height == maximum height since tokens are fixed height.
-            [@"min-size",       CGSizeMake(0.0, 19.0)],
-            [@"max-size",       CGSizeMake(-1.0, 19.0)],
+            [@"min-size",       CGSizeMake(0.0, 18.0)],
+            [@"max-size",       CGSizeMake(-1.0, 18.0)],
 
             [@"vertical-alignment", CPCenterTextAlignment],
         ];
