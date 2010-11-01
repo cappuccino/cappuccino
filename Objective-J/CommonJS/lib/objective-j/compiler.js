@@ -113,7 +113,7 @@ function resolveFlags(args)
         else if (argument.indexOf("-U") === 0)
             gccFlags.push(argument);
 
-        else if (argument.indexOf("--include") === 0)
+        else if (argument === "--include")
         {
             if (++index < count)
             {
