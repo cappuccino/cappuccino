@@ -91,7 +91,7 @@ CPCriticalAlertStyle        = 2;
     id              _modalDelegate;
 }
 
-+ (CPString)themeClass
++ (CPString)defaultThemeClass
 {
     return @"alert";
 }

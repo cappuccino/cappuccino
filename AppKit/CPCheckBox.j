@@ -38,7 +38,7 @@ CPCheckBoxImageOffset = 4.0;
     return [self buttonWithTitle:aTitle];
 }
 
-+ (CPString)themeClass
++ (CPString)defaultThemeClass
 {
     return @"check-box";
 }

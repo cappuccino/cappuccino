@@ -158,7 +158,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
     return textField;
 }
 
-+ (CPString)themeClass
++ (CPString)defaultThemeClass
 {
     return "textfield";
 }

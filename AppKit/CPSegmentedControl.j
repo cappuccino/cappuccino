@@ -49,7 +49,7 @@ CPSegmentSwitchTrackingMomentary = 2;
     BOOL                    _trackingHighlighted;
 }
 
-+ (CPString)themeClass
++ (CPString)defaultThemeClass
 {
     return "segmented-control";
 }

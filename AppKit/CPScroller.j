@@ -72,7 +72,7 @@ NAMES_FOR_PARTS[CPScrollerKnob]             = @"knob";
     CGPoint                 _trackingStartPoint;
 }
 
-+ (CPString)themeClass
++ (CPString)defaultThemeClass
 {
     return "scroller";
 }

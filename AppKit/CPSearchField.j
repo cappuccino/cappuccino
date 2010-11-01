@@ -68,7 +68,7 @@ var RECENT_SEARCH_PREFIX = @"   ";
     CPTimer     _partialStringTimer;
 }
 
-+ (CPString)themeClass
++ (CPString)defaultThemeClass
 {
     return @"searchfield"
 }

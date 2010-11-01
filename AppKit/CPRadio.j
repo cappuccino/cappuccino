@@ -89,7 +89,7 @@ CPRadioImageOffset = 4.0;
     return button;
 }
 
-+ (CPString)themeClass
++ (CPString)defaultThemeClass
 {
     return @"radio";
 }

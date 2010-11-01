@@ -87,7 +87,7 @@ var CPThemeStateAutoCompleting          = @"CPThemeStateAutoCompleting",
     return [CPCharacterSet characterSetWithCharactersInString:@","];
 }
 
-+ (CPString)themeClass
++ (CPString)defaultThemeClass
 {
     return "tokenfield";
 }
@@ -1146,7 +1146,7 @@ var CPThemeStateAutoCompleting          = @"CPThemeStateAutoCompleting",
     CPTokenField                    _tokenField;
 }
 
-+ (CPString)themeClass
++ (CPString)defaultThemeClass
 {
     return "tokenfield-token";
 }
@@ -1243,7 +1243,7 @@ var CPThemeStateAutoCompleting          = @"CPThemeStateAutoCompleting",
     return attributes;
 }
 
-+ (CPString)themeClass
++ (CPString)defaultThemeClass
 {
     return "tokenfield-token-close-button";
 }

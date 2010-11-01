@@ -179,6 +179,7 @@ var CPViewFlags                     = { },
 
     // Theming Support
     CPTheme             _theme;
+    CPString            _themeClass;
     JSObject            _themeAttributes;
     unsigned            _themeState;
 
@@ -1004,7 +1005,7 @@ var CPViewFlags                     = { },
 {
     var mask = [self autoresizingMask];
 
-    if(mask == CPViewNotSizable)
+    if (mask == CPViewNotSizable)
         return;
 
     var frame = _superview._frame,
@@ -1160,7 +1161,7 @@ var CPViewFlags                     = { },
 {
     aFlag = !!aFlag;
 
-    if(_isHidden === aFlag)
+    if (_isHidden === aFlag)
         return;
 
 //  FIXME: Should we return to visibility?  This breaks in FireFox, Opera, and IE.
@@ -1352,7 +1353,7 @@ var CPViewFlags                     = { },
 */
 - (CPView)hitTest:(CPPoint)aPoint
 {
-    if(_isHidden || !_hitTests || !CPRectContainsPoint(_frame, aPoint))
+    if (_isHidden || !_hitTests || !CPRectContainsPoint(_frame, aPoint))
         return nil;
 
     var view = nil,
@@ -1960,7 +1961,7 @@ setBoundsOrigin:
     var superview = _superview,
         clipViewClass = [CPClipView class];
 
-    while(superview && ![superview isKindOfClass:clipViewClass])
+    while (superview && ![superview isKindOfClass:clipViewClass])
         superview = superview._superview;
 
     return superview;
@@ -2056,7 +2057,7 @@ setBoundsOrigin:
     var superview = _superview,
         scrollViewClass = [CPScrollView class];
 
-    while(superview && ![superview isKindOfClass:scrollViewClass])
+    while (superview && ![superview isKindOfClass:scrollViewClass])
         superview = superview._superview;
 
     return superview;
@@ -2252,9 +2253,27 @@ setBoundsOrigin:
 
 #pragma mark Theme Attributes
 
-+ (CPString)themeClass
++ (CPString)defaultThemeClass
 {
     return nil;
+}
+
+- (CPString)themeClass
+{
+    if (_themeClass)
+        return _themeClass;
+
+    return [[self class] defaultThemeClass];
+}
+
+- (void)setThemeClass:(CPString)theClass
+{
+    _themeClass = theClass;
+
+    [self _loadThemeAttributes];
+
+    [self setNeedsLayout];
+    [self setNeedsDisplay:YES];
 }
 
 + (CPDictionary)themeAttributes
@@ -2315,7 +2334,7 @@ setBoundsOrigin:
         return;
 
     var theme = [self theme],
-        themeClass = [theClass themeClass];
+        themeClass = [self themeClass];
 
     _themeAttributes = {};
 
@@ -2351,7 +2370,7 @@ setBoundsOrigin:
         return;
 
     var theme = [self theme],
-        themeClass = [[self class] themeClass];
+        themeClass = [self themeClass];
 
     for (var attributeName in _themeAttributes)
         if (_themeAttributes.hasOwnProperty(attributeName))
@@ -2502,6 +2521,7 @@ var CPViewAutoresizingMaskKey       = @"CPViewAutoresizingMask",
     CPViewSubviewsKey               = @"CPViewSubviewsKey",
     CPViewSuperviewKey              = @"CPViewSuperviewKey",
     CPViewTagKey                    = @"CPViewTagKey",
+    CPViewThemeClassKey             = @"CPViewThemeClassKey",
     CPViewThemeStateKey             = @"CPViewThemeStateKey",
     CPViewWindowKey                 = @"CPViewWindowKey",
     CPViewNextKeyViewKey            = @"CPViewNextKeyViewKey",
@@ -2581,11 +2601,12 @@ var CPViewAutoresizingMaskKey       = @"CPViewAutoresizingMask",
         [self setupViewFlags];
 
         _theme = [CPTheme defaultTheme];
+        _themeClass = [aCoder decodeObjectForKey:CPViewThemeClassKey];
         _themeState = CPThemeState([aCoder decodeIntForKey:CPViewThemeStateKey]);
         _themeAttributes = {};
 
         var theClass = [self class],
-            themeClass = [theClass themeClass],
+            themeClass = [self themeClass],
             attributes = [theClass _themeAttributes],
             count = attributes.length;
 
@@ -2668,6 +2689,7 @@ var CPViewAutoresizingMaskKey       = @"CPViewAutoresizingMask",
     if (previousKeyView !== nil)
         [aCoder encodeConditionalObject:previousKeyView forKey:CPViewPreviousKeyViewKey];
 
+    [aCoder encodeObject:[self themeClass] forKey:CPViewThemeClassKey];
     [aCoder encodeInt:CPThemeStateName(_themeState) forKey:CPViewThemeStateKey];
 
     for (var attributeName in _themeAttributes)

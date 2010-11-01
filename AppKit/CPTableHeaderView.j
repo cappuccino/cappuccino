@@ -33,7 +33,7 @@
     _CPImageAndTextView     _textField;
 }
 
-+ (CPString)themeClass
++ (CPString)defaultThemeClass
 {
     return @"columnHeader";
 }
@@ -168,7 +168,7 @@ var _CPTableColumnHeaderViewStringValueKey = @"_CPTableColumnHeaderViewStringVal
     CPTableView             _tableView @accessors(property=tableView);
 }
 
-+ (CPString)themeClass
++ (CPString)defaultThemeClass
 {
     return @"tableHeaderRow";
 }
