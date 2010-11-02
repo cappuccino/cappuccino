@@ -82,6 +82,7 @@
 @import "CPTextField.j"
 @import "CPToolbar.j"
 @import "CPToolbarItem.j"
+@import "CPTokenField.j"
 @import "CPTreeNode.j"
 @import "CPView.j"
 @import "CPViewAnimation.j"

@@ -33,7 +33,10 @@
     {
         _title = [aCoder decodeObjectForKey:@"NSTitle"];
         _cibName = [aCoder decodeObjectForKey:@"NSNibName"];
-        _cibBundle = [CPBundle bundleWithPath:[aCoder decodeObjectForKey:@"NSNibBundleIdentifier"]];
+
+        var bundlePath = [aCoder decodeObjectForKey:@"NSNibBundleIdentifier"]
+        if (bundlePath)
+            _cibBundle = [CPBundle bundleWithPath:bundlePath];
     }
 
     return self;

@@ -39,7 +39,7 @@
 
     [binder setCheese:@"banana"];
 
-    [self assertTrue:[self valueForKey:@"FOO"]==="banana" message:"Bound value should have been updated to banana, was "+FOO];
+    [self assertTrue:[self valueForKey:@"FOO"] === "banana" message:"Bound value should have been updated to banana, was " + FOO];
 }
 
 - (void)testBindOptions
@@ -164,7 +164,7 @@
     [tableColumn bind:@"value" toObject:arrayController withKeyPath:@"arrangedObjects.valueA" options:nil];
 
     // Reset these if they were read during initialization.
-    for(var i=0; i<[content count];i++)
+    for (var i = 0; i < [content count]; i++)
         [content[i] setAccesses:0];
     var testView = [DataViewTester new];
     [tableColumn prepareDataView:testView forRow:0];
@@ -190,6 +190,32 @@
     [self assert:'value' equals:testView.lastKey];
 }
 
+- (void)testTextField
+{
+    var textField = [[CPTextField alloc] initWithFrame:CGRectMakeZero()];
+    [textField setPlaceholderString:@"cheese"];
+
+    // Establish a random binding.
+    [textField bind:@"hidden" toObject:self withKeyPath:@"FOO" options:nil];
+    [self assert:@"cheese" equals:[textField placeholderString] message:"placeholder should not be cleared when a binding is established"];
+
+    content = [
+        [BindingTester testerWithCheese:@"yellow"],
+        [BindingTester testerWithCheese:@"green"]
+    ];
+    arrayController = [[CPArrayController alloc] initWithContent:content];
+
+    [arrayController setSelectionIndexes:[CPIndexSet indexSetWithIndexesInRange:CPMakeRange(0, 2)]];
+
+    var options = [CPDictionary dictionaryWithJSObject:{CPMultipleValuesPlaceholderBindingOption:@"Multiple Values"}];
+    [textField bind:@"value" toObject:arrayController withKeyPath:@"selection.cheese" options:options];
+
+    [self assert:@"Multiple Values" equals:[textField placeholderString]];
+
+    [arrayController setSelectionIndex:0];
+    [self assert:@"cheese" equals:[textField placeholderString]];
+}
+
 - (void)observeValueForKeyPath:(CPString)aKeyPath ofObject:(id)anObject change:(CPDictionary)changes context:(id)aContext
 {
     CPLog(@"here: "+aKeyPath+" value: "+[anObject valueForKey:aKeyPath]);
@@ -200,6 +226,13 @@
 @implementation BindingTester : CPObject
 {
     id cheese;
+}
+
++ (id)testerWithCheese:(id)aCheese
+{
+    var tester = [[self alloc] init];
+    [tester setCheese:aCheese];
+    return tester;
 }
 
 - (void)setCheese:(id)aCheese
@@ -242,7 +275,7 @@
     CPNumber    accesses @accessors;
 }
 
-+ (AccessCounter) counterWithValueA:aValue valueB:anotherValue
++ (AccessCounter)counterWithValueA:aValue valueB:anotherValue
 {
     r = [self new];
     [r setValueA:aValue];

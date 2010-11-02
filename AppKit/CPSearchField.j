@@ -20,10 +20,9 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+@import "CPButton.j"
 @import "CPTextField.j"
 
-#include "CoreGraphics/CGGeometry.h"
-#include "Platform/Platform.h"
 
 CPSearchFieldRecentsTitleMenuItemTag    = 1000;
 CPSearchFieldRecentsMenuItemTag         = 1001;
@@ -65,6 +64,11 @@ var RECENT_SEARCH_PREFIX = @"   ";
     BOOL        _sendsSearchStringImmediately;
     BOOL        _canResignFirstResponder;
     CPTimer     _partialStringTimer;
+}
+
++ (CPString)defaultThemeClass
+{
+    return @"searchfield"
 }
 
 + (void)initialize

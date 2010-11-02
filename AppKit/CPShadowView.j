@@ -28,8 +28,6 @@
 @import "CPView.j"
 
 
-#include "CoreGraphics/CGGeometry.h"
-
 CPLightShadow   = 0;
 CPHeavyShadow   = 1;
 

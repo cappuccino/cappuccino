@@ -29,6 +29,7 @@
 @import "CPView.j"
 @import "_CPMenuItemView.j"
 
+
 /*!
     @ingroup appkit
     @class CPMenuItem

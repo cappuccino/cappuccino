@@ -28,10 +28,6 @@
 @import "CPView.j"
 @import "CPControl.j"
 
-#include "CoreGraphics/CGGeometry.h"
-
-#include "Platform/Platform.h"
-#include "Platform/DOM/CPDOMDisplayServer.h"
 
 var _CPimageAndTextViewFrameSizeChangedFlag         = 1 << 0,
     _CPImageAndTextViewImageChangedFlag             = 1 << 1,
@@ -44,9 +40,6 @@ var _CPimageAndTextViewFrameSizeChangedFlag         = 1 << 0,
     _CPImageAndTextViewTextShadowColorChangedFlag   = 1 << 8,
     _CPImageAndTextViewImagePositionChangedFlag     = 1 << 9,
     _CPImageAndTextViewImageScalingChangedFlag      = 1 << 10;
-
-var HORIZONTAL_MARGIN   = 3.0,
-    VERTICAL_MARGIN     = 5.0;
 
 /* @ignore */
 @implementation _CPImageAndTextView : CPView
@@ -63,12 +56,13 @@ var HORIZONTAL_MARGIN   = 3.0,
 
     CPCellImagePosition     _imagePosition;
     CPImageScaling          _imageScaling;
+    float                   _imageOffset;
     BOOL                    _shouldDimImage;
 
     CPImage                 _image;
     CPString                _text;
 
-    CGRect                  _textSize;
+    CGSize                  _textSize;
 
     unsigned                _flags;
 
@@ -97,6 +91,7 @@ var HORIZONTAL_MARGIN   = 3.0,
             [self setFont:[aControl font]];
             [self setImagePosition:[aControl imagePosition]];
             [self setImageScaling:[aControl imageScaling]];
+            [self setImageOffset:[aControl imageOffset]];
         }
         else
         {
@@ -108,7 +103,7 @@ var HORIZONTAL_MARGIN   = 3.0,
             [self setImageScaling:CPScaleNone];
         }
 
-        _textSize = NULL;
+        _textSize = nil;
     }
 
     return self;
@@ -185,6 +180,11 @@ var HORIZONTAL_MARGIN   = 3.0,
     if (_imagePosition == anImagePosition)
         return;
 
+    // If the position was CPNoImage, there is an image now,
+    // so mark the flags accordingly so that the image will load.
+    if (_imagePosition == CPNoImage)
+        _flags |= _CPImageAndTextViewImageChangedFlag;
+
     _imagePosition = anImagePosition;
     _flags |= _CPImageAndTextViewImagePositionChangedFlag;
 
@@ -247,7 +247,7 @@ var HORIZONTAL_MARGIN   = 3.0,
 
     _font = aFont;
     _flags |= _CPImageAndTextViewFontChangedFlag;
-    _textSize = NULL;
+    _textSize = nil;
 
     [self setNeedsLayout];
 }
@@ -305,6 +305,20 @@ var HORIZONTAL_MARGIN   = 3.0,
     [self setNeedsLayout];
 }
 
+- (void)setImageOffset:(float)theImageOffset
+{
+    if (_imageOffset === theImageOffset)
+        return;
+
+    _imageOffset = theImageOffset;
+    [self setNeedsLayout];
+}
+
+- (float)imageOffset
+{
+    return _imageOffset;
+}
+
 - (void)imageDidLoad:(id)anImage
 {
     if (anImage === _image)
@@ -327,7 +341,7 @@ var HORIZONTAL_MARGIN   = 3.0,
     _text = text;
     _flags |= _CPImageAndTextViewTextChangedFlag;
 
-    _textSize = NULL;
+    _textSize = nil;
 
     [self setNeedsLayout];
 }
@@ -350,7 +364,7 @@ var HORIZONTAL_MARGIN   = 3.0,
         {
             _DOMElement.removeChild(_DOMTextElement);
 
-            _DOMTextElement = NULL;
+            _DOMTextElement = nil;
 
             hasDOMTextElement = NO;
         }
@@ -388,7 +402,7 @@ var HORIZONTAL_MARGIN   = 3.0,
         {
             _DOMElement.removeChild(_DOMTextShadowElement);
 
-            _DOMTextShadowElement = NULL;
+            _DOMTextShadowElement = nil;
 
             hasDOMTextShadowElement = NO;
         }
@@ -526,7 +540,7 @@ var HORIZONTAL_MARGIN   = 3.0,
         {
             _DOMElement.removeChild(_DOMImageElement);
 
-            _DOMImageElement = NULL;
+            _DOMImageElement = nil;
 
             hasDOMImageElement = NO;
         }
@@ -599,31 +613,32 @@ var HORIZONTAL_MARGIN   = 3.0,
             imageStyle.left = FLOOR(centerX - imageWidth / 2.0) + "px";
             imageStyle.top = FLOOR(size.height - imageHeight) + "px";
 
-            textRect.size.height = size.height - imageHeight - VERTICAL_MARGIN;
+            textRect.size.height = size.height - imageHeight - _imageOffset;
         }
         else if (_imagePosition === CPImageAbove)
         {
-            CPDOMDisplayServerSetStyleLeftTop(_DOMImageElement, NULL, FLOOR(centerX - imageWidth / 2.0), 0);
+            imageStyle.left = FLOOR(centerX - imageWidth / 2.0) + "px";
+            imageStyle.top = 0 + "px";
 
-            textRect.origin.y += imageHeight + VERTICAL_MARGIN;
-            textRect.size.height = size.height - imageHeight - VERTICAL_MARGIN;
+            textRect.origin.y += imageHeight + _imageOffset;
+            textRect.size.height = size.height - imageHeight - _imageOffset;
         }
         else if (_imagePosition === CPImageLeft)
         {
             imageStyle.top = FLOOR(centerY - imageHeight / 2.0) + "px";
             imageStyle.left = "0px";
 
-            textRect.origin.x = imageWidth + HORIZONTAL_MARGIN;
-            textRect.size.width -= imageWidth + HORIZONTAL_MARGIN;
+            textRect.origin.x = imageWidth + _imageOffset;
+            textRect.size.width -= imageWidth + _imageOffset;
         }
         else if (_imagePosition === CPImageRight)
         {
             imageStyle.top = FLOOR(centerY - imageHeight / 2.0) + "px";
             imageStyle.left = FLOOR(size.width - imageWidth) + "px";
 
-            textRect.size.width -= imageWidth + HORIZONTAL_MARGIN;
+            textRect.size.width -= imageWidth + _imageOffset;
         }
-        else if (_imagePosition === CPImageOnly)
+        else if (_imagePosition === CPImageOnly || _imagePosition == CPImageOverlaps)
         {
             imageStyle.top = FLOOR(centerY - imageHeight / 2.0) + "px";
             imageStyle.left = FLOOR(centerX - imageWidth / 2.0) + "px";
@@ -701,13 +716,13 @@ var HORIZONTAL_MARGIN   = 3.0,
 
         if (_imagePosition === CPImageLeft || _imagePosition === CPImageRight)
         {
-            size.width += _textSize.width + HORIZONTAL_MARGIN;
+            size.width += _textSize.width + _imageOffset;
             size.height = MAX(size.height, _textSize.height);
         }
         else if (_imagePosition === CPImageAbove || _imagePosition === CPImageBelow)
         {
             size.width = MAX(size.width, _textSize.width);
-            size.height += _textSize.height + VERTICAL_MARGIN;
+            size.height += _textSize.height + _imageOffset;
         }
         else // if (_imagePosition == CPImageOverlaps)
         {

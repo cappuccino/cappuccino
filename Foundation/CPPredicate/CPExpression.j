@@ -132,7 +132,7 @@ CPMinusSetExpressionType = 9;
 */
 + (CPExpression)expressionForUnionSet:(CPExpression)left with:(CPExpression)right
 {
-    return [[CPExpression_unionset alloc] initWithLeft:left right:right];
+    return [[CPExpression_set alloc] initWithType:CPUnionSetExpressionType left:left right:right];
 }
 
 /*!
@@ -143,7 +143,7 @@ CPMinusSetExpressionType = 9;
 */
 + (CPExpression)expressionForIntersectSet:(CPExpression)left with:(CPExpression)right
 {
-    return [[CPExpression_intersectset alloc] initWithLeft:left right:right];
+    return [[CPExpression_set alloc] initWithType:CPIntersectSetExpressionType left:left right:right];
 }
 
 /*!
@@ -154,7 +154,7 @@ CPMinusSetExpressionType = 9;
 */
 + (CPExpression)expressionForMinusSet:(CPExpression)left with:(CPExpression)right
 {
-    return [[CPExpression_minusset alloc] initWithLeft:left right:right];
+    return [[CPExpression_set alloc] initWithType:CPMinusSetExpressionType left:left right:right];
 }
 
 // Creating an Expression for a Function
@@ -319,6 +319,4 @@ CPMinusSetExpressionType = 9;
 @import "CPExpression_keypath.j"
 @import "CPExpression_function.j"
 @import "CPExpression_aggregate.j"
-@import "CPExpression_unionset.j"
-@import "CPExpression_intersectset.j"
-@import "CPExpression_minusset.j"
+@import "CPExpression_set.j"

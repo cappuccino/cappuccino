@@ -26,10 +26,6 @@
 @import "CPImage.j"
 @import "CPShadowView.j"
 
-#include "Platform/Platform.h"
-#include "Platform/DOM/CPDOMDisplayServer.h"
-
-#include "CoreGraphics/CGGeometry.h"
 
 CPScaleProportionally   = 0;
 CPScaleToFit            = 1;

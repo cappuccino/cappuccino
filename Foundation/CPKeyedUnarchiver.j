@@ -20,8 +20,14 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+@import "CPArray.j"
+@import "CPData.j"
+@import "CPDictionary.j"
 @import "CPCoder.j"
+@import "CPKeyedArchiver.j"
 @import "CPNull.j"
+@import "CPNumber.j"
+@import "CPString.j"
 
 
 CPInvalidUnarchiveOperationException    = @"CPInvalidUnarchiveOperationException";
@@ -235,7 +241,7 @@ var CPArrayClass                                                            = Ni
 */
 - (BOOL)decodeBoolForKey:(CPString)aKey
 {
-    return [self decodeObjectForKey:aKey];
+    return !![self decodeObjectForKey:aKey];
 }
 
 /*

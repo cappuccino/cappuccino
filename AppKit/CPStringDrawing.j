@@ -25,7 +25,19 @@
 @import "CPPlatformString.j"
 
 
+var CPStringSizeWithFontInWidthCache = {};
+
+CPStringSizeCachingEnabled = YES;
+
 @implementation CPString (CPStringDrawing)
+
+/*!
+    Returns a dictionary with the items "ascender", "descender", "lineHeight"
+*/
++ (CPDictionary)metricsOfFont:(CPFont)aFont
+{
+    return [CPPlatformString metricsOfFont:aFont];
+}
 
 /*!
     Returns the string
@@ -42,7 +54,19 @@
 
 - (CGSize)sizeWithFont:(CPFont)aFont inWidth:(float)aWidth
 {
-    return [CPPlatformString sizeOfString:self withFont:aFont forWidth:aWidth];
+    if (!CPStringSizeCachingEnabled)
+        return [CPPlatformString sizeOfString:self withFont:aFont forWidth:aWidth];
+
+    var cacheKey = self + [aFont cssString] + aWidth,
+        size = CPStringSizeWithFontInWidthCache[cacheKey];
+
+    if (size === undefined)
+    {
+        size = [CPPlatformString sizeOfString:self withFont:aFont forWidth:aWidth];
+        CPStringSizeWithFontInWidthCache[cacheKey] = size;
+    }
+
+    return CGSizeMakeCopy(size);
 }
 
 @end

@@ -7,7 +7,8 @@
  */
 
 @import <Foundation/CPObject.j>
-@import <AppKit/CPTabView2.j>
+@import <AppKit/CPTabView.j>
+
 
 @implementation AppController : CPObject
 
@@ -16,9 +17,9 @@
     var theWindow = [[CPWindow alloc] initWithContentRect:CGRectMakeZero() styleMask:CPBorderlessBridgeWindowMask],
         contentView = [theWindow contentView];
 
-	var tabView = [[CPTabView2 alloc] initWithFrame:CGRectMake(50,50,400,400)];
+	var tabView = [[CPTabView alloc] initWithFrame:CGRectMake(50,50,400,400)];
 	[tabView setTabViewType:CPNoTabsBezelBorder];
-	[tabView setTabViewType:CPBottomTabsBezelBorder];
+	[tabView setTabViewType:CPTopTabsBezelBorder];
 	
 	var view = [[CPView alloc] initWithFrame:CGRectMake(20, 20, 200, 200)];
 	[view addSubview:[CPTextField labelWithTitle:@"First"]];

@@ -297,7 +297,7 @@
 */
 - (void)setSelectionIndexes:(CPIndexSet)anIndexSet
 {
-    if (_selectionIndexes == anIndexSet || !_isSelectable)
+    if ([_selectionIndexes isEqual:anIndexSet] || !_isSelectable)
         return;
 
     var index = CPNotFound;
@@ -596,12 +596,28 @@
     {
         if (_allowsMultipleSelection && ([anEvent modifierFlags] & CPCommandKeyMask || [anEvent modifierFlags] & CPShiftKeyMask))
         {
-            var indexes = [_selectionIndexes copy];
+            if ([anEvent modifierFlags] & CPCommandKeyMask)
+            {
+                var indexes = [_selectionIndexes copy];
 
-            if ([indexes containsIndex:index])
-                [indexes removeIndex:index];
-            else
-                [indexes addIndex:index];
+                if ([indexes containsIndex:index])
+                    [indexes removeIndex:index];
+                else
+                    [indexes addIndex:index];
+            }
+            else if ([anEvent modifierFlags] & CPShiftKeyMask)
+            {
+                var firstSelectedIndex = [[self selectionIndexes] firstIndex],
+                    newSelectedRange = nil;
+
+                if (index < firstSelectedIndex)
+                    newSelectedRange = CPMakeRange(index, (firstSelectedIndex - index) + 1);
+                else
+                    newSelectedRange = CPMakeRange(firstSelectedIndex, (index - firstSelectedIndex) + 1);
+
+                indexes = [[self selectionIndexes] copy];
+                [indexes addIndexesInRange:newSelectedRange];
+            }
         }
         else
             indexes = [CPIndexSet indexSetWithIndex:index];
@@ -742,7 +758,7 @@
 
 - (void)_modifySelectionWithNewIndex:(int)anIndex direction:(int)aDirection expand:(BOOL)shouldExpand
 {
-    anIndex = MIN(MAX(anIndex, 0), [[self items] count]-1);
+    anIndex = MIN(MAX(anIndex, 0), [[self items] count] - 1);
 
     if (_allowsMultipleSelection && shouldExpand)
     {
@@ -834,8 +850,8 @@
         [[self delegate] collectionView:self shouldDeleteItemsAtIndexes:[self selectionIndexes]];
 
         var index = [[self selectionIndexes] firstIndex];
-        if (index > [[self content] count]-1)
-            [self setSelectionIndexes:[CPIndexSet indexSetWithIndex:[[self content] count]-1]];
+        if (index > [[self content] count] - 1)
+            [self setSelectionIndexes:[CPIndexSet indexSetWithIndex:[[self content] count] - 1]];
 
         [self _scrollToSelection];
         [self setNeedsDisplay:YES];
@@ -869,13 +885,14 @@
 
 @end
 
-var CPCollectionViewMinItemSizeKey        = @"CPCollectionViewMinItemSizeKey",
-    CPCollectionViewMaxItemSizeKey        = @"CPCollectionViewMaxItemSizeKey",
-    CPCollectionViewVerticalMarginKey     = @"CPCollectionViewVerticalMarginKey",
-    CPCollectionViewMaxNumberOfRowsKey    = @"CPCollectionViewMaxNumberOfRowsKey",
-    CPCollectionViewMaxNumberOfColumnsKey = @"CPCollectionViewMaxNumberOfColumnsKey",
-    CPCollectionViewSelectableKey         = @"CPCollectionViewSelectableKey",
-    CPCollectionViewBackgroundColorsKey   = @"CPCollectionViewBackgroundColorsKey";
+var CPCollectionViewMinItemSizeKey              = @"CPCollectionViewMinItemSizeKey",
+    CPCollectionViewMaxItemSizeKey              = @"CPCollectionViewMaxItemSizeKey",
+    CPCollectionViewVerticalMarginKey           = @"CPCollectionViewVerticalMarginKey",
+    CPCollectionViewMaxNumberOfRowsKey          = @"CPCollectionViewMaxNumberOfRowsKey",
+    CPCollectionViewMaxNumberOfColumnsKey       = @"CPCollectionViewMaxNumberOfColumnsKey",
+    CPCollectionViewSelectableKey               = @"CPCollectionViewSelectableKey",
+    CPCollectionViewAllowsMultipleSelectionKey  = @"CPCollectionViewAllowsMultipleSelectionKey",
+    CPCollectionViewBackgroundColorsKey         = @"CPCollectionViewBackgroundColorsKey";
 
 
 @implementation CPCollectionView (CPCoding)
@@ -902,6 +919,7 @@ var CPCollectionViewMinItemSizeKey        = @"CPCollectionViewMinItemSizeKey",
         _verticalMargin = [aCoder decodeFloatForKey:CPCollectionViewVerticalMarginKey];
 
         _isSelectable = [aCoder decodeBoolForKey:CPCollectionViewSelectableKey];
+        _allowsMultipleSelection = [aCoder decodeBoolForKey:CPCollectionViewAllowsMultipleSelectionKey];
 
         [self setBackgroundColors:[aCoder decodeObjectForKey:CPCollectionViewBackgroundColorsKey]];
 
@@ -929,6 +947,7 @@ var CPCollectionViewMinItemSizeKey        = @"CPCollectionViewMinItemSizeKey",
     [aCoder encodeInt:_maxNumberOfColumns forKey:CPCollectionViewMaxNumberOfColumnsKey];
 
     [aCoder encodeBool:_isSelectable forKey:CPCollectionViewSelectableKey];
+    [aCoder encodeBool:_allowsMultipleSelection forKey:CPCollectionViewAllowsMultipleSelectionKey];
 
     [aCoder encodeFloat:_verticalMargin forKey:CPCollectionViewVerticalMarginKey];
 

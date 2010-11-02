@@ -31,9 +31,6 @@
 @import "CPMenuItem.j"
 @import "CPPanel.j"
 
-#include "../CoreGraphics/CGGeometry.h"
-#include "../Platform/Platform.h"
-
 
 CPMenuDidAddItemNotification        = @"CPMenuDidAddItemNotification";
 CPMenuDidChangeItemNotification     = @"CPMenuDidChangeItemNotification";

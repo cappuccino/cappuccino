@@ -27,7 +27,6 @@
 @import "CPObject.j"
 @import "CPSet.j"
 
-
 @implementation CPObject (KeyValueObserving)
 
 - (void)willChangeValueForKey:(CPString)aKey
@@ -69,7 +68,7 @@
 
 + (CPSet)keyPathsForValuesAffectingValueForKey:(CPString)aKey
 {
-    var capitalizedKey = aKey.charAt(0).toUpperCase() + aKey.substring(1);
+    var capitalizedKey = aKey.charAt(0).toUpperCase() + aKey.substring(1),
         selector = "keyPathsForValuesAffecting" + capitalizedKey;
 
     if ([[self class] respondsToSelector:selector])
@@ -174,7 +173,7 @@ CPKeyValueChangeInsertion   = 2;
 CPKeyValueChangeRemoval     = 3;
 CPKeyValueChangeReplacement = 4;
 
-var kvoNewAndOld = CPKeyValueObservingOptionNew|CPKeyValueObservingOptionOld,
+var kvoNewAndOld = CPKeyValueObservingOptionNew | CPKeyValueObservingOptionOld,
     DependentKeysKey = "$KVODEPENDENT",
     KVOProxyKey = "$KVOPROXY";
 
@@ -326,7 +325,25 @@ var kvoNewAndOld = CPKeyValueObservingOptionNew|CPKeyValueObservingOptionOld,
         }
 
         [affectedKeys addObject:aKey];
-        [self _replaceSetterForKey:affectingKey];
+
+        // Observe key paths of objects other then ourselves, so ware notified of the changes
+        if (affectingKey.indexOf(@".") !== -1)
+            [_targetObject addObserver:self forKeyPath:affectingKey options:0 context:nil];
+        else
+            [self _replaceSetterForKey:affectingKey];
+    }
+}
+
+- (void)observeValueForKeyPath:(CPString)theKeyPath ofObject:(id)theObject change:(CPDictionary)theChanges context:(id)theContext
+{
+    // Fire change events for the dependent keys
+    var dependentKeysForClass = _nativeClass[DependentKeysKey],
+        dependantKeys = [dependentKeysForClass[theKeyPath] allObjects];
+
+    for (var i = 0; i < [dependantKeys count]; i++)
+    {
+        var dependantKey = [dependantKeys objectAtIndex:i];
+        [self _sendNotificationsForKey:dependantKey changeOptions:theChanges isBefore:NO];
     }
 }
 
@@ -361,7 +378,7 @@ var kvoNewAndOld = CPKeyValueObservingOptionNew|CPKeyValueObservingOptionOld,
             newValue = [CPNull null];
 
         var changes = [CPDictionary dictionaryWithObject:newValue forKey:CPKeyValueChangeNewKey];
-        [anObserver observeValueForKeyPath:aPath ofObject:self change:changes context:aContext];
+        [anObserver observeValueForKeyPath:aPath ofObject:_targetObject change:changes context:aContext];
     }
 }
 
@@ -394,6 +411,7 @@ var kvoNewAndOld = CPKeyValueObservingOptionNew|CPKeyValueObservingOptionOld,
 
 - (void)_sendNotificationsForKey:(CPString)aKey changeOptions:(CPDictionary)changeOptions isBefore:(BOOL)isBefore
 {
+    // CPLog.warn("_sendNotificationsForKey: " + aKey + " ...isBefore: " + isBefore);
     var changes = _changesForKey[aKey];
 
     if (isBefore)
@@ -491,6 +509,9 @@ var kvoNewAndOld = CPKeyValueObservingOptionNew|CPKeyValueObservingOptionOld,
     for (; index < count; ++index)
     {
         var keyPath = dependentKeyPaths[index];
+
+        // CPLog.warn("firing dependepent key " + index + " for " + aKey + ": "+keyPath);
+        // objj_backtrace_print(CPLog.error);
 
         [self _sendNotificationsForKey:keyPath
                          changeOptions:isBefore ? [changeOptions copy] : _changesForKey[keyPath]

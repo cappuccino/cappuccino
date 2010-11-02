@@ -1,5 +1,5 @@
 
-@import <AppKit/CPPanel.j>
+@import "CPPanel.j"
 
 
 @implementation CPSavePanel : CPPanel

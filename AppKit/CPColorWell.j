@@ -29,7 +29,7 @@
 
 var _CPColorWellDidBecomeExclusiveNotification = @"_CPColorWellDidBecomeExclusiveNotification";
 
-/*! 
+/*!
     @ingroup appkit
     @class CPColorWell
 
@@ -41,7 +41,7 @@ var _CPColorWellDidBecomeExclusiveNotification = @"_CPColorWellDidBecomeExclusiv
 {
     BOOL    _active;
     BOOL    _bordered;
-    
+
     CPColor _color;
     CPView  _wellView;
 }
@@ -49,19 +49,19 @@ var _CPColorWellDidBecomeExclusiveNotification = @"_CPColorWellDidBecomeExclusiv
 - (id)initWithFrame:(CGRect)aFrame
 {
     self = [super initWithFrame:aFrame];
-    
+
     if (self)
     {
         _active = NO;
         _bordered = YES;
         _color = [CPColor whiteColor];
-        
+
         [self drawBezelWithHighlight:NO];
         [self drawWellInside:CGRectInset([self bounds], 3.0, 3.0)];
-        
+
         [self _registerForNotifications];
     }
-    
+
     return self;
 }
 
@@ -97,9 +97,9 @@ var _CPColorWellDidBecomeExclusiveNotification = @"_CPColorWellDidBecomeExclusiv
 {
     if (_bordered == bordered)
         return;
-        
+
     _bordered = bordered;
-    
+
     [self drawWellInside:CGRectInset([self bounds], 3.0, 3.0)];
 }
 
@@ -120,9 +120,9 @@ var _CPColorWellDidBecomeExclusiveNotification = @"_CPColorWellDidBecomeExclusiv
 {
     if (_color == aColor)
         return;
-    
+
     _color = aColor;
-    
+
     [self drawWellInside:CGRectInset([self bounds], 3.0, 3.0)];
 }
 
@@ -137,7 +137,7 @@ var _CPColorWellDidBecomeExclusiveNotification = @"_CPColorWellDidBecomeExclusiv
 
 // Activating and Deactivating Color Wells
 /*!
-    Activates the color well, displays the color panel, and makes the panel's current color the same as its own. 
+    Activates the color well, displays the color panel, and makes the panel's current color the same as its own.
     If exclusive is \c YES, deactivates any other CPColorWells. \c NO, keeps them active.
     @param shouldBeExclusive whether other color wells should be deactivated.
 */
@@ -152,9 +152,9 @@ var _CPColorWellDidBecomeExclusiveNotification = @"_CPColorWellDidBecomeExclusiv
 
     if ([self isActive])
         return;
-        
+
     _active = YES;
-    
+
     [[CPNotificationCenter defaultCenter]
         addObserver:self
            selector:@selector(colorPanelDidChangeColor:)
@@ -169,9 +169,9 @@ var _CPColorWellDidBecomeExclusiveNotification = @"_CPColorWellDidBecomeExclusiv
 {
     if (![self isActive])
         return;
-    
+
     _active = NO;
-    
+
     [[CPNotificationCenter defaultCenter]
         removeObserver:self
                   name:CPColorPanelColorDidChangeNotification
@@ -202,19 +202,19 @@ var _CPColorWellDidBecomeExclusiveNotification = @"_CPColorWellDidBecomeExclusiv
     {
         _wellView = [[CPView alloc] initWithFrame:aRect];
         [_wellView setAutoresizingMask:CPViewWidthSizable | CPViewHeightSizable];
-        
+
         [self addSubview:_wellView];
     }
     else
         [_wellView setFrame:aRect];
-    
+
     [_wellView setBackgroundColor:_color];
 }
 
 - (void)colorPanelDidChangeColor:(CPNotification)aNotification
 {
     [self takeColorFrom:[aNotification object]];
-    
+
     [self sendAction:[self action] to:[self target]];
 }
 
@@ -245,17 +245,17 @@ var _CPColorWellDidBecomeExclusiveNotification = @"_CPColorWellDidBecomeExclusiv
     [self drawBezelWithHighlight:CGRectContainsPoint([self bounds], [self convertPoint:[anEvent locationInWindow] fromView:nil])];
 }
 
--(void)mouseUp:(CPEvent)anEvent
+- (void)mouseUp:(CPEvent)anEvent
 {
     [self drawBezelWithHighlight:NO];
 
     if (!CGRectContainsPoint([self bounds], [self convertPoint:[anEvent locationInWindow] fromView:nil]) || ![self isEnabled])
         return;
-        
+
     [self activate:YES];
 
     var colorPanel = [CPColorPanel sharedColorPanel];
-    
+
     [colorPanel setColor:_color];
     [colorPanel orderFront:self];
 }
@@ -274,11 +274,11 @@ var CPColorWellColorKey     = "CPColorWellColorKey",
 - (id)initWithCoder:(CPCoder)aCoder
 {
     self = [super initWithCoder:aCoder];
-    
+
     if (self)
     {
         _active = NO;
-        _bordered = [aCoder decodeObjectForKey:CPColorWellBorderedKey];
+        _bordered = [aCoder decodeBoolForKey:CPColorWellBorderedKey];
         _color = [aCoder decodeObjectForKey:CPColorWellColorKey];
 
         [self drawBezelWithHighlight:NO];
@@ -286,7 +286,7 @@ var CPColorWellColorKey     = "CPColorWellColorKey",
 
         [self _registerForNotifications];
     }
-    
+
     return self;
 }
 
@@ -296,17 +296,17 @@ var CPColorWellColorKey     = "CPColorWellColorKey",
 */
 - (void)encodeWithCoder:(CPCoder)aCoder
 {
-    // We do this in order to avoid encoding the _wellView, which 
+    // We do this in order to avoid encoding the _wellView, which
     // should just automatically be created programmatically as needed.
     var actualSubviews = _subviews;
-    
+
     _subviews = [_subviews copy];
     [_subviews removeObjectIdenticalTo:_wellView];
-    
+
     [super encodeWithCoder:aCoder];
-    
+
     _subviews = actualSubviews;
-    
+
     [aCoder encodeObject:_color forKey:CPColorWellColorKey];
     [aCoder encodeObject:_bordered forKey:CPColorWellBorderedKey];
 }

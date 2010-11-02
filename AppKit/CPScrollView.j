@@ -20,11 +20,10 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-@import "CPView.j"
+@import "CPBox.j"
 @import "CPClipView.j"
 @import "CPScroller.j"
-
-#include "CoreGraphics/CGGeometry.h"
+@import "CPView.j"
 
 
 /*!
@@ -40,6 +39,7 @@
     CPClipView      _contentView;
     CPClipView      _headerClipView;
     CPView          _cornerView;
+    CPView          _bottomCornerView;
 
     BOOL            _hasVerticalScroller;
     BOOL            _hasHorizontalScroller;
@@ -56,6 +56,19 @@
     float           _horizontalPageScroll;
 
     CPBorderType    _borderType;
+}
+
++ (CPString)defaultThemeClass
+{
+    return @"scrollview"
+}
+
++ (CPDictionary)themeAttributes
+{
+    return [CPDictionary dictionaryWithJSObject:{
+        @"bottom-corner-color": [CPColor whiteColor],
+        @"border-color": [CPColor blackColor]
+    }];
 }
 
 - (id)initWithFrame:(CGRect)aFrame
@@ -77,8 +90,10 @@
         [self addSubview:_contentView];
 
         _headerClipView = [[CPClipView alloc] init];
-
         [self addSubview:_headerClipView];
+
+        _bottomCornerView = [[CPView alloc] init];
+        [self addSubview:_bottomCornerView];
 
         [self setHasVerticalScroller:YES];
         [self setHasHorizontalScroller:YES];
@@ -150,7 +165,7 @@
 /*!
     Returns the size of the scroll view's content view.
 */
-- (CGRect)contentSize
+- (CGSize)contentSize
 {
     return [_contentView frame].size;
 }
@@ -169,7 +184,7 @@
 */
 - (void)setContentView:(CPClipView)aContentView
 {
-    if (_contentView !== aContentView || !aContentView)
+    if (_contentView === aContentView || !aContentView)
         return;
 
     var documentView = [aContentView documentView];
@@ -216,7 +231,7 @@
 */
 - (void)reflectScrolledClipView:(CPClipView)aClipView
 {
-    if(_contentView !== aClipView)
+    if (_contentView !== aClipView)
         return;
 
     if (_recursionCount > 5)
@@ -298,8 +313,10 @@
 
     if (shouldShowVerticalScroller)
     {
-        var verticalScrollerY = MAX(_CGRectGetMaxY([self _cornerViewFrame]), headerClipViewHeight),
-            verticalScrollerHeight = _CGRectGetMaxY(contentFrame) - verticalScrollerY;
+        var verticalScrollerY =
+            MAX(_CGRectGetMinY(contentFrame), MAX(_CGRectGetMaxY([self _cornerViewFrame]), _CGRectGetMaxY(headerClipViewFrame)));
+
+        var verticalScrollerHeight = _CGRectGetMaxY(contentFrame) - verticalScrollerY;
 
         [_verticalScroller setFloatValue:(difference.height <= 0.0) ? 0.0 : scrollPoint.y / difference.height];
         [_verticalScroller setKnobProportion:_CGRectGetHeight(contentFrame) / _CGRectGetHeight(documentFrame)];
@@ -326,6 +343,9 @@
     [_contentView setFrame:contentFrame];
     [_headerClipView setFrame:headerClipViewFrame];
     [_cornerView setFrame:[self _cornerViewFrame]];
+
+    [[self bottomCornerView] setFrame:[self _bottomCornerViewFrame]];
+    [[self bottomCornerView] setBackgroundColor:[self currentValueForThemeAttribute:@"bottom-corner-color"]];
 
     --_recursionCount;
 }
@@ -565,6 +585,42 @@
     return frame;
 }
 
+- (CGRect)_bottomCornerViewFrame
+{
+    if ([[self horizontalScroller] isHidden] || [[self verticalScroller] isHidden])
+        return CGRectMakeZero();
+
+    var verticalFrame = [[self verticalScroller] frame],
+        bottomCornerFrame = CGRectMakeZero();
+
+    bottomCornerFrame.origin.x = CGRectGetMinX(verticalFrame);
+    bottomCornerFrame.origin.y = CGRectGetMaxY(verticalFrame);
+    bottomCornerFrame.size.width = [CPScroller scrollerWidth];
+    bottomCornerFrame.size.height = [CPScroller scrollerWidth];
+
+    return bottomCornerFrame;
+}
+
+- (void)setBottomCornerView:(CPView)aBottomCornerView
+{
+    if (_bottomCornerView === aBottomCornerView)
+        return;
+
+    [_bottomCornerView removeFromSuperview];
+
+    [aBottomCornerView setFrame:[self _bottomCornerViewFrame]];
+    [self addSubview:aBottomCornerView];
+
+    _bottomCornerView = aBottomCornerView;
+
+    [self _updateCornerAndHeaderView];
+}
+
+- (CPView)bottomCornerView
+{
+    return _bottomCornerView;
+}
+
 /* @ignore */
 - (void)_verticalScrollerDidScroll:(CPScroller)aScroller
 {
@@ -640,7 +696,7 @@
 /*
     @ignore
 */
--(void)resizeSubviewsWithOldSize:(CGSize)aSize
+- (void)resizeSubviewsWithOldSize:(CGSize)aSize
 {
     [self reflectScrolledClipView:_contentView];
 }
@@ -767,22 +823,111 @@
     switch (_borderType)
     {
         case CPLineBorder:
-            CGContextSetStrokeColor(context, [CPColor blackColor]);
+            CGContextSetStrokeColor(context, [self currentValueForThemeAttribute:@"border-color"]);
             CGContextStrokeRect(context, _CGRectInset(strokeRect, 0.5, 0.5));
             break;
 
         case CPBezelBorder:
-            CPDrawGrayBezel(strokeRect);
+            [self _drawGrayBezelInContext:context bounds:strokeRect];
             break;
 
         case CPGrooveBorder:
-            CPDrawGroove(strokeRect, YES);
+            [self _drawGrooveInContext:context bounds:strokeRect];
             break;
 
         default:
             break;
     }
 }
+
+- (void)_drawGrayBezelInContext:(CGContext)context bounds:(CGRect)aRect
+{
+    CGContextBeginPath(context);
+    CGContextSetStrokeColor(context, [CPColor colorWithWhite:142.0 / 255.0 alpha:1.0]);
+
+    var y = _CGRectGetMinY(aRect) + 0.5;
+
+    CGContextMoveToPoint(context, _CGRectGetMinX(aRect), y);
+    CGContextAddLineToPoint(context, _CGRectGetMinX(aRect) + 1.0, y);
+    CGContextStrokePath(context);
+
+    CGContextBeginPath(context);
+    CGContextSetStrokeColor(context, [CPColor colorWithWhite:192.0 / 255.0 alpha:1.0]);
+    CGContextMoveToPoint(context, _CGRectGetMinX(aRect) + 1.0, y);
+    CGContextAddLineToPoint(context, _CGRectGetMaxX(aRect) - 1.0, y);
+    CGContextStrokePath(context);
+
+    CGContextBeginPath(context);
+    CGContextSetStrokeColor(context, [CPColor colorWithWhite:142.0 / 255.0 alpha:1.0]);
+    CGContextMoveToPoint(context, _CGRectGetMaxX(aRect) - 1.0, y);
+    CGContextAddLineToPoint(context, _CGRectGetMaxX(aRect), y);
+    CGContextStrokePath(context);
+
+    CGContextBeginPath(context);
+    CGContextSetStrokeColor(context, [CPColor colorWithWhite:190.0 / 255.0 alpha:1.0]);
+
+    var x = _CGRectGetMaxX(aRect) - 0.5;
+
+    CGContextMoveToPoint(context, x, _CGRectGetMinY(aRect) + 1.0);
+    CGContextAddLineToPoint(context, x, _CGRectGetMaxY(aRect));
+
+    CGContextMoveToPoint(context, x - 0.5, _CGRectGetMaxY(aRect) - 0.5);
+    CGContextAddLineToPoint(context, _CGRectGetMinX(aRect), _CGRectGetMaxY(aRect) - 0.5);
+
+    x = _CGRectGetMinX(aRect) + 0.5;
+
+    CGContextMoveToPoint(context, x, _CGRectGetMaxY(aRect));
+    CGContextAddLineToPoint(context, x, _CGRectGetMinY(aRect) + 1.0);
+
+    CGContextStrokePath(context);
+}
+
+- (void)_drawGrooveInContext:(CGContext)context bounds:(CGRect)aRect
+{
+    CGContextBeginPath(context);
+    CGContextSetStrokeColor(context, [CPColor colorWithWhite:159.0 / 255.0 alpha:1.0]);
+
+    var y = _CGRectGetMinY(aRect) + 0.5;
+
+    CGContextMoveToPoint(context, _CGRectGetMinX(aRect), y);
+    CGContextAddLineToPoint(context, _CGRectGetMaxX(aRect), y);
+
+    var x = _CGRectGetMaxX(aRect) - 1.5;
+
+    CGContextMoveToPoint(context, x, _CGRectGetMinY(aRect) + 2.0);
+    CGContextAddLineToPoint(context, x, _CGRectGetMaxY(aRect) - 1.0);
+
+    y = _CGRectGetMaxY(aRect) - 1.5;
+
+    CGContextMoveToPoint(context, _CGRectGetMaxX(aRect) - 1.0, y);
+    CGContextAddLineToPoint(context, _CGRectGetMinX(aRect) + 2.0, y);
+
+    x = _CGRectGetMinX(aRect) + 0.5;
+
+    CGContextMoveToPoint(context, x, _CGRectGetMaxY(aRect));
+    CGContextAddLineToPoint(context, x, _CGRectGetMinY(aRect));
+
+    CGContextStrokePath(context);
+
+    CGContextBeginPath(context);
+    CGContextSetStrokeColor(context, [CPColor whiteColor]);
+
+    var rect = _CGRectOffset(aRect, 1.0, 1.0);
+
+    rect.size.width -= 1.0;
+    rect.size.height -= 1.0;
+    CGContextStrokeRect(context, _CGRectInset(rect, 0.5, 0.5));
+
+    CGContextBeginPath(context);
+    CGContextSetStrokeColor(context, [CPColor colorWithWhite:192.0 / 255.0 alpha:1.0]);
+
+    y = _CGRectGetMinY(aRect) + 2.5;
+
+    CGContextMoveToPoint(context, _CGRectGetMinX(aRect) + 2.0, y);
+    CGContextAddLineToPoint(context, _CGRectGetMaxX(aRect) - 2.0, y);
+    CGContextStrokePath(context);
+}
+
 
 // CPResponder Overrides
 
@@ -792,8 +937,7 @@
 */
 - (void)scrollWheel:(CPEvent)anEvent
 {
-    [self _respondToScrollWheelEventWithDeltaX:[anEvent deltaX] * _horizontalLineScroll
-                                        deltaY:[anEvent deltaY] * _verticalLineScroll];
+    [self _respondToScrollWheelEventWithDeltaX:[anEvent deltaX] deltaY:[anEvent deltaY]];
 }
 
 - (void)_respondToScrollWheelEventWithDeltaX:(float)deltaX deltaY:(float)deltaY
@@ -801,17 +945,15 @@
     var documentFrame = [[self documentView] frame],
         contentBounds = [_contentView bounds],
         contentFrame = [_contentView frame],
-        enclosingScrollView = [self enclosingScrollView],
-        extraX = 0,
-        extraY = 0;
+        enclosingScrollView = [self enclosingScrollView];
 
     // We want integral bounds!
     contentBounds.origin.x = ROUND(contentBounds.origin.x + deltaX);
     contentBounds.origin.y = ROUND(contentBounds.origin.y + deltaY);
 
-    var constrainedOrigin = [_contentView constrainScrollPoint:CGPointCreateCopy(contentBounds.origin)];
-    extraX = ((contentBounds.origin.x - constrainedOrigin.x) / _horizontalLineScroll) * [enclosingScrollView horizontalLineScroll];
-    extraY = ((contentBounds.origin.y - constrainedOrigin.y) / _verticalLineScroll) * [enclosingScrollView verticalLineScroll];
+    var constrainedOrigin = [_contentView constrainScrollPoint:CGPointCreateCopy(contentBounds.origin)],
+        extraX = contentBounds.origin.x - constrainedOrigin.x,
+        extraY = contentBounds.origin.y - constrainedOrigin.y;
 
     [_contentView scrollToPoint:constrainedOrigin];
     [_headerClipView scrollToPoint:CGPointMake(constrainedOrigin.x, 0.0)];
@@ -820,18 +962,13 @@
         [enclosingScrollView _respondToScrollWheelEventWithDeltaX:extraX deltaY:extraY];
 }
 
-- (void)keyDown:(CPEvent)anEvent
-{
-    [self interpretKeyEvents:[anEvent]];
-}
-
-- (void)pageUp:(id)sender
+- (void)scrollPageUp:(id)sender
 {
     var contentBounds = [_contentView bounds];
     [self moveByOffset:CGSizeMake(0.0, -(_CGRectGetHeight(contentBounds) - _verticalPageScroll))];
 }
 
-- (void)pageDown:(id)sender
+- (void)scrollPageDown:(id)sender
 {
     var contentBounds = [_contentView bounds];
     [self moveByOffset:CGSizeMake(0.0, _CGRectGetHeight(contentBounds) - _verticalPageScroll)];
@@ -905,6 +1042,9 @@ var CPScrollViewContentViewKey       = "CPScrollViewContentView",
             _headerClipView = [[CPClipView alloc] init];
             [self addSubview:_headerClipView];
         }
+
+        _bottomCornerView       = [[CPView alloc] init];
+        [self addSubview:_bottomCornerView];
 
         _verticalScroller       = [aCoder decodeObjectForKey:CPScrollViewVScrollerKey];
         _horizontalScroller     = [aCoder decodeObjectForKey:CPScrollViewHScrollerKey];

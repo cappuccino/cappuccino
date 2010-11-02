@@ -31,7 +31,6 @@
 @import "CPCibLoading.j"
 @import "CPPlatform.j"
 
-#include "Platform/Platform.h"
 
 var CPMainCibFile               = @"CPMainCibFile",
     CPMainCibFileHumanFriendly  = @"Main cib file base name";
@@ -108,6 +107,8 @@ CPRunContinuesResponse  = -1002;
     CPImage                 _applicationIconImage;
 
     CPPanel                 _aboutPanel;
+
+    CPThemeBlend            _themeBlend @accessors(property=themeBlend);
 }
 
 /*!
@@ -505,7 +506,8 @@ CPRunContinuesResponse  = -1002;
     var theWindow = aModalSession._window;
 
     [theWindow center];
-    [theWindow makeKeyAndOrderFront:self];
+    [theWindow makeKeyWindow];
+    [theWindow orderFront:self];
 
 //    [theWindow._bridge _obscureWindowsBelowModalWindow];
 
@@ -681,7 +683,7 @@ CPRunContinuesResponse  = -1002;
     if ([super tryToPerform:anAction with:anObject])
         return YES;
 
-    if([_delegate respondsToSelector:anAction])
+    if ([_delegate respondsToSelector:anAction])
     {
         [_delegate performSelector:anAction withObject:anObject];
 
@@ -871,8 +873,8 @@ CPRunContinuesResponse  = -1002;
 
     while (--count >= 0)
     {
-        var aWindow = [_windows objectAtIndex:count];
-        var context = aWindow._sheetContext;
+        var aWindow = [_windows objectAtIndex:count],
+            context = aWindow._sheetContext;
 
         if (context != nil && context["sheet"] === sheet)
         {
@@ -890,7 +892,7 @@ CPRunContinuesResponse  = -1002;
 
 - (CPArray)arguments
 {
-    if(_fullArgsString !== window.location.hash)
+    if (_fullArgsString !== window.location.hash)
         [self _reloadArguments];
 
     return _args;
@@ -898,7 +900,7 @@ CPRunContinuesResponse  = -1002;
 
 - (void)setArguments:(CPArray)args
 {
-    if(!args || args.length == 0)
+    if (!args || args.length == 0)
     {
         _args = [];
         window.location.hash = @"#";
@@ -906,13 +908,13 @@ CPRunContinuesResponse  = -1002;
         return;
     }
 
-    if([args class] != CPArray)
+    if ([args class] != CPArray)
         args = [CPArray arrayWithObject:args];
 
     _args = args;
 
     var toEncode = [_args copy];
-    for(var i=0, count = toEncode.length; i<count; i++)
+    for (var i = 0, count = toEncode.length; i < count; i++)
         toEncode[i] = encodeURIComponent(toEncode[i]);
 
     var hash = [toEncode componentsJoinedByString:@"/"];
@@ -1019,7 +1021,6 @@ CPRunContinuesResponse  = -1002;
 
 + (CPString)defaultThemeName
 {
-    // FIXME: don't hardcode
     return ([[CPBundle mainBundle] objectForInfoDictionaryKey:"CPDefaultTheme"] || @"Aristo");
 }
 
@@ -1035,7 +1036,8 @@ var _CPEventListenerMake = function(anEventMask, aCallback)
     return { _mask:anEventMask, _callback:aCallback };
 }
 
-var _CPRunModalLoop = function(anEvent)
+// Make this a global for use in CPPlatformWindow+DOM.j.
+_CPRunModalLoop = function(anEvent)
 {
     [CPApp setCallback:_CPRunModalLoop forNextEventMatchingMask:CPAnyEventMask untilDate:nil inMode:0 dequeue:NO];
 
@@ -1113,8 +1115,15 @@ var _CPAppBootstrapperActions = nil;
 
 + (BOOL)loadDefaultTheme
 {
-    var blend = [[CPThemeBlend alloc] initWithContentsOfURL:[[CPBundle bundleForClass:[CPApplication class]] pathForResource:[CPApplication defaultThemeName] + ".blend"]];
+    var defaultThemeName = [CPApplication defaultThemeName],
+        themeURL = nil;
 
+    if (defaultThemeName === @"Aristo")
+        themeURL = [[CPBundle bundleForClass:[CPApplication class]] pathForResource:defaultThemeName + @".blend"];
+    else
+        themeURL = [[CPBundle mainBundle] pathForResource:defaultThemeName + @".blend"];
+
+    var blend = [[CPThemeBlend alloc] initWithContentsOfURL:themeURL];
     [blend loadWithDelegate:self];
 
     return YES;
@@ -1122,6 +1131,7 @@ var _CPAppBootstrapperActions = nil;
 
 + (void)blendDidFinishLoading:(CPThemeBlend)aThemeBlend
 {
+    [[CPApplication sharedApplication] setThemeBlend:aThemeBlend];
     [CPTheme setDefaultTheme:[CPTheme themeNamed:[CPApplication defaultThemeName]]];
 
     [self performActions];
@@ -1219,7 +1229,7 @@ var _CPAppBootstrapperActions = nil;
 
 + (void)reset
 {
-	_CPAppBootstrapperActions = nil;
+    _CPAppBootstrapperActions = nil;
 }
 
 @end

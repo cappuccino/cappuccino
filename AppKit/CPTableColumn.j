@@ -22,12 +22,12 @@
 
 @import <Foundation/CPDictionary.j>
 @import <Foundation/CPObject.j>
+@import <Foundation/CPIndexSet.j>
 @import <Foundation/CPSortDescriptor.j>
 @import <Foundation/CPString.j>
 
 @import "CPTableHeaderView.j"
 
-#include "CoreGraphics/CGGeometry.h"
 
 CPTableColumnNoResizing         = 0;
 CPTableColumnAutoresizingMask   = 1 << 0;
@@ -242,9 +242,6 @@ CPTableColumnUserResizingMask   = 1 << 1;
 */
 - (void)setDataView:(CPView)aView
 {
-    if (_dataView === aView)
-        return;
-
     if (_dataView)
         _dataViewData[[_dataView UID]] = nil;
 
@@ -403,7 +400,7 @@ CPTableColumnUserResizingMask   = 1 << 1;
     var bindingsDictionary = [CPKeyValueBinding allBindingsForObject:self],
         keys = [bindingsDictionary allKeys];
 
-    for (var i=0, count = [keys count]; i<count; i++)
+    for (var i = 0, count = [keys count]; i < count; i++)
     {
         var bindingName = keys[i],
             bindingPath = [aDataView _replacementKeyPathForBinding:bindingName],
@@ -430,7 +427,7 @@ CPTableColumnUserResizingMask   = 1 << 1;
             */
 
             var firstPart = keyPath.substring(0, dotIndex),
-                secondPart = keyPath.substring(dotIndex+1),
+                secondPart = keyPath.substring(dotIndex + 1),
                 firstValue = [destination valueForKeyPath:firstPart];
 
             if ([firstValue isKindOfClass:CPArray])
@@ -488,7 +485,7 @@ var CPTableColumnIdentifierKey   = @"CPTableColumnIdentifierKey",
         [self setDataView:[aCoder decodeObjectForKey:CPTableColumnDataViewKey]];
         [self setHeaderView:[aCoder decodeObjectForKey:CPTableColumnHeaderViewKey]];
 
-        _resizingMask  = [aCoder decodeBoolForKey:CPTableColumnResizingMaskKey];
+        _resizingMask  = [aCoder decodeIntForKey:CPTableColumnResizingMaskKey];
         _isHidden = [aCoder decodeBoolForKey:CPTableColumnIsHiddenKey];
         _isEditable = [aCoder decodeBoolForKey:CPTableColumnIsEditableKey];
 

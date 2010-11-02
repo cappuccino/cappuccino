@@ -31,6 +31,7 @@ extern NSString *SERVER_USER;
     NSURL                           * baseURL;
 }
 
+- (void)configureLocalStorage;
 - (NSURL *)baseURL;
 
 - (void)startServer;

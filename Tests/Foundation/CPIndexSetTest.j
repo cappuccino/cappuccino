@@ -387,6 +387,12 @@ function descriptionWithoutEntity(aString)
     
     [_set shiftIndexesStartingAtIndex:[_set lastIndex] + 1 by:1];
     [self assertTrue:[_set lastIndex] === 0];
+
+    // make sure shifting past the lower bound works
+    _set = [CPIndexSet indexSetWithIndex:0];
+    [_set shiftIndexesStartingAtIndex:0 by:-1];
+    [self assert:[_set lastIndex] equals:CPNotFound];
+    [self assert:[_set count] equals:0];
 }
 
 - (void)testIsEqual

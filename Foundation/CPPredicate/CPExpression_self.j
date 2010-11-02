@@ -4,13 +4,20 @@
 @import <Foundation/CPDictionary.j>
 @import <Foundation/CPCoder.j>
 
-@implementation CPExpression_self : CPExpression{}
+var defaultInstance = nil;
+@implementation CPExpression_self : CPExpression
+{
+}
 
 - (id)init
 {
-    [super initWithExpressionType:CPEvaluatedObjectExpressionType];
+    if (defaultInstance == nil)
+    {
+        [super initWithExpressionType:CPEvaluatedObjectExpressionType];
+        defaultInstance = self;
+    }    
     
-    return self;
+    return defaultInstance;
 }
 
 - (id)initWithCoder:(CPCoder)coder
@@ -24,10 +31,10 @@
 
 - (BOOL)isEqual:(id)object
 {
-    return (object == self);
+    return (object === self);
 }
 
-- (id)expressionValueWithObject:object context:(CPDictionary)context
+- (id)expressionValueWithObject:(id)object context:(CPDictionary)context
 {
     return object;
 }

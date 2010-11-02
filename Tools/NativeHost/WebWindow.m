@@ -28,7 +28,8 @@ CGEventRef headTapCallback(CGEventTapProxy proxy, CGEventType type, CGEventRef e
                 if ([window isKindOfClass:[WebWindow class]] && ![(WebWindow *)window hitTest:NSLocation])
                 {
                     [window setIgnoresMouseEvents:YES];
-
+					[window performSelector:@selector(setIgnoresMouseEvents:) withObject:NO afterDelay:1.0];
+					
                     [DisabledWindows addObject:window];
                 }
             }

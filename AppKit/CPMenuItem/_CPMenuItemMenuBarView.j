@@ -1,3 +1,6 @@
+@import "CPView.j"
+
+
 var HORIZONTAL_MARGIN           = 8.0,
     SUBMENU_INDICATOR_MARGIN    = 3.0,
     VERTICAL_MARGIN             = 4.0;
@@ -62,6 +65,7 @@ var SelectionColor                              = nil,
         _imageAndTextView = [[_CPImageAndTextView alloc] initWithFrame:CGRectMake(HORIZONTAL_MARGIN, 0.0, 0.0, 0.0)];
 
         [_imageAndTextView setImagePosition:CPImageLeft];
+        [_imageAndTextView setImageOffset:3.0];
         [_imageAndTextView setTextShadowOffset:CGSizeMake(0.0, 1.0)];
         [_imageAndTextView setAutoresizingMask:CPViewMinYMargin | CPViewMaxYMargin];
 

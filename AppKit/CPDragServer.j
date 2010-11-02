@@ -20,13 +20,12 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-@import <AppKit/CPView.j>
-@import <AppKit/CPEvent.j>
-@import <AppKit/CPPasteboard.j>
-@import <AppKit/CPImageView.j>
-
-#import "CoreGraphics/CGGeometry.h"
-#import "Platform/Platform.h"
+@import "CPApplication.j"
+@import "CPEvent.j"
+@import "CPImageView.j"
+@import "CPPasteboard.j"
+@import "CPView.j"
+@import "CPWindow.j"
 
 
 CPDragOperationNone     = 0,
@@ -262,7 +261,7 @@ var CPDraggingSource_draggedImage_movedTo_          = 1 << 0,
         {
             var contentView = [scrollView contentView],
                 bounds = [contentView bounds],
-                insetBounds = CGRectInset(bounds, 10, 10)
+                insetBounds = CGRectInset(bounds, 10, 10),
                 eventLocation = [contentView convertPoint:_draggingLocation fromView:nil],
                 deltaX = 0,
                 deltaY = 0;
@@ -304,7 +303,7 @@ var CPDraggingSource_draggedImage_movedTo_          = 1 << 0,
 - (void)_sendPeriodicDraggingUpdate:(CPTimer)aTimer
 {
     var userInfo = [aTimer userInfo];
-    _dragOperation = [self draggingUpdatedInPlatformWindow:[userInfo objectForKey:@"platformWindow"] 
+    _dragOperation = [self draggingUpdatedInPlatformWindow:[userInfo objectForKey:@"platformWindow"]
                                                   location:[userInfo objectForKey:@"location"]];
 }
 
@@ -328,8 +327,8 @@ var CPDraggingSource_draggedImage_movedTo_          = 1 << 0,
 
 - (void)performDragOperationInPlatformWindow:(CPPlatformWindow)aPlatformWindow
 {
-    if (_draggingDestination && 
-        (![_draggingDestination respondsToSelector:@selector(prepareForDragOperation:)] || [_draggingDestination prepareForDragOperation:CPDragServerDraggingInfo]) && 
+    if (_draggingDestination &&
+        (![_draggingDestination respondsToSelector:@selector(prepareForDragOperation:)] || [_draggingDestination prepareForDragOperation:CPDragServerDraggingInfo]) &&
         (![_draggingDestination respondsToSelector:@selector(performDragOperation:)] || [_draggingDestination performDragOperation:CPDragServerDraggingInfo]) &&
         [_draggingDestination respondsToSelector:@selector(concludeDragOperation:)])
         [_draggingDestination concludeDragOperation:CPDragServerDraggingInfo];

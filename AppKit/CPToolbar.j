@@ -28,8 +28,6 @@
 @import "CPPopUpButton.j"
 @import "CPToolbarItem.j"
 
-#include "CoreGraphics/CGGeometry.h"
-
 
 /*
     @global

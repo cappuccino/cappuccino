@@ -82,12 +82,12 @@
 
 - (void)testRemoveObjectsAtIndexes
 {
-	var array = [CPMutableArray arrayWithObjects:@"one", @"two", @"three", @"four", nil],
-			indexes = [CPMutableIndexSet indexSetWithIndex: 2];
+    var array = [CPMutableArray arrayWithObjects:@"one", @"two", @"three", @"four", nil],
+            indexes = [CPMutableIndexSet indexSetWithIndex: 2];
 
-	[array removeObjectsAtIndexes: indexes];
+    [array removeObjectsAtIndexes: indexes];
 
-	[self assert:array equals:[@"one", @"two", @"four", nil]];
+    [self assert:array equals:[@"one", @"two", @"four", nil]];
 }
 
 - (void)testIndexOfObjectPassingTest
@@ -98,7 +98,7 @@
         failPredicate = function(object, index) { return [object.name isEqual:@"Horton"]; },
         noPredicate = function(object, index) { return NO; },
         stopPredicate = function(object, index) { return nil; };
-    
+
     [self assert:[array indexOfObjectPassingTest:namePredicate] equals:2];
     [self assert:[array indexOfObjectPassingTest:agePredicate] equals:1];
     [self assert:[array indexOfObjectPassingTest:failPredicate] equals:CPNotFound];
@@ -111,7 +111,7 @@
     var array = [CPArray arrayWithObjects:{name:@"Tom", age:7}, {name:@"Dick", age:13}, {name:@"Harry", age:27}, {name:@"Zelda", age:7}],
         namePredicate = function(object, index, context) { return [object.name isEqual:context]; },
         agePredicate = function(object, index, context) { return object.age === context; };
-    
+
     [self assert:[array indexOfObjectPassingTest:namePredicate context:@"Harry"] equals:2];
     [self assert:[array indexOfObjectPassingTest:agePredicate context:13] equals:1];
 }
@@ -121,7 +121,7 @@
     var array = [CPArray arrayWithObjects:{name:@"Tom", age:7}, {name:@"Dick", age:13}, {name:@"Harry", age:27}, {name:@"Zelda", age:7}],
         namePredicate = function(object, index) { return [object.name isEqual:@"Harry"]; },
         agePredicate = function(object, index) { return object.age === 7; };
-    
+
     [self assert:[array indexOfObjectWithOptions:CPEnumerationNormal passingTest:namePredicate] equals:2];
     [self assert:[array indexOfObjectWithOptions:CPEnumerationReverse passingTest:namePredicate] equals:2];
     [self assert:[array indexOfObjectWithOptions:CPEnumerationNormal passingTest:agePredicate] equals:0];
@@ -133,7 +133,7 @@
     var array = [CPArray arrayWithObjects:{name:@"Tom", age:7}, {name:@"Dick", age:13}, {name:@"Harry", age:27}, {name:@"Zelda", age:7}],
         namePredicate = function(object, index, context) { return [object.name isEqual:context]; },
         agePredicate = function(object, index, context) { return object.age === context; };
-    
+
     [self assert:[array indexOfObjectWithOptions:CPEnumerationNormal passingTest:namePredicate context:@"Harry"] equals:2];
     [self assert:[array indexOfObjectWithOptions:CPEnumerationReverse passingTest:namePredicate context:@"Harry"] equals:2];
     [self assert:[array indexOfObjectWithOptions:CPEnumerationNormal passingTest:agePredicate context:7] equals:0];
@@ -318,107 +318,103 @@
 
 - (void)testThatCPArrayDoesSortUsingDescriptorsForStrings
 {
-	var target = ["a", "b", "c", "d"];
-	
-	var pretty = [];
-	
-	for(var i = 0; i < target.length; i++)
-		pretty.push([[CPPrettyObject alloc] initWithValue:target[i] number:i]);
-	
-	[pretty sortUsingDescriptors:[[[CPSortDescriptor alloc] initWithKey:@"value" ascending:NO]]];
-	
-	[self assert:"(\n\t3:d, \n\t2:c, \n\t1:b, \n\t0:a\n)" equals:[pretty description]];
-	
-	[pretty sortUsingDescriptors:[[[CPSortDescriptor alloc] initWithKey:@"value" ascending:YES]]];
-	
-	[self assert:"(\n\t0:a, \n\t1:b, \n\t2:c, \n\t3:d\n)" equals:[pretty description]]
+    var target = ["a", "b", "c", "d"],
+        pretty = [];
+
+    for(var i = 0; i < target.length; i++)
+        pretty.push([[CPPrettyObject alloc] initWithValue:target[i] number:i]);
+
+    [pretty sortUsingDescriptors:[[[CPSortDescriptor alloc] initWithKey:@"value" ascending:NO]]];
+
+    [self assert:"(\n\t3:d, \n\t2:c, \n\t1:b, \n\t0:a\n)" equals:[pretty description]];
+
+    [pretty sortUsingDescriptors:[[[CPSortDescriptor alloc] initWithKey:@"value" ascending:YES]]];
+
+    [self assert:"(\n\t0:a, \n\t1:b, \n\t2:c, \n\t3:d\n)" equals:[pretty description]]
 }
 
 - (void)testThatCPArrayDoesSortUsingTwoDescriptors
 {
-	var descriptors = 	[
-							[[CPSortDescriptor alloc] initWithKey:@"value" ascending:NO],
-							[[CPSortDescriptor alloc] initWithKey:@"number" ascending:NO]
-						];
-					
-	var target = [
-					[[CPPrettyObject alloc] initWithValue:@"a" number:1],
-					[[CPPrettyObject alloc] initWithValue:@"a" number:2],
-					[[CPPrettyObject alloc] initWithValue:@"a" number:3],
-					[[CPPrettyObject alloc] initWithValue:@"b" number:1],
-					[[CPPrettyObject alloc] initWithValue:@"b" number:2],
-					[[CPPrettyObject alloc] initWithValue:@"b" number:3],
-				 ];
-				
-	[target sortUsingDescriptors:descriptors];
-	
-	[self assert:@"3:b" equals:[target[0] description]];
-	[self assert:@"2:b" equals:[target[1] description]];
-	[self assert:@"1:b" equals:[target[2] description]];
-	[self assert:@"3:a" equals:[target[3] description]];
-	[self assert:@"2:a" equals:[target[4] description]];
-	[self assert:@"1:a" equals:[target[5] description]];
+    var descriptors = [
+                        [[CPSortDescriptor alloc] initWithKey:@"value" ascending:NO],
+                        [[CPSortDescriptor alloc] initWithKey:@"number" ascending:NO]
+                      ],
+        target = [
+                    [[CPPrettyObject alloc] initWithValue:@"a" number:1],
+                    [[CPPrettyObject alloc] initWithValue:@"a" number:2],
+                    [[CPPrettyObject alloc] initWithValue:@"a" number:3],
+                    [[CPPrettyObject alloc] initWithValue:@"b" number:1],
+                    [[CPPrettyObject alloc] initWithValue:@"b" number:2],
+                    [[CPPrettyObject alloc] initWithValue:@"b" number:3],
+                 ];
+
+    [target sortUsingDescriptors:descriptors];
+
+    [self assert:@"3:b" equals:[target[0] description]];
+    [self assert:@"2:b" equals:[target[1] description]];
+    [self assert:@"1:b" equals:[target[2] description]];
+    [self assert:@"3:a" equals:[target[3] description]];
+    [self assert:@"2:a" equals:[target[4] description]];
+    [self assert:@"1:a" equals:[target[5] description]];
 }
 
 - (void)testThatCPArrayDoesSortUsingTwoDescriptorsOpposite
 {
-	var descriptors = 	[
-							[[CPSortDescriptor alloc] initWithKey:@"number" ascending:NO],
-							[[CPSortDescriptor alloc] initWithKey:@"value" ascending:NO]
-						];
+    var descriptors = [
+                          [[CPSortDescriptor alloc] initWithKey:@"number" ascending:NO],
+                          [[CPSortDescriptor alloc] initWithKey:@"value" ascending:NO]
+                      ],
+        target = [
+                    [[CPPrettyObject alloc] initWithValue:@"a" number:1],
+                    [[CPPrettyObject alloc] initWithValue:@"a" number:2],
+                    [[CPPrettyObject alloc] initWithValue:@"a" number:3],
+                    [[CPPrettyObject alloc] initWithValue:@"b" number:1],
+                    [[CPPrettyObject alloc] initWithValue:@"b" number:2],
+                    [[CPPrettyObject alloc] initWithValue:@"b" number:3],
+                 ];
 
-	var target = [
-					[[CPPrettyObject alloc] initWithValue:@"a" number:1],
-					[[CPPrettyObject alloc] initWithValue:@"a" number:2],
-					[[CPPrettyObject alloc] initWithValue:@"a" number:3],
-					[[CPPrettyObject alloc] initWithValue:@"b" number:1],
-					[[CPPrettyObject alloc] initWithValue:@"b" number:2],
-					[[CPPrettyObject alloc] initWithValue:@"b" number:3],
-				 ];
+    [target sortUsingDescriptors:descriptors];
 
-	[target sortUsingDescriptors:descriptors];
-
-	[self assert:@"3:b" equals:[target[0] description]];
-	[self assert:@"3:a" equals:[target[1] description]];
-	[self assert:@"2:b" equals:[target[2] description]];
-	[self assert:@"2:a" equals:[target[3] description]];
-	[self assert:@"1:b" equals:[target[4] description]];
-	[self assert:@"1:a" equals:[target[5] description]];
+    [self assert:@"3:b" equals:[target[0] description]];
+    [self assert:@"3:a" equals:[target[1] description]];
+    [self assert:@"2:b" equals:[target[2] description]];
+    [self assert:@"2:a" equals:[target[3] description]];
+    [self assert:@"1:b" equals:[target[4] description]];
+    [self assert:@"1:a" equals:[target[5] description]];
 }
 
 - (void)testThatCPArrayDoesSortUsingDescriptorWithMultipleSameValues
 {
-	var descriptors = [[[CPSortDescriptor alloc] initWithKey:@"intValue" ascending:NO]];
-	
-	var target = [1, 1, 2, 4, 3, 1, 2, 4, 5, 1];
-	
-	[target sortUsingDescriptors:descriptors];
-	
-	[self assert:[5, 4, 4, 3, 2, 2, 1, 1, 1, 1] equals:target];
+    var descriptors = [[[CPSortDescriptor alloc] initWithKey:@"intValue" ascending:NO]],
+        target = [1, 1, 2, 4, 3, 1, 2, 4, 5, 1];
+
+    [target sortUsingDescriptors:descriptors];
+
+    [self assert:[5, 4, 4, 3, 2, 2, 1, 1, 1, 1] equals:target];
 }
 
 @end
 
 @implementation CPPrettyObject : CPObject
 {
-	CPString		value		@accessors;
-	CPNumber		number		@accessors;
+    CPString        value       @accessors;
+    CPNumber        number      @accessors;
 }
 
 - (id)initWithValue:(CPString)aValue number:(CPNumber)aNumber
 {
-	self = [super init];
-	if(self)
-	{
-		number = aNumber;
-		value = aValue;
-	}
-	return self;
+    self = [super init];
+    if (self)
+    {
+        number = aNumber;
+        value = aValue;
+    }
+    return self;
 }
 
 - (CPString)description
 {
-	return number + ":" + value;
+    return number + ":" + value;
 }
 
 @end
