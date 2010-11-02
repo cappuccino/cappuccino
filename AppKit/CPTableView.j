@@ -22,19 +22,19 @@
 
 @import <Foundation/CPArray.j>
 @import <Foundation/CPIndexSet.j>
-@import <AppKit/CGGradient.j>
+
+@import "CGGradient.j"
 
 @import "CPControl.j"
 @import "CPTableColumn.j"
 @import "_CPCornerView.j"
 @import "CPScroller.j"
 
+
 CPTableViewColumnDidMoveNotification        = @"CPTableViewColumnDidMoveNotification";
 CPTableViewColumnDidResizeNotification      = @"CPTableViewColumnDidResizeNotification";
 CPTableViewSelectionDidChangeNotification   = @"CPTableViewSelectionDidChangeNotification";
 CPTableViewSelectionIsChangingNotification  = @"CPTableViewSelectionIsChangingNotification";
-
-#include "CoreGraphics/CGGeometry.h"
 
 var CPTableViewDataSource_numberOfRowsInTableView_                                                      = 1 << 0,
     CPTableViewDataSource_tableView_objectValueForTableColumn_row_                                      = 1 << 1,
@@ -221,7 +221,7 @@ CPTableViewFirstColumnOnlyAutoresizingStyle = 5;
     CPArray     _differedColumnDataToRemove;
 }
 
-+ (CPString)themeClass
++ (CPString)defaultThemeClass
 {
     return @"tableview";
 }

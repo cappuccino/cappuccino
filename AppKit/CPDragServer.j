@@ -20,15 +20,12 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-@import <AppKit/CPApplication.j>
-@import <AppKit/CPEvent.j>
-@import <AppKit/CPImageView.j>
-@import <AppKit/CPPasteboard.j>
-@import <AppKit/CPView.j>
-@import <AppKit/CPWindow.j>
-
-#import "CoreGraphics/CGGeometry.h"
-#import "Platform/Platform.h"
+@import "CPApplication.j"
+@import "CPEvent.j"
+@import "CPImageView.j"
+@import "CPPasteboard.j"
+@import "CPView.j"
+@import "CPWindow.j"
 
 
 CPDragOperationNone     = 0,

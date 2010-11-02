@@ -24,7 +24,6 @@
 
 @import "CPControl.j"
 
-#include "CoreGraphics/CGGeometry.h"
 
 CPSegmentSwitchTrackingSelectOne = 0;
 CPSegmentSwitchTrackingSelectAny = 1;
@@ -49,7 +48,7 @@ CPSegmentSwitchTrackingMomentary = 2;
     BOOL                    _trackingHighlighted;
 }
 
-+ (CPString)themeClass
++ (CPString)defaultThemeClass
 {
     return "segmented-control";
 }

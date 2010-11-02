@@ -26,6 +26,7 @@
 @import "CPPanel.j"
 @import "CPView.j"
 
+
 CPColorPanelColorDidChangeNotification = @"CPColorPanelColorDidChangeNotification";
 
 var PREVIEW_HEIGHT = 20.0,

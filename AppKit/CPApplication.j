@@ -31,7 +31,6 @@
 @import "CPCibLoading.j"
 @import "CPPlatform.j"
 
-#include "Platform/Platform.h"
 
 var CPMainCibFile               = @"CPMainCibFile",
     CPMainCibFileHumanFriendly  = @"Main cib file base name";

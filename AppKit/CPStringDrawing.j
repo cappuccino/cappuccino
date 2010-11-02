@@ -24,6 +24,7 @@
 
 @import "CPPlatformString.j"
 
+
 var CPStringSizeWithFontInWidthCache = {};
 
 CPStringSizeCachingEnabled = YES;

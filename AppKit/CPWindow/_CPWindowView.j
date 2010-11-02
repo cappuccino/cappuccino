@@ -23,8 +23,6 @@
 @import "CPImageView.j"
 @import "CPView.j"
 
-#include "../CoreGraphics/CGGeometry.h"
-
 
 var _CPWindowViewResizeIndicatorImage = nil;
 

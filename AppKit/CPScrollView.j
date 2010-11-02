@@ -25,8 +25,6 @@
 @import "CPScroller.j"
 @import "CPView.j"
 
-#include "CoreGraphics/CGGeometry.h"
-
 
 /*!
     @ingroup appkit
@@ -60,7 +58,7 @@
     CPBorderType    _borderType;
 }
 
-+ (CPString)themeClass
++ (CPString)defaultThemeClass
 {
     return @"scrollview"
 }

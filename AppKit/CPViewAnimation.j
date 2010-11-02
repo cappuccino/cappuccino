@@ -20,9 +20,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-@import <AppKit/CPAnimation.j>
+@import "CPAnimation.j"
 
-#include "CoreGraphics/CGGeometry.h"
 
 CPViewAnimationTargetKey = @"CPViewAnimationTarget";
 CPViewAnimationStartFrameKey = @"CPViewAnimationStartFrame";

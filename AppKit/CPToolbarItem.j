@@ -23,8 +23,9 @@
 @import <Foundation/CPObject.j>
 @import <Foundation/CPString.j>
 
-@import <AppKit/CPImage.j>
-@import <AppKit/CPView.j>
+@import "CPImage.j"
+@import "CPView.j"
+
 
 CPToolbarItemVisibilityPriorityStandard = 0;
 CPToolbarItemVisibilityPriorityLow      = -1000;

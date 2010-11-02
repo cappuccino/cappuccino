@@ -22,6 +22,7 @@
 
 @import "CPButton.j"
 
+
 CPCheckBoxImageOffset = 4.0;
 
 @implementation CPCheckBox : CPButton
@@ -38,7 +39,7 @@ CPCheckBoxImageOffset = 4.0;
     return [self buttonWithTitle:aTitle];
 }
 
-+ (CPString)themeClass
++ (CPString)defaultThemeClass
 {
     return @"check-box";
 }

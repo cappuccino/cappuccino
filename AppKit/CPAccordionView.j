@@ -26,10 +26,9 @@
 @import <Foundation/CPIndexSet.j>
 @import <Foundation/CPString.j>
 
-@import <AppKit/CPView.j>
-@import <AppKit/CPButton.j>
+@import "CPView.j"
+@import "CPButton.j"
 
-#import "CoreGraphics/CGGeometry.h"
 
 /*!
   @ingroup appkit

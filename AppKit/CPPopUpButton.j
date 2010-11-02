@@ -25,8 +25,6 @@
 @import "CPMenu.j"
 @import "CPMenuItem.j"
 
-#include "CoreGraphics/CGGeometry.h"
-
 
 var VISIBLE_MARGIN  = 7.0;
 
@@ -46,7 +44,7 @@ CPPopUpButtonStatePullsDown = CPThemeState("pulls-down");
     CPMenu      _menu;
 }
 
-+ (CPString)themeClass
++ (CPString)defaultThemeClass
 {
     return "popup-button";
 }

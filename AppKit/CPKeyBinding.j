@@ -21,7 +21,8 @@
  */
 
 @import <Foundation/CPObject.j>
-@import <AppKit/CPEvent.j>
+
+@import "CPEvent.j"
 
 
 CPStandardKeyBindings = {

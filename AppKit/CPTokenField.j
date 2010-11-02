@@ -30,7 +30,6 @@
 @import "CPWindow.j"
 @import "_CPMenuWindow.j"
 
-#include "Platform/Platform.h"
 
 #if PLATFORM(DOM)
 
@@ -87,7 +86,7 @@ var CPThemeStateAutoCompleting          = @"CPThemeStateAutoCompleting",
     return [CPCharacterSet characterSetWithCharactersInString:@","];
 }
 
-+ (CPString)themeClass
++ (CPString)defaultThemeClass
 {
     return "tokenfield";
 }
@@ -1146,7 +1145,7 @@ var CPThemeStateAutoCompleting          = @"CPThemeStateAutoCompleting",
     CPTokenField                    _tokenField;
 }
 
-+ (CPString)themeClass
++ (CPString)defaultThemeClass
 {
     return "tokenfield-token";
 }
@@ -1243,7 +1242,7 @@ var CPThemeStateAutoCompleting          = @"CPThemeStateAutoCompleting",
     return attributes;
 }
 
-+ (CPString)themeClass
++ (CPString)defaultThemeClass
 {
     return "tokenfield-token-close-button";
 }

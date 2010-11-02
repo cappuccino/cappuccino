@@ -20,10 +20,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-@import <AppKit/CPView.j>
-@import <AppKit/CPScrollView.j>
-
-#include "Platform/Platform.h"
+@import "CPView.j"
+@import "CPScrollView.j"
 
 
 // FIXME: implement these where possible:

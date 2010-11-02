@@ -26,14 +26,14 @@
 @import <Foundation/CPObject.j>
 @import <Foundation/CPString.j>
 
-@import <AppKit/CPApplication.j>
-@import <AppKit/CPButton.j>
-@import <AppKit/CPColor.j>
-@import <AppKit/CPFont.j>
-@import <AppKit/CPImage.j>
-@import <AppKit/CPImageView.j>
-@import <AppKit/CPPanel.j>
-@import <AppKit/CPTextField.j>
+@import "CPApplication.j"
+@import "CPButton.j"
+@import "CPColor.j"
+@import "CPFont.j"
+@import "CPImage.j"
+@import "CPImageView.j"
+@import "CPPanel.j"
+@import "CPTextField.j"
 
 /*
     @global
@@ -91,7 +91,7 @@ CPCriticalAlertStyle        = 2;
     id              _modalDelegate;
 }
 
-+ (CPString)themeClass
++ (CPString)defaultThemeClass
 {
     return @"alert";
 }

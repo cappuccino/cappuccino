@@ -1,4 +1,5 @@
-@import <AppKit/CPControl.j>
+@import "CPControl.j"
+
 
 var LEFT_MARGIN                 = 3.0,
     RIGHT_MARGIN                = 14.0 + 3.0,

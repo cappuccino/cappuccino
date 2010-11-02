@@ -23,8 +23,6 @@
 @import "CPTableColumn.j"
 @import "CPTableView.j"
 
-#include "CoreGraphics/CGGeometry.h"
-
 
 CPOutlineViewColumnDidMoveNotification          = @"CPOutlineViewColumnDidMoveNotification";
 CPOutlineViewColumnDidResizeNotification        = @"CPOutlineViewColumnDidResizeNotification";
