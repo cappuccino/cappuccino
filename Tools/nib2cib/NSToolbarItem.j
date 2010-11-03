@@ -59,7 +59,6 @@ NS_CPToolbarItemIdentifierMap =
         [self setAction:CPSelectorFromString([aCoder decodeObjectForKey:@"NSToolbarItemAction"])];
         [self setEnabled:[aCoder decodeBoolForKey:@"NSToolbarItemEnabled"]];
 
-        var image = [aCoder decodeObjectForKey:@"NSToolbarItemImage"];
         [self setImage:[aCoder decodeObjectForKey:@"NSToolbarItemImage"]];
 
         //FIXME: we shouldn't let toolbars have images which are too big at all

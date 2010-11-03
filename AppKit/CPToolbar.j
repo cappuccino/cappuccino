@@ -468,7 +468,14 @@ var CPToolbarIdentifierKey              = @"CPToolbarIdentifierKey",
         // specified, it will be read later and the resulting call to -setDelegate:
         // will cause -_reloadToolbarItems] to run again :-(
         // FIXME: Can we make this better?
-        [self _reloadToolbarItems];
+
+        // Do this at the end of the run loop to allow all the cib-stuff to
+        // finish (establishing connections, etc.).
+        [[CPRunLoop currentRunLoop]
+            performSelector:@selector(_reloadToolbarItems)
+                     target:self
+                   argument:nil
+                      order:0 modes:[CPDefaultRunLoopMode]];
     }
 
     return self;

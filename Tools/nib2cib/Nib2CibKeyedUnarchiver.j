@@ -68,18 +68,10 @@ var File = require("file");
             else if (File.isDirectory(path))
                 pathGroups.push(File.listPaths(path));
 
-            else if (!File.extension(aName))
-            {
-                var extensions = ["png", "gif", "jpg", "jpeg", "cib"],
-                    extensionCount = extensions.length,
-                    extension;
-
-                while(extensionCount--)
-                {
-                    if (File.basename(path) === aName+"."+extensions[extensionCount])
-                        return path;
-                }
-            }
+            else if (!File.extension(aName) &&
+                    File.basename(path) === aName &&
+                    ["png", "gif", "jpg", "jpeg", "cib"].indexOf(FILE.extension(path)) !== -1)
+                return path;
         }
     }
 

@@ -51,8 +51,9 @@ var FILE = require("file");
             else
                 size = imageSize(FILE.join(FILE.cwd(), resourcePath));
 
-            if (resourcePath && FILE.basename(resourcePath) !== FILE.basename(_resourceName))
-                _resourceName = (_resourceName.indexOf("/") === -1 ? "" : FILE.dirname(_resourceName)) + FILE.basename(resourcePath);
+            // Account for the fact that an extension may have been inferred.
+            if (resourcePath && FILE.extension(resourcePath) !== FILE.extension(_resourceName))
+                _resourceName += FILE.extension(resourcePath);
         }
 
         _properties = [CPDictionary dictionaryWithObject:size forKey:@"size"];
