@@ -1,4 +1,5 @@
 
+
 /*
  * CPArrayController.j
  * AppKit
@@ -150,7 +151,7 @@
 
 - (void)setContent:(id)value
 {
-    if (value == nil)
+    if (value === nil)
         value = [];
 
     if (![value isKindOfClass:[CPArray class]])
