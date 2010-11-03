@@ -80,13 +80,13 @@ var FILE = require("file");
 
 @end
 
-File.listPaths = function(aPath)
+FILE.listPaths = function(aPath)
 {
-    var paths = File.list(aPath),
+    var paths = FILE.list(aPath),
         count = paths.length;
 
     while (count--)
-        paths[count] = File.join(aPath, paths[count]);
+        paths[count] = FILE.join(aPath, paths[count]);
 
     return paths;
 }
