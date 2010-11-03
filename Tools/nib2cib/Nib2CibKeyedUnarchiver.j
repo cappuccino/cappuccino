@@ -68,9 +68,7 @@ var FILE = require("file");
             else if (FILE.isDirectory(path))
                 pathGroups.push(FILE.listPaths(path));
 
-            else if (!FILE.extension(aName) &&
-                    FILE.basename(path) === aName &&
-                    ["png", "gif", "jpg", "jpeg", "cib"].indexOf(FILE.extension(path)) !== -1)
+            else if (!FILE.extension(aName) && FILE.basename(path).replace(/\.[^.]*$/, "") === aName)
                 return path;
         }
     }
