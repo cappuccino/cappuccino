@@ -1008,19 +1008,20 @@
 
 @end
 
-var CPScrollViewContentViewKey       = "CPScrollViewContentView",
-    CPScrollViewHeaderClipViewKey    = "CPScrollViewHeaderClipViewKey",
-    CPScrollViewVLineScrollKey       = "CPScrollViewVLineScroll",
-    CPScrollViewHLineScrollKey       = "CPScrollViewHLineScroll",
-    CPScrollViewVPageScrollKey       = "CPScrollViewVPageScroll",
-    CPScrollViewHPageScrollKey       = "CPScrollViewHPageScroll",
-    CPScrollViewHasVScrollerKey      = "CPScrollViewHasVScroller",
-    CPScrollViewHasHScrollerKey      = "CPScrollViewHasHScroller",
-    CPScrollViewVScrollerKey         = "CPScrollViewVScroller",
-    CPScrollViewHScrollerKey         = "CPScrollViewHScroller",
-    CPScrollViewAutohidesScrollerKey = "CPScrollViewAutohidesScroller",
-    CPScrollViewCornerViewKey        = "CPScrollViewCornerViewKey",
-    CPScrollViewBorderTypeKey        = "CPScrollViewBorderTypeKey";
+var CPScrollViewContentViewKey          = @"CPScrollViewContentView",
+    CPScrollViewHeaderClipViewKey       = @"CPScrollViewHeaderClipViewKey",
+    CPScrollViewVLineScrollKey          = @"CPScrollViewVLineScroll",
+    CPScrollViewHLineScrollKey          = @"CPScrollViewHLineScroll",
+    CPScrollViewVPageScrollKey          = @"CPScrollViewVPageScroll",
+    CPScrollViewHPageScrollKey          = @"CPScrollViewHPageScroll",
+    CPScrollViewHasVScrollerKey         = @"CPScrollViewHasVScroller",
+    CPScrollViewHasHScrollerKey         = @"CPScrollViewHasHScroller",
+    CPScrollViewVScrollerKey            = @"CPScrollViewVScroller",
+    CPScrollViewHScrollerKey            = @"CPScrollViewHScroller",
+    CPScrollViewAutohidesScrollerKey    = @"CPScrollViewAutohidesScroller",
+    CPScrollViewCornerViewKey           = @"CPScrollViewCornerViewKey",
+    CPScrollViewBottomCornerViewKey     = @"CPScrollViewBottomCornerViewKey",
+    CPScrollViewBorderTypeKey           = @"CPScrollViewBorderTypeKey";
 
 @implementation CPScrollView (CPCoding)
 
@@ -1043,9 +1044,6 @@ var CPScrollViewContentViewKey       = "CPScrollViewContentView",
             [self addSubview:_headerClipView];
         }
 
-        _bottomCornerView       = [[CPView alloc] init];
-        [self addSubview:_bottomCornerView];
-
         _verticalScroller       = [aCoder decodeObjectForKey:CPScrollViewVScrollerKey];
         _horizontalScroller     = [aCoder decodeObjectForKey:CPScrollViewHScrollerKey];
 
@@ -1056,6 +1054,7 @@ var CPScrollViewContentViewKey       = "CPScrollViewContentView",
         _borderType             = [aCoder decodeIntForKey:CPScrollViewBorderTypeKey];
 
         _cornerView             = [aCoder decodeObjectForKey:CPScrollViewCornerViewKey];
+        _bottomCornerView       = [aCoder decodeObjectForKey:CPScrollViewBottomCornerViewKey];
 
         // Do to the anything goes nature of decoding, our subviews may not exist yet, so layout at the end of the run loop when we're sure everything is in a correct state.
         [[CPRunLoop currentRunLoop] performSelector:@selector(reflectScrolledClipView:) target:self argument:_contentView order:0 modes:[CPDefaultRunLoopMode]];
@@ -1084,6 +1083,7 @@ var CPScrollViewContentViewKey       = "CPScrollViewContentView",
     [aCoder encodeBool:_autohidesScrollers      forKey:CPScrollViewAutohidesScrollerKey];
 
     [aCoder encodeObject:_cornerView            forKey:CPScrollViewCornerViewKey];
+    [aCoder encodeObject:_bottomCornerView      forKey:CPScrollViewBottomCornerViewKey];
 
     [aCoder encodeInt:_borderType               forKey:CPScrollViewBorderTypeKey];
 }
