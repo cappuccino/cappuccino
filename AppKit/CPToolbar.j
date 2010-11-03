@@ -972,7 +972,7 @@ var TOP_MARGIN      = 5.0,
         {
             _imageView = [[CPImageView alloc] initWithFrame:[self bounds]];
 
-            [_imageView setImageScaling:CPScaleNone];
+            [_imageView setImageScaling:CPScaleProportionally];
 
             [self addSubview:_imageView];
         }

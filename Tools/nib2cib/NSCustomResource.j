@@ -50,6 +50,9 @@ var FILE = require("file");
                 CPLog.warn("*** WARNING: Resource named " + _resourceName + " not found in supplied resources path.");
             else
                 size = imageSize(FILE.join(FILE.cwd(), resourcePath));
+
+            if (resourcePath && FILE.basename(resourcePath) !== FILE.basename(_resourceName))
+                _resourceName = (_resourceName.indexOf("/") === -1 ? "" : FILE.dirname(_resourceName)) + FILE.basename(resourcePath);
         }
 
         _properties = [CPDictionary dictionaryWithObject:size forKey:@"size"];
