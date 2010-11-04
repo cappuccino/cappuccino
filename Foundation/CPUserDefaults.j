@@ -39,10 +39,15 @@ var StandardUserDefaults;
 
     CPUserDefaults provides a way of storing a list of user preferences. Everything you store must be CPCoding compliant because it is stored as CPData.
 
-    Unlike in Cocoa, CPUserDefaults is per-host by default because it stores its data in a cookie. You need to be aware that if the host does not accept
-    cookies or if they delete their cookies, your defaults will be erased.
+    Unlike in Cocoa, CPUserDefaults is per-host by default because of the method of storage. By default, the localStorage API will be used if the browser
+    supports it. Otherwise a cookie fallback mechanism is utilized. Be aware that if the user erases the local database or clears their cookies, all the
+    preferences will be lost. Also be aware that this is not a safe storage method; do not store sensitive data in the defaults database.
 
-    You can prevent this using the same method you use to store per-user defaults: write your defaults out to a persistent store. Hooks are provided for this.
+    The storage method utilized is determined by matching the writing domain to a dictionary of stores, concrete subclasses of the CPUserDefaultsStore abstract
+    class. This is a deviation from Cocoa. You can create a custom defaults store by subclassing the abstract class and implementing the protocol. Currently the
+    protocol consists of only two methods: -data and -setData:. The latter needs to store the passed in CPData object in your storage mechanism and the former
+    needs to return an equivalent CPData object synchronously. You can then configure CPUserDefaults to use your storage mechanism using
+    -setPersistentStoreClass:forDomain:reloadData:
 */
 @implementation CPUserDefaults : CPObject
 {
@@ -291,6 +296,10 @@ var StandardUserDefaults;
 /*!
     Set the CPUserDefaultStore concrete subclass that should be instantiated for use
     in persisting the given domain name.
+
+    @param aStoreClass The concrete subclass of CPUserDefaultsStore to use to store the defaults database for this domain
+    @param aDomain The name of the domain for which you want to change the storage mechanism
+    @param reloadData Empty the cached defaults for this domain and reload them from the new storage mechanism
 */
 - (CPUserDefaultsStore)setPersistentStoreClass:(Class)aStoreClass forDomain:(CPString)aDomain reloadData:(BOOL)aFlag
 {
