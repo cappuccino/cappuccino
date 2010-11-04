@@ -59,7 +59,13 @@ NS_CPToolbarItemIdentifierMap =
         [self setAction:CPSelectorFromString([aCoder decodeObjectForKey:@"NSToolbarItemAction"])];
         [self setEnabled:[aCoder decodeBoolForKey:@"NSToolbarItemEnabled"]];
 
-        [self setImage:[aCoder decodeBoolForKey:@"NSToolbarItemImage"]];
+        [self setImage:[aCoder decodeObjectForKey:@"NSToolbarItemImage"]];
+
+        //FIXME: we shouldn't let toolbars have images which are too big at all
+        if (_maxSize.height > 0)
+            _maxSize.height = MIN(_maxSize.height, 32.0);
+        if (_minSize.height > 0)
+            _minSize.height = MIN(_minSize.height, 32.0);
 
         [self setView:[aCoder decodeObjectForKey:@"NSToolbarItemView"]];
 

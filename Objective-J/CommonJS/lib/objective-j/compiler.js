@@ -112,7 +112,16 @@ function resolveFlags(args)
             
         else if (argument.indexOf("-U") === 0)
             gccFlags.push(argument);
-            
+
+        else if (argument === "--include")
+        {
+            if (++index < count)
+            {
+                gccFlags.push(argument);
+                gccFlags.push(args[index]);
+            }
+        }
+
         else if (argument.indexOf("-E") === 0)
             objjcFlags &= ~ObjectiveJ.Preprocessor.Flags.Preprocess;
             

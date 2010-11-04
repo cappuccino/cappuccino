@@ -26,8 +26,6 @@
 @import "CPControl.j"
 @import "CPStringDrawing.j"
 
-#include "CoreGraphics/CGGeometry.h"
-
 
 /* @group CPBezelStyle */
 
@@ -120,7 +118,7 @@ CPButtonImageOffset   = 3.0;
     return button;
 }
 
-+ (CPString)themeClass
++ (CPString)defaultThemeClass
 {
     return @"button";
 }
@@ -435,6 +433,7 @@ CPButtonImageOffset   = 3.0;
     if (_CGInsetIsEmpty(contentInset))
         return bounds;
 
+    bounds = _CGRectMakeCopy(bounds);
     bounds.origin.x += contentInset.left;
     bounds.origin.y += contentInset.top;
     bounds.size.width -= contentInset.left + contentInset.right;
@@ -453,6 +452,7 @@ CPButtonImageOffset   = 3.0;
     if (_CGInsetIsEmpty(bezelInset))
         return bounds;
 
+    bounds = _CGRectMakeCopy(bounds);
     bounds.origin.x += bezelInset.left;
     bounds.origin.y += bezelInset.top;
     bounds.size.width -= bezelInset.left + bezelInset.right;

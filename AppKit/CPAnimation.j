@@ -48,14 +48,14 @@ CPAnimationLinear       = 3;
 
 ACTUAL_FRAME_RATE = 0;
 
-/*! 
+/*!
     @ingroup appkit
     @class CPAnimation
 
     Manages an animation. Contains timing and progress information.
 
     @par Delegate Methods
-    
+
     @delegate -(BOOL)animationShouldStart:(CPAnimation)animation;
     Called at the beginning of \c -startAnimation.
     @param animation the animation that will start
@@ -81,13 +81,13 @@ ACTUAL_FRAME_RATE = 0;
 {
     CPTimeInterval          _lastTime;
     CPTimeInterval          _duration;
-    
+
     CPAnimationCurve        _animationCurve;
     CAMediaTimingFunction   _timingFunction;
-    
+
     float                   _frameRate;
     float                   _progress;
-    
+
     id                      _delegate;
     CPTimer                 _timer;
 }
@@ -101,7 +101,7 @@ ACTUAL_FRAME_RATE = 0;
 - (id)initWithDuration:(float)aDuration animationCurve:(CPAnimationCurve)anAnimationCurve
 {
     self = [super init];
-    
+
     if (self)
     {
         _progress = 0.0;
@@ -110,14 +110,14 @@ ACTUAL_FRAME_RATE = 0;
 
         [self setAnimationCurve:anAnimationCurve];
     }
-    
+
     return self;
 }
 
 /*!
     Sets the animation's pace.
     @param anAnimationCurve the animation's pace
-    @throws CPInvalidArgumentException if an invalid animation curve is specified 
+    @throws CPInvalidArgumentException if an invalid animation curve is specified
 */
 - (void)setAnimationCurve:(CPAnimationCurve)anAnimationCurve
 {
@@ -125,13 +125,13 @@ ACTUAL_FRAME_RATE = 0;
     {
         case CPAnimationEaseInOut:  timingFunctionName = kCAMediaTimingFunctionEaseInEaseOut;
                                     break;
-                                    
+
         case CPAnimationEaseIn:     timingFunctionName = kCAMediaTimingFunctionEaseIn;
                                     break;
-                                    
+
         case CPAnimationEaseOut:    timingFunctionName = kCAMediaTimingFunctionEaseOut;
                                     break;
-                                    
+
         case CPAnimationLinear:     timingFunctionName = kCAMediaTimingFunctionLinear;
                                     break;
 
@@ -139,7 +139,7 @@ ACTUAL_FRAME_RATE = 0;
                                                 reason:"Invalid value provided for animation curve"];
                                     break;
     }
-    
+
     _animationCurve = anAnimationCurve;
     _timingFunction = [CAMediaTimingFunction functionWithName:timingFunctionName];
 }
@@ -161,7 +161,7 @@ ACTUAL_FRAME_RATE = 0;
 {
     if (aDuration < 0)
         [CPException raise:CPInvalidArgumentException reason:"aDuration can't be negative"];
-        
+
     _duration = aDuration;
 }
 
@@ -182,7 +182,7 @@ ACTUAL_FRAME_RATE = 0;
 {
     if (frameRate < 0)
         [CPException raise:CPInvalidArgumentException reason:"frameRate can't be negative"];
-        
+
     _frameRate = frameRate;
 }
 
@@ -221,13 +221,13 @@ ACTUAL_FRAME_RATE = 0;
     // If we're already animating, or our delegate stops us, animate.
     if (_timer || _delegate && [_delegate respondsToSelector:@selector(animationShouldStart:)] && ![_delegate animationShouldStart:self])
         return;
-    
+
     if (_progress === 1.0)
         _progress = 0.0;
-    
+
     ACTUAL_FRAME_RATE = 0;
     _lastTime = new Date();
-    
+
     _timer = [CPTimer scheduledTimerWithTimeInterval:0.0 target:self selector:@selector(animationTimerDidFire:) userInfo:nil repeats:YES];
 }
 
@@ -242,14 +242,14 @@ ACTUAL_FRAME_RATE = 0;
     _lastTime = currentTime;
 
     ++ACTUAL_FRAME_RATE;
-    
+
     [self setCurrentProgress:progress];
-    
+
     if (progress === 1.0)
     {
         [_timer invalidate];
         _timer = nil;
-        
+
         if ([_delegate respondsToSelector:@selector(animationDidEnd:)])
             [_delegate animationDidEnd:self];
     }
@@ -262,10 +262,10 @@ ACTUAL_FRAME_RATE = 0;
 {
     if (!_timer)
         return;
-    
+
     [_timer invalidate];
     _timer = nil;
-    
+
     if ([_delegate respondsToSelector:@selector(animationDidStop:)])
         [_delegate animationDidStop:self];
 }
@@ -302,16 +302,16 @@ ACTUAL_FRAME_RATE = 0;
 - (float)currentValue
 {
     var t = [self currentProgress];
-    
+
     if ([_delegate respondsToSelector:@selector(animation:valueForProgress:)])
         return [_delegate animation:self valueForProgress:t];
-    
+
     var c1 = [],
         c2 = [];
-  
+
     [_timingFunction getControlPointAtIndex:1 values:c1];
     [_timingFunction getControlPointAtIndex:2 values:c2];
- 
+
     return CubicBezierAtTime(t,c1[0],c1[1],c2[0],c2[1],_duration);
 }
 
@@ -332,7 +332,7 @@ var CubicBezierAtTime = function CubicBezierAtTime(t,p1x,p1y,p2x,p2y,duration)
     function solve(x,epsilon) {return sampleCurveY(solveCurveX(x,epsilon));};
     // Given an x value, find a parametric value it came from.
     function solveCurveX(x,epsilon) {var t0,t1,t2,x2,d2,i;
-        function fabs(n) {if(n>=0) {return n;}else {return 0-n;}}; 
+        function fabs(n) {if(n>=0) {return n;}else {return 0-n;}};
         // First try a few iterations of Newton's method -- normally very fast.
         for(t2=x, i=0; i<8; i++) {x2=sampleCurveX(t2)-x; if(fabs(x2)<epsilon) {return t2;} d2=sampleCurveDerivativeX(t2); if(fabs(d2)<1e-6) {break;} t2=t2-x2/d2;}
         // Fall back to the bisection method for reliability.

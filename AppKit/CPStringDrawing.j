@@ -25,6 +25,10 @@
 @import "CPPlatformString.j"
 
 
+var CPStringSizeWithFontInWidthCache = {};
+
+CPStringSizeCachingEnabled = YES;
+
 @implementation CPString (CPStringDrawing)
 
 /*!
@@ -50,7 +54,19 @@
 
 - (CGSize)sizeWithFont:(CPFont)aFont inWidth:(float)aWidth
 {
-    return [CPPlatformString sizeOfString:self withFont:aFont forWidth:aWidth];
+    if (!CPStringSizeCachingEnabled)
+        return [CPPlatformString sizeOfString:self withFont:aFont forWidth:aWidth];
+
+    var cacheKey = self + [aFont cssString] + aWidth,
+        size = CPStringSizeWithFontInWidthCache[cacheKey];
+
+    if (size === undefined)
+    {
+        size = [CPPlatformString sizeOfString:self withFont:aFont forWidth:aWidth];
+        CPStringSizeWithFontInWidthCache[cacheKey] = size;
+    }
+
+    return CGSizeMakeCopy(size);
 }
 
 @end

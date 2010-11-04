@@ -20,6 +20,7 @@
  */
 
 @import "CPObject.j"
+@import "CPArray.j"
 
 /*!
     Operations receive very low priority for execution.

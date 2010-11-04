@@ -42,10 +42,12 @@ foundationTask = framework ("Foundation", function(foundationTask)
     foundationTask.setInfoPlistPath("Info.plist");
     foundationTask.setEnvironments(require("objective-j/jake/environment").ObjJ);
 
+    var INCLUDES = "--include \"../AppKit/Platform/Platform.h\"";
+
     if ($CONFIGURATION === "Release")
-        foundationTask.setCompilerFlags("-O");
+        foundationTask.setCompilerFlags("-O " + INCLUDES);
     else
-        foundationTask.setCompilerFlags("-DDEBUG -g");
+        foundationTask.setCompilerFlags("-DDEBUG -g " + INCLUDES);
 });
 
 $BUILD_CJS_FOUNDATION = FILE.join($BUILD_CJS_CAPPUCCINO_FRAMEWORKS, "Foundation");

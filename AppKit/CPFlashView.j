@@ -23,7 +23,6 @@
 @import "CPFlashMovie.j"
 @import "CPView.j"
 
-#include "Platform/Platform.h"
 
 var IEFlashCLSID = "clsid:D27CDB6E-AE6D-11cf-96B8-444553540000";
 

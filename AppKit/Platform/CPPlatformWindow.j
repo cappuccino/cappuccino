@@ -22,9 +22,6 @@
 
 @import <Foundation/CPObject.j>
 
-#import "Platform.h"
-#import "../CoreGraphics/CGGeometry.h"
-
 
 var PrimaryPlatformWindow   = NULL;
 

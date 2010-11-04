@@ -37,6 +37,12 @@ var selectors = ["pointingHandCursor", "resizeDownCursor", "resizeLeftCursor", "
     [button setTitle:@"set Cursor"];
     [contentView addSubview:button];
     
+    var button = [[CPButton alloc] initWithFrame:CGRectMake(270,150,150,24)];
+    [button setAction:@selector(setUrlCursor:)];
+    [button setTarget:self];
+    [button setTitle:@"set Cursor from url"];
+    [contentView addSubview:button];
+    
     [theWindow orderFront:self];
     // Uncomment the following line to turn on the standard menu bar.
     //[CPMenu setMenuBarVisible:YES];
@@ -46,6 +52,13 @@ var selectors = ["pointingHandCursor", "resizeDownCursor", "resizeLeftCursor", "
 {
     var selector = CPSelectorFromString([popup titleOfSelectedItem]);
     var cursor = [CPCursor performSelector:selector];
+    [cursor set];
+}
+
+-(void)setUrlCursor:(id)sender
+{   // note  gifs don't animate when they are used as a cursor.
+    var aImage = [[CPImage alloc] initWithContentsOfFile:[[CPBundle mainBundle] pathForResource:@"spinner.gif"]];
+    var cursor = [[CPCursor alloc] initWithImage:aImage hotSpot:CGPointMakeZero()];
     [cursor set];
 }
 

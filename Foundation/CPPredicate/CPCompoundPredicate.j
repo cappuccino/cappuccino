@@ -126,7 +126,7 @@ var CPCompoundPredicateType;
         i;
 
     if (count == 0)
-    	return @"TRUPREDICATE";
+        return @"TRUPREDICATE";
 
     for (i = 0; i < count; i++)
     {

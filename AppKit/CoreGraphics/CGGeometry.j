@@ -20,8 +20,6 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#include "CGGeometry.h"
-
 #define _function(inline) function inline { return _##inline; }
 
 _function(CGPointMake(x, y))

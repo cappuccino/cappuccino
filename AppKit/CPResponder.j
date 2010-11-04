@@ -22,6 +22,7 @@
 
 @import <Foundation/CPObject.j>
 
+
 CPDeleteKeyCode         = 8;
 CPTabKeyCode            = 9;
 CPReturnKeyCode         = 13;
@@ -260,10 +261,6 @@ CPDeleteForwardKeyCode  = 46;
     [[self nextResponder] insertNewline:aSender];
 }
 
-- (void)cancel:(id)sender
-{
-}
-
 - (void)insertTab:(id)sender
 {
 }
@@ -303,7 +300,7 @@ CPDeleteForwardKeyCode  = 46;
 */
 - (BOOL)tryToPerform:(SEL)aSelector with:(id)anObject
 {
-    if([self respondsToSelector:aSelector])
+    if ([self respondsToSelector:aSelector])
     {
         [self performSelector:aSelector withObject:anObject];
 
@@ -345,7 +342,8 @@ CPDeleteForwardKeyCode  = 46;
 
 @end
 
-var CPResponderNextResponderKey = @"CPResponderNextResponderKey";
+var CPResponderNextResponderKey = @"CPResponderNextResponderKey",
+    CPResponderMenuKey = @"CPResponderMenuKey";
 
 @implementation CPResponder (CPCoding)
 
@@ -359,7 +357,10 @@ var CPResponderNextResponderKey = @"CPResponderNextResponderKey";
     self = [super init];
 
     if (self)
+    {
         _nextResponder = [aCoder decodeObjectForKey:CPResponderNextResponderKey];
+        _menu = [aCoder decodeObjectForKey:CPResponderMenuKey];
+    }
 
     return self;
 }
@@ -373,6 +374,8 @@ var CPResponderNextResponderKey = @"CPResponderNextResponderKey";
     // This will come out nil on the other side with decodeObjectForKey:
     if (_nextResponder !== nil)
         [aCoder encodeConditionalObject:_nextResponder forKey:CPResponderNextResponderKey];
+
+    [aCoder encodeObject:_menu forKey:CPResponderMenuKey];
 }
 
 @end

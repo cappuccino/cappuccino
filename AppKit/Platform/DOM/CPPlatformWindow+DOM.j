@@ -120,7 +120,6 @@
 @import "CPPlatformWindow.j"
 @import "CPPlatformWindow+DOMKeys.j"
 
-#import "../../CoreGraphics/CGGeometry.h"
 
 // List of all open native windows
 var PlatformWindows = [CPSet set];
@@ -822,7 +821,14 @@ var supportsNativeDragAndDrop = [CPPlatform supportsDragAndDrop];
                                 _capsLockActive = NO;
 
                             if ([ModifierKeyCodes containsObject:keyCode])
+                            {
+                                // A modifier key will never fire keypress. We don't need to do any other processing so we just fire it here and break.
+                                event = [CPEvent keyEventWithType:CPFlagsChanged location:location modifierFlags:modifierFlags
+                                            timestamp:timestamp windowNumber:windowNumber context:nil
+                                            characters:nil charactersIgnoringModifiers:nil isARepeat:NO keyCode:_keyCode];
+
                                 break;
+                            }
 
                             var characters = KeyCodesToUnicodeMap[charCode] || String.fromCharCode(charCode),
                                 charactersIgnoringModifiers = characters.toLowerCase();

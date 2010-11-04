@@ -1,5 +1,6 @@
 
 @import <Foundation/CPDictionary.j>
+@import <Foundation/CPCountedSet.j>
 
 @import "CPController.j"
 
@@ -495,7 +496,7 @@ var CPObjectControllerObjectClassNameKey                = @"CPObjectControllerOb
             [self didChangeValueForKey:keyPath];
     }
 
-    [self replaceObjectAtIndex:anIndex withObject:anObject];
+    [super replaceObjectAtIndex:anIndex withObject:anObject];
 }
 
 @end

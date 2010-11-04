@@ -440,7 +440,7 @@ class_createInstance = function(/*Class*/ aClass)
 
         while (theClass)
         {
-            var ivars = theClass.ivars;
+            var ivars = theClass.ivars,
                 count = ivars.length;
 
             while (count--)

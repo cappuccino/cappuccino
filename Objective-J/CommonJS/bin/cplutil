@@ -5,7 +5,7 @@ var FILE = require("file"),
     OS = require("os"),
     ObjectiveJ = require("objective-j");
 
-var parser = new (require("args").Parser)();
+var parser = new (require("narwhal/args").Parser)();
 
 parser.usage("file...");
 parser.help("Cappuccino plist converter.");

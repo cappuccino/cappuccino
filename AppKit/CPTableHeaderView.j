@@ -20,18 +20,19 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+@import <Foundation/CPIndexSet.j>
+
 @import "CPTableColumn.j"
 @import "CPTableView.j"
 @import "CPView.j"
 
-#include "CoreGraphics/CGGeometry.h"
 
 @implementation _CPTableColumnHeaderView : CPView
 {
     _CPImageAndTextView     _textField;
 }
 
-+ (CPString)themeClass
++ (CPString)defaultThemeClass
 {
     return @"columnHeader";
 }
@@ -166,7 +167,7 @@ var _CPTableColumnHeaderViewStringValueKey = @"_CPTableColumnHeaderViewStringVal
     CPTableView             _tableView @accessors(property=tableView);
 }
 
-+ (CPString)themeClass
++ (CPString)defaultThemeClass
 {
     return @"tableHeaderRow";
 }

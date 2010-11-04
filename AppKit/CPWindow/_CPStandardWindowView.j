@@ -22,6 +22,7 @@
 
 @import "_CPWindowView.j"
 
+
 var GRADIENT_HEIGHT = 41.0;
 
 var _CPTexturedWindowHeadGradientColor  = nil,

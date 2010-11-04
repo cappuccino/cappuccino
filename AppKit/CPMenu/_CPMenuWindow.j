@@ -1,5 +1,4 @@
-
-#include "../CoreGraphics/CGGeometry.h"
+@import "CPWindow.j"
 
 
 var _CPMenuWindowPool                       = [],

@@ -4,9 +4,9 @@ require("./common.jake");
 var FILE = require("file"),
     SYSTEM = require("system"),
     OS = require("os"),
-    UTIL = require("util"),
+    UTIL = require("narwhal/util"),
     jake = require("jake"),
-    stream = require("term").stream;
+    stream = require("narwhal/term").stream;
 
 var subprojects = ["Objective-J", "CommonJS", "Foundation", "AppKit", "Tools"];
 
@@ -263,6 +263,8 @@ task("test-only", function()
     var code = OS.system(serializedENV() + " " + cmd.map(OS.enquote).join(" "));
     if (code !== 0)
         OS.exit(code);
+
+    OS.system(serializedENV() + " " + ["js", "Tests/DetectMissingImports.js"].map(OS.enquote).join(" "));
 });
 
 task("push-packages", ["push-cappuccino", "push-objective-j"]);

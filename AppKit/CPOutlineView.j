@@ -23,8 +23,6 @@
 @import "CPTableColumn.j"
 @import "CPTableView.j"
 
-#include "CoreGraphics/CGGeometry.h"
-
 
 CPOutlineViewColumnDidMoveNotification          = @"CPOutlineViewColumnDidMoveNotification";
 CPOutlineViewColumnDidResizeNotification        = @"CPOutlineViewColumnDidResizeNotification";
@@ -1199,10 +1197,10 @@ var _loadItemInfoForItem = function(/*CPOutlineView*/ anOutlineView, /*id*/ anIt
     }
 }
 
-- (BOOL)tableView:(CPTableView)aTableView isGroupRow:(int)row
+- (BOOL)tableView:(CPTableView)aTableView isGroupRow:(int)aRow
 {
     if ((_outlineView._implementedOutlineViewDelegateMethods & CPOutlineViewDelegate_outlineView_isGroupItem_))
-        return [_outlineView._outlineViewDelegate outlineView:_outlineView isGroupItem:[_outlineView itemAtRow:theRow]];
+        return [_outlineView._outlineViewDelegate outlineView:_outlineView isGroupItem:[_outlineView itemAtRow:aRow]];
 
     return NO;
 }

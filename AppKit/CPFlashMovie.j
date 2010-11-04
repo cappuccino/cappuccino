@@ -22,6 +22,7 @@
 
 @import <Foundation/CPObject.j>
 
+
 /*! 
     @ingroup appkit
     @class CPFlashMovie
