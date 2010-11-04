@@ -24,10 +24,6 @@
 @import "CPImage.j"
 @import "CPView.j"
 
-#include "CoreGraphics/CGGeometry.h"
-#include "Platform/Platform.h"
-#include "Platform/DOM/CPDOMDisplayServer.h"
-
 
 CPSplitViewDidResizeSubviewsNotification = @"CPSplitViewDidResizeSubviewsNotification";
 CPSplitViewWillResizeSubviewsNotification = @"CPSplitViewWillResizeSubviewsNotification";
@@ -61,7 +57,7 @@ var CPSplitViewHorizontalImage = nil,
     CPArray     _buttonBars;
 }
 
-+ (CPString)themeClass
++ (CPString)defaultThemeClass
 {
     return @"splitview";
 }

@@ -22,8 +22,6 @@
 
 @import "CPControl.j"
 
-#include "CoreGraphics/CGGeometry.h"
-
 
 // CPScroller Constants
 CPScrollerNoPart            = 0;
@@ -72,7 +70,7 @@ NAMES_FOR_PARTS[CPScrollerKnob]             = @"knob";
     CGPoint                 _trackingStartPoint;
 }
 
-+ (CPString)themeClass
++ (CPString)defaultThemeClass
 {
     return "scroller";
 }

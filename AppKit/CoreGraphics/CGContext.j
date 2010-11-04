@@ -20,13 +20,11 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#include "CGGeometry.h"
-#include "CGAffineTransform.h"
-
 @import "CGAffineTransform.j"
 @import "CPCompatibility.j"
 @import "CGGeometry.j"
 @import "CGPath.j"
+
 
 kCGLineCapButt              = 0;
 kCGLineCapRound             = 1; 

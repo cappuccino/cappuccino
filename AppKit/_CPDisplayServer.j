@@ -20,10 +20,6 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#include "CoreGraphics/CGGeometry.h"
-#include "CoreGraphics/CGAffineTransform.h"
-#include "Platform/DOM/CPDOMDisplayServer.h"
-
 @import <Foundation/CPRunLoop.j>
 
 PREPARE_DOM_OPTIMIZATION();

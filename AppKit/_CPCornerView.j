@@ -26,7 +26,7 @@
 {
 }
 
-+ (CPString)themeClass
++ (CPString)defaultThemeClass
 {
     return @"cornerview";
 }

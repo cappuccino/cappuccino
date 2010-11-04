@@ -22,7 +22,6 @@
 
 @import "CPControl.j"
 
-#include "CoreGraphics/CGGeometry.h"
 
 /*! SLIDER STATES */
 
@@ -42,7 +41,7 @@ CPCircularSlider    = 1;
     BOOL            _isVertical;
 }
 
-+ (CPString)themeClass
++ (CPString)defaultThemeClass
 {
     return "slider";
 }

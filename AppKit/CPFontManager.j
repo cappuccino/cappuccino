@@ -22,7 +22,7 @@
 
 @import <Foundation/CPObject.j>
 
-@import <AppKit/CPFont.j>
+@import "CPFont.j"
 
 
 var CPSharedFontManager     = nil,

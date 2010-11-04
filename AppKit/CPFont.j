@@ -23,7 +23,8 @@
 @import <Foundation/CPObject.j>
 @import <Foundation/CPBundle.j>
 
-@import <AppKit/CPView.j>
+@import "CPView.j"
+
 
 var _CPFonts                = {},
     _CPFontSystemFontFace   = @"Arial, sans-serif",

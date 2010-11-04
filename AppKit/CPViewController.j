@@ -22,9 +22,10 @@
 
 @import <Foundation/CPArray.j>
 
-@import <AppKit/CPApplication.j>
-@import <AppKit/CPCib.j>
-@import <AppKit/CPResponder.j>
+@import "CPApplication.j"
+@import "CPCib.j"
+@import "CPResponder.j"
+
 
 var CPViewControllerCachedCibs;
 

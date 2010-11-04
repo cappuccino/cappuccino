@@ -1,7 +1,5 @@
 
-@import <AppKit/CPView.j>
-
-#include "CoreGraphics/CGGeometry.h"
+@import "CPView.j"
 
 
 @implementation CPButtonBar : CPView
@@ -50,7 +48,7 @@
     return button;
 }
 
-+ (CPString)themeClass
++ (CPString)defaultThemeClass
 {
     return @"button-bar";
 }

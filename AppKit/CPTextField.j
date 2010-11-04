@@ -26,9 +26,6 @@
 @import "CPCompatibility.j"
 @import "_CPImageAndTextView.j"
 
-#include "CoreGraphics/CGGeometry.h"
-#include "Platform/Platform.h"
-#include "Platform/DOM/CPDOMDisplayServer.h"
 
 CPTextFieldSquareBezel          = 0;    /*! A textfield bezel with a squared corners. */
 CPTextFieldRoundedBezel         = 1;    /*! A textfield bezel with rounded corners. */
@@ -158,7 +155,7 @@ CPTextFieldStatePlaceholder = CPThemeState("placeholder");
     return textField;
 }
 
-+ (CPString)themeClass
++ (CPString)defaultThemeClass
 {
     return "textfield";
 }
@@ -1266,17 +1263,6 @@ var CPTextFieldIsEditableKey            = "CPTextFieldIsEditableKey",
 
         [self setPlaceholderString:[aCoder decodeObjectForKey:CPTextFieldPlaceholderStringKey]];
 
-        // Make sure the frame is big enough
-        var minSize = [self _minimumFrameSize];
-        minSize.width = MAX(CGRectGetWidth([self frame]), minSize.width);
-        minSize.height = MAX(CGRectGetHeight([self frame]), minSize.height);
-
-        // Only size multiline bezeled textfields if it's to small to fit the content
-        if ([self isBezeled])
-            if ([self lineBreakMode] === CPLineBreakByCharWrapping || [self lineBreakMode] == CPLineBreakByWordWrapping)
-                minSize.height = MAX(CGRectGetHeight([self frame]), minSize.height);
-
-        [self setFrameSize:minSize];
     }
 
     return self;

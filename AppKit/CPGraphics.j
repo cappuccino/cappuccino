@@ -23,8 +23,6 @@
 @import "CPColor.j"
 @import "CPGraphicsContext.j"
 
-#include "CoreGraphics/CGGeometry.h"
-
 
 function CPDrawTiledRects(
    /* CGRect */ boundsRect,

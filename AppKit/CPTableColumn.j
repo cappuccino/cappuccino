@@ -28,7 +28,6 @@
 
 @import "CPTableHeaderView.j"
 
-#include "CoreGraphics/CGGeometry.h"
 
 CPTableColumnNoResizing         = 0;
 CPTableColumnAutoresizingMask   = 1 << 0;

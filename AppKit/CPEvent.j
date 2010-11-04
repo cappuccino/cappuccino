@@ -23,8 +23,6 @@
 @import <Foundation/CPObject.j>
 @import "CPText.j"
 
-#include "CoreGraphics/CGGeometry.h"
-
 
 CPLeftMouseDown                         = 1;
 CPLeftMouseUp                           = 2;

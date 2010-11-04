@@ -20,13 +20,10 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#include "CGGeometry.h"
-#include "CGAffineTransform.h"
-
-#define _function(inline) function inline { return _##inline; }
-
 @import "CGGeometry.j"
 
+
+#define _function(inline) function inline { return _##inline; }
 
 _function(CGAffineTransformMake(a, b, c, d, tx, ty))
 _function(CGAffineTransformMakeIdentity())

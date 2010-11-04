@@ -16,17 +16,6 @@
     return self;
 }
 
-- (id)initWithCoder:(CPCoder)coder
-{
-    var variable = [coder decodeObjectForKey:@"CPExpressionVariable"];
-    return [self initWithVariable:variable];
-}
-
-- (void)encodeWithCoder:(CPCoder)coder
-{
-    [coder encodeObject:_variable forKey:@"CPExpressionVariable"];
-}
-
 - (BOOL)isEqual:(id)object
 {
     if (self == object)
@@ -63,6 +52,22 @@
     return self;
 }
 
+@end
+
+var CPVariableKey = @"CPVariable";
+
+@implementation CPExpression_variable (CPCoding)
+
+- (id)initWithCoder:(CPCoder)coder
+{
+    var variable = [coder decodeObjectForKey:CPVariableKey];
+    return [self initWithVariable:variable];
+}
+
+- (void)encodeWithCoder:(CPCoder)coder
+{
+    [coder encodeObject:_variable forKey:CPVariableKey];
+}
 
 @end
 

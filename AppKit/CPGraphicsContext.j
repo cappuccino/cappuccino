@@ -21,7 +21,9 @@
  */
 
 @import <Foundation/CPObject.j>
-@import <AppKit/CGContext.j>
+
+@import "CGContext.j"
+
 
 var CPGraphicsContextCurrent    = nil;
 

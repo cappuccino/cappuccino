@@ -28,6 +28,7 @@
 @import <Foundation/CPDictionary.j>
 @import <Foundation/CPValueTransformer.j>
 
+
 var exposedBindingsMap = [CPDictionary new],
     bindingsMap = [CPDictionary new];
 

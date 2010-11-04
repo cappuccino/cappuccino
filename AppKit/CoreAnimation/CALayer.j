@@ -22,13 +22,10 @@
 
 @import <Foundation/CPObject.j>
 
-@import <AppKit/CABackingStore.j>
+@import "CABackingStore.j"
 
-@import <AppKit/CGContext.j>
-@import <AppKit/CGGeometry.j>
-
-#include "../CoreGraphics/CGGeometry.h"
-#include "../CoreGraphics/CGAffineTransform.j"
+@import "CGContext.j"
+@import "CGGeometry.j"
 
 
 #define DOM(aLayer) aLayer._DOMElement
