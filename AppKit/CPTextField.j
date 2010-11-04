@@ -1263,17 +1263,6 @@ var CPTextFieldIsEditableKey            = "CPTextFieldIsEditableKey",
 
         [self setPlaceholderString:[aCoder decodeObjectForKey:CPTextFieldPlaceholderStringKey]];
 
-        // Make sure the frame is big enough
-        var minSize = [self _minimumFrameSize];
-        minSize.width = MAX(CGRectGetWidth([self frame]), minSize.width);
-        minSize.height = MAX(CGRectGetHeight([self frame]), minSize.height);
-
-        // Only size multiline bezeled textfields if it's to small to fit the content
-        if ([self isBezeled])
-            if ([self lineBreakMode] === CPLineBreakByCharWrapping || [self lineBreakMode] == CPLineBreakByWordWrapping)
-                minSize.height = MAX(CGRectGetHeight([self frame]), minSize.height);
-
-        [self setFrameSize:minSize];
     }
 
     return self;
