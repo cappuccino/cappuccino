@@ -1567,6 +1567,16 @@ var CPViewFlags                     = { },
 }
 
 /*!
+    Converts the point from the base coordinate system to the receiver’s coordinate system.
+    @param aPoint A point specifying a location in the base coordinate system
+    @return The point converted to the receiver’s base coordinate system
+*/
+- (CGPoint)convertPointFromBase:(CGPoint)aPoint
+{
+    return CGPointApplyAffineTransform(aPoint, _CPViewGetTransform(nil, self));
+}
+
+/*!
     Converts \c aPoint from the receiver's coordinate space to the coordinate space of \c aView.
     @param aPoint the point to convert
     @param aView the coordinate space to which the point will be converted
@@ -1575,6 +1585,16 @@ var CPViewFlags                     = { },
 - (CGPoint)convertPoint:(CGPoint)aPoint toView:(CPView)aView
 {
     return CGPointApplyAffineTransform(aPoint, _CPViewGetTransform(self, aView));
+}
+
+/*!
+    Converts the point from the receiver’s coordinate system to the base coordinate system.
+    @param aPoint A point specifying a location in the coordinate system of the receiver
+    @return The point converted to the base coordinate system
+*/
+- (CGPoint)convertPointToBase:(CGPoint)aPoint
+{
+    return CGPointApplyAffineTransform(aPoint, _CPViewGetTransform(self, nil));
 }
 
 /*!
@@ -1611,6 +1631,16 @@ var CPViewFlags                     = { },
 }
 
 /*!
+    Converts the rectangle from the base coordinate system to the receiver’s coordinate system.
+    @param aRect A rectangle specifying a location in the base coordinate system
+    @return The rectangle converted to the receiver’s base coordinate system
+*/
+- (CGRect)convertRectFromBase:(CGRect)aRect
+{
+    return CGRectApplyAffineTransform(aRect, _CPViewGetTransform(nil, self));
+}
+
+/*!
     Converts \c aRect from the receiver's coordinate space to \c aView's coordinate space.
     @param aRect the rectangle to convert
     @param aView the coordinate space to which the rectangle will be converted
@@ -1619,6 +1649,16 @@ var CPViewFlags                     = { },
 - (CGRect)convertRect:(CGRect)aRect toView:(CPView)aView
 {
     return CGRectApplyAffineTransform(aRect, _CPViewGetTransform(self, aView));
+}
+
+/*!
+    Converts the rectangle from the receiver’s coordinate system to the base coordinate system.
+    @param aRect  A rectangle specifying a location in the coordinate system of the receiver
+    @return The rectangle converted to the base coordinate system
+*/
+- (CGRect)convertRectToBase:(CGRect)aRect
+{
+    return CGRectApplyAffineTransform(aRect, _CPViewGetTransform(self, nil));
 }
 
 /*!
