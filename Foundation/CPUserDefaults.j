@@ -559,7 +559,7 @@ var StandardUserDefaults;
 - (void)setString:(int)aString forKey:(CPString)aKey
 {
     if ([aString class] !== CPString)
-        [CPException raise:CPInvalidArgumentException reason:aString + @" is not a valid number"];
+        [CPException raise:CPInvalidArgumentException reason:aString + @" is not a valid string"];
     [self setObject:aString forKey:aKey];
 }
 
