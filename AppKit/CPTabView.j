@@ -74,7 +74,7 @@ var HEIGHT_OF_SEGMENTED_CONTROL = 24;
         [self addSubview:box];
         [self addSubview:tabs];
 
-        [box setAutoresizingMask:CPViewWidthSizable];
+        [box setAutoresizingMask:CPViewWidthSizable | CPViewHeightSizable];
         [tabs setAutoresizingMask:CPViewMinXMargin | CPViewMaxXMargin];
     }
     return self;
