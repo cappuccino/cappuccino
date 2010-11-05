@@ -528,7 +528,7 @@ var StandardUserDefaults;
 */
 - (void)setFloat:(float)aFloat forKey:(CPString)aKey
 {
-    if (typeof(aFloat) !== "number")
+    if (typeof(parseFloat(aFloat)) !== "number")
         [CPException raise:CPInvalidArgumentException reason:aFloat + @" is not a valid number"];
     [self setObject:aFloat forKey:aKey];
 }
@@ -538,7 +538,7 @@ var StandardUserDefaults;
 */
 - (void)setDouble:(double)aDouble forKey:(CPString)aKey
 {
-    if (typeof(aDouble) !== "number")
+    if (typeof(parseFloat(aDouble)) !== "number")
         [CPException raise:CPInvalidArgumentException reason:aDouble + @" is not a valid number"];
     [self setObject:aDouble forKey:aKey];
 }
@@ -548,7 +548,7 @@ var StandardUserDefaults;
 */
 - (void)setInteger:(int)anInteger forKey:(CPString)aKey
 {
-    if (typeof(anInteger) !== "number")
+    if (typeof(parseInt(anInteger)) !== "number")
         [CPException raise:CPInvalidArgumentException reason:anInteger + @" is not a valid number"];
     [self setObject:anInteger forKey:aKey];
 }
