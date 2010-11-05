@@ -493,6 +493,22 @@ var StandardUserDefaults;
     return nil;
 }
 
+/*!
+    Returns the string array value associated with the specified key.
+*/
+- (CPArray)stringArrayForKey:(CPString)aKey
+{
+    var value = [self objectForKey:aKey];
+    if ([value class] === CPArray)
+    {
+        for (var i = 0; i < [value count]; i++)
+            if ([[value objectAtIndex:i] class] !== CPString)
+                return nil;
+        return value;
+    }
+    return nil;
+}
+
 
 #pragma mark -
 #pragma mark Values Setters
