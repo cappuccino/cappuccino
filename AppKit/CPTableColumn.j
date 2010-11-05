@@ -377,6 +377,8 @@ CPTableColumnUserResizingMask   = 1 << 1;
 
 - (void)_postDidResizeNotificationWithOldWidth:(float)oldWidth
 {
+    [[self tableView] _didResizeTableColumn:self];
+
     [[CPNotificationCenter defaultCenter]
     postNotificationName:CPTableViewColumnDidResizeNotification
                   object:[self tableView]

@@ -265,8 +265,8 @@ CPGrooveBorder  = 3;
     CGContextSetStrokeColor(context, [self borderColor]);
     CGContextSetLineWidth(context, 1.0);
 
-    CGContextMoveToPoint(context, CGRectGetMinX(aRect), CGRectGetMinY(aRect));
-    CGContextAddLineToPoint(context, CGRectGetWidth(aRect), CGRectGetMinY(aRect));
+    CGContextMoveToPoint(context, CGRectGetMinX(aRect), CGRectGetMinY(aRect) + 0.5);
+    CGContextAddLineToPoint(context, CGRectGetWidth(aRect), CGRectGetMinY(aRect) + 0.5);
     CGContextStrokePath(context);
 }
 
@@ -277,8 +277,8 @@ CPGrooveBorder  = 3;
     CGContextSetStrokeColor(context, [self borderColor]);
     CGContextSetLineWidth(context, 1.0);
 
-    CGContextMoveToPoint(context, CGRectGetMinX(aRect), CGRectGetMinY(aRect));
-    CGContextAddLineToPoint(context, CGRectGetMinX(aRect), CGRectGetHeight(aRect));
+    CGContextMoveToPoint(context, CGRectGetMinX(aRect) + 0.5, CGRectGetMinY(aRect));
+    CGContextAddLineToPoint(context, CGRectGetMinX(aRect) + 0.5, CGRectGetHeight(aRect));
     CGContextStrokePath(context);
 }
 
