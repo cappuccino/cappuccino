@@ -568,7 +568,7 @@ var StandardUserDefaults;
 */
 - (void)setURL:(CPURL)anURL forKey:(CPString)aKey
 {
-    if ([anURL class] !== CPURL)
+    if ([anURL class] !== CPURL && [anURL class] !== CPString)
         [CPException raise:CPInvalidArgumentException reason:anURL + @" is not a valid CPURL"];
     [self setObject:anURL forKey:aKey];
 }
