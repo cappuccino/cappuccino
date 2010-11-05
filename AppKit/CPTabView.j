@@ -425,7 +425,6 @@ var CPTabViewItemsKey               = "CPTabViewItemsKey",
 {
     if (self = [super initWithCoder:aCoder])
     {
-        type    = [aCoder decodeIntForKey:CPTabViewTypeKey];
         items   = [];
 
         [self _init];
@@ -439,6 +438,8 @@ var CPTabViewItemsKey               = "CPTabViewItemsKey",
             [self selectTabViewItem:selected];
 
         [self setDelegate:[aCoder decodeObjectForKey:CPTabViewDelegateKey]];
+
+        [self setTabViewType:[aCoder decodeIntForKey:CPTabViewTypeKey]];
     }
 
     return self;
