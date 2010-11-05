@@ -370,7 +370,9 @@ var StandardUserDefaults;
 - (BOOL)boolForKey:(CPString)aKey
 {
     var value = [self objectForKey:aKey];
-    if ([value respondsToSelector:@selector(boolValue)])
+    if (typeof(value) == "boolean")
+        return value;
+    else if ([value respondsToSelector:@selector(boolValue)])
         return [value boolValue];
 
     return NO;
@@ -407,7 +409,9 @@ var StandardUserDefaults;
 - (float)floatForKey:(CPString)aKey
 {
     var value = [self objectForKey:aKey];
-    if ([value respondsToSelector:@selector(floatValue)])
+    if (typeof(value) == "number")
+        return parseFloat(value);
+    else if ([value respondsToSelector:@selector(floatValue)])
         return [value floatValue];
 
     return 0.0;
@@ -419,7 +423,9 @@ var StandardUserDefaults;
 - (int)integerForKey:(CPString)aKey
 {
     var value = [self objectForKey:aKey];
-    if ([value respondsToSelector:@selector(intValue)])
+    if (typeof(value) == "number")
+        return parseInt(value);
+    else if ([value respondsToSelector:@selector(intValue)])
         return [value intValue];
 
     return 0;
@@ -431,7 +437,9 @@ var StandardUserDefaults;
 - (double)doubleForKey:(CPString)aKey
 {
     var value = [self objectForKey:aKey];
-    if ([value respondsToSelector:@selector(doubleValue)])
+    if (typeof(value) == "number")
+        return parseFloat(value);
+    else if ([value respondsToSelector:@selector(doubleValue)])
         return [value doubleValue];
 
     return 0.0;
@@ -442,8 +450,11 @@ var StandardUserDefaults;
 */
 - (CPString)stringForKey:(CPString)aKey
 {
-    var value = [self objectForKey:aKey];
-    if ([value respondsToSelector:@selector(stringValue)])
+    var value = [self objectForKey:aKey];    
+    
+    if ([value class] === CPString)
+        return value;
+    else if ([value respondsToSelector:@selector(stringValue)])
         return [value stringValue];
 
     return nil;
@@ -461,9 +472,6 @@ var StandardUserDefaults;
             return value;
             break;
         case CPString:
-            return [CPURL URLWithString:value];
-            break;
-        case CPData:
             return [CPURL URLWithString:value];
             break;
         default:
