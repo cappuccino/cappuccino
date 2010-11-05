@@ -59,25 +59,31 @@ var HEIGHT_OF_SEGMENTED_CONTROL = 24;
     if (self)
     {
         items = [CPArray array];
-
-        tabs = [[CPSegmentedControl alloc] initWithFrame:CGRectMake(0, 0, 0, HEIGHT_OF_SEGMENTED_CONTROL)];
-        [tabs setHitTests:NO];
-
-        box = [[CPBox alloc] initWithFrame:CGRectMake(0, HEIGHT_OF_SEGMENTED_CONTROL / 2, CGRectGetWidth(aFrame),
-                                                            CGRectGetHeight(aFrame) - HEIGHT_OF_SEGMENTED_CONTROL)];
-
         selectedIndex = CPNotFound;
-
         [self setTabViewType:CPTopTabsBezelBorder];
-        [self setBackgroundColor:[CPColor colorWithCalibratedWhite:0.95 alpha:1.0]];
 
-        [self addSubview:box];
-        [self addSubview:tabs];
-
-        [box setAutoresizingMask:CPViewWidthSizable | CPViewHeightSizable];
-        [tabs setAutoresizingMask:CPViewMinXMargin | CPViewMaxXMargin];
+        [self _init];
     }
     return self;
+}
+
+- (void)_init
+{
+    tabs = [[CPSegmentedControl alloc] initWithFrame:CGRectMake(0, 0, 0, HEIGHT_OF_SEGMENTED_CONTROL)];
+    [tabs setHitTests:NO];
+
+    var aFrame = [self frame];
+
+    box = [[CPBox alloc] initWithFrame:CGRectMake(0, HEIGHT_OF_SEGMENTED_CONTROL / 2, CGRectGetWidth(aFrame),
+                                                        CGRectGetHeight(aFrame) - HEIGHT_OF_SEGMENTED_CONTROL)];
+
+    [self setBackgroundColor:[CPColor colorWithCalibratedWhite:0.95 alpha:1.0]];
+
+    [self addSubview:box];
+    [self addSubview:tabs];
+
+    [box setAutoresizingMask:CPViewWidthSizable | CPViewHeightSizable];
+    [tabs setAutoresizingMask:CPViewMinXMargin | CPViewMaxXMargin];
 }
 
 // Adding and Removing Tabs
@@ -421,6 +427,8 @@ var CPTabViewItemsKey               = "CPTabViewItemsKey",
     {
         type    = [aCoder decodeIntForKey:CPTabViewTypeKey];
         items   = [];
+
+        [self _init];
 
         var encodedItems = [aCoder decodeObjectForKey:CPTabViewItemsKey];
         for (var i = 0; encodedItems && i < encodedItems.length; i++)
