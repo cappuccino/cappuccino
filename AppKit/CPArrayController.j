@@ -205,7 +205,7 @@
 
 - (void)_setContentSet:(id)aSet
 {
-    [self setContent:aSet];
+    [self setContent:[aSet allObjects]];
 }
 
 - (id)contentArray
@@ -215,7 +215,7 @@
 
 - (id)contentSet
 {
-    return [self content];
+    return [CPSet setWithArray:[self content]];
 }
 
 - (CPArray)arrangeObjects:(CPArray)objects
