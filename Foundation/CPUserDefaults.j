@@ -221,6 +221,8 @@ var StandardUserDefaults;
         var key = keys[i];
         [self setObject:[aDictionary objectForKey:key] forKey:key inDomain:CPRegistrationDomain];
     }
+    
+    _searchListNeedsReload = YES;
 }
 
 /*!
