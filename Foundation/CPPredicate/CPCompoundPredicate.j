@@ -1,6 +1,5 @@
+
 @import "CPPredicate.j"
-@import <Foundation/CPArray.j>
-@import <Foundation/CPString.j>
 
 /*!
     A predicate to compare directly the left and right hand sides.

@@ -1,8 +1,8 @@
-@import <Foundation/CPString.j>
-@import <Foundation/CPArray.j>
-@import <Foundation/CPKeyValueCoding.j>
-@import <Foundation/CPDictionary.j>
-@import <Foundation/CPCoder.j>
+
+@import "CPString.j"
+@import "CPArray.j"
+@import "CPKeyValueCoding.j"
+@import "CPDictionary.j"
 
 /*!
     An expression that always returns the same value.
@@ -90,7 +90,7 @@ CPMinusSetExpressionType = 9;
 */
 + (CPExpression)expressionForEvaluatedObject
 {
-    return [[CPExpression_self alloc] init];
+    return [CPExpression_self evaluatedObject];
 }
 
 /*!
