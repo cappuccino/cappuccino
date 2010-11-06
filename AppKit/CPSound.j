@@ -31,7 +31,7 @@ CPSoundPlayBackStateStop    = 1;
 CPSoundPlayBackStatePause   = 2;
 
 
-/*! TNSound is a Cappuccino for binding for HTML5 audio element
+/*! CPSound is a Cappuccino for binding for HTML5 audio element
     respecting the NSSound protocol
 
     CPSound delegate:
@@ -125,6 +125,8 @@ CPSoundPlayBackStatePause   = 2;
 */
 - (void)_soundDidEnd
 {
+    if (![self loops])
+        [self stop];
     if (_delegate && [_delegate respondsToSelector:@selector(sound:didFinishPlaying:)])
         [_delegate sound:self didFinishPlaying:YES];
 }
@@ -156,6 +158,10 @@ CPSoundPlayBackStatePause   = 2;
     _audioTag.pause();
     _audioTag.currentTime = 0.0;
     _playBackStatus = CPSoundPlayBackStateStop;
+    
+    if (_delegate && [_delegate respondsToSelector:@selector(sound:didFinishPlaying:)])
+        [_delegate sound:self didFinishPlaying:YES];
+    
 }
 
 /*! pause the sound
