@@ -541,7 +541,7 @@ var CPStringRegexSpecialCharacters = [
 */
 - (BOOL)isEqualToString:(CPString)aString
 {
-    return self == aString;
+    return self == String(aString);
 }
 
 /*!
