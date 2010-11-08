@@ -361,8 +361,19 @@ var StandardUserDefaults;
     }
 }
 
-#pragma mark -
-#pragma mark Values Accessors
+#pragma mark Getting Default Values
+
+/*!
+    Returns the array value associated with the specified key.
+*/
+- (CPArray)arrayForKey:(CPString)aKey
+{
+    var value = [self objectForKey:aKey];
+    if ([value isKindOfClass:CPArray])
+        return value;
+
+    return nil;
+}
 
 /*!
     Returns the Boolean value associated with the specified key.
@@ -370,9 +381,7 @@ var StandardUserDefaults;
 - (BOOL)boolForKey:(CPString)aKey
 {
     var value = [self objectForKey:aKey];
-    if (typeof(value) == "boolean")
-        return value;
-    else if ([value respondsToSelector:@selector(boolValue)])
+    if ([value respondsToSelector:@selector(boolValue)])
         return [value boolValue];
 
     return NO;
@@ -380,12 +389,12 @@ var StandardUserDefaults;
 
 
 /*!
-    Returns the data value associated with the specified key.
+    Returns the data object associated with the specified key.
 */
 - (CPData)dataForKey:(CPString)aKey
 {
     var value = [self objectForKey:aKey];
-    if ([value class] ===  CPData)
+    if ([value isKindOfClass:CPData])
         return value;
 
     return nil;
@@ -397,24 +406,25 @@ var StandardUserDefaults;
 - (CPDictionary)dictionaryForKey:(CPString)aKey
 {
     var value = [self objectForKey:aKey];
-    if ([value class] ===  CPDictionary)
+    if ([value isKindOfClass:CPDictionary])
         return value;
 
     return nil;
 }
 
 /*!
-    Returns the floating-point value associated with the specified key.
+    Returns the float value associated with the specified key.
 */
 - (float)floatForKey:(CPString)aKey
 {
     var value = [self objectForKey:aKey];
-    if (typeof(value) == "number")
-        return parseFloat(value);
-    else if ([value respondsToSelector:@selector(floatValue)])
-        return [value floatValue];
+    if (value === nil)
+        return 0;
 
-    return 0.0;
+    if ([value respondsToSelector:@selector(floatValue)])
+        value = [value floatValue];
+
+    return parseFloat(value);
 }
 
 /*!
@@ -423,12 +433,13 @@ var StandardUserDefaults;
 - (int)integerForKey:(CPString)aKey
 {
     var value = [self objectForKey:aKey];
-    if (typeof(value) == "number")
-        return parseInt(value);
-    else if ([value respondsToSelector:@selector(intValue)])
-        return [value intValue];
+    if (value === nil)
+        return 0;
 
-    return 0;
+    if ([value respondsToSelector:@selector(intValue)])
+        value = [value intValue];
+
+    return parseInt(value);
 }
 
 /*!
@@ -436,13 +447,7 @@ var StandardUserDefaults;
 */
 - (double)doubleForKey:(CPString)aKey
 {
-    var value = [self objectForKey:aKey];
-    if (typeof(value) == "number")
-        return parseFloat(value);
-    else if ([value respondsToSelector:@selector(doubleValue)])
-        return [value doubleValue];
-
-    return 0.0;
+    return [self floatForKey:aKey];
 }
 
 /*!
@@ -450,43 +455,13 @@ var StandardUserDefaults;
 */
 - (CPString)stringForKey:(CPString)aKey
 {
-    var value = [self objectForKey:aKey];    
-    
-    if ([value class] === CPString)
+    var value = [self objectForKey:aKey];
+
+    if ([value isKindOfClass:CPString])
         return value;
+
     else if ([value respondsToSelector:@selector(stringValue)])
         return [value stringValue];
-
-    return nil;
-}
-
-/*!
-    Returns the CPURL value associated with the specified key.
-*/
-- (CPURL)URLForKey:(CPString)aKey
-{
-    var value = [self objectForKey:aKey];
-    switch ([value class])
-    {
-        case CPURL:
-            return value;
-            break;
-        case CPString:
-            return [CPURL URLWithString:value];
-            break;
-        default:
-            return nil;
-    }
-}
-
-/*!
-    Returns the array value associated with the specified key.
-*/
-- (CPArray)arrayForKey:(CPString)aKey
-{
-    var value = [self objectForKey:aKey];
-    if ([value class] === CPArray)
-        return value;
 
     return nil;
 }
@@ -497,80 +472,86 @@ var StandardUserDefaults;
 - (CPArray)stringArrayForKey:(CPString)aKey
 {
     var value = [self objectForKey:aKey];
-    if ([value class] === CPArray)
-    {
-        for (var i = 0; i < [value count]; i++)
-            if ([[value objectAtIndex:i] class] !== CPString)
-                return nil;
+    if (![value isKindOfClass:CPArray])
+        return nil;
+
+    for (var i = 0, count = [value count]; i < count; i++)
+        if (![value[i] isKindOfClass:CPString])
+            return nil;
+
+    return value;
+}
+
+/*!
+    Returns the CPURL value associated with the specified key.
+*/
+- (CPURL)URLForKey:(CPString)aKey
+{
+    var value = [self objectForKey:aKey];
+    if ([value isKindOfClass:CPURL])
         return value;
-    }
+
+    if ([value isKindOfClass:CPString])
+        return [CPURL URLWithString:value];
+
     return nil;
 }
 
-
-#pragma mark -
-#pragma mark Values Setters
+#pragma mark Setting Default Values
 
 /*!
-    Set a boolean in your application domain.
+    Sets the value of the specified default key to the specified Boolean value.
+    A cast will be attempted with -boolValue.
 */
-- (void)setBool:(BOOL)aBool forKey:(CPString)aKey
+- (void)setBool:(BOOL)aValue forKey:(CPString)aKey
 {
-    if (typeof(aBool) !== "boolean")
-        [CPException raise:CPInvalidArgumentException reason:aBool + @" is not a BOOL"];
-    [self setObject:aBool forKey:aKey];
+    if ([aValue respondsToSelector:@selector(boolValue)])
+        [self setObject:[aValue boolValue] forKey:aKey];
 }
 
 /*!
-    Set a float in your application domain.
+    Sets the value of the specified default key to the specified float value.
+    A cast will be attempted with -floatValue and parseFloat().
 */
-- (void)setFloat:(float)aFloat forKey:(CPString)aKey
+- (void)setFloat:(float)aValue forKey:(CPString)aKey
 {
-    if (typeof(parseFloat(aFloat)) !== "number")
-        [CPException raise:CPInvalidArgumentException reason:aFloat + @" is not a valid number"];
-    [self setObject:aFloat forKey:aKey];
+    if ([aValue respondsToSelector:@selector(aValue)])
+        aValue = [aValue floatValue];
+
+    [self setObject:parseFloat(aValue) forKey:aKey];
 }
 
 /*!
-    Set a double in your application domain.
+    Sets the value of the specified default key to the double value.
 */
-- (void)setDouble:(double)aDouble forKey:(CPString)aKey
+- (void)setDouble:(double)aValue forKey:(CPString)aKey
 {
-    if (typeof(parseFloat(aDouble)) !== "number")
-        [CPException raise:CPInvalidArgumentException reason:aDouble + @" is not a valid number"];
-    [self setObject:aDouble forKey:aKey];
+    [self setFloat:aValue forKey:aKey];
 }
 
 /*!
-    Set a integer in your application domain.
+    Sets the value of the specified default key to the specified integer value.
+    A cast will be attempted with -intValue and parseInt().
 */
-- (void)setInteger:(int)anInteger forKey:(CPString)aKey
+- (void)setInteger:(int)aValue forKey:(CPString)aKey
 {
-    if (typeof(parseInt(anInteger)) !== "number")
-        [CPException raise:CPInvalidArgumentException reason:anInteger + @" is not a valid number"];
-    [self setObject:anInteger forKey:aKey];
+    if ([aValue respondsToSelector:@selector(intValue)])
+        aValue = [aValue intValue];
+
+    [self setObject:parseInt(aValue) forKey:aKey];
 }
 
 /*!
-    Set a string in your application domain.
+    Sets the value of the specified default key to the specified URL.
+    The adjustments made in Cocoa are not present here.
 */
-- (void)setString:(int)aString forKey:(CPString)aKey
+- (void)setURL:(CPURL)aValue forKey:(CPString)aKey
 {
-    if ([aString class] !== CPString)
-        [CPException raise:CPInvalidArgumentException reason:aString + @" is not a valid string"];
-    [self setObject:aString forKey:aKey];
-}
+    if ([aValue isKindOfClass:CPString])
+        aValue = [CPURL URLWithString:aValue];
 
-/*!
-    Set a URL in your application domain.
-*/
-- (void)setURL:(CPURL)anURL forKey:(CPString)aKey
-{
-    if ([anURL class] !== CPURL && [anURL class] !== CPString)
-        [CPException raise:CPInvalidArgumentException reason:anURL + @" is not a valid CPURL"];
-    [self setObject:anURL forKey:aKey];
+    [self setObject:aValue forKey:aKey];
 }
-
 
 @end
 
