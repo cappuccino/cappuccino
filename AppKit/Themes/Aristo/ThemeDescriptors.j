@@ -796,8 +796,8 @@ var themedButtonValues = nil,
         [@"bezel-color",        bezelFocusedColor,                  CPThemeStateBezeled | CPThemeStateEditing],
         [@"font",               [CPFont systemFontOfSize:12.0],     CPThemeStateBezeled],
 
-        [@"content-inset",      CGInsetMake(7.0, 7.0, 5.0, 8.0),    CPThemeStateBezeled],
-        [@"content-inset",      CGInsetMake(6.0, 7.0, 5.0, 8.0),    CPThemeStateBezeled | CPThemeStateEditing],
+        [@"content-inset",      CGInsetMake(8.0, 7.0, 5.0, 8.0),    CPThemeStateBezeled],
+        [@"content-inset",      CGInsetMake(7.0, 7.0, 5.0, 8.0),    CPThemeStateBezeled | CPThemeStateEditing],
         [@"bezel-inset",        CGInsetMake(3.0, 4.0, 3.0, 4.0),    CPThemeStateBezeled],
         [@"bezel-inset",        CGInsetMake(0.0, 0.0, 0.0, 0.0),    CPThemeStateBezeled | CPThemeStateEditing],
 
