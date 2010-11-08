@@ -24,7 +24,7 @@
 
 CPSoundLoadStateEmpty       = 0;
 CPSoundLoadStateLoading     = 1;
-CPSoundLoadStateCanBePlayed = 1;
+CPSoundLoadStateCanBePlayed = 2;
 
 CPSoundPlayBackStatePlay    = 0;
 CPSoundPlayBackStateStop    = 1;
@@ -57,7 +57,7 @@ CPSoundPlayBackStatePause   = 2;
     {
         _loadStatus = CPSoundLoadStateEmpty;
         _loops = NO;
-        _audioTag = new Audio();
+        _audioTag = document.createElement("audio");
         _audioTag.preload = YES;
         _audioTag.addEventListener("canplay", function(){
             [self _soundDidload];
@@ -127,8 +127,6 @@ CPSoundPlayBackStatePause   = 2;
 {
     if (![self loops])
         [self stop];
-    if (_delegate && [_delegate respondsToSelector:@selector(sound:didFinishPlaying:)])
-        [_delegate sound:self didFinishPlaying:YES];
 }
 
 
@@ -158,10 +156,9 @@ CPSoundPlayBackStatePause   = 2;
     _audioTag.pause();
     _audioTag.currentTime = 0.0;
     _playBackStatus = CPSoundPlayBackStateStop;
-    
+
     if (_delegate && [_delegate respondsToSelector:@selector(sound:didFinishPlaying:)])
         [_delegate sound:self didFinishPlaying:YES];
-    
 }
 
 /*! pause the sound
