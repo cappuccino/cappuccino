@@ -517,17 +517,17 @@ var themedButtonValues = nil,
     var button = [[CPPopUpButton alloc] initWithFrame:CGRectMake(0.0, 0.0, 100.0, 24.0) pullsDown:NO],
         color = PatternColor(
             [
-                ["button-bezel-left.png", 4.0, 24.0],
-                ["button-bezel-center.png", 1.0, 24.0],
-                ["popup-bezel-right.png", 27.0, 24.0]
+                ["popup-bezel-left.png", 3.0, 24.0],
+                ["popup-bezel-center.png", 1.0, 24.0],
+                ["popup-bezel-right.png", 21.0, 24.0]
             ],
             PatternIsHorizontal),
 
         disabledColor = PatternColor(
             [
-                ["button-bezel-disabled-left.png", 4.0, 24.0],
-                ["button-bezel-disabled-center.png", 1.0, 24.0],
-                ["popup-bezel-disabled-right.png", 27.0, 24.0]
+                ["popup-bezel-disabled-left.png", 3.0, 24.0],
+                ["popup-bezel-disabled-center.png", 1.0, 24.0],
+                ["popup-bezel-disabled-right.png", 21.0, 24.0]
             ],
             PatternIsHorizontal),
 
@@ -536,7 +536,7 @@ var themedButtonValues = nil,
             [@"bezel-color",        color,          CPThemeStateBordered],
             [@"bezel-color",        disabledColor,  CPThemeStateBordered | CPThemeStateDisabled],
 
-            [@"content-inset",      CGInsetMake(0, 27.0 + 5.0, 0, 5.0), CPThemeStateBordered],
+            [@"content-inset",      CGInsetMake(0, 21.0 + 5.0, 0, 5.0), CPThemeStateBordered],
             [@"font",               [CPFont boldSystemFontOfSize:12.0]],
             [@"text-color",         [CPColor colorWithCalibratedWhite:79.0 / 255.0 alpha:1.0]],
             [@"text-shadow-color",  [CPColor colorWithCalibratedWhite:240.0 / 255.0 alpha:1.0]],
@@ -561,16 +561,16 @@ var themedButtonValues = nil,
     var button = [[CPPopUpButton alloc] initWithFrame:CGRectMake(0.0, 0.0, 100.0, 24.0) pullsDown:YES],
         color = PatternColor(
             [
-                ["button-bezel-left.png", 4.0, 24.0],
-                ["button-bezel-center.png", 1.0, 24.0],
+                ["popup-bezel-left.png", 4.0, 24.0],
+                ["popup-bezel-center.png", 1.0, 24.0],
                 ["popup-bezel-right-pullsdown.png", 27.0, 24.0]
             ],
             PatternIsHorizontal),
 
         disabledColor = PatternColor(
             [
-                ["button-bezel-disabled-left.png", 4.0, 24.0],
-                ["button-bezel-disabled-center.png", 1.0, 24.0],
+                ["popup-bezel-disabled-left.png", 4.0, 24.0],
+                ["popup-bezel-disabled-center.png", 1.0, 24.0],
                 ["popup-bezel-disabled-right-pullsdown.png", 27.0, 24.0]
             ],
             PatternIsHorizontal),
