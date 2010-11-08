@@ -763,28 +763,28 @@ var themedButtonValues = nil,
 
         bezelColor = PatternColor(
             [
-                ["textfield-bezel-square-0.png", 2.0, 3.0],
-                ["textfield-bezel-square-1.png", 1.0, 3.0],
-                ["textfield-bezel-square-2.png", 2.0, 3.0],
-                ["textfield-bezel-square-3.png", 2.0, 1.0],
+                ["textfield-bezel-square-0.png", 3.0, 4.0],
+                ["textfield-bezel-square-1.png", 1.0, 4.0],
+                ["textfield-bezel-square-2.png", 3.0, 4.0],
+                ["textfield-bezel-square-3.png", 3.0, 1.0],
                 ["textfield-bezel-square-4.png", 1.0, 1.0],
-                ["textfield-bezel-square-5.png", 2.0, 1.0],
-                ["textfield-bezel-square-6.png", 2.0, 2.0],
-                ["textfield-bezel-square-7.png", 1.0, 2.0],
-                ["textfield-bezel-square-8.png", 2.0, 2.0]
+                ["textfield-bezel-square-5.png", 3.0, 1.0],
+                ["textfield-bezel-square-6.png", 3.0, 4.0],
+                ["textfield-bezel-square-7.png", 1.0, 4.0],
+                ["textfield-bezel-square-8.png", 3.0, 4.0]
             ]),
 
         bezelFocusedColor = PatternColor(
             [
-                ["textfield-bezel-square-focused-0.png", 6.0, 7.0],
+                ["textfield-bezel-square-focused-0.png", 7.0, 7.0],
                 ["textfield-bezel-square-focused-1.png", 1.0, 7.0],
-                ["textfield-bezel-square-focused-2.png", 6.0, 7.0],
-                ["textfield-bezel-square-focused-3.png", 6.0, 1.0],
+                ["textfield-bezel-square-focused-2.png", 7.0, 7.0],
+                ["textfield-bezel-square-focused-3.png", 7.0, 1.0],
                 ["textfield-bezel-square-focused-4.png", 1.0, 1.0],
-                ["textfield-bezel-square-focused-5.png", 6.0, 1.0],
-                ["textfield-bezel-square-focused-6.png", 6.0, 5.0],
-                ["textfield-bezel-square-focused-7.png", 1.0, 5.0],
-                ["textfield-bezel-square-focused-8.png", 6.0, 5.0]
+                ["textfield-bezel-square-focused-5.png", 7.0, 1.0],
+                ["textfield-bezel-square-focused-6.png", 7.0, 7.0],
+                ["textfield-bezel-square-focused-7.png", 1.0, 7.0],
+                ["textfield-bezel-square-focused-8.png", 7.0, 7.0]
             ]),
 
         placeholderColor = [CPColor colorWithCalibratedRed:189.0 / 255.0 green:199.0 / 255.0 blue:211.0 / 255.0 alpha:1.0];
