@@ -903,14 +903,14 @@ var themedButtonValues = nil,
 
 + (CPTokenField)themedTokenField
 {
-    var tokenfield = [[CPTokenField alloc] initWithFrame:CGRectMake(0.0, 0.0, 60.0, 30.0)],
+    var tokenfield = [[CPTokenField alloc] initWithFrame:CGRectMake(0.0, 0.0, 60.0, 29.0)],
 
         overrides =
         [
-            [@"content-inset", CGInsetMake(7.0, 0.0, 4.0, 0.0)],
+            [@"content-inset", CGInsetMake(8.0, 0.0, 4.0, 0.0)],
             // Placeholder is displayed as regular text, not tokens; requires a different inset.
             [@"content-inset", CGInsetMake(9.0, 0.0, 5.0, 2.0), CPTextFieldStatePlaceholder],
-            [@"content-inset", CGInsetMake(7.0, 5.0, 5.0, 6.0), CPThemeStateBezeled],
+            [@"content-inset", CGInsetMake(6.0, 5.0, 5.0, 6.0), CPThemeStateBezeled],
             [@"content-inset", CGInsetMake(9.0, 7.0, 6.0, 8.0), CPThemeStateBezeled | CPTextFieldStatePlaceholder],
         ];
 
