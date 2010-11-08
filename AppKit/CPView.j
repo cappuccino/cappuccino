@@ -2509,7 +2509,7 @@ setBoundsOrigin:
 
     var frame = [self rectForEphemeralSubviewNamed:aViewName];
 
-    if (frame && !_CGRectIsEmpty(frame))
+    if (frame)
     {
         if (!_ephemeralSubviewsForNames[aViewName])
         {
