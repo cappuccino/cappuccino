@@ -787,6 +787,19 @@ var themedButtonValues = nil,
                 ["textfield-bezel-square-focused-8.png", 7.0, 7.0]
             ]),
 
+        bezelDisabledColor = PatternColor(
+            [
+                ["textfield-bezel-square-disabled-0.png", 3.0, 4.0],
+                ["textfield-bezel-square-disabled-1.png", 1.0, 4.0],
+                ["textfield-bezel-square-disabled-2.png", 3.0, 4.0],
+                ["textfield-bezel-square-disabled-3.png", 3.0, 1.0],
+                ["textfield-bezel-square-disabled-4.png", 1.0, 1.0],
+                ["textfield-bezel-square-disabled-5.png", 3.0, 1.0],
+                ["textfield-bezel-square-disabled-6.png", 3.0, 4.0],
+                ["textfield-bezel-square-disabled-7.png", 1.0, 4.0],
+                ["textfield-bezel-square-disabled-8.png", 3.0, 4.0]
+            ]),
+
         placeholderColor = [CPColor colorWithCalibratedRed:189.0 / 255.0 green:199.0 / 255.0 blue:211.0 / 255.0 alpha:1.0];
 
     // Global for reuse by CPTokenField.
@@ -794,6 +807,7 @@ var themedButtonValues = nil,
     [
         [@"bezel-color",        bezelColor,                         CPThemeStateBezeled],
         [@"bezel-color",        bezelFocusedColor,                  CPThemeStateBezeled | CPThemeStateEditing],
+        [@"bezel-color",        bezelDisabledColor,                 CPThemeStateBezeled | CPThemeStateDisabled],
         [@"font",               [CPFont systemFontOfSize:12.0],     CPThemeStateBezeled],
 
         [@"content-inset",      CGInsetMake(8.0, 7.0, 5.0, 8.0),    CPThemeStateBezeled],
