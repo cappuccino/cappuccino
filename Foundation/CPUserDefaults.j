@@ -361,7 +361,8 @@ var StandardUserDefaults;
     }
 }
 
-// Value accessors
+#pragma mark -
+#pragma mark Values Accessors
 
 /*!
     Returns the Boolean value associated with the specified key.
@@ -369,10 +370,37 @@ var StandardUserDefaults;
 - (BOOL)boolForKey:(CPString)aKey
 {
     var value = [self objectForKey:aKey];
-    if ([value respondsToSelector:@selector(boolValue)])
-        return [value boolValue]
+    if (typeof(value) == "boolean")
+        return value;
+    else if ([value respondsToSelector:@selector(boolValue)])
+        return [value boolValue];
 
-    return value;
+    return NO;
+}
+
+
+/*!
+    Returns the data value associated with the specified key.
+*/
+- (CPData)dataForKey:(CPString)aKey
+{
+    var value = [self objectForKey:aKey];
+    if ([value class] ===  CPData)
+        return value;
+
+    return nil;
+}
+
+/*!
+    Returns the Boolean value associated with the specified key.
+*/
+- (CPDictionary)dictionaryForKey:(CPString)aKey
+{
+    var value = [self objectForKey:aKey];
+    if ([value class] ===  CPDictionary)
+        return value;
+
+    return nil;
 }
 
 /*!
@@ -381,22 +409,12 @@ var StandardUserDefaults;
 - (float)floatForKey:(CPString)aKey
 {
     var value = [self objectForKey:aKey];
-    if ([value respondsToSelector:@selector(floatValue)])
+    if (typeof(value) == "number")
+        return parseFloat(value);
+    else if ([value respondsToSelector:@selector(floatValue)])
         return [value floatValue];
 
-    return value;
-}
-
-/*!
-    Returns the double value associated with the specified key.
-*/
-- (double)doubleForKey:(CPString)aKey
-{
-    var value = [self objectForKey:aKey];
-    if ([value respondsToSelector:@selector(doubleValue)])
-        return [value doubleValue];
-
-    return value;
+    return 0.0;
 }
 
 /*!
@@ -405,11 +423,154 @@ var StandardUserDefaults;
 - (int)integerForKey:(CPString)aKey
 {
     var value = [self objectForKey:aKey];
-    if ([value respondsToSelector:@selector(intValue)])
+    if (typeof(value) == "number")
+        return parseInt(value);
+    else if ([value respondsToSelector:@selector(intValue)])
         return [value intValue];
 
-    return value;
+    return 0;
 }
+
+/*!
+    Returns the double value associated with the specified key.
+*/
+- (double)doubleForKey:(CPString)aKey
+{
+    var value = [self objectForKey:aKey];
+    if (typeof(value) == "number")
+        return parseFloat(value);
+    else if ([value respondsToSelector:@selector(doubleValue)])
+        return [value doubleValue];
+
+    return 0.0;
+}
+
+/*!
+    Returns the string value associated with the specified key.
+*/
+- (CPString)stringForKey:(CPString)aKey
+{
+    var value = [self objectForKey:aKey];    
+    
+    if ([value class] === CPString)
+        return value;
+    else if ([value respondsToSelector:@selector(stringValue)])
+        return [value stringValue];
+
+    return nil;
+}
+
+/*!
+    Returns the CPURL value associated with the specified key.
+*/
+- (CPURL)URLForKey:(CPString)aKey
+{
+    var value = [self objectForKey:aKey];
+    switch ([value class])
+    {
+        case CPURL:
+            return value;
+            break;
+        case CPString:
+            return [CPURL URLWithString:value];
+            break;
+        default:
+            return nil;
+    }
+}
+
+/*!
+    Returns the array value associated with the specified key.
+*/
+- (CPArray)arrayForKey:(CPString)aKey
+{
+    var value = [self objectForKey:aKey];
+    if ([value class] === CPArray)
+        return value;
+
+    return nil;
+}
+
+/*!
+    Returns the string array value associated with the specified key.
+*/
+- (CPArray)stringArrayForKey:(CPString)aKey
+{
+    var value = [self objectForKey:aKey];
+    if ([value class] === CPArray)
+    {
+        for (var i = 0; i < [value count]; i++)
+            if ([[value objectAtIndex:i] class] !== CPString)
+                return nil;
+        return value;
+    }
+    return nil;
+}
+
+
+#pragma mark -
+#pragma mark Values Setters
+
+/*!
+    Set a boolean in your application domain.
+*/
+- (void)setBool:(BOOL)aBool forKey:(CPString)aKey
+{
+    if (typeof(aBool) !== "boolean")
+        [CPException raise:CPInvalidArgumentException reason:aBool + @" is not a BOOL"];
+    [self setObject:aBool forKey:aKey];
+}
+
+/*!
+    Set a float in your application domain.
+*/
+- (void)setFloat:(float)aFloat forKey:(CPString)aKey
+{
+    if (typeof(parseFloat(aFloat)) !== "number")
+        [CPException raise:CPInvalidArgumentException reason:aFloat + @" is not a valid number"];
+    [self setObject:aFloat forKey:aKey];
+}
+
+/*!
+    Set a double in your application domain.
+*/
+- (void)setDouble:(double)aDouble forKey:(CPString)aKey
+{
+    if (typeof(parseFloat(aDouble)) !== "number")
+        [CPException raise:CPInvalidArgumentException reason:aDouble + @" is not a valid number"];
+    [self setObject:aDouble forKey:aKey];
+}
+
+/*!
+    Set a integer in your application domain.
+*/
+- (void)setInteger:(int)anInteger forKey:(CPString)aKey
+{
+    if (typeof(parseInt(anInteger)) !== "number")
+        [CPException raise:CPInvalidArgumentException reason:anInteger + @" is not a valid number"];
+    [self setObject:anInteger forKey:aKey];
+}
+
+/*!
+    Set a string in your application domain.
+*/
+- (void)setString:(int)aString forKey:(CPString)aKey
+{
+    if ([aString class] !== CPString)
+        [CPException raise:CPInvalidArgumentException reason:aString + @" is not a valid string"];
+    [self setObject:aString forKey:aKey];
+}
+
+/*!
+    Set a URL in your application domain.
+*/
+- (void)setURL:(CPURL)anURL forKey:(CPString)aKey
+{
+    if ([anURL class] !== CPURL && [anURL class] !== CPString)
+        [CPException raise:CPInvalidArgumentException reason:anURL + @" is not a valid CPURL"];
+    [self setObject:anURL forKey:aKey];
+}
+
 
 @end
 
