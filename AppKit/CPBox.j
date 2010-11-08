@@ -25,7 +25,7 @@
 // CPBoxType
 CPBoxPrimary    = 0;
 CPBoxSecondary  = 1;
-CPBoxSeperator  = 2;
+CPBoxSeparator  = 2;
 CPBoxOldStyle   = 3;
 CPBoxCustom     = 4;
 
@@ -234,7 +234,7 @@ CPGrooveBorder  = 3;
 
     switch (_boxType)
     {
-        case CPBoxSeperator:
+        case CPBoxSeparator:
             // NSBox does not include a horitontal flag for the seperator type. We have to determine
             // the type of seperator to draw by the width and height of the frame.
             if (CGRectGetWidth(bounds) === 5.0)
