@@ -92,9 +92,6 @@ var CPStepperButtonsSize = CPSizeMake(19, 13);
         [_buttonUp setTarget:self];
         [_buttonUp setAction:@selector(_buttonDidClick:)];
         [_buttonUp setAutoresizingMask:CPViewNotSizable];
-        [_buttonUp setValue:[self valueForThemeAttribute:@"bezel-color-up-button" inState:CPThemeStateBordered] forThemeAttribute:@"bezel-color" inState:CPThemeStateBordered];
-        [_buttonUp setValue:[self valueForThemeAttribute:@"bezel-color-up-button" inState:CPThemeStateBordered | CPThemeStateDisabled] forThemeAttribute:@"bezel-color" inState:CPThemeStateBordered | CPThemeStateDisabled];
-        [_buttonUp setValue:[self valueForThemeAttribute:@"bezel-color-up-button" inState:CPThemeStateBordered | CPThemeStateHighlighted] forThemeAttribute:@"bezel-color" inState:CPThemeStateBordered | CPThemeStateHighlighted];
         [self addSubview:_buttonUp];
         
         _buttonDown = [[_CPContinuousButton alloc] initWithFrame:CPRectMake(aFrame.size.width - CPStepperButtonsSize.width, CPStepperButtonsSize.height, CPStepperButtonsSize.width, CPStepperButtonsSize.height - 1)];
@@ -102,10 +99,9 @@ var CPStepperButtonsSize = CPSizeMake(19, 13);
         [_buttonDown setTarget:self];
         [_buttonDown setAction:@selector(_buttonDidClick:)];
         [_buttonDown setAutoresizingMask:CPViewNotSizable];
-        [_buttonDown setValue:[self valueForThemeAttribute:@"bezel-color-down-button" inState:CPThemeStateBordered] forThemeAttribute:@"bezel-color" inState:CPThemeStateBordered];
-        [_buttonDown setValue:[self valueForThemeAttribute:@"bezel-color-down-button" inState:CPThemeStateBordered | CPThemeStateDisabled] forThemeAttribute:@"bezel-color" inState:CPThemeStateBordered | CPThemeStateDisabled];
-        [_buttonDown setValue:[self valueForThemeAttribute:@"bezel-color-down-button" inState:CPThemeStateBordered | CPThemeStateHighlighted] forThemeAttribute:@"bezel-color" inState:CPThemeStateBordered | CPThemeStateHighlighted];
-        [self addSubview:_buttonDown];     
+        [self addSubview:_buttonDown];
+        
+        [self setNeedsLayout];
     }
 
     return self;
@@ -114,7 +110,7 @@ var CPStepperButtonsSize = CPSizeMake(19, 13);
 #pragma mark -
 #pragma mark Superclass overrides
 
-/*! set the CPStepper enabled or not
+/*! set if the CPStepper is enabled or not
     @param shouldEnabled BOOL that define if stepper is enabled or not.
 */
 - (void)setEnabled:(BOOL)shouldEnabled
@@ -134,7 +130,19 @@ var CPStepperButtonsSize = CPSizeMake(19, 13);
         [super setFrame:aFrame];
 }
 
-/*!  set is CPStepper should autorepear
+/*! @ignore
+*/
+- (void)layoutSubviews
+{
+    [_buttonUp setValue:[self valueForThemeAttribute:@"bezel-color-up-button" inState:CPThemeStateBordered] forThemeAttribute:@"bezel-color" inState:CPThemeStateBordered];
+    [_buttonUp setValue:[self valueForThemeAttribute:@"bezel-color-up-button" inState:CPThemeStateBordered | CPThemeStateDisabled] forThemeAttribute:@"bezel-color" inState:CPThemeStateBordered | CPThemeStateDisabled];
+    [_buttonUp setValue:[self valueForThemeAttribute:@"bezel-color-up-button" inState:CPThemeStateBordered | CPThemeStateHighlighted] forThemeAttribute:@"bezel-color" inState:CPThemeStateBordered | CPThemeStateHighlighted];
+    [_buttonDown setValue:[self valueForThemeAttribute:@"bezel-color-down-button" inState:CPThemeStateBordered] forThemeAttribute:@"bezel-color" inState:CPThemeStateBordered];
+    [_buttonDown setValue:[self valueForThemeAttribute:@"bezel-color-down-button" inState:CPThemeStateBordered | CPThemeStateDisabled] forThemeAttribute:@"bezel-color" inState:CPThemeStateBordered | CPThemeStateDisabled];
+    [_buttonDown setValue:[self valueForThemeAttribute:@"bezel-color-down-button" inState:CPThemeStateBordered | CPThemeStateHighlighted] forThemeAttribute:@"bezel-color" inState:CPThemeStateBordered | CPThemeStateHighlighted];    
+}
+
+/*! set if CPStepper should autorepeat
     @param shouldAutoRepeat if YES, the first mouse down does one increment (decrement) and, after each delay of 0.5 seconds
 */
 - (void)setAutorepeat:(BOOL)shouldAutoRepeat
@@ -195,7 +203,7 @@ var CPStepperButtonsSize = CPSizeMake(19, 13);
 #pragma mark -
 #pragma mark Theming
 
-+ (CPString)themeClass
++ (CPString)defaultThemeClass
 {
     return @"stepper";
 }
