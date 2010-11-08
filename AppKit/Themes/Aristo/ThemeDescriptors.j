@@ -1452,6 +1452,74 @@ var themedButtonValues = nil,
     return alert;
 }
 
++ (CPStepper)themedStepper
+{
+    var stepper = [CPStepper stepper],
+    
+        bezelUp = PatternColor(
+            [
+                ["stepper-bezel-big-up-left.png", 3.0, 13.0],
+                ["stepper-bezel-big-up-center.png", 13.0, 13.0],
+                ["stepper-bezel-big-up-right.png", 3.0, 13.0]
+            ],
+            PatternIsHorizontal),
+        
+        bezelDown = PatternColor(
+            [
+                ["stepper-bezel-big-down-left.png", 3.0, 12.0],
+                ["stepper-bezel-big-down-center.png", 13.0, 12.0],
+                ["stepper-bezel-big-down-right.png", 3.0, 12.0]
+            ],
+            PatternIsHorizontal),
+        
+        bezelUpDisabled = PatternColor(
+            [
+                ["stepper-bezel-big-disabled-up-left.png", 3.0, 13.0],
+                ["stepper-bezel-big-disabled-up-center.png", 13.0, 13.0],
+                ["stepper-bezel-big-disabled-up-right.png", 3.0, 13.0]
+            ],
+            PatternIsHorizontal),
+
+        bezelDownDisabled = PatternColor(
+            [
+                ["stepper-bezel-big-disabled-down-left.png", 3.0, 12.0],
+                ["stepper-bezel-big-disabled-down-center.png", 13.0, 12.0],
+                ["stepper-bezel-big-disabled-down-right.png", 3.0, 12.0]
+            ],
+            PatternIsHorizontal),
+        
+        bezelUpHighlighted = PatternColor(
+            [
+                [@"stepper-bezel-big-highlighted-up-left.png", 3.0, 13.0],
+                [@"stepper-bezel-big-highlighted-up-center.png", 13.0, 13.0],
+                [@"stepper-bezel-big-highlighted-up-right.png", 3.0, 13.0]
+            ],
+            PatternIsHorizontal),
+
+        bezelDownHighlighted = PatternColor(
+            [
+                [@"stepper-bezel-big-highlighted-down-left.png", 3.0, 12.0],
+                [@"stepper-bezel-big-highlighted-down-center.png", 13.0, 12.0],
+                [@"stepper-bezel-big-highlighted-down-right.png", 3.0, 12.0]
+            ],
+            PatternIsHorizontal),
+
+        themeValues =
+        [
+            [@"bezel-color-up-button",      bezelUp,                        CPThemeStateBordered],
+            [@"bezel-color-down-button",    bezelDown,                      CPThemeStateBordered],
+            [@"bezel-color-up-button",      bezelUpDisabled,                CPThemeStateBordered | CPThemeStateDisabled],
+            [@"bezel-color-down-button",    bezelDownDisabled,              CPThemeStateBordered | CPThemeStateDisabled],
+            [@"bezel-color-up-button",      bezelUpHighlighted,             CPThemeStateBordered | CPThemeStateHighlighted],
+            [@"bezel-color-down-button",    bezelDownHighlighted,           CPThemeStateBordered | CPThemeStateHighlighted],            
+            [@"min-size",                   CGSizeMake(19.0, 25.0)]
+        ];
+
+    [self registerThemeValues:themeValues forView:stepper];
+
+    return stepper;
+}
+
 @end
 
 @implementation AristoHUDThemeDescriptor : BKThemeDescriptor
