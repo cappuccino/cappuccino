@@ -87,7 +87,7 @@ var CPAlertLabelOffset      = 3.0;
     CPImage         _icon                   @accessors(property=icon);
     BOOL            _showSupressionButton   @accessors(getter=showsSupressionButton);
     CPCheckBox      _supressionButton       @accessors(getter=suppressionButton);
-    
+
     BOOL            _needsLayout;
     CPImageView     _alertImageView;
     CPButton        _alertHelpButton;
@@ -179,13 +179,11 @@ var CPAlertLabelOffset      = 3.0;
 - (void)_createPanelWithStyle:(int)forceStyle
 {
     var frame = CGRectMakeZero(),
-        styleMask = [self currentValueForThemeAttribute:@"bezel-color"] ? CPBorderlessWindowMask : CPTitledWindowMask;
+        styleMask = CPTitledWindowMask;
 
     frame.size = [self currentValueForThemeAttribute:@"size"];
 
     _alertPanel = [[CPPanel alloc] initWithContentRect:frame styleMask:forceStyle || styleMask];
-
-    [_alertPanel setMovableByWindowBackground:YES];
 
     var contentView = [_alertPanel contentView],
         count = [_buttons count];
@@ -369,7 +367,7 @@ var CPAlertLabelOffset      = 3.0;
             suppressionButtonViewOriginY = CPRectGetMaxY([(_accessoryView || _informativeLabel) frame]) + CPAlertLabelOffset + suppressionViewOffset;
 
         [_supressionButton setFrameOrigin:CGPointMake(inset.left, suppressionButtonViewOriginY)];
-        [[_alertPanel contentView] addSubview:_supressionButton];   
+        [[_alertPanel contentView] addSubview:_supressionButton];
     }
 }
 
@@ -436,7 +434,7 @@ var CPAlertLabelOffset      = 3.0;
 {
     if (!_needsLayout)
         return;
-    
+
     if (!_alertPanel)
         [self _createPanelWithStyle:nil];
 
@@ -474,19 +472,18 @@ var CPAlertLabelOffset      = 3.0;
 
     [_alertPanel setFloatingPanel:YES];
     [_alertPanel center];
-    [[_alertPanel contentView] setBackgroundColor:[self currentValueForThemeAttribute:@"bezel-color"]];
 
     [self _layoutMessageView];
     [self _layoutInformativeView];
     [self _layoutAccessoryView];
     [self _layoutSuppressionButton];
-    
+
     var lastView = _informativeLabel;
     if (_showSupressionButton)
         lastView = _supressionButton;
     else if (_accessoryView)
         lastView = _accessoryView
-    
+
     finalSize = [self _layoutButtonsFromView:lastView];
 
     if (([_alertPanel styleMask] & CPDocModalWindowMask) || ([_alertPanel styleMask] & CPBorderlessWindowMask))
@@ -494,7 +491,7 @@ var CPAlertLabelOffset      = 3.0;
 
     //alert panel size resetting
     [_alertPanel setFrameSize:finalSize];
-    
+
     _needsLayout = NO;
 }
 
@@ -509,7 +506,6 @@ var CPAlertLabelOffset      = 3.0;
 - (void)runModal
 {
     [self layout];
-    [_alertPanel setMovableByWindowBackground:YES];
     [CPApp runModalForWindow:_alertPanel];
 }
 
@@ -525,8 +521,6 @@ var CPAlertLabelOffset      = 3.0;
     if (!([_alertPanel styleMask] & CPDocModalWindowMask))
         [self _createPanelWithStyle:CPDocModalWindowMask]
     [self layout];
-
-    [_alertPanel setMovableByWindowBackground:NO];
 
     _didEndSelector = alertDidEndSelector;
     _modalDelegate = modalDelegate;
@@ -605,7 +599,6 @@ var CPAlertLabelOffset      = 3.0;
                                                 [CPNull null],
                                                 [CPNull null],
                                                 [CPNull null],
-                                                [CPNull null],
                                                 0.0
                                                 ]
                                        forKeys:[@"size", @"content-inset", @"informative-offset", @"button-offset",
@@ -615,7 +608,6 @@ var CPAlertLabelOffset      = 3.0;
                                                 @"information-image",
                                                 @"warning-image",
                                                 @"error-image",
-                                                @"bezel-color",
                                                 @"help-image",
                                                 @"help-image-left-offset",
                                                 @"help-image-pressed",
