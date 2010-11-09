@@ -440,7 +440,6 @@ var CPAlertLabelOffset      = 3.0;
         [self _createPanelWithStyle:nil];
 
     var iconOffset = [self currentValueForThemeAttribute:@"image-offset"],
-        theTitle = @"",
         theImage,
         finalSize;
 
@@ -451,21 +450,15 @@ var CPAlertLabelOffset      = 3.0;
         {
             case CPWarningAlertStyle:
                 theImage = [self currentValueForThemeAttribute:@"warning-image"];
-                theTitle = "Warning";
                 break;
             case CPInformationalAlertStyle:
                 theImage = [self currentValueForThemeAttribute:@"information-image"];
-                theTitle = "Information";
                 break;
             case CPCriticalAlertStyle:
                 theImage = [self currentValueForThemeAttribute:@"error-image"];
-                theTitle = @"Critical";
                 break;
         }
-
-    if ([_alertPanel styleMask] == CPTitledWindowMask)
-        [_alertPanel setTitle:theTitle];
-
+    
     [_alertImageView setImage:theImage];
 
     var imageSize = theImage ? [theImage size] : CGSizeMakeZero();
@@ -487,7 +480,7 @@ var CPAlertLabelOffset      = 3.0;
 
     finalSize = [self _layoutButtonsFromView:lastView];
 
-    if (([_alertPanel styleMask] & CPDocModalWindowMask) || ([_alertPanel styleMask] & CPBorderlessWindowMask))
+    if ([_alertPanel styleMask] & CPDocModalWindowMask)
         finalSize.height -= 26; // adjust the absence of title bar
 
     //alert panel size resetting
